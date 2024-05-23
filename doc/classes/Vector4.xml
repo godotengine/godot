@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A 4D vector using floating point coordinates.
+		A 4D vector using floating-point coordinates.
 	</brief_description>
 	<description>
 		A 4-element structure that can be used to represent 4D coordinates or any other quadruplet of numeric values.
@@ -64,6 +64,14 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
+		<method name="clampf" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="min" type="float" />
+			<param index="1" name="max" type="float" />
+			<description>
+				Returns a new vector with all components clamped between [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
 		<method name="cubic_interpolate" qualifiers="const">
 			<return type="Vector4" />
 			<param index="0" name="b" type="Vector4" />
@@ -85,7 +93,7 @@
 			<param index="6" name="post_b_t" type="float" />
 			<description>
 				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
-				It can perform smoother interpolation than [code]cubic_interpolate()[/code] by the time values.
+				It can perform smoother interpolation than [method cubic_interpolate] by the time values.
 			</description>
 		</method>
 		<method name="direction_to" qualifiers="const">
@@ -155,7 +163,7 @@
 				This method is faster than using [method is_equal_approx] with one value as a zero vector.
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="float" />
 			<description>
 				Returns the length (magnitude) of this vector.
@@ -168,12 +176,19 @@
 				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
-		<method name="lerp" qualifiers="const">
+		<method name="lerp" qualifiers="const" keywords="interpolate">
 			<return type="Vector4" />
 			<param index="0" name="to" type="Vector4" />
 			<param index="1" name="weight" type="float" />
 			<description>
 				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
+			</description>
+		</method>
+		<method name="max" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="with" type="Vector4" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector4(maxf(x, with.x), maxf(y, with.y), maxf(z, with.z), maxf(w, with.w))[/code].
 			</description>
 		</method>
 		<method name="max_axis_index" qualifiers="const">
@@ -182,10 +197,31 @@
 				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
+		<method name="maxf" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector4(maxf(x, with), maxf(y, with), maxf(z, with), maxf(w, with))[/code].
+			</description>
+		</method>
+		<method name="min" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="with" type="Vector4" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector4(minf(x, with.x), minf(y, with.y), minf(z, with.z), minf(w, with.w))[/code].
+			</description>
+		</method>
 		<method name="min_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_W].
+			</description>
+		</method>
+		<method name="minf" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector4(minf(x, with), minf(y, with), minf(z, with), minf(w, with))[/code].
 			</description>
 		</method>
 		<method name="normalized" qualifiers="const">
@@ -226,6 +262,13 @@
 			<param index="0" name="step" type="Vector4" />
 			<description>
 				Returns a new vector with each component snapped to the nearest multiple of the corresponding component in [param step]. This can also be used to round the components to an arbitrary number of decimals.
+			</description>
+		</method>
+		<method name="snappedf" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="step" type="float" />
+			<description>
+				Returns a new vector with each component snapped to the nearest multiple of [param step]. This can also be used to round the components to an arbitrary number of decimals.
 			</description>
 		</method>
 	</methods>
@@ -280,7 +323,8 @@
 			<return type="Vector4" />
 			<param index="0" name="right" type="Projection" />
 			<description>
-				Inversely transforms (multiplies) the [Vector4] by the given [Projection] matrix.
+				Transforms (multiplies) the [Vector4] by the transpose of the given [Projection] matrix.
+				For transforming by inverse of a projection [code]projection.inverse() * vector[/code] can be used instead. See [method Projection.inverse].
 			</description>
 		</operator>
 		<operator name="operator *">

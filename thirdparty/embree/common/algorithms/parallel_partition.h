@@ -175,8 +175,8 @@ namespace embree
       /* calculate all left and right ranges that are on the wrong global side */
       size_t numMisplacedRangesLeft  = 0;
       size_t numMisplacedRangesRight = 0;
-      size_t numMisplacedItemsLeft   = 0;
-      size_t numMisplacedItemsRight  = 0;
+      size_t numMisplacedItemsLeft  MAYBE_UNUSED = 0;
+      size_t numMisplacedItemsRight MAYBE_UNUSED = 0;
 
       for (size_t i=0; i<numTasks; i++)
       {	    

@@ -63,7 +63,9 @@ class EditorSceneTabs : public MarginContainer {
 	void _scene_tab_hovered(int p_tab);
 	void _scene_tab_exit();
 	void _scene_tab_input(const Ref<InputEvent> &p_input);
+	void _scene_tabs_resized();
 
+	void _update_tab_titles();
 	void _reposition_active_tab(int p_to_index);
 	void _update_context_menu();
 	void _disable_menu_option_if(int p_option, bool p_condition);
@@ -77,6 +79,7 @@ class EditorSceneTabs : public MarginContainer {
 
 protected:
 	void _notification(int p_what);
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	static void _bind_methods();
 
 public:

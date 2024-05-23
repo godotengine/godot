@@ -33,6 +33,7 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "core/io/http_client.h"
 #include "core/os/os.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
@@ -60,6 +61,7 @@ public:
 	bool is_running() { return blender_pid != 0 && OS::get_singleton()->is_process_running(blender_pid); }
 	bool is_using_rpc() { return rpc_port != 0; }
 	Error do_import(const Dictionary &p_options);
+	HTTPClient::Status connect_blender_rpc(const Ref<HTTPClient> &p_client, int p_timeout_usecs);
 
 	EditorImportBlendRunner();
 };

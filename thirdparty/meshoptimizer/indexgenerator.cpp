@@ -157,7 +157,7 @@ static T* hashLookup(T* table, size_t buckets, const Hash& hash, const T& key, c
 	}
 
 	assert(false && "Hash table is full"); // unreachable
-	return 0;
+	return NULL;
 }
 
 static void buildPositionRemap(unsigned int* remap, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, meshopt_Allocator& allocator)
@@ -178,6 +178,22 @@ static void buildPositionRemap(unsigned int* remap, const float* vertex_position
 
 		remap[index] = *entry;
 	}
+
+	allocator.deallocate(vertex_table);
+}
+
+template <size_t BlockSize>
+static void remapVertices(void* destination, const void* vertices, size_t vertex_count, size_t vertex_size, const unsigned int* remap)
+{
+	size_t block_size = BlockSize == 0 ? vertex_size : BlockSize;
+	assert(block_size == vertex_size);
+
+	for (size_t i = 0; i < vertex_count; ++i)
+		if (remap[i] != ~0u)
+		{
+			assert(remap[i] < vertex_count);
+			memcpy(static_cast<unsigned char*>(destination) + remap[i] * block_size, static_cast<const unsigned char*>(vertices) + i * block_size, block_size);
+		}
 }
 
 } // namespace meshopt
@@ -288,6 +304,8 @@ size_t meshopt_generateVertexRemapMulti(unsigned int* destination, const unsigne
 
 void meshopt_remapVertexBuffer(void* destination, const void* vertices, size_t vertex_count, size_t vertex_size, const unsigned int* remap)
 {
+	using namespace meshopt;
+
 	assert(vertex_size > 0 && vertex_size <= 256);
 
 	meshopt_Allocator allocator;
@@ -300,14 +318,23 @@ void meshopt_remapVertexBuffer(void* destination, const void* vertices, size_t v
 		vertices = vertices_copy;
 	}
 
-	for (size_t i = 0; i < vertex_count; ++i)
+	// specialize the loop for common vertex sizes to ensure memcpy is compiled as an inlined intrinsic
+	switch (vertex_size)
 	{
-		if (remap[i] != ~0u)
-		{
-			assert(remap[i] < vertex_count);
+	case 4:
+		return remapVertices<4>(destination, vertices, vertex_count, vertex_size, remap);
 
-			memcpy(static_cast<unsigned char*>(destination) + remap[i] * vertex_size, static_cast<const unsigned char*>(vertices) + i * vertex_size, vertex_size);
-		}
+	case 8:
+		return remapVertices<8>(destination, vertices, vertex_count, vertex_size, remap);
+
+	case 12:
+		return remapVertices<12>(destination, vertices, vertex_count, vertex_size, remap);
+
+	case 16:
+		return remapVertices<16>(destination, vertices, vertex_count, vertex_size, remap);
+
+	default:
+		return remapVertices<0>(destination, vertices, vertex_count, vertex_size, remap);
 	}
 }
 

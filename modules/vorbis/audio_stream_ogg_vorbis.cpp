@@ -46,8 +46,9 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 	int todo = p_frames;
 
 	int beat_length_frames = -1;
-	bool beat_loop = vorbis_stream->has_loop();
-	if (beat_loop && vorbis_stream->get_bpm() > 0 && vorbis_stream->get_beat_count() > 0) {
+	bool use_loop = looping_override ? looping : vorbis_stream->loop;
+
+	if (use_loop && vorbis_stream->get_bpm() > 0 && vorbis_stream->get_beat_count() > 0) {
 		beat_length_frames = vorbis_stream->get_beat_count() * vorbis_data->get_sampling_rate() * 60 / vorbis_stream->get_bpm();
 	}
 
@@ -99,7 +100,7 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 			} else
 			**/
 
-			if (beat_loop && beat_length_frames <= (int)frames_mixed) {
+			if (use_loop && beat_length_frames <= (int)frames_mixed) {
 				// End of file when doing beat-based looping. <= used instead of == because importer editing
 				if (!have_packets_left && !have_samples_left) {
 					//Nothing remaining, so do nothing.
@@ -125,7 +126,7 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 		if (!have_packets_left && !have_samples_left) {
 			// Actual end of file!
 			bool is_not_empty = mixed > 0 || vorbis_stream->get_length() > 0;
-			if (vorbis_stream->loop && is_not_empty) {
+			if (use_loop && is_not_empty) {
 				//loop
 
 				seek(vorbis_stream->loop_offset);
@@ -144,7 +145,7 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 }
 
 int AudioStreamPlaybackOggVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p_frames) {
-	ERR_FAIL_COND_V(!ready, 0);
+	ERR_FAIL_COND_V(!ready, p_frames);
 	if (!have_samples_left) {
 		ogg_packet *packet = nullptr;
 		int err;
@@ -156,10 +157,10 @@ int AudioStreamPlaybackOggVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p
 		}
 
 		err = vorbis_synthesis(&block, packet);
-		ERR_FAIL_COND_V_MSG(err != 0, 0, "Error during vorbis synthesis " + itos(err));
+		ERR_FAIL_COND_V_MSG(err != 0, p_frames, "Error during vorbis synthesis " + itos(err));
 
 		err = vorbis_synthesis_blockin(&dsp_state, &block);
-		ERR_FAIL_COND_V_MSG(err != 0, 0, "Error during vorbis block processing " + itos(err));
+		ERR_FAIL_COND_V_MSG(err != 0, p_frames, "Error during vorbis block processing " + itos(err));
 
 		have_packets_left = !packet->e_o_s;
 	}
@@ -176,13 +177,13 @@ int AudioStreamPlaybackOggVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p
 
 	if (info.channels > 1) {
 		for (int frame = 0; frame < frames; frame++) {
-			p_buffer[frame].l = pcm[0][frame];
-			p_buffer[frame].r = pcm[1][frame];
+			p_buffer[frame].left = pcm[0][frame];
+			p_buffer[frame].right = pcm[1][frame];
 		}
 	} else {
 		for (int frame = 0; frame < frames; frame++) {
-			p_buffer[frame].l = pcm[0][frame];
-			p_buffer[frame].r = pcm[0][frame];
+			p_buffer[frame].left = pcm[0][frame];
+			p_buffer[frame].right = pcm[0][frame];
 		}
 	}
 	vorbis_synthesis_read(&dsp_state, frames);
@@ -257,6 +258,25 @@ void AudioStreamPlaybackOggVorbis::tag_used_streams() {
 	vorbis_stream->tag_used(get_playback_position());
 }
 
+void AudioStreamPlaybackOggVorbis::set_parameter(const StringName &p_name, const Variant &p_value) {
+	if (p_name == SNAME("looping")) {
+		if (p_value == Variant()) {
+			looping_override = false;
+			looping = false;
+		} else {
+			looping_override = true;
+			looping = p_value;
+		}
+	}
+}
+
+Variant AudioStreamPlaybackOggVorbis::get_parameter(const StringName &p_name) const {
+	if (looping_override && p_name == SNAME("looping")) {
+		return looping;
+	}
+	return Variant();
+}
+
 void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 	ERR_FAIL_COND(!ready);
 	ERR_FAIL_COND(vorbis_stream.is_null());
@@ -264,11 +284,10 @@ void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 		return;
 	}
 
-	vorbis_synthesis_restart(&dsp_state);
-
 	if (p_time >= vorbis_stream->get_length()) {
 		p_time = 0;
 	}
+
 	frames_mixed = uint32_t(vorbis_data->get_sampling_rate() * p_time);
 
 	const int64_t desired_sample = p_time * get_stream_sampling_rate();
@@ -278,107 +297,81 @@ void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 		return;
 	}
 
-	ogg_packet *packet;
-	if (!vorbis_data_playback->next_ogg_packet(&packet)) {
-		WARN_PRINT_ONCE("seeking beyond limits");
-		return;
+	// We want to start decoding before the page that we expect the sample to be in (the sample may
+	// be part of a partial packet across page boundaries). Otherwise, the decoder may not have
+	// synchronized before reaching the sample.
+	int64_t start_page_number = vorbis_data_playback->get_page_number() - 1;
+	if (start_page_number < 0) {
+		start_page_number = 0;
 	}
-
-	// The granule position of the page we're seeking through.
-	int64_t granule_pos = 0;
-
-	int headers_remaining = 0;
-	int samples_in_page = 0;
-	int err;
-	while (true) {
-		if (vorbis_synthesis_idheader(packet)) {
-			headers_remaining = 3;
-		}
-		if (!headers_remaining) {
-			err = vorbis_synthesis(&block, packet);
-			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis synthesis " + itos(err));
-
-			err = vorbis_synthesis_blockin(&dsp_state, &block);
-			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis block processing " + itos(err));
-
-			int samples_out = vorbis_synthesis_pcmout(&dsp_state, nullptr);
-			err = vorbis_synthesis_read(&dsp_state, samples_out);
-			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis read updating " + itos(err));
-
-			samples_in_page += samples_out;
-
-		} else {
-			headers_remaining--;
-		}
-		if (packet->granulepos != -1 && headers_remaining == 0) {
-			// This indicates the end of the page.
-			granule_pos = packet->granulepos;
-			break;
-		}
-		if (packet->e_o_s) {
-			break;
-		}
-		if (!vorbis_data_playback->next_ogg_packet(&packet)) {
-			// We should get an e_o_s flag before this happens.
-			WARN_PRINT("Vorbis file ended without warning.");
-			break;
-		}
-	}
-
-	int64_t samples_to_burn = samples_in_page - (granule_pos - desired_sample);
-
-	if (samples_to_burn > samples_in_page) {
-		WARN_PRINT_ONCE("Burning more samples than we have in this page. Check seek algorithm.");
-	} else if (samples_to_burn < 0) {
-		WARN_PRINT_ONCE("Burning negative samples doesn't make sense. Check seek algorithm.");
-	}
-
-	// Seek again, this time we'll burn a specific number of samples instead of all of them.
-	if (!vorbis_data_playback->seek_page(desired_sample)) {
-		WARN_PRINT("seek failed");
-		return;
-	}
-
-	if (!vorbis_data_playback->next_ogg_packet(&packet)) {
-		WARN_PRINT_ONCE("seeking beyond limits");
-		return;
-	}
-	vorbis_synthesis_restart(&dsp_state);
 
 	while (true) {
-		if (vorbis_synthesis_idheader(packet)) {
-			headers_remaining = 3;
-		}
-		if (!headers_remaining) {
-			err = vorbis_synthesis(&block, packet);
-			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis synthesis " + itos(err));
+		ogg_packet *packet;
+		int err;
 
-			err = vorbis_synthesis_blockin(&dsp_state, &block);
-			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis block processing " + itos(err));
+		// We start at an unknown granule position.
+		int64_t granule_pos = -1;
 
-			int samples_out = vorbis_synthesis_pcmout(&dsp_state, nullptr);
-			int read_samples = samples_to_burn > samples_out ? samples_out : samples_to_burn;
-			err = vorbis_synthesis_read(&dsp_state, samples_out);
-			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis read updating " + itos(err));
-			samples_to_burn -= read_samples;
+		// Decode data until we get to the desired sample or notice that we have read past it.
+		vorbis_data_playback->set_page_number(start_page_number);
+		vorbis_synthesis_restart(&dsp_state);
 
-			if (samples_to_burn <= 0) {
-				break;
+		while (true) {
+			if (!vorbis_data_playback->next_ogg_packet(&packet)) {
+				WARN_PRINT_ONCE("Seeking beyond limits");
+				return;
 			}
-		} else {
-			headers_remaining--;
-		}
-		if (packet->granulepos != -1 && headers_remaining == 0) {
-			// This indicates the end of the page.
-			break;
-		}
-		if (packet->e_o_s) {
-			break;
-		}
-		if (!vorbis_data_playback->next_ogg_packet(&packet)) {
-			// We should get an e_o_s flag before this happens.
-			WARN_PRINT("Vorbis file ended without warning.");
-			break;
+
+			err = vorbis_synthesis(&block, packet);
+			if (err != OV_ENOTAUDIO) {
+				ERR_FAIL_COND_MSG(err != 0, "Error during vorbis synthesis " + itos(err) + ".");
+
+				err = vorbis_synthesis_blockin(&dsp_state, &block);
+				ERR_FAIL_COND_MSG(err != 0, "Error during vorbis block processing " + itos(err) + ".");
+
+				int samples_out = vorbis_synthesis_pcmout(&dsp_state, nullptr);
+
+				if (granule_pos < 0) {
+					// We don't know where we are yet, so just keep on decoding.
+					err = vorbis_synthesis_read(&dsp_state, samples_out);
+					ERR_FAIL_COND_MSG(err != 0, "Error during vorbis read updating " + itos(err) + ".");
+				} else if (granule_pos + samples_out >= desired_sample) {
+					// Our sample is in this block. Skip the beginning of the block up to the sample, then
+					// return.
+					int skip_samples = (int)(desired_sample - granule_pos);
+					err = vorbis_synthesis_read(&dsp_state, skip_samples);
+					ERR_FAIL_COND_MSG(err != 0, "Error during vorbis read updating " + itos(err) + ".");
+					have_samples_left = skip_samples < samples_out;
+					have_packets_left = !packet->e_o_s;
+					return;
+				} else {
+					// Our sample is not in this block. Skip it.
+					err = vorbis_synthesis_read(&dsp_state, samples_out);
+					ERR_FAIL_COND_MSG(err != 0, "Error during vorbis read updating " + itos(err) + ".");
+					granule_pos += samples_out;
+				}
+			}
+			if (packet->granulepos != -1) {
+				// We found an update to our granule position.
+				granule_pos = packet->granulepos;
+				if (granule_pos > desired_sample) {
+					// We've read past our sample. We need to start on an earlier page.
+					if (start_page_number == 0) {
+						// We didn't find the sample even reading from the beginning.
+						have_samples_left = false;
+						have_packets_left = !packet->e_o_s;
+						return;
+					}
+					start_page_number--;
+					break;
+				}
+			}
+			if (packet->e_o_s) {
+				// We've reached the end of the stream and didn't find our sample.
+				have_samples_left = false;
+				have_packets_left = false;
+				return;
+			}
 		}
 	}
 }
@@ -518,6 +511,10 @@ int AudioStreamOggVorbis::get_bar_beats() const {
 
 bool AudioStreamOggVorbis::is_monophonic() const {
 	return false;
+}
+
+void AudioStreamOggVorbis::get_parameter_list(List<Parameter> *r_parameters) {
+	r_parameters->push_back(Parameter(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CHECKABLE), Variant()));
 }
 
 void AudioStreamOggVorbis::_bind_methods() {

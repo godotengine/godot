@@ -43,10 +43,10 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "main/main.h"
 
 #ifdef UNIX_ENABLED
@@ -143,12 +143,12 @@ bool godot_icall_Internal_IsAssembliesReloadingNeeded() {
 
 void godot_icall_Internal_ReloadAssemblies(bool p_soft_reload) {
 #ifdef GD_MONO_HOT_RELOAD
-	mono_bind::GodotSharp::get_singleton()->call_deferred(SNAME("_reload_assemblies"), (bool)p_soft_reload);
+	callable_mp(mono_bind::GodotSharp::get_singleton(), &mono_bind::GodotSharp::reload_assemblies).call_deferred(p_soft_reload);
 #endif
 }
 
 void godot_icall_Internal_EditorDebuggerNodeReloadScripts() {
-	EditorDebuggerNode::get_singleton()->reload_scripts();
+	EditorDebuggerNode::get_singleton()->reload_all_scripts();
 }
 
 bool godot_icall_Internal_ScriptEditorEdit(Resource *p_resource, int32_t p_line, int32_t p_col, bool p_grab_focus) {
@@ -175,7 +175,7 @@ void godot_icall_Internal_EditorPlugin_AddControlToEditorRunBar(Control *p_contr
 void godot_icall_Internal_ScriptEditorDebugger_ReloadScripts() {
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 	if (ed) {
-		ed->reload_scripts();
+		ed->reload_all_scripts();
 	}
 }
 

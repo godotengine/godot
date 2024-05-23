@@ -45,7 +45,6 @@
 void OpenXRInteractionProfileEditorBase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_add_binding", "action", "path"), &OpenXRInteractionProfileEditorBase::_add_binding);
 	ClassDB::bind_method(D_METHOD("_remove_binding", "action", "path"), &OpenXRInteractionProfileEditorBase::_remove_binding);
-	ClassDB::bind_method(D_METHOD("_update_interaction_profile"), &OpenXRInteractionProfileEditorBase::_update_interaction_profile);
 }
 
 void OpenXRInteractionProfileEditorBase::_notification(int p_what) {
@@ -63,7 +62,7 @@ void OpenXRInteractionProfileEditorBase::_notification(int p_what) {
 void OpenXRInteractionProfileEditorBase::_do_update_interaction_profile() {
 	if (!is_dirty) {
 		is_dirty = true;
-		call_deferred("_update_interaction_profile");
+		callable_mp(this, &OpenXRInteractionProfileEditorBase::_update_interaction_profile).call_deferred();
 	}
 }
 
@@ -223,7 +222,7 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 	Button *path_add = memnew(Button);
 	path_add->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
 	path_add->set_flat(true);
-	path_add->connect("pressed", callable_mp(this, &OpenXRInteractionProfileEditor::select_action_for).bind(String(p_io_path->openxr_path)));
+	path_add->connect(SceneStringName(pressed), callable_mp(this, &OpenXRInteractionProfileEditor::select_action_for).bind(String(p_io_path->openxr_path)));
 	path_hb->add_child(path_add);
 
 	if (interaction_profile.is_valid()) {
@@ -250,7 +249,7 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 				Button *action_rem = memnew(Button);
 				action_rem->set_flat(true);
 				action_rem->set_icon(get_theme_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
-				action_rem->connect("pressed", callable_mp((OpenXRInteractionProfileEditor *)this, &OpenXRInteractionProfileEditor::_on_remove_pressed).bind(action->get_name_with_set(), String(p_io_path->openxr_path)));
+				action_rem->connect(SceneStringName(pressed), callable_mp((OpenXRInteractionProfileEditor *)this, &OpenXRInteractionProfileEditor::_on_remove_pressed).bind(action->get_name_with_set(), String(p_io_path->openxr_path)));
 				action_hb->add_child(action_rem);
 			}
 		}

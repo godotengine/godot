@@ -30,15 +30,15 @@
 
 #include "gradient_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
-#include "node_3d_editor_plugin.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/popup.h"
@@ -102,7 +102,7 @@ void GradientEdit::_color_changed(const Color &p_color) {
 
 void GradientEdit::set_gradient(const Ref<Gradient> &p_gradient) {
 	gradient = p_gradient;
-	gradient->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+	gradient->connect(CoreStringName(changed), callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 }
 
 const Ref<Gradient> &GradientEdit::get_gradient() const {
@@ -531,7 +531,7 @@ void GradientEdit::_redraw() {
 			draw_texture(get_theme_icon(SNAME("overbright_indicator"), SNAME("ColorPicker")), Point2(button_offset, 0));
 		}
 	} else {
-		// If no color is selected, draw grey color with 'X' on top.
+		// If no color is selected, draw gray color with 'X' on top.
 		draw_rect(Rect2(button_offset, 0, h, h), Color(0.5, 0.5, 0.5, 1));
 		draw_line(Vector2(button_offset, 0), Vector2(button_offset + h, h), Color(0.8, 0.8, 0.8));
 		draw_line(Vector2(button_offset, h), Vector2(button_offset + h, 0), Color(0.8, 0.8, 0.8));
@@ -644,7 +644,7 @@ GradientEditor::GradientEditor() {
 
 	gradient_editor_rect = memnew(GradientEdit);
 	add_child(gradient_editor_rect);
-	reverse_button->connect("pressed", callable_mp(gradient_editor_rect, &GradientEdit::reverse_gradient));
+	reverse_button->connect(SceneStringName(pressed), callable_mp(gradient_editor_rect, &GradientEdit::reverse_gradient));
 
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	_set_snap_enabled(snap_button->is_pressed());

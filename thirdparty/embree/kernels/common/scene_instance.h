@@ -13,7 +13,7 @@ namespace embree
   /*! Instanced acceleration structure */
   struct Instance : public Geometry
   {
-    ALIGNED_STRUCT_(16);
+    //ALIGNED_STRUCT_(16);
     static const Geometry::GTypeMask geom_type = Geometry::MTY_INSTANCE;
 
   public:
@@ -50,6 +50,7 @@ namespace embree
     virtual void setTransform(const AffineSpace3fa& local2world, unsigned int timeStep) override;
     virtual void setQuaternionDecomposition(const AffineSpace3ff& qd, unsigned int timeStep) override;
     virtual AffineSpace3fa getTransform(float time) override;
+    virtual AffineSpace3fa getTransform(size_t, float time) override;
     virtual void setMask (unsigned mask) override;
     virtual void build() {}
     virtual void addElementsToCount (GeometryCounts & counts) const override;
@@ -132,10 +133,13 @@ namespace embree
 
     __forceinline AffineSpace3fa getLocal2World(float t) const
     {
-      float ftime; const unsigned int itime = timeSegment(t, ftime);
-      if (unlikely(gsubtype == GTY_SUBTYPE_INSTANCE_QUATERNION))
-        return slerp(local2world[itime+0],local2world[itime+1],ftime);
-      return lerp(local2world[itime+0],local2world[itime+1],ftime);
+      if (numTimeSegments() > 0) {
+        float ftime; const unsigned int itime = timeSegment(t, ftime);
+        if (unlikely(gsubtype == GTY_SUBTYPE_INSTANCE_QUATERNION))
+          return slerp(local2world[itime+0],local2world[itime+1],ftime);
+        return lerp(local2world[itime+0],local2world[itime+1],ftime);
+      }
+      return getLocal2World();
     }
 
     __forceinline AffineSpace3fa getWorld2Local() const {
@@ -143,7 +147,9 @@ namespace embree
     }
 
     __forceinline AffineSpace3fa getWorld2Local(float t) const {
-      return rcp(getLocal2World(t));
+      if (numTimeSegments() > 0)
+        return rcp(getLocal2World(t));
+      return getWorld2Local();
     }
 
     template<int K>
@@ -152,6 +158,10 @@ namespace embree
       if (unlikely(gsubtype == GTY_SUBTYPE_INSTANCE_QUATERNION))
         return getWorld2LocalSlerp<K>(valid, t);
       return getWorld2LocalLerp<K>(valid, t);
+    }
+
+    __forceinline float projectedPrimitiveArea(const size_t i) const {
+      return area(bounds(i));
     }
 
     private:
@@ -220,7 +230,11 @@ namespace embree
       InstanceISA (Device* device)
         : Instance(device) {}
 
-      PrimInfo createPrimRefArray(mvector<PrimRef>& prims, const range<size_t>& r, size_t k, unsigned int geomID) const
+      LBBox3fa vlinearBounds(size_t primID, const BBox1f& time_range) const {
+        return linearBounds(primID,time_range);
+      }
+
+      PrimInfo createPrimRefArray(PrimRef* prims, const range<size_t>& r, size_t k, unsigned int geomID) const
       {
         assert(r.begin() == 0);
         assert(r.end()   == 1);
@@ -252,7 +266,23 @@ namespace embree
         prims[k++] = prim;
         return pinfo;
       }
-      
+
+      PrimInfo createPrimRefArrayMB(PrimRef* prims, const BBox1f& time_range, const range<size_t>& r, size_t k, unsigned int geomID) const
+      {
+        assert(r.begin() == 0);
+        assert(r.end()   == 1);
+
+        PrimInfo pinfo(empty);
+        const BBox1f t0t1 = intersect(getTimeRange(), time_range);
+        if (t0t1.empty()) return pinfo;
+        
+        const BBox3fa bounds = linearBounds(0, t0t1).bounds();
+        const PrimRef prim(bounds, geomID, unsigned(0));
+        pinfo.add_center2(prim);
+        prims[k++] = prim;
+        return pinfo;
+      }
+
       PrimInfoMB createPrimRefMBArray(mvector<PrimRefMB>& prims, const BBox1f& t0t1, const range<size_t>& r, size_t k, unsigned int geomID) const
       {
         assert(r.begin() == 0);

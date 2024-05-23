@@ -407,7 +407,8 @@ void GodotBody2D::set_space(GodotSpace2D *p_space) {
 
 	if (get_space()) {
 		_mass_properties_changed();
-		if (active) {
+
+		if (active && !active_list.in_list()) {
 			get_space()->body_add_to_active_list(&active_list);
 		}
 	}
@@ -422,7 +423,7 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 		return;
 	}
 
-	ERR_FAIL_COND(!get_space());
+	ERR_FAIL_NULL(get_space());
 
 	int ac = areas.size();
 
@@ -615,7 +616,7 @@ void GodotBody2D::integrate_velocities(real_t p_step) {
 		return;
 	}
 
-	if (fi_callback_data || body_state_callback.get_object()) {
+	if (fi_callback_data || body_state_callback.is_valid()) {
 		get_space()->body_add_to_state_query_list(&direct_state_query_list);
 	}
 
@@ -676,7 +677,7 @@ void GodotBody2D::call_queries() {
 	Variant direct_state_variant = get_direct_state();
 
 	if (fi_callback_data) {
-		if (!fi_callback_data->callable.get_object()) {
+		if (!fi_callback_data->callable.is_valid()) {
 			set_force_integration_callback(Callable());
 		} else {
 			const Variant *vp[2] = { &direct_state_variant, &fi_callback_data->udata };
@@ -692,11 +693,8 @@ void GodotBody2D::call_queries() {
 		}
 	}
 
-	if (body_state_callback.get_object()) {
-		const Variant *vp[1] = { &direct_state_variant };
-		Callable::CallError ce;
-		Variant rv;
-		body_state_callback.callp(vp, 1, rv, ce);
+	if (body_state_callback.is_valid()) {
+		body_state_callback.call(direct_state_variant);
 	}
 }
 
@@ -722,7 +720,7 @@ void GodotBody2D::set_state_sync_callback(const Callable &p_callable) {
 }
 
 void GodotBody2D::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {
-	if (p_callable.get_object()) {
+	if (p_callable.is_valid()) {
 		if (!fi_callback_data) {
 			fi_callback_data = memnew(ForceIntegrationCallbackData);
 		}

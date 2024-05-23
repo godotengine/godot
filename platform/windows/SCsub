@@ -3,33 +3,59 @@
 Import("env")
 
 import os
-from platform_methods import run_in_subprocess
+from pathlib import Path
+
 import platform_windows_builders
+
+sources = []
 
 common_win = [
     "godot_windows.cpp",
-    "crash_handler_windows.cpp",
     "os_windows.cpp",
     "display_server_windows.cpp",
     "key_mapping_windows.cpp",
     "joypad_windows.cpp",
     "tts_windows.cpp",
     "windows_terminal_logger.cpp",
-    "vulkan_context_win.cpp",
+    "windows_utils.cpp",
+    "native_menu_windows.cpp",
     "gl_manager_windows_native.cpp",
     "gl_manager_windows_angle.cpp",
     "wgl_detect_version.cpp",
+    "rendering_context_driver_vulkan_windows.cpp",
 ]
+
+if env.msvc:
+    common_win += ["crash_handler_windows_seh.cpp"]
+else:
+    common_win += ["crash_handler_windows_signal.cpp"]
 
 common_win_wrap = [
     "console_wrapper_windows.cpp",
 ]
 
+
+def arrange_program_clean(prog):
+    """
+    Given an SCons program, arrange for output files SCons doesn't know about
+    to be cleaned when SCons is called with --clean
+    """
+    extensions_to_clean = [".ilk", ".exp", ".pdb", ".lib"]
+    for program in prog:
+        executable_stem = Path(program.name).stem
+        extra_files_to_clean = [f"#bin/{executable_stem}{extension}" for extension in extensions_to_clean]
+        Clean(prog, extra_files_to_clean)
+
+
 res_file = "godot_res.rc"
 res_target = "godot_res" + env["OBJSUFFIX"]
 res_obj = env.RES(res_target, res_file)
 
-prog = env.add_program("#bin/godot", common_win + res_obj, PROGSUFFIX=env["PROGSUFFIX"])
+env.add_source_files(sources, common_win)
+sources += res_obj
+
+prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+arrange_program_clean(prog)
 
 # Build console wrapper app.
 if env["windows_subsystem"] == "gui":
@@ -46,7 +72,9 @@ if env["windows_subsystem"] == "gui":
         env_wrap.Append(LIBS=["version"])
 
     prog_wrap = env_wrap.add_program("#bin/godot", common_win_wrap + res_wrap_obj, PROGSUFFIX=env["PROGSUFFIX_WRAP"])
+    arrange_program_clean(prog_wrap)
     env_wrap.Depends(prog_wrap, prog)
+    sources += common_win_wrap + res_wrap_obj
 
 # Microsoft Visual Studio Project Generation
 if env["vsproj"]:
@@ -58,8 +86,63 @@ if env["vsproj"]:
         for x in common_win_wrap:
             env.vs_srcs += ["platform/windows/" + str(x)]
 
+if env["d3d12"]:
+    dxc_target_aliases = {
+        "x86_32": "x86",
+        "x86_64": "x64",
+        "arm32": "arm",
+        "arm64": "arm64",
+    }
+    dxc_arch_subdir = dxc_target_aliases[env["arch"]]
+
+    agility_target_aliases = {
+        "x86_32": "win32",
+        "x86_64": "x64",
+        "arm32": "arm",
+        "arm64": "arm64",
+    }
+    agility_arch_subdir = agility_target_aliases[env["arch"]]
+
+    # Used in cases where we can have multiple archs side-by-side.
+    arch_bin_dir = "#bin/" + env["arch"]
+
+    # DXC
+    if env["dxc_path"] != "" and os.path.exists(env["dxc_path"]):
+        dxc_dll = "dxil.dll"
+        # Whether this one is loaded from arch-specific directory or not can be determined at runtime.
+        # Let's copy to both and let the user decide the distribution model.
+        for v in ["#bin", arch_bin_dir]:
+            env.Command(
+                v + "/" + dxc_dll,
+                env["dxc_path"] + "/bin/" + dxc_arch_subdir + "/" + dxc_dll,
+                Copy("$TARGET", "$SOURCE"),
+            )
+
+    # Agility SDK
+    if env["agility_sdk_path"] != "" and os.path.exists(env["agility_sdk_path"]):
+        agility_dlls = ["D3D12Core.dll", "d3d12SDKLayers.dll"]
+        # Whether these are loaded from arch-specific directory or not has to be known at build time.
+        target_dir = arch_bin_dir if env["agility_sdk_multiarch"] else "#bin"
+        for dll in agility_dlls:
+            env.Command(
+                target_dir + "/" + dll,
+                env["agility_sdk_path"] + "/build/native/bin/" + agility_arch_subdir + "/" + dll,
+                Copy("$TARGET", "$SOURCE"),
+            )
+
+    # PIX
+    if env["use_pix"]:
+        pix_dll = "WinPixEventRuntime.dll"
+        env.Command(
+            "#bin/" + pix_dll,
+            env["pix_path"] + "/bin/" + dxc_arch_subdir + "/" + pix_dll,
+            Copy("$TARGET", "$SOURCE"),
+        )
+
 if not os.getenv("VCINSTALLDIR"):
-    if env["debug_symbols"] and env["separate_debug_symbols"]:
-        env.AddPostAction(prog, run_in_subprocess(platform_windows_builders.make_debug_mingw))
+    if env["debug_symbols"]:
+        env.AddPostAction(prog, env.Run(platform_windows_builders.make_debug_mingw))
         if env["windows_subsystem"] == "gui":
-            env.AddPostAction(prog_wrap, run_in_subprocess(platform_windows_builders.make_debug_mingw))
+            env.AddPostAction(prog_wrap, env.Run(platform_windows_builders.make_debug_mingw))
+
+env.platform_sources += sources

@@ -7,6 +7,7 @@
 		Represents a light as defined by the [code]KHR_lights_punctual[/code] GLTF extension.
 	</description>
 	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 		<link title="KHR_lights_punctual GLTF extension spec">https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual</link>
 	</tutorials>
 	<methods>
@@ -24,6 +25,19 @@
 				Create a new GLTFLight instance from the given Godot [Light3D] node.
 			</description>
 		</method>
+		<method name="get_additional_data">
+			<return type="Variant" />
+			<param index="0" name="extension_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="set_additional_data">
+			<return type="void" />
+			<param index="0" name="extension_name" type="StringName" />
+			<param index="1" name="additional_data" type="Variant" />
+			<description>
+			</description>
+		</method>
 		<method name="to_dictionary" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
@@ -38,7 +52,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
 			The [Color] of the light. Defaults to white. A black color causes the light to have no effect.
 		</member>
 		<member name="inner_cone_angle" type="float" setter="set_inner_cone_angle" getter="get_inner_cone_angle" default="0.0">

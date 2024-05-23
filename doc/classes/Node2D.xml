@@ -44,7 +44,8 @@
 			<return type="void" />
 			<param index="0" name="point" type="Vector2" />
 			<description>
-				Rotates the node so it points towards the [param point], which is expected to use global coordinates.
+				Rotates the node so that its local +X axis points towards the [param point], which is expected to use global coordinates.
+				[param point] should not be the same as the node's position, otherwise the node always looks to the right.
 			</description>
 		</method>
 		<method name="move_local_x">

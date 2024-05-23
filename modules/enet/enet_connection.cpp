@@ -252,7 +252,7 @@ int ENetConnection::get_max_channels() const {
 
 int ENetConnection::get_local_port() const {
 	ERR_FAIL_NULL_V_MSG(host, 0, "The ENetConnection instance isn't currently active.");
-	ERR_FAIL_COND_V_MSG(!(host->socket), 0, "The ENetConnection instance isn't currently bound");
+	ERR_FAIL_COND_V_MSG(!(host->socket), 0, "The ENetConnection instance isn't currently bound.");
 	ENetAddress address;
 	ERR_FAIL_COND_V_MSG(enet_socket_get_address(host->socket, &address), 0, "Unable to get socket address");
 	return address.port;
@@ -344,7 +344,7 @@ void ENetConnection::_broadcast(int p_channel, PackedByteArray p_packet, int p_f
 
 void ENetConnection::socket_send(const String &p_address, int p_port, const PackedByteArray &p_packet) {
 	ERR_FAIL_NULL_MSG(host, "The ENetConnection instance isn't currently active.");
-	ERR_FAIL_COND_MSG(!(host->socket), "The ENetConnection instance isn't currently bound");
+	ERR_FAIL_COND_MSG(!(host->socket), "The ENetConnection instance isn't currently bound.");
 	ERR_FAIL_COND_MSG(p_port < 1 || p_port > 65535, "The remote port number must be between 1 and 65535 (inclusive).");
 
 	IPAddress ip;

@@ -117,8 +117,7 @@
 			<param index="0" name="offset" type="float" default="0.0" />
 			<param index="1" name="cubic" type="bool" default="false" />
 			<description>
-				Returns a point within the curve at position [param offset], where [param offset] is measured as a distance in 3D units along the curve.
-				To do that, it finds the two cached points where the [param offset] lies between, then interpolates the values. This interpolation is cubic if [param cubic] is set to [code]true[/code], or linear if set to [code]false[/code].
+				Returns a point within the curve at position [param offset], where [param offset] is measured as a distance in 3D units along the curve. To do that, it finds the two cached points where the [param offset] lies between, then interpolates the values. This interpolation is cubic if [param cubic] is set to [code]true[/code], or linear if set to [code]false[/code].
 				Cubic interpolation tends to follow the curves better, but linear is faster (and often, precise enough).
 			</description>
 		</method>
@@ -127,8 +126,7 @@
 			<param index="0" name="offset" type="float" />
 			<param index="1" name="apply_tilt" type="bool" default="false" />
 			<description>
-				Returns an up vector within the curve at position [param offset], where [param offset] is measured as a distance in 3D units along the curve.
-				To do that, it finds the two cached up vectors where the [param offset] lies between, then interpolates the values. If [param apply_tilt] is [code]true[/code], an interpolated tilt is applied to the interpolated up vector.
+				Returns an up vector within the curve at position [param offset], where [param offset] is measured as a distance in 3D units along the curve. To do that, it finds the two cached up vectors where the [param offset] lies between, then interpolates the values. If [param apply_tilt] is [code]true[/code], an interpolated tilt is applied to the interpolated up vector.
 				If the curve has no up vectors, the function sends an error to the console, and returns [code](0, 1, 0)[/code].
 			</description>
 		</method>
@@ -138,7 +136,7 @@
 			<param index="1" name="cubic" type="bool" default="false" />
 			<param index="2" name="apply_tilt" type="bool" default="false" />
 			<description>
-				Similar with [code]interpolate_baked()[/code]. The return value is [code]Transform3D[/code], with [code]origin[/code] as point position, [code]basis.x[/code] as sideway vector, [code]basis.y[/code] as up vector, [code]basis.z[/code] as forward vector. When the curve length is 0, there is no reasonable way to calculate the rotation, all vectors aligned with global space axes.
+				Returns a [Transform3D] with [code]origin[/code] as point position, [code]basis.x[/code] as sideway vector, [code]basis.y[/code] as up vector, [code]basis.z[/code] as forward vector. When the curve length is 0, there is no reasonable way to calculate the rotation, all vectors aligned with global space axes. See also [method sample_baked].
 			</description>
 		</method>
 		<method name="samplef" qualifiers="const">

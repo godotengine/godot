@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,29 +39,33 @@ static uint8_t _hexCharToDec(const char c)
 /* External Class Implementation                                        */
 /************************************************************************/
 
-string svgUtilURLDecode(const char *src)
+size_t svgUtilURLDecode(const char *src, char** dst)
 {
-    if (!src) return nullptr;
+    if (!src) return 0;
 
     auto length = strlen(src);
-    if (length == 0) return nullptr;
+    if (length == 0) return 0;
 
-    string decoded;
-    decoded.reserve(length);
+    char* decoded = (char*)malloc(sizeof(char) * length + 1);
 
     char a, b;
+    int idx =0;
     while (*src) {
         if (*src == '%' &&
             ((a = src[1]) && (b = src[2])) &&
             (isxdigit(a) && isxdigit(b))) {
-            decoded += (_hexCharToDec(a) << 4) + _hexCharToDec(b);
+            decoded[idx++] = (_hexCharToDec(a) << 4) + _hexCharToDec(b);
             src+=3;
         } else if (*src == '+') {
-            decoded += ' ';
+            decoded[idx++] = ' ';
             src++;
         } else {
-            decoded += *src++;
+            decoded[idx++] = *src++;
         }
     }
-    return decoded;
+    decoded[idx] = '\0';
+
+    *dst = decoded;
+    return idx + 1;
 }
+

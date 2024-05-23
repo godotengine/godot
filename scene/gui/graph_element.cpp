@@ -49,14 +49,10 @@ void GraphElement::_resort() {
 	Size2 size = get_size();
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i));
-		if (!child || !child->is_visible_in_tree()) {
+		Control *child = as_sortable_control(get_child(i));
+		if (!child) {
 			continue;
 		}
-		if (child->is_set_as_top_level()) {
-			continue;
-		}
-
 		fit_child_in_rect(child, Rect2(Point2(), size));
 	}
 }
@@ -65,17 +61,13 @@ Size2 GraphElement::get_minimum_size() const {
 	Size2 minsize;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *child = Object::cast_to<Control>(get_child(i));
-		if (!child) {
-			continue;
-		}
-		if (child->is_set_as_top_level()) {
+		if (!child || child->is_set_as_top_level()) {
 			continue;
 		}
 
 		Size2i size = child->get_combined_minimum_size();
 
-		minsize.width = MAX(minsize.width, size.width);
-		minsize.height = MAX(minsize.height, size.height);
+		minsize = minsize.max(size);
 	}
 
 	return minsize;
@@ -150,7 +142,7 @@ void GraphElement::gui_input(const Ref<InputEvent> &p_ev) {
 
 	Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid()) {
-		ERR_FAIL_COND_MSG(get_parent_control() == nullptr, "GraphElement must be the child of a GraphEdit node.");
+		ERR_FAIL_NULL_MSG(get_parent_control(), "GraphElement must be the child of a GraphEdit node.");
 
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			Vector2 mpos = mb->get_position();
@@ -167,7 +159,11 @@ void GraphElement::gui_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (!mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-			resizing = false;
+			if (resizing) {
+				resizing = false;
+				emit_signal(SNAME("resize_end"), get_size());
+				return;
+			}
 		}
 	}
 
@@ -233,13 +229,16 @@ void GraphElement::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selectable"), "set_selectable", "is_selectable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selected"), "set_selected", "is_selected");
 
-	ADD_SIGNAL(MethodInfo("position_offset_changed"));
 	ADD_SIGNAL(MethodInfo("node_selected"));
 	ADD_SIGNAL(MethodInfo("node_deselected"));
-	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
+
 	ADD_SIGNAL(MethodInfo("raise_request"));
-	ADD_SIGNAL(MethodInfo("close_request"));
-	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_minsize")));
+	ADD_SIGNAL(MethodInfo("delete_request"));
+	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_size")));
+	ADD_SIGNAL(MethodInfo("resize_end", PropertyInfo(Variant::VECTOR2, "new_size")));
+
+	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
+	ADD_SIGNAL(MethodInfo("position_offset_changed"));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphElement, resizer);
 }

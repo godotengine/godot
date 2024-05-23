@@ -48,24 +48,17 @@ void SkeletonIK3DEditorPlugin::_play() {
 		skeleton_ik->start();
 	} else {
 		skeleton_ik->stop();
-		skeleton_ik->get_parent_skeleton()->clear_bones_global_pose_override();
 	}
 }
 
 void SkeletonIK3DEditorPlugin::edit(Object *p_object) {
-	if (p_object != skeleton_ik) {
-		if (skeleton_ik) {
-			play_btn->set_pressed(false);
-			_play();
-		}
-	}
-
 	SkeletonIK3D *s = Object::cast_to<SkeletonIK3D>(p_object);
 	if (!s) {
 		return;
 	}
 
 	skeleton_ik = s;
+	play_btn->set_pressed(skeleton_ik->is_running());
 }
 
 bool SkeletonIK3DEditorPlugin::handles(Object *p_object) const {
@@ -89,7 +82,7 @@ SkeletonIK3DEditorPlugin::SkeletonIK3DEditorPlugin() {
 	play_btn->set_text(TTR("Play IK"));
 	play_btn->set_toggle_mode(true);
 	play_btn->hide();
-	play_btn->connect("pressed", callable_mp(this, &SkeletonIK3DEditorPlugin::_play));
+	play_btn->connect(SceneStringName(pressed), callable_mp(this, &SkeletonIK3DEditorPlugin::_play));
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, play_btn);
 	skeleton_ik = nullptr;
 }

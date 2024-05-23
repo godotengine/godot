@@ -52,16 +52,16 @@
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
 
-#if defined(VULKAN_ENABLED)
-#include "vulkan_context_win.h"
-
-#include "drivers/vulkan/rendering_device_vulkan.h"
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
 #endif
 
 #if defined(GLES3_ENABLED)
 #include "gl_manager_windows_angle.h"
 #include "gl_manager_windows_native.h"
 #endif // GLES3_ENABLED
+
+#include "native_menu_windows.h"
 
 #include <io.h>
 #include <stdio.h>
@@ -154,11 +154,23 @@ typedef UINT(WINAPI *WTInfoPtr)(UINT p_category, UINT p_index, LPVOID p_output);
 typedef BOOL(WINAPI *WTPacketPtr)(HANDLE p_ctx, UINT p_param, LPVOID p_packets);
 typedef BOOL(WINAPI *WTEnablePtr)(HANDLE p_ctx, BOOL p_enable);
 
+enum PreferredAppMode {
+	APPMODE_DEFAULT = 0,
+	APPMODE_ALLOWDARK = 1,
+	APPMODE_FORCEDARK = 2,
+	APPMODE_FORCELIGHT = 3,
+	APPMODE_MAX = 4
+};
+
 typedef bool(WINAPI *ShouldAppsUseDarkModePtr)();
 typedef DWORD(WINAPI *GetImmersiveColorFromColorSetExPtr)(UINT dwImmersiveColorSet, UINT dwImmersiveColorType, bool bIgnoreHighContrast, UINT dwHighContrastCacheMode);
 typedef int(WINAPI *GetImmersiveColorTypeFromNamePtr)(const WCHAR *name);
 typedef int(WINAPI *GetImmersiveUserColorSetPreferencePtr)(bool bForceCheckRegistry, bool bSkipCheckOnFail);
 typedef HRESULT(WINAPI *RtlGetVersionPtr)(OSVERSIONINFOW *lpVersionInformation);
+typedef bool(WINAPI *AllowDarkModeForAppPtr)(bool darkMode);
+typedef PreferredAppMode(WINAPI *SetPreferredAppModePtr)(PreferredAppMode appMode);
+typedef void(WINAPI *RefreshImmersiveColorPolicyStatePtr)();
+typedef void(WINAPI *FlushMenuThemesPtr)();
 
 // Windows Ink API
 #ifndef POINTER_STRUCTURES
@@ -194,6 +206,7 @@ typedef UINT32 PEN_MASK;
 #define POINTER_MESSAGE_FLAG_FIRSTBUTTON 0x00000010
 #endif
 
+#if WINVER < 0x0602
 enum tagPOINTER_INPUT_TYPE {
 	PT_POINTER = 0x00000001,
 	PT_TOUCH = 0x00000002,
@@ -244,6 +257,7 @@ typedef struct tagPOINTER_PEN_INFO {
 	INT32 tiltX;
 	INT32 tiltY;
 } POINTER_PEN_INFO;
+#endif
 
 #endif //POINTER_STRUCTURES
 
@@ -262,6 +276,7 @@ typedef struct tagPOINTER_PEN_INFO {
 typedef BOOL(WINAPI *GetPointerTypePtr)(uint32_t p_id, POINTER_INPUT_TYPE *p_type);
 typedef BOOL(WINAPI *GetPointerPenInfoPtr)(uint32_t p_id, POINTER_PEN_INFO *p_pen_info);
 typedef BOOL(WINAPI *LogicalToPhysicalPointForPerMonitorDPIPtr)(HWND hwnd, LPPOINT lpPoint);
+typedef BOOL(WINAPI *PhysicalToLogicalPointForPerMonitorDPIPtr)(HWND hwnd, LPPOINT lpPoint);
 
 typedef struct {
 	BYTE bWidth; // Width, in pixels, of the image
@@ -288,6 +303,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	// UXTheme API
 	static bool dark_title_available;
+	static bool use_legacy_dark_mode_before_20H1;
 	static bool ux_theme_available;
 	static ShouldAppsUseDarkModePtr ShouldAppsUseDarkMode;
 	static GetImmersiveColorFromColorSetExPtr GetImmersiveColorFromColorSetEx;
@@ -309,6 +325,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	// DPI conversion API
 	static LogicalToPhysicalPointForPerMonitorDPIPtr win81p_LogicalToPhysicalPointForPerMonitorDPI;
+	static PhysicalToLogicalPointForPerMonitorDPIPtr win81p_PhysicalToLogicalPointForPerMonitorDPI;
 
 	void _update_tablet_ctx(const String &p_old_driver, const String &p_new_driver);
 	String tablet_driver;
@@ -340,9 +357,9 @@ class DisplayServerWindows : public DisplayServer {
 	GLManagerNative_Windows *gl_manager_native = nullptr;
 #endif
 
-#if defined(VULKAN_ENABLED)
-	VulkanContextWindows *context_vulkan = nullptr;
-	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
+#if defined(RD_ENABLED)
+	RenderingContextDriver *rendering_context = nullptr;
+	RenderingDevice *rendering_device = nullptr;
 #endif
 
 	RBMap<int, Vector2> touch_state;
@@ -355,6 +372,7 @@ class DisplayServerWindows : public DisplayServer {
 	HANDLE power_request;
 
 	TTS_Windows *tts = nullptr;
+	NativeMenuWindows *native_menu = nullptr;
 
 	struct WindowData {
 		HWND hWnd;
@@ -364,16 +382,17 @@ class DisplayServerWindows : public DisplayServer {
 		bool pre_fs_valid = false;
 		RECT pre_fs_rect;
 		bool maximized = false;
+		bool maximized_fs = false;
 		bool minimized = false;
 		bool fullscreen = false;
 		bool multiwindow_fs = false;
 		bool borderless = false;
 		bool resizable = true;
 		bool window_focused = false;
+		int activate_state = 0;
 		bool was_maximized = false;
 		bool always_on_top = false;
 		bool no_focus = false;
-		bool window_has_focus = false;
 		bool exclusive = false;
 		bool context_created = false;
 		bool mpass = false;
@@ -384,7 +403,7 @@ class DisplayServerWindows : public DisplayServer {
 
 		// Timers.
 		uint32_t move_timer_id = 0U;
-		uint32_t focus_timer_id = 0U;
+		uint32_t activate_timer_id = 0U;
 
 		HANDLE wtctx;
 		LOGCONTEXTW wtlc;
@@ -446,8 +465,16 @@ class DisplayServerWindows : public DisplayServer {
 
 	WNDPROC user_proc = nullptr;
 
+	struct IndicatorData {
+		RID menu_rid;
+		Callable callback;
+	};
+
+	IndicatorID indicator_id_counter = 0;
+	HashMap<IndicatorID, IndicatorData> indicators;
+
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
+	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
 
 	MouseMode mouse_mode;
 	int restore_mouse_trails = 0;
@@ -469,6 +496,8 @@ class DisplayServerWindows : public DisplayServer {
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 	RBMap<CursorShape, Vector<Variant>> cursors_cache;
 
+	Callable system_theme_changed;
+
 	void _drag_event(WindowID p_window, float p_x, float p_y, int idx);
 	void _touch_event(WindowID p_window, bool p_pressed, float p_x, float p_y, int idx);
 
@@ -481,7 +510,7 @@ class DisplayServerWindows : public DisplayServer {
 	WindowID _get_focused_window_or_popup() const;
 	void _register_raw_input_devices(WindowID p_target_window);
 
-	void _process_activate_event(WindowID p_window_id, WPARAM wParam, LPARAM lParam);
+	void _process_activate_event(WindowID p_window_id);
 	void _process_key_events();
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
@@ -489,6 +518,8 @@ class DisplayServerWindows : public DisplayServer {
 
 	LRESULT _handle_early_window_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	Point2i _get_screens_origin() const;
+
+	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb);
 
 public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -512,8 +543,11 @@ public:
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
 	virtual Color get_accent_color() const override;
+	virtual Color get_base_color() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
+	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) override;
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
@@ -569,6 +603,7 @@ public:
 	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual Size2i window_get_title_size(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override;
@@ -603,6 +638,8 @@ public:
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override;
 
+	virtual WindowID get_focused_window() const override;
+
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual bool can_any_window_draw() const override;
@@ -624,6 +661,9 @@ public:
 
 	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
 
+	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
+	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
+
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;
 	virtual void keyboard_set_current_layout(int p_index) override;
@@ -642,19 +682,26 @@ public:
 	virtual void force_process_and_drop_events() override;
 
 	virtual void release_rendering_thread() override;
-	virtual void make_rendering_thread() override;
 	virtual void swap_buffers() override;
 
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
 
+	virtual IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
+	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) override;
+	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) override;
+	virtual void status_indicator_set_menu(IndicatorID p_id, const RID &p_rid) override;
+	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) override;
+	virtual Rect2 status_indicator_get_rect(IndicatorID p_id) const override;
+	virtual void delete_status_indicator(IndicatorID p_id) override;
+
 	virtual void set_context(Context p_context) override;
 
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 	static void register_windows_driver();
 
-	DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
+	DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
 	~DisplayServerWindows();
 };
 

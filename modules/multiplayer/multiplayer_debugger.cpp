@@ -89,7 +89,7 @@ Error MultiplayerDebugger::_capture(void *p_user, const String &p_msg, const Arr
 // BandwidthProfiler
 
 int MultiplayerDebugger::BandwidthProfiler::bandwidth_usage(const Vector<BandwidthFrame> &p_buffer, int p_pointer) {
-	ERR_FAIL_COND_V(p_buffer.size() == 0, 0);
+	ERR_FAIL_COND_V(p_buffer.is_empty(), 0);
 	int total_bandwidth = 0;
 
 	uint64_t timestamp = OS::get_singleton()->get_ticks_msec();
@@ -174,7 +174,7 @@ Array MultiplayerDebugger::RPCFrame::serialize() {
 }
 
 bool MultiplayerDebugger::RPCFrame::deserialize(const Array &p_arr) {
-	ERR_FAIL_COND_V(p_arr.size() < 1, false);
+	ERR_FAIL_COND_V(p_arr.is_empty(), false);
 	uint32_t size = p_arr[0];
 	ERR_FAIL_COND_V(size % 6, false);
 	ERR_FAIL_COND_V((uint32_t)p_arr.size() != size + 1, false);
@@ -239,8 +239,8 @@ void MultiplayerDebugger::RPCProfiler::tick(double p_frame_time, double p_proces
 MultiplayerDebugger::SyncInfo::SyncInfo(MultiplayerSynchronizer *p_sync) {
 	ERR_FAIL_NULL(p_sync);
 	synchronizer = p_sync->get_instance_id();
-	if (p_sync->get_replication_config().is_valid()) {
-		config = p_sync->get_replication_config()->get_instance_id();
+	if (p_sync->get_replication_config_ptr()) {
+		config = p_sync->get_replication_config_ptr()->get_instance_id();
 	}
 	if (p_sync->get_root_node()) {
 		root_node = p_sync->get_root_node()->get_instance_id();
@@ -279,7 +279,7 @@ Array MultiplayerDebugger::ReplicationFrame::serialize() {
 }
 
 bool MultiplayerDebugger::ReplicationFrame::deserialize(const Array &p_arr) {
-	ERR_FAIL_COND_V(p_arr.size() < 1, false);
+	ERR_FAIL_COND_V(p_arr.is_empty(), false);
 	uint32_t size = p_arr[0];
 	ERR_FAIL_COND_V(size % 7, false);
 	ERR_FAIL_COND_V((uint32_t)p_arr.size() != size + 1, false);

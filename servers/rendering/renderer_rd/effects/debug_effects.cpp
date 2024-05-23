@@ -108,7 +108,7 @@ void DebugEffects::_create_frustum_arrays() {
 
 		// Create our index_array
 		PackedByteArray data;
-		data.resize(6 * 2 * 3 * 4);
+		data.resize(6 * 2 * 3 * 2);
 		{
 			uint8_t *w = data.ptrw();
 			uint16_t *p16 = (uint16_t *)w;
@@ -142,7 +142,7 @@ void DebugEffects::_create_frustum_arrays() {
 
 		// Create our lines_array
 		PackedByteArray data;
-		data.resize(12 * 2 * 4);
+		data.resize(12 * 2 * 2);
 		{
 			uint8_t *w = data.ptrw();
 			uint16_t *p16 = (uint16_t *)w;
@@ -282,7 +282,7 @@ void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_proj
 		// And draw our frustum.
 		RD::FramebufferFormatID fb_format_id = RD::get_singleton()->framebuffer_get_format(p_dest_fb);
 
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, rect);
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 0.0, 0, rect);
 
 		RID pipeline = shadow_frustum.pipelines[SFP_TRANSPARENT].get_render_pipeline(frustum.vertex_format, fb_format_id);
 		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, pipeline);
@@ -326,7 +326,7 @@ void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_proj
 			rect.size.x *= atlas_rect_norm.size.x;
 			rect.size.y *= atlas_rect_norm.size.y;
 
-			draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, rect);
+			draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 0.0, 0, rect);
 
 			pipeline = shadow_frustum.pipelines[SFP_TRANSPARENT].get_render_pipeline(frustum.vertex_format, fb_format_id);
 			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, pipeline);
@@ -351,10 +351,12 @@ void DebugEffects::draw_motion_vectors(RID p_velocity, RID p_depth, RID p_dest_f
 	RD::Uniform u_source_velocity(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_velocity }));
 	RD::Uniform u_source_depth(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 1, Vector<RID>({ default_sampler, p_depth }));
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, motion_vectors.pipeline.get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_fb), false, RD::get_singleton()->draw_list_get_current_pass()));
 
-	Projection reprojection = p_previous_projection.flipped_y() * p_previous_transform.affine_inverse() * p_current_transform * p_current_projection.flipped_y().inverse();
+	Projection correction;
+	correction.set_depth_correction(true, true, false);
+	Projection reprojection = (correction * p_previous_projection) * p_previous_transform.affine_inverse() * p_current_transform * (correction * p_current_projection).inverse();
 	RendererRD::MaterialStorage::store_camera(reprojection, motion_vectors.push_constant.reprojection_matrix);
 
 	motion_vectors.push_constant.resolution[0] = p_resolution.width;

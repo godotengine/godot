@@ -13,7 +13,7 @@
 		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="1.0">
 			Length that the resulting collision extends in either direction perpendicular to its 2D polygon.
 		</member>
-		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false" keywords="enabled">
 			If [code]true[/code], no collision will be produced.
 		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.04">
@@ -21,7 +21,6 @@
 		</member>
 		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array()">
 			Array of vertices which define the 2D polygon in the local XY plane.
-			[b]Note:[/b] The returned value is a copy of the original. Methods which mutate the size or properties of the return value will not impact the original polygon. To change properties of the polygon, assign it to a temporary variable and make changes before reassigning the [code]polygon[/code] member.
 		</member>
 	</members>
 </class>

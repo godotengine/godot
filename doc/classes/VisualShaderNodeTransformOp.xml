@@ -4,7 +4,7 @@
 		A [Transform3D] operator to be used within the visual shader graph.
 	</brief_description>
 	<description>
-		Applies [member operator] to two transform (4x4 matrices) inputs.
+		Applies [member operator] to two transform (4×4 matrices) inputs.
 	</description>
 	<tutorials>
 	</tutorials>

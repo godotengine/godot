@@ -34,6 +34,10 @@
 #include "core/io/file_access.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
+#include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif // MODULE_REGEX_ENABLED
 
 #include <stdarg.h>
 
@@ -86,6 +90,10 @@ class RotatedFileLogger : public Logger {
 	void clear_old_backups();
 	void rotate_file();
 
+#ifdef MODULE_REGEX_ENABLED
+	Ref<RegEx> strip_ansi_regex;
+#endif // MODULE_REGEX_ENABLED
+
 public:
 	explicit RotatedFileLogger(const String &p_base_path, int p_max_files = 10);
 
@@ -96,7 +104,7 @@ class CompositeLogger : public Logger {
 	Vector<Logger *> loggers;
 
 public:
-	explicit CompositeLogger(Vector<Logger *> p_loggers);
+	explicit CompositeLogger(const Vector<Logger *> &p_loggers);
 
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
 	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type = ERR_ERROR) override;

@@ -14,6 +14,7 @@ func test():
     print(v)
     print()
 
+    @warning_ignore("standalone_ternary")
     v=func(): print(2) if false else print(3)
     @warning_ignore("unsafe_cast")
     (v as Callable).call()
@@ -26,6 +27,7 @@ func test():
     if true: (v as Callable).call()
     print()
 
+    @warning_ignore("unsafe_call_argument")
     other(v)
     print()
 

@@ -46,6 +46,9 @@
 			The name of the pose we're bound to. Which poses a tracker supports is not known during design time.
 			Godot defines number of standard pose names such as [code]aim[/code] and [code]grip[/code] but other may be configured within a given [XRInterface].
 		</member>
+		<member name="show_when_tracked" type="bool" setter="set_show_when_tracked" getter="get_show_when_tracked" default="false">
+			Enables showing the node when tracking starts, and hiding the node when tracking is lost.
+		</member>
 		<member name="tracker" type="StringName" setter="set_tracker" getter="get_tracker" default="&amp;&quot;&quot;">
 			The name of the tracker we're bound to. Which trackers are available is not known during design time.
 			Godot defines a number of standard trackers such as [code]left_hand[/code] and [code]right_hand[/code] but others may be configured within a given [XRInterface].

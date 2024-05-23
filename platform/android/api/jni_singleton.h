@@ -241,6 +241,18 @@ public:
 		instance = nullptr;
 #endif
 	}
+
+	~JNISingleton() {
+#ifdef ANDROID_ENABLED
+		method_map.clear();
+		if (instance) {
+			JNIEnv *env = get_jni_env();
+			ERR_FAIL_NULL(env);
+
+			env->DeleteGlobalRef(instance);
+		}
+#endif
+	}
 };
 
 #endif // JNI_SINGLETON_H

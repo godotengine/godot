@@ -1377,7 +1377,7 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 			if (p_allow_reassign) {
 				break;
 			}
-			ERR_FAIL_COND_V(!p_block->parent_block, false);
+			ERR_FAIL_NULL_V(p_block->parent_block, false);
 			p_block = p_block->parent_block;
 		}
 	}
@@ -1455,17 +1455,17 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 		return true;
 	}
 
-	for (int i = 0; i < shader->functions.size(); i++) {
-		if (!shader->functions[i].callable) {
+	for (int i = 0; i < shader->vfunctions.size(); i++) {
+		if (!shader->vfunctions[i].callable) {
 			continue;
 		}
 
-		if (shader->functions[i].name == p_identifier) {
+		if (shader->vfunctions[i].name == p_identifier) {
 			if (r_data_type) {
-				*r_data_type = shader->functions[i].function->return_type;
+				*r_data_type = shader->vfunctions[i].function->return_type;
 			}
 			if (r_array_size) {
-				*r_array_size = shader->functions[i].function->return_array_size;
+				*r_array_size = shader->vfunctions[i].function->return_array_size;
 			}
 			if (r_type) {
 				*r_type = IDENTIFIER_FUNCTION;
@@ -3413,18 +3413,18 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 	bool exists = false;
 	String arg_list = "";
 
-	for (int i = 0; i < shader->functions.size(); i++) {
-		if (name != shader->functions[i].name) {
+	for (int i = 0; i < shader->vfunctions.size(); i++) {
+		if (name != shader->vfunctions[i].name) {
 			continue;
 		}
 		exists = true;
 
-		if (!shader->functions[i].callable) {
+		if (!shader->vfunctions[i].callable) {
 			_set_error(vformat(RTR("Function '%s' can't be called from source code."), String(name)));
 			return false;
 		}
 
-		FunctionNode *pfunc = shader->functions[i].function;
+		FunctionNode *pfunc = shader->vfunctions[i].function;
 		if (arg_list.is_empty()) {
 			for (int j = 0; j < pfunc->arguments.size(); j++) {
 				if (j > 0) {
@@ -4076,6 +4076,8 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_BOOL:
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.hint = PROPERTY_HINT_TYPE_STRING;
+				pi.hint_string = itos(Variant::INT) + "/" + itos(PROPERTY_HINT_FLAGS) + ":" + RTR("On");
 			} else {
 				pi.type = Variant::BOOL;
 			}
@@ -4083,6 +4085,8 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_BVEC2:
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.hint = PROPERTY_HINT_TYPE_STRING;
+				pi.hint_string = itos(Variant::INT) + "/" + itos(PROPERTY_HINT_FLAGS) + ":x,y";
 			} else {
 				pi.type = Variant::INT;
 				pi.hint = PROPERTY_HINT_FLAGS;
@@ -4092,6 +4096,8 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_BVEC3:
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.hint = PROPERTY_HINT_TYPE_STRING;
+				pi.hint_string = itos(Variant::INT) + "/" + itos(PROPERTY_HINT_FLAGS) + ":x,y,z";
 			} else {
 				pi.type = Variant::INT;
 				pi.hint = PROPERTY_HINT_FLAGS;
@@ -4101,6 +4107,8 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_BVEC4:
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.hint = PROPERTY_HINT_TYPE_STRING;
+				pi.hint_string = itos(Variant::INT) + "/" + itos(PROPERTY_HINT_FLAGS) + ":x,y,z,w";
 			} else {
 				pi.type = Variant::INT;
 				pi.hint = PROPERTY_HINT_FLAGS;
@@ -4111,11 +4119,16 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_INT: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				// TODO: Handle range and encoding for for unsigned values.
 			} else {
 				pi.type = Variant::INT;
+				pi.hint = PROPERTY_HINT_RANGE;
 				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
-					pi.hint = PROPERTY_HINT_RANGE;
 					pi.hint_string = rtos(p_uniform.hint_range[0]) + "," + rtos(p_uniform.hint_range[1]) + "," + rtos(p_uniform.hint_range[2]);
+				} else if (p_uniform.type == ShaderLanguage::TYPE_UINT) {
+					pi.hint_string = "0," + itos(UINT32_MAX);
+				} else {
+					pi.hint_string = itos(INT32_MIN) + "," + itos(INT32_MAX);
 				}
 			}
 		} break;
@@ -4123,6 +4136,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_IVEC2: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				// TODO: Handle vector pairs?
 			} else {
 				pi.type = Variant::VECTOR2I;
 			}
@@ -4131,6 +4145,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_IVEC3: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				// TODO: Handle vector pairs?
 			} else {
 				pi.type = Variant::VECTOR3I;
 			}
@@ -4139,6 +4154,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_IVEC4: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				// TODO: Handle vector pairs?
 			} else {
 				pi.type = Variant::VECTOR4I;
 			}
@@ -4639,6 +4655,10 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const FunctionInfo &p_functi
 			return false;
 		}
 
+		if (shader->varyings.has(var->name)) {
+			return _validate_varying_assign(shader->varyings[var->name], r_message);
+		}
+
 		if (!(p_function_info.built_ins.has(var->name) && p_function_info.built_ins[var->name].constant)) {
 			return true;
 		}
@@ -4661,11 +4681,11 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const FunctionInfo &p_functi
 	return false;
 }
 
-bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(StringName p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat) {
-	for (int i = 0; i < shader->functions.size(); i++) {
-		if (shader->functions[i].name == p_name) {
-			ERR_FAIL_INDEX_V(p_argument, shader->functions[i].function->arguments.size(), false);
-			FunctionNode::Argument *arg = &shader->functions[i].function->arguments.write[p_argument];
+bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(const StringName &p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat) {
+	for (int i = 0; i < shader->vfunctions.size(); i++) {
+		if (shader->vfunctions[i].name == p_name) {
+			ERR_FAIL_INDEX_V(p_argument, shader->vfunctions[i].function->arguments.size(), false);
+			FunctionNode::Argument *arg = &shader->vfunctions[i].function->arguments.write[p_argument];
 			if (arg->tex_builtin_check) {
 				_set_error(vformat(RTR("Sampler argument %d of function '%s' called more than once using both built-ins and uniform textures, this is not supported (use either one or the other)."), p_argument, String(p_name)));
 				return false;
@@ -4695,11 +4715,11 @@ bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(StringNam
 	ERR_FAIL_V(false); //bug? function not found
 }
 
-bool ShaderLanguage::_propagate_function_call_sampler_builtin_reference(StringName p_name, int p_argument, const StringName &p_builtin) {
-	for (int i = 0; i < shader->functions.size(); i++) {
-		if (shader->functions[i].name == p_name) {
-			ERR_FAIL_INDEX_V(p_argument, shader->functions[i].function->arguments.size(), false);
-			FunctionNode::Argument *arg = &shader->functions[i].function->arguments.write[p_argument];
+bool ShaderLanguage::_propagate_function_call_sampler_builtin_reference(const StringName &p_name, int p_argument, const StringName &p_builtin) {
+	for (int i = 0; i < shader->vfunctions.size(); i++) {
+		if (shader->vfunctions[i].name == p_name) {
+			ERR_FAIL_INDEX_V(p_argument, shader->vfunctions[i].function->arguments.size(), false);
+			FunctionNode::Argument *arg = &shader->vfunctions[i].function->arguments.write[p_argument];
 			if (arg->tex_argument_check) {
 				_set_error(vformat(RTR("Sampler argument %d of function '%s' called more than once using both built-ins and uniform textures, this is not supported (use either one or the other)."), p_argument, String(p_name)));
 				return false;
@@ -5025,6 +5045,10 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 	Vector<Expression> expression;
 
 	//Vector<TokenType> operators;
+#ifdef DEBUG_ENABLED
+	bool check_position_write = check_warnings && HAS_WARNING(ShaderWarning::MAGIC_POSITION_WRITE_FLAG);
+	check_position_write = check_position_write && String(shader_type_identifier) == "spatial" && current_function == "vertex";
+#endif
 
 	while (true) {
 		Node *expr = nullptr;
@@ -5193,11 +5217,11 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					funcname->name = name;
 					func->arguments.push_back(funcname);
 
-					for (int i = 0; i < pstruct->members.size(); i++) {
+					for (List<ShaderLanguage::MemberNode *>::Element *E = pstruct->members.front(); E; E = E->next()) {
 						Node *nexpr;
 
-						if (pstruct->members[i]->array_size != 0) {
-							nexpr = _parse_array_constructor(p_block, p_function_info, pstruct->members[i]->get_datatype(), pstruct->members[i]->struct_name, pstruct->members[i]->array_size);
+						if (E->get()->array_size != 0) {
+							nexpr = _parse_array_constructor(p_block, p_function_info, E->get()->get_datatype(), E->get()->struct_name, E->get()->array_size);
 							if (!nexpr) {
 								return nullptr;
 							}
@@ -5206,12 +5230,12 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							if (!nexpr) {
 								return nullptr;
 							}
-							if (!_compare_datatypes_in_nodes(pstruct->members[i], nexpr)) {
+							if (!_compare_datatypes_in_nodes(E->get(), nexpr)) {
 								return nullptr;
 							}
 						}
 
-						if (i + 1 < pstruct->members.size()) {
+						if (E->next()) {
 							tk = _get_token();
 							if (tk.type != TK_COMMA) {
 								_set_expected_error(",");
@@ -5229,11 +5253,13 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					expr = func;
 
 				} else { //a function call
-					if (p_block == nullptr) { // Non-constructor function call in global space is forbidden.
-						if (is_const_decl) {
+
+					// Non-builtin function call is forbidden for constant declaration.
+					if (is_const_decl) {
+						if (shader->functions.has(identifier)) {
 							_set_error(RTR("Expected constant expression."));
+							return nullptr;
 						}
-						return nullptr;
 					}
 
 					const StringName &name = identifier;
@@ -5260,12 +5286,12 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 					//test if function was parsed first
 					int function_index = -1;
-					for (int i = 0; i < shader->functions.size(); i++) {
-						if (shader->functions[i].name == name) {
+					for (int i = 0; i < shader->vfunctions.size(); i++) {
+						if (shader->vfunctions[i].name == name) {
 							//add to current function as dependency
-							for (int j = 0; j < shader->functions.size(); j++) {
-								if (shader->functions[j].name == current_function) {
-									shader->functions.write[j].uses_function.insert(name);
+							for (int j = 0; j < shader->vfunctions.size(); j++) {
+								if (shader->vfunctions[j].name == current_function) {
+									shader->vfunctions.write[j].uses_function.insert(name);
 									break;
 								}
 							}
@@ -5298,7 +5324,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						//connect texture arguments, so we can cache in the
 						//argument what type of filter and repeat to use
 
-						FunctionNode *call_function = shader->functions[function_index].function;
+						FunctionNode *call_function = shader->vfunctions[function_index].function;
 						if (call_function) {
 							func->return_cache = call_function->get_datatype();
 							func->struct_name = call_function->get_datatype_name();
@@ -5416,7 +5442,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 										}
 
 										if (error) {
-											_set_error(vformat(RTR("A constant value cannot be passed for '%s' parameter."), _get_qualifier_str(arg_qual)));
+											_set_error(vformat(RTR("A constant value cannot be passed for the '%s' parameter."), _get_qualifier_str(arg_qual)));
 											return nullptr;
 										}
 									}
@@ -5583,6 +5609,24 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						_set_error(vformat(RTR("Can't use function as identifier: '%s'."), String(identifier)));
 						return nullptr;
 					}
+#ifdef DEBUG_ENABLED
+					if (check_position_write && ident_type == IDENTIFIER_BUILTIN_VAR) {
+						if (String(identifier) == "POSITION") {
+							// Check if the user wrote "POSITION = vec4(VERTEX," and warn if they did.
+							TkPos prev_pos = _get_tkpos();
+							if (_get_token().type == TK_OP_ASSIGN &&
+									_get_token().type == TK_TYPE_VEC4 &&
+									_get_token().type == TK_PARENTHESIS_OPEN &&
+									_get_token().text == "VERTEX" &&
+									_get_token().type == TK_COMMA) {
+								_add_line_warning(ShaderWarning::MAGIC_POSITION_WRITE);
+							}
+
+							// Reset the position so compiling can continue as normal.
+							_set_tkpos(prev_pos);
+						}
+					}
+#endif
 					if (is_const) {
 						last_type = IDENTIFIER_CONSTANT;
 					} else {
@@ -7441,8 +7485,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					continue;
 				} else {
 					HashSet<int> constants;
-					for (int i = 0; i < switch_block->statements.size(); i++) { // Checks for duplicates.
-						ControlFlowNode *flow = static_cast<ControlFlowNode *>(switch_block->statements[i]);
+					for (ShaderLanguage::Node *statement : switch_block->statements) { // Checks for duplicates.
+						ControlFlowNode *flow = static_cast<ControlFlowNode *>(statement);
 						if (flow) {
 							if (flow->flow_op == FLOW_OP_CASE) {
 								if (flow->expressions[0]->type == Node::NODE_TYPE_CONSTANT) {
@@ -8355,7 +8399,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						}
 					}
 #endif // DEBUG_ENABLED
-					if (String(shader_type_identifier) != "spatial") {
+					if (shader_type_identifier != StringName() && String(shader_type_identifier) != "spatial") {
 						_set_error(vformat(RTR("Uniform instances are not yet implemented for '%s' shaders."), shader_type_identifier));
 						return ERR_PARSE_ERROR;
 					}
@@ -8842,7 +8886,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 										_set_error(RTR("'hint_normal_roughness_texture' is only available when using the Forward+ backend."));
 										return ERR_PARSE_ERROR;
 									}
-									if (String(shader_type_identifier) != "spatial") {
+									if (shader_type_identifier != StringName() && String(shader_type_identifier) != "spatial") {
 										_set_error(vformat(RTR("'hint_normal_roughness_texture' is not supported in '%s' shaders."), shader_type_identifier));
 										return ERR_PARSE_ERROR;
 									}
@@ -8851,7 +8895,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									new_hint = ShaderNode::Uniform::HINT_DEPTH_TEXTURE;
 									--texture_uniforms;
 									--texture_binding;
-									if (String(shader_type_identifier) != "spatial") {
+									if (shader_type_identifier != StringName() && String(shader_type_identifier) != "spatial") {
 										_set_error(vformat(RTR("'hint_depth_texture' is not supported in '%s' shaders."), shader_type_identifier));
 										return ERR_PARSE_ERROR;
 									}
@@ -9476,8 +9520,8 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					}
 				}
 
-				for (int i = 0; i < shader->functions.size(); i++) {
-					if (!shader->functions[i].callable && shader->functions[i].name == name) {
+				for (int i = 0; i < shader->vfunctions.size(); i++) {
+					if (!shader->vfunctions[i].callable && shader->vfunctions[i].name == name) {
 						_set_redefinition_error(String(name));
 						return ERR_PARSE_ERROR;
 					}
@@ -9492,7 +9536,8 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 				function.function = func_node;
 
-				shader->functions.push_back(function);
+				shader->functions.insert(name, function);
+				shader->vfunctions.push_back(function);
 
 				func_node->name = name;
 				func_node->return_type = type;
@@ -9817,9 +9862,9 @@ Error ShaderLanguage::_find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOper
 Error ShaderLanguage::_find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op) {
 	bool found = false;
 
-	for (int i = p_block->statements.size() - 1; i >= 0; i--) {
-		if (p_block->statements[i]->type == Node::NODE_TYPE_CONTROL_FLOW) {
-			ControlFlowNode *flow = static_cast<ControlFlowNode *>(p_block->statements[i]);
+	for (List<ShaderLanguage::Node *>::Element *E = p_block->statements.back(); E; E = E->prev()) {
+		if (E->get()->type == Node::NODE_TYPE_CONTROL_FLOW) {
+			ControlFlowNode *flow = static_cast<ControlFlowNode *>(E->get());
 			if (flow->flow_op == p_op) {
 				found = true;
 				break;
@@ -9829,8 +9874,8 @@ Error ShaderLanguage::_find_last_flow_op_in_block(BlockNode *p_block, FlowOperat
 					break;
 				}
 			}
-		} else if (p_block->statements[i]->type == Node::NODE_TYPE_BLOCK) {
-			BlockNode *block = static_cast<BlockNode *>(p_block->statements[i]);
+		} else if (E->get()->type == Node::NODE_TYPE_BLOCK) {
+			BlockNode *block = static_cast<BlockNode *>(E->get());
 			if (_find_last_flow_op_in_block(block, p_op) == OK) {
 				found = true;
 				break;
@@ -10122,8 +10167,8 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		case COMPLETION_STRUCT: {
 			if (shader->structs.has(completion_struct)) {
 				StructNode *node = shader->structs[completion_struct].shader_struct;
-				for (int i = 0; i < node->members.size(); i++) {
-					ScriptLanguage::CodeCompletionOption option(node->members[i]->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+				for (ShaderLanguage::MemberNode *member : node->members) {
+					ScriptLanguage::CodeCompletionOption option(member->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
 					r_options->push_back(option);
 				}
 			}
@@ -10136,8 +10181,8 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					continue;
 				}
 				bool found = false;
-				for (int i = 0; i < shader->functions.size(); i++) {
-					if (shader->functions[i].name == E.key) {
+				for (int i = 0; i < shader->vfunctions.size(); i++) {
+					if (shader->vfunctions[i].name == E.key) {
 						found = true;
 						break;
 					}
@@ -10257,11 +10302,11 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					}
 				}
 
-				for (int i = 0; i < shader->functions.size(); i++) {
-					if (!shader->functions[i].callable || shader->functions[i].name == skip_function) {
+				for (int i = 0; i < shader->vfunctions.size(); i++) {
+					if (!shader->vfunctions[i].callable || shader->vfunctions[i].name == skip_function) {
 						continue;
 					}
-					matches.insert(String(shader->functions[i].name), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+					matches.insert(String(shader->vfunctions[i].name), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
 				}
 
 				int idx = 0;
@@ -10319,26 +10364,26 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				block = block->parent_block;
 			}
 
-			for (int i = 0; i < shader->functions.size(); i++) {
-				if (!shader->functions[i].callable) {
+			for (int i = 0; i < shader->vfunctions.size(); i++) {
+				if (!shader->vfunctions[i].callable) {
 					continue;
 				}
-				if (shader->functions[i].name == completion_function) {
+				if (shader->vfunctions[i].name == completion_function) {
 					String calltip;
 
-					calltip += get_datatype_name(shader->functions[i].function->return_type);
+					calltip += get_datatype_name(shader->vfunctions[i].function->return_type);
 
-					if (shader->functions[i].function->return_array_size > 0) {
+					if (shader->vfunctions[i].function->return_array_size > 0) {
 						calltip += "[";
-						calltip += itos(shader->functions[i].function->return_array_size);
+						calltip += itos(shader->vfunctions[i].function->return_array_size);
 						calltip += "]";
 					}
 
 					calltip += " ";
-					calltip += shader->functions[i].name;
+					calltip += shader->vfunctions[i].name;
 					calltip += "(";
 
-					for (int j = 0; j < shader->functions[i].function->arguments.size(); j++) {
+					for (int j = 0; j < shader->vfunctions[i].function->arguments.size(); j++) {
 						if (j > 0) {
 							calltip += ", ";
 						} else {
@@ -10349,25 +10394,25 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 							calltip += char32_t(0xFFFF);
 						}
 
-						if (shader->functions[i].function->arguments[j].is_const) {
+						if (shader->vfunctions[i].function->arguments[j].is_const) {
 							calltip += "const ";
 						}
 
-						if (shader->functions[i].function->arguments[j].qualifier != ArgumentQualifier::ARGUMENT_QUALIFIER_IN) {
-							if (shader->functions[i].function->arguments[j].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_OUT) {
+						if (shader->vfunctions[i].function->arguments[j].qualifier != ArgumentQualifier::ARGUMENT_QUALIFIER_IN) {
+							if (shader->vfunctions[i].function->arguments[j].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_OUT) {
 								calltip += "out ";
 							} else { // ArgumentQualifier::ARGUMENT_QUALIFIER_INOUT
 								calltip += "inout ";
 							}
 						}
 
-						calltip += get_datatype_name(shader->functions[i].function->arguments[j].type);
+						calltip += get_datatype_name(shader->vfunctions[i].function->arguments[j].type);
 						calltip += " ";
-						calltip += shader->functions[i].function->arguments[j].name;
+						calltip += shader->vfunctions[i].function->arguments[j].name;
 
-						if (shader->functions[i].function->arguments[j].array_size > 0) {
+						if (shader->vfunctions[i].function->arguments[j].array_size > 0) {
 							calltip += "[";
-							calltip += itos(shader->functions[i].function->arguments[j].array_size);
+							calltip += itos(shader->vfunctions[i].function->arguments[j].array_size);
 							calltip += "]";
 						}
 
@@ -10376,7 +10421,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						}
 					}
 
-					if (shader->functions[i].function->arguments.size()) {
+					if (shader->vfunctions[i].function->arguments.size()) {
 						calltip += " ";
 					}
 					calltip += ")";

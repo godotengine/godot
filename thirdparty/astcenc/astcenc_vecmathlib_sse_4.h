@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2019-2022 Arm Limited
+// Copyright 2019-2023 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -39,6 +39,7 @@
 #endif
 
 #include <cstdio>
+#include <cstring>
 
 // ============================================================================
 // vfloat4 data type
@@ -293,6 +294,18 @@ struct vint4
 	}
 
 	/**
+	 * @brief Factory that returns a vector loaded from unaligned memory.
+	 */
+	static ASTCENC_SIMD_INLINE vint4 load(const uint8_t* p)
+	{
+#if ASTCENC_SSE >= 41
+		return vint4(_mm_lddqu_si128(reinterpret_cast<const __m128i*>(p)));
+#else
+		return vint4(_mm_loadu_si128(reinterpret_cast<const __m128i*>(p)));
+#endif
+	}
+
+	/**
 	 * @brief Factory that returns a vector loaded from 16B aligned memory.
 	 */
 	static ASTCENC_SIMD_INLINE vint4 loada(const int* p)
@@ -366,9 +379,9 @@ struct vmask4
 	/**
 	 * @brief Get the scalar value of a single lane.
 	 */
-	template <int l> ASTCENC_SIMD_INLINE float lane() const
+	template <int l> ASTCENC_SIMD_INLINE bool lane() const
 	{
-		return _mm_cvtss_f32(_mm_shuffle_ps(m, m, l));
+		return _mm_cvtss_f32(_mm_shuffle_ps(m, m, l)) != 0.0f;
 	}
 
 	/**
@@ -631,6 +644,14 @@ ASTCENC_SIMD_INLINE void store(vint4 a, int* p)
 {
 	// Cast due to missing intrinsics
 	_mm_storeu_ps(reinterpret_cast<float*>(p), _mm_castsi128_ps(a.m));
+}
+
+/**
+ * @brief Store a vector to an unaligned memory address.
+ */
+ASTCENC_SIMD_INLINE void store(vint4 a, uint8_t* p)
+{
+	std::memcpy(p, &a.m, sizeof(int) * 4);
 }
 
 /**
@@ -934,7 +955,7 @@ ASTCENC_SIMD_INLINE vint4 float_to_int(vfloat4 a)
  */
 ASTCENC_SIMD_INLINE vint4 float_to_int_rtn(vfloat4 a)
 {
-	a = round(a);
+	a = a + vfloat4(0.5f);
 	return vint4(_mm_cvttps_epi32(a.m));
 }
 
@@ -1087,8 +1108,9 @@ ASTCENC_SIMD_INLINE vint4 vtable_8bt_32bi(vint4 t0, vint4 idx)
 	__m128i result = _mm_shuffle_epi8(t0.m, idxx);
 	return vint4(result);
 #else
-	alignas(ASTCENC_VECALIGN) uint8_t table[16];
-	storea(t0, reinterpret_cast<int*>(table +  0));
+	uint8_t table[16];
+
+	std::memcpy(table +  0, &t0.m, 4 * sizeof(int));
 
 	return vint4(table[idx.lane<0>()],
 	             table[idx.lane<1>()],
@@ -1114,9 +1136,10 @@ ASTCENC_SIMD_INLINE vint4 vtable_8bt_32bi(vint4 t0, vint4 t1, vint4 idx)
 
 	return vint4(result);
 #else
-	alignas(ASTCENC_VECALIGN) uint8_t table[32];
-	storea(t0, reinterpret_cast<int*>(table +  0));
-	storea(t1, reinterpret_cast<int*>(table + 16));
+	uint8_t table[32];
+
+	std::memcpy(table +  0, &t0.m, 4 * sizeof(int));
+	std::memcpy(table + 16, &t1.m, 4 * sizeof(int));
 
 	return vint4(table[idx.lane<0>()],
 	             table[idx.lane<1>()],
@@ -1150,11 +1173,12 @@ ASTCENC_SIMD_INLINE vint4 vtable_8bt_32bi(vint4 t0, vint4 t1, vint4 t2, vint4 t3
 
 	return vint4(result);
 #else
-	alignas(ASTCENC_VECALIGN) uint8_t table[64];
-	storea(t0, reinterpret_cast<int*>(table +  0));
-	storea(t1, reinterpret_cast<int*>(table + 16));
-	storea(t2, reinterpret_cast<int*>(table + 32));
-	storea(t3, reinterpret_cast<int*>(table + 48));
+	uint8_t table[64];
+
+	std::memcpy(table +  0, &t0.m, 4 * sizeof(int));
+	std::memcpy(table + 16, &t1.m, 4 * sizeof(int));
+	std::memcpy(table + 32, &t2.m, 4 * sizeof(int));
+	std::memcpy(table + 48, &t3.m, 4 * sizeof(int));
 
 	return vint4(table[idx.lane<0>()],
 	             table[idx.lane<1>()],
@@ -1191,14 +1215,22 @@ ASTCENC_SIMD_INLINE vint4 interleave_rgba8(vint4 r, vint4 g, vint4 b, vint4 a)
 }
 
 /**
+ * @brief Store a single vector lane to an unaligned address.
+ */
+ASTCENC_SIMD_INLINE void store_lane(uint8_t* base, int data)
+{
+	std::memcpy(base, &data, sizeof(int));
+}
+
+/**
  * @brief Store a vector, skipping masked lanes.
  *
  * All masked lanes must be at the end of vector, after all non-masked lanes.
  */
-ASTCENC_SIMD_INLINE void store_lanes_masked(int* base, vint4 data, vmask4 mask)
+ASTCENC_SIMD_INLINE void store_lanes_masked(uint8_t* base, vint4 data, vmask4 mask)
 {
 #if ASTCENC_AVX >= 2
-	_mm_maskstore_epi32(base, _mm_castps_si128(mask.m), data.m);
+	_mm_maskstore_epi32(reinterpret_cast<int*>(base), _mm_castps_si128(mask.m), data.m);
 #else
 	// Note - we cannot use _mm_maskmoveu_si128 as the underlying hardware doesn't guarantee
 	// fault suppression on masked lanes so we can get page faults at the end of an image.
@@ -1208,18 +1240,18 @@ ASTCENC_SIMD_INLINE void store_lanes_masked(int* base, vint4 data, vmask4 mask)
 	}
 	else if (mask.lane<2>() != 0.0f)
 	{
-		base[0] = data.lane<0>();
-		base[1] = data.lane<1>();
-		base[2] = data.lane<2>();
+		store_lane(base + 0, data.lane<0>());
+		store_lane(base + 4, data.lane<1>());
+		store_lane(base + 8, data.lane<2>());
 	}
 	else if (mask.lane<1>() != 0.0f)
 	{
-		base[0] = data.lane<0>();
-		base[1] = data.lane<1>();
+		store_lane(base + 0, data.lane<0>());
+		store_lane(base + 4, data.lane<1>());
 	}
 	else if (mask.lane<0>() != 0.0f)
 	{
-		base[0] = data.lane<0>();
+		store_lane(base + 0, data.lane<0>());
 	}
 #endif
 }

@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2018 University of Cambridge
+          New API code Copyright (c) 2016-2023 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,12 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDED_FROM_PCRE2_JIT_COMPILE
 #error This file must be included from pcre2_jit_compile.c.
 #endif
+
+#if defined(__has_feature)
+#if __has_feature(memory_sanitizer)
+#include <sanitizer/msan_interface.h>
+#endif /* __has_feature(memory_sanitizer) */
+#endif /* defined(__has_feature) */
 
 #ifdef SUPPORT_JIT
 
@@ -171,12 +177,20 @@ if (rc > (int)oveccount)
   rc = 0;
 match_data->code = re;
 match_data->subject = (rc >= 0 || rc == PCRE2_ERROR_PARTIAL)? subject : NULL;
+match_data->subject_length = length;
 match_data->rc = rc;
 match_data->startchar = arguments.startchar_ptr - subject;
 match_data->leftchar = 0;
 match_data->rightchar = 0;
 match_data->mark = arguments.mark_ptr;
 match_data->matchedby = PCRE2_MATCHEDBY_JIT;
+
+#if defined(__has_feature)
+#if __has_feature(memory_sanitizer)
+if (rc > 0)
+  __msan_unpoison(match_data->ovector, 2 * rc * sizeof(match_data->ovector[0]));
+#endif /* __has_feature(memory_sanitizer) */
+#endif /* defined(__has_feature) */
 
 return match_data->rc;
 

@@ -486,8 +486,10 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
   if (likely (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH)))
     return;
 
-  /* The Arabic shaper currently always processes in RTL mode, so we should
-   * stretch / position the stretched pieces to the left / preceding glyphs. */
+  bool rtl = buffer->props.direction == HB_DIRECTION_RTL;
+
+  if (!rtl)
+    buffer->reverse ();
 
   /* We do a two pass implementation:
    * First pass calculates the exact number of extra glyphs we need,
@@ -558,9 +560,9 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 
       DEBUG_MSG (ARABIC, nullptr, "%s stretch at (%u,%u,%u)",
 		 step == MEASURE ? "measuring" : "cutting", context, start, end);
-      DEBUG_MSG (ARABIC, nullptr, "rest of word:    count=%u width %d", start - context, w_total);
-      DEBUG_MSG (ARABIC, nullptr, "fixed tiles:     count=%d width=%d", n_fixed, w_fixed);
-      DEBUG_MSG (ARABIC, nullptr, "repeating tiles: count=%d width=%d", n_repeating, w_repeating);
+      DEBUG_MSG (ARABIC, nullptr, "rest of word:    count=%u width %" PRId32, start - context, w_total);
+      DEBUG_MSG (ARABIC, nullptr, "fixed tiles:     count=%d width=%" PRId32, n_fixed, w_fixed);
+      DEBUG_MSG (ARABIC, nullptr, "repeating tiles: count=%d width=%" PRId32, n_repeating, w_repeating);
 
       /* Number of additional times to repeat each repeating tile. */
       int n_copies = 0;
@@ -577,7 +579,10 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	++n_copies;
 	hb_position_t excess = (n_copies + 1) * sign * w_repeating - sign * w_remaining;
 	if (excess > 0)
+	{
 	  extra_repeat_overlap = excess / (n_copies * n_repeating);
+	  w_remaining = 0;
+	}
       }
 
       if (step == MEASURE)
@@ -588,7 +593,7 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
       else
       {
 	buffer->unsafe_to_break (context, end);
-	hb_position_t x_offset = 0;
+	hb_position_t x_offset = w_remaining / 2;
 	for (unsigned int k = end; k > start; k--)
 	{
 	  hb_position_t width = font->get_glyph_h_advance (info[k - 1].codepoint);
@@ -597,18 +602,29 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	  if (info[k - 1].arabic_shaping_action() == STCH_REPEATING)
 	    repeat += n_copies;
 
-	  DEBUG_MSG (ARABIC, nullptr, "appending %u copies of glyph %u; j=%u",
+	  DEBUG_MSG (ARABIC, nullptr, "appending %u copies of glyph %" PRIu32 "; j=%u",
 		     repeat, info[k - 1].codepoint, j);
+	  pos[k - 1].x_advance = 0;
 	  for (unsigned int n = 0; n < repeat; n++)
 	  {
-	    x_offset -= width;
-	    if (n > 0)
-	      x_offset += extra_repeat_overlap;
+	    if (rtl)
+	    {
+	      x_offset -= width;
+	      if (n > 0)
+		x_offset += extra_repeat_overlap;
+	    }
 	    pos[k - 1].x_offset = x_offset;
 	    /* Append copy. */
 	    --j;
 	    info[j] = info[k - 1];
 	    pos[j] = pos[k - 1];
+
+	    if (!rtl)
+	    {
+	      x_offset += width;
+	      if (n > 0)
+		x_offset -= extra_repeat_overlap;
+	    }
 	  }
 	}
       }
@@ -625,6 +641,9 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
       buffer->len = new_len;
     }
   }
+
+  if (!rtl)
+    buffer->reverse ();
 }
 
 

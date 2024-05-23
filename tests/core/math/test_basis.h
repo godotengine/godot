@@ -324,6 +324,100 @@ TEST_CASE("[Basis] Is conformal checks") {
 	CHECK_FALSE_MESSAGE(
 			Basis(Vector3(Math_SQRT12, Math_SQRT12, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)).is_conformal(),
 			"Basis with the X axis skewed 45 degrees should not be conformal.");
+
+	CHECK_MESSAGE(
+			Basis(0, 0, 0, 0, 0, 0, 0, 0, 0).is_conformal(),
+			"Edge case: Basis with all zeroes should return true for is_conformal (because a 0 scale is uniform).");
+}
+
+TEST_CASE("[Basis] Is orthogonal checks") {
+	CHECK_MESSAGE(
+			Basis().is_orthogonal(),
+			"Identity Basis should be orthogonal.");
+
+	CHECK_MESSAGE(
+			Basis::from_euler(Vector3(1.2, 3.4, 5.6)).is_orthogonal(),
+			"Basis with only rotation should be orthogonal.");
+
+	CHECK_MESSAGE(
+			Basis::from_scale(Vector3(-1, -1, -1)).is_orthogonal(),
+			"Basis with only a flip should be orthogonal.");
+
+	CHECK_MESSAGE(
+			Basis::from_scale(Vector3(1.2, 3.4, 5.6)).is_orthogonal(),
+			"Basis with only scale should be orthogonal.");
+
+	CHECK_MESSAGE(
+			Basis(Vector3(3, 4, 0), Vector3(4, -3, 0), Vector3(0, 0, 5)).is_orthogonal(),
+			"Basis with a flip, rotation, and uniform scale should be orthogonal.");
+
+	CHECK_FALSE_MESSAGE(
+			Basis(Vector3(Math_SQRT12, Math_SQRT12, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)).is_orthogonal(),
+			"Basis with the X axis skewed 45 degrees should not be orthogonal.");
+
+	CHECK_MESSAGE(
+			Basis(0, 0, 0, 0, 0, 0, 0, 0, 0).is_orthogonal(),
+			"Edge case: Basis with all zeroes should return true for is_orthogonal, since zero vectors are orthogonal to all vectors.");
+}
+
+TEST_CASE("[Basis] Is orthonormal checks") {
+	CHECK_MESSAGE(
+			Basis().is_orthonormal(),
+			"Identity Basis should be orthonormal.");
+
+	CHECK_MESSAGE(
+			Basis::from_euler(Vector3(1.2, 3.4, 5.6)).is_orthonormal(),
+			"Basis with only rotation should be orthonormal.");
+
+	CHECK_MESSAGE(
+			Basis::from_scale(Vector3(-1, -1, -1)).is_orthonormal(),
+			"Basis with only a flip should be orthonormal.");
+
+	CHECK_FALSE_MESSAGE(
+			Basis::from_scale(Vector3(1.2, 3.4, 5.6)).is_orthonormal(),
+			"Basis with only scale should not be orthonormal.");
+
+	CHECK_FALSE_MESSAGE(
+			Basis(Vector3(3, 4, 0), Vector3(4, -3, 0), Vector3(0, 0, 5)).is_orthonormal(),
+			"Basis with a flip, rotation, and uniform scale should not be orthonormal.");
+
+	CHECK_FALSE_MESSAGE(
+			Basis(Vector3(Math_SQRT12, Math_SQRT12, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)).is_orthonormal(),
+			"Basis with the X axis skewed 45 degrees should not be orthonormal.");
+
+	CHECK_FALSE_MESSAGE(
+			Basis(0, 0, 0, 0, 0, 0, 0, 0, 0).is_orthonormal(),
+			"Edge case: Basis with all zeroes should return false for is_orthonormal, since the vectors do not have a length of 1.");
+}
+
+TEST_CASE("[Basis] Is rotation checks") {
+	CHECK_MESSAGE(
+			Basis().is_rotation(),
+			"Identity Basis should be a rotation (a rotation of zero).");
+
+	CHECK_MESSAGE(
+			Basis::from_euler(Vector3(1.2, 3.4, 5.6)).is_rotation(),
+			"Basis with only rotation should be a rotation.");
+
+	CHECK_FALSE_MESSAGE(
+			Basis::from_scale(Vector3(-1, -1, -1)).is_rotation(),
+			"Basis with only a flip should not be a rotation.");
+
+	CHECK_FALSE_MESSAGE(
+			Basis::from_scale(Vector3(1.2, 3.4, 5.6)).is_rotation(),
+			"Basis with only scale should not be a rotation.");
+
+	CHECK_FALSE_MESSAGE(
+			Basis(Vector3(2, 0, 0), Vector3(0, 0.5, 0), Vector3(0, 0, 1)).is_rotation(),
+			"Basis with a squeeze should not be a rotation.");
+
+	CHECK_FALSE_MESSAGE(
+			Basis(Vector3(Math_SQRT12, Math_SQRT12, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)).is_rotation(),
+			"Basis with the X axis skewed 45 degrees should not be a rotation.");
+
+	CHECK_FALSE_MESSAGE(
+			Basis(0, 0, 0, 0, 0, 0, 0, 0, 0).is_rotation(),
+			"Edge case: Basis with all zeroes should return false for is_rotation, because it is not just a rotation (has a scale of 0).");
 }
 
 } // namespace TestBasis

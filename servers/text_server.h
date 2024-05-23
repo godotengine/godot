@@ -43,6 +43,8 @@ class TypedArray;
 struct Glyph;
 struct CaretInfo;
 
+#define OT_TAG(m_c1, m_c2, m_c3, m_c4) ((int32_t)((((uint32_t)(m_c1) & 0xff) << 24) | (((uint32_t)(m_c2) & 0xff) << 16) | (((uint32_t)(m_c3) & 0xff) << 8) | ((uint32_t)(m_c4) & 0xff)))
+
 class TextServer : public RefCounted {
 	GDCLASS(TextServer, RefCounted);
 
@@ -108,6 +110,7 @@ public:
 		BREAK_GRAPHEME_BOUND = 1 << 2,
 		BREAK_ADAPTIVE = 1 << 3,
 		BREAK_TRIM_EDGE_SPACES = 1 << 4,
+		BREAK_TRIM_INDENT = 1 << 5,
 	};
 
 	enum OverrunBehavior {
@@ -141,6 +144,7 @@ public:
 		GRAPHEME_IS_CONNECTED = 1 << 10, // Connected to previous grapheme.
 		GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL = 1 << 11, // It is safe to insert a U+0640 before this grapheme for elongation.
 		GRAPHEME_IS_EMBEDDED_OBJECT = 1 << 12, // Grapheme is an object replacement character for the embedded object.
+		GRAPHEME_IS_SOFT_HYPHEN = 1 << 13, // Grapheme is a soft hyphen.
 	};
 
 	enum Hinting {
@@ -207,6 +211,12 @@ public:
 		STRUCTURED_TEXT_CUSTOM
 	};
 
+	enum FixedSizeScaleMode {
+		FIXED_SIZE_SCALE_DISABLE,
+		FIXED_SIZE_SCALE_INTEGER_ONLY,
+		FIXED_SIZE_SCALE_ENABLED,
+	};
+
 	void _draw_hex_code_box_number(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;
 
 protected:
@@ -215,6 +225,11 @@ protected:
 	void _init_diacritics_map();
 
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	PackedInt32Array _shaped_text_get_word_breaks_bind_compat_90732(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION) const;
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -231,12 +246,13 @@ public:
 
 	virtual bool is_locale_right_to_left(const String &p_locale) const = 0;
 
-	virtual int64_t name_to_tag(const String &p_name) const { return 0; };
-	virtual String tag_to_name(int64_t p_tag) const { return ""; };
+	virtual int64_t name_to_tag(const String &p_name) const;
+	virtual String tag_to_name(int64_t p_tag) const;
 
 	/* Font interface */
 
 	virtual RID create_font() = 0;
+	virtual RID create_font_linked_variation(const RID &p_font_rid) = 0;
 
 	virtual void font_set_data(const RID &p_font_rid, const PackedByteArray &p_data) = 0;
 	virtual void font_set_data_ptr(const RID &p_font_rid, const uint8_t *p_data_ptr, int64_t p_data_size) = 0;
@@ -265,6 +281,9 @@ public:
 	virtual void font_set_antialiasing(const RID &p_font_rid, FontAntialiasing p_antialiasing) = 0;
 	virtual FontAntialiasing font_get_antialiasing(const RID &p_font_rid) const = 0;
 
+	virtual void font_set_disable_embedded_bitmaps(const RID &p_font_rid, bool p_disable_embedded_bitmaps) = 0;
+	virtual bool font_get_disable_embedded_bitmaps(const RID &p_font_rid) const = 0;
+
 	virtual void font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) = 0;
 	virtual bool font_get_generate_mipmaps(const RID &p_font_rid) const = 0;
 
@@ -279,6 +298,9 @@ public:
 
 	virtual void font_set_fixed_size(const RID &p_font_rid, int64_t p_fixed_size) = 0;
 	virtual int64_t font_get_fixed_size(const RID &p_font_rid) const = 0;
+
+	virtual void font_set_fixed_size_scale_mode(const RID &p_font_rid, FixedSizeScaleMode p_fixed_size_scale) = 0;
+	virtual FixedSizeScaleMode font_get_fixed_size_scale_mode(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_allow_system_fallback(const RID &p_font_rid, bool p_allow_system_fallback) = 0;
 	virtual bool font_is_allow_system_fallback(const RID &p_font_rid) const = 0;
@@ -297,6 +319,9 @@ public:
 
 	virtual void font_set_spacing(const RID &p_font_rid, SpacingType p_spacing, int64_t p_value) = 0;
 	virtual int64_t font_get_spacing(const RID &p_font_rid, SpacingType p_spacing) const = 0;
+
+	virtual void font_set_baseline_offset(const RID &p_font_rid, float p_baseline_offset) = 0;
+	virtual float font_get_baseline_offset(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_transform(const RID &p_font_rid, const Transform2D &p_transform) = 0;
 	virtual Transform2D font_get_transform(const RID &p_font_rid) const = 0;
@@ -417,6 +442,9 @@ public:
 	virtual void shaped_text_set_custom_punctuation(const RID &p_shaped, const String &p_punct) = 0;
 	virtual String shaped_text_get_custom_punctuation(const RID &p_shaped) const = 0;
 
+	virtual void shaped_text_set_custom_ellipsis(const RID &p_shaped, int64_t p_char) = 0;
+	virtual int64_t shaped_text_get_custom_ellipsis(const RID &p_shaped) const = 0;
+
 	virtual void shaped_text_set_orientation(const RID &p_shaped, Orientation p_orientation = ORIENTATION_HORIZONTAL) = 0;
 	virtual Orientation shaped_text_get_orientation(const RID &p_shaped) const = 0;
 
@@ -460,7 +488,7 @@ public:
 
 	virtual PackedInt32Array shaped_text_get_line_breaks_adv(const RID &p_shaped, const PackedFloat32Array &p_width, int64_t p_start = 0, bool p_once = true, BitField<TextServer::LineBreakFlag> p_break_flags = BREAK_MANDATORY | BREAK_WORD_BOUND) const;
 	virtual PackedInt32Array shaped_text_get_line_breaks(const RID &p_shaped, double p_width, int64_t p_start = 0, BitField<TextServer::LineBreakFlag> p_break_flags = BREAK_MANDATORY | BREAK_WORD_BOUND) const;
-	virtual PackedInt32Array shaped_text_get_word_breaks(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION) const;
+	virtual PackedInt32Array shaped_text_get_word_breaks(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION, BitField<TextServer::GraphemeFlag> p_skip_grapheme_flags = GRAPHEME_IS_VIRTUAL) const;
 
 	virtual int64_t shaped_text_get_trim_pos(const RID &p_shaped) const = 0;
 	virtual int64_t shaped_text_get_ellipsis_pos(const RID &p_shaped) const = 0;
@@ -472,6 +500,8 @@ public:
 
 	virtual Array shaped_text_get_objects(const RID &p_shaped) const = 0;
 	virtual Rect2 shaped_text_get_object_rect(const RID &p_shaped, const Variant &p_key) const = 0;
+	virtual Vector2i shaped_text_get_object_range(const RID &p_shaped, const Variant &p_key) const = 0;
+	virtual int64_t shaped_text_get_object_glyph(const RID &p_shaped, const Variant &p_key) const = 0;
 
 	virtual Size2 shaped_text_get_size(const RID &p_shaped) const = 0;
 	virtual double shaped_text_get_ascent(const RID &p_shaped) const = 0;
@@ -517,10 +547,12 @@ public:
 
 	virtual String strip_diacritics(const String &p_string) const;
 	virtual bool is_valid_identifier(const String &p_string) const;
+	virtual bool is_valid_letter(char32_t p_unicode) const;
 
 	// Other string operations.
 	virtual String string_to_upper(const String &p_string, const String &p_language = "") const = 0;
 	virtual String string_to_lower(const String &p_string, const String &p_language = "") const = 0;
+	virtual String string_to_title(const String &p_string, const String &p_language = "") const = 0;
 
 	TypedArray<Vector3i> parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 
@@ -619,6 +651,7 @@ VARIANT_BITFIELD_CAST(TextServer::FontStyle);
 VARIANT_ENUM_CAST(TextServer::StructuredTextParser);
 VARIANT_ENUM_CAST(TextServer::FontAntialiasing);
 VARIANT_ENUM_CAST(TextServer::FontLCDSubpixelLayout);
+VARIANT_ENUM_CAST(TextServer::FixedSizeScaleMode);
 
 GDVIRTUAL_NATIVE_PTR(Glyph);
 GDVIRTUAL_NATIVE_PTR(CaretInfo);

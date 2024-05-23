@@ -377,10 +377,7 @@ static FfxErrorCode execute_gpu_job_copy_rd(FSR2Context::Scratch &p_scratch, con
 	ERR_FAIL_COND_V(dst_desc.type == FFX_RESOURCE_TYPE_BUFFER, FFX_ERROR_INVALID_ARGUMENT);
 
 	for (uint32_t mip_level = 0; mip_level < src_desc.mipCount; mip_level++) {
-		// Only push the barriers on the last copy.
-		// FIXME: This could be optimized if RenderingDevice was able to copy multiple mip levels in a single command.
-		BitField<RD::BarrierMask> post_barrier = (mip_level == (src_desc.mipCount - 1)) ? RD::BARRIER_MASK_ALL_BARRIERS : RD::BARRIER_MASK_NO_BARRIER;
-		RD::get_singleton()->texture_copy(src, dst, Vector3(0, 0, 0), Vector3(0, 0, 0), Vector3(src_desc.width, src_desc.height, src_desc.depth), mip_level, mip_level, 0, 0, post_barrier);
+		RD::get_singleton()->texture_copy(src, dst, Vector3(0, 0, 0), Vector3(0, 0, 0), Vector3(src_desc.width, src_desc.height, src_desc.depth), mip_level, mip_level, 0, 0);
 	}
 
 	return FFX_OK;
@@ -435,8 +432,7 @@ static FfxErrorCode execute_gpu_job_compute_rd(FSR2Context::Scratch &p_scratch, 
 		RID buffer_rid = p_scratch.ubo_ring_buffer[p_scratch.ubo_ring_buffer_index];
 		p_scratch.ubo_ring_buffer_index = (p_scratch.ubo_ring_buffer_index + 1) % FSR2_UBO_RING_BUFFER_SIZE;
 
-		BitField<RD::BarrierMask> post_barrier = (i == (p_job.pipeline.constCount - 1)) ? RD::BARRIER_MASK_ALL_BARRIERS : RD::BARRIER_MASK_NO_BARRIER;
-		RD::get_singleton()->buffer_update(buffer_rid, 0, p_job.cbs[i].uint32Size * sizeof(uint32_t), p_job.cbs[i].data, post_barrier);
+		RD::get_singleton()->buffer_update(buffer_rid, 0, p_job.cbs[i].uint32Size * sizeof(uint32_t), p_job.cbs[i].data);
 
 		RD::Uniform buffer_uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, p_job.pipeline.cbResourceBindings[i].slotIndex, buffer_rid);
 		compute_uniforms.push_back(buffer_uniform);
@@ -531,6 +527,7 @@ FSR2Effect::FSR2Effect() {
 			"\n#define FFX_GLSL 1\n"
 			"\n#define FFX_FSR2_OPTION_LOW_RESOLUTION_MOTION_VECTORS 1\n"
 			"\n#define FFX_FSR2_OPTION_HDR_COLOR_INPUT 1\n"
+			"\n#define FFX_FSR2_OPTION_INVERTED_DEPTH 1\n"
 			"\n#define FFX_FSR2_OPTION_GODOT_REACTIVE_MASK_CLAMP 1\n"
 			"\n#define FFX_FSR2_OPTION_GODOT_DERIVE_INVALID_MOTION_VECTORS 1\n";
 
@@ -566,7 +563,6 @@ FSR2Effect::FSR2Effect() {
 			FfxResourceBinding{ 2, 0, L"r_dilatedDepth" },
 			FfxResourceBinding{ 3, 0, L"r_reactive_mask" },
 			FfxResourceBinding{ 4, 0, L"r_transparency_and_composition_mask" },
-			FfxResourceBinding{ 5, 0, L"r_prepared_input_color" },
 			FfxResourceBinding{ 6, 0, L"r_previous_dilated_motion_vectors" },
 			FfxResourceBinding{ 7, 0, L"r_input_motion_vectors" },
 			FfxResourceBinding{ 8, 0, L"r_input_color_jittered" },
@@ -804,14 +800,16 @@ FSR2Effect::~FSR2Effect() {
 	RD::get_singleton()->free(device.linear_clamp_sampler);
 
 	for (uint32_t i = 0; i < FFX_FSR2_PASS_COUNT; i++) {
-		RD::get_singleton()->free(device.passes[i].pipeline.pipeline_rid);
+		if (device.passes[i].pipeline.pipeline_rid.is_valid()) {
+			RD::get_singleton()->free(device.passes[i].pipeline.pipeline_rid);
+		}
 		device.passes[i].shader->version_free(device.passes[i].shader_version);
 	}
 }
 
 FSR2Context *FSR2Effect::create_context(Size2i p_internal_size, Size2i p_target_size) {
 	FSR2Context *context = memnew(RendererRD::FSR2Context);
-	context->fsr_desc.flags = FFX_FSR2_ENABLE_HIGH_DYNAMIC_RANGE;
+	context->fsr_desc.flags = FFX_FSR2_ENABLE_HIGH_DYNAMIC_RANGE | FFX_FSR2_ENABLE_DEPTH_INVERTED;
 	context->fsr_desc.maxRenderSize.width = p_internal_size.x;
 	context->fsr_desc.maxRenderSize.height = p_internal_size.y;
 	context->fsr_desc.displaySize.width = p_target_size.x;

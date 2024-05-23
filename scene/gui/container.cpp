@@ -30,9 +30,6 @@
 
 #include "container.h"
 
-#include "core/object/message_queue.h"
-#include "scene/scene_string_names.h"
-
 void Container::_child_minsize_changed() {
 	update_minimum_size();
 	queue_sort();
@@ -46,9 +43,9 @@ void Container::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	control->connect(SNAME("size_flags_changed"), callable_mp(this, &Container::queue_sort));
-	control->connect(SNAME("minimum_size_changed"), callable_mp(this, &Container::_child_minsize_changed));
-	control->connect(SNAME("visibility_changed"), callable_mp(this, &Container::_child_minsize_changed));
+	control->connect(SceneStringName(size_flags_changed), callable_mp(this, &Container::queue_sort));
+	control->connect(SceneStringName(minimum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
+	control->connect(SceneStringName(visibility_changed), callable_mp(this, &Container::_child_minsize_changed));
 
 	update_minimum_size();
 	queue_sort();
@@ -73,9 +70,9 @@ void Container::remove_child_notify(Node *p_child) {
 		return;
 	}
 
-	control->disconnect("size_flags_changed", callable_mp(this, &Container::queue_sort));
-	control->disconnect("minimum_size_changed", callable_mp(this, &Container::_child_minsize_changed));
-	control->disconnect("visibility_changed", callable_mp(this, &Container::_child_minsize_changed));
+	control->disconnect(SceneStringName(size_flags_changed), callable_mp(this, &Container::queue_sort));
+	control->disconnect(SceneStringName(minimum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
+	control->disconnect(SceneStringName(visibility_changed), callable_mp(this, &Container::_child_minsize_changed));
 
 	update_minimum_size();
 	queue_sort();
@@ -87,10 +84,10 @@ void Container::_sort_children() {
 	}
 
 	notification(NOTIFICATION_PRE_SORT_CHILDREN);
-	emit_signal(SceneStringNames::get_singleton()->pre_sort_children);
+	emit_signal(SceneStringName(pre_sort_children));
 
 	notification(NOTIFICATION_SORT_CHILDREN);
-	emit_signal(SceneStringNames::get_singleton()->sort_children);
+	emit_signal(SceneStringName(sort_children));
 	pending_sort = false;
 }
 
@@ -138,8 +135,16 @@ void Container::queue_sort() {
 		return;
 	}
 
-	MessageQueue::get_singleton()->push_callable(callable_mp(this, &Container::_sort_children));
+	callable_mp(this, &Container::_sort_children).call_deferred();
 	pending_sort = true;
+}
+
+Control *Container::as_sortable_control(Node *p_node) const {
+	Control *c = Object::cast_to<Control>(p_node);
+	if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
+		return nullptr;
+	}
+	return c;
 }
 
 Vector<int> Container::get_allowed_size_flags_horizontal() const {

@@ -8,7 +8,7 @@
 		Used in scripting by [EditorExportPlugin] to configure platform-specific customization of scenes and resources. See [method EditorExportPlugin._begin_customize_scenes] and [method EditorExportPlugin._begin_customize_resources] for more details.
 	</description>
 	<tutorials>
-		<link title="$DOCS_URL/tutorials/platform/consoles.html">Console support in Godot</link>
+		<link title="Console support in Godot">$DOCS_URL/tutorials/platform/consoles.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_os_name" qualifiers="const">
