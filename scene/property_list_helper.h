@@ -44,6 +44,7 @@ class PropertyListHelper {
 
 	String prefix;
 	MethodBind *array_length_getter = nullptr;
+	MethodBind *property_filter = nullptr;
 	HashMap<String, Property> property_list;
 	Object *object = nullptr;
 
@@ -57,6 +58,10 @@ public:
 	template <typename G>
 	void set_array_length_getter(G p_array_length_getter) {
 		array_length_getter = create_method_bind(p_array_length_getter);
+	}
+	template <typename F>
+	void set_property_filter(F p_property_filter) {
+		property_filter = create_method_bind(p_property_filter);
 	}
 
 	// Register property without setter/getter. Only use when you don't need PropertyListHelper for _set/_get logic.
