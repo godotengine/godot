@@ -3104,7 +3104,23 @@ void SceneTreeDock::set_edited_scene(Node *p_scene) {
 	edited_scene = p_scene;
 }
 
+static bool _is_same_selection(const Vector<Node *> &p_first, const List<Node *> &p_second) {
+	if (p_first.size() != p_second.size()) {
+		return false;
+	}
+	for (Node *node : p_second) {
+		if (!p_first.has(node)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void SceneTreeDock::set_selection(const Vector<Node *> &p_nodes) {
+	// If the nodes selected are the same independently of order then return early.
+	if (_is_same_selection(p_nodes, editor_selection->get_full_selected_node_list())) {
+		return;
+	}
 	editor_selection->clear();
 	for (Node *node : p_nodes) {
 		editor_selection->add_node(node);
