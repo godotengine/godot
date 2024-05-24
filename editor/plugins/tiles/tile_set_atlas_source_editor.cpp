@@ -2938,6 +2938,18 @@ bool EditorInspectorPluginTileData::parse_property(Object *p_object, const Varia
 			add_property_editor(p_path, ep);
 			return true;
 		}
+	} else if (p_path.begins_with("custom_data_") && p_path.trim_prefix("custom_data_").is_valid_int()) {
+		// Custom data layers.
+		int layer_index = components[0].trim_prefix("custom_data_").to_int();
+		ERR_FAIL_COND_V(layer_index < 0, false);
+		EditorProperty *ep = EditorInspectorDefaultPlugin::get_editor_for_property(p_object, p_type, p_path, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
+		const TileSetAtlasSourceEditor::AtlasTileProxyObject *proxy_obj = Object::cast_to<TileSetAtlasSourceEditor::AtlasTileProxyObject>(p_object);
+		const TileSetAtlasSource *atlas_source = *proxy_obj->get_edited_tile_set_atlas_source();
+		ERR_FAIL_NULL_V(atlas_source, false);
+		const TileSet *tile_set = atlas_source->get_tile_set();
+		ERR_FAIL_NULL_V(tile_set, false);
+		add_property_editor(p_path, ep, false, tile_set->get_custom_data_layer_name(layer_index));
+		return true;
 	}
 	return false;
 }
