@@ -851,8 +851,9 @@ void GodotConvexPolygonShape3D::project_range(const Vector3 &p_normal, const Tra
 }
 
 Vector3 GodotConvexPolygonShape3D::get_support(const Vector3 &p_normal) const {
-	// Skip if there are no vertices in the mesh
-	if (mesh.vertices.size() == 0) {
+	// Skip if there are no vertices in the mesh or is not yet initialized
+	if (mesh.vertices.size() == 0 ||
+			extreme_vertices.size() == 0 || vertex_neighbors.size() == 0) {
 		return Vector3();
 	}
 
@@ -1099,8 +1100,8 @@ void GodotConvexPolygonShape3D::_setup(const Vector<Vector3> &p_vertices) {
 	if (err != OK) {
 		ERR_PRINT("Failed to build convex hull");
 	}
-	extreme_vertices.resize(0);
-	vertex_neighbors.resize(0);
+	LocalVector<int> new_extreme_vertices;
+	LocalVector<LocalVector<int>> new_vertex_neighbors;
 
 	AABB _aabb;
 
@@ -1133,8 +1134,8 @@ void GodotConvexPolygonShape3D::_setup(const Vector<Vector3> &p_vertices) {
 							max_support = s;
 						}
 					}
-					if (!extreme_vertices.has(best_vertex))
-						extreme_vertices.push_back(best_vertex);
+					if (!new_extreme_vertices.has(best_vertex))
+						new_extreme_vertices.push_back(best_vertex);
 				}
 			}
 		}
@@ -1142,13 +1143,15 @@ void GodotConvexPolygonShape3D::_setup(const Vector<Vector3> &p_vertices) {
 
 	// Record all the neighbors of each vertex.  This is used in get_support().
 
-	if (extreme_vertices.size() < mesh.vertices.size()) {
-		vertex_neighbors.resize(mesh.vertices.size());
+	if (new_extreme_vertices.size() < mesh.vertices.size()) {
+		new_vertex_neighbors.resize(mesh.vertices.size());
 		for (Geometry3D::MeshData::Edge &edge : mesh.edges) {
-			vertex_neighbors[edge.vertex_a].push_back(edge.vertex_b);
-			vertex_neighbors[edge.vertex_b].push_back(edge.vertex_a);
+			new_vertex_neighbors[edge.vertex_a].push_back(edge.vertex_b);
+			new_vertex_neighbors[edge.vertex_b].push_back(edge.vertex_a);
 		}
 	}
+	extreme_vertices = new_extreme_vertices;
+	vertex_neighbors = new_vertex_neighbors;
 }
 
 void GodotConvexPolygonShape3D::set_data(const Variant &p_data) {
