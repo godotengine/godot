@@ -397,6 +397,16 @@ Point2i Window::get_position_with_decorations() const {
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		return DisplayServer::get_singleton()->window_get_position_with_decorations(window_id);
 	}
+	if (visible && is_embedded() && !get_flag(Window::FLAG_BORDERLESS)) {
+		Size2 border_offset;
+		if (theme_cache.embedded_border.is_valid()) {
+			border_offset = theme_cache.embedded_border->get_offset();
+		}
+		if (theme_cache.embedded_unfocused_border.is_valid()) {
+			border_offset = border_offset.max(theme_cache.embedded_unfocused_border->get_offset());
+		}
+		return position - border_offset;
+	}
 	return position;
 }
 
@@ -404,6 +414,16 @@ Size2i Window::get_size_with_decorations() const {
 	ERR_READ_THREAD_GUARD_V(Size2i());
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		return DisplayServer::get_singleton()->window_get_size_with_decorations(window_id);
+	}
+	if (visible && is_embedded() && !get_flag(Window::FLAG_BORDERLESS)) {
+		Size2 border_size;
+		if (theme_cache.embedded_border.is_valid()) {
+			border_size = theme_cache.embedded_border->get_minimum_size();
+		}
+		if (theme_cache.embedded_unfocused_border.is_valid()) {
+			border_size = border_size.max(theme_cache.embedded_unfocused_border->get_minimum_size());
+		}
+		return size + border_size;
 	}
 	return size;
 }
