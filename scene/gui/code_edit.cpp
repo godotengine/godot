@@ -2777,7 +2777,7 @@ void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
 }
 
 int CodeEdit::_is_in_delimiter(int p_line, int p_column, DelimiterType p_type) const {
-	if (delimiters.size() == 0) {
+	if (delimiters.size() == 0 || p_line >= delimiter_cache.size()) {
 		return -1;
 	}
 	ERR_FAIL_INDEX_V(p_line, get_line_count(), 0);
