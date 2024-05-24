@@ -505,6 +505,14 @@ BitField<MouseButtonMask> DisplayServerX11::mouse_get_button_state() const {
 	return last_button_state;
 }
 
+void DisplayServerX11::mouse_set_button_flag(const MouseButtonMask p_mouse_mask) {
+	last_button_state.set_flag(p_mouse_mask);
+}
+
+void DisplayServerX11::mouse_clear_button_flag(const MouseButtonMask p_mouse_mask) {
+	last_button_state.clear_flag(p_mouse_mask);
+}
+
 void DisplayServerX11::clipboard_set(const String &p_text) {
 	_THREAD_SAFE_METHOD_
 

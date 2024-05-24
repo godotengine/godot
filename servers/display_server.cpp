@@ -502,6 +502,14 @@ BitField<MouseButtonMask> DisplayServer::mouse_get_button_state() const {
 	ERR_FAIL_V_MSG(0, "Mouse is not supported by this display server.");
 }
 
+void DisplayServer::mouse_set_button_flag(const MouseButtonMask p_mouse_mask) {
+	ERR_FAIL_MSG("Mouse is not supported by this display server.");
+}
+
+void DisplayServer::mouse_clear_button_flag(const MouseButtonMask p_mouse_mask) {
+	ERR_FAIL_MSG("Mouse is not supported by this display server.");
+}
+
 void DisplayServer::clipboard_set(const String &p_text) {
 	WARN_PRINT("Clipboard is not supported by this display server.");
 }

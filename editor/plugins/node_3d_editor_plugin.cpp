@@ -3052,6 +3052,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 				_remove_preview_node();
 			}
 		} break;
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			DisplayServer::get_singleton()->mouse_clear_button_flag(MouseButtonMask::LEFT);
+		} break;
 	}
 }
 
