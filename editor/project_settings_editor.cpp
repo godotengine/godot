@@ -54,7 +54,7 @@ void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 	if (saved_size != Rect2()) {
 		popup(saved_size);
 	} else {
-		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
+		popup_centered_clamped(Size2(1200, 700) * EDSCALE, 0.8);
 	}
 
 	_add_feature_overrides();

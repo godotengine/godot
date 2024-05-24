@@ -1,9 +1,10 @@
 import os
-import sys
 import platform
 import subprocess
-from methods import print_warning, print_error
+import sys
 from typing import TYPE_CHECKING
+
+from methods import print_error, print_warning
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -66,11 +67,11 @@ def get_min_target_api():
 
 
 def get_flags():
-    return [
-        ("arch", "arm64"),  # Default for convenience.
-        ("target", "template_debug"),
-        ("supported", ["mono"]),
-    ]
+    return {
+        "arch": "arm64",  # Default for convenience.
+        "target": "template_debug",
+        "supported": ["mono"],
+    }
 
 
 # Check if Android NDK version is installed

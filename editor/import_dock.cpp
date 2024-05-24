@@ -188,10 +188,20 @@ void ImportDock::_update_options(const String &p_path, const Ref<ConfigFile> &p_
 	params->checked.clear();
 	params->base_options_path = p_path;
 
+	HashMap<StringName, Variant> import_options;
+	List<String> section_keys;
+	p_config->get_section_keys("params", &section_keys);
+	for (const String &section_key : section_keys) {
+		import_options[section_key] = p_config->get_value("params", section_key);
+	}
+	if (params->importer.is_valid()) {
+		params->importer->handle_compatibility_options(import_options);
+	}
+
 	for (const ResourceImporter::ImportOption &E : options) {
 		params->properties.push_back(E.option);
-		if (p_config.is_valid() && p_config->has_section_key("params", E.option.name)) {
-			params->values[E.option.name] = p_config->get_value("params", E.option.name);
+		if (p_config.is_valid() && import_options.has(E.option.name)) {
+			params->values[E.option.name] = import_options[E.option.name];
 		} else {
 			params->values[E.option.name] = E.default_value;
 		}

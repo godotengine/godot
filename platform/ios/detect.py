@@ -1,8 +1,8 @@
 import os
 import sys
-from methods import print_error, detect_darwin_sdk_path
-
 from typing import TYPE_CHECKING
+
+from methods import detect_darwin_sdk_path, print_error
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -47,13 +47,13 @@ def get_doc_path():
 
 
 def get_flags():
-    return [
-        ("arch", "arm64"),  # Default for convenience.
-        ("target", "template_debug"),
-        ("use_volk", False),
-        ("supported", ["mono"]),
-        ("builtin_pcre2_with_jit", False),
-    ]
+    return {
+        "arch": "arm64",  # Default for convenience.
+        "target": "template_debug",
+        "use_volk": False,
+        "supported": ["mono"],
+        "builtin_pcre2_with_jit": False,
+    }
 
 
 def configure(env: "SConsEnvironment"):

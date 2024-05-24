@@ -6,8 +6,9 @@ Import("env")
 
 # The HTTP server "targets". Run with "scons p=web serve", or "scons p=web run"
 if "serve" in COMMAND_LINE_TARGETS or "run" in COMMAND_LINE_TARGETS:
-    from serve import serve
     import os
+
+    from serve import serve
 
     port = os.environ.get("GODOT_WEB_TEST_PORT", 8060)
     try:

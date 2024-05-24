@@ -958,6 +958,8 @@ void RendererSceneCull::instance_set_blend_shape_weight(RID p_instance, int p_sh
 	if (instance->mesh_instance.is_valid()) {
 		RSG::mesh_storage->mesh_instance_set_blend_shape_weight(instance->mesh_instance, p_shape, p_weight);
 	}
+
+	_instance_queue_update(instance, false, false);
 }
 
 void RendererSceneCull::instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material) {
