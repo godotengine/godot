@@ -4296,10 +4296,11 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 			}
 		} else {
 			// TODO: Don't load if validating: use completion cache.
+			String resource_type = ResourceLoader::get_resource_type(p_preload->resolved_path);
 
 			// Must load GDScript separately to permit cyclic references
 			// as ResourceLoader::load() detects and rejects those.
-			if (ResourceLoader::get_resource_type(p_preload->resolved_path) == "GDScript") {
+			if (resource_type == "GDScript") {
 				Error err = OK;
 				Ref<GDScript> res = GDScriptCache::get_shallow_script(p_preload->resolved_path, err, parser->script_path);
 				p_preload->resource = res;
@@ -4307,9 +4308,16 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 					push_error(vformat(R"(Could not preload resource script "%s".)", p_preload->resolved_path), p_preload->path);
 				}
 			} else {
-				p_preload->resource = ResourceLoader::load(p_preload->resolved_path);
-				if (p_preload->resource.is_null()) {
-					push_error(vformat(R"(Could not preload resource file "%s".)", p_preload->resolved_path), p_preload->path);
+				// Permit cyclic loading if `ResourceLoader` is currently loading that resource.
+				Error err = OK;
+				Ref<PackedScene> res = ResourceLoader::get_loading_resource(p_preload->resolved_path, &err);
+				if (err == OK) {
+					p_preload->resource = res;
+				} else {
+					p_preload->resource = ResourceLoader::load(p_preload->resolved_path);
+					if (p_preload->resource.is_null()) {
+						push_error(vformat(R"(Could not preload resource file "%s".)", p_preload->resolved_path), p_preload->path);
+					}
 				}
 			}
 		}

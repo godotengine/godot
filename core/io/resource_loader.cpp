@@ -454,6 +454,25 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 	return res;
 }
 
+// Returns a shallow reference of the loading resource.
+// Will fail if the resource is not loading.
+Ref<Resource> ResourceLoader::get_loading_resource(const String &p_path, Error *r_error) {
+	ERR_FAIL_COND_V(r_error == nullptr, nullptr);
+	*r_error = OK;
+
+	String local_path = _validate_local_path(p_path);
+	{
+		MutexLock thread_load_lock(thread_load_mutex);
+
+		if (!thread_load_tasks.has(local_path)) {
+			*r_error = FAILED;
+			return nullptr;
+		}
+
+		return thread_load_tasks[local_path].resource;
+	}
+}
+
 Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode) {
 	String local_path = _validate_local_path(p_path);
 

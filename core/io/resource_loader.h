@@ -204,6 +204,7 @@ public:
 	static bool is_within_load() { return load_nesting > 0; };
 
 	static Ref<Resource> load(const String &p_path, const String &p_type_hint = "", ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, Error *r_error = nullptr);
+	static Ref<Resource> get_loading_resource(const String &p_path, Error *r_error);
 	static bool exists(const String &p_path, const String &p_type_hint = "");
 
 	static void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions);
