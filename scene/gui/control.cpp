@@ -2588,14 +2588,16 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 	if (p_idx == 0) {
 		List<StringName> sn;
 		String pf = p_function;
-		if (pf == "add_color_override" || pf == "has_color" || pf == "has_color_override" || pf == "get_color") {
+		if (pf == "add_color_override" || pf == "has_color" || pf == "has_color_override" || pf == "get_color" || pf == "remove_color_override") {
 			Theme::get_default()->get_color_list(get_class(), &sn);
-		} else if (pf == "add_style_override" || pf == "has_style" || pf == "has_style_override" || pf == "get_style") {
+		} else if (pf == "add_stylebox_override" || pf == "has_stylebox" || pf == "has_stylebox_override" || pf == "get_stylebox" || pf == "remove_stylebox_override") {
 			Theme::get_default()->get_stylebox_list(get_class(), &sn);
-		} else if (pf == "add_font_override" || pf == "has_font" || pf == "has_font_override" || pf == "get_font") {
+		} else if (pf == "add_font_override" || pf == "has_font" || pf == "has_font_override" || pf == "get_font" || pf == "remove_font_override") {
 			Theme::get_default()->get_font_list(get_class(), &sn);
-		} else if (pf == "add_constant_override" || pf == "has_constant" || pf == "has_constant_override" || pf == "get_constant") {
+		} else if (pf == "add_constant_override" || pf == "has_constant" || pf == "has_constant_override" || pf == "get_constant" || pf == "remove_constant_override") {
 			Theme::get_default()->get_constant_list(get_class(), &sn);
+		} else if (pf == "add_icon_override" || pf == "has_icon" || pf == "has_icon_override" || pf == "get_icon" || pf == "remove_icon_override") {
+			Theme::get_default()->get_icon_list(get_class(), &sn);
 		}
 
 		sn.sort_custom<StringName::AlphCompare>();
