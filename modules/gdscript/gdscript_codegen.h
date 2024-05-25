@@ -149,7 +149,9 @@ public:
 	virtual void write_jump_if_shared(const Address &p_value) = 0;
 	virtual void write_end_jump_if_shared() = 0;
 	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type) = 0;
-	virtual void write_for_assignment(const Address &p_list) = 0;
+	virtual void write_for_container_assignment(const Address &p_list) = 0;
+	virtual void write_for_dictionary_type_check(const Address &p_second_variable) = 0;
+	virtual void write_for_second_variable_assignment(const Address &p_second_variable, const bool p_use_conversion) = 0;
 	virtual void write_for(const Address &p_variable, bool p_use_conversion) = 0;
 	virtual void write_endfor() = 0;
 	virtual void start_while_condition() = 0; // Used to allow a jump to the expression evaluation.

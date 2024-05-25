@@ -1987,20 +1987,43 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 	ForNode *n_for = alloc_node<ForNode>();
 
 	if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected loop variable name after "for".)")) {
-		n_for->variable = parse_identifier();
+		n_for->first_variable = parse_identifier();
 	}
 
 	if (match(GDScriptTokenizer::Token::COLON)) {
-		n_for->datatype_specifier = parse_type();
-		if (n_for->datatype_specifier == nullptr) {
+		n_for->first_datatype_specifier = parse_type();
+		if (n_for->first_datatype_specifier == nullptr) {
 			push_error(R"(Expected type specifier after ":".)");
 		}
 	}
 
-	if (n_for->datatype_specifier == nullptr) {
-		consume(GDScriptTokenizer::Token::IN, R"(Expected "in" or ":" after "for" variable name.)");
+	bool has_second_variable = false;
+	if (match(GDScriptTokenizer::Token::COMMA)) {
+		has_second_variable = true;
+		if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected second loop variable name after ",".)")) {
+			n_for->second_variable = parse_identifier();
+		}
+
+		if (match(GDScriptTokenizer::Token::COLON)) {
+			n_for->second_datatype_specifier = parse_type();
+			if (n_for->second_datatype_specifier == nullptr) {
+				push_error(R"(Expected type specifier after ":".)");
+			}
+		}
+	}
+
+	if (has_second_variable) {
+		if (n_for->second_datatype_specifier == nullptr) {
+			consume(GDScriptTokenizer::Token::IN, R"(Expected "in" or ":" after "for" variable name.)");
+		} else {
+			consume(GDScriptTokenizer::Token::IN, R"(Expected "in" after "for" variable type specifier.)");
+		}
 	} else {
-		consume(GDScriptTokenizer::Token::IN, R"(Expected "in" after "for" variable type specifier.)");
+		if (n_for->first_datatype_specifier == nullptr) {
+			consume(GDScriptTokenizer::Token::IN, R"(Expected "in", ",", or ":" after "for" variable name.)");
+		} else {
+			consume(GDScriptTokenizer::Token::IN, R"(Expected "in" or "," after "for" variable type specifier.)");
+		}
 	}
 
 	n_for->list = parse_expression(false);
@@ -2020,12 +2043,19 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 	can_continue = true;
 
 	SuiteNode *suite = alloc_node<SuiteNode>();
-	if (n_for->variable) {
-		const SuiteNode::Local &local = current_suite->get_local(n_for->variable->name);
+	if (n_for->first_variable) {
+		const SuiteNode::Local &local = current_suite->get_local(n_for->first_variable->name);
 		if (local.type != SuiteNode::Local::UNDEFINED) {
-			push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), n_for->variable->name), n_for->variable);
+			push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), n_for->first_variable->name), n_for->first_variable);
 		}
-		suite->add_local(SuiteNode::Local(n_for->variable, current_function));
+		suite->add_local(SuiteNode::Local(n_for->first_variable, current_function));
+	}
+	if (n_for->second_variable) {
+		const SuiteNode::Local &local = current_suite->get_local(n_for->second_variable->name);
+		if (local.type != SuiteNode::Local::UNDEFINED) {
+			push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), n_for->second_variable->name), n_for->second_variable);
+		}
+		suite->add_local(SuiteNode::Local(n_for->second_variable, current_function));
 	}
 	suite->is_in_loop = true;
 	n_for->loop = parse_suite(R"("for" block)", suite);
@@ -5350,7 +5380,7 @@ void GDScriptParser::TreePrinter::print_enum(EnumNode *p_enum) {
 
 void GDScriptParser::TreePrinter::print_for(ForNode *p_for) {
 	push_text("For ");
-	print_identifier(p_for->variable);
+	print_identifier(p_for->first_variable);
 	push_text(" IN ");
 	print_expression(p_for->list);
 	push_line(" :");

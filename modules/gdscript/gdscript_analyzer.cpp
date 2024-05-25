@@ -2126,12 +2126,13 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 		}
 	}
 
-	GDScriptParser::DataType variable_type;
+	GDScriptParser::DataType first_variable_type;
+	GDScriptParser::DataType second_variable_type;
 	String list_visible_type = "<unresolved type>";
 	if (list_resolved) {
-		variable_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
-		variable_type.kind = GDScriptParser::DataType::BUILTIN;
-		variable_type.builtin_type = Variant::INT;
+		first_variable_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+		first_variable_type.kind = GDScriptParser::DataType::BUILTIN;
+		first_variable_type.builtin_type = Variant::INT;
 		list_visible_type = "Array[int]"; // NOTE: `range()` has `Array` return type.
 	} else if (p_for->list) {
 		resolve_node(p_for->list, false);
@@ -2141,75 +2142,114 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 			mark_node_unsafe(p_for->list);
 		}
 		if (list_type.is_variant()) {
-			variable_type.kind = GDScriptParser::DataType::VARIANT;
+			first_variable_type.kind = GDScriptParser::DataType::VARIANT;
 			mark_node_unsafe(p_for->list);
 		} else if (list_type.has_container_element_type(0)) {
-			variable_type = list_type.get_container_element_type(0);
-			variable_type.type_source = list_type.type_source;
+			first_variable_type = list_type.get_container_element_type(0);
+			first_variable_type.type_source = list_type.type_source;
 		} else if (list_type.is_typed_container_type()) {
-			variable_type = list_type.get_typed_container_type();
-			variable_type.type_source = list_type.type_source;
+			first_variable_type = list_type.get_typed_container_type();
+			first_variable_type.type_source = list_type.type_source;
 		} else if (list_type.builtin_type == Variant::INT || list_type.builtin_type == Variant::FLOAT || list_type.builtin_type == Variant::STRING) {
-			variable_type.type_source = list_type.type_source;
-			variable_type.kind = GDScriptParser::DataType::BUILTIN;
-			variable_type.builtin_type = list_type.builtin_type;
+			first_variable_type.type_source = list_type.type_source;
+			first_variable_type.kind = GDScriptParser::DataType::BUILTIN;
+			first_variable_type.builtin_type = list_type.builtin_type;
 		} else if (list_type.builtin_type == Variant::VECTOR2I || list_type.builtin_type == Variant::VECTOR3I) {
-			variable_type.type_source = list_type.type_source;
-			variable_type.kind = GDScriptParser::DataType::BUILTIN;
-			variable_type.builtin_type = Variant::INT;
+			first_variable_type.type_source = list_type.type_source;
+			first_variable_type.kind = GDScriptParser::DataType::BUILTIN;
+			first_variable_type.builtin_type = Variant::INT;
 		} else if (list_type.builtin_type == Variant::VECTOR2 || list_type.builtin_type == Variant::VECTOR3) {
-			variable_type.type_source = list_type.type_source;
-			variable_type.kind = GDScriptParser::DataType::BUILTIN;
-			variable_type.builtin_type = Variant::FLOAT;
+			first_variable_type.type_source = list_type.type_source;
+			first_variable_type.kind = GDScriptParser::DataType::BUILTIN;
+			first_variable_type.builtin_type = Variant::FLOAT;
 		} else if (list_type.builtin_type == Variant::OBJECT) {
 			GDScriptParser::DataType return_type;
 			List<GDScriptParser::DataType> par_types;
 			int default_arg_count = 0;
 			BitField<MethodFlags> method_flags;
 			if (get_function_signature(p_for->list, false, list_type, CoreStringName(_iter_get), return_type, par_types, default_arg_count, method_flags)) {
-				variable_type = return_type;
-				variable_type.type_source = list_type.type_source;
+				first_variable_type = return_type;
+				first_variable_type.type_source = list_type.type_source;
 			} else if (!list_type.is_hard_type()) {
-				variable_type.kind = GDScriptParser::DataType::VARIANT;
+				first_variable_type.kind = GDScriptParser::DataType::VARIANT;
 			} else {
 				push_error(vformat(R"(Unable to iterate on object of type "%s".)", list_type.to_string()), p_for->list);
 			}
 		} else if (list_type.builtin_type == Variant::ARRAY || list_type.builtin_type == Variant::DICTIONARY || !list_type.is_hard_type()) {
-			variable_type.kind = GDScriptParser::DataType::VARIANT;
+			first_variable_type.kind = GDScriptParser::DataType::VARIANT;
 		} else {
 			push_error(vformat(R"(Unable to iterate on value of type "%s".)", list_type.to_string()), p_for->list);
 		}
+
+		if (p_for->second_variable) {
+			if (list_type.is_variant()) {
+				mark_node_unsafe(p_for->second_variable);
+			} else if (list_type.builtin_type != Variant::DICTIONARY) {
+				push_error(vformat(R"(Unable to iterate "%s" as a key-value pair.)", list_type.to_string()), p_for->second_variable);
+			}
+		}
 	}
 
-	if (p_for->variable) {
-		if (p_for->datatype_specifier) {
-			GDScriptParser::DataType specified_type = type_from_metatype(resolve_datatype(p_for->datatype_specifier));
+	if (p_for->first_variable) {
+		if (p_for->first_datatype_specifier) {
+			GDScriptParser::DataType specified_type = type_from_metatype(resolve_datatype(p_for->first_datatype_specifier));
 			if (!specified_type.is_variant()) {
-				if (variable_type.is_variant() || !variable_type.is_hard_type()) {
-					mark_node_unsafe(p_for->variable);
-					p_for->use_conversion_assign = true;
-				} else if (!is_type_compatible(specified_type, variable_type, true, p_for->variable)) {
-					if (is_type_compatible(variable_type, specified_type)) {
-						mark_node_unsafe(p_for->variable);
-						p_for->use_conversion_assign = true;
+				if (first_variable_type.is_variant() || !first_variable_type.is_hard_type()) {
+					mark_node_unsafe(p_for->first_variable);
+					p_for->first_use_conversion_assign = true;
+				} else if (!is_type_compatible(specified_type, first_variable_type, true, p_for->first_variable)) {
+					if (is_type_compatible(first_variable_type, specified_type)) {
+						mark_node_unsafe(p_for->first_variable);
+						p_for->first_use_conversion_assign = true;
 					} else {
-						push_error(vformat(R"(Unable to iterate on value of type "%s" with variable of type "%s".)", list_visible_type, specified_type.to_string()), p_for->datatype_specifier);
+						push_error(vformat(R"(Unable to iterate on value of type "%s" with variable of type "%s".)", list_visible_type, specified_type.to_string()), p_for->first_datatype_specifier);
 					}
-				} else if (!is_type_compatible(specified_type, variable_type)) {
-					p_for->use_conversion_assign = true;
+				} else if (!is_type_compatible(specified_type, first_variable_type)) {
+					p_for->first_use_conversion_assign = true;
 				}
 				if (p_for->list && p_for->list->type == GDScriptParser::Node::ARRAY) {
 					update_array_literal_element_type(static_cast<GDScriptParser::ArrayNode *>(p_for->list), specified_type);
 				}
 			}
-			p_for->variable->set_datatype(specified_type);
+			p_for->first_variable->set_datatype(specified_type);
 		} else {
-			p_for->variable->set_datatype(variable_type);
+			p_for->first_variable->set_datatype(first_variable_type);
 #ifdef DEBUG_ENABLED
-			if (variable_type.is_hard_type()) {
-				parser->push_warning(p_for->variable, GDScriptWarning::INFERRED_DECLARATION, R"("for" iterator variable)", p_for->variable->name);
+			if (first_variable_type.is_hard_type()) {
+				parser->push_warning(p_for->first_variable, GDScriptWarning::INFERRED_DECLARATION, R"("for" iterator variable)", p_for->first_variable->name);
 			} else {
-				parser->push_warning(p_for->variable, GDScriptWarning::UNTYPED_DECLARATION, R"("for" iterator variable)", p_for->variable->name);
+				parser->push_warning(p_for->first_variable, GDScriptWarning::UNTYPED_DECLARATION, R"("for" iterator variable)", p_for->first_variable->name);
+			}
+#endif
+		}
+	}
+
+	if (p_for->second_variable) {
+		if (p_for->second_datatype_specifier) {
+			GDScriptParser::DataType second_specified_type = type_from_metatype(resolve_datatype(p_for->second_datatype_specifier));
+			if (!second_specified_type.is_variant()) {
+				if (second_variable_type.is_variant() || !second_variable_type.is_hard_type()) {
+					mark_node_unsafe(p_for->second_variable);
+					p_for->second_use_conversion_assign = true;
+				} else if (!is_type_compatible(second_specified_type, second_variable_type, true, p_for->second_variable)) {
+					if (is_type_compatible(second_variable_type, second_specified_type)) {
+						mark_node_unsafe(p_for->second_variable);
+						p_for->second_use_conversion_assign = true;
+					} else {
+						push_error(vformat(R"(Unable to iterate on value of type "%s" with second variable of type "%s".)", list_visible_type, second_specified_type.to_string()), p_for->second_datatype_specifier);
+					}
+				} else if (!is_type_compatible(second_specified_type, second_variable_type)) {
+					p_for->second_use_conversion_assign = true;
+				}
+			}
+			p_for->second_variable->set_datatype(second_specified_type);
+		} else {
+			p_for->second_variable->set_datatype(second_variable_type);
+#ifdef DEBUG_ENABLED
+			if (second_variable_type.is_hard_type()) {
+				parser->push_warning(p_for->second_variable, GDScriptWarning::INFERRED_DECLARATION, R"("for" iterator second variable)", p_for->second_variable->name);
+			} else {
+				parser->push_warning(p_for->second_variable, GDScriptWarning::UNTYPED_DECLARATION, R"("for" iterator second variable)", p_for->second_variable->name);
 			}
 #endif
 		}
@@ -2218,8 +2258,11 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 	resolve_suite(p_for->loop);
 	p_for->set_datatype(p_for->loop->get_datatype());
 #ifdef DEBUG_ENABLED
-	if (p_for->variable) {
-		is_shadowing(p_for->variable, R"("for" iterator variable)", true);
+	if (p_for->first_variable) {
+		is_shadowing(p_for->first_variable, R"("for" iterator variable)", true);
+	}
+	if (p_for->second_variable) {
+		is_shadowing(p_for->second_variable, R"("for" iterator second variable)", true);
 	}
 #endif
 }

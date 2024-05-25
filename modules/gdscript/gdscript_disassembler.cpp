@@ -996,6 +996,13 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 3;
 			} break;
+			case OPCODE_FOR_SECOND_VARIABLE_DICT_TYPE_TEST: {
+				text += "for_loop_second_var_type_test ";
+				text += DADDR(1);
+				text += " is Dictionary";
+
+				incr += 2;
+			} break;
 
 #define DISASSEMBLE_ITERATE(m_type)      \
 	case OPCODE_ITERATE_##m_type: {      \
