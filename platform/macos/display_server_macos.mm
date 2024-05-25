@@ -3315,9 +3315,11 @@ void DisplayServerMacOS::delete_status_indicator(IndicatorID p_id) {
 }
 
 bool DisplayServerMacOS::is_window_transparency_available() const {
+#if defined(RD_ENABLED)
 	if (rendering_device && !rendering_device->is_composite_alpha_supported()) {
 		return false;
 	}
+#endif
 	return OS::get_singleton()->is_layered_allowed();
 }
 
