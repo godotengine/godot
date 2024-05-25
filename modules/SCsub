@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import methods
 import os
+
+import methods
 
 Import("env")
 

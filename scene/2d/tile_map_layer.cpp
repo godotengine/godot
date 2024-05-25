@@ -340,7 +340,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 					}
 
 					// Drawing the tile in the canvas item.
-					TileMap::draw_tile(ci, local_tile_pos - rendering_quadrant->canvas_items_position, tile_set, cell_data.cell.source_id, cell_data.cell.get_atlas_coords(), cell_data.cell.alternative_tile, -1, get_self_modulate(), tile_data, random_animation_offset);
+					draw_tile(ci, local_tile_pos - rendering_quadrant->canvas_items_position, tile_set, cell_data.cell.source_id, cell_data.cell.get_atlas_coords(), cell_data.cell.alternative_tile, -1, get_self_modulate(), tile_data, random_animation_offset);
 				}
 
 				// Reset physics interpolation for any recreated canvas items.
@@ -603,6 +603,7 @@ void TileMapLayer::_rendering_occluders_update_cell(CellData &r_cell_data) {
 						rs->canvas_light_occluder_set_polygon(occluder, tile_data->get_occluder(occlusion_layer_index, flip_h, flip_v, transpose)->get_rid());
 						rs->canvas_light_occluder_attach_to_canvas(occluder, get_canvas());
 						rs->canvas_light_occluder_set_light_mask(occluder, tile_set->get_occlusion_layer_light_mask(occlusion_layer_index));
+						rs->canvas_light_occluder_set_as_sdf_collision(occluder, tile_set->get_occlusion_layer_sdf_collision(occlusion_layer_index));
 					} else {
 						// Clear occluder.
 						if (occluder.is_valid()) {
@@ -1695,18 +1696,18 @@ void TileMapLayer::_notification(int p_what) {
 			_internal_update(true);
 		} break;
 
-		case TileMap::NOTIFICATION_ENTER_CANVAS: {
+		case NOTIFICATION_ENTER_CANVAS: {
 			dirty.flags[DIRTY_FLAGS_LAYER_IN_CANVAS] = true;
 			_queue_internal_update();
 		} break;
 
-		case TileMap::NOTIFICATION_EXIT_CANVAS: {
+		case NOTIFICATION_EXIT_CANVAS: {
 			dirty.flags[DIRTY_FLAGS_LAYER_IN_CANVAS] = true;
 			// Update immediately on exiting, and force cleanup.
 			_internal_update(true);
 		} break;
 
-		case TileMap::NOTIFICATION_VISIBILITY_CHANGED: {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 			dirty.flags[DIRTY_FLAGS_LAYER_VISIBILITY] = true;
 			_queue_internal_update();
 		} break;
@@ -2161,6 +2162,91 @@ TileMapCell TileMapLayer::get_cell(const Vector2i &p_coords) const {
 	}
 }
 
+void TileMapLayer::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame, Color p_modulation, const TileData *p_tile_data_override, real_t p_normalized_animation_offset) {
+	ERR_FAIL_COND(p_tile_set.is_null());
+	ERR_FAIL_COND(!p_tile_set->has_source(p_atlas_source_id));
+	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_tile(p_atlas_coords));
+	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_alternative_tile(p_atlas_coords, p_alternative_tile));
+	TileSetSource *source = *p_tile_set->get_source(p_atlas_source_id);
+	TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+	if (atlas_source) {
+		// Check for the frame.
+		if (p_frame >= 0) {
+			ERR_FAIL_INDEX(p_frame, atlas_source->get_tile_animation_frames_count(p_atlas_coords));
+		}
+
+		// Get the texture.
+		Ref<Texture2D> tex = atlas_source->get_runtime_texture();
+		if (tex.is_null()) {
+			return;
+		}
+
+		// Check if we are in the texture, return otherwise.
+		Vector2i grid_size = atlas_source->get_atlas_grid_size();
+		if (p_atlas_coords.x >= grid_size.x || p_atlas_coords.y >= grid_size.y) {
+			return;
+		}
+
+		// Get tile data.
+		const TileData *tile_data = p_tile_data_override ? p_tile_data_override : atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile);
+
+		// Get the tile modulation.
+		Color modulate = tile_data->get_modulate() * p_modulation;
+
+		// Compute the offset.
+		Vector2 tile_offset = tile_data->get_texture_origin();
+
+		// Get destination rect.
+		Rect2 dest_rect;
+		dest_rect.size = atlas_source->get_runtime_tile_texture_region(p_atlas_coords).size;
+		dest_rect.size.x += FP_ADJUST;
+		dest_rect.size.y += FP_ADJUST;
+
+		bool transpose = tile_data->get_transpose() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_TRANSPOSE);
+		if (transpose) {
+			dest_rect.position = (p_position - Vector2(dest_rect.size.y, dest_rect.size.x) / 2 - tile_offset);
+		} else {
+			dest_rect.position = (p_position - dest_rect.size / 2 - tile_offset);
+		}
+
+		if (tile_data->get_flip_h() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_H)) {
+			dest_rect.size.x = -dest_rect.size.x;
+		}
+
+		if (tile_data->get_flip_v() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_V)) {
+			dest_rect.size.y = -dest_rect.size.y;
+		}
+
+		// Draw the tile.
+		if (p_frame >= 0) {
+			Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, p_frame);
+			tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
+		} else if (atlas_source->get_tile_animation_frames_count(p_atlas_coords) == 1) {
+			Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, 0);
+			tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
+		} else {
+			real_t speed = atlas_source->get_tile_animation_speed(p_atlas_coords);
+			real_t animation_duration = atlas_source->get_tile_animation_total_duration(p_atlas_coords) / speed;
+			real_t animation_offset = p_normalized_animation_offset * animation_duration;
+			// Accumulate durations unaffected by the speed to avoid accumulating floating point division errors.
+			// Aka do `sum(duration[i]) / speed` instead of `sum(duration[i] / speed)`.
+			real_t time_unscaled = 0.0;
+			for (int frame = 0; frame < atlas_source->get_tile_animation_frames_count(p_atlas_coords); frame++) {
+				real_t frame_duration_unscaled = atlas_source->get_tile_animation_frame_duration(p_atlas_coords, frame);
+				real_t slice_start = time_unscaled / speed;
+				real_t slice_end = (time_unscaled + frame_duration_unscaled) / speed;
+				RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, animation_duration, slice_start, slice_end, animation_offset);
+
+				Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, frame);
+				tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
+
+				time_unscaled += frame_duration_unscaled;
+			}
+			RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, 1.0, 0.0, 1.0, 0.0);
+		}
+	}
+}
+
 void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile) {
 	// Set the current cell tile (using integer position).
 	Vector2i pk(p_coords);
@@ -2211,7 +2297,7 @@ void TileMapLayer::erase_cell(const Vector2i &p_coords) {
 }
 
 void TileMapLayer::fix_invalid_tiles() {
-	ERR_FAIL_COND_MSG(tile_set.is_null(), "Cannot call fix_invalid_tiles() on a TileMap without a valid TileSet.");
+	ERR_FAIL_COND_MSG(tile_set.is_null(), "Cannot call fix_invalid_tiles() on a TileMapLayer without a valid TileSet.");
 
 	RBSet<Vector2i> coords;
 	for (const KeyValue<Vector2i, CellData> &E : tile_map_layer_data) {

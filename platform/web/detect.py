@@ -1,18 +1,19 @@
 import os
 import sys
+from typing import TYPE_CHECKING
 
 from emscripten_helpers import (
-    run_closure_compiler,
-    create_engine_file,
+    add_js_externs,
     add_js_libraries,
     add_js_pre,
-    add_js_externs,
+    create_engine_file,
     create_template_zip,
     get_template_zip_path,
+    run_closure_compiler,
 )
-from methods import print_warning, print_error, get_compiler_version
 from SCons.Util import WhereIs
-from typing import TYPE_CHECKING
+
+from methods import get_compiler_version, print_error, print_warning
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -64,21 +65,21 @@ def get_doc_path():
 
 
 def get_flags():
-    return [
-        ("arch", "wasm32"),
-        ("target", "template_debug"),
-        ("builtin_pcre2_with_jit", False),
-        ("vulkan", False),
+    return {
+        "arch": "wasm32",
+        "target": "template_debug",
+        "builtin_pcre2_with_jit": False,
+        "vulkan": False,
         # Embree is heavy and requires too much memory (GH-70621).
-        ("module_raycast_enabled", False),
+        "module_raycast_enabled": False,
         # Use -Os to prioritize optimizing for reduced file size. This is
         # particularly valuable for the web platform because it directly
         # decreases download time.
         # -Os reduces file size by around 5 MiB over -O3. -Oz only saves about
         # 100 KiB over -Os, which does not justify the negative impact on
         # run-time performance.
-        ("optimize", "size"),
-    ]
+        "optimize": "size",
+    }
 
 
 def configure(env: "SConsEnvironment"):

@@ -1381,6 +1381,10 @@ Error FBXDocument::_parse_animations(Ref<FBXState> p_state) {
 		additional_data["time_end"] = fbx_anim_stack->time_end;
 		animation->set_additional_data("GODOT_animation_time_begin_time_end", additional_data);
 		ufbx_bake_opts opts = {};
+		opts.resample_rate = p_state->get_bake_fps();
+		opts.minimum_sample_rate = p_state->get_bake_fps();
+		opts.max_keyframe_segments = 1024;
+
 		ufbx_error error;
 		ufbx_unique_ptr<ufbx_baked_anim> fbx_baked_anim{ ufbx_bake_anim(fbx_scene, fbx_anim_stack->anim, &opts, &error) };
 		if (!fbx_baked_anim) {
@@ -1759,7 +1763,7 @@ void FBXDocument::_generate_skeleton_bone_node(Ref<FBXState> p_state, const GLTF
 	}
 }
 
-void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_animation_player, const GLTFAnimationIndex p_index, const float p_bake_fps, const bool p_trimming, const bool p_remove_immutable_tracks) {
+void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_animation_player, const GLTFAnimationIndex p_index, const bool p_trimming, const bool p_remove_immutable_tracks) {
 	Ref<GLTFAnimation> anim = p_state->animations[p_index];
 
 	String anim_name = anim->get_name();
@@ -1771,7 +1775,7 @@ void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_an
 	Ref<Animation> animation;
 	animation.instantiate();
 	animation->set_name(anim_name);
-	animation->set_step(1.0 / p_bake_fps);
+	animation->set_step(1.0 / p_state->get_bake_fps());
 
 	if (anim->get_loop()) {
 		animation->set_loop_mode(Animation::LOOP_LINEAR);
@@ -2118,6 +2122,7 @@ Node *FBXDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool
 	ERR_FAIL_COND_V(state.is_null(), nullptr);
 	ERR_FAIL_NULL_V(state, nullptr);
 	ERR_FAIL_INDEX_V(0, state->root_nodes.size(), nullptr);
+	p_state->set_bake_fps(p_bake_fps);
 	GLTFNodeIndex fbx_root = state->root_nodes.write[0];
 	Node *fbx_root_node = state->get_scene_node(fbx_root);
 	Node *root = fbx_root_node;
@@ -2131,7 +2136,7 @@ Node *FBXDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool
 		root->add_child(ap, true);
 		ap->set_owner(root);
 		for (int i = 0; i < state->animations.size(); i++) {
-			_import_animation(state, ap, i, p_bake_fps, p_trimming, p_remove_immutable_tracks);
+			_import_animation(state, ap, i, p_trimming, p_remove_immutable_tracks);
 		}
 	}
 	ERR_FAIL_NULL_V(root, nullptr);

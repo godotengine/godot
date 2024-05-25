@@ -50,6 +50,7 @@ void OpenXRExtensionWrapperExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_on_session_created, "session");
 	GDVIRTUAL_BIND(_on_process);
 	GDVIRTUAL_BIND(_on_pre_render);
+	GDVIRTUAL_BIND(_on_main_swapchains_created);
 	GDVIRTUAL_BIND(_on_session_destroyed);
 	GDVIRTUAL_BIND(_on_state_idle);
 	GDVIRTUAL_BIND(_on_state_ready);
@@ -196,6 +197,10 @@ void OpenXRExtensionWrapperExtension::on_process() {
 
 void OpenXRExtensionWrapperExtension::on_pre_render() {
 	GDVIRTUAL_CALL(_on_pre_render);
+}
+
+void OpenXRExtensionWrapperExtension::on_main_swapchains_created() {
+	GDVIRTUAL_CALL(_on_main_swapchains_created);
 }
 
 void OpenXRExtensionWrapperExtension::on_session_destroyed() {

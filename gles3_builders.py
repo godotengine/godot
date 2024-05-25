@@ -1,8 +1,9 @@
 """Functions used to generate source files during build time"""
 
 import os.path
-from methods import print_error
 from typing import Optional
+
+from methods import print_error
 
 
 class GLES3HeaderStruct:
@@ -91,11 +92,11 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
                 includeline = line.replace("#include ", "").strip()[1:-1]
 
                 included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
-                if not included_file in header_data.vertex_included_files and header_data.reading == "vertex":
+                if included_file not in header_data.vertex_included_files and header_data.reading == "vertex":
                     header_data.vertex_included_files += [included_file]
                     if include_file_in_gles3_header(included_file, header_data, depth + 1) is None:
                         print_error(f'In file "{filename}": #include "{includeline}" could not be found!"')
-                elif not included_file in header_data.fragment_included_files and header_data.reading == "fragment":
+                elif included_file not in header_data.fragment_included_files and header_data.reading == "fragment":
                     header_data.fragment_included_files += [included_file]
                     if include_file_in_gles3_header(included_file, header_data, depth + 1) is None:
                         print_error(f'In file "{filename}": #include "{includeline}" could not be found!"')
@@ -121,7 +122,7 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
                         # unfiorm array
                         x = x[: x.find("[")]
 
-                    if not x in header_data.texunit_names:
+                    if x not in header_data.texunit_names:
                         header_data.texunits += [(x, texunit)]
                         header_data.texunit_names += [x]
 
@@ -142,7 +143,7 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
                         # unfiorm array
                         x = x[: x.find("[")]
 
-                    if not x in header_data.ubo_names:
+                    if x not in header_data.ubo_names:
                         header_data.ubos += [(x, ubo)]
                         header_data.ubo_names += [x]
 
@@ -157,7 +158,7 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
                         # unfiorm array
                         x = x[: x.find("[")]
 
-                    if not x in header_data.uniforms:
+                    if x not in header_data.uniforms:
                         header_data.uniforms += [x]
 
             if (line.strip().find("out ") == 0 or line.strip().find("flat ") == 0) and line.find("tfb:") != -1:

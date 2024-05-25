@@ -847,12 +847,13 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 	ERR_FAIL_INDEX(p_bone_idx, bone_size);
 
 	Bone *bonesptr = bones.ptrw();
-	List<int> bones_to_process = List<int>();
+	thread_local LocalVector<int> bones_to_process;
+	bones_to_process.clear();
 	bones_to_process.push_back(p_bone_idx);
 
-	while (bones_to_process.size() > 0) {
-		int current_bone_idx = bones_to_process.front()->get();
-		bones_to_process.erase(current_bone_idx);
+	uint32_t index = 0;
+	while (index < bones_to_process.size()) {
+		int current_bone_idx = bones_to_process[index];
 
 		Bone &b = bonesptr[current_bone_idx];
 		bool bone_enabled = b.enabled && !show_rest_only;
@@ -905,6 +906,8 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 		for (int i = 0; i < child_bone_size; i++) {
 			bones_to_process.push_back(b.child_bones[i]);
 		}
+
+		index++;
 	}
 }
 

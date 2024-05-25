@@ -1,4 +1,4 @@
-const Features = { // eslint-disable-line no-unused-vars
+const Features = {
 	/**
 	 * Check whether WebGL is available. Optionally, specify a particular version of WebGL to check for.
 	 *

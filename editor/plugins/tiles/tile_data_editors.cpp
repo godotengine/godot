@@ -144,7 +144,8 @@ void GenericTilePolygonEditor::_base_control_draw() {
 	}
 
 	// Draw tile-related things.
-	Size2 tile_size = tile_set->get_tile_size();
+	const Size2 base_tile_size = tile_set->get_tile_size();
+	const Size2 tile_size = background_region.size;
 
 	Transform2D xform;
 	xform.set_origin(base_control->get_size() / 2 + panning);
@@ -170,12 +171,16 @@ void GenericTilePolygonEditor::_base_control_draw() {
 
 	// Draw grid.
 	if (current_snap_option == SNAP_GRID) {
-		Vector2 spacing = tile_size / snap_subdivision->get_value();
+		Vector2 spacing = base_tile_size / snap_subdivision->get_value();
 		Vector2 offset = -tile_size / 2;
+		int w = snap_subdivision->get_value() * (tile_size / base_tile_size).x;
+		int h = snap_subdivision->get_value() * (tile_size / base_tile_size).y;
 
-		for (int i = 1; i < snap_subdivision->get_value(); i++) {
-			base_control->draw_line(Vector2(spacing.x * i, 0) + offset, Vector2(spacing.x * i, tile_size.y) + offset, Color(1, 1, 1, 0.33));
-			base_control->draw_line(Vector2(0, spacing.y * i) + offset, Vector2(tile_size.x, spacing.y * i) + offset, Color(1, 1, 1, 0.33));
+		for (int y = 1; y < h; y++) {
+			for (int x = 1; x < w; x++) {
+				base_control->draw_line(Vector2(spacing.x * x, 0) + offset, Vector2(spacing.x * x, tile_size.y) + offset, Color(1, 1, 1, 0.33));
+				base_control->draw_line(Vector2(0, spacing.y * y) + offset, Vector2(tile_size.x, spacing.y * y) + offset, Color(1, 1, 1, 0.33));
+			}
 		}
 	}
 
@@ -1320,7 +1325,7 @@ TileDataDefaultEditor::TileDataDefaultEditor() {
 	picker_button = memnew(Button);
 	picker_button->set_theme_type_variation("FlatButton");
 	picker_button->set_toggle_mode(true);
-	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", TTR("Picker"), Key::P));
+	picker_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/picker"));
 	toolbar->add_child(picker_button);
 }
 
@@ -2807,7 +2812,7 @@ TileDataTerrainsEditor::TileDataTerrainsEditor() {
 	picker_button = memnew(Button);
 	picker_button->set_theme_type_variation("FlatButton");
 	picker_button->set_toggle_mode(true);
-	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", TTR("Picker"), Key::P));
+	picker_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/picker"));
 	toolbar->add_child(picker_button);
 
 	// Setup

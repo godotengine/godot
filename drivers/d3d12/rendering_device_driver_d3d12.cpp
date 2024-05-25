@@ -2199,9 +2199,21 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 		swap_chain_desc.SampleDesc.Count = 1;
 		swap_chain_desc.Flags = creation_flags;
 		swap_chain_desc.Scaling = DXGI_SCALING_NONE;
+		if (OS::get_singleton()->is_layered_allowed()) {
+			swap_chain_desc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
+			has_comp_alpha[(uint64_t)p_cmd_queue.id] = true;
+		} else {
+			swap_chain_desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+			has_comp_alpha[(uint64_t)p_cmd_queue.id] = false;
+		}
 
 		ComPtr<IDXGISwapChain1> swap_chain_1;
 		res = context_driver->dxgi_factory_get()->CreateSwapChainForHwnd(command_queue->d3d_queue.Get(), surface->hwnd, &swap_chain_desc, nullptr, nullptr, swap_chain_1.GetAddressOf());
+		if (!SUCCEEDED(res) && swap_chain_desc.AlphaMode != DXGI_ALPHA_MODE_IGNORE) {
+			swap_chain_desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+			has_comp_alpha[(uint64_t)p_cmd_queue.id] = false;
+			res = context_driver->dxgi_factory_get()->CreateSwapChainForHwnd(command_queue->d3d_queue.Get(), surface->hwnd, &swap_chain_desc, nullptr, nullptr, swap_chain_1.GetAddressOf());
+		}
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 
 		swap_chain_1.As(&swap_chain->d3d_swap_chain);
@@ -5978,6 +5990,13 @@ String RenderingDeviceDriverD3D12::get_pipeline_cache_uuid() const {
 
 const RDD::Capabilities &RenderingDeviceDriverD3D12::get_capabilities() const {
 	return device_capabilities;
+}
+
+bool RenderingDeviceDriverD3D12::is_composite_alpha_supported(CommandQueueID p_queue) const {
+	if (has_comp_alpha.has((uint64_t)p_queue.id)) {
+		return has_comp_alpha[(uint64_t)p_queue.id];
+	}
+	return false;
 }
 
 /******************/

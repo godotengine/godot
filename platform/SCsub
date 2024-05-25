@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import methods
 from glob import glob
 from pathlib import Path
+
+import methods
 
 Import("env")
 

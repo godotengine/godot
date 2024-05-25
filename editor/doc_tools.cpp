@@ -344,25 +344,6 @@ void DocTools::merge_from(const DocTools &p_data) {
 		merge_theme_properties(c.theme_properties, cf.theme_properties);
 
 		merge_operators(c.operators, cf.operators);
-
-#ifndef MODULE_MONO_ENABLED
-		// The Mono module defines some properties that we want to keep when
-		// re-generating docs with a non-Mono build, to prevent pointless diffs
-		// (and loss of descriptions) depending on the config of the doc writer.
-		// We use a horrible hack to force keeping the relevant properties,
-		// hardcoded below. At least it's an ad hoc hack... ¯\_(ツ)_/¯
-		// Don't show this to your kids.
-		if (c.name == "@GlobalScope") {
-			// Retrieve GodotSharp singleton.
-			for (int j = 0; j < cf.properties.size(); j++) {
-				if (cf.properties[j].name == "GodotSharp") {
-					c.properties.push_back(cf.properties[j]);
-					c.properties.sort();
-					break;
-				}
-			}
-		}
-#endif
 	}
 }
 

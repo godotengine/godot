@@ -273,6 +273,10 @@ void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 }
 
 void EditorLog::_rebuild_log() {
+	if (messages.is_empty()) {
+		return;
+	}
+
 	log->clear();
 
 	int line_count = 0;

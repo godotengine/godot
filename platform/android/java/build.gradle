@@ -232,11 +232,6 @@ def generateBuildTasks(String flavor = "template") {
     return tasks
 }
 
-def isAndroidStudio() {
-    def sysProps = System.getProperties()
-    return sysProps != null && sysProps['idea.platform.prefix'] != null
-}
-
 task copyEditorReleaseApkToBin(type: Copy) {
     dependsOn ':editor:assembleRelease'
     from('editor/build/outputs/apk/release')

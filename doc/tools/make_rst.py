@@ -4,17 +4,16 @@
 
 import argparse
 import os
-import platform
 import re
 import sys
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
-from typing import List, Dict, TextIO, Tuple, Optional, Any, Union
+from typing import Any, Dict, List, Optional, TextIO, Tuple, Union
 
 # Import hardcoded version information from version.py
 root_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 sys.path.append(root_directory)  # Include the root directory
-import version
+import version  # noqa: E402
 
 # $DOCS_URL/path/to/page.html(#fragment-tag)
 GODOT_DOCS_PATTERN = re.compile(r"^\$DOCS_URL/(.*)\.html(#.*)?$")
@@ -706,7 +705,7 @@ def main() -> None:
     # <https://github.com/python/cpython/issues/73245>
     if should_color and sys.stdout.isatty() and sys.platform == "win32":
         try:
-            from ctypes import windll, byref, WinError  # type: ignore
+            from ctypes import WinError, byref, windll  # type: ignore
             from ctypes.wintypes import DWORD  # type: ignore
 
             stdout_handle = windll.kernel32.GetStdHandle(DWORD(-11))
@@ -1413,7 +1412,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     operator_anchor = f".. _class_{class_name}_operator_{sanitize_operator_name(m.name, state)}"
                     for parameter in m.parameters:
                         operator_anchor += f"_{parameter.type_name.type_name}"
-                    operator_anchor += f":\n\n"
+                    operator_anchor += ":\n\n"
                     f.write(operator_anchor)
 
                     f.write(".. rst-class:: classref-operator\n\n")
@@ -1553,7 +1552,7 @@ def make_method_signature(
             out += f":ref:`{op_name}<class_{class_def.name}_{ref_type}_{sanitize_operator_name(definition.name, state)}"
             for parameter in definition.parameters:
                 out += f"_{parameter.type_name.type_name}"
-            out += f">`"
+            out += ">`"
         elif ref_type == "method":
             ref_type_qualifier = ""
             if definition.name.startswith("_"):

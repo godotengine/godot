@@ -272,7 +272,8 @@ class SceneTreeDock : public VBoxContainer {
 	void _filter_option_selected(int option);
 	void _append_filter_options_to(PopupMenu *p_menu, bool p_include_separator = true);
 
-	void _perform_instantiate_scenes(const Vector<String> &p_files, Node *parent, int p_pos);
+	void _perform_instantiate_scenes(const Vector<String> &p_files, Node *p_parent, int p_pos);
+	void _perform_create_audio_stream_players(const Vector<String> &p_files, Node *p_parent, int p_pos);
 	void _replace_with_branch_scene(const String &p_file, Node *base);
 
 	void _remote_tree_selected();

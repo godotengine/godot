@@ -3,8 +3,8 @@
 Import("env")
 
 import glob
-import editor_theme_builders
 
+import editor_theme_builders
 
 # Fonts
 flist = glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.ttf")

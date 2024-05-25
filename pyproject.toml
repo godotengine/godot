@@ -11,6 +11,19 @@ namespace_packages = true
 explicit_package_bases = true
 exclude = ["thirdparty/"]
 
-[tool.black]
+[tool.ruff]
+extend-exclude = ["thirdparty"]
+extend-include = ["SConstruct", "SCsub"]
 line-length = 120
-extend-exclude = ".*thirdparty/.*"
+target-version = "py37"
+
+[tool.ruff.lint]
+extend-select = [
+	"I", # isort
+]
+
+[tool.ruff.lint.per-file-ignores]
+"{SConstruct,SCsub}" = [
+	"E402", # Module level import not at top of file
+	"F821", # Undefined name
+]

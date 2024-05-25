@@ -330,8 +330,7 @@ ext.getReleaseKeyAlias = { ->
 }
 
 ext.isAndroidStudio = { ->
-    def sysProps = System.getProperties()
-    return sysProps != null && sysProps['idea.platform.prefix'] != null
+    return project.hasProperty('android.injected.invoked.from.ide')
 }
 
 ext.shouldZipAlign = { ->

@@ -250,7 +250,7 @@ void TileAtlasView::_draw_base_tiles() {
 				Vector2 offset_pos = Rect2(base_frame_rect).get_center() + Vector2(tile_set_atlas_source->get_tile_data(atlas_coords, 0)->get_texture_origin());
 
 				// Draw the tile.
-				TileMap::draw_tile(ci_rid, offset_pos, tile_set, source_id, atlas_coords, 0, frame);
+				TileMapLayer::draw_tile(ci_rid, offset_pos, tile_set, source_id, atlas_coords, 0, frame);
 			}
 		}
 
@@ -411,7 +411,7 @@ void TileAtlasView::_draw_alternatives() {
 				}
 
 				// Draw the tile.
-				TileMap::draw_tile(ci_rid, offset_pos, tile_set, source_id, atlas_coords, alternative_id);
+				TileMapLayer::draw_tile(ci_rid, offset_pos, tile_set, source_id, atlas_coords, alternative_id);
 
 				// Increment the x position.
 				current_pos.x += transposed ? texture_region_size.y : texture_region_size.x;

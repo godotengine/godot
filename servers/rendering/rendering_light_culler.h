@@ -181,14 +181,14 @@ private:
 		}
 
 		// Prevent divide by zero.
-		if (lc > 0.00001f) {
+		if (lc > 0.001f) {
 			// If the summed length of the smaller two
 			// sides is close to the length of the longest side,
 			// the points are colinear, and the triangle is near degenerate.
 			float ld = ((la + lb) - lc) / lc;
 
 			// ld will be close to zero for colinear tris.
-			return ld < 0.00001f;
+			return ld < 0.001f;
 		}
 
 		// Don't create planes from tiny triangles,

@@ -1014,9 +1014,6 @@ void PopupMenu::_notification(int p_what) {
 				float pm_delay = pm->get_submenu_popup_delay();
 				set_submenu_popup_delay(pm_delay);
 			}
-			if (!is_embedded()) {
-				set_flag(FLAG_NO_FOCUS, true);
-			}
 			if (system_menu_id != NativeMenu::INVALID_MENU_ID) {
 				bind_global_menu();
 			}
@@ -2829,6 +2826,8 @@ void PopupMenu::popup(const Rect2i &p_bounds) {
 	if (native) {
 		NativeMenu::get_singleton()->popup(global_menu, (p_bounds != Rect2i()) ? p_bounds.position : get_position());
 	} else {
+		set_flag(FLAG_NO_FOCUS, !is_embedded());
+
 		moved = Vector2();
 		popup_time_msec = OS::get_singleton()->get_ticks_msec();
 		if (!is_embedded()) {
@@ -2856,6 +2855,8 @@ void PopupMenu::set_visible(bool p_visible) {
 			NativeMenu::get_singleton()->popup(global_menu, get_position());
 		}
 	} else {
+		set_flag(FLAG_NO_FOCUS, !is_embedded());
+
 		Popup::set_visible(p_visible);
 	}
 }

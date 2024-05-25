@@ -614,9 +614,9 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 
 	updating_tree = true;
 	tree->clear();
+	last_hash = hash_djb2_one_64(0);
 	if (get_scene_node()) {
 		_add_nodes(get_scene_node(), nullptr);
-		last_hash = hash_djb2_one_64(0);
 		_compute_hash(get_scene_node(), last_hash);
 	}
 	updating_tree = false;
@@ -1368,22 +1368,35 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		}
 
 		bool scene_drop = true;
+		bool audio_drop = true;
 		for (int i = 0; i < files.size(); i++) {
 			String ftype = EditorFileSystem::get_singleton()->get_file_type(files[i]);
 			if (ftype != "PackedScene") {
 				scene_drop = false;
-				break;
+			}
+			if (audio_drop && !ClassDB::is_parent_class(ftype, "AudioStream")) {
+				audio_drop = false;
 			}
 		}
 
 		if (scene_drop) {
 			tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM);
-		} else {
-			if (files.size() > 1) {
-				return false;
-			}
-			tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
+			return true;
 		}
+
+		if (audio_drop) {
+			if (files.size() > 1) {
+				tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
+			} else {
+				tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM);
+			}
+			return true;
+		}
+
+		if (files.size() > 1) {
+			return false;
+		}
+		tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
 
 		return true;
 	}
