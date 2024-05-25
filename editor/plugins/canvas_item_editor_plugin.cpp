@@ -3985,59 +3985,58 @@ void CanvasItemEditor::_notification(int p_what) {
 			bool moved_viewport = false;
 			if (drag_type == DRAG_MOVE || drag_type == DRAG_MOVE_X ||
 					drag_type == DRAG_MOVE_Y) {
-
 				Size2 hmin = h_scroll->get_minimum_size();
 				Size2 vmin = v_scroll->get_minimum_size();
 				// Get the visible frame.
 				Rect2 local_rect =
-					Rect2(Point2(), viewport->get_size() - Size2(vmin.width, hmin.height));
+						Rect2(Point2(), viewport->get_size() - Size2(vmin.width, hmin.height));
 				Vector2 mouse_position = Input::get_singleton()->get_mouse_position() -
-										viewport->get_global_position();
+						viewport->get_global_position();
 				// Check if the mouse is outside the visible frame.
 				if (!local_rect.has_point(mouse_position)) {
 					Vector2 direction = Vector2(0, 0);
 
 					if (mouse_position.x < local_rect.get_position().x) {
-					direction.x = -1;
+						direction.x = -1;
 					} else if (mouse_position.x >
 							local_rect.get_position().x + local_rect.get_size().x) {
-					direction.x = 1;
+						direction.x = 1;
 					}
 					if (mouse_position.y < local_rect.get_position().y) {
-					direction.y = -1;
+						direction.y = -1;
 					} else if (mouse_position.y >
 							local_rect.get_position().y + local_rect.get_size().y) {
-					direction.y = 1;
+						direction.y = 1;
 					}
 
 					Vector2 nearest_point = Vector2(0, 0);
 					bool mouse_in_x = false;
 					bool mouse_in_y = false;
 					if (mouse_position.x < local_rect.get_position().x) {
-					nearest_point.x = local_rect.get_position().x;
-					mouse_in_x = true;
+						nearest_point.x = local_rect.get_position().x;
+						mouse_in_x = true;
 
 					} else if (mouse_position.x >
 							local_rect.get_position().x + local_rect.get_size().x) {
-					nearest_point.x = local_rect.get_position().x + local_rect.get_size().x;
-					mouse_in_x = true;
+						nearest_point.x = local_rect.get_position().x + local_rect.get_size().x;
+						mouse_in_x = true;
 					}
 					if (mouse_position.y < local_rect.get_position().y) {
-					nearest_point.y = local_rect.get_position().y;
-					mouse_in_y = true;
+						nearest_point.y = local_rect.get_position().y;
+						mouse_in_y = true;
 					} else if (mouse_position.y >
 							local_rect.get_position().y + local_rect.get_size().y) {
-					nearest_point.y = local_rect.get_position().y + local_rect.get_size().y;
-					mouse_in_y = true;
+						nearest_point.y = local_rect.get_position().y + local_rect.get_size().y;
+						mouse_in_y = true;
 					}
 
 					float distance;
 					if (mouse_in_x && !mouse_in_y) {
-					distance = abs(nearest_point.x - mouse_position.x);
+						distance = abs(nearest_point.x - mouse_position.x);
 					} else if (mouse_in_y && !mouse_in_x) {
-					distance = abs(nearest_point.y - mouse_position.y);
+						distance = abs(nearest_point.y - mouse_position.y);
 					} else {
-					distance = nearest_point.distance_to(mouse_position);
+						distance = nearest_point.distance_to(mouse_position);
 					}
 
 					// Use the distance to adjust the speed of the viewport shift
