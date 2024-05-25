@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Unable to iterate with key-value pair on iteration of type "Array" (not a dictionary).

@@ -537,6 +537,7 @@ public:
 	virtual void write_end_jump_if_shared() override;
 	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type) override;
 	virtual void write_for_assignment(const Address &p_list) override;
+	virtual void write_for_value_assignment(const Address &p_value) override;
 	virtual void write_for(const Address &p_variable, bool p_use_conversion) override;
 	virtual void write_endfor() override;
 	virtual void start_while_condition() override;

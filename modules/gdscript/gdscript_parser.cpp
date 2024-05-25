@@ -1990,10 +1990,23 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 		n_for->variable = parse_identifier();
 	}
 
+	if (match(GDScriptTokenizer::Token::COMMA)) {
+		if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected loop variable name after ",".)")) {
+			n_for->pair_variable = parse_identifier();
+		}
+	}
+
 	if (match(GDScriptTokenizer::Token::COLON)) {
 		n_for->datatype_specifier = parse_type();
 		if (n_for->datatype_specifier == nullptr) {
 			push_error(R"(Expected type specifier after ":".)");
+		}
+
+		if (match(GDScriptTokenizer::Token::COMMA)) {
+			n_for->value_datatype_specifier = parse_type();
+			if (n_for->value_datatype_specifier == nullptr) {
+				push_error(R"(Expected type specifier after ",".)");
+			}
 		}
 	}
 
@@ -2026,6 +2039,13 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 			push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), n_for->variable->name), n_for->variable);
 		}
 		suite->add_local(SuiteNode::Local(n_for->variable, current_function));
+	}
+	if (n_for->pair_variable) {
+		const SuiteNode::Local &local = current_suite->get_local(n_for->pair_variable->name);
+		if (local.type != SuiteNode::Local::UNDEFINED) {
+			push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), n_for->pair_variable->name), n_for->pair_variable);
+		}
+		suite->add_local(SuiteNode::Local(n_for->pair_variable, current_function));
 	}
 	suite->is_in_loop = true;
 	n_for->loop = parse_suite(R"("for" block)", suite);

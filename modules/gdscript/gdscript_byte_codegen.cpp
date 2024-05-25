@@ -1493,6 +1493,13 @@ void GDScriptByteCodeGenerator::write_for_assignment(const Address &p_list) {
 	append(p_list);
 }
 
+void GDScriptByteCodeGenerator::write_for_value_assignment(const Address &p_value) {
+	const Address &counter = for_counter_variables.back()->get();
+	const Address &container = for_container_variables.back()->get();
+
+	write_get(p_value, counter, container);
+}
+
 void GDScriptByteCodeGenerator::write_for(const Address &p_variable, bool p_use_conversion) {
 	const Address &counter = for_counter_variables.back()->get();
 	const Address &container = for_container_variables.back()->get();

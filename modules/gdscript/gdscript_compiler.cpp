@@ -2013,6 +2013,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				codegen.start_block(); // Add an extra block, since the iterator and @special variables belong to the loop scope.
 
 				GDScriptCodeGenerator::Address iterator = codegen.add_local(for_n->variable->name, _gdtype_from_datatype(for_n->variable->get_datatype(), codegen.script));
+				GDScriptCodeGenerator::Address iterator_value;
 
 				gen->start_for(iterator.type, _gdtype_from_datatype(for_n->list->get_datatype(), codegen.script));
 
@@ -2032,6 +2033,10 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				// Loop variables must be cleared even when `break`/`continue` is used.
 				List<GDScriptCodeGenerator::Address> loop_locals = _add_block_locals(codegen, for_n->loop);
 
+				if (for_n->pair_variable) {
+					iterator_value = codegen.add_local(for_n->pair_variable->name, _gdtype_from_datatype(for_n->pair_variable->get_datatype(), codegen.script));
+					gen->write_for_value_assignment(iterator_value);
+				}
 				//_clear_block_locals(codegen, loop_locals); // Inside loop, before block - for `continue`. // TODO
 
 				err = _parse_block(codegen, for_n->loop, false); // Don't add locals again.
