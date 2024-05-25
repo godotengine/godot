@@ -490,6 +490,7 @@ class EditorInspector : public ScrollContainer {
 	void _clear(bool p_hide_plugins = true);
 	Object *object = nullptr;
 	Object *next_object = nullptr;
+	Object *last_object = nullptr;
 
 	//
 
@@ -513,9 +514,11 @@ class EditorInspector : public ScrollContainer {
 	bool deletable_properties = false;
 
 	float refresh_countdown;
-	bool update_tree_pending = false;
+	bool update_tree_pending = false; // Only updates the tree if new property list is different from the last. Use `last_object = nullptr` to force update.
 	StringName _prop_edited;
 	StringName property_selected;
+	List<PropertyInfo> property_list;
+
 	int property_focusable;
 	int update_scroll_request;
 

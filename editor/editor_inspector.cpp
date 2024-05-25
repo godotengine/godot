@@ -2801,8 +2801,7 @@ void EditorInspector::update_tree() {
 	int section_depth = 0;
 	VBoxContainer *category_vbox = nullptr;
 
-	List<PropertyInfo> plist;
-	object->get_property_list(&plist, true);
+	object->get_property_list(&property_list, true);
 
 	HashMap<VBoxContainer *, HashMap<String, VBoxContainer *>> vbox_per_path;
 	HashMap<String, EditorInspectorArray *> editor_inspector_array_per_prefix;
@@ -2818,7 +2817,7 @@ void EditorInspector::update_tree() {
 	StringName doc_name;
 
 	// Get the lists of editors for properties.
-	for (List<PropertyInfo>::Element *E_property = plist.front(); E_property; E_property = E_property->next()) {
+	for (List<PropertyInfo>::Element *E_property = property_list.front(); E_property; E_property = E_property->next()) {
 		PropertyInfo &p = E_property->get();
 
 		if (p.usage & PROPERTY_USAGE_SUBGROUP) {
@@ -3485,6 +3484,7 @@ void EditorInspector::update_tree() {
 		EditorNode::get_singleton()->hide_unused_editors();
 	}
 	set_follow_focus(true);
+	last_object = object;
 }
 
 void EditorInspector::update_property(const String &p_prop) {
@@ -3504,6 +3504,8 @@ void EditorInspector::_clear(bool p_hide_plugins) {
 		memdelete(main_vbox->get_child(0));
 	}
 
+	property_list.clear();
+	last_object = nullptr;
 	property_selected = StringName();
 	property_focusable = -1;
 	editor_property_map.clear();
@@ -3744,6 +3746,7 @@ void EditorInspector::_page_change_request(int p_new_page, const StringName &p_a
 	if (new_page != prev_page) {
 		per_array_page[p_array_prefix] = new_page;
 		update_tree_pending = true;
+		last_object = nullptr; // Force refresh.
 	}
 }
 
@@ -4087,7 +4090,32 @@ void EditorInspector::_notification(int p_what) {
 			changing++;
 
 			if (update_tree_pending) {
-				update_tree();
+				// If the new property list is the same as the old one, we don't need
+				// to re-create everything.
+				bool same_property_list = true;
+				if (last_object == object) {
+					List<PropertyInfo> newlist;
+					object->get_property_list(&newlist, true);
+					List<PropertyInfo>::Element *old_property = property_list.front();
+					for (List<PropertyInfo>::Element *new_property = newlist.front(); new_property; new_property = new_property->next()) {
+						if (!old_property) {
+							same_property_list = false;
+							break;
+						}
+						PropertyInfo &old_p = old_property->get();
+						PropertyInfo &new_p = new_property->get();
+						if (!(old_p == new_p)) {
+							same_property_list = false;
+							break;
+						}
+						old_property = old_property->next();
+					}
+				} else {
+					same_property_list = false;
+				}
+				if (!same_property_list) {
+					update_tree();
+				}
 				update_tree_pending = false;
 				pending.clear();
 
