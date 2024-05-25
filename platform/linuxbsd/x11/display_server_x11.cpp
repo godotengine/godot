@@ -5201,10 +5201,11 @@ bool DisplayServerX11::is_window_transparency_available() const {
 	if (XGetSelectionOwner(x11_display, net_wm_cm) == None) {
 		return false;
 	}
-
+#if defined(RD_ENABLED)
 	if (rendering_device && !rendering_device->is_composite_alpha_supported()) {
 		return false;
 	}
+#endif
 	return OS::get_singleton()->is_layered_allowed();
 }
 
