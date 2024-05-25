@@ -162,8 +162,19 @@ void NavigationRegion2D::_notification(int p_what) {
 			set_physics_process_internal(true);
 		} break;
 
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+#ifdef DEBUG_ENABLED
+			if (debug_instance_rid.is_valid()) {
+				RS::get_singleton()->canvas_item_set_visible(debug_instance_rid, is_visible_in_tree());
+			}
+#endif // DEBUG_ENABLED
+		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			_region_exit_navigation_map();
+#ifdef DEBUG_ENABLED
+			_free_debug();
+#endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -189,6 +200,9 @@ void NavigationRegion2D::set_navigation_polygon(const Ref<NavigationPolygon> &p_
 	}
 
 	navigation_polygon = p_navigation_polygon;
+#ifdef DEBUG_ENABLED
+	debug_mesh_dirty = true;
+#endif // DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->region_set_navigation_polygon(region, p_navigation_polygon);
 
 	if (navigation_polygon.is_valid()) {
@@ -420,12 +434,42 @@ void NavigationRegion2D::_region_update_transform() {
 
 #ifdef DEBUG_ENABLED
 void NavigationRegion2D::_update_debug_mesh() {
-	Vector<Vector2> navigation_polygon_vertices = navigation_polygon->get_vertices();
-	if (navigation_polygon_vertices.size() < 3) {
+	if (!is_inside_tree()) {
+		_free_debug();
 		return;
 	}
 
 	const NavigationServer2D *ns2d = NavigationServer2D::get_singleton();
+	RenderingServer *rs = RenderingServer::get_singleton();
+
+	if (!debug_instance_rid.is_valid()) {
+		debug_instance_rid = rs->canvas_item_create();
+	}
+	if (!debug_mesh_rid.is_valid()) {
+		debug_mesh_rid = rs->mesh_create();
+	}
+
+	const Transform2D region_gt = get_global_transform();
+
+	rs->canvas_item_set_parent(debug_instance_rid, get_world_2d()->get_canvas());
+	rs->canvas_item_set_transform(debug_instance_rid, region_gt);
+
+	if (!debug_mesh_dirty) {
+		return;
+	}
+
+	rs->mesh_clear(debug_mesh_rid);
+	debug_mesh_dirty = false;
+
+	const Vector<Vector2> &vertices = navigation_polygon->get_vertices();
+	if (vertices.size() < 3) {
+		return;
+	}
+
+	int polygon_count = navigation_polygon->get_polygon_count();
+	if (polygon_count == 0) {
+		return;
+	}
 
 	bool enabled_geometry_face_random_color = ns2d->get_debug_navigation_enable_geometry_face_random_color();
 	bool enabled_edge_lines = ns2d->get_debug_navigation_enable_edge_lines();
@@ -438,39 +482,109 @@ void NavigationRegion2D::_update_debug_mesh() {
 		debug_edge_color = ns2d->get_debug_navigation_geometry_edge_disabled_color();
 	}
 
+	int vertex_count = 0;
+	int line_count = 0;
+
+	for (int i = 0; i < polygon_count; i++) {
+		const Vector<int> &polygon = navigation_polygon->get_polygon(i);
+		int polygon_size = polygon.size();
+		if (polygon_size < 3) {
+			continue;
+		}
+		line_count += polygon_size * 2;
+		vertex_count += (polygon_size - 2) * 3;
+	}
+
+	Vector<Vector2> face_vertex_array;
+	face_vertex_array.resize(vertex_count);
+
+	Vector<Color> face_color_array;
+	if (enabled_geometry_face_random_color) {
+		face_color_array.resize(vertex_count);
+	}
+
+	Vector<Vector2> line_vertex_array;
+	if (enabled_edge_lines) {
+		line_vertex_array.resize(line_count);
+	}
+
 	RandomPCG rand;
+	Color polygon_color = debug_face_color;
 
-	for (int i = 0; i < navigation_polygon->get_polygon_count(); i++) {
-		// An array of vertices for this polygon.
-		Vector<int> polygon = navigation_polygon->get_polygon(i);
-		Vector<Vector2> debug_polygon_vertices;
-		debug_polygon_vertices.resize(polygon.size());
-		for (int j = 0; j < polygon.size(); j++) {
-			ERR_FAIL_INDEX(polygon[j], navigation_polygon_vertices.size());
-			debug_polygon_vertices.write[j] = navigation_polygon_vertices[polygon[j]];
+	int face_vertex_index = 0;
+	int line_vertex_index = 0;
+
+	Vector2 *face_vertex_array_ptrw = face_vertex_array.ptrw();
+	Color *face_color_array_ptrw = face_color_array.ptrw();
+	Vector2 *line_vertex_array_ptrw = line_vertex_array.ptrw();
+
+	for (int polygon_index = 0; polygon_index < polygon_count; polygon_index++) {
+		const Vector<int> &polygon_indices = navigation_polygon->get_polygon(polygon_index);
+		int polygon_indices_size = polygon_indices.size();
+		if (polygon_indices_size < 3) {
+			continue;
 		}
 
-		// Generate the polygon color, slightly randomly modified from the settings one.
-		Color random_variation_color = debug_face_color;
 		if (enabled_geometry_face_random_color) {
-			random_variation_color.set_hsv(
-					debug_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1,
-					debug_face_color.get_s(),
-					debug_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
+			// Generate the polygon color, slightly randomly modified from the settings one.
+			polygon_color.set_hsv(debug_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_face_color.get_s(), debug_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
+			polygon_color.a = debug_face_color.a;
 		}
-		random_variation_color.a = debug_face_color.a;
 
-		Vector<Color> debug_face_colors;
-		debug_face_colors.push_back(random_variation_color);
-		RS::get_singleton()->canvas_item_add_polygon(get_canvas_item(), debug_polygon_vertices, debug_face_colors);
+		for (int polygon_indices_index = 0; polygon_indices_index < polygon_indices_size - 2; polygon_indices_index++) {
+			face_vertex_array_ptrw[face_vertex_index] = vertices[polygon_indices[0]];
+			face_vertex_array_ptrw[face_vertex_index + 1] = vertices[polygon_indices[polygon_indices_index + 1]];
+			face_vertex_array_ptrw[face_vertex_index + 2] = vertices[polygon_indices[polygon_indices_index + 2]];
+			if (enabled_geometry_face_random_color) {
+				face_color_array_ptrw[face_vertex_index] = polygon_color;
+				face_color_array_ptrw[face_vertex_index + 1] = polygon_color;
+				face_color_array_ptrw[face_vertex_index + 2] = polygon_color;
+			}
+			face_vertex_index += 3;
+		}
 
 		if (enabled_edge_lines) {
-			Vector<Color> debug_edge_colors;
-			debug_edge_colors.push_back(debug_edge_color);
-			debug_polygon_vertices.push_back(debug_polygon_vertices[0]); // Add first again for closing polyline.
-			RS::get_singleton()->canvas_item_add_polyline(get_canvas_item(), debug_polygon_vertices, debug_edge_colors);
+			for (int polygon_indices_index = 0; polygon_indices_index < polygon_indices_size; polygon_indices_index++) {
+				line_vertex_array_ptrw[line_vertex_index] = vertices[polygon_indices[polygon_indices_index]];
+				line_vertex_index += 1;
+				if (polygon_indices_index + 1 == polygon_indices_size) {
+					line_vertex_array_ptrw[line_vertex_index] = vertices[polygon_indices[0]];
+					line_vertex_index += 1;
+				} else {
+					line_vertex_array_ptrw[line_vertex_index] = vertices[polygon_indices[polygon_indices_index + 1]];
+					line_vertex_index += 1;
+				}
+			}
 		}
 	}
+
+	if (!enabled_geometry_face_random_color) {
+		face_color_array.resize(face_vertex_array.size());
+		face_color_array.fill(debug_face_color);
+	}
+
+	Array face_mesh_array;
+	face_mesh_array.resize(Mesh::ARRAY_MAX);
+	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
+	face_mesh_array[Mesh::ARRAY_COLOR] = face_color_array;
+
+	rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_TRIANGLES, face_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+
+	if (enabled_edge_lines) {
+		Vector<Color> line_color_array;
+		line_color_array.resize(line_vertex_array.size());
+		line_color_array.fill(debug_edge_color);
+
+		Array line_mesh_array;
+		line_mesh_array.resize(Mesh::ARRAY_MAX);
+		line_mesh_array[Mesh::ARRAY_VERTEX] = line_vertex_array;
+		line_mesh_array[Mesh::ARRAY_COLOR] = line_color_array;
+
+		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINES, line_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+	}
+
+	rs->canvas_item_add_mesh(debug_instance_rid, debug_mesh_rid, Transform2D());
+	rs->canvas_item_set_visible(debug_instance_rid, is_visible_in_tree());
 }
 #endif // DEBUG_ENABLED
 
@@ -509,6 +623,22 @@ void NavigationRegion2D::_update_debug_baking_rect() {
 		Rect2 debug_baking_rect = Rect2(baking_rect.position.x + baking_rect_offset.x, baking_rect.position.y + baking_rect_offset.y, baking_rect.size.x, baking_rect.size.y);
 		Color debug_baking_rect_color = Color(0.8, 0.5, 0.7, 0.1);
 		draw_rect(debug_baking_rect, debug_baking_rect_color);
+	}
+}
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+void NavigationRegion2D::_free_debug() {
+	RenderingServer *rs = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rs);
+	if (debug_instance_rid.is_valid()) {
+		rs->canvas_item_clear(debug_instance_rid);
+		rs->free(debug_instance_rid);
+		debug_instance_rid = RID();
+	}
+	if (debug_mesh_rid.is_valid()) {
+		rs->free(debug_mesh_rid);
+		debug_mesh_rid = RID();
 	}
 }
 #endif // DEBUG_ENABLED
