@@ -43,6 +43,9 @@
 #else
 #include <wayland-client-core.h>
 #include <wayland-cursor.h>
+#ifdef GLES3_ENABLED
+#include <wayland-egl.h>
+#endif
 #include <xkbcommon/xkbcommon.h>
 #endif // SOWRAP_ENABLED
 
