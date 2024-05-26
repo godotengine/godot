@@ -138,6 +138,12 @@ void Node::_notification(int p_notification) {
 
 			get_tree()->nodes_in_tree_count++;
 			orphan_node_count--;
+
+			// Allow physics interpolated nodes to automatically reset when added to the tree
+			// (this is to save the user from doing this manually each time).
+			if (get_tree()->is_physics_interpolation_enabled()) {
+				_set_physics_interpolation_reset_requested(true);
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -433,6 +439,18 @@ void Node::_propagate_physics_interpolated(bool p_interpolated) {
 	data.blocked++;
 	for (KeyValue<StringName, Node *> &K : data.children) {
 		K.value->_propagate_physics_interpolated(p_interpolated);
+	}
+	data.blocked--;
+}
+
+void Node::_propagate_physics_interpolation_reset_requested(bool p_requested) {
+	if (is_physics_interpolated()) {
+		data.physics_interpolation_reset_requested = p_requested;
+	}
+
+	data.blocked++;
+	for (KeyValue<StringName, Node *> &K : data.children) {
+		K.value->_propagate_physics_interpolation_reset_requested(p_requested);
 	}
 	data.blocked--;
 }
@@ -890,15 +908,23 @@ void Node::set_physics_interpolation_mode(PhysicsInterpolationMode p_mode) {
 	}
 
 	// If swapping from interpolated to non-interpolated, use this as an extra means to cause a reset.
-	if (is_physics_interpolated() && !interpolate) {
-		reset_physics_interpolation();
+	if (is_physics_interpolated() && !interpolate && is_inside_tree()) {
+		propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 	}
 
 	_propagate_physics_interpolated(interpolate);
 }
 
 void Node::reset_physics_interpolation() {
-	propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
+	if (is_inside_tree()) {
+		propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
+
+		// If `reset_physics_interpolation()` is called explicitly by the user
+		// (e.g. from scripts) then we prevent deferred auto-resets taking place.
+		// The user is trusted to call reset in the right order, and auto-reset
+		// will interfere with their control of prev / curr, so should be turned off.
+		_propagate_physics_interpolation_reset_requested(false);
+	}
 }
 
 bool Node::_is_enabled() const {
@@ -3825,6 +3851,9 @@ Node::Node() {
 	data.unhandled_key_input = false;
 
 	data.physics_interpolated = true;
+	data.physics_interpolation_reset_requested = false;
+	data.physics_interpolated_client_side = false;
+	data.use_identity_transform = false;
 
 	data.parent_owned = false;
 	data.in_constructor = true;
