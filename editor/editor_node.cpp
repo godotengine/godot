@@ -6409,6 +6409,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 			get_scene_editor_data_for_node(owner, original_node, scene_editor_data_table);
 
 			bool original_node_scene_instance_load_placeholder = original_node->get_scene_instance_load_placeholder();
+			bool original_node_scene_editor_only = original_node->get_scene_editor_only();
 
 			// Delete all the remaining node children.
 			while (original_node->get_child_count()) {
@@ -6450,6 +6451,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 
 			// Restore the placeholder state from the original node.
 			instantiated_node->set_scene_instance_load_placeholder(original_node_scene_instance_load_placeholder);
+			instantiated_node->set_scene_editor_only(original_node_scene_editor_only);
 
 			// Attempt to re-add all the additional nodes.
 			for (AdditiveNodeEntry additive_node_entry : instance_modifications.addition_list) {
