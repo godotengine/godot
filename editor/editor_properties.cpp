@@ -3036,8 +3036,9 @@ void EditorPropertyButton::update_property() {
 	button->add_theme_style_override("hover", style);
 }
 
-void EditorPropertyButton::setup(const String &p_hit_string)
+void EditorPropertyButton::setup(Object * p_object, const String &p_hit_string)
 {
+	object = p_object;
 	Vector<String> sv = p_hit_string.split(";", false);
 	if(sv.size() == 3) {
 		color = Color::html(sv[0]);
@@ -3051,21 +3052,27 @@ void EditorPropertyButton::setup(const String &p_hit_string)
 		color = Color(0, 1, 1, 1);
 		lable = "none_name";
 	}
+	update_property();
 
 }
 void EditorPropertyButton::_button_pressed()
 {
 	if(expr.is_valid())
 	{
-		expr->execute(Array(), get_edited_object(), true);
+		expr->execute(Array(), object, true);
 	}
 }
 
+Size2 EditorPropertyButton::get_minimum_size() const {
+	Size2 ms = VBoxContainer::get_minimum_size();
+	ms.y = MAX(ms.y, 32 * EDSCALE);
+	return ms;
+}
 EditorPropertyButton::EditorPropertyButton() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(hb);
-	set_bottom_editor(hb);
+	//set_bottom_editor(hb);
 	button = memnew(Button);
 	hb->add_child(button);
 	button->connect("pressed", callable_mp(this, &EditorPropertyButton::_button_pressed));
@@ -3078,9 +3085,10 @@ void EditorPropertyResource::_set_read_only(bool p_read_only) {
 	resource_picker->set_editable(!p_read_only);
 }
 
-void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource, bool p_inspect) {
-	if (p_resource->is_built_in() && !p_resource->get_path().is_empty()) {
-		String parent = p_resource->get_path().get_slice("::", 0);
+void EditorPropertyResource::_resource_selected(const Ref<RefCounted> &p_resource, bool p_inspect) {
+	Ref<Resource> r = p_resource;
+	if (r.is_valid() && r->is_built_in() && !r->get_path().is_empty()) {
+		String parent = r->get_path().get_slice("::", 0);
 		List<String> extensions;
 		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 
@@ -3088,7 +3096,7 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 			if (extensions.find(parent.get_extension()) && (!EditorNode::get_singleton()->get_edited_scene() || EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path() != parent)) {
 				// If the resource belongs to another (non-imported) scene, edit it in that scene instead.
 				if (!FileAccess::exists(parent + ".import")) {
-					callable_mp(EditorNode::get_singleton(), &EditorNode::edit_foreign_resource).call_deferred(p_resource);
+					callable_mp(EditorNode::get_singleton(), &EditorNode::edit_foreign_resource).call_deferred(r);
 					return;
 				}
 			}
@@ -3172,7 +3180,7 @@ static bool _find_recursive_resources(const Variant &v, HashSet<Resource *> &res
 	return false;
 }
 
-void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) {
+void EditorPropertyResource::_resource_changed(const Ref<RefCounted> &p_resource) {
 	Resource *r = Object::cast_to<Resource>(get_edited_object());
 	if (r) {
 		// Check for recursive setting of resource
@@ -3256,7 +3264,7 @@ void EditorPropertyResource::_sub_inspector_property_keyed(const String &p_prope
 	emit_signalp(SNAME("property_keyed_with_value"), argp, 3);
 }
 
-void EditorPropertyResource::_sub_inspector_resource_selected(const Ref<Resource> &p_resource, const String &p_property) {
+void EditorPropertyResource::_sub_inspector_resource_selected(const Ref<RefCounted> &p_resource, const String &p_property) {
 	emit_signal(SNAME("resource_selected"), String(get_edited_property()) + ":" + p_property, p_resource);
 }
 
@@ -3355,7 +3363,7 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 }
 
 void EditorPropertyResource::update_property() {
-	Ref<Resource> res = get_edited_property_value();
+	Ref<RefCounted> res = get_edited_property_value();
 
 	if (use_sub_inspector) {
 		if (res.is_valid() != resource_picker->is_toggle_mode()) {
@@ -3495,8 +3503,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Varian
 	
 	if (p_hint == PROPERTY_HINT_BUTTON) {
 		EditorPropertyButton *editor = memnew(EditorPropertyButton);
-		editor->setup(p_hint_text);
-		add_property_editor(p_path,editor);
+		editor->setup(p_object,p_hint_text);
+		add_custom_control(editor);
 	}
 	else
 	{

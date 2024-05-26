@@ -43,10 +43,10 @@ public:
         for (int i = 0; i < animation_library.size(); i++)
         {
             item.path = animation_library[i];
-            String name = item.path.get_file().get_basename();
-            if(name.size() > 0)
+            String nm = item.path.get_file().get_basename();
+            if(nm.size() > 0)
             {
-                animations.insert(name, item);
+                animations.insert(nm, item);
             }
         }
     }
@@ -277,6 +277,10 @@ class CharacterAnimatorNode2D : public CharacterAnimatorNodeBase
 
         ADD_PROPERTY(PropertyInfo(Variant::INT, "position_count"), "set_position_count", "get_position_count");
         ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "position_array"), "set_position_array", "get_position_array");
+
+        BIND_ENUM_CONSTANT(SimpleDirectionnal2D);
+        BIND_ENUM_CONSTANT(FreeformDirectionnal2D);
+        BIND_ENUM_CONSTANT(FreeformCartesian2D);
     }
 public:
     enum BlendType
@@ -349,6 +353,9 @@ class CharacterAnimatorLayerConfig : public Resource
         ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_type"), "set_blend_type", "get_blend_type");
         ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mask", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorMask"), "set_mask", "get_mask");
         ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "layer_name"), "set_layer_name", "get_layer_name");
+
+        BIND_ENUM_CONSTANT(BT_Blend);
+        BIND_ENUM_CONSTANT(BT_Override);
     }
     public:
     enum BlendType
@@ -419,7 +426,6 @@ class CharacterAnimatorLayer: public AnimationMixer
     GDCLASS(CharacterAnimatorLayer, AnimationMixer);
     static void bind_methods()
     {
-
     }
 
     List<Ref<CharacterAnimatorNodeBase>> play_list;
@@ -460,6 +466,58 @@ class CharacterAnimationLogicNode : public Resource
     GDCLASS(CharacterAnimationLogicNode,Resource)
     static void _bind_methods()
     {
+        ClassDB::bind_method(D_METHOD("set_blackboard_plan", "blackboard_plan"), &CharacterAnimationLogicNode::set_blackboard_plan);
+        ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &CharacterAnimationLogicNode::get_blackboard_plan);
+
+        ClassDB::bind_method(D_METHOD("set_priority", "priority"), &CharacterAnimationLogicNode::set_priority);
+        ClassDB::bind_method(D_METHOD("get_priority"), &CharacterAnimationLogicNode::get_priority);
+
+        ClassDB::bind_method(D_METHOD("set_player_animation_name", "player_animation_name"), &CharacterAnimationLogicNode::set_player_animation_name);
+        ClassDB::bind_method(D_METHOD("get_player_animation_name"), &CharacterAnimationLogicNode::get_player_animation_name);
+
+        ClassDB::bind_method(D_METHOD("set_enter_condtion", "enter_condtion"), &CharacterAnimationLogicNode::set_enter_condtion);
+        ClassDB::bind_method(D_METHOD("get_enter_condtion"), &CharacterAnimationLogicNode::get_enter_condtion);
+
+        ClassDB::bind_method(D_METHOD("set_check_stop_delay_time", "check_stop_delay_time"), &CharacterAnimationLogicNode::set_check_stop_delay_time);
+        ClassDB::bind_method(D_METHOD("get_check_stop_delay_time"), &CharacterAnimationLogicNode::get_check_stop_delay_time);
+
+        ClassDB::bind_method(D_METHOD("set_life_time", "life_time"), &CharacterAnimationLogicNode::set_life_time);
+        ClassDB::bind_method(D_METHOD("get_life_time"), &CharacterAnimationLogicNode::get_life_time);
+
+        ClassDB::bind_method(D_METHOD("set_stop_check_type", "stop_check_type"), &CharacterAnimationLogicNode::set_stop_check_type);
+        ClassDB::bind_method(D_METHOD("get_stop_check_type"), &CharacterAnimationLogicNode::get_stop_check_type);
+
+        ClassDB::bind_method(D_METHOD("set_stop_check_condtion", "stop_check_condtion"), &CharacterAnimationLogicNode::set_stop_check_condtion);
+        ClassDB::bind_method(D_METHOD("get_stop_check_condtion"), &CharacterAnimationLogicNode::get_stop_check_condtion);
+
+        ClassDB::bind_method(D_METHOD("set_play_count", "play_count"), &CharacterAnimationLogicNode::set_play_count);
+        ClassDB::bind_method(D_METHOD("get_play_count"), &CharacterAnimationLogicNode::get_play_count);
+
+
+        ADD_PROPERTY(PropertyInfo(Variant::INT, "priority"), "set_priority", "get_priority");
+
+        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "player_animation_name"), "set_player_animation_name", "get_player_animation_name");
+
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "enter_condtion", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorCondition"), "set_enter_condtion", "get_enter_condtion");
+
+        ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "check_stop_delay_time"), "set_check_stop_delay_time", "get_check_stop_delay_time");
+
+        ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "life_time"), "set_life_time", "get_life_time");
+
+        ADD_PROPERTY(PropertyInfo(Variant::INT, "stop_check_type",PROPERTY_HINT_ENUM,"Life,PlayCount,Condition,Script"), "set_stop_check_type", "get_stop_check_type");
+
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stop_check_condtion", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorCondition"), "set_stop_check_condtion", "get_stop_check_condtion");
+
+        ADD_PROPERTY(PropertyInfo(Variant::INT, "play_count"), "set_play_count", "get_play_count");
+
+
+        GDVIRTUAL_BIND(_animation_process,"_layer","_blackboard", "_delta");
+        GDVIRTUAL_BIND(_check_stop,"_layer","_blackboard");
+
+        BIND_ENUM_CONSTANT(Life);
+        BIND_ENUM_CONSTANT(PlayCount);
+        BIND_ENUM_CONSTANT(Condition);
+        BIND_ENUM_CONSTANT(Script);
 
     }
 
@@ -472,6 +530,7 @@ public:
         PlayCount,
         // 通过检测条件结束
         Condition,
+        Script
     };
     struct SortCharacterAnimationLogicNode {
         bool operator()(const Ref<CharacterAnimationLogicNode> &l, const Ref<CharacterAnimationLogicNode> &r) const {
@@ -498,8 +557,6 @@ public:
     }
     Ref<BlackboardPlan> get_blackboard_plan() { return blackboard_plan; }
 
-    void set_node_name(StringName p_node_name) { node_name = p_node_name; }
-    StringName get_node_name() { return node_name; }
 
     void set_priority(int p_priority) { priority = p_priority; }
     int get_priority() { return priority; }
@@ -521,6 +578,9 @@ public:
 
     void set_stop_check_condtion(const Ref<CharacterAnimatorCondition>& p_stop_check_condtion) { stop_check_condtion = p_stop_check_condtion; }
     Ref<CharacterAnimatorCondition> get_stop_check_condtion() { return stop_check_condtion; }
+
+    void set_play_count(int p_play_count) { play_count = p_play_count; }
+    int get_play_count() { return play_count; }
     
     static void init_blackboard(Ref<BlackboardPlan> p_blackboard_plan)
     {
@@ -594,7 +654,6 @@ private:
 
 
 public:
-    StringName node_name;
     // 优先级
     int priority = 0;
     // 播放的动画名称
@@ -604,7 +663,7 @@ public:
     Ref<BlackboardPlan> blackboard_plan;
     // 检测结束等待时间
     float check_stop_delay_time = 0.0f;
-    AnimatorAIStopCheckType stop_check_type;
+    AnimatorAIStopCheckType stop_check_type = Life;
     // 生命期
     float life_time = 0.0f;
     int play_count = 1;

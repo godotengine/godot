@@ -46,7 +46,7 @@ class EditorResourcePicker : public HBoxContainer {
 	GDCLASS(EditorResourcePicker, HBoxContainer);
 
 	String base_type;
-	Ref<Resource> edited_resource;
+	Ref<RefCounted> edited_resource;
 
 	bool editable = true;
 	bool dropping = false;
@@ -98,7 +98,7 @@ class EditorResourcePicker : public HBoxContainer {
 	void _button_draw();
 	void _button_input(const Ref<InputEvent> &p_event);
 
-	String _get_resource_type(const Ref<Resource> &p_resource) const;
+	String _get_resource_type(const Ref<RefCounted> &p_resource) const;
 	void _ensure_allowed_types() const;
 	bool _is_drop_valid(const Dictionary &p_drag_data) const;
 	bool _is_type_valid(const String &p_type_name, const HashSet<StringName> &p_allowed_types) const;
@@ -128,9 +128,9 @@ public:
 	String get_base_type() const;
 	Vector<String> get_allowed_types() const;
 
-	void set_edited_resource(Ref<Resource> p_resource);
-	void set_edited_resource_no_check(Ref<Resource> p_resource);
-	Ref<Resource> get_edited_resource();
+	void set_edited_resource(Ref<RefCounted> p_resource);
+	void set_edited_resource_no_check(Ref<RefCounted> p_resource);
+	Ref<RefCounted> get_edited_resource();
 
 	void set_toggle_mode(bool p_enable);
 	bool is_toggle_mode() const;

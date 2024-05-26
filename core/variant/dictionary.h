@@ -34,6 +34,8 @@
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
 #include "core/variant/array.h"
+#include "core/templates/pair.h"
+#include <initializer_list>
 
 class Variant;
 
@@ -95,6 +97,7 @@ public:
 
 	Dictionary(const Dictionary &p_from);
 	Dictionary();
+	Dictionary(std::initializer_list<KeyValue<Variant,Variant>> p_from);
 	~Dictionary();
 };
 

@@ -358,54 +358,54 @@ void Resource::configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource
 	}
 }
 
-Ref<Resource> Resource::duplicate(bool p_subresources) const {
-	List<PropertyInfo> plist;
-	get_property_list(&plist);
+// Ref<Resource> Resource::duplicate(bool p_subresources) const {
+// 	List<PropertyInfo> plist;
+// 	get_property_list(&plist);
 
-	Ref<Resource> r = static_cast<Resource *>(ClassDB::instantiate(get_class()));
-	ERR_FAIL_COND_V(r.is_null(), Ref<Resource>());
+// 	Ref<Resource> r = static_cast<Resource *>(ClassDB::instantiate(get_class()));
+// 	ERR_FAIL_COND_V(r.is_null(), Ref<Resource>());
 
-	for (const PropertyInfo &E : plist) {
-		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
-			continue;
-		}
-		Variant p = get(E.name);
+// 	for (const PropertyInfo &E : plist) {
+// 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+// 			continue;
+// 		}
+// 		Variant p = get(E.name);
 
-		switch (p.get_type()) {
-			case Variant::Type::DICTIONARY:
-			case Variant::Type::ARRAY:
-			case Variant::Type::PACKED_BYTE_ARRAY:
-			case Variant::Type::PACKED_COLOR_ARRAY:
-			case Variant::Type::PACKED_INT32_ARRAY:
-			case Variant::Type::PACKED_INT64_ARRAY:
-			case Variant::Type::PACKED_FLOAT32_ARRAY:
-			case Variant::Type::PACKED_FLOAT64_ARRAY:
-			case Variant::Type::PACKED_STRING_ARRAY:
-			case Variant::Type::PACKED_VECTOR2_ARRAY:
-			case Variant::Type::PACKED_VECTOR3_ARRAY:
-			case Variant::Type::PACKED_VECTOR4_ARRAY: {
-				r->set(E.name, p.duplicate(p_subresources));
-			} break;
+// 		switch (p.get_type()) {
+// 			case Variant::Type::DICTIONARY:
+// 			case Variant::Type::ARRAY:
+// 			case Variant::Type::PACKED_BYTE_ARRAY:
+// 			case Variant::Type::PACKED_COLOR_ARRAY:
+// 			case Variant::Type::PACKED_INT32_ARRAY:
+// 			case Variant::Type::PACKED_INT64_ARRAY:
+// 			case Variant::Type::PACKED_FLOAT32_ARRAY:
+// 			case Variant::Type::PACKED_FLOAT64_ARRAY:
+// 			case Variant::Type::PACKED_STRING_ARRAY:
+// 			case Variant::Type::PACKED_VECTOR2_ARRAY:
+// 			case Variant::Type::PACKED_VECTOR3_ARRAY:
+// 			case Variant::Type::PACKED_VECTOR4_ARRAY: {
+// 				r->set(E.name, p.duplicate(p_subresources));
+// 			} break;
 
-			case Variant::Type::OBJECT: {
-				if (!(E.usage & PROPERTY_USAGE_NEVER_DUPLICATE) && (p_subresources || (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE))) {
-					Ref<Resource> sr = p;
-					if (sr.is_valid()) {
-						r->set(E.name, sr->duplicate(p_subresources));
-					}
-				} else {
-					r->set(E.name, p);
-				}
-			} break;
+// 			case Variant::Type::OBJECT: {
+// 				if (!(E.usage & PROPERTY_USAGE_NEVER_DUPLICATE) && (p_subresources || (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE))) {
+// 					Ref<Resource> sr = p;
+// 					if (sr.is_valid()) {
+// 						r->set(E.name, sr->duplicate(p_subresources));
+// 					}
+// 				} else {
+// 					r->set(E.name, p);
+// 				}
+// 			} break;
 
-			default: {
-				r->set(E.name, p);
-			}
-		}
-	}
+// 			default: {
+// 				r->set(E.name, p);
+// 			}
+// 		}
+// 	}
 
-	return r;
-}
+// 	return r;
+// }
 
 void Resource::_set_path(const String &p_path) {
 	set_path(p_path, false);
@@ -548,7 +548,6 @@ void Resource::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("emit_changed"), &Resource::emit_changed);
 
-	ClassDB::bind_method(D_METHOD("duplicate", "subresources"), &Resource::duplicate, DEFVAL(false));
 	ADD_SIGNAL(MethodInfo("changed"));
 	ADD_SIGNAL(MethodInfo("setup_local_to_scene_requested"));
 

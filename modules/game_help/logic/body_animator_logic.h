@@ -104,7 +104,7 @@ protected:
     virtual void update_name()
     {
         #if TOOLS_ENABLED
-        String nm = String(propertyName)  + " " + get_compare_type_name();
+        String nm = String("[float]") + String(propertyName)  + " " + get_compare_type_name();
         {
             nm += " " + String::num(value);
         }
@@ -204,7 +204,7 @@ protected:
     virtual void update_name()
     {
         #if TOOLS_ENABLED
-        String nm = String(propertyName)  + " "+ get_compare_type_name();
+        String nm = String("[int]") + String(propertyName)  + " "+ get_compare_type_name();
         if(is_value_by_property)
         {
             nm += " " + String(value_property_name);
@@ -306,7 +306,7 @@ protected:
     virtual void update_name()
     {
         #if TOOLS_ENABLED
-        String nm = String(propertyName)  + " " + get_compare_type_name();
+        String nm = String("[bool]") + String(propertyName)  + " " + get_compare_type_name();
         {
             nm += " ";
             nm += (value ? "true" : "false");
@@ -385,7 +385,7 @@ protected:
     virtual void update_name()
     {
         #if TOOLS_ENABLED
-        String nm = String(propertyName)  + " " + get_compare_type_name();
+        String nm = String("[StringName]") + String(propertyName)  + " " + get_compare_type_name();
         {
             nm += " " + value;
         }
@@ -436,36 +436,77 @@ protected:
     StringName value;
 };
 // 角色动画的条件
-class CharacterAnimatorConditionList : public RefCounted
+class CharacterAnimatorCondition : public RefCounted
 {
-    GDCLASS(CharacterAnimatorConditionList, RefCounted)
-    static void _bind_methods()
-    {
-        ClassDB::bind_method(D_METHOD("set_conditions","conditions"),&CharacterAnimatorConditionList::set_conditions);
-        ClassDB::bind_method(D_METHOD("get_conditions"),&CharacterAnimatorConditionList::get_conditions);
 
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "conditions", PROPERTY_HINT_ARRAY_TYPE,RESOURCE_TYPE_HINT("AnimatorAIStateConditionBase")), "set_conditions", "get_conditions");
+    GDCLASS(CharacterAnimatorCondition, RefCounted)
+    static void _bind_methods();
+public :
+    void set_include_condition(const TypedArray<Ref<AnimatorAIStateConditionBase>>& p_include_condition) 
+    {
+        include_condition.clear();
+        for(int32_t i = 0; i < p_include_condition.size(); ++i)
+        {
+            include_condition.push_back(p_include_condition[i]);
+        }
+         update_blackboard_plan();
+    }
+    TypedArray<Ref<AnimatorAIStateConditionBase>> get_include_condition()
+     {
+        TypedArray<Ref<AnimatorAIStateConditionBase>> rs;
+        for(uint32_t i = 0; i < include_condition.size(); ++i)
+        {
+            rs.push_back(include_condition[i]);
+        }
+         return rs; 
+    }
+
+    void set_exclude_condition(const TypedArray<Ref<AnimatorAIStateConditionBase>>& p_exclude_condition)
+    {
+        exclude_condition.clear();
+        for(int32_t i = 0; i < p_exclude_condition.size(); ++i)
+        {
+            exclude_condition.push_back(p_exclude_condition[i]);
+        }
+         update_blackboard_plan();
+    }
+    TypedArray<Ref<AnimatorAIStateConditionBase>> get_exclude_condition()
+     {
+        TypedArray<Ref<AnimatorAIStateConditionBase>> rs;
+        for(uint32_t i = 0; i < exclude_condition.size(); ++i)
+        {
+            rs.push_back(exclude_condition[i]);
+        }
+         return rs; 
+    }
+    void update_blackboard_plan()
+    {
+        for(uint32_t i = 0; i < include_condition.size(); ++i)
+        {
+			if(include_condition[i].is_valid())
+				include_condition[i]->set_blackboard_plan(blackboard_plan);
+        }
+        for(uint32_t i = 0; i < exclude_condition.size(); ++i)
+        {
+			if (exclude_condition[i].is_valid())
+				exclude_condition[i]->set_blackboard_plan(blackboard_plan);
+        }
     }
 public:
-    void set_conditions(const Array& p_conditions)
-    {
-        conditions.clear();
-        for(int32_t i = 0; i < p_conditions.size(); ++i)
-        {
-            conditions.push_back(static_cast<Ref<AnimatorAIStateConditionBase>>(p_conditions[i]));
-        }
-        update_blackboard_plan();
-    }
-    Array get_conditions() { 
-        Array ret;
-        for(uint32_t i = 0; i < conditions.size(); ++i)
-        {
-            ret.push_back(conditions[i]);
-        }
-        return ret; 
-    }
-    
+    void set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) { blackboard_plan = p_blackboard_plan; update_blackboard_plan();}
     virtual bool is_enable(Blackboard* p_blackboard,bool p_is_include)
+    {
+        if(!is_enable(include_condition,p_blackboard,true))
+        {
+            return false;
+        }
+        if(!is_enable(exclude_condition,p_blackboard,false))
+        {
+            return false;
+        }
+        return true;
+    }
+    virtual bool is_enable(const LocalVector<Ref<AnimatorAIStateConditionBase>> & conditions,Blackboard* p_blackboard,bool p_is_include)
     {
         if(p_is_include)
         {
@@ -496,66 +537,9 @@ public:
         }
         return true;
     }
-    void set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) { blackboard_plan = p_blackboard_plan; update_blackboard_plan();}
-    void update_blackboard_plan();
-
 public:
-    LocalVector<Ref<AnimatorAIStateConditionBase>> conditions;
-    Ref<BlackboardPlan> blackboard_plan;
-    
-};
-// 角色动画的条件
-class CharacterAnimatorCondition : public RefCounted
-{
-
-    GDCLASS(CharacterAnimatorCondition, RefCounted)
-    static void _bind_methods();
-public :
-    void set_include_condition(const Ref<CharacterAnimatorConditionList>& p_include_condition) 
-    {
-         include_condition = p_include_condition; 
-         update_blackboard_plan();
-    }
-    Ref<CharacterAnimatorConditionList> get_include_condition() { return include_condition; }
-
-    void set_exclude_condition(const Ref<CharacterAnimatorConditionList>& p_exclude_condition)
-    {
-         exclude_condition = p_exclude_condition; 
-         update_blackboard_plan();
-    }
-    Ref<CharacterAnimatorConditionList> get_exclude_condition() { return exclude_condition; }
-    void update_blackboard_plan()
-    {
-        if(include_condition.is_valid()){
-            include_condition->set_blackboard_plan(blackboard_plan);
-        }
-        if(exclude_condition.is_valid()){
-            exclude_condition->set_blackboard_plan(blackboard_plan);
-        }
-    }
-public:
-    void set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) { blackboard_plan = p_blackboard_plan; update_blackboard_plan();}
-    virtual bool is_enable(Blackboard* p_blackboard,bool p_is_include)
-    {
-        if(include_condition.is_valid())
-        {
-            if(!include_condition->is_enable(p_blackboard,true))
-            {
-                return false;
-            }
-        }
-        if(exclude_condition.is_valid())
-        {
-            if(!exclude_condition->is_enable(p_blackboard,false))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-public:
-    Ref<CharacterAnimatorConditionList> include_condition;
-    Ref<CharacterAnimatorConditionList> exclude_condition;
+    LocalVector<Ref<AnimatorAIStateConditionBase>> include_condition;
+    LocalVector<Ref<AnimatorAIStateConditionBase>> exclude_condition;
     Ref<BlackboardPlan> blackboard_plan;
     
 };

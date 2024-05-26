@@ -402,6 +402,11 @@ Dictionary::Dictionary(const Dictionary &p_from) {
 	_p = nullptr;
 	_ref(p_from);
 }
+Dictionary::Dictionary(std::initializer_list<KeyValue<Variant,Variant>> p_from)
+{		
+	for (auto&& item : p_from)
+		(*this)[item.key] = item.value;
+}
 
 Dictionary::Dictionary() {
 	_p = memnew(DictionaryPrivate);

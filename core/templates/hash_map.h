@@ -36,6 +36,7 @@
 #include "core/templates/hashfuncs.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/pair.h"
+#include <initializer_list>
 
 /**
  * A HashMap implementation that uses open addressing with Robin Hood hashing.
@@ -592,6 +593,11 @@ public:
 		// Capacity can't be 0.
 		capacity_index = 0;
 		reserve(p_initial_capacity);
+	}
+	HashMap(std::initializer_list<KeyValue<TKey, TValue>> p_from)
+	{		
+		for (auto&& item : p_from)
+			insert(item.key, item.value);
 	}
 	HashMap() {
 		capacity_index = MIN_CAPACITY_INDEX;

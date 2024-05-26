@@ -5,7 +5,6 @@
 void AnimatorAIStateConditionBase::set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) 
 {
         blackboard_plan = p_blackboard_plan; 
-        CharacterAnimationLogicNode::init_blackboard(blackboard_plan);
 }
 void AnimatorAIStateConditionBase::set_compare_type_name(const StringName& p_type)
 {
@@ -72,8 +71,8 @@ void CharacterAnimatorCondition::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_exclude_condition", "exclude_condition"), &CharacterAnimatorCondition::set_exclude_condition);
     ClassDB::bind_method(D_METHOD("get_exclude_condition"), &CharacterAnimatorCondition::get_exclude_condition);
 
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "include_condition", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorConditionList"), "set_include_condition", "get_include_condition");
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "exclude_condition",PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorConditionList"), "set_exclude_condition", "get_exclude_condition");
+    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "include_condition", PROPERTY_HINT_ARRAY_TYPE,RESOURCE_TYPE_HINT("AnimatorAIStateConditionBase")), "set_include_condition", "get_include_condition");
+    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_condition",PROPERTY_HINT_ARRAY_TYPE, RESOURCE_TYPE_HINT("AnimatorAIStateConditionBase")), "set_exclude_condition", "get_exclude_condition");
 
 }
 ////////////////////////////////////////// CharacterAnimationLogicRoot /////////////////////////////////////////
@@ -92,19 +91,5 @@ void CharacterAnimationLogicRoot::_bind_methods()
 
     ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "node_list", PROPERTY_HINT_ARRAY_TYPE,RESOURCE_TYPE_HINT("CharacterAnimationLogicNode")), "set_node_list", "get_node_list");
     ADD_PROPERTY(PropertyInfo(Variant::INT, "bt_sort",PROPERTY_HINT_BUTTON,"#FF22AA;Sort;sort"), "set_bt_sort", "get_bt_sort");
-
-}
-
-void CharacterAnimatorConditionList::update_blackboard_plan()
-{
-    CharacterAnimationLogicNode::init_blackboard(blackboard_plan);
-    for (uint32_t i = 0; i < conditions.size(); ++i)
-    {
-        if(conditions[i].is_null())
-        {
-            continue;
-        }
-        conditions[i]->set_blackboard_plan(blackboard_plan);
-    }
 
 }

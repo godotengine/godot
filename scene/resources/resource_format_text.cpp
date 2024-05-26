@@ -1883,7 +1883,7 @@ String ResourceFormatSaverTextInstance::_write_resource(const Ref<Resource> &res
 			String path = relative_paths ? local_path.path_to_file(res->get_path()) : res->get_path();
 			return "Resource(\"" + path + "\")";
 		} else {
-			ERR_FAIL_V_MSG("null", "Resource was not pre cached for the resource section, bug?");
+			ERR_FAIL_V_MSG("null", res->get_class() + ":" + res->get_name() + ":Resource was not pre cached for the resource section, bug?" + res->get_path());
 			//internal resource
 		}
 	}

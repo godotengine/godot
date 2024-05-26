@@ -49,6 +49,7 @@ public:
 	bool unreference();
 	int get_reference_count() const;
 
+	virtual Ref<RefCounted> duplicate(bool p_subresources = false) const ;
 	RefCounted();
 	~RefCounted() {}
 };

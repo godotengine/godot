@@ -49,6 +49,7 @@ void RefCounted::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reference"), &RefCounted::reference);
 	ClassDB::bind_method(D_METHOD("unreference"), &RefCounted::unreference);
 	ClassDB::bind_method(D_METHOD("get_reference_count"), &RefCounted::get_reference_count);
+	ClassDB::bind_method(D_METHOD("duplicate", "subresources"), &RefCounted::duplicate, DEFVAL(false));
 }
 
 int RefCounted::get_reference_count() const {
@@ -93,6 +94,55 @@ bool RefCounted::unreference() {
 	return die;
 }
 
+Ref<RefCounted> RefCounted::duplicate(bool p_subresources) const {
+	List<PropertyInfo> plist;
+	get_property_list(&plist);
+
+	Ref<RefCounted> r = static_cast<RefCounted *>(ClassDB::instantiate(get_class()));
+	ERR_FAIL_COND_V(r.is_null(), Ref<RefCounted>());
+
+	for (const PropertyInfo &E : plist) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+			continue;
+		}
+		Variant p = get(E.name);
+
+		switch (p.get_type()) {
+			case Variant::Type::DICTIONARY:
+			case Variant::Type::ARRAY:
+			case Variant::Type::PACKED_BYTE_ARRAY:
+			case Variant::Type::PACKED_COLOR_ARRAY:
+			case Variant::Type::PACKED_INT32_ARRAY:
+			case Variant::Type::PACKED_INT64_ARRAY:
+			case Variant::Type::PACKED_FLOAT32_ARRAY:
+			case Variant::Type::PACKED_FLOAT64_ARRAY:
+			case Variant::Type::PACKED_STRING_ARRAY:
+			case Variant::Type::PACKED_VECTOR2_ARRAY:
+			case Variant::Type::PACKED_VECTOR3_ARRAY:
+			case Variant::Type::PACKED_VECTOR4_ARRAY: {
+				r->set(E.name, p.duplicate(true));
+			} break;
+
+			case Variant::Type::OBJECT: {
+				Ref<RefCounted> sr = p;
+				if (!(E.usage & PROPERTY_USAGE_NEVER_DUPLICATE) && (p_subresources || (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE))) {
+					if (sr.is_valid()) {
+						r->set(E.name, sr->duplicate(p_subresources));
+					}
+				}
+				else {
+					r->set(E.name, p);
+				}
+			} break;
+
+			default: {
+				r->set(E.name, p);
+			}
+		}
+	}
+
+return r;
+}
 RefCounted::RefCounted() :
 		Object(true) {
 	refcount.init();

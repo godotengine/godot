@@ -466,7 +466,7 @@ void StreamPeerBuffer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_data_array", "data"), &StreamPeerBuffer::set_data_array);
 	ClassDB::bind_method(D_METHOD("get_data_array"), &StreamPeerBuffer::get_data_array);
 	ClassDB::bind_method(D_METHOD("clear"), &StreamPeerBuffer::clear);
-	ClassDB::bind_method(D_METHOD("duplicate"), &StreamPeerBuffer::duplicate);
+	//ClassDB::bind_method(D_METHOD("duplicate"), &StreamPeerBuffer::duplicate);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data_array"), "set_data_array", "get_data_array");
 }
@@ -558,7 +558,7 @@ void StreamPeerBuffer::clear() {
 	pointer = 0;
 }
 
-Ref<StreamPeerBuffer> StreamPeerBuffer::duplicate() const {
+Ref<RefCounted> StreamPeerBuffer::duplicate(bool p_subresources) const {
 	Ref<StreamPeerBuffer> spb;
 	spb.instantiate();
 	spb->data = data;

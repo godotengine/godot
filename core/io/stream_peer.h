@@ -146,7 +146,7 @@ public:
 
 	void clear();
 
-	Ref<StreamPeerBuffer> duplicate() const;
+	Ref<RefCounted> duplicate(bool p_subresources = false) const;
 
 	StreamPeerBuffer() {}
 };

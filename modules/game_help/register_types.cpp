@@ -120,7 +120,6 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<AnimatorAIStateBoolCondition>();
 
 	
-	ClassDB::register_class<CharacterAnimatorConditionList>();
 	ClassDB::register_class<CharacterAnimatorCondition>();
 	ClassDB::register_class<CharacterAnimationLogicNode>();
 

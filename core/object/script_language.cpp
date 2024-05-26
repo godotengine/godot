@@ -261,6 +261,10 @@ void ScriptServer::init_languages() {
 				if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
 					continue;
 				}
+				if(!FileAccess::exists(c["path"])) {
+					// TODO: This should be a warning.
+					continue;
+				}
 				add_global_class(c["class"], c["base"], c["language"], c["path"]);
 			}
 			ProjectSettings::get_singleton()->clear("_global_script_classes");
@@ -271,6 +275,10 @@ void ScriptServer::init_languages() {
 		for (const Variant &script_class : script_classes) {
 			Dictionary c = script_class;
 			if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
+				continue;
+			}
+			if(!FileAccess::exists(c["path"])) {
+				// TODO: This should be a warning.
 				continue;
 			}
 			add_global_class(c["class"], c["base"], c["language"], c["path"]);
@@ -480,6 +488,10 @@ void ScriptServer::save_global_classes() {
 	get_global_class_list(&gc);
 	Array gcarr;
 	for (const StringName &E : gc) {
+		if(!FileAccess::exists(global_classes[E].path)) {
+			// TODO: This should be a warning.
+			continue;
+		}
 		Dictionary d;
 		d["class"] = E;
 		d["language"] = global_classes[E].language;

@@ -113,7 +113,7 @@ public:
 	void set_scene_unique_id(const String &p_id);
 	String get_scene_unique_id() const;
 
-	virtual Ref<Resource> duplicate(bool p_subresources = false) const;
+	//virtual Ref<Resource> duplicate(bool p_subresources = false) const;
 	Ref<Resource> duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache);
 	void configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache);
 

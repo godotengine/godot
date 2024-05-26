@@ -33,7 +33,7 @@ void CharacterBodyMain::_bind_methods()
 
     ClassDB::bind_method(D_METHOD("init_body_part_array", "part_array"), &CharacterBodyMain::init_body_part_array);
     ClassDB::bind_method(D_METHOD("set_body_part", "part"), &CharacterBodyMain::set_body_part);
-    ClassDB::bind_method(D_METHOD("get_body_part", "part"), &CharacterBodyMain::get_body_part);
+    ClassDB::bind_method(D_METHOD("get_body_part"), &CharacterBodyMain::get_body_part);
 
 
     

@@ -48,9 +48,10 @@
 #include "scene/resources/image_texture.h"
 
 void EditorResourcePicker::_update_resource() {
+	Ref<Resource> resource = edited_resource;
 	String resource_path;
-	if (edited_resource.is_valid() && edited_resource->get_path().is_resource_file()) {
-		resource_path = edited_resource->get_path() + "\n";
+	if (resource.is_valid() && resource->get_path().is_resource_file()) {
+		resource_path = resource->get_path() + "\n";
 	}
 	String class_name = _get_resource_type(edited_resource);
 
@@ -59,28 +60,37 @@ void EditorResourcePicker::_update_resource() {
 
 		assign_button->set_custom_minimum_size(assign_button_min_size);
 
-		if (edited_resource == Ref<Resource>()) {
+		if (edited_resource.is_null()) {
 			assign_button->set_icon(Ref<Texture2D>());
 			assign_button->set_text(TTR("<empty>"));
 			assign_button->set_tooltip_text("");
 		} else {
 			assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
+			if(resource.is_valid()) {
+				if (!resource->get_name().is_empty()) {
+					assign_button->set_text(resource->get_name());
+				} else if (resource->get_path().is_resource_file()) {
+					assign_button->set_text(resource->get_path().get_file());
+				} else {
+					assign_button->set_text(class_name);
+				}
 
-			if (!edited_resource->get_name().is_empty()) {
-				assign_button->set_text(edited_resource->get_name());
-			} else if (edited_resource->get_path().is_resource_file()) {
-				assign_button->set_text(edited_resource->get_path().get_file());
-			} else {
+				if (resource->get_path().is_resource_file()) {
+					resource_path = resource->get_path() + "\n";
+				}
+				assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + class_name);
+
+				// Preview will override the above, so called at the end.
+				EditorResourcePreview::get_singleton()->queue_edited_resource_preview(resource, this, "_update_resource_preview", resource->get_instance_id());
+				
+			}
+			else
+			{
+				assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
 				assign_button->set_text(class_name);
-			}
+				assign_button->set_tooltip_text(TTR("Type:") + " " + class_name);
 
-			if (edited_resource->get_path().is_resource_file()) {
-				resource_path = edited_resource->get_path() + "\n";
 			}
-			assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + class_name);
-
-			// Preview will override the above, so called at the end.
-			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(edited_resource, this, "_update_resource_preview", edited_resource->get_instance_id());
 		}
 	} else if (edited_resource.is_valid()) {
 		assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + edited_resource->get_class());
@@ -128,8 +138,11 @@ void EditorResourcePicker::_resource_selected() {
 		return;
 	}
 
-	FileSystemDock::get_singleton()->navigate_to_path(edited_resource->get_path());
-	emit_signal(SNAME("resource_selected"), edited_resource, false);
+	Ref<Resource> resource = edited_resource;
+	if(resource.is_valid()) {
+		FileSystemDock::get_singleton()->navigate_to_path(resource->get_path());
+	}
+	emit_signal(SNAME("resource_selected"), edited_resource, false);		
 }
 
 void EditorResourcePicker::_file_selected(const String &p_path) {
@@ -203,7 +216,8 @@ void EditorResourcePicker::_update_menu_items() {
 	}
 
 	// Add options for changing existing value of the resource.
-	if (edited_resource.is_valid()) {
+	Ref<Resource> resource = get_edited_resource();
+	if (resource.is_valid()) {
 		// Determine if the edited resource is part of another scene (foreign) which was imported
 		bool is_edited_resource_foreign_import = EditorNode::get_singleton()->is_resource_read_only(edited_resource, true);
 
@@ -222,7 +236,7 @@ void EditorResourcePicker::_update_menu_items() {
 
 			// Check whether the resource has subresources.
 			List<PropertyInfo> property_list;
-			edited_resource->get_property_list(&property_list);
+			resource->get_property_list(&property_list);
 			bool has_subresources = false;
 			for (PropertyInfo &p : property_list) {
 				if ((p.type == Variant::OBJECT) && (p.hint == PROPERTY_HINT_RESOURCE_TYPE) && (p.name != "script") && ((Object *)edited_resource->get(p.name) != nullptr)) {
@@ -238,7 +252,7 @@ void EditorResourcePicker::_update_menu_items() {
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save As..."), OBJ_MENU_SAVE_AS);
 		}
 
-		if (edited_resource->get_path().is_resource_file()) {
+		if (resource->get_path().is_resource_file()) {
 			edit_menu->add_separator();
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("ShowInFileSystem")), TTR("Show in FileSystem"), OBJ_MENU_SHOW_IN_FILE_SYSTEM);
 		}
@@ -265,7 +279,7 @@ void EditorResourcePicker::_update_menu_items() {
 		}
 	}
 
-	if (edited_resource.is_valid() || paste_valid) {
+	if (resource.is_valid() || paste_valid) {
 		edit_menu->add_separator();
 
 		if (edited_resource.is_valid()) {
@@ -278,7 +292,7 @@ void EditorResourcePicker::_update_menu_items() {
 	}
 
 	// Add options to convert existing resource to another type of resource.
-	if (is_editable() && edited_resource.is_valid()) {
+	if (is_editable() && resource.is_valid()) {
 		Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(edited_resource);
 		if (conversions.size()) {
 			edit_menu->add_separator();
@@ -341,23 +355,22 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 		} break;
 
 		case OBJ_MENU_INSPECT: {
-			if (edited_resource.is_valid()) {
-				emit_signal(SNAME("resource_selected"), edited_resource, true);
-			}
+			emit_signal(SNAME("resource_selected"), edited_resource, true);
 		} break;
 
 		case OBJ_MENU_CLEAR: {
-			edited_resource = Ref<Resource>();
+			edited_resource = Ref<RefCounted>();
 			emit_signal(SNAME("resource_changed"), edited_resource);
 			_update_resource();
 		} break;
 
 		case OBJ_MENU_MAKE_UNIQUE: {
-			if (edited_resource.is_null()) {
+			Ref<RefCounted> resource = get_edited_resource();
+			if (resource.is_null()) {
 				return;
 			}
 
-			Ref<Resource> unique_resource = edited_resource->duplicate();
+			Ref<RefCounted> unique_resource = resource->duplicate();
 			ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
 
 			edited_resource = unique_resource;
@@ -366,7 +379,8 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 		} break;
 
 		case OBJ_MENU_MAKE_UNIQUE_RECURSIVE: {
-			if (edited_resource.is_null()) {
+			Ref<Resource> resource = get_edited_resource();
+			if (resource.is_null()) {
 				return;
 			}
 
@@ -391,45 +405,60 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 			duplicate_resources_tree->clear();
 			TreeItem *root = duplicate_resources_tree->create_item();
-			_gather_resources_to_duplicate(edited_resource, root);
+			_gather_resources_to_duplicate(resource, root);
 
 			duplicate_resources_dialog->reset_size();
 			duplicate_resources_dialog->popup_centered(Vector2(500, 400) * EDSCALE);
 		} break;
 
 		case OBJ_MENU_SAVE: {
-			if (edited_resource.is_null()) {
+			Ref<Resource> resource = get_edited_resource();
+			if (resource.is_null()) {
 				return;
 			}
-			EditorNode::get_singleton()->save_resource(edited_resource);
+			EditorNode::get_singleton()->save_resource(resource);
 		} break;
 
 		case OBJ_MENU_SAVE_AS: {
-			if (edited_resource.is_null()) {
+			Ref<Resource> resource = get_edited_resource();
+			if (resource.is_null()) {
 				return;
 			}
-			EditorNode::get_singleton()->save_resource_as(edited_resource);
+			EditorNode::get_singleton()->save_resource_as(resource);
 		} break;
 
 		case OBJ_MENU_COPY: {
-			EditorSettings::get_singleton()->set_resource_clipboard(edited_resource);
+			Ref<Resource> resource = get_edited_resource();
+			if (resource.is_null()) {
+				return;
+			}
+			EditorSettings::get_singleton()->set_resource_clipboard(resource);
 		} break;
 
 		case OBJ_MENU_PASTE: {
-			edited_resource = EditorSettings::get_singleton()->get_resource_clipboard();
-			if (edited_resource->is_built_in() && EditorNode::get_singleton()->get_edited_scene() &&
-					edited_resource->get_path().get_slice("::", 0) != EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path()) {
+			Ref<Resource> resource = EditorSettings::get_singleton()->get_resource_clipboard();
+			if(resource.is_null()) {
+				return;
+			}
+
+			edited_resource = resource;
+			if (resource->is_built_in() && EditorNode::get_singleton()->get_edited_scene() &&
+					resource->get_path().get_slice("::", 0) != EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path()) {
 				// Automatically make resource unique if it belongs to another scene.
 				_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
 				return;
 			}
 
-			emit_signal(SNAME("resource_changed"), edited_resource);
+			emit_signal(SNAME("resource_changed"), resource);
 			_update_resource();
 		} break;
 
 		case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
-			FileSystemDock::get_singleton()->navigate_to_path(edited_resource->get_path());
+			Ref<Resource> resource = get_edited_resource();
+			if(resource.is_null()) {
+				return;
+			}
+			FileSystemDock::get_singleton()->navigate_to_path(resource->get_path());
 		} break;
 
 		default: {
@@ -440,7 +469,12 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 			if (p_which >= CONVERT_BASE_ID) {
 				int to_type = p_which - CONVERT_BASE_ID;
-				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(edited_resource);
+
+				Ref<Resource> resource = edited_resource;
+				if(!resource.is_valid()) {
+					break;
+				}
+				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(resource);
 				ERR_FAIL_INDEX(to_type, conversions.size());
 
 				edited_resource = conversions[to_type]->convert(edited_resource);
@@ -464,15 +498,16 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				obj = EditorNode::get_editor_data().instantiate_custom_type(intype, "Resource");
 			}
 
-			Resource *resp = Object::cast_to<Resource>(obj);
+			RefCounted *resp = Object::cast_to<RefCounted>(obj);
 			ERR_BREAK(!resp);
 
 			EditorNode::get_editor_data().instantiate_object_properties(obj);
 
 			// Prevent freeing of the object until the end of the update of the resource (GH-88286).
-			Ref<Resource> old_edited_resource = edited_resource;
-			edited_resource = Ref<Resource>(resp);
-			emit_signal(SNAME("resource_changed"), edited_resource);
+			Ref<RefCounted> old_edited_resource = edited_resource;
+			edited_resource = resp;
+			Ref<Resource> resource = Ref<RefCounted>(resp);
+			emit_signal(SNAME("resource_changed"), edited_resource);	
 			_update_resource();
 		} break;
 	}
@@ -545,7 +580,7 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource) const {
+String EditorResourcePicker::_get_resource_type(const Ref<RefCounted> &p_resource) const {
 	if (p_resource.is_null()) {
 		return String();
 	}
@@ -787,12 +822,12 @@ void EditorResourcePicker::_bind_methods() {
 	GDVIRTUAL_BIND(_handle_menu_selected, "id");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type"), "set_base_type", "get_base_type");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource", PROPERTY_USAGE_NONE), "set_edited_resource", "get_edited_resource");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_resource", PROPERTY_HINT_RESOURCE_TYPE, "RefCounted", PROPERTY_USAGE_NONE), "set_edited_resource", "get_edited_resource");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
 
-	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::BOOL, "inspect")));
-	ADD_SIGNAL(MethodInfo("resource_changed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "RefCounted"), PropertyInfo(Variant::BOOL, "inspect")));
+	ADD_SIGNAL(MethodInfo("resource_changed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "RefCounted")));
 }
 
 void EditorResourcePicker::_notification(int p_what) {
@@ -880,9 +915,9 @@ Vector<String> EditorResourcePicker::get_allowed_types() const {
 	return types;
 }
 
-void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
+void EditorResourcePicker::set_edited_resource(Ref<RefCounted> p_resource) {
 	if (!p_resource.is_valid()) {
-		edited_resource = Ref<Resource>();
+		edited_resource = Ref<RefCounted>();
 		_update_resource();
 		return;
 	}
@@ -906,12 +941,12 @@ void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 	set_edited_resource_no_check(p_resource);
 }
 
-void EditorResourcePicker::set_edited_resource_no_check(Ref<Resource> p_resource) {
+void EditorResourcePicker::set_edited_resource_no_check(Ref<RefCounted> p_resource) {
 	edited_resource = p_resource;
 	_update_resource();
 }
 
-Ref<Resource> EditorResourcePicker::get_edited_resource() {
+Ref<RefCounted> EditorResourcePicker::get_edited_resource() {
 	return edited_resource;
 }
 

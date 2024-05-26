@@ -694,8 +694,9 @@ public:
 };
 
 
-class EditorPropertyButton : public EditorProperty {
-	GDCLASS(EditorPropertyButton, EditorProperty);
+class EditorPropertyButton : public VBoxContainer {
+	GDCLASS(EditorPropertyButton, VBoxContainer);
+	Object * object;
 	Button *button = nullptr;
 	Color color;
 	String lable;
@@ -704,8 +705,10 @@ class EditorPropertyButton : public EditorProperty {
 
 	void _button_pressed();
 public:
-	void setup(const String &p_hit_string);
-	virtual void update_property() override;
+	void setup(Object * p_object,const String &p_hit_string);
+	virtual void update_property() ;
+
+	virtual Size2 get_minimum_size() const override;
 	EditorPropertyButton();
 };
 
@@ -719,13 +722,13 @@ class EditorPropertyResource : public EditorProperty {
 	EditorInspector *sub_inspector = nullptr;
 	bool opened_editor = false;
 
-	void _resource_selected(const Ref<Resource> &p_resource, bool p_inspect);
-	void _resource_changed(const Ref<Resource> &p_resource);
+	void _resource_selected(const Ref<RefCounted> &p_resource, bool p_inspect);
+	void _resource_changed(const Ref<RefCounted> &p_resource);
 
 	void _viewport_selected(const NodePath &p_path);
 
 	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool p_advance);
-	void _sub_inspector_resource_selected(const Ref<Resource> &p_resource, const String &p_property);
+	void _sub_inspector_resource_selected(const Ref<RefCounted> &p_resource, const String &p_property);
 	void _sub_inspector_object_id_selected(int p_id);
 
 	void _open_editor_pressed();
