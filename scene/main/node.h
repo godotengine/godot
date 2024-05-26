@@ -225,6 +225,21 @@ private:
 		// is switched on.
 		bool physics_interpolated : 1;
 
+		// We can auto-reset physics interpolation when e.g. adding a node for the first time.
+		bool physics_interpolation_reset_requested : 1;
+
+		// Most nodes need not be interpolated in the scene tree, physics interpolation
+		// is normally only needed in the RenderingServer. However if we need to read the
+		// interpolated transform of a node in the SceneTree, it is necessary to duplicate
+		// the interpolation logic client side, in order to prevent stalling the RenderingServer
+		// by reading back.
+		bool physics_interpolated_client_side : 1;
+
+		// For certain nodes (e.g. CPU particles in global mode)
+		// it can be useful to not send the instance transform to the
+		// RenderingServer, and specify the mesh in world space.
+		bool use_identity_transform : 1;
+
 		bool parent_owned : 1;
 		bool in_constructor : 1;
 		bool use_placeholder : 1;
@@ -263,6 +278,7 @@ private:
 	void _propagate_exit_tree();
 	void _propagate_after_exit_tree();
 	void _propagate_physics_interpolated(bool p_interpolated);
+	void _propagate_physics_interpolation_reset_requested(bool p_requested);
 	void _propagate_process_owner(Node *p_owner, int p_pause_notification, int p_enabled_notification);
 	void _propagate_groups_dirty();
 	Array _get_node_and_resource(const NodePath &p_path);
@@ -333,6 +349,15 @@ protected:
 	void _add_child_nocheck(Node *p_child, const StringName &p_name, InternalMode p_internal_mode = INTERNAL_MODE_DISABLED);
 	void _set_owner_nocheck(Node *p_owner);
 	void _set_name_nocheck(const StringName &p_name);
+
+	void _set_physics_interpolated_client_side(bool p_enable) { data.physics_interpolated_client_side = p_enable; }
+	bool _is_physics_interpolated_client_side() const { return data.physics_interpolated_client_side; }
+
+	void _set_physics_interpolation_reset_requested(bool p_enable) { data.physics_interpolation_reset_requested = p_enable; }
+	bool _is_physics_interpolation_reset_requested() const { return data.physics_interpolation_reset_requested; }
+
+	void _set_use_identity_transform(bool p_enable) { data.use_identity_transform = p_enable; }
+	bool _is_using_identity_transform() const { return data.use_identity_transform; }
 
 	//call from SceneTree
 	void _call_input(const Ref<InputEvent> &p_event);

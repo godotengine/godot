@@ -41,6 +41,9 @@
 
 class PackedScene;
 class Node;
+#ifndef _3D_DISABLED
+class Node3D;
+#endif
 class Window;
 class Material;
 class Mesh;
@@ -119,6 +122,13 @@ private:
 		Vector<Node *> nodes;
 		bool changed = false;
 	};
+
+#ifndef _3D_DISABLED
+	struct ClientPhysicsInterpolation {
+		SelfList<Node3D>::List _node_3d_list;
+		void physics_process();
+	} _client_physics_interpolation;
+#endif
 
 	Window *root = nullptr;
 
@@ -315,6 +325,7 @@ public:
 	virtual void iteration_prepare() override;
 
 	virtual bool physics_process(double p_time) override;
+	virtual void iteration_end() override;
 	virtual bool process(double p_time) override;
 
 	virtual void finalize() override;
@@ -422,6 +433,11 @@ public:
 
 	void set_physics_interpolation_enabled(bool p_enabled);
 	bool is_physics_interpolation_enabled() const;
+
+#ifndef _3D_DISABLED
+	void client_physics_interpolation_add_node_3d(SelfList<Node3D> *p_elem);
+	void client_physics_interpolation_remove_node_3d(SelfList<Node3D> *p_elem);
+#endif
 
 	SceneTree();
 	~SceneTree();
