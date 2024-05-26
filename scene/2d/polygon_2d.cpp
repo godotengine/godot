@@ -232,6 +232,8 @@ void Polygon2D::_notification(int p_what) {
 						uvs.write[i] = texmat.xform(points[i]) / tex_size;
 					}
 				}
+			} else if (points.size() == uv.size()) {
+				uvs = uv;
 			}
 
 			if (skeleton_node && !invert && bone_weights.size()) {
