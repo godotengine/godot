@@ -427,6 +427,7 @@ TEST_CASE("[String] Find and replace") {
 	MULTICHECK_STRING_STRING_EQ(s, replace, "Birthday", "Halloween", "Happy Halloween, Anna!");
 	MULTICHECK_STRING_STRING_EQ(s, replace_first, "y", "Y", "HappY Birthday, Anna!");
 	MULTICHECK_STRING_STRING_EQ(s, replacen, "Y", "Y", "HappY BirthdaY, Anna!");
+	CHECK(s.replace(Vector<String>({ " ", ",", "Anna!" }), "") == "HappyBirthday");
 }
 
 TEST_CASE("[String] Insertion") {

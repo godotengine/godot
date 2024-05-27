@@ -4117,7 +4117,7 @@ String String::replace(const Vector<String> &p_keys, const String &p_with) const
 			if (found) {
 				replaced = true;
 				new_string += p_with;
-				src_pos += key_len;
+				src_pos += key_len - 1;
 				break;
 			}
 		}
