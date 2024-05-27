@@ -571,7 +571,7 @@ Resource::~Resource() {
 		return;
 	}
 	MutexLock lock(ResourceCache::resources_mutex);
-  
+
 	// Only unregister from the cache if this is the actual resource listed there.
 	// (Other resources can have the same value in `path_cache` if loaded with `CACHE_IGNORE`.)
 	HashMap<String, Resource *>::Iterator E = ResourceCache::resources.find(path_cache);
