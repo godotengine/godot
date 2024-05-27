@@ -424,6 +424,46 @@
 				Gets the type of a track.
 			</description>
 		</method>
+		<method name="add_key_to_bind">
+			<return type="int" />
+			<param index="0" name="bind_idx" type="int" />
+			<param index="1" name="p_at_pos" type="int" />
+			<param index="2" name="track_idx" type="int" />
+			<param index="3" name="key_idx" type="int" />
+			<description>
+				Binds a key to a list of binded keys. Returns the index of the added key in the list.
+			</description>
+		</method>
+		<method name="remove_key_from_bind">
+			<return type="void" />
+			<param index="0" name="bind_idx" type="int" />
+			<param index="1" name="track_idx" type="int" />
+			<param index="2" name="key" type="int" />
+			<description>
+				Removes a binded key from a list of binded keys.
+			</description>
+		</method>
+		<method name="track_clone_key">
+			<return type="int" />
+			<param index="0" name="src_key" type="int" />
+			<param index="1" name="src_track_idx" type="int" />
+			<param index="2" name="track" type="int" />
+			<param index="3" name="time" type="double" />
+			<param index="4" name="key" type="Variant" />
+			<param index="5" name="transition" type="float" default="1" />
+			<description>
+				Duplicates and binds keys. Returns the key index.
+			</description>
+		</method>
+		<method name="track_set_key_bind">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key" type="int" />
+			<param index="2" name="bind_idx" type="int" />
+			<description>
+				Binds a key.
+			</description>
+		</method>
 		<method name="track_insert_key">
 			<return type="int" />
 			<param index="0" name="track_idx" type="int" />

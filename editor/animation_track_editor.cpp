@@ -2757,6 +2757,18 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 			accept_event();
 		}
+		if (ED_IS_SHORTCUT("animation_editor/clone_selected_keys", p_event)) {
+			if (!read_only) {
+				emit_signal(SNAME("clone_request"), -1.0, false);
+			}
+			accept_event();
+		}
+		if (ED_IS_SHORTCUT("animation_editor/make_unique_selected_keys", p_event)) {
+			if (!read_only) {
+				emit_signal(SNAME("make_unique_request"), -1.0, false);
+			}
+			accept_event();
+		}
 		if (ED_IS_SHORTCUT("animation_editor/cut_selected_keys", p_event)) {
 			if (!read_only) {
 				emit_signal(SNAME("cut_request"));
@@ -2923,6 +2935,8 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				if (selected || editor->is_selection_active()) {
 					menu->add_separator();
 					menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Duplicate Key(s)"), MENU_KEY_DUPLICATE);
+					menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Clone Key(s)"), MENU_KEY_CLONE);
+					menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), MENU_KEY_MAKE_UNIQUE);
 					menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCut")), TTR("Cut Key(s)"), MENU_KEY_CUT);
 					menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCopy")), TTR("Copy Key(s)"), MENU_KEY_COPY);
 				}
@@ -3268,6 +3282,12 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		case MENU_KEY_DUPLICATE: {
 			emit_signal(SNAME("duplicate_request"), insert_at_pos, true);
 		} break;
+		case MENU_KEY_CLONE: {
+			emit_signal(SNAME("clone_request"), insert_at_pos, true);
+		} break;
+		case MENU_KEY_MAKE_UNIQUE: {
+			emit_signal(SNAME("make_unique_request"), insert_at_pos, true);
+		} break;
 		case MENU_KEY_CUT: {
 			emit_signal(SNAME("cut_request"));
 		} break;
@@ -3350,6 +3370,8 @@ void AnimationTrackEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("move_selection_cancel"));
 
 	ADD_SIGNAL(MethodInfo("duplicate_request", PropertyInfo(Variant::FLOAT, "offset"), PropertyInfo(Variant::BOOL, "is_offset_valid")));
+	ADD_SIGNAL(MethodInfo("clone_request", PropertyInfo(Variant::FLOAT, "offset"), PropertyInfo(Variant::BOOL, "is_offset_valid")));
+	ADD_SIGNAL(MethodInfo("make_unique_request", PropertyInfo(Variant::FLOAT, "offset"), PropertyInfo(Variant::BOOL, "is_offset_valid")));
 	ADD_SIGNAL(MethodInfo("create_reset_request"));
 	ADD_SIGNAL(MethodInfo("copy_request"));
 	ADD_SIGNAL(MethodInfo("cut_request"));
@@ -4710,6 +4732,8 @@ void AnimationTrackEditor::_update_tracks() {
 		track_edit->connect("move_selection_cancel", callable_mp(this, &AnimationTrackEditor::_move_selection_cancel));
 
 		track_edit->connect("duplicate_request", callable_mp(this, &AnimationTrackEditor::_anim_duplicate_keys).bind(i), CONNECT_DEFERRED);
+		track_edit->connect("clone_request", callable_mp(this, &AnimationTrackEditor::_anim_clone_keys).bind(i), CONNECT_DEFERRED);
+		track_edit->connect("make_unique_request", callable_mp(this, &AnimationTrackEditor::_anim_make_key_unique).bind(i), CONNECT_DEFERRED);
 		track_edit->connect("cut_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_CUT_KEYS), CONNECT_DEFERRED);
 		track_edit->connect("copy_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_COPY_KEYS), CONNECT_DEFERRED);
 		track_edit->connect("paste_request", callable_mp(this, &AnimationTrackEditor::_anim_paste_keys).bind(i), CONNECT_DEFERRED);
@@ -5854,6 +5878,132 @@ void AnimationTrackEditor::_anim_duplicate_keys(float p_ofs, bool p_ofs_valid, i
 	}
 }
 
+void AnimationTrackEditor::_anim_clone_keys(float p_ofs, bool p_ofs_valid, int p_track) {
+	if (selection.size() && animation.is_valid()) {
+		int top_track = 0x7FFFFFFF;
+		float top_time = 1e10;
+		for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+			const SelectedKey &sk = E->key();
+
+			float t = animation->track_get_key_time(sk.track, sk.key);
+			if (t < top_time) {
+				top_time = t;
+			}
+			if (sk.track < top_track) {
+				top_track = sk.track;
+			}
+		}
+		ERR_FAIL_COND(top_track == 0x7FFFFFFF || top_time == 1e10);
+
+		// Find the track to start cloning
+		int start_track = p_track;
+		if (p_track == -1) {
+			bool is_valid_track_selected = _get_track_selected() >= 0 && _get_track_selected() < animation->get_track_count();
+			start_track = is_valid_track_selected ? _get_track_selected() : top_track;
+		}
+
+		bool all_compatible = true;
+
+		for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+			const SelectedKey &sk = E->key();
+			int dst_track = sk.track + (start_track - top_track);
+
+			if (dst_track < 0 || dst_track >= animation->get_track_count()) {
+				all_compatible = false;
+				break;
+			}
+
+			Variant::Type value_type = animation->track_get_key_value(sk.track, sk.key).get_type();
+			Animation::TrackType track_type = animation->track_get_type(sk.track);
+			if (!_is_track_compatible(dst_track, value_type, track_type)) {
+				all_compatible = false;
+				break;
+			}
+		}
+
+		ERR_FAIL_COND_MSG(!all_compatible, "Clone failed: Not all animation keys were compatible with their target tracks");
+
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Animation Clone Keys"));
+
+		List<Pair<int, float>> new_selection_values;
+
+		for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+			const SelectedKey &sk = E->key();
+
+			float t = animation->track_get_key_time(sk.track, sk.key);
+			float insert_pos = p_ofs_valid ? p_ofs : timeline->get_play_position();
+
+			if (p_ofs_valid) {
+				if (snap->is_pressed() && step->get_value() != 0) {
+					insert_pos = snap_time(insert_pos);
+				}
+			}
+
+			float dst_time = t + (insert_pos - top_time);
+			int dst_track = sk.track + (start_track - top_track);
+
+			if (dst_track < 0 || dst_track >= animation->get_track_count()) {
+				continue;
+			}
+
+			int existing_idx = animation->track_find_key(dst_track, dst_time, Animation::FIND_MODE_APPROX);
+
+			Variant value = animation->track_get_key_value(sk.track, sk.key);
+			bool key_is_bezier = animation->track_get_type(sk.track) == Animation::TYPE_BEZIER;
+			bool track_is_bezier = animation->track_get_type(dst_track) == Animation::TYPE_BEZIER;
+			if (key_is_bezier && !track_is_bezier) {
+				value = AnimationBezierTrackEdit::get_bezier_key_value(value);
+			} else if (!key_is_bezier && track_is_bezier) {
+				value = AnimationBezierTrackEdit::make_default_bezier_key(value);
+			}
+
+			undo_redo->add_do_method(animation.ptr(), "track_clone_key", sk.key, sk.track, dst_track, dst_time, value, animation->track_get_key_transition(E->key().track, E->key().key));
+			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", dst_track, dst_time);
+
+			Pair<int, float> p;
+			p.first = dst_track;
+			p.second = dst_time;
+			new_selection_values.push_back(p);
+
+			// Clone keys
+			if (existing_idx != -1) {
+				undo_redo->add_undo_method(animation.ptr(), "track_clone_key", sk.key, sk.track, dst_track, dst_time, animation->track_get_key_value(dst_track, existing_idx), animation->track_get_key_transition(dst_track, existing_idx));
+			}
+		}
+
+		undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
+		undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+
+		RBMap<SelectedKey, KeyInfo> new_selection;
+		for (const Pair<int, float> &E : new_selection_values) {
+			undo_redo->add_do_method(this, "_select_at_anim", animation, E.first, E.second);
+		}
+		for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+			undo_redo->add_undo_method(this, "_select_at_anim", animation, E->key().track, E->get().pos);
+		}
+
+		undo_redo->add_do_method(this, "_redraw_tracks");
+		undo_redo->add_undo_method(this, "_redraw_tracks");
+		undo_redo->commit_action();
+	}
+}
+
+void AnimationTrackEditor::_anim_make_key_unique() {
+	if (selection.size() && animation.is_valid()) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Animation Make Keys Unique"));
+
+		for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+			const SelectedKey &sk = E->key();
+			int bind_idx = animation->track_get_key_bind(sk.track, sk.key);
+			undo_redo->add_do_method(animation.ptr(), "remove_key_from_bind", bind_idx, sk.track, sk.key);
+			undo_redo->add_undo_method(animation.ptr(), "add_key_to_bind", bind_idx, -1, sk.track, sk.key);
+		}
+		undo_redo->commit_action();
+	}
+}
+
 void AnimationTrackEditor::_anim_copy_keys(bool p_cut) {
 	if (is_selection_active() && animation.is_valid()) {
 		int top_track = 0x7FFFFFFF;
@@ -6553,6 +6703,18 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			}
 			_anim_duplicate_keys(-1.0, false, -1.0);
 		} break;
+		case EDIT_CLONE_SELECTED_KEYS: {
+			if (bezier_edit->is_visible()) {
+				break;
+			}
+			_anim_clone_keys(-1.0, false, -1.0);
+		} break;
+		case EDIT_MAKE_UNIQUE_SELECTED_KEYS: {
+			if (bezier_edit->is_visible()) {
+				break;
+			}
+			_anim_make_key_unique();
+		} break;
 		case EDIT_CUT_KEYS: {
 			if (bezier_edit->is_visible()) {
 				bezier_edit->copy_selected_keys(true);
@@ -6675,8 +6837,12 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				undo_redo->create_action(TTR("Animation Delete Keys"));
 
 				for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+					int bind_idx = animation->track_get_key_bind(E->key().track, E->key().key);
 					undo_redo->add_do_method(animation.ptr(), "track_remove_key", E->key().track, E->key().key);
 					undo_redo->add_undo_method(animation.ptr(), "track_insert_key", E->key().track, E->get().pos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
+					if (bind_idx >= 0) {
+						undo_redo->add_undo_method(animation.ptr(), "add_key_to_bind", bind_idx, -1, E->key().track, E->key().key);
+					}
 				}
 				undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
 				undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
@@ -7345,6 +7511,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->get_popup()->add_item(TTR("Make Easing Selection..."), EDIT_EASE_SELECTION);
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/duplicate_selected_keys", TTR("Duplicate Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::D), EDIT_DUPLICATE_SELECTED_KEYS);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/clone_selected_keys", TTR("Clone Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::L), EDIT_CLONE_SELECTED_KEYS);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/make_unique_selected_keys", TTR("Make Unique Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::U), EDIT_MAKE_UNIQUE_SELECTED_KEYS);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/cut_selected_keys", TTR("Cut Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::X), EDIT_CUT_KEYS);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/copy_selected_keys", TTR("Copy Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::C), EDIT_COPY_KEYS);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/paste_keys", TTR("Paste Keys"), KeyModifierMask::CMD_OR_CTRL | Key::V), EDIT_PASTE_KEYS);

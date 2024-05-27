@@ -969,6 +969,174 @@ void Animation::remove_track(int p_track) {
 	_check_capture_included();
 }
 
+int Animation::add_bind(int p_at_pos) {
+	if (p_at_pos < 0 || p_at_pos >= binded_keys.size()) {
+		p_at_pos = binded_keys.size();
+	}
+
+	BindParent *bp = memnew(BindParent);
+	binded_keys.insert(p_at_pos, bp);
+
+	emit_changed();
+	return p_at_pos;
+}
+
+void Animation::remove_bind(int p_bind) {
+	ERR_FAIL_INDEX(p_bind, binded_keys.size());
+	BindParent *bp = binded_keys[p_bind];
+
+	memdelete(bp);
+	binded_keys.remove_at(p_bind);
+	emit_changed();
+	_check_capture_included();
+}
+
+
+int Animation::add_key_to_bind(int bind_idx, int p_at_pos, int track_idx, int key_idx) {
+	BindParent *bindp = binded_keys[bind_idx];
+
+	if (p_at_pos < 0 || p_at_pos >= bindp->bindedChildren.size()) {
+		p_at_pos = bindp->bindedChildren.size();
+	}
+
+	BindedKey *bk = memnew(BindedKey);
+	bk->track_idx = track_idx;
+	bk->key_idx = key_idx;
+	(bindp->bindedChildren).insert(p_at_pos, bk);
+
+	track_set_key_bind(track_idx, key_idx, bind_idx);
+
+	emit_changed();
+	return p_at_pos;
+}
+
+void Animation::remove_key_from_bind(int bind_idx, int track_idx, int key_idx) {
+	BindParent *bp = binded_keys[bind_idx];
+
+	int idx = -1;
+	for (int i = 0; i < bp->bindedChildren.size(); i++) {
+		BindedKey *bk = bp->bindedChildren[i];
+		if (bk->track_idx == track_idx && bk->key_idx == key_idx) {
+			idx = i;
+			break;
+		}
+	}
+	if (idx >= 0) {
+		memdelete(bp->bindedChildren[idx]);
+		bp->bindedChildren.remove_at(idx);
+		track_set_key_bind(track_idx, key_idx, -1);
+	}
+}
+
+void Animation::signal_value_change_to_binded_keys(int bind_idx, const Variant &p_value, TrackType type) {
+	BindParent *bindp = binded_keys[bind_idx];
+		
+	for (int i = 0; i < bindp->bindedChildren.size(); i++) {
+		BindedKey *bk = bindp->bindedChildren[i];
+		int p_track = bk->track_idx;
+		int p_key_idx = bk->key_idx;
+
+		ERR_FAIL_INDEX(p_track, tracks.size());
+		Track *t = tracks[p_track];
+
+
+		switch (type) {
+			case TYPE_POSITION_3D: {
+				ERR_FAIL_COND((p_value.get_type() != Variant::VECTOR3) && (p_value.get_type() != Variant::VECTOR3I));
+				PositionTrack *tt = static_cast<PositionTrack *>(t);
+				ERR_FAIL_COND(tt->compressed_track >= 0);
+				ERR_FAIL_INDEX(p_key_idx, tt->positions.size());
+
+				tt->positions.write[p_key_idx].value = p_value;
+
+			} break;
+			case TYPE_ROTATION_3D: {
+				ERR_FAIL_COND((p_value.get_type() != Variant::QUATERNION) && (p_value.get_type() != Variant::BASIS));
+				RotationTrack *rt = static_cast<RotationTrack *>(t);
+				ERR_FAIL_COND(rt->compressed_track >= 0);
+				ERR_FAIL_INDEX(p_key_idx, rt->rotations.size());
+
+				rt->rotations.write[p_key_idx].value = p_value;
+
+			} break;
+			case TYPE_SCALE_3D: {
+				ERR_FAIL_COND((p_value.get_type() != Variant::VECTOR3) && (p_value.get_type() != Variant::VECTOR3I));
+				ScaleTrack *st = static_cast<ScaleTrack *>(t);
+				ERR_FAIL_COND(st->compressed_track >= 0);
+				ERR_FAIL_INDEX(p_key_idx, st->scales.size());
+
+				st->scales.write[p_key_idx].value = p_value;
+
+			} break;
+			case TYPE_BLEND_SHAPE: {
+				ERR_FAIL_COND((p_value.get_type() != Variant::FLOAT) && (p_value.get_type() != Variant::INT));
+				BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
+				ERR_FAIL_COND(bst->compressed_track >= 0);
+				ERR_FAIL_INDEX(p_key_idx, bst->blend_shapes.size());
+
+				bst->blend_shapes.write[p_key_idx].value = p_value;
+
+			} break;
+			case TYPE_VALUE: {
+				ValueTrack *vt = static_cast<ValueTrack *>(t);
+				ERR_FAIL_INDEX(p_key_idx, vt->values.size());
+
+				vt->values.write[p_key_idx].value = p_value;
+
+			} break;
+			case TYPE_METHOD: {
+				MethodTrack *mt = static_cast<MethodTrack *>(t);
+				ERR_FAIL_INDEX(p_key_idx, mt->methods.size());
+
+				Dictionary d = p_value;
+
+				if (d.has("method")) {
+					mt->methods.write[p_key_idx].method = d["method"];
+				}
+				if (d.has("args")) {
+					mt->methods.write[p_key_idx].params = d["args"];
+				}
+
+			} break;
+			case TYPE_BEZIER: {
+				BezierTrack *bt = static_cast<BezierTrack *>(t);
+				ERR_FAIL_INDEX(p_key_idx, bt->values.size());
+
+				Array arr = p_value;
+				ERR_FAIL_COND(arr.size() != 5);
+
+				bt->values.write[p_key_idx].value.value = arr[0];
+				bt->values.write[p_key_idx].value.in_handle.x = arr[1];
+				bt->values.write[p_key_idx].value.in_handle.y = arr[2];
+				bt->values.write[p_key_idx].value.out_handle.x = arr[3];
+				bt->values.write[p_key_idx].value.out_handle.y = arr[4];
+
+			} break;
+			case TYPE_AUDIO: {
+				AudioTrack *at = static_cast<AudioTrack *>(t);
+				ERR_FAIL_INDEX(p_key_idx, at->values.size());
+
+				Dictionary k = p_value;
+				ERR_FAIL_COND(!k.has("start_offset"));
+				ERR_FAIL_COND(!k.has("end_offset"));
+				ERR_FAIL_COND(!k.has("stream"));
+
+				at->values.write[p_key_idx].value.start_offset = k["start_offset"];
+				at->values.write[p_key_idx].value.end_offset = k["end_offset"];
+				at->values.write[p_key_idx].value.stream = k["stream"];
+
+			} break;
+			case TYPE_ANIMATION: {
+				AnimationTrack *at = static_cast<AnimationTrack *>(t);
+				ERR_FAIL_INDEX(p_key_idx, at->values.size());
+
+				at->values.write[p_key_idx].value = p_value;
+
+			} break;
+		}
+	}
+}
+
 void Animation::set_capture_included(bool p_capture_included) {
 	capture_included = p_capture_included;
 }
@@ -1424,6 +1592,11 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	Track *t = tracks[p_track];
 
+	int bind_idx = track_get_key_bind(p_track, p_idx);
+	if (bind_idx >= 0) {
+		remove_key_from_bind(bind_idx , p_track, p_idx);
+	}
+
 	switch (t->type) {
 		case TYPE_POSITION_3D: {
 			PositionTrack *tt = static_cast<PositionTrack *>(t);
@@ -1674,6 +1847,19 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 	return -1;
 }
 
+int Animation::track_clone_key(int src_key_idx, int src_track_idx, int p_track, double p_time, const Variant &p_key, real_t p_transition) {
+	int bind_idx = track_get_key_bind(src_track_idx, src_key_idx);
+	if (bind_idx < 0) {
+		bind_idx = add_bind(-1);
+		add_key_to_bind(bind_idx, -1, src_track_idx, src_key_idx);
+	}
+	
+	int key_idx = track_insert_key(p_track, p_time, p_key, p_transition);
+	add_key_to_bind(bind_idx, -1, p_track, key_idx);
+    
+	return key_idx;
+}
+
 int Animation::track_insert_key(int p_track, double p_time, const Variant &p_key, real_t p_transition) {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
@@ -1848,6 +2034,57 @@ int Animation::track_get_key_count(int p_track) const {
 	}
 
 	ERR_FAIL_V(-1);
+}
+
+
+int Animation::track_get_key_bind(int p_track, int p_key_idx) const {
+
+	Track *t = tracks[p_track];
+	int ret = -1;
+
+	switch (t->type) {
+		case TYPE_POSITION_3D: {
+			PositionTrack *tt = static_cast<PositionTrack *>(t);
+			return tt->positions[p_key_idx].bind_idx;
+		}
+		case TYPE_ROTATION_3D: {
+			RotationTrack *rt = static_cast<RotationTrack *>(t);
+			return rt->rotations[p_key_idx].bind_idx;
+		}
+		case TYPE_SCALE_3D: {
+			ScaleTrack *st = static_cast<ScaleTrack *>(t);
+			return st->scales[p_key_idx].bind_idx;
+		}
+		case TYPE_BLEND_SHAPE: {
+			BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
+			return bst->blend_shapes[p_key_idx].bind_idx;
+		}
+		case TYPE_VALUE: {
+			ValueTrack *vt = static_cast<ValueTrack *>(t);
+			return vt->values[p_key_idx].bind_idx;
+		}
+		case TYPE_METHOD: {
+			// disabled for TYPE_METHOD
+			return -1;
+		}
+		case TYPE_BEZIER: {
+			BezierTrack *bt = static_cast<BezierTrack *>(t);
+			return bt->values[p_key_idx].bind_idx;
+		}
+		case TYPE_AUDIO: {
+			AudioTrack *at = static_cast<AudioTrack *>(t);
+			return at->values[p_key_idx].bind_idx;
+		}
+		case TYPE_ANIMATION: {
+			AnimationTrack *at = static_cast<AnimationTrack *>(t);
+			return at->values[p_key_idx].bind_idx;
+		} 
+		default: {
+			return -1;
+        }
+	}
+
+	return ret;
 }
 
 Variant Animation::track_get_key_value(int p_track, int p_key_idx) const {
@@ -2200,6 +2437,63 @@ bool Animation::track_is_compressed(int p_track) const {
 	}
 }
 
+void Animation::track_set_key_bind(int p_track, int p_key_idx, int bind_idx) {
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	Track *t = tracks[p_track];
+
+	switch (t->type) {
+		case TYPE_POSITION_3D: {
+			PositionTrack *tt = static_cast<PositionTrack *>(t);
+			ERR_FAIL_COND(tt->compressed_track >= 0);
+			ERR_FAIL_INDEX(p_key_idx, tt->positions.size());
+			tt->positions.write[p_key_idx].bind_idx = bind_idx;
+		} break;
+		case TYPE_ROTATION_3D: {
+			RotationTrack *rt = static_cast<RotationTrack *>(t);
+			ERR_FAIL_COND(rt->compressed_track >= 0);
+			ERR_FAIL_INDEX(p_key_idx, rt->rotations.size());
+			rt->rotations.write[p_key_idx].bind_idx = bind_idx;
+		} break;
+		case TYPE_SCALE_3D: {
+			ScaleTrack *st = static_cast<ScaleTrack *>(t);
+			ERR_FAIL_COND(st->compressed_track >= 0);
+			ERR_FAIL_INDEX(p_key_idx, st->scales.size());
+			st->scales.write[p_key_idx].bind_idx = bind_idx;
+		} break;
+		case TYPE_BLEND_SHAPE: {
+			BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
+			ERR_FAIL_COND(bst->compressed_track >= 0);
+			ERR_FAIL_INDEX(p_key_idx, bst->blend_shapes.size());
+			bst->blend_shapes.write[p_key_idx].bind_idx = bind_idx;
+		} break;
+		case TYPE_VALUE: {
+			ValueTrack *vt = static_cast<ValueTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, vt->values.size());
+			vt->values.write[p_key_idx].bind_idx = bind_idx;
+		} break;
+		case TYPE_METHOD: {
+			// disabled for TYPE_METHOD
+		} break;
+		case TYPE_BEZIER: {
+			BezierTrack *bt = static_cast<BezierTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, bt->values.size());
+			bt->values.write[p_key_idx].bind_idx = bind_idx;
+		} break;
+		case TYPE_AUDIO: {
+			AudioTrack *at = static_cast<AudioTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, at->values.size());
+			at->values.write[p_key_idx].bind_idx = bind_idx;
+		} break;
+		case TYPE_ANIMATION: {
+			AnimationTrack *at = static_cast<AnimationTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, at->values.size());
+			at->values.write[p_key_idx].bind_idx = bind_idx;
+		} break;
+	}
+
+	emit_changed();
+}
+
 void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p_value) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	Track *t = tracks[p_track];
@@ -2210,8 +2504,11 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			PositionTrack *tt = static_cast<PositionTrack *>(t);
 			ERR_FAIL_COND(tt->compressed_track >= 0);
 			ERR_FAIL_INDEX(p_key_idx, tt->positions.size());
-
-			tt->positions.write[p_key_idx].value = p_value;
+			if (tt->positions[p_key_idx].bind_idx >= 0) {
+				signal_value_change_to_binded_keys(tt->positions[p_key_idx].bind_idx, p_value, TYPE_POSITION_3D);
+			} else {
+				tt->positions.write[p_key_idx].value = p_value;
+			}
 
 		} break;
 		case TYPE_ROTATION_3D: {
@@ -2219,8 +2516,11 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			RotationTrack *rt = static_cast<RotationTrack *>(t);
 			ERR_FAIL_COND(rt->compressed_track >= 0);
 			ERR_FAIL_INDEX(p_key_idx, rt->rotations.size());
-
-			rt->rotations.write[p_key_idx].value = p_value;
+			if (rt->rotations[p_key_idx].bind_idx >= 0) {
+				signal_value_change_to_binded_keys(rt->rotations[p_key_idx].bind_idx, p_value, TYPE_ROTATION_3D);
+			} else {
+				rt->rotations.write[p_key_idx].value = p_value;
+			}
 
 		} break;
 		case TYPE_SCALE_3D: {
@@ -2228,8 +2528,11 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			ScaleTrack *st = static_cast<ScaleTrack *>(t);
 			ERR_FAIL_COND(st->compressed_track >= 0);
 			ERR_FAIL_INDEX(p_key_idx, st->scales.size());
-
-			st->scales.write[p_key_idx].value = p_value;
+			if (st->scales[p_key_idx].bind_idx >= 0) {
+				signal_value_change_to_binded_keys(st->scales[p_key_idx].bind_idx, p_value, TYPE_SCALE_3D);
+			} else {
+				st->scales.write[p_key_idx].value = p_value;			
+			}
 
 		} break;
 		case TYPE_BLEND_SHAPE: {
@@ -2237,15 +2540,22 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
 			ERR_FAIL_COND(bst->compressed_track >= 0);
 			ERR_FAIL_INDEX(p_key_idx, bst->blend_shapes.size());
-
-			bst->blend_shapes.write[p_key_idx].value = p_value;
+			if (bst->blend_shapes[p_key_idx].bind_idx >= 0) {
+				signal_value_change_to_binded_keys(bst->blend_shapes[p_key_idx].bind_idx, p_value, TYPE_BLEND_SHAPE);
+			} else {
+				bst->blend_shapes.write[p_key_idx].value = p_value;
+			}
 
 		} break;
 		case TYPE_VALUE: {
 			ValueTrack *vt = static_cast<ValueTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, vt->values.size());
 
-			vt->values.write[p_key_idx].value = p_value;
+			if (vt->values[p_key_idx].bind_idx >= 0) {
+				signal_value_change_to_binded_keys(vt->values[p_key_idx].bind_idx, p_value, TYPE_VALUE);
+			} else {
+				vt->values.write[p_key_idx].value = p_value;
+			}
 
 		} break;
 		case TYPE_METHOD: {
@@ -2260,6 +2570,13 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			if (d.has("args")) {
 				mt->methods.write[p_key_idx].params = d["args"];
 			}
+			if (d.has("bind_idx")) {
+				if (mt->methods[p_key_idx].bind_idx >= 0) {
+				signal_value_change_to_binded_keys(mt->methods[p_key_idx].bind_idx, p_value, TYPE_METHOD);
+				} else {
+					mt->methods.write[p_key_idx].bind_idx = d["bind_idx"];
+				}
+			}
 
 		} break;
 		case TYPE_BEZIER: {
@@ -2269,11 +2586,15 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			Array arr = p_value;
 			ERR_FAIL_COND(arr.size() != 5);
 
-			bt->values.write[p_key_idx].value.value = arr[0];
-			bt->values.write[p_key_idx].value.in_handle.x = arr[1];
-			bt->values.write[p_key_idx].value.in_handle.y = arr[2];
-			bt->values.write[p_key_idx].value.out_handle.x = arr[3];
-			bt->values.write[p_key_idx].value.out_handle.y = arr[4];
+			if (bt->values[p_key_idx].bind_idx >= 0) {
+				signal_value_change_to_binded_keys(bt->values[p_key_idx].bind_idx, p_value, TYPE_BEZIER);
+			} else {
+				bt->values.write[p_key_idx].value.value = arr[0];
+				bt->values.write[p_key_idx].value.in_handle.x = arr[1];
+				bt->values.write[p_key_idx].value.in_handle.y = arr[2];
+				bt->values.write[p_key_idx].value.out_handle.x = arr[3];
+				bt->values.write[p_key_idx].value.out_handle.y = arr[4];
+			}
 
 		} break;
 		case TYPE_AUDIO: {
@@ -2285,16 +2606,24 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			ERR_FAIL_COND(!k.has("end_offset"));
 			ERR_FAIL_COND(!k.has("stream"));
 
-			at->values.write[p_key_idx].value.start_offset = k["start_offset"];
-			at->values.write[p_key_idx].value.end_offset = k["end_offset"];
-			at->values.write[p_key_idx].value.stream = k["stream"];
+			if (at->values[p_key_idx].bind_idx >= 0) {
+				signal_value_change_to_binded_keys(at->values[p_key_idx].bind_idx, p_value, TYPE_AUDIO);
+			} else {
+				at->values.write[p_key_idx].value.start_offset = k["start_offset"];
+				at->values.write[p_key_idx].value.end_offset = k["end_offset"];
+				at->values.write[p_key_idx].value.stream = k["stream"];
+			}
 
 		} break;
 		case TYPE_ANIMATION: {
 			AnimationTrack *at = static_cast<AnimationTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, at->values.size());
 
-			at->values.write[p_key_idx].value = p_value;
+			if (at->values[p_key_idx].bind_idx >= 0) {
+				signal_value_change_to_binded_keys(at->values[p_key_idx].bind_idx, p_value, TYPE_ANIMATION);
+			} else {
+				at->values.write[p_key_idx].value = p_value;
+			}
 
 		} break;
 	}
@@ -3825,6 +4154,9 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("scale_track_interpolate", "track_idx", "time_sec", "backward"), &Animation::scale_track_interpolate, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("blend_shape_track_interpolate", "track_idx", "time_sec", "backward"), &Animation::blend_shape_track_interpolate, DEFVAL(false));
 
+	ClassDB::bind_method(D_METHOD("add_key_to_bind", "bind_idx", "track_idx", "key"), &Animation::add_key_to_bind, DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("remove_key_from_bind", "bind_idx", "track_idx", "key"), &Animation::remove_key_from_bind, DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("track_clone_key", "src_key_idx", "src_track_idx", "track_idx", "time", "key", "transition"), &Animation::track_clone_key, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("track_insert_key", "track_idx", "time", "key", "transition"), &Animation::track_insert_key, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("track_remove_key", "track_idx", "key_idx"), &Animation::track_remove_key);
 	ClassDB::bind_method(D_METHOD("track_remove_key_at_time", "track_idx", "time"), &Animation::track_remove_key_at_time);

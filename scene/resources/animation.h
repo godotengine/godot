@@ -115,7 +115,17 @@ private:
 		virtual ~Track() {}
 	};
 
+	struct BindedKey {
+		int track_idx;
+		int key_idx;
+	};
+
+	struct BindParent {
+		Vector<BindedKey *> bindedChildren;
+	};
+
 	struct Key {
+		int bind_idx = -1;
 		real_t transition = 1.0;
 		double time = 0.0; // Time in secs.
 	};
@@ -236,6 +246,7 @@ private:
 	};
 
 	Vector<Track *> tracks;
+	Vector<BindParent *> binded_keys;
 
 	template <typename T>
 	void _clear(T &p_keys);
@@ -394,6 +405,10 @@ public:
 	int add_track(TrackType p_type, int p_at_pos = -1);
 	void remove_track(int p_track);
 
+	int add_bind(int p_at_pos);
+	void remove_bind(int p_bind);
+	void signal_value_change_to_binded_keys(int bind_idx, const Variant &p_value, TrackType type);
+
 	void set_capture_included(bool p_capture_included);
 	bool is_capture_included() const;
 
@@ -417,13 +432,18 @@ public:
 	void track_set_enabled(int p_track, bool p_enabled);
 	bool track_is_enabled(int p_track) const;
 
+	int add_key_to_bind(int bind_idx, int p_at_pos, int track_idx, int key_idx);
+	void remove_key_from_bind(int bind_idx, int track_idx, int key_idx); 
+	int track_clone_key(int src_key_idx, int src_track_idx, int p_track, double p_time, const Variant &p_key, real_t p_transition = 1);
 	int track_insert_key(int p_track, double p_time, const Variant &p_key, real_t p_transition = 1);
 	void track_set_key_transition(int p_track, int p_key_idx, real_t p_transition);
+	void track_set_key_bind(int p_track, int p_key_idx, int bind_idx);
 	void track_set_key_value(int p_track, int p_key_idx, const Variant &p_value);
 	void track_set_key_time(int p_track, int p_key_idx, double p_time);
 	int track_find_key(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST, bool p_limit = false) const;
 	void track_remove_key(int p_track, int p_idx);
 	void track_remove_key_at_time(int p_track, double p_time);
+	int track_get_key_bind(int p_track, int p_key_idx) const;
 	int track_get_key_count(int p_track) const;
 	Variant track_get_key_value(int p_track, int p_key_idx) const;
 	double track_get_key_time(int p_track, int p_key_idx) const;
