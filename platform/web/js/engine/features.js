@@ -8,8 +8,12 @@ const Features = {
 	 */
 	isWebGLAvailable: function (majorVersion = 1) {
 		try {
-			return !!document.createElement('canvas').getContext(['webgl', 'webgl2'][majorVersion - 1]);
-		} catch (e) { /* Not available */ }
+			return !!document
+				.createElement("canvas")
+				.getContext(["webgl", "webgl2"][majorVersion - 1]);
+		} catch (e) {
+			/* Not available */
+		}
 		return false;
 	},
 
@@ -20,7 +24,11 @@ const Features = {
 	 * @function Engine.isFetchAvailable
 	 */
 	isFetchAvailable: function () {
-		return 'fetch' in window && 'Response' in window && 'body' in window.Response.prototype;
+		return (
+			"fetch" in window &&
+			"Response" in window &&
+			"body" in window.Response.prototype
+		);
 	},
 
 	/**
@@ -30,7 +38,7 @@ const Features = {
 	 * @function Engine.isSecureContext
 	 */
 	isSecureContext: function () {
-		return window['isSecureContext'] === true;
+		return window["isSecureContext"] === true;
 	},
 
 	/**
@@ -41,7 +49,7 @@ const Features = {
 	 * @function Engine.isSecureContext
 	 */
 	isCrossOriginIsolated: function () {
-		return window['crossOriginIsolated'] === true;
+		return window["crossOriginIsolated"] === true;
 	},
 
 	/**
@@ -54,7 +62,7 @@ const Features = {
 	 * @function Engine.isSharedArrayBufferAvailable
 	 */
 	isSharedArrayBufferAvailable: function () {
-		return 'SharedArrayBuffer' in window;
+		return "SharedArrayBuffer" in window;
 	},
 
 	/**
@@ -64,7 +72,7 @@ const Features = {
 	 * @function Engine.isAudioWorkletAvailable
 	 */
 	isAudioWorkletAvailable: function () {
-		return 'AudioContext' in window && 'audioWorklet' in AudioContext.prototype;
+		return "AudioContext" in window && "audioWorklet" in AudioContext.prototype;
 	},
 
 	/**
@@ -75,27 +83,33 @@ const Features = {
 	 * @param {{threads: (boolean|undefined)}} supportedFeatures
 	 */
 	getMissingFeatures: function (supportedFeatures = {}) {
-		const {
-			threads: supportsThreads = true,
-		} = supportedFeatures;
+		const { threads: supportsThreads = true } = supportedFeatures;
 
 		const missing = [];
 		if (!Features.isWebGLAvailable(2)) {
-			missing.push('WebGL2 - Check web browser configuration and hardware support');
+			missing.push(
+				"WebGL2 - Check web browser configuration and hardware support",
+			);
 		}
 		if (!Features.isFetchAvailable()) {
-			missing.push('Fetch - Check web browser version');
+			missing.push("Fetch - Check web browser version");
 		}
 		if (!Features.isSecureContext()) {
-			missing.push('Secure Context - Check web server configuration (use HTTPS)');
+			missing.push(
+				"Secure Context - Check web server configuration (use HTTPS)",
+			);
 		}
 
 		if (supportsThreads) {
 			if (!Features.isCrossOriginIsolated()) {
-				missing.push('Cross-Origin Isolation - Check that the web server configuration sends the correct headers.');
+				missing.push(
+					"Cross-Origin Isolation - Check that the web server configuration sends the correct headers.",
+				);
 			}
 			if (!Features.isSharedArrayBufferAvailable()) {
-				missing.push('SharedArrayBuffer - Check that the web server configuration sends the correct headers.');
+				missing.push(
+					"SharedArrayBuffer - Check that the web server configuration sends the correct headers.",
+				);
 			}
 		}
 

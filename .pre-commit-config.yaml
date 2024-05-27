@@ -89,28 +89,21 @@ repos:
         entry: python3 doc/tools/doc_status.py
         files: ^(doc/classes|.*/doc_classes)/.*\.xml$
 
-      - id: eslint
-        name: eslint
-        language: node
-        entry: eslint
-        files: ^(platform/web/js/|modules/|misc/dist/html/).*\.(js|html)$
-        args: [--fix, --no-warn-ignored, --no-config-lookup, --config, platform/web/eslint.config.cjs]
-        additional_dependencies:
-          - '@eslint/js@^9.3.0'
-          - '@html-eslint/eslint-plugin@^0.24.1'
-          - '@html-eslint/parser@^0.24.1'
-          - '@stylistic/eslint-plugin@^2.1.0'
-          - 'eslint@^9.3.0'
-          - 'eslint-plugin-html@^8.1.1'
-          - 'globals@^15.3.0'
-          - 'espree@^10.0.1'
+      - id: biome
+        name: biome (JavaScript, TypeScript, JSX, and JSON formatting)
+        language: system
+        entry: misc/scripts/biome.sh
+        pass_filenames: false
 
+      # Requires `npx` to be installed. (Install node.js)
       - id: jsdoc
         name: jsdoc
-        language: node
-        entry: jsdoc
+        language: system
+        entry: npx
         files: ^platform/web/js/engine/(engine|config|features)\.js$
         args:
+          - --yes
+          - jsdoc@^4.0.3
           - --template
           - platform/web/js/jsdoc2rst/
           - platform/web/js/engine/engine.js
@@ -121,7 +114,6 @@ repos:
           - -d
           - dry-run
         pass_filenames: false
-        additional_dependencies: ['jsdoc@^4.0.3']
 
       - id: copyright-headers
         name: copyright-headers
