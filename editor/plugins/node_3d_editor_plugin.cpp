@@ -3023,6 +3023,10 @@ void Node3DEditorViewport::_notification(int p_what) {
 			update_preview_node = false;
 		} break;
 
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			set_freelook_active(false);
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			surface->connect(SceneStringName(draw), callable_mp(this, &Node3DEditorViewport::_draw));
 			surface->connect(SceneStringName(gui_input), callable_mp(this, &Node3DEditorViewport::_sinput));

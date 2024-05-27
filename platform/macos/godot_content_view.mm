@@ -370,16 +370,6 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
-	BitField<MouseButtonMask> last_button_state = ds->mouse_get_button_state();
-
-	MouseButtonMask mask = mouse_button_to_mask(index);
-
-	if (pressed) {
-		last_button_state.set_flag(mask);
-	} else {
-		last_button_state.clear_flag(mask);
-	}
-	ds->mouse_set_button_state(last_button_state);
 
 	Ref<InputEventMouseButton> mb;
 	mb.instantiate();
@@ -394,7 +384,7 @@
 	mb->set_pressed(pressed);
 	mb->set_position(wd.mouse_pos);
 	mb->set_global_position(wd.mouse_pos);
-	mb->set_button_mask(last_button_state);
+	mb->set_button_mask(ds->mouse_get_button_state());
 	if (!outofstream && index == MouseButton::LEFT && pressed) {
 		mb->set_double_click([event clickCount] == 2);
 	}
@@ -745,7 +735,6 @@
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	MouseButtonMask mask = mouse_button_to_mask(button);
-	BitField<MouseButtonMask> last_button_state = ds->mouse_get_button_state();
 
 	Ref<InputEventMouseButton> sc;
 	sc.instantiate();
@@ -757,9 +746,9 @@
 	sc->set_pressed(true);
 	sc->set_position(wd.mouse_pos);
 	sc->set_global_position(wd.mouse_pos);
-	last_button_state.set_flag(mask);
-	sc->set_button_mask(last_button_state);
-	ds->mouse_set_button_state(last_button_state);
+	BitField<MouseButtonMask> scroll_mask = ds->mouse_get_button_state();
+	scroll_mask.set_flag(mask);
+	sc->set_button_mask(scroll_mask);
 
 	Input::get_singleton()->parse_input_event(sc);
 
@@ -770,9 +759,8 @@
 	sc->set_pressed(false);
 	sc->set_position(wd.mouse_pos);
 	sc->set_global_position(wd.mouse_pos);
-	last_button_state.clear_flag(mask);
-	sc->set_button_mask(last_button_state);
-	ds->mouse_set_button_state(last_button_state);
+	scroll_mask.clear_flag(mask);
+	sc->set_button_mask(scroll_mask);
 
 	Input::get_singleton()->parse_input_event(sc);
 }
