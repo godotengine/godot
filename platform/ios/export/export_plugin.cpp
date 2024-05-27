@@ -1400,7 +1400,8 @@ Error EditorExportPlatformIOS::_copy_asset(const Ref<EditorExportPreset> &p_pres
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	String base_dir = p_asset.get_base_dir().replace(Vector<String>({ "res://", ".godot/mono/temp/bin/" }), "");
+	static Vector<String> to_replace({ "res://", ".godot/mono/temp/bin/" });
+	String base_dir = p_asset.get_base_dir().replace(to_replace, "");
 	String asset = p_asset.ends_with("/") ? p_asset.left(p_asset.length() - 1) : p_asset;
 	String destination_dir;
 	String destination;

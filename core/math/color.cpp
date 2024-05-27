@@ -415,7 +415,8 @@ Color Color::named(const String &p_name, const Color &p_default) {
 int Color::find_named_color(const String &p_name) {
 	String name = p_name;
 	// Normalize name.
-	name = name.replace(Vector<String>({ " ", "-", "_", "'", "." }), "");
+	static Vector<String> to_replace({ " ", "-", "_", "'", "." });
+	name = name.replace(to_replace, "");
 	name = name.to_upper();
 
 	static HashMap<String, int> named_colors_hashmap;
