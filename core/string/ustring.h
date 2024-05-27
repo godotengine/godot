@@ -312,6 +312,7 @@ public:
 	String replace_first(const char *p_key, const char *p_with) const;
 	String replace(const String &p_key, const String &p_with) const;
 	String replace(const char *p_key, const char *p_with) const;
+	String replace(const Vector<String> &p_keys, const String &p_with) const;
 	String replacen(const String &p_key, const String &p_with) const;
 	String replacen(const char *p_key, const char *p_with) const;
 	String repeat(int p_count) const;

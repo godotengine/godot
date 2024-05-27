@@ -246,9 +246,7 @@ String get_csharp_project_name() {
 				// Other chars that have been found to break assembly loading.
 				";", "'", "=", "," });
 		name = name.strip_edges();
-		for (int i = 0; i < invalid_chars.size(); i++) {
-			name = name.replace(invalid_chars[i], "-");
-		}
+		name = name.replace(invalid_chars, "-");
 	}
 
 	if (name.is_empty()) {

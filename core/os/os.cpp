@@ -243,10 +243,7 @@ String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_paths) const
 			safe_dir_name = "twodots";
 		}
 	}
-
-	for (int i = 0; i < invalid_chars.size(); i++) {
-		safe_dir_name = safe_dir_name.replace(invalid_chars[i], "-");
-	}
+	safe_dir_name = safe_dir_name.replace(invalid_chars, "-");
 	return safe_dir_name;
 }
 

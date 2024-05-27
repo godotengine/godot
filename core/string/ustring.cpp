@@ -4093,6 +4093,43 @@ String String::replacen(const char *p_key, const char *p_with) const {
 	return new_string;
 }
 
+String String::replace(const Vector<String> &p_keys, const String &p_with) const {
+	String new_string;
+
+	const int len = length();
+	for (int src_pos = 0; src_pos < len; src_pos++) {
+		bool replaced = false;
+		const char32_t *src = &operator[](src_pos);
+
+		for (const String &key : p_keys) {
+			const int key_len = key.length();
+			if (src_pos + key_len > len)
+				continue;
+
+			bool found = true;
+			for (int k = 0; k < key_len; k++) {
+				if (key[k] != src[k]) {
+					found = false;
+					break;
+				}
+			}
+
+			if (found) {
+				replaced = true;
+				new_string += p_with;
+				src_pos += key_len;
+				break;
+			}
+		}
+
+		if (!replaced) {
+			new_string += src[0];
+		}
+	}
+
+	return new_string;
+}
+
 String String::repeat(int p_count) const {
 	ERR_FAIL_COND_V_MSG(p_count < 0, "", "Parameter count should be a positive number.");
 
@@ -5048,9 +5085,7 @@ bool String::is_valid_filename() const {
 String String::validate_filename() const {
 	Vector<String> chars = String(invalid_filename_characters).split(" ");
 	String name = strip_edges();
-	for (int i = 0; i < chars.size(); i++) {
-		name = name.replace(chars[i], "_");
-	}
+	name = name.replace(chars, "_");
 	return name;
 }
 

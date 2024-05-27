@@ -79,21 +79,22 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 	type_hints = EDITOR_GET("text_editor/completion/add_type_hints");
 #endif
 	if (!type_hints) {
-		processed_template = processed_template.replace(": int", "")
-									 .replace(": Shader.Mode", "")
-									 .replace(": VisualShader.Type", "")
-									 .replace(": float", "")
-									 .replace(": String", "")
-									 .replace(": Array[String]", "")
-									 .replace(": Node", "")
-									 .replace(": CharFXTransform", "")
-									 .replace(":=", "=")
-									 .replace(" -> void", "")
-									 .replace(" -> bool", "")
-									 .replace(" -> int", "")
-									 .replace(" -> PortType", "")
-									 .replace(" -> String", "")
-									 .replace(" -> Object", "");
+		processed_template = processed_template.replace(Vector<String>({ ": int",
+																": Shader.Mode",
+																": VisualShader.Type",
+																": float",
+																": String",
+																": Array[String]",
+																": Node",
+																": CharFXTransform",
+																":=",
+																" -> void",
+																" -> bool",
+																" -> int",
+																" -> PortType",
+																" -> String",
+																" -> Object" }),
+				"");
 	}
 
 	processed_template = processed_template.replace("_BASE_", p_base_class_name)

@@ -293,8 +293,7 @@ String FBXDocument::_sanitize_animation_name(const String &p_name) {
 
 	// TODO: Consider adding invalid_characters or a validate_animation_name to animation_player to mirror Node.
 	String anim_name = p_name.validate_node_name();
-	anim_name = anim_name.replace(",", "");
-	anim_name = anim_name.replace("[", "");
+	anim_name = anim_name.replace(Vector<String>({ ",", "[" }), "");
 	return anim_name;
 }
 
