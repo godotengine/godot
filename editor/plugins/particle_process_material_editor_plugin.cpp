@@ -271,7 +271,7 @@ void ParticleProcessMaterialMinMaxPropertyEditor::_update_mode() {
 
 void ParticleProcessMaterialMinMaxPropertyEditor::_toggle_mode(bool p_edit_mode) {
 	slider_mode = p_edit_mode ? Mode::MIDPOINT : Mode::RANGE;
-	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "particle_spin_mode", int(slider_mode));
+	SET_PROJECT_META("editor_metadata", "particle_spin_mode", int(slider_mode));
 	_update_mode();
 }
 

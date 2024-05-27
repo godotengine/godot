@@ -50,7 +50,7 @@ void ProjectSettingsEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs
 
 void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 	// Restore valid window bounds or pop up at default size.
-	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "project_settings", Rect2());
+	Rect2 saved_size = GET_PROJECT_META("dialog_bounds", "project_settings", Rect2());
 	if (saved_size != Rect2()) {
 		popup(saved_size);
 	} else {
@@ -100,7 +100,7 @@ void ProjectSettingsEditor::_update_advanced(bool p_is_advanced) {
 }
 
 void ProjectSettingsEditor::_advanced_toggled(bool p_button_pressed) {
-	EditorSettings::get_singleton()->set_project_metadata("project_settings", "advanced_mode", p_button_pressed);
+	SET_PROJECT_META("project_settings", "advanced_mode", p_button_pressed);
 	_update_advanced(p_button_pressed);
 	general_settings_inspector->set_restrict_to_basic_settings(!p_button_pressed);
 }
@@ -606,7 +606,7 @@ void ProjectSettingsEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
-				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "project_settings", Rect2(get_position(), get_size()));
+				SET_PROJECT_META("dialog_bounds", "project_settings", Rect2(get_position(), get_size()));
 			}
 		} break;
 
@@ -771,7 +771,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	set_ok_button_text(TTR("Close"));
 	set_hide_on_ok(true);
 
-	bool use_advanced = EditorSettings::get_singleton()->get_project_metadata("project_settings", "advanced_mode", false);
+	bool use_advanced = GET_PROJECT_META("project_settings", "advanced_mode", false);
 
 	if (use_advanced) {
 		advanced->set_pressed(true);

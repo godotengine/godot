@@ -902,12 +902,12 @@ void CanvasItemEditor::_commit_canvas_item_state(const List<CanvasItem *> &p_can
 void CanvasItemEditor::_snap_changed() {
 	static_cast<SnapDialog *>(snap_dialog)->get_fields(grid_offset, grid_step, primary_grid_step, snap_rotation_offset, snap_rotation_step, snap_scale_step);
 
-	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "grid_offset", grid_offset);
-	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "grid_step", grid_step);
-	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "primary_grid_step", primary_grid_step);
-	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "snap_rotation_offset", snap_rotation_offset);
-	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "snap_rotation_step", snap_rotation_step);
-	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "snap_scale_step", snap_scale_step);
+	SET_PROJECT_META("2d_editor", "grid_offset", grid_offset);
+	SET_PROJECT_META("2d_editor", "grid_step", grid_step);
+	SET_PROJECT_META("2d_editor", "primary_grid_step", primary_grid_step);
+	SET_PROJECT_META("2d_editor", "snap_rotation_offset", snap_rotation_offset);
+	SET_PROJECT_META("2d_editor", "snap_rotation_step", snap_rotation_step);
+	SET_PROJECT_META("2d_editor", "snap_scale_step", snap_scale_step);
 
 	grid_step_multiplier = 0;
 	viewport->queue_redraw();
@@ -1047,7 +1047,7 @@ void CanvasItemEditor::_switch_theme_preview(int p_mode) {
 		return;
 	}
 	theme_preview = (ThemePreviewMode)p_mode;
-	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "theme_preview", theme_preview);
+	SET_PROJECT_META("2d_editor", "theme_preview", theme_preview);
 
 	for (int i = 0; i < THEME_PREVIEW_MAX; i++) {
 		theme_menu->set_item_checked(i, i == theme_preview);
@@ -5064,12 +5064,12 @@ void CanvasItemEditor::clear() {
 	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen.
 	_update_scrollbars();
 
-	grid_offset = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "grid_offset", Vector2());
-	grid_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "grid_step", Vector2(8, 8));
-	primary_grid_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "primary_grid_step", Vector2i(8, 8));
-	snap_rotation_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_step", Math::deg_to_rad(15.0));
-	snap_rotation_offset = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_offset", 0.0);
-	snap_scale_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_scale_step", 0.1);
+	grid_offset = GET_PROJECT_META("2d_editor", "grid_offset", Vector2());
+	grid_step = GET_PROJECT_META("2d_editor", "grid_step", Vector2(8, 8));
+	primary_grid_step = GET_PROJECT_META("2d_editor", "primary_grid_step", Vector2i(8, 8));
+	snap_rotation_step = GET_PROJECT_META("2d_editor", "snap_rotation_step", Math::deg_to_rad(15.0));
+	snap_rotation_offset = GET_PROJECT_META("2d_editor", "snap_rotation_offset", 0.0);
+	snap_scale_step = GET_PROJECT_META("2d_editor", "snap_scale_step", 0.1);
 }
 
 void CanvasItemEditor::add_control_to_menu_panel(Control *p_control) {
@@ -5529,7 +5529,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	theme_menu->add_radio_check_item(TTR("Default theme"), THEME_PREVIEW_DEFAULT);
 	p->add_submenu_node_item(TTR("Preview Theme"), theme_menu);
 
-	theme_preview = (ThemePreviewMode)(int)EditorSettings::get_singleton()->get_project_metadata("2d_editor", "theme_preview", THEME_PREVIEW_PROJECT);
+	theme_preview = (ThemePreviewMode)(int)GET_PROJECT_META("2d_editor", "theme_preview", THEME_PREVIEW_PROJECT);
 	for (int i = 0; i < THEME_PREVIEW_MAX; i++) {
 		theme_menu->set_item_checked(i, i == theme_preview);
 	}

@@ -689,8 +689,8 @@ void GenericTilePolygonEditor::_set_snap_option(int p_index) {
 }
 
 void GenericTilePolygonEditor::_store_snap_options() {
-	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "tile_snap_option", current_snap_option);
-	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "tile_snap_subdiv", snap_subdivision->get_value());
+	SET_PROJECT_META("editor_metadata", "tile_snap_option", current_snap_option);
+	SET_PROJECT_META("editor_metadata", "tile_snap_subdiv", snap_subdivision->get_value());
 }
 
 void GenericTilePolygonEditor::_toggle_expand(bool p_expand) {
@@ -963,8 +963,8 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_center_view->set_disabled(true);
 	root->add_child(button_center_view);
 
-	snap_subdivision->set_value_no_signal(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_snap_subdiv", 4));
-	_set_snap_option(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_snap_option", SNAP_NONE));
+	snap_subdivision->set_value_no_signal(GET_PROJECT_META("editor_metadata", "tile_snap_subdiv", 4));
+	_set_snap_option(GET_PROJECT_META("editor_metadata", "tile_snap_option", SNAP_NONE));
 	initializing = false;
 }
 

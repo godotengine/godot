@@ -741,7 +741,7 @@ void ScriptEditor::_add_recent_script(const String &p_path) {
 		return;
 	}
 
-	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scripts", Array());
+	Array rc = GET_PROJECT_META("recent_files", "scripts", Array());
 	if (rc.has(p_path)) {
 		rc.erase(p_path);
 	}
@@ -750,12 +750,12 @@ void ScriptEditor::_add_recent_script(const String &p_path) {
 		rc.resize(10);
 	}
 
-	EditorSettings::get_singleton()->set_project_metadata("recent_files", "scripts", rc);
+	SET_PROJECT_META("recent_files", "scripts", rc);
 	_update_recent_scripts();
 }
 
 void ScriptEditor::_update_recent_scripts() {
-	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scripts", Array());
+	Array rc = GET_PROJECT_META("recent_files", "scripts", Array());
 	recent_scripts->clear();
 
 	String path;
@@ -774,12 +774,12 @@ void ScriptEditor::_update_recent_scripts() {
 void ScriptEditor::_open_recent_script(int p_idx) {
 	// clear button
 	if (p_idx == recent_scripts->get_item_count() - 1) {
-		EditorSettings::get_singleton()->set_project_metadata("recent_files", "scripts", Array());
+		SET_PROJECT_META("recent_files", "scripts", Array());
 		callable_mp(this, &ScriptEditor::_update_recent_scripts).call_deferred();
 		return;
 	}
 
-	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scripts", Array());
+	Array rc = GET_PROJECT_META("recent_files", "scripts", Array());
 	ERR_FAIL_INDEX(p_idx, rc.size());
 
 	String path = rc[p_idx];
@@ -825,7 +825,7 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 	}
 
 	rc.remove_at(p_idx);
-	EditorSettings::get_singleton()->set_project_metadata("recent_files", "scripts", rc);
+	SET_PROJECT_META("recent_files", "scripts", rc);
 	_update_recent_scripts();
 	_show_error_dialog(path);
 }
@@ -1240,7 +1240,7 @@ TypedArray<Script> ScriptEditor::_get_open_scripts() const {
 
 bool ScriptEditor::toggle_scripts_panel() {
 	list_split->set_visible(!list_split->is_visible());
-	EditorSettings::get_singleton()->set_project_metadata("scripts_panel", "show_scripts_panel", list_split->is_visible());
+	SET_PROJECT_META("scripts_panel", "show_scripts_panel", list_split->is_visible());
 	return list_split->is_visible();
 }
 
@@ -4028,7 +4028,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	overview_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	list_split->add_child(overview_vbox);
-	list_split->set_visible(EditorSettings::get_singleton()->get_project_metadata("scripts_panel", "show_scripts_panel", true));
+	list_split->set_visible(GET_PROJECT_META("scripts_panel", "show_scripts_panel", true));
 	buttons_hbox = memnew(HBoxContainer);
 	overview_vbox->add_child(buttons_hbox);
 

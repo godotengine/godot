@@ -226,7 +226,7 @@ void ActionMapEditor::_tree_item_activated() {
 void ActionMapEditor::set_show_builtin_actions(bool p_show) {
 	show_builtin_actions = p_show;
 	show_builtin_actions_checkbutton->set_pressed(p_show);
-	EditorSettings::get_singleton()->set_project_metadata("project_settings", "show_builtin_actions", show_builtin_actions);
+	SET_PROJECT_META("project_settings", "show_builtin_actions", show_builtin_actions);
 
 	// Prevent unnecessary updates of action list when cache is empty.
 	if (!actions_cache.is_empty()) {
@@ -586,7 +586,7 @@ ActionMapEditor::ActionMapEditor() {
 	show_builtin_actions_checkbutton->connect("toggled", callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
 	add_hbox->add_child(show_builtin_actions_checkbutton);
 
-	show_builtin_actions = EditorSettings::get_singleton()->get_project_metadata("project_settings", "show_builtin_actions", false);
+	show_builtin_actions = GET_PROJECT_META("project_settings", "show_builtin_actions", false);
 	show_builtin_actions_checkbutton->set_pressed(show_builtin_actions);
 
 	main_vbox->add_child(add_hbox);

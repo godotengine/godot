@@ -6230,9 +6230,9 @@ void Node3DEditor::_snap_changed() {
 	snap_rotate_value = snap_rotate->get_text().to_float();
 	snap_scale_value = snap_scale->get_text().to_float();
 
-	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_translate_value", snap_translate_value);
-	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_rotate_value", snap_rotate_value);
-	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_scale_value", snap_scale_value);
+	SET_PROJECT_META("3d_editor", "snap_translate_value", snap_translate_value);
+	SET_PROJECT_META("3d_editor", "snap_rotate_value", snap_rotate_value);
+	SET_PROJECT_META("3d_editor", "snap_scale_value", snap_scale_value);
 }
 
 void Node3DEditor::_snap_update() {
@@ -8214,9 +8214,9 @@ void Node3DEditor::clear() {
 	settings_znear->set_value(EDITOR_GET("editors/3d/default_z_near"));
 	settings_zfar->set_value(EDITOR_GET("editors/3d/default_z_far"));
 
-	snap_translate_value = EditorSettings::get_singleton()->get_project_metadata("3d_editor", "snap_translate_value", 1);
-	snap_rotate_value = EditorSettings::get_singleton()->get_project_metadata("3d_editor", "snap_rotate_value", 15);
-	snap_scale_value = EditorSettings::get_singleton()->get_project_metadata("3d_editor", "snap_scale_value", 10);
+	snap_translate_value = GET_PROJECT_META("3d_editor", "snap_translate_value", 1);
+	snap_rotate_value = GET_PROJECT_META("3d_editor", "snap_rotate_value", 15);
+	snap_scale_value = GET_PROJECT_META("3d_editor", "snap_scale_value", 10);
 	_snap_update();
 
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {

@@ -1616,7 +1616,7 @@ void SceneTreeDialog::popup_scenetree_dialog(Node *p_selected_node, Node *p_mark
 }
 
 void SceneTreeDialog::_show_all_nodes_changed(bool p_button_pressed) {
-	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "show_all_nodes_for_node_selection", p_button_pressed);
+	SET_PROJECT_META("editor_metadata", "show_all_nodes_for_node_selection", p_button_pressed);
 	tree->set_show_all_nodes(p_button_pressed);
 }
 
@@ -1758,7 +1758,7 @@ SceneTreeDialog::SceneTreeDialog() {
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &SceneTreeDialog::_select));
 	// Initialize button state, must be done after the tree has been created to update its 'show_all_nodes' flag.
 	// This is also done before adding the tree to the content to avoid triggering unnecessary tree filtering.
-	show_all_nodes->set_pressed(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "show_all_nodes_for_node_selection", false));
+	show_all_nodes->set_pressed(GET_PROJECT_META("editor_metadata", "show_all_nodes_for_node_selection", false));
 	content->add_child(tree);
 
 	// Disable the OK button when no node is selected.

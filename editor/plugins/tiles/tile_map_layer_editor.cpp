@@ -2139,7 +2139,7 @@ void TileMapLayerEditorTilesPlugin::_set_source_sort(int p_sort) {
 	}
 	TilesEditorUtils::get_singleton()->set_sorting_option(p_sort);
 	_update_tile_set_sources_list();
-	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "tile_source_sort", p_sort);
+	SET_PROJECT_META("editor_metadata", "tile_source_sort", p_sort);
 }
 
 void TileMapLayerEditorTilesPlugin::_bind_methods() {

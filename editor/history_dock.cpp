@@ -221,8 +221,8 @@ void HistoryDock::_notification(int p_notification) {
 }
 
 void HistoryDock::save_options() {
-	EditorSettings::get_singleton()->set_project_metadata("history", "include_scene", current_scene_checkbox->is_pressed());
-	EditorSettings::get_singleton()->set_project_metadata("history", "include_global", global_history_checkbox->is_pressed());
+	SET_PROJECT_META("history", "include_scene", current_scene_checkbox->is_pressed());
+	SET_PROJECT_META("history", "include_global", global_history_checkbox->is_pressed());
 }
 
 HistoryDock::HistoryDock() {
@@ -235,8 +235,8 @@ HistoryDock::HistoryDock() {
 	HBoxContainer *mode_hb = memnew(HBoxContainer);
 	add_child(mode_hb);
 
-	bool include_scene = EditorSettings::get_singleton()->get_project_metadata("history", "include_scene", true);
-	bool include_global = EditorSettings::get_singleton()->get_project_metadata("history", "include_global", true);
+	bool include_scene = GET_PROJECT_META("history", "include_scene", true);
+	bool include_global = GET_PROJECT_META("history", "include_global", true);
 
 	current_scene_checkbox = memnew(CheckBox);
 	mode_hb->add_child(current_scene_checkbox);

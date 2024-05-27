@@ -69,7 +69,7 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 	_save_and_update_favorite_list();
 
 	// Restore valid window bounds or pop up at default size.
-	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "create_new_node", Rect2());
+	Rect2 saved_size = GET_PROJECT_META("dialog_bounds", "create_new_node", Rect2());
 	if (saved_size != Rect2()) {
 		popup(saved_size);
 	} else {
@@ -459,7 +459,7 @@ void CreateDialog::_notification(int p_what) {
 				callable_mp((Control *)search_box, &Control::grab_focus).call_deferred(); // Still not visible.
 				search_box->select_all();
 			} else {
-				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
+				SET_PROJECT_META("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
 			}
 		} break;
 

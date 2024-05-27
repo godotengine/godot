@@ -397,9 +397,9 @@ void ConnectDialog::_update_method_tree() {
 
 void ConnectDialog::_method_check_button_pressed(const CheckButton *p_button) {
 	if (p_button == script_methods_only) {
-		EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "show_script_methods_only", p_button->is_pressed());
+		SET_PROJECT_META("editor_metadata", "show_script_methods_only", p_button->is_pressed());
 	} else if (p_button == compatible_methods_only) {
-		EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "show_compatible_methods_only", p_button->is_pressed());
+		SET_PROJECT_META("editor_metadata", "show_compatible_methods_only", p_button->is_pressed());
 	}
 	_update_method_tree();
 }
@@ -681,7 +681,7 @@ void ConnectDialog::_advanced_pressed() {
 		error_label->set_visible(!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root()));
 	}
 
-	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "use_advanced_connections", advanced->is_pressed());
+	SET_PROJECT_META("editor_metadata", "use_advanced_connections", advanced->is_pressed());
 
 	popup_centered();
 }
@@ -767,13 +767,13 @@ ConnectDialog::ConnectDialog() {
 	script_methods_only = memnew(CheckButton(TTR("Script Methods Only")));
 	method_vbc->add_child(script_methods_only);
 	script_methods_only->set_h_size_flags(Control::SIZE_SHRINK_END);
-	script_methods_only->set_pressed(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "show_script_methods_only", true));
+	script_methods_only->set_pressed(GET_PROJECT_META("editor_metadata", "show_script_methods_only", true));
 	script_methods_only->connect(SceneStringName(pressed), callable_mp(this, &ConnectDialog::_method_check_button_pressed).bind(script_methods_only));
 
 	compatible_methods_only = memnew(CheckButton(TTR("Compatible Methods Only")));
 	method_vbc->add_child(compatible_methods_only);
 	compatible_methods_only->set_h_size_flags(Control::SIZE_SHRINK_END);
-	compatible_methods_only->set_pressed(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "show_compatible_methods_only", true));
+	compatible_methods_only->set_pressed(GET_PROJECT_META("editor_metadata", "show_compatible_methods_only", true));
 	compatible_methods_only->connect(SceneStringName(pressed), callable_mp(this, &ConnectDialog::_method_check_button_pressed).bind(compatible_methods_only));
 
 	vbc_right = memnew(VBoxContainer);
@@ -839,7 +839,7 @@ ConnectDialog::ConnectDialog() {
 	advanced = memnew(CheckButton(TTR("Advanced")));
 	vbc_left->add_child(advanced);
 	advanced->set_h_size_flags(Control::SIZE_SHRINK_BEGIN | Control::SIZE_EXPAND);
-	advanced->set_pressed(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "use_advanced_connections", false));
+	advanced->set_pressed(GET_PROJECT_META("editor_metadata", "use_advanced_connections", false));
 	advanced->connect(SceneStringName(pressed), callable_mp(this, &ConnectDialog::_advanced_pressed));
 
 	HBoxContainer *hbox = memnew(HBoxContainer);

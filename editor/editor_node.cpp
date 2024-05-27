@@ -735,7 +735,7 @@ void EditorNode::_notification(int p_what) {
 			_titlebar_resized();
 
 			// Set up a theme context for the 2D preview viewport using the stored preview theme.
-			CanvasItemEditor::ThemePreviewMode theme_preview_mode = (CanvasItemEditor::ThemePreviewMode)(int)EditorSettings::get_singleton()->get_project_metadata("2d_editor", "theme_preview", CanvasItemEditor::THEME_PREVIEW_PROJECT);
+			CanvasItemEditor::ThemePreviewMode theme_preview_mode = (CanvasItemEditor::ThemePreviewMode)(int)GET_PROJECT_META("2d_editor", "theme_preview", CanvasItemEditor::THEME_PREVIEW_PROJECT);
 			update_preview_themes(theme_preview_mode);
 
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
@@ -3879,8 +3879,8 @@ void EditorNode::_set_current_scene_nocheck(int p_idx) {
 
 void EditorNode::setup_color_picker(ColorPicker *p_picker) {
 	p_picker->set_editor_settings(EditorSettings::get_singleton());
-	int default_color_mode = EditorSettings::get_singleton()->get_project_metadata("color_picker", "color_mode", EDITOR_GET("interface/inspector/default_color_picker_mode"));
-	int picker_shape = EditorSettings::get_singleton()->get_project_metadata("color_picker", "picker_shape", EDITOR_GET("interface/inspector/default_color_picker_shape"));
+	int default_color_mode = GET_PROJECT_META("color_picker", "color_mode", EDITOR_GET("interface/inspector/default_color_picker_mode"));
+	int picker_shape = GET_PROJECT_META("color_picker", "picker_shape", EDITOR_GET("interface/inspector/default_color_picker_shape"));
 
 	p_picker->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
 	p_picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
@@ -4348,7 +4348,7 @@ void EditorNode::_show_messages() {
 }
 
 void EditorNode::_add_to_recent_scenes(const String &p_scene) {
-	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
+	Array rc = GET_PROJECT_META("recent_files", "scenes", Array());
 	if (rc.has(p_scene)) {
 		rc.erase(p_scene);
 	}
@@ -4357,28 +4357,28 @@ void EditorNode::_add_to_recent_scenes(const String &p_scene) {
 		rc.resize(10);
 	}
 
-	EditorSettings::get_singleton()->set_project_metadata("recent_files", "scenes", rc);
+	SET_PROJECT_META("recent_files", "scenes", rc);
 	_update_recent_scenes();
 }
 
 void EditorNode::_open_recent_scene(int p_idx) {
 	if (p_idx == recent_scenes->get_item_count() - 1) {
-		EditorSettings::get_singleton()->set_project_metadata("recent_files", "scenes", Array());
+		SET_PROJECT_META("recent_files", "scenes", Array());
 		callable_mp(this, &EditorNode::_update_recent_scenes).call_deferred();
 	} else {
-		Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
+		Array rc = GET_PROJECT_META("recent_files", "scenes", Array());
 		ERR_FAIL_INDEX(p_idx, rc.size());
 
 		if (load_scene(rc[p_idx]) != OK) {
 			rc.remove_at(p_idx);
-			EditorSettings::get_singleton()->set_project_metadata("recent_files", "scenes", rc);
+			SET_PROJECT_META("recent_files", "scenes", rc);
 			_update_recent_scenes();
 		}
 	}
 }
 
 void EditorNode::_update_recent_scenes() {
-	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
+	Array rc = GET_PROJECT_META("recent_files", "scenes", Array());
 	recent_scenes->clear();
 
 	String path;
@@ -6311,7 +6311,7 @@ EditorNode::EditorNode() {
 
 	// Warm up the surface upgrade tool as early as possible.
 	surface_upgrade_tool = memnew(SurfaceUpgradeTool);
-	run_surface_upgrade_tool = EditorSettings::get_singleton()->get_project_metadata("surface_upgrade_tool", "run_on_restart", false);
+	run_surface_upgrade_tool = GET_PROJECT_META("surface_upgrade_tool", "run_on_restart", false);
 	if (run_surface_upgrade_tool) {
 		SurfaceUpgradeTool::get_singleton()->begin_upgrade();
 	}
@@ -7467,7 +7467,7 @@ EditorNode::EditorNode() {
 
 	String exec = OS::get_singleton()->get_executable_path();
 	// Save editor executable path for third-party tools.
-	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "executable_path", exec);
+	SET_PROJECT_META("editor_metadata", "executable_path", exec);
 
 	follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
 	use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");

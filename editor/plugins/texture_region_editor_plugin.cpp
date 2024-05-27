@@ -856,10 +856,10 @@ void TextureRegionEditor::_notification(int p_what) {
 			}
 
 			if (!is_visible()) {
-				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_offset", snap_offset);
-				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_step", snap_step);
-				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_separation", snap_separation);
-				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_mode", snap_mode);
+				SET_PROJECT_META("texture_region_editor", "snap_offset", snap_offset);
+				SET_PROJECT_META("texture_region_editor", "snap_step", snap_step);
+				SET_PROJECT_META("texture_region_editor", "snap_separation", snap_separation);
+				SET_PROJECT_META("texture_region_editor", "snap_mode", snap_mode);
 			}
 		} break;
 
@@ -1116,10 +1116,10 @@ TextureRegionEditor::TextureRegionEditor() {
 	set_ok_button_text(TTR("Close"));
 
 	// A power-of-two value works better as a default grid size.
-	snap_offset = EditorSettings::get_singleton()->get_project_metadata("texture_region_editor", "snap_offset", Vector2());
-	snap_step = EditorSettings::get_singleton()->get_project_metadata("texture_region_editor", "snap_step", Vector2(8, 8));
-	snap_separation = EditorSettings::get_singleton()->get_project_metadata("texture_region_editor", "snap_separation", Vector2());
-	snap_mode = (SnapMode)(int)EditorSettings::get_singleton()->get_project_metadata("texture_region_editor", "snap_mode", SNAP_NONE);
+	snap_offset = GET_PROJECT_META("texture_region_editor", "snap_offset", Vector2());
+	snap_step = GET_PROJECT_META("texture_region_editor", "snap_step", Vector2(8, 8));
+	snap_separation = GET_PROJECT_META("texture_region_editor", "snap_separation", Vector2());
+	snap_mode = (SnapMode)(int)GET_PROJECT_META("texture_region_editor", "snap_mode", SNAP_NONE);
 
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &TextureRegionEditor::_pan_callback), callable_mp(this, &TextureRegionEditor::_zoom_callback));

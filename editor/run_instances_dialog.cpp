@@ -100,8 +100,8 @@ void RunInstancesDialog::_create_instance(InstanceData &p_instance, const Dictio
 void RunInstancesDialog::_save_main_args() {
 	ProjectSettings::get_singleton()->set_setting("editor/run/main_run_args", main_args_edit->get_text());
 	ProjectSettings::get_singleton()->save();
-	EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_main_feature_tags", main_features_edit->get_text());
-	EditorSettings::get_singleton()->set_project_metadata("debug_options", "multiple_instances_enabled", enable_multiple_instances_checkbox->is_pressed());
+	SET_PROJECT_META("debug_options", "run_main_feature_tags", main_features_edit->get_text());
+	SET_PROJECT_META("debug_options", "multiple_instances_enabled", enable_multiple_instances_checkbox->is_pressed());
 }
 
 void RunInstancesDialog::_save_arguments() {
@@ -116,7 +116,7 @@ void RunInstancesDialog::_save_arguments() {
 		dict["features"] = instance.get_feature_tags();
 		stored_data[i] = dict;
 	}
-	EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_instances_config", stored_data);
+	SET_PROJECT_META("debug_options", "run_instances_config", stored_data);
 }
 
 Vector<String> RunInstancesDialog::_split_cmdline_args(const String &p_arg_string) const {
@@ -279,7 +279,7 @@ RunInstancesDialog::RunInstancesDialog() {
 
 	enable_multiple_instances_checkbox = memnew(CheckBox);
 	enable_multiple_instances_checkbox->set_text(TTR("Enable Multiple Instances"));
-	enable_multiple_instances_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false));
+	enable_multiple_instances_checkbox->set_pressed(GET_PROJECT_META("debug_options", "multiple_instances_enabled", false));
 	args_gc->add_child(enable_multiple_instances_checkbox);
 	enable_multiple_instances_checkbox->connect(SceneStringName(pressed), callable_mp(this, &RunInstancesDialog::_start_main_timer));
 
@@ -295,7 +295,7 @@ RunInstancesDialog::RunInstancesDialog() {
 		args_gc->add_child(l);
 	}
 
-	stored_data = TypedArray<Dictionary>(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_instances_config", TypedArray<Dictionary>()));
+	stored_data = TypedArray<Dictionary>(GET_PROJECT_META("debug_options", "run_instances_config", TypedArray<Dictionary>()));
 
 	instance_count = memnew(SpinBox);
 	instance_count->set_min(1);
@@ -318,7 +318,7 @@ RunInstancesDialog::RunInstancesDialog() {
 	main_features_edit = memnew(LineEdit);
 	main_features_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	main_features_edit->set_placeholder(TTR("Comma-separated tags, example: demo, steam, event"));
-	main_features_edit->set_text(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_main_feature_tags", ""));
+	main_features_edit->set_text(GET_PROJECT_META("debug_options", "run_main_feature_tags", ""));
 	args_gc->add_child(main_features_edit);
 	main_features_edit->connect("text_changed", callable_mp(this, &RunInstancesDialog::_start_main_timer).unbind(1));
 

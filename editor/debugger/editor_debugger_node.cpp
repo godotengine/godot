@@ -537,14 +537,14 @@ void EditorDebuggerNode::_menu_option(int p_id) {
 			debug_with_external_editor = !ischecked;
 			script_menu->get_popup()->set_item_checked(script_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR), !ischecked);
 			if (!initializing) {
-				EditorSettings::get_singleton()->set_project_metadata("debug_options", "debug_with_external_editor", !ischecked);
+				SET_PROJECT_META("debug_options", "debug_with_external_editor", !ischecked);
 			}
 		} break;
 	}
 }
 
 void EditorDebuggerNode::_update_debug_options() {
-	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "debug_with_external_editor", false).operator bool()) {
+	if (GET_PROJECT_META("debug_options", "debug_with_external_editor", false).operator bool()) {
 		_menu_option(DEBUG_WITH_EXTERNAL_EDITOR);
 	}
 }
