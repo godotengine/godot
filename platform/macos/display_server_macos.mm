@@ -655,6 +655,7 @@ void DisplayServerMacOS::send_window_event(const WindowData &wd, WindowEvent p_e
 
 void DisplayServerMacOS::release_pressed_events() {
 	_THREAD_SAFE_METHOD_
+	last_button_state = 0;
 	if (Input::get_singleton()) {
 		Input::get_singleton()->release_pressed_events();
 	}

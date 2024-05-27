@@ -4893,6 +4893,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 void DisplayServerWindows::_process_activate_event(WindowID p_window_id) {
 	WindowData &wd = windows[p_window_id];
 	if (wd.activate_state == WA_ACTIVE || wd.activate_state == WA_CLICKACTIVE) {
+		last_button_state = 0;
 		last_focused_window = p_window_id;
 		alt_mem = false;
 		control_mem = false;
@@ -4905,6 +4906,7 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id) {
 		wd.window_focused = true;
 		_send_window_event(wd, WINDOW_EVENT_FOCUS_IN);
 	} else { // WM_INACTIVE.
+		last_button_state = 0;
 		Input::get_singleton()->release_pressed_events();
 		track_mouse_leave_event(wd.hWnd);
 		// Release capture unconditionally because it can be set due to dragging, in addition to captured mode.

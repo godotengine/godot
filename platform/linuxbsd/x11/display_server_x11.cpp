@@ -4683,6 +4683,7 @@ void DisplayServerX11::process_events() {
 				}
 				wd.focused = false;
 
+				last_button_state = 0;
 				Input::get_singleton()->release_pressed_events();
 				_send_window_event(wd, WINDOW_EVENT_FOCUS_OUT);
 
