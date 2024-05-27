@@ -129,6 +129,9 @@ public:
 	static _ALWAYS_INLINE_ double exp(double p_x) { return ::exp(p_x); }
 	static _ALWAYS_INLINE_ float exp(float p_x) { return ::expf(p_x); }
 
+	static _ALWAYS_INLINE_ double expm1(double p_x) { return ::expm1(p_x); }
+	static _ALWAYS_INLINE_ float expm1(float p_x) { return ::expm1f(p_x); }
+
 	static _ALWAYS_INLINE_ bool is_nan(double p_val) {
 #ifdef _MSC_VER
 		return _isnan(p_val);
