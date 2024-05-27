@@ -494,22 +494,15 @@ class CharacterAnimationLogicNode : public Resource
         ClassDB::bind_method(D_METHOD("get_play_count"), &CharacterAnimationLogicNode::get_play_count);
 
 
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan",PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan"), "set_blackboard_plan", "get_blackboard_plan");
         ADD_PROPERTY(PropertyInfo(Variant::INT, "priority"), "set_priority", "get_priority");
-
         ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "player_animation_name"), "set_player_animation_name", "get_player_animation_name");
-
         ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "enter_condtion", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorCondition"), "set_enter_condtion", "get_enter_condtion");
-
         ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "check_stop_delay_time"), "set_check_stop_delay_time", "get_check_stop_delay_time");
-
         ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "life_time"), "set_life_time", "get_life_time");
-
         ADD_PROPERTY(PropertyInfo(Variant::INT, "stop_check_type",PROPERTY_HINT_ENUM,"Life,PlayCount,Condition,Script"), "set_stop_check_type", "get_stop_check_type");
-
         ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stop_check_condtion", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorCondition"), "set_stop_check_condtion", "get_stop_check_condtion");
-
         ADD_PROPERTY(PropertyInfo(Variant::INT, "play_count"), "set_play_count", "get_play_count");
-
 
         GDVIRTUAL_BIND(_animation_process,"_layer","_blackboard", "_delta");
         GDVIRTUAL_BIND(_check_stop,"_layer","_blackboard");

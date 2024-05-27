@@ -168,7 +168,7 @@ class ResourceFormatSaverTextInstance {
 	bool skip_editor = false;
 
 	struct NonPersistentKey { //for resource properties generated on the fly
-		Ref<Resource> base;
+		Ref<RefCounted> base;
 		StringName property;
 		bool operator<(const NonPersistentKey &p_key) const { return base == p_key.base ? property < p_key.property : base < p_key.base; }
 	};

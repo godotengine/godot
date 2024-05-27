@@ -1893,33 +1893,43 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 	switch (p_variant.get_type()) {
 		case Variant::OBJECT: {
 			Ref<Resource> res = p_variant;
+			Ref<RefCounted> ref = p_variant;
 
 			if (res.is_null() || external_resources.has(res) || res->get_meta(SNAME("_skip_save_"), false)) {
-				return;
+				if (ref.is_null()) {
+					return;
+				}
 			}
+			if(res.is_valid())
+			{
+				if (!p_main && (!bundle_resources) && !res->is_built_in()) {
+					if (res->get_path() == local_path) {
+						ERR_PRINT("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
+						return;
+					}
 
-			if (!p_main && (!bundle_resources) && !res->is_built_in()) {
-				if (res->get_path() == local_path) {
-					ERR_PRINT("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
+					// Use a numeric ID as a base, because they are sorted in natural order before saving.
+					// This increases the chances of thread loading to fetch them first.
+					String id = itos(external_resources.size() + 1) + "_" + Resource::generate_scene_unique_id();
+					external_resources[res] = id;
 					return;
 				}
 
-				// Use a numeric ID as a base, because they are sorted in natural order before saving.
-				// This increases the chances of thread loading to fetch them first.
-				String id = itos(external_resources.size() + 1) + "_" + Resource::generate_scene_unique_id();
-				external_resources[res] = id;
+				if (resource_set.has(res)) {
+					return;
+				}
+
+				resource_set.insert(res);
+
+			}
+			if(ref.is_null())
+			{
 				return;
 			}
-
-			if (resource_set.has(res)) {
-				return;
-			}
-
-			resource_set.insert(res);
 
 			List<PropertyInfo> property_list;
 
-			res->get_property_list(&property_list);
+			ref->get_property_list(&property_list);
 			property_list.sort();
 
 			List<PropertyInfo>::Element *I = property_list.front();
@@ -1928,11 +1938,11 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 				PropertyInfo pi = I->get();
 
 				if (pi.usage & PROPERTY_USAGE_STORAGE) {
-					Variant v = res->get(I->get().name);
+					Variant v = ref->get(I->get().name);
 
 					if (pi.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
 						NonPersistentKey npk;
-						npk.base = res;
+						npk.base = ref;
 						npk.property = pi.name;
 						non_persistent_map[npk] = v;
 
@@ -1950,8 +1960,8 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 
 				I = I->next();
 			}
-
-			saved_resources.push_back(res); // Saved after, so the children it needs are available when loaded
+			if(res.is_valid())
+				saved_resources.push_back(res); // Saved after, so the children it needs are available when loaded
 
 		} break;
 		case Variant::ARRAY: {
@@ -2154,6 +2164,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 	for (List<Ref<Resource>>::Element *E = saved_resources.front(); E; E = E->next()) {
 		Ref<Resource> res = E->get();
+		Ref<RefCounted> ref = E->get();
 		ERR_CONTINUE(!resource_set.has(res));
 		bool main = (E->next() == nullptr);
 
@@ -2209,7 +2220,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 				Variant value;
 				if (PE->get().usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
 					NonPersistentKey npk;
-					npk.base = res;
+					npk.base = ref;
 					npk.property = name;
 					if (non_persistent_map.has(npk)) {
 						value = non_persistent_map[npk];

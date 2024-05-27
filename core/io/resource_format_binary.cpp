@@ -1992,37 +1992,47 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 	switch (p_variant.get_type()) {
 		case Variant::OBJECT: {
 			Ref<Resource> res = p_variant;
+			Ref<RefCounted> ref = p_variant;
 
 			if (res.is_null() || external_resources.has(res) || res->get_meta(SNAME("_skip_save_"), false)) {
-				return;
-			}
-
-			if (!p_main && (!bundle_resources) && !res->is_built_in()) {
-				if (res->get_path() == path) {
-					ERR_PRINT("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
+				if (ref.is_null()) {
 					return;
 				}
-				int idx = external_resources.size();
-				external_resources[res] = idx;
-				return;
 			}
 
-			if (resource_set.has(res)) {
+			if(res.is_valid())
+			{
+				if (!p_main && (!bundle_resources) && !res->is_built_in()) {
+					if (res->get_path() == path) {
+						ERR_PRINT("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
+						return;
+					}
+					int idx = external_resources.size();
+					external_resources[res] = idx;
+					return;
+				}
+
+				if (resource_set.has(res)) {
+					return;
+				}
+
+				resource_set.insert(res);
+			}
+			if(ref.is_null())
+			{
 				return;
 			}
-
-			resource_set.insert(res);
 
 			List<PropertyInfo> property_list;
 
-			res->get_property_list(&property_list);
+			ref->get_property_list(&property_list);
 
 			for (const PropertyInfo &E : property_list) {
 				if (E.usage & PROPERTY_USAGE_STORAGE) {
-					Variant value = res->get(E.name);
+					Variant value = ref->get(E.name);
 					if (E.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
 						NonPersistentKey npk;
-						npk.base = res;
+						npk.base = ref;
 						npk.property = E.name;
 						non_persistent_map[npk] = value;
 
@@ -2039,7 +2049,8 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 				}
 			}
 
-			saved_resources.push_back(res);
+			if(res.is_valid())
+				saved_resources.push_back(res); 
 
 		} break;
 
