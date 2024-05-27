@@ -659,6 +659,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/script_list/sort_members_outline_alphabetically", false);
 
 	// Completion
+	String autocompletion_filtering_options = "Default,Beginning Matching Only,Any Substring Matching";
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/completion/autocompletion_filtering", 0, autocompletion_filtering_options);
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/idle_parse_delay", 2.0, "0.1,10,0.01")
 	_initial_set("text_editor/completion/auto_brace_complete", true);
 	_initial_set("text_editor/completion/code_complete_enabled", true);

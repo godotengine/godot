@@ -68,6 +68,22 @@ static bool match_option(const Dictionary p_expected, const ScriptLanguage::Code
 	return true;
 }
 
+static bool match_option(const Dictionary p_expected, const Dictionary p_got) {
+	if (p_expected.get("display", p_got.get("display_text", "")) != p_got.get("display_text", "")) {
+		return false;
+	}
+	if (p_expected.get("insert_text", p_got.get("insert_text", "")) != p_got.get("insert_text", "")) {
+		return false;
+	}
+	if (p_expected.get("kind", p_got.get("kind", "")) != Variant(p_got.get("kind", ""))) {
+		return false;
+	}
+	if (p_expected.get("location", p_got.get("location", "")) != Variant(p_got.get("location", ""))) {
+		return false;
+	}
+	return true;
+}
+
 static void to_dict_list(Variant p_variant, List<Dictionary> &p_list) {
 	ERR_FAIL_COND(!p_variant.is_array());
 
@@ -130,6 +146,7 @@ static void test_directory(const String &p_dir) {
 #endif
 
 			EditorSettings::get_singleton()->set_setting("text_editor/completion/use_single_quotes", conf.get_value("input", "use_single_quotes", false));
+			EditorSettings::get_singleton()->set_setting("text_editor/completion/autocompletion_filtering", conf.get_value("input", "autocompletion_filtering", 0));
 
 			List<Dictionary> include;
 			to_dict_list(conf.get_value("output", "include", Array()), include);
@@ -138,6 +155,7 @@ static void test_directory(const String &p_dir) {
 			to_dict_list(conf.get_value("output", "exclude", Array()), exclude);
 
 			List<ScriptLanguage::CodeCompletionOption> options;
+			TypedArray<Dictionary> filtered_options;
 			String call_hint;
 			bool forced;
 
@@ -182,21 +200,65 @@ static void test_directory(const String &p_dir) {
 
 			GDScriptLanguage::get_singleton()->complete_code(code, res_path, owner, &options, forced, call_hint);
 			String contains_excluded;
-			for (ScriptLanguage::CodeCompletionOption &option : options) {
-				for (const Dictionary &E : exclude) {
-					if (match_option(E, option)) {
-						contains_excluded = option.display;
+
+			if ((int32_t)conf.get_value("input", "autocompletion_filtering", 0) > 0) {
+				int start = location;
+				int end = location;
+				for (; start >= 0; --start) {
+					if ((code.get(start) == '\n') || (code.get(start) == ' ') || (code.get(start) == '\t') || (code.get(start) == '.')) {
 						break;
 					}
 				}
-				if (!contains_excluded.is_empty()) {
-					break;
-				}
+				start++;
+				String line = code.substr(start, end - start);
 
-				for (const Dictionary &E : include) {
-					if (match_option(E, option)) {
-						include.erase(E);
+				CodeEdit *code_edit = memnew(CodeEdit);
+				code_edit->set_code_autocompletion_type((int32_t)conf.get_value("input", "autocompletion_filtering", 0));
+				code_edit->set_code_completion_enabled(true);
+				code_edit->insert_text_at_caret(line);
+				for (const ScriptLanguage::CodeCompletionOption &e : options) {
+					code_edit->add_code_completion_option((CodeEdit::CodeCompletionKind)e.kind, e.display, e.insert_text, Color(1, 1, 1), nullptr, e.default_value, e.location);
+				}
+				code_edit->update_code_completion_options();
+
+				filtered_options = code_edit->get_code_completion_options();
+
+				for (Dictionary option : filtered_options) {
+					for (const Dictionary &E : exclude) {
+						if (match_option(E, option)) {
+							contains_excluded = option.get("display_text", "");
+							break;
+						}
+					}
+					if (!contains_excluded.is_empty()) {
 						break;
+					}
+
+					for (const Dictionary &E : include) {
+						if (match_option(E, option)) {
+							include.erase(E);
+							break;
+						}
+					}
+				}
+				memdelete(code_edit);
+			} else {
+				for (ScriptLanguage::CodeCompletionOption &option : options) {
+					for (const Dictionary &E : exclude) {
+						if (match_option(E, option)) {
+							contains_excluded = option.display;
+							break;
+						}
+					}
+					if (!contains_excluded.is_empty()) {
+						break;
+					}
+
+					for (const Dictionary &E : include) {
+						if (match_option(E, option)) {
+							include.erase(E);
+							break;
+						}
 					}
 				}
 			}

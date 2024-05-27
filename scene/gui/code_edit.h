@@ -61,6 +61,12 @@ public:
 		LOCATION_OTHER = 1 << 10,
 	};
 
+	enum CodeAutocompletionType {
+		AUTOCOMPLETION_DEFAULT,
+		AUTOCOMPLETION_SUBSTRING_MATCH,
+		AUTOCOMPLETION_BEGINNING_MATCH,
+	};
+
 private:
 	/* Indent management */
 	int indent_size = 4;
@@ -214,6 +220,7 @@ private:
 	int code_completion_longest_line = 0;
 	Rect2i code_completion_rect;
 	Rect2i code_completion_scroll_rect;
+	CodeAutocompletionType autocompletion_type = AUTOCOMPLETION_DEFAULT;
 
 	HashSet<char32_t> code_completion_prefixes;
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_submitted;
@@ -478,6 +485,9 @@ public:
 
 	void confirm_code_completion(bool p_replace = false);
 	void cancel_code_completion();
+
+	void set_code_autocompletion_type(CodeAutocompletionType p_type);
+	void set_code_autocompletion_type(int p_idx);
 
 	/* Line length guidelines */
 	void set_line_length_guidelines(TypedArray<int> p_guideline_columns);

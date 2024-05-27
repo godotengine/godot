@@ -1631,6 +1631,36 @@ void ScriptTextEditor::_edit_option_toggle_inline_comment() {
 	code_editor->toggle_inline_comment(delimiter);
 }
 
+void ScriptTextEditor::set_autocompletion_filtering(String p_autocompletion, CodeEdit::CodeAutocompletionType a_type) {
+	ERR_FAIL_COND(p_autocompletion.is_empty());
+	for (String mode : autocompletion_modes) {
+		int autocomletion_index = autocompletion_menu->get_item_idx_from_text(mode);
+		autocompletion_menu->set_item_checked(autocomletion_index, mode == p_autocompletion);
+	}
+
+	CodeEdit *te = code_editor->get_text_editor();
+	te->set_code_autocompletion_type(a_type);
+}
+
+void ScriptTextEditor::_change_autocompletion_filtering(int p_idx) {
+	CodeEdit::CodeAutocompletionType type = CodeEdit::AUTOCOMPLETION_DEFAULT;
+	switch (p_idx) {
+		case 0: {
+			type = CodeEdit::AUTOCOMPLETION_DEFAULT;
+			break;
+		}
+		case 1: {
+			type = CodeEdit::AUTOCOMPLETION_BEGINNING_MATCH;
+			break;
+		}
+		case 2: {
+			type = CodeEdit::AUTOCOMPLETION_SUBSTRING_MATCH;
+			break;
+		}
+	}
+	set_autocompletion_filtering(autocompletion_menu->get_item_text(p_idx), type);
+}
+
 void ScriptTextEditor::add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
 	ERR_FAIL_COND(p_highlighter.is_null());
 
@@ -2319,6 +2349,8 @@ void ScriptTextEditor::_enable_code_editor() {
 	}
 	edit_menu->get_popup()->add_submenu_node_item(TTR("Syntax Highlighter"), highlighter_menu);
 	highlighter_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_change_syntax_highlighter));
+	edit_menu->get_popup()->add_submenu_node_item(TTR("Autocompletion Filtering"), autocompletion_menu);
+	autocompletion_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_change_autocompletion_filtering));
 
 	edit_hb->add_child(search_menu);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
@@ -2415,6 +2447,17 @@ ScriptTextEditor::ScriptTextEditor() {
 	highlighter.instantiate();
 	add_syntax_highlighter(highlighter);
 	set_syntax_highlighter(highlighter);
+
+	autocompletion_menu = memnew(PopupMenu);
+
+	autocompletion_menu->add_radio_check_item("Default");
+	autocompletion_modes.push_back("Default");
+	autocompletion_menu->add_radio_check_item("Beginning Matching Only");
+	autocompletion_modes.push_back("Beginning Matching Only");
+	autocompletion_menu->add_radio_check_item("Any Substring Matching");
+	autocompletion_modes.push_back("Any Substring Matching");
+
+	set_autocompletion_filtering("Default", CodeEdit::AUTOCOMPLETION_DEFAULT);
 
 	search_menu = memnew(MenuButton);
 	search_menu->set_text(TTR("Search"));

@@ -2252,6 +2252,28 @@ void CodeEdit::cancel_code_completion() {
 	queue_redraw();
 }
 
+void CodeEdit::set_code_autocompletion_type(CodeEdit::CodeAutocompletionType p_type) {
+	autocompletion_type = p_type;
+	update_code_completion_options(false);
+}
+
+void CodeEdit::set_code_autocompletion_type(int p_idx) {
+	switch (p_idx) {
+		case 0: {
+			set_code_autocompletion_type(CodeEdit::CodeAutocompletionType::AUTOCOMPLETION_DEFAULT);
+			break;
+		}
+		case 1: {
+			set_code_autocompletion_type(CodeEdit::CodeAutocompletionType::AUTOCOMPLETION_BEGINNING_MATCH);
+			break;
+		}
+		case 2: {
+			set_code_autocompletion_type(CodeEdit::CodeAutocompletionType::AUTOCOMPLETION_SUBSTRING_MATCH);
+			break;
+		}
+	}
+}
+
 /* Line length guidelines */
 void CodeEdit::set_line_length_guidelines(TypedArray<int> p_guideline_columns) {
 	line_length_guideline_columns = p_guideline_columns;
@@ -3424,9 +3446,15 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		const char32_t *target_char_lower = &target_lower[0];
 
 		Vector<Vector<Pair<int, int>>> all_possible_subsequence_matches;
-		for (int i = 0; *target_char_lower; i++, target_char_lower++) {
-			if (*target_char_lower == *string_to_complete_char_lower) {
-				all_possible_subsequence_matches.push_back({ { i, 1 } });
+		if (*target_char_lower == *string_to_complete_char_lower) {
+			all_possible_subsequence_matches.push_back({ { 0, 1 } });
+		}
+		target_char_lower++;
+		if (autocompletion_type <= CodeEdit::AUTOCOMPLETION_SUBSTRING_MATCH) {
+			for (int i = 1; *target_char_lower; i++, target_char_lower++) {
+				if (*target_char_lower == *string_to_complete_char_lower) {
+					all_possible_subsequence_matches.push_back({ { i, 1 } });
+				}
 			}
 		}
 		string_to_complete_char_lower++;
@@ -3457,16 +3485,19 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 						continue;
 					}
 				}
-				for (int index : all_ocurence) {
-					if (index > next_index) {
-						Vector<Pair<int, int>> new_match = subsequence_match;
-						new_match.push_back({ index, 1 });
-						next_subsequence_matches.push_back(new_match);
+				if (autocompletion_type <= CodeEdit::AUTOCOMPLETION_DEFAULT) {
+					for (int index : all_ocurence) {
+						if (index > next_index) {
+							Vector<Pair<int, int>> new_match = subsequence_match;
+							new_match.push_back({ index, 1 });
+							next_subsequence_matches.push_back(new_match);
+						}
 					}
 				}
 			}
 			all_possible_subsequence_matches = next_subsequence_matches;
 		}
+
 		// go through all possible matches to get the best one as defined by CodeCompletionOptionCompare
 		if (all_possible_subsequence_matches.size() > 0) {
 			option.matches = all_possible_subsequence_matches[0];

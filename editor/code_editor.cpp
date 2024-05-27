@@ -1058,6 +1058,7 @@ void CodeTextEditor::update_editor_settings() {
 	// Completion
 	text_editor->set_auto_brace_completion_enabled(EDITOR_GET("text_editor/completion/auto_brace_complete"));
 	text_editor->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
+	text_editor->set_code_autocompletion_type(EDITOR_GET("text_editor/completion/autocompletion_filtering"));
 	code_complete_enabled = EDITOR_GET("text_editor/completion/code_complete_enabled");
 	code_complete_timer->set_wait_time(EDITOR_GET("text_editor/completion/code_complete_delay"));
 	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
