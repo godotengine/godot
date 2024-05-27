@@ -612,14 +612,14 @@ void main() {
 
 						vec3 uvw_pos = vec3(local_pos_bottom / FRAME.colliders[i].extents) * 0.5 + 0.5;
 
-						float y = 1.0 - texture(sampler2D(height_field_texture, SAMPLER_LINEAR_CLAMP), uvw_pos.xz).r;
+						float y = texture(sampler2D(height_field_texture, SAMPLER_LINEAR_CLAMP), uvw_pos.xz).r;
 
 						if (y > uvw_pos.y) {
 							//inside heightfield
 
 							vec3 pos1 = (vec3(uvw_pos.x, y, uvw_pos.z) * 2.0 - 1.0) * FRAME.colliders[i].extents;
-							vec3 pos2 = (vec3(uvw_pos.x + DELTA, 1.0 - texture(sampler2D(height_field_texture, SAMPLER_LINEAR_CLAMP), uvw_pos.xz + vec2(DELTA, 0)).r, uvw_pos.z) * 2.0 - 1.0) * FRAME.colliders[i].extents;
-							vec3 pos3 = (vec3(uvw_pos.x, 1.0 - texture(sampler2D(height_field_texture, SAMPLER_LINEAR_CLAMP), uvw_pos.xz + vec2(0, DELTA)).r, uvw_pos.z + DELTA) * 2.0 - 1.0) * FRAME.colliders[i].extents;
+							vec3 pos2 = (vec3(uvw_pos.x + DELTA, texture(sampler2D(height_field_texture, SAMPLER_LINEAR_CLAMP), uvw_pos.xz + vec2(DELTA, 0)).r, uvw_pos.z) * 2.0 - 1.0) * FRAME.colliders[i].extents;
+							vec3 pos3 = (vec3(uvw_pos.x, texture(sampler2D(height_field_texture, SAMPLER_LINEAR_CLAMP), uvw_pos.xz + vec2(0, DELTA)).r, uvw_pos.z + DELTA) * 2.0 - 1.0) * FRAME.colliders[i].extents;
 
 							normal = normalize(cross(pos1 - pos2, pos1 - pos3));
 							float local_y = (vec3(local_pos / FRAME.colliders[i].extents) * 0.5 + 0.5).y;

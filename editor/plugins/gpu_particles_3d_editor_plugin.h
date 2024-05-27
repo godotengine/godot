@@ -31,7 +31,7 @@
 #ifndef GPU_PARTICLES_3D_EDITOR_PLUGIN_H
 #define GPU_PARTICLES_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/gui/spin_box.h"
 

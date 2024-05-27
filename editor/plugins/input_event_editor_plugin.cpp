@@ -88,7 +88,7 @@ InputEventConfigContainer::InputEventConfigContainer() {
 	add_child(input_event_text);
 
 	open_config_button = EditorInspector::create_inspector_action_button(TTR("Configure"));
-	open_config_button->connect("pressed", callable_mp(this, &InputEventConfigContainer::_configure_pressed));
+	open_config_button->connect(SceneStringName(pressed), callable_mp(this, &InputEventConfigContainer::_configure_pressed));
 	add_child(open_config_button);
 
 	add_child(memnew(Control));

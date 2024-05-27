@@ -32,9 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 
 // TODO implement redo/undo system
 
@@ -43,7 +44,6 @@ void OpenXRActionMapEditor::_bind_methods() {
 	ClassDB::bind_method("_add_interaction_profile_editor", &OpenXRActionMapEditor::_add_interaction_profile_editor);
 
 	ClassDB::bind_method(D_METHOD("_add_action_set", "name"), &OpenXRActionMapEditor::_add_action_set);
-	ClassDB::bind_method(D_METHOD("_set_focus_on_action_set", "action_set"), &OpenXRActionMapEditor::_set_focus_on_action_set);
 	ClassDB::bind_method(D_METHOD("_remove_action_set", "name"), &OpenXRActionMapEditor::_remove_action_set);
 
 	ClassDB::bind_method(D_METHOD("_do_add_action_set_editor", "action_set_editor"), &OpenXRActionMapEditor::_do_add_action_set_editor);
@@ -175,7 +175,7 @@ void OpenXRActionMapEditor::_on_add_action_set() {
 	// Make sure our action set is the current tab
 	tabs->set_current_tab(0);
 
-	call_deferred("_set_focus_on_action_set", new_action_set_editor);
+	callable_mp(this, &OpenXRActionMapEditor::_set_focus_on_action_set).call_deferred(new_action_set_editor);
 }
 
 void OpenXRActionMapEditor::_set_focus_on_action_set(OpenXRActionSetEditor *p_action_set_editor) {
@@ -357,7 +357,7 @@ void OpenXRActionMapEditor::_do_remove_interaction_profile_editor(OpenXRInteract
 }
 
 void OpenXRActionMapEditor::open_action_map(String p_path) {
-	EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+	EditorNode::get_bottom_panel()->make_item_visible(this);
 
 	// out with the old...
 	_clear_action_map();
@@ -402,13 +402,13 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	add_action_set = memnew(Button);
 	add_action_set->set_text(TTR("Add Action Set"));
 	add_action_set->set_tooltip_text(TTR("Add an action set."));
-	add_action_set->connect("pressed", callable_mp(this, &OpenXRActionMapEditor::_on_add_action_set));
+	add_action_set->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionMapEditor::_on_add_action_set));
 	top_hb->add_child(add_action_set);
 
 	add_interaction_profile = memnew(Button);
 	add_interaction_profile->set_text(TTR("Add profile"));
 	add_interaction_profile->set_tooltip_text(TTR("Add an interaction profile."));
-	add_interaction_profile->connect("pressed", callable_mp(this, &OpenXRActionMapEditor::_on_add_interaction_profile));
+	add_interaction_profile->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionMapEditor::_on_add_interaction_profile));
 	top_hb->add_child(add_interaction_profile);
 
 	VSeparator *vseparator = memnew(VSeparator);
@@ -417,13 +417,13 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	save_as = memnew(Button);
 	save_as->set_text(TTR("Save"));
 	save_as->set_tooltip_text(TTR("Save this OpenXR action map."));
-	save_as->connect("pressed", callable_mp(this, &OpenXRActionMapEditor::_on_save_action_map));
+	save_as->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionMapEditor::_on_save_action_map));
 	top_hb->add_child(save_as);
 
 	_default = memnew(Button);
 	_default->set_text(TTR("Reset to Default"));
 	_default->set_tooltip_text(TTR("Reset to default OpenXR action map."));
-	_default->connect("pressed", callable_mp(this, &OpenXRActionMapEditor::_on_reset_to_default_layout));
+	_default->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionMapEditor::_on_reset_to_default_layout));
 	top_hb->add_child(_default);
 
 	tabs = memnew(TabContainer);

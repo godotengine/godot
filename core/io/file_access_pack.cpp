@@ -200,6 +200,8 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		return false;
 	}
 
+	int64_t pck_start_pos = f->get_position() - 4;
+
 	uint32_t version = f->get_32();
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
@@ -212,6 +214,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	uint64_t file_base = f->get_64();
 
 	bool enc_directory = (pack_flags & PACK_DIR_ENCRYPTED);
+	bool rel_filebase = (pack_flags & PACK_REL_FILEBASE);
 
 	for (int i = 0; i < 16; i++) {
 		//reserved
@@ -219,6 +222,10 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	}
 
 	int file_count = f->get_32();
+
+	if (rel_filebase) {
+		file_base += pck_start_pos;
+	}
 
 	if (enc_directory) {
 		Ref<FileAccessEncrypted> fae;
@@ -331,7 +338,7 @@ uint64_t FileAccessPack::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 		to_read = (int64_t)pf.size - (int64_t)pos;
 	}
 
-	pos += p_length;
+	pos += to_read;
 
 	if (to_read <= 0) {
 		return 0;
@@ -459,7 +466,7 @@ String DirAccessPack::get_drive(int p_drive) {
 	return "";
 }
 
-PackedData::PackedDir *DirAccessPack::_find_dir(String p_dir) {
+PackedData::PackedDir *DirAccessPack::_find_dir(const String &p_dir) {
 	String nd = p_dir.replace("\\", "/");
 
 	// Special handling since simplify_path() will forbid it
@@ -495,7 +502,7 @@ PackedData::PackedDir *DirAccessPack::_find_dir(String p_dir) {
 	}
 
 	for (int i = 0; i < paths.size(); i++) {
-		String p = paths[i];
+		const String &p = paths[i];
 		if (p == ".") {
 			continue;
 		} else if (p == "..") {

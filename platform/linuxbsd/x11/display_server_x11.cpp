@@ -41,7 +41,6 @@
 #include "core/string/ustring.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
-#include "scene/resources/atlas_texture.h"
 
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
@@ -110,6 +109,11 @@ static String get_atom_name(Display *p_disp, Atom p_atom) {
 
 bool DisplayServerX11::has_feature(Feature p_feature) const {
 	switch (p_feature) {
+#ifndef DISABLE_DEPRECATED
+		case FEATURE_GLOBAL_MENU: {
+			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
+		} break;
+#endif
 		case FEATURE_SUBWINDOWS:
 #ifdef TOUCH_ENABLED
 		case FEATURE_TOUCHSCREEN:
@@ -124,8 +128,10 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		//case FEATURE_HIDPI:
 		case FEATURE_ICON:
 #ifdef DBUS_ENABLED
-		case FEATURE_NATIVE_DIALOG:
+		case FEATURE_NATIVE_DIALOG_FILE:
 #endif
+		//case FEATURE_NATIVE_DIALOG:
+		//case FEATURE_NATIVE_DIALOG_INPUT:
 		//case FEATURE_NATIVE_ICON:
 		case FEATURE_SWAP_BUFFERS:
 #ifdef DBUS_ENABLED
@@ -364,6 +370,10 @@ bool DisplayServerX11::is_dark_mode() const {
 	}
 }
 
+void DisplayServerX11::set_system_theme_change_callback(const Callable &p_callable) {
+	portal_desktop->set_system_theme_change_callback(p_callable);
+}
+
 Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
 	WindowID window_id = last_focused_window;
 
@@ -372,7 +382,18 @@ Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_
 	}
 
 	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
-	return portal_desktop->file_dialog_show(last_focused_window, xid, p_title, p_current_directory, p_filename, p_mode, p_filters, p_callback);
+	return portal_desktop->file_dialog_show(last_focused_window, xid, p_title, p_current_directory, String(), p_filename, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
+}
+
+Error DisplayServerX11::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
+	WindowID window_id = last_focused_window;
+
+	if (!windows.has(window_id)) {
+		window_id = MAIN_WINDOW_ID;
+	}
+
+	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
+	return portal_desktop->file_dialog_show(last_focused_window, xid, p_title, p_current_directory, p_root, p_filename, p_mode, p_filters, p_options, p_callback, true);
 }
 
 #endif
@@ -986,7 +1007,8 @@ int DisplayServerX11::get_screen_count() const {
 	if (xinerama_ext_ok && XineramaQueryExtension(x11_display, &event_base, &error_base)) {
 		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
 		XFree(xsi);
-	} else {
+	}
+	if (count == 0) {
 		count = XScreenCount(x11_display);
 	}
 
@@ -1047,25 +1069,29 @@ Rect2i DisplayServerX11::_screen_get_rect(int p_screen) const {
 	ERR_FAIL_COND_V(p_screen < 0, rect);
 
 	// Using Xinerama Extension.
+	bool found = false;
 	int event_base, error_base;
 	if (xinerama_ext_ok && XineramaQueryExtension(x11_display, &event_base, &error_base)) {
 		int count;
 		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-
-		// Check if screen is valid.
-		if (p_screen < count) {
-			rect.position.x = xsi[p_screen].x_org;
-			rect.position.y = xsi[p_screen].y_org;
-			rect.size.width = xsi[p_screen].width;
-			rect.size.height = xsi[p_screen].height;
-		} else {
-			ERR_PRINT("Invalid screen index: " + itos(p_screen) + "(count: " + itos(count) + ").");
-		}
-
 		if (xsi) {
+			if (count > 0) {
+				// Check if screen is valid.
+				if (p_screen < count) {
+					rect.position.x = xsi[p_screen].x_org;
+					rect.position.y = xsi[p_screen].y_org;
+					rect.size.width = xsi[p_screen].width;
+					rect.size.height = xsi[p_screen].height;
+					found = true;
+				} else {
+					ERR_PRINT(vformat("Invalid screen index: %d (count: %d).", p_screen, count));
+				}
+			}
 			XFree(xsi);
 		}
-	} else {
+	}
+
+	if (!found) {
 		int count = XScreenCount(x11_display);
 		if (p_screen < count) {
 			Window root = XRootWindow(x11_display, p_screen);
@@ -1076,7 +1102,7 @@ Rect2i DisplayServerX11::_screen_get_rect(int p_screen) const {
 			rect.size.width = xwa.width;
 			rect.size.height = xwa.height;
 		} else {
-			ERR_PRINT("Invalid screen index: " + itos(p_screen) + "(count: " + itos(count) + ").");
+			ERR_PRINT(vformat("Invalid screen index: %d (count: %d).", p_screen, count));
 		}
 	}
 
@@ -1482,25 +1508,33 @@ Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
 
 	XImage *image = nullptr;
 
+	bool found = false;
 	int event_base, error_base;
 	if (xinerama_ext_ok && XineramaQueryExtension(x11_display, &event_base, &error_base)) {
 		int xin_count;
 		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &xin_count);
-		if (p_screen < xin_count) {
-			int x_count = XScreenCount(x11_display);
-			for (int i = 0; i < x_count; i++) {
-				Window root = XRootWindow(x11_display, i);
-				XWindowAttributes root_attrs;
-				XGetWindowAttributes(x11_display, root, &root_attrs);
-				if ((xsi[p_screen].x_org >= root_attrs.x) && (xsi[p_screen].x_org <= root_attrs.x + root_attrs.width) && (xsi[p_screen].y_org >= root_attrs.y) && (xsi[p_screen].y_org <= root_attrs.y + root_attrs.height)) {
-					image = XGetImage(x11_display, root, xsi[p_screen].x_org, xsi[p_screen].y_org, xsi[p_screen].width, xsi[p_screen].height, AllPlanes, ZPixmap);
-					break;
+		if (xsi) {
+			if (xin_count > 0) {
+				if (p_screen < xin_count) {
+					int x_count = XScreenCount(x11_display);
+					for (int i = 0; i < x_count; i++) {
+						Window root = XRootWindow(x11_display, i);
+						XWindowAttributes root_attrs;
+						XGetWindowAttributes(x11_display, root, &root_attrs);
+						if ((xsi[p_screen].x_org >= root_attrs.x) && (xsi[p_screen].x_org <= root_attrs.x + root_attrs.width) && (xsi[p_screen].y_org >= root_attrs.y) && (xsi[p_screen].y_org <= root_attrs.y + root_attrs.height)) {
+							found = true;
+							image = XGetImage(x11_display, root, xsi[p_screen].x_org, xsi[p_screen].y_org, xsi[p_screen].width, xsi[p_screen].height, AllPlanes, ZPixmap);
+							break;
+						}
+					}
+				} else {
+					ERR_PRINT(vformat("Invalid screen index: %d (count: %d).", p_screen, xin_count));
 				}
 			}
-		} else {
-			ERR_FAIL_V_MSG(Ref<Image>(), "Invalid screen index: " + itos(p_screen) + "(count: " + itos(xin_count) + ").");
+			XFree(xsi);
 		}
-	} else {
+	}
+	if (!found) {
 		int x_count = XScreenCount(x11_display);
 		if (p_screen < x_count) {
 			Window root = XRootWindow(x11_display, p_screen);
@@ -1510,7 +1544,7 @@ Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
 
 			image = XGetImage(x11_display, root, root_attrs.x, root_attrs.y, root_attrs.width, root_attrs.height, AllPlanes, ZPixmap);
 		} else {
-			ERR_FAIL_V_MSG(Ref<Image>(), "Invalid screen index: " + itos(p_screen) + "(count: " + itos(x_count) + ").");
+			ERR_PRINT(vformat("Invalid screen index: %d (count: %d).", p_screen, x_count));
 		}
 	}
 
@@ -1659,7 +1693,11 @@ DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, V
 			window_set_flag(WindowFlags(i), true, id);
 		}
 	}
-
+#ifdef RD_ENABLED
+	if (rendering_device) {
+		rendering_device->screen_create(id);
+	}
+#endif
 	return id;
 }
 
@@ -1707,9 +1745,13 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 		window_set_transient(p_id, INVALID_WINDOW_ID);
 	}
 
-#ifdef VULKAN_ENABLED
-	if (context_vulkan) {
-		context_vulkan->window_destroy(p_id);
+#if defined(RD_ENABLED)
+	if (rendering_device) {
+		rendering_device->screen_free(p_id);
+	}
+
+	if (rendering_context) {
+		rendering_context->window_destroy(p_id);
 	}
 #endif
 #ifdef GLES3_ENABLED
@@ -1968,8 +2010,7 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 		Size2i wsize = window_get_size(p_window);
 		wpos += srect.position;
 		if (srect != Rect2i()) {
-			wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - wsize.width / 3);
-			wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - wsize.height / 3);
+			wpos = wpos.clamp(srect.position, srect.position + srect.size - wsize / 3);
 		}
 		window_set_position(wpos, p_window);
 	}
@@ -2010,8 +2051,8 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 		// RevertToPointerRoot is used to make sure we don't lose all focus in case
 		// a subwindow and its parent are both destroyed.
 		if (!wd_window.no_focus && !wd_window.is_popup && wd_window.focused) {
-			if ((xwa.map_state == IsViewable) && !wd_parent.no_focus && !wd_window.is_popup) {
-				XSetInputFocus(x11_display, wd_parent.x11_window, RevertToPointerRoot, CurrentTime);
+			if ((xwa.map_state == IsViewable) && !wd_parent.no_focus && !wd_window.is_popup && _window_focus_check()) {
+				_set_input_focus(wd_parent.x11_window, RevertToPointerRoot);
 			}
 		}
 	} else {
@@ -2197,8 +2238,7 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 
 	Size2i size = p_size;
-	size.x = MAX(1, size.x);
-	size.y = MAX(1, size.y);
+	size = size.maxi(1);
 
 	WindowData &wd = windows[p_window];
 
@@ -2233,9 +2273,9 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	}
 
 	// Keep rendering context window size in sync
-#if defined(VULKAN_ENABLED)
-	if (context_vulkan) {
-		context_vulkan->window_resize(p_window, xwa.width, xwa.height);
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_size(p_window, xwa.width, xwa.height);
 	}
 #endif
 #if defined(GLES3_ENABLED)
@@ -2891,10 +2931,15 @@ void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
 	XFlush(x11_display);
 }
 
+DisplayServerX11::WindowID DisplayServerX11::get_focused_window() const {
+	return last_focused_window;
+}
+
 bool DisplayServerX11::window_is_focused(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
+
 	const WindowData &wd = windows[p_window];
 
 	return wd.focused;
@@ -2945,8 +2990,8 @@ void DisplayServerX11::window_set_ime_active(const bool p_active, WindowID p_win
 		XWindowAttributes xwa;
 		XSync(x11_display, False);
 		XGetWindowAttributes(x11_display, wd.x11_xim_window, &xwa);
-		if (xwa.map_state == IsViewable) {
-			XSetInputFocus(x11_display, wd.x11_xim_window, RevertToParent, CurrentTime);
+		if (xwa.map_state == IsViewable && _window_focus_check()) {
+			_set_input_focus(wd.x11_xim_window, RevertToParent);
 		}
 		XSetICFocus(wd.xic);
 	} else {
@@ -3036,39 +3081,10 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 			cursors_cache.erase(p_shape);
 		}
 
-		Ref<Texture2D> texture = p_cursor;
-		ERR_FAIL_COND(!texture.is_valid());
-		Ref<AtlasTexture> atlas_texture = p_cursor;
-		Size2i texture_size;
-		Rect2i atlas_rect;
-
-		if (atlas_texture.is_valid()) {
-			texture = atlas_texture->get_atlas();
-
-			atlas_rect.size.width = texture->get_width();
-			atlas_rect.size.height = texture->get_height();
-			atlas_rect.position.x = atlas_texture->get_region().position.x;
-			atlas_rect.position.y = atlas_texture->get_region().position.y;
-
-			texture_size.width = atlas_texture->get_region().size.x;
-			texture_size.height = atlas_texture->get_region().size.y;
-		} else {
-			texture_size.width = texture->get_width();
-			texture_size.height = texture->get_height();
-		}
-
-		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
-		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
-		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
-
-		Ref<Image> image = texture->get_image();
-
-		ERR_FAIL_COND(!image.is_valid());
-		if (image->is_compressed()) {
-			image = image->duplicate(true);
-			Error err = image->decompress();
-			ERR_FAIL_COND_MSG(err != OK, "Couldn't decompress VRAM-compressed custom mouse cursor image. Switch to a lossless compression mode in the Import dock.");
-		}
+		Rect2 atlas_rect;
+		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot, atlas_rect);
+		ERR_FAIL_COND(image.is_null());
+		Vector2i texture_size = image->get_size();
 
 		// Create the cursor structure
 		XcursorImage *cursor_image = XcursorImageCreate(texture_size.width, texture_size.height);
@@ -3087,7 +3103,7 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 			int row_index = floor(index / texture_size.width) + atlas_rect.position.y;
 			int column_index = (index % int(texture_size.width)) + atlas_rect.position.x;
 
-			if (atlas_texture.is_valid()) {
+			if (atlas_rect.has_area()) {
 				column_index = MIN(column_index, atlas_rect.size.width - 1);
 				row_index = MIN(row_index, atlas_rect.size.height - 1);
 			}
@@ -3496,6 +3512,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				bool keypress = xkeyevent->type == KeyPress;
 				Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
 				Key physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
+				KeyLocation key_location = KeyMappingX11::get_location(xkeyevent->keycode);
 
 				if (keycode >= Key::A + 32 && keycode <= Key::Z + 32) {
 					keycode -= 'a' - 'A';
@@ -3533,6 +3550,8 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 						k->set_unicode(fix_unicode(tmp[i]));
 					}
 
+					k->set_location(key_location);
+
 					k->set_echo(false);
 
 					if (k->get_keycode() == Key::BACKTAB) {
@@ -3557,6 +3576,8 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 	Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
 	Key physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
+
+	KeyLocation key_location = KeyMappingX11::get_location(xkeyevent->keycode);
 
 	/* Phase 3, obtain a unicode character from the keysym */
 
@@ -3657,6 +3678,9 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	if (keypress) {
 		k->set_unicode(fix_unicode(unicode));
 	}
+
+	k->set_location(key_location);
+
 	k->set_echo(p_echo);
 
 	if (k->get_keycode() == Key::BACKTAB) {
@@ -3875,7 +3899,7 @@ void DisplayServerX11::_xim_preedit_draw_callback(::XIM xim, ::XPointer client_d
 			ds->im_selection = Point2i();
 		}
 
-		OS_Unix::get_singleton()->get_main_loop()->call_deferred(SNAME("notification"), MainLoop::NOTIFICATION_OS_IME_UPDATE);
+		callable_mp((Object *)OS_Unix::get_singleton()->get_main_loop(), &Object::notification).call_deferred(MainLoop::NOTIFICATION_OS_IME_UPDATE, false);
 	}
 }
 
@@ -3945,9 +3969,9 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	wd.position = new_rect.position;
 	wd.size = new_rect.size;
 
-#if defined(VULKAN_ENABLED)
-	if (context_vulkan) {
-		context_vulkan->window_resize(window_id, wd.size.width, wd.size.height);
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_size(window_id, wd.size.width, wd.size.height);
 	}
 #endif
 #if defined(GLES3_ENABLED)
@@ -4016,6 +4040,18 @@ void DisplayServerX11::_send_window_event(const WindowData &wd, WindowEvent p_ev
 	if (wd.event_callback.is_valid()) {
 		Variant event = int(p_event);
 		wd.event_callback.call(event);
+	}
+}
+
+void DisplayServerX11::_set_input_focus(Window p_window, int p_revert_to) {
+	Window focused_window;
+	int focus_ret_state;
+	XGetInputFocus(x11_display, &focused_window, &focus_ret_state);
+
+	// Only attempt to change focus if the window isn't already focused, in order to
+	// prevent issues with Godot stealing input focus with alternative window managers.
+	if (p_window != focused_window) {
+		XSetInputFocus(x11_display, p_window, p_revert_to, CurrentTime);
 	}
 }
 
@@ -4228,8 +4264,26 @@ bool DisplayServerX11::mouse_process_popups() {
 	return closed;
 }
 
+bool DisplayServerX11::_window_focus_check() {
+	Window focused_window;
+	int focus_ret_state;
+	XGetInputFocus(x11_display, &focused_window, &focus_ret_state);
+
+	bool has_focus = false;
+	for (const KeyValue<int, DisplayServerX11::WindowData> &wid : windows) {
+		if (wid.value.x11_window == focused_window) {
+			has_focus = true;
+			break;
+		}
+	}
+
+	return has_focus;
+}
+
 void DisplayServerX11::process_events() {
-	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND(!Thread::is_main_thread());
+
+	_THREAD_SAFE_LOCK_
 
 #ifdef DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
 	static int frame = 0;
@@ -4472,6 +4526,7 @@ void DisplayServerX11::process_events() {
 							sd->set_index(index);
 							sd->set_position(pos);
 							sd->set_relative(pos - curr_pos_elem->value);
+							sd->set_relative_screen_position(sd->get_relative());
 							Input::get_singleton()->parse_input_event(sd);
 
 							curr_pos_elem->value = pos;
@@ -4499,8 +4554,8 @@ void DisplayServerX11::process_events() {
 				// Set focus when menu window is started.
 				// RevertToPointerRoot is used to make sure we don't lose all focus in case
 				// a subwindow and its parent are both destroyed.
-				if ((xwa.map_state == IsViewable) && !wd.no_focus && !wd.is_popup) {
-					XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
+				if ((xwa.map_state == IsViewable) && !wd.no_focus && !wd.is_popup && _window_focus_check()) {
+					_set_input_focus(wd.x11_window, RevertToPointerRoot);
 				}
 
 				// Have we failed to set fullscreen while the window was unmapped?
@@ -4666,19 +4721,6 @@ void DisplayServerX11::process_events() {
 					break;
 				}
 
-				const WindowData &wd = windows[window_id];
-
-				XWindowAttributes xwa;
-				XSync(x11_display, False);
-				XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
-
-				// Set focus when menu window is re-used.
-				// RevertToPointerRoot is used to make sure we don't lose all focus in case
-				// a subwindow and its parent are both destroyed.
-				if ((xwa.map_state == IsViewable) && !wd.no_focus && !wd.is_popup) {
-					XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
-				}
-
 				_window_changed(&event);
 			} break;
 
@@ -4720,7 +4762,7 @@ void DisplayServerX11::process_events() {
 					// RevertToPointerRoot is used to make sure we don't lose all focus in case
 					// a subwindow and its parent are both destroyed.
 					if (!wd.no_focus && !wd.is_popup) {
-						XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
+						_set_input_focus(wd.x11_window, RevertToPointerRoot);
 					}
 
 					uint64_t diff = OS::get_singleton()->get_ticks_usec() / 1000 - last_click_ms;
@@ -4893,8 +4935,10 @@ void DisplayServerX11::process_events() {
 				mm->set_position(pos);
 				mm->set_global_position(pos);
 				mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+				mm->set_screen_velocity(mm->get_velocity());
 
 				mm->set_relative(rel);
+				mm->set_relative_screen_position(rel);
 
 				last_mouse_pos = pos;
 
@@ -4963,7 +5007,7 @@ void DisplayServerX11::process_events() {
 						files.write[i] = files[i].replace("file://", "").uri_decode();
 					}
 
-					if (!windows[window_id].drop_files_callback.is_null()) {
+					if (windows[window_id].drop_files_callback.is_valid()) {
 						windows[window_id].drop_files_callback.call(files);
 					}
 
@@ -5068,6 +5112,14 @@ void DisplayServerX11::process_events() {
 		*/
 	}
 
+#ifdef DBUS_ENABLED
+	if (portal_desktop) {
+		portal_desktop->process_file_dialog_callbacks();
+	}
+#endif
+
+	_THREAD_SAFE_UNLOCK_
+
 	Input::get_singleton()->flush_buffered_events();
 }
 
@@ -5078,17 +5130,6 @@ void DisplayServerX11::release_rendering_thread() {
 	}
 	if (gl_manager_egl) {
 		gl_manager_egl->release_current();
-	}
-#endif
-}
-
-void DisplayServerX11::make_rendering_thread() {
-#if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->make_current();
-	}
-	if (gl_manager_egl) {
-		gl_manager_egl->make_current();
 	}
 #endif
 }
@@ -5151,6 +5192,23 @@ void DisplayServerX11::set_context(Context p_context) {
 	}
 }
 
+bool DisplayServerX11::is_window_transparency_available() const {
+	CharString net_wm_cm_name = vformat("_NET_WM_CM_S%d", XDefaultScreen(x11_display)).ascii();
+	Atom net_wm_cm = XInternAtom(x11_display, net_wm_cm_name.get_data(), False);
+	if (net_wm_cm == None) {
+		return false;
+	}
+	if (XGetSelectionOwner(x11_display, net_wm_cm) == None) {
+		return false;
+	}
+#if defined(RD_ENABLED)
+	if (rendering_device && !rendering_device->is_composite_alpha_supported()) {
+		return false;
+	}
+#endif
+	return OS::get_singleton()->is_layered_allowed();
+}
+
 void DisplayServerX11::set_native_icon(const String &p_filename) {
 	WARN_PRINT("Native icon not supported by this display server.");
 }
@@ -5183,7 +5241,7 @@ void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
 			if (g_set_icon_error) {
 				g_set_icon_error = false;
 
-				WARN_PRINT("Icon too large, attempting to resize icon.");
+				WARN_PRINT(vformat("Icon too large (%dx%d), attempting to downscale icon.", w, h));
 
 				int new_width, new_height;
 				if (w > h) {
@@ -5244,9 +5302,9 @@ void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
 
 void DisplayServerX11::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
-#if defined(VULKAN_ENABLED)
-	if (context_vulkan) {
-		context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
 	}
 #endif
 
@@ -5262,9 +5320,9 @@ void DisplayServerX11::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mo
 
 DisplayServer::VSyncMode DisplayServerX11::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
-#if defined(VULKAN_ENABLED)
-	if (context_vulkan) {
-		return context_vulkan->get_vsync_mode(p_window);
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_vsync_mode(p_window);
 	}
 #endif
 #if defined(GLES3_ENABLED)
@@ -5292,8 +5350,8 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error));
+DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			String executable_name = OS::get_singleton()->get_executable_path().get_file();
@@ -5422,8 +5480,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	} else {
 		Rect2i srect = screen_get_usable_rect(rq_screen);
 		Point2i wpos = p_rect.position;
-		wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - p_rect.size.width / 3);
-		wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - p_rect.size.height / 3);
+		wpos = wpos.clamp(srect.position, srect.position + srect.size - p_rect.size / 3);
 
 		win_rect.position = wpos;
 	}
@@ -5606,10 +5663,24 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 		_update_size_hints(id);
 
-#if defined(VULKAN_ENABLED)
-		if (context_vulkan) {
-			Error err = context_vulkan->window_create(id, p_vsync_mode, wd.x11_window, x11_display, win_rect.size.width, win_rect.size.height);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan window");
+#if defined(RD_ENABLED)
+		if (rendering_context) {
+			union {
+#ifdef VULKAN_ENABLED
+				RenderingContextDriverVulkanX11::WindowPlatformData vulkan;
+#endif
+			} wpd;
+#ifdef VULKAN_ENABLED
+			if (rendering_driver == "vulkan") {
+				wpd.vulkan.window = wd.x11_window;
+				wpd.vulkan.display = x11_display;
+			}
+#endif
+			Error err = rendering_context->window_create(id, &wpd);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, vformat("Can't create a %s window", rendering_driver));
+
+			rendering_context->window_set_size(id, win_rect.size.width, win_rect.size.height);
+			rendering_context->window_set_vsync_mode(id, p_vsync_mode);
 		}
 #endif
 #ifdef GLES3_ENABLED
@@ -5711,8 +5782,11 @@ static ::XIMStyle _get_best_xim_style(const ::XIMStyle &p_style_a, const ::XIMSt
 	return p_style_a;
 }
 
-DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	KeyMappingX11::initialize();
+
+	native_menu = memnew(NativeMenu);
+	context = p_context;
 
 #ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
@@ -6008,14 +6082,20 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	rendering_driver = p_rendering_driver;
 
 	bool driver_found = false;
+#if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-		context_vulkan = memnew(VulkanContextX11);
-		if (context_vulkan->initialize() != OK) {
-			memdelete(context_vulkan);
-			context_vulkan = nullptr;
+		rendering_context = memnew(RenderingContextDriverVulkanX11);
+	}
+#endif
+
+	if (rendering_context) {
+		if (rendering_context->initialize() != OK) {
+			ERR_PRINT(vformat("Could not initialize %s", rendering_driver));
+			memdelete(rendering_context);
+			rendering_context = nullptr;
 			r_error = ERR_CANT_CREATE;
-			ERR_FAIL_MSG("Could not initialize Vulkan");
+			return;
 		}
 		driver_found = true;
 	}
@@ -6108,7 +6188,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		if (p_screen == SCREEN_OF_MAIN_WINDOW) {
 			p_screen = SCREEN_PRIMARY;
 		}
-		window_position = screen_get_position(p_screen) + (screen_get_size(p_screen) - p_resolution) / 2;
+		Rect2i scr_rect = screen_get_usable_rect(p_screen);
+		window_position = scr_rect.position + (scr_rect.size - p_resolution) / 2;
 	}
 
 	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution));
@@ -6123,11 +6204,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 	show_window(main_window);
 
-#if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		//temporary
-		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
-		rendering_device_vulkan->initialize(context_vulkan);
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_device = memnew(RenderingDevice);
+		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
 	}
@@ -6299,11 +6380,20 @@ DisplayServerX11::~DisplayServerX11() {
 	events_thread_done.set();
 	events_thread.wait_to_finish();
 
+	if (native_menu) {
+		memdelete(native_menu);
+		native_menu = nullptr;
+	}
+
 	//destroy all windows
 	for (KeyValue<WindowID, WindowData> &E : windows) {
-#ifdef VULKAN_ENABLED
-		if (context_vulkan) {
-			context_vulkan->window_destroy(E.key);
+#if defined(RD_ENABLED)
+		if (rendering_device) {
+			rendering_device->screen_free(E.key);
+		}
+
+		if (rendering_context) {
+			rendering_context->window_destroy(E.key);
 		}
 #endif
 #ifdef GLES3_ENABLED
@@ -6345,16 +6435,15 @@ DisplayServerX11::~DisplayServerX11() {
 #endif
 
 	//destroy drivers
-#if defined(VULKAN_ENABLED)
-	if (rendering_device_vulkan) {
-		rendering_device_vulkan->finalize();
-		memdelete(rendering_device_vulkan);
-		rendering_device_vulkan = nullptr;
+#if defined(RD_ENABLED)
+	if (rendering_device) {
+		memdelete(rendering_device);
+		rendering_device = nullptr;
 	}
 
-	if (context_vulkan) {
-		memdelete(context_vulkan);
-		context_vulkan = nullptr;
+	if (rendering_context) {
+		memdelete(rendering_context);
+		rendering_context = nullptr;
 	}
 #endif
 

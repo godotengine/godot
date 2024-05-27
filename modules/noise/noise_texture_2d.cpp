@@ -49,10 +49,6 @@ NoiseTexture2D::~NoiseTexture2D() {
 }
 
 void NoiseTexture2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_texture"), &NoiseTexture2D::_update_texture);
-	ClassDB::bind_method(D_METHOD("_generate_texture"), &NoiseTexture2D::_generate_texture);
-	ClassDB::bind_method(D_METHOD("_thread_done", "image"), &NoiseTexture2D::_thread_done);
-
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &NoiseTexture2D::set_width);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &NoiseTexture2D::set_height);
 
@@ -123,6 +119,7 @@ void NoiseTexture2D::_set_texture_image(const Ref<Image> &p_image) {
 		} else {
 			texture = RS::get_singleton()->texture_2d_create(p_image);
 		}
+		RS::get_singleton()->texture_set_path(texture, get_path());
 	}
 	emit_changed();
 }
@@ -138,7 +135,7 @@ void NoiseTexture2D::_thread_done(const Ref<Image> &p_image) {
 
 void NoiseTexture2D::_thread_function(void *p_ud) {
 	NoiseTexture2D *tex = static_cast<NoiseTexture2D *>(p_ud);
-	tex->call_deferred(SNAME("_thread_done"), tex->_generate_texture());
+	callable_mp(tex, &NoiseTexture2D::_thread_done).call_deferred(tex->_generate_texture());
 }
 
 void NoiseTexture2D::_queue_update() {
@@ -147,7 +144,7 @@ void NoiseTexture2D::_queue_update() {
 	}
 
 	update_queued = true;
-	call_deferred(SNAME("_update_texture"));
+	callable_mp(this, &NoiseTexture2D::_update_texture).call_deferred();
 }
 
 Ref<Image> NoiseTexture2D::_generate_texture() {

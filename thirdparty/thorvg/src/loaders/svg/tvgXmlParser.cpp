@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -171,10 +171,11 @@ static const char* _simpleXmlFindStartTag(const char* itr, const char* itrEnd)
 
 static const char* _simpleXmlFindEndTag(const char* itr, const char* itrEnd)
 {
-    bool insideQuote = false;
+    bool insideQuote[2] = {false, false}; // 0: ", 1: '
     for (; itr < itrEnd; itr++) {
-        if (*itr == '"') insideQuote = !insideQuote;
-        if (!insideQuote) {
+        if (*itr == '"' && !insideQuote[1]) insideQuote[0] = !insideQuote[0];
+        if (*itr == '\'' && !insideQuote[0]) insideQuote[1] = !insideQuote[1];
+        if (!insideQuote[0] && !insideQuote[1]) {
             if ((*itr == '>') || (*itr == '<'))
                 return itr;
         }
@@ -313,7 +314,10 @@ bool simpleXmlParseAttributes(const char* buf, unsigned bufLength, simpleXMLAttr
             if ((*keyEnd == '=') || (isspace((unsigned char)*keyEnd))) break;
         }
         if (keyEnd == itrEnd) goto error;
-        if (keyEnd == key) continue;
+        if (keyEnd == key) {  // There is no key. This case is invalid, but explores the following syntax.
+            itr = keyEnd + 1;
+            continue;
+        }
 
         if (*keyEnd == '=') value = keyEnd + 1;
         else {

@@ -32,13 +32,14 @@
 #define EDITOR_SETTINGS_DIALOG_H
 
 #include "editor/action_map_editor.h"
-#include "editor/editor_inspector.h"
-#include "editor/editor_sectioned_inspector.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/rich_text_label.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/texture_rect.h"
+
+class PanelContainer;
+class SectionedInspector;
+class TabContainer;
+class TextureRect;
+class Tree;
+class TreeItem;
 
 class EditorSettingsDialog : public AcceptDialog {
 	GDCLASS(EditorSettingsDialog, AcceptDialog);
@@ -53,6 +54,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	LineEdit *shortcut_search_box = nullptr;
 	EventListenerLineEdit *shortcut_search_by_event = nullptr;
 	SectionedInspector *inspector = nullptr;
+	Button *clear_all_search = nullptr;
 
 	// Shortcuts
 	enum ShortcutButton {

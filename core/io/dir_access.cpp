@@ -84,7 +84,7 @@ static Error _erase_recursive(DirAccess *da) {
 	String n = da->get_next();
 	while (!n.is_empty()) {
 		if (n != "." && n != "..") {
-			if (da->current_is_dir()) {
+			if (da->current_is_dir() && !da->is_link(n)) {
 				dirs.push_back(n);
 			} else {
 				files.push_back(n);
@@ -131,7 +131,7 @@ Error DirAccess::erase_contents_recursive() {
 	return _erase_recursive(this);
 }
 
-Error DirAccess::make_dir_recursive(String p_dir) {
+Error DirAccess::make_dir_recursive(const String &p_dir) {
 	if (p_dir.length() < 1) {
 		return OK;
 	}
@@ -188,7 +188,7 @@ DirAccess::AccessType DirAccess::get_access_type() const {
 	return _access_type;
 }
 
-String DirAccess::fix_path(String p_path) const {
+String DirAccess::fix_path(const String &p_path) const {
 	switch (_access_type) {
 		case ACCESS_RESOURCES: {
 			if (ProjectSettings::get_singleton()) {
@@ -338,7 +338,7 @@ String DirAccess::get_full_path(const String &p_path, AccessType p_access) {
 	return full;
 }
 
-Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
+Error DirAccess::copy(const String &p_from, const String &p_to, int p_chmod_flags) {
 	//printf("copy %s -> %s\n",p_from.ascii().get_data(),p_to.ascii().get_data());
 	Error err;
 	{
@@ -396,7 +396,7 @@ class DirChanger {
 	String original_dir;
 
 public:
-	DirChanger(DirAccess *p_da, String p_dir) :
+	DirChanger(DirAccess *p_da, const String &p_dir) :
 			da(p_da),
 			original_dir(p_da->get_current_dir()) {
 		p_da->change_dir(p_dir);
@@ -407,7 +407,7 @@ public:
 	}
 };
 
-Error DirAccess::_copy_dir(Ref<DirAccess> &p_target_da, String p_to, int p_chmod_flags, bool p_copy_links) {
+Error DirAccess::_copy_dir(Ref<DirAccess> &p_target_da, const String &p_to, int p_chmod_flags, bool p_copy_links) {
 	List<String> dirs;
 
 	String curdir = get_current_dir();
@@ -460,7 +460,7 @@ Error DirAccess::_copy_dir(Ref<DirAccess> &p_target_da, String p_to, int p_chmod
 	return OK;
 }
 
-Error DirAccess::copy_dir(String p_from, String p_to, int p_chmod_flags, bool p_copy_links) {
+Error DirAccess::copy_dir(const String &p_from, String p_to, int p_chmod_flags, bool p_copy_links) {
 	ERR_FAIL_COND_V_MSG(!dir_exists(p_from), ERR_FILE_NOT_FOUND, "Source directory doesn't exist.");
 
 	Ref<DirAccess> target_da = DirAccess::create_for_path(p_to);
@@ -481,7 +481,7 @@ Error DirAccess::copy_dir(String p_from, String p_to, int p_chmod_flags, bool p_
 	return err;
 }
 
-bool DirAccess::exists(String p_dir) {
+bool DirAccess::exists(const String &p_dir) {
 	Ref<DirAccess> da = DirAccess::create_for_path(p_dir);
 	return da->change_dir(p_dir) == OK;
 }
@@ -581,6 +581,10 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_static_method("DirAccess", D_METHOD("rename_absolute", "from", "to"), &DirAccess::rename_absolute);
 	ClassDB::bind_method(D_METHOD("remove", "path"), &DirAccess::remove);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("remove_absolute", "path"), &DirAccess::remove_absolute);
+
+	ClassDB::bind_method(D_METHOD("is_link", "path"), &DirAccess::is_link);
+	ClassDB::bind_method(D_METHOD("read_link", "path"), &DirAccess::read_link);
+	ClassDB::bind_method(D_METHOD("create_link", "source", "target"), &DirAccess::create_link);
 
 	ClassDB::bind_method(D_METHOD("set_include_navigational", "enable"), &DirAccess::set_include_navigational);
 	ClassDB::bind_method(D_METHOD("get_include_navigational"), &DirAccess::get_include_navigational);

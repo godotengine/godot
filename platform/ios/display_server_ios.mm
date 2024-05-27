@@ -51,7 +51,7 @@ DisplayServerIOS *DisplayServerIOS::get_singleton() {
 	return (DisplayServerIOS *)DisplayServer::get_singleton();
 }
 
-DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	KeyMappingIOS::initialize();
 
 	rendering_driver = p_rendering_driver;
@@ -61,35 +61,54 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 	if (tts_enabled) {
 		tts = [[TTS_IOS alloc] init];
 	}
+	native_menu = memnew(NativeMenu);
+
+#if defined(RD_ENABLED)
+	rendering_context = nullptr;
+	rendering_device = nullptr;
+
+	CALayer *layer = nullptr;
+
+	union {
+#ifdef VULKAN_ENABLED
+		RenderingContextDriverVulkanIOS::WindowPlatformData vulkan;
+#endif
+	} wpd;
 
 #if defined(VULKAN_ENABLED)
-	context_vulkan = nullptr;
-	rendering_device_vulkan = nullptr;
-
 	if (rendering_driver == "vulkan") {
-		context_vulkan = memnew(VulkanContextIOS);
-		if (context_vulkan->initialize() != OK) {
-			memdelete(context_vulkan);
-			context_vulkan = nullptr;
-			ERR_FAIL_MSG("Failed to initialize Vulkan context");
-		}
-
-		CALayer *layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"vulkan"];
-
+		layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"vulkan"];
 		if (!layer) {
 			ERR_FAIL_MSG("Failed to create iOS Vulkan rendering layer.");
 		}
+		wpd.vulkan.layer_ptr = (CAMetalLayer *const *)&layer;
+		rendering_context = memnew(RenderingContextDriverVulkanIOS);
+	}
+#endif
 
-		Size2i size = Size2i(layer.bounds.size.width, layer.bounds.size.height) * screen_get_max_scale();
-		if (context_vulkan->window_create(MAIN_WINDOW_ID, p_vsync_mode, layer, size.width, size.height) != OK) {
-			memdelete(context_vulkan);
-			context_vulkan = nullptr;
-			r_error = ERR_UNAVAILABLE;
-			ERR_FAIL_MSG("Failed to create Vulkan window.");
+	if (rendering_context) {
+		if (rendering_context->initialize() != OK) {
+			ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			return;
 		}
 
-		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
-		rendering_device_vulkan->initialize(context_vulkan);
+		if (rendering_context->window_create(MAIN_WINDOW_ID, &wpd) != OK) {
+			ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
+
+		Size2i size = Size2i(layer.bounds.size.width, layer.bounds.size.height) * screen_get_max_scale();
+		rendering_context->window_set_size(MAIN_WINDOW_ID, size.width, size.height);
+		rendering_context->window_set_vsync_mode(MAIN_WINDOW_ID, p_vsync_mode);
+
+		rendering_device = memnew(RenderingDevice);
+		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
 	}
@@ -116,23 +135,28 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 }
 
 DisplayServerIOS::~DisplayServerIOS() {
-#if defined(VULKAN_ENABLED)
-	if (rendering_device_vulkan) {
-		rendering_device_vulkan->finalize();
-		memdelete(rendering_device_vulkan);
-		rendering_device_vulkan = nullptr;
+	if (native_menu) {
+		memdelete(native_menu);
+		native_menu = nullptr;
 	}
 
-	if (context_vulkan) {
-		context_vulkan->window_destroy(MAIN_WINDOW_ID);
-		memdelete(context_vulkan);
-		context_vulkan = nullptr;
+#if defined(RD_ENABLED)
+	if (rendering_device) {
+		rendering_device->screen_free(MAIN_WINDOW_ID);
+		memdelete(rendering_device);
+		rendering_device = nullptr;
+	}
+
+	if (rendering_context) {
+		rendering_context->window_destroy(MAIN_WINDOW_ID);
+		memdelete(rendering_context);
+		rendering_context = nullptr;
 	}
 #endif
 }
 
-DisplayServer *DisplayServerIOS::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
-	return memnew(DisplayServerIOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error));
+DisplayServer *DisplayServerIOS::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+	return memnew(DisplayServerIOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
 }
 
 Vector<String> DisplayServerIOS::get_rendering_drivers_func() {
@@ -194,7 +218,7 @@ void DisplayServerIOS::send_window_event(DisplayServer::WindowEvent p_event) con
 }
 
 void DisplayServerIOS::_window_callback(const Callable &p_callable, const Variant &p_arg) const {
-	if (!p_callable.is_null()) {
+	if (p_callable.is_valid()) {
 		p_callable.call(p_arg);
 	}
 }
@@ -222,6 +246,7 @@ void DisplayServerIOS::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x
 	ev->set_tilt(p_tilt);
 	ev->set_position(Vector2(p_x, p_y));
 	ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
+	ev->set_relative_screen_position(ev->get_relative());
 	perform_event(ev);
 }
 
@@ -235,7 +260,7 @@ void DisplayServerIOS::touches_canceled(int p_idx) {
 
 // MARK: Keyboard
 
-void DisplayServerIOS::key(Key p_key, char32_t p_char, Key p_unshifted, Key p_physical, NSInteger p_modifier, bool p_pressed) {
+void DisplayServerIOS::key(Key p_key, char32_t p_char, Key p_unshifted, Key p_physical, NSInteger p_modifier, bool p_pressed, KeyLocation p_location) {
 	Ref<InputEventKey> ev;
 	ev.instantiate();
 	ev->set_echo(false);
@@ -258,46 +283,47 @@ void DisplayServerIOS::key(Key p_key, char32_t p_char, Key p_unshifted, Key p_ph
 	ev->set_key_label(p_unshifted);
 	ev->set_physical_keycode(p_physical);
 	ev->set_unicode(fix_unicode(p_char));
+	ev->set_location(p_location);
 	perform_event(ev);
 }
 
 // MARK: Motion
 
-void DisplayServerIOS::update_gravity(float p_x, float p_y, float p_z) {
-	Input::get_singleton()->set_gravity(Vector3(p_x, p_y, p_z));
+void DisplayServerIOS::update_gravity(const Vector3 &p_gravity) {
+	Input::get_singleton()->set_gravity(p_gravity);
 }
 
-void DisplayServerIOS::update_accelerometer(float p_x, float p_y, float p_z) {
-	// Found out the Z should not be negated! Pass as is!
-	Vector3 v_accelerometer = Vector3(
-			p_x / kDisplayServerIOSAcceleration,
-			p_y / kDisplayServerIOSAcceleration,
-			p_z / kDisplayServerIOSAcceleration);
-
-	Input::get_singleton()->set_accelerometer(v_accelerometer);
+void DisplayServerIOS::update_accelerometer(const Vector3 &p_accelerometer) {
+	Input::get_singleton()->set_accelerometer(p_accelerometer / kDisplayServerIOSAcceleration);
 }
 
-void DisplayServerIOS::update_magnetometer(float p_x, float p_y, float p_z) {
-	Input::get_singleton()->set_magnetometer(Vector3(p_x, p_y, p_z));
+void DisplayServerIOS::update_magnetometer(const Vector3 &p_magnetometer) {
+	Input::get_singleton()->set_magnetometer(p_magnetometer);
 }
 
-void DisplayServerIOS::update_gyroscope(float p_x, float p_y, float p_z) {
-	Input::get_singleton()->set_gyroscope(Vector3(p_x, p_y, p_z));
+void DisplayServerIOS::update_gyroscope(const Vector3 &p_gyroscope) {
+	Input::get_singleton()->set_gyroscope(p_gyroscope);
 }
 
 // MARK: -
 
 bool DisplayServerIOS::has_feature(Feature p_feature) const {
 	switch (p_feature) {
+#ifndef DISABLE_DEPRECATED
+		case FEATURE_GLOBAL_MENU: {
+			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
+		} break;
+#endif
 		// case FEATURE_CURSOR_SHAPE:
 		// case FEATURE_CUSTOM_CURSOR_SHAPE:
-		// case FEATURE_GLOBAL_MENU:
 		// case FEATURE_HIDPI:
 		// case FEATURE_ICON:
 		// case FEATURE_IME:
 		// case FEATURE_MOUSE:
 		// case FEATURE_MOUSE_WARP:
 		// case FEATURE_NATIVE_DIALOG:
+		// case FEATURE_NATIVE_DIALOG_INPUT:
+		// case FEATURE_NATIVE_DIALOG_FILE:
 		// case FEATURE_NATIVE_ICON:
 		// case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_CLIPBOARD:
@@ -364,6 +390,16 @@ bool DisplayServerIOS::is_dark_mode() const {
 		return [UITraitCollection currentTraitCollection].userInterfaceStyle == UIUserInterfaceStyleDark;
 	} else {
 		return false;
+	}
+}
+
+void DisplayServerIOS::set_system_theme_change_callback(const Callable &p_callable) {
+	system_theme_changed = p_callable;
+}
+
+void DisplayServerIOS::emit_system_theme_changed() {
+	if (system_theme_changed.is_valid()) {
+		system_theme_changed.call();
 	}
 }
 
@@ -443,7 +479,11 @@ int DisplayServerIOS::screen_get_dpi(int p_screen) const {
 }
 
 float DisplayServerIOS::screen_get_refresh_rate(int p_screen) const {
-	return [UIScreen mainScreen].maximumFramesPerSecond;
+	float fps = [UIScreen mainScreen].maximumFramesPerSecond;
+	if ([NSProcessInfo processInfo].lowPowerModeEnabled) {
+		fps = 60;
+	}
+	return fps;
 }
 
 float DisplayServerIOS::screen_get_scale(int p_screen) const {
@@ -693,9 +733,9 @@ bool DisplayServerIOS::screen_is_kept_on() const {
 void DisplayServerIOS::resize_window(CGSize viewSize) {
 	Size2i size = Size2i(viewSize.width, viewSize.height) * screen_get_max_scale();
 
-#if defined(VULKAN_ENABLED)
-	if (context_vulkan) {
-		context_vulkan->window_resize(MAIN_WINDOW_ID, size.x, size.y);
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_size(MAIN_WINDOW_ID, size.x, size.y);
 	}
 #endif
 
@@ -705,18 +745,18 @@ void DisplayServerIOS::resize_window(CGSize viewSize) {
 
 void DisplayServerIOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
-#if defined(VULKAN_ENABLED)
-	if (context_vulkan) {
-		context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
 	}
 #endif
 }
 
 DisplayServer::VSyncMode DisplayServerIOS::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
-#if defined(VULKAN_ENABLED)
-	if (context_vulkan) {
-		return context_vulkan->get_vsync_mode(p_window);
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_vsync_mode(p_window);
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;

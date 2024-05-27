@@ -273,12 +273,13 @@ void EditorRunBar::play_main_scene(bool p_from_native) {
 }
 
 void EditorRunBar::play_current_scene(bool p_reload) {
+	String last_current_scene = run_current_filename; // This is necessary to have a copy of the string.
+
 	EditorNode::get_singleton()->save_default_environment();
 	stop_playing();
 
 	current_mode = RunMode::RUN_CURRENT;
 	if (p_reload) {
-		String last_current_scene = run_current_filename; // This is necessary to have a copy of the string.
 		_run_scene(last_current_scene);
 	} else {
 		_run_scene();
@@ -371,11 +372,11 @@ EditorRunBar::EditorRunBar() {
 
 	play_button = memnew(Button);
 	main_hbox->add_child(play_button);
-	play_button->set_flat(true);
+	play_button->set_theme_type_variation("RunBarButton");
 	play_button->set_toggle_mode(true);
 	play_button->set_focus_mode(Control::FOCUS_NONE);
 	play_button->set_tooltip_text(TTR("Run the project's default scene."));
-	play_button->connect("pressed", callable_mp(this, &EditorRunBar::play_main_scene).bind(false));
+	play_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::play_main_scene).bind(false));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_project", TTR("Run Project"), Key::F5);
 	ED_SHORTCUT_OVERRIDE("editor/run_project", "macos", KeyModifierMask::META | Key::B);
@@ -383,7 +384,7 @@ EditorRunBar::EditorRunBar() {
 
 	pause_button = memnew(Button);
 	main_hbox->add_child(pause_button);
-	pause_button->set_flat(true);
+	pause_button->set_theme_type_variation("RunBarButton");
 	pause_button->set_toggle_mode(true);
 	pause_button->set_focus_mode(Control::FOCUS_NONE);
 	pause_button->set_tooltip_text(TTR("Pause the running project's execution for debugging."));
@@ -395,11 +396,11 @@ EditorRunBar::EditorRunBar() {
 
 	stop_button = memnew(Button);
 	main_hbox->add_child(stop_button);
-	stop_button->set_flat(true);
+	stop_button->set_theme_type_variation("RunBarButton");
 	stop_button->set_focus_mode(Control::FOCUS_NONE);
 	stop_button->set_tooltip_text(TTR("Stop the currently running project."));
 	stop_button->set_disabled(true);
-	stop_button->connect("pressed", callable_mp(this, &EditorRunBar::stop_playing));
+	stop_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::stop_playing));
 
 	ED_SHORTCUT("editor/stop_running_project", TTR("Stop Running Project"), Key::F8);
 	ED_SHORTCUT_OVERRIDE("editor/stop_running_project", "macos", KeyModifierMask::META | Key::PERIOD);
@@ -411,11 +412,11 @@ EditorRunBar::EditorRunBar() {
 
 	play_scene_button = memnew(Button);
 	main_hbox->add_child(play_scene_button);
-	play_scene_button->set_flat(true);
+	play_scene_button->set_theme_type_variation("RunBarButton");
 	play_scene_button->set_toggle_mode(true);
 	play_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_scene_button->set_tooltip_text(TTR("Run the currently edited scene."));
-	play_scene_button->connect("pressed", callable_mp(this, &EditorRunBar::_play_current_pressed));
+	play_scene_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::_play_current_pressed));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_current_scene", TTR("Run Current Scene"), Key::F6);
 	ED_SHORTCUT_OVERRIDE("editor/run_current_scene", "macos", KeyModifierMask::META | Key::R);
@@ -423,11 +424,11 @@ EditorRunBar::EditorRunBar() {
 
 	play_custom_scene_button = memnew(Button);
 	main_hbox->add_child(play_custom_scene_button);
-	play_custom_scene_button->set_flat(true);
+	play_custom_scene_button->set_theme_type_variation("RunBarButton");
 	play_custom_scene_button->set_toggle_mode(true);
 	play_custom_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_custom_scene_button->set_tooltip_text(TTR("Run a specific scene."));
-	play_custom_scene_button->connect("pressed", callable_mp(this, &EditorRunBar::_play_custom_pressed));
+	play_custom_scene_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::_play_custom_pressed));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_specific_scene", TTR("Run Specific Scene"), KeyModifierMask::CTRL | KeyModifierMask::SHIFT | Key::F5);
 	ED_SHORTCUT_OVERRIDE("editor/run_specific_scene", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::R);
@@ -438,7 +439,7 @@ EditorRunBar::EditorRunBar() {
 
 	write_movie_button = memnew(Button);
 	write_movie_panel->add_child(write_movie_button);
-	write_movie_button->set_flat(true);
+	write_movie_button->set_theme_type_variation("RunBarButton");
 	write_movie_button->set_toggle_mode(true);
 	write_movie_button->set_pressed(false);
 	write_movie_button->set_focus_mode(Control::FOCUS_NONE);

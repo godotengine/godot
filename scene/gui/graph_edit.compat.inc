@@ -38,9 +38,14 @@ void GraphEdit::_set_arrange_nodes_button_hidden_bind_compat_81582(bool p_enable
 	set_show_arrange_button(!p_enable);
 }
 
+PackedVector2Array GraphEdit::_get_connection_line_bind_compat_86158(const Vector2 &p_from, const Vector2 &p_to) {
+	return get_connection_line(p_from, p_to);
+}
+
 void GraphEdit::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("is_arrange_nodes_button_hidden"), &GraphEdit::_is_arrange_nodes_button_hidden_bind_compat_81582);
 	ClassDB::bind_compatibility_method(D_METHOD("set_arrange_nodes_button_hidden", "enable"), &GraphEdit::_set_arrange_nodes_button_hidden_bind_compat_81582);
+	ClassDB::bind_compatibility_method(D_METHOD("get_connection_line", "from_node", "to_node"), &GraphEdit::_get_connection_line_bind_compat_86158);
 }
 
 #endif

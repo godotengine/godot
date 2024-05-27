@@ -31,13 +31,16 @@
 #ifndef SPRITE_2D_EDITOR_PLUGIN_H
 #define SPRITE_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/gui/spin_box.h"
 
 class AcceptDialog;
 class ConfirmationDialog;
+class EditorZoomWidget;
 class MenuButton;
+class Panel;
+class ViewPanner;
 
 class Sprite2DEditor : public Control {
 	GDCLASS(Sprite2DEditor, Control);
@@ -60,13 +63,20 @@ class Sprite2DEditor : public Control {
 	AcceptDialog *err_dialog = nullptr;
 
 	ConfirmationDialog *debug_uv_dialog = nullptr;
-	Control *debug_uv = nullptr;
+	Panel *debug_uv = nullptr;
 	Vector<Vector2> uv_lines;
 	Vector<Vector<Vector2>> outline_lines;
 	Vector<Vector<Vector2>> computed_outline_lines;
 	Vector<Vector2> computed_vertices;
 	Vector<Vector2> computed_uv;
 	Vector<int> computed_indices;
+
+	HScrollBar *h_scroll = nullptr;
+	VScrollBar *v_scroll = nullptr;
+	EditorZoomWidget *zoom_widget = nullptr;
+	Ref<ViewPanner> panner;
+	Vector2 draw_offset;
+	real_t draw_zoom = 1.0;
 
 	SpinBox *simplification = nullptr;
 	SpinBox *grow_pixels = nullptr;
@@ -78,8 +88,13 @@ class Sprite2DEditor : public Control {
 	//void _create_uv_lines();
 	friend class Sprite2DEditorPlugin;
 
+	void _debug_uv_input(const Ref<InputEvent> &p_input);
 	void _debug_uv_draw();
 	void _popup_debug_uv_dialog();
+	void _center_view();
+	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
+	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
+	void _update_zoom_and_pan(bool p_zoom_at_center);
 	void _update_mesh_data();
 
 	void _create_node();

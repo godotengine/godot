@@ -5,8 +5,6 @@ using Godot;
 using GodotTools.Internals;
 using JetBrains.Rider.PathLocator;
 
-#nullable enable
-
 namespace GodotTools.Ides.Rider
 {
     public static class RiderPathManager

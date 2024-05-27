@@ -55,11 +55,8 @@ void BoxContainer::_resort() {
 	HashMap<Control *, _MinSizeCache> min_size_cache;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible_in_tree()) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
+		Control *c = as_sortable_control(get_child(i));
+		if (!c) {
 			continue;
 		}
 
@@ -109,11 +106,8 @@ void BoxContainer::_resort() {
 		float error = 0.0; // Keep track of accumulated error in pixels
 
 		for (int i = 0; i < get_child_count(); i++) {
-			Control *c = Object::cast_to<Control>(get_child(i));
-			if (!c || !c->is_visible_in_tree()) {
-				continue;
-			}
-			if (c->is_set_as_top_level()) {
+			Control *c = as_sortable_control(get_child(i));
+			if (!c) {
 				continue;
 			}
 
@@ -201,11 +195,8 @@ void BoxContainer::_resort() {
 	}
 
 	for (int i = start; i != end; i += delta) {
-		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible_in_tree()) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
+		Control *c = as_sortable_control(get_child(i));
+		if (!c) {
 			continue;
 		}
 
@@ -253,14 +244,7 @@ Size2 BoxContainer::get_minimum_size() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
-			continue;
-		}
-
-		if (!c->is_visible()) {
+		if (!c || !c->is_visible() || c->is_set_as_top_level()) {
 			continue;
 		}
 

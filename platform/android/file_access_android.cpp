@@ -31,8 +31,12 @@
 #include "file_access_android.h"
 
 #include "core/string/print_string.h"
+#include "thread_jandroid.h"
+
+#include <android/asset_manager_jni.h>
 
 AAssetManager *FileAccessAndroid::asset_manager = nullptr;
+jobject FileAccessAndroid::j_asset_manager = nullptr;
 
 String FileAccessAndroid::get_path() const {
 	return path_src;
@@ -121,6 +125,75 @@ uint8_t FileAccessAndroid::get_8() const {
 	return byte;
 }
 
+uint16_t FileAccessAndroid::get_16() const {
+	if (pos >= len) {
+		eof = true;
+		return 0;
+	}
+
+	uint16_t bytes = 0;
+	int r = AAsset_read(asset, &bytes, 2);
+
+	if (r >= 0) {
+		pos += r;
+		if (pos >= len) {
+			eof = true;
+		}
+	}
+
+	if (big_endian) {
+		bytes = BSWAP16(bytes);
+	}
+
+	return bytes;
+}
+
+uint32_t FileAccessAndroid::get_32() const {
+	if (pos >= len) {
+		eof = true;
+		return 0;
+	}
+
+	uint32_t bytes = 0;
+	int r = AAsset_read(asset, &bytes, 4);
+
+	if (r >= 0) {
+		pos += r;
+		if (pos >= len) {
+			eof = true;
+		}
+	}
+
+	if (big_endian) {
+		bytes = BSWAP32(bytes);
+	}
+
+	return bytes;
+}
+
+uint64_t FileAccessAndroid::get_64() const {
+	if (pos >= len) {
+		eof = true;
+		return 0;
+	}
+
+	uint64_t bytes = 0;
+	int r = AAsset_read(asset, &bytes, 8);
+
+	if (r >= 0) {
+		pos += r;
+		if (pos >= len) {
+			eof = true;
+		}
+	}
+
+	if (big_endian) {
+		bytes = BSWAP64(bytes);
+	}
+
+	return bytes;
+}
+
 uint64_t FileAccessAndroid::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 
@@ -151,6 +224,18 @@ void FileAccessAndroid::store_8(uint8_t p_dest) {
 	ERR_FAIL();
 }
 
+void FileAccessAndroid::store_16(uint16_t p_dest) {
+	ERR_FAIL();
+}
+
+void FileAccessAndroid::store_32(uint32_t p_dest) {
+	ERR_FAIL();
+}
+
+void FileAccessAndroid::store_64(uint64_t p_dest) {
+	ERR_FAIL();
+}
+
 bool FileAccessAndroid::file_exists(const String &p_path) {
 	String path = fix_path(p_path).simplify_path();
 	if (path.begins_with("/")) {
@@ -175,4 +260,17 @@ void FileAccessAndroid::close() {
 
 FileAccessAndroid::~FileAccessAndroid() {
 	_close();
+}
+
+void FileAccessAndroid::setup(jobject p_asset_manager) {
+	JNIEnv *env = get_jni_env();
+	j_asset_manager = env->NewGlobalRef(p_asset_manager);
+	asset_manager = AAssetManager_fromJava(env, j_asset_manager);
+}
+
+void FileAccessAndroid::terminate() {
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+
+	env->DeleteGlobalRef(j_asset_manager);
 }

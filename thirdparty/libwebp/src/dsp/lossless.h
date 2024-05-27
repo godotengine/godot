@@ -182,9 +182,9 @@ extern VP8LPredictorAddSubFunc VP8LPredictorsSub_C[16];
 // -----------------------------------------------------------------------------
 // Huffman-cost related functions.
 
-typedef float (*VP8LCostFunc)(const uint32_t* population, int length);
-typedef float (*VP8LCostCombinedFunc)(const uint32_t* X, const uint32_t* Y,
-                                      int length);
+typedef uint32_t (*VP8LCostFunc)(const uint32_t* population, int length);
+typedef uint32_t (*VP8LCostCombinedFunc)(const uint32_t* X, const uint32_t* Y,
+                                         int length);
 typedef float (*VP8LCombinedShannonEntropyFunc)(const int X[256],
                                                 const int Y[256]);
 

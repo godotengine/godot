@@ -111,6 +111,13 @@
 				Returns the title of the tab at index [param tab_idx].
 			</description>
 		</method>
+		<method name="get_tab_tooltip" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the tooltip text of the tab at index [param tab_idx].
+			</description>
+		</method>
 		<method name="is_tab_disabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="tab_idx" type="int" />
@@ -224,13 +231,25 @@
 				Sets a [param title] for the tab at index [param tab_idx].
 			</description>
 		</method>
+		<method name="set_tab_tooltip">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="tooltip" type="String" />
+			<description>
+				Sets a [param tooltip] for tab at index [param tab_idx].
+				[b]Note:[/b] By default, if the [param tooltip] is empty and the tab text is truncated (not all characters fit into the tab), the title will be displayed as a tooltip. To hide the tooltip, assign [code]" "[/code] as the [param tooltip] text.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="clip_tabs" type="bool" setter="set_clip_tabs" getter="get_clip_tabs" default="true">
 			If [code]true[/code], tabs overflowing this node's width will be hidden, displaying two navigation buttons instead. Otherwise, this node's minimum size is updated so that all tabs are visible.
 		</member>
-		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="0">
-			Select tab at index [code]tab_idx[/code].
+		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="-1">
+			The index of the current selected tab. A value of [code]-1[/code] means that no tab is selected and can only be set when [member deselect_enabled] is [code]true[/code] or if all tabs are hidden or disabled.
+		</member>
+		<member name="deselect_enabled" type="bool" setter="set_deselect_enabled" getter="get_deselect_enabled" default="false">
+			If [code]true[/code], all tabs can be deselected so that no tab is selected. Click on the current tab to deselect it.
 		</member>
 		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled" default="false">
 			If [code]true[/code], tabs can be rearranged with mouse drag.
@@ -357,7 +376,7 @@
 		<theme_item name="font_hovered_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			Font color of the currently hovered tab. Does not apply to the selected tab.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the tab name.
 		</theme_item>
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">

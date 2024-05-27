@@ -10,7 +10,6 @@ _FORCE_INLINE_ virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
 def generate_mod_version(argcount, const=False, returns=False):
     s = proto_mod
     sproto = str(argcount)
-    method_info = ""
     if returns:
         sproto += "R"
         s = s.replace("$RETTYPE", "m_ret, ")
@@ -68,7 +67,6 @@ virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
 def generate_ex_version(argcount, const=False, returns=False):
     s = proto_ex
     sproto = str(argcount)
-    method_info = ""
     if returns:
         sproto += "R"
         s = s.replace("$RETTYPE", "m_ret, ")
@@ -142,11 +140,5 @@ def run(target, source, env):
 
     txt += "\n#endif\n"
 
-    with open(target[0], "w") as f:
+    with open(str(target[0]), "w", encoding="utf-8", newline="\n") as f:
         f.write(txt)
-
-
-if __name__ == "__main__":
-    from platform_methods import subprocess_main
-
-    subprocess_main(globals())

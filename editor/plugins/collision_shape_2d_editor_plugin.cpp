@@ -35,15 +35,14 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "scene/resources/capsule_shape_2d.h"
-#include "scene/resources/circle_shape_2d.h"
-#include "scene/resources/concave_polygon_shape_2d.h"
-#include "scene/resources/convex_polygon_shape_2d.h"
-#include "scene/resources/rectangle_shape_2d.h"
-#include "scene/resources/segment_shape_2d.h"
-#include "scene/resources/separation_ray_shape_2d.h"
-#include "scene/resources/world_boundary_shape_2d.h"
-#include "scene/scene_string_names.h"
+#include "scene/resources/2d/capsule_shape_2d.h"
+#include "scene/resources/2d/circle_shape_2d.h"
+#include "scene/resources/2d/concave_polygon_shape_2d.h"
+#include "scene/resources/2d/convex_polygon_shape_2d.h"
+#include "scene/resources/2d/rectangle_shape_2d.h"
+#include "scene/resources/2d/segment_shape_2d.h"
+#include "scene/resources/2d/separation_ray_shape_2d.h"
+#include "scene/resources/2d/world_boundary_shape_2d.h"
 
 CollisionShape2DEditor::CollisionShape2DEditor() {
 	grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
@@ -326,6 +325,7 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 					return false;
 				}
 
+				original_mouse_pos = gpoint;
 				original_point = handles[edit_handle];
 				original = get_handle_value(edit_handle);
 				original_transform = node->get_global_transform();
@@ -336,7 +336,9 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 
 			} else {
 				if (pressed) {
-					commit_handle(edit_handle, original);
+					if (original_mouse_pos != gpoint) {
+						commit_handle(edit_handle, original);
+					}
 
 					edit_handle = -1;
 					pressed = false;
@@ -384,7 +386,7 @@ void CollisionShape2DEditor::_shape_changed() {
 	canvas_item_editor->update_viewport();
 
 	if (current_shape.is_valid()) {
-		current_shape->disconnect(SceneStringNames::get_singleton()->changed, callable_mp(canvas_item_editor, &CanvasItemEditor::update_viewport));
+		current_shape->disconnect_changed(callable_mp(canvas_item_editor, &CanvasItemEditor::update_viewport));
 		current_shape = Ref<Shape2D>();
 		shape_type = -1;
 	}
@@ -396,7 +398,7 @@ void CollisionShape2DEditor::_shape_changed() {
 	current_shape = node->get_shape();
 
 	if (current_shape.is_valid()) {
-		current_shape->connect(SceneStringNames::get_singleton()->changed, callable_mp(canvas_item_editor, &CanvasItemEditor::update_viewport));
+		current_shape->connect_changed(callable_mp(canvas_item_editor, &CanvasItemEditor::update_viewport));
 	} else {
 		return;
 	}
@@ -537,7 +539,7 @@ void CollisionShape2DEditor::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/polygon_editor/point_grab_radius")) {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/polygon_editor")) {
 				grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 			}
 		} break;

@@ -60,7 +60,7 @@ public:
 
 	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer) override;
 
-	virtual void on_state_ready() override;
+	virtual void on_main_swapchains_created() override;
 
 	bool is_enabled() const;
 
@@ -82,7 +82,15 @@ private:
 	XrFoveationLevelFB foveation_level = XR_FOVEATION_LEVEL_NONE_FB;
 	XrFoveationDynamicFB foveation_dynamic = XR_FOVEATION_DYNAMIC_DISABLED_FB;
 
-	void update_profile();
+	static void _update_profile();
+
+	void update_profile() {
+		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+		RenderingServer *rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL(rendering_server);
+
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRFBFoveationExtension::_update_profile));
+	}
 
 	// Enable foveation on this swapchain
 	XrSwapchainCreateInfoFoveationFB swapchain_create_info_foveation_fb;

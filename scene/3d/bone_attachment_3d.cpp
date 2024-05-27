@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "bone_attachment_3d.h"
+#include "bone_attachment_3d.compat.inc"
 
 void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "bone_name") {
@@ -148,9 +149,9 @@ void BoneAttachment3D::_check_bind() {
 			bone_idx = sk->find_bone(bone_name);
 		}
 		if (bone_idx != -1) {
-			sk->connect(SNAME("bone_pose_changed"), callable_mp(this, &BoneAttachment3D::on_bone_pose_update));
+			sk->connect(SceneStringName(skeleton_updated), callable_mp(this, &BoneAttachment3D::on_skeleton_update));
 			bound = true;
-			call_deferred(SNAME("on_bone_pose_update"), bone_idx);
+			callable_mp(this, &BoneAttachment3D::on_skeleton_update);
 		}
 	}
 }
@@ -176,7 +177,7 @@ void BoneAttachment3D::_check_unbind() {
 		Skeleton3D *sk = _get_skeleton3d();
 
 		if (sk) {
-			sk->disconnect(SNAME("bone_pose_changed"), callable_mp(this, &BoneAttachment3D::on_bone_pose_update));
+			sk->disconnect(SceneStringName(skeleton_updated), callable_mp(this, &BoneAttachment3D::on_skeleton_update));
 		}
 		bound = false;
 	}
@@ -187,7 +188,7 @@ void BoneAttachment3D::_transform_changed() {
 		return;
 	}
 
-	if (override_pose) {
+	if (override_pose && !overriding) {
 		Skeleton3D *sk = _get_skeleton3d();
 
 		ERR_FAIL_NULL_MSG(sk, "Cannot override pose: Skeleton not found!");
@@ -198,8 +199,11 @@ void BoneAttachment3D::_transform_changed() {
 			our_trans = sk->get_global_transform().affine_inverse() * get_global_transform();
 		}
 
-		sk->set_bone_global_pose_override(bone_idx, our_trans, 1.0, true);
+		overriding = true;
+		sk->set_bone_global_pose(bone_idx, our_trans);
+		sk->force_update_all_dirty_bones();
 	}
+	overriding = false;
 }
 
 void BoneAttachment3D::set_bone_name(const String &p_name) {
@@ -244,16 +248,8 @@ int BoneAttachment3D::get_bone_idx() const {
 
 void BoneAttachment3D::set_override_pose(bool p_override) {
 	override_pose = p_override;
-	set_notify_local_transform(override_pose);
+	set_notify_transform(override_pose);
 	set_process_internal(override_pose);
-
-	if (!override_pose) {
-		Skeleton3D *sk = _get_skeleton3d();
-		if (sk) {
-			sk->set_bone_global_pose_override(bone_idx, Transform3D(), 0.0, false);
-		}
-		_transform_changed();
-	}
 	notify_property_list_changed();
 }
 
@@ -301,7 +297,7 @@ void BoneAttachment3D::_notification(int p_what) {
 			_check_unbind();
 		} break;
 
-		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+		case NOTIFICATION_TRANSFORM_CHANGED: {
 			_transform_changed();
 		} break;
 
@@ -313,8 +309,12 @@ void BoneAttachment3D::_notification(int p_what) {
 	}
 }
 
-void BoneAttachment3D::on_bone_pose_update(int p_bone_index) {
-	if (bone_idx == p_bone_index) {
+void BoneAttachment3D::on_skeleton_update() {
+	if (updating) {
+		return;
+	}
+	updating = true;
+	if (bone_idx >= 0) {
 		Skeleton3D *sk = _get_skeleton3d();
 		if (sk) {
 			if (!override_pose) {
@@ -331,6 +331,7 @@ void BoneAttachment3D::on_bone_pose_update(int p_bone_index) {
 			}
 		}
 	}
+	updating = false;
 }
 #ifdef TOOLS_ENABLED
 void BoneAttachment3D::notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, Dictionary p_rename_map) {
@@ -371,7 +372,7 @@ void BoneAttachment3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bone_idx", "bone_idx"), &BoneAttachment3D::set_bone_idx);
 	ClassDB::bind_method(D_METHOD("get_bone_idx"), &BoneAttachment3D::get_bone_idx);
 
-	ClassDB::bind_method(D_METHOD("on_bone_pose_update", "bone_index"), &BoneAttachment3D::on_bone_pose_update);
+	ClassDB::bind_method(D_METHOD("on_skeleton_update"), &BoneAttachment3D::on_skeleton_update);
 
 	ClassDB::bind_method(D_METHOD("set_override_pose", "override_pose"), &BoneAttachment3D::set_override_pose);
 	ClassDB::bind_method(D_METHOD("get_override_pose"), &BoneAttachment3D::get_override_pose);

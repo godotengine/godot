@@ -43,7 +43,6 @@
 #include "servers/rendering/storage/utilities.h"
 
 #include "drivers/gles3/shaders/canvas.glsl.gen.h"
-#include "drivers/gles3/shaders/cubemap_filter.glsl.gen.h"
 #include "drivers/gles3/shaders/particles.glsl.gen.h"
 #include "drivers/gles3/shaders/scene.glsl.gen.h"
 #include "drivers/gles3/shaders/sky.glsl.gen.h"
@@ -168,6 +167,10 @@ struct CanvasShaderData : public ShaderData {
 	bool uses_screen_texture_mipmaps;
 	bool uses_sdf;
 	bool uses_time;
+	bool uses_custom0;
+	bool uses_custom1;
+
+	uint64_t vertex_input_mask;
 
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;
@@ -245,6 +248,7 @@ struct SceneShaderData : public ShaderData {
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
 		BLEND_MODE_MUL,
+		BLEND_MODE_PREMULT_ALPHA,
 		BLEND_MODE_ALPHA_TO_COVERAGE
 	};
 
@@ -539,7 +543,6 @@ public:
 		CanvasShaderGLES3 canvas_shader;
 		SkyShaderGLES3 sky_shader;
 		SceneShaderGLES3 scene_shader;
-		CubemapFilterShaderGLES3 cubemap_filter_shader;
 		ParticlesShaderGLES3 particles_process_shader;
 
 		ShaderCompiler compiler_canvas;

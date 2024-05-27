@@ -313,7 +313,7 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
-	if (!wd.drop_files_callback.is_null()) {
+	if (wd.drop_files_callback.is_valid()) {
 		Vector<String> files;
 		NSPasteboard *pboard = [sender draggingPasteboard];
 
@@ -356,7 +356,7 @@
 	ds->cursor_update_shape();
 }
 
-- (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index pressed:(bool)pressed {
+- (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index pressed:(bool)pressed outofstream:(bool)outofstream {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (!ds || !ds->has_window(window_id)) {
 		return;
@@ -377,14 +377,18 @@
 	Ref<InputEventMouseButton> mb;
 	mb.instantiate();
 	mb->set_window_id(window_id);
-	ds->update_mouse_pos(wd, [event locationInWindow]);
+	if (outofstream) {
+		ds->update_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
+	} else {
+		ds->update_mouse_pos(wd, [event locationInWindow]);
+	}
 	ds->get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(index);
 	mb->set_pressed(pressed);
 	mb->set_position(wd.mouse_pos);
 	mb->set_global_position(wd.mouse_pos);
 	mb->set_button_mask(last_button_state);
-	if (index == MouseButton::LEFT && pressed) {
+	if (!outofstream && index == MouseButton::LEFT && pressed) {
 		mb->set_double_click([event clickCount] == 2);
 	}
 
@@ -394,10 +398,10 @@
 - (void)mouseDown:(NSEvent *)event {
 	if (([event modifierFlags] & NSEventModifierFlagControl)) {
 		mouse_down_control = true;
-		[self processMouseEvent:event index:MouseButton::RIGHT pressed:true];
+		[self processMouseEvent:event index:MouseButton::RIGHT pressed:true outofstream:false];
 	} else {
 		mouse_down_control = false;
-		[self processMouseEvent:event index:MouseButton::LEFT pressed:true];
+		[self processMouseEvent:event index:MouseButton::LEFT pressed:true outofstream:false];
 	}
 }
 
@@ -407,9 +411,9 @@
 
 - (void)mouseUp:(NSEvent *)event {
 	if (mouse_down_control) {
-		[self processMouseEvent:event index:MouseButton::RIGHT pressed:false];
+		[self processMouseEvent:event index:MouseButton::RIGHT pressed:false outofstream:false];
 	} else {
-		[self processMouseEvent:event index:MouseButton::LEFT pressed:false];
+		[self processMouseEvent:event index:MouseButton::LEFT pressed:false outofstream:false];
 	}
 }
 
@@ -448,15 +452,17 @@
 	}
 	mm->set_global_position(wd.mouse_pos);
 	mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+	mm->set_screen_velocity(mm->get_velocity());
 	const Vector2i relativeMotion = Vector2i(delta.x, delta.y) * ds->screen_get_max_scale();
 	mm->set_relative(relativeMotion);
+	mm->set_relative_screen_position(relativeMotion);
 	ds->get_key_modifier_state([event modifierFlags], mm);
 
 	Input::get_singleton()->parse_input_event(mm);
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
-	[self processMouseEvent:event index:MouseButton::RIGHT pressed:true];
+	[self processMouseEvent:event index:MouseButton::RIGHT pressed:true outofstream:false];
 }
 
 - (void)rightMouseDragged:(NSEvent *)event {
@@ -464,16 +470,16 @@
 }
 
 - (void)rightMouseUp:(NSEvent *)event {
-	[self processMouseEvent:event index:MouseButton::RIGHT pressed:false];
+	[self processMouseEvent:event index:MouseButton::RIGHT pressed:false outofstream:false];
 }
 
 - (void)otherMouseDown:(NSEvent *)event {
 	if ((int)[event buttonNumber] == 2) {
-		[self processMouseEvent:event index:MouseButton::MIDDLE pressed:true];
+		[self processMouseEvent:event index:MouseButton::MIDDLE pressed:true outofstream:false];
 	} else if ((int)[event buttonNumber] == 3) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 pressed:true];
+		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 pressed:true outofstream:false];
 	} else if ((int)[event buttonNumber] == 4) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 pressed:true];
+		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 pressed:true outofstream:false];
 	} else {
 		return;
 	}
@@ -485,13 +491,28 @@
 
 - (void)otherMouseUp:(NSEvent *)event {
 	if ((int)[event buttonNumber] == 2) {
-		[self processMouseEvent:event index:MouseButton::MIDDLE pressed:false];
+		[self processMouseEvent:event index:MouseButton::MIDDLE pressed:false outofstream:false];
 	} else if ((int)[event buttonNumber] == 3) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 pressed:false];
+		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 pressed:false outofstream:false];
 	} else if ((int)[event buttonNumber] == 4) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 pressed:false];
+		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 pressed:false outofstream:false];
 	} else {
 		return;
+	}
+}
+
+- (void)swipeWithEvent:(NSEvent *)event {
+	// Swipe gesture on Trackpad/Magic Mouse, or physical back/forward mouse buttons.
+	if ([event phase] == NSEventPhaseEnded || [event phase] == NSEventPhaseChanged) {
+		if (Math::is_equal_approx([event deltaX], 1.0)) {
+			// Swipe left (back).
+			[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 pressed:true outofstream:true];
+			[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 pressed:false outofstream:true];
+		} else if (Math::is_equal_approx([event deltaX], -1.0)) {
+			// Swipe right (forward).
+			[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 pressed:true outofstream:true];
+			[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 pressed:false outofstream:true];
+		}
 	}
 }
 
@@ -576,21 +597,23 @@
 			String u32text;
 			u32text.parse_utf16(text.ptr(), text.length());
 
+			DisplayServerMacOS::KeyEvent ke;
+			ke.window_id = window_id;
+			ke.macos_state = [event modifierFlags];
+			ke.pressed = true;
+			ke.echo = [event isARepeat];
+			ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], false);
+			ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
+			ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
+			ke.raw = true;
+
+			if (u32text.is_empty()) {
+				ke.unicode = 0;
+				ds->push_to_key_event_buffer(ke);
+			}
 			for (int i = 0; i < u32text.length(); i++) {
 				const char32_t codepoint = u32text[i];
-
-				DisplayServerMacOS::KeyEvent ke;
-
-				ke.window_id = window_id;
-				ke.macos_state = [event modifierFlags];
-				ke.pressed = true;
-				ke.echo = [event isARepeat];
-				ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], false);
-				ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
-				ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
 				ke.unicode = fix_unicode(codepoint);
-				ke.raw = true;
-
 				ds->push_to_key_event_buffer(ke);
 			}
 		} else {
@@ -604,6 +627,7 @@
 			ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
 			ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
 			ke.unicode = 0;
+			ke.location = KeyMappingMacOS::translate_location([event keyCode]);
 			ke.raw = false;
 
 			ds->push_to_key_event_buffer(ke);
@@ -669,6 +693,7 @@
 	ke.physical_keycode = KeyMappingMacOS::translate_key(key);
 	ke.key_label = KeyMappingMacOS::remap_key(key, mod, true);
 	ke.unicode = 0;
+	ke.location = KeyMappingMacOS::translate_location(key);
 
 	ds->push_to_key_event_buffer(ke);
 }
@@ -696,6 +721,7 @@
 		ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
 		ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
 		ke.unicode = 0;
+		ke.location = KeyMappingMacOS::translate_location([event keyCode]);
 		ke.raw = true;
 
 		ds->push_to_key_event_buffer(ke);

@@ -34,9 +34,9 @@
 #include "core/io/resource_importer.h"
 #include "editor/action_map_editor.h"
 #include "editor/editor_autoload_settings.h"
-#include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
 #include "editor/localization_editor.h"
+#include "editor/plugins/editor_plugin_settings.h"
 #include "editor/shader_globals_editor.h"
 #include "scene/gui/center_container.h"
 
@@ -211,7 +211,7 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 	reset_defaults = memnew(Button);
 	reset_defaults->set_text(TTR("Reset to Defaults"));
 	reset_defaults->set_disabled(true);
-	reset_defaults->connect("pressed", callable_mp(this, &ImportDefaultsEditor::_reset));
+	reset_defaults->connect(SceneStringName(pressed), callable_mp(this, &ImportDefaultsEditor::_reset));
 	hb->add_child(reset_defaults);
 	add_child(hb);
 
@@ -225,7 +225,7 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 	CenterContainer *cc = memnew(CenterContainer);
 	save_defaults = memnew(Button);
 	save_defaults->set_text(TTR("Save"));
-	save_defaults->connect("pressed", callable_mp(this, &ImportDefaultsEditor::_save));
+	save_defaults->connect(SceneStringName(pressed), callable_mp(this, &ImportDefaultsEditor::_save));
 	cc->add_child(save_defaults);
 	add_child(cc);
 

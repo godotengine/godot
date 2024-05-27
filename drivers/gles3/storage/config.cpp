@@ -99,8 +99,14 @@ Config::Config() {
 	msaa_supported = extensions.has("GL_EXT_framebuffer_multisample");
 #endif
 #ifndef IOS_ENABLED
+#ifdef WEB_ENABLED
+	msaa_multiview_supported = extensions.has("OCULUS_multiview");
+	rt_msaa_multiview_supported = msaa_multiview_supported;
+#else
 	msaa_multiview_supported = extensions.has("GL_EXT_multiview_texture_multisample");
-	multiview_supported = extensions.has("GL_OVR_multiview2") || extensions.has("GL_OVR_multiview");
+#endif
+
+	multiview_supported = extensions.has("OCULUS_multiview") || extensions.has("GL_OVR_multiview2") || extensions.has("GL_OVR_multiview");
 #endif
 
 #ifdef ANDROID_ENABLED
@@ -151,7 +157,7 @@ Config::Config() {
 				continue;
 			}
 
-			if (renderer.findn(v) != -1) {
+			if (renderer.containsn(v)) {
 				use_depth_prepass = false;
 			}
 		}
@@ -160,6 +166,11 @@ Config::Config() {
 	max_renderable_elements = GLOBAL_GET("rendering/limits/opengl/max_renderable_elements");
 	max_renderable_lights = GLOBAL_GET("rendering/limits/opengl/max_renderable_lights");
 	max_lights_per_object = GLOBAL_GET("rendering/limits/opengl/max_lights_per_object");
+
+	//Adreno 3xx Compatibility
+	const String rendering_device_name = String::utf8((const char *)glGetString(GL_RENDERER));
+	//TODO: Check the number between 300 and 399(?)
+	adreno_3xx_compatibility = (rendering_device_name.left(13) == "Adreno (TM) 3");
 }
 
 Config::~Config() {

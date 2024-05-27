@@ -114,10 +114,10 @@
 			</description>
 		</method>
 		<method name="get_input_source_tracker" qualifiers="const">
-			<return type="XRPositionalTracker" />
+			<return type="XRControllerTracker" />
 			<param index="0" name="input_source_id" type="int" />
 			<description>
-				Gets an [XRPositionalTracker] for the given [param input_source_id].
+				Gets an [XRControllerTracker] for the given [param input_source_id].
 				In the context of WebXR, an input source can be an advanced VR controller like the Oculus Touch or Index controllers, or even a tap on the screen, a spoken voice command or a button press on the device itself. When a non-traditional input source is used, interpret the position and orientation of the [XRPositionalTracker] as a ray pointing at the object the user wishes to interact with.
 				Use this method to get information about the input source that triggered one of these signals:
 				- [signal selectstart]
@@ -153,6 +153,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="enabled_features" type="String" setter="" getter="get_enabled_features">
+			A comma-separated list of features that were successfully enabled by [method XRInterface.initialize] when setting up the WebXR session.
+			This may include features requested by setting [member required_features] and [member optional_features].
+		</member>
 		<member name="optional_features" type="String" setter="set_optional_features" getter="get_optional_features">
 			A comma-seperated list of optional features used by [method XRInterface.initialize] when setting up the WebXR session.
 			If a user's browser or device doesn't support one of the given features, initialization will continue, but you won't be able to use the requested feature.

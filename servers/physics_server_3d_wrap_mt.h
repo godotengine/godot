@@ -32,6 +32,7 @@
 #define PHYSICS_SERVER_3D_WRAP_MT_H
 
 #include "core/config/project_settings.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
 #include "servers/physics_server_3d.h"
@@ -42,30 +43,24 @@
 #define SYNC_DEBUG
 #endif
 
+#ifdef DEBUG_ENABLED
+#define MAIN_THREAD_SYNC_WARN WARN_PRINT("Call to " + String(__FUNCTION__) + " causing PhysicsServer3D synchronizations on every frame. This significantly affects performance.");
+#endif
+
 class PhysicsServer3DWrapMT : public PhysicsServer3D {
-	mutable PhysicsServer3D *physics_server_3d;
+	mutable PhysicsServer3D *physics_server_3d = nullptr;
 
 	mutable CommandQueueMT command_queue;
 
-	static void _thread_callback(void *_instance);
-	void thread_loop();
-
-	Thread::ID server_thread;
-	Thread::ID main_thread;
-	volatile bool exit = false;
-	Thread thread;
-	volatile bool step_thread_up = false;
+	Thread::ID server_thread = Thread::UNASSIGNED_ID;
+	WorkerThreadPool::TaskID server_task_id = WorkerThreadPool::INVALID_TASK_ID;
+	bool exit = false;
 	bool create_thread = false;
 
-	Semaphore step_sem;
-	void thread_step(real_t p_delta);
-
-	void thread_exit();
-
-	bool first_frame = true;
-
-	Mutex alloc_mutex;
-	int pool_max_size = 0;
+	void _assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id);
+	void _thread_exit();
+	void _thread_step(real_t p_delta);
+	void _thread_loop();
 
 public:
 #define ServerName PhysicsServer3D
@@ -99,7 +94,7 @@ public:
 #if 0
 	//these work well, but should be used from the main thread only
 	bool shape_collide(RID p_shape_A, const Transform &p_xform_A, const Vector3 &p_motion_A, RID p_shape_B, const Transform &p_xform_B, const Vector3 &p_motion_B, Vector3 *r_results, int p_result_max, int &r_result_count) {
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
+		ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
 		return physics_server_3d->shape_collide(p_shape_A, p_xform_A, p_motion_A, p_shape_B, p_xform_B, p_motion_B, r_results, p_result_max, r_result_count);
 	}
 #endif
@@ -114,18 +109,18 @@ public:
 
 	// this function only works on physics process, errors and returns null otherwise
 	PhysicsDirectSpaceState3D *space_get_direct_state(RID p_space) override {
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), nullptr);
+		ERR_FAIL_COND_V(!Thread::is_main_thread(), nullptr);
 		return physics_server_3d->space_get_direct_state(p_space);
 	}
 
 	FUNC2(space_set_debug_contacts, RID, int);
 	virtual Vector<Vector3> space_get_contacts(RID p_space) const override {
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), Vector<Vector3>());
+		ERR_FAIL_COND_V(!Thread::is_main_thread(), Vector<Vector3>());
 		return physics_server_3d->space_get_contacts(p_space);
 	}
 
 	virtual int space_get_contact_count(RID p_space) const override {
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), 0);
+		ERR_FAIL_COND_V(!Thread::is_main_thread(), 0);
 		return physics_server_3d->space_get_contact_count(p_space);
 	}
 
@@ -261,13 +256,13 @@ public:
 	FUNC2(body_set_ray_pickable, RID, bool);
 
 	bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override {
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
+		ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
 		return physics_server_3d->body_test_motion(p_body, p_parameters, r_result);
 	}
 
 	// this function only works on physics process, errors and returns null otherwise
 	PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) override {
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), nullptr);
+		ERR_FAIL_COND_V(!Thread::is_main_thread(), nullptr);
 		return physics_server_3d->body_get_direct_state(p_body);
 	}
 
@@ -411,5 +406,9 @@ public:
 #undef DEBUG_SYNC
 #endif
 #undef SYNC_DEBUG
+
+#ifdef DEBUG_ENABLED
+#undef MAIN_THREAD_SYNC_WARN
+#endif
 
 #endif // PHYSICS_SERVER_3D_WRAP_MT_H

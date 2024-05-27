@@ -41,7 +41,7 @@ class FileAccessMemory : public FileAccess {
 	static Ref<FileAccess> create();
 
 public:
-	static void register_file(String p_name, Vector<uint8_t> p_data);
+	static void register_file(const String &p_name, const Vector<uint8_t> &p_data);
 	static void cleanup();
 
 	virtual Error open_custom(const uint8_t *p_data, uint64_t p_len); ///< open a file
@@ -61,6 +61,7 @@ public:
 
 	virtual Error get_error() const override; ///< get last error
 
+	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override;
 	virtual void store_8(uint8_t p_byte) override; ///< store a byte
 	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes

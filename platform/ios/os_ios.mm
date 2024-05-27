@@ -35,6 +35,7 @@
 #import "app_delegate.h"
 #import "display_server_ios.h"
 #import "godot_view.h"
+#import "ios_terminal_logger.h"
 #import "view_controller.h"
 
 #include "core/config/project_settings.h"
@@ -50,15 +51,17 @@
 #import <dlfcn.h>
 #include <sys/sysctl.h>
 
-#if defined(VULKAN_ENABLED)
+#if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
-
 #import <QuartzCore/CAMetalLayer.h>
+
+#if defined(VULKAN_ENABLED)
 #ifdef USE_VOLK
 #include <volk.h>
 #else
 #include <vulkan/vulkan.h>
 #endif
+#endif // VULKAN_ENABLED
 #endif
 
 // Initialization order between compilation units is not guaranteed,
@@ -103,12 +106,7 @@ OS_IOS::OS_IOS() {
 	main_loop = nullptr;
 
 	Vector<Logger *> loggers;
-	loggers.push_back(memnew(SyslogLogger));
-#ifdef DEBUG_ENABLED
-	// it seems iOS app's stdout/stderr is only obtainable if you launch it from
-	// Xcode
-	loggers.push_back(memnew(StdLogger));
-#endif
+	loggers.push_back(memnew(IOSTerminalLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
 
 	AudioDriverManager::add_driver(&audio_driver);
@@ -151,10 +149,6 @@ void OS_IOS::deinitialize_modules() {
 
 void OS_IOS::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
-
-	if (main_loop) {
-		main_loop->initialize();
-	}
 }
 
 MainLoop *OS_IOS::get_main_loop() const {
@@ -183,7 +177,9 @@ bool OS_IOS::iterate() {
 }
 
 void OS_IOS::start() {
-	Main::start();
+	if (Main::start() == EXIT_SUCCESS) {
+		main_loop->initialize();
+	}
 
 	if (joypad_ios) {
 		joypad_ios->start_processing();
@@ -221,13 +217,13 @@ _FORCE_INLINE_ String OS_IOS::get_framework_executable(const String &p_path) {
 	return p_path;
 }
 
-Error OS_IOS::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_IOS::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
 	if (p_path.length() == 0) {
 		// Static xcframework.
 		p_library_handle = RTLD_SELF;
 
-		if (r_resolved_path != nullptr) {
-			*r_resolved_path = p_path;
+		if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+			*p_data->r_resolved_path = p_path;
 		}
 
 		return OK;
@@ -255,11 +251,13 @@ Error OS_IOS::open_dynamic_library(const String p_path, void *&p_library_handle,
 		path = get_framework_executable(get_executable_path().get_base_dir().path_join("Frameworks").path_join(p_path.get_file().get_basename() + ".framework"));
 	}
 
+	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
-	if (r_resolved_path != nullptr) {
-		*r_resolved_path = path;
+	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+		*p_data->r_resolved_path = path;
 	}
 
 	return OK;
@@ -272,7 +270,7 @@ Error OS_IOS::close_dynamic_library(void *p_library_handle) {
 	return OS_Unix::close_dynamic_library(p_library_handle);
 }
 
-Error OS_IOS::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional) {
+Error OS_IOS::get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional) {
 	if (p_library_handle == RTLD_SELF) {
 		void **ptr = OS_IOS::dynamic_symbol_lookup_table.getptr(p_name);
 		if (ptr) {
@@ -305,7 +303,7 @@ String OS_IOS::get_model_name() const {
 	return OS_Unix::get_model_name();
 }
 
-Error OS_IOS::shell_open(String p_uri) {
+Error OS_IOS::shell_open(const String &p_uri) {
 	NSString *urlPath = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
 	NSURL *url = [NSURL URLWithString:urlPath];
 
@@ -361,7 +359,7 @@ String OS_IOS::get_unique_id() const {
 String OS_IOS::get_processor_name() const {
 	char buffer[256];
 	size_t buffer_len = 256;
-	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, nullptr, 0) == 0) {
 		return String::utf8(buffer, buffer_len);
 	}
 	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
@@ -573,9 +571,13 @@ String OS_IOS::get_system_font_path(const String &p_font_name, int p_weight, int
 	return ret;
 }
 
-void OS_IOS::vibrate_handheld(int p_duration_ms) {
+void OS_IOS::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 	if (ios->supports_haptic_engine()) {
-		ios->vibrate_haptic_engine((float)p_duration_ms / 1000.f);
+		if (p_amplitude > 0.0) {
+			p_amplitude = CLAMP(p_amplitude, 0.0, 1.0);
+		}
+
+		ios->vibrate_haptic_engine((float)p_duration_ms / 1000.f, p_amplitude);
 	} else {
 		// iOS <13 does not support duration for vibration
 		AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
@@ -601,6 +603,10 @@ void OS_IOS::on_focus_out() {
 			DisplayServerIOS::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
 		}
 
+		if (OS::get_singleton()->get_main_loop()) {
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+		}
+
 		[AppDelegate.viewController.godotView stopRendering];
 
 		audio_driver.stop();
@@ -615,9 +621,33 @@ void OS_IOS::on_focus_in() {
 			DisplayServerIOS::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
 		}
 
+		if (OS::get_singleton()->get_main_loop()) {
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+		}
+
 		[AppDelegate.viewController.godotView startRendering];
 
 		audio_driver.start();
+	}
+}
+
+void OS_IOS::on_enter_background() {
+	// Do not check for is_focused, because on_focus_out will always be fired first by applicationWillResignActive.
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
+	}
+
+	on_focus_out();
+}
+
+void OS_IOS::on_exit_background() {
+	if (!is_focused) {
+		on_focus_in();
+
+		if (OS::get_singleton()->get_main_loop()) {
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
+		}
 	}
 }
 

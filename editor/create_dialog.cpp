@@ -35,9 +35,9 @@
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_current_type, const String &p_current_name) {
 	_fill_type_list();
@@ -85,7 +85,7 @@ void CreateDialog::_fill_type_list() {
 	EditorData &ed = EditorNode::get_editor_data();
 
 	for (List<StringName>::Element *I = complete_type_list.front(); I; I = I->next()) {
-		String type = I->get();
+		StringName type = I->get();
 		if (!_should_hide_type(type)) {
 			type_list.push_back(type);
 
@@ -118,12 +118,12 @@ bool CreateDialog::_is_class_disabled_by_feature_profile(const StringName &p_cla
 	return !profile.is_null() && profile->is_class_disabled(p_class);
 }
 
-bool CreateDialog::_should_hide_type(const String &p_type) const {
+bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 	if (_is_class_disabled_by_feature_profile(p_type)) {
 		return true;
 	}
 
-	if (is_base_type_node && p_type.begins_with("Editor")) {
+	if (is_base_type_node && p_type.operator String().begins_with("Editor")) {
 		return true; // Do not show editor nodes.
 	}
 
@@ -146,11 +146,11 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 			}
 		}
 	} else {
-		if (!EditorNode::get_editor_data().script_class_is_parent(p_type, base_type)) {
-			return true; // Wrong inheritance.
-		}
 		if (!ScriptServer::is_global_class(p_type)) {
 			return true;
+		}
+		if (!EditorNode::get_editor_data().script_class_is_parent(p_type, base_type)) {
+			return true; // Wrong inheritance.
 		}
 
 		StringName native_type = ScriptServer::get_global_class_native_base(p_type);
@@ -182,79 +182,75 @@ void CreateDialog::_update_search() {
 	const String search_text = search_box->get_text();
 	bool empty_search = search_text.is_empty();
 
-	// Filter all candidate results.
-	Vector<String> candidates;
-	for (List<StringName>::Element *I = type_list.front(); I; I = I->next()) {
-		if (empty_search || search_text.is_subsequence_ofn(I->get())) {
-			candidates.push_back(I->get());
-		}
-	}
+	float highest_score = 0.0f;
+	StringName best_match;
 
-	// Build the type tree.
-	for (int i = 0; i < candidates.size(); i++) {
-		_add_type(candidates[i], ClassDB::class_exists(candidates[i]) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE);
+	for (List<StringName>::Element *I = type_list.front(); I; I = I->next()) {
+		StringName candidate = I->get();
+		if (empty_search || search_text.is_subsequence_ofn(candidate)) {
+			_add_type(candidate, ClassDB::class_exists(candidate) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE);
+
+			// Determine the best match for an non-empty search.
+			if (!empty_search) {
+				float score = _score_type(candidate.operator String().get_slicec(' ', 0), search_text);
+				if (score > highest_score) {
+					highest_score = score;
+					best_match = candidate;
+				}
+			}
+		}
 	}
 
 	// Select the best result.
 	if (empty_search) {
 		select_type(base_type);
-	} else if (candidates.size() > 0) {
-		select_type(_top_result(candidates, search_text));
+	} else if (best_match != StringName()) {
+		select_type(best_match);
 	} else {
 		favorite->set_disabled(true);
-		help_bit->set_text(vformat(TTR("No results for \"%s\"."), search_text));
-		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
+		help_bit->set_custom_text(String(), String(), vformat(TTR("No results for \"%s\"."), search_text.replace("[", "[lb]")));
 		get_ok_button()->set_disabled(true);
 		search_options->deselect_all();
 	}
 }
 
-void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_category) {
+void CreateDialog::_add_type(const StringName &p_type, TypeCategory p_type_category) {
 	if (search_options_types.has(p_type)) {
 		return;
 	}
 
-	String inherits;
-
 	TypeCategory inherited_type = TypeCategory::OTHER_TYPE;
 
+	StringName inherits;
 	if (p_type_category == TypeCategory::CPP_TYPE) {
 		inherits = ClassDB::get_parent_class(p_type);
 		inherited_type = TypeCategory::CPP_TYPE;
-	} else if (p_type_category == TypeCategory::PATH_TYPE) {
-		ERR_FAIL_COND(!ResourceLoader::exists(p_type, "Script"));
-		Ref<Script> scr = ResourceLoader::load(p_type, "Script");
-		ERR_FAIL_COND(scr.is_null());
-
-		Ref<Script> base = scr->get_base_script();
-		if (base.is_null()) {
-			String extends;
-			scr->get_language()->get_global_class_name(scr->get_path(), &extends);
-
-			inherits = extends;
-			inherited_type = TypeCategory::CPP_TYPE;
-		} else {
-			inherits = scr->get_language()->get_global_class_name(base->get_path());
-			if (inherits.is_empty()) {
-				inherits = base->get_path();
-				inherited_type = TypeCategory::PATH_TYPE;
-			}
-		}
 	} else {
-		if (ScriptServer::is_global_class(p_type)) {
-			Ref<Script> scr = EditorNode::get_editor_data().script_class_load_script(p_type);
+		if (p_type_category == TypeCategory::PATH_TYPE || ScriptServer::is_global_class(p_type)) {
+			Ref<Script> scr;
+			if (p_type_category == TypeCategory::PATH_TYPE) {
+				ERR_FAIL_COND(!ResourceLoader::exists(p_type, "Script"));
+				scr = ResourceLoader::load(p_type, "Script");
+			} else {
+				scr = EditorNode::get_editor_data().script_class_load_script(p_type);
+			}
 			ERR_FAIL_COND(scr.is_null());
 
 			Ref<Script> base = scr->get_base_script();
 			if (base.is_null()) {
-				String extends;
-				scr->get_language()->get_global_class_name(scr->get_path(), &extends);
+				// Must be a native base type.
+				StringName extends = scr->get_instance_base_type();
+				if (extends == StringName()) {
+					// Not a valid script (has compile errors), we therefore ignore it as it can not be instantiated anyway (when selected).
+					return;
+				}
 
 				inherits = extends;
 				inherited_type = TypeCategory::CPP_TYPE;
 			} else {
-				inherits = scr->get_language()->get_global_class_name(base->get_path());
-				if (inherits.is_empty()) {
+				inherits = base->get_global_name();
+
+				if (inherits == StringName()) {
 					inherits = base->get_path();
 					inherited_type = TypeCategory::PATH_TYPE;
 				}
@@ -268,7 +264,7 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 	}
 
 	// Should never happen, but just in case...
-	ERR_FAIL_COND(inherits.is_empty());
+	ERR_FAIL_COND(inherits == StringName());
 
 	_add_type(inherits, inherited_type);
 
@@ -277,7 +273,7 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 	_configure_search_option_item(item, p_type, p_type_category);
 }
 
-void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String &p_type, const TypeCategory p_type_category) {
+void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringName &p_type, TypeCategory p_type_category) {
 	bool script_type = ScriptServer::is_global_class(p_type);
 	bool is_abstract = false;
 	if (p_type_category == TypeCategory::CPP_TYPE) {
@@ -306,7 +302,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 
 	r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type));
 	if (!instantiable) {
-		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 	}
 
 	HashMap<String, DocData::ClassDoc>::Iterator class_doc = EditorHelp::get_doc_data()->class_list.find(p_type);
@@ -343,20 +339,6 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 	}
 }
 
-String CreateDialog::_top_result(const Vector<String> p_candidates, const String &p_search_text) const {
-	float highest_score = 0;
-	int highest_index = 0;
-	for (int i = 0; i < p_candidates.size(); i++) {
-		float score = _score_type(p_candidates[i].get_slicec(' ', 0), p_search_text);
-		if (score > highest_score) {
-			highest_score = score;
-			highest_index = i;
-		}
-	}
-
-	return p_candidates[highest_index];
-}
-
 float CreateDialog::_score_type(const String &p_type, const String &p_search) const {
 	if (p_type == p_search) {
 		// Always favor an exact match (case-sensitive), since clicking a favorite will set the search text to the type.
@@ -377,7 +359,7 @@ float CreateDialog::_score_type(const String &p_type, const String &p_search) co
 	score *= _is_type_preferred(p_type) ? 1.0f : 0.9f;
 
 	// Add score for being a favorite type.
-	score *= (favorite_list.find(p_type) > -1) ? 1.0f : 0.8f;
+	score *= favorite_list.has(p_type) ? 1.0f : 0.8f;
 
 	// Look through at most 5 recent items
 	bool in_recent = false;
@@ -474,7 +456,7 @@ void CreateDialog::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-				search_box->call_deferred(SNAME("grab_focus")); // still not visible
+				callable_mp((Control *)search_box, &Control::grab_focus).call_deferred(); // Still not visible.
 				search_box->select_all();
 			} else {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
@@ -502,21 +484,18 @@ void CreateDialog::select_type(const String &p_type, bool p_center_on_item) {
 	to_select->select(0);
 	search_options->scroll_to_item(to_select, p_center_on_item);
 
-	String text = help_bit->get_class_description(p_type);
-	if (!text.is_empty()) {
-		// Display both class name and description, since the help bit may be displayed
-		// far away from the location (especially if the dialog was resized to be taller).
-		help_bit->set_text(vformat("[b]%s[/b]: %s", p_type, text));
-		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
-	} else {
-		// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.
-		help_bit->set_text(vformat(TTR("No description available for %s."), vformat("[b]%s[/b]", p_type)));
-		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
-	}
+	help_bit->parse_symbol("class|" + p_type + "|");
 
 	favorite->set_disabled(false);
 	favorite->set_pressed(favorite_list.has(p_type));
-	get_ok_button()->set_disabled(false);
+
+	if (to_select->get_meta("__instantiable", true)) {
+		get_ok_button()->set_disabled(false);
+		get_ok_button()->set_tooltip_text(String());
+	} else {
+		get_ok_button()->set_disabled(true);
+		get_ok_button()->set_tooltip_text(TTR("The selected class can't be instantiated."));
+	}
 }
 
 void CreateDialog::select_base() {
@@ -779,6 +758,7 @@ CreateDialog::CreateDialog() {
 	vsc->add_child(fav_vb);
 
 	favorites = memnew(Tree);
+	favorites->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	favorites->set_hide_root(true);
 	favorites->set_hide_folding(true);
 	favorites->set_allow_reselect(true);
@@ -794,6 +774,7 @@ CreateDialog::CreateDialog() {
 	rec_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	recent = memnew(ItemList);
+	recent->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
 	recent->set_allow_reselect(true);
 	recent->connect("item_selected", callable_mp(this, &CreateDialog::_history_selected));
@@ -809,7 +790,7 @@ CreateDialog::CreateDialog() {
 	search_box->set_clear_button_enabled(true);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->connect("text_changed", callable_mp(this, &CreateDialog::_text_changed));
-	search_box->connect("gui_input", callable_mp(this, &CreateDialog::_sbox_input));
+	search_box->connect(SceneStringName(gui_input), callable_mp(this, &CreateDialog::_sbox_input));
 
 	HBoxContainer *search_hb = memnew(HBoxContainer);
 	search_hb->add_child(search_box);
@@ -817,16 +798,18 @@ CreateDialog::CreateDialog() {
 	favorite = memnew(Button);
 	favorite->set_toggle_mode(true);
 	favorite->set_tooltip_text(TTR("(Un)favorite selected item."));
-	favorite->connect("pressed", callable_mp(this, &CreateDialog::_favorite_toggled));
+	favorite->connect(SceneStringName(pressed), callable_mp(this, &CreateDialog::_favorite_toggled));
 	search_hb->add_child(favorite);
 	vbc->add_margin_child(TTR("Search:"), search_hb);
 
 	search_options = memnew(Tree);
+	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->connect("item_activated", callable_mp(this, &CreateDialog::_confirmed));
 	search_options->connect("cell_selected", callable_mp(this, &CreateDialog::_item_selected));
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 
 	help_bit = memnew(EditorHelpBit);
+	help_bit->set_content_height_limits(64 * EDSCALE, 64 * EDSCALE);
 	help_bit->connect("request_hide", callable_mp(this, &CreateDialog::_hide_requested));
 	vbc->add_margin_child(TTR("Description:"), help_bit);
 

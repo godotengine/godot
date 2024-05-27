@@ -81,6 +81,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	EditorPropertyPath *export_path = nullptr;
 	EditorInspector *parameters = nullptr;
 	CheckButton *runnable = nullptr;
+	CheckButton *advanced_options = nullptr;
 
 	Button *button_export = nullptr;
 	bool updating = false;
@@ -119,6 +120,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	bool exporting = false;
 
+	void _advanced_options_pressed();
 	void _runnable_pressed();
 	void _update_parameters(const String &p_edited_property);
 	void _name_changed(const String &p_string);
@@ -152,13 +154,13 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	EditorFileDialog *export_pck_zip = nullptr;
 	EditorFileDialog *export_project = nullptr;
-	CheckBox *export_debug = nullptr;
-	CheckBox *export_pck_zip_debug = nullptr;
 
 	CheckButton *enc_pck = nullptr;
 	CheckButton *enc_directory = nullptr;
 	LineEdit *enc_in_filters = nullptr;
 	LineEdit *enc_ex_filters = nullptr;
+
+	OptionButton *script_mode = nullptr;
 
 	void _open_export_template_manager();
 
@@ -182,6 +184,8 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _enc_filters_changed(const String &p_text);
 	void _script_encryption_key_changed(const String &p_key);
 	bool _validate_script_encryption_key(const String &p_key);
+
+	void _script_export_mode_changed(int p_mode);
 
 	void _open_key_help_link();
 

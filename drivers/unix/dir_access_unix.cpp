@@ -289,7 +289,7 @@ String DirAccessUnix::get_drive(int p_drive) {
 
 	ERR_FAIL_INDEX_V(p_drive, list.size(), "");
 
-	return list[p_drive];
+	return list.get(p_drive);
 }
 
 int DirAccessUnix::get_current_drive() {
@@ -419,7 +419,7 @@ Error DirAccessUnix::remove(String p_path) {
 		return FAILED;
 	}
 
-	if (S_ISDIR(flags.st_mode)) {
+	if (S_ISDIR(flags.st_mode) && !is_link(p_path)) {
 		return ::rmdir(p_path.utf8().get_data()) == 0 ? OK : FAILED;
 	} else {
 		return ::unlink(p_path.utf8().get_data()) == 0 ? OK : FAILED;
@@ -435,7 +435,7 @@ bool DirAccessUnix::is_link(String p_file) {
 
 	struct stat flags = {};
 	if ((lstat(p_file.utf8().get_data(), &flags) != 0)) {
-		return FAILED;
+		return false;
 	}
 
 	return S_ISLNK(flags.st_mode);

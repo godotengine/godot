@@ -35,11 +35,11 @@
 #include "core/io/zip_io.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/progress_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/label.h"
 #include "scene/gui/link_button.h"
@@ -54,23 +54,51 @@ void EditorAssetInstaller::_item_checked_cbk() {
 	updating_source = true;
 	TreeItem *item = source_tree->get_edited();
 	item->propagate_check(0);
+	_fix_conflicted_indeterminate_state(source_tree->get_root(), 0);
 	_update_confirm_button();
 	_rebuild_destination_tree();
 	updating_source = false;
 }
 
-void EditorAssetInstaller::_check_propagated_to_item(Object *p_obj, int p_column) {
-	TreeItem *affected_item = Object::cast_to<TreeItem>(p_obj);
-	if (!affected_item) {
-		return;
+// Determine parent state based on non-conflict children, to avoid indeterminate state, and allow toggle dir with conflicts.
+bool EditorAssetInstaller::_fix_conflicted_indeterminate_state(TreeItem *p_item, int p_column) {
+	if (p_item->get_child_count() == 0) {
+		return false;
 	}
-
-	Dictionary item_meta = affected_item->get_metadata(0);
-	bool is_conflict = item_meta.get("is_conflict", false);
-	if (is_conflict) {
-		affected_item->set_checked(0, false);
-		affected_item->propagate_check(0, false);
+	bool all_non_conflict_checked = true;
+	bool all_non_conflict_unchecked = true;
+	bool has_conflict_child = false;
+	bool has_indeterminate_child = false;
+	TreeItem *child_item = p_item->get_first_child();
+	while (child_item) {
+		has_conflict_child |= _fix_conflicted_indeterminate_state(child_item, p_column);
+		Dictionary child_meta = child_item->get_metadata(p_column);
+		bool child_conflict = child_meta.get("is_conflict", false);
+		if (child_conflict) {
+			child_item->set_checked(p_column, false);
+			has_conflict_child = true;
+		} else {
+			bool child_checked = child_item->is_checked(p_column);
+			bool child_indeterminate = child_item->is_indeterminate(p_column);
+			all_non_conflict_checked &= (child_checked || child_indeterminate);
+			all_non_conflict_unchecked &= !child_checked;
+			has_indeterminate_child |= child_indeterminate;
+		}
+		child_item = child_item->get_next();
 	}
+	if (has_indeterminate_child) {
+		p_item->set_indeterminate(p_column, true);
+	} else if (all_non_conflict_checked) {
+		p_item->set_checked(p_column, true);
+	} else if (all_non_conflict_unchecked) {
+		p_item->set_checked(p_column, false);
+	}
+	if (has_conflict_child) {
+		p_item->set_custom_color(p_column, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+	} else {
+		p_item->clear_custom_color(p_column);
+	}
+	return has_conflict_child;
 }
 
 bool EditorAssetInstaller::_is_item_checked(const String &p_source_path) const {
@@ -257,6 +285,7 @@ bool EditorAssetInstaller::_update_source_item_status(TreeItem *p_item, const St
 	}
 
 	p_item->propagate_check(0);
+	_fix_conflicted_indeterminate_state(p_item->get_tree()->get_root(), 0);
 	return target_exists;
 }
 
@@ -311,6 +340,7 @@ TreeItem *EditorAssetInstaller::_create_dir_item(Tree *p_tree, TreeItem *p_paren
 		ti->set_editable(0, true);
 		ti->set_checked(0, true);
 		ti->propagate_check(0);
+		_fix_conflicted_indeterminate_state(ti->get_tree()->get_root(), 0);
 
 		Dictionary meta;
 		meta["asset_path"] = p_path + "/";
@@ -664,7 +694,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	target_dir_button->set_text(TTR("Change Install Folder"));
 	target_dir_button->set_tooltip_text(TTR("Change the folder where the contents of the asset are going to be installed."));
 	remapping_tools->add_child(target_dir_button);
-	target_dir_button->connect("pressed", callable_mp(this, &EditorAssetInstaller::_open_target_dir_dialog));
+	target_dir_button->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetInstaller::_open_target_dir_dialog));
 
 	remapping_tools->add_child(memnew(VSeparator));
 
@@ -686,7 +716,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	asset_conflicts_link->set_tooltip_text(TTR("Show contents of the asset and conflicting files."));
 	asset_conflicts_link->set_visible(false);
 	remapping_tools->add_child(asset_conflicts_link);
-	asset_conflicts_link->connect("pressed", callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(true, true));
+	asset_conflicts_link->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(true, true));
 
 	// File hierarchy trees.
 
@@ -705,9 +735,9 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	source_tree_vb->add_child(source_tree_label);
 
 	source_tree = memnew(Tree);
+	source_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	source_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	source_tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_checked_cbk));
-	source_tree->connect("check_propagated_to_item", callable_mp(this, &EditorAssetInstaller::_check_propagated_to_item));
 	source_tree_vb->add_child(source_tree);
 
 	VBoxContainer *destination_tree_vb = memnew(VBoxContainer);
@@ -720,9 +750,9 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	destination_tree_vb->add_child(destination_tree_label);
 
 	destination_tree = memnew(Tree);
+	destination_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	destination_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	destination_tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_checked_cbk));
-	destination_tree->connect("check_propagated_to_item", callable_mp(this, &EditorAssetInstaller::_check_propagated_to_item));
 	destination_tree_vb->add_child(destination_tree);
 
 	// Dialog configuration.

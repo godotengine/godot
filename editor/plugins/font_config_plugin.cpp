@@ -30,9 +30,10 @@
 
 #include "font_config_plugin.h"
 
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/import/dynamic_font_import_settings.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/gui/margin_container.h"
 
 /*************************************************************************/
 /*  EditorPropertyFontMetaObject                                         */
@@ -162,7 +163,7 @@ void EditorPropertyFontMetaOverride::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyFontMetaOverride::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+void EditorPropertyFontMetaOverride::_property_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("keys")) {
 		Dictionary dict = object->get_dict();
 		String key = p_property.get_slice("/", 1);
@@ -304,7 +305,7 @@ void EditorPropertyFontMetaOverride::update_property() {
 			Button *remove = memnew(Button);
 			remove->set_icon(get_editor_theme_icon(SNAME("Remove")));
 			hbox->add_child(remove);
-			remove->connect("pressed", callable_mp(this, &EditorPropertyFontMetaOverride::_remove).bind(remove, name));
+			remove->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyFontMetaOverride::_remove).bind(remove, name));
 
 			prop->update_property();
 		}
@@ -315,7 +316,7 @@ void EditorPropertyFontMetaOverride::update_property() {
 		} else {
 			button_add = EditorInspector::create_inspector_action_button(TTR("Add Locale"));
 		}
-		button_add->connect("pressed", callable_mp(this, &EditorPropertyFontMetaOverride::_add_menu));
+		button_add->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyFontMetaOverride::_add_menu));
 		property_vbox->add_child(button_add);
 
 		updating = false;
@@ -358,7 +359,7 @@ EditorPropertyFontMetaOverride::EditorPropertyFontMetaOverride(bool p_script) {
 	edit = memnew(Button);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
-	edit->connect("pressed", callable_mp(this, &EditorPropertyFontMetaOverride::_edit_pressed));
+	edit->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyFontMetaOverride::_edit_pressed));
 	edit->set_toggle_mode(true);
 	add_child(edit);
 	add_focusable(edit);
@@ -382,15 +383,7 @@ EditorPropertyFontMetaOverride::EditorPropertyFontMetaOverride(bool p_script) {
 /* EditorPropertyOTVariation                                             */
 /*************************************************************************/
 
-void EditorPropertyOTVariation::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED: {
-		} break;
-	}
-}
-
-void EditorPropertyOTVariation::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+void EditorPropertyOTVariation::_property_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("keys")) {
 		Dictionary dict = object->get_dict();
 		Dictionary defaults_dict = object->get_defaults();
@@ -537,7 +530,7 @@ EditorPropertyOTVariation::EditorPropertyOTVariation() {
 	edit = memnew(Button);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
-	edit->connect("pressed", callable_mp(this, &EditorPropertyOTVariation::_edit_pressed));
+	edit->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyOTVariation::_edit_pressed));
 	edit->set_toggle_mode(true);
 	add_child(edit);
 	add_focusable(edit);
@@ -558,7 +551,7 @@ void EditorPropertyOTFeatures::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyOTFeatures::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+void EditorPropertyOTFeatures::_property_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("keys")) {
 		Dictionary dict = object->get_dict();
 		int key = p_property.get_slice("/", 1).to_int();
@@ -723,7 +716,7 @@ void EditorPropertyOTFeatures::update_property() {
 		}
 		for (int i = 0; i < FGRP_MAX; i++) {
 			if (have_sub[i]) {
-				menu->add_submenu_item(RTR(group_names[i]), "FTRMenu_" + itos(i));
+				menu->add_submenu_node_item(TTRGET(group_names[i]), menu_sub[i]);
 			}
 		}
 
@@ -791,7 +784,7 @@ void EditorPropertyOTFeatures::update_property() {
 				Button *remove = memnew(Button);
 				remove->set_icon(get_editor_theme_icon(SNAME("Remove")));
 				hbox->add_child(remove);
-				remove->connect("pressed", callable_mp(this, &EditorPropertyOTFeatures::_remove).bind(remove, name_tag));
+				remove->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyOTFeatures::_remove).bind(remove, name_tag));
 
 				prop->update_property();
 			}
@@ -799,7 +792,7 @@ void EditorPropertyOTFeatures::update_property() {
 
 		button_add = EditorInspector::create_inspector_action_button(TTR("Add Feature"));
 		button_add->set_icon(get_editor_theme_icon(SNAME("Add")));
-		button_add->connect("pressed", callable_mp(this, &EditorPropertyOTFeatures::_add_menu));
+		button_add->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyOTFeatures::_add_menu));
 		property_vbox->add_child(button_add);
 
 		updating = false;
@@ -840,7 +833,7 @@ EditorPropertyOTFeatures::EditorPropertyOTFeatures() {
 	edit = memnew(Button);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
-	edit->connect("pressed", callable_mp(this, &EditorPropertyOTFeatures::_edit_pressed));
+	edit->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyOTFeatures::_edit_pressed));
 	edit->set_toggle_mode(true);
 	add_child(edit);
 	add_focusable(edit);
@@ -851,20 +844,19 @@ EditorPropertyOTFeatures::EditorPropertyOTFeatures() {
 
 	for (int i = 0; i < FGRP_MAX; i++) {
 		menu_sub[i] = memnew(PopupMenu);
-		menu_sub[i]->set_name("FTRMenu_" + itos(i));
 		menu->add_child(menu_sub[i]);
 		menu_sub[i]->connect("id_pressed", callable_mp(this, &EditorPropertyOTFeatures::_add_feature));
 	}
 
-	group_names[FGRP_STYLISTIC_SET] = "Stylistic Sets";
-	group_names[FGRP_CHARACTER_VARIANT] = "Character Variants";
-	group_names[FGRP_CAPITLS] = "Capitals";
-	group_names[FGRP_LIGATURES] = "Ligatures";
-	group_names[FGRP_ALTERNATES] = "Alternates";
-	group_names[FGRP_EAL] = "East Asian Language";
-	group_names[FGRP_EAW] = "East Asian Widths";
-	group_names[FGRP_NUMAL] = "Numeral Alignment";
-	group_names[FGRP_CUSTOM] = "Custom";
+	group_names[FGRP_STYLISTIC_SET] = TTRC("Stylistic Sets");
+	group_names[FGRP_CHARACTER_VARIANT] = TTRC("Character Variants");
+	group_names[FGRP_CAPITLS] = TTRC("Capitals");
+	group_names[FGRP_LIGATURES] = TTRC("Ligatures");
+	group_names[FGRP_ALTERNATES] = TTRC("Alternates");
+	group_names[FGRP_EAL] = TTRC("East Asian Language");
+	group_names[FGRP_EAW] = TTRC("East Asian Widths");
+	group_names[FGRP_NUMAL] = TTRC("Numeral Alignment");
+	group_names[FGRP_CUSTOM] = TTRC("Custom");
 }
 
 /*************************************************************************/

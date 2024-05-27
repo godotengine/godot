@@ -59,12 +59,13 @@ class FileSystemTree : public Tree {
 class FileSystemList : public ItemList {
 	GDCLASS(FileSystemList, ItemList);
 
+	bool popup_edit_commited = true;
 	VBoxContainer *popup_editor_vb = nullptr;
 	Popup *popup_editor = nullptr;
 	LineEdit *line_editor = nullptr;
 
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
-	void _line_editor_submit(String p_text);
+	void _line_editor_submit(const String &p_text);
 	void _text_editor_popup_modal_close();
 
 protected:
@@ -102,6 +103,12 @@ public:
 		FILE_SORT_MAX,
 	};
 
+	enum Overwrite {
+		OVERWRITE_UNDECIDED,
+		OVERWRITE_REPLACE,
+		OVERWRITE_RENAME,
+	};
+
 private:
 	enum FileMenu {
 		FILE_OPEN,
@@ -110,6 +117,7 @@ private:
 		FILE_INSTANTIATE,
 		FILE_ADD_FAVORITE,
 		FILE_REMOVE_FAVORITE,
+		FILE_SHOW_IN_FILESYSTEM,
 		FILE_DEPENDENCIES,
 		FILE_OWNERS,
 		FILE_MOVE,
@@ -121,7 +129,9 @@ private:
 		FILE_NEW,
 		FILE_SHOW_IN_EXPLORER,
 		FILE_OPEN_EXTERNAL,
+		FILE_OPEN_IN_TERMINAL,
 		FILE_COPY_PATH,
+		FILE_COPY_ABSOLUTE_PATH,
 		FILE_COPY_UID,
 		FOLDER_EXPAND_ALL,
 		FOLDER_COLLAPSE_ALL,
@@ -132,12 +142,7 @@ private:
 		FILE_NEW_SCENE,
 	};
 
-	enum Overwrite {
-		OVERWRITE_UNDECIDED,
-		OVERWRITE_REPLACE,
-		OVERWRITE_RENAME,
-	};
-
+	HashMap<String, String> icon_cache;
 	HashMap<String, Color> folder_colors;
 	Dictionary assigned_folder_colors;
 
@@ -153,6 +158,8 @@ private:
 
 	HashSet<String> favorites;
 
+	Button *button_dock_placement = nullptr;
+
 	Button *button_toggle_display_mode = nullptr;
 	Button *button_reload = nullptr;
 	Button *button_file_list_display_mode = nullptr;
@@ -167,7 +174,7 @@ private:
 	LineEdit *file_list_search_box = nullptr;
 	MenuButton *file_list_button_sort = nullptr;
 
-	String searched_string;
+	PackedStringArray searched_tokens;
 	Vector<String> uncollapsed_paths_before_search;
 
 	TextureRect *search_icon = nullptr;
@@ -225,8 +232,7 @@ private:
 	int history_max_size;
 
 	String current_path;
-
-	bool initialized = false;
+	String select_after_scan;
 
 	bool updating_tree = false;
 	int tree_update_id;
@@ -243,7 +249,8 @@ private:
 	void _tree_mouse_exited();
 	void _reselect_items_selected_on_drag_begin(bool reset = false);
 
-	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, String p_file_type);
+	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, const String &p_file_type, const String &p_icon_path);
+	String _get_entry_script_icon(const EditorFileSystemDirectory *p_dir, int p_file);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
 	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_select_in_favorites = false, bool p_unfold_path = false);
 	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false);
@@ -279,8 +286,8 @@ private:
 	void _update_folder_colors_setting();
 
 	void _resource_removed(const Ref<Resource> &p_resource);
-	void _file_removed(String p_file);
-	void _folder_removed(String p_folder);
+	void _file_removed(const String &p_file);
+	void _folder_removed(const String &p_folder);
 
 	void _resource_created();
 	void _make_scene_confirm();
@@ -288,7 +295,6 @@ private:
 	void _duplicate_operation_confirm();
 	void _overwrite_dialog_action(bool p_overwrite);
 	Vector<String> _check_existing();
-	void _move_dialog_confirm(const String &p_path);
 	void _move_operation_confirm(const String &p_to_path, bool p_copy = false, Overwrite p_overwrite = OVERWRITE_UNDECIDED);
 
 	void _tree_rmb_option(int p_option);
@@ -304,14 +310,16 @@ private:
 	void _rescan();
 
 	void _change_split_mode();
+	void _split_dragged(int p_offset);
 
 	void _search_changed(const String &p_text, const Control *p_from);
+	bool _matches_all_search_tokens(const String &p_text);
 
 	MenuButton *_create_file_menu_button();
 	void _file_sort_popup(int p_id);
 
 	void _folder_color_index_pressed(int p_index, PopupMenu *p_menu);
-	void _file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options = true);
+	void _file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options = true);
 	void _tree_rmb_select(const Vector2 &p_pos, MouseButton p_button);
 	void _file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _file_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
@@ -321,13 +329,14 @@ private:
 	struct FileInfo {
 		String name;
 		String path;
+		String icon_path;
 		StringName type;
 		Vector<String> sources;
 		bool import_broken = false;
 		uint64_t modified_time = 0;
 
 		bool operator<(const FileInfo &fi) const {
-			return NaturalNoCaseComparator()(name, fi.name);
+			return FileNoCaseComparator()(name, fi.name);
 		}
 	};
 
@@ -356,7 +365,13 @@ private:
 	bool _is_file_type_disabled_by_feature_profile(const StringName &p_class);
 
 	void _feature_profile_changed();
+	void _project_settings_changed();
 	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
+
+	void _change_bottom_dock_placement();
+
+	bool _can_dock_horizontal() const;
+	void _set_dock_horizontal(bool p_enable);
 
 private:
 	static FileSystemDock *singleton;
@@ -369,6 +384,14 @@ protected:
 	static void _bind_methods();
 
 public:
+	static constexpr double ITEM_COLOR_SCALE = 1.75;
+	static constexpr double ITEM_ALPHA_MIN = 0.1;
+	static constexpr double ITEM_ALPHA_MAX = 0.15;
+	static constexpr double ITEM_BG_DARK_SCALE = 0.3;
+
+	const HashMap<String, Color> &get_folder_colors() const;
+	Dictionary get_assigned_folder_colors() const;
+
 	Vector<String> get_selected_paths() const;
 	Vector<String> get_uncollapsed_paths() const;
 
@@ -376,24 +399,27 @@ public:
 	String get_current_directory() const;
 
 	void navigate_to_path(const String &p_path);
+	void focus_on_path();
 	void focus_on_filter();
 
 	ScriptCreateDialog *get_script_create_dialog() const;
 
 	void fix_dependencies(const String &p_for_file);
 
-	int get_split_offset() { return split_box->get_split_offset(); }
-	void set_split_offset(int p_offset) { split_box->set_split_offset(p_offset); }
+	int get_h_split_offset() const { return split_box_offset_h; }
+	void set_h_split_offset(int p_offset) { split_box_offset_h = p_offset; }
+	int get_v_split_offset() const { return split_box_offset_v; }
+	void set_v_split_offset(int p_offset) { split_box_offset_v = p_offset; }
 	void select_file(const String &p_file);
 
 	void set_display_mode(DisplayMode p_display_mode);
-	DisplayMode get_display_mode() { return display_mode; }
+	DisplayMode get_display_mode() const { return display_mode; }
 
 	void set_file_sort(FileSortOption p_file_sort);
-	FileSortOption get_file_sort() { return file_sort; }
+	FileSortOption get_file_sort() const { return file_sort; }
 
 	void set_file_list_display_mode(FileListDisplayMode p_mode);
-	FileListDisplayMode get_file_list_display_mode() { return file_list_display_mode; };
+	FileListDisplayMode get_file_list_display_mode() const { return file_list_display_mode; };
 
 	Tree *get_tree_control() { return tree; }
 
@@ -401,8 +427,13 @@ public:
 	void remove_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
 	Control *create_tooltip_for_path(const String &p_path) const;
 
+	void save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
+	void load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
+
 	FileSystemDock();
 	~FileSystemDock();
 };
+
+VARIANT_ENUM_CAST(FileSystemDock::Overwrite);
 
 #endif // FILESYSTEM_DOCK_H

@@ -34,10 +34,10 @@
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/separator.h"
@@ -233,7 +233,7 @@ void AbstractPolygon2DEditor::_wip_close() {
 	selected_point = Vertex();
 }
 
-void AbstractPolygon2DEditor::disable_polygon_editing(bool p_disable, String p_reason) {
+void AbstractPolygon2DEditor::disable_polygon_editing(bool p_disable, const String &p_reason) {
 	_polygon_editing_enabled = !p_disable;
 
 	button_create->set_disabled(p_disable);
@@ -291,6 +291,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 					const PosVertex closest = closest_point(gpoint);
 					if (closest.valid()) {
+						original_mouse_pos = gpoint;
 						pre_move_edit = _get_polygon(closest.polygon);
 						edited_point = PosVertex(closest, xform.affine_inverse().xform(closest.pos));
 						selected_point = closest;
@@ -327,15 +328,15 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 					}
 				} else {
 					if (edited_point.valid()) {
-						//apply
+						if (original_mouse_pos != gpoint) {
+							Vector<Vector2> vertices = _get_polygon(edited_point.polygon);
+							ERR_FAIL_INDEX_V(edited_point.vertex, vertices.size(), false);
+							vertices.write[edited_point.vertex] = edited_point.pos - _get_offset(edited_point.polygon);
 
-						Vector<Vector2> vertices = _get_polygon(edited_point.polygon);
-						ERR_FAIL_INDEX_V(edited_point.vertex, vertices.size(), false);
-						vertices.write[edited_point.vertex] = edited_point.pos - _get_offset(edited_point.polygon);
-
-						undo_redo->create_action(TTR("Edit Polygon"));
-						_action_set_polygon(edited_point.polygon, pre_move_edit, vertices);
-						_commit_action();
+							undo_redo->create_action(TTR("Edit Polygon"));
+							_action_set_polygon(edited_point.polygon, pre_move_edit, vertices);
+							_commit_action();
+						}
 
 						edited_point = PosVertex();
 						return true;
@@ -729,19 +730,19 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(bool p_wip_destructive) {
 	button_create = memnew(Button);
 	button_create->set_theme_type_variation("FlatButton");
 	add_child(button_create);
-	button_create->connect("pressed", callable_mp(this, &AbstractPolygon2DEditor::_menu_option).bind(MODE_CREATE));
+	button_create->connect(SceneStringName(pressed), callable_mp(this, &AbstractPolygon2DEditor::_menu_option).bind(MODE_CREATE));
 	button_create->set_toggle_mode(true);
 
 	button_edit = memnew(Button);
 	button_edit->set_theme_type_variation("FlatButton");
 	add_child(button_edit);
-	button_edit->connect("pressed", callable_mp(this, &AbstractPolygon2DEditor::_menu_option).bind(MODE_EDIT));
+	button_edit->connect(SceneStringName(pressed), callable_mp(this, &AbstractPolygon2DEditor::_menu_option).bind(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
 
 	button_delete = memnew(Button);
 	button_delete->set_theme_type_variation("FlatButton");
 	add_child(button_delete);
-	button_delete->connect("pressed", callable_mp(this, &AbstractPolygon2DEditor::_menu_option).bind(MODE_DELETE));
+	button_delete->connect(SceneStringName(pressed), callable_mp(this, &AbstractPolygon2DEditor::_menu_option).bind(MODE_DELETE));
 	button_delete->set_toggle_mode(true);
 
 	create_resource = memnew(ConfirmationDialog);
@@ -766,7 +767,7 @@ void AbstractPolygon2DEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-AbstractPolygon2DEditorPlugin::AbstractPolygon2DEditorPlugin(AbstractPolygon2DEditor *p_polygon_editor, String p_class) :
+AbstractPolygon2DEditorPlugin::AbstractPolygon2DEditorPlugin(AbstractPolygon2DEditor *p_polygon_editor, const String &p_class) :
 		polygon_editor(p_polygon_editor),
 		klass(p_class) {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(polygon_editor);

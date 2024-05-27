@@ -397,7 +397,10 @@ int LightmapGI::_bsp_get_simplex_side(const Vector<Vector3> &p_points, const Loc
 	const BSPSimplex &s = p_simplices[p_simplex];
 	for (int i = 0; i < 4; i++) {
 		const Vector3 v = p_points[s.vertices[i]];
-		if (p_plane.has_point(v)) {
+		// The tolerance used here comes from experiments on scenes up to
+		// 1000x1000x100 meters. If it's any smaller, some simplices will
+		// appear to self-intersect due to a lack of precision in Plane.
+		if (p_plane.has_point(v, 1.0 / (1 << 13))) {
 			// Coplanar.
 		} else if (p_plane.is_point_over(v)) {
 			over++;
@@ -419,7 +422,8 @@ int LightmapGI::_bsp_get_simplex_side(const Vector<Vector3> &p_points, const Loc
 //#define DEBUG_BSP
 
 int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const LocalVector<Plane> &p_planes, LocalVector<int32_t> &planes_tested, const LocalVector<BSPSimplex> &p_simplices, const LocalVector<int32_t> &p_simplex_indices, LocalVector<BSPNode> &bsp_nodes) {
-	//if we reach here, it means there is more than one simplex
+	ERR_FAIL_COND_V(p_simplex_indices.size() < 2, -1);
+
 	int32_t node_index = (int32_t)bsp_nodes.size();
 	bsp_nodes.push_back(BSPNode());
 
@@ -477,16 +481,55 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 
 			float score = 0; //by default, score is 0 (worst)
 			if (over_count > 0) {
-				//give score mainly based on ratio (under / over), this means that this plane is splitting simplices a lot, but its balanced
-				score = float(under_count) / over_count;
+				// Simplices that are intersected by the plane are moved into both the over
+				// and under subtrees which makes the entire tree deeper, so the best plane
+				// will have the least intersections while separating the simplices evenly.
+				float balance = float(under_count) / over_count;
+				float separation = float(over_count + under_count) / p_simplex_indices.size();
+				score = balance * separation * separation;
 			}
-
-			//adjusting priority over least splits, probably not a great idea
-			//score *= Math::sqrt(float(over_count + under_count) / p_simplex_indices.size()); //also multiply score
 
 			if (score > best_plane_score) {
 				best_plane = plane;
 				best_plane_score = score;
+			}
+		}
+	}
+
+	// We often end up with two (or on rare occasions, three) simplices that are
+	// either disjoint or share one vertex and don't have a separating plane
+	// among their faces. The fallback is to loop through new planes created
+	// with one vertex of the first simplex and two vertices of the second until
+	// we find a winner.
+	if (best_plane_score == 0) {
+		const BSPSimplex &simplex0 = p_simplices[p_simplex_indices[0]];
+		const BSPSimplex &simplex1 = p_simplices[p_simplex_indices[1]];
+
+		for (uint32_t i = 0; i < 4 && !best_plane_score; i++) {
+			Vector3 v0 = p_points[simplex0.vertices[i]];
+			for (uint32_t j = 0; j < 3 && !best_plane_score; j++) {
+				if (simplex0.vertices[i] == simplex1.vertices[j]) {
+					break;
+				}
+				Vector3 v1 = p_points[simplex1.vertices[j]];
+				for (uint32_t k = j + 1; k < 4; k++) {
+					if (simplex0.vertices[i] == simplex1.vertices[k]) {
+						break;
+					}
+					Vector3 v2 = p_points[simplex1.vertices[k]];
+
+					Plane plane = Plane(v0, v1, v2);
+					if (plane == Plane()) { // When v0, v1, and v2 are collinear, they can't form a plane.
+						continue;
+					}
+					int32_t side0 = _bsp_get_simplex_side(p_points, p_simplices, plane, p_simplex_indices[0]);
+					int32_t side1 = _bsp_get_simplex_side(p_points, p_simplices, plane, p_simplex_indices[1]);
+					if ((side0 == 1 && side1 == -1) || (side0 == -1 && side1 == 1)) {
+						best_plane = plane;
+						best_plane_score = 1.0;
+						break;
+					}
+				}
 			}
 		}
 	}
@@ -515,8 +558,6 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 #endif
 
 	if (best_plane_score < 0.0 || indices_over.size() == p_simplex_indices.size() || indices_under.size() == p_simplex_indices.size()) {
-		ERR_FAIL_COND_V(p_simplex_indices.size() <= 1, 0); //should not happen, this is a bug
-
 		// Failed to separate the tetrahedrons using planes
 		// this means Delaunay broke at some point.
 		// Luckily, because we are using tetrahedrons, we can resort to
@@ -734,15 +775,15 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 			MeshesFound &mf = meshes_found.write[m_i];
 
-			Size2i lightmap_size = mf.mesh->get_lightmap_size_hint();
-
-			if (lightmap_size == Size2i(0, 0)) {
+			Size2i mesh_lightmap_size = mf.mesh->get_lightmap_size_hint();
+			if (mesh_lightmap_size == Size2i(0, 0)) {
 				// TODO we should compute a size if no lightmap hint is set, as we did in 3.x.
 				// For now set to basic size to avoid crash.
-				lightmap_size = Size2i(64, 64);
+				mesh_lightmap_size = Size2i(64, 64);
 			}
+			Size2i lightmap_size = Size2i(Size2(mesh_lightmap_size) * mf.lightmap_scale * texel_scale);
+			ERR_FAIL_COND_V(lightmap_size.x == 0 || lightmap_size.y == 0, BAKE_ERROR_LIGHTMAP_TOO_SMALL);
 
-			lightmap_size *= mf.lightmap_scale;
 			TypedArray<RID> overrides;
 			overrides.resize(mf.overrides.size());
 			for (int i = 0; i < mf.overrides.size(); i++) {
@@ -1061,7 +1102,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		}
 	}
 
-	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, denoiser_strength, bounces, bounce_indirect_energy, bias, max_texture_size, directional, use_texture_for_bounces, Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization);
+	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, denoiser_strength, denoiser_range, bounces, bounce_indirect_energy, bias, max_texture_size, directional, use_texture_for_bounces, Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization);
 
 	if (bake_err == Lightmapper::BAKE_ERROR_LIGHTMAP_TOO_SMALL) {
 		return BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL;
@@ -1409,6 +1450,14 @@ float LightmapGI::get_denoiser_strength() const {
 	return denoiser_strength;
 }
 
+void LightmapGI::set_denoiser_range(int p_denoiser_range) {
+	denoiser_range = p_denoiser_range;
+}
+
+int LightmapGI::get_denoiser_range() const {
+	return denoiser_range;
+}
+
 void LightmapGI::set_directional(bool p_enable) {
 	directional = p_enable;
 }
@@ -1493,6 +1542,15 @@ float LightmapGI::get_bias() const {
 	return bias;
 }
 
+void LightmapGI::set_texel_scale(float p_multiplier) {
+	ERR_FAIL_COND(p_multiplier < (0.01 - CMP_EPSILON));
+	texel_scale = p_multiplier;
+}
+
+float LightmapGI::get_texel_scale() const {
+	return texel_scale;
+}
+
 void LightmapGI::set_max_texture_size(int p_size) {
 	ERR_FAIL_COND_MSG(p_size < 2048, vformat("The LightmapGI maximum texture size supplied (%d) is too small. The minimum allowed value is 2048.", p_size));
 	ERR_FAIL_COND_MSG(p_size > 16384, vformat("The LightmapGI maximum texture size supplied (%d) is too large. The maximum allowed value is 16384.", p_size));
@@ -1523,7 +1581,7 @@ PackedStringArray LightmapGI::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		warnings.push_back(RTR("LightmapGI nodes are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
+		warnings.push_back(RTR("Lightmap can only be baked from a device that supports the RD backends. Lightmap baking may fail."));
 		return warnings;
 	}
 
@@ -1541,6 +1599,9 @@ void LightmapGI::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 	if (p_property.name == "denoiser_strength" && !use_denoiser) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+	if (p_property.name == "denoiser_range" && !use_denoiser) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
@@ -1576,6 +1637,9 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_environment_custom_energy", "energy"), &LightmapGI::set_environment_custom_energy);
 	ClassDB::bind_method(D_METHOD("get_environment_custom_energy"), &LightmapGI::get_environment_custom_energy);
 
+	ClassDB::bind_method(D_METHOD("set_texel_scale", "texel_scale"), &LightmapGI::set_texel_scale);
+	ClassDB::bind_method(D_METHOD("get_texel_scale"), &LightmapGI::get_texel_scale);
+
 	ClassDB::bind_method(D_METHOD("set_max_texture_size", "max_texture_size"), &LightmapGI::set_max_texture_size);
 	ClassDB::bind_method(D_METHOD("get_max_texture_size"), &LightmapGI::get_max_texture_size);
 
@@ -1584,6 +1648,9 @@ void LightmapGI::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_denoiser_strength", "denoiser_strength"), &LightmapGI::set_denoiser_strength);
 	ClassDB::bind_method(D_METHOD("get_denoiser_strength"), &LightmapGI::get_denoiser_strength);
+
+	ClassDB::bind_method(D_METHOD("set_denoiser_range", "denoiser_range"), &LightmapGI::set_denoiser_range);
+	ClassDB::bind_method(D_METHOD("get_denoiser_range"), &LightmapGI::get_denoiser_range);
 
 	ClassDB::bind_method(D_METHOD("set_interior", "enable"), &LightmapGI::set_interior);
 	ClassDB::bind_method(D_METHOD("is_interior"), &LightmapGI::is_interior);
@@ -1608,7 +1675,9 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_denoiser"), "set_use_denoiser", "is_using_denoiser");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "denoiser_strength", PROPERTY_HINT_RANGE, "0.001,0.2,0.001,or_greater"), "set_denoiser_strength", "get_denoiser_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "denoiser_range", PROPERTY_HINT_RANGE, "1,20"), "set_denoiser_range", "get_denoiser_range");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bias", PROPERTY_HINT_RANGE, "0.00001,0.1,0.00001,or_greater"), "set_bias", "get_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texel_scale", PROPERTY_HINT_RANGE, "0.01,100.0,0.01"), "set_texel_scale", "get_texel_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_texture_size", PROPERTY_HINT_RANGE, "2048,16384,1"), "set_max_texture_size", "get_max_texture_size");
 	ADD_GROUP("Environment", "environment_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "environment_mode", PROPERTY_HINT_ENUM, "Disabled,Scene,Custom Sky,Custom Color"), "set_environment_mode", "get_environment_mode");

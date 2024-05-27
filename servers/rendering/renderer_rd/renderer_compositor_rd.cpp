@@ -33,15 +33,15 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 
-void RendererCompositorRD::prepare_for_blitting_render_targets() {
-	RD::get_singleton()->prepare_screen_for_drawing();
-}
-
 void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(p_screen);
-	if (draw_list == RD::INVALID_ID) {
-		return; // Window is minimized and does not have valid swapchain, skip drawing without printing errors.
+	Error err = RD::get_singleton()->screen_prepare_for_drawing(p_screen);
+	if (err != OK) {
+		// Window is minimized and does not have valid swapchain, skip drawing without printing errors.
+		return;
 	}
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(p_screen);
+	ERR_FAIL_COND(draw_list == RD::INVALID_ID);
 
 	for (int i = 0; i < p_amount; i++) {
 		RID rd_texture = texture_storage->render_target_get_rd_texture(p_render_targets[i].render_target);
@@ -122,7 +122,7 @@ void RendererCompositorRD::initialize() {
 		blit.shader_version = blit.shader.version_create();
 
 		for (int i = 0; i < BLIT_MODE_MAX; i++) {
-			blit.pipelines[i] = RD::get_singleton()->render_pipeline_create(blit.shader.version_get_shader(blit.shader_version, i), RD::get_singleton()->screen_get_framebuffer_format(), RD::INVALID_ID, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), i == BLIT_MODE_NORMAL_ALPHA ? RenderingDevice::PipelineColorBlendState::create_blend() : RenderingDevice::PipelineColorBlendState::create_disabled(), 0);
+			blit.pipelines[i] = RD::get_singleton()->render_pipeline_create(blit.shader.version_get_shader(blit.shader_version, i), RD::get_singleton()->screen_get_framebuffer_format(DisplayServer::MAIN_WINDOW_ID), RD::INVALID_ID, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), i == BLIT_MODE_NORMAL_ALPHA ? RenderingDevice::PipelineColorBlendState::create_blend() : RenderingDevice::PipelineColorBlendState::create_disabled(), 0);
 		}
 
 		//create index array for copy shader
@@ -169,7 +169,11 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 		return;
 	}
 
-	RD::get_singleton()->prepare_screen_for_drawing();
+	Error err = RD::get_singleton()->screen_prepare_for_drawing(DisplayServer::MAIN_WINDOW_ID);
+	if (err != OK) {
+		// Window is minimized and does not have valid swapchain, skip drawing without printing errors.
+		return;
+	}
 
 	RID texture = texture_storage->texture_allocate();
 	texture_storage->texture_2d_initialize(texture, p_image);
@@ -306,7 +310,7 @@ RendererCompositorRD::RendererCompositorRD() {
 	fog = memnew(RendererRD::Fog);
 	canvas = memnew(RendererCanvasRenderRD());
 
-	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
+	String rendering_method = OS::get_singleton()->get_current_rendering_method();
 	uint64_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
 	if (rendering_method == "mobile" || textures_per_stage < 48) {

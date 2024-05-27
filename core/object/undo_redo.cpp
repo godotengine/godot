@@ -71,7 +71,14 @@ bool UndoRedo::_redo(bool p_execute) {
 	}
 
 	current_action++;
-	_process_operation_list(actions.write[current_action].do_ops.front(), p_execute);
+
+	List<Operation>::Element *start_doops_element = actions.write[current_action].do_ops.front();
+	while (merge_total > 0 && start_doops_element) {
+		start_doops_element = start_doops_element->next();
+		merge_total--;
+	}
+
+	_process_operation_list(start_doops_element, p_execute);
 	version++;
 	emit_signal(SNAME("version_changed"));
 
@@ -104,6 +111,12 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_back
 				}
 			}
 
+			if (p_mode == MERGE_ALL) {
+				merge_total = actions.write[current_action + 1].do_ops.size();
+			} else {
+				merge_total = 0;
+			}
+
 			actions.write[actions.size() - 1].last_tick = ticks;
 
 			// Revert reverse from previous commit.
@@ -121,6 +134,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_back
 			actions.push_back(new_action);
 
 			merge_mode = MERGE_DISABLE;
+			merge_total = 0;
 		}
 	}
 
@@ -130,7 +144,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_back
 }
 
 void UndoRedo::add_do_method(const Callable &p_callable) {
-	ERR_FAIL_COND(p_callable.is_null());
+	ERR_FAIL_COND(!p_callable.is_valid());
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
@@ -155,7 +169,7 @@ void UndoRedo::add_do_method(const Callable &p_callable) {
 }
 
 void UndoRedo::add_undo_method(const Callable &p_callable) {
-	ERR_FAIL_COND(p_callable.is_null());
+	ERR_FAIL_COND(!p_callable.is_valid());
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
@@ -316,6 +330,14 @@ void UndoRedo::commit_action(bool p_execute) {
 	_redo(p_execute); // perform action
 	committing--;
 
+	if (max_steps > 0) {
+		// Clear early steps.
+
+		while (actions.size() > max_steps) {
+			_pop_history_tail();
+		}
+	}
+
 	if (add_message && callback && actions.size() > 0) {
 		callback(callback_ud, actions[actions.size() - 1].name);
 	}
@@ -473,6 +495,14 @@ uint64_t UndoRedo::get_version() const {
 	return version;
 }
 
+void UndoRedo::set_max_steps(int p_max_steps) {
+	max_steps = p_max_steps;
+}
+
+int UndoRedo::get_max_steps() const {
+	return max_steps;
+}
+
 void UndoRedo::set_commit_notify_callback(CommitNotifyCallback p_callback, void *p_ud) {
 	callback = p_callback;
 	callback_ud = p_ud;
@@ -517,8 +547,12 @@ void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_undo"), &UndoRedo::has_undo);
 	ClassDB::bind_method(D_METHOD("has_redo"), &UndoRedo::has_redo);
 	ClassDB::bind_method(D_METHOD("get_version"), &UndoRedo::get_version);
+	ClassDB::bind_method(D_METHOD("set_max_steps", "max_steps"), &UndoRedo::set_max_steps);
+	ClassDB::bind_method(D_METHOD("get_max_steps"), &UndoRedo::get_max_steps);
 	ClassDB::bind_method(D_METHOD("redo"), &UndoRedo::redo);
 	ClassDB::bind_method(D_METHOD("undo"), &UndoRedo::undo);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_steps", PROPERTY_HINT_RANGE, "0,50,1,or_greater"), "set_max_steps", "get_max_steps");
 
 	ADD_SIGNAL(MethodInfo("version_changed"));
 

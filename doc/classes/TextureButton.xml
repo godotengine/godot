@@ -9,7 +9,7 @@
 		See also [BaseButton] which contains common properties and methods associated with this node.
 	</description>
 	<tutorials>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
 	<members>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">

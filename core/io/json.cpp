@@ -86,7 +86,7 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 		case Variant::PACKED_STRING_ARRAY:
 		case Variant::ARRAY: {
 			Array a = p_var;
-			if (a.size() == 0) {
+			if (a.is_empty()) {
 				return "[]";
 			}
 			String s = "[";
@@ -95,12 +95,15 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 			ERR_FAIL_COND_V_MSG(p_markers.has(a.id()), "\"[...]\"", "Converting circular structure to JSON.");
 			p_markers.insert(a.id());
 
-			for (int i = 0; i < a.size(); i++) {
-				if (i > 0) {
+			bool first = true;
+			for (const Variant &var : a) {
+				if (first) {
+					first = false;
+				} else {
 					s += ",";
 					s += end_statement;
 				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _stringify(a[i], p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
+				s += _make_indent(p_indent, p_cur_indent + 1) + _stringify(var, p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
 			}
 			s += end_statement + _make_indent(p_indent, p_cur_indent) + "]";
 			p_markers.erase(a.id());
@@ -341,10 +344,10 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 					r_token.value = number;
 					return OK;
 
-				} else if (is_ascii_char(p_str[index])) {
+				} else if (is_ascii_alphabet_char(p_str[index])) {
 					String id;
 
-					while (is_ascii_char(p_str[index])) {
+					while (is_ascii_alphabet_char(p_str[index])) {
 						id += p_str[index];
 						index++;
 					}

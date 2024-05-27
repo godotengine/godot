@@ -34,15 +34,17 @@
 #include "core/os/thread.h"
 #include "editor/code_editor.h"
 #include "editor/doc_tools.h"
-#include "editor/editor_plugin.h"
-#include "scene/gui/margin_container.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/popup.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
+
+#include "modules/modules_enabled.gen.h" // For gdscript, mono.
 
 class FindBar : public HBoxContainer {
 	GDCLASS(FindBar, HBoxContainer);
@@ -113,6 +115,7 @@ class EditorHelp : public VBoxContainer {
 	RichTextLabel *class_desc = nullptr;
 	HSplitContainer *h_split = nullptr;
 	static DocTools *doc;
+	static DocTools *ext_doc;
 
 	ConfirmationDialog *search_dialog = nullptr;
 	LineEdit *search = nullptr;
@@ -133,6 +136,7 @@ class EditorHelp : public VBoxContainer {
 		Color value_color;
 		Color qualifier_color;
 		Color type_color;
+		Color override_color;
 
 		Ref<Font> doc_font;
 		Ref<Font> doc_bold_font;
@@ -177,8 +181,8 @@ class EditorHelp : public VBoxContainer {
 
 	Error _goto_desc(const String &p_class);
 	//void _update_history_buttons();
-	void _update_method_list(const Vector<DocData::MethodDoc> p_methods, MethodType p_method_type);
-	void _update_method_descriptions(const DocData::ClassDoc p_classdoc, const Vector<DocData::MethodDoc> p_methods, MethodType p_method_type);
+	void _update_method_list(MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods);
+	void _update_method_descriptions(const DocData::ClassDoc &p_classdoc, MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods);
 	void _update_doc();
 
 	void _request_help(const String &p_string);
@@ -187,6 +191,7 @@ class EditorHelp : public VBoxContainer {
 	String _fix_constant(const String &p_constant) const;
 	void _toggle_scripts_pressed();
 
+	static int doc_generation_count;
 	static String doc_version_hash;
 	static Thread worker_thread;
 
@@ -195,6 +200,16 @@ class EditorHelp : public VBoxContainer {
 	static void _gen_doc_thread(void *p_udata);
 	static void _gen_extensions_docs();
 	static void _compute_doc_version_hash();
+
+	struct PropertyCompare {
+		_FORCE_INLINE_ bool operator()(const DocData::PropertyDoc &p_l, const DocData::PropertyDoc &p_r) const {
+			// Sort overridden properties above all else.
+			if (p_l.overridden == p_r.overridden) {
+				return p_l.name.naturalcasecmp_to(p_r.name) < 0;
+			}
+			return p_l.overridden;
+		}
+	};
 
 protected:
 	virtual void _update_theme_item_cache() override;
@@ -207,6 +222,9 @@ public:
 	static DocTools *get_doc_data();
 	static void cleanup_doc();
 	static String get_cache_full_path();
+
+	static void load_xml_buffer(const uint8_t *p_buffer, int p_size);
+	static void remove_class(const String &p_class);
 
 	void go_to_help(const String &p_help);
 	void go_to_class(const String &p_class);
@@ -227,54 +245,139 @@ public:
 
 	void update_toggle_scripts_button();
 
+	static void init_gdext_pointers();
+
 	EditorHelp();
 	~EditorHelp();
 };
 
-class EditorHelpBit : public MarginContainer {
-	GDCLASS(EditorHelpBit, MarginContainer);
+class EditorHelpBit : public VBoxContainer {
+	GDCLASS(EditorHelpBit, VBoxContainer);
 
-	inline static HashMap<StringName, String> doc_class_cache;
-	inline static HashMap<StringName, HashMap<StringName, String>> doc_property_cache;
-	inline static HashMap<StringName, HashMap<StringName, String>> doc_method_cache;
-	inline static HashMap<StringName, HashMap<StringName, String>> doc_signal_cache;
-	inline static HashMap<StringName, HashMap<StringName, String>> doc_theme_item_cache;
+	struct DocType {
+		String type;
+		String enumeration;
+		bool is_bitfield = false;
+	};
 
-	RichTextLabel *rich_text = nullptr;
-	void _go_to_help(String p_what);
-	void _meta_clicked(String p_select);
+	struct ArgumentData {
+		String name;
+		DocType doc_type;
+		String default_value;
+	};
 
-	String text;
+	struct HelpData {
+		String description;
+		String deprecated_message;
+		String experimental_message;
+		DocType doc_type; // For method return type.
+		Vector<ArgumentData> arguments; // For methods and signals.
+	};
+
+	inline static HashMap<StringName, HelpData> doc_class_cache;
+	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_property_cache;
+	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_method_cache;
+	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_signal_cache;
+	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_theme_item_cache;
+
+	RichTextLabel *title = nullptr;
+	RichTextLabel *content = nullptr;
+
+	String symbol_class_name;
+	String symbol_type;
+	String symbol_visible_type;
+	String symbol_name;
+
+	HelpData help_data;
+
+	float content_min_height = 0.0;
+	float content_max_height = 0.0;
+
+	static HelpData _get_class_help_data(const StringName &p_class_name);
+	static HelpData _get_property_help_data(const StringName &p_class_name, const StringName &p_property_name);
+	static HelpData _get_method_help_data(const StringName &p_class_name, const StringName &p_method_name);
+	static HelpData _get_signal_help_data(const StringName &p_class_name, const StringName &p_signal_name);
+	static HelpData _get_theme_item_help_data(const StringName &p_class_name, const StringName &p_theme_item_name);
+
+	void _add_type_to_title(const DocType &p_doc_type);
+	void _update_labels();
+	void _go_to_help(const String &p_what);
+	void _meta_clicked(const String &p_select);
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
-	String get_class_description(const StringName &p_class_name) const;
-	String get_property_description(const StringName &p_class_name, const StringName &p_property_name) const;
-	String get_method_description(const StringName &p_class_name, const StringName &p_method_name) const;
-	String get_signal_description(const StringName &p_class_name, const StringName &p_signal_name) const;
-	String get_theme_item_description(const StringName &p_class_name, const StringName &p_theme_item_name) const;
+	void parse_symbol(const String &p_symbol);
+	void set_custom_text(const String &p_type, const String &p_name, const String &p_description);
+	void set_description(const String &p_text);
+	_FORCE_INLINE_ String get_description() const { return help_data.description; }
 
-	RichTextLabel *get_rich_text() { return rich_text; }
-	void set_text(const String &p_text);
+	void set_content_height_limits(float p_min, float p_max);
+	void update_content_height();
 
-	EditorHelpBit();
+	EditorHelpBit(const String &p_symbol = String());
 };
 
-class EditorHelpTooltip : public EditorHelpBit {
-	GDCLASS(EditorHelpTooltip, EditorHelpBit);
+// Standard tooltips do not allow you to hover over them.
+// This class is intended as a temporary workaround.
+class EditorHelpBitTooltip : public PopupPanel {
+	GDCLASS(EditorHelpBitTooltip, PopupPanel);
 
-	String tooltip_text;
+	Timer *timer = nullptr;
+	int _pushing_input = 0;
+	bool _need_free = false;
+
+	void _safe_queue_free();
 
 protected:
 	void _notification(int p_what);
+	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 
 public:
-	void parse_tooltip(const String &p_text);
+	static void show_tooltip(EditorHelpBit *p_help_bit, Control *p_target);
 
-	EditorHelpTooltip(const String &p_text = String());
+	void popup_under_cursor();
+
+	EditorHelpBitTooltip(Control *p_target);
 };
+
+#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+class EditorSyntaxHighlighter;
+
+class EditorHelpHighlighter {
+public:
+	enum Language {
+		LANGUAGE_GDSCRIPT,
+		LANGUAGE_CSHARP,
+		LANGUAGE_MAX,
+	};
+
+private:
+	using HighlightData = Vector<Pair<int, Color>>;
+
+	static EditorHelpHighlighter *singleton;
+
+	HashMap<String, HighlightData> highlight_data_caches[LANGUAGE_MAX];
+
+	TextEdit *text_edits[LANGUAGE_MAX];
+	Ref<Script> scripts[LANGUAGE_MAX];
+	Ref<EditorSyntaxHighlighter> highlighters[LANGUAGE_MAX];
+
+	HighlightData _get_highlight_data(Language p_language, const String &p_source, bool p_use_cache);
+
+public:
+	static void create_singleton();
+	static void free_singleton();
+	static EditorHelpHighlighter *get_singleton();
+
+	void highlight(RichTextLabel *p_rich_text_label, Language p_language, const String &p_source, bool p_use_cache);
+	void reset_cache();
+
+	EditorHelpHighlighter();
+	virtual ~EditorHelpHighlighter();
+};
+#endif // defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
 
 #endif // EDITOR_HELP_H

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,13 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_SHAPE_IMPL_H_
-#define _TVG_SHAPE_IMPL_H_
+#ifndef _TVG_SHAPE_H_
+#define _TVG_SHAPE_H_
 
 #include <memory.h>
 #include "tvgMath.h"
 #include "tvgPaint.h"
 
-/************************************************************************/
-/* Internal Class Implementation                                        */
-/************************************************************************/
 
 struct Shape::Impl
 {
@@ -38,30 +35,30 @@ struct Shape::Impl
     Shape* shape;
     uint8_t flag = RenderUpdateFlag::None;
     uint8_t opacity;                    //for composition
-    bool needComp;                      //composite or not
+    bool needComp = false;              //composite or not
 
     Impl(Shape* s) : shape(s)
     {
     }
 
-    bool dispose(RenderMethod& renderer)
+    ~Impl()
     {
-        renderer.dispose(rd);
-        rd = nullptr;
-        return true;
+        if (auto renderer = PP(shape)->renderer) {
+            renderer->dispose(rd);
+        }
     }
 
-    bool render(RenderMethod& renderer)
+    bool render(RenderMethod* renderer)
     {
         Compositor* cmp = nullptr;
         bool ret;
 
         if (needComp) {
-            cmp = renderer.target(bounds(renderer), renderer.colorSpace());
-            renderer.beginComposite(cmp, CompositeMethod::None, opacity);
+            cmp = renderer->target(bounds(renderer), renderer->colorSpace());
+            renderer->beginComposite(cmp, CompositeMethod::None, opacity);
         }
-        ret = renderer.renderShape(rd);
-        if (cmp) renderer.endComposite(cmp);
+        ret = renderer->renderShape(rd);
+        if (cmp) renderer->endComposite(cmp);
         return ret;
     }
 
@@ -79,13 +76,26 @@ struct Shape::Impl
         //Composition test
         const Paint* target;
         auto method = shape->composite(&target);
-        if (!target || method == tvg::CompositeMethod::ClipPath) return false;
-        if (target->pImpl->opacity == 255 || target->pImpl->opacity == 0) return false;
+        if (!target || method == CompositeMethod::ClipPath) return false;
+        if (target->pImpl->opacity == 255 || target->pImpl->opacity == 0) {
+            if (target->identifier() == TVG_CLASS_ID_SHAPE) {
+                auto shape = static_cast<const Shape*>(target);
+                if (!shape->fill()) {
+                    uint8_t r, g, b, a;
+                    shape->fillColor(&r, &g, &b, &a);
+                    if (a == 0 || a == 255) {
+                        if (method == CompositeMethod::LumaMask || method == CompositeMethod::InvLumaMask) {
+                            if ((r == 255 && g == 255 && b == 255) || (r == 0 && g == 0 && b == 0)) return false;
+                        } else return false;
+                    }
+                }
+            }
+        }
 
         return true;
     }
 
-    RenderData update(RenderMethod& renderer, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper)
+    RenderData update(RenderMethod* renderer, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper)
     {     
         if ((needComp = needComposition(opacity))) {
             /* Overriding opacity value. If this scene is half-translucent,
@@ -94,21 +104,21 @@ struct Shape::Impl
             opacity = 255;
         }
 
-        rd = renderer.prepare(rs, rd, transform, clips, opacity, static_cast<RenderUpdateFlag>(pFlag | flag), clipper);
+        rd = renderer->prepare(rs, rd, transform, clips, opacity, static_cast<RenderUpdateFlag>(pFlag | flag), clipper);
         flag = RenderUpdateFlag::None;
         return rd;
     }
 
-    RenderRegion bounds(RenderMethod& renderer)
+    RenderRegion bounds(RenderMethod* renderer)
     {
-        return renderer.region(rd);
+        return renderer->region(rd);
     }
 
     bool bounds(float* x, float* y, float* w, float* h, bool stroking)
     {
         //Path bounding size
         if (rs.path.pts.count > 0 ) {
-            auto pts = rs.path.pts.data;
+            auto pts = rs.path.pts.begin();
             Point min = { pts->x, pts->y };
             Point max = { pts->x, pts->y };
 
@@ -206,7 +216,7 @@ struct Shape::Impl
         return true;
     }
 
-    bool strokeTrim(float begin, float end)
+    bool strokeTrim(float begin, float end, bool individual)
     {
         if (!rs.stroke) {
             if (begin == 0.0f && end == 1.0f) return true;
@@ -217,6 +227,7 @@ struct Shape::Impl
 
         rs.stroke->trim.begin = begin;
         rs.stroke->trim.end = end;
+        rs.stroke->trim.individual = individual;
         flag |= RenderUpdateFlag::Stroke;
 
         return true;
@@ -340,9 +351,9 @@ struct Shape::Impl
 
     Paint* duplicate()
     {
-        auto ret = Shape::gen();
+        auto ret = Shape::gen().release();
+        auto dup = ret->pImpl;
 
-        auto dup = ret.get()->pImpl;
         dup->rs.rule = rs.rule;
 
         //Color
@@ -378,7 +389,7 @@ struct Shape::Impl
             dup->flag |= RenderUpdateFlag::Gradient;
         }
 
-        return ret.release();
+        return ret;
     }
 
     Iterator* iterator()
@@ -387,4 +398,4 @@ struct Shape::Impl
     }
 };
 
-#endif //_TVG_SHAPE_IMPL_H_
+#endif //_TVG_SHAPE_H_

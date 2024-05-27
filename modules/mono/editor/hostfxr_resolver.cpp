@@ -239,7 +239,7 @@ bool get_dotnet_self_registered_dir(String &r_dotnet_root) {
 	String sub_key = "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + get_dotnet_arch();
 	Char16String value = String("InstallLocation").utf16();
 
-	HKEY hkey = NULL;
+	HKEY hkey = nullptr;
 	LSTATUS result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)(sub_key.utf16().get_data()), 0, KEY_READ | KEY_WOW64_32KEY, &hkey);
 	if (result != ERROR_SUCCESS) {
 		return false;

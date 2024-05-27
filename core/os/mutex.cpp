@@ -40,7 +40,11 @@ void _global_unlock() {
 	_global_mutex.unlock();
 }
 
+#ifdef THREADS_ENABLED
+
 template class MutexImpl<THREADING_NAMESPACE::recursive_mutex>;
 template class MutexImpl<THREADING_NAMESPACE::mutex>;
 template class MutexLock<MutexImpl<THREADING_NAMESPACE::recursive_mutex>>;
 template class MutexLock<MutexImpl<THREADING_NAMESPACE::mutex>>;
+
+#endif

@@ -32,11 +32,11 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector_dock.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/panel.h"
@@ -60,8 +60,11 @@ void EditorSceneTabs::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			scene_tabs->set_tab_close_display_policy((TabBar::CloseButtonDisplayPolicy)EDITOR_GET("interface/scene_tabs/display_close_button").operator int());
-			scene_tabs->set_max_tab_width(int(EDITOR_GET("interface/scene_tabs/maximum_width")) * EDSCALE);
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/scene_tabs")) {
+				scene_tabs->set_tab_close_display_policy((TabBar::CloseButtonDisplayPolicy)EDITOR_GET("interface/scene_tabs/display_close_button").operator int());
+				scene_tabs->set_max_tab_width(int(EDITOR_GET("interface/scene_tabs/maximum_width")) * EDSCALE);
+				_scene_tabs_resized();
+			}
 		} break;
 	}
 }
@@ -133,6 +136,17 @@ void EditorSceneTabs::_scene_tab_input(const Ref<InputEvent> &p_input) {
 	}
 }
 
+void EditorSceneTabs::unhandled_key_input(const Ref<InputEvent> &p_event) {
+	if (!tab_preview_panel->is_visible()) {
+		return;
+	}
+
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+		tab_preview_panel->hide();
+	}
+}
+
 void EditorSceneTabs::_reposition_active_tab(int p_to_index) {
 	EditorNode::get_editor_data().move_edited_scene_to_index(p_to_index);
 	update_scene_tabs();
@@ -190,15 +204,40 @@ void EditorSceneTabs::_disable_menu_option_if(int p_option, bool p_condition) {
 	}
 }
 
-// TODO: This REALLY should be done in a better way than replacing all tabs after almost EVERY action.
 void EditorSceneTabs::update_scene_tabs() {
+	static bool menu_initialized = false;
 	tab_preview_panel->hide();
 
-	bool show_rb = EDITOR_GET("interface/scene_tabs/show_script_button");
-
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
-		DisplayServer::get_singleton()->global_menu_clear("_dock");
+	if (menu_initialized && scene_tabs->get_tab_count() == EditorNode::get_editor_data().get_edited_scene_count()) {
+		_update_tab_titles();
+		return;
 	}
+	menu_initialized = true;
+
+	if (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
+		RID dock_rid = NativeMenu::get_singleton()->get_system_menu(NativeMenu::DOCK_MENU_ID);
+		NativeMenu::get_singleton()->clear(dock_rid);
+	}
+
+	scene_tabs->set_block_signals(true);
+	scene_tabs->set_tab_count(EditorNode::get_editor_data().get_edited_scene_count());
+	scene_tabs->set_block_signals(false);
+
+	if (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
+		RID dock_rid = NativeMenu::get_singleton()->get_system_menu(NativeMenu::DOCK_MENU_ID);
+		for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
+			int global_menu_index = NativeMenu::get_singleton()->add_item(dock_rid, EditorNode::get_editor_data().get_scene_title(i), callable_mp(this, &EditorSceneTabs::_global_menu_scene), Callable(), i);
+			scene_tabs->set_tab_metadata(i, global_menu_index);
+		}
+		NativeMenu::get_singleton()->add_separator(dock_rid);
+		NativeMenu::get_singleton()->add_item(dock_rid, TTR("New Window"), callable_mp(this, &EditorSceneTabs::_global_menu_new_window));
+	}
+
+	_update_tab_titles();
+}
+
+void EditorSceneTabs::_update_tab_titles() {
+	bool show_rb = EDITOR_GET("interface/scene_tabs/show_script_button");
 
 	// Get all scene names, which may be ambiguous.
 	Vector<String> disambiguated_scene_names;
@@ -207,13 +246,8 @@ void EditorSceneTabs::update_scene_tabs() {
 		disambiguated_scene_names.append(EditorNode::get_editor_data().get_scene_title(i));
 		full_path_names.append(EditorNode::get_editor_data().get_scene_path(i));
 	}
-
 	EditorNode::disambiguate_filenames(full_path_names, disambiguated_scene_names);
 
-	// Workaround to ignore the tab_changed signal from the first added tab.
-	scene_tabs->disconnect("tab_changed", callable_mp(this, &EditorSceneTabs::_scene_tab_changed));
-
-	scene_tabs->clear_tabs();
 	Ref<Texture2D> script_icon = get_editor_theme_icon(SNAME("Script"));
 	for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
 		Node *type_node = EditorNode::get_editor_data().get_edited_scene_root(i);
@@ -221,28 +255,36 @@ void EditorSceneTabs::update_scene_tabs() {
 		if (type_node) {
 			icon = EditorNode::get_singleton()->get_object_icon(type_node, "Node");
 		}
+		scene_tabs->set_tab_icon(i, icon);
 
 		bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(EditorNode::get_editor_data().get_scene_history_id(i));
-		scene_tabs->add_tab(disambiguated_scene_names[i] + (unsaved ? "(*)" : ""), icon);
+		scene_tabs->set_tab_title(i, disambiguated_scene_names[i] + (unsaved ? "(*)" : ""));
 
-		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
-			DisplayServer::get_singleton()->global_menu_add_item("_dock", EditorNode::get_editor_data().get_scene_title(i) + (unsaved ? "(*)" : ""), callable_mp(this, &EditorSceneTabs::_global_menu_scene), Callable(), i);
+		if (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
+			RID dock_rid = NativeMenu::get_singleton()->get_system_menu(NativeMenu::DOCK_MENU_ID);
+			int global_menu_index = scene_tabs->get_tab_metadata(i);
+			NativeMenu::get_singleton()->set_item_text(dock_rid, global_menu_index, EditorNode::get_editor_data().get_scene_title(i) + (unsaved ? "(*)" : ""));
+			NativeMenu::get_singleton()->set_item_tag(dock_rid, global_menu_index, i);
 		}
 
 		if (show_rb && EditorNode::get_editor_data().get_scene_root_script(i).is_valid()) {
 			scene_tabs->set_tab_button_icon(i, script_icon);
+		} else {
+			scene_tabs->set_tab_button_icon(i, nullptr);
 		}
 	}
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
-		DisplayServer::get_singleton()->global_menu_add_separator("_dock");
-		DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), callable_mp(this, &EditorSceneTabs::_global_menu_new_window));
+	int current_tab = EditorNode::get_editor_data().get_edited_scene();
+	if (scene_tabs->get_tab_count() > 0 && scene_tabs->get_current_tab() != current_tab) {
+		scene_tabs->set_block_signals(true);
+		scene_tabs->set_current_tab(current_tab);
+		scene_tabs->set_block_signals(false);
 	}
 
-	if (scene_tabs->get_tab_count() > 0) {
-		scene_tabs->set_current_tab(EditorNode::get_editor_data().get_edited_scene());
-	}
+	_scene_tabs_resized();
+}
 
+void EditorSceneTabs::_scene_tabs_resized() {
 	const Size2 add_button_size = Size2(scene_tab_add->get_size().x, scene_tabs->get_size().y);
 	if (scene_tabs->get_offset_buttons_visible()) {
 		// Move the add button to a fixed position.
@@ -271,9 +313,6 @@ void EditorSceneTabs::update_scene_tabs() {
 			scene_tab_add->set_rect(Rect2(Point2(last_tab.position.x + last_tab.size.width + hsep, last_tab.position.y), add_button_size));
 		}
 	}
-
-	// Reconnect after everything is done.
-	scene_tabs->connect("tab_changed", callable_mp(this, &EditorSceneTabs::_scene_tab_changed));
 }
 
 void EditorSceneTabs::_tab_preview_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
@@ -342,6 +381,7 @@ EditorSceneTabs::EditorSceneTabs() {
 	singleton = this;
 
 	set_process_shortcut_input(true);
+	set_process_unhandled_key_input(true);
 
 	tabbar_panel = memnew(PanelContainer);
 	add_child(tabbar_panel);
@@ -354,7 +394,7 @@ EditorSceneTabs::EditorSceneTabs() {
 	scene_tabs->set_tab_close_display_policy((TabBar::CloseButtonDisplayPolicy)EDITOR_GET("interface/scene_tabs/display_close_button").operator int());
 	scene_tabs->set_max_tab_width(int(EDITOR_GET("interface/scene_tabs/maximum_width")) * EDSCALE);
 	scene_tabs->set_drag_to_rearrange_enabled(true);
-	scene_tabs->set_auto_translate(false);
+	scene_tabs->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	scene_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tabbar_container->add_child(scene_tabs);
 
@@ -362,10 +402,10 @@ EditorSceneTabs::EditorSceneTabs() {
 	scene_tabs->connect("tab_button_pressed", callable_mp(this, &EditorSceneTabs::_scene_tab_script_edited));
 	scene_tabs->connect("tab_close_pressed", callable_mp(this, &EditorSceneTabs::_scene_tab_closed));
 	scene_tabs->connect("tab_hovered", callable_mp(this, &EditorSceneTabs::_scene_tab_hovered));
-	scene_tabs->connect("mouse_exited", callable_mp(this, &EditorSceneTabs::_scene_tab_exit));
-	scene_tabs->connect("gui_input", callable_mp(this, &EditorSceneTabs::_scene_tab_input));
+	scene_tabs->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorSceneTabs::_scene_tab_exit));
+	scene_tabs->connect(SceneStringName(gui_input), callable_mp(this, &EditorSceneTabs::_scene_tab_input));
 	scene_tabs->connect("active_tab_rearranged", callable_mp(this, &EditorSceneTabs::_reposition_active_tab));
-	scene_tabs->connect("resized", callable_mp(this, &EditorSceneTabs::update_scene_tabs));
+	scene_tabs->connect(SceneStringName(resized), callable_mp(this, &EditorSceneTabs::_scene_tabs_resized));
 
 	scene_tabs_context_menu = memnew(PopupMenu);
 	tabbar_container->add_child(scene_tabs_context_menu);
@@ -375,7 +415,7 @@ EditorSceneTabs::EditorSceneTabs() {
 	scene_tab_add->set_flat(true);
 	scene_tab_add->set_tooltip_text(TTR("Add a new scene."));
 	scene_tabs->add_child(scene_tab_add);
-	scene_tab_add->connect("pressed", callable_mp(EditorNode::get_singleton(), &EditorNode::trigger_menu_option).bind(EditorNode::FILE_NEW_SCENE, false));
+	scene_tab_add->connect(SceneStringName(pressed), callable_mp(EditorNode::get_singleton(), &EditorNode::trigger_menu_option).bind(EditorNode::FILE_NEW_SCENE, false));
 
 	scene_tab_add_ph = memnew(Control);
 	scene_tab_add_ph->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);

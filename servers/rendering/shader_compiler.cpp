@@ -479,8 +479,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				struct_code += _mkid(pnode->vstructs[i].name);
 				struct_code += " ";
 				struct_code += "{\n";
-				for (int j = 0; j < st->members.size(); j++) {
-					SL::MemberNode *m = st->members[j];
+				for (SL::MemberNode *m : st->members) {
 					if (m->datatype == SL::TYPE_STRUCT) {
 						struct_code += _mkid(m->struct_name);
 					} else {
@@ -543,7 +542,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			uniform_names.sort_custom<StringName::AlphCompare>(); //ensure order is deterministic so the same shader is always produced
 
 			for (int k = 0; k < uniform_names.size(); k++) {
-				StringName uniform_name = uniform_names[k];
+				const StringName &uniform_name = uniform_names[k];
 				const SL::ShaderNode::Uniform &uniform = pnode->uniforms[uniform_name];
 
 				String ucode;
@@ -670,7 +669,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			varying_names.sort_custom<StringName::AlphCompare>(); //ensure order is deterministic so the same shader is always produced
 
 			for (int k = 0; k < varying_names.size(); k++) {
-				StringName varying_name = varying_names[k];
+				const StringName &varying_name = varying_names[k];
 				const SL::ShaderNode::Varying &varying = pnode->varyings[varying_name];
 
 				if (varying.stage == SL::ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT || varying.stage == SL::ShaderNode::Varying::STAGE_FRAGMENT) {
@@ -807,10 +806,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				code += _mktab(p_level - 1) + "{\n";
 			}
 
-			for (int i = 0; i < bnode->statements.size(); i++) {
-				String scode = _dump_node_code(bnode->statements[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+			int i = 0;
+			for (List<ShaderLanguage::Node *>::ConstIterator itr = bnode->statements.begin(); itr != bnode->statements.end(); ++itr, ++i) {
+				String scode = _dump_node_code(*itr, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 
-				if (bnode->statements[i]->type == SL::Node::NODE_TYPE_CONTROL_FLOW || bnode->single_statement) {
+				if ((*itr)->type == SL::Node::NODE_TYPE_CONTROL_FLOW || bnode->single_statement) {
 					code += scode; //use directly
 					if (bnode->use_comma_between_statements && i + 1 < bnode->statements.size()) {
 						code += ",";
@@ -1191,6 +1191,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					// we will add logic to automatically switch between
 					// sampler2D and sampler2D array and vec2 UV and vec3 UV.
 					bool multiview_uv_needed = false;
+					bool is_normal_roughness_texture = false;
 
 					for (int i = 1; i < onode->arguments.size(); i++) {
 						if (i > 1) {
@@ -1259,7 +1260,6 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 								// Need to map from texture to sampler in order to sample when using Vulkan GLSL.
 								String sampler_name;
 								bool is_depth_texture = false;
-								bool is_normal_roughness_texture = false;
 
 								if (actions.custom_samplers.has(texture_uniform)) {
 									sampler_name = actions.custom_samplers[texture_uniform];
@@ -1339,6 +1339,9 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					code += ")";
 					if (is_screen_texture && !texture_func_returns_data && actions.apply_luminance_multiplier) {
 						code = "(" + code + " * vec4(vec3(sc_luminance_multiplier), 1.0))";
+					}
+					if (is_normal_roughness_texture && !texture_func_returns_data) {
+						code = "normal_roughness_compatibility(" + code + ")";
 					}
 				} break;
 				case SL::OP_INDEX: {

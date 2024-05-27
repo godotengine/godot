@@ -318,6 +318,16 @@ void TSymbolTableLevel::setFunctionExtensions(const char* name, int num, const c
     }
 }
 
+// Make a single function require an extension(s). i.e., this will only set the extensions for the symbol that matches 'name' exactly.
+// This is different from setFunctionExtensions, which uses std::map::lower_bound to effectively set all symbols that start with 'name'.
+// Should only be used for a version/profile that actually needs the extension(s).
+void TSymbolTableLevel::setSingleFunctionExtensions(const char* name, int num, const char* const extensions[])
+{
+    if (auto candidate = level.find(name); candidate != level.end()) {
+        candidate->second->setExtensions(num, extensions);
+    }
+}
+
 //
 // Make all symbols in this table level read only.
 //

@@ -41,6 +41,7 @@ class ConfirmationDialog;
 class EditorInspector;
 class EditorValidationPanel;
 class LineEdit;
+class MarginContainer;
 class OptionButton;
 class PanelContainer;
 class PopupMenu;
@@ -66,6 +67,12 @@ public:
 		MENU_OPEN_DOCUMENTATION,
 	};
 
+	enum ColorationMode {
+		COLORATION_CONTAINER_RESOURCE,
+		COLORATION_RESOURCE,
+		COLORATION_EXTERNAL,
+	};
+
 private:
 	String label;
 	int text_size;
@@ -74,6 +81,7 @@ private:
 	StringName property;
 	String property_path;
 	String doc_path;
+	bool internal = false;
 	bool has_doc_tooltip = false;
 
 	int property_usage;
@@ -128,6 +136,8 @@ private:
 	void _update_pin_flags();
 
 protected:
+	bool has_borders = false;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 	virtual void _set_read_only(bool p_read_only);
@@ -138,6 +148,8 @@ protected:
 
 	virtual Variant _get_cache_value(const StringName &p_prop, bool &r_valid) const;
 	virtual StringName _get_revert_property() const;
+
+	void _update_property_bg();
 
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
@@ -156,6 +168,7 @@ public:
 	EditorInspector *get_parent_inspector() const;
 
 	void set_doc_path(const String &p_doc_path);
+	void set_internal(bool p_internal);
 
 	virtual void update_property();
 	void update_editor_property_status();
@@ -173,6 +186,8 @@ public:
 
 	void set_keying(bool p_keying);
 	bool is_keying() const;
+
+	virtual bool is_colored(ColorationMode p_mode) { return false; }
 
 	void set_deletable(bool p_enable);
 	bool is_deletable() const;
@@ -329,7 +344,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 		MODE_NONE,
 		MODE_USE_COUNT_PROPERTY,
 		MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION,
-	} mode;
+	} mode = MODE_NONE;
 	StringName count_property;
 	StringName array_element_prefix;
 	String swap_method;
@@ -404,7 +419,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 	int _drop_position() const;
 
 	void _new_size_spin_box_value_changed(float p_value);
-	void _new_size_spin_box_text_submitted(String p_text);
+	void _new_size_spin_box_text_submitted(const String &p_text);
 	void _resize_dialog_confirmed();
 
 	void _update_elements_visibility();
@@ -421,8 +436,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void setup_with_move_element_function(Object *p_object, String p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "");
-	void setup_with_count_property(Object *p_object, String p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "", const String &p_swap_method = "");
+	void setup_with_move_element_function(Object *p_object, const String &p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "");
+	void setup_with_count_property(Object *p_object, const String &p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "", const String &p_swap_method = "");
 	VBoxContainer *get_vbox(int p_index);
 
 	EditorInspectorArray(bool p_read_only);
@@ -442,7 +457,7 @@ class EditorPaginator : public HBoxContainer {
 
 	void _first_page_button_pressed();
 	void _prev_page_button_pressed();
-	void _page_line_edit_text_submitted(String p_text);
+	void _page_line_edit_text_submitted(const String &p_text);
 	void _next_page_button_pressed();
 	void _last_page_button_pressed();
 
@@ -479,7 +494,8 @@ class EditorInspector : public ScrollContainer {
 	//
 
 	LineEdit *search_box = nullptr;
-	bool show_categories = false;
+	bool show_standard_categories = false;
+	bool show_custom_categories = false;
 	bool hide_script = true;
 	bool hide_metadata = true;
 	bool use_doc_hints = false;
@@ -503,8 +519,14 @@ class EditorInspector : public ScrollContainer {
 	int property_focusable;
 	int update_scroll_request;
 
-	HashMap<StringName, HashMap<StringName, String>> doc_path_cache;
+	struct DocCacheInfo {
+		String doc_path;
+		String theme_item_name;
+	};
+
+	HashMap<StringName, HashMap<StringName, DocCacheInfo>> doc_cache;
 	HashSet<StringName> restart_request_props;
+	HashMap<String, String> custom_property_descriptions;
 
 	HashMap<ObjectID, int> scroll_cache;
 
@@ -517,7 +539,7 @@ class EditorInspector : public ScrollContainer {
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
 	void _property_changed(const String &p_path, const Variant &p_value, const String &p_name = "", bool p_changing = false, bool p_update_all = false);
-	void _multiple_properties_changed(Vector<String> p_paths, Array p_values, bool p_changing = false);
+	void _multiple_properties_changed(const Vector<String> &p_paths, const Array &p_values, bool p_changing = false);
 	void _property_keyed(const String &p_path, bool p_advance);
 	void _property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance);
 	void _property_deleted(const String &p_path);
@@ -547,8 +569,6 @@ class EditorInspector : public ScrollContainer {
 	void _feature_profile_changed();
 
 	bool _is_property_disabled_by_feature_profile(const StringName &p_property);
-
-	void _update_inspector_bg();
 
 	ConfirmationDialog *add_meta_dialog = nullptr;
 	LineEdit *add_meta_name = nullptr;
@@ -591,7 +611,7 @@ public:
 
 	void set_autoclear(bool p_enable);
 
-	void set_show_categories(bool p_show);
+	void set_show_categories(bool p_show_standard, bool p_show_custom);
 	void set_use_doc_hints(bool p_enable);
 	void set_hide_script(bool p_hide);
 	void set_hide_metadata(bool p_hide);
@@ -611,6 +631,9 @@ public:
 
 	void set_property_prefix(const String &p_prefix);
 	String get_property_prefix() const;
+
+	void add_custom_property_description(const String &p_class, const String &p_property, const String &p_description);
+	String get_custom_property_description(const String &p_property) const;
 
 	void set_object_class(const String &p_class);
 	String get_object_class() const;

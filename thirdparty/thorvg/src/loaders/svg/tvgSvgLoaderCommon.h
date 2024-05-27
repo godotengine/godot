@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -485,11 +485,12 @@ struct SvgStyleProperty
     SvgComposite mask;
     int opacity;
     SvgColor color;
-    bool curColorSet;
     char* cssClass;
-    bool paintOrder; //true if default (fill, stroke), false otherwise
     SvgStyleFlags flags;
     SvgStyleFlags flagsImportance; //indicates the importance of the flag - if set, higher priority is applied (https://drafts.csswg.org/css-cascade-4/#importance)
+    bool curColorSet;
+    bool paintOrder; //true if default (fill, stroke), false otherwise
+    bool display;
 };
 
 struct SvgNode
@@ -518,7 +519,6 @@ struct SvgNode
         SvgCssStyleNode cssStyle;
         SvgSymbolNode symbol;
     } node;
-    bool display;
     ~SvgNode();
 };
 
@@ -560,6 +560,7 @@ struct SvgLoaderData
     int level = 0;
     bool result = false;
     bool style = false;
+    SvgNode* currentGraphicsNode = nullptr;
 };
 
 struct Box

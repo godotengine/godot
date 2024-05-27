@@ -42,8 +42,6 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
-#include "editor/editor_scale.h"
-
 /**
  * NOTE: Do not assume the EditorNode singleton to be available in this class' methods.
  * EditorAbout is also used from the project manager where EditorNode isn't initialized.
@@ -56,21 +54,21 @@ class EditorAbout : public AcceptDialog {
 private:
 	void _license_tree_selected();
 	void _version_button_pressed();
-	ScrollContainer *_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], const int p_flag_single_column = 0);
+	void _item_with_website_selected(int p_id, ItemList *p_il);
+	void _item_list_resized(ItemList *p_il);
+	ScrollContainer *_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], int p_single_column_flags = 0, bool p_allow_website = false);
 
 	LinkButton *version_btn = nullptr;
 	Tree *_tpl_tree = nullptr;
-	RichTextLabel *_license_text = nullptr;
+	RichTextLabel *license_text_label = nullptr;
 	RichTextLabel *_tpl_text = nullptr;
 	TextureRect *_logo = nullptr;
+	Vector<ItemList *> name_lists;
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
-	TextureRect *get_logo() const;
-
 	EditorAbout();
 	~EditorAbout();
 };
