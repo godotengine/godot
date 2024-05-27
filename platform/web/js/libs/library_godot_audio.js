@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 const GodotAudio = {
-	$GodotAudio__deps: ['$GodotRuntime', '$GodotOS'],
+	$GodotAudio__deps: ["$GodotRuntime", "$GodotOS"],
 	$GodotAudio: {
 		ctx: null,
 		input: null,
@@ -40,7 +40,7 @@ const GodotAudio = {
 			const opts = {};
 			// If mix_rate is 0, let the browser choose.
 			if (mix_rate) {
-				opts['sampleRate'] = mix_rate;
+				opts["sampleRate"] = mix_rate;
 			}
 			// Do not specify, leave 'interactive' for good performance.
 			// opts['latencyHint'] = latency / 1000;
@@ -49,15 +49,15 @@ const GodotAudio = {
 			ctx.onstatechange = function () {
 				let state = 0;
 				switch (ctx.state) {
-				case 'suspended':
-					state = 0;
-					break;
-				case 'running':
-					state = 1;
-					break;
-				case 'closed':
-					state = 2;
-					break;
+					case "suspended":
+						state = 0;
+						break;
+					case "running":
+						state = 1;
+						break;
+					case "closed":
+						state = 2;
+						break;
 
 					// no default
 				}
@@ -88,28 +88,35 @@ const GodotAudio = {
 					GodotAudio.input = GodotAudio.ctx.createMediaStreamSource(stream);
 					callback(GodotAudio.input);
 				} catch (e) {
-					GodotRuntime.error('Failed creating input.', e);
+					GodotRuntime.error("Failed creating input.", e);
 				}
 			}
-			if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-				navigator.mediaDevices.getUserMedia({
-					'audio': true,
-				}).then(gotMediaInput, function (e) {
-					GodotRuntime.error('Error getting user media.', e);
-				});
+			if (navigator.mediaDevices?.getUserMedia) {
+				navigator.mediaDevices
+					.getUserMedia({
+						audio: true,
+					})
+					.then(gotMediaInput, function (e) {
+						GodotRuntime.error("Error getting user media.", e);
+					});
 			} else {
 				if (!navigator.getUserMedia) {
-					navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+					navigator.getUserMedia =
+						navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 				}
 				if (!navigator.getUserMedia) {
-					GodotRuntime.error('getUserMedia not available.');
+					GodotRuntime.error("getUserMedia not available.");
 					return 1;
 				}
-				navigator.getUserMedia({
-					'audio': true,
-				}, gotMediaInput, function (e) {
-					GodotRuntime.print(e);
-				});
+				navigator.getUserMedia(
+					{
+						audio: true,
+					},
+					gotMediaInput,
+					function (e) {
+						GodotRuntime.print(e);
+					},
+				);
 			}
 			return 0;
 		},
@@ -137,21 +144,24 @@ const GodotAudio = {
 			if (GodotAudio.driver) {
 				closed = GodotAudio.driver.close();
 			}
-			closed.then(function () {
-				return ctx.close();
-			}).then(function () {
-				ctx.onstatechange = null;
-				resolve();
-			}).catch(function (e) {
-				ctx.onstatechange = null;
-				GodotRuntime.error('Error closing AudioContext', e);
-				resolve();
-			});
+			closed
+				.then(function () {
+					return ctx.close();
+				})
+				.then(function () {
+					ctx.onstatechange = null;
+					resolve();
+				})
+				.catch(function (e) {
+					ctx.onstatechange = null;
+					GodotRuntime.error("Error closing AudioContext", e);
+					resolve();
+				});
 		},
 	},
 
-	godot_audio_is_available__sig: 'i',
-	godot_audio_is_available__proxy: 'sync',
+	godot_audio_is_available__sig: "i",
+	godot_audio_is_available__proxy: "sync",
 	godot_audio_is_available: function () {
 		if (!(window.AudioContext || window.webkitAudioContext)) {
 			return 0;
@@ -159,52 +169,62 @@ const GodotAudio = {
 		return 1;
 	},
 
-	godot_audio_has_worklet__proxy: 'sync',
-	godot_audio_has_worklet__sig: 'i',
+	godot_audio_has_worklet__proxy: "sync",
+	godot_audio_has_worklet__sig: "i",
 	godot_audio_has_worklet: function () {
-		return (GodotAudio.ctx && GodotAudio.ctx.audioWorklet) ? 1 : 0;
+		return GodotAudio.ctx?.audioWorklet ? 1 : 0;
 	},
 
-	godot_audio_has_script_processor__proxy: 'sync',
-	godot_audio_has_script_processor__sig: 'i',
+	godot_audio_has_script_processor__proxy: "sync",
+	godot_audio_has_script_processor__sig: "i",
 	godot_audio_has_script_processor: function () {
-		return (GodotAudio.ctx && GodotAudio.ctx.createScriptProcessor) ? 1 : 0;
+		return GodotAudio.ctx?.createScriptProcessor ? 1 : 0;
 	},
 
-	godot_audio_init__proxy: 'sync',
-	godot_audio_init__sig: 'iiiii',
-	godot_audio_init: function (p_mix_rate, p_latency, p_state_change, p_latency_update) {
+	godot_audio_init__proxy: "sync",
+	godot_audio_init__sig: "iiiii",
+	godot_audio_init: function (
+		p_mix_rate,
+		p_latency,
+		p_state_change,
+		p_latency_update,
+	) {
 		const statechange = GodotRuntime.get_func(p_state_change);
 		const latencyupdate = GodotRuntime.get_func(p_latency_update);
-		const mix_rate = GodotRuntime.getHeapValue(p_mix_rate, 'i32');
-		const channels = GodotAudio.init(mix_rate, p_latency, statechange, latencyupdate);
-		GodotRuntime.setHeapValue(p_mix_rate, GodotAudio.ctx.sampleRate, 'i32');
+		const mix_rate = GodotRuntime.getHeapValue(p_mix_rate, "i32");
+		const channels = GodotAudio.init(
+			mix_rate,
+			p_latency,
+			statechange,
+			latencyupdate,
+		);
+		GodotRuntime.setHeapValue(p_mix_rate, GodotAudio.ctx.sampleRate, "i32");
 		return channels;
 	},
 
-	godot_audio_resume__proxy: 'sync',
-	godot_audio_resume__sig: 'v',
+	godot_audio_resume__proxy: "sync",
+	godot_audio_resume__sig: "v",
 	godot_audio_resume: function () {
-		if (GodotAudio.ctx && GodotAudio.ctx.state !== 'running') {
+		if (GodotAudio.ctx && GodotAudio.ctx.state !== "running") {
 			GodotAudio.ctx.resume();
 		}
 	},
 
-	godot_audio_input_start__proxy: 'sync',
-	godot_audio_input_start__sig: 'i',
+	godot_audio_input_start__proxy: "sync",
+	godot_audio_input_start__sig: "i",
 	godot_audio_input_start: function () {
 		return GodotAudio.create_input(function (input) {
 			input.connect(GodotAudio.driver.get_node());
 		});
 	},
 
-	godot_audio_input_stop__proxy: 'sync',
-	godot_audio_input_stop__sig: 'v',
+	godot_audio_input_stop__proxy: "sync",
+	godot_audio_input_stop__sig: "v",
 	godot_audio_input_stop: function () {
 		if (GodotAudio.input) {
-			const tracks = GodotAudio.input['mediaStream']['getTracks']();
+			const tracks = GodotAudio.input["mediaStream"]["getTracks"]();
 			for (let i = 0; i < tracks.length; i++) {
-				tracks[i]['stop']();
+				tracks[i]["stop"]();
 			}
 			GodotAudio.input.disconnect();
 			GodotAudio.input = null;
@@ -212,31 +232,33 @@ const GodotAudio = {
 	},
 };
 
-autoAddDeps(GodotAudio, '$GodotAudio');
+autoAddDeps(GodotAudio, "$GodotAudio");
 mergeInto(LibraryManager.library, GodotAudio);
 
 /**
  * The AudioWorklet API driver, used when threads are available.
  */
 const GodotAudioWorklet = {
-	$GodotAudioWorklet__deps: ['$GodotAudio', '$GodotConfig'],
+	$GodotAudioWorklet__deps: ["$GodotAudio", "$GodotConfig"],
 	$GodotAudioWorklet: {
 		promise: null,
 		worklet: null,
 		ring_buffer: null,
 
 		create: function (channels) {
-			const path = GodotConfig.locate_file('godot.audio.worklet.js');
-			GodotAudioWorklet.promise = GodotAudio.ctx.audioWorklet.addModule(path).then(function () {
-				GodotAudioWorklet.worklet = new AudioWorkletNode(
-					GodotAudio.ctx,
-					'godot-processor',
-					{
-						'outputChannelCount': [channels],
-					}
-				);
-				return Promise.resolve();
-			});
+			const path = GodotConfig.locate_file("godot.audio.worklet.js");
+			GodotAudioWorklet.promise = GodotAudio.ctx.audioWorklet
+				.addModule(path)
+				.then(function () {
+					GodotAudioWorklet.worklet = new AudioWorkletNode(
+						GodotAudio.ctx,
+						"godot-processor",
+						{
+							outputChannelCount: [channels],
+						},
+					);
+					return Promise.resolve();
+				});
 			GodotAudio.driver = GodotAudioWorklet;
 		},
 
@@ -245,8 +267,8 @@ const GodotAudioWorklet = {
 				const node = GodotAudioWorklet.worklet;
 				node.connect(GodotAudio.ctx.destination);
 				node.port.postMessage({
-					'cmd': 'start',
-					'data': [state, in_buf, out_buf],
+					cmd: "start",
+					data: [state, in_buf, out_buf],
 				});
 				node.port.onmessage = function (event) {
 					GodotRuntime.error(event.data);
@@ -254,7 +276,14 @@ const GodotAudioWorklet = {
 			});
 		},
 
-		start_no_threads: function (p_out_buf, p_out_size, out_callback, p_in_buf, p_in_size, in_callback) {
+		start_no_threads: function (
+			p_out_buf,
+			p_out_size,
+			out_callback,
+			p_in_buf,
+			p_in_size,
+			in_callback,
+		) {
 			function RingBuffer() {
 				let wpos = 0;
 				let rpos = 0;
@@ -276,9 +305,12 @@ const GodotAudioWorklet = {
 						wpos = 0;
 					}
 					if (pending_samples > 0) {
-						wbuf.set(buffer.subarray(wpos, wpos + pending_samples), tot_sent - pending_samples);
+						wbuf.set(
+							buffer.subarray(wpos, wpos + pending_samples),
+							tot_sent - pending_samples,
+						);
 					}
-					port.postMessage({ 'cmd': 'chunk', 'data': wbuf.subarray(0, tot_sent) });
+					port.postMessage({ cmd: "chunk", data: wbuf.subarray(0, tot_sent) });
 					wpos += pending_samples;
 					pending_samples = 0;
 				}
@@ -310,20 +342,23 @@ const GodotAudioWorklet = {
 				const buffer = GodotRuntime.heapSlice(HEAPF32, p_out_buf, p_out_size);
 				node.connect(GodotAudio.ctx.destination);
 				node.port.postMessage({
-					'cmd': 'start_nothreads',
-					'data': [buffer, p_in_size],
+					cmd: "start_nothreads",
+					data: [buffer, p_in_size],
 				});
 				node.port.onmessage = function (event) {
 					if (!GodotAudioWorklet.worklet) {
 						return;
 					}
-					if (event.data['cmd'] === 'read') {
-						const read = event.data['data'];
-						GodotAudioWorklet.ring_buffer.consumed(read, GodotAudioWorklet.worklet.port);
-					} else if (event.data['cmd'] === 'input') {
-						const buf = event.data['data'];
+					if (event.data["cmd"] === "read") {
+						const read = event.data["data"];
+						GodotAudioWorklet.ring_buffer.consumed(
+							read,
+							GodotAudioWorklet.worklet.port,
+						);
+					} else if (event.data["cmd"] === "input") {
+						const buf = event.data["data"];
 						if (buf.length > p_in_size) {
-							GodotRuntime.error('Input chunk is too big');
+							GodotRuntime.error("Input chunk is too big");
 							return;
 						}
 						GodotAudioWorklet.ring_buffer.receive(buf);
@@ -346,8 +381,8 @@ const GodotAudioWorklet = {
 				const p = GodotAudioWorklet.promise;
 				p.then(function () {
 					GodotAudioWorklet.worklet.port.postMessage({
-						'cmd': 'stop',
-						'data': null,
+						cmd: "stop",
+						data: null,
 					});
 					GodotAudioWorklet.worklet.disconnect();
 					GodotAudioWorklet.worklet.port.onmessage = null;
@@ -362,65 +397,94 @@ const GodotAudioWorklet = {
 		},
 	},
 
-	godot_audio_worklet_create__proxy: 'sync',
-	godot_audio_worklet_create__sig: 'ii',
+	godot_audio_worklet_create__proxy: "sync",
+	godot_audio_worklet_create__sig: "ii",
 	godot_audio_worklet_create: function (channels) {
 		try {
 			GodotAudioWorklet.create(channels);
 		} catch (e) {
-			GodotRuntime.error('Error starting AudioDriverWorklet', e);
+			GodotRuntime.error("Error starting AudioDriverWorklet", e);
 			return 1;
 		}
 		return 0;
 	},
 
-	godot_audio_worklet_start__proxy: 'sync',
-	godot_audio_worklet_start__sig: 'viiiii',
-	godot_audio_worklet_start: function (p_in_buf, p_in_size, p_out_buf, p_out_size, p_state) {
+	godot_audio_worklet_start__proxy: "sync",
+	godot_audio_worklet_start__sig: "viiiii",
+	godot_audio_worklet_start: function (
+		p_in_buf,
+		p_in_size,
+		p_out_buf,
+		p_out_size,
+		p_state,
+	) {
 		const out_buffer = GodotRuntime.heapSub(HEAPF32, p_out_buf, p_out_size);
 		const in_buffer = GodotRuntime.heapSub(HEAPF32, p_in_buf, p_in_size);
 		const state = GodotRuntime.heapSub(HEAP32, p_state, 4);
 		GodotAudioWorklet.start(in_buffer, out_buffer, state);
 	},
 
-	godot_audio_worklet_start_no_threads__proxy: 'sync',
-	godot_audio_worklet_start_no_threads__sig: 'viiiiii',
-	godot_audio_worklet_start_no_threads: function (p_out_buf, p_out_size, p_out_callback, p_in_buf, p_in_size, p_in_callback) {
+	godot_audio_worklet_start_no_threads__proxy: "sync",
+	godot_audio_worklet_start_no_threads__sig: "viiiiii",
+	godot_audio_worklet_start_no_threads: function (
+		p_out_buf,
+		p_out_size,
+		p_out_callback,
+		p_in_buf,
+		p_in_size,
+		p_in_callback,
+	) {
 		const out_callback = GodotRuntime.get_func(p_out_callback);
 		const in_callback = GodotRuntime.get_func(p_in_callback);
-		GodotAudioWorklet.start_no_threads(p_out_buf, p_out_size, out_callback, p_in_buf, p_in_size, in_callback);
+		GodotAudioWorklet.start_no_threads(
+			p_out_buf,
+			p_out_size,
+			out_callback,
+			p_in_buf,
+			p_in_size,
+			in_callback,
+		);
 	},
 
-	godot_audio_worklet_state_wait__sig: 'iiii',
-	godot_audio_worklet_state_wait: function (p_state, p_idx, p_expected, p_timeout) {
+	godot_audio_worklet_state_wait__sig: "iiii",
+	godot_audio_worklet_state_wait: function (
+		p_state,
+		p_idx,
+		p_expected,
+		p_timeout,
+	) {
 		Atomics.wait(HEAP32, (p_state >> 2) + p_idx, p_expected, p_timeout);
 		return Atomics.load(HEAP32, (p_state >> 2) + p_idx);
 	},
 
-	godot_audio_worklet_state_add__sig: 'iiii',
+	godot_audio_worklet_state_add__sig: "iiii",
 	godot_audio_worklet_state_add: function (p_state, p_idx, p_value) {
 		return Atomics.add(HEAP32, (p_state >> 2) + p_idx, p_value);
 	},
 
-	godot_audio_worklet_state_get__sig: 'iii',
+	godot_audio_worklet_state_get__sig: "iii",
 	godot_audio_worklet_state_get: function (p_state, p_idx) {
 		return Atomics.load(HEAP32, (p_state >> 2) + p_idx);
 	},
 };
 
-autoAddDeps(GodotAudioWorklet, '$GodotAudioWorklet');
+autoAddDeps(GodotAudioWorklet, "$GodotAudioWorklet");
 mergeInto(LibraryManager.library, GodotAudioWorklet);
 
 /*
  * The deprecated ScriptProcessorNode API, used when threads are disabled.
  */
 const GodotAudioScript = {
-	$GodotAudioScript__deps: ['$GodotAudio'],
+	$GodotAudioScript__deps: ["$GodotAudio"],
 	$GodotAudioScript: {
 		script: null,
 
 		create: function (buffer_length, channel_count) {
-			GodotAudioScript.script = GodotAudio.ctx.createScriptProcessor(buffer_length, 2, channel_count);
+			GodotAudioScript.script = GodotAudio.ctx.createScriptProcessor(
+				buffer_length,
+				2,
+				channel_count,
+			);
 			GodotAudio.driver = GodotAudioScript;
 			return GodotAudioScript.script.bufferSize;
 		},
@@ -472,27 +536,39 @@ const GodotAudioScript = {
 		},
 	},
 
-	godot_audio_script_create__proxy: 'sync',
-	godot_audio_script_create__sig: 'iii',
+	godot_audio_script_create__proxy: "sync",
+	godot_audio_script_create__sig: "iii",
 	godot_audio_script_create: function (buffer_length, channel_count) {
-		const buf_len = GodotRuntime.getHeapValue(buffer_length, 'i32');
+		const buf_len = GodotRuntime.getHeapValue(buffer_length, "i32");
 		try {
 			const out_len = GodotAudioScript.create(buf_len, channel_count);
-			GodotRuntime.setHeapValue(buffer_length, out_len, 'i32');
+			GodotRuntime.setHeapValue(buffer_length, out_len, "i32");
 		} catch (e) {
-			GodotRuntime.error('Error starting AudioDriverScriptProcessor', e);
+			GodotRuntime.error("Error starting AudioDriverScriptProcessor", e);
 			return 1;
 		}
 		return 0;
 	},
 
-	godot_audio_script_start__proxy: 'sync',
-	godot_audio_script_start__sig: 'viiiii',
-	godot_audio_script_start: function (p_in_buf, p_in_size, p_out_buf, p_out_size, p_cb) {
+	godot_audio_script_start__proxy: "sync",
+	godot_audio_script_start__sig: "viiiii",
+	godot_audio_script_start: function (
+		p_in_buf,
+		p_in_size,
+		p_out_buf,
+		p_out_size,
+		p_cb,
+	) {
 		const onprocess = GodotRuntime.get_func(p_cb);
-		GodotAudioScript.start(p_in_buf, p_in_size, p_out_buf, p_out_size, onprocess);
+		GodotAudioScript.start(
+			p_in_buf,
+			p_in_size,
+			p_out_buf,
+			p_out_size,
+			onprocess,
+		);
 	},
 };
 
-autoAddDeps(GodotAudioScript, '$GodotAudioScript');
+autoAddDeps(GodotAudioScript, "$GodotAudioScript");
 mergeInto(LibraryManager.library, GodotAudioScript);

@@ -29,9 +29,8 @@
 /**************************************************************************/
 
 const GodotJSWrapper = {
-
-	$GodotJSWrapper__deps: ['$GodotRuntime', '$IDHandler'],
-	$GodotJSWrapper__postset: 'GodotJSWrapper.proxies = new Map();',
+	$GodotJSWrapper__deps: ["$GodotRuntime", "$IDHandler"],
+	$GodotJSWrapper__postset: "GodotJSWrapper.proxies = new Map();",
 	$GodotJSWrapper: {
 		proxies: null,
 		cb_ret: null,
@@ -78,20 +77,22 @@ const GodotJSWrapper = {
 
 		variant2js: function (type, val) {
 			switch (type) {
-			case 0:
-				return null;
-			case 1:
-				return !!GodotRuntime.getHeapValue(val, 'i64');
-			case 2:
-				return GodotRuntime.getHeapValue(val, 'i64');
-			case 3:
-				return GodotRuntime.getHeapValue(val, 'double');
-			case 4:
-				return GodotRuntime.parseString(GodotRuntime.getHeapValue(val, '*'));
-			case 24: // OBJECT
-				return GodotJSWrapper.get_proxied_value(GodotRuntime.getHeapValue(val, 'i64'));
-			default:
-				return undefined;
+				case 0:
+					return null;
+				case 1:
+					return !!GodotRuntime.getHeapValue(val, "i64");
+				case 2:
+					return GodotRuntime.getHeapValue(val, "i64");
+				case 3:
+					return GodotRuntime.getHeapValue(val, "double");
+				case 4:
+					return GodotRuntime.parseString(GodotRuntime.getHeapValue(val, "*"));
+				case 24: // OBJECT
+					return GodotJSWrapper.get_proxied_value(
+						GodotRuntime.getHeapValue(val, "i64"),
+					);
+				default:
+					return undefined;
 			}
 		},
 
@@ -99,40 +100,42 @@ const GodotJSWrapper = {
 			if (p_val === undefined || p_val === null) {
 				return 0; // NIL
 			}
-			const type = typeof (p_val);
-			if (type === 'boolean') {
-				GodotRuntime.setHeapValue(p_exchange, p_val, 'i64');
+			const type = typeof p_val;
+			if (type === "boolean") {
+				GodotRuntime.setHeapValue(p_exchange, p_val, "i64");
 				return 1; // BOOL
-			} else if (type === 'number') {
+			}
+			if (type === "number") {
 				if (Number.isInteger(p_val)) {
-					GodotRuntime.setHeapValue(p_exchange, p_val, 'i64');
+					GodotRuntime.setHeapValue(p_exchange, p_val, "i64");
 					return 2; // INT
 				}
-				GodotRuntime.setHeapValue(p_exchange, p_val, 'double');
+				GodotRuntime.setHeapValue(p_exchange, p_val, "double");
 				return 3; // FLOAT
-			} else if (type === 'string') {
+			}
+			if (type === "string") {
 				const c_str = GodotRuntime.allocString(p_val);
-				GodotRuntime.setHeapValue(p_exchange, c_str, '*');
+				GodotRuntime.setHeapValue(p_exchange, c_str, "*");
 				return 4; // STRING
 			}
 			const id = GodotJSWrapper.get_proxied(p_val);
-			GodotRuntime.setHeapValue(p_exchange, id, 'i64');
+			GodotRuntime.setHeapValue(p_exchange, id, "i64");
 			return 24; // OBJECT
 		},
 	},
 
-	godot_js_wrapper_interface_get__proxy: 'sync',
-	godot_js_wrapper_interface_get__sig: 'ii',
+	godot_js_wrapper_interface_get__proxy: "sync",
+	godot_js_wrapper_interface_get__sig: "ii",
 	godot_js_wrapper_interface_get: function (p_name) {
 		const name = GodotRuntime.parseString(p_name);
-		if (typeof (window[name]) !== 'undefined') {
+		if (typeof window[name] !== "undefined") {
 			return GodotJSWrapper.get_proxied(window[name]);
 		}
 		return 0;
 	},
 
-	godot_js_wrapper_object_get__proxy: 'sync',
-	godot_js_wrapper_object_get__sig: 'iiii',
+	godot_js_wrapper_object_get__proxy: "sync",
+	godot_js_wrapper_object_get__sig: "iiii",
 	godot_js_wrapper_object_get: function (p_id, p_exchange, p_prop) {
 		const obj = GodotJSWrapper.get_proxied_value(p_id);
 		if (obj === undefined) {
@@ -150,8 +153,8 @@ const GodotJSWrapper = {
 		return GodotJSWrapper.js2variant(obj, p_exchange);
 	},
 
-	godot_js_wrapper_object_set__proxy: 'sync',
-	godot_js_wrapper_object_set__sig: 'viiii',
+	godot_js_wrapper_object_set__proxy: "sync",
+	godot_js_wrapper_object_set__sig: "viiii",
 	godot_js_wrapper_object_set: function (p_id, p_name, p_type, p_exchange) {
 		const obj = GodotJSWrapper.get_proxied_value(p_id);
 		if (obj === undefined) {
@@ -165,9 +168,18 @@ const GodotJSWrapper = {
 		}
 	},
 
-	godot_js_wrapper_object_call__proxy: 'sync',
-	godot_js_wrapper_object_call__sig: 'iiiiiiiii',
-	godot_js_wrapper_object_call: function (p_id, p_method, p_args, p_argc, p_convert_callback, p_exchange, p_lock, p_free_lock_callback) {
+	godot_js_wrapper_object_call__proxy: "sync",
+	godot_js_wrapper_object_call__sig: "iiiiiiiii",
+	godot_js_wrapper_object_call: function (
+		p_id,
+		p_method,
+		p_args,
+		p_argc,
+		p_convert_callback,
+		p_exchange,
+		p_lock,
+		p_free_lock_callback,
+	) {
 		const obj = GodotJSWrapper.get_proxied_value(p_id);
 		if (obj === undefined) {
 			return -1;
@@ -178,7 +190,7 @@ const GodotJSWrapper = {
 		const args = new Array(p_argc);
 		for (let i = 0; i < p_argc; i++) {
 			const type = convert(p_args, i, p_exchange, p_lock);
-			const lock = GodotRuntime.getHeapValue(p_lock, '*');
+			const lock = GodotRuntime.getHeapValue(p_lock, "*");
 			args[i] = GodotJSWrapper.variant2js(type, p_exchange);
 			if (lock) {
 				freeLock(p_lock, type);
@@ -188,13 +200,18 @@ const GodotJSWrapper = {
 			const res = obj[method](...args);
 			return GodotJSWrapper.js2variant(res, p_exchange);
 		} catch (e) {
-			GodotRuntime.error(`Error calling method ${method} on:`, obj, 'error:', e);
+			GodotRuntime.error(
+				`Error calling method ${method} on:`,
+				obj,
+				"error:",
+				e,
+			);
 			return -1;
 		}
 	},
 
-	godot_js_wrapper_object_unref__proxy: 'sync',
-	godot_js_wrapper_object_unref__sig: 'vi',
+	godot_js_wrapper_object_unref__proxy: "sync",
+	godot_js_wrapper_object_unref__sig: "vi",
 	godot_js_wrapper_object_unref: function (p_id) {
 		const proxy = IDHandler.get(p_id);
 		if (proxy !== undefined) {
@@ -202,12 +219,12 @@ const GodotJSWrapper = {
 		}
 	},
 
-	godot_js_wrapper_create_cb__proxy: 'sync',
-	godot_js_wrapper_create_cb__sig: 'iii',
+	godot_js_wrapper_create_cb__proxy: "sync",
+	godot_js_wrapper_create_cb__sig: "iii",
 	godot_js_wrapper_create_cb: function (p_ref, p_func) {
 		const func = GodotRuntime.get_func(p_func);
 		let id = 0;
-		const cb = function () {
+		const cb = function (...args) {
 			if (!GodotJSWrapper.get_proxied_value(id)) {
 				return undefined;
 			}
@@ -215,7 +232,6 @@ const GodotJSWrapper = {
 			// "godot_js_wrapper_object_set_cb_ret" upon calling the user function.
 			// This is safe! JavaScript is single threaded (and using it in threads is not a good idea anyway).
 			GodotJSWrapper.cb_ret = null;
-			const args = Array.from(arguments);
 			const argsProxy = new GodotJSWrapper.MyProxy(args);
 			func(p_ref, argsProxy.get_id(), args.length);
 			argsProxy.unref();
@@ -227,14 +243,14 @@ const GodotJSWrapper = {
 		return id;
 	},
 
-	godot_js_wrapper_object_set_cb_ret__proxy: 'sync',
-	godot_js_wrapper_object_set_cb_ret__sig: 'vii',
+	godot_js_wrapper_object_set_cb_ret__proxy: "sync",
+	godot_js_wrapper_object_set_cb_ret__sig: "vii",
 	godot_js_wrapper_object_set_cb_ret: function (p_val_type, p_val_ex) {
 		GodotJSWrapper.cb_ret = GodotJSWrapper.variant2js(p_val_type, p_val_ex);
 	},
 
-	godot_js_wrapper_object_getvar__proxy: 'sync',
-	godot_js_wrapper_object_getvar__sig: 'iiii',
+	godot_js_wrapper_object_getvar__proxy: "sync",
+	godot_js_wrapper_object_getvar__sig: "iiii",
 	godot_js_wrapper_object_getvar: function (p_id, p_type, p_exchange) {
 		const obj = GodotJSWrapper.get_proxied_value(p_id);
 		if (obj === undefined) {
@@ -252,9 +268,15 @@ const GodotJSWrapper = {
 		}
 	},
 
-	godot_js_wrapper_object_setvar__proxy: 'sync',
-	godot_js_wrapper_object_setvar__sig: 'iiiiii',
-	godot_js_wrapper_object_setvar: function (p_id, p_key_type, p_key_ex, p_val_type, p_val_ex) {
+	godot_js_wrapper_object_setvar__proxy: "sync",
+	godot_js_wrapper_object_setvar__sig: "iiiiii",
+	godot_js_wrapper_object_setvar: function (
+		p_id,
+		p_key_type,
+		p_key_ex,
+		p_val_type,
+		p_val_ex,
+	) {
 		const obj = GodotJSWrapper.get_proxied_value(p_id);
 		if (obj === undefined) {
 			return -1;
@@ -269,11 +291,19 @@ const GodotJSWrapper = {
 		}
 	},
 
-	godot_js_wrapper_create_object__proxy: 'sync',
-	godot_js_wrapper_create_object__sig: 'iiiiiiii',
-	godot_js_wrapper_create_object: function (p_object, p_args, p_argc, p_convert_callback, p_exchange, p_lock, p_free_lock_callback) {
+	godot_js_wrapper_create_object__proxy: "sync",
+	godot_js_wrapper_create_object__sig: "iiiiiiii",
+	godot_js_wrapper_create_object: function (
+		p_object,
+		p_args,
+		p_argc,
+		p_convert_callback,
+		p_exchange,
+		p_lock,
+		p_free_lock_callback,
+	) {
 		const name = GodotRuntime.parseString(p_object);
-		if (typeof (window[name]) === 'undefined') {
+		if (typeof window[name] === "undefined") {
 			return -1;
 		}
 		const convert = GodotRuntime.get_func(p_convert_callback);
@@ -281,7 +311,7 @@ const GodotJSWrapper = {
 		const args = new Array(p_argc);
 		for (let i = 0; i < p_argc; i++) {
 			const type = convert(p_args, i, p_exchange, p_lock);
-			const lock = GodotRuntime.getHeapValue(p_lock, '*');
+			const lock = GodotRuntime.getHeapValue(p_lock, "*");
 			args[i] = GodotJSWrapper.variant2js(type, p_exchange);
 			if (lock) {
 				freeLock(p_lock, type);
@@ -291,63 +321,81 @@ const GodotJSWrapper = {
 			const res = new window[name](...args);
 			return GodotJSWrapper.js2variant(res, p_exchange);
 		} catch (e) {
-			GodotRuntime.error(`Error calling constructor ${name} with args:`, args, 'error:', e);
+			GodotRuntime.error(
+				`Error calling constructor ${name} with args:`,
+				args,
+				"error:",
+				e,
+			);
 			return -1;
 		}
 	},
 };
 
-autoAddDeps(GodotJSWrapper, '$GodotJSWrapper');
+autoAddDeps(GodotJSWrapper, "$GodotJSWrapper");
 mergeInto(LibraryManager.library, GodotJSWrapper);
 
 const GodotEval = {
-	godot_js_eval__deps: ['$GodotRuntime'],
-	godot_js_eval__sig: 'iiiiiii',
-	godot_js_eval: function (p_js, p_use_global_ctx, p_union_ptr, p_byte_arr, p_byte_arr_write, p_callback) {
+	godot_js_eval__deps: ["$GodotRuntime"],
+	godot_js_eval__sig: "iiiiiii",
+	godot_js_eval: function (
+		p_js,
+		p_use_global_ctx,
+		p_union_ptr,
+		p_byte_arr,
+		p_byte_arr_write,
+		p_callback,
+	) {
 		const js_code = GodotRuntime.parseString(p_js);
 		let eval_ret = null;
 		try {
 			if (p_use_global_ctx) {
 				// indirect eval call grants global execution context
-				const global_eval = eval; // eslint-disable-line no-eval
+				// biome-ignore lint/security/noGlobalEval: explicit use of `eval`
+				const global_eval = eval;
 				eval_ret = global_eval(js_code);
 			} else {
-				eval_ret = eval(js_code); // eslint-disable-line no-eval
+				// biome-ignore lint/security/noGlobalEval: explicit use of `eval`
+				eval_ret = eval(js_code);
 			}
 		} catch (e) {
 			GodotRuntime.error(e);
 		}
 
 		switch (typeof eval_ret) {
-		case 'boolean':
-			GodotRuntime.setHeapValue(p_union_ptr, eval_ret, 'i32');
-			return 1; // BOOL
+			case "boolean":
+				GodotRuntime.setHeapValue(p_union_ptr, eval_ret, "i32");
+				return 1; // BOOL
 
-		case 'number':
-			GodotRuntime.setHeapValue(p_union_ptr, eval_ret, 'double');
-			return 3; // FLOAT
+			case "number":
+				GodotRuntime.setHeapValue(p_union_ptr, eval_ret, "double");
+				return 3; // FLOAT
 
-		case 'string':
-			GodotRuntime.setHeapValue(p_union_ptr, GodotRuntime.allocString(eval_ret), '*');
-			return 4; // STRING
+			case "string":
+				GodotRuntime.setHeapValue(
+					p_union_ptr,
+					GodotRuntime.allocString(eval_ret),
+					"*",
+				);
+				return 4; // STRING
 
-		case 'object':
-			if (eval_ret === null) {
+			case "object":
+				if (eval_ret === null) {
+					break;
+				}
+
+				if (ArrayBuffer.isView(eval_ret) && !(eval_ret instanceof Uint8Array)) {
+					eval_ret = new Uint8Array(eval_ret.buffer);
+				} else if (eval_ret instanceof ArrayBuffer) {
+					eval_ret = new Uint8Array(eval_ret);
+				}
+				if (eval_ret instanceof Uint8Array) {
+					const func = GodotRuntime.get_func(p_callback);
+					const bytes_ptr = func(p_byte_arr, p_byte_arr_write, eval_ret.length);
+					HEAPU8.set(eval_ret, bytes_ptr);
+					return 29; // PACKED_BYTE_ARRAY
+				}
 				break;
-			}
-
-			if (ArrayBuffer.isView(eval_ret) && !(eval_ret instanceof Uint8Array)) {
-				eval_ret = new Uint8Array(eval_ret.buffer);
-			} else if (eval_ret instanceof ArrayBuffer) {
-				eval_ret = new Uint8Array(eval_ret);
-			}
-			if (eval_ret instanceof Uint8Array) {
-				const func = GodotRuntime.get_func(p_callback);
-				const bytes_ptr = func(p_byte_arr, p_byte_arr_write, eval_ret.length);
-				HEAPU8.set(eval_ret, bytes_ptr);
-				return 29; // PACKED_BYTE_ARRAY
-			}
-			break;
 
 			// no default
 		}

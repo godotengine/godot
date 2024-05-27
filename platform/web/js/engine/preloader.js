@@ -1,4 +1,4 @@
-const Preloader = /** @constructor */ function () { // eslint-disable-line no-unused-vars
+const Preloader = /** @constructor */ function () {
 	function getTrackedResponse(response, load_status) {
 		function onloadprogress(reader, controller) {
 			return reader.read().then(function (result) {
@@ -17,13 +17,16 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 			});
 		}
 		const reader = response.body.getReader();
-		return new Response(new ReadableStream({
-			start: function (controller) {
-				onloadprogress(reader, controller).then(function () {
-					controller.close();
-				});
-			},
-		}), { headers: response.headers });
+		return new Response(
+			new ReadableStream({
+				start: function (controller) {
+					onloadprogress(reader, controller).then(function () {
+						controller.close();
+					});
+				},
+			}),
+			{ headers: response.headers },
+		);
 	}
 
 	function loadFetch(file, tracker, fileSize, raw) {
@@ -51,7 +54,9 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 			}
 			return new Promise(function (resolve, reject) {
 				setTimeout(function () {
-					retry(func, attempts - 1).then(resolve).catch(reject);
+					retry(func, attempts - 1)
+						.then(resolve)
+						.catch(reject);
 				}, 1000);
 			});
 		}
@@ -69,8 +74,7 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 		let totalIsValid = true;
 		let progressIsFinal = true;
 
-		Object.keys(loadingFiles).forEach(function (file) {
-			const stat = loadingFiles[file];
+		for (const stat of Object.values(loadingFiles)) {
 			if (!stat.done) {
 				progressIsFinal = false;
 			}
@@ -81,11 +85,11 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 				total += stat.total;
 			}
 			loaded += stat.loaded;
-		});
+		}
 		if (loaded !== lastProgress.loaded || total !== lastProgress.total) {
 			lastProgress.loaded = loaded;
 			lastProgress.total = total;
-			if (typeof progressFunc === 'function') {
+			if (typeof progressFunc === "function") {
 				progressFunc(loaded, total);
 			}
 		}
@@ -101,13 +105,16 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 	};
 
 	this.loadPromise = function (file, fileSize, raw = false) {
-		return retry(loadFetch.bind(null, file, loadingFiles, fileSize, raw), DOWNLOAD_ATTEMPTS_MAX);
+		return retry(
+			loadFetch.bind(null, file, loadingFiles, fileSize, raw),
+			DOWNLOAD_ATTEMPTS_MAX,
+		);
 	};
 
 	this.preloadedFiles = [];
 	this.preload = function (pathOrBuffer, destPath, fileSize) {
 		let buffer = null;
-		if (typeof pathOrBuffer === 'string') {
+		if (typeof pathOrBuffer === "string") {
 			const me = this;
 			return this.loadPromise(pathOrBuffer, fileSize).then(function (buf) {
 				me.preloadedFiles.push({
@@ -116,7 +123,8 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 				});
 				return Promise.resolve();
 			});
-		} else if (pathOrBuffer instanceof ArrayBuffer) {
+		}
+		if (pathOrBuffer instanceof ArrayBuffer) {
 			buffer = new Uint8Array(pathOrBuffer);
 		} else if (ArrayBuffer.isView(pathOrBuffer)) {
 			buffer = new Uint8Array(pathOrBuffer.buffer);
@@ -128,6 +136,6 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 			});
 			return Promise.resolve();
 		}
-		return Promise.reject(new Error('Invalid object for preloading'));
+		return Promise.reject(new Error("Invalid object for preloading"));
 	};
 };

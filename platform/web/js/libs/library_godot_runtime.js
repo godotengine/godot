@@ -40,12 +40,12 @@ const GodotRuntime = {
 		/*
 		 * Prints
 		 */
-		error: function () {
-			err.apply(null, Array.from(arguments)); // eslint-disable-line no-undef
+		error: function (...args) {
+			err.apply(null, args);
 		},
 
-		print: function () {
-			out.apply(null, Array.from(arguments)); // eslint-disable-line no-undef
+		print: function (...args) {
+			out.apply(null, args);
 		},
 
 		/*
@@ -90,11 +90,8 @@ const GodotRuntime = {
 		},
 
 		parseStringArray: function (p_ptr, p_size) {
-			const strings = [];
 			const ptrs = GodotRuntime.heapSub(HEAP32, p_ptr, p_size); // TODO wasm64
-			ptrs.forEach(function (ptr) {
-				strings.push(GodotRuntime.parseString(ptr));
-			});
+			const strings = ptrs.map((ptr) => GodotRuntime.parseString(ptr));
 			return strings;
 		},
 
@@ -130,5 +127,5 @@ const GodotRuntime = {
 		},
 	},
 };
-autoAddDeps(GodotRuntime, '$GodotRuntime');
+autoAddDeps(GodotRuntime, "$GodotRuntime");
 mergeInto(LibraryManager.library, GodotRuntime);
