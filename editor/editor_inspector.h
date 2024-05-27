@@ -304,7 +304,6 @@ class EditorInspectorSection : public Container {
 	int indent_depth = 0;
 
 	Timer *dropping_unfold_timer = nullptr;
-	bool dropping = false;
 	bool dropping_for_unfold = false;
 
 	HashSet<StringName> revertable_properties;
