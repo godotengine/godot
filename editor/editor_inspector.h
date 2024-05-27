@@ -236,6 +236,9 @@ class EditorInspectorSection : public Container {
 	Color bg_color;
 	bool foldable;
 
+	Timer *dropping_unfold_timer;
+	bool dropping_for_unfold;
+
 	void _test_unfold();
 	int _get_header_height();
 	Ref<Texture> _get_arrow();
