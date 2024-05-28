@@ -1209,6 +1209,15 @@ void DisplayServerWayland::set_context(Context p_context) {
 	wayland_thread.window_set_app_id(MAIN_WINDOW_ID, app_id);
 }
 
+bool DisplayServerWayland::is_window_transparency_available() const {
+#if defined(RD_ENABLED)
+	if (rendering_device && !rendering_device->is_composite_alpha_supported()) {
+		return false;
+	}
+#endif
+	return OS::get_singleton()->is_layered_allowed();
+}
+
 Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
 	Vector<String> drivers;
 
