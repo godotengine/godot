@@ -109,7 +109,7 @@ OS_IOS::OS_IOS() {
 	loggers.push_back(memnew(IOSTerminalLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
 
-	//AudioDriverManager::add_driver(&audio_driver);//
+	AudioDriverManager::add_driver(&audio_driver);
 
 	DisplayServerIOS::register_ios_driver();
 }
