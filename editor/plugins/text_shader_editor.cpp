@@ -30,12 +30,12 @@
 
 #include "text_shader_editor.h"
 
+#include "core/config/project_settings.h"
 #include "core/version_generated.gen.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/filesystem_dock.h"
-#include "editor/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/split_container.h"
@@ -735,6 +735,13 @@ void TextShaderEditor::_menu_option(int p_option) {
 	}
 }
 
+void TextShaderEditor::_prepare_edit_menu() {
+	const CodeEdit *tx = code_editor->get_text_editor();
+	PopupMenu *popup = edit_menu->get_popup();
+	popup->set_item_disabled(popup->get_item_index(EDIT_UNDO), !tx->has_undo());
+	popup->set_item_disabled(popup->get_item_index(EDIT_REDO), !tx->has_redo());
+}
+
 void TextShaderEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
@@ -1088,6 +1095,9 @@ void TextShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) 
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
 
+	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_UNDO), !code_editor->get_text_editor()->has_undo());
+	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_REDO), !code_editor->get_text_editor()->has_redo());
+
 	context_menu->set_position(get_screen_position() + p_position);
 	context_menu->reset_size();
 	context_menu->popup();
@@ -1128,6 +1138,7 @@ TextShaderEditor::TextShaderEditor() {
 	edit_menu->set_shortcut_context(this);
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->set_switch_on_hover(true);
+	edit_menu->connect("about_to_popup", callable_mp(this, &TextShaderEditor::_prepare_edit_menu));
 
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_redo"), EDIT_REDO);
