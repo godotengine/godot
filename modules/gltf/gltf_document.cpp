@@ -5617,7 +5617,8 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 		p_scene_parent->add_child(bone_attachment, true);
 
 		// Find the correct bone_idx so we can properly serialize it.
-		bone_attachment->set_bone_idx(active_skeleton->find_bone(gltf_node->get_name()));
+		Ref<GLTFNode> gltf_parent_node = p_state->nodes[gltf_node->get_parent()];
+		bone_attachment->set_bone_idx(active_skeleton->find_bone(gltf_parent_node->get_name()));
 
 		bone_attachment->set_owner(p_scene_root);
 
@@ -5731,8 +5732,9 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, const GL
 
 			p_scene_parent->add_child(bone_attachment, true);
 
-			// Find the correct bone_idx so we can properly serialize it.
-			bone_attachment->set_bone_idx(active_skeleton->find_bone(gltf_node->get_name()));
+		// Find the correct bone_idx so we can properly serialize it.
+			Ref<GLTFNode> gltf_parent_node = p_state->nodes[gltf_node->get_parent()];
+			bone_attachment->set_bone_idx(active_skeleton->find_bone(gltf_parent_node->get_name()));
 
 			bone_attachment->set_owner(p_scene_root);
 
