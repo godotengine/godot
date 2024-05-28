@@ -1607,8 +1607,34 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 				if (p_meta) {
 					int64_t glyph_idx = TS->shaped_text_hit_test_grapheme(rid, p_click.x - rect.position.x);
 					if (glyph_idx >= 0) {
+						float baseline_y = rect.position.y + TS->shaped_text_get_ascent(rid);
 						const Glyph *glyphs = TS->shaped_text_get_glyphs(rid);
-						char_pos = glyphs[glyph_idx].start;
+						if (glyphs[glyph_idx].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) {
+							// Emebedded object.
+							for (int i = 0; i < objects.size(); i++) {
+								if (TS->shaped_text_get_object_glyph(rid, objects[i]) == glyph_idx) {
+									Rect2 obj_rect = TS->shaped_text_get_object_rect(rid, objects[i]);
+									obj_rect.position.y += baseline_y;
+									if (p_click.y >= obj_rect.position.y && p_click.y <= obj_rect.position.y + obj_rect.size.y) {
+										char_pos = glyphs[glyph_idx].start;
+									}
+									break;
+								}
+							}
+						} else if (glyphs[glyph_idx].font_rid != RID()) {
+							// Normal glyph.
+							float fa = TS->font_get_ascent(glyphs[glyph_idx].font_rid, glyphs[glyph_idx].font_size);
+							float fd = TS->font_get_descent(glyphs[glyph_idx].font_rid, glyphs[glyph_idx].font_size);
+							if (p_click.y >= baseline_y - fa && p_click.y <= baseline_y + fd) {
+								char_pos = glyphs[glyph_idx].start;
+							}
+						} else if (!(glyphs[glyph_idx].flags & TextServer::GRAPHEME_IS_VIRTUAL)) {
+							// Hex code box.
+							Vector2 gl_size = TS->get_hex_code_box_size(glyphs[glyph_idx].font_size, glyphs[glyph_idx].index);
+							if (p_click.y >= baseline_y - gl_size.y * 0.9 && p_click.y <= baseline_y + gl_size.y * 0.2) {
+								char_pos = glyphs[glyph_idx].start;
+							}
+						}
 					}
 				} else {
 					char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
