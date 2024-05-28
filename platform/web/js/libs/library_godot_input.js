@@ -63,8 +63,15 @@ const GodotIME = {
 
 		ime_position: function (x, y) {
 			if (GodotIME.ime) {
-				GodotIME.ime.style.left = `${x}px`;
-				GodotIME.ime.style.top = `${y}px`;
+				const canvas = GodotConfig.canvas;
+				const rect = canvas.getBoundingClientRect();
+				const rw = canvas.width / rect.width;
+				const rh = canvas.height / rect.height;
+				const clx = (x / rw) + rect.x;
+				const cly = (y / rh) + rect.y;
+
+				GodotIME.ime.style.left = `${clx}px`;
+				GodotIME.ime.style.top = `${cly}px`;
 			}
 		},
 
@@ -99,10 +106,12 @@ const GodotIME = {
 			ime.style.background = 'none';
 			ime.style.opacity = 0.0;
 			ime.style.position = 'fixed';
+			ime.style.textAlign = 'left';
+			ime.style.fontSize = '1px';
 			ime.style.left = '0px';
 			ime.style.top = '0px';
-			ime.style.width = '2px';
-			ime.style.height = '2px';
+			ime.style.width = '100%';
+			ime.style.height = '40px';
 			ime.style.display = 'none';
 			ime.contentEditable = 'true';
 
