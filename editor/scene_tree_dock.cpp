@@ -3333,9 +3333,9 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 	// Either instantiate scenes or create AudioStreamPlayers.
 	int to_pos = -1;
 	_normalize_drop(node, to_pos, p_type);
-	if (res_type == "PackedScene") {
+	if (ClassDB::is_parent_class(res_type, "PackedScene")) {
 		_perform_instantiate_scenes(p_files, node, to_pos);
-	} else {
+	} else if (ClassDB::is_parent_class(res_type, "AudioStream")) {
 		_perform_create_audio_stream_players(p_files, node, to_pos);
 	}
 }

@@ -5638,7 +5638,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	clear(); // Make sure values are initialized.
 
 	// Update the menus' checkboxes.
-	callable_mp(this, &CanvasItemEditor::set_state).bind(get_state()).call_deferred();
+	callable_mp(this, &CanvasItemEditor::set_state).call_deferred(get_state());
 }
 
 CanvasItemEditor *CanvasItemEditor::singleton = nullptr;

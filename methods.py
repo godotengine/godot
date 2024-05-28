@@ -531,6 +531,7 @@ def no_verbose(env):
     link_shared_library_message = "{}Linking Shared Library {}$TARGET{} ...{}".format(*colors)
     java_library_message = "{}Creating Java Archive {}$TARGET{} ...{}".format(*colors)
     compiled_resource_message = "{}Creating Compiled Resource {}$TARGET{} ...{}".format(*colors)
+    zip_archive_message = "{}Archiving {}$TARGET{} ...{}".format(*colors)
     generated_file_message = "{}Generating {}$TARGET{} ...{}".format(*colors)
 
     env["CXXCOMSTR"] = compile_source_message
@@ -544,6 +545,7 @@ def no_verbose(env):
     env["JARCOMSTR"] = java_library_message
     env["JAVACCOMSTR"] = java_compile_source_message
     env["RCCOMSTR"] = compiled_resource_message
+    env["ZIPCOMSTR"] = zip_archive_message
     env["GENCOMSTR"] = generated_file_message
 
 

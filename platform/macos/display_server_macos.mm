@@ -3315,9 +3315,11 @@ void DisplayServerMacOS::delete_status_indicator(IndicatorID p_id) {
 }
 
 bool DisplayServerMacOS::is_window_transparency_available() const {
+#if defined(RD_ENABLED)
 	if (rendering_device && !rendering_device->is_composite_alpha_supported()) {
 		return false;
 	}
+#endif
 	return OS::get_singleton()->is_layered_allowed();
 }
 
@@ -3446,7 +3448,10 @@ void DisplayServerMacOS::popup_close(WindowID p_window) {
 		WindowID win_id = E->get();
 		popup_list.erase(E);
 
-		send_window_event(windows[win_id], DisplayServerMacOS::WINDOW_EVENT_CLOSE_REQUEST);
+		if (win_id != p_window) {
+			// Only request close on related windows, not this window.  We are already processing it.
+			send_window_event(windows[win_id], DisplayServerMacOS::WINDOW_EVENT_CLOSE_REQUEST);
+		}
 		E = F;
 	}
 	if (!was_empty && popup_list.is_empty()) {

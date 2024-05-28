@@ -94,6 +94,11 @@ public:
 	};
 
 private:
+	struct ThemeCache {
+		Color seek_line_color;
+		Color seek_line_hover_color;
+	} theme_cache;
+
 	Button *activate = nullptr;
 	Button *clear_button = nullptr;
 	TextureRect *graph = nullptr;

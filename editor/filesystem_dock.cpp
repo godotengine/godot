@@ -3287,7 +3287,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	if (p_paths.size() == 1) {
 		const String &fpath = p_paths[0];
 
-		bool added_separator = false;
+		[[maybe_unused]] bool added_separator = false;
 
 		if (favorites_list.has(fpath)) {
 			TreeItem *favorites_item = tree->get_root()->get_first_child();

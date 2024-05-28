@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_accessor.h                                                       */
+/*  editor_inspector.compat.inc                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,88 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_ACCESSOR_H
-#define GLTF_ACCESSOR_H
+#ifndef DISABLE_DEPRECATED
 
-#include "../gltf_defines.h"
+void EditorInspectorPlugin::_add_property_editor_bind_compat_92322(const String &p_for_property, Control *p_prop, bool p_add_to_end) {
+	add_property_editor(p_for_property, p_prop, p_add_to_end, "");
+}
 
-#include "core/io/resource.h"
+void EditorInspectorPlugin::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("add_property_editor", "property", "editor", "add_to_end"), &EditorInspectorPlugin::_add_property_editor_bind_compat_92322, DEFVAL(false));
+}
 
-enum GLTFAccessorType {
-	TYPE_SCALAR,
-	TYPE_VEC2,
-	TYPE_VEC3,
-	TYPE_VEC4,
-	TYPE_MAT2,
-	TYPE_MAT3,
-	TYPE_MAT4,
-};
-
-struct GLTFAccessor : public Resource {
-	GDCLASS(GLTFAccessor, Resource);
-	friend class GLTFDocument;
-
-private:
-	GLTFBufferViewIndex buffer_view = -1;
-	int byte_offset = 0;
-	int component_type = 0;
-	bool normalized = false;
-	int count = 0;
-	GLTFAccessorType accessor_type = GLTFAccessorType::TYPE_SCALAR;
-	Vector<double> min;
-	Vector<double> max;
-	int sparse_count = 0;
-	int sparse_indices_buffer_view = 0;
-	int sparse_indices_byte_offset = 0;
-	int sparse_indices_component_type = 0;
-	int sparse_values_buffer_view = 0;
-	int sparse_values_byte_offset = 0;
-
-protected:
-	static void _bind_methods();
-
-public:
-	GLTFBufferViewIndex get_buffer_view();
-	void set_buffer_view(GLTFBufferViewIndex p_buffer_view);
-
-	int get_byte_offset();
-	void set_byte_offset(int p_byte_offset);
-
-	int get_component_type();
-	void set_component_type(int p_component_type);
-
-	bool get_normalized();
-	void set_normalized(bool p_normalized);
-
-	int get_count();
-	void set_count(int p_count);
-
-	int get_accessor_type();
-	void set_accessor_type(int p_accessor_type);
-
-	Vector<double> get_min();
-	void set_min(Vector<double> p_min);
-
-	Vector<double> get_max();
-	void set_max(Vector<double> p_max);
-
-	int get_sparse_count();
-	void set_sparse_count(int p_sparse_count);
-
-	int get_sparse_indices_buffer_view();
-	void set_sparse_indices_buffer_view(int p_sparse_indices_buffer_view);
-
-	int get_sparse_indices_byte_offset();
-	void set_sparse_indices_byte_offset(int p_sparse_indices_byte_offset);
-
-	int get_sparse_indices_component_type();
-	void set_sparse_indices_component_type(int p_sparse_indices_component_type);
-
-	int get_sparse_values_buffer_view();
-	void set_sparse_values_buffer_view(int p_sparse_values_buffer_view);
-
-	int get_sparse_values_byte_offset();
-	void set_sparse_values_byte_offset(int p_sparse_values_byte_offset);
-};
-
-#endif // GLTF_ACCESSOR_H
+#endif // DISABLE_DEPRECATED

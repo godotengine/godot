@@ -2875,8 +2875,10 @@ Error Main::setup2() {
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Servers");
 
+#ifndef WEB_ENABLED
 	// Add a blank line for readability.
 	Engine::get_singleton()->print_header("");
+#endif // WEB_ENABLED
 
 	register_core_singletons();
 

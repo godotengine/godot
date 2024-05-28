@@ -1389,7 +1389,7 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 					*r_data_type = function->arguments[i].type;
 				}
 				if (r_struct_name) {
-					*r_struct_name = function->arguments[i].type_str;
+					*r_struct_name = function->arguments[i].struct_name;
 				}
 				if (r_array_size) {
 					*r_array_size = function->arguments[i].array_size;
@@ -1442,7 +1442,7 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 			*r_array_size = shader->constants[p_identifier].array_size;
 		}
 		if (r_struct_name) {
-			*r_struct_name = shader->constants[p_identifier].type_str;
+			*r_struct_name = shader->constants[p_identifier].struct_name;
 		}
 		if (r_constant_value) {
 			if (shader->constants[p_identifier].initializer && shader->constants[p_identifier].initializer->values.size() == 1) {
@@ -3432,7 +3432,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 				}
 				String func_arg_name;
 				if (pfunc->arguments[j].type == TYPE_STRUCT) {
-					func_arg_name = pfunc->arguments[j].type_str;
+					func_arg_name = pfunc->arguments[j].struct_name;
 				} else {
 					func_arg_name = get_datatype_name(pfunc->arguments[j].type);
 				}
@@ -3455,10 +3455,10 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 		for (int j = 0; j < args.size(); j++) {
 			if (get_scalar_type(args[j]) == args[j] && p_func->arguments[j + 1]->type == Node::NODE_TYPE_CONSTANT && args3[j] == 0 && convert_constant(static_cast<ConstantNode *>(p_func->arguments[j + 1]), pfunc->arguments[j].type)) {
 				//all good, but it needs implicit conversion later
-			} else if (args[j] != pfunc->arguments[j].type || (args[j] == TYPE_STRUCT && args2[j] != pfunc->arguments[j].type_str) || args3[j] != pfunc->arguments[j].array_size) {
+			} else if (args[j] != pfunc->arguments[j].type || (args[j] == TYPE_STRUCT && args2[j] != pfunc->arguments[j].struct_name) || args3[j] != pfunc->arguments[j].array_size) {
 				String func_arg_name;
 				if (pfunc->arguments[j].type == TYPE_STRUCT) {
-					func_arg_name = pfunc->arguments[j].type_str;
+					func_arg_name = pfunc->arguments[j].struct_name;
 				} else {
 					func_arg_name = get_datatype_name(pfunc->arguments[j].type);
 				}
@@ -9228,7 +9228,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						ShaderNode::Constant constant;
 						constant.name = name;
 						constant.type = is_struct ? TYPE_STRUCT : type;
-						constant.type_str = struct_name;
+						constant.struct_name = struct_name;
 						constant.precision = precision;
 						constant.initializer = nullptr;
 						constant.array_size = array_size;
@@ -9407,7 +9407,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 								expr->datatype = constant.type;
 
-								expr->struct_name = constant.type_str;
+								expr->struct_name = constant.struct_name;
 
 								expr->array_size = constant.array_size;
 
@@ -9748,7 +9748,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					FunctionNode::Argument arg;
 					arg.type = param_type;
 					arg.name = param_name;
-					arg.type_str = param_struct_name;
+					arg.struct_name = param_struct_name;
 					arg.precision = param_precision;
 					arg.qualifier = param_qualifier;
 					arg.tex_argument_check = false;
@@ -10371,7 +10371,11 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				if (shader->vfunctions[i].name == completion_function) {
 					String calltip;
 
-					calltip += get_datatype_name(shader->vfunctions[i].function->return_type);
+					if (shader->vfunctions[i].function->return_type == TYPE_STRUCT) {
+						calltip += String(shader->vfunctions[i].function->return_struct_name);
+					} else {
+						calltip += get_datatype_name(shader->vfunctions[i].function->return_type);
+					}
 
 					if (shader->vfunctions[i].function->return_array_size > 0) {
 						calltip += "[";
@@ -10406,7 +10410,11 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 							}
 						}
 
-						calltip += get_datatype_name(shader->vfunctions[i].function->arguments[j].type);
+						if (shader->vfunctions[i].function->arguments[j].type == TYPE_STRUCT) {
+							calltip += String(shader->vfunctions[i].function->arguments[j].struct_name);
+						} else {
+							calltip += get_datatype_name(shader->vfunctions[i].function->arguments[j].type);
+						}
 						calltip += " ";
 						calltip += shader->vfunctions[i].function->arguments[j].name;
 

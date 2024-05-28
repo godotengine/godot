@@ -263,7 +263,7 @@ void NavMeshGenerator2D::generator_parse_geometry_node(Ref<NavigationPolygon> p_
 		// Special case for TileMap, so that internal layer get parsed even if p_recurse_children is false.
 		for (int i = 0; i < p_node->get_child_count(); i++) {
 			TileMapLayer *tile_map_layer = Object::cast_to<TileMapLayer>(p_node->get_child(i));
-			if (tile_map_layer->get_index_in_tile_map() >= 0) {
+			if (tile_map_layer && tile_map_layer->get_index_in_tile_map() >= 0) {
 				generator_parse_tile_map_layer_node(p_navigation_mesh, p_source_geometry_data, tile_map_layer);
 			}
 		}

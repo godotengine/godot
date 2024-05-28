@@ -70,7 +70,7 @@ bool DisplayServerWeb::check_size_force_redraw() {
 void DisplayServerWeb::fullscreen_change_callback(int p_fullscreen) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_fullscreen_change_callback).bind(p_fullscreen).call_deferred();
+		callable_mp_static(DisplayServerWeb::_fullscreen_change_callback).call_deferred(p_fullscreen);
 		return;
 	}
 #endif
@@ -96,7 +96,7 @@ void DisplayServerWeb::drop_files_js_callback(const char **p_filev, int p_filec)
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_drop_files_js_callback).bind(files).call_deferred();
+		callable_mp_static(DisplayServerWeb::_drop_files_js_callback).call_deferred(files);
 		return;
 	}
 #endif
@@ -161,7 +161,7 @@ void DisplayServerWeb::key_callback(int p_pressed, int p_repeat, int p_modifiers
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_key_callback).bind(code, key, p_pressed, p_repeat, p_modifiers).call_deferred();
+		callable_mp_static(DisplayServerWeb::_key_callback).call_deferred(code, key, p_pressed, p_repeat, p_modifiers);
 		return;
 	}
 #endif
@@ -214,7 +214,7 @@ void DisplayServerWeb::_key_callback(const String &p_key_event_code, const Strin
 int DisplayServerWeb::mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_mouse_button_callback).bind(p_pressed, p_button, p_x, p_y, p_modifiers).call_deferred();
+		callable_mp_static(DisplayServerWeb::_mouse_button_callback).call_deferred(p_pressed, p_button, p_x, p_y, p_modifiers);
 		return true;
 	}
 #endif
@@ -301,7 +301,7 @@ int DisplayServerWeb::_mouse_button_callback(int p_pressed, int p_button, double
 void DisplayServerWeb::mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_mouse_move_callback).bind(p_x, p_y, p_rel_x, p_rel_y, p_modifiers).call_deferred();
+		callable_mp_static(DisplayServerWeb::_mouse_move_callback).call_deferred(p_x, p_y, p_rel_x, p_rel_y, p_modifiers);
 		return;
 	}
 #endif
@@ -394,7 +394,7 @@ void DisplayServerWeb::update_voices_callback(int p_size, const char **p_voice) 
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_update_voices_callback).bind(voices).call_deferred();
+		callable_mp_static(DisplayServerWeb::_update_voices_callback).call_deferred(voices);
 		return;
 	}
 #endif
@@ -461,7 +461,7 @@ void DisplayServerWeb::tts_stop() {
 void DisplayServerWeb::js_utterance_callback(int p_event, int p_id, int p_pos) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_js_utterance_callback).bind(p_event, p_id, p_pos).call_deferred();
+		callable_mp_static(DisplayServerWeb::_js_utterance_callback).call_deferred(p_event, p_id, p_pos);
 		return;
 	}
 #endif
@@ -591,7 +591,7 @@ Point2i DisplayServerWeb::mouse_get_position() const {
 int DisplayServerWeb::mouse_wheel_callback(double p_delta_x, double p_delta_y) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_mouse_wheel_callback).bind(p_delta_x, p_delta_y).call_deferred();
+		callable_mp_static(DisplayServerWeb::_mouse_wheel_callback).call_deferred(p_delta_x, p_delta_y);
 		return true;
 	}
 #endif
@@ -654,7 +654,7 @@ int DisplayServerWeb::_mouse_wheel_callback(double p_delta_x, double p_delta_y) 
 void DisplayServerWeb::touch_callback(int p_type, int p_count) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_touch_callback).bind(p_type, p_count).call_deferred();
+		callable_mp_static(DisplayServerWeb::_touch_callback).call_deferred(p_type, p_count);
 		return;
 	}
 #endif
@@ -712,7 +712,7 @@ void DisplayServerWeb::vk_input_text_callback(const char *p_text, int p_cursor) 
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_vk_input_text_callback).bind(text, p_cursor).call_deferred();
+		callable_mp_static(DisplayServerWeb::_vk_input_text_callback).call_deferred(text, p_cursor);
 		return;
 	}
 #endif
@@ -774,7 +774,7 @@ void DisplayServerWeb::gamepad_callback(int p_index, int p_connected, const char
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_gamepad_callback).bind(p_index, p_connected, id, guid).call_deferred();
+		callable_mp_static(DisplayServerWeb::_gamepad_callback).call_deferred(p_index, p_connected, id, guid);
 		return;
 	}
 #endif
@@ -797,7 +797,7 @@ void DisplayServerWeb::ime_callback(int p_type, const char *p_text) {
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_ime_callback).bind(p_type, text).call_deferred();
+		callable_mp_static(DisplayServerWeb::_ime_callback).call_deferred(p_type, text);
 		return;
 	}
 #endif
@@ -866,6 +866,9 @@ void DisplayServerWeb::_ime_callback(int p_type, const String &p_text) {
 		default:
 			break;
 	}
+
+	ds->process_keys();
+	Input::get_singleton()->flush_buffered_events();
 }
 
 void DisplayServerWeb::window_set_ime_active(const bool p_active, WindowID p_window) {
@@ -927,7 +930,7 @@ void DisplayServerWeb::update_clipboard_callback(const char *p_text) {
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_update_clipboard_callback).bind(text).call_deferred();
+		callable_mp_static(DisplayServerWeb::_update_clipboard_callback).call_deferred(text);
 		return;
 	}
 #endif
@@ -953,7 +956,7 @@ String DisplayServerWeb::clipboard_get() const {
 void DisplayServerWeb::send_window_event_callback(int p_notification) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_send_window_event_callback).bind(p_notification).call_deferred();
+		callable_mp_static(DisplayServerWeb::_send_window_event_callback).call_deferred(p_notification);
 		return;
 	}
 #endif
@@ -1353,29 +1356,33 @@ DisplayServer::VSyncMode DisplayServerWeb::window_get_vsync_mode(WindowID p_vsyn
 }
 
 void DisplayServerWeb::process_events() {
+	process_keys();
 	Input::get_singleton()->flush_buffered_events();
 	if (godot_js_input_gamepad_sample() == OK) {
 		process_joypads();
-		for (int i = 0; i < key_event_pos; i++) {
-			const DisplayServerWeb::KeyEvent &ke = key_event_buffer[i];
-
-			Ref<InputEventKey> ev;
-			ev.instantiate();
-			ev->set_pressed(ke.pressed);
-			ev->set_echo(ke.echo);
-			ev->set_keycode(ke.keycode);
-			ev->set_physical_keycode(ke.physical_keycode);
-			ev->set_key_label(ke.key_label);
-			ev->set_unicode(ke.unicode);
-			ev->set_location(ke.location);
-			if (ke.raw) {
-				dom2godot_mod(ev, ke.mod, ke.keycode);
-			}
-
-			Input::get_singleton()->parse_input_event(ev);
-		}
-		key_event_pos = 0;
 	}
+}
+
+void DisplayServerWeb::process_keys() {
+	for (int i = 0; i < key_event_pos; i++) {
+		const DisplayServerWeb::KeyEvent &ke = key_event_buffer[i];
+
+		Ref<InputEventKey> ev;
+		ev.instantiate();
+		ev->set_pressed(ke.pressed);
+		ev->set_echo(ke.echo);
+		ev->set_keycode(ke.keycode);
+		ev->set_physical_keycode(ke.physical_keycode);
+		ev->set_key_label(ke.key_label);
+		ev->set_unicode(ke.unicode);
+		ev->set_location(ke.location);
+		if (ke.raw) {
+			dom2godot_mod(ev, ke.mod, ke.keycode);
+		}
+
+		Input::get_singleton()->parse_input_event(ev);
+	}
+	key_event_pos = 0;
 }
 
 int DisplayServerWeb::get_current_video_driver() const {
