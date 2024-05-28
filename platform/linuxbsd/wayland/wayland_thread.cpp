@@ -3504,7 +3504,7 @@ BitField<MouseButtonMask> WaylandThread::pointer_get_button_mask() const {
 	return BitField<MouseButtonMask>();
 }
 
-void WaylandThread::pointer_get_button_mask() {
+void WaylandThread::pointer_clear_button_mask() {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 	if (ss) {
 		ss->pointer_data_buffer.pressed_button_mask.clear()
