@@ -259,6 +259,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["pvs"] = "PVS";
 	capitalize_string_remaps["rcedit"] = "rcedit";
 	capitalize_string_remaps["rcodesign"] = "rcodesign";
+	capitalize_string_remaps["relu"] = "ReLU";
 	capitalize_string_remaps["rgb"] = "RGB";
 	capitalize_string_remaps["rid"] = "RID";
 	capitalize_string_remaps["rmb"] = "RMB";
@@ -271,6 +272,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["sdk"] = "SDK";
 	capitalize_string_remaps["sec"] = "(sec)"; // Unit.
 	capitalize_string_remaps["signtool"] = "signtool";
+	capitalize_string_remaps["silu"] = "SiLU";
 	capitalize_string_remaps["sms"] = "SMS";
 	capitalize_string_remaps["srgb"] = "sRGB";
 	capitalize_string_remaps["ssao"] = "SSAO";
