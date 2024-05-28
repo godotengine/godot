@@ -5011,7 +5011,14 @@ void DisplayServerX11::process_events() {
 					}
 
 					if (windows[window_id].drop_files_callback.is_valid()) {
-						windows[window_id].drop_files_callback.call(files);
+						Variant v_files = files;
+						const Variant *v_args[1] = { &v_files };
+						Variant ret;
+						Callable::CallError ce;
+						windows[window_id].drop_files_callback.callp((const Variant **)&v_args, 1, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute drop files callback: %s.", Variant::get_callable_error_text(windows[window_id].drop_files_callback, v_args, 1, ce)));
+						}
 					}
 
 					//Reply that all is well.

@@ -3842,7 +3842,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 			}
 			if (system_theme_changed.is_valid()) {
-				system_theme_changed.call();
+				Variant ret;
+				Callable::CallError ce;
+				system_theme_changed.callp(nullptr, 0, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT(vformat("Failed to execute system theme changed callback: %s.", Variant::get_callable_error_text(system_theme_changed, nullptr, 0, ce)));
+				}
 			}
 		} break;
 		case WM_THEMECHANGED: {
@@ -3897,10 +3902,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					} else if (indicators[iid].callback.is_valid()) {
 						Variant v_button = mb;
 						Variant v_pos = mouse_get_position();
-						Variant *v_args[2] = { &v_button, &v_pos };
+						const Variant *v_args[2] = { &v_button, &v_pos };
 						Variant ret;
 						Callable::CallError ce;
 						indicators[iid].callback.callp((const Variant **)&v_args, 2, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute status indicator callback: %s.", Variant::get_callable_error_text(indicators[iid].callback, v_args, 2, ce)));
+						}
 					}
 				}
 				return 0;
@@ -4868,7 +4876,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			if (files.size() && windows[window_id].drop_files_callback.is_valid()) {
-				windows[window_id].drop_files_callback.call(files);
+				Variant v_files = files;
+				const Variant *v_args[1] = { &v_files };
+				Variant ret;
+				Callable::CallError ce;
+				windows[window_id].drop_files_callback.callp((const Variant **)&v_args, 1, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT(vformat("Failed to execute drop files callback: %s.", Variant::get_callable_error_text(windows[window_id].drop_files_callback, v_args, 1, ce)));
+				}
 			}
 		} break;
 		default: {
