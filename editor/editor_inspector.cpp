@@ -1078,7 +1078,7 @@ void EditorProperty::_bind_methods() {
 
 EditorProperty::EditorProperty() {
 	object = nullptr;
-	split_ratio = 0.5;
+	split_ratio = 0.3f;
 	text_size = 0;
 	property_usage = 0;
 	selected_focusable = -1;

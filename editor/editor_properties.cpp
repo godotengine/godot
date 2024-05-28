@@ -3883,7 +3883,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 						options.push_back(opt);
 					}
 				}
-				editor->setup(options, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
+				editor->setup(options, true, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
 			}			
 			else {

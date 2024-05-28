@@ -1950,6 +1950,10 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 						if (sres.is_valid()) {
 							resource_set.insert(sres);
 							saved_resources.push_back(sres);
+							if (sres->is_built_in())
+							{
+								_find_resources(sres);
+							}
 						} else {
 							_find_resources(v);
 						}

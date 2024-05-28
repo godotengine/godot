@@ -568,11 +568,19 @@ public:
     {
          blackboard_plan = p_blackboard_plan; 
          init_blackboard(blackboard_plan);
-        if(enter_condtion.is_valid()){
-            enter_condtion->set_blackboard_plan(p_blackboard_plan);
-        }
+		 update_blackboard_plan();
     }
     Ref<BlackboardPlan> get_blackboard_plan() { return blackboard_plan; }
+	void update_blackboard_plan()
+	{
+		if (enter_condtion.is_valid()) {
+			enter_condtion->set_blackboard_plan(blackboard_plan);
+		}
+		if (stop_check_condtion.is_valid()) {
+			stop_check_condtion->set_blackboard_plan(blackboard_plan);
+		}
+
+	}
 
 
     void set_priority(int p_priority) { priority = p_priority; }
@@ -581,7 +589,7 @@ public:
     void set_player_animation_name(StringName p_player_animation_name) { player_animation_name = p_player_animation_name; }
     StringName get_player_animation_name() { return player_animation_name; }
 
-    void set_enter_condtion(const Ref<CharacterAnimatorCondition>& p_enter_condtion) { enter_condtion = p_enter_condtion; }
+	void set_enter_condtion(const Ref<CharacterAnimatorCondition>& p_enter_condtion) { enter_condtion = p_enter_condtion; update_blackboard_plan(); }
     Ref<CharacterAnimatorCondition> get_enter_condtion() { return enter_condtion; }
 
     void set_check_stop_delay_time(float p_check_stop_delay_time) { check_stop_delay_time = p_check_stop_delay_time; }
@@ -593,7 +601,7 @@ public:
     void set_stop_check_type(AnimatorAIStopCheckType p_stop_check_type) { stop_check_type = p_stop_check_type; }
     AnimatorAIStopCheckType get_stop_check_type() { return stop_check_type; }
 
-    void set_stop_check_condtion(const Ref<CharacterAnimatorCondition>& p_stop_check_condtion) { stop_check_condtion = p_stop_check_condtion; }
+    void set_stop_check_condtion(const Ref<CharacterAnimatorCondition>& p_stop_check_condtion) { stop_check_condtion = p_stop_check_condtion; update_blackboard_plan();}
     Ref<CharacterAnimatorCondition> get_stop_check_condtion() { return stop_check_condtion; }
 
     void set_stop_check_anmation_length_scale(float p_stop_check_anmation_length_scale) { anmation_scale = p_stop_check_anmation_length_scale; }

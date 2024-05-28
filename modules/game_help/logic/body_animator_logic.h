@@ -101,7 +101,7 @@ protected:
         ret.append(StringName(">="));
         ret.append(StringName("<"));
         ret.append(StringName("<="));
-        return Array();
+        return ret;
     }
     virtual void update_name()
     {
@@ -228,7 +228,7 @@ protected:
         ret.append(StringName("<"));
         ret.append(StringName("<="));
         ret.append(StringName("!="));
-        return Array();
+		return ret;
     }
     virtual Array _get_blackbord_propertys() override
     {
@@ -321,7 +321,7 @@ protected:
         Array ret;
         ret.append(StringName("=="));
         ret.append(StringName("!="));
-        return Array();
+		return ret;
     }
     virtual Array _get_blackbord_propertys() override
     {
@@ -399,7 +399,7 @@ protected:
         Array ret;
         ret.append(StringName("=="));
         ret.append(StringName("!="));
-        return Array();
+		return ret;
     }
     virtual Array _get_blackbord_propertys() override
     {

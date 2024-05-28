@@ -271,12 +271,12 @@ private:
 	void _setup_animation_player();
 	void _animation_player_changed();
 
+public:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	virtual void _validate_property(PropertyInfo &p_property) const override;
 	void _notification(int p_what);
-
 	static void _bind_methods();
 
 	virtual void _set_active(bool p_active) override;

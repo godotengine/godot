@@ -58,7 +58,7 @@ void AnimatorAIStateConditionBase::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "compare_type_name", PROPERTY_HINT_ENUM_DYNAMIC_LIST,"get_compare_value"), "set_compare_type_name", "get_compare_type_name");
     ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "blackbord_property_name",PROPERTY_HINT_ENUM_DYNAMIC_LIST,"get_blackbord_propertys"), "set_blackbord_property_name", "get_blackbord_property_name");
 
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan"), "set_blackboard_plan", "get_blackboard_plan");
+    //ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan"), "set_blackboard_plan", "get_blackboard_plan");
 }
 
 
@@ -112,11 +112,11 @@ Ref<CharacterAnimationLogicNode> CharacterAnimationLogicRoot::process_logic(Blac
     return Ref<CharacterAnimationLogicNode>();
 }
 
-Ref<CharacterAnimationLogicNode> CharacterAnimationLogicLayer::process_logic(StringName default_state_name,Blackboard* blackboard)
+Ref<CharacterAnimationLogicNode> CharacterAnimationLogicLayer::process_logic(StringName p_default_state_name,Blackboard* blackboard)
 {
-    if(state_map.has(default_state_name))
+    if(state_map.has(p_default_state_name))
     {
-        return state_map[default_state_name]->process_logic(blackboard);
+        return state_map[p_default_state_name]->process_logic(blackboard);
     }
     return Ref<CharacterAnimationLogicNode>();
 }
