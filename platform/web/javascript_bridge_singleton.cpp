@@ -262,7 +262,7 @@ void JavaScriptObjectImpl::callback(void *p_ref, int p_args_id, int p_argc) {
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(JavaScriptObjectImpl::_callback).bind(obj, arg).call_deferred();
+		callable_mp_static(JavaScriptObjectImpl::_callback).call_deferred(obj, arg);
 		return;
 	}
 #endif
