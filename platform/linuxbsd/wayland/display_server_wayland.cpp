@@ -1123,6 +1123,10 @@ void DisplayServerWayland::process_events() {
 			} else if (winev_msg->event == WINDOW_EVENT_FOCUS_OUT) {
 				if (OS::get_singleton()->get_main_loop()) {
 					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+					{
+						MutexLock mutex_lock(wayland_thread.mutex);
+						wayland_thread.pointer_clear_button_mask();
+					}
 				}
 			}
 		}

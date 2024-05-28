@@ -4310,6 +4310,7 @@ void DisplayServerX11::process_events() {
 				if (OS::get_singleton()->get_main_loop()) {
 					DEBUG_LOG_X11("All focus lost, triggering NOTIFICATION_APPLICATION_FOCUS_OUT\n");
 					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+					last_button_state.clear();
 				}
 				app_focused = false;
 			}

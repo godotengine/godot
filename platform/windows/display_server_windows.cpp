@@ -3774,6 +3774,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			app_focused = new_app_focused;
 			if (OS::get_singleton()->get_main_loop()) {
 				OS::get_singleton()->get_main_loop()->notification(app_focused ? MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN : MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+				if (!app_focused) {
+					last_button_state.clear();
+				}
 			}
 		} break;
 		case WM_ACTIVATE: {
