@@ -1,6 +1,8 @@
 #pragma once
 #include "scene/3d/node_3d.h"
 #include "modules/limboai/bt/bt_player.h"
+
+// 继承Resource目的主要是为了编辑时方便显示名称
 class AnimatorAIStateConditionBase : public Resource
 {
     GDCLASS(AnimatorAIStateConditionBase, Resource)
@@ -494,7 +496,7 @@ public :
     }
 public:
     void set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) { blackboard_plan = p_blackboard_plan; update_blackboard_plan();}
-    virtual bool is_enable(Blackboard* p_blackboard,bool p_is_include)
+    virtual bool is_enable(Blackboard* p_blackboard)
     {
         if(!is_enable(include_condition,p_blackboard,true))
         {
@@ -569,7 +571,7 @@ public:
 
     void set_bt_sort(int id){}
     int get_bt_sort() { return 0; }
-
+    Ref<CharacterAnimationLogicNode> process_logic(Blackboard* blackboard);
 public:
     bool is_need_sort = true;
     LocalVector<Ref<CharacterAnimationLogicNode>>  node_list;
@@ -588,12 +590,42 @@ class CharacterAnimationLogicLayer : public Resource
         ClassDB::bind_method(D_METHOD("set_default_state_name","p_default_state_name"),&CharacterAnimationLogicLayer::set_default_state_name);
         ClassDB::bind_method(D_METHOD("get_default_state_name"),&CharacterAnimationLogicLayer::get_default_state_name);
 
+        ClassDB::bind_method(D_METHOD("set_state_map","p_state_map"),&CharacterAnimationLogicLayer::set_state_map);
+        ClassDB::bind_method(D_METHOD("get_state_map"),&CharacterAnimationLogicLayer::get_state_map);
+
         ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "default_state_name"), "set_default_state_name", "get_default_state_name");
+        ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "state_map"), "set_state_map", "get_state_map");
     }
 public:
 
     void set_default_state_name(const StringName& p_default_state_name) { default_state_name = p_default_state_name; }
     StringName get_default_state_name() { return default_state_name; }
+
+    void set_state_map(const Dictionary& p_state_map) 
+    {
+        state_map.clear();
+        Array key = p_state_map.keys();
+        Array value = p_state_map.values();
+        for(int32_t i = 0; i < key.size(); ++i)
+        {
+            state_map[key[i]] = value[i];
+        }
+        if(state_map.size() > 0 && !state_map.has(default_state_name))
+        {
+            default_state_name = key[0];
+        }
+    }
+    Dictionary get_state_map() 
+    { 
+        Dictionary ret;
+        for(auto & a : state_map)
+        {
+            ret[a.key] = a.value;
+        }
+        return ret; 
+    }
+
+    Ref<CharacterAnimationLogicNode> process_logic(StringName default_state_name,Blackboard* blackboard);
 
 
 public:

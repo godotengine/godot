@@ -27,32 +27,71 @@ class CharacterAnimationLibrary : public Resource
 
         ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animation_library",PROPERTY_HINT_ARRAY_TYPE,"String"), "set_animation_library", "get_animation_library");
     }
-    struct AnimationItem
+
+public:
+    class AnimationItem : public Resource
     {
+	public:
         String path;
         Ref<CharacterAnimatorNodeBase> node;
-        bool is_loaded = false;
+		void load()
+		{
+			if (is_loaded == 0)
+			{
+                ResourceLoader::load_threaded_request(path);
+                is_loaded = 1;
+			}
+		}
+        Ref<CharacterAnimatorNodeBase> get_node()
+        {
+            if(is_loaded == 1)
+            {
+               node = ResourceLoader::load_threaded_get(path);
+               is_loaded = 2;
+            }
+            return node;
+        }
+        int is_loaded = 0;
     };
 
 public:
     void set_animation_library(const TypedArray<String>& p_animation_library) { animation_library = p_animation_library; init_animation_library();}
     TypedArray<String> get_animation_library() { return animation_library; }
+    Ref<CharacterAnimationLibrary::AnimationItem> get_animation_by_name(StringName p_name)
+    {
+        if(animations.has(p_name))
+        {
+            return animations[p_name];
+        }
+        else
+        {
+            ERR_PRINT(String("not find animation ") +  p_name.operator String().utf8().get_data());
+        }
+        return Ref<CharacterAnimationLibrary::AnimationItem>();
+    }
     void init_animation_library()
     {
-        AnimationItem item;
+        if(is_init)
+        {
+            return;
+        }
         for (int i = 0; i < animation_library.size(); i++)
         {
-            item.path = animation_library[i];
-            String nm = item.path.get_file().get_basename();
+			Ref<AnimationItem> item;
+			item.instantiate();
+            item->path = animation_library[i];
+            String nm = item->path.get_file().get_basename();
             if(nm.size() > 0)
             {
                 animations.insert(nm, item);
             }
         }
+        is_init = true;
     }
 public:
+    bool is_init = false;
     TypedArray<String> animation_library;
-    HashMap<StringName, AnimationItem> animations;
+    HashMap<StringName, Ref<AnimationItem>> animations;
 };
 
 // 动画遮罩
@@ -153,8 +192,9 @@ class CharacterAnimatorNodeBase : public Resource
     static void bind_methods();
 
 public:
-    float fadeOutTime = 0.0f;
-    bool isLoop = false;
+    void touch() { lastUsingTime = OS::get_singleton()->get_unix_time(); }
+
+    bool is_need_remove(float remove_time) { return OS::get_singleton()->get_unix_time() - lastUsingTime > remove_time; }
 
 public:
     virtual void process_animation(class CharacterAnimatorLayer *p_layer,struct CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard)
@@ -178,11 +218,22 @@ public:
     StringName get_black_board_property_y() { return black_board_property_y; }
     virtual void _init();
 
-    
-    TypedArray<CharacterAnimationItem>    animation_arrays;
-    StringName               black_board_property;
-    StringName               black_board_property_y;
+    void set_fade_out_time(float p_fade_out_time) { fade_out_time = p_fade_out_time; }
+    float get_fade_out_time() { return fade_out_time; }
 
+    void set_loop(bool p_loop) { isLoop = p_loop; }
+    bool get_loop() { return isLoop; }
+
+    void set_loop_pingpong(bool p_loop_pingpong) { isLoopPingPong = p_loop_pingpong; }
+    bool get_loop_pingpong() { return isLoopPingPong; }
+public:
+    enum LoopType
+    {
+        LOOP_Once,
+        LOOP_Count,
+        LOOP_PingPongOnce,
+        LOOP_PingPongCount,
+    };
     struct Blend1dDataConstant
     {
 
@@ -237,6 +288,20 @@ public:
         float* weightArray, int* cropArray, Vector2* workspaceBlendVectors,
         float blendValueX, float blendValueY, bool preCompute = false);
     static void get_weights1d(const Blend1dDataConstant& blendConstant, float* weightArray, float blendValue);
+
+	void _add_animation_item(const Ref<CharacterAnimationItem>& p_anim)
+	{
+		animation_arrays.push_back(p_anim);
+	}
+    protected:
+    
+    TypedArray<CharacterAnimationItem>    animation_arrays;
+    StringName               black_board_property;
+    StringName               black_board_property_y;
+    float fade_out_time = 0.0f;
+    float lastUsingTime = 0.0f;
+    bool isLoop = false;
+    bool isLoopPingPong = false;
 
 
 };
@@ -323,11 +388,11 @@ struct CharacterAnimationInstance
     float fadeTotalTime = 0.0f;
     float get_weight()
     {
-        if(m_PlayState == PS_FadeOut)
+        if(m_PlayState == PlayState::PS_FadeOut)
         {
-            if(node->fadeOutTime <= 0.0f)
+            if(node->get_fade_out_time() <= 0.0f)
                 return 0;
-            return MAX(0.0f,1.0f - fadeTotalTime / node->fadeOutTime);
+            return MAX(0.0f,1.0f - fadeTotalTime / node->get_fade_out_time());
         }
         else
         {
@@ -384,22 +449,6 @@ protected:
     BlendType m_BlendType = BT_Blend;
 };
 class CharacterAnimatorLayer;
-// 动画逻辑上下文
-struct CharacterAnimationLogicContext
-{
-    // 动画逻辑
-    Ref<CharacterAnimationLogicLayer> animation_logic;
-    // 当前状态名称
-    StringName state_name;
-    Ref<CharacterAnimationLogicRoot> curr_state_root;
-    // 当前处理的逻辑节点
-    Ref<CharacterAnimationLogicLayer>   logic;
-    // 执行时长
-    float time = 0.0f;
-    bool is_start = false;
-    int play_count = 1;
-
-};
 
 // 时间线资源,这个主要用来Animation 对角色进行一些操控,比如播放动画,切换角色材质
 class CharacterTimelineNode : public Node3D
@@ -419,6 +468,26 @@ class CharacterTimelineNode : public Node3D
     
     void set_float_value(StringName p_name,float value){}
 };
+// 动画逻辑上下文
+struct CharacterAnimationLogicContext
+{
+    // 动画逻辑
+    Ref<CharacterAnimationLogicLayer> animation_logic;
+    // 当前状态名称
+    StringName last_name;
+    // 当前状态名称
+    StringName curr_name;
+    Ref<CharacterAnimationLogicRoot> curr_state_root;
+    // 当前处理的逻辑节点
+    Ref<CharacterAnimationLogicNode>   curr_logic;
+    Ref<CharacterAnimationLibrary::AnimationItem> curr_animation;
+    // 执行时长
+    float time = 0.0f;
+    bool is_start = false;
+    float curr_animation_play_time = 0.0f;
+    float curr_animation_time_length = 0.0f;
+
+};
 
 // 动画分层
 class CharacterAnimatorLayer: public AnimationMixer
@@ -437,6 +506,7 @@ public:
     // 动画掩码
     Ref<CharacterAnimatorLayerConfig> config;
 
+    void _process_logic(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first = true);
     // 处理动画
     void _process_animation(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first = true);
     void layer_blend_apply() ;
@@ -456,7 +526,8 @@ public:
         return &logic_context;
     }
 
-    void play_animation(Ref<CharacterAnimatorNodeBase> p_node);
+    bool play_animation(Ref<CharacterAnimatorNodeBase> p_node);
+    void play_animation(const StringName& p_node_name);
     ~CharacterAnimatorLayer();
 };
 
@@ -464,55 +535,7 @@ public:
 class CharacterAnimationLogicNode : public Resource
 {
     GDCLASS(CharacterAnimationLogicNode,Resource)
-    static void _bind_methods()
-    {
-        ClassDB::bind_method(D_METHOD("set_blackboard_plan", "blackboard_plan"), &CharacterAnimationLogicNode::set_blackboard_plan);
-        ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &CharacterAnimationLogicNode::get_blackboard_plan);
-
-        ClassDB::bind_method(D_METHOD("set_priority", "priority"), &CharacterAnimationLogicNode::set_priority);
-        ClassDB::bind_method(D_METHOD("get_priority"), &CharacterAnimationLogicNode::get_priority);
-
-        ClassDB::bind_method(D_METHOD("set_player_animation_name", "player_animation_name"), &CharacterAnimationLogicNode::set_player_animation_name);
-        ClassDB::bind_method(D_METHOD("get_player_animation_name"), &CharacterAnimationLogicNode::get_player_animation_name);
-
-        ClassDB::bind_method(D_METHOD("set_enter_condtion", "enter_condtion"), &CharacterAnimationLogicNode::set_enter_condtion);
-        ClassDB::bind_method(D_METHOD("get_enter_condtion"), &CharacterAnimationLogicNode::get_enter_condtion);
-
-        ClassDB::bind_method(D_METHOD("set_check_stop_delay_time", "check_stop_delay_time"), &CharacterAnimationLogicNode::set_check_stop_delay_time);
-        ClassDB::bind_method(D_METHOD("get_check_stop_delay_time"), &CharacterAnimationLogicNode::get_check_stop_delay_time);
-
-        ClassDB::bind_method(D_METHOD("set_life_time", "life_time"), &CharacterAnimationLogicNode::set_life_time);
-        ClassDB::bind_method(D_METHOD("get_life_time"), &CharacterAnimationLogicNode::get_life_time);
-
-        ClassDB::bind_method(D_METHOD("set_stop_check_type", "stop_check_type"), &CharacterAnimationLogicNode::set_stop_check_type);
-        ClassDB::bind_method(D_METHOD("get_stop_check_type"), &CharacterAnimationLogicNode::get_stop_check_type);
-
-        ClassDB::bind_method(D_METHOD("set_stop_check_condtion", "stop_check_condtion"), &CharacterAnimationLogicNode::set_stop_check_condtion);
-        ClassDB::bind_method(D_METHOD("get_stop_check_condtion"), &CharacterAnimationLogicNode::get_stop_check_condtion);
-
-        ClassDB::bind_method(D_METHOD("set_play_count", "play_count"), &CharacterAnimationLogicNode::set_play_count);
-        ClassDB::bind_method(D_METHOD("get_play_count"), &CharacterAnimationLogicNode::get_play_count);
-
-
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan",PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan"), "set_blackboard_plan", "get_blackboard_plan");
-        ADD_PROPERTY(PropertyInfo(Variant::INT, "priority"), "set_priority", "get_priority");
-        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "player_animation_name"), "set_player_animation_name", "get_player_animation_name");
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "enter_condtion", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorCondition"), "set_enter_condtion", "get_enter_condtion");
-        ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "check_stop_delay_time"), "set_check_stop_delay_time", "get_check_stop_delay_time");
-        ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "life_time"), "set_life_time", "get_life_time");
-        ADD_PROPERTY(PropertyInfo(Variant::INT, "stop_check_type",PROPERTY_HINT_ENUM,"Life,PlayCount,Condition,Script"), "set_stop_check_type", "get_stop_check_type");
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stop_check_condtion", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorCondition"), "set_stop_check_condtion", "get_stop_check_condtion");
-        ADD_PROPERTY(PropertyInfo(Variant::INT, "play_count"), "set_play_count", "get_play_count");
-
-        GDVIRTUAL_BIND(_animation_process,"_layer","_blackboard", "_delta");
-        GDVIRTUAL_BIND(_check_stop,"_layer","_blackboard");
-
-        BIND_ENUM_CONSTANT(Life);
-        BIND_ENUM_CONSTANT(PlayCount);
-        BIND_ENUM_CONSTANT(Condition);
-        BIND_ENUM_CONSTANT(Script);
-
-    }
+    static void _bind_methods();
 
 public:
 
@@ -520,7 +543,7 @@ public:
     {
         // 固定生命期
         Life,
-        PlayCount,
+        AnimationLengthScale,
         // 通过检测条件结束
         Condition,
         Script
@@ -544,6 +567,7 @@ public:
     void set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) 
     {
          blackboard_plan = p_blackboard_plan; 
+         init_blackboard(blackboard_plan);
         if(enter_condtion.is_valid()){
             enter_condtion->set_blackboard_plan(p_blackboard_plan);
         }
@@ -572,76 +596,30 @@ public:
     void set_stop_check_condtion(const Ref<CharacterAnimatorCondition>& p_stop_check_condtion) { stop_check_condtion = p_stop_check_condtion; }
     Ref<CharacterAnimatorCondition> get_stop_check_condtion() { return stop_check_condtion; }
 
-    void set_play_count(int p_play_count) { play_count = p_play_count; }
-    int get_play_count() { return play_count; }
+    void set_stop_check_anmation_length_scale(float p_stop_check_anmation_length_scale) { anmation_scale = p_stop_check_anmation_length_scale; }
+    float get_stop_check_anmation_length_scale() { return anmation_scale; }
     
-    static void init_blackboard(Ref<BlackboardPlan> p_blackboard_plan)
+    static void init_blackboard(Ref<BlackboardPlan> p_blackboard_plan);
+
+public:
+    virtual void process_start(CharacterAnimatorLayer* animator,Blackboard* blackboard);
+	virtual void process(CharacterAnimatorLayer* animator,Blackboard* blackboard, double delta);
+	virtual bool check_stop(CharacterAnimatorLayer* animator,Blackboard* blackboard);
+    virtual void process_stop(CharacterAnimatorLayer* animator,Blackboard* blackboard);
+
+public:
+    bool is_enter(Blackboard* blackboard)
     {
-        Ref<BlackboardPlan> blackboard_plan = p_blackboard_plan;
-        if(blackboard_plan.is_null())
+        if(enter_condtion.is_valid())
         {
-            return ;
+            return enter_condtion->is_enable(blackboard);
         }
-        if(!blackboard_plan->has_var("OldForward"))
-            blackboard_plan->add_var("OldForward",BBVariable(Variant::VECTOR3,Vector3()));
-
-        if(!blackboard_plan->has_var("CurrForward"))
-            blackboard_plan->add_var("CurrForward",BBVariable(Variant::VECTOR3,Vector3()));
-
-        if(!blackboard_plan->has_var("MoveTarget"))
-            blackboard_plan->add_var("MoveTarget",BBVariable(Variant::VECTOR3,Vector3()));
-
-        if(!blackboard_plan->has_var("CurrState"))
-            blackboard_plan->add_var("CurrState",BBVariable(Variant::STRING_NAME,StringName()));
-
-        if(!blackboard_plan->has_var("HorizontalMovement"))
-            blackboard_plan->add_var("HorizontalMovement",BBVariable(Variant::FLOAT,0.0f));
-
-        if(!blackboard_plan->has_var("VerticalMovement"))
-            blackboard_plan->add_var("VerticalMovement",BBVariable(Variant::FLOAT,0.0f));
-        
-        if(!blackboard_plan->has_var("Pitch"))
-            blackboard_plan->add_var("Pitch",BBVariable(Variant::FLOAT,0.0f));
-        if(!blackboard_plan->has_var("Yaw"))
-            blackboard_plan->add_var("Yaw",BBVariable(Variant::FLOAT,0.0f));
-        if(!blackboard_plan->has_var("Speed"))
-            blackboard_plan->add_var("Speed",BBVariable(Variant::FLOAT,0.0f));
-        
-        // 是否使用能力
-        if(!blackboard_plan->has_var("IsAbility"))
-            blackboard_plan->add_var("IsAbility",BBVariable(Variant::BOOL,false));
-        if(!blackboard_plan->has_var("AbilityIndex"))
-            blackboard_plan->add_var("AbilityIndex",BBVariable(Variant::INT,0));
-        if(!blackboard_plan->has_var("AbilityIntData"))
-            blackboard_plan->add_var("AbilityIntData",BBVariable(Variant::INT,0));
-        if(!blackboard_plan->has_var("AbilityFloatData"))
-            blackboard_plan->add_var("AbilityFloatData",BBVariable(Variant::FLOAT,0.0f));
-        
-        if(!blackboard_plan->has_var("IsGround"))
-            blackboard_plan->add_var("IsGround",BBVariable(Variant::BOOL,false));
-        if(!blackboard_plan->has_var("IsMoving"))
-            blackboard_plan->add_var("IsMoving",BBVariable(Variant::BOOL,false));
-        
-        if(!blackboard_plan->has_var("IsJump"))
-            blackboard_plan->add_var("IsJump",BBVariable(Variant::BOOL,false));
-        if(!blackboard_plan->has_var("IsCrouch"))
-            blackboard_plan->add_var("IsCrouch",BBVariable(Variant::BOOL,false));
-        if(!blackboard_plan->has_var("IsAttack"))
-            blackboard_plan->add_var("IsAttack",BBVariable(Variant::BOOL,false));
-        if(!blackboard_plan->has_var("IsDead"))
-            blackboard_plan->add_var("IsDead",BBVariable(Variant::BOOL,false));
-        if(!blackboard_plan->has_var("LegIndex"))
-            blackboard_plan->add_var("LegIndex",BBVariable(Variant::INT,0));
-        
-        
+        return true;
     }
 
 private:
-    
-	virtual void process(CharacterAnimatorLayer* animator,Blackboard* blackboard, double delta);
-	virtual bool check_stop(CharacterAnimatorLayer* animator,Blackboard* blackboard);
-
-private:
+	GDVIRTUAL2(_animation_process_start,CharacterAnimatorLayer*,Blackboard*)
+    GDVIRTUAL2(_animation_process_stop,CharacterAnimatorLayer*,Blackboard*)
 	GDVIRTUAL3(_animation_process,CharacterAnimatorLayer*,Blackboard*, double)
 	GDVIRTUAL2R(bool,_check_stop,CharacterAnimatorLayer*,Blackboard*)
 
@@ -659,7 +637,7 @@ public:
     AnimatorAIStopCheckType stop_check_type = Life;
     // 生命期
     float life_time = 0.0f;
-    int play_count = 1;
+    float anmation_scale = 1.0f;
     
     // 退出检测条件
     Ref<CharacterAnimatorCondition> stop_check_condtion;
@@ -704,6 +682,7 @@ public:
             }
         }
     }
+    Ref<CharacterAnimationLibrary::AnimationItem> get_animation_by_name(const StringName& p_name);
     void set_animation_layer_arrays(TypedArray<CharacterAnimatorLayerConfig> p_animation_layer_arrays)
     {
         animation_layer_arrays = p_animation_layer_arrays;        

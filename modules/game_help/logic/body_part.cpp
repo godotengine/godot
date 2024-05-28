@@ -17,5 +17,5 @@ void CharacterBodyPart::_bind_methods() {
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"material",PROPERTY_HINT_RESOURCE_TYPE,"BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
     
     
-	ADD_SIGNAL(MethodInfo("changed"));
+	ADD_SIGNAL(MethodInfo("part_changed"));
 }

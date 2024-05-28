@@ -106,6 +106,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<DataTableManager>();
 	ClassDB::register_class<PathManager>();
 	
+	ClassDB::register_class<CharacterAnimationLibrary>();
 	ClassDB::register_class<CharacterBodyMain>();
 	ClassDB::register_class<CharacterBodyPart>();
 	ClassDB::register_class<CharacterBodyPartInstane>();

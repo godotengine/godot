@@ -93,3 +93,30 @@ void CharacterAnimationLogicRoot::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::INT, "bt_sort",PROPERTY_HINT_BUTTON,"#FF22AA;Sort;sort"), "set_bt_sort", "get_bt_sort");
 
 }
+Ref<CharacterAnimationLogicNode> CharacterAnimationLogicRoot::process_logic(Blackboard* blackboard)
+{
+    if(is_need_sort)
+    {
+        sort();
+    }
+    for(uint32_t i = 0; i < node_list.size(); ++i)
+    {
+        if(node_list[i].is_valid())
+        {
+            if(node_list[i]->is_enter(blackboard))
+            {
+                return node_list[i];
+            }
+        }
+    }
+    return Ref<CharacterAnimationLogicNode>();
+}
+
+Ref<CharacterAnimationLogicNode> CharacterAnimationLogicLayer::process_logic(StringName default_state_name,Blackboard* blackboard)
+{
+    if(state_map.has(default_state_name))
+    {
+        return state_map[default_state_name]->process_logic(blackboard);
+    }
+    return Ref<CharacterAnimationLogicNode>();
+}

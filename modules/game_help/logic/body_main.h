@@ -116,6 +116,22 @@ public:
 
     // 动画相关
 public:
+    void set_animation_library(const Ref<CharacterAnimationLibrary> &p_library) 
+    {
+        if(animation_library.is_valid() || p_library.is_null())
+        {
+            return;
+        }
+        animation_library = p_library;
+    }
+    Ref<CharacterAnimationLibrary> get_animation_library()
+    {
+        if(animation_library.is_valid())
+        {
+            animation_library.instantiate();
+        }
+        return animation_library;
+    }
     void set_animator(const Ref<CharacterAnimator> &p_animator)
     {
         if(animator.is_valid() || p_animator.is_null())

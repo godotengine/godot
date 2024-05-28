@@ -147,13 +147,13 @@ static void _buffer_to_animationNode(StreamPeerConstBuffer&  buffer,Ref<Characte
 		err = ERR_OUT_OF_MEMORY;
 		return ;
 	}
-	rs->black_board_property = buffer.get_utf8_string(pro_name_len);
+	rs->set_black_board_property(buffer.get_utf8_string(pro_name_len));
 	pro_name_len = buffer.get_32();
 	if(pro_name_len < 0 || pro_name_len > 10240){
 		err = ERR_OUT_OF_MEMORY;
 		return ;
 	}
-	rs->black_board_property_y = buffer.get_utf8_string(pro_name_len);
+	rs->set_black_board_property_y( buffer.get_utf8_string(pro_name_len));
 
 	if(type == 0){
 		// 0 代表是CharacterAnimatorNode1D
@@ -181,7 +181,7 @@ static void _buffer_to_animationNode(StreamPeerConstBuffer&  buffer,Ref<Characte
 		if(err != OK){
 			return ;
 		}
-		rs->animation_arrays.append(animation_item);
+		rs->_add_animation_item(animation_item);
 
 	}
 

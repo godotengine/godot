@@ -117,12 +117,12 @@ public:
         }
         if(part.is_valid())
         {
-            part->disconnect("changed",Callable(this,"_on_part_changed"));
+            part->disconnect("part_changed",Callable(this,"_on_part_changed"));
         }
         part = p_part;
         if(part.is_valid())
         {
-            part->connect("changed",Callable(this,"_on_part_changed"));
+            part->connect("part_changed",Callable(this,"_on_part_changed"));
         }
         init();
     }

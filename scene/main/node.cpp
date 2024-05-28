@@ -4090,19 +4090,19 @@ void Node::node_unhandled_key_input(const Ref<InputEvent> &p_key_event)const
 
 void NodeComponent::_bind_methods()
 {
-	GDVIRTUAL_BIND(_is_supper_class,"node");
-	GDVIRTUAL_BIND(_add_to_node,"node");
-	GDVIRTUAL_BIND(_remove_to_node,"node");
-	GDVIRTUAL_BIND(_node_process,"node","delta");
-	GDVIRTUAL_BIND(_node_physics_process,"node","delta");
-	GDVIRTUAL_BIND(_node_enter_tree,"node");
-	GDVIRTUAL_BIND(_node_exit_tree,"node");
-	GDVIRTUAL_BIND(_node_ready,"node");
-	GDVIRTUAL_BIND(_node_get_configuration_warnings,"node");
-	GDVIRTUAL_BIND(_node_input,"node","event");
-	GDVIRTUAL_BIND(_node_shortcut_input,"node","event");
-	GDVIRTUAL_BIND(_node_unhandled_input,"node","event");
-	GDVIRTUAL_BIND(_node_unhandled_key_input,"node","event");
+	GDVIRTUAL_BIND(_is_supper_class,"node","com_member");
+	GDVIRTUAL_BIND(_add_to_node,"node","com_member");
+	GDVIRTUAL_BIND(_remove_to_node,"node","com_member");
+	GDVIRTUAL_BIND(_node_process,"node","delta","com_member");
+	GDVIRTUAL_BIND(_node_physics_process,"node","delta","com_member");
+	GDVIRTUAL_BIND(_node_enter_tree,"node","com_member");
+	GDVIRTUAL_BIND(_node_exit_tree,"node","com_member");
+	GDVIRTUAL_BIND(_node_ready,"node","com_member");
+	GDVIRTUAL_BIND(_node_get_configuration_warnings,"node","com_member");
+	GDVIRTUAL_BIND(_node_input,"node","event","com_member");
+	GDVIRTUAL_BIND(_node_shortcut_input,"node","event","com_member");
+	GDVIRTUAL_BIND(_node_unhandled_input,"node","event","com_member");
+	GDVIRTUAL_BIND(_node_unhandled_key_input,"node","event","com_member");
 }
 
 
