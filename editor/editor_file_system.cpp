@@ -1867,7 +1867,7 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 		return false;
 	}
 	f = f.substr(6);
-	f = f.replace("\\", "/");
+	f = f.replace_char('\\', '/');
 
 	Vector<String> path = f.split("/");
 
@@ -1993,7 +1993,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 	}
 
 	f = f.substr(6);
-	f = f.replace("\\", "/");
+	f = f.replace_char('\\', '/');
 	if (f.is_empty()) {
 		return filesystem;
 	}

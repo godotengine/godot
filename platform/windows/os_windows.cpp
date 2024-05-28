@@ -113,10 +113,10 @@ static String fix_path(const String &p_path) {
 		size_t str_len = GetCurrentDirectoryW(0, nullptr);
 		current_dir_name.resize(str_len + 1);
 		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
-		path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace("\\", "/").path_join(path);
+		path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(path);
 	}
 	path = path.simplify_path();
-	path = path.replace("/", "\\");
+	path = path.replace_char('/', '\\');
 	if (path.size() >= MAX_PATH && !path.is_network_share_path() && !path.begins_with(R"(\\?\)")) {
 		path = R"(\\?\)" + path;
 	}
@@ -195,7 +195,7 @@ bool OS_Windows::is_using_con_wrapper() const {
 			WCHAR proc_name[MAX_PATH];
 			DWORD len = MAX_PATH;
 			if (QueryFullProcessImageNameW(process, 0, &proc_name[0], &len)) {
-				String name = String::utf16((const char16_t *)&proc_name[0], len).replace("\\", "/").to_lower();
+				String name = String::utf16((const char16_t *)&proc_name[0], len).replace_char('\\', '/').to_lower();
 				if (name == exe_name) {
 					found_exe = true;
 				}
@@ -1879,7 +1879,7 @@ Vector<String> OS_Windows::get_system_font_path_for_text(const String &p_font_na
 		if (FAILED(hr)) {
 			continue;
 		}
-		String fpath = String::utf16((const char16_t *)&file_path[0]).replace("\\", "/");
+		String fpath = String::utf16((const char16_t *)&file_path[0]).replace_char('\\', '/');
 
 		WIN32_FIND_DATAW d;
 		HANDLE fnd = FindFirstFileW((LPCWSTR)&file_path[0], &d);
@@ -1958,7 +1958,7 @@ String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight,
 		if (FAILED(hr)) {
 			continue;
 		}
-		String fpath = String::utf16((const char16_t *)&file_path[0]).replace("\\", "/");
+		String fpath = String::utf16((const char16_t *)&file_path[0]).replace_char('\\', '/');
 
 		WIN32_FIND_DATAW d;
 		HANDLE fnd = FindFirstFileW((LPCWSTR)&file_path[0], &d);
@@ -1978,7 +1978,7 @@ String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight,
 String OS_Windows::get_executable_path() const {
 	WCHAR bufname[4096];
 	GetModuleFileNameW(nullptr, bufname, 4096);
-	String s = String::utf16((const char16_t *)bufname).replace("\\", "/");
+	String s = String::utf16((const char16_t *)bufname).replace_char('\\', '/');
 	return s;
 }
 
@@ -2195,14 +2195,14 @@ String OS_Windows::get_locale() const {
 		}
 
 		if (lang == wl->main_lang && sublang == wl->sublang) {
-			return String(wl->locale).replace("-", "_");
+			return String(wl->locale).replace_char('-', '_');
 		}
 
 		wl++;
 	}
 
 	if (!neutral.is_empty()) {
-		return String(neutral).replace("-", "_");
+		return String(neutral).replace_char('-', '_');
 	}
 
 	return "en";
@@ -2331,7 +2331,7 @@ uint64_t OS_Windows::get_embedded_pck_offset() const {
 
 String OS_Windows::get_config_path() const {
 	if (has_environment("APPDATA")) {
-		return get_environment("APPDATA").replace("\\", "/");
+		return get_environment("APPDATA").replace_char('\\', '/');
 	}
 	return ".";
 }
@@ -2344,7 +2344,7 @@ String OS_Windows::get_cache_path() const {
 	static String cache_path_cache;
 	if (cache_path_cache.is_empty()) {
 		if (has_environment("LOCALAPPDATA")) {
-			cache_path_cache = get_environment("LOCALAPPDATA").replace("\\", "/");
+			cache_path_cache = get_environment("LOCALAPPDATA").replace_char('\\', '/');
 		}
 		if (cache_path_cache.is_empty()) {
 			cache_path_cache = get_temp_path();
@@ -2374,7 +2374,7 @@ String OS_Windows::get_temp_path() const {
 			temp_path_cache = get_config_path();
 		}
 	}
-	return temp_path_cache.replace("\\", "/").trim_suffix("/");
+	return temp_path_cache.replace_char('\\', '/').trim_suffix("/");
 }
 
 // Get properly capitalized engine name for system paths
@@ -2415,13 +2415,13 @@ String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 	PWSTR szPath;
 	HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &szPath);
 	ERR_FAIL_COND_V(res != S_OK, String());
-	String path = String::utf16((const char16_t *)szPath).replace("\\", "/");
+	String path = String::utf16((const char16_t *)szPath).replace_char('\\', '/');
 	CoTaskMemFree(szPath);
 	return path;
 }
 
 String OS_Windows::get_user_data_dir(const String &p_user_dir) const {
-	return get_data_path().path_join(p_user_dir).replace("\\", "/");
+	return get_data_path().path_join(p_user_dir).replace_char('\\', '/');
 }
 
 String OS_Windows::get_unique_id() const {
