@@ -34,6 +34,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/resources/image_texture.h"
 
 void EditorProfiler::_make_metric_ptrs(Metric &m) {
@@ -423,6 +424,15 @@ void EditorProfiler::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			activate->set_icon(get_editor_theme_icon(SNAME("Play")));
 			clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
+
+			theme_cache.seek_line_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+			theme_cache.seek_line_color.a = 0.8;
+			theme_cache.seek_line_hover_color = theme_cache.seek_line_color;
+			theme_cache.seek_line_hover_color.a = 0.4;
+
+			if (total_metrics > 0) {
+				_update_plot();
+			}
 		} break;
 	}
 }
@@ -434,11 +444,11 @@ void EditorProfiler::_graph_tex_draw() {
 	if (seeking) {
 		int frame = cursor_metric_edit->get_value() - _get_frame_metric(0).frame_number;
 		int cur_x = (2 * frame + 1) * graph->get_size().x / (2 * frame_metrics.size()) + 1;
-		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), Color(1, 1, 1, 0.8));
+		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), theme_cache.seek_line_color);
 	}
 	if (hover_metric > -1 && hover_metric < total_metrics) {
 		int cur_x = (2 * hover_metric + 1) * graph->get_size().x / (2 * frame_metrics.size()) + 1;
-		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), Color(1, 1, 1, 0.4));
+		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), theme_cache.seek_line_hover_color);
 	}
 }
 
