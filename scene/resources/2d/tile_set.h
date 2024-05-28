@@ -37,6 +37,7 @@
 #include "core/templates/rb_set.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/main/canvas_item.h"
+#include "scene/property_list_helper.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
 #include "scene/resources/image_texture.h"
@@ -187,6 +188,16 @@ private:
 		int z_index = 0;
 	};
 
+	static inline PropertyListHelper base_occlusion_layer_property_helper;
+	static inline PropertyListHelper base_physics_layer_property_helper;
+	static inline PropertyListHelper base_navigation_layer_property_helper;
+	static inline PropertyListHelper base_custom_data_property_helper;
+
+	PropertyListHelper occlusion_layer_property_helper;
+	PropertyListHelper physics_layer_property_helper;
+	PropertyListHelper navigation_layer_property_helper;
+	PropertyListHelper custom_data_property_helper;
+
 	enum CompatibilityTileMode {
 		COMPATIBILITY_TILE_MODE_SINGLE_TILE = 0,
 		COMPATIBILITY_TILE_MODE_AUTO_TILE,
@@ -297,6 +308,8 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 	void _validate_property(PropertyInfo &p_property) const;
 
 #ifdef TOOLS_ENABLED
