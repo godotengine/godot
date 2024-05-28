@@ -583,7 +583,7 @@ public:
 			ArgumentQualifier qualifier;
 			StringName name;
 			DataType type;
-			StringName type_str;
+			StringName struct_name;
 			DataPrecision precision;
 			//for passing textures as arguments
 			bool tex_argument_check;
@@ -618,7 +618,7 @@ public:
 		struct Constant {
 			StringName name;
 			DataType type;
-			StringName type_str;
+			StringName struct_name;
 			DataPrecision precision;
 			ConstantNode *initializer = nullptr;
 			int array_size;
