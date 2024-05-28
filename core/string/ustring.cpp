@@ -4103,8 +4103,9 @@ String String::replace(const Vector<String> &p_keys, const String &p_with) const
 
 		for (const String &key : p_keys) {
 			const int key_len = key.length();
-			if (src_pos + key_len > len || key_len == 0)
+			if (src_pos + key_len > len || key_len == 0) {
 				continue;
+			}
 
 			bool found = true;
 			for (int k = 0; k < key_len; k++) {
