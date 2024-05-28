@@ -925,7 +925,7 @@ String String::_camelcase_to_underscore() const {
 }
 
 String String::capitalize() const {
-	String aux = _camelcase_to_underscore().replace("_", " ").strip_edges();
+	String aux = _camelcase_to_underscore().replace_char('_', ' ').strip_edges();
 	String cap;
 	for (int i = 0; i < aux.get_slice_count(" "); i++) {
 		String slice = aux.get_slicec(' ', i);
@@ -954,7 +954,7 @@ String String::to_pascal_case() const {
 }
 
 String String::to_snake_case() const {
-	return _camelcase_to_underscore().replace(" ", "_").strip_edges();
+	return _camelcase_to_underscore().replace_char(' ', '_').strip_edges();
 }
 
 String String::get_with_code_lines() const {
@@ -4199,6 +4199,117 @@ String String::replace_first(const char *p_key, const char *p_with) const {
 	return *this;
 }
 
+String String::replace_char(char32_t p_key, char32_t p_with) const {
+	ERR_FAIL_COND_V_MSG(p_with == 0, *this, "`with` must not be the NUL character.");
+
+	if (p_key == 0) {
+		return *this;
+	}
+
+	int len = length();
+	if (len == 0) {
+		return *this;
+	}
+
+	int index = 0;
+	const char32_t *old_ptr = ptr();
+	for (; index < len; ++index) {
+		if (old_ptr[index] == p_key) {
+			break;
+		}
+	}
+
+	// If no occurrence of `key` was found, return this.
+	if (index == len) {
+		return *this;
+	}
+
+	// If we found at least one occurrence of `key`, create new string.
+	String new_string;
+	new_string.resize(len + 1);
+	char32_t *new_ptr = new_string.ptrw();
+
+	// Copy part of input before `key`.
+	memcpy(new_ptr, old_ptr, index * sizeof(char32_t));
+
+	new_ptr[index] = p_with;
+
+	// Copy or replace rest of input.
+	for (++index; index < len; ++index) {
+		if (old_ptr[index] == p_key) {
+			new_ptr[index] = p_with;
+		} else {
+			new_ptr[index] = old_ptr[index];
+		}
+	}
+
+	new_ptr[index] = _null;
+
+	return new_string;
+}
+
+template <class T>
+static String _replace_chars_common(const String &p_this, const T *p_keys, int p_keys_len, char32_t p_with) {
+	ERR_FAIL_COND_V_MSG(p_with == 0, p_this, "`with` must not be the NUL character.");
+
+	// Delegate if p_keys is a single element.
+	if (p_keys_len == 1) {
+		return p_this.replace_char(*p_keys, p_with);
+	} else if (p_keys_len == 0) {
+		return p_this;
+	}
+
+	int len = p_this.length();
+	if (len == 0) {
+		return p_this;
+	}
+
+	int index = 0;
+	const char32_t *old_ptr = p_this.ptr();
+	for (; index < len; ++index) {
+		if (_contains_char(old_ptr[index], p_keys, p_keys_len)) {
+			break;
+		}
+	}
+
+	// If no occurrence of `keys` was found, return this.
+	if (index == len) {
+		return p_this;
+	}
+
+	// If we found at least one occurrence of `keys`, create new string.
+	String new_string;
+	new_string.resize(len + 1);
+	char32_t *new_ptr = new_string.ptrw();
+
+	// Copy part of input before `key`.
+	memcpy(new_ptr, old_ptr, index * sizeof(char32_t));
+
+	new_ptr[index] = p_with;
+
+	// Copy or replace rest of input.
+	for (++index; index < len; ++index) {
+		const char32_t old_char = old_ptr[index];
+		if (_contains_char(old_char, p_keys, p_keys_len)) {
+			new_ptr[index] = p_with;
+		} else {
+			new_ptr[index] = old_char;
+		}
+	}
+
+	new_ptr[index] = 0;
+
+	return new_string;
+}
+
+String String::replace_chars(const String &p_keys, char32_t p_with) const {
+	return _replace_chars_common(*this, p_keys.ptr(), p_keys.length(), p_with);
+}
+
+String String::replace_chars(const char *p_keys, char32_t p_with) const {
+	return _replace_chars_common(*this, p_keys, strlen(p_keys), p_with);
+}
+
 String String::replacen(const String &p_key, const String &p_with) const {
 	return _replace_common(*this, p_key, p_with, true);
 }
@@ -4481,7 +4592,7 @@ String String::simplify_path() const {
 		}
 	}
 
-	s = s.replace("\\", "/");
+	s = s.replace_char('\\', '/');
 	while (true) { // in case of using 2 or more slash
 		String compare = s.replace("//", "/");
 		if (s == compare) {
@@ -5124,8 +5235,8 @@ bool String::is_valid_float() const {
 
 String String::path_to_file(const String &p_path) const {
 	// Don't get base dir for src, this is expected to be a dir already.
-	String src = replace("\\", "/");
-	String dst = p_path.replace("\\", "/").get_base_dir();
+	String src = replace_char('\\', '/');
+	String dst = p_path.replace_char('\\', '/').get_base_dir();
 	String rel = src.path_to(dst);
 	if (rel == dst) { // failed
 		return p_path;
@@ -5135,8 +5246,8 @@ String String::path_to_file(const String &p_path) const {
 }
 
 String String::path_to(const String &p_path) const {
-	String src = replace("\\", "/");
-	String dst = p_path.replace("\\", "/");
+	String src = replace_char('\\', '/');
+	String dst = p_path.replace_char('\\', '/');
 	if (!src.ends_with("/")) {
 		src += "/";
 	}

@@ -108,7 +108,7 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 		}
 	}
 
-	if (!accepted && update_on_text_changed && !line_edit->get_text().replace(",", ".").contains_char('.')) {
+	if (!accepted && update_on_text_changed && !line_edit->get_text().replace_char(',', '.').contains_char('.')) {
 		value = String::num(get_value(), 0);
 	}
 
@@ -124,7 +124,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 
 	if (update_on_text_changed) {
 		// Convert commas ',' to dots '.' for French/German etc. keyboard layouts.
-		text = p_string.replace(",", ".");
+		text = p_string.replace_char(',', '.');
 
 		if (!text.begins_with(".") && p_string.ends_with(".")) {
 			return;
@@ -140,7 +140,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 	Ref<Expression> expr;
 	expr.instantiate();
 
-	text = text.replace(";", ",");
+	text = text.replace_char(';', ',');
 	text = TS->parse_number(text);
 	// Ignore the prefix and suffix in the expression.
 	text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
@@ -175,7 +175,7 @@ void SpinBox::_text_changed(const String &p_string) {
 
 	_text_submitted(p_string);
 
-	String text = p_string.replace(",", ".");
+	String text = p_string.replace_char(',', '.');
 
 	// Line edit 'set_text' method resets the cursor position so we need to undo that.
 	if (update_on_text_changed && !text.begins_with(".")) {

@@ -1714,7 +1714,7 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 				str = get_project_name(p_preset, package_name);
 
 			} else {
-				String lang = str.substr(str.rfind_char('-') + 1).replace("-", "_");
+				String lang = str.substr(str.rfind_char('-') + 1).replace_char('-', '_');
 				if (appnames.has(lang)) {
 					str = appnames[lang];
 				} else {

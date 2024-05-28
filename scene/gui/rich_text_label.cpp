@@ -1934,7 +1934,7 @@ void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int
 	// Process text.
 	const RID &para_rid = l.text_buf->get_rid();
 
-	String l_text = TS->shaped_get_text(para_rid).replace(String::chr(0xfffc), "").strip_edges();
+	String l_text = TS->shaped_get_text(para_rid).remove_char(0xfffc).strip_edges();
 	if (l.dc_item) {
 		ItemDropcap *dc = static_cast<ItemDropcap *>(l.dc_item);
 		l_text = dc->text + l_text;
