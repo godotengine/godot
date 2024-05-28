@@ -124,6 +124,7 @@ private:
 	WindowInitialPosition initial_position = WINDOW_INITIAL_POSITION_ABSOLUTE;
 	bool force_native = false;
 
+	bool main_window = false;
 	bool use_font_oversampling = false;
 	bool transient = false;
 	bool transient_to_focused = false;
