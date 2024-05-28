@@ -261,7 +261,7 @@
 		<signal name="velocity_computed">
 			<param index="0" name="safe_velocity" type="Vector2" />
 			<description>
-				Notifies when the collision avoidance velocity is calculated. Emitted when [member velocity] is set. Only emitted when [member avoidance_enabled] is true.
+				Notifies when the collision avoidance velocity is calculated. Emitted every update as long as [member avoidance_enabled] is [code]true[/code] and the agent has a navigation map.
 			</description>
 		</signal>
 		<signal name="waypoint_reached">
