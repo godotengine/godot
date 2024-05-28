@@ -1003,23 +1003,12 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					if (str.length() == 0) {
-						// Draw line background if empty as we won't loop at all.
-						if (caret_line_wrap_index_map.has(line) && caret_line_wrap_index_map[line].has(line_wrap_index) && highlight_current_line) {
-							if (rtl) {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - ofs_x - xmargin_end, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
-							} else {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(ofs_x, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
-							}
-						}
-					} else {
-						// If it has text, then draw current line marker in the margin, as line number etc will draw over it, draw the rest of line marker later.
-						if (caret_line_wrap_index_map.has(line) && caret_line_wrap_index_map[line].has(line_wrap_index) && highlight_current_line) {
-							if (rtl) {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - ofs_x - xmargin_end, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
-							} else {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(ofs_x, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
-							}
+					// Draw current line highlight.
+					if (highlight_current_line && caret_line_wrap_index_map.has(line) && caret_line_wrap_index_map[line].has(line_wrap_index)) {
+						if (rtl) {
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - ofs_x - xmargin_end, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
+						} else {
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(ofs_x, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
 						}
 					}
 
