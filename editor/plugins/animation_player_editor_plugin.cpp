@@ -881,6 +881,7 @@ void AnimationPlayerEditor::_update_player() {
 
 	tool_anim->set_disabled(player == nullptr);
 	pin->set_disabled(player == nullptr);
+	_set_controls_disabled(player == nullptr);
 
 	if (!player) {
 		AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
@@ -931,17 +932,6 @@ void AnimationPlayerEditor::_update_player() {
 	ITEM_CHECK_DISABLED(TOOL_NEW_ANIM);
 #undef ITEM_CHECK_DISABLED
 
-	stop->set_disabled(no_anims_found);
-	play->set_disabled(no_anims_found);
-	play_bw->set_disabled(no_anims_found);
-	play_bw_from->set_disabled(no_anims_found);
-	play_from->set_disabled(no_anims_found);
-	frame->set_editable(!no_anims_found);
-	animation->set_disabled(no_anims_found);
-	autoplay->set_disabled(no_anims_found);
-	onion_toggle->set_disabled(no_anims_found);
-	onion_skinning->set_disabled(no_anims_found);
-
 	_update_animation_list_icons();
 
 	updating = false;
@@ -958,7 +948,9 @@ void AnimationPlayerEditor::_update_player() {
 		_animation_selected(0);
 	}
 
-	if (!no_anims_found) {
+	if (no_anims_found) {
+		_set_controls_disabled(true);
+	} else {
 		String current = animation->get_item_text(animation->get_selected());
 		Ref<Animation> anim = player->get_animation(current);
 
@@ -972,6 +964,20 @@ void AnimationPlayerEditor::_update_player() {
 	}
 
 	_update_animation();
+}
+
+void AnimationPlayerEditor::_set_controls_disabled(bool p_disabled) {
+	frame->set_editable(!p_disabled);
+
+	stop->set_disabled(p_disabled);
+	play->set_disabled(p_disabled);
+	play_bw->set_disabled(p_disabled);
+	play_bw_from->set_disabled(p_disabled);
+	play_from->set_disabled(p_disabled);
+	animation->set_disabled(p_disabled);
+	autoplay->set_disabled(p_disabled);
+	onion_toggle->set_disabled(p_disabled);
+	onion_skinning->set_disabled(p_disabled);
 }
 
 void AnimationPlayerEditor::_update_animation_list_icons() {
@@ -1076,9 +1082,6 @@ void AnimationPlayerEditor::_ensure_dummy_player() {
 		}
 	}
 
-	// Make some options disabled.
-	onion_toggle->set_disabled(dummy_exists);
-	onion_skinning->set_disabled(dummy_exists);
 	int selected = animation->get_selected();
 	autoplay->set_disabled(selected != -1 ? (animation->get_item_text(selected).is_empty() ? true : dummy_exists) : true);
 
