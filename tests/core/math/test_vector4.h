@@ -39,9 +39,9 @@
 namespace TestVector4 {
 
 TEST_CASE("[Vector4] Constructor methods") {
-	const Vector4 vector_empty = Vector4();
-	const Vector4 vector_zero = Vector4(0.0, 0.0, 0.0, 0.0);
-	CHECK_MESSAGE(
+	constexpr Vector4 vector_empty = Vector4();
+	constexpr Vector4 vector_zero = Vector4(0.0, 0.0, 0.0, 0.0);
+	static_assert(
 			vector_empty == vector_zero,
 			"Vector4 Constructor with no inputs should return a zero Vector4.");
 }
@@ -68,8 +68,8 @@ TEST_CASE("[Vector4] Axis methods") {
 }
 
 TEST_CASE("[Vector4] Interpolation methods") {
-	const Vector4 vector1 = Vector4(1, 2, 3, 4);
-	const Vector4 vector2 = Vector4(4, 5, 6, 7);
+	constexpr Vector4 vector1 = Vector4(1, 2, 3, 4);
+	constexpr Vector4 vector2 = Vector4(4, 5, 6, 7);
 	CHECK_MESSAGE(
 			vector1.lerp(vector2, 0.5) == Vector4(2.5, 3.5, 4.5, 5.5),
 			"Vector4 lerp should work as expected.");
@@ -85,8 +85,8 @@ TEST_CASE("[Vector4] Interpolation methods") {
 }
 
 TEST_CASE("[Vector4] Length methods") {
-	const Vector4 vector1 = Vector4(10, 10, 10, 10);
-	const Vector4 vector2 = Vector4(20, 30, 40, 50);
+	constexpr Vector4 vector1 = Vector4(10, 10, 10, 10);
+	constexpr Vector4 vector2 = Vector4(20, 30, 40, 50);
 	CHECK_MESSAGE(
 			vector1.length_squared() == 400,
 			"Vector4 length_squared should work as expected and return exact result.");
@@ -108,7 +108,7 @@ TEST_CASE("[Vector4] Length methods") {
 }
 
 TEST_CASE("[Vector4] Limiting methods") {
-	const Vector4 vector = Vector4(10, 10, 10, 10);
+	constexpr Vector4 vector = Vector4(10, 10, 10, 10);
 	CHECK_MESSAGE(
 			Vector4(-5, 5, 15, -15).clamp(Vector4(), vector) == Vector4(0, 5, 10, 0),
 			"Vector4 clamp should work as expected.");
@@ -136,12 +136,12 @@ TEST_CASE("[Vector4] Normalization methods") {
 }
 
 TEST_CASE("[Vector4] Operators") {
-	const Vector4 decimal1 = Vector4(2.3, 4.9, 7.8, 3.2);
-	const Vector4 decimal2 = Vector4(1.2, 3.4, 5.6, 1.7);
-	const Vector4 power1 = Vector4(0.75, 1.5, 0.625, 0.125);
-	const Vector4 power2 = Vector4(0.5, 0.125, 0.25, 0.75);
-	const Vector4 int1 = Vector4(4, 5, 9, 2);
-	const Vector4 int2 = Vector4(1, 2, 3, 1);
+	constexpr Vector4 decimal1 = Vector4(2.3, 4.9, 7.8, 3.2);
+	constexpr Vector4 decimal2 = Vector4(1.2, 3.4, 5.6, 1.7);
+	constexpr Vector4 power1 = Vector4(0.75, 1.5, 0.625, 0.125);
+	constexpr Vector4 power2 = Vector4(0.5, 0.125, 0.25, 0.75);
+	constexpr Vector4 int1 = Vector4(4, 5, 9, 2);
+	constexpr Vector4 int2 = Vector4(1, 2, 3, 1);
 
 	CHECK_MESSAGE(
 			-decimal1 == Vector4(-2.3, -4.9, -7.8, -3.2),
@@ -227,7 +227,7 @@ TEST_CASE("[Vector4] Operators") {
 }
 
 TEST_CASE("[Vector4] Other methods") {
-	const Vector4 vector = Vector4(1.2, 3.4, 5.6, 1.6);
+	constexpr Vector4 vector = Vector4(1.2, 3.4, 5.6, 1.6);
 	CHECK_MESSAGE(
 			vector.direction_to(Vector4()).is_equal_approx(-vector.normalized()),
 			"Vector4 direction_to should work as expected.");
@@ -266,8 +266,8 @@ TEST_CASE("[Vector4] Other methods") {
 }
 
 TEST_CASE("[Vector4] Rounding methods") {
-	const Vector4 vector1 = Vector4(1.2, 3.4, 5.6, 1.6);
-	const Vector4 vector2 = Vector4(1.2, -3.4, -5.6, -1.6);
+	constexpr Vector4 vector1 = Vector4(1.2, 3.4, 5.6, 1.6);
+	constexpr Vector4 vector2 = Vector4(1.2, -3.4, -5.6, -1.6);
 	CHECK_MESSAGE(
 			vector1.abs() == vector1,
 			"Vector4 abs should work as expected.");
@@ -304,10 +304,10 @@ TEST_CASE("[Vector4] Rounding methods") {
 }
 
 TEST_CASE("[Vector4] Linear algebra methods") {
-	const Vector4 vector_x = Vector4(1, 0, 0, 0);
-	const Vector4 vector_y = Vector4(0, 1, 0, 0);
-	const Vector4 vector1 = Vector4(1.7, 2.3, 1, 9.1);
-	const Vector4 vector2 = Vector4(-8.2, -16, 3, 2.4);
+	constexpr Vector4 vector_x = Vector4(1, 0, 0, 0);
+	constexpr Vector4 vector_y = Vector4(0, 1, 0, 0);
+	constexpr Vector4 vector1 = Vector4(1.7, 2.3, 1, 9.1);
+	constexpr Vector4 vector2 = Vector4(-8.2, -16, 3, 2.4);
 
 	CHECK_MESSAGE(
 			vector_x.dot(vector_y) == 0.0,

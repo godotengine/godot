@@ -38,16 +38,16 @@
 namespace TestVector2 {
 
 TEST_CASE("[Vector2] Constructor methods") {
-	const Vector2 vector_empty = Vector2();
-	const Vector2 vector_zero = Vector2(0.0, 0.0);
-	CHECK_MESSAGE(
+	constexpr Vector2 vector_empty = Vector2();
+	constexpr Vector2 vector_zero = Vector2(0.0, 0.0);
+	static_assert(
 			vector_empty == vector_zero,
 			"Vector2 Constructor with no inputs should return a zero Vector2.");
 }
 
 TEST_CASE("[Vector2] Angle methods") {
-	const Vector2 vector_x = Vector2(1, 0);
-	const Vector2 vector_y = Vector2(0, 1);
+	constexpr Vector2 vector_x = Vector2(1, 0);
+	constexpr Vector2 vector_y = Vector2(0, 1);
 	CHECK_MESSAGE(
 			vector_x.angle_to(vector_y) == doctest::Approx((real_t)Math_TAU / 4),
 			"Vector2 angle_to should work as expected.");
@@ -80,8 +80,8 @@ TEST_CASE("[Vector2] Axis methods") {
 }
 
 TEST_CASE("[Vector2] Interpolation methods") {
-	const Vector2 vector1 = Vector2(1, 2);
-	const Vector2 vector2 = Vector2(4, 5);
+	constexpr Vector2 vector1 = Vector2(1, 2);
+	constexpr Vector2 vector2 = Vector2(4, 5);
 	CHECK_MESSAGE(
 			vector1.lerp(vector2, 0.5) == Vector2(2.5, 3.5),
 			"Vector2 lerp should work as expected.");
@@ -130,8 +130,8 @@ TEST_CASE("[Vector2] Interpolation methods") {
 }
 
 TEST_CASE("[Vector2] Length methods") {
-	const Vector2 vector1 = Vector2(10, 10);
-	const Vector2 vector2 = Vector2(20, 30);
+	constexpr Vector2 vector1 = Vector2(10, 10);
+	constexpr Vector2 vector2 = Vector2(20, 30);
 	CHECK_MESSAGE(
 			vector1.length_squared() == 200,
 			"Vector2 length_squared should work as expected and return exact result.");
@@ -153,7 +153,7 @@ TEST_CASE("[Vector2] Length methods") {
 }
 
 TEST_CASE("[Vector2] Limiting methods") {
-	const Vector2 vector = Vector2(10, 10);
+	constexpr Vector2 vector = Vector2(10, 10);
 	CHECK_MESSAGE(
 			vector.limit_length().is_equal_approx(Vector2(Math_SQRT12, Math_SQRT12)),
 			"Vector2 limit_length should work as expected.");
@@ -194,12 +194,12 @@ TEST_CASE("[Vector2] Normalization methods") {
 }
 
 TEST_CASE("[Vector2] Operators") {
-	const Vector2 decimal1 = Vector2(2.3, 4.9);
-	const Vector2 decimal2 = Vector2(1.2, 3.4);
-	const Vector2 power1 = Vector2(0.75, 1.5);
-	const Vector2 power2 = Vector2(0.5, 0.125);
-	const Vector2 int1 = Vector2(4, 5);
-	const Vector2 int2 = Vector2(1, 2);
+	constexpr Vector2 decimal1 = Vector2(2.3, 4.9);
+	constexpr Vector2 decimal2 = Vector2(1.2, 3.4);
+	constexpr Vector2 power1 = Vector2(0.75, 1.5);
+	constexpr Vector2 power2 = Vector2(0.5, 0.125);
+	constexpr Vector2 int1 = Vector2(4, 5);
+	constexpr Vector2 int2 = Vector2(1, 2);
 
 	CHECK_MESSAGE(
 			(decimal1 + decimal2).is_equal_approx(Vector2(3.5, 8.3)),
@@ -292,7 +292,7 @@ TEST_CASE("[Vector2] Operators") {
 }
 
 TEST_CASE("[Vector2] Other methods") {
-	const Vector2 vector = Vector2(1.2, 3.4);
+	constexpr Vector2 vector = Vector2(1.2, 3.4);
 	CHECK_MESSAGE(
 			vector.aspect() == doctest::Approx((real_t)1.2 / (real_t)3.4),
 			"Vector2 aspect should work as expected.");
@@ -350,10 +350,10 @@ TEST_CASE("[Vector2] Other methods") {
 }
 
 TEST_CASE("[Vector2] Plane methods") {
-	const Vector2 vector = Vector2(1.2, 3.4);
-	const Vector2 vector_y = Vector2(0, 1);
-	const Vector2 vector_normal = Vector2(0.95879811270838721622267, 0.2840883296913739899919);
-	const Vector2 vector_non_normal = Vector2(5.4, 1.6);
+	constexpr Vector2 vector = Vector2(1.2, 3.4);
+	constexpr Vector2 vector_y = Vector2(0, 1);
+	constexpr Vector2 vector_normal = Vector2(0.95879811270838721622267, 0.2840883296913739899919);
+	constexpr Vector2 vector_non_normal = Vector2(5.4, 1.6);
 	const real_t p_d = 99.1;
 	CHECK_MESSAGE(
 			vector.bounce(vector_y) == Vector2(1.2, -3.4),
@@ -397,8 +397,8 @@ TEST_CASE("[Vector2] Plane methods") {
 }
 
 TEST_CASE("[Vector2] Rounding methods") {
-	const Vector2 vector1 = Vector2(1.2, 5.6);
-	const Vector2 vector2 = Vector2(1.2, -5.6);
+	constexpr Vector2 vector1 = Vector2(1.2, 5.6);
+	constexpr Vector2 vector2 = Vector2(1.2, -5.6);
 	CHECK_MESSAGE(
 			vector1.abs() == vector1,
 			"Vector2 abs should work as expected.");
@@ -436,10 +436,10 @@ TEST_CASE("[Vector2] Rounding methods") {
 }
 
 TEST_CASE("[Vector2] Linear algebra methods") {
-	const Vector2 vector_x = Vector2(1, 0);
-	const Vector2 vector_y = Vector2(0, 1);
-	const Vector2 a = Vector2(3.5, 8.5);
-	const Vector2 b = Vector2(5.2, 4.6);
+	constexpr Vector2 vector_x = Vector2(1, 0);
+	constexpr Vector2 vector_y = Vector2(0, 1);
+	constexpr Vector2 a = Vector2(3.5, 8.5);
+	constexpr Vector2 b = Vector2(5.2, 4.6);
 	CHECK_MESSAGE(
 			vector_x.cross(vector_y) == 1,
 			"Vector2 cross product of X and Y should give 1.");

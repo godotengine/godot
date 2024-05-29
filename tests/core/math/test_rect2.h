@@ -38,15 +38,15 @@
 
 namespace TestRect2 {
 TEST_CASE("[Rect2] Constructor methods") {
-	const Rect2 rect = Rect2(0, 100, 1280, 720);
-	const Rect2 rect_vector = Rect2(Vector2(0, 100), Vector2(1280, 720));
-	const Rect2 rect_copy_rect = Rect2(rect);
+	constexpr Rect2 rect = Rect2(0, 100, 1280, 720);
+	constexpr Rect2 rect_vector = Rect2(Vector2(0, 100), Vector2(1280, 720));
+	constexpr Rect2 rect_copy_rect = Rect2(rect);
 	const Rect2 rect_copy_recti = Rect2(Rect2i(0, 100, 1280, 720));
 
-	CHECK_MESSAGE(
+	static_assert(
 			rect == rect_vector,
 			"Rect2s created with the same dimensions but by different methods should be equal.");
-	CHECK_MESSAGE(
+	static_assert(
 			rect == rect_copy_rect,
 			"Rect2s created with the same dimensions but by different methods should be equal.");
 	CHECK_MESSAGE(
@@ -302,7 +302,7 @@ TEST_CASE("[Rect2] Merging") {
 }
 
 TEST_CASE("[Rect2] Finite number checks") {
-	const Vector2 x(0, 1);
+	constexpr Vector2 x(0, 1);
 	const Vector2 infinite(NAN, NAN);
 
 	CHECK_MESSAGE(

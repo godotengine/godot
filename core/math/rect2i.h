@@ -144,9 +144,6 @@ struct _NO_DISCARD_ Rect2i {
 		return true;
 	}
 
-	bool operator==(const Rect2i &p_rect) const { return position == p_rect.position && size == p_rect.size; }
-	bool operator!=(const Rect2i &p_rect) const { return position != p_rect.position || size != p_rect.size; }
-
 	Rect2i grow(int p_amount) const {
 		Rect2i g = *this;
 		g.position.x -= p_amount;
@@ -224,18 +221,21 @@ struct _NO_DISCARD_ Rect2i {
 		return position + size;
 	}
 
+	constexpr bool operator==(const Rect2i &p_rect) const { return position == p_rect.position && size == p_rect.size; }
+	constexpr bool operator!=(const Rect2i &p_rect) const { return position != p_rect.position || size != p_rect.size; }
+
 	operator String() const;
 	operator Rect2() const;
 
-	Rect2i() {}
-	Rect2i(int p_x, int p_y, int p_width, int p_height) :
+	constexpr Rect2i() {}
+
+	constexpr Rect2i(int p_x, int p_y, int p_width, int p_height) :
 			position(Point2i(p_x, p_y)),
-			size(Size2i(p_width, p_height)) {
-	}
-	Rect2i(const Point2i &p_pos, const Size2i &p_size) :
+			size(Size2i(p_width, p_height)) {}
+
+	constexpr Rect2i(const Point2i &p_pos, const Size2i &p_size) :
 			position(p_pos),
-			size(p_size) {
-	}
+			size(p_size) {}
 };
 
 #endif // RECT2I_H

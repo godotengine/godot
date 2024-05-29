@@ -40,17 +40,17 @@
 namespace TestVector3 {
 
 TEST_CASE("[Vector3] Constructor methods") {
-	const Vector3 vector_empty = Vector3();
-	const Vector3 vector_zero = Vector3(0.0, 0.0, 0.0);
-	CHECK_MESSAGE(
+	constexpr Vector3 vector_empty = Vector3();
+	constexpr Vector3 vector_zero = Vector3(0.0, 0.0, 0.0);
+	static_assert(
 			vector_empty == vector_zero,
 			"Vector3 Constructor with no inputs should return a zero Vector3.");
 }
 
 TEST_CASE("[Vector3] Angle methods") {
-	const Vector3 vector_x = Vector3(1, 0, 0);
-	const Vector3 vector_y = Vector3(0, 1, 0);
-	const Vector3 vector_yz = Vector3(0, 1, 1);
+	constexpr Vector3 vector_x = Vector3(1, 0, 0);
+	constexpr Vector3 vector_y = Vector3(0, 1, 0);
+	constexpr Vector3 vector_yz = Vector3(0, 1, 1);
 	CHECK_MESSAGE(
 			vector_x.angle_to(vector_y) == doctest::Approx((real_t)Math_TAU / 4),
 			"Vector3 angle_to should work as expected.");
@@ -97,8 +97,8 @@ TEST_CASE("[Vector3] Axis methods") {
 }
 
 TEST_CASE("[Vector3] Interpolation methods") {
-	const Vector3 vector1 = Vector3(1, 2, 3);
-	const Vector3 vector2 = Vector3(4, 5, 6);
+	constexpr Vector3 vector1 = Vector3(1, 2, 3);
+	constexpr Vector3 vector2 = Vector3(4, 5, 6);
 	CHECK_MESSAGE(
 			vector1.lerp(vector2, 0.5) == Vector3(2.5, 3.5, 4.5),
 			"Vector3 lerp should work as expected.");
@@ -147,8 +147,8 @@ TEST_CASE("[Vector3] Interpolation methods") {
 }
 
 TEST_CASE("[Vector3] Length methods") {
-	const Vector3 vector1 = Vector3(10, 10, 10);
-	const Vector3 vector2 = Vector3(20, 30, 40);
+	constexpr Vector3 vector1 = Vector3(10, 10, 10);
+	constexpr Vector3 vector2 = Vector3(20, 30, 40);
 	CHECK_MESSAGE(
 			vector1.length_squared() == 300,
 			"Vector3 length_squared should work as expected and return exact result.");
@@ -170,7 +170,7 @@ TEST_CASE("[Vector3] Length methods") {
 }
 
 TEST_CASE("[Vector3] Limiting methods") {
-	const Vector3 vector = Vector3(10, 10, 10);
+	constexpr Vector3 vector = Vector3(10, 10, 10);
 	CHECK_MESSAGE(
 			vector.limit_length().is_equal_approx(Vector3(Math_SQRT13, Math_SQRT13, Math_SQRT13)),
 			"Vector3 limit_length should work as expected.");
@@ -214,12 +214,12 @@ TEST_CASE("[Vector3] Normalization methods") {
 }
 
 TEST_CASE("[Vector3] Operators") {
-	const Vector3 decimal1 = Vector3(2.3, 4.9, 7.8);
-	const Vector3 decimal2 = Vector3(1.2, 3.4, 5.6);
-	const Vector3 power1 = Vector3(0.75, 1.5, 0.625);
-	const Vector3 power2 = Vector3(0.5, 0.125, 0.25);
-	const Vector3 int1 = Vector3(4, 5, 9);
-	const Vector3 int2 = Vector3(1, 2, 3);
+	constexpr Vector3 decimal1 = Vector3(2.3, 4.9, 7.8);
+	constexpr Vector3 decimal2 = Vector3(1.2, 3.4, 5.6);
+	constexpr Vector3 power1 = Vector3(0.75, 1.5, 0.625);
+	constexpr Vector3 power2 = Vector3(0.5, 0.125, 0.25);
+	constexpr Vector3 int1 = Vector3(4, 5, 9);
+	constexpr Vector3 int2 = Vector3(1, 2, 3);
 
 	CHECK_MESSAGE(
 			(decimal1 + decimal2).is_equal_approx(Vector3(3.5, 8.3, 13.4)),
@@ -312,7 +312,7 @@ TEST_CASE("[Vector3] Operators") {
 }
 
 TEST_CASE("[Vector3] Other methods") {
-	const Vector3 vector = Vector3(1.2, 3.4, 5.6);
+	constexpr Vector3 vector = Vector3(1.2, 3.4, 5.6);
 	CHECK_MESSAGE(
 			vector.direction_to(Vector3()).is_equal_approx(-vector.normalized()),
 			"Vector3 direction_to should work as expected.");
@@ -365,10 +365,10 @@ TEST_CASE("[Vector3] Other methods") {
 }
 
 TEST_CASE("[Vector3] Plane methods") {
-	const Vector3 vector = Vector3(1.2, 3.4, 5.6);
-	const Vector3 vector_y = Vector3(0, 1, 0);
-	const Vector3 vector_normal = Vector3(0.88763458893247992491, 0.26300284116517923701, 0.37806658417494515320);
-	const Vector3 vector_non_normal = Vector3(5.4, 1.6, 2.3);
+	constexpr Vector3 vector = Vector3(1.2, 3.4, 5.6);
+	constexpr Vector3 vector_y = Vector3(0, 1, 0);
+	constexpr Vector3 vector_normal = Vector3(0.88763458893247992491, 0.26300284116517923701, 0.37806658417494515320);
+	constexpr Vector3 vector_non_normal = Vector3(5.4, 1.6, 2.3);
 	CHECK_MESSAGE(
 			vector.bounce(vector_y) == Vector3(1.2, -3.4, 5.6),
 			"Vector3 bounce on a plane with normal of the Y axis should.");
@@ -408,8 +408,8 @@ TEST_CASE("[Vector3] Plane methods") {
 }
 
 TEST_CASE("[Vector3] Rounding methods") {
-	const Vector3 vector1 = Vector3(1.2, 3.4, 5.6);
-	const Vector3 vector2 = Vector3(1.2, -3.4, -5.6);
+	constexpr Vector3 vector1 = Vector3(1.2, 3.4, 5.6);
+	constexpr Vector3 vector2 = Vector3(1.2, -3.4, -5.6);
 	CHECK_MESSAGE(
 			vector1.abs() == vector1,
 			"Vector3 abs should work as expected.");
@@ -447,11 +447,11 @@ TEST_CASE("[Vector3] Rounding methods") {
 }
 
 TEST_CASE("[Vector3] Linear algebra methods") {
-	const Vector3 vector_x = Vector3(1, 0, 0);
-	const Vector3 vector_y = Vector3(0, 1, 0);
-	const Vector3 vector_z = Vector3(0, 0, 1);
-	const Vector3 a = Vector3(3.5, 8.5, 2.3);
-	const Vector3 b = Vector3(5.2, 4.6, 7.8);
+	constexpr Vector3 vector_x = Vector3(1, 0, 0);
+	constexpr Vector3 vector_y = Vector3(0, 1, 0);
+	constexpr Vector3 vector_z = Vector3(0, 0, 1);
+	constexpr Vector3 a = Vector3(3.5, 8.5, 2.3);
+	constexpr Vector3 b = Vector3(5.2, 4.6, 7.8);
 	CHECK_MESSAGE(
 			vector_x.cross(vector_y) == vector_z,
 			"Vector3 cross product of X and Y should give Z.");

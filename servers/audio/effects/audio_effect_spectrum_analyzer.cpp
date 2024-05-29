@@ -189,7 +189,7 @@ Vector2 AudioEffectSpectrumAnalyzerInstance::get_magnitude_for_frequency_range(f
 		Vector2 avg;
 
 		for (int i = begin_pos; i <= end_pos; i++) {
-			avg += Vector2(r[i]);
+			avg += Vector2(r[i].left, r[i].right);
 		}
 
 		avg /= float(end_pos - begin_pos + 1);

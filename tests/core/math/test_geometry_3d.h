@@ -47,7 +47,7 @@ TEST_CASE("[Geometry3D] Closest Distance Between Segments") {
 }
 
 TEST_CASE("[Geometry3D] Build Box Planes") {
-	const Vector3 extents = Vector3(5, 5, 20);
+	constexpr Vector3 extents = Vector3(5, 5, 20);
 	Vector<Plane> box = Geometry3D::build_box_planes(extents);
 	CHECK(box.size() == 6);
 	CHECK(extents.x == box[0].d);

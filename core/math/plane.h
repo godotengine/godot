@@ -71,21 +71,27 @@ struct _NO_DISCARD_ Plane {
 
 	/* misc */
 
-	Plane operator-() const { return Plane(-normal, -d); }
 	bool is_equal_approx(const Plane &p_plane) const;
 	bool is_equal_approx_any_side(const Plane &p_plane) const;
 	bool is_finite() const;
 
-	_FORCE_INLINE_ bool operator==(const Plane &p_plane) const;
-	_FORCE_INLINE_ bool operator!=(const Plane &p_plane) const;
+	constexpr Plane operator-() const { return Plane(-normal, -d); }
+
+	constexpr bool operator==(const Plane &p_plane) const { return normal == p_plane.normal && d == p_plane.d; }
+	constexpr bool operator!=(const Plane &p_plane) const { return normal != p_plane.normal || d != p_plane.d; }
+
 	operator String() const;
 
-	_FORCE_INLINE_ Plane() {}
-	_FORCE_INLINE_ Plane(real_t p_a, real_t p_b, real_t p_c, real_t p_d) :
+	constexpr Plane() {}
+
+	constexpr Plane(real_t p_a, real_t p_b, real_t p_c, real_t p_d) :
 			normal(p_a, p_b, p_c),
 			d(p_d) {}
 
-	_FORCE_INLINE_ Plane(const Vector3 &p_normal, real_t p_d = 0.0);
+	constexpr Plane(const Vector3 &p_normal, real_t p_d = 0) :
+			normal(p_normal),
+			d(p_d) {}
+
 	_FORCE_INLINE_ Plane(const Vector3 &p_normal, const Vector3 &p_point);
 	_FORCE_INLINE_ Plane(const Vector3 &p_point1, const Vector3 &p_point2, const Vector3 &p_point3, ClockDirection p_dir = CLOCKWISE);
 };
@@ -104,11 +110,6 @@ bool Plane::has_point(const Vector3 &p_point, real_t p_tolerance) const {
 	return (dist <= p_tolerance);
 }
 
-Plane::Plane(const Vector3 &p_normal, real_t p_d) :
-		normal(p_normal),
-		d(p_d) {
-}
-
 Plane::Plane(const Vector3 &p_normal, const Vector3 &p_point) :
 		normal(p_normal),
 		d(p_normal.dot(p_point)) {
@@ -123,14 +124,6 @@ Plane::Plane(const Vector3 &p_point1, const Vector3 &p_point2, const Vector3 &p_
 
 	normal.normalize();
 	d = normal.dot(p_point1);
-}
-
-bool Plane::operator==(const Plane &p_plane) const {
-	return normal == p_plane.normal && d == p_plane.d;
-}
-
-bool Plane::operator!=(const Plane &p_plane) const {
-	return normal != p_plane.normal || d != p_plane.d;
 }
 
 #endif // PLANE_H

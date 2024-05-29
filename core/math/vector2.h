@@ -38,7 +38,7 @@ class String;
 struct Vector2i;
 
 struct _NO_DISCARD_ Vector2 {
-	static const int AXIS_COUNT = 2;
+	static constexpr int AXIS_COUNT = 2;
 
 	enum Axis {
 		AXIS_X,
@@ -47,27 +47,20 @@ struct _NO_DISCARD_ Vector2 {
 
 	union {
 		struct {
-			union {
-				real_t x;
-				real_t width;
-			};
-			union {
-				real_t y;
-				real_t height;
-			};
+			real_t x;
+			real_t y;
 		};
 
-		real_t coord[2] = { 0 };
+		struct {
+			real_t width;
+			real_t height;
+		};
+
+		real_t coord[2] = { 0, 0 };
 	};
 
-	_FORCE_INLINE_ real_t &operator[](int p_axis) {
-		DEV_ASSERT((unsigned int)p_axis < 2);
-		return coord[p_axis];
-	}
-	_FORCE_INLINE_ const real_t &operator[](int p_axis) const {
-		DEV_ASSERT((unsigned int)p_axis < 2);
-		return coord[p_axis];
-	}
+	constexpr const real_t &operator[](size_t p_axis) const;
+	constexpr real_t &operator[](size_t p_axis);
 
 	_FORCE_INLINE_ Vector2::Axis min_axis_index() const {
 		return x < y ? Vector2::AXIS_X : Vector2::AXIS_Y;
@@ -132,33 +125,6 @@ struct _NO_DISCARD_ Vector2 {
 	bool is_zero_approx() const;
 	bool is_finite() const;
 
-	Vector2 operator+(const Vector2 &p_v) const;
-	void operator+=(const Vector2 &p_v);
-	Vector2 operator-(const Vector2 &p_v) const;
-	void operator-=(const Vector2 &p_v);
-	Vector2 operator*(const Vector2 &p_v1) const;
-
-	Vector2 operator*(real_t p_rvalue) const;
-	void operator*=(real_t p_rvalue);
-	void operator*=(const Vector2 &p_rvalue) { *this = *this * p_rvalue; }
-
-	Vector2 operator/(const Vector2 &p_v1) const;
-
-	Vector2 operator/(real_t p_rvalue) const;
-
-	void operator/=(real_t p_rvalue);
-	void operator/=(const Vector2 &p_rvalue) { *this = *this / p_rvalue; }
-
-	Vector2 operator-() const;
-
-	bool operator==(const Vector2 &p_vec2) const;
-	bool operator!=(const Vector2 &p_vec2) const;
-
-	bool operator<(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y < p_vec2.y) : (x < p_vec2.x); }
-	bool operator>(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y > p_vec2.y) : (x > p_vec2.x); }
-	bool operator<=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x); }
-	bool operator>=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
-
 	real_t angle() const;
 	static Vector2 from_angle(real_t p_angle);
 
@@ -181,74 +147,180 @@ struct _NO_DISCARD_ Vector2 {
 	Vector2 clampf(real_t p_min, real_t p_max) const;
 	real_t aspect() const { return width / height; }
 
+	constexpr Vector2 &operator+=(const Vector2 &p_other);
+	constexpr Vector2 operator+(const Vector2 &p_other) const;
+	constexpr Vector2 &operator-=(const Vector2 &p_other);
+	constexpr Vector2 operator-(const Vector2 &p_other) const;
+	constexpr Vector2 &operator*=(const Vector2 &p_other);
+	constexpr Vector2 operator*(const Vector2 &p_other) const;
+	constexpr Vector2 &operator/=(const Vector2 &p_other);
+	constexpr Vector2 operator/(const Vector2 &p_other) const;
+
+	constexpr Vector2 &operator*=(real_t p_scalar);
+	constexpr Vector2 operator*(real_t p_scalar) const;
+	constexpr Vector2 &operator/=(real_t p_scalar);
+	constexpr Vector2 operator/(real_t p_scalar) const;
+
+	constexpr Vector2 operator-() const;
+
+	constexpr bool operator==(const Vector2 &p_other) const;
+	constexpr bool operator!=(const Vector2 &p_other) const;
+	constexpr bool operator<(const Vector2 &p_other) const;
+	constexpr bool operator<=(const Vector2 &p_other) const;
+	constexpr bool operator>(const Vector2 &p_other) const;
+	constexpr bool operator>=(const Vector2 &p_other) const;
+
 	operator String() const;
 	operator Vector2i() const;
 
-	_FORCE_INLINE_ Vector2() {}
-	_FORCE_INLINE_ Vector2(real_t p_x, real_t p_y) {
-		x = p_x;
-		y = p_y;
-	}
+	constexpr Vector2() :
+			x(0), y(0) {}
+
+	constexpr Vector2(real_t p_x, real_t p_y) :
+			x(p_x), y(p_y) {}
 };
 
-_FORCE_INLINE_ Vector2 Vector2::plane_project(real_t p_d, const Vector2 &p_vec) const {
-	return p_vec - *this * (dot(p_vec) - p_d);
+constexpr const real_t &Vector2::operator[](size_t p_axis) const {
+#ifdef DEV_ENABLED
+	if (!__builtin_is_constant_evaluated()) {
+		CRASH_BAD_UNSIGNED_INDEX(p_axis, AXIS_COUNT);
+	}
+#endif
+	switch (p_axis) {
+		case AXIS_X:
+			return x;
+		case AXIS_Y:
+			return y;
+		default:
+			return coord[p_axis];
+	}
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator+(const Vector2 &p_v) const {
-	return Vector2(x + p_v.x, y + p_v.y);
+constexpr real_t &Vector2::operator[](size_t p_axis) {
+#ifdef DEV_ENABLED
+	if (!__builtin_is_constant_evaluated()) {
+		CRASH_BAD_UNSIGNED_INDEX(p_axis, AXIS_COUNT);
+	}
+#endif
+	switch (p_axis) {
+		case AXIS_X:
+			return x;
+		case AXIS_Y:
+			return y;
+		default:
+			return coord[p_axis];
+	}
 }
 
-_FORCE_INLINE_ void Vector2::operator+=(const Vector2 &p_v) {
-	x += p_v.x;
-	y += p_v.y;
+constexpr Vector2 &Vector2::operator+=(const Vector2 &p_other) {
+	x += p_other.x;
+	y += p_other.y;
+	return *this;
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator-(const Vector2 &p_v) const {
-	return Vector2(x - p_v.x, y - p_v.y);
+constexpr Vector2 Vector2::operator+(const Vector2 &p_other) const {
+	return Vector2(x + p_other.x, y + p_other.y);
 }
 
-_FORCE_INLINE_ void Vector2::operator-=(const Vector2 &p_v) {
-	x -= p_v.x;
-	y -= p_v.y;
+constexpr Vector2 &Vector2::operator-=(const Vector2 &p_other) {
+	x -= p_other.x;
+	y -= p_other.y;
+	return *this;
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator*(const Vector2 &p_v1) const {
-	return Vector2(x * p_v1.x, y * p_v1.y);
+constexpr Vector2 Vector2::operator-(const Vector2 &p_other) const {
+	return Vector2(x - p_other.x, y - p_other.y);
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator*(real_t p_rvalue) const {
-	return Vector2(x * p_rvalue, y * p_rvalue);
+constexpr Vector2 &Vector2::operator*=(const Vector2 &p_other) {
+	x *= p_other.x;
+	y *= p_other.y;
+	return *this;
 }
 
-_FORCE_INLINE_ void Vector2::operator*=(real_t p_rvalue) {
-	x *= p_rvalue;
-	y *= p_rvalue;
+constexpr Vector2 Vector2::operator*(const Vector2 &p_other) const {
+	return Vector2(x * p_other.x, y * p_other.y);
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator/(const Vector2 &p_v1) const {
-	return Vector2(x / p_v1.x, y / p_v1.y);
+constexpr Vector2 &Vector2::operator/=(const Vector2 &p_other) {
+	x /= p_other.x;
+	y /= p_other.y;
+	return *this;
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator/(real_t p_rvalue) const {
-	return Vector2(x / p_rvalue, y / p_rvalue);
+constexpr Vector2 Vector2::operator/(const Vector2 &p_other) const {
+	return Vector2(x / p_other.x, y / p_other.y);
 }
 
-_FORCE_INLINE_ void Vector2::operator/=(real_t p_rvalue) {
-	x /= p_rvalue;
-	y /= p_rvalue;
+constexpr Vector2 &Vector2::operator*=(real_t p_scalar) {
+	x *= p_scalar;
+	y *= p_scalar;
+	return *this;
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator-() const {
+constexpr Vector2 Vector2::operator*(real_t p_scalar) const {
+	return Vector2(x * p_scalar, y * p_scalar);
+}
+
+constexpr Vector2 &Vector2::operator/=(real_t p_scalar) {
+	x /= p_scalar;
+	y /= p_scalar;
+	return *this;
+}
+
+constexpr Vector2 Vector2::operator/(real_t p_scalar) const {
+	return Vector2(x / p_scalar, y / p_scalar);
+}
+
+constexpr Vector2 Vector2::operator-() const {
 	return Vector2(-x, -y);
 }
 
-_FORCE_INLINE_ bool Vector2::operator==(const Vector2 &p_vec2) const {
+constexpr bool Vector2::operator==(const Vector2 &p_vec2) const {
 	return x == p_vec2.x && y == p_vec2.y;
 }
 
-_FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
+constexpr bool Vector2::operator!=(const Vector2 &p_vec2) const {
 	return x != p_vec2.x || y != p_vec2.y;
+}
+
+constexpr bool Vector2::operator<(const Vector2 &p_vec2) const {
+	return x == p_vec2.x ? (y < p_vec2.y) : (x < p_vec2.x);
+}
+
+constexpr bool Vector2::operator>(const Vector2 &p_vec2) const {
+	return x == p_vec2.x ? (y > p_vec2.y) : (x > p_vec2.x);
+}
+
+constexpr bool Vector2::operator<=(const Vector2 &p_vec2) const {
+	return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x);
+}
+
+constexpr bool Vector2::operator>=(const Vector2 &p_vec2) const {
+	return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x);
+}
+
+// Multiplication operators required to workaround issues with LLVM using implicit conversion
+// to Vector2i instead for integers where it should not.
+
+constexpr Vector2 operator*(float p_scalar, const Vector2 &p_vector2) {
+	return p_vector2 * p_scalar;
+}
+
+constexpr Vector2 operator*(double p_scalar, const Vector2 &p_vector2) {
+	return p_vector2 * p_scalar;
+}
+
+constexpr Vector2 operator*(int32_t p_scalar, const Vector2 &p_vector2) {
+	return p_vector2 * p_scalar;
+}
+
+constexpr Vector2 operator*(int64_t p_scalar, const Vector2 &p_vector2) {
+	return p_vector2 * p_scalar;
+}
+
+_FORCE_INLINE_ Vector2 Vector2::plane_project(real_t p_d, const Vector2 &p_vec) const {
+	return p_vec - *this * (dot(p_vec) - p_d);
 }
 
 Vector2 Vector2::lerp(const Vector2 &p_to, real_t p_weight) const {
@@ -303,25 +375,6 @@ Vector2 Vector2::direction_to(const Vector2 &p_to) const {
 	Vector2 ret(p_to.x - x, p_to.y - y);
 	ret.normalize();
 	return ret;
-}
-
-// Multiplication operators required to workaround issues with LLVM using implicit conversion
-// to Vector2i instead for integers where it should not.
-
-_FORCE_INLINE_ Vector2 operator*(float p_scalar, const Vector2 &p_vec) {
-	return p_vec * p_scalar;
-}
-
-_FORCE_INLINE_ Vector2 operator*(double p_scalar, const Vector2 &p_vec) {
-	return p_vec * p_scalar;
-}
-
-_FORCE_INLINE_ Vector2 operator*(int32_t p_scalar, const Vector2 &p_vec) {
-	return p_vec * p_scalar;
-}
-
-_FORCE_INLINE_ Vector2 operator*(int64_t p_scalar, const Vector2 &p_vec) {
-	return p_vec * p_scalar;
 }
 
 typedef Vector2 Size2;

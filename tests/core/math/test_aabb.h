@@ -38,10 +38,10 @@
 namespace TestAABB {
 
 TEST_CASE("[AABB] Constructor methods") {
-	const AABB aabb = AABB(Vector3(-1.5, 2, -2.5), Vector3(4, 5, 6));
-	const AABB aabb_copy = AABB(aabb);
+	constexpr AABB aabb = AABB(Vector3(-1.5, 2, -2.5), Vector3(4, 5, 6));
+	constexpr AABB aabb_copy = AABB(aabb);
 
-	CHECK_MESSAGE(
+	static_assert(
 			aabb == aabb_copy,
 			"AABBs created with the same dimensions but by different methods should be equal.");
 }
