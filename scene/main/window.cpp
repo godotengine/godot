@@ -306,10 +306,21 @@ String Window::get_title() const {
 	return title;
 }
 
+void Window::_settings_changed() {
+	if (visible && initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE && is_in_edited_scene_root()) {
+		Size2 screen_size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+		position = (screen_size - size) / 2;
+		if (embedder) {
+			embedder->_sub_window_update(this);
+		}
+	}
+}
+
 void Window::set_initial_position(Window::WindowInitialPosition p_initial_position) {
 	ERR_MAIN_THREAD_GUARD;
 
 	initial_position = p_initial_position;
+	_settings_changed();
 	notify_property_list_changed();
 }
 
@@ -829,7 +840,12 @@ void Window::set_visible(bool p_visible) {
 		if (visible) {
 			embedder = embedder_vp;
 			if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
-				position = (embedder->get_visible_rect().size - size) / 2;
+				if (is_in_edited_scene_root()) {
+					Size2 screen_size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+					position = (screen_size - size) / 2;
+				} else {
+					position = (embedder->get_visible_rect().size - size) / 2;
+				}
 			}
 			embedder->_sub_window_register(this);
 			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
@@ -1265,6 +1281,12 @@ void Window::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
+			if (is_in_edited_scene_root()) {
+				if (!ProjectSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &Window::_settings_changed))) {
+					ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Window::_settings_changed));
+				}
+			}
+
 			bool embedded = false;
 			{
 				embedder = get_embedder();
@@ -1280,7 +1302,12 @@ void Window::_notification(int p_what) {
 				// Create as embedded.
 				if (embedder) {
 					if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
-						position = (embedder->get_visible_rect().size - size) / 2;
+						if (is_in_edited_scene_root()) {
+							Size2 screen_size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+							position = (screen_size - size) / 2;
+						} else {
+							position = (embedder->get_visible_rect().size - size) / 2;
+						}
 					}
 					embedder->_sub_window_register(this);
 					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
@@ -1377,6 +1404,10 @@ void Window::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			if (ProjectSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &Window::_settings_changed))) {
+				ProjectSettings::get_singleton()->disconnect("settings_changed", callable_mp(this, &Window::_settings_changed));
+			}
+
 			set_theme_context(nullptr, false);
 
 			if (transient) {
