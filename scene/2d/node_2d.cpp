@@ -138,7 +138,9 @@ void Node2D::_update_transform() {
 
 	RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), transform);
 
-	_notify_transform();
+	if (!top_level_changed) {
+		_notify_transform();
+	}
 }
 
 void Node2D::reparent(Node *p_parent, bool p_keep_global_transform) {
@@ -440,6 +442,31 @@ void Node2D::_notification(int p_notification) {
 			if (get_viewport()) {
 				get_parent()->disconnect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::gui_set_root_order_dirty));
 			}
+		} break;
+		case NOTIFICATION_TOP_LEVEL_CHANGED: {
+			top_level_changed = true;
+
+			if (is_set_as_top_level()) {
+				set_rotation(get_global_transform().get_rotation());
+				set_position(get_global_transform().get_origin());
+				set_scale(get_global_transform().get_scale());
+				set_skew(get_global_transform().get_skew());
+			} else {
+				CanvasItem *parent_item = get_parent_item();
+
+				if (parent_item) {
+					Transform2D local_transform = parent_item->get_global_transform().affine_inverse() * get_global_transform();
+
+					set_rotation(local_transform.get_rotation());
+					set_position(local_transform.get_origin());
+					set_scale(local_transform.get_scale());
+					set_skew(local_transform.get_skew());
+				}
+			}
+
+			top_level_changed = false;
+			queue_redraw();
+			_notify_transform();
 		} break;
 	}
 }

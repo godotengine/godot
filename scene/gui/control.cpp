@@ -1541,7 +1541,9 @@ void Control::set_scale(const Vector2 &p_scale) {
 		data.scale.y = CMP_EPSILON;
 	}
 	queue_redraw();
-	_notify_transform();
+	if (!data.top_level_changed) {
+		_notify_transform();
+	}
 }
 
 Vector2 Control::get_scale() const {
@@ -1557,7 +1559,9 @@ void Control::set_rotation(real_t p_radians) {
 
 	data.rotation = p_radians;
 	queue_redraw();
-	_notify_transform();
+	if (!data.top_level_changed) {
+		_notify_transform();
+	}
 }
 
 void Control::set_rotation_degrees(real_t p_degrees) {
@@ -1583,7 +1587,9 @@ void Control::set_pivot_offset(const Vector2 &p_pivot) {
 
 	data.pivot_offset = p_pivot;
 	queue_redraw();
-	_notify_transform();
+	if (!data.top_level_changed) {
+		_notify_transform();
+	}
 }
 
 Vector2 Control::get_pivot_offset() const {
@@ -1744,7 +1750,9 @@ void Control::_size_changed() {
 		}
 		if (pos_changed || size_changed) {
 			item_rect_changed(size_changed);
-			_notify_transform();
+			if (!data.top_level_changed) {
+				_notify_transform();
+			}
 		}
 
 		if (pos_changed && !size_changed) {
@@ -1752,7 +1760,9 @@ void Control::_size_changed() {
 		}
 	} else {
 		if (pos_changed) {
-			_notify_transform();
+			if (!data.top_level_changed) {
+				_notify_transform();
+			}
 		}
 	}
 }
@@ -3359,6 +3369,31 @@ void Control::_notification(int p_notification) {
 				update_minimum_size();
 				_size_changed();
 			}
+		} break;
+		case NOTIFICATION_TOP_LEVEL_CHANGED: {
+			data.top_level_changed = true;
+
+			if (is_set_as_top_level()) {
+				set_rotation(get_global_transform().get_rotation());
+				set_position(get_global_transform().get_origin());
+				set_scale(get_global_transform().get_scale());
+				set_pivot_offset(get_global_transform().get_origin() - get_position());
+			} else {
+				CanvasItem *parent_item = get_parent_item();
+
+				if (parent_item) {
+					Transform2D local_transform = parent_item->get_global_transform().affine_inverse() * get_global_transform();
+
+					set_rotation(local_transform.get_rotation());
+					set_position(local_transform.get_origin());
+					set_scale(local_transform.get_scale());
+					set_pivot_offset(local_transform.get_origin() - get_position());
+				}
+			}
+
+			data.top_level_changed = false;
+			queue_redraw();
+			_notify_transform();
 		} break;
 	}
 }

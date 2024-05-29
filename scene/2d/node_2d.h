@@ -36,6 +36,8 @@
 class Node2D : public CanvasItem {
 	GDCLASS(Node2D, CanvasItem);
 
+	bool top_level_changed = false;
+
 	mutable MTFlag xform_dirty;
 	mutable Point2 position;
 	mutable real_t rotation = 0.0;

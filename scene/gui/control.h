@@ -205,6 +205,8 @@ private:
 
 		bool size_warning = true;
 
+		bool top_level_changed = false;
+
 		// Container sizing.
 
 		BitField<SizeFlags> h_size_flags = SIZE_FILL;

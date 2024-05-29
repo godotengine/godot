@@ -481,6 +481,7 @@ void CanvasItem::set_as_top_level(bool p_top_level) {
 	_exit_canvas();
 	top_level = p_top_level;
 	_top_level_changed();
+	notification(NOTIFICATION_TOP_LEVEL_CHANGED);
 	_enter_canvas();
 
 	_notify_transform();
