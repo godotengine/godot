@@ -185,10 +185,9 @@ bool Transform2D::is_finite() const {
 }
 
 Transform2D Transform2D::looking_at(const Vector2 &p_target) const {
-	Transform2D return_trans = Transform2D(get_rotation(), get_origin());
-	Vector2 target_position = affine_inverse().xform(p_target);
-	return_trans.set_rotation(return_trans.get_rotation() + (target_position * get_scale()).angle());
-	return return_trans;
+	const Vector2 origin = get_origin();
+	real_t target_angle = (p_target - get_origin()).angle();
+	return Transform2D(target_angle, origin);
 }
 
 bool Transform2D::operator==(const Transform2D &p_transform) const {
