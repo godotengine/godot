@@ -44,6 +44,7 @@
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
 #include "main/main.h"
+#include <queue>
 
 template <typename T>
 class TypedArray;
@@ -412,11 +413,20 @@ public:                                                                         
 		return String(#m_class);                                                                                                                 \
 	}                                                                                                                                            \
 	virtual const StringName *_get_class_namev() const override {                                                                                \
-		static StringName _class_name_static;                                                                                                    \
-		if (unlikely(!_class_name_static)) {                                                                                                     \
-			StringName::assign_static_unique_class_name(&_class_name_static, #m_class);                                                          \
+		static std::queue<StringName> _class_name_statics;                                                                                       \
+		static int local_version = -1;                                                                                                           \
+		if (unlikely(Main::version != local_version)) {                                                                                          \
+			local_version = Main::version;                                                                                                       \
+			if (_class_name_statics.size() > 0) {																								 \
+				/* TODO: find a way to pop old refs */                                                                                           \
+				/*_class_name_statics.pop();*/                                                                                                   \
+			}                                                                                                                                    \
+			_class_name_statics.push(StringName());                                                                                              \
 		}                                                                                                                                        \
-		return &_class_name_static;                                                                                                              \
+		if (unlikely(!_class_name_statics.back())) {                                                                                             \
+			StringName::assign_static_unique_class_name(&_class_name_statics.back(), #m_class);                                                  \
+		}                                                                                                                                        \
+		return &_class_name_statics.back();                                                                                                      \
 	}                                                                                                                                            \
 	static _FORCE_INLINE_ void *get_class_ptr_static() {                                                                                         \
 		static int ptr;                                                                                                                          \

@@ -1506,13 +1506,15 @@ Variant Object::_get_indexed_bind(const NodePath &p_name) const {
 }
 
 void Object::initialize_class() {
-	if (initialized) {
+	static int local_version = -1;
+	if (Main::version == local_version) {
 		return;
 	}
 	ClassDB::_add_class<Object>();
 	_bind_methods();
 	_bind_compatibility_methods();
 	initialized = true;
+	local_version++;
 }
 
 String Object::tr(const StringName &p_message, const StringName &p_context) const {
