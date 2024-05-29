@@ -117,6 +117,7 @@ protected:
 	RendererRD::GI gi;
 
 	virtual void _update_shader_quality_settings() {}
+	static bool _debug_draw_can_use_effects(RS::ViewportDebugDraw p_debug_draw);
 
 private:
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
