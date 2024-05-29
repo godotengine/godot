@@ -273,7 +273,7 @@
 			The number of possible simultaneous sounds for each of the assigned AudioStreamPlayers.
 			For example, if this value is [code]32[/code] and the animation has two audio tracks, the two [AudioStreamPlayer]s assigned can play simultaneously up to [code]32[/code] voices each.
 		</member>
-		<member name="callback_mode_discrete" type="int" setter="set_callback_mode_discrete" getter="get_callback_mode_discrete" enum="AnimationMixer.AnimationCallbackModeDiscrete" default="0">
+		<member name="callback_mode_discrete" type="int" setter="set_callback_mode_discrete" getter="get_callback_mode_discrete" enum="AnimationMixer.AnimationCallbackModeDiscrete" default="1">
 			Ordinarily, tracks can be set to [constant Animation.UPDATE_DISCRETE] to update infrequently, usually when using nearest interpolation.
 			However, when blending with [constant Animation.UPDATE_CONTINUOUS] several results are considered. The [member callback_mode_discrete] specify it explicitly. See also [enum AnimationCallbackModeDiscrete].
 			To make the blended results look good, it is recommended to set this to [constant ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS] to update every frame during blending. Other values exist for compatibility and they are fine if there is no blending, but not so, may produce artifacts.
@@ -361,14 +361,14 @@
 			Make method calls immediately when reached in the animation.
 		</constant>
 		<constant name="ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT" value="0" enum="AnimationCallbackModeDiscrete">
-			An [constant Animation.UPDATE_DISCRETE] track value takes precedence when blending [constant Animation.UPDATE_CONTINUOUS] or [constant Animation.UPDATE_CAPTURE] track values and [constant Animation.UPDATE_DISCRETE] track values. This is the default behavior for [AnimationPlayer].
-			[b]Note:[/b] If a value track has non-numeric type key values, it is internally converted to use [constant ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT] with [constant Animation.UPDATE_DISCRETE].
+			An [constant Animation.UPDATE_DISCRETE] track value takes precedence when blending [constant Animation.UPDATE_CONTINUOUS] or [constant Animation.UPDATE_CAPTURE] track values and [constant Animation.UPDATE_DISCRETE] track values.
 		</constant>
 		<constant name="ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE" value="1" enum="AnimationCallbackModeDiscrete">
-			An [constant Animation.UPDATE_CONTINUOUS] or [constant Animation.UPDATE_CAPTURE] track value takes precedence when blending the [constant Animation.UPDATE_CONTINUOUS] or [constant Animation.UPDATE_CAPTURE] track values and the [constant Animation.UPDATE_DISCRETE] track values.
+			An [constant Animation.UPDATE_CONTINUOUS] or [constant Animation.UPDATE_CAPTURE] track value takes precedence when blending the [constant Animation.UPDATE_CONTINUOUS] or [constant Animation.UPDATE_CAPTURE] track values and the [constant Animation.UPDATE_DISCRETE] track values. This is the default behavior for [AnimationPlayer].
 		</constant>
 		<constant name="ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS" value="2" enum="AnimationCallbackModeDiscrete">
 			Always treat the [constant Animation.UPDATE_DISCRETE] track value as [constant Animation.UPDATE_CONTINUOUS] with [constant Animation.INTERPOLATION_NEAREST]. This is the default behavior for [AnimationTree].
+			If a value track has non-numeric type key values, it is internally converted to use [constant ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE] with [constant Animation.UPDATE_DISCRETE].
 		</constant>
 	</constants>
 </class>
