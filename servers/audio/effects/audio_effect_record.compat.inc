@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  audio_effect_compressor.h                                             */
+/*  audio_effect_record.compat.inc                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,63 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef DISABLE_DEPRECATED
 
-#include "servers/audio/audio_effect.h"
+void AudioEffectRecord::_set_recording_active_bind_compat_92532(bool p_record) {
+	set_recording_active(p_record, 0);
+}
 
-class AudioEffectCompressor;
+bool AudioEffectRecord::_is_recording_active_bind_compat_92532() const {
+	return is_recording_active(0);
+}
 
-class AudioEffectCompressorInstance : public AudioEffectInstance {
-	GDCLASS(AudioEffectCompressorInstance, AudioEffectInstance);
-	friend class AudioEffectCompressor;
-	Ref<AudioEffectCompressor> base;
+Ref<AudioStreamWAV> AudioEffectRecord::_get_recording_bind_compat_92532() const {
+	return get_recording(0);
+}
 
-	float rundb, averatio, runratio, runmax, maxover, gr_meter;
-	int current_channel;
+void AudioEffectRecord::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("set_recording_active", "frames"), &AudioEffectRecord::_set_recording_active_bind_compat_92532);
+	ClassDB::bind_compatibility_method(D_METHOD("is_recording_active"), &AudioEffectRecord::_is_recording_active_bind_compat_92532);
+	ClassDB::bind_compatibility_method(D_METHOD("get_recording"), &AudioEffectRecord::_get_recording_bind_compat_92532);
+}
 
-public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
-};
-
-class AudioEffectCompressor : public AudioEffect {
-	GDCLASS(AudioEffectCompressor, AudioEffect);
-
-	friend class AudioEffectCompressorInstance;
-	float threshold;
-	float ratio;
-	float gain;
-	float attack_us;
-	float release_ms;
-	float mix;
-	StringName sidechain;
-
-protected:
-	void _validate_property(PropertyInfo &p_property) const;
-	static void _bind_methods();
-
-public:
-	Ref<AudioEffectInstance> instantiate() override;
-
-	void set_threshold(float p_threshold);
-	float get_threshold() const;
-
-	void set_ratio(float p_ratio);
-	float get_ratio() const;
-
-	void set_gain(float p_gain);
-	float get_gain() const;
-
-	void set_attack_us(float p_attack_us);
-	float get_attack_us() const;
-
-	void set_release_ms(float p_release_ms);
-	float get_release_ms() const;
-
-	void set_mix(float p_mix);
-	float get_mix() const;
-
-	void set_sidechain(const StringName &p_sidechain);
-	StringName get_sidechain() const;
-
-	AudioEffectCompressor();
-};
+#endif // DISABLE_DEPRECATED

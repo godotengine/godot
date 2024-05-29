@@ -34,22 +34,13 @@
 #include "core/object/ref_counted.h"
 #include "core/templates/ring_buffer.h"
 #include "servers/audio/audio_effect.h"
+#include "servers/audio/audio_server.h"
 
 class AudioEffectCapture;
 
 class AudioEffectCaptureInstance : public AudioEffectInstance {
 	GDCLASS(AudioEffectCaptureInstance, AudioEffectInstance);
 	friend class AudioEffectCapture;
-	Ref<AudioEffectCapture> base;
-
-public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
-	virtual bool process_silence() const override;
-};
-
-class AudioEffectCapture : public AudioEffect {
-	GDCLASS(AudioEffectCapture, AudioEffect)
-	friend class AudioEffectCaptureInstance;
 
 	RingBuffer<AudioFrame> buffer;
 	SafeNumeric<uint64_t> discarded_frames;
@@ -57,11 +48,14 @@ class AudioEffectCapture : public AudioEffect {
 	float buffer_length_seconds = 0.1f;
 	bool buffer_initialized = false;
 
+	bool initialize_buffer();
+
 protected:
 	static void _bind_methods();
 
 public:
-	virtual Ref<AudioEffectInstance> instantiate() override;
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
+	virtual bool process_silence() const override;
 
 	void set_buffer_length(float p_buffer_length_seconds);
 	float get_buffer_length();
@@ -74,4 +68,45 @@ public:
 	int64_t get_discarded_frames() const;
 	int get_buffer_length_frames() const;
 	int64_t get_pushed_frames() const;
+};
+
+class AudioEffectCapture : public AudioEffect {
+	GDCLASS(AudioEffectCapture, AudioEffect)
+	friend class AudioEffectCaptureInstance;
+
+	float buffer_length_seconds = 0.1f;
+	Vector<Ref<AudioEffectCaptureInstance>> instances;
+
+protected:
+	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	bool _can_get_buffer_bind_compat_92532(int p_frames) const;
+	PackedVector2Array _get_buffer_bind_compat_92532(int p_len);
+	void _clear_buffer_bind_compat_92532();
+
+	int _get_frames_available_bind_compat_92532() const;
+	int64_t _get_discarded_frames_bind_compat_92532() const;
+	int _get_buffer_length_frames_bind_compat_92532() const;
+	int64_t _get_pushed_frames_bind_compat_92532() const;
+
+	static void _bind_compatibility_methods();
+#endif
+
+public:
+	virtual Ref<AudioEffectInstance> instantiate() override;
+
+	virtual void set_channel_count(int p_channel_count) override;
+
+	void set_buffer_length(float p_buffer_length_seconds);
+	float get_buffer_length();
+
+	bool can_get_buffer(int p_frames, int p_channel = 0) const;
+	PackedVector2Array get_buffer(int p_len, int p_channel = 0);
+	void clear_buffer(int p_channel = 0);
+
+	int get_frames_available(int p_channel = 0) const;
+	int64_t get_discarded_frames(int p_channel = 0) const;
+	int get_buffer_length_frames(int p_channel = 0) const;
+	int64_t get_pushed_frames(int p_channel = 0) const;
 };

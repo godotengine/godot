@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  audio_effect_compressor.h                                             */
+/*  audio_effect_capture.compat.inc                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,63 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef DISABLE_DEPRECATED
 
-#include "servers/audio/audio_effect.h"
+bool AudioEffectCapture::_can_get_buffer_bind_compat_92532(int p_frames) const {
+	return can_get_buffer(p_frames, 0);
+}
 
-class AudioEffectCompressor;
+PackedVector2Array AudioEffectCapture::_get_buffer_bind_compat_92532(int p_len) {
+	return get_buffer(p_len, 0);
+}
 
-class AudioEffectCompressorInstance : public AudioEffectInstance {
-	GDCLASS(AudioEffectCompressorInstance, AudioEffectInstance);
-	friend class AudioEffectCompressor;
-	Ref<AudioEffectCompressor> base;
+void AudioEffectCapture::_clear_buffer_bind_compat_92532() {
+	clear_buffer(0);
+}
 
-	float rundb, averatio, runratio, runmax, maxover, gr_meter;
-	int current_channel;
+int AudioEffectCapture::_get_frames_available_bind_compat_92532() const {
+	return get_frames_available(0);
+}
 
-public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
-};
+int64_t AudioEffectCapture::_get_discarded_frames_bind_compat_92532() const {
+	return get_discarded_frames(0);
+}
 
-class AudioEffectCompressor : public AudioEffect {
-	GDCLASS(AudioEffectCompressor, AudioEffect);
+int AudioEffectCapture::_get_buffer_length_frames_bind_compat_92532() const {
+	return get_buffer_length_frames(0);
+}
 
-	friend class AudioEffectCompressorInstance;
-	float threshold;
-	float ratio;
-	float gain;
-	float attack_us;
-	float release_ms;
-	float mix;
-	StringName sidechain;
+int64_t AudioEffectCapture::_get_pushed_frames_bind_compat_92532() const {
+	return get_pushed_frames(0);
+}
 
-protected:
-	void _validate_property(PropertyInfo &p_property) const;
-	static void _bind_methods();
+void AudioEffectCapture::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("can_get_buffer", "frames"), &AudioEffectCapture::_can_get_buffer_bind_compat_92532);
+	ClassDB::bind_compatibility_method(D_METHOD("get_buffer", "frames"), &AudioEffectCapture::_get_buffer_bind_compat_92532);
+	ClassDB::bind_compatibility_method(D_METHOD("clear_buffer"), &AudioEffectCapture::_clear_buffer_bind_compat_92532);
+	ClassDB::bind_compatibility_method(D_METHOD("get_frames_available"), &AudioEffectCapture::_get_frames_available_bind_compat_92532);
+	ClassDB::bind_compatibility_method(D_METHOD("get_discarded_frames"), &AudioEffectCapture::_get_discarded_frames_bind_compat_92532);
+	ClassDB::bind_compatibility_method(D_METHOD("get_buffer_length_frames"), &AudioEffectCapture::_get_buffer_length_frames_bind_compat_92532);
+	ClassDB::bind_compatibility_method(D_METHOD("get_pushed_frames"), &AudioEffectCapture::_get_pushed_frames_bind_compat_92532);
+}
 
-public:
-	Ref<AudioEffectInstance> instantiate() override;
-
-	void set_threshold(float p_threshold);
-	float get_threshold() const;
-
-	void set_ratio(float p_ratio);
-	float get_ratio() const;
-
-	void set_gain(float p_gain);
-	float get_gain() const;
-
-	void set_attack_us(float p_attack_us);
-	float get_attack_us() const;
-
-	void set_release_ms(float p_release_ms);
-	float get_release_ms() const;
-
-	void set_mix(float p_mix);
-	float get_mix() const;
-
-	void set_sidechain(const StringName &p_sidechain);
-	StringName get_sidechain() const;
-
-	AudioEffectCompressor();
-};
+#endif // DISABLE_DEPRECATED

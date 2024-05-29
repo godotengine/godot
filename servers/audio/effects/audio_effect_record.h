@@ -41,6 +41,8 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 	GDCLASS(AudioEffectRecordInstance, AudioEffectInstance);
 	friend class AudioEffectRecord;
 
+	AudioStreamWAV::Format format;
+
 	bool is_recording;
 	Thread io_thread;
 
@@ -58,11 +60,22 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 	void _update_buffer();
 	static void _update(void *userdata);
 
+protected:
+	static void _bind_methods();
+
 public:
-	void init();
-	void finish();
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 	virtual bool process_silence() const override;
+
+	void init();
+	void finish();
+
+	void set_recording_active(bool p_record);
+	bool is_recording_active() const;
+	void set_format(AudioStreamWAV::Format p_format);
+	AudioStreamWAV::Format get_format() const;
+	Ref<AudioStreamWAV> get_recording() const;
+	~AudioEffectRecordInstance();
 };
 
 class AudioEffectRecord : public AudioEffect {
@@ -74,22 +87,29 @@ class AudioEffectRecord : public AudioEffect {
 		IO_BUFFER_SIZE_MS = 1500
 	};
 
-	Ref<AudioEffectRecordInstance> current_instance;
+	Vector<Ref<AudioEffectRecordInstance>> instances;
 
 	AudioStreamWAV::Format format;
-
-	void ensure_thread_stopped();
 
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _set_recording_active_bind_compat_92532(bool p_record);
+	bool _is_recording_active_bind_compat_92532() const;
+	Ref<AudioStreamWAV> _get_recording_bind_compat_92532() const;
+
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	Ref<AudioEffectInstance> instantiate() override;
-	void set_recording_active(bool p_record);
-	bool is_recording_active() const;
+
+	virtual void set_channel_count(int p_channel_count) override;
+	void set_recording_active(bool p_record, int p_channel = 0);
+	bool is_recording_active(int p_channel = 0) const;
 	void set_format(AudioStreamWAV::Format p_format);
 	AudioStreamWAV::Format get_format() const;
-	Ref<AudioStreamWAV> get_recording() const;
+	Ref<AudioStreamWAV> get_recording(int p_channel = 0) const;
 	AudioEffectRecord();
-	~AudioEffectRecord();
 };

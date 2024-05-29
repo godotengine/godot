@@ -122,7 +122,7 @@ Ref<AudioEffectInstance> AudioEffectCompressor::instantiate() {
 	ins->runmax = 0;
 	ins->maxover = 0;
 	ins->gr_meter = 1.0;
-	ins->current_channel = -1;
+	ins->current_channel = get_channel();
 	return ins;
 }
 

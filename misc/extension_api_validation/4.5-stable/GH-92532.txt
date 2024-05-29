@@ -1,0 +1,14 @@
+GH-92532
+--------
+Validate extension JSON: Error: Field 'classes/AudioEffectCapture/methods/can_get_buffer/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/AudioEffectCapture/methods/get_buffer/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/AudioEffectRecord/methods/set_recording_active/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/AudioEffectCapture/methods/clear_buffer': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/AudioEffectCapture/methods/get_buffer_length_frames': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/AudioEffectCapture/methods/get_discarded_frames': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/AudioEffectCapture/methods/get_frames_available': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/AudioEffectCapture/methods/get_pushed_frames': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/AudioEffectRecord/methods/get_recording': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/AudioEffectRecord/methods/is_recording_active': arguments
+
+Optional argument added. Compatibility methods registered.

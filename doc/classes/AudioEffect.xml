@@ -30,5 +30,18 @@
 				[b]Note:[/b] It is recommended to keep a reference to the original [AudioEffect] in the new instance. Depending on the implementation this allows the effect instance to listen for changes at run-time and be modified accordingly.
 			</description>
 		</method>
+		<method name="_set_channel_count" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="channel_count" type="int" />
+			<description>
+				Override this method to configure effect [param channel_count], the number of configured stereo channels in the [AudioServer]. Will match [method AudioServer.get_bus_channels] for the audio bus this effect is part of.
+			</description>
+		</method>
+		<method name="get_channel" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the audio channel index being configured by _instantiate, so that channel specific configuration can be done as part of [AudioEffectInstance] creation.
+			</description>
+		</method>
 	</methods>
 </class>
