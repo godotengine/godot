@@ -446,6 +446,11 @@ void InputEventConfigurationDialog::_key_location_selected(int p_location) {
 	_set_event(k, original_event);
 }
 
+void InputEventConfigurationDialog::_input_list_item_activated() {
+	TreeItem *selected = input_list_tree->get_selected();
+	selected->set_collapsed(!selected->is_collapsed());
+}
+
 void InputEventConfigurationDialog::_input_list_item_selected() {
 	TreeItem *selected = input_list_tree->get_selected();
 
@@ -670,6 +675,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	input_list_tree = memnew(Tree);
 	input_list_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	input_list_tree->set_custom_minimum_size(Size2(0, 100 * EDSCALE)); // Min height for tree
+	input_list_tree->connect("item_activated", callable_mp(this, &InputEventConfigurationDialog::_input_list_item_activated));
 	input_list_tree->connect("item_selected", callable_mp(this, &InputEventConfigurationDialog::_input_list_item_selected));
 	input_list_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	manual_vbox->add_child(input_list_tree);
