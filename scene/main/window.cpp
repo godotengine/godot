@@ -33,9 +33,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
-#include "core/input/shortcut.h"
 #include "core/string/translation.h"
-#include "core/variant/variant_parser.h"
 #include "scene/gui/control.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
@@ -1611,33 +1609,7 @@ bool Window::_can_consume_input_events() const {
 void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	ERR_MAIN_THREAD_GUARD;
 	if (EngineDebugger::is_active()) {
-		// Quit from game window using the stop shortcut (F8 by default).
-		// The custom shortcut is provided via environment variable when running from the editor.
-		if (debugger_stop_shortcut.is_null()) {
-			String shortcut_str = OS::get_singleton()->get_environment("__GODOT_EDITOR_STOP_SHORTCUT__");
-			if (!shortcut_str.is_empty()) {
-				Variant shortcut_var;
-
-				VariantParser::StreamString ss;
-				ss.s = shortcut_str;
-
-				String errs;
-				int line;
-				VariantParser::parse(&ss, shortcut_var, errs, line);
-				debugger_stop_shortcut = shortcut_var;
-			}
-
-			if (debugger_stop_shortcut.is_null()) {
-				// Define a default shortcut if it wasn't provided or is invalid.
-				debugger_stop_shortcut.instantiate();
-				debugger_stop_shortcut->set_events({ (Variant)InputEventKey::create_reference(Key::F8) });
-			}
-		}
-
-		Ref<InputEventKey> k = p_ev;
-		if (k.is_valid() && k->is_pressed() && !k->is_echo() && debugger_stop_shortcut->matches_event(k)) {
-			EngineDebugger::get_singleton()->send_message("request_quit", Array());
-		}
+		EngineDebugger::get_singleton()->check_stop_shortcut(p_ev);
 	}
 
 	if (exclusive_child != nullptr) {

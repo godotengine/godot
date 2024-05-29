@@ -35,7 +35,6 @@
 #include "scene/resources/theme.h"
 
 class Font;
-class Shortcut;
 class StyleBox;
 class ThemeOwner;
 class ThemeContext;
@@ -232,8 +231,6 @@ private:
 	bool mouse_in_window = false;
 	void _update_mouse_over(Vector2 p_pos) override;
 	void _mouse_leave_viewport() override;
-
-	Ref<Shortcut> debugger_stop_shortcut;
 
 	static int root_layout_direction;
 
