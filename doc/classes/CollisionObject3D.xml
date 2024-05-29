@@ -58,7 +58,7 @@
 		<method name="get_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the object's [RID].
+				Returns the internal [RID] used by the [PhysicsServer3D] for this collision object.
 			</description>
 		</method>
 		<method name="get_shape_owners">

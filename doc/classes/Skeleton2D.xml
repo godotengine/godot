@@ -48,7 +48,7 @@
 		<method name="get_skeleton" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the [RID] of a Skeleton2D instance.
+				Returns the internal [RID] used by the [RenderingServer] for this skeleton.
 			</description>
 		</method>
 		<method name="set_bone_local_pose_override">

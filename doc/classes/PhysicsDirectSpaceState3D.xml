@@ -39,7 +39,7 @@
 				[code]linear_velocity[/code]: The colliding object's velocity [Vector3]. If the object is an [Area3D], the result is [code](0, 0, 0)[/code].
 				[code]normal[/code]: The object's surface normal at the intersection point.
 				[code]point[/code]: The intersection point.
-				[code]rid[/code]: The intersecting object's [RID].
+				[code]rid[/code]: The [RID] of the intersecting object in the [PhysicsServer3D].
 				[code]shape[/code]: The shape index of the colliding shape.
 				If the shape did not intersect anything, then an empty dictionary is returned instead.
 				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object.
@@ -53,7 +53,7 @@
 				Checks whether a point is inside any solid shape. Position and other parameters are defined through [PhysicsPointQueryParameters3D]. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
-				[code]rid[/code]: The intersecting object's [RID].
+				[code]rid[/code]: The [RID] of the intersecting object in the [PhysicsServer3D].
 				[code]shape[/code]: The shape index of the colliding shape.
 				The number of intersections can be limited with the [param max_results] parameter, to reduce the processing time.
 			</description>
@@ -69,7 +69,7 @@
 				[code]position[/code]: The intersection point.
 				[code]face_index[/code]: The face index at the intersection point.
 				[b]Note:[/b] Returns a valid number only if the intersected shape is a [ConcavePolygonShape3D]. Otherwise, [code]-1[/code] is returned.
-				[code]rid[/code]: The intersecting object's [RID].
+				[code]rid[/code]: The [RID] of the intersecting object in the [PhysicsServer3D].
 				[code]shape[/code]: The shape index of the colliding shape.
 				If the ray did not intersect anything, then an empty dictionary is returned instead.
 			</description>
@@ -82,7 +82,7 @@
 				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters3D] object, against the space. The intersected shapes are returned in an array containing dictionaries with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
-				[code]rid[/code]: The intersecting object's [RID].
+				[code]rid[/code]: The [RID] of the intersecting object in the [PhysicsServer3D].
 				[code]shape[/code]: The shape index of the colliding shape.
 				The number of intersections can be limited with the [param max_results] parameter, to reduce the processing time.
 				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object.

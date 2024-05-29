@@ -42,7 +42,7 @@
 		<method name="get_physics_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the internal [RID] used by the [PhysicsServer3D] for this body.
+				Returns the internal [RID] used by the [PhysicsServer3D] for this soft body.
 			</description>
 		</method>
 		<method name="get_point_transform">

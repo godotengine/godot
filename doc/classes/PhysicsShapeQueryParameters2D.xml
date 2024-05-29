@@ -19,7 +19,7 @@
 			The physics layers the query will detect (as a bitmask). By default, all collision layers are detected. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="exclude" type="RID[]" setter="set_exclude" getter="get_exclude" default="[]">
-			The list of object [RID]s that will be excluded from collisions. Use [method CollisionObject2D.get_rid] to get the [RID] associated with a [CollisionObject2D]-derived node.
+			The list of [RID]s of objects in the [PhysicsServer2D] that will be excluded from collisions. Use [method CollisionObject2D.get_rid] to get the [RID] associated with a [CollisionObject2D]-derived node.
 		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.0">
 			The collision margin for the shape.
@@ -31,7 +31,7 @@
 			The [Shape2D] that will be used for collision/intersection queries. This stores the actual reference which avoids the shape to be released while being used for queries, so always prefer using this over [member shape_rid].
 		</member>
 		<member name="shape_rid" type="RID" setter="set_shape_rid" getter="get_shape_rid" default="RID()">
-			The queried shape's [RID] that will be used for collision/intersection queries. Use this over [member shape] if you want to optimize for performance using the Servers API:
+			The [RID] of the shape in the [PhysicsServer2D] that will be used for collision/intersection queries. Use this over [member shape] if you want to optimize for performance using the Servers API:
 				[codeblocks]
 				[gdscript]
 				var shape_rid = PhysicsServer2D.circle_shape_create()

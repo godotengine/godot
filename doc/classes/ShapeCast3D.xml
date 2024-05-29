@@ -22,7 +22,7 @@
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
 			<description>
-				Adds a collision exception so the shape does not report collisions with the specified [RID].
+				Adds a collision exception so the shape does not report collisions with the object in the [PhysicsServer3D] with the given [RID].
 			</description>
 		</method>
 		<method name="clear_exceptions">
@@ -62,7 +62,7 @@
 			<return type="RID" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the [RID] of the collided object of one of the multiple collisions at [param index].
+				Returns the [RID] of the collided object (in the [PhysicsServer3D]) of one of the multiple collisions at [param index].
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const">
@@ -117,7 +117,7 @@
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
 			<description>
-				Removes a collision exception so the shape does report collisions with the specified [RID].
+				Removes a collision exception so the shape does report collisions with the object in the [PhysicsServer3D] with the given [RID].
 			</description>
 		</method>
 		<method name="resource_changed" deprecated="Use [signal Resource.changed] instead.">

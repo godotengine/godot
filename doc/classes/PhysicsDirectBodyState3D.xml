@@ -106,7 +106,7 @@
 			<return type="RID" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
-				Returns the collider's [RID].
+				Returns the [RID] of the colliding body in the [PhysicsServer3D].
 			</description>
 		</method>
 		<method name="get_contact_collider_id" qualifiers="const">

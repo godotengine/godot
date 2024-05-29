@@ -91,7 +91,7 @@
 			<return type="Vector2i" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns the coordinates of the tile for given physics body [RID]. Such an [RID] can be retrieved from [method KinematicCollision2D.get_collider_rid], when colliding with a tile.
+				Returns the coordinates of the tile that contains the body with the given [RID] from the [PhysicsServer2D]. Such an [RID] can be retrieved from [method KinematicCollision2D.get_collider_rid], when colliding with a tile.
 			</description>
 		</method>
 		<method name="get_navigation_map" qualifiers="const">
@@ -150,7 +150,7 @@
 			<return type="bool" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns whether the provided [param body] [RID] belongs to one of this [TileMapLayer]'s cells.
+				Returns whether the provided [RID] of a body from the [PhysicsServer2D] belongs to one of this [TileMapLayer]'s cells.
 			</description>
 		</method>
 		<method name="local_to_map" qualifiers="const">
