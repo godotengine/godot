@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  audio_effect.h                                                        */
+/*  audio_effect_capture.compat.inc                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef DISABLE_DEPRECATED
 
-#include "core/io/resource.h"
-#include "core/math/audio_frame.h"
-#include "core/object/gdvirtual.gen.inc"
-#include "core/variant/native_ptr.h"
+bool AudioEffectCapture::_can_get_buffer_bind_compat_92532(int p_frames) const {
+	return can_get_buffer(p_frames, 0);
+}
 
-class AudioEffectInstance : public RefCounted {
-	GDCLASS(AudioEffectInstance, RefCounted);
+PackedVector2Array AudioEffectCapture::_get_buffer_bind_compat_92532(int p_len) {
+	return get_buffer(p_len, 0);
+}
 
-protected:
-	GDVIRTUAL3_REQUIRED(_process, GDExtensionConstPtr<AudioFrame>, GDExtensionPtr<AudioFrame>, int)
-	GDVIRTUAL0RC(bool, _process_silence)
-	static void _bind_methods();
+void AudioEffectCapture::_clear_buffer_bind_compat_92532() {
+	clear_buffer(0);
+}
 
-	int current_channel;
+int AudioEffectCapture::_get_frames_available_bind_compat_92532() const {
+	return get_frames_available(0);
+}
 
-public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
-	virtual bool process_silence() const;
+int64_t AudioEffectCapture::_get_discarded_frames_bind_compat_92532() const {
+	return get_discarded_frames(0);
+}
 
-	void set_current_channel(int p_channel) { current_channel = p_channel; }
-	int get_current_channel() { return current_channel; }
-};
+int AudioEffectCapture::_get_buffer_length_frames_bind_compat_92532() const {
+	return get_buffer_length_frames(0);
+}
 
-class AudioEffect : public Resource {
-	GDCLASS(AudioEffect, Resource);
+int64_t AudioEffectCapture::_get_pushed_frames_bind_compat_92532() const {
+	return get_pushed_frames(0);
+}
 
-protected:
-	GDVIRTUAL0R_REQUIRED(Ref<AudioEffectInstance>, _instantiate)
-	GDVIRTUAL0(_finalize)
-	static void _bind_methods();
+void AudioEffectCapture::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("can_get_buffer", "frames"), &AudioEffectCapture::_can_get_buffer_bind_compat_92532);
+	ClassDB::bind_compatibility_method(D_METHOD("get_buffer", "frames"), &AudioEffectCapture::_get_buffer_bind_compat_92532);
+	ClassDB::bind_compatibility_method(D_METHOD("clear_buffer"), &AudioEffectCapture::_clear_buffer_bind_compat_92532);
+	ClassDB::bind_compatibility_method(D_METHOD("get_frames_available"), &AudioEffectCapture::_get_frames_available_bind_compat_92532);
+	ClassDB::bind_compatibility_method(D_METHOD("get_discarded_frames"), &AudioEffectCapture::_get_discarded_frames_bind_compat_92532);
+	ClassDB::bind_compatibility_method(D_METHOD("get_buffer_length_frames"), &AudioEffectCapture::_get_buffer_length_frames_bind_compat_92532);
+	ClassDB::bind_compatibility_method(D_METHOD("get_pushed_frames"), &AudioEffectCapture::_get_pushed_frames_bind_compat_92532);
+}
 
-public:
-	virtual Ref<AudioEffectInstance> instantiate();
-	virtual void finalize();
-
-	AudioEffect();
-};
+#endif // DISABLE_DEPRECATED
