@@ -310,6 +310,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps" default="-1">
+			When fixed_fps is greater than [code]-1[/code], the engine will process at this fps regardless of what the actual fps is. This is useful for doing things such as recording movies where realtime updates do not matter, but the images captured should appear smooth once being encoded together.
+		</member>
 		<member name="max_fps" type="int" setter="set_max_fps" getter="get_max_fps" default="0">
 			The maximum number of frames that can be rendered every second (FPS). A value of [code]0[/code] means the framerate is uncapped.
 			Limiting the FPS can be useful to reduce the host machine's power consumption, which reduces heat, noise emissions, and improves battery life.

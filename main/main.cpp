@@ -228,7 +228,6 @@ static int max_fps = -1;
 static int frame_delay = 0;
 static int audio_output_latency = 0;
 static bool disable_render_loop = false;
-static int fixed_fps = -1;
 static MovieWriter *movie_writer = nullptr;
 static bool disable_vsync = false;
 static bool print_fps = false;
@@ -1640,7 +1639,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			disable_render_loop = true;
 		} else if (arg == "--fixed-fps") {
 			if (N) {
-				fixed_fps = N->get().to_int();
+				Engine::get_singleton()->set_fixed_fps(N->get().to_int());
 				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing fixed-fps argument, aborting.\n");
@@ -1650,8 +1649,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (N) {
 				Engine::get_singleton()->set_write_movie_path(N->get());
 				N = N->next();
-				if (fixed_fps == -1) {
-					fixed_fps = 60;
+				if (Engine::get_singleton()->get_fixed_fps() == -1) {
+					Engine::get_singleton()->set_fixed_fps(60);
 				}
 				OS::get_singleton()->_writing_movie = true;
 			} else {
@@ -3893,7 +3892,7 @@ int Main::start() {
 	}
 
 	if (movie_writer) {
-		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, Engine::get_singleton()->get_write_movie_path());
+		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), Engine::get_singleton()->get_fixed_fps(), Engine::get_singleton()->get_write_movie_path());
 	}
 
 	if (minimum_time_msec) {
@@ -3944,6 +3943,7 @@ bool Main::iteration() {
 	iterating++;
 
 	const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+	const int fixed_fps = Engine::get_singleton()->get_fixed_fps();
 	Engine::get_singleton()->_frame_ticks = ticks;
 	main_timer_sync.set_cpu_ticks_usec(ticks);
 	main_timer_sync.set_fixed_fps(fixed_fps);

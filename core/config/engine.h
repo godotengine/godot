@@ -70,6 +70,7 @@ private:
 	int max_physics_steps_per_frame = 8;
 	double _physics_interpolation_fraction = 0.0f;
 	bool abort_on_gpu_errors = false;
+	int fixed_fps = -1;
 	bool use_validation_layers = false;
 	bool generate_spirv_debug_info = false;
 	int32_t gpu_idx = -1;
@@ -109,6 +110,9 @@ public:
 
 	virtual void set_max_fps(int p_fps);
 	virtual int get_max_fps() const;
+
+	virtual void set_fixed_fps(int p_fps);
+	virtual int get_fixed_fps() const;
 
 	virtual void set_audio_output_latency(int p_msec);
 	virtual int get_audio_output_latency() const;

@@ -499,6 +499,8 @@ public:
 
 	void set_max_fps(int p_fps);
 	int get_max_fps() const;
+	void set_fixed_fps(int p_fps);
+	int get_fixed_fps() const;
 
 	double get_frames_per_second() const;
 	uint64_t get_physics_frames() const;
