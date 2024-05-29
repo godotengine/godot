@@ -31,6 +31,14 @@
 				[b]Note:[/b] If you use [method Resource.take_over_path], this method will return [code]true[/code] for the taken path even if the resource wasn't saved (i.e. exists only in resource cache).
 			</description>
 		</method>
+		<method name="get_cached_ref">
+			<return type="Resource" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the cached resource reference for the given [param path].
+				[b]Note:[/b] If the resource is not cached, the returned [Resource] will be invalid.
+			</description>
+		</method>
 		<method name="get_dependencies">
 			<return type="PackedStringArray" />
 			<param index="0" name="path" type="String" />
