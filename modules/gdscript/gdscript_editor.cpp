@@ -2731,8 +2731,9 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	while (base_type.is_set() && !base_type.is_variant()) {
 		switch (base_type.kind) {
 			case GDScriptParser::DataType::CLASS: {
-				if (base_type.class_type->has_member(p_method)) {
-					const GDScriptParser::ClassNode::Member &member = base_type.class_type->get_member(p_method);
+				const StringName &method = p_method == "new" ? "_init" : p_method;
+				if (base_type.class_type->has_member(method)) {
+					const GDScriptParser::ClassNode::Member &member = base_type.class_type->get_member(method);
 
 					if (member.type == GDScriptParser::ClassNode::Member::FUNCTION) {
 						r_arghint = _make_arguments_hint(member.function, p_argidx);
