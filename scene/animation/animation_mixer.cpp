@@ -529,6 +529,7 @@ AnimationMixer::AnimationCallbackModeMethod AnimationMixer::get_callback_mode_me
 
 void AnimationMixer::set_callback_mode_discrete(AnimationCallbackModeDiscrete p_mode) {
 	callback_mode_discrete = p_mode;
+	_clear_caches();
 	emit_signal(SNAME("mixer_updated"));
 }
 
@@ -735,7 +736,7 @@ bool AnimationMixer::_update_caches() {
 						track_value->init_value = anim->track_get_key_value(i, 0);
 						track_value->init_value.zero();
 
-						track_value->init_use_continuous = callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS;
+						track_value->is_init = false;
 
 						// Can't interpolate them, need to convert.
 						track_value->is_variant_interpolatable = Animation::is_variant_interpolatable(track_value->init_value);
@@ -745,7 +746,6 @@ bool AnimationMixer::_update_caches() {
 							int rt = reset_anim->find_track(path, track_src_type);
 							if (rt >= 0) {
 								if (track_src_type == Animation::TYPE_VALUE) {
-									track_value->init_use_continuous = track_value->init_use_continuous || (reset_anim->value_track_get_update_mode(rt) != Animation::UPDATE_DISCRETE); // Take precedence Force Continuous.
 									if (reset_anim->track_get_key_count(rt) > 0) {
 										track_value->init_value = reset_anim->track_get_key_value(rt, 0);
 									}
@@ -1069,7 +1069,7 @@ void AnimationMixer::_blend_init() {
 				TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 				t->value = Animation::cast_to_blendwise(t->init_value);
 				t->element_size = t->init_value.is_string() ? (real_t)(t->init_value.operator String()).length() : 0;
-				t->use_continuous = t->init_use_continuous;
+				t->use_continuous = false;
 				t->use_discrete = false;
 			} break;
 			case Animation::TYPE_AUDIO: {
@@ -1530,12 +1530,12 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							t->value = Animation::blend_variant(t->value, value, blend);
 						}
 					} else {
-						t->use_discrete = true;
 						if (seeked) {
 							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT, true);
 							if (idx < 0) {
 								continue;
 							}
+							t->use_discrete = true;
 							Variant value = a->track_get_key_value(i, idx);
 							value = post_process_key_value(a, i, value, t->object_id);
 							Object *t_obj = ObjectDB::get_instance(t->object_id);
@@ -1546,6 +1546,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							List<int> indices;
 							a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
 							for (int &F : indices) {
+								t->use_discrete = true;
 								Variant value = a->track_get_key_value(i, F);
 								value = post_process_key_value(a, i, value, t->object_id);
 								Object *t_obj = ObjectDB::get_instance(t->object_id);
@@ -1750,7 +1751,8 @@ void AnimationMixer::_blend_apply() {
 	// Finally, set the tracks.
 	for (const KeyValue<Animation::TypeHash, TrackCache *> &K : track_cache) {
 		TrackCache *track = K.value;
-		if (!deterministic && Math::is_zero_approx(track->total_weight)) {
+		bool is_zero_amount = Math::is_zero_approx(track->total_weight);
+		if (!deterministic && is_zero_amount) {
 			continue;
 		}
 		switch (track->type) {
@@ -1810,8 +1812,22 @@ void AnimationMixer::_blend_apply() {
 			case Animation::TYPE_VALUE: {
 				TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
-				if (!t->is_variant_interpolatable || !t->use_continuous || (callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT && t->use_discrete)) {
+				if (t->use_discrete && !t->use_continuous) {
+					t->is_init = true; // If only disctere value is applied, no more RESET.
+				}
+
+				if ((t->is_init && (is_zero_amount || !t->use_continuous)) ||
+						(callback_mode_discrete != ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS &&
+								!is_zero_amount &&
+								callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT &&
+								t->use_discrete)) {
 					break; // Don't overwrite the value set by UPDATE_DISCRETE.
+				}
+
+				if (callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS) {
+					t->is_init = false; // Always update in Force Continuous.
+				} else {
+					t->is_init = !t->use_continuous; // If there is no Continuous in non-Force Continuous type, it means RESET.
 				}
 
 				// Trim unused elements if init array/string is not blended.

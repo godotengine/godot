@@ -328,7 +328,7 @@ private:
 	void _top_connection_layer_input(const Ref<InputEvent> &p_ev);
 
 	float _get_shader_line_width();
-	void _draw_minimap_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color);
+	void _draw_minimap_connection_line(const Vector2 &p_from_graph_position, const Vector2 &p_to_graph_position, const Color &p_from_color, const Color &p_to_color);
 	void _invalidate_connection_line_cache();
 	void _update_top_connection_layer();
 	void _update_connections();

@@ -2870,15 +2870,6 @@ void EditorInspector::update_tree() {
 			// Otherwise the category was probably added via `@export_category` or `_get_property_list()`.
 			const bool is_custom_category = p.hint_string.is_empty();
 
-			if ((is_custom_category && !show_custom_categories) || (!is_custom_category && !show_standard_categories)) {
-				continue;
-			}
-
-			// Hide the "MultiNodeEdit" category for MultiNodeEdit.
-			if (Object::cast_to<MultiNodeEdit>(object) && p.name == "MultiNodeEdit") {
-				continue;
-			}
-
 			// Iterate over remaining properties. If no properties in category, skip the category.
 			List<PropertyInfo>::Element *N = E_property->next();
 			bool valid = true;
@@ -2899,22 +2890,20 @@ void EditorInspector::update_tree() {
 				continue; // Empty, ignore it.
 			}
 
-			// Create an EditorInspectorCategory and add it to the inspector.
-			EditorInspectorCategory *category = memnew(EditorInspectorCategory);
-			main_vbox->add_child(category);
-			category_vbox = nullptr; //reset
+			String category_label;
+			String category_tooltip;
+			Ref<Texture> category_icon;
 
 			// Do not add an icon, do not change the current class (`doc_name`) for custom categories.
 			if (is_custom_category) {
-				category->label = p.name;
-				category->set_tooltip_text(p.name);
+				category_label = p.name;
+				category_tooltip = p.name;
 			} else {
-				String type = p.name;
-				String label = p.name;
 				doc_name = p.name;
+				category_label = p.name;
 
 				// Use category's owner script to update some of its information.
-				if (!EditorNode::get_editor_data().is_type_recognized(type) && ResourceLoader::exists(p.hint_string)) {
+				if (!EditorNode::get_editor_data().is_type_recognized(p.name) && ResourceLoader::exists(p.hint_string)) {
 					Ref<Script> scr = ResourceLoader::load(p.hint_string, "Script");
 					if (scr.is_valid()) {
 						StringName script_name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
@@ -2927,30 +2916,48 @@ void EditorInspector::update_tree() {
 							doc_name = docs[docs.size() - 1].name;
 						}
 						if (script_name != StringName()) {
-							label = script_name;
+							category_label = script_name;
 						}
 
 						// Find the icon corresponding to the script.
 						if (script_name != StringName()) {
-							category->icon = EditorNode::get_singleton()->get_class_icon(script_name);
+							category_icon = EditorNode::get_singleton()->get_class_icon(script_name);
 						} else {
-							category->icon = EditorNode::get_singleton()->get_object_icon(scr.ptr(), "Object");
+							category_icon = EditorNode::get_singleton()->get_object_icon(scr.ptr(), "Object");
 						}
 					}
 				}
 
-				if (category->icon.is_null() && !type.is_empty()) {
-					category->icon = EditorNode::get_singleton()->get_class_icon(type);
+				if (category_icon.is_null() && !p.name.is_empty()) {
+					category_icon = EditorNode::get_singleton()->get_class_icon(p.name);
 				}
-
-				// Set the category label.
-				category->label = label;
-				category->doc_class_name = doc_name;
 
 				if (use_doc_hints) {
 					// `|` separators used in `EditorHelpBit`.
-					category->set_tooltip_text("class|" + doc_name + "|");
+					category_tooltip = "class|" + doc_name + "|";
 				}
+			}
+
+			if ((is_custom_category && !show_custom_categories) || (!is_custom_category && !show_standard_categories)) {
+				continue;
+			}
+
+			// Hide the "MultiNodeEdit" category for MultiNodeEdit.
+			if (Object::cast_to<MultiNodeEdit>(object) && p.name == "MultiNodeEdit") {
+				continue;
+			}
+
+			// Create an EditorInspectorCategory and add it to the inspector.
+			EditorInspectorCategory *category = memnew(EditorInspectorCategory);
+			main_vbox->add_child(category);
+			category_vbox = nullptr; // Reset.
+
+			// Set the category info.
+			category->label = category_label;
+			category->set_tooltip_text(category_tooltip);
+			category->icon = category_icon;
+			if (!is_custom_category) {
+				category->doc_class_name = doc_name;
 			}
 
 			// Add editors at the start of a category.

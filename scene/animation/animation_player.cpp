@@ -447,10 +447,10 @@ void AnimationPlayer::_play(const StringName &p_name, double p_custom_blend, flo
 	} else {
 		if (p_from_end && c.current.pos == 0) {
 			// Animation reset but played backwards, set position to the end.
-			c.current.pos = c.current.from->animation->get_length();
+			seek(c.current.from->animation->get_length(), true, true);
 		} else if (!p_from_end && c.current.pos == c.current.from->animation->get_length()) {
 			// Animation resumed but already ended, set position to the beginning.
-			c.current.pos = 0;
+			seek(0, true, true);
 		} else if (playing) {
 			return;
 		}

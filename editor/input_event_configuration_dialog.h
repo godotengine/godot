@@ -107,6 +107,7 @@ private:
 
 	void _search_term_updated(const String &p_term);
 	void _update_input_list();
+	void _input_list_item_activated();
 	void _input_list_item_selected();
 
 	void _mod_toggled(bool p_checked, int p_index);
