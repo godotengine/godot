@@ -47,7 +47,7 @@ void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
 }
 
 void AcceptDialog::_parent_focused() {
-	if (!is_exclusive() && get_flag(FLAG_POPUP)) {
+	if (popped_up && !is_exclusive() && get_flag(FLAG_POPUP)) {
 		_cancel_pressed();
 	}
 }
@@ -71,9 +71,18 @@ void AcceptDialog::_notification(int p_what) {
 					parent_visible->connect(SceneStringName(focus_entered), callable_mp(this, &AcceptDialog::_parent_focused));
 				}
 			} else {
+				popped_up = false;
 				if (parent_visible) {
 					parent_visible->disconnect(SceneStringName(focus_entered), callable_mp(this, &AcceptDialog::_parent_focused));
 					parent_visible = nullptr;
+				}
+			}
+		} break;
+
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+			if (!is_in_edited_scene_root()) {
+				if (has_focus()) {
+					popped_up = true;
 				}
 			}
 		} break;
@@ -114,8 +123,14 @@ void AcceptDialog::_text_submitted(const String &p_text) {
 	_ok_pressed();
 }
 
+void AcceptDialog::_post_popup() {
+	Window::_post_popup();
+	popped_up = true;
+}
+
 void AcceptDialog::_ok_pressed() {
 	if (hide_on_ok) {
+		popped_up = false;
 		set_visible(false);
 	}
 	ok_pressed();
@@ -124,6 +139,7 @@ void AcceptDialog::_ok_pressed() {
 }
 
 void AcceptDialog::_cancel_pressed() {
+	popped_up = false;
 	Window *parent_window = parent_visible;
 	if (parent_visible) {
 		parent_visible->disconnect(SceneStringName(focus_entered), callable_mp(this, &AcceptDialog::_parent_focused));
