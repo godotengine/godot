@@ -98,6 +98,8 @@ void XRServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(RESET_BUT_KEEP_TILT);
 	BIND_ENUM_CONSTANT(DONT_RESET_ROTATION);
 
+	ADD_SIGNAL(MethodInfo("reference_frame_changed"));
+
 	ADD_SIGNAL(MethodInfo("interface_added", PropertyInfo(Variant::STRING_NAME, "interface_name")));
 	ADD_SIGNAL(MethodInfo("interface_removed", PropertyInfo(Variant::STRING_NAME, "interface_name")));
 
@@ -213,11 +215,13 @@ void XRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
 
 	reference_frame = new_reference_frame.inverse();
 	set_render_reference_frame(reference_frame);
+	emit_signal(SNAME("reference_frame_changed"));
 }
 
 void XRServer::clear_reference_frame() {
 	reference_frame = Transform3D();
 	set_render_reference_frame(reference_frame);
+	emit_signal(SNAME("reference_frame_changed"));
 }
 
 void XRServer::_set_render_reference_frame(const Transform3D &p_reference_frame) {

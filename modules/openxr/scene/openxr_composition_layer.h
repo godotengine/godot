@@ -77,6 +77,8 @@ protected:
 
 	void update_fallback_mesh();
 
+	XrPosef get_openxr_pose();
+
 	static Vector<OpenXRCompositionLayer *> composition_layer_nodes;
 	bool is_viewport_in_use(SubViewport *p_viewport);
 
