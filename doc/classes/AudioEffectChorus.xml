@@ -14,7 +14,7 @@
 			<return type="float" />
 			<param index="0" name="voice_idx" type="int" />
 			<description>
-				Gets the cuttoff frequency of a specific voice.
+				Gets the cutoff frequency of a specific voice.
 			</description>
 		</method>
 		<method name="get_voice_delay_ms" qualifiers="const">
@@ -28,14 +28,14 @@
 			<return type="float" />
 			<param index="0" name="voice_idx" type="int" />
 			<description>
-				Gets the depth of a specific voices filter in milliseconds.
+				Gets the depth of a specific voice filter in milliseconds.
 			</description>
 		</method>
 		<method name="get_voice_level_db" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="voice_idx" type="int" />
 			<description>
-				Gets the volume of a specific voices in decibels.
+				Gets the volume of a specific voice in decibels.
 			</description>
 		</method>
 		<method name="get_voice_pan" qualifiers="const">
@@ -57,7 +57,7 @@
 			<param index="0" name="voice_idx" type="int" />
 			<param index="1" name="cutoff_hz" type="float" />
 			<description>
-				Sets the cuttoff frequency of a specific voice.
+				Sets the cutoff frequency of a specific voice.
 			</description>
 		</method>
 		<method name="set_voice_delay_ms">
@@ -73,7 +73,7 @@
 			<param index="0" name="voice_idx" type="int" />
 			<param index="1" name="depth_ms" type="float" />
 			<description>
-				Sets the depth of a specific voices filter in milliseconds.
+				Sets the depth of a specific voice filter in milliseconds.
 			</description>
 		</method>
 		<method name="set_voice_level_db">
@@ -81,7 +81,7 @@
 			<param index="0" name="voice_idx" type="int" />
 			<param index="1" name="level_db" type="float" />
 			<description>
-				Sets the volume of a specific voices in decibels.
+				Sets the volume of a specific voice in decibels.
 			</description>
 		</method>
 		<method name="set_voice_pan">
