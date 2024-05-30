@@ -274,6 +274,13 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 		if (r_raw_strength != nullptr) {
 			*r_raw_strength = strength;
 		}
+		if (r_event_index) {
+			if (input_event_action->get_event_index() >= 0) {
+				*r_event_index = input_event_action->get_event_index();
+			} else {
+				*r_event_index = E->value.inputs.size();
+			}
+		}
 		return input_event_action->get_action() == p_action;
 	}
 
