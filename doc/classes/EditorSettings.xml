@@ -1082,6 +1082,12 @@
 		<member name="text_editor/completion/auto_brace_complete" type="bool" setter="" getter="">
 			If [code]true[/code], automatically completes braces when making use of code completion.
 		</member>
+		<member name="text_editor/completion/autocompletion_filtering" type="int" setter="" getter="">
+			Filters autocompletion results.
+			- [b]Default[/b] will show all results that feature the input characters in the given order, but not necessarily grouped as a substring.
+			- [b]Beginning Matching Only[/b] will only show results that start with given input.
+			- [b]Any Substring Matching[/b] will show all results that feature the given input as a substring.
+		</member>
 		<member name="text_editor/completion/code_complete_delay" type="float" setter="" getter="">
 			The delay in seconds after which autocompletion suggestions should be displayed when the user stops typing.
 		</member>

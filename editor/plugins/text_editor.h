@@ -52,6 +52,7 @@ private:
 	MenuButton *search_menu = nullptr;
 	PopupMenu *bookmarks_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
+	PopupMenu *autocompletion_menu = nullptr;
 
 	GotoLineDialog *goto_line_dialog = nullptr;
 
@@ -110,9 +111,14 @@ protected:
 	void _update_bookmark_list();
 	void _bookmark_item_pressed(int p_idx);
 
+	List<String> autocompletion_modes;
+	void _change_autocompletion_filtering(int p_idx);
+
 public:
 	virtual void add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
 	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
+
+	void set_autocompletion_filtering(String p_autocompletion, CodeEdit::CodeAutocompletionType a_type);
 
 	virtual String get_name() override;
 	virtual Ref<Texture2D> get_theme_icon() override;

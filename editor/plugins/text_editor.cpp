@@ -61,6 +61,36 @@ void TextEditor::_change_syntax_highlighter(int p_idx) {
 	set_syntax_highlighter(highlighters[highlighter_menu->get_item_text(p_idx)]);
 }
 
+void TextEditor::set_autocompletion_filtering(String p_autocompletion, CodeEdit::CodeAutocompletionType a_type) {
+	ERR_FAIL_COND(p_autocompletion.is_empty());
+	for (String mode : autocompletion_modes) {
+		int autocomletion_index = autocompletion_menu->get_item_idx_from_text(mode);
+		autocompletion_menu->set_item_checked(autocomletion_index, mode == p_autocompletion);
+	}
+
+	CodeEdit *te = code_editor->get_text_editor();
+	te->set_code_autocompletion_type(a_type);
+}
+
+void TextEditor::_change_autocompletion_filtering(int p_idx) {
+	CodeEdit::CodeAutocompletionType type = CodeEdit::AUTOCOMPLETION_DEFAULT;
+	switch (p_idx) {
+		case 0: {
+			type = CodeEdit::AUTOCOMPLETION_DEFAULT;
+			break;
+		}
+		case 1: {
+			type = CodeEdit::AUTOCOMPLETION_BEGINNING_MATCH;
+			break;
+		}
+		case 2: {
+			type = CodeEdit::AUTOCOMPLETION_SUBSTRING_MATCH;
+			break;
+		}
+	}
+	set_autocompletion_filtering(autocompletion_menu->get_item_text(p_idx), type);
+}
+
 void TextEditor::_load_theme_settings() {
 	code_editor->get_text_editor()->get_syntax_highlighter()->update_cache();
 }
@@ -672,6 +702,19 @@ TextEditor::TextEditor() {
 	highlighter.instantiate();
 	add_syntax_highlighter(highlighter);
 	set_syntax_highlighter(plain_highlighter);
+
+	autocompletion_menu = memnew(PopupMenu);
+	edit_menu->get_popup()->add_submenu_node_item(TTR("Autocompletion Filtering"), autocompletion_menu);
+	autocompletion_menu->connect("id_pressed", callable_mp(this, &TextEditor::_change_autocompletion_filtering));
+
+	autocompletion_menu->add_radio_check_item("Default");
+	autocompletion_modes.push_back("Default");
+	autocompletion_menu->add_radio_check_item("Beginning Matching Only");
+	autocompletion_modes.push_back("Beginning Matching Only");
+	autocompletion_menu->add_radio_check_item("Any Substring Matching");
+	autocompletion_modes.push_back("Any Substring Matching");
+
+	set_autocompletion_filtering("Default", CodeEdit::AUTOCOMPLETION_DEFAULT);
 
 	search_menu = memnew(MenuButton);
 	search_menu->set_shortcut_context(this);

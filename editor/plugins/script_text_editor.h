@@ -84,6 +84,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	PopupMenu *breakpoints_menu = nullptr;
 	PopupMenu *highlighter_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
+	PopupMenu *autocompletion_menu = nullptr;
 
 	GotoLineDialog *goto_line_dialog = nullptr;
 	ScriptEditorQuickOpen *quick_open = nullptr;
@@ -208,12 +209,17 @@ protected:
 
 	String _get_absolute_path(const String &rel_path);
 
+	List<String> autocompletion_modes;
+	void _change_autocompletion_filtering(int p_idx);
+
 public:
 	void _update_connected_methods();
 
 	virtual void add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
 	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
 	void update_toggle_scripts_button() override;
+
+	void set_autocompletion_filtering(String p_autocompletion, CodeEdit::CodeAutocompletionType a_type);
 
 	virtual void apply_code() override;
 	virtual Ref<Resource> get_edited_resource() const override;
