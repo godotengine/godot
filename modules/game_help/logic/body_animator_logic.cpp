@@ -55,8 +55,18 @@ void AnimatorAIStateConditionBase::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &AnimatorAIStateConditionBase::set_blackboard_plan);
     ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &AnimatorAIStateConditionBase::get_blackboard_plan);
 
+    
+
+    ClassDB::bind_method(D_METHOD("set_is_value_by_property","value"),&AnimatorAIStateFloatCondition::set_is_value_by_property);
+    ClassDB::bind_method(D_METHOD("get_is_value_by_property"),&AnimatorAIStateFloatCondition::get_is_value_by_property);
+
+    ClassDB::bind_method(D_METHOD("set_property_name","value"),&AnimatorAIStateFloatCondition::set_property_name);
+    ClassDB::bind_method(D_METHOD("get_property_name"),&AnimatorAIStateFloatCondition::get_property_name);
+
     ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "compare_type_name", PROPERTY_HINT_ENUM_DYNAMIC_LIST,"get_compare_value"), "set_compare_type_name", "get_compare_type_name");
     ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "blackbord_property_name",PROPERTY_HINT_ENUM_DYNAMIC_LIST,"get_blackbord_propertys"), "set_blackbord_property_name", "get_blackbord_property_name");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_value_by_property"), "set_is_value_by_property", "get_is_value_by_property");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "property_name",PROPERTY_HINT_ENUM_DYNAMIC_LIST,"get_blackbord_propertys"), "set_property_name", "get_property_name");
 
     //ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan"), "set_blackboard_plan", "get_blackboard_plan");
 }

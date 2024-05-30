@@ -312,6 +312,7 @@ Dictionary CharacterBodyMain::get_body_part()
 
 CharacterBodyMain::CharacterBodyMain()
 {
+    character_movement.instantiate();
     mainShape = memnew(CollisionShape3D);
     mainShape->set_name("MainCollision");
     add_child(mainShape);

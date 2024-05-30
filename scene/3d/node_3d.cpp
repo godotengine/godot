@@ -126,6 +126,8 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 		}
 	}
 	_set_dirty_bits(DIRTY_GLOBAL_TRANSFORM);
+	
+	emit_signal(SceneStringName(transform_changed));
 }
 
 void Node3D::_notification(int p_what) {
@@ -1236,6 +1238,7 @@ void Node3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "visibility_parent", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GeometryInstance3D"), "set_visibility_parent", "get_visibility_parent");
 
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
+	ADD_SIGNAL(MethodInfo("transform_changed"));
 }
 
 Node3D::Node3D() :

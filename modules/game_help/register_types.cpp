@@ -113,6 +113,9 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<CharacterController>();
 	//ClassDB::register_class<BTPlaySkill>();
 
+
+	ClassDB::register_abstract_class<CharacterMovement>();
+
 	
 	ClassDB::register_abstract_class<AnimatorAIStateConditionBase>();
 	ClassDB::register_class<AnimatorAIStateFloatCondition>();

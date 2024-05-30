@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RetargetProfileGlobalAll" inherits="RetargetProfile" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="global_transform_target_size" type="int" setter="set_global_transform_target_size" getter="get_global_transform_target_size" overrides="RetargetProfile" default="56" />
+		<member name="label_for_animation_name" type="String" setter="set_label_for_animation_name" getter="get_label_for_animation_name" overrides="RetargetProfile" default="&quot;Glb-All&quot;" />
+	</members>
+</class>

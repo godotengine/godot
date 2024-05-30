@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RetargetProfile" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_absolute_transform_target">
+			<return type="void" />
+			<param index="0" name="bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="add_global_transform_target">
+			<return type="void" />
+			<param index="0" name="bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="add_local_transform_target">
+			<return type="void" />
+			<param index="0" name="bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="get_absolute_transform_target" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_global_transform_target" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_local_transform_target" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="has_absolute_transform_target">
+			<return type="bool" />
+			<param index="0" name="bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="has_global_transform_target">
+			<return type="bool" />
+			<param index="0" name="bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="has_local_transform_target">
+			<return type="bool" />
+			<param index="0" name="bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="set_absolute_transform_target">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="set_global_transform_target">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="set_local_transform_target">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="absolute_transform_target_size" type="int" setter="set_absolute_transform_target_size" getter="get_absolute_transform_target_size" default="0">
+		</member>
+		<member name="global_transform_target_size" type="int" setter="set_global_transform_target_size" getter="get_global_transform_target_size" default="0">
+		</member>
+		<member name="label_for_animation_name" type="String" setter="set_label_for_animation_name" getter="get_label_for_animation_name" default="&quot;&quot;">
+		</member>
+		<member name="local_transform_target_size" type="int" setter="set_local_transform_target_size" getter="get_local_transform_target_size" default="0">
+		</member>
+	</members>
+</class>

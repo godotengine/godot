@@ -11,6 +11,7 @@
 #include "body_part.h"
 #include "animation_help.h"
 #include "body_animator.h"
+#include "character_movement.h"
 
 
 #include "modules/limboai/bt/bt_player.h"
@@ -244,6 +245,7 @@ protected:
     mutable BTPlayer *btSkillPlayer = nullptr;
     // 角色自己的黑板
     Ref<Blackboard> player_blackboard;
+    Ref<CharacterMovement> character_movement;
     // 骨架配置文件
     String skeleton_res;
     // 动画组配置

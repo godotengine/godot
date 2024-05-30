@@ -47,6 +47,19 @@ public:
     void set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan);
     Ref<BlackboardPlan> get_blackboard_plan() { return blackboard_plan; }
 
+    
+    void set_is_value_by_property(bool p_value)
+    {
+        is_value_by_property = p_value;
+        update_name();
+    }
+    bool get_is_value_by_property()
+    {
+        return is_value_by_property;
+    }
+    void set_property_name(const StringName& p_name) { propertyName = p_name; update_name();}
+    StringName get_property_name() { return propertyName; }
+
     Array get_compare_value() 
     {
         return _get_compare_value();
@@ -69,6 +82,8 @@ protected:
     Ref<BlackboardPlan> blackboard_plan;
     StringName propertyName;
     AnimatorAICompareType compareType;
+    bool is_value_by_property = false;
+    StringName value_property_name;
 
 };
 // float类型条件
@@ -107,7 +122,10 @@ protected:
     {
         #if TOOLS_ENABLED
         String nm = String("[float]") + String(propertyName)  + " " + get_compare_type_name();
+        if(is_value_by_property)
         {
+            nm += " " + String(value_property_name);
+        }else{
             nm += " " + String::num(value);
         }
         set_name( nm );
@@ -157,8 +175,6 @@ protected:
     }
 protected:
     double value;
-    bool is_value_by_property = false;
-    StringName value_property_name;
 
 };
 // int类型
@@ -277,8 +293,6 @@ protected:
         return false;
     }
     int64_t value;
-    bool is_value_by_property = false;
-    StringName value_property_name;
 
 };
 // 字符串表达式
@@ -309,6 +323,12 @@ protected:
     {
         #if TOOLS_ENABLED
         String nm = String("[bool]") + String(propertyName)  + " " + get_compare_type_name();
+        
+        if(is_value_by_property)
+        {
+            nm += " " + String(value_property_name);
+        }
+        else
         {
             nm += " ";
             nm += (value ? "true" : "false");
@@ -388,6 +408,11 @@ protected:
     {
         #if TOOLS_ENABLED
         String nm = String("[StringName]") + String(propertyName)  + " " + get_compare_type_name();
+         if(is_value_by_property)
+        {
+            nm += " " + String(value_property_name);
+        }
+        else
         {
             nm += " " + value;
         }
@@ -544,6 +569,56 @@ public:
     LocalVector<Ref<AnimatorAIStateConditionBase>> exclude_condition;
     Ref<BlackboardPlan> blackboard_plan;
     
+};
+class CharacterAnimatorLayer;
+// 动画逻辑执行的任务
+class CharacterTaskBase : public Resource
+{
+    GDCLASS(CharacterTaskBase,Resource)
+    static void _bind_methods()
+    {
+
+    }
+public:
+    void process_task(CharacterAnimatorLayer* animator,Blackboard* blackboard)
+    {
+        _process_task(animator,blackboard);
+    }
+    virtual void _process_task(CharacterAnimatorLayer* animator,Blackboard* blackboard)
+    {
+
+    }
+protected:
+    bool is_value_by_property = false;
+    StringName value_property_name;
+};
+class CharacterTaskActionBase : public Resource
+{
+    GDCLASS(CharacterTaskActionBase,Resource)
+    static void _bind_methods()
+    {
+
+    }
+    public:
+    virtual void _process_task(CharacterAnimatorLayer* animator,Blackboard* blackboard)
+    {
+
+    }
+    virtual void update_name()
+    {
+
+    }
+    Array get_blackbord_propertys()
+    {
+        return _get_blackbord_propertys();
+    }
+    virtual Array _get_blackbord_propertys()
+    {
+        return Array();
+    }
+protected:
+    bool is_value_by_property = false;
+    StringName value_property_name;
 };
 class CharacterAnimationLogicNode;
 class CharacterAnimationLogicRoot : public RefCounted

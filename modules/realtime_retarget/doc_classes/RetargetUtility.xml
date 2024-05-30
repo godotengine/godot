@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RetargetUtility" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="extract_global_transform" qualifiers="static">
+			<return type="Transform3D" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
+			<param index="1" name="bone_idx" type="int" />
+			<param index="2" name="transform" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="extract_global_transform_position" qualifiers="static">
+			<return type="Vector3" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
+			<param index="1" name="bone_idx" type="int" />
+			<param index="2" name="position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="extract_global_transform_rotation" qualifiers="static">
+			<return type="Quaternion" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
+			<param index="1" name="bone_idx" type="int" />
+			<param index="2" name="rotation" type="Quaternion" />
+			<description>
+			</description>
+		</method>
+		<method name="extract_global_transform_scale" qualifiers="static">
+			<return type="Vector3" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
+			<param index="1" name="bone_idx" type="int" />
+			<param index="2" name="scale" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="extract_local_transform" qualifiers="static">
+			<return type="Transform3D" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
+			<param index="1" name="bone_idx" type="int" />
+			<param index="2" name="transform" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="extract_local_transform_position" qualifiers="static">
+			<return type="Vector3" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
+			<param index="1" name="bone_idx" type="int" />
+			<param index="2" name="position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="extract_local_transform_rotation" qualifiers="static">
+			<return type="Quaternion" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
+			<param index="1" name="bone_idx" type="int" />
+			<param index="2" name="rotation" type="Quaternion" />
+			<description>
+			</description>
+		</method>
+		<method name="extract_local_transform_scale" qualifiers="static">
+			<return type="Vector3" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
+			<param index="1" name="bone_idx" type="int" />
+			<param index="2" name="scale" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="global_transform_position_to_bone_pose" qualifiers="static">
+			<return type="Vector3" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
+			<param index="1" name="bone_idx" type="int" />
+			<param index="2" name="position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="global_transform_rotation_to_bone_pose" qualifiers="static">
+			<return type="Quaternion" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
+			<param index="1" name="bone_idx" type="int" />
+			<param index="2" name="rotation" type="Quaternion" />
+			<description>
+			</description>
+		</method>
+		<method name="global_transform_scale_to_bone_pose" qualifiers="static">
+			<return type="Vector3" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
+			<param index="1" name="bone_idx" type="int" />
+			<param index="2" name="scale" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="global_transform_to_bone_pose" qualifiers="static">
+			<return type="Transform3D" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
+			<param index="1" name="bone_idx" type="int" />
+			<param index="2" name="transform" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="local_transform_position_to_bone_pose" qualifiers="static">
+			<return type="Vector3" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
+			<param index="1" name="bone_idx" type="int" />
+			<param index="2" name="position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="local_transform_rotation_to_bone_pose" qualifiers="static">
+			<return type="Quaternion" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
+			<param index="1" name="bone_idx" type="int" />
+			<param index="2" name="rotation" type="Quaternion" />
+			<description>
+			</description>
+		</method>
+		<method name="local_transform_scale_to_bone_pose" qualifiers="static">
+			<return type="Vector3" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
+			<param index="1" name="bone_idx" type="int" />
+			<param index="2" name="scale" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="local_transform_to_bone_pose" qualifiers="static">
+			<return type="Transform3D" />
+			<param index="0" name="skeleton" type="Skeleton3D" />
+			<param index="1" name="bone_idx" type="int" />
+			<param index="2" name="transform" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="TYPE_ABSOLUTE" value="0" enum="TransformType">
+		</constant>
+		<constant name="TYPE_LOCAL" value="1" enum="TransformType">
+		</constant>
+		<constant name="TYPE_GLOBAL" value="2" enum="TransformType">
+		</constant>
+	</constants>
+</class>

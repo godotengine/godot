@@ -55,6 +55,7 @@ public:
 	StringName draw;
 	StringName hidden;
 	StringName visibility_changed;
+	StringName transform_changed;
 	StringName input_event;
 	StringName gui_input;
 	StringName item_rect_changed;

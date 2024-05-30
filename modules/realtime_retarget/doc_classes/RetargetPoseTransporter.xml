@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RetargetPoseTransporter" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Transfers the source skeleton's pose to the target skeleton.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="active" type="bool" setter="set_active" getter="is_active" default="false">
+		</member>
+		<member name="enable_position" type="bool" setter="set_position_enabled" getter="is_position_enabled" default="true">
+		</member>
+		<member name="enable_rotation" type="bool" setter="set_rotation_enabled" getter="is_rotation_enabled" default="true">
+		</member>
+		<member name="enable_scale" type="bool" setter="set_scale_enabled" getter="is_scale_enabled" default="true">
+		</member>
+		<member name="process_callback" type="int" setter="set_process_callback" getter="get_process_callback" enum="RetargetPoseTransporter.AnimationProcessCallback" default="1">
+		</member>
+		<member name="profile" type="RetargetProfile" setter="set_profile" getter="get_profile">
+		</member>
+		<member name="source_skeleton" type="NodePath" setter="set_source_skeleton" getter="get_source_skeleton" default="NodePath(&quot;&quot;)">
+		</member>
+		<member name="target_skeleton" type="NodePath" setter="set_target_skeleton" getter="get_target_skeleton" default="NodePath(&quot;&quot;)">
+		</member>
+	</members>
+	<constants>
+		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback">
+		</constant>
+		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback">
+		</constant>
+		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback">
+		</constant>
+	</constants>
+</class>
