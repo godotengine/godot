@@ -4314,13 +4314,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			DisplayServer::WindowID receiving_window_id = _get_focused_window_or_popup();
-			if (receiving_window_id == INVALID_WINDOW_ID) {
-				receiving_window_id = window_id;
-			}
 			Ref<InputEventMouseMotion> mm;
 			mm.instantiate();
-			mm->set_window_id(receiving_window_id);
+			mm->set_window_id(window_id);
 			mm->set_ctrl_pressed((wParam & MK_CONTROL) != 0);
 			mm->set_shift_pressed((wParam & MK_SHIFT) != 0);
 			mm->set_alt_pressed(alt_mem);
@@ -4380,11 +4376,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
 
-			if (receiving_window_id != window_id) {
-				// Adjust event position relative to window distance when event is sent to a different window.
-				mm->set_position(mm->get_position() - window_get_position(receiving_window_id) + window_get_position(window_id));
-				mm->set_global_position(mm->get_position());
-			}
 			Input::get_singleton()->parse_input_event(mm);
 
 		} break;
