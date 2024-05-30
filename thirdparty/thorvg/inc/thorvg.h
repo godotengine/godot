@@ -650,6 +650,30 @@ public:
     virtual Result draw() noexcept;
 
     /**
+     * @brief Sets the drawing region in the canvas.
+     *
+     * This function defines the rectangular area of the canvas that will be used for drawing operations.
+     * The specified viewport is used to clip the rendering output to the boundaries of the rectangle.
+     *
+     * @param[in] x The x-coordinate of the upper-left corner of the rectangle.
+     * @param[in] y The y-coordinate of the upper-left corner of the rectangle.
+     * @param[in] w The width of the rectangle.
+     * @param[in] h The height of the rectangle.
+     *
+     * @retval Result::Success when succeed, Result::InsufficientCondition otherwise.
+     *
+     * @see SwCanvas::target()
+     * @see GlCanvas::target()
+     * @see WgCanvas::target()
+     *
+     * @warning It's not allowed to change the viewport during Canvas::push() - Canvas::sync() or Canvas::update() - Canvas::sync().
+     *
+     * @note When resetting the target, the viewport will also be reset to the target size.
+     * @note Experimental API
+     */
+    virtual Result viewport(int32_t x, int32_t y, int32_t w, int32_t h) noexcept;
+
+    /**
      * @brief Guarantees that drawing task is finished.
      *
      * The Canvas rendering can be performed asynchronously. To make sure that rendering is finished,
@@ -1660,7 +1684,9 @@ public:
      * @retval Result::InvalidArguments In case no valid pointer is provided or the width, or the height or the stride is zero.
      * @retval Result::NonSupport In case the software engine is not supported.
      *
-     * @warning Do not access @p buffer during Canvas::draw() - Canvas::sync(). It should not be accessed while TVG is writing on it.
+     * @warning Do not access @p buffer during Canvas::push() - Canvas::sync(). It should not be accessed while the engine is writing on it.
+     *
+     * @see Canvas::viewport()
     */
     Result target(uint32_t* buffer, uint32_t stride, uint32_t w, uint32_t h, Colorspace cs) noexcept;
 
@@ -1726,6 +1752,8 @@ public:
      * @warning This API is experimental and not officially supported. It may be modified or removed in future versions.
      * @warning Drawing on the main surface is currently not permitted. If the identifier (@p id) is set to @c 0, the operation will be aborted.
      *
+     * @see Canvas::viewport()
+     *
      * @note Currently, this only allows the GL_RGBA8 color space format.
      * @note Experimental API
     */
@@ -1764,6 +1792,7 @@ public:
      * @warning Please do not use it, this API is not official one. It could be modified in the next version.
      *
      * @note Experimental API
+     * @see Canvas::viewport()
      */
     Result target(void* window, uint32_t w, uint32_t h) noexcept;
 
@@ -1856,6 +1885,7 @@ public:
      *
      * @note For efficiency, ThorVG ignores updates to the new frame value if the difference from the current frame value
      *       is less than 0.001. In such cases, it returns @c Result::InsufficientCondition.
+     *       Values less than 0.001 may be disregarded and may not be accurately retained by the Animation.
      *
      * @see totalFrame()
      *
