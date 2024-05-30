@@ -970,39 +970,38 @@ void Animation::remove_track(int p_track) {
 }
 
 int Animation::add_bind(int p_at_pos) {
-	if (p_at_pos < 0 || p_at_pos >= binded_keys.size()) {
-		p_at_pos = binded_keys.size();
+	if (p_at_pos < 0 || p_at_pos >= bound_keys.size()) {
+		p_at_pos = bound_keys.size();
 	}
 
 	BindParent *bp = memnew(BindParent);
-	binded_keys.insert(p_at_pos, bp);
+	bound_keys.insert(p_at_pos, bp);
 
 	emit_changed();
 	return p_at_pos;
 }
 
 void Animation::remove_bind(int p_bind) {
-	ERR_FAIL_INDEX(p_bind, binded_keys.size());
-	BindParent *bp = binded_keys[p_bind];
+	ERR_FAIL_INDEX(p_bind, bound_keys.size());
+	BindParent *bp = bound_keys[p_bind];
 
 	memdelete(bp);
-	binded_keys.remove_at(p_bind);
+	bound_keys.remove_at(p_bind);
 	emit_changed();
 	_check_capture_included();
 }
 
-
 int Animation::add_key_to_bind(int bind_idx, int p_at_pos, int track_idx, int key_idx) {
-	BindParent *bindp = binded_keys[bind_idx];
+	BindParent *bindp = bound_keys[bind_idx];
 
-	if (p_at_pos < 0 || p_at_pos >= bindp->bindedChildren.size()) {
-		p_at_pos = bindp->bindedChildren.size();
+	if (p_at_pos < 0 || p_at_pos >= bindp->bound_Children.size()) {
+		p_at_pos = bindp->bound_Children.size();
 	}
 
-	BindedKey *bk = memnew(BindedKey);
+	BoundKey *bk = memnew(BoundKey);
 	bk->track_idx = track_idx;
 	bk->key_idx = key_idx;
-	(bindp->bindedChildren).insert(p_at_pos, bk);
+	(bindp->bound_Children).insert(p_at_pos, bk);
 
 	track_set_key_bind(track_idx, key_idx, bind_idx);
 
@@ -1011,34 +1010,33 @@ int Animation::add_key_to_bind(int bind_idx, int p_at_pos, int track_idx, int ke
 }
 
 void Animation::remove_key_from_bind(int bind_idx, int track_idx, int key_idx) {
-	BindParent *bp = binded_keys[bind_idx];
+	BindParent *bp = bound_keys[bind_idx];
 
 	int idx = -1;
-	for (int i = 0; i < bp->bindedChildren.size(); i++) {
-		BindedKey *bk = bp->bindedChildren[i];
+	for (int i = 0; i < bp->bound_Children.size(); i++) {
+		BoundKey *bk = bp->bound_Children[i];
 		if (bk->track_idx == track_idx && bk->key_idx == key_idx) {
 			idx = i;
 			break;
 		}
 	}
 	if (idx >= 0) {
-		memdelete(bp->bindedChildren[idx]);
-		bp->bindedChildren.remove_at(idx);
+		memdelete(bp->bound_Children[idx]);
+		bp->bound_Children.remove_at(idx);
 		track_set_key_bind(track_idx, key_idx, -1);
 	}
 }
 
-void Animation::signal_value_change_to_binded_keys(int bind_idx, const Variant &p_value, TrackType type) {
-	BindParent *bindp = binded_keys[bind_idx];
-		
-	for (int i = 0; i < bindp->bindedChildren.size(); i++) {
-		BindedKey *bk = bindp->bindedChildren[i];
+void Animation::signal_value_change_to_bound_keys(int bind_idx, const Variant &p_value, TrackType type) {
+	BindParent *bindp = bound_keys[bind_idx];
+
+	for (int i = 0; i < bindp->bound_Children.size(); i++) {
+		BoundKey *bk = bindp->bound_Children[i];
 		int p_track = bk->track_idx;
 		int p_key_idx = bk->key_idx;
 
 		ERR_FAIL_INDEX(p_track, tracks.size());
 		Track *t = tracks[p_track];
-
 
 		switch (type) {
 			case TYPE_POSITION_3D: {
@@ -1594,7 +1592,7 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 
 	int bind_idx = track_get_key_bind(p_track, p_idx);
 	if (bind_idx >= 0) {
-		remove_key_from_bind(bind_idx , p_track, p_idx);
+		remove_key_from_bind(bind_idx, p_track, p_idx);
 	}
 
 	switch (t->type) {
@@ -1853,10 +1851,10 @@ int Animation::track_clone_key(int src_key_idx, int src_track_idx, int p_track, 
 		bind_idx = add_bind(-1);
 		add_key_to_bind(bind_idx, -1, src_track_idx, src_key_idx);
 	}
-	
+
 	int key_idx = track_insert_key(p_track, p_time, p_key, p_transition);
 	add_key_to_bind(bind_idx, -1, p_track, key_idx);
-    
+
 	return key_idx;
 }
 
@@ -2036,9 +2034,7 @@ int Animation::track_get_key_count(int p_track) const {
 	ERR_FAIL_V(-1);
 }
 
-
 int Animation::track_get_key_bind(int p_track, int p_key_idx) const {
-
 	Track *t = tracks[p_track];
 	int ret = -1;
 
@@ -2078,10 +2074,10 @@ int Animation::track_get_key_bind(int p_track, int p_key_idx) const {
 		case TYPE_ANIMATION: {
 			AnimationTrack *at = static_cast<AnimationTrack *>(t);
 			return at->values[p_key_idx].bind_idx;
-		} 
+		}
 		default: {
 			return -1;
-        }
+		}
 	}
 
 	return ret;
@@ -2505,7 +2501,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			ERR_FAIL_COND(tt->compressed_track >= 0);
 			ERR_FAIL_INDEX(p_key_idx, tt->positions.size());
 			if (tt->positions[p_key_idx].bind_idx >= 0) {
-				signal_value_change_to_binded_keys(tt->positions[p_key_idx].bind_idx, p_value, TYPE_POSITION_3D);
+				signal_value_change_to_bound_keys(tt->positions[p_key_idx].bind_idx, p_value, TYPE_POSITION_3D);
 			} else {
 				tt->positions.write[p_key_idx].value = p_value;
 			}
@@ -2517,7 +2513,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			ERR_FAIL_COND(rt->compressed_track >= 0);
 			ERR_FAIL_INDEX(p_key_idx, rt->rotations.size());
 			if (rt->rotations[p_key_idx].bind_idx >= 0) {
-				signal_value_change_to_binded_keys(rt->rotations[p_key_idx].bind_idx, p_value, TYPE_ROTATION_3D);
+				signal_value_change_to_bound_keys(rt->rotations[p_key_idx].bind_idx, p_value, TYPE_ROTATION_3D);
 			} else {
 				rt->rotations.write[p_key_idx].value = p_value;
 			}
@@ -2529,9 +2525,9 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			ERR_FAIL_COND(st->compressed_track >= 0);
 			ERR_FAIL_INDEX(p_key_idx, st->scales.size());
 			if (st->scales[p_key_idx].bind_idx >= 0) {
-				signal_value_change_to_binded_keys(st->scales[p_key_idx].bind_idx, p_value, TYPE_SCALE_3D);
+				signal_value_change_to_bound_keys(st->scales[p_key_idx].bind_idx, p_value, TYPE_SCALE_3D);
 			} else {
-				st->scales.write[p_key_idx].value = p_value;			
+				st->scales.write[p_key_idx].value = p_value;		
 			}
 
 		} break;
@@ -2541,7 +2537,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			ERR_FAIL_COND(bst->compressed_track >= 0);
 			ERR_FAIL_INDEX(p_key_idx, bst->blend_shapes.size());
 			if (bst->blend_shapes[p_key_idx].bind_idx >= 0) {
-				signal_value_change_to_binded_keys(bst->blend_shapes[p_key_idx].bind_idx, p_value, TYPE_BLEND_SHAPE);
+				signal_value_change_to_bound_keys(bst->blend_shapes[p_key_idx].bind_idx, p_value, TYPE_BLEND_SHAPE);
 			} else {
 				bst->blend_shapes.write[p_key_idx].value = p_value;
 			}
@@ -2552,7 +2548,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			ERR_FAIL_INDEX(p_key_idx, vt->values.size());
 
 			if (vt->values[p_key_idx].bind_idx >= 0) {
-				signal_value_change_to_binded_keys(vt->values[p_key_idx].bind_idx, p_value, TYPE_VALUE);
+				signal_value_change_to_bound_keys(vt->values[p_key_idx].bind_idx, p_value, TYPE_VALUE);
 			} else {
 				vt->values.write[p_key_idx].value = p_value;
 			}
@@ -2572,7 +2568,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			}
 			if (d.has("bind_idx")) {
 				if (mt->methods[p_key_idx].bind_idx >= 0) {
-				signal_value_change_to_binded_keys(mt->methods[p_key_idx].bind_idx, p_value, TYPE_METHOD);
+					signal_value_change_to_bound_keys(mt->methods[p_key_idx].bind_idx, p_value, TYPE_METHOD);
 				} else {
 					mt->methods.write[p_key_idx].bind_idx = d["bind_idx"];
 				}
@@ -2587,7 +2583,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			ERR_FAIL_COND(arr.size() != 5);
 
 			if (bt->values[p_key_idx].bind_idx >= 0) {
-				signal_value_change_to_binded_keys(bt->values[p_key_idx].bind_idx, p_value, TYPE_BEZIER);
+				signal_value_change_to_bound_keys(bt->values[p_key_idx].bind_idx, p_value, TYPE_BEZIER);
 			} else {
 				bt->values.write[p_key_idx].value.value = arr[0];
 				bt->values.write[p_key_idx].value.in_handle.x = arr[1];
@@ -2607,7 +2603,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			ERR_FAIL_COND(!k.has("stream"));
 
 			if (at->values[p_key_idx].bind_idx >= 0) {
-				signal_value_change_to_binded_keys(at->values[p_key_idx].bind_idx, p_value, TYPE_AUDIO);
+				signal_value_change_to_bound_keys(at->values[p_key_idx].bind_idx, p_value, TYPE_AUDIO);
 			} else {
 				at->values.write[p_key_idx].value.start_offset = k["start_offset"];
 				at->values.write[p_key_idx].value.end_offset = k["end_offset"];
@@ -2620,7 +2616,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			ERR_FAIL_INDEX(p_key_idx, at->values.size());
 
 			if (at->values[p_key_idx].bind_idx >= 0) {
-				signal_value_change_to_binded_keys(at->values[p_key_idx].bind_idx, p_value, TYPE_ANIMATION);
+				signal_value_change_to_bound_keys(at->values[p_key_idx].bind_idx, p_value, TYPE_ANIMATION);
 			} else {
 				at->values.write[p_key_idx].value = p_value;
 			}

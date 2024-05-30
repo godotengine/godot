@@ -115,13 +115,13 @@ private:
 		virtual ~Track() {}
 	};
 
-	struct BindedKey {
+	struct BoundKey {
 		int track_idx;
 		int key_idx;
 	};
 
 	struct BindParent {
-		Vector<BindedKey *> bindedChildren;
+		Vector<BoundKey *> bound_Children;
 	};
 
 	struct Key {
@@ -246,7 +246,7 @@ private:
 	};
 
 	Vector<Track *> tracks;
-	Vector<BindParent *> binded_keys;
+	Vector<BindParent *> bound_keys;
 
 	template <typename T>
 	void _clear(T &p_keys);
@@ -407,7 +407,7 @@ public:
 
 	int add_bind(int p_at_pos);
 	void remove_bind(int p_bind);
-	void signal_value_change_to_binded_keys(int bind_idx, const Variant &p_value, TrackType type);
+	void signal_value_change_to_bound_keys(int bind_idx, const Variant &p_value, TrackType type);
 
 	void set_capture_included(bool p_capture_included);
 	bool is_capture_included() const;
@@ -433,7 +433,7 @@ public:
 	bool track_is_enabled(int p_track) const;
 
 	int add_key_to_bind(int bind_idx, int p_at_pos, int track_idx, int key_idx);
-	void remove_key_from_bind(int bind_idx, int track_idx, int key_idx); 
+	void remove_key_from_bind(int bind_idx, int track_idx, int key_idx);
 	int track_clone_key(int src_key_idx, int src_track_idx, int p_track, double p_time, const Variant &p_key, real_t p_transition = 1);
 	int track_insert_key(int p_track, double p_time, const Variant &p_key, real_t p_transition = 1);
 	void track_set_key_transition(int p_track, int p_key_idx, real_t p_transition);

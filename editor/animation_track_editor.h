@@ -593,7 +593,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _anim_clone_keys(float p_ofs, bool p_ofs_valid, int p_track);
 
-    void _anim_make_key_unique();
+	void _anim_make_key_unique();
 
 	void _anim_copy_keys(bool p_cut);
 
