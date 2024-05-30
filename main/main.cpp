@@ -4220,6 +4220,12 @@ void Main::cleanup(bool p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
 
+#ifdef DEBUG_ENABLED
+	if (input) {
+		input->flush_frame_parsed_events();
+	}
+#endif
+
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 		TextServerManager::get_singleton()->get_interface(i)->cleanup();
 	}
