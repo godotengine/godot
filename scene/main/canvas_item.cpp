@@ -34,6 +34,7 @@
 #include "scene/2d/canvas_group.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
+#include "scene/resources/atlas_texture.h"
 #include "scene/resources/canvas_item_material.h"
 #include "scene/resources/font.h"
 #include "scene/resources/multimesh.h"
@@ -850,18 +851,28 @@ void CanvasItem::draw_polygon(const Vector<Point2> &p_points, const Vector<Color
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 
-	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	const Ref<AtlasTexture> atlas = p_texture;
+	if (atlas.is_valid() && atlas->get_atlas().is_valid()) {
+		const Ref<Texture2D> &texture = atlas->get_atlas();
+		const Vector2 atlas_size = texture->get_size();
 
-	RenderingServer::get_singleton()->canvas_item_add_polygon(canvas_item, p_points, p_colors, p_uvs, rid);
+		const Vector2 remap_min = atlas->get_region().position / atlas_size;
+		const Vector2 remap_max = atlas->get_region().get_end() / atlas_size;
+
+		PackedVector2Array uvs = p_uvs;
+		for (Vector2 &p : uvs) {
+			p.x = Math::remap(p.x, 0, 1, remap_min.x, remap_max.x);
+			p.y = Math::remap(p.y, 0, 1, remap_min.y, remap_max.y);
+		}
+		RenderingServer::get_singleton()->canvas_item_add_polygon(canvas_item, p_points, p_colors, uvs, texture->get_rid());
+	} else {
+		RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+		RenderingServer::get_singleton()->canvas_item_add_polygon(canvas_item, p_points, p_colors, p_uvs, texture_rid);
+	}
 }
 
 void CanvasItem::draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture) {
-	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
-
-	Vector<Color> colors = { p_color };
-	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
-	RenderingServer::get_singleton()->canvas_item_add_polygon(canvas_item, p_points, colors, p_uvs, rid);
+	draw_polygon(p_points, { p_color }, p_uvs, p_texture);
 }
 
 void CanvasItem::draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture2D> &p_texture, const Transform2D &p_transform, const Color &p_modulate) {
