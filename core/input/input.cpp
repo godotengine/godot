@@ -1029,6 +1029,14 @@ void Input::parse_input_event(const Ref<InputEvent> &p_event) {
 	}
 }
 
+#ifdef DEBUG_ENABLED
+void Input::flush_frame_parsed_events() {
+	_THREAD_SAFE_METHOD_
+
+	frame_parsed_events.clear();
+}
+#endif
+
 void Input::flush_buffered_events() {
 	_THREAD_SAFE_METHOD_
 
@@ -1244,7 +1252,7 @@ void Input::_update_action_cache(const StringName &p_action_name, ActionState &r
 	r_action_state.cache.strength = 0.0;
 	r_action_state.cache.raw_strength = 0.0;
 
-	int max_event = InputMap::get_singleton()->action_get_events(p_action_name)->size();
+	int max_event = InputMap::get_singleton()->action_get_events(p_action_name)->size() + 1; // +1 comes from InputEventAction.
 	for (const KeyValue<int, ActionState::DeviceState> &kv : r_action_state.device_states) {
 		const ActionState::DeviceState &device_state = kv.value;
 		for (int i = 0; i < max_event; i++) {
