@@ -122,8 +122,9 @@ bool PropertyListHelper::is_property_valid(const String &p_property, int *r_inde
 	return property_list.has(components[1]);
 }
 
-void PropertyListHelper::get_property_list(List<PropertyInfo> *p_list, int p_count) const {
-	for (int i = 0; i < p_count; i++) {
+void PropertyListHelper::get_property_list(List<PropertyInfo> *p_list) const {
+	const int property_count = _call_array_length_getter();
+	for (int i = 0; i < property_count; i++) {
 		for (const KeyValue<String, Property> &E : property_list) {
 			const Property &property = E.value;
 
@@ -177,7 +178,9 @@ bool PropertyListHelper::property_get_revert(const String &p_property, Variant &
 
 PropertyListHelper::~PropertyListHelper() {
 	// No object = it's the main helper. Do a cleanup.
-	if (!object) {
+	if (!object && is_initialized()) {
+		memdelete(array_length_getter);
+
 		for (const KeyValue<String, Property> &E : property_list) {
 			if (E.value.setter) {
 				memdelete(E.value.setter);

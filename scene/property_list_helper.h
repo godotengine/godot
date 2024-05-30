@@ -77,7 +77,7 @@ public:
 	void setup_for_instance(const PropertyListHelper &p_base, Object *p_object);
 	bool is_property_valid(const String &p_property, int *r_index = nullptr) const;
 
-	void get_property_list(List<PropertyInfo> *p_list, int p_count) const;
+	void get_property_list(List<PropertyInfo> *p_list) const;
 	bool property_get_value(const String &p_property, Variant &r_ret) const;
 	bool property_set_value(const String &p_property, const Variant &p_value) const;
 	bool property_can_revert(const String &p_property) const;
