@@ -645,7 +645,7 @@ namespace Godot.Collections
                         variantKey, out godot_variant value).ToBool())
                 {
                     using (value)
-                        return VariantUtils.ConvertTo<TValue>(value);
+                        return VariantUtils.ConvertTo<TValue>(value, false);
                 }
                 else
                 {
@@ -707,7 +707,7 @@ namespace Godot.Collections
             {
                 return new KeyValuePair<TKey, TValue>(
                     VariantUtils.ConvertTo<TKey>(key),
-                    VariantUtils.ConvertTo<TValue>(value));
+                    VariantUtils.ConvertTo<TValue>(value, false));
             }
         }
 
