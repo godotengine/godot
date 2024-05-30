@@ -79,14 +79,17 @@ repos:
       - id: make-rst
         name: make-rst
         language: python
-        entry: python3 doc/tools/make_rst.py doc/classes modules platform --dry-run --color
+        entry: misc/scripts/python.sh doc/tools/make_rst.py
+        args: [doc/classes, modules, platform, --dry-run, --color]
         pass_filenames: false
         files: ^(doc/classes|.*/doc_classes)/.*\.xml$
 
       - id: doc-status
         name: doc-status
         language: python
-        entry: python3 doc/tools/doc_status.py
+        entry: misc/scripts/python.sh doc/tools/doc_status.py
+        args: [doc/classes, modules/*/doc_classes, platform/*/doc_classes]
+        pass_filenames: false
         files: ^(doc/classes|.*/doc_classes)/.*\.xml$
 
       - id: eslint
@@ -126,7 +129,7 @@ repos:
       - id: copyright-headers
         name: copyright-headers
         language: python
-        entry: python3 misc/scripts/copyright_headers.py
+        entry: misc/scripts/python.sh misc/scripts/copyright_headers.py
         files: \.(c|h|cpp|hpp|cc|cxx|m|mm|inc|java)$
         exclude: |
           (?x)^(
@@ -141,7 +144,7 @@ repos:
       - id: header-guards
         name: header-guards
         language: python
-        entry: python3 misc/scripts/header_guards.py
+        entry: misc/scripts/python.sh misc/scripts/header_guards.py
         files: \.(h|hpp)$
         exclude: |
           (?x)^(
@@ -153,7 +156,7 @@ repos:
       - id: file-format
         name: file-format
         language: python
-        entry: python3 misc/scripts/file_format.py
+        entry: misc/scripts/python.sh misc/scripts/file_format.py
         types_or: [text]
         exclude: |
           (?x)^(
@@ -170,7 +173,7 @@ repos:
       - id: dotnet-format
         name: dotnet-format
         language: python
-        entry: python3 misc/scripts/dotnet_format.py
+        entry: misc/scripts/python.sh misc/scripts/dotnet_format.py
         types_or: [c#]
 
 # End of upstream Godot pre-commit hooks.
