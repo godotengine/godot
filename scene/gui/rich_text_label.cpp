@@ -4538,6 +4538,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "justification_flags" || subtag_a[0] == "jst") {
 						Vector<String> subtag_b = subtag_a[1].split(",");
+						jst_flags = 0; // Clear flags.
 						for (const String &E : subtag_b) {
 							if (E == "kashida" || E == "k") {
 								jst_flags.set_flag(TextServer::JUSTIFICATION_KASHIDA);
@@ -4551,7 +4552,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 								jst_flags.set_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE);
 							} else if (E == "skip_last_with_chars" || E == "sv") {
 								jst_flags.set_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS);
-							} else if (E == "do_not_skip_singe" || E == "ns") {
+							} else if (E == "do_not_skip_single" || E == "ns") {
 								jst_flags.set_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE);
 							}
 						}
