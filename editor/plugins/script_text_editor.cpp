@@ -1869,6 +1869,11 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 			if (drop_modifier_pressed && ResourceLoader::exists(path)) {
 				Ref<Resource> resource = ResourceLoader::load(path);
+				if (resource.is_null()) {
+					// Resource exists, but failed to load. We need only path and name, so we can use a dummy Resource instead.
+					resource.instantiate();
+					resource->set_path_cache(path);
+				}
 				text_to_drop += _get_dropped_resource_line(resource, is_empty_line);
 			} else {
 				text_to_drop += _quote_drop_data(path);
