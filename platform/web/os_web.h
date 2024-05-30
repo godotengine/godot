@@ -44,6 +44,7 @@
 class OS_Web : public OS_Unix {
 	MainLoop *main_loop = nullptr;
 	List<AudioDriverWeb *> audio_drivers;
+	HashMap<String, void *> libraries;
 
 	bool idb_is_syncing = false;
 	bool idb_available = false;

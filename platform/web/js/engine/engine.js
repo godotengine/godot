@@ -177,9 +177,13 @@ const Engine = (function () {
 								me.rtenv['copyToFS'](file.path, file.buffer);
 							});
 							preloader.preloadedFiles.length = 0; // Clear memory
+							me.config.gdextensionLibs.forEach(function (lib) {
+								me.rtenv['godot_dlopen'](lib);
+							});
 							me.rtenv['callMain'](me.config.args);
 							initPromise = null;
 							me.installServiceWorker();
+							me.rtenv['call_real_main'](me.config.args);
 							resolve();
 						});
 					});

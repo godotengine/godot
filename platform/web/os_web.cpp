@@ -249,8 +249,13 @@ bool OS_Web::is_userfs_persistent() const {
 
 Error OS_Web::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
 	String path = p_path.get_file();
-	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
-	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
+	if (libraries.has(path)) {
+		p_library_handle = libraries[path];
+	} else {
+		p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
+		ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
+		libraries[path] = p_library_handle;
+	}
 
 	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
 		*p_data->r_resolved_path = path;
