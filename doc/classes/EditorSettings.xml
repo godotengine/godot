@@ -577,7 +577,7 @@
 			The maximum idle uptime (in seconds) of the Blender process.
 			This prevents Godot from having to create a new process for each import within the given seconds.
 		</member>
-		<member name="filesystem/import/fbx2gltf/fbx2gltf_path" type="String" setter="" getter="">
+		<member name="filesystem/import/fbx/fbx2gltf_path" type="String" setter="" getter="">
 			The path to the FBX2glTF executable used for converting Autodesk FBX 3D scene files [code].fbx[/code] to glTF 2.0 format during import.
 			To enable this feature for your specific project, use [member ProjectSettings.filesystem/import/fbx2gltf/enabled].
 		</member>
