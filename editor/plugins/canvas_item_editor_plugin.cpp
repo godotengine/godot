@@ -3058,6 +3058,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		return;
 	}
 
+	const Ref<Texture2D> position_icon = get_editor_theme_icon(SNAME("EditorPosition"));
 	if (ruler_tool_active) {
 		Color ruler_primary_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 		Color ruler_secondary_color = ruler_primary_color;
@@ -3126,8 +3127,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		if (begin.is_equal_approx(end)) {
 			viewport->draw_string_outline(font, text_pos, (String)ruler_tool_origin, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
 			viewport->draw_string(font, text_pos, (String)ruler_tool_origin, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
-			Ref<Texture2D> position_icon = get_editor_theme_icon(SNAME("EditorPosition"));
-			viewport->draw_texture(get_editor_theme_icon(SNAME("EditorPosition")), (ruler_tool_origin - view_offset) * zoom - position_icon->get_size() / 2);
+			viewport->draw_texture(position_icon, (ruler_tool_origin - view_offset) * zoom - position_icon->get_size() / 2);
 			return;
 		}
 
@@ -3198,7 +3198,6 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		}
 	} else {
 		if (grid_snap_active) {
-			Ref<Texture2D> position_icon = get_editor_theme_icon(SNAME("EditorPosition"));
 			viewport->draw_texture(position_icon, (ruler_tool_origin - view_offset) * zoom - position_icon->get_size() / 2);
 		}
 	}

@@ -5119,7 +5119,11 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> p_state, MeshIn
 	ERR_FAIL_COND_V_MSG(p_mesh_instance->get_mesh().is_null(), -1, "glTF: Tried to export a MeshInstance3D node named " + p_mesh_instance->get_name() + ", but it has no mesh. This node will be exported without a mesh.");
 	Ref<Mesh> mesh_resource = p_mesh_instance->get_mesh();
 	ERR_FAIL_COND_V_MSG(mesh_resource->get_surface_count() == 0, -1, "glTF: Tried to export a MeshInstance3D node named " + p_mesh_instance->get_name() + ", but its mesh has no surfaces. This node will be exported without a mesh.");
-
+	TypedArray<Material> instance_materials;
+	for (int32_t surface_i = 0; surface_i < mesh_resource->get_surface_count(); surface_i++) {
+		Ref<Material> mat = p_mesh_instance->get_active_material(surface_i);
+		instance_materials.append(mat);
+	}
 	Ref<ImporterMesh> current_mesh = _mesh_to_importer_mesh(mesh_resource);
 	Vector<float> blend_weights;
 	int32_t blend_count = mesh_resource->get_blend_shape_count();
@@ -5130,17 +5134,6 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> p_state, MeshIn
 
 	Ref<GLTFMesh> gltf_mesh;
 	gltf_mesh.instantiate();
-	TypedArray<Material> instance_materials;
-	for (int32_t surface_i = 0; surface_i < current_mesh->get_surface_count(); surface_i++) {
-		Ref<Material> mat = current_mesh->get_surface_material(surface_i);
-		if (p_mesh_instance->get_surface_override_material(surface_i).is_valid()) {
-			mat = p_mesh_instance->get_surface_override_material(surface_i);
-		}
-		if (p_mesh_instance->get_material_override().is_valid()) {
-			mat = p_mesh_instance->get_material_override();
-		}
-		instance_materials.append(mat);
-	}
 	gltf_mesh->set_instance_materials(instance_materials);
 	gltf_mesh->set_mesh(current_mesh);
 	gltf_mesh->set_blend_weights(blend_weights);
@@ -5309,11 +5302,22 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	Ref<ImporterMesh> mesh;
 	mesh.instantiate();
 	{
-		Ref<Mesh> csg_mesh = csg->get_meshes()[1];
-
+		Ref<ArrayMesh> csg_mesh = csg->get_meshes()[1];
 		for (int32_t surface_i = 0; surface_i < csg_mesh->get_surface_count(); surface_i++) {
 			Array array = csg_mesh->surface_get_arrays(surface_i);
-			Ref<Material> mat = csg_mesh->surface_get_material(surface_i);
+
+			Ref<Material> mat;
+
+			Ref<Material> mat_override = csg->get_material_override();
+			if (mat_override.is_valid()) {
+				mat = mat_override;
+			}
+
+			Ref<Material> mat_surface_override = csg_mesh->surface_get_material(surface_i);
+			if (mat_surface_override.is_valid() && mat.is_null()) {
+				mat = mat_surface_override;
+			}
+
 			String mat_name;
 			if (mat.is_valid()) {
 				mat_name = mat->get_name();
@@ -5321,6 +5325,7 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 				// Assign default material when no material is assigned.
 				mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 			}
+
 			mesh->add_surface(csg_mesh->surface_get_primitive_type(surface_i),
 					array, csg_mesh->surface_get_blend_shape_arrays(surface_i), csg_mesh->surface_get_lods(surface_i), mat,
 					mat_name, csg_mesh->surface_get_format(surface_i));
@@ -5334,7 +5339,7 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	GLTFMeshIndex mesh_i = p_state->meshes.size();
 	p_state->meshes.push_back(gltf_mesh);
 	p_gltf_node->mesh = mesh_i;
-	p_gltf_node->transform = csg->get_meshes()[0];
+	p_gltf_node->transform = csg->get_transform();
 	p_gltf_node->set_original_name(csg->get_name());
 	p_gltf_node->set_name(_gen_unique_name(p_state, csg->get_name()));
 }

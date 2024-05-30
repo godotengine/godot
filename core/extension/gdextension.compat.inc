@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_composition_layer_quad.h                                       */
+/*  gdextension.compat.inc                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,37 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_COMPOSITION_LAYER_QUAD_H
-#define OPENXR_COMPOSITION_LAYER_QUAD_H
+#ifndef DISABLE_DEPRECATED
 
-#include <openxr/openxr.h>
+Error GDExtension::_open_library_bind_compat_88418(const String &p_path, const String &p_entry_symbol) {
+	return ERR_UNAVAILABLE;
+}
 
-#include "openxr_composition_layer.h"
+void GDExtension::_close_library_bind_compat_88418() {
+}
 
-class OpenXRCompositionLayerQuad : public OpenXRCompositionLayer {
-	GDCLASS(OpenXRCompositionLayerQuad, OpenXRCompositionLayer);
+void GDExtension::_initialize_library_bind_compat_88418(InitializationLevel p_level) {
+}
 
-	XrCompositionLayerQuad composition_layer;
+void GDExtension::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("open_library", "path", "entry_symbol"), &GDExtension::_open_library_bind_compat_88418);
+	ClassDB::bind_compatibility_method(D_METHOD("close_library"), &GDExtension::_close_library_bind_compat_88418);
+	ClassDB::bind_compatibility_method(D_METHOD("initialize_library", "level"), &GDExtension::_initialize_library_bind_compat_88418);
+}
 
-	Size2 quad_size = Size2(1.0, 1.0);
-
-protected:
-	static void _bind_methods();
-
-	void _notification(int p_what);
-
-	void update_transform();
-
-	virtual Ref<Mesh> _create_fallback_mesh() override;
-
-public:
-	void set_quad_size(const Size2 &p_size);
-	Size2 get_quad_size() const;
-
-	virtual Vector2 intersects_ray(const Vector3 &p_origin, const Vector3 &p_direction) const override;
-
-	OpenXRCompositionLayerQuad();
-	~OpenXRCompositionLayerQuad();
-};
-
-#endif // OPENXR_COMPOSITION_LAYER_QUAD_H
+#endif

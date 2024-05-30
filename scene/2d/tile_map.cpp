@@ -722,7 +722,7 @@ bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 
 void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
-	property_helper.get_property_list(p_list, layers.size());
+	property_helper.get_property_list(p_list);
 }
 
 Vector2 TileMap::map_to_local(const Vector2i &p_pos) const {

@@ -925,14 +925,14 @@
 		<member name="run/auto_save/save_before_running" type="bool" setter="" getter="">
 			If [code]true[/code], saves all scenes and scripts automatically before running the project. Setting this to [code]false[/code] prevents the editor from saving if there are no changes which can speed up the project startup slightly, but it makes it possible to run a project that has unsaved changes. (Unsaved changes will not be visible in the running project.)
 		</member>
+		<member name="run/bottom_panel/action_on_play" type="int" setter="" getter="">
+			The action to execute on the bottom panel when running the project.
+		</member>
+		<member name="run/bottom_panel/action_on_stop" type="int" setter="" getter="">
+			The action to execute on the bottom panel when stopping the project.
+		</member>
 		<member name="run/output/always_clear_output_on_play" type="bool" setter="" getter="">
 			If [code]true[/code], the editor will clear the Output panel when running the project.
-		</member>
-		<member name="run/output/always_close_output_on_stop" type="bool" setter="" getter="">
-			If [code]true[/code], the editor will collapse the Output panel when stopping the project.
-		</member>
-		<member name="run/output/always_open_output_on_play" type="bool" setter="" getter="">
-			If [code]true[/code], the editor will expand the Output panel when running the project.
 		</member>
 		<member name="run/output/font_size" type="int" setter="" getter="">
 			The size of the font in the [b]Output[/b] panel at the bottom of the editor. This setting does not impact the font size of the script editor (see [member interface/editor/code_font_size]).
@@ -1027,6 +1027,9 @@
 		</member>
 		<member name="text_editor/behavior/files/restore_scripts_on_load" type="bool" setter="" getter="">
 			If [code]true[/code], reopens scripts that were opened in the last session when the editor is reopened on a given project.
+		</member>
+		<member name="text_editor/behavior/files/trim_final_newlines_on_save" type="bool" setter="" getter="">
+			If [code]true[/code], trims all empty newlines after the final newline when saving a script. Final newlines refer to the empty newlines found at the end of files. Since these serve no practical purpose, they can and should be removed to make version control diffs less noisy.
 		</member>
 		<member name="text_editor/behavior/files/trim_trailing_whitespace_on_save" type="bool" setter="" getter="">
 			If [code]true[/code], trims trailing whitespace when saving a script. Trailing whitespace refers to tab and space characters placed at the end of lines. Since these serve no practical purpose, they can and should be removed to make version control diffs less noisy.

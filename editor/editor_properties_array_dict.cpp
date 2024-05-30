@@ -235,6 +235,9 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 	Variant array = object->get_array().duplicate();
 	array.set(index, p_value);
 	emit_changed(get_edited_property(), array, p_name, p_changing);
+	if (p_changing) {
+		object->set_array(array);
+	}
 }
 
 void EditorPropertyArray::_change_type(Object *p_button, int p_slot_index) {
