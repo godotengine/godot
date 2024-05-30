@@ -1042,10 +1042,32 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 	}
 
 	TPPLPartition tpart;
-	if (tpart.ConvexPartition_HM(&tppl_in_polygon, &tppl_out_polygon) == 0) { //failed!
-		ERR_PRINT("NavigationPolygon Convex partition failed. Unable to create a valid NavigationMesh from defined polygon outline paths.");
-		p_navigation_mesh->clear();
-		return;
+
+	NavigationPolygon::SamplePartitionType sample_partition_type = p_navigation_mesh->get_sample_partition_type();
+
+	switch (sample_partition_type) {
+		case NavigationPolygon::SamplePartitionType::SAMPLE_PARTITION_CONVEX_PARTITION:
+			if (tpart.ConvexPartition_HM(&tppl_in_polygon, &tppl_out_polygon) == 0) {
+				ERR_PRINT("NavigationPolygon polygon convex partition failed. Unable to create a valid navigation mesh polygon layout from provided source geometry.");
+				p_navigation_mesh->set_vertices(Vector<Vector2>());
+				p_navigation_mesh->clear_polygons();
+				return;
+			}
+			break;
+		case NavigationPolygon::SamplePartitionType::SAMPLE_PARTITION_TRIANGULATE:
+			if (tpart.Triangulate_EC(&tppl_in_polygon, &tppl_out_polygon) == 0) {
+				ERR_PRINT("NavigationPolygon polygon triangulation failed. Unable to create a valid navigation mesh polygon layout from provided source geometry.");
+				p_navigation_mesh->set_vertices(Vector<Vector2>());
+				p_navigation_mesh->clear_polygons();
+				return;
+			}
+			break;
+		default: {
+			ERR_PRINT("NavigationPolygon polygon partitioning failed. Unrecognized partition type.");
+			p_navigation_mesh->set_vertices(Vector<Vector2>());
+			p_navigation_mesh->clear_polygons();
+			return;
+		}
 	}
 
 	Vector<Vector2> new_vertices;
