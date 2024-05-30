@@ -505,6 +505,8 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	float animation_offset;\n";
 	code += "	float lifetime;\n";
 	code += "	vec4 color;\n";
+	code += "	ivec2 emission_tex_size;\n";
+
 	code += "};\n";
 	code += "\n";
 	code += "struct DynamicsParameters{\n";
@@ -562,11 +564,13 @@ void ParticleProcessMaterial::_update_shader() {
 	if (color_initial_ramp.is_valid()) {
 		code += "	params.color *= texture(color_initial_ramp, vec2(rand_from_seed(alt_seed)));\n";
 	}
-	if (emission_color_texture.is_valid() && (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS)) {
-		code += "	int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
-		code += "	ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
-		code += "	ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
-		code += "	params.color *= texelFetch(emission_texture_color, emission_tex_ofs, 0);\n";
+	if (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
+		code += "	params.emission_tex_size = textureSize(emission_texture_points, 0);\n";
+		if (emission_color_texture.is_valid()) {
+			code += "	int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
+			code += "	ivec2 emission_tex_ofs = ivec2(point % params.emission_tex_size.x, point / params.emission_tex_size.x);\n";
+			code += "	params.color *= texelFetch(emission_texture_color, emission_tex_ofs, 0);\n";
+		}
 	}
 	code += "}\n";
 
@@ -597,7 +601,7 @@ void ParticleProcessMaterial::_update_shader() {
 	}
 	code += "}\n";
 
-	code += "vec3 calculate_initial_position(inout uint alt_seed) {\n";
+	code += "vec3 calculate_initial_position(inout uint alt_seed,in ivec2 emission_tex_size) {\n";
 	code += "	float pi = 3.14159;\n";
 	code += "	float degree_to_rad = pi / 180.0;\n";
 	code += "	vec3 pos = vec3(0.);\n";
@@ -623,7 +627,6 @@ void ParticleProcessMaterial::_update_shader() {
 	}
 	if (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
 		code += "		int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
-		code += "		ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
 		code += "		ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
 		code += "		pos = texelFetch(emission_texture_points, emission_tex_ofs, 0).xyz;\n";
 	}
@@ -851,7 +854,7 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	}\n";
 	code += "\n";
 	code += "	if (RESTART_POSITION) {\n";
-	code += "		TRANSFORM[3].xyz = calculate_initial_position(alt_seed);\n";
+	code += "		TRANSFORM[3].xyz = calculate_initial_position(alt_seed, params.emission_tex_size);\n";
 	if (turbulence_enabled) {
 		code += "	float initial_turbulence_displacement = mix(turbulence_initial_displacement_min, turbulence_initial_displacement_max, rand_from_seed(alt_seed));\n";
 		code += "			vec3 noise_direction = get_noise_direction(TRANSFORM[3].xyz);\n";
@@ -863,8 +866,7 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "		VELOCITY = get_random_direction_from_spread(alt_seed, spread) * dynamic_params.initial_velocity_multiplier;\n";
 	if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
 		code += "		int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
-		code += "		ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
-		code += "		ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
+		code += "		ivec2 emission_tex_ofs = ivec2(point % params.emission_tex_size.x, point / params.emission_tex_size.x);\n";
 		if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 			code += "		{\n";
 			code += "			mat2 rotm;";
