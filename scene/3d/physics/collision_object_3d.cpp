@@ -439,6 +439,9 @@ void CollisionObject3D::_on_transform_changed() {
 			}
 			const ShapeData::ShapeBase *shape_bases = shapedata.shapes.ptr();
 			for (int i = 0; i < shapedata.shapes.size(); i++) {
+				if (shape_bases[i].debug_shape.is_null()) {
+					continue;
+				}
 				RS::get_singleton()->instance_set_transform(shape_bases[i].debug_shape, debug_shape_old_transform * shapedata.xform);
 			}
 		}
