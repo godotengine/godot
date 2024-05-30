@@ -1029,6 +1029,14 @@ void Input::parse_input_event(const Ref<InputEvent> &p_event) {
 	}
 }
 
+#ifdef DEBUG_ENABLED
+void Input::flush_frame_parsed_events() {
+	_THREAD_SAFE_METHOD_
+
+	frame_parsed_events.clear();
+}
+#endif
+
 void Input::flush_buffered_events() {
 	_THREAD_SAFE_METHOD_
 
