@@ -1739,12 +1739,15 @@ void Control::_size_changed() {
 	data.size_cache = new_size_cache;
 
 	if (is_inside_tree()) {
-		if (size_changed) {
-			notification(NOTIFICATION_RESIZED);
-		}
 		if (pos_changed || size_changed) {
-			item_rect_changed(size_changed);
+			// Ensure global transform is marked as dirty before `NOTIFICATION_RESIZED` / `item_rect_changed` signal
+			// so an up to date global transform could be obtained when handling these.
 			_notify_transform();
+
+			if (size_changed) {
+				notification(NOTIFICATION_RESIZED);
+			}
+			item_rect_changed(size_changed);
 		}
 
 		if (pos_changed && !size_changed) {
