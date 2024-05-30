@@ -3962,10 +3962,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					}
 				}
 			} else if (mouse_mode == MOUSE_MODE_CAPTURED && raw->header.dwType == RIM_TYPEMOUSE) {
+				DisplayServer::WindowID receiving_window_id = get_window_at_screen_position(mouse_get_position());
+				if (receiving_window_id == DisplayServer::INVALID_WINDOW_ID) {
+					receiving_window_id = window_id;
+				}
+
 				Ref<InputEventMouseMotion> mm;
 				mm.instantiate();
 
-				mm->set_window_id(window_id);
+				mm->set_window_id(receiving_window_id);
 				mm->set_ctrl_pressed(control_mem);
 				mm->set_shift_pressed(shift_mem);
 				mm->set_alt_pressed(alt_mem);
@@ -4011,7 +4016,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 				mm->set_relative_screen_position(mm->get_relative());
 
-				if ((windows[window_id].window_focused || windows[window_id].is_popup) && mm->get_relative() != Vector2()) {
+				if (mm->get_relative() != Vector2()) {
+					if (receiving_window_id != window_id) {
+						// Adjust event position relative to window distance when event is sent to a different window.
+						mm->set_position(mm->get_position() - window_get_position(receiving_window_id) + window_get_position(window_id));
+						mm->set_global_position(mm->get_position());
+					}
 					Input::get_singleton()->parse_input_event(mm);
 				}
 			}
@@ -4063,9 +4073,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						break;
 					}
 
+					DisplayServer::WindowID receiving_window_id = get_window_at_screen_position(mouse_get_position());
+					if (receiving_window_id == DisplayServer::INVALID_WINDOW_ID) {
+						receiving_window_id = window_id;
+					}
+
 					Ref<InputEventMouseMotion> mm;
 					mm.instantiate();
-					mm->set_window_id(window_id);
+					mm->set_window_id(receiving_window_id);
 					mm->set_ctrl_pressed(GetKeyState(VK_CONTROL) < 0);
 					mm->set_shift_pressed(GetKeyState(VK_SHIFT) < 0);
 					mm->set_alt_pressed(alt_mem);
@@ -4109,9 +4124,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					mm->set_relative_screen_position(mm->get_relative());
 					old_x = mm->get_position().x;
 					old_y = mm->get_position().y;
-					if (windows[window_id].window_focused || window_get_active_popup() == window_id) {
-						Input::get_singleton()->parse_input_event(mm);
+
+					if (receiving_window_id != window_id) {
+						// Adjust event position relative to window distance when event is sent to a different window.
+						mm->set_position(mm->get_position() - window_get_position(receiving_window_id) + window_get_position(window_id));
+						mm->set_global_position(mm->get_position());
 					}
+					Input::get_singleton()->parse_input_event(mm);
 				}
 				return 0;
 			}
@@ -4199,10 +4218,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
+			DisplayServer::WindowID receiving_window_id = get_window_at_screen_position(mouse_get_position());
+			if (receiving_window_id == DisplayServer::INVALID_WINDOW_ID) {
+				receiving_window_id = window_id;
+			}
+
 			Ref<InputEventMouseMotion> mm;
 			mm.instantiate();
 
-			mm->set_window_id(window_id);
+			mm->set_window_id(receiving_window_id);
 			if (pen_info.penMask & PEN_MASK_PRESSURE) {
 				mm->set_pressure((float)pen_info.pressure / 1024);
 			} else {
@@ -4258,9 +4282,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_relative_screen_position(mm->get_relative());
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
-			if (windows[window_id].window_focused || window_get_active_popup() == window_id) {
-				Input::get_singleton()->parse_input_event(mm);
+
+			if (receiving_window_id != window_id) {
+				// Adjust event position relative to window distance when event is sent to a different window.
+				mm->set_position(mm->get_position() - window_get_position(receiving_window_id) + window_get_position(window_id));
+				mm->set_global_position(mm->get_position());
 			}
+			Input::get_singleton()->parse_input_event(mm);
 
 			return 0; // Pointer event handled return 0 to avoid duplicate WM_MOUSEMOVE event.
 		} break;
@@ -4314,7 +4342,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			DisplayServer::WindowID receiving_window_id = _get_focused_window_or_popup();
+			DisplayServer::WindowID receiving_window_id = get_window_at_screen_position(mouse_get_position());
 			if (receiving_window_id == INVALID_WINDOW_ID) {
 				receiving_window_id = window_id;
 			}
@@ -4410,9 +4438,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_XBUTTONDBLCLK:
 		case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP: {
+			DisplayServer::WindowID receiving_window_id = get_window_at_screen_position(mouse_get_position());
+			if (receiving_window_id == DisplayServer::INVALID_WINDOW_ID) {
+				receiving_window_id = window_id;
+			}
+
 			Ref<InputEventMouseButton> mb;
 			mb.instantiate();
-			mb->set_window_id(window_id);
+			mb->set_window_id(receiving_window_id);
 
 			switch (uMsg) {
 				case WM_LBUTTONDOWN: {
@@ -4555,11 +4588,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			mb->set_global_position(mb->get_position());
 
+			if (receiving_window_id != window_id) {
+				// Adjust event position relative to window distance when event is sent to a different window.
+				mb->set_position(mb->get_position() - window_get_position(receiving_window_id) + window_get_position(window_id));
+				mb->set_global_position(mb->get_position());
+			}
 			Input::get_singleton()->parse_input_event(mb);
 			if (mb->is_pressed() && mb->get_button_index() >= MouseButton::WHEEL_UP && mb->get_button_index() <= MouseButton::WHEEL_RIGHT) {
 				// Send release for mouse wheel.
 				Ref<InputEventMouseButton> mbd = mb->duplicate();
-				mbd->set_window_id(window_id);
 				last_button_state.clear_flag(mouse_button_to_mask(mbd->get_button_index()));
 				mbd->set_button_mask(last_button_state);
 				mbd->set_pressed(false);
