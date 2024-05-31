@@ -265,18 +265,6 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 	minsize.width += max_w + icon_w + accel_max_w + item_side_padding;
 
 	if (has_check) {
-		// float computed_height = minsize.height - margin_size_height - (margin_container->get_margin_size(SIDE_TOP) + margin_container->get_margin_size(SIDE_BOTTOM));
-		// float computed_width = 0.0;
-
-		// if (theme_cache.checked->get_height() > theme_cache.radio_checked->get_height()) {
-		// 	float texture_scale = computed_height / theme_cache.checked->get_height();
-
-		// 	computed_width = theme_cache.checked->get_width() * texture_scale;
-		// } else {
-		// 	float texture_scale = computed_height / theme_cache.radio_checked->get_height();
-
-		// 	computed_width = theme_cache.radio_checked->get_width() * texture_scale;
-		// }
 
 		minsize.width += theme_cache.h_separation;
 	}
