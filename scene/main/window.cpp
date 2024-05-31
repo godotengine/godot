@@ -391,6 +391,7 @@ void Window::set_size(const Size2i &p_size) {
 
 	size = p_size;
 	_update_window_size();
+	_settings_changed();
 }
 
 Size2i Window::get_size() const {
