@@ -12,7 +12,7 @@ def configure(env):
     # Check if the platform has marked mono as supported.
     supported = env.get("supported", [])
 
-    if not "mono" in supported:
+    if "mono" not in supported:
         raise RuntimeError("This module does not currently support building for this platform")
 
     env.add_module_version_string("mono")

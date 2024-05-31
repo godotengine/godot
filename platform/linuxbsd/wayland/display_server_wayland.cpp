@@ -1137,7 +1137,14 @@ void DisplayServerWayland::process_events() {
 			WindowData wd = main_window;
 
 			if (wd.drop_files_callback.is_valid()) {
-				wd.drop_files_callback.call(dropfiles_msg->files);
+				Variant v_files = dropfiles_msg->files;
+				const Variant *v_args[1] = { &v_files };
+				Variant ret;
+				Callable::CallError ce;
+				wd.drop_files_callback.callp((const Variant **)&v_args, 1, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT(vformat("Failed to execute drop files callback: %s.", Variant::get_callable_error_text(wd.drop_files_callback, v_args, 1, ce)));
+				}
 			}
 		}
 	}
@@ -1209,6 +1216,15 @@ void DisplayServerWayland::set_context(Context p_context) {
 	wayland_thread.window_set_app_id(MAIN_WINDOW_ID, app_id);
 }
 
+bool DisplayServerWayland::is_window_transparency_available() const {
+#if defined(RD_ENABLED)
+	if (rendering_device && !rendering_device->is_composite_alpha_supported()) {
+		return false;
+	}
+#endif
+	return OS::get_singleton()->is_layered_allowed();
+}
+
 Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
 	Vector<String> drivers;
 
@@ -1224,8 +1240,8 @@ Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerWayland(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
+DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerWayland(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, p_context, r_error));
 	if (r_error != OK) {
 		ERR_PRINT("Can't create the Wayland display server.");
 		memdelete(ds);
@@ -1235,7 +1251,7 @@ DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_drive
 	return ds;
 }
 
-DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Context p_context, Error &r_error) {
 #ifdef GLES3_ENABLED
 #ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
@@ -1247,6 +1263,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 #endif // GLES3_ENABLED
 
 	r_error = ERR_UNAVAILABLE;
+	context = p_context;
 
 	Error thread_err = wayland_thread.init();
 

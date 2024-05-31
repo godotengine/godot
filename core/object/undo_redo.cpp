@@ -159,10 +159,11 @@ void UndoRedo::add_do_method(const Callable &p_callable) {
 		do_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(object));
 	}
 	do_op.type = Operation::TYPE_METHOD;
-	do_op.name = p_callable.get_method();
-	if (do_op.name == StringName()) {
-		// There's no `get_method()` for custom callables, so use `operator String()` instead.
+	// There's no `get_method()` for custom callables, so use `operator String()` instead.
+	if (p_callable.is_custom()) {
 		do_op.name = static_cast<String>(p_callable);
+	} else {
+		do_op.name = p_callable.get_method();
 	}
 
 	actions.write[current_action + 1].do_ops.push_back(do_op);
@@ -190,10 +191,11 @@ void UndoRedo::add_undo_method(const Callable &p_callable) {
 	}
 	undo_op.type = Operation::TYPE_METHOD;
 	undo_op.force_keep_in_merge_ends = force_keep_in_merge_ends;
-	undo_op.name = p_callable.get_method();
-	if (undo_op.name == StringName()) {
-		// There's no `get_method()` for custom callables, so use `operator String()` instead.
+	// There's no `get_method()` for custom callables, so use `operator String()` instead.
+	if (p_callable.is_custom()) {
 		undo_op.name = static_cast<String>(p_callable);
+	} else {
+		undo_op.name = p_callable.get_method();
 	}
 
 	actions.write[current_action + 1].undo_ops.push_back(undo_op);

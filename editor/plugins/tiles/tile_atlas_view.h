@@ -45,8 +45,8 @@ class TileAtlasView : public Control {
 	GDCLASS(TileAtlasView, Control);
 
 private:
-	TileSet *tile_set = nullptr;
-	TileSetAtlasSource *tile_set_atlas_source = nullptr;
+	Ref<TileSet> tile_set;
+	Ref<TileSetAtlasSource> tile_set_atlas_source;
 	int source_id = TileSet::INVALID_SOURCE;
 
 	enum DragType {

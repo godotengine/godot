@@ -268,11 +268,7 @@ Error EditorDebuggerNode::start(const String &p_uri) {
 	}
 	stop(true);
 	current_uri = p_uri;
-	if (EDITOR_GET("run/output/always_open_output_on_play")) {
-		EditorNode::get_bottom_panel()->make_item_visible(EditorNode::get_log());
-	} else {
-		EditorNode::get_bottom_panel()->make_item_visible(this);
-	}
+
 	server = Ref<EditorDebuggerServer>(EditorDebuggerServer::create(p_uri.substr(0, p_uri.find("://") + 3)));
 	const Error err = server->start(p_uri);
 	if (err != OK) {
@@ -314,12 +310,18 @@ void EditorDebuggerNode::stop(bool p_force) {
 void EditorDebuggerNode::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (tabs->get_tab_count() > 1 && EditorThemeManager::is_generated_theme_outdated()) {
+			if (!EditorThemeManager::is_generated_theme_outdated()) {
+				return;
+			}
+
+			if (tabs->get_tab_count() > 1) {
 				add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_LEFT));
 				add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_RIGHT));
 
 				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 			}
+
+			remote_scene_tree->update_icon_max_width();
 		} break;
 
 		case NOTIFICATION_READY: {

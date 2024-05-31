@@ -1,11 +1,11 @@
-import methods
 import os
 import subprocess
 import sys
-from methods import print_warning, print_error
-from platform_methods import detect_arch
-
 from typing import TYPE_CHECKING
+
+import methods
+from methods import print_error, print_warning
+from platform_methods import detect_arch
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -178,7 +178,7 @@ def get_opts():
             caller_frame = inspect.stack()[1]
             caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
             d3d12_deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
-        except:  # Give up.
+        except Exception:  # Give up.
             d3d12_deps_folder = ""
 
     return [
@@ -248,10 +248,10 @@ def get_doc_path():
 def get_flags():
     arch = detect_build_env_arch() or detect_arch()
 
-    return [
-        ("arch", arch),
-        ("supported", ["mono"]),
-    ]
+    return {
+        "arch": arch,
+        "supported": ["mono"],
+    }
 
 
 def build_res_file(target, source, env: "SConsEnvironment"):
@@ -523,7 +523,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
             env.Append(CXXFLAGS=["/bigobj"])
 
         # PIX
-        if not env["arch"] in ["x86_64", "arm64"] or env["pix_path"] == "" or not os.path.exists(env["pix_path"]):
+        if env["arch"] not in ["x86_64", "arm64"] or env["pix_path"] == "" or not os.path.exists(env["pix_path"]):
             env["use_pix"] = False
 
         if env["use_pix"]:
@@ -750,7 +750,7 @@ def configure_mingw(env: "SConsEnvironment"):
         env.Append(LIBS=["dxgi", "dxguid"])
 
         # PIX
-        if not env["arch"] in ["x86_64", "arm64"] or env["pix_path"] == "" or not os.path.exists(env["pix_path"]):
+        if env["arch"] not in ["x86_64", "arm64"] or env["pix_path"] == "" or not os.path.exists(env["pix_path"]):
             env["use_pix"] = False
 
         if env["use_pix"]:

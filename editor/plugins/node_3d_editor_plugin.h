@@ -255,6 +255,8 @@ private:
 	ViewportNavigationControl *look_control = nullptr;
 	ViewportRotationControl *rotation_control = nullptr;
 	Gradient *frame_time_gradient = nullptr;
+	PanelContainer *frame_time_panel = nullptr;
+	VBoxContainer *frame_time_vbox = nullptr;
 	Label *cpu_time_label = nullptr;
 	Label *gpu_time_label = nullptr;
 	Label *fps_label = nullptr;
@@ -296,8 +298,8 @@ private:
 
 	ObjectID clicked;
 	ObjectID material_target;
-	Vector<_RayResult> selection_results;
-	Vector<_RayResult> selection_results_menu;
+	Vector<Node3D *> selection_results;
+	Vector<Node3D *> selection_results_menu;
 	bool clicked_wants_append = false;
 	bool selection_in_progress = false;
 

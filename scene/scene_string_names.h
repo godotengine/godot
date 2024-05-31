@@ -134,7 +134,6 @@ public:
 
 	StringName Master;
 
-	StringName parameters_base_path;
 	StringName window_input;
 
 	StringName theme_changed;

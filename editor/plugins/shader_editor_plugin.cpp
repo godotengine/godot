@@ -436,8 +436,14 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 			int index = shader_tabs->get_current_tab();
 			ERR_FAIL_INDEX(index, shader_tabs->get_tab_count());
 			TextShaderEditor *editor = edited_shaders[index].shader_editor;
-			if (editor && editor->get_trim_trailing_whitespace_on_save()) {
-				editor->trim_trailing_whitespace();
+			if (editor) {
+				if (editor->get_trim_trailing_whitespace_on_save()) {
+					editor->trim_trailing_whitespace();
+				}
+
+				if (editor->get_trim_final_newlines_on_save()) {
+					editor->trim_final_newlines();
+				}
 			}
 			if (edited_shaders[index].shader.is_valid()) {
 				EditorNode::get_singleton()->save_resource(edited_shaders[index].shader);
@@ -452,8 +458,14 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 			int index = shader_tabs->get_current_tab();
 			ERR_FAIL_INDEX(index, shader_tabs->get_tab_count());
 			TextShaderEditor *editor = edited_shaders[index].shader_editor;
-			if (editor && editor->get_trim_trailing_whitespace_on_save()) {
-				editor->trim_trailing_whitespace();
+			if (editor) {
+				if (editor->get_trim_trailing_whitespace_on_save()) {
+					editor->trim_trailing_whitespace();
+				}
+
+				if (editor->get_trim_final_newlines_on_save()) {
+					editor->trim_final_newlines();
+				}
 			}
 			String path;
 			if (edited_shaders[index].shader.is_valid()) {

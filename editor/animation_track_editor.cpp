@@ -7312,17 +7312,19 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bottom_hb->add_child(zoom);
 	timeline->set_zoom(zoom);
 
+	ED_SHORTCUT("animation_editor/auto_fit", TTR("Fit to panel"), KeyModifierMask::ALT | Key::F);
+
 	auto_fit = memnew(Button);
 	auto_fit->set_flat(true);
 	auto_fit->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_auto_fit));
-	auto_fit->set_shortcut(ED_SHORTCUT("animation_editor/auto_fit", TTR("Fit to panel"), KeyModifierMask::ALT | Key::F));
+	auto_fit->set_shortcut(ED_GET_SHORTCUT("animation_editor/auto_fit"));
 	bottom_hb->add_child(auto_fit);
 
 	auto_fit_bezier = memnew(Button);
 	auto_fit_bezier->set_flat(true);
 	auto_fit_bezier->set_visible(false);
 	auto_fit_bezier->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_auto_fit_bezier));
-	auto_fit_bezier->set_shortcut(ED_SHORTCUT("animation_editor/auto_fit", TTR("Fit to panel"), KeyModifierMask::ALT | Key::F));
+	auto_fit_bezier->set_shortcut(ED_GET_SHORTCUT("animation_editor/auto_fit"));
 	bottom_hb->add_child(auto_fit_bezier);
 
 	edit = memnew(MenuButton);

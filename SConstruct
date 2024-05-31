@@ -10,11 +10,11 @@ import os
 import pickle
 import sys
 import time
-from types import ModuleType
 from collections import OrderedDict
-from importlib.util import spec_from_file_location, module_from_spec
-from SCons import __version__ as scons_raw_version
+from importlib.util import module_from_spec, spec_from_file_location
+from types import ModuleType
 
+from SCons import __version__ as scons_raw_version
 
 # Explicitly resolve the helper modules, this is done to avoid clash with
 # modules of the same name that might be randomly added (e.g. someone adding
@@ -53,12 +53,12 @@ _helper_module("core.core_builders", "core/core_builders.py")
 _helper_module("main.main_builders", "main/main_builders.py")
 
 # Local
-import methods
-import glsl_builders
 import gles3_builders
+import glsl_builders
+import methods
 import scu_builders
-from methods import print_warning, print_error
-from platform_methods import architectures, architecture_aliases
+from methods import print_error, print_warning
+from platform_methods import architecture_aliases, architectures
 
 if ARGUMENTS.get("target", "editor") == "editor":
     _helper_module("editor.editor_builders", "editor/editor_builders.py")
@@ -68,7 +68,7 @@ if ARGUMENTS.get("target", "editor") == "editor":
 # <https://github.com/python/cpython/issues/73245>
 if sys.stdout.isatty() and sys.platform == "win32":
     try:
-        from ctypes import windll, byref, WinError  # type: ignore
+        from ctypes import WinError, byref, windll  # type: ignore
         from ctypes.wintypes import DWORD  # type: ignore
 
         stdout_handle = windll.kernel32.GetStdHandle(DWORD(-11))
@@ -122,6 +122,8 @@ for x in sorted(glob.glob("platform/*")):
         platform_list += [x]
         platform_opts[x] = detect.get_opts()
         platform_flags[x] = detect.get_flags()
+        if isinstance(platform_flags[x], list):  # backwards compatibility
+            platform_flags[x] = {flag[0]: flag[1] for flag in platform_flags[x]}
     sys.path.remove(tmppath)
     sys.modules.pop("detect")
 
@@ -216,7 +218,7 @@ opts.Add(BoolVariable("brotli", "Enable Brotli for decompresson and WOFF2 fonts 
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add(BoolVariable("vulkan", "Enable the vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
-opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver (Windows only)", False))
+opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver", False))
 opts.Add(BoolVariable("openxr", "Enable the OpenXR driver", True))
 opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
@@ -562,16 +564,16 @@ if env["build_profile"] != "":
             dbo = ft["disabled_build_options"]
             for c in dbo:
                 env[c] = dbo[c]
-    except:
+    except json.JSONDecodeError:
         print_error('Failed to open feature build profile: "{}"'.format(env["build_profile"]))
         Exit(255)
 
 # Platform specific flags.
 # These can sometimes override default options.
 flag_list = platform_flags[env["platform"]]
-for f in flag_list:
-    if not (f[0] in ARGUMENTS) or ARGUMENTS[f[0]] == "auto":  # Allow command line to override platform flags
-        env[f[0]] = f[1]
+for key, value in flag_list.items():
+    if key not in ARGUMENTS or ARGUMENTS[key] == "auto":  # Allow command line to override platform flags
+        env[key] = value
 
 # 'dev_mode' and 'production' are aliases to set default options if they haven't been
 # set manually by the user.
@@ -591,7 +593,7 @@ if env["production"]:
 # Run SCU file generation script if in a SCU build.
 if env["scu_build"]:
     max_includes_per_scu = 8
-    if env.dev_build == True:
+    if env.dev_build:
         max_includes_per_scu = 1024
 
     read_scu_limit = int(env["scu_limit"])
@@ -984,7 +986,7 @@ GLSL_BUILDERS = {
 env.Append(BUILDERS=GLSL_BUILDERS)
 
 scons_cache_path = os.environ.get("SCONS_CACHE")
-if scons_cache_path != None:
+if scons_cache_path is not None:
     CacheDir(scons_cache_path)
     print("Scons cache enabled... (path: '" + scons_cache_path + "')")
 

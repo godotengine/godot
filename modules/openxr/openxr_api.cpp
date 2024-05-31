@@ -1220,6 +1220,10 @@ bool OpenXRAPI::create_main_swapchains(Size2i p_size) {
 		}
 	};
 
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		wrapper->on_main_swapchains_created();
+	}
+
 	return true;
 };
 

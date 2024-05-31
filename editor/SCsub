@@ -4,11 +4,12 @@ Import("env")
 
 env.editor_sources = []
 
-import os
 import glob
-import editor_builders
-import methods
+import os
 
+import editor_builders
+
+import methods
 
 if env.editor_build:
     # Generate doc data paths

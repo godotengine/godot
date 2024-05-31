@@ -87,6 +87,8 @@ Result SwCanvas::target(uint32_t* buffer, uint32_t stride, uint32_t w, uint32_t 
     if (!renderer) return Result::MemoryCorruption;
 
     if (!renderer->target(buffer, stride, w, h, static_cast<ColorSpace>(cs))) return Result::InvalidArguments;
+    Canvas::pImpl->vport = {0, 0, (int32_t)w, (int32_t)h};
+    renderer->viewport(Canvas::pImpl->vport);
 
     //Paints must be updated again with this new target.
     Canvas::pImpl->needRefresh();

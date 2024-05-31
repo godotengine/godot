@@ -124,7 +124,7 @@ static void _dashLineTo(SwDashStroke& dash, const Point* to, const Matrix* trans
                 len -= dash.curLen;
                 lineSplitAt(cur, dash.curLen, left, right);
                 if (!dash.curOpGap) {
-                    if (dash.move || dash.pattern[dash.curIdx] - dash.curLen < FLT_EPSILON) {
+                    if (dash.move || dash.pattern[dash.curIdx] - dash.curLen < FLOAT_EPSILON) {
                         _outlineMoveTo(*dash.outline, &left.pt1, transform);
                         dash.move = false;
                     }
@@ -185,7 +185,7 @@ static void _dashCubicTo(SwDashStroke& dash, const Point* ctrl1, const Point* ct
                 len -= dash.curLen;
                 bezSplitAt(cur, dash.curLen, left, right);
                 if (!dash.curOpGap) {
-                    if (dash.move || dash.pattern[dash.curIdx] - dash.curLen < FLT_EPSILON) {
+                    if (dash.move || dash.pattern[dash.curIdx] - dash.curLen < FLOAT_EPSILON) {
                         _outlineMoveTo(*dash.outline, &left.start, transform);
                         dash.move = false;
                     }

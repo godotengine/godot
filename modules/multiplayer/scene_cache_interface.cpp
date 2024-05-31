@@ -76,7 +76,7 @@ void SceneCacheInterface::on_peer_change(int p_id, bool p_connected) {
 		for (KeyValue<int, ObjectID> E : pinfo->recv_nodes) {
 			NodeCache *nc = nodes_cache.getptr(E.value);
 			ERR_CONTINUE(!nc);
-			nc->recv_ids.erase(E.key);
+			nc->recv_ids.erase(p_id);
 		}
 		for (const ObjectID &oid : pinfo->sent_nodes) {
 			NodeCache *nc = nodes_cache.getptr(oid);

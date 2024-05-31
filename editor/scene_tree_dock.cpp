@@ -3104,7 +3104,23 @@ void SceneTreeDock::set_edited_scene(Node *p_scene) {
 	edited_scene = p_scene;
 }
 
+static bool _is_same_selection(const Vector<Node *> &p_first, const List<Node *> &p_second) {
+	if (p_first.size() != p_second.size()) {
+		return false;
+	}
+	for (Node *node : p_second) {
+		if (!p_first.has(node)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void SceneTreeDock::set_selection(const Vector<Node *> &p_nodes) {
+	// If the nodes selected are the same independently of order then return early.
+	if (_is_same_selection(p_nodes, editor_selection->get_full_selected_node_list())) {
+		return;
+	}
 	editor_selection->clear();
 	for (Node *node : p_nodes) {
 		editor_selection->add_node(node);
@@ -3317,9 +3333,9 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 	// Either instantiate scenes or create AudioStreamPlayers.
 	int to_pos = -1;
 	_normalize_drop(node, to_pos, p_type);
-	if (res_type == "PackedScene") {
+	if (ClassDB::is_parent_class(res_type, "PackedScene")) {
 		_perform_instantiate_scenes(p_files, node, to_pos);
-	} else {
+	} else if (ClassDB::is_parent_class(res_type, "AudioStream")) {
 		_perform_create_audio_stream_players(p_files, node, to_pos);
 	}
 }
@@ -3651,7 +3667,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 	if (profile_allow_editing) {
 		menu->add_separator();
-		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Remove")), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), Key::KEY_DELETE), TOOL_ERASE);
+		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Remove")), ED_GET_SHORTCUT("scene_tree/delete"), TOOL_ERASE);
 	}
 	menu->reset_size();
 	menu->set_position(p_menu_pos);

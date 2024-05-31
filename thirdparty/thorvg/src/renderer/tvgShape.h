@@ -67,7 +67,7 @@ struct Shape::Impl
         if (opacity == 0) return false;
 
         //Shape composition is only necessary when stroking & fill are valid.
-        if (!rs.stroke || rs.stroke->width < FLT_EPSILON || (!rs.stroke->fill && rs.stroke->color[3] == 0)) return false;
+        if (!rs.stroke || rs.stroke->width < FLOAT_EPSILON || (!rs.stroke->fill && rs.stroke->color[3] == 0)) return false;
         if (!rs.fill && rs.color[3] == 0) return false;
 
         //translucent fill & stroke
@@ -301,7 +301,7 @@ struct Shape::Impl
         }
 
         for (uint32_t i = 0; i < cnt; i++) {
-            if (pattern[i] < FLT_EPSILON) return Result::InvalidArguments;
+            if (pattern[i] < FLOAT_EPSILON) return Result::InvalidArguments;
         }
 
         //Reset dash

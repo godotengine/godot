@@ -583,7 +583,7 @@ public:
 			ArgumentQualifier qualifier;
 			StringName name;
 			DataType type;
-			StringName type_str;
+			StringName struct_name;
 			DataPrecision precision;
 			//for passing textures as arguments
 			bool tex_argument_check;
@@ -618,7 +618,7 @@ public:
 		struct Constant {
 			StringName name;
 			DataType type;
-			StringName type_str;
+			StringName struct_name;
 			DataPrecision precision;
 			ConstantNode *initializer = nullptr;
 			int array_size;
@@ -884,7 +884,7 @@ public:
 		bool can_discard = false;
 		bool main_function = false;
 	};
-	static bool has_builtin(const HashMap<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name);
+	static bool has_builtin(const HashMap<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name, bool p_check_global_funcs = false);
 
 	typedef DataType (*GlobalShaderUniformGetTypeFunc)(const StringName &p_name);
 

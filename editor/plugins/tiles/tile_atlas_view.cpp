@@ -59,6 +59,9 @@ void TileAtlasView::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<In
 }
 
 Size2i TileAtlasView::_compute_base_tiles_control_size() {
+	if (tile_set_atlas_source.is_null()) {
+		return Size2i();
+	}
 	// Update the texture.
 	Vector2i size;
 	Ref<Texture2D> texture = tile_set_atlas_source->get_texture();
@@ -69,6 +72,9 @@ Size2i TileAtlasView::_compute_base_tiles_control_size() {
 }
 
 Size2i TileAtlasView::_compute_alternative_tiles_control_size() {
+	if (tile_set_atlas_source.is_null()) {
+		return Size2i();
+	}
 	Vector2i size;
 	for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 		Vector2i tile_id = tile_set_atlas_source->get_tile_id(i);
@@ -89,6 +95,9 @@ Size2i TileAtlasView::_compute_alternative_tiles_control_size() {
 }
 
 void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos) {
+	if (tile_set_atlas_source.is_null()) {
+		return;
+	}
 	float zoom = zoom_widget->get_zoom();
 
 	// Compute the minimum sizes.
@@ -153,6 +162,9 @@ void TileAtlasView::_center_view() {
 }
 
 void TileAtlasView::_base_tiles_root_control_gui_input(const Ref<InputEvent> &p_event) {
+	if (tile_set_atlas_source.is_null()) {
+		return;
+	}
 	base_tiles_root_control->set_tooltip_text("");
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -169,6 +181,9 @@ void TileAtlasView::_base_tiles_root_control_gui_input(const Ref<InputEvent> &p_
 }
 
 void TileAtlasView::_draw_base_tiles() {
+	if (tile_set.is_null() || tile_set_atlas_source.is_null()) {
+		return;
+	}
 	Ref<Texture2D> texture = tile_set_atlas_source->get_texture();
 	if (texture.is_valid()) {
 		Vector2i margins = tile_set_atlas_source->get_margins();
@@ -250,7 +265,7 @@ void TileAtlasView::_draw_base_tiles() {
 				Vector2 offset_pos = Rect2(base_frame_rect).get_center() + Vector2(tile_set_atlas_source->get_tile_data(atlas_coords, 0)->get_texture_origin());
 
 				// Draw the tile.
-				TileMap::draw_tile(ci_rid, offset_pos, tile_set, source_id, atlas_coords, 0, frame);
+				TileMapLayer::draw_tile(ci_rid, offset_pos, tile_set, source_id, atlas_coords, 0, frame);
 			}
 		}
 
@@ -314,6 +329,9 @@ void TileAtlasView::_clear_material_canvas_items() {
 }
 
 void TileAtlasView::_draw_base_tiles_texture_grid() {
+	if (tile_set_atlas_source.is_null()) {
+		return;
+	}
 	Ref<Texture2D> texture = tile_set_atlas_source->get_texture();
 	if (texture.is_valid()) {
 		Vector2i margins = tile_set_atlas_source->get_margins();
@@ -344,6 +362,9 @@ void TileAtlasView::_draw_base_tiles_texture_grid() {
 }
 
 void TileAtlasView::_draw_base_tiles_shape_grid() {
+	if (tile_set.is_null() || tile_set_atlas_source.is_null()) {
+		return;
+	}
 	// Draw the shapes.
 	Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 	Vector2i tile_shape_size = tile_set->get_tile_size();
@@ -382,6 +403,9 @@ void TileAtlasView::_alternative_tiles_root_control_gui_input(const Ref<InputEve
 }
 
 void TileAtlasView::_draw_alternatives() {
+	if (tile_set.is_null() || tile_set_atlas_source.is_null()) {
+		return;
+	}
 	// Draw the alternative tiles.
 	Ref<Texture2D> texture = tile_set_atlas_source->get_texture();
 	if (texture.is_valid()) {
@@ -411,7 +435,7 @@ void TileAtlasView::_draw_alternatives() {
 				}
 
 				// Draw the tile.
-				TileMap::draw_tile(ci_rid, offset_pos, tile_set, source_id, atlas_coords, alternative_id);
+				TileMapLayer::draw_tile(ci_rid, offset_pos, tile_set, source_id, atlas_coords, alternative_id);
 
 				// Increment the x position.
 				current_pos.x += transposed ? texture_region_size.y : texture_region_size.x;
@@ -432,12 +456,12 @@ void TileAtlasView::_draw_background_right() {
 }
 
 void TileAtlasView::set_atlas_source(TileSet *p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id) {
-	tile_set = p_tile_set;
-	tile_set_atlas_source = p_tile_set_atlas_source;
+	tile_set = Ref<TileSet>(p_tile_set);
+	tile_set_atlas_source = Ref<TileSetAtlasSource>(p_tile_set_atlas_source);
 
 	_clear_material_canvas_items();
 
-	if (!tile_set) {
+	if (tile_set.is_null()) {
 		return;
 	}
 
@@ -485,6 +509,10 @@ void TileAtlasView::set_padding(Side p_side, int p_padding) {
 }
 
 Vector2i TileAtlasView::get_atlas_tile_coords_at_pos(const Vector2 p_pos, bool p_clamp) const {
+	if (tile_set_atlas_source.is_null()) {
+		return Vector2i();
+	}
+
 	Ref<Texture2D> texture = tile_set_atlas_source->get_texture();
 	if (!texture.is_valid()) {
 		return TileSetSource::INVALID_ATLAS_COORDS;
@@ -508,6 +536,10 @@ Vector2i TileAtlasView::get_atlas_tile_coords_at_pos(const Vector2 p_pos, bool p
 }
 
 void TileAtlasView::_update_alternative_tiles_rect_cache() {
+	if (tile_set_atlas_source.is_null()) {
+		return;
+	}
+
 	alternative_tiles_rect_cache.clear();
 
 	Rect2i current;

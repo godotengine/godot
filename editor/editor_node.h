@@ -140,6 +140,17 @@ public:
 		SCENE_NAME_CASING_KEBAB_CASE,
 	};
 
+	enum ActionOnPlay {
+		ACTION_ON_PLAY_DO_NOTHING,
+		ACTION_ON_PLAY_OPEN_OUTPUT,
+		ACTION_ON_PLAY_OPEN_DEBUGGER,
+	};
+
+	enum ActionOnStop {
+		ACTION_ON_STOP_DO_NOTHING,
+		ACTION_ON_STOP_CLOSE_BUTTOM_PANEL,
+	};
+
 	struct ExecuteThreadArgs {
 		String path;
 		List<String> args;
@@ -662,7 +673,7 @@ private:
 
 	void _begin_first_scan();
 
-	void _notify_scene_updated(Node *p_node);
+	void _notify_nodes_scene_reimported(Node *p_node, Array p_reimported_nodes);
 
 protected:
 	friend class FileSystemDock;
@@ -779,7 +790,7 @@ public:
 	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_clear_errors = true, bool p_force_open_imported = false, bool p_silent_change_tab = false);
 	Error load_resource(const String &p_resource, bool p_ignore_broken_deps = false);
 
-	HashMap<StringName, Variant> get_modified_properties_for_node(Node *p_node);
+	HashMap<StringName, Variant> get_modified_properties_for_node(Node *p_node, bool p_node_references_only);
 
 	struct AdditiveNodeEntry {
 		Node *node = nullptr;
@@ -806,10 +817,17 @@ public:
 	};
 
 	void update_ownership_table_for_addition_node_ancestors(Node *p_current_node, HashMap<Node *, Node *> &p_ownership_table);
+	void update_node_from_node_modification_entry(Node *p_node, ModificationNodeEntry &p_node_modification);
 
-	void update_diff_data_for_node(
-			Node *p_edited_scene,
+	void update_node_reference_modification_table_for_node(
 			Node *p_root,
+			Node *p_node,
+			List<Node *> p_excluded_nodes,
+			HashMap<NodePath, ModificationNodeEntry> &p_modification_table);
+
+	void update_reimported_diff_data_for_node(
+			Node *p_edited_scene,
+			Node *p_reimported_root,
 			Node *p_node,
 			HashMap<NodePath, ModificationNodeEntry> &p_modification_table,
 			List<AdditiveNodeEntry> &p_addition_list);

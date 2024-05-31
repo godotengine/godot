@@ -86,6 +86,7 @@ public:
 	virtual void on_session_created(const XrSession p_session) override;
 	virtual void on_process() override;
 	virtual void on_pre_render() override;
+	virtual void on_main_swapchains_created() override;
 	virtual void on_session_destroyed() override;
 
 	GDVIRTUAL0(_on_register_metadata);
@@ -95,6 +96,7 @@ public:
 	GDVIRTUAL1(_on_session_created, uint64_t);
 	GDVIRTUAL0(_on_process);
 	GDVIRTUAL0(_on_pre_render);
+	GDVIRTUAL0(_on_main_swapchains_created);
 	GDVIRTUAL0(_on_session_destroyed);
 
 	virtual void on_state_idle() override;

@@ -754,13 +754,17 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx, bool
 	return arghint;
 }
 
-static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_function, int p_arg_idx) {
+static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_function, int p_arg_idx, bool p_just_args = false) {
 	String arghint;
 
-	if (p_function->get_datatype().builtin_type == Variant::NIL) {
-		arghint = "void " + p_function->identifier->name.operator String() + "(";
+	if (p_just_args) {
+		arghint = "(";
 	} else {
-		arghint = p_function->get_datatype().to_string() + " " + p_function->identifier->name.operator String() + "(";
+		if (p_function->get_datatype().builtin_type == Variant::NIL) {
+			arghint = "void " + p_function->identifier->name.operator String() + "(";
+		} else {
+			arghint = p_function->get_datatype().to_string() + " " + p_function->identifier->name.operator String() + "(";
+		}
 	}
 
 	for (int i = 0; i < p_function->parameters.size(); i++) {
@@ -2731,6 +2735,25 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	while (base_type.is_set() && !base_type.is_variant()) {
 		switch (base_type.kind) {
 			case GDScriptParser::DataType::CLASS: {
+				if (base_type.is_meta_type && p_method == SNAME("new")) {
+					const GDScriptParser::ClassNode *current = base_type.class_type;
+
+					do {
+						if (current->has_member("_init")) {
+							const GDScriptParser::ClassNode::Member &member = current->get_member("_init");
+
+							if (member.type == GDScriptParser::ClassNode::Member::FUNCTION) {
+								r_arghint = base_type.class_type->get_datatype().to_string() + " new" + _make_arguments_hint(member.function, p_argidx, true);
+								return;
+							}
+						}
+						current = current->base_type.class_type;
+					} while (current != nullptr);
+
+					r_arghint = base_type.class_type->get_datatype().to_string() + " new()";
+					return;
+				}
+
 				if (base_type.class_type->has_member(p_method)) {
 					const GDScriptParser::ClassNode::Member &member = base_type.class_type->get_member(p_method);
 

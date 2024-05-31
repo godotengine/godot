@@ -739,9 +739,21 @@ void Node3DEditorViewport::_select_clicked(bool p_allow_locked) {
 		return;
 	}
 
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+
+	// Prevent selection of nodes not owned by the edited scene.
+	while (node && node != edited_scene->get_parent()) {
+		Node *node_owner = node->get_owner();
+		if (node_owner == edited_scene || node == edited_scene || (node_owner != nullptr && edited_scene->is_editable_instance(node_owner))) {
+			break;
+		}
+		node = node->get_parent();
+		selected = Object::cast_to<Node3D>(node);
+	}
+
 	if (!p_allow_locked) {
 		// Replace the node by the group if grouped
-		while (node && node != EditorNode::get_singleton()->get_edited_scene()->get_parent()) {
+		while (node && node != edited_scene->get_parent()) {
 			Node3D *selected_tmp = Object::cast_to<Node3D>(node);
 			if (selected_tmp && node->has_meta("_edit_group_")) {
 				selected = selected_tmp;
@@ -1044,25 +1056,34 @@ void Node3DEditorViewport::_select_region() {
 
 		found_nodes.insert(sp);
 
-		Node *item = Object::cast_to<Node>(sp);
-		if (item != edited_scene) {
-			item = edited_scene->get_deepest_editable_node(item);
+		Node *node = Object::cast_to<Node>(sp);
+		if (node != edited_scene) {
+			node = edited_scene->get_deepest_editable_node(node);
+		}
+
+		// Prevent selection of nodes not owned by the edited scene.
+		while (node && node != edited_scene->get_parent()) {
+			Node *node_owner = node->get_owner();
+			if (node_owner == edited_scene || node == edited_scene || (node_owner != nullptr && edited_scene->is_editable_instance(node_owner))) {
+				break;
+			}
+			node = node->get_parent();
 		}
 
 		// Replace the node by the group if grouped
-		if (item->is_class("Node3D")) {
-			Node3D *sel = Object::cast_to<Node3D>(item);
-			while (item && item != EditorNode::get_singleton()->get_edited_scene()->get_parent()) {
-				Node3D *selected_tmp = Object::cast_to<Node3D>(item);
-				if (selected_tmp && item->has_meta("_edit_group_")) {
+		if (node->is_class("Node3D")) {
+			Node3D *sel = Object::cast_to<Node3D>(node);
+			while (node && node != EditorNode::get_singleton()->get_edited_scene()->get_parent()) {
+				Node3D *selected_tmp = Object::cast_to<Node3D>(node);
+				if (selected_tmp && node->has_meta("_edit_group_")) {
 					sel = selected_tmp;
 				}
-				item = item->get_parent();
+				node = node->get_parent();
 			}
-			item = sel;
+			node = sel;
 		}
 
-		if (_is_node_locked(item)) {
+		if (_is_node_locked(node)) {
 			continue;
 		}
 
@@ -1074,7 +1095,7 @@ void Node3DEditorViewport::_select_region() {
 			}
 
 			if (seg->intersect_frustum(camera, frustum)) {
-				selected.push_back(item);
+				selected.push_back(node);
 			}
 		}
 	}
@@ -1531,23 +1552,35 @@ bool Node3DEditorViewport ::_is_node_locked(const Node *p_node) {
 }
 
 void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
-	_find_items_at_pos(b->get_position(), selection_results, spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
+	Vector<_RayResult> potential_selection_results;
+	_find_items_at_pos(b->get_position(), potential_selection_results, spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
 
-	Node *scene = EditorNode::get_singleton()->get_edited_scene();
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
 
-	for (int i = 0; i < selection_results.size(); i++) {
-		Node3D *item = selection_results[i].item;
-		if (item != scene && item->get_owner() != scene && item != scene->get_deepest_editable_node(item)) {
-			//invalid result
-			selection_results.remove_at(i);
-			i--;
+	// Filter to a list of nodes which include either the edited scene or nodes directly owned by the edited scene.
+	// If a node has an invalid owner, recursively check their parents until a valid node is found.
+	for (int i = 0; i < potential_selection_results.size(); i++) {
+		Node3D *node = potential_selection_results[i].item;
+		while (true) {
+			if (node == nullptr || node == edited_scene->get_parent()) {
+				break;
+			} else {
+				Node *node_owner = node->get_owner();
+				if (node == edited_scene || node_owner == edited_scene || (node_owner != nullptr && edited_scene->is_editable_instance(node_owner))) {
+					if (selection_results.has(node)) {
+						selection_results.append(node);
+					}
+					break;
+				}
+			}
+			node = Object::cast_to<Node3D>(node->get_parent());
 		}
 	}
 
 	clicked_wants_append = b->is_shift_pressed();
 
 	if (selection_results.size() == 1) {
-		clicked = selection_results[0].item->get_instance_id();
+		clicked = selection_results[0]->get_instance_id();
 		selection_results.clear();
 
 		if (clicked.is_valid()) {
@@ -1558,7 +1591,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		StringName root_name = root_path.get_name(root_path.get_name_count() - 1);
 
 		for (int i = 0; i < selection_results.size(); i++) {
-			Node3D *spat = selection_results[i].item;
+			Node3D *spat = selection_results[i];
 
 			Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(spat, "Node");
 
@@ -2901,10 +2934,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 			// FPS Counter.
 			bool show_fps = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_FRAME_TIME));
 
-			if (show_fps != fps_label->is_visible()) {
-				cpu_time_label->set_visible(show_fps);
-				gpu_time_label->set_visible(show_fps);
-				fps_label->set_visible(show_fps);
+			if (show_fps != frame_time_panel->is_visible()) {
+				frame_time_panel->set_visible(show_fps);
 				RS::get_singleton()->viewport_set_measure_render_time(viewport->get_viewport_rid(), show_fps);
 				for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
 					// Initialize to 120 FPS, so that the initial estimation until we get enough data is always reasonable.
@@ -3033,9 +3064,15 @@ void Node3DEditorViewport::_notification(int p_what) {
 			frame_time_gradient->set_color(2, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			info_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			cpu_time_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			gpu_time_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			fps_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+
+			frame_time_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			// Set a minimum width to prevent the width from changing all the time
+			// when numbers vary rapidly. This minimum width is set based on a
+			// GPU time of 999.99 ms in the current editor language.
+			const float min_width = get_theme_font(SNAME("main"), EditorStringName(EditorFonts))->get_string_size(vformat(TTR("GPU Time: %s ms"), 999.99)).x;
+			frame_time_panel->set_custom_minimum_size(Size2(min_width, 0) * EDSCALE);
+			frame_time_vbox->add_theme_constant_override("separation", Math::round(-1 * EDSCALE));
+
 			cinema_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			locked_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 		} break;
@@ -3750,7 +3787,7 @@ void Node3DEditorViewport::_selection_result_pressed(int p_result) {
 		return;
 	}
 
-	clicked = selection_results_menu[p_result].item->get_instance_id();
+	clicked = selection_results_menu[p_result]->get_instance_id();
 
 	if (clicked.is_valid()) {
 		_select_clicked(spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
@@ -5379,10 +5416,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	top_right_vbox = memnew(VBoxContainer);
 	top_right_vbox->set_anchors_and_offsets_preset(PRESET_TOP_RIGHT, PRESET_MODE_MINSIZE, 10.0 * EDSCALE);
 	top_right_vbox->set_h_grow_direction(GROW_DIRECTION_BEGIN);
-	// Make sure frame time labels don't touch the viewport's edge.
-	top_right_vbox->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
-	// Prevent visible spacing between frame time labels.
-	top_right_vbox->add_theme_constant_override("separation", 0);
 
 	const int navigation_control_size = 150;
 
@@ -5414,18 +5447,22 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	rotation_control->set_viewport(this);
 	top_right_vbox->add_child(rotation_control);
 
+	frame_time_panel = memnew(PanelContainer);
+	top_right_vbox->add_child(frame_time_panel);
+	frame_time_panel->hide();
+
+	frame_time_vbox = memnew(VBoxContainer);
+	frame_time_panel->add_child(frame_time_vbox);
+
 	// Individual Labels are used to allow coloring each label with its own color.
 	cpu_time_label = memnew(Label);
-	top_right_vbox->add_child(cpu_time_label);
-	cpu_time_label->hide();
+	frame_time_vbox->add_child(cpu_time_label);
 
 	gpu_time_label = memnew(Label);
-	top_right_vbox->add_child(gpu_time_label);
-	gpu_time_label->hide();
+	frame_time_vbox->add_child(gpu_time_label);
 
 	fps_label = memnew(Label);
-	top_right_vbox->add_child(fps_label);
-	fps_label->hide();
+	frame_time_vbox->add_child(fps_label);
 
 	surface->add_child(top_right_vbox);
 
@@ -8476,7 +8513,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_LOCK_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_LOCK_SELECTED));
 	tool_button[TOOL_LOCK_SELECTED]->set_tooltip_text(TTR("Lock selected node, preventing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	tool_button[TOOL_LOCK_SELECTED]->set_shortcut(ED_SHORTCUT("editor/lock_selected_nodes", TTR("Lock Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | Key::L));
+	tool_button[TOOL_LOCK_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/lock_selected_nodes"));
 
 	tool_button[TOOL_UNLOCK_SELECTED] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_UNLOCK_SELECTED]);
@@ -8484,7 +8521,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_UNLOCK_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNLOCK_SELECTED));
 	tool_button[TOOL_UNLOCK_SELECTED]->set_tooltip_text(TTR("Unlock selected node, allowing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	tool_button[TOOL_UNLOCK_SELECTED]->set_shortcut(ED_SHORTCUT("editor/unlock_selected_nodes", TTR("Unlock Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::L));
+	tool_button[TOOL_UNLOCK_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/unlock_selected_nodes"));
 
 	tool_button[TOOL_GROUP_SELECTED] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_GROUP_SELECTED]);
@@ -8492,7 +8529,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_GROUP_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_GROUP_SELECTED));
 	tool_button[TOOL_GROUP_SELECTED]->set_tooltip_text(TTR("Groups the selected node with its children. This selects the parent when any child node is clicked in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	tool_button[TOOL_GROUP_SELECTED]->set_shortcut(ED_SHORTCUT("editor/group_selected_nodes", TTR("Group Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | Key::G));
+	tool_button[TOOL_GROUP_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/group_selected_nodes"));
 
 	tool_button[TOOL_UNGROUP_SELECTED] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_UNGROUP_SELECTED]);
@@ -8500,7 +8537,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_UNGROUP_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNGROUP_SELECTED));
 	tool_button[TOOL_UNGROUP_SELECTED]->set_tooltip_text(TTR("Ungroups the selected node from its children. Child nodes will be individual items in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	tool_button[TOOL_UNGROUP_SELECTED]->set_shortcut(ED_SHORTCUT("editor/ungroup_selected_nodes", TTR("Ungroup Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::G));
+	tool_button[TOOL_UNGROUP_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/ungroup_selected_nodes"));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 

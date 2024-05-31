@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 import fnmatch
-import os
-import sys
-import re
 import math
+import os
 import platform
+import re
+import sys
 import xml.etree.ElementTree as ET
 from typing import Dict, List, Set
 
@@ -286,7 +286,7 @@ class ClassStatus:
                     status.progresses[tag.tag].increment(is_deprecated or is_experimental or has_descr)
             elif tag.tag in ["constants", "members", "theme_items"]:
                 for sub_tag in list(tag):
-                    if not sub_tag.text is None:
+                    if sub_tag.text is not None:
                         is_deprecated = "deprecated" in sub_tag.attrib
                         is_experimental = "experimental" in sub_tag.attrib
                         has_descr = len(sub_tag.text.strip()) > 0

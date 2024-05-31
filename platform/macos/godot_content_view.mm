@@ -323,7 +323,14 @@
 			NSString *file = [NSURL URLWithString:url].path;
 			files.push_back(String::utf8([file UTF8String]));
 		}
-		wd.drop_files_callback.call(files);
+		Variant v_files = files;
+		const Variant *v_args[1] = { &v_files };
+		Variant ret;
+		Callable::CallError ce;
+		wd.drop_files_callback.callp((const Variant **)&v_args, 1, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute drop files callback: %s.", Variant::get_callable_error_text(wd.drop_files_callback, v_args, 1, ce)));
+		}
 	}
 
 	return NO;

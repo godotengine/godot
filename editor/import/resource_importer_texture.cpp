@@ -269,9 +269,9 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 				Vector<uint8_t> data;
 				if (use_webp) {
-					data = Image::webp_lossless_packer(p_image->get_image_from_mipmap(i));
+					data = Image::webp_lossless_packer(i ? p_image->get_image_from_mipmap(i) : p_image);
 				} else {
-					data = Image::png_packer(p_image->get_image_from_mipmap(i));
+					data = Image::png_packer(i ? p_image->get_image_from_mipmap(i) : p_image);
 				}
 				int data_len = data.size();
 				f->store_32(data_len);
@@ -289,7 +289,7 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 			f->store_32(p_image->get_format());
 
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
-				Vector<uint8_t> data = Image::webp_lossy_packer(p_image->get_image_from_mipmap(i), p_lossy_quality);
+				Vector<uint8_t> data = Image::webp_lossy_packer(i ? p_image->get_image_from_mipmap(i) : p_image, p_lossy_quality);
 				int data_len = data.size();
 				f->store_32(data_len);
 

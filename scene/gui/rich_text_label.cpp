@@ -1607,8 +1607,34 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 				if (p_meta) {
 					int64_t glyph_idx = TS->shaped_text_hit_test_grapheme(rid, p_click.x - rect.position.x);
 					if (glyph_idx >= 0) {
+						float baseline_y = rect.position.y + TS->shaped_text_get_ascent(rid);
 						const Glyph *glyphs = TS->shaped_text_get_glyphs(rid);
-						char_pos = glyphs[glyph_idx].start;
+						if (glyphs[glyph_idx].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) {
+							// Emebedded object.
+							for (int i = 0; i < objects.size(); i++) {
+								if (TS->shaped_text_get_object_glyph(rid, objects[i]) == glyph_idx) {
+									Rect2 obj_rect = TS->shaped_text_get_object_rect(rid, objects[i]);
+									obj_rect.position.y += baseline_y;
+									if (p_click.y >= obj_rect.position.y && p_click.y <= obj_rect.position.y + obj_rect.size.y) {
+										char_pos = glyphs[glyph_idx].start;
+									}
+									break;
+								}
+							}
+						} else if (glyphs[glyph_idx].font_rid != RID()) {
+							// Normal glyph.
+							float fa = TS->font_get_ascent(glyphs[glyph_idx].font_rid, glyphs[glyph_idx].font_size);
+							float fd = TS->font_get_descent(glyphs[glyph_idx].font_rid, glyphs[glyph_idx].font_size);
+							if (p_click.y >= baseline_y - fa && p_click.y <= baseline_y + fd) {
+								char_pos = glyphs[glyph_idx].start;
+							}
+						} else if (!(glyphs[glyph_idx].flags & TextServer::GRAPHEME_IS_VIRTUAL)) {
+							// Hex code box.
+							Vector2 gl_size = TS->get_hex_code_box_size(glyphs[glyph_idx].font_size, glyphs[glyph_idx].index);
+							if (p_click.y >= baseline_y - gl_size.y * 0.9 && p_click.y <= baseline_y + gl_size.y * 0.2) {
+								char_pos = glyphs[glyph_idx].start;
+							}
+						}
 					}
 				} else {
 					char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
@@ -4512,6 +4538,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "justification_flags" || subtag_a[0] == "jst") {
 						Vector<String> subtag_b = subtag_a[1].split(",");
+						jst_flags = 0; // Clear flags.
 						for (const String &E : subtag_b) {
 							if (E == "kashida" || E == "k") {
 								jst_flags.set_flag(TextServer::JUSTIFICATION_KASHIDA);
@@ -4525,7 +4552,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 								jst_flags.set_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE);
 							} else if (E == "skip_last_with_chars" || E == "sv") {
 								jst_flags.set_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS);
-							} else if (E == "do_not_skip_singe" || E == "ns") {
+							} else if (E == "do_not_skip_single" || E == "ns") {
 								jst_flags.set_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE);
 							}
 						}
