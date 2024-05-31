@@ -2527,7 +2527,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			if (st->scales[p_key_idx].bind_idx >= 0) {
 				signal_value_change_to_bound_keys(st->scales[p_key_idx].bind_idx, p_value, TYPE_SCALE_3D);
 			} else {
-				st->scales.write[p_key_idx].value = p_value;		
+				st->scales.write[p_key_idx].value = p_value;
 			}
 
 		} break;
