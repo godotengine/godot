@@ -77,6 +77,7 @@ public:
 
 	struct Workarounds {
 		bool avoid_compute_after_draw = false;
+		bool avoid_render_graph_reorder = false;
 	};
 
 	struct Device {
