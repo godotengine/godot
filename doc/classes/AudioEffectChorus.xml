@@ -97,7 +97,7 @@
 			<param index="0" name="voice_idx" type="int" />
 			<param index="1" name="rate_hz" type="float" />
 			<description>
-				Sets the filter rate frequency of a specific voice.
+				Sets the filter rate frequency of a specific voice in hertz (number of samples per second). The recommended range is [code]0.1[/code] to [code]20[/code].
 			</description>
 		</method>
 	</methods>
