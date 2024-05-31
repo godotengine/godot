@@ -57,7 +57,7 @@
 			<param index="0" name="voice_idx" type="int" />
 			<param index="1" name="cutoff_hz" type="float" />
 			<description>
-				Sets the cutoff frequency of a specific voice.
+				Sets the cutoff frequency of a specific voice in hertz (number of samples per second). Cutoff frequency refers to the top-most frequency beyond which the signal is blocked. This can be used to create a low pass filter to simulate a "muffled" sound. The recommended range is [code]0[/code] to [code]20500[/code].
 			</description>
 		</method>
 		<method name="set_voice_delay_ms">
