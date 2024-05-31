@@ -81,7 +81,7 @@
 			<param index="0" name="voice_idx" type="int" />
 			<param index="1" name="level_db" type="float" />
 			<description>
-				Sets the volume of a specific voice in decibels.
+				Sets the volume of a specific voice in decibels. This is the base volume before attenuation. The recommended range is [code]-60[/code] to [code]24[/code].
 			</description>
 		</method>
 		<method name="set_voice_pan">
