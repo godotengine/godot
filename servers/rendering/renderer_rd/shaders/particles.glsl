@@ -528,11 +528,13 @@ void main() {
 				vec3 rel_vec = PARTICLE.xform[3].xyz - FRAME.colliders[i].transform[3].xyz;
 				vec3 local_pos = rel_vec * mat3(FRAME.colliders[i].transform);
 
+				// Allowing for a small epsilon to allow particle just touching colliders to count as collided
+				const float EPSILON = 0.001;
 				switch (FRAME.colliders[i].type) {
 					case COLLIDER_TYPE_SPHERE: {
 						float d = length(rel_vec) - (particle_size + FRAME.colliders[i].extents.x);
 
-						if (d < 0.0) {
+						if (d <= EPSILON) {
 							col = true;
 							depth = -d;
 							normal = normalize(rel_vec);
@@ -549,7 +551,7 @@ void main() {
 							vec3 closest = min(abs_pos, FRAME.colliders[i].extents);
 							vec3 rel = abs_pos - closest;
 							depth = length(rel) - particle_size;
-							if (depth < 0.0) {
+							if (depth <= EPSILON) {
 								col = true;
 								normal = mat3(FRAME.colliders[i].transform) * (normalize(rel) * sgn_pos);
 								depth = -depth;
@@ -588,10 +590,10 @@ void main() {
 						float s = texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], SAMPLER_LINEAR_CLAMP), uvw_pos).r;
 						s *= FRAME.colliders[i].scale;
 						s += extra_dist;
-						if (s < particle_size) {
+						if (s <= particle_size + EPSILON) {
 							col = true;
 							depth = particle_size - s;
-							const float EPSILON = 0.001;
+
 							normal = mat3(FRAME.colliders[i].transform) *
 									normalize(
 											vec3(
@@ -614,7 +616,7 @@ void main() {
 
 						float y = texture(sampler2D(height_field_texture, SAMPLER_LINEAR_CLAMP), uvw_pos.xz).r;
 
-						if (y > uvw_pos.y) {
+						if (y + EPSILON >= uvw_pos.y) {
 							//inside heightfield
 
 							vec3 pos1 = (vec3(uvw_pos.x, y, uvw_pos.z) * 2.0 - 1.0) * FRAME.colliders[i].extents;
