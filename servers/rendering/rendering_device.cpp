@@ -702,6 +702,8 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 
 	ERR_FAIL_INDEX_V(format.samples, TEXTURE_SAMPLES_MAX, RID());
 
+	ERR_FAIL_COND_V_MSG(format.usage_bits == 0, RID(), "No usage bits specified (at least one is needed)");
+
 	format.height = format.texture_type != TEXTURE_TYPE_1D && format.texture_type != TEXTURE_TYPE_1D_ARRAY ? format.height : 1;
 	format.depth = format.texture_type == TEXTURE_TYPE_3D ? format.depth : 1;
 
