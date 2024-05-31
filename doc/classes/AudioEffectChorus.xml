@@ -73,7 +73,7 @@
 			<param index="0" name="voice_idx" type="int" />
 			<param index="1" name="depth_ms" type="float" />
 			<description>
-				Sets the depth of a specific voice filter in milliseconds.
+				Sets the depth of a specific voice filter in milliseconds. Increasing the audio depth increases the intensity of a sound. The recommended range is [code]0[/code] to [code]20[/code]. [b]Note:[/b] The maximum value can be exceeded to create distortions.
 			</description>
 		</method>
 		<method name="set_voice_level_db">
