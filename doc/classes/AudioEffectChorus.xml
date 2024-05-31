@@ -89,7 +89,7 @@
 			<param index="0" name="voice_idx" type="int" />
 			<param index="1" name="pan" type="float" />
 			<description>
-				Sets the pan level of a specific voice.
+				Sets the pan level of a specific voice. Values range from [code]-1.0[/code] (left ear) to [code]1.0[/code] (right ear). [b]Note:[/b] This effect does not work with stereo sounds, but mono can be forced in import settings.
 			</description>
 		</method>
 		<method name="set_voice_rate_hz">
