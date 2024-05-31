@@ -65,7 +65,7 @@
 			<param index="0" name="voice_idx" type="int" />
 			<param index="1" name="delay_ms" type="float" />
 			<description>
-				Sets the delay of a specific voice in milliseconds.
+				Sets the delay of a specific voice in milliseconds. Longer delay creates more audible separation between the voices. The recommended range is [code]0[/code] to [code]50[/code]. [b]Note: [/b] the maximum recommended value can be exceeded to create longer more noticeable separation.
 			</description>
 		</method>
 		<method name="set_voice_depth_ms">
