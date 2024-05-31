@@ -50,7 +50,7 @@ EditorSceneTabs *EditorSceneTabs::singleton = nullptr;
 void EditorSceneTabs::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			tabbar_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("tabbar_background"), SNAME("TabContainer")));
+			tabbar_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("tabbar_background"), SNAME("TabContainer")));
 			scene_tabs->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 
 			scene_tab_add->set_icon(get_editor_theme_icon(SNAME("Add")));
@@ -409,7 +409,7 @@ EditorSceneTabs::EditorSceneTabs() {
 
 	scene_tabs_context_menu = memnew(PopupMenu);
 	tabbar_container->add_child(scene_tabs_context_menu);
-	scene_tabs_context_menu->connect("id_pressed", callable_mp(EditorNode::get_singleton(), &EditorNode::trigger_menu_option).bind(false));
+	scene_tabs_context_menu->connect(SceneStringName(id_pressed), callable_mp(EditorNode::get_singleton(), &EditorNode::trigger_menu_option).bind(false));
 
 	scene_tab_add = memnew(Button);
 	scene_tab_add->set_flat(true);

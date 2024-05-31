@@ -90,6 +90,7 @@
 #endif
 
 #ifdef TOOLS_ENABLED
+#include "editor/debugger/debug_adapter/debug_adapter_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc_data_class_path.gen.h"
 #include "editor/doc_tools.h"
@@ -544,8 +545,9 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("-e, --editor", "Start the editor instead of running the scene.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("-p, --project-manager", "Start the project manager, even if a project is auto-detected.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--debug-server <uri>", "Start the editor debug server (<protocol>://<host/IP>[:port], e.g. tcp://127.0.0.1:6007)\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--dap-port <port>", "Use the specified port for the GDScript Debugger Adaptor protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #if defined(MODULE_GDSCRIPT_ENABLED) && !defined(GDSCRIPT_NO_LSP)
-	print_help_option("--lsp-port <port>", "Use the specified port for the GDScript language server protocol. The port should be between 1025 and 49150.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--lsp-port <port>", "Use the specified port for the GDScript language server protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif // MODULE_GDSCRIPT_ENABLED && !GDSCRIPT_NO_LSP
 #endif
 	print_help_option("--quit", "Quit after the first iteration.\n");
@@ -1747,6 +1749,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 #endif // TOOLS_ENABLED && MODULE_GDSCRIPT_ENABLED && !GDSCRIPT_NO_LSP
+#if defined(TOOLS_ENABLED)
+		} else if (arg == "--dap-port") {
+			if (N) {
+				int port_override = N->get().to_int();
+				if (port_override < 0 || port_override > 65535) {
+					OS::get_singleton()->print("<port> argument for --dap-port <port> must be between 0 and 65535.\n");
+					goto error;
+				}
+				DebugAdapterServer::port_override = port_override;
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing <port> argument for --dap-port <port>.\n");
+				goto error;
+			}
+#endif // TOOLS_ENABLED
 		} else if (arg == "--" || arg == "++") {
 			adding_user_args = true;
 		} else {

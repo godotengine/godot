@@ -1432,7 +1432,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	extra_options = memnew(MenuButton);
 	extra_options->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GuiTabMenuHl"), EditorStringName(EditorIcons)));
 	extra_options->get_popup()->connect(SNAME("about_to_popup"), callable_mp(this, &VersionControlEditorPlugin::_update_extra_options));
-	extra_options->get_popup()->connect(SNAME("id_pressed"), callable_mp(this, &VersionControlEditorPlugin::_extra_option_selected));
+	extra_options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &VersionControlEditorPlugin::_extra_option_selected));
 	menu_bar->add_child(extra_options);
 
 	extra_options->get_popup()->add_item(TTR("Force Push"), EXTRA_OPTION_FORCE_PUSH);
@@ -1440,14 +1440,14 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	extra_options->get_popup()->add_item(TTR("Create New Branch"), EXTRA_OPTION_CREATE_BRANCH);
 
 	extra_options_remove_branch_list = memnew(PopupMenu);
-	extra_options_remove_branch_list->connect(SNAME("id_pressed"), callable_mp(this, &VersionControlEditorPlugin::_popup_branch_remove_confirm));
+	extra_options_remove_branch_list->connect(SceneStringName(id_pressed), callable_mp(this, &VersionControlEditorPlugin::_popup_branch_remove_confirm));
 	extra_options->get_popup()->add_submenu_node_item(TTR("Remove Branch"), extra_options_remove_branch_list);
 
 	extra_options->get_popup()->add_separator();
 	extra_options->get_popup()->add_item(TTR("Create New Remote"), EXTRA_OPTION_CREATE_REMOTE);
 
 	extra_options_remove_remote_list = memnew(PopupMenu);
-	extra_options_remove_remote_list->connect(SNAME("id_pressed"), callable_mp(this, &VersionControlEditorPlugin::_popup_remote_remove_confirm));
+	extra_options_remove_remote_list->connect(SceneStringName(id_pressed), callable_mp(this, &VersionControlEditorPlugin::_popup_remote_remove_confirm));
 	extra_options->get_popup()->add_submenu_node_item(TTR("Remove Remote"), extra_options_remove_remote_list);
 
 	change_type_to_strings[EditorVCSInterface::CHANGE_TYPE_NEW] = TTR("New");

@@ -587,7 +587,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	options->get_popup()->add_item(TTR("Create LightOccluder2D Sibling"), MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D);
 	options->set_switch_on_hover(true);
 
-	options->get_popup()->connect("id_pressed", callable_mp(this, &Sprite2DEditor::_menu_option));
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Sprite2DEditor::_menu_option));
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);

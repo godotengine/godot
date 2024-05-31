@@ -2389,7 +2389,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	source_sort_button->set_tooltip_text(TTR("Sort sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
-	p->connect("id_pressed", callable_mp(this, &TileMapLayerEditorTilesPlugin::_set_source_sort));
+	p->connect(SceneStringName(id_pressed), callable_mp(this, &TileMapLayerEditorTilesPlugin::_set_source_sort));
 	p->add_radio_check_item(TTR("Sort by ID (Ascending)"), TilesEditorUtils::SOURCE_SORT_ID);
 	p->add_radio_check_item(TTR("Sort by ID (Descending)"), TilesEditorUtils::SOURCE_SORT_ID_REVERSE);
 	p->add_radio_check_item(TTR("Sort by Name (Ascending)"), TilesEditorUtils::SOURCE_SORT_NAME);
@@ -4491,7 +4491,7 @@ TileMapLayerEditor::TileMapLayerEditor() {
 	advanced_menu_button->set_theme_type_variation("FlatButton");
 	advanced_menu_button->get_popup()->add_item(TTR("Automatically Replace Tiles with Proxies"), ADVANCED_MENU_REPLACE_WITH_PROXIES);
 	advanced_menu_button->get_popup()->add_item(TTR("Extract TileMap layers as individual TileMapLayer nodes"), ADVANCED_MENU_EXTRACT_TILE_MAP_LAYERS);
-	advanced_menu_button->get_popup()->connect("id_pressed", callable_mp(this, &TileMapLayerEditor::_advanced_menu_button_id_pressed));
+	advanced_menu_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TileMapLayerEditor::_advanced_menu_button_id_pressed));
 	tile_map_toolbar->add_child(advanced_menu_button);
 
 	// A label for editing errors.

@@ -587,7 +587,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 			split_sheet_zoom_out->set_icon(get_editor_theme_icon(SNAME("ZoomLess")));
 			split_sheet_zoom_reset->set_icon(get_editor_theme_icon(SNAME("ZoomReset")));
 			split_sheet_zoom_in->set_icon(get_editor_theme_icon(SNAME("ZoomMore")));
-			split_sheet_scroll->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			split_sheet_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 
 			_update_show_settings();
 		} break;

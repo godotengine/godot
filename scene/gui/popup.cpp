@@ -271,7 +271,7 @@ void PopupPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY:
 		case NOTIFICATION_THEME_CHANGED: {
-			panel->add_theme_style_override("panel", theme_cache.panel_style);
+			panel->add_theme_style_override(SceneStringName(panel), theme_cache.panel_style);
 			_update_child_rects();
 		} break;
 

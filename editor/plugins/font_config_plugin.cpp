@@ -372,7 +372,7 @@ EditorPropertyFontMetaOverride::EditorPropertyFontMetaOverride(bool p_script) {
 		}
 	}
 	add_child(menu);
-	menu->connect("id_pressed", callable_mp(this, &EditorPropertyFontMetaOverride::_add_script));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyFontMetaOverride::_add_script));
 
 	locale_select = memnew(EditorLocaleDialog);
 	locale_select->connect("locale_selected", callable_mp(this, &EditorPropertyFontMetaOverride::_add_lang));
@@ -840,12 +840,12 @@ EditorPropertyOTFeatures::EditorPropertyOTFeatures() {
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->connect("id_pressed", callable_mp(this, &EditorPropertyOTFeatures::_add_feature));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyOTFeatures::_add_feature));
 
 	for (int i = 0; i < FGRP_MAX; i++) {
 		menu_sub[i] = memnew(PopupMenu);
 		menu->add_child(menu_sub[i]);
-		menu_sub[i]->connect("id_pressed", callable_mp(this, &EditorPropertyOTFeatures::_add_feature));
+		menu_sub[i]->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyOTFeatures::_add_feature));
 	}
 
 	group_names[FGRP_STYLISTIC_SET] = TTRC("Stylistic Sets");
@@ -1018,7 +1018,7 @@ EditorPropertyFontNamesArray::EditorPropertyFontNamesArray() {
 		}
 	}
 	add_child(menu);
-	menu->connect("id_pressed", callable_mp(this, &EditorPropertyFontNamesArray::_add_font));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyFontNamesArray::_add_font));
 }
 
 /*************************************************************************/

@@ -2254,7 +2254,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	errors_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_error_clicked));
 
 	add_child(context_menu);
-	context_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 
 	add_child(color_panel);
 
@@ -2297,7 +2297,7 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unindent"), EDIT_UNINDENT);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
-		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 		edit_menu->get_popup()->add_submenu_node_item(TTR("Line"), sub_menu);
 	}
 	{
@@ -2306,7 +2306,7 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_all_lines"), EDIT_FOLD_ALL_LINES);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/create_code_region"), EDIT_CREATE_CODE_REGION);
-		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 		edit_menu->get_popup()->add_submenu_node_item(TTR("Folding"), sub_menu);
 	}
 	edit_menu->get_popup()->add_separator();
@@ -2318,21 +2318,21 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_spaces"), EDIT_CONVERT_INDENT_TO_SPACES);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_tabs"), EDIT_CONVERT_INDENT_TO_TABS);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/auto_indent"), EDIT_AUTO_INDENT);
-		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 		edit_menu->get_popup()->add_submenu_node_item(TTR("Indentation"), sub_menu);
 	}
-	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+	edit_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 	edit_menu->get_popup()->add_separator();
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_uppercase"), EDIT_TO_UPPERCASE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_lowercase"), EDIT_TO_LOWERCASE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/capitalize"), EDIT_CAPITALIZE);
-		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 		edit_menu->get_popup()->add_submenu_node_item(TTR("Convert Case"), sub_menu);
 	}
 	edit_menu->get_popup()->add_submenu_node_item(TTR("Syntax Highlighter"), highlighter_menu);
-	highlighter_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_change_syntax_highlighter));
+	highlighter_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_change_syntax_highlighter));
 
 	edit_hb->add_child(search_menu);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
@@ -2344,7 +2344,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
 	search_menu->get_popup()->add_separator();
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/contextual_help"), HELP_CONTEXTUAL);
-	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+	search_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 
 	_load_theme_settings();
 
@@ -2363,7 +2363,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	breakpoints_menu->connect("about_to_popup", callable_mp(this, &ScriptTextEditor::_update_breakpoint_list));
 	breakpoints_menu->connect("index_pressed", callable_mp(this, &ScriptTextEditor::_breakpoint_item_pressed));
 
-	goto_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+	goto_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 }
 
 ScriptTextEditor::ScriptTextEditor() {

@@ -3670,7 +3670,7 @@ void ThemeEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			preview_tabs->add_theme_style_override("tab_selected", get_theme_stylebox(SNAME("ThemeEditorPreviewFG"), EditorStringName(EditorStyles)));
 			preview_tabs->add_theme_style_override("tab_unselected", get_theme_stylebox(SNAME("ThemeEditorPreviewBG"), EditorStringName(EditorStyles)));
-			preview_tabs_content->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainerOdd")));
+			preview_tabs_content->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("TabContainerOdd")));
 
 			add_preview_button->set_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;

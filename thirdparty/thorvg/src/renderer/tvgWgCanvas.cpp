@@ -63,6 +63,8 @@ Result WgCanvas::target(void* window, uint32_t w, uint32_t h) noexcept
     if (!renderer) return Result::MemoryCorruption;
 
     if (!renderer->target(window, w, h)) return Result::Unknown;
+    Canvas::pImpl->vport = {0, 0, (int32_t)w, (int32_t)h};
+    renderer->viewport(Canvas::pImpl->vport);
 
     //Paints must be updated again with this new target.
     Canvas::pImpl->needRefresh();

@@ -337,7 +337,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	struct KeyEvent {
 		WindowID window_id;
-		bool alt, shift, control, meta;
+		bool alt, shift, control, meta, altgr;
 		UINT uMsg;
 		WPARAM wParam;
 		LPARAM lParam;
@@ -478,11 +478,6 @@ class DisplayServerWindows : public DisplayServer {
 
 	MouseMode mouse_mode;
 	int restore_mouse_trails = 0;
-	bool alt_mem = false;
-	bool gr_mem = false;
-	bool shift_mem = false;
-	bool control_mem = false;
-	bool meta_mem = false;
 	BitField<MouseButtonMask> last_button_state;
 	bool use_raw_input = false;
 	bool drop_events = false;
@@ -518,6 +513,15 @@ class DisplayServerWindows : public DisplayServer {
 
 	LRESULT _handle_early_window_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	Point2i _get_screens_origin() const;
+
+	enum class WinKeyModifierMask {
+		ALT_GR = (1 << 1),
+		SHIFT = (1 << 2),
+		ALT = (1 << 3),
+		META = (1 << 4),
+		CTRL = (1 << 5),
+	};
+	BitField<WinKeyModifierMask> _get_mods() const;
 
 	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb);
 

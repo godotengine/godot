@@ -614,7 +614,7 @@ TextEditor::TextEditor() {
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
-	context_menu->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
+	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditor::_edit_option));
 
 	edit_hb = memnew(HBoxContainer);
 
@@ -624,7 +624,7 @@ TextEditor::TextEditor() {
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->set_switch_on_hover(true);
 	edit_menu->connect("about_to_popup", callable_mp(this, &TextEditor::_prepare_edit_menu));
-	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
+	edit_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditor::_edit_option));
 
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_redo"), EDIT_REDO);
@@ -658,11 +658,11 @@ TextEditor::TextEditor() {
 	convert_case->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_uppercase"), EDIT_TO_UPPERCASE);
 	convert_case->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_lowercase"), EDIT_TO_LOWERCASE);
 	convert_case->add_shortcut(ED_GET_SHORTCUT("script_text_editor/capitalize"), EDIT_CAPITALIZE);
-	convert_case->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
+	convert_case->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditor::_edit_option));
 
 	highlighter_menu = memnew(PopupMenu);
 	edit_menu->get_popup()->add_submenu_node_item(TTR("Syntax Highlighter"), highlighter_menu);
-	highlighter_menu->connect("id_pressed", callable_mp(this, &TextEditor::_change_syntax_highlighter));
+	highlighter_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditor::_change_syntax_highlighter));
 
 	Ref<EditorPlainTextSyntaxHighlighter> plain_highlighter;
 	plain_highlighter.instantiate();
@@ -678,7 +678,7 @@ TextEditor::TextEditor() {
 	edit_hb->add_child(search_menu);
 	search_menu->set_text(TTR("Search"));
 	search_menu->set_switch_on_hover(true);
-	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
+	search_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditor::_edit_option));
 
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
@@ -693,7 +693,7 @@ TextEditor::TextEditor() {
 	edit_hb->add_child(goto_menu);
 	goto_menu->set_text(TTR("Go To"));
 	goto_menu->set_switch_on_hover(true);
-	goto_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
+	goto_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditor::_edit_option));
 
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
 	goto_menu->get_popup()->add_separator();

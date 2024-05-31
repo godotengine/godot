@@ -4393,13 +4393,7 @@ int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
 		}
 	}
 
-	if (row < 0) {
-		row = 0;
-	}
-
-	if (row >= text.size()) {
-		row = text.size() - 1;
-	}
+	row = CLAMP(row, 0, text.size() - 1);
 
 	return row;
 }
@@ -7188,9 +7182,9 @@ void TextEdit::_generate_context_menu() {
 	menu->add_check_item(ETR("Display Control Characters"), MENU_DISPLAY_UCC);
 	menu->add_submenu_node_item(ETR("Insert Control Character"), menu_ctl, MENU_SUBMENU_INSERT_UCC);
 
-	menu->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
-	menu_dir->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
-	menu_ctl->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextEdit::menu_option));
+	menu_dir->connect(SceneStringName(id_pressed), callable_mp(this, &TextEdit::menu_option));
+	menu_ctl->connect(SceneStringName(id_pressed), callable_mp(this, &TextEdit::menu_option));
 }
 
 void TextEdit::_update_context_menu() {
@@ -7991,7 +7985,7 @@ void TextEdit::_update_minimap_click() {
 	}
 
 	Point2i next_line = get_next_visible_line_index_offset_from(row, 0, -get_visible_line_count() / 2);
-	int first_line = row - next_line.x + 1;
+	int first_line = MAX(0, row - next_line.x + 1);
 	double delta = get_scroll_pos_for_line(first_line, next_line.y) - get_v_scroll();
 	if (delta < 0) {
 		_scroll_up(-delta, true);

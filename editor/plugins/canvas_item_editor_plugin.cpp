@@ -3952,7 +3952,7 @@ void CanvasItemEditor::_update_editor_settings() {
 	key_auto_insert_button->add_theme_color_override("icon_pressed_color", key_auto_color.lerp(Color(1, 0, 0), 0.55));
 	animation_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
-	context_toolbar_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
+	context_toolbar_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
 
 	panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/2d_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 	panner->set_scroll_speed(EDITOR_GET("editors/panning/2d_editor_pan_speed"));
@@ -5388,7 +5388,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	snap_config_menu->set_switch_on_hover(true);
 
 	PopupMenu *p = snap_config_menu->get_popup();
-	p->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
+	p->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_popup_callback));
 	p->set_hide_on_checkable_item_selection(false);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_rotation_snap", TTR("Use Rotation Snap")), SNAP_USE_ROTATION);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_scale_snap", TTR("Use Scale Snap")), SNAP_USE_SCALE);
@@ -5396,7 +5396,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_pixel_snap", TTR("Use Pixel Snap")), SNAP_USE_PIXEL);
 
 	smartsnap_config_popup = memnew(PopupMenu);
-	smartsnap_config_popup->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
+	smartsnap_config_popup->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_popup_callback));
 	smartsnap_config_popup->set_hide_on_checkable_item_selection(false);
 	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_node_parent", TTR("Snap to Parent")), SNAP_USE_NODE_PARENT);
 	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_node_anchors", TTR("Snap to Node Anchor")), SNAP_USE_NODE_ANCHORS);
@@ -5459,7 +5459,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_show_bones", TTR("Show Bones")), SKELETON_SHOW_BONES);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_make_bones", TTR("Make Bone2D Node(s) from Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::B), SKELETON_MAKE_BONES);
-	p->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
+	p->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_popup_callback));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -5481,14 +5481,14 @@ CanvasItemEditor::CanvasItemEditor() {
 	view_menu->set_switch_on_hover(true);
 	view_menu->set_shortcut_context(this);
 	main_menu_hbox->add_child(view_menu);
-	view_menu->get_popup()->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
+	view_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_popup_callback));
 
 	p = view_menu->get_popup();
 	p->set_hide_on_checkable_item_selection(false);
 
 	grid_menu = memnew(PopupMenu);
 	grid_menu->connect("about_to_popup", callable_mp(this, &CanvasItemEditor::_prepare_grid_menu));
-	grid_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_on_grid_menu_id_pressed));
+	grid_menu->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_on_grid_menu_id_pressed));
 	grid_menu->add_radio_check_item(TTR("Show"), GRID_VISIBILITY_SHOW);
 	grid_menu->add_radio_check_item(TTR("Show When Snapping"), GRID_VISIBILITY_SHOW_WHEN_SNAPPING);
 	grid_menu->add_radio_check_item(TTR("Hide"), GRID_VISIBILITY_HIDE);
@@ -5505,7 +5505,7 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	gizmos_menu = memnew(PopupMenu);
 	gizmos_menu->set_name("GizmosMenu");
-	gizmos_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
+	gizmos_menu->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_popup_callback));
 	gizmos_menu->set_hide_on_checkable_item_selection(false);
 	gizmos_menu->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_position_gizmos", TTR("Position")), SHOW_POSITION_GIZMOS);
 	gizmos_menu->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_lock_gizmos", TTR("Lock")), SHOW_LOCK_GIZMOS);
@@ -5522,7 +5522,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/preview_canvas_scale", TTR("Preview Canvas Scale")), PREVIEW_CANVAS_SCALE);
 
 	theme_menu = memnew(PopupMenu);
-	theme_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_switch_theme_preview));
+	theme_menu->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_switch_theme_preview));
 	theme_menu->add_radio_check_item(TTR("Project theme"), THEME_PREVIEW_PROJECT);
 	theme_menu->add_radio_check_item(TTR("Editor theme"), THEME_PREVIEW_EDITOR);
 	theme_menu->add_radio_check_item(TTR("Default theme"), THEME_PREVIEW_DEFAULT);
@@ -5596,7 +5596,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	animation_menu->set_shortcut_context(this);
 	animation_menu->set_tooltip_text(TTR("Animation Key and Pose Options"));
 	animation_hb->add_child(animation_menu);
-	animation_menu->get_popup()->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
+	animation_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_popup_callback));
 	animation_menu->set_switch_on_hover(true);
 
 	p = animation_menu->get_popup();
@@ -5618,12 +5618,12 @@ CanvasItemEditor::CanvasItemEditor() {
 	add_child(selection_menu);
 	selection_menu->set_min_size(Vector2(100, 0));
 	selection_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	selection_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_selection_result_pressed));
+	selection_menu->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_selection_result_pressed));
 	selection_menu->connect("popup_hide", callable_mp(this, &CanvasItemEditor::_selection_menu_hide), CONNECT_DEFERRED);
 
 	add_node_menu = memnew(PopupMenu);
 	add_child(add_node_menu);
-	add_node_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_add_node_pressed));
+	add_node_menu->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_add_node_pressed));
 
 	multiply_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/multiply_grid_step", TTR("Multiply grid step by 2"), Key::KP_MULTIPLY);
 	divide_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/divide_grid_step", TTR("Divide grid step by 2"), Key::KP_DIVIDE);

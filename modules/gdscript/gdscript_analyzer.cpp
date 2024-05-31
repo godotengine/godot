@@ -1971,7 +1971,12 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 		const bool is_parameter = p_assignable->type == GDScriptParser::Node::PARAMETER;
 		const String declaration_type = is_constant ? "Constant" : (is_parameter ? "Parameter" : "Variable");
 		if (p_assignable->infer_datatype || is_constant) {
-			parser->push_warning(p_assignable, GDScriptWarning::INFERRED_DECLARATION, declaration_type, p_assignable->identifier->name);
+			// Do not produce the `INFERRED_DECLARATION` warning on type import because there is no way to specify the true type.
+			// And removing the metatype makes it impossible to use the constant as a type hint (especially for enums).
+			const bool is_type_import = is_constant && p_assignable->initializer != nullptr && p_assignable->initializer->datatype.is_meta_type;
+			if (!is_type_import) {
+				parser->push_warning(p_assignable, GDScriptWarning::INFERRED_DECLARATION, declaration_type, p_assignable->identifier->name);
+			}
 		} else {
 			parser->push_warning(p_assignable, GDScriptWarning::UNTYPED_DECLARATION, declaration_type, p_assignable->identifier->name);
 		}
@@ -4342,15 +4347,45 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 
 		GDScriptParser::DataType base_type = p_subscript->base->get_datatype();
 		bool valid = false;
+
 		// If the base is a metatype, use the analyzer instead.
-		if (p_subscript->base->is_constant && !base_type.is_meta_type && base_type.kind != GDScriptParser::DataType::CLASS) {
-			// Just try to get it.
-			Variant value = p_subscript->base->reduced_value.get_named(p_subscript->attribute->name, valid);
-			if (valid) {
-				p_subscript->is_constant = true;
-				p_subscript->reduced_value = value;
-				result_type = type_from_variant(value, p_subscript);
+		if (p_subscript->base->is_constant && !base_type.is_meta_type) {
+			// GH-92534. If the base is a GDScript, use the analyzer instead.
+			bool base_is_gdscript = false;
+			if (p_subscript->base->reduced_value.get_type() == Variant::OBJECT) {
+				Ref<GDScript> gdscript = Object::cast_to<GDScript>(p_subscript->base->reduced_value.get_validated_object());
+				if (gdscript.is_valid()) {
+					base_is_gdscript = true;
+					// Makes a metatype from a constant GDScript, since `base_type` is not a metatype.
+					GDScriptParser::DataType base_type_meta = type_from_variant(gdscript, p_subscript);
+					// First try to reduce the attribute from the metatype.
+					reduce_identifier_from_base(p_subscript->attribute, &base_type_meta);
+					GDScriptParser::DataType attr_type = p_subscript->attribute->get_datatype();
+					if (attr_type.is_set()) {
+						valid = !attr_type.is_pseudo_type || p_can_be_pseudo_type;
+						result_type = attr_type;
+						p_subscript->is_constant = p_subscript->attribute->is_constant;
+						p_subscript->reduced_value = p_subscript->attribute->reduced_value;
+					}
+					if (!valid) {
+						// If unsuccessful, reset and return to the normal route.
+						p_subscript->attribute->set_datatype(GDScriptParser::DataType());
+					}
+				}
 			}
+			if (!base_is_gdscript) {
+				// Just try to get it.
+				Variant value = p_subscript->base->reduced_value.get_named(p_subscript->attribute->name, valid);
+				if (valid) {
+					p_subscript->is_constant = true;
+					p_subscript->reduced_value = value;
+					result_type = type_from_variant(value, p_subscript);
+				}
+			}
+		}
+
+		if (valid) {
+			// Do nothing.
 		} else if (base_type.is_variant() || !base_type.is_hard_type()) {
 			valid = !base_type.is_pseudo_type || p_can_be_pseudo_type;
 			result_type.kind = GDScriptParser::DataType::VARIANT;
@@ -4388,6 +4423,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 				mark_node_unsafe(p_subscript);
 			}
 		}
+
 		if (!valid) {
 			GDScriptParser::DataType attr_type = p_subscript->attribute->get_datatype();
 			if (!p_can_be_pseudo_type && (attr_type.is_pseudo_type || result_type.is_pseudo_type)) {
@@ -4406,6 +4442,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 		if (p_subscript->base->is_constant && p_subscript->index->is_constant) {
 			// Just try to get it.
 			bool valid = false;
+			// TODO: Check if `p_subscript->base->reduced_value` is GDScript.
 			Variant value = p_subscript->base->reduced_value.get(p_subscript->index->reduced_value, &valid);
 			if (!valid) {
 				push_error(vformat(R"(Cannot get index "%s" from "%s".)", p_subscript->index->reduced_value, p_subscript->base->reduced_value), p_subscript->index);

@@ -5821,7 +5821,7 @@ Tree::Tree() {
 	line_editor->connect("text_submitted", callable_mp(this, &Tree::_line_editor_submit));
 	text_editor->connect(SceneStringName(gui_input), callable_mp(this, &Tree::_text_editor_gui_input));
 	popup_editor->connect("popup_hide", callable_mp(this, &Tree::_text_editor_popup_modal_close));
-	popup_menu->connect("id_pressed", callable_mp(this, &Tree::popup_select));
+	popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &Tree::popup_select));
 	value_editor->connect("value_changed", callable_mp(this, &Tree::value_editor_changed));
 
 	set_notify_transform(true);

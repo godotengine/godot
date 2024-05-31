@@ -173,7 +173,7 @@ CPUParticles3DEditor::CPUParticles3DEditor() {
 	options->get_popup()->add_item(TTR("Generate AABB"), MENU_OPTION_GENERATE_AABB);
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 	options->get_popup()->add_item(TTR("Convert to GPUParticles3D"), MENU_OPTION_CONVERT_TO_GPU_PARTICLES);
-	options->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticles3DEditor::_menu_option));
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &CPUParticles3DEditor::_menu_option));
 
 	generate_aabb = memnew(ConfirmationDialog);
 	generate_aabb->set_title(TTR("Generate Visibility AABB"));

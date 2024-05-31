@@ -141,6 +141,9 @@ public:
 	StringName shader_overrides_group_active;
 
 	StringName pressed;
+	StringName id_pressed;
+
+	StringName panel;
 };
 
 #define SceneStringName(m_name) SceneStringNames::get_singleton()->m_name

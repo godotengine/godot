@@ -121,20 +121,20 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			tool_anim->get_popup()->connect(SNAME("id_pressed"), callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
+			tool_anim->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
 
-			onion_skinning->get_popup()->connect(SNAME("id_pressed"), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
+			onion_skinning->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
 
 			blend_editor.next->connect(SNAME("item_selected"), callable_mp(this, &AnimationPlayerEditor::_blend_editor_next_changed));
 
 			get_tree()->connect(SNAME("node_removed"), callable_mp(this, &AnimationPlayerEditor::_node_removed));
 
-			add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
+			add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorThemeManager::is_generated_theme_outdated()) {
-				add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
+				add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
 			}
 		} break;
 
@@ -172,8 +172,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			pin->set_icon(get_editor_theme_icon(SNAME("Pin")));
 
-			tool_anim->add_theme_style_override("normal", get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
-			track_editor->get_edit_menu()->add_theme_style_override("normal", get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
+			tool_anim->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
+			track_editor->get_edit_menu()->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
 
 #define ITEM_ICON(m_item, m_icon) tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(m_item), get_editor_theme_icon(SNAME(m_icon)))
 

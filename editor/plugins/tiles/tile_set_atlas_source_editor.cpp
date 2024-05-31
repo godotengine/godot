@@ -997,7 +997,7 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 			Button *button = memnew(Button);
 			button->set_flat(true);
 			button->set_icon(get_editor_theme_icon(SNAME("Add")));
-			button->add_theme_style_override("normal", memnew(StyleBoxEmpty));
+			button->add_theme_style_override(CoreStringName(normal), memnew(StyleBoxEmpty));
 			button->add_theme_style_override("hover", memnew(StyleBoxEmpty));
 			button->add_theme_style_override("focus", memnew(StyleBoxEmpty));
 			button->add_theme_style_override(SceneStringName(pressed), memnew(StyleBoxEmpty));
@@ -2637,7 +2637,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Create Tiles in Non-Transparent Texture Regions"), ADVANCED_AUTO_CREATE_TILES);
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Remove Tiles in Fully Transparent Texture Regions"), ADVANCED_AUTO_REMOVE_TILES);
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Remove Tiles Outside the Texture"), ADVANCED_CLEANUP_TILES);
-	tool_advanced_menu_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
+	tool_advanced_menu_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
 	tool_settings->add_child(tool_advanced_menu_button);
 
 	outside_tiles_warning = memnew(TextureRect);
@@ -2689,12 +2689,12 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	base_tile_popup_menu = memnew(PopupMenu);
 	base_tile_popup_menu->add_shortcut(ED_GET_SHORTCUT("tiles_editor/delete"), TILE_DELETE);
 	base_tile_popup_menu->add_item(TTR("Create an Alternative Tile"), TILE_CREATE_ALTERNATIVE);
-	base_tile_popup_menu->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
+	base_tile_popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
 	tile_atlas_view->add_child(base_tile_popup_menu);
 
 	empty_base_tile_popup_menu = memnew(PopupMenu);
 	empty_base_tile_popup_menu->add_item(TTR("Create a Tile"), TILE_CREATE);
-	empty_base_tile_popup_menu->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
+	empty_base_tile_popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
 	tile_atlas_view->add_child(empty_base_tile_popup_menu);
 
 	tile_atlas_control = memnew(TileAtlasControl(this));
@@ -2710,7 +2710,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	alternative_tile_popup_menu = memnew(PopupMenu);
 	alternative_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete_tile", TTR("Delete"), Key::KEY_DELETE), TILE_DELETE);
-	alternative_tile_popup_menu->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
+	alternative_tile_popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
 	tile_atlas_view->add_child(alternative_tile_popup_menu);
 
 	alternative_tiles_control = memnew(Control);
