@@ -48,7 +48,7 @@ def get_doc_path():
 
 def get_flags():
     return {
-        "arch": "arm64",  # Default for convenience.
+        "arch": "arm64",
         "target": "template_debug",
         "use_volk": False,
         "supported": ["mono"],
