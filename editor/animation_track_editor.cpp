@@ -2810,7 +2810,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				if (!menu) {
 					menu = memnew(PopupMenu);
 					add_child(menu);
-					menu->connect("id_pressed", callable_mp(this, &AnimationTrackEdit::_menu_selected));
+					menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationTrackEdit::_menu_selected));
 				}
 				menu->clear();
 				if (animation->track_get_type(track) == Animation::TYPE_AUDIO) {
@@ -2833,7 +2833,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				if (!menu) {
 					menu = memnew(PopupMenu);
 					add_child(menu);
-					menu->connect("id_pressed", callable_mp(this, &AnimationTrackEdit::_menu_selected));
+					menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationTrackEdit::_menu_selected));
 				}
 				menu->clear();
 				menu->add_icon_item(get_editor_theme_icon(SNAME("InterpRaw")), TTR("Nearest"), MENU_INTERPOLATION_NEAREST);
@@ -2879,7 +2879,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				if (!menu) {
 					menu = memnew(PopupMenu);
 					add_child(menu);
-					menu->connect("id_pressed", callable_mp(this, &AnimationTrackEdit::_menu_selected));
+					menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationTrackEdit::_menu_selected));
 				}
 				menu->clear();
 				menu->add_icon_item(get_editor_theme_icon(SNAME("InterpWrapClamp")), TTR("Clamp Loop Interp"), MENU_LOOP_CLAMP);
@@ -2913,7 +2913,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				if (!menu) {
 					menu = memnew(PopupMenu);
 					add_child(menu);
-					menu->connect("id_pressed", callable_mp(this, &AnimationTrackEdit::_menu_selected));
+					menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationTrackEdit::_menu_selected));
 				}
 
 				bool selected = _try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), false);
@@ -7365,7 +7365,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->get_popup()->add_item(TTR("Optimize Animation (no undo)..."), EDIT_OPTIMIZE_ANIMATION);
 	edit->get_popup()->add_item(TTR("Clean-Up Animation (no undo)..."), EDIT_CLEAN_UP_ANIMATION);
 
-	edit->get_popup()->connect("id_pressed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed));
+	edit->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed));
 	edit->get_popup()->connect("about_to_popup", callable_mp(this, &AnimationTrackEditor::_edit_menu_about_to_popup));
 
 	pick_track = memnew(SceneTreeDialog);

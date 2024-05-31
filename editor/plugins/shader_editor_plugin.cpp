@@ -699,7 +699,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	file_menu->get_popup()->add_item(TTR("Open File in Inspector"), FILE_INSPECT);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_item(TTR("Close File"), FILE_CLOSE);
-	file_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditorPlugin::_menu_item_pressed));
+	file_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ShaderEditorPlugin::_menu_item_pressed));
 	menu_hb->add_child(file_menu);
 
 	for (int i = FILE_SAVE; i < FILE_MAX; i++) {

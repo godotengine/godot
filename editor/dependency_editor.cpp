@@ -396,7 +396,7 @@ void DependencyEditorOwners::show(const String &p_path) {
 DependencyEditorOwners::DependencyEditorOwners() {
 	file_options = memnew(PopupMenu);
 	add_child(file_options);
-	file_options->connect("id_pressed", callable_mp(this, &DependencyEditorOwners::_file_option));
+	file_options->connect(SceneStringName(id_pressed), callable_mp(this, &DependencyEditorOwners::_file_option));
 
 	owners = memnew(ItemList);
 	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);

@@ -1373,7 +1373,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	file_mode_popup->add_item(TTR("Strip Visuals"), EditorExportPreset::MODE_FILE_STRIP);
 	file_mode_popup->add_item(TTR("Keep"), EditorExportPreset::MODE_FILE_KEEP);
 	file_mode_popup->add_item(TTR("Remove"), EditorExportPreset::MODE_FILE_REMOVE);
-	file_mode_popup->connect("id_pressed", callable_mp(this, &ProjectExportDialog::_set_file_export_mode));
+	file_mode_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectExportDialog::_set_file_export_mode));
 
 	include_filters = memnew(LineEdit);
 	resources_vb->add_margin_child(

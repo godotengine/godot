@@ -606,7 +606,7 @@ bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<Ani
 
 	PopupMenu *nodes_menu = memnew(PopupMenu);
 	nodes_menu->set_name(p_name);
-	nodes_menu->connect("id_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_connect_to));
+	nodes_menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_connect_to));
 	p_menu->add_child(nodes_menu);
 
 	bool node_added = false;
@@ -1766,7 +1766,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->connect("id_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_add_menu_type));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_add_menu_type));
 	menu->connect("popup_hide", callable_mp(this, &AnimationNodeStateMachineEditor::_stop_connecting));
 
 	animations_menu = memnew(PopupMenu);
@@ -1776,17 +1776,17 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	connect_menu = memnew(PopupMenu);
 	add_child(connect_menu);
-	connect_menu->connect("id_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_connect_to));
+	connect_menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_connect_to));
 	connect_menu->connect("popup_hide", callable_mp(this, &AnimationNodeStateMachineEditor::_stop_connecting));
 
 	state_machine_menu = memnew(PopupMenu);
 	state_machine_menu->set_name("state_machines");
-	state_machine_menu->connect("id_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_connect_to));
+	state_machine_menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_connect_to));
 	connect_menu->add_child(state_machine_menu);
 
 	end_menu = memnew(PopupMenu);
 	end_menu->set_name("end_nodes");
-	end_menu->connect("id_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_connect_to));
+	end_menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_connect_to));
 	connect_menu->add_child(end_menu);
 
 	name_edit_popup = memnew(Popup);

@@ -6195,7 +6195,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	PopupMenu *varying_menu = varying_button->get_popup();
 	varying_menu->add_item(TTR("Add Varying"), int(VaryingMenuOptions::ADD));
 	varying_menu->add_item(TTR("Remove Varying"), int(VaryingMenuOptions::REMOVE));
-	varying_menu->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_varying_menu_id_pressed));
+	varying_menu->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_varying_menu_id_pressed));
 
 	preview_shader = memnew(Button);
 	preview_shader->set_theme_type_variation("FlatButton");
@@ -6251,14 +6251,14 @@ VisualShaderEditor::VisualShaderEditor() {
 	popup_menu->add_item(TTR("Delete"), NodeMenuOptions::DELETE);
 	popup_menu->add_item(TTR("Duplicate"), NodeMenuOptions::DUPLICATE);
 	popup_menu->add_item(TTR("Clear Copy Buffer"), NodeMenuOptions::CLEAR_COPY_BUFFER);
-	popup_menu->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_node_menu_id_pressed));
+	popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_node_menu_id_pressed));
 
 	connection_popup_menu = memnew(PopupMenu);
 	add_child(connection_popup_menu);
 	connection_popup_menu->add_item(TTR("Disconnect"), ConnectionMenuOptions::DISCONNECT);
 	connection_popup_menu->add_item(TTR("Insert New Node"), ConnectionMenuOptions::INSERT_NEW_NODE);
 	connection_popup_menu->add_item(TTR("Insert New Reroute"), ConnectionMenuOptions::INSERT_NEW_REROUTE);
-	connection_popup_menu->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_connection_menu_id_pressed));
+	connection_popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_connection_menu_id_pressed));
 
 	///////////////////////////////////////
 	// SHADER NODES TREE
@@ -6280,7 +6280,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	tools = memnew(MenuButton);
 	filter_hb->add_child(tools);
 	tools->set_tooltip_text(TTR("Options"));
-	tools->get_popup()->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_tools_menu_option));
+	tools->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_tools_menu_option));
 	tools->get_popup()->add_item(TTR("Expand All"), EXPAND_ALL);
 	tools->get_popup()->add_item(TTR("Collapse All"), COLLAPSE_ALL);
 

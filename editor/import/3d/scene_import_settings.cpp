@@ -1584,7 +1584,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	action_menu->get_popup()->add_item(TTR("Set Animation Save Paths"), ACTION_CHOOSE_ANIMATION_SAVE_PATHS);
 	action_menu->get_popup()->add_item(TTR("Set Mesh Save Paths"), ACTION_CHOOSE_MESH_SAVE_PATHS);
 
-	action_menu->get_popup()->connect("id_pressed", callable_mp(this, &SceneImportSettingsDialog::_menu_callback));
+	action_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &SceneImportSettingsDialog::_menu_callback));
 
 	tree_split = memnew(HSplitContainer);
 	main_vb->add_child(tree_split);

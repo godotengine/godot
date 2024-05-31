@@ -838,7 +838,7 @@ EditorDockManager::EditorDockManager() {
 
 	docks_menu = memnew(PopupMenu);
 	docks_menu->set_hide_on_item_selection(false);
-	docks_menu->connect("id_pressed", callable_mp(this, &EditorDockManager::_docks_menu_option));
+	docks_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorDockManager::_docks_menu_option));
 	EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorDockManager::_update_docks_menu));
 }
 

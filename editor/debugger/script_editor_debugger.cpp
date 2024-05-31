@@ -1937,7 +1937,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		tabs->add_child(dbg);
 
 		breakpoints_menu = memnew(PopupMenu);
-		breakpoints_menu->connect("id_pressed", callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
+		breakpoints_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
 		breakpoints_tree->add_child(breakpoints_menu);
 	}
 
@@ -1990,7 +1990,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		errors_tab->add_child(error_tree);
 
 		item_menu = memnew(PopupMenu);
-		item_menu->connect("id_pressed", callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
+		item_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
 		error_tree->add_child(item_menu);
 
 		tabs->add_child(errors_tab);
