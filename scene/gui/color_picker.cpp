@@ -1560,7 +1560,7 @@ void ColorPicker::_pick_button_pressed_legacy() {
 
 		picker_preview_style_box = (Ref<StyleBoxFlat>)memnew(StyleBoxFlat);
 		picker_preview_style_box->set_bg_color(Color(1.0, 1.0, 1.0));
-		picker_preview->add_theme_style_override("panel", picker_preview_style_box);
+		picker_preview->add_theme_style_override(SceneStringName(panel), picker_preview_style_box);
 	}
 
 	Rect2i screen_rect;

@@ -265,7 +265,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 		}
 
 		// TODO: Avoid using strings, expose a method on GraphNode instead.
-		Ref<StyleBoxFlat> sb = node->get_theme_stylebox(SNAME("panel"));
+		Ref<StyleBoxFlat> sb = node->get_theme_stylebox(SceneStringName(panel));
 		Color c = sb->get_border_color();
 		Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
 		mono_color.a = 0.85;
@@ -942,7 +942,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			if (is_visible_in_tree()) {
