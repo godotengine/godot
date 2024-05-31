@@ -62,12 +62,29 @@ void Label::set_justification_flags(BitField<TextServer::JustificationFlag> p_fl
 	}
 
 	jst_flags = p_flags;
-	lines_dirty = true;
-	queue_redraw();
+	if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT) {
+		lines_dirty = true;
+		queue_redraw();
+	}
 }
 
 BitField<TextServer::JustificationFlag> Label::get_justification_flags() const {
 	return jst_flags;
+}
+
+void Label::set_justification_threshold(float p_threshold) {
+	if (justification_threshold == p_threshold) {
+		return;
+	}
+	justification_threshold = p_threshold;
+	if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT) {
+		lines_dirty = true;
+		queue_redraw();
+	}
+}
+
+float Label::get_justification_threshold() const {
+	return justification_threshold;
 }
 
 void Label::set_uppercase(bool p_uppercase) {
@@ -219,7 +236,7 @@ void Label::_shape() {
 			if (lines_hidden) {
 				overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
 			}
-			if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
+			if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT) {
 				int jst_to_line = visible_lines;
 				if (lines_rid.size() == 1 && line_jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
 					jst_to_line = lines_rid.size();
@@ -238,7 +255,9 @@ void Label::_shape() {
 				}
 				for (int i = 0; i < lines_rid.size(); i++) {
 					if (i < jst_to_line) {
-						TS->shaped_text_fit_to_width(lines_rid[i], width, line_jst_flags);
+						if (TS->shaped_text_get_width(lines_rid[i]) >= justification_threshold * width) {
+							TS->shaped_text_fit_to_width(lines_rid[i], width, line_jst_flags);
+						}
 					} else if (i == (visible_lines - 1)) {
 						TS->shaped_text_set_custom_ellipsis(lines_rid[i], (el_char.length() > 0) ? el_char[0] : 0x2026);
 						TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
@@ -267,12 +286,14 @@ void Label::_shape() {
 				}
 			}
 			for (int i = 0; i < lines_rid.size(); i++) {
-				if (i < jst_to_line && horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-					TS->shaped_text_fit_to_width(lines_rid[i], width, line_jst_flags);
-					overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
-					TS->shaped_text_set_custom_ellipsis(lines_rid[i], (el_char.length() > 0) ? el_char[0] : 0x2026);
-					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
-					TS->shaped_text_fit_to_width(lines_rid[i], width, line_jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+				if (i < jst_to_line && (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT)) {
+					if (TS->shaped_text_get_width(lines_rid[i]) >= justification_threshold * width) {
+						TS->shaped_text_fit_to_width(lines_rid[i], width, line_jst_flags);
+						overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
+						TS->shaped_text_set_custom_ellipsis(lines_rid[i], (el_char.length() > 0) ? el_char[0] : 0x2026);
+						TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
+						TS->shaped_text_fit_to_width(lines_rid[i], width, line_jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+					}
 				} else {
 					TS->shaped_text_set_custom_ellipsis(lines_rid[i], (el_char.length() > 0) ? el_char[0] : 0x2026);
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
@@ -507,13 +528,7 @@ void Label::_notification(int p_what) {
 				ofs.x = 0;
 				ofs.y += TS->shaped_text_get_ascent(lines_rid[i]);
 				switch (horizontal_alignment) {
-					case HORIZONTAL_ALIGNMENT_FILL:
-						if (rtl && autowrap_mode != TextServer::AUTOWRAP_OFF) {
-							ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
-						} else {
-							ofs.x = style->get_offset().x;
-						}
-						break;
+					case HORIZONTAL_ALIGNMENT_FILL_LEFT:
 					case HORIZONTAL_ALIGNMENT_LEFT: {
 						if (rtl_layout) {
 							ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
@@ -521,9 +536,11 @@ void Label::_notification(int p_what) {
 							ofs.x = style->get_offset().x;
 						}
 					} break;
+					case HORIZONTAL_ALIGNMENT_FILL_CENTER:
 					case HORIZONTAL_ALIGNMENT_CENTER: {
 						ofs.x = int(size.width - line_size.width) / 2;
 					} break;
+					case HORIZONTAL_ALIGNMENT_FILL_RIGHT:
 					case HORIZONTAL_ALIGNMENT_RIGHT: {
 						if (rtl_layout) {
 							ofs.x = style->get_offset().x;
@@ -645,7 +662,6 @@ Rect2 Label::get_character_bounds(int p_pos) const {
 	Size2 size = get_size();
 	Ref<StyleBox> style = theme_cache.normal_style;
 	int line_spacing = has_settings ? settings->get_line_spacing() : theme_cache.line_spacing;
-	bool rtl = (TS->shaped_text_get_inferred_direction(text_rid) == TextServer::DIRECTION_RTL);
 	bool rtl_layout = is_layout_rtl();
 
 	float total_h = 0.0;
@@ -708,13 +724,7 @@ Rect2 Label::get_character_bounds(int p_pos) const {
 		Size2 line_size = TS->shaped_text_get_size(lines_rid[i]);
 		ofs.x = 0;
 		switch (horizontal_alignment) {
-			case HORIZONTAL_ALIGNMENT_FILL:
-				if (rtl && autowrap_mode != TextServer::AUTOWRAP_OFF) {
-					ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
-				} else {
-					ofs.x = style->get_offset().x;
-				}
-				break;
+			case HORIZONTAL_ALIGNMENT_FILL_LEFT:
 			case HORIZONTAL_ALIGNMENT_LEFT: {
 				if (rtl_layout) {
 					ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
@@ -722,9 +732,11 @@ Rect2 Label::get_character_bounds(int p_pos) const {
 					ofs.x = style->get_offset().x;
 				}
 			} break;
+			case HORIZONTAL_ALIGNMENT_FILL_CENTER:
 			case HORIZONTAL_ALIGNMENT_CENTER: {
 				ofs.x = int(size.width - line_size.width) / 2;
 			} break;
+			case HORIZONTAL_ALIGNMENT_FILL_RIGHT:
 			case HORIZONTAL_ALIGNMENT_RIGHT: {
 				if (rtl_layout) {
 					ofs.x = style->get_offset().x;
@@ -830,12 +842,14 @@ int Label::get_visible_line_count() const {
 }
 
 void Label::set_horizontal_alignment(HorizontalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX((int)p_alignment, 6);
 	if (horizontal_alignment == p_alignment) {
 		return;
 	}
 
-	if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
+	bool old_fill = horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT;
+	bool new_fill = p_alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || p_alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || p_alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT;
+	if (old_fill != new_fill) {
 		lines_dirty = true; // Reshape lines.
 	}
 	horizontal_alignment = p_alignment;
@@ -1128,6 +1142,8 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &Label::get_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("set_justification_flags", "justification_flags"), &Label::set_justification_flags);
 	ClassDB::bind_method(D_METHOD("get_justification_flags"), &Label::get_justification_flags);
+	ClassDB::bind_method(D_METHOD("set_justification_threshold", "threshold"), &Label::set_justification_threshold);
+	ClassDB::bind_method(D_METHOD("get_justification_threshold"), &Label::get_justification_threshold);
 	ClassDB::bind_method(D_METHOD("set_clip_text", "enable"), &Label::set_clip_text);
 	ClassDB::bind_method(D_METHOD("is_clipping_text"), &Label::is_clipping_text);
 	ClassDB::bind_method(D_METHOD("set_tab_stops", "tab_stops"), &Label::set_tab_stops);
@@ -1161,10 +1177,11 @@ void Label::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "label_settings", PROPERTY_HINT_RESOURCE_TYPE, "LabelSettings"), "set_label_settings", "get_label_settings");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill Left,Fill Center,Fill Right"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Justify Only After Last Tab:8,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "justification_threshold", PROPERTY_HINT_RANGE, "0,1,0.1"), "set_justification_threshold", "get_justification_threshold");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");

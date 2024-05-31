@@ -364,3 +364,10 @@ GH-92322
 Validate extension JSON: Error: Field 'classes/EditorInspectorPlugin/methods/add_property_editor/arguments': size changed value in new API, from 3 to 4.
 
 Optional arguments added. Compatibility methods registered.
+
+
+GH-XXXXX
+--------
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/push_paragraph/arguments': size changed value in new API, from 6 to 7.
+
+Optional argument added. Compatibility method registered.

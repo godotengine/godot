@@ -476,6 +476,7 @@
 			<param index="3" name="st_parser" type="int" enum="TextServer.StructuredTextParser" default="0" />
 			<param index="4" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="163" />
 			<param index="5" name="tab_stops" type="PackedFloat32Array" default="PackedFloat32Array()" />
+			<param index="6" name="justification_threshold" type="float" default="0.7" />
 			<description>
 				Adds a [code skip-lint][p][/code] tag to the tag stack.
 			</description>

@@ -56,6 +56,7 @@ private:
 
 	BitField<TextServer::LineBreakFlag> brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND;
 	BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
+	float justification_threshold = 0.70;
 	String el_char = U"…";
 	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
 
@@ -106,6 +107,9 @@ public:
 
 	void set_justification_flags(BitField<TextServer::JustificationFlag> p_flags);
 	BitField<TextServer::JustificationFlag> get_justification_flags() const;
+
+	void set_justification_threshold(float p_threshold);
+	float get_justification_threshold() const;
 
 	void set_break_flags(BitField<TextServer::LineBreakFlag> p_flags);
 	BitField<TextServer::LineBreakFlag> get_break_flags() const;

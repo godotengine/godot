@@ -154,8 +154,14 @@
 		<member name="ellipsis_char" type="String" setter="set_ellipsis_char" getter="get_ellipsis_char" default="&quot;…&quot;">
 			Ellipsis character used for text clipping.
 		</member>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="3">
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" enum="TextServer.JustificationFlag" is_bitfield="true" deprecated="Use [member justification_flags] instead.">
 			Line alignment rules. For more info see [TextServer].
+		</member>
+		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="3">
+			Line fill alignment rules. For more info see [TextServer].
+		</member>
+		<member name="justification_threshold" type="float" setter="set_justification_threshold" getter="get_justification_threshold" default="0.7">
+			Shortest line width (as a fraction of total width) to apply fill alignment to.
 		</member>
 		<member name="orientation" type="int" setter="set_orientation" getter="get_orientation" enum="TextServer.Orientation" default="0">
 			Text orientation.

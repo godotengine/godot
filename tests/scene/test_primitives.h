@@ -726,7 +726,9 @@ TEST_CASE("[SceneTree][Primitive][Text] Text Primitive") {
 		CHECK((text->get_horizontal_alignment() == HORIZONTAL_ALIGNMENT_CENTER ||
 				text->get_horizontal_alignment() == HORIZONTAL_ALIGNMENT_LEFT ||
 				text->get_horizontal_alignment() == HORIZONTAL_ALIGNMENT_RIGHT ||
-				text->get_horizontal_alignment() == HORIZONTAL_ALIGNMENT_FILL));
+				text->get_horizontal_alignment() == HORIZONTAL_ALIGNMENT_FILL_LEFT ||
+				text->get_horizontal_alignment() == HORIZONTAL_ALIGNMENT_FILL_CENTER ||
+				text->get_horizontal_alignment() == HORIZONTAL_ALIGNMENT_FILL_RIGHT));
 		CHECK((text->get_vertical_alignment() == VERTICAL_ALIGNMENT_BOTTOM ||
 				text->get_vertical_alignment() == VERTICAL_ALIGNMENT_TOP ||
 				text->get_vertical_alignment() == VERTICAL_ALIGNMENT_CENTER ||
