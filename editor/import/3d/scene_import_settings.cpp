@@ -1261,7 +1261,7 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			action_menu->begin_bulk_theme_override();
-			action_menu->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
+			action_menu->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), "Button"));
 			action_menu->add_theme_style_override("hover", get_theme_stylebox("hover", "Button"));
 			action_menu->add_theme_style_override(SceneStringName(pressed), get_theme_stylebox(SceneStringName(pressed), "Button"));
 			action_menu->end_bulk_theme_override();

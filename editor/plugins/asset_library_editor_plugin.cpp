@@ -181,7 +181,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	label_margin->set_content_margin_all(0);
 
 	price = memnew(Label);
-	price->add_theme_style_override("normal", label_margin);
+	price->add_theme_style_override(CoreStringName(normal), label_margin);
 	price->set_tooltip_text(TTR("License"));
 	price->set_mouse_filter(MOUSE_FILTER_PASS);
 
