@@ -29,6 +29,7 @@ layout(set = 5, binding = 0) uniform sampler2D source_color_5;
 
 layout(push_constant, std430) uniform Params {
 	float fovx;
+	bool keep_width;
 }
 params;
 
@@ -69,12 +70,14 @@ void main() {
 	vec3 albedo = vec3(0.0);
 
 	float view_ratio = viewport_size.x / viewport_size.y;
-	vec2 uv = uv_interp * viewport_size / min(viewport_size.x, viewport_size.y);
+	vec2 uv = uv_interp * viewport_size / (params.keep_width ? viewport_size.x : viewport_size.y);
 	vec3 pos = vec3(0.0, 0.0, 0.0);
-	if (view_ratio > 1.0) {
-		pos = panini_ray(vec2(uv.x - 0.5 * view_ratio, uv.y - 0.5) * 1.0);
-	} else {
+	if (params.keep_width) {
+		// adjust height
 		pos = panini_ray(vec2(uv.x - 0.5, uv.y - 0.5 / view_ratio) * 1.0);
+	} else {
+		// adjust width
+		pos = panini_ray(vec2(uv.x - 0.5 * view_ratio, uv.y - 0.5) * 1.0);
 	}
 	if (pos == vec3(0.0, 0.0, 0.0)) {
 		albedo = pos;

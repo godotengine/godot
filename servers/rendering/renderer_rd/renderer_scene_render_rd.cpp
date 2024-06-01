@@ -1072,6 +1072,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		scene_data.cam_orthogonal = p_camera_data->is_orthogonal;
 		scene_data.cam_panini = p_camera_data->is_panini;
 		scene_data.cam_panini_fov = p_camera_data->panini_fov;
+		scene_data.cam_keep_width = p_camera_data->vaspect;
 		scene_data.camera_visible_layers = p_camera_data->visible_layers;
 		scene_data.taa_jitter = p_camera_data->taa_jitter;
 		scene_data.main_cam_transform = p_camera_data->main_transform;

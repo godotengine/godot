@@ -51,7 +51,7 @@ Panini::~Panini() {
 	shader.version_free(shader_version);
 }
 
-void Panini::panini(RID p_source_color_0, RID p_source_color_1, RID p_source_color_2, RID p_source_color_3, RID p_source_color_4, RID p_source_color_5, RID p_dst_framebuffer, float fovx) {
+void Panini::panini(RID p_source_color_0, RID p_source_color_1, RID p_source_color_2, RID p_source_color_3, RID p_source_color_4, RID p_source_color_5, RID p_dst_framebuffer, float fovx, bool keep_width) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -60,6 +60,7 @@ void Panini::panini(RID p_source_color_0, RID p_source_color_1, RID p_source_col
 	memset(&push_constant, 0, sizeof(PaniniPushConstant));
 
 	push_constant.fovx = fovx;
+	push_constant.keep_width = keep_width;
 
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 

@@ -47,7 +47,8 @@ public:
 
 	struct PaniniPushConstant {
 		float fovx;
-		float pad[3];
+		bool keep_width;
+		float pad[2];
 	};
 
 	PaniniPushConstant push_constant;
@@ -55,7 +56,7 @@ public:
 	RID shader_version;
 	PipelineCacheRD pipeline;
 
-	void panini(RID p_source_color_0, RID p_source_color_1, RID p_source_color_2, RID p_source_color_3, RID p_source_color_4, RID p_source_color_5, RID p_dst_framebuffer, float fovx);
+	void panini(RID p_source_color_0, RID p_source_color_1, RID p_source_color_2, RID p_source_color_3, RID p_source_color_4, RID p_source_color_5, RID p_dst_framebuffer, float fovx, bool keep_width);
 };
 
 } // namespace RendererRD

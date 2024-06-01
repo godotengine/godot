@@ -2324,7 +2324,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 					rb->get_panini_texture(4, v),
 					rb->get_panini_texture(5, v),
 					rb_data->get_post_panini_fb(),
-					p_render_data->scene_data->cam_panini_fov);
+					p_render_data->scene_data->cam_panini_fov,
+					p_render_data->scene_data->cam_keep_width);
 		}
 
 		if (use_msaa) {
