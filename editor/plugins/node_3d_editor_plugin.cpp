@@ -2367,7 +2367,6 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		// Freelook doesn't work in orthogonal mode.
 		if (!orthogonal && ED_IS_SHORTCUT("spatial_editor/freelook_toggle", p_event)) {
 			set_freelook_active(!is_freelook_active());
-
 		}
 
 		if (k->get_keycode() == Key::SPACE) {
