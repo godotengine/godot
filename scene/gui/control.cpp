@@ -726,14 +726,10 @@ void Control::set_anchor(Side p_side, real_t p_anchor, bool p_keep_offset, bool 
 	ERR_FAIL_INDEX((int)p_side, 4);
 
 	Rect2 parent_rect = get_parent_anchorable_rect();
-	real_t parent_range = (p_side == SIDE_LEFT || p_side == SIDE_RIGHT) ? parent_rect.size.x : parent_rect.size.y;
-	real_t previous_pos = data.offset[p_side] + data.anchor[p_side] * parent_range;
-	real_t previous_opposite_pos = data.offset[(p_side + 2) % 4] + data.anchor[(p_side + 2) % 4] * parent_range;
 
 	data.anchor[p_side] = p_anchor;
 
-	if (((p_side == SIDE_LEFT || p_side == SIDE_TOP) && data.anchor[p_side] > data.anchor[(p_side + 2) % 4]) ||
-			((p_side == SIDE_RIGHT || p_side == SIDE_BOTTOM) && data.anchor[p_side] < data.anchor[(p_side + 2) % 4])) {
+	if (((p_side == SIDE_LEFT || p_side == SIDE_TOP) && data.anchor[p_side] > data.anchor[(p_side + 2) % 4]) || ((p_side == SIDE_RIGHT || p_side == SIDE_BOTTOM) && data.anchor[p_side] < data.anchor[(p_side + 2) % 4])) {
 		if (p_push_opposite_anchor) {
 			data.anchor[(p_side + 2) % 4] = data.anchor[p_side];
 		} else {
@@ -742,11 +738,14 @@ void Control::set_anchor(Side p_side, real_t p_anchor, bool p_keep_offset, bool 
 	}
 
 	if (!p_keep_offset) {
-		data.offset[p_side] = previous_pos - data.anchor[p_side] * parent_range;
-		if (p_push_opposite_anchor) {
-			data.offset[(p_side + 2) % 4] = previous_opposite_pos - data.anchor[(p_side + 2) % 4] * parent_range;
-		}
+		if(p_side == SIDE_LEFT) {data.offset[0] = 0;};
+		if(p_side == SIDE_TOP) {data.offset[1] = 0;};
+		if(p_side == SIDE_RIGHT) {data.offset[2] = (data.anchor[2] - 1) * (parent_rect.size.x - parent_rect.position.x);};
+		if(p_side == SIDE_BOTTOM) {data.offset[3] = (data.anchor[3] - 1) * (parent_rect.size.y - parent_rect.position.y);};
 	}
+
+	
+
 	if (is_inside_tree()) {
 		_size_changed();
 	}
