@@ -177,13 +177,9 @@ Vector<int> Container::get_allowed_size_flags_vertical() const {
 
 void Container::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			pending_sort = false;
-			queue_sort();
-		} break;
-
 		case NOTIFICATION_RESIZED:
-		case NOTIFICATION_THEME_CHANGED: {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
 			queue_sort();
 		} break;
 
