@@ -1591,8 +1591,10 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						if (t->audio_stream_playback.is_null()) {
 							t->audio_stream_playback = t_obj->call(SNAME("get_stream_playback"));
 						}
+						float volume_db = t_obj->get(SNAME("volume_db"));
+						float pitch = t_obj->get(SNAME("pitch_scale"));
 						PlayingAudioStreamInfo pasi;
-						pasi.index = t->audio_stream_playback->play_stream(stream, start_ofs);
+						pasi.index = t->audio_stream_playback->play_stream(stream, start_ofs, volume_db, pitch);
 						pasi.start = time;
 						if (len && end_ofs > 0) { // Force an end at a time.
 							pasi.len = len - start_ofs - end_ofs;
