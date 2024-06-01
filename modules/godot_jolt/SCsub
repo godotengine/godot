@@ -35,7 +35,7 @@ env_godot_jolt.add_source_files(module_obj, "jolt/Physics/Body/*.cpp")
 env_godot_jolt.add_source_files(module_obj, "jolt/Physics/Character/*.cpp")
 env_godot_jolt.add_source_files(module_obj, "jolt/Physics/Collision/*.cpp")
 env_godot_jolt.add_source_files(module_obj, "jolt/Physics/Collision/BroadPhase/*.cpp")
-env_godot_jolt.add_source_files(module_obj, "jolt/Physics/Collision/BroadPhase/Shape/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "jolt/Physics/Collision/Shape/*.cpp")
 
 
 env_godot_jolt.add_source_files(module_obj, "jolt/Physics/Constraints/*.cpp")
