@@ -48,6 +48,7 @@
 #include "tests/core/io/test_image.h"
 #include "tests/core/io/test_ip.h"
 #include "tests/core/io/test_json.h"
+#include "tests/core/io/test_json_native.h"
 #include "tests/core/io/test_marshalls.h"
 #include "tests/core/io/test_pck_packer.h"
 #include "tests/core/io/test_resource.h"
