@@ -648,7 +648,7 @@ void GroupsEditor::_show_add_group_dialog() {
 		add_group_description->set_editable(false);
 		gc->add_child(add_group_description);
 
-		global_group_button->connect("toggled", callable_mp(add_group_description, &LineEdit::set_editable));
+		global_group_button->connect(SceneStringName(toggled), callable_mp(add_group_description, &LineEdit::set_editable));
 
 		add_group_dialog->register_text_enter(add_group_name);
 		add_group_dialog->register_text_enter(add_group_description);

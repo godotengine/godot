@@ -1410,12 +1410,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	sec_scroll_container->add_child(sec_vb);
 
 	enc_pck = memnew(CheckButton);
-	enc_pck->connect("toggled", callable_mp(this, &ProjectExportDialog::_enc_pck_changed));
+	enc_pck->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_enc_pck_changed));
 	enc_pck->set_text(TTR("Encrypt Exported PCK"));
 	sec_vb->add_child(enc_pck);
 
 	enc_directory = memnew(CheckButton);
-	enc_directory->connect("toggled", callable_mp(this, &ProjectExportDialog::_enc_directory_changed));
+	enc_directory->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_enc_directory_changed));
 	enc_directory->set_text(TTR("Encrypt Index (File Names and Info)"));
 	sec_vb->add_child(enc_directory);
 

@@ -304,7 +304,7 @@ RunInstancesDialog::RunInstancesDialog() {
 	args_gc->add_child(instance_count);
 	instance_count->connect(SceneStringName(value_changed), callable_mp(this, &RunInstancesDialog::_start_instance_timer).unbind(1));
 	instance_count->connect(SceneStringName(value_changed), callable_mp(this, &RunInstancesDialog::_refresh_argument_count).unbind(1));
-	enable_multiple_instances_checkbox->connect("toggled", callable_mp(instance_count, &SpinBox::set_editable));
+	enable_multiple_instances_checkbox->connect(SceneStringName(toggled), callable_mp(instance_count, &SpinBox::set_editable));
 	instance_count->set_editable(enable_multiple_instances_checkbox->is_pressed());
 
 	main_args_edit = memnew(LineEdit);
