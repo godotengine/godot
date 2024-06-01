@@ -1,0 +1,49 @@
+[gd_scene load_steps=6 format=3 uid="uid://d3p7n0bmr7xga"]
+
+[ext_resource type="Material" uid="uid://bd8s48i3httg2" path="res://scenes/common/materials/grey.tres" id="1_akppi"]
+[ext_resource type="Material" uid="uid://ctm5wb05otmn4" path="res://scenes/common/materials/green.tres" id="2_l4u3r"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_rjt17"]
+height = 2.49
+radius = 0.05
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_6phst"]
+friction = 0.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hmsk6"]
+size = Vector3(0.1, 2, 0.8)
+
+[node name="Spinner" type="Node3D"]
+metadata/_edit_group_ = true
+
+[node name="Hinge" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.245, 0)
+collision_layer = 0
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Hinge"]
+shape = SubResource("CylinderShape3D_rjt17")
+disabled = true
+
+[node name="Mesh" type="CSGCylinder3D" parent="Hinge"]
+radius = 0.05
+height = 2.49
+sides = 15
+material = ExtResource("1_akppi")
+
+[node name="Joint" type="HingeJoint3D" parent="Hinge"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
+node_a = NodePath("../../Sheet")
+node_b = NodePath("..")
+
+[node name="Sheet" type="RigidBody3D" parent="."]
+physics_material_override = SubResource("PhysicsMaterial_6phst")
+
+[node name="Shape" type="CollisionShape3D" parent="Sheet"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -0.4)
+shape = SubResource("BoxShape3D_hmsk6")
+
+[node name="Mesh" type="CSGBox3D" parent="Sheet"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -0.4)
+size = Vector3(0.1, 2, 0.8)
+material = ExtResource("2_l4u3r")

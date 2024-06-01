@@ -425,7 +425,7 @@ public:
 
 	GDVIRTUAL1RC(TypedArray<RID>, _soft_body_get_collision_exceptions, RID)
 
-	void soft_body_get_collision_exceptions(RID p_soft_body, List<RID> *p_exceptions) override {
+	virtual void soft_body_get_collision_exceptions(RID p_soft_body, List<RID> *p_exceptions) override {
 		TypedArray<RID> ret;
 		GDVIRTUAL_REQUIRED_CALL(_soft_body_get_collision_exceptions, p_soft_body, ret);
 		for (int i = 0; i < ret.size(); i++) {

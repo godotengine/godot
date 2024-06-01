@@ -1,0 +1,16 @@
+name: Setup Windows
+
+inputs:
+  version:
+    default: 17
+  arch:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: pwsh
+      run: >
+        ./scripts/ci_setup_windows.ps1
+        -Version ${{ inputs.version }}
+        -Arch ${{ inputs.arch }}

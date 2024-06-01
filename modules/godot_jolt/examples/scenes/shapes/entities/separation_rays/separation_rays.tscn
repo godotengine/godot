@@ -1,0 +1,68 @@
+[gd_scene load_steps=3 format=3 uid="uid://dyveo1c8dyfqp"]
+
+[ext_resource type="Material" uid="uid://ctm5wb05otmn4" path="res://scenes/common/materials/green.tres" id="1_2mywa"]
+
+[sub_resource type="SeparationRayShape3D" id="SeparationRayShape3D_y3thr"]
+length = 0.5
+slide_on_slope = true
+
+[node name="SeparationRays" type="RigidBody3D"]
+
+[node name="Shape_Back" type="CollisionShape3D" parent="."]
+shape = SubResource("SeparationRayShape3D_y3thr")
+
+[node name="Mesh" type="CSGCylinder3D" parent="Shape_Back"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0.25)
+radius = 0.05
+height = 0.5
+material = ExtResource("1_2mywa")
+
+[node name="Shape_Right" type="CollisionShape3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0, 0)
+shape = SubResource("SeparationRayShape3D_y3thr")
+
+[node name="Mesh" type="CSGCylinder3D" parent="Shape_Right"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0.25)
+radius = 0.05
+height = 0.5
+material = ExtResource("1_2mywa")
+
+[node name="Shape_Front" type="CollisionShape3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+shape = SubResource("SeparationRayShape3D_y3thr")
+
+[node name="Mesh" type="CSGCylinder3D" parent="Shape_Front"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0.25)
+radius = 0.05
+height = 0.5
+material = ExtResource("1_2mywa")
+
+[node name="Shape_Left" type="CollisionShape3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0, 0)
+shape = SubResource("SeparationRayShape3D_y3thr")
+
+[node name="Mesh" type="CSGCylinder3D" parent="Shape_Left"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0.25)
+radius = 0.05
+height = 0.5
+material = ExtResource("1_2mywa")
+
+[node name="Shape_Up" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, 0)
+shape = SubResource("SeparationRayShape3D_y3thr")
+
+[node name="Mesh" type="CSGCylinder3D" parent="Shape_Up"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0.25)
+radius = 0.05
+height = 0.5
+material = ExtResource("1_2mywa")
+
+[node name="Shape_Down" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0)
+shape = SubResource("SeparationRayShape3D_y3thr")
+
+[node name="Mesh" type="CSGCylinder3D" parent="Shape_Down"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0.25)
+radius = 0.05
+height = 0.5
+material = ExtResource("1_2mywa")

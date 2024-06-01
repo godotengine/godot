@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://dufmnyw4ry3c3"]
+
+[ext_resource type="Material" uid="uid://ctm5wb05otmn4" path="res://scenes/common/materials/green.tres" id="1_3s2ir"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_nfxxm"]
+height = 1.0
+
+[node name="Cylinder" type="RigidBody3D"]
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+shape = SubResource("CylinderShape3D_nfxxm")
+
+[node name="Mesh" type="CSGCylinder3D" parent="."]
+height = 1.0
+sides = 36
+material = ExtResource("1_3s2ir")

@@ -1,0 +1,26 @@
+name: Setup Linux
+
+inputs:
+  toolchain:
+    required: true
+  version-gcc:
+    default: 13
+  version-llvm:
+    default: 16
+
+runs:
+  using: composite
+  steps:
+    - if: inputs.toolchain == 'gcc'
+      shell: pwsh
+      run: >
+        sudo ./scripts/ci_setup_linux.ps1
+        -Toolchain gcc
+        -VersionGcc ${{ inputs.version-gcc }}
+    - if: inputs.toolchain == 'llvm'
+      shell: pwsh
+      run: >
+        sudo ./scripts/ci_setup_linux.ps1
+        -Toolchain llvm
+        -VersionGcc ${{ inputs.version-gcc }}
+        -VersionLlvm ${{ inputs.version-llvm }}

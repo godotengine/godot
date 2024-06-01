@@ -71,6 +71,12 @@ public:
 		}
 	}
 
+	_FORCE_INLINE_ T& push_empty() {
+		T V;
+		push_back(V);
+		return data[count - 1];
+	}
+
 	void remove_at(U p_index) {
 		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
 		count--;
@@ -298,6 +304,44 @@ public:
 			}
 		}
 		insert(i, p_val);
+	}
+	template<typename TPredicate>
+	_FORCE_INLINE_ void ordered_insert(T p_val, TPredicate&& p_pred) {
+		U i;
+		for (i = 0; i < count; i++) {
+			if (p_pred(p_val , data[i])) {
+				break;
+			}
+		}
+		insert(i, p_val);
+	}
+	template<typename TPredicate>
+	_FORCE_INLINE_ int32_t erase_if(TPredicate&& p_pred) {
+		int32_t ret;
+		U i;
+		for (i = 0; i < count;) {
+			if (p_pred(data[i])) {
+				remove_at(i);
+				++count;
+			}
+			else
+			{
+				i++;
+			}
+		}
+
+		return ret;
+	}
+		template<typename TPredicate>
+	_FORCE_INLINE_ int32_t find_if(TPredicate&& p_pred, int32_t p_from = 0) const {
+		U i;
+		for (i = p_from; i < count; i++) {
+			if (p_pred(data[i])) {
+				return i;
+			}
+		}
+
+		return -1;
 	}
 
 	operator Vector<T>() const {

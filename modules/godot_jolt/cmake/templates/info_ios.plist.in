@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>${MACOSX_FRAMEWORK_NAME}</string>
+	<key>CFBundleName</key>
+	<string>${PROJECT_TITLE}</string>
+	<key>CFBundleDisplayName</key>
+	<string>${PROJECT_TITLE}</string>
+	<key>CFBundleIdentifier</key>
+	<string>${PROJECT_BUNDLE_IDENTIFIER}</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>${PROJECT_COPYRIGHT}</string>
+	<key>CFBundleVersion</key>
+	<string>${PROJECT_VERSION}</string>
+	<key>CFBundleShortVersionString</key>
+	<string>${PROJECT_VERSION}</string>
+	<key>CFBundlePackageType</key>
+	<string>FMWK</string>
+	<key>CSResourcesFileMapped</key>
+	<true/>
+	<key>DTPlatformName</key>
+	<string>iphoneos</string>
+	<key>MinimumOSVersion</key>
+	<string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
+</dict>
+</plist>

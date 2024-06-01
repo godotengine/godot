@@ -1,0 +1,25 @@
+root = true
+
+[*]
+charset = utf-8
+indent_style = tab
+indent_size = 4
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 100
+
+[{CMakeLists.txt,*.cmake}]
+max_line_length = unset
+
+[*.{json,yml,yaml,svg,clang-format,clang-tidy,clangd}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+indent_style = space
+indent_size = 2
+
+[{LICENSE,COPYRIGHT}.txt]
+indent_style = space
+indent_size = 4

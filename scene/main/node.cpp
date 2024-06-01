@@ -52,11 +52,13 @@ thread_local Node *Node::current_process_thread_group = nullptr;
 void Node::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_PROCESS: {
+			process(get_process_delta_time());
 			GDVIRTUAL_CALL(_process, get_process_delta_time());
 			node_process(get_process_delta_time());
 		} break;
 
 		case NOTIFICATION_PHYSICS_PROCESS: {
+			physics_process(get_physics_process_delta_time());
 			GDVIRTUAL_CALL(_physics_process, get_physics_process_delta_time());
 			node_physics_process( get_physics_process_delta_time());
 		} break;
@@ -1302,6 +1304,14 @@ StringName Node::get_name() const {
 
 void Node::_set_name_nocheck(const StringName &p_name) {
 	data.name = p_name;
+}
+StringName Node::get_tag()
+{
+	return data.tag;
+}
+void Node::set_tag(const StringName &p_tag)
+{
+	data.tag = p_tag;
 }
 
 void Node::set_name(const String &p_name) {
@@ -3550,6 +3560,10 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
+
+	ClassDB::bind_method(D_METHOD("set_tag", "tag"), &Node::set_tag);
+	ClassDB::bind_method(D_METHOD("get_tag"), &Node::get_tag);
+
 	ClassDB::bind_method(D_METHOD("add_child", "node", "force_readable_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("reparent", "new_parent", "keep_global_transform"), &Node::reparent, DEFVAL(true));
@@ -3815,6 +3829,7 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("editor_description_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "tag", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_tag", "get_tag");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_owner", "get_owner");

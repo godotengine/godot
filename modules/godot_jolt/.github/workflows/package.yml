@@ -1,0 +1,420 @@
+name: 📦 Package
+
+on:
+  push:
+    tags:
+      - v\d+.\d+.\d+-\w+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-2022
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, x86]
+        precision: [single, double]
+
+    name: Build (windows-${{ matrix.arch }}-${{ matrix.precision }})
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up environment
+        uses: ./.github/actions/setup-windows
+        with:
+          arch: ${{ matrix.arch }}
+
+      - name: Configure
+        uses: ./.github/actions/cmake-configure
+        with:
+          platform: windows-clangcl
+          arch: ${{ matrix.arch }}
+          double: ${{ matrix.precision == 'double' && 'true' || 'false' }}
+          args: >
+            -DCMAKE_INSTALL_PREFIX=dist
+            -DGDJ_INSTALL_DEBUG_SYMBOLS=TRUE
+        env:
+          CFLAGS: /clang:-fmacro-prefix-map=${{ github.workspace }}=.
+          CXXFLAGS: /clang:-fmacro-prefix-map=${{ github.workspace }}=.
+
+      - name: Build (non-editor)
+        uses: ./.github/actions/cmake-build
+        with:
+          platform: windows-clangcl
+          arch: ${{ matrix.arch }}
+          editor: false
+          config: distribution
+
+      - name: Build (editor)
+        uses: ./.github/actions/cmake-build
+        with:
+          platform: windows-clangcl
+          arch: ${{ matrix.arch }}
+          editor: true
+          config: distribution
+
+      - name: Upload builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-${{ matrix.arch }}-${{ matrix.precision }}
+          path: ./dist/**
+          retention-days: 1
+
+  linux:
+    runs-on: ubuntu-20.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, x86]
+        precision: [single, double]
+
+    name: Build (linux-${{ matrix.arch }}-${{ matrix.precision }})
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up environment
+        uses: ./.github/actions/setup-linux
+        with:
+          toolchain: llvm
+
+      - name: List dynamic dependencies
+        run: ldd --version
+
+      - name: Configure
+        uses: ./.github/actions/cmake-configure
+        with:
+          platform: linux-clang
+          arch: ${{ matrix.arch }}
+          double: ${{ matrix.precision == 'double' && 'true' || 'false' }}
+          args: >
+            -DCMAKE_INSTALL_PREFIX=dist
+            -DGDJ_INSTALL_DEBUG_SYMBOLS=TRUE
+        env:
+          CFLAGS: -fmacro-prefix-map=${{ github.workspace }}=.
+          CXXFLAGS: -fmacro-prefix-map=${{ github.workspace }}=.
+
+      - name: Build (non-editor)
+        uses: ./.github/actions/cmake-build
+        with:
+          platform: linux-clang
+          arch: ${{ matrix.arch }}
+          editor: false
+          config: distribution
+
+      - name: Build (editor)
+        uses: ./.github/actions/cmake-build
+        with:
+          platform: linux-clang
+          arch: ${{ matrix.arch }}
+          editor: true
+          config: distribution
+
+      - name: Upload builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-${{ matrix.arch }}-${{ matrix.precision }}
+          path: ./dist/**
+          retention-days: 1
+
+  macos:
+    runs-on: macos-13
+
+    strategy:
+      fail-fast: false
+      matrix:
+        precision: [single, double]
+
+    name: Build (macos-${{ matrix.precision }})
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up environment
+        uses: ./.github/actions/setup-macos
+
+      - name: Configure
+        uses: ./.github/actions/cmake-configure
+        with:
+          platform: macos-clang
+          double: ${{ matrix.precision == 'double' && 'true' || 'false' }}
+          args: >
+            -DCMAKE_INSTALL_PREFIX=tmp
+            -DGDJ_INSTALL_DEBUG_SYMBOLS=TRUE
+        env:
+          CFLAGS: -fmacro-prefix-map=${{ github.workspace }}=.
+          CXXFLAGS: -fmacro-prefix-map=${{ github.workspace }}=.
+
+      - name: Build (non-editor)
+        uses: ./.github/actions/cmake-build
+        with:
+          platform: macos-clang
+          editor: false
+          config: distribution
+
+      - name: Build (editor)
+        uses: ./.github/actions/cmake-build
+        with:
+          platform: macos-clang
+          editor: true
+          config: distribution
+
+      # HACK(mihe): Framework bundles contain symlinks to help with supporting multiple versions in
+      # a bundle. This can result in multiple physical duplicates of the bundled library when we do
+      # things like zip them, push them to source control or just deal with them in general on
+      # platforms that don't do well with symlinks, like Windows. So to mitigate this we replace the
+      # symlinks with the actual files and remove any duplicates.
+      - name: Remove symbolic links
+        run: >
+          rsync ./tmp/ ./dist
+          --archive
+          --copy-links
+          --exclude="*/Versions/"
+
+      - name: Sign frameworks
+        shell: pwsh
+        env:
+          APPLE_CERT_BASE64: ${{ secrets.APPLE_CERT_BASE64 }}
+          APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+          APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
+          APPLE_DEV_TEAM_ID: ${{ secrets.APPLE_DEV_TEAM_ID }}
+          APPLE_DEV_PASSWORD: ${{ secrets.APPLE_DEV_PASSWORD }}
+        run: gci -R ./dist/*.framework | ./scripts/ci_sign_macos.ps1
+
+      - name: Upload builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.precision }}
+          path: ./dist/**
+          retention-days: 1
+
+  ios:
+    runs-on: macos-13
+
+    strategy:
+      fail-fast: false
+      matrix:
+        precision: [single, double]
+
+    name: Build (ios-${{ matrix.precision }})
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up environment
+        uses: ./.github/actions/setup-macos
+
+      - name: Configure
+        uses: ./.github/actions/cmake-configure
+        with:
+          platform: macos-ios
+          double: ${{ matrix.precision == 'double' && 'true' || 'false' }}
+          args: >
+            -DCMAKE_INSTALL_PREFIX=dist
+            -DGDJ_INSTALL_DEBUG_SYMBOLS=TRUE
+        env:
+          CFLAGS: -fmacro-prefix-map=${{ github.workspace }}=.
+          CXXFLAGS: -fmacro-prefix-map=${{ github.workspace }}=.
+
+      - name: Build (non-editor)
+        uses: ./.github/actions/cmake-build
+        with:
+          platform: macos-ios
+          editor: false
+          config: distribution
+
+      - name: Build (editor)
+        uses: ./.github/actions/cmake-build
+        with:
+          platform: macos-ios
+          editor: true
+          config: distribution
+
+      - name: Upload builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-${{ matrix.precision }}
+          path: ./dist/**
+          retention-days: 1
+
+  android:
+    runs-on: ubuntu-20.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm64, arm32, x64, x86]
+        precision: [single, double]
+
+    name: Build (android-${{ matrix.arch }}-${{ matrix.precision }})
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: List dynamic dependencies
+        run: ldd --version
+
+      - name: Configure
+        uses: ./.github/actions/cmake-configure
+        with:
+          platform: linux-android
+          arch: ${{ matrix.arch }}
+          double: ${{ matrix.precision == 'double' && 'true' || 'false' }}
+          args: >
+            -DCMAKE_INSTALL_PREFIX=dist
+            -DGDJ_INSTALL_DEBUG_SYMBOLS=TRUE
+        env:
+          CFLAGS: -fmacro-prefix-map=${{ github.workspace }}=.
+          CXXFLAGS: -fmacro-prefix-map=${{ github.workspace }}=.
+
+      - name: Build (non-editor)
+        uses: ./.github/actions/cmake-build
+        with:
+          platform: linux-android
+          arch: ${{ matrix.arch }}
+          editor: false
+          config: distribution
+
+      - name: Build (editor)
+        uses: ./.github/actions/cmake-build
+        with:
+          platform: linux-android
+          arch: ${{ matrix.arch }}
+          editor: true
+          config: distribution
+
+      - name: Upload builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ matrix.arch }}-${{ matrix.precision }}
+          path: ./dist/**
+          retention-days: 1
+
+  upload:
+    runs-on: ubuntu-20.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        precision: [single, double]
+
+    needs: [windows, linux, macos, ios, android]
+
+    name: Upload
+
+    steps:
+      - name: Download builds (windows-x64)
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-x64-${{ matrix.precision }}
+          path: ./dist
+
+      - name: Download builds (windows-x86)
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-x86-${{ matrix.precision }}
+          path: ./dist
+
+      - name: Download builds (linux-x64)
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-x64-${{ matrix.precision }}
+          path: ./dist
+
+      - name: Download builds (linux-x86)
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-x86-${{ matrix.precision }}
+          path: ./dist
+
+      - name: Download builds (macos)
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-${{ matrix.precision }}
+          path: ./dist
+
+      - name: Download builds (ios)
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-${{ matrix.precision }}
+          path: ./dist
+
+      - name: Download builds (android-arm64)
+        uses: actions/download-artifact@v4
+        with:
+          name: android-arm64-${{ matrix.precision }}
+          path: ./dist
+
+      - name: Download builds (android-arm32)
+        uses: actions/download-artifact@v4
+        with:
+          name: android-arm32-${{ matrix.precision }}
+          path: ./dist
+
+      - name: Download builds (android-x64)
+        uses: actions/download-artifact@v4
+        with:
+          name: android-x64-${{ matrix.precision }}
+          path: ./dist
+
+      - name: Download builds (android-x86)
+        uses: actions/download-artifact@v4
+        with:
+          name: android-x86-${{ matrix.precision }}
+          path: ./dist
+
+      - name: Delete temporary artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: |
+            windows-x64-${{ matrix.precision }}
+            windows-x86-${{ matrix.precision }}
+            linux-x64-${{ matrix.precision }}
+            linux-x86-${{ matrix.precision }}
+            macos-${{ matrix.precision }}
+            ios-${{ matrix.precision }}
+            android-arm64-${{ matrix.precision }}
+            android-arm32-${{ matrix.precision }}
+            android-x64-${{ matrix.precision }}
+            android-x86-${{ matrix.precision }}
+
+      - name: Separate debug symbols
+        run: >
+          rsync ./dist/./ ./symbols
+          --archive
+          --relative
+          --remove-source-files
+          --include="*/"
+          --include="*.pdb"
+          --include="*.debug"
+          --include="*.dSYM/**"
+          --exclude="*"
+
+      - name: Delete empty directories
+        run: find . -type d -empty -delete
+
+      - name: Upload builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-jolt_${{ github.ref_name }}_${{ matrix.precision }}
+          path: ./dist/**
+          retention-days: 1
+
+      - name: Upload debug symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-jolt_${{ github.ref_name }}_${{ matrix.precision }}_symbols
+          path: ./symbols/**
+          retention-days: 1

@@ -1,0 +1,78 @@
+name: 🪟 Build (Windows)
+
+on:
+  push:
+    branches:
+      - '**'
+    paths-ignore:
+      - 'docs/**'
+      - 'examples/**'
+      - '**.md'
+      - '**.txt'
+      - '!**/CMakeLists.txt'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'examples/**'
+      - '**.md'
+      - '**.txt'
+      - '!**/CMakeLists.txt'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    name: "\
+      ${{ matrix.platform }}-\
+      ${{ matrix.arch }}-\
+      ${{ matrix.double == true && 'double-' || '' }}\
+      ${{ matrix.editor == true && 'editor-' || '' }}\
+      ${{ matrix.config }}"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-msvc, windows-clangcl]
+        arch: [x64, x86]
+        double: [false, true]
+        editor: [false, true]
+        config: [debug, development, distribution]
+
+        # HACK(mihe): 32-bit clang-cl builds are compiled using a 32-bit compiler, which tend to run
+        # out of memory randomly when IPO/LTO is enabled, so we disable that for all 32-bit clang-cl
+        # builds by injecting the relevant CMake argument using `include`
+        include:
+          - platform: windows-clangcl
+            arch: x86
+            args: -DGDJ_INTERPROCEDURAL_OPTIMIZATION=FALSE
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up environment
+        uses: ./.github/actions/setup-windows
+        with:
+          arch: ${{ matrix.arch }}
+
+      - name: Configure
+        uses: ./.github/actions/cmake-configure
+        with:
+          platform: ${{ matrix.platform }}
+          arch: ${{ matrix.arch }}
+          double: ${{ matrix.double }}
+          args: ${{ matrix.args }}
+        env:
+          CXXFLAGS: /WX
+
+      - name: Build
+        uses: ./.github/actions/cmake-build
+        with:
+          platform: ${{ matrix.platform }}
+          arch: ${{ matrix.arch }}
+          editor: ${{ matrix.editor }}
+          config: ${{ matrix.config }}

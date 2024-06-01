@@ -1,0 +1,85 @@
+name: 🔍 Analyze
+
+on:
+  push:
+    branches:
+      - '**'
+    paths-ignore:
+      - 'docs/**'
+      - 'examples/**'
+      - '**.md'
+      - '**.txt'
+      - '!**/CMakeLists.txt'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'examples/**'
+      - '**.md'
+      - '**.txt'
+      - '!**/CMakeLists.txt'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  clang-format:
+    name: Formatting
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up LLVM
+        uses: ./.github/actions/setup-linux
+        with:
+          toolchain: llvm
+
+      - name: Identify clang-format
+        shell: pwsh
+        run: clang-format --version
+
+      - name: Run clang-format
+        shell: pwsh
+        run: ./scripts/run_clang_format.ps1 -SourcePath ./src
+
+  clang-tidy:
+    name: Linting
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up LLVM
+        uses: ./.github/actions/setup-linux
+        with:
+          toolchain: llvm
+
+      - name: Configure
+        uses: ./.github/actions/cmake-configure
+        with:
+          platform: linux-clang
+          arch: x64
+          args: -DGDJ_PRECOMPILE_HEADERS=FALSE
+
+      - name: Build
+        uses: ./.github/actions/cmake-build
+        with:
+          platform: linux-clang
+          arch: x64
+          editor: false
+          config: debug
+
+      - name: Identify clang-tidy
+        shell: pwsh
+        run: clang-tidy --version
+
+      - name: Run clang-tidy
+        shell: pwsh
+        run: >
+          ./scripts/run_clang_tidy.ps1
+          -SourcePath ./src
+          -BuildPath ./build/linux-clang-x64

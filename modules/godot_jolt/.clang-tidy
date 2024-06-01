@@ -1,0 +1,320 @@
+---
+# Requires LLVM 16.0
+
+# The checks are split it into 4 groups:
+#
+# 1. Globs
+# 2. General
+# 3. C++ Standard Library
+# 4. Exception handling
+#
+# The checks in the last two are grouped solely for the sake of being able to easily enable them if
+# there ever was a need in the future.
+
+Checks: >
+  -abseil-*,
+  -altera-*,
+  -android-*,
+  -boost-*,
+  -cert-*,
+  -clang-analyzer-*,
+  -darwin-*,
+  -fuchsia-*,
+  -google-*,
+  -linuxkernel-*,
+  -llvm-*,
+  -llvmlibc-*,
+  -mpi-*,
+  -objc-*,
+  -openmp-*,
+  -zircon-*,
+
+  -bugprone-argument-comment,
+  bugprone-assert-side-effect,
+  -bugprone-assignment-in-if-condition,
+  -bugprone-bad-signal-to-kill-thread,
+  bugprone-bool-pointer-implicit-conversion,
+  -bugprone-branch-clone,
+  bugprone-copy-constructor-init,
+  bugprone-dangling-handle,
+  bugprone-dynamic-static-initializers,
+  -bugprone-easily-swappable-parameters,
+  bugprone-fold-init-type,
+  bugprone-forward-declaration-namespace,
+  bugprone-forwarding-reference-overload,
+  bugprone-implicit-widening-of-multiplication-result,
+  bugprone-incorrect-roundings,
+  bugprone-infinite-loop,
+  bugprone-integer-division,
+  bugprone-lambda-function-name,
+  bugprone-macro-parentheses,
+  bugprone-macro-repeated-side-effects,
+  bugprone-misplaced-operator-in-strlen-in-alloc,
+  bugprone-misplaced-pointer-arithmetic-in-alloc,
+  bugprone-misplaced-widening-cast,
+  bugprone-move-forwarding-reference,
+  bugprone-multiple-statement-macro,
+  -bugprone-no-escape,
+  bugprone-not-null-terminated-result,
+  bugprone-parent-virtual-call,
+  -bugprone-posix-return,
+  bugprone-redundant-branch-condition,
+  -bugprone-reserved-identifier,
+  -bugprone-signal-handler,
+  bugprone-signed-char-misuse,
+  bugprone-sizeof-expression,
+  -bugprone-spuriously-wake-up-functions,
+  bugprone-string-literal-with-embedded-nul,
+  bugprone-suspicious-enum-usage,
+  bugprone-suspicious-include,
+  bugprone-suspicious-memory-comparison,
+  bugprone-suspicious-memset-usage,
+  bugprone-suspicious-missing-comma,
+  bugprone-suspicious-realloc-usage,
+  bugprone-suspicious-semicolon,
+  bugprone-suspicious-string-compare,
+  bugprone-swapped-arguments,
+  bugprone-terminating-continue,
+  bugprone-too-small-loop-variable,
+  bugprone-undefined-memory-manipulation,
+  bugprone-undelegated-constructor,
+  bugprone-unhandled-self-assignment,
+  bugprone-unused-raii,
+  bugprone-unused-return-value,
+  bugprone-use-after-move,
+  -bugprone-virtual-near-miss,
+  -clang-diagnostic-pragma-once-outside-header,
+  concurrency-mt-unsafe,
+  -concurrency-thread-canceltype-asynchronous,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -cppcoreguidelines-avoid-do-while,
+  cppcoreguidelines-avoid-goto,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -cppcoreguidelines-avoid-reference-coroutine-parameters
+  cppcoreguidelines-init-variables,
+  cppcoreguidelines-interfaces-global-init,
+  -cppcoreguidelines-macro-usage,
+  cppcoreguidelines-narrowing-conversions,
+  -cppcoreguidelines-no-malloc,
+  -cppcoreguidelines-owning-memory,
+  cppcoreguidelines-prefer-member-initializer,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  cppcoreguidelines-pro-type-const-cast,
+  cppcoreguidelines-pro-type-cstyle-cast,
+  cppcoreguidelines-pro-type-member-init,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-type-static-cast-downcast,
+  -cppcoreguidelines-pro-type-union-access,
+  -cppcoreguidelines-pro-type-vararg,
+  cppcoreguidelines-slicing,
+  -cppcoreguidelines-special-member-functions,
+  cppcoreguidelines-virtual-class-destructor,
+  hicpp-explicit-conversions,
+  hicpp-multiway-paths-covered,
+  hicpp-no-assembler,
+  hicpp-signed-bitwise,
+  -misc-confusable-identifiers,
+  -misc-const-correctness,
+  misc-definitions-in-headers,
+  misc-misleading-bidirectional,
+  misc-misleading-identifier,
+  misc-misplaced-const,
+  misc-new-delete-overloads,
+  -misc-no-recursion,
+  misc-non-copyable-objects,
+  -misc-non-private-member-variables-in-classes,
+  misc-redundant-expression,
+  misc-static-assert,
+  misc-unconventional-assign-operator,
+  misc-unused-alias-decls,
+  misc-unused-parameters,
+  misc-unused-using-decls,
+  misc-use-anonymous-namespace,
+  modernize-concat-nested-namespaces,
+  modernize-deprecated-headers,
+  modernize-loop-convert,
+  modernize-macro-to-enum,
+  modernize-pass-by-value,
+  modernize-raw-string-literal,
+  modernize-redundant-void-arg,
+  modernize-replace-disallow-copy-and-assign-macro,
+  modernize-return-braced-init-list,
+  modernize-unary-static-assert,
+  modernize-use-auto,
+  modernize-use-bool-literals,
+  modernize-use-default-member-init,
+  modernize-use-equals-default,
+  modernize-use-equals-delete,
+  -modernize-use-nodiscard,
+  modernize-use-nullptr,
+  modernize-use-override,
+  -modernize-use-trailing-return-type,
+  modernize-use-using,
+  performance-for-range-copy,
+  performance-implicit-conversion-in-loop,
+  performance-move-const-arg,
+  performance-move-constructor-init,
+  performance-no-automatic-move,
+  -performance-no-int-to-ptr,
+  performance-noexcept-move-constructor,
+  performance-trivially-destructible,
+  performance-type-promotion-in-math-fn,
+  performance-unnecessary-copy-initialization,
+  performance-unnecessary-value-param,
+  portability-restrict-system-includes,
+  -portability-simd-intrinsics,
+  readability-avoid-const-params-in-decls,
+  readability-braces-around-statements,
+  readability-const-return-type,
+  -readability-convert-member-functions-to-static,
+  readability-delete-null-pointer,
+  readability-duplicate-include,
+  -readability-else-after-return,
+  -readability-function-cognitive-complexity,
+  -readability-function-size,
+  -readability-identifier-length,
+  readability-identifier-naming,
+  readability-implicit-bool-conversion,
+  readability-inconsistent-declaration-parameter-name,
+  readability-isolate-declaration,
+  -readability-magic-numbers,
+  readability-make-member-function-const,
+  readability-misleading-indentation,
+  readability-misplaced-array-index,
+  readability-named-parameter,
+  readability-non-const-parameter,
+  readability-qualified-auto,
+  readability-redundant-access-specifiers,
+  readability-redundant-control-flow,
+  readability-redundant-declaration,
+  readability-redundant-function-ptr-dereference,
+  readability-redundant-member-init,
+  readability-redundant-preprocessor,
+  readability-simplify-boolean-expr,
+  readability-static-accessed-through-instance,
+  readability-static-definition-in-anonymous-namespace,
+  -readability-suspicious-call-argument,
+  readability-uppercase-literal-suffix,
+
+  bugprone-inaccurate-erase,
+  -bugprone-shared-ptr-array-mismatch,
+  bugprone-sizeof-container,
+  -bugprone-standalone-empty,
+  bugprone-string-constructor,
+  bugprone-string-integer-assignment,
+  -bugprone-stringview-nullptr,
+  -bugprone-unchecked-optional-access,
+  -misc-uniqueptr-reset-release,
+  modernize-avoid-bind,
+  -modernize-avoid-c-arrays,
+  -modernize-deprecated-ios-base-aliases,
+  -modernize-make-shared,
+  -modernize-make-unique,
+  -modernize-replace-auto-ptr,
+  modernize-replace-random-shuffle,
+  modernize-shrink-to-fit,
+  -modernize-use-emplace,
+  modernize-use-transparent-functors,
+  performance-faster-string-find,
+  performance-inefficient-algorithm,
+  performance-inefficient-string-concatenation,
+  performance-inefficient-vector-operation,
+  portability-std-allocator-const,
+  readability-container-contains,
+  readability-container-data-pointer,
+  readability-container-size-empty,
+  -readability-redundant-smartptr-get,
+  readability-redundant-string-cstr,
+  readability-redundant-string-init,
+  readability-simplify-subscript-expr,
+  readability-string-compare,
+  -readability-uniqueptr-delete-release,
+  -readability-use-anyofallof,
+
+  -bugprone-exception-escape,
+  -bugprone-throw-keyword-missing,
+  -bugprone-unhandled-exception-at-new,
+  -hicpp-exception-baseclass,
+  -misc-throw-by-value-catch-by-reference,
+  -modernize-use-noexcept,
+  -modernize-use-uncaught-exceptions,
+
+# Aliases to already included checks:
+#
+# ⚠️ Keep in mind that aliases can have different CheckOptions defaults.
+#
+# bugprone-narrowing-conversions
+# cppcoreguidelines-avoid-c-arrays
+# cppcoreguidelines-avoid-magic-numbers
+# cppcoreguidelines-c-copy-assignment-signature
+# cppcoreguidelines-explicit-virtual-functions
+# cppcoreguidelines-macro-to-enum
+# cppcoreguidelines-non-private-member-variables-in-classes
+# hicpp-avoid-c-arrays
+# hicpp-avoid-goto,
+# hicpp-braces-around-statements
+# hicpp-deprecated-headers
+# hicpp-function-size
+# hicpp-invalid-access-moved
+# hicpp-member-init
+# hicpp-move-const-arg
+# hicpp-named-parameter
+# hicpp-new-delete-operators
+# hicpp-no-array-decay
+# hicpp-no-malloc
+# hicpp-noexcept-move
+# hicpp-special-member-functions
+# hicpp-static-assert
+# hicpp-undelegated-constructor
+# hicpp-uppercase-literal-suffix
+# hicpp-use-auto
+# hicpp-use-emplace
+# hicpp-use-equals-default
+# hicpp-use-equals-delete
+# hicpp-use-noexcept
+# hicpp-use-nullptr
+# hicpp-use-override
+# hicpp-vararg
+
+CheckOptions:
+  cppcoreguidelines-narrowing-conversions.PedanticMode: true
+  cppcoreguidelines-pro-type-member-init.IgnoreArrays: true
+  cppcoreguidelines-pro-type-member-init.UseAssignment: true
+  cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor: true
+  misc-definitions-in-headers.HeaderFileExtensions: hpp
+  misc-unused-parameters.StrictMode: true
+  modernize-deprecated-headers.CheckHeaderFile: true
+  modernize-use-auto.MinTypeNameLength: 0
+  modernize-use-default-member-init.UseAssignment: true
+  readability-identifier-naming.AggressiveDependentMemberLookup: true
+  readability-identifier-naming.ClassCase: CamelCase
+  readability-identifier-naming.EnumCase: CamelCase
+  readability-identifier-naming.EnumConstantCase: UPPER_CASE
+  readability-identifier-naming.FunctionCase: lower_case
+  readability-identifier-naming.GetConfigPerFile: false
+  readability-identifier-naming.GlobalConstantCase: UPPER_CASE
+  readability-identifier-naming.MacroDefinitionCase: UPPER_CASE
+  readability-identifier-naming.MemberCase: lower_case
+  readability-identifier-naming.NamespaceCase: lower_case
+  readability-identifier-naming.ParameterCase: lower_case
+  readability-identifier-naming.ParameterPrefix: p_
+  readability-identifier-naming.PrivateMethodPrefix: _
+  readability-identifier-naming.ProtectedMethodPrefix: _
+  readability-identifier-naming.ScopedEnumConstantCase: UPPER_CASE
+  readability-identifier-naming.TemplateParameterCase: CamelCase
+  readability-identifier-naming.TemplateParameterPrefix: T
+  readability-identifier-naming.TypeAliasCase: CamelCase
+  readability-identifier-naming.TypedefCase: CamelCase
+  readability-identifier-naming.UnionCase: CamelCase
+  readability-identifier-naming.VariableCase: lower_case
+  readability-inconsistent-declaration-parameter-name.Strict: true
+  readability-simplify-boolean-expr.ChainedConditionalAssignment: true
+  readability-simplify-boolean-expr.ChainedConditionalReturn: true
+  readability-simplify-boolean-expr.SimplifyDeMorganRelaxed: true
+  readability-uppercase-literal-suffix.NewSuffixes: L;LL;U;UL;ULL;f
+
+WarningsAsErrors: '*'
+HeaderFilterRegex: src/.+
+...

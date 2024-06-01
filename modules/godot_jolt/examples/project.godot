@@ -1,0 +1,40 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Godot Jolt Examples"
+config/description="Project for showcasing and testing the features of Godot Jolt."
+run/main_scene="res://scenes/shapes/shapes.tscn"
+config/features=PackedStringArray("4.2")
+config/icon="res://project/icon.svg"
+
+[autoload]
+
+Global="*res://scenes/common/scripts/global.gd"
+
+[display]
+
+window/size/viewport_width=1600
+window/size/viewport_height=900
+
+[filesystem]
+
+import/blender/enabled=false
+
+[physics]
+
+3d/physics_engine="JoltPhysics3D"
+common/enable_object_picking=false
+
+[rendering]
+
+environment/defaults/default_clear_color=Color(0.392157, 0.584314, 0.929412, 1)
+anti_aliasing/quality/msaa_3d=2

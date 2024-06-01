@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_godot_jolt = env_modules.Clone()
+
+# Godot source files
+
+module_obj = []
+
+env_godot_jolt.Prepend(CPPPATH=[ "src"])
+env_godot_jolt.Prepend(CPPPATH=[ "."])
+env_godot_jolt.add_source_files(module_obj, "*.cpp")
+env_godot_jolt.add_source_files(module_obj, "src/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "src/containers/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "src/joints/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "src/objects/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "src/servers/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "src/shapes/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "src/spaces/*.cpp")
+
+
+env_godot_jolt.add_source_files(module_obj, "jolt/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "jolt/Core/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "jolt/AABBTree/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "jolt/Geometry/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "jolt/Math/*.cpp")
+
+env_godot_jolt.add_source_files(module_obj, "jolt/ObjectStream/*.cpp")
+
+
+env_godot_jolt.add_source_files(module_obj, "jolt/Physics/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "jolt/Physics/Body/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "jolt/Physics/Character/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "jolt/Physics/Collision/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "jolt/Physics/Collision/BroadPhase/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "jolt/Physics/Collision/BroadPhase/Shape/*.cpp")
+
+
+env_godot_jolt.add_source_files(module_obj, "jolt/Physics/Constraints/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "jolt/Physics/Constraints/ConstraintPart/*.cpp")
+
+
+env_godot_jolt.add_source_files(module_obj,  "jolt/Physics/Ragdoll/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "jolt/Physics/SoftBody/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "jolt/Physics/Vehicle/*.cpp")
+
+env_godot_jolt.add_source_files(module_obj, "jolt/Skeleton/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "jolt/TriangleGrouper/*.cpp")
+env_godot_jolt.add_source_files(module_obj, "jolt/TriangleSplitter/*.cpp")
+
+env.modules_sources += module_obj
+

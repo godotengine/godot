@@ -8,10 +8,12 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/physics/character_body_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/3d/physics/area_3d.h"
 #include "body_part.h"
 #include "animation_help.h"
 #include "body_animator.h"
 #include "character_movement.h"
+#include "character_ai.h"
 
 
 #include "modules/limboai/bt/bt_player.h"
@@ -239,6 +241,7 @@ protected:
     Skeleton3D *skeleton = nullptr;
     AnimationPlayer *player = nullptr;
     CollisionShape3D * mainShape = nullptr;
+    Area3D * area = nullptr;
     mutable BTPlayer *btPlayer = nullptr;
     bool is_skill_stop = false;
     // 技能播放器
@@ -246,6 +249,7 @@ protected:
     // 角色自己的黑板
     Ref<Blackboard> player_blackboard;
     Ref<CharacterMovement> character_movement;
+    Ref<CharacterAI> character_ai;
     // 骨架配置文件
     String skeleton_res;
     // 动画组配置

@@ -1,0 +1,61 @@
+[gd_scene load_steps=5 format=3 uid="uid://22dn1k6ow04"]
+
+[ext_resource type="Material" uid="uid://bd8s48i3httg2" path="res://scenes/common/materials/grey.tres" id="1_qchgo"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_1wpvx"]
+height = 4.0
+radius = 0.05
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_ssrqi"]
+height = 1.0
+radius = 0.05
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_wdbvx"]
+radius = 0.075
+
+[node name="Rail" type="StaticBody3D"]
+metadata/_edit_group_ = true
+
+[node name="Shape_HRail" type="CollisionShape3D" parent="."]
+transform = Transform3D(-4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CylinderShape3D_1wpvx")
+
+[node name="Mesh" type="CSGCylinder3D" parent="Shape_HRail"]
+transform = Transform3D(-1, 8.74228e-08, 0, -8.74228e-08, -1, 0, 0, 0, 1, 0, 0, 0)
+radius = 0.05
+height = 4.0
+material = ExtResource("1_qchgo")
+
+[node name="Shape_VRail_Left" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.5, 0)
+shape = SubResource("CylinderShape3D_ssrqi")
+
+[node name="Mesh" type="CSGCylinder3D" parent="Shape_VRail_Left"]
+radius = 0.05
+height = 1.0
+material = ExtResource("1_qchgo")
+
+[node name="Shape_VRail_Right" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.5, 0)
+shape = SubResource("CylinderShape3D_ssrqi")
+
+[node name="Mesh" type="CSGCylinder3D" parent="Shape_VRail_Right"]
+radius = 0.05
+height = 1.0
+material = ExtResource("1_qchgo")
+
+[node name="Shape_Ball_Left" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1, 0)
+shape = SubResource("SphereShape3D_wdbvx")
+
+[node name="Mesh" type="CSGSphere3D" parent="Shape_Ball_Left"]
+radius = 0.075
+material = ExtResource("1_qchgo")
+
+[node name="Shape_Ball_Right" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 0)
+shape = SubResource("SphereShape3D_wdbvx")
+
+[node name="Mesh" type="CSGSphere3D" parent="Shape_Ball_Right"]
+radius = 0.075
+material = ExtResource("1_qchgo")

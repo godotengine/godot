@@ -134,6 +134,7 @@ public:
     void init_skeleton_bone_map();
 
 	Dictionary bone_map;
+    Dictionary bone_reset;
     DECL_GODOT_PROPERTY(bool,is_init_skeleton,false);
     DECL_GODOT_PROPERTY(String, ref_skeleton_file_path,"");
     DECL_GODOT_PROPERTY(bool, is_by_sekeleton_file,false);
@@ -181,6 +182,7 @@ public:
     float speed = 1.0f;
     bool is_clip = true;
     Ref<Animation> animation;
+    Ref<Animation> retarget_animation;
     Ref<CharacterBoneMap> bone_map;
     Ref<class CharacterAnimatorNodeBase> child_node;
     bool is_init = false;

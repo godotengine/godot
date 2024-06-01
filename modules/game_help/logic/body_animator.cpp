@@ -1,5 +1,6 @@
 #include "body_animator.h"
 #include "body_main.h"
+#include "modules/realtime_retarget/src/retarget_utility.h"
 
 
 
@@ -1242,6 +1243,9 @@ void CharacterAnimationLogicNode::init_blackboard(Ref<BlackboardPlan> p_blackboa
     if(!blackboard_plan->has_var("LegIndex"))
         blackboard_plan->add_var("LegIndex",BBVariable(Variant::INT,0));
     
+    // AI 大腦更新頻率
+    if(!blackboard_plan->has_var("AI_BrainUpdate_Rate"))
+        blackboard_plan->add_var("AI_BrainUpdate_Rate",BBVariable(Variant::FLOAT,1.0f));
     
 }
 void CharacterAnimationLogicNode::_bind_methods()

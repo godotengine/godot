@@ -180,6 +180,7 @@ private:
 		int depth = -1;
 		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
 		StringName name;
+		StringName tag;
 		SceneTree *tree = nullptr;
 
 #ifdef TOOLS_ENABLED
@@ -383,7 +384,8 @@ protected:
 	virtual void shortcut_input(const Ref<InputEvent> &p_key_event);
 	virtual void unhandled_input(const Ref<InputEvent> &p_event);
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_key_event);
-
+	virtual void process(double p_delta){}
+	virtual void physics_process(double p_delta){}
 	GDVIRTUAL1(_process, double)
 	GDVIRTUAL1(_physics_process, double)
 	GDVIRTUAL0(_enter_tree)
@@ -453,6 +455,9 @@ public:
 	StringName get_name() const;
 	String get_description() const;
 	void set_name(const String &p_name);
+
+	StringName get_tag();
+	void set_tag(const StringName &p_tag);
 
 	InternalMode get_internal_mode() const;
 

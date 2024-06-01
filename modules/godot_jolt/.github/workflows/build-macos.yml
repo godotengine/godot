@@ -1,0 +1,63 @@
+name: 🍎 Build (macOS)
+
+on:
+  push:
+    branches:
+      - '**'
+    paths-ignore:
+      - 'docs/**'
+      - 'examples/**'
+      - '**.md'
+      - '**.txt'
+      - '!**/CMakeLists.txt'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'examples/**'
+      - '**.md'
+      - '**.txt'
+      - '!**/CMakeLists.txt'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-13
+    name: "\
+      ${{ matrix.platform }}-\
+      ${{ matrix.double == true && 'double-' || '' }}\
+      ${{ matrix.editor == true && 'editor-' || '' }}\
+      ${{ matrix.config }}"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-clang]
+        double: [false, true]
+        editor: [false, true]
+        config: [debug, development, distribution]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up environment
+        uses: ./.github/actions/setup-macos
+
+      - name: Configure
+        uses: ./.github/actions/cmake-configure
+        with:
+          platform: ${{ matrix.platform }}
+          double: ${{ matrix.double }}
+        env:
+          CXXFLAGS: -Werror
+
+      - name: Build
+        uses: ./.github/actions/cmake-build
+        with:
+          platform: ${{ matrix.platform }}
+          editor: ${{ matrix.editor }}
+          config: ${{ matrix.config }}

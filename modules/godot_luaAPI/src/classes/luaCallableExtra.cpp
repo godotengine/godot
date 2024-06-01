@@ -32,11 +32,11 @@ void LuaCallableExtra::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "argc", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_argc", "get_argc");
 }
 
-void LuaCallableExtra::setInfo(Callable function, int argc, bool isTuple, bool wantsRef) {
-	this->function = function;
-	this->argc = argc;
-	this->isTuple = isTuple;
-	this->wantsRef = wantsRef;
+void LuaCallableExtra::setInfo(Callable p_function, int _argc, bool _isTuple, bool _wantsRef) {
+	this->function = p_function;
+	this->argc = _argc;
+	this->isTuple = _isTuple;
+	this->wantsRef = _wantsRef;
 }
 
 void LuaCallableExtra::setTuple(bool value) {

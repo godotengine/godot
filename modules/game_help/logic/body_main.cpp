@@ -317,6 +317,8 @@ CharacterBodyMain::CharacterBodyMain()
     mainShape->set_name("MainCollision");
     add_child(mainShape);
     mainShape->set_owner(this);
+    area = memnew(Area3D);
+    add_child(area);
 }
 CharacterBodyMain::~CharacterBodyMain()
 {

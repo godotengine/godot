@@ -353,7 +353,6 @@ public:
 		num_elements--;
 		return true;
 	}
-
 	// Replace the key of an entry in-place, without invalidating iterators or changing the entries position during iteration.
 	// p_old_key must exist in the map and p_new_key must not, unless it is equal to p_old_key.
 	bool replace_key(const TKey &p_old_key, const TKey &p_new_key) {
@@ -510,6 +509,24 @@ public:
 		if (p_iter) {
 			erase(p_iter->key);
 		}
+	}
+	template<typename TPredicate>
+	_FORCE_INLINE_ int32_t erase_if(TPredicate&& p_pred) {
+		int32_t count = 0;
+
+		for (auto iter = begin(); iter != end();) {
+			if (p_pred(*iter)) {
+				auto next = iter;
+				++next;
+				remove(iter);
+				iter = next;
+				count++;
+			} else {
+				++iter;
+			}
+		}
+
+		return count;
 	}
 
 	_FORCE_INLINE_ ConstIterator begin() const {

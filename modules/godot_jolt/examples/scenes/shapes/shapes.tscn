@@ -1,0 +1,54 @@
+[gd_scene load_steps=11 format=3 uid="uid://bua2ujukcadgw"]
+
+[ext_resource type="Environment" uid="uid://cgl5t5rlv6o6v" path="res://scenes/common/environments/default.tres" id="1_3khfi"]
+[ext_resource type="Script" path="res://scenes/common/scripts/free_look_camera.gd" id="1_uh1hw"]
+[ext_resource type="PackedScene" uid="uid://h15mak3p16ck" path="res://scenes/shapes/entities/sphere/sphere.tscn" id="3_4mmy4"]
+[ext_resource type="PackedScene" uid="uid://dyveo1c8dyfqp" path="res://scenes/shapes/entities/separation_rays/separation_rays.tscn" id="3_rnu5g"]
+[ext_resource type="PackedScene" uid="uid://bdo18a3tpxda1" path="res://scenes/shapes/entities/box/box.tscn" id="4_tqif0"]
+[ext_resource type="PackedScene" uid="uid://cxj20ksax0cnv" path="res://scenes/shapes/entities/capsule/capsule.tscn" id="5_h3oln"]
+[ext_resource type="PackedScene" uid="uid://dufmnyw4ry3c3" path="res://scenes/shapes/entities/cylinder/cylinder.tscn" id="6_tlkvd"]
+[ext_resource type="PackedScene" uid="uid://cqqkfrnystsat" path="res://scenes/shapes/entities/convex_polygon/convex_polygon.tscn" id="7_objwy"]
+[ext_resource type="PackedScene" uid="uid://cco8tutfmoey8" path="res://scenes/shapes/entities/height_map/height_map.tscn" id="8_8j6mc"]
+[ext_resource type="PackedScene" uid="uid://dosgsvakfplrm" path="res://scenes/shapes/entities/concave_polygon/concave_polygon.tscn" id="9_i15bi"]
+
+[node name="Shapes" type="Node3D"]
+
+[node name="Environment" type="WorldEnvironment" parent="."]
+environment = ExtResource("1_3khfi")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.825549, -0.544985, 0.146493, 0, 0.259587, 0.965719, -0.56433, 0.797249, -0.214302, 0, 0, 0)
+light_bake_mode = 0
+shadow_enabled = true
+
+[node name="Camera" type="Camera3D" parent="."]
+transform = Transform3D(-0.707107, -0.353553, 0.612372, 0, 0.866026, 0.5, -0.707107, 0.353553, -0.612372, 8, 10, -8)
+current = true
+script = ExtResource("1_uh1hw")
+
+[node name="DebugGeometry" type="JoltDebugGeometry3D" parent="."]
+visible = false
+
+[node name="SeparationRays" parent="." instance=ExtResource("3_rnu5g")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.5, 0)
+
+[node name="Sphere" parent="." instance=ExtResource("3_4mmy4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11, 0)
+
+[node name="Box" parent="." instance=ExtResource("4_tqif0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, 0)
+
+[node name="Capsule" parent="." instance=ExtResource("5_h3oln")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.5, 0)
+
+[node name="Cylinder" parent="." instance=ExtResource("6_tlkvd")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.5, 0)
+
+[node name="ConvexPolygon" parent="." instance=ExtResource("7_objwy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+
+[node name="HeightMap" parent="." instance=ExtResource("8_8j6mc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+[node name="ConcavePolygon" parent="." instance=ExtResource("9_i15bi")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)

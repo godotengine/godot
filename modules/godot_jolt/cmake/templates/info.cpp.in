@@ -1,0 +1,19 @@
+extern "C" {
+
+GDE_EXPORT const char* _file_info_title() {
+	return "@FileInfo_Title: ${PROJECT_TITLE}";
+}
+
+GDE_EXPORT const char* _file_info_description() {
+	return "@FileInfo_Description: ${PROJECT_DESCRIPTION}";
+}
+
+GDE_EXPORT const char* _file_info_copyright() {
+	return "@FileInfo_Copyright: ${PROJECT_COPYRIGHT}";
+}
+
+GDE_EXPORT const char* _file_info_version() {
+	return "@FileInfo_Version: ${PROJECT_VERSION_WITH_BUILD}";
+}
+
+} // extern "C"

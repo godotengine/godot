@@ -1,0 +1,31 @@
+name: Build with CMake
+
+inputs:
+  platform:
+    required: true
+  arch:
+    default: null
+  editor:
+    required: true
+  config:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: pwsh
+      run: cmake --version
+
+    - shell: pwsh
+      run: |
+        $Platform = "${{ inputs.platform }}"
+        $Arch = "${{ inputs.arch != null && format('-{0}', inputs.arch) || '' }}"
+        $Editor = "${{ inputs.editor == 'true' && '-editor' || '' }}"
+        $BuildConfig = "${{ format('-{0}', inputs.config) }}"
+        $ConfigurePreset = "$Platform$Arch"
+        $BuildPreset = "$ConfigurePreset$Editor$BuildConfig"
+
+        cmake `
+          --build `
+          --verbose `
+          --preset $BuildPreset

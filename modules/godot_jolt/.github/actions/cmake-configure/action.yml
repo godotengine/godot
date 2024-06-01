@@ -1,0 +1,31 @@
+name: Configure with CMake
+
+inputs:
+  platform:
+    required: true
+  arch:
+    default: null
+  double:
+    default: false
+  args:
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - shell: pwsh
+      run: cmake --version
+
+    - shell: pwsh
+      run: |
+        $Platform = "${{ inputs.platform }}"
+        $Arch = "${{ inputs.arch != null && format('-{0}', inputs.arch) || '' }}"
+        $ConfigurePreset = "$Platform$Arch"
+
+        cmake `
+          --log-level=VERBOSE `
+          --warn-uninitialized `
+          -Werror=dev `
+          --preset $ConfigurePreset `
+          ${{ inputs.double == 'true' && '-DGDJ_DOUBLE_PRECISION=TRUE' || '' }} `
+          ${{ inputs.args }}
