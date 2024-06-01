@@ -70,10 +70,6 @@ private:
 		Ref<StyleBox> focus;
 
 		Size2 max_style_size;
-		float style_margin_left = 0;
-		float style_margin_right = 0;
-		float style_margin_top = 0;
-		float style_margin_bottom = 0;
 
 		Color font_color;
 		Color font_focus_color;

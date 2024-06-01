@@ -56,70 +56,30 @@ void Button::_update_theme_item_cache() {
 	const bool rtl = is_layout_rtl();
 	if (rtl && has_theme_stylebox(SNAME("normal_mirrored"))) {
 		theme_cache.max_style_size = theme_cache.normal_mirrored->get_minimum_size();
-		theme_cache.style_margin_left = theme_cache.normal_mirrored->get_margin(SIDE_LEFT);
-		theme_cache.style_margin_right = theme_cache.normal_mirrored->get_margin(SIDE_RIGHT);
-		theme_cache.style_margin_top = theme_cache.normal_mirrored->get_margin(SIDE_TOP);
-		theme_cache.style_margin_bottom = theme_cache.normal_mirrored->get_margin(SIDE_BOTTOM);
 	} else {
 		theme_cache.max_style_size = theme_cache.normal->get_minimum_size();
-		theme_cache.style_margin_left = theme_cache.normal->get_margin(SIDE_LEFT);
-		theme_cache.style_margin_right = theme_cache.normal->get_margin(SIDE_RIGHT);
-		theme_cache.style_margin_top = theme_cache.normal->get_margin(SIDE_TOP);
-		theme_cache.style_margin_bottom = theme_cache.normal->get_margin(SIDE_BOTTOM);
 	}
 	if (has_theme_stylebox("hover_pressed")) {
 		if (rtl && has_theme_stylebox(SNAME("hover_pressed_mirrored"))) {
 			theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.hover_pressed_mirrored->get_minimum_size());
-			theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.hover_pressed_mirrored->get_margin(SIDE_LEFT));
-			theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.hover_pressed_mirrored->get_margin(SIDE_RIGHT));
-			theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.hover_pressed_mirrored->get_margin(SIDE_TOP));
-			theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.hover_pressed_mirrored->get_margin(SIDE_BOTTOM));
 		} else {
 			theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.hover_pressed->get_minimum_size());
-			theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.hover_pressed->get_margin(SIDE_LEFT));
-			theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.hover_pressed->get_margin(SIDE_RIGHT));
-			theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.hover_pressed->get_margin(SIDE_TOP));
-			theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.hover_pressed->get_margin(SIDE_BOTTOM));
 		}
 	}
 	if (rtl && has_theme_stylebox(SNAME("pressed_mirrored"))) {
 		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.pressed_mirrored->get_minimum_size());
-		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.pressed_mirrored->get_margin(SIDE_LEFT));
-		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.pressed_mirrored->get_margin(SIDE_RIGHT));
-		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.pressed_mirrored->get_margin(SIDE_TOP));
-		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.pressed_mirrored->get_margin(SIDE_BOTTOM));
 	} else {
 		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.pressed->get_minimum_size());
-		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.pressed->get_margin(SIDE_LEFT));
-		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.pressed->get_margin(SIDE_RIGHT));
-		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.pressed->get_margin(SIDE_TOP));
-		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.pressed->get_margin(SIDE_BOTTOM));
 	}
 	if (rtl && has_theme_stylebox(SNAME("hover_mirrored"))) {
 		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.hover_mirrored->get_minimum_size());
-		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.hover_mirrored->get_margin(SIDE_LEFT));
-		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.hover_mirrored->get_margin(SIDE_RIGHT));
-		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.hover_mirrored->get_margin(SIDE_TOP));
-		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.hover_mirrored->get_margin(SIDE_BOTTOM));
 	} else {
 		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.hover->get_minimum_size());
-		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.hover->get_margin(SIDE_LEFT));
-		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.hover->get_margin(SIDE_RIGHT));
-		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.hover->get_margin(SIDE_TOP));
-		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.hover->get_margin(SIDE_BOTTOM));
 	}
 	if (rtl && has_theme_stylebox(SNAME("disabled_mirrored"))) {
 		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.disabled_mirrored->get_minimum_size());
-		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.disabled_mirrored->get_margin(SIDE_LEFT));
-		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.disabled_mirrored->get_margin(SIDE_RIGHT));
-		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.disabled_mirrored->get_margin(SIDE_TOP));
-		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.disabled_mirrored->get_margin(SIDE_BOTTOM));
 	} else {
 		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.disabled->get_minimum_size());
-		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.disabled->get_margin(SIDE_LEFT));
-		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.disabled->get_margin(SIDE_RIGHT));
-		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.disabled->get_margin(SIDE_TOP));
-		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.disabled->get_margin(SIDE_BOTTOM));
 	}
 }
 
@@ -214,9 +174,10 @@ void Button::_notification(int p_what) {
 			const RID ci = get_canvas_item();
 			const Size2 size = get_size();
 
+			Ref<StyleBox> style = _get_current_stylebox();
 			// Draws the stylebox in the current state.
 			if (!flat) {
-				_get_current_stylebox()->draw(ci, Rect2(Point2(), size));
+				style->draw(ci, Rect2(Point2(), size));
 			}
 
 			if (has_focus()) {
@@ -232,11 +193,16 @@ void Button::_notification(int p_what) {
 				break;
 			}
 
+			const float style_margin_left = style->get_margin(SIDE_LEFT);
+			const float style_margin_right = style->get_margin(SIDE_RIGHT);
+			const float style_margin_top = style->get_margin(SIDE_TOP);
+			const float style_margin_bottom = style->get_margin(SIDE_BOTTOM);
+
 			Size2 drawable_size_remained = size;
 
 			{ // The size after the stelybox is stripped.
-				drawable_size_remained.width -= theme_cache.style_margin_left + theme_cache.style_margin_right;
-				drawable_size_remained.height -= theme_cache.style_margin_top + theme_cache.style_margin_bottom;
+				drawable_size_remained.width -= style_margin_left + style_margin_right;
+				drawable_size_remained.height -= style_margin_top + style_margin_bottom;
 			}
 
 			const int h_separation = MAX(0, theme_cache.h_separation);
@@ -381,12 +347,12 @@ void Button::_notification(int p_what) {
 							[[fallthrough]];
 						case HORIZONTAL_ALIGNMENT_FILL:
 						case HORIZONTAL_ALIGNMENT_LEFT: {
-							icon_ofs.x += theme_cache.style_margin_left;
+							icon_ofs.x += style_margin_left;
 							icon_ofs.x += left_internal_margin_with_h_separation;
 						} break;
 
 						case HORIZONTAL_ALIGNMENT_RIGHT: {
-							icon_ofs.x = size.x - theme_cache.style_margin_right;
+							icon_ofs.x = size.x - style_margin_right;
 							icon_ofs.x -= right_internal_margin_with_h_separation;
 							icon_ofs.x -= icon_size.width;
 						} break;
@@ -399,11 +365,11 @@ void Button::_notification(int p_what) {
 							[[fallthrough]];
 						case VERTICAL_ALIGNMENT_FILL:
 						case VERTICAL_ALIGNMENT_TOP: {
-							icon_ofs.y += theme_cache.style_margin_top;
+							icon_ofs.y += style_margin_top;
 						} break;
 
 						case VERTICAL_ALIGNMENT_BOTTOM: {
-							icon_ofs.y = size.y - theme_cache.style_margin_bottom - icon_size.height;
+							icon_ofs.y = size.y - style_margin_bottom - icon_size.height;
 						} break;
 					}
 					icon_ofs = icon_ofs.floor();
@@ -442,7 +408,7 @@ void Button::_notification(int p_what) {
 					case HORIZONTAL_ALIGNMENT_FILL:
 					case HORIZONTAL_ALIGNMENT_LEFT:
 					case HORIZONTAL_ALIGNMENT_RIGHT: {
-						text_ofs.x += theme_cache.style_margin_left;
+						text_ofs.x += style_margin_left;
 						text_ofs.x += left_internal_margin_with_h_separation;
 						if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_LEFT) {
 							// Offset by the space's width that occupied by icon and h_separation together.
@@ -451,7 +417,7 @@ void Button::_notification(int p_what) {
 					} break;
 				}
 
-				text_ofs.y = (drawable_size_remained.height - text_buf->get_size().height) / 2.0f + theme_cache.style_margin_top;
+				text_ofs.y = (drawable_size_remained.height - text_buf->get_size().height) / 2.0f + style_margin_top;
 				if (vertical_icon_alignment == VERTICAL_ALIGNMENT_TOP) {
 					text_ofs.y += custom_element_size.height - drawable_size_remained.height; // Offset by the icon's height.
 				}
