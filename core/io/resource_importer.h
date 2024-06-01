@@ -35,6 +35,9 @@
 #include "core/io/resource_saver.h"
 
 class ResourceImporter;
+class ResourceFormatImporter;
+
+typedef Ref<Resource> (*ResourceFormatImporterLoadOnStartup)(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceFormatLoader::CacheMode p_cache_mode);
 
 class ResourceFormatImporter : public ResourceFormatLoader {
 	struct PathAndType {
@@ -60,6 +63,7 @@ class ResourceFormatImporter : public ResourceFormatLoader {
 public:
 	static ResourceFormatImporter *get_singleton() { return singleton; }
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
+	Ref<Resource> load_internal(const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode, bool p_silence_errors);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const override;
 	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const override;
@@ -94,6 +98,7 @@ public:
 
 	String get_import_base_path(const String &p_for_file) const;
 	Error get_resource_import_info(const String &p_path, StringName &r_type, ResourceUID::ID &r_uid, String &r_import_group_file) const;
+
 	ResourceFormatImporter();
 };
 
@@ -104,6 +109,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static ResourceFormatImporterLoadOnStartup load_on_startup;
+
 	virtual String get_importer_name() const = 0;
 	virtual String get_visible_name() const = 0;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
