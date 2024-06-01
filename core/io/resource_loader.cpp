@@ -1220,6 +1220,8 @@ DependencyErrorNotify ResourceLoader::dep_err_notify = nullptr;
 bool ResourceLoader::create_missing_resources_if_class_unavailable = false;
 bool ResourceLoader::abort_on_missing_resource = true;
 bool ResourceLoader::timestamp_on_load = false;
+bool ResourceLoader::reimport_file_on_failed_load = false;
+ResourceLoaderImportFile ResourceLoader::import_file = nullptr;
 
 thread_local int ResourceLoader::load_nesting = 0;
 thread_local WorkerThreadPool::TaskID ResourceLoader::caller_task_id = 0;
