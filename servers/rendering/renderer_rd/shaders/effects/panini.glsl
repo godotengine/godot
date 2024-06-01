@@ -66,15 +66,15 @@ vec3 panini_ray(vec2 p) {
 
 void main() {
 	vec2 viewport_size = vec2(textureSize(source_color_0, 0));
-    vec3 albedo = vec3(0.0);
+	vec3 albedo = vec3(0.0);
 
 	float view_ratio = viewport_size.x / viewport_size.y;
-	vec2 uv = uv_interp*viewport_size / min(viewport_size.x, viewport_size.y);
+	vec2 uv = uv_interp * viewport_size / min(viewport_size.x, viewport_size.y);
 	vec3 pos = vec3(0.0, 0.0, 0.0);
 	if (view_ratio > 1.0) {
 		pos = panini_ray(vec2(uv.x - 0.5 * view_ratio, uv.y - 0.5) * 1.0);
 	} else {
-		pos = panini_ray(vec2(uv.x - 0.5 * view_ratio, uv.y - 0.5) * 1.0);
+		pos = panini_ray(vec2(uv.x - 0.5, uv.y - 0.5 / view_ratio) * 1.0);
 	}
 	if (pos == vec3(0.0, 0.0, 0.0)) {
 		albedo = pos;
@@ -112,5 +112,5 @@ void main() {
 			albedo = vec3(0.0, 0.0, 0.0);
 		}
 	}
-    frag_color = vec4(albedo, 1.0);
+	frag_color = vec4(albedo, 1.0);
 }
