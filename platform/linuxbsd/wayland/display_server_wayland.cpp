@@ -1343,7 +1343,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 			if (prime_idx == -1) {
 				print_verbose("Detecting GPUs, set DRI_PRIME in the environment to override GPU detection logic.");
-				prime_idx = DetectPrimeEGL::detect_prime();
+				prime_idx = DetectPrimeEGL::detect_prime(EGL_PLATFORM_WAYLAND_KHR);
 			}
 
 			if (prime_idx) {
@@ -1356,7 +1356,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		if (rendering_driver == "opengl3") {
 			egl_manager = memnew(EGLManagerWayland);
 
-			if (egl_manager->initialize() != OK || egl_manager->open_display(wayland_thread.get_wl_display()) != OK) {
+			if (egl_manager->initialize(wayland_thread.get_wl_display()) != OK || egl_manager->open_display(wayland_thread.get_wl_display()) != OK) {
 				memdelete(egl_manager);
 				egl_manager = nullptr;
 
@@ -1376,7 +1376,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		if (rendering_driver == "opengl3_es") {
 			egl_manager = memnew(EGLManagerWaylandGLES);
 
-			if (egl_manager->initialize() != OK) {
+			if (egl_manager->initialize(wayland_thread.get_wl_display()) != OK) {
 				memdelete(egl_manager);
 				egl_manager = nullptr;
 				r_error = ERR_CANT_CREATE;
