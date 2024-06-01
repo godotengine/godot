@@ -68,7 +68,7 @@ def get_min_target_api():
 
 def get_flags():
     return {
-        "arch": "arm64",  # Default for convenience.
+        "arch": "arm64",
         "target": "template_debug",
         "supported": ["mono"],
     }

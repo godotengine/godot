@@ -133,8 +133,10 @@ public:
 
 	enum ResourceUsage {
 		RESOURCE_USAGE_NONE,
-		RESOURCE_USAGE_TRANSFER_FROM,
-		RESOURCE_USAGE_TRANSFER_TO,
+		RESOURCE_USAGE_COPY_FROM,
+		RESOURCE_USAGE_COPY_TO,
+		RESOURCE_USAGE_RESOLVE_FROM,
+		RESOURCE_USAGE_RESOLVE_TO,
 		RESOURCE_USAGE_UNIFORM_BUFFER_READ,
 		RESOURCE_USAGE_INDIRECT_BUFFER_READ,
 		RESOURCE_USAGE_TEXTURE_BUFFER_READ,
@@ -165,6 +167,7 @@ public:
 		RDD::BufferID buffer_driver_id;
 		RDD::TextureID texture_driver_id;
 		RDD::TextureSubresourceRange texture_subresources;
+		uint32_t texture_usage = 0;
 		int32_t texture_slice_command_index = -1;
 		ResourceTracker *parent = nullptr;
 		ResourceTracker *dirty_shared_list = nullptr;
@@ -341,7 +344,15 @@ private:
 	struct RecordedTextureCopyCommand : RecordedCommand {
 		RDD::TextureID from_texture;
 		RDD::TextureID to_texture;
-		RDD::TextureCopyRegion region;
+		uint32_t texture_copy_regions_count = 0;
+
+		_FORCE_INLINE_ RDD::TextureCopyRegion *texture_copy_regions() {
+			return reinterpret_cast<RDD::TextureCopyRegion *>(&this[1]);
+		}
+
+		_FORCE_INLINE_ const RDD::TextureCopyRegion *texture_copy_regions() const {
+			return reinterpret_cast<const RDD::TextureCopyRegion *>(&this[1]);
+		}
 	};
 
 	struct RecordedTextureGetDataCommand : RecordedCommand {
@@ -615,7 +626,8 @@ private:
 	int32_t command_synchronization_index = -1;
 	bool command_synchronization_pending = false;
 	BarrierGroup barrier_group;
-	bool driver_honors_barriers = false;
+	bool driver_honors_barriers : 1;
+	bool driver_clears_with_copy_engine : 1;
 	WorkaroundsState workarounds_state;
 	TightLocalVector<Frame> frames;
 	uint32_t frame = 0;
@@ -697,10 +709,10 @@ public:
 	void add_draw_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages);
 	void add_draw_list_end();
 	void add_texture_clear(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, const Color &p_color, const RDD::TextureSubresourceRange &p_range);
-	void add_texture_copy(RDD::TextureID p_src, ResourceTracker *p_src_tracker, RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, RDD::TextureCopyRegion p_region);
-	void add_texture_get_data(RDD::TextureID p_src, ResourceTracker *p_src_tracker, RDD::BufferID p_dst, VectorView<RDD::BufferTextureCopyRegion> p_buffer_texture_copy_regions);
+	void add_texture_copy(RDD::TextureID p_src, ResourceTracker *p_src_tracker, RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, VectorView<RDD::TextureCopyRegion> p_texture_copy_regions);
+	void add_texture_get_data(RDD::TextureID p_src, ResourceTracker *p_src_tracker, RDD::BufferID p_dst, VectorView<RDD::BufferTextureCopyRegion> p_buffer_texture_copy_regions, ResourceTracker *p_dst_tracker = nullptr);
 	void add_texture_resolve(RDD::TextureID p_src, ResourceTracker *p_src_tracker, RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, uint32_t p_src_layer, uint32_t p_src_mipmap, uint32_t p_dst_layer, uint32_t p_dst_mipmap);
-	void add_texture_update(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, VectorView<RecordedBufferToTextureCopy> p_buffer_copies);
+	void add_texture_update(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, VectorView<RecordedBufferToTextureCopy> p_buffer_copies, VectorView<ResourceTracker *> p_buffer_trackers = VectorView<ResourceTracker *>());
 	void add_capture_timestamp(RDD::QueryPoolID p_query_pool, uint32_t p_index);
 	void add_synchronization();
 	void begin_label(const String &p_label_name, const Color &p_color);

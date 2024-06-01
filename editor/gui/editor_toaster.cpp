@@ -348,13 +348,13 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 	panel->set_tooltip_text(p_tooltip);
 	switch (p_severity) {
 		case SEVERITY_INFO:
-			panel->add_theme_style_override("panel", info_panel_style_background);
+			panel->add_theme_style_override(SceneStringName(panel), info_panel_style_background);
 			break;
 		case SEVERITY_WARNING:
-			panel->add_theme_style_override("panel", warning_panel_style_background);
+			panel->add_theme_style_override(SceneStringName(panel), warning_panel_style_background);
 			break;
 		case SEVERITY_ERROR:
-			panel->add_theme_style_override("panel", error_panel_style_background);
+			panel->add_theme_style_override(SceneStringName(panel), error_panel_style_background);
 			break;
 		default:
 			break;
@@ -552,7 +552,7 @@ EditorToaster::EditorToaster() {
 	// Disable notification button.
 	disable_notifications_panel = memnew(PanelContainer);
 	disable_notifications_panel->set_as_top_level(true);
-	disable_notifications_panel->add_theme_style_override("panel", info_panel_style_background);
+	disable_notifications_panel->add_theme_style_override(SceneStringName(panel), info_panel_style_background);
 	add_child(disable_notifications_panel);
 
 	disable_notifications_button = memnew(Button);

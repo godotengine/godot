@@ -4397,12 +4397,12 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	filter->add_theme_constant_override("minimum_character_width", 0);
 	filter->connect("text_changed", callable_mp(this, &SceneTreeDock::_filter_changed));
 	filter->connect(SceneStringName(gui_input), callable_mp(this, &SceneTreeDock::_filter_gui_input));
-	filter->get_menu()->connect("id_pressed", callable_mp(this, &SceneTreeDock::_filter_option_selected));
+	filter->get_menu()->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_filter_option_selected));
 	_append_filter_options_to(filter->get_menu());
 
 	filter_quick_menu = memnew(PopupMenu);
 	filter_quick_menu->set_theme_type_variation("FlatMenuButton");
-	filter_quick_menu->connect("id_pressed", callable_mp(this, &SceneTreeDock::_filter_option_selected));
+	filter_quick_menu->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_filter_option_selected));
 	filter->add_child(filter_quick_menu);
 
 	button_create_script = memnew(Button);
@@ -4429,7 +4429,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	filter_hbc->add_child(button_tree_menu);
 
 	PopupMenu *tree_menu = button_tree_menu->get_popup();
-	tree_menu->connect("id_pressed", callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
+	tree_menu->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
 
 	button_hb = memnew(HBoxContainer);
 	vbc->add_child(button_hb);
@@ -4549,15 +4549,15 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->connect("id_pressed", callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
 
 	menu_subresources = memnew(PopupMenu);
-	menu_subresources->connect("id_pressed", callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
+	menu_subresources->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
 	menu->add_child(menu_subresources);
 
 	menu_properties = memnew(PopupMenu);
 	add_child(menu_properties);
-	menu_properties->connect("id_pressed", callable_mp(this, &SceneTreeDock::_property_selected));
+	menu_properties->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_property_selected));
 
 	clear_inherit_confirm = memnew(ConfirmationDialog);
 	clear_inherit_confirm->set_text(TTR("Clear Inheritance? (No Undo!)"));

@@ -45,7 +45,7 @@ EditorDebuggerTree::EditorDebuggerTree() {
 
 	// Popup
 	item_menu = memnew(PopupMenu);
-	item_menu->connect("id_pressed", callable_mp(this, &EditorDebuggerTree::_item_menu_id_pressed));
+	item_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorDebuggerTree::_item_menu_id_pressed));
 	add_child(item_menu);
 
 	// File Dialog

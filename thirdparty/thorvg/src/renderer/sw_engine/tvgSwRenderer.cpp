@@ -434,10 +434,6 @@ bool SwRenderer::target(pixel_t* data, uint32_t stride, uint32_t w, uint32_t h, 
     surface->channelSize = CHANNEL_SIZE(cs);
     surface->premultiplied = true;
 
-    vport.x = vport.y = 0;
-    vport.w = surface->w;
-    vport.h = surface->h;
-
     return rasterCompositor(surface);
 }
 
@@ -604,6 +600,12 @@ bool SwRenderer::mempool(bool shared)
 
     if (mpool) return true;
     return false;
+}
+
+
+const Surface* SwRenderer::mainSurface()
+{
+    return surface;
 }
 
 

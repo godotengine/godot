@@ -73,7 +73,7 @@ Node *EditorSceneFormatImporterFBX2GLTF::import_scene(const String &p_path, uint
 
 	// Run fbx2gltf.
 
-	String fbx2gltf_path = EDITOR_GET("filesystem/import/fbx2gltf/fbx2gltf_path");
+	String fbx2gltf_path = EDITOR_GET("filesystem/import/fbx/fbx2gltf_path");
 
 	List<String> args;
 	args.push_back("--pbr-metallic-roughness");

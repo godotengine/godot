@@ -3604,6 +3604,30 @@ void DisplayServerWindows::popup_close(WindowID p_window) {
 	}
 }
 
+BitField<DisplayServerWindows::WinKeyModifierMask> DisplayServerWindows::_get_mods() const {
+	BitField<WinKeyModifierMask> mask;
+	static unsigned char keyboard_state[256];
+	if (GetKeyboardState((PBYTE)&keyboard_state)) {
+		if ((keyboard_state[VK_LSHIFT] & 0x80) || (keyboard_state[VK_RSHIFT] & 0x80)) {
+			mask.set_flag(WinKeyModifierMask::SHIFT);
+		}
+		if ((keyboard_state[VK_LCONTROL] & 0x80) || (keyboard_state[VK_RCONTROL] & 0x80)) {
+			mask.set_flag(WinKeyModifierMask::CTRL);
+		}
+		if ((keyboard_state[VK_LMENU] & 0x80) || (keyboard_state[VK_RMENU] & 0x80)) {
+			mask.set_flag(WinKeyModifierMask::ALT);
+		}
+		if ((keyboard_state[VK_RMENU] & 0x80)) {
+			mask.set_flag(WinKeyModifierMask::ALT_GR);
+		}
+		if ((keyboard_state[VK_LWIN] & 0x80) || (keyboard_state[VK_RWIN] & 0x80)) {
+			mask.set_flag(WinKeyModifierMask::META);
+		}
+	}
+
+	return mask;
+}
+
 LRESULT DisplayServerWindows::MouseProc(int code, WPARAM wParam, LPARAM lParam) {
 	_THREAD_SAFE_METHOD_
 
@@ -3859,7 +3883,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					if (((lParam >> 16) <= 0) && !engine->is_project_manager_hint() && !engine->is_editor_hint() && !GLOBAL_GET("application/run/enable_alt_space_menu")) {
 						return 0;
 					}
-					if (!alt_mem || !(GetAsyncKeyState(VK_SPACE) & (1 << 15))) {
+					if (!_get_mods().has_flag(WinKeyModifierMask::ALT) || !(GetAsyncKeyState(VK_SPACE) & (1 << 15))) {
 						return 0;
 					}
 					SendMessage(windows[window_id].hWnd, WM_SYSKEYUP, VK_SPACE, 0);
@@ -3945,20 +3969,22 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			RAWINPUT *raw = (RAWINPUT *)lpb;
 
+			const BitField<WinKeyModifierMask> &mods = _get_mods();
 			if (raw->header.dwType == RIM_TYPEKEYBOARD) {
 				if (raw->data.keyboard.VKey == VK_SHIFT) {
 					// If multiple Shifts are held down at the same time,
 					// Windows natively only sends a KEYUP for the last one to be released.
 					if (raw->data.keyboard.Flags & RI_KEY_BREAK) {
-						if (GetAsyncKeyState(VK_SHIFT) < 0) {
+						if (!mods.has_flag(WinKeyModifierMask::SHIFT)) {
 							// A Shift is released, but another Shift is still held
 							ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
 							KeyEvent ke;
 							ke.shift = false;
-							ke.alt = alt_mem;
-							ke.control = control_mem;
-							ke.meta = meta_mem;
+							ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
+							ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
+							ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
+							ke.meta = mods.has_flag(WinKeyModifierMask::META);
 							ke.uMsg = WM_KEYUP;
 							ke.window_id = window_id;
 
@@ -3975,9 +4001,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				mm.instantiate();
 
 				mm->set_window_id(window_id);
-				mm->set_ctrl_pressed(control_mem);
-				mm->set_shift_pressed(shift_mem);
-				mm->set_alt_pressed(alt_mem);
+				mm->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
+				mm->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
+				mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
+				mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
 
 				mm->set_pressure((raw->data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN) ? 1.0f : 0.0f);
 
@@ -4072,12 +4099,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						break;
 					}
 
+					const BitField<WinKeyModifierMask> &mods = _get_mods();
 					Ref<InputEventMouseMotion> mm;
 					mm.instantiate();
 					mm->set_window_id(window_id);
-					mm->set_ctrl_pressed(GetKeyState(VK_CONTROL) < 0);
-					mm->set_shift_pressed(GetKeyState(VK_SHIFT) < 0);
-					mm->set_alt_pressed(alt_mem);
+					mm->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
+					mm->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
+					mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
+					mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
 
 					mm->set_pressure(windows[window_id].last_pressure);
 					mm->set_tilt(windows[window_id].last_tilt);
@@ -4222,9 +4251,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 			mm->set_pen_inverted(pen_info.penFlags & (PEN_FLAG_INVERTED | PEN_FLAG_ERASER));
 
-			mm->set_ctrl_pressed(GetKeyState(VK_CONTROL) < 0);
-			mm->set_shift_pressed(GetKeyState(VK_SHIFT) < 0);
-			mm->set_alt_pressed(alt_mem);
+			const BitField<WinKeyModifierMask> &mods = _get_mods();
+			mm->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
+			mm->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
+			mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
+			mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
 
 			mm->set_button_mask(last_button_state);
 
@@ -4327,12 +4358,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (receiving_window_id == INVALID_WINDOW_ID) {
 				receiving_window_id = window_id;
 			}
+
+			const BitField<WinKeyModifierMask> &mods = _get_mods();
 			Ref<InputEventMouseMotion> mm;
 			mm.instantiate();
 			mm->set_window_id(receiving_window_id);
-			mm->set_ctrl_pressed((wParam & MK_CONTROL) != 0);
-			mm->set_shift_pressed((wParam & MK_SHIFT) != 0);
-			mm->set_alt_pressed(alt_mem);
+			mm->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
+			mm->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
+			mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
+			mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
 
 			if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
 				// Note: WinTab sends both WT_PACKET and WM_xBUTTONDOWN/UP/MOUSEMOVE events, use mouse 1/0 pressure only when last_pressure was not updated recently.
@@ -4521,10 +4555,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 			}
 
-			mb->set_ctrl_pressed((wParam & MK_CONTROL) != 0);
-			mb->set_shift_pressed((wParam & MK_SHIFT) != 0);
-			mb->set_alt_pressed(alt_mem);
-			// mb->is_alt_pressed()=(wParam&MK_MENU)!=0;
+			const BitField<WinKeyModifierMask> &mods = _get_mods();
+			mb->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
+			mb->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
+			mb->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
+			mb->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
+
 			if (mb->is_pressed()) {
 				last_button_state.set_flag(mouse_button_to_mask(mb->get_button_index()));
 			} else {
@@ -4700,19 +4736,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_KEYUP:
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN: {
-			if (wParam == VK_SHIFT) {
-				shift_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
-			}
-			if (wParam == VK_CONTROL) {
-				control_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
-			}
-			if (wParam == VK_MENU) {
-				alt_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
-				if (lParam & (1 << 24)) {
-					gr_mem = alt_mem;
-				}
-			}
-
 			if (windows[window_id].ime_suppress_next_keyup && (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP)) {
 				windows[window_id].ime_suppress_next_keyup = false;
 				break;
@@ -4723,7 +4746,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED) {
 				// When SetCapture is used, ALT+F4 hotkey is ignored by Windows, so handle it ourselves
-				if (wParam == VK_F4 && alt_mem && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN)) {
+				if (wParam == VK_F4 && _get_mods().has_flag(WinKeyModifierMask::ALT) && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN)) {
 					_send_window_event(windows[window_id], WINDOW_EVENT_CLOSE_REQUEST);
 				}
 			}
@@ -4731,13 +4754,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_CHAR: {
 			ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
+			const BitField<WinKeyModifierMask> &mods = _get_mods();
 
-			// Make sure we don't include modifiers for the modifier key itself.
 			KeyEvent ke;
-			ke.shift = (wParam != VK_SHIFT) ? shift_mem : false;
-			ke.alt = (!(wParam == VK_MENU && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN))) ? alt_mem : false;
-			ke.control = (wParam != VK_CONTROL) ? control_mem : false;
-			ke.meta = meta_mem;
+			ke.shift = mods.has_flag(WinKeyModifierMask::SHIFT);
+			ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
+			ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
+			ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
+			ke.meta = mods.has_flag(WinKeyModifierMask::META);
 			ke.uMsg = uMsg;
 			ke.window_id = window_id;
 
@@ -4908,10 +4932,6 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id) {
 	WindowData &wd = windows[p_window_id];
 	if (wd.activate_state == WA_ACTIVE || wd.activate_state == WA_CLICKACTIVE) {
 		last_focused_window = p_window_id;
-		alt_mem = false;
-		control_mem = false;
-		shift_mem = false;
-		gr_mem = false;
 		_set_mouse_mode_impl(mouse_mode);
 		if (!IsIconic(wd.hWnd)) {
 			SetFocus(wd.hWnd);
@@ -4923,7 +4943,6 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id) {
 		track_mouse_leave_event(wd.hWnd);
 		// Release capture unconditionally because it can be set due to dragging, in addition to captured mode.
 		ReleaseCapture();
-		alt_mem = false;
 		wd.window_focused = false;
 		_send_window_event(wd, WINDOW_EVENT_FOCUS_OUT);
 	}
@@ -4994,7 +5013,7 @@ void DisplayServerWindows::_process_key_events() {
 					k->set_physical_keycode(physical_keycode);
 					k->set_key_label(key_label);
 					k->set_unicode(fix_unicode(unicode));
-					if (k->get_unicode() && gr_mem) {
+					if (k->get_unicode() && ke.altgr) {
 						k->set_alt_pressed(false);
 						k->set_ctrl_pressed(false);
 					}
@@ -5070,7 +5089,7 @@ void DisplayServerWindows::_process_key_events() {
 					}
 					k->set_unicode(fix_unicode(unicode));
 				}
-				if (k->get_unicode() && gr_mem) {
+				if (k->get_unicode() && ke.altgr) {
 					k->set_alt_pressed(false);
 					k->set_ctrl_pressed(false);
 				}
@@ -5536,11 +5555,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	drop_events = false;
 	key_event_pos = 0;
 
-	alt_mem = false;
-	gr_mem = false;
-	shift_mem = false;
-	control_mem = false;
-	meta_mem = false;
 	hInstance = static_cast<OS_Windows *>(OS::get_singleton())->get_hinstance();
 
 	pressrc = 0;

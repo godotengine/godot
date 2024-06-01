@@ -702,6 +702,8 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 
 	ERR_FAIL_INDEX_V(format.samples, TEXTURE_SAMPLES_MAX, RID());
 
+	ERR_FAIL_COND_V_MSG(format.usage_bits == 0, RID(), "No usage bits specified (at least one is needed)");
+
 	format.height = format.texture_type != TEXTURE_TYPE_1D && format.texture_type != TEXTURE_TYPE_1D_ARRAY ? format.height : 1;
 	format.depth = format.texture_type == TEXTURE_TYPE_3D ? format.depth : 1;
 
@@ -824,8 +826,8 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 		}
 
 		if (texture.draw_tracker != nullptr) {
-			// Draw tracker can assume the texture will be in transfer destination.
-			texture.draw_tracker->usage = RDG::RESOURCE_USAGE_TRANSFER_TO;
+			// Draw tracker can assume the texture will be in copy destination.
+			texture.draw_tracker->usage = RDG::RESOURCE_USAGE_COPY_TO;
 		}
 	}
 
@@ -847,8 +849,11 @@ RID RenderingDevice::texture_create_shared(const TextureView &p_view, RID p_with
 	// Create view.
 
 	Texture texture = *src_texture;
+	texture.shared_fallback = nullptr;
 
 	RDD::TextureView tv;
+	bool create_shared = true;
+	bool raw_reintepretation = false;
 	if (p_view.format_override == DATA_FORMAT_MAX || p_view.format_override == texture.format) {
 		tv.format = texture.format;
 	} else {
@@ -857,13 +862,47 @@ RID RenderingDevice::texture_create_shared(const TextureView &p_view, RID p_with
 		ERR_FAIL_COND_V_MSG(!texture.allowed_shared_formats.has(p_view.format_override), RID(),
 				"Format override is not in the list of allowed shareable formats for original texture.");
 		tv.format = p_view.format_override;
+		create_shared = driver->texture_can_make_shared_with_format(texture.driver_id, p_view.format_override, raw_reintepretation);
 	}
 	tv.swizzle_r = p_view.swizzle_r;
 	tv.swizzle_g = p_view.swizzle_g;
 	tv.swizzle_b = p_view.swizzle_b;
 	tv.swizzle_a = p_view.swizzle_a;
 
-	texture.driver_id = driver->texture_create_shared(texture.driver_id, tv);
+	if (create_shared) {
+		texture.driver_id = driver->texture_create_shared(texture.driver_id, tv);
+	} else {
+		// The regular view will use the same format as the main texture.
+		RDD::TextureView regular_view = tv;
+		regular_view.format = src_texture->format;
+		texture.driver_id = driver->texture_create_shared(texture.driver_id, regular_view);
+
+		// Create the independent texture for the alias.
+		RDD::TextureFormat alias_format = texture.texture_format();
+		alias_format.format = tv.format;
+		alias_format.usage_bits = TEXTURE_USAGE_SAMPLING_BIT | TEXTURE_USAGE_CAN_COPY_TO_BIT;
+
+		_texture_check_shared_fallback(src_texture);
+		_texture_check_shared_fallback(&texture);
+
+		texture.shared_fallback->texture = driver->texture_create(alias_format, tv);
+		texture.shared_fallback->raw_reinterpretation = raw_reintepretation;
+		texture_memory += driver->texture_get_allocation_size(texture.shared_fallback->texture);
+
+		RDG::ResourceTracker *tracker = RDG::resource_tracker_create();
+		tracker->texture_driver_id = texture.shared_fallback->texture;
+		tracker->texture_subresources = texture.barrier_range();
+		tracker->texture_usage = alias_format.usage_bits;
+		tracker->reference_count = 1;
+		texture.shared_fallback->texture_tracker = tracker;
+		texture.shared_fallback->revision = 0;
+
+		if (raw_reintepretation && src_texture->shared_fallback->buffer.id == 0) {
+			// For shared textures of the same size, we create the buffer on the main texture if it doesn't have it already.
+			_texture_create_reinterpret_buffer(src_texture);
+		}
+	}
+
 	ERR_FAIL_COND_V(!texture.driver_id, RID());
 
 	texture.slice_trackers.clear();
@@ -965,6 +1004,7 @@ RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view,
 	}
 
 	Texture texture = *src_texture;
+	texture.shared_fallback = nullptr;
 
 	get_image_format_required_size(texture.format, texture.width, texture.height, texture.depth, p_mipmap + 1, &texture.width, &texture.height);
 	texture.mipmaps = p_mipmaps;
@@ -979,6 +1019,8 @@ RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view,
 	}
 
 	RDD::TextureView tv;
+	bool create_shared = true;
+	bool raw_reintepretation = false;
 	if (p_view.format_override == DATA_FORMAT_MAX || p_view.format_override == texture.format) {
 		tv.format = texture.format;
 	} else {
@@ -987,7 +1029,9 @@ RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view,
 		ERR_FAIL_COND_V_MSG(!texture.allowed_shared_formats.has(p_view.format_override), RID(),
 				"Format override is not in the list of allowed shareable formats for original texture.");
 		tv.format = p_view.format_override;
+		create_shared = driver->texture_can_make_shared_with_format(texture.driver_id, p_view.format_override, raw_reintepretation);
 	}
+
 	tv.swizzle_r = p_view.swizzle_r;
 	tv.swizzle_g = p_view.swizzle_g;
 	tv.swizzle_b = p_view.swizzle_b;
@@ -1000,7 +1044,47 @@ RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view,
 				"Specified layer must be a multiple of 6.");
 	}
 
-	texture.driver_id = driver->texture_create_shared_from_slice(src_texture->driver_id, tv, p_slice_type, p_layer, slice_layers, p_mipmap, p_mipmaps);
+	if (create_shared) {
+		texture.driver_id = driver->texture_create_shared_from_slice(src_texture->driver_id, tv, p_slice_type, p_layer, slice_layers, p_mipmap, p_mipmaps);
+	} else {
+		// The regular view will use the same format as the main texture.
+		RDD::TextureView regular_view = tv;
+		regular_view.format = src_texture->format;
+		texture.driver_id = driver->texture_create_shared_from_slice(src_texture->driver_id, regular_view, p_slice_type, p_layer, slice_layers, p_mipmap, p_mipmaps);
+
+		// Create the independent texture for the slice.
+		RDD::TextureSubresourceRange slice_range = texture.barrier_range();
+		slice_range.base_mipmap = 0;
+		slice_range.base_layer = 0;
+
+		RDD::TextureFormat slice_format = texture.texture_format();
+		slice_format.width = MAX(texture.width >> p_mipmap, 1U);
+		slice_format.height = MAX(texture.height >> p_mipmap, 1U);
+		slice_format.depth = MAX(texture.depth >> p_mipmap, 1U);
+		slice_format.format = tv.format;
+		slice_format.usage_bits = TEXTURE_USAGE_SAMPLING_BIT | TEXTURE_USAGE_CAN_COPY_TO_BIT;
+
+		_texture_check_shared_fallback(src_texture);
+		_texture_check_shared_fallback(&texture);
+
+		texture.shared_fallback->texture = driver->texture_create(slice_format, tv);
+		texture.shared_fallback->raw_reinterpretation = raw_reintepretation;
+		texture_memory += driver->texture_get_allocation_size(texture.shared_fallback->texture);
+
+		RDG::ResourceTracker *tracker = RDG::resource_tracker_create();
+		tracker->texture_driver_id = texture.shared_fallback->texture;
+		tracker->texture_subresources = slice_range;
+		tracker->texture_usage = slice_format.usage_bits;
+		tracker->reference_count = 1;
+		texture.shared_fallback->texture_tracker = tracker;
+		texture.shared_fallback->revision = 0;
+
+		if (raw_reintepretation && src_texture->shared_fallback->buffer.id == 0) {
+			// For shared texture slices, we create the buffer on the slice if the source texture has no reinterpretation buffer.
+			_texture_create_reinterpret_buffer(&texture);
+		}
+	}
+
 	ERR_FAIL_COND_V(!texture.driver_id, RID());
 
 	const Rect2i slice_rect(p_mipmap, p_layer, p_mipmaps, slice_layers);
@@ -1093,15 +1177,18 @@ Error RenderingDevice::_texture_update(RID p_texture, uint32_t p_layer, const Ve
 		// When using the setup queue directly, we transition the texture to the optimal layout.
 		RDD::TextureBarrier tb;
 		tb.texture = texture->driver_id;
-		tb.dst_access = RDD::BARRIER_ACCESS_TRANSFER_WRITE_BIT;
+		tb.dst_access = RDD::BARRIER_ACCESS_COPY_WRITE_BIT;
 		tb.prev_layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
-		tb.next_layout = RDD::TEXTURE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		tb.next_layout = RDD::TEXTURE_LAYOUT_COPY_DST_OPTIMAL;
 		tb.subresources.aspect = texture->barrier_aspect_flags;
 		tb.subresources.mipmap_count = texture->mipmaps;
 		tb.subresources.base_layer = p_layer;
 		tb.subresources.layer_count = 1;
 
-		driver->command_pipeline_barrier(frames[frame].setup_command_buffer, RDD::PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, RDD::PIPELINE_STAGE_TRANSFER_BIT, {}, {}, tb);
+		driver->command_pipeline_barrier(frames[frame].setup_command_buffer, RDD::PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, RDD::PIPELINE_STAGE_COPY_BIT, {}, {}, tb);
+	} else if (!p_use_setup_queue) {
+		// Indicate the texture will get modified for the shared texture fallback.
+		_texture_update_shared_fallback(p_texture, texture, true);
 	}
 
 	uint32_t mipmap_offset = 0;
@@ -1199,7 +1286,7 @@ Error RenderingDevice::_texture_update(RID p_texture, uint32_t p_layer, const Ve
 					copy_region.texture_region_size = Vector3i(region_logic_w, region_logic_h, 1);
 
 					if (p_use_setup_queue) {
-						driver->command_copy_buffer_to_texture(frames[frame].setup_command_buffer, staging_buffer_blocks[staging_buffer_current].driver_id, texture->driver_id, RDD::TEXTURE_LAYOUT_TRANSFER_DST_OPTIMAL, copy_region);
+						driver->command_copy_buffer_to_texture(frames[frame].setup_command_buffer, staging_buffer_blocks[staging_buffer_current].driver_id, texture->driver_id, RDD::TEXTURE_LAYOUT_COPY_DST_OPTIMAL, copy_region);
 					} else {
 						RDG::RecordedBufferToTextureCopy buffer_to_texture_copy;
 						buffer_to_texture_copy.from_buffer = staging_buffer_blocks[staging_buffer_current].driver_id;
@@ -1221,14 +1308,14 @@ Error RenderingDevice::_texture_update(RID p_texture, uint32_t p_layer, const Ve
 		// If the texture does not have a tracker, it means it must be transitioned to the sampling state.
 		RDD::TextureBarrier tb;
 		tb.texture = texture->driver_id;
-		tb.src_access = RDD::BARRIER_ACCESS_TRANSFER_WRITE_BIT;
-		tb.prev_layout = RDD::TEXTURE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		tb.src_access = RDD::BARRIER_ACCESS_COPY_WRITE_BIT;
+		tb.prev_layout = RDD::TEXTURE_LAYOUT_COPY_DST_OPTIMAL;
 		tb.next_layout = RDD::TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		tb.subresources.aspect = texture->barrier_aspect_flags;
 		tb.subresources.mipmap_count = texture->mipmaps;
 		tb.subresources.base_layer = p_layer;
 		tb.subresources.layer_count = 1;
-		driver->command_pipeline_barrier(frames[frame].setup_command_buffer, RDD::PIPELINE_STAGE_TRANSFER_BIT, RDD::PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, {}, {}, tb);
+		driver->command_pipeline_barrier(frames[frame].setup_command_buffer, RDD::PIPELINE_STAGE_COPY_BIT, RDD::PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, {}, {}, tb);
 	} else if (!p_use_setup_queue && !command_buffer_to_texture_copies_vector.is_empty()) {
 		if (_texture_make_mutable(texture, p_texture)) {
 			// The texture must be mutable to be used as a copy destination.
@@ -1239,6 +1326,186 @@ Error RenderingDevice::_texture_update(RID p_texture, uint32_t p_layer, const Ve
 	}
 
 	return OK;
+}
+
+void RenderingDevice::_texture_check_shared_fallback(Texture *p_texture) {
+	if (p_texture->shared_fallback == nullptr) {
+		p_texture->shared_fallback = memnew(Texture::SharedFallback);
+	}
+}
+
+void RenderingDevice::_texture_update_shared_fallback(RID p_texture_rid, Texture *p_texture, bool p_for_writing) {
+	if (p_texture->shared_fallback == nullptr) {
+		// This texture does not use any of the shared texture fallbacks.
+		return;
+	}
+
+	if (p_texture->owner.is_valid()) {
+		Texture *owner_texture = texture_owner.get_or_null(p_texture->owner);
+		ERR_FAIL_NULL(owner_texture);
+		if (p_for_writing) {
+			// Only the main texture is used for writing when using the shared fallback.
+			owner_texture->shared_fallback->revision++;
+		} else if (p_texture->shared_fallback->revision != owner_texture->shared_fallback->revision) {
+			// Copy the contents of the main texture into the shared texture fallback slice. Update the revision.
+			_texture_copy_shared(p_texture->owner, owner_texture, p_texture_rid, p_texture);
+			p_texture->shared_fallback->revision = owner_texture->shared_fallback->revision;
+		}
+	} else if (p_for_writing) {
+		// Increment the revision of the texture so shared texture fallback slices must be updated.
+		p_texture->shared_fallback->revision++;
+	}
+}
+
+void RenderingDevice::_texture_free_shared_fallback(Texture *p_texture) {
+	if (p_texture->shared_fallback != nullptr) {
+		if (p_texture->shared_fallback->texture_tracker != nullptr) {
+			RDG::resource_tracker_free(p_texture->shared_fallback->texture_tracker);
+		}
+
+		if (p_texture->shared_fallback->buffer_tracker != nullptr) {
+			RDG::resource_tracker_free(p_texture->shared_fallback->buffer_tracker);
+		}
+
+		if (p_texture->shared_fallback->texture.id != 0) {
+			texture_memory -= driver->texture_get_allocation_size(p_texture->shared_fallback->texture);
+			driver->texture_free(p_texture->shared_fallback->texture);
+		}
+
+		if (p_texture->shared_fallback->buffer.id != 0) {
+			buffer_memory -= driver->buffer_get_allocation_size(p_texture->shared_fallback->buffer);
+			driver->buffer_free(p_texture->shared_fallback->buffer);
+		}
+
+		memdelete(p_texture->shared_fallback);
+		p_texture->shared_fallback = nullptr;
+	}
+}
+
+void RenderingDevice::_texture_copy_shared(RID p_src_texture_rid, Texture *p_src_texture, RID p_dst_texture_rid, Texture *p_dst_texture) {
+	// The only type of copying allowed is from the main texture to the slice texture, as slice textures are not allowed to be used for writing when using this fallback.
+	DEV_ASSERT(p_src_texture != nullptr);
+	DEV_ASSERT(p_dst_texture != nullptr);
+	DEV_ASSERT(p_src_texture->owner.is_null());
+	DEV_ASSERT(p_dst_texture->owner == p_src_texture_rid);
+
+	bool src_made_mutable = _texture_make_mutable(p_src_texture, p_src_texture_rid);
+	bool dst_made_mutable = _texture_make_mutable(p_dst_texture, p_dst_texture_rid);
+	if (src_made_mutable || dst_made_mutable) {
+		draw_graph.add_synchronization();
+	}
+
+	if (p_dst_texture->shared_fallback->raw_reinterpretation) {
+		// If one of the textures is a main texture and they have a reinterpret buffer, we prefer using that as it's guaranteed to be big enough to hold
+		// anything and it's how the shared textures that don't use slices are created.
+		bool src_has_buffer = p_src_texture->shared_fallback->buffer.id != 0;
+		bool dst_has_buffer = p_dst_texture->shared_fallback->buffer.id != 0;
+		bool from_src = p_src_texture->owner.is_null() && src_has_buffer;
+		bool from_dst = p_dst_texture->owner.is_null() && dst_has_buffer;
+		if (!from_src && !from_dst) {
+			// If neither texture passed the condition, we just pick whichever texture has a reinterpretation buffer.
+			from_src = src_has_buffer;
+			from_dst = dst_has_buffer;
+		}
+
+		// Pick the buffer and tracker to use from the right texture.
+		RDD::BufferID shared_buffer;
+		RDG::ResourceTracker *shared_buffer_tracker = nullptr;
+		if (from_src) {
+			shared_buffer = p_src_texture->shared_fallback->buffer;
+			shared_buffer_tracker = p_src_texture->shared_fallback->buffer_tracker;
+		} else if (from_dst) {
+			shared_buffer = p_dst_texture->shared_fallback->buffer;
+			shared_buffer_tracker = p_dst_texture->shared_fallback->buffer_tracker;
+		} else {
+			DEV_ASSERT(false && "This path should not be reachable.");
+		}
+
+		// FIXME: When using reinterpretation buffers, the only texture aspect supported is color. Depth or stencil contents won't get copied.
+		RDD::BufferTextureCopyRegion get_data_region;
+		RDG::RecordedBufferToTextureCopy update_copy;
+		RDD::TextureCopyableLayout first_copyable_layout;
+		RDD::TextureCopyableLayout copyable_layout;
+		RDD::TextureSubresource texture_subresource;
+		texture_subresource.aspect = RDD::TEXTURE_ASPECT_COLOR;
+		texture_subresource.layer = 0;
+		texture_subresource.mipmap = 0;
+		driver->texture_get_copyable_layout(p_dst_texture->shared_fallback->texture, texture_subresource, &first_copyable_layout);
+
+		// Copying each mipmap from main texture to a buffer and then to the slice texture.
+		thread_local LocalVector<RDD::BufferTextureCopyRegion> get_data_vector;
+		thread_local LocalVector<RDG::RecordedBufferToTextureCopy> update_vector;
+		get_data_vector.clear();
+		update_vector.clear();
+		for (uint32_t i = 0; i < p_dst_texture->mipmaps; i++) {
+			driver->texture_get_copyable_layout(p_dst_texture->shared_fallback->texture, texture_subresource, &copyable_layout);
+
+			uint32_t mipmap = p_dst_texture->base_mipmap + i;
+			get_data_region.buffer_offset = copyable_layout.offset - first_copyable_layout.offset;
+			get_data_region.texture_subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
+			get_data_region.texture_subresources.base_layer = p_dst_texture->base_layer;
+			get_data_region.texture_subresources.mipmap = mipmap;
+			get_data_region.texture_subresources.layer_count = p_dst_texture->layers;
+			get_data_region.texture_region_size.x = MAX(1U, p_src_texture->width >> mipmap);
+			get_data_region.texture_region_size.y = MAX(1U, p_src_texture->height >> mipmap);
+			get_data_region.texture_region_size.z = MAX(1U, p_src_texture->depth >> mipmap);
+			get_data_vector.push_back(get_data_region);
+
+			update_copy.from_buffer = shared_buffer;
+			update_copy.region.buffer_offset = get_data_region.buffer_offset;
+			update_copy.region.texture_subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
+			update_copy.region.texture_subresources.base_layer = texture_subresource.layer;
+			update_copy.region.texture_subresources.mipmap = texture_subresource.mipmap;
+			update_copy.region.texture_subresources.layer_count = get_data_region.texture_subresources.layer_count;
+			update_copy.region.texture_region_size.x = get_data_region.texture_region_size.x;
+			update_copy.region.texture_region_size.y = get_data_region.texture_region_size.y;
+			update_copy.region.texture_region_size.z = get_data_region.texture_region_size.z;
+			update_vector.push_back(update_copy);
+
+			texture_subresource.mipmap++;
+		}
+
+		draw_graph.add_texture_get_data(p_src_texture->driver_id, p_src_texture->draw_tracker, shared_buffer, get_data_vector, shared_buffer_tracker);
+		draw_graph.add_texture_update(p_dst_texture->shared_fallback->texture, p_dst_texture->shared_fallback->texture_tracker, update_vector, shared_buffer_tracker);
+	} else {
+		// Raw reinterpretation is not required. Use a regular texture copy.
+		RDD::TextureCopyRegion copy_region;
+		copy_region.src_subresources.aspect = p_src_texture->read_aspect_flags;
+		copy_region.src_subresources.base_layer = p_dst_texture->base_layer;
+		copy_region.src_subresources.layer_count = p_dst_texture->layers;
+		copy_region.dst_subresources.aspect = p_dst_texture->read_aspect_flags;
+		copy_region.dst_subresources.base_layer = 0;
+		copy_region.dst_subresources.layer_count = copy_region.src_subresources.layer_count;
+
+		// Copying each mipmap from main texture to to the slice texture.
+		thread_local LocalVector<RDD::TextureCopyRegion> region_vector;
+		region_vector.clear();
+		for (uint32_t i = 0; i < p_dst_texture->mipmaps; i++) {
+			uint32_t mipmap = p_dst_texture->base_mipmap + i;
+			copy_region.src_subresources.mipmap = mipmap;
+			copy_region.dst_subresources.mipmap = i;
+			copy_region.size.x = MAX(1U, p_src_texture->width >> mipmap);
+			copy_region.size.y = MAX(1U, p_src_texture->height >> mipmap);
+			copy_region.size.z = MAX(1U, p_src_texture->depth >> mipmap);
+			region_vector.push_back(copy_region);
+		}
+
+		draw_graph.add_texture_copy(p_src_texture->driver_id, p_src_texture->draw_tracker, p_dst_texture->shared_fallback->texture, p_dst_texture->shared_fallback->texture_tracker, region_vector);
+	}
+}
+
+void RenderingDevice::_texture_create_reinterpret_buffer(Texture *p_texture) {
+	uint64_t row_pitch_step = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP);
+	uint64_t transfer_alignment = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT);
+	uint32_t pixel_bytes = get_image_format_pixel_size(p_texture->format);
+	uint32_t row_pitch = STEPIFY(p_texture->width * pixel_bytes, row_pitch_step);
+	uint64_t buffer_size = STEPIFY(pixel_bytes * row_pitch * p_texture->height * p_texture->depth, transfer_alignment);
+	p_texture->shared_fallback->buffer = driver->buffer_create(buffer_size, RDD::BUFFER_USAGE_TRANSFER_FROM_BIT | RDD::BUFFER_USAGE_TRANSFER_TO_BIT, RDD::MEMORY_ALLOCATION_TYPE_GPU);
+	buffer_memory += driver->buffer_get_allocation_size(p_texture->shared_fallback->buffer);
+
+	RDG::ResourceTracker *tracker = RDG::resource_tracker_create();
+	tracker->buffer_driver_id = p_texture->shared_fallback->buffer;
+	p_texture->shared_fallback->buffer_tracker = tracker;
 }
 
 Vector<uint8_t> RenderingDevice::_texture_get_data(Texture *tex, uint32_t p_layer, bool p_2d) {
@@ -1535,6 +1802,9 @@ Error RenderingDevice::texture_copy(RID p_from_texture, RID p_to_texture, const 
 
 	copy_region.size = p_size;
 
+	// Indicate the texture will get modified for the shared texture fallback.
+	_texture_update_shared_fallback(p_to_texture, dst_tex, true);
+
 	// The textures must be mutable to be used in the copy operation.
 	bool src_made_mutable = _texture_make_mutable(src_tex, p_from_texture);
 	bool dst_made_mutable = _texture_make_mutable(dst_tex, p_to_texture);
@@ -1578,6 +1848,9 @@ Error RenderingDevice::texture_resolve_multisample(RID p_from_texture, RID p_to_
 	ERR_FAIL_COND_V_MSG(src_tex->read_aspect_flags != dst_tex->read_aspect_flags, ERR_INVALID_PARAMETER,
 			"Source and destination texture must be of the same type (color or depth).");
 
+	// Indicate the texture will get modified for the shared texture fallback.
+	_texture_update_shared_fallback(p_to_texture, dst_tex, true);
+
 	// The textures must be mutable to be used in the resolve operation.
 	bool src_made_mutable = _texture_make_mutable(src_tex, p_from_texture);
 	bool dst_made_mutable = _texture_make_mutable(dst_tex, p_to_texture);
@@ -1619,6 +1892,9 @@ Error RenderingDevice::texture_clear(RID p_texture, const Color &p_color, uint32
 	range.mipmap_count = p_mipmaps;
 	range.base_layer = src_tex->base_layer + p_base_layer;
 	range.layer_count = p_layers;
+
+	// Indicate the texture will get modified for the shared texture fallback.
+	_texture_update_shared_fallback(p_texture, src_tex, true);
 
 	if (_texture_make_mutable(src_tex, p_texture)) {
 		// The texture must be mutable to be used as a clear destination.
@@ -2526,6 +2802,14 @@ RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<u
 	return id;
 }
 
+void RenderingDevice::_uniform_set_update_shared(UniformSet *p_uniform_set) {
+	for (UniformSet::SharedTexture shared : p_uniform_set->shared_textures_to_update) {
+		Texture *texture = texture_owner.get_or_null(shared.texture);
+		ERR_CONTINUE(texture == nullptr);
+		_texture_update_shared_fallback(shared.texture, texture, shared.writing);
+	}
+}
+
 RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) {
 	_THREAD_SAFE_METHOD_
 
@@ -2554,6 +2838,7 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 	Vector<RDG::ResourceTracker *> draw_trackers;
 	Vector<RDG::ResourceUsage> draw_trackers_usage;
 	HashMap<RID, RDG::ResourceUsage> untracked_usage;
+	Vector<UniformSet::SharedTexture> shared_textures_to_update;
 
 	for (uint32_t i = 0; i < set_uniform_count; i++) {
 		const ShaderUniform &set_uniform = set_uniforms[i];
@@ -2619,8 +2904,16 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 						attachable_textures.push_back(attachable_texture);
 					}
 
-					if (texture->draw_tracker != nullptr) {
-						draw_trackers.push_back(texture->draw_tracker);
+					RDD::TextureID driver_id = texture->driver_id;
+					RDG::ResourceTracker *tracker = texture->draw_tracker;
+					if (texture->shared_fallback != nullptr && texture->shared_fallback->texture.id != 0) {
+						driver_id = texture->shared_fallback->texture;
+						tracker = texture->shared_fallback->texture_tracker;
+						shared_textures_to_update.push_back({ false, texture_id });
+					}
+
+					if (tracker != nullptr) {
+						draw_trackers.push_back(tracker);
 						draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_TEXTURE_SAMPLE);
 					} else {
 						untracked_usage[texture_id] = RDG::RESOURCE_USAGE_TEXTURE_SAMPLE;
@@ -2629,7 +2922,7 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 					DEV_ASSERT(!texture->owner.is_valid() || texture_owner.get_or_null(texture->owner));
 
 					driver_uniform.ids.push_back(*sampler_driver_id);
-					driver_uniform.ids.push_back(texture->driver_id);
+					driver_uniform.ids.push_back(driver_id);
 				}
 			} break;
 			case UNIFORM_TYPE_TEXTURE: {
@@ -2656,8 +2949,16 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 						attachable_textures.push_back(attachable_texture);
 					}
 
-					if (texture->draw_tracker != nullptr) {
-						draw_trackers.push_back(texture->draw_tracker);
+					RDD::TextureID driver_id = texture->driver_id;
+					RDG::ResourceTracker *tracker = texture->draw_tracker;
+					if (texture->shared_fallback != nullptr && texture->shared_fallback->texture.id != 0) {
+						driver_id = texture->shared_fallback->texture;
+						tracker = texture->shared_fallback->texture_tracker;
+						shared_textures_to_update.push_back({ false, texture_id });
+					}
+
+					if (tracker != nullptr) {
+						draw_trackers.push_back(tracker);
 						draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_TEXTURE_SAMPLE);
 					} else {
 						untracked_usage[texture_id] = RDG::RESOURCE_USAGE_TEXTURE_SAMPLE;
@@ -2665,7 +2966,7 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 
 					DEV_ASSERT(!texture->owner.is_valid() || texture_owner.get_or_null(texture->owner));
 
-					driver_uniform.ids.push_back(texture->driver_id);
+					driver_uniform.ids.push_back(driver_id);
 				}
 			} break;
 			case UNIFORM_TYPE_IMAGE: {
@@ -2686,6 +2987,10 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 
 					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_STORAGE_BIT), RID(),
 							"Image (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs the TEXTURE_USAGE_STORAGE_BIT usage flag set in order to be used as uniform.");
+
+					if (texture->owner.is_null() && texture->shared_fallback != nullptr) {
+						shared_textures_to_update.push_back({ true, texture_id });
+					}
 
 					if (_texture_make_mutable(texture, texture_id)) {
 						// The texture must be mutable as a layout transition will be required.
@@ -2872,6 +3177,7 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 	uniform_set.draw_trackers = draw_trackers;
 	uniform_set.draw_trackers_usage = draw_trackers_usage;
 	uniform_set.untracked_usage = untracked_usage;
+	uniform_set.shared_textures_to_update = shared_textures_to_update;
 	uniform_set.shader_set = p_shader_set;
 	uniform_set.shader_id = p_shader;
 
@@ -3347,11 +3653,15 @@ Error RenderingDevice::_draw_list_render_pass_begin(Framebuffer *p_framebuffer, 
 		for (int i = 0; i < p_framebuffer->texture_ids.size(); i++) {
 			RDD::RenderPassClearValue clear_value;
 
-			Texture *texture = texture_owner.get_or_null(p_framebuffer->texture_ids[i]);
+			RID texture_rid = p_framebuffer->texture_ids[i];
+			Texture *texture = texture_owner.get_or_null(texture_rid);
 			if (!texture) {
 				color_index++;
 				continue;
 			}
+
+			// Indicate the texture will get modified for the shared texture fallback.
+			_texture_update_shared_fallback(texture_rid, texture, true);
 
 			if (texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 				if (color_index < p_clear_colors.size()) {
@@ -3817,6 +4127,8 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 			draw_graph.add_draw_list_bind_uniform_set(dl->state.pipeline_shader_driver_id, dl->state.sets[i].uniform_set_driver_id, i);
 
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(dl->state.sets[i].uniform_set);
+			_uniform_set_update_shared(uniform_set);
+
 			draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
 
 			dl->state.sets[i].bound = true;
@@ -4301,6 +4613,8 @@ void RenderingDevice::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_g
 			draw_graph.add_compute_list_bind_uniform_set(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
 
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(cl->state.sets[i].uniform_set);
+			_uniform_set_update_shared(uniform_set);
+
 			draw_graph.add_compute_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
 
 			cl->state.sets[i].bound = true;
@@ -4408,6 +4722,8 @@ void RenderingDevice::compute_list_dispatch_indirect(ComputeListID p_list, RID p
 			draw_graph.add_compute_list_bind_uniform_set(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
 
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(cl->state.sets[i].uniform_set);
+			_uniform_set_update_shared(uniform_set);
+
 			draw_graph.add_compute_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
 
 			cl->state.sets[i].bound = true;
@@ -4499,6 +4815,7 @@ bool RenderingDevice::_texture_make_mutable(Texture *p_texture, RID p_texture_id
 						draw_tracker->parent = owner_texture->draw_tracker;
 						draw_tracker->texture_driver_id = p_texture->driver_id;
 						draw_tracker->texture_subresources = p_texture->barrier_range();
+						draw_tracker->texture_usage = p_texture->usage_flags;
 						draw_tracker->texture_slice_or_dirty_rect = p_texture->slice_rect;
 						owner_texture->slice_trackers[p_texture->slice_rect] = draw_tracker;
 					}
@@ -4520,6 +4837,7 @@ bool RenderingDevice::_texture_make_mutable(Texture *p_texture, RID p_texture_id
 			p_texture->draw_tracker = RDG::resource_tracker_create();
 			p_texture->draw_tracker->texture_driver_id = p_texture->driver_id;
 			p_texture->draw_tracker->texture_subresources = p_texture->barrier_range();
+			p_texture->draw_tracker->texture_usage = p_texture->usage_flags;
 			p_texture->draw_tracker->reference_count = 1;
 
 			if (p_texture_id.is_valid()) {
@@ -4915,6 +5233,8 @@ void RenderingDevice::_free_pending_resources(int p_frame) {
 		if (texture->bound) {
 			WARN_PRINT("Deleted a texture while it was bound.");
 		}
+
+		_texture_free_shared_fallback(texture);
 
 		texture_memory -= driver->texture_get_allocation_size(texture->driver_id);
 		driver->texture_free(texture->driver_id);

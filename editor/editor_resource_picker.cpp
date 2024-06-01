@@ -847,7 +847,7 @@ void EditorResourcePicker::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			draw_style_box(get_theme_stylebox(SNAME("panel"), SNAME("Tree")), Rect2(Point2(), get_size()));
+			draw_style_box(get_theme_stylebox(SceneStringName(panel), SNAME("Tree")), Rect2(Point2(), get_size()));
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -983,7 +983,7 @@ void EditorResourcePicker::_ensure_resource_menu() {
 	edit_menu = memnew(PopupMenu);
 	edit_menu->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 	add_child(edit_menu);
-	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
+	edit_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
 	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed).bind(false));
 }
 

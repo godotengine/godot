@@ -147,7 +147,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	}
 
 	// Panel
-	theme->set_stylebox("panel", "Panel", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
+	theme->set_stylebox(SceneStringName(panel), "Panel", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
 
 	// Button
 
@@ -159,7 +159,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// Make the focus outline appear to be flush with the buttons it's focusing.
 	focus->set_expand_margin_all(Math::round(2 * scale));
 
-	theme->set_stylebox("normal", "Button", button_normal);
+	theme->set_stylebox(CoreStringName(normal), "Button", button_normal);
 	theme->set_stylebox("hover", "Button", button_hover);
 	theme->set_stylebox(SceneStringName(pressed), "Button", button_pressed);
 	theme->set_stylebox("disabled", "Button", button_disabled);
@@ -188,7 +188,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("icon_max_width", "Button", 0);
 
 	// MenuBar
-	theme->set_stylebox("normal", "MenuBar", button_normal);
+	theme->set_stylebox(CoreStringName(normal), "MenuBar", button_normal);
 	theme->set_stylebox("hover", "MenuBar", button_hover);
 	theme->set_stylebox(SceneStringName(pressed), "MenuBar", button_pressed);
 	theme->set_stylebox("disabled", "MenuBar", button_disabled);
@@ -231,7 +231,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBox> sb_optbutton_pressed = make_flat_stylebox(style_pressed_color, 2 * default_margin, default_margin, 2 * default_margin, default_margin);
 	Ref<StyleBox> sb_optbutton_disabled = make_flat_stylebox(style_disabled_color, 2 * default_margin, default_margin, 2 * default_margin, default_margin);
 
-	theme->set_stylebox("normal", "OptionButton", sb_optbutton_normal);
+	theme->set_stylebox(CoreStringName(normal), "OptionButton", sb_optbutton_normal);
 	theme->set_stylebox("hover", "OptionButton", sb_optbutton_hover);
 	theme->set_stylebox(SceneStringName(pressed), "OptionButton", sb_optbutton_pressed);
 	theme->set_stylebox("disabled", "OptionButton", sb_optbutton_disabled);
@@ -266,7 +266,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// MenuButton
 
-	theme->set_stylebox("normal", "MenuButton", button_normal);
+	theme->set_stylebox(CoreStringName(normal), "MenuButton", button_normal);
 	theme->set_stylebox(SceneStringName(pressed), "MenuButton", button_pressed);
 	theme->set_stylebox("hover", "MenuButton", button_hover);
 	theme->set_stylebox("disabled", "MenuButton", button_disabled);
@@ -292,7 +292,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBox> cbx_focus = focus;
 	cbx_focus->set_content_margin_all(Math::round(4 * scale));
 
-	theme->set_stylebox("normal", "CheckBox", cbx_empty);
+	theme->set_stylebox(CoreStringName(normal), "CheckBox", cbx_empty);
 	theme->set_stylebox(SceneStringName(pressed), "CheckBox", cbx_empty);
 	theme->set_stylebox("disabled", "CheckBox", cbx_empty);
 	theme->set_stylebox("hover", "CheckBox", cbx_empty);
@@ -328,7 +328,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBox> cb_empty = memnew(StyleBoxEmpty);
 	cb_empty->set_content_margin_individual(Math::round(6 * scale), Math::round(4 * scale), Math::round(6 * scale), Math::round(4 * scale));
 
-	theme->set_stylebox("normal", "CheckButton", cb_empty);
+	theme->set_stylebox(CoreStringName(normal), "CheckButton", cb_empty);
 	theme->set_stylebox(SceneStringName(pressed), "CheckButton", cb_empty);
 	theme->set_stylebox("disabled", "CheckButton", cb_empty);
 	theme->set_stylebox("hover", "CheckButton", cb_empty);
@@ -372,19 +372,19 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxFlat> flat_button_pressed = button_pressed->duplicate();
 	flat_button_pressed->set_bg_color(style_pressed_color * Color(1, 1, 1, 0.85));
 
-	theme->set_stylebox("normal", "FlatButton", flat_button_normal);
+	theme->set_stylebox(CoreStringName(normal), "FlatButton", flat_button_normal);
 	theme->set_stylebox("hover", "FlatButton", flat_button_normal);
 	theme->set_stylebox(SceneStringName(pressed), "FlatButton", flat_button_pressed);
 	theme->set_stylebox("disabled", "FlatButton", flat_button_normal);
 
-	theme->set_stylebox("normal", "FlatMenuButton", flat_button_normal);
+	theme->set_stylebox(CoreStringName(normal), "FlatMenuButton", flat_button_normal);
 	theme->set_stylebox("hover", "FlatMenuButton", flat_button_normal);
 	theme->set_stylebox(SceneStringName(pressed), "FlatMenuButton", flat_button_pressed);
 	theme->set_stylebox("disabled", "FlatMenuButton", flat_button_normal);
 
 	// Label
 
-	theme->set_stylebox("normal", "Label", memnew(StyleBoxEmpty));
+	theme->set_stylebox(CoreStringName(normal), "Label", memnew(StyleBoxEmpty));
 	theme->set_font("font", "Label", Ref<Font>());
 	theme->set_font_size("font_size", "Label", -1);
 
@@ -413,7 +413,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// Add a line at the bottom to make LineEdits distinguishable from Buttons.
 	style_line_edit->set_border_width(SIDE_BOTTOM, 2);
 	style_line_edit->set_border_color(style_pressed_color);
-	theme->set_stylebox("normal", "LineEdit", style_line_edit);
+	theme->set_stylebox(CoreStringName(normal), "LineEdit", style_line_edit);
 
 	theme->set_stylebox("focus", "LineEdit", focus);
 
@@ -457,7 +457,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// TextEdit
 
-	theme->set_stylebox("normal", "TextEdit", style_line_edit);
+	theme->set_stylebox(CoreStringName(normal), "TextEdit", style_line_edit);
 	theme->set_stylebox("focus", "TextEdit", focus);
 	theme->set_stylebox("read_only", "TextEdit", style_line_edit_read_only);
 
@@ -487,7 +487,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// CodeEdit
 
-	theme->set_stylebox("normal", "CodeEdit", style_line_edit);
+	theme->set_stylebox(CoreStringName(normal), "CodeEdit", style_line_edit);
 	theme->set_stylebox("focus", "CodeEdit", focus);
 	theme->set_stylebox("read_only", "CodeEdit", style_line_edit_read_only);
 	theme->set_stylebox("completion", "CodeEdit", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
@@ -617,7 +617,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	Ref<StyleBoxEmpty> empty;
 	empty.instantiate();
-	theme->set_stylebox("panel", "ScrollContainer", empty);
+	theme->set_stylebox(SceneStringName(panel), "ScrollContainer", empty);
 
 	// Window
 
@@ -640,7 +640,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// Dialogs
 
 	// AcceptDialog is currently the base dialog, so this defines styles for all extending nodes.
-	theme->set_stylebox("panel", "AcceptDialog", make_flat_stylebox(style_popup_color, Math::round(8 * scale), Math::round(8 * scale), Math::round(8 * scale), Math::round(8 * scale), 0));
+	theme->set_stylebox(SceneStringName(panel), "AcceptDialog", make_flat_stylebox(style_popup_color, Math::round(8 * scale), Math::round(8 * scale), Math::round(8 * scale), Math::round(8 * scale), 0));
 	theme->set_constant("buttons_separation", "AcceptDialog", Math::round(10 * scale));
 
 	// File Dialog
@@ -659,11 +659,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Popup
 
-	theme->set_stylebox("panel", "PopupPanel", make_flat_stylebox(style_normal_color));
+	theme->set_stylebox(SceneStringName(panel), "PopupPanel", make_flat_stylebox(style_normal_color));
 
 	// PopupDialog
 
-	theme->set_stylebox("panel", "PopupDialog", make_flat_stylebox(style_normal_color));
+	theme->set_stylebox(SceneStringName(panel), "PopupDialog", make_flat_stylebox(style_normal_color));
 
 	// PopupMenu
 
@@ -680,7 +680,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	style_popup_panel->set_border_width_all(2);
 	style_popup_panel->set_border_color(style_popup_border_color);
 
-	theme->set_stylebox("panel", "PopupMenu", style_popup_panel);
+	theme->set_stylebox(SceneStringName(panel), "PopupMenu", style_popup_panel);
 	theme->set_stylebox("hover", "PopupMenu", make_flat_stylebox(style_popup_hover_color));
 	theme->set_stylebox("separator", "PopupMenu", separator_horizontal);
 	theme->set_stylebox("labeled_separator_left", "PopupMenu", separator_horizontal);
@@ -731,7 +731,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	graphn_sb_titlebar_selected->set_bg_color(Color(1.0, 0.625, 0.625, 0.6));
 	Ref<StyleBoxEmpty> graphnode_slot = make_empty_stylebox(0, 0, 0, 0);
 
-	theme->set_stylebox("panel", "GraphNode", graphnode_normal);
+	theme->set_stylebox(SceneStringName(panel), "GraphNode", graphnode_normal);
 	theme->set_stylebox("panel_selected", "GraphNode", graphnode_selected);
 	theme->set_stylebox("titlebar", "GraphNode", graphn_sb_titlebar);
 	theme->set_stylebox("titlebar_selected", "GraphNode", graphn_sb_titlebar_selected);
@@ -746,7 +746,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_type_variation("GraphNodeTitleLabel", "Label");
 
-	theme->set_stylebox("normal", "GraphNodeTitleLabel", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_stylebox(CoreStringName(normal), "GraphNodeTitleLabel", make_empty_stylebox(0, 0, 0, 0));
 	theme->set_font("font", "GraphNodeTitleLabel", Ref<Font>());
 	theme->set_font_size("font_size", "GraphNodeTitleLabel", -1);
 	theme->set_color("font_color", "GraphNodeTitleLabel", control_font_color);
@@ -766,7 +766,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxFlat> graphframe_sb_selected = graphframe_sb->duplicate();
 	graphframe_sb_selected->set_border_color(style_hover_color);
 
-	theme->set_stylebox("panel", "GraphFrame", graphframe_sb);
+	theme->set_stylebox(SceneStringName(panel), "GraphFrame", graphframe_sb);
 	theme->set_stylebox("panel_selected", "GraphFrame", graphframe_sb_selected);
 	theme->set_stylebox("titlebar", "GraphFrame", make_empty_stylebox(4, 4, 4, 4));
 	theme->set_stylebox("titlebar_selected", "GraphFrame", make_empty_stylebox(4, 4, 4, 4));
@@ -777,7 +777,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_type_variation("GraphFrameTitleLabel", "Label");
 
-	theme->set_stylebox("normal", "GraphFrameTitleLabel", memnew(StyleBoxEmpty));
+	theme->set_stylebox(CoreStringName(normal), "GraphFrameTitleLabel", memnew(StyleBoxEmpty));
 	theme->set_font_size("font_size", "GraphFrameTitleLabel", 22);
 	theme->set_color("font_color", "GraphFrameTitleLabel", Color(1, 1, 1));
 	theme->set_color("font_shadow_color", "GraphFrameTitleLabel", Color(0, 0, 0, 0));
@@ -790,7 +790,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Tree
 
-	theme->set_stylebox("panel", "Tree", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
+	theme->set_stylebox(SceneStringName(panel), "Tree", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
 	theme->set_stylebox("focus", "Tree", focus);
 	theme->set_stylebox("selected", "Tree", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("selected_focus", "Tree", make_flat_stylebox(style_selected_color));
@@ -860,7 +860,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// ItemList
 
-	theme->set_stylebox("panel", "ItemList", make_flat_stylebox(style_normal_color));
+	theme->set_stylebox(SceneStringName(panel), "ItemList", make_flat_stylebox(style_normal_color));
 	theme->set_stylebox("focus", "ItemList", focus);
 	theme->set_constant("h_separation", "ItemList", Math::round(4 * scale));
 	theme->set_constant("v_separation", "ItemList", Math::round(4 * scale));
@@ -904,7 +904,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("tab_unselected", "TabContainer", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabContainer", style_tab_disabled);
 	theme->set_stylebox("tab_focus", "TabContainer", style_tab_focus);
-	theme->set_stylebox("panel", "TabContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
+	theme->set_stylebox(SceneStringName(panel), "TabContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
 	theme->set_stylebox("tabbar_background", "TabContainer", make_empty_stylebox(0, 0, 0, 0));
 
 	theme->set_icon("increment", "TabContainer", icons["scroll_button_right"]);
@@ -1050,7 +1050,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// ColorPickerButton
 
 	theme->set_icon("bg", "ColorPickerButton", icons["mini_checkerboard"]);
-	theme->set_stylebox("normal", "ColorPickerButton", button_normal);
+	theme->set_stylebox(CoreStringName(normal), "ColorPickerButton", button_normal);
 	theme->set_stylebox(SceneStringName(pressed), "ColorPickerButton", button_pressed);
 	theme->set_stylebox("hover", "ColorPickerButton", button_hover);
 	theme->set_stylebox("disabled", "ColorPickerButton", button_disabled);
@@ -1083,7 +1083,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// TooltipPanel + TooltipLabel
 
 	theme->set_type_variation("TooltipPanel", "PopupPanel");
-	theme->set_stylebox("panel", "TooltipPanel",
+	theme->set_stylebox(SceneStringName(panel), "TooltipPanel",
 			make_flat_stylebox(Color(0, 0, 0, 0.5), 2 * default_margin, 0.5 * default_margin, 2 * default_margin, 0.5 * default_margin));
 
 	theme->set_type_variation("TooltipLabel", "Label");
@@ -1101,7 +1101,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// RichTextLabel
 
 	theme->set_stylebox("focus", "RichTextLabel", focus);
-	theme->set_stylebox("normal", "RichTextLabel", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_stylebox(CoreStringName(normal), "RichTextLabel", make_empty_stylebox(0, 0, 0, 0));
 
 	theme->set_font("normal_font", "RichTextLabel", Ref<Font>());
 	theme->set_font("bold_font", "RichTextLabel", bold_font);
@@ -1171,7 +1171,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("h_separation", "VFlowContainer", Math::round(4 * scale));
 	theme->set_constant("v_separation", "VFlowContainer", Math::round(4 * scale));
 
-	theme->set_stylebox("panel", "PanelContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
+	theme->set_stylebox(SceneStringName(panel), "PanelContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
 
 	theme->set_icon("zoom_out", "GraphEdit", icons["zoom_less"]);
 	theme->set_icon("zoom_in", "GraphEdit", icons["zoom_more"]);
@@ -1181,7 +1181,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("snapping_toggle", "GraphEdit", icons["grid_snap"]);
 	theme->set_icon("layout", "GraphEdit", icons["grid_layout"]);
 
-	theme->set_stylebox("panel", "GraphEdit", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
+	theme->set_stylebox(SceneStringName(panel), "GraphEdit", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
 
 	Ref<StyleBoxFlat> graph_toolbar_style = make_flat_stylebox(Color(0.24, 0.24, 0.24, 0.6), 4, 2, 4, 2);
 	theme->set_stylebox("menu_panel", "GraphEdit", graph_toolbar_style);
@@ -1200,7 +1200,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("port_hotzone_inner_extent", "GraphEdit", 22 * scale);
 	theme->set_constant("port_hotzone_outer_extent", "GraphEdit", 26 * scale);
 
-	theme->set_stylebox("panel", "GraphEditMinimap", make_flat_stylebox(Color(0.24, 0.24, 0.24), 0, 0, 0, 0));
+	theme->set_stylebox(SceneStringName(panel), "GraphEditMinimap", make_flat_stylebox(Color(0.24, 0.24, 0.24), 0, 0, 0, 0));
 	Ref<StyleBoxFlat> style_minimap_camera = make_flat_stylebox(Color(0.65, 0.65, 0.65, 0.2), 0, 0, 0, 0, 0);
 	style_minimap_camera->set_border_color(Color(0.65, 0.65, 0.65, 0.45));
 	style_minimap_camera->set_border_width_all(1);

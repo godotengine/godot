@@ -1138,7 +1138,7 @@ TextShaderEditor::TextShaderEditor() {
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
-	context_menu->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
+	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	VBoxContainer *main_container = memnew(VBoxContainer);
 	HBoxContainer *hbc = memnew(HBoxContainer);
@@ -1169,7 +1169,7 @@ TextShaderEditor::TextShaderEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_word_wrap"), EDIT_TOGGLE_WORD_WRAP);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
-	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
+	edit_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	search_menu = memnew(MenuButton);
 	search_menu->set_shortcut_context(this);
@@ -1180,13 +1180,13 @@ TextShaderEditor::TextShaderEditor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
-	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
+	search_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	MenuButton *goto_menu = memnew(MenuButton);
 	goto_menu->set_shortcut_context(this);
 	goto_menu->set_text(TTR("Go To"));
 	goto_menu->set_switch_on_hover(true);
-	goto_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
+	goto_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
 	goto_menu->get_popup()->add_separator();
@@ -1201,7 +1201,7 @@ TextShaderEditor::TextShaderEditor() {
 	help_menu->set_text(TTR("Help"));
 	help_menu->set_switch_on_hover(true);
 	help_menu->get_popup()->add_item(TTR("Online Docs"), HELP_DOCS);
-	help_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
+	help_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	add_child(main_container);
 	main_container->add_child(hbc);
@@ -1209,7 +1209,7 @@ TextShaderEditor::TextShaderEditor() {
 	hbc->add_child(edit_menu);
 	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
-	hbc->add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
+	hbc->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	main_container->add_child(editor_box);

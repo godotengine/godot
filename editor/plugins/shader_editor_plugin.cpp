@@ -699,7 +699,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	file_menu->get_popup()->add_item(TTR("Open File in Inspector"), FILE_INSPECT);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_item(TTR("Close File"), FILE_CLOSE);
-	file_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditorPlugin::_menu_item_pressed));
+	file_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ShaderEditorPlugin::_menu_item_pressed));
 	menu_hb->add_child(file_menu);
 
 	for (int i = FILE_SAVE; i < FILE_MAX; i++) {
@@ -738,7 +738,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	main_split->add_child(shader_tabs);
 	Ref<StyleBoxEmpty> empty;
 	empty.instantiate();
-	shader_tabs->add_theme_style_override("panel", empty);
+	shader_tabs->add_theme_style_override(SceneStringName(panel), empty);
 
 	button = EditorNode::get_bottom_panel()->add_item(TTR("Shader Editor"), window_wrapper, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_editor_bottom_panel", TTR("Toggle Shader Editor Bottom Panel"), KeyModifierMask::ALT | Key::S));
 

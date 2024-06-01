@@ -63,7 +63,7 @@ void OpenXRActionSetEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			_theme_changed();
-			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
+			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("TabContainer")));
 		} break;
 	}
 }

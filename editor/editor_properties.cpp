@@ -854,7 +854,7 @@ EditorPropertyLayersGrid::EditorPropertyLayersGrid() {
 	layer_rename = memnew(PopupMenu);
 	layer_rename->add_item(TTR("Rename layer"), 0);
 	add_child(layer_rename);
-	layer_rename->connect("id_pressed", callable_mp(this, &EditorPropertyLayersGrid::_rename_pressed));
+	layer_rename->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyLayersGrid::_rename_pressed));
 }
 
 Size2 EditorPropertyLayersGrid::get_grid_size() const {
@@ -1304,7 +1304,7 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	layers = memnew(PopupMenu);
 	add_child(layers);
 	layers->set_hide_on_checkable_item_selection(false);
-	layers->connect("id_pressed", callable_mp(this, &EditorPropertyLayers::_menu_pressed));
+	layers->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyLayers::_menu_pressed));
 	layers->connect("popup_hide", callable_mp((BaseButton *)button, &BaseButton::set_pressed).bind(false));
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorPropertyLayers::_refresh_names));
 }
@@ -1687,7 +1687,7 @@ EditorPropertyEasing::EditorPropertyEasing() {
 
 	preset = memnew(PopupMenu);
 	add_child(preset);
-	preset->connect("id_pressed", callable_mp(this, &EditorPropertyEasing::_set_preset));
+	preset->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyEasing::_set_preset));
 
 	spin = memnew(EditorSpinSlider);
 	spin->set_flat(true);
@@ -2990,7 +2990,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	menu->get_popup()->add_item(TTR("Copy as Text"), ACTION_COPY);
 	menu->get_popup()->add_item(TTR("Edit"), ACTION_EDIT);
 	menu->get_popup()->add_item(TTR("Show Node in Tree"), ACTION_SELECT);
-	menu->get_popup()->connect(SNAME("id_pressed"), callable_mp(this, &EditorPropertyNodePath::_menu_option));
+	menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyNodePath::_menu_option));
 
 	edit = memnew(LineEdit);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);

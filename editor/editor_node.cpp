@@ -514,14 +514,14 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 
 	// Update styles.
 	{
-		gui_base->add_theme_style_override("panel", theme->get_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
+		gui_base->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
 		main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, theme->get_constant(SNAME("window_border_margin"), EditorStringName(Editor)));
 		main_vbox->add_theme_constant_override("separation", theme->get_constant(SNAME("top_bar_separation"), EditorStringName(Editor)));
 
-		scene_root_parent->add_theme_style_override("panel", theme->get_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
-		bottom_panel->add_theme_style_override("panel", theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
+		scene_root_parent->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
+		bottom_panel->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 		distraction_free->set_icon(theme->get_icon(SNAME("DistractionFree"), EditorStringName(EditorIcons)));
-		distraction_free->add_theme_style_override(SceneStringName(pressed), theme->get_stylebox("normal", "FlatMenuButton"));
+		distraction_free->add_theme_style_override(SceneStringName(pressed), theme->get_stylebox(CoreStringName(normal), "FlatMenuButton"));
 
 		help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), theme->get_icon(SNAME("HelpSearch"), EditorStringName(EditorIcons)));
 		help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), theme->get_icon(SNAME("ActionCopy"), EditorStringName(EditorIcons)));
@@ -529,7 +529,7 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 		help_menu->set_item_icon(help_menu->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), theme->get_icon(SNAME("Heart"), EditorStringName(EditorIcons)));
 
 		if (EditorDebuggerNode::get_singleton()->is_visible()) {
-			bottom_panel->add_theme_style_override("panel", theme->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
+			bottom_panel->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
 		}
 
 		for (int i = 0; i < main_editor_buttons.size(); i++) {
@@ -6792,7 +6792,7 @@ EditorNode::EditorNode() {
 
 	scene_root_parent = memnew(PanelContainer);
 	scene_root_parent->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
-	scene_root_parent->add_theme_style_override("panel", theme->get_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
+	scene_root_parent->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
 	scene_root_parent->set_draw_behind_parent(true);
 	srt->add_child(scene_root_parent);
 	scene_root_parent->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -6902,7 +6902,7 @@ EditorNode::EditorNode() {
 
 	recent_scenes = memnew(PopupMenu);
 	file_menu->add_submenu_node_item(TTR("Open Recent"), recent_scenes, FILE_OPEN_RECENT);
-	recent_scenes->connect("id_pressed", callable_mp(this, &EditorNode::_open_recent_scene));
+	recent_scenes->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_open_recent_scene));
 
 	file_menu->add_separator();
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/save_scene", TTR("Save Scene"), KeyModifierMask::CMD_OR_CTRL + Key::S), FILE_SAVE_SCENE);
@@ -6947,7 +6947,7 @@ EditorNode::EditorNode() {
 
 		apple_menu->add_shortcut(ED_GET_SHORTCUT("editor/editor_settings"), SETTINGS_PREFERENCES);
 		apple_menu->add_separator();
-		apple_menu->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
+		apple_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
 	}
 #endif
 
@@ -6956,7 +6956,7 @@ EditorNode::EditorNode() {
 	main_menu->add_child(project_menu);
 
 	project_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/project_settings", TTR("Project Settings..."), Key::NONE, TTR("Project Settings")), RUN_SETTINGS);
-	project_menu->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
+	project_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
 
 	project_menu->add_separator();
 	project_menu->add_item(TTR("Version Control"), VCS_MENU);
@@ -7028,7 +7028,7 @@ EditorNode::EditorNode() {
 	editor_layouts = memnew(PopupMenu);
 	editor_layouts->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	settings_menu->add_submenu_node_item(TTR("Editor Layout"), editor_layouts);
-	editor_layouts->connect("id_pressed", callable_mp(this, &EditorNode::_layout_menu_option));
+	editor_layouts->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_layout_menu_option));
 	settings_menu->add_separator();
 
 	ED_SHORTCUT_AND_COMMAND("editor/take_screenshot", TTR("Take Screenshot"), KeyModifierMask::CTRL | Key::F12);
@@ -7071,7 +7071,7 @@ EditorNode::EditorNode() {
 	}
 	main_menu->add_child(help_menu);
 
-	help_menu->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
+	help_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
 
 	ED_SHORTCUT_AND_COMMAND("editor/editor_help", TTR("Search Help..."), Key::F1);
 	ED_SHORTCUT_OVERRIDE("editor/editor_help", "macos", KeyModifierMask::ALT | Key::SPACE);
@@ -7170,7 +7170,7 @@ EditorNode::EditorNode() {
 	update_spinner = memnew(MenuButton);
 	right_menu_hb->add_child(update_spinner);
 	update_spinner->set_icon(theme->get_icon(SNAME("Progress1"), EditorStringName(EditorIcons)));
-	update_spinner->get_popup()->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
+	update_spinner->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
 	PopupMenu *p = update_spinner->get_popup();
 	p->add_radio_check_item(TTR("Update Continuously"), SETTINGS_UPDATE_CONTINUOUSLY);
 	p->add_radio_check_item(TTR("Update When Changed"), SETTINGS_UPDATE_WHEN_CHANGED);
@@ -7341,11 +7341,11 @@ EditorNode::EditorNode() {
 	gui_base->add_child(file_script);
 	file_script->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
 
-	file_menu->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
+	file_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
 	file_menu->connect("about_to_popup", callable_mp(this, &EditorNode::_update_file_menu_opened));
 	file_menu->connect("popup_hide", callable_mp(this, &EditorNode::_update_file_menu_closed));
 
-	settings_menu->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
+	settings_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
 
 	file->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
 	file_templates->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));

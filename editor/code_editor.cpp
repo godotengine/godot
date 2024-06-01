@@ -1794,7 +1794,7 @@ CodeTextEditor::CodeTextEditor() {
 		zoom_menu->set_item_metadata(i, z);
 	}
 
-	zoom_menu->connect("id_pressed", callable_mp(this, &CodeTextEditor::_zoom_popup_id_pressed));
+	zoom_menu->connect(SceneStringName(id_pressed), callable_mp(this, &CodeTextEditor::_zoom_popup_id_pressed));
 
 	status_bar->add_child(memnew(VSeparator));
 

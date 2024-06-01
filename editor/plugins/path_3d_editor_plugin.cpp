@@ -896,7 +896,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	menu->set_item_checked(HANDLE_OPTION_ANGLE, mirror_handle_angle);
 	menu->add_check_item(TTR("Mirror Handle Lengths"));
 	menu->set_item_checked(HANDLE_OPTION_LENGTH, mirror_handle_length);
-	menu->connect("id_pressed", callable_mp(this, &Path3DEditorPlugin::_handle_option_pressed));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &Path3DEditorPlugin::_handle_option_pressed));
 
 	curve_edit->set_pressed(true);
 }

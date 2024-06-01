@@ -4538,6 +4538,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "justification_flags" || subtag_a[0] == "jst") {
 						Vector<String> subtag_b = subtag_a[1].split(",");
+						jst_flags = 0; // Clear flags.
 						for (const String &E : subtag_b) {
 							if (E == "kashida" || E == "k") {
 								jst_flags.set_flag(TextServer::JUSTIFICATION_KASHIDA);
@@ -4551,7 +4552,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 								jst_flags.set_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE);
 							} else if (E == "skip_last_with_chars" || E == "sv") {
 								jst_flags.set_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS);
-							} else if (E == "do_not_skip_singe" || E == "ns") {
+							} else if (E == "do_not_skip_single" || E == "ns") {
 								jst_flags.set_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE);
 							}
 						}
@@ -6308,7 +6309,7 @@ Size2 RichTextLabel::get_minimum_size() const {
 void RichTextLabel::_generate_context_menu() {
 	menu = memnew(PopupMenu);
 	add_child(menu, false, INTERNAL_MODE_FRONT);
-	menu->connect("id_pressed", callable_mp(this, &RichTextLabel::menu_option));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &RichTextLabel::menu_option));
 
 	menu->add_item(ETR("Copy"), MENU_COPY);
 	menu->add_item(ETR("Select All"), MENU_SELECT_ALL);
