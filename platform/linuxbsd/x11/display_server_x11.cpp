@@ -3081,8 +3081,7 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 			cursors_cache.erase(p_shape);
 		}
 
-		Rect2 atlas_rect;
-		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot, atlas_rect);
+		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot);
 		ERR_FAIL_COND(image.is_null());
 		Vector2i texture_size = image->get_size();
 
@@ -3100,13 +3099,8 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 		cursor_image->pixels = (XcursorPixel *)memalloc(size);
 
 		for (XcursorPixel index = 0; index < image_size; index++) {
-			int row_index = floor(index / texture_size.width) + atlas_rect.position.y;
-			int column_index = (index % int(texture_size.width)) + atlas_rect.position.x;
-
-			if (atlas_rect.has_area()) {
-				column_index = MIN(column_index, atlas_rect.size.width - 1);
-				row_index = MIN(row_index, atlas_rect.size.height - 1);
-			}
+			int row_index = floor(index / texture_size.width);
+			int column_index = index % int(texture_size.width);
 
 			*(cursor_image->pixels + index) = image->get_pixel(column_index, row_index).to_argb32();
 		}

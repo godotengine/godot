@@ -517,18 +517,9 @@ DisplayServer::CursorShape DisplayServerWeb::cursor_get_shape() const {
 void DisplayServerWeb::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 	if (p_cursor.is_valid()) {
-		Rect2 atlas_rect;
-		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot, atlas_rect);
+		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot);
 		ERR_FAIL_COND(image.is_null());
 		Vector2i texture_size = image->get_size();
-
-		if (atlas_rect.has_area()) {
-			image->crop_from_point(
-					atlas_rect.position.x,
-					atlas_rect.position.y,
-					texture_size.width,
-					texture_size.height);
-		}
 
 		if (image->get_format() != Image::FORMAT_RGBA8) {
 			image->convert(Image::FORMAT_RGBA8);
