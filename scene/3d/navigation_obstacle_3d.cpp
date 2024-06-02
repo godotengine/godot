@@ -92,30 +92,26 @@ void NavigationObstacle3D::_notification(int p_what) {
 			} else {
 				_update_map(RID());
 			}
-			previous_transform = get_global_transform();
 			// need to trigger map controlled agent assignment somehow for the fake_agent since obstacles use no callback like regular agents
 			NavigationServer3D::get_singleton()->obstacle_set_avoidance_enabled(obstacle, avoidance_enabled);
-			_update_position(get_global_transform().origin);
+			_update_position(get_global_position());
 			set_physics_process_internal(true);
 #ifdef DEBUG_ENABLED
-			if ((NavigationServer3D::get_singleton()->get_debug_avoidance_enabled()) &&
-					(NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_radius())) {
-				_update_fake_agent_radius_debug();
-				_update_static_obstacle_debug();
-			}
+			_update_debug();
 #endif // DEBUG_ENABLED
 		} break;
+
+#ifdef TOOLS_ENABLED
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			update_gizmos();
+		} break;
+#endif // TOOLS_ENABLED
 
 		case NOTIFICATION_EXIT_TREE: {
 			set_physics_process_internal(false);
 			_update_map(RID());
 #ifdef DEBUG_ENABLED
-			if (fake_agent_radius_debug_instance.is_valid()) {
-				RS::get_singleton()->instance_set_visible(fake_agent_radius_debug_instance, false);
-			}
-			if (static_obstacle_debug_instance.is_valid()) {
-				RS::get_singleton()->instance_set_visible(static_obstacle_debug_instance, false);
-			}
+			_update_debug();
 #endif // DEBUG_ENABLED
 		} break;
 
@@ -151,20 +147,13 @@ void NavigationObstacle3D::_notification(int p_what) {
 
 #ifdef DEBUG_ENABLED
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (is_inside_tree()) {
-				if (fake_agent_radius_debug_instance.is_valid()) {
-					RS::get_singleton()->instance_set_visible(fake_agent_radius_debug_instance, is_visible_in_tree());
-				}
-				if (static_obstacle_debug_instance.is_valid()) {
-					RS::get_singleton()->instance_set_visible(static_obstacle_debug_instance, is_visible_in_tree());
-				}
-			}
+			_update_debug();
 		} break;
 #endif // DEBUG_ENABLED
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (is_inside_tree()) {
-				_update_position(get_global_transform().origin);
+				_update_position(get_global_position());
 
 				if (velocity_submitted) {
 					velocity_submitted = false;
@@ -175,21 +164,23 @@ void NavigationObstacle3D::_notification(int p_what) {
 					previous_velocity = velocity;
 				}
 #ifdef DEBUG_ENABLED
-				if (fake_agent_radius_debug_instance.is_valid() && radius > 0.0) {
+				if (fake_agent_radius_debug_instance_rid.is_valid() && radius > 0.0) {
 					// Prevent non-positive scaling.
 					const Vector3 safe_scale = get_global_basis().get_scale().abs().maxf(0.001);
 					// Agent radius is a scalar value and does not support non-uniform scaling, choose the largest axis.
 					const float scaling_max_value = safe_scale[safe_scale.max_axis_index()];
 					const Vector3 uniform_max_scale = Vector3(scaling_max_value, scaling_max_value, scaling_max_value);
 					const Transform3D debug_transform = Transform3D(Basis().scaled(uniform_max_scale), get_global_position());
-					RS::get_singleton()->instance_set_transform(fake_agent_radius_debug_instance, debug_transform);
+
+					RS::get_singleton()->instance_set_transform(fake_agent_radius_debug_instance_rid, debug_transform);
 				}
-				if (static_obstacle_debug_instance.is_valid() && get_vertices().size() > 0) {
+				if (static_obstacle_debug_instance_rid.is_valid() && get_vertices().size() > 0) {
 					// Prevent non-positive scaling.
 					const Vector3 safe_scale = get_global_basis().get_scale().abs().maxf(0.001);
 					// Obstacles are projected to the xz-plane, so only rotation around the y-axis can be taken into account.
 					const Transform3D debug_transform = Transform3D(Basis().scaled(safe_scale).rotated(Vector3(0.0, 1.0, 0.0), get_global_rotation().y), get_global_position());
-					RS::get_singleton()->instance_set_transform(static_obstacle_debug_instance, debug_transform);
+
+					RS::get_singleton()->instance_set_transform(static_obstacle_debug_instance_rid, debug_transform);
 				}
 #endif // DEBUG_ENABLED
 			}
@@ -198,53 +189,79 @@ void NavigationObstacle3D::_notification(int p_what) {
 }
 
 NavigationObstacle3D::NavigationObstacle3D() {
-	obstacle = NavigationServer3D::get_singleton()->obstacle_create();
+	NavigationServer3D *ns3d = NavigationServer3D::get_singleton();
 
-	NavigationServer3D::get_singleton()->obstacle_set_height(obstacle, height);
-	NavigationServer3D::get_singleton()->obstacle_set_radius(obstacle, radius);
-	NavigationServer3D::get_singleton()->obstacle_set_vertices(obstacle, vertices);
-	NavigationServer3D::get_singleton()->obstacle_set_avoidance_layers(obstacle, avoidance_layers);
-	NavigationServer3D::get_singleton()->obstacle_set_use_3d_avoidance(obstacle, use_3d_avoidance);
-	NavigationServer3D::get_singleton()->obstacle_set_avoidance_enabled(obstacle, avoidance_enabled);
+	obstacle = ns3d->obstacle_create();
+
+	ns3d->obstacle_set_height(obstacle, height);
+	ns3d->obstacle_set_radius(obstacle, radius);
+	ns3d->obstacle_set_vertices(obstacle, vertices);
+	ns3d->obstacle_set_avoidance_layers(obstacle, avoidance_layers);
+	ns3d->obstacle_set_use_3d_avoidance(obstacle, use_3d_avoidance);
+	ns3d->obstacle_set_avoidance_enabled(obstacle, avoidance_enabled);
 
 #ifdef DEBUG_ENABLED
-	NavigationServer3D::get_singleton()->connect("avoidance_debug_changed", callable_mp(this, &NavigationObstacle3D::_update_fake_agent_radius_debug));
-	NavigationServer3D::get_singleton()->connect("avoidance_debug_changed", callable_mp(this, &NavigationObstacle3D::_update_static_obstacle_debug));
+	RenderingServer *rs = RenderingServer::get_singleton();
+
+	fake_agent_radius_debug_mesh_rid = rs->mesh_create();
+	static_obstacle_debug_mesh_rid = rs->mesh_create();
+
+	fake_agent_radius_debug_instance_rid = rs->instance_create();
+	static_obstacle_debug_instance_rid = rs->instance_create();
+
+	rs->instance_set_base(fake_agent_radius_debug_instance_rid, fake_agent_radius_debug_mesh_rid);
+	rs->instance_set_base(static_obstacle_debug_instance_rid, static_obstacle_debug_mesh_rid);
+
+	ns3d->connect("avoidance_debug_changed", callable_mp(this, &NavigationObstacle3D::_update_fake_agent_radius_debug));
+	ns3d->connect("avoidance_debug_changed", callable_mp(this, &NavigationObstacle3D::_update_static_obstacle_debug));
 	_update_fake_agent_radius_debug();
 	_update_static_obstacle_debug();
 #endif // DEBUG_ENABLED
+
+#ifdef TOOLS_ENABLED
+	set_notify_transform(true);
+#endif // TOOLS_ENABLED
 }
 
 NavigationObstacle3D::~NavigationObstacle3D() {
-	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
+	NavigationServer3D *ns3d = NavigationServer3D::get_singleton();
+	ERR_FAIL_NULL(ns3d);
 
-	NavigationServer3D::get_singleton()->free(obstacle);
+	ns3d->free(obstacle);
 	obstacle = RID();
 
 #ifdef DEBUG_ENABLED
-	NavigationServer3D::get_singleton()->disconnect("avoidance_debug_changed", callable_mp(this, &NavigationObstacle3D::_update_fake_agent_radius_debug));
-	NavigationServer3D::get_singleton()->disconnect("avoidance_debug_changed", callable_mp(this, &NavigationObstacle3D::_update_static_obstacle_debug));
-	if (fake_agent_radius_debug_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(fake_agent_radius_debug_instance);
-	}
-	if (fake_agent_radius_debug_mesh.is_valid()) {
-		RenderingServer::get_singleton()->free(fake_agent_radius_debug_mesh->get_rid());
-	}
+	ns3d->disconnect("avoidance_debug_changed", callable_mp(this, &NavigationObstacle3D::_update_fake_agent_radius_debug));
+	ns3d->disconnect("avoidance_debug_changed", callable_mp(this, &NavigationObstacle3D::_update_static_obstacle_debug));
 
-	if (static_obstacle_debug_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(static_obstacle_debug_instance);
+	RenderingServer *rs = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rs);
+	if (fake_agent_radius_debug_instance_rid.is_valid()) {
+		rs->free(fake_agent_radius_debug_instance_rid);
+		fake_agent_radius_debug_instance_rid = RID();
 	}
-	if (static_obstacle_debug_mesh.is_valid()) {
-		RenderingServer::get_singleton()->free(static_obstacle_debug_mesh->get_rid());
+	if (fake_agent_radius_debug_mesh_rid.is_valid()) {
+		rs->free(fake_agent_radius_debug_mesh_rid);
+		fake_agent_radius_debug_mesh_rid = RID();
+	}
+	if (static_obstacle_debug_instance_rid.is_valid()) {
+		rs->free(static_obstacle_debug_instance_rid);
+		static_obstacle_debug_instance_rid = RID();
+	}
+	if (static_obstacle_debug_mesh_rid.is_valid()) {
+		rs->free(static_obstacle_debug_mesh_rid);
+		static_obstacle_debug_mesh_rid = RID();
 	}
 #endif // DEBUG_ENABLED
 }
 
 void NavigationObstacle3D::set_vertices(const Vector<Vector3> &p_vertices) {
 	vertices = p_vertices;
+
 	NavigationServer3D::get_singleton()->obstacle_set_vertices(obstacle, vertices);
 #ifdef DEBUG_ENABLED
 	_update_static_obstacle_debug();
+	update_gizmos();
 #endif // DEBUG_ENABLED
 }
 
@@ -276,6 +293,7 @@ void NavigationObstacle3D::set_radius(real_t p_radius) {
 
 #ifdef DEBUG_ENABLED
 	_update_fake_agent_radius_debug();
+	update_gizmos();
 #endif // DEBUG_ENABLED
 }
 
@@ -290,6 +308,7 @@ void NavigationObstacle3D::set_height(real_t p_height) {
 
 #ifdef DEBUG_ENABLED
 	_update_static_obstacle_debug();
+	update_gizmos();
 #endif // DEBUG_ENABLED
 }
 
@@ -394,30 +413,43 @@ void NavigationObstacle3D::_update_use_3d_avoidance(bool p_use_3d_avoidance) {
 }
 
 #ifdef DEBUG_ENABLED
+void NavigationObstacle3D::_update_debug() {
+	RenderingServer *rs = RenderingServer::get_singleton();
+	if (is_inside_tree()) {
+		rs->instance_set_visible(fake_agent_radius_debug_instance_rid, is_visible_in_tree());
+		rs->instance_set_visible(static_obstacle_debug_instance_rid, is_visible_in_tree());
+		rs->instance_set_scenario(fake_agent_radius_debug_instance_rid, get_world_3d()->get_scenario());
+		rs->instance_set_scenario(static_obstacle_debug_instance_rid, get_world_3d()->get_scenario());
+		rs->instance_set_transform(fake_agent_radius_debug_instance_rid, Transform3D(Basis(), get_global_position()));
+		rs->instance_set_transform(static_obstacle_debug_instance_rid, Transform3D(Basis(), get_global_position()));
+		_update_fake_agent_radius_debug();
+		_update_static_obstacle_debug();
+	} else {
+		rs->mesh_clear(fake_agent_radius_debug_mesh_rid);
+		rs->mesh_clear(static_obstacle_debug_mesh_rid);
+		rs->instance_set_scenario(fake_agent_radius_debug_instance_rid, RID());
+		rs->instance_set_scenario(static_obstacle_debug_instance_rid, RID());
+	}
+}
+
 void NavigationObstacle3D::_update_fake_agent_radius_debug() {
+	NavigationServer3D *ns3d = NavigationServer3D::get_singleton();
+	RenderingServer *rs = RenderingServer::get_singleton();
+
 	bool is_debug_enabled = false;
 	if (Engine::get_singleton()->is_editor_hint()) {
 		is_debug_enabled = true;
-	} else if (NavigationServer3D::get_singleton()->get_debug_enabled() &&
-			NavigationServer3D::get_singleton()->get_debug_avoidance_enabled() &&
-			NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_radius()) {
+	} else if (ns3d->get_debug_enabled() &&
+			ns3d->get_debug_avoidance_enabled() &&
+			ns3d->get_debug_navigation_avoidance_enable_obstacles_radius()) {
 		is_debug_enabled = true;
 	}
 
-	if (is_debug_enabled == false) {
-		if (fake_agent_radius_debug_instance.is_valid()) {
-			RS::get_singleton()->instance_set_visible(fake_agent_radius_debug_instance, false);
-		}
+	rs->mesh_clear(fake_agent_radius_debug_mesh_rid);
+
+	if (!is_debug_enabled) {
 		return;
 	}
-
-	if (!fake_agent_radius_debug_instance.is_valid()) {
-		fake_agent_radius_debug_instance = RenderingServer::get_singleton()->instance_create();
-	}
-	if (fake_agent_radius_debug_mesh.is_null()) {
-		fake_agent_radius_debug_mesh.instantiate();
-	}
-	fake_agent_radius_debug_mesh->clear_surfaces();
 
 	Vector<Vector3> face_vertex_array;
 	Vector<int> face_indices_array;
@@ -472,147 +504,106 @@ void NavigationObstacle3D::_update_fake_agent_radius_debug() {
 	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
 	face_mesh_array[Mesh::ARRAY_INDEX] = face_indices_array;
 
-	fake_agent_radius_debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
-	Ref<StandardMaterial3D> face_material = NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_obstacles_radius_material();
-	fake_agent_radius_debug_mesh->surface_set_material(0, face_material);
+	rs->mesh_add_surface_from_arrays(fake_agent_radius_debug_mesh_rid, RS::PRIMITIVE_TRIANGLES, face_mesh_array);
 
-	RS::get_singleton()->instance_set_base(fake_agent_radius_debug_instance, fake_agent_radius_debug_mesh->get_rid());
+	Ref<StandardMaterial3D> face_material = ns3d->get_debug_navigation_avoidance_obstacles_radius_material();
+	rs->instance_set_surface_override_material(fake_agent_radius_debug_instance_rid, 0, face_material->get_rid());
+
 	if (is_inside_tree()) {
-		RS::get_singleton()->instance_set_scenario(fake_agent_radius_debug_instance, get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_visible(fake_agent_radius_debug_instance, is_visible_in_tree());
+		rs->instance_set_scenario(fake_agent_radius_debug_instance_rid, get_world_3d()->get_scenario());
+		rs->instance_set_visible(fake_agent_radius_debug_instance_rid, is_visible_in_tree());
 	}
 }
 #endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
 void NavigationObstacle3D::_update_static_obstacle_debug() {
-	bool is_debug_enabled = false;
 	if (Engine::get_singleton()->is_editor_hint()) {
-		is_debug_enabled = true;
-	} else if (NavigationServer3D::get_singleton()->get_debug_enabled() &&
-			NavigationServer3D::get_singleton()->get_debug_avoidance_enabled() &&
-			NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_static()) {
+		// Don't update inside Editor as Node3D gizmo takes care of this.
+		return;
+	}
+
+	NavigationServer3D *ns3d = NavigationServer3D::get_singleton();
+	RenderingServer *rs = RenderingServer::get_singleton();
+
+	bool is_debug_enabled = false;
+	if (ns3d->get_debug_enabled() &&
+			ns3d->get_debug_avoidance_enabled() &&
+			ns3d->get_debug_navigation_avoidance_enable_obstacles_static()) {
 		is_debug_enabled = true;
 	}
 
-	if (is_debug_enabled == false) {
-		if (static_obstacle_debug_instance.is_valid()) {
-			RS::get_singleton()->instance_set_visible(static_obstacle_debug_instance, false);
+	rs->mesh_clear(static_obstacle_debug_mesh_rid);
+
+	if (!is_debug_enabled) {
+		return;
+	}
+
+	const int vertex_count = vertices.size();
+
+	if (vertex_count < 3) {
+		if (static_obstacle_debug_instance_rid.is_valid()) {
+			rs->instance_set_visible(static_obstacle_debug_instance_rid, false);
 		}
 		return;
 	}
-
-	if (vertices.size() < 3) {
-		if (static_obstacle_debug_instance.is_valid()) {
-			RS::get_singleton()->instance_set_visible(static_obstacle_debug_instance, false);
-		}
-		return;
-	}
-
-	if (!static_obstacle_debug_instance.is_valid()) {
-		static_obstacle_debug_instance = RenderingServer::get_singleton()->instance_create();
-	}
-	if (static_obstacle_debug_mesh.is_null()) {
-		static_obstacle_debug_mesh.instantiate();
-	}
-	static_obstacle_debug_mesh->clear_surfaces();
-
-	Vector<Vector2> polygon_2d_vertices;
-	polygon_2d_vertices.resize(vertices.size());
-	Vector2 *polygon_2d_vertices_ptr = polygon_2d_vertices.ptrw();
-
-	for (int i = 0; i < vertices.size(); ++i) {
-		Vector3 obstacle_vertex = vertices[i];
-		Vector2 obstacle_vertex_2d = Vector2(obstacle_vertex.x, obstacle_vertex.z);
-		polygon_2d_vertices_ptr[i] = obstacle_vertex_2d;
-	}
-
-	Vector<int> triangulated_polygon_2d_indices = Geometry2D::triangulate_polygon(polygon_2d_vertices);
-
-	if (triangulated_polygon_2d_indices.is_empty()) {
-		// failed triangulation
-		return;
-	}
-
-	bool obstacle_pushes_inward = Geometry2D::is_polygon_clockwise(polygon_2d_vertices);
-
-	Vector<Vector3> face_vertex_array;
-	Vector<int> face_indices_array;
-
-	face_vertex_array.resize(polygon_2d_vertices.size());
-	face_indices_array.resize(triangulated_polygon_2d_indices.size());
-
-	Vector3 *face_vertex_array_ptr = face_vertex_array.ptrw();
-	int *face_indices_array_ptr = face_indices_array.ptrw();
-
-	for (int i = 0; i < triangulated_polygon_2d_indices.size(); ++i) {
-		int vertex_index = triangulated_polygon_2d_indices[i];
-		const Vector2 &vertex_2d = polygon_2d_vertices[vertex_index];
-		Vector3 vertex_3d = Vector3(vertex_2d.x, 0.0, vertex_2d.y);
-		face_vertex_array_ptr[vertex_index] = vertex_3d;
-		face_indices_array_ptr[i] = vertex_index;
-	}
-
-	Array face_mesh_array;
-	face_mesh_array.resize(Mesh::ARRAY_MAX);
-	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
-	face_mesh_array[Mesh::ARRAY_INDEX] = face_indices_array;
-
-	static_obstacle_debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
 
 	Vector<Vector3> edge_vertex_array;
+	edge_vertex_array.resize(vertex_count * 8);
 
-	for (int i = 0; i < polygon_2d_vertices.size(); ++i) {
-		int from_index = i - 1;
-		int to_index = i;
+	Vector3 *edge_vertex_array_ptrw = edge_vertex_array.ptrw();
 
-		if (i == 0) {
-			from_index = polygon_2d_vertices.size() - 1;
-		}
+	int vertex_index = 0;
 
-		const Vector2 &vertex_2d_from = polygon_2d_vertices[from_index];
-		const Vector2 &vertex_2d_to = polygon_2d_vertices[to_index];
+	for (int i = 0; i < vertex_count; i++) {
+		Vector3 point = vertices[i];
+		Vector3 next_point = vertices[(i + 1) % vertex_count];
 
-		Vector3 vertex_3d_ground_from = Vector3(vertex_2d_from.x, 0.0, vertex_2d_from.y);
-		Vector3 vertex_3d_ground_to = Vector3(vertex_2d_to.x, 0.0, vertex_2d_to.y);
+		Vector3 direction = next_point.direction_to(point);
+		Vector3 arrow_dir = direction.cross(Vector3(0.0, 1.0, 0.0));
+		Vector3 edge_middle = point + ((next_point - point) * 0.5);
 
-		edge_vertex_array.push_back(vertex_3d_ground_from);
-		edge_vertex_array.push_back(vertex_3d_ground_to);
+		edge_vertex_array_ptrw[vertex_index++] = edge_middle;
+		edge_vertex_array_ptrw[vertex_index++] = edge_middle + (arrow_dir * 0.5);
 
-		Vector3 vertex_3d_height_from = Vector3(vertex_2d_from.x, height, vertex_2d_from.y);
-		Vector3 vertex_3d_height_to = Vector3(vertex_2d_to.x, height, vertex_2d_to.y);
+		edge_vertex_array_ptrw[vertex_index++] = point;
+		edge_vertex_array_ptrw[vertex_index++] = next_point;
 
-		edge_vertex_array.push_back(vertex_3d_height_from);
-		edge_vertex_array.push_back(vertex_3d_height_to);
+		edge_vertex_array_ptrw[vertex_index++] = Vector3(point.x, height, point.z);
+		edge_vertex_array_ptrw[vertex_index++] = Vector3(next_point.x, height, next_point.z);
 
-		edge_vertex_array.push_back(vertex_3d_ground_from);
-		edge_vertex_array.push_back(vertex_3d_height_from);
+		edge_vertex_array_ptrw[vertex_index++] = point;
+		edge_vertex_array_ptrw[vertex_index++] = Vector3(point.x, height, point.z);
 	}
 
 	Array edge_mesh_array;
 	edge_mesh_array.resize(Mesh::ARRAY_MAX);
 	edge_mesh_array[Mesh::ARRAY_VERTEX] = edge_vertex_array;
 
-	static_obstacle_debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, edge_mesh_array);
+	rs->mesh_add_surface_from_arrays(static_obstacle_debug_mesh_rid, RS::PRIMITIVE_LINES, edge_mesh_array);
 
-	Ref<StandardMaterial3D> face_material;
-	Ref<StandardMaterial3D> edge_material;
-
-	if (obstacle_pushes_inward) {
-		face_material = NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushin_face_material();
-		edge_material = NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushin_edge_material();
-	} else {
-		face_material = NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushout_face_material();
-		edge_material = NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushout_edge_material();
+	Vector<Vector2> polygon_2d_vertices;
+	polygon_2d_vertices.resize(vertex_count);
+	for (int i = 0; i < vertex_count; i++) {
+		const Vector3 &vert = vertices[i];
+		polygon_2d_vertices.write[i] = Vector2(vert.x, vert.z);
 	}
 
-	static_obstacle_debug_mesh->surface_set_material(0, face_material);
-	static_obstacle_debug_mesh->surface_set_material(1, edge_material);
+	Vector<int> triangulated_polygon_2d_indices = Geometry2D::triangulate_polygon(polygon_2d_vertices);
 
-	RS::get_singleton()->instance_set_base(static_obstacle_debug_instance, static_obstacle_debug_mesh->get_rid());
+	Ref<StandardMaterial3D> edge_material;
+
+	if (triangulated_polygon_2d_indices.is_empty()) {
+		edge_material = ns3d->get_debug_navigation_avoidance_static_obstacle_pushin_edge_material();
+	} else {
+		edge_material = ns3d->get_debug_navigation_avoidance_static_obstacle_pushout_edge_material();
+	}
+
+	rs->instance_set_surface_override_material(static_obstacle_debug_instance_rid, 0, edge_material->get_rid());
+
 	if (is_inside_tree()) {
-		RS::get_singleton()->instance_set_scenario(static_obstacle_debug_instance, get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_visible(static_obstacle_debug_instance, is_visible_in_tree());
+		rs->instance_set_scenario(static_obstacle_debug_instance_rid, get_world_3d()->get_scenario());
+		rs->instance_set_visible(static_obstacle_debug_instance_rid, is_visible_in_tree());
 	}
 }
 #endif // DEBUG_ENABLED
