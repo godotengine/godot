@@ -39,6 +39,8 @@
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/view_panner.h"
+#include <scene/resources/style_box_flat.h>
+#include <scene/theme/default_theme.cpp>
 
 void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 	if (panner->gui_input(p_event)) {
@@ -459,8 +461,10 @@ void TileAtlasView::_draw_background_right() {
 	}
 }
 
-void TileAtlasView::_update_checkerboard_setting() {
+void TileAtlasView::_update_background_settings() {
 	draw_checkerboard = EDITOR_GET("editors/tiles_editor/draw_checkerboard");
+	background_color = EDITOR_GET("editors/tiles_editor/background_color");
+	panel->set_self_modulate(background_color);
 	queue_redraw();
 }
 
@@ -618,7 +622,7 @@ void TileAtlasView::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
 				if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/tiles_editor")) {
-					_update_checkerboard_setting();
+					_update_background_settings();
 				}
 				break;
 			}
@@ -641,7 +645,9 @@ void TileAtlasView::_bind_methods() {
 TileAtlasView::TileAtlasView() {
 	set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 
-	Panel *panel = memnew(Panel);
+	panel = memnew(Panel);
+	background_color = EDITOR_GET("editors/tiles_editor/background_color");
+	panel->set_self_modulate(background_color);
 	panel->set_clip_contents(true);
 	panel->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	panel->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);

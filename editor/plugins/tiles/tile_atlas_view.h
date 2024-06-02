@@ -82,7 +82,9 @@ private:
 	Control *background_right = nullptr;
 	void _draw_background_right();
 	bool draw_checkerboard = true;
-	void _update_checkerboard_setting();
+	void _update_background_settings();
+	Color background_color = Color(1.0, 1.0, 1.0, 1.0);
+	Panel *panel = nullptr;
 
 	// Left side.
 	Control *base_tiles_root_control = nullptr;
