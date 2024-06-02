@@ -61,8 +61,8 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
     thirdparty_tvg_dir = "../../../thirdparty/thorvg/"
     thirdparty_tvg_sources = [
         # common
-        "src/common/tvgBezier.cpp",
         "src/common/tvgCompressor.cpp",
+        "src/common/tvgLines.cpp",
         "src/common/tvgMath.cpp",
         "src/common/tvgStr.cpp",
         # SVG parser
@@ -73,6 +73,7 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         "src/loaders/svg/tvgSvgUtil.cpp",
         "src/loaders/svg/tvgXmlParser.cpp",
         "src/loaders/raw/tvgRawLoader.cpp",
+        # image loaders
         "src/loaders/external_png/tvgPngLoader.cpp",
         "src/loaders/jpg/tvgJpgd.cpp",
         "src/loaders/jpg/tvgJpgLoader.cpp",
@@ -117,6 +118,7 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
             "../../../thirdparty/thorvg/src/loaders/raw",
             "../../../thirdparty/thorvg/src/loaders/external_png",
             "../../../thirdparty/thorvg/src/loaders/jpg",
+            "../../../thirdparty/libpng",
         ]
     )
 
