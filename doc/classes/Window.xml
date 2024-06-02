@@ -619,9 +619,9 @@
 			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows.
 			[b]Note:[/b] This property only works with native windows.
 		</member>
-		<member name="mouse_passthrough_polygon" type="PackedVector2Array" setter="set_mouse_passthrough_polygon" getter="get_mouse_passthrough_polygon" default="PackedVector2Array()">
+		<member name="mouse_passthrough_polygons" type="PackedVector2Array[]" setter="set_mouse_passthrough_polygons" getter="get_mouse_passthrough_polygons" default="[]">
 			Sets a polygonal region of the window which accepts mouse events. Mouse events outside the region will be passed through.
-			Passing an empty array will disable passthrough support (all mouse events will be intercepted by the window, which is the default behavior).
+			Passing empty arrays to this and [member mouse_passthrough_rects] will disable passthrough support (all mouse events will be intercepted by the window, which is the default behavior).
 			[codeblocks]
 			[gdscript]
 			# Set region, using Path2D node.
@@ -646,7 +646,20 @@
 			[/codeblocks]
 			[b]Note:[/b] This property is ignored if [member mouse_passthrough] is set to [code]true[/code].
 			[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux (X11) and macOS it is.
-			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows.
+			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows. For wider support use [member mouse_passthrough_rects].
+		</member>
+		<member name="mouse_passthrough_rects" type="Rect2i[]" setter="set_mouse_passthrough_rects" getter="get_mouse_passthrough_rects" default="[]">
+			Sets an input region out of rectangles for the window which accept mouse events. Mouse events outside the input region will be passed through.
+			Passing empty arrays to this and [member mouse_passthrough_polygon] will disable passthrough support (all mouse events will be intercepted by the window, which is the default behavior).
+			[codeblocks]
+			[gdscript]
+			# Set region, using control node bounds.
+			$Window.mouse_passthrough_rects = [Rect2i($Control.get_rect())]
+			[/gdscript]
+			[/codeblocks]
+			[b]Note:[/b] This property is ignored if [member mouse_passthrough] is set to [code]true[/code].
+			[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux (X11) and macOS it is.
+			[b]Note:[/b] This property is implemented on Linux (X11, Wayland), macOS and Windows.
 		</member>
 		<member name="popup_window" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] will be considered a popup. Popups are sub-windows that don't show as separate windows in system's window manager's window list and will send close request when anything is clicked outside of them (unless [member exclusive] is enabled).

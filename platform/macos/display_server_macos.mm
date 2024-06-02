@@ -548,6 +548,24 @@ NSImage *DisplayServerMacOS::_convert_to_nsimg(Ref<Image> &p_image) const {
 	return nsimg;
 }
 
+bool DisplayServerMacOS::_mouse_intersects_input_region(const WindowData &p_wd) const {
+	const Point2i &mouse_pos = p_wd.mouse_pos;
+	for (int i = 0; i < p_wd.mregions.size(); i++) {
+		if (Geometry2D::is_point_in_polygon(mouse_pos, p_wd.mregions[i])) {
+			return true;
+		}
+	}
+
+	for (int i = 0; i < p_wd.mrects.size(); i++) {
+		const Rect2i &rect = p_wd.mrects[i];
+		if (rect.has_point(mouse_pos)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 NSCursor *DisplayServerMacOS::_cursor_from_selector(SEL p_selector, SEL p_fallback) {
 	if ([NSCursor respondsToSelector:p_selector]) {
 		id object = [NSCursor performSelector:p_selector];
@@ -1846,13 +1864,22 @@ Size2i DisplayServerMacOS::window_get_title_size(const String &p_title, WindowID
 	return size * scale;
 }
 
-void DisplayServerMacOS::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {
+void DisplayServerMacOS::window_set_mouse_passthrough_polygons(const TypedArray<Vector<Vector2>> &p_regions, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	wd.mpath = p_region;
+	wd.mregions = p_regions;
+}
+
+void DisplayServerMacOS::window_set_mouse_passthrough_rects(const TypedArray<Rect2i> &p_rects, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	wd.mrects = p_rects;
 }
 
 int DisplayServerMacOS::window_get_current_screen(WindowID p_window) const {
@@ -3034,9 +3061,9 @@ void DisplayServerMacOS::process_events() {
 			if (![wd.window_object ignoresMouseEvents]) {
 				[wd.window_object setIgnoresMouseEvents:YES];
 			}
-		} else if (wd.mpath.size() > 0) {
+		} else if (wd.mregions.size() > 0 || wd.mrects.size() > 0) {
 			update_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
-			if (Geometry2D::is_point_in_polygon(wd.mouse_pos, wd.mpath)) {
+			if (_mouse_intersects_input_region(wd)) {
 				if ([wd.window_object ignoresMouseEvents]) {
 					[wd.window_object setIgnoresMouseEvents:NO];
 				}

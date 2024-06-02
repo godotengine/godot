@@ -377,7 +377,8 @@ class DisplayServerWindows : public DisplayServer {
 	struct WindowData {
 		HWND hWnd;
 
-		Vector<Vector2> mpath;
+		TypedArray<Vector<Vector2>> mregions;
+		TypedArray<Rect2i> mrects;
 
 		bool pre_fs_valid = false;
 		RECT pre_fs_rect;
@@ -498,6 +499,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	void _update_window_style(WindowID p_window, bool p_repaint = true);
 	void _update_window_mouse_passthrough(WindowID p_window);
+	void _update_window_input_region(WindowID p_window);
 
 	void _update_real_mouse_position(WindowID p_window);
 
@@ -608,7 +610,8 @@ public:
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_title_size(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) const override;
-	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_mouse_passthrough_polygons(const TypedArray<Vector<Vector2>> &p_regions, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_mouse_passthrough_rects(const TypedArray<Rect2i> &p_rects, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override;
