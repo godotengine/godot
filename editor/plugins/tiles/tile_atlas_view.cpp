@@ -39,8 +39,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/view_panner.h"
-#include <scene/resources/style_box_flat.h>
-#include <scene/theme/default_theme.cpp>
+#include "scene/resources/style_box_flat.h"
 
 void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 	if (panner->gui_input(p_event)) {
