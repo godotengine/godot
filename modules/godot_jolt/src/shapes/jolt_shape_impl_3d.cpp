@@ -2,8 +2,6 @@
 
 #include "objects/jolt_shaped_object_impl_3d.hpp"
 #include "shapes/jolt_custom_user_data_shape.hpp"
-#include "../common.h"
-#include "misc/error_macros.hpp"
 
 namespace {
 
