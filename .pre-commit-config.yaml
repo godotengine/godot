@@ -1,3 +1,6 @@
+default_language_version:
+  python: python3
+
 exclude: |
   (?x)^(
     .*thirdparty/.*|
@@ -9,7 +12,7 @@ repos:
     rev: v17.0.6
     hooks:
       - id: clang-format
-        files: \.(c|h|cpp|hpp|cc|cxx|m|mm|inc|java|glsl)$
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java|glsl)$
         types_or: [text]
         exclude: |
           (?x)^(
@@ -79,14 +82,17 @@ repos:
       - id: make-rst
         name: make-rst
         language: python
-        entry: python3 doc/tools/make_rst.py doc/classes modules platform --dry-run --color
+        entry: python doc/tools/make_rst.py
+        args: [doc/classes, modules, platform, --dry-run, --color]
         pass_filenames: false
         files: ^(doc/classes|.*/doc_classes)/.*\.xml$
 
       - id: doc-status
         name: doc-status
         language: python
-        entry: python3 doc/tools/doc_status.py
+        entry: python doc/tools/doc_status.py
+        args: [doc/classes, modules/*/doc_classes, platform/*/doc_classes]
+        pass_filenames: false
         files: ^(doc/classes|.*/doc_classes)/.*\.xml$
 
       - id: eslint
@@ -126,8 +132,8 @@ repos:
       - id: copyright-headers
         name: copyright-headers
         language: python
-        entry: python3 misc/scripts/copyright_headers.py
-        files: \.(c|h|cpp|hpp|cc|cxx|m|mm|inc|java)$
+        entry: python misc/scripts/copyright_headers.py
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java)$
         exclude: |
           (?x)^(
             core/math/bvh_.*\.inc$|
@@ -141,19 +147,14 @@ repos:
       - id: header-guards
         name: header-guards
         language: python
-        entry: python3 misc/scripts/header_guards.py
-        files: \.(h|hpp)$
-        exclude: |
-          (?x)^(
-            .*/thread\.h$|
-            .*/platform_config\.h$|
-            .*/platform_gl\.$h
-          )
+        entry: python misc/scripts/header_guards.py
+        files: \.(h|hpp|hh|hxx)$
+        exclude: ^.*/(thread|platform_config|platform_gl)\.h$
 
       - id: file-format
         name: file-format
         language: python
-        entry: python3 misc/scripts/file_format.py
+        entry: python misc/scripts/file_format.py
         types_or: [text]
         exclude: |
           (?x)^(
@@ -170,7 +171,7 @@ repos:
       - id: dotnet-format
         name: dotnet-format
         language: python
-        entry: python3 misc/scripts/dotnet_format.py
+        entry: python misc/scripts/dotnet_format.py
         types_or: [c#]
 
 # End of upstream Godot pre-commit hooks.
