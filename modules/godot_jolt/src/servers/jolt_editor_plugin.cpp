@@ -1,6 +1,6 @@
 #include "jolt_editor_plugin.hpp"
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 
 #include "servers/jolt_physics_server_3d.hpp"
 
@@ -81,4 +81,4 @@ void JoltEditorPlugin::_dump_debug_snapshots() {
 	debug_snapshots_dialog->popup_centered_ratio(0.5);
 }
 
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED

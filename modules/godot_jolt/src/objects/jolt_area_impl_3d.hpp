@@ -2,7 +2,6 @@
 
 #include "objects/jolt_shaped_object_impl_3d.hpp"
 
-
 class JoltBodyImpl3D;
 class JoltSoftBodyImpl3D;
 
@@ -24,7 +23,7 @@ class JoltAreaImpl3D final : public JoltShapedObjectImpl3D {
 			return hash_fmix32(hash);
 		}
 
-		static bool compare(const ShapeIDPair& p_lhs, const ShapeIDPair& p_rhs) {
+		friend bool operator==(const ShapeIDPair& p_lhs, const ShapeIDPair& p_rhs) {
 			return std::tie(p_lhs.other, p_lhs.self) == std::tie(p_rhs.other, p_rhs.self);
 		}
 
@@ -40,7 +39,7 @@ class JoltAreaImpl3D final : public JoltShapedObjectImpl3D {
 	};
 
 	struct Overlap {
-		HashMap<ShapeIDPair, ShapeIndexPair, ShapeIDPair,ShapeIDPair> shape_pairs;
+		JHashMap<ShapeIDPair, ShapeIndexPair, ShapeIDPair> shape_pairs;
 
 		InlineVector<ShapeIndexPair, 1> pending_added;
 

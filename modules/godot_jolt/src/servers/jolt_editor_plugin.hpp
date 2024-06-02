@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 
 #include "joints/jolt_joint_gizmo_plugin_3d.hpp"
 
@@ -31,4 +31,4 @@ private:
 	EditorFileDialog* debug_snapshots_dialog = nullptr;
 };
 
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED

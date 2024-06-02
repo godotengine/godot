@@ -80,7 +80,7 @@ JoltSpace3D::JoltSpace3D(JPH::JobSystem* p_job_system)
 		}
 	);
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	// HACK(mihe): The `EditorLog` class gets initialized fairly late in the application flow, so if
 	// we do this any earlier the warning is only ever going to be emitted to stdout and not the
 	// editor log, hence why this is here.
@@ -90,7 +90,7 @@ JoltSpace3D::JoltSpace3D(JPH::JobSystem* p_job_system)
 			"Any such setting will be ignored."
 		);
 	}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 }
 
 JoltSpace3D::~JoltSpace3D() {
@@ -462,7 +462,7 @@ void JoltSpace3D::remove_joint(JoltJointImpl3D* p_joint) {
 	remove_joint(p_joint->get_jolt_ref());
 }
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 
 void JoltSpace3D::dump_debug_snapshot(const String& p_dir) {
 	const Dictionary datetime = Time::get_singleton()->get_datetime_dict_from_system();
@@ -516,11 +516,11 @@ void JoltSpace3D::dump_debug_snapshot(const String& p_dir) {
 			"Writing snapshot of physics space with RID '%d' to '%s' failed with error '%s'.",
 			rid.get_id(),
 			path,
-			UtilityFunctions::error_string(file_access->get_error())
+			VariantUtilityFunctions::error_string(file_access->get_error())
 		)
 	);
 
-	UtilityFunctions::print(
+	print_line(
 		vformat("Snapshot of physics space with RID '%d' saved to '%s'.", rid.get_id(), path)
 	);
 }
@@ -541,7 +541,7 @@ void JoltSpace3D::set_max_debug_contacts(int32_t p_count) {
 	contact_listener->set_max_debug_contacts(p_count);
 }
 
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 void JoltSpace3D::_pre_step(float p_step) {
 	body_accessor.acquire_all();

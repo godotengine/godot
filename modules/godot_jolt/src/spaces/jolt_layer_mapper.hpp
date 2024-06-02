@@ -1,7 +1,10 @@
 #pragma once
 #include "../common.h"
-#include "containers/inline_vector.hpp"
 #include "misc/error_macros.hpp"
+#include "containers/hash_map.hpp"
+#include "containers/hash_set.hpp"
+#include "containers/local_vector.hpp"
+#include "containers/inline_vector.hpp"
 class JoltLayerMapper final
 	: public JPH::BroadPhaseLayerInterface
 	, public JPH::ObjectLayerPairFilter
@@ -41,7 +44,7 @@ private:
 
 	InlineVector<uint64_t, 32> collisions_by_layer;
 
-	HashMap<uint64_t, JPH::ObjectLayer> layers_by_collision;
+	JHashMap<uint64_t, JPH::ObjectLayer> layers_by_collision;
 
 	JPH::ObjectLayer next_object_layer = 0;
 };

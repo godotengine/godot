@@ -1,5 +1,10 @@
 #pragma once
 #include "../common.h"
+#include "misc/type_conversions.hpp"
+#include "containers/hash_set.hpp"
+#include "containers/local_vector.hpp"
+#include "containers/inline_vector.hpp"
+#include "containers/hash_map.hpp"
 class JoltShapedObjectImpl3D;
 class JoltSpace3D;
 
@@ -46,7 +51,7 @@ class JoltContactListener3D final
 		JPH::Vec3 impulse = {};
 	};
 
-	using Contacts = LocalVector<Contact>;
+	using Contacts = JLocalVector<Contact>;
 
 	struct Manifold {
 		Contacts contacts1;
@@ -56,11 +61,11 @@ class JoltContactListener3D final
 		float depth = 0.0f;
 	};
 
-	using BodyIDs = HashSet<JPH::BodyID, BodyIDHasher,BodyIDHasher>;
+	using BodyIDs = JHashSet<JPH::BodyID, BodyIDHasher,BodyIDHasher>;
 
-	using Overlaps = HashSet<JPH::SubShapeIDPair, ShapePairHasher,ShapePairHasher>;
+	using Overlaps = JHashSet<JPH::SubShapeIDPair, ShapePairHasher,ShapePairHasher>;
 
-	using ManifoldsByShapePair = HashMap<JPH::SubShapeIDPair, Manifold, ShapePairHasher>;
+	using ManifoldsByShapePair = JHashMap<JPH::SubShapeIDPair, Manifold, ShapePairHasher>;
 
 public:
 	explicit JoltContactListener3D(JoltSpace3D* p_space)
@@ -72,7 +77,7 @@ public:
 
 	void post_step();
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	const PackedVector3Array& get_debug_contacts() const { return debug_contacts; }
 
 	int32_t get_debug_contact_count() const { return debug_contact_count; }
@@ -80,7 +85,7 @@ public:
 	int32_t get_max_debug_contacts() const { return (int32_t)debug_contacts.size(); }
 
 	void set_max_debug_contacts(int32_t p_count) { debug_contacts.resize(p_count); }
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 private:
 	void OnContactAdded(
@@ -105,12 +110,12 @@ private:
 		JPH::SoftBodyContactSettings& p_settings
 	) override;
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	void OnSoftBodyContactAdded(
 		const JPH::Body& p_soft_body,
 		const JPH::SoftBodyManifold& p_manifold
 	) override;
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	bool _is_listening_for(const JPH::Body& p_body) const;
 
@@ -149,7 +154,7 @@ private:
 
 	bool _try_remove_area_overlap(const JPH::SubShapeIDPair& p_shape_pair);
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	bool _try_add_debug_contacts(
 		const JPH::Body& p_body1,
 		const JPH::Body& p_body2,
@@ -160,7 +165,7 @@ private:
 		const JPH::Body& p_soft_body,
 		const JPH::SoftBodyManifold& p_manifold
 	);
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	void _flush_contacts();
 
@@ -184,9 +189,9 @@ private:
 
 	JoltSpace3D* space = nullptr;
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	PackedVector3Array debug_contacts;
 
 	std::atomic<int32_t> debug_contact_count = 0;
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 };

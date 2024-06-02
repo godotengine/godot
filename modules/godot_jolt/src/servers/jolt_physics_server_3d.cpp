@@ -23,11 +23,11 @@
 #include "spaces/jolt_space_3d.hpp"
 
 void JoltPhysicsServer3D::_bind_methods() {
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	BIND_METHOD(JoltPhysicsServer3D, dump_debug_snapshots, "dir");
 
 	BIND_METHOD(JoltPhysicsServer3D, space_dump_debug_snapshot, "space", "dir");
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	BIND_METHOD(JoltPhysicsServer3D, joint_get_enabled, "joint");
 	BIND_METHOD(JoltPhysicsServer3D, joint_set_enabled, "joint", "enabled");
@@ -326,35 +326,35 @@ void JoltPhysicsServer3D::space_set_debug_contacts(
 	[[maybe_unused]] RID p_space,
 	[[maybe_unused]] int32_t p_max_contacts
 ) {
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	JoltSpace3D* space = space_owner.get_or_null(p_space);
 	ERR_FAIL_NULL(space);
 
 	space->set_max_debug_contacts(p_max_contacts);
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 }
 
 PackedVector3Array JoltPhysicsServer3D::space_get_contacts([[maybe_unused]] RID p_space
 ) const {
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	JoltSpace3D* space = space_owner.get_or_null(p_space);
 	ERR_FAIL_NULL_D(space);
 
 	return space->get_debug_contacts();
-#else // GDJ_CONFIG_EDITOR
+#else // TOOLS_ENABLED
 	return {};
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 }
 
 int32_t JoltPhysicsServer3D::space_get_contact_count([[maybe_unused]] RID p_space) const {
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	JoltSpace3D* space = space_owner.get_or_null(p_space);
 	ERR_FAIL_NULL_D(space);
 
 	return space->get_debug_contact_count();
-#else // GDJ_CONFIG_EDITOR
+#else // TOOLS_ENABLED
 	return 0;
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 }
 
 RID JoltPhysicsServer3D::area_create() {
@@ -1922,9 +1922,9 @@ void JoltPhysicsServer3D::flush_queries() {
 
 	flushing_queries = false;
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	job_system->flush_timings();
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 }
 
 void JoltPhysicsServer3D::finish() {
@@ -1987,7 +1987,7 @@ void JoltPhysicsServer3D::free_joint(JoltJointImpl3D* p_joint) {
 	memdelete_safely(p_joint);
 }
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 
 void JoltPhysicsServer3D::dump_debug_snapshots(const String& p_dir) {
 	for (JoltSpace3D* space : active_spaces) {
@@ -2002,7 +2002,7 @@ void JoltPhysicsServer3D::space_dump_debug_snapshot(RID p_space, const String& p
 	space->dump_debug_snapshot(p_dir);
 }
 
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 bool JoltPhysicsServer3D::joint_get_enabled(RID p_joint) const {
 	JoltJointImpl3D* joint = joint_owner.get_or_null(p_joint);

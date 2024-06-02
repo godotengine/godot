@@ -11,5 +11,5 @@ private:
 	}
 
 public:
-	JoltPhysicsServer3D* create_server() { return memnew(JoltPhysicsServer3D); }
+	JoltPhysicsServer3D* create_server() {print_line("JoltPhysicsServerFactory3D::create_server()");  return memnew(JoltPhysicsServer3D); }
 };

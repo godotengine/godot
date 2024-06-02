@@ -294,6 +294,24 @@ public:
 
 		return true;
 	}
+	template<typename TPredicate>
+	_FORCE_INLINE_ int32_t erase_if(TPredicate&& p_pred) {
+		int32_t count = 0;
+
+		for (auto iter = begin(); iter != end();) {
+			if (p_pred(*iter)) {
+				auto next = iter;
+				++next;
+				remove(iter);
+				iter = next;
+				count++;
+			} else {
+				++iter;
+			}
+		}
+
+		return count;
+	}
 
 	// Reserves space for a number of elements, useful to avoid many resizes and rehashes.
 	// If adding a known (possibly large) number of elements at once, must be larger than old capacity.

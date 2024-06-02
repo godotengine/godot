@@ -49,7 +49,7 @@ JoltBodyImpl3D::~JoltBodyImpl3D() {
 }
 
 void JoltBodyImpl3D::set_transform(Transform3D p_transform) {
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	if (unlikely(p_transform.basis.determinant() == 0.0f)) {
 		ERR_PRINT(vformat(
 			"Failed to set transform for body '%s'. "
@@ -61,7 +61,7 @@ void JoltBodyImpl3D::set_transform(Transform3D p_transform) {
 
 		p_transform.basis = Basis();
 	}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	Vector3 new_scale;
 	decompose(p_transform, new_scale);

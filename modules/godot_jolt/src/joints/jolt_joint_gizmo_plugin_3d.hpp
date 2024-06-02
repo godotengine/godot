@@ -1,7 +1,10 @@
 #pragma once
-
-#ifdef GDJ_CONFIG_EDITOR
-
+#include "../common.h"
+#include "containers/hash_map.hpp"
+#include "containers/hash_set.hpp"
+#include "containers/local_vector.hpp"
+#include "containers/inline_vector.hpp"
+#ifdef TOOLS_ENABLED
 class JoltJointGizmoPlugin3D final : public EditorNode3DGizmoPlugin {
 	GDCLASS(JoltJointGizmoPlugin3D, EditorNode3DGizmoPlugin)
 
@@ -13,13 +16,13 @@ public:
 
 	explicit JoltJointGizmoPlugin3D(EditorInterface* p_editor_interface);
 
-	bool _has_gizmo(Node3D* p_node) const override;
+	bool has_gizmo(Node3D* p_node) override;
 
-	Ref<EditorNode3DGizmo> _create_gizmo(Node3D* p_node) const override;
+	Ref<EditorNode3DGizmo> create_gizmo(Node3D* p_node) override;
 
-	String _get_gizmo_name() const override;
+	String get_gizmo_name() const override;
 
-	void _redraw(const Ref<EditorNode3DGizmo>& p_gizmo) override;
+	void redraw(EditorNode3DGizmo* p_gizmo) override;
 
 	void redraw_gizmos();
 
@@ -28,11 +31,11 @@ private:
 
 	void _create_redraw_timer(const Ref<EditorNode3DGizmo>& p_gizmo);
 
-	mutable HashSet<Ref<EditorNode3DGizmo>> gizmos;
+	mutable JHashSet<Ref<EditorNode3DGizmo>> gizmos;
 
 	EditorInterface* editor_interface = nullptr;
 
 	bool initialized = false;
 };
 
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED

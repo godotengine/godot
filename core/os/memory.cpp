@@ -290,8 +290,8 @@ struct SmallMemoryManager
 
 static _FORCE_INLINE_ SmallMemoryManager& get_small_memory_manager()
 {
-	static SmallMemoryManager s_manager;
-	return s_manager;
+	static SmallMemoryManager* s_manager = new(malloc(sizeof(SmallMemoryManager))) SmallMemoryManager();
+	return *s_manager;
 }
 
 

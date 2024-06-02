@@ -22,7 +22,7 @@ void JoltJobSystem::post_step() {
 	_reclaim_jobs();
 }
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 
 void JoltJobSystem::flush_timings() {
 	static const StringName profiler_name("servers");
@@ -47,7 +47,7 @@ void JoltJobSystem::flush_timings() {
 	}
 }
 
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 JoltJobSystem::Job::Job(
 	const char* p_name,
@@ -57,9 +57,9 @@ JoltJobSystem::Job::Job(
 	JPH::uint32 p_dependency_count
 )
 	: JPH::JobSystem::Job(p_name, p_color, p_job_system, p_job_function, p_dependency_count)
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	, name(p_name)
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 {
 }
 
@@ -106,20 +106,20 @@ void JoltJobSystem::Job::queue() {
 void JoltJobSystem::Job::_execute(void* p_user_data) {
 	auto* job = static_cast<Job*>(p_user_data);
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	const uint64_t time_start = Time::get_singleton()->get_ticks_usec();
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	job->Execute();
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	const uint64_t time_end = Time::get_singleton()->get_ticks_usec();
 	const uint64_t time_elapsed = time_end - time_start;
 
 	timings_lock.lock();
 	timings_by_job[job->name] += time_elapsed;
 	timings_lock.unlock();
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	job->Release();
 }

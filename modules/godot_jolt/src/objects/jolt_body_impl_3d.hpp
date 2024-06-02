@@ -314,13 +314,13 @@ private:
 
 	void _contact_reporting_changed();
 
-	LocalVector<RID> exceptions;
+	JLocalVector<RID> exceptions;
 
-	LocalVector<Contact> contacts;
+	JLocalVector<Contact> contacts;
 
-	LocalVector<JoltAreaImpl3D*> areas;
+	JLocalVector<JoltAreaImpl3D*> areas;
 
-	LocalVector<JoltJointImpl3D*> joints;
+	JLocalVector<JoltJointImpl3D*> joints;
 
 	Variant custom_integration_userdata;
 

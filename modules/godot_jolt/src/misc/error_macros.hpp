@@ -59,7 +59,7 @@
 #define QUIET_FAIL_UNSIGNED_INDEX_V(m_index, m_size, m_retval) QUIET_FAIL_COND_V((m_index) >= (m_size), m_retval)
 #define QUIET_FAIL_UNSIGNED_INDEX_D(m_index, m_size) QUIET_FAIL_UNSIGNED_INDEX_V(m_index, m_size, {})
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 
 #define QUIET_FAIL_COND_D_ED(m_cond, m_retval) QUIET_FAIL_COND_D(m_cond, m_retval)
 #define QUIET_FAIL_NULL_ED(m_param) QUIET_FAIL_NULL(m_param)
@@ -74,7 +74,7 @@
 #define QUIET_BREAK_ED(m_cond) QUIET_BREAK(m_cond)
 #define QUIET_CONTINUE_ED(m_cond) QUIET_CONTINUE(m_cond)
 
-#else // GDJ_CONFIG_EDITOR
+#else // TOOLS_ENABLED
 
 #define QUIET_FAIL_COND_D_ED(m_cond, m_retval)
 #define QUIET_FAIL_NULL_ED(m_param)
@@ -89,4 +89,4 @@
 #define QUIET_BREAK_ED(m_cond)
 #define QUIET_CONTINUE_ED(m_cond)
 
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED

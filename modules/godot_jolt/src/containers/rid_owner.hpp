@@ -48,5 +48,5 @@
 // 	RID_PtrOwner& operator=(RID_PtrOwner&& p_other) noexcept = default;
 
 // private:
-// 	HashMap<int64_t, TResource*> ptrs_by_id;
+// 	JHashMap<int64_t, TResource*> ptrs_by_id;
 // };

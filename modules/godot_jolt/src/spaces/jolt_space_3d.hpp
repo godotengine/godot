@@ -98,7 +98,7 @@ public:
 
 	void remove_joint(JoltJointImpl3D* p_joint);
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	void dump_debug_snapshot(const String& p_dir);
 
 	const PackedVector3Array& get_debug_contacts() const;
@@ -108,7 +108,7 @@ public:
 	int32_t get_max_debug_contacts() const;
 
 	void set_max_debug_contacts(int32_t p_count);
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 private:
 	void _pre_step(float p_step);

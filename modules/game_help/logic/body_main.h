@@ -297,7 +297,7 @@ class CharacterController : public Resource
         ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan"), "set_blackboardPlan", "get_blackboardPlan");
 
         ADD_GROUP("Load Test", "load_test_");
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "load_test_player", PROPERTY_HINT_NODE_TYPE, "CharacterBodyMain"), "set_load_test_player", "get_load_test_player");
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "load_test_player", PROPERTY_HINT_NODE_TYPE, "CharacterBodyMain",PROPERTY_USAGE_EDITOR), "set_load_test_player", "get_load_test_player");
 
         ADD_PROPERTY(PropertyInfo(Variant::INT, "load_test_id"), "set_load_test_id", "get_load_test_id");
         // 增加一个按钮属性

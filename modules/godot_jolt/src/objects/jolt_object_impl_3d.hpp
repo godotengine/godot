@@ -137,7 +137,7 @@ protected:
 
 	virtual void _space_changed() { }
 
-	LocalVector<Ref<JoltShapeInstance3D>> shapes;
+	JLocalVector<Ref<JoltShapeInstance3D>> shapes;
 
 	RID rid;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 
 class JoltStreamOutWrapper final : public JPH::StreamOut {
 public:
@@ -37,4 +37,4 @@ private:
 	Ref<FileAccess> file_access;
 };
 
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED

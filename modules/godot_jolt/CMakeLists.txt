@@ -168,7 +168,7 @@ target_compile_definitions(godot-jolt
 	PRIVATE $<${is_debug_config}:GDJ_CONFIG_DEBUG>
 	PRIVATE $<${is_development_config}:GDJ_CONFIG_DEVELOPMENT>
 	PRIVATE $<${is_distribution_config}:GDJ_CONFIG_DISTRIBUTION>
-	PRIVATE $<${is_editor_config}:GDJ_CONFIG_EDITOR>
+	PRIVATE $<${is_editor_config}:TOOLS_ENABLED>
 	PRIVATE $<${use_mimalloc}:GDJ_USE_MIMALLOC>
 	PRIVATE $<IF:${is_debug_config},_DEBUG,NDEBUG>
 	PRIVATE $<${is_windows}:WIN32_LEAN_AND_MEAN>

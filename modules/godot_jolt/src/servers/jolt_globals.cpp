@@ -43,7 +43,7 @@ void jolt_trace(const char* p_format, ...) {
 	char buffer[1024] = {'\0'};
 	vsnprintf(buffer, sizeof(buffer), p_format, args);
 	va_end(args);
-	print_verbose(buffer);
+	print_line(buffer);
 }
 
 bool jolt_assert(const char* p_expr, const char* p_msg, const char* p_file, uint32_t p_line) {

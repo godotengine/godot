@@ -13,9 +13,9 @@ void JoltContactListener3D::listen_for(JoltShapedObjectImpl3D* p_object) {
 void JoltContactListener3D::pre_step() {
 	listening_for.clear();
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	debug_contact_count = 0;
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 }
 
 void JoltContactListener3D::post_step() {
@@ -36,9 +36,9 @@ void JoltContactListener3D::OnContactAdded(
 	_try_add_contacts(p_body1, p_body2, p_manifold, p_settings);
 	_try_evaluate_area_overlap(p_body1, p_body2, p_manifold);
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	_try_add_debug_contacts(p_body1, p_body2, p_manifold);
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 }
 
 void JoltContactListener3D::OnContactPersisted(
@@ -52,9 +52,9 @@ void JoltContactListener3D::OnContactPersisted(
 	_try_add_contacts(p_body1, p_body2, p_manifold, p_settings);
 	_try_evaluate_area_overlap(p_body1, p_body2, p_manifold);
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	_try_add_debug_contacts(p_body1, p_body2, p_manifold);
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 }
 
 void JoltContactListener3D::OnContactRemoved(const JPH::SubShapeIDPair& p_shape_pair) {
@@ -73,7 +73,7 @@ JPH::SoftBodyValidateResult JoltContactListener3D::OnSoftBodyContactValidate(
 	return JPH::SoftBodyValidateResult::AcceptContact;
 }
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 
 void JoltContactListener3D::OnSoftBodyContactAdded(
 	const JPH::Body& p_soft_body,
@@ -82,7 +82,7 @@ void JoltContactListener3D::OnSoftBodyContactAdded(
 	_try_add_debug_contacts(p_soft_body, p_manifold);
 }
 
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 bool JoltContactListener3D::_is_listening_for(const JPH::Body& p_body) const {
 	return listening_for.has(p_body.GetID());
@@ -239,8 +239,8 @@ bool JoltContactListener3D::_try_add_contacts(
 	);
 
 	for (JPH::uint i = 0; i < contact_count; ++i) {
-		Contact& contact1 = manifold.contacts1.push_empty();
-		Contact& contact2 = manifold.contacts2.push_empty();
+		Contact& contact1 = manifold.contacts1.emplace_back();
+		Contact& contact2 = manifold.contacts2.emplace_back();
 
 		const auto relative_point1 = JPH::RVec3(p_manifold.mRelativeContactPointsOn1[i]);
 		const auto relative_point2 = JPH::RVec3(p_manifold.mRelativeContactPointsOn2[i]);
@@ -366,7 +366,7 @@ bool JoltContactListener3D::_try_remove_area_overlap(const JPH::SubShapeIDPair& 
 	return removed;
 }
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 
 bool JoltContactListener3D::_try_add_debug_contacts(
 	const JPH::Body& p_body1,
@@ -405,8 +405,8 @@ bool JoltContactListener3D::_try_add_debug_contacts(
 		const JPH::RVec3 point_on_1 = p_manifold.GetWorldSpaceContactPointOn1((JPH::uint)i);
 		const JPH::RVec3 point_on_2 = p_manifold.GetWorldSpaceContactPointOn2((JPH::uint)i);
 
-		debug_contacts[pair_index + 0] = to_godot(point_on_1);
-		debug_contacts[pair_index + 1] = to_godot(point_on_2);
+		debug_contacts.set(pair_index + 0, to_godot(point_on_1));
+		debug_contacts.set(pair_index + 1, to_godot(point_on_2));
 	}
 
 	return true;
@@ -454,13 +454,13 @@ bool JoltContactListener3D::_try_add_debug_contacts(
 		const JPH::Vec3 local_contact_point = p_manifold.GetLocalContactPoint(vertex);
 		const JPH::RVec3 contact_point = body_com_transform * local_contact_point;
 
-		debug_contacts[contact_index++] = to_godot(contact_point);
+		debug_contacts.set(contact_index++, to_godot(contact_point));
 	}
 
 	return true;
 }
 
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 void JoltContactListener3D::_flush_contacts() {
 	for (auto&& [shape_pair, manifold] : manifolds_by_shape_pair) {

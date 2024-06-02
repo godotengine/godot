@@ -14,7 +14,7 @@ JPH_NAMESPACE_BEGIN
 class SubShapeIDPair
 {
 public:
-	//JPH_OVERRIDE_NEW_DELETE
+	JPH_OVERRIDE_NEW_DELETE
 
 	/// Constructor
 							SubShapeIDPair() 

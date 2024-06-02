@@ -106,7 +106,7 @@ JPH::ObjectLayer JoltLayerMapper::to_object_layer(
 
 	auto iter = layers_by_collision.find(collision);
 	if (iter != layers_by_collision.end()) {
-		object_layer = iter->value;
+		object_layer = iter->second;
 	} else {
 		constexpr uint16_t object_layer_count = 1U << 13U;
 

@@ -25,7 +25,7 @@ class RayCastResult;
 class JPH_EXPORT TransformedShape
 {
 public:
-	//JPH_OVERRIDE_NEW_DELETE
+	JPH_OVERRIDE_NEW_DELETE
 
 	/// Constructor
 								TransformedShape() = default;

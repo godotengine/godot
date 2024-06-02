@@ -453,7 +453,7 @@ bool JoltAreaImpl3D::_remove_shape_pair(
 		return false;
 	}
 
-	p_overlap.pending_removed.push_back(shape_pair->value);
+	p_overlap.pending_removed.push_back(shape_pair->second);
 	p_overlap.shape_pairs.remove(shape_pair);
 
 	return true;

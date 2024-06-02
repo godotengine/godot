@@ -2,6 +2,10 @@
 #include "../common.h"
 #include "misc/type_conversions.hpp"
 #include "misc/error_macros.hpp"
+#include "containers/hash_map.hpp"
+#include "containers/hash_set.hpp"
+#include "containers/local_vector.hpp"
+#include "containers/inline_vector.hpp"
 
 class JoltShapedObjectImpl3D;
 
@@ -70,7 +74,7 @@ protected:
 
 	String _owners_to_string() const;
 
-	HashMap<JoltShapedObjectImpl3D*, int32_t> ref_counts_by_owner;
+	JHashMap<JoltShapedObjectImpl3D*, int32_t> ref_counts_by_owner;
 
 	RID rid;
 

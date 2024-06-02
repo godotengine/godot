@@ -635,11 +635,11 @@ public:
 
 	JoltJointImpl3D* get_joint(RID p_rid) const { return joint_owner.get_or_null(p_rid); }
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	void dump_debug_snapshots(const String& p_dir);
 
 	void space_dump_debug_snapshot(RID p_space, const String& p_dir);
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	bool joint_get_enabled(RID p_joint) const;
 
@@ -759,7 +759,7 @@ private:
 
 	mutable RID_PtrOwner<JoltJointImpl3D> joint_owner;
 
-	HashSet<JoltSpace3D*> active_spaces;
+	JHashSet<JoltSpace3D*> active_spaces;
 
 	JoltJobSystem* job_system = nullptr;
 

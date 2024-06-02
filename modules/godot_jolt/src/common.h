@@ -17,13 +17,17 @@
 #include "core/extension/gdextension_interface.h"
 
 #include "core/core_bind.h"
+#include "core/os/time.h"
 #include "core/templates/rid.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/string/node_path.h"
+#include "core/string/ustring.h"
+#include "core/string/print_string.h"
 #include "core/os/os.h"
 #include "core/variant/variant.h"
+#include "core/variant/variant_utility.h"
 #include "core/config/project_settings.h"
 #include "scene/resources/mesh.h"
 #include "scene/3d/node_3d.h"
@@ -34,28 +38,22 @@
 #include "core/object/worker_thread_pool.h"
 #include "servers/extensions/physics_server_3d_extension.h"
 #include "servers/extensions/physics_server_2d_extension.h"
+#include "scene/gui/popup.h"
+#include "scene/gui/popup_menu.h"
 #include <variant>
 
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 
-#include <godot_cpp/classes/control.hpp>
-#include <godot_cpp/classes/editor_file_dialog.hpp>
-#include <godot_cpp/classes/editor_interface.hpp>
-#include <godot_cpp/classes/editor_node3d_gizmo.hpp>
-#include <godot_cpp/classes/editor_node3d_gizmo_plugin.hpp>
-#include <godot_cpp/classes/editor_plugin.hpp>
-#include <godot_cpp/classes/editor_settings.hpp>
-#include <godot_cpp/classes/engine_debugger.hpp>
-#include <godot_cpp/classes/file_access.hpp>
-#include <godot_cpp/classes/popup_menu.hpp>
-#include <godot_cpp/classes/standard_material3d.hpp>
-#include <godot_cpp/classes/theme.hpp>
-#include <godot_cpp/classes/time.hpp>
-#include <godot_cpp/classes/timer.hpp>
-#include <godot_cpp/templates/spin_lock.hpp>
+#include "editor/plugins/node_3d_editor_gizmos.h"
+#include "editor/gui/editor_file_dialog.h"
+#include "editor/editor_interface.h"
+#include "editor/plugins/editor_plugin.h"
+#include "editor/editor_settings.h"
+#include "core/debugger/engine_debugger.h"
 
-#endif // GDJ_CONFIG_EDITOR
+
+#endif // TOOLS_ENABLED
 
 #ifdef JPH_DEBUG_RENDERER
 

@@ -1,5 +1,9 @@
 #pragma once
 #include "../common.h"
+#include "containers/hash_map.hpp"
+#include "containers/hash_set.hpp"
+#include "containers/local_vector.hpp"
+#include "containers/inline_vector.hpp"
 
 class JoltBodyImpl3D;
 class JoltShapeImpl3D;

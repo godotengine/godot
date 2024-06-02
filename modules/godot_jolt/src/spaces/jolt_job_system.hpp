@@ -1,6 +1,10 @@
 #pragma once
 #include "../common.h"
 #include "containers/free_list.hpp"
+#include "containers/hash_map.hpp"
+#include "containers/hash_set.hpp"
+#include "containers/local_vector.hpp"
+#include "containers/inline_vector.hpp"
 class JoltJobSystem final : public JPH::JobSystemWithBarrier {
 public:
 	JoltJobSystem();
@@ -9,9 +13,9 @@ public:
 
 	void post_step();
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	void flush_timings();
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 private:
 	class Job : public JPH::JobSystem::Job {
@@ -43,9 +47,9 @@ private:
 
 		inline static std::atomic<Job*> completed_head = nullptr;
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 		const char* name = nullptr;
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 		int64_t task_id = -1;
 
@@ -69,13 +73,13 @@ private:
 
 	void _reclaim_jobs();
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	// HACK(mihe): We use `const void*` here to avoid the cost of hashing the actual string, since
 	// the job names are always literals and as such will point to the same address every time.
-	inline static HashMap<const void*, uint64_t> timings_by_job;
+	inline static JHashMap<const void*, uint64_t> timings_by_job;
 
 	inline static SpinLock timings_lock;
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	FreeList<Job> jobs;
 

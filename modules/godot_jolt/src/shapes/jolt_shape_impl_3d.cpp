@@ -295,7 +295,7 @@ String JoltShapeImpl3D::_owners_to_string() const {
 		return "'<unknown>' and 0 other object(s)";
 	}
 
-	const JoltShapedObjectImpl3D& random_owner = *ref_counts_by_owner.begin()->key;
+	const JoltShapedObjectImpl3D& random_owner = *ref_counts_by_owner.begin()->first;
 
 	return vformat("'%s' and %d other object(s)", random_owner.to_string(), owner_count - 1);
 }

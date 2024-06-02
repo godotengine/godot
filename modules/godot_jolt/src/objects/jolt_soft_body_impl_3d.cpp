@@ -495,15 +495,15 @@ bool JoltSoftBodyImpl3D::_ref_shared_data() {
 
 		iter_shared_data = mesh_to_shared.insert(mesh,Shared());
 
-		LocalVector<int32_t>& mesh_to_physics = iter_shared_data->value.mesh_to_physics;
+		JLocalVector<int32_t>& mesh_to_physics = iter_shared_data->second.mesh_to_physics;
 
-		JPH::SoftBodySharedSettings& settings = *iter_shared_data->value.settings;
-		settings.mVertexRadius = JoltProjectSettings::get_soft_body_point_margin();
+		JPH::Ref<JPH::SoftBodySharedSettings>& settings = iter_shared_data->second.settings;
+		settings->mVertexRadius = JoltProjectSettings::get_soft_body_point_margin();
 
-		JPH::Array<SoftBodyVertex>& physics_vertices = settings.mVertices;
-		JPH::Array<SoftBodyFace>& physics_faces = settings.mFaces;
+		JPH::Array<SoftBodyVertex>& physics_vertices = settings->mVertices;
+		JPH::Array<SoftBodyFace>& physics_faces = settings->mFaces;
 
-		HashMap<Vector3, int32_t> vertex_to_physics;
+		JHashMap<Vector3, int32_t> vertex_to_physics;
 
 		const auto mesh_vertex_count = (int32_t)mesh_vertices.size();
 		const auto mesh_index_count = (int32_t)mesh_indices.size();
@@ -539,8 +539,8 @@ bool JoltSoftBodyImpl3D::_ref_shared_data() {
 				}
 
 				mesh_face[j] = mesh_index;
-				physics_face[j] = iter_physics_index->value;
-				mesh_to_physics[mesh_index] = iter_physics_index->value;
+				physics_face[j] = iter_physics_index->second;
+				mesh_to_physics[mesh_index] = iter_physics_index->second;
 			}
 
 			ERR_CONTINUE_MSG(
@@ -585,13 +585,13 @@ bool JoltSoftBodyImpl3D::_ref_shared_data() {
 		JPH::SoftBodySharedSettings::VertexAttributes vertex_attrib;
 		vertex_attrib.mCompliance = vertex_attrib.mShearCompliance = inverse_stiffness;
 
-		settings.CreateConstraints(&vertex_attrib, 1, JPH::SoftBodySharedSettings::EBendType::None);
-		settings.Optimize();
+		settings->CreateConstraints(&vertex_attrib, 1, JPH::SoftBodySharedSettings::EBendType::None);
+		settings->Optimize();
 	} else {
-		iter_shared_data->value.ref_count++;
+		iter_shared_data->second.ref_count++;
 	}
 
-	shared = &iter_shared_data->value;
+	shared = &iter_shared_data->second;
 
 	return true;
 }
@@ -602,7 +602,7 @@ void JoltSoftBodyImpl3D::_deref_shared_data() {
 	auto iter = mesh_to_shared.find(mesh);
 	QUIET_FAIL_COND(iter == mesh_to_shared.end());
 
-	if (--iter->value.ref_count == 0) {
+	if (--iter->second.ref_count == 0) {
 		mesh_to_shared.remove(iter);
 	}
 

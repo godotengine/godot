@@ -53,11 +53,11 @@ void on_initialize(ModuleInitializationLevel p_level) {
 			ClassDB::register_class<JoltGeneric6DOFJoint3D>();
 		} break;
 		case MODULE_INITIALIZATION_LEVEL_EDITOR: {
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 			ClassDB::register_class<JoltJointGizmoPlugin3D>();
 			ClassDB::register_class<JoltEditorPlugin>();
 			EditorPlugins::add_by_type<JoltEditorPlugin>();
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 		} break;
 	}
 }

@@ -156,7 +156,7 @@ int32_t JoltPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_
 
 	Transform3D transform = p_parameters.transform;
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	if (unlikely(transform.basis.determinant() == 0.0f)) {
 		ERR_PRINT(vformat(
 			"intersect_shape failed due to being passed an invalid transform. "
@@ -167,12 +167,12 @@ int32_t JoltPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_
 
 		transform.basis = Basis();
 	}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	Vector3 scale;
 	decompose(transform, scale);
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	if (unlikely(!jolt_shape->IsValidScale(to_jolt(scale)))) {
 		ERR_PRINT(vformat(
 			"intersect_shape failed due to being passed an invalid transform. "
@@ -183,7 +183,7 @@ int32_t JoltPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_
 
 		scale = Vector3(1, 1, 1);
 	}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	const Vector3 com_scaled = to_godot(jolt_shape->GetCenterOfMass());
 	const Transform3D transform_com = transform.translated_local(com_scaled);
@@ -264,7 +264,7 @@ bool JoltPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_paramet
 
 	Transform3D transform = p_parameters.transform;
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	if (unlikely(transform.basis.determinant() == 0.0f)) {
 		ERR_PRINT(vformat(
 			"cast_motion failed due to being passed an invalid transform. "
@@ -275,12 +275,12 @@ bool JoltPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_paramet
 
 		transform.basis = Basis();
 	}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	Vector3 scale;
 	decompose(transform, scale);
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	if (unlikely(!jolt_shape->IsValidScale(to_jolt(scale)))) {
 		ERR_PRINT(vformat(
 			"cast_motion failed due to being passed an invalid transform. "
@@ -291,7 +291,7 @@ bool JoltPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_paramet
 
 		scale = Vector3(1, 1, 1);
 	}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	const Vector3 com_scaled = to_godot(jolt_shape->GetCenterOfMass());
 	Transform3D transform_com = transform.translated_local(com_scaled);
@@ -348,7 +348,7 @@ bool JoltPhysicsDirectSpaceState3D::collide_shape(const ShapeParameters &p_param
 
 	Transform3D transform = p_parameters.transform;
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	if (unlikely(transform.basis.determinant() == 0.0f)) {
 		ERR_PRINT(vformat(
 			"collide_shape failed due to being passed an invalid transform. "
@@ -359,12 +359,12 @@ bool JoltPhysicsDirectSpaceState3D::collide_shape(const ShapeParameters &p_param
 
 		transform.basis = Basis();
 	}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	Vector3 scale;
 	decompose(transform, scale);
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	if (unlikely(!jolt_shape->IsValidScale(to_jolt(scale)))) {
 		ERR_PRINT(vformat(
 			"collide_shape failed due to being passed an invalid transform. "
@@ -375,7 +375,7 @@ bool JoltPhysicsDirectSpaceState3D::collide_shape(const ShapeParameters &p_param
 
 		scale = Vector3(1, 1, 1);
 	}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	const Vector3 com_scaled = to_godot(jolt_shape->GetCenterOfMass());
 	const Transform3D transform_com = transform.translated_local(com_scaled);
@@ -467,7 +467,7 @@ bool JoltPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_parameter
 
 	Transform3D transform = p_parameters.transform;
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	if (unlikely(transform.basis.determinant() == 0.0f)) {
 		ERR_PRINT(vformat(
 			"get_rest_info failed due to being passed an invalid transform. "
@@ -478,12 +478,12 @@ bool JoltPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_parameter
 
 		transform.basis = Basis();
 	}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	Vector3 scale;
 	decompose(transform, scale);
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	if (unlikely(!jolt_shape->IsValidScale(to_jolt(scale)))) {
 		ERR_PRINT(vformat(
 			"get_rest_info failed due to being passed an invalid transform. "
@@ -494,7 +494,7 @@ bool JoltPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_parameter
 
 		scale = Vector3(1, 1, 1);
 	}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	const Vector3 com_scaled = to_godot(jolt_shape->GetCenterOfMass());
 	const Transform3D transform_com = transform.translated_local(com_scaled);
@@ -664,7 +664,7 @@ bool JoltPhysicsDirectSpaceState3D::test_body_motion(
 
 	Transform3D transform = p_transform;
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	if (unlikely(transform.basis.determinant() == 0.0f)) {
 		ERR_PRINT(vformat(
 			"body_test_motion failed due to being passed an invalid transform. "
@@ -675,12 +675,12 @@ bool JoltPhysicsDirectSpaceState3D::test_body_motion(
 
 		transform.basis = Basis();
 	}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	Vector3 scale;
 	decompose(transform, scale);
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	if (unlikely(!p_body.get_jolt_shape()->IsValidScale(to_jolt(scale)))) {
 		ERR_PRINT(vformat(
 			"body_test_motion failed due to being passed an invalid transform. "
@@ -691,7 +691,7 @@ bool JoltPhysicsDirectSpaceState3D::test_body_motion(
 
 		scale = Vector3(1, 1, 1);
 	}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	space->try_optimize();
 
@@ -1041,11 +1041,11 @@ bool JoltPhysicsDirectSpaceState3D::body_motion_cast(
 		const Transform3D transform_com = body_transform * transform_com_local;
 		const Transform3D transform_com_unscaled = decomposed(transform_com, scale);
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 		if (!jolt_shape->IsValidScale(to_jolt(scale))) {
 			continue;
 		}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 		real_t shape_safe_fraction = 1.0;
 		real_t shape_unsafe_fraction = 1.0;

@@ -130,7 +130,7 @@ JPH::ShapeRefC JoltShapedObjectImpl3D::try_build_shape() {
 	}
 
 	if (scale != Vector3(1, 1, 1)) {
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 		if (unlikely(!result->IsValidScale(to_jolt(scale)))) {
 			ERR_PRINT(vformat(
 				"Godot Jolt failed to scale body '%s'. "
@@ -142,7 +142,7 @@ JPH::ShapeRefC JoltShapedObjectImpl3D::try_build_shape() {
 
 			scale = Vector3(1, 1, 1);
 		}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 		result = JoltShapeImpl3D::with_scale(result, scale);
 	}
@@ -190,7 +190,7 @@ void JoltShapedObjectImpl3D::add_shape(
 	Transform3D p_transform,
 	bool p_disabled
 ) {
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	if (unlikely(p_transform.basis.determinant() == 0.0f)) {
 		ERR_PRINT(vformat(
 			"Failed to set transform for shape at index %d of body '%s'. "
@@ -203,7 +203,7 @@ void JoltShapedObjectImpl3D::add_shape(
 
 		p_transform.basis = Basis();
 	}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	Vector3 shape_scale;
 	decompose(p_transform, shape_scale);
@@ -294,7 +294,7 @@ Vector3 JoltShapedObjectImpl3D::get_shape_scale(int32_t p_index) const {
 void JoltShapedObjectImpl3D::set_shape_transform(int32_t p_index, Transform3D p_transform) {
 	ERR_FAIL_INDEX(p_index, shapes.size());
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 	if (unlikely(p_transform.basis.determinant() == 0.0f)) {
 		ERR_PRINT(vformat(
 			"Failed to set transform for shape at index %d of body '%s'. "
@@ -307,7 +307,7 @@ void JoltShapedObjectImpl3D::set_shape_transform(int32_t p_index, Transform3D p_
 
 		p_transform.basis = Basis();
 	}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 	Vector3 new_scale;
 	decompose(p_transform, new_scale);
@@ -369,7 +369,7 @@ JPH::ShapeRefC JoltShapedObjectImpl3D::_try_build_single_shape() {
 		const Transform3D sub_shape_transform = sub_shape->get_transform_unscaled();
 
 		if (sub_shape_scale != Vector3(1, 1, 1)) {
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 			if (unlikely(!jolt_sub_shape->IsValidScale(to_jolt(sub_shape_scale)))) {
 				ERR_PRINT(vformat(
 					"Godot Jolt failed to scale shape at index %d for body '%s'. "
@@ -382,7 +382,7 @@ JPH::ShapeRefC JoltShapedObjectImpl3D::_try_build_single_shape() {
 
 				sub_shape_scale = Vector3(1, 1, 1);
 			}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 			jolt_sub_shape = JoltShapeImpl3D::with_scale(jolt_sub_shape, sub_shape_scale);
 		}
@@ -418,7 +418,7 @@ JPH::ShapeRefC JoltShapedObjectImpl3D::_try_build_compound_shape() {
 		const Transform3D sub_shape_transform = sub_shape->get_transform_unscaled();
 
 		if (sub_shape_scale != Vector3(1, 1, 1)) {
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 			if (unlikely(!jolt_sub_shape->IsValidScale(to_jolt(sub_shape_scale)))) {
 				ERR_PRINT(vformat(
 					"Godot Jolt failed to scale shape at index %d for body '%s'. "
@@ -431,7 +431,7 @@ JPH::ShapeRefC JoltShapedObjectImpl3D::_try_build_compound_shape() {
 
 				sub_shape_scale = Vector3(1, 1, 1);
 			}
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED
 
 			jolt_sub_shape = JoltShapeImpl3D::with_scale(jolt_sub_shape, sub_shape_scale);
 		}

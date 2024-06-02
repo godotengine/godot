@@ -1,6 +1,6 @@
 #include "jolt_joint_gizmo_plugin_3d.hpp"
 
-#ifdef GDJ_CONFIG_EDITOR
+#ifdef TOOLS_ENABLED
 
 #include "joints/jolt_cone_twist_joint_3d.hpp"
 #include "joints/jolt_generic_6dof_joint.hpp"
@@ -259,14 +259,14 @@ void JoltJointGizmoPlugin3D::_bind_methods() {
 JoltJointGizmoPlugin3D::JoltJointGizmoPlugin3D(EditorInterface* p_editor_interface)
 	: editor_interface(p_editor_interface) { }
 
-bool JoltJointGizmoPlugin3D::_has_gizmo(Node3D* p_node) const {
+bool JoltJointGizmoPlugin3D::has_gizmo(Node3D* p_node)  {
 	return Object::cast_to<JoltJoint3D>(p_node) != nullptr;
 }
 
-Ref<EditorNode3DGizmo> JoltJointGizmoPlugin3D::_create_gizmo(Node3D* p_node) const {
+Ref<EditorNode3DGizmo> JoltJointGizmoPlugin3D::create_gizmo(Node3D* p_node)  {
 	EditorNode3DGizmo* gizmo = nullptr;
 
-	if (_has_gizmo(p_node)) {
+	if (has_gizmo(p_node)) {
 		gizmo = memnew(EditorNode3DGizmo);
 		gizmos.insert(gizmo);
 	}
@@ -274,11 +274,11 @@ Ref<EditorNode3DGizmo> JoltJointGizmoPlugin3D::_create_gizmo(Node3D* p_node) con
 	return gizmo;
 }
 
-String JoltJointGizmoPlugin3D::_get_gizmo_name() const {
+String JoltJointGizmoPlugin3D::get_gizmo_name() const {
 	return U"JoltJoint3D";
 }
 
-void JoltJointGizmoPlugin3D::_redraw(const Ref<EditorNode3DGizmo>& p_gizmo) {
+void JoltJointGizmoPlugin3D::redraw(EditorNode3DGizmo* p_gizmo) {
 	if (unlikely(!initialized)) {
 		_create_materials();
 		_create_redraw_timer(p_gizmo);
@@ -312,7 +312,7 @@ void JoltJointGizmoPlugin3D::_redraw(const Ref<EditorNode3DGizmo>& p_gizmo) {
 void JoltJointGizmoPlugin3D::redraw_gizmos() {
 	gizmos.erase_if([&](const Ref<EditorNode3DGizmo>& p_gizmo) {
 		if (p_gizmo->get_reference_count() > 1) {
-			_redraw(p_gizmo);
+			redraw(p_gizmo.ptr());
 			return false;
 		} else {
 			return true;
@@ -363,4 +363,4 @@ void JoltJointGizmoPlugin3D::_create_redraw_timer(const Ref<EditorNode3DGizmo>& 
 	editor_node->call_deferred("add_child", timer);
 }
 
-#endif // GDJ_CONFIG_EDITOR
+#endif // TOOLS_ENABLED

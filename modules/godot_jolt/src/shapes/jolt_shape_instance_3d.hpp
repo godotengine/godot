@@ -1,6 +1,8 @@
 #pragma once
 #include "../common.h"
 #include "containers/inline_vector.hpp"
+#include "containers/hash_map.hpp"
+#include "containers/hash_set.hpp"
 #include "misc/type_conversions.hpp"
 #include "misc/utility_functions.hpp"
 #include "misc/error_macros.hpp"
