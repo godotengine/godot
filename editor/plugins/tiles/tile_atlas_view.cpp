@@ -448,11 +448,17 @@ void TileAtlasView::_draw_alternatives() {
 }
 
 void TileAtlasView::_draw_background_left() {
-	background_left->draw_texture_rect(theme_cache.checkerboard, Rect2(Vector2(), background_left->get_size()), true);
+	bool draw_checkerboard = EDITOR_GET("editors/tiles_editor/draw_checkerboard");
+	if (draw_checkerboard) {
+		background_left->draw_texture_rect(theme_cache.checkerboard, Rect2(Vector2(), background_left->get_size()), true);
+	}
 }
 
 void TileAtlasView::_draw_background_right() {
-	background_right->draw_texture_rect(theme_cache.checkerboard, Rect2(Vector2(), background_right->get_size()), true);
+	bool draw_checkerboard = EDITOR_GET("editors/tiles_editor/draw_checkerboard");
+	if (draw_checkerboard) {
+		background_right->draw_texture_rect(theme_cache.checkerboard, Rect2(Vector2(), background_right->get_size()), true);
+	}
 }
 
 void TileAtlasView::set_atlas_source(TileSet *p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id) {
