@@ -81,6 +81,8 @@ private:
 	void _draw_background_left();
 	Control *background_right = nullptr;
 	void _draw_background_right();
+	bool draw_checkerboard = true;
+	void _update_checkerboard_setting();
 
 	// Left side.
 	Control *base_tiles_root_control = nullptr;

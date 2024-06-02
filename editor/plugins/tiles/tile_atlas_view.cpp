@@ -448,17 +448,20 @@ void TileAtlasView::_draw_alternatives() {
 }
 
 void TileAtlasView::_draw_background_left() {
-	bool draw_checkerboard = EDITOR_GET("editors/tiles_editor/draw_checkerboard");
 	if (draw_checkerboard) {
 		background_left->draw_texture_rect(theme_cache.checkerboard, Rect2(Vector2(), background_left->get_size()), true);
 	}
 }
 
 void TileAtlasView::_draw_background_right() {
-	bool draw_checkerboard = EDITOR_GET("editors/tiles_editor/draw_checkerboard");
 	if (draw_checkerboard) {
 		background_right->draw_texture_rect(theme_cache.checkerboard, Rect2(Vector2(), background_right->get_size()), true);
 	}
+}
+
+void TileAtlasView::_update_checkerboard_setting() {
+	draw_checkerboard = EDITOR_GET("editors/tiles_editor/draw_checkerboard");
+	queue_redraw();
 }
 
 void TileAtlasView::set_atlas_source(TileSet *p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id) {
@@ -614,6 +617,9 @@ void TileAtlasView::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
+				if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/tiles_editor")) {
+					_update_checkerboard_setting();
+				}
 				break;
 			}
 			[[fallthrough]];
@@ -705,6 +711,7 @@ TileAtlasView::TileAtlasView() {
 	base_tiles_root_control->connect(SceneStringName(gui_input), callable_mp(this, &TileAtlasView::_base_tiles_root_control_gui_input));
 	left_vbox->add_child(base_tiles_root_control);
 
+	draw_checkerboard = EDITOR_GET("editors/tiles_editor/draw_checkerboard");
 	background_left = memnew(Control);
 	background_left->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	background_left->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT);
