@@ -30,6 +30,7 @@
 
 #include "create_dialog.h"
 
+#include "core/io/json.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_feature_profile.h"
@@ -37,6 +38,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_checklist_dialog.h"
 #include "editor/themes/editor_scale.h"
 
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_current_type, const String &p_current_name) {
@@ -65,7 +67,7 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 		set_ok_button_text(TTR("Create"));
 	}
 
-	_load_favorites_and_history();
+	_load_favorites_and_history_and_tabs();
 	_save_and_update_favorite_list();
 
 	// Restore valid window bounds or pop up at default size.
@@ -179,6 +181,21 @@ void CreateDialog::_update_search() {
 	search_options_types[base_type] = root;
 	_configure_search_option_item(root, base_type, ClassDB::class_exists(base_type) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE);
 
+	Tree *current_tree = Object::cast_to<Tree>(tabs->get_tab_control(tabs->get_current_tab()));
+	Array current_metadata = static_cast<Array>(tabs->get_tab_metadata(tabs->get_current_tab()));
+
+	if (current_tree != search_options) {
+		current_tree->clear();
+
+		Dictionary custom_search_options_types = current_metadata[0];
+		custom_search_options_types.clear();
+
+		TreeItem *custom_root = current_tree->create_item();
+		custom_root->set_text(0, base_type);
+		custom_root->set_icon(0, current_tree->get_editor_theme_icon(icon_fallback));
+		custom_search_options_types[base_type] = custom_root;
+	}
+
 	const String search_text = search_box->get_text();
 	bool empty_search = search_text.is_empty();
 
@@ -188,7 +205,7 @@ void CreateDialog::_update_search() {
 	for (List<StringName>::Element *I = type_list.front(); I; I = I->next()) {
 		StringName candidate = I->get();
 		if (empty_search || search_text.is_subsequence_ofn(candidate)) {
-			_add_type(candidate, ClassDB::class_exists(candidate) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE);
+			_add_type(candidate, ClassDB::class_exists(candidate) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE, current_tree, current_metadata);
 
 			// Determine the best match for an non-empty search.
 			if (!empty_search) {
@@ -204,6 +221,7 @@ void CreateDialog::_update_search() {
 	// Select the best result.
 	if (empty_search) {
 		select_type(base_type);
+		search_options->scroll_to_item(root); // for some reason the scroll is going down a little bit the first time the dialog is opened after this Tree was added to the TabContainer. This line fixes that.
 	} else if (best_match != StringName()) {
 		select_type(best_match);
 	} else {
@@ -214,7 +232,7 @@ void CreateDialog::_update_search() {
 	}
 }
 
-void CreateDialog::_add_type(const StringName &p_type, TypeCategory p_type_category) {
+void CreateDialog::_add_type(const StringName &p_type, TypeCategory p_type_category, Tree *current_tree, Array current_metadata) {
 	if (search_options_types.has(p_type)) {
 		return;
 	}
@@ -266,11 +284,19 @@ void CreateDialog::_add_type(const StringName &p_type, TypeCategory p_type_categ
 	// Should never happen, but just in case...
 	ERR_FAIL_COND(inherits == StringName());
 
-	_add_type(inherits, inherited_type);
+	_add_type(inherits, inherited_type, current_tree, current_metadata);
 
 	TreeItem *item = search_options->create_item(search_options_types[inherits]);
 	search_options_types[p_type] = item;
 	_configure_search_option_item(item, p_type, p_type_category);
+
+	if ((current_tree != search_options) && static_cast<const Dictionary &>(current_metadata[1]).has(p_type)) {
+		Dictionary custom_search_options_types = current_metadata[0];
+
+		TreeItem *custom_item = current_tree->create_item(Object::cast_to<TreeItem>(custom_search_options_types[inherits]));
+		custom_search_options_types[p_type] = custom_item;
+		_configure_search_option_item(custom_item, p_type, p_type_category);
+	}
 }
 
 void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringName &p_type, TypeCategory p_type_category) {
@@ -416,6 +442,11 @@ void CreateDialog::_confirmed() {
 	_cleanup();
 }
 
+void CreateDialog::_custom_confirmed() {
+	search_options->set_selected(search_options_types[Object::cast_to<Tree>(tabs->get_tab_control(tabs->get_current_tab()))->get_selected()->get_text(0)]);
+	_confirmed();
+}
+
 void CreateDialog::_text_changed(const String &p_newtext) {
 	_update_search();
 }
@@ -471,6 +502,8 @@ void CreateDialog::_notification(int p_what) {
 
 			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			favorite->set_icon(get_editor_theme_icon(SNAME("Favorites")));
+			add_category->set_icon(get_editor_theme_icon(SNAME("Add")));
+			tabs->set_tab_icon(0, get_editor_theme_icon(SNAME("Lock")));
 		} break;
 	}
 }
@@ -551,6 +584,10 @@ void CreateDialog::_item_selected() {
 	String name = get_selected_type();
 	select_type(name, false);
 }
+void CreateDialog::_custom_item_selected() {
+	search_options->set_selected(search_options_types[Object::cast_to<Tree>(tabs->get_tab_control(tabs->get_current_tab()))->get_selected()->get_text(0)]);
+	_item_selected();
+}
 
 void CreateDialog::_hide_requested() {
 	_cancel_pressed(); // From AcceptDialog.
@@ -577,6 +614,147 @@ void CreateDialog::_favorite_toggled() {
 	}
 
 	_save_and_update_favorite_list();
+}
+
+Variant CreateDialog::_create_tab_metadata(const Dictionary &p_node_names) const {
+	Array tab_metadata;
+	tab_metadata.append(Dictionary{}); // for the custom search options types
+	tab_metadata.append(p_node_names);
+
+	return tab_metadata;
+}
+
+void CreateDialog::_add_tab(const String &p_name, const Dictionary &p_node_names) {
+	Tree *new_search_options = memnew(Tree);
+	new_search_options->set_name(p_name);
+	new_search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	new_search_options->connect("item_activated", callable_mp(this, &CreateDialog::_custom_confirmed));
+	new_search_options->connect("cell_selected", callable_mp(this, &CreateDialog::_custom_item_selected));
+	tabs->add_child(new_search_options);
+	tabs->set_tab_metadata(tabs->get_tab_count() - 1, _create_tab_metadata(p_node_names));
+}
+
+void CreateDialog::_add_category_pressed() {
+	String category_name = category_box->get_text();
+
+	category_box->clear();
+
+	if (category_name.is_empty() || tabs->has_node(category_name)) {
+		return;
+	}
+
+	Dictionary node_names;
+	_add_tab(category_name, node_names);
+
+	Dictionary tab_data;
+	tab_data["name"] = category_name;
+	tab_data["nodes"] = node_names;
+	static_cast<Array>(json->get_data()).push_back(tab_data);
+	_save_and_update_tabs();
+}
+
+void CreateDialog::_add_node_pressed() {
+	int tabs_child_count = tabs->get_child_count(false);
+
+	if ((tabs_child_count == 1) || !Object::cast_to<Tree>(tabs->get_tab_control(tabs->get_current_tab()))->get_selected()) {
+		return;
+	}
+
+	Tree *tree = memnew(Tree);
+
+	TreeItem *root = tree->create_item();
+	root->set_text(0, "Categories");
+
+	for (int i = 0; i < tabs_child_count; ++i) {
+		Node *tab_child = tabs->get_child(i, false);
+
+		if (tab_child == search_options) {
+			continue;
+		}
+
+		TreeItem *item = tree->create_item(root);
+		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+		item->set_text(0, tab_child->get_name());
+		item->set_editable(0, true);
+	}
+
+	checklist_dialog->reload(tree);
+	checklist_dialog->popup_centered();
+}
+
+void CreateDialog::_remove_node_pressed() {
+	Tree *current_tree = Object::cast_to<Tree>(tabs->get_tab_control(tabs->get_current_tab()));
+	TreeItem *selected = current_tree->get_selected();
+
+	if ((current_tree == search_options) || !selected) {
+		return;
+	}
+
+	static_cast<Dictionary>(static_cast<Array>(tabs->get_tab_metadata(tabs->get_current_tab()))[1]).erase(selected->get_text(0));
+
+	_save_and_update_tabs();
+	_update_search();
+}
+
+void CreateDialog::_checklist_confirmed() {
+	String node_name = Object::cast_to<Tree>(tabs->get_tab_control(tabs->get_current_tab()))->get_selected()->get_text(0);
+
+	Vector<TreeItem *> checked = checklist_dialog->get_all_checked();
+
+	for (const TreeItem *item : checked) {
+		static_cast<Dictionary>(static_cast<Array>(tabs->get_tab_metadata(tabs->get_node(item->get_text(0))->get_index(false)))[1])[node_name] = 1;
+	}
+
+	_save_and_update_tabs();
+}
+
+void CreateDialog::_tab_changed(int p_idx) {
+	if (tabs->get_tab_control(p_idx) == search_options) {
+		tabs->get_tab_bar()->set_tab_close_display_policy(TabBar::CLOSE_BUTTON_SHOW_NEVER);
+	} else {
+		tabs->get_tab_bar()->set_tab_close_display_policy(TabBar::CLOSE_BUTTON_SHOW_ACTIVE_ONLY);
+	}
+
+	_update_search();
+}
+
+void CreateDialog::_tab_closed(int p_idx) {
+	String node_name = tabs->get_child(p_idx, false)->get_name();
+	tabs->get_child(p_idx, false)->queue_free();
+
+	Array tab_data = json->get_data();
+	for (int i = 0; i < tab_data.size(); ++i) {
+		if (static_cast<const Dictionary &>(tab_data[i])["name"] == node_name) {
+			tab_data.remove_at(i);
+			break;
+		}
+	}
+	
+	_save_and_update_tabs();
+}
+
+void CreateDialog::_tab_rearranged(int p_idx_to) {
+	if (tabs->get_child(p_idx_to, false) == search_options) {
+		return;
+	}
+
+	Array tab_data = json->get_data();
+	tab_data.clear();
+
+	for (int i = 0, tabs_child_count = tabs->get_child_count(false); i < tabs_child_count; ++i) {
+		Node *node = tabs->get_child(i, false);
+
+		if (node == search_options) {
+			continue;
+		}
+
+		Dictionary new_data;
+		new_data["name"] = node->get_name();
+		new_data["nodes"] = static_cast<Array>(tabs->get_tab_metadata(i))[1];
+		tab_data.push_back(new_data);
+	}
+
+	_save_and_update_tabs();
 }
 
 void CreateDialog::_history_selected(int p_idx) {
@@ -708,7 +886,16 @@ void CreateDialog::_save_and_update_favorite_list() {
 	emit_signal(SNAME("favorites_updated"));
 }
 
-void CreateDialog::_load_favorites_and_history() {
+void CreateDialog::_save_and_update_tabs() {
+	Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("tabs." + base_type), FileAccess::WRITE);
+	if (f.is_valid()) {
+		f->store_string(json->stringify(json->get_data()));
+	}
+
+	emit_signal(SNAME("tabs_updated"));
+}
+
+void CreateDialog::_load_favorites_and_history_and_tabs() {
 	String dir = EditorPaths::get_singleton()->get_project_settings_dir();
 	Ref<FileAccess> f = FileAccess::open(dir.path_join("create_recent." + base_type), FileAccess::READ);
 	if (f.is_valid()) {
@@ -732,11 +919,31 @@ void CreateDialog::_load_favorites_and_history() {
 			}
 		}
 	}
+
+	if (json.is_null()) {
+		json.instantiate();
+		f = FileAccess::open(dir.path_join("tabs." + base_type), FileAccess::READ);
+		if (f.is_valid()) {
+			Error err = json->parse(f->get_as_text());
+			if (err != OK) {
+				String err_text = "Error parsing tabs file on line " + itos(json->get_error_line()) + ": " + json->get_error_message();
+				WARN_PRINT(err_text);
+			}
+
+			Array tab_data = json->get_data();
+			for (const Dictionary &tab_metadata : tab_data) {
+				_add_tab(tab_metadata["name"], tab_metadata["nodes"]);
+			}
+		} else {
+			json->parse("[]");
+		}
+	}
 }
 
 void CreateDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("create"));
 	ADD_SIGNAL(MethodInfo("favorites_updated"));
+	ADD_SIGNAL(MethodInfo("tabs_updated"));
 }
 
 CreateDialog::CreateDialog() {
@@ -802,11 +1009,51 @@ CreateDialog::CreateDialog() {
 	search_hb->add_child(favorite);
 	vbc->add_margin_child(TTR("Search:"), search_hb);
 
+	category_box = memnew(LineEdit);
+	category_box->set_clear_button_enabled(true);
+	category_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+	add_category = memnew(Button);
+	add_category->set_tooltip_text(TTR("Add a new category tab."));
+	add_category->connect(SceneStringName(pressed), callable_mp(this, &CreateDialog::_add_category_pressed));
+
+	Button *add_node = memnew(Button);
+	add_node->set_text(TTR("Add node"));
+	add_node->set_tooltip_text(TTR("Add node into selected category tab."));
+	add_node->connect(SceneStringName(pressed), callable_mp(this, &CreateDialog::_add_node_pressed));
+
+	Button *remove_node = memnew(Button);
+	remove_node->set_text(TTR("Remove node"));
+	remove_node->set_tooltip_text(TTR("Remove node from selected category tab."));
+	remove_node->connect(SceneStringName(pressed), callable_mp(this, &CreateDialog::_remove_node_pressed));
+
+	HBoxContainer *category_hb = memnew(HBoxContainer);
+	category_hb->add_child(category_box);
+	category_hb->add_child(add_category);
+	VSeparator *v_separator = memnew(VSeparator);
+	category_hb->add_child(v_separator);
+	category_hb->add_child(add_node);
+	category_hb->add_child(remove_node);
+	vbc->add_margin_child(TTR("Categories:"), category_hb);
+
+	tabs = memnew(TabContainer);
+	tabs->set_drag_to_rearrange_enabled(true);
+	tabs->connect("tab_changed", callable_mp(this, &CreateDialog::_tab_changed));
+	tabs->connect("active_tab_rearranged", callable_mp(this, &CreateDialog::_tab_rearranged));
+	tabs->get_tab_bar()->connect("tab_close_pressed", callable_mp(this, &CreateDialog::_tab_closed));
+	vbc->add_margin_child(TTR("Matches:"), tabs, true);
+
 	search_options = memnew(Tree);
+	search_options->set_name(TTR("Built-in"));
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->connect("item_activated", callable_mp(this, &CreateDialog::_confirmed));
 	search_options->connect("cell_selected", callable_mp(this, &CreateDialog::_item_selected));
-	vbc->add_margin_child(TTR("Matches:"), search_options, true);
+	tabs->add_child(search_options);
+	tabs->set_tab_metadata(0, _create_tab_metadata());
+
+	checklist_dialog = memnew(EditorChecklistDialog);
+	checklist_dialog->connect("confirmed", callable_mp(this, &CreateDialog::_checklist_confirmed));
+	add_child(checklist_dialog);
 
 	help_bit = memnew(EditorHelpBit);
 	help_bit->set_content_height_limits(64 * EDSCALE, 64 * EDSCALE);
