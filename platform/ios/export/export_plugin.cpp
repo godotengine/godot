@@ -1357,12 +1357,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(const String &p_out_dir, co
 
 		String type;
 		if (asset.exported_path.ends_with(".framework")) {
-			int total_libs = 0;
-			int static_libs = 0;
-			int dylibs = 0;
-			int frameworks = 0;
-			_check_xcframework_content(p_out_dir.path_join(asset.exported_path), total_libs, static_libs, dylibs, frameworks);
-			if (asset.should_embed && (static_libs != total_libs)) {
+			if (asset.should_embed) {
 				additional_asset_info_format += "$framework_id = {isa = PBXBuildFile; fileRef = $ref_id; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };\n";
 				framework_id = (++current_id).str();
 				pbx_embeded_frameworks += framework_id + ",\n";
