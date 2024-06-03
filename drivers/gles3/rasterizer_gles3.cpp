@@ -130,12 +130,9 @@ void RasterizerGLES3::clear_depth(float p_depth) {
 
 #ifdef CAN_DEBUG
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
-	if (type == _EXT_DEBUG_TYPE_OTHER_ARB) {
+	// These are ultimately annoying, so removing for now.
+	if (type == _EXT_DEBUG_TYPE_OTHER_ARB || type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB) {
 		return;
-	}
-
-	if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB) {
-		return; //these are ultimately annoying, so removing for now
 	}
 
 	char debSource[256], debType[256], debSev[256];
@@ -152,6 +149,8 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 		strcpy(debSource, "Application");
 	} else if (source == _EXT_DEBUG_SOURCE_OTHER_ARB) {
 		strcpy(debSource, "Other");
+	} else {
+		ERR_FAIL_MSG(vformat("GL ERROR: Invalid or unhandled source '%d' in debug callback.", source));
 	}
 
 	if (type == _EXT_DEBUG_TYPE_ERROR_ARB) {
@@ -162,10 +161,8 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 		strcpy(debType, "Undefined behavior");
 	} else if (type == _EXT_DEBUG_TYPE_PORTABILITY_ARB) {
 		strcpy(debType, "Portability");
-	} else if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB) {
-		strcpy(debType, "Performance");
-	} else if (type == _EXT_DEBUG_TYPE_OTHER_ARB) {
-		strcpy(debType, "Other");
+	} else {
+		ERR_FAIL_MSG(vformat("GL ERROR: Invalid or unhandled type '%d' in debug callback.", type));
 	}
 
 	if (severity == _EXT_DEBUG_SEVERITY_HIGH_ARB) {
@@ -174,6 +171,8 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 		strcpy(debSev, "Medium");
 	} else if (severity == _EXT_DEBUG_SEVERITY_LOW_ARB) {
 		strcpy(debSev, "Low");
+	} else {
+		ERR_FAIL_MSG(vformat("GL ERROR: Invalid or unhandled severity '%d' in debug callback.", severity));
 	}
 
 	String output = String() + "GL ERROR: Source: " + debSource + "\tType: " + debType + "\tID: " + itos(id) + "\tSeverity: " + debSev + "\tMessage: " + message;
