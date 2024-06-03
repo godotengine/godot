@@ -1250,9 +1250,8 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	int pan_speed = p_settings.get("editors/panning/2d_editor_pan_speed", 20);
 	Array keys = p_settings.get("canvas_item_editor/pan_view", Array()).operator Array();
 	panner->setup(panning_scheme, DebuggerMarshalls::deserialize_key_shortcut(keys), simple_panning);
-	panner->set_viewport(root);
+	panner->setup_warped_panning(root, p_settings.get("editors/panning/warped_mouse_panning", true));
 	panner->set_scroll_speed(pan_speed);
-	warped_panning = p_settings.get("editors/panning/warped_mouse_panning", false);
 
 	/// 2D Selection Box Generation
 
@@ -1363,7 +1362,7 @@ void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
 
 	if (camera_override) {
 		if (node_select_type == NODE_TYPE_2D) {
-			if (panner->gui_input(p_event, warped_panning ? Rect2(Vector2(), root->get_size()) : Rect2())) {
+			if (panner->gui_input(p_event, Rect2(Vector2(), root->get_size()))) {
 				return;
 			}
 		} else if (node_select_type == NODE_TYPE_3D) {

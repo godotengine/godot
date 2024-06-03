@@ -930,14 +930,13 @@ void AnimationNodeBlendTreeEditor::_inspect_filters(const String &p_which) {
 
 void AnimationNodeBlendTreeEditor::_update_editor_settings() {
 	graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-	graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
+	graph->set_warped_panning(EDITOR_GET("editors/panning/warped_mouse_panning"));
 }
 
 void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_editor_settings();
-			graph->get_panner()->set_viewport(get_viewport());
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
