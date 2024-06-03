@@ -6274,9 +6274,15 @@ void SpatialEditor::_init_grid() {
 
 	bool orthogonal = camera->get_projection() == Camera::PROJECTION_ORTHOGONAL;
 
-	PoolVector<Color> grid_colors[3];
-	PoolVector<Vector3> grid_points[3];
-	PoolVector<Vector3> grid_normals[3];
+	static LocalVector<Color> grid_colors[3];
+	static LocalVector<Vector3> grid_points[3];
+	static LocalVector<Vector3> grid_normals[3];
+
+	for (uint32_t n = 0; n < 3; n++) {
+		grid_colors[n].clear();
+		grid_points[n].clear();
+		grid_normals[n].clear();
+	}
 
 	Color primary_grid_color = EditorSettings::get_singleton()->get("editors/3d/primary_grid_color");
 	Color secondary_grid_color = EditorSettings::get_singleton()->get("editors/3d/secondary_grid_color");
@@ -6402,9 +6408,9 @@ void SpatialEditor::_init_grid() {
 		grid[c] = RID_PRIME(VisualServer::get_singleton()->mesh_create());
 		Array d;
 		d.resize(VS::ARRAY_MAX);
-		d[VisualServer::ARRAY_VERTEX] = grid_points[c];
-		d[VisualServer::ARRAY_COLOR] = grid_colors[c];
-		d[VisualServer::ARRAY_NORMAL] = grid_normals[c];
+		d[VisualServer::ARRAY_VERTEX] = (PoolVector<Vector3>)grid_points[c];
+		d[VisualServer::ARRAY_COLOR] = (PoolVector<Color>)grid_colors[c];
+		d[VisualServer::ARRAY_NORMAL] = (PoolVector<Vector3>)grid_normals[c];
 		VisualServer::get_singleton()->mesh_add_surface_from_arrays(grid[c], VisualServer::PRIMITIVE_LINES, d);
 		VisualServer::get_singleton()->mesh_surface_set_material(grid[c], 0, grid_mat[c]->get_rid());
 		grid_instance[c] = VisualServer::get_singleton()->instance_create2(grid[c], get_tree()->get_root()->get_world()->get_scenario());
