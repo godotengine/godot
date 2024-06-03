@@ -660,6 +660,24 @@ Point2i DisplayServerWindows::mouse_get_position() const {
 }
 
 BitField<MouseButtonMask> DisplayServerWindows::mouse_get_button_state() const {
+	BitField<MouseButtonMask> last_button_state = 0;
+
+	if (GetAsyncKeyState(VK_LBUTTON) & (1 << 15)) {
+		last_button_state.set_flag(MouseButtonMask::LEFT);
+	}
+	if (GetAsyncKeyState(VK_RBUTTON) & (1 << 15)) {
+		last_button_state.set_flag(MouseButtonMask::RIGHT);
+	}
+	if (GetAsyncKeyState(VK_MBUTTON) & (1 << 15)) {
+		last_button_state.set_flag(MouseButtonMask::MIDDLE);
+	}
+	if (GetAsyncKeyState(VK_XBUTTON1) & (1 << 15)) {
+		last_button_state.set_flag(MouseButtonMask::MB_XBUTTON1);
+	}
+	if (GetAsyncKeyState(VK_XBUTTON2) & (1 << 15)) {
+		last_button_state.set_flag(MouseButtonMask::MB_XBUTTON2);
+	}
+
 	return last_button_state;
 }
 
@@ -3999,7 +4017,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 				mm->set_pressure((raw->data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN) ? 1.0f : 0.0f);
 
-				mm->set_button_mask(last_button_state);
+				mm->set_button_mask(mouse_get_button_state());
 
 				Point2i c(windows[window_id].width / 2, windows[window_id].height / 2);
 
@@ -4103,7 +4121,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					mm->set_tilt(windows[window_id].last_tilt);
 					mm->set_pen_inverted(windows[window_id].last_pen_inverted);
 
-					mm->set_button_mask(last_button_state);
+					mm->set_button_mask(mouse_get_button_state());
 
 					mm->set_position(Vector2(coords.x, coords.y));
 					mm->set_global_position(Vector2(coords.x, coords.y));
@@ -4248,7 +4266,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
 			mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
 
-			mm->set_button_mask(last_button_state);
+			mm->set_button_mask(mouse_get_button_state());
 
 			POINT coords; // Client coords.
 			coords.x = GET_X_LPARAM(lParam);
@@ -4378,7 +4396,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_tilt(windows[window_id].last_tilt);
 			mm->set_pen_inverted(windows[window_id].last_pen_inverted);
 
-			mm->set_button_mask(last_button_state);
+			mm->set_button_mask(mouse_get_button_state());
 
 			mm->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 			mm->set_global_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
@@ -4552,12 +4570,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mb->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
 			mb->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
 
-			if (mb->is_pressed()) {
-				last_button_state.set_flag(mouse_button_to_mask(mb->get_button_index()));
+			if (mb->is_pressed() && mb->get_button_index() >= MouseButton::WHEEL_UP && mb->get_button_index() <= MouseButton::WHEEL_RIGHT) {
+				MouseButtonMask mask = mouse_button_to_mask(mb->get_button_index());
+				BitField<MouseButtonMask> scroll_mask = mouse_get_button_state();
+				scroll_mask.set_flag(mask);
+				mb->set_button_mask(scroll_mask);
 			} else {
-				last_button_state.clear_flag(mouse_button_to_mask(mb->get_button_index()));
+				mb->set_button_mask(mouse_get_button_state());
 			}
-			mb->set_button_mask(last_button_state);
 
 			mb->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
@@ -4571,7 +4591,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						SetCapture(hWnd);
 					}
 				} else {
-					if (--pressrc <= 0 || last_button_state.is_empty()) {
+					if (--pressrc <= 0 || mouse_get_button_state().is_empty()) {
 						if (mouse_mode != MOUSE_MODE_CAPTURED) {
 							ReleaseCapture();
 						}
@@ -4596,8 +4616,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				// Send release for mouse wheel.
 				Ref<InputEventMouseButton> mbd = mb->duplicate();
 				mbd->set_window_id(window_id);
-				last_button_state.clear_flag(mouse_button_to_mask(mbd->get_button_index()));
-				mbd->set_button_mask(last_button_state);
+				mbd->set_button_mask(mouse_get_button_state());
 				mbd->set_pressed(false);
 				Input::get_singleton()->parse_input_event(mbd);
 			}
