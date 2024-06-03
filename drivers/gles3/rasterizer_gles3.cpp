@@ -54,6 +54,8 @@
 #define _EXT_DEBUG_TYPE_PORTABILITY_ARB 0x824F
 #define _EXT_DEBUG_TYPE_PERFORMANCE_ARB 0x8250
 #define _EXT_DEBUG_TYPE_OTHER_ARB 0x8251
+#define _EXT_DEBUG_TYPE_MARKER_ARB 0x8268
+#define _EXT_DEBUG_SEVERITY_NOTIFICATION_ARB 0x826B
 #define _EXT_MAX_DEBUG_MESSAGE_LENGTH_ARB 0x9143
 #define _EXT_MAX_DEBUG_LOGGED_MESSAGES_ARB 0x9144
 #define _EXT_DEBUG_LOGGED_MESSAGES_ARB 0x9145
@@ -134,7 +136,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 		return;
 	}
 
-	if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB) {
+	if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB || type == _EXT_DEBUG_TYPE_MARKER_ARB) {
 		return; //these are ultimately annoying, so removing for now
 	}
 
@@ -152,6 +154,8 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 		strcpy(debSource, "Application");
 	} else if (source == _EXT_DEBUG_SOURCE_OTHER_ARB) {
 		strcpy(debSource, "Other");
+	} else {
+		strcpy(debSource, "(unknown)");
 	}
 
 	if (type == _EXT_DEBUG_TYPE_ERROR_ARB) {
@@ -164,8 +168,12 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 		strcpy(debType, "Portability");
 	} else if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB) {
 		strcpy(debType, "Performance");
+	} else if (type == _EXT_DEBUG_TYPE_MARKER_ARB) {
+		strcpy(debType, "Marker");
 	} else if (type == _EXT_DEBUG_TYPE_OTHER_ARB) {
 		strcpy(debType, "Other");
+	} else {
+		strcpy(debType, "(unknown)");
 	}
 
 	if (severity == _EXT_DEBUG_SEVERITY_HIGH_ARB) {
@@ -174,6 +182,10 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 		strcpy(debSev, "Medium");
 	} else if (severity == _EXT_DEBUG_SEVERITY_LOW_ARB) {
 		strcpy(debSev, "Low");
+	} else if (severity == _EXT_DEBUG_SEVERITY_NOTIFICATION_ARB) {
+		strcpy(debSev, "Notification");
+	} else {
+		strcpy(debSev, "(unknown)");
 	}
 
 	String output = String() + "GL ERROR: Source: " + debSource + "\tType: " + debType + "\tID: " + itos(id) + "\tSeverity: " + debSev + "\tMessage: " + message;
