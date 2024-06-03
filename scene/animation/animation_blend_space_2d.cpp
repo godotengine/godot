@@ -511,9 +511,9 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(const AnimationM
 
 		first = true;
 
-		bool found = false;
 		double max_weight = 0.0;
 		for (int i = 0; i < blend_points_used; i++) {
+			bool found = false;
 			for (int j = 0; j < 3; j++) {
 				if (i == triangle_points[j]) {
 					//blend with the given weight
