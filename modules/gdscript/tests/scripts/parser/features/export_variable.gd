@@ -1,6 +1,8 @@
+class_name ExportVariableTest
 extends Node
 
 const Utils = preload("../../utils.notest.gd")
+const PreloadedScript = preload("./export_variable.notest.gd")
 
 # Built-in types.
 @export var test_weak_int = 1
@@ -19,6 +21,10 @@ const Utils = preload("../../utils.notest.gd")
 # Resources and nodes.
 @export var test_image: Image
 @export var test_timer: Timer
+
+# Global custom classes.
+@export var test_global_class: ExportVariableTest
+@export var test_preloaded_script: PreloadedScript
 
 # Arrays.
 @export var test_array: Array
