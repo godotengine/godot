@@ -207,6 +207,9 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 		parameters_map["use_renderable"] = false;
 		parameters_map["use_visible"] = false;
 	}
+	if (p_options.has(SNAME("blender/nodes/active_collection_only")) && p_options[SNAME("blender/nodes/active_collection_only")]) {
+		parameters_map["use_active_collection"] = true;
+	}
 
 	if (p_options.has(SNAME("blender/meshes/uvs")) && p_options[SNAME("blender/meshes/uvs")]) {
 		parameters_map["export_texcoords"] = true;
@@ -332,6 +335,7 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, SNAME(PATH), PROPERTY_HINT_ENUM, ENUM_HINT), VALUE));
 
 	ADD_OPTION_ENUM("blender/nodes/visible", "All,Visible Only,Renderable", BLEND_VISIBLE_ALL);
+	ADD_OPTION_BOOL("blender/nodes/active_collection_only", false);
 	ADD_OPTION_BOOL("blender/nodes/punctual_lights", true);
 	ADD_OPTION_BOOL("blender/nodes/cameras", true);
 	ADD_OPTION_BOOL("blender/nodes/custom_properties", true);

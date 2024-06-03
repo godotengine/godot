@@ -1421,11 +1421,25 @@ Point2i DisplayServerMacOS::mouse_get_position() const {
 	return Vector2i();
 }
 
-void DisplayServerMacOS::mouse_set_button_state(BitField<MouseButtonMask> p_state) {
-	last_button_state = p_state;
-}
-
 BitField<MouseButtonMask> DisplayServerMacOS::mouse_get_button_state() const {
+	BitField<MouseButtonMask> last_button_state = 0;
+
+	NSUInteger buttons = [NSEvent pressedMouseButtons];
+	if (buttons & (1 << 0)) {
+		last_button_state.set_flag(MouseButtonMask::LEFT);
+	}
+	if (buttons & (1 << 1)) {
+		last_button_state.set_flag(MouseButtonMask::RIGHT);
+	}
+	if (buttons & (1 << 2)) {
+		last_button_state.set_flag(MouseButtonMask::MIDDLE);
+	}
+	if (buttons & (1 << 3)) {
+		last_button_state.set_flag(MouseButtonMask::MB_XBUTTON1);
+	}
+	if (buttons & (1 << 4)) {
+		last_button_state.set_flag(MouseButtonMask::MB_XBUTTON2);
+	}
 	return last_button_state;
 }
 

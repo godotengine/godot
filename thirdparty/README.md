@@ -344,7 +344,7 @@ See the patches in the `patches` directory.
 ## glslang
 
 - Upstream: https://github.com/KhronosGroup/glslang
-- Version: vulkan-sdk-1.3.275.0 (a91631b260cba3f22858d6c6827511e636c2458a, 2023)
+- Version: vulkan-sdk-1.3.283.0 (e8dd0b6903b34f1879520b444634c75ea2deedf5, 2024)
 - License: glslang
 
 Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
@@ -830,7 +830,7 @@ proposed by these libraries and better integrate them with Godot.
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect
-- Version: vulkan-sdk-1.3.275.0 (2f7460f0be0f73c9ffde719bc3e924b4250f4d98, 2024)
+- Version: vulkan-sdk-1.3.283.0 (ee5b57fba6a986381f998567761bbc064428e645, 2024)
 - License: Apache 2.0
 
 Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
@@ -923,15 +923,11 @@ folder.
 ## volk
 
 - Upstream: https://github.com/zeux/volk
-- Version: vulkan-sdk-1.3.275.0 (f2a16e3e19c2349b873343b2dc38a1d4c25af23a, 2024)
+- Version: vulkan-sdk-1.3.283.0 (3a8068a57417940cf2bf9d837a7bb60d015ca2f1, 2024)
 - License: MIT
 
-Unless there is a specific reason to package a more recent version, please stick
-to tagged releases. All Vulkan libraries and headers should be kept in sync so:
-
-- Update Vulkan SDK components to the matching tag (see "vulkan")
-- Update glslang (see "glslang")
-- Update spirv-reflect (see "spirv-reflect")
+Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
+section).
 
 Files extracted from upstream source:
 
@@ -942,10 +938,16 @@ Files extracted from upstream source:
 ## vulkan
 
 - Upstream: https://github.com/KhronosGroup/Vulkan-Headers
-- Version: vulkan-sdk-1.3.275.0 (217e93c664ec6704ec2d8c36fa116c1a4a1e2d40, 2024)
+- Version: vulkan-sdk-1.3.283.0 (eaa319dade959cb61ed2229c8ea42e307cc8f8b3, 2024)
 - License: Apache 2.0
 
-The vendored version should be kept in sync with volk, see above.
+Unless there is a specific reason to package a more recent version, please stick
+to tagged SDK releases. All Vulkan libraries and headers should be kept in sync so:
+
+- Update Vulkan SDK components to the matching tag (see "vulkan")
+- Update volk (see "volk")
+- Update glslang (see "glslang")
+- Update spirv-reflect (see "spirv-reflect")
 
 Files extracted from upstream source:
 
@@ -956,8 +958,7 @@ Files extracted from upstream source:
 SDK release: https://github.com/KhronosGroup/Vulkan-Utility-Libraries/blob/main/include/vulkan/vk_enum_string_helper.h
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-Version: git (38627f4e37d7a9b13214fd267ec60e0e877e3997, 2024), as advised by upstream:
-https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/issues/318#issuecomment-1411804981
+Version: 3.1.0 (009ecd192c1289c7529bff248a16cfe896254816, 2024)
 `vk_mem_alloc.cpp` is a Godot file and should be preserved on updates.
 
 Patches in the `patches` directory should be re-applied after updates.

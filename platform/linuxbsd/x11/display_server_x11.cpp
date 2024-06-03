@@ -502,7 +502,34 @@ Point2i DisplayServerX11::mouse_get_position() const {
 }
 
 BitField<MouseButtonMask> DisplayServerX11::mouse_get_button_state() const {
-	return last_button_state;
+	int number_of_screens = XScreenCount(x11_display);
+	for (int i = 0; i < number_of_screens; i++) {
+		Window root, child;
+		int root_x, root_y, win_x, win_y;
+		unsigned int mask;
+		if (XQueryPointer(x11_display, XRootWindow(x11_display, i), &root, &child, &root_x, &root_y, &win_x, &win_y, &mask)) {
+			BitField<MouseButtonMask> last_button_state = 0;
+
+			if (mask & Button1Mask) {
+				last_button_state.set_flag(MouseButtonMask::LEFT);
+			}
+			if (mask & Button2Mask) {
+				last_button_state.set_flag(MouseButtonMask::MIDDLE);
+			}
+			if (mask & Button3Mask) {
+				last_button_state.set_flag(MouseButtonMask::RIGHT);
+			}
+			if (mask & Button4Mask) {
+				last_button_state.set_flag(MouseButtonMask::MB_XBUTTON1);
+			}
+			if (mask & Button5Mask) {
+				last_button_state.set_flag(MouseButtonMask::MB_XBUTTON2);
+			}
+
+			return last_button_state;
+		}
+	}
+	return 0;
 }
 
 void DisplayServerX11::clipboard_set(const String &p_text) {
@@ -3351,18 +3378,6 @@ void DisplayServerX11::_get_key_modifier_state(unsigned int p_x11_state, Ref<Inp
 	state->set_meta_pressed((p_x11_state & Mod4Mask));
 }
 
-BitField<MouseButtonMask> DisplayServerX11::_get_mouse_button_state(MouseButton p_x11_button, int p_x11_type) {
-	MouseButtonMask mask = mouse_button_to_mask(p_x11_button);
-
-	if (p_x11_type == ButtonPress) {
-		last_button_state.set_flag(mask);
-	} else {
-		last_button_state.clear_flag(mask);
-	}
-
-	return last_button_state;
-}
-
 void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo) {
 	WindowData &wd = windows[p_window];
 	// X11 functions don't know what const is
@@ -4750,11 +4765,19 @@ void DisplayServerX11::process_events() {
 				} else if (mb->get_button_index() == MouseButton::MIDDLE) {
 					mb->set_button_index(MouseButton::RIGHT);
 				}
-				mb->set_button_mask(_get_mouse_button_state(mb->get_button_index(), event.xbutton.type));
 				mb->set_position(Vector2(event.xbutton.x, event.xbutton.y));
 				mb->set_global_position(mb->get_position());
 
 				mb->set_pressed((event.type == ButtonPress));
+
+				if (mb->is_pressed() && mb->get_button_index() >= MouseButton::WHEEL_UP && mb->get_button_index() <= MouseButton::WHEEL_RIGHT) {
+					MouseButtonMask mask = mouse_button_to_mask(mb->get_button_index());
+					BitField<MouseButtonMask> scroll_mask = mouse_get_button_state();
+					scroll_mask.set_flag(mask);
+					mb->set_button_mask(scroll_mask);
+				} else {
+					mb->set_button_mask(mouse_get_button_state());
+				}
 
 				const WindowData &wd = windows[window_id];
 
