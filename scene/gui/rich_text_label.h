@@ -561,6 +561,8 @@ private:
 	String _roman(int p_num, bool p_capitalize) const;
 	String _letters(int p_num, bool p_capitalize) const;
 
+	List<Item *> _get_table_frames(ItemTable *p_table) const;
+
 	Item *_find_indentable(Item *p_item);
 	Item *_get_item_at_pos(Item *p_item_from, Item *p_item_to, int p_position);
 	void _find_frame(Item *p_item, ItemFrame **r_frame, int *r_line);

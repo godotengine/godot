@@ -266,7 +266,7 @@ void RichTextLabel::_update_line_font(ItemFrame *p_frame, int p_line, const Ref<
 		switch (it->type) {
 			case ITEM_TABLE: {
 				ItemTable *table = static_cast<ItemTable *>(it);
-				for (Item *E : table->subitems) {
+				for (Item *E : _get_table_frames(table)) {
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E);
 					for (int i = 0; i < (int)frame->lines.size(); i++) {
@@ -319,7 +319,7 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 				}
 
 				int idx = 0;
-				for (Item *E : table->subitems) {
+				for (Item *E : _get_table_frames(table)) {
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E);
 					float prev_h = 0;
@@ -405,7 +405,7 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 				Vector2 offset;
 				float row_height = 0.0;
 
-				for (Item *E : table->subitems) {
+				for (Item *E : _get_table_frames(table)) {
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E);
 
@@ -607,7 +607,8 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				const int available_width = p_width - theme_cache.table_h_separation * (col_count - 1);
 
 				int idx = 0;
-				for (Item *E : table->subitems) {
+				List<Item *> frames = _get_table_frames(table);
+				for (Item *E : frames) {
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E);
 
@@ -701,7 +702,8 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				Vector2 offset;
 				float row_height = 0.0;
 
-				for (const List<Item *>::Element *E = table->subitems.front(); E; E = E->next()) {
+				List<Item *> table_frames = _get_table_frames(table);
+				for (const List<Item *>::Element *E = table_frames.front(); E; E = E->next()) {
 					ERR_CONTINUE(E->get()->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E->get());
 
@@ -974,7 +976,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						int row_count = table->rows.size();
 
 						int idx = 0;
-						for (Item *E : table->subitems) {
+						for (Item *E : _get_table_frames(table)) {
 							ItemFrame *frame = static_cast<ItemFrame *>(E);
 
 							int col = idx % col_count;
@@ -1549,7 +1551,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 							int col_count = table->columns.size();
 							int row_count = table->rows.size();
 
-							for (Item *E : table->subitems) {
+							for (Item *E : _get_table_frames(table)) {
 								ItemFrame *frame = static_cast<ItemFrame *>(E);
 
 								int col = idx % col_count;
@@ -1575,7 +1577,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 											if (table_click_frame && table_click_item) {
 												// Save cell detected cell hit data.
 												table_range = Vector2i(INT32_MAX, 0);
-												for (Item *F : table->subitems) {
+												for (Item *F : _get_table_frames(table)) {
 													ItemFrame *sub_frame = static_cast<ItemFrame *>(F);
 													for (int k = 0; k < (int)sub_frame->lines.size(); k++) {
 														table_range.x = MIN(table_range.x, sub_frame->lines[k].char_offset);
@@ -2285,6 +2287,34 @@ RichTextLabel::Item *RichTextLabel::_find_indentable(Item *p_item) {
 	}
 
 	return indentable;
+}
+
+List<RichTextLabel::Item *> RichTextLabel::_get_table_frames(ItemTable *p_table) const {
+	List<RichTextLabel::Item *> search_list;
+	List<RichTextLabel::Item *> frames;
+
+	// Add all children to search queue.
+	for (const List<Item *>::Element *E = p_table->subitems.front(); E; E = E->next()) {
+		search_list.push_front(E->get());
+	}
+
+	while (!search_list.is_empty()) {
+		Item *c = search_list.back()->get();
+		search_list.pop_back();
+
+		ERR_CONTINUE((c->type != ITEM_CONTEXT) && (c->type != ITEM_FRAME));
+
+		if (c->type == ITEM_FRAME) {
+			frames.push_front(static_cast<Item *>(c));
+		} else if (c->type == ITEM_CONTEXT) {
+			// If item is a context item, search through its children.
+			for (const List<Item *>::Element *E = c->subitems.front(); E; E = E->next()) {
+				search_list.push_front(E->get());
+			}
+		}
+	}
+
+	return frames;
 }
 
 RichTextLabel::ItemFont *RichTextLabel::_find_font(Item *p_item) {
@@ -3862,7 +3892,6 @@ void RichTextLabel::push_context() {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
-	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ItemContext *item = memnew(ItemContext);
 	item->owner = get_instance_id();
 	item->rid = items.make_rid(item);
@@ -3931,7 +3960,7 @@ void RichTextLabel::push_cell() {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
-	ERR_FAIL_COND(current->type != ITEM_TABLE);
+	ERR_FAIL_COND((current->type != ITEM_TABLE) && (current->type != ITEM_CONTEXT));
 
 	ItemFrame *item = memnew(ItemFrame);
 	item->owner = get_instance_id();
@@ -3949,7 +3978,7 @@ int RichTextLabel::get_current_table_column() const {
 	ERR_FAIL_COND_V(current->type != ITEM_TABLE, -1);
 
 	ItemTable *table = static_cast<ItemTable *>(current);
-	return table->subitems.size() % table->columns.size();
+	return _get_table_frames(table).size() % table->columns.size();
 }
 
 void RichTextLabel::pop() {
@@ -5371,7 +5400,8 @@ bool RichTextLabel::_search_line(ItemFrame *p_frame, int p_line, const String &p
 			} break;
 			case ITEM_TABLE: {
 				ItemTable *table = static_cast<ItemTable *>(it);
-				List<Item *>::Element *E = p_reverse_search ? table->subitems.back() : table->subitems.front();
+				List<Item *> frames = _get_table_frames(table);
+				List<Item *>::Element *E = p_reverse_search ? frames.back() : frames.front();
 				if (_search_table(table, E, p_string, p_reverse_search)) {
 					return true;
 				}
@@ -5431,7 +5461,8 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 		if (selection.from_frame->parent != nullptr && selection.from_frame->parent->type == ITEM_TABLE) {
 			// Find last search result in table
 			ItemTable *parent_table = static_cast<ItemTable *>(selection.from_frame->parent);
-			List<Item *>::Element *parent_element = p_search_previous ? parent_table->subitems.back() : parent_table->subitems.front();
+			List<Item *> frames = _get_table_frames(parent_table);
+			List<Item *>::Element *parent_element = p_search_previous ? frames.back() : frames.front();
 
 			while (parent_element->get() != selection.from_frame) {
 				parent_element = p_search_previous ? parent_element->prev() : parent_element->next();
@@ -5439,8 +5470,7 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 			}
 
 			// Search remainder of table
-			if (!(p_search_previous && parent_element == parent_table->subitems.front()) &&
-					parent_element != parent_table->subitems.back()) {
+			if (!(p_search_previous && parent_element == frames.front()) && parent_element != frames.back()) {
 				parent_element = p_search_previous ? parent_element->prev() : parent_element->next(); // Don't want to search current item
 				ERR_FAIL_NULL_V(parent_element, false);
 
@@ -5508,7 +5538,7 @@ String RichTextLabel::_get_line_text(ItemFrame *p_frame, int p_line, Selection p
 	for (Item *it = l.from; it && it != it_to; it = _get_next_item(it)) {
 		if (it->type == ITEM_TABLE) {
 			ItemTable *table = static_cast<ItemTable *>(it);
-			for (Item *E : table->subitems) {
+			for (Item *E : _get_table_frames(table)) {
 				ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 				ItemFrame *frame = static_cast<ItemFrame *>(E);
 				for (int i = 0; i < (int)frame->lines.size(); i++) {
