@@ -360,9 +360,9 @@ void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vert
 	}
 
 	Control *gui_base = EditorNode::get_singleton()->get_gui_base();
-	String wide_preset_icon = SNAME("ControlAlignHCenterWide");
-	String begin_preset_icon = SNAME("ControlAlignCenterLeft");
-	String end_preset_icon = SNAME("ControlAlignCenterRight");
+	StringName wide_preset_icon = SNAME("ControlAlignHCenterWide");
+	StringName begin_preset_icon = SNAME("ControlAlignCenterLeft");
+	StringName end_preset_icon = SNAME("ControlAlignCenterRight");
 	if (vertical) {
 		wide_preset_icon = SNAME("ControlAlignVCenterWide");
 		begin_preset_icon = SNAME("ControlAlignCenterTop");
