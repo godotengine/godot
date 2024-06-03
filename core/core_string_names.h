@@ -50,6 +50,7 @@ public:
 
 	static CoreStringNames *singleton;
 
+	StringName on_free; // "on_free", conflict with C++ keyword.
 	StringName free_; // "free", conflict with C++ keyword.
 	StringName changed;
 	StringName _master_script;

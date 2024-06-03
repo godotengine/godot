@@ -1,17 +1,32 @@
 #ifndef _CHARACTER_AI_H_
 #define _CHARACTER_AI_H_
-#include "body_animator_logic.h"
-#include "body_main.h"
+#include "scene/3d/node_3d.h"
+#include "core/object/ref_counted.h"
+#include "modules/limboai/bt/bt_player.h"
 
 // 用来检测角色的一些状态
 class CharacterAI_CheckBase : public RefCounted
 {
+    public:
+    virtual void execute(Node3D *node, Blackboard* blackboard)
+    {
+
+    }
 
 };
 
 // 检测角色是否在地面上
 class CharacterAI_CheckGround : public CharacterAI_CheckBase
 {
+
+public:
+    void execute(Node3D *node, Blackboard* blackboard);
+
+	PhysicsDirectSpaceState3D::RayResult result;
+    float check_move_height;
+    float check_max_distance = 0.0;
+    float ground_min_distance = 0.0;
+    uint64_t ground_mask = 0;
 
 };
 
@@ -204,7 +219,7 @@ struct CharacterAIContext
 
 
 // AI 大脑
-class CharacterAI_Brain : public Resource
+class CharacterAI_Brain : public RefCounted
 {
 public:
     virtual void execute(Blackboard* blackboard) 
@@ -217,8 +232,9 @@ public:
 
 };
 
-class CharacterAI : public RefCounted
+class CharacterAI : public Resource
 {
+
 public:
     void execute(Blackboard* blackboard)
     {

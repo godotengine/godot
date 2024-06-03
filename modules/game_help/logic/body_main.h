@@ -10,10 +10,10 @@
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/area_3d.h"
 #include "body_part.h"
-#include "animation_help.h"
-#include "body_animator.h"
+#include "animator/animation_help.h"
+#include "animator/body_animator.h"
 #include "character_movement.h"
-#include "character_ai.h"
+#include "character_ai/character_ai.h"
 
 
 #include "modules/limboai/bt/bt_player.h"
@@ -53,9 +53,11 @@ public:
 
 	void set_blackboard_plan(const Ref<BlackboardPlan> &p_plan)
     {
+        init_blackboard_plan(p_plan);
         get_bt_player()->set_blackboard_plan(p_plan);
     }
 	Ref<BlackboardPlan> get_blackboard_plan() { return get_bt_player()->get_blackboard_plan(); }
+    static void init_blackboard_plan(Ref<BlackboardPlan> p_plan);
 
 	void set_update_mode(int p_mode)
     {
@@ -91,20 +93,36 @@ public:
 
     void set_controller(const Ref<class CharacterController> &p_controller);
     Ref<class CharacterController> get_controller();
-
-    void set_main_shape(const Ref<Shape3D>& p_shape) {
-        if(mainShape != nullptr)
+public:
+    void set_main_shape(const Ref<CollisionObject3DConnection>& p_shape) {
+        if(mainShape.is_null() || p_shape.is_valid())
         {
-            mainShape->set_shape(p_shape);
+            mainShape = p_shape;
+            mainShape->set_link_target(mainCollision);
         }
     }
-    Ref<Shape3D> get_main_shape()
+    Ref<CollisionObject3DConnection> get_main_shape()
      {
-        if(mainShape == nullptr)
-        {
-            return mainShape->get_shape();
-        }
         return mainShape; 
+    }
+    void set_area_shape(const Ref<CollisionObject3DConnection>& p_shape) {
+        if(areaShape.is_null() || p_shape.is_valid())
+        {
+            areaShape = p_shape;
+            areaShape->set_link_target(areaCollision);
+        }
+    }
+    Ref<CollisionObject3DConnection> get_area_shape()
+     {
+        return areaShape; 
+    }
+    void on_body_enter_area(Node3D *p_area)
+    {
+
+    }
+    void on_body_exit_area(Node3D *p_area)
+    {
+        
     }
 public:
     // 初始化身體分組信息
@@ -116,6 +134,24 @@ public:
 public:
     bool play_skill(String p_skill_name);
     void stop_skill();
+
+public:
+    void set_character_ai(const Ref<CharacterAI> &p_ai)
+    {
+        if(character_ai.is_valid() || p_ai.is_null())
+        {
+            return;
+        }
+        character_ai = p_ai;
+    }
+    Ref<CharacterAI> get_character_ai()
+    {
+        if(character_ai.is_valid())
+        {
+            character_ai.instantiate();
+        }
+        return character_ai;
+    }
 
     // 动画相关
 public:
@@ -237,11 +273,14 @@ protected:
     void skill_tree_update(int last_status);
 
 
+
 protected:
     Skeleton3D *skeleton = nullptr;
     AnimationPlayer *player = nullptr;
-    CollisionShape3D * mainShape = nullptr;
-    Area3D * area = nullptr;
+    CollisionShape3D* mainCollision = nullptr;
+    Ref<CollisionObject3DConnection> mainShape;
+    Area3D * areaCollision = nullptr;
+    Ref<CollisionObject3DConnection> areaShape;
     mutable BTPlayer *btPlayer = nullptr;
     bool is_skill_stop = false;
     // 技能播放器

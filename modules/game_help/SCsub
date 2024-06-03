@@ -10,6 +10,8 @@ env_game_help.add_source_files(env.modules_sources, "Terrain3D/src/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "foliage_manager/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "game_gui/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "logic/*.cpp")
+env_game_help.add_source_files(env.modules_sources, "logic/animator/*.cpp")
+env_game_help.add_source_files(env.modules_sources, "logic/character_ai/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "csv/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "unity/*.cpp")
 # mterrain

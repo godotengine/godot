@@ -69,5 +69,90 @@ public:
 	CollisionShape3D();
 	~CollisionShape3D();
 };
+class CollisionObject3DConnectionShape : public RefCounted {
+	GDCLASS(CollisionObject3DConnectionShape, RefCounted);
+	static void _bind_methods();
+public:
+	void set_shape(const Ref<Shape3D> &p_shape) {
+		shape = p_shape;
+		update_transform();
+	}
+
+	Ref<Shape3D> get_shape() const {
+		return shape;
+	}
+	void set_position(const Vector3 &p_position) {
+		local_origin = p_position;
+		update_transform();
+	}
+
+	Vector3 get_position() const {
+		return local_origin;
+	}
+
+	void set_rotation(const Vector3 &p_rotation) {
+		local_rotation = p_rotation;
+		update_transform();
+	}
+
+	Vector3 get_rotation() const {
+		return local_rotation;
+	}
+
+	void set_scale(const Vector3 &p_scale) {
+		local_scale = p_scale;
+		update_transform();
+	}
+
+	Vector3 get_scale() const {
+		return local_scale;
+	}
+	CollisionObject3DConnectionShape() {}
+	~CollisionObject3DConnectionShape() {set_link_target(nullptr);}
+protected:
+friend class CollisionObject3DConnection;
+	void set_link_target(Node3D *p_target);
+	void update_transform();
+protected:
+	Node3D* link_target = nullptr;
+	CollisionShape3D *shape_node = nullptr;
+	Ref<Shape3D> shape;
+	Vector3 local_origin = Vector3(0, 0, 0);
+	Vector3 local_rotation = Vector3(0, 0, 0);
+	Vector3 local_scale = Vector3(1, 1, 1);
+
+};
+
+
+class CollisionObject3DConnection : public RefCounted {
+	GDCLASS(CollisionObject3DConnection, RefCounted);
+
+
+public:
+	void set_shapes(const TypedArray<CollisionObject3DConnectionShape> &p_shapes) {
+		shapes = p_shapes;
+		update_link_target();
+	}
+	TypedArray<CollisionObject3DConnectionShape> get_shapes() const {
+		return shapes;
+	}
+
+	void set_link_target(Node3D *p_target) ;
+	void update_link_target();
+	~CollisionObject3DConnection()
+	{
+		link_target = nullptr;
+		update_link_target();
+	}
+	void on_taeget_free() {
+		link_target = nullptr;
+	}
+protected:
+
+
+	
+	TypedArray<CollisionObject3DConnectionShape> shapes;
+	Node3D* link_target = nullptr;
+};
 
 #endif // COLLISION_SHAPE_3D_H

@@ -1313,6 +1313,14 @@ void Node::set_tag(const StringName &p_tag)
 {
 	data.tag = p_tag;
 }
+void Node::set_dont_save(bool p_enable)
+{
+	data.is_dotnt_saved = p_enable;
+}
+bool Node::get_dont_save() const
+{
+	return data.is_dotnt_saved;
+}
 
 void Node::set_name(const String &p_name) {
 	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Changing the name to nodes inside the SceneTree is only allowed from the main thread. Use `set_name.call_deferred(new_name)`.");
@@ -3564,6 +3572,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tag", "tag"), &Node::set_tag);
 	ClassDB::bind_method(D_METHOD("get_tag"), &Node::get_tag);
 
+	ClassDB::bind_method(D_METHOD("set_dont_save", "enable"), &Node::set_dont_save);
+	ClassDB::bind_method(D_METHOD("get_dont_save"), &Node::get_dont_save);
+
 	ClassDB::bind_method(D_METHOD("add_child", "node", "force_readable_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("reparent", "new_parent", "keep_global_transform"), &Node::reparent, DEFVAL(true));
@@ -3816,6 +3827,7 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_ALWAYS);
 	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_DISABLED);
 
+	ADD_SIGNAL(MethodInfo("on_free"));
 	ADD_SIGNAL(MethodInfo("ready"));
 	ADD_SIGNAL(MethodInfo("renamed"));
 	ADD_SIGNAL(MethodInfo("tree_entered"));
@@ -3830,6 +3842,7 @@ void Node::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "tag", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_tag", "get_tag");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dont_save", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_dont_save", "get_dont_save");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_owner", "get_owner");
@@ -3917,9 +3930,12 @@ Node::Node() {
 	data.inside_tree = false;
 	data.ready_notified = false; // This is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification.
 	data.ready_first = true;
+	data.is_dotnt_saved = false;
 }
 
 Node::~Node() {
+	
+	emit_signal(CoreStringName(on_free));
 	data.grouped.clear();
 	data.owned.clear();
 	data.children.clear();

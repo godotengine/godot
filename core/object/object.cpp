@@ -2183,6 +2183,7 @@ void Object::detach_from_objectdb() {
 }
 
 Object::~Object() {
+	
 	if(master_script_instance) {
 		memdelete(master_script_instance);
 	}

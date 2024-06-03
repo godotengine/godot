@@ -238,6 +238,7 @@ private:
 		bool inside_tree : 1;
 		bool ready_notified : 1;
 		bool ready_first : 1;
+		bool is_dotnt_saved : 1;
 
 		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 		mutable bool is_auto_translating = true;
@@ -458,6 +459,9 @@ public:
 
 	StringName get_tag();
 	void set_tag(const StringName &p_tag);
+
+	void set_dont_save(bool p_enable);
+	bool get_dont_save() const;
 
 	InternalMode get_internal_mode() const;
 

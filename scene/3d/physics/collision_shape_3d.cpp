@@ -223,3 +223,93 @@ CollisionShape3D::CollisionShape3D() {
 CollisionShape3D::~CollisionShape3D() {
 	//RenderingServer::get_singleton()->free(indicator);
 }
+
+void CollisionObject3DConnectionShape::_bind_methods()
+{
+
+	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &CollisionObject3DConnectionShape::set_shape);
+	ClassDB::bind_method(D_METHOD("get_shape"), &CollisionObject3DConnectionShape::get_shape);
+
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &CollisionObject3DConnectionShape::set_position);
+	ClassDB::bind_method(D_METHOD("get_position"), &CollisionObject3DConnectionShape::get_position);
+
+	ClassDB::bind_method(D_METHOD("set_rotation", "rotation"), &CollisionObject3DConnectionShape::set_rotation);
+	ClassDB::bind_method(D_METHOD("get_rotation"), &CollisionObject3DConnectionShape::get_rotation);
+
+	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &CollisionObject3DConnectionShape::set_scale);
+	ClassDB::bind_method(D_METHOD("get_scale"), &CollisionObject3DConnectionShape::get_scale);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"), "set_shape", "get_shape");
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation"), "set_rotation", "get_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale"), "set_scale", "get_scale");
+}
+void CollisionObject3DConnectionShape::set_link_target(Node3D *p_target) {
+	if(link_target == p_target) {
+		return;
+	}
+	link_target = p_target;
+	if(link_target) {
+		shape_node = memnew (CollisionShape3D);
+		link_target->add_child(shape_node, true);
+		shape_node->set_owner(link_target->get_owner());
+		shape_node->set_shape(shape);
+		shape_node->set_dont_save(true);
+	}
+	else
+	{
+		if(shape_node) {
+			shape_node->queue_free();
+			shape_node = nullptr;
+		}
+	}
+	update_transform();
+}
+void CollisionObject3DConnectionShape::update_transform() {
+	if(shape_node) {
+		Quaternion rot = Quaternion::from_euler(local_rotation);
+		Transform3D local_transform = Transform3D(Basis(rot,local_scale),local_origin);
+		shape_node->set_transform(local_transform);
+	}
+	
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void CollisionObject3DConnection::set_link_target(Node3D *p_target) {
+	if(link_target == p_target) {
+		return;
+	}
+	if(link_target) {
+		link_target->disconnect(CoreStringName(on_free), callable_mp(this, &CollisionObject3DConnection::on_taeget_free));
+	}
+	link_target = p_target;
+	if(link_target)
+	{
+		link_target->connect(CoreStringName(on_free), callable_mp(this, &CollisionObject3DConnection::on_taeget_free));
+	}
+	update_link_target();
+}
+void CollisionObject3DConnection::update_link_target() {
+	if(link_target) {
+		for(int i = 0; i < shapes.size(); i++) {
+			Ref<CollisionObject3DConnectionShape> sp = shapes[i];
+			if(sp.is_valid())
+				sp->set_link_target(link_target);
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+

@@ -41,7 +41,7 @@
 #include "modules/game_help/game_gui/game_gui_compoent.h"
 
 
-#include "modules/game_help/logic/animation_help.h"
+#include "modules/game_help/logic/animator/animation_help.h"
 #include "modules/game_help/logic/body_main.h"
 #include "modules/game_help/logic/body_part.h"
 #include "modules/game_help/logic/data_table_manager.h"

@@ -7,9 +7,9 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/physics/character_body_3d.h"
-#include "body_part.h"
+#include "../body_part.h"
 #include "animation_help.h"
-#include "body_animator_logic.h"
+#include "../character_ai/body_animator_logic.h"
 
 
 #include "modules/limboai/bt/bt_player.h"
@@ -652,7 +652,6 @@ public:
     // 退出检测条件
     Ref<CharacterAnimatorCondition> stop_check_condtion;
 };
-
 
 class CharacterAnimator : public RefCounted
 {

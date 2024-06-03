@@ -1166,6 +1166,7 @@ void JoltBodyImpl3D::_add_to_space() {
 	jolt_settings->mObjectLayer = _get_object_layer();
 	jolt_settings->mCollisionGroup = JPH::CollisionGroup(nullptr, group_id, sub_group_id);
 	jolt_settings->mMotionType = _get_motion_type();
+	jolt_settings->mAllowedDOFs = _calculate_allowed_dofs();
 	jolt_settings->mAllowDynamicOrKinematic = true;
 	jolt_settings->mCollideKinematicVsNonDynamic = reports_all_kinematic_contacts();
 	jolt_settings->mUseManifoldReduction = !reports_contacts();

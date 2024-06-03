@@ -1,5 +1,5 @@
 #include "body_animator_logic.h"
-#include "body_animator.h"
+#include "../animator/body_animator.h"
 
 
 void AnimatorAIStateConditionBase::set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) 

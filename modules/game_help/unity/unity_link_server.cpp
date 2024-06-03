@@ -33,7 +33,7 @@
 #include "core/io/marshalls.h"
 #include "core/io/file_access.h"
 #include "core/io/dir_access.h"
-#include "../logic/body_animator.h"
+#include "../logic/animator/body_animator.h"
 #include "../logic/data_table_manager.h"
 
 #define FILESYSTEM_PROTOCOL_VERSION 1
