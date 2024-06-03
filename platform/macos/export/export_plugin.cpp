@@ -30,10 +30,7 @@
 
 #include "export_plugin.h"
 
-#include "codesign.h"
-#include "lipo.h"
 #include "logo_svg.gen.h"
-#include "macho.h"
 #include "run_icon_svg.gen.h"
 
 #include "core/io/image_loader.h"
@@ -43,6 +40,9 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_string_names.h"
+#include "editor/export/codesign.h"
+#include "editor/export/lipo.h"
+#include "editor/export/macho.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
