@@ -633,6 +633,7 @@ bool DeduceVersionProfile(TInfoSink& infoSink, EShLanguage stage, bool versionNo
             infoSink.info.message(EPrefixError, "#version: mesh/task shaders require es profile with version 320 or above, or non-es profile with version 450 or above");
             version = profile == EEsProfile ? 320 : 450;
         }
+        break;
     default:
         break;
     }
@@ -1433,7 +1434,8 @@ int ShCompile(
     int /*debugOptions*/,
     int defaultVersion,        // use 100 for ES environment, 110 for desktop
     bool forwardCompatible,    // give errors for use of deprecated features
-    EShMessages messages       // warnings/errors/AST; things to print out
+    EShMessages messages,       // warnings/errors/AST; things to print out,
+    const char *shaderFileName // the filename
     )
 {
     // Map the generic handle to the C++ object
@@ -1449,6 +1451,9 @@ int ShCompile(
 
     compiler->infoSink.info.erase();
     compiler->infoSink.debug.erase();
+    compiler->infoSink.info.setShaderFileName(shaderFileName);
+    compiler->infoSink.debug.setShaderFileName(shaderFileName);
+
 
     TIntermediate intermediate(compiler->getLanguage());
     TShader::ForbidIncluder includer;

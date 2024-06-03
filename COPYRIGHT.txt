@@ -515,8 +515,8 @@ License: Expat
 Files: ./thirdparty/vulkan/
 Comment: Vulkan Headers
 Copyright: 2014-2024, The Khronos Group Inc.
-  2014-2023, Valve Corporation
-  2014-2023, LunarG, Inc.
+  2014-2024, Valve Corporation
+  2014-2024, LunarG, Inc.
 License: Apache-2.0
 
 Files: ./thirdparty/vulkan/vk_mem_alloc.h
