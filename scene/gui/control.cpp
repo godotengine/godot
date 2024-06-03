@@ -738,13 +738,19 @@ void Control::set_anchor(Side p_side, real_t p_anchor, bool p_keep_offset, bool 
 	}
 
 	if (!p_keep_offset) {
-		if(p_side == SIDE_LEFT) {data.offset[0] = 0;};
-		if(p_side == SIDE_TOP) {data.offset[1] = 0;};
-		if(p_side == SIDE_RIGHT) {data.offset[2] = (data.anchor[2] - 1) * (parent_rect.size.x - parent_rect.position.x);};
-		if(p_side == SIDE_BOTTOM) {data.offset[3] = (data.anchor[3] - 1) * (parent_rect.size.y - parent_rect.position.y);};
+		if (p_side == SIDE_LEFT) {
+			data.offset[0] = 0;
+		}
+		if (p_side == SIDE_TOP) {
+			data.offset[1] = 0;
+		}
+		if (p_side == SIDE_RIGHT) {
+			data.offset[2] = (data.anchor[2] - 1) * (parent_rect.size.x - parent_rect.position.x);
+		}
+		if (p_side == SIDE_BOTTOM) {
+			data.offset[3] = (data.anchor[3] - 1) * (parent_rect.size.y - parent_rect.position.y);
+		}
 	}
-
-	
 
 	if (is_inside_tree()) {
 		_size_changed();
