@@ -37,8 +37,8 @@
 
 void IKLimitCone3D::update_tangent_handles(Ref<IKLimitCone3D> p_next) {
 	if (p_next.is_valid()) {
-		double radA = _get_radius();
-		double radB = p_next->_get_radius();
+		double radA = get_radius();
+		double radB = p_next->get_radius();
 
 		Vector3 A = get_control_point();
 		Vector3 B = p_next->get_control_point();
@@ -113,7 +113,7 @@ void IKLimitCone3D::update_tangent_handles(Ref<IKLimitCone3D> p_next) {
 		tangent_circle_center_next_1 = _get_orthogonal(control_point).normalized();
 	}
 	if (tangent_circle_center_next_2 == Vector3(NAN, NAN, NAN)) {
-		tangent_circle_center_next_2 = (tangent_circle_center_next_1 * -1).normalized();
+		tangent_circle_center_next_2 = _get_orthogonal(tangent_circle_center_next_1 * -1).normalized();
 	}
 	if (p_next.is_valid()) {
 		compute_triangles(p_next);
@@ -139,14 +139,6 @@ double IKLimitCone3D::_get_tangent_circle_radius_next_cos() {
 
 Vector3 IKLimitCone3D::get_tangent_circle_center_next_2() {
 	return tangent_circle_center_next_2;
-}
-
-double IKLimitCone3D::_get_radius() {
-	return radius;
-}
-
-double IKLimitCone3D::_get_radius_cosine() {
-	return radius_cosine;
 }
 
 void IKLimitCone3D::compute_triangles(Ref<IKLimitCone3D> p_next) {

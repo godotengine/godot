@@ -97,11 +97,6 @@ class IKLimitCone3D : public Resource {
 	double _get_tangent_circle_radius_next_cos();
 	static Vector3 _get_orthogonal(Vector3 p_in);
 
-protected:
-	double _get_radius();
-
-	double _get_radius_cosine();
-
 public:
 	IKLimitCone3D() {}
 	virtual ~IKLimitCone3D() {}
