@@ -1068,7 +1068,6 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX((int)p_preset, 16);
 
-
 	Size2 parent_rect_size = get_parent_anchorable_rect().size;
 	Size2 size = get_size();
 	Vector2 size_to_anchor = Vector2((float)size.x/parent_rect_size.x, (float)size.y/parent_rect_size.y); 
