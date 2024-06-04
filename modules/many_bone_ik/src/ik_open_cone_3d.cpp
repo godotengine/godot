@@ -108,13 +108,8 @@ void IKLimitCone3D::update_tangent_handles(Ref<IKLimitCone3D> p_next) {
 	set_tangent_circle_center_next_1(sphereIntersect1);
 	set_tangent_circle_center_next_2(sphereIntersect2);
 	set_tangent_circle_radius_next(tRadius);
-
-	if (Math::is_zero_approx(tangent_circle_center_next_1.length_squared())) {
-		tangent_circle_center_next_1 = _get_orthogonal(control_point).normalized();
-	}
-	if (Math::is_zero_approx(tangent_circle_center_next_2.length_squared())) {
-		tangent_circle_center_next_2 = _get_orthogonal(tangent_circle_center_next_1 * -1).normalized();
-	}
+	tangent_circle_center_next_1 = get_orthogonal(control_point).normalized();
+	tangent_circle_center_next_2 = get_orthogonal(tangent_circle_center_next_1 * -1).normalized();
 	if (p_next.is_valid()) {
 		compute_triangles(p_next);
 	}
@@ -265,7 +260,7 @@ Vector3 IKLimitCone3D::_get_closest_collision(Ref<IKLimitCone3D> next, Vector3 i
 	return result;
 }
 
-Vector3 IKLimitCone3D::_get_orthogonal(Vector3 p_in) {
+Vector3 IKLimitCone3D::get_orthogonal(Vector3 p_in) {
 	Vector3 result;
 	float threshold = p_in.length() * 0.6f;
 	if (threshold > 0.f) {

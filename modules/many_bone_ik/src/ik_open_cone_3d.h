@@ -95,7 +95,6 @@ class IKLimitCone3D : public Resource {
 	Vector3 _closest_point_on_closest_cone(Ref<IKLimitCone3D> next, Vector3 input, Vector<double> *in_bounds) const;
 
 	double _get_tangent_circle_radius_next_cos();
-	static Vector3 _get_orthogonal(Vector3 p_in);
 
 public:
 	IKLimitCone3D() {}
@@ -130,6 +129,7 @@ public:
 	double get_radius() const;
 	double get_radius_cosine() const;
 	void set_radius(double radius);
+	static Vector3 get_orthogonal(Vector3 p_input);
 };
 
 #endif // IK_OPEN_CONE_3D_H

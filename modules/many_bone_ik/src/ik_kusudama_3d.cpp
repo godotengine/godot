@@ -161,9 +161,9 @@ void IKKusudama3D::add_open_cone(
 		Ref<IKLimitCone3D> p_cone) {
 	ERR_FAIL_COND(p_cone.is_null());
 	ERR_FAIL_COND(p_cone->get_attached_to().is_null());
-	ERR_FAIL_COND(Math::is_zero_approx(p_cone->get_tangent_circle_center_next_1().length_squared()));
-	ERR_FAIL_COND(Math::is_zero_approx(p_cone->get_tangent_circle_center_next_2().length_squared()));
 	ERR_FAIL_COND(Math::is_zero_approx(p_cone->get_control_point().length_squared()));
+	p_cone->set_tangent_circle_center_next_1(IKLimitCone3D::get_orthogonal(p_cone->get_control_point()));
+	p_cone->set_tangent_circle_center_next_2(IKLimitCone3D::get_orthogonal(p_cone->get_tangent_circle_center_next_1() * -1));
 	open_cones.push_back(p_cone);
 }
 
