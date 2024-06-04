@@ -690,25 +690,32 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	_find_list(l.from, list_index, list_items);
 
 	String prefix;
+	int segments = 0;
 	for (int i = 0; i < list_index.size(); i++) {
+		String segment;
+		if (list_items[i]->list_type == LIST_DOTS) {
+			if (segments == 0) {
+				prefix = list_items[i]->bullet;
+			}
+			break;
+		}
 		if (rtl) {
 			prefix = prefix + ".";
 		} else {
 			prefix = "." + prefix;
 		}
-		String segment;
-		if (list_items[i]->list_type == LIST_DOTS) {
-			prefix = list_items[i]->bullet;
-			break;
-		} else if (list_items[i]->list_type == LIST_NUMBERS) {
+		if (list_items[i]->list_type == LIST_NUMBERS) {
 			segment = itos(list_index[i]);
 			if (is_localizing_numeral_system()) {
 				segment = TS->format_number(segment, _find_language(l.from));
 			}
+			segments++;
 		} else if (list_items[i]->list_type == LIST_LETTERS) {
 			segment = _letters(list_index[i], list_items[i]->capitalize);
+			segments++;
 		} else if (list_items[i]->list_type == LIST_ROMAN) {
 			segment = _roman(list_index[i], list_items[i]->capitalize);
+			segments++;
 		}
 		if (rtl) {
 			prefix = prefix + segment;

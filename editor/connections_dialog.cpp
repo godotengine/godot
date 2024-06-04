@@ -281,20 +281,32 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 	bool check_signal = compatible_methods_only->is_pressed();
 	List<MethodInfo> ret;
 
+	List<Pair<Variant::Type, StringName>> effective_args;
+	int unbind = get_unbinds();
+	for (int i = 0; i < p_signal.arguments.size() - unbind; i++) {
+		PropertyInfo pi = p_signal.arguments.get(i);
+		effective_args.push_back(Pair(pi.type, pi.class_name));
+	}
+	if (unbind == 0) {
+		for (const Variant &variant : get_binds()) {
+			effective_args.push_back(Pair(variant.get_type(), StringName()));
+		}
+	}
+
 	for (const MethodInfo &mi : p_methods) {
 		if (!p_search_string.is_empty() && !mi.name.containsn(p_search_string)) {
 			continue;
 		}
 
 		if (check_signal) {
-			if (mi.arguments.size() != p_signal.arguments.size()) {
+			if (mi.arguments.size() != effective_args.size()) {
 				continue;
 			}
 
 			bool type_mismatch = false;
-			const List<PropertyInfo>::Element *E = p_signal.arguments.front();
+			const List<Pair<Variant::Type, StringName>>::Element *E = effective_args.front();
 			for (const List<PropertyInfo>::Element *F = mi.arguments.front(); F; F = F->next(), E = E->next()) {
-				Variant::Type stype = E->get().type;
+				Variant::Type stype = E->get().first;
 				Variant::Type mtype = F->get().type;
 
 				if (stype != Variant::NIL && mtype != Variant::NIL && stype != mtype) {
@@ -302,7 +314,7 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 					break;
 				}
 
-				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && !ClassDB::is_parent_class(E->get().class_name, F->get().class_name)) {
+				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && !ClassDB::is_parent_class(E->get().second, F->get().class_name)) {
 					type_mismatch = true;
 					break;
 				}

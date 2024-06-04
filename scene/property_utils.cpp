@@ -39,16 +39,22 @@
 #include "editor/editor_node.h"
 #endif // TOOLS_ENABLED
 
-bool PropertyUtils::is_property_value_different(const Variant &p_a, const Variant &p_b) {
+bool PropertyUtils::is_property_value_different(const Object *p_object, const Variant &p_a, const Variant &p_b) {
 	if (p_a.get_type() == Variant::FLOAT && p_b.get_type() == Variant::FLOAT) {
-		//this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
+		// This must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error.
 		return !Math::is_equal_approx((float)p_a, (float)p_b);
-	} else {
-		// For our purposes, treating null object as NIL is the right thing to do
-		const Variant &a = p_a.get_type() == Variant::OBJECT && (Object *)p_a == nullptr ? Variant() : p_a;
-		const Variant &b = p_b.get_type() == Variant::OBJECT && (Object *)p_b == nullptr ? Variant() : p_b;
-		return a != b;
+	} else if (p_a.get_type() == Variant::NODE_PATH && p_b.get_type() == Variant::OBJECT) {
+		const Node *base_node = Object::cast_to<Node>(p_object);
+		const Node *target_node = Object::cast_to<Node>(p_b);
+		if (base_node && target_node) {
+			return p_a != base_node->get_path_to(target_node);
+		}
 	}
+
+	// For our purposes, treating null object as NIL is the right thing to do
+	const Variant &a = p_a.get_type() == Variant::OBJECT && (Object *)p_a == nullptr ? Variant() : p_a;
+	const Variant &b = p_b.get_type() == Variant::OBJECT && (Object *)p_b == nullptr ? Variant() : p_b;
+	return a != b;
 }
 
 Variant PropertyUtils::get_property_default_value(const Object *p_object, const StringName &p_property, bool *r_is_valid, const Vector<SceneState::PackState> *p_states_stack_cache, bool p_update_exports, const Node *p_owner, bool *r_is_class_default) {
