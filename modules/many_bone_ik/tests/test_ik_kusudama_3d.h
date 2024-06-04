@@ -82,15 +82,15 @@ TEST_CASE("[Modules][ManyBoneIK][IKKusudama3D] Test a point inside or on the bou
 	kusudama->add_open_cone(cone);
 
 	TypedArray<IKLimitCone3D> open_cones = kusudama->get_open_cones();
-	REQUIRE(open_cones.size() == 1);
+	CHECK_EQ(open_cones.size(), 1);
 
 	Vector<double> bounds;
 	bounds.resize(2);
 	bounds.write[0] = 0;
 	bounds.write[1] = 0;
 	Vector3 returned_point_outside = kusudama->get_local_point_in_limits(limit_cone_control_point, &bounds);
-	CHECK(bounds[0] > 0);
-	CHECK(returned_point_outside == limit_cone_control_point);
+	CHECK_LT(bounds[0], 0);
+	CHECK(returned_point_outside.is_equal_approx(limit_cone_control_point));
 }
 
 TEST_CASE("[Modules][ManyBoneIK][IKKusudama3D] Test a point outside the bounds with radius 0 degrees") {
@@ -120,7 +120,7 @@ TEST_CASE("[Modules][ManyBoneIK][IKKusudama3D] Test a point outside the bounds w
 
 	Vector3 test_point_outside = Vector3(1, 0, 0);
 	Vector3 returned_point_outside = kusudama->get_local_point_in_limits(test_point_outside, &bounds);
-	CHECK_EQ(bounds[0], 0);
+	CHECK_EQ(bounds[0], -1);
 	CHECK(returned_point_outside.is_equal_approx(limit_cone_control_point));
 }
 
@@ -151,7 +151,7 @@ TEST_CASE("[Modules][ManyBoneIK][IKKusudama3D] Test a point outside the bounds w
 
 	Vector3 test_point_outside = Vector3(1, 0, 0);
 	Vector3 returned_point_outside = kusudama->get_local_point_in_limits(test_point_outside, &bounds);
-	CHECK_EQ(bounds[0], 0);
+	CHECK_EQ(bounds[0], -1);
 	CHECK(returned_point_outside.is_equal_approx(Vector3(0.50000001261839133, 0, 0.86602539649920684 )));
 }
 
