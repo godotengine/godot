@@ -2831,24 +2831,26 @@ void TextEdit::_update_caches() {
 }
 
 void TextEdit::_close_ime_window() {
-	if (get_viewport()->get_window_id() == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+	DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
+	if (wid == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 		return;
 	}
-	DisplayServer::get_singleton()->window_set_ime_position(Point2(), get_viewport()->get_window_id());
-	DisplayServer::get_singleton()->window_set_ime_active(false, get_viewport()->get_window_id());
+	DisplayServer::get_singleton()->window_set_ime_position(Point2(), wid);
+	DisplayServer::get_singleton()->window_set_ime_active(false, wid);
 }
 
 void TextEdit::_update_ime_window_position() {
-	if (get_viewport()->get_window_id() == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+	DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
+	if (wid == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 		return;
 	}
-	DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
+	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
 	Point2 pos = get_global_position() + get_caret_draw_pos();
 	if (get_window()->get_embedder()) {
 		pos += get_viewport()->get_popup_base_transform().get_origin();
 	}
 	// The window will move to the updated position the next time the IME is updated, not immediately.
-	DisplayServer::get_singleton()->window_set_ime_position(pos, get_viewport()->get_window_id());
+	DisplayServer::get_singleton()->window_set_ime_position(pos, wid);
 }
 
 void TextEdit::_update_ime_text() {
