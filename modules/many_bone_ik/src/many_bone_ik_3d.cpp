@@ -1046,8 +1046,6 @@ void ManyBoneIK3D::_bone_list_changed() {
 				Ref<IKLimitCone3D> new_cone;
 				new_cone.instantiate();
 				new_cone->set_attached_to(constraint);
-				new_cone->set_tangent_circle_center_next_1(Vector3(0.0f, -1.0f, 0.0f));
-				new_cone->set_tangent_circle_center_next_2(Vector3(0.0f, 1.0f, 0.0f));
 				new_cone->set_radius(MAX(1.0e-38, cone.w));
 				new_cone->set_control_point(Vector3(cone.x, cone.y, cone.z).normalized());
 				constraint->add_open_cone(new_cone);
