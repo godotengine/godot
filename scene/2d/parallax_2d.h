@@ -57,7 +57,7 @@ class Parallax2D : public Node2D {
 
 protected:
 #ifdef TOOLS_ENABLED
-	void _edit_set_position(const Point2 &p_position) override;
+	void _edit_set_position(const Point2i &p_position) override;
 #endif // TOOLS_ENABLED
 	void _validate_property(PropertyInfo &p_property) const;
 	void _camera_moved(const Transform2D &p_transform, const Point2 &p_screen_offset, const Point2 &p_adj_screen_offset);

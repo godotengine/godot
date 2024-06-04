@@ -35,7 +35,7 @@
 #include "scene/theme/theme_db.h"
 
 #ifdef TOOLS_ENABLED
-void GraphElement::_edit_set_position(const Point2 &p_position) {
+void GraphElement::_edit_set_position(const Point2i &p_position) {
 	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 	if (graph) {
 		Point2 offset = (p_position + graph->get_scroll_offset()) * graph->get_zoom();

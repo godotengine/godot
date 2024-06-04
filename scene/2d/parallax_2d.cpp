@@ -59,7 +59,7 @@ void Parallax2D::_notification(int p_what) {
 }
 
 #ifdef TOOLS_ENABLED
-void Parallax2D::_edit_set_position(const Point2 &p_position) {
+void Parallax2D::_edit_set_position(const Point2i &p_position) {
 	set_scroll_offset(p_position);
 }
 #endif // TOOLS_ENABLED

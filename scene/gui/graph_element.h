@@ -54,7 +54,7 @@ protected:
 	} theme_cache;
 
 #ifdef TOOLS_ENABLED
-	void _edit_set_position(const Point2 &p_position) override;
+	void _edit_set_position(const Point2i &p_position) override;
 #endif
 
 protected:

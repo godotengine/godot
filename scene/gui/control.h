@@ -388,8 +388,8 @@ public:
 	virtual Dictionary _edit_get_state() const override;
 	virtual void _edit_set_state(const Dictionary &p_state) override;
 
-	virtual void _edit_set_position(const Point2 &p_position) override;
-	virtual Point2 _edit_get_position() const override;
+	virtual void _edit_set_position(const Point2i &p_position) override;
+	virtual Point2i _edit_get_position() const override;
 
 	virtual void _edit_set_scale(const Size2 &p_scale) override;
 	virtual Size2 _edit_get_scale() const override;

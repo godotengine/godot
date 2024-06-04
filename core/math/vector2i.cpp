@@ -33,6 +33,23 @@
 #include "core/math/vector2.h"
 #include "core/string/ustring.h"
 
+real_t Vector2i::angle() const {
+    return Math::atan2(y, x);
+}
+
+real_t Vector2i::angle_to_point(const Vector2i &p_vector2) const {
+    return (p_vector2 - *this).angle();
+}
+
+void Vector2i::normalize() {
+    int32_t l = x * x + y * y;
+    if (l != 0) {
+        l = Math::sqrt(l);
+        x /= l;
+        y /= l;
+    }
+}
+
 Vector2i Vector2i::clamp(const Vector2i &p_min, const Vector2i &p_max) const {
 	return Vector2i(
 			CLAMP(x, p_min.x, p_max.x),

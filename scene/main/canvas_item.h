@@ -203,8 +203,8 @@ public:
 	virtual Dictionary _edit_get_state() const { return Dictionary(); }
 
 	// Used to move the node
-	virtual void _edit_set_position(const Point2 &p_position) = 0;
-	virtual Point2 _edit_get_position() const = 0;
+	virtual void _edit_set_position(const Point2i &p_position) = 0;
+	virtual Point2i _edit_get_position() const = 0;
 
 	// Used to scale the node
 	virtual void _edit_set_scale(const Size2 &p_scale) = 0;

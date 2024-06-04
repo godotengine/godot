@@ -93,6 +93,11 @@ struct _NO_DISCARD_ Vector2i {
 		return Vector2i(MAX(x, p_scalar), MAX(y, p_scalar));
 	}
 
+    void normalize();
+    real_t angle() const;
+    real_t angle_to_point(const Vector2i &p_vector2) const;
+    _FORCE_INLINE_ Vector2i direction_to(const Vector2i &p_to) const;
+
 	double distance_to(const Vector2i &p_to) const {
 		return (p_to - *this).length();
 	}
@@ -109,6 +114,7 @@ struct _NO_DISCARD_ Vector2i {
 
 	Vector2i operator*(int32_t p_rvalue) const;
 	void operator*=(int32_t p_rvalue);
+    void operator*=(const Vector2i &p_rvalue) { *this = *this * p_rvalue; }
 
 	Vector2i operator/(const Vector2i &p_v1) const;
 	Vector2i operator/(int32_t p_rvalue) const;
@@ -148,6 +154,12 @@ struct _NO_DISCARD_ Vector2i {
 		y = p_y;
 	}
 };
+
+Vector2i Vector2i::direction_to(const Vector2i &p_to) const {
+    Vector2i ret(p_to.x - x, p_to.y - y);
+    ret.normalize();
+    return ret;
+}
 
 // Multiplication operators required to workaround issues with LLVM using implicit conversion.
 

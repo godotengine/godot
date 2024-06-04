@@ -52,11 +52,11 @@ void Node2D::_edit_set_state(const Dictionary &p_state) {
 	_update_transform();
 }
 
-void Node2D::_edit_set_position(const Point2 &p_position) {
+void Node2D::_edit_set_position(const Point2i &p_position) {
 	set_position(p_position);
 }
 
-Point2 Node2D::_edit_get_position() const {
+Point2i Node2D::_edit_get_position() const {
 	return position;
 }
 
@@ -152,7 +152,7 @@ void Node2D::reparent(Node *p_parent, bool p_keep_global_transform) {
 	}
 }
 
-void Node2D::set_position(const Point2 &p_pos) {
+void Node2D::set_position(const Point2i &p_pos) {
 	ERR_THREAD_GUARD;
 	if (_is_xform_dirty()) {
 		_update_xform_values();
@@ -266,7 +266,7 @@ void Node2D::apply_scale(const Size2 &p_amount) {
 	set_scale(get_scale() * p_amount);
 }
 
-void Node2D::move_x(real_t p_delta, bool p_scaled) {
+void Node2D::move_x(int32_t p_delta, bool p_scaled) {
 	ERR_THREAD_GUARD;
 	Transform2D t = get_transform();
 	Vector2 m = t[0];
@@ -276,7 +276,7 @@ void Node2D::move_x(real_t p_delta, bool p_scaled) {
 	set_position(t[2] + m * p_delta);
 }
 
-void Node2D::move_y(real_t p_delta, bool p_scaled) {
+void Node2D::move_y(int32_t p_delta, bool p_scaled) {
 	ERR_THREAD_GUARD;
 	Transform2D t = get_transform();
 	Vector2 m = t[1];
@@ -286,8 +286,8 @@ void Node2D::move_y(real_t p_delta, bool p_scaled) {
 	set_position(t[2] + m * p_delta);
 }
 
-Point2 Node2D::get_global_position() const {
-	ERR_READ_THREAD_GUARD_V(Point2());
+Point2i Node2D::get_global_position() const {
+	ERR_READ_THREAD_GUARD_V(Point2i());
 	return get_global_transform().get_origin();
 }
 

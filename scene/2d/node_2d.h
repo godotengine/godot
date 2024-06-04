@@ -37,7 +37,7 @@ class Node2D : public CanvasItem {
 	GDCLASS(Node2D, CanvasItem);
 
 	mutable MTFlag xform_dirty;
-	mutable Point2 position;
+	mutable Point2i position;
 	mutable real_t rotation = 0.0;
 	mutable Size2 scale = Vector2(1, 1);
 	mutable real_t skew = 0.0;
@@ -60,8 +60,8 @@ public:
 	virtual Dictionary _edit_get_state() const override;
 	virtual void _edit_set_state(const Dictionary &p_state) override;
 
-	virtual void _edit_set_position(const Point2 &p_position) override;
-	virtual Point2 _edit_get_position() const override;
+	virtual void _edit_set_position(const Point2i &p_position) override;
+	virtual Point2i _edit_get_position() const override;
 
 	virtual void _edit_set_scale(const Size2 &p_scale) override;
 	virtual Size2 _edit_get_scale() const override;
@@ -74,15 +74,15 @@ public:
 #endif
 	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
 
-	void set_position(const Point2 &p_pos);
+	void set_position(const Point2i &p_pos);
 	void set_rotation(real_t p_radians);
 	void set_rotation_degrees(real_t p_degrees);
 	void set_skew(real_t p_radians);
 	void set_scale(const Size2 &p_scale);
 
 	void rotate(real_t p_radians);
-	void move_x(real_t p_delta, bool p_scaled = false);
-	void move_y(real_t p_delta, bool p_scaled = false);
+	void move_x(int32_t p_delta, bool p_scaled = false);
+	void move_y(int32_t p_delta, bool p_scaled = false);
 	void translate(const Vector2 &p_amount);
 	void global_translate(const Vector2 &p_amount);
 	void apply_scale(const Size2 &p_amount);
@@ -93,7 +93,7 @@ public:
 	real_t get_skew() const;
 	Size2 get_scale() const;
 
-	Point2 get_global_position() const;
+	Point2i get_global_position() const;
 	real_t get_global_rotation() const;
 	real_t get_global_rotation_degrees() const;
 	real_t get_global_skew() const;
