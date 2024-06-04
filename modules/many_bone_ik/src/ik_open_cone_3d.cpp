@@ -108,8 +108,12 @@ void IKLimitCone3D::update_tangent_handles(Ref<IKLimitCone3D> p_next) {
 	set_tangent_circle_center_next_1(sphereIntersect1);
 	set_tangent_circle_center_next_2(sphereIntersect2);
 	set_tangent_circle_radius_next(tRadius);
-	tangent_circle_center_next_1 = get_orthogonal(control_point).normalized();
-	tangent_circle_center_next_2 = get_orthogonal(tangent_circle_center_next_1 * -1).normalized();
+	if (Math::is_zero_approx(tangent_circle_center_next_1.length_squared())) {
+		tangent_circle_center_next_1 = get_orthogonal(control_point).normalized();
+	}
+	if (Math::is_zero_approx(tangent_circle_center_next_2.length_squared())) {
+		tangent_circle_center_next_2 = get_orthogonal(tangent_circle_center_next_1 * -1).normalized();
+	}
 	if (p_next.is_valid()) {
 		compute_triangles(p_next);
 	}
