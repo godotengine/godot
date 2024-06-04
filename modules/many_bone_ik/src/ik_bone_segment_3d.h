@@ -93,7 +93,7 @@ public:
 	Ref<IKBone3D> get_tip() const;
 	bool is_pinned() const;
 	Vector<Ref<IKBoneSegment3D>> get_child_segments() const;
-	void create_bone_list(Vector<Ref<IKBone3D>> &p_list, bool p_recursive = false, bool p_debug_skeleton = false) const;
+	void create_bone_list(Vector<Ref<IKBone3D>> &p_list, bool p_recursive = false) const;
 	Ref<IKBone3D> get_ik_bone(BoneId p_bone) const;
 	void generate_default_segments(Vector<Ref<IKEffectorTemplate3D>> &p_pins, BoneId p_root_bone, BoneId p_tip_bone, ManyBoneIK3D *p_many_bone_ik);
 	IKBoneSegment3D() {}

@@ -1022,7 +1022,7 @@ void ManyBoneIK3D::_bone_list_changed() {
 		segmented_skeleton->get_root()->get_ik_transform()->set_parent(ik_origin);
 		segmented_skeleton->generate_default_segments(pins, root_bone_index, -1, this);
 		Vector<Ref<IKBone3D>> new_bone_list;
-		segmented_skeleton->create_bone_list(new_bone_list, true, queue_debug_skeleton);
+		segmented_skeleton->create_bone_list(new_bone_list, true);
 		bone_list.append_array(new_bone_list);
 		Vector<Vector<double>> weight_array;
 		segmented_skeleton->update_pinned_list(weight_array);

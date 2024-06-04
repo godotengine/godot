@@ -60,7 +60,6 @@ class ManyBoneIK3D : public SkeletonModifier3D {
 	float MAX_KUSUDAMA_OPEN_CONES = 10;
 	int32_t iterations_per_frame = 15;
 	float default_damp = Math::deg_to_rad(5.0f);
-	bool queue_debug_skeleton = false;
 	Ref<IKNode3D> godot_skeleton_transform;
 	Transform3D godot_skeleton_transform_inverse;
 	Ref<IKNode3D> ik_origin;

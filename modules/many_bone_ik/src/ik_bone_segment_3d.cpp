@@ -53,10 +53,10 @@ Vector<Ref<IKBoneSegment3D>> IKBoneSegment3D::get_child_segments() const {
 	return child_segments;
 }
 
-void IKBoneSegment3D::create_bone_list(Vector<Ref<IKBone3D>> &p_list, bool p_recursive, bool p_debug_skeleton) const {
+void IKBoneSegment3D::create_bone_list(Vector<Ref<IKBone3D>> &p_list, bool p_recursive) const {
 	if (p_recursive) {
 		for (int32_t child_i = 0; child_i < child_segments.size(); child_i++) {
-			child_segments[child_i]->create_bone_list(p_list, p_recursive, p_debug_skeleton);
+			child_segments[child_i]->create_bone_list(p_list, p_recursive);
 		}
 	}
 	Ref<IKBone3D> current_bone = tip;
@@ -67,25 +67,6 @@ void IKBoneSegment3D::create_bone_list(Vector<Ref<IKBone3D>> &p_list, bool p_rec
 			break;
 		}
 		current_bone = current_bone->get_parent();
-	}
-	if (p_debug_skeleton) {
-		for (int32_t name_i = 0; name_i < list.size(); name_i++) {
-			BoneId bone = list[name_i]->get_bone_id();
-
-			String bone_name = skeleton->get_bone_name(bone);
-			String effector;
-			if (list[name_i]->is_pinned()) {
-				effector += "Effector ";
-			}
-			String prefix;
-			if (list[name_i] == root) {
-				prefix += "(" + effector + "Root) ";
-			}
-			if (list[name_i] == tip) {
-				prefix += "(" + effector + "Tip) ";
-			}
-			print_line(vformat("%s%s (%s)", prefix, bone_name, itos(bone)));
-		}
 	}
 	p_list.append_array(list);
 }
