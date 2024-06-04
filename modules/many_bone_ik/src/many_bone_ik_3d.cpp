@@ -434,10 +434,6 @@ ManyBoneIK3D::ManyBoneIK3D() {
 ManyBoneIK3D::~ManyBoneIK3D() {
 }
 
-void ManyBoneIK3D::queue_print_skeleton() {
-	queue_debug_skeleton = true;
-}
-
 float ManyBoneIK3D::get_pin_motion_propagation_factor(int32_t p_effector_index) const {
 	ERR_FAIL_INDEX_V(p_effector_index, pins.size(), 0.0f);
 	const Ref<IKEffectorTemplate3D> effector_template = pins[p_effector_index];
@@ -1065,9 +1061,6 @@ void ManyBoneIK3D::_bone_list_changed() {
 			constraint->_update_constraint(ik_bone_3d->get_constraint_twist_transform());
 			break;
 		}
-	}
-	if (queue_debug_skeleton) {
-		queue_debug_skeleton = false;
 	}
 }
 
