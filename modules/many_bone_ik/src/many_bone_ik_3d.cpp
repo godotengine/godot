@@ -504,7 +504,7 @@ void ManyBoneIK3D::set_kusudama_open_cone(int32_t p_constraint_index, int32_t p_
 	ERR_FAIL_INDEX(p_constraint_index, kusudama_open_cones.size());
 	Vector<Vector4> cones = kusudama_open_cones.write[p_constraint_index];
 	if (Math::is_zero_approx(p_center.length_squared())) {
-		p_center = Vector3(0.0f, 1.0f, 0.0f);
+		p_center = Vector3(0.0f, -1.0f, 0.0f);
 	}
 	Vector3 center = p_center.normalized();
 	Vector4 cone;
@@ -578,16 +578,11 @@ void ManyBoneIK3D::set_kusudama_open_cone_center(int32_t p_effector_index, int32
 	ERR_FAIL_INDEX(p_effector_index, kusudama_open_cones.size());
 	ERR_FAIL_INDEX(p_index, kusudama_open_cones[p_effector_index].size());
 	Vector4 &cone = kusudama_open_cones.write[p_effector_index].write[p_index];
-	Basis basis;
-	basis.set_column(0, Vector3(1, 0, 0));
-	basis.set_column(1, Vector3(0, 0, -1));
-	basis.set_column(2, Vector3(0, 1, 0));
 	if (Math::is_zero_approx(p_center.length_squared())) {
 		cone.x = 0;
-		cone.y = 0;
-		cone.z = 1;
+		cone.y = 1;
+		cone.z = 0;
 	} else {
-		p_center = basis.xform(p_center);
 		cone.x = p_center.x;
 		cone.y = p_center.y;
 		cone.z = p_center.z;
@@ -609,11 +604,7 @@ Vector3 ManyBoneIK3D::get_kusudama_open_cone_center(int32_t p_constraint_index, 
 	ret.x = cone.x;
 	ret.y = cone.y;
 	ret.z = cone.z;
-	Basis basis;
-	basis.set_column(0, Vector3(1, 0, 0));
-	basis.set_column(1, Vector3(0, 0, -1));
-	basis.set_column(2, Vector3(0, 1, 0));
-	return basis.xform_inv(ret);
+	return ret;
 }
 
 void ManyBoneIK3D::set_constraint_name_at_index(int32_t p_index, String p_name) {
@@ -986,7 +977,7 @@ void ManyBoneIK3D::add_constraint() {
 	constraint_names.write[old_count] = String();
 	kusudama_open_cone_count.write[old_count] = 0;
 	kusudama_open_cones.write[old_count].resize(1);
-	kusudama_open_cones.write[old_count].write[0] = Vector4(0, -1, 0, Math_PI);
+	kusudama_open_cones.write[old_count].write[0] = Vector4(0, 1, 0, Math_PI);
 	joint_twist.write[old_count] = Vector2(0, Math_PI);
 	set_dirty();
 }
@@ -1061,7 +1052,7 @@ void ManyBoneIK3D::_bone_list_changed() {
 				new_cone.instantiate();
 				new_cone->set_attached_to(constraint);
 				new_cone->set_tangent_circle_center_next_1(Vector3(0.0f, -1.0f, 0.0f));
-				new_cone->set_tangent_circle_center_next_2(Vector3(0.0f, 1.0f, 0.0f));
+				new_cone->set_tangent_circle_center_next_2(Vector3(0.0f, -1.0f, 0.0f));
 				new_cone->set_radius(MAX(1.0e-38, cone.w));
 				new_cone->set_control_point(Vector3(cone.x, cone.y, cone.z).normalized());
 				constraint->add_open_cone(new_cone);
