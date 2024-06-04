@@ -1096,7 +1096,7 @@ void Window::_update_viewport_size() {
 	Size2i final_size;
 	Size2i final_size_override;
 	Rect2i attach_to_screen_rect(Point2i(), size);
-	float font_oversampling = 1.0;
+	double font_oversampling = 1.0;
 	window_transform = Transform2D();
 
 	if (content_scale_stretch == Window::CONTENT_SCALE_STRETCH_INTEGER) {
@@ -1215,7 +1215,7 @@ void Window::_update_viewport_size() {
 	}
 
 	bool allocate = is_inside_tree() && visible && (window_id != DisplayServer::INVALID_WINDOW_ID || embedder != nullptr);
-	_set_size(final_size, final_size_override, allocate);
+	bool ci_updated = _set_size(final_size, final_size_override, allocate);
 
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		RenderingServer::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), attach_to_screen_rect, window_id);
@@ -1227,9 +1227,14 @@ void Window::_update_viewport_size() {
 		if (!use_font_oversampling) {
 			font_oversampling = 1.0;
 		}
-		if (TS->font_get_global_oversampling() != font_oversampling) {
+		if (!Math::is_equal_approx(TS->font_get_global_oversampling(), font_oversampling)) {
 			TS->font_set_global_oversampling(font_oversampling);
+			ci_updated = false;
 		}
+	}
+
+	if (!ci_updated) {
+		update_canvas_items();
 	}
 
 	notification(NOTIFICATION_WM_SIZE_CHANGED);

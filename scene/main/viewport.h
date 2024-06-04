@@ -475,7 +475,7 @@ private:
 	void _propagate_world_2d_changed(Node *p_node);
 
 protected:
-	void _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, bool p_allocated);
+	bool _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, bool p_allocated);
 
 	Size2i _get_size() const;
 	Size2i _get_size_2d_override() const;
