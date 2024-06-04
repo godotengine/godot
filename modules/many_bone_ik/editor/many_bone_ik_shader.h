@@ -193,7 +193,7 @@ void vertex() {
 	// Draw the spheres in front of the background.
 	VERTEX = VERTEX;
     POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
-	POSITION.z = mix(POSITION.z, POSITION.w, 0.998)
+    POSITION.z = mix(POSITION.z, 0, 0.95);
 }
 
 void fragment() {
