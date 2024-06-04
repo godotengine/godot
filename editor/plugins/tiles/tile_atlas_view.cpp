@@ -354,7 +354,10 @@ void TileAtlasView::_draw_base_tiles_texture_grid() {
 					}
 				} else {
 					// Draw the grid.
-					base_tiles_texture_grid->draw_rect(Rect2i(origin, texture_region_size), Color(0.7, 0.7, 0.7, 0.1), false);
+					Transform2D tile_xform;
+					tile_xform.set_origin(Rect2(origin, texture_region_size).get_center());
+					tile_xform.set_scale(texture_region_size);
+					tile_set->draw_tile_shape(base_tiles_texture_grid, tile_xform, Color(0.7, 0.7, 0.7, 0.1));
 				}
 			}
 		}
