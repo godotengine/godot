@@ -68,9 +68,24 @@
 
 #include <stdint.h>
 
+#ifdef USE_BREAKPAD
+#include "modules/breakpad/breakpad.h"
+#endif
+
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.
 // This must be a superset of `ignored_types` in bindings_generator.cpp.
 const Vector<String> ignored_types = {};
+
+#include "godotsharp_dirs.h"
+#include "mono_gd/gd_mono_cache.h"
+#include "mono_gd/gd_mono_class.h"
+#include "mono_gd/gd_mono_marshal.h"
+#include "mono_gd/gd_mono_utils.h"
+#include "signal_awaiter_utils.h"
+#include "utils/macros.h"
+#include "utils/string_utils.h"
+
+#define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->get_string_names().m_var)
 
 #ifdef TOOLS_ENABLED
 static bool _create_project_solution_if_needed() {
@@ -131,6 +146,10 @@ void CSharpLanguage::init() {
 	if (gdmono->should_initialize()) {
 		gdmono->initialize();
 	}
+
+#ifdef USE_BREAKPAD
+	report_mono_loaded_to_breakpad();
+#endif
 }
 
 void CSharpLanguage::finish() {

@@ -130,6 +130,10 @@
 #endif // TOOLS_ENABLED && !GDSCRIPT_NO_LSP
 #endif // MODULE_GDSCRIPT_ENABLED
 
+#ifdef USE_BREAKPAD
+#include "modules/breakpad/breakpad.h"
+#endif
+
 /* Static members */
 
 // Singletons
@@ -1821,7 +1825,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions(); // core extensions must be registered after globals setup and before display
 
-	ResourceUID::get_singleton()->load_from_cache(true); // load UUIDs from cache.
+#ifdef USE_BREAKPAD
+	report_user_data_dir_usable();
+#endif
 
 	if (ProjectSettings::get_singleton()->has_custom_feature("dedicated_server")) {
 		audio_driver = NULL_AUDIO_DRIVER;

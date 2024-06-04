@@ -71,6 +71,26 @@ Applied upstream PR https://github.com/BinomialLLC/basis_universal/pull/344 to
 fix build with our own copy of zstd (patch in `patches`).
 
 
+## breakpad
+
+- Upstream: https://chromium.googlesource.com/breakpad/breakpad/
+- Version: git (605c51ed96ad44b34c457bbca320e74e194c317e, 2021)
+- License: BSD-3-Clause (main), others
+
+Files extracted from upstream source:
+
+- `src/client` except `.gyp`, upload and test related files
+- `src/common` except `.gyp`, upload and test related files
+- `src/third_party/lss/LICENSE`
+- `src/third_party/lss/linux_syscall_support.h`
+- `src/google_breakpad/common`
+- `LICENSE`
+
+This only contains the crash report generating required files. No files
+related to processing debug symbols, uploading, or receiving crash
+reports are included.
+
+
 ## brotli
 
 - Upstream: https://github.com/google/brotli

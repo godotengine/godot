@@ -224,6 +224,7 @@ opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loade
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
+opts.Add(BoolVariable("use_breakpad", "Enable Breakpad crash dump creation.", False))
 
 # Advanced options
 opts.Add(BoolVariable("dev_mode", "Alias for dev options: verbose=yes warnings=extra werror=yes tests=yes", False))
@@ -521,6 +522,9 @@ if not env["deprecated"]:
 
 if env["precision"] == "double":
     env.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
+
+if env["use_breakpad"]:
+    env_base.Append(CPPDEFINES=["USE_BREAKPAD"])
 
 tmppath = "./platform/" + env["platform"]
 sys.path.insert(0, tmppath)
