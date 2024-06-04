@@ -725,8 +725,6 @@ void Control::set_anchor(Side p_side, real_t p_anchor, bool p_keep_offset, bool 
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX((int)p_side, 4);
 
-	Rect2 parent_rect = get_parent_anchorable_rect();
-
 	data.anchor[p_side] = p_anchor;
 
 	if (((p_side == SIDE_LEFT || p_side == SIDE_TOP) && data.anchor[p_side] > data.anchor[(p_side + 2) % 4]) || ((p_side == SIDE_RIGHT || p_side == SIDE_BOTTOM) && data.anchor[p_side] < data.anchor[(p_side + 2) % 4])) {
