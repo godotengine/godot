@@ -123,10 +123,12 @@ SceneStringNames::SceneStringNames() {
 	window_input = StaticCString::create("window_input");
 
 	theme_changed = StaticCString::create("theme_changed");
-	parameters_base_path = "parameters/";
 
 	shader_overrides_group = StaticCString::create("_shader_overrides_group_");
 	shader_overrides_group_active = StaticCString::create("_shader_overrides_group_active_");
 
 	pressed = StaticCString::create("pressed");
+	id_pressed = StaticCString::create("id_pressed");
+
+	panel = StaticCString::create("panel");
 }

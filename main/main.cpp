@@ -90,6 +90,7 @@
 #endif
 
 #ifdef TOOLS_ENABLED
+#include "editor/debugger/debug_adapter/debug_adapter_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc_data_class_path.gen.h"
 #include "editor/doc_tools.h"
@@ -111,6 +112,10 @@
 #include "editor/project_converter_3_to_4.h"
 #endif // DISABLE_DEPRECATED
 #endif // TOOLS_ENABLED
+
+#if defined(STEAMAPI_ENABLED)
+#include "main/steam_tracker.h"
+#endif
 
 #include "modules/modules_enabled.gen.h" // For mono.
 
@@ -141,6 +146,10 @@ static PackedData *packed_data = nullptr;
 static ZipArchive *zip_packed_data = nullptr;
 #endif
 static MessageQueue *message_queue = nullptr;
+
+#if defined(STEAMAPI_ENABLED)
+static SteamTracker *steam_tracker = nullptr;
+#endif
 
 // Initialized in setup2()
 static AudioServer *audio_server = nullptr;
@@ -518,8 +527,9 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("-e, --editor", "Start the editor instead of running the scene.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("-p, --project-manager", "Start the project manager, even if a project is auto-detected.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--debug-server <uri>", "Start the editor debug server (<protocol>://<host/IP>[:port], e.g. tcp://127.0.0.1:6007)\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--dap-port <port>", "Use the specified port for the GDScript Debugger Adaptor protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #if defined(MODULE_GDSCRIPT_ENABLED) && !defined(GDSCRIPT_NO_LSP)
-	print_help_option("--lsp-port <port>", "Use the specified port for the GDScript language server protocol. The port should be between 1025 and 49150.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--lsp-port <port>", "Use the specified port for the GDScript language server protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif // MODULE_GDSCRIPT_ENABLED && !GDSCRIPT_NO_LSP
 #endif
 	print_help_option("--quit", "Quit after the first iteration.\n");
@@ -828,13 +838,15 @@ void Main::test_cleanup() {
 	if (globals) {
 		memdelete(globals);
 	}
-	if (engine) {
-		memdelete(engine);
-	}
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
+
+	if (engine) {
+		memdelete(engine);
+	}
+
 	unregister_core_types();
 
 	OS::get_singleton()->finalize_core();
@@ -1714,6 +1726,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 #endif // TOOLS_ENABLED && MODULE_GDSCRIPT_ENABLED && !GDSCRIPT_NO_LSP
+#if defined(TOOLS_ENABLED)
+		} else if (arg == "--dap-port") {
+			if (N) {
+				int port_override = N->get().to_int();
+				if (port_override < 0 || port_override > 65535) {
+					OS::get_singleton()->print("<port> argument for --dap-port <port> must be between 0 and 65535.\n");
+					goto error;
+				}
+				DebugAdapterServer::port_override = port_override;
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing <port> argument for --dap-port <port>.\n");
+				goto error;
+			}
+#endif // TOOLS_ENABLED
 		} else if (arg == "--" || arg == "++") {
 			adding_user_args = true;
 		} else {
@@ -2428,6 +2455,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Core");
 
+#if defined(STEAMAPI_ENABLED)
+	if (editor || project_manager) {
+		steam_tracker = memnew(SteamTracker);
+	}
+#endif
+
 	if (p_second_phase) {
 		return setup2();
 	}
@@ -2465,15 +2498,17 @@ error:
 	if (globals) {
 		memdelete(globals);
 	}
-	if (engine) {
-		memdelete(engine);
-	}
 	if (packed_data) {
 		memdelete(packed_data);
 	}
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
+
+	if (engine) {
+		memdelete(engine);
+	}
+
 	unregister_core_types();
 
 	OS::get_singleton()->_cmdline.clear();
@@ -2485,6 +2520,12 @@ error:
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Core");
 	OS::get_singleton()->benchmark_end_measure("Startup", "Setup");
+
+#if defined(STEAMAPI_ENABLED)
+	if (steam_tracker) {
+		memdelete(steam_tracker);
+	}
+#endif
 
 	OS::get_singleton()->finalize_core();
 	locale = String();
@@ -2686,9 +2727,18 @@ Error Main::setup2() {
 		Color boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", boot_splash_bg_color);
 		DisplayServer::set_early_window_clear_color_override(true, boot_bg_color);
 
+		DisplayServer::Context context;
+		if (editor) {
+			context = DisplayServer::CONTEXT_EDITOR;
+		} else if (project_manager) {
+			context = DisplayServer::CONTEXT_PROJECTMAN;
+		} else {
+			context = DisplayServer::CONTEXT_ENGINE;
+		}
+
 		// rendering_driver now held in static global String in main and initialized in setup()
 		Error err;
-		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, err);
+		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, err);
 		if (err != OK || display_server == nullptr) {
 			// We can't use this display server, try other ones as fallback.
 			// Skip headless (always last registered) because that's not what users
@@ -2697,7 +2747,7 @@ Error Main::setup2() {
 				if (i == display_driver_idx) {
 					continue; // Don't try the same twice.
 				}
-				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, err);
+				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, err);
 				if (err == OK && display_server != nullptr) {
 					break;
 				}
@@ -2832,8 +2882,10 @@ Error Main::setup2() {
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Servers");
 
+#ifndef WEB_ENABLED
 	// Add a blank line for readability.
 	Engine::get_singleton()->print_header("");
+#endif // WEB_ENABLED
 
 	register_core_singletons();
 
@@ -3807,16 +3859,12 @@ int Main::start() {
 						ERR_PRINT("Failed to load scene");
 					}
 				}
-				DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_EDITOR);
 				if (!debug_server_uri.is_empty()) {
 					EditorDebuggerNode::get_singleton()->start(debug_server_uri);
 					EditorDebuggerNode::get_singleton()->set_keep_open(true);
 				}
 			}
 #endif
-			if (!editor) {
-				DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_ENGINE);
-			}
 		}
 
 		if (!project_manager && !editor) { // game
@@ -3874,7 +3922,6 @@ int Main::start() {
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
 			pmanager->add_child(progress_dialog);
 			sml->get_root()->add_child(pmanager);
-			DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_PROJECTMAN);
 			OS::get_singleton()->benchmark_end_measure("Startup", "Project Manager");
 		}
 
@@ -4176,6 +4223,12 @@ void Main::cleanup(bool p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
 
+#ifdef DEBUG_ENABLED
+	if (input) {
+		input->flush_frame_parsed_events();
+	}
+#endif
+
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 		TextServerManager::get_singleton()->get_interface(i)->cleanup();
 	}
@@ -4307,14 +4360,21 @@ void Main::cleanup(bool p_force) {
 	message_queue->flush();
 	memdelete(message_queue);
 
+#if defined(STEAMAPI_ENABLED)
+	if (steam_tracker) {
+		memdelete(steam_tracker);
+	}
+#endif
+
 	unregister_core_driver_types();
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
-	unregister_core_types();
 
 	if (engine) {
 		memdelete(engine);
 	}
+
+	unregister_core_types();
 
 	OS::get_singleton()->benchmark_end_measure("Shutdown", "Total");
 	OS::get_singleton()->benchmark_dump();

@@ -717,7 +717,7 @@ void GraphEdit::_notification(int p_what) {
 
 			zoom_label->set_custom_minimum_size(Size2(48, 0) * theme_cache.base_scale);
 
-			menu_panel->add_theme_style_override("panel", theme_cache.menu_panel);
+			menu_panel->add_theme_style_override(SceneStringName(panel), theme_cache.menu_panel);
 		} break;
 		case NOTIFICATION_READY: {
 			Size2 hmin = h_scrollbar->get_combined_minimum_size();
@@ -1299,18 +1299,26 @@ List<Ref<GraphEdit::Connection>> GraphEdit::get_connections_intersecting_with_re
 	return intersecting_connections;
 }
 
-void GraphEdit::_draw_minimap_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_from_color, const Color &p_to_color) {
-	const Vector<Vector2> &points = get_connection_line(p_from, p_to);
+void GraphEdit::_draw_minimap_connection_line(const Vector2 &p_from_graph_position, const Vector2 &p_to_graph_position, const Color &p_from_color, const Color &p_to_color) {
+	Vector<Vector2> points = get_connection_line(p_from_graph_position, p_to_graph_position);
+	ERR_FAIL_COND_MSG(points.size() < 2, "\"_get_connection_line()\" returned an invalid line.");
+	// Convert to minimap points.
+	for (Vector2 &point : points) {
+		point = minimap->_convert_from_graph_position(point) + minimap->minimap_offset;
+	}
+
+	// Setup polyline colors.
 	LocalVector<Color> colors;
 	colors.reserve(points.size());
-
-	float length_inv = 1.0 / (p_from).distance_to(p_to);
+	const Vector2 &from = points[0];
+	const Vector2 &to = points[points.size() - 1];
+	float length_inv = 1.0 / (from).distance_to(to);
 	for (const Vector2 &point : points) {
-		float normalized_curve_position = (p_from).distance_to(point) * length_inv;
+		float normalized_curve_position = from.distance_to(point) * length_inv;
 		colors.push_back(p_from_color.lerp(p_to_color, normalized_curve_position));
 	}
 
-	p_where->draw_polyline_colors(points, colors, 0.5, lines_antialiased);
+	minimap->draw_polyline_colors(points, colors, 0.5, lines_antialiased);
 }
 
 void GraphEdit::_update_connections() {
@@ -1528,7 +1536,7 @@ void GraphEdit::_minimap_draw() {
 		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style->duplicate();
 
 		// Override default values with colors provided by the GraphNode's stylebox, if possible.
-		Ref<StyleBoxFlat> sb_frame = graph_frame->get_theme_stylebox(graph_frame->is_selected() ? SNAME("panel_selected") : SNAME("panel"));
+		Ref<StyleBoxFlat> sb_frame = graph_frame->get_theme_stylebox(graph_frame->is_selected() ? SNAME("panel_selected") : SceneStringName(panel));
 		if (sb_frame.is_valid()) {
 			Color node_color = sb_frame->get_bg_color();
 			if (graph_frame->is_tint_color_enabled()) {
@@ -1565,8 +1573,8 @@ void GraphEdit::_minimap_draw() {
 
 	// Draw node connections.
 	for (const Ref<Connection> &c : connections) {
-		Vector2 from_position = minimap->_convert_from_graph_position(c->_cache.from_pos * zoom - graph_offset) + minimap_offset;
-		Vector2 to_position = minimap->_convert_from_graph_position(c->_cache.to_pos * zoom - graph_offset) + minimap_offset;
+		Vector2 from_graph_position = c->_cache.from_pos * zoom - graph_offset;
+		Vector2 to_graph_position = c->_cache.to_pos * zoom - graph_offset;
 		Color from_color = c->_cache.from_color;
 		Color to_color = c->_cache.to_color;
 
@@ -1574,7 +1582,8 @@ void GraphEdit::_minimap_draw() {
 			from_color = from_color.lerp(theme_cache.activity_color, c->activity);
 			to_color = to_color.lerp(theme_cache.activity_color, c->activity);
 		}
-		_draw_minimap_connection_line(minimap, from_position, to_position, from_color, to_color);
+
+		_draw_minimap_connection_line(from_graph_position, to_graph_position, from_color, to_color);
 	}
 
 	// Draw the "camera" viewport.

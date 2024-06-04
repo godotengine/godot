@@ -31,7 +31,9 @@
 #include "editor_properties_vector.h"
 
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/texture_button.h"
 
@@ -135,8 +137,11 @@ void EditorPropertyVectorN::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+
 			linked->set_texture_normal(get_editor_theme_icon(SNAME("Unlinked")));
 			linked->set_texture_pressed(get_editor_theme_icon(SNAME("Instance")));
+			linked->set_custom_minimum_size(Size2(icon_size + 8 * EDSCALE, 0));
 
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < component_count; i++) {

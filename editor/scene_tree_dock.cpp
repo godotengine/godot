@@ -3104,7 +3104,23 @@ void SceneTreeDock::set_edited_scene(Node *p_scene) {
 	edited_scene = p_scene;
 }
 
+static bool _is_same_selection(const Vector<Node *> &p_first, const List<Node *> &p_second) {
+	if (p_first.size() != p_second.size()) {
+		return false;
+	}
+	for (Node *node : p_second) {
+		if (!p_first.has(node)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void SceneTreeDock::set_selection(const Vector<Node *> &p_nodes) {
+	// If the nodes selected are the same independently of order then return early.
+	if (_is_same_selection(p_nodes, editor_selection->get_full_selected_node_list())) {
+		return;
+	}
 	editor_selection->clear();
 	for (Node *node : p_nodes) {
 		editor_selection->add_node(node);
@@ -3317,9 +3333,9 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 	// Either instantiate scenes or create AudioStreamPlayers.
 	int to_pos = -1;
 	_normalize_drop(node, to_pos, p_type);
-	if (res_type == "PackedScene") {
+	if (ClassDB::is_parent_class(res_type, "PackedScene")) {
 		_perform_instantiate_scenes(p_files, node, to_pos);
-	} else {
+	} else if (ClassDB::is_parent_class(res_type, "AudioStream")) {
 		_perform_create_audio_stream_players(p_files, node, to_pos);
 	}
 }
@@ -4155,7 +4171,7 @@ void SceneTreeDock::_create_remap_for_node(Node *p_node, HashMap<Ref<Resource>, 
 
 				bool is_valid_default = false;
 				Variant orig = PropertyUtils::get_property_default_value(p_node, E.name, &is_valid_default, &states_stack);
-				if (is_valid_default && !PropertyUtils::is_property_value_different(v, orig)) {
+				if (is_valid_default && !PropertyUtils::is_property_value_different(p_node, v, orig)) {
 					continue;
 				}
 
@@ -4381,12 +4397,12 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	filter->add_theme_constant_override("minimum_character_width", 0);
 	filter->connect("text_changed", callable_mp(this, &SceneTreeDock::_filter_changed));
 	filter->connect(SceneStringName(gui_input), callable_mp(this, &SceneTreeDock::_filter_gui_input));
-	filter->get_menu()->connect("id_pressed", callable_mp(this, &SceneTreeDock::_filter_option_selected));
+	filter->get_menu()->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_filter_option_selected));
 	_append_filter_options_to(filter->get_menu());
 
 	filter_quick_menu = memnew(PopupMenu);
 	filter_quick_menu->set_theme_type_variation("FlatMenuButton");
-	filter_quick_menu->connect("id_pressed", callable_mp(this, &SceneTreeDock::_filter_option_selected));
+	filter_quick_menu->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_filter_option_selected));
 	filter->add_child(filter_quick_menu);
 
 	button_create_script = memnew(Button);
@@ -4413,7 +4429,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	filter_hbc->add_child(button_tree_menu);
 
 	PopupMenu *tree_menu = button_tree_menu->get_popup();
-	tree_menu->connect("id_pressed", callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
+	tree_menu->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
 
 	button_hb = memnew(HBoxContainer);
 	vbc->add_child(button_hb);
@@ -4533,15 +4549,15 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->connect("id_pressed", callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
 
 	menu_subresources = memnew(PopupMenu);
-	menu_subresources->connect("id_pressed", callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
+	menu_subresources->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
 	menu->add_child(menu_subresources);
 
 	menu_properties = memnew(PopupMenu);
 	add_child(menu_properties);
-	menu_properties->connect("id_pressed", callable_mp(this, &SceneTreeDock::_property_selected));
+	menu_properties->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_property_selected));
 
 	clear_inherit_confirm = memnew(ConfirmationDialog);
 	clear_inherit_confirm->set_text(TTR("Clear Inheritance? (No Undo!)"));

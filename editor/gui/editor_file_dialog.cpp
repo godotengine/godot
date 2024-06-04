@@ -2265,7 +2265,7 @@ EditorFileDialog::EditorFileDialog() {
 	list_vb->add_child(item_list);
 
 	item_menu = memnew(PopupMenu);
-	item_menu->connect("id_pressed", callable_mp(this, &EditorFileDialog::_item_menu_id_pressed));
+	item_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorFileDialog::_item_menu_id_pressed));
 	add_child(item_menu);
 
 	// Other stuff.

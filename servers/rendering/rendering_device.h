@@ -207,6 +207,15 @@ public:
 	// for a framebuffer to render into it.
 
 	struct Texture {
+		struct SharedFallback {
+			uint32_t revision = 1;
+			RDD::TextureID texture;
+			RDG::ResourceTracker *texture_tracker = nullptr;
+			RDD::BufferID buffer;
+			RDG::ResourceTracker *buffer_tracker = nullptr;
+			bool raw_reinterpretation = false;
+		};
+
 		RDD::TextureID driver_id;
 
 		TextureType type = TEXTURE_TYPE_MAX;
@@ -235,6 +244,7 @@ public:
 
 		RDG::ResourceTracker *draw_tracker = nullptr;
 		HashMap<Rect2i, RDG::ResourceTracker *> slice_trackers;
+		SharedFallback *shared_fallback = nullptr;
 
 		RDD::TextureSubresourceRange barrier_range() const {
 			RDD::TextureSubresourceRange r;
@@ -245,6 +255,22 @@ public:
 			r.layer_count = layers;
 			return r;
 		}
+
+		TextureFormat texture_format() const {
+			TextureFormat tf;
+			tf.format = format;
+			tf.width = width;
+			tf.height = height;
+			tf.depth = depth;
+			tf.array_layers = layers;
+			tf.mipmaps = mipmaps;
+			tf.texture_type = type;
+			tf.samples = samples;
+			tf.usage_bits = usage_flags;
+			tf.shareable_formats = allowed_shared_formats;
+			tf.is_resolve_buffer = is_resolve_buffer;
+			return tf;
+		}
 	};
 
 	RID_Owner<Texture> texture_owner;
@@ -252,6 +278,11 @@ public:
 
 	Vector<uint8_t> _texture_get_data(Texture *tex, uint32_t p_layer, bool p_2d = false);
 	Error _texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_use_setup_queue, bool p_validate_can_update);
+	void _texture_check_shared_fallback(Texture *p_texture);
+	void _texture_update_shared_fallback(RID p_texture_rid, Texture *p_texture, bool p_for_writing);
+	void _texture_free_shared_fallback(Texture *p_texture);
+	void _texture_copy_shared(RID p_src_texture_rid, Texture *p_src_texture, RID p_dst_texture_rid, Texture *p_dst_texture);
+	void _texture_create_reinterpret_buffer(Texture *p_texture);
 
 public:
 	struct TextureView {
@@ -916,15 +947,23 @@ private:
 			RID texture;
 		};
 
+		struct SharedTexture {
+			uint32_t writing = 0;
+			RID texture;
+		};
+
 		LocalVector<AttachableTexture> attachable_textures; // Used for validation.
 		Vector<RDG::ResourceTracker *> draw_trackers;
 		Vector<RDG::ResourceUsage> draw_trackers_usage;
 		HashMap<RID, RDG::ResourceUsage> untracked_usage;
+		LocalVector<SharedTexture> shared_textures_to_update;
 		InvalidationCallback invalidated_callback = nullptr;
 		void *invalidated_callback_userdata = nullptr;
 	};
 
 	RID_Owner<UniformSet> uniform_set_owner;
+
+	void _uniform_set_update_shared(UniformSet *p_uniform_set);
 
 public:
 	RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
@@ -1359,6 +1398,8 @@ public:
 	String get_device_api_name() const;
 	String get_device_api_version() const;
 	String get_device_pipeline_cache_uuid() const;
+
+	bool is_composite_alpha_supported() const;
 
 	uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0);
 

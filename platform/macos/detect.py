@@ -53,11 +53,11 @@ def get_doc_path():
 
 
 def get_flags():
-    return [
-        ("arch", detect_arch()),
-        ("use_volk", False),
-        ("supported", ["mono"]),
-    ]
+    return {
+        "arch": detect_arch(),
+        "use_volk": False,
+        "supported": ["mono"],
+    }
 
 
 def configure(env: "SConsEnvironment"):

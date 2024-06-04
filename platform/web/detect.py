@@ -65,21 +65,21 @@ def get_doc_path():
 
 
 def get_flags():
-    return [
-        ("arch", "wasm32"),
-        ("target", "template_debug"),
-        ("builtin_pcre2_with_jit", False),
-        ("vulkan", False),
+    return {
+        "arch": "wasm32",
+        "target": "template_debug",
+        "builtin_pcre2_with_jit": False,
+        "vulkan": False,
         # Embree is heavy and requires too much memory (GH-70621).
-        ("module_raycast_enabled", False),
+        "module_raycast_enabled": False,
         # Use -Os to prioritize optimizing for reduced file size. This is
         # particularly valuable for the web platform because it directly
         # decreases download time.
         # -Os reduces file size by around 5 MiB over -O3. -Oz only saves about
         # 100 KiB over -Os, which does not justify the negative impact on
         # run-time performance.
-        ("optimize", "size"),
-    ]
+        "optimize": "size",
+    }
 
 
 def configure(env: "SConsEnvironment"):
@@ -181,7 +181,7 @@ def configure(env: "SConsEnvironment"):
     # Use TempFileMunge since some AR invocations are too long for cmd.exe.
     # Use POSIX-style paths, required with TempFileMunge.
     env["ARCOM_POSIX"] = env["ARCOM"].replace("$TARGET", "$TARGET.posix").replace("$SOURCES", "$SOURCES.posix")
-    env["ARCOM"] = "${TEMPFILE(ARCOM_POSIX)}"
+    env["ARCOM"] = "${TEMPFILE('$ARCOM_POSIX','$ARCOMSTR')}"
 
     # All intermediate files are just object files.
     env["OBJPREFIX"] = ""

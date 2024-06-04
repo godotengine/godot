@@ -122,6 +122,8 @@ for x in sorted(glob.glob("platform/*")):
         platform_list += [x]
         platform_opts[x] = detect.get_opts()
         platform_flags[x] = detect.get_flags()
+        if isinstance(platform_flags[x], list):  # backwards compatibility
+            platform_flags[x] = {flag[0]: flag[1] for flag in platform_flags[x]}
     sys.path.remove(tmppath)
     sys.modules.pop("detect")
 
@@ -216,7 +218,7 @@ opts.Add(BoolVariable("brotli", "Enable Brotli for decompresson and WOFF2 fonts 
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add(BoolVariable("vulkan", "Enable the vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
-opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver (Windows only)", False))
+opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver", False))
 opts.Add(BoolVariable("openxr", "Enable the OpenXR driver", True))
 opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
@@ -252,6 +254,7 @@ opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise e
 opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
 opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the Project Manager", True))
+opts.Add(BoolVariable("steamapi", "Enable minimal SteamAPI integration for usage time tracking (editor only)", False))
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -371,6 +374,14 @@ if env["platform"] not in platform_list:
 if env["platform"] in platform_opts:
     for opt in platform_opts[env["platform"]]:
         opts.Add(opt)
+
+# Platform-specific flags.
+# These can sometimes override default options, so they need to be processed
+# as early as possible to ensure that we're using the correct values.
+flag_list = platform_flags[env["platform"]]
+for key, value in flag_list.items():
+    if key not in ARGUMENTS or ARGUMENTS[key] == "auto":  # Allow command line to override platform flags
+        env[key] = value
 
 # Update the environment to take platform-specific options into account.
 opts.Update(env, {**ARGUMENTS, **env.Dictionary()})
@@ -566,17 +577,8 @@ if env["build_profile"] != "":
         print_error('Failed to open feature build profile: "{}"'.format(env["build_profile"]))
         Exit(255)
 
-# Platform specific flags.
-# These can sometimes override default options.
-flag_list = platform_flags[env["platform"]]
-for f in flag_list:
-    if f[0] not in ARGUMENTS or ARGUMENTS[f[0]] == "auto":  # Allow command line to override platform flags
-        env[f[0]] = f[1]
-
 # 'dev_mode' and 'production' are aliases to set default options if they haven't been
 # set manually by the user.
-# These need to be checked *after* platform specific flags so that different
-# default values can be set (e.g. to keep LTO off for `production` on some platforms).
 if env["dev_mode"]:
     env["verbose"] = methods.get_cmdline_bool("verbose", True)
     env["warnings"] = ARGUMENTS.get("warnings", "extra")

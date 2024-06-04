@@ -56,11 +56,11 @@ void EditorRunBar::_notification(int p_what) {
 			stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
 
 			if (is_movie_maker_enabled()) {
-				main_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("LaunchPadMovieMode"), EditorStringName(EditorStyles)));
-				write_movie_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("MovieWriterButtonPressed"), EditorStringName(EditorStyles)));
+				main_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadMovieMode"), EditorStringName(EditorStyles)));
+				write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonPressed"), EditorStringName(EditorStyles)));
 			} else {
-				main_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("LaunchPadNormal"), EditorStringName(EditorStyles)));
-				write_movie_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
+				main_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadNormal"), EditorStringName(EditorStyles)));
+				write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
 			}
 
 			write_movie_button->set_icon(get_editor_theme_icon(SNAME("MainMovieWrite")));
@@ -112,11 +112,11 @@ void EditorRunBar::_update_play_buttons() {
 
 void EditorRunBar::_write_movie_toggled(bool p_enabled) {
 	if (p_enabled) {
-		add_theme_style_override("panel", get_theme_stylebox(SNAME("LaunchPadMovieMode"), EditorStringName(EditorStyles)));
-		write_movie_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("MovieWriterButtonPressed"), EditorStringName(EditorStyles)));
+		add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadMovieMode"), EditorStringName(EditorStyles)));
+		write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonPressed"), EditorStringName(EditorStyles)));
 	} else {
-		add_theme_style_override("panel", get_theme_stylebox(SNAME("LaunchPadNormal"), EditorStringName(EditorStyles)));
-		write_movie_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
+		add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadNormal"), EditorStringName(EditorStyles)));
+		write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
 	}
 }
 

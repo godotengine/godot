@@ -858,7 +858,7 @@ GroupsEditor::GroupsEditor() {
 	add_child(tree);
 
 	menu = memnew(PopupMenu);
-	menu->connect("id_pressed", callable_mp(this, &GroupsEditor::_menu_id_pressed));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GroupsEditor::_menu_id_pressed));
 	tree->add_child(menu);
 
 	ProjectSettingsEditor::get_singleton()->get_group_settings()->connect("group_changed", callable_mp(this, &GroupsEditor::_update_groups_and_tree));

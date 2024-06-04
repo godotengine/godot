@@ -4239,6 +4239,9 @@
 		<constant name="MAX_2D_DIRECTIONAL_LIGHTS" value="8">
 			The maximum number of directional lights that can be rendered at a given time in 2D.
 		</constant>
+		<constant name="MAX_MESH_SURFACES" value="256">
+			The maximum number of surfaces a mesh can have.
+		</constant>
 		<constant name="TEXTURE_LAYERED_2D_ARRAY" value="0" enum="TextureLayeredType">
 			Array of 2-dimensional textures (see [Texture2DArray]).
 		</constant>

@@ -103,31 +103,53 @@ public:
         stringIds[file_c_str] = strId;
         return strId;
     }
-    spv::Id getSourceFile() const
+
+    spv::Id getMainFileId() const { return mainFileId; }
+
+    // Initialize the main source file name
+    void setDebugSourceFile(const std::string& file)
     {
-        return sourceFileStringId;
+        if (trackDebugInfo) {
+            dirtyLineTracker = true;
+            mainFileId = getStringId(file);
+            currentFileId = mainFileId;
+        }
     }
-    void setSourceFile(const std::string& file)
+
+    // Set the debug source location tracker in the builder.
+    // The upcoming instructions in basic blocks will be associated to this location.
+    void setDebugSourceLocation(int line, const char* filename)
     {
-        sourceFileStringId = getStringId(file);
-        currentFileId = sourceFileStringId;
+        if (trackDebugInfo) {
+            dirtyLineTracker = true;
+            if (line != 0) {
+                // TODO: This is special handling of some AST nodes having (untracked) line 0. 
+                //       But they should have a valid line number.
+                currentLine = line;
+                if (filename) {
+                    currentFileId = getStringId(filename);
+                }
+            }
+        }
     }
+
     void setSourceText(const std::string& text) { sourceText = text; }
     void addSourceExtension(const char* ext) { sourceExtensions.push_back(ext); }
     void addModuleProcessed(const std::string& p) { moduleProcesses.push_back(p.c_str()); }
-    void setEmitOpLines() { emitOpLines = true; }
-    void setEmitNonSemanticShaderDebugInfo(bool const emit)
+    void setEmitSpirvDebugInfo()
     {
-        emitNonSemanticShaderDebugInfo = emit;
-
-        if(emit)
-        {
-            importNonSemanticShaderDebugInfoInstructions();
-        }
+        trackDebugInfo = true;
+        emitSpirvDebugInfo = true;
     }
-    void setEmitNonSemanticShaderDebugSource(bool const src)
+    void setEmitNonSemanticShaderDebugInfo(bool emitSourceText)
     {
-        emitNonSemanticShaderDebugSource = src;
+        trackDebugInfo = true;
+        emitNonSemanticShaderDebugInfo = true;
+        importNonSemanticShaderDebugInfoInstructions();
+
+        if (emitSourceText) {
+            emitNonSemanticShaderDebugSource = emitSourceText;
+        }
     }
     void addExtension(const char* ext) { extensions.insert(ext); }
     void removeExtension(const char* ext)
@@ -168,20 +190,6 @@ public:
         uniqueId += numIds;
         return id;
     }
-
-    // Generate OpLine for non-filename-based #line directives (ie no filename
-    // seen yet): Log the current line, and if different than the last one,
-    // issue a new OpLine using the new line and current source file name.
-    void setLine(int line);
-
-    // If filename null, generate OpLine for non-filename-based line directives,
-    // else do filename-based: Log the current line and file, and if different
-    // than the last one, issue a new OpLine using the new line and file
-    // name.
-    void setLine(int line, const char* filename);
-    // Low-level OpLine. See setLine() for a layered helper.
-    void addLine(Id fileName, int line, int column);
-    void addDebugScopeAndLine(Id fileName, int line, int column);
 
     // For creating new types (will return old type if the requested one was already made).
     Id makeVoidType();
@@ -226,6 +234,7 @@ public:
     Id makeMemberDebugType(Id const memberType, DebugTypeLoc const& debugTypeLoc);
     Id makeCompositeDebugType(std::vector<Id> const& memberTypes, char const*const name,
         NonSemanticShaderDebugInfo100DebugCompositeType const tag, bool const isOpaqueType = false);
+    Id makePointerDebugType(StorageClass storageClass, Id const baseType);
     Id makeDebugSource(const Id fileName);
     Id makeDebugCompilationUnit();
     Id createDebugGlobalVariable(Id const type, char const*const name, Id const variable);
@@ -317,8 +326,6 @@ public:
     // See if a resultId is valid for use as an initializer.
     bool isValidInitializer(Id resultId) const { return isConstant(resultId) || isGlobalVariable(resultId); }
 
-    bool isRayTracingOpCode(Op opcode) const;
-
     int getScalarTypeWidth(Id typeId) const
     {
         Id scalarTypeId = getScalarTypeId(typeId);
@@ -408,10 +415,15 @@ public:
     // Also reset current last DebugScope and current source line to unknown
     void setBuildPoint(Block* bp) {
         buildPoint = bp;
-        lastDebugScopeId = NoResult;
-        currentLine = 0;
+        // TODO: Technically, change of build point should set line tracker dirty. But we'll have bad line info for
+        //       branch instructions. Commenting this for now because at least this matches the old behavior.
+        dirtyScopeTracker = true;
     }
     Block* getBuildPoint() const { return buildPoint; }
+
+    // Append an instruction to the end of the current build point.
+    // Optionally, additional debug info instructions may also be prepended.
+    void addInstruction(std::unique_ptr<Instruction> inst);
 
     // Make the entry-point function. The returned pointer is only valid
     // for the lifetime of this builder.
@@ -429,10 +441,10 @@ public:
     void makeReturn(bool implicit, Id retVal = 0);
 
     // Initialize state and generate instructions for new lexical scope
-    void enterScope(uint32_t line);
+    void enterLexicalBlock(uint32_t line);
 
     // Set state and generate instructions to exit current lexical scope
-    void leaveScope();
+    void leaveLexicalBlock();
 
     // Prepare builder for generation of instructions for a function.
     void enterFunction(Function const* function);
@@ -881,21 +893,37 @@ public:
     unsigned int spvVersion;     // the version of SPIR-V to emit in the header
     SourceLanguage sourceLang;
     int sourceVersion;
-    spv::Id sourceFileStringId;
     spv::Id nonSemanticShaderCompilationUnitId {0};
     spv::Id nonSemanticShaderDebugInfo {0};
     spv::Id debugInfoNone {0};
     spv::Id debugExpression {0}; // Debug expression with zero operations.
     std::string sourceText;
-    int currentLine;
-    const char* currentFile;
-    spv::Id currentFileId;
+
+    // True if an new OpLine/OpDebugLine may need to be inserted. Either:
+    // 1. The current debug location changed
+    // 2. The current build point changed
+    bool dirtyLineTracker;
+    int currentLine = 0;
+    // OpString id of the current file name. Always 0 if debug info is off.
+    spv::Id currentFileId = 0;
+    // OpString id of the main file name. Always 0 if debug info is off.
+    spv::Id mainFileId = 0;
+
+    // True if an new OpDebugScope may need to be inserted. Either:
+    // 1. A new lexical block is pushed
+    // 2. The current build point changed
+    bool dirtyScopeTracker;
     std::stack<spv::Id> currentDebugScopeId;
-    spv::Id lastDebugScopeId;
-    bool emitOpLines;
-    bool emitNonSemanticShaderDebugInfo;
-    bool restoreNonSemanticShaderDebugInfo;
-    bool emitNonSemanticShaderDebugSource;
+
+    // This flag toggles tracking of debug info while building the SPIR-V.
+    bool trackDebugInfo = false;
+    // This flag toggles emission of SPIR-V debug instructions, like OpLine and OpSource.
+    bool emitSpirvDebugInfo = false;
+    // This flag toggles emission of Non-Semantic Debug extension debug instructions.
+    bool emitNonSemanticShaderDebugInfo = false;
+    bool restoreNonSemanticShaderDebugInfo = false;
+    bool emitNonSemanticShaderDebugSource = false;
+
     std::set<std::string> extensions;
     std::vector<const char*> sourceExtensions;
     std::vector<const char*> moduleProcesses;

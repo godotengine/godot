@@ -540,7 +540,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->get_popup()->add_item(TTR("View UV2"), MENU_OPTION_DEBUG_UV2);
 	options->get_popup()->add_item(TTR("Unwrap UV2 for Lightmap/AO"), MENU_OPTION_CREATE_UV2);
 
-	options->get_popup()->connect("id_pressed", callable_mp(this, &MeshInstance3DEditor::_menu_option));
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &MeshInstance3DEditor::_menu_option));
 
 	outline_dialog = memnew(ConfirmationDialog);
 	outline_dialog->set_title(TTR("Create Outline Mesh"));

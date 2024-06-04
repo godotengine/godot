@@ -291,7 +291,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		const PackedStringArray warnings = p_node->get_configuration_warnings();
 		const int num_warnings = warnings.size();
 		if (num_warnings > 0) {
-			String warning_icon;
+			StringName warning_icon;
 			if (num_warnings == 1) {
 				warning_icon = SNAME("NodeWarning");
 			} else if (num_warnings <= 3) {
@@ -614,9 +614,9 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 
 	updating_tree = true;
 	tree->clear();
+	last_hash = hash_djb2_one_64(0);
 	if (get_scene_node()) {
 		_add_nodes(get_scene_node(), nullptr);
-		last_hash = hash_djb2_one_64(0);
 		_compute_hash(get_scene_node(), last_hash);
 	}
 	updating_tree = false;

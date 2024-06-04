@@ -306,10 +306,21 @@ String Window::get_title() const {
 	return title;
 }
 
+void Window::_settings_changed() {
+	if (visible && initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE && is_in_edited_scene_root()) {
+		Size2 screen_size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+		position = (screen_size - size) / 2;
+		if (embedder) {
+			embedder->_sub_window_update(this);
+		}
+	}
+}
+
 void Window::set_initial_position(Window::WindowInitialPosition p_initial_position) {
 	ERR_MAIN_THREAD_GUARD;
 
 	initial_position = p_initial_position;
+	_settings_changed();
 	notify_property_list_changed();
 }
 
@@ -380,6 +391,7 @@ void Window::set_size(const Size2i &p_size) {
 
 	size = p_size;
 	_update_window_size();
+	_settings_changed();
 }
 
 Size2i Window::get_size() const {
@@ -397,6 +409,16 @@ Point2i Window::get_position_with_decorations() const {
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		return DisplayServer::get_singleton()->window_get_position_with_decorations(window_id);
 	}
+	if (visible && is_embedded() && !get_flag(Window::FLAG_BORDERLESS)) {
+		Size2 border_offset;
+		if (theme_cache.embedded_border.is_valid()) {
+			border_offset = theme_cache.embedded_border->get_offset();
+		}
+		if (theme_cache.embedded_unfocused_border.is_valid()) {
+			border_offset = border_offset.max(theme_cache.embedded_unfocused_border->get_offset());
+		}
+		return position - border_offset;
+	}
 	return position;
 }
 
@@ -404,6 +426,16 @@ Size2i Window::get_size_with_decorations() const {
 	ERR_READ_THREAD_GUARD_V(Size2i());
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		return DisplayServer::get_singleton()->window_get_size_with_decorations(window_id);
+	}
+	if (visible && is_embedded() && !get_flag(Window::FLAG_BORDERLESS)) {
+		Size2 border_size;
+		if (theme_cache.embedded_border.is_valid()) {
+			border_size = theme_cache.embedded_border->get_minimum_size();
+		}
+		if (theme_cache.embedded_unfocused_border.is_valid()) {
+			border_size = border_size.max(theme_cache.embedded_unfocused_border->get_minimum_size());
+		}
+		return size + border_size;
 	}
 	return size;
 }
@@ -829,7 +861,12 @@ void Window::set_visible(bool p_visible) {
 		if (visible) {
 			embedder = embedder_vp;
 			if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
-				position = (embedder->get_visible_rect().size - size) / 2;
+				if (is_in_edited_scene_root()) {
+					Size2 screen_size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+					position = (screen_size - size) / 2;
+				} else {
+					position = (embedder->get_visible_rect().size - size) / 2;
+				}
 			}
 			embedder->_sub_window_register(this);
 			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
@@ -1059,7 +1096,7 @@ void Window::_update_viewport_size() {
 	Size2i final_size;
 	Size2i final_size_override;
 	Rect2i attach_to_screen_rect(Point2i(), size);
-	float font_oversampling = 1.0;
+	double font_oversampling = 1.0;
 	window_transform = Transform2D();
 
 	if (content_scale_stretch == Window::CONTENT_SCALE_STRETCH_INTEGER) {
@@ -1178,7 +1215,7 @@ void Window::_update_viewport_size() {
 	}
 
 	bool allocate = is_inside_tree() && visible && (window_id != DisplayServer::INVALID_WINDOW_ID || embedder != nullptr);
-	_set_size(final_size, final_size_override, allocate);
+	bool ci_updated = _set_size(final_size, final_size_override, allocate);
 
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		RenderingServer::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), attach_to_screen_rect, window_id);
@@ -1190,9 +1227,14 @@ void Window::_update_viewport_size() {
 		if (!use_font_oversampling) {
 			font_oversampling = 1.0;
 		}
-		if (TS->font_get_global_oversampling() != font_oversampling) {
+		if (!Math::is_equal_approx(TS->font_get_global_oversampling(), font_oversampling)) {
 			TS->font_set_global_oversampling(font_oversampling);
+			ci_updated = false;
 		}
+	}
+
+	if (!ci_updated) {
+		update_canvas_items();
 	}
 
 	notification(NOTIFICATION_WM_SIZE_CHANGED);
@@ -1265,6 +1307,12 @@ void Window::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
+			if (is_in_edited_scene_root()) {
+				if (!ProjectSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &Window::_settings_changed))) {
+					ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Window::_settings_changed));
+				}
+			}
+
 			bool embedded = false;
 			{
 				embedder = get_embedder();
@@ -1280,7 +1328,12 @@ void Window::_notification(int p_what) {
 				// Create as embedded.
 				if (embedder) {
 					if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
-						position = (embedder->get_visible_rect().size - size) / 2;
+						if (is_in_edited_scene_root()) {
+							Size2 screen_size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+							position = (screen_size - size) / 2;
+						} else {
+							position = (embedder->get_visible_rect().size - size) / 2;
+						}
 					}
 					embedder->_sub_window_register(this);
 					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
@@ -1377,6 +1430,10 @@ void Window::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			if (ProjectSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &Window::_settings_changed))) {
+				ProjectSettings::get_singleton()->disconnect("settings_changed", callable_mp(this, &Window::_settings_changed));
+			}
+
 			set_theme_context(nullptr, false);
 
 			if (transient) {

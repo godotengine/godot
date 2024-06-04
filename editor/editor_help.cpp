@@ -37,7 +37,7 @@
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
-#include "core/version.h"
+#include "core/version_generated.gen.h"
 #include "editor/doc_data_compressed.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
@@ -345,7 +345,7 @@ void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
 		Ref<StyleBox> class_desc_stylebox = theme_cache.background_style->duplicate();
 		class_desc_stylebox->set_content_margin(SIDE_LEFT, display_margin);
 		class_desc_stylebox->set_content_margin(SIDE_RIGHT, display_margin);
-		class_desc->add_theme_style_override("normal", class_desc_stylebox);
+		class_desc->add_theme_style_override(CoreStringName(normal), class_desc_stylebox);
 		class_desc->add_theme_style_override("focused", class_desc_stylebox);
 	}
 }
@@ -2340,6 +2340,9 @@ void EditorHelp::_help_callback(const String &p_topic) {
 
 	if (class_desc->is_ready()) {
 		// call_deferred() is not enough.
+		if (class_desc->is_connected(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph))) {
+			class_desc->disconnect(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph));
+		}
 		class_desc->connect(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).bind(line), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 	} else {
 		scroll_to = line;
@@ -2890,7 +2893,7 @@ void EditorHelp::_load_doc_thread(void *p_udata) {
 		callable_mp_static(&EditorHelp::_gen_extensions_docs).call_deferred();
 	} else {
 		// We have to go back to the main thread to start from scratch, bypassing any possibly existing cache.
-		callable_mp_static(&EditorHelp::generate_doc).bind(false).call_deferred();
+		callable_mp_static(&EditorHelp::generate_doc).call_deferred(false);
 	}
 
 	OS::get_singleton()->benchmark_end_measure("EditorHelp", vformat("Generate Documentation (Run %d)", doc_generation_count));
@@ -3380,6 +3383,7 @@ EditorHelpBit::HelpData EditorHelpBit::_get_theme_item_help_data(const StringNam
 			if (theme_item.name == p_theme_item_name) {
 				result = current;
 				found = true;
+
 				if (!is_native) {
 					break;
 				}
@@ -3719,7 +3723,7 @@ void EditorHelpBit::set_content_height_limits(float p_min, float p_max) {
 
 void EditorHelpBit::update_content_height() {
 	float content_height = content->get_content_height();
-	const Ref<StyleBox> style = content->get_theme_stylebox("normal");
+	const Ref<StyleBox> style = content->get_theme_stylebox(CoreStringName(normal));
 	if (style.is_valid()) {
 		content_height += style->get_content_margin(SIDE_TOP) + style->get_content_margin(SIDE_BOTTOM);
 	}

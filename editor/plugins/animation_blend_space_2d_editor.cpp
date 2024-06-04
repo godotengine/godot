@@ -795,9 +795,9 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			tool_blend->set_icon(get_editor_theme_icon(SNAME("EditPivot")));
 			tool_select->set_icon(get_editor_theme_icon(SNAME("ToolSelect")));
 			tool_create->set_icon(get_editor_theme_icon(SNAME("EditKey")));
@@ -1078,7 +1078,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->connect("id_pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_add_menu_type));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_add_menu_type));
 
 	animations_menu = memnew(PopupMenu);
 	animations_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);

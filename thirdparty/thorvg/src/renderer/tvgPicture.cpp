@@ -29,7 +29,9 @@
 RenderUpdateFlag Picture::Impl::load()
 {
     if (loader) {
-        if (!paint) {
+        if (paint) {
+            loader->sync();
+        } else {
             paint = loader->paint();
             if (paint) {
                 if (w != loader->w || h != loader->h) {
@@ -42,8 +44,7 @@ RenderUpdateFlag Picture::Impl::load()
                 }
                 return RenderUpdateFlag::None;
             }
-        } else loader->sync();
-
+        }
         if (!surface) {
             if ((surface = loader->bitmap())) {
                 return RenderUpdateFlag::Image;

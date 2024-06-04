@@ -541,6 +541,44 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			}
 
 			strnew += lines[i].replace("$interface_orientations", orientations);
+		} else if (lines[i].contains("$ipad_interface_orientations")) {
+			String orientations;
+			const DisplayServer::ScreenOrientation screen_orientation =
+					DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation")));
+
+			switch (screen_orientation) {
+				case DisplayServer::SCREEN_LANDSCAPE:
+					orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
+					break;
+				case DisplayServer::SCREEN_PORTRAIT:
+					orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
+					break;
+				case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+					orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
+					break;
+				case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+					orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
+					break;
+				case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+					// Allow both landscape orientations depending on sensor direction.
+					orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
+					orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
+					break;
+				case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+					// Allow both portrait orientations depending on sensor direction.
+					orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
+					orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
+					break;
+				case DisplayServer::SCREEN_SENSOR:
+					// Allow all screen orientations depending on sensor direction.
+					orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
+					orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
+					orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
+					orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
+					break;
+			}
+
+			strnew += lines[i].replace("$ipad_interface_orientations", orientations);
 		} else if (lines[i].contains("$camera_usage_description")) {
 			String description = p_preset->get("privacy/camera_usage_description");
 			strnew += lines[i].replace("$camera_usage_description", description) + "\n";
@@ -1319,12 +1357,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(const String &p_out_dir, co
 
 		String type;
 		if (asset.exported_path.ends_with(".framework")) {
-			int total_libs = 0;
-			int static_libs = 0;
-			int dylibs = 0;
-			int frameworks = 0;
-			_check_xcframework_content(p_out_dir.path_join(asset.exported_path), total_libs, static_libs, dylibs, frameworks);
-			if (asset.should_embed && (static_libs != total_libs)) {
+			if (asset.should_embed) {
 				additional_asset_info_format += "$framework_id = {isa = PBXBuildFile; fileRef = $ref_id; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };\n";
 				framework_id = (++current_id).str();
 				pbx_embeded_frameworks += framework_id + ",\n";
@@ -1332,7 +1365,12 @@ void EditorExportPlatformIOS::_add_assets_to_project(const String &p_out_dir, co
 
 			type = "wrapper.framework";
 		} else if (asset.exported_path.ends_with(".xcframework")) {
-			if (asset.should_embed) {
+			int total_libs = 0;
+			int static_libs = 0;
+			int dylibs = 0;
+			int frameworks = 0;
+			_check_xcframework_content(p_out_dir.path_join(asset.exported_path), total_libs, static_libs, dylibs, frameworks);
+			if (asset.should_embed && static_libs != total_libs) {
 				additional_asset_info_format += "$framework_id = {isa = PBXBuildFile; fileRef = $ref_id; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };\n";
 				framework_id = (++current_id).str();
 				pbx_embeded_frameworks += framework_id + ",\n";

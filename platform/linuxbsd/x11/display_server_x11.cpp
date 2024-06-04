@@ -502,7 +502,34 @@ Point2i DisplayServerX11::mouse_get_position() const {
 }
 
 BitField<MouseButtonMask> DisplayServerX11::mouse_get_button_state() const {
-	return last_button_state;
+	int number_of_screens = XScreenCount(x11_display);
+	for (int i = 0; i < number_of_screens; i++) {
+		Window root, child;
+		int root_x, root_y, win_x, win_y;
+		unsigned int mask;
+		if (XQueryPointer(x11_display, XRootWindow(x11_display, i), &root, &child, &root_x, &root_y, &win_x, &win_y, &mask)) {
+			BitField<MouseButtonMask> last_button_state = 0;
+
+			if (mask & Button1Mask) {
+				last_button_state.set_flag(MouseButtonMask::LEFT);
+			}
+			if (mask & Button2Mask) {
+				last_button_state.set_flag(MouseButtonMask::MIDDLE);
+			}
+			if (mask & Button3Mask) {
+				last_button_state.set_flag(MouseButtonMask::RIGHT);
+			}
+			if (mask & Button4Mask) {
+				last_button_state.set_flag(MouseButtonMask::MB_XBUTTON1);
+			}
+			if (mask & Button5Mask) {
+				last_button_state.set_flag(MouseButtonMask::MB_XBUTTON2);
+			}
+
+			return last_button_state;
+		}
+	}
+	return 0;
 }
 
 void DisplayServerX11::clipboard_set(const String &p_text) {
@@ -2269,7 +2296,7 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 			break;
 		}
 
-		usleep(10000);
+		OS::get_singleton()->delay_usec(10'000);
 	}
 
 	// Keep rendering context window size in sync
@@ -2544,7 +2571,7 @@ void DisplayServerX11::_set_wm_maximized(WindowID p_window, bool p_enabled) {
 		// Give up after 0.5s, it's not going to happen on this WM.
 		// https://github.com/godotengine/godot/issues/19978
 		for (int attempt = 0; window_get_mode(p_window) != WINDOW_MODE_MAXIMIZED && attempt < 50; attempt++) {
-			usleep(10000);
+			OS::get_singleton()->delay_usec(10'000);
 		}
 	}
 	wd.maximized = p_enabled;
@@ -3349,18 +3376,6 @@ void DisplayServerX11::_get_key_modifier_state(unsigned int p_x11_state, Ref<Inp
 	state->set_ctrl_pressed((p_x11_state & ControlMask));
 	state->set_alt_pressed((p_x11_state & Mod1Mask /*|| p_x11_state&Mod5Mask*/)); //altgr should not count as alt
 	state->set_meta_pressed((p_x11_state & Mod4Mask));
-}
-
-BitField<MouseButtonMask> DisplayServerX11::_get_mouse_button_state(MouseButton p_x11_button, int p_x11_type) {
-	MouseButtonMask mask = mouse_button_to_mask(p_x11_button);
-
-	if (p_x11_type == ButtonPress) {
-		last_button_state.set_flag(mask);
-	} else {
-		last_button_state.clear_flag(mask);
-	}
-
-	return last_button_state;
 }
 
 void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo) {
@@ -4206,7 +4221,10 @@ void DisplayServerX11::popup_close(WindowID p_window) {
 		WindowID win_id = E->get();
 		popup_list.erase(E);
 
-		_send_window_event(windows[win_id], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
+		if (win_id != p_window) {
+			// Only request close on related windows, not this window.  We are already processing it.
+			_send_window_event(windows[win_id], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
+		}
 		E = F;
 	}
 }
@@ -4747,11 +4765,19 @@ void DisplayServerX11::process_events() {
 				} else if (mb->get_button_index() == MouseButton::MIDDLE) {
 					mb->set_button_index(MouseButton::RIGHT);
 				}
-				mb->set_button_mask(_get_mouse_button_state(mb->get_button_index(), event.xbutton.type));
 				mb->set_position(Vector2(event.xbutton.x, event.xbutton.y));
 				mb->set_global_position(mb->get_position());
 
 				mb->set_pressed((event.type == ButtonPress));
+
+				if (mb->is_pressed() && mb->get_button_index() >= MouseButton::WHEEL_UP && mb->get_button_index() <= MouseButton::WHEEL_RIGHT) {
+					MouseButtonMask mask = mouse_button_to_mask(mb->get_button_index());
+					BitField<MouseButtonMask> scroll_mask = mouse_get_button_state();
+					scroll_mask.set_flag(mask);
+					mb->set_button_mask(scroll_mask);
+				} else {
+					mb->set_button_mask(mouse_get_button_state());
+				}
 
 				const WindowData &wd = windows[window_id];
 
@@ -5008,7 +5034,14 @@ void DisplayServerX11::process_events() {
 					}
 
 					if (windows[window_id].drop_files_callback.is_valid()) {
-						windows[window_id].drop_files_callback.call(files);
+						Variant v_files = files;
+						const Variant *v_args[1] = { &v_files };
+						Variant ret;
+						Callable::CallError ce;
+						windows[window_id].drop_files_callback.callp((const Variant **)&v_args, 1, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute drop files callback: %s.", Variant::get_callable_error_text(windows[window_id].drop_files_callback, v_args, 1, ce)));
+						}
 					}
 
 					//Reply that all is well.
@@ -5192,6 +5225,23 @@ void DisplayServerX11::set_context(Context p_context) {
 	}
 }
 
+bool DisplayServerX11::is_window_transparency_available() const {
+	CharString net_wm_cm_name = vformat("_NET_WM_CM_S%d", XDefaultScreen(x11_display)).ascii();
+	Atom net_wm_cm = XInternAtom(x11_display, net_wm_cm_name.get_data(), False);
+	if (net_wm_cm == None) {
+		return false;
+	}
+	if (XGetSelectionOwner(x11_display, net_wm_cm) == None) {
+		return false;
+	}
+#if defined(RD_ENABLED)
+	if (rendering_device && !rendering_device->is_composite_alpha_supported()) {
+		return false;
+	}
+#endif
+	return OS::get_singleton()->is_layered_allowed();
+}
+
 void DisplayServerX11::set_native_icon(const String &p_filename) {
 	WARN_PRINT("Native icon not supported by this display server.");
 }
@@ -5333,8 +5383,8 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error));
+DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			String executable_name = OS::get_singleton()->get_executable_path().get_file();
@@ -5765,10 +5815,11 @@ static ::XIMStyle _get_best_xim_style(const ::XIMStyle &p_style_a, const ::XIMSt
 	return p_style_a;
 }
 
-DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	KeyMappingX11::initialize();
 
 	native_menu = memnew(NativeMenu);
+	context = p_context;
 
 #ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED

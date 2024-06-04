@@ -1,3 +1,6 @@
+default_language_version:
+  python: python3
+
 exclude: |
   (?x)^(
     .*thirdparty/.*|
@@ -9,7 +12,7 @@ repos:
     rev: v17.0.6
     hooks:
       - id: clang-format
-        files: \.(c|h|cpp|hpp|cc|cxx|m|mm|inc|java|glsl)$
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java|glsl)$
         types_or: [text]
         exclude: |
           (?x)^(
@@ -74,51 +77,39 @@ repos:
   #       files: ^(doc/classes|.*/doc_classes)/.*\.xml$
   #       args: [--schema, doc/class.xsd]
 
-  - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v8.46.0
-    hooks:
-      - id: eslint
-        name: eslint-engine
-        files: ^(platform/web/js/engine/|js/jsdoc2rst/).*\.js$
-        args: [--fix, --no-eslintrc, --config, platform/web/.eslintrc.engine.js]
-        additional_dependencies: &eslint-deps
-          - eslint@8.46.0
-          - eslint-config-airbnb-base@15.0.0
-          - eslint-plugin-import@2.28.0
-          - eslint-plugin-html@7.1.0
-          - '@html-eslint/eslint-plugin@0.19.1'
-          - '@html-eslint/parser@0.19.1'
-      - id: eslint
-        name: eslint-libs
-        files: ^(platform/web/js/libs/|modules/).*\.js$
-        args: [--fix, --no-eslintrc, --config, platform/web/.eslintrc.libs.js]
-        additional_dependencies: *eslint-deps
-      - id: eslint
-        name: eslint-sw
-        files: ^misc/dist/html/service-worker\.js$
-        args: [--fix, --no-eslintrc, --config, platform/web/.eslintrc.sw.js]
-        additional_dependencies: *eslint-deps
-      - id: eslint
-        name: eslint-html
-        files: ^misc/dist/html/.*\.html$
-        types: [html]
-        args: [--fix, --no-eslintrc, --config, platform/web/.eslintrc.html.js]
-        additional_dependencies: *eslint-deps
-
   - repo: local
     hooks:
       - id: make-rst
         name: make-rst
         language: python
-        entry: python3 doc/tools/make_rst.py doc/classes modules platform --dry-run --color
+        entry: python doc/tools/make_rst.py
+        args: [doc/classes, modules, platform, --dry-run, --color]
         pass_filenames: false
         files: ^(doc/classes|.*/doc_classes)/.*\.xml$
 
       - id: doc-status
         name: doc-status
         language: python
-        entry: python3 doc/tools/doc_status.py
+        entry: python doc/tools/doc_status.py
+        args: [doc/classes, modules/*/doc_classes, platform/*/doc_classes]
+        pass_filenames: false
         files: ^(doc/classes|.*/doc_classes)/.*\.xml$
+
+      - id: eslint
+        name: eslint
+        language: node
+        entry: eslint
+        files: ^(platform/web/js/|modules/|misc/dist/html/).*\.(js|html)$
+        args: [--fix, --no-warn-ignored, --no-config-lookup, --config, platform/web/eslint.config.cjs]
+        additional_dependencies:
+          - '@eslint/js@^9.3.0'
+          - '@html-eslint/eslint-plugin@^0.24.1'
+          - '@html-eslint/parser@^0.24.1'
+          - '@stylistic/eslint-plugin@^2.1.0'
+          - 'eslint@^9.3.0'
+          - 'eslint-plugin-html@^8.1.1'
+          - 'globals@^15.3.0'
+          - 'espree@^10.0.1'
 
       - id: jsdoc
         name: jsdoc
@@ -141,8 +132,8 @@ repos:
       - id: copyright-headers
         name: copyright-headers
         language: python
-        entry: python3 misc/scripts/copyright_headers.py
-        files: \.(c|h|cpp|hpp|cc|cxx|m|mm|inc|java)$
+        entry: python misc/scripts/copyright_headers.py
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java)$
         exclude: |
           (?x)^(
             core/math/bvh_.*\.inc$|
@@ -156,19 +147,14 @@ repos:
       - id: header-guards
         name: header-guards
         language: python
-        entry: python3 misc/scripts/header_guards.py
-        files: \.(h|hpp)$
-        exclude: |
-          (?x)^(
-            .*/thread\.h$|
-            .*/platform_config\.h$|
-            .*/platform_gl\.$h
-          )
+        entry: python misc/scripts/header_guards.py
+        files: \.(h|hpp|hh|hxx)$
+        exclude: ^.*/(thread|platform_config|platform_gl)\.h$
 
       - id: file-format
         name: file-format
         language: python
-        entry: python3 misc/scripts/file_format.py
+        entry: python misc/scripts/file_format.py
         types_or: [text]
         exclude: |
           (?x)^(
@@ -185,7 +171,7 @@ repos:
       - id: dotnet-format
         name: dotnet-format
         language: python
-        entry: python3 misc/scripts/dotnet_format.py
+        entry: python misc/scripts/dotnet_format.py
         types_or: [c#]
 
 # End of upstream Godot pre-commit hooks.

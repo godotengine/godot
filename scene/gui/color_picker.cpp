@@ -1560,7 +1560,7 @@ void ColorPicker::_pick_button_pressed_legacy() {
 
 		picker_preview_style_box = (Ref<StyleBoxFlat>)memnew(StyleBoxFlat);
 		picker_preview_style_box->set_bg_color(Color(1.0, 1.0, 1.0));
-		picker_preview->add_theme_style_override("panel", picker_preview_style_box);
+		picker_preview->add_theme_style_override(SceneStringName(panel), picker_preview_style_box);
 	}
 
 	Rect2i screen_rect;
@@ -1863,7 +1863,7 @@ ColorPicker::ColorPicker() {
 	shape_popup->add_radio_check_item("VHS Circle", SHAPE_VHS_CIRCLE);
 	shape_popup->add_radio_check_item("OKHSL Circle", SHAPE_OKHSL_CIRCLE);
 	shape_popup->set_item_checked(current_shape, true);
-	shape_popup->connect("id_pressed", callable_mp(this, &ColorPicker::set_picker_shape));
+	shape_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ColorPicker::set_picker_shape));
 
 	add_mode(new ColorModeRGB(this));
 	add_mode(new ColorModeHSV(this));
@@ -1904,7 +1904,7 @@ ColorPicker::ColorPicker() {
 	mode_popup->add_check_item("Colorized Sliders", MODE_MAX);
 	mode_popup->set_item_checked(current_mode, true);
 	mode_popup->set_item_checked(MODE_MAX + 1, true);
-	mode_popup->connect("id_pressed", callable_mp(this, &ColorPicker::_set_mode_popup_value));
+	mode_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ColorPicker::_set_mode_popup_value));
 	VBoxContainer *vbl = memnew(VBoxContainer);
 	real_vbox->add_child(vbl);
 

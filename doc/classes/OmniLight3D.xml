@@ -15,8 +15,8 @@
 	<members>
 		<member name="omni_attenuation" type="float" setter="set_param" getter="get_param" default="1.0">
 			Controls the distance attenuation function for omnilights.
-			A value of [code]0.0[/code] smoothly attenuates light at the edge of the range. A value of [code]1.0[/code] approaches a physical lighting model. A value of [code]0.5[/code] approximates linear attenuation.
-			[b]Note:[/b] Setting it to [code]1.0[/code] may result in distant objects receiving minimal light, even within range. For example, with a range of [code]4096[/code], an object at [code]100[/code] units receives less than [code]0.1[/code] energy.
+			A value of [code]0.0[/code] will maintain a constant brightness through most of the range, but smoothly attenuate the light at the edge of the range. Use a value of [code]2.0[/code] for physically accurate lights as it results in the proper inverse square attenutation.
+			[b]Note:[/b] Setting attenuation to [code]2.0[/code] or higher may result in distant objects receiving minimal light, even within range. For example, with a range of [code]4096[/code], an object at [code]100[/code] units is attenuated by a factor of [code]0.0001[/code]. With a default brightness of [code]1[/code], the light would not be visible at that distance.
 			[b]Note:[/b] Using negative or values higher than [code]10.0[/code] may lead to unexpected results.
 		</member>
 		<member name="omni_range" type="float" setter="set_param" getter="get_param" default="5.0">

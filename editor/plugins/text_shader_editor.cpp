@@ -30,12 +30,12 @@
 
 #include "text_shader_editor.h"
 
+#include "core/config/project_settings.h"
 #include "core/version_generated.gen.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/filesystem_dock.h"
-#include "editor/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/split_container.h"
@@ -735,6 +735,13 @@ void TextShaderEditor::_menu_option(int p_option) {
 	}
 }
 
+void TextShaderEditor::_prepare_edit_menu() {
+	const CodeEdit *tx = code_editor->get_text_editor();
+	PopupMenu *popup = edit_menu->get_popup();
+	popup->set_item_disabled(popup->get_item_index(EDIT_UNDO), !tx->has_undo());
+	popup->set_item_disabled(popup->get_item_index(EDIT_REDO), !tx->has_redo());
+}
+
 void TextShaderEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
@@ -763,6 +770,7 @@ void TextShaderEditor::_apply_editor_settings() {
 	code_editor->update_editor_settings();
 
 	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
+	trim_final_newlines_on_save = EDITOR_GET("text_editor/behavior/files/trim_final_newlines_on_save");
 }
 
 void TextShaderEditor::_show_warnings_panel(bool p_show) {
@@ -927,6 +935,10 @@ void TextShaderEditor::save_external_data(const String &p_str) {
 		trim_trailing_whitespace();
 	}
 
+	if (trim_final_newlines_on_save) {
+		trim_final_newlines();
+	}
+
 	apply_shaders();
 
 	Ref<Shader> edited_shader = code_editor->get_edited_shader();
@@ -951,6 +963,10 @@ void TextShaderEditor::save_external_data(const String &p_str) {
 
 void TextShaderEditor::trim_trailing_whitespace() {
 	code_editor->trim_trailing_whitespace();
+}
+
+void TextShaderEditor::trim_final_newlines() {
+	code_editor->trim_final_newlines();
 }
 
 void TextShaderEditor::validate_script() {
@@ -1088,6 +1104,9 @@ void TextShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) 
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
 
+	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_UNDO), !code_editor->get_text_editor()->has_undo());
+	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_REDO), !code_editor->get_text_editor()->has_redo());
+
 	context_menu->set_position(get_screen_position() + p_position);
 	context_menu->reset_size();
 	context_menu->popup();
@@ -1119,7 +1138,7 @@ TextShaderEditor::TextShaderEditor() {
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
-	context_menu->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
+	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	VBoxContainer *main_container = memnew(VBoxContainer);
 	HBoxContainer *hbc = memnew(HBoxContainer);
@@ -1128,6 +1147,7 @@ TextShaderEditor::TextShaderEditor() {
 	edit_menu->set_shortcut_context(this);
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->set_switch_on_hover(true);
+	edit_menu->connect("about_to_popup", callable_mp(this, &TextShaderEditor::_prepare_edit_menu));
 
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_redo"), EDIT_REDO);
@@ -1149,7 +1169,7 @@ TextShaderEditor::TextShaderEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_word_wrap"), EDIT_TOGGLE_WORD_WRAP);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
-	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
+	edit_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	search_menu = memnew(MenuButton);
 	search_menu->set_shortcut_context(this);
@@ -1160,13 +1180,13 @@ TextShaderEditor::TextShaderEditor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
-	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
+	search_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	MenuButton *goto_menu = memnew(MenuButton);
 	goto_menu->set_shortcut_context(this);
 	goto_menu->set_text(TTR("Go To"));
 	goto_menu->set_switch_on_hover(true);
-	goto_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
+	goto_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
 	goto_menu->get_popup()->add_separator();
@@ -1181,7 +1201,7 @@ TextShaderEditor::TextShaderEditor() {
 	help_menu->set_text(TTR("Help"));
 	help_menu->set_switch_on_hover(true);
 	help_menu->get_popup()->add_item(TTR("Online Docs"), HELP_DOCS);
-	help_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
+	help_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	add_child(main_container);
 	main_container->add_child(hbc);
@@ -1189,7 +1209,7 @@ TextShaderEditor::TextShaderEditor() {
 	hbc->add_child(edit_menu);
 	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
-	hbc->add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
+	hbc->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	main_container->add_child(editor_box);

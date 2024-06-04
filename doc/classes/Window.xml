@@ -118,12 +118,14 @@
 			<return type="Vector2i" />
 			<description>
 				Returns the window's position including its border.
+				[b]Note:[/b] If [member visible] is [code]false[/code], this method returns the same value as [member position].
 			</description>
 		</method>
 		<method name="get_size_with_decorations" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
 				Returns the window's size including its border.
+				[b]Note:[/b] If [member visible] is [code]false[/code], this method returns the same value as [member size].
 			</description>
 		</method>
 		<method name="get_theme_color" qualifiers="const">

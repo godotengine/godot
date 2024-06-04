@@ -735,7 +735,7 @@ void Skeleton3DEditor::create_editors() {
 	p->add_item(TTR("Create Physical Skeleton"), SKELETON_OPTION_CREATE_PHYSICAL_SKELETON);
 	p->add_item(TTR("Export Skeleton Profile"), SKELETON_OPTION_EXPORT_SKELETON_PROFILE);
 
-	p->connect("id_pressed", callable_mp(this, &Skeleton3DEditor::_on_click_skeleton_option));
+	p->connect(SceneStringName(id_pressed), callable_mp(this, &Skeleton3DEditor::_on_click_skeleton_option));
 	set_bone_options_enabled(false);
 
 	Vector<Variant> button_binds;

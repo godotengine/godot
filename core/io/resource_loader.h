@@ -226,7 +226,7 @@ public:
 	// Loaders can safely use this regardless which thread they are running on.
 	static void notify_load_error(const String &p_err) {
 		if (err_notify) {
-			callable_mp_static(err_notify).bind(p_err).call_deferred();
+			MessageQueue::get_main_singleton()->push_callable(callable_mp_static(err_notify).bind(p_err));
 		}
 	}
 	static void set_error_notify_func(ResourceLoadErrorNotify p_err_notify) {
@@ -239,7 +239,7 @@ public:
 			if (Thread::get_caller_id() == Thread::get_main_id()) {
 				dep_err_notify(p_path, p_dependency, p_type);
 			} else {
-				callable_mp_static(dep_err_notify).bind(p_path, p_dependency, p_type).call_deferred();
+				MessageQueue::get_main_singleton()->push_callable(callable_mp_static(dep_err_notify).bind(p_path, p_dependency, p_type));
 			}
 		}
 	}

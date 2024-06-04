@@ -281,20 +281,32 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 	bool check_signal = compatible_methods_only->is_pressed();
 	List<MethodInfo> ret;
 
+	List<Pair<Variant::Type, StringName>> effective_args;
+	int unbind = get_unbinds();
+	for (int i = 0; i < p_signal.arguments.size() - unbind; i++) {
+		PropertyInfo pi = p_signal.arguments.get(i);
+		effective_args.push_back(Pair(pi.type, pi.class_name));
+	}
+	if (unbind == 0) {
+		for (const Variant &variant : get_binds()) {
+			effective_args.push_back(Pair(variant.get_type(), StringName()));
+		}
+	}
+
 	for (const MethodInfo &mi : p_methods) {
 		if (!p_search_string.is_empty() && !mi.name.containsn(p_search_string)) {
 			continue;
 		}
 
 		if (check_signal) {
-			if (mi.arguments.size() != p_signal.arguments.size()) {
+			if (mi.arguments.size() != effective_args.size()) {
 				continue;
 			}
 
 			bool type_mismatch = false;
-			const List<PropertyInfo>::Element *E = p_signal.arguments.front();
+			const List<Pair<Variant::Type, StringName>>::Element *E = effective_args.front();
 			for (const List<PropertyInfo>::Element *F = mi.arguments.front(); F; F = F->next(), E = E->next()) {
-				Variant::Type stype = E->get().type;
+				Variant::Type stype = E->get().first;
 				Variant::Type mtype = F->get().type;
 
 				if (stype != Variant::NIL && mtype != Variant::NIL && stype != mtype) {
@@ -302,7 +314,7 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 					break;
 				}
 
-				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && !ClassDB::is_parent_class(E->get().class_name, F->get().class_name)) {
+				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && !ClassDB::is_parent_class(E->get().second, F->get().class_name)) {
 					type_mismatch = true;
 					break;
 				}
@@ -465,10 +477,10 @@ void ConnectDialog::_notification(int p_what) {
 				type_list->set_item_icon(i, get_editor_theme_icon(type_name));
 			}
 
-			Ref<StyleBox> style = get_theme_stylebox("normal", "LineEdit")->duplicate();
+			Ref<StyleBox> style = get_theme_stylebox(CoreStringName(normal), "LineEdit")->duplicate();
 			if (style.is_valid()) {
 				style->set_content_margin(SIDE_TOP, style->get_content_margin(SIDE_TOP) + 1.0);
-				from_signal->add_theme_style_override("normal", style);
+				from_signal->add_theme_style_override(CoreStringName(normal), style);
 			}
 			method_search->set_right_icon(get_editor_theme_icon("Search"));
 			open_method_tree->set_icon(get_editor_theme_icon("Edit"));
@@ -1596,13 +1608,13 @@ ConnectionsDock::ConnectionsDock() {
 	disconnect_all_dialog->set_text(TTR("Are you sure you want to remove all connections from this signal?"));
 
 	class_menu = memnew(PopupMenu);
-	class_menu->connect("id_pressed", callable_mp(this, &ConnectionsDock::_handle_class_menu_option));
+	class_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ConnectionsDock::_handle_class_menu_option));
 	class_menu->connect("about_to_popup", callable_mp(this, &ConnectionsDock::_class_menu_about_to_popup));
 	class_menu->add_item(TTR("Open Documentation"), CLASS_MENU_OPEN_DOCS);
 	add_child(class_menu);
 
 	signal_menu = memnew(PopupMenu);
-	signal_menu->connect("id_pressed", callable_mp(this, &ConnectionsDock::_handle_signal_menu_option));
+	signal_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ConnectionsDock::_handle_signal_menu_option));
 	signal_menu->connect("about_to_popup", callable_mp(this, &ConnectionsDock::_signal_menu_about_to_popup));
 	signal_menu->add_item(TTR("Connect..."), SIGNAL_MENU_CONNECT);
 	signal_menu->add_item(TTR("Disconnect All"), SIGNAL_MENU_DISCONNECT_ALL);
@@ -1612,7 +1624,7 @@ ConnectionsDock::ConnectionsDock() {
 	add_child(signal_menu);
 
 	slot_menu = memnew(PopupMenu);
-	slot_menu->connect("id_pressed", callable_mp(this, &ConnectionsDock::_handle_slot_menu_option));
+	slot_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ConnectionsDock::_handle_slot_menu_option));
 	slot_menu->connect("about_to_popup", callable_mp(this, &ConnectionsDock::_slot_menu_about_to_popup));
 	slot_menu->add_item(TTR("Edit..."), SLOT_MENU_EDIT);
 	slot_menu->add_item(TTR("Go to Method"), SLOT_MENU_GO_TO_METHOD);

@@ -235,6 +235,9 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 	Variant array = object->get_array().duplicate();
 	array.set(index, p_value);
 	emit_changed(get_edited_property(), array, p_name, p_changing);
+	if (p_changing) {
+		object->set_array(array);
+	}
 }
 
 void EditorPropertyArray::_change_type(Object *p_button, int p_slot_index) {
@@ -838,7 +841,7 @@ EditorPropertyArray::EditorPropertyArray() {
 
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
-	change_type->connect("id_pressed", callable_mp(this, &EditorPropertyArray::_change_type_menu));
+	change_type->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyArray::_change_type_menu));
 	changing_type_index = -1;
 
 	subtype = Variant::NIL;
@@ -960,6 +963,7 @@ void EditorPropertyDictionary::update_property() {
 			memdelete(container);
 			button_add_item = nullptr;
 			container = nullptr;
+			add_panel = nullptr;
 			slots.clear();
 		}
 		return;
@@ -1001,7 +1005,7 @@ void EditorPropertyDictionary::update_property() {
 
 			add_panel = memnew(PanelContainer);
 			property_vbox->add_child(add_panel);
-			add_panel->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("DictionaryAddItem")));
+			add_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DictionaryAddItem")));
 			VBoxContainer *add_vbox = memnew(VBoxContainer);
 			add_panel->add_child(add_vbox);
 
@@ -1097,7 +1101,7 @@ void EditorPropertyDictionary::_notification(int p_what) {
 
 			if (button_add_item) {
 				button_add_item->set_icon(get_editor_theme_icon(SNAME("Add")));
-				add_panel->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("DictionaryAddItem")));
+				add_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DictionaryAddItem")));
 			}
 		} break;
 	}
@@ -1153,7 +1157,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	paginator = nullptr;
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
-	change_type->connect("id_pressed", callable_mp(this, &EditorPropertyDictionary::_change_type_menu));
+	change_type->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyDictionary::_change_type_menu));
 	changing_type_index = -1;
 	has_borders = true;
 }

@@ -32,6 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
@@ -414,12 +415,12 @@ GPUParticles3DEditor::GPUParticles3DEditor() {
 	particles_editor_hb->hide();
 
 	options->set_text(TTR("GPUParticles3D"));
-	options->get_popup()->add_item(TTR("Restart"), MENU_OPTION_RESTART);
+	options->get_popup()->add_shortcut(ED_GET_SHORTCUT("particles/restart_emission"), MENU_OPTION_RESTART);
 	options->get_popup()->add_item(TTR("Generate AABB"), MENU_OPTION_GENERATE_AABB);
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 	options->get_popup()->add_item(TTR("Convert to CPUParticles3D"), MENU_OPTION_CONVERT_TO_CPU_PARTICLES);
 
-	options->get_popup()->connect("id_pressed", callable_mp(this, &GPUParticles3DEditor::_menu_option));
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GPUParticles3DEditor::_menu_option));
 
 	generate_aabb = memnew(ConfirmationDialog);
 	generate_aabb->set_title(TTR("Generate Visibility AABB"));

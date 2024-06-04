@@ -839,7 +839,7 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 
 	file_popup = memnew(PopupMenu);
 	add_child(file_popup);
-	file_popup->connect("id_pressed", callable_mp(this, &AnimationLibraryEditor::_file_popup_selected));
+	file_popup->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationLibraryEditor::_file_popup_selected));
 
 	add_child(vb);
 

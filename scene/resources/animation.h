@@ -43,6 +43,8 @@ class Animation : public Resource {
 public:
 	typedef uint32_t TypeHash;
 
+	static inline String PARAMETERS_BASE_PATH = "parameters/";
+
 	enum TrackType {
 		TYPE_VALUE, // Set a value in a property, can be interpolated.
 		TYPE_POSITION_3D, // Position 3D track, can be compressed.

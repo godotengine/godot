@@ -100,34 +100,13 @@ struct RenderRegion
 {
     int32_t x, y, w, h;
 
-    void intersect(const RenderRegion& rhs)
+    void intersect(const RenderRegion& rhs);
+    void add(const RenderRegion& rhs);
+
+    bool operator==(const RenderRegion& rhs)
     {
-        auto x1 = x + w;
-        auto y1 = y + h;
-        auto x2 = rhs.x + rhs.w;
-        auto y2 = rhs.y + rhs.h;
-
-        x = (x > rhs.x) ? x : rhs.x;
-        y = (y > rhs.y) ? y : rhs.y;
-        w = ((x1 < x2) ? x1 : x2) - x;
-        h = ((y1 < y2) ? y1 : y2) - y;
-
-        if (w < 0) w = 0;
-        if (h < 0) h = 0;
-    }
-
-    void add(const RenderRegion& rhs)
-    {
-        if (rhs.x < x) {
-            w += (x - rhs.x);
-            x = rhs.x;
-        }
-        if (rhs.y < y) {
-            h += (y - rhs.y);
-            y = rhs.y;
-        }
-        if (rhs.x + rhs.w > x + w) w = (rhs.x + rhs.w) - x;
-        if (rhs.y + rhs.h > y + h) h = (rhs.y + rhs.h) - y;
+        if (x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h) return true;
+        return false;
     }
 };
 
@@ -293,6 +272,7 @@ public:
     virtual bool viewport(const RenderRegion& vp) = 0;
     virtual bool blend(BlendMethod method) = 0;
     virtual ColorSpace colorSpace() = 0;
+    virtual const Surface* mainSurface() = 0;
 
     virtual bool clear() = 0;
     virtual bool sync() = 0;

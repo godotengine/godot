@@ -1124,6 +1124,31 @@ void CodeTextEditor::trim_trailing_whitespace() {
 	}
 }
 
+void CodeTextEditor::trim_final_newlines() {
+	int final_line = text_editor->get_line_count() - 1;
+	int check_line = final_line;
+
+	String line = text_editor->get_line(check_line);
+
+	while (line.is_empty() && check_line > -1) {
+		--check_line;
+
+		line = text_editor->get_line(check_line);
+	}
+
+	++check_line;
+
+	if (check_line < final_line) {
+		text_editor->begin_complex_operation();
+
+		text_editor->remove_text(check_line, 0, final_line, 0);
+
+		text_editor->merge_overlapping_carets();
+		text_editor->end_complex_operation();
+		text_editor->queue_redraw();
+	}
+}
+
 void CodeTextEditor::insert_final_newline() {
 	int final_line = text_editor->get_line_count() - 1;
 	String line = text_editor->get_line(final_line);
@@ -1769,7 +1794,7 @@ CodeTextEditor::CodeTextEditor() {
 		zoom_menu->set_item_metadata(i, z);
 	}
 
-	zoom_menu->connect("id_pressed", callable_mp(this, &CodeTextEditor::_zoom_popup_id_pressed));
+	zoom_menu->connect(SceneStringName(id_pressed), callable_mp(this, &CodeTextEditor::_zoom_popup_id_pressed));
 
 	status_bar->add_child(memnew(VSeparator));
 

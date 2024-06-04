@@ -154,7 +154,7 @@ void ScriptEditorDebugger::update_tabs() {
 }
 
 void ScriptEditorDebugger::clear_style() {
-	tabs->remove_theme_style_override("panel");
+	tabs->remove_theme_style_override(SceneStringName(panel));
 }
 
 void ScriptEditorDebugger::save_node(ObjectID p_id, const String &p_file) {
@@ -857,7 +857,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			tabs->add_theme_style_override("panel", get_theme_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
+			tabs->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 
 			skip_breakpoints->set_icon(get_editor_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff")));
 			copy->set_icon(get_editor_theme_icon(SNAME("ActionCopy")));
@@ -1009,7 +1009,6 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	set_process(true);
 	camera_override = CameraOverride::OVERRIDE_NONE;
 
-	tabs->set_current_tab(0);
 	_set_reason_text(TTR("Debug session started."), MESSAGE_SUCCESS);
 	_update_buttons_state();
 	emit_signal(SNAME("started"));
@@ -1938,7 +1937,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		tabs->add_child(dbg);
 
 		breakpoints_menu = memnew(PopupMenu);
-		breakpoints_menu->connect("id_pressed", callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
+		breakpoints_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
 		breakpoints_tree->add_child(breakpoints_menu);
 	}
 
@@ -1991,7 +1990,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		errors_tab->add_child(error_tree);
 
 		item_menu = memnew(PopupMenu);
-		item_menu->connect("id_pressed", callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
+		item_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
 		error_tree->add_child(item_menu);
 
 		tabs->add_child(errors_tab);

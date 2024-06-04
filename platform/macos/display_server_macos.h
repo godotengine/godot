@@ -164,7 +164,6 @@ private:
 
 	CGEventSourceRef event_source;
 	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
-	BitField<MouseButtonMask> last_button_state;
 
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
@@ -302,7 +301,6 @@ public:
 	bool update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, NSPoint &r_mpos, NSTimeInterval p_timestamp);
 	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
-	void mouse_set_button_state(BitField<MouseButtonMask> p_state);
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
@@ -439,12 +437,14 @@ public:
 	virtual Rect2 status_indicator_get_rect(IndicatorID p_id) const override;
 	virtual void delete_status_indicator(IndicatorID p_id) override;
 
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
+	virtual bool is_window_transparency_available() const override;
+
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 
 	static void register_macos_driver();
 
-	DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
+	DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
 	~DisplayServerMacOS();
 };
 

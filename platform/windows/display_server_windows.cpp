@@ -660,6 +660,24 @@ Point2i DisplayServerWindows::mouse_get_position() const {
 }
 
 BitField<MouseButtonMask> DisplayServerWindows::mouse_get_button_state() const {
+	BitField<MouseButtonMask> last_button_state = 0;
+
+	if (GetAsyncKeyState(VK_LBUTTON) & (1 << 15)) {
+		last_button_state.set_flag(MouseButtonMask::LEFT);
+	}
+	if (GetAsyncKeyState(VK_RBUTTON) & (1 << 15)) {
+		last_button_state.set_flag(MouseButtonMask::RIGHT);
+	}
+	if (GetAsyncKeyState(VK_MBUTTON) & (1 << 15)) {
+		last_button_state.set_flag(MouseButtonMask::MIDDLE);
+	}
+	if (GetAsyncKeyState(VK_XBUTTON1) & (1 << 15)) {
+		last_button_state.set_flag(MouseButtonMask::MB_XBUTTON1);
+	}
+	if (GetAsyncKeyState(VK_XBUTTON2) & (1 << 15)) {
+		last_button_state.set_flag(MouseButtonMask::MB_XBUTTON2);
+	}
+
 	return last_button_state;
 }
 
@@ -1832,24 +1850,6 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 
 	int w = p_size.width;
 	int h = p_size.height;
-
-	wd.width = w;
-	wd.height = h;
-
-#if defined(RD_ENABLED)
-	if (rendering_context) {
-		rendering_context->window_set_size(p_window, w, h);
-	}
-#endif
-#if defined(GLES3_ENABLED)
-	if (gl_manager_native) {
-		gl_manager_native->window_resize(p_window, w, h);
-	}
-	if (gl_manager_angle) {
-		gl_manager_angle->window_resize(p_window, w, h);
-	}
-#endif
-
 	RECT rect;
 	GetWindowRect(wd.hWnd, &rect);
 
@@ -3401,6 +3401,21 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 void DisplayServerWindows::set_context(Context p_context) {
 }
 
+bool DisplayServerWindows::is_window_transparency_available() const {
+	BOOL dwm_enabled = true;
+	if (DwmIsCompositionEnabled(&dwm_enabled) == S_OK) { // Note: Always enabled on Windows 8+, this check can be removed after Windows 7 support is dropped.
+		if (!dwm_enabled) {
+			return false;
+		}
+	}
+#if defined(RD_ENABLED)
+	if (rendering_device && !rendering_device->is_composite_alpha_supported()) {
+		return false;
+	}
+#endif
+	return OS::get_singleton()->is_layered_allowed();
+}
+
 #define MI_WP_SIGNATURE 0xFF515700
 #define SIGNATURE_MASK 0xFFFFFF00
 // Keeping the name suggested by Microsoft, but this macro really answers:
@@ -3596,6 +3611,30 @@ void DisplayServerWindows::popup_close(WindowID p_window) {
 		}
 		E = F;
 	}
+}
+
+BitField<DisplayServerWindows::WinKeyModifierMask> DisplayServerWindows::_get_mods() const {
+	BitField<WinKeyModifierMask> mask;
+	static unsigned char keyboard_state[256];
+	if (GetKeyboardState((PBYTE)&keyboard_state)) {
+		if ((keyboard_state[VK_LSHIFT] & 0x80) || (keyboard_state[VK_RSHIFT] & 0x80)) {
+			mask.set_flag(WinKeyModifierMask::SHIFT);
+		}
+		if ((keyboard_state[VK_LCONTROL] & 0x80) || (keyboard_state[VK_RCONTROL] & 0x80)) {
+			mask.set_flag(WinKeyModifierMask::CTRL);
+		}
+		if ((keyboard_state[VK_LMENU] & 0x80) || (keyboard_state[VK_RMENU] & 0x80)) {
+			mask.set_flag(WinKeyModifierMask::ALT);
+		}
+		if ((keyboard_state[VK_RMENU] & 0x80)) {
+			mask.set_flag(WinKeyModifierMask::ALT_GR);
+		}
+		if ((keyboard_state[VK_LWIN] & 0x80) || (keyboard_state[VK_RWIN] & 0x80)) {
+			mask.set_flag(WinKeyModifierMask::META);
+		}
+	}
+
+	return mask;
 }
 
 LRESULT DisplayServerWindows::MouseProc(int code, WPARAM wParam, LPARAM lParam) {
@@ -3827,7 +3866,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 			}
 			if (system_theme_changed.is_valid()) {
-				system_theme_changed.call();
+				Variant ret;
+				Callable::CallError ce;
+				system_theme_changed.callp(nullptr, 0, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT(vformat("Failed to execute system theme changed callback: %s.", Variant::get_callable_error_text(system_theme_changed, nullptr, 0, ce)));
+				}
 			}
 		} break;
 		case WM_THEMECHANGED: {
@@ -3848,7 +3892,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					if (((lParam >> 16) <= 0) && !engine->is_project_manager_hint() && !engine->is_editor_hint() && !GLOBAL_GET("application/run/enable_alt_space_menu")) {
 						return 0;
 					}
-					if (!alt_mem || !(GetAsyncKeyState(VK_SPACE) & (1 << 15))) {
+					if (!_get_mods().has_flag(WinKeyModifierMask::ALT) || !(GetAsyncKeyState(VK_SPACE) & (1 << 15))) {
 						return 0;
 					}
 					SendMessage(windows[window_id].hWnd, WM_SYSKEYUP, VK_SPACE, 0);
@@ -3882,10 +3926,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					} else if (indicators[iid].callback.is_valid()) {
 						Variant v_button = mb;
 						Variant v_pos = mouse_get_position();
-						Variant *v_args[2] = { &v_button, &v_pos };
+						const Variant *v_args[2] = { &v_button, &v_pos };
 						Variant ret;
 						Callable::CallError ce;
 						indicators[iid].callback.callp((const Variant **)&v_args, 2, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute status indicator callback: %s.", Variant::get_callable_error_text(indicators[iid].callback, v_args, 2, ce)));
+						}
 					}
 				}
 				return 0;
@@ -3931,20 +3978,22 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			RAWINPUT *raw = (RAWINPUT *)lpb;
 
+			const BitField<WinKeyModifierMask> &mods = _get_mods();
 			if (raw->header.dwType == RIM_TYPEKEYBOARD) {
 				if (raw->data.keyboard.VKey == VK_SHIFT) {
 					// If multiple Shifts are held down at the same time,
 					// Windows natively only sends a KEYUP for the last one to be released.
 					if (raw->data.keyboard.Flags & RI_KEY_BREAK) {
-						if (GetAsyncKeyState(VK_SHIFT) < 0) {
+						if (!mods.has_flag(WinKeyModifierMask::SHIFT)) {
 							// A Shift is released, but another Shift is still held
 							ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
 							KeyEvent ke;
 							ke.shift = false;
-							ke.alt = alt_mem;
-							ke.control = control_mem;
-							ke.meta = meta_mem;
+							ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
+							ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
+							ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
+							ke.meta = mods.has_flag(WinKeyModifierMask::META);
 							ke.uMsg = WM_KEYUP;
 							ke.window_id = window_id;
 
@@ -3961,13 +4010,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				mm.instantiate();
 
 				mm->set_window_id(window_id);
-				mm->set_ctrl_pressed(control_mem);
-				mm->set_shift_pressed(shift_mem);
-				mm->set_alt_pressed(alt_mem);
+				mm->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
+				mm->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
+				mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
+				mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
 
 				mm->set_pressure((raw->data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN) ? 1.0f : 0.0f);
 
-				mm->set_button_mask(last_button_state);
+				mm->set_button_mask(mouse_get_button_state());
 
 				Point2i c(windows[window_id].width / 2, windows[window_id].height / 2);
 
@@ -4058,18 +4108,20 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						break;
 					}
 
+					const BitField<WinKeyModifierMask> &mods = _get_mods();
 					Ref<InputEventMouseMotion> mm;
 					mm.instantiate();
 					mm->set_window_id(window_id);
-					mm->set_ctrl_pressed(GetKeyState(VK_CONTROL) < 0);
-					mm->set_shift_pressed(GetKeyState(VK_SHIFT) < 0);
-					mm->set_alt_pressed(alt_mem);
+					mm->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
+					mm->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
+					mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
+					mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
 
 					mm->set_pressure(windows[window_id].last_pressure);
 					mm->set_tilt(windows[window_id].last_tilt);
 					mm->set_pen_inverted(windows[window_id].last_pen_inverted);
 
-					mm->set_button_mask(last_button_state);
+					mm->set_button_mask(mouse_get_button_state());
 
 					mm->set_position(Vector2(coords.x, coords.y));
 					mm->set_global_position(Vector2(coords.x, coords.y));
@@ -4208,11 +4260,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 			mm->set_pen_inverted(pen_info.penFlags & (PEN_FLAG_INVERTED | PEN_FLAG_ERASER));
 
-			mm->set_ctrl_pressed(GetKeyState(VK_CONTROL) < 0);
-			mm->set_shift_pressed(GetKeyState(VK_SHIFT) < 0);
-			mm->set_alt_pressed(alt_mem);
+			const BitField<WinKeyModifierMask> &mods = _get_mods();
+			mm->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
+			mm->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
+			mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
+			mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
 
-			mm->set_button_mask(last_button_state);
+			mm->set_button_mask(mouse_get_button_state());
 
 			POINT coords; // Client coords.
 			coords.x = GET_X_LPARAM(lParam);
@@ -4313,12 +4367,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (receiving_window_id == INVALID_WINDOW_ID) {
 				receiving_window_id = window_id;
 			}
+
+			const BitField<WinKeyModifierMask> &mods = _get_mods();
 			Ref<InputEventMouseMotion> mm;
 			mm.instantiate();
 			mm->set_window_id(receiving_window_id);
-			mm->set_ctrl_pressed((wParam & MK_CONTROL) != 0);
-			mm->set_shift_pressed((wParam & MK_SHIFT) != 0);
-			mm->set_alt_pressed(alt_mem);
+			mm->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
+			mm->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
+			mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
+			mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
 
 			if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
 				// Note: WinTab sends both WT_PACKET and WM_xBUTTONDOWN/UP/MOUSEMOVE events, use mouse 1/0 pressure only when last_pressure was not updated recently.
@@ -4339,7 +4396,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_tilt(windows[window_id].last_tilt);
 			mm->set_pen_inverted(windows[window_id].last_pen_inverted);
 
-			mm->set_button_mask(last_button_state);
+			mm->set_button_mask(mouse_get_button_state());
 
 			mm->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 			mm->set_global_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
@@ -4507,16 +4564,20 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 			}
 
-			mb->set_ctrl_pressed((wParam & MK_CONTROL) != 0);
-			mb->set_shift_pressed((wParam & MK_SHIFT) != 0);
-			mb->set_alt_pressed(alt_mem);
-			// mb->is_alt_pressed()=(wParam&MK_MENU)!=0;
-			if (mb->is_pressed()) {
-				last_button_state.set_flag(mouse_button_to_mask(mb->get_button_index()));
+			const BitField<WinKeyModifierMask> &mods = _get_mods();
+			mb->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
+			mb->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
+			mb->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
+			mb->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
+
+			if (mb->is_pressed() && mb->get_button_index() >= MouseButton::WHEEL_UP && mb->get_button_index() <= MouseButton::WHEEL_RIGHT) {
+				MouseButtonMask mask = mouse_button_to_mask(mb->get_button_index());
+				BitField<MouseButtonMask> scroll_mask = mouse_get_button_state();
+				scroll_mask.set_flag(mask);
+				mb->set_button_mask(scroll_mask);
 			} else {
-				last_button_state.clear_flag(mouse_button_to_mask(mb->get_button_index()));
+				mb->set_button_mask(mouse_get_button_state());
 			}
-			mb->set_button_mask(last_button_state);
 
 			mb->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
@@ -4530,7 +4591,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						SetCapture(hWnd);
 					}
 				} else {
-					if (--pressrc <= 0 || last_button_state.is_empty()) {
+					if (--pressrc <= 0 || mouse_get_button_state().is_empty()) {
 						if (mouse_mode != MOUSE_MODE_CAPTURED) {
 							ReleaseCapture();
 						}
@@ -4555,8 +4616,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				// Send release for mouse wheel.
 				Ref<InputEventMouseButton> mbd = mb->duplicate();
 				mbd->set_window_id(window_id);
-				last_button_state.clear_flag(mouse_button_to_mask(mbd->get_button_index()));
-				mbd->set_button_mask(last_button_state);
+				mbd->set_button_mask(mouse_get_button_state());
 				mbd->set_pressed(false);
 				Input::get_singleton()->parse_input_event(mbd);
 			}
@@ -4626,6 +4686,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					rendering_context->window_set_size(window_id, window.width, window.height);
 				}
 #endif
+#if defined(GLES3_ENABLED)
+				if (gl_manager_native) {
+					gl_manager_native->window_resize(window_id, window.width, window.height);
+				}
+				if (gl_manager_angle) {
+					gl_manager_angle->window_resize(window_id, window.width, window.height);
+				}
+#endif
 			}
 
 			if (!window.minimized && (!(window_pos_params->flags & SWP_NOMOVE) || window_pos_params->flags & SWP_FRAMECHANGED)) {
@@ -4678,19 +4746,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_KEYUP:
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN: {
-			if (wParam == VK_SHIFT) {
-				shift_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
-			}
-			if (wParam == VK_CONTROL) {
-				control_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
-			}
-			if (wParam == VK_MENU) {
-				alt_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
-				if (lParam & (1 << 24)) {
-					gr_mem = alt_mem;
-				}
-			}
-
 			if (windows[window_id].ime_suppress_next_keyup && (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP)) {
 				windows[window_id].ime_suppress_next_keyup = false;
 				break;
@@ -4701,7 +4756,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED) {
 				// When SetCapture is used, ALT+F4 hotkey is ignored by Windows, so handle it ourselves
-				if (wParam == VK_F4 && alt_mem && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN)) {
+				if (wParam == VK_F4 && _get_mods().has_flag(WinKeyModifierMask::ALT) && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN)) {
 					_send_window_event(windows[window_id], WINDOW_EVENT_CLOSE_REQUEST);
 				}
 			}
@@ -4709,13 +4764,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_CHAR: {
 			ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
+			const BitField<WinKeyModifierMask> &mods = _get_mods();
 
-			// Make sure we don't include modifiers for the modifier key itself.
 			KeyEvent ke;
-			ke.shift = (wParam != VK_SHIFT) ? shift_mem : false;
-			ke.alt = (!(wParam == VK_MENU && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN))) ? alt_mem : false;
-			ke.control = (wParam != VK_CONTROL) ? control_mem : false;
-			ke.meta = meta_mem;
+			ke.shift = mods.has_flag(WinKeyModifierMask::SHIFT);
+			ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
+			ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
+			ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
+			ke.meta = mods.has_flag(WinKeyModifierMask::META);
 			ke.uMsg = uMsg;
 			ke.window_id = window_id;
 
@@ -4853,7 +4909,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			if (files.size() && windows[window_id].drop_files_callback.is_valid()) {
-				windows[window_id].drop_files_callback.call(files);
+				Variant v_files = files;
+				const Variant *v_args[1] = { &v_files };
+				Variant ret;
+				Callable::CallError ce;
+				windows[window_id].drop_files_callback.callp((const Variant **)&v_args, 1, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT(vformat("Failed to execute drop files callback: %s.", Variant::get_callable_error_text(windows[window_id].drop_files_callback, v_args, 1, ce)));
+				}
 			}
 		} break;
 		default: {
@@ -4879,10 +4942,6 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id) {
 	WindowData &wd = windows[p_window_id];
 	if (wd.activate_state == WA_ACTIVE || wd.activate_state == WA_CLICKACTIVE) {
 		last_focused_window = p_window_id;
-		alt_mem = false;
-		control_mem = false;
-		shift_mem = false;
-		gr_mem = false;
 		_set_mouse_mode_impl(mouse_mode);
 		if (!IsIconic(wd.hWnd)) {
 			SetFocus(wd.hWnd);
@@ -4894,7 +4953,6 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id) {
 		track_mouse_leave_event(wd.hWnd);
 		// Release capture unconditionally because it can be set due to dragging, in addition to captured mode.
 		ReleaseCapture();
-		alt_mem = false;
 		wd.window_focused = false;
 		_send_window_event(wd, WINDOW_EVENT_FOCUS_OUT);
 	}
@@ -4965,7 +5023,7 @@ void DisplayServerWindows::_process_key_events() {
 					k->set_physical_keycode(physical_keycode);
 					k->set_key_label(key_label);
 					k->set_unicode(fix_unicode(unicode));
-					if (k->get_unicode() && gr_mem) {
+					if (k->get_unicode() && ke.altgr) {
 						k->set_alt_pressed(false);
 						k->set_ctrl_pressed(false);
 					}
@@ -5041,7 +5099,7 @@ void DisplayServerWindows::_process_key_events() {
 					}
 					k->set_unicode(fix_unicode(unicode));
 				}
-				if (k->get_unicode() && gr_mem) {
+				if (k->get_unicode() && ke.altgr) {
 					k->set_alt_pressed(false);
 					k->set_ctrl_pressed(false);
 				}
@@ -5501,17 +5559,12 @@ void DisplayServerWindows::tablet_set_current_driver(const String &p_driver) {
 	}
 }
 
-DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	KeyMappingWindows::initialize();
 
 	drop_events = false;
 	key_event_pos = 0;
 
-	alt_mem = false;
-	gr_mem = false;
-	shift_mem = false;
-	control_mem = false;
-	meta_mem = false;
 	hInstance = static_cast<OS_Windows *>(OS::get_singleton())->get_hinstance();
 
 	pressrc = 0;
@@ -5861,8 +5914,8 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error));
+DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			String executable_name = OS::get_singleton()->get_executable_path().get_file();

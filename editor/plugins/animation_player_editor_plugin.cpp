@@ -121,20 +121,20 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			tool_anim->get_popup()->connect(SNAME("id_pressed"), callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
+			tool_anim->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
 
-			onion_skinning->get_popup()->connect(SNAME("id_pressed"), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
+			onion_skinning->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
 
 			blend_editor.next->connect(SNAME("item_selected"), callable_mp(this, &AnimationPlayerEditor::_blend_editor_next_changed));
 
 			get_tree()->connect(SNAME("node_removed"), callable_mp(this, &AnimationPlayerEditor::_node_removed));
 
-			add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
+			add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorThemeManager::is_generated_theme_outdated()) {
-				add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
+				add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
 			}
 		} break;
 
@@ -172,8 +172,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			pin->set_icon(get_editor_theme_icon(SNAME("Pin")));
 
-			tool_anim->add_theme_style_override("normal", get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
-			track_editor->get_edit_menu()->add_theme_style_override("normal", get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
+			tool_anim->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
+			track_editor->get_edit_menu()->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
 
 #define ITEM_ICON(m_item, m_icon) tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(m_item), get_editor_theme_icon(SNAME(m_icon)))
 
@@ -547,13 +547,18 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		} break;
 
 		case TOOL_NEW_ANIM: {
-			String current = animation->get_item_text(animation->get_selected());
-			Ref<Animation> current_anim = player->get_animation(current);
 			Ref<Animation> new_anim = Ref<Animation>(memnew(Animation));
 			new_anim->set_name(new_name);
-			if (current_anim.is_valid()) {
-				new_anim->set_step(current_anim->get_step());
+
+			if (animation->get_item_count() > 0) {
+				String current = animation->get_item_text(animation->get_selected());
+				Ref<Animation> current_anim = player->get_animation(current);
+
+				if (current_anim.is_valid()) {
+					new_anim->set_step(current_anim->get_step());
+				}
 			}
+
 			String library_name;
 			Ref<AnimationLibrary> al;
 			library_name = library->get_item_metadata(library->get_selected());
@@ -881,6 +886,7 @@ void AnimationPlayerEditor::_update_player() {
 
 	tool_anim->set_disabled(player == nullptr);
 	pin->set_disabled(player == nullptr);
+	_set_controls_disabled(player == nullptr);
 
 	if (!player) {
 		AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
@@ -931,17 +937,6 @@ void AnimationPlayerEditor::_update_player() {
 	ITEM_CHECK_DISABLED(TOOL_NEW_ANIM);
 #undef ITEM_CHECK_DISABLED
 
-	stop->set_disabled(no_anims_found);
-	play->set_disabled(no_anims_found);
-	play_bw->set_disabled(no_anims_found);
-	play_bw_from->set_disabled(no_anims_found);
-	play_from->set_disabled(no_anims_found);
-	frame->set_editable(!no_anims_found);
-	animation->set_disabled(no_anims_found);
-	autoplay->set_disabled(no_anims_found);
-	onion_toggle->set_disabled(no_anims_found);
-	onion_skinning->set_disabled(no_anims_found);
-
 	_update_animation_list_icons();
 
 	updating = false;
@@ -958,7 +953,9 @@ void AnimationPlayerEditor::_update_player() {
 		_animation_selected(0);
 	}
 
-	if (!no_anims_found) {
+	if (no_anims_found) {
+		_set_controls_disabled(true);
+	} else {
 		String current = animation->get_item_text(animation->get_selected());
 		Ref<Animation> anim = player->get_animation(current);
 
@@ -972,6 +969,20 @@ void AnimationPlayerEditor::_update_player() {
 	}
 
 	_update_animation();
+}
+
+void AnimationPlayerEditor::_set_controls_disabled(bool p_disabled) {
+	frame->set_editable(!p_disabled);
+
+	stop->set_disabled(p_disabled);
+	play->set_disabled(p_disabled);
+	play_bw->set_disabled(p_disabled);
+	play_bw_from->set_disabled(p_disabled);
+	play_from->set_disabled(p_disabled);
+	animation->set_disabled(p_disabled);
+	autoplay->set_disabled(p_disabled);
+	onion_toggle->set_disabled(p_disabled);
+	onion_skinning->set_disabled(p_disabled);
 }
 
 void AnimationPlayerEditor::_update_animation_list_icons() {
@@ -1076,9 +1087,6 @@ void AnimationPlayerEditor::_ensure_dummy_player() {
 		}
 	}
 
-	// Make some options disabled.
-	onion_toggle->set_disabled(dummy_exists);
-	onion_skinning->set_disabled(dummy_exists);
 	int selected = animation->get_selected();
 	autoplay->set_disabled(selected != -1 ? (animation->get_item_text(selected).is_empty() ? true : dummy_exists) : true);
 
@@ -1711,7 +1719,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_step_prepare(int p_step_offs
 			OS::get_singleton()->get_main_loop()->process(0);
 			// This is the key: process the frame and let all callbacks/updates/notifications happen
 			// so everything (transforms, skeletons, etc.) is up-to-date visually.
-			callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_2_step_capture).bind(p_step_offset, p_capture_idx).call_deferred();
+			callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_2_step_capture).call_deferred(p_step_offset, p_capture_idx);
 			return;
 		} else {
 			next_capture_idx++;

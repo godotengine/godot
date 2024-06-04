@@ -33,6 +33,7 @@
 #include "canvas_item_editor_plugin.h"
 #include "core/io/image_loader.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/scene_tree_dock.h"
@@ -351,7 +352,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 void GPUParticles2DEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			menu->get_popup()->connect("id_pressed", callable_mp(this, &GPUParticles2DEditorPlugin::_menu_callback));
+			menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GPUParticles2DEditorPlugin::_menu_callback));
 			menu->set_icon(menu->get_editor_theme_icon(SNAME("GPUParticles2D")));
 			file->connect("file_selected", callable_mp(this, &GPUParticles2DEditorPlugin::_file_selected));
 			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &GPUParticles2DEditorPlugin::_selection_changed));
@@ -370,7 +371,7 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	toolbar->hide();
 
 	menu = memnew(MenuButton);
-	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
+	menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("particles/restart_emission"), MENU_RESTART);
 	menu->get_popup()->add_item(TTR("Generate Visibility Rect"), MENU_GENERATE_VISIBILITY_RECT);
 	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);
 	//	menu->get_popup()->add_item(TTR("Clear Emission Mask"), MENU_CLEAR_EMISSION_MASK);

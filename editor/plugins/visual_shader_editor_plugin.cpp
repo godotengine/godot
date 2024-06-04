@@ -789,7 +789,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	}
 
 	// Set the minimum width of a node based on the preview size to avoid a resize when toggling the preview.
-	Ref<StyleBoxFlat> graph_node_stylebox = graph->get_theme_stylebox("panel", "GraphNode");
+	Ref<StyleBoxFlat> graph_node_stylebox = graph->get_theme_stylebox(SceneStringName(panel), "GraphNode");
 	int port_preview_size = EDITOR_GET("editors/visual_editors/visual_shader/port_preview_size");
 	if (!is_frame && !is_reroute) {
 		node->set_custom_minimum_size(Size2((Math::ceil(graph_node_stylebox->get_minimum_size().width) + port_preview_size) * EDSCALE, 0));
@@ -1138,14 +1138,14 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					Label *label = memnew(Label);
 					label->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED); // TODO: Implement proper translation switch.
 					label->set_text(name_left);
-					label->add_theme_style_override("normal", editor->get_theme_stylebox(SNAME("label_style"), SNAME("VShaderEditor"))); //more compact
+					label->add_theme_style_override(CoreStringName(normal), editor->get_theme_stylebox(SNAME("label_style"), SNAME("VShaderEditor"))); //more compact
 					hb->add_child(label);
 
 					if (vsnode->is_input_port_default(j, mode) && !port_left_used) {
 						Label *hint_label = memnew(Label);
 						hint_label->set_text(TTR("[default]"));
 						hint_label->add_theme_color_override("font_color", editor->get_theme_color(SNAME("font_readonly_color"), SNAME("TextEdit")));
-						hint_label->add_theme_style_override("normal", editor->get_theme_stylebox(SNAME("label_style"), SNAME("VShaderEditor")));
+						hint_label->add_theme_style_override(CoreStringName(normal), editor->get_theme_stylebox(SNAME("label_style"), SNAME("VShaderEditor")));
 						hb->add_child(hint_label);
 					}
 				}
@@ -1188,7 +1188,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					Label *label = memnew(Label);
 					label->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED); // TODO: Implement proper translation switch.
 					label->set_text(name_right);
-					label->add_theme_style_override("normal", editor->get_theme_stylebox(SNAME("label_style"), SNAME("VShaderEditor"))); //more compact
+					label->add_theme_style_override(CoreStringName(normal), editor->get_theme_stylebox(SNAME("label_style"), SNAME("VShaderEditor"))); //more compact
 					hb->add_child(label);
 				}
 			}
@@ -4929,7 +4929,7 @@ void VisualShaderEditor::_notification(int p_what) {
 				preview_text->add_comment_delimiter("/*", "*/", false);
 				preview_text->add_comment_delimiter("//", "", true);
 
-				error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+				error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Panel")));
 				error_label->begin_bulk_theme_override();
 				error_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
 				error_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
@@ -6195,7 +6195,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	PopupMenu *varying_menu = varying_button->get_popup();
 	varying_menu->add_item(TTR("Add Varying"), int(VaryingMenuOptions::ADD));
 	varying_menu->add_item(TTR("Remove Varying"), int(VaryingMenuOptions::REMOVE));
-	varying_menu->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_varying_menu_id_pressed));
+	varying_menu->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_varying_menu_id_pressed));
 
 	preview_shader = memnew(Button);
 	preview_shader->set_theme_type_variation("FlatButton");
@@ -6251,14 +6251,14 @@ VisualShaderEditor::VisualShaderEditor() {
 	popup_menu->add_item(TTR("Delete"), NodeMenuOptions::DELETE);
 	popup_menu->add_item(TTR("Duplicate"), NodeMenuOptions::DUPLICATE);
 	popup_menu->add_item(TTR("Clear Copy Buffer"), NodeMenuOptions::CLEAR_COPY_BUFFER);
-	popup_menu->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_node_menu_id_pressed));
+	popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_node_menu_id_pressed));
 
 	connection_popup_menu = memnew(PopupMenu);
 	add_child(connection_popup_menu);
 	connection_popup_menu->add_item(TTR("Disconnect"), ConnectionMenuOptions::DISCONNECT);
 	connection_popup_menu->add_item(TTR("Insert New Node"), ConnectionMenuOptions::INSERT_NEW_NODE);
 	connection_popup_menu->add_item(TTR("Insert New Reroute"), ConnectionMenuOptions::INSERT_NEW_REROUTE);
-	connection_popup_menu->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_connection_menu_id_pressed));
+	connection_popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_connection_menu_id_pressed));
 
 	///////////////////////////////////////
 	// SHADER NODES TREE
@@ -6280,7 +6280,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	tools = memnew(MenuButton);
 	filter_hb->add_child(tools);
 	tools->set_tooltip_text(TTR("Options"));
-	tools->get_popup()->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_tools_menu_option));
+	tools->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_tools_menu_option));
 	tools->get_popup()->add_item(TTR("Expand All"), EXPAND_ALL);
 	tools->get_popup()->add_item(TTR("Collapse All"), COLLAPSE_ALL);
 

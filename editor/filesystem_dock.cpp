@@ -556,8 +556,8 @@ void FileSystemDock::_notification(int p_what) {
 			files->connect("item_activated", callable_mp(this, &FileSystemDock::_file_list_activate_file));
 			button_hist_next->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_fw_history));
 			button_hist_prev->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_bw_history));
-			file_list_popup->connect("id_pressed", callable_mp(this, &FileSystemDock::_file_list_rmb_option));
-			tree_popup->connect("id_pressed", callable_mp(this, &FileSystemDock::_tree_rmb_option));
+			file_list_popup->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_file_list_rmb_option));
+			tree_popup->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_tree_rmb_option));
 			current_path_line_edit->connect("text_submitted", callable_mp(this, &FileSystemDock::_navigate_to_path).bind(false));
 
 			always_show_folders = bool(EDITOR_GET("docks/filesystem/always_show_folders"));
@@ -646,7 +646,7 @@ void FileSystemDock::_notification(int p_what) {
 				button_hist_prev->set_icon(get_editor_theme_icon(SNAME("Back")));
 			}
 
-			overwrite_dialog_scroll->add_theme_style_override("panel", get_theme_stylebox("panel", "Tree"));
+			overwrite_dialog_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), "Tree"));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -961,6 +961,9 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		files->set_fixed_column_width(thumbnail_size * 3 / 2);
 		files->set_max_text_lines(2);
 		files->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
+
+		const int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+		files->set_fixed_tag_icon_size(Size2(icon_size, icon_size));
 
 		if (thumbnail_size < 64) {
 			folder_thumbnail = get_editor_theme_icon(SNAME("FolderMediumThumb"));
@@ -3174,7 +3177,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 
 	if (p_paths.size() == 1 && p_display_path_dependent_options) {
 		PopupMenu *new_menu = memnew(PopupMenu);
-		new_menu->connect("id_pressed", callable_mp(this, &FileSystemDock::_tree_rmb_option));
+		new_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_tree_rmb_option));
 
 		p_popup->add_submenu_node_item(TTR("Create New"), new_menu, FILE_NEW);
 		p_popup->set_item_icon(p_popup->get_item_index(FILE_NEW), get_editor_theme_icon(SNAME("Add")));
@@ -3199,7 +3202,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 
 		if (p_paths[0] != "res://") {
 			PopupMenu *folder_colors_menu = memnew(PopupMenu);
-			folder_colors_menu->connect("id_pressed", callable_mp(this, &FileSystemDock::_folder_color_index_pressed).bind(folder_colors_menu));
+			folder_colors_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_folder_color_index_pressed).bind(folder_colors_menu));
 
 			p_popup->add_submenu_node_item(TTR("Set Folder Color..."), folder_colors_menu);
 			p_popup->set_item_icon(-1, get_editor_theme_icon(SNAME("Paint")));
@@ -3279,7 +3282,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	if (p_paths.size() == 1) {
 		const String &fpath = p_paths[0];
 
-		bool added_separator = false;
+		[[maybe_unused]] bool added_separator = false;
 
 		if (favorites_list.has(fpath)) {
 			TreeItem *favorites_item = tree->get_root()->get_first_child();
@@ -3310,15 +3313,15 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		// Opening the system file manager is not supported on the Android and web editors.
 		const bool is_directory = fpath.ends_with("/");
 
-		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
-		p_popup->set_item_text(p_popup->get_item_index(FILE_SHOW_IN_EXPLORER), is_directory ? TTR("Open in File Manager") : TTR("Show in File Manager"));
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_OPEN_IN_TERMINAL);
+		p_popup->set_item_text(p_popup->get_item_index(FILE_OPEN_IN_TERMINAL), is_directory ? TTR("Open in Terminal") : TTR("Open Containing Folder in Terminal"));
 
 		if (!is_directory) {
 			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_OPEN_EXTERNAL);
 		}
 
-		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_OPEN_IN_TERMINAL);
-		p_popup->set_item_text(p_popup->get_item_index(FILE_OPEN_IN_TERMINAL), is_directory ? TTR("Open in Terminal") : TTR("Open Containing Folder in Terminal"));
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
+		p_popup->set_item_text(p_popup->get_item_index(FILE_SHOW_IN_EXPLORER), is_directory ? TTR("Open in File Manager") : TTR("Show in File Manager"));
 #endif
 
 		current_path = fpath;
@@ -3362,8 +3365,8 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	// Opening the system file manager is not supported on the Android and web editors.
 	tree_popup->add_separator();
-	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
 	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_OPEN_IN_TERMINAL);
+	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
 #endif
 
 	tree_popup->set_position(tree->get_screen_position() + p_pos);
@@ -3425,8 +3428,8 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTR("New Resource..."), FILE_NEW_RESOURCE);
 	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
 	file_list_popup->add_separator();
-	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
 	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_OPEN_IN_TERMINAL);
+	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
 
 	file_list_popup->set_position(files->get_screen_position() + p_pos);
 	file_list_popup->reset_size();
@@ -3771,7 +3774,7 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 	button->set_tooltip_text(TTR("Sort Files"));
 
 	PopupMenu *p = button->get_popup();
-	p->connect("id_pressed", callable_mp(this, &FileSystemDock::_file_sort_popup));
+	p->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_file_sort_popup));
 	p->add_radio_check_item(TTR("Sort by Name (Ascending)"), FILE_SORT_NAME);
 	p->add_radio_check_item(TTR("Sort by Name (Descending)"), FILE_SORT_NAME_REVERSE);
 	p->add_radio_check_item(TTR("Sort by Type (Ascending)"), FILE_SORT_TYPE);

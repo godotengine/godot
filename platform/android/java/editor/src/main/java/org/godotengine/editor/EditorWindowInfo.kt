@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  GodotProjectManager.kt                                                */
+/*  EditorWindowInfo.kt                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,14 +31,38 @@
 package org.godotengine.editor
 
 /**
- * Launcher activity for the Godot Android Editor.
- *
- * It presents the user with the project manager interface.
- * Upon selection of a project, this activity (via its parent logic) starts the
- * [GodotEditor] activity.
+ * Specifies the policy for adjacent launches.
  */
-class GodotProjectManager : GodotEditor() {
-	override fun checkForProjectPermissionsToEnable() {
-		// Nothing to do here.. we have yet to select a project to load.
-	}
+enum class LaunchAdjacentPolicy {
+	/**
+	 * Adjacent launches are disabled.
+	 */
+	DISABLED,
+
+	/**
+	 * Adjacent launches are enabled / disabled based on the device and screen metrics.
+	 */
+	AUTO,
+
+	/**
+	 * Adjacent launches are enabled.
+	 */
+	ENABLED
+}
+
+/**
+ * Describe the editor window to launch
+ */
+data class EditorWindowInfo(
+	val windowClassName: String,
+	val windowId: Int,
+	val processNameSuffix: String,
+	val launchAdjacentPolicy: LaunchAdjacentPolicy = LaunchAdjacentPolicy.DISABLED
+) {
+	constructor(
+		windowClass: Class<*>,
+		windowId: Int,
+		processNameSuffix: String,
+		launchAdjacentPolicy: LaunchAdjacentPolicy = LaunchAdjacentPolicy.DISABLED
+	) : this(windowClass.name, windowId, processNameSuffix, launchAdjacentPolicy)
 }

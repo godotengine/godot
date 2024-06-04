@@ -130,7 +130,7 @@ void ProgressDialog::_popup() {
 	Size2 ms = main->get_combined_minimum_size();
 	ms.width = MAX(500 * EDSCALE, ms.width);
 
-	Ref<StyleBox> style = main->get_theme_stylebox(SNAME("panel"), SNAME("PopupMenu"));
+	Ref<StyleBox> style = main->get_theme_stylebox(SceneStringName(panel), SNAME("PopupMenu"));
 	ms += style->get_minimum_size();
 
 	main->set_offset(SIDE_LEFT, style->get_margin(SIDE_LEFT));
