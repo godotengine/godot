@@ -986,7 +986,7 @@ void ManyBoneIK3D::add_constraint() {
 	constraint_names.write[old_count] = String();
 	kusudama_open_cone_count.write[old_count] = 0;
 	kusudama_open_cones.write[old_count].resize(1);
-	kusudama_open_cones.write[old_count].write[0] = Vector4(0, 1, 0, Math_PI);
+	kusudama_open_cones.write[old_count].write[0] = Vector4(0, -1, 0, Math_PI);
 	joint_twist.write[old_count] = Vector2(0, Math_PI);
 	set_dirty();
 }
