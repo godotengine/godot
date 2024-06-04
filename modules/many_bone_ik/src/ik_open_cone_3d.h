@@ -47,7 +47,7 @@ class IKLimitCone3D : public Resource {
 	double radius_cosine = 0;
 	double radius = 0;
 	Vector3 _closest_cone(Ref<IKLimitCone3D> next, Vector3 input) const;
-	void _set_tangent_circle_radius_next(double rad);
+	void set_tangent_circle_radius_next(double rad);
 	WeakRef parent_kusudama;
 
 	Vector3 tangent_circle_center_next_1;
