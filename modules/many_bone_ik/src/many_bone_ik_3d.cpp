@@ -152,7 +152,7 @@ void ManyBoneIK3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(
 				PropertyInfo(Variant::BOOL, "pins/" + itos(pin_i) + "/target_static", PROPERTY_HINT_NONE, "", pin_usage));
 		p_list->push_back(
-				PropertyInfo(Variant::FLOAT, "pins/" + itos(pin_i) + "/passthrough_factor", PROPERTY_HINT_RANGE, "0,1,0.1,or_greater", pin_usage));
+				PropertyInfo(Variant::FLOAT, "pins/" + itos(pin_i) + "/motion_propagation_factor", PROPERTY_HINT_RANGE, "0,1,0.1,or_greater", pin_usage));
 		p_list->push_back(
 				PropertyInfo(Variant::FLOAT, "pins/" + itos(pin_i) + "/weight", PROPERTY_HINT_RANGE, "0,1,0.1,or_greater", pin_usage));
 		p_list->push_back(
@@ -236,8 +236,8 @@ bool ManyBoneIK3D::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (what == "target_static") {
 			r_ret = effector_template->get_target_node().is_empty();
 			return true;
-		} else if (what == "passthrough_factor") {
-			r_ret = get_pin_passthrough_factor(index);
+		} else if (what == "motion_propagation_factor") {
+			r_ret = get_pin_motion_propagation_factor(index);
 			return true;
 		} else if (what == "weight") {
 			r_ret = get_pin_weight(index);
@@ -314,8 +314,8 @@ bool ManyBoneIK3D::_set(const StringName &p_name, const Variant &p_value) {
 				set_effector_target_node_path(index, NodePath());
 			}
 			return true;
-		} else if (what == "passthrough_factor") {
-			set_pin_passthrough_factor(index, p_value);
+		} else if (what == "motion_propagation_factor") {
+			set_pin_motion_propagation_factor(index, p_value);
 			return true;
 		} else if (what == "weight") {
 			set_pin_weight(index, p_value);
@@ -391,8 +391,8 @@ void ManyBoneIK3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_kusudama_open_cone_count", "index"), &ManyBoneIK3D::get_kusudama_open_cone_count);
 	ClassDB::bind_method(D_METHOD("set_joint_twist", "index", "limit"), &ManyBoneIK3D::set_joint_twist);
 	ClassDB::bind_method(D_METHOD("get_joint_twist", "index"), &ManyBoneIK3D::get_joint_twist);
-	ClassDB::bind_method(D_METHOD("set_pin_passthrough_factor", "index", "falloff"), &ManyBoneIK3D::set_pin_passthrough_factor);
-	ClassDB::bind_method(D_METHOD("get_pin_passthrough_factor", "index"), &ManyBoneIK3D::get_pin_passthrough_factor);
+	ClassDB::bind_method(D_METHOD("set_pin_motion_propagation_factor", "index", "falloff"), &ManyBoneIK3D::set_pin_motion_propagation_factor);
+	ClassDB::bind_method(D_METHOD("get_pin_motion_propagation_factor", "index"), &ManyBoneIK3D::get_pin_motion_propagation_factor);
 	ClassDB::bind_method(D_METHOD("get_pin_count"), &ManyBoneIK3D::get_effector_count);
 	ClassDB::bind_method(D_METHOD("get_effector_bone_name", "index"), &ManyBoneIK3D::get_effector_bone_name);
 	ClassDB::bind_method(D_METHOD("get_pin_direction_priorities", "index"), &ManyBoneIK3D::get_pin_direction_priorities);
@@ -438,17 +438,17 @@ void ManyBoneIK3D::queue_print_skeleton() {
 	queue_debug_skeleton = true;
 }
 
-float ManyBoneIK3D::get_pin_passthrough_factor(int32_t p_effector_index) const {
+float ManyBoneIK3D::get_pin_motion_propagation_factor(int32_t p_effector_index) const {
 	ERR_FAIL_INDEX_V(p_effector_index, pins.size(), 0.0f);
 	const Ref<IKEffectorTemplate3D> effector_template = pins[p_effector_index];
-	return effector_template->get_passthrough_factor();
+	return effector_template->get_motion_propagation_factor();
 }
 
-void ManyBoneIK3D::set_pin_passthrough_factor(int32_t p_effector_index, const float p_passthrough_factor) {
+void ManyBoneIK3D::set_pin_motion_propagation_factor(int32_t p_effector_index, const float p_motion_propagation_factor) {
 	ERR_FAIL_INDEX(p_effector_index, pins.size());
 	Ref<IKEffectorTemplate3D> effector_template = pins[p_effector_index];
 	ERR_FAIL_NULL(effector_template);
-	effector_template->set_passthrough_factor(p_passthrough_factor);
+	effector_template->set_motion_propagation_factor(p_motion_propagation_factor);
 	set_dirty();
 }
 

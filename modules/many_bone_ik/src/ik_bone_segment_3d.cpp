@@ -98,8 +98,8 @@ void IKBoneSegment3D::update_pinned_list(Vector<Vector<double>> &r_weights) {
 	if (is_pinned()) {
 		effector_list.push_back(tip->get_pin());
 	}
-	double passthrough_factor = is_pinned() ? tip->get_pin()->passthrough_factor : 1.0;
-	if (passthrough_factor > 0.0) {
+	double motion_propagation_factor = is_pinned() ? tip->get_pin()->motion_propagation_factor : 1.0;
+	if (motion_propagation_factor > 0.0) {
 		for (Ref<IKBoneSegment3D> child : child_segments) {
 			effector_list.append_array(child->effector_list);
 		}
@@ -349,7 +349,7 @@ void IKBoneSegment3D::recursive_create_penalty_array(Ref<IKBoneSegment3D> p_bone
 
 		r_penalty_array.push_back(inner_weight_array);
 		r_pinned_bones.push_back(current_tip);
-		current_falloff = pin->get_passthrough_factor();
+		current_falloff = pin->get_motion_propagation_factor();
 	}
 
 	for (Ref<IKBoneSegment3D> s : p_bone_segment->get_child_segments()) {
