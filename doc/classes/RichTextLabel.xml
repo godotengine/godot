@@ -451,8 +451,12 @@
 			<param index="1" name="type" type="int" enum="RichTextLabel.ListType" />
 			<param index="2" name="capitalize" type="bool" />
 			<param index="3" name="bullet" type="String" default="&quot;•&quot;" />
+			<param index="4" name="prefix" type="String" default="&quot;&quot;" />
+			<param index="5" name="suffix" type="String" default="&quot;.&quot;" />
+			<param index="6" name="indent_size" type="int" default="-1" />
+			<param index="7" name="break_at_level" type="bool" default="false" />
 			<description>
-				Adds [code skip-lint][ol][/code] or [code skip-lint][ul][/code] tag to the tag stack. Multiplies [param level] by current [member tab_size] to determine new margin length.
+				Adds [code skip-lint][ol][/code] or [code skip-lint][ul][/code] tag to the tag stack. Multiplies [param level] by current [member tab_size] to determine new margin length. If [param break_at_level] is set, list sublevels are reset.
 			</description>
 		</method>
 		<method name="push_meta" keywords="push_url">
@@ -763,6 +767,9 @@
 		</constant>
 		<constant name="LIST_DOTS" value="3" enum="ListType">
 			Each list item has a filled circle marker.
+		</constant>
+		<constant name="LIST_CUSTOM" value="4" enum="ListType">
+			Each list item has a marker from user defined marker list.
 		</constant>
 		<constant name="MENU_COPY" value="0" enum="MenuItems">
 			Copies the selected text.
