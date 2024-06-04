@@ -1068,6 +1068,16 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX((int)p_preset, 16);
 
+
+	Size2 parent_rect_size = get_parent_anchorable_rect().size;
+	Size2 size = get_size();
+	Vector2 size_to_anchor = Vector2((float)size.x/parent_rect_size.x, (float)size.y/parent_rect_size.y); 
+
+	int h_offset = data.offset[SIDE_LEFT] - data.offset[SIDE_RIGHT];
+	int v_offset = data.offset[SIDE_TOP] - data.offset[SIDE_BOTTOM];
+	
+	Vector2 size_and_offset_to_anchor = Vector2(((float)size.x + h_offset) /parent_rect_size.x, ((float)size.y + v_offset)/parent_rect_size.y); 
+
 	//Left
 	switch (p_preset) {
 		case PRESET_TOP_LEFT:
@@ -1078,21 +1088,29 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 		case PRESET_LEFT_WIDE:
 		case PRESET_HCENTER_WIDE:
 		case PRESET_FULL_RECT:
-			set_anchor(SIDE_LEFT, ANCHOR_BEGIN, p_keep_offsets);
+			set_anchor(SIDE_LEFT, 0, p_keep_offsets);
 			break;
 
 		case PRESET_CENTER_TOP:
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_CENTER:
 		case PRESET_VCENTER_WIDE:
-			set_anchor(SIDE_LEFT, 0.5, p_keep_offsets);
+			if (!p_keep_offsets){
+				set_anchor(SIDE_LEFT, 0.5-size_to_anchor.x/2, p_keep_offsets);
+			} else {
+				set_anchor(SIDE_LEFT, 0.5-size_and_offset_to_anchor.x/2, p_keep_offsets);
+			}
 			break;
 
 		case PRESET_TOP_RIGHT:
 		case PRESET_BOTTOM_RIGHT:
 		case PRESET_CENTER_RIGHT:
 		case PRESET_RIGHT_WIDE:
-			set_anchor(SIDE_LEFT, ANCHOR_END, p_keep_offsets);
+			if (!p_keep_offsets){
+				set_anchor(SIDE_TOP, 1-size_to_anchor.y, p_keep_offsets);
+			} else {
+				set_anchor(SIDE_TOP, 1-size_and_offset_to_anchor.y, p_keep_offsets);
+			}
 			break;
 	}
 
@@ -1106,21 +1124,29 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 		case PRESET_TOP_WIDE:
 		case PRESET_VCENTER_WIDE:
 		case PRESET_FULL_RECT:
-			set_anchor(SIDE_TOP, ANCHOR_BEGIN, p_keep_offsets);
+			set_anchor(SIDE_TOP, 0, p_keep_offsets);
 			break;
 
 		case PRESET_CENTER_LEFT:
 		case PRESET_CENTER_RIGHT:
 		case PRESET_CENTER:
 		case PRESET_HCENTER_WIDE:
-			set_anchor(SIDE_TOP, 0.5, p_keep_offsets);
+			if (!p_keep_offsets){
+				set_anchor(SIDE_TOP, 0.5-size_to_anchor.y/2, p_keep_offsets);
+			} else {
+				set_anchor(SIDE_TOP, 0.5-size_and_offset_to_anchor.y/2, p_keep_offsets);
+			}
 			break;
-
+		
 		case PRESET_BOTTOM_LEFT:
 		case PRESET_BOTTOM_RIGHT:
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_BOTTOM_WIDE:
-			set_anchor(SIDE_TOP, ANCHOR_END, p_keep_offsets);
+			if (!p_keep_offsets){
+				set_anchor(SIDE_TOP, 1-size_to_anchor.y, p_keep_offsets);
+			} else {
+				set_anchor(SIDE_TOP, 1-size_and_offset_to_anchor.y, p_keep_offsets);
+			}
 			break;
 	}
 
@@ -1130,14 +1156,23 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 		case PRESET_BOTTOM_LEFT:
 		case PRESET_CENTER_LEFT:
 		case PRESET_LEFT_WIDE:
-			set_anchor(SIDE_RIGHT, ANCHOR_BEGIN, p_keep_offsets);
+			if (!p_keep_offsets){
+				set_anchor(SIDE_TOP, 0+size_to_anchor.x, p_keep_offsets);
+			} else {
+				set_anchor(SIDE_TOP, 0+size_and_offset_to_anchor.x, p_keep_offsets);
+			}
 			break;
 
 		case PRESET_CENTER_TOP:
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_CENTER:
 		case PRESET_VCENTER_WIDE:
-			set_anchor(SIDE_RIGHT, 0.5, p_keep_offsets);
+			if (!p_keep_offsets){
+				set_anchor(SIDE_RIGHT, 0.5+size_to_anchor.x/2, p_keep_offsets);
+			} else {
+				set_anchor(SIDE_RIGHT, 0.5+size_and_offset_to_anchor.x/2, p_keep_offsets);
+			}
+			
 			break;
 
 		case PRESET_TOP_RIGHT:
@@ -1148,7 +1183,7 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_HCENTER_WIDE:
 		case PRESET_FULL_RECT:
-			set_anchor(SIDE_RIGHT, ANCHOR_END, p_keep_offsets);
+			set_anchor(SIDE_RIGHT, 1, p_keep_offsets);
 			break;
 	}
 
@@ -1158,14 +1193,22 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 		case PRESET_TOP_RIGHT:
 		case PRESET_CENTER_TOP:
 		case PRESET_TOP_WIDE:
-			set_anchor(SIDE_BOTTOM, ANCHOR_BEGIN, p_keep_offsets);
+			if (!p_keep_offsets){
+				set_anchor(SIDE_TOP, 0+size_to_anchor.y, p_keep_offsets);
+			} else {
+				set_anchor(SIDE_TOP, 0+size_and_offset_to_anchor.y, p_keep_offsets);
+			}
 			break;
 
 		case PRESET_CENTER_LEFT:
 		case PRESET_CENTER_RIGHT:
 		case PRESET_CENTER:
 		case PRESET_HCENTER_WIDE:
-			set_anchor(SIDE_BOTTOM, 0.5, p_keep_offsets);
+			if (!p_keep_offsets){
+				set_anchor(SIDE_BOTTOM, 0.5+size_to_anchor.y/2, p_keep_offsets);
+			} else {
+				set_anchor(SIDE_BOTTOM, 0.5+size_and_offset_to_anchor.y/2, p_keep_offsets);
+			}
 			break;
 
 		case PRESET_BOTTOM_LEFT:
@@ -1176,7 +1219,7 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_VCENTER_WIDE:
 		case PRESET_FULL_RECT:
-			set_anchor(SIDE_BOTTOM, ANCHOR_END, p_keep_offsets);
+			set_anchor(SIDE_BOTTOM, 1, p_keep_offsets);
 			break;
 	}
 }
