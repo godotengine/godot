@@ -2992,6 +2992,10 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 			to_erase.push_back(oldnode->get_child(i));
 		}
 	}
+
+	if (oldnode == edited_scene) {
+		EditorNode::get_singleton()->set_edited_scene_root(newnode, false);
+	}
 	oldnode->replace_by(newnode, true);
 
 	// Re-apply size of anchored control.
