@@ -126,7 +126,7 @@ float IKBoneSegment3D::_get_manual_msd(const PackedVector3Array &r_htip, const P
 	return manual_RMSD;
 }
 
-void IKBoneSegment3D::_set_optimal_rotation(Ref<IKBone3D> p_for_bone, PackedVector3Array *r_htip, PackedVector3Array *r_htarget, Vector<double> *r_weights, float p_dampening, bool p_translate, bool p_constraint_mode, int32_t current_iteration, int32_t total_iterations) {
+void IKBoneSegment3D::_set_optimal_rotation(Ref<IKBone3D> p_for_bone, PackedVector3Array *r_htip, PackedVector3Array *r_htarget, Vector<double> *r_weights, float p_dampening, bool p_translate, bool p_constraint_mode, double current_iteration, double total_iterations) {
 	ERR_FAIL_NULL(p_for_bone);
 	ERR_FAIL_NULL(r_htip);
 	ERR_FAIL_NULL(r_htarget);
@@ -145,7 +145,11 @@ void IKBoneSegment3D::_set_optimal_rotation(Ref<IKBone3D> p_for_bone, PackedVect
 			Vector3 translation = qcp.get_translation();
 			double dampening = (p_dampening != -1.0) ? p_dampening : bone_damp;
 			rotation = clamp_to_cos_half_angle(rotation.get_rotation_quaternion(), cos(dampening / 2.0));
-			p_for_bone->get_ik_transform()->rotate_local_with_global(rotation.get_rotation_quaternion());
+			if (current_iteration == 0) {
+				current_iteration = 0.0001;
+			}
+			rotation = rotation.slerp(p_for_bone->get_global_pose().basis, static_cast<double>(total_iterations) / current_iteration);
+			p_for_bone->get_ik_transform()->rotate_local_with_global(rotation);
 			Transform3D result = Transform3D(p_for_bone->get_global_pose().basis, p_for_bone->get_global_pose().origin + translation);
 			p_for_bone->set_global_pose(result);
 		}

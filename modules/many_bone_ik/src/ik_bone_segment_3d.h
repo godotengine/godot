@@ -66,7 +66,7 @@ class IKBoneSegment3D : public Resource {
 	void _enable_pinned_descendants();
 	void _update_target_headings(Ref<IKBone3D> p_for_bone, Vector<double> *r_weights, PackedVector3Array *r_htarget);
 	void _update_tip_headings(Ref<IKBone3D> p_for_bone, PackedVector3Array *r_heading_tip);
-	void _set_optimal_rotation(Ref<IKBone3D> p_for_bone, PackedVector3Array *r_htip, PackedVector3Array *r_heading_tip, Vector<double> *r_weights, float p_dampening = -1, bool p_translate = false, bool p_constraint_mode = false, int32_t current_iteration = 0, int32_t total_iterations = 0);
+	void _set_optimal_rotation(Ref<IKBone3D> p_for_bone, PackedVector3Array *r_htip, PackedVector3Array *r_heading_tip, Vector<double> *r_weights, float p_dampening = -1, bool p_translate = false, bool p_constraint_mode = false, double current_iteration = 0, double total_iterations = 0);
 	void _qcp_solver(const Vector<float> &p_damp, float p_default_damp, bool p_translate, bool p_constraint_mode, int32_t p_current_iteration, int32_t p_total_iterations);
 	void _update_optimal_rotation(Ref<IKBone3D> p_for_bone, double p_damp, bool p_translate, bool p_constraint_mode, int32_t current_iteration, int32_t total_iterations);
 	float _get_manual_msd(const PackedVector3Array &r_htip, const PackedVector3Array &r_htarget, const Vector<double> &p_weights);
