@@ -51,7 +51,18 @@ private:
 		return memnew(DisplayServerHeadless());
 	}
 
+	static void _dispatch_input_events(const Ref<InputEvent> &p_event) {
+		static_cast<DisplayServerHeadless *>(get_singleton())->_dispatch_input_event(p_event);
+	}
+
+	void _dispatch_input_event(const Ref<InputEvent> &p_event) {
+		if (input_event_callback.is_valid()) {
+			input_event_callback.call(p_event);
+		}
+	}
+
 	NativeMenu *native_menu = nullptr;
+	Callable input_event_callback;
 
 public:
 	bool has_feature(Feature p_feature) const override { return false; }
@@ -86,7 +97,11 @@ public:
 	void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override {}
 
 	void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override {}
-	void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override {}
+
+	void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override {
+		input_event_callback = p_callable;
+	}
+
 	void window_set_input_text_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override {}
 	void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override {}
 
@@ -137,7 +152,9 @@ public:
 
 	int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const override { return 0; }
 
-	void process_events() override {}
+	void process_events() override {
+		Input::get_singleton()->flush_buffered_events();
+	}
 
 	void set_native_icon(const String &p_filename) override {}
 	void set_icon(const Ref<Image> &p_icon) override {}
@@ -178,7 +195,9 @@ public:
 
 	DisplayServerHeadless() {
 		native_menu = memnew(NativeMenu);
+		Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 	}
+
 	~DisplayServerHeadless() {
 		if (native_menu) {
 			memdelete(native_menu);
