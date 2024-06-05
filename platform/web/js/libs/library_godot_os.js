@@ -358,11 +358,11 @@ const GodotOS = {
 	godot_js_os_preload_libraries__sig: 'vi',
 	godot_js_os_preload_libraries: function (p_func) {
 		const cb = GodotRuntime.get_func(p_func);
-		GodotOS._libs.forEach(function (lib) {
+		for (const lib of GodotOS._libs) {
 			const c_str = GodotRuntime.allocString(lib);
 			cb(c_str);
 			GodotRuntime.free(c_str);
-		});
+		};
 	},
 
 	godot_js_os_real_main_cb__proxy: 'sync',
