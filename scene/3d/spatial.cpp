@@ -359,7 +359,7 @@ void Spatial::_disable_client_physics_interpolation() {
 }
 
 Transform Spatial::_get_global_transform_interpolated(real_t p_interpolation_fraction) {
-	ERR_FAIL_NULL_V(is_inside_tree(), Transform());
+	ERR_FAIL_COND_V(!is_inside_tree(), Transform());
 
 	// set in motion the mechanisms for client side interpolation if not already active
 	if (!_is_physics_interpolated_client_side()) {

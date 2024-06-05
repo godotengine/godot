@@ -33,8 +33,11 @@
 #include "collision_object.h"
 #include "core/engine.h"
 #include "core/math/camera_matrix.h"
+#include "core/math/transform_interpolator.h"
 #include "scene/resources/material.h"
 #include "scene/resources/surface_tool.h"
+#include "servers/visual/visual_server_constants.h"
+
 void Camera::_update_audio_listener_state() {
 }
 
@@ -79,7 +82,16 @@ void Camera::_update_camera() {
 		return;
 	}
 
-	VisualServer::get_singleton()->camera_set_transform(camera, get_camera_transform());
+	if (!is_physics_interpolated_and_enabled()) {
+		VisualServer::get_singleton()->camera_set_transform(camera, get_camera_transform());
+	} else {
+		// Ideally we shouldn't be moving a physics interpolated camera within a frame,
+		// because it will break smooth interpolation, but it may occur on e.g. level load.
+		if (!Engine::get_singleton()->is_in_physics_frame() && camera.is_valid()) {
+			_physics_interpolation_ensure_transform_calculated(true);
+			VisualServer::get_singleton()->camera_set_transform(camera, _interpolation_data.camera_xform_interpolated);
+		}
+	}
 
 	// here goes listener stuff
 	/*
@@ -99,7 +111,61 @@ void Camera::_update_camera() {
 }
 
 void Camera::_physics_interpolated_changed() {
-	VisualServer::get_singleton()->camera_set_interpolated(camera, is_physics_interpolated());
+	_update_process_mode();
+}
+
+void Camera::_physics_interpolation_ensure_data_flipped() {
+	// The curr -> previous update can either occur
+	// on the INTERNAL_PHYSICS_PROCESS OR
+	// on NOTIFICATION_TRANSFORM_CHANGED,
+	// if NOTIFICATION_TRANSFORM_CHANGED takes place
+	// earlier than INTERNAL_PHYSICS_PROCESS on a tick.
+	// This is to ensure that the data keeps flowing, but the new data
+	// doesn't overwrite before prev has been set.
+
+	// Keep the data flowing.
+	uint64_t tick = Engine::get_singleton()->get_physics_frames();
+	if (_interpolation_data.last_update_physics_tick != tick) {
+		_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+		_interpolation_data.last_update_physics_tick = tick;
+		physics_interpolation_flip_data();
+	}
+}
+
+void Camera::_physics_interpolation_ensure_transform_calculated(bool p_force) const {
+	DEV_CHECK_ONCE(!Engine::get_singleton()->is_in_physics_frame());
+
+	InterpolationData &id = _interpolation_data;
+	uint64_t frame = Engine::get_singleton()->get_frames_drawn();
+
+	if (id.last_update_frame != frame || p_force) {
+		id.last_update_frame = frame;
+
+		TransformInterpolator::interpolate_transform(id.xform_prev, id.xform_curr, id.xform_interpolated, Engine::get_singleton()->get_physics_interpolation_fraction());
+
+		Transform &tr = id.camera_xform_interpolated;
+		tr = _get_adjusted_camera_transform(id.xform_interpolated);
+	}
+}
+
+void Camera::set_desired_process_modes(bool p_process_internal, bool p_physics_process_internal) {
+	_desired_process_internal = p_process_internal;
+	_desired_physics_process_internal = p_physics_process_internal;
+	_update_process_mode();
+}
+
+void Camera::_update_process_mode() {
+	bool process = _desired_process_internal;
+	bool physics_process = _desired_physics_process_internal;
+
+	if (is_physics_interpolated_and_enabled()) {
+		if (is_current()) {
+			process = true;
+			physics_process = true;
+		}
+	}
+	set_process_internal(process);
+	set_physics_process_internal(physics_process);
 }
 
 void Camera::_notification(int p_what) {
@@ -116,15 +182,48 @@ void Camera::_notification(int p_what) {
 				viewport->_camera_set(this);
 			}
 		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (is_physics_interpolated_and_enabled() && camera.is_valid()) {
+				_physics_interpolation_ensure_transform_calculated();
+
+#ifdef VISUAL_SERVER_DEBUG_PHYSICS_INTERPOLATION
+				print_line("\t\tinterpolated Camera: " + rtos(_interpolation_data.xform_interpolated.origin.x) + "\t( prev " + rtos(_interpolation_data.xform_prev.origin.x) + ", curr " + rtos(_interpolation_data.xform_curr.origin.x) + " ) on tick " + itos(Engine::get_singleton()->get_physics_frames()));
+#endif
+
+				VisualServer::get_singleton()->camera_set_transform(camera, _interpolation_data.camera_xform_interpolated);
+			}
+		} break;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (is_physics_interpolated_and_enabled()) {
+				_physics_interpolation_ensure_data_flipped();
+				_interpolation_data.xform_curr = get_global_transform();
+			}
+		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
+			if (is_physics_interpolated_and_enabled()) {
+				_physics_interpolation_ensure_data_flipped();
+				_interpolation_data.xform_curr = get_global_transform();
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+				if (!Engine::get_singleton()->is_in_physics_frame()) {
+					PHYSICS_INTERPOLATION_NODE_WARNING(get_instance_id(), "Interpolated Camera triggered from outside physics process");
+				}
+#endif
+			}
 			_request_camera_update();
 			if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 				velocity_tracker->update_position(get_global_transform().origin);
 			}
+			// Allow auto-reset when first adding to the tree, as a convenience.
+			if (_is_physics_interpolation_reset_requested() && is_inside_tree()) {
+				_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
+				_set_physics_interpolation_reset_requested(false);
+			}
+
 		} break;
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
-			if (is_physics_interpolated()) {
-				VisualServer::get_singleton()->camera_reset_physics_interpolation(camera);
+			if (is_inside_tree()) {
+				_interpolation_data.xform_curr = get_global_transform();
+				_interpolation_data.xform_prev = _interpolation_data.xform_curr;
 			}
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
@@ -148,20 +247,31 @@ void Camera::_notification(int p_what) {
 			if (viewport) {
 				viewport->find_world()->_register_camera(this);
 			}
+			_update_process_mode();
 		} break;
 		case NOTIFICATION_LOST_CURRENT: {
 			if (viewport) {
 				viewport->find_world()->_remove_camera(this);
 			}
+			_update_process_mode();
 		} break;
 	}
 }
 
-Transform Camera::get_camera_transform() const {
-	Transform tr = get_global_transform().orthonormalized();
+Transform Camera::_get_adjusted_camera_transform(const Transform &p_xform) const {
+	Transform tr = p_xform.orthonormalized();
 	tr.origin += tr.basis.get_axis(1) * v_offset;
 	tr.origin += tr.basis.get_axis(0) * h_offset;
 	return tr;
+}
+
+Transform Camera::get_camera_transform() const {
+	if (is_physics_interpolated_and_enabled() && !Engine::get_singleton()->is_in_physics_frame()) {
+		_physics_interpolation_ensure_transform_calculated();
+		return _interpolation_data.camera_xform_interpolated;
+	}
+
+	return _get_adjusted_camera_transform(get_global_transform());
 }
 
 void Camera::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far) {
@@ -365,6 +475,10 @@ Point2 Camera::unproject_position(const Vector3 &p_pos) const {
 	Plane p(get_camera_transform().xform_inv(p_pos), 1.0);
 
 	p = cm.xform4(p);
+
+	// Prevent divide by zero.
+	// TODO : Investigate, this was causing Nans.
+	ERR_FAIL_COND_V(p.d == 0, Point2());
 	p.normal /= p.d;
 
 	Point2 res;
@@ -692,25 +806,48 @@ float ClippedCamera::get_margin() const {
 	return margin;
 }
 void ClippedCamera::set_process_mode(ProcessMode p_mode) {
+	if (is_physics_interpolated_and_enabled() && p_mode == CLIP_PROCESS_IDLE) {
+		p_mode = CLIP_PROCESS_PHYSICS;
+		WARN_PRINT_ONCE("[Physics interpolation] Forcing ClippedCamera to PROCESS_PHYSICS mode.");
+	}
+
 	if (process_mode == p_mode) {
 		return;
 	}
 	process_mode = p_mode;
-	set_process_internal(process_mode == CLIP_PROCESS_IDLE);
-	set_physics_process_internal(process_mode == CLIP_PROCESS_PHYSICS);
+
+	set_desired_process_modes(process_mode == CLIP_PROCESS_IDLE, process_mode == CLIP_PROCESS_PHYSICS);
 }
 ClippedCamera::ProcessMode ClippedCamera::get_process_mode() const {
 	return process_mode;
 }
 
-Transform ClippedCamera::get_camera_transform() const {
-	Transform t = Camera::get_camera_transform();
+void ClippedCamera::physics_interpolation_flip_data() {
+	_interpolation_data.clip_offset_prev = _interpolation_data.clip_offset_curr;
+}
+
+void ClippedCamera::_physics_interpolated_changed() {
+	// Switch process mode to physics if we are turning on interpolation.
+	// Idle process mode doesn't work well with physics interpolation.
+	set_process_mode(get_process_mode());
+
+	Camera::_physics_interpolated_changed();
+}
+
+Transform ClippedCamera::_get_adjusted_camera_transform(const Transform &p_xform) const {
+	Transform t = Camera::_get_adjusted_camera_transform(p_xform);
 	t.origin += -t.basis.get_axis(Vector3::AXIS_Z).normalized() * clip_offset;
 	return t;
 }
 
 void ClippedCamera::_notification(int p_what) {
-	if (p_what == NOTIFICATION_INTERNAL_PROCESS || p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		// Switch process mode to physics if we are turning on interpolation.
+		// Idle process mode doesn't work well with physics interpolation.
+		set_process_mode(get_process_mode());
+	}
+
+	if (((p_what == NOTIFICATION_INTERNAL_PROCESS) && process_mode == CLIP_PROCESS_IDLE) || ((p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) && process_mode == CLIP_PROCESS_PHYSICS)) {
 		Spatial *parent = Object::cast_to<Spatial>(get_parent());
 		if (!parent) {
 			return;
@@ -732,7 +869,7 @@ void ClippedCamera::_notification(int p_what) {
 
 		Vector3 ray_from = parent_plane.project(cam_pos);
 
-		clip_offset = 0; //reset by defau;t
+		_interpolation_data.clip_offset_curr = 0; // Reset by default.
 
 		{ //check if points changed
 			Vector<Vector3> local_points = get_near_plane_points();
@@ -758,14 +895,28 @@ void ClippedCamera::_notification(int p_what) {
 
 		float closest_safe = 1.0f, closest_unsafe = 1.0f;
 		if (dspace->cast_motion(pyramid_shape, xf, cam_pos - ray_from, margin, closest_safe, closest_unsafe, exclude, collision_mask, clip_to_bodies, clip_to_areas)) {
-			clip_offset = cam_pos.distance_to(ray_from + (cam_pos - ray_from) * closest_safe);
+			_interpolation_data.clip_offset_curr = cam_pos.distance_to(ray_from + (cam_pos - ray_from) * closest_safe);
+		}
+
+		// Default to use the current value
+		// (in the case of non-interpolated).
+		if (!is_physics_interpolated_and_enabled()) {
+			clip_offset = _interpolation_data.clip_offset_curr;
 		}
 
 		_update_camera();
 	}
 
+	if (is_physics_interpolated_and_enabled() && (p_what == NOTIFICATION_INTERNAL_PROCESS)) {
+		clip_offset = ((_interpolation_data.clip_offset_curr - _interpolation_data.clip_offset_prev) * Engine::get_singleton()->get_physics_interpolation_fraction()) + _interpolation_data.clip_offset_prev;
+	}
+
 	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
 		update_gizmo();
+	}
+
+	if (p_what == NOTIFICATION_RESET_PHYSICS_INTERPOLATION) {
+		_interpolation_data.clip_offset_prev = _interpolation_data.clip_offset_curr;
 	}
 }
 
@@ -881,9 +1032,11 @@ void ClippedCamera::_bind_methods() {
 }
 ClippedCamera::ClippedCamera() {
 	margin = 0;
-	clip_offset = 0;
-	process_mode = CLIP_PROCESS_PHYSICS;
-	set_physics_process_internal(true);
+
+	// Force initializing to physics (prevent noop check).
+	process_mode = CLIP_PROCESS_IDLE;
+	set_process_mode(CLIP_PROCESS_PHYSICS);
+
 	collision_mask = 1;
 	set_notify_local_transform(Engine::get_singleton()->is_editor_hint());
 	points.resize(5);

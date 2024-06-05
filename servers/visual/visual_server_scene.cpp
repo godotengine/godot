@@ -40,16 +40,6 @@
 
 /* CAMERA API */
 
-Transform VisualServerScene::Camera::get_transform_interpolated() const {
-	if (!interpolated) {
-		return transform;
-	}
-
-	Transform final;
-	TransformInterpolator::interpolate_transform_via_method(transform_prev, transform, final, Engine::get_singleton()->get_physics_interpolation_fraction(), interpolation_method);
-	return final;
-}
-
 RID VisualServerScene::camera_create() {
 	Camera *camera = memnew(Camera);
 	return camera_owner.make_rid(camera);
@@ -83,59 +73,11 @@ void VisualServerScene::camera_set_frustum(RID p_camera, float p_size, Vector2 p
 	camera->zfar = p_z_far;
 }
 
-void VisualServerScene::camera_reset_physics_interpolation(RID p_camera) {
-	Camera *camera = camera_owner.get(p_camera);
-	ERR_FAIL_COND(!camera);
-
-	if (_interpolation_data.interpolation_enabled && camera->interpolated) {
-		_interpolation_data.camera_teleport_list.push_back(p_camera);
-	}
-}
-
-void VisualServerScene::camera_set_interpolated(RID p_camera, bool p_interpolated) {
-	Camera *camera = camera_owner.get(p_camera);
-	ERR_FAIL_COND(!camera);
-	camera->interpolated = p_interpolated;
-}
-
 void VisualServerScene::camera_set_transform(RID p_camera, const Transform &p_transform) {
 	Camera *camera = camera_owner.get(p_camera);
 	ERR_FAIL_COND(!camera);
 
 	camera->transform = p_transform.orthonormalized();
-
-	if (_interpolation_data.interpolation_enabled) {
-		if (camera->interpolated) {
-			if (!camera->on_interpolate_transform_list) {
-				_interpolation_data.camera_transform_update_list_curr->push_back(p_camera);
-				camera->on_interpolate_transform_list = true;
-			}
-
-			// decide on the interpolation method .. slerp if possible
-			camera->interpolation_method = TransformInterpolator::find_method(camera->transform_prev.basis, camera->transform.basis);
-
-#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
-			if (!Engine::get_singleton()->is_in_physics_frame()) {
-				// Effectively a WARN_PRINT_ONCE but after a certain number of occurrences.
-				static int32_t warn_count = -256;
-				if ((warn_count == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
-					WARN_PRINT("[Physics interpolation] Camera interpolation is being triggered from outside physics process, this might lead to issues (possibly benign).");
-				}
-				warn_count++;
-			}
-#endif
-		} else {
-#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
-			if (Engine::get_singleton()->is_in_physics_frame()) {
-				static int32_t warn_count = -256;
-				if ((warn_count == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
-					WARN_PRINT("[Physics interpolation] Non-interpolated Camera is being triggered from physics process, this might lead to issues (possibly benign).");
-				}
-				warn_count++;
-			}
-#endif
-		}
-	}
 }
 
 void VisualServerScene::camera_set_cull_mask(RID p_camera, uint32_t p_layers) {
@@ -828,7 +770,13 @@ void VisualServerScene::instance_reset_physics_interpolation(RID p_instance) {
 	ERR_FAIL_COND(!instance);
 
 	if (_interpolation_data.interpolation_enabled && instance->interpolated) {
-		_interpolation_data.instance_teleport_list.push_back(p_instance);
+		instance->transform_prev = instance->transform_curr;
+		instance->transform_checksum_prev = instance->transform_checksum_curr;
+
+#ifdef VISUAL_SERVER_DEBUG_PHYSICS_INTERPOLATION
+		print_line("instance_reset_physics_interpolation .. tick " + itos(Engine::get_singleton()->get_physics_frames()));
+		print_line("\tprev " + rtos(instance->transform_prev.origin.x) + ", curr " + rtos(instance->transform_curr.origin.x));
+#endif
 	}
 }
 
@@ -841,6 +789,10 @@ void VisualServerScene::instance_set_interpolated(RID p_instance, bool p_interpo
 void VisualServerScene::instance_set_transform(RID p_instance, const Transform &p_transform) {
 	Instance *instance = instance_owner.get(p_instance);
 	ERR_FAIL_COND(!instance);
+
+#ifdef VISUAL_SERVER_DEBUG_PHYSICS_INTERPOLATION
+	print_line("instance_set_transform " + rtos(p_transform.origin.x) + " .. tick " + itos(Engine::get_singleton()->get_physics_frames()));
+#endif
 
 	if (!(_interpolation_data.interpolation_enabled && instance->interpolated) || !instance->scenario) {
 		if (instance->transform == p_transform) {
@@ -865,24 +817,7 @@ void VisualServerScene::instance_set_transform(RID p_instance, const Transform &
 
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
 		if ((_interpolation_data.interpolation_enabled && !instance->interpolated) && (Engine::get_singleton()->is_in_physics_frame())) {
-			static int32_t warn_count = 0;
-			warn_count++;
-			if (((warn_count % 2048) == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
-				String node_name;
-				ObjectID id = instance->object_id;
-				if (id != 0) {
-					if (ObjectDB::get_instance(id)) {
-						Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
-						if (node && node->is_inside_tree()) {
-							node_name = "\"" + String(node->get_path()) + "\"";
-						} else {
-							node_name = "\"unknown\"";
-						}
-					}
-				}
-
-				WARN_PRINT("[Physics interpolation] Non-interpolated Instance is being triggered from physics process, this might lead to issues: " + node_name + " (possibly benign).");
-			}
+			PHYSICS_INTERPOLATION_NODE_WARNING(instance->object_id, "Non-interpolated triggered from physics process");
 		}
 #endif
 
@@ -918,6 +853,10 @@ void VisualServerScene::instance_set_transform(RID p_instance, const Transform &
 
 	instance->transform_curr = p_transform;
 
+#ifdef VISUAL_SERVER_DEBUG_PHYSICS_INTERPOLATION
+	print_line("\tprev " + rtos(instance->transform_prev.origin.x) + ", curr " + rtos(instance->transform_curr.origin.x));
+#endif
+
 	// keep checksums up to date
 	instance->transform_checksum_curr = new_checksum;
 
@@ -950,39 +889,9 @@ void VisualServerScene::instance_set_transform(RID p_instance, const Transform &
 
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
 	if (!Engine::get_singleton()->is_in_physics_frame()) {
-		static int32_t warn_count = 0;
-		warn_count++;
-		if (((warn_count % 2048) == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
-			String node_name;
-			ObjectID id = instance->object_id;
-			if (id != 0) {
-				if (ObjectDB::get_instance(id)) {
-					Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
-					if (node && node->is_inside_tree()) {
-						node_name = "\"" + String(node->get_path()) + "\"";
-					} else {
-						node_name = "\"unknown\"";
-					}
-				}
-			}
-
-			WARN_PRINT("[Physics interpolation] Instance interpolation is being triggered from outside physics process, this might lead to issues: " + node_name + " (possibly benign).");
-		}
+		PHYSICS_INTERPOLATION_NODE_WARNING(instance->object_id, "Interpolated triggered from outside physics process");
 	}
 #endif
-}
-
-void VisualServerScene::InterpolationData::notify_free_camera(RID p_rid, Camera &r_camera) {
-	r_camera.on_interpolate_transform_list = false;
-
-	if (!interpolation_enabled) {
-		return;
-	}
-
-	// if the camera was on any of the lists, remove
-	camera_transform_update_list_curr->erase_multiple_unordered(p_rid);
-	camera_transform_update_list_prev->erase_multiple_unordered(p_rid);
-	camera_teleport_list.erase_multiple_unordered(p_rid);
 }
 
 void VisualServerScene::InterpolationData::notify_free_instance(RID p_rid, Instance &r_instance) {
@@ -997,10 +906,13 @@ void VisualServerScene::InterpolationData::notify_free_instance(RID p_rid, Insta
 	instance_interpolate_update_list.erase_multiple_unordered(p_rid);
 	instance_transform_update_list_curr->erase_multiple_unordered(p_rid);
 	instance_transform_update_list_prev->erase_multiple_unordered(p_rid);
-	instance_teleport_list.erase_multiple_unordered(p_rid);
 }
 
 void VisualServerScene::update_interpolation_tick(bool p_process) {
+#ifdef VISUAL_SERVER_DEBUG_PHYSICS_INTERPOLATION
+	print_line("update_interpolation_tick " + itos(Engine::get_singleton()->get_physics_frames()));
+#endif
+
 	// update interpolation in storage
 	VSG::storage->update_interpolation_tick(p_process);
 
@@ -1057,63 +969,11 @@ void VisualServerScene::update_interpolation_tick(bool p_process) {
 
 	// prepare for the next iteration
 	_interpolation_data.instance_transform_update_list_curr->clear();
-
-	// CAMERAS
-	// detect any that were on the previous transform list that are no longer active,
-	for (unsigned int n = 0; n < _interpolation_data.camera_transform_update_list_prev->size(); n++) {
-		const RID &rid = (*_interpolation_data.camera_transform_update_list_prev)[n];
-		Camera *camera = camera_owner.getornull(rid);
-
-		// no longer active? (either the instance deleted or no longer being transformed)
-		if (camera && !camera->on_interpolate_transform_list) {
-			camera->transform = camera->transform_prev;
-		}
-	}
-
-	// cameras , swap any current with previous
-	for (unsigned int n = 0; n < _interpolation_data.camera_transform_update_list_curr->size(); n++) {
-		const RID &rid = (*_interpolation_data.camera_transform_update_list_curr)[n];
-		Camera *camera = camera_owner.getornull(rid);
-		if (camera) {
-			camera->transform_prev = camera->transform;
-			camera->on_interpolate_transform_list = false;
-		}
-	}
-
-	// we maintain a mirror list for the transform updates, so we can detect when an instance
-	// is no longer being transformed, and remove it from the interpolate list
-	SWAP(_interpolation_data.camera_transform_update_list_curr, _interpolation_data.camera_transform_update_list_prev);
-
-	// prepare for the next iteration
-	_interpolation_data.camera_transform_update_list_curr->clear();
 }
 
 void VisualServerScene::update_interpolation_frame(bool p_process) {
 	// update interpolation in storage
 	VSG::storage->update_interpolation_frame(p_process);
-
-	// teleported instances
-	for (unsigned int n = 0; n < _interpolation_data.instance_teleport_list.size(); n++) {
-		const RID &rid = _interpolation_data.instance_teleport_list[n];
-		Instance *instance = instance_owner.getornull(rid);
-		if (instance) {
-			instance->transform_prev = instance->transform_curr;
-			instance->transform_checksum_prev = instance->transform_checksum_curr;
-		}
-	}
-
-	_interpolation_data.instance_teleport_list.clear();
-
-	// camera teleports
-	for (unsigned int n = 0; n < _interpolation_data.camera_teleport_list.size(); n++) {
-		const RID &rid = _interpolation_data.camera_teleport_list[n];
-		Camera *camera = camera_owner.getornull(rid);
-		if (camera) {
-			camera->transform_prev = camera->transform;
-		}
-	}
-
-	_interpolation_data.camera_teleport_list.clear();
 
 	if (p_process) {
 		real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
@@ -1123,6 +983,10 @@ void VisualServerScene::update_interpolation_frame(bool p_process) {
 			Instance *instance = instance_owner.getornull(rid);
 			if (instance) {
 				TransformInterpolator::interpolate_transform_via_method(instance->transform_prev, instance->transform_curr, instance->transform, f, instance->interpolation_method);
+
+#ifdef VISUAL_SERVER_DEBUG_PHYSICS_INTERPOLATION
+				print_line("\t\tinterpolated: " + rtos(instance->transform.origin.x) + "\t( prev " + rtos(instance->transform_prev.origin.x) + ", curr " + rtos(instance->transform_curr.origin.x) + " ) on tick " + itos(Engine::get_singleton()->get_physics_frames()));
+#endif
 
 				// make sure AABBs are constantly up to date through the interpolation
 				_instance_queue_update(instance, true);
@@ -2930,10 +2794,8 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_view
 		} break;
 	}
 
-	Transform camera_transform = _interpolation_data.interpolation_enabled ? camera->get_transform_interpolated() : camera->transform;
-
-	_prepare_scene(camera_transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), camera->previous_room_id_hint);
-	_render_scene(camera_transform, camera_matrix, 0, ortho, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
+	_prepare_scene(camera->transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), camera->previous_room_id_hint);
+	_render_scene(camera->transform, camera_matrix, 0, ortho, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
 #endif
 }
 
@@ -4615,8 +4477,6 @@ void VisualServerScene::update_dirty_instances() {
 bool VisualServerScene::free(RID p_rid) {
 	if (camera_owner.owns(p_rid)) {
 		Camera *camera = camera_owner.get(p_rid);
-		_interpolation_data.notify_free_camera(p_rid, *camera);
-
 		camera_owner.free(p_rid);
 		memdelete(camera);
 	} else if (scenario_owner.owns(p_rid)) {

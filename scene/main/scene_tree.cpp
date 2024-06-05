@@ -555,6 +555,9 @@ void SceneTree::client_physics_interpolation_remove_spatial(SelfList<Spatial> *p
 
 void SceneTree::iteration_prepare() {
 	if (_physics_interpolation_enabled) {
+		// Make sure any pending transforms from the last tick / frame
+		// are flushed before pumping the interpolation prev and currents.
+		flush_transform_notifications();
 		VisualServer::get_singleton()->tick();
 	}
 }

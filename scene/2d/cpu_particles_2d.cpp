@@ -1267,7 +1267,7 @@ void CPUParticles2D::_notification(int p_what) {
 			}
 		}
 	}
-	if (p_what == NOTIFICATION_RESET_PHYSICS_INTERPOLATION) {
+	if (p_what == NOTIFICATION_RESET_PHYSICS_INTERPOLATION && is_inside_tree()) {
 		// Make sure current is up to date with any pending global transform changes.
 		_interpolation_data.global_xform_curr = get_global_transform_const();
 		_interpolation_data.global_xform_prev = _interpolation_data.global_xform_curr;

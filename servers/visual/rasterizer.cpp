@@ -361,11 +361,7 @@ void RasterizerStorage::multimesh_instance_set_transform(RID p_multimesh, int p_
 
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
 			if (!Engine::get_singleton()->is_in_physics_frame()) {
-				static int32_t warn_count = 0;
-				warn_count++;
-				if (((warn_count % 2048) == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
-					WARN_PRINT("[Physics interpolation] MultiMesh interpolation is being triggered from outside physics process, this might lead to issues (possibly benign).");
-				}
+				PHYSICS_INTERPOLATION_WARNING("Interpolated MultiMesh triggered from outside physics process");
 			}
 #endif
 			return;
@@ -521,11 +517,7 @@ void RasterizerStorage::multimesh_set_as_bulk_array_interpolated(RID p_multimesh
 		_multimesh_add_to_interpolation_lists(p_multimesh, *mmi);
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
 		if (!Engine::get_singleton()->is_in_physics_frame()) {
-			static int32_t warn_count = 0;
-			warn_count++;
-			if (((warn_count % 2048) == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
-				WARN_PRINT("[Physics interpolation] MultiMesh interpolation is being triggered from outside physics process, this might lead to issues (possibly benign).");
-			}
+			PHYSICS_INTERPOLATION_WARNING("Interpolated MultiMesh triggered from outside physics process");
 		}
 #endif
 	}
@@ -541,11 +533,7 @@ void RasterizerStorage::multimesh_set_as_bulk_array(RID p_multimesh, const PoolV
 			_multimesh_add_to_interpolation_lists(p_multimesh, *mmi);
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
 			if (!Engine::get_singleton()->is_in_physics_frame()) {
-				static int32_t warn_count = 0;
-				warn_count++;
-				if (((warn_count % 2048) == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
-					WARN_PRINT("[Physics interpolation] MultiMesh interpolation is being triggered from outside physics process, this might lead to issues (possibly benign).");
-				}
+				PHYSICS_INTERPOLATION_WARNING("Interpolated MultiMesh triggered from outside physics process");
 			}
 #endif
 			return;
