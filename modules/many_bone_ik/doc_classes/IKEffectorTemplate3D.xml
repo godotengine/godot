@@ -12,8 +12,7 @@
 		<member name="direction_priorities" type="Vector3" setter="set_direction_priorities" getter="get_direction_priorities" default="Vector3(0.2, 0, 0.2)">
 			Specifies the priority of movement in each direction (X, Y, Z). Higher values indicate higher priority.
 		</member>
-		<member name="passthrough_factor" type="float" setter="set_passthrough_factor" getter="get_passthrough_factor" default="0.0">
-			Determines how much the effector influences its parent bones. A value of 1 means full influence, while a value of 0 means no influence.
+		<member name="motion_propagation_factor" type="float" setter="set_motion_propagation_factor" getter="get_motion_propagation_factor" default="1.0">
 		</member>
 		<member name="root_bone" type="String" setter="set_root_bone" getter="get_root_bone" default="&quot;&quot;">
 		</member>

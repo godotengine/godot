@@ -134,12 +134,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="queue_print_skeleton">
-			<return type="void" />
-			<description>
-				Queues a print operation for the skeleton structure. Useful for debugging.
-			</description>
-		</method>
 		<method name="register_skeleton">
 			<return type="void" />
 			<description>
@@ -237,6 +231,12 @@
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<param index="1" name="transform" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="set_pin_count">
+			<return type="void" />
+			<param index="0" name="count" type="int" />
 			<description>
 			</description>
 		</method>
