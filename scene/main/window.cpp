@@ -1229,12 +1229,10 @@ void Window::_update_viewport_size() {
 		}
 		if (!Math::is_equal_approx(TS->font_get_global_oversampling(), font_oversampling)) {
 			TS->font_set_global_oversampling(font_oversampling);
-			ci_updated = false;
+			if (!ci_updated) {
+				update_canvas_items();
+			}
 		}
-	}
-
-	if (!ci_updated) {
-		update_canvas_items();
 	}
 
 	notification(NOTIFICATION_WM_SIZE_CHANGED);
