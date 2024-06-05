@@ -1103,6 +1103,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("focus", "RichTextLabel", focus);
 	theme->set_stylebox(CoreStringName(normal), "RichTextLabel", make_empty_stylebox(0, 0, 0, 0));
 
+	theme->set_icon("scroll", "RichTextLabel", icons["scroll_drag"]);
+
 	theme->set_font("normal_font", "RichTextLabel", Ref<Font>());
 	theme->set_font("bold_font", "RichTextLabel", bold_font);
 	theme->set_font("italics_font", "RichTextLabel", italics_font);
