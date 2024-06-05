@@ -669,15 +669,6 @@
 				[b]Note:[/b] Subgroups cannot be nested, they only provide one extra level of depth. Just like the next group ends the previous group, so do the subsequent subgroups.
 			</description>
 		</annotation>
-		<annotation name="@export_input">
-			<description>
-				Exports a String or StringName as an enum of the current project's InputMap.
-				[codeblock]
-				@export_input var input_action : StringName
-				@export_input(true) var builtin_action: String
-				[/codeblock]
-			</description>
-		</annotation>
 		<annotation name="@icon">
 			<return type="void" />
 			<param index="0" name="icon_path" type="String" />

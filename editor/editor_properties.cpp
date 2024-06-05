@@ -3582,15 +3582,15 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				Vector<String> options;
 				InputMap::get_singleton()->load_from_project_settings();
 				for (const StringName &action_name : InputMap::get_singleton()->get_actions()) {
-					if ((p_hint_text == "false" || p_hint_text.is_empty()) && InputMap::get_singleton()->get_builtins().has(action_name)) {
+					if ((p_hint_text != "allow_builtin") && InputMap::get_singleton()->get_builtins().has(action_name)) {
 						continue;
 					}
-					if (((String)action_name).begins_with("spatial_editor/")) {
+					if (String(action_name).begins_with("spatial_editor/")) {
 						continue;
 					}
 					options.append(action_name);
 				}
-				editor->setup(options, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
+				editor->setup(options, false, true);
 				return editor;
 			} else {
 				EditorPropertyText *editor = memnew(EditorPropertyText);
@@ -3717,21 +3717,6 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			if (p_hint == PROPERTY_HINT_ENUM || p_hint == PROPERTY_HINT_ENUM_SUGGESTION) {
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
 				Vector<String> options = p_hint_text.split(",", false);
-				editor->setup(options, true, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
-				return editor;
-			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
-				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
-				Vector<String> options;
-				InputMap::get_singleton()->load_from_project_settings();
-				for (const StringName &action_name : InputMap::get_singleton()->get_actions()) {
-					if ((p_hint_text == "false" || p_hint_text.is_empty()) && InputMap::get_singleton()->get_builtins().has(action_name)) {
-						continue;
-					}
-					if (((String)action_name).begins_with("spatial_editor/")) {
-						continue;
-					}
-					options.append(action_name);
-				}
 				editor->setup(options, true, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
 			} else {

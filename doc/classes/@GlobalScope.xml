@@ -2930,7 +2930,10 @@
 		<constant name="PROPERTY_HINT_PASSWORD" value="36" enum="PropertyHint">
 			Hints that a string property is a password, and every character is replaced with the secret character.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="38" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INPUT_NAME" value="38" enum="PropertyHint">
+			Hints that a string property should be suggested with the project's input actions
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="39" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">
