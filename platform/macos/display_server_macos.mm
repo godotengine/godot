@@ -3172,42 +3172,13 @@ void DisplayServerMacOS::set_icon(const Ref<Image> &p_icon) {
 
 DisplayServer::IndicatorID DisplayServerMacOS::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
 	NSImage *nsimg = nullptr;
-	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
 		img = img->duplicate();
-		img->convert(Image::FORMAT_RGBA8);
-
-		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
-				initWithBitmapDataPlanes:nullptr
-							  pixelsWide:img->get_width()
-							  pixelsHigh:img->get_height()
-						   bitsPerSample:8
-						 samplesPerPixel:4
-								hasAlpha:YES
-								isPlanar:NO
-						  colorSpaceName:NSDeviceRGBColorSpace
-							 bytesPerRow:img->get_width() * 4
-							bitsPerPixel:32];
-		if (imgrep) {
-			uint8_t *pixels = [imgrep bitmapData];
-
-			int len = img->get_width() * img->get_height();
-			const uint8_t *r = img->get_data().ptr();
-
-			/* Premultiply the alpha channel */
-			for (int i = 0; i < len; i++) {
-				uint8_t alpha = r[i * 4 + 3];
-				pixels[i * 4 + 0] = (uint8_t)(((uint16_t)r[i * 4 + 0] * alpha) / 255);
-				pixels[i * 4 + 1] = (uint8_t)(((uint16_t)r[i * 4 + 1] * alpha) / 255);
-				pixels[i * 4 + 2] = (uint8_t)(((uint16_t)r[i * 4 + 2] * alpha) / 255);
-				pixels[i * 4 + 3] = alpha;
-			}
-
-			nsimg = [[NSImage alloc] initWithSize:NSMakeSize(img->get_width(), img->get_height())];
-			if (nsimg) {
-				[nsimg addRepresentation:imgrep];
-			}
+		if (img->is_compressed()) {
+			img->decompress();
 		}
+		nsimg = _convert_to_nsimg(img);
 	}
 
 	IndicatorData idat;
@@ -3235,42 +3206,13 @@ void DisplayServerMacOS::status_indicator_set_icon(IndicatorID p_id, const Ref<T
 	ERR_FAIL_COND(!indicators.has(p_id));
 
 	NSImage *nsimg = nullptr;
-	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
 		img = img->duplicate();
-		img->convert(Image::FORMAT_RGBA8);
-
-		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
-				initWithBitmapDataPlanes:nullptr
-							  pixelsWide:img->get_width()
-							  pixelsHigh:img->get_height()
-						   bitsPerSample:8
-						 samplesPerPixel:4
-								hasAlpha:YES
-								isPlanar:NO
-						  colorSpaceName:NSDeviceRGBColorSpace
-							 bytesPerRow:img->get_width() * 4
-							bitsPerPixel:32];
-		if (imgrep) {
-			uint8_t *pixels = [imgrep bitmapData];
-
-			int len = img->get_width() * img->get_height();
-			const uint8_t *r = img->get_data().ptr();
-
-			/* Premultiply the alpha channel */
-			for (int i = 0; i < len; i++) {
-				uint8_t alpha = r[i * 4 + 3];
-				pixels[i * 4 + 0] = (uint8_t)(((uint16_t)r[i * 4 + 0] * alpha) / 255);
-				pixels[i * 4 + 1] = (uint8_t)(((uint16_t)r[i * 4 + 1] * alpha) / 255);
-				pixels[i * 4 + 2] = (uint8_t)(((uint16_t)r[i * 4 + 2] * alpha) / 255);
-				pixels[i * 4 + 3] = alpha;
-			}
-
-			nsimg = [[NSImage alloc] initWithSize:NSMakeSize(img->get_width(), img->get_height())];
-			if (nsimg) {
-				[nsimg addRepresentation:imgrep];
-			}
+		if (img->is_compressed()) {
+			img->decompress();
 		}
+		nsimg = _convert_to_nsimg(img);
 	}
 
 	NSStatusItem *item = indicators[p_id].item;

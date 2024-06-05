@@ -436,7 +436,7 @@ int NativeMenuMacOS::add_icon_item(const RID &p_rid, const Ref<Texture2D> &p_ico
 		obj->max_states = 0;
 		obj->state = 0;
 		DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-		if (ds && p_icon.is_valid()) {
+		if (ds && p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 			obj->img = p_icon->get_image();
 			obj->img = obj->img->duplicate();
 			if (obj->img->is_compressed()) {
@@ -467,7 +467,7 @@ int NativeMenuMacOS::add_icon_check_item(const RID &p_rid, const Ref<Texture2D> 
 		obj->max_states = 0;
 		obj->state = 0;
 		DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-		if (ds && p_icon.is_valid()) {
+		if (ds && p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 			obj->img = p_icon->get_image();
 			obj->img = obj->img->duplicate();
 			if (obj->img->is_compressed()) {
@@ -518,7 +518,7 @@ int NativeMenuMacOS::add_icon_radio_check_item(const RID &p_rid, const Ref<Textu
 		obj->max_states = 0;
 		obj->state = 0;
 		DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-		if (ds && p_icon.is_valid()) {
+		if (ds && p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 			obj->img = p_icon->get_image();
 			obj->img = obj->img->duplicate();
 			if (obj->img->is_compressed()) {
@@ -1212,7 +1212,7 @@ void NativeMenuMacOS::set_item_icon(const RID &p_rid, int p_idx, const Ref<Textu
 		GodotMenuItem *obj = [menu_item representedObject];
 		ERR_FAIL_NULL(obj);
 		DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-		if (ds && p_icon.is_valid()) {
+		if (ds && p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 			obj->img = p_icon->get_image();
 			obj->img = obj->img->duplicate();
 			if (obj->img->is_compressed()) {
