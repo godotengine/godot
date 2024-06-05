@@ -29,6 +29,45 @@
 #define FLAGS_FLIP_H (1 << 30)
 #define FLAGS_FLIP_V (1 << 31)
 
+#ifdef USE_BATCHING
+
+struct InstanceData {
+	vec2 world_x;
+	vec2 world_y;
+	vec2 world_ofs;
+	uint flags;
+	uint specular_shininess;
+#ifdef USE_PRIMITIVE
+	vec2 points[3];
+	vec2 uvs[3];
+	uint colors[6];
+#else
+	vec4 modulation;
+	vec4 ninepatch_margins;
+	vec4 dst_rect; //for built-in rect and UV
+	vec4 src_rect;
+	vec2 pad;
+
+#endif
+	vec2 color_texture_pixel_size;
+	uint lights[4];
+};
+
+layout(set = 4, binding = 0, std430) restrict readonly buffer DrawData {
+	InstanceData data[];
+}
+instances;
+
+layout(push_constant, std430) uniform Params {
+	uint base_instance_index; // base index to instance data
+	uint pad1;
+	uint pad2;
+	uint pad3;
+}
+params;
+
+#else
+
 // Push Constant
 
 layout(push_constant, std430) uniform DrawData {
@@ -53,6 +92,8 @@ layout(push_constant, std430) uniform DrawData {
 	uint lights[4];
 }
 draw_data;
+
+#endif // USE_BATCHING
 
 // In vulkan, sets should always be ordered using the following logic:
 // Lower Sets: Sets that change format and layout less often

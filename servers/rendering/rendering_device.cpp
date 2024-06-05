@@ -2846,6 +2846,7 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 		for (int j = 0; j < (int)uniform_count; j++) {
 			if (uniforms[j].binding == set_uniform.binding) {
 				uniform_idx = j;
+				break;
 			}
 		}
 		ERR_FAIL_COND_V_MSG(uniform_idx == -1, RID(),
@@ -3260,6 +3261,7 @@ RID RenderingDevice::render_pipeline_create(RID p_shader, FramebufferFormatID p_
 			for (int j = 0; j < vd.vertex_formats.size(); j++) {
 				if (vd.vertex_formats[j].location == i) {
 					found = true;
+					break;
 				}
 			}
 
