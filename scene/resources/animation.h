@@ -45,7 +45,7 @@ public:
 
 	static inline String PARAMETERS_BASE_PATH = "parameters/";
 
-	enum TrackType {
+	enum TrackType : uint8_t {
 		TYPE_VALUE, // Set a value in a property, can be interpolated.
 		TYPE_POSITION_3D, // Position 3D track, can be compressed.
 		TYPE_ROTATION_3D, // Rotation 3D track, can be compressed.
@@ -57,7 +57,7 @@ public:
 		TYPE_ANIMATION,
 	};
 
-	enum InterpolationType {
+	enum InterpolationType : uint8_t {
 		INTERPOLATION_NEAREST,
 		INTERPOLATION_LINEAR,
 		INTERPOLATION_CUBIC,
@@ -65,46 +65,45 @@ public:
 		INTERPOLATION_CUBIC_ANGLE,
 	};
 
-	enum UpdateMode {
+	enum UpdateMode : uint8_t {
 		UPDATE_CONTINUOUS,
 		UPDATE_DISCRETE,
 		UPDATE_CAPTURE,
 	};
 
-	enum LoopMode {
+	enum LoopMode : uint8_t {
 		LOOP_NONE,
 		LOOP_LINEAR,
 		LOOP_PINGPONG,
 	};
 
 	// LoopedFlag is used in Animataion to "process the keys at both ends correct".
-	enum LoopedFlag {
+	enum LoopedFlag : uint8_t {
 		LOOPED_FLAG_NONE,
 		LOOPED_FLAG_END,
 		LOOPED_FLAG_START,
 	};
 
-	enum FindMode {
+	enum FindMode : uint8_t {
 		FIND_MODE_NEAREST,
 		FIND_MODE_APPROX,
 		FIND_MODE_EXACT,
 	};
 
 #ifdef TOOLS_ENABLED
-	enum HandleMode {
+	enum HandleMode{
 		HANDLE_MODE_FREE,
 		HANDLE_MODE_LINEAR,
 		HANDLE_MODE_BALANCED,
 		HANDLE_MODE_MIRRORED,
 	};
-	enum HandleSetMode {
+	enum HandleSetMode{
 		HANDLE_SET_MODE_NONE,
 		HANDLE_SET_MODE_RESET,
 		HANDLE_SET_MODE_AUTO,
 	};
 #endif // TOOLS_ENABLED
 
-private:
 	struct Track {
 		TrackType type = TrackType::TYPE_ANIMATION;
 		InterpolationType interpolation = INTERPOLATION_LINEAR;
@@ -117,6 +116,7 @@ private:
 		virtual ~Track() {}
 	};
 
+private:
 	struct Key {
 		real_t transition = 1.0;
 		double time = 0.0; // Time in secs.
@@ -395,6 +395,10 @@ protected:
 public:
 	int add_track(TrackType p_type, int p_at_pos = -1);
 	void remove_track(int p_track);
+
+	_FORCE_INLINE_ const Vector<Track *> get_tracks() {
+		return tracks;
+	}
 
 	bool is_capture_included() const;
 
