@@ -115,8 +115,8 @@ public:
 	void set_cos_half_dampen(float p_cos_half_dampen);
 	Transform3D get_parent_bone_aligned_transform();
 	Transform3D get_set_constraint_twist_transform() const;
-	float calculate_total_radius_sum(const TypedArray<IKOpenCone3D> &p_cones) const;
-	Vector3 calculate_weighted_direction(const TypedArray<IKOpenCone3D> &p_cones, float p_total_radius_sum) const;
+	float calculate_total_radius_sum(const TypedArray<IKLimitCone3D> &p_cones) const;
+	Vector3 calculate_weighted_direction(const TypedArray<IKLimitCone3D> &p_cones, float p_total_radius_sum) const;
 };
 
 #endif // IK_BONE_3D_H

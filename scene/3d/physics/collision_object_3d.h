@@ -125,10 +125,10 @@ protected:
 	GDVIRTUAL0(_mouse_enter)
 	GDVIRTUAL0(_mouse_exit)
 public:
-	void set_collision_layer(uint32_t p_layer);
+	virtual void set_collision_layer(uint32_t p_layer);
 	uint32_t get_collision_layer() const;
 
-	void set_collision_mask(uint32_t p_mask);
+	virtual void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
 	void set_collision_layer_value(int p_layer_number, bool p_value);

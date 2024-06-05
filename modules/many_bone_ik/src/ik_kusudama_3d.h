@@ -44,7 +44,7 @@
 #include "scene/3d/node_3d.h"
 
 class IKBone3D;
-class IKOpenCone3D;
+class IKLimitCone3D;
 class IKKusudama3D : public Resource {
 	GDCLASS(IKKusudama3D, Resource);
 
@@ -53,7 +53,7 @@ class IKKusudama3D : public Resource {
 	 * with the expectation that any limitCone in the array is connected to the cone at the previous element in the array,
 	 * and the cone at the next element in the array.
 	 */
-	Vector<Ref<IKOpenCone3D>> open_cones;
+	Vector<Ref<IKLimitCone3D>> open_cones;
 
 	Quaternion twist_min_rot;
 	Vector3 twist_min_vec;
@@ -171,8 +171,8 @@ public:
 	 * @param new_point where on the Kusudama to add the LimitCone (in Kusudama's local coordinate frame defined by its bone's majorRotationAxes))
 	 * @param radius the radius of the limitCone
 	 */
-	void add_open_cone(Ref<IKOpenCone3D> p_open_cone);
-	void remove_open_cone(Ref<IKOpenCone3D> limitCone);
+	void add_open_cone(Ref<IKLimitCone3D> p_open_cone);
+	void remove_open_cone(Ref<IKLimitCone3D> limitCone);
 
 	/**
 	 *
@@ -193,8 +193,8 @@ public:
 	void disable();
 	void enable();
 	void clear_open_cones();
-	TypedArray<IKOpenCone3D> get_open_cones() const;
-	void set_open_cones(TypedArray<IKOpenCone3D> p_cones);
+	TypedArray<IKLimitCone3D> get_open_cones() const;
+	void set_open_cones(TypedArray<IKLimitCone3D> p_cones);
 	float get_resistance();
 	void set_resistance(float p_resistance);
 	static Quaternion clamp_to_quadrance_angle(Quaternion p_rotation, double p_cos_half_angle);

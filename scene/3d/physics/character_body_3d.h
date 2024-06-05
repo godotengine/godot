@@ -114,6 +114,11 @@ public:
 
 	CharacterBody3D();
 
+	virtual void update_world_transform(const Transform3D & trans)
+	{
+		set_global_transform(trans);
+	}
+
 private:
 	real_t margin = 0.001;
 	MotionMode motion_mode = MOTION_MODE_GROUNDED;

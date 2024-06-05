@@ -60,7 +60,6 @@ class ManyBoneIK3D : public SkeletonModifier3D {
 	float MAX_KUSUDAMA_OPEN_CONES = 10;
 	int32_t iterations_per_frame = 15;
 	float default_damp = Math::deg_to_rad(5.0f);
-	bool queue_debug_skeleton = false;
 	Ref<IKNode3D> godot_skeleton_transform;
 	Transform3D godot_skeleton_transform_inverse;
 	Ref<IKNode3D> ik_origin;
@@ -114,6 +113,7 @@ public:
 	void set_iterations_per_frame(const float &p_iterations_per_frame);
 	void queue_print_skeleton();
 	int32_t get_effector_count() const;
+	void set_effector_count(int32_t p_pin_count);
 	void remove_constraint_at_index(int32_t p_index);
 	void set_effector_bone_name(int32_t p_pin_index, const String &p_bone);
 	StringName get_effector_bone_name(int32_t p_effector_index) const;
@@ -126,8 +126,8 @@ public:
 	void set_pin_direction_priorities(int32_t p_pin_index, const Vector3 &p_priority_direction);
 	Vector3 get_pin_direction_priorities(int32_t p_pin_index) const;
 	NodePath get_effector_target_node_path(int32_t p_pin_index);
-	void set_pin_passthrough_factor(int32_t p_effector_index, const float p_passthrough_factor);
-	float get_pin_passthrough_factor(int32_t p_effector_index) const;
+	void set_pin_motion_propagation_factor(int32_t p_effector_index, const float p_motion_propagation_factor);
+	float get_pin_motion_propagation_factor(int32_t p_effector_index) const;
 	real_t get_default_damp() const;
 	void set_default_damp(float p_default_damp);
 	int32_t find_constraint(String p_string) const;

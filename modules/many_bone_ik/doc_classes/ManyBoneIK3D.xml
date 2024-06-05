@@ -114,7 +114,7 @@
 				Returns whether the pin at the specified index is enabled or not.
 			</description>
 		</method>
-		<method name="get_pin_passthrough_factor" qualifiers="const">
+		<method name="get_pin_motion_propagation_factor" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="index" type="int" />
 			<description>
@@ -132,12 +132,6 @@
 			<return type="Transform3D" />
 			<param index="0" name="index" type="int" />
 			<description>
-			</description>
-		</method>
-		<method name="queue_print_skeleton">
-			<return type="void" />
-			<description>
-				Queues a print operation for the skeleton structure. Useful for debugging.
 			</description>
 		</method>
 		<method name="register_skeleton">
@@ -240,6 +234,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_pin_count">
+			<return type="void" />
+			<param index="0" name="count" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="set_pin_direction_priorities">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
@@ -248,7 +248,7 @@
 				Sets the direction priorities of the pin at the specified index.
 			</description>
 		</method>
-		<method name="set_pin_passthrough_factor">
+		<method name="set_pin_motion_propagation_factor">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<param index="1" name="falloff" type="float" />

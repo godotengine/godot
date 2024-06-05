@@ -34,8 +34,8 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_main_shape", "shape"), &CharacterBodyMain::set_main_shape);
     ClassDB::bind_method(D_METHOD("get_main_shape"), &CharacterBodyMain::get_main_shape);
 
-    ClassDB::bind_method(D_METHOD("set_area_shape", "shape"), &CharacterBodyMain::set_area_shape);
-    ClassDB::bind_method(D_METHOD("get_area_shape"), &CharacterBodyMain::get_area_shape);
+    ClassDB::bind_method(D_METHOD("set_check_area", "check_area"), &CharacterBodyMain::set_check_area);
+    ClassDB::bind_method(D_METHOD("get_check_area"), &CharacterBodyMain::get_check_area);
 
     ClassDB::bind_method(D_METHOD("init_body_part_array", "part_array"), &CharacterBodyMain::init_body_part_array);
     ClassDB::bind_method(D_METHOD("set_body_part", "part"), &CharacterBodyMain::set_body_part);
@@ -60,7 +60,7 @@ void CharacterBodyMain::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animator", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimator",PROPERTY_USAGE_DEFAULT ), "set_animator", "get_animator");
 
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "main_shape", PROPERTY_HINT_RESOURCE_TYPE, "CollisionObject3DConnection",PROPERTY_USAGE_DEFAULT), "set_main_shape", "get_main_shape");
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "area_shape", PROPERTY_HINT_RESOURCE_TYPE, "CollisionObject3DConnection",PROPERTY_USAGE_DEFAULT), "set_area_shape", "get_area_shape");
+    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "check_area", PROPERTY_HINT_RESOURCE_TYPE, RESOURCE_TYPE_HINT("CharacterCheckArea3D"),PROPERTY_USAGE_DEFAULT), "set_check_area", "get_check_area");
     ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "body_part", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT), "set_body_part", "get_body_part");
 
 
@@ -382,17 +382,18 @@ CharacterBodyMain::CharacterBodyMain()
     mainCollision->set_name("MainCollision");
     add_child(mainCollision);
     mainCollision->set_owner(this);
-    areaCollision = memnew(Area3D);
-    add_child(areaCollision);
-    areaCollision->set_owner(this);
-    areaCollision->connect("body_entered",callable_mp(this,&CharacterBodyMain::on_body_enter_area));
-    areaCollision->connect("body_exited",callable_mp(this,&CharacterBodyMain::on_body_exit_area));
 }
 CharacterBodyMain::~CharacterBodyMain()
 {
     
-    areaCollision->disconnect("body_entered",callable_mp(this,&CharacterBodyMain::on_body_enter_area));
-    areaCollision->disconnect("body_exited",callable_mp(this,&CharacterBodyMain::on_body_exit_area));
+    for(uint32_t i = 0; i < check_area.size();++i)
+    {
+        if(check_area[i].is_valid())
+        {
+            check_area[i]->set_body_main(nullptr);
+        }
+    }
+    check_area.clear();
 }
 
 

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  ik_open_cone_3d.cpp                                                  */
+/*  ik_open_cone_3d.cpp                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -33,123 +33,114 @@
 #include "core/math/quaternion.h"
 #include "ik_kusudama_3d.h"
 
-#include "core/io/resource.h"
-
-void IKOpenCone3D::update_tangent_handles(Ref<IKOpenCone3D> p_next) {
-	if (p_next.is_valid()) {
-		double radA = _get_radius();
-		double radB = p_next->_get_radius();
-
-		Vector3 A = get_control_point();
-		Vector3 B = p_next->get_control_point();
-
-		Vector3 arc_normal = A.cross(B).normalized();
-
-		/**
-		 * There are an infinite number of circles co-tangent with A and B, every other
-		 * one of which has a unique radius.
-		 *
-		 * However, we want the radius of our tangent circles to obey the following properties:
-		 *   1) When the radius of A + B == 0, our tangent circle's radius should = 90.
-		 *   	In other words, the tangent circle should span a hemisphere.
-		 *   2) When the radius of A + B == 180, our tangent circle's radius should = 0.
-		 *   	In other words, when A + B combined are capable of spanning the entire sphere,
-		 *   	our tangentCircle should be nothing.
-		 *
-		 * Another way to think of this is -- whatever the maximum distance can be between the
-		 * borders of A and B (presuming their centers are free to move about the circle
-		 * but their radii remain constant), we want our tangentCircle's diameter to be precisely that distance,
-		 * and so, our tangent circles radius should be precisely half of that distance.
-		 */
-		double tRadius = (Math_PI - (radA + radB)) / 2;
-
-		/**
-		 * Once we have the desired radius for our tangent circle, we may find the solution for its
-		 * centers (usually, there are two).
-		 */
-		double boundaryPlusTangentRadiusA = radA + tRadius;
-		double boundaryPlusTangentRadiusB = radB + tRadius;
-
-		// the axis of this cone, scaled to minimize its distance to the tangent contact points.
-		Vector3 scaledAxisA = A * Math::cos(boundaryPlusTangentRadiusA);
-		// a point on the plane running through the tangent contact points
-		Quaternion temp_var = IKKusudama3D::get_quaternion_axis_angle(arc_normal, boundaryPlusTangentRadiusA);
-		Vector3 planeDir1A = temp_var.xform(A);
-		// another point on the same plane
-		Quaternion tempVar2 = IKKusudama3D::get_quaternion_axis_angle(A, Math_PI / 2);
-		Vector3 planeDir2A = tempVar2.xform(planeDir1A);
-
-		Vector3 scaledAxisB = B * cos(boundaryPlusTangentRadiusB);
-		// a point on the plane running through the tangent contact points
-		Quaternion tempVar3 = IKKusudama3D::get_quaternion_axis_angle(arc_normal, boundaryPlusTangentRadiusB);
-		Vector3 planeDir1B = tempVar3.xform(B);
-		// another point on the same plane
-		Quaternion tempVar4 = IKKusudama3D::get_quaternion_axis_angle(B, Math_PI / 2);
-		Vector3 planeDir2B = tempVar4.xform(planeDir1B);
-
-		// ray from scaled center of next cone to half way point between the circumference of this cone and the next cone.
-		Ref<IKRay3D> r1B = Ref<IKRay3D>(memnew(IKRay3D(planeDir1B, scaledAxisB)));
-		Ref<IKRay3D> r2B = Ref<IKRay3D>(memnew(IKRay3D(planeDir1B, planeDir2B)));
-
-		r1B->elongate(99);
-		r2B->elongate(99);
-
-		Vector3 intersection1 = r1B->get_intersects_plane(scaledAxisA, planeDir1A, planeDir2A);
-		Vector3 intersection2 = r2B->get_intersects_plane(scaledAxisA, planeDir1A, planeDir2A);
-
-		Ref<IKRay3D> intersectionRay = Ref<IKRay3D>(memnew(IKRay3D(intersection1, intersection2)));
-		intersectionRay->elongate(99);
-
-		Vector3 sphereIntersect1;
-		Vector3 sphereIntersect2;
-		Vector3 sphereCenter;
-		intersectionRay->intersects_sphere(sphereCenter, 1.0f, &sphereIntersect1, &sphereIntersect2);
-
-		set_tangent_circle_center_next_1(sphereIntersect1);
-		set_tangent_circle_center_next_2(sphereIntersect2);
-		_set_tangent_circle_radius_next(tRadius);
+void IKLimitCone3D::update_tangent_handles(Ref<IKLimitCone3D> p_next) {
+	if (p_next.is_null()) {
+		return;
 	}
-	if (tangent_circle_center_next_1 == Vector3(NAN, NAN, NAN)) {
-		tangent_circle_center_next_1 = _get_orthogonal(control_point).normalized();
+	double radA = get_radius();
+	double radB = p_next->get_radius();
+
+	Vector3 A = get_control_point();
+	Vector3 B = p_next->get_control_point();
+
+	Vector3 arc_normal = A.cross(B).normalized();
+
+	/**
+	 * There are an infinite number of circles co-tangent with A and B, every other
+	 * one of which has a unique radius.
+	 *
+	 * However, we want the radius of our tangent circles to obey the following properties:
+	 *   1) When the radius of A + B == 0, our tangent circle's radius should = 90.
+	 *   	In other words, the tangent circle should span a hemisphere.
+	 *   2) When the radius of A + B == 180, our tangent circle's radius should = 0.
+	 *   	In other words, when A + B combined are capable of spanning the entire sphere,
+	 *   	our tangentCircle should be nothing.
+	 *
+	 * Another way to think of this is -- whatever the maximum distance can be between the
+	 * borders of A and B (presuming their centers are free to move about the circle
+	 * but their radii remain constant), we want our tangentCircle's diameter to be precisely that distance,
+	 * and so, our tangent circles radius should be precisely half of that distance.
+	 */
+	double tRadius = (Math_PI - (radA + radB)) / 2;
+
+	/**
+	 * Once we have the desired radius for our tangent circle, we may find the solution for its
+	 * centers (usually, there are two).
+	 */
+	double boundaryPlusTangentRadiusA = radA + tRadius;
+	double boundaryPlusTangentRadiusB = radB + tRadius;
+
+	// the axis of this cone, scaled to minimize its distance to the tangent contact points.
+	Vector3 scaledAxisA = A * Math::cos(boundaryPlusTangentRadiusA);
+	// a point on the plane running through the tangent contact points
+	Quaternion temp_var = IKKusudama3D::get_quaternion_axis_angle(arc_normal, boundaryPlusTangentRadiusA);
+	Vector3 planeDir1A = temp_var.xform(A);
+	// another point on the same plane
+	Quaternion tempVar2 = IKKusudama3D::get_quaternion_axis_angle(A, Math_PI / 2);
+	Vector3 planeDir2A = tempVar2.xform(planeDir1A);
+
+	Vector3 scaledAxisB = B * cos(boundaryPlusTangentRadiusB);
+	// a point on the plane running through the tangent contact points
+	Quaternion tempVar3 = IKKusudama3D::get_quaternion_axis_angle(arc_normal, boundaryPlusTangentRadiusB);
+	Vector3 planeDir1B = tempVar3.xform(B);
+	// another point on the same plane
+	Quaternion tempVar4 = IKKusudama3D::get_quaternion_axis_angle(B, Math_PI / 2);
+	Vector3 planeDir2B = tempVar4.xform(planeDir1B);
+
+	// ray from scaled center of next cone to half way point between the circumference of this cone and the next cone.
+	Ref<IKRay3D> r1B = Ref<IKRay3D>(memnew(IKRay3D(planeDir1B, scaledAxisB)));
+	Ref<IKRay3D> r2B = Ref<IKRay3D>(memnew(IKRay3D(planeDir1B, planeDir2B)));
+
+	r1B->elongate(99);
+	r2B->elongate(99);
+
+	Vector3 intersection1 = r1B->get_intersects_plane(scaledAxisA, planeDir1A, planeDir2A);
+	Vector3 intersection2 = r2B->get_intersects_plane(scaledAxisA, planeDir1A, planeDir2A);
+
+	Ref<IKRay3D> intersectionRay = Ref<IKRay3D>(memnew(IKRay3D(intersection1, intersection2)));
+	intersectionRay->elongate(99);
+
+	Vector3 sphereIntersect1;
+	Vector3 sphereIntersect2;
+	Vector3 sphereCenter;
+	intersectionRay->intersects_sphere(sphereCenter, 1.0f, &sphereIntersect1, &sphereIntersect2);
+
+	set_tangent_circle_center_next_1(sphereIntersect1);
+	set_tangent_circle_center_next_2(sphereIntersect2);
+	set_tangent_circle_radius_next(tRadius);
+	if (Math::is_zero_approx(tangent_circle_center_next_1.length_squared())) {
+		tangent_circle_center_next_1 = get_orthogonal(control_point).normalized();
 	}
-	if (tangent_circle_center_next_2 == Vector3(NAN, NAN, NAN)) {
-		tangent_circle_center_next_2 = (tangent_circle_center_next_1 * -1).normalized();
+	if (Math::is_zero_approx(tangent_circle_center_next_2.length_squared())) {
+		tangent_circle_center_next_2 = get_orthogonal(tangent_circle_center_next_1 * -1).normalized();
 	}
 	if (p_next.is_valid()) {
 		compute_triangles(p_next);
 	}
 }
 
-void IKOpenCone3D::_set_tangent_circle_radius_next(double rad) {
+void IKLimitCone3D::set_tangent_circle_radius_next(double rad) {
 	tangent_circle_radius_next = rad;
 	tangent_circle_radius_next_cos = cos(tangent_circle_radius_next);
 }
 
-Vector3 IKOpenCone3D::get_tangent_circle_center_next_1() {
+Vector3 IKLimitCone3D::get_tangent_circle_center_next_1() {
 	return tangent_circle_center_next_1;
 }
 
-double IKOpenCone3D::get_tangent_circle_radius_next() {
+double IKLimitCone3D::get_tangent_circle_radius_next() {
 	return tangent_circle_radius_next;
 }
 
-double IKOpenCone3D::_get_tangent_circle_radius_next_cos() {
+double IKLimitCone3D::_get_tangent_circle_radius_next_cos() {
 	return tangent_circle_radius_next_cos;
 }
 
-Vector3 IKOpenCone3D::get_tangent_circle_center_next_2() {
+Vector3 IKLimitCone3D::get_tangent_circle_center_next_2() {
 	return tangent_circle_center_next_2;
 }
 
-double IKOpenCone3D::_get_radius() {
-	return radius;
-}
-
-double IKOpenCone3D::_get_radius_cosine() {
-	return radius_cosine;
-}
-
-void IKOpenCone3D::compute_triangles(Ref<IKOpenCone3D> p_next) {
+void IKLimitCone3D::compute_triangles(Ref<IKLimitCone3D> p_next) {
 	if (p_next.is_null()) {
 		return;
 	}
@@ -162,11 +153,11 @@ void IKOpenCone3D::compute_triangles(Ref<IKOpenCone3D> p_next) {
 	second_triangle_next.write[2] = p_next->get_control_point().normalized();
 }
 
-Vector3 IKOpenCone3D::get_control_point() const {
+Vector3 IKLimitCone3D::get_control_point() const {
 	return control_point;
 }
 
-void IKOpenCone3D::set_control_point(Vector3 p_control_point) {
+void IKLimitCone3D::set_control_point(Vector3 p_control_point) {
 	if (Math::is_zero_approx(p_control_point.length_squared())) {
 		control_point = Vector3(0, 1, 0);
 	} else {
@@ -175,20 +166,20 @@ void IKOpenCone3D::set_control_point(Vector3 p_control_point) {
 	}
 }
 
-double IKOpenCone3D::get_radius() const {
+double IKLimitCone3D::get_radius() const {
 	return radius;
 }
 
-double IKOpenCone3D::get_radius_cosine() const {
+double IKLimitCone3D::get_radius_cosine() const {
 	return radius_cosine;
 }
 
-void IKOpenCone3D::set_radius(double p_radius) {
+void IKLimitCone3D::set_radius(double p_radius) {
 	radius = p_radius;
 	radius_cosine = cos(p_radius);
 }
 
-bool IKOpenCone3D::_determine_if_in_bounds(Ref<IKOpenCone3D> next, Vector3 input) const {
+bool IKLimitCone3D::_determine_if_in_bounds(Ref<IKLimitCone3D> next, Vector3 input) const {
 	/**
 	 * Procedure : Check if input is contained in this cone, or the next cone
 	 * 	if it is, then we're finished and in bounds. otherwise,
@@ -242,10 +233,10 @@ bool IKOpenCone3D::_determine_if_in_bounds(Ref<IKOpenCone3D> next, Vector3 input
 	}
 }
 
-Vector3 IKOpenCone3D::get_closest_path_point(Ref<IKOpenCone3D> next, Vector3 input) const {
+Vector3 IKLimitCone3D::get_closest_path_point(Ref<IKLimitCone3D> next, Vector3 input) const {
 	Vector3 result;
 	if (next.is_null()) {
-		result = _closest_cone(Ref<IKOpenCone3D>(this), input);
+		result = _closest_cone(Ref<IKLimitCone3D>(this), input);
 	} else {
 		result = _get_on_path_sequence(next, input);
 		bool is_number = !(Math::is_nan(result.x) && Math::is_nan(result.y) && Math::is_nan(result.z));
@@ -256,12 +247,12 @@ Vector3 IKOpenCone3D::get_closest_path_point(Ref<IKOpenCone3D> next, Vector3 inp
 	return result;
 }
 
-Vector3 IKOpenCone3D::_get_closest_collision(Ref<IKOpenCone3D> next, Vector3 input) const {
+Vector3 IKLimitCone3D::_get_closest_collision(Ref<IKLimitCone3D> next, Vector3 input) const {
 	ERR_FAIL_COND_V(next.is_null(), input);
 	Vector3 result;
 	if (next.is_null()) {
 		Vector<double> in_bounds = { 0.0 };
-		result = _closest_cone(Ref<IKOpenCone3D>(), input);
+		result = _closest_cone(Ref<IKLimitCone3D>(), input);
 	} else {
 		result = get_on_great_tangent_triangle(next, input);
 		bool is_number = !(Math::is_nan(result.x) && Math::is_nan(result.y) && Math::is_nan(result.z));
@@ -273,7 +264,7 @@ Vector3 IKOpenCone3D::_get_closest_collision(Ref<IKOpenCone3D> next, Vector3 inp
 	return result;
 }
 
-Vector3 IKOpenCone3D::_get_orthogonal(Vector3 p_in) {
+Vector3 IKLimitCone3D::get_orthogonal(Vector3 p_in) {
 	Vector3 result;
 	float threshold = p_in.length() * 0.6f;
 	if (threshold > 0.f) {
@@ -291,7 +282,7 @@ Vector3 IKOpenCone3D::_get_orthogonal(Vector3 p_in) {
 	return result;
 }
 
-Vector3 IKOpenCone3D::get_on_great_tangent_triangle(Ref<IKOpenCone3D> next, Vector3 input) const {
+Vector3 IKLimitCone3D::get_on_great_tangent_triangle(Ref<IKLimitCone3D> next, Vector3 input) const {
 	ERR_FAIL_COND_V(next.is_null(), input);
 	Vector3 c1xc2 = control_point.cross(next->control_point);
 	double c1c2dir = input.dot(c1xc2);
@@ -329,7 +320,7 @@ Vector3 IKOpenCone3D::get_on_great_tangent_triangle(Ref<IKOpenCone3D> next, Vect
 	}
 }
 
-Vector3 IKOpenCone3D::_closest_cone(Ref<IKOpenCone3D> next, Vector3 input) const {
+Vector3 IKLimitCone3D::_closest_cone(Ref<IKLimitCone3D> next, Vector3 input) const {
 	if (next.is_null()) {
 		return control_point;
 	}
@@ -340,7 +331,7 @@ Vector3 IKOpenCone3D::_closest_cone(Ref<IKOpenCone3D> next, Vector3 input) const
 	}
 }
 
-Vector3 IKOpenCone3D::_closest_point_on_closest_cone(Ref<IKOpenCone3D> next, Vector3 input, Vector<double> *in_bounds) const {
+Vector3 IKLimitCone3D::_closest_point_on_closest_cone(Ref<IKLimitCone3D> next, Vector3 input, Vector<double> *in_bounds) const {
 	ERR_FAIL_COND_V(next.is_null(), input);
 	Vector3 closestToFirst = closest_to_cone(input, in_bounds);
 	if (in_bounds != nullptr && (*in_bounds)[0] > 0.0) {
@@ -364,7 +355,7 @@ Vector3 IKOpenCone3D::_closest_point_on_closest_cone(Ref<IKOpenCone3D> next, Vec
 	}
 }
 
-Vector3 IKOpenCone3D::closest_to_cone(Vector3 input, Vector<double> *in_bounds) const {
+Vector3 IKLimitCone3D::closest_to_cone(Vector3 input, Vector<double> *in_bounds) const {
 	Vector3 normalized_input = input.normalized();
 	Vector3 normalized_control_point = get_control_point().normalized();
 	if (normalized_input.dot(normalized_control_point) > get_radius_cosine()) {
@@ -389,15 +380,15 @@ Vector3 IKOpenCone3D::closest_to_cone(Vector3 input, Vector<double> *in_bounds) 
 	return result;
 }
 
-void IKOpenCone3D::set_tangent_circle_center_next_1(Vector3 point) {
+void IKLimitCone3D::set_tangent_circle_center_next_1(Vector3 point) {
 	tangent_circle_center_next_1 = point.normalized();
 }
 
-void IKOpenCone3D::set_tangent_circle_center_next_2(Vector3 point) {
+void IKLimitCone3D::set_tangent_circle_center_next_2(Vector3 point) {
 	tangent_circle_center_next_2 = point.normalized();
 }
 
-Vector3 IKOpenCone3D::_get_on_path_sequence(Ref<IKOpenCone3D> next, Vector3 input) const {
+Vector3 IKLimitCone3D::_get_on_path_sequence(Ref<IKLimitCone3D> next, Vector3 input) const {
 	if (next.is_null()) {
 		return Vector3(NAN, NAN, NAN);
 	}
@@ -426,10 +417,10 @@ Vector3 IKOpenCone3D::_get_on_path_sequence(Ref<IKOpenCone3D> next, Vector3 inpu
 	}
 }
 
-void IKOpenCone3D::set_attached_to(Ref<IKKusudama3D> p_attached_to) {
+void IKLimitCone3D::set_attached_to(Ref<IKKusudama3D> p_attached_to) {
 	parent_kusudama.set_ref(p_attached_to);
 }
 
-Ref<IKKusudama3D> IKOpenCone3D::get_attached_to() {
+Ref<IKKusudama3D> IKLimitCone3D::get_attached_to() {
 	return parent_kusudama.get_ref();
 }

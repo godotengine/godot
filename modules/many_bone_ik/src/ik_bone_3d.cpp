@@ -106,7 +106,7 @@ void IKBone3D::update_default_constraint_transform() {
 		return;
 	}
 
-	TypedArray<IKOpenCone3D> cones = constraint->get_open_cones();
+	TypedArray<IKLimitCone3D> cones = constraint->get_open_cones();
 	Vector3 direction;
 	if (cones.size() == 0) {
 		direction = bone_direction_transform->get_global_transform().basis.get_column(Vector3::AXIS_Y);
@@ -214,7 +214,7 @@ IKBone3D::IKBone3D(StringName p_bone, Skeleton3D *p_skeleton, const Ref<IKBone3D
 			create_pin();
 			Ref<IKEffector3D> effector = get_pin();
 			effector->set_target_node(p_skeleton, elem->get_target_node());
-			effector->set_passthrough_factor(elem->get_passthrough_factor());
+			effector->set_motion_propagation_factor(elem->get_motion_propagation_factor());
 			effector->set_weight(elem->get_weight());
 			effector->set_direction_priorities(elem->get_direction_priorities());
 			break;
@@ -336,10 +336,10 @@ Transform3D IKBone3D::get_set_constraint_twist_transform() const {
 	return constraint_orientation_transform->get_global_transform();
 }
 
-float IKBone3D::calculate_total_radius_sum(const TypedArray<IKOpenCone3D> &p_cones) const {
+float IKBone3D::calculate_total_radius_sum(const TypedArray<IKLimitCone3D> &p_cones) const {
 	float total_radius_sum = 0.0f;
 	for (int32_t i = 0; i < p_cones.size(); ++i) {
-		const Ref<IKOpenCone3D> &cone = p_cones[i];
+		const Ref<IKLimitCone3D> &cone = p_cones[i];
 		if (cone.is_null()) {
 			break;
 		}
@@ -348,10 +348,10 @@ float IKBone3D::calculate_total_radius_sum(const TypedArray<IKOpenCone3D> &p_con
 	return total_radius_sum;
 }
 
-Vector3 IKBone3D::calculate_weighted_direction(const TypedArray<IKOpenCone3D> &p_cones, float p_total_radius_sum) const {
+Vector3 IKBone3D::calculate_weighted_direction(const TypedArray<IKLimitCone3D> &p_cones, float p_total_radius_sum) const {
 	Vector3 direction = Vector3();
 	for (int32_t i = 0; i < p_cones.size(); ++i) {
-		const Ref<IKOpenCone3D> &cone = p_cones[i];
+		const Ref<IKLimitCone3D> &cone = p_cones[i];
 		if (cone.is_null()) {
 			break;
 		}

@@ -129,7 +129,7 @@ void ManyBoneIK3DGizmoPlugin::create_gizmo_mesh(BoneId current_bone_idx, Ref<IKB
 	if (ik_kusudama.is_null()) {
 		return;
 	}
-	const TypedArray<IKOpenCone3D> &open_cones = ik_kusudama->get_open_cones();
+	const TypedArray<IKLimitCone3D> &open_cones = ik_kusudama->get_open_cones();
 	if (!open_cones.size()) {
 		return;
 	}
@@ -149,7 +149,7 @@ void ManyBoneIK3DGizmoPlugin::create_gizmo_mesh(BoneId current_bone_idx, Ref<IKB
 	PackedFloat32Array kusudama_open_cones;
 	Ref<IKKusudama3D> kusudama = ik_bone->get_constraint();
 	for (int32_t cone_i = 0; cone_i < open_cones.size(); cone_i++) {
-		Ref<IKOpenCone3D> open_cone = open_cones[cone_i];
+		Ref<IKLimitCone3D> open_cone = open_cones[cone_i];
 		Vector3 control_point = open_cone->get_control_point();
 		PackedFloat32Array new_kusudama_open_cones;
 		new_kusudama_open_cones.resize(4 * 3);
@@ -589,7 +589,7 @@ void vertex() {
 	}
 	VERTEX = VERTEX;
 	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
-	POSITION.z = mix(POSITION.z, 0, 0.998);
+	POSITION.z = mix(POSITION.z, POSITION.w, 0.999);
 }
 void fragment() {
 	ALBEDO = COLOR.rgb;

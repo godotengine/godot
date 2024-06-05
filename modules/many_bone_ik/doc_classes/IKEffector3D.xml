@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="passthrough_factor" type="float" setter="set_passthrough_factor" getter="get_passthrough_factor" default="0.0">
+		<member name="motion_propagation_factor" type="float" setter="set_motion_propagation_factor" getter="get_motion_propagation_factor" default="0.0">
 			Pins can be ultimate targets or intermediary targets.
 			By default, each pin is treated as an ultimate target, meaning any bones which are ancestors to that pin's effector are not aware of any pins which are the target of bones descending from that effector.
 			Changing this value makes ancestor bones aware and determines how much less they care with each level down.

@@ -1258,6 +1258,7 @@ bool HeightFieldShape::SetMaterials(uint inX, uint inY, uint inSizeX, uint inSiz
 	if (mMaterials.size() == 1)
 	{
 		// Only 1 material, we don't need to store the material indices
+		inAllocator.Free(material_remap_table, material_remap_table_size);
 		return true;
 	}
 

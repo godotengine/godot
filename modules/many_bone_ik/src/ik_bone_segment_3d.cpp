@@ -53,10 +53,10 @@ Vector<Ref<IKBoneSegment3D>> IKBoneSegment3D::get_child_segments() const {
 	return child_segments;
 }
 
-void IKBoneSegment3D::create_bone_list(Vector<Ref<IKBone3D>> &p_list, bool p_recursive, bool p_debug_skeleton) const {
+void IKBoneSegment3D::create_bone_list(Vector<Ref<IKBone3D>> &p_list, bool p_recursive) const {
 	if (p_recursive) {
 		for (int32_t child_i = 0; child_i < child_segments.size(); child_i++) {
-			child_segments[child_i]->create_bone_list(p_list, p_recursive, p_debug_skeleton);
+			child_segments[child_i]->create_bone_list(p_list, p_recursive);
 		}
 	}
 	Ref<IKBone3D> current_bone = tip;
@@ -67,25 +67,6 @@ void IKBoneSegment3D::create_bone_list(Vector<Ref<IKBone3D>> &p_list, bool p_rec
 			break;
 		}
 		current_bone = current_bone->get_parent();
-	}
-	if (p_debug_skeleton) {
-		for (int32_t name_i = 0; name_i < list.size(); name_i++) {
-			BoneId bone = list[name_i]->get_bone_id();
-
-			String bone_name = skeleton->get_bone_name(bone);
-			String effector;
-			if (list[name_i]->is_pinned()) {
-				effector += "Effector ";
-			}
-			String prefix;
-			if (list[name_i] == root) {
-				prefix += "(" + effector + "Root) ";
-			}
-			if (list[name_i] == tip) {
-				prefix += "(" + effector + "Tip) ";
-			}
-			print_line(vformat("%s%s (%s)", prefix, bone_name, itos(bone)));
-		}
 	}
 	p_list.append_array(list);
 }
@@ -98,8 +79,8 @@ void IKBoneSegment3D::update_pinned_list(Vector<Vector<double>> &r_weights) {
 	if (is_pinned()) {
 		effector_list.push_back(tip->get_pin());
 	}
-	double passthrough_factor = is_pinned() ? tip->get_pin()->passthrough_factor : 1.0;
-	if (passthrough_factor > 0.0) {
+	double motion_propagation_factor = is_pinned() ? tip->get_pin()->motion_propagation_factor : 1.0;
+	if (motion_propagation_factor > 0.0) {
 		for (Ref<IKBoneSegment3D> child : child_segments) {
 			effector_list.append_array(child->effector_list);
 		}
@@ -145,7 +126,7 @@ float IKBoneSegment3D::_get_manual_msd(const PackedVector3Array &r_htip, const P
 	return manual_RMSD;
 }
 
-void IKBoneSegment3D::_set_optimal_rotation(Ref<IKBone3D> p_for_bone, PackedVector3Array *r_htip, PackedVector3Array *r_htarget, Vector<double> *r_weights, float p_dampening, bool p_translate, bool p_constraint_mode, int32_t current_iteration, int32_t total_iterations) {
+void IKBoneSegment3D::_set_optimal_rotation(Ref<IKBone3D> p_for_bone, PackedVector3Array *r_htip, PackedVector3Array *r_htarget, Vector<double> *r_weights, float p_dampening, bool p_translate, bool p_constraint_mode, double current_iteration, double total_iterations) {
 	ERR_FAIL_NULL(p_for_bone);
 	ERR_FAIL_NULL(r_htip);
 	ERR_FAIL_NULL(r_htarget);
@@ -164,7 +145,11 @@ void IKBoneSegment3D::_set_optimal_rotation(Ref<IKBone3D> p_for_bone, PackedVect
 			Vector3 translation = qcp.get_translation();
 			double dampening = (p_dampening != -1.0) ? p_dampening : bone_damp;
 			rotation = clamp_to_cos_half_angle(rotation.get_rotation_quaternion(), cos(dampening / 2.0));
-			p_for_bone->get_ik_transform()->rotate_local_with_global(rotation.get_rotation_quaternion());
+			if (current_iteration == 0) {
+				current_iteration = 0.0001;
+			}
+			rotation = rotation.slerp(p_for_bone->get_global_pose().basis, static_cast<double>(total_iterations) / current_iteration);
+			p_for_bone->get_ik_transform()->rotate_local_with_global(rotation);
 			Transform3D result = Transform3D(p_for_bone->get_global_pose().basis, p_for_bone->get_global_pose().origin + translation);
 			p_for_bone->set_global_pose(result);
 		}
@@ -349,7 +334,7 @@ void IKBoneSegment3D::recursive_create_penalty_array(Ref<IKBoneSegment3D> p_bone
 
 		r_penalty_array.push_back(inner_weight_array);
 		r_pinned_bones.push_back(current_tip);
-		current_falloff = pin->get_passthrough_factor();
+		current_falloff = pin->get_motion_propagation_factor();
 	}
 
 	for (Ref<IKBoneSegment3D> s : p_bone_segment->get_child_segments()) {

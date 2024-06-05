@@ -3,12 +3,13 @@
 #include "scene/3d/node_3d.h"
 #include "core/object/ref_counted.h"
 #include "modules/limboai/bt/bt_player.h"
+#include "scene/3d/physics/character_body_3d.h"
 
 // 用来检测角色的一些状态
 class CharacterAI_CheckBase : public RefCounted
 {
     public:
-    virtual void execute(Node3D *node, Blackboard* blackboard)
+    virtual void execute(CharacterBody3D *node, Blackboard* blackboard)
     {
 
     }
@@ -20,7 +21,7 @@ class CharacterAI_CheckGround : public CharacterAI_CheckBase
 {
 
 public:
-    void execute(Node3D *node, Blackboard* blackboard);
+    void execute(CharacterBody3D *node, Blackboard* blackboard);
 
 	PhysicsDirectSpaceState3D::RayResult result;
     float check_move_height;

@@ -153,12 +153,12 @@ void IKEffector3D::_bind_methods() {
 			&IKEffector3D::set_target_node);
 	ClassDB::bind_method(D_METHOD("get_target_node"),
 			&IKEffector3D::get_target_node);
-	ClassDB::bind_method(D_METHOD("set_passthrough_factor", "amount"),
-			&IKEffector3D::set_passthrough_factor);
-	ClassDB::bind_method(D_METHOD("get_passthrough_factor"),
-			&IKEffector3D::get_passthrough_factor);
+	ClassDB::bind_method(D_METHOD("set_motion_propagation_factor", "amount"),
+			&IKEffector3D::set_motion_propagation_factor);
+	ClassDB::bind_method(D_METHOD("get_motion_propagation_factor"),
+			&IKEffector3D::get_motion_propagation_factor);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "passthrough_factor"), "set_passthrough_factor", "get_passthrough_factor");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_propagation_factor"), "set_motion_propagation_factor", "get_motion_propagation_factor");
 }
 
 void IKEffector3D::set_weight(real_t p_weight) {
@@ -174,10 +174,10 @@ IKEffector3D::IKEffector3D(const Ref<IKBone3D> &p_current_bone) {
 	for_bone = p_current_bone;
 }
 
-void IKEffector3D::set_passthrough_factor(float p_passthrough_factor) {
-	passthrough_factor = CLAMP(p_passthrough_factor, 0.0, 1.0);
+void IKEffector3D::set_motion_propagation_factor(float p_motion_propagation_factor) {
+	motion_propagation_factor = CLAMP(p_motion_propagation_factor, 0.0, 1.0);
 }
 
-float IKEffector3D::get_passthrough_factor() const {
-	return passthrough_factor;
+float IKEffector3D::get_motion_propagation_factor() const {
+	return motion_propagation_factor;
 }

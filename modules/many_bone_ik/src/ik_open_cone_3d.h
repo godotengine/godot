@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  ik_open_cone_3d.h                                                    */
+/*  ik_open_cone_3d.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,17 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IK_open_cone_3D_H
-#define IK_open_cone_3D_H
+#ifndef IK_OPEN_CONE_3D_H
+#define IK_OPEN_CONE_3D_H
 
 #include "core/io/resource.h"
 #include "core/math/vector3.h"
 #include "core/object/ref_counted.h"
 
 class IKKusudama3D;
-class IKOpenCone3D : public Resource {
-	GDCLASS(IKOpenCone3D, Resource);
-	void compute_triangles(Ref<IKOpenCone3D> p_next);
+class IKLimitCone3D : public Resource {
+	GDCLASS(IKLimitCone3D, Resource);
+	void compute_triangles(Ref<IKLimitCone3D> p_next);
 
 	Vector3 control_point = Vector3(0, 1, 0);
 	Vector3 radial_point;
@@ -46,8 +46,8 @@ class IKOpenCone3D : public Resource {
 	// Radius stored as cosine to save on the acos call necessary for the angle between.
 	double radius_cosine = 0;
 	double radius = 0;
-	Vector3 _closest_cone(Ref<IKOpenCone3D> next, Vector3 input) const;
-	void _set_tangent_circle_radius_next(double rad);
+	Vector3 _closest_cone(Ref<IKLimitCone3D> next, Vector3 input) const;
+	void set_tangent_circle_radius_next(double rad);
 	WeakRef parent_kusudama;
 
 	Vector3 tangent_circle_center_next_1;
@@ -70,7 +70,7 @@ class IKOpenCone3D : public Resource {
 	 * @return null if the input point is already in bounds, or the point's rectified position
 	 * if the point was out of bounds.
 	 */
-	Vector3 _get_closest_collision(Ref<IKOpenCone3D> next, Vector3 input) const;
+	Vector3 _get_closest_collision(Ref<IKLimitCone3D> next, Vector3 input) const;
 
 	/**
 	 * Determines if a ray emanating from the origin to given point in local space
@@ -82,8 +82,8 @@ class IKOpenCone3D : public Resource {
 	 * @param input
 	 * @return
 	 */
-	bool _determine_if_in_bounds(Ref<IKOpenCone3D> next, Vector3 input) const;
-	Vector3 _get_on_path_sequence(Ref<IKOpenCone3D> next, Vector3 input) const;
+	bool _determine_if_in_bounds(Ref<IKLimitCone3D> next, Vector3 input) const;
+	Vector3 _get_on_path_sequence(Ref<IKLimitCone3D> next, Vector3 input) const;
 
 	/**
 	 * returns null if no rectification is required.
@@ -92,22 +92,16 @@ class IKOpenCone3D : public Resource {
 	 * @param in_bounds
 	 * @return
 	 */
-	Vector3 _closest_point_on_closest_cone(Ref<IKOpenCone3D> next, Vector3 input, Vector<double> *in_bounds) const;
+	Vector3 _closest_point_on_closest_cone(Ref<IKLimitCone3D> next, Vector3 input, Vector<double> *in_bounds) const;
 
 	double _get_tangent_circle_radius_next_cos();
-	static Vector3 _get_orthogonal(Vector3 p_in);
-
-protected:
-	double _get_radius();
-
-	double _get_radius_cosine();
 
 public:
-	IKOpenCone3D() {}
-	virtual ~IKOpenCone3D() {}
+	IKLimitCone3D() {}
+	virtual ~IKLimitCone3D() {}
 	void set_attached_to(Ref<IKKusudama3D> p_attached_to);
 	Ref<IKKusudama3D> get_attached_to();
-	void update_tangent_handles(Ref<IKOpenCone3D> p_next);
+	void update_tangent_handles(Ref<IKLimitCone3D> p_next);
 	void set_tangent_circle_center_next_1(Vector3 point);
 	void set_tangent_circle_center_next_2(Vector3 point);
 	/**
@@ -117,7 +111,7 @@ public:
 	 * @return null if inapplicable for rectification. the original point if in bounds, or the point rectified to the closest boundary on the path sequence
 	 * between two cones if the point is out of bounds and applicable for rectification.
 	 */
-	Vector3 get_on_great_tangent_triangle(Ref<IKOpenCone3D> next, Vector3 input) const;
+	Vector3 get_on_great_tangent_triangle(Ref<IKLimitCone3D> next, Vector3 input) const;
 	double get_tangent_circle_radius_next();
 	Vector3 get_tangent_circle_center_next_1();
 	Vector3 get_tangent_circle_center_next_2();
@@ -129,12 +123,13 @@ public:
 	 * @return
 	 */
 	Vector3 closest_to_cone(Vector3 input, Vector<double> *in_bounds) const;
-	Vector3 get_closest_path_point(Ref<IKOpenCone3D> next, Vector3 input) const;
+	Vector3 get_closest_path_point(Ref<IKLimitCone3D> next, Vector3 input) const;
 	Vector3 get_control_point() const;
 	void set_control_point(Vector3 p_control_point);
 	double get_radius() const;
 	double get_radius_cosine() const;
 	void set_radius(double radius);
+	static Vector3 get_orthogonal(Vector3 p_input);
 };
 
-#endif // IK_open_cone_3D_H
+#endif // IK_OPEN_CONE_3D_H

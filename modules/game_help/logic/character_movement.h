@@ -15,6 +15,7 @@ class CharacterMovement : public RefCounted
 public:
     void update();
     const Transform3D& get_global_transform();
+    void set_world_transform(const Transform3D & p_trans);
     void set_attach_target(ObjectID id);
     void detach_target();
     void moveing(const Vector3& pos);

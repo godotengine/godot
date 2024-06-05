@@ -40,7 +40,7 @@ class IKEffectorTemplate3D : public Resource {
 	StringName root_bone;
 	NodePath target_node;
 	bool target_static = false;
-	real_t passthrough_factor = 0.0f;
+	real_t motion_propagation_factor = 1.0f;
 	real_t weight = 0.0f;
 	Vector3 priority_direction = Vector3(0.2f, 0.0f, 0.2f); // Purported ideal values are 1.0 / 3.0 for one direction, 1.0 / 5.0 for two directions and 1.0 / 7.0 for three directions.
 protected:
@@ -51,8 +51,8 @@ public:
 	void set_root_bone(String p_root_bone);
 	NodePath get_target_node() const;
 	void set_target_node(NodePath p_node_path);
-	float get_passthrough_factor() const;
-	void set_passthrough_factor(float p_passthrough_factor);
+	float get_motion_propagation_factor() const;
+	void set_motion_propagation_factor(float p_motion_propagation_factor);
 	real_t get_weight() const { return weight; }
 	void set_weight(real_t p_weight) { weight = p_weight; }
 	Vector3 get_direction_priorities() const { return priority_direction; }

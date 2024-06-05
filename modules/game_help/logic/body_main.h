@@ -8,12 +8,12 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/physics/character_body_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
-#include "scene/3d/physics/area_3d.h"
 #include "body_part.h"
 #include "animator/animation_help.h"
 #include "animator/body_animator.h"
 #include "character_movement.h"
 #include "character_ai/character_ai.h"
+#include "character_check_area_3d.h"
 
 
 #include "modules/limboai/bt/bt_player.h"
@@ -31,6 +31,7 @@ class BodySocket
     }
 
 };
+
 // 身体主要部件部分
 class CharacterBodyMain : public CharacterBody3D {
     GDCLASS(CharacterBodyMain, CharacterBody3D);
@@ -105,25 +106,26 @@ public:
      {
         return mainShape; 
     }
-    void set_area_shape(const Ref<CollisionObject3DConnection>& p_shape) {
-        if(areaShape.is_null() || p_shape.is_valid())
+    void set_check_area(const TypedArray<CharacterCheckArea3D> &p_check_area)
+    {
+        check_area.clear();
+        for(int i = 0;i<p_check_area.size();i++)
         {
-            areaShape = p_shape;
-            areaShape->set_link_target(areaCollision);
+            check_area.push_back(p_check_area[i]);
         }
+        on_update_area();
     }
-    Ref<CollisionObject3DConnection> get_area_shape()
-     {
-        return areaShape; 
-    }
-    void on_body_enter_area(Node3D *p_area)
+    TypedArray<CharacterCheckArea3D> get_check_area()
     {
+        TypedArray<CharacterCheckArea3D> ret;
+        for(uint32_t i = 0;i<check_area.size();i++)
+        {
+            ret.push_back(check_area[i]);
+        }
+        return ret;
+    }
+    
 
-    }
-    void on_body_exit_area(Node3D *p_area)
-    {
-        
-    }
 public:
     // 初始化身體分組信息
     void init_body_part_array(const Array& p_part_array);
@@ -272,7 +274,28 @@ protected:
     void skill_tree_finished(int last_status);
     void skill_tree_update(int last_status);
 
-
+protected:
+	virtual void update_world_transform(const Transform3D & trans) override
+	{
+        if(character_movement.is_valid())
+        {
+            character_movement->set_world_transform(trans);
+        }
+        else
+        {
+		    set_global_transform(trans);
+        }
+	}
+    void on_update_area()
+    {
+        for(uint32_t i = 0; i < check_area.size();++i)
+        {
+            if(check_area[i].is_valid())
+            {
+                check_area[i]->set_body_main(this);
+            }
+        }
+    }
 
 protected:
     Skeleton3D *skeleton = nullptr;
@@ -300,14 +323,12 @@ protected:
     // 身体部件信息
     HashMap<StringName,Ref<CharacterBodyPartInstane>> bodyPart;
     Ref<CharacterAnimator>    animator;
+    LocalVector<Ref<CharacterCheckArea3D>> check_area;
     
     Ref<CharacterAnimationLibrary> animation_library;
     Ref<class CharacterController>  controller;
     // 初始化数据
     Dictionary init_data;
-    
-
-
 };
 
 class CharacterBodyMain;

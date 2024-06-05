@@ -76,7 +76,7 @@ void IKKusudama3D::_update_constraint(Ref<IKNode3D> p_limiting_axes) {
 	Quaternion old_y_to_new_y = Quaternion(p_limiting_axes->get_global_transform().get_basis().get_column(Vector3::AXIS_Y).normalized(), p_limiting_axes->get_global_transform().get_basis().xform(new_y_ray.origin).normalized());
 	p_limiting_axes->rotate_local_with_global(old_y_to_new_y);
 
-	for (Ref<IKOpenCone3D> open_cone : open_cones) {
+	for (Ref<IKLimitCone3D> open_cone : open_cones) {
 		if (open_cone == nullptr) {
 			continue;
 		}
@@ -90,12 +90,12 @@ void IKKusudama3D::_update_constraint(Ref<IKNode3D> p_limiting_axes) {
 
 void IKKusudama3D::update_tangent_radii() {
 	for (int i = 0; i < open_cones.size(); i++) {
-		Ref<IKOpenCone3D> current = open_cones.write[i];
-		Ref<IKOpenCone3D> next;
+		Ref<IKLimitCone3D> current = open_cones.write[i];
+		Ref<IKLimitCone3D> next;
 		if (i < open_cones.size() - 1) {
 			next = open_cones.write[i + 1];
 		}
-		Ref<IKOpenCone3D> cone = open_cones[i];
+		Ref<IKLimitCone3D> cone = open_cones[i];
 		cone->update_tangent_handles(next);
 	}
 }
@@ -158,16 +158,14 @@ void IKKusudama3D::get_swing_twist(
 }
 
 void IKKusudama3D::add_open_cone(
-		Ref<IKOpenCone3D> p_cone) {
+		Ref<IKLimitCone3D> p_cone) {
 	ERR_FAIL_COND(p_cone.is_null());
 	ERR_FAIL_COND(p_cone->get_attached_to().is_null());
-	ERR_FAIL_COND(Math::is_zero_approx(p_cone->get_tangent_circle_center_next_1().length_squared()));
-	ERR_FAIL_COND(Math::is_zero_approx(p_cone->get_tangent_circle_center_next_2().length_squared()));
-	ERR_FAIL_COND(Math::is_zero_approx(p_cone->get_control_point().length_squared()));
 	open_cones.push_back(p_cone);
+	update_tangent_radii();
 }
 
-void IKKusudama3D::remove_open_cone(Ref<IKOpenCone3D> limitCone) {
+void IKKusudama3D::remove_open_cone(Ref<IKLimitCone3D> limitCone) {
 	ERR_FAIL_COND(limitCone.is_null());
 	open_cones.erase(limitCone);
 }
@@ -226,9 +224,9 @@ void IKKusudama3D::enable() {
 	orientationally_constrained = true;
 }
 
-TypedArray<IKOpenCone3D> IKKusudama3D::get_open_cones() const {
-	TypedArray<IKOpenCone3D> cones;
-	for (Ref<IKOpenCone3D> cone : open_cones) {
+TypedArray<IKLimitCone3D> IKKusudama3D::get_open_cones() const {
+	TypedArray<IKLimitCone3D> cones;
+	for (Ref<IKLimitCone3D> cone : open_cones) {
 		cones.append(cone);
 	}
 	return cones;
@@ -241,12 +239,12 @@ Vector3 IKKusudama3D::local_point_on_path_sequence(Vector3 p_in_point, Ref<IKNod
 	Vector3 result = point;
 
 	if (open_cones.size() == 1) {
-		Ref<IKOpenCone3D> cone = open_cones[0];
+		Ref<IKLimitCone3D> cone = open_cones[0];
 		result = cone->get_control_point();
 	} else {
 		for (int i = 0; i < open_cones.size() - 1; i++) {
-			Ref<IKOpenCone3D> next_cone = open_cones[i + 1];
-			Ref<IKOpenCone3D> cone = open_cones[i];
+			Ref<IKLimitCone3D> next_cone = open_cones[i + 1];
+			Ref<IKLimitCone3D> cone = open_cones[i];
 			Vector3 closestPathPoint = cone->get_closest_path_point(next_cone, point);
 			double closeDot = closestPathPoint.dot(point);
 			if (closeDot > closest_point_dot) {
@@ -282,7 +280,7 @@ Vector3 IKKusudama3D::get_local_point_in_limits(Vector3 in_point, Vector<double>
 
 	// Loop through each limit cone
 	for (int i = 0; i < open_cones.size(); i++) {
-		Ref<IKOpenCone3D> cone = open_cones[i];
+		Ref<IKLimitCone3D> cone = open_cones[i];
 		Vector3 collision_point = cone->closest_to_cone(point, in_bounds);
 
 		// If the collision point is NaN, return the original point
@@ -304,8 +302,8 @@ Vector3 IKKusudama3D::get_local_point_in_limits(Vector3 in_point, Vector<double>
 	// If we're out of bounds of all cones, check if we're in the paths between the cones
 	if ((*in_bounds)[0] == -1) {
 		for (int i = 0; i < open_cones.size() - 1; i++) {
-			Ref<IKOpenCone3D> currCone = open_cones[i];
-			Ref<IKOpenCone3D> nextCone = open_cones[i + 1];
+			Ref<IKLimitCone3D> currCone = open_cones[i];
+			Ref<IKLimitCone3D> nextCone = open_cones[i + 1];
 			Vector3 collision_point = currCone->get_on_great_tangent_triangle(nextCone, point);
 
 			// If the collision point is NaN, skip to the next iteration
@@ -338,7 +336,7 @@ void IKKusudama3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_open_cones", "open_cones"), &IKKusudama3D::set_open_cones);
 }
 
-void IKKusudama3D::set_open_cones(TypedArray<IKOpenCone3D> p_cones) {
+void IKKusudama3D::set_open_cones(TypedArray<IKLimitCone3D> p_cones) {
 	open_cones.clear();
 	open_cones.resize(p_cones.size());
 	for (int32_t i = 0; i < p_cones.size(); i++) {

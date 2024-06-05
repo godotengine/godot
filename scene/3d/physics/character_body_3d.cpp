@@ -186,7 +186,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 				if (result.travel.length() <= margin + CMP_EPSILON) {
 					gt.origin -= result.travel;
 				}
-				set_global_transform(gt);
+				update_world_transform(gt);
 				velocity = Vector3();
 				motion = Vector3();
 				last_motion = Vector3();
@@ -234,7 +234,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 								result.travel = result.travel.slide(up_direction);
 								motion = result.remainder;
 							}
-							set_global_transform(gt);
+							update_world_transform(gt);
 							// Determines if you are on the ground, and limits the possibility of climbing on the walls because of the approximations.
 							_snap_on_floor(true, false);
 						} else {
@@ -359,7 +359,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 			sliding_enabled = true;
 			Transform3D gt = get_global_transform();
 			gt.origin = gt.origin - result.travel;
-			set_global_transform(gt);
+			update_world_transform(gt);
 
 			// Slide using the intersection between the motion plane and the floor plane,
 			// in order to keep the direction intact.
@@ -422,7 +422,7 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 				if (result.travel.length() < margin + CMP_EPSILON) {
 					Transform3D gt = get_global_transform();
 					gt.origin -= result.travel;
-					set_global_transform(gt);
+					update_world_transform(gt);
 				}
 			} else if (first_slide) {
 				Vector3 motion_slide_norm = result.remainder.slide(wall_normal).normalized();
@@ -475,7 +475,7 @@ void CharacterBody3D::apply_floor_snap() {
 			}
 
 			parameters.from.origin += result.travel;
-			set_global_transform(parameters.from);
+			update_world_transform(parameters.from);
 		}
 	}
 }

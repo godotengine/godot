@@ -111,6 +111,19 @@ void CharacterMovement::moveing_up(float dis)
 {
     moveing(Vector3(0,1,0)*dis);
 }
+void CharacterMovement::set_world_transform(const Transform3D & p_trans)
+{
+    if(!is_move)
+    {
+        return;
+    }
+    world_pos = p_trans;
+    if(attach_target.is_valid())
+    {
+        local_rot = attach_world_pos.inverse() * world_pos;
+    }
+    update();
+}
 
 
 void CharacterMovement::on_attach_target_exit()
