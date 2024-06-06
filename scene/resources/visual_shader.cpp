@@ -5162,11 +5162,11 @@ VisualShaderNodeVarying::PortType VisualShaderNodeVarying::get_port_type(VisualS
 		case VisualShader::VARYING_TYPE_UINT:
 			return PORT_TYPE_SCALAR_UINT;
 		case VisualShader::VARYING_TYPE_VECTOR_2D:
-			return PORT_TYPE_VECTOR_2D;
+			return p_port == 0 ? PORT_TYPE_VECTOR_2D : PORT_TYPE_SCALAR;
 		case VisualShader::VARYING_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR_3D;
+			return p_port == 0 ? PORT_TYPE_VECTOR_3D : PORT_TYPE_SCALAR;
 		case VisualShader::VARYING_TYPE_VECTOR_4D:
-			return PORT_TYPE_VECTOR_4D;
+			return p_port == 0 ? PORT_TYPE_VECTOR_4D : PORT_TYPE_SCALAR;
 		case VisualShader::VARYING_TYPE_BOOLEAN:
 			return PORT_TYPE_BOOLEAN;
 		case VisualShader::VARYING_TYPE_TRANSFORM:
