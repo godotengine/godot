@@ -465,6 +465,7 @@ private:
 
 	void _draw_viewport();
 
+	void _is_hovering_guide(Point2 p_pos, bool p_is_pressed = false, bool p_ctrl_pressed = false);
 	bool _gui_input_anchors(const Ref<InputEvent> &p_event);
 	bool _gui_input_move(const Ref<InputEvent> &p_event);
 	bool _gui_input_open_scene_on_double_click(const Ref<InputEvent> &p_event);
@@ -489,7 +490,9 @@ private:
 	void _project_settings_changed();
 
 	SnapTarget snap_target[2];
+	SnapTarget snap_target2[2];
 	Transform2D snap_transform;
+	Transform2D snap_transform2;
 	void _snap_if_closer_float(
 			const real_t p_value,
 			real_t &r_current_snap, SnapTarget &r_current_snap_target,
