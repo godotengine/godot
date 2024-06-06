@@ -524,7 +524,7 @@ if env["precision"] == "double":
     env.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
 
 if env["use_breakpad"]:
-    env_base.Append(CPPDEFINES=["USE_BREAKPAD"])
+    env.Append(CPPDEFINES=["USE_BREAKPAD"])
 
 tmppath = "./platform/" + env["platform"]
 sys.path.insert(0, tmppath)

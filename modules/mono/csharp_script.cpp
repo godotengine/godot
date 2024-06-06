@@ -76,17 +76,6 @@
 // This must be a superset of `ignored_types` in bindings_generator.cpp.
 const Vector<String> ignored_types = {};
 
-#include "godotsharp_dirs.h"
-#include "mono_gd/gd_mono_cache.h"
-#include "mono_gd/gd_mono_class.h"
-#include "mono_gd/gd_mono_marshal.h"
-#include "mono_gd/gd_mono_utils.h"
-#include "signal_awaiter_utils.h"
-#include "utils/macros.h"
-#include "utils/string_utils.h"
-
-#define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->get_string_names().m_var)
-
 #ifdef TOOLS_ENABLED
 static bool _create_project_solution_if_needed() {
 	CRASH_COND(CSharpLanguage::get_singleton()->get_godotsharp_editor() == nullptr);

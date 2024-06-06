@@ -34,6 +34,7 @@
 #include "core/os/os.h"
 
 #ifdef WINDOWS_ENABLED
+#include <thirdparty/breakpad/src/google_breakpad/common/minidump_format.h>
 #include <thirdparty/breakpad/src/client/windows/handler/exception_handler.h>
 #else
 #include <thirdparty/breakpad/src/client/linux/handler/exception_handler.h>
@@ -59,7 +60,13 @@ static bool dump_callback(const google_breakpad::MinidumpDescriptor &descriptor,
 static void create_breakpad_handler(const String &crash_folder) {
 #ifdef WINDOWS_ENABLED
 	// Automatic register to the exception handlers can be disabled when Godot crash handler listens to them
-	breakpad_handler = new google_breakpad::ExceptionHandler(crash_folder.c_str(), nullptr, dump_callback, nullptr,
+	std::wstring crash_folder_w(crash_folder.length(), '\0');
+
+	for (int i = 0; i < crash_folder.length(); i++) {
+		crash_folder_w[i] = crash_folder[i];
+	}
+
+	breakpad_handler = new google_breakpad::ExceptionHandler(crash_folder_w, nullptr, dump_callback, nullptr,
 			register_breakpad_handlers ? google_breakpad::ExceptionHandler::HANDLER_ALL : google_breakpad::ExceptionHandler::HANDLER_NONE);
 
 #else
