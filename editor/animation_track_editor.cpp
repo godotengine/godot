@@ -2931,7 +2931,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				if (selected || editor->is_selection_active()) {
 					AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
-					if (!player->has_animation(SceneStringName(RESET)) || animation != player->get_animation(SceneStringName(RESET))) {
+					if ((!player->has_animation(SceneStringName(RESET)) || animation != player->get_animation(SceneStringName(RESET))) && editor->can_add_reset_key()) {
 						menu->add_icon_item(get_editor_theme_icon(SNAME("Reload")), TTR("Add RESET Value(s)"), MENU_KEY_ADD_RESET);
 					}
 
@@ -4524,6 +4524,16 @@ bool AnimationTrackEditor::is_key_clipboard_active() const {
 
 bool AnimationTrackEditor::is_snap_enabled() const {
 	return snap->is_pressed() ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+}
+
+bool AnimationTrackEditor::can_add_reset_key() const {
+	for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+		const Animation::TrackType track_type = animation->track_get_type(E.key.track);
+		if (track_type != Animation::TYPE_ANIMATION && track_type != Animation::TYPE_AUDIO && track_type != Animation::TYPE_METHOD) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void AnimationTrackEditor::_update_tracks() {
@@ -6610,6 +6620,11 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 			for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
 				const SelectedKey &sk = E.key;
+
+				const Animation::TrackType track_type = animation->track_get_type(E.key.track);
+				if (track_type == Animation::TYPE_ANIMATION || track_type == Animation::TYPE_AUDIO || track_type == Animation::TYPE_METHOD) {
+					continue;
+				}
 
 				// Only add one key per track.
 				if (tracks_added.has(sk.track)) {
