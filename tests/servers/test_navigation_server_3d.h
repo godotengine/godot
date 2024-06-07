@@ -697,10 +697,14 @@ TEST_SUITE("[Navigation]") {
 			CHECK_NE(navigation_server->map_get_closest_point(map, Vector3(0, 0, 0)), Vector3(0, 0, 0));
 			CHECK_NE(navigation_server->map_get_closest_point_normal(map, Vector3(0, 0, 0)), Vector3());
 			CHECK(navigation_server->map_get_closest_point_owner(map, Vector3(0, 0, 0)).is_valid());
-			// TODO: Test map_get_closest_point_to_segment() with p_use_collision=true as well.
 			CHECK_NE(navigation_server->map_get_closest_point_to_segment(map, Vector3(0, 0, 0), Vector3(1, 1, 1), false), Vector3());
+			CHECK_NE(navigation_server->map_get_closest_point_to_segment(map, Vector3(0, 0, 0), Vector3(1, 1, 1), true), Vector3());
 			CHECK_NE(navigation_server->map_get_path(map, Vector3(0, 0, 0), Vector3(10, 0, 10), true).size(), 0);
 			CHECK_NE(navigation_server->map_get_path(map, Vector3(0, 0, 0), Vector3(10, 0, 10), false).size(), 0);
+		}
+
+		SUBCASE("'map_get_closest_point_to_segment' with 'use_collision' should return default if segment doesn't intersect map") {
+			CHECK_EQ(navigation_server->map_get_closest_point_to_segment(map, Vector3(1, 2, 1), Vector3(1, 1, 1), true), Vector3());
 		}
 
 		SUBCASE("Elaborate query with 'CORRIDORFUNNEL' post-processing should yield non-empty result") {

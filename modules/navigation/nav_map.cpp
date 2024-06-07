@@ -617,7 +617,7 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 			const Face3 f(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 			Vector3 inters;
 			if (f.intersects_segment(p_from, p_to, &inters)) {
-				const real_t d = closest_point_d = p_from.distance_to(inters);
+				const real_t d = p_from.distance_to(inters);
 				if (use_collision == false) {
 					closest_point = inters;
 					use_collision = true;
