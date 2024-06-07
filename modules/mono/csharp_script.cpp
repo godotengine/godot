@@ -135,10 +135,6 @@ void CSharpLanguage::init() {
 	if (gdmono->should_initialize()) {
 		gdmono->initialize();
 	}
-
-#ifdef USE_BREAKPAD
-	report_mono_loaded_to_breakpad();
-#endif
 }
 
 void CSharpLanguage::finish() {

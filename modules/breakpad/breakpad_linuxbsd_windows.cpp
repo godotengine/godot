@@ -60,11 +60,7 @@ static bool dump_callback(const google_breakpad::MinidumpDescriptor &descriptor,
 static void create_breakpad_handler(const String &crash_folder) {
 #ifdef WINDOWS_ENABLED
 	// Automatic register to the exception handlers can be disabled when Godot crash handler listens to them
-	std::wstring crash_folder_w(crash_folder.length(), '\0');
-
-	for (int i = 0; i < crash_folder.length(); i++) {
-		crash_folder_w[i] = crash_folder[i];
-	}
+	std::wstring crash_folder_w(reinterpret_cast<const wchar_t *>(crash_folder.utf16().get_data()));
 
 	breakpad_handler = new google_breakpad::ExceptionHandler(crash_folder_w, nullptr, dump_callback, nullptr,
 			register_breakpad_handlers ? google_breakpad::ExceptionHandler::HANDLER_ALL : google_breakpad::ExceptionHandler::HANDLER_NONE);
@@ -108,18 +104,6 @@ void initialize_breakpad(bool register_handlers) {
 
 #else
 	create_breakpad_handler("/tmp");
-#endif
-}
-
-void report_mono_loaded_to_breakpad() {
-#ifndef WINDOWS_ENABLED
-	if (breakpad_handler == nullptr)
-		return;
-
-	const String &crash_folder = get_settings_specific_crash_folder();
-
-	delete breakpad_handler;
-	create_breakpad_handler(crash_folder);
 #endif
 }
 
