@@ -218,10 +218,10 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 }
 
 AudioStreamPlaybackPolyphonic::Stream *AudioStreamPlaybackPolyphonic::_find_stream(int64_t p_id) {
-	for (uint32_t i = 0; i < streams.size(); i++) {
+  for (uint32_t i = 0; i < streams.size(); i++) {
     if (streams[i].active.is_set() && streams[i].id == p_id) {
       return &streams[i];
-	  }
+    }
   }
 
   return nullptr;
