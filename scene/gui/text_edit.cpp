@@ -286,6 +286,7 @@ void TextEdit::Text::invalidate_all_lines() {
 	}
 	tab_size_dirty = false;
 
+	max_width = -1;
 	_calculate_max_line_width();
 }
 
@@ -404,10 +405,12 @@ void TextEdit::Text::remove_range(int p_from_line, int p_to_line) {
 	text.resize(text.size() - diff);
 
 	if (dirty_height) {
+		line_height = -1;
 		_calculate_line_height();
 	}
 
 	if (dirty_width) {
+		max_width = -1;
 		_calculate_max_line_width();
 	}
 }
