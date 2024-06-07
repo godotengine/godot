@@ -86,6 +86,13 @@ void EditorResourcePicker::_update_resource() {
 			}
 			else
 			{
+				String name = TTR("Type:") + " " + class_name;
+				if(edited_resource.is_valid() && edited_resource->has_method("get_name")) {
+					String nm = edited_resource->call("get_name");
+					if(!nm.is_empty()) {
+						name = nm;
+					}
+				}				
 				assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
 				assign_button->set_text(class_name);
 				assign_button->set_tooltip_text(TTR("Type:") + " " + class_name);

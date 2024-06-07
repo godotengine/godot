@@ -49,6 +49,10 @@ void Blackboard::set_var(const StringName &p_name, const Variant &p_value) {
 	if (data.has(p_name)) {
 		// Not checking type - allowing duck-typing.
 		data[p_name].set_value(p_value);
+		// 调用回调
+		if(changed_value_callback.is_valid()) {
+			changed_value_callback.call(this,p_name);
+		}
 	} else {
 		BBVariable var(p_value.get_type());
 		var.set_value(p_value);

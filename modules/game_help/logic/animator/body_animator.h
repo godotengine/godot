@@ -530,6 +530,14 @@ public:
 
     bool play_animation(Ref<CharacterAnimatorNodeBase> p_node);
     void play_animation(const StringName& p_node_name);
+    void change_state(const StringName& p_state_name)
+    {
+        if(logic_context.curr_name == p_state_name)
+        {
+            logic_context.last_name = logic_context.curr_name;
+            logic_context.curr_name = p_state_name;
+        }
+    }
     ~CharacterAnimatorLayer();
 };
 
@@ -674,6 +682,15 @@ public:
     void create_layers();
 
     void clear_layer();
+    void change_state(const StringName& p_state_name)
+    {
+        auto it = m_LayerList.begin();
+        while(it != m_LayerList.end())
+        {
+            (*it)->change_state(p_state_name);
+            ++it;
+        }
+    }
 
     void on_layer_delete(CharacterAnimatorLayer *p_layer)
     {

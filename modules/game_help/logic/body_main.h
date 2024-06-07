@@ -12,13 +12,12 @@
 #include "animator/animation_help.h"
 #include "animator/body_animator.h"
 #include "character_movement.h"
-#include "character_ai/character_ai.h"
 #include "character_check_area_3d.h"
 
 
 #include "modules/limboai/bt/bt_player.h"
 #include "modules/limboai/bt/tasks/decorators/bt_new_scope.h"
-
+class CharacterAI;
 // 身体的插槽信息
 class BodySocket
 {
@@ -138,22 +137,8 @@ public:
     void stop_skill();
 
 public:
-    void set_character_ai(const Ref<CharacterAI> &p_ai)
-    {
-        if(character_ai.is_valid() || p_ai.is_null())
-        {
-            return;
-        }
-        character_ai = p_ai;
-    }
-    Ref<CharacterAI> get_character_ai()
-    {
-        if(character_ai.is_valid())
-        {
-            character_ai.instantiate();
-        }
-        return character_ai;
-    }
+    void set_character_ai(const Ref<CharacterAI> &p_ai);
+    Ref<CharacterAI> get_character_ai();
 
     // 动画相关
 public:
@@ -235,6 +220,14 @@ public:
         p_blocakboard->set_var(StringName("OldForward"),old_forward);
         p_blocakboard->set_var(StringName("CurrForward"),curr_forward);
     }
+    void change_animator_state(StringName p_state_name)
+    {
+        get_blackboard()->set_var("CurrState",p_state_name);
+        if(animator.is_valid())
+        {
+            animator->change_state(p_state_name);
+        }
+    }
 	GDVIRTUAL0(_update_player_position)
 public:
     
@@ -293,6 +286,17 @@ protected:
             if(check_area[i].is_valid())
             {
                 check_area[i]->set_body_main(this);
+            }
+        }
+    }
+    void on_blockbora_value_changed(Blackboard *p_blackboard,const StringName& p_property)
+    {
+        String name = p_property;
+        if(name.begins_with("anim_state/"))
+        {
+            if(animator.is_valid())
+            {
+                // 動畫狀態相關屬性，通知執行當前狀態匹配的動作
             }
         }
     }

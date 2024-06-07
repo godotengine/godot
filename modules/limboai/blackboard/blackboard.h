@@ -36,11 +36,14 @@ class Blackboard : public RefCounted {
 private:
 	HashMap<StringName, BBVariable> data;
 	Ref<Blackboard> parent;
+	Callable changed_value_callback;
 
 protected:
 	static void _bind_methods();
 
 public:
+	void set_changed_value_callback(const Callable &p_callback) { changed_value_callback = p_callback; }
+	
 	void set_parent(const Ref<Blackboard> &p_blackboard) { parent = p_blackboard; }
 	Ref<Blackboard> get_parent() const { return parent; }
 

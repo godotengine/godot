@@ -73,6 +73,13 @@ class CollisionObject3DConnectionShape : public RefCounted {
 	GDCLASS(CollisionObject3DConnectionShape, RefCounted);
 	static void _bind_methods();
 public:
+	void set_name(const String &p_name) {
+		name = p_name;
+	}
+
+	String get_name() const {
+		return name;
+	}
 	void set_shape(const Ref<Shape3D> &p_shape) {
 		shape = p_shape;
 		update_transform();
@@ -114,6 +121,7 @@ friend class CollisionObject3DConnection;
 	void set_link_target(Node3D *p_target);
 	void update_transform();
 protected:
+	String name;
 	Node3D* link_target = nullptr;
 	CollisionShape3D *shape_node = nullptr;
 	Ref<Shape3D> shape;
@@ -127,8 +135,15 @@ protected:
 class CollisionObject3DConnection : public RefCounted {
 	GDCLASS(CollisionObject3DConnection, RefCounted);
 
-
+	static void _bind_methods();
 public:
+	void set_name(const String &p_name) {
+		name = p_name;
+	}
+
+	String get_name() const {
+		return name;
+	}
 	void set_shapes(const TypedArray<CollisionObject3DConnectionShape> &p_shapes) {
 		shapes = p_shapes;
 		update_link_target();
@@ -147,10 +162,8 @@ public:
 	void on_taeget_free() {
 		link_target = nullptr;
 	}
-protected:
-
-
-	
+protected:	
+	String name;
 	TypedArray<CollisionObject3DConnectionShape> shapes;
 	Node3D* link_target = nullptr;
 };

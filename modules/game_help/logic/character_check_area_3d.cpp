@@ -33,3 +33,26 @@ void CharacterCheckArea3D::set_body_main(class CharacterBodyMain* p_mainBody)
     }
 
 }
+void CharacterCheckArea3D::update_coord()
+{
+    if(!is_update_coord)
+    {
+        return;
+    }
+    boundOtherCharacterByCoord.clear();
+    for(auto& node : boundOtherCharacter)
+    {
+        auto pos = world_pos_to_cell_pos(node->get_global_position());
+        if(boundOtherCharacterByCoord.has(pos))
+        {
+            boundOtherCharacterByCoord[pos].push_back(node);
+        }
+        else
+        {
+            LocalVector<Node3D*> nodes;
+            nodes.push_back(node);
+            boundOtherCharacterByCoord.insert(pos,nodes);   
+        }
+    }
+    is_update_coord = false;
+}

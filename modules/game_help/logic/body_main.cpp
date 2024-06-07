@@ -1,5 +1,7 @@
 #include "body_main.h"
 #include "data_table_manager.h"
+#include "scene/3d/path_3d.h"
+#include "character_ai/character_ai.h"
 
 
 void CharacterBodyMain::_bind_methods()
@@ -98,6 +100,13 @@ void CharacterBodyMain::_notification( int p_notification )
             {
                 animator->update_animation(get_process_delta_time());
             }
+            for(uint32_t i = 0; i < check_area.size();++i)
+            {
+                if(check_area[i].is_valid())
+                {
+                    check_area[i]->update_world_move(get_global_position());
+                }
+            }
 		} break;
     }
 
@@ -109,6 +118,23 @@ void CharacterBodyMain::init_main_body(String p_skeleton_file_path,StringName p_
     animation_group = p_animation_group;
     load_skeleton();
 
+}
+
+void CharacterBodyMain::set_character_ai(const Ref<CharacterAI> &p_ai)
+{
+    if(character_ai.is_valid() || p_ai.is_null())
+    {
+        return;
+    }
+    character_ai = p_ai;
+}
+Ref<CharacterAI> CharacterBodyMain::get_character_ai()
+{
+    if(character_ai.is_valid())
+    {
+        character_ai.instantiate();
+    }
+    return character_ai;
 }
 void CharacterBodyMain::load_skeleton()
 {
@@ -270,55 +296,106 @@ void CharacterBodyMain::init_blackboard_plan(Ref<BlackboardPlan> p_plan)
     {
         return;
     }
-    if(p_plan->has_var("look_target_pos"))
+    if(p_plan->has_var("prop/curr_life"))
     {
-        p_plan->add_var("look_target_pos",BBVariable(Variant::VECTOR3,Vector3()));
+        p_plan->add_var("prop/curr_life",BBVariable(Variant::FLOAT,0.0f));
     }
-    if(p_plan->has_var("atack_target_pos"))
+    if(p_plan->has_var("prop/max_life"))
     {
-        p_plan->add_var("atack_target_pos",BBVariable(Variant::VECTOR3,Vector3()));
+        p_plan->add_var("prop/max_life",BBVariable(Variant::FLOAT,0.0f));
     }
-
-    if(p_plan->has_var("is_ground"))
+    if(p_plan->has_var("ai/curr_logic_node_name"))
     {
-        p_plan->add_var("is_ground",BBVariable(Variant::BOOL,false));
-    }
-    if(p_plan->has_var("to_ground_distance"))
-    {
-        p_plan->add_var("to_ground_distance",BBVariable(Variant::FLOAT,0));
-    }
-    if(p_plan->has_var("ground_pos"))
-    {
-        p_plan->add_var("ground_pos",BBVariable(Variant::VECTOR3,Vector3()));
-    }
-    if(p_plan->has_var("ground_normal"))
-    {
-        p_plan->add_var("ground_normal",BBVariable(Variant::VECTOR3,Vector3()));
-    }
-    if(p_plan->has_var("ground_object_id"))
-    {
-        p_plan->add_var("ground_object_id",BBVariable(Variant::INT,0));
-    }
-    if(p_plan->has_var("ground_collider_layer"))
-    {
-        p_plan->add_var("ground_collider_layer",BBVariable(Variant::INT,0));
+        p_plan->add_var("ai/curr_logic_node_name",BBVariable(Variant::STRING_NAME,StringName()));
     }
 
-    if(p_plan->has_var("is_jump"))
+
+    if(p_plan->has_var("move/look_target_pos"))
     {
-        p_plan->add_var("is_jump",BBVariable(Variant::BOOL,false));
+        p_plan->add_var("move/look_target_pos",BBVariable(Variant::VECTOR3,Vector3()));
+    }
+    if(p_plan->has_var("move/move_path"))
+    {
+        p_plan->add_var("move/move_path",BBVariable(Variant::OBJECT,Ref<Curve3D>()));
+    }
+    if(p_plan->has_var("move/atack_target_pos"))
+    {
+        p_plan->add_var("move/atack_target_pos",BBVariable(Variant::VECTOR3,Vector3()));
+    }
+
+    if(p_plan->has_var("move/request"))
+    {
+        p_plan->add_var("move/request",BBVariable(Variant::BOOL,false));
+    }
+
+    if(p_plan->has_var("move/speed"))
+    {
+        p_plan->add_var("move/speed",BBVariable(Variant::FLOAT,0));
+    }
+    if(p_plan->has_var("move/curr_speed"))
+    {
+        p_plan->add_var("move/curr_speed",BBVariable(Variant::FLOAT,0));
+    }
+
+    if(p_plan->has_var("phys/is_ground"))
+    {
+        p_plan->add_var("phys/is_ground",BBVariable(Variant::BOOL,false));
+    }
+    if(p_plan->has_var("phys/to_ground_distance"))
+    {
+        p_plan->add_var("phys/to_ground_distance",BBVariable(Variant::FLOAT,0));
+    }
+    if(p_plan->has_var("phys/ground_pos"))
+    {
+        p_plan->add_var("phys/ground_pos",BBVariable(Variant::VECTOR3,Vector3()));
+    }
+    if(p_plan->has_var("phys/ground_normal"))
+    {
+        p_plan->add_var("phys/ground_normal",BBVariable(Variant::VECTOR3,Vector3()));
+    }
+    if(p_plan->has_var("phys/ground_object_id"))
+    {
+        p_plan->add_var("phys/ground_object_id",BBVariable(Variant::INT,0));
+    }
+    if(p_plan->has_var("phys/ground_collider_layer"))
+    {
+        p_plan->add_var("phys/ground_collider_layer",BBVariable(Variant::INT,0));
+    }
+    if(p_plan->has_var("phys/is_fall"))
+    {
+        p_plan->add_var("phys/is_fall",BBVariable(Variant::BOOL,false));
+    }
+    if(p_plan->has_var("phys/is_on_air"))
+    {
+        p_plan->add_var("phys/is_on_air",BBVariable(Variant::BOOL,false));
+    }
+
+    
+    if(p_plan->has_var("jump/request_jump"))
+    {
+        p_plan->add_var("jump/is_jump",BBVariable(Variant::BOOL,false));
+    }  
+
+    if(p_plan->has_var("jump/is_jump"))
+    {
+        p_plan->add_var("jump/is_jump",BBVariable(Variant::BOOL,false));
     }   
-    if(p_plan->has_var("jump_count"))
+    if(p_plan->has_var("jump/is_jump2"))
     {
-        p_plan->add_var("jump_count",BBVariable(Variant::INT,0));
+        p_plan->add_var("jump/is_jump2",BBVariable(Variant::BOOL,false));
+    }  
+    if(p_plan->has_var("jump/jump_count"))
+    {
+        p_plan->add_var("jump/jump_count",BBVariable(Variant::INT,0));
     }
-    if(p_plan->has_var("is_fall"))
+    // 请求角色复活
+    if(p_plan->has_var("dead/is_dead"))
     {
-        p_plan->add_var("is_fall",BBVariable(Variant::BOOL,false));
+        p_plan->add_var("request_revive",BBVariable(Variant::BOOL,false));
     }
-    if(p_plan->has_var("is_on_air"))
+    if(p_plan->has_var("dead/request_revive"))
     {
-        p_plan->add_var("is_on_air",BBVariable(Variant::BOOL,false));
+        p_plan->add_var("dead/request_revive",BBVariable(Variant::BOOL,false));
     }
 }
 

@@ -1,7 +1,7 @@
 #include "character_ai.h"
 #include "scene/3d/physics/collision_object_3d.h"
 
-void CharacterAI_CheckGround::execute(CharacterBody3D *node, Blackboard* blackboard)
+bool CharacterAI_CheckGround::_execute_check(CharacterBodyMain *node, Blackboard* blackboard)
 {
     Vector3 start = node->get_global_position() + Vector3(0.0, check_move_height, 0.0);
 
@@ -30,4 +30,5 @@ void CharacterAI_CheckGround::execute(CharacterBody3D *node, Blackboard* blackbo
     {        
         blackboard->set_var("is_ground",  false);
     }
+    return false;
 }
