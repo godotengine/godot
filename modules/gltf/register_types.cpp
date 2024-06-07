@@ -140,8 +140,13 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(EditorSceneFormatImporterGLTF);
 		EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
 
+		PropertyUsageFlags disabled_on_mobile_and_web = PROPERTY_USAGE_NONE;
+#if defined(ANDROID_ENABLED) || defined(IOS_ENABLED) || defined(WEB_ENABLED)
+		disabled_on_mobile_and_web = PROPERTY_USAGE_READ_ONLY;
+#endif
+
 		// Project settings defined here so doctool finds them.
-		GLOBAL_DEF_RST_BASIC("filesystem/import/blender/enabled", true);
+		GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::BOOL, "filesystem/import/blender/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | disabled_on_mobile_and_web), true);
 		GDREGISTER_CLASS(EditorSceneFormatImporterBlend);
 		// Can't (a priori) run external app on these platforms.
 		GLOBAL_DEF_RST("filesystem/import/blender/enabled.android", false);
