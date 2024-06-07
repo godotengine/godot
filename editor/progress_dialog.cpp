@@ -126,6 +126,16 @@ void BackgroundProgress::end_task(const String &p_task) {
 
 ProgressDialog *ProgressDialog::singleton = nullptr;
 
+void ProgressDialog::_update_ui() {
+	// Run main loop for two frames.
+	if (is_inside_tree()) {
+		DisplayServer::get_singleton()->process_events();
+#ifndef ANDROID_ENABLED
+		Main::iteration();
+#endif
+	}
+}
+
 void ProgressDialog::_popup() {
 	Size2 ms = main->get_combined_minimum_size();
 	ms.width = MAX(500 * EDSCALE, ms.width);
@@ -138,7 +148,13 @@ void ProgressDialog::_popup() {
 	main->set_offset(SIDE_TOP, style->get_margin(SIDE_TOP));
 	main->set_offset(SIDE_BOTTOM, -style->get_margin(SIDE_BOTTOM));
 
-	if (!is_inside_tree()) {
+	if (is_inside_tree()) {
+		Rect2i adjust = _popup_adjust_rect();
+		if (adjust != Rect2i()) {
+			set_position(adjust.position);
+			set_size(adjust.size);
+		}
+	} else {
 		for (Window *window : host_windows) {
 			if (window->has_focus()) {
 				popup_exclusive_centered(window, ms);
@@ -182,6 +198,7 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 	if (p_can_cancel) {
 		cancel->grab_focus();
 	}
+	_update_ui();
 }
 
 bool ProgressDialog::task_step(const String &p_task, const String &p_state, int p_step, bool p_force_redraw) {
@@ -203,11 +220,8 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 
 	t.state->set_text(p_state);
 	last_progress_tick = OS::get_singleton()->get_ticks_usec();
-	DisplayServer::get_singleton()->process_events();
+	_update_ui();
 
-#ifndef ANDROID_ENABLED
-	Main::iteration(); // this will not work on a lot of platforms, so it's only meant for the editor
-#endif
 	return canceled;
 }
 
