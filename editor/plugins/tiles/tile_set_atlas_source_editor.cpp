@@ -1045,6 +1045,13 @@ void TileSetAtlasSourceEditor::_update_toolbar() {
 	}
 }
 
+void TileSetAtlasSourceEditor::_update_buttons() {
+	tool_paint_button->set_disabled(read_only);
+	tool_paint_button->set_tooltip_text(read_only ? TTR("TileSet is in read-only mode. Make the resource unique to edit TileSet properties.") : TTR("Paint properties."));
+	tools_settings_erase_button->set_disabled(read_only);
+	tool_advanced_menu_button->set_disabled(read_only);
+}
+
 void TileSetAtlasSourceEditor::_tile_atlas_control_mouse_exited() {
 	hovered_base_tile_coords = TileSetSource::INVALID_ATLAS_COORDS;
 	tile_atlas_control->queue_redraw();
@@ -2212,10 +2219,7 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 		tool_setup_atlas_source_button->set_pressed(true);
 	}
 
-	// Disable buttons in read-only mode.
-	tool_paint_button->set_disabled(read_only);
-	tools_settings_erase_button->set_disabled(read_only);
-	tool_advanced_menu_button->set_disabled(read_only);
+	_update_buttons();
 
 	// Update everything.
 	_update_source_inspector();
@@ -2458,10 +2462,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 					read_only = EditorNode::get_singleton()->is_resource_read_only(tile_set);
 				}
 
-				// Disable buttons in read-only mode.
-				tool_paint_button->set_disabled(read_only);
-				tools_settings_erase_button->set_disabled(read_only);
-				tool_advanced_menu_button->set_disabled(read_only);
+				_update_buttons();
 
 				// Update everything.
 				_update_source_inspector();
@@ -2545,7 +2546,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_paint_button->set_theme_type_variation("FlatButton");
 	tool_paint_button->set_toggle_mode(true);
 	tool_paint_button->set_button_group(tools_button_group);
-	tool_paint_button->set_tooltip_text(TTR("Paint properties."));
 	toolbox->add_child(tool_paint_button);
 
 	// Tile inspector.
@@ -2647,6 +2647,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_settings->add_child(outside_tiles_warning);
 
 	_update_toolbar();
+	_update_buttons();
 
 	// Right side of toolbar.
 	Control *middle_space = memnew(Control);
