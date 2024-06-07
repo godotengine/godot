@@ -225,6 +225,18 @@ AudioStreamPlaybackPolyphonic::Stream *AudioStreamPlaybackPolyphonic::_find_stre
   }
 
   return nullptr;
+	// uint32_t index = p_id >> INDEX_SHIFT;
+	// if (index >= streams.size()) {
+	// 	return nullptr;
+	// }
+	// if (!streams[index].active.is_set()) {
+	// 	return nullptr; // Not active, no longer exists.
+	// }
+	// int64_t id = p_id & ID_MASK;
+	// if (streams[index].id != id) {
+	// 	return nullptr;
+	// }
+	// return &streams[index];
 }
 
 void AudioStreamPlaybackPolyphonic::set_stream_volume(ID p_stream_id, float p_volume_db) {
