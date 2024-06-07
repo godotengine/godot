@@ -35,6 +35,8 @@
 #include "scene/resources/image_texture.h"
 
 HBITMAP NativeMenuWindows::_make_bitmap(const Ref<Image> &p_img) const {
+	p_img->convert(Image::FORMAT_RGBA8);
+
 	Vector2i texture_size = p_img->get_size();
 	UINT image_size = texture_size.width * texture_size.height;
 
@@ -354,12 +356,14 @@ int NativeMenuWindows::add_icon_item(const RID &p_rid, const Ref<Texture2D> &p_i
 	item_data->checkable_type = CHECKABLE_TYPE_NONE;
 	item_data->max_states = 0;
 	item_data->state = 0;
-	item_data->img = p_icon->get_image();
-	item_data->img = item_data->img->duplicate();
-	if (item_data->img->is_compressed()) {
-		item_data->img->decompress();
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
+		item_data->img = p_icon->get_image();
+		item_data->img = item_data->img->duplicate();
+		if (item_data->img->is_compressed()) {
+			item_data->img->decompress();
+		}
+		item_data->bmp = _make_bitmap(item_data->img);
 	}
-	item_data->bmp = _make_bitmap(item_data->img);
 
 	Char16String label = p_label.utf16();
 	MENUITEMINFOW item;
@@ -394,12 +398,14 @@ int NativeMenuWindows::add_icon_check_item(const RID &p_rid, const Ref<Texture2D
 	item_data->checkable_type = CHECKABLE_TYPE_CHECK_BOX;
 	item_data->max_states = 0;
 	item_data->state = 0;
-	item_data->img = p_icon->get_image();
-	item_data->img = item_data->img->duplicate();
-	if (item_data->img->is_compressed()) {
-		item_data->img->decompress();
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
+		item_data->img = p_icon->get_image();
+		item_data->img = item_data->img->duplicate();
+		if (item_data->img->is_compressed()) {
+			item_data->img->decompress();
+		}
+		item_data->bmp = _make_bitmap(item_data->img);
 	}
-	item_data->bmp = _make_bitmap(item_data->img);
 
 	Char16String label = p_label.utf16();
 	MENUITEMINFOW item;
@@ -467,12 +473,14 @@ int NativeMenuWindows::add_icon_radio_check_item(const RID &p_rid, const Ref<Tex
 	item_data->checkable_type = CHECKABLE_TYPE_RADIO_BUTTON;
 	item_data->max_states = 0;
 	item_data->state = 0;
-	item_data->img = p_icon->get_image();
-	item_data->img = item_data->img->duplicate();
-	if (item_data->img->is_compressed()) {
-		item_data->img->decompress();
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
+		item_data->img = p_icon->get_image();
+		item_data->img = item_data->img->duplicate();
+		if (item_data->img->is_compressed()) {
+			item_data->img->decompress();
+		}
+		item_data->bmp = _make_bitmap(item_data->img);
 	}
-	item_data->bmp = _make_bitmap(item_data->img);
 
 	Char16String label = p_label.utf16();
 	MENUITEMINFOW item;
@@ -1087,7 +1095,7 @@ void NativeMenuWindows::set_item_icon(const RID &p_rid, int p_idx, const Ref<Tex
 			if (item_data->bmp) {
 				DeleteObject(item_data->bmp);
 			}
-			if (p_icon.is_valid()) {
+			if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 				item_data->img = p_icon->get_image();
 				item_data->img = item_data->img->duplicate();
 				if (item_data->img->is_compressed()) {

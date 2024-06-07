@@ -3166,9 +3166,12 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 
 DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
 	HICON hicon = nullptr;
-	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
 		img = img->duplicate();
+		if (img->is_compressed()) {
+			img->decompress();
+		}
 		img->convert(Image::FORMAT_RGBA8);
 
 		int w = img->get_width();
@@ -3236,9 +3239,12 @@ void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref
 	ERR_FAIL_COND(!indicators.has(p_id));
 
 	HICON hicon = nullptr;
-	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
 		img = img->duplicate();
+		if (img->is_compressed()) {
+			img->decompress();
+		}
 		img->convert(Image::FORMAT_RGBA8);
 
 		int w = img->get_width();
