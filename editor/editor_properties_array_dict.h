@@ -49,6 +49,10 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 
 public:
+	enum {
+		NOT_CHANGING_TYPE = -1,
+	};
+
 	void set_array(const Variant &p_array);
 	Variant get_array();
 
@@ -68,7 +72,8 @@ protected:
 
 public:
 	enum {
-		NEW_KEY_INDEX = -2,
+		NOT_CHANGING_TYPE = -3,
+		NEW_KEY_INDEX,
 		NEW_VALUE_INDEX,
 	};
 
@@ -111,7 +116,7 @@ class EditorPropertyArray : public EditorProperty {
 
 	int page_length = 20;
 	int page_index = 0;
-	int changing_type_index;
+	int changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
 	Button *edit = nullptr;
 	PanelContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
@@ -206,7 +211,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	Ref<EditorPropertyDictionaryObject> object;
 	int page_length = 20;
 	int page_index = 0;
-	int changing_type_index;
+	int changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE;
 	Button *edit = nullptr;
 	PanelContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
