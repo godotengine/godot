@@ -7825,7 +7825,7 @@ bool VisualShaderNodeDistanceFade::has_output_port_preview(int p_port) const {
 
 String VisualShaderNodeDistanceFade::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
-	code += vformat("	%s = clamp(smoothstep(%s, %s,-VERTEX.z),0.0,1.0);\n", p_output_vars[0], p_input_vars[0], p_input_vars[1]);
+	code += vformat("	%s = clamp(smoothstep(%s, %s, length(VERTEX)), 0.0, 1.0);\n", p_output_vars[0], p_input_vars[0], p_input_vars[1]);
 	return code;
 }
 
