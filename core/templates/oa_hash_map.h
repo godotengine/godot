@@ -91,20 +91,31 @@ private:
 	bool _lookup_pos(const TKey &p_key, uint32_t &r_pos) const {
 		uint32_t hash = _hash(p_key);
 		uint32_t pos = hash % capacity;
-		uint32_t distance = 0;
 
+		if (hashes[pos] == hash && Comparator::compare(keys[pos], p_key)) {
+			r_pos = pos;
+			return true;
+		}
+
+		if (hashes[pos] == EMPTY_HASH) {
+			return false;
+		}
+
+		// A collision occurred.
+		pos = (pos + 1) % capacity;
+		uint32_t distance = 1;
 		while (true) {
+			if (hashes[pos] == hash && Comparator::compare(keys[pos], p_key)) {
+				r_pos = pos;
+				return true;
+			}
+
 			if (hashes[pos] == EMPTY_HASH) {
 				return false;
 			}
 
 			if (distance > _get_probe_length(pos, hashes[pos])) {
 				return false;
-			}
-
-			if (hashes[pos] == hash && Comparator::compare(keys[pos], p_key)) {
-				r_pos = pos;
-				return true;
 			}
 
 			pos = (pos + 1) % capacity;
@@ -114,16 +125,21 @@ private:
 
 	void _insert_with_hash(uint32_t p_hash, const TKey &p_key, const TValue &p_value) {
 		uint32_t hash = p_hash;
-		uint32_t distance = 0;
 		uint32_t pos = hash % capacity;
 
+		if (hashes[pos] == EMPTY_HASH) {
+			_construct(pos, hash, p_key, p_value);
+			return;
+		}
+
+		// A collision occurred.
+		pos = (pos + 1) % capacity;
+		uint32_t distance = 1;
 		TKey key = p_key;
 		TValue value = p_value;
-
 		while (true) {
 			if (hashes[pos] == EMPTY_HASH) {
 				_construct(pos, hash, key, value);
-
 				return;
 			}
 

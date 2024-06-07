@@ -105,20 +105,31 @@ private:
 		const uint64_t capacity_inv = hash_table_size_primes_inv[capacity_index];
 		uint32_t hash = _hash(p_key);
 		uint32_t pos = fastmod(hash, capacity_inv, capacity);
-		uint32_t distance = 0;
 
+		if (hashes[pos] == hash && Comparator::compare(elements[pos]->data.key, p_key)) {
+			r_pos = pos;
+			return true;
+		}
+
+		if (hashes[pos] == EMPTY_HASH) {
+			return false;
+		}
+
+		// A collision occurred.
+		pos = fastmod(pos + 1, capacity_inv, capacity);
+		uint32_t distance = 1;
 		while (true) {
+			if (hashes[pos] == hash && Comparator::compare(elements[pos]->data.key, p_key)) {
+				r_pos = pos;
+				return true;
+			}
+
 			if (hashes[pos] == EMPTY_HASH) {
 				return false;
 			}
 
 			if (distance > _get_probe_length(pos, hashes[pos], capacity, capacity_inv)) {
 				return false;
-			}
-
-			if (hashes[pos] == hash && Comparator::compare(elements[pos]->data.key, p_key)) {
-				r_pos = pos;
-				return true;
 			}
 
 			pos = fastmod((pos + 1), capacity_inv, capacity);
@@ -129,18 +140,25 @@ private:
 	void _insert_with_hash(uint32_t p_hash, HashMapElement<TKey, TValue> *p_value) {
 		const uint32_t capacity = hash_table_size_primes[capacity_index];
 		const uint64_t capacity_inv = hash_table_size_primes_inv[capacity_index];
+		uint32_t pos = fastmod(p_hash, capacity_inv, capacity);
+
+		if (hashes[pos] == EMPTY_HASH) {
+			elements[pos] = p_value;
+			hashes[pos] = p_hash;
+			num_elements++;
+			return;
+		}
+
+		// A collision occurred.
+		pos = fastmod(pos + 1, capacity_inv, capacity);
+		uint32_t distance = 1;
 		uint32_t hash = p_hash;
 		HashMapElement<TKey, TValue> *value = p_value;
-		uint32_t distance = 0;
-		uint32_t pos = fastmod(hash, capacity_inv, capacity);
-
 		while (true) {
 			if (hashes[pos] == EMPTY_HASH) {
 				elements[pos] = value;
 				hashes[pos] = hash;
-
 				num_elements++;
-
 				return;
 			}
 
