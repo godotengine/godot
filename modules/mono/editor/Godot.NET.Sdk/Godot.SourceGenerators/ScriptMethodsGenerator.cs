@@ -82,6 +82,7 @@ namespace Godot.SourceGenerators
             bool hasNamespace = classNs.Length != 0;
 
             bool isInnerClass = symbol.ContainingType != null;
+            bool isNode = symbol.InheritsFrom("GodotSharp", GodotClasses.Node);
 
             string uniqueHint = symbol.FullQualifiedNameOmitGlobal().SanitizeQualifiedNameForUniqueHint()
                                 + "_ScriptMethods.generated";
@@ -134,6 +135,27 @@ namespace Godot.SourceGenerators
                 .Distinct(new MethodOverloadEqualityComparer())
                 .ToArray();
 
+            List<ISymbol> getNode = new List<ISymbol>();
+            getNode.AddRange(members.Where(s => s.Kind == SymbolKind.Property)
+                                            .Cast<IPropertySymbol>()
+                                            .Where(s => s.GetAttributes()
+                                                .Any(a => a.AttributeClass?.IsGodotGetNodeAttribute() ?? false)));
+
+            getNode.AddRange(members.Where(s => s.Kind == SymbolKind.Field && !s.IsImplicitlyDeclared)
+                                            .Cast<IFieldSymbol>()
+                                            .Where(s => s.GetAttributes()
+                                                .Any(a => a.AttributeClass?.IsGodotGetNodeAttribute() ?? false)));
+
+
+            if (!isNode && getNode.Count > 0)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    Common.OnlyNodesShouldHaveGetNodeRule,
+                    symbol.Locations.FirstLocationWithSourceTreeOrDefault()
+                ));
+                getNode.Clear();
+            }
+
             source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
             source.Append("    /// <summary>\n")
@@ -148,7 +170,10 @@ namespace Godot.SourceGenerators
             var distinctMethodNames = godotClassMethods
                 .Select(m => m.Method.Name)
                 .Distinct()
-                .ToArray();
+                .ToList();
+
+            if (getNode.Count > 0)
+                distinctMethodNames.Add("_InitGodotGetNodeMembers");
 
             foreach (string methodName in distinctMethodNames)
             {
@@ -205,12 +230,33 @@ namespace Godot.SourceGenerators
 
             // Generate InvokeGodotClassMethod
 
-            if (godotClassMethods.Length > 0)
+            if (getNode.Count > 0)
+            {
+                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                source.Append("    protected override void _InitGodotGetNodeMembers() {\n");
+                source.Append("        base._InitGodotGetNodeMembers();\n");
+                foreach (var member in getNode)
+                {
+                    AppendGetNodeSetter(context, source, member);
+                }
+                source.Append("    }\n");
+            }
+
+            if (godotClassMethods.Length > 0 || getNode.Count > 0)
             {
                 source.Append("    /// <inheritdoc/>\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append("    protected override bool InvokeGodotClassMethod(in godot_string_name method, ");
                 source.Append("NativeVariantPtrArgs args, out godot_variant ret)\n    {\n");
+
+                if (getNode.Count > 0)
+                {
+                    source.Append("        if(method == global::Godot.Node.MethodName._Ready && args.Count == 0) {\n");
+                    source.Append("            _InitGodotGetNodeMembers();\n");
+                    source.Append("            ret = default;\n");
+                    source.Append("            return true;\n");
+                    source.Append("        }\n");
+                }
 
                 foreach (var method in godotClassMethods)
                 {
@@ -247,7 +293,7 @@ namespace Godot.SourceGenerators
 
             // Generate HasGodotClassMethod
 
-            if (distinctMethodNames.Length > 0)
+            if (distinctMethodNames.Count > 0)
             {
                 source.Append("    /// <inheritdoc/>\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
@@ -283,6 +329,130 @@ namespace Godot.SourceGenerators
             }
 
             context.AddSource(uniqueHint, SourceText.From(source.ToString(), Encoding.UTF8));
+        }
+
+        private static void AppendGetNodeSetter(GeneratorExecutionContext context, StringBuilder source, ISymbol symbol)
+        {
+            var attr = symbol.GetAttributes()
+                                                   .Where(a => a.AttributeClass?.IsGodotGetNodeAttribute() ?? false)
+                                                   .First();
+
+            string path = attr.ConstructorArguments.Length >= 0 ? attr.ConstructorArguments[0].Value as string ?? string.Empty : string.Empty;
+            if (string.IsNullOrEmpty(path))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                            Common.GetNodeAttributePathIsEmpty,
+                            symbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                            symbol.ToDisplayString()
+                        ));
+                return;
+            }
+
+            ITypeSymbol type;
+            if (symbol is IPropertySymbol)
+            {
+                var propertySymbol = (IPropertySymbol)symbol;
+                type = propertySymbol.Type;
+
+                if (propertySymbol.IsStatic)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                            Common.GetNodeMemberIsStaticRule,
+                            symbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                            symbol.ToDisplayString()
+                        ));
+                    return;
+                }
+
+                if (propertySymbol.SetMethod == null || propertySymbol.SetMethod.IsInitOnly)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                            Common.GetNodeMemberIsReadOnlyRule,
+                            symbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                            symbol.ToDisplayString()
+                        ));
+                    return;
+                }
+
+                if (propertySymbol.IsIndexer)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.GetNodeMemberIsIndexerRule,
+                        propertySymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        propertySymbol.ToDisplayString()
+                    ));
+                    return;
+                }
+
+                if (propertySymbol.ExplicitInterfaceImplementations.Length > 0)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.GetNodeMemberIsExplicitInterfaceImplementationRule,
+                        propertySymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        propertySymbol.ToDisplayString()
+                    ));
+                    return;
+                }
+            }
+            else if (symbol is IFieldSymbol)
+            {
+                var fieldSymbol = (IFieldSymbol)symbol;
+                type = fieldSymbol.Type;
+
+                if (fieldSymbol.IsStatic)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                            Common.GetNodeMemberIsStaticRule,
+                            symbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                            symbol.ToDisplayString()
+                        ));
+                    return;
+                }
+
+                if (fieldSymbol.IsReadOnly)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                            Common.GetNodeMemberIsReadOnlyRule,
+                            symbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                            symbol.ToDisplayString()
+                        ));
+                    return;
+                }
+
+            }
+            else
+            {
+                //Should not happen.
+                return;
+            }
+
+
+            if (!type.InheritsFrom("GodotSharp", GodotClasses.Node))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    Common.GetNodeMemberShouldBeNodes,
+                    symbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                    symbol.ToDisplayString()
+                ));
+                return;
+            }
+
+            source.Append("        try\n");
+            source.Append("        {\n");
+            source.Append("            ")
+                  .Append(symbol.Name)
+                  .Append(" = GetNode<")
+                  .Append(type.Name)
+                  .Append(">(\"")
+                  .Append(attr.ConstructorArguments[0].Value)
+                  .Append("\");\n");
+            source.Append("        }\n");
+            source.Append("        catch (global::System.Exception e)\n");
+            source.Append("        {\n");
+            source.Append("            global::Godot.GD.PushError($\"Error GetNode for '{this.Name}.")
+                  .Append(symbol.Name)
+                  .Append("': {e.Message}\");\n");
+            source.Append("        }\n");
         }
 
         private static void AppendMethodInfo(StringBuilder source, MethodInfo methodInfo)
