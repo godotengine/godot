@@ -231,6 +231,11 @@ float NativeMenuWindows::get_minimum_width(const RID &p_rid) const {
 	return 0.f;
 }
 
+bool NativeMenuWindows::is_opened(const RID &p_rid) const {
+	// Not supported.
+	return false;
+}
+
 int NativeMenuWindows::add_submenu_item(const RID &p_rid, const String &p_label, const RID &p_submenu_rid, const Variant &p_tag, int p_index) {
 	MenuData *md = menus.get_or_null(p_rid);
 	MenuData *md_sub = menus.get_or_null(p_submenu_rid);

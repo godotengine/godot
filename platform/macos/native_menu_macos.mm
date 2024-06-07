@@ -91,11 +91,22 @@ void NativeMenuMacOS::_menu_open(NSMenu *p_menu) {
 	if (menu_lookup.has(p_menu)) {
 		MenuData *md = menus.get_or_null(menu_lookup[p_menu]);
 		if (md) {
+			// Note: Set "is_open" flag, but do not call callback, menu items can't be modified during this call and "_menu_need_update" will be called right before it.
 			md->is_open = true;
+		}
+	}
+}
+
+void NativeMenuMacOS::_menu_need_update(NSMenu *p_menu) {
+	if (menu_lookup.has(p_menu)) {
+		MenuData *md = menus.get_or_null(menu_lookup[p_menu]);
+		if (md) {
+			// Note: "is_open" flag is set by "_menu_open", this method is always called before menu is shown, but might be called for the other reasons as well.
 			if (md->open_cb.is_valid()) {
 				Variant ret;
 				Callable::CallError ce;
 
+				// Callback is called directly, since it's expected to modify menu items before it's shown.
 				md->open_cb.callp(nullptr, 0, ret, ce);
 				if (ce.error != Callable::CallError::CALL_OK) {
 					ERR_PRINT(vformat("Failed to execute menu open callback: %s.", Variant::get_callable_error_text(md->open_cb, nullptr, 0, ce)));
@@ -110,15 +121,22 @@ void NativeMenuMacOS::_menu_close(NSMenu *p_menu) {
 		MenuData *md = menus.get_or_null(menu_lookup[p_menu]);
 		if (md) {
 			md->is_open = false;
-			if (md->close_cb.is_valid()) {
-				Variant ret;
-				Callable::CallError ce;
 
-				md->close_cb.callp(nullptr, 0, ret, ce);
-				if (ce.error != Callable::CallError::CALL_OK) {
-					ERR_PRINT(vformat("Failed to execute menu close callback: %s.", Variant::get_callable_error_text(md->close_cb, nullptr, 0, ce)));
-				}
-			}
+			// Callback called deferred, since it should not modify menu items during "_menu_close" call.
+			callable_mp(this, &NativeMenuMacOS::_menu_close_cb).call_deferred(menu_lookup[p_menu]);
+		}
+	}
+}
+
+void NativeMenuMacOS::_menu_close_cb(const RID &p_rid) {
+	MenuData *md = menus.get_or_null(p_rid);
+	if (md->close_cb.is_valid()) {
+		Variant ret;
+		Callable::CallError ce;
+
+		md->close_cb.callp(nullptr, 0, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute menu close callback: %s.", Variant::get_callable_error_text(md->close_cb, nullptr, 0, ce)));
 		}
 	}
 }
@@ -326,6 +344,13 @@ float NativeMenuMacOS::get_minimum_width(const RID &p_rid) const {
 	ERR_FAIL_NULL_V(md, 0.0);
 
 	return md->menu.minimumWidth * DisplayServer::get_singleton()->screen_get_max_scale();
+}
+
+bool NativeMenuMacOS::is_opened(const RID &p_rid) const {
+	const MenuData *md = menus.get_or_null(p_rid);
+	ERR_FAIL_NULL_V(md, false);
+
+	return md->is_open;
 }
 
 int NativeMenuMacOS::add_submenu_item(const RID &p_rid, const String &p_label, const RID &p_submenu_rid, const Variant &p_tag, int p_index) {
