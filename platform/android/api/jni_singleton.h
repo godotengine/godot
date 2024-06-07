@@ -219,19 +219,12 @@ public:
 	}
 
 	void add_signal(const StringName &p_name, const Vector<Variant::Type> &p_args) {
-		if (p_args.size() == 0) {
-			ADD_SIGNAL(MethodInfo(p_name));
-		} else if (p_args.size() == 1) {
-			ADD_SIGNAL(MethodInfo(p_name, PropertyInfo(p_args[0], "arg1")));
-		} else if (p_args.size() == 2) {
-			ADD_SIGNAL(MethodInfo(p_name, PropertyInfo(p_args[0], "arg1"), PropertyInfo(p_args[1], "arg2")));
-		} else if (p_args.size() == 3) {
-			ADD_SIGNAL(MethodInfo(p_name, PropertyInfo(p_args[0], "arg1"), PropertyInfo(p_args[1], "arg2"), PropertyInfo(p_args[2], "arg3")));
-		} else if (p_args.size() == 4) {
-			ADD_SIGNAL(MethodInfo(p_name, PropertyInfo(p_args[0], "arg1"), PropertyInfo(p_args[1], "arg2"), PropertyInfo(p_args[2], "arg3"), PropertyInfo(p_args[3], "arg4")));
-		} else if (p_args.size() == 5) {
-			ADD_SIGNAL(MethodInfo(p_name, PropertyInfo(p_args[0], "arg1"), PropertyInfo(p_args[1], "arg2"), PropertyInfo(p_args[2], "arg3"), PropertyInfo(p_args[3], "arg4"), PropertyInfo(p_args[4], "arg5")));
+		MethodInfo mi;
+		mi.name = p_name;
+		for (int i = 0; i < p_args.size(); i++) {
+			mi.arguments.push_back(PropertyInfo(p_args[i], "arg" + itos(i + 1)));
 		}
+		ADD_SIGNAL(mi);
 	}
 
 #endif
