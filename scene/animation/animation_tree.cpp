@@ -838,12 +838,12 @@ void AnimationTree::_setup_animation_player() {
 	// Using AnimationPlayer here is for compatibility. Changing to AnimationMixer needs extra work like error handling.
 	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node_or_null(animation_player));
 	if (player) {
-		if (!player->is_connected(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
-			player->connect(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
-		}
-		if (!player->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
-			player->connect(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
-		}
+		// if (!player->is_connected(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
+		// 	player->connect(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
+		// }
+		// if (!player->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
+		// 	player->connect(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
+		// }
 		Node *root = player->get_node_or_null(player->get_root_node());
 		if (root) {
 			set_root_node(get_path_to(root, true));

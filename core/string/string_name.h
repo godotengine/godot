@@ -59,7 +59,8 @@ class StringName {
 #ifdef DEBUG_ENABLED
 		uint32_t debug_references = 0;
 #endif
-		String get_name() const { return cname ? String(cname) : name; }
+		//String get_name() const { return cname ? String(cname) : name; }
+		String get_name() const { return name; }
 		int idx = 0;
 		uint32_t hash = 0;
 		_Data *prev = nullptr;

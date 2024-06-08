@@ -311,6 +311,7 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 	_data->hash = hash;
 	_data->idx = idx;
 	_data->cname = p_static_string.ptr;
+	_data->name = String(p_static_string.ptr);
 	_data->next = _table[idx];
 	_data->prev = nullptr;
 #ifdef DEBUG_ENABLED
@@ -335,11 +336,11 @@ StringName::StringName(const String &p_name, bool p_static) {
 		return;
 	}
 
-	MutexLock lock(mutex);
 
 	uint32_t hash = p_name.hash();
 	uint32_t idx = hash & STRING_TABLE_MASK;
 
+	MutexLock lock(mutex);
 	_data = _table[idx];
 
 	while (_data) {

@@ -11,8 +11,8 @@ JPH_NAMESPACE_BEGIN
 /// Helper functions to get properties of a scaling vector
 namespace ScaleHelpers
 {
-	/// The tolerance used to check if components of the scale vector are the same
-	static constexpr float	cScaleToleranceSq = 1.0e-8f;
+	/// The tolerance used to check if components of the scale vector are the sa	me
+	static constexpr float	cScaleToleranceSq = 0.001f;
 
 	/// Test if a scale is identity
 	inline bool				IsNotScaled(Vec3Arg inScale)									{ return inScale.IsClose(Vec3::sReplicate(1.0f), cScaleToleranceSq); }

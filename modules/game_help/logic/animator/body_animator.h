@@ -194,6 +194,13 @@ class CharacterAnimatorNodeBase : public Resource
     static void bind_methods();
 
 public:
+    enum LoopType
+    {
+        LOOP_Once,
+        LOOP_ClampCount,
+        LOOP_PingPongOnce,
+        LOOP_PingPongCount,
+    };
     void touch() { lastUsingTime = OS::get_singleton()->get_unix_time(); }
 
     bool is_need_remove(float remove_time) { return OS::get_singleton()->get_unix_time() - lastUsingTime > remove_time; }
@@ -223,19 +230,12 @@ public:
     void set_fade_out_time(float p_fade_out_time) { fade_out_time = p_fade_out_time; }
     float get_fade_out_time() { return fade_out_time; }
 
-    void set_loop(bool p_loop) { isLoop = p_loop; }
-    bool get_loop() { return isLoop; }
+    void set_loop(LoopType p_loop) { isLoop = p_loop; }
+    LoopType get_loop() { return isLoop; }
 
-    void set_loop_pingpong(bool p_loop_pingpong) { isLoopPingPong = p_loop_pingpong; }
-    bool get_loop_pingpong() { return isLoopPingPong; }
+    void set_loop_count(int p_loop_count) { loop_count = p_loop_count; }
+    int get_loop_count() { return loop_count; }
 public:
-    enum LoopType
-    {
-        LOOP_Once,
-        LOOP_Count,
-        LOOP_PingPongOnce,
-        LOOP_PingPongCount,
-    };
     struct Blend1dDataConstant
     {
 
@@ -302,8 +302,8 @@ public:
     StringName               black_board_property_y;
     float fade_out_time = 0.0f;
     float lastUsingTime = 0.0f;
-    bool isLoop = false;
-    bool isLoopPingPong = false;
+    LoopType isLoop = LOOP_Once;
+    int loop_count = 0;
 
 
 };
@@ -722,6 +722,7 @@ public:
     }
 
 };
+VARIANT_ENUM_CAST(CharacterAnimatorNodeBase::LoopType)
 VARIANT_ENUM_CAST(CharacterAnimationLogicNode::AnimatorAIStopCheckType)
 VARIANT_ENUM_CAST(CharacterAnimatorLayerConfig::BlendType)
 VARIANT_ENUM_CAST(CharacterAnimatorNode2D::BlendType)

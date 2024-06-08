@@ -159,15 +159,21 @@ void CharacterAnimatorNodeBase::bind_methods()
     ClassDB::bind_method(D_METHOD("set_loop", "loop"), &CharacterAnimatorNodeBase::set_loop);
     ClassDB::bind_method(D_METHOD("get_loop"), &CharacterAnimatorNodeBase::get_loop);
 
-    ClassDB::bind_method(D_METHOD("set_loop_pingpong", "loop_pingpong"), &CharacterAnimatorNodeBase::set_loop_pingpong);
-    ClassDB::bind_method(D_METHOD("get_loop_pingpong"), &CharacterAnimatorNodeBase::get_loop_pingpong);
+    ClassDB::bind_method(D_METHOD("set_loop_count", "loop_count"), &CharacterAnimatorNodeBase::set_loop_count);
+    ClassDB::bind_method(D_METHOD("get_loop_count"), &CharacterAnimatorNodeBase::get_loop_count);
+
 
     ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "animation_arrays"), "set_animation_arrays", "get_animation_arrays");
     ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property"), "set_black_board_property", "get_black_board_property");
     ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property_y"), "set_black_board_property_y", "get_black_board_property_y");
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fade_out_time"), "set_fade_out_time", "get_fade_out_time");
-    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "get_loop");
-    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop_pingpong"), "set_loop_pingpong", "get_loop_pingpong");
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "loop", PROPERTY_HINT_ENUM, "Once,Clamp Count,PingPong Once,PingPong Count"), "set_loop", "get_loop");
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_count"), "set_loop_count", "get_loop_count");
+    
+    BIND_ENUM_CONSTANT(LOOP_Once);
+    BIND_ENUM_CONSTANT(LOOP_ClampCount);
+    BIND_ENUM_CONSTANT(LOOP_PingPongOnce);
+    BIND_ENUM_CONSTANT(LOOP_PingPongCount);
 }    
 void CharacterAnimatorNodeBase::_init()
 {

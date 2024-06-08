@@ -12,7 +12,6 @@
 #include "blackboard_plan.h"
 
 bool BlackboardPlan::_set(const StringName &p_name, const Variant &p_value) {
-	String name_str = p_name;
 
 	// * Editor
 	if (var_map.has(p_name)) {
@@ -25,6 +24,7 @@ bool BlackboardPlan::_set(const StringName &p_name, const Variant &p_value) {
 		return true;
 	}
 
+	String name_str = p_name;
 	// * Storage
 	if (name_str.begins_with("var/")) {
 		StringName var_name = name_str.get_slicec('/', 1);
@@ -52,7 +52,6 @@ bool BlackboardPlan::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool BlackboardPlan::_get(const StringName &p_name, Variant &r_ret) const {
-	String name_str = p_name;
 
 	// * Editor
 	if (var_map.has(p_name)) {
@@ -61,12 +60,21 @@ bool BlackboardPlan::_get(const StringName &p_name, Variant &r_ret) const {
 	}
 
 	// * Storage
-	if (!name_str.begins_with("var/")) {
+	if (!p_name.begins_with("var/")) {
 		return false;
 	}
-
-	StringName var_name = name_str.get_slicec('/', 1);
-	String what = name_str.get_slicec('/', 2);
+	String name_str = p_name;
+	Vector<String> parts = name_str.split("/");
+	String var_name = "";
+	for(int i = 1; i < parts.size() - 1; i++) {
+		var_name += parts[i];
+		if(i != parts.size() - 2) {
+			var_name += "/";
+		}
+	}
+	String what = parts[parts.size() - 1];
+	//StringName var_name = name_str.get_slicec('/', 1);
+	//String what = name_str.get_slicec('/', 2);
 	ERR_FAIL_COND_V(!var_map.has(var_name), false);
 
 	if (what == "name") {
