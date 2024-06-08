@@ -142,7 +142,7 @@ struct RenderStroke
     struct {
         float begin = 0.0f;
         float end = 1.0f;
-        bool individual = false;
+        bool simultaneous = true;
     } trim;
 
     ~RenderStroke()
