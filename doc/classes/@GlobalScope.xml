@@ -2931,7 +2931,8 @@
 			Hints that a string property is a password, and every character is replaced with the secret character.
 		</constant>
 		<constant name="PROPERTY_HINT_INPUT_NAME" value="38" enum="PropertyHint">
-			Hints that a string property should be suggested with the project's input actions
+			Hints that a string property is an input action name, and can select any action name from the input map.
+			If the [code]"allow_builtin"[/code] is used as a parameter, then built-in input actions can be used.
 		</constant>
 		<constant name="PROPERTY_HINT_MAX" value="39" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
