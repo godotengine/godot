@@ -652,6 +652,19 @@ void EditorProperty::add_focusable(Control *p_control) {
 	focusables.push_back(p_control);
 }
 
+void EditorProperty::grab_focus(int p_focusable) {
+	if (focusables.is_empty()) {
+		return;
+	}
+
+	if (p_focusable >= 0) {
+		ERR_FAIL_INDEX(p_focusable, focusables.size());
+		focusables[p_focusable]->grab_focus();
+	} else {
+		focusables[0]->grab_focus();
+	}
+}
+
 void EditorProperty::select(int p_focusable) {
 	bool already_selected = selected;
 	if (!selectable) {

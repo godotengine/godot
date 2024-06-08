@@ -294,6 +294,13 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 	}
 
 	for (const MethodInfo &mi : p_methods) {
+		if (mi.name.begins_with("@")) {
+			// GH-92782. GDScript inline setters/getters are historically present in `get_method_list()`
+			// and can be called using `Object.call()`. However, these functions are meant to be internal
+			// and their names are not valid identifiers, so let's hide them from the user.
+			continue;
+		}
+
 		if (!p_search_string.is_empty() && !mi.name.containsn(p_search_string)) {
 			continue;
 		}
@@ -324,8 +331,10 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 				continue;
 			}
 		}
+
 		ret.push_back(mi);
 	}
+
 	return ret;
 }
 

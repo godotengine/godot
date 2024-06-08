@@ -73,8 +73,11 @@ class NativeMenuMacOS : public NativeMenu {
 public:
 	void _register_system_menus(NSMenu *p_main_menu, NSMenu *p_application_menu, NSMenu *p_window_menu, NSMenu *p_help_menu, NSMenu *p_dock_menu);
 	NSMenu *_get_dock_menu();
+
+	void _menu_need_update(NSMenu *p_menu);
 	void _menu_open(NSMenu *p_menu);
 	void _menu_close(NSMenu *p_menu);
+	void _menu_close_cb(const RID &p_rid);
 
 	virtual bool has_feature(Feature p_feature) const override;
 
@@ -97,6 +100,8 @@ public:
 	virtual Callable get_popup_close_callback(const RID &p_rid) const override;
 	virtual void set_minimum_width(const RID &p_rid, float p_width) override;
 	virtual float get_minimum_width(const RID &p_rid) const override;
+
+	virtual bool is_opened(const RID &p_rid) const override;
 
 	virtual int add_submenu_item(const RID &p_rid, const String &p_label, const RID &p_submenu_rid, const Variant &p_tag = Variant(), int p_index = -1) override;
 	virtual int add_item(const RID &p_rid, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1) override;

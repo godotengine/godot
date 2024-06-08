@@ -649,6 +649,9 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _pick_track_select_recursive(TreeItem *p_item, const String &p_filter, Vector<Node *> &p_select_candidates);
 	void _pick_track_filter_input(const Ref<InputEvent> &p_ie);
 
+	double snap_unit;
+	void _update_snap_unit();
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);

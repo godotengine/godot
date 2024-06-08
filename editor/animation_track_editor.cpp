@@ -57,6 +57,9 @@
 #include "scene/main/window.h"
 #include "servers/audio/audio_stream.h"
 
+constexpr double FPS_DECIMAL = 1;
+constexpr double SECOND_DECIMAL = 0.0001;
+
 void AnimationTrackKeyEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_obj"), &AnimationTrackKeyEdit::_update_obj);
 	ClassDB::bind_method(D_METHOD("_key_ofs_changed"), &AnimationTrackKeyEdit::_key_ofs_changed);
@@ -1322,7 +1325,7 @@ void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 		return;
 	}
 
-	p_new_len = MAX(0.0001, p_new_len);
+	p_new_len = MAX(SECOND_DECIMAL, p_new_len);
 	if (use_fps && animation->get_step() > 0) {
 		p_new_len *= animation->get_step();
 	}
@@ -1442,7 +1445,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 
 			float l = animation->get_length();
 			if (l <= 0) {
-				l = 0.0001; // Avoid crashor.
+				l = SECOND_DECIMAL; // Avoid crashor.
 			}
 
 			Ref<Texture2D> hsize_icon = get_editor_theme_icon(SNAME("Hsize"));
@@ -1723,7 +1726,7 @@ void AnimationTimelineEdit::update_values() {
 	editing = true;
 	if (use_fps && animation->get_step() > 0) {
 		length->set_value(animation->get_length() / animation->get_step());
-		length->set_step(1);
+		length->set_step(FPS_DECIMAL);
 		length->set_tooltip_text(TTR("Animation length (frames)"));
 		time_icon->set_tooltip_text(TTR("Animation length (frames)"));
 		if (track_edit) {
@@ -1731,7 +1734,7 @@ void AnimationTimelineEdit::update_values() {
 		}
 	} else {
 		length->set_value(animation->get_length());
-		length->set_step(0.0001);
+		length->set_step(SECOND_DECIMAL);
 		length->set_tooltip_text(TTR("Animation length (seconds)"));
 		time_icon->set_tooltip_text(TTR("Animation length (seconds)"));
 	}
@@ -1912,9 +1915,9 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	time_icon->set_tooltip_text(TTR("Animation length (seconds)"));
 	len_hb->add_child(time_icon);
 	length = memnew(EditorSpinSlider);
-	length->set_min(0.0001);
+	length->set_min(SECOND_DECIMAL);
 	length->set_max(36000);
-	length->set_step(0.0001);
+	length->set_step(SECOND_DECIMAL);
 	length->set_allow_greater(true);
 	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
 	length->set_hide_slider(true);
@@ -2645,7 +2648,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 		}
 
 		if (key_idx != -1) {
-			String text = TTR("Time (s):") + " " + TS->format_number(rtos(Math::snapped(animation->track_get_key_time(track, key_idx), 0.0001))) + "\n";
+			String text = TTR("Time (s):") + " " + TS->format_number(rtos(Math::snapped(animation->track_get_key_time(track, key_idx), SECOND_DECIMAL))) + "\n";
 			switch (animation->track_get_type(track)) {
 				case Animation::TYPE_POSITION_3D: {
 					Vector3 t = animation->track_get_key_value(track, key_idx);
@@ -4758,10 +4761,12 @@ void AnimationTrackEditor::_animation_changed() {
 }
 
 void AnimationTrackEditor::_snap_mode_changed(int p_mode) {
-	timeline->set_use_fps(p_mode == 1);
+	bool use_fps = p_mode == 1;
+	timeline->set_use_fps(use_fps);
 	if (key_edit) {
-		key_edit->set_use_fps(p_mode == 1);
+		key_edit->set_use_fps(use_fps);
 	}
+	step->set_step(use_fps ? FPS_DECIMAL : SECOND_DECIMAL);
 	_update_step_spinbox();
 }
 
@@ -4775,7 +4780,9 @@ void AnimationTrackEditor::_update_step_spinbox() {
 		if (animation->get_step() == 0) {
 			step->set_value(0);
 		} else {
-			step->set_value(1.0 / animation->get_step());
+			// The value stored within tscn cannot restored the original FPS due to lack of precision,
+			// so the value should be limited to integer.
+			step->set_value(Math::round(1.0 / animation->get_step()));
 		}
 
 	} else {
@@ -4783,6 +4790,7 @@ void AnimationTrackEditor::_update_step_spinbox() {
 	}
 
 	step->set_block_signals(false);
+	_update_snap_unit();
 }
 
 void AnimationTrackEditor::_animation_update() {
@@ -4875,6 +4883,8 @@ void AnimationTrackEditor::_update_step(double p_new_step) {
 	if (animation.is_null()) {
 		return;
 	}
+
+	_update_snap_unit();
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Change Animation Step"));
@@ -5162,7 +5172,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 		p_ofs = snap_time(p_ofs);
 	}
 	while (animation->track_find_key(p_track, p_ofs, Animation::FIND_MODE_APPROX) != -1) { // Make sure insertion point is valid.
-		p_ofs += 0.0001;
+		p_ofs += SECOND_DECIMAL;
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -7007,25 +7017,31 @@ void AnimationTrackEditor::_selection_changed() {
 	}
 }
 
+void AnimationTrackEditor::_update_snap_unit() {
+	if (step->get_value() <= 0) {
+		snap_unit = 0;
+		return; // Avoid zero div.
+	}
+
+	if (timeline->is_using_fps()) {
+		snap_unit = 1.0 / step->get_value();
+	} else {
+		snap_unit = 1.0 / Math::round(1.0 / step->get_value()); // Follow the snap behavior of the timeline editor.
+	}
+}
+
 float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
 	if (is_snap_enabled()) {
-		double snap_increment;
-		if (timeline->is_using_fps() && step->get_value() > 0) {
-			snap_increment = 1.0 / step->get_value();
-		} else {
-			snap_increment = step->get_value();
-		}
-
 		if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 			// Use more precise snapping when holding Shift.
-			snap_increment *= 0.25;
+			snap_unit *= 0.25;
 		}
 
 		if (p_relative) {
-			double rel = Math::fmod(timeline->get_value(), snap_increment);
-			p_value = Math::snapped(p_value + rel, snap_increment) - rel;
+			double rel = Math::fmod(timeline->get_value(), snap_unit);
+			p_value = Math::snapped(p_value + rel, snap_unit) - rel;
 		} else {
-			p_value = Math::snapped(p_value, snap_increment);
+			p_value = Math::snapped(p_value, snap_unit);
 		}
 	}
 
@@ -7282,7 +7298,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	step = memnew(EditorSpinSlider);
 	step->set_min(0);
 	step->set_max(1000000);
-	step->set_step(0.0001);
+	step->set_step(SECOND_DECIMAL);
 	step->set_hide_slider(true);
 	step->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	step->set_tooltip_text(TTR("Animation step value."));
@@ -7524,9 +7540,9 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	ease_selection->select(Tween::EASE_IN_OUT); // Default
 	ease_selection->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Translation context is needed.
 	ease_fps = memnew(SpinBox);
-	ease_fps->set_min(1);
+	ease_fps->set_min(FPS_DECIMAL);
 	ease_fps->set_max(999);
-	ease_fps->set_step(1);
+	ease_fps->set_step(FPS_DECIMAL);
 	ease_fps->set_value(30); // Default
 	ease_grid->add_child(memnew(Label(TTR("Transition Type:"))));
 	ease_grid->add_child(transition_selection);
@@ -7550,9 +7566,9 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bake_value = memnew(CheckBox);
 	bake_value->set_pressed(true);
 	bake_fps = memnew(SpinBox);
-	bake_fps->set_min(1);
+	bake_fps->set_min(FPS_DECIMAL);
 	bake_fps->set_max(999);
-	bake_fps->set_step(1);
+	bake_fps->set_step(FPS_DECIMAL);
 	bake_fps->set_value(30); // Default
 	bake_grid->add_child(memnew(Label(TTR("3D Pos/Rot/Scl Track:"))));
 	bake_grid->add_child(bake_trs);
@@ -7671,15 +7687,14 @@ AnimationTrackKeyEditEditor::AnimationTrackKeyEditEditor(Ref<Animation> p_animat
 	spinner->set_allow_lesser(true);
 
 	if (use_fps) {
-		spinner->set_step(1);
-		spinner->set_hide_slider(true);
+		spinner->set_step(FPS_DECIMAL);
 		real_t fps = animation->get_step();
 		if (fps > 0) {
 			fps = 1.0 / fps;
 		}
 		spinner->set_value(key_ofs * fps);
 	} else {
-		spinner->set_step(0.0001);
+		spinner->set_step(SECOND_DECIMAL);
 		spinner->set_value(key_ofs);
 		spinner->set_max(animation->get_length());
 	}
