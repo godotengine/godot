@@ -38,8 +38,10 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.*
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.annotation.CallSuper
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.window.layout.WindowMetricsCalculator
 import org.godotengine.godot.GodotActivity
 import org.godotengine.godot.GodotLib
@@ -88,8 +90,13 @@ open class GodotEditor : GodotActivity() {
 	}
 
 	private val commandLineParams = ArrayList<String>()
+	private val editorLoadingIndicator: View? by lazy { findViewById(R.id.editor_loading_indicator) }
+
+	override fun getGodotAppLayout() = R.layout.godot_editor_layout
 
 	override fun onCreate(savedInstanceState: Bundle?) {
+		installSplashScreen()
+
 		// We exclude certain permissions from the set we request at startup, as they'll be
 		// requested on demand based on use-cases.
 		PermissionsUtil.requestManifestPermissions(this, setOf(Manifest.permission.RECORD_AUDIO))
@@ -118,6 +125,14 @@ open class GodotEditor : GodotActivity() {
 				enableLongPress(longPressEnabled)
 				enablePanningAndScalingGestures(panScaleEnabled)
 			}
+		}
+	}
+
+	override fun onGodotMainLoopStarted() {
+		super.onGodotMainLoopStarted()
+		runOnUiThread {
+			// Hide the loading indicator
+			editorLoadingIndicator?.visibility = View.GONE
 		}
 	}
 
