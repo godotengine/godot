@@ -1660,6 +1660,24 @@ void CodeEdit::unfold_all_lines() {
 	_unhide_all_lines();
 }
 
+void CodeEdit::fold_all_comments() {
+	for (int i = 0; i < get_line_count(); i++) {
+		if (is_in_comment(i) != -1) {
+			fold_line(i);
+		}
+	}
+	queue_redraw();
+}
+
+void CodeEdit::unfold_all_comments() {
+	for (int i = 0; i < get_line_count(); i++) {
+		if (is_in_comment(i) != -1 && is_line_folded(i)) {
+			unfold_line(i);
+		}
+	}
+	queue_redraw();
+}
+
 void CodeEdit::toggle_foldable_line(int p_line) {
 	ERR_FAIL_INDEX(p_line, get_line_count());
 	if (is_line_folded(p_line)) {
@@ -2564,6 +2582,8 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unfold_line", "line"), &CodeEdit::unfold_line);
 	ClassDB::bind_method(D_METHOD("fold_all_lines"), &CodeEdit::fold_all_lines);
 	ClassDB::bind_method(D_METHOD("unfold_all_lines"), &CodeEdit::unfold_all_lines);
+	ClassDB::bind_method(D_METHOD("fold_all_comments"), &CodeEdit::fold_all_comments);
+	ClassDB::bind_method(D_METHOD("unfold_all_comments"), &CodeEdit::unfold_all_comments);
 	ClassDB::bind_method(D_METHOD("toggle_foldable_line", "line"), &CodeEdit::toggle_foldable_line);
 	ClassDB::bind_method(D_METHOD("toggle_foldable_lines_at_carets"), &CodeEdit::toggle_foldable_lines_at_carets);
 

@@ -168,6 +168,12 @@
 				Duplicates all selected text and duplicates all lines with a caret on them.
 			</description>
 		</method>
+		<method name="fold_all_comments">
+			<return type="void" />
+			<description>
+				Folds all comments that are possible to be folded (see [method can_fold_line]).
+			</description>
+		</method>
 		<method name="fold_all_lines">
 			<return type="void" />
 			<description>
@@ -495,6 +501,12 @@
 			<return type="void" />
 			<description>
 				Toggle the folding of the code block on all lines with a caret on them.
+			</description>
+		</method>
+		<method name="unfold_all_comments">
+			<return type="void" />
+			<description>
+				Unfolds all comments that are folded but not hidden.
 			</description>
 		</method>
 		<method name="unfold_all_lines">

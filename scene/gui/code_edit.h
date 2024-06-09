@@ -411,6 +411,8 @@ public:
 	void unfold_line(int p_line);
 	void fold_all_lines();
 	void unfold_all_lines();
+	void fold_all_comments();
+	void unfold_all_comments();
 	void toggle_foldable_line(int p_line);
 	void toggle_foldable_lines_at_carets();
 
