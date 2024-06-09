@@ -445,11 +445,11 @@
 				[codeblocks]
 				[gdscript]
 				var my_basis = Basis(Vector3(1, 1, 1), Vector3(1, 1, 1), Vector3(0, 2, 5))
-				print(my_basis * Vector3(1, 2, 3)) # Prints (7, 3, 16)
+				print(my_basis * Vector3(1, 2, 3)) # Prints (3, 9, 18)
 				[/gdscript]
 				[csharp]
 				var myBasis = new Basis(new Vector3(1, 1, 1), new Vector3(1, 1, 1), new Vector3(0, 2, 5));
-				GD.Print(my_basis * new Vector3(1, 2, 3)); // Prints (7, 3, 16)
+				GD.Print(my_basis * new Vector3(1, 2, 3)); // Prints (3, 9, 18)
 				[/csharp]
 				[/codeblocks]
 			</description>
