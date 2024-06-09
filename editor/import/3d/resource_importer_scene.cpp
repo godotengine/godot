@@ -3092,7 +3092,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		if (!scr.is_valid()) {
 			EditorNode::add_io_error(TTR("Couldn't load post-import script:") + " " + post_import_script_path);
 		} else {
-			post_import_script = Ref<EditorScenePostImport>(memnew(EditorScenePostImport));
+			post_import_script.instantiate();
 			post_import_script->set_script(scr);
 			if (!post_import_script->get_script_instance()) {
 				EditorNode::add_io_error(TTR("Invalid/broken script for post-import (check console):") + " " + post_import_script_path);

@@ -117,7 +117,7 @@ static Ref<ImporterMesh> _mesh_to_importer_mesh(Ref<Mesh> p_mesh) {
 			mat_name = mat->get_name();
 		} else {
 			// Assign default material when no material is assigned.
-			mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+			mat.instantiate();
 		}
 		importer_mesh->add_surface(p_mesh->surface_get_primitive_type(surface_i),
 				array, p_mesh->surface_get_blend_shape_arrays(surface_i), p_mesh->surface_get_lods(surface_i), mat,
@@ -5913,7 +5913,7 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 				mat_name = mat->get_name();
 			} else {
 				// Assign default material when no material is assigned.
-				mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+				mat.instantiate();
 			}
 
 			mesh->add_surface(csg_mesh->surface_get_primitive_type(surface_i),

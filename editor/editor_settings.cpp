@@ -1229,7 +1229,7 @@ fail:
 		extra_config->set_value("init_projects", "list", list);
 	}
 
-	singleton = Ref<EditorSettings>(memnew(EditorSettings));
+	singleton.instantiate();
 	singleton->set_path(config_file_path, true);
 	singleton->save_changed_setting = true;
 	singleton->_load_defaults(extra_config);
