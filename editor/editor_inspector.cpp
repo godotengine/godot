@@ -413,7 +413,7 @@ void EditorProperty::_notification(int p_what) {
 			if (has_borders) {
 				get_parent()->disconnect(SceneStringName(theme_changed), callable_mp(this, &EditorProperty::_update_property_bg));
 			}
-		}
+		} break;
 	}
 }
 
@@ -1364,6 +1364,8 @@ void EditorInspectorSection::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
+			bg_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
+			bg_color.a /= level;
 		} break;
 
 		case NOTIFICATION_SORT_CHILDREN: {
@@ -1562,13 +1564,14 @@ Size2 EditorInspectorSection::get_minimum_size() const {
 	return ms;
 }
 
-void EditorInspectorSection::setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth) {
+void EditorInspectorSection::setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, int p_level) {
 	section = p_section;
 	label = p_label;
 	object = p_object;
 	bg_color = p_bg_color;
 	foldable = p_foldable;
 	indent_depth = p_indent_depth;
+	level = p_level;
 
 	if (!foldable && !vbox_added) {
 		add_child(vbox);
@@ -1668,7 +1671,7 @@ void EditorInspectorSection::property_can_revert_changed(const String &p_path, b
 }
 
 void EditorInspectorSection::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("setup", "section", "label", "object", "bg_color", "foldable"), &EditorInspectorSection::setup);
+	ClassDB::bind_method(D_METHOD("setup", "section", "label", "object", "bg_color", "foldable", "indent_depth", "level"), &EditorInspectorSection::setup, DEFVAL(0), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("get_vbox"), &EditorInspectorSection::get_vbox);
 	ClassDB::bind_method(D_METHOD("unfold"), &EditorInspectorSection::unfold);
 	ClassDB::bind_method(D_METHOD("fold"), &EditorInspectorSection::fold);
@@ -3178,7 +3181,7 @@ void EditorInspector::update_tree() {
 
 				Color c = sscolor;
 				c.a /= level;
-				section->setup(acc_path, label, object, c, use_folding, section_depth);
+				section->setup(acc_path, label, object, c, use_folding, section_depth, level);
 				section->set_tooltip_text(tooltip);
 
 				// Add editors at the start of a group.
