@@ -361,7 +361,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 
 			file_context_menu = memnew(PopupMenu);
 			file_context_menu->add_item(TTR("Show in FileSystem"), FILE_SHOW_IN_FILESYSTEM);
-			file_context_menu->add_item(TTR("Show in File Manager"), FILE_SHOW_IN_FILE_MANAGER);
+			file_context_menu->add_item(OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_SHOW), FILE_SHOW_IN_FILE_MANAGER);
 			file_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &QuickOpenResultContainer::_menu_option));
 			file_context_menu->hide();
 			scroll_container->add_child(file_context_menu);
