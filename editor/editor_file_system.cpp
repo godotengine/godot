@@ -961,6 +961,14 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 
 		if (fi->uid != ResourceUID::INVALID_ID) {
 			if (ResourceUID::get_singleton()->has_id(fi->uid)) {
+				// Restrict UID dupe warning to first-scan since we know there are no file moves going on yet.
+				if (first_scan) {
+					// Warn if we detect files with duplicate UIDs.
+					const String other_path = ResourceUID::get_singleton()->get_id_path(fi->uid);
+					if (other_path != path) {
+						WARN_PRINT(vformat("UID duplicate detected between %s and %s.", path, other_path));
+					}
+				}
 				ResourceUID::get_singleton()->set_id(fi->uid, path);
 			} else {
 				ResourceUID::get_singleton()->add_id(fi->uid, path);
