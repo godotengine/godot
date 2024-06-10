@@ -150,7 +150,7 @@ bool _prepareLinear(SwFill* fill, const LinearGradient* linear, const Matrix* tr
     bool isTransformation = !mathIdentity((const Matrix*)(&gradTransform));
 
     if (isTransformation) {
-        if (transform) gradTransform = mathMultiply(transform, &gradTransform);
+        if (transform) gradTransform = *transform * gradTransform;
     } else if (transform) {
         gradTransform = *transform;
         isTransformation = true;
@@ -216,7 +216,7 @@ bool _prepareRadial(SwFill* fill, const RadialGradient* radial, const Matrix* tr
     bool isTransformation = !mathIdentity((const Matrix*)(&gradTransform));
 
     if (transform) {
-        if (isTransformation) gradTransform = mathMultiply(transform, &gradTransform);
+        if (isTransformation) gradTransform = *transform * gradTransform;
         else {
             gradTransform = *transform;
             isTransformation = true;
