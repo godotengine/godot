@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_mirror_animations = env_modules.Clone()
+
+# Godot source files
+
+env_mirror_animations.add_source_files(env.modules_sources, "*.cpp")
+
+if env.editor_build:
+    env_mirror_animations.add_source_files(env.modules_sources, "editor/*.cpp")

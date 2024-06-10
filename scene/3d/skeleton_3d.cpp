@@ -485,18 +485,19 @@ String Skeleton3D::get_bone_name(int p_bone) const {
 	return bones[p_bone].name;
 }
 
-void Skeleton3D::set_bone_name(int p_bone, const String &p_name) {
+String Skeleton3D::get_bone_counterpart_name(int p_bone) const {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX_V(p_bone, bone_size, "");
+	return bones[p_bone].counterpart_name;
+}
+
+void Skeleton3D::set_bone_name(int p_bone, const String &p_name, const String& p_counterpart_name ) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
 
-	const int *bone_index_ptr = name_to_bone_index.getptr(p_name);
-	if (bone_index_ptr != nullptr) {
-		ERR_FAIL_COND_MSG(*bone_index_ptr != p_bone, "Skeleton3D: '" + get_name() + "', bone name:  '" + p_name + "' already exists.");
-		return; // No need to rename, the bone already has the given name.
-	}
-
 	name_to_bone_index.erase(bones[p_bone].name);
 	bones.write[p_bone].name = p_name;
+	bones.write[p_bone].counterpart_name = p_counterpart_name;
 	name_to_bone_index.insert(p_name, p_bone);
 
 	version++;

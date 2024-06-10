@@ -86,6 +86,7 @@ private:
 
 	struct Bone {
 		String name;
+		String counterpart_name;
 
 		int parent = -1;
 		Vector<int> child_bones;
@@ -199,7 +200,10 @@ public:
 	int add_bone(const String &p_name);
 	int find_bone(const String &p_name) const;
 	String get_bone_name(int p_bone) const;
-	void set_bone_name(int p_bone, const String &p_name);
+	void set_bone_name(int p_bone, const String &p_name, const String& p_counterpart_name = "");
+
+	String get_bone_counterpart_name(int p_bone) const;
+
 
 	bool is_bone_parent_of(int p_bone_id, int p_parent_bone_id) const;
 
