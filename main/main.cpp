@@ -2896,7 +2896,7 @@ Error Main::setup2() {
 
 		MAIN_PRINT("Main: Setup Logo");
 
-#if !defined(TOOLS_ENABLED) && (defined(WEB_ENABLED) || defined(ANDROID_ENABLED))
+#if !defined(TOOLS_ENABLED) && defined(WEB_ENABLED)
 		bool show_logo = false;
 #else
 		bool show_logo = true;
