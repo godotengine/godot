@@ -135,6 +135,7 @@ protected:
 	void _push_meta_bind_compat_89024(const Variant &p_meta);
 	void _add_image_bind_compat_80410(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region);
 	bool _remove_paragraph_bind_compat_91098(int p_paragraph);
+	void _push_paragraph_compat_xxxxx(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE, const PackedFloat32Array &p_tab_stops = PackedFloat32Array());
 	static void _bind_compatibility_methods();
 #endif
 
@@ -308,6 +309,7 @@ private:
 		Control::TextDirection direction = Control::TEXT_DIRECTION_AUTO;
 		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 		BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
+		float justification_threshold = 0.70;
 		PackedFloat32Array tab_stops;
 		ItemParagraph() { type = ITEM_PARAGRAPH; }
 	};
@@ -479,6 +481,7 @@ private:
 
 	HorizontalAlignment default_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	BitField<TextServer::JustificationFlag> default_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
+	float default_justification_threshold = 0.70;
 
 	ItemMeta *meta_hovering = nullptr;
 	Variant current_meta;
@@ -573,11 +576,7 @@ private:
 	ItemDropcap *_find_dc_item(Item *p_item);
 	int _find_list(Item *p_item, Vector<int> &r_index, Vector<ItemList *> &r_list);
 	int _find_margin(Item *p_item, const Ref<Font> &p_base_font, int p_base_font_size);
-	PackedFloat32Array _find_tab_stops(Item *p_item);
-	HorizontalAlignment _find_alignment(Item *p_item);
-	BitField<TextServer::JustificationFlag> _find_jst_flags(Item *p_item);
-	TextServer::Direction _find_direction(Item *p_item);
-	TextServer::StructuredTextParser _find_stt(Item *p_item);
+	ItemParagraph *_find_paragraph(Item *p_item);
 	String _find_language(Item *p_item);
 	Color _find_color(Item *p_item, const Color &p_default_color);
 	Color _find_outline_color(Item *p_item, const Color &p_default_color);
@@ -685,7 +684,7 @@ public:
 	void push_underline();
 	void push_strikethrough();
 	void push_language(const String &p_language);
-	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE, const PackedFloat32Array &p_tab_stops = PackedFloat32Array());
+	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE, const PackedFloat32Array &p_tab_stops = PackedFloat32Array(), float p_justification_threshold = 0.70);
 	void push_indent(int p_level);
 	void push_list(int p_level, ListType p_list, bool p_capitalize, const String &p_bullet = String::utf8("•"));
 	void push_meta(const Variant &p_meta, MetaUnderline p_underline_mode = META_UNDERLINE_ALWAYS);

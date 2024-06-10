@@ -661,7 +661,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void LineEdit::set_horizontal_alignment(HorizontalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX((int)p_alignment, 6);
 	if (alignment == p_alignment) {
 		return;
 	}
@@ -853,7 +853,7 @@ void LineEdit::_notification(int p_what) {
 			float text_height = TS->shaped_text_get_size(text_rid).y;
 
 			switch (alignment) {
-				case HORIZONTAL_ALIGNMENT_FILL:
+				case HORIZONTAL_ALIGNMENT_FILL_LEFT:
 				case HORIZONTAL_ALIGNMENT_LEFT: {
 					if (rtl) {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
@@ -861,6 +861,7 @@ void LineEdit::_notification(int p_what) {
 						x_ofs = style->get_offset().x;
 					}
 				} break;
+				case HORIZONTAL_ALIGNMENT_FILL_CENTER:
 				case HORIZONTAL_ALIGNMENT_CENTER: {
 					if (!Math::is_zero_approx(scroll_offset)) {
 						x_ofs = style->get_offset().x;
@@ -868,6 +869,7 @@ void LineEdit::_notification(int p_what) {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - (text_width)) / 2);
 					}
 				} break;
+				case HORIZONTAL_ALIGNMENT_FILL_RIGHT:
 				case HORIZONTAL_ALIGNMENT_RIGHT: {
 					if (rtl) {
 						x_ofs = style->get_offset().x;
@@ -995,7 +997,7 @@ void LineEdit::_notification(int p_what) {
 						int y = style->get_offset().y + (y_area - h) / 2;
 						caret.l_dir = (rtl) ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR;
 						switch (alignment) {
-							case HORIZONTAL_ALIGNMENT_FILL:
+							case HORIZONTAL_ALIGNMENT_FILL_LEFT:
 							case HORIZONTAL_ALIGNMENT_LEFT: {
 								if (rtl) {
 									caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
@@ -1003,9 +1005,11 @@ void LineEdit::_notification(int p_what) {
 									caret.l_caret = Rect2(Vector2(style->get_offset().x, y), Size2(caret_width, h));
 								}
 							} break;
+							case HORIZONTAL_ALIGNMENT_FILL_CENTER:
 							case HORIZONTAL_ALIGNMENT_CENTER: {
 								caret.l_caret = Rect2(Vector2(size.x / 2, y), Size2(caret_width, h));
 							} break;
+							case HORIZONTAL_ALIGNMENT_FILL_RIGHT:
 							case HORIZONTAL_ALIGNMENT_RIGHT: {
 								if (rtl) {
 									caret.l_caret = Rect2(Vector2(style->get_offset().x, y), Size2(caret_width, h));
@@ -1308,7 +1312,7 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 	int x_ofs = 0;
 	float text_width = TS->shaped_text_get_size(text_rid).x;
 	switch (alignment) {
-		case HORIZONTAL_ALIGNMENT_FILL:
+		case HORIZONTAL_ALIGNMENT_FILL_LEFT:
 		case HORIZONTAL_ALIGNMENT_LEFT: {
 			if (rtl) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
@@ -1316,6 +1320,7 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 				x_ofs = style->get_offset().x;
 			}
 		} break;
+		case HORIZONTAL_ALIGNMENT_FILL_CENTER:
 		case HORIZONTAL_ALIGNMENT_CENTER: {
 			if (!Math::is_zero_approx(scroll_offset)) {
 				x_ofs = style->get_offset().x;
@@ -1323,6 +1328,7 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - (text_width)) / 2);
 			}
 		} break;
+		case HORIZONTAL_ALIGNMENT_FILL_RIGHT:
 		case HORIZONTAL_ALIGNMENT_RIGHT: {
 			if (rtl) {
 				x_ofs = style->get_offset().x;
@@ -1359,7 +1365,7 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 	int x_ofs = 0;
 	float text_width = TS->shaped_text_get_size(text_rid).x;
 	switch (alignment) {
-		case HORIZONTAL_ALIGNMENT_FILL:
+		case HORIZONTAL_ALIGNMENT_FILL_LEFT:
 		case HORIZONTAL_ALIGNMENT_LEFT: {
 			if (rtl) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
@@ -1367,6 +1373,7 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 				x_ofs = style->get_offset().x;
 			}
 		} break;
+		case HORIZONTAL_ALIGNMENT_FILL_CENTER:
 		case HORIZONTAL_ALIGNMENT_CENTER: {
 			if (!Math::is_zero_approx(scroll_offset)) {
 				x_ofs = style->get_offset().x;
@@ -1374,6 +1381,7 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - (text_width)) / 2);
 			}
 		} break;
+		case HORIZONTAL_ALIGNMENT_FILL_RIGHT:
 		case HORIZONTAL_ALIGNMENT_RIGHT: {
 			if (rtl) {
 				x_ofs = style->get_offset().x;
@@ -1699,7 +1707,7 @@ void LineEdit::set_caret_column(int p_column) {
 	int x_ofs = 0;
 	float text_width = TS->shaped_text_get_size(text_rid).x;
 	switch (alignment) {
-		case HORIZONTAL_ALIGNMENT_FILL:
+		case HORIZONTAL_ALIGNMENT_FILL_LEFT:
 		case HORIZONTAL_ALIGNMENT_LEFT: {
 			if (rtl) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
@@ -1707,6 +1715,7 @@ void LineEdit::set_caret_column(int p_column) {
 				x_ofs = style->get_offset().x;
 			}
 		} break;
+		case HORIZONTAL_ALIGNMENT_FILL_CENTER:
 		case HORIZONTAL_ALIGNMENT_CENTER: {
 			if (!Math::is_zero_approx(scroll_offset)) {
 				x_ofs = style->get_offset().x;
@@ -1714,6 +1723,7 @@ void LineEdit::set_caret_column(int p_column) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - (text_width)) / 2);
 			}
 		} break;
+		case HORIZONTAL_ALIGNMENT_FILL_RIGHT:
 		case HORIZONTAL_ALIGNMENT_RIGHT: {
 			if (rtl) {
 				x_ofs = style->get_offset().x;
@@ -2360,7 +2370,7 @@ void LineEdit::_shape() {
 }
 
 void LineEdit::_fit_to_width() {
-	if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
+	if (alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT) {
 		Ref<StyleBox> style = theme_cache.normal;
 		int t_width = get_size().width - style->get_margin(SIDE_RIGHT) - style->get_margin(SIDE_LEFT);
 		bool using_placeholder = text.is_empty() && ime_text.is_empty();
@@ -2663,7 +2673,7 @@ void LineEdit::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "placeholder_text"), "set_placeholder", "get_placeholder");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill Left,Fill Center,Fill Right"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_length", PROPERTY_HINT_RANGE, "0,1000,1,or_greater"), "set_max_length", "get_max_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_to_text_length"), "set_expand_to_text_length_enabled", "is_expand_to_text_length_enabled");

@@ -280,6 +280,9 @@
 		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
 			Line fill alignment rules. For more info see [enum TextServer.JustificationFlag].
 		</member>
+		<member name="justification_threshold" type="float" setter="set_justification_threshold" getter="get_justification_threshold" default="0.7">
+			Shortest line width (as a fraction of total width) to apply fill alignment to.
+		</member>
 		<member name="max_lines_visible" type="int" setter="set_max_lines_visible" getter="get_max_lines_visible" default="-1">
 			Limits the lines of text shown.
 		</member>

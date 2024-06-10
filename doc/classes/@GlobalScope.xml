@@ -1702,8 +1702,17 @@
 		<constant name="HORIZONTAL_ALIGNMENT_RIGHT" value="2" enum="HorizontalAlignment">
 			Horizontal right alignment, usually for text-derived classes.
 		</constant>
-		<constant name="HORIZONTAL_ALIGNMENT_FILL" value="3" enum="HorizontalAlignment">
-			Expand row to fit width, usually for text-derived classes.
+		<constant name="HORIZONTAL_ALIGNMENT_FILL_LEFT" value="3" enum="HorizontalAlignment">
+			Expand row to fit width and apply horizontal left alignment, usually for text-derived classes.
+		</constant>
+		<constant name="HORIZONTAL_ALIGNMENT_FILL_CENTER" value="4" enum="HorizontalAlignment">
+			Expand row to fit width and apply horizontal center alignment, usually for text-derived classes.
+		</constant>
+		<constant name="HORIZONTAL_ALIGNMENT_FILL_RIGHT" value="5" enum="HorizontalAlignment">
+			Expand row to fit width and apply horizontal right alignment, usually for text-derived classes.
+		</constant>
+		<constant name="HORIZONTAL_ALIGNMENT_FILL" value="3" enum="HorizontalAlignment" deprecated="Use [constant HORIZONTAL_ALIGNMENT_FILL_LEFT], [constant HORIZONTAL_ALIGNMENT_FILL_CENTER], or [constant HORIZONTAL_ALIGNMENT_FILL_RIGHT] instead.">
+			Expand row to fit width, usually for text-derived classes. Same as [constant HORIZONTAL_ALIGNMENT_FILL_LEFT].
 		</constant>
 		<constant name="VERTICAL_ALIGNMENT_TOP" value="0" enum="VerticalAlignment">
 			Vertical top alignment, usually for text-derived classes.

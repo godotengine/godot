@@ -278,7 +278,7 @@ void Font::set_cache_capacity(int p_single_line, int p_multi_line) {
 }
 
 Size2 Font::get_string_size(const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
-	bool fill = (p_alignment == HORIZONTAL_ALIGNMENT_FILL);
+	bool fill = (p_alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || p_alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || p_alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT);
 	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, fill ? p_width : 0.0, fill ? p_jst_flags : TextServer::JUSTIFICATION_NONE, TextServer::BREAK_NONE, p_direction, p_orientation);
 
 	Ref<TextLine> buffer;
@@ -295,8 +295,8 @@ Size2 Font::get_string_size(const String &p_text, HorizontalAlignment p_alignmen
 
 	buffer->set_width(p_width);
 	buffer->set_horizontal_alignment(p_alignment);
-	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-		buffer->set_flags(p_jst_flags);
+	if (fill) {
+		buffer->set_justification_flags(p_jst_flags);
 	}
 
 	return buffer->get_size();
@@ -327,7 +327,7 @@ Size2 Font::get_multiline_string_size(const String &p_text, HorizontalAlignment 
 }
 
 void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
-	bool fill = (p_alignment == HORIZONTAL_ALIGNMENT_FILL);
+	bool fill = (p_alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || p_alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || p_alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT);
 	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, fill ? p_width : 0.0, fill ? p_jst_flags : TextServer::JUSTIFICATION_NONE, TextServer::BREAK_NONE, p_direction, p_orientation);
 
 	Ref<TextLine> buffer;
@@ -351,8 +351,8 @@ void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_t
 
 	buffer->set_width(p_width);
 	buffer->set_horizontal_alignment(p_alignment);
-	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-		buffer->set_flags(p_jst_flags);
+	if (fill) {
+		buffer->set_justification_flags(p_jst_flags);
 	}
 
 	buffer->draw(p_canvas_item, ofs, p_modulate);
@@ -390,7 +390,7 @@ void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const S
 }
 
 void Font::draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
-	bool fill = (p_alignment == HORIZONTAL_ALIGNMENT_FILL);
+	bool fill = (p_alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || p_alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || p_alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT);
 	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, fill ? p_width : 0.0, fill ? p_jst_flags : TextServer::JUSTIFICATION_NONE, TextServer::BREAK_NONE, p_direction, p_orientation);
 
 	Ref<TextLine> buffer;
@@ -414,8 +414,8 @@ void Font::draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const Str
 
 	buffer->set_width(p_width);
 	buffer->set_horizontal_alignment(p_alignment);
-	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-		buffer->set_flags(p_jst_flags);
+	if (fill) {
+		buffer->set_justification_flags(p_jst_flags);
 	}
 
 	buffer->draw_outline(p_canvas_item, ofs, p_size, p_modulate);

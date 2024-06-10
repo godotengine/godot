@@ -42,10 +42,15 @@ bool RichTextLabel::_remove_paragraph_bind_compat_91098(int p_paragraph) {
 	return remove_paragraph(p_paragraph, false);
 }
 
+void RichTextLabel::_push_paragraph_compat_xxxxx(HorizontalAlignment p_alignment, Control::TextDirection p_direction, const String &p_language, TextServer::StructuredTextParser p_st_parser, BitField<TextServer::JustificationFlag> p_jst_flags, const PackedFloat32Array &p_tab_stops) {
+	push_paragraph(p_alignment, p_direction, p_language, p_st_parser, p_jst_flags, p_tab_stops, 0.70);
+}
+
 void RichTextLabel::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("push_meta", "data"), &RichTextLabel::_push_meta_bind_compat_89024);
 	ClassDB::bind_compatibility_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region"), &RichTextLabel::_add_image_bind_compat_80410, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()));
 	ClassDB::bind_compatibility_method(D_METHOD("remove_paragraph", "paragraph"), &RichTextLabel::_remove_paragraph_bind_compat_91098);
+	ClassDB::bind_compatibility_method(D_METHOD("push_paragraph", "alignment", "base_direction", "language", "st_parser", "justification_flags", "tab_stops"), &RichTextLabel::_push_paragraph_compat_xxxxx, DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(""), DEFVAL(TextServer::STRUCTURED_TEXT_DEFAULT), DEFVAL(TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE), DEFVAL(PackedFloat32Array()));
 }
 
 #endif // DISABLE_DEPRECATED

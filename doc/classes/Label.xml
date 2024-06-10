@@ -61,6 +61,9 @@
 		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
 			Line fill alignment rules. For more info see [enum TextServer.JustificationFlag].
 		</member>
+		<member name="justification_threshold" type="float" setter="set_justification_threshold" getter="get_justification_threshold" default="0.7">
+			Shortest line width (as a fraction of total width) to apply fill alignment to.
+		</member>
 		<member name="label_settings" type="LabelSettings" setter="set_label_settings" getter="get_label_settings">
 			A [LabelSettings] resource that can be shared between multiple [Label] nodes. Takes priority over theme properties.
 		</member>

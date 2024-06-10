@@ -33,6 +33,9 @@
 		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
 			Line fill alignment rules. For more info see [enum TextServer.JustificationFlag].
 		</member>
+		<member name="justification_threshold" type="float" setter="set_justification_threshold" getter="get_justification_threshold" default="0.7">
+			Shortest line width (as a fraction of total width) to apply fill alignment to.
+		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for text shaping algorithms, if left empty current locale is used instead.
 		</member>

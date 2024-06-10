@@ -2962,7 +2962,7 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 			lines_rid.push_back(line);
 		}
 
-		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
+		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT) {
 			int jst_to_line = lines_rid.size();
 			if (lines_rid.size() == 1 && jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
 				jst_to_line = lines_rid.size();
@@ -2980,7 +2980,9 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 				}
 			}
 			for (int i = 0; i < jst_to_line; i++) {
-				TS->shaped_text_fit_to_width(lines_rid[i], (width > 0) ? width : max_line_w, jst_flags);
+				if (TS->shaped_text_get_width(lines_rid[i]) >= justification_threshold * width) {
+					TS->shaped_text_fit_to_width(lines_rid[i], (width > 0) ? width : max_line_w, jst_flags);
+				}
 			}
 		}
 		dirty_lines = false;
@@ -3024,13 +3026,15 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		float line_width = TS->shaped_text_get_width(lines_rid[i]) * pixel_size;
 
 		switch (horizontal_alignment) {
+			case HORIZONTAL_ALIGNMENT_FILL_LEFT:
 			case HORIZONTAL_ALIGNMENT_LEFT:
 				offset.x = 0.0;
 				break;
-			case HORIZONTAL_ALIGNMENT_FILL:
+			case HORIZONTAL_ALIGNMENT_FILL_CENTER:
 			case HORIZONTAL_ALIGNMENT_CENTER: {
 				offset.x = -line_width / 2.0;
 			} break;
+			case HORIZONTAL_ALIGNMENT_FILL_RIGHT:
 			case HORIZONTAL_ALIGNMENT_RIGHT: {
 				offset.x = -line_width;
 			} break;
@@ -3102,13 +3106,15 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		float line_width = TS->shaped_text_get_width(lines_rid[i]) * pixel_size;
 
 		switch (horizontal_alignment) {
+			case HORIZONTAL_ALIGNMENT_FILL_LEFT:
 			case HORIZONTAL_ALIGNMENT_LEFT:
 				offset.x = 0.0;
 				break;
-			case HORIZONTAL_ALIGNMENT_FILL:
+			case HORIZONTAL_ALIGNMENT_FILL_CENTER:
 			case HORIZONTAL_ALIGNMENT_CENTER: {
 				offset.x = -line_width / 2.0;
 			} break;
+			case HORIZONTAL_ALIGNMENT_FILL_RIGHT:
 			case HORIZONTAL_ALIGNMENT_RIGHT: {
 				offset.x = -line_width;
 			} break;
@@ -3310,6 +3316,9 @@ void TextMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_justification_flags", "justification_flags"), &TextMesh::set_justification_flags);
 	ClassDB::bind_method(D_METHOD("get_justification_flags"), &TextMesh::get_justification_flags);
 
+	ClassDB::bind_method(D_METHOD("set_justification_threshold", "threshold"), &TextMesh::set_justification_threshold);
+	ClassDB::bind_method(D_METHOD("get_justification_threshold"), &TextMesh::get_justification_threshold);
+
 	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &TextMesh::set_depth);
 	ClassDB::bind_method(D_METHOD("get_depth"), &TextMesh::get_depth);
 
@@ -3344,12 +3353,13 @@ void TextMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, ""), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size", PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px"), "set_font_size", "get_font_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill Left,Fill Center,Fill Right"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Justify Only After Last Tab:8,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "justification_threshold", PROPERTY_HINT_RANGE, "0,1,0.1"), "set_justification_threshold", "get_justification_threshold");
 
 	ADD_GROUP("Mesh", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
@@ -3394,9 +3404,11 @@ TextMesh::~TextMesh() {
 }
 
 void TextMesh::set_horizontal_alignment(HorizontalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX((int)p_alignment, 6);
 	if (horizontal_alignment != p_alignment) {
-		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
+		bool old_fill = horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT;
+		bool new_fill = p_alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || p_alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || p_alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT;
+		if (old_fill != new_fill) {
 			dirty_lines = true;
 		}
 		horizontal_alignment = p_alignment;
@@ -3531,13 +3543,29 @@ TextServer::AutowrapMode TextMesh::get_autowrap_mode() const {
 void TextMesh::set_justification_flags(BitField<TextServer::JustificationFlag> p_flags) {
 	if (jst_flags != p_flags) {
 		jst_flags = p_flags;
-		dirty_lines = true;
-		request_update();
+		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT) {
+			dirty_lines = true;
+			request_update();
+		}
 	}
 }
 
 BitField<TextServer::JustificationFlag> TextMesh::get_justification_flags() const {
 	return jst_flags;
+}
+
+void TextMesh::set_justification_threshold(float p_threshold) {
+	if (justification_threshold != p_threshold) {
+		justification_threshold = p_threshold;
+		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT) {
+			dirty_lines = true;
+			request_update();
+		}
+	}
+}
+
+float TextMesh::get_justification_threshold() const {
+	return justification_threshold;
 }
 
 void TextMesh::set_depth(real_t p_depth) {

@@ -375,16 +375,18 @@ void Button::_notification(int p_what) {
 					Point2 icon_ofs;
 
 					switch (icon_align_rtl_checked) {
+						case HORIZONTAL_ALIGNMENT_FILL_LEFT:
 						case HORIZONTAL_ALIGNMENT_CENTER: {
 							icon_ofs.x = (custom_element_size.width - icon_size.width) / 2.0f;
 						}
 							[[fallthrough]];
-						case HORIZONTAL_ALIGNMENT_FILL:
+						case HORIZONTAL_ALIGNMENT_FILL_CENTER:
 						case HORIZONTAL_ALIGNMENT_LEFT: {
 							icon_ofs.x += theme_cache.style_margin_left;
 							icon_ofs.x += left_internal_margin_with_h_separation;
 						} break;
 
+						case HORIZONTAL_ALIGNMENT_FILL_RIGHT:
 						case HORIZONTAL_ALIGNMENT_RIGHT: {
 							icon_ofs.x = size.x - theme_cache.style_margin_right;
 							icon_ofs.x -= right_internal_margin_with_h_separation;
@@ -435,12 +437,14 @@ void Button::_notification(int p_what) {
 				Point2 text_ofs;
 
 				switch (align_rtl_checked) {
+					case HORIZONTAL_ALIGNMENT_FILL_CENTER:
 					case HORIZONTAL_ALIGNMENT_CENTER: {
 						text_ofs.x = (drawable_size_remained.width - text_buf_width) / 2.0f;
 					}
 						[[fallthrough]];
-					case HORIZONTAL_ALIGNMENT_FILL:
+					case HORIZONTAL_ALIGNMENT_FILL_LEFT:
 					case HORIZONTAL_ALIGNMENT_LEFT:
+					case HORIZONTAL_ALIGNMENT_FILL_RIGHT:
 					case HORIZONTAL_ALIGNMENT_RIGHT: {
 						text_ofs.x += theme_cache.style_margin_left;
 						text_ofs.x += left_internal_margin_with_h_separation;

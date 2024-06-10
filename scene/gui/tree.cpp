@@ -1909,15 +1909,17 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 	w += ts.width;
 
 	switch (p_cell.text_alignment) {
-		case HORIZONTAL_ALIGNMENT_FILL:
+		case HORIZONTAL_ALIGNMENT_FILL_LEFT:
 		case HORIZONTAL_ALIGNMENT_LEFT: {
 			if (rtl) {
 				rect.position.x += MAX(0, (rect.size.width - w));
 			}
 		} break;
+		case HORIZONTAL_ALIGNMENT_FILL_CENTER:
 		case HORIZONTAL_ALIGNMENT_CENTER:
 			rect.position.x += MAX(0, (rect.size.width - w) / 2);
 			break;
+		case HORIZONTAL_ALIGNMENT_FILL_RIGHT:
 		case HORIZONTAL_ALIGNMENT_RIGHT:
 			if (!rtl) {
 				rect.position.x += MAX(0, (rect.size.width - w));
@@ -5028,7 +5030,7 @@ String Tree::get_column_title(int p_column) const {
 void Tree::set_column_title_alignment(int p_column, HorizontalAlignment p_alignment) {
 	ERR_FAIL_INDEX(p_column, columns.size());
 
-	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
+	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || p_alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || p_alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT) {
 		WARN_PRINT("HORIZONTAL_ALIGNMENT_FILL is not supported for column titles.");
 	}
 

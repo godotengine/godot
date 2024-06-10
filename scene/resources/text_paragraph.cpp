@@ -70,7 +70,7 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &TextParagraph::set_alignment);
 	ClassDB::bind_method(D_METHOD("get_alignment"), &TextParagraph::get_alignment);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_alignment", "get_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill Left,Fill Center,Fill Right"), "set_alignment", "get_alignment");
 
 	ClassDB::bind_method(D_METHOD("tab_align", "tab_stops"), &TextParagraph::tab_align);
 
@@ -83,6 +83,11 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_justification_flags"), &TextParagraph::get_justification_flags);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Trim Edge Spaces After Justification:4,Justify Only After Last Tab:8,Constrain Ellipsis:16,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
+
+	ClassDB::bind_method(D_METHOD("set_justification_threshold", "threshold"), &TextParagraph::set_justification_threshold);
+	ClassDB::bind_method(D_METHOD("get_justification_threshold"), &TextParagraph::get_justification_threshold);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "justification_threshold", PROPERTY_HINT_RANGE, "0,1,0.1"), "set_justification_threshold", "get_justification_threshold");
 
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &TextParagraph::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &TextParagraph::get_text_overrun_behavior);
@@ -234,7 +239,7 @@ void TextParagraph::_shape_lines() {
 			if (lines_hidden) {
 				overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
 			}
-			if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
+			if (alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT) {
 				int jst_to_line = visible_lines;
 				if (lines_rid.size() == 1 && jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
 					jst_to_line = lines_rid.size();
@@ -254,7 +259,9 @@ void TextParagraph::_shape_lines() {
 				for (int i = 0; i < (int)lines_rid.size(); i++) {
 					float line_w = (i <= dropcap_lines) ? (width - h_offset) : width;
 					if (i < jst_to_line) {
-						TS->shaped_text_fit_to_width(lines_rid[i], line_w, jst_flags);
+						if (TS->shaped_text_get_width(lines_rid[i]) >= justification_threshold * line_w) {
+							TS->shaped_text_fit_to_width(lines_rid[i], line_w, jst_flags);
+						}
 					} else if (i == (visible_lines - 1)) {
 						TS->shaped_text_set_custom_ellipsis(lines_rid[visible_lines - 1], (el_char.length() > 0) ? el_char[0] : 0x2026);
 						TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], line_w, overrun_flags);
@@ -284,12 +291,16 @@ void TextParagraph::_shape_lines() {
 			}
 			for (int i = 0; i < (int)lines_rid.size(); i++) {
 				float line_w = (i <= dropcap_lines) ? (width - h_offset) : width;
-				if (i < jst_to_line && alignment == HORIZONTAL_ALIGNMENT_FILL) {
-					TS->shaped_text_fit_to_width(lines_rid[i], line_w, jst_flags);
-					overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
+				if (i < jst_to_line && (alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT)) {
+					if (TS->shaped_text_get_width(lines_rid[i]) >= justification_threshold * line_w) {
+						TS->shaped_text_fit_to_width(lines_rid[i], line_w, jst_flags);
+						overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
+					}
 					TS->shaped_text_set_custom_ellipsis(lines_rid[i], (el_char.length() > 0) ? el_char[0] : 0x2026);
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], line_w, overrun_flags);
-					TS->shaped_text_fit_to_width(lines_rid[i], line_w, jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+					if (TS->shaped_text_get_width(lines_rid[i]) >= justification_threshold * line_w) {
+						TS->shaped_text_fit_to_width(lines_rid[i], line_w, jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+					}
 				} else {
 					TS->shaped_text_set_custom_ellipsis(lines_rid[i], (el_char.length() > 0) ? el_char[0] : 0x2026);
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], line_w, overrun_flags);
@@ -450,12 +461,12 @@ void TextParagraph::set_alignment(HorizontalAlignment p_alignment) {
 	_THREAD_SAFE_METHOD_
 
 	if (alignment != p_alignment) {
-		if (alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			alignment = p_alignment;
+		bool old_fill = alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT;
+		bool new_fill = p_alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || p_alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || p_alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT;
+		if (old_fill != new_fill) {
 			lines_dirty = true;
-		} else {
-			alignment = p_alignment;
 		}
+		alignment = p_alignment;
 	}
 }
 
@@ -475,12 +486,27 @@ void TextParagraph::set_justification_flags(BitField<TextServer::JustificationFl
 
 	if (jst_flags != p_flags) {
 		jst_flags = p_flags;
-		lines_dirty = true;
+		if (alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT) {
+			lines_dirty = true;
+		}
 	}
 }
 
 BitField<TextServer::JustificationFlag> TextParagraph::get_justification_flags() const {
 	return jst_flags;
+}
+
+void TextParagraph::set_justification_threshold(float p_threshold) {
+	if (justification_threshold != p_threshold) {
+		justification_threshold = p_threshold;
+		if (alignment == HORIZONTAL_ALIGNMENT_FILL_LEFT || alignment == HORIZONTAL_ALIGNMENT_FILL_CENTER || alignment == HORIZONTAL_ALIGNMENT_FILL_RIGHT) {
+			lines_dirty = true;
+		}
+	}
+}
+
+float TextParagraph::get_justification_threshold() const {
+	return justification_threshold;
 }
 
 void TextParagraph::set_break_flags(BitField<TextServer::LineBreakFlag> p_flags) {
@@ -632,17 +658,10 @@ Rect2 TextParagraph::get_line_object_rect(int p_line, Variant p_key) const {
 		float length = TS->shaped_text_get_width(lines_rid[i]);
 		if (width > 0) {
 			switch (alignment) {
-				case HORIZONTAL_ALIGNMENT_FILL:
-					if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
-						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
-							ofs.x += l_width - length;
-						} else {
-							ofs.y += l_width - length;
-						}
-					}
-					break;
+				case HORIZONTAL_ALIGNMENT_FILL_LEFT:
 				case HORIZONTAL_ALIGNMENT_LEFT:
 					break;
+				case HORIZONTAL_ALIGNMENT_FILL_CENTER:
 				case HORIZONTAL_ALIGNMENT_CENTER: {
 					if (length <= l_width) {
 						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
@@ -658,6 +677,7 @@ Rect2 TextParagraph::get_line_object_rect(int p_line, Variant p_key) const {
 						}
 					}
 				} break;
+				case HORIZONTAL_ALIGNMENT_FILL_RIGHT:
 				case HORIZONTAL_ALIGNMENT_RIGHT: {
 					if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 						ofs.x += l_width - length;
@@ -801,17 +821,10 @@ void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_colo
 		float line_width = TS->shaped_text_get_width(lines_rid[i]);
 		if (width > 0) {
 			switch (alignment) {
-				case HORIZONTAL_ALIGNMENT_FILL:
-					if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
-						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
-							ofs.x += l_width - line_width;
-						} else {
-							ofs.y += l_width - line_width;
-						}
-					}
-					break;
+				case HORIZONTAL_ALIGNMENT_FILL_LEFT:
 				case HORIZONTAL_ALIGNMENT_LEFT:
 					break;
+				case HORIZONTAL_ALIGNMENT_FILL_CENTER:
 				case HORIZONTAL_ALIGNMENT_CENTER: {
 					if (line_width <= l_width) {
 						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
@@ -827,6 +840,7 @@ void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_colo
 						}
 					}
 				} break;
+				case HORIZONTAL_ALIGNMENT_FILL_RIGHT:
 				case HORIZONTAL_ALIGNMENT_RIGHT: {
 					if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 						ofs.x += l_width - line_width;
@@ -903,17 +917,10 @@ void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outli
 		float length = TS->shaped_text_get_width(lines_rid[i]);
 		if (width > 0) {
 			switch (alignment) {
-				case HORIZONTAL_ALIGNMENT_FILL:
-					if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
-						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
-							ofs.x += l_width - length;
-						} else {
-							ofs.y += l_width - length;
-						}
-					}
-					break;
+				case HORIZONTAL_ALIGNMENT_FILL_LEFT:
 				case HORIZONTAL_ALIGNMENT_LEFT:
 					break;
+				case HORIZONTAL_ALIGNMENT_FILL_CENTER:
 				case HORIZONTAL_ALIGNMENT_CENTER: {
 					if (length <= l_width) {
 						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
@@ -929,6 +936,7 @@ void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outli
 						}
 					}
 				} break;
+				case HORIZONTAL_ALIGNMENT_FILL_RIGHT:
 				case HORIZONTAL_ALIGNMENT_RIGHT: {
 					if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 						ofs.x += l_width - length;
