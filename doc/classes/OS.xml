@@ -455,6 +455,12 @@
 				Returns the amount of static memory being used by the program in bytes. Only works in debug builds.
 			</description>
 		</method>
+		<method name="get_system_ca_certificates">
+			<return type="String" />
+			<description>
+				Returns the list of certification authorities trusted by the operating system as a string of concatenated certificates in PEM format.
+			</description>
+		</method>
 		<method name="get_system_dir" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="dir" type="int" enum="OS.SystemDir" />
