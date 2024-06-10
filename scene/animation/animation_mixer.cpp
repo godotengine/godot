@@ -823,7 +823,6 @@ bool AnimationMixer::_update_caches() {
 						} else {
 							track_method->object_id = child->get_instance_id();
 						}
-
 						track = track_method;
 
 					} break;
@@ -1097,7 +1096,7 @@ void AnimationMixer::_blend_calc_total_weight() {
 void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 	// Apply value/transform/blend/bezier blends to track caches and execute method/audio/animation tracks.
 #ifdef TOOLS_ENABLED
-	bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
+	bool in_tree = is_inside_tree();
 #endif // TOOLS_ENABLED
 	for (const AnimationInstance &ai : animation_instances) {
 		Ref<Animation> a = ai.animation_data.animation;
@@ -1491,11 +1490,6 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					}
 				} break;
 				case Animation::TYPE_METHOD: {
-#ifdef TOOLS_ENABLED
-					if (!can_call) {
-						continue;
-					}
-#endif // TOOLS_ENABLED
 					if (p_update_only || Math::is_zero_approx(blend)) {
 						continue;
 					}
@@ -1505,6 +1499,12 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						if (idx < 0) {
 							continue;
 						}
+#ifdef TOOLS_ENABLED
+						bool can_call = in_tree && a->method_track_get_call_in_editor(i, idx);
+						if (!can_call) {
+							continue;
+						}
+#endif // TOOLS_ENABLED
 						StringName method = a->method_track_get_name(i, idx);
 						Vector<Variant> params = a->method_track_get_params(i, idx);
 						_call_object(t->object_id, method, params, callback_mode_method == ANIMATION_CALLBACK_MODE_METHOD_DEFERRED);
@@ -1512,6 +1512,12 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						List<int> indices;
 						a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
 						for (int &F : indices) {
+#ifdef TOOLS_ENABLED
+							bool can_call = in_tree && a->method_track_get_call_in_editor(i, F);
+							if (!can_call) {
+								continue;
+							}
+#endif // TOOLS_ENABLED
 							StringName method = a->method_track_get_name(i, F);
 							Vector<Variant> params = a->method_track_get_params(i, F);
 							_call_object(t->object_id, method, params, callback_mode_method == ANIMATION_CALLBACK_MODE_METHOD_DEFERRED);
