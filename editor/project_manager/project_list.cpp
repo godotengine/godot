@@ -202,11 +202,23 @@ void ProjectListItemControl::set_is_missing(bool p_missing) {
 		project_icon->set_modulate(Color(1, 1, 1, 1.0));
 
 		explore_button->set_icon(get_editor_theme_icon(SNAME("Load")));
+
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
-		explore_button->set_tooltip_text(TTR("Show in File Manager"));
+
+#if defined(WINDOWS_ENABLED)
+		const String tooltip_text = TTR("Show in File Explorer");
+#elif defined(MACOS_ENABLED)
+		const String tooltip_text = TTR("Show in Finder");
 #else
+		const String tooltip_text = TTR("Show in File Manager");
+#endif
+		explore_button->set_tooltip_text(tooltip_text);
+
+#else // defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
+
 		// Opening the system file manager is not supported on the Android and web editors.
 		explore_button->hide();
+
 #endif
 	}
 }

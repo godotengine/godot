@@ -7305,7 +7305,16 @@ EditorNode::EditorNode() {
 	}
 
 	remove_android_build_template = memnew(ConfirmationDialog);
-	remove_android_build_template->set_ok_button_text(TTR("Show in File Manager"));
+
+#if defined(WINDOWS_ENABLED)
+	const String ok_button_text = TTR("Show in File Explorer");
+#elif defined(MACOS_ENABLED)
+	const String ok_button_text = TTR("Show in Finder");
+#else
+	const String ok_button_text = TTR("Show in File Manager");
+#endif
+	remove_android_build_template->set_ok_button_text(ok_button_text);
+
 	remove_android_build_template->connect("confirmed", callable_mp(this, &EditorNode::_menu_option).bind(FILE_EXPLORE_ANDROID_BUILD_TEMPLATES));
 	gui_base->add_child(remove_android_build_template);
 

@@ -3321,7 +3321,17 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		}
 
 		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
-		p_popup->set_item_text(p_popup->get_item_index(FILE_SHOW_IN_EXPLORER), is_directory ? TTR("Open in File Manager") : TTR("Show in File Manager"));
+
+		// Show in file manager string.
+#if defined(WINDOWS_ENABLED)
+		const String item_text = TTR("Show in File Explorer");
+#elif defined(MACOS_ENABLED)
+		const String item_text = TTR("Show in Finder");
+#else
+		const String item_text = TTR("Show in File Manager");
+#endif
+		p_popup->set_item_text(p_popup->get_item_index(FILE_SHOW_IN_EXPLORER), item_text);
+
 #endif
 
 		current_path = fpath;
