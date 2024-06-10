@@ -803,7 +803,7 @@ void FileDialog::_popup_menu(const Vector2 &p_pos, int p_for_item) {
 		meta = file_list->get_item_metadata(p_for_item);
 	}
 
-	item_menu->add_item((p_for_item == -1 || meta["dir"]) ? ETR("Open in File Manager") : ETR("Show in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
+	item_menu->add_item((p_for_item == -1 || meta["dir"]) ? OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN) : OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_SHOW), ITEM_MENU_SHOW_IN_EXPLORER);
 	item_menu->set_item_icon(-1, theme_cache.menu_show_in_file_manager);
 	if (meta["bundle"]) {
 		item_menu->add_item(ETR("Show Package Contents"), ITEM_MENU_SHOW_BUNDLE_CONTENT);
