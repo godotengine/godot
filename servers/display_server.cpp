@@ -586,8 +586,12 @@ void DisplayServer::window_set_exclusive(WindowID p_window, bool p_exclusive) {
 	// Do nothing, if not supported.
 }
 
-void DisplayServer::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {
-	ERR_FAIL_MSG("Mouse passthrough not supported by this display server.");
+void DisplayServer::window_set_mouse_passthrough_polygons(const TypedArray<Vector<Vector2>> &p_regions, WindowID p_window) {
+	ERR_FAIL_MSG("Mouse polygon passthrough not supported by this display server.");
+}
+
+void DisplayServer::window_set_mouse_passthrough_rects(const TypedArray<Rect2i> &p_rects, WindowID p_window) {
+	ERR_FAIL_MSG("Mouse rectangle passthrough not supported by this display server.");
 }
 
 void DisplayServer::gl_window_make_current(DisplayServer::WindowID p_window_id) {
@@ -891,7 +895,8 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("window_set_title", "title", "window_id"), &DisplayServer::window_set_title, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_title_size", "title", "window_id"), &DisplayServer::window_get_title_size, DEFVAL(MAIN_WINDOW_ID));
-	ClassDB::bind_method(D_METHOD("window_set_mouse_passthrough", "region", "window_id"), &DisplayServer::window_set_mouse_passthrough, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_set_mouse_passthrough_polygons", "regions", "window_id"), &DisplayServer::window_set_mouse_passthrough_polygons, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_set_mouse_passthrough_rects", "rectangles", "window_id"), &DisplayServer::window_set_mouse_passthrough_rects, DEFVAL(MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("window_get_current_screen", "window_id"), &DisplayServer::window_get_current_screen, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_set_current_screen", "screen", "window_id"), &DisplayServer::window_set_current_screen, DEFVAL(MAIN_WINDOW_ID));

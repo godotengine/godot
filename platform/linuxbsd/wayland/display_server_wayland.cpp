@@ -669,9 +669,37 @@ void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer
 	wayland_thread.window_set_title(MAIN_WINDOW_ID, wd.title);
 }
 
-void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServer::WindowID p_window_id) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_mouse_passthrough region %s", p_region));
+void DisplayServerWayland::window_set_mouse_passthrough_polygons(const TypedArray<Vector<Vector2>> &p_regions, DisplayServer::WindowID p_window_id) {
+	ERR_FAIL_MSG("Mouse polygon passthrough not supported by wayland.");
+}
+
+void DisplayServerWayland::window_set_mouse_passthrough_rects(const TypedArray<Rect2i> &p_rectangles, WindowID p_window) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+	main_window.passthrough_rectangles = p_rectangles;
+	_update_window_mouse_passthrough(p_window);
+}
+
+void DisplayServerWayland::_update_window_mouse_passthrough(WindowID p_window) {
+	wl_surface *surface = wayland_thread.window_get_wl_surface(p_window);
+	WaylandThread::WindowState *window_state = wayland_thread.wl_surface_get_window_state(surface);
+
+	if (main_window.flags & WINDOW_FLAG_MOUSE_PASSTHROUGH_BIT) {
+		wl_region *region = wl_compositor_create_region(window_state->registry->wl_compositor);
+		wl_surface_set_input_region(surface, region);
+		wl_region_destroy(region);
+	} else if (main_window.passthrough_rectangles.is_empty()) {
+		wl_surface_set_input_region(surface, nullptr);
+	} else {
+		wl_region *region = wl_compositor_create_region(window_state->registry->wl_compositor);
+		double scale_factor = 1.0 / wayland_thread.window_state_get_scale_factor(window_state);
+		for (int i = 0; i < main_window.passthrough_rectangles.size(); i++) {
+			const Rect2i &rect = main_window.passthrough_rectangles[i];
+			wl_region_add(region, scale_factor * rect.position.x, scale_factor * rect.position.y, scale_factor * rect.size.width, scale_factor * rect.size.height);
+		}
+
+		wl_surface_set_input_region(surface, region);
+		wl_region_destroy(region);
+	}
 }
 
 void DisplayServerWayland::window_set_rect_changed_callback(const Callable &p_callable, DisplayServer::WindowID p_window_id) {
@@ -856,19 +884,22 @@ void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, D
 
 	DEBUG_LOG_WAYLAND(vformat("Window set flag %d", p_flag));
 
-	switch (p_flag) {
-		case WINDOW_FLAG_BORDERLESS: {
-			wayland_thread.window_set_borderless(MAIN_WINDOW_ID, p_enabled);
-		} break;
-
-		default: {
-		}
-	}
-
 	if (p_enabled) {
 		wd.flags |= 1 << p_flag;
 	} else {
 		wd.flags &= ~(1 << p_flag);
+	}
+
+	switch (p_flag) {
+		case WINDOW_FLAG_BORDERLESS: {
+			wayland_thread.window_set_borderless(MAIN_WINDOW_ID, p_enabled);
+		} break;
+		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
+			_update_window_mouse_passthrough(p_window_id);
+		} break;
+
+		default: {
+		}
 	}
 }
 

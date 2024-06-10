@@ -116,7 +116,8 @@ private:
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
 	mutable Size2i min_size;
 	mutable Size2i max_size;
-	mutable Vector<Vector2> mpath;
+	mutable TypedArray<Vector<Vector2>> mregions;
+	mutable TypedArray<Rect2i> mrects;
 	mutable Mode mode = MODE_WINDOWED;
 	mutable bool flags[FLAG_MAX] = {};
 	bool visible = true;
@@ -365,8 +366,11 @@ public:
 	void set_use_font_oversampling(bool p_oversampling);
 	bool is_using_font_oversampling() const;
 
-	void set_mouse_passthrough_polygon(const Vector<Vector2> &p_region);
-	Vector<Vector2> get_mouse_passthrough_polygon() const;
+	void set_mouse_passthrough_polygons(const TypedArray<Vector<Vector2>> &p_region);
+	TypedArray<Vector<Vector2>> get_mouse_passthrough_polygons() const;
+
+	void set_mouse_passthrough_rects(const TypedArray<Rect2i> &p_rects);
+	TypedArray<Rect2i> get_mouse_passthrough_rects() const;
 
 	void set_wrap_controls(bool p_enable);
 	bool is_wrapping_controls() const;

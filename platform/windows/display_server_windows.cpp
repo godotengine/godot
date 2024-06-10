@@ -1594,35 +1594,68 @@ Size2i DisplayServerWindows::window_get_title_size(const String &p_title, Window
 	return size;
 }
 
-void DisplayServerWindows::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {
+void DisplayServerWindows::window_set_mouse_passthrough_polygons(const TypedArray<Vector<Vector2>> &p_regions, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	windows[p_window].mpath = p_region;
+	windows[p_window].mregions = p_regions;
+	_update_window_mouse_passthrough(p_window);
+}
+
+void DisplayServerWindows::window_set_mouse_passthrough_rects(const TypedArray<Rect2i> &p_rects, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	windows[p_window].mrects = p_rects;
 	_update_window_mouse_passthrough(p_window);
 }
 
 void DisplayServerWindows::_update_window_mouse_passthrough(WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 
-	if (windows[p_window].mpass || windows[p_window].mpath.size() == 0) {
+	const bool has_region_passthrough = windows[p_window].mregions.size() != 0 || windows[p_window].mrects.size() != 0;
+	if (windows[p_window].mpass || !has_region_passthrough) {
 		SetWindowRgn(windows[p_window].hWnd, nullptr, FALSE);
 	} else {
-		POINT *points = (POINT *)memalloc(sizeof(POINT) * windows[p_window].mpath.size());
-		for (int i = 0; i < windows[p_window].mpath.size(); i++) {
-			if (windows[p_window].borderless) {
-				points[i].x = windows[p_window].mpath[i].x;
-				points[i].y = windows[p_window].mpath[i].y;
-			} else {
-				points[i].x = windows[p_window].mpath[i].x + GetSystemMetrics(SM_CXSIZEFRAME);
-				points[i].y = windows[p_window].mpath[i].y + GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CYCAPTION);
-			}
+		_update_window_input_region(p_window);
+	}
+}
+
+void DisplayServerWindows::_update_window_input_region(WindowID p_window) {
+	const TypedArray<Vector<Vector2>> &region_paths = windows[p_window].mregions;
+	const TypedArray<Rect2i> &region_rectangles = windows[p_window].mrects;
+
+	Vector2i frame_offset(0, 0);
+	if (!windows[p_window].borderless) {
+		frame_offset = Vector2i(GetSystemMetrics(SM_CXSIZEFRAME), GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CYCAPTION));
+	}
+
+	HRGN input_region = CreateRectRgn(0, 0, 0, 0);
+	for (int region_idx = 0; region_idx < region_paths.size(); region_idx++) {
+		const Vector<Vector2> &region_path = region_paths[region_idx];
+		POINT *points = (POINT *)memalloc(sizeof(POINT) * region_path.size());
+
+		for (int i = 0; i < region_path.size(); i++) {
+			points[i].x = region_path[i].x + frame_offset.x;
+			points[i].y = region_path[i].y + frame_offset.y;
 		}
 
-		HRGN region = CreatePolygonRgn(points, windows[p_window].mpath.size(), ALTERNATE);
-		SetWindowRgn(windows[p_window].hWnd, region, FALSE);
+		HRGN path_input_region = CreatePolygonRgn(points, region_path.size(), ALTERNATE);
 		memfree(points);
+
+		CombineRgn(input_region, input_region, path_input_region, RGN_OR);
+		DeleteObject(path_input_region);
 	}
+
+	for (int i = 0; i < region_rectangles.size(); i++) {
+		const Rect2i &rect = region_rectangles[i];
+		const Vector2i true_position = rect.position + frame_offset;
+		HRGN rect_input_region = CreateRectRgn(true_position.x, true_position.y, true_position.x + rect.size.x, true_position.y + rect.size.y);
+		CombineRgn(input_region, input_region, rect_input_region, RGN_OR);
+		DeleteObject(rect_input_region);
+	}
+
+	SetWindowRgn(windows[p_window].hWnd, input_region, FALSE);
 }
 
 int DisplayServerWindows::window_get_current_screen(WindowID p_window) const {

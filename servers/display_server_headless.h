@@ -92,7 +92,8 @@ public:
 
 	void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) override {}
 
-	void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID) override {}
+	void window_set_mouse_passthrough_polygons(const TypedArray<Vector<Vector2>> &p_regions, WindowID p_window = MAIN_WINDOW_ID) override {}
+	void window_set_mouse_passthrough_rects(const TypedArray<Rect2i> &p_rects, WindowID p_window = MAIN_WINDOW_ID) override  {}
 
 	int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override { return -1; }
 	void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override {}
