@@ -37,6 +37,10 @@
 #include "core/io/stream_peer_tcp.h"
 #include "core/object/ref_counted.h"
 
+#include "core/extension/ext_wrappers.gen.inc"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/variant/native_ptr.h"
+
 class HTTPClient : public RefCounted {
 	GDCLASS(HTTPClient, RefCounted);
 
@@ -143,6 +147,9 @@ public:
 
 	};
 
+private:
+	static StringName default_extension;
+
 protected:
 	static const char *_methods[METHOD_MAX];
 	static const int HOST_MIN_LEN = 4;
@@ -163,6 +170,8 @@ protected:
 
 public:
 	static HTTPClient *create();
+
+	static void set_default_extension(const StringName &p_name);
 
 	String query_string_from_dict(const Dictionary &p_dict);
 	Error verify_headers(const Vector<String> &p_headers);
@@ -204,5 +213,51 @@ public:
 VARIANT_ENUM_CAST(HTTPClient::ResponseCode)
 VARIANT_ENUM_CAST(HTTPClient::Method);
 VARIANT_ENUM_CAST(HTTPClient::Status);
+
+class HTTPClientExtension : public HTTPClient {
+	GDCLASS(HTTPClientExtension, HTTPClient);
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_size) override {
+		Error err;
+		if (GDVIRTUAL_CALL(_request, p_method, p_url, p_headers, p_body, p_body_size, err)) {
+			return err;
+		}
+		return FAILED;
+	}
+	GDVIRTUAL5R(Error, _request, Method, const String &, const Vector<String> &, GDExtensionConstPtr<const uint8_t>, int);
+
+	EXBIND3R(Error, connect_to_host, const String &, int, const Ref<TLSOptions> &);
+
+	EXBIND1(set_connection, const Ref<StreamPeer> &);
+	EXBIND0RC(Ref<StreamPeer>, get_connection);
+
+	EXBIND0(close);
+
+	EXBIND0RC(Status, get_status);
+
+	EXBIND0RC(bool, has_response);
+	EXBIND0RC(bool, is_response_chunked);
+	EXBIND0RC(int, get_response_code);
+	EXBIND0R(PackedStringArray, get_response_headers);
+
+	EXBIND0RC(int64_t, get_response_body_length);
+	EXBIND0R(PackedByteArray, read_response_body_chunk);
+
+	EXBIND1(set_blocking_mode, bool);
+	EXBIND0RC(bool, is_blocking_mode_enabled);
+
+	EXBIND1(set_read_chunk_size, int);
+	EXBIND0RC(int, get_read_chunk_size);
+
+	EXBIND0R(Error, poll);
+
+	// Use empty string or -1 to unset
+	EXBIND2(set_http_proxy, const String &, int);
+	EXBIND2(set_https_proxy, const String &, int);
+};
 
 #endif // HTTP_CLIENT_H
