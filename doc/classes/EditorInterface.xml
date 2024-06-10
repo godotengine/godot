@@ -110,6 +110,12 @@
 				Returns the editor's [EditorSettings] instance.
 			</description>
 		</method>
+		<method name="get_editor_current_tool" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the currently selected tool in the editor.
+			</description>
+		</method>
 		<method name="get_editor_theme" qualifiers="const">
 			<return type="Theme" />
 			<description>
