@@ -609,7 +609,7 @@ void SceneImportSettingsDialog::_update_camera() {
 	float rot_y = cam_rot_y;
 	float zoom = cam_zoom;
 
-	if (selected_type == "Node" || selected_type.is_empty()) {
+	if (selected_type == "Node" || selected_type == "Animation" || selected_type.is_empty()) {
 		camera_aabb = contents_aabb;
 	} else {
 		if (mesh_preview->get_mesh().is_valid()) {
