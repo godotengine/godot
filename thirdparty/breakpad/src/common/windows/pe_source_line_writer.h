@@ -1,5 +1,4 @@
-// Copyright (c) 2019, Google Inc.
-// All rights reserved.
+// Copyright 2019 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -32,7 +31,6 @@
 
 #include <string>
 
-#include "common/basictypes.h"
 #include "common/windows/module_info.h"
 
 namespace google_breakpad {
@@ -45,6 +43,8 @@ using std::wstring;
 class PESourceLineWriter {
 public:
   explicit PESourceLineWriter(const wstring& pe_file);
+  PESourceLineWriter(const PESourceLineWriter&) = delete;
+  void operator=(const PESourceLineWriter&) = delete;
   ~PESourceLineWriter();
 
   // Writes Breakpad symbols from the pe file to |symbol_file|.
@@ -59,9 +59,7 @@ public:
   bool GetPEInfo(PEModuleInfo* info);
 
 private:
-  const wstring pe_file_;
-
-  DISALLOW_COPY_AND_ASSIGN(PESourceLineWriter);
+ const wstring pe_file_;
 };
 
 }  // namespace google_breakpad

@@ -1,5 +1,4 @@
-// Copyright (c) 2006, Google Inc.
-// All rights reserved.
+// Copyright 2006 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -36,19 +35,19 @@
 
 #include <limits.h>
 #include <mach/machine.h>
+#include <stddef.h>
 
 namespace google_breakpad {
+namespace mach_o {
 
 class FileID {
  public:
-  FileID(const char *path);
-  ~FileID() {}
+  // Constructs a FileID given a path to a file
+  FileID(const char* path);
 
-  // Load the identifier for the file path specified in the constructor into
-  // |identifier|.  Return false if the identifier could not be created for the
-  // file.
-  // The current implementation will return the MD5 hash of the file's bytes.
-  bool FileIdentifier(unsigned char identifier[16]);
+  // Constructs a FileID given the contents of a file and its size.
+  FileID(void* memory, size_t size);
+  ~FileID() {}
 
   // Treat the file as a mach-o file that will contain one or more archicture.
   // Accepted values for |cpu_type| and |cpu_subtype| (e.g., CPU_TYPE_X86 or
@@ -74,8 +73,19 @@ class FileID {
  private:
   // Storage for the path specified
   char path_[PATH_MAX];
+
+  // Storage for contents of a file if this instance is used to operate on in
+  // memory file data rather than directly from a filesystem. If memory_ is
+  // null, the file represented by path_ will be opened/read. If memory_ is
+  // non-null, it is assumed to contain valid data, and no file operations will
+  // occur.
+  void* memory_;
+
+  // Size of memory_
+  size_t size_;
 };
 
+}  // namespace mach_o
 }  // namespace google_breakpad
 
 #endif  // COMMON_MAC_FILE_ID_H__

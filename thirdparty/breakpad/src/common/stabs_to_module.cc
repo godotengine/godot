@@ -1,5 +1,4 @@
-// Copyright (c) 2010 Google Inc.
-// All rights reserved.
+// Copyright 2010 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -31,12 +30,18 @@
 
 // dump_stabs.cc --- implement the StabsToModule class.
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>  // Must come first
+#endif
+
 #include <assert.h>
 #include <cxxabi.h>
 #include <stdarg.h>
 #include <stdio.h>
 
 #include <algorithm>
+#include <memory>
+#include <utility>
 
 #include "common/stabs_to_module.h"
 #include "common/using_std_string.h"
@@ -133,7 +138,7 @@ bool StabsToModule::Line(uint64_t address, const char *name, int number) {
 }
 
 bool StabsToModule::Extern(const string& name, uint64_t address) {
-  Module::Extern *ext = new Module::Extern(address);
+  auto ext = std::make_unique<Module::Extern>(address);
   // Older libstdc++ demangle implementations can crash on unexpected
   // input, so be careful about what gets passed in.
   if (name.compare(0, 3, "__Z") == 0) {
@@ -143,7 +148,7 @@ bool StabsToModule::Extern(const string& name, uint64_t address) {
   } else {
     ext->name = name;
   }
-  module_->AddExtern(ext);
+  module_->AddExtern(std::move(ext));
   return true;
 }
 
@@ -192,9 +197,11 @@ void StabsToModule::Finalize() {
     }
   }
   // Now that everything has a size, add our functions to the module, and
-  // dispose of our private list.
+  // dispose of our private list. Delete the functions that we fail to add, so
+  // they aren't leaked.
   for (Module::Function* func: functions_)
-    module_->AddFunction(func);
+    if (!module_->AddFunction(func))
+      delete func;
   functions_.clear();
 }
 

@@ -1,7 +1,6 @@
 // -*- mode: c++ -*-
 
-// Copyright (c) 2010, Google Inc.
-// All rights reserved.
+// Copyright 2010 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -13,7 +12,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -44,6 +43,7 @@
 
 #include <set>
 #include <string>
+#include <memory>
 #include <vector>
 
 #include "common/module.h"
@@ -114,6 +114,9 @@ class DwarfCFIToModule: public CallFrameInfo::Handler {
     // MIPS.
     static vector<string> MIPS();
 
+    // RISC-V.
+    static vector<string> RISCV();
+
    private:
     // Given STRINGS, an array of C strings with SIZE elements, return an
     // equivalent vector<string>.
@@ -132,9 +135,9 @@ class DwarfCFIToModule: public CallFrameInfo::Handler {
   DwarfCFIToModule(Module* module, const vector<string>& register_names,
                    Reporter* reporter)
       : module_(module), register_names_(register_names), reporter_(reporter),
-        entry_(NULL), return_address_(-1), cfa_name_(".cfa"), ra_name_(".ra") {
+        return_address_(-1), cfa_name_(".cfa"), ra_name_(".ra") {
   }
-  virtual ~DwarfCFIToModule() { delete entry_; }
+  virtual ~DwarfCFIToModule() = default;
 
   virtual bool Entry(size_t offset, uint64_t address, uint64_t length,
                      uint8_t version, const string& augmentation,
@@ -151,6 +154,8 @@ class DwarfCFIToModule: public CallFrameInfo::Handler {
   virtual bool ValExpressionRule(uint64_t address, int reg,
                                  const string& expression);
   virtual bool End();
+
+  virtual string Architecture();
 
  private:
   // Return the name to use for register REG.
@@ -169,7 +174,7 @@ class DwarfCFIToModule: public CallFrameInfo::Handler {
   Reporter* reporter_;
 
   // The current entry we're constructing.
-  Module::StackFrameEntry* entry_;
+  std::unique_ptr<Module::StackFrameEntry> entry_;
 
   // The section offset of the current frame description entry, for
   // use in error messages.

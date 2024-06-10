@@ -1,6 +1,6 @@
 // -*- mode: c++ -*-
 
-// Copyright (c) 2010 Google Inc. All Rights Reserved.
+// Copyright 2010 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -12,7 +12,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -580,10 +580,10 @@ enum DwarfSectionId {
   DW_SECT_TYPES = 2,
   DW_SECT_ABBREV = 3,
   DW_SECT_LINE = 4,
-  DW_SECT_LOC = 5,
+  DW_SECT_LOCLISTS = 5,
   DW_SECT_STR_OFFSETS = 6,
-  DW_SECT_MACINFO = 7,
-  DW_SECT_MACRO = 8
+  DW_SECT_MACRO = 7,
+  DW_SECT_RNGLISTS = 8
 };
 
 // Source languages.  These are values for DW_AT_language.

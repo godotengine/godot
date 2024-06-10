@@ -1,5 +1,4 @@
-// Copyright (c) 2011, Google Inc.
-// All rights reserved.
+// Copyright 2011 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -34,7 +33,7 @@
 #define COMMON_LINUX_MEMORY_MAPPED_FILE_H_
 
 #include <stddef.h>
-#include "common/basictypes.h"
+
 #include "common/memory_range.h"
 
 namespace google_breakpad {
@@ -49,6 +48,9 @@ class MemoryMappedFile {
   // Constructor that calls Map() to map a file at |path| into memory.
   // If Map() fails, the object behaves as if it is default constructed.
   MemoryMappedFile(const char* path, size_t offset);
+
+  MemoryMappedFile(const MemoryMappedFile&) = delete;
+  void operator=(const MemoryMappedFile&) = delete;
 
   ~MemoryMappedFile();
 
@@ -78,8 +80,6 @@ class MemoryMappedFile {
  private:
   // Mapped file content as a MemoryRange object.
   MemoryRange content_;
-
-  DISALLOW_COPY_AND_ASSIGN(MemoryMappedFile);
 };
 
 }  // namespace google_breakpad

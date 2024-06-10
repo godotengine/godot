@@ -1,6 +1,6 @@
 // -*- mode: C++ -*-
 
-// Copyright (c) 2010 Google Inc. All Rights Reserved.
+// Copyright 2010 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -12,7 +12,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -469,8 +469,7 @@ class CompilationUnit {
   // compilation unit.  We also inherit the Dwarf2Handler from
   // the executable file, and call it as if we were still
   // processing the original compilation unit.
-  void SetSplitDwarf(const uint8_t* addr_buffer, uint64_t addr_buffer_length,
-                     uint64_t addr_base, uint64_t ranges_base, uint64_t dwo_id);
+  void SetSplitDwarf(uint64_t addr_base, uint64_t dwo_id);
 
   // Begin reading a Dwarf2 compilation unit, and calling the
   // callbacks in the Dwarf2Handler
@@ -480,6 +479,36 @@ class CompilationUnit {
   // is the offset of the end of the compilation unit --- and the
   // start of the next compilation unit, if there is one.
   uint64_t Start();
+
+  // Process the actual debug information in a split DWARF file.
+  bool ProcessSplitDwarf(std::string& split_file,
+                         SectionMap& sections,
+                         ByteReader& split_byte_reader,
+                         uint64_t& cu_offset);
+
+  const uint8_t* GetAddrBuffer() { return addr_buffer_; }
+
+  uint64_t GetAddrBufferLen() { return addr_buffer_length_; }
+
+  uint64_t GetAddrBase() { return addr_base_; }
+
+  uint64_t GetLowPC() { return low_pc_; }
+
+  uint64_t GetDWOID() { return dwo_id_; }
+
+  const uint8_t* GetLineBuffer() { return line_buffer_; }
+
+  uint64_t GetLineBufferLen() { return line_buffer_length_; }
+
+  const uint8_t* GetLineStrBuffer() { return line_string_buffer_; }
+
+  uint64_t GetLineStrBufferLen() { return line_string_buffer_length_; }
+
+  bool HasSourceLineInfo() { return has_source_line_info_; }
+
+  uint64_t GetSourceLineOffset() { return source_line_offset_; }
+
+  bool ShouldProcessSplitDwarf() { return should_process_split_dwarf_; }
 
  private:
 
@@ -541,10 +570,10 @@ class CompilationUnit {
   // Special version of ProcessAttribute, for finding str_offsets_base and
   // DW_AT_addr_base in DW_TAG_compile_unit, for DWARF v5.
   const uint8_t* ProcessOffsetBaseAttribute(uint64_t dieoffset,
-					       const uint8_t* start,
-					       enum DwarfAttribute attr,
-					       enum DwarfForm form,
-					       uint64_t implicit_const);
+                                            const uint8_t* start,
+                                            enum DwarfAttribute attr,
+                                            enum DwarfForm form,
+                                            uint64_t implicit_const);
 
   // Called when we have an attribute with unsigned data to give to
   // our handler.  The attribute is for the DIE at OFFSET from the
@@ -565,14 +594,12 @@ class CompilationUnit {
     else if (attr == DW_AT_str_offsets_base) {
       str_offsets_base_ = data;
     }
-    else if (attr == DW_AT_GNU_ranges_base || attr == DW_AT_rnglists_base) {
-      ranges_base_ = data;
+    else if (attr == DW_AT_low_pc) {
+      low_pc_ = data;
     }
-    // TODO(yunlian): When we add DW_AT_ranges_base from DWARF-5,
-    // that base will apply to DW_AT_ranges attributes in the
-    // skeleton CU as well as in the .dwo/.dwp files.
-    else if (attr == DW_AT_ranges && is_split_dwarf_) {
-      data += ranges_base_;
+    else if (attr == DW_AT_stmt_list) {
+      has_source_line_info_ = true;
+      source_line_offset_ = data;
     }
     handler_->ProcessAttributeUnsigned(offset, attr, form, data);
   }
@@ -637,7 +664,7 @@ class CompilationUnit {
   }
 
   // Processes all DIEs for this compilation unit
-  void ProcessDIEs();
+  bool ProcessDIEs();
 
   // Skips the die with attributes specified in ABBREV starting at
   // START, and return the new place to position the stream to.
@@ -647,9 +674,6 @@ class CompilationUnit {
   // new place to position the stream to.
   const uint8_t* SkipAttribute(const uint8_t* start, enum DwarfForm form);
 
-  // Process the actual debug information in a split DWARF file.
-  void ProcessSplitDwarf();
-
   // Read the debug sections from a .dwo file.
   void ReadDebugSectionsFromDwo(ElfReader* elf_reader,
                                 SectionMap* sections);
@@ -658,7 +682,7 @@ class CompilationUnit {
   const string path_;
 
   // Offset from section start is the offset of this compilation unit
-  // from the beginning of the .debug_info section.
+  // from the beginning of the .debug_info/.debug_info.dwo section.
   uint64_t offset_from_section_start_;
 
   // buffer is the buffer for our CU, starting at .debug_info + offset
@@ -688,7 +712,7 @@ class CompilationUnit {
   const uint8_t* string_buffer_;
   uint64_t string_buffer_length_;
 
-  // Similarly for .debug_line_string.
+  // Similarly for .debug_line_str.
   const uint8_t* line_string_buffer_;
   uint64_t line_string_buffer_length_;
 
@@ -701,6 +725,10 @@ class CompilationUnit {
   // (.debug_addr).
   const uint8_t* addr_buffer_;
   uint64_t addr_buffer_length_;
+
+  // .debug_line section buffer and length.
+  const uint8_t* line_buffer_;
+  uint64_t line_buffer_length_;
 
   // Flag indicating whether this compilation unit is part of a .dwo
   // or .dwp file.  If true, we are reading this unit because a
@@ -730,10 +758,6 @@ class CompilationUnit {
   // from the skeleton CU.
   uint64_t skeleton_dwo_id_;
 
-  // The value of the DW_AT_GNU_ranges_base or DW_AT_rnglists_base attribute,
-  // if any.
-  uint64_t ranges_base_;
-
   // The value of the DW_AT_GNU_addr_base attribute, if any.
   uint64_t addr_base_;
 
@@ -743,14 +767,20 @@ class CompilationUnit {
   // True if we have already looked for a .dwp file.
   bool have_checked_for_dwp_;
 
-  // Path to the .dwp file.
-  string dwp_path_;
-
-  // ByteReader for the DWP file.
-  std::unique_ptr<ByteReader> dwp_byte_reader_;
+  // ElfReader for the dwo/dwo file.
+  std::unique_ptr<ElfReader> split_elf_reader_;
 
   // DWP reader.
-   std::unique_ptr<DwpReader> dwp_reader_;
+  std::unique_ptr<DwpReader> dwp_reader_;
+
+  bool should_process_split_dwarf_;
+
+  // The value of the DW_AT_low_pc attribute, if any.
+  uint64_t low_pc_;
+
+  // The value of DW_AT_stmt_list attribute if any.
+  bool has_source_line_info_;
+  uint64_t source_line_offset_;
 };
 
 // A Reader for a .dwp file.  Supports the fetching of DWARF debug
@@ -769,8 +799,6 @@ class CompilationUnit {
 class DwpReader {
  public:
   DwpReader(const ByteReader& byte_reader, ElfReader* elf_reader);
-
-  ~DwpReader();
 
   // Read the CU index and initialize data members.
   void Initialize();
@@ -839,6 +867,8 @@ class DwpReader {
   size_t info_size_;
   const char* str_offsets_data_;
   size_t str_offsets_size_;
+  const char* rnglist_data_;
+  size_t rnglist_size_;
 };
 
 // This class is a reader for DWARF's Call Frame Information.  CFI
@@ -879,11 +909,11 @@ class DwpReader {
 //
 // For example, here is a complete (uncompressed) table describing the
 // function above:
-// 
+//
 //     insn      cfa    r0      r1 ...  ra
 //     =======================================
 //     func+0:   sp                     cfa[0]
-//     func+1:   sp+16                  cfa[0] 
+//     func+1:   sp+16                  cfa[0]
 //     func+2:   sp+16  cfa[-4]         cfa[0]
 //     func+11:  sp+20  cfa[-4]         cfa[0]
 //     func+21:  sp+20                  cfa[0]
@@ -917,7 +947,7 @@ class DwpReader {
 //   save them, caller-saves registers are probably dead in the caller
 //   anyway, so compilers usually don't generate CFA for caller-saves
 //   registers.)
-// 
+//
 // - Exactly where the CFA points is a matter of convention that
 //   depends on the architecture and ABI in use. In the example, the
 //   CFA is the value the stack pointer had upon entry to the
@@ -938,7 +968,7 @@ class DwpReader {
 // reduces the size of the data by mentioning only the addresses and
 // columns at which changes take place. So for the above, DWARF CFI
 // data would only actually mention the following:
-// 
+//
 //     insn      cfa    r0      r1 ...  ra
 //     =======================================
 //     func+0:   sp                     cfa[0]
@@ -946,7 +976,7 @@ class DwpReader {
 //     func+2:          cfa[-4]
 //     func+11:  sp+20
 //     func+21:         r0
-//     func+22:  sp            
+//     func+22:  sp
 //
 // In fact, this is the way the parser reports CFI to the consumer: as
 // a series of statements of the form, "At address X, column Y changed
@@ -1064,7 +1094,7 @@ class CallFrameInfo {
   // handling are described here, rather poorly:
   // http://refspecs.linux-foundation.org/LSB_4.0.0/LSB-Core-generic/LSB-Core-generic/dwarfext.html
   // http://refspecs.linux-foundation.org/LSB_4.0.0/LSB-Core-generic/LSB-Core-generic/ehframechpt.html
-  // 
+  //
   // The mechanics of C++ exception handling, personality routines,
   // and language-specific data areas are described here, rather nicely:
   // http://www.codesourcery.com/public/cxx-abi/abi-eh.html
@@ -1097,7 +1127,7 @@ class CallFrameInfo {
 
     // The start of this entry in the buffer.
     const uint8_t* start;
-    
+
     // Which kind of entry this is.
     //
     // We want to be able to use this for error reporting even while we're
@@ -1131,13 +1161,13 @@ class CallFrameInfo {
   struct CIE: public Entry {
     uint8_t version;                      // CFI data version number
     string augmentation;                // vendor format extension markers
-    uint64_t code_alignment_factor;       // scale for code address adjustments 
+    uint64_t code_alignment_factor;       // scale for code address adjustments
     int data_alignment_factor;          // scale for stack pointer adjustments
     unsigned return_address_register;   // which register holds the return addr
 
     // True if this CIE includes Linux C++ ABI 'z' augmentation data.
     bool has_z_augmentation;
- 
+
     // Parsed 'z' augmentation data. These are meaningful only if
     // has_z_augmentation is true.
     bool has_z_lsda;                    // The 'z' augmentation included 'L'.
@@ -1191,7 +1221,7 @@ class CallFrameInfo {
   class ValExpressionRule;
   class RuleMap;
   class State;
-  
+
   // Parse the initial length and id of a CFI entry, either a CIE, an FDE,
   // or a .eh_frame end-of-data mark. CURSOR points to the beginning of the
   // data to parse. On success, populate ENTRY as appropriate, and return
@@ -1278,7 +1308,7 @@ class CallFrameInfo::Handler {
   // Immediately after a call to Entry, the handler should assume that
   // the rule for each callee-saves register is "unchanged" --- that
   // is, that the register still has the value it had in the caller.
-  // 
+  //
   // If a *Rule function returns true, we continue processing this entry's
   // instructions. If a *Rule function returns false, we stop evaluating
   // instructions, and skip to the next entry. Either way, we call End
@@ -1331,6 +1361,9 @@ class CallFrameInfo::Handler {
   // everything is okay, or false if an error has occurred and parsing
   // should stop.
   virtual bool End() = 0;
+
+  // The target architecture for the data.
+  virtual string Architecture() = 0;
 
   // Handler functions for Linux C++ exception handling data. These are
   // only called if the data includes 'z' augmentation strings.
@@ -1464,13 +1497,13 @@ class CallFrameInfo::Reporter {
   // The instruction at INSN_OFFSET in the entry at OFFSET, of kind
   // KIND, establishes a rule that cites the CFA, but we have not
   // established a CFA rule yet.
-  virtual void NoCFARule(uint64_t offset, CallFrameInfo::EntryKind kind, 
+  virtual void NoCFARule(uint64_t offset, CallFrameInfo::EntryKind kind,
                          uint64_t insn_offset);
 
   // The instruction at INSN_OFFSET in the entry at OFFSET, of kind
   // KIND, is a DW_CFA_restore_state instruction, but the stack of
   // saved states is empty.
-  virtual void EmptyStateStack(uint64_t offset, CallFrameInfo::EntryKind kind, 
+  virtual void EmptyStateStack(uint64_t offset, CallFrameInfo::EntryKind kind,
                                uint64_t insn_offset);
 
   // The DW_CFA_remember_state instruction at INSN_OFFSET in the entry
@@ -1478,7 +1511,7 @@ class CallFrameInfo::Reporter {
   // rule, whereas the current state does have a CFA rule. This is
   // bogus input, which the CallFrameInfo::Handler interface doesn't
   // (and shouldn't) have any way to report.
-  virtual void ClearingCFARule(uint64_t offset, CallFrameInfo::EntryKind kind, 
+  virtual void ClearingCFARule(uint64_t offset, CallFrameInfo::EntryKind kind,
                                uint64_t insn_offset);
 
  protected:

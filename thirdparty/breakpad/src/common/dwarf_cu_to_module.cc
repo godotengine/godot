@@ -1,5 +1,4 @@
-// Copyright (c) 2010 Google Inc.
-// All rights reserved.
+// Copyright 2010 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -35,6 +34,10 @@
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS
 #endif  /* __STDC_FORMAT_MACROS */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>  // Must come first
+#endif
 
 #include "common/dwarf_cu_to_module.h"
 
@@ -124,11 +127,21 @@ DwarfCUToModule::FileContext::FileContext(const string& filename,
 }
 
 DwarfCUToModule::FileContext::~FileContext() {
+  for (std::vector<uint8_t *>::iterator i = uncompressed_sections_.begin();
+        i != uncompressed_sections_.end(); ++i) {
+    delete[] *i;
+  }
 }
 
 void DwarfCUToModule::FileContext::AddSectionToSectionMap(
     const string& name, const uint8_t* contents, uint64_t length) {
   section_map_[name] = std::make_pair(contents, length);
+}
+
+void DwarfCUToModule::FileContext::AddManagedSectionToSectionMap(
+    const string& name, uint8_t* contents, uint64_t length) {
+  section_map_[name] = std::make_pair(contents, length);
+  uncompressed_sections_.push_back(contents);
 }
 
 void DwarfCUToModule::FileContext::ClearSectionMapForTest() {
@@ -156,19 +169,23 @@ bool DwarfCUToModule::FileContext::IsUnhandledInterCUReference(
 // parsing. This is for data shared across the CU's entire DIE tree,
 // and parameters from the code invoking the CU parser.
 struct DwarfCUToModule::CUContext {
-  CUContext(FileContext* file_context_arg, WarningReporter* reporter_arg,
-            RangesHandler* ranges_handler_arg)
+  CUContext(FileContext* file_context_arg,
+            WarningReporter* reporter_arg,
+            RangesHandler* ranges_handler_arg,
+            uint64_t low_pc,
+            uint64_t addr_base)
       : version(0),
         file_context(file_context_arg),
         reporter(reporter_arg),
         ranges_handler(ranges_handler_arg),
         language(Language::CPlusPlus),
-        low_pc(0),
+        low_pc(low_pc),
         high_pc(0),
         ranges_form(DW_FORM_sec_offset),
         ranges_data(0),
         ranges_base(0),
-        str_offsets_base(0) { }
+        addr_base(addr_base),
+        str_offsets_base(0) {}
 
   ~CUContext() {
     for (vector<Module::Function*>::iterator it = functions.begin();
@@ -286,6 +303,7 @@ class DwarfCUToModule::GenericDIEHandler: public DIEHandler {
         offset_(offset),
         declaration_(false),
         specification_(NULL),
+        no_specification(false),
         abstract_origin_(NULL),
         forward_ref_die_offset_(0), specification_offset_(0) { }
 
@@ -316,7 +334,10 @@ class DwarfCUToModule::GenericDIEHandler: public DIEHandler {
   // Use this from EndAttributes member functions, not ProcessAttribute*
   // functions; only the former can be sure that all the DIE's attributes
   // have been seen.
-  StringView ComputeQualifiedName();
+  //
+  // On return, if has_qualified_name is non-NULL, *has_qualified_name is set to
+  // true if the DIE includes a fully-qualified name, false otherwise.
+  StringView ComputeQualifiedName(bool* has_qualified_name);
 
   CUContext* cu_context_;
   DIEContext* parent_context_;
@@ -330,6 +351,10 @@ class DwarfCUToModule::GenericDIEHandler: public DIEHandler {
   // Specification structure for the DIE the attribute refers to.
   // Otherwise, this is NULL.
   Specification* specification_;
+
+  // If this DIE has DW_AT_specification with offset smaller than this DIE and
+  // we can't find that in the specification map.
+  bool no_specification;
 
   // If this DIE has a DW_AT_abstract_origin attribute, this is the
   // AbstractOrigin structure for the DIE the attribute refers to.
@@ -393,7 +418,7 @@ void DwarfCUToModule::GenericDIEHandler::ProcessAttributeReference(
       } else if (data > offset_) {
         forward_ref_die_offset_ = data;
       } else {
-        cu_context_->reporter->UnknownSpecification(offset_, data);
+        no_specification = true;
       }
       specification_offset_ = data;
       break;
@@ -448,7 +473,8 @@ void DwarfCUToModule::GenericDIEHandler::ProcessAttributeString(
   }
 }
 
-StringView DwarfCUToModule::GenericDIEHandler::ComputeQualifiedName() {
+StringView DwarfCUToModule::GenericDIEHandler::ComputeQualifiedName(
+    bool* has_qualified_name) {
   // Use the demangled name, if one is available. Demangled names are
   // preferable to those inferred from the DWARF structure because they
   // include argument types.
@@ -464,6 +490,15 @@ StringView DwarfCUToModule::GenericDIEHandler::ComputeQualifiedName() {
   StringView* unqualified_name = nullptr;
   StringView* enclosing_name = nullptr;
   if (!qualified_name) {
+    if (has_qualified_name) {
+      // dSYMs built with -gmlt do not include the DW_AT_linkage_name
+      // with the unmangled symbol, but rather include it in the
+      // LC_SYMTAB STABS, which end up in the externs of the module.
+      //
+      // Remember this so the Module can copy over the extern name later.
+      *has_qualified_name = false;
+    }
+
     // Find the unqualified name. If the DIE has its own DW_AT_name
     // attribute, then use that; otherwise, check the specification.
     if (!name_attribute_.empty()) {
@@ -479,8 +514,12 @@ StringView DwarfCUToModule::GenericDIEHandler::ComputeQualifiedName() {
     // counts; otherwise, use this DIE's context.
     if (specification_) {
       enclosing_name = &specification_->enclosing_name;
-    } else {
+    } else if (parent_context_) {
       enclosing_name = &parent_context_->name;
+    }
+  } else {
+    if (has_qualified_name) {
+      *has_qualified_name = true;
     }
   }
 
@@ -523,6 +562,29 @@ static bool IsEmptyRange(const vector<Module::Range>& ranges) {
   return size == 0;
 }
 
+// A handler for DW_TAG_lexical_block DIEs.
+class DwarfCUToModule::LexicalBlockHandler : public GenericDIEHandler {
+ public:
+  LexicalBlockHandler(CUContext* cu_context,
+                      uint64_t offset,
+                      int inline_nest_level,
+                      vector<unique_ptr<Module::Inline>>& inlines)
+      : GenericDIEHandler(cu_context, nullptr, offset),
+        inline_nest_level_(inline_nest_level),
+        inlines_(inlines) {}
+
+  DIEHandler* FindChildHandler(uint64_t offset, enum DwarfTag tag);
+  bool EndAttributes() { return true; }
+  void Finish();
+
+ private:
+  int inline_nest_level_;
+  // A vector of inlines in the same nest level. It's owned by its parent
+  // function/inline. At Finish(), add this inline into the vector.
+  vector<unique_ptr<Module::Inline>>& inlines_;
+  // A vector of child inlines.
+  vector<unique_ptr<Module::Inline>> child_inlines_;
+};
 
 // A handler for DW_TAG_inlined_subroutine DIEs.
 class DwarfCUToModule::InlineHandler : public GenericDIEHandler {
@@ -540,6 +602,7 @@ class DwarfCUToModule::InlineHandler : public GenericDIEHandler {
         ranges_data_(0),
         call_site_line_(0),
         inline_nest_level_(inline_nest_level),
+        has_range_data_(false),
         inlines_(inlines) {}
 
   void ProcessAttributeUnsigned(enum DwarfAttribute attr,
@@ -561,6 +624,7 @@ class DwarfCUToModule::InlineHandler : public GenericDIEHandler {
   int call_site_line_;         // DW_AT_call_line
   int call_site_file_id_;      // DW_AT_call_file
   int inline_nest_level_;
+  bool has_range_data_;
   // A vector of inlines in the same nest level. It's owned by its parent
   // function/inline. At Finish(), add this inline into the vector.
   vector<unique_ptr<Module::Inline>>& inlines_;
@@ -581,6 +645,7 @@ void DwarfCUToModule::InlineHandler::ProcessAttributeUnsigned(
       high_pc_ = data;
       break;
     case DW_AT_ranges:
+      has_range_data_ = true;
       ranges_data_ = data;
       ranges_form_ = form;
       break;
@@ -601,8 +666,11 @@ DIEHandler* DwarfCUToModule::InlineHandler::FindChildHandler(
     enum DwarfTag tag) {
   switch (tag) {
     case DW_TAG_inlined_subroutine:
-      return new InlineHandler(cu_context_, new DIEContext(), offset,
+      return new InlineHandler(cu_context_, nullptr, offset,
                                inline_nest_level_ + 1, child_inlines_);
+    case DW_TAG_lexical_block:
+      return new LexicalBlockHandler(cu_context_, offset,
+                                     inline_nest_level_ + 1, child_inlines_);
     default:
       return NULL;
   }
@@ -624,7 +692,7 @@ bool DwarfCUToModule::InlineHandler::EndAttributes() {
 void DwarfCUToModule::InlineHandler::Finish() {
   vector<Module::Range> ranges;
 
-  if (low_pc_ && high_pc_) {
+  if (!has_range_data_) {
     if (high_pc_form_ != DW_FORM_addr &&
         high_pc_form_ != DW_FORM_GNU_addr_index &&
         high_pc_form_ != DW_FORM_addrx &&
@@ -661,16 +729,58 @@ void DwarfCUToModule::InlineHandler::Finish() {
   // Every DW_TAG_inlined_subroutine should have a DW_AT_abstract_origin.
   assert(specification_offset_ != 0);
 
-  cu_context_->file_context->module_->inline_origin_map.SetReference(
-      specification_offset_, specification_offset_);
+  Module::InlineOriginMap& inline_origin_map =
+      cu_context_->file_context->module_
+          ->inline_origin_maps[cu_context_->file_context->filename_];
+  inline_origin_map.SetReference(specification_offset_, specification_offset_);
   Module::InlineOrigin* origin =
-      cu_context_->file_context->module_->inline_origin_map
-          .GetOrCreateInlineOrigin(specification_offset_, name_);
+      inline_origin_map.GetOrCreateInlineOrigin(specification_offset_, name_);
   unique_ptr<Module::Inline> in(
       new Module::Inline(origin, ranges, call_site_line_, call_site_file_id_,
                          inline_nest_level_, std::move(child_inlines_)));
   inlines_.push_back(std::move(in));
 }
+
+DIEHandler* DwarfCUToModule::LexicalBlockHandler::FindChildHandler(
+    uint64_t offset,
+    enum DwarfTag tag) {
+  switch (tag) {
+    case DW_TAG_inlined_subroutine:
+      return new InlineHandler(cu_context_, nullptr, offset, inline_nest_level_,
+                               child_inlines_);
+    case DW_TAG_lexical_block:
+      return new LexicalBlockHandler(cu_context_, offset, inline_nest_level_,
+                                     child_inlines_);
+    default:
+      return nullptr;
+  }
+}
+
+void DwarfCUToModule::LexicalBlockHandler::Finish() {
+  // Insert child inlines inside the lexical block into the inline vector from
+  // parent as if the block does not exit.
+  inlines_.insert(inlines_.end(),
+                  std::make_move_iterator(child_inlines_.begin()),
+                  std::make_move_iterator(child_inlines_.end()));
+}
+
+// A handler for DIEs that contain functions and contribute a
+// component to their names: namespaces, classes, etc.
+class DwarfCUToModule::NamedScopeHandler: public GenericDIEHandler {
+ public:
+  NamedScopeHandler(CUContext* cu_context,
+                    DIEContext* parent_context,
+                    uint64_t offset,
+                    bool handle_inline)
+      : GenericDIEHandler(cu_context, parent_context, offset),
+        handle_inline_(handle_inline) {}
+  bool EndAttributes();
+  DIEHandler* FindChildHandler(uint64_t offset, enum DwarfTag tag);
+
+ private:
+  DIEContext child_context_; // A context for our children.
+  bool handle_inline_;
+};
 
 // A handler class for DW_TAG_subprogram DIEs.
 class DwarfCUToModule::FuncHandler: public GenericDIEHandler {
@@ -686,7 +796,9 @@ class DwarfCUToModule::FuncHandler: public GenericDIEHandler {
         ranges_form_(DW_FORM_sec_offset),
         ranges_data_(0),
         inline_(false),
-        handle_inline_(handle_inline) {}
+        handle_inline_(handle_inline),
+        has_qualified_name_(false),
+        has_range_data_(false) {}
 
   void ProcessAttributeUnsigned(enum DwarfAttribute attr,
                                 enum DwarfForm form,
@@ -709,6 +821,9 @@ class DwarfCUToModule::FuncHandler: public GenericDIEHandler {
   bool inline_;
   vector<unique_ptr<Module::Inline>> child_inlines_;
   bool handle_inline_;
+  bool has_qualified_name_;
+  bool has_range_data_;
+  DIEContext child_context_; // A context for our children.
 };
 
 void DwarfCUToModule::FuncHandler::ProcessAttributeUnsigned(
@@ -727,6 +842,7 @@ void DwarfCUToModule::FuncHandler::ProcessAttributeUnsigned(
       high_pc_ = data;
       break;
     case DW_AT_ranges:
+      has_range_data_ = true;
       ranges_data_ = data;
       ranges_form_ = form;
       break;
@@ -757,8 +873,16 @@ DIEHandler* DwarfCUToModule::FuncHandler::FindChildHandler(
   switch (tag) {
     case DW_TAG_inlined_subroutine:
       if (handle_inline_)
-        return new InlineHandler(cu_context_, new DIEContext(), offset, 0,
+        return new InlineHandler(cu_context_, nullptr, offset, 0,
                                  child_inlines_);
+    case DW_TAG_class_type:
+    case DW_TAG_structure_type:
+    case DW_TAG_union_type:
+      return new NamedScopeHandler(cu_context_, &child_context_, offset,
+                                   handle_inline_);
+    case DW_TAG_lexical_block:
+      if (handle_inline_)
+        return new LexicalBlockHandler(cu_context_, offset, 0, child_inlines_);
     default:
       return NULL;
   }
@@ -766,9 +890,13 @@ DIEHandler* DwarfCUToModule::FuncHandler::FindChildHandler(
 
 bool DwarfCUToModule::FuncHandler::EndAttributes() {
   // Compute our name, and record a specification, if appropriate.
-  name_ = ComputeQualifiedName();
+  name_ = ComputeQualifiedName(&has_qualified_name_);
   if (name_.empty() && abstract_origin_) {
     name_ = abstract_origin_->name;
+  }
+  child_context_.name = name_;
+  if (name_.empty() && no_specification) {
+    cu_context_->reporter->UnknownSpecification(offset_, specification_offset_);
   }
   return true;
 }
@@ -788,7 +916,7 @@ void DwarfCUToModule::FuncHandler::Finish() {
       iter->second->name = name_;
   }
 
-  if (!ranges_data_) {
+  if (!has_range_data_) {
     // Make high_pc_ an address, if it isn't already.
     if (high_pc_form_ != DW_FORM_addr &&
         high_pc_form_ != DW_FORM_GNU_addr_index &&
@@ -835,6 +963,9 @@ void DwarfCUToModule::FuncHandler::Finish() {
     scoped_ptr<Module::Function> func(new Module::Function(name, low_pc_));
     func->ranges = ranges;
     func->parameter_size = 0;
+    // If the name was unqualified, prefer the Extern name if there's a mismatch
+    // (the Extern name will be fully-qualified in that case).
+    func->prefer_extern_name = !has_qualified_name_;
     if (func->address) {
       // If the function address is zero this is a sign that this function
       // description is just empty debug data and should just be discarded.
@@ -861,33 +992,19 @@ void DwarfCUToModule::FuncHandler::Finish() {
     StringView name = name_.empty() ? name_omitted : name_;
     uint64_t offset =
         specification_offset_ != 0 ? specification_offset_ : offset_;
-    cu_context_->file_context->module_->inline_origin_map.SetReference(offset_,
-                                                                       offset);
-    cu_context_->file_context->module_->inline_origin_map
-        .GetOrCreateInlineOrigin(offset_, name);
+    Module::InlineOriginMap& inline_origin_map =
+        cu_context_->file_context->module_
+            ->inline_origin_maps[cu_context_->file_context->filename_];
+    inline_origin_map.SetReference(offset_, offset);
+    inline_origin_map.GetOrCreateInlineOrigin(offset_, name);
   }
 }
 
-// A handler for DIEs that contain functions and contribute a
-// component to their names: namespaces, classes, etc.
-class DwarfCUToModule::NamedScopeHandler: public GenericDIEHandler {
- public:
-  NamedScopeHandler(CUContext* cu_context,
-                    DIEContext* parent_context,
-                    uint64_t offset,
-                    bool handle_inline)
-      : GenericDIEHandler(cu_context, parent_context, offset),
-        handle_inline_(handle_inline) {}
-  bool EndAttributes();
-  DIEHandler* FindChildHandler(uint64_t offset, enum DwarfTag tag);
-
- private:
-  DIEContext child_context_; // A context for our children.
-  bool handle_inline_;
-};
-
 bool DwarfCUToModule::NamedScopeHandler::EndAttributes() {
-  child_context_.name = ComputeQualifiedName();
+  child_context_.name = ComputeQualifiedName(NULL);
+  if (child_context_.name.empty() && no_specification) {
+    cu_context_->reporter->UnknownSpecification(offset_, specification_offset_);
+  }
   return true;
 }
 
@@ -1014,12 +1131,21 @@ DwarfCUToModule::DwarfCUToModule(FileContext* file_context,
                                  LineToModuleHandler* line_reader,
                                  RangesHandler* ranges_handler,
                                  WarningReporter* reporter,
-                                 bool handle_inline)
+                                 bool handle_inline,
+                                 uint64_t low_pc,
+                                 uint64_t addr_base,
+                                 bool has_source_line_info,
+                                 uint64_t source_line_offset)
     : RootDIEHandler(handle_inline),
       line_reader_(line_reader),
-      cu_context_(new CUContext(file_context, reporter, ranges_handler)),
+      cu_context_(new CUContext(file_context,
+                                reporter,
+                                ranges_handler,
+                                low_pc,
+                                addr_base)),
       child_context_(new DIEContext()),
-      has_source_line_info_(false) {}
+      has_source_line_info_(has_source_line_info),
+      source_line_offset_(source_line_offset) {}
 
 DwarfCUToModule::~DwarfCUToModule() {
 }

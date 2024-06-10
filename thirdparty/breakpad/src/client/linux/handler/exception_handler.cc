@@ -1,5 +1,4 @@
-// Copyright (c) 2010 Google Inc.
-// All rights reserved.
+// Copyright 2010 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -62,6 +61,10 @@
 // restrictions at the top of minidump_writer.cc apply: no libc and use the
 // alternative malloc. Each function should have comment above it detailing the
 // context which it runs in.
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>  // Must come first
+#endif
 
 #include "client/linux/handler/exception_handler.h"
 
@@ -461,10 +464,7 @@ bool ExceptionHandler::HandleSignal(int /*sig*/, siginfo_t* info, void* uc) {
     memcpy(&g_crash_context_.float_state, fp_ptr,
            sizeof(g_crash_context_.float_state));
   }
-#elif !defined(__ARM_EABI__) && !defined(__mips__)
-  // FP state is not part of user ABI on ARM Linux.
-  // In case of MIPS Linux FP state is already part of ucontext_t
-  // and 'float_state' is not a member of CrashContext.
+#elif GOOGLE_BREAKPAD_CRASH_CONTEXT_HAS_FLOAT_STATE
   ucontext_t* uc_ptr = (ucontext_t*)uc;
   if (uc_ptr->uc_mcontext.fpregs) {
     memcpy(&g_crash_context_.float_state, uc_ptr->uc_mcontext.fpregs,
@@ -701,8 +701,7 @@ bool ExceptionHandler::WriteMinidump() {
   }
 #endif
 
-#if !defined(__ARM_EABI__) && !defined(__aarch64__) && !defined(__mips__)
-  // FPU state is not part of ARM EABI ucontext_t.
+#if GOOGLE_BREAKPAD_CRASH_CONTEXT_HAS_FLOAT_STATE && !defined(__aarch64__)
   memcpy(&context.float_state, context.context.uc_mcontext.fpregs,
          sizeof(context.float_state));
 #endif
@@ -726,8 +725,11 @@ bool ExceptionHandler::WriteMinidump() {
 #elif defined(__mips__)
   context.siginfo.si_addr =
       reinterpret_cast<void*>(context.context.uc_mcontext.pc);
+#elif defined(__riscv)
+  context.siginfo.si_addr =
+      reinterpret_cast<void*>(context.context.uc_mcontext.__gregs[REG_PC]);
 #else
-#error "This code has not been ported to your platform yet."
+# error "This code has not been ported to your platform yet."
 #endif
 
   return GenerateDump(&context);

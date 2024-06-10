@@ -1,5 +1,4 @@
-/* Copyright (c) 2006, Google Inc.
- * All rights reserved.
+/* Copyright 2006 Google LLC
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
- *     * Neither the name of Google Inc. nor the names of its
+ *     * Neither the name of Google LLC nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
  *
@@ -118,6 +117,7 @@ typedef struct {
 #include "minidump_cpu_mips.h"
 #include "minidump_cpu_ppc.h"
 #include "minidump_cpu_ppc64.h"
+#include "minidump_cpu_riscv.h"
 #include "minidump_cpu_sparc.h"
 #include "minidump_cpu_x86.h"
 
@@ -239,6 +239,15 @@ typedef struct {
   MDRVA     rva;
 } MDLocationDescriptor;  /* MINIDUMP_LOCATION_DESCRIPTOR */
 
+/* An MDRVA64 is an 64-bit offset into the minidump file.  The beginning of the
+ * MDRawHeader is at offset 0. */
+typedef uint64_t MDRVA64; /* RVA64 */
+
+typedef struct {
+  uint64_t data_size;
+  MDRVA64 rva;
+} MDLocationDescriptor64; /* MINIDUMP_LOCATION_DESCRIPTOR64 */
+
 
 typedef struct {
   /* The base address of the memory range on the host that produced the
@@ -332,6 +341,7 @@ typedef enum {
   MD_JAVASCRIPT_DATA_STREAM      = 20,
   MD_SYSTEM_MEMORY_INFO_STREAM   = 21,
   MD_PROCESS_VM_COUNTERS_STREAM  = 22,
+  MD_THREAD_NAME_LIST_STREAM     = 24, /* MDRawThreadNameList */
   MD_LAST_RESERVED_STREAM        = 0x0000ffff,
 
   /* Breakpad extension types.  0x4767 = "Gg" */
@@ -382,6 +392,20 @@ typedef struct {
 static const size_t MDRawThreadList_minsize = offsetof(MDRawThreadList,
                                                        threads[0]);
 
+#pragma pack(push, 4)
+typedef struct {
+  uint32_t thread_id;
+  MDRVA64 thread_name_rva; /* MDString */
+} MDRawThreadName;         /* MINIDUMP_THREAD_NAME */
+
+typedef struct {
+  uint32_t number_of_thread_names;
+  MDRawThreadName thread_names[1];
+} MDRawThreadNameList; /* MINIDUMP_THREAD_NAME_LIST */
+#pragma pack(pop)
+
+static const size_t MDRawThreadNameList_minsize =
+    offsetof(MDRawThreadNameList, thread_names[0]);
 
 typedef struct {
   uint64_t             base_of_image;
@@ -660,6 +684,8 @@ typedef enum {
   MD_CPU_ARCHITECTURE_PPC64     = 0x8002, /* Breakpad-defined value for PPC64 */
   MD_CPU_ARCHITECTURE_ARM64_OLD = 0x8003, /* Breakpad-defined value for ARM64 */
   MD_CPU_ARCHITECTURE_MIPS64    = 0x8004, /* Breakpad-defined value for MIPS64 */
+  MD_CPU_ARCHITECTURE_RISCV     = 0x8005, /* Breakpad-defined value for RISCV */
+  MD_CPU_ARCHITECTURE_RISCV64   = 0x8006, /* Breakpad-defined value for RISCV64 */
   MD_CPU_ARCHITECTURE_UNKNOWN   = 0xffff  /* PROCESSOR_ARCHITECTURE_UNKNOWN */
 } MDCPUArchitecture;
 
@@ -1071,9 +1097,22 @@ typedef struct {
 } MDRawSimpleStringDictionary;
 
 typedef struct {
+  MDRVA name;
+  uint16_t type;
+  uint16_t reserved;
+  MDRVA value;
+} MDRawCrashpadAnnotation;
+
+typedef struct {
+  uint32_t count;
+  MDRawCrashpadAnnotation objects[0];
+} MDRawCrashpadAnnotationList;
+
+typedef struct {
   uint32_t version;
   MDLocationDescriptor list_annotations;
   MDLocationDescriptor simple_annotations;  /* MDRawSimpleStringDictionary */
+  MDLocationDescriptor annotation_objects;  /* MDRawCrashpadAnnotationList */
 } MDRawModuleCrashpadInfo;
 
 typedef struct {
@@ -1083,7 +1122,7 @@ typedef struct {
 
 typedef struct {
   uint32_t count;
-  MDLocationDescriptor modules[0];  /* MDRawModuleCrashpadInfoLink */
+  MDRawModuleCrashpadInfoLink modules[0];
 } MDRawModuleCrashpadInfoList;
 
 typedef struct {
@@ -1092,6 +1131,8 @@ typedef struct {
   MDGUID client_id;
   MDLocationDescriptor simple_annotations;  /* MDRawSimpleStringDictionary */
   MDLocationDescriptor module_list;  /* MDRawModuleCrashpadInfoList */
+  uint32_t reserved;
+  uint64_t address_mask;
 } MDRawCrashpadInfo;
 
 #if defined(_MSC_VER)

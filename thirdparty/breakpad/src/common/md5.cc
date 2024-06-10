@@ -13,6 +13,10 @@
  * will fill a supplied 16-byte array with the digest.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>  // Must come first
+#endif
+
 #include <string.h>
 
 #include "common/md5.h"

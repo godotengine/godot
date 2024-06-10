@@ -65,6 +65,10 @@
  * I've modified it to be compatible with 64-bit images.
 */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>  // Must come first
+#endif
+
 #include "breakpad_nlist_64.h"
 
 #include <CoreFoundation/CoreFoundation.h>

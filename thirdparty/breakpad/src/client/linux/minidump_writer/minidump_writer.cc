@@ -1,5 +1,4 @@
-// Copyright (c) 2010, Google Inc.
-// All rights reserved.
+// Copyright 2010 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -43,6 +42,10 @@
 //     a canonical instance in the LinuxDumper object. We use the placement
 //     new form to allocate objects and we don't delete them.
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>  // Must come first
+#endif
+
 #include "client/linux/handler/minidump_descriptor.h"
 #include "client/linux/minidump_writer/minidump_writer.h"
 #include "client/minidump_file_writer-inl.h"
@@ -71,6 +74,8 @@
 #include "client/linux/minidump_writer/line_reader.h"
 #include "client/linux/minidump_writer/linux_dumper.h"
 #include "client/linux/minidump_writer/linux_ptrace_dumper.h"
+#include "client/linux/minidump_writer/pe_file.h"
+#include "client/linux/minidump_writer/pe_structs.h"
 #include "client/linux/minidump_writer/proc_cpuinfo_reader.h"
 #include "client/minidump_file_writer.h"
 #include "common/linux/file_id.h"
@@ -83,9 +88,9 @@ namespace {
 
 using google_breakpad::AppMemoryList;
 using google_breakpad::auto_wasteful_vector;
+using google_breakpad::elf::kDefaultBuildIdSize;
 using google_breakpad::ExceptionHandler;
 using google_breakpad::CpuSet;
-using google_breakpad::kDefaultBuildIdSize;
 using google_breakpad::LineReader;
 using google_breakpad::LinuxDumper;
 using google_breakpad::LinuxPtraceDumper;
@@ -95,8 +100,11 @@ using google_breakpad::MappingInfo;
 using google_breakpad::MappingList;
 using google_breakpad::MinidumpFileWriter;
 using google_breakpad::PageAllocator;
+using google_breakpad::PEFile;
+using google_breakpad::PEFileFormat;
 using google_breakpad::ProcCpuInfoReader;
 using google_breakpad::RawContextCPU;
+using google_breakpad::RSDS_DEBUG_FORMAT;
 using google_breakpad::ThreadInfo;
 using google_breakpad::TypedMDRVA;
 using google_breakpad::UContextReader;
@@ -136,7 +144,7 @@ class MinidumpWriter {
       : fd_(minidump_fd),
         path_(minidump_path),
         ucontext_(context ? &context->context : NULL),
-#if !defined(__ARM_EABI__) && !defined(__mips__)
+#if GOOGLE_BREAKPAD_CRASH_CONTEXT_HAS_FLOAT_STATE
         float_state_(context ? &context->float_state : NULL),
 #endif
         dumper_(dumper),
@@ -468,7 +476,7 @@ class MinidumpWriter {
         if (!cpu.Allocate())
           return false;
         my_memset(cpu.get(), 0, sizeof(RawContextCPU));
-#if !defined(__ARM_EABI__) && !defined(__mips__)
+#if GOOGLE_BREAKPAD_CRASH_CONTEXT_HAS_FLOAT_STATE
         UContextReader::FillCPUContext(cpu.get(), ucontext_, float_state_);
 #else
         UContextReader::FillCPUContext(cpu.get(), ucontext_);
@@ -632,39 +640,87 @@ class MinidumpWriter {
     mod->base_of_image = mapping.start_addr;
     mod->size_of_image = mapping.size;
 
-    auto_wasteful_vector<uint8_t, kDefaultBuildIdSize> identifier_bytes(
-        dumper_->allocator());
+    char file_name[NAME_MAX];
+    char file_path[NAME_MAX];
 
-    if (identifier) {
-      // GUID was provided by caller.
-      identifier_bytes.insert(identifier_bytes.end(),
-                              identifier,
-                              identifier + sizeof(MDGUID));
+    dumper_->GetMappingEffectiveNameAndPath(mapping, file_path,
+                                            sizeof(file_path), file_name,
+                                            sizeof(file_name));
+
+    RSDS_DEBUG_FORMAT rsds;
+    PEFileFormat file_format = PEFile::TryGetDebugInfo(file_path, &rsds);
+
+    if (file_format == PEFileFormat::notPeCoff) {
+      // The module is not a PE/COFF file, process as an ELF.
+      auto_wasteful_vector<uint8_t, kDefaultBuildIdSize> identifier_bytes(
+          dumper_->allocator());
+
+      if (identifier) {
+        // GUID was provided by caller.
+        identifier_bytes.insert(identifier_bytes.end(), identifier,
+                                identifier + sizeof(MDGUID));
+      } else {
+        // Note: ElfFileIdentifierForMapping() can manipulate the
+        // |mapping.name|, that is why we need to call the method
+        // GetMappingEffectiveNameAndPath again.
+        dumper_->ElfFileIdentifierForMapping(mapping, member, mapping_id,
+                                             identifier_bytes);
+        dumper_->GetMappingEffectiveNameAndPath(mapping, file_path,
+                                                sizeof(file_path), file_name,
+                                                sizeof(file_name));
+      }
+
+      if (!identifier_bytes.empty()) {
+        UntypedMDRVA cv(&minidump_writer_);
+        if (!cv.Allocate(MDCVInfoELF_minsize + identifier_bytes.size()))
+          return false;
+
+        const uint32_t cv_signature = MD_CVINFOELF_SIGNATURE;
+        cv.Copy(&cv_signature, sizeof(cv_signature));
+        cv.Copy(cv.position() + sizeof(cv_signature), &identifier_bytes[0],
+                identifier_bytes.size());
+
+        mod->cv_record = cv.location();
+      }
     } else {
-      // Note: ElfFileIdentifierForMapping() can manipulate the |mapping.name|.
-      dumper_->ElfFileIdentifierForMapping(mapping,
-                                           member,
-                                           mapping_id,
-                                           identifier_bytes);
-    }
-
-    if (!identifier_bytes.empty()) {
-      UntypedMDRVA cv(&minidump_writer_);
-      if (!cv.Allocate(MDCVInfoELF_minsize + identifier_bytes.size()))
+      // The module is a PE/COFF file. Create MDCVInfoPDB70 struct for it.
+      size_t file_name_length = strlen(file_name);
+      TypedMDRVA<MDCVInfoPDB70> cv(&minidump_writer_);
+      if (!cv.AllocateObjectAndArray(file_name_length + 1, sizeof(uint8_t)))
         return false;
-
-      const uint32_t cv_signature = MD_CVINFOELF_SIGNATURE;
-      cv.Copy(&cv_signature, sizeof(cv_signature));
-      cv.Copy(cv.position() + sizeof(cv_signature), &identifier_bytes[0],
-              identifier_bytes.size());
+      if (!cv.CopyIndexAfterObject(0, file_name, file_name_length))
+        return false;
+      MDCVInfoPDB70* cv_ptr = cv.get();
+      cv_ptr->cv_signature = MD_CVINFOPDB70_SIGNATURE;
+      if (file_format == PEFileFormat::peWithBuildId) {
+        // Populate BuildId and age using RSDS instance.
+        cv_ptr->signature.data1 = static_cast<uint32_t>(rsds.guid[0]) << 24 |
+                                  static_cast<uint32_t>(rsds.guid[1]) << 16 |
+                                  static_cast<uint32_t>(rsds.guid[2]) << 8 |
+                                  static_cast<uint32_t>(rsds.guid[3]);
+        cv_ptr->signature.data2 =
+            static_cast<uint16_t>(rsds.guid[4]) << 8 | rsds.guid[5];
+        cv_ptr->signature.data3 =
+            static_cast<uint16_t>(rsds.guid[6]) << 8 | rsds.guid[7];
+        cv_ptr->signature.data4[0] = rsds.guid[8];
+        cv_ptr->signature.data4[1] = rsds.guid[9];
+        cv_ptr->signature.data4[2] = rsds.guid[10];
+        cv_ptr->signature.data4[3] = rsds.guid[11];
+        cv_ptr->signature.data4[4] = rsds.guid[12];
+        cv_ptr->signature.data4[5] = rsds.guid[13];
+        cv_ptr->signature.data4[6] = rsds.guid[14];
+        cv_ptr->signature.data4[7] = rsds.guid[15];
+        // The Age field should be reverted as well.
+        cv_ptr->age = static_cast<uint32_t>(rsds.age[0]) << 24 |
+                      static_cast<uint32_t>(rsds.age[1]) << 16 |
+                      static_cast<uint32_t>(rsds.age[2]) << 8 |
+                      static_cast<uint32_t>(rsds.age[3]);
+      } else {
+        cv_ptr->age = 0;
+      }
 
       mod->cv_record = cv.location();
     }
-
-    char file_name[NAME_MAX];
-    char file_path[NAME_MAX];
-    dumper_->GetMappingEffectiveNameAndPath(
-        mapping, file_path, sizeof(file_path), file_name, sizeof(file_name));
 
     MDLocationDescriptor ld;
     if (!minidump_writer_.WriteString(file_path, my_strlen(file_path), &ld))
@@ -1085,9 +1141,7 @@ class MinidumpWriter {
           sys_close(fd);
 
           cpus_present.IntersectWith(cpus_possible);
-          int cpu_count = cpus_present.GetCount();
-          if (cpu_count > 255)
-            cpu_count = 255;
+          int cpu_count = std::min(255, cpus_present.GetCount());
           sys_info->number_of_processors = static_cast<uint8_t>(cpu_count);
         }
       }
@@ -1201,6 +1255,59 @@ class MinidumpWriter {
         }
       }
       sys_close(fd);
+    }
+
+    return true;
+  }
+#elif defined(__riscv)
+  bool WriteCPUInformation(MDRawSystemInfo* sys_info) {
+    // processor_architecture should always be set, do this first
+# if __riscv_xlen == 32
+    sys_info->processor_architecture = MD_CPU_ARCHITECTURE_RISCV;
+# elif __riscv_xlen == 64
+    sys_info->processor_architecture = MD_CPU_ARCHITECTURE_RISCV64;
+# else
+#  error "Unexpected __riscv_xlen"
+# endif
+
+    // /proc/cpuinfo is not readable under various sandboxed environments
+    // (e.g. Android services with the android:isolatedProcess attribute)
+    // prepare for this by setting default values now, which will be
+    // returned when this happens.
+    //
+    // Note: Bogus values are used to distinguish between failures (to
+    //       read /sys and /proc files) and really badly configured kernels.
+    sys_info->number_of_processors = 0;
+    sys_info->processor_level = 0U;
+    sys_info->processor_revision = 42;
+    sys_info->cpu.other_cpu_info.processor_features[0] = 0;
+    sys_info->cpu.other_cpu_info.processor_features[1] = 0;
+
+    // Counting the number of CPUs involves parsing two sysfs files,
+    // because the content of /proc/cpuinfo will only mirror the number
+    // of 'online' cores, and thus will vary with time.
+    // See http://www.kernel.org/doc/Documentation/cputopology.txt
+    {
+      CpuSet cpus_present;
+      CpuSet cpus_possible;
+
+      int fd = sys_open("/sys/devices/system/cpu/present",
+                        O_RDONLY | O_CLOEXEC, 0);
+      if (fd >= 0) {
+        cpus_present.ParseSysFile(fd);
+        sys_close(fd);
+
+        fd = sys_open("/sys/devices/system/cpu/possible",
+                      O_RDONLY | O_CLOEXEC, 0);
+        if (fd >= 0) {
+          cpus_possible.ParseSysFile(fd);
+          sys_close(fd);
+
+          cpus_present.IntersectWith(cpus_possible);
+          int cpu_count = std::min(255, cpus_present.GetCount());
+          sys_info->number_of_processors = static_cast<uint8_t>(cpu_count);
+        }
+      }
     }
 
     return true;
@@ -1333,7 +1440,7 @@ class MinidumpWriter {
   const char* path_;  // Path to the file where the minidum should be written.
 
   const ucontext_t* const ucontext_;  // also from the signal handler
-#if !defined(__ARM_EABI__) && !defined(__mips__)
+#if GOOGLE_BREAKPAD_CRASH_CONTEXT_HAS_FLOAT_STATE
   const google_breakpad::fpstate_t* const float_state_;  // ditto
 #endif
   LinuxDumper* dumper_;

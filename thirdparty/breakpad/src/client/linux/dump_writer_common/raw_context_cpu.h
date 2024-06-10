@@ -1,5 +1,4 @@
-// Copyright (c) 2014, Google Inc.
-// All rights reserved.
+// Copyright 2014 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -44,6 +43,14 @@ typedef MDRawContextARM RawContextCPU;
 typedef MDRawContextARM64_Old RawContextCPU;
 #elif defined(__mips__)
 typedef MDRawContextMIPS RawContextCPU;
+#elif defined(__riscv)
+# if __riscv_xlen == 32
+typedef MDRawContextRISCV RawContextCPU;
+# elif __riscv_xlen == 64
+typedef MDRawContextRISCV64 RawContextCPU;
+# else
+#  error "Unexpected __riscv_xlen"
+# endif
 #else
 #error "This code has not been ported to your platform yet."
 #endif

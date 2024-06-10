@@ -1,5 +1,4 @@
-// Copyright (c) 2010, Google Inc.
-// All rights reserved.
+// Copyright 2010 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -35,6 +34,10 @@
 // rules apply as detailed at the top of minidump_writer.h: no libc calls and
 // use the alternative allocator.
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>  // Must come first
+#endif
+
 #include "client/linux/minidump_writer/linux_dumper.h"
 
 #include <assert.h>
@@ -52,6 +55,8 @@
 #include "common/linux/safe_readlink.h"
 #include "google_breakpad/common/minidump_exception_linux.h"
 #include "third_party/lss/linux_syscall_support.h"
+
+using google_breakpad::elf::FileID;
 
 #if defined(__ANDROID__)
 
@@ -341,7 +346,7 @@ LinuxDumper::ElfFileIdentifierForMapping(const MappingInfo& mapping,
     return false;
   bool filename_modified = HandleDeletedFileInMapping(filename);
 
-  MemoryMappedFile mapped_file(filename, mapping.offset);
+  MemoryMappedFile mapped_file(filename, 0);
   if (!mapped_file.data() || mapped_file.size() < SELFMAG)
     return false;
 
@@ -454,7 +459,7 @@ bool ElfFileSoName(const LinuxDumper& dumper,
   if (!dumper.GetMappingAbsolutePath(mapping, filename))
     return false;
 
-  MemoryMappedFile mapped_file(filename, mapping.offset);
+  MemoryMappedFile mapped_file(filename, 0);
   if (!mapped_file.data() || mapped_file.size() < SELFMAG) {
     // mmap failed
     return false;

@@ -1,5 +1,4 @@
-// Copyright (c) 2012, Google Inc.
-// All rights reserved.
+// Copyright 2012 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -32,16 +31,26 @@
 #ifndef COMMON_MAC_ARCH_UTILITIES_H__
 #define COMMON_MAC_ARCH_UTILITIES_H__
 
-#include <mach-o/arch.h>
+#include <mach/machine.h>
 
-namespace google_breakpad {
+#include <optional>
 
-// Custom implementation of |NXGetArchInfoFromName| and
-// |NXGetArchInfoFromCpuType| that handle newer CPU on older OSes.
-const NXArchInfo* BreakpadGetArchInfoFromName(const char* arch_name);
-const NXArchInfo* BreakpadGetArchInfoFromCpuType(cpu_type_t cpu_type,
-                                                 cpu_subtype_t cpu_subtype);
+static constexpr const char* kUnknownArchName = "<Unknown architecture>";
 
-}  // namespace google_breakpad
+struct ArchInfo {
+  cpu_type_t cputype;
+  cpu_subtype_t cpusubtype;
+};
+
+// Returns architecture info if `arch_name` corresponds to a valid, known
+// architecture, and std::nullopt otherwise.
+std::optional<ArchInfo> GetArchInfoFromName(const char* arch_name);
+
+// Returns the name of the architecture specified by `cpu_type` and
+// `cpu_subtype`, or `kUnknownArchName` if it's unknown or invalid.
+const char* GetNameFromCPUType(cpu_type_t cpu_type, cpu_subtype_t cpu_subtype);
+
+// Returns the architecture of the machine this code is running on.
+ArchInfo GetLocalArchInfo();
 
 #endif  // COMMON_MAC_ARCH_UTILITIES_H__

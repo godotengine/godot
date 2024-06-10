@@ -1,5 +1,4 @@
-// Copyright (c) 2007, Google Inc.
-// All rights reserved.
+// Copyright 2007 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -32,6 +31,10 @@
 // See file_id.h for documentation
 //
 // Author: Alfred Peng
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>  // Must come first
+#endif
 
 #include <elf.h>
 #include <fcntl.h>
@@ -128,10 +131,6 @@ static bool FindElfTextSection(int fd, const void* elf_base,
   return false;
 }
 
-FileID::FileID(const char* path) {
-  strcpy(path_, path);
-}
-
 class AutoCloser {
  public:
   AutoCloser(int fd) : fd_(fd) {}
@@ -139,6 +138,12 @@ class AutoCloser {
  private:
   int fd_;
 };
+
+namespace elf {
+
+FileID::FileID(const char* path) {
+  strcpy(path_, path);
+}
 
 bool FileID::ElfFileIdentifier(unsigned char identifier[16]) {
   int fd = 0;
@@ -194,4 +199,5 @@ bool FileID::ConvertIdentifierToString(const unsigned char identifier[16],
   return true;
 }
 
+}  // elf
 }  // namespace google_breakpad

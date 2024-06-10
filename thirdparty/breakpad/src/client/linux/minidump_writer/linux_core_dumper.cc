@@ -1,5 +1,4 @@
-// Copyright (c) 2012, Google Inc.
-// All rights reserved.
+// Copyright 2012 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -29,6 +28,10 @@
 
 // linux_core_dumper.cc: Implement google_breakpad::LinuxCoreDumper.
 // See linux_core_dumper.h for details.
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>  // Must come first
+#endif
 
 #include "client/linux/minidump_writer/linux_core_dumper.h"
 
@@ -112,8 +115,11 @@ bool LinuxCoreDumper::GetThreadInfoByIndex(size_t index, ThreadInfo* info) {
 #elif defined(__mips__)
   stack_pointer =
       reinterpret_cast<uint8_t*>(info->mcontext.gregs[MD_CONTEXT_MIPS_REG_SP]);
+#elif defined(__riscv)
+    stack_pointer = reinterpret_cast<uint8_t*>(
+        info->mcontext.__gregs[MD_CONTEXT_RISCV_REG_SP]);
 #else
-#error "This code hasn't been ported to your platform yet."
+# error "This code hasn't been ported to your platform yet."
 #endif
   info->stack_pointer = reinterpret_cast<uintptr_t>(stack_pointer);
   return true;
@@ -208,19 +214,22 @@ bool LinuxCoreDumper::EnumerateThreads() {
         info.tgid = status->pr_pgrp;
         info.ppid = status->pr_ppid;
 #if defined(__mips__)
-#if defined(__ANDROID__)
+# if defined(__ANDROID__)
         for (int i = EF_R0; i <= EF_R31; i++)
           info.mcontext.gregs[i - EF_R0] = status->pr_reg[i];
-#else  // __ANDROID__
+# else  // __ANDROID__
         for (int i = EF_REG0; i <= EF_REG31; i++)
           info.mcontext.gregs[i - EF_REG0] = status->pr_reg[i];
-#endif  // __ANDROID__
+# endif  // __ANDROID__
         info.mcontext.mdlo = status->pr_reg[EF_LO];
         info.mcontext.mdhi = status->pr_reg[EF_HI];
         info.mcontext.pc = status->pr_reg[EF_CP0_EPC];
-#else  // __mips__
+#elif defined(__riscv)
+        memcpy(&info.mcontext.__gregs, status->pr_reg,
+               sizeof(info.mcontext.__gregs));
+#else  // __riscv
         memcpy(&info.regs, status->pr_reg, sizeof(info.regs));
-#endif  // __mips__
+#endif
         if (first_thread) {
           crash_thread_ = pid;
           crash_signal_ = status->pr_info.si_signo;

@@ -1,5 +1,4 @@
-// Copyright (c) 2014, Google Inc.
-// All rights reserved.
+// Copyright 2014 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -26,6 +25,10 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>  // Must come first
+#endif
 
 #include "client/linux/dump_writer_common/thread_info.h"
 
@@ -270,7 +273,70 @@ void ThreadInfo::FillCPUContext(RawContextCPU* out) const {
   out->float_save.fir = mcontext.fpc_eir;
 #endif
 }
-#endif  // __mips__
+
+#elif defined(__riscv)
+
+uintptr_t ThreadInfo::GetInstructionPointer() const {
+  return mcontext.__gregs[0];
+}
+
+void ThreadInfo::FillCPUContext(RawContextCPU* out) const {
+# if __riscv__xlen == 32
+  out->context_flags = MD_CONTEXT_RISCV_FULL;
+# elif __riscv_xlen == 64
+  out->context_flags = MD_CONTEXT_RISCV64_FULL;
+# else
+#  error "Unexpected __riscv_xlen"
+# endif
+
+  out->pc  = mcontext.__gregs[0];
+  out->ra  = mcontext.__gregs[1];
+  out->sp  = mcontext.__gregs[2];
+  out->gp  = mcontext.__gregs[3];
+  out->tp  = mcontext.__gregs[4];
+  out->t0  = mcontext.__gregs[5];
+  out->t1  = mcontext.__gregs[6];
+  out->t2  = mcontext.__gregs[7];
+  out->s0  = mcontext.__gregs[8];
+  out->s1  = mcontext.__gregs[9];
+  out->a0  = mcontext.__gregs[10];
+  out->a1  = mcontext.__gregs[11];
+  out->a2  = mcontext.__gregs[12];
+  out->a3  = mcontext.__gregs[13];
+  out->a4  = mcontext.__gregs[14];
+  out->a5  = mcontext.__gregs[15];
+  out->a6  = mcontext.__gregs[16];
+  out->a7  = mcontext.__gregs[17];
+  out->s2  = mcontext.__gregs[18];
+  out->s3  = mcontext.__gregs[19];
+  out->s4  = mcontext.__gregs[20];
+  out->s5  = mcontext.__gregs[21];
+  out->s6  = mcontext.__gregs[22];
+  out->s7  = mcontext.__gregs[23];
+  out->s8  = mcontext.__gregs[24];
+  out->s9  = mcontext.__gregs[25];
+  out->s10 = mcontext.__gregs[26];
+  out->s11 = mcontext.__gregs[27];
+  out->t3  = mcontext.__gregs[28];
+  out->t4  = mcontext.__gregs[29];
+  out->t5  = mcontext.__gregs[30];
+  out->t6  = mcontext.__gregs[31];
+
+  // Breakpad only supports RISCV32 with 32 bit floating point.
+  // Breakpad only supports RISCV64 with 64 bit floating point.
+#if __riscv_xlen == 32
+  for (int i = 0; i < MD_CONTEXT_RISCV_FPR_COUNT; i++)
+    out->fpregs[i] = mcontext.__fpregs.__f.__f[i];
+  out->fcsr = mcontext.__fpregs.__f.__fcsr;
+#elif __riscv_xlen == 64
+  for (int i = 0; i < MD_CONTEXT_RISCV_FPR_COUNT; i++)
+    out->fpregs[i] = mcontext.__fpregs.__d.__f[i];
+  out->fcsr = mcontext.__fpregs.__d.__fcsr;
+#else
+#error "Unexpected __riscv_xlen"
+#endif
+}
+#endif  // __riscv
 
 void ThreadInfo::GetGeneralPurposeRegisters(void** gp_regs, size_t* size) {
   assert(gp_regs || size);
@@ -279,6 +345,11 @@ void ThreadInfo::GetGeneralPurposeRegisters(void** gp_regs, size_t* size) {
     *gp_regs = mcontext.gregs;
   if (size)
     *size = sizeof(mcontext.gregs);
+#elif defined(__riscv)
+  if (gp_regs)
+    *gp_regs = mcontext.__gregs;
+  if (size)
+    *size = sizeof(mcontext.__gregs);
 #else
   if (gp_regs)
     *gp_regs = &regs;
@@ -294,6 +365,25 @@ void ThreadInfo::GetFloatingPointRegisters(void** fp_regs, size_t* size) {
     *fp_regs = &mcontext.fpregs;
   if (size)
     *size = sizeof(mcontext.fpregs);
+#elif defined(__riscv)
+# if __riscv_flen == 32
+  if (fp_regs)
+    *fp_regs = &mcontext.__fpregs.__f.__f;
+  if (size)
+    *size = sizeof(mcontext.__fpregs.__f.__f);
+# elif __riscv_flen == 64
+  if (fp_regs)
+    *fp_regs = &mcontext.__fpregs.__d.__f;
+  if (size)
+    *size = sizeof(mcontext.__fpregs.__d.__f);
+# elif __riscv_flen == 128
+  if (fp_regs)
+    *fp_regs = &mcontext.__fpregs.__q.__f;
+  if (size)
+    *size = sizeof(mcontext.__fpregs.__q.__f);
+# else
+#  error "Unexpected __riscv_flen"
+# endif
 #else
   if (fp_regs)
     *fp_regs = &fpregs;

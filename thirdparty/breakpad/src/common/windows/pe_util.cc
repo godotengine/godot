@@ -1,5 +1,4 @@
-// Copyright (c) 2019, Google Inc.
-// All rights reserved.
+// Copyright 2019 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -27,6 +26,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>  // Must come first
+#endif
+
 #include "pe_util.h"
 
 #include <windows.h>
@@ -35,6 +38,7 @@
 #include <ImageHlp.h>
 
 #include <functional>
+#include <memory>
 
 #include "common/windows/string_utils-inl.h"
 #include "common/windows/guid_string.h"
@@ -42,15 +46,19 @@
 namespace {
 
 /*
- * Not defined in WinNT.h for some reason. Definitions taken from:
- * http://uninformed.org/index.cgi?v=4&a=1&p=13
+ * Not defined in WinNT.h prior to SDK 10.0.20348.0 for some reason.
+ * Definitions taken from: http://uninformed.org/index.cgi?v=4&a=1&p=13
  *
  */
 typedef unsigned char UBYTE;
 
-#if !defined(_WIN64)
+#if !defined(UNW_FLAG_EHANDLER)
 #define UNW_FLAG_EHANDLER  0x01
+#endif
+#if !defined(UNW_FLAG_UHANDLER)
 #define UNW_FLAG_UHANDLER  0x02
+#endif
+#if !defined(UNW_FLAG_CHAININFO)
 #define UNW_FLAG_CHAININFO 0x04
 #endif
 

@@ -1,5 +1,4 @@
-// Copyright (c) 2006, Google Inc.
-// All rights reserved.
+// Copyright 2006 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -33,53 +32,45 @@
 //
 // Author: Dan Waylonis
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>  // Must come first
+#endif
+
+#include "common/mac/file_id.h"
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 
-#include "common/mac/file_id.h"
 #include "common/mac/macho_id.h"
+#include "common/scoped_ptr.h"
 
 using MacFileUtilities::MachoID;
 
 namespace google_breakpad {
-
-FileID::FileID(const char *path) {
+namespace mach_o {
+// Constructs a FileID given a path to a file
+FileID::FileID(const char* path) : memory_(nullptr), size_(0) {
   snprintf(path_, sizeof(path_), "%s", path);
 }
 
-bool FileID::FileIdentifier(unsigned char identifier[16]) {
-  int fd = open(path_, O_RDONLY);
-  if (fd == -1)
-    return false;
-
-  MD5Context md5;
-  MD5Init(&md5);
-
-  // Read 4k x 2 bytes at a time.  This is faster than just 4k bytes, but
-  // doesn't seem to be an unreasonable size for the stack.
-  unsigned char buffer[4096 * 2];
-  size_t buffer_size = sizeof(buffer);
-  while ((buffer_size = read(fd, buffer, buffer_size) > 0)) {
-    MD5Update(&md5, buffer, static_cast<unsigned>(buffer_size));
-  }
-
-  close(fd);
-  MD5Final(identifier, &md5);
-
-  return true;
-}
+// Constructs a FileID given the contents of a file and its size
+FileID::FileID(void* memory, size_t size)
+    : path_(), memory_(memory), size_(size) {}
 
 bool FileID::MachoIdentifier(cpu_type_t cpu_type,
                              cpu_subtype_t cpu_subtype,
                              unsigned char identifier[16]) {
-  MachoID macho(path_);
-
-  if (macho.UUIDCommand(cpu_type, cpu_subtype, identifier))
+  scoped_ptr<MachoID> macho;
+  if (memory_) {
+    macho.reset(new MachoID(memory_, size_));
+  } else {
+    macho.reset(new MachoID(path_));
+  }
+  if (macho->UUIDCommand(cpu_type, cpu_subtype, identifier))
     return true;
 
-  return macho.MD5(cpu_type, cpu_subtype, identifier);
+  return macho->MD5(cpu_type, cpu_subtype, identifier);
 }
 
 // static
@@ -103,4 +94,5 @@ void FileID::ConvertIdentifierToString(const unsigned char identifier[16],
   buffer[(buffer_idx < buffer_length) ? buffer_idx : buffer_idx - 1] = 0;
 }
 
+}  // namespace mach_o
 }  // namespace google_breakpad

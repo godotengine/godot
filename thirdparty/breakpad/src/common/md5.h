@@ -1,4 +1,4 @@
-// Copyright 2007 Google Inc. All Rights Reserved.
+// Copyright 2007 Google LLC
 // Author: liuli@google.com (Liu Li)
 #ifndef COMMON_MD5_H__
 #define COMMON_MD5_H__

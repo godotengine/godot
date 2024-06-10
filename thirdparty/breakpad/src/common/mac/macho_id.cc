@@ -1,5 +1,4 @@
-// Copyright (c) 2006, Google Inc.
-// All rights reserved.
+// Copyright 2006 Google LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -11,7 +10,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -34,14 +33,14 @@
 // Author: Dan Waylonis
 
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>  // Must come first
+#endif
+
 #include <fcntl.h>
 #include <mach-o/loader.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #include "common/mac/macho_id.h"
 #include "common/mac/macho_walker.h"
@@ -54,73 +53,18 @@ using google_breakpad::MD5Update;
 using google_breakpad::MD5Final;
 
 MachoID::MachoID(const char* path)
-   : memory_(0),
-     memory_size_(0),
-     crc_(0), 
-     md5_context_(), 
-     update_function_(NULL) {
+    : memory_(0), memory_size_(0), md5_context_(), update_function_(NULL) {
   snprintf(path_, sizeof(path_), "%s", path);
 }
 
-MachoID::MachoID(const char* path, void* memory, size_t size)
-   : memory_(memory),
-     memory_size_(size),
-     crc_(0), 
-     md5_context_(), 
-     update_function_(NULL) {
-  snprintf(path_, sizeof(path_), "%s", path);
-}
+MachoID::MachoID(void* memory, size_t size)
+    : path_(),
+      memory_(memory),
+      memory_size_(size),
+      md5_context_(),
+      update_function_(NULL) {}
 
-MachoID::~MachoID() {
-}
-
-// The CRC info is from http://en.wikipedia.org/wiki/Adler-32
-// With optimizations from http://www.zlib.net/
-
-// The largest prime smaller than 65536
-#define MOD_ADLER 65521
-// MAX_BLOCK is the largest n such that 255n(n+1)/2 + (n+1)(MAX_BLOCK-1) <= 2^32-1
-#define MAX_BLOCK 5552
-
-void MachoID::UpdateCRC(unsigned char* bytes, size_t size) {
-// Unrolled loops for summing
-#define DO1(buf,i)  {sum1 += (buf)[i]; sum2 += sum1;}
-#define DO2(buf,i)  DO1(buf,i); DO1(buf,i+1);
-#define DO4(buf,i)  DO2(buf,i); DO2(buf,i+2);
-#define DO8(buf,i)  DO4(buf,i); DO4(buf,i+4);
-#define DO16(buf)   DO8(buf,0); DO8(buf,8);
-  // Split up the crc
-  uint32_t sum1 = crc_ & 0xFFFF;
-  uint32_t sum2 = (crc_ >> 16) & 0xFFFF;
-
-  // Do large blocks
-  while (size >= MAX_BLOCK) {
-    size -= MAX_BLOCK;
-    int block_count = MAX_BLOCK / 16;
-    do {
-      DO16(bytes);
-      bytes += 16;
-    } while (--block_count);
-    sum1 %= MOD_ADLER;
-    sum2 %= MOD_ADLER;
-  }
-
-  // Do remaining bytes
-  if (size) {
-    while (size >= 16) {
-      size -= 16;
-      DO16(bytes);
-      bytes += 16;
-    }
-    while (size--) {
-      sum1 += *bytes++;
-      sum2 += sum1;
-    }
-    sum1 %= MOD_ADLER;
-    sum2 %= MOD_ADLER;
-    crc_ = (sum2 << 16) | sum1;
-  }
-}
+MachoID::~MachoID() {}
 
 void MachoID::UpdateMD5(unsigned char* bytes, size_t size) {
   MD5Update(&md5_context_, bytes, static_cast<unsigned>(size));
@@ -167,59 +111,6 @@ bool MachoID::UUIDCommand(cpu_type_t cpu_type,
   }
 
   return false;
-}
-
-bool MachoID::IDCommand(cpu_type_t cpu_type,
-                        cpu_subtype_t cpu_subtype,
-                        unsigned char identifier[16]) {
-  struct dylib_command dylib_cmd;
-  dylib_cmd.cmd = 0;
-  if (!WalkHeader(cpu_type, cpu_subtype, IDWalkerCB, &dylib_cmd))
-    return false;
-
-  // If we found the command, we'll have initialized the dylib_command
-  // structure
-  if (dylib_cmd.cmd == LC_ID_DYLIB) {
-    // Take the hashed filename, version, and compatability version bytes
-    // to form the first 12 bytes, pad the rest with zeros
-
-    // create a crude hash of the filename to generate the first 4 bytes
-    identifier[0] = 0;
-    identifier[1] = 0;
-    identifier[2] = 0;
-    identifier[3] = 0;
-
-    for (int j = 0, i = (int)strlen(path_)-1; i>=0 && path_[i]!='/'; ++j, --i) {
-      identifier[j%4] += path_[i];
-    }
-
-    identifier[4] = (dylib_cmd.dylib.current_version >> 24) & 0xFF;
-    identifier[5] = (dylib_cmd.dylib.current_version >> 16) & 0xFF;
-    identifier[6] = (dylib_cmd.dylib.current_version >> 8) & 0xFF;
-    identifier[7] = dylib_cmd.dylib.current_version & 0xFF;
-    identifier[8] = (dylib_cmd.dylib.compatibility_version >> 24) & 0xFF;
-    identifier[9] = (dylib_cmd.dylib.compatibility_version >> 16) & 0xFF;
-    identifier[10] = (dylib_cmd.dylib.compatibility_version >> 8) & 0xFF;
-    identifier[11] = dylib_cmd.dylib.compatibility_version & 0xFF;
-    identifier[12] = (cpu_type >> 24) & 0xFF;
-    identifier[13] = (cpu_type >> 16) & 0xFF;
-    identifier[14] = (cpu_type >> 8) & 0xFF;
-    identifier[15] = cpu_type & 0xFF;
-
-    return true;
-  }
-
-  return false;
-}
-
-uint32_t MachoID::Adler32(cpu_type_t cpu_type, cpu_subtype_t cpu_subtype) {
-  update_function_ = &MachoID::UpdateCRC;
-  crc_ = 0;
-
-  if (!WalkHeader(cpu_type, cpu_subtype, WalkerCB, this))
-    return 0;
-
-  return crc_;
 }
 
 bool MachoID::MD5(cpu_type_t cpu_type, cpu_subtype_t cpu_subtype, unsigned char identifier[16]) {
@@ -346,24 +237,4 @@ bool MachoID::UUIDWalkerCB(MachoWalker* walker, load_command* cmd, off_t offset,
   // Continue processing
   return true;
 }
-
-// static
-bool MachoID::IDWalkerCB(MachoWalker* walker, load_command* cmd, off_t offset,
-                         bool swap, void* context) {
-  if (cmd->cmd == LC_ID_DYLIB) {
-    struct dylib_command* dylib_cmd = (struct dylib_command*)context;
-
-    if (!walker->ReadBytes(dylib_cmd, sizeof(struct dylib_command), offset))
-      return false;
-
-    if (swap)
-      breakpad_swap_dylib_command(dylib_cmd);
-
-    return false;
-  }
-
-  // Continue processing
-  return true;
-}
-
 }  // namespace MacFileUtilities
