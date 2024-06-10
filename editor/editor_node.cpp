@@ -7035,7 +7035,7 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_OVERRIDE("editor/take_screenshot", "macos", KeyModifierMask::META | Key::F12);
 	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/take_screenshot"), EDITOR_SCREENSHOT);
 
-	settings_menu->set_item_tooltip(-1, TTR("Screenshots are stored in the Editor Data/Settings Folder."));
+	settings_menu->set_item_tooltip(-1, TTR("Screenshots are stored in the user data folder (\"user://\")."));
 
 #ifndef ANDROID_ENABLED
 	ED_SHORTCUT_AND_COMMAND("editor/fullscreen_mode", TTR("Toggle Fullscreen"), KeyModifierMask::SHIFT | Key::F11);
