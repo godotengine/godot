@@ -396,6 +396,10 @@
 		<member name="editors/animation/autorename_animation_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], automatically updates animation tracks' target paths when renaming or reparenting nodes in the Scene tree dock.
 		</member>
+		<member name="editors/animation/confirm_insert_track" type="bool" setter="" getter="">
+			If [code]true[/code], display a confirmation dialog when adding a new track to an animation by pressing the "key" icon next to a property. Holding Shift will bypass the dialog.
+			If [code]false[/code], the behavior is reversed, i.e. the dialog only appears when Shift is held.
+		</member>
 		<member name="editors/animation/default_create_bezier_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], create a Bezier track instead of a standard track when pressing the "key" icon next to a property. Bezier tracks provide more control over animation curves, but are more difficult to adjust quickly.
 		</member>
