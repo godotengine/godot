@@ -322,7 +322,7 @@ AudioStreamMicrophone::AudioStreamMicrophone() {
 }
 
 int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_frames) {
-	AudioDriver::get_singleton()->lock();
+	AudioDriver::get_singleton()->input_lock();
 
 	Vector<int32_t> buf = AudioDriver::get_singleton()->get_input_buffer();
 	unsigned int input_size = AudioDriver::get_singleton()->get_input_size();
@@ -369,8 +369,7 @@ int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fra
 	}
 #endif
 
-	AudioDriver::get_singleton()->unlock();
-
+	AudioDriver::get_singleton()->input_unlock();
 	return mixed_frames;
 }
 

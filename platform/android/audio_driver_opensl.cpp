@@ -44,7 +44,7 @@ void AudioDriverOpenSL::_buffer_callback(
 	if (pause) {
 		mix = false;
 	} else {
-		mix = mutex.try_lock();
+		mix = output_mutex.try_lock();
 	}
 
 	if (mix) {
@@ -57,7 +57,7 @@ void AudioDriverOpenSL::_buffer_callback(
 	}
 
 	if (mix) {
-		mutex.unlock();
+		output_mutex.unlock();
 	}
 
 	const int32_t *src_buff = mixdown_buffer;
@@ -184,13 +184,13 @@ void AudioDriverOpenSL::start() {
 }
 
 void AudioDriverOpenSL::_record_buffer_callback(SLAndroidSimpleBufferQueueItf queueItf) {
-	lock();
+	input_lock();
 	for (int i = 0; i < rec_buffer.size(); i++) {
 		int32_t sample = rec_buffer[i] << 16;
 		input_buffer_write(sample);
 		input_buffer_write(sample); // call twice to convert to Stereo
 	}
-	unlock();
+	input_unlock();
 
 	SLresult res = (*recordBufferQueueItf)->Enqueue(recordBufferQueueItf, rec_buffer.ptrw(), rec_buffer.size() * sizeof(int16_t));
 	ERR_FAIL_COND(res != SL_RESULT_SUCCESS);
@@ -294,6 +294,14 @@ Error AudioDriverOpenSL::input_stop() {
 	return OK;
 }
 
+void AudioDriverOpenSL::input_lock() {
+	input_mutex.lock();
+}
+
+void AudioDriverOpenSL::input_unlock() {
+	input_mutex.unlock();
+}
+
 int AudioDriverOpenSL::get_mix_rate() const {
 	return 44100; // hardcoded for Android, as selected by SL_SAMPLINGRATE_44_1
 }
@@ -303,15 +311,11 @@ AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const {
 }
 
 void AudioDriverOpenSL::lock() {
-	if (active) {
-		mutex.lock();
-	}
+	output_mutex.lock();
 }
 
 void AudioDriverOpenSL::unlock() {
-	if (active) {
-		mutex.unlock();
-	}
+	output_mutex.unlock();
 }
 
 void AudioDriverOpenSL::finish() {

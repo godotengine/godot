@@ -111,6 +111,9 @@ public:
 	virtual Error input_start() { return FAILED; }
 	virtual Error input_stop() { return FAILED; }
 
+	virtual void input_lock() { lock(); }
+	virtual void input_unlock() { unlock(); }
+
 	virtual PackedStringArray get_input_device_list();
 	virtual String get_input_device() { return "Default"; }
 	virtual void set_input_device(const String &p_name) {}
