@@ -2669,6 +2669,7 @@ bool Tree::_is_sibling_branch_selected(TreeItem *p_from) const {
 }
 
 void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev, bool *r_in_range, bool p_force_deselect) {
+	ERR_FAIL_INDEX_MSG(p_col, columns.size(), "Tried to select an invalid column index. This is an internal method, a bug exists in the calling code.");
 	popup_editor->hide();
 
 	TreeItem::Cell &selected_cell = p_selected->cells.write[p_col];
@@ -3354,15 +3355,15 @@ void Tree::_go_up() {
 		prev = selected_item->get_prev_visible();
 	}
 
+	int col = selected_col < 0 ? 0 : selected_col;
 	if (select_mode == SELECT_MULTI) {
 		if (!prev) {
 			return;
 		}
 
-		select_single_item(prev, get_root(), selected_col);
+		select_single_item(prev, get_root(), col);
 		queue_redraw();
 	} else {
-		int col = selected_col < 0 ? 0 : selected_col;
 		while (prev && !prev->cells[col].selectable) {
 			prev = prev->get_prev_visible();
 		}
@@ -3386,16 +3387,15 @@ void Tree::_go_down() {
 		next = selected_item->get_next_visible();
 	}
 
+	int col = selected_col < 0 ? 0 : selected_col;
 	if (select_mode == SELECT_MULTI) {
 		if (!next) {
 			return;
 		}
 
-		select_single_item(next, get_root(), selected_col);
+		select_single_item(next, get_root(), col);
 		queue_redraw();
 	} else {
-		int col = selected_col < 0 ? 0 : selected_col;
-
 		while (next && !next->cells[col].selectable) {
 			next = next->get_next_visible();
 		}
