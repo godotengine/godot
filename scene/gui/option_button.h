@@ -36,6 +36,14 @@
 #include "scene/property_list_helper.h"
 
 class OptionButton : public Button {
+public:
+	enum Type {
+		DROPDOWN,
+		HYBRID,
+		CAROUSEL,
+	};
+
+private:
 	GDCLASS(OptionButton, Button);
 
 	bool disable_shortcuts = false;
@@ -47,6 +55,11 @@ class OptionButton : public Button {
 	bool allow_reselect = false;
 	bool initialized = false;
 	int queued_current = -1;
+	MouseButton current_mouse_button = MouseButton::NONE;
+	bool carousel_wraparound = true;
+	Type type = DROPDOWN;
+	DrawMode left_arrow_mode = DRAW_NORMAL;
+	DrawMode right_arrow_mode = DRAW_NORMAL;
 
 	struct ThemeCache {
 		Ref<StyleBox> normal;
@@ -61,6 +74,16 @@ class OptionButton : public Button {
 		int h_separation = 0;
 
 		Ref<Texture2D> arrow_icon;
+		Ref<Texture2D> left_arrow_normal_icon;
+		Ref<Texture2D> left_arrow_hover_icon;
+		Ref<Texture2D> left_arrow_hover_pressed_icon;
+		Ref<Texture2D> left_arrow_pressed_icon;
+		Ref<Texture2D> left_arrow_disabled_icon;
+		Ref<Texture2D> right_arrow_normal_icon;
+		Ref<Texture2D> right_arrow_hover_icon;
+		Ref<Texture2D> right_arrow_hover_pressed_icon;
+		Ref<Texture2D> right_arrow_pressed_icon;
+		Ref<Texture2D> right_arrow_disabled_icon;
 		int arrow_margin = 0;
 		int modulate_arrow = 0;
 	} theme_cache;
@@ -74,6 +97,25 @@ class OptionButton : public Button {
 	void _select_int(int p_which);
 	void _refresh_size_cache();
 	void _dummy_setter() {} // Stub for PropertyListHelper (_set() doesn't use it).
+
+	bool _is_over_arrow(bool p_arrow, Vector2 p_pos);
+	void _set_arrow_mode(bool p_arrow, DrawMode p_mode);
+
+	bool _is_arrow_hovered(bool p_arrow);
+	bool _is_arrow_pressed(bool p_arrow);
+	bool _is_arrow_disabled(bool p_arrow);
+	void _set_arrow_pressed(bool p_arrow, bool p_pressed);
+	void _set_arrow_hovered(bool p_arrow, bool p_hovered);
+	void _set_arrow_disabled(bool p_arrow, bool p_disabled);
+
+	Ref<Texture2D> _get_arrow_icon(bool p_arrow);
+
+	void _on_left_pressed();
+	void _on_right_pressed();
+	void _select_previous(bool p_emit);
+	void _select_next(bool p_emit);
+	bool _has_next_selectable_item();
+	bool _has_previous_selectable_item();
 
 	virtual void pressed() override;
 
@@ -91,6 +133,7 @@ protected:
 	static void _bind_methods();
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	// ATTENTION: This is used by the POT generator's scene parser. If the number of properties returned by `_get_items()` ever changes,
@@ -143,8 +186,16 @@ public:
 
 	void set_disable_shortcuts(bool p_disabled);
 
+	void set_carousel_wraparound(bool p_carousel_wraparound);
+	bool is_carousel_wraparound();
+
+	void set_type(Type p_type);
+	Type get_type();
+
 	OptionButton(const String &p_text = String());
 	~OptionButton();
 };
+
+VARIANT_ENUM_CAST(OptionButton::Type);
 
 #endif // OPTION_BUTTON_H

@@ -35,6 +35,8 @@
 #include "scene/theme/theme_db.h"
 
 static const int NONE_SELECTED = -1;
+static const bool LEFT = false;
+static const bool RIGHT = true;
 
 void OptionButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
@@ -77,7 +79,16 @@ void OptionButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
 			_refresh_size_cache();
-			if (has_theme_icon(SNAME("arrow"))) {
+			if (type != DROPDOWN) {
+				Ref<Texture2D> left_arrow_icon = _get_arrow_icon(LEFT);
+				Ref<Texture2D> right_arrow_icon = _get_arrow_icon(RIGHT);
+				if (left_arrow_icon.is_valid()) {
+					_set_internal_margin(SIDE_LEFT, left_arrow_icon->get_width() + theme_cache.arrow_margin);
+				}
+				if (right_arrow_icon.is_valid()) {
+					_set_internal_margin(SIDE_RIGHT, right_arrow_icon->get_width() + theme_cache.arrow_margin);
+				}
+			} else if (has_theme_icon(SNAME("arrow"))) {
 				if (is_layout_rtl()) {
 					_set_internal_margin(SIDE_LEFT, theme_cache.arrow_icon->get_width());
 				} else {
@@ -87,44 +98,108 @@ void OptionButton::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (!has_theme_icon(SNAME("arrow"))) {
-				return;
-			}
-
 			RID ci = get_canvas_item();
-			Color clr = Color(1, 1, 1);
-			if (theme_cache.modulate_arrow) {
-				switch (get_draw_mode()) {
-					case DRAW_PRESSED:
-						clr = theme_cache.font_pressed_color;
-						break;
-					case DRAW_HOVER:
-						clr = theme_cache.font_hover_color;
-						break;
-					case DRAW_HOVER_PRESSED:
-						clr = theme_cache.font_hover_pressed_color;
-						break;
-					case DRAW_DISABLED:
-						clr = theme_cache.font_disabled_color;
-						break;
-					default:
-						if (has_focus()) {
-							clr = theme_cache.font_focus_color;
-						} else {
-							clr = theme_cache.font_color;
+			if (is_disabled()) {
+				_set_arrow_disabled(LEFT, true);
+				_set_arrow_disabled(RIGHT, true);
+			}
+			if (type != DROPDOWN) {
+				Ref<Texture2D> left_arrow_icon = _get_arrow_icon(LEFT);
+				Ref<Texture2D> right_arrow_icon = _get_arrow_icon(RIGHT);
+				if (left_arrow_icon.is_valid()) {
+					Color clr = Color(1, 1, 1);
+					if (theme_cache.modulate_arrow) {
+						switch (left_arrow_mode) {
+							case DRAW_PRESSED:
+								clr = theme_cache.font_pressed_color;
+								break;
+							case DRAW_HOVER:
+								clr = theme_cache.font_hover_color;
+								break;
+							case DRAW_HOVER_PRESSED:
+								clr = theme_cache.font_hover_pressed_color;
+								break;
+							case DRAW_DISABLED:
+								clr = theme_cache.font_disabled_color;
+								break;
+							default:
+								clr = theme_cache.font_color;
 						}
+					}
+					Size2 size = get_size();
+					Point2 ofs = Point2(theme_cache.arrow_margin,
+							int(Math::abs((size.height - left_arrow_icon->get_height()) / 2)));
+					left_arrow_icon->draw(ci, ofs, clr);
 				}
-			}
-
-			Size2 size = get_size();
-
-			Point2 ofs;
-			if (is_layout_rtl()) {
-				ofs = Point2(theme_cache.arrow_margin, int(Math::abs((size.height - theme_cache.arrow_icon->get_height()) / 2)));
+				if (right_arrow_icon.is_valid()) {
+					Color clr = Color(1, 1, 1);
+					if (theme_cache.modulate_arrow) {
+						switch (right_arrow_mode) {
+							case DRAW_PRESSED:
+								clr = theme_cache.font_pressed_color;
+								break;
+							case DRAW_HOVER:
+								clr = theme_cache.font_hover_color;
+								break;
+							case DRAW_HOVER_PRESSED:
+								clr = theme_cache.font_hover_pressed_color;
+								break;
+							case DRAW_DISABLED:
+								clr = theme_cache.font_disabled_color;
+								break;
+							default:
+								clr = theme_cache.font_color;
+						}
+					}
+					Size2 size = get_size();
+					Point2 ofs = Point2(size.x - right_arrow_icon->get_width() - theme_cache.arrow_margin,
+							int(Math::abs((size.height - right_arrow_icon->get_height()) / 2)));
+					right_arrow_icon->draw(ci, ofs, clr);
+				}
 			} else {
-				ofs = Point2(size.width - theme_cache.arrow_icon->get_width() - theme_cache.arrow_margin, int(Math::abs((size.height - theme_cache.arrow_icon->get_height()) / 2)));
+				if (!has_theme_icon(SNAME("arrow"))) {
+					return;
+				}
+
+				Color clr = Color(1, 1, 1);
+				if (theme_cache.modulate_arrow) {
+					switch (get_draw_mode()) {
+						case DRAW_PRESSED:
+							clr = theme_cache.font_pressed_color;
+							break;
+						case DRAW_HOVER:
+							clr = theme_cache.font_hover_color;
+							break;
+						case DRAW_HOVER_PRESSED:
+							clr = theme_cache.font_hover_pressed_color;
+							break;
+						case DRAW_DISABLED:
+							clr = theme_cache.font_disabled_color;
+							break;
+						default:
+							if (has_focus()) {
+								clr = theme_cache.font_focus_color;
+							} else {
+								clr = theme_cache.font_color;
+							}
+					}
+				}
+
+				Size2 size = get_size();
+
+				Point2 ofs;
+				if (is_layout_rtl()) {
+					ofs = Point2(theme_cache.arrow_margin, int(Math::abs((size.height - theme_cache.arrow_icon->get_height()) / 2)));
+				} else {
+					ofs = Point2(size.width - theme_cache.arrow_icon->get_width() - theme_cache.arrow_margin, int(Math::abs((size.height - theme_cache.arrow_icon->get_height()) / 2)));
+				}
+				theme_cache.arrow_icon->draw(ci, ofs, clr);
 			}
-			theme_cache.arrow_icon->draw(ci, ofs, clr);
+		} break;
+
+		case NOTIFICATION_MOUSE_EXIT: {
+			_set_arrow_hovered(LEFT, false);
+			_set_arrow_hovered(RIGHT, false);
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -133,13 +208,31 @@ void OptionButton::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			if (has_theme_icon(SNAME("arrow"))) {
-				if (is_layout_rtl()) {
-					_set_internal_margin(SIDE_LEFT, theme_cache.arrow_icon->get_width());
-					_set_internal_margin(SIDE_RIGHT, 0.f);
+			if (type != DROPDOWN) {
+				Ref<Texture2D> left_arrow_icon = _get_arrow_icon(LEFT);
+				Ref<Texture2D> right_arrow_icon = _get_arrow_icon(RIGHT);
+				if (left_arrow_icon.is_valid()) {
+					_set_internal_margin(SIDE_LEFT, left_arrow_icon->get_width() + theme_cache.arrow_margin);
 				} else {
 					_set_internal_margin(SIDE_LEFT, 0.f);
-					_set_internal_margin(SIDE_RIGHT, theme_cache.arrow_icon->get_width());
+				}
+				if (right_arrow_icon.is_valid()) {
+					_set_internal_margin(SIDE_RIGHT, right_arrow_icon->get_width() + theme_cache.arrow_margin);
+				} else {
+					_set_internal_margin(SIDE_RIGHT, 0.f);
+				}
+			} else {
+				if (has_theme_icon(SNAME("arrow"))) {
+					if (is_layout_rtl()) {
+						_set_internal_margin(SIDE_LEFT, theme_cache.arrow_icon->get_width());
+						_set_internal_margin(SIDE_RIGHT, 0.f);
+					} else {
+						_set_internal_margin(SIDE_LEFT, 0.f);
+						_set_internal_margin(SIDE_RIGHT, theme_cache.arrow_icon->get_width());
+					}
+				} else {
+					_set_internal_margin(SIDE_LEFT, 0.f);
+					_set_internal_margin(SIDE_RIGHT, 0.f);
 				}
 			}
 			_refresh_size_cache();
@@ -186,12 +279,20 @@ void OptionButton::_selected(int p_which) {
 }
 
 void OptionButton::pressed() {
-	if (popup->is_visible()) {
-		popup->hide();
-		return;
-	}
+	if (type == CAROUSEL) {
+		if (current_mouse_button == MouseButton::RIGHT) {
+			_select_previous(true);
+		} else {
+			_select_next(true);
+		}
+	} else {
+		if (popup->is_visible()) {
+			popup->hide();
+			return;
+		}
 
-	show_popup();
+		show_popup();
+	}
 }
 
 void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id) {
@@ -394,6 +495,14 @@ void OptionButton::_select(int p_which, bool p_emit) {
 		set_icon(popup->get_item_icon(current));
 	}
 
+	if (is_layout_rtl()) {
+		_set_arrow_disabled(LEFT, !_has_next_selectable_item());
+		_set_arrow_disabled(RIGHT, !_has_previous_selectable_item());
+	} else {
+		_set_arrow_disabled(LEFT, !_has_previous_selectable_item());
+		_set_arrow_disabled(RIGHT, !_has_next_selectable_item());
+	}
+
 	if (is_inside_tree() && p_emit) {
 		emit_signal(SNAME("item_selected"), current);
 	}
@@ -504,6 +613,9 @@ void OptionButton::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "text" || p_property.name == "icon") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
+	if (p_property.name == "carousel_wraparound" && type == DROPDOWN) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
 }
 
 void OptionButton::_bind_methods() {
@@ -544,10 +656,20 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_reselect", "allow"), &OptionButton::set_allow_reselect);
 	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &OptionButton::get_allow_reselect);
 	ClassDB::bind_method(D_METHOD("set_disable_shortcuts", "disabled"), &OptionButton::set_disable_shortcuts);
+	ClassDB::bind_method(D_METHOD("set_carousel_wraparound", "carousel_wraparound"), &OptionButton::set_carousel_wraparound);
+	ClassDB::bind_method(D_METHOD("is_carousel_wraparound"), &OptionButton::is_carousel_wraparound);
+	ClassDB::bind_method(D_METHOD("set_type", "type"), &OptionButton::set_type);
+	ClassDB::bind_method(D_METHOD("get_type"), &OptionButton::get_type);
+
+	BIND_ENUM_CONSTANT(DROPDOWN);
+	BIND_ENUM_CONSTANT(HYBRID);
+	BIND_ENUM_CONSTANT(CAROUSEL);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_to_longest_item"), "set_fit_to_longest_item", "is_fit_to_longest_item");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "carousel_wraparound"), "set_carousel_wraparound", "is_carousel_wraparound");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "type", PROPERTY_HINT_ENUM, "Dropdown,Hybrid,Carousel"), "set_type", "get_type");
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
@@ -565,6 +687,16 @@ void OptionButton::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, h_separation);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, arrow_icon, "arrow");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, left_arrow_normal_icon, "left_arrow_normal");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, left_arrow_hover_icon, "left_arrow_hover");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, left_arrow_hover_pressed_icon, "left_arrow_hover_pressed");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, left_arrow_pressed_icon, "left_arrow_pressed");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, left_arrow_disabled_icon, "left_arrow_disabled");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, right_arrow_normal_icon, "right_arrow_normal");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, right_arrow_hover_icon, "right_arrow_hover");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, right_arrow_hover_pressed_icon, "right_arrow_hover_pressed");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, right_arrow_pressed_icon, "right_arrow_pressed");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, right_arrow_disabled_icon, "right_arrow_disabled");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, arrow_margin);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, modulate_arrow);
 
@@ -583,6 +715,33 @@ void OptionButton::set_disable_shortcuts(bool p_disabled) {
 	disable_shortcuts = p_disabled;
 }
 
+void OptionButton::set_type(OptionButton::Type p_type) {
+	bool initial = type;
+	type = p_type;
+	set_toggle_mode(type != CAROUSEL);
+	_select(current);
+	if (initial != p_type) {
+		notification(NOTIFICATION_THEME_CHANGED);
+		queue_redraw();
+	}
+	if (type != DROPDOWN && get_selected() == NONE_SELECTED && get_item_count() > 0) {
+		_select_next(true);
+	}
+}
+
+OptionButton::Type OptionButton::get_type() {
+	return type;
+}
+
+void OptionButton::set_carousel_wraparound(bool p_carousel_wraparound) {
+	carousel_wraparound = p_carousel_wraparound;
+	_select(current);
+}
+
+bool OptionButton::is_carousel_wraparound() {
+	return carousel_wraparound;
+}
+
 OptionButton::OptionButton(const String &p_text) :
 		Button(p_text) {
 	set_toggle_mode(true);
@@ -598,6 +757,272 @@ OptionButton::OptionButton(const String &p_text) :
 	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed).bind(false));
 
 	property_helper.setup_for_instance(base_property_helper, this);
+}
+
+// assumes p_pos is already inside the control
+bool OptionButton::_is_over_arrow(bool p_arrow, Vector2 p_pos) {
+	return p_arrow ? (p_pos.x > get_size().x - _get_arrow_icon(p_arrow)->get_size().x - theme_cache.arrow_margin) : (p_pos.x < _get_arrow_icon(p_arrow)->get_size().x + theme_cache.arrow_margin);
+}
+
+void OptionButton::_set_arrow_mode(bool p_arrow, DrawMode p_mode) {
+	DrawMode initial = p_arrow ? right_arrow_mode : left_arrow_mode;
+	if (p_arrow) {
+		right_arrow_mode = p_mode;
+	} else {
+		left_arrow_mode = p_mode;
+	}
+	if (initial != p_mode) {
+		queue_redraw();
+	}
+}
+
+bool OptionButton::_is_arrow_hovered(bool p_arrow) {
+	DrawMode mode = p_arrow ? right_arrow_mode : left_arrow_mode;
+	return mode == DRAW_HOVER || mode == DRAW_HOVER_PRESSED;
+}
+
+bool OptionButton::_is_arrow_pressed(bool p_arrow) {
+	DrawMode mode = p_arrow ? right_arrow_mode : left_arrow_mode;
+	return mode == DRAW_PRESSED || mode == DRAW_HOVER_PRESSED;
+}
+
+bool OptionButton::_is_arrow_disabled(bool p_arrow) {
+	DrawMode mode = p_arrow ? right_arrow_mode : left_arrow_mode;
+	return mode == DRAW_DISABLED;
+}
+
+void OptionButton::_set_arrow_pressed(bool p_arrow, bool p_pressed) {
+	if ((p_arrow ? right_arrow_mode : left_arrow_mode) == DRAW_DISABLED) {
+		return;
+	}
+	DrawMode hover = p_pressed ? DRAW_HOVER_PRESSED : DRAW_HOVER;
+	DrawMode no_hover = p_pressed ? DRAW_PRESSED : DRAW_NORMAL;
+	_set_arrow_mode(p_arrow, _is_arrow_hovered(p_arrow) ? hover : no_hover);
+}
+
+void OptionButton::_set_arrow_hovered(bool p_arrow, bool p_hovered) {
+	if ((p_arrow ? right_arrow_mode : left_arrow_mode) == DRAW_DISABLED) {
+		return;
+	}
+	DrawMode press = p_hovered ? DRAW_HOVER_PRESSED : DRAW_PRESSED;
+	DrawMode no_press = p_hovered ? DRAW_HOVER : DRAW_NORMAL;
+	_set_arrow_mode(p_arrow, _is_arrow_pressed(p_arrow) ? press : no_press);
+}
+
+void OptionButton::_set_arrow_disabled(bool p_arrow, bool p_disabled) {
+	DrawMode initial = p_arrow ? right_arrow_mode : left_arrow_mode;
+	DrawMode not_disabled = DRAW_NORMAL;
+	if (initial != DRAW_DISABLED) {
+		not_disabled = initial;
+	}
+	_set_arrow_mode(p_arrow, p_disabled ? DRAW_DISABLED : not_disabled);
+}
+
+Ref<Texture2D> OptionButton::_get_arrow_icon(bool p_arrow) {
+	if (p_arrow) {
+		switch (right_arrow_mode) {
+			default:
+			case DRAW_NORMAL:
+				return theme_cache.right_arrow_normal_icon;
+			case DRAW_HOVER:
+				return theme_cache.right_arrow_hover_icon;
+			case DRAW_HOVER_PRESSED:
+				return theme_cache.right_arrow_hover_pressed_icon;
+			case DRAW_PRESSED:
+				return theme_cache.right_arrow_pressed_icon;
+			case DRAW_DISABLED:
+				return theme_cache.right_arrow_disabled_icon;
+		}
+	} else {
+		switch (left_arrow_mode) {
+			default:
+			case DRAW_NORMAL:
+				return theme_cache.left_arrow_normal_icon;
+			case DRAW_HOVER:
+				return theme_cache.left_arrow_hover_icon;
+			case DRAW_HOVER_PRESSED:
+				return theme_cache.left_arrow_hover_pressed_icon;
+			case DRAW_PRESSED:
+				return theme_cache.left_arrow_pressed_icon;
+			case DRAW_DISABLED:
+				return theme_cache.left_arrow_disabled_icon;
+		}
+	}
+}
+
+void OptionButton::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	if (type == DROPDOWN) {
+		Button::gui_input(p_event);
+		return;
+	}
+
+	if (is_disabled()) {
+		Button::gui_input(p_event);
+		return;
+	}
+
+	Ref<InputEventMouseMotion> mouse_motion = p_event;
+	if (mouse_motion.is_valid()) {
+		Vector2 pos = mouse_motion->get_position();
+		_set_arrow_hovered(LEFT, _is_over_arrow(LEFT, pos));
+		_set_arrow_hovered(RIGHT, _is_over_arrow(RIGHT, pos));
+		return;
+	}
+
+	bool pressed_left = p_event->is_action("ui_left") && !p_event->is_echo();
+	bool pressed_right = p_event->is_action("ui_right") && !p_event->is_echo();
+
+	if (pressed_left || pressed_right) {
+		bool pressed = p_event->is_pressed();
+
+		_set_arrow_pressed(LEFT, pressed_left && pressed);
+		_set_arrow_pressed(RIGHT, pressed_right && pressed);
+
+		if (pressed) {
+			// we only want to register the press when we release
+			if (get_action_mode() == ACTION_MODE_BUTTON_RELEASE) {
+				// required so that focus can leave if an arrow is disabled
+				if (!((pressed_left && _is_arrow_disabled(LEFT)) || (pressed_right && _is_arrow_disabled(RIGHT)))) {
+					accept_event();
+				}
+				return;
+			}
+		} else {
+			if (get_action_mode() == ACTION_MODE_BUTTON_PRESS) {
+				accept_event();
+				return;
+			}
+		}
+	}
+
+	Ref<InputEventMouseButton> mouse_button = p_event;
+	bool button_masked = mouse_button.is_valid() &&
+			((int)mouse_button_to_mask(mouse_button->get_button_index()) & (int)get_button_mask()) != 0;
+
+	if (button_masked) {
+		current_mouse_button = mouse_button->get_button_index();
+		bool pressed = mouse_button->is_pressed();
+		if (_is_over_arrow(LEFT, mouse_button->get_position())) {
+			pressed_left = true;
+		}
+		if (_is_over_arrow(RIGHT, mouse_button->get_position())) {
+			pressed_right = true;
+		}
+		_set_arrow_pressed(LEFT, pressed_left && pressed);
+		_set_arrow_pressed(RIGHT, pressed_right && pressed);
+		if (get_action_mode() == ACTION_MODE_BUTTON_PRESS) {
+			pressed = !pressed;
+		}
+		if (pressed && (pressed_left || pressed_right)) {
+			// wait for release
+			accept_event();
+			return;
+		}
+	}
+
+	if (pressed_left) {
+		accept_event();
+		if (!_is_arrow_disabled(LEFT)) {
+			_on_left_pressed();
+		}
+	} else if (pressed_right) {
+		accept_event();
+		if (!_is_arrow_disabled(RIGHT)) {
+			_on_right_pressed();
+		}
+	} else {
+		Button::gui_input(p_event);
+	}
+}
+
+void OptionButton::_on_left_pressed() {
+	if (is_layout_rtl()) {
+		_select_next(true);
+	} else {
+		_select_previous(true);
+	}
+}
+
+void OptionButton::_on_right_pressed() {
+	if (is_layout_rtl()) {
+		_select_previous(true);
+	} else {
+		_select_next(true);
+	}
+}
+
+void OptionButton::_select_previous(bool p_emit) {
+	int count = get_item_count();
+	if (carousel_wraparound) {
+		if (!has_selectable_items()) {
+			return;
+		}
+		int start_idx = current == NONE_SELECTED ? 0 : current;
+		for (int i = (start_idx - 1 + count) % count; i != start_idx; i = (i - 1 + count) % count) {
+			if (!popup->is_item_disabled(i) && !popup->is_item_separator(i)) {
+				_select(i, p_emit);
+				return;
+			}
+		}
+	} else {
+		for (int i = current - 1; i >= 0; i--) {
+			if (!popup->is_item_disabled(i) && !popup->is_item_separator(i)) {
+				_select(i, p_emit);
+				return;
+			}
+		}
+	}
+}
+
+void OptionButton::_select_next(bool p_emit) {
+	int count = get_item_count();
+	if (carousel_wraparound) {
+		if (!has_selectable_items()) {
+			return;
+		}
+		int start_idx = current;
+		for (int i = (start_idx + 1) % count; i != start_idx; i = (i + 1) % count) {
+			if (!popup->is_item_disabled(i) && !popup->is_item_separator(i)) {
+				_select(i, p_emit);
+				return;
+			}
+		}
+	} else {
+		for (int i = current + 1; i < count; i++) {
+			if (!popup->is_item_disabled(i) && !popup->is_item_separator(i)) {
+				_select(i, p_emit);
+				return;
+			}
+		}
+	}
+}
+
+bool OptionButton::_has_next_selectable_item() {
+	if (carousel_wraparound) {
+		return has_selectable_items();
+	} else {
+		for (int i = current + 1; i < get_item_count(); i++) {
+			if (!popup->is_item_disabled(i) && !popup->is_item_separator(i)) {
+				return true;
+			}
+		}
+		return false;
+	}
+}
+
+bool OptionButton::_has_previous_selectable_item() {
+	if (carousel_wraparound) {
+		return has_selectable_items();
+	} else {
+		for (int i = current - 1; i >= 0; i--) {
+			if (!popup->is_item_disabled(i) && !popup->is_item_separator(i)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
 
 OptionButton::~OptionButton() {

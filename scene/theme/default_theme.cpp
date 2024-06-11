@@ -247,6 +247,16 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("disabled_mirrored", "OptionButton", sb_optbutton_disabled_mirrored);
 
 	theme->set_icon("arrow", "OptionButton", icons["option_button_arrow"]);
+	theme->set_icon("left_arrow_normal", "OptionButton", icons["arrow_left"]);
+	theme->set_icon("left_arrow_hover", "OptionButton", icons["arrow_left"]);
+	theme->set_icon("left_arrow_hover_pressed", "OptionButton", icons["arrow_left"]);
+	theme->set_icon("left_arrow_pressed", "OptionButton", icons["arrow_left"]);
+	theme->set_icon("left_arrow_disabled", "OptionButton", icons["arrow_left"]);
+	theme->set_icon("right_arrow_normal", "OptionButton", icons["arrow_right"]);
+	theme->set_icon("right_arrow_hover", "OptionButton", icons["arrow_right"]);
+	theme->set_icon("right_arrow_hover_pressed", "OptionButton", icons["arrow_right"]);
+	theme->set_icon("right_arrow_pressed", "OptionButton", icons["arrow_right"]);
+	theme->set_icon("right_arrow_disabled", "OptionButton", icons["arrow_right"]);
 
 	theme->set_font("font", "OptionButton", Ref<Font>());
 	theme->set_font_size("font_size", "OptionButton", -1);
