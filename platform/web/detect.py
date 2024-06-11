@@ -204,7 +204,7 @@ def configure(env: "SConsEnvironment"):
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
         # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
-        env.Append(LINKFLAGS=["-s", "USE_WEBGL2=1"])
+        env.Append(LINKFLAGS=["-s", "MAX_WEBGL_VERSION=2"])
         # Allow use to take control of swapping WebGL buffers.
         env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
         # Breaking change since emscripten 3.1.51
