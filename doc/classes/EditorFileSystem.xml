@@ -90,18 +90,6 @@
 				Emitted if at least one resource is reloaded when the filesystem is scanned.
 			</description>
 		</signal>
-		<signal name="scan_started">
-			<param index="0" name="complete_scan" type="bool" />
-			<description>
-				Emitted when a new scan of the project files has started.
-			</description>
-		</signal>
-		<signal name="scan_stopped">
-			<param index="0" name="complete_scan" type="bool" />
-			<description>
-				Emitted when a scan of the project files has ended.
-			</description>
-		</signal>
 		<signal name="script_classes_updated">
 			<description>
 				Emitted when the list of global script classes gets updated.
