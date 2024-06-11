@@ -28,11 +28,11 @@ repos:
       - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.971
+    rev: v1.10.0
     hooks:
       - id: mypy
         files: \.py$
-        types_or: [text]
+        additional_dependencies: [tokenize-rt==5.2.0]
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.3.0

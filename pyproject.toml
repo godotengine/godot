@@ -1,15 +1,17 @@
 [tool.mypy]
-ignore_missing_imports = true
 disallow_any_generics = true
+explicit_package_bases = true
+ignore_missing_imports = true
+namespace_packages = true
 no_implicit_optional = true
 pretty = true
+scripts_are_modules = true
 show_column_numbers = true
 warn_redundant_casts = true
 warn_return_any = true
 warn_unreachable = true
-namespace_packages = true
-explicit_package_bases = true
-exclude = ["thirdparty/"]
+exclude = ["thirdparty"]
+python_version = "3.8"
 
 [tool.ruff]
 extend-exclude = ["thirdparty"]
