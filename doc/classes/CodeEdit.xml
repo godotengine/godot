@@ -171,13 +171,13 @@
 		<method name="fold_all_comments">
 			<return type="void" />
 			<description>
-				Folds all comments that are possible to be folded (see [method can_fold_line]).
+				Folds all comments that can be folded (see [method can_fold_line]).
 			</description>
 		</method>
 		<method name="fold_all_lines">
 			<return type="void" />
 			<description>
-				Folds all lines that are possible to be folded (see [method can_fold_line]).
+				Folds all lines that can be folded (see [method can_fold_line]).
 			</description>
 		</method>
 		<method name="fold_line">
