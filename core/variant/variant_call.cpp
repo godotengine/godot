@@ -1853,10 +1853,6 @@ static void _register_variant_builtin_methods_math() {
 	bind_methodv(Rect2, grow_side, &Rect2::grow_side_bind, sarray("side", "amount"), varray());
 	bind_method(Rect2, grow_individual, sarray("left", "top", "right", "bottom"), varray());
 	bind_method(Rect2, abs, sarray(), varray());
-	#define BIND_VEC2D(v, a, b) bind_method(v, get_##a##b, sarray(), varray()); bind_method(v, set_##a##b, sarray("value"), varray())
-	#define BIND_VEC2DM(v, a, b) BIND_VEC2D(v, a, b); BIND_VEC2D(v, b, a);
-	#define BIND_VEC2DP(v, a, b) BIND_VEC2DM(v, a, b); BIND_VEC2D(v, a, a); BIND_VEC2D(v, b, b)
-	BIND_VEC2DP(Vector2, x, y);
 
 	/* Rect2i */
 
@@ -1873,7 +1869,6 @@ static void _register_variant_builtin_methods_math() {
 	bind_methodv(Rect2i, grow_side, &Rect2i::grow_side_bind, sarray("side", "amount"), varray());
 	bind_method(Rect2i, grow_individual, sarray("left", "top", "right", "bottom"), varray());
 	bind_method(Rect2i, abs, sarray(), varray());
-	BIND_VEC2DP(Vector2i, x, y);
 
 	/* Vector3 */
 
@@ -1925,19 +1920,6 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector3, max, sarray("with"), varray());
 	bind_method(Vector3, maxf, sarray("with"), varray());
 	bind_static_method(Vector3, octahedron_decode, sarray("uv"), varray());
-	#define BIND_VEC3D(v, a, b, c) bind_method(v, get_##a##b##c, sarray(), varray()); bind_method(v, set_##a##b##c, sarray("value"), varray())
-	#define BIND_VEC3DP(v, a, b, c) BIND_VEC3D(v,a,a,a); BIND_VEC3D(v,a,a,b); BIND_VEC3D(v,a,a,c); BIND_VEC3D(v,a,b,a); BIND_VEC3D(v,a,b,b); BIND_VEC3D(v,a,b,c); \
-	BIND_VEC3D(v,a,c,a); BIND_VEC3D(v,a,c,b); BIND_VEC3D(v,a,c,c); BIND_VEC3D(v,b,a,a); BIND_VEC3D(v,b,a,b); BIND_VEC3D(v,b,a,c); \
-	BIND_VEC3D(v,b,b,a); BIND_VEC3D(v,b,b,b); BIND_VEC3D(v,b,b,c); BIND_VEC3D(v,b,c,a); BIND_VEC3D(v,b,c,b); BIND_VEC3D(v,b,c,c); \
-	BIND_VEC3D(v,c,a,a); BIND_VEC3D(v,c,a,b); BIND_VEC3D(v,c,a,c); BIND_VEC3D(v,c,b,a); BIND_VEC3D(v,c,b,b); BIND_VEC3D(v,c,b,c); \
-	BIND_VEC3D(v,c,c,a); BIND_VEC3D(v,c,c,b); BIND_VEC3D(v,c,c,c)
-	BIND_VEC2DM(Vector3, x, y);
-	BIND_VEC2DM(Vector3, x, z);
-	BIND_VEC2DM(Vector3, y, z);
-	BIND_VEC2D (Vector3, x, x);
-	BIND_VEC2D (Vector3, y, y);
-	BIND_VEC2D (Vector3, z, z);
-	BIND_VEC3DP(Vector3, x, y, z);
 
 	/* Vector3i */
 
@@ -1957,13 +1939,6 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector3i, mini, sarray("with"), varray());
 	bind_method(Vector3i, max, sarray("with"), varray());
 	bind_method(Vector3i, maxi, sarray("with"), varray());
-	BIND_VEC2DM(Vector3i, x, y);
-	BIND_VEC2DM(Vector3i, x, z);
-	BIND_VEC2DM(Vector3i, y, z);
-	BIND_VEC2D (Vector3i, x, x);
-	BIND_VEC2D (Vector3i, y, y);
-	BIND_VEC2D (Vector3i, z, z);
-	BIND_VEC3DP(Vector3i, x, y, z);
 
 	/* Vector4 */
 
