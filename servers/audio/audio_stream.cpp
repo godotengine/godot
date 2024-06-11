@@ -322,54 +322,65 @@ AudioStreamMicrophone::AudioStreamMicrophone() {
 }
 
 int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_frames) {
-	AudioDriver::get_singleton()->input_lock();
-
-	Vector<int32_t> buf = AudioDriver::get_singleton()->get_input_buffer();
-	unsigned int input_size = AudioDriver::get_singleton()->get_input_size();
-	int mix_rate = AudioDriver::get_singleton()->get_mix_rate();
+	const LocalVector<int32_t> &buf = AudioDriver::get_singleton()->get_input_buffer();
+	AudioDriver::SizePosition size_position = AudioDriver::get_singleton()->get_input_size_position();
+	unsigned int mix_rate = AudioDriver::get_singleton()->get_mix_rate();
 	unsigned int playback_delay = MIN(((50 * mix_rate) / 1000) * 2, buf.size() >> 1);
-#ifdef DEBUG_ENABLED
-	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
-#endif
 
 	int mixed_frames = p_frames;
 
-	if (playback_delay > input_size) {
+	if (playback_delay > size_position.size) {
 		for (int i = 0; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0.0f, 0.0f);
 		}
 		input_ofs = 0;
 	} else {
-		for (int i = 0; i < p_frames; i++) {
-			if (input_size > input_ofs && (int)input_ofs < buf.size()) {
+		bool was_locked = false;
+
+		int current_frame = 0;
+		for (; current_frame < p_frames; current_frame++) {
+			if (size_position.size > input_ofs && input_ofs < buf.size()) {
 				float l = (buf[input_ofs++] >> 16) / 32768.f;
-				if ((int)input_ofs >= buf.size()) {
+				if (input_ofs >= buf.size()) {
 					input_ofs = 0;
 				}
 				float r = (buf[input_ofs++] >> 16) / 32768.f;
-				if ((int)input_ofs >= buf.size()) {
+				if (input_ofs >= buf.size()) {
 					input_ofs = 0;
 				}
 
-				p_buffer[i] = AudioFrame(l, r);
+				p_buffer[current_frame] = AudioFrame(l, r);
 			} else {
-				if (mixed_frames == p_frames) {
-					mixed_frames = i;
+				if (!was_locked) {
+					// Wait while the other thread writes to the input buffer.
+					AudioDriver::get_singleton()->input_lock();
+					AudioDriver::get_singleton()->input_unlock();
+
+					size_position = AudioDriver::get_singleton()->get_input_size_position();
+					was_locked = true;
+
+					// Process the same frame on the next loop iteration.
+					current_frame--;
+				} else {
+					break;
 				}
-				p_buffer[i] = AudioFrame(0.0f, 0.0f);
 			}
+		}
+
+		mixed_frames = current_frame;
+		for (; current_frame < p_frames; current_frame++) {
+			p_buffer[current_frame] = AudioFrame(0.0f, 0.0f);
 		}
 	}
 
 #ifdef DEBUG_ENABLED
 	if (mixed_frames != p_frames) {
-		ERR_PRINT(vformat("Buffer underrun: input_size = %d, input_ofs = %d, buf.size() = %d.", input_size, input_ofs, buf.size()));
-	} else if (input_ofs > input_position && (int)(input_ofs - input_position) < (p_frames * 2)) {
-		print_verbose(String(get_class_name()) + " buffer underrun: input_position=" + itos(input_position) + " input_ofs=" + itos(input_ofs) + " input_size=" + itos(input_size));
+		ERR_PRINT(vformat("Buffer underrun: size_position.size = %d, input_ofs = %d, buf.size() = %d.", size_position.size, input_ofs, buf.size()));
+	} else if (input_ofs > size_position.position && (int)(input_ofs - size_position.position) < (p_frames * 2)) {
+		print_verbose(String(get_class_name()) + " buffer underrun: size_position.position=" + itos(size_position.position) + " size_position.size=" + itos(size_position.size) + " input_ofs=" + itos(input_ofs));
 	}
 #endif
 
-	AudioDriver::get_singleton()->input_unlock();
 	return mixed_frames;
 }
 

@@ -190,6 +190,7 @@ void AudioDriverOpenSL::_record_buffer_callback(SLAndroidSimpleBufferQueueItf qu
 		input_buffer_write(sample);
 		input_buffer_write(sample); // call twice to convert to Stereo
 	}
+	input_buffer_end_write();
 	input_unlock();
 
 	SLresult res = (*recordBufferQueueItf)->Enqueue(recordBufferQueueItf, rec_buffer.ptrw(), rec_buffer.size() * sizeof(int16_t));

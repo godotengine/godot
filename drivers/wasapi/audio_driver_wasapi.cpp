@@ -483,8 +483,8 @@ Error AudioDriverWASAPI::init_output_device(bool p_reinit) {
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
 	samples_in.resize(buffer_frames * channels);
 
-	input_position = 0;
-	input_size = 0;
+	input_read = SizePosition(0, 0);
+	input_write = SizePosition(0, 0);
 
 	print_verbose("WASAPI: detected " + itos(audio_output.channels) + " channels");
 	print_verbose("WASAPI: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
@@ -859,6 +859,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 						ad->input_buffer_write(l);
 						ad->input_buffer_write(r);
 					}
+					ad->input_buffer_end_write();
 
 					read_frames += num_frames_available;
 

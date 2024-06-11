@@ -56,15 +56,26 @@ class AudioDriver {
 	SafeNumeric<uint64_t> prof_time;
 #endif
 
+public:
+	struct SizePosition {
+		unsigned int size;
+		unsigned int position;
+
+		SizePosition(unsigned int p_size = 0, unsigned int p_position = 0) noexcept :
+				size(p_size), position(p_position) {}
+	};
+
 protected:
-	Vector<int32_t> input_buffer;
-	unsigned int input_position = 0;
-	unsigned int input_size = 0;
+	LocalVector<int32_t> input_buffer;
+	std::atomic<SizePosition> input_read;
+	SizePosition input_write;
 
 	void audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time = true);
 	void update_mix_time(int p_frames);
+
 	void input_buffer_init(int driver_buffer_frames);
 	void input_buffer_write(int32_t sample);
+	void input_buffer_end_write();
 
 	int _get_configured_mix_rate();
 
@@ -123,9 +134,8 @@ public:
 	SpeakerMode get_speaker_mode_by_total_channels(int p_channels) const;
 	int get_total_channels_by_speaker_mode(SpeakerMode) const;
 
-	Vector<int32_t> get_input_buffer() { return input_buffer; }
-	unsigned int get_input_position() { return input_position; }
-	unsigned int get_input_size() { return input_size; }
+	const LocalVector<int32_t> &get_input_buffer() { return input_buffer; }
+	SizePosition get_input_size_position() { return input_read; }
 
 #ifdef DEBUG_ENABLED
 	uint64_t get_profiling_time() const { return prof_time.get(); }
