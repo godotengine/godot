@@ -362,6 +362,24 @@ Variant ResourceFormatImporter::get_resource_metadata(const String &p_path) cons
 
 	return pat.metadata;
 }
+
+Error ResourceFormatImporter::get_resource_import_info(const String &p_path, StringName &r_type, ResourceUID::ID &r_uid, String &r_import_group_file) const {
+	PathAndType pat;
+	Error err = _get_path_and_type(p_path, pat);
+
+	if (err == OK) {
+		r_type = pat.type;
+		r_uid = pat.uid;
+		r_import_group_file = pat.group_file;
+	} else {
+		r_type = "";
+		r_uid = ResourceUID::INVALID_ID;
+		r_import_group_file = "";
+	}
+
+	return err;
+}
+
 void ResourceFormatImporter::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
 	PathAndType pat;
 	Error err = _get_path_and_type(p_path, pat);
