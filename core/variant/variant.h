@@ -332,6 +332,8 @@ private:
 	Variant(const Variant *) {}
 	Variant(const Variant **) {}
 
+	void _tag_collect_pass_object(uint32_t p_pass, bool p_collect_containers) const;
+
 public:
 	_FORCE_INLINE_ Type get_type() const {
 		return type;
@@ -795,6 +797,18 @@ public:
 
 	static void register_types();
 	static void unregister_types();
+
+	_FORCE_INLINE_ void tag_collect_pass(uint32_t p_pass, bool p_collect_containers = false) const {
+		if (type == OBJECT) {
+			_tag_collect_pass_object(p_pass, p_collect_containers);
+		} else if (p_collect_containers) {
+			if (type == ARRAY) {
+				reinterpret_cast<const Array *>(_data._mem)->tag_collect_pass(p_pass, p_collect_containers);
+			} else if (type == DICTIONARY) {
+				reinterpret_cast<const Dictionary *>(_data._mem)->tag_collect_pass(p_pass, p_collect_containers);
+			}
+		}
+	}
 
 	Variant(const Variant &p_variant);
 	_FORCE_INLINE_ Variant() :

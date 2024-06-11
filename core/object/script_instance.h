@@ -93,6 +93,8 @@ public:
 
 	virtual const Variant get_rpc_config() const;
 
+	virtual void tag_collect_pass(uint32_t p_pass, bool p_collect_containers = false) {}
+
 	virtual ScriptLanguage *get_language() = 0;
 	virtual ~ScriptInstance();
 };

@@ -49,6 +49,12 @@ int Node::orphan_node_count = 0;
 
 thread_local Node *Node::current_process_thread_group = nullptr;
 
+void Node::_tag_collect_pass_custom(uint32_t p_pass, bool p_containers) const {
+	for (const KeyValue<StringName, Node *> &K : data.children) {
+		K.value->tag_collect_pass(p_pass, p_containers);
+	}
+}
+
 void Node::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_PROCESS: {

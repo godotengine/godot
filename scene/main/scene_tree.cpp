@@ -906,6 +906,59 @@ bool SceneTree::is_paused() const {
 	return paused;
 }
 
+int SceneTree::break_reference_cycles(bool p_scripts_only, bool p_collect_containers, bool p_verbose) {
+	static uint32_t pass = 1;
+	pass++;
+	tag_collect_pass(pass, p_collect_containers);
+
+	List<Engine::Singleton> singletons;
+	Engine::get_singleton()->get_singletons(&singletons);
+	for (const Engine::Singleton &S : singletons) {
+		S.ptr->tag_collect_pass(pass, p_collect_containers);
+	}
+	if (root) {
+		root->tag_collect_pass(pass, p_collect_containers);
+	}
+
+	List<ObjectID> collect_unlinked;
+	ObjectDB::fetch_unliked_objects(pass, collect_unlinked);
+
+	int unlinked_total = 0;
+
+	while (collect_unlinked.size()) {
+		Object *obj = ObjectDB::get_instance(collect_unlinked.front()->get());
+		if (obj) {
+			bool unlinked = false;
+			if (obj->get_script_instance()) {
+				if (p_verbose) {
+					print_line("Breaking cycle on: ", obj->to_string());
+				}
+
+				Ref<RefCounted> ref;
+				if (obj->is_ref_counted()) {
+					ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj)); // Keep a reference while breaking the link as this can cause a crash otherwise.
+				}
+				obj->set_script(Ref<Script>());
+				ref.unref();
+				unlinked = true;
+			}
+
+			if (!p_scripts_only) {
+				obj->unlink_resources(p_collect_containers);
+				unlinked = true;
+			}
+
+			if (unlinked) {
+				unlinked_total++;
+			}
+		}
+
+		collect_unlinked.pop_front();
+	}
+
+	return unlinked_total;
+}
+
 void SceneTree::_process_group(ProcessGroup *p_group, bool p_physics) {
 	// When reading this function, keep in mind that this code must work in a way where
 	// if any node is removed, this needs to continue working.
@@ -1656,6 +1709,8 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_multiplayer", "for_path"), &SceneTree::get_multiplayer, DEFVAL(NodePath()));
 	ClassDB::bind_method(D_METHOD("set_multiplayer_poll_enabled", "enabled"), &SceneTree::set_multiplayer_poll_enabled);
 	ClassDB::bind_method(D_METHOD("is_multiplayer_poll_enabled"), &SceneTree::is_multiplayer_poll_enabled);
+
+	ClassDB::bind_method(D_METHOD("break_reference_cycles", "scripts_only", "collect_containers", "verbose"), &SceneTree::break_reference_cycles, DEFVAL(true), DEFVAL(false), DEFVAL(false));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_accept_quit"), "set_auto_accept_quit", "is_auto_accept_quit");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "quit_on_go_back"), "set_quit_on_go_back", "is_quit_on_go_back");

@@ -1396,6 +1396,24 @@ void GDScript::_collect_dependencies(RBSet<GDScript *> &p_dependencies, const GD
 	}
 }
 
+void GDScript::_tag_collect_pass_custom(uint32_t p_pass, bool p_containers) const {
+	for (int i = 0; i < static_variables.size(); i++) {
+		static_variables[i].tag_collect_pass(p_pass, p_containers);
+	}
+
+	for (const KeyValue<StringName, Variant> &K : constants) {
+		K.value.tag_collect_pass(p_pass, p_containers);
+	}
+
+	for (const KeyValue<StringName, Ref<GDScript>> &SC : subclasses) {
+		SC.value->tag_collect_pass(p_pass, p_containers);
+	}
+
+	for (const KeyValue<StringName, GDScriptFunction *> &F : member_functions) {
+		F.value->tag_collect_pass(p_pass, p_containers);
+	}
+}
+
 GDScript::GDScript() :
 		script_list(this) {
 	{
@@ -1446,6 +1464,13 @@ void GDScript::_save_orphaned_subclasses(ClearData *p_clear_data) {
 		// subclass is not released
 		GDScriptLanguage::get_singleton()->add_orphan_subclass(subclass.fully_qualified_name, subclass.id);
 	}
+}
+
+String GDScript::get_script_name() const {
+	if (get_local_name() != StringName()) {
+		return get_local_name();
+	}
+	return get_fully_qualified_name().get_file();
 }
 
 #ifdef DEBUG_ENABLED
@@ -2119,6 +2144,21 @@ ScriptLanguage *GDScriptInstance::get_language() {
 
 const Variant GDScriptInstance::get_rpc_config() const {
 	return script->get_rpc_config();
+}
+
+void GDScriptInstance::tag_collect_pass(uint32_t p_pass, bool p_collect_containers) {
+	if (collect_pass == p_pass) {
+		return;
+	}
+
+	collect_pass = p_pass; // Set beforehand due to recursion.
+
+	int mb_count = members.size();
+	const Variant *mb = members.ptr();
+
+	for (int i = 0; i < mb_count; i++) {
+		mb[i].tag_collect_pass(p_pass, p_collect_containers);
+	}
 }
 
 void GDScriptInstance::reload_members() {

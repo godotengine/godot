@@ -93,6 +93,8 @@ public:
 
 	const void *id() const;
 
+	void tag_collect_pass(uint32_t p_pass, bool p_collect_containers) const;
+
 	Dictionary(const Dictionary &p_from);
 	Dictionary();
 	~Dictionary();

@@ -131,6 +131,7 @@ public:
 
 	virtual bool can_instantiate() const = 0;
 
+	virtual String get_script_name() const;
 	virtual Ref<Script> get_base_script() const = 0; //for script inheritance
 	virtual StringName get_global_name() const = 0;
 	virtual bool inherits_script(const Ref<Script> &p_script) const = 0;
@@ -434,6 +435,7 @@ class PlaceHolderScriptInstance : public ScriptInstance {
 	HashMap<StringName, Variant> constants;
 	ScriptLanguage *language = nullptr;
 	Ref<Script> script;
+	uint32_t collect_pass = 0;
 
 public:
 	virtual bool set(const StringName &p_name, const Variant &p_value) override;
@@ -475,6 +477,8 @@ public:
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid = nullptr) override;
 
 	virtual const Variant get_rpc_config() const override { return Variant(); }
+
+	virtual void tag_collect_pass(uint32_t p_pass, bool p_collect_containers = false) override;
 
 	PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner);
 	~PlaceHolderScriptInstance();

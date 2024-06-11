@@ -923,20 +923,25 @@ void Object::notification(int p_notification, bool p_reversed) {
 }
 
 String Object::to_string() {
+	String id = itos(get_instance_id());
 	if (script_instance) {
 		bool valid;
 		String ret = script_instance->to_string(&valid);
 		if (valid) {
 			return ret;
 		}
+		if (script_instance->get_script().is_valid()) {
+			id = script_instance->get_script()->get_script_name();
+		}
 	}
+
 	if (_extension && _extension->to_string) {
 		String ret;
 		GDExtensionBool is_valid;
 		_extension->to_string(_extension_instance, &is_valid, &ret);
 		return ret;
 	}
-	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
+	return "<" + get_class() + "#" + id + ">";
 }
 
 void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance) {
@@ -2172,6 +2177,34 @@ void ObjectDB::debug_objects(DebugFunc p_func) {
 	spin_lock.unlock();
 }
 
+void Object::tag_collect_pass(uint32_t p_pass, bool p_collect_containers) {
+	if (collect_pass == p_pass) {
+		return; // Already collected.
+	}
+
+	collect_pass = p_pass; // Mark beforehand due to recursion.
+
+	if (script_instance) {
+		script_instance->tag_collect_pass(p_pass, p_collect_containers);
+		Ref<Script> scr = script;
+		if (scr.is_valid()) {
+			scr->tag_collect_pass(p_pass, p_collect_containers);
+		}
+	}
+
+	ClassDB::tag_collect_pass(this, p_pass, p_collect_containers);
+
+	_tag_collect_pass_customv(p_pass, p_collect_containers);
+
+	for (const KeyValue<StringName, Variant> &K : metadata) {
+		K.value.tag_collect_pass(p_pass, p_collect_containers);
+	}
+}
+
+void Object::unlink_resources(bool p_collect_containers) {
+	ClassDB::unlink_resources(this, p_collect_containers);
+}
+
 #ifdef TOOLS_ENABLED
 void Object::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
@@ -2349,5 +2382,22 @@ void ObjectDB::cleanup() {
 		memfree(object_slots);
 	}
 
+	spin_lock.unlock();
+}
+
+void ObjectDB::fetch_unliked_objects(uint32_t p_collect_pass, List<ObjectID> &r_unlinked) {
+	spin_lock.lock();
+	for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
+		if (object_slots[i].validator) {
+			if (object_slots[i].object->get_collect_pass() != p_collect_pass) {
+				uint64_t id = object_slots[i].validator;
+				id <<= OBJECTDB_SLOT_MAX_COUNT_BITS;
+				id |= uint64_t(i);
+
+				r_unlinked.push_back(ObjectID(id));
+			}
+			count--;
+		}
+	}
 	spin_lock.unlock();
 }

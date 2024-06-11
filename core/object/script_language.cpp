@@ -46,6 +46,17 @@ bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
 ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
 
+String Script::get_script_name() const {
+	if (get_global_name() != StringName()) {
+		return get_global_name();
+	} else if (!get_path().is_empty()) {
+		return get_path().get_file();
+	} else if (!get_name().is_empty()) {
+		return get_name(); // Resource name.
+	}
+	return get_class();
+}
+
 void Script::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
@@ -807,6 +818,19 @@ Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_nam
 	}
 
 	return Variant();
+}
+
+void PlaceHolderScriptInstance::tag_collect_pass(uint32_t p_pass, bool p_collect_containers) {
+	if (collect_pass == p_pass) {
+		return;
+	}
+
+	collect_pass = p_pass; // Tag beforehand due to recursion.
+
+	for (const KeyValue<StringName, Variant> &E : values) {
+		const Variant &v = E.value;
+		v.tag_collect_pass(p_pass, p_collect_containers);
+	}
 }
 
 PlaceHolderScriptInstance::PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner) :
