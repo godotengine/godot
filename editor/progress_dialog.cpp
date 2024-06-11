@@ -143,10 +143,7 @@ void ProgressDialog::_popup() {
 	Ref<StyleBox> style = main->get_theme_stylebox(SceneStringName(panel), SNAME("PopupMenu"));
 	ms += style->get_minimum_size();
 
-	main->set_offset(SIDE_LEFT, style->get_margin(SIDE_LEFT));
-	main->set_offset(SIDE_RIGHT, -style->get_margin(SIDE_RIGHT));
-	main->set_offset(SIDE_TOP, style->get_margin(SIDE_TOP));
-	main->set_offset(SIDE_BOTTOM, -style->get_margin(SIDE_BOTTOM));
+	main->call_deferred("notification", Container::NOTIFICATION_SORT_CHILDREN);
 
 	if (is_inside_tree()) {
 		Rect2i adjust = _popup_adjust_rect();

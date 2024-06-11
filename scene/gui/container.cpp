@@ -80,7 +80,6 @@ void Container::remove_child_notify(Node *p_child) {
 
 void Container::_sort_children() {
 	if (!is_inside_tree()) {
-		pending_sort = false;
 		return;
 	}
 
