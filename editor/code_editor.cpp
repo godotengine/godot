@@ -653,6 +653,7 @@ void FindReplaceBar::set_text_edit(CodeTextEditor *p_text_editor) {
 	}
 
 	if (base_text_editor) {
+		text_editor->set_search_text(String());
 		base_text_editor->remove_find_replace_bar();
 		base_text_editor = nullptr;
 		text_editor->disconnect("text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
@@ -670,8 +671,7 @@ void FindReplaceBar::set_text_edit(CodeTextEditor *p_text_editor) {
 	text_editor = base_text_editor->get_text_editor();
 	text_editor->connect("text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
 
-	_update_results_count();
-	_update_matches_display();
+	_editor_text_changed();
 }
 
 void FindReplaceBar::_bind_methods() {
