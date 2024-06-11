@@ -550,8 +550,6 @@ void FileSystemDock::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &FileSystemDock::_feature_profile_changed));
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &FileSystemDock::_fs_changed));
-			EditorFileSystem::get_singleton()->connect("scan_started", callable_mp(this, &FileSystemDock::_scan_started));
-			EditorFileSystem::get_singleton()->connect("scan_stopped", callable_mp(this, &FileSystemDock::_scan_stopped));
 			EditorResourcePreview::get_singleton()->connect("preview_invalidated", callable_mp(this, &FileSystemDock::_preview_invalidated));
 
 			button_file_list_display_mode->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_toggle_file_display));
@@ -568,7 +566,9 @@ void FileSystemDock::_notification(int p_what) {
 
 			_update_display_mode();
 
-			if (!EditorFileSystem::get_singleton()->is_scanning()) {
+			if (EditorFileSystem::get_singleton()->is_scanning()) {
+				_set_scanning_mode();
+			} else {
 				_update_tree(Vector<String>(), true);
 			}
 		} break;
@@ -1324,18 +1324,6 @@ void FileSystemDock::_fs_changed() {
 	}
 
 	set_process(false);
-}
-
-void FileSystemDock::_scan_started(bool p_complete_scan) {
-	if (p_complete_scan) {
-		_set_scanning_mode();
-	}
-}
-
-void FileSystemDock::_scan_stopped(bool p_complete_scan) {
-	if (p_complete_scan) {
-		_fs_changed();
-	}
 }
 
 void FileSystemDock::_set_scanning_mode() {
@@ -2661,6 +2649,7 @@ bool FileSystemDock::_matches_all_search_tokens(const String &p_text) {
 }
 
 void FileSystemDock::_rescan() {
+	_set_scanning_mode();
 	EditorFileSystem::get_singleton()->scan();
 }
 

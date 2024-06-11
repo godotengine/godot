@@ -153,7 +153,6 @@ class EditorFileSystem : public Node {
 		Action action = ACTION_NONE;
 		EditorFileSystemDirectory *dir = nullptr;
 		String file;
-		String import_group_file;
 		EditorFileSystemDirectory *new_dir = nullptr;
 		EditorFileSystemDirectory::FileInfo *new_file = nullptr;
 	};
@@ -201,15 +200,11 @@ class EditorFileSystem : public Node {
 	HashSet<String> dep_update_list;
 
 	struct ScanProgress {
-		int directories_processed = 0;
-		int nb_dir_to_scan = 0;
-		int nb_file_to_scan = 0;
-		float estimated = 0;
-		float real = 0;
-		float current = 0;
-		EditorProgressBG *progress = nullptr;
-		void increment();
-		void update_estimated(int p_depth, int p_nb_dirs, int p_nb_files);
+		float low = 0;
+		float hi = 0;
+		mutable EditorProgressBG *progress = nullptr;
+		void update(int p_current, int p_total) const;
+		ScanProgress get_sub(int p_current, int p_total) const;
 	};
 
 	void _save_filesystem_cache();
@@ -217,7 +212,7 @@ class EditorFileSystem : public Node {
 
 	bool _find_file(const String &p_file, EditorFileSystemDirectory **r_d, int &r_file_pos) const;
 
-	void _scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanProgress *p_progress);
+	void _scan_fs_changes(EditorFileSystemDirectory *p_dir, const ScanProgress &p_progress);
 
 	void _delete_internal_files(const String &p_file);
 
@@ -225,7 +220,7 @@ class EditorFileSystem : public Node {
 	HashSet<String> valid_extensions;
 	HashSet<String> import_extensions;
 
-	void _scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAccess> &da, ScanProgress *p_progress, int p_depth);
+	void _scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAccess> &da, const ScanProgress &p_progress);
 
 	Thread thread_sources;
 	bool scanning_changes = false;
@@ -236,7 +231,7 @@ class EditorFileSystem : public Node {
 	List<String> sources_changed;
 	List<ItemAction> scan_actions;
 
-	bool _update_scan_actions(bool p_show_progress = false);
+	bool _update_scan_actions();
 
 	void _update_extensions();
 
@@ -262,8 +257,8 @@ class EditorFileSystem : public Node {
 	Mutex update_script_mutex;
 	HashSet<String> update_script_paths;
 	void _queue_update_script_class(const String &p_path);
-	void _update_script_classes(bool p_show_progress = false);
-	void _update_pending_script_classes(bool p_show_progress = false);
+	void _update_script_classes();
+	void _update_pending_script_classes();
 
 	Mutex update_scene_mutex;
 	HashSet<String> update_scene_paths;
@@ -291,7 +286,6 @@ class EditorFileSystem : public Node {
 		SafeNumeric<int> max_index;
 	};
 
-	void _reimport_files_internal(const Vector<String> &p_files, const HashMap<String, String> *p_import_group_files);
 	void _reimport_thread(uint32_t p_index, ImportThreadData *p_import_data);
 
 	static ResourceUID::ID _resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate);

@@ -308,8 +308,6 @@ private:
 
 	void _set_scanning_mode();
 	void _rescan();
-	void _scan_started(bool p_complete_scan);
-	void _scan_stopped(bool p_complete_scan);
 
 	void _change_split_mode();
 	void _split_dragged(int p_offset);

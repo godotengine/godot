@@ -59,9 +59,11 @@ bool FileAccess::exists(const String &p_name) {
 		return true;
 	}
 
-	// Using file_exists because it's faster then trying to open the file.
-	Ref<FileAccess> ret = create_for_path(p_name);
-	return ret->file_exists(p_name);
+	Ref<FileAccess> f = open(p_name, READ);
+	if (f.is_null()) {
+		return false;
+	}
+	return true;
 }
 
 void FileAccess::_set_access_type(AccessType p_access) {

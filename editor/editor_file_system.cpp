@@ -316,6 +316,8 @@ void EditorFileSystem::_scan_filesystem() {
 	EditorProgressBG scan_progress("efs", "ScanFS", 1000);
 
 	ScanProgress sp;
+	sp.low = 0;
+	sp.hi = 1;
 	sp.progress = &scan_progress;
 
 	new_filesystem = memnew(EditorFileSystemDirectory);
@@ -323,8 +325,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	d->change_dir("res://");
-
-	_scan_new_dir(new_filesystem, d, &sp, 1);
+	_scan_new_dir(new_filesystem, d, sp);
 	dep_update_list.clear();
 
 	file_cache.clear(); //clear caches, no longer needed
@@ -559,27 +560,15 @@ bool EditorFileSystem::_scan_import_support(const Vector<String> &reimports) {
 	return false;
 }
 
-bool EditorFileSystem::_update_scan_actions(bool p_show_progress) {
+bool EditorFileSystem::_update_scan_actions() {
 	sources_changed.clear();
 
 	bool fs_changed = false;
 
 	Vector<String> reimports;
 	Vector<String> reloads;
-	HashMap<String, String> import_group_files;
 
-	EditorProgress *editor_progress = nullptr;
-	if (p_show_progress && scan_actions.size() > 0) {
-		editor_progress = memnew(EditorProgress("_update_scan_actions", TTR("Scanning actions..."), scan_actions.size()));
-		editor_progress->step("", 0, true);
-	}
-
-	int idx_action = 0;
 	for (const ItemAction &ia : scan_actions) {
-		if (editor_progress) {
-			editor_progress->step(ia.file, idx_action, false);
-		}
-		idx_action++;
 		switch (ia.action) {
 			case ItemAction::ACTION_NONE: {
 			} break;
@@ -654,17 +643,10 @@ bool EditorFileSystem::_update_scan_actions(bool p_show_progress) {
 				if (_test_for_reimport(full_path, false)) {
 					//must reimport
 					reimports.push_back(full_path);
-					if (!ia.import_group_file.is_empty()) {
-						import_group_files[full_path] = ia.import_group_file;
-					}
 					Vector<String> dependencies = _get_dependencies(full_path);
 					for (const String &dependency_path : dependencies) {
 						if (import_extensions.has(dependency_path.get_extension())) {
 							reimports.push_back(dependency_path);
-							String import_groupe_file = ResourceFormatImporter::get_singleton()->get_import_group_file(dependency_path);
-							if (!ia.import_group_file.is_empty()) {
-								import_group_files[dependency_path] = import_groupe_file;
-							}
 						}
 					}
 				} else {
@@ -694,8 +676,6 @@ bool EditorFileSystem::_update_scan_actions(bool p_show_progress) {
 		}
 	}
 
-	memdelete_notnull(editor_progress);
-
 	if (_scan_extensions()) {
 		//needs editor restart
 		//extensions also may provide filetypes to be imported, so they must run before importing
@@ -714,7 +694,7 @@ bool EditorFileSystem::_update_scan_actions(bool p_show_progress) {
 			return true;
 		}
 
-		_reimport_files_internal(reimports, &import_group_files);
+		reimport_files(reimports);
 	} else {
 		//reimport files will update the uid cache file so if nothing was reimported, update it manually
 		ResourceUID::get_singleton()->update_cache();
@@ -745,10 +725,10 @@ void EditorFileSystem::scan() {
 	}
 
 	_update_extensions();
+
 	if (!use_threads) {
 		scanning = true;
 		scan_total = 0;
-		emit_signal(SNAME("scan_started"), true);
 		_scan_filesystem();
 		if (filesystem) {
 			memdelete(filesystem);
@@ -756,7 +736,7 @@ void EditorFileSystem::scan() {
 		//file_type_cache.clear();
 		filesystem = new_filesystem;
 		new_filesystem = nullptr;
-		_update_scan_actions(true);
+		_update_scan_actions();
 		scanning = false;
 		_update_pending_script_classes();
 		_update_pending_scene_groups();
@@ -769,50 +749,28 @@ void EditorFileSystem::scan() {
 		Thread::Settings s;
 		scanning = true;
 		scan_total = 0;
-		emit_signal(SNAME("scan_started"), true);
 		s.priority = Thread::PRIORITY_LOW;
 		thread.start(_thread_func, this, s);
+		//tree->hide();
+		//progress->show();
 	}
 }
 
-void EditorFileSystem::ScanProgress::increment() {
-	real++;
-	nb_file_to_scan--;
-	current = CLAMP(real / estimated, current, 1);
-	progress->step(current * 1000);
-	EditorFileSystem::singleton->scan_total = current;
+void EditorFileSystem::ScanProgress::update(int p_current, int p_total) const {
+	float ratio = low + ((hi - low) / p_total) * p_current;
+	progress->step(ratio * 1000);
+	EditorFileSystem::singleton->scan_total = ratio;
 }
 
-void EditorFileSystem::ScanProgress::update_estimated(int p_depth, int p_nb_sub_dirs, int p_nb_files) {
-	// The algorithm calculates an estimated value for the progress of scanning directories and files.
-	// It adjusts the estimate based on the number of directories and files discovered so far,
-	// and ensures the estimated value does not decrease drastically between updates.
-	float average = 10;
-	directories_processed++;
-	if (nb_dir_to_scan > 0) {
-		nb_dir_to_scan--;
-	}
-	nb_dir_to_scan += p_nb_sub_dirs;
-	nb_file_to_scan += p_nb_files;
-
-	if (directories_processed > 2) {
-		average = (real + nb_file_to_scan) / directories_processed;
-		if (average < 10) {
-			average = 10;
-		}
-	}
-
-	float old_estimated = estimated;
-	estimated = real + nb_file_to_scan + (nb_dir_to_scan * average * p_depth);
-	if (estimated < old_estimated * 0.95) {
-		estimated = old_estimated * 0.95;
-	}
-	if (estimated <= real + average) {
-		estimated = real + average;
-	}
+EditorFileSystem::ScanProgress EditorFileSystem::ScanProgress::get_sub(int p_current, int p_total) const {
+	ScanProgress sp = *this;
+	float slice = (sp.hi - sp.low) / p_total;
+	sp.low += slice * p_current;
+	sp.hi = slice;
+	return sp;
 }
 
-void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAccess> &da, ScanProgress *p_progress, int p_depth) {
+void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAccess> &da, const ScanProgress &p_progress) {
 	List<String> dirs;
 	List<String> files;
 
@@ -852,12 +810,11 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 	dirs.sort_custom<FileNoCaseComparator>();
 	files.sort_custom<FileNoCaseComparator>();
 
-	p_progress->update_estimated(p_depth, dirs.size(), files.size());
-
+	int total = dirs.size() + files.size();
 	int idx = 0;
+
 	for (List<String>::Element *E = dirs.front(); E; E = E->next(), idx++) {
-		String name = E->get();
-		if (da->change_dir(name) == OK) {
+		if (da->change_dir(E->get()) == OK) {
 			String d = da->get_current_dir();
 
 			if (d == cd || !d.begins_with(cd)) {
@@ -868,27 +825,38 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				efd->parent = p_dir;
 				efd->name = E->get();
 
-				_scan_new_dir(efd, da, p_progress, p_depth + 1);
+				_scan_new_dir(efd, da, p_progress.get_sub(idx, total));
 
-				// Folders are already sorted with FileNoCaseComparator.
-				p_dir->subdirs.push_back(efd);
+				int idx2 = 0;
+				for (int i = 0; i < p_dir->subdirs.size(); i++) {
+					if (efd->name.filenocasecmp_to(p_dir->subdirs[i]->name) < 0) {
+						break;
+					}
+					idx2++;
+				}
+				if (idx2 == p_dir->subdirs.size()) {
+					p_dir->subdirs.push_back(efd);
+				} else {
+					p_dir->subdirs.insert(idx2, efd);
+				}
 
 				da->change_dir("..");
 			}
 		} else {
 			ERR_PRINT("Cannot go into subdir '" + E->get() + "'.");
 		}
+
+		p_progress.update(idx, total);
 	}
 
 	for (List<String>::Element *E = files.front(); E; E = E->next(), idx++) {
-		String name = E->get();
-		String ext = name.get_extension().to_lower();
+		String ext = E->get().get_extension().to_lower();
 		if (!valid_extensions.has(ext)) {
 			continue; //invalid
 		}
 
 		EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
-		fi->file = name;
+		fi->file = E->get();
 
 		String path = cd.path_join(fi->file);
 
@@ -916,6 +884,14 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				fi->script_class_extends = fc->script_class_extends;
 				fi->script_class_icon_path = fc->script_class_icon_path;
 
+				if (revalidate_import_files && !ResourceFormatImporter::get_singleton()->are_import_settings_valid(path)) {
+					ItemAction ia;
+					ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
+					ia.dir = p_dir;
+					ia.file = E->get();
+					scan_actions.push_back(ia);
+				}
+
 				if (fc->type.is_empty()) {
 					fi->type = ResourceLoader::get_resource_type(path);
 					fi->resource_script_class = ResourceLoader::get_resource_script_class(path);
@@ -924,23 +900,15 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 					//note: I think this should not happen any longer..
 				}
 
-				if (revalidate_import_files && !ResourceFormatImporter::get_singleton()->are_import_settings_valid(path)) {
-					ItemAction ia;
-					ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
-					ia.dir = p_dir;
-					ia.file = E->get();
-					ia.import_group_file = fi->import_group_file;
-					scan_actions.push_back(ia);
-				}
-
 				if (fc->uid == ResourceUID::INVALID_ID) {
 					// imported files should always have a UID, so attempt to fetch it.
 					fi->uid = ResourceLoader::get_resource_uid(path);
 				}
 
 			} else {
-				// Using get_resource_import_info() to prevent calling 3 times ResourceFormatImporter::_get_path_and_type.
-				ResourceFormatImporter::get_singleton()->get_resource_import_info(path, fi->type, fi->uid, fi->import_group_file);
+				fi->type = ResourceFormatImporter::get_singleton()->get_resource_type(path);
+				fi->uid = ResourceFormatImporter::get_singleton()->get_resource_uid(path);
+				fi->import_group_file = ResourceFormatImporter::get_singleton()->get_import_group_file(path);
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 				fi->modified_time = 0;
 				fi->import_modified_time = 0;
@@ -950,7 +918,6 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
 				ia.dir = p_dir;
 				ia.file = E->get();
-				ia.import_group_file = fi->import_group_file;
 				scan_actions.push_back(ia);
 			}
 		} else {
@@ -1001,11 +968,11 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 		}
 
 		p_dir->files.push_back(fi);
-		p_progress->increment();
+		p_progress.update(idx, total);
 	}
 }
 
-void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanProgress *p_progress) {
+void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const ScanProgress &p_progress) {
 	uint64_t current_mtime = FileAccess::get_modified_time(p_dir->get_path());
 
 	bool updated_dir = false;
@@ -1061,7 +1028,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 					efd->name = f;
 					Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 					d->change_dir(cd.path_join(f));
-					_scan_new_dir(efd, d, p_progress, 1);
+					_scan_new_dir(efd, d, p_progress.get_sub(1, 1));
 
 					ItemAction ia;
 					ia.action = ItemAction::ACTION_DIR_ADD;
@@ -1113,7 +1080,6 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 						ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
 						ia.dir = p_dir;
 						ia.file = f;
-						ia.import_group_file = fi->import_group_file;
 						scan_actions.push_back(ia);
 					}
 
@@ -1164,7 +1130,6 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 				ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
 				ia.dir = p_dir;
 				ia.file = p_dir->files[i]->file;
-				ia.import_group_file = p_dir->files[i]->import_group_file;
 				scan_actions.push_back(ia);
 			}
 		} else if (ResourceCache::has(path)) { //test for potential reload
@@ -1214,7 +1179,9 @@ void EditorFileSystem::_thread_func_sources(void *_userdata) {
 		EditorProgressBG pr("sources", TTR("ScanSources"), 1000);
 		ScanProgress sp;
 		sp.progress = &pr;
-		efs->_scan_fs_changes(efs->filesystem, &sp);
+		sp.hi = 1;
+		sp.low = 0;
+		efs->_scan_fs_changes(efs->filesystem, sp);
 	}
 	efs->scanning_changes_done.set();
 }
@@ -1237,9 +1204,10 @@ void EditorFileSystem::scan_changes() {
 			EditorProgressBG pr("sources", TTR("ScanSources"), 1000);
 			ScanProgress sp;
 			sp.progress = &pr;
+			sp.hi = 1;
+			sp.low = 0;
 			scan_total = 0;
-			emit_signal(SNAME("scan_started"), false);
-			_scan_fs_changes(filesystem, &sp);
+			_scan_fs_changes(filesystem, sp);
 			bool changed = _update_scan_actions();
 			_update_pending_script_classes();
 			_update_pending_scene_groups();
@@ -1254,7 +1222,6 @@ void EditorFileSystem::scan_changes() {
 		ERR_FAIL_COND(thread_sources.is_started());
 		set_process(true);
 		scan_total = 0;
-		emit_signal(SNAME("scan_started"), false);
 		Thread::Settings s;
 		s.priority = Thread::PRIORITY_LOW;
 		thread_sources.start(_thread_func_sources, this, s);
@@ -1308,7 +1275,6 @@ void EditorFileSystem::_notification(int p_what) {
 						if (thread_sources.is_started()) {
 							thread_sources.wait_to_finish();
 						}
-						emit_signal(SNAME("scan_stopped"), false);
 						bool changed = _update_scan_actions();
 						_update_pending_script_classes();
 						_update_pending_scene_groups();
@@ -1329,8 +1295,7 @@ void EditorFileSystem::_notification(int p_what) {
 					filesystem = new_filesystem;
 					new_filesystem = nullptr;
 					thread.wait_to_finish();
-					emit_signal(SNAME("scan_stopped"), true);
-					_update_scan_actions(true);
+					_update_scan_actions();
 					_update_pending_script_classes();
 					_update_pending_scene_groups();
 					emit_signal(SNAME("filesystem_changed"));
@@ -1613,20 +1578,10 @@ String EditorFileSystem::_get_global_script_class(const String &p_type, const St
 	return String();
 }
 
-void EditorFileSystem::_update_script_classes(bool p_show_progress) {
+void EditorFileSystem::_update_script_classes() {
 	update_script_mutex.lock();
 
-	EditorProgress *ep = nullptr;
-	if (p_show_progress && update_script_paths.size() > 0) {
-		ep = memnew(EditorProgress("update_scripts_classes", TTR("(Re)importing Scripts"), update_script_paths.size() * 2));
-		ep->step("", 0, true);
-	}
-
-	int step_count = 0;
 	for (const String &path : update_script_paths) {
-		if (ep) {
-			ep->step(TTR("Registering global classes..."), step_count++, false);
-		}
 		EditorFileSystem::get_singleton()->register_global_class_script(path, path);
 	}
 
@@ -1634,10 +1589,6 @@ void EditorFileSystem::_update_script_classes(bool p_show_progress) {
 	for (const String &path : update_script_paths) {
 		int index = -1;
 		EditorFileSystemDirectory *efd = find_file(path, &index);
-
-		if (ep) {
-			ep->step(TTR("Updating documentation..."), step_count++, false);
-		}
 
 		if (!efd || index < 0) {
 			// The file was removed
@@ -1659,8 +1610,6 @@ void EditorFileSystem::_update_script_classes(bool p_show_progress) {
 		}
 	}
 
-	memdelete_notnull(ep);
-
 	update_script_paths.clear();
 	update_script_mutex.unlock();
 
@@ -1677,9 +1626,9 @@ void EditorFileSystem::_update_script_classes(bool p_show_progress) {
 	ResourceSaver::add_custom_savers();
 }
 
-void EditorFileSystem::_update_pending_script_classes(bool p_show_progress) {
+void EditorFileSystem::_update_pending_script_classes() {
 	if (!update_script_paths.is_empty()) {
-		_update_script_classes(p_show_progress);
+		_update_script_classes();
 	} else {
 		// In case the class cache file was removed somehow, regenerate it.
 		if (!FileAccess::exists(ScriptServer::get_global_class_cache_file_path())) {
@@ -1719,7 +1668,7 @@ void EditorFileSystem::_update_scene_groups() {
 		}
 
 		if (ep) {
-			ep->step(TTR("Updating Scene Groups..."), step_count++, false);
+			ep->step(TTR("Updating Scene Groups..."), step_count++);
 		}
 	}
 
@@ -1800,13 +1749,9 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 				fs->files.remove_at(cpos);
 			}
 
-			// Preventing update of scripts and scene groups while first scan.
-			// Some ResourceLoader resave files which invoke update_file while loading (ex: ResourceImporterCSVTranslation).
-			if (!first_scan) {
-				_update_pending_script_classes();
-				_update_pending_scene_groups();
-				call_deferred(SNAME("emit_signal"), "filesystem_changed"); // Update later.
-			}
+			_update_pending_script_classes();
+			_update_pending_scene_groups();
+			call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
 			return;
 		}
 
@@ -1877,13 +1822,9 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 		}
 	}
 
-	// Preventing update of scripts and scene groups while first scan.
-	// Some ResourceLoader resave files which invoke update_file while loading (ex: ResourceImporterCSVTranslation).
-	if (!first_scan) {
-		_update_pending_script_classes();
-		_update_pending_scene_groups();
-		call_deferred(SNAME("emit_signal"), "filesystem_changed"); // Update later.
-	}
+	_update_pending_script_classes();
+	_update_pending_scene_groups();
+	call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
 }
 
 HashSet<String> EditorFileSystem::get_valid_extensions() const {
@@ -2404,152 +2345,132 @@ void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_im
 }
 
 void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
-	_reimport_files_internal(p_files, nullptr);
-}
-
-void EditorFileSystem::_reimport_files_internal(const Vector<String> &p_files, const HashMap<String, String> *p_import_group_files) {
 	ERR_FAIL_COND_MSG(importing, "Attempted to call reimport_files() recursively, this is not allowed.");
 	importing = true;
 
 	Vector<String> reloads;
 
-	{
-		EditorProgress pr("reimport", TTR("(Re)Importing Assets"), p_files.size());
-		pr.step("", 0, true);
+	EditorProgress pr("reimport", TTR("(Re)Importing Assets"), p_files.size());
 
-		Vector<ImportFile> reimport_files;
-		HashMap<String, String> import_group_files = *p_import_group_files;
+	Vector<ImportFile> reimport_files;
 
-		HashSet<String> groups_to_reimport;
+	HashSet<String> groups_to_reimport;
 
-		for (int i = 0; i < p_files.size(); i++) {
-			String file = p_files[i];
+	for (int i = 0; i < p_files.size(); i++) {
+		String file = p_files[i];
 
-			ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(file);
-			if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
-				file = ResourceUID::get_singleton()->get_id_path(uid);
-			}
-
-			String group_file;
-			if (p_import_group_files) {
-				if (p_import_group_files->has(file)) {
-					group_file = (*p_import_group_files)[file];
-				}
-			} else {
-				group_file = ResourceFormatImporter::get_singleton()->get_import_group_file(file);
-			}
-
-			if (group_file_cache.has(file)) {
-				// Maybe the file itself is a group!
-				groups_to_reimport.insert(file);
-				// Groups do not belong to groups.
-				group_file = String();
-			} else if (groups_to_reimport.has(file)) {
-				// Groups do not belong to groups.
-				group_file = String();
-			} else if (!group_file.is_empty()) {
-				// It's a group file, add group to import and skip this file.
-				groups_to_reimport.insert(group_file);
-			} else {
-				// It's a regular file.
-				ImportFile ifile;
-				ifile.path = file;
-				ResourceFormatImporter::get_singleton()->get_import_order_threads_and_importer(file, ifile.order, ifile.threaded, ifile.importer);
-				reloads.push_back(file);
-				reimport_files.push_back(ifile);
-			}
-
-			// Group may have changed, so also update group reference.
-			if (!p_import_group_files) {
-				EditorFileSystemDirectory *fs = nullptr;
-				int cpos = -1;
-				if (_find_file(file, &fs, cpos)) {
-					fs->files.write[cpos]->import_group_file = group_file;
-				}
-			}
-
-			pr.step(TTR("Preparing files to reimport..."), i, false);
+		ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(file);
+		if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
+			file = ResourceUID::get_singleton()->get_id_path(uid);
 		}
 
-		reimport_files.sort();
+		String group_file = ResourceFormatImporter::get_singleton()->get_import_group_file(file);
 
-#ifdef THREADS_ENABLED
-		bool use_multiple_threads = GLOBAL_GET("editor/import/use_multiple_threads");
-#else
-		bool use_multiple_threads = false;
-#endif
-
-		int from = 0;
-		for (int i = 0; i < reimport_files.size(); i++) {
-			if (groups_to_reimport.has(reimport_files[i].path)) {
-				continue;
-			}
-
-			if (use_multiple_threads && reimport_files[i].threaded) {
-				if (i + 1 == reimport_files.size() || reimport_files[i + 1].importer != reimport_files[from].importer) {
-					if (from - i == 0) {
-						// Single file, do not use threads.
-						pr.step(reimport_files[i].path.get_file(), i, false);
-						_reimport_file(reimport_files[i].path);
-					} else {
-						Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(reimport_files[from].importer);
-						ERR_CONTINUE(importer.is_null());
-
-						importer->import_threaded_begin();
-
-						ImportThreadData tdata;
-						tdata.max_index.set(from);
-						tdata.reimport_from = from;
-						tdata.reimport_files = reimport_files.ptr();
-
-						WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &EditorFileSystem::_reimport_thread, &tdata, i - from + 1, -1, false, vformat(TTR("Import resources of type: %s"), reimport_files[from].importer));
-						int current_index = from - 1;
-						do {
-							if (current_index < tdata.max_index.get()) {
-								current_index = tdata.max_index.get();
-								pr.step(reimport_files[current_index].path.get_file(), current_index, false);
-							}
-							OS::get_singleton()->delay_usec(1);
-						} while (!WorkerThreadPool::get_singleton()->is_group_task_completed(group_task));
-
-						WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
-
-						importer->import_threaded_end();
-					}
-
-					from = i + 1;
-				}
-
-			} else {
-				pr.step(reimport_files[i].path.get_file(), i, false);
-				_reimport_file(reimport_files[i].path);
-			}
+		if (group_file_cache.has(file)) {
+			// Maybe the file itself is a group!
+			groups_to_reimport.insert(file);
+			// Groups do not belong to groups.
+			group_file = String();
+		} else if (groups_to_reimport.has(file)) {
+			// Groups do not belong to groups.
+			group_file = String();
+		} else if (!group_file.is_empty()) {
+			// It's a group file, add group to import and skip this file.
+			groups_to_reimport.insert(group_file);
+		} else {
+			// It's a regular file.
+			ImportFile ifile;
+			ifile.path = file;
+			ResourceFormatImporter::get_singleton()->get_import_order_threads_and_importer(file, ifile.order, ifile.threaded, ifile.importer);
+			reloads.push_back(file);
+			reimport_files.push_back(ifile);
 		}
 
-		// Reimport groups.
-
-		from = reimport_files.size();
-
-		if (groups_to_reimport.size()) {
-			HashMap<String, Vector<String>> group_files;
-			_find_group_files(filesystem, group_files, groups_to_reimport);
-			for (const KeyValue<String, Vector<String>> &E : group_files) {
-				pr.step(E.key.get_file(), from++, false);
-				Error err = _reimport_group(E.key, E.value);
-				reloads.push_back(E.key);
-				reloads.append_array(E.value);
-				if (err == OK) {
-					_reimport_file(E.key);
-				}
-			}
+		// Group may have changed, so also update group reference.
+		EditorFileSystemDirectory *fs = nullptr;
+		int cpos = -1;
+		if (_find_file(file, &fs, cpos)) {
+			fs->files.write[cpos]->import_group_file = group_file;
 		}
-
-		ResourceUID::get_singleton()->update_cache(); // After reimporting, update the cache.
-
-		_save_filesystem_cache();
 	}
 
-	_update_pending_script_classes(true);
+	reimport_files.sort();
+
+#ifdef THREADS_ENABLED
+	bool use_multiple_threads = GLOBAL_GET("editor/import/use_multiple_threads");
+#else
+	bool use_multiple_threads = false;
+#endif
+
+	int from = 0;
+	for (int i = 0; i < reimport_files.size(); i++) {
+		if (groups_to_reimport.has(reimport_files[i].path)) {
+			continue;
+		}
+
+		if (use_multiple_threads && reimport_files[i].threaded) {
+			if (i + 1 == reimport_files.size() || reimport_files[i + 1].importer != reimport_files[from].importer) {
+				if (from - i == 0) {
+					// Single file, do not use threads.
+					pr.step(reimport_files[i].path.get_file(), i);
+					_reimport_file(reimport_files[i].path);
+				} else {
+					Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(reimport_files[from].importer);
+					ERR_CONTINUE(!importer.is_valid());
+
+					importer->import_threaded_begin();
+
+					ImportThreadData tdata;
+					tdata.max_index.set(from);
+					tdata.reimport_from = from;
+					tdata.reimport_files = reimport_files.ptr();
+
+					WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &EditorFileSystem::_reimport_thread, &tdata, i - from + 1, -1, false, vformat(TTR("Import resources of type: %s"), reimport_files[from].importer));
+					int current_index = from - 1;
+					do {
+						if (current_index < tdata.max_index.get()) {
+							current_index = tdata.max_index.get();
+							pr.step(reimport_files[current_index].path.get_file(), current_index);
+						}
+						OS::get_singleton()->delay_usec(1);
+					} while (!WorkerThreadPool::get_singleton()->is_group_task_completed(group_task));
+
+					WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
+					importer->import_threaded_end();
+				}
+
+				from = i + 1;
+			}
+
+		} else {
+			pr.step(reimport_files[i].path.get_file(), i);
+			_reimport_file(reimport_files[i].path);
+		}
+	}
+
+	// Reimport groups.
+
+	from = reimport_files.size();
+
+	if (groups_to_reimport.size()) {
+		HashMap<String, Vector<String>> group_files;
+		_find_group_files(filesystem, group_files, groups_to_reimport);
+		for (const KeyValue<String, Vector<String>> &E : group_files) {
+			pr.step(E.key.get_file(), from++);
+			Error err = _reimport_group(E.key, E.value);
+			reloads.push_back(E.key);
+			reloads.append_array(E.value);
+			if (err == OK) {
+				_reimport_file(E.key);
+			}
+		}
+	}
+
+	ResourceUID::get_singleton()->update_cache(); // After reimporting, update the cache.
+
+	_save_filesystem_cache();
+	_update_pending_script_classes();
 	_update_pending_scene_groups();
 	importing = false;
 	if (!is_scanning()) {
@@ -2767,8 +2688,6 @@ void EditorFileSystem::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("sources_changed", PropertyInfo(Variant::BOOL, "exist")));
 	ADD_SIGNAL(MethodInfo("resources_reimported", PropertyInfo(Variant::PACKED_STRING_ARRAY, "resources")));
 	ADD_SIGNAL(MethodInfo("resources_reload", PropertyInfo(Variant::PACKED_STRING_ARRAY, "resources")));
-	ADD_SIGNAL(MethodInfo("scan_started", PropertyInfo(Variant::BOOL, "complete_scan")));
-	ADD_SIGNAL(MethodInfo("scan_stopped", PropertyInfo(Variant::BOOL, "complete_scan")));
 }
 
 void EditorFileSystem::_update_extensions() {
