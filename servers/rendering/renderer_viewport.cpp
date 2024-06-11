@@ -481,6 +481,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			while (light) {
 				RENDER_TIMESTAMP("Render PointLight2D Shadow");
 
+                RSG::canvas_render->light_update_occluders(light->light_internal, shadow_count, light->xform_cache.affine_inverse(), light->item_shadow_mask, occluders);
 				RSG::canvas_render->light_update_shadow(light->light_internal, shadow_count++, light->xform_cache.affine_inverse(), light->item_shadow_mask, light->radius_cache / 1000.0, light->radius_cache * 1.1, occluders);
 				light = light->shadows_next_ptr;
 			}
@@ -567,6 +568,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 					}
 				}
 
+                RSG::canvas_render->light_update_occluders(light->light_internal, shadow_count, light->xform_cache.affine_inverse(), light->item_shadow_mask, occluders);
 				RSG::canvas_render->light_update_directional_shadow(light->light_internal, shadow_count++, light->xform_cache, light->item_shadow_mask, cull_distance, clip_rect, occluders);
 
 				light = light->shadows_next_ptr;

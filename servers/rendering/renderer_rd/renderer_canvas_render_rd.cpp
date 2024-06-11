@@ -1130,6 +1130,14 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 
 	{
 		RD::Uniform u;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+		u.binding = 8;
+		u.append_id(state.occluder_texture);
+		uniforms.push_back(u);
+	}
+
+	{
+		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 		u.binding = 9;
 		u.append_id(RendererRD::MaterialStorage::get_singleton()->global_shader_uniforms_get_storage_buffer());
@@ -1420,6 +1428,11 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				state.light_uniforms[index].atlas_rect[3] = 0;
 			}
 
+			state.light_uniforms[index].occluder_texture_index = clight->occluder_details.texture_index;
+			state.light_uniforms[index].occluder_scale_x = clight->occluder_details.texture_scale[0];
+			state.light_uniforms[index].occluder_scale_y = clight->occluder_details.texture_scale[1];
+			state.light_uniforms[index].occluder_max_size = state.occluder_texture_size;
+
 			l->render_index_cache = index;
 
 			index++;
@@ -1703,7 +1716,7 @@ void RendererCanvasRenderRD::light_set_use_shadow(RID p_rid, bool p_enable) {
 
 void RendererCanvasRenderRD::_update_shadow_atlas() {
 	if (state.shadow_fb == RID()) {
-		//ah, we lack the shadow texture..
+		//ah, we lack the shadow texture...
 		RD::get_singleton()->free(state.shadow_texture); //erase placeholder
 
 		Vector<RID> fb_textures;
@@ -1734,6 +1747,31 @@ void RendererCanvasRenderRD::_update_shadow_atlas() {
 		state.shadow_fb = RD::get_singleton()->framebuffer_create(fb_textures);
 	}
 }
+
+void RendererCanvasRenderRD::_update_occluder_atlas() {
+	if (state.occluder_fbs[0] == RID()) {
+		//ah, we lack the occluder texture...
+		RD::get_singleton()->free(state.occluder_texture); //erase placeholder
+
+		RD::TextureFormat tf;
+		tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+		tf.width = state.occluder_texture_size;
+		tf.height = state.occluder_texture_size;
+		tf.array_layers = state.MAX_LIGHTS_LIMIT;
+		tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+		tf.format = RD::DATA_FORMAT_R32_SFLOAT;
+
+		state.occluder_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+		for (int i = 0; i < state.MAX_LIGHTS_LIMIT; ++i) {
+			state.occluder_views[i] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), state.occluder_texture, i, 0);
+			Vector<RID> fbtex;
+			fbtex.push_back(state.occluder_views[i]);
+			state.occluder_fbs[i] = RD::get_singleton()->framebuffer_create(fbtex);
+		}
+	}
+}
+
 void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) {
 	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
 	ERR_FAIL_COND(!cl->shadow.enabled);
@@ -1889,6 +1927,57 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 	cl->shadow.directional_xform = to_shadow * to_light_xform;
 }
 
+void RendererCanvasRenderRD::light_update_occluders(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, LightOccluderInstance *p_occluders) {
+	ERR_FAIL_COND(p_shadow_index >= state.MAX_LIGHTS_LIMIT);
+
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
+	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
+	ERR_FAIL_COND(!cl->shadow.enabled);
+
+	_update_occluder_atlas();
+
+	cl->occluder_details.texture_index = p_shadow_index;
+	Vector2i size = texture_storage->texture_2d_get_size(cl->texture);
+	cl->occluder_details.texture_scale[0] = (float)size.width / (float)state.occluder_texture_size;
+	cl->occluder_details.texture_scale[1] = (float)size.height / (float)state.occluder_texture_size;
+
+	Vector<Color> cc;
+	cc.push_back(Color(1.0, 1.0, 1.0, 1.0));
+	Rect2i rect(0, 0, size.width, size.height);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.occluder_fbs[cl->occluder_details.texture_index], RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, cc, 1.0, 0, rect);
+
+	OccluderRenderPushConstant push_constant;
+	push_constant.scale[0] = 2.0 / (float)size.width;
+	push_constant.scale[1] = 2.0 / (float)size.height;
+	push_constant.pad1 = 0;
+	push_constant.pad2 = 0;
+
+	LightOccluderInstance *instance = p_occluders;
+
+	while (instance) {
+		OccluderPolygon *co = occluder_polygon_owner.get_or_null(instance->occluder);
+
+		if (!co || co->index_array.is_null() || !(p_light_mask & instance->light_mask)) {
+			instance = instance->next;
+			continue;
+		}
+
+		_update_transform_2d_to_mat2x4(p_light_xform * instance->xform_cache, push_constant.modelview);
+
+		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, shadow_render.occluder_render_pipelines[co->cull_mode]);
+		RD::get_singleton()->draw_list_bind_vertex_array(draw_list, co->vertex_array_shape);
+		RD::get_singleton()->draw_list_bind_index_array(draw_list, co->index_array_shape);
+		RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(OccluderRenderPushConstant));
+
+		RD::get_singleton()->draw_list_draw(draw_list, true);
+
+		instance = instance->next;
+	}
+
+	RD::get_singleton()->draw_list_end();
+}
+
 void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstance *p_occluders) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
@@ -1994,11 +2083,19 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		RD::get_singleton()->free(oc->vertex_buffer);
 		RD::get_singleton()->free(oc->index_array);
 		RD::get_singleton()->free(oc->index_buffer);
+		RD::get_singleton()->free(oc->vertex_array_shape);
+		RD::get_singleton()->free(oc->vertex_buffer_shape);
+		RD::get_singleton()->free(oc->index_array_shape);
+		RD::get_singleton()->free(oc->index_buffer_shape);
 
 		oc->vertex_array = RID();
 		oc->vertex_buffer = RID();
 		oc->index_array = RID();
 		oc->index_buffer = RID();
+		oc->vertex_array_shape = RID();
+		oc->vertex_buffer_shape = RID();
+		oc->index_array_shape = RID();
+		oc->index_buffer_shape = RID();
 
 		oc->line_point_count = lines.size();
 	}
@@ -2008,6 +2105,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		Vector<uint8_t> geometry;
 		Vector<uint8_t> indices;
 		int lc = lines.size();
+		ERR_FAIL_COND(lc != 8);
 
 		geometry.resize(lc * 6 * sizeof(float));
 		indices.resize(lc * 3 * sizeof(uint16_t));
@@ -2070,6 +2168,57 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 			RD::get_singleton()->buffer_update(oc->vertex_buffer, 0, geometry.size(), vr);
 			const uint8_t *ir = indices.ptr();
 			RD::get_singleton()->buffer_update(oc->index_buffer, 0, indices.size(), ir);
+		}
+
+		Vector<uint8_t> geometry_shape;
+		Vector<uint8_t> indices_shape;
+
+		geometry_shape.resize(16 * sizeof(float));
+		indices_shape.resize(6 * sizeof(uint16_t));
+
+		{
+			uint8_t *vw = geometry_shape.ptrw();
+			float *vwptr = reinterpret_cast<float *>(vw);
+			uint8_t *iw = indices_shape.ptrw();
+			uint16_t *iwptr = (uint16_t *)iw;
+
+			const Vector2 *lr = lines.ptr();
+
+			for (int i = 0; i < lc; i += 2) {
+				vwptr[i + 0] = lr[i].x;
+				vwptr[i + 1] = lr[i].y;
+			}
+
+			iwptr[0] = 0;
+			iwptr[1] = 1;
+			iwptr[2] = 2;
+
+			iwptr[3] = 2;
+			iwptr[4] = 3;
+			iwptr[5] = 0;
+		}
+
+		//if same buffer len is being set, just use buffer_update to avoid a pipeline flush
+
+		if (oc->vertex_array_shape.is_null()) {
+			//create from scratch
+			//vertices
+			oc->vertex_buffer_shape = RD::get_singleton()->vertex_buffer_create(16 * sizeof(float), geometry_shape);
+
+			Vector<RID> buffer;
+			buffer.push_back(oc->vertex_buffer_shape);
+			oc->vertex_array_shape = RD::get_singleton()->vertex_array_create(8, shadow_render.occluder_vertex_format, buffer);
+			//indices_shape
+
+			oc->index_buffer_shape = RD::get_singleton()->index_buffer_create(6, RD::INDEX_BUFFER_FORMAT_UINT16, indices_shape);
+			oc->index_array_shape = RD::get_singleton()->index_array_create(oc->index_buffer_shape, 0, 6);
+
+		} else {
+			//update existing
+			const uint8_t *vr = geometry_shape.ptr();
+			RD::get_singleton()->buffer_update(oc->vertex_buffer_shape, 0, geometry_shape.size(), vr);
+			const uint8_t *ir = indices_shape.ptr();
+			RD::get_singleton()->buffer_update(oc->index_buffer_shape, 0, indices_shape.size(), ir);
 		}
 	}
 
@@ -2597,6 +2746,8 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["LIGHT_POSITION"] = "light_position";
 		actions.renames["LIGHT_DIRECTION"] = "light_direction";
 		actions.renames["LIGHT_IS_DIRECTIONAL"] = "is_directional";
+		actions.renames["LIGHT_STEP_COUNT"] = "light_max_steps";
+		actions.renames["LIGHT_STEP_LENGTH"] = "light_step_size";
 		actions.renames["LIGHT_COLOR"] = "light_color";
 		actions.renames["LIGHT_ENERGY"] = "light_energy";
 		actions.renames["LIGHT"] = "light";
@@ -2673,6 +2824,22 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 			shadow_render.sdf_framebuffer_format = RD::get_singleton()->framebuffer_format_create(attachments);
 		}
 
+		Vector<String> versions_occluder;
+		versions_occluder.push_back("");
+		shadow_render.occluder_shader.initialize(versions_occluder);
+
+		{
+			Vector<RD::AttachmentFormat> attachments;
+
+			RD::AttachmentFormat af_color;
+			af_color.format = RD::DATA_FORMAT_R32_SFLOAT;
+			af_color.usage_flags = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+
+			attachments.push_back(af_color);
+
+			shadow_render.occluder_framebuffer_format = RD::get_singleton()->framebuffer_format_create(attachments);
+		}
+
 		//pipelines
 		Vector<RD::VertexAttribute> vf;
 		RD::VertexAttribute vd;
@@ -2688,8 +2855,10 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 
 		vf.write[0] = vd;
 		shadow_render.sdf_vertex_format = RD::get_singleton()->vertex_format_create(vf);
+		shadow_render.occluder_vertex_format = RD::get_singleton()->vertex_format_create(vf);
 
 		shadow_render.shader_version = shadow_render.shader.version_create();
+		shadow_render.occluder_shader_version = shadow_render.occluder_shader.version_create();
 
 		for (int i = 0; i < 3; i++) {
 			RD::PipelineRasterizationState rs;
@@ -2699,6 +2868,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 			ds.enable_depth_test = true;
 			ds.depth_compare_operator = RD::COMPARE_OP_LESS;
 			shadow_render.render_pipelines[i] = RD::get_singleton()->render_pipeline_create(shadow_render.shader.version_get_shader(shadow_render.shader_version, SHADOW_RENDER_MODE_SHADOW), shadow_render.framebuffer_format, shadow_render.vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rs, RD::PipelineMultisampleState(), ds, RD::PipelineColorBlendState::create_disabled(), 0);
+			shadow_render.occluder_render_pipelines[i] = RD::get_singleton()->render_pipeline_create(shadow_render.occluder_shader.version_get_shader(shadow_render.occluder_shader_version, 0), shadow_render.occluder_framebuffer_format, shadow_render.occluder_vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rs, RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
 		}
 
 		for (int i = 0; i < 2; i++) {
@@ -2760,6 +2930,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		tf.format = RD::DATA_FORMAT_R32_SFLOAT;
 
 		state.shadow_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		state.occluder_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	}
 
 	{
@@ -2910,6 +3081,7 @@ RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 	//shadow rendering
 	{
 		shadow_render.shader.version_free(shadow_render.shader_version);
+		shadow_render.occluder_shader.version_free(shadow_render.occluder_shader_version);
 		//this will also automatically clear all pipelines
 		RD::get_singleton()->free(state.shadow_sampler);
 	}
@@ -2930,6 +3102,7 @@ RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 		RD::get_singleton()->free(state.shadow_depth_texture);
 	}
 	RD::get_singleton()->free(state.shadow_texture);
+	RD::get_singleton()->free(state.occluder_texture);
 
 	RendererRD::TextureStorage::get_singleton()->canvas_texture_free(default_canvas_texture);
 	//pipelines don't need freeing, they are all gone after shaders are gone

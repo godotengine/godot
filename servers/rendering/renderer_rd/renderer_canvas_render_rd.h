@@ -35,6 +35,7 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/canvas.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/canvas_occluder.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_occlusion.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/rendering_device.h"
@@ -261,6 +262,10 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 			float y_offset;
 			Transform2D directional_xform;
 		} shadow;
+        struct {
+            int texture_index;
+            float texture_scale[2];
+        } occluder_details;
 	};
 
 	RID_Owner<CanvasLight> canvas_light_owner;
@@ -273,6 +278,13 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		float pad;
 	};
 
+	struct OccluderRenderPushConstant {
+		float modelview[8];
+		float scale[2];
+		uint32_t pad1;
+		uint32_t pad2;
+	};
+
 	struct OccluderPolygon {
 		RS::CanvasOccluderPolygonCullMode cull_mode;
 		int line_point_count;
@@ -280,6 +292,10 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		RID vertex_array;
 		RID index_buffer;
 		RID index_array;
+		RID vertex_buffer_shape;
+		RID vertex_array_shape;
+		RID index_buffer_shape;
+		RID index_array_shape;
 
 		int sdf_point_count;
 		int sdf_index_count;
@@ -305,6 +321,11 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		float shadow_y_ofs;
 
 		float atlas_rect[4];
+
+		uint32_t occluder_texture_index;
+		float occluder_scale_x;
+		float occluder_scale_y;
+		uint32_t occluder_max_size;
 	};
 
 	RID_Owner<OccluderPolygon> occluder_polygon_owner;
@@ -328,6 +349,13 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		RD::VertexFormatID sdf_vertex_format;
 		RD::FramebufferFormatID framebuffer_format;
 		RD::FramebufferFormatID sdf_framebuffer_format;
+
+		// occluder
+		CanvasOccluderShaderRD occluder_shader;
+		RID occluder_shader_version;
+		RID occluder_render_pipelines[3];
+		RD::VertexFormatID occluder_vertex_format;
+		RD::FramebufferFormatID occluder_framebuffer_format;
 	} shadow_render;
 
 	/***************/
@@ -367,6 +395,12 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		RID shadow_depth_texture;
 		RID shadow_fb;
 		int shadow_texture_size = 2048;
+
+		static const int MAX_LIGHTS_LIMIT = 12;
+        RID occluder_texture;
+		RID occluder_views[MAX_LIGHTS_LIMIT];
+        RID occluder_fbs[MAX_LIGHTS_LIMIT];
+        int occluder_texture_size = 512;
 
 		RID default_transforms_uniform_set;
 
@@ -434,6 +468,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	_FORCE_INLINE_ void _update_transform_to_mat4(const Transform3D &p_transform, float *p_mat4);
 
 	void _update_shadow_atlas();
+    void _update_occluder_atlas();
 
 public:
 	PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) override;
@@ -443,6 +478,7 @@ public:
 	void light_set_texture(RID p_rid, RID p_texture) override;
 	void light_set_use_shadow(RID p_rid, bool p_enable) override;
 	void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) override;
+    void light_update_occluders(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, LightOccluderInstance *p_occluders) override;
 	void light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) override;
 
 	virtual void render_sdf(RID p_render_target, LightOccluderInstance *p_occluders) override;

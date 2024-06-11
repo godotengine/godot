@@ -112,6 +112,11 @@ struct Light {
 	float shadow_y_ofs;
 
 	vec4 atlas_rect;
+
+    uint occluder_texture_index;
+	float occluder_scale_x;
+	float occluder_scale_y;
+	uint occluder_max_size;
 };
 
 layout(set = 0, binding = 2, std140) uniform LightData {
@@ -126,6 +131,8 @@ layout(set = 0, binding = 5) uniform sampler shadow_sampler;
 
 layout(set = 0, binding = 6) uniform texture2D color_buffer;
 layout(set = 0, binding = 7) uniform texture2D sdf_texture;
+
+layout(set = 0, binding = 8) uniform texture2DArray occluder_texture;
 
 #include "samplers_inc.glsl"
 

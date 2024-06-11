@@ -559,6 +559,8 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["LIGHT_COLOR"] = "light_color";
 		actions.renames["LIGHT_IS_DIRECTIONAL"] = "is_directional";
 		actions.renames["LIGHT"] = "light";
+		actions.renames["LIGHT_STEP_COUNT"] = "light_max_steps";
+		actions.renames["LIGHT_STEP_LENGTH"] = "light_step_size";
 		actions.renames["ATTENUATION"] = "attenuation";
 		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light";
 		actions.renames["SPECULAR_LIGHT"] = "specular_light";
