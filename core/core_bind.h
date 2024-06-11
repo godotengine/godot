@@ -576,8 +576,24 @@ public:
 	bool has_capture(const StringName &p_name);
 
 	void send_message(const String &p_msg, const Array &p_data);
+	void debug(bool p_can_continue = true, bool p_is_error_breakpoint = false);
+	void script_debug(ScriptLanguage *p_lang, bool p_can_continue = true, bool p_is_error_breakpoint = false);
 
 	static Error call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured);
+
+	void line_poll();
+
+	void set_lines_left(int p_lines);
+	int get_lines_left() const;
+
+	void set_depth(int p_depth);
+	int get_depth() const;
+
+	bool is_breakpoint(int p_line, const StringName &p_source) const;
+	bool is_skipping_breakpoints() const;
+	void insert_breakpoint(int p_line, const StringName &p_source);
+	void remove_breakpoint(int p_line, const StringName &p_source);
+	void clear_breakpoints();
 
 	EngineDebugger() { singleton = this; }
 	~EngineDebugger();
