@@ -77,6 +77,15 @@ struct _NO_DISCARD_ Vector2i {
 		return x < y ? Vector2i::AXIS_Y : Vector2i::AXIS_X;
 	}
 
+	#define SETGET_2D(a, b) _FORCE_INLINE_ Vector2i get_##a##b() const { return Vector2i(a, b); }\
+	_FORCE_INLINE_ void set_##a##b(const Vector2i &p_v) { a = p_v.x; b = p_v.y; }
+	#define SETGET_2DM(a,b) SETGET_2D(a, b) SETGET_2D(b,a) SETGET_2D(a,a) SETGET_2D(b,b)
+
+	SETGET_2DM(x, y)
+
+	#undef SETGET_2D
+	#undef SETGET_2DM
+
 	Vector2i min(const Vector2i &p_vector2i) const {
 		return Vector2i(MIN(x, p_vector2i.x), MIN(y, p_vector2i.y));
 	}

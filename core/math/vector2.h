@@ -76,6 +76,15 @@ struct _NO_DISCARD_ Vector2 {
 	_FORCE_INLINE_ Vector2::Axis max_axis_index() const {
 		return x < y ? Vector2::AXIS_Y : Vector2::AXIS_X;
 	}
+	
+	#define SETGET_2D(a, b) _FORCE_INLINE_ Vector2 get_##a##b() const { return Vector2(a, b); }\
+	_FORCE_INLINE_ void set_##a##b(const Vector2 &p_v) { a = p_v.x; b = p_v.y; }
+	#define SETGET_2DM(a,b) SETGET_2D(a, b) SETGET_2D(b,a) SETGET_2D(a,a) SETGET_2D(b,b)
+
+	SETGET_2DM(x, y)
+
+	#undef SETGET_2D
+	#undef SETGET_2DM
 
 	void normalize();
 	Vector2 normalized() const;
