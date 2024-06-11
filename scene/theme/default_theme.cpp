@@ -187,6 +187,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("h_separation", "Button", Math::round(4 * scale));
 	theme->set_constant("icon_max_width", "Button", 0);
 
+	theme->set_constant("align_to_largest_stylebox", "Button", 0); // Disabled.
+
 	// MenuBar
 	theme->set_stylebox(CoreStringName(normal), "MenuBar", button_normal);
 	theme->set_stylebox("hover", "MenuBar", button_hover);
