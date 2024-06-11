@@ -37,7 +37,7 @@ Ref<NavigationPolygon> TileData::_get_navigation_polygon_bind_compat_84660(int p
 }
 
 Ref<OccluderPolygon2D> TileData::_get_occluder_bind_compat_84660(int p_layer_id) const {
-	return get_occluder(p_layer_id, false, false, false);
+	return get_occluder_polygon(p_layer_id, 0, false, false, false);
 }
 
 void TileData::_bind_compatibility_methods() {
