@@ -3735,6 +3735,7 @@ EditorHelpBit::EditorHelpBit(const String &p_symbol) {
 
 	title = memnew(RichTextLabel);
 	title->set_theme_type_variation("EditorHelpBitTitle");
+	title->set_custom_minimum_size(Size2(512 * EDSCALE, 0)); // GH-93031. Set the minimum width even if `fit_content` is true.
 	title->set_fit_content(true);
 	title->set_selection_enabled(true);
 	//title->set_context_menu_enabled(true); // TODO: Fix opening context menu hides tooltip.
