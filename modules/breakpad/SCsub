@@ -42,6 +42,7 @@ if env["platform"] == "linuxbsd":
         "src/client/linux/handler/minidump_descriptor.cc",
         "src/client/linux/log/log.cc",
         "src/client/linux/microdump_writer/microdump_writer.cc",
+        "src/client/linux/minidump_writer/pe_file.cc",
         "src/client/linux/minidump_writer/linux_core_dumper.cc",
         "src/client/linux/minidump_writer/linux_dumper.cc",
         "src/client/linux/minidump_writer/linux_ptrace_dumper.cc",
