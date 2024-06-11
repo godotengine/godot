@@ -391,6 +391,9 @@ unsigned int qoa_encode_frame(const short *sample_data, qoa_desc *qoa, unsigned 
 			16 scalefactors, encode all samples for the current slice and 
 			meassure the total squared error. */
 			qoa_uint64_t best_rank = -1;
+			#ifdef QOA_RECORD_TOTAL_ERROR
+				qoa_uint64_t best_error = -1;
+			#endif
 			qoa_uint64_t best_slice = -1;
 			qoa_lms_t best_lms = {{-1, -1, -1, -1}, {-1, -1, -1, -1}};
 			int best_scalefactor = -1;
@@ -407,6 +410,9 @@ unsigned int qoa_encode_frame(const short *sample_data, qoa_desc *qoa, unsigned 
 				qoa_lms_t lms = qoa->lms[c];
 				qoa_uint64_t slice = scalefactor;
 				qoa_uint64_t current_rank = 0;
+				#ifdef QOA_RECORD_TOTAL_ERROR
+					qoa_uint64_t current_error = 0;
+				#endif
 
 				for (int si = slice_start; si < slice_end; si += channels) {
 					int sample = sample_data[si];
@@ -436,6 +442,9 @@ unsigned int qoa_encode_frame(const short *sample_data, qoa_desc *qoa, unsigned 
 					qoa_uint64_t error_sq = error * error;
 
 					current_rank += error_sq + weights_penalty * weights_penalty;
+					#ifdef QOA_RECORD_TOTAL_ERROR
+						current_error += error_sq;
+					#endif
 					if (current_rank > best_rank) {
 						break;
 					}
@@ -446,6 +455,9 @@ unsigned int qoa_encode_frame(const short *sample_data, qoa_desc *qoa, unsigned 
 
 				if (current_rank < best_rank) {
 					best_rank = current_rank;
+					#ifdef QOA_RECORD_TOTAL_ERROR
+						best_error = current_error;
+					#endif
 					best_slice = slice;
 					best_lms = lms;
 					best_scalefactor = scalefactor;
@@ -581,8 +593,8 @@ unsigned int qoa_decode_frame(const unsigned char *bytes, unsigned int size, qoa
 	unsigned int samples    = (frame_header >> 16) & 0x00ffff;
 	unsigned int frame_size = (frame_header      ) & 0x00ffff;
 
-	int data_size = frame_size - 8 - QOA_LMS_LEN * 4 * channels;
-	int num_slices = data_size / 8;
+	unsigned int data_size = frame_size - 8 - QOA_LMS_LEN * 4 * channels;
+	unsigned int num_slices = data_size / 8;
 	unsigned int max_total_samples = num_slices * QOA_SLICE_LEN;
 
 	if (

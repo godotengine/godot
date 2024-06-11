@@ -228,12 +228,87 @@ String RichTextLabel::_letters(int p_num, bool p_capitalize) const {
 	return s;
 }
 
+String RichTextLabel::_get_prefix(Item *p_item, const Vector<int> &p_list_index, const Vector<ItemList *> &p_list_items) {
+	String prefix;
+	int segments = 0;
+	for (int i = 0; i < p_list_index.size(); i++) {
+		String segment;
+		if (p_list_items[i]->list_type == LIST_DOTS) {
+			if (segments == 0) {
+				prefix = p_list_items[i]->bullet;
+			}
+			break;
+		}
+		prefix = "." + prefix;
+		if (p_list_items[i]->list_type == LIST_NUMBERS) {
+			segment = itos(p_list_index[i]);
+			if (is_localizing_numeral_system()) {
+				segment = TS->format_number(segment, _find_language(p_item));
+			}
+			segments++;
+		} else if (p_list_items[i]->list_type == LIST_LETTERS) {
+			segment = _letters(p_list_index[i], p_list_items[i]->capitalize);
+			segments++;
+		} else if (p_list_items[i]->list_type == LIST_ROMAN) {
+			segment = _roman(p_list_index[i], p_list_items[i]->capitalize);
+			segments++;
+		}
+		prefix = segment + prefix;
+	}
+	return prefix;
+}
+
 void RichTextLabel::_update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size) {
 	ERR_FAIL_NULL(p_frame);
 	ERR_FAIL_COND(p_line < 0 || p_line >= (int)p_frame->lines.size());
 
 	Line &l = p_frame->lines[p_line];
 	MutexLock lock(l.text_buf->get_mutex());
+
+	// Prefix.
+	Vector<int> list_index;
+	Vector<int> list_count;
+	Vector<ItemList *> list_items;
+	_find_list(l.from, list_index, list_count, list_items);
+
+	if (list_items.size() > 0) {
+		if (list_index[0] == 1) {
+			// List level start, shape all prefixes for this level and compute max. prefix width.
+			list_items[0]->max_width = 0;
+			int index = 0;
+			for (int i = p_line; i < (int)p_frame->lines.size(); i++) {
+				Line &list_l = p_frame->lines[i];
+				if (_find_list_item(list_l.from) == list_items[0]) {
+					index++;
+
+					Ref<Font> font = theme_cache.normal_font;
+					int font_size = theme_cache.normal_font_size;
+
+					ItemFont *font_it = _find_font(list_l.from);
+					if (font_it) {
+						if (font_it->font.is_valid()) {
+							font = font_it->font;
+						}
+						if (font_it->font_size > 0) {
+							font_size = font_it->font_size;
+						}
+					}
+					ItemFontSize *font_size_it = _find_font_size(list_l.from);
+					if (font_size_it && font_size_it->font_size > 0) {
+						font_size = font_size_it->font_size;
+					}
+
+					list_index.write[0] = index;
+					String prefix = _get_prefix(list_l.from, list_index, list_items);
+					list_l.text_prefix.instantiate();
+					list_l.text_prefix->set_direction(_find_direction(list_l.from));
+					list_l.text_prefix->add_string(prefix, font, font_size);
+					list_items.write[0]->max_width = MAX(list_items[0]->max_width, list_l.text_prefix->get_size().x);
+				}
+			}
+		}
+		l.prefix_width = list_items[0]->max_width;
+	}
 
 	RID t = l.text_buf->get_rid();
 	int spans = TS->shaped_get_span_count(t);
@@ -287,7 +362,7 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 	Line &l = p_frame->lines[p_line];
 	MutexLock lock(l.text_buf->get_mutex());
 
-	l.offset.x = _find_margin(l.from, p_base_font, p_base_font_size);
+	l.offset.x = _find_margin(l.from, p_base_font, p_base_font_size) + l.prefix_width;
 	l.text_buf->set_width(p_width - l.offset.x);
 
 	PackedFloat32Array tab_stops = _find_tab_stops(l.from);
@@ -378,8 +453,53 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	l.char_offset = *r_char_offset;
 	l.char_count = 0;
 
+	// List prefix.
+	Vector<int> list_index;
+	Vector<int> list_count;
+	Vector<ItemList *> list_items;
+	_find_list(l.from, list_index, list_count, list_items);
+
+	if (list_items.size() > 0) {
+		if (list_index[0] == 1) {
+			// List level start, shape all prefixes for this level and compute max. prefix width.
+			list_items[0]->max_width = 0;
+			int index = 0;
+			for (int i = p_line; i < (int)p_frame->lines.size(); i++) {
+				Line &list_l = p_frame->lines[i];
+				if (_find_list_item(list_l.from) == list_items[0]) {
+					index++;
+
+					Ref<Font> font = theme_cache.normal_font;
+					int font_size = theme_cache.normal_font_size;
+
+					ItemFont *font_it = _find_font(list_l.from);
+					if (font_it) {
+						if (font_it->font.is_valid()) {
+							font = font_it->font;
+						}
+						if (font_it->font_size > 0) {
+							font_size = font_it->font_size;
+						}
+					}
+					ItemFontSize *font_size_it = _find_font_size(list_l.from);
+					if (font_size_it && font_size_it->font_size > 0) {
+						font_size = font_size_it->font_size;
+					}
+
+					list_index.write[0] = index;
+					String prefix = _get_prefix(list_l.from, list_index, list_items);
+					list_l.text_prefix.instantiate();
+					list_l.text_prefix->set_direction(_find_direction(list_l.from));
+					list_l.text_prefix->add_string(prefix, font, font_size);
+					list_items.write[0]->max_width = MAX(list_items[0]->max_width, list_l.text_prefix->get_size().x);
+				}
+			}
+		}
+		l.prefix_width = list_items[0]->max_width;
+	}
+
 	// Add indent.
-	l.offset.x = _find_margin(l.from, p_base_font, p_base_font_size);
+	l.offset.x = _find_margin(l.from, p_base_font, p_base_font_size) + l.prefix_width;
 	l.text_buf->set_width(p_width - l.offset.x);
 	l.text_buf->set_alignment(_find_alignment(l.from));
 	l.text_buf->set_direction(_find_direction(l.from));
@@ -685,45 +805,6 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	int total_glyphs = (trim_glyphs_ltr || trim_glyphs_rtl) ? get_total_glyph_count() : 0;
 	int visible_glyphs = total_glyphs * visible_ratio;
 
-	Vector<int> list_index;
-	Vector<ItemList *> list_items;
-	_find_list(l.from, list_index, list_items);
-
-	String prefix;
-	int segments = 0;
-	for (int i = 0; i < list_index.size(); i++) {
-		String segment;
-		if (list_items[i]->list_type == LIST_DOTS) {
-			if (segments == 0) {
-				prefix = list_items[i]->bullet;
-			}
-			break;
-		}
-		if (rtl) {
-			prefix = prefix + ".";
-		} else {
-			prefix = "." + prefix;
-		}
-		if (list_items[i]->list_type == LIST_NUMBERS) {
-			segment = itos(list_index[i]);
-			if (is_localizing_numeral_system()) {
-				segment = TS->format_number(segment, _find_language(l.from));
-			}
-			segments++;
-		} else if (list_items[i]->list_type == LIST_LETTERS) {
-			segment = _letters(list_index[i], list_items[i]->capitalize);
-			segments++;
-		} else if (list_items[i]->list_type == LIST_ROMAN) {
-			segment = _roman(list_index[i], list_items[i]->capitalize);
-			segments++;
-		}
-		if (rtl) {
-			prefix = prefix + segment;
-		} else {
-			prefix = segment + prefix;
-		}
-	}
-
 	// Draw dropcap.
 	int dc_lines = l.text_buf->get_dropcap_lines();
 	float h_off = l.text_buf->get_dropcap_size().x;
@@ -790,27 +871,27 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		}
 
 		bool skip_prefix = (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && l.char_offset == visible_characters) || (trim_chars && l.char_offset > visible_characters) || (trim_glyphs_ltr && (r_processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (r_processed_glyphs < total_glyphs - visible_glyphs));
-		if (!prefix.is_empty() && line == 0 && !skip_prefix) {
-			Ref<Font> font = theme_cache.normal_font;
-			int font_size = theme_cache.normal_font_size;
-
-			ItemFont *font_it = _find_font(l.from);
-			if (font_it) {
-				if (font_it->font.is_valid()) {
-					font = font_it->font;
-				}
-				if (font_it->font_size > 0) {
-					font_size = font_it->font_size;
-				}
-			}
-			ItemFontSize *font_size_it = _find_font_size(l.from);
-			if (font_size_it && font_size_it->font_size > 0) {
-				font_size = font_size_it->font_size;
-			}
+		if (l.text_prefix.is_valid() && line == 0 && !skip_prefix) {
+			Color font_color = _find_color(l.from, p_base_color);
+			int outline_size = _find_outline_size(l.from, p_outline_size);
+			Color font_outline_color = _find_outline_color(l.from, p_outline_color);
+			Color font_shadow_color = p_font_shadow_color * Color(1, 1, 1, font_color.a);
 			if (rtl) {
-				font->draw_string(ci, p_ofs + Vector2(off.x + length, l.text_buf->get_line_ascent(0)), " " + prefix, HORIZONTAL_ALIGNMENT_LEFT, l.offset.x, font_size, _find_color(l.from, p_base_color));
+				if (p_shadow_outline_size > 0 && font_shadow_color.a != 0.0) {
+					l.text_prefix->draw_outline(ci, p_ofs + Vector2(off.x + length, 0) + p_shadow_ofs, p_shadow_outline_size, font_shadow_color);
+				}
+				if (outline_size > 0 && font_outline_color.a != 0.0) {
+					l.text_prefix->draw_outline(ci, p_ofs + Vector2(off.x + length, 0), outline_size, font_outline_color);
+				}
+				l.text_prefix->draw(ci, p_ofs + Vector2(off.x + length, 0), font_color);
 			} else {
-				font->draw_string(ci, p_ofs + Vector2(off.x - l.offset.x, l.text_buf->get_line_ascent(0)), prefix + " ", HORIZONTAL_ALIGNMENT_RIGHT, l.offset.x, font_size, _find_color(l.from, p_base_color));
+				if (p_shadow_outline_size > 0 && font_shadow_color.a != 0.0) {
+					l.text_prefix->draw_outline(ci, p_ofs + Vector2(off.x - l.text_prefix->get_size().x, 0) + p_shadow_ofs, p_shadow_outline_size, font_shadow_color);
+				}
+				if (outline_size > 0 && font_outline_color.a != 0.0) {
+					l.text_prefix->draw_outline(ci, p_ofs + Vector2(off.x - l.text_prefix->get_size().x, 0), outline_size, font_outline_color);
+				}
+				l.text_prefix->draw(ci, p_ofs + Vector2(off.x - l.text_prefix->get_size().x, 0), font_color);
 			}
 		}
 
@@ -2320,7 +2401,7 @@ RichTextLabel::ItemList *RichTextLabel::_find_list_item(Item *p_item) {
 	return nullptr;
 }
 
-int RichTextLabel::_find_list(Item *p_item, Vector<int> &r_index, Vector<ItemList *> &r_list) {
+int RichTextLabel::_find_list(Item *p_item, Vector<int> &r_index, Vector<int> &r_count, Vector<ItemList *> &r_list) {
 	Item *item = p_item;
 	Item *prev_item = p_item;
 
@@ -2335,15 +2416,20 @@ int RichTextLabel::_find_list(Item *p_item, Vector<int> &r_index, Vector<ItemLis
 			_find_frame(list, &frame, &line);
 
 			int index = 1;
+			int count = 1;
 			if (frame != nullptr) {
-				for (int i = list->line + 1; i <= prev_item->line && i < (int)frame->lines.size(); i++) {
+				for (int i = list->line + 1; i < (int)frame->lines.size(); i++) {
 					if (_find_list_item(frame->lines[i].from) == list) {
-						index++;
+						if (i <= prev_item->line) {
+							index++;
+						}
+						count++;
 					}
 				}
 			}
 
 			r_index.push_back(index);
+			r_count.push_back(count);
 			r_list.push_back(list);
 
 			prev_item = item;

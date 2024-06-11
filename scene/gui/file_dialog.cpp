@@ -99,7 +99,9 @@ void FileDialog::set_visible(bool p_visible) {
 #endif
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
-		_native_popup();
+		if (p_visible) {
+			_native_popup();
+		}
 	} else {
 		ConfirmationDialog::set_visible(p_visible);
 	}

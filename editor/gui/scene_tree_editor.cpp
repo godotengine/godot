@@ -232,22 +232,26 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	item->set_icon(0, icon);
 	item->set_metadata(0, p_node->get_path());
 
+	if (connecting_signal) {
+		// Add script icons for all scripted nodes.
+		Ref<Script> scr = p_node->get_script();
+		if (scr.is_valid()) {
+			item->add_button(0, get_editor_theme_icon(SNAME("Script")), BUTTON_SCRIPT);
+			if (EditorNode::get_singleton()->get_object_custom_type_base(p_node) == scr) {
+				// Disable button on custom scripts (pure visual cue).
+				item->set_button_disabled(0, item->get_button_count(0) - 1, true);
+			}
+		}
+	}
+
 	if (connect_to_script_mode) {
 		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 
 		Ref<Script> scr = p_node->get_script();
-		if (!scr.is_null() && EditorNode::get_singleton()->get_object_custom_type_base(p_node) != scr) {
-			//has script
-			item->add_button(0, get_editor_theme_icon(SNAME("Script")), BUTTON_SCRIPT);
-		} else {
-			//has no script (or script is a custom type)
+		bool has_custom_script = scr.is_valid() && EditorNode::get_singleton()->get_object_custom_type_base(p_node) == scr;
+		if (scr.is_null() || has_custom_script) {
 			_set_item_custom_color(item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 			item->set_selectable(0, false);
-
-			if (!scr.is_null()) { // make sure to mark the script if a custom type
-				item->add_button(0, get_editor_theme_icon(SNAME("Script")), BUTTON_SCRIPT);
-				item->set_button_disabled(0, item->get_button_count(0) - 1, true);
-			}
 
 			accent.a *= 0.7;
 		}

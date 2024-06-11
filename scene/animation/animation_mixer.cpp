@@ -1177,6 +1177,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 		real_t weight = ai.playback_info.weight;
 		Vector<real_t> track_weights = ai.playback_info.track_weights;
 		bool backward = signbit(delta); // This flag is used by the root motion calculates or detecting the end of audio stream.
+		bool seeked_backward = signbit(p_delta);
 #ifndef _3D_DISABLED
 		bool calc_root = !seeked || is_external_seeking;
 #endif // _3D_DISABLED
@@ -1531,7 +1532,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						}
 					} else {
 						if (seeked) {
-							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT, true);
+							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT, false, seeked_backward);
 							if (idx < 0) {
 								continue;
 							}
@@ -1812,8 +1813,10 @@ void AnimationMixer::_blend_apply() {
 			case Animation::TYPE_VALUE: {
 				TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
-				if (t->use_discrete && !t->use_continuous) {
-					t->is_init = true; // If only disctere value is applied, no more RESET.
+				if (callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS) {
+					t->is_init = false; // Always update in Force Continuous.
+				} else if (!t->use_continuous && (t->use_discrete || !deterministic)) {
+					t->is_init = true; // If there is no continuous value and only disctere value is applied or just started, don't RESET.
 				}
 
 				if ((t->is_init && (is_zero_amount || !t->use_continuous)) ||
@@ -1824,9 +1827,7 @@ void AnimationMixer::_blend_apply() {
 					break; // Don't overwrite the value set by UPDATE_DISCRETE.
 				}
 
-				if (callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS) {
-					t->is_init = false; // Always update in Force Continuous.
-				} else {
+				if (callback_mode_discrete != ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS) {
 					t->is_init = !t->use_continuous; // If there is no Continuous in non-Force Continuous type, it means RESET.
 				}
 

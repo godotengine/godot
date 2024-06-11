@@ -78,7 +78,6 @@ struct SwShapeTask : SwTask
 {
     SwShape shape;
     const RenderShape* rshape = nullptr;
-    bool cmpStroking = false;
     bool clipper = false;
 
     /* We assume that if the stroke width is greater than 2,

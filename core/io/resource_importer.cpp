@@ -410,6 +410,7 @@ void ResourceFormatImporter::get_importers_for_extension(const String &p_extensi
 		for (const String &F : local_exts) {
 			if (p_extension.to_lower() == F) {
 				r_importers->push_back(importers[i]);
+				break;
 			}
 		}
 	}

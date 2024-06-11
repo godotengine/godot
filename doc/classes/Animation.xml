@@ -360,9 +360,12 @@
 			<param index="1" name="time" type="float" />
 			<param index="2" name="find_mode" type="int" enum="Animation.FindMode" default="0" />
 			<param index="3" name="limit" type="bool" default="false" />
+			<param index="4" name="backward" type="bool" default="false" />
 			<description>
 				Finds the key index by time in a given track. Optionally, only find it if the approx/exact time is given.
 				If [param limit] is [code]true[/code], it does not return keys outside the animation range.
+				If [param backward] is [code]true[/code], the direction is reversed in methods that rely on one directional processing.
+				For example, in case [param find_mode] is [constant FIND_MODE_NEAREST], if there is no key in the current position just after seeked, the first key found is retrieved by searching before the position, but if [param backward] is [code]true[/code], the first key found is retrieved after the position.
 			</description>
 		</method>
 		<method name="track_get_interpolation_loop_wrap" qualifiers="const">
@@ -583,6 +586,7 @@
 			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated value at the given time (in seconds). The [param track_idx] must be the index of a value track.
+				A [param backward] mainly affects the direction of key retrieval of the track with [constant UPDATE_DISCRETE] converted by [constant AnimationMixer.ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS] to match the result with [method track_find_key].
 			</description>
 		</method>
 		<method name="value_track_set_update_mode">

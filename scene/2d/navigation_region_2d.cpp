@@ -458,6 +458,7 @@ void NavigationRegion2D::_update_debug_mesh() {
 		return;
 	}
 
+	rs->canvas_item_clear(debug_instance_rid);
 	rs->mesh_clear(debug_mesh_rid);
 	debug_mesh_dirty = false;
 

@@ -1498,7 +1498,7 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 	emit_changed();
 }
 
-int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, bool p_limit) const {
+int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, bool p_limit, bool p_backward) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
 
@@ -1520,7 +1520,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 				return key_index;
 			}
 
-			int k = _find(tt->positions, p_time, false, p_limit);
+			int k = _find(tt->positions, p_time, p_backward, p_limit);
 			if (k < 0 || k >= tt->positions.size()) {
 				return -1;
 			}
@@ -1547,7 +1547,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 				return key_index;
 			}
 
-			int k = _find(rt->rotations, p_time, false, p_limit);
+			int k = _find(rt->rotations, p_time, p_backward, p_limit);
 			if (k < 0 || k >= rt->rotations.size()) {
 				return -1;
 			}
@@ -1574,7 +1574,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 				return key_index;
 			}
 
-			int k = _find(st->scales, p_time, false, p_limit);
+			int k = _find(st->scales, p_time, p_backward, p_limit);
 			if (k < 0 || k >= st->scales.size()) {
 				return -1;
 			}
@@ -1601,7 +1601,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 				return key_index;
 			}
 
-			int k = _find(bst->blend_shapes, p_time, false, p_limit);
+			int k = _find(bst->blend_shapes, p_time, p_backward, p_limit);
 			if (k < 0 || k >= bst->blend_shapes.size()) {
 				return -1;
 			}
@@ -1613,7 +1613,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 		} break;
 		case TYPE_VALUE: {
 			ValueTrack *vt = static_cast<ValueTrack *>(t);
-			int k = _find(vt->values, p_time, false, p_limit);
+			int k = _find(vt->values, p_time, p_backward, p_limit);
 			if (k < 0 || k >= vt->values.size()) {
 				return -1;
 			}
@@ -1625,7 +1625,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 		} break;
 		case TYPE_METHOD: {
 			MethodTrack *mt = static_cast<MethodTrack *>(t);
-			int k = _find(mt->methods, p_time, false, p_limit);
+			int k = _find(mt->methods, p_time, p_backward, p_limit);
 			if (k < 0 || k >= mt->methods.size()) {
 				return -1;
 			}
@@ -1637,7 +1637,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 		} break;
 		case TYPE_BEZIER: {
 			BezierTrack *bt = static_cast<BezierTrack *>(t);
-			int k = _find(bt->values, p_time, false, p_limit);
+			int k = _find(bt->values, p_time, p_backward, p_limit);
 			if (k < 0 || k >= bt->values.size()) {
 				return -1;
 			}
@@ -1649,7 +1649,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 		} break;
 		case TYPE_AUDIO: {
 			AudioTrack *at = static_cast<AudioTrack *>(t);
-			int k = _find(at->values, p_time, false, p_limit);
+			int k = _find(at->values, p_time, p_backward, p_limit);
 			if (k < 0 || k >= at->values.size()) {
 				return -1;
 			}
@@ -1661,7 +1661,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 		} break;
 		case TYPE_ANIMATION: {
 			AnimationTrack *at = static_cast<AnimationTrack *>(t);
-			int k = _find(at->values, p_time, false, p_limit);
+			int k = _find(at->values, p_time, p_backward, p_limit);
 			if (k < 0 || k >= at->values.size()) {
 				return -1;
 			}
@@ -3867,7 +3867,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("track_get_key_count", "track_idx"), &Animation::track_get_key_count);
 	ClassDB::bind_method(D_METHOD("track_get_key_value", "track_idx", "key_idx"), &Animation::track_get_key_value);
 	ClassDB::bind_method(D_METHOD("track_get_key_time", "track_idx", "key_idx"), &Animation::track_get_key_time);
-	ClassDB::bind_method(D_METHOD("track_find_key", "track_idx", "time", "find_mode", "limit"), &Animation::track_find_key, DEFVAL(FIND_MODE_NEAREST), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("track_find_key", "track_idx", "time", "find_mode", "limit", "backward"), &Animation::track_find_key, DEFVAL(FIND_MODE_NEAREST), DEFVAL(false), DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("track_set_interpolation_type", "track_idx", "interpolation"), &Animation::track_set_interpolation_type);
 	ClassDB::bind_method(D_METHOD("track_get_interpolation_type", "track_idx"), &Animation::track_get_interpolation_type);

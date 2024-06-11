@@ -75,13 +75,13 @@ static Result _compFastTrack(Paint* cmpTarget, const RenderTransform* pTransform
         auto v2 = *pt3;
 
         if (rTransform) {
-            mathMultiply(&v1, &rTransform->m);
-            mathMultiply(&v2, &rTransform->m);
+            v1 *= rTransform->m;
+            v2 *= rTransform->m;
         }
 
         if (pTransform) {
-            mathMultiply(&v1, &pTransform->m);
-            mathMultiply(&v2, &pTransform->m);
+            v1 *= pTransform->m;
+            v2 *= pTransform->m;
         }
 
         //sorting
@@ -327,7 +327,7 @@ bool Paint::Impl::bounds(float* x, float* y, float* w, float* h, bool transforme
 
     //Compute the AABB after transformation
     for (int i = 0; i < 4; i++) {
-        mathMultiply(&pt[i], m);
+        pt[i] *= *m;
 
         if (pt[i].x < x1) x1 = pt[i].x;
         if (pt[i].x > x2) x2 = pt[i].x;

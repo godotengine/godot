@@ -50,6 +50,15 @@
 				Sends the given [param message] to the attached remote instance, optionally passing additionally [param data]. See [EngineDebugger] for how to retrieve those messages.
 			</description>
 		</method>
+		<method name="set_breakpoint">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="line" type="int" />
+			<param index="2" name="enabled" type="bool" />
+			<description>
+				Enables or disables a specific breakpoint based on [param enabled], updating the Editor Breakpoint Panel accordingly.
+			</description>
+		</method>
 		<method name="toggle_profiler">
 			<return type="void" />
 			<param index="0" name="profiler" type="String" />
