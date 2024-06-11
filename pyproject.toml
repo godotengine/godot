@@ -26,7 +26,19 @@ extend-select = [
 [tool.ruff.lint.per-file-ignores]
 "{SConstruct,SCsub}" = [
 	"E402", # Module level import not at top of file
-	"F821", # Undefined name
+	"F403", # Undefined local with import star
+	"F405", # Undefined local with import star usage
+]
+
+[tool.ruff.lint.isort]
+sections = { metadata = ["misc.utility.scons_hints"] }
+section-order = [
+	"future",
+	"metadata",
+	"standard-library",
+	"third-party",
+	"first-party",
+	"local-folder",
 ]
 
 [tool.codespell]
