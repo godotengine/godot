@@ -451,6 +451,9 @@ void EditorThemeManager::_create_shared_styles(const Ref<EditorTheme> &p_theme, 
 		p_theme->set_color("success_color", EditorStringName(Editor), p_config.success_color);
 		p_theme->set_color("warning_color", EditorStringName(Editor), p_config.warning_color);
 		p_theme->set_color("error_color", EditorStringName(Editor), p_config.error_color);
+#ifndef DISABLE_DEPRECATED // Used before 4.3.
+		p_theme->set_color("disabled_highlight_color", EditorStringName(Editor), p_config.highlight_disabled_color);
+#endif
 
 		// Only used when the Draw Extra Borders editor setting is enabled.
 		p_config.extra_border_color_1 = Color(0.5, 0.5, 0.5);
@@ -480,6 +483,12 @@ void EditorThemeManager::_create_shared_styles(const Ref<EditorTheme> &p_theme, 
 		p_theme->set_color("font_readonly_color", EditorStringName(Editor), p_config.font_readonly_color);
 		p_theme->set_color("font_placeholder_color", EditorStringName(Editor), p_config.font_placeholder_color);
 		p_theme->set_color("font_outline_color", EditorStringName(Editor), p_config.font_outline_color);
+#ifndef DISABLE_DEPRECATED // Used before 4.3.
+		p_theme->set_color("readonly_font_color", EditorStringName(Editor), p_config.font_readonly_color);
+		p_theme->set_color("disabled_font_color", EditorStringName(Editor), p_config.font_disabled_color);
+		p_theme->set_color("readonly_color", EditorStringName(Editor), p_config.font_readonly_color);
+		p_theme->set_color("highlighted_font_color", EditorStringName(Editor), p_config.font_hover_color); // Closest equivalent.
+#endif
 
 		// Icon colors.
 
@@ -2106,6 +2115,9 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_color("prop_category", EditorStringName(Editor), prop_category_color);
 		p_theme->set_color("prop_section", EditorStringName(Editor), prop_section_color);
 		p_theme->set_color("prop_subsection", EditorStringName(Editor), prop_subsection_color);
+#ifndef DISABLE_DEPRECATED // Used before 4.3.
+		p_theme->set_color("property_color", EditorStringName(Editor), prop_category_color);
+#endif
 
 		// EditorInspectorCategory.
 
