@@ -304,8 +304,6 @@ vec4 light_compute(
 		float light_energy,
 		vec4 specular_shininess,
 		inout vec4 shadow_modulate,
-		inout uint light_max_steps,
-		inout float light_step_size,
 		vec2 screen_uv,
 		vec2 uv,
 		vec4 color, bool is_directional) {
@@ -318,8 +316,6 @@ vec4 light_compute(
 	} else {
 		light_direction = normalize(light_position - light_vertex);
 	}
-
-#CODE : LIGHT_SETTINGS
 
 #CODE : LIGHT
 
@@ -730,13 +726,19 @@ void main() {
 		uint light_max_steps = 5;
 		float light_step_size = 1.5;
 
+#ifdef LIGHT_SETTINGS_CODE_USED
+
+#CODE : LIGHT_SETTINGS
+
+#endif
+
 #ifdef LIGHT_CODE_USED
 
 		vec4 shadow_modulate = vec4(1.0);
 		vec3 light_position = vec3(light_array.data[light_base].position, light_array.data[light_base].height);
 
 		light_color.rgb *= light_base_color.rgb;
-		light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, light_max_steps, light_step_size, screen_uv, uv, base_color, false);
+		light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, screen_uv, uv, base_color, false);
 #else
 
 		light_color.rgb *= light_base_color.rgb * light_base_color.a;
