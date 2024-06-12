@@ -92,32 +92,55 @@ struct _NO_DISCARD_ Vector3 {
 		return Vector3(MAX(x, p_scalar), MAX(y, p_scalar), MAX(z, p_scalar));
 	}
 
-	#define SETGET_2D(a, b) struct Vector2 get_##a##b() const;\
+#define SETGET_2D(a, b)                 \
+	struct Vector2 get_##a##b() const; \
 	void set_##a##b(const struct Vector2 &p_v);
-	#define SETGET_2DM(a,b) SETGET_2D(a, b) SETGET_2D(b,a)
-
+#define SETGET_2DM(a,b) SETGET_2D(a, b) SETGET_2D(b,a)
 	SETGET_2DM(x, y)
 	SETGET_2DM(x, z)
 	SETGET_2DM(y, z)
 	SETGET_2D (x, x)
 	SETGET_2D (y, y)
 	SETGET_2D (z, z)
+#undef SETGET_2D
+#undef SETGET_2DM
 
-	#undef SETGET_2D
-	#undef SETGET_2DM
-
-	#define SETGET_3D(a, b, c) _FORCE_INLINE_ Vector3 get_##a##b##c() const { return Vector3(a, b, c); }\
-	_FORCE_INLINE_ void set_##a##b##c(const Vector3 &p_v) { a = p_v.x; b = p_v.y; c = p_v.z; }
-	#define SETGET_3DP(a, b, c) SETGET_3D(a,a,a) SETGET_3D(a,a,b) SETGET_3D(a,a,c) SETGET_3D(a,b,a) SETGET_3D(a,b,b) SETGET_3D(a,b,c) \
-	SETGET_3D(a,c,a) SETGET_3D(a,c,b) SETGET_3D(a,c,c) SETGET_3D(b,a,a) SETGET_3D(b,a,b) SETGET_3D(b,a,c) \
-	SETGET_3D(b,b,a) SETGET_3D(b,b,b) SETGET_3D(b,b,c) SETGET_3D(b,c,a) SETGET_3D(b,c,b) SETGET_3D(b,c,c) \
-	SETGET_3D(c,a,a) SETGET_3D(c,a,b) SETGET_3D(c,a,c) SETGET_3D(c,b,a) SETGET_3D(c,b,b) SETGET_3D(c,b,c) \
-	SETGET_3D(c,c,a) SETGET_3D(c,c,b) SETGET_3D(c,c,c)
-
-	SETGET_3DP(x, y, z)
-
-	#undef SETGET_3D
-	#undef SETGET_3DM
+#define SETGET_3D(a, b, c)                                                      \
+	_FORCE_INLINE_ Vector3 get_##a##b##c() const { return Vector3(a, b, c); }   \
+	_FORCE_INLINE_ void set_##a##b##c(const Vector3 &p_v) {                     \
+		a = p_v.x;                                                              \
+		b = p_v.y;                                                              \
+		c = p_v.z;                                                              \
+	}
+	SETGET_3D(x,x,x)
+	SETGET_3D(x,x,y)
+	SETGET_3D(x,x,z)
+	SETGET_3D(x,y,x)
+	SETGET_3D(x,y,y)
+	SETGET_3D(x,y,z)
+	SETGET_3D(x,z,x)
+	SETGET_3D(x,z,y)
+	SETGET_3D(x,z,z)
+	SETGET_3D(y,x,x)
+	SETGET_3D(y,x,y)
+	SETGET_3D(y,x,z)
+	SETGET_3D(y,y,x)
+	SETGET_3D(y,y,y)
+	SETGET_3D(y,y,z)
+	SETGET_3D(y,z,x)
+	SETGET_3D(y,z,y)
+	SETGET_3D(y,z,z)
+	SETGET_3D(z,x,x)
+	SETGET_3D(z,x,y)
+	SETGET_3D(z,x,z)
+	SETGET_3D(z,y,x)
+	SETGET_3D(z,y,y)
+	SETGET_3D(z,y,z)
+	SETGET_3D(z,z,x)
+	SETGET_3D(z,z,y)
+	SETGET_3D(z,z,z)
+#undef SETGET_3D
+#undef SETGET_3DM
 
 	_FORCE_INLINE_ real_t length() const;
 	_FORCE_INLINE_ real_t length_squared() const;

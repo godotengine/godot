@@ -64,16 +64,48 @@ static void register_member(Variant::Type p_type, const StringName &p_member) {
 
 void register_named_setters_getters() {
 #define REGISTER_MEMBER(m_base_type, m_member) register_member<VariantSetGet_##m_base_type##_##m_member>(GetTypeInfo<m_base_type>::VARIANT_TYPE, #m_member)
-#define REGISTER_SWIZZLE_2DP(vector, a, b) REGISTER_MEMBER(vector, a); REGISTER_MEMBER(vector, b); REGISTER_MEMBER(vector, a##b); \
-		REGISTER_MEMBER(vector, b##a); REGISTER_MEMBER(vector, a##a); REGISTER_MEMBER(vector, b##b);
-#define REGISTER_SWIZZLE_2DM(vector, a, b) REGISTER_MEMBER(vector, a##b); REGISTER_MEMBER(vector, b##a)
-#define REGISTER_3D(vector, a, b, c) REGISTER_MEMBER(vector, a##b##c);
-#define REGISTER_3DP(v, a, b, c) REGISTER_MEMBER(v, a); REGISTER_MEMBER(v, b); REGISTER_MEMBER(v, c);\
-REGISTER_3D(v,a,a,a) REGISTER_3D(v,a,a,b) REGISTER_3D(v,a,a,c) REGISTER_3D(v,a,b,a) REGISTER_3D(v,a,b,b) REGISTER_3D(v,a,b,c) \
-REGISTER_3D(v,a,c,a) REGISTER_3D(v,a,c,b) REGISTER_3D(v,a,c,c) REGISTER_3D(v,b,a,a) REGISTER_3D(v,b,a,b) REGISTER_3D(v,b,a,c) \
-REGISTER_3D(v,b,b,a) REGISTER_3D(v,b,b,b) REGISTER_3D(v,b,b,c) REGISTER_3D(v,b,c,a) REGISTER_3D(v,b,c,b) REGISTER_3D(v,b,c,c) \
-REGISTER_3D(v,c,a,a) REGISTER_3D(v,c,a,b) REGISTER_3D(v,c,a,c) REGISTER_3D(v,c,b,a) REGISTER_3D(v,c,b,b) REGISTER_3D(v,c,b,c) \
-REGISTER_3D(v,c,c,a) REGISTER_3D(v,c,c,b) REGISTER_3D(v,c,c,c)
+#define REGISTER_SWIZZLE_2DP(vector, a, b) \
+	REGISTER_MEMBER(vector, a);            \
+	REGISTER_MEMBER(vector, b);            \
+	REGISTER_MEMBER(vector, a##b);         \
+	REGISTER_MEMBER(vector, b##a);         \
+	REGISTER_MEMBER(vector, a##a);         \
+	REGISTER_MEMBER(vector, b##b);
+#define REGISTER_SWIZZLE_2DM(vector, a, b) \
+	REGISTER_MEMBER(vector, a##b);         \
+	REGISTER_MEMBER(vector, b##a)
+#define REGISTER_3D(vector, a, b, c) REGISTER_MEMBER(vector, a##b##c)
+#define REGISTER_3DP(v, a, b, c) \
+	REGISTER_MEMBER(v, a);       \
+	REGISTER_MEMBER(v, b);       \
+	REGISTER_MEMBER(v, c);       \
+	REGISTER_3D(v, a, a, a);     \
+	REGISTER_3D(v, a, a, b);     \
+	REGISTER_3D(v, a, a, c);     \
+	REGISTER_3D(v, a, b, a);     \
+	REGISTER_3D(v, a, b, b);     \
+	REGISTER_3D(v, a, b, c);     \
+	REGISTER_3D(v, a, c, a);     \
+	REGISTER_3D(v, a, c, b);     \
+	REGISTER_3D(v, a, c, c);     \
+	REGISTER_3D(v, b, a, a);     \
+	REGISTER_3D(v, b, a, b);     \
+	REGISTER_3D(v, b, a, c);     \
+	REGISTER_3D(v, b, b, a);     \
+	REGISTER_3D(v, b, b, b);     \
+	REGISTER_3D(v, b, b, c);     \
+	REGISTER_3D(v, b, c, a);     \
+	REGISTER_3D(v, b, c, b);     \
+	REGISTER_3D(v, b, c, c);     \
+	REGISTER_3D(v, c, a, a);     \
+	REGISTER_3D(v, c, a, b);     \
+	REGISTER_3D(v, c, a, c);     \
+	REGISTER_3D(v, c, b, a);     \
+	REGISTER_3D(v, c, b, b);     \
+	REGISTER_3D(v, c, b, c);     \
+	REGISTER_3D(v, c, c, a);     \
+	REGISTER_3D(v, c, c, b);     \
+	REGISTER_3D(v, c, c, c)
 
 	REGISTER_SWIZZLE_2DP(Vector2, x, y);
 
