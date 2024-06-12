@@ -319,6 +319,8 @@ vec4 light_compute(
 		light_direction = normalize(light_position - light_vertex);
 	}
 
+#CODE : LIGHT_SETTINGS
+
 #CODE : LIGHT
 
 	return light;
@@ -772,6 +774,8 @@ void main() {
 				occluder = texture(sampler2DArray(occluder_texture, texture_sampler), occluder_uv).r;
 			}
 
+//			tex_uv_atlas = ((interpolated_pos + (light_size / 2.0)) / light_size) * light_array.data[light_base].atlas_rect.zw + light_array.data[light_base].atlas_rect.xy;
+//			light_color = textureLod(sampler2D(atlas_texture, texture_sampler), tex_uv_atlas, 0.0);
 			if (interpolation_steps < light_max_steps) {
 				vec4 shadow_uv = shadow_uv_compute(interpolated_pos, light_array.data[light_base].shadow_zfar_inv, light_array.data[light_base].shadow_y_ofs);
 				light_color = light_shadow_compute(light_base, light_color, shadow_uv, float(interpolation_steps) / float(light_max_steps)
@@ -791,14 +795,6 @@ void main() {
 
 				light_color = shadow_color;
 			}
-
-//			light_color = vec4(occluder, occluder, occluder, 1.0);
-//			light_color = light_shadow_compute(light_base, light_color, shadow_uv
-//#ifdef LIGHT_CODE_USED
-//					,
-//					shadow_modulate.rgb
-//#endif
-//			);
 		}
 
 		light_blend_compute(light_base, light_color, color.rgb);
