@@ -525,6 +525,9 @@ class DisplayServerWindows : public DisplayServer {
 
 	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb);
 
+	bool _simulate_modifiers_press(BitField<KeyModifierMask> p_modifiers);
+	bool _simulate_modifiers_release(BitField<KeyModifierMask> p_modifiers);
+
 public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT MouseProc(int code, WPARAM wParam, LPARAM lParam);
@@ -680,6 +683,10 @@ public:
 	virtual String tablet_get_driver_name(int p_driver) const override;
 	virtual String tablet_get_current_driver() const override;
 	virtual void tablet_set_current_driver(const String &p_driver) override;
+
+	virtual bool simulate_mouse_click(MouseButton p_button, BitField<KeyModifierMask> p_modifiers, bool p_pressed) override;
+	virtual bool simulate_keypress(Key p_keycode, BitField<KeyModifierMask> p_modifiers, bool p_pressed) override;
+	virtual bool simulate_unicode_input(const String &p_text) override;
 
 	virtual void process_events() override;
 

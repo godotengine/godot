@@ -772,6 +772,7 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_SCREEN_CAPTURE:
 		case FEATURE_STATUS_INDICATOR:
 		case FEATURE_NATIVE_HELP:
+		case FEATURE_INPUT_SIMULATION:
 			return true;
 		default: {
 		}
@@ -2995,6 +2996,127 @@ Key DisplayServerMacOS::keyboard_get_label_from_physical(Key p_keycode) const {
 	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
 	unsigned int macos_keycode = KeyMappingMacOS::unmap_key(keycode_no_mod);
 	return (Key)(KeyMappingMacOS::remap_key(macos_keycode, 0, true) | modifiers);
+}
+
+bool DisplayServerMacOS::simulate_mouse_click(MouseButton p_button, BitField<KeyModifierMask> p_modifiers, bool p_pressed) {
+	Point2 position_on_screen = mouse_get_position();
+	position_on_screen.y *= -1;
+	position_on_screen += _get_screens_origin();
+	position_on_screen /= screen_get_max_scale();
+	CGPoint mouse_pos = { position_on_screen.x, CGDisplayBounds(CGMainDisplayID()).size.height - position_on_screen.y };
+
+	CGEventType mouse_type = kCGEventNull;
+	CGMouseButton mouse_button = (CGMouseButton)0;
+	Vector2i wheel_factor;
+	switch (p_button) {
+		case MouseButton::LEFT: {
+			mouse_type = p_pressed ? kCGEventLeftMouseDown : kCGEventLeftMouseUp;
+			mouse_button = (CGMouseButton)0;
+		} break;
+		case MouseButton::RIGHT: {
+			mouse_type = p_pressed ? kCGEventRightMouseDown : kCGEventRightMouseUp;
+			mouse_button = (CGMouseButton)1;
+		} break;
+		case MouseButton::MIDDLE: {
+			mouse_type = p_pressed ? kCGEventOtherMouseDown : kCGEventOtherMouseUp;
+			mouse_button = (CGMouseButton)2;
+		} break;
+		case MouseButton::MB_XBUTTON1: {
+			mouse_type = p_pressed ? kCGEventOtherMouseDown : kCGEventOtherMouseUp;
+			mouse_button = (CGMouseButton)3;
+		} break;
+		case MouseButton::MB_XBUTTON2: {
+			mouse_type = p_pressed ? kCGEventOtherMouseDown : kCGEventOtherMouseUp;
+			mouse_button = (CGMouseButton)4;
+		} break;
+		case MouseButton::WHEEL_UP: {
+			mouse_type = kCGEventScrollWheel;
+			wheel_factor = Vector2i(-1, 0);
+		} break;
+		case MouseButton::WHEEL_DOWN: {
+			mouse_type = kCGEventScrollWheel;
+			wheel_factor = Vector2i(1, 0);
+		} break;
+		case MouseButton::WHEEL_LEFT: {
+			mouse_type = kCGEventScrollWheel;
+			wheel_factor = Vector2i(0, -1);
+		} break;
+		case MouseButton::WHEEL_RIGHT: {
+			mouse_type = kCGEventScrollWheel;
+			wheel_factor = Vector2i(0, 1);
+		} break;
+		default:
+			break;
+	}
+	if (mouse_type == kCGEventScrollWheel) {
+		CGEventRef event = CGEventCreateScrollWheelEvent(nullptr, kCGScrollEventUnitLine, 2, wheel_factor.x, wheel_factor.y);
+		CGEventFlags flags = 0;
+		if (p_modifiers.has_flag(KeyModifierMask::SHIFT)) {
+			flags |= kCGEventFlagMaskShift;
+		}
+		if (p_modifiers.has_flag(KeyModifierMask::ALT)) {
+			flags |= kCGEventFlagMaskAlternate;
+		}
+		if (p_modifiers.has_flag(KeyModifierMask::META) || p_modifiers.has_flag(KeyModifierMask::CMD_OR_CTRL)) {
+			flags |= kCGEventFlagMaskCommand;
+		}
+		if (p_modifiers.has_flag(KeyModifierMask::CTRL)) {
+			flags |= kCGEventFlagMaskControl;
+		}
+		CGEventSetFlags(event, flags);
+		CGEventPost(kCGHIDEventTap, event);
+		CFRelease(event);
+	} else {
+		CGEventRef event = CGEventCreateMouseEvent(nullptr, mouse_type, mouse_pos, mouse_button);
+		CGEventFlags flags = 0;
+		if (p_modifiers.has_flag(KeyModifierMask::SHIFT)) {
+			flags |= kCGEventFlagMaskShift;
+		}
+		if (p_modifiers.has_flag(KeyModifierMask::ALT)) {
+			flags |= kCGEventFlagMaskAlternate;
+		}
+		if (p_modifiers.has_flag(KeyModifierMask::META) || p_modifiers.has_flag(KeyModifierMask::CMD_OR_CTRL)) {
+			flags |= kCGEventFlagMaskCommand;
+		}
+		if (p_modifiers.has_flag(KeyModifierMask::CTRL)) {
+			flags |= kCGEventFlagMaskControl;
+		}
+		CGEventSetFlags(event, flags);
+		CGEventPost(kCGHIDEventTap, event);
+		CFRelease(event);
+	}
+	return true;
+}
+
+bool DisplayServerMacOS::simulate_keypress(Key p_keycode, BitField<KeyModifierMask> p_modifiers, bool p_pressed) {
+	unsigned int macos_keycode = KeyMappingMacOS::unmap_key(p_keycode & KeyModifierMask::CODE_MASK);
+	CGEventRef event = CGEventCreateKeyboardEvent(nullptr, (CGKeyCode)macos_keycode, p_pressed);
+	CGEventFlags flags = 0;
+	if (p_modifiers.has_flag(KeyModifierMask::SHIFT)) {
+		flags |= kCGEventFlagMaskShift;
+	}
+	if (p_modifiers.has_flag(KeyModifierMask::ALT)) {
+		flags |= kCGEventFlagMaskAlternate;
+	}
+	if (p_modifiers.has_flag(KeyModifierMask::META) || p_modifiers.has_flag(KeyModifierMask::CMD_OR_CTRL)) {
+		flags |= kCGEventFlagMaskCommand;
+	}
+	if (p_modifiers.has_flag(KeyModifierMask::CTRL)) {
+		flags |= kCGEventFlagMaskControl;
+	}
+	CGEventSetFlags(event, flags);
+	CGEventPost(kCGHIDEventTap, event);
+	CFRelease(event);
+	return true;
+}
+
+bool DisplayServerMacOS::simulate_unicode_input(const String &p_text) {
+	CGEventRef event = CGEventCreateKeyboardEvent(nullptr, 0, true);
+	Char16String text16 = p_text.utf16();
+	CGEventKeyboardSetUnicodeString(event, text16.length(), (const UniChar *)text16.get_data());
+	CGEventPost(kCGHIDEventTap, event);
+	CFRelease(event);
+	return true;
 }
 
 void DisplayServerMacOS::process_events() {

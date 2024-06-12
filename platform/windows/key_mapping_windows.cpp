@@ -43,9 +43,12 @@ struct HashMapHasherKeys {
 };
 
 HashMap<unsigned int, Key, HashMapHasherKeys> vk_map;
+HashMap<Key, unsigned int, HashMapHasherKeys> vk_map_inv;
 HashMap<unsigned int, Key, HashMapHasherKeys> scansym_map;
 HashMap<Key, unsigned int, HashMapHasherKeys> scansym_map_inv;
 HashMap<unsigned int, Key, HashMapHasherKeys> scansym_map_ext;
+HashMap<Key, unsigned int, HashMapHasherKeys> scansym_map_ext_inv;
+
 HashMap<unsigned int, KeyLocation, HashMapHasherKeys> location_map;
 
 void KeyMappingWindows::initialize() {
@@ -232,6 +235,10 @@ void KeyMappingWindows::initialize() {
 	// VK_PA1 (0xFD), Old IBM 3270 PA1 key.
 	vk_map[VK_OEM_CLEAR] = Key::CLEAR; // (0xFE), OEM specific clear key. Unclear how it differs from normal clear.
 
+	for (const KeyValue<unsigned int, Key> &E : vk_map) {
+		vk_map_inv[E.value] = E.key;
+	}
+
 	scansym_map[0x00] = Key::PAUSE;
 	scansym_map[0x01] = Key::ESCAPE;
 	scansym_map[0x02] = Key::KEY_1;
@@ -382,6 +389,10 @@ void KeyMappingWindows::initialize() {
 	scansym_map_ext[0x6D] = Key::LAUNCHMEDIA;
 	scansym_map_ext[0x78] = Key::MEDIARECORD;
 
+	for (const KeyValue<unsigned int, Key> &E : scansym_map_ext) {
+		scansym_map_ext_inv[E.value] = E.key;
+	}
+
 	// Scancode to physical location map.
 	// Shift.
 	location_map[0x2A] = KeyLocation::LEFT;
@@ -400,8 +411,24 @@ Key KeyMappingWindows::get_keysym(unsigned int p_code) {
 	return Key::UNKNOWN;
 }
 
+unsigned int KeyMappingWindows::get_vk(Key p_keycode) {
+	const unsigned int *key = vk_map_inv.getptr(p_keycode);
+	if (key) {
+		return *key;
+	}
+	return 0;
+}
+
 unsigned int KeyMappingWindows::get_scancode(Key p_keycode) {
 	const unsigned int *key = scansym_map_inv.getptr(p_keycode);
+	if (key) {
+		return *key;
+	}
+	return 0;
+}
+
+unsigned int KeyMappingWindows::get_scancode_ext(Key p_keycode) {
+	const unsigned int *key = scansym_map_ext_inv.getptr(p_keycode);
 	if (key) {
 		return *key;
 	}

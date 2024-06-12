@@ -148,6 +148,7 @@ public:
 		FEATURE_NATIVE_HELP,
 		FEATURE_NATIVE_DIALOG_INPUT,
 		FEATURE_NATIVE_DIALOG_FILE,
+		FEATURE_INPUT_SIMULATION,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -559,6 +560,10 @@ public:
 	virtual String tablet_get_driver_name(int p_driver) const { return "default"; }
 	virtual String tablet_get_current_driver() const { return "default"; }
 	virtual void tablet_set_current_driver(const String &p_driver) {}
+
+	virtual bool simulate_mouse_click(MouseButton p_button, BitField<KeyModifierMask> p_modifiers, bool p_pressed) { return false; };
+	virtual bool simulate_keypress(Key p_keycode, BitField<KeyModifierMask> p_modifiers, bool p_pressed) { return false; };
+	virtual bool simulate_unicode_input(const String &p_text) { return false; };
 
 	virtual void process_events() = 0;
 
