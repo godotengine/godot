@@ -255,6 +255,10 @@ void EditorPropertyArray::_change_type_menu(int p_index) {
 		return;
 	}
 
+	ERR_FAIL_COND_MSG(
+			changing_type_index == EditorPropertyArrayObject::NOT_CHANGING_TYPE,
+			"Tried to change type of an array item, but no item was selected.");
+
 	Variant value;
 	VariantInternal::initialize(&value, Variant::Type(p_index));
 
@@ -443,6 +447,10 @@ void EditorPropertyArray::update_property() {
 				slot.prop->queue_free();
 				slot.prop = new_prop;
 				slot.set_index(idx);
+			}
+			if (slot.index == changing_type_index) {
+				callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(0);
+				changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
 			}
 			slot.prop->update_property();
 		}
@@ -921,6 +929,10 @@ void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 }
 
 void EditorPropertyDictionary::_change_type_menu(int p_index) {
+	ERR_FAIL_COND_MSG(
+			changing_type_index == EditorPropertyDictionaryObject::NOT_CHANGING_TYPE,
+			"Tried to change the type of a dict key or value, but nothing was selected.");
+
 	Variant value;
 	switch (changing_type_index) {
 		case EditorPropertyDictionaryObject::NEW_KEY_INDEX:
@@ -1062,6 +1074,14 @@ void EditorPropertyDictionary::update_property() {
 				new_prop->set_read_only(is_read_only());
 				slot.set_prop(new_prop);
 			}
+
+			// We need to grab the focus of the property that is being changed, even if the type didn't actually changed.
+			// Otherwise, focus will stay on the change type button, which is not very user friendly.
+			if (changing_type_index == slot.index) {
+				callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(0);
+				changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE; // Reset to avoid grabbing focus again.
+			}
+
 			slot.prop->update_property();
 		}
 		updating = false;

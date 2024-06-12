@@ -272,8 +272,9 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		ci->repeat_times = repeat_times;
 
 		if (repeat_size.x || repeat_size.y) {
-			rect.size += repeat_size * repeat_times / final_xform.get_scale();
-			rect.position -= repeat_size * (repeat_times / 2);
+			Size2 scale = final_xform.get_scale();
+			rect.size += repeat_size * repeat_times / scale;
+			rect.position -= repeat_size / scale * (repeat_times / 2);
 		}
 	}
 

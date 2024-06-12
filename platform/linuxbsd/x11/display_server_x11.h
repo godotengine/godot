@@ -330,6 +330,7 @@ class DisplayServerX11 : public DisplayServer {
 	bool xrandr_ext_ok = true;
 	bool xinerama_ext_ok = true;
 	bool xshaped_ext_ok = true;
+	bool xwayland = false;
 
 	struct Property {
 		unsigned char *data;

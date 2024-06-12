@@ -306,16 +306,8 @@ void SkeletonIK3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "root_bone" || p_property.name == "tip_bone") {
 		Skeleton3D *skeleton = get_skeleton();
 		if (skeleton) {
-			String names("--,");
-			for (int i = 0; i < skeleton->get_bone_count(); i++) {
-				if (i > 0) {
-					names += ",";
-				}
-				names += skeleton->get_bone_name(i);
-			}
-
 			p_property.hint = PROPERTY_HINT_ENUM;
-			p_property.hint_string = names;
+			p_property.hint_string = skeleton->get_concatenated_bone_names();
 		} else {
 			p_property.hint = PROPERTY_HINT_NONE;
 			p_property.hint_string = "";

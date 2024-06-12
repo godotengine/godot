@@ -2204,6 +2204,10 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 				Vector3 val = defval;
 				inputs[i] = "n_in" + itos(p_node) + "p" + itos(i);
 				node_code += "	vec3 " + inputs[i] + " = " + vformat("vec3(%.5f, %.5f, %.5f);\n", val.x, val.y, val.z);
+			} else if (defval.get_type() == Variant::VECTOR4) {
+				Vector4 val = defval;
+				inputs[i] = "n_in" + itos(p_node) + "p" + itos(i);
+				node_code += "	vec4 " + inputs[i] + " = " + vformat("vec4(%.5f, %.5f, %.5f, %.5f);\n", val.x, val.y, val.z, val.w);
 			} else if (defval.get_type() == Variant::QUATERNION) {
 				Quaternion val = defval;
 				inputs[i] = "n_in" + itos(p_node) + "p" + itos(i);
@@ -5162,11 +5166,11 @@ VisualShaderNodeVarying::PortType VisualShaderNodeVarying::get_port_type(VisualS
 		case VisualShader::VARYING_TYPE_UINT:
 			return PORT_TYPE_SCALAR_UINT;
 		case VisualShader::VARYING_TYPE_VECTOR_2D:
-			return PORT_TYPE_VECTOR_2D;
+			return p_port == 0 ? PORT_TYPE_VECTOR_2D : PORT_TYPE_SCALAR;
 		case VisualShader::VARYING_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR_3D;
+			return p_port == 0 ? PORT_TYPE_VECTOR_3D : PORT_TYPE_SCALAR;
 		case VisualShader::VARYING_TYPE_VECTOR_4D:
-			return PORT_TYPE_VECTOR_4D;
+			return p_port == 0 ? PORT_TYPE_VECTOR_4D : PORT_TYPE_SCALAR;
 		case VisualShader::VARYING_TYPE_BOOLEAN:
 			return PORT_TYPE_BOOLEAN;
 		case VisualShader::VARYING_TYPE_TRANSFORM:

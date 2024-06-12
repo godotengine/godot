@@ -537,17 +537,20 @@ void TextureProgressBar::_notification(int p_what) {
 									uvs.push_back(uv);
 								}
 
-								Point2 center_point = get_relative_center();
-								points.push_back(progress_offset + s * center_point);
-								if (valid_atlas_progress) {
-									center_point.x = Math::remap(center_point.x, 0, 1, region_rect.position.x / atlas_size.x, (region_rect.position.x + region_rect.size.x) / atlas_size.x);
-									center_point.y = Math::remap(center_point.y, 0, 1, region_rect.position.y / atlas_size.y, (region_rect.position.y + region_rect.size.y) / atlas_size.y);
-								}
-								uvs.push_back(center_point);
+								// Filter out an edge case where almost equal `from`, `to` were mapped to the same UV.
+								if (points.size() >= 2) {
+									Point2 center_point = get_relative_center();
+									points.push_back(progress_offset + s * center_point);
+									if (valid_atlas_progress) {
+										center_point.x = Math::remap(center_point.x, 0, 1, region_rect.position.x / atlas_size.x, (region_rect.position.x + region_rect.size.x) / atlas_size.x);
+										center_point.y = Math::remap(center_point.y, 0, 1, region_rect.position.y / atlas_size.y, (region_rect.position.y + region_rect.size.y) / atlas_size.y);
+									}
+									uvs.push_back(center_point);
 
-								Vector<Color> colors;
-								colors.push_back(tint_progress);
-								draw_polygon(points, colors, uvs, progress);
+									Vector<Color> colors;
+									colors.push_back(tint_progress);
+									draw_polygon(points, colors, uvs, progress);
+								}
 							}
 
 							// Draw a reference cross.

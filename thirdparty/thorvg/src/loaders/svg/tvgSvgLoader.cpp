@@ -709,7 +709,7 @@ static bool _toColor(const char* str, uint8_t* r, uint8_t* g, uint8_t* b, char**
         *ref = _idFromUrl((const char*)(str + 3));
         return true;
     } else if (len >= 10 && (str[0] == 'h' || str[0] == 'H') && (str[1] == 's' || str[1] == 'S') && (str[2] == 'l' || str[2] == 'L') && str[3] == '(' && str[len - 1] == ')') {
-        float th, ts, tb;
+        float_t th, ts, tb;
         const char *content, *hue, *satuation, *brightness;
         content = str + 4;
         content = _skipSpace(content, nullptr);
@@ -840,14 +840,14 @@ static Matrix* _parseTransformationMatrix(const char* value)
         if (state == MatrixState::Matrix) {
             if (ptCount != 6) goto error;
             Matrix tmp = {points[0], points[2], points[4], points[1], points[3], points[5], 0, 0, 1};
-            *matrix = mathMultiply(matrix, &tmp);
+            *matrix *= tmp;
         } else if (state == MatrixState::Translate) {
             if (ptCount == 1) {
                 Matrix tmp = {1, 0, points[0], 0, 1, 0, 0, 0, 1};
-                *matrix = mathMultiply(matrix, &tmp);
+                *matrix *= tmp;
             } else if (ptCount == 2) {
                 Matrix tmp = {1, 0, points[0], 0, 1, points[1], 0, 0, 1};
-                *matrix = mathMultiply(matrix, &tmp);
+                *matrix *= tmp;
             } else goto error;
         } else if (state == MatrixState::Rotate) {
             //Transform to signed.
@@ -857,14 +857,14 @@ static Matrix* _parseTransformationMatrix(const char* value)
             auto s = sinf(mathDeg2Rad(points[0]));
             if (ptCount == 1) {
                 Matrix tmp = { c, -s, 0, s, c, 0, 0, 0, 1 };
-                *matrix = mathMultiply(matrix, &tmp);
+                *matrix *= tmp;
             } else if (ptCount == 3) {
                 Matrix tmp = { 1, 0, points[1], 0, 1, points[2], 0, 0, 1 };
-                *matrix = mathMultiply(matrix, &tmp);
+                *matrix *= tmp;
                 tmp = { c, -s, 0, s, c, 0, 0, 0, 1 };
-                *matrix = mathMultiply(matrix, &tmp);
+                *matrix *= tmp;
                 tmp = { 1, 0, -points[1], 0, 1, -points[2], 0, 0, 1 };
-                *matrix = mathMultiply(matrix, &tmp);
+                *matrix *= tmp;
             } else {
                 goto error;
             }
@@ -874,17 +874,17 @@ static Matrix* _parseTransformationMatrix(const char* value)
             auto sy = sx;
             if (ptCount == 2) sy = points[1];
             Matrix tmp = { sx, 0, 0, 0, sy, 0, 0, 0, 1 };
-            *matrix = mathMultiply(matrix, &tmp);
+            *matrix *= tmp;
         } else if (state == MatrixState::SkewX) {
             if (ptCount != 1) goto error;
             auto deg = tanf(mathDeg2Rad(points[0]));
             Matrix tmp = { 1, deg, 0, 0, 1, 0, 0, 0, 1 };
-            *matrix = mathMultiply(matrix, &tmp);
+            *matrix *= tmp;
         } else if (state == MatrixState::SkewY) {
             if (ptCount != 1) goto error;
             auto deg = tanf(mathDeg2Rad(points[0]));
             Matrix tmp = { 1, 0, 0, deg, 1, 0, 0, 0, 1 };
-            *matrix = mathMultiply(matrix, &tmp);
+            *matrix *= tmp;
         }
     }
     return matrix;

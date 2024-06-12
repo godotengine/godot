@@ -3571,9 +3571,13 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		switch (base_type.kind) {
 			case GDScriptParser::DataType::CLASS: {
 				if (base_type.class_type) {
-					if (base_type.class_type->has_member(p_symbol)) {
+					String name = p_symbol;
+					if (name == "new") {
+						name = "_init";
+					}
+					if (base_type.class_type->has_member(name)) {
 						r_result.type = ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION;
-						r_result.location = base_type.class_type->get_member(p_symbol).get_line();
+						r_result.location = base_type.class_type->get_member(name).get_line();
 						r_result.class_path = base_type.script_path;
 						Error err = OK;
 						r_result.script = GDScriptCache::get_shallow_script(r_result.class_path, err);

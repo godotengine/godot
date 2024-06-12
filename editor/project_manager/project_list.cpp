@@ -295,13 +295,6 @@ ProjectListItemControl::ProjectListItemControl() {
 		project_path->set_modulate(Color(1, 1, 1, 0.5));
 		path_hb->add_child(project_path);
 
-		last_edited_info = memnew(Label);
-		last_edited_info->set_name("LastEditedInfo");
-		last_edited_info->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-		last_edited_info->set_tooltip_text("Last edited timestamp");
-		last_edited_info->set_modulate(Color(1, 1, 1, 0.5));
-		path_hb->add_child(last_edited_info);
-
 		project_unsupported_features = memnew(TextureRect);
 		project_unsupported_features->set_name("ProjectUnsupportedFeatures");
 		project_unsupported_features->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
@@ -312,6 +305,13 @@ ProjectListItemControl::ProjectListItemControl() {
 		project_version->set_name("ProjectVersion");
 		project_version->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 		path_hb->add_child(project_version);
+
+		last_edited_info = memnew(Label);
+		last_edited_info->set_name("LastEditedInfo");
+		last_edited_info->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		last_edited_info->set_tooltip_text(TTR("Last edited timestamp"));
+		last_edited_info->set_modulate(Color(1, 1, 1, 0.5));
+		path_hb->add_child(last_edited_info);
 
 		Control *spacer = memnew(Control);
 		spacer->set_custom_minimum_size(Size2(10, 10));

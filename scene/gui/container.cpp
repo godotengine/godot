@@ -80,6 +80,7 @@ void Container::remove_child_notify(Node *p_child) {
 
 void Container::_sort_children() {
 	if (!is_inside_tree()) {
+		pending_sort = false;
 		return;
 	}
 
@@ -139,9 +140,15 @@ void Container::queue_sort() {
 	pending_sort = true;
 }
 
-Control *Container::as_sortable_control(Node *p_node) const {
+Control *Container::as_sortable_control(Node *p_node, SortableVisbilityMode p_visibility_mode) const {
 	Control *c = Object::cast_to<Control>(p_node);
-	if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
+	if (!c || c->is_set_as_top_level()) {
+		return nullptr;
+	}
+	if (p_visibility_mode == SortableVisbilityMode::VISIBLE && !c->is_visible()) {
+		return nullptr;
+	}
+	if (p_visibility_mode == SortableVisbilityMode::VISIBLE_IN_TREE && !c->is_visible_in_tree()) {
 		return nullptr;
 	}
 	return c;
@@ -177,13 +184,9 @@ Vector<int> Container::get_allowed_size_flags_vertical() const {
 
 void Container::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			pending_sort = false;
-			queue_sort();
-		} break;
-
 		case NOTIFICATION_RESIZED:
-		case NOTIFICATION_THEME_CHANGED: {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
 			queue_sort();
 		} break;
 

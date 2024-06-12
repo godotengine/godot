@@ -228,16 +228,6 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 	public boolean onGenericMotionEvent(MotionEvent event) {
 		lastSeenToolType = getEventToolType(event);
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && gestureDetector.onGenericMotionEvent(event)) {
-			// The gesture detector has handled the event.
-			return true;
-		}
-
-		if (godotGestureHandler.onMotionEvent(event)) {
-			// The gesture handler has handled the event.
-			return true;
-		}
-
 		if (event.isFromSource(InputDevice.SOURCE_JOYSTICK) && event.getActionMasked() == MotionEvent.ACTION_MOVE) {
 			// Check if the device exists
 			final int deviceId = event.getDeviceId();
@@ -273,11 +263,20 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 				}
 				return true;
 			}
-		} else {
-			return handleMouseEvent(event);
+			return false;
 		}
 
-		return false;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && gestureDetector.onGenericMotionEvent(event)) {
+			// The gesture detector has handled the event.
+			return true;
+		}
+
+		if (godotGestureHandler.onMotionEvent(event)) {
+			// The gesture handler has handled the event.
+			return true;
+		}
+
+		return handleMouseEvent(event);
 	}
 
 	public void initInputDevices() {

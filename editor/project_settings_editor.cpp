@@ -743,20 +743,24 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	localization_editor->connect("localization_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	tab_container->add_child(localization_editor);
 
+	TabContainer *globals_container = memnew(TabContainer);
+	globals_container->set_name(TTR("Globals"));
+	tab_container->add_child(globals_container);
+
 	autoload_settings = memnew(EditorAutoloadSettings);
 	autoload_settings->set_name(TTR("Autoload"));
 	autoload_settings->connect("autoload_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
-	tab_container->add_child(autoload_settings);
+	globals_container->add_child(autoload_settings);
 
 	shaders_global_shader_uniforms_editor = memnew(ShaderGlobalsEditor);
 	shaders_global_shader_uniforms_editor->set_name(TTR("Shader Globals"));
 	shaders_global_shader_uniforms_editor->connect("globals_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
-	tab_container->add_child(shaders_global_shader_uniforms_editor);
+	globals_container->add_child(shaders_global_shader_uniforms_editor);
 
 	group_settings = memnew(GroupSettingsEditor);
-	group_settings->set_name(TTR("Global Groups"));
+	group_settings->set_name(TTR("Groups"));
 	group_settings->connect("group_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
-	tab_container->add_child(group_settings);
+	globals_container->add_child(group_settings);
 
 	plugin_settings = memnew(EditorPluginSettings);
 	plugin_settings->set_name(TTR("Plugins"));

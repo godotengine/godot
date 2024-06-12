@@ -44,16 +44,8 @@ void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		if (parent) {
-			String names;
-			for (int i = 0; i < parent->get_bone_count(); i++) {
-				if (i > 0) {
-					names += ",";
-				}
-				names += parent->get_bone_name(i);
-			}
-
 			p_property.hint = PROPERTY_HINT_ENUM;
-			p_property.hint_string = names;
+			p_property.hint_string = parent->get_concatenated_bone_names();
 		} else {
 			p_property.hint = PROPERTY_HINT_NONE;
 			p_property.hint_string = "";

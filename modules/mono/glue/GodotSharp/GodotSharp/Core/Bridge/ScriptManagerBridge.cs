@@ -427,10 +427,11 @@ namespace Godot.Bridge
             // This method may be called before initialization.
             if (NativeFuncs.godotsharp_dotnet_module_is_initialized().ToBool() && Engine.IsEditorHint())
             {
-                foreach (var scriptPath in _pathTypeBiMap.Paths)
+                if (_pathTypeBiMap.Paths.Count > 0)
                 {
-                    using godot_string nativeScriptPath = Marshaling.ConvertStringToNative(scriptPath);
-                    NativeFuncs.godotsharp_internal_editor_file_system_update_file(nativeScriptPath);
+                    string[] scriptPaths = _pathTypeBiMap.Paths.ToArray();
+                    using godot_packed_string_array scriptPathsNative = Marshaling.ConvertSystemArrayToNativePackedStringArray(scriptPaths);
+                    NativeFuncs.godotsharp_internal_editor_file_system_update_files(scriptPathsNative);
                 }
             }
         }

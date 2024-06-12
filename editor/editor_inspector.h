@@ -192,6 +192,7 @@ public:
 	void set_deletable(bool p_enable);
 	bool is_deletable() const;
 	void add_focusable(Control *p_control);
+	void grab_focus(int p_focusable = -1);
 	void select(int p_focusable = -1);
 	void deselect();
 	bool is_selected() const;

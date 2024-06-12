@@ -2543,6 +2543,7 @@ public:
 
 	virtual HashMap<StringName, String> get_editable_properties_names() const override;
 	virtual bool is_show_prop_names() const override;
+	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
 
 	Vector<StringName> get_editable_properties() const override;
 

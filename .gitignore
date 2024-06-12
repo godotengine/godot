@@ -159,6 +159,7 @@ gmon.out
 
 # Kate
 *.kate-swp
+.kateproject.build
 
 # Kdevelop
 *.kdev4
