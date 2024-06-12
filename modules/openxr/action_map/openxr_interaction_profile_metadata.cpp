@@ -225,21 +225,6 @@ void OpenXRInteractionProfileMetadata::_register_core_metadata() {
 	register_top_level_path("Gamepad", "/user/gamepad", "");
 	register_top_level_path("Treadmill", "/user/treadmill", "");
 
-	// TODO move this into OpenXRHTCViveTrackerExtension once this is supported.
-	// register_top_level_path("Handheld object tracker", "/user/vive_tracker_htcx/role/handheld_object", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
-	register_top_level_path("Left foot tracker", "/user/vive_tracker_htcx/role/left_foot", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
-	register_top_level_path("Right foot tracker", "/user/vive_tracker_htcx/role/right_foot", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
-	register_top_level_path("Left shoulder tracker", "/user/vive_tracker_htcx/role/left_shoulder", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
-	register_top_level_path("Right shoulder tracker", "/user/vive_tracker_htcx/role/right_shoulder", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
-	register_top_level_path("Left elbow tracker", "/user/vive_tracker_htcx/role/left_elbow", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
-	register_top_level_path("Right elbow tracker", "/user/vive_tracker_htcx/role/right_elbow", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
-	register_top_level_path("Left knee tracker", "/user/vive_tracker_htcx/role/left_knee", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
-	register_top_level_path("Right knee tracker", "/user/vive_tracker_htcx/role/right_knee", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
-	register_top_level_path("Waist tracker", "/user/vive_tracker_htcx/role/waist", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
-	register_top_level_path("Chest tracker", "/user/vive_tracker_htcx/role/chest", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
-	register_top_level_path("Camera tracker", "/user/vive_tracker_htcx/role/camera", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
-	register_top_level_path("Keyboard tracker", "/user/vive_tracker_htcx/role/keyboard", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
-
 	// Fallback Khronos simple controller
 	register_interaction_profile("Simple controller", "/interaction_profiles/khr/simple_controller", "");
 	register_io_path("/interaction_profiles/khr/simple_controller", "Grip pose", "/user/hand/left", "/user/hand/left/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
