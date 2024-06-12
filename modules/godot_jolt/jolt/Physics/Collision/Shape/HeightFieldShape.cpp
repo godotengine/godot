@@ -27,6 +27,7 @@
 #include <Jolt/Core/StreamIn.h>
 #include <Jolt/Core/StreamOut.h>
 #include <Jolt/Core/TempAllocator.h>
+#include <Jolt/Core/ScopeExit.h>
 #include <Jolt/Geometry/AABox4.h>
 #include <Jolt/Geometry/RayTriangle.h>
 #include <Jolt/Geometry/RayAABox.h>
@@ -52,6 +53,7 @@ JPH_IMPLEMENT_SERIALIZABLE_VIRTUAL(HeightFieldShapeSettings)
 	JPH_ADD_ATTRIBUTE(HeightFieldShapeSettings, mScale)
 	JPH_ADD_ATTRIBUTE(HeightFieldShapeSettings, mMinHeightValue)
 	JPH_ADD_ATTRIBUTE(HeightFieldShapeSettings, mMaxHeightValue)
+	JPH_ADD_ATTRIBUTE(HeightFieldShapeSettings, mMaterialsCapacity)
 	JPH_ADD_ATTRIBUTE(HeightFieldShapeSettings, mSampleCount)
 	JPH_ADD_ATTRIBUTE(HeightFieldShapeSettings, mBlockSize)
 	JPH_ADD_ATTRIBUTE(HeightFieldShapeSettings, mBitsPerSample)
@@ -202,6 +204,7 @@ void HeightFieldShape::CalculateActiveEdges(uint inX, uint inY, uint inSizeX, ui
 	// Allocate temporary buffer for normals
 	uint normals_size = 2 * inSizeX * inSizeY * sizeof(Vec3);
 	Vec3 *normals = (Vec3 *)inAllocator.Allocate(normals_size);
+	JPH_SCOPE_EXIT([&inAllocator, normals, normals_size]{ inAllocator.Free(normals, normals_size); });
 
 	// Calculate triangle normals and make normals zero for triangles that are missing
 	Vec3 *out_normal = normals;
@@ -311,9 +314,6 @@ void HeightFieldShape::CalculateActiveEdges(uint inX, uint inY, uint inSizeX, ui
 
 		global_bit_pos += 3 * (mSampleCount - 1 - inSizeX);
 	}
-
-	// Free temporary buffer for normals
-	inAllocator.Free(normals, normals_size);
 }
 
 void HeightFieldShape::CalculateActiveEdges(const HeightFieldShapeSettings &inSettings)
@@ -354,27 +354,28 @@ void HeightFieldShape::StoreMaterialIndices(const HeightFieldShapeSettings &inSe
 	uint in_count_min_1 = inSettings.mSampleCount - 1;
 	uint out_count_min_1 = mSampleCount - 1;
 
-	mNumBitsPerMaterialIndex = 32 - CountLeadingZeros((uint32)mMaterials.size() - 1);
+	mNumBitsPerMaterialIndex = 32 - CountLeadingZeros(max((uint32)mMaterials.size(), inSettings.mMaterialsCapacity) - 1);
 	mMaterialIndices.resize(((Square(out_count_min_1) * mNumBitsPerMaterialIndex + 7) >> 3) + 1, 0); // Add 1 byte so we don't read out of bounds when reading an uint16
 
-	for (uint y = 0; y < out_count_min_1; ++y)
-		for (uint x = 0; x < out_count_min_1; ++x)
-		{
-			// Read material
-			uint16 material_index = x < in_count_min_1 && y < in_count_min_1? uint16(inSettings.mMaterialIndices[x + y * in_count_min_1]) : 0;
+	if (mMaterials.size() > 1)
+		for (uint y = 0; y < out_count_min_1; ++y)
+			for (uint x = 0; x < out_count_min_1; ++x)
+			{
+				// Read material
+				uint16 material_index = x < in_count_min_1 && y < in_count_min_1? uint16(inSettings.mMaterialIndices[x + y * in_count_min_1]) : 0;
 
-			// Calculate byte and bit position where the material index needs to go
-			uint sample_pos = x + y * out_count_min_1;
-			uint bit_pos = sample_pos * mNumBitsPerMaterialIndex;
-			uint byte_pos = bit_pos >> 3;
-			bit_pos &= 0b111;
+				// Calculate byte and bit position where the material index needs to go
+				uint sample_pos = x + y * out_count_min_1;
+				uint bit_pos = sample_pos * mNumBitsPerMaterialIndex;
+				uint byte_pos = bit_pos >> 3;
+				bit_pos &= 0b111;
 
-			// Write the material index
-			material_index <<= bit_pos;
-			JPH_ASSERT(byte_pos + 1 < mMaterialIndices.size());
-			mMaterialIndices[byte_pos] |= uint8(material_index);
-			mMaterialIndices[byte_pos + 1] |= uint8(material_index >> 8);
-		}
+				// Write the material index
+				material_index <<= bit_pos;
+				JPH_ASSERT(byte_pos + 1 < mMaterialIndices.size());
+				mMaterialIndices[byte_pos] |= uint8(material_index);
+				mMaterialIndices[byte_pos + 1] |= uint8(material_index >> 8);
+			}
 }
 
 void HeightFieldShape::CacheValues()
@@ -403,10 +404,14 @@ HeightFieldShape::HeightFieldShape(const HeightFieldShapeSettings &inSettings, S
 	mScale(inSettings.mScale),
 	mSampleCount(((inSettings.mSampleCount + inSettings.mBlockSize - 1) / inSettings.mBlockSize) * inSettings.mBlockSize), // Round sample count to nearest block size
 	mBlockSize(inSettings.mBlockSize),
-	mBitsPerSample(uint8(inSettings.mBitsPerSample)),
-	mMaterials(inSettings.mMaterials)
+	mBitsPerSample(uint8(inSettings.mBitsPerSample))
 {
 	CacheValues();
+
+	// Reserve a bigger materials list if requested
+	if (inSettings.mMaterialsCapacity > 0)
+		mMaterials.reserve(inSettings.mMaterialsCapacity);
+	mMaterials = inSettings.mMaterials;
 
 	// Check block size
 	if (mBlockSize < 2 || mBlockSize > 8)
@@ -696,7 +701,7 @@ HeightFieldShape::HeightFieldShape(const HeightFieldShapeSettings &inSettings, S
 	CalculateActiveEdges(inSettings);
 
 	// Compress material indices
-	if (mMaterials.size() > 1)
+	if (mMaterials.size() > 1 || inSettings.mMaterialsCapacity > 1)
 		StoreMaterialIndices(inSettings);
 
 	outResult.Set(this);
@@ -706,6 +711,36 @@ HeightFieldShape::~HeightFieldShape()
 {
 	if (mRangeBlocks != nullptr)
 		AlignedFree(mRangeBlocks);
+}
+
+Ref<HeightFieldShape> HeightFieldShape::Clone() const
+{
+	Ref<HeightFieldShape> clone = new HeightFieldShape;
+	clone->SetUserData(GetUserData());
+
+	clone->mOffset = mOffset;
+	clone->mScale = mScale;
+	clone->mSampleCount = mSampleCount;
+	clone->mBlockSize = mBlockSize;
+	clone->mBitsPerSample = mBitsPerSample;
+	clone->mSampleMask = mSampleMask;
+	clone->mMinSample = mMinSample;
+	clone->mMaxSample = mMaxSample;
+
+	clone->AllocateBuffers();
+	memcpy(clone->mRangeBlocks, mRangeBlocks, mRangeBlocksSize * sizeof(RangeBlock) + mHeightSamplesSize + mActiveEdgesSize); // Copy the entire buffer in 1 go
+
+	clone->mMaterials.reserve(mMaterials.capacity()); // Ensure we keep the capacity of the original
+	clone->mMaterials = mMaterials;
+	clone->mMaterialIndices = mMaterialIndices;
+	clone->mNumBitsPerMaterialIndex = mNumBitsPerMaterialIndex;
+
+#ifdef JPH_DEBUG_RENDERER
+	clone->mGeometry = mGeometry;
+	clone->mCachedUseMaterialColors = mCachedUseMaterialColors;
+#endif // JPH_DEBUG_RENDERER
+
+	return clone;
 }
 
 inline void HeightFieldShape::sGetRangeBlockOffsetAndStride(uint inNumBlocks, uint inMaxLevel, uint &outRangeBlockOffset, uint &outRangeBlockStride)
@@ -1216,6 +1251,7 @@ bool HeightFieldShape::SetMaterials(uint inX, uint inY, uint inSizeX, uint inSiz
 	// Remap materials
 	uint material_remap_table_size = uint(inMaterialList != nullptr? inMaterialList->size() : mMaterials.size());
 	uint8 *material_remap_table = (uint8 *)inAllocator.Allocate(material_remap_table_size);
+	JPH_SCOPE_EXIT([&inAllocator, material_remap_table, material_remap_table_size]{ inAllocator.Free(material_remap_table, material_remap_table_size); });
 	if (inMaterialList != nullptr)
 	{
 		// Conservatively reserve more space if the incoming material list is bigger
@@ -1239,7 +1275,6 @@ bool HeightFieldShape::SetMaterials(uint inX, uint inY, uint inSizeX, uint inSiz
 				if (mMaterials.size() >= 256)
 				{
 					// We can't have more than 256 materials since we use uint8 as indices
-					inAllocator.Free(material_remap_table, material_remap_table_size);
 					return false;
 				}
 				*remap_entry = uint8(mMaterials.size());
@@ -1258,7 +1293,6 @@ bool HeightFieldShape::SetMaterials(uint inX, uint inY, uint inSizeX, uint inSiz
 	if (mMaterials.size() == 1)
 	{
 		// Only 1 material, we don't need to store the material indices
-		inAllocator.Free(material_remap_table, material_remap_table_size);
 		return true;
 	}
 
@@ -1266,7 +1300,7 @@ bool HeightFieldShape::SetMaterials(uint inX, uint inY, uint inSizeX, uint inSiz
 	uint count_min_1 = mSampleCount - 1;
 	uint32 new_bits_per_material_index = 32 - CountLeadingZeros((uint32)mMaterials.size() - 1);
 	JPH_ASSERT(mNumBitsPerMaterialIndex <= 8 && new_bits_per_material_index <= 8);
-	if (new_bits_per_material_index != mNumBitsPerMaterialIndex)
+	if (new_bits_per_material_index > mNumBitsPerMaterialIndex)
 	{
 		// Resize the material indices array
 		mMaterialIndices.resize(((Square(count_min_1) * new_bits_per_material_index + 7) >> 3) + 1, 0); // Add 1 byte so we don't read out of bounds when reading an uint16
@@ -1338,8 +1372,6 @@ bool HeightFieldShape::SetMaterials(uint inX, uint inY, uint inSizeX, uint inSiz
 		}
 	}
 
-	// Free the remapping table
-	inAllocator.Free(material_remap_table, material_remap_table_size);
 	return true;
 }
 
@@ -2607,6 +2639,10 @@ void HeightFieldShape::RestoreBinaryState(StreamIn &inStream)
 	inStream.Read(mMaxSample);
 	inStream.Read(mMaterialIndices);
 	inStream.Read(mNumBitsPerMaterialIndex);
+
+	// We don't have the exact number of reserved materials anymore, but ensure that our array is big enough
+	// TODO: Next time when we bump the binary serialization format of this class we should store the capacity and allocate the right amount, for now we accept a little bit of waste
+	mMaterials.reserve(PhysicsMaterialList::size_type(1) << mNumBitsPerMaterialIndex);
 
 	CacheValues();
 

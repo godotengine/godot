@@ -37,9 +37,9 @@ public:
 								DVec3() = default; ///< Intentionally not initialized for performance reasons
 								DVec3(const DVec3 &inRHS) = default;
 	DVec3 &						operator = (const DVec3 &inRHS) = default;
-	JPH_INLINE explicit			DVec3(Vec3Arg inRHS);
-	JPH_INLINE explicit			DVec3(Vec4Arg inRHS);
-	JPH_INLINE					DVec3(TypeArg inRHS) : mValue(inRHS)			{ CheckW(); }
+	JPH_INLINE explicit			DVec3(const Vec3Arg& inRHS);
+	JPH_INLINE explicit			DVec3(const Vec4Arg& inRHS);
+	JPH_INLINE					DVec3(const TypeArg& inRHS) : mValue(inRHS)			{ CheckW(); }
 
 	/// Create a vector from 3 components
 	JPH_INLINE					DVec3(double inX, double inY, double inZ);
@@ -83,43 +83,43 @@ public:
 	JPH_INLINE Vec3				ToVec3RoundUp() const;
 
 	/// Return the minimum value of each of the components
-	static JPH_INLINE DVec3		sMin(DVec3Arg inV1, DVec3Arg inV2);
+	static JPH_INLINE DVec3		sMin(const DVec3Arg& inV1, const DVec3Arg& inV2);
 
 	/// Return the maximum of each of the components
-	static JPH_INLINE DVec3		sMax(DVec3Arg inV1, DVec3Arg inV2);
+	static JPH_INLINE DVec3		sMax(const DVec3Arg& inV1, const DVec3Arg& inV2);
 
 	/// Clamp a vector between min and max (component wise)
-	static JPH_INLINE DVec3		sClamp(DVec3Arg inV, DVec3Arg inMin, DVec3Arg inMax);
+	static JPH_INLINE DVec3		sClamp(const DVec3Arg& inV, const DVec3Arg& inMin, const DVec3Arg& inMax);
 
 	/// Equals (component wise)
-	static JPH_INLINE DVec3		sEquals(DVec3Arg inV1, DVec3Arg inV2);
+	static JPH_INLINE DVec3		sEquals(const DVec3Arg& inV1, const DVec3Arg& inV2);
 
 	/// Less than (component wise)
-	static JPH_INLINE DVec3		sLess(DVec3Arg inV1, DVec3Arg inV2);
+	static JPH_INLINE DVec3		sLess(const DVec3Arg& inV1, const DVec3Arg& inV2);
 
 	/// Less than or equal (component wise)
-	static JPH_INLINE DVec3		sLessOrEqual(DVec3Arg inV1, DVec3Arg inV2);
+	static JPH_INLINE DVec3		sLessOrEqual(const DVec3Arg& inV1, const DVec3Arg& inV2);
 
 	/// Greater than (component wise)
-	static JPH_INLINE DVec3		sGreater(DVec3Arg inV1, DVec3Arg inV2);
+	static JPH_INLINE DVec3		sGreater(const DVec3Arg& inV1, const DVec3Arg& inV2);
 
 	/// Greater than or equal (component wise)
-	static JPH_INLINE DVec3		sGreaterOrEqual(DVec3Arg inV1, DVec3Arg inV2);
+	static JPH_INLINE DVec3		sGreaterOrEqual(const DVec3Arg& inV1, const DVec3Arg& inV2);
 
 	/// Calculates inMul1 * inMul2 + inAdd
-	static JPH_INLINE DVec3		sFusedMultiplyAdd(DVec3Arg inMul1, DVec3Arg inMul2, DVec3Arg inAdd);
+	static JPH_INLINE DVec3		sFusedMultiplyAdd(const DVec3Arg& inMul1, const DVec3Arg& inMul2, const DVec3Arg& inAdd);
 
 	/// Component wise select, returns inV1 when highest bit of inControl = 0 and inV2 when highest bit of inControl = 1
-	static JPH_INLINE DVec3		sSelect(DVec3Arg inV1, DVec3Arg inV2, DVec3Arg inControl);
+	static JPH_INLINE DVec3		sSelect(const DVec3Arg& inV1, const DVec3Arg& inV2, const DVec3Arg& inControl);
 
 	/// Logical or (component wise)
-	static JPH_INLINE DVec3		sOr(DVec3Arg inV1, DVec3Arg inV2);
+	static JPH_INLINE DVec3		sOr(const DVec3Arg& inV1, const DVec3Arg& inV2);
 
 	/// Logical xor (component wise)
-	static JPH_INLINE DVec3		sXor(DVec3Arg inV1, DVec3Arg inV2);
+	static JPH_INLINE DVec3		sXor(const DVec3Arg& inV1, const DVec3Arg& inV2);
 
 	/// Logical and (component wise)
-	static JPH_INLINE DVec3		sAnd(DVec3Arg inV1, DVec3Arg inV2);
+	static JPH_INLINE DVec3		sAnd(const DVec3Arg& inV1, const DVec3Arg& inV2);
 
 	/// Store if X is true in bit 0, Y in bit 1, Z in bit 2 and W in bit 3 (true is when highest bit of component is set)
 	JPH_INLINE int				GetTrues() const;
@@ -164,11 +164,11 @@ public:
 	JPH_INLINE void				SetComponent(uint inCoordinate, double inValue)	{ JPH_ASSERT(inCoordinate < 3); mF64[inCoordinate] = inValue; mValue = sFixW(mValue); } // Assure Z and W are the same
 
 	/// Comparison
-	JPH_INLINE bool				operator == (DVec3Arg inV2) const;
-	JPH_INLINE bool				operator != (DVec3Arg inV2) const				{ return !(*this == inV2); }
+	JPH_INLINE bool				operator == (const DVec3Arg& inV2) const;
+	JPH_INLINE bool				operator != (const DVec3Arg& inV2) const				{ return !(*this == inV2); }
 
 	/// Test if two vectors are close
-	JPH_INLINE bool				IsClose(DVec3Arg inV2, double inMaxDistSq = 1.0e-24) const;
+	JPH_INLINE bool				IsClose(const DVec3Arg& inV2, double inMaxDistSq = 1.0e-24) const;
 
 	/// Test if vector is near zero
 	JPH_INLINE bool				IsNearZero(double inMaxDistSq = 1.0e-24) const;
@@ -180,13 +180,13 @@ public:
 	JPH_INLINE bool				IsNaN() const;
 
 	/// Multiply two double vectors (component wise)
-	JPH_INLINE DVec3			operator * (DVec3Arg inV2) const;
+	JPH_INLINE DVec3			operator * (const DVec3Arg& inV2) const;
 
 	/// Multiply vector with double
 	JPH_INLINE DVec3			operator * (double inV2) const;
 
 	/// Multiply vector with double
-	friend JPH_INLINE DVec3		operator * (double inV1, DVec3Arg inV2);
+	friend JPH_INLINE DVec3		operator * (double inV1, const DVec3Arg& inV2);
 
 	/// Divide vector by double
 	JPH_INLINE DVec3			operator / (double inV2) const;
@@ -195,40 +195,40 @@ public:
 	JPH_INLINE DVec3 &			operator *= (double inV2);
 
 	/// Multiply vector with vector
-	JPH_INLINE DVec3 &			operator *= (DVec3Arg inV2);
+	JPH_INLINE DVec3 &			operator *= (const DVec3Arg& inV2);
 
 	/// Divide vector by double
 	JPH_INLINE DVec3 &			operator /= (double inV2);
 
 	/// Add two vectors (component wise)
-	JPH_INLINE DVec3			operator + (Vec3Arg inV2) const;
+	JPH_INLINE DVec3			operator + (const Vec3Arg& inV2) const;
 
 	/// Add two double vectors (component wise)
-	JPH_INLINE DVec3			operator + (DVec3Arg inV2) const;
+	JPH_INLINE DVec3			operator + (const DVec3Arg& inV2) const;
 
 	/// Add two vectors (component wise)
-	JPH_INLINE DVec3 &			operator += (Vec3Arg inV2);
+	JPH_INLINE DVec3 &			operator += (const Vec3Arg& inV2);
 
 	/// Add two double vectors (component wise)
-	JPH_INLINE DVec3 &			operator += (DVec3Arg inV2);
+	JPH_INLINE DVec3 &			operator += (const DVec3Arg& inV2);
 
 	/// Negate
 	JPH_INLINE DVec3			operator - () const;
 
 	/// Subtract two vectors (component wise)
-	JPH_INLINE DVec3			operator - (Vec3Arg inV2) const;
+	JPH_INLINE DVec3			operator - (const Vec3Arg& inV2) const;
 
 	/// Subtract two double vectors (component wise)
-	JPH_INLINE DVec3			operator - (DVec3Arg inV2) const;
+	JPH_INLINE DVec3			operator - (const DVec3Arg& inV2) const;
 
 	/// Add two vectors (component wise)
-	JPH_INLINE DVec3 &			operator -= (Vec3Arg inV2);
+	JPH_INLINE DVec3 &			operator -= (const Vec3Arg& inV2);
 
 	/// Add two double vectors (component wise)
-	JPH_INLINE DVec3 &			operator -= (DVec3Arg inV2);
+	JPH_INLINE DVec3 &			operator -= (const DVec3Arg& inV2);
 
 	/// Divide (component wise)
-	JPH_INLINE DVec3			operator / (DVec3Arg inV2) const;
+	JPH_INLINE DVec3			operator / (const DVec3Arg& inV2) const;
 
 	/// Return the absolute value of each of the components
 	JPH_INLINE DVec3			Abs() const;
@@ -237,10 +237,10 @@ public:
 	JPH_INLINE DVec3			Reciprocal() const;
 
 	/// Cross product
-	JPH_INLINE DVec3			Cross(DVec3Arg inV2) const;
+	JPH_INLINE DVec3			Cross(const DVec3Arg& inV2) const;
 
 	/// Dot product
-	JPH_INLINE double			Dot(DVec3Arg inV2) const;
+	JPH_INLINE double			Dot(const DVec3Arg& inV2) const;
 
 	/// Squared length of vector
 	JPH_INLINE double			LengthSq() const;
@@ -268,7 +268,7 @@ public:
 	JPH_INLINE void				CheckW() const;
 
 	/// Internal helper function that ensures that the Z component is replicated to the W component to prevent divisions by zero
-	static JPH_INLINE Type		sFixW(TypeArg inValue);
+	static JPH_INLINE Type		sFixW(const TypeArg& inValue);
 
 	/// Representations of true and false for boolean operations
 	inline static const double	cTrue = BitCast<double>(~uint64(0));

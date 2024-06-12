@@ -6,7 +6,7 @@
 
 JPH_NAMESPACE_BEGIN
 
-Vec8::Vec8(Vec4Arg inLo, Vec4Arg inHi) :
+Vec8::Vec8(const Vec4Arg& inLo, const Vec4Arg& inHi) :
 	mValue(_mm256_insertf128_ps(_mm256_castps128_ps256(inLo.mValue), inHi.mValue, 1))
 {
 }
@@ -21,22 +21,22 @@ Vec8 Vec8::sReplicate(float inV)
 	return _mm256_set1_ps(inV);
 }
 
-Vec8 Vec8::sSplatX(Vec4Arg inV)
+Vec8 Vec8::sSplatX(const Vec4Arg& inV)
 {
 	return _mm256_set1_ps(inV.GetX());
 }
 
-Vec8 Vec8::sSplatY(Vec4Arg inV)
+Vec8 Vec8::sSplatY(const Vec4Arg& inV)
 {
 	return _mm256_set1_ps(inV.GetY());
 }
 
-Vec8 Vec8::sSplatZ(Vec4Arg inV)
+Vec8 Vec8::sSplatZ(const Vec4Arg& inV)
 {
 	return _mm256_set1_ps(inV.GetZ());
 }
 
-Vec8 Vec8::sFusedMultiplyAdd(Vec8Arg inMul1, Vec8Arg inMul2, Vec8Arg inAdd)
+Vec8 Vec8::sFusedMultiplyAdd(const Vec8Arg& inMul1, const Vec8Arg& inMul2, const Vec8Arg& inAdd)
 {
 #ifdef JPH_USE_FMADD
 	return _mm256_fmadd_ps(inMul1.mValue, inMul2.mValue, inAdd.mValue);
@@ -45,22 +45,22 @@ Vec8 Vec8::sFusedMultiplyAdd(Vec8Arg inMul1, Vec8Arg inMul2, Vec8Arg inAdd)
 #endif
 }
 
-Vec8 Vec8::sSelect(Vec8Arg inV1, Vec8Arg inV2, UVec8Arg inControl)
+Vec8 Vec8::sSelect(const Vec8Arg& inV1, const Vec8Arg& inV2, const UVec8Arg& inControl)
 {
 	return _mm256_blendv_ps(inV1.mValue, inV2.mValue, _mm256_castsi256_ps(inControl.mValue));
 }
 
-Vec8 Vec8::sMin(Vec8Arg inV1, Vec8Arg inV2)
+Vec8 Vec8::sMin(const Vec8Arg& inV1, const Vec8Arg& inV2)
 {
 	return _mm256_min_ps(inV1.mValue, inV2.mValue);
 }
 
-Vec8 Vec8::sMax(Vec8Arg inV1, Vec8Arg inV2)
+Vec8 Vec8::sMax(const Vec8Arg& inV1, const Vec8Arg& inV2)
 {
 	return _mm256_max_ps(inV1.mValue, inV2.mValue);
 }
 
-UVec8 Vec8::sLess(Vec8Arg inV1, Vec8Arg inV2)
+UVec8 Vec8::sLess(const Vec8Arg& inV1, const Vec8Arg& inV2)
 {
 	return _mm256_castps_si256(_mm256_cmp_ps(inV1.mValue, inV2.mValue, _CMP_LT_OQ));
 }
@@ -80,7 +80,7 @@ Vec8 Vec8::sLoadFloat8Aligned(const float *inV)
 	return _mm256_load_ps(inV);
 }
 
-Vec8 Vec8::operator * (Vec8Arg inV2) const
+Vec8 Vec8::operator * (const Vec8Arg& inV2) const
 {
 	return _mm256_mul_ps(mValue, inV2.mValue);
 }
@@ -90,17 +90,17 @@ Vec8 Vec8::operator * (float inV2) const
 	return _mm256_mul_ps(mValue, _mm256_set1_ps(inV2));
 }
 
-Vec8 Vec8::operator + (Vec8Arg inV2) const
+Vec8 Vec8::operator + (const Vec8Arg& inV2) const
 {
 	return _mm256_add_ps(mValue, inV2.mValue);
 }
 
-Vec8 Vec8::operator - (Vec8Arg inV2) const
+Vec8 Vec8::operator - (const Vec8Arg& inV2) const
 {
 	return _mm256_sub_ps(mValue, inV2.mValue);
 }
 
-Vec8 Vec8::operator / (Vec8Arg inV2) const
+Vec8 Vec8::operator / (const Vec8Arg& inV2) const
 {
 	return _mm256_div_ps(mValue, inV2.mValue);
 }

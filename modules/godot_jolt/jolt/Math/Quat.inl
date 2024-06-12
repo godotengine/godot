@@ -4,7 +4,7 @@
 
 JPH_NAMESPACE_BEGIN
 
-Quat Quat::operator * (QuatArg inRHS) const
+Quat Quat::operator * (const QuatArg& inRHS) const
 {
 #if defined(JPH_USE_SSE4_1)
 	// Taken from: http://momchil-velikov.blogspot.nl/2013/10/fast-sse-quternion-multiplication.html
@@ -71,7 +71,7 @@ Quat Quat::operator * (QuatArg inRHS) const
 #endif
 }
 
-Quat Quat::sRotation(Vec3Arg inAxis, float inAngle)
+Quat Quat::sRotation(const Vec3Arg& inAxis, float inAngle)
 {
     // returns [inAxis * sin(0.5f * inAngle), cos(0.5f * inAngle)]
 	JPH_ASSERT(inAxis.IsNormalized());
@@ -97,7 +97,7 @@ void Quat::GetAxisAngle(Vec3 &outAxis, float &outAngle) const
 	}
 }
 
-Quat Quat::sFromTo(Vec3Arg inFrom, Vec3Arg inTo)
+Quat Quat::sFromTo(const Vec3Arg& inFrom, const Vec3Arg& inTo)
 {
 	/*
 		Uses (inFrom = v1, inTo = v2):
@@ -162,7 +162,7 @@ Quat Quat::sRandom(Random &inRandom)
 	return Quat(s.GetX() * r1, c.GetX() * r1, s.GetY() * r2, c.GetY() * r2);
 }
 
-Quat Quat::sEulerAngles(Vec3Arg inAngles)
+Quat Quat::sEulerAngles(const Vec3Arg& inAngles)
 {
 	Vec4 half(0.5f * inAngles);
 	Vec4 s, c;
@@ -202,7 +202,7 @@ Vec3 Quat::GetEulerAngles() const
 	return Vec3(ATan2(t0, t1), ASin(t2), ATan2(t3, t4));
 }
 
-Quat Quat::GetTwist(Vec3Arg inAxis) const
+Quat Quat::GetTwist(const Vec3Arg& inAxis) const
 {
 	Quat twist(Vec4(GetXYZ().Dot(inAxis) * inAxis, GetW()));
 	float twist_len = twist.LengthSq();
@@ -229,13 +229,13 @@ void Quat::GetSwingTwist(Quat &outSwing, Quat &outTwist) const
 	}
 }
 
-Quat Quat::LERP(QuatArg inDestination, float inFraction) const
+Quat Quat::LERP(const QuatArg& inDestination, float inFraction) const
 {
 	float scale0 = 1.0f - inFraction;
 	return Quat(Vec4::sReplicate(scale0) * mValue + Vec4::sReplicate(inFraction) * inDestination.mValue);
 }
 
-Quat Quat::SLERP(QuatArg inDestination, float inFraction) const
+Quat Quat::SLERP(const QuatArg& inDestination, float inFraction) const
 {
     // Difference at which to LERP instead of SLERP
 	const float delta = 0.0001f;
@@ -272,14 +272,14 @@ Quat Quat::SLERP(QuatArg inDestination, float inFraction) const
 	return Quat(Vec4::sReplicate(scale0) * mValue + Vec4::sReplicate(scale1) * inDestination.mValue).Normalized();
 }
 
-Vec3 Quat::operator * (Vec3Arg inValue) const
+Vec3 Quat::operator * (const Vec3Arg& inValue) const
 {
 	// Rotating a vector by a quaternion is done by: p' = q * p * q^-1 (q^-1 = conjugated(q) for a unit quaternion)
 	JPH_ASSERT(IsNormalized());
 	return Vec3((*this * Quat(Vec4(inValue, 0)) * Conjugated()).mValue);
 }
 
-Vec3 Quat::InverseRotate(Vec3Arg inValue) const
+Vec3 Quat::InverseRotate(const Vec3Arg& inValue) const
 {
 	JPH_ASSERT(IsNormalized());
 	return Vec3((Conjugated() * Quat(Vec4(inValue, 0)) * *this).mValue);

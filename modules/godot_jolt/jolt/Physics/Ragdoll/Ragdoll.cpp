@@ -341,7 +341,7 @@ RagdollSettings::RagdollResult RagdollSettings::sRestoreFromBinaryState(StreamIn
 				result.SetError(constraint_result.GetError());
 				return result;
 			}
-			p.mToParent = DynamicCast<TwoBodyConstraintSettings>(constraint_result.Get().GetPtr());
+			p.mToParent = DynamicCast<TwoBodyConstraintSettings>(constraint_result.Get());
 		}
 	}
 
@@ -361,7 +361,7 @@ RagdollSettings::RagdollResult RagdollSettings::sRestoreFromBinaryState(StreamIn
 			result.SetError(constraint_result.GetError());
 			return result;
 		}
-		c.mConstraint = DynamicCast<TwoBodyConstraintSettings>(constraint_result.Get().GetPtr());
+		c.mConstraint = DynamicCast<TwoBodyConstraintSettings>(constraint_result.Get());
 	}
 
 	// Create mapping tables

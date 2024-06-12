@@ -38,7 +38,7 @@ public:
 	explicit					WheelTV(const WheelSettingsTV &inWheel);
 
 	/// Override GetSettings and cast to the correct class
-	const WheelSettingsTV *		GetSettings() const							{ return static_cast<const WheelSettingsTV *>(mSettings.GetPtr()); }
+	const WheelSettingsTV *		GetSettings() const							{ return StaticCast<WheelSettingsTV>(mSettings); }
 
 	/// Update the angular velocity of the wheel based on the angular velocity of the track
 	void						CalculateAngularVelocity(const VehicleConstraint &inConstraint);

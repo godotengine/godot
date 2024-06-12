@@ -24,6 +24,9 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_controller", "controller"), &CharacterBodyMain::set_controller);
     ClassDB::bind_method(D_METHOD("get_controller"), &CharacterBodyMain::get_controller);
 
+    ClassDB::bind_method(D_METHOD("set_navigation_agent", "navigation_agent"), &CharacterBodyMain::set_navigation_agent);
+    ClassDB::bind_method(D_METHOD("get_navigation_agent"), &CharacterBodyMain::get_navigation_agent);
+
     ClassDB::bind_method(D_METHOD("set_skeleton", "skeleton"), &CharacterBodyMain::set_skeleton);
     ClassDB::bind_method(D_METHOD("get_skeleton"), &CharacterBodyMain::get_skeleton);
 
@@ -56,6 +59,7 @@ void CharacterBodyMain::_bind_methods()
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_RESOURCE_TYPE, "Blackboard",PROPERTY_USAGE_DEFAULT ), "set_blackboard", "get_blackboard");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT ), "set_blackboard_plan", "get_blackboard_plan");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "controller", PROPERTY_HINT_RESOURCE_TYPE, "CharacterController"), "set_controller", "get_controller");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_agent", PROPERTY_HINT_RESOURCE_TYPE, "CharacterNavigationAgent"), "set_navigation_agent", "get_navigation_agent");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skeleton", PROPERTY_HINT_NODE_TYPE, "Skeleton",PROPERTY_USAGE_EDITOR), "set_skeleton", "get_skeleton");    
     // 只能編輯不能保存
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_library", PROPERTY_HINT_RESOURCE_TYPE, "AnimationLibrary",PROPERTY_USAGE_DEFAULT ), "set_animation_library", "get_animation_library");
@@ -71,6 +75,8 @@ void CharacterBodyMain::_bind_methods()
     
 	ADD_SIGNAL(MethodInfo("skill_tree_finished", PropertyInfo(Variant::INT, "status")));
 	ADD_SIGNAL(MethodInfo("skill_tree_updated", PropertyInfo(Variant::INT, "status")));
+
+    
 
 }
 
@@ -91,6 +97,12 @@ void CharacterBodyMain::clear_all()
 }
 void CharacterBodyMain::_notification( int p_notification )
 {
+    if(character_agent.is_valid())
+    {
+        character_agent->set_body_main(this);
+        character_agent->_notification(p_notification);
+
+    }
 	switch (p_notification) {
 		case NOTIFICATION_PROCESS: {
             // 更新玩家位置
@@ -238,6 +250,26 @@ Ref<CharacterController> CharacterBodyMain::get_controller()
 {
     return controller; 
 }
+void CharacterBodyMain::set_navigation_agent(const Ref<CharacterNavigationAgent3D> &p_navigation_agent)
+{
+    if(character_agent == p_navigation_agent)
+    {
+        return;
+    }
+    if(character_agent.is_valid())
+    {
+        character_agent->set_body_main(nullptr);
+    }
+    character_agent = p_navigation_agent;
+    if(character_agent.is_valid())
+    {
+        character_agent->set_body_main(this);
+    }
+}
+Ref<CharacterNavigationAgent3D> CharacterBodyMain::get_navigation_agent()
+{
+    return character_agent;
+}
 bool CharacterBodyMain::play_skill(String p_skill_name)
 {
     if(btSkillPlayer != nullptr)
@@ -336,6 +368,16 @@ void CharacterBodyMain::init_blackboard_plan(Ref<BlackboardPlan> p_plan)
     {
         p_plan->add_var("move/curr_speed",BBVariable(Variant::FLOAT,0));
     }
+    // 出生点
+    if(!p_plan->has_var("move/birth_point"))
+    {
+        p_plan->add_var("move/birth_point",BBVariable(Variant::FLOAT,0));
+    }
+    // 巡逻范围
+    if(!p_plan->has_var("move/patrol_range"))
+    {
+        p_plan->add_var("move/patrol_range",BBVariable(Variant::FLOAT,0));
+    }
 
     if(!p_plan->has_var("phys/is_ground"))
     {
@@ -396,6 +438,10 @@ void CharacterBodyMain::init_blackboard_plan(Ref<BlackboardPlan> p_plan)
     if(!p_plan->has_var("dead/request_revive"))
     {
         p_plan->add_var("dead/request_revive",BBVariable(Variant::BOOL,false));
+    }
+    if(!p_plan->has_var("dead/request_revive_life"))
+    {
+        p_plan->add_var("dead/request_revive_life",BBVariable(Variant::FLOAT,0.0f));
     }
 }
 

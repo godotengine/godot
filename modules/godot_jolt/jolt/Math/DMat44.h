@@ -24,7 +24,7 @@ public:
 
 	/// Constructor
 								DMat44() = default; ///< Intentionally not initialized for performance reasons
-	JPH_INLINE					DMat44(Vec4Arg inC1, Vec4Arg inC2, Vec4Arg inC3, DVec3Arg inC4);
+	JPH_INLINE					DMat44(const Vec4Arg& inC1, const Vec4Arg& inC2, const Vec4Arg& inC3, const DVec3Arg& inC4);
 								DMat44(const DMat44 &inM2) = default;
 	DMat44 &					operator = (const DMat44 &inM2) = default;
 	JPH_INLINE explicit			DMat44(Mat44Arg inM);
@@ -38,82 +38,82 @@ public:
 	static JPH_INLINE DMat44	sIdentity();
 
 	/// Rotate from quaternion
-	static JPH_INLINE DMat44	sRotation(QuatArg inQuat)								{ return DMat44(Mat44::sRotation(inQuat), DVec3::sZero()); }
+	static JPH_INLINE DMat44	sRotation(const QuatArg& inQuat)								{ return DMat44(Mat44::sRotation(inQuat), DVec3::sZero()); }
 
 	/// Get matrix that translates
-	static JPH_INLINE DMat44	sTranslation(DVec3Arg inV)								{ return DMat44(Vec4(1, 0, 0, 0), Vec4(0, 1, 0, 0), Vec4(0, 0, 1, 0), inV); }
+	static JPH_INLINE DMat44	sTranslation(const DVec3Arg& inV)								{ return DMat44(Vec4(1, 0, 0, 0), Vec4(0, 1, 0, 0), Vec4(0, 0, 1, 0), inV); }
 
 	/// Get matrix that rotates and translates
-	static JPH_INLINE DMat44	sRotationTranslation(QuatArg inR, DVec3Arg inT)			{ return DMat44(Mat44::sRotation(inR), inT); }
+	static JPH_INLINE DMat44	sRotationTranslation(const QuatArg& inR, const DVec3Arg& inT)			{ return DMat44(Mat44::sRotation(inR), inT); }
 
 	/// Get inverse matrix of sRotationTranslation
-	static JPH_INLINE DMat44	sInverseRotationTranslation(QuatArg inR, DVec3Arg inT);
+	static JPH_INLINE DMat44	sInverseRotationTranslation(const QuatArg& inR, const DVec3Arg& inT);
 
 	/// Get matrix that scales (produces a matrix with (inV, 1) on its diagonal)
-	static JPH_INLINE DMat44	sScale(Vec3Arg inV)										{ return DMat44(Mat44::sScale(inV), DVec3::sZero()); }
+	static JPH_INLINE DMat44	sScale(const Vec3Arg& inV)										{ return DMat44(Mat44::sScale(inV), DVec3::sZero()); }
 
 	/// Convert to Mat44 rounding to nearest
 	JPH_INLINE Mat44			ToMat44() const											{ return Mat44(mCol[0], mCol[1], mCol[2], Vec3(mCol3)); }
 
 	/// Comparison
-	JPH_INLINE bool				operator == (DMat44Arg inM2) const;
-	JPH_INLINE bool				operator != (DMat44Arg inM2) const						{ return !(*this == inM2); }
+	JPH_INLINE bool				operator == (const DMat44Arg& inM2) const;
+	JPH_INLINE bool				operator != (const DMat44Arg& inM2) const						{ return !(*this == inM2); }
 
 	/// Test if two matrices are close
-	JPH_INLINE bool				IsClose(DMat44Arg inM2, float inMaxDistSq = 1.0e-12f) const;
+	JPH_INLINE bool				IsClose(const DMat44Arg& inM2, float inMaxDistSq = 1.0e-12f) const;
 
 	/// Multiply matrix by matrix
-	JPH_INLINE DMat44			operator * (Mat44Arg inM) const;
+	JPH_INLINE DMat44			operator * (const Mat44Arg& inM) const;
 
 	/// Multiply matrix by matrix
-	JPH_INLINE DMat44			operator * (DMat44Arg inM) const;
+	JPH_INLINE DMat44			operator * (const DMat44Arg& inM) const;
 
 	/// Multiply vector by matrix
-	JPH_INLINE DVec3			operator * (Vec3Arg inV) const;
+	JPH_INLINE DVec3			operator * (const Vec3Arg& inV) const;
 
 	/// Multiply vector by matrix
-	JPH_INLINE DVec3			operator * (DVec3Arg inV) const;
+	JPH_INLINE DVec3			operator * (const DVec3Arg& inV) const;
 
 	/// Multiply vector by only 3x3 part of the matrix
-	JPH_INLINE Vec3				Multiply3x3(Vec3Arg inV) const							{ return GetRotation().Multiply3x3(inV); }
+	JPH_INLINE Vec3				Multiply3x3(const Vec3Arg& inV) const							{ return GetRotation().Multiply3x3(inV); }
 
 	/// Multiply vector by only 3x3 part of the matrix
-	JPH_INLINE DVec3			Multiply3x3(DVec3Arg inV) const;
+	JPH_INLINE DVec3			Multiply3x3(const DVec3Arg& inV) const;
 
 	/// Multiply vector by only 3x3 part of the transpose of the matrix (\f$result = this^T \: inV\f$)
-	JPH_INLINE Vec3				Multiply3x3Transposed(Vec3Arg inV) const				{ return GetRotation().Multiply3x3Transposed(inV); }
+	JPH_INLINE Vec3				Multiply3x3Transposed(const Vec3Arg& inV) const				{ return GetRotation().Multiply3x3Transposed(inV); }
 
 	/// Scale a matrix: result = this * Mat44::sScale(inScale)
-	JPH_INLINE DMat44			PreScaled(Vec3Arg inScale) const;
+	JPH_INLINE DMat44			PreScaled(const Vec3Arg& inScale) const;
 
 	/// Scale a matrix: result = Mat44::sScale(inScale) * this
-	JPH_INLINE DMat44			PostScaled(Vec3Arg inScale) const;
+	JPH_INLINE DMat44			PostScaled(const Vec3Arg& inScale) const;
 
 	/// Pre multiply by translation matrix: result = this * Mat44::sTranslation(inTranslation)
-	JPH_INLINE DMat44			PreTranslated(Vec3Arg inTranslation) const;
+	JPH_INLINE DMat44			PreTranslated(const Vec3Arg& inTranslation) const;
 
 	/// Pre multiply by translation matrix: result = this * Mat44::sTranslation(inTranslation)
-	JPH_INLINE DMat44			PreTranslated(DVec3Arg inTranslation) const;
+	JPH_INLINE DMat44			PreTranslated(const DVec3Arg& inTranslation) const;
 
 	/// Post multiply by translation matrix: result = Mat44::sTranslation(inTranslation) * this (i.e. add inTranslation to the 4-th column)
-	JPH_INLINE DMat44			PostTranslated(Vec3Arg inTranslation) const;
+	JPH_INLINE DMat44			PostTranslated(const Vec3Arg& inTranslation) const;
 
 	/// Post multiply by translation matrix: result = Mat44::sTranslation(inTranslation) * this (i.e. add inTranslation to the 4-th column)
-	JPH_INLINE DMat44			PostTranslated(DVec3Arg inTranslation) const;
+	JPH_INLINE DMat44			PostTranslated(const DVec3Arg& inTranslation) const;
 
 	/// Access to the columns
 	JPH_INLINE Vec3				GetAxisX() const										{ return Vec3(mCol[0]); }
-	JPH_INLINE void				SetAxisX(Vec3Arg inV)									{ mCol[0] = Vec4(inV, 0.0f); }
+	JPH_INLINE void				SetAxisX(const Vec3Arg& inV)									{ mCol[0] = Vec4(inV, 0.0f); }
 	JPH_INLINE Vec3				GetAxisY() const										{ return Vec3(mCol[1]); }
-	JPH_INLINE void				SetAxisY(Vec3Arg inV)									{ mCol[1] = Vec4(inV, 0.0f); }
+	JPH_INLINE void				SetAxisY(const Vec3Arg& inV)									{ mCol[1] = Vec4(inV, 0.0f); }
 	JPH_INLINE Vec3				GetAxisZ() const										{ return Vec3(mCol[2]); }
-	JPH_INLINE void				SetAxisZ(Vec3Arg inV)									{ mCol[2] = Vec4(inV, 0.0f); }
+	JPH_INLINE void				SetAxisZ(const Vec3Arg& inV)									{ mCol[2] = Vec4(inV, 0.0f); }
 	JPH_INLINE DVec3			GetTranslation() const									{ return mCol3; }
-	JPH_INLINE void				SetTranslation(DVec3Arg inV)							{ mCol3 = inV; }
+	JPH_INLINE void				SetTranslation(const DVec3Arg& inV)							{ mCol3 = inV; }
 	JPH_INLINE Vec3				GetColumn3(uint inCol) const							{ JPH_ASSERT(inCol < 3); return Vec3(mCol[inCol]); }
-	JPH_INLINE void				SetColumn3(uint inCol, Vec3Arg inV)						{ JPH_ASSERT(inCol < 3); mCol[inCol] = Vec4(inV, 0.0f); }
+	JPH_INLINE void				SetColumn3(uint inCol, const Vec3Arg& inV)						{ JPH_ASSERT(inCol < 3); mCol[inCol] = Vec4(inV, 0.0f); }
 	JPH_INLINE Vec4				GetColumn4(uint inCol) const							{ JPH_ASSERT(inCol < 3); return mCol[inCol]; }
-	JPH_INLINE void				SetColumn4(uint inCol, Vec4Arg inV)						{ JPH_ASSERT(inCol < 3); mCol[inCol] = inV; }
+	JPH_INLINE void				SetColumn4(uint inCol, const Vec4Arg& inV)						{ JPH_ASSERT(inCol < 3); mCol[inCol] = inV; }
 
 	/// Transpose 3x3 subpart of matrix
 	JPH_INLINE Mat44			Transposed3x3() const									{ return GetRotation().Transposed3x3(); }
@@ -128,7 +128,7 @@ public:
 	JPH_INLINE Mat44			GetRotation() const										{ return Mat44(mCol[0], mCol[1], mCol[2], Vec4(0, 0, 0, 1)); }
 
 	/// Updates the rotation part of this matrix (the first 3 columns)
-	JPH_INLINE void				SetRotation(Mat44Arg inRotation);
+	JPH_INLINE void				SetRotation(const Mat44Arg& inRotation);
 
 	/// Convert to quaternion
 	JPH_INLINE Quat				GetQuaternion() const									{ return GetRotation().GetQuaternion(); }

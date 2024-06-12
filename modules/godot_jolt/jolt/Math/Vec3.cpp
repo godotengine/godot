@@ -8,7 +8,7 @@
 
 JPH_NAMESPACE_BEGIN
 
-static void sAddVertex(StaticArray<Vec3, 1026> &ioVertices, Vec3Arg inVertex)
+static void sAddVertex(StaticArray<Vec3, 1026> &ioVertices, const Vec3Arg& inVertex)
 {
 	bool found = false;
 	for (const Vec3 &v : ioVertices)
@@ -21,7 +21,7 @@ static void sAddVertex(StaticArray<Vec3, 1026> &ioVertices, Vec3Arg inVertex)
 		ioVertices.push_back(inVertex);
 }
 
-static void sCreateVertices(StaticArray<Vec3, 1026> &ioVertices, Vec3Arg inDir1, Vec3Arg inDir2, Vec3Arg inDir3, int inLevel)
+static void sCreateVertices(StaticArray<Vec3, 1026> &ioVertices, const Vec3Arg& inDir1, const Vec3Arg& inDir2, const Vec3Arg& inDir3, int inLevel)
 {
 	Vec3 center1 = (inDir1 + inDir2).Normalized();
 	Vec3 center2 = (inDir2 + inDir3).Normalized();

@@ -12,17 +12,17 @@ JPH_NAMESPACE_BEGIN
 
 #define JPH_EL(r, c) mCol[c].mF32[r]
 
-Mat44::Mat44(Vec4Arg inC1, Vec4Arg inC2, Vec4Arg inC3, Vec4Arg inC4) :
+Mat44::Mat44(const Vec4Arg& inC1, const Vec4Arg& inC2, const Vec4Arg& inC3, const Vec4Arg& inC4) :
 	mCol { inC1, inC2, inC3, inC4 }
 {
 }
 
-Mat44::Mat44(Vec4Arg inC1, Vec4Arg inC2, Vec4Arg inC3, Vec3Arg inC4) :
+Mat44::Mat44(const Vec4Arg& inC1, const Vec4Arg& inC2, const Vec4Arg& inC3, const Vec3Arg& inC4) :
 	mCol { inC1, inC2, inC3, Vec4(inC4, 1.0f) }
 {
 }
 
-Mat44::Mat44(Type inC1, Type inC2, Type inC3, Type inC4) :
+Mat44::Mat44(const Type& inC1, const Type& inC2, const Type& inC3, const Type& inC4) :
 	mCol { inC1, inC2, inC3, inC4 }
 {
 }
@@ -82,7 +82,7 @@ Mat44 Mat44::sRotationZ(float inZ)
 	return Mat44(Vec4(c, s, 0, 0), Vec4(-s, c, 0, 0), Vec4(0, 0, 1, 0), Vec4(0, 0, 0, 1));
 }
 
-Mat44 Mat44::sRotation(QuatArg inQuat)
+Mat44 Mat44::sRotation(const QuatArg& inQuat)
 {
 	JPH_ASSERT(inQuat.IsNormalized());
 
@@ -136,24 +136,24 @@ Mat44 Mat44::sRotation(QuatArg inQuat)
 #endif
 }
 
-Mat44 Mat44::sRotation(Vec3Arg inAxis, float inAngle)
+Mat44 Mat44::sRotation(const Vec3Arg& inAxis, float inAngle)
 {
 	return sRotation(Quat::sRotation(inAxis, inAngle));
 }
 
-Mat44 Mat44::sTranslation(Vec3Arg inV)
+Mat44 Mat44::sTranslation(const Vec3Arg& inV)
 {
 	return Mat44(Vec4(1, 0, 0, 0), Vec4(0, 1, 0, 0), Vec4(0, 0, 1, 0), Vec4(inV, 1));
 }
 
-Mat44 Mat44::sRotationTranslation(QuatArg inR, Vec3Arg inT)
+Mat44 Mat44::sRotationTranslation(const QuatArg& inR, const Vec3Arg& inT)
 {
 	Mat44 m = sRotation(inR);
 	m.SetTranslation(inT);
 	return m;
 }
 
-Mat44 Mat44::sInverseRotationTranslation(QuatArg inR, Vec3Arg inT)
+Mat44 Mat44::sInverseRotationTranslation(const QuatArg& inR, const Vec3Arg& inT)
 {
 	Mat44 m = sRotation(inR.Conjugated());
 	m.SetTranslation(-m.Multiply3x3(inT));
@@ -165,18 +165,18 @@ Mat44 Mat44::sScale(float inScale)
 	return Mat44(Vec4(inScale, 0, 0, 0), Vec4(0, inScale, 0, 0), Vec4(0, 0, inScale, 0), Vec4(0, 0, 0, 1));
 }
 
-Mat44 Mat44::sScale(Vec3Arg inV)
+Mat44 Mat44::sScale(const Vec3Arg& inV)
 {
 	return Mat44(Vec4(inV.GetX(), 0, 0, 0), Vec4(0, inV.GetY(), 0, 0), Vec4(0, 0, inV.GetZ(), 0), Vec4(0, 0, 0, 1));
 }
 
-Mat44 Mat44::sOuterProduct(Vec3Arg inV1, Vec3Arg inV2)
+Mat44 Mat44::sOuterProduct(const Vec3Arg& inV1, const Vec3Arg& inV2)
 {
 	Vec4 v1(inV1, 0);
 	return Mat44(v1 * inV2.SplatX(), v1 * inV2.SplatY(), v1 * inV2.SplatZ(), Vec4(0, 0, 0, 1));
 }
 
-Mat44 Mat44::sCrossProduct(Vec3Arg inV)
+Mat44 Mat44::sCrossProduct(const Vec3Arg& inV)
 {
 #ifdef JPH_USE_SSE4_1
 	// Zero out the W component
@@ -204,7 +204,7 @@ Mat44 Mat44::sCrossProduct(Vec3Arg inV)
 #endif
 }
 
-Mat44 Mat44::sLookAt(Vec3Arg inPos, Vec3Arg inTarget, Vec3Arg inUp)
+Mat44 Mat44::sLookAt(const Vec3Arg& inPos, const Vec3Arg& inTarget, const Vec3Arg& inUp)
 {
 	Vec3 direction = (inTarget - inPos).NormalizedOr(-Vec3::sAxisZ());
 	Vec3 right = direction.Cross(inUp).NormalizedOr(Vec3::sAxisX());
@@ -222,7 +222,7 @@ Mat44 Mat44::sPerspective(float inFovY, float inAspect, float inNear, float inFa
 	return Mat44(Vec4(width, 0.0f, 0.0f, 0.0f), Vec4(0.0f, height, 0.0f, 0.0f), Vec4(0.0f, 0.0f, range, -1.0f), Vec4(0.0f, 0.0f, range * inNear, 0.0f));
 }
 
-bool Mat44::operator == (Mat44Arg inM2) const
+bool Mat44::operator == (const Mat44Arg& inM2) const
 {
 	return UVec4::sAnd(
 		UVec4::sAnd(Vec4::sEquals(mCol[0], inM2.mCol[0]), Vec4::sEquals(mCol[1], inM2.mCol[1])),
@@ -230,7 +230,7 @@ bool Mat44::operator == (Mat44Arg inM2) const
 	).TestAllTrue();
 }
 
-bool Mat44::IsClose(Mat44Arg inM2, float inMaxDistSq) const
+bool Mat44::IsClose(const Mat44Arg& inM2, float inMaxDistSq) const
 {
 	for (int i = 0; i < 4; ++i)
 		if (!mCol[i].IsClose(inM2.mCol[i], inMaxDistSq))
@@ -238,7 +238,7 @@ bool Mat44::IsClose(Mat44Arg inM2, float inMaxDistSq) const
 	return true;
 }
 
-Mat44 Mat44::operator * (Mat44Arg inM) const
+Mat44 Mat44::operator * (const Mat44Arg& inM) const
 {
 	Mat44 result;
 #if defined(JPH_USE_SSE)
@@ -268,7 +268,7 @@ Mat44 Mat44::operator * (Mat44Arg inM) const
 	return result;
 }
 
-Vec3 Mat44::operator * (Vec3Arg inV) const
+Vec3 Mat44::operator * (const Vec3Arg& inV) const
 {
 #if defined(JPH_USE_SSE)
 	__m128 t = _mm_mul_ps(mCol[0].mValue, _mm_shuffle_ps(inV.mValue, inV.mValue, _MM_SHUFFLE(0, 0, 0, 0)));
@@ -290,7 +290,7 @@ Vec3 Mat44::operator * (Vec3Arg inV) const
 #endif
 }
 
-Vec4 Mat44::operator * (Vec4Arg inV) const
+Vec4 Mat44::operator * (const Vec4Arg& inV) const
 {
 #if defined(JPH_USE_SSE)
 	__m128 t = _mm_mul_ps(mCol[0].mValue, _mm_shuffle_ps(inV.mValue, inV.mValue, _MM_SHUFFLE(0, 0, 0, 0)));
@@ -313,7 +313,7 @@ Vec4 Mat44::operator * (Vec4Arg inV) const
 #endif
 }
 
-Vec3 Mat44::Multiply3x3(Vec3Arg inV) const
+Vec3 Mat44::Multiply3x3(const Vec3Arg& inV) const
 {
 #if defined(JPH_USE_SSE)
 	__m128 t = _mm_mul_ps(mCol[0].mValue, _mm_shuffle_ps(inV.mValue, inV.mValue, _MM_SHUFFLE(0, 0, 0, 0)));
@@ -333,7 +333,7 @@ Vec3 Mat44::Multiply3x3(Vec3Arg inV) const
 #endif
 }
 
-Vec3 Mat44::Multiply3x3Transposed(Vec3Arg inV) const
+Vec3 Mat44::Multiply3x3Transposed(const Vec3Arg& inV) const
 {
 #if defined(JPH_USE_SSE4_1)
 	__m128 x = _mm_dp_ps(mCol[0].mValue, inV.mValue, 0x7f);
@@ -347,7 +347,7 @@ Vec3 Mat44::Multiply3x3Transposed(Vec3Arg inV) const
 #endif
 }
 
-Mat44 Mat44::Multiply3x3(Mat44Arg inM) const
+Mat44 Mat44::Multiply3x3(const Mat44Arg& inM) const
 {
 	JPH_ASSERT(mCol[0][3] == 0.0f);
 	JPH_ASSERT(mCol[1][3] == 0.0f);
@@ -380,7 +380,7 @@ Mat44 Mat44::Multiply3x3(Mat44Arg inM) const
 	return result;
 }
 
-Mat44 Mat44::Multiply3x3LeftTransposed(Mat44Arg inM) const
+Mat44 Mat44::Multiply3x3LeftTransposed(const Mat44Arg& inM) const
 {
 	// Transpose left hand side
 	Mat44 trans = Transposed3x3();
@@ -394,7 +394,7 @@ Mat44 Mat44::Multiply3x3LeftTransposed(Mat44Arg inM) const
 	return result;
 }
 
-Mat44 Mat44::Multiply3x3RightTransposed(Mat44Arg inM) const
+Mat44 Mat44::Multiply3x3RightTransposed(const Mat44Arg& inM) const
 {
 	JPH_ASSERT(mCol[0][3] == 0.0f);
 	JPH_ASSERT(mCol[1][3] == 0.0f);
@@ -426,7 +426,7 @@ Mat44 &Mat44::operator *= (float inV)
 	return *this;
 }
 
-Mat44 Mat44::operator + (Mat44Arg inM) const
+Mat44 Mat44::operator + (const Mat44Arg& inM) const
 {
 	Mat44 result;
 	for (int i = 0; i < 4; ++i)
@@ -442,7 +442,7 @@ Mat44 Mat44::operator - () const
 	return result;
 }
 
-Mat44 Mat44::operator - (Mat44Arg inM) const
+Mat44 Mat44::operator - (const Mat44Arg& inM) const
 {
 	Mat44 result;
 	for (int i = 0; i < 4; ++i)
@@ -450,7 +450,7 @@ Mat44 Mat44::operator - (Mat44Arg inM) const
 	return result;
 }
 
-Mat44 &Mat44::operator += (Mat44Arg inM)
+Mat44 &Mat44::operator += (const Mat44Arg& inM)
 {
 	for (int c = 0; c < 4; ++c)
 		mCol[c] += inM.mCol[c];
@@ -835,7 +835,7 @@ Quat Mat44::GetQuaternion() const
 	}
 }
 
-Mat44 Mat44::sQuatLeftMultiply(QuatArg inQ)
+Mat44 Mat44::sQuatLeftMultiply(const QuatArg& inQ)
 {
 	return Mat44(
 		Vec4(1, 1, -1, -1) * inQ.mValue.Swizzle<SWIZZLE_W, SWIZZLE_Z, SWIZZLE_Y, SWIZZLE_X>(),
@@ -844,7 +844,7 @@ Mat44 Mat44::sQuatLeftMultiply(QuatArg inQ)
 		inQ.mValue);
 }
 
-Mat44 Mat44::sQuatRightMultiply(QuatArg inQ)
+Mat44 Mat44::sQuatRightMultiply(const QuatArg& inQ)
 {
 	return Mat44(
 		Vec4(1, -1, 1, -1) * inQ.mValue.Swizzle<SWIZZLE_W, SWIZZLE_Z, SWIZZLE_Y, SWIZZLE_X>(),
@@ -888,29 +888,29 @@ Mat44 Mat44::GetRotationSafe() const
 #endif
 }
 
-void Mat44::SetRotation(Mat44Arg inRotation)
+void Mat44::SetRotation(const Mat44Arg& inRotation)
 {
 	mCol[0] = inRotation.mCol[0];
 	mCol[1] = inRotation.mCol[1];
 	mCol[2] = inRotation.mCol[2];
 }
 
-Mat44 Mat44::PreTranslated(Vec3Arg inTranslation) const
+Mat44 Mat44::PreTranslated(const Vec3Arg& inTranslation) const
 {
 	return Mat44(mCol[0], mCol[1], mCol[2], Vec4(GetTranslation() + Multiply3x3(inTranslation), 1));
 }
 
-Mat44 Mat44::PostTranslated(Vec3Arg inTranslation) const
+Mat44 Mat44::PostTranslated(const Vec3Arg& inTranslation) const
 {
 	return Mat44(mCol[0], mCol[1], mCol[2], Vec4(GetTranslation() + inTranslation, 1));
 }
 
-Mat44 Mat44::PreScaled(Vec3Arg inScale) const
+Mat44 Mat44::PreScaled(const Vec3Arg& inScale) const
 {
 	return Mat44(inScale.GetX() * mCol[0], inScale.GetY() * mCol[1], inScale.GetZ() * mCol[2], mCol[3]);
 }
 
-Mat44 Mat44::PostScaled(Vec3Arg inScale) const
+Mat44 Mat44::PostScaled(const Vec3Arg& inScale) const
 {
 	Vec4 scale(inScale, 1);
 	return Mat44(scale * mCol[0], scale * mCol[1], scale * mCol[2], scale * mCol[3]);

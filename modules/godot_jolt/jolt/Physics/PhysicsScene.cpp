@@ -181,7 +181,7 @@ PhysicsScene::PhysicsSceneResult PhysicsScene::sRestoreFromBinaryState(StreamIn 
 			result.SetError(c_result.GetError());
 			return result;
 		}
-		cc.mSettings = static_cast<const TwoBodyConstraintSettings *>(c_result.Get().GetPtr());
+		cc.mSettings = StaticCast<TwoBodyConstraintSettings>(c_result.Get());
 		inStream.Read(cc.mBody1);
 		inStream.Read(cc.mBody2);
 	}
@@ -254,7 +254,7 @@ void PhysicsScene::FromPhysicsSystem(const PhysicsSystem *inSystem)
 
 			// Create constraint settings and add the constraint
 			Ref<ConstraintSettings> settings = c->GetConstraintSettings();
-			AddConstraint(static_cast<const TwoBodyConstraintSettings *>(settings.GetPtr()), b1->second, b2->second);
+			AddConstraint(StaticCast<TwoBodyConstraintSettings>(settings), b1->second, b2->second);
 		}
 }
 

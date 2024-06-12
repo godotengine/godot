@@ -39,6 +39,7 @@
 #include "modules/game_help/Terrain3D/src/register_types.h"
 #include "modules/game_help/foliage_manager/register_types.h"
 #include "modules/game_help/game_gui/game_gui_compoent.h"
+#include "modules/game_help/logic/character_ai/character_ai.h"
 
 
 #include "modules/game_help/logic/animator/animation_help.h"
@@ -111,6 +112,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<CharacterBodyPart>();
 	ClassDB::register_class<CharacterBodyPartInstane>();
 	ClassDB::register_class<CharacterController>();
+	ClassDB::register_class<CharacterNavigationAgent3D>();
 	//ClassDB::register_class<BTPlaySkill>();
 
 
@@ -138,6 +140,30 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<CharacterAnimatorLayer>();
 	ClassDB::register_class<CharacterAnimator>();
 	ClassDB::register_class<CharacterCheckArea3D>();
+
+
+	ClassDB::register_class<CharacterAI_CheckBase>();
+	ClassDB::register_class<CharacterAI_CheckGround>();
+	ClassDB::register_class<CharacterAI_CheckEnemy>();
+	ClassDB::register_class<CharacterAI_CheckJump>();
+	ClassDB::register_class<CharacterAI_CheckJump2>();
+	ClassDB::register_class<CharacterAI_CheckPatrol>();
+
+	ClassDB::register_class<CharacterAILogicNode>();
+	ClassDB::register_class<CharacterAILogicNode_Patrol>();
+	ClassDB::register_class<CharacterAILogicNode_Jump>();
+	ClassDB::register_class<CharacterAILogicNode_Jump2>();
+	ClassDB::register_class<CharacterAILogicNode_Follow>();
+	ClassDB::register_class<CharacterAILogicNode_Escape>();
+	ClassDB::register_class<CharacterAILogicNode_Battle>();
+	ClassDB::register_class<CharacterAILogicNode_Respawn>();
+	ClassDB::register_class<CharacterAILogicNode_Provoke>();
+	ClassDB::register_class<CharacterAILogicNode_Idle>();
+	ClassDB::register_class<CharacterAILogicNode_Dead>();
+
+	ClassDB::register_class<CharacterAI_Inductor>();
+	ClassDB::register_class<CharacterAI_Brain>();
+	ClassDB::register_class<CharacterAI>();
 
 	animation_help = memnew(AnimationManager);
 
@@ -178,7 +204,6 @@ void uninitialize_game_help_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
-	Engine::get_singleton()->remove_singleton("AnimationHelp");
 	Engine::get_singleton()->remove_singleton("DataTableManager");
 	Engine::get_singleton()->remove_singleton("PathManager");
 

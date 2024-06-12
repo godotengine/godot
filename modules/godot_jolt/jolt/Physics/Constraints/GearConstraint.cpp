@@ -106,7 +106,7 @@ bool GearConstraint::SolvePositionConstraint(float inDeltaTime, float inBaumgart
 	float gear1rot;
 	if (mGear1Constraint->GetSubType() == EConstraintSubType::Hinge)
 	{
-		gear1rot = static_cast<const HingeConstraint *>(mGear1Constraint.GetPtr())->GetCurrentAngle();
+		gear1rot = StaticCast<HingeConstraint>(mGear1Constraint)->GetCurrentAngle();
 	}
 	else
 	{
@@ -117,7 +117,7 @@ bool GearConstraint::SolvePositionConstraint(float inDeltaTime, float inBaumgart
 	float gear2rot;
 	if (mGear2Constraint->GetSubType() == EConstraintSubType::Hinge)
 	{
-		gear2rot = static_cast<const HingeConstraint *>(mGear2Constraint.GetPtr())->GetCurrentAngle();
+		gear2rot = StaticCast<HingeConstraint>(mGear2Constraint)->GetCurrentAngle();
 	}
 	else
 	{

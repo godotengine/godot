@@ -8,25 +8,25 @@
 
 JPH_NAMESPACE_BEGIN
 
-DMat44::DMat44(Vec4Arg inC1, Vec4Arg inC2, Vec4Arg inC3, DVec3Arg inC4) :
+DMat44::DMat44(const Vec4Arg& inC1, const Vec4Arg& inC2, const Vec4Arg& inC3, const DVec3Arg& inC4) :
 	mCol { inC1, inC2, inC3 },
 	mCol3(inC4)
 {
 }
 
-DMat44::DMat44(Type inC1, Type inC2, Type inC3, DTypeArg inC4) :
+DMat44::DMat44(Type inC1, Type inC2, Type inC3, const DTypeArg& inC4) :
 	mCol { inC1, inC2, inC3 },
 	mCol3(inC4)
 {
 }
 
-DMat44::DMat44(Mat44Arg inM) :
+DMat44::DMat44(const Mat44Arg& inM) :
 	mCol { inM.GetColumn4(0), inM.GetColumn4(1), inM.GetColumn4(2) },
 	mCol3(inM.GetTranslation())
 {
 }
 
-DMat44::DMat44(Mat44Arg inRot, DVec3Arg inT) :
+DMat44::DMat44(const Mat44Arg& inRot, const DVec3Arg& inT) :
 	mCol { inRot.GetColumn4(0), inRot.GetColumn4(1), inRot.GetColumn4(2) },
 	mCol3(inT)
 {
@@ -42,7 +42,7 @@ DMat44 DMat44::sIdentity()
 	return DMat44(Vec4(1, 0, 0, 0), Vec4(0, 1, 0, 0), Vec4(0, 0, 1, 0), DVec3::sZero());
 }
 
-DMat44 DMat44::sInverseRotationTranslation(QuatArg inR, DVec3Arg inT)
+DMat44 DMat44::sInverseRotationTranslation(const QuatArg& inR, const DVec3Arg& inT)
 {
 	Mat44 m = Mat44::sRotation(inR.Conjugated());
 	DMat44 dm(m, DVec3::sZero());
@@ -50,7 +50,7 @@ DMat44 DMat44::sInverseRotationTranslation(QuatArg inR, DVec3Arg inT)
 	return dm;
 }
 
-bool DMat44::operator == (DMat44Arg inM2) const
+bool DMat44::operator == (const DMat44Arg& inM2) const
 {
 	return mCol[0] == inM2.mCol[0]
 		&& mCol[1] == inM2.mCol[1]
@@ -58,7 +58,7 @@ bool DMat44::operator == (DMat44Arg inM2) const
 		&& mCol3 == inM2.mCol3;
 }
 
-bool DMat44::IsClose(DMat44Arg inM2, float inMaxDistSq) const
+bool DMat44::IsClose(const DMat44Arg& inM2, float inMaxDistSq) const
 {
 	for (int i = 0; i < 3; ++i)
 		if (!mCol[i].IsClose(inM2.mCol[i], inMaxDistSq))
@@ -66,7 +66,7 @@ bool DMat44::IsClose(DMat44Arg inM2, float inMaxDistSq) const
 	return mCol3.IsClose(inM2.mCol3, double(inMaxDistSq));
 }
 
-DVec3 DMat44::operator * (Vec3Arg inV) const
+DVec3 DMat44::operator * (const Vec3Arg& inV) const
 {
 #if defined(JPH_USE_AVX)
 	__m128 t = _mm_mul_ps(mCol[0].mValue, _mm_shuffle_ps(inV.mValue, inV.mValue, _MM_SHUFFLE(0, 0, 0, 0)));
@@ -95,7 +95,7 @@ DVec3 DMat44::operator * (Vec3Arg inV) const
 #endif
 }
 
-DVec3 DMat44::operator * (DVec3Arg inV) const
+DVec3 DMat44::operator * (const DVec3Arg& inV) const
 {
 #if defined(JPH_USE_AVX)
 	__m256d t = _mm256_add_pd(mCol3.mValue, _mm256_mul_pd(_mm256_cvtps_pd(mCol[0].mValue), _mm256_set1_pd(inV.mF64[0])));
@@ -138,7 +138,7 @@ DVec3 DMat44::operator * (DVec3Arg inV) const
 #endif
 }
 
-DVec3 DMat44::Multiply3x3(DVec3Arg inV) const
+DVec3 DMat44::Multiply3x3(const DVec3Arg& inV) const
 {
 #if defined(JPH_USE_AVX)
 	__m256d t = _mm256_mul_pd(_mm256_cvtps_pd(mCol[0].mValue), _mm256_set1_pd(inV.mF64[0]));
@@ -181,7 +181,7 @@ DVec3 DMat44::Multiply3x3(DVec3Arg inV) const
 #endif
 }
 
-DMat44 DMat44::operator * (Mat44Arg inM) const
+DMat44 DMat44::operator * (const Mat44Arg& inM) const
 {
 	DMat44 result;
 
@@ -218,7 +218,7 @@ DMat44 DMat44::operator * (Mat44Arg inM) const
 	return result;
 }
 
-DMat44 DMat44::operator * (DMat44Arg inM) const
+DMat44 DMat44::operator * (const DMat44Arg& inM) const
 {
 	DMat44 result;
 
@@ -255,40 +255,40 @@ DMat44 DMat44::operator * (DMat44Arg inM) const
 	return result;
 }
 
-void DMat44::SetRotation(Mat44Arg inRotation)
+void DMat44::SetRotation(const Mat44Arg& inRotation)
 {
 	mCol[0] = inRotation.GetColumn4(0);
 	mCol[1] = inRotation.GetColumn4(1);
 	mCol[2] = inRotation.GetColumn4(2);
 }
 
-DMat44 DMat44::PreScaled(Vec3Arg inScale) const
+DMat44 DMat44::PreScaled(const Vec3Arg& inScale) const
 {
 	return DMat44(inScale.GetX() * mCol[0], inScale.GetY() * mCol[1], inScale.GetZ() * mCol[2], mCol3);
 }
 
-DMat44 DMat44::PostScaled(Vec3Arg inScale) const
+DMat44 DMat44::PostScaled(const Vec3Arg& inScale) const
 {
 	Vec4 scale(inScale, 1);
 	return DMat44(scale * mCol[0], scale * mCol[1], scale * mCol[2], DVec3(scale) * mCol3);
 }
 
-DMat44 DMat44::PreTranslated(Vec3Arg inTranslation) const
+DMat44 DMat44::PreTranslated(const Vec3Arg& inTranslation) const
 {
 	return DMat44(mCol[0], mCol[1], mCol[2], GetTranslation() + Multiply3x3(inTranslation));
 }
 
-DMat44 DMat44::PreTranslated(DVec3Arg inTranslation) const
+DMat44 DMat44::PreTranslated(const DVec3Arg& inTranslation) const
 {
 	return DMat44(mCol[0], mCol[1], mCol[2], GetTranslation() + Multiply3x3(inTranslation));
 }
 
-DMat44 DMat44::PostTranslated(Vec3Arg inTranslation) const
+DMat44 DMat44::PostTranslated(const Vec3Arg& inTranslation) const
 {
 	return DMat44(mCol[0], mCol[1], mCol[2], GetTranslation() + inTranslation);
 }
 
-DMat44 DMat44::PostTranslated(DVec3Arg inTranslation) const
+DMat44 DMat44::PostTranslated(const DVec3Arg& inTranslation) const
 {
 	return DMat44(mCol[0], mCol[1], mCol[2], GetTranslation() + inTranslation);
 }

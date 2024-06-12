@@ -29,7 +29,7 @@ uint AABBTreeBuilder::Node::GetMinDepth() const
 		return min(left, right) + 1;
 	}
 	else
-		return 1; 
+		return 1;
 }
 
 uint AABBTreeBuilder::Node::GetMaxDepth() const
@@ -192,6 +192,20 @@ AABBTreeBuilder::Node *AABBTreeBuilder::BuildInternal(const TriangleSplitter::Ra
 		TriangleSplitter::Range left, right;
 		if (!mTriangleSplitter.Split(inTriangles, left, right))
 		{
+			// When the trace below triggers:
+			//
+			// This code builds a tree structure to accelerate collision detection.
+			// At top level it will start with all triangles in a mesh and then divides the triangles into two batches.
+			// This process repeats until until the batch size is smaller than mMaxTrianglePerLeaf.
+			//
+			// It uses a TriangleSplitter to find a good split. When this warning triggers, the splitter was not able
+			// to create a reasonable split for the triangles. This usually happens when the triangles in a batch are
+			// intersecting. They could also be overlapping when projected on the 3 coordinate axis.
+			//
+			// To solve this issue, you could try to pass your mesh through a mesh cleaning / optimization algorithm.
+			// You could also inspect the triangles that cause this issue and see if that part of the mesh can be fixed manually.
+			//
+			// When you do not fix this warning, the tree will be less efficient for collision detection, but it will still work.
 			JPH_IF_DEBUG(Trace("AABBTreeBuilder: Doing random split for %d triangles (max per node: %u)!", (int)inTriangles.Count(), mMaxTrianglesPerLeaf);)
 			int half = inTriangles.Count() / 2;
 			JPH_ASSERT(half > 0);

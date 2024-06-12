@@ -55,6 +55,20 @@ MutableCompoundShape::MutableCompoundShape(const MutableCompoundShapeSettings &i
 	outResult.Set(this);
 }
 
+Ref<MutableCompoundShape> MutableCompoundShape::Clone() const
+{
+	Ref<MutableCompoundShape> clone = new MutableCompoundShape();
+	clone->SetUserData(GetUserData());
+
+	clone->mCenterOfMass = mCenterOfMass;
+	clone->mLocalBounds = mLocalBounds;
+	clone->mSubShapes = mSubShapes;
+	clone->mInnerRadius = mInnerRadius;
+	clone->mSubShapeBounds = mSubShapeBounds;
+
+	return clone;
+}
+
 void MutableCompoundShape::AdjustCenterOfMass()
 {
 	// First calculate the delta of the center of mass

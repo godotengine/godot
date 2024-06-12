@@ -11,6 +11,8 @@ class CharacterBodyMain;
 // 用来检测角色的一些状态
 class CharacterAI_CheckBase : public RefCounted
 {
+    GDCLASS(CharacterAI_CheckBase,RefCounted);
+    static void _bind_methods(){}
     public:
     // 返回true 代表立即执行决策,否则大脑根据其他条件决策
     virtual bool execute(CharacterBodyMain *node, Blackboard* blackboard)
@@ -29,7 +31,7 @@ class CharacterAI_CheckBase : public RefCounted
     }
     virtual bool _execute_check(CharacterBodyMain *node,Blackboard* blackboard)
     {
-
+        return false;
     }
 	GDVIRTUAL2R(bool,_execute,CharacterBodyMain*,Blackboard*)
     // 优先级
@@ -40,7 +42,8 @@ class CharacterAI_CheckBase : public RefCounted
 // 检测角色是否在地面上
 class CharacterAI_CheckGround : public CharacterAI_CheckBase
 {
-
+    GDCLASS(CharacterAI_CheckGround, CharacterAI_CheckBase);
+    static void _bind_methods(){}
 public:
     bool _execute_check(CharacterBodyMain *node, Blackboard* blackboard);
 
@@ -55,6 +58,8 @@ public:
 // 检测角色敌人
 class CharacterAI_CheckEnemy : public CharacterAI_CheckBase
 {
+    GDCLASS(CharacterAI_CheckEnemy, CharacterAI_CheckBase);
+    static void _bind_methods(){}
     public:
     bool _execute_check(CharacterBodyMain *node, Blackboard* blackboard)
     {
@@ -65,6 +70,8 @@ class CharacterAI_CheckEnemy : public CharacterAI_CheckBase
 // 检测角色跳跃
 class CharacterAI_CheckJump : public CharacterAI_CheckBase
 {
+    GDCLASS(CharacterAI_CheckJump, CharacterAI_CheckBase);
+    static void _bind_methods(){}
     public:
     bool _execute_check(CharacterBodyMain *node, Blackboard* blackboard)
     {
@@ -86,6 +93,9 @@ class CharacterAI_CheckJump : public CharacterAI_CheckBase
 // 检测角色二次跳跃
 class CharacterAI_CheckJump2 : public CharacterAI_CheckBase
 {
+    GDCLASS(CharacterAI_CheckJump2, CharacterAI_CheckBase);
+    static void _bind_methods(){}
+    public:
     bool _execute_check(CharacterBodyMain *node, Blackboard* blackboard)
     {
         // 检测玩家是否请求跳跃
@@ -109,6 +119,8 @@ class CharacterAI_CheckJump2 : public CharacterAI_CheckBase
 // 检测角色是否超越巡逻范围
 class CharacterAI_CheckPatrol : public CharacterAI_CheckBase
 {
+    GDCLASS(CharacterAI_CheckPatrol, CharacterAI_CheckBase);
+    static void _bind_methods(){}
     public:
     virtual bool _execute_check(Blackboard* blackboard) 
     {
@@ -120,6 +132,8 @@ class CharacterAI_CheckPatrol : public CharacterAI_CheckBase
 // 角色感应器
 class CharacterAI_Inductor : public RefCounted
 {
+    GDCLASS(CharacterAI_Inductor,RefCounted);
+    static void _bind_methods(){}
 public:
     struct SortCharacterCheck {
         bool operator()(const Ref<CharacterAI_CheckBase> &l, const Ref<CharacterAI_CheckBase> &r) const {
@@ -393,7 +407,6 @@ class CharacterAILogicNode_Provoke  : public CharacterAILogicNode
     public:
     virtual void _enter_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
-
     }
     virtual bool _execute_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
@@ -416,16 +429,44 @@ class CharacterAILogicNode_Idle : public CharacterAILogicNode
     public:
     virtual void _enter_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
-
+        int ident_index = 0;
+        if(is_random)
+        {
+            ident_index = Math::rand()%idle_time_list.size();
+        }
+        blackboard->set_var("Idextity_Index",ident_index);
+        current_idle_start_time = OS::get_singleton()->get_unix_time();
     }
     virtual bool _execute_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
+        int ident_index = blackboard->get_var("Idextity_Index",0);
+        float idle_time = idle_time_list[ident_index];
+        if(OS::get_singleton()->get_unix_time() - current_idle_start_time < idle_time)
+        {
+            return false;
+        }
+        ++ident_index;
+        if(ident_index >= idle_time_list.size())
+        {
+            ident_index = 0;
+        }
+        if(is_random)
+        {
+            ident_index = Math::rand()%idle_time_list.size();
+        }
+        blackboard->set_var("Idextity_Index",ident_index);
+        current_idle_start_time = OS::get_singleton()->get_unix_time();
         return false;
     }
     virtual void _stop_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
 
     }
+
+    TypedArray<float> idle_time_list;
+    bool is_random;
+    float current_idle_start_time;
+    
 };
 
 // 死亡 AI 逻辑节点
@@ -439,12 +480,18 @@ class CharacterAILogicNode_Dead : public CharacterAILogicNode
     public:
     virtual void _enter_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
-
+        if(!blackboard->get("dead/is_dead"))
+        {
+            blackboard->set("is_dead",true);
+        }
     }
     virtual bool _execute_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
-        if(!blackboard->get("is_dead"))
+        if(!blackboard->get("dead/request_revive"))
         {
+            blackboard->set("is_dead",false);
+            // 设置复活的生命
+            blackboard->set("prop/curr_life",blackboard->get("dead/request_revive_life"));
             return true;
         }
         return false;
@@ -453,6 +500,7 @@ class CharacterAILogicNode_Dead : public CharacterAILogicNode
     {
 
     }
+    
 };
 // 角色的阵营 枚举
 enum CharacterCamp

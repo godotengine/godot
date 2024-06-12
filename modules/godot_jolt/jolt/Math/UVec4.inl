@@ -20,7 +20,7 @@ UVec4::UVec4(uint32 inX, uint32 inY, uint32 inZ, uint32 inW)
 #endif
 }
 
-bool UVec4::operator == (UVec4Arg inV2) const
+bool UVec4::operator == (const UVec4Arg& inV2) const
 {
 	return sEquals(*this, inV2).TestAllTrue();
 }
@@ -98,7 +98,7 @@ UVec4 UVec4::sLoadInt4Aligned(const uint32 *inV)
 }
 
 template <const int Scale>
-UVec4 UVec4::sGatherInt4(const uint32 *inBase, UVec4Arg inOffsets)
+UVec4 UVec4::sGatherInt4(const uint32 *inBase, const UVec4Arg& inOffsets)
 {
 #ifdef JPH_USE_AVX2
 	return _mm_i32gather_epi32(reinterpret_cast<const int *>(inBase), inOffsets.mValue, Scale);
@@ -107,7 +107,7 @@ UVec4 UVec4::sGatherInt4(const uint32 *inBase, UVec4Arg inOffsets)
 #endif
 }
 
-UVec4 UVec4::sMin(UVec4Arg inV1, UVec4Arg inV2)
+UVec4 UVec4::sMin(const UVec4Arg& inV1, const UVec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE4_1)
 	return _mm_min_epu32(inV1.mValue, inV2.mValue);
@@ -121,7 +121,7 @@ UVec4 UVec4::sMin(UVec4Arg inV1, UVec4Arg inV2)
 #endif
 }
 
-UVec4 UVec4::sMax(UVec4Arg inV1, UVec4Arg inV2)
+UVec4 UVec4::sMax(const UVec4Arg& inV1, const UVec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE4_1)
 	return _mm_max_epu32(inV1.mValue, inV2.mValue);
@@ -135,7 +135,7 @@ UVec4 UVec4::sMax(UVec4Arg inV1, UVec4Arg inV2)
 #endif
 }
 
-UVec4 UVec4::sEquals(UVec4Arg inV1, UVec4Arg inV2)
+UVec4 UVec4::sEquals(const UVec4Arg& inV1, const UVec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	return _mm_cmpeq_epi32(inV1.mValue, inV2.mValue);
@@ -149,7 +149,7 @@ UVec4 UVec4::sEquals(UVec4Arg inV1, UVec4Arg inV2)
 #endif
 }
 
-UVec4 UVec4::sSelect(UVec4Arg inV1, UVec4Arg inV2, UVec4Arg inControl)
+UVec4 UVec4::sSelect(const UVec4Arg& inV1, const UVec4Arg& inV2, const UVec4Arg& inControl)
 {
 #if defined(JPH_USE_SSE4_1)
 	return _mm_castps_si128(_mm_blendv_ps(_mm_castsi128_ps(inV1.mValue), _mm_castsi128_ps(inV2.mValue), _mm_castsi128_ps(inControl.mValue)));
@@ -163,7 +163,7 @@ UVec4 UVec4::sSelect(UVec4Arg inV1, UVec4Arg inV2, UVec4Arg inControl)
 #endif
 }
 
-UVec4 UVec4::sOr(UVec4Arg inV1, UVec4Arg inV2)
+UVec4 UVec4::sOr(const UVec4Arg& inV1, const UVec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	return _mm_or_si128(inV1.mValue, inV2.mValue);
@@ -177,7 +177,7 @@ UVec4 UVec4::sOr(UVec4Arg inV1, UVec4Arg inV2)
 #endif
 }
 
-UVec4 UVec4::sXor(UVec4Arg inV1, UVec4Arg inV2)
+UVec4 UVec4::sXor(const UVec4Arg& inV1, const UVec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	return _mm_xor_si128(inV1.mValue, inV2.mValue);
@@ -191,7 +191,7 @@ UVec4 UVec4::sXor(UVec4Arg inV1, UVec4Arg inV2)
 #endif
 }
 
-UVec4 UVec4::sAnd(UVec4Arg inV1, UVec4Arg inV2)
+UVec4 UVec4::sAnd(const UVec4Arg& inV1, const UVec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	return _mm_and_si128(inV1.mValue, inV2.mValue);
@@ -206,7 +206,7 @@ UVec4 UVec4::sAnd(UVec4Arg inV1, UVec4Arg inV2)
 }
 
 
-UVec4 UVec4::sNot(UVec4Arg inV1)
+UVec4 UVec4::sNot(const UVec4Arg& inV1)
 {
 #if defined(JPH_USE_AVX512)
 	return _mm_ternarylogic_epi32(inV1.mValue, inV1.mValue, inV1.mValue, 0b01010101);
@@ -219,7 +219,7 @@ UVec4 UVec4::sNot(UVec4Arg inV1)
 #endif
 }
 
-UVec4 UVec4::sSort4True(UVec4Arg inValue, UVec4Arg inIndex)
+UVec4 UVec4::sSort4True(const UVec4Arg& inValue, const UVec4Arg& inIndex)
 {
 	// If inValue.z is false then shift W to Z
 	UVec4 v = UVec4::sSelect(inIndex.Swizzle<SWIZZLE_X, SWIZZLE_Y, SWIZZLE_W, SWIZZLE_W>(), inIndex, inValue.SplatZ());
@@ -233,7 +233,7 @@ UVec4 UVec4::sSort4True(UVec4Arg inValue, UVec4Arg inIndex)
 	return v;
 }
 
-UVec4 UVec4::operator * (UVec4Arg inV2) const
+UVec4 UVec4::operator * (const UVec4Arg& inV2) const
 {
 #if defined(JPH_USE_SSE4_1)
 	return _mm_mullo_epi32(mValue, inV2.mValue);
@@ -247,7 +247,7 @@ UVec4 UVec4::operator * (UVec4Arg inV2) const
 #endif
 }
 
-UVec4 UVec4::operator + (UVec4Arg inV2)
+UVec4 UVec4::operator + (const UVec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	return _mm_add_epi32(mValue, inV2.mValue);
@@ -261,7 +261,7 @@ UVec4 UVec4::operator + (UVec4Arg inV2)
 #endif
 }
 
-UVec4 &UVec4::operator += (UVec4Arg inV2)
+UVec4 &UVec4::operator += (const UVec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	mValue = _mm_add_epi32(mValue, inV2.mValue);

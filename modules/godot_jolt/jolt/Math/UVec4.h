@@ -26,14 +26,14 @@ public:
 								UVec4() = default; ///< Intentionally not initialized for performance reasons
 								UVec4(const UVec4 &inRHS) = default;
 	UVec4 &						operator = (const UVec4 &inRHS) = default;
-	JPH_INLINE					UVec4(Type inRHS) : mValue(inRHS)					{ }
+	JPH_INLINE					UVec4(const Type& inRHS) : mValue(inRHS)					{ }
 
 	/// Create a vector from 4 integer components
 	JPH_INLINE					UVec4(uint32 inX, uint32 inY, uint32 inZ, uint32 inW);
 
 	/// Comparison
-	JPH_INLINE bool				operator == (UVec4Arg inV2) const;
-	JPH_INLINE bool				operator != (UVec4Arg inV2) const					{ return !(*this == inV2); }
+	JPH_INLINE bool				operator == (const UVec4Arg& inV2) const;
+	JPH_INLINE bool				operator != (const UVec4Arg& inV2) const					{ return !(*this == inV2); }
 
 	/// Swizzle the elements in inV
 	template<uint32 SwizzleX, uint32 SwizzleY, uint32 SwizzleZ, uint32 SwizzleW>
@@ -56,36 +56,36 @@ public:
 
 	/// Gather 4 ints from memory at inBase + inOffsets[i] * Scale
 	template <const int Scale>
-	static JPH_INLINE UVec4		sGatherInt4(const uint32 *inBase, UVec4Arg inOffsets);
+	static JPH_INLINE UVec4		sGatherInt4(const uint32 *inBase, const UVec4Arg& inOffsets);
 
 	/// Return the minimum value of each of the components
-	static JPH_INLINE UVec4		sMin(UVec4Arg inV1, UVec4Arg inV2);
+	static JPH_INLINE UVec4		sMin(const UVec4Arg& inV1, const UVec4Arg& inV2);
 
 	/// Return the maximum of each of the components
-	static JPH_INLINE UVec4		sMax(UVec4Arg inV1, UVec4Arg inV2);
+	static JPH_INLINE UVec4		sMax(const UVec4Arg& inV1, const UVec4Arg& inV2);
 
 	/// Equals (component wise)
-	static JPH_INLINE UVec4		sEquals(UVec4Arg inV1, UVec4Arg inV2);
+	static JPH_INLINE UVec4		sEquals(const UVec4Arg& inV1, const UVec4Arg& inV2);
 
 	/// Component wise select, returns inV1 when highest bit of inControl = 0 and inV2 when highest bit of inControl = 1
-	static JPH_INLINE UVec4		sSelect(UVec4Arg inV1, UVec4Arg inV2, UVec4Arg inControl);
+	static JPH_INLINE UVec4		sSelect(const UVec4Arg& inV1, const UVec4Arg& inV2, const UVec4Arg& inControl);
 
 	/// Logical or (component wise)
-	static JPH_INLINE UVec4		sOr(UVec4Arg inV1, UVec4Arg inV2);
+	static JPH_INLINE UVec4		sOr(const UVec4Arg& inV1, const UVec4Arg& inV2);
 
 	/// Logical xor (component wise)
-	static JPH_INLINE UVec4		sXor(UVec4Arg inV1, UVec4Arg inV2);
+	static JPH_INLINE UVec4		sXor(const UVec4Arg& inV1, const UVec4Arg& inV2);
 
 	/// Logical and (component wise)
-	static JPH_INLINE UVec4		sAnd(UVec4Arg inV1, UVec4Arg inV2);
+	static JPH_INLINE UVec4		sAnd(const UVec4Arg& inV1, const UVec4Arg& inV2);
 
 	/// Logical not (component wise)
-	static JPH_INLINE UVec4		sNot(UVec4Arg inV1);
+	static JPH_INLINE UVec4		sNot(const UVec4Arg& inV1);
 
 	/// Sorts the elements in inIndex so that the values that correspond to trues in inValue are the first elements.
 	/// The remaining elements will be set to inValue.w.
 	/// I.e. if inValue = (true, false, true, false) and inIndex = (1, 2, 3, 4) the function returns (1, 3, 4, 4).
-	static JPH_INLINE UVec4		sSort4True(UVec4Arg inValue, UVec4Arg inIndex);
+	static JPH_INLINE UVec4		sSort4True(const UVec4Arg& inValue, const UVec4Arg& inIndex);
 
 	/// Get individual components
 #if defined(JPH_USE_SSE)
@@ -116,13 +116,13 @@ public:
 	JPH_INLINE uint32 &			operator [] (uint inCoordinate)						{ JPH_ASSERT(inCoordinate < 4); return mU32[inCoordinate]; }
 
 	/// Multiplies each of the 4 integer components with an integer (discards any overflow)
-	JPH_INLINE UVec4			operator * (UVec4Arg inV2) const;
+	JPH_INLINE UVec4			operator * (const UVec4Arg& inV2) const;
 
 	/// Adds an integer value to all integer components (discards any overflow)
-	JPH_INLINE UVec4			operator + (UVec4Arg inV2);
+	JPH_INLINE UVec4			operator + (const UVec4Arg& inV2);
 
 	/// Add two integer vectors (component wise)
-	JPH_INLINE UVec4 &			operator += (UVec4Arg inV2);
+	JPH_INLINE UVec4 &			operator += (const UVec4Arg& inV2);
 
 	/// Replicate the X component to all components
 	JPH_INLINE UVec4			SplatX() const;
@@ -200,7 +200,7 @@ public:
 	JPH_INLINE UVec4			ShiftComponents4Minus(int inCount) const;
 
 	/// To String
-	friend ostream &			operator << (ostream &inStream, UVec4Arg inV)
+	friend ostream &			operator << (ostream &inStream, const UVec4Arg& inV)
 	{
 		inStream << inV.mU32[0] << ", " << inV.mU32[1] << ", " << inV.mU32[2] << ", " << inV.mU32[3];
 		return inStream;

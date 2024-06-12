@@ -28,9 +28,9 @@ public:
 								Vec4() = default; ///< Intentionally not initialized for performance reasons
 								Vec4(const Vec4 &inRHS) = default;
 	Vec4 &						operator = (const Vec4 &inRHS) = default;
-	explicit JPH_INLINE			Vec4(Vec3Arg inRHS);							///< WARNING: W component undefined!
-	JPH_INLINE					Vec4(Vec3Arg inRHS, float inW);
-	JPH_INLINE					Vec4(Type inRHS) : mValue(inRHS)				{ }
+	explicit JPH_INLINE			Vec4(const Vec3Arg& inRHS);							///< WARNING: W component undefined!
+	JPH_INLINE					Vec4(const Vec3Arg& inRHS, float inW);
+	JPH_INLINE					Vec4(const Type& inRHS) : mValue(inRHS)				{ }
 
 	/// Create a vector from 4 components
 	JPH_INLINE					Vec4(float inX, float inY, float inZ, float inW);
@@ -52,43 +52,43 @@ public:
 
 	/// Gather 4 floats from memory at inBase + inOffsets[i] * Scale
 	template <const int Scale>
-	static JPH_INLINE Vec4		sGatherFloat4(const float *inBase, UVec4Arg inOffsets);
+	static JPH_INLINE Vec4		sGatherFloat4(const float *inBase, const UVec4Arg& inOffsets);
 
 	/// Return the minimum value of each of the components
-	static JPH_INLINE Vec4		sMin(Vec4Arg inV1, Vec4Arg inV2);
+	static JPH_INLINE Vec4		sMin(const Vec4Arg& inV1, const Vec4Arg& inV2);
 
 	/// Return the maximum of each of the components
-	static JPH_INLINE Vec4		sMax(Vec4Arg inV1, Vec4Arg inV2);
+	static JPH_INLINE Vec4		sMax(const Vec4Arg& inV1, const Vec4Arg& inV2);
 
 	/// Equals (component wise)
-	static JPH_INLINE UVec4		sEquals(Vec4Arg inV1, Vec4Arg inV2);
+	static JPH_INLINE UVec4		sEquals(const Vec4Arg& inV1, const Vec4Arg& inV2);
 
 	/// Less than (component wise)
-	static JPH_INLINE UVec4		sLess(Vec4Arg inV1, Vec4Arg inV2);
+	static JPH_INLINE UVec4		sLess(const Vec4Arg& inV1, const Vec4Arg& inV2);
 
 	/// Less than or equal (component wise)
-	static JPH_INLINE UVec4		sLessOrEqual(Vec4Arg inV1, Vec4Arg inV2);
+	static JPH_INLINE UVec4		sLessOrEqual(const Vec4Arg& inV1, const Vec4Arg& inV2);
 
 	/// Greater than (component wise)
-	static JPH_INLINE UVec4		sGreater(Vec4Arg inV1, Vec4Arg inV2);
+	static JPH_INLINE UVec4		sGreater(const Vec4Arg& inV1, const Vec4Arg& inV2);
 
 	/// Greater than or equal (component wise)
-	static JPH_INLINE UVec4		sGreaterOrEqual(Vec4Arg inV1, Vec4Arg inV2);
+	static JPH_INLINE UVec4		sGreaterOrEqual(const Vec4Arg& inV1, const Vec4Arg& inV2);
 
 	/// Calculates inMul1 * inMul2 + inAdd
-	static JPH_INLINE Vec4		sFusedMultiplyAdd(Vec4Arg inMul1, Vec4Arg inMul2, Vec4Arg inAdd);
+	static JPH_INLINE Vec4		sFusedMultiplyAdd(const Vec4Arg& inMul1, const Vec4Arg& inMul2, const Vec4Arg& inAdd);
 
 	/// Component wise select, returns inV1 when highest bit of inControl = 0 and inV2 when highest bit of inControl = 1
-	static JPH_INLINE Vec4		sSelect(Vec4Arg inV1, Vec4Arg inV2, UVec4Arg inControl);
+	static JPH_INLINE Vec4		sSelect(const Vec4Arg& inV1, const Vec4Arg& inV2, const UVec4Arg& inControl);
 
 	/// Logical or (component wise)
-	static JPH_INLINE Vec4		sOr(Vec4Arg inV1, Vec4Arg inV2);
+	static JPH_INLINE Vec4		sOr(const Vec4Arg& inV1, const Vec4Arg& inV2);
 
 	/// Logical xor (component wise)
-	static JPH_INLINE Vec4		sXor(Vec4Arg inV1, Vec4Arg inV2);
+	static JPH_INLINE Vec4		sXor(const Vec4Arg& inV1, const Vec4Arg& inV2);
 
 	/// Logical and (component wise)
-	static JPH_INLINE Vec4		sAnd(Vec4Arg inV1, Vec4Arg inV2);
+	static JPH_INLINE Vec4		sAnd(const Vec4Arg& inV1, const Vec4Arg& inV2);
 
 	/// Sort the four elements of ioValue and sort ioIndex at the same time.
 	/// Based on a sorting network: http://en.wikipedia.org/wiki/Sorting_network
@@ -130,11 +130,11 @@ public:
 	JPH_INLINE float &			operator [] (uint inCoordinate)					{ JPH_ASSERT(inCoordinate < 4); return mF32[inCoordinate]; }
 
 	/// Comparison
-	JPH_INLINE bool				operator == (Vec4Arg inV2) const;
-	JPH_INLINE bool				operator != (Vec4Arg inV2) const			{ return !(*this == inV2); }
+	JPH_INLINE bool				operator == (const Vec4Arg& inV2) const;
+	JPH_INLINE bool				operator != (const Vec4Arg& inV2) const			{ return !(*this == inV2); }
 
 	/// Test if two vectors are close
-	JPH_INLINE bool				IsClose(Vec4Arg inV2, float inMaxDistSq = 1.0e-12f) const;
+	JPH_INLINE bool				IsClose(const Vec4Arg& inV2, float inMaxDistSq = 1.0e-12f) const;
 
 	/// Test if vector is normalized
 	JPH_INLINE bool				IsNormalized(float inTolerance = 1.0e-6f) const;
@@ -143,13 +143,13 @@ public:
 	JPH_INLINE bool				IsNaN() const;
 
 	/// Multiply two float vectors (component wise)
-	JPH_INLINE Vec4				operator * (Vec4Arg inV2) const;
+	JPH_INLINE Vec4				operator * (const Vec4Arg& inV2) const;
 
 	/// Multiply vector with float
 	JPH_INLINE Vec4				operator * (float inV2) const;
 
 	/// Multiply vector with float
-	friend JPH_INLINE Vec4		operator * (float inV1, Vec4Arg inV2);
+	friend JPH_INLINE Vec4		operator * (float inV1, const Vec4Arg& inV2);
 
 	/// Divide vector by float
 	JPH_INLINE Vec4				operator / (float inV2) const;
@@ -158,28 +158,28 @@ public:
 	JPH_INLINE Vec4 &			operator *= (float inV2);
 
 	/// Multiply vector with vector
-	JPH_INLINE Vec4 &			operator *= (Vec4Arg inV2);
+	JPH_INLINE Vec4 &			operator *= (const Vec4Arg& inV2);
 
 	/// Divide vector by float
 	JPH_INLINE Vec4 &			operator /= (float inV2);
 
 	/// Add two float vectors (component wise)
-	JPH_INLINE Vec4				operator + (Vec4Arg inV2) const;
+	JPH_INLINE Vec4				operator + (const Vec4Arg& inV2) const;
 
 	/// Add two float vectors (component wise)
-	JPH_INLINE Vec4 &			operator += (Vec4Arg inV2);
+	JPH_INLINE Vec4 &			operator += (const Vec4Arg& inV2);
 
 	/// Negate
 	JPH_INLINE Vec4				operator - () const;
 
 	/// Subtract two float vectors (component wise)
-	JPH_INLINE Vec4				operator - (Vec4Arg inV2) const;
+	JPH_INLINE Vec4				operator - (const Vec4Arg& inV2) const;
 
 	/// Add two float vectors (component wise)
-	JPH_INLINE Vec4 &			operator -= (Vec4Arg inV2);
+	JPH_INLINE Vec4 &			operator -= (const Vec4Arg& inV2);
 
 	/// Divide (component wise)
-	JPH_INLINE Vec4				operator / (Vec4Arg inV2) const;
+	JPH_INLINE Vec4				operator / (const Vec4Arg& inV2) const;
 
 	/// Swizzle the elements in inV
 	template<uint32 SwizzleX, uint32 SwizzleY, uint32 SwizzleZ, uint32 SwizzleW>
@@ -204,10 +204,10 @@ public:
 	JPH_INLINE Vec4				Reciprocal() const;
 
 	/// Dot product, returns the dot product in X, Y and Z components
-	JPH_INLINE Vec4				DotV(Vec4Arg inV2) const;
+	JPH_INLINE Vec4				DotV(const Vec4Arg& inV2) const;
 
 	/// Dot product
-	JPH_INLINE float			Dot(Vec4Arg inV2) const;
+	JPH_INLINE float			Dot(const Vec4Arg& inV2) const;
 
 	/// Squared length of vector
 	JPH_INLINE float			LengthSq() const;
@@ -260,7 +260,7 @@ public:
 	inline Vec4					ATan() const;
 
 	/// Calculate the arc tangent of y / x using the signs of the arguments to determine the correct quadrant (returns value in the range [-PI, PI])
-	inline static Vec4			sATan2(Vec4Arg inY, Vec4Arg inX);
+	inline static Vec4			sATan2(const Vec4Arg& inY, const Vec4Arg& inX);
 
 	/// To String
 	friend ostream &			operator << (ostream &inStream, Vec4Arg inV)

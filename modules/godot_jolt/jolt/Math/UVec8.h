@@ -18,38 +18,38 @@ public:
 	JPH_INLINE					UVec8(__m256i inRHS) : mValue(inRHS)				{ }
 
 	/// Set 256 bit vector from 2 128 bit vectors
-	JPH_INLINE					UVec8(UVec4Arg inLo, UVec4Arg inHi);
+	JPH_INLINE					UVec8(const UVec4Arg& inLo, const UVec4Arg& inHi);
 
 	/// Comparison
-	JPH_INLINE bool				operator == (UVec8Arg inV2) const;
+	JPH_INLINE bool				operator == (const UVec8Arg& inV2) const;
 	JPH_INLINE bool				operator != (UVec8Arg inV2) const					{ return !(*this == inV2); }
 
 	/// Replicate int across all components
 	static JPH_INLINE UVec8		sReplicate(uint32 inV);
 
 	/// Replicate the X component of inV to all components
-	static JPH_INLINE UVec8		sSplatX(UVec4Arg inV);
+	static JPH_INLINE UVec8		sSplatX(const UVec4Arg& inV);
 
 	/// Replicate the Y component of inV to all components
-	static JPH_INLINE UVec8		sSplatY(UVec4Arg inV);
+	static JPH_INLINE UVec8		sSplatY(const UVec4Arg& inV);
 
 	/// Replicate the Z component of inV to all components
-	static JPH_INLINE UVec8		sSplatZ(UVec4Arg inV);
+	static JPH_INLINE UVec8		sSplatZ(const UVec4Arg& inV);
 
 	/// Equals (component wise)
-	static JPH_INLINE UVec8		sEquals(UVec8Arg inV1, UVec8Arg inV2);
+	static JPH_INLINE UVec8		sEquals(const UVec8Arg& inV1, const UVec8Arg& inV2);
 
 	/// Component wise select, returns inV1 when highest bit of inControl = 0 and inV2 when highest bit of inControl = 1
-	static JPH_INLINE UVec8		sSelect(UVec8Arg inV1, UVec8Arg inV2, UVec8Arg inControl);
+	static JPH_INLINE UVec8		sSelect(const UVec8Arg& inV1, const UVec8Arg& inV2, const UVec8Arg& inControl);
 
 	/// Logical or
-	static JPH_INLINE UVec8		sOr(UVec8Arg inV1, UVec8Arg inV2);
+	static JPH_INLINE UVec8		sOr(const UVec8Arg& inV1, const UVec8Arg& inV2);
 
 	/// Logical xor
-	static JPH_INLINE UVec8		sXor(UVec8Arg inV1, UVec8Arg inV2);
+	static JPH_INLINE UVec8		sXor(const UVec8Arg& inV1, const UVec8Arg& inV2);
 
 	/// Logical and
-	static JPH_INLINE UVec8		sAnd(UVec8Arg inV1, UVec8Arg inV2);
+	static JPH_INLINE UVec8		sAnd(const UVec8Arg& inV1, const UVec8Arg& inV2);
 
 	/// Get float component by index
 	JPH_INLINE uint32			operator [] (uint inCoordinate) const				{ JPH_ASSERT(inCoordinate < 8); return mU32[inCoordinate]; }

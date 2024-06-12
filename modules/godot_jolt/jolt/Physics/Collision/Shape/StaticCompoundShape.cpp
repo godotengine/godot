@@ -11,6 +11,7 @@
 #include <Jolt/Core/StreamIn.h>
 #include <Jolt/Core/StreamOut.h>
 #include <Jolt/Core/TempAllocator.h>
+#include <Jolt/Core/ScopeExit.h>
 #include <Jolt/ObjectStream/TypeDeclarations.h>
 
 JPH_NAMESPACE_BEGIN
@@ -216,10 +217,12 @@ StaticCompoundShape::StaticCompoundShape(const StaticCompoundShapeSettings &inSe
 	// Temporary storage for the bounding boxes of all shapes
 	uint bounds_size = num_subshapes * sizeof(AABox);
 	AABox *bounds = (AABox *)inTempAllocator.Allocate(bounds_size);
+	JPH_SCOPE_EXIT([&inTempAllocator, bounds, bounds_size]{ inTempAllocator.Free(bounds, bounds_size); });
 
 	// Temporary storage for body indexes (we're shuffling them)
 	uint body_idx_size = num_subshapes * sizeof(uint);
 	uint *body_idx = (uint *)inTempAllocator.Allocate(body_idx_size);
+	JPH_SCOPE_EXIT([&inTempAllocator, body_idx, body_idx_size]{ inTempAllocator.Free(body_idx, body_idx_size); });
 
 	// Shift all shapes so that the center of mass is now at the origin and calculate bounds
 	for (uint i = 0; i < num_subshapes; ++i)
@@ -251,6 +254,7 @@ StaticCompoundShape::StaticCompoundShape(const StaticCompoundShapeSettings &inSe
 	};
 	uint stack_size = num_subshapes * sizeof(StackEntry);
 	StackEntry *stack = (StackEntry *)inTempAllocator.Allocate(stack_size);
+	JPH_SCOPE_EXIT([&inTempAllocator, stack, stack_size]{ inTempAllocator.Free(stack, stack_size); });
 	int top = 0;
 
 	// Reserve enough space so that every sub shape gets its own leaf node
@@ -333,11 +337,6 @@ StaticCompoundShape::StaticCompoundShape(const StaticCompoundShapeSettings &inSe
 	JPH_ASSERT(next_node_idx <= mNodes.size());
 	mNodes.resize(next_node_idx);
 	mNodes.shrink_to_fit();
-
-	// Free temporary memory
-	inTempAllocator.Free(stack, stack_size);
-	inTempAllocator.Free(body_idx, body_idx_size);
-	inTempAllocator.Free(bounds, bounds_size);
 
 	// Check if we ran out of bits for addressing a node
 	if (next_node_idx > IS_SUBSHAPE)

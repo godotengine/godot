@@ -47,7 +47,7 @@ public:
 	explicit					WheelWV(const WheelSettingsWV &inWheel);
 
 	/// Override GetSettings and cast to the correct class
-	const WheelSettingsWV *		GetSettings() const							{ return static_cast<const WheelSettingsWV *>(mSettings.GetPtr()); }
+	const WheelSettingsWV *		GetSettings() const							{ return StaticCast<WheelSettingsWV>(mSettings); }
 
 	/// Apply a torque (N m) to the wheel for a particular delta time
 	void						ApplyTorque(float inTorque, float inDeltaTime)

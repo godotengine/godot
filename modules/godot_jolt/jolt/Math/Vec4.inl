@@ -9,12 +9,12 @@
 JPH_NAMESPACE_BEGIN
 
 // Constructor
-Vec4::Vec4(Vec3Arg inRHS) :
+Vec4::Vec4(const Vec3Arg& inRHS) :
 	mValue(inRHS.mValue)
 {
 }
 
-Vec4::Vec4(Vec3Arg inRHS, float inW)
+Vec4::Vec4(const Vec3Arg& inRHS, float inW)
 {
 #if defined(JPH_USE_SSE4_1)
 	mValue = _mm_blend_ps(inRHS.mValue, _mm_set1_ps(inW), 8);
@@ -110,7 +110,7 @@ Vec4 Vec4::sLoadFloat4Aligned(const Float4 *inV)
 }
 
 template <const int Scale>
-Vec4 Vec4::sGatherFloat4(const float *inBase, UVec4Arg inOffsets)
+Vec4 Vec4::sGatherFloat4(const float *inBase, const UVec4Arg& inOffsets)
 {
 #if defined(JPH_USE_SSE)
 	#ifdef JPH_USE_AVX2
@@ -135,7 +135,7 @@ Vec4 Vec4::sGatherFloat4(const float *inBase, UVec4Arg inOffsets)
 #endif
 }
 
-Vec4 Vec4::sMin(Vec4Arg inV1, Vec4Arg inV2)
+Vec4 Vec4::sMin(const Vec4Arg& inV1, const Vec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	return _mm_min_ps(inV1.mValue, inV2.mValue);
@@ -149,7 +149,7 @@ Vec4 Vec4::sMin(Vec4Arg inV1, Vec4Arg inV2)
 #endif
 }
 
-Vec4 Vec4::sMax(Vec4Arg inV1, Vec4Arg inV2)
+Vec4 Vec4::sMax(const Vec4Arg& inV1, const Vec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	return _mm_max_ps(inV1.mValue, inV2.mValue);
@@ -163,7 +163,7 @@ Vec4 Vec4::sMax(Vec4Arg inV1, Vec4Arg inV2)
 #endif
 }
 
-UVec4 Vec4::sEquals(Vec4Arg inV1, Vec4Arg inV2)
+UVec4 Vec4::sEquals(const Vec4Arg& inV1, const Vec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	return _mm_castps_si128(_mm_cmpeq_ps(inV1.mValue, inV2.mValue));
@@ -177,7 +177,7 @@ UVec4 Vec4::sEquals(Vec4Arg inV1, Vec4Arg inV2)
 #endif
 }
 
-UVec4 Vec4::sLess(Vec4Arg inV1, Vec4Arg inV2)
+UVec4 Vec4::sLess(const Vec4Arg& inV1, const Vec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	return _mm_castps_si128(_mm_cmplt_ps(inV1.mValue, inV2.mValue));
@@ -191,7 +191,7 @@ UVec4 Vec4::sLess(Vec4Arg inV1, Vec4Arg inV2)
 #endif
 }
 
-UVec4 Vec4::sLessOrEqual(Vec4Arg inV1, Vec4Arg inV2)
+UVec4 Vec4::sLessOrEqual(const Vec4Arg& inV1, const Vec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	return _mm_castps_si128(_mm_cmple_ps(inV1.mValue, inV2.mValue));
@@ -205,7 +205,7 @@ UVec4 Vec4::sLessOrEqual(Vec4Arg inV1, Vec4Arg inV2)
 #endif
 }
 
-UVec4 Vec4::sGreater(Vec4Arg inV1, Vec4Arg inV2)
+UVec4 Vec4::sGreater(const Vec4Arg& inV1, const Vec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	return _mm_castps_si128(_mm_cmpgt_ps(inV1.mValue, inV2.mValue));
@@ -219,7 +219,7 @@ UVec4 Vec4::sGreater(Vec4Arg inV1, Vec4Arg inV2)
 #endif
 }
 
-UVec4 Vec4::sGreaterOrEqual(Vec4Arg inV1, Vec4Arg inV2)
+UVec4 Vec4::sGreaterOrEqual(const Vec4Arg& inV1, const Vec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	return _mm_castps_si128(_mm_cmpge_ps(inV1.mValue, inV2.mValue));
@@ -233,7 +233,7 @@ UVec4 Vec4::sGreaterOrEqual(Vec4Arg inV1, Vec4Arg inV2)
 #endif
 }
 
-Vec4 Vec4::sFusedMultiplyAdd(Vec4Arg inMul1, Vec4Arg inMul2, Vec4Arg inAdd)
+Vec4 Vec4::sFusedMultiplyAdd(const Vec4Arg& inMul1, const Vec4Arg& inMul2, const Vec4Arg& inAdd)
 {
 #if defined(JPH_USE_SSE)
 	#ifdef JPH_USE_FMADD
@@ -251,7 +251,7 @@ Vec4 Vec4::sFusedMultiplyAdd(Vec4Arg inMul1, Vec4Arg inMul2, Vec4Arg inAdd)
 #endif
 }
 
-Vec4 Vec4::sSelect(Vec4Arg inV1, Vec4Arg inV2, UVec4Arg inControl)
+Vec4 Vec4::sSelect(const Vec4Arg& inV1, const Vec4Arg& inV2, const UVec4Arg&  inControl)
 {
 #if defined(JPH_USE_SSE4_1)
 	return _mm_blendv_ps(inV1.mValue, inV2.mValue, _mm_castsi128_ps(inControl.mValue));
@@ -265,7 +265,7 @@ Vec4 Vec4::sSelect(Vec4Arg inV1, Vec4Arg inV2, UVec4Arg inControl)
 #endif
 }
 
-Vec4 Vec4::sOr(Vec4Arg inV1, Vec4Arg inV2)
+Vec4 Vec4::sOr(const Vec4Arg& inV1, const Vec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	return _mm_or_ps(inV1.mValue, inV2.mValue);
@@ -276,7 +276,7 @@ Vec4 Vec4::sOr(Vec4Arg inV1, Vec4Arg inV2)
 #endif
 }
 
-Vec4 Vec4::sXor(Vec4Arg inV1, Vec4Arg inV2)
+Vec4 Vec4::sXor(const Vec4Arg& inV1, const Vec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	return _mm_xor_ps(inV1.mValue, inV2.mValue);
@@ -287,7 +287,7 @@ Vec4 Vec4::sXor(Vec4Arg inV1, Vec4Arg inV2)
 #endif
 }
 
-Vec4 Vec4::sAnd(Vec4Arg inV1, Vec4Arg inV2)
+Vec4 Vec4::sAnd(const Vec4Arg& inV1, const Vec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	return _mm_and_ps(inV1.mValue, inV2.mValue);
@@ -346,12 +346,12 @@ void Vec4::sSort4Reverse(Vec4 &ioValue, UVec4 &ioIndex)
 	ioIndex = UVec4::sSelect(ioIndex, i3, c3);
 }
 
-bool Vec4::operator == (Vec4Arg inV2) const
+bool Vec4::operator == (const Vec4Arg& inV2) const
 {
 	return sEquals(*this, inV2).TestAllTrue();
 }
 
-bool Vec4::IsClose(Vec4Arg inV2, float inMaxDistSq) const
+bool Vec4::IsClose(const Vec4Arg& inV2, float inMaxDistSq) const
 {
 	return (inV2 - *this).LengthSq() <= inMaxDistSq;
 }
@@ -375,7 +375,7 @@ bool Vec4::IsNaN() const
 #endif
 }
 
-Vec4 Vec4::operator * (Vec4Arg inV2) const
+Vec4 Vec4::operator * (const Vec4Arg& inV2) const
 {
 #if defined(JPH_USE_SSE)
 	return _mm_mul_ps(mValue, inV2.mValue);
@@ -401,7 +401,7 @@ Vec4 Vec4::operator * (float inV2) const
 }
 
 /// Multiply vector with float
-Vec4 operator * (float inV1, Vec4Arg inV2)
+Vec4 operator * (float inV1, const Vec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	return _mm_mul_ps(_mm_set1_ps(inV1), inV2.mValue);
@@ -439,7 +439,7 @@ Vec4 &Vec4::operator *= (float inV2)
 	return *this;
 }
 
-Vec4 &Vec4::operator *= (Vec4Arg inV2)
+Vec4 &Vec4::operator *= (const Vec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	mValue = _mm_mul_ps(mValue, inV2.mValue);
@@ -465,7 +465,7 @@ Vec4 &Vec4::operator /= (float inV2)
 	return *this;
 }
 
-Vec4 Vec4::operator + (Vec4Arg inV2) const
+Vec4 Vec4::operator + (const Vec4Arg& inV2) const
 {
 #if defined(JPH_USE_SSE)
 	return _mm_add_ps(mValue, inV2.mValue);
@@ -479,7 +479,7 @@ Vec4 Vec4::operator + (Vec4Arg inV2) const
 #endif
 }
 
-Vec4 &Vec4::operator += (Vec4Arg inV2)
+Vec4 &Vec4::operator += (const Vec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	mValue = _mm_add_ps(mValue, inV2.mValue);
@@ -511,7 +511,7 @@ Vec4 Vec4::operator - () const
 #endif
 }
 
-Vec4 Vec4::operator - (Vec4Arg inV2) const
+Vec4 Vec4::operator - (const Vec4Arg& inV2) const
 {
 #if defined(JPH_USE_SSE)
 	return _mm_sub_ps(mValue, inV2.mValue);
@@ -525,7 +525,7 @@ Vec4 Vec4::operator - (Vec4Arg inV2) const
 #endif
 }
 
-Vec4 &Vec4::operator -= (Vec4Arg inV2)
+Vec4 &Vec4::operator -= (const Vec4Arg& inV2)
 {
 #if defined(JPH_USE_SSE)
 	mValue = _mm_sub_ps(mValue, inV2.mValue);
@@ -538,7 +538,7 @@ Vec4 &Vec4::operator -= (Vec4Arg inV2)
 	return *this;
 }
 
-Vec4 Vec4::operator / (Vec4Arg inV2) const
+Vec4 Vec4::operator / (const Vec4Arg& inV2) const
 {
 #if defined(JPH_USE_SSE)
 	return _mm_div_ps(mValue, inV2.mValue);
@@ -614,7 +614,7 @@ Vec4 Vec4::Reciprocal() const
 	return sReplicate(1.0f) / mValue;
 }
 
-Vec4 Vec4::DotV(Vec4Arg inV2) const
+Vec4 Vec4::DotV(const Vec4Arg& inV2) const
 {
 #if defined(JPH_USE_SSE4_1)
 	return _mm_dp_ps(mValue, inV2.mValue, 0xff);
@@ -627,7 +627,7 @@ Vec4 Vec4::DotV(Vec4Arg inV2) const
 #endif
 }
 
-float Vec4::Dot(Vec4Arg inV2) const
+float Vec4::Dot(const Vec4Arg& inV2) const
 {
 #if defined(JPH_USE_SSE4_1)
 	return _mm_cvtss_f32(_mm_dp_ps(mValue, inV2.mValue, 0xff));
@@ -942,7 +942,7 @@ Vec4 Vec4::ATan() const
 	return Vec4::sXor(y, atan_sign.ReinterpretAsFloat());
 }
 
-Vec4 Vec4::sATan2(Vec4Arg inY, Vec4Arg inX)
+Vec4 Vec4::sATan2(const Vec4Arg& inY, const Vec4Arg& inX)
 {
 	UVec4 sign_mask = UVec4::sReplicate(0x80000000U);
 

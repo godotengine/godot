@@ -13,6 +13,7 @@
 #include "animator/body_animator.h"
 #include "character_movement.h"
 #include "character_check_area_3d.h"
+#include "navigation/character_navigation_agent.h"
 
 
 #include "modules/limboai/bt/bt_player.h"
@@ -93,6 +94,9 @@ public:
 
     void set_controller(const Ref<class CharacterController> &p_controller);
     Ref<class CharacterController> get_controller();
+
+    void set_navigation_agent(const Ref<CharacterNavigationAgent3D> &p_navigation_agent);
+    Ref<CharacterNavigationAgent3D> get_navigation_agent();
 public:
     void set_main_shape(const Ref<CollisionObject3DConnection>& p_shape) {
         if(mainShape.is_null() || p_shape.is_valid())
@@ -315,6 +319,7 @@ protected:
     // 角色自己的黑板
     Ref<Blackboard> player_blackboard;
     Ref<CharacterMovement> character_movement;
+    Ref<CharacterNavigationAgent3D> character_agent;
     Ref<CharacterAI> character_ai;
     // 骨架配置文件
     String skeleton_res;

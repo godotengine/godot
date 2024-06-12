@@ -4,12 +4,12 @@
 
 JPH_NAMESPACE_BEGIN
 
-UVec8::UVec8(UVec4Arg inLo, UVec4Arg inHi) :
+UVec8::UVec8(const UVec4Arg& inLo, const UVec4Arg& inHi) :
 	mValue(_mm256_insertf128_si256(_mm256_castsi128_si256(inLo.mValue), inHi.mValue, 1))
 {
 }
 
-bool UVec8::operator == (UVec8Arg inV2) const
+bool UVec8::operator == (const UVec8Arg& inV2) const
 {
 	return sEquals(*this, inV2).TestAllTrue();
 }
@@ -19,22 +19,22 @@ UVec8 UVec8::sReplicate(uint32 inV)
 	return _mm256_set1_epi32(int(inV));
 }
 
-UVec8 UVec8::sSplatX(UVec4Arg inV)
+UVec8 UVec8::sSplatX(const UVec4Arg& inV)
 {
 	return _mm256_set1_epi32(inV.GetX());
 }
 
-UVec8 UVec8::sSplatY(UVec4Arg inV)
+UVec8 UVec8::sSplatY(const UVec4Arg& inV)
 {
 	return _mm256_set1_epi32(inV.GetY());
 }
 
-UVec8 UVec8::sSplatZ(UVec4Arg inV)
+UVec8 UVec8::sSplatZ(const UVec4Arg& inV)
 {
 	return _mm256_set1_epi32(inV.GetZ());
 }
 
-UVec8 UVec8::sEquals(UVec8Arg inV1, UVec8Arg inV2)
+UVec8 UVec8::sEquals(const UVec8Arg& inV1, const UVec8Arg& inV2)
 {
 #ifdef JPH_USE_AVX2
 	return _mm256_cmpeq_epi32(inV1.mValue, inV2.mValue);
@@ -43,22 +43,22 @@ UVec8 UVec8::sEquals(UVec8Arg inV1, UVec8Arg inV2)
 #endif
 }
 
-UVec8 UVec8::sSelect(UVec8Arg inV1, UVec8Arg inV2, UVec8Arg inControl)
+UVec8 UVec8::sSelect(const UVec8Arg& inV1, const UVec8Arg& inV2, const UVec8Arg& inControl)
 {
 	return _mm256_castps_si256(_mm256_blendv_ps(_mm256_castsi256_ps(inV1.mValue), _mm256_castsi256_ps(inV2.mValue), _mm256_castsi256_ps(inControl.mValue)));
 }
 
-UVec8 UVec8::sOr(UVec8Arg inV1, UVec8Arg inV2)
+UVec8 UVec8::sOr(const UVec8Arg& inV1, const UVec8Arg& inV2)
 {
 	return _mm256_castps_si256(_mm256_or_ps(_mm256_castsi256_ps(inV1.mValue), _mm256_castsi256_ps(inV2.mValue)));
 }
 
-UVec8 UVec8::sXor(UVec8Arg inV1, UVec8Arg inV2)
+UVec8 UVec8::sXor(const UVec8Arg& inV1, const UVec8Arg& inV2)
 {
 	return _mm256_castps_si256(_mm256_xor_ps(_mm256_castsi256_ps(inV1.mValue), _mm256_castsi256_ps(inV2.mValue)));
 }
 
-UVec8 UVec8::sAnd(UVec8Arg inV1, UVec8Arg inV2)
+UVec8 UVec8::sAnd(const UVec8Arg& inV1, const UVec8Arg& inV2)
 {
 	return _mm256_castps_si256(_mm256_and_ps(_mm256_castsi256_ps(inV1.mValue), _mm256_castsi256_ps(inV2.mValue)));
 }

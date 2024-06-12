@@ -1248,6 +1248,10 @@ void CharacterAnimationLogicNode::init_blackboard(Ref<BlackboardPlan> p_blackboa
         blackboard_plan->add_var("IsDead",BBVariable(Variant::BOOL,false));
     if(!blackboard_plan->has_var("LegIndex"))
         blackboard_plan->add_var("LegIndex",BBVariable(Variant::INT,0));
+    if(!blackboard_plan->has_var("IdentityIndex"))
+    {
+        blackboard_plan->add_var("IdentityIndex",BBVariable(Variant::INT,0));
+    }
     
     // AI 大腦更新頻率
     if(!blackboard_plan->has_var("AI_BrainUpdate_Rate"))

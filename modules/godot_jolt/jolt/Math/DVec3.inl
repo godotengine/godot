@@ -11,7 +11,7 @@ JPH_MAKE_HASHABLE(JPH::DVec3, t.GetX(), t.GetY(), t.GetZ())
 
 JPH_NAMESPACE_BEGIN
 
-DVec3::DVec3(Vec3Arg inRHS)
+DVec3::DVec3(const Vec3Arg& inRHS)
 {
 #if defined(JPH_USE_AVX)
 	mValue = _mm256_cvtps_pd(inRHS.mValue);
@@ -31,7 +31,7 @@ DVec3::DVec3(Vec3Arg inRHS)
 #endif
 }
 
-DVec3::DVec3(Vec4Arg inRHS) :
+DVec3::DVec3(const Vec4Arg& inRHS) :
 	DVec3(Vec3(inRHS))
 {
 }
@@ -89,7 +89,7 @@ void DVec3::CheckW() const
 }
 
 /// Internal helper function that ensures that the Z component is replicated to the W component to prevent divisions by zero
-DVec3::Type DVec3::sFixW(TypeArg inValue)
+DVec3::Type DVec3::sFixW(const TypeArg& inValue)
 {
 #ifdef JPH_FLOATING_POINT_EXCEPTIONS_ENABLED
 	#if defined(JPH_USE_AVX)
@@ -190,7 +190,7 @@ DVec3::operator Vec3() const
 #endif
 }
 
-DVec3 DVec3::sMin(DVec3Arg inV1, DVec3Arg inV2)
+DVec3 DVec3::sMin(const DVec3Arg& inV1, const DVec3Arg& inV2)
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_min_pd(inV1.mValue, inV2.mValue);
@@ -205,7 +205,7 @@ DVec3 DVec3::sMin(DVec3Arg inV1, DVec3Arg inV2)
 #endif
 }
 
-DVec3 DVec3::sMax(DVec3Arg inV1, DVec3Arg inV2)
+DVec3 DVec3::sMax(const DVec3Arg& inV1, const DVec3Arg& inV2)
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_max_pd(inV1.mValue, inV2.mValue);
@@ -220,12 +220,12 @@ DVec3 DVec3::sMax(DVec3Arg inV1, DVec3Arg inV2)
 #endif
 }
 
-DVec3 DVec3::sClamp(DVec3Arg inV, DVec3Arg inMin, DVec3Arg inMax)
+DVec3 DVec3::sClamp(const DVec3Arg& inV, const DVec3Arg& inMin, const DVec3Arg& inMax)
 {
 	return sMax(sMin(inV, inMax), inMin);
 }
 
-DVec3 DVec3::sEquals(DVec3Arg inV1, DVec3Arg inV2)
+DVec3 DVec3::sEquals(const DVec3Arg& inV1, const DVec3Arg& inV2)
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_cmp_pd(inV1.mValue, inV2.mValue, _CMP_EQ_OQ);
@@ -240,7 +240,7 @@ DVec3 DVec3::sEquals(DVec3Arg inV1, DVec3Arg inV2)
 #endif
 }
 
-DVec3 DVec3::sLess(DVec3Arg inV1, DVec3Arg inV2)
+DVec3 DVec3::sLess(const DVec3Arg& inV1, const DVec3Arg& inV2)
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_cmp_pd(inV1.mValue, inV2.mValue, _CMP_LT_OQ);
@@ -255,7 +255,7 @@ DVec3 DVec3::sLess(DVec3Arg inV1, DVec3Arg inV2)
 #endif
 }
 
-DVec3 DVec3::sLessOrEqual(DVec3Arg inV1, DVec3Arg inV2)
+DVec3 DVec3::sLessOrEqual(const DVec3Arg& inV1, const DVec3Arg& inV2)
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_cmp_pd(inV1.mValue, inV2.mValue, _CMP_LE_OQ);
@@ -270,7 +270,7 @@ DVec3 DVec3::sLessOrEqual(DVec3Arg inV1, DVec3Arg inV2)
 #endif
 }
 
-DVec3 DVec3::sGreater(DVec3Arg inV1, DVec3Arg inV2)
+DVec3 DVec3::sGreater(const DVec3Arg& inV1, const DVec3Arg& inV2)
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_cmp_pd(inV1.mValue, inV2.mValue, _CMP_GT_OQ);
@@ -285,7 +285,7 @@ DVec3 DVec3::sGreater(DVec3Arg inV1, DVec3Arg inV2)
 #endif
 }
 
-DVec3 DVec3::sGreaterOrEqual(DVec3Arg inV1, DVec3Arg inV2)
+DVec3 DVec3::sGreaterOrEqual(const DVec3Arg& inV1, const DVec3Arg& inV2)
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_cmp_pd(inV1.mValue, inV2.mValue, _CMP_GE_OQ);
@@ -300,7 +300,7 @@ DVec3 DVec3::sGreaterOrEqual(DVec3Arg inV1, DVec3Arg inV2)
 #endif
 }
 
-DVec3 DVec3::sFusedMultiplyAdd(DVec3Arg inMul1, DVec3Arg inMul2, DVec3Arg inAdd)
+DVec3 DVec3::sFusedMultiplyAdd(const DVec3Arg& inMul1, const DVec3Arg& inMul2, const DVec3Arg& inAdd)
 {
 #if defined(JPH_USE_AVX)
 	#ifdef JPH_USE_FMADD
@@ -315,7 +315,7 @@ DVec3 DVec3::sFusedMultiplyAdd(DVec3Arg inMul1, DVec3Arg inMul2, DVec3Arg inAdd)
 #endif
 }
 
-DVec3 DVec3::sSelect(DVec3Arg inV1, DVec3Arg inV2, DVec3Arg inControl)
+DVec3 DVec3::sSelect(const DVec3Arg& inV1, const DVec3Arg& inV2, const DVec3Arg& inControl)
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_blendv_pd(inV1.mValue, inV2.mValue, inControl.mValue);
@@ -336,7 +336,7 @@ DVec3 DVec3::sSelect(DVec3Arg inV1, DVec3Arg inV2, DVec3Arg inControl)
 #endif
 }
 
-DVec3 DVec3::sOr(DVec3Arg inV1, DVec3Arg inV2)
+DVec3 DVec3::sOr(const DVec3Arg& inV1, const DVec3Arg& inV2)
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_or_pd(inV1.mValue, inV2.mValue);
@@ -351,7 +351,7 @@ DVec3 DVec3::sOr(DVec3Arg inV1, DVec3Arg inV2)
 #endif
 }
 
-DVec3 DVec3::sXor(DVec3Arg inV1, DVec3Arg inV2)
+DVec3 DVec3::sXor(const DVec3Arg& inV1, const DVec3Arg& inV2)
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_xor_pd(inV1.mValue, inV2.mValue);
@@ -366,7 +366,7 @@ DVec3 DVec3::sXor(DVec3Arg inV1, DVec3Arg inV2)
 #endif
 }
 
-DVec3 DVec3::sAnd(DVec3Arg inV1, DVec3Arg inV2)
+DVec3 DVec3::sAnd(const DVec3Arg& inV1, const DVec3Arg& inV2)
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_and_pd(inV1.mValue, inV2.mValue);
@@ -402,12 +402,12 @@ bool DVec3::TestAllTrue() const
 	return GetTrues() == 0x7;
 }
 
-bool DVec3::operator == (DVec3Arg inV2) const
+bool DVec3::operator == (const DVec3Arg& inV2) const
 {
 	return sEquals(*this, inV2).TestAllTrue();
 }
 
-bool DVec3::IsClose(DVec3Arg inV2, double inMaxDistSq) const
+bool DVec3::IsClose(const DVec3Arg& inV2, double inMaxDistSq) const
 {
 	return (inV2 - *this).LengthSq() <= inMaxDistSq;
 }
@@ -417,7 +417,7 @@ bool DVec3::IsNearZero(double inMaxDistSq) const
 	return LengthSq() <= inMaxDistSq;
 }
 
-DVec3 DVec3::operator * (DVec3Arg inV2) const
+DVec3 DVec3::operator * (const DVec3Arg& inV2) const
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_mul_pd(mValue, inV2.mValue);
@@ -444,7 +444,7 @@ DVec3 DVec3::operator * (double inV2) const
 #endif
 }
 
-DVec3 operator * (double inV1, DVec3Arg inV2)
+DVec3 operator * (double inV1, const DVec3Arg& inV2)
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_mul_pd(_mm256_set1_pd(inV1), inV2.mValue);
@@ -494,7 +494,7 @@ DVec3 &DVec3::operator *= (double inV2)
 	return *this;
 }
 
-DVec3 &DVec3::operator *= (DVec3Arg inV2)
+DVec3 &DVec3::operator *= (const DVec3Arg& inV2)
 {
 #if defined(JPH_USE_AVX)
 	mValue = _mm256_mul_pd(mValue, inV2.mValue);
@@ -536,7 +536,7 @@ DVec3 &DVec3::operator /= (double inV2)
 	return *this;
 }
 
-DVec3 DVec3::operator + (Vec3Arg inV2) const
+DVec3 DVec3::operator + (const Vec3Arg& inV2) const
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_add_pd(mValue, _mm256_cvtps_pd(inV2.mValue));
@@ -549,7 +549,7 @@ DVec3 DVec3::operator + (Vec3Arg inV2) const
 #endif
 }
 
-DVec3 DVec3::operator + (DVec3Arg inV2) const
+DVec3 DVec3::operator + (const DVec3Arg& inV2) const
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_add_pd(mValue, inV2.mValue);
@@ -562,7 +562,7 @@ DVec3 DVec3::operator + (DVec3Arg inV2) const
 #endif
 }
 
-DVec3 &DVec3::operator += (Vec3Arg inV2)
+DVec3 &DVec3::operator += (const Vec3Arg& inV2)
 {
 #if defined(JPH_USE_AVX)
 	mValue = _mm256_add_pd(mValue, _mm256_cvtps_pd(inV2.mValue));
@@ -582,7 +582,7 @@ DVec3 &DVec3::operator += (Vec3Arg inV2)
 	return *this;
 }
 
-DVec3 &DVec3::operator += (DVec3Arg inV2)
+DVec3 &DVec3::operator += (const DVec3Arg& inV2)
 {
 #if defined(JPH_USE_AVX)
 	mValue = _mm256_add_pd(mValue, inV2.mValue);
@@ -625,7 +625,7 @@ DVec3 DVec3::operator - () const
 #endif
 }
 
-DVec3 DVec3::operator - (Vec3Arg inV2) const
+DVec3 DVec3::operator - (const Vec3Arg& inV2) const
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_sub_pd(mValue, _mm256_cvtps_pd(inV2.mValue));
@@ -638,7 +638,7 @@ DVec3 DVec3::operator - (Vec3Arg inV2) const
 #endif
 }
 
-DVec3 DVec3::operator - (DVec3Arg inV2) const
+DVec3 DVec3::operator - (const DVec3Arg& inV2) const
 {
 #if defined(JPH_USE_AVX)
 	return _mm256_sub_pd(mValue, inV2.mValue);
@@ -651,7 +651,7 @@ DVec3 DVec3::operator - (DVec3Arg inV2) const
 #endif
 }
 
-DVec3 &DVec3::operator -= (Vec3Arg inV2)
+DVec3 &DVec3::operator -= (const Vec3Arg& inV2)
 {
 #if defined(JPH_USE_AVX)
 	mValue = _mm256_sub_pd(mValue, _mm256_cvtps_pd(inV2.mValue));
@@ -671,7 +671,7 @@ DVec3 &DVec3::operator -= (Vec3Arg inV2)
 	return *this;
 }
 
-DVec3 &DVec3::operator -= (DVec3Arg inV2)
+DVec3 &DVec3::operator -= (const DVec3Arg& inV2)
 {
 #if defined(JPH_USE_AVX)
 	mValue = _mm256_sub_pd(mValue, inV2.mValue);
@@ -691,7 +691,7 @@ DVec3 &DVec3::operator -= (DVec3Arg inV2)
 	return *this;
 }
 
-DVec3 DVec3::operator / (DVec3Arg inV2) const
+DVec3 DVec3::operator / (const DVec3Arg& inV2) const
 {
 	inV2.CheckW();
 #if defined(JPH_USE_AVX)
@@ -726,7 +726,7 @@ DVec3 DVec3::Reciprocal() const
 	return sReplicate(1.0) / mValue;
 }
 
-DVec3 DVec3::Cross(DVec3Arg inV2) const
+DVec3 DVec3::Cross(const DVec3Arg& inV2) const
 {
 #if defined(JPH_USE_AVX2)
 	__m256d t1 = _mm256_permute4x64_pd(inV2.mValue, _MM_SHUFFLE(0, 0, 2, 1)); // Assure Z and W are the same
@@ -742,7 +742,7 @@ DVec3 DVec3::Cross(DVec3Arg inV2) const
 #endif
 }
 
-double DVec3::Dot(DVec3Arg inV2) const
+double DVec3::Dot(const DVec3Arg& inV2) const
 {
 #if defined(JPH_USE_AVX)
 	__m256d mul = _mm256_mul_pd(mValue, inV2.mValue);
