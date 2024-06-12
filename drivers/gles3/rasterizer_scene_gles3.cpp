@@ -2245,9 +2245,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	}
 
 	bool glow_enabled = false;
-	if (p_environment.is_valid() && rb.is_valid()) {
+	if (p_environment.is_valid()) {
 		glow_enabled = environment_get_glow_enabled(p_environment);
-		rb->set_glow_enabled(glow_enabled); // ensure our intermediate buffer is available if glow is enabled
+		rb->ensure_internal_buffers(); // Ensure our intermediate buffer is available if glow is enabled
 		if (glow_enabled) {
 			// If glow is enabled, we apply tonemapping etc. in post, so disable it during rendering
 			apply_color_adjustments_in_post = true;
@@ -2339,6 +2339,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	if (render_data.environment.is_valid()) {
 		bool use_bcs = environment_get_adjustments_enabled(render_data.environment);
 		if (use_bcs) {
+			rb->ensure_internal_buffers();
 			apply_color_adjustments_in_post = true;
 		}
 
