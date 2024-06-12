@@ -123,6 +123,8 @@ void SkeletonModifier3D::_notification(int p_what) {
 }
 
 void SkeletonModifier3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_skeleton"), &SkeletonModifier3D::get_skeleton);
+
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &SkeletonModifier3D::set_active);
 	ClassDB::bind_method(D_METHOD("is_active"), &SkeletonModifier3D::is_active);
 

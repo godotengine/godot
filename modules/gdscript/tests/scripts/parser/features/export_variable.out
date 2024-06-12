@@ -23,6 +23,10 @@ var test_image: Image = null
   hint=RESOURCE_TYPE hint_string="Image" usage=DEFAULT|SCRIPT_VARIABLE class_name=&"Image"
 var test_timer: Timer = null
   hint=NODE_TYPE hint_string="Timer" usage=DEFAULT|SCRIPT_VARIABLE class_name=&"Timer"
+var test_global_class: ExportVariableTest = null
+  hint=NODE_TYPE hint_string="ExportVariableTest" usage=DEFAULT|SCRIPT_VARIABLE class_name=&"ExportVariableTest"
+var test_preloaded_script: ExportPreloadedClassTest = null
+  hint=NODE_TYPE hint_string="ExportPreloadedClassTest" usage=DEFAULT|SCRIPT_VARIABLE class_name=&"ExportPreloadedClassTest"
 var test_array: Array = []
   hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_array_bool: Array = Array[bool]([])

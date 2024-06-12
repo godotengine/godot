@@ -35,37 +35,10 @@ repos:
         types_or: [text]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
       - id: codespell
-        types_or: [text]
-        exclude: |
-          (?x)^(
-            .*\.desktop$|
-            .*\.gitignore$|
-            .*\.po$|
-            .*\.pot$|
-            .*\.rc$|
-            \.mailmap$|
-            AUTHORS.md$|
-            COPYRIGHT.txt$|
-            DONORS.md$|
-            core/input/gamecontrollerdb.txt$|
-            core/string/locales.h$|
-            editor/project_converter_3_to_4.cpp$|
-            platform/android/java/lib/src/com/.*|
-            platform/web/package-lock.json$
-          )
-        args:
-          - --enable-colors
-          - --write-changes
-          - --check-hidden
-          - --quiet-level
-          - '3'
-          - --ignore-words-list
-          - aesthetic,aesthetics,breaked,cancelled,colour,curvelinear,doubleclick,expct,findn,gird,hel,inout,lod,mis,nd,numer,ot,requestor,te,thirdparty,vai
-          - --builtin
-          - clear,rare,en-GB_to_en-US
+        additional_dependencies: [tomli]
 
   ### Requires Docker; look into alternative implementation.
   # - repo: https://github.com/comkieffer/pre-commit-xmllint.git

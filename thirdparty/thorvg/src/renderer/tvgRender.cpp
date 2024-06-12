@@ -47,7 +47,7 @@ void RenderTransform::update()
 
     mathScale(&m, scale, scale);
 
-    if (!mathZero(degree)) mathRotate(&m, degree);
+    mathRotate(&m, degree);
 
     mathTranslate(&m, x, y);
 }
@@ -55,7 +55,7 @@ void RenderTransform::update()
 
 RenderTransform::RenderTransform(const RenderTransform* lhs, const RenderTransform* rhs)
 {
-    if (lhs && rhs) m = mathMultiply(&lhs->m, &rhs->m);
+    if (lhs && rhs) m = lhs->m * rhs->m;
     else if (lhs) m = lhs->m;
     else if (rhs) m = rhs->m;
     else mathIdentity(&m);

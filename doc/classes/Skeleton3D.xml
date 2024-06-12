@@ -155,6 +155,13 @@
 				Returns the rest transform for a bone [param bone_idx].
 			</description>
 		</method>
+		<method name="get_concatenated_bone_names" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns all bone names concatenated with commas ([code],[/code]) as a single [StringName].
+				It is useful to set it as a hint for the enum property.
+			</description>
+		</method>
 		<method name="get_parentless_bones" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<description>

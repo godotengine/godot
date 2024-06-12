@@ -160,7 +160,6 @@ public:
 
 	void set_marked(const HashSet<Node *> &p_marked, bool p_selectable = true, bool p_children_selectable = true);
 	void set_marked(Node *p_marked, bool p_selectable = true, bool p_children_selectable = true);
-	bool has_marked() const { return !marked.is_empty(); }
 	void set_selected(Node *p_node, bool p_emit_selected = true);
 	Node *get_selected();
 	void set_can_rename(bool p_can_rename) { can_rename = p_can_rename; }

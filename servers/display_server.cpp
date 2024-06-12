@@ -31,7 +31,6 @@
 #include "display_server.h"
 
 #include "core/input/input.h"
-#include "scene/resources/atlas_texture.h"
 #include "scene/resources/texture.h"
 #include "servers/display_server_headless.h"
 
@@ -1124,35 +1123,22 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(TTS_UTTERANCE_BOUNDARY);
 }
 
-Ref<Image> DisplayServer::_get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot, Rect2 &r_atlas_rect) {
+Ref<Image> DisplayServer::_get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot) {
 	Ref<Image> image;
 	ERR_FAIL_COND_V_MSG(p_hotspot.x < 0 || p_hotspot.y < 0, image, "Hotspot outside cursor image.");
 
-	Size2 texture_size;
-
 	Ref<Texture2D> texture = p_cursor;
 	if (texture.is_valid()) {
-		Ref<AtlasTexture> atlas_texture = p_cursor;
-
-		if (atlas_texture.is_valid()) {
-			texture = atlas_texture->get_atlas();
-			r_atlas_rect.size = texture->get_size();
-			r_atlas_rect.position = atlas_texture->get_region().position;
-			texture_size = atlas_texture->get_region().size;
-		} else {
-			texture_size = texture->get_size();
-		}
 		image = texture->get_image();
 	} else {
 		image = p_cursor;
-		ERR_FAIL_COND_V(image.is_null(), image);
-		texture_size = image->get_size();
 	}
-
-	ERR_FAIL_COND_V_MSG(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height, image, "Hotspot outside cursor image.");
-	ERR_FAIL_COND_V_MSG(texture_size.width > 256 || texture_size.height > 256, image, "Cursor image too big. Max supported size is 256x256.");
-
 	ERR_FAIL_COND_V(image.is_null(), image);
+
+	Size2 image_size = image->get_size();
+	ERR_FAIL_COND_V_MSG(p_hotspot.x > image_size.width || p_hotspot.y > image_size.height, image, "Hotspot outside cursor image.");
+	ERR_FAIL_COND_V_MSG(image_size.width > 256 || image_size.height > 256, image, "Cursor image too big. Max supported size is 256x256.");
+
 	if (image->is_compressed()) {
 		image = image->duplicate(true);
 		Error err = image->decompress();

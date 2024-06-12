@@ -923,6 +923,7 @@ void Object::notification(int p_notification, bool p_reversed) {
 }
 
 String Object::to_string() {
+	// Keep this method in sync with `Node::to_string`.
 	if (script_instance) {
 		bool valid;
 		String ret = script_instance->to_string(&valid);

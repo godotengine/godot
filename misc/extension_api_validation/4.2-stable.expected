@@ -126,13 +126,6 @@ Validate extension JSON: Error: Field 'classes/Animation/methods/value_track_int
 Added optional argument to track_interpolate to treat playing backward correctly. Compatibility method registered.
 
 
-GH-86661
---------
-Validate extension JSON: Error: Field 'classes/Animation/methods/track_find_key/arguments': size changed value in new API, from 3 to 4.
-
-Added optional argument to track_find_key to avoid finding keys out of the animation range. Compatibility method registered.
-
-
 GH-84792
 --------
 Validate extension JSON: Error: Field 'classes/RenderingServer/methods/environment_set_fog/arguments': size changed value in new API, from 10 to 11.
@@ -364,3 +357,11 @@ GH-92322
 Validate extension JSON: Error: Field 'classes/EditorInspectorPlugin/methods/add_property_editor/arguments': size changed value in new API, from 3 to 4.
 
 Optional arguments added. Compatibility methods registered.
+
+
+GH-92861
+--------
+Validate extension JSON: Error: Field 'classes/Animation/methods/track_find_key/arguments': size changed value in new API, from 3 to 5.
+
+Added optional arguments to avoid finding keys out of the animation range (GH-86661), and to handle backward seeking.
+Compatibility method registered.

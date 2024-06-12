@@ -217,6 +217,8 @@ void NavigationPolygonEditor::_clear_pressed() {
 	if (node) {
 		if (node->get_navigation_polygon().is_valid()) {
 			node->get_navigation_polygon()->clear();
+			// Needed to update all the region internals.
+			node->set_navigation_polygon(node->get_navigation_polygon());
 		}
 	}
 

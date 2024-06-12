@@ -225,11 +225,24 @@ void PropertySelector::_update_search() {
 		} else {
 			Ref<Script> script_ref = Object::cast_to<Script>(ObjectDB::get_instance(script));
 			if (script_ref.is_valid()) {
-				methods.push_back(MethodInfo("*Script Methods"));
 				if (script_ref->is_built_in()) {
 					script_ref->reload(true);
 				}
-				script_ref->get_script_method_list(&methods);
+
+				List<MethodInfo> script_methods;
+				script_ref->get_script_method_list(&script_methods);
+
+				methods.push_back(MethodInfo("*Script Methods")); // TODO: Split by inheritance.
+
+				for (const MethodInfo &mi : script_methods) {
+					if (mi.name.begins_with("@")) {
+						// GH-92782. GDScript inline setters/getters are historically present in `get_method_list()`
+						// and can be called using `Object.call()`. However, these functions are meant to be internal
+						// and their names are not valid identifiers, so let's hide them from the user.
+						continue;
+					}
+					methods.push_back(mi);
+				}
 			}
 
 			StringName base = base_type;

@@ -88,6 +88,9 @@ protected:
 	bool _is_editing_in_editor() const;
 	void _update_process_callback();
 	void _update_scroll();
+#ifdef TOOLS_ENABLED
+	void _project_settings_changed();
+#endif
 
 	void _make_current(Object *p_which);
 	void _reset_just_exited() { just_exited_tree = false; }

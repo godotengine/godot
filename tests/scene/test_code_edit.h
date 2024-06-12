@@ -3331,6 +3331,45 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 		CHECK_FALSE(code_edit->is_line_folded(1));
 	}
 
+	SUBCASE("[CodeEdit] actions unfold") {
+		// add_selection_for_next_occurrence unfolds.
+		code_edit->set_text("test\n\tline1 test\n\t\tline 2\ntest2");
+		code_edit->select(0, 0, 0, 4);
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		code_edit->add_selection_for_next_occurrence();
+
+		CHECK(code_edit->get_caret_count() == 2);
+		CHECK(code_edit->has_selection(0));
+		CHECK(code_edit->get_caret_line() == 0);
+		CHECK(code_edit->get_selection_origin_line() == 0);
+		CHECK(code_edit->get_caret_column() == 4);
+		CHECK(code_edit->get_selection_origin_column() == 0);
+		CHECK(code_edit->has_selection(1));
+		CHECK(code_edit->get_caret_line(1) == 1);
+		CHECK(code_edit->get_selection_origin_line(1) == 1);
+		CHECK(code_edit->get_caret_column(1) == 11);
+		CHECK(code_edit->get_selection_origin_column(1) == 7);
+		CHECK_FALSE(code_edit->is_line_folded(0));
+		code_edit->remove_secondary_carets();
+
+		// skip_selection_for_next_occurrence unfolds.
+		code_edit->select(0, 0, 0, 4);
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		code_edit->skip_selection_for_next_occurrence();
+
+		CHECK(code_edit->get_caret_count() == 1);
+		CHECK(code_edit->has_selection(0));
+		CHECK(code_edit->get_caret_line() == 1);
+		CHECK(code_edit->get_selection_origin_line() == 1);
+		CHECK(code_edit->get_caret_column() == 11);
+		CHECK(code_edit->get_selection_origin_column() == 7);
+		CHECK_FALSE(code_edit->is_line_folded(0));
+		code_edit->remove_secondary_carets();
+		code_edit->deselect();
+	}
+
 	SUBCASE("[CodeEdit] toggle folding carets") {
 		code_edit->set_text("test\n\tline1\ntest2\n\tline2");
 

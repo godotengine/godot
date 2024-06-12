@@ -229,6 +229,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 							} else {
 								end = token.hex_to_int();
 								step = STEP_ADVANCE_BEGIN;
+								c--;
 							}
 						}
 					} break;
@@ -244,6 +245,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 							} else {
 								end = token.to_int();
 								step = STEP_ADVANCE_BEGIN;
+								c--;
 							}
 						}
 					} break;
