@@ -2749,6 +2749,8 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["LIGHT_IS_DIRECTIONAL"] = "is_directional";
 		actions.renames["LIGHT_STEP_COUNT"] = "light_max_steps";
 		actions.renames["LIGHT_STEP_LENGTH"] = "light_step_size";
+		actions.renames["LIGHT_STEP_ROUNDING"] = "light_pixel_size";
+		actions.renames["LIGHT_STEP_ENABLE_ROUNDING"] = "light_enable_rounding";
 		actions.renames["LIGHT_COLOR"] = "light_color";
 		actions.renames["LIGHT_ENERGY"] = "light_energy";
 		actions.renames["LIGHT"] = "light";

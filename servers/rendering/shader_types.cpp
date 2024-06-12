@@ -322,6 +322,8 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light_settings"].built_ins["LIGHT_STEP_COUNT"] = ShaderLanguage::TYPE_UINT;
 	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light_settings"].built_ins["LIGHT_STEP_LENGTH"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light_settings"].built_ins["LIGHT_STEP_ROUNDING"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light_settings"].built_ins["LIGHT_STEP_ENABLE_ROUNDING"] = ShaderLanguage::TYPE_BOOL;
 	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light_settings"].can_discard = true;
 	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light_settings"].main_function = true;
 

@@ -393,23 +393,27 @@ vec3 light_normal_compute(vec3 light_vec, vec3 normal, vec3 base_color, vec3 lig
 }
 
 // gets a point on the line from the starting point, to the vec2(0, 0)
-vec2 point_on_line(vec2 starting_point, float pixelSize, uint currentStep) {
-    float totalDistance = length(starting_point);
+vec2 point_on_line(vec2 starting_point, float step_size, float pixel_size, bool enable_rounding, uint current_step) {
+    float total_distance = length(starting_point);
 
-    uint numSteps = uint(ceil(totalDistance / pixelSize));
+    uint numSteps = uint(ceil(total_distance / step_size));
 
-    if (currentStep > numSteps) {
-        currentStep = numSteps;
+    if (current_step > numSteps) {
+        current_step = numSteps;
     }
 
-    float t = float(currentStep) / float(numSteps);
+    float t = float(current_step) / float(numSteps);
 
-    vec2 currentPoint = mix(starting_point, vec2(0, 0), t);
+    vec2 current_point = mix(starting_point, vec2(0, 0), t);
 
-    return currentPoint;
+	if (enable_rounding) {
+		current_point = floor(current_point / pixel_size + 0.5) * pixel_size;
+	}
+
+    return current_point;
 }
 
-vec4 shadow_uv_compute(vec2 shadow_pos, float shadow_zfar_inv, float shadow_y_ofs) {
+vec4 shadow_uv_compute(uint light_base, vec2 shadow_pos) {
 	vec2 pos_norm = normalize(shadow_pos);
 	vec2 pos_abs = abs(pos_norm);
 	vec2 pos_box = pos_norm / max(pos_abs.x, pos_abs.y);
@@ -434,10 +438,43 @@ vec4 shadow_uv_compute(vec2 shadow_pos, float shadow_zfar_inv, float shadow_y_of
 		}
 	}
 
-	distance *= shadow_zfar_inv;
+	distance *= light_array.data[light_base].shadow_zfar_inv;
 
 	//float distance = length(shadow_pos);
-	return vec4(tex_ofs, shadow_y_ofs, distance, 1.0);
+	return vec4(tex_ofs, light_array.data[light_base].shadow_y_ofs, distance, 1.0);
+}
+
+vec4 light_color_compute(uint light_base, bool normal_used, vec2 tex_uv_atlas, vec3 light_vertex, vec3 normal, vec4 specular_shininess, bool specular_shininess_used, vec2 screen_uv, vec2 uv, vec4 base_color
+#ifdef LIGHT_CODE_USED
+	,
+	inout vec4 shadow_modulate
+#endif
+) {
+	vec4 light_color = textureLod(sampler2D(atlas_texture, texture_sampler), tex_uv_atlas, 0.0);
+	vec4 light_base_color = light_array.data[light_base].color;
+
+#ifdef LIGHT_CODE_USED
+
+	vec3 light_position = vec3(light_array.data[light_base].position, light_array.data[light_base].height);
+
+	light_color.rgb *= light_base_color.rgb;
+	light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, screen_uv, uv, base_color, false);
+#else
+
+	light_color.rgb *= light_base_color.rgb * light_base_color.a;
+
+	if (normal_used) {
+		vec3 light_pos = vec3(light_array.data[light_base].position, light_array.data[light_base].height);
+		vec3 pos = light_vertex;
+		vec3 light_vec = normalize(light_pos - pos);
+
+		light_color.rgb = light_normal_compute(light_vec, normal, base_color.rgb, light_color.rgb, specular_shininess, specular_shininess_used);
+	} else {
+		light_color.rgb *= base_color.rgb;
+	}
+#endif
+
+	return light_color;
 }
 
 //float distance = length(shadow_pos);
@@ -713,18 +750,16 @@ void main() {
 		light_base &= 0xFF;
 
 		vec2 tex_uv = (vec4(vertex, 0.0, 1.0) * mat4(light_array.data[light_base].texture_matrix[0], light_array.data[light_base].texture_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
-		vec2 tex_uv_atlas = tex_uv * light_array.data[light_base].atlas_rect.zw + light_array.data[light_base].atlas_rect.xy;
 
 		if (any(lessThan(tex_uv, vec2(0.0, 0.0))) || any(greaterThanEqual(tex_uv, vec2(1.0, 1.0)))) {
 			//if outside the light texture, light color is zero
 			continue;
 		}
 
-		vec4 light_color = textureLod(sampler2D(atlas_texture, texture_sampler), tex_uv_atlas, 0.0);
-		vec4 light_base_color = light_array.data[light_base].color;
-
 		uint light_max_steps = 5;
 		float light_step_size = 1.5;
+		float light_pixel_size = 1.0;
+		bool light_enable_rounding = false;
 
 #ifdef LIGHT_SETTINGS_CODE_USED
 
@@ -732,27 +767,7 @@ void main() {
 
 #endif
 
-#ifdef LIGHT_CODE_USED
-
-		vec4 shadow_modulate = vec4(1.0);
-		vec3 light_position = vec3(light_array.data[light_base].position, light_array.data[light_base].height);
-
-		light_color.rgb *= light_base_color.rgb;
-		light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, screen_uv, uv, base_color, false);
-#else
-
-		light_color.rgb *= light_base_color.rgb * light_base_color.a;
-
-		if (normal_used) {
-			vec3 light_pos = vec3(light_array.data[light_base].position, light_array.data[light_base].height);
-			vec3 pos = light_vertex;
-			vec3 light_vec = normalize(light_pos - pos);
-
-			light_color.rgb = light_normal_compute(light_vec, normal, base_color.rgb, light_color.rgb, specular_shininess, specular_shininess_used);
-		} else {
-			light_color.rgb *= base_color.rgb;
-		}
-#endif
+		vec4 light_color;
 
 		if (bool(light_array.data[light_base].flags & LIGHT_FLAGS_HAS_SHADOW)) {
 
@@ -771,15 +786,25 @@ void main() {
 
 			while (occluder < 0.5 && interpolation_steps < light_max_steps) {
 				interpolation_steps += 1;
-				interpolated_pos = point_on_line(shadow_pos, light_step_size, interpolation_steps);
+				interpolated_pos = point_on_line(shadow_pos, light_step_size, light_pixel_size, light_enable_rounding, interpolation_steps);
 				occluder_uv = vec3((interpolated_pos + (light_size / 2.0)) / occluder_max_size, float(light_array.data[light_base].occluder_texture_index));
 				occluder = texture(sampler2DArray(occluder_texture, texture_sampler), occluder_uv).r;
 			}
 
-//			tex_uv_atlas = ((interpolated_pos + (light_size / 2.0)) / light_size) * light_array.data[light_base].atlas_rect.zw + light_array.data[light_base].atlas_rect.xy;
-//			light_color = textureLod(sampler2D(atlas_texture, texture_sampler), tex_uv_atlas, 0.0);
+//			vec2 tex_uv_atlas = tex_uv * light_array.data[light_base].atlas_rect.zw + light_array.data[light_base].atlas_rect.xy;
+			vec2 tex_uv_atlas = ((interpolated_pos + (light_size / 2.0)) / light_size) * light_array.data[light_base].atlas_rect.zw + light_array.data[light_base].atlas_rect.xy;
+#ifdef LIGHT_CODE_USED
+			vec4 shadow_modulate = vec4(1.0);
+#endif
+			light_color = light_color_compute(light_base, normal_used, tex_uv_atlas, light_vertex, normal, specular_shininess, specular_shininess_used, screen_uv, uv, base_color
+#ifdef LIGHT_CODE_USED
+			,
+			shadow_modulate
+#endif
+			);
+
 			if (interpolation_steps < light_max_steps) {
-				vec4 shadow_uv = shadow_uv_compute(interpolated_pos, light_array.data[light_base].shadow_zfar_inv, light_array.data[light_base].shadow_y_ofs);
+				vec4 shadow_uv = shadow_uv_compute(light_base, interpolated_pos);
 				light_color = light_shadow_compute(light_base, light_color, shadow_uv, float(interpolation_steps) / float(light_max_steps)
 #ifdef LIGHT_CODE_USED
 					,
@@ -797,6 +822,15 @@ void main() {
 
 				light_color = shadow_color;
 			}
+		}
+		else {
+			vec2 tex_uv_atlas = tex_uv * light_array.data[light_base].atlas_rect.zw + light_array.data[light_base].atlas_rect.xy;
+			light_color = light_color_compute(light_base, normal_used, tex_uv_atlas, light_vertex, normal, specular_shininess, specular_shininess_used, screen_uv, uv, base_color
+#ifdef LIGHT_CODE_USED
+				,
+				vec4(1.0)
+#endif
+			);
 		}
 
 		light_blend_compute(light_base, light_color, color.rgb);
