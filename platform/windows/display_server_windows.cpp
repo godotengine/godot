@@ -662,19 +662,19 @@ Point2i DisplayServerWindows::mouse_get_position() const {
 BitField<MouseButtonMask> DisplayServerWindows::mouse_get_button_state() const {
 	BitField<MouseButtonMask> last_button_state = 0;
 
-	if (GetAsyncKeyState(VK_LBUTTON) & (1 << 15)) {
+	if (GetKeyState(VK_LBUTTON) & (1 << 15)) {
 		last_button_state.set_flag(MouseButtonMask::LEFT);
 	}
-	if (GetAsyncKeyState(VK_RBUTTON) & (1 << 15)) {
+	if (GetKeyState(VK_RBUTTON) & (1 << 15)) {
 		last_button_state.set_flag(MouseButtonMask::RIGHT);
 	}
-	if (GetAsyncKeyState(VK_MBUTTON) & (1 << 15)) {
+	if (GetKeyState(VK_MBUTTON) & (1 << 15)) {
 		last_button_state.set_flag(MouseButtonMask::MIDDLE);
 	}
-	if (GetAsyncKeyState(VK_XBUTTON1) & (1 << 15)) {
+	if (GetKeyState(VK_XBUTTON1) & (1 << 15)) {
 		last_button_state.set_flag(MouseButtonMask::MB_XBUTTON1);
 	}
-	if (GetAsyncKeyState(VK_XBUTTON2) & (1 << 15)) {
+	if (GetKeyState(VK_XBUTTON2) & (1 << 15)) {
 		last_button_state.set_flag(MouseButtonMask::MB_XBUTTON2);
 	}
 
