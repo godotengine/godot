@@ -139,8 +139,9 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 #endif
 		case FEATURE_CLIPBOARD_PRIMARY:
 		case FEATURE_TEXT_TO_SPEECH:
-		case FEATURE_SCREEN_CAPTURE:
 			return true;
+		case FEATURE_SCREEN_CAPTURE:
+			return !xwayland;
 		default: {
 		}
 	}
@@ -1494,9 +1495,20 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	return 96;
 }
 
+int get_image_errorhandler(Display *dpy, XErrorEvent *ev) {
+	return 0;
+}
+
 Color DisplayServerX11::screen_get_pixel(const Point2i &p_position) const {
 	Point2i pos = p_position;
 
+	if (xwayland) {
+		return Color();
+	}
+
+	int (*old_handler)(Display *, XErrorEvent *) = XSetErrorHandler(&get_image_errorhandler);
+
+	Color color;
 	int number_of_screens = XScreenCount(x11_display);
 	for (int i = 0; i < number_of_screens; i++) {
 		Window root = XRootWindow(x11_display, i);
@@ -1509,12 +1521,15 @@ Color DisplayServerX11::screen_get_pixel(const Point2i &p_position) const {
 				c.pixel = XGetPixel(image, 0, 0);
 				XFree(image);
 				XQueryColor(x11_display, XDefaultColormap(x11_display, i), &c);
-				return Color(float(c.red) / 65535.0, float(c.green) / 65535.0, float(c.blue) / 65535.0, 1.0);
+				color = Color(float(c.red) / 65535.0, float(c.green) / 65535.0, float(c.blue) / 65535.0, 1.0);
+				break;
 			}
 		}
 	}
 
-	return Color();
+	XSetErrorHandler(old_handler);
+
+	return color;
 }
 
 Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
@@ -1532,6 +1547,12 @@ Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
 	}
 
 	ERR_FAIL_COND_V(p_screen < 0, Ref<Image>());
+
+	if (xwayland) {
+		return Ref<Image>();
+	}
+
+	int (*old_handler)(Display *, XErrorEvent *) = XSetErrorHandler(&get_image_errorhandler);
 
 	XImage *image = nullptr;
 
@@ -1574,6 +1595,8 @@ Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
 			ERR_PRINT(vformat("Invalid screen index: %d (count: %d).", p_screen, x_count));
 		}
 	}
+
+	XSetErrorHandler(old_handler);
 
 	Ref<Image> img;
 	if (image) {
@@ -5814,6 +5837,8 @@ static ::XIMStyle _get_best_xim_style(const ::XIMStyle &p_style_a, const ::XIMSt
 
 DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	KeyMappingX11::initialize();
+
+	xwayland = OS::get_singleton()->get_environment("XDG_SESSION_TYPE").to_lower() == "wayland";
 
 	native_menu = memnew(NativeMenu);
 	context = p_context;
