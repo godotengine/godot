@@ -68,6 +68,14 @@ void JoltBodyImpl3D::set_transform(Transform3D p_transform) {
 
 	if (!scale.is_equal_approx(new_scale)) {
 		scale = new_scale;
+		float s = MAX(scale.x,MAX( scale.y , scale.z));
+		
+		// jolt 不支持非等比缩放, 因此将其设置为等比缩放,因为非等比缩放加旋转可能导致碰撞模型斜切变形
+		scale.x = s;
+		scale.y = s;
+		scale.z = s;
+		//WARN_PRINT(_T("jolt does not support non-equal scale, so it is set to equal scale"));
+		
 		_shapes_changed();
 	}
 
