@@ -239,6 +239,7 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	current_object_label = memnew(Label);
 	current_object_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	current_object_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	current_object_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	current_object_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	main_hb->add_child(current_object_label);
 
