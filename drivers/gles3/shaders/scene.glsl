@@ -46,6 +46,12 @@ LIGHTMAP_BICUBIC_FILTER = false
 #define SHADER_IS_SRGB true
 #define SHADER_SPACE_FAR -1.0
 
+#if defined(RENDER_SHADOWS) || defined(RENDER_SHADOWS_LINEAR)
+#define IN_SHADOW_PASS true
+#else
+#define IN_SHADOW_PASS false
+#endif
+
 #include "stdlib_inc.glsl"
 
 #if !defined(MODE_RENDER_DEPTH) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED) ||defined(LIGHT_CLEARCOAT_USED)
@@ -607,6 +613,10 @@ void main() {
 #endif
 #endif
 
+#ifdef Z_CLIP_SCALE_USED
+	float z_clip_scale = 1.0;
+#endif
+
 	float roughness = 1.0;
 
 	highp mat4 modelview = scene_data.view_matrix * model_matrix;
@@ -710,6 +720,12 @@ void main() {
 	gl_Position = position;
 #else
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
+#endif
+
+#if !defined(RENDER_SHADOWS) && !defined(RENDER_SHADOWS_LINEAR)
+#ifdef Z_CLIP_SCALE_USED
+	gl_Position.z = mix(gl_Position.w, gl_Position.z, z_clip_scale);
+#endif
 #endif
 
 #ifdef RENDER_MATERIAL
@@ -832,6 +848,12 @@ void main() {
 
 #define SHADER_IS_SRGB true
 #define SHADER_SPACE_FAR -1.0
+
+#if defined(RENDER_SHADOWS) || defined(RENDER_SHADOWS_LINEAR)
+#define IN_SHADOW_PASS true
+#else
+#define IN_SHADOW_PASS false
+#endif
 
 #define FLAGS_NON_UNIFORM_SCALE (1 << 4)
 
