@@ -78,8 +78,8 @@ TEST_CASE("[Image] Instantiation") {
 
 TEST_CASE("[Image] Saving and loading") {
 	Ref<Image> image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
-	const String save_path_png = OS::get_singleton()->get_cache_path().path_join("image.png");
-	const String save_path_exr = OS::get_singleton()->get_cache_path().path_join("image.exr");
+	const String save_path_png = TestUtils::get_temp_path("image.png");
+	const String save_path_exr = TestUtils::get_temp_path("image.exr");
 
 	// Save PNG
 	Error err;
