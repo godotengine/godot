@@ -447,8 +447,13 @@ void Path2DEditor::edit(Node *p_path2d) {
 		canvas_item_editor = CanvasItemEditor::get_singleton();
 	}
 
+	if (node) {
+		node->set_selected(false);
+	}
+
 	if (p_path2d) {
 		node = Object::cast_to<Path2D>(p_path2d);
+		node->set_selected(true);
 
 		if (!node->is_connected(SceneStringName(visibility_changed), callable_mp(this, &Path2DEditor::_node_visibility_changed))) {
 			node->connect(SceneStringName(visibility_changed), callable_mp(this, &Path2DEditor::_node_visibility_changed));
