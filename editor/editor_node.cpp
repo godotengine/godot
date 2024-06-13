@@ -2304,6 +2304,12 @@ void EditorNode::push_item(Object *p_object, const String &p_property, bool p_in
 	_edit_current();
 }
 
+void EditorNode::edit_previous_item() {
+	if (editor_history.previous()) {
+		_edit_current();
+	}
+}
+
 void EditorNode::push_item_no_inspector(Object *p_object) {
 	_add_to_history(p_object, "", false);
 	_edit_current(false, true);

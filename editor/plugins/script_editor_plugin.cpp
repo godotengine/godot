@@ -2856,6 +2856,10 @@ void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const 
 
 		break;
 	}
+
+	// Move back to the previously edited node to reselect it in the Inspector and the NodeDock.
+	// We assume that the previous item is the node on which the callbacks were added.
+	EditorNode::get_singleton()->edit_previous_item();
 }
 
 void ScriptEditor::_save_editor_state(ScriptEditorBase *p_editor) {
