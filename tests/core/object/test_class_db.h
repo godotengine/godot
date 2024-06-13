@@ -289,6 +289,38 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 	return false;
 }
 
+bool arg_default_value_is_valid_data(const Variant &p_val, String *r_err_msg = nullptr) {
+	switch (p_val.get_type()) {
+		case Variant::RID:
+		case Variant::ARRAY:
+		case Variant::DICTIONARY:
+		case Variant::PACKED_BYTE_ARRAY:
+		case Variant::PACKED_INT32_ARRAY:
+		case Variant::PACKED_INT64_ARRAY:
+		case Variant::PACKED_FLOAT32_ARRAY:
+		case Variant::PACKED_FLOAT64_ARRAY:
+		case Variant::PACKED_STRING_ARRAY:
+		case Variant::PACKED_VECTOR2_ARRAY:
+		case Variant::PACKED_VECTOR3_ARRAY:
+		case Variant::PACKED_COLOR_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY:
+		case Variant::CALLABLE:
+		case Variant::SIGNAL:
+		case Variant::OBJECT:
+			if (p_val.is_zero()) {
+				return true;
+			}
+			if (r_err_msg) {
+				*r_err_msg = "Must be zero.";
+			}
+			break;
+		default:
+			return true;
+	}
+
+	return false;
+}
+
 void validate_property(const Context &p_context, const ExposedClass &p_class, const PropertyData &p_prop) {
 	const MethodData *setter = p_class.find_method_by_name(p_prop.setter);
 
@@ -411,6 +443,14 @@ void validate_argument(const Context &p_context, const ExposedClass &p_class, co
 		}
 
 		TEST_COND(!arg_defval_assignable_to_type, err_msg);
+
+		bool arg_defval_valid_data = arg_default_value_is_valid_data(p_arg.defval, &type_error_msg);
+
+		if (!type_error_msg.is_empty()) {
+			err_msg += " " + type_error_msg;
+		}
+
+		TEST_COND(!arg_defval_valid_data, err_msg);
 	}
 }
 
