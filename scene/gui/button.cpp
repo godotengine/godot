@@ -487,6 +487,8 @@ Size2 Button::_fit_icon_size(const Size2 &p_size) const {
 }
 
 Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Texture2D> p_icon) const {
+	// Do not include `_internal_margin`, it's already added in the `get_minimum_size` overrides.
+
 	Ref<TextParagraph> paragraph;
 	if (p_text.is_empty()) {
 		paragraph = text_buf;
@@ -498,21 +500,6 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 	Size2 minsize = paragraph->get_size();
 	if (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING || autowrap_mode != TextServer::AUTOWRAP_OFF) {
 		minsize.width = 0;
-	}
-
-	float left_internal_margin_with_h_separation = _internal_margin[SIDE_LEFT];
-	float right_internal_margin_with_h_separation = _internal_margin[SIDE_RIGHT];
-	{ // The width reserved for internal element in derived classes (and h_separation if needed).
-
-		if (_internal_margin[SIDE_LEFT] > 0.0f) {
-			left_internal_margin_with_h_separation += theme_cache.h_separation;
-		}
-
-		if (_internal_margin[SIDE_RIGHT] > 0.0f) {
-			right_internal_margin_with_h_separation += theme_cache.h_separation;
-		}
-
-		minsize.width += left_internal_margin_with_h_separation + right_internal_margin_with_h_separation; // The size after the internal element is stripped.
 	}
 
 	if (!expand_icon && p_icon.is_valid()) {
