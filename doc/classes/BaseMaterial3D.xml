@@ -229,6 +229,10 @@
 		<member name="fixed_size" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object is rendered at the same size regardless of distance. The object's size on screen is the same as if the camera was [code]1.0[/code] units away from the object's origin, regardless of the actual distance from the camera. The [Camera3D]'s field of view (or [member Camera3D.size] when in orthogonal/frustum mode) still affects the size the object is drawn at.
 		</member>
+		<member name="fov_override" type="float" setter="set_fov_override" getter="get_fov_override" default="75.0">
+			Overrides the [Camera3D]'s field of view angle (in degrees).
+			[b]Note:[/b] This behaves as if the field of view is set on a [Camera3D] with [member Camera3D.keep_aspect] set to [constant Camera3D.KEEP_HEIGHT]. Additionally, it may not look correct on a non-perspective camera where the field of view setting is ignored.
+		</member>
 		<member name="grow" type="bool" setter="set_grow_enabled" getter="is_grow_enabled" default="false">
 			If [code]true[/code], enables the vertex grow setting. This can be used to create mesh-based outlines using a second material pass and its [member cull_mode] set to [constant CULL_FRONT]. See also [member grow_amount].
 			[b]Note:[/b] Vertex growth cannot create new vertices, which means that visible gaps may occur in sharp corners. This can be alleviated by designing the mesh to use smooth normals exclusively using [url=http://wiki.polycount.com/wiki/Face_weighted_normals]face weighted normals[/url] in the 3D authoring software. In this case, grow will be able to join every outline together, just like in the original mesh.
@@ -407,12 +411,18 @@
 		<member name="transparency" type="int" setter="set_transparency" getter="get_transparency" enum="BaseMaterial3D.Transparency" default="0">
 			The material's transparency mode. Some transparency modes will disable shadow casting. Any transparency mode other than [constant TRANSPARENCY_DISABLED] has a greater performance impact compared to opaque rendering. See also [member blend_mode].
 		</member>
+		<member name="use_fov_override" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code] use [member fov_override] to override the [Camera3D]'s field of view angle.
+		</member>
 		<member name="use_particle_trails" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], enables parts of the shader required for [GPUParticles3D] trails to function. This also requires using a mesh with appropriate skinning, such as [RibbonTrailMesh] or [TubeTrailMesh]. Enabling this feature outside of materials used in [GPUParticles3D] meshes will break material rendering.
 		</member>
 		<member name="use_point_size" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], render point size can be changed.
 			[b]Note:[/b] This is only effective for objects whose geometry is point-based rather than triangle-based. See also [member point_size].
+		</member>
+		<member name="use_z_clip_scale" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code] use [member z_clip_scale] to scale the object being rendered towards the camera to avoid clipping into things like walls.
 		</member>
 		<member name="uv1_offset" type="Vector3" setter="set_uv1_offset" getter="get_uv1_offset" default="Vector3(0, 0, 0)">
 			How much to offset the [code]UV[/code] coordinates. This amount will be added to [code]UV[/code] in the vertex function. This can be used to offset a texture. The Z component is used when [member uv1_triplanar] is enabled, but it is not used anywhere else.
@@ -452,6 +462,9 @@
 		</member>
 		<member name="vertex_color_use_as_albedo" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the vertex color is used as albedo color.
+		</member>
+		<member name="z_clip_scale" type="float" setter="set_z_clip_scale" getter="get_z_clip_scale" default="1.0">
+			Scales the object being rendered towards the camera to avoid clipping into things like walls. This is intended to be used for objects that are fixed with respect to the camera like player arms, tools, etc. Lighting and shadows will continue to work correctly when this setting is adjusted, but screen-space effects like SSAO and SSR may break with lower scales. Therefore, try to keep this setting as close to [code]1.0[/code] as possible.
 		</member>
 	</members>
 	<constants>
@@ -727,7 +740,13 @@
 		<constant name="FLAG_DISABLE_SPECULAR_OCCLUSION" value="22" enum="Flags">
 			Disables specular occlusion.
 		</constant>
-		<constant name="FLAG_MAX" value="23" enum="Flags">
+		<constant name="FLAG_USE_Z_CLIP_SCALE" value="23" enum="Flags">
+			Enables using [member z_clip_scale].
+		</constant>
+		<constant name="FLAG_USE_FOV_OVERRIDE" value="24" enum="Flags">
+			Enables using [member fov_override].
+		</constant>
+		<constant name="FLAG_MAX" value="25" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">

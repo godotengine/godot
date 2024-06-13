@@ -10,6 +10,12 @@
 #define SHADER_IS_SRGB false
 #define SHADER_SPACE_FAR 0.0
 
+#ifdef SHADOW_PASS
+#define IN_SHADOW_PASS true
+#else
+#define IN_SHADOW_PASS false
+#endif
+
 /* INPUT ATTRIBS */
 
 // Always contains vertex position in XYZ, can contain tangent angle in W.
@@ -377,6 +383,10 @@ void main() {
 #endif
 #endif
 
+#ifdef Z_CLIP_SCALE_USED
+	float z_clip_scale = 1.0;
+#endif
+
 	float roughness = 1.0;
 
 	mat4 modelview = scene_data.view_matrix * model_matrix;
@@ -559,15 +569,19 @@ void main() {
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
 #endif // OVERRIDE_POSITION
 
+#if defined(Z_CLIP_SCALE_USED) && !defined(SHADOW_PASS)
+	gl_Position.z = mix(gl_Position.w, gl_Position.z, z_clip_scale);
+#endif
+
 #ifdef MODE_RENDER_DEPTH
-	if (scene_data.pancake_shadows) {
+	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_PANCAKE_SHADOWS)) {
 		if (gl_Position.z >= 0.9999) {
 			gl_Position.z = 0.9999;
 		}
 	}
 #endif // MODE_RENDER_DEPTH
 #ifdef MODE_RENDER_MATERIAL
-	if (scene_data.material_uv2_mode) {
+	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_UV2_MATERIAL)) {
 		vec2 uv_dest_attrib;
 		if (uv_scale != vec4(0.0)) {
 			uv_dest_attrib = (uv2_attrib.xy - 0.5) * uv_scale.zw;
@@ -590,6 +604,12 @@ void main() {
 
 #define SHADER_IS_SRGB false
 #define SHADER_SPACE_FAR 0.0
+
+#ifdef SHADOW_PASS
+#define IN_SHADOW_PASS true
+#else
+#define IN_SHADOW_PASS false
+#endif
 
 /* Include our forward mobile UBOs definitions etc. */
 #include "scene_forward_mobile_inc.glsl"
@@ -1122,7 +1142,7 @@ void main() {
 	// to maximize VGPR usage
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 
-	if (!sc_disable_fog() && scene_data.fog_enabled) {
+	if (!sc_disable_fog() && bool(scene_data.flags & SCENE_DATA_FLAGS_USE_FOG)) {
 		fog = fog_process(vertex);
 	}
 
@@ -1287,7 +1307,7 @@ void main() {
 
 #ifndef USE_LIGHTMAP
 	//lightmap overrides everything
-	if (scene_data.use_ambient_light) {
+	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_AMBIENT_LIGHT)) {
 		ambient_light = scene_data.ambient_light_color_energy.rgb;
 
 		if (sc_scene_use_ambient_cubemap()) {
