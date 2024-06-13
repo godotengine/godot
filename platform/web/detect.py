@@ -276,6 +276,10 @@ def configure(env: "SConsEnvironment"):
     # Wrap the JavaScript support code around a closure named Godot.
     env.Append(LINKFLAGS=["-sMODULARIZE=1", "-sEXPORT_NAME='Godot'"])
 
+    # Force long jump mode to 'wasm'
+    env.Append(CCFLAGS=["-sSUPPORT_LONGJMP='wasm'"])
+    env.Append(LINKFLAGS=["-sSUPPORT_LONGJMP='wasm'"])
+
     # Allow increasing memory buffer size during runtime. This is efficient
     # when using WebAssembly (in comparison to asm.js) and works well for
     # us since we don't know requirements at compile-time.
