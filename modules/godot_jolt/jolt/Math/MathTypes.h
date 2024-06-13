@@ -17,17 +17,17 @@ class Mat44;
 class DMat44;
 
 // Types to use for passing arguments to functions
-using Vec3Arg = const Vec3;
+using Vec3Arg = const Vec3&;
 #ifdef JPH_USE_AVX
-	using DVec3Arg = const DVec3;
+	using DVec3Arg = const DVec3&;
 #else
 	using DVec3Arg = const DVec3 &;
 #endif
-using Vec4Arg = const Vec4;
-using UVec4Arg = const UVec4;
-using Vec8Arg = const Vec8;
-using UVec8Arg = const UVec8;
-using QuatArg = const Quat;
+using Vec4Arg = const Vec4&;
+using UVec4Arg = const UVec4&;
+using Vec8Arg = const Vec8&;
+using UVec8Arg = const UVec8&;
+using QuatArg = const Quat&;
 using Mat44Arg = const Mat44 &;
 using DMat44Arg = const DMat44 &;
 
