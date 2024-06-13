@@ -960,6 +960,15 @@
 				Sets the variables to be used with the "glow" post-process effect. See [Environment] for more details.
 			</description>
 		</method>
+		<method name="environment_set_glow_map">
+			<return type="void" />
+			<argument index="0" name="env" type="RID" />
+			<argument index="1" name="glow_map_strength" type="float" />
+			<argument index="2" name="glow_map" type="RID" />
+			<description>
+				Sets the variables to be used with the glow map post-process effect. See [Environment] for more details.
+			</description>
+		</method>
 		<method name="environment_set_sky">
 			<return type="void" />
 			<argument index="0" name="env" type="RID" />

@@ -42,6 +42,8 @@ uniform highp float auto_exposure_grey;
 
 uniform highp sampler2D source_glow; //texunit:2
 uniform highp float glow_intensity;
+uniform highp float glow_map_strength;
+uniform highp sampler2D glow_map; //texunit:3
 #endif
 
 #ifdef USE_BCS
@@ -57,7 +59,7 @@ uniform float sharpen_intensity;
 #endif
 
 #ifdef USE_COLOR_CORRECTION
-uniform sampler2D color_correction; //texunit:3
+uniform sampler2D color_correction; //texunit:4
 #endif
 
 layout(location = 0) out vec4 frag_color;
@@ -482,6 +484,9 @@ void main() {
 
 #ifdef USING_GLOW
 	vec3 glow = gather_glow(source_glow, uv_interp) * glow_intensity;
+	if (glow_map_strength > 0.001) {
+		glow = mix(glow, texture(glow_map, vec2(uv_interp.x, 1.0 - uv_interp.y)).rgb * glow, glow_map_strength);
+	}
 
 	// high dynamic range -> SRGB
 	glow = apply_tonemapping(glow, white);

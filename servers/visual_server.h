@@ -796,6 +796,7 @@ public:
 		GLOW_BLEND_MODE_REPLACE,
 	};
 	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale, bool p_high_quality) = 0;
+	virtual void environment_set_glow_map(RID p_env, float p_glow_map_strength, RID p_glow_map) = 0;
 
 	enum EnvironmentToneMapper {
 		ENV_TONE_MAPPER_LINEAR,
