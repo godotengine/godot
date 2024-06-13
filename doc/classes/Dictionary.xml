@@ -358,6 +358,14 @@
 				See also [method merge].
 			</description>
 		</method>
+		<method name="recursive_equal" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<param index="1" name="recursion_count" type="int" />
+			<description>
+				Returns [code]true[/code] if the two dictionaries contain the same keys and values, inner [Dictionary] and [Array] keys and values are compared recursively.
+			</description>
+		</method>
 		<method name="size" qualifiers="const">
 			<return type="int" />
 			<description>
