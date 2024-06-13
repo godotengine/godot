@@ -302,7 +302,8 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	thread_load_mutex.unlock();
 
 	// Thread-safe either if it's the current thread or a brand new one.
-	CallQueue *mq_override = nullptr;
+	bool mq_override_present = false;
+	CallQueue *own_mq_override = nullptr;
 	if (load_nesting == 0) {
 		load_paths_stack = memnew(Vector<String>);
 
@@ -310,8 +311,12 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 			load_paths_stack->push_back(load_task.dependent_path);
 		}
 		if (!Thread::is_main_thread()) {
-			mq_override = memnew(CallQueue);
-			MessageQueue::set_thread_singleton_override(mq_override);
+			// Let the caller thread use its own, for added flexibility. Provide one otherwise.
+			if (MessageQueue::get_singleton() == MessageQueue::get_main_singleton()) {
+				own_mq_override = memnew(CallQueue);
+				MessageQueue::set_thread_singleton_override(own_mq_override);
+			}
+			mq_override_present = true;
 			set_current_thread_safe_for_nodes(true);
 		}
 	} else {
@@ -324,8 +329,8 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	}
 
 	Ref<Resource> res = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_task.error, load_task.use_sub_threads, &load_task.progress);
-	if (mq_override) {
-		mq_override->flush();
+	if (mq_override_present) {
+		MessageQueue::get_singleton()->flush();
 	}
 
 	thread_load_mutex.lock();
@@ -394,9 +399,9 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	thread_load_mutex.unlock();
 
 	if (load_nesting == 0) {
-		if (mq_override) {
+		if (own_mq_override) {
 			MessageQueue::set_thread_singleton_override(nullptr);
-			memdelete(mq_override);
+			memdelete(own_mq_override);
 		}
 		memdelete(load_paths_stack);
 	}
