@@ -395,6 +395,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 	if (load_nesting == 0) {
 		if (mq_override) {
+			MessageQueue::set_thread_singleton_override(nullptr);
 			memdelete(mq_override);
 		}
 		memdelete(load_paths_stack);
