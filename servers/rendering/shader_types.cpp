@@ -320,12 +320,17 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].can_discard = true;
 	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].main_function = true;
 
-	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light_settings"].built_ins["LIGHT_STEP_COUNT"] = ShaderLanguage::TYPE_UINT;
-	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light_settings"].built_ins["LIGHT_STEP_LENGTH"] = ShaderLanguage::TYPE_FLOAT;
-	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light_settings"].built_ins["LIGHT_STEP_ROUNDING"] = ShaderLanguage::TYPE_FLOAT;
-	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light_settings"].built_ins["LIGHT_STEP_ENABLE_ROUNDING"] = ShaderLanguage::TYPE_BOOL;
-	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light_settings"].can_discard = true;
-	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light_settings"].main_function = true;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["pre_light"].built_ins["LIGHT_STEP_COUNT"] = ShaderLanguage::TYPE_UINT;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["pre_light"].built_ins["LIGHT_STEP_LENGTH"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["pre_light"].built_ins["LIGHT_STEP_ROUNDING"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["pre_light"].built_ins["LIGHT_STEP_ENABLE_ROUNDING"] = ShaderLanguage::TYPE_BOOL;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["pre_light"].built_ins["LIGHT_SAMPLE_OFFSET"] = ShaderLanguage::TYPE_VEC2;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["pre_light"].can_discard = true;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["pre_light"].main_function = true;
+
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["post_light"].built_ins["LIGHT"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["post_light"].can_discard = true;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["post_light"].main_function = true;
 
 	// canvasitem render modes
 	{

@@ -760,10 +760,11 @@ void main() {
 		float light_step_size = 1.5;
 		float light_pixel_size = 1.0;
 		bool light_enable_rounding = false;
+		vec2 light_sample_offset = vec2(0.0);
 
-#ifdef LIGHT_SETTINGS_CODE_USED
+#ifdef PRE_LIGHT_CODE_USED
 
-#CODE : LIGHT_SETTINGS
+#CODE : PRE_LIGHT
 
 #endif
 
@@ -775,6 +776,8 @@ void main() {
 			vec2 light_size = occluder_max_size * vec2(light_array.data[light_base].occluder_scale_x, light_array.data[light_base].occluder_scale_y);
 
 			vec2 shadow_pos = (vec4(shadow_vertex, 0.0, 1.0) * mat4(light_array.data[light_base].shadow_matrix[0], light_array.data[light_base].shadow_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
+
+			shadow_pos = shadow_pos + light_sample_offset;
 
 //			vec3 occluder_uv = vec3(tex_uv * vec2(light_array.data[light_base].occluder_scale_x, light_array.data[light_base].occluder_scale_y), float(light_array.data[light_base].occluder_texture_index));
 
@@ -832,6 +835,16 @@ void main() {
 #endif
 			);
 		}
+
+#ifdef POST_LIGHT_CODE_USED
+
+		vec4 light = light_color;
+
+#CODE : POST_LIGHT
+
+		light_color = light;
+
+#endif
 
 		light_blend_compute(light_base, light_color, color.rgb);
 #ifdef MODE_LIGHT_ONLY
