@@ -5595,52 +5595,57 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	HMODULE nt_lib = LoadLibraryW(L"ntdll.dll");
 	if (nt_lib) {
-		RtlGetVersionPtr RtlGetVersion = (RtlGetVersionPtr)GetProcAddress(nt_lib, "RtlGetVersion");
-		if (RtlGetVersion) {
-			RtlGetVersion(&os_ver);
+		WineGetVersionPtr wine_get_version = (WineGetVersionPtr)GetProcAddress(nt_lib, "wine_get_version"); // Do not read Windows build number under Wine, it can be set to arbitrary value.
+		if (!wine_get_version) {
+			RtlGetVersionPtr RtlGetVersion = (RtlGetVersionPtr)GetProcAddress(nt_lib, "RtlGetVersion");
+			if (RtlGetVersion) {
+				RtlGetVersion(&os_ver);
+			}
 		}
 		FreeLibrary(nt_lib);
 	}
 
-	// Load UXTheme.
-	HMODULE ux_theme_lib = LoadLibraryW(L"uxtheme.dll");
-	if (ux_theme_lib) {
-		ShouldAppsUseDarkMode = (ShouldAppsUseDarkModePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(132));
-		GetImmersiveColorFromColorSetEx = (GetImmersiveColorFromColorSetExPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(95));
-		GetImmersiveColorTypeFromName = (GetImmersiveColorTypeFromNamePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(96));
-		GetImmersiveUserColorSetPreference = (GetImmersiveUserColorSetPreferencePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(98));
-		if (os_ver.dwBuildNumber >= 17763) {
-			AllowDarkModeForAppPtr AllowDarkModeForApp = nullptr;
-			SetPreferredAppModePtr SetPreferredAppMode = nullptr;
-			FlushMenuThemesPtr FlushMenuThemes = nullptr;
-			if (os_ver.dwBuildNumber < 18362) {
-				AllowDarkModeForApp = (AllowDarkModeForAppPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(135));
-			} else {
-				SetPreferredAppMode = (SetPreferredAppModePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(135));
-				FlushMenuThemes = (FlushMenuThemesPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(136));
+	// Load UXTheme, available on Windows 10+ only.
+	if (os_ver.dwBuildNumber >= 10240) {
+		HMODULE ux_theme_lib = LoadLibraryW(L"uxtheme.dll");
+		if (ux_theme_lib) {
+			ShouldAppsUseDarkMode = (ShouldAppsUseDarkModePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(132));
+			GetImmersiveColorFromColorSetEx = (GetImmersiveColorFromColorSetExPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(95));
+			GetImmersiveColorTypeFromName = (GetImmersiveColorTypeFromNamePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(96));
+			GetImmersiveUserColorSetPreference = (GetImmersiveUserColorSetPreferencePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(98));
+			if (os_ver.dwBuildNumber >= 17763) { // Windows 10 Redstone 5 (1809)+ only.
+				AllowDarkModeForAppPtr AllowDarkModeForApp = nullptr;
+				SetPreferredAppModePtr SetPreferredAppMode = nullptr;
+				FlushMenuThemesPtr FlushMenuThemes = nullptr;
+				if (os_ver.dwBuildNumber < 18362) { // Windows 10 Redstone 5 (1809) and 19H1 (1903) only.
+					AllowDarkModeForApp = (AllowDarkModeForAppPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(135));
+				} else { // Windows 10 19H2 (1909)+ only.
+					SetPreferredAppMode = (SetPreferredAppModePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(135));
+					FlushMenuThemes = (FlushMenuThemesPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(136));
+				}
+				RefreshImmersiveColorPolicyStatePtr RefreshImmersiveColorPolicyState = (RefreshImmersiveColorPolicyStatePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(104));
+				if (ShouldAppsUseDarkMode) {
+					bool dark_mode = ShouldAppsUseDarkMode();
+					if (SetPreferredAppMode) {
+						SetPreferredAppMode(dark_mode ? APPMODE_ALLOWDARK : APPMODE_DEFAULT);
+					} else if (AllowDarkModeForApp) {
+						AllowDarkModeForApp(dark_mode);
+					}
+					if (RefreshImmersiveColorPolicyState) {
+						RefreshImmersiveColorPolicyState();
+					}
+					if (FlushMenuThemes) {
+						FlushMenuThemes();
+					}
+				}
 			}
-			RefreshImmersiveColorPolicyStatePtr RefreshImmersiveColorPolicyState = (RefreshImmersiveColorPolicyStatePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(104));
-			if (ShouldAppsUseDarkMode) {
-				bool dark_mode = ShouldAppsUseDarkMode();
-				if (SetPreferredAppMode) {
-					SetPreferredAppMode(dark_mode ? APPMODE_ALLOWDARK : APPMODE_DEFAULT);
-				} else if (AllowDarkModeForApp) {
-					AllowDarkModeForApp(dark_mode);
-				}
-				if (RefreshImmersiveColorPolicyState) {
-					RefreshImmersiveColorPolicyState();
-				}
-				if (FlushMenuThemes) {
-					FlushMenuThemes();
-				}
-			}
-		}
 
-		ux_theme_available = ShouldAppsUseDarkMode && GetImmersiveColorFromColorSetEx && GetImmersiveColorTypeFromName && GetImmersiveUserColorSetPreference;
-		if (os_ver.dwBuildNumber >= 18363) {
-			dark_title_available = true;
-			if (os_ver.dwBuildNumber < 19041) {
-				use_legacy_dark_mode_before_20H1 = true;
+			ux_theme_available = ShouldAppsUseDarkMode && GetImmersiveColorFromColorSetEx && GetImmersiveColorTypeFromName && GetImmersiveUserColorSetPreference;
+			if (os_ver.dwBuildNumber >= 18363) {
+				dark_title_available = true;
+				if (os_ver.dwBuildNumber < 19041) {
+					use_legacy_dark_mode_before_20H1 = true;
+				}
 			}
 		}
 	}
