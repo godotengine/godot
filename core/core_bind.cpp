@@ -259,19 +259,29 @@ String OS::get_executable_path() const {
 }
 
 Error OS::shell_open(const String &p_uri) {
+	const String warning = R"(Attempting to open an URL with the "%s://" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_open()`.)";
 	if (p_uri.begins_with("res://")) {
-		WARN_PRINT("Attempting to open an URL with the \"res://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_open()`.");
+		WARN_PRINT(vformat(warning, "res"));
 	} else if (p_uri.begins_with("user://")) {
-		WARN_PRINT("Attempting to open an URL with the \"user://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_open()`.");
+		WARN_PRINT(vformat(warning, "user"));
+#ifdef TOOLS_ENABLED
+	} else if (likely(Engine::get_singleton()->is_editor_hint()) && p_uri.begins_with("editor://")) {
+		WARN_PRINT(vformat(warning, "editor"));
+#endif // TOOLS_ENABLED
 	}
 	return ::OS::get_singleton()->shell_open(p_uri);
 }
 
 Error OS::shell_show_in_file_manager(const String &p_path, bool p_open_folder) {
+	const String warning = R"(Attempting to explore file path with the "%s://" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_show_in_file_manager()`.)";
 	if (p_path.begins_with("res://")) {
-		WARN_PRINT("Attempting to explore file path with the \"res://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_show_in_file_manager()`.");
+		WARN_PRINT(vformat(warning, "res"));
 	} else if (p_path.begins_with("user://")) {
-		WARN_PRINT("Attempting to explore file path with the \"user://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_show_in_file_manager()`.");
+		WARN_PRINT(vformat(warning, "user"));
+#ifdef TOOLS_ENABLED
+	} else if (likely(Engine::get_singleton()->is_editor_hint()) && p_path.begins_with("editor://")) {
+		WARN_PRINT(vformat(warning, "editor"));
+#endif // TOOLS_ENABLED
 	}
 	return ::OS::get_singleton()->shell_show_in_file_manager(p_path, p_open_folder);
 }

@@ -46,6 +46,7 @@
 #include "core/version.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor/editor_paths.h"
 #include "modules/modules_enabled.gen.h" // For mono.
 #endif // TOOLS_ENABLED
 
@@ -259,15 +260,23 @@ void ProjectSettings::add_hidden_prefix(const String &p_prefix) {
 String ProjectSettings::globalize_path(const String &p_path) const {
 	if (p_path.begins_with("res://")) {
 		if (!resource_path.is_empty()) {
-			return p_path.replace("res:/", resource_path);
+			return p_path.replace_first("res:/", resource_path);
 		}
-		return p_path.replace("res://", "");
+		return p_path.replace_first("res://", "");
 	} else if (p_path.begins_with("user://")) {
 		String data_dir = OS::get_singleton()->get_user_data_dir();
 		if (!data_dir.is_empty()) {
-			return p_path.replace("user:/", data_dir);
+			return p_path.replace_first("user:/", data_dir);
 		}
-		return p_path.replace("user://", "");
+		return p_path.replace_first("user://", "");
+#ifdef TOOLS_ENABLED
+	} else if (likely(Engine::get_singleton()->is_editor_hint()) && p_path.begins_with("editor://")) {
+		String editor_dir = EditorPaths::get_singleton()->get_data_dir();
+		if (!editor_dir.is_empty()) {
+			return p_path.replace_first("editor:/", editor_dir);
+		}
+		return p_path.replace_first("editor://", "");
+#endif // TOOLS_ENABLED
 	}
 
 	return p_path;

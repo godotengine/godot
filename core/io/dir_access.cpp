@@ -35,6 +35,11 @@
 #include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
+#include "core/typedefs.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_paths.h"
+#endif
 
 thread_local Error DirAccess::last_dir_open_error = OK;
 
@@ -44,6 +49,12 @@ String DirAccess::_get_root_path() const {
 			return ProjectSettings::get_singleton()->get_resource_path();
 		case ACCESS_USERDATA:
 			return OS::get_singleton()->get_user_data_dir();
+		case ACCESS_EDITOR:
+#ifdef TOOLS_ENABLED
+			return EditorPaths::get_singleton()->get_data_dir();
+#else
+			return "";
+#endif // TOOLS_ENABLED
 		default:
 			return "";
 	}
@@ -55,6 +66,12 @@ String DirAccess::_get_root_string() const {
 			return "res://";
 		case ACCESS_USERDATA:
 			return "user://";
+		case ACCESS_EDITOR:
+#ifdef TOOLS_ENABLED
+			return "editor://";
+#else
+			return "";
+#endif // TOOLS_ENABLED
 		default:
 			return "";
 	}
@@ -154,6 +171,10 @@ Error DirAccess::make_dir_recursive(const String &p_dir) {
 		base = "res://";
 	} else if (full_dir.begins_with("user://")) {
 		base = "user://";
+#ifdef TOOLS_ENABLED
+	} else if (likely(Engine::get_singleton()->is_editor_hint()) && full_dir.begins_with("editor://")) {
+		base = "editor://";
+#endif // TOOLS_ENABLED
 	} else if (full_dir.is_network_share_path()) {
 		int pos = full_dir.find("/", 2);
 		ERR_FAIL_COND_V(pos < 0, ERR_INVALID_PARAMETER);
@@ -210,7 +231,17 @@ String DirAccess::fix_path(const String &p_path) const {
 				}
 				return p_path.replace_first("user://", "");
 			}
-
+		} break;
+		case ACCESS_EDITOR: {
+#ifdef TOOLS_ENABLED
+			if (p_path.begins_with("editor://")) {
+				String editor_dir = OS::get_singleton()->get_config_path();
+				if (!editor_dir.is_empty()) {
+					return p_path.replace_first("editor:/", editor_dir);
+				}
+				return p_path.replace_first("editor://", "");
+			}
+#endif // TOOLS_ENABLED
 		} break;
 		case ACCESS_FILESYSTEM: {
 			return p_path;
@@ -230,6 +261,10 @@ Ref<DirAccess> DirAccess::create_for_path(const String &p_path) {
 		da = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
 		da = create(ACCESS_USERDATA);
+#ifdef TOOLS_ENABLED
+	} else if (likely(Engine::get_singleton()->is_editor_hint()) && p_path.begins_with("editor://")) {
+		da = create(ACCESS_EDITOR);
+#endif // TOOLS_ENABLED
 	} else {
 		da = create(ACCESS_FILESYSTEM);
 	}
@@ -317,6 +352,10 @@ Ref<DirAccess> DirAccess::create(AccessType p_access) {
 			da->change_dir("res://");
 		} else if (p_access == ACCESS_USERDATA) {
 			da->change_dir("user://");
+#ifdef TOOLS_ENABLED
+		} else if (p_access == ACCESS_EDITOR) {
+			da->change_dir("editor://");
+#endif // TOOLS_ENABLED
 		}
 	}
 
