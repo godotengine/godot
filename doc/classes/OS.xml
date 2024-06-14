@@ -262,6 +262,14 @@
 				[b]Note:[/b] This method is not supported on the Web platform. It returns an empty string.
 			</description>
 		</method>
+		<method name="get_entropy">
+			<return type="PackedByteArray" />
+			<param index="0" name="size" type="int" />
+			<description>
+				Generates a [PackedByteArray] of cryptographically secure random bytes with given [param size].
+				[b]Note:[/b] Generating large quantities of bytes using this method can result in locking and entropy of lower quality on most platforms. Using [method Crypto.generate_random_bytes] is preferred in most cases.
+			</description>
+		</method>
 		<method name="get_environment" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="variable" type="String" />
