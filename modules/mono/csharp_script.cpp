@@ -148,7 +148,7 @@ void CSharpLanguage::finalize() {
 
 	finalizing = true;
 
-	// Make sure all script binding gchandles are released before finalizing GDMono
+	// Make sure all script binding gchandles are released before finalizing GDMono.
 	for (KeyValue<Object *, CSharpScriptBinding> &E : script_bindings) {
 		CSharpScriptBinding &script_binding = E.value;
 
@@ -156,6 +156,10 @@ void CSharpLanguage::finalize() {
 			script_binding.gchandle.release();
 			script_binding.inited = false;
 		}
+
+		// Make sure we clear all the instance binding callbacks so they don't get called
+		// after finalizing the C# language.
+		script_binding.owner->free_instance_binding(this);
 	}
 
 	if (gdmono) {
@@ -1227,6 +1231,11 @@ void CSharpLanguage::_instance_binding_free_callback(void *, void *, void *p_bin
 }
 
 GDExtensionBool CSharpLanguage::_instance_binding_reference_callback(void *p_token, void *p_binding, GDExtensionBool p_reference) {
+	// Instance bindings callbacks can only be called if the C# language is available.
+	// Failing this assert usually means that we didn't clear the instance binding in some Object
+	// and the C# language has already been finalized.
+	DEV_ASSERT(CSharpLanguage::get_singleton() != nullptr);
+
 	CRASH_COND(!p_binding);
 
 	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)p_binding)->get();
@@ -1662,7 +1671,7 @@ bool CSharpInstance::_reference_owner_unsafe() {
 	// but the managed instance is alive, the refcount will be 1 instead of 0.
 	// See: _unreference_owner_unsafe()
 
-	// May not me referenced yet, so we must use init_ref() instead of reference()
+	// May not be referenced yet, so we must use init_ref() instead of reference()
 	if (static_cast<RefCounted *>(owner)->init_ref()) {
 		CSharpLanguage::get_singleton()->post_unsafe_reference(owner);
 		unsafe_referenced = true;
