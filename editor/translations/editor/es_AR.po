@@ -1109,6 +1109,9 @@ msgstr "Guardar Rama como Escena"
 msgid "Copy Node Path"
 msgstr "Copiar Ruta del Nodo"
 
+msgid "Instance:"
+msgstr "Instancia:"
+
 msgid "Toggle Visibility"
 msgstr "Act/Desact. Visibilidad"
 
@@ -1801,6 +1804,12 @@ msgstr "Importar Perfil(es)"
 msgid "Manage Editor Feature Profiles"
 msgstr "Administrar Perfiles de Características del Editor"
 
+msgid "Restart"
+msgstr "Reiniciar"
+
+msgid "Save & Restart"
+msgstr "Guardar y Reiniciar"
+
 msgid "ScanSources"
 msgstr "Escanear Fuentes"
 
@@ -2240,6 +2249,18 @@ msgstr "%d más carpetas"
 msgid "%d more files"
 msgstr "%d más archivos"
 
+msgid "Lock Selected Node(s)"
+msgstr "Bloquear Nodo(s) Seleccionado(s)"
+
+msgid "Unlock Selected Node(s)"
+msgstr "Desbloquear Nodo(s) Seleccionado(s)"
+
+msgid "Group Selected Node(s)"
+msgstr "Agrupar Nodo(s) Seleccionado(s)"
+
+msgid "Ungroup Selected Node(s)"
+msgstr "Desagrupar Nodo(s) Seleccionado(s)"
+
 msgid "Pan View"
 msgstr "Panear Vista"
 
@@ -2318,9 +2339,6 @@ msgstr "Layout del Editor"
 msgid "Take Screenshot"
 msgstr "Tomar Captura de Pantalla"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Las capturas se almacenan en la carpeta Editor Datta/Settings."
-
 msgid "Toggle Fullscreen"
 msgstr "Act./Desact. Pantalla Completa"
 
@@ -2359,9 +2377,6 @@ msgstr "Enviar comentarios sobre la documentación"
 
 msgid "Support Godot Development"
 msgstr "Apoyar el desarrollo de Godot"
-
-msgid "Save & Restart"
-msgstr "Guardar y Reiniciar"
 
 msgid "Update Continuously"
 msgstr "Actualizar Continuamente"
@@ -2410,12 +2425,6 @@ msgid ""
 msgstr ""
 "Los siguientes archivos son nuevos en disco.\n"
 "¿Qué acción se debería tomar?"
-
-msgid "Reload"
-msgstr "Volver a Cargar"
-
-msgid "Resave"
-msgstr "Volver a Guardar"
 
 msgid "New Inherited"
 msgstr "Nuevo Heredado"
@@ -2662,6 +2671,12 @@ msgid ""
 msgstr ""
 "No se encontraron links de descarga para esta versión. Las descargas directas "
 "solo están disponibles para releases oficiales."
+
+msgid "Connecting..."
+msgstr "Conectando..."
+
+msgid "Requesting..."
+msgstr "Solicitando..."
 
 msgid "Can't open the export templates file."
 msgstr "No se puede abrir el archivo de plantillas de exportación."
@@ -2948,6 +2963,9 @@ msgstr "Quitar de Favoritos"
 msgid "Reimport"
 msgstr "Reimportar"
 
+msgid "Open in File Manager"
+msgstr "Abrir en el Explorador de Archivos"
+
 msgid "New Folder..."
 msgstr "Nueva Carpeta..."
 
@@ -2983,9 +3001,6 @@ msgstr "Duplicar..."
 
 msgid "Rename..."
 msgstr "Renombrar..."
-
-msgid "Open in File Manager"
-msgstr "Abrir en el Explorador de Archivos"
 
 msgid "Re-Scan Filesystem"
 msgstr "Reexaminar Sistema de Archivos"
@@ -3209,9 +3224,6 @@ msgstr ""
 
 msgid "Open in Editor"
 msgstr "Abrir en Editor"
-
-msgid "Instance:"
-msgstr "Instancia:"
 
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Nombre de nodo inválido, los siguientes caracteres no están permitidos:"
@@ -3820,12 +3832,6 @@ msgstr "Descargando..."
 msgid "Resolving..."
 msgstr "Resolviendo..."
 
-msgid "Connecting..."
-msgstr "Conectando..."
-
-msgid "Requesting..."
-msgstr "Solicitando..."
-
 msgid "Error making request"
 msgstr "Error al realizar la solicitud"
 
@@ -4041,6 +4047,11 @@ msgstr "Zoom a 1600%"
 msgid "Select Mode"
 msgstr "Modo Seleccionar"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+Click Der.: Mostrar una lista de todos los nodos en la posición "
+"clickeada, incluyendo bloqueados."
+
 msgid "RMB: Add node at position clicked."
 msgstr "Click Der.: Añadir un nodo en la posición clickeada."
 
@@ -4112,18 +4123,6 @@ msgstr "Ajuste Inteligente"
 
 msgid "Configure Snap..."
 msgstr "Configurar Ajuste..."
-
-msgid "Lock Selected Node(s)"
-msgstr "Bloquear Nodo(s) Seleccionado(s)"
-
-msgid "Unlock Selected Node(s)"
-msgstr "Desbloquear Nodo(s) Seleccionado(s)"
-
-msgid "Group Selected Node(s)"
-msgstr "Agrupar Nodo(s) Seleccionado(s)"
-
-msgid "Ungroup Selected Node(s)"
-msgstr "Desagrupar Nodo(s) Seleccionado(s)"
 
 msgid "Skeleton Options"
 msgstr "Opciones de Esqueleto"
@@ -4215,9 +4214,6 @@ msgstr "Dividir step de grilla por 2"
 msgid "Adding %s..."
 msgstr "Agregando %s..."
 
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "No se puede instanciar múltiples nodos sin raíz."
-
 msgid "Create Node"
 msgstr "Crear Nodo"
 
@@ -4274,9 +4270,6 @@ msgstr "Derecha Ancha"
 
 msgid "Full Rect"
 msgstr "Todo el Rect"
-
-msgid "Restart"
-msgstr "Reiniciar"
 
 msgid "Load Emission Mask"
 msgstr "Cargar Máscara de Emisión"
@@ -4435,9 +4428,6 @@ msgstr "Cambiar Radio de Shape Cilindro"
 
 msgid "Change Cylinder Shape Height"
 msgstr "Cambiar Altura de Shape Cilindro"
-
-msgid "Change Particles AABB"
-msgstr "Cambiar Particulas AABB"
 
 msgid "Change Light Radius"
 msgstr "Cambiar Radio de Luces"
@@ -4893,11 +4883,6 @@ msgstr "Ajustar Nodos al Suelo"
 msgid "Couldn't find a solid floor to snap the selection to."
 msgstr "No se pudo encontrar un suelo sólido al que ajustar la selección."
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+Click Der.: Mostrar una lista de todos los nodos en la posición "
-"clickeada, incluyendo bloqueados."
-
 msgid "Use Local Space"
 msgstr "Usar Espacio Local"
 
@@ -5045,14 +5030,14 @@ msgstr "Quitar Out-Control de la Curva"
 msgid "Remove In-Control from Curve"
 msgstr "Quitar In-Control de la Curva"
 
-msgid "Add Point to Curve"
-msgstr "Agregar Punto a Curva"
-
 msgid "Split Curve"
 msgstr "Partir Curva"
 
 msgid "Move Point in Curve"
 msgstr "Mover Punto en Curva"
+
+msgid "Add Point to Curve"
+msgstr "Agregar Punto a Curva"
 
 msgid "Move In-Control in Curve"
 msgstr "Mover In-Control en Curva"
@@ -5287,9 +5272,6 @@ msgstr "Pegar Recurso"
 msgid "Load Resource"
 msgstr "Cargar Recurso"
 
-msgid "Clear Recent Files"
-msgstr "Restablecer Archivos Recientes"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "No se puede abrir '%s'. El archivo puede haber sido movido o eliminado."
 
@@ -5320,6 +5302,12 @@ msgstr "Error al guardar"
 msgid "Save Theme As..."
 msgstr "Guardar Tema Como..."
 
+msgid "Online Docs"
+msgstr "Documentación Online"
+
+msgid "Open Godot online documentation."
+msgstr "Abrir la documentación en línea de Godot."
+
 msgid "%s Class Reference"
 msgstr "%s Referencia de Clase"
 
@@ -5346,9 +5334,6 @@ msgstr "Archivo"
 
 msgid "Open..."
 msgstr "Abrir..."
-
-msgid "Reopen Closed Script"
-msgstr "Reabrir Script Cerrado"
 
 msgid "Save All"
 msgstr "Guardar Todo"
@@ -5386,12 +5371,6 @@ msgstr "Ejecutar"
 msgid "Search"
 msgstr "Buscar"
 
-msgid "Online Docs"
-msgstr "Documentación Online"
-
-msgid "Open Godot online documentation."
-msgstr "Abrir la documentación en línea de Godot."
-
 msgid "Search the reference documentation."
 msgstr "Buscar en la documentación de referencia."
 
@@ -5404,15 +5383,20 @@ msgstr "Ir a siguiente documento editado."
 msgid "Discard"
 msgstr "Descartar"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?:"
-msgstr ""
-"Los siguientes archivos son nuevos en disco.\n"
-"¿Qué acción se debería tomar?:"
+msgid "Reopen Closed Script"
+msgstr "Reabrir Script Cerrado"
 
 msgid "Clear Recent Scripts"
 msgstr "Restablecer Scripts Recientes"
+
+msgid "Uppercase"
+msgstr "Mayúsculas"
+
+msgid "Lowercase"
+msgstr "Minúsculas"
+
+msgid "Capitalize"
+msgstr "Capitalizar"
 
 msgid "Standard"
 msgstr "Estándar"
@@ -5446,15 +5430,6 @@ msgstr "Seleccionar Color"
 
 msgid "Line"
 msgstr "Línea"
-
-msgid "Uppercase"
-msgstr "Mayúsculas"
-
-msgid "Lowercase"
-msgstr "Minúsculas"
-
-msgid "Capitalize"
-msgstr "Capitalizar"
 
 msgid "Convert Case"
 msgstr "Convertir Mayúsculas"
@@ -5656,6 +5631,12 @@ msgstr "Tamaño"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "Crear Frames a partir de Sprite Sheet"
+
+msgid "Reload"
+msgstr "Volver a Cargar"
+
+msgid "Resave"
+msgstr "Volver a Guardar"
 
 msgid "Set Region Rect"
 msgstr "Setear Region Rect"

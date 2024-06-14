@@ -1536,6 +1536,9 @@ msgstr "가지를 씬으로 저장하기"
 msgid "Copy Node Path"
 msgstr "노드 경로 복사"
 
+msgid "Instance:"
+msgstr "인스턴스:"
+
 msgid ""
 "This node has been instantiated from a PackedScene file:\n"
 "%s\n"
@@ -2600,6 +2603,12 @@ msgstr "프로필 가져오기"
 msgid "Manage Editor Feature Profiles"
 msgstr "에디터 기능 프로필 관리"
 
+msgid "Restart"
+msgstr "다시 시작"
+
+msgid "Save & Restart"
+msgstr "저장 & 다시 시작"
+
 msgid "ScanSources"
 msgstr "소스 스캔중"
 
@@ -3561,6 +3570,18 @@ msgstr "호환성"
 msgid "(Overridden)"
 msgstr "(오버라이드)"
 
+msgid "Lock Selected Node(s)"
+msgstr "선택한 노드 잠금"
+
+msgid "Unlock Selected Node(s)"
+msgstr "선택한 노드 잠금 해제"
+
+msgid "Group Selected Node(s)"
+msgstr "선택한 노드 그룹화"
+
+msgid "Ungroup Selected Node(s)"
+msgstr "선택한 노드 그룹 해제"
+
 msgid "Pan View"
 msgstr "팬 보기"
 
@@ -3663,9 +3684,6 @@ msgstr "에디터 레이아웃"
 msgid "Take Screenshot"
 msgstr "스크린샷 찍기"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "스크린샷이 Editor Data/Settings 폴더에 저장되었습니다."
-
 msgid "Toggle Fullscreen"
 msgstr "전체 화면 토글"
 
@@ -3734,9 +3752,6 @@ msgstr ""
 "- Forward+를 선택시, 모바일 플랫폼은 Mobile 렌더링 메서드를 사용합니다.\n"
 "- 웹 플랫폼은 항상 Compatibility 렌더링 메서드를 사용합니다."
 
-msgid "Save & Restart"
-msgstr "저장 & 다시 시작"
-
 msgid "Update Continuously"
 msgstr "상시 업데이트"
 
@@ -3791,12 +3806,6 @@ msgid ""
 msgstr ""
 "다음 파일은 디스크에 있는 게 더 최신입니다.\n"
 "어떻게 할까요?"
-
-msgid "Reload"
-msgstr "새로고침"
-
-msgid "Resave"
-msgstr "다시 저장"
 
 msgid "Create/Override Version Control Metadata..."
 msgstr "버전 관리 메타데이터 (재)생성..."
@@ -4312,6 +4321,12 @@ msgid ""
 msgstr ""
 "이 버전의 다운로드 링크를 찾을 수 없습니다. 공식 출시 버전만 바로 다운로드할 "
 "수 있습니다."
+
+msgid "Connecting..."
+msgstr "연결 중..."
+
+msgid "Requesting..."
+msgstr "요청 중..."
 
 msgid "Can't open the export templates file."
 msgstr "내보내기 템플릿 파일을 열 수 없습니다."
@@ -4847,8 +4862,14 @@ msgstr "즐겨찾기에서 제거"
 msgid "Reimport"
 msgstr "다시 가져오기"
 
+msgid "Open in Terminal"
+msgstr "터미널에서 열기"
+
 msgid "Open Containing Folder in Terminal"
 msgstr "폴더를 터미널에서 열기"
+
+msgid "Open in File Manager"
+msgstr "파일 매니저에서 열기"
 
 msgid "New Folder..."
 msgstr "새 폴더..."
@@ -4895,14 +4916,8 @@ msgstr "복제..."
 msgid "Rename..."
 msgstr "이름 바꾸기..."
 
-msgid "Open in File Manager"
-msgstr "파일 매니저에서 열기"
-
 msgid "Open in External Program"
 msgstr "다른 프로그램에서 열기"
-
-msgid "Open in Terminal"
-msgstr "터미널에서 열기"
 
 msgid "Red"
 msgstr "붉은색"
@@ -5392,9 +5407,6 @@ msgstr ""
 
 msgid "Open in Editor"
 msgstr "에디터에서 열기"
-
-msgid "Instance:"
-msgstr "인스턴스:"
 
 msgid "\"%s\" is not a known filter."
 msgstr "\"%s\"는 알 수 없는 필터입니다."
@@ -6742,12 +6754,6 @@ msgstr "다운로드 중..."
 msgid "Resolving..."
 msgstr "해결 중..."
 
-msgid "Connecting..."
-msgstr "연결 중..."
-
-msgid "Requesting..."
-msgstr "요청 중..."
-
 msgid "Error making request"
 msgstr "요청 만드는 중 오류"
 
@@ -7048,6 +7054,10 @@ msgstr "중앙 보기"
 msgid "Select Mode"
 msgstr "선택 모드"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+우클릭: 클릭된 위치에 있는 잠금을 포함한 모든 노드의 목록을 보여줍니다."
+
 msgid "RMB: Add node at position clicked."
 msgstr "우클릭: 클릭한 위치에 노드를 추가합니다."
 
@@ -7132,20 +7142,8 @@ msgstr "스냅 구성..."
 msgid "Lock selected node, preventing selection and movement."
 msgstr "선택된 노드를 잠그어 선택하거나 이동하지 못하게 합니다."
 
-msgid "Lock Selected Node(s)"
-msgstr "선택한 노드 잠금"
-
 msgid "Unlock selected node, allowing selection and movement."
 msgstr "선택된 노드를 잠금 해제하여 선택하거나 이동할 수 있게 합니다."
-
-msgid "Unlock Selected Node(s)"
-msgstr "선택한 노드 잠금 해제"
-
-msgid "Group Selected Node(s)"
-msgstr "선택한 노드 그룹화"
-
-msgid "Ungroup Selected Node(s)"
-msgstr "선택한 노드 그룹 해제"
 
 msgid "Skeleton Options"
 msgstr "스켈레톤 설정"
@@ -7269,26 +7267,11 @@ msgstr "격자 단계를 반으로 감소"
 msgid "Adding %s..."
 msgstr "%s 추가하는 중..."
 
-msgid "Hold Alt when dropping to add as child of root node."
-msgstr "Alt를 누른 채 드롭하면 루트 노드의 자식으로 추가합니다."
-
-msgid "Hold Shift when dropping to add as sibling of selected node."
-msgstr "Shift를 누른 채 드롭하면 선택된 노드의 형제로서 노드를 추가합니다."
-
-msgid "Hold Alt + Shift when dropping to add as a different node type."
-msgstr "Alt + Shift를 누른 채 드롭하면 다른 노드 타입으로 추가합니다."
-
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "루트 노드 없이 여러 노드를 인스턴스할 수 없습니다."
-
 msgid "Create Node"
 msgstr "노드 만들기"
 
-msgid "Instantiating:"
-msgstr "인스턴스화하는 중:"
-
-msgid "Creating inherited scene from: "
-msgstr "새 상속된 씬을 만드는 중: "
+msgid "Hold Alt when dropping to add as child of root node."
+msgstr "Alt를 누른 채 드롭하면 루트 노드의 자식으로 추가합니다."
 
 msgid "Change Default Type"
 msgstr "디폴트 타입 바꾸기"
@@ -7404,9 +7387,6 @@ msgstr ""
 msgid "Some parents of the selected nodes do not support the Expand flag."
 msgstr "선택된 노드의 부모들 중 일부가 확장 플래그를 지원하지 않습니다."
 
-msgid "Align with Expand"
-msgstr "확장과 정렬"
-
 msgid "Change Anchors, Offsets, Grow Direction"
 msgstr "앵커, 오프셋, 확장 방향 변경"
 
@@ -7447,9 +7427,6 @@ msgstr "세로 방향 정렬"
 
 msgid "Convert to GPUParticles3D"
 msgstr "GPUParticles3D로 변환"
-
-msgid "Restart"
-msgstr "다시 시작"
 
 msgid "Load Emission Mask"
 msgstr "방출 마스크 불러오기"
@@ -7748,9 +7725,6 @@ msgstr "구분 광선 모양 길이 바꾸기"
 
 msgid "Change Decal Size"
 msgstr "데칼 크기 바꾸기"
-
-msgid "Change Particles AABB"
-msgstr "파티클 AABB 바꾸기"
 
 msgid "Change Radius"
 msgstr "반경 바꾸기"
@@ -8324,6 +8298,9 @@ msgstr "GPU 시간: %s ms"
 msgid "FPS: %d"
 msgstr "FPS: %d"
 
+msgid "Instantiating:"
+msgstr "인스턴스화하는 중:"
+
 msgid "Top View."
 msgstr "상단면 보기."
 
@@ -8618,10 +8595,6 @@ msgstr ""
 "존재합니다.\n"
 "미리보기가 비활성화됩니다."
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+우클릭: 클릭된 위치에 있는 잠금을 포함한 모든 노드의 목록을 보여줍니다."
-
 msgid "Use Local Space"
 msgstr "로컬 공간 사용"
 
@@ -8893,14 +8866,14 @@ msgstr "곡선의 아웃-컨트롤 제거"
 msgid "Remove In-Control from Curve"
 msgstr "곡선의 인-컨트롤 제거"
 
-msgid "Add Point to Curve"
-msgstr "곡선에 점 추가"
-
 msgid "Split Curve"
 msgstr "곡선 가르기"
 
 msgid "Move Point in Curve"
 msgstr "곡선의 점 이동"
+
+msgid "Add Point to Curve"
+msgstr "곡선에 점 추가"
 
 msgid "Move In-Control in Curve"
 msgstr "곡선의 인-컨트롤 이동"
@@ -9247,9 +9220,6 @@ msgstr ""
 "AnimationMixer의 루트 노드 경로가 유효하지 않으므로 트랙 이름을 받아올 수 없습"
 "니다."
 
-msgid "Clear Recent Files"
-msgstr "최근 파일 지우기"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "'%s'을(를) 열 수 없습니다. 파일이 이동했거나 삭제되었을 수 있습니다."
 
@@ -9305,6 +9275,12 @@ msgstr "저장 중 오류"
 msgid "Save Theme As..."
 msgstr "테마를 다른 이름으로 저장..."
 
+msgid "Online Docs"
+msgstr "온라인 문서"
+
+msgid "Open Godot online documentation."
+msgstr "Godot 온라인 문서를 엽니다."
+
 msgid "Unsaved file."
 msgstr "저장되지 않은 파일입니다."
 
@@ -9337,9 +9313,6 @@ msgstr "파일"
 
 msgid "Open..."
 msgstr "열기..."
-
-msgid "Reopen Closed Script"
-msgstr "닫은 스크립트 다시 열기"
 
 msgid "Save All"
 msgstr "모두 저장"
@@ -9380,12 +9353,6 @@ msgstr "실행"
 msgid "Search"
 msgstr "검색"
 
-msgid "Online Docs"
-msgstr "온라인 문서"
-
-msgid "Open Godot online documentation."
-msgstr "Godot 온라인 문서를 엽니다."
-
 msgid "Search the reference documentation."
 msgstr "참조 문서를 검색합니다."
 
@@ -9401,21 +9368,26 @@ msgstr "스크립트 에디터를 창으로 띄웁니다."
 msgid "Discard"
 msgstr "버리기"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?:"
-msgstr ""
-"해당 파일은 디스크에 있는 게 더 최신입니다.\n"
-"어떻게 할 건가요?:"
-
 msgid "There are unsaved changes in the following built-in script(s):"
 msgstr "다음 내장 스크립트에서 저장되지 않은 변경 사항이 있습니다(s):"
 
 msgid "Save changes to the following script(s) before quitting?"
 msgstr "종료하기 전에 해당 스크립트의 변경사항을 저장하시겠습니까?"
 
+msgid "Reopen Closed Script"
+msgstr "닫은 스크립트 다시 열기"
+
 msgid "Clear Recent Scripts"
 msgstr "최근 스크립트 지우기"
+
+msgid "Uppercase"
+msgstr "대문자로"
+
+msgid "Lowercase"
+msgstr "소문자로"
+
+msgid "Capitalize"
+msgstr "대문자로 시작"
 
 msgid "Standard"
 msgstr "표준"
@@ -9477,15 +9449,6 @@ msgstr "행"
 
 msgid "Folding"
 msgstr "접기"
-
-msgid "Uppercase"
-msgstr "대문자로"
-
-msgid "Lowercase"
-msgstr "소문자로"
-
-msgid "Capitalize"
-msgstr "대문자로 시작"
 
 msgid "Convert Case"
 msgstr "대소문자 변환"
@@ -9936,6 +9899,12 @@ msgid ""
 msgstr ""
 "이 셰이더는 디스크에서 수정했습니다.\n"
 "어떻게 하시겠습니까?"
+
+msgid "Reload"
+msgstr "새로고침"
+
+msgid "Resave"
+msgstr "다시 저장"
 
 msgid "Memory: %s"
 msgstr "메모리: %s"
@@ -10613,9 +10582,6 @@ msgstr "칠하는 타일 속성"
 msgid "Painting:"
 msgstr "칠하는 중:"
 
-msgid "Picker"
-msgstr "선택기"
-
 msgid "No terrains"
 msgstr "지형 없음"
 
@@ -10686,27 +10652,11 @@ msgstr "타일 붙여넣기"
 msgid "Selection"
 msgstr "선택"
 
-msgid "Paint"
-msgstr "칠하기"
-
 msgid "Shift: Draw rectangle."
 msgstr "Shift: 사각형을 그립니다."
 
-msgctxt "Tool"
-msgid "Line"
-msgstr "직선"
-
-msgid "Rect"
-msgstr "직사각형"
-
-msgid "Bucket"
-msgstr "페인트통"
-
 msgid "Alternatively hold %s with other tools to pick tile."
 msgstr "다른 툴에서도 %s 버튼을 홀드하여 타일을 선택할 수 있습니다."
-
-msgid "Eraser"
-msgstr "지우개"
 
 msgid "Alternatively use RMB to erase tiles."
 msgstr "우클릭으로도 타일을 지울 수 있습니다."
@@ -10945,6 +10895,9 @@ msgstr ""
 msgid "Select a property editor"
 msgstr "속성 편집기 선택"
 
+msgid "Paint properties."
+msgstr "속성을 칠합니다."
+
 msgid "Create tiles"
 msgstr "타일 만들기"
 
@@ -10997,8 +10950,8 @@ msgstr ""
 msgid "Select tiles."
 msgstr "타일을 선택합니다."
 
-msgid "Paint properties."
-msgstr "속성을 칠합니다."
+msgid "Paint"
+msgstr "칠하기"
 
 msgid ""
 "No tiles selected.\n"
@@ -11103,6 +11056,22 @@ msgstr "씬 컬렉션 속성:"
 
 msgid "Tile properties:"
 msgstr "타일 속성:"
+
+msgctxt "Tool"
+msgid "Line"
+msgstr "직선"
+
+msgid "Rect"
+msgstr "직사각형"
+
+msgid "Bucket"
+msgstr "페인트통"
+
+msgid "Eraser"
+msgstr "지우개"
+
+msgid "Picker"
+msgstr "선택기"
 
 msgid "Error"
 msgstr "오류"
@@ -13138,9 +13107,6 @@ msgid ""
 msgstr ""
 "노드들 중 하나에 현재 씬이 있기 때문에, '%s' 씬을 인스턴스할 수 없습니다."
 
-msgid "Instantiate Scene(s)"
-msgstr "씬 인스턴스화"
-
 msgid "Replace with Branch Scene"
 msgstr "가지 씬으로 교체"
 
@@ -14404,14 +14370,14 @@ msgstr "아이콘 내보내기"
 msgid "Exporting for iOS"
 msgstr "IOS로 내보내기"
 
+msgid "Prepare Templates"
+msgstr "템플릿 준비"
+
 msgid "Export template not found."
 msgstr "내보내기 템플릿을 찾을 수 없습니다."
 
 msgid "Failed to create the directory: \"%s\""
 msgstr "디렉토리를 만들 수 없음: \"%s\""
-
-msgid "Prepare Templates"
-msgstr "템플릿 준비"
 
 msgid "Code signing failed, see editor log for details."
 msgstr "코드 서명에 실패했습니다. 자세한 사항은 에디터 로그를 참조하세요."
@@ -14568,14 +14534,14 @@ msgstr "Apple ID 비밀번호가 지정되지 않았습니다."
 msgid "App Store Connect issuer ID name not specified."
 msgstr "App Store Connect 발급자 ID 이름이 지정되지 않았습니다."
 
+msgid "Notarization"
+msgstr "공증"
+
 msgid "Could not start rcodesign executable."
 msgstr "rcodesign 실행 파일을 시작할 수 없습니다."
 
 msgid "Notarization request UUID: \"%s\""
 msgstr "Notarization 요청 UUID: \"%s\""
-
-msgid "Notarization"
-msgstr "공증"
 
 msgid "Could not start xcrun executable."
 msgstr "xcrun 실행 파일을 시작하지 못했습니다."
@@ -15605,6 +15571,9 @@ msgstr "'%s'을(를) '%s'에 대입할 수 없습니다."
 msgid "Expected constant expression."
 msgstr "상수 표현식이 와야 합니다."
 
+msgid "Constants cannot be modified."
+msgstr "상수는 수정할 수 없습니다."
+
 msgid ""
 "Sampler argument %d of function '%s' called more than once using different "
 "built-ins. Only calling with the same built-in is supported."
@@ -15697,9 +15666,6 @@ msgstr ""
 
 msgid "Can't use function as identifier: '%s'."
 msgstr "함수를 식별자로 사용할 수 없습니다: '%s'."
-
-msgid "Constants cannot be modified."
-msgstr "상수는 수정할 수 없습니다."
 
 msgid "Only integer expressions are allowed for indexing."
 msgstr "인덱싱에는 정수 표현식만 허용됩니다."

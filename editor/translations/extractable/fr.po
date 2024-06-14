@@ -67,6 +67,9 @@ msgstr "OK"
 msgid "Alert!"
 msgstr "Alerte !"
 
+msgid "Please Confirm..."
+msgstr "Veuillez confirmer..."
+
 msgid "Network"
 msgstr "Réseau"
 

@@ -35,13 +35,14 @@
 # Martin Kovács <3is73az7@gmail.com>, 2023.
 # Limpa <pe.simon17@gmail.com>, 2023.
 # bedo david <bedo.david7676@gmail.com>, 2024.
+# Attila Diós <xatixatix@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-03 21:46+0000\n"
-"Last-Translator: bedo david <bedo.david7676@gmail.com>\n"
+"PO-Revision-Date: 2024-05-12 15:44+0000\n"
+"Last-Translator: Attila Diós <xatixatix@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -49,7 +50,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.5.4\n"
 
 msgid "Main Thread"
 msgstr "Fő thread"
@@ -458,6 +459,9 @@ msgstr "Esemény Szerkesztése"
 
 msgid "Remove Event"
 msgstr "Esemény Eltávolítása"
+
+msgid "Filter by Name"
+msgstr "Szűrés név szerint"
 
 msgid "Add New Action"
 msgstr "Művelet hozzáadása"
@@ -984,6 +988,9 @@ msgstr "Hibakeresés"
 
 msgid "Copy Node Path"
 msgstr "Node Útvonal Másolása"
+
+msgid "Instance:"
+msgstr "Példány:"
 
 msgid "Value"
 msgstr "Érték"
@@ -1530,6 +1537,12 @@ msgstr "Profil(ok) importálása"
 msgid "Manage Editor Feature Profiles"
 msgstr "A szerkesztő funkcióprofiljainak kezelése"
 
+msgid "Restart"
+msgstr "Újraindítás"
+
+msgid "Save & Restart"
+msgstr "Mentés és újraindítás"
+
 msgid "ScanSources"
 msgstr "Források Vizsgálata"
 
@@ -1966,9 +1979,6 @@ msgstr "Szerkesztő Elrendezés"
 msgid "Take Screenshot"
 msgstr "Képernyőkép készítése"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "A képernyőképek a szerkesztő adatai/beállításai mappában tárolódnak."
-
 msgid "Toggle Fullscreen"
 msgstr "Teljes Képernyő"
 
@@ -1998,9 +2008,6 @@ msgstr "Hiba bejelentése"
 
 msgid "Send Docs Feedback"
 msgstr "Visszajelzé Küldése s A Dokumentumokról"
-
-msgid "Save & Restart"
-msgstr "Mentés és újraindítás"
 
 msgid "Update Continuously"
 msgstr "Folyamatos frissítés"
@@ -2045,12 +2052,6 @@ msgid ""
 msgstr ""
 "A alábbi fájlok újabbak a lemezen.\n"
 "Mit szeretne tenni?"
-
-msgid "Reload"
-msgstr "Újratöltés"
-
-msgid "Resave"
-msgstr "Újramentés"
 
 msgid "New Inherited"
 msgstr "Új Örökölt"
@@ -2203,6 +2204,12 @@ msgstr ""
 "Nem található letöltési link ehhez a verzióhoz. Közvetlen letöltés csak a "
 "hivatalos kiadásokhoz elérhető."
 
+msgid "Connecting..."
+msgstr "Csatlakozás..."
+
+msgid "Requesting..."
+msgstr "Lekérdezés..."
+
 msgid "Extracting Export Templates"
 msgstr "Export Sablonok Kibontása"
 
@@ -2307,6 +2314,9 @@ msgstr "Eltávolítás a kedvencek közül"
 msgid "Reimport"
 msgstr "Újraimportálás"
 
+msgid "Open in File Manager"
+msgstr "Megnyitás a Fájlkezelőben"
+
 msgid "New Folder..."
 msgstr "Új Mappa..."
 
@@ -2324,9 +2334,6 @@ msgstr "Megkettőzés..."
 
 msgid "Rename..."
 msgstr "Átnevezés..."
-
-msgid "Open in File Manager"
-msgstr "Megnyitás a Fájlkezelőben"
 
 msgid "Re-Scan Filesystem"
 msgstr "Fájlrendszer Újra-vizsgálata"
@@ -2511,9 +2518,6 @@ msgstr "Szkript megnyitása:"
 
 msgid "Open in Editor"
 msgstr "Megnyitás Szerkesztőben"
-
-msgid "Instance:"
-msgstr "Példány:"
 
 msgid "Importing Scene..."
 msgstr "Jelenet importálása..."
@@ -2933,12 +2937,6 @@ msgstr "Letöltés..."
 msgid "Resolving..."
 msgstr "Megoldás..."
 
-msgid "Connecting..."
-msgstr "Csatlakozás..."
-
-msgid "Requesting..."
-msgstr "Lekérdezés..."
-
 msgid "Error making request"
 msgstr "Hiba kéréskor"
 
@@ -3191,9 +3189,6 @@ msgstr "Rács Léptetés Mértékének Felezése"
 msgid "Adding %s..."
 msgstr "%s Hozzáadása..."
 
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "Nem lehet több Node-ot példányosítani gyökér nélkül."
-
 msgid "Create Node"
 msgstr "Node létrehozás"
 
@@ -3232,9 +3227,6 @@ msgstr "Jobb alsó"
 
 msgid "Full Rect"
 msgstr "Teljes Téglalap"
-
-msgid "Restart"
-msgstr "Újraindítás"
 
 msgid "Load Emission Mask"
 msgstr "Kibocsátási Maszk Betöltése"
@@ -3590,11 +3582,11 @@ msgstr "Ki-Vezérlő Eltávolítása Görbéből"
 msgid "Remove In-Control from Curve"
 msgstr "Be-Vezérlő Eltávolítása Görbéből"
 
-msgid "Add Point to Curve"
-msgstr "Pont Hozzáadása a Görbéhez"
-
 msgid "Move Point in Curve"
 msgstr "Pont Mozgatása a Görbén"
+
+msgid "Add Point to Curve"
+msgstr "Pont Hozzáadása a Görbéhez"
 
 msgid "Move In-Control in Curve"
 msgstr "Be-Vezérlő Mozgatása a Görbén"
@@ -3764,9 +3756,6 @@ msgstr "Erőforrás Beillesztése"
 msgid "Load Resource"
 msgstr "Erőforrás Betöltése"
 
-msgid "Clear Recent Files"
-msgstr "Legutóbbi Fájlok Törlése"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr ""
 "A(z) '%s' nem nyitható meg. Lehet, hogy a fájlt áthelyezték vagy törölték."
@@ -3798,6 +3787,12 @@ msgstr "Hiba mentés közben"
 msgid "Save Theme As..."
 msgstr "Téma Mentése Másként..."
 
+msgid "Online Docs"
+msgstr "Online Dokumentáció"
+
+msgid "Open Godot online documentation."
+msgstr "Godot online dokumentáció megnyitása."
+
 msgid "Find Next"
 msgstr "Következő Keresése"
 
@@ -3815,9 +3810,6 @@ msgstr "Fájl"
 
 msgid "Open..."
 msgstr "Megnyitás..."
-
-msgid "Reopen Closed Script"
-msgstr "Bezárt szkript újbóli megnyitása"
 
 msgid "Save All"
 msgstr "Összes Mentése"
@@ -3852,12 +3844,6 @@ msgstr "Futtatás"
 msgid "Search"
 msgstr "Keresés"
 
-msgid "Online Docs"
-msgstr "Online Dokumentáció"
-
-msgid "Open Godot online documentation."
-msgstr "Godot online dokumentáció megnyitása."
-
 msgid "Search the reference documentation."
 msgstr "Keresés a referencia dokumentációban."
 
@@ -3870,15 +3856,20 @@ msgstr "Ugrás a következőleg szerkesztett dokumentumra."
 msgid "Discard"
 msgstr "Elvetés"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?:"
-msgstr ""
-"A alábbi fájlok újabbak a lemezen.\n"
-"Mit szeretne lépni?:"
+msgid "Reopen Closed Script"
+msgstr "Bezárt szkript újbóli megnyitása"
 
 msgid "Clear Recent Scripts"
 msgstr "Legutóbbi szkriptek törlése"
+
+msgid "Uppercase"
+msgstr "Mind Nagybetű"
+
+msgid "Lowercase"
+msgstr "Mind Kisbetű"
+
+msgid "Capitalize"
+msgstr "Szó Eleji Nagybetű"
 
 msgid "Standard"
 msgstr "Alapértelmezett"
@@ -3894,15 +3885,6 @@ msgstr "Ugrás függvényre"
 
 msgid "Pick Color"
 msgstr "Szín Választása"
-
-msgid "Uppercase"
-msgstr "Mind Nagybetű"
-
-msgid "Lowercase"
-msgstr "Mind Kisbetű"
-
-msgid "Capitalize"
-msgstr "Szó Eleji Nagybetű"
 
 msgid "Convert Case"
 msgstr "Kis- és Nagybetűk Konvertálása"
@@ -4008,6 +3990,12 @@ msgstr "Nagyítás visszaállítása"
 
 msgid "Size"
 msgstr "Méret"
+
+msgid "Reload"
+msgstr "Újratöltés"
+
+msgid "Resave"
+msgstr "Újramentés"
 
 msgid "Set Margin"
 msgstr "Margó Beállítása"
