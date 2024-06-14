@@ -82,7 +82,7 @@ void Material::_validate_property(PropertyInfo &p_property) const {
 }
 
 void Material::_mark_ready() {
-	init_state = INIT_STATE_INITIALIZING;
+	init_state = INIT_STATE_READY;
 }
 
 void Material::_mark_initialized(const Callable &p_add_to_dirty_list, const Callable &p_update_shader) {
