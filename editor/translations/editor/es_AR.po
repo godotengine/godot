@@ -590,26 +590,60 @@ msgstr "Animación Múltiple Cambiar transición"
 msgid "Animation Multi Change Position3D"
 msgstr "Animación Múltiple Cambiar posición 3D"
 
+msgid "Animation Multi Change Rotation3D"
+msgstr "Cambiar Rotación 3D de Múltiples Animaciones"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Cambiar Escala 3D de Múltiples Animaciones"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "Cambiar Valor de Fotograma Clave en Múltiples Animaciones"
+
+msgid "Animation Multi Change Call"
+msgstr "Cambiar Llamada de Múltiples Animaciones"
+
 msgid "Change Animation Length"
 msgstr "Cambiar Duración de la Animación"
 
 msgid "Change Animation Loop"
 msgstr "Cambiar Loop de Animación"
 
-msgid "Property Track"
-msgstr "Pista de Propiedades"
+msgid "Can't change loop mode on animation instanced from imported scene."
+msgstr ""
+"No se puede cambiar el modo de bucle en una animación creada a partir de una "
+"escena importada."
 
-msgid "Call Method Track"
-msgstr "Pista de Llamada a Métodos"
+msgid "Can't change loop mode on animation embedded in another scene."
+msgstr ""
+"No se puede cambiar el modo de bucle en una animación insertada en otra "
+"escena."
 
-msgid "Bezier Curve Track"
-msgstr "Pista de Curva Bezier"
+msgid "Property Track..."
+msgstr "Pista de Propiedades..."
 
-msgid "Audio Playback Track"
-msgstr "Pista de Reproducción de Audio"
+msgid "3D Position Track..."
+msgstr "Pista de Posición 3D..."
 
-msgid "Animation Playback Track"
-msgstr "Pista de Reproducción de Animación"
+msgid "3D Rotation Track..."
+msgstr "Pista de Rotación 3D..."
+
+msgid "3D Scale Track..."
+msgstr "Pista de Escala 3D..."
+
+msgid "Blend Shape Track..."
+msgstr "Pista de Forma Combinada..."
+
+msgid "Call Method Track..."
+msgstr "Pista de Método de Llamada..."
+
+msgid "Bezier Curve Track..."
+msgstr "Pista de Curva Bezier..."
+
+msgid "Audio Playback Track..."
+msgstr "Pista de Reproducción de Audio..."
+
+msgid "Animation Playback Track..."
+msgstr "Pista de Reproducción de Animación..."
 
 msgid "Animation length (frames)"
 msgstr "Duración de la animación (frames)"
@@ -629,11 +663,17 @@ msgstr "Funciones:"
 msgid "Audio Clips:"
 msgstr "Clips de Audio:"
 
+msgid "Animation Clips:"
+msgstr "Clips de Animación:"
+
 msgid "Change Track Path"
 msgstr "Cambiar Ruta de la Pista"
 
 msgid "Toggle this track on/off."
 msgstr "Act./Desact. esta pista."
+
+msgid "Use Blend"
+msgstr "Usar Mezcla"
 
 msgid "Update Mode (How this property is set)"
 msgstr "Modo de Actualización (Como esta configurada esta propiedad)"
@@ -647,14 +687,29 @@ msgstr "Modo Loop Envolvente (Interpolar el final con el comienzo al loopear)"
 msgid "Remove this track."
 msgstr "Quitar esta pista."
 
+msgid "Time (s):"
+msgstr "Tiempo (s):"
+
 msgid "Position:"
 msgstr "Posición:"
+
+msgid "Rotation:"
+msgstr "Rotación:"
 
 msgid "Scale:"
 msgstr "Escala:"
 
+msgid "Blend Shape:"
+msgstr "Forma Combinada:"
+
 msgid "Type:"
 msgstr "Tipo:"
+
+msgid "(Invalid, expected type: %s)"
+msgstr "(Inválido, tipo esperado: %s)"
+
+msgid "Easing:"
+msgstr "Atenuación:"
 
 msgid "Toggle Track Enabled"
 msgstr "Activar/Desactivar Pista"
@@ -682,9 +737,6 @@ msgstr "Interp de Loop Cortante"
 
 msgid "Wrap Loop Interp"
 msgstr "Interp de Loop Envolvente"
-
-msgid "Insert Key"
-msgstr "Insertar Clave"
 
 msgid "Duplicate Key(s)"
 msgstr "Duplicar Clave(s)"
@@ -823,15 +875,6 @@ msgstr "Editar"
 
 msgid "Animation properties."
 msgstr "Propiedades de animación."
-
-msgid "Copy Tracks"
-msgstr "Copiar Pistas"
-
-msgid "Scale Selection"
-msgstr "Escalar Selección"
-
-msgid "Scale From Cursor"
-msgstr "Escalar Desde Cursor"
 
 msgid "Duplicate Selection"
 msgstr "Duplicar Selección"
@@ -2290,14 +2333,14 @@ msgstr ""
 "Es posible cambiarla más tarde en \"Ajustes del Proyecto\" bajo la categoría "
 "'application'."
 
+msgid "Default"
+msgstr "Por Defecto"
+
 msgid "Save Layout"
 msgstr "Guardar Layout"
 
 msgid "Delete Layout"
 msgstr "Eliminar Layout"
-
-msgid "Default"
-msgstr "Por Defecto"
 
 msgid "Save & Close"
 msgstr "Guardar y Cerrar"
@@ -2442,9 +2485,6 @@ msgstr "Sugerir una Feature"
 
 msgid "Send Docs Feedback"
 msgstr "Enviar comentarios sobre la documentación"
-
-msgid "About Godot"
-msgstr "Acerca de Godot"
 
 msgid "Support Godot Development"
 msgstr "Apoyar el desarrollo de Godot"
@@ -2647,8 +2687,8 @@ msgstr ""
 "El recurso seleccionado (%s) no concuerda con ningún tipo esperado para esta "
 "propiedad (%s)."
 
-msgid "Quick Load"
-msgstr "Carga Rápida"
+msgid "Load..."
+msgstr "Cargar..."
 
 msgid "Make Unique"
 msgstr "Convertir en Unico"
@@ -2665,11 +2705,8 @@ msgstr "Convertir a %s"
 msgid "New %s"
 msgstr "Nuevo %s"
 
-msgid "New Script"
-msgstr "Nuevo Script"
-
-msgid "Extend Script"
-msgstr "Extender Script"
+msgid "New Script..."
+msgstr "Nuevo Script.."
 
 msgid ""
 "No runnable export preset found for this platform.\n"
@@ -3116,9 +3153,6 @@ msgstr "Nueva Carpeta..."
 
 msgid "New Scene..."
 msgstr "Nueva Escena..."
-
-msgid "New Script..."
-msgstr "Nuevo Script.."
 
 msgid "New Resource..."
 msgstr "Nuevo Recurso..."
@@ -3639,9 +3673,6 @@ msgstr "Agregar Animación"
 
 msgid "Add %s"
 msgstr "Agregar %s"
-
-msgid "Load..."
-msgstr "Cargar..."
 
 msgid "Move Node Point"
 msgstr "Mover Punto de Nodo"
@@ -4412,6 +4443,9 @@ msgstr "Máscara de escala para insertar claves."
 
 msgid "Insert keys (based on mask)."
 msgstr "Insertar claves (basadas en máscara)."
+
+msgid "Insert Key"
+msgstr "Insertar Clave"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -7584,9 +7618,6 @@ msgstr ""
 
 msgid "Can't paste root node into the same scene."
 msgstr "No se puede pegar el nodo raiz en la misma escena."
-
-msgid "Reparent to New Node"
-msgstr "Reemparentar a Nuevo Nodo"
 
 msgid "Make Scene Root"
 msgstr "Convertir en Raíz de Escena"

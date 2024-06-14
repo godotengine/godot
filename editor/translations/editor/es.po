@@ -714,32 +714,32 @@ msgstr ""
 "No se puede cambiar el modo de bucle en una animación incrustada en otra "
 "escena."
 
-msgid "Property Track"
-msgstr "Pista de Propiedades"
+msgid "Property Track..."
+msgstr "Pista de Propiedades..."
 
-msgid "3D Position Track"
-msgstr "Pista de Posición 3D"
+msgid "3D Position Track..."
+msgstr "Pista de Posición 3D..."
 
-msgid "3D Rotation Track"
-msgstr "Pista de Rotación 3D"
+msgid "3D Rotation Track..."
+msgstr "Pista de Rotación 3D..."
 
-msgid "3D Scale Track"
-msgstr "Pista de Escala 3D"
+msgid "3D Scale Track..."
+msgstr "Pista de Escala 3D..."
 
-msgid "Blend Shape Track"
-msgstr "Pista de Forma Combinada"
+msgid "Blend Shape Track..."
+msgstr "Pista de Forma Combinada..."
 
-msgid "Call Method Track"
-msgstr "Pista de Llamada a Métodos"
+msgid "Call Method Track..."
+msgstr "Pista de Método de Llamada..."
 
-msgid "Bezier Curve Track"
-msgstr "Pista de Curva Bezier"
+msgid "Bezier Curve Track..."
+msgstr "Pista de Curva Bezier..."
 
-msgid "Audio Playback Track"
-msgstr "Pista de Reproducción de Audio"
+msgid "Audio Playback Track..."
+msgstr "Pista de Reproducción de Audio..."
 
-msgid "Animation Playback Track"
-msgstr "Pista de Reproducción de Animación"
+msgid "Animation Playback Track..."
+msgstr "Pista de Reproducción de Animación..."
 
 msgid "Animation length (frames)"
 msgstr "Duración de la animación (fotogramas)"
@@ -873,8 +873,8 @@ msgstr "Interp de Loop Cortante"
 msgid "Wrap Loop Interp"
 msgstr "Interp de Loop Envolvente"
 
-msgid "Insert Key"
-msgstr "Insertar Clave"
+msgid "Insert Key..."
+msgstr "Insertar Clave..."
 
 msgid "Duplicate Key(s)"
 msgstr "Duplicar Clave(s)"
@@ -1134,17 +1134,17 @@ msgstr "Editar"
 msgid "Animation properties."
 msgstr "Propiedades de animación."
 
-msgid "Copy Tracks"
-msgstr "Copiar Pistas"
+msgid "Copy Tracks..."
+msgstr "Copiar Pistas..."
 
-msgid "Scale Selection"
-msgstr "Escalar Selección"
+msgid "Scale Selection..."
+msgstr "Escalar Selección..."
 
-msgid "Scale From Cursor"
-msgstr "Escalar Desde Cursor"
+msgid "Scale From Cursor..."
+msgstr "Escalar Desde Cursor..."
 
-msgid "Make Easing Selection"
-msgstr "Selección de Interpolación"
+msgid "Make Easing Selection..."
+msgstr "Selección de Interpolación..."
 
 msgid "Duplicate Selection"
 msgstr "Duplicar Selección"
@@ -1164,14 +1164,14 @@ msgstr "Ir al Paso Anterior"
 msgid "Apply Reset"
 msgstr "Aplicar Reset"
 
-msgid "Bake Animation"
-msgstr "Bakear Animación"
+msgid "Bake Animation..."
+msgstr "Hornear Animación..."
 
-msgid "Optimize Animation (no undo)"
-msgstr "Optimizar Animación (No se puede deshacer)"
+msgid "Optimize Animation (no undo)..."
+msgstr "Optimizar Animación (No se puede deshacer)..."
 
-msgid "Clean-Up Animation (no undo)"
-msgstr "Limpiar Animación (No se puede deshacer)"
+msgid "Clean-Up Animation (no undo)..."
+msgstr "Limpiar Animación (No se puede deshacer)..."
 
 msgid "Pick a node to animate:"
 msgstr "Selecciona un nodo para animar:"
@@ -3618,14 +3618,20 @@ msgstr ""
 "Es posible cambiarla más tarde en \"Configuración del Proyecto\" bajo la "
 "categoría 'application'."
 
+msgid "Save Layout..."
+msgstr "Guardar Layout..."
+
+msgid "Delete Layout..."
+msgstr "Eliminar Layout..."
+
+msgid "Default"
+msgstr "Predeterminado"
+
 msgid "Save Layout"
 msgstr "Guardar Layout"
 
 msgid "Delete Layout"
 msgstr "Eliminar Layout"
-
-msgid "Default"
-msgstr "Predeterminado"
 
 msgid "This scene was never saved."
 msgstr "Esta escena nunca fue guardada."
@@ -3697,6 +3703,9 @@ msgstr "Móvil"
 
 msgid "Compatibility"
 msgstr "Compatibilidad"
+
+msgid "(Overridden)"
+msgstr "(Anulado)"
 
 msgid "Pan View"
 msgstr "Vista Panorámica"
@@ -3847,6 +3856,9 @@ msgstr "Configurar Importador FBX..."
 msgid "Help"
 msgstr "Ayuda"
 
+msgid "Search Help..."
+msgstr "Buscar en la Ayuda..."
+
 msgid "Online Documentation"
 msgstr "Documentación en línea"
 
@@ -3873,11 +3885,27 @@ msgstr "Sugerir una característica"
 msgid "Send Docs Feedback"
 msgstr "Enviar Feedback de la Documentación"
 
-msgid "About Godot"
-msgstr "Sobre Godot"
+msgid "About Godot..."
+msgstr "Sobre Godot..."
 
 msgid "Support Godot Development"
 msgstr "Apoyar el desarrollo de Godot"
+
+msgid ""
+"Choose a rendering method.\n"
+"\n"
+"Notes:\n"
+"- On mobile platforms, the Mobile rendering method is used if Forward+ is "
+"selected here.\n"
+"- On the web platform, the Compatibility rendering method is always used."
+msgstr ""
+"Seleccionar un método de renderizado.\n"
+"\n"
+"Notas:\n"
+"- En dispositivos móviles, se utiliza el método de renderizado Móvil si se "
+"selecciona Forward+ aquí.\n"
+"- En la plataforma web, siempre se utiliza el método de renderizado "
+"Compatibilidad."
 
 msgid "Update Continuously"
 msgstr "Actualizar Continuamente"
@@ -4182,8 +4210,16 @@ msgstr ""
 "El recurso seleccionado (%s) no coincide con ningún tipo esperado para esta "
 "propiedad (%s)."
 
-msgid "Quick Load"
-msgstr "Carga Rápida"
+msgid "Quick Load..."
+msgstr "Carga Rápida..."
+
+msgid "Opens a quick menu to select from a list of allowed Resource files."
+msgstr ""
+"Abre un menú rápido para seleccionar de una lista de archivos de Recursos "
+"permitidos."
+
+msgid "Load..."
+msgstr "Cargar..."
 
 msgid "Inspect"
 msgstr "Inspeccionar"
@@ -4209,14 +4245,14 @@ msgstr "Seleccionar recursos para hacerlos únicos:"
 msgid "New %s"
 msgstr "Nuevo %s"
 
-msgid "New Script"
-msgstr "Nuevo Script"
+msgid "New Script..."
+msgstr "Nuevo Script..."
 
-msgid "Extend Script"
-msgstr "Extender Script"
+msgid "Extend Script..."
+msgstr "Extender Script..."
 
-msgid "New Shader"
-msgstr "Nuevo Shader"
+msgid "New Shader..."
+msgstr "Nuevo Shader..."
 
 msgid "No Remote Debug export presets configured."
 msgstr "No hay preajustes de exportación de depuración remota configurados."
@@ -4242,12 +4278,6 @@ msgstr "Escribe tu lógica en el método _run()."
 
 msgid "There is an edited scene already."
 msgstr "Ya hay una escena editada."
-
-msgid ""
-"Couldn't run editor script, did you forget to override the '_run' method?"
-msgstr ""
-"No se pudo ejecutar el script del editor, ¿olvidaste sobrescribir el método "
-"'_run'?"
 
 msgid "Undo: %s"
 msgstr "Deshacer: %s"
@@ -5056,9 +5086,6 @@ msgstr "Nueva Carpeta..."
 msgid "New Scene..."
 msgstr "Nueva Escena..."
 
-msgid "New Script..."
-msgstr "Nuevo Script..."
-
 msgid "New Resource..."
 msgstr "Nuevo Recurso..."
 
@@ -5830,6 +5857,16 @@ msgstr "2D"
 msgid "3D"
 msgstr "3D"
 
+msgid ""
+"%s: Atlas texture significantly larger on one axis (%d), consider changing "
+"the `editor/import/atlas_max_width` Project Setting to allow a wider texture, "
+"making the result more even in size."
+msgstr ""
+"%s: La textura del atlas es significativamente más grande en un eje (%d), "
+"considere cambiar la Configuración del Proyecto `editor/import/"
+"atlas_max_width` para permitir una textura más amplia, lo que hará que el "
+"resultado sea más uniforme en tamaño."
+
 msgid "<Unnamed Material>"
 msgstr "<Material sin Nombre>"
 
@@ -6378,9 +6415,6 @@ msgstr "Añadir Animación"
 msgid "Add %s"
 msgstr "Añadir %s"
 
-msgid "Load..."
-msgstr "Cargar..."
-
 msgid "Move Node Point"
 msgstr "Mover Punto de Nodo"
 
@@ -6793,6 +6827,9 @@ msgstr "Herramientas de Animación"
 
 msgid "Animation"
 msgstr "Animación"
+
+msgid "New..."
+msgstr "Nuevo..."
 
 msgid "Manage Animations..."
 msgstr "Gestionar Animaciones..."
@@ -7530,6 +7567,9 @@ msgstr "Máscara de escala para insertar claves."
 
 msgid "Insert keys (based on mask)."
 msgstr "Insertar claves (basadas en máscara)."
+
+msgid "Insert Key"
+msgstr "Insertar Clave"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -9930,20 +9970,17 @@ msgstr "¿Guardar los cambios en las siguientes Shaders antes de salir?"
 msgid "Shader Editor"
 msgstr "Editor de Shader"
 
-msgid "New Shader Include"
-msgstr "Nueva Inclusión de Shader"
+msgid "New Shader Include..."
+msgstr "Nueva Inclusión de Shader..."
 
-msgid "Load Shader File"
-msgstr "Cargar Archivo de Shader"
+msgid "Load Shader File..."
+msgstr "Cargar Archivo de Shader..."
 
-msgid "Load Shader Include File"
-msgstr "Cargar Archivo de Inclusión de Shader"
+msgid "Load Shader Include File..."
+msgstr "Cargar Archivo de Inclusión de Shader..."
 
 msgid "Save File"
 msgstr "Guardar Archivo"
-
-msgid "Save File As"
-msgstr "Guardar Archivo Como"
 
 msgid "Open File in Inspector"
 msgstr "Abrir Archivo en el Inspector"
@@ -13978,6 +14015,9 @@ msgstr "<Sin nombre> en %s"
 msgid "(used %d times)"
 msgstr "(usado %d veces)"
 
+msgid "Batch Rename..."
+msgstr "Renombrar por lote..."
+
 msgid "Add Child Node..."
 msgstr "Añadir Nodo Hijo..."
 
@@ -13996,14 +14036,17 @@ msgstr "Cambiar Tipo..."
 msgid "Attach Script..."
 msgstr "Añadir Script..."
 
-msgid "Extend Script..."
-msgstr "Extender Script..."
+msgid "Reparent..."
+msgstr "Reemparentar..."
 
-msgid "Reparent to New Node"
-msgstr "Reemparentar a Nuevo Nodo"
+msgid "Reparent to New Node..."
+msgstr "Reemparentar a Nuevo Nodo..."
 
 msgid "Make Scene Root"
 msgstr "Convertir en Raíz de Escena"
+
+msgid "Save Branch as Scene..."
+msgstr "Guardar Rama como Escena..."
 
 msgid "Toggle Access as Unique Name"
 msgstr "Alternar Acceso como Nombre Único"
@@ -15008,6 +15051,26 @@ msgstr ""
 "Release keystore no está configurado correctamente en el preset de "
 "exportación."
 
+msgid "A valid Java SDK path is required in Editor Settings."
+msgstr ""
+"Se requiere una ruta válida para el SDK de Java en la Configuración del "
+"Editor."
+
+msgid "Invalid Java SDK path in Editor Settings."
+msgstr "Ruta no válida para el SDK de Java en la Configuración del Editor."
+
+msgid "Missing 'bin' directory!"
+msgstr "¡Directorio 'bin' faltante!"
+
+msgid "Unable to find 'java' command using the Java SDK path."
+msgstr ""
+"No se puede encontrar el comando 'java' utilizando la ruta del SDK de Java."
+
+msgid "Please check the Java SDK directory specified in Editor Settings."
+msgstr ""
+"Por favor, comprueba el directorio del SDK de Java especificado en la "
+"Configuración del Editor."
+
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
 "Se requiere una ruta válida del SDK de Android en la Configuración del Editor."
@@ -15052,6 +15115,15 @@ msgstr ""
 
 msgid "\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."
 msgstr "\"Min SDK\" debe ser mayor o igual a %d para el renderizador \"%s\"."
+
+msgid ""
+"The project name does not meet the requirement for the package name format "
+"and will be updated to \"%s\". Please explicitly specify the package name if "
+"needed."
+msgstr ""
+"El nombre del proyecto no cumple con el formato requerido para el nombre del "
+"paquete y se actualizará a \"%s\". Por favor, especifica explícitamente el "
+"nombre del paquete si es necesario."
 
 msgid "Code Signing"
 msgstr "Firma del Código"
@@ -15133,6 +15205,13 @@ msgstr ""
 "La versión de compilación de Android no coincide: Plantilla instalada: %s, "
 "versión de Godot: %s. Reinstala la plantilla de compilación de Android desde "
 "el menú \"Proyecto\"."
+
+msgid ""
+"Java SDK path must be configured in Editor Settings at 'export/android/"
+"java_sdk_path'."
+msgstr ""
+"La ruta del SDK de Java debe configurarse en la Configuración del Editor en "
+"'exportar/android/ruta_del_sdk_de_java'."
 
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name."
@@ -15264,6 +15343,12 @@ msgid "Installation/running failed, see editor log for details."
 msgstr ""
 "La instalación o la ejecución ha fallado, consulte el registro del editor "
 "para obtener más detalles."
+
+msgid "Could not start device executable."
+msgstr "No se pudo iniciar el ejecutable del dispositivo."
+
+msgid "Could not start devicectl executable."
+msgstr "No se pudo iniciar el ejecutable devicectl."
 
 msgid "Debug Script Export"
 msgstr "Exportación de Script de Depuración"
@@ -16635,13 +16720,6 @@ msgstr "No se ha establecido ninguna pose."
 
 msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "XROrigin3D requiere un nodo hijo XRCamera3D."
-
-msgid ""
-"XR is not enabled in rendering project settings. Stereoscopic output is not "
-"supported unless this is enabled."
-msgstr ""
-"XR no está activado en el renderizado de la configuración del proyecto. La "
-"salida estereoscópica será soportada a menos que esté activada."
 
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr "En el nodo BlendTree '%s', no se encontró la animación: '%s'"

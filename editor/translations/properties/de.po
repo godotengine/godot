@@ -2573,6 +2573,9 @@ msgstr "Fehlende importierte Dateien reimportieren"
 msgid "Use Multiple Threads"
 msgstr "Mehrere Threads verwenden"
 
+msgid "Atlas Max Width"
+msgstr "Max. Atlasbreite"
+
 msgid "Convert Text Resources to Binary"
 msgstr "Textressourcen in Binärformat konvertieren"
 
@@ -3010,6 +3013,9 @@ msgstr "Native Symbole im Editor anzeigen"
 
 msgid "Use Thread"
 msgstr "Thread verwenden"
+
+msgid "Poll Limit (µsec)"
+msgstr "Poll-Limit (µsec)"
 
 msgid "glTF"
 msgstr "glTF"
@@ -3638,6 +3644,9 @@ msgstr "Reference-Space-Typ"
 msgid "Visibility State"
 msgstr "Sichtbarkeitsstatus"
 
+msgid "Java SDK Path"
+msgstr "Java SDK-Pfad"
+
 msgid "Android SDK Path"
 msgstr "Android-SDK-Pfad"
 
@@ -3958,6 +3967,12 @@ msgstr "Fotobibliothek-Nutzungsbeschreibung"
 
 msgid "Photolibrary Usage Description Localized"
 msgstr "Fotobibliothek-Nutzungsbeschreibung Lokalisierung"
+
+msgid "Tracking Enabled"
+msgstr "Tracking aktiviert"
+
+msgid "Tracking Domains"
+msgstr "Tracking-Domänen"
 
 msgid "Storyboard"
 msgstr "Storyboard"

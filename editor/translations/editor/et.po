@@ -305,21 +305,6 @@ msgstr "Muuda animatsiooni pikkust"
 msgid "Change Animation Loop"
 msgstr "Muuda animatsiooni tsüklit"
 
-msgid "Property Track"
-msgstr "Atribuudi rada"
-
-msgid "Call Method Track"
-msgstr "Meetodi kutsumise rada"
-
-msgid "Bezier Curve Track"
-msgstr "Bezier-kõvera rada"
-
-msgid "Audio Playback Track"
-msgstr "Helimängimise rada"
-
-msgid "Animation Playback Track"
-msgstr "Animatsiooni mängimise rada"
-
 msgid "Animation length (frames)"
 msgstr "Animatsiooni pikkus (kaadrid)"
 
@@ -403,9 +388,6 @@ msgstr "Sirgjooneline"
 
 msgid "Cubic"
 msgstr "Kuupmõõtmeline"
-
-msgid "Insert Key"
-msgstr "Sisesta võti"
 
 msgid "Duplicate Key(s)"
 msgstr "Paljunda võti (võtmed)"
@@ -516,9 +498,6 @@ msgstr "Muuda"
 
 msgid "Animation properties."
 msgstr "Animatsiooni atribuudid."
-
-msgid "Copy Tracks"
-msgstr "Kopeeri Rajad"
 
 msgid "Duplicate Selection"
 msgstr "Duplikeeri Valik"
@@ -2337,14 +2316,14 @@ msgstr ""
 "Valitud stseen '%s' ei ole stseenifail, kas valida sobiv fail?\n"
 "Saate seda hiljem muuta \"Projekti sätted\" kategooria \"Rakendus\" all."
 
+msgid "Default"
+msgstr "Vaikimisi"
+
 msgid "Save Layout"
 msgstr "Salvesta Paigutus"
 
 msgid "Delete Layout"
 msgstr "Kustuta Paigutus"
-
-msgid "Default"
-msgstr "Vaikimisi"
 
 msgid "Save & Close"
 msgstr "Salvesta Ja Sulge"
@@ -2521,9 +2500,6 @@ msgstr "Funktsionaalsuse Soovitamine"
 
 msgid "Send Docs Feedback"
 msgstr "Saada dokumentatsioonide tagasiside"
-
-msgid "About Godot"
-msgstr "Teave Godot'ist"
 
 msgid "Support Godot Development"
 msgstr "Toeta Godot'i Arendamist"
@@ -2800,8 +2776,8 @@ msgstr ""
 "Valitud ressurss (%s) ei vasta ühelegi selle atribuudi (%s) eeldatavale "
 "tüübile."
 
-msgid "Quick Load"
-msgstr "Kiire Laadimine"
+msgid "Load..."
+msgstr "Lae..."
 
 msgid "Inspect"
 msgstr "Vaata üle"
@@ -2824,14 +2800,8 @@ msgstr "Teisenda %s'ks"
 msgid "New %s"
 msgstr "Uus %s"
 
-msgid "New Script"
-msgstr "Uus skript"
-
-msgid "Extend Script"
-msgstr "Laienda skripti"
-
-msgid "New Shader"
-msgstr "Uus Shader"
+msgid "New Script..."
+msgstr "Uus skript..."
 
 msgid "No Remote Debug export presets configured."
 msgstr "Ühtegi Kaugsilumise Ekspordi Eelseadistust Pole Konfigureeritud."
@@ -2856,12 +2826,6 @@ msgstr "Kirjutage oma loogika meetodis _run()."
 
 msgid "There is an edited scene already."
 msgstr "Redigeeritud stseen on juba olemas."
-
-msgid ""
-"Couldn't run editor script, did you forget to override the '_run' method?"
-msgstr ""
-"Redaktori Skripti ei saanud käivitada, kas unustasite meetodi \"_ run\" "
-"ülekrijutada?"
 
 msgid "Undo: %s"
 msgstr "Võta tagasi %s"
@@ -3524,9 +3488,6 @@ msgstr "Uus kaust..."
 
 msgid "New Scene..."
 msgstr "Uus stseen..."
-
-msgid "New Script..."
-msgstr "Uus skript..."
 
 msgid "New Resource..."
 msgstr "Uus ressurss..."
@@ -4577,9 +4538,6 @@ msgstr "Lisa Animatsioon"
 msgid "Add %s"
 msgstr "Lisa %s"
 
-msgid "Load..."
-msgstr "Lae..."
-
 msgid "Move Node Point"
 msgstr "Liiguta Sõlme Punkt"
 
@@ -5463,6 +5421,9 @@ msgstr "Suumi Valitule"
 
 msgid "Preview Canvas Scale"
 msgstr "Kanvaa Skaala Eelvaade"
+
+msgid "Insert Key"
+msgstr "Sisesta võti"
 
 msgid "Copy Pose"
 msgstr "Kopeeri Poos"
@@ -7471,14 +7432,8 @@ msgstr "Naase eelmise katkepunkti juurde"
 msgid "Shader Editor"
 msgstr "Shader-Redaktor"
 
-msgid "Load Shader File"
-msgstr "Lae Shader Fail"
-
 msgid "Save File"
 msgstr "Salvesta Fail"
-
-msgid "Save File As"
-msgstr "Salvesta Fail Kui"
 
 msgid "Open File in Inspector"
 msgstr "Ava Fail Inspektoris"

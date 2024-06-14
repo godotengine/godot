@@ -438,6 +438,9 @@ msgstr "Usar Ambiente"
 msgid "Low Processor Usage Mode"
 msgstr "Modo de Bajo Uso del Procesador"
 
+msgid "Low Processor Usage Mode Sleep (µsec)"
+msgstr "Modo de Suspensión con Bajo Uso del Procesador (µseg)"
+
 msgid "Delta Smoothing"
 msgstr "Suavizando Delta"
 
@@ -962,6 +965,12 @@ msgstr "Fuente Principal En Negrita"
 
 msgid "Code Font"
 msgstr "Código Fuente"
+
+msgid "Low Processor Mode Sleep (µsec)"
+msgstr "Modo de Suspensión con Procesador en Bajo Consumo (µseg)"
+
+msgid "Unfocused Low Processor Mode Sleep (µsec)"
+msgstr "Modo de Suspensión con Procesador en Bajo Consumo no Enfocado (µseg)"
 
 msgid "Separate Distraction Mode"
 msgstr "Modo de Distracción Separado"
@@ -1686,6 +1695,9 @@ msgstr "Tipo de Color del Usuario"
 msgid "Comment Color"
 msgstr "Color de los Comentarios"
 
+msgid "Doc Comment Color"
+msgstr "Color del Comentario de Documentación"
+
 msgid "String Color"
 msgstr "Color del String"
 
@@ -1965,6 +1977,9 @@ msgstr "Huesos no Mapeados"
 msgid "Create From"
 msgstr "Crear Desde"
 
+msgid "Scaling Mode"
+msgstr "Modo de Escalado"
+
 msgid "Delimiter"
 msgstr "Delimitador"
 
@@ -2033,6 +2048,9 @@ msgstr "Offset de Mesh"
 
 msgid "Optimize Mesh"
 msgstr "Optimizar Malla"
+
+msgid "Force Disable Mesh Compression"
+msgstr "Forzar Desactivación de Compresión de Mesh"
 
 msgid "Skip Import"
 msgstr "Saltar Importación"
@@ -2225,6 +2243,9 @@ msgstr "Bake de Luces"
 
 msgid "Lightmap Texel Size"
 msgstr "Tamaño Lightmap Texel"
+
+msgid "Force Disable Compression"
+msgstr "Forzar Desactivación de Compresión"
 
 msgid "Skins"
 msgstr "Skins"
@@ -2421,6 +2442,9 @@ msgstr "Mostrar Gizmo de Navegación de la Vista"
 msgid "Gizmo Settings"
 msgstr "Configuración del Gizmo"
 
+msgid "Path Tilt"
+msgstr "Inclinación del camino"
+
 msgid "Auto Reload and Parse Scripts on Save"
 msgstr "Recarga Automática y Análisis de Scripts al Guardar"
 
@@ -2538,6 +2562,9 @@ msgstr "Reimportar Archivos Importados Faltantes"
 msgid "Use Multiple Threads"
 msgstr "Usar Multiples Hilos"
 
+msgid "Atlas Max Width"
+msgstr "Ancho Máximo del Atlas"
+
 msgid "Convert Text Resources to Binary"
 msgstr "Convertir Recursos De Texto En Binarios"
 
@@ -2594,6 +2621,9 @@ msgstr "Compatibilidad GL"
 
 msgid "Nvidia Disable Threaded Optimization"
 msgstr "Desactivar la Optimización con Hilos de Nvidia"
+
+msgid "Force Angle on Devices"
+msgstr "Forzar Ángulo en Dispositivos"
 
 msgid "Renderer"
 msgstr "Renderizador"
@@ -2699,6 +2729,15 @@ msgstr "Enviar Buffer de Profundidad"
 
 msgid "Startup Alert"
 msgstr "Alerta de Inicio"
+
+msgid "Extensions"
+msgstr "Extensiones"
+
+msgid "Hand Tracking"
+msgstr "Seguimiento de Mano"
+
+msgid "Eye Gaze Interaction"
+msgstr "Interacción por Mirada"
 
 msgid "In Editor"
 msgstr "En Editor"
@@ -3303,6 +3342,12 @@ msgstr "Recuento de Rayos de Calidad Ultra"
 msgid "Max Rays per Probe Pass"
 msgstr "Máximo de Rayos por Pase de Sonda"
 
+msgid "Denoising"
+msgstr "Eliminación de Ruido"
+
+msgid "Denoiser"
+msgstr "Reductor de Ruido"
+
 msgid "BPM"
 msgstr "BPM"
 
@@ -3572,6 +3617,9 @@ msgstr "Tipo de Espacio de Referencia"
 
 msgid "Visibility State"
 msgstr "Estado de Visibilidad"
+
+msgid "Java SDK Path"
+msgstr "Ruta del SDK de Java"
 
 msgid "Android SDK Path"
 msgstr "Ruta del SDK de Android"
@@ -4628,6 +4676,9 @@ msgstr "Ajuste Máximo"
 
 msgid "Offset Curve"
 msgstr "Curva de Offset"
+
+msgid "Amount Ratio"
+msgstr "Proporción de Cantidad"
 
 msgid "Sub Emitter"
 msgstr "Sub Emisor"

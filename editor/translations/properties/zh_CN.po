@@ -2562,6 +2562,9 @@ msgstr "重新导入缺失的已导入文件"
 msgid "Use Multiple Threads"
 msgstr "使用多线程"
 
+msgid "Atlas Max Width"
+msgstr "图集最大宽度"
+
 msgid "Convert Text Resources to Binary"
 msgstr "将文本资源转换为二进制"
 
@@ -2999,6 +3002,9 @@ msgstr "编辑器中显示原生符号"
 
 msgid "Use Thread"
 msgstr "使用线程"
+
+msgid "Poll Limit (µsec)"
+msgstr "轮询限制（微秒）"
 
 msgid "glTF"
 msgstr "glTF"
@@ -3627,6 +3633,9 @@ msgstr "参照空间类型"
 msgid "Visibility State"
 msgstr "可见状态"
 
+msgid "Java SDK Path"
+msgstr "Java SDK 路径"
+
 msgid "Android SDK Path"
 msgstr "Android SDK 路径"
 
@@ -3947,6 +3956,12 @@ msgstr "照片图库使用描述"
 
 msgid "Photolibrary Usage Description Localized"
 msgstr "照片图库使用描述本地化"
+
+msgid "Tracking Enabled"
+msgstr "启用追踪"
+
+msgid "Tracking Domains"
+msgstr "追踪域"
 
 msgid "Storyboard"
 msgstr "Storyboard"

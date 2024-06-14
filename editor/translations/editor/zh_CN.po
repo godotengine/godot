@@ -676,32 +676,32 @@ msgstr "无法修改从导入场景中实例化的动画的循环模式。"
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "无法修改嵌入另一场景的动画的循环模式。"
 
-msgid "Property Track"
-msgstr "属性轨道"
+msgid "Property Track..."
+msgstr "属性轨道..."
 
-msgid "3D Position Track"
-msgstr "3D 位置轨道"
+msgid "3D Position Track..."
+msgstr "3D 位置轨道..."
 
-msgid "3D Rotation Track"
-msgstr "3D 旋转轨道"
+msgid "3D Rotation Track..."
+msgstr "3D 旋转轨道..."
 
-msgid "3D Scale Track"
-msgstr "3D 缩放轨道"
+msgid "3D Scale Track..."
+msgstr "3D 缩放轨道..."
 
-msgid "Blend Shape Track"
-msgstr "混合形状轨道"
+msgid "Blend Shape Track..."
+msgstr "混合形状轨道..."
 
-msgid "Call Method Track"
-msgstr "方法调用轨道"
+msgid "Call Method Track..."
+msgstr "方法调用轨道..."
 
-msgid "Bezier Curve Track"
-msgstr "贝塞尔曲线轨道"
+msgid "Bezier Curve Track..."
+msgstr "贝塞尔曲线轨道..."
 
-msgid "Audio Playback Track"
-msgstr "音频播放轨道"
+msgid "Audio Playback Track..."
+msgstr "音频播放轨道..."
 
-msgid "Animation Playback Track"
-msgstr "动画播放轨道"
+msgid "Animation Playback Track..."
+msgstr "动画播放轨道..."
 
 msgid "Animation length (frames)"
 msgstr "动画长度（帧）"
@@ -835,8 +835,8 @@ msgstr "钳制循环插值"
 msgid "Wrap Loop Interp"
 msgstr "环绕循环插值"
 
-msgid "Insert Key"
-msgstr "插入关键帧"
+msgid "Insert Key..."
+msgstr "插入关键帧..."
 
 msgid "Duplicate Key(s)"
 msgstr "复制关键帧"
@@ -1082,17 +1082,17 @@ msgstr "编辑"
 msgid "Animation properties."
 msgstr "动画属性。"
 
-msgid "Copy Tracks"
-msgstr "复制轨道"
+msgid "Copy Tracks..."
+msgstr "复制轨道..."
 
-msgid "Scale Selection"
-msgstr "缩放选中项"
+msgid "Scale Selection..."
+msgstr "缩放选中项..."
 
-msgid "Scale From Cursor"
-msgstr "通过光标缩放"
+msgid "Scale From Cursor..."
+msgstr "通过光标缩放..."
 
-msgid "Make Easing Selection"
-msgstr "缓动选中项"
+msgid "Make Easing Selection..."
+msgstr "缓动选中项..."
 
 msgid "Duplicate Selection"
 msgstr "复制选中项"
@@ -1112,14 +1112,14 @@ msgstr "跳到上一步"
 msgid "Apply Reset"
 msgstr "应用重置"
 
-msgid "Bake Animation"
-msgstr "烘焙动画"
+msgid "Bake Animation..."
+msgstr "烘焙动画..."
 
-msgid "Optimize Animation (no undo)"
-msgstr "优化动画（无法撤销）"
+msgid "Optimize Animation (no undo)..."
+msgstr "优化动画（无法撤销）..."
 
-msgid "Clean-Up Animation (no undo)"
-msgstr "清理动画（无法撤销）"
+msgid "Clean-Up Animation (no undo)..."
+msgstr "清理动画（无法撤销）..."
 
 msgid "Pick a node to animate:"
 msgstr "选择要设置动画的节点："
@@ -3459,14 +3459,20 @@ msgstr ""
 "选中的 “%s” 场景并非场景文件，请选择有效的场景。\n"
 "稍后也可在 “项目设置” 的 “application” 分类下更换主场景。"
 
+msgid "Save Layout..."
+msgstr "保存布局..."
+
+msgid "Delete Layout..."
+msgstr "删除布局..."
+
+msgid "Default"
+msgstr "默认"
+
 msgid "Save Layout"
 msgstr "保存布局"
 
 msgid "Delete Layout"
 msgstr "删除布局"
-
-msgid "Default"
-msgstr "默认"
 
 msgid "This scene was never saved."
 msgstr "该场景从未保存过。"
@@ -3683,6 +3689,9 @@ msgstr "配置 FBX 导入器..."
 msgid "Help"
 msgstr "帮助"
 
+msgid "Search Help..."
+msgstr "搜索帮助..."
+
 msgid "Online Documentation"
 msgstr "在线文档"
 
@@ -3707,8 +3716,8 @@ msgstr "提交新特性建议"
 msgid "Send Docs Feedback"
 msgstr "发送文档反馈"
 
-msgid "About Godot"
-msgstr "关于 Godot"
+msgid "About Godot..."
+msgstr "关于 Godot..."
 
 msgid "Support Godot Development"
 msgstr "支持 Godot 开发"
@@ -4017,8 +4026,14 @@ msgid ""
 "(%s)."
 msgstr "所选资源（%s）与该属性（%s）所需的类型都不匹配。"
 
-msgid "Quick Load"
-msgstr "快速加载"
+msgid "Quick Load..."
+msgstr "快速加载..."
+
+msgid "Opens a quick menu to select from a list of allowed Resource files."
+msgstr "打开快捷菜单，从允许的 Resource 文件列表中进行选择。"
+
+msgid "Load..."
+msgstr "加载..."
 
 msgid "Inspect"
 msgstr "查看"
@@ -4044,14 +4059,14 @@ msgstr "选择要唯一化的资源："
 msgid "New %s"
 msgstr "新建 %s"
 
-msgid "New Script"
-msgstr "新建脚本"
+msgid "New Script..."
+msgstr "新建脚本..."
 
-msgid "Extend Script"
-msgstr "扩展脚本"
+msgid "Extend Script..."
+msgstr "扩展脚本..."
 
-msgid "New Shader"
-msgstr "新建着色器"
+msgid "New Shader..."
+msgstr "新建着色器..."
 
 msgid "No Remote Debug export presets configured."
 msgstr "没有配置远程调试导出预置。"
@@ -4075,10 +4090,6 @@ msgstr "在 _run() 方法中填写逻辑代码。"
 
 msgid "There is an edited scene already."
 msgstr "已存在一个正在编辑的场景。"
-
-msgid ""
-"Couldn't run editor script, did you forget to override the '_run' method?"
-msgstr "无法运行编辑器脚本，你是否忘了覆盖“_run”方法？"
 
 msgid "Undo: %s"
 msgstr "撤销：%s"
@@ -4853,9 +4864,6 @@ msgstr "新建文件夹..."
 msgid "New Scene..."
 msgstr "新建场景..."
 
-msgid "New Script..."
-msgstr "新建脚本..."
-
 msgid "New Resource..."
 msgstr "新建资源..."
 
@@ -5587,6 +5595,14 @@ msgstr "2D"
 msgid "3D"
 msgstr "3D"
 
+msgid ""
+"%s: Atlas texture significantly larger on one axis (%d), consider changing "
+"the `editor/import/atlas_max_width` Project Setting to allow a wider texture, "
+"making the result more even in size."
+msgstr ""
+"%s：图集纹理的某个轴（%d）明显大于另一个轴，请考虑在“项目设置”中调整 `editor/"
+"import/atlas_max_width`，允许使用更宽的纹理，从而获得更均衡的结果。"
+
 msgid "<Unnamed Material>"
 msgstr "<未命名材质>"
 
@@ -6097,9 +6113,6 @@ msgstr "添加动画"
 msgid "Add %s"
 msgstr "添加 %s"
 
-msgid "Load..."
-msgstr "加载..."
-
 msgid "Move Node Point"
 msgstr "移动节点顶点"
 
@@ -6494,6 +6507,9 @@ msgstr "动画工具"
 
 msgid "Animation"
 msgstr "动画"
+
+msgid "New..."
+msgstr "新建..."
 
 msgid "Manage Animations..."
 msgstr "管理动画..."
@@ -7219,6 +7235,9 @@ msgstr "插入键的缩放遮罩。"
 
 msgid "Insert keys (based on mask)."
 msgstr "插入帧（基于遮罩）。"
+
+msgid "Insert Key"
+msgstr "插入关键帧"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -9525,20 +9544,17 @@ msgstr "退出前要保存以下着色器更改吗？"
 msgid "Shader Editor"
 msgstr "着色器编辑器"
 
-msgid "New Shader Include"
-msgstr "新建着色器头文件"
+msgid "New Shader Include..."
+msgstr "新建着色器头文件..."
 
-msgid "Load Shader File"
-msgstr "加载着色器文件"
+msgid "Load Shader File..."
+msgstr "加载着色器文件..."
 
-msgid "Load Shader Include File"
-msgstr "加载着色器头文件"
+msgid "Load Shader Include File..."
+msgstr "加载着色器头文件..."
 
 msgid "Save File"
 msgstr "保存"
-
-msgid "Save File As"
-msgstr "另存为"
 
 msgid "Open File in Inspector"
 msgstr "在检查器中打开文件"
@@ -13366,6 +13382,9 @@ msgstr "%s 中的 <未命名>"
 msgid "(used %d times)"
 msgstr "（使用 %d 次）"
 
+msgid "Batch Rename..."
+msgstr "批量重命名..."
+
 msgid "Add Child Node..."
 msgstr "添加子节点..."
 
@@ -13384,14 +13403,17 @@ msgstr "更改类型..."
 msgid "Attach Script..."
 msgstr "添加脚本..."
 
-msgid "Extend Script..."
-msgstr "扩展脚本..."
+msgid "Reparent..."
+msgstr "重设父节点..."
 
-msgid "Reparent to New Node"
-msgstr "重设父节点为新节点"
+msgid "Reparent to New Node..."
+msgstr "重设父节点为新节点..."
 
 msgid "Make Scene Root"
 msgstr "设为场景根节点"
+
+msgid "Save Branch as Scene..."
+msgstr "将分支保存为场景..."
 
 msgid "Toggle Access as Unique Name"
 msgstr "切换作为唯一名称访问"
@@ -14326,6 +14348,21 @@ msgstr "“发布密钥库”“发布用户”“发布密码”必须全部填
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "未在导出预设中正确设置“发布密钥库”。"
 
+msgid "A valid Java SDK path is required in Editor Settings."
+msgstr "编辑器设置中需要有效的 Java SDK 路径。"
+
+msgid "Invalid Java SDK path in Editor Settings."
+msgstr "编辑器设置中的 Java SDK 路径无效。"
+
+msgid "Missing 'bin' directory!"
+msgstr "缺失“bin”目录！"
+
+msgid "Unable to find 'java' command using the Java SDK path."
+msgstr "无法使用 Java SDK 路径找到“java”命令。"
+
+msgid "Please check the Java SDK directory specified in Editor Settings."
+msgstr "请检查编辑器设置中指定的 Java SDK 目录。"
+
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr "编辑器设置中需要有效的 Android SDK 路径。"
 
@@ -14445,6 +14482,12 @@ msgstr ""
 "装 Android 构建模板。"
 
 msgid ""
+"Java SDK path must be configured in Editor Settings at 'export/android/"
+"java_sdk_path'."
+msgstr ""
+"必须在“编辑器设置”的“export/android/java_sdk_path”中配置 Java SDK 路径。"
+
+msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name."
 msgstr "无法使用项目名称覆盖 res://android/build/res/*.xml 文件。"
 
@@ -14500,6 +14543,15 @@ msgstr "未指定 App Store 团队 ID。"
 
 msgid "Invalid Identifier:"
 msgstr "无效的标识符："
+
+msgid "At least one file timestamp access reason should be selected."
+msgstr "应当至少选择一个文件时间戳访问理由。"
+
+msgid "At least one disk space access reason should be selected."
+msgstr "应当至少选择一个硬盘空间访问理由。"
+
+msgid "At least one system boot time access reason should be selected."
+msgstr "应当至少选择一个系统启动时间访问理由。"
 
 msgid "Export Icons"
 msgstr "导出图标"
@@ -14559,6 +14611,12 @@ msgstr "无法启动 ios-deploy 可执行文件。"
 
 msgid "Installation/running failed, see editor log for details."
 msgstr "安装/运行失败，详见编辑器日志。"
+
+msgid "Could not start device executable."
+msgstr "无法启动设备可执行文件。"
+
+msgid "Could not start devicectl executable."
+msgstr "无法启动 devicectl 可执行文件。"
 
 msgid "Debug Script Export"
 msgstr "调试脚本导出"
@@ -15746,9 +15804,12 @@ msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "XROrigin3D 需要 XRCamera3D 子节点。"
 
 msgid ""
-"XR is not enabled in rendering project settings. Stereoscopic output is not "
-"supported unless this is enabled."
-msgstr "渲染项目设置中未启用 XR。除非启用该功能，否则不支持立体输出。"
+"XR shaders are not enabled in project settings. Stereoscopic output is not "
+"supported unless they are enabled. Please enable `xr/shaders/enabled` to use "
+"stereoscopic output."
+msgstr ""
+"项目设置中未启用 XR 着色器。除非启用，否则不支持立体输出。使用立体输出请启用 "
+"`xr/shaders/enabled`。"
 
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr "在 BlendTree 节点 “%s” 上没有发现动画： “%s”"

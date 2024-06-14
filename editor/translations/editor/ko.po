@@ -641,32 +641,32 @@ msgstr "가져온 씬에서 인스턴스화된 애니메이션의 루프 모드�
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "다른 장면에 임베드된 애니메이션의 루프 모드를 변경할 수 없습니다."
 
-msgid "Property Track"
-msgstr "속성 트랙"
+msgid "Property Track..."
+msgstr "속성 트랙..."
 
-msgid "3D Position Track"
-msgstr "3D 위치 트래킹"
+msgid "3D Position Track..."
+msgstr "3D 위치 트랙..."
 
-msgid "3D Rotation Track"
-msgstr "3D 회전 트래킹"
+msgid "3D Rotation Track..."
+msgstr "3D 회전 트랙..."
 
-msgid "3D Scale Track"
-msgstr "3D 크기 트래킹"
+msgid "3D Scale Track..."
+msgstr "3D 크기 트랙..."
 
-msgid "Blend Shape Track"
-msgstr "블렌드 모양 트랙"
+msgid "Blend Shape Track..."
+msgstr "블렌드 모양 트랙..."
 
-msgid "Call Method Track"
-msgstr "메서드 호출 트랙"
+msgid "Call Method Track..."
+msgstr "메서드 호출 트랙..."
 
-msgid "Bezier Curve Track"
-msgstr "베지어 곡선 트랙"
+msgid "Bezier Curve Track..."
+msgstr "베지어 곡선 트랙..."
 
-msgid "Audio Playback Track"
-msgstr "오디오 재생 트랙"
+msgid "Audio Playback Track..."
+msgstr "오디오 재생 트랙..."
 
-msgid "Animation Playback Track"
-msgstr "애니메이션 재생 트랙"
+msgid "Animation Playback Track..."
+msgstr "애니메이션 재생 트랙..."
 
 msgid "Animation length (frames)"
 msgstr "애니메이션 길이 (프레임)"
@@ -800,8 +800,8 @@ msgstr "루프 보간 고정"
 msgid "Wrap Loop Interp"
 msgstr "루프 보간 래핑"
 
-msgid "Insert Key"
-msgstr "키 삽입"
+msgid "Insert Key..."
+msgstr "키 삽입..."
 
 msgid "Duplicate Key(s)"
 msgstr "키 복제"
@@ -1057,17 +1057,17 @@ msgstr "편집"
 msgid "Animation properties."
 msgstr "애니메이션 속성입니다."
 
-msgid "Copy Tracks"
-msgstr "트랙 복사"
+msgid "Copy Tracks..."
+msgstr "트랙 복사..."
 
-msgid "Scale Selection"
-msgstr "선택 항목 스케일 조절"
+msgid "Scale Selection..."
+msgstr "선택 항목 스케일 조절..."
 
-msgid "Scale From Cursor"
-msgstr "커서 위치에서 스케일 조절"
+msgid "Scale From Cursor..."
+msgstr "커서 위치에서 스케일 조절..."
 
-msgid "Make Easing Selection"
-msgstr "선택된 구간에 이징 만들기"
+msgid "Make Easing Selection..."
+msgstr "선택 항목에 이징 만들기..."
 
 msgid "Duplicate Selection"
 msgstr "선택 항목 복제"
@@ -1087,14 +1087,14 @@ msgstr "이전 단계로 이동"
 msgid "Apply Reset"
 msgstr "재설정 적용"
 
-msgid "Bake Animation"
-msgstr "애니메이션 굽기"
+msgid "Bake Animation..."
+msgstr "애니메이션 굽기..."
 
-msgid "Optimize Animation (no undo)"
-msgstr "애니메이션 최적화 (되돌릴 수 없음)"
+msgid "Optimize Animation (no undo)..."
+msgstr "애니메이션 최적화 (되돌릴 수 없음)..."
 
-msgid "Clean-Up Animation (no undo)"
-msgstr "애니메이션 정리 (되돌릴 수 없음)"
+msgid "Clean-Up Animation (no undo)..."
+msgstr "애니메이션 정리 (되돌릴 수 없음)..."
 
 msgid "Pick a node to animate:"
 msgstr "애니메이션을 줄 노드를 선택하세요:"
@@ -3485,14 +3485,20 @@ msgstr ""
 "선택한 씬 '%s'은(는) 씬 파일이 아닙니다, 다른 씬으로 정할까요?\n"
 "이건 나중에 \"프로젝트 설정\"의 'application' 카테고리에서 바꿀 수 있습니다."
 
+msgid "Save Layout..."
+msgstr "레이아웃 저장..."
+
+msgid "Delete Layout..."
+msgstr "레이아웃 삭제..."
+
+msgid "Default"
+msgstr "기본값"
+
 msgid "Save Layout"
 msgstr "레이아웃 저장"
 
 msgid "Delete Layout"
 msgstr "레이아웃 삭제"
-
-msgid "Default"
-msgstr "기본값"
 
 msgid "This scene was never saved."
 msgstr "이 씬은 저장되지 않았습니다."
@@ -3559,6 +3565,9 @@ msgstr "모바일"
 
 msgid "Compatibility"
 msgstr "호환성"
+
+msgid "(Overridden)"
+msgstr "(오버라이드)"
 
 msgid "Pan View"
 msgstr "팬 보기"
@@ -3707,6 +3716,9 @@ msgstr "FBX 가져오기 설정..."
 msgid "Help"
 msgstr "도움말"
 
+msgid "Search Help..."
+msgstr "도움말 검색..."
+
 msgid "Online Documentation"
 msgstr "온라인 문서"
 
@@ -3731,8 +3743,8 @@ msgstr "기능 제안"
 msgid "Send Docs Feedback"
 msgstr "문서 피드백 보내기"
 
-msgid "About Godot"
-msgstr "Godot 정보"
+msgid "About Godot..."
+msgstr "Godot 정보..."
 
 msgid "Support Godot Development"
 msgstr "Godot 개발 지원"
@@ -4046,8 +4058,14 @@ msgid ""
 "(%s)."
 msgstr "선택한 리소스(%s)가 이 속성(%s)에 적합한 모든 타입에 맞지 않습니다."
 
-msgid "Quick Load"
-msgstr "빠른 불러오기"
+msgid "Quick Load..."
+msgstr "빠른 불러오기..."
+
+msgid "Opens a quick menu to select from a list of allowed Resource files."
+msgstr "사용 가능한 리소스 파일을 빠르게 선택합니다."
+
+msgid "Load..."
+msgstr "불러오기..."
 
 msgid "Inspect"
 msgstr "자세히"
@@ -4073,14 +4091,14 @@ msgstr "유일하게 만들 리소스를 선택하세요:"
 msgid "New %s"
 msgstr "새 %s"
 
-msgid "New Script"
-msgstr "새 스크립트"
+msgid "New Script..."
+msgstr "새 스크립트..."
 
-msgid "Extend Script"
-msgstr "스크립트 상속"
+msgid "Extend Script..."
+msgstr "스크립트 상속..."
 
-msgid "New Shader"
-msgstr "새 셰이더"
+msgid "New Shader..."
+msgstr "새 셰이더..."
 
 msgid "No Remote Debug export presets configured."
 msgstr "원격 디버그 내보내기 프리셋이 구성되지 않았습니다."
@@ -4105,12 +4123,6 @@ msgstr "_run() 메서드에 당신의 논리를 작성하세요."
 
 msgid "There is an edited scene already."
 msgstr "이미 편집된 씬이 있습니다."
-
-msgid ""
-"Couldn't run editor script, did you forget to override the '_run' method?"
-msgstr ""
-"에디터 스크립트를 실행할 수 없습니다. '_run' 메서드를 오버라이딩하는 것을 잊으"
-"셨나요?"
 
 msgid "Undo: %s"
 msgstr "실행 취소: %s"
@@ -4896,9 +4908,6 @@ msgstr "새 폴더..."
 
 msgid "New Scene..."
 msgstr "새 씬..."
-
-msgid "New Script..."
-msgstr "새 스크립트..."
 
 msgid "New Resource..."
 msgstr "새 리소스..."
@@ -6169,9 +6178,6 @@ msgstr "애니메이션 추가"
 msgid "Add %s"
 msgstr "%s 추가"
 
-msgid "Load..."
-msgstr "불러오기..."
-
 msgid "Move Node Point"
 msgstr "노드 점 이동"
 
@@ -6577,6 +6583,9 @@ msgstr "애니메이션 툴"
 
 msgid "Animation"
 msgstr "애니메이션"
+
+msgid "New..."
+msgstr "새로 만들기..."
 
 msgid "Manage Animations..."
 msgstr "애니메이션 관리..."
@@ -7306,6 +7315,9 @@ msgstr "키를 삽입하기 위한 스케일 마스크."
 
 msgid "Insert keys (based on mask)."
 msgstr "키 삽입하기 (마스크 기준)."
+
+msgid "Insert Key"
+msgstr "키 삽입"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -9653,20 +9665,17 @@ msgstr "종료하기 전에 해당 셰이더의 변경사항을 저장하시겠�
 msgid "Shader Editor"
 msgstr "셰이더 에디터"
 
-msgid "New Shader Include"
-msgstr "셰이더 인클루드 만들기"
+msgid "New Shader Include..."
+msgstr "새 셰이더 인클루드..."
 
-msgid "Load Shader File"
-msgstr "셰이더 파일 불러오기"
+msgid "Load Shader File..."
+msgstr "셰이더 파일 불러오기..."
 
-msgid "Load Shader Include File"
-msgstr "셰이더 인클루드 파일 불러오기"
+msgid "Load Shader Include File..."
+msgstr "셰이더 인클루드 파일 불러오기..."
 
 msgid "Save File"
 msgstr "파일 저장"
-
-msgid "Save File As"
-msgstr "파일을 다른 이름으로 저장"
 
 msgid "Open File in Inspector"
 msgstr "파일을 인스펙터에서 열기"
@@ -13565,6 +13574,9 @@ msgstr "%s의 <이름 없음>"
 msgid "(used %d times)"
 msgstr "(%d회 사용됨)"
 
+msgid "Batch Rename..."
+msgstr "일괄 이름 바꾸기..."
+
 msgid "Add Child Node..."
 msgstr "자식 노드 추가..."
 
@@ -13583,14 +13595,17 @@ msgstr "타입 바꾸기..."
 msgid "Attach Script..."
 msgstr "스크립트 붙이기..."
 
-msgid "Extend Script..."
-msgstr "스크립트 상속..."
+msgid "Reparent..."
+msgstr "부모 다시 지정..."
 
-msgid "Reparent to New Node"
-msgstr "새 노드에 부모 노드 다시 지정"
+msgid "Reparent to New Node..."
+msgstr "새 노드에 부모 노드 다시 지정..."
 
 msgid "Make Scene Root"
 msgstr "씬 루트 만들기"
+
+msgid "Save Branch as Scene..."
+msgstr "가지를 씬으로 저장하기..."
 
 msgid "Toggle Access as Unique Name"
 msgstr "고유 이름으로 액세스 토글"
@@ -14515,6 +14530,9 @@ msgstr ""
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "내보내기 프리셋에 출시 keystorke가 잘못 구성되어 있습니다."
 
+msgid "Missing 'bin' directory!"
+msgstr "'bin' 디렉토리가 누락되어 있습니다!"
+
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr "에디터 설정에서 올바른 Android SDK 경로가 필요합니다."
 
@@ -14849,6 +14867,12 @@ msgstr "잘못된 자격 파일."
 msgid "Invalid executable file."
 msgstr "잘못된 실행 파일."
 
+msgid "Unknown bundle type."
+msgstr "알 수 없는 번들 타입입니다."
+
+msgid "Unknown object type."
+msgstr "알 수 없는 오브젝트 타입입니다."
+
 msgid "Invalid bundle identifier:"
 msgstr "잘못된 bundle 식별자:"
 
@@ -14876,6 +14900,9 @@ msgstr "공증"
 msgid "Could not start rcodesign executable."
 msgstr "rcodesign 실행 파일을 시작할 수 없습니다."
 
+msgid "Notarization request UUID: \"%s\""
+msgstr "Notarization 요청 UUID: \"%s\""
+
 msgid "Could not start xcrun executable."
 msgstr "xcrun 실행 파일을 시작하지 못했습니다."
 
@@ -14888,11 +14915,20 @@ msgstr "PKG 생성"
 msgid "Could not start productbuild executable."
 msgstr "productbuild 실행 파일을 시작할 수 없었습니다."
 
+msgid "`productbuild` failed."
+msgstr "`productbuild` 가 실패했습니다."
+
 msgid "DMG Creation"
 msgstr "DMG 생성"
 
 msgid "Could not start hdiutil executable."
 msgstr "hdiutil 실행 파일을 시작할 수 없었습니다."
+
+msgid "`hdiutil create` failed."
+msgstr "`hdiutil create` 가 실패했습니다."
+
+msgid "Exporting for macOS"
+msgstr "macOS로 내보내는 중"
 
 msgid "Creating app bundle"
 msgstr "앱 번들 생성"
@@ -14915,6 +14951,9 @@ msgstr "바로가기 파일 \"%s\" -> \"%s\"를 만들 수 없습니다."
 msgid "Could not open \"%s\"."
 msgstr "\"%s\"를 열 수 없습니다."
 
+msgid "Making PKG"
+msgstr "PKG 만드는 중"
+
 msgid "Entitlements Modified"
 msgstr "수정된 자격"
 
@@ -14923,6 +14962,24 @@ msgstr "자격 파일을 만들 수 없습니다."
 
 msgid "Could not create helper entitlements file."
 msgstr "도우미 자격 파일을 생성할 수 없습니다."
+
+msgid "Code signing bundle"
+msgstr "번들 코드 서명 중"
+
+msgid "Making DMG"
+msgstr "DMG 만드는 중"
+
+msgid "Code signing DMG"
+msgstr "DMG 코드 서명 중"
+
+msgid "Making PKG installer"
+msgstr "PKG 인스톨러 생성 중"
+
+msgid "Making ZIP"
+msgstr "ZIP 만드는 중"
+
+msgid "Sending archive for notarization"
+msgstr "Notarization을 위해 아카이브 전송 중"
 
 msgid "Could not open template for export: \"%s\"."
 msgstr "내보내기 템플릿을 열 수 없음: \"%s\"."
@@ -16028,6 +16085,9 @@ msgstr "Varying은 '%s' 매개변수로 전달될 수 없습니다."
 
 msgid "Invalid arguments for the built-in function: \"%s(%s)\"."
 msgstr "내장 함수에 잘못된 인수가 들어감: \"%s(%s)\"."
+
+msgid "Recursion is not allowed."
+msgstr "재귀는 허용되지 않습니다."
 
 msgid "Invalid assignment of '%s' to '%s'."
 msgstr "'%s'을(를) '%s'에 대입할 수 없습니다."

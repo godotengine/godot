@@ -43,6 +43,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.1-dev\n"
 
+msgid "Main Thread"
+msgstr "Κύριο νήμα"
+
 msgid "Unset"
 msgstr "Απενεργοποίηση"
 
@@ -305,6 +308,9 @@ msgstr "Κύληση προς τα κάτω"
 msgid "Select All"
 msgstr "Επιλογή όλων"
 
+msgid "Add Selection for Next Occurrence"
+msgstr "Πρόσθεσε επιλογή για την επόμενη εμφάνιση"
+
 msgid "Toggle Insert Mode"
 msgstr "Εναλλαγή λειτουργίας εισαγωγής"
 
@@ -461,21 +467,6 @@ msgstr "Αλλαγή Μήκους Κίνησης"
 msgid "Change Animation Loop"
 msgstr "Αλλαγή βρόχου κίνησης"
 
-msgid "Property Track"
-msgstr "Κομμάτι Ιδιότητας"
-
-msgid "Call Method Track"
-msgstr "Κομμάτι κλήσης μεθόδου"
-
-msgid "Bezier Curve Track"
-msgstr "Κομμάτι καμπύλης Bezier"
-
-msgid "Audio Playback Track"
-msgstr "Κομμάτι αναπαραγωγής ήχου"
-
-msgid "Animation Playback Track"
-msgstr "Κομμάτι αναπαραγωγής κίνησης"
-
 msgid "Animation length (frames)"
 msgstr "Μήκος κίνησης (καρέ)"
 
@@ -565,9 +556,6 @@ msgstr "Περιορισμός παρεμβολής επανάληψης"
 
 msgid "Wrap Loop Interp"
 msgstr "Αναδίπλωση παρεμβολής επανάληψης"
-
-msgid "Insert Key"
-msgstr "Εισαγωγή κλειδιού"
 
 msgid "Duplicate Key(s)"
 msgstr "Αναπαραγωγή Κλειδιών"
@@ -701,15 +689,6 @@ msgstr "Επεξεργασία"
 
 msgid "Animation properties."
 msgstr "Ιδιότητες κίνησης."
-
-msgid "Copy Tracks"
-msgstr "Αντιγραφή κομματιών"
-
-msgid "Scale Selection"
-msgstr "Μεγέθυνση επιλογής"
-
-msgid "Scale From Cursor"
-msgstr "Μεγέθυνση από τον δείκτη"
 
 msgid "Duplicate Selection"
 msgstr "Αναπαραγωγή Επιλογής"
@@ -2067,14 +2046,14 @@ msgstr ""
 "Μπορείτε να την αλλάξετε αργότερα στις «Ρυθμίσεις έργου» κάτω από την "
 "κατηγορία «εφαρμογή»."
 
+msgid "Default"
+msgstr "Προεπιλεγμένο"
+
 msgid "Save Layout"
 msgstr "Αποθήκευση διάταξης"
 
 msgid "Delete Layout"
 msgstr "Διαγραφή διάταξης"
-
-msgid "Default"
-msgstr "Προεπιλεγμένο"
 
 msgid "Save & Close"
 msgstr "Αποθήκευση & Κλείσιμο"
@@ -2405,6 +2384,9 @@ msgstr ""
 "Ο επιλεγμένος πόρος (%s) δεν ταιριάζει σε κανέναν αναμενόμενο τύπο γι'αυτήν "
 "την ιδιότητα (%s)."
 
+msgid "Load..."
+msgstr "Φόρτωσε..."
+
 msgid "Make Unique"
 msgstr "Κάνε μοναδικό"
 
@@ -2417,11 +2399,8 @@ msgstr "Εμφάνιση στο Σύστημα Αρχείων"
 msgid "New %s"
 msgstr "Νέο %s"
 
-msgid "New Script"
-msgstr "Νέα Δέσμη Ενεργειών"
-
-msgid "Extend Script"
-msgstr "Επέκταση Δέσμης Ενεργειών"
+msgid "New Script..."
+msgstr "Νέα Δέσμη Ενεργειών..."
 
 msgid ""
 "No runnable export preset found for this platform.\n"
@@ -2748,9 +2727,6 @@ msgstr "Νέος φάκελος..."
 
 msgid "New Scene..."
 msgstr "Νέα Σκηνή..."
-
-msgid "New Script..."
-msgstr "Νέα Δέσμη Ενεργειών..."
 
 msgid "New Resource..."
 msgstr "Νέος πόρος..."
@@ -3206,9 +3182,6 @@ msgstr "Προσθήκη κίνησης"
 
 msgid "Add %s"
 msgstr "Πρόσθεσε %s"
-
-msgid "Load..."
-msgstr "Φόρτωσε..."
 
 msgid "Move Node Point"
 msgstr "Μετακίνηση Σημείου Κόμβου"
@@ -3878,6 +3851,9 @@ msgstr "Μάσκα κλιμάκωσης για εισαγόμενα κλειδι
 
 msgid "Insert keys (based on mask)."
 msgstr "Εισαγωγή κλειδιών (βάση μάσκας)."
+
+msgid "Insert Key"
+msgstr "Εισαγωγή κλειδιού"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -6519,9 +6495,6 @@ msgstr ""
 
 msgid "Can't paste root node into the same scene."
 msgstr "Δεν είναι δυνατή η επικόλληση του ριζικού κόμβου στην ίδια σκηνή."
-
-msgid "Reparent to New Node"
-msgstr "Επαναπροσδιορισμός Γονέα σε Νέο Κόμβο"
 
 msgid "Make Scene Root"
 msgstr "Κάνε Ρίζα Σκηνής"

@@ -688,32 +688,32 @@ msgstr ""
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "Başka bir sahneye gömülü animasyonda, döngü kipi değiştirilemez."
 
-msgid "Property Track"
-msgstr "Özellikler İzi"
+msgid "Property Track..."
+msgstr "Özellik İzi..."
 
-msgid "3D Position Track"
-msgstr "3B Konum İzi"
+msgid "3D Position Track..."
+msgstr "3B Konum İzi..."
 
-msgid "3D Rotation Track"
-msgstr "3B Dönme İzi"
+msgid "3D Rotation Track..."
+msgstr "3B Dönme İzi..."
 
-msgid "3D Scale Track"
-msgstr "3B Ölçek İzi"
+msgid "3D Scale Track..."
+msgstr "3B Ölçek İzi..."
 
-msgid "Blend Shape Track"
-msgstr "Harmanlama Şekli İzi"
+msgid "Blend Shape Track..."
+msgstr "Harmanlama Şekli İzi..."
 
-msgid "Call Method Track"
-msgstr "Yöntem Çağırma İzi"
+msgid "Call Method Track..."
+msgstr "Yöntem Çağırma İzi..."
 
-msgid "Bezier Curve Track"
-msgstr "Bezier Eğrisi İzi"
+msgid "Bezier Curve Track..."
+msgstr "Bezier Eğrisi İzi..."
 
-msgid "Audio Playback Track"
-msgstr "Ses Oynatıcı İzi"
+msgid "Audio Playback Track..."
+msgstr "Ses Oynatıcı İzi..."
 
-msgid "Animation Playback Track"
-msgstr "Animasyon Oynatma İzi"
+msgid "Animation Playback Track..."
+msgstr "Animasyon Oynatma İzi..."
 
 msgid "Animation length (frames)"
 msgstr "Animasyon uzunluğu (kare)"
@@ -847,8 +847,8 @@ msgstr "Kesik Döngülü Aradeğerleme"
 msgid "Wrap Loop Interp"
 msgstr "Sarılmış Döngülü Aradeğerleme"
 
-msgid "Insert Key"
-msgstr "Anahtar Ekle"
+msgid "Insert Key..."
+msgstr "Anahtar Ekle..."
 
 msgid "Duplicate Key(s)"
 msgstr "Yinelenen Anahtar(lar)"
@@ -1106,17 +1106,17 @@ msgstr "Düzenle"
 msgid "Animation properties."
 msgstr "Animasyon özellikleri."
 
-msgid "Copy Tracks"
-msgstr "İzleri Kopyala"
+msgid "Copy Tracks..."
+msgstr "İzleri Kopyala..."
 
-msgid "Scale Selection"
-msgstr "Seçimi Ölçekle"
+msgid "Scale Selection..."
+msgstr "Seçimi Ölçekle..."
 
-msgid "Scale From Cursor"
-msgstr "İmleçten Ölçekle"
+msgid "Scale From Cursor..."
+msgstr "İmleçten Ölçekle..."
 
-msgid "Make Easing Selection"
-msgstr "Yumuşatma Seçimleri Yap"
+msgid "Make Easing Selection..."
+msgstr "Yumuşatma Seçimini Yap..."
 
 msgid "Duplicate Selection"
 msgstr "Seçimin Kopyasını Oluştur"
@@ -1136,14 +1136,14 @@ msgstr "Önceki Adıma Git"
 msgid "Apply Reset"
 msgstr "Sıfırlamayı Uygula"
 
-msgid "Bake Animation"
-msgstr "Animasyonu Pişir"
+msgid "Bake Animation..."
+msgstr "Animasyonu Pişir..."
 
-msgid "Optimize Animation (no undo)"
-msgstr "Animasyonu Eniyileştir (geri alınamaz)"
+msgid "Optimize Animation (no undo)..."
+msgstr "Animasyonu Eniyileştir (geri alınamaz)..."
 
-msgid "Clean-Up Animation (no undo)"
-msgstr "Animasyonu temizle (geri alınamaz)"
+msgid "Clean-Up Animation (no undo)..."
+msgstr "Animasyonu temizle (geri alınamaz)..."
 
 msgid "Pick a node to animate:"
 msgstr "Canlandırılacak düğümü seç:"
@@ -3510,8 +3510,8 @@ msgstr ""
 msgid ""
 "Unable to load addon script from path: '%s'. Base type is not 'EditorPlugin'."
 msgstr ""
-"Eklenti betiği '%s' yolundan yüklenemedi. Bunun temel tipi "
-"'EditorPlugin' (düzenleyici eklentisi) değil."
+"Eklenti betiği '%s' yolundan yüklenemedi. Bunun temel tipi 'EditorPlugin' "
+"(düzenleyici eklentisi) değil."
 
 msgid "Unable to load addon script from path: '%s'. Script is not in tool mode."
 msgstr "Eklenti betiği '%s' yolundan yüklenemedi. Betik, araç kipinde değil."
@@ -3569,14 +3569,20 @@ msgstr ""
 "Bunu daha sonra \"uygulama\" kategorisinin altındaki \"Proje Ayarları\" ndan "
 "değiştirebilirsin."
 
+msgid "Save Layout..."
+msgstr "Yerleşim Düzenini Kaydet..."
+
+msgid "Delete Layout..."
+msgstr "Yerleşim Düzenini Sil..."
+
+msgid "Default"
+msgstr "Varsayılan"
+
 msgid "Save Layout"
 msgstr "Yerleşim Düzenini Kaydet"
 
 msgid "Delete Layout"
 msgstr "Yerleşim Düzenini Sil"
-
-msgid "Default"
-msgstr "Varsayılan"
 
 msgid "This scene was never saved."
 msgstr "Bu sahne hiç kaydedilmedi."
@@ -3798,6 +3804,9 @@ msgstr "FBX İçe Aktarıcıyı Yapılandır..."
 msgid "Help"
 msgstr "Yardım"
 
+msgid "Search Help..."
+msgstr "Yardımda Ara..."
+
 msgid "Online Documentation"
 msgstr "Çevrimiçi Belgeler"
 
@@ -3822,8 +3831,8 @@ msgstr "Yeni bir Özellik Öner"
 msgid "Send Docs Feedback"
 msgstr "Belgeler Hakkında Geri Bildirimde Bulun"
 
-msgid "About Godot"
-msgstr "Godot Hakkında"
+msgid "About Godot..."
+msgstr "Godot Hakkında..."
 
 msgid "Support Godot Development"
 msgstr "Godot'yu Geliştirmeye Destek Olun"
@@ -4144,8 +4153,16 @@ msgstr ""
 "Seçili kaynak (%s), bu özellik (%s) için beklenen herhangi bir tip ile "
 "uyuşmuyor."
 
-msgid "Quick Load"
-msgstr "Hızlı Yükleme"
+msgid "Quick Load..."
+msgstr "Hızlı Yükleme..."
+
+msgid "Opens a quick menu to select from a list of allowed Resource files."
+msgstr ""
+"İzin verilen Kaynak dosyaları listesinden seçim yapmak için bir hızlı menü "
+"açar."
+
+msgid "Load..."
+msgstr "Yükle..."
 
 msgid "Inspect"
 msgstr "İncele"
@@ -4171,14 +4188,14 @@ msgstr "Benzersiz kılınacak kaynakları seçin:"
 msgid "New %s"
 msgstr "Yeni %s"
 
-msgid "New Script"
-msgstr "Yeni Betik"
+msgid "New Script..."
+msgstr "Yeni Betik..."
 
-msgid "Extend Script"
-msgstr "Betiği Genişlet"
+msgid "Extend Script..."
+msgstr "Betiği Genişlet..."
 
-msgid "New Shader"
-msgstr "Yeni Gölgelendirici"
+msgid "New Shader..."
+msgstr "Yeni Gölgelendirici..."
 
 msgid "No Remote Debug export presets configured."
 msgstr "Uzaktan Hata Ayıklama dışa aktarım hazırayarı yapılandırılmamış."
@@ -4203,11 +4220,6 @@ msgstr "Mantığınızı _run() yöntemine yazın."
 
 msgid "There is an edited scene already."
 msgstr "Düzenlenmiş bir sahne zaten var."
-
-msgid ""
-"Couldn't run editor script, did you forget to override the '_run' method?"
-msgstr ""
-"Editör betiği çalıştırılamadı, '_run' yönteminin üstüne yazmayı mı unuttunuz?"
 
 msgid "Undo: %s"
 msgstr "Geri al: %s"
@@ -5017,9 +5029,6 @@ msgstr "Yeni Klasör..."
 msgid "New Scene..."
 msgstr "Yeni Sahne..."
 
-msgid "New Script..."
-msgstr "Yeni Betik..."
-
 msgid "New Resource..."
 msgstr "Yeni Kaynak..."
 
@@ -5783,6 +5792,15 @@ msgstr "2B"
 msgid "3D"
 msgstr "3B"
 
+msgid ""
+"%s: Atlas texture significantly larger on one axis (%d), consider changing "
+"the `editor/import/atlas_max_width` Project Setting to allow a wider texture, "
+"making the result more even in size."
+msgstr ""
+"%s: Atlas dokusu eksenlerin birinde (%d) önemli ölçüde daha büyük, daha geniş "
+"bir dokuya izin vermek için `editor/import/atlas_max_width` Proje Ayarını "
+"değiştirmeyi düşünün, böylece sonuç daha eşit boyutlarda olur."
+
 msgid "<Unnamed Material>"
 msgstr "<İsimsiz Malzeme>"
 
@@ -6323,9 +6341,6 @@ msgstr "Animasyon Ekle"
 msgid "Add %s"
 msgstr "%s Ekle"
 
-msgid "Load..."
-msgstr "Yükle..."
-
 msgid "Move Node Point"
 msgstr "Düğüm Noktasını Taşı"
 
@@ -6733,6 +6748,9 @@ msgstr "Animasyon Araçları"
 
 msgid "Animation"
 msgstr "Animasyon"
+
+msgid "New..."
+msgstr "Yeni..."
 
 msgid "Manage Animations..."
 msgstr "Animasyonları Yönet..."
@@ -7467,6 +7485,9 @@ msgstr "Anahtar eklemek için ölçekleme maskesi."
 
 msgid "Insert keys (based on mask)."
 msgstr "Anahtarları Gir (maskeye dayalı olarak)."
+
+msgid "Insert Key"
+msgstr "Anahtar Ekle"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -9852,20 +9873,17 @@ msgstr "Çıkmadan önce, şu gölgelendirici(ler)deki değişiklikler kaydedils
 msgid "Shader Editor"
 msgstr "Gölgelendirici Düzenleyicisi"
 
-msgid "New Shader Include"
-msgstr "Yeni Gölgelendirici Dahil Etmesi"
+msgid "New Shader Include..."
+msgstr "Yeni Gölgelendirici İçermesi..."
 
-msgid "Load Shader File"
-msgstr "Gölgelendirici Dosyası Yükle"
+msgid "Load Shader File..."
+msgstr "Gölgelendirici Dosyası Yükle..."
 
-msgid "Load Shader Include File"
-msgstr "Gölgelendirici Dahil Etme Dosyasını Yükle"
+msgid "Load Shader Include File..."
+msgstr "Gölgelendirici İçerme Dosyasını Yükle..."
 
 msgid "Save File"
 msgstr "Dosyayı Kaydet"
-
-msgid "Save File As"
-msgstr "Dosyayı Farklı Kaydet"
 
 msgid "Open File in Inspector"
 msgstr "Dosyayı Denetleyicide Aç"
@@ -13876,6 +13894,9 @@ msgstr "%s 'de <İsimsiz>"
 msgid "(used %d times)"
 msgstr "( %d kez kullanıldı)"
 
+msgid "Batch Rename..."
+msgstr "Toplu Yeniden İsimlendir..."
+
 msgid "Add Child Node..."
 msgstr "Alt-öğe Düğümü Ekle..."
 
@@ -13894,14 +13915,17 @@ msgstr "Türü Değiştir..."
 msgid "Attach Script..."
 msgstr "Betik İliştir..."
 
-msgid "Extend Script..."
-msgstr "Betiği Genişlet..."
+msgid "Reparent..."
+msgstr "Üst-Öğeyi Değiştir..."
 
-msgid "Reparent to New Node"
-msgstr "Yeni Düğüme Üst-öğe Yap"
+msgid "Reparent to New Node..."
+msgstr "Yeni Düğüme Üst-öğe Yap..."
 
 msgid "Make Scene Root"
 msgstr "Sahne Kökü Yap"
+
+msgid "Save Branch as Scene..."
+msgstr "Bu Dalı, Sahne olarak Kaydet..."
 
 msgid "Toggle Access as Unique Name"
 msgstr "Benzersiz İsim olarak Erişimi Aç/Kapat"
@@ -14905,6 +14929,22 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
 "Yayınlama anahtar deposu, dışa aktarma hazırayarında yanlış yapılandırılmış."
 
+msgid "A valid Java SDK path is required in Editor Settings."
+msgstr "Düzenleyici Ayarları'nda geçerli bir Java SDK yolu gereklidir."
+
+msgid "Invalid Java SDK path in Editor Settings."
+msgstr "Düzenleyici Ayarları'nda geçersiz Java SDK yolu."
+
+msgid "Missing 'bin' directory!"
+msgstr "'bin' klasörü eksik!"
+
+msgid "Unable to find 'java' command using the Java SDK path."
+msgstr "Verilen Java SDK yolunda 'java' komutu bulunamıyor."
+
+msgid "Please check the Java SDK directory specified in Editor Settings."
+msgstr ""
+"Lütfen Düzenleyici Ayarları'nda belirtilen Java SDK dizinini kontrol edin."
+
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr "Düzenleyici Ayarlarında geçerli bir Android SDK yolu gerekli."
 
@@ -15034,6 +15074,13 @@ msgstr ""
 "Lütfen 'Proje' menüsünden Android derleme şablonunu yeniden yükleyin."
 
 msgid ""
+"Java SDK path must be configured in Editor Settings at 'export/android/"
+"java_sdk_path'."
+msgstr ""
+"Java SDK yolu Düzenleyici Ayarları'nda bulunan 'export/android/java_sdk_path' "
+"ile yapılandırılmalıdır."
+
+msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name."
 msgstr ""
 "Proje ismiyle res://android/build/res/*.xml dosyalarının üzerine yazılamıyor."
@@ -15093,6 +15140,15 @@ msgstr "App Store Ekip Kimliği belirtilmemiş."
 
 msgid "Invalid Identifier:"
 msgstr "Geçersiz Tanımlayıcı:"
+
+msgid "At least one file timestamp access reason should be selected."
+msgstr "En az bir dosya zaman damgası erişimi nedeni seçilmelidir."
+
+msgid "At least one disk space access reason should be selected."
+msgstr "En az bir disk alanı erişimi nedeni seçilmelidir."
+
+msgid "At least one system boot time access reason should be selected."
+msgstr "En az bir sistem önyükleme zamanı erişimi nedeni seçilmelidir."
 
 msgid "Export Icons"
 msgstr "Simgeleri Dışa Aktar"
@@ -15161,6 +15217,12 @@ msgid "Installation/running failed, see editor log for details."
 msgstr ""
 "Kurulum/çalıştırma başarısız oldu, ayrıntılar için düzenleyici günlüğüne "
 "bakın."
+
+msgid "Could not start device executable."
+msgstr "Cihaz çalıştırılabilir dosyası başlatılamadı."
+
+msgid "Could not start devicectl executable."
+msgstr "devicectl çalıştırılabilir dosyası başlatılamadı."
 
 msgid "Debug Script Export"
 msgstr "Hata Ayıklama Betiği Dışa Aktarması"
@@ -16535,12 +16597,13 @@ msgstr ""
 "(XRCamera3D)düğümü gerektirir."
 
 msgid ""
-"XR is not enabled in rendering project settings. Stereoscopic output is not "
-"supported unless this is enabled."
+"XR shaders are not enabled in project settings. Stereoscopic output is not "
+"supported unless they are enabled. Please enable `xr/shaders/enabled` to use "
+"stereoscopic output."
 msgstr ""
-"Projesi işleme ayarlarında XR (Genişletilmiş Gerçeklik) etkinleştirilmemiş. "
-"Bu etkinleştirilmediği sürece stereoskopik çıktı (sol ve sağ göze ayrı "
-"görüntü) desteklenmez."
+"XR gölgelendiricileri proje ayarlarında etkinleştirilmemiş. "
+"Etkinleştirilmedikleri sürece stereoskopik çıktı desteklenmez. Stereoskopik "
+"çıktı kullanmak için lütfen `xr/shaders/enabled` seçeneğini etkinleştirin."
 
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr "'%s' Harmanlama Ağacı (BlendTree) düğümünde, animasyon bulunamadı: '%s'"

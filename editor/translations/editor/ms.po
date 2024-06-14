@@ -157,6 +157,18 @@ msgstr "D-pad Kanan"
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
 msgstr "Xbox Kongsi, Mikrofon PS5, Nintendo Tangkap"
 
+msgid "Xbox Paddle 1"
+msgstr "Paddle Xbox 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Paddle Xbox 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Paddle Xbox 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Paddle Xbox 4"
+
 msgid "PS4/5 Touchpad"
 msgstr "Pad Sentuh PS4/5"
 
@@ -538,6 +550,36 @@ msgstr "Batalkan Pilihan Semua Kunci"
 msgid "Animation Change Transition"
 msgstr "Animasi Ubah Transisi"
 
+msgid "Animation Change Position3D"
+msgstr "Animasi Ubah Position3D"
+
+msgid "Animation Change Rotation3D"
+msgstr "Animasi Ubah Rotation3D"
+
+msgid "Animation Change Scale3D"
+msgstr "Animasi Ubah Scale3D"
+
+msgid "Animation Change Keyframe Value"
+msgstr "Animasi Ubah Nilai Bingkai Kekunci"
+
+msgid "Animation Change Call"
+msgstr "Animasi Ubah Panggilan"
+
+msgid "Animation Multi Change Transition"
+msgstr "Animasi Ubah Multi Transisi"
+
+msgid "Animation Multi Change Position3D"
+msgstr "Animasi Ubah Multi Position3D"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "Animasi Ubah Multi Rotation3D"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Animasi Ubah Multi Scale3D"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "Animasi Ubah Multi Nilai Bingkai Kekunci"
+
 msgid "Change Animation Length"
 msgstr "Ubah Panjang Animasi"
 
@@ -552,21 +594,6 @@ msgstr ""
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr ""
 "Tidak dapat menukar mod gelung pada animasi yang terbenam dalam adegan lain."
-
-msgid "Property Track"
-msgstr "Trek Sifat"
-
-msgid "Call Method Track"
-msgstr "Trek Panggilan Kaedah"
-
-msgid "Bezier Curve Track"
-msgstr "Trek Lengkung Bezier"
-
-msgid "Audio Playback Track"
-msgstr "Trek Main balik Audio"
-
-msgid "Animation Playback Track"
-msgstr "Trek Main Balik Animasi"
 
 msgid "Animation length (frames)"
 msgstr "Panjang animasi (bingkai)"
@@ -631,6 +658,18 @@ msgstr "Dalam-Pemegang:"
 msgid "Out-Handle:"
 msgstr "Keluar-Pemegang:"
 
+msgid "Handle mode: Free\n"
+msgstr "Cara urusan: Bebas\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "Cara urusan: Lelurus\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "Cara urusan: Seimbang\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "Cara urusan: Cerminan\n"
+
 msgid "Stream:"
 msgstr "Aliran:"
 
@@ -645,6 +684,9 @@ msgstr "Klip Animasi:"
 
 msgid "Toggle Track Enabled"
 msgstr "Togol Trek Diaktifkan"
+
+msgid "Don't Use Blend"
+msgstr "Jangan Gunakan Paduan"
 
 msgid "Continuous"
 msgstr "Berterusan"
@@ -670,9 +712,6 @@ msgstr "Kepit Gelung Interp"
 msgid "Wrap Loop Interp"
 msgstr "Balut Gelung Interp"
 
-msgid "Insert Key"
-msgstr "Masukkan Kunci"
-
 msgid "Duplicate Key(s)"
 msgstr "Menduakan Kunci"
 
@@ -691,8 +730,19 @@ msgstr "Tukar Mod Interpolasi Animasi"
 msgid "Change Animation Loop Mode"
 msgstr "Tukar Mod Gelung Animasi"
 
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"Trek pemampatan tidak boleh disunting atau dibuang. Import semula animasi "
+"tanpa mampatan untuk menyunting."
+
 msgid "Remove Anim Track"
 msgstr "Keluarkan Trek Anim"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"Tekan dan tahan Shift semasa mengklik ikon kunci untuk langkau dialog ini."
 
 msgid "Create"
 msgstr "Cipta"
@@ -765,6 +815,9 @@ msgstr "Skala"
 msgid "Methods"
 msgstr "Kaedah"
 
+msgid "Bezier"
+msgstr "Bezier"
+
 msgid "Audio"
 msgstr "Audio"
 
@@ -785,6 +838,12 @@ msgstr "Pilih nod AnimationPlayer untuk mencipta dan mengedit animasi."
 
 msgid "Warning: Editing imported animation"
 msgstr "Amaran: Mengedit animasi yang diimport"
+
+msgid "Dummy Player"
+msgstr "Pemain Patung"
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "Tukar antara penyunting lengkung bezier dan penyunting trek."
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Hanya tunjukkan trek dari nod yang dipilih di pokok."
@@ -809,15 +868,6 @@ msgstr "Sunting"
 
 msgid "Animation properties."
 msgstr "Sifat animasi."
-
-msgid "Copy Tracks"
-msgstr "Salin Trek"
-
-msgid "Scale Selection"
-msgstr "Pemilihan Skala"
-
-msgid "Scale From Cursor"
-msgstr "Skala Dari Kursor"
 
 msgid "Duplicate Selection"
 msgstr "Menduakan Pilihan"
@@ -864,6 +914,32 @@ msgstr "Bersihkan"
 msgid "Scale Ratio:"
 msgstr "Nisbah Skala:"
 
+msgid "Select Transition and Easing"
+msgstr "Pilih Transisi dan Perlincinan"
+
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "Sinus"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "Kuad"
+
+msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "Kenyal"
+
+msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "Lantunan"
+
+msgctxt "Transition Type"
+msgid "Spring"
+msgstr "Pegas"
+
+msgid "FPS:"
+msgstr "FPS:"
+
 msgid "Select Tracks to Copy"
 msgstr "Pilih Trek untuk Disalin"
 
@@ -903,6 +979,10 @@ msgstr "Ganti Semua"
 msgid "Selection Only"
 msgstr "Pilihan Sahaja"
 
+msgctxt "Indentation"
+msgid "Tabs"
+msgstr "Tab"
+
 msgid "Toggle Scripts Panel"
 msgstr "Togol Panel Skrip"
 
@@ -914,6 +994,9 @@ msgstr "Zum Keluar"
 
 msgid "Reset Zoom"
 msgstr "Set Semula Zum"
+
+msgid "Errors"
+msgstr "Ralat"
 
 msgid "Warnings"
 msgstr "Amaran"
@@ -946,6 +1029,12 @@ msgstr "Dari Isyarat:"
 msgid "Scene does not contain any script."
 msgstr "Adegan tidak mengandungi sebarang skrip."
 
+msgid "Select Method"
+msgstr "Pilih Kaedah"
+
+msgid "No method found matching given filters."
+msgstr "Tiada kaedah ditemui dengan tapisan yang diberi."
+
 msgid "Remove"
 msgstr "Keluarkan"
 
@@ -954,6 +1043,9 @@ msgstr "Tambah Hujah Panggilan Tambahan:"
 
 msgid "Extra Call Arguments:"
 msgstr "Hujah Panggilan Tambahan:"
+
+msgid "Allows to drop arguments sent by signal emitter."
+msgstr "Membenarkan untuk gugurkan argumen yang dihantar oleh pemancar isyarat."
 
 msgid "Receiver Method:"
 msgstr "Kaedah Penerima:"
@@ -1032,6 +1124,12 @@ msgstr "Cipta %s Baru"
 msgid "No results for \"%s\"."
 msgstr "Tiada hasil untuk \"%s\"."
 
+msgid "This class is marked as deprecated."
+msgstr "Kelas ini ditanda sebagai usang."
+
+msgid "This class is marked as experimental."
+msgstr "Kelas ini ditanda sebagai eksperimental."
+
 msgid "No description available for %s."
 msgstr "Tiada keterangan tersedia untuk %s."
 
@@ -1050,8 +1148,20 @@ msgstr "Padanan:"
 msgid "Description:"
 msgstr "Keterangan:"
 
+msgid "Debugger"
+msgstr "Penyahpepijat"
+
 msgid "Debug"
 msgstr "Nyahpepijat"
+
+msgid "Save Branch as Scene"
+msgstr "Simpan Cabang sebagai Adengan"
+
+msgid "Copy Node Path"
+msgstr "Salin Laluan Nod"
+
+msgid "Instance:"
+msgstr "Tika:"
 
 msgid "Value"
 msgstr "Nilai"
@@ -2125,14 +2235,14 @@ msgstr ""
 "Anda boleh mengubahnya kemudian dalam \"Tetapan Projek\" di bawah kategori "
 "'aplikasi'."
 
+msgid "Default"
+msgstr "Lalai"
+
 msgid "Save Layout"
 msgstr "Simpan Susun Atur"
 
 msgid "Delete Layout"
 msgstr "Padam Susun Atur"
-
-msgid "Default"
-msgstr "Lalai"
 
 msgid "Save & Close"
 msgstr "Simpan & Tutup"
@@ -2277,9 +2387,6 @@ msgstr "Cadangkan Ciri"
 
 msgid "Send Docs Feedback"
 msgstr "Hantar Maklum Balas Dokumen"
-
-msgid "About Godot"
-msgstr "Tentang Godot"
 
 msgid "Support Godot Development"
 msgstr "Sokong Pembangunan Godot"
@@ -2481,8 +2588,8 @@ msgstr ""
 "Sumber yang dipilih (%s) tidak sesuai dengan jenis yang diharapkan untuk "
 "sifat ini (%s)."
 
-msgid "Quick Load"
-msgstr "Muatan Cepat"
+msgid "Load..."
+msgstr "Muatkan..."
 
 msgid "Make Unique"
 msgstr "Buat Unik"
@@ -2499,11 +2606,8 @@ msgstr "Tukar ke %s"
 msgid "New %s"
 msgstr "%s baru"
 
-msgid "New Script"
-msgstr "Skrip Baru"
-
-msgid "Extend Script"
-msgstr "Lanjutkan Skrip"
+msgid "New Script..."
+msgstr "Skrip Baru..."
 
 msgid ""
 "No runnable export preset found for this platform.\n"
@@ -2814,9 +2918,6 @@ msgstr "Folder Baru..."
 
 msgid "New Scene..."
 msgstr "Adegan Baru..."
-
-msgid "New Script..."
-msgstr "Skrip Baru..."
 
 msgid "New Resource..."
 msgstr "Sumber Baru..."
@@ -3242,9 +3343,6 @@ msgstr "Tambah Animasi"
 
 msgid "Add %s"
 msgstr "Tambah %s"
-
-msgid "Load..."
-msgstr "Muatkan..."
 
 msgid "Move Node Point"
 msgstr "Pindahkan Titik Nod"
@@ -4007,6 +4105,9 @@ msgstr "Topeng skala untuk memasukkan kekunci."
 
 msgid "Insert keys (based on mask)."
 msgstr "Masukkan kekunci (berdasarkan topeng)."
+
+msgid "Insert Key"
+msgstr "Masukkan Kunci"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "

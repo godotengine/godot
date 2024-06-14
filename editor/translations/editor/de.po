@@ -698,32 +698,32 @@ msgstr ""
 "Der Loop-Modus kann nicht für eine Animation geändert werden, die in einer "
 "anderen Szene eingebettet wurde."
 
-msgid "Property Track"
-msgstr "Eigenschaften-Track"
+msgid "Property Track..."
+msgstr "Eigenschaften-Track..."
 
-msgid "3D Position Track"
-msgstr "3D-Positions-Track"
+msgid "3D Position Track..."
+msgstr "3D-Positions-Track..."
 
-msgid "3D Rotation Track"
-msgstr "3D-Rotations-Track"
+msgid "3D Rotation Track..."
+msgstr "3D-Rotations-Track..."
 
-msgid "3D Scale Track"
-msgstr "3D-Skalierungs-Track"
+msgid "3D Scale Track..."
+msgstr "3D-Skalierungs-Track..."
 
-msgid "Blend Shape Track"
-msgstr "Blend-Shape-Track"
+msgid "Blend Shape Track..."
+msgstr "Blend-Shape-Track..."
 
-msgid "Call Method Track"
-msgstr "Methodenaufrufs-Track"
+msgid "Call Method Track..."
+msgstr "Methodenaufrufs-Track..."
 
-msgid "Bezier Curve Track"
-msgstr "Bezierkurven-Track"
+msgid "Bezier Curve Track..."
+msgstr "Bezierkurven-Track..."
 
-msgid "Audio Playback Track"
-msgstr "Audio Playback-Track"
+msgid "Audio Playback Track..."
+msgstr "Audio Playback-Track..."
 
-msgid "Animation Playback Track"
-msgstr "Animationsplayback-Track"
+msgid "Animation Playback Track..."
+msgstr "Animationsplayback-Track..."
 
 msgid "Animation length (frames)"
 msgstr "Animationsdauer (in Frames)"
@@ -857,8 +857,8 @@ msgstr "Clamp-Loop-Interpol"
 msgid "Wrap Loop Interp"
 msgstr "Wiederhol-Loop-Interpol"
 
-msgid "Insert Key"
-msgstr "Key einfügen"
+msgid "Insert Key..."
+msgstr "Key einfügen..."
 
 msgid "Duplicate Key(s)"
 msgstr "Key(s) duplizieren"
@@ -1120,17 +1120,17 @@ msgstr "Bearbeiten"
 msgid "Animation properties."
 msgstr "Animationseigenschaften."
 
-msgid "Copy Tracks"
-msgstr "Tracks kopieren"
+msgid "Copy Tracks..."
+msgstr "Tracks kopieren..."
 
-msgid "Scale Selection"
-msgstr "Auswahl skalieren"
+msgid "Scale Selection..."
+msgstr "Auswahl skalieren..."
 
-msgid "Scale From Cursor"
-msgstr "Vom Mauszeiger skalieren"
+msgid "Scale From Cursor..."
+msgstr "Vom Mauszeiger skalieren..."
 
-msgid "Make Easing Selection"
-msgstr "Easing-Auswahl erzeugen"
+msgid "Make Easing Selection..."
+msgstr "Easing-Auswahl erzeugen..."
 
 msgid "Duplicate Selection"
 msgstr "Auswahl duplizieren"
@@ -1150,14 +1150,14 @@ msgstr "Zum vorherigen Schritt"
 msgid "Apply Reset"
 msgstr "Zurücksetzen durchführen"
 
-msgid "Bake Animation"
-msgstr "Animation backen"
+msgid "Bake Animation..."
+msgstr "Animation backen..."
 
-msgid "Optimize Animation (no undo)"
-msgstr "Animation optimieren (kann nicht rückgängig gemacht werden)"
+msgid "Optimize Animation (no undo)..."
+msgstr "Animation optimieren (kann nicht rückgängig gemacht werden)..."
 
-msgid "Clean-Up Animation (no undo)"
-msgstr "Animation bereinigen (kann nicht rückgängig gemacht werden)"
+msgid "Clean-Up Animation (no undo)..."
+msgstr "Animation bereinigen (kann nicht rückgängig gemacht werden)..."
 
 msgid "Pick a node to animate:"
 msgstr "Node zum Animieren auswählen:"
@@ -3613,14 +3613,20 @@ msgstr ""
 "Dies kann später in den Projekteinstellungen unter der Kategorie ‚Anwendung‘ "
 "geändert werden."
 
+msgid "Save Layout..."
+msgstr "Layout speichern..."
+
+msgid "Delete Layout..."
+msgstr "Layout löschen..."
+
+msgid "Default"
+msgstr "Default"
+
 msgid "Save Layout"
 msgstr "Layout speichern"
 
 msgid "Delete Layout"
 msgstr "Layout löschen"
-
-msgid "Default"
-msgstr "Default"
 
 msgid "This scene was never saved."
 msgstr "Diese Szene wurde nie gespeichert."
@@ -3842,6 +3848,9 @@ msgstr "FBX-Importierer konfigurieren …"
 msgid "Help"
 msgstr "Hilfe"
 
+msgid "Search Help..."
+msgstr "Hilfe durchsuchen..."
+
 msgid "Online Documentation"
 msgstr "Internet-Dokumentation"
 
@@ -3867,8 +3876,8 @@ msgstr "Neues Feature vorschlagen"
 msgid "Send Docs Feedback"
 msgstr "Dokumentationsvorschläge senden"
 
-msgid "About Godot"
-msgstr "Über Godot"
+msgid "About Godot..."
+msgstr "Über Godot..."
 
 msgid "Support Godot Development"
 msgstr "Unterstützung der Godot-Entwicklung"
@@ -4190,8 +4199,16 @@ msgstr ""
 "Die ausgewählte Ressource (%s) stimmt mit keinem erwarteten Typ dieser "
 "Eigenschaft (%s) überein."
 
-msgid "Quick Load"
-msgstr "Schnell laden"
+msgid "Quick Load..."
+msgstr "Schnell laden..."
+
+msgid "Opens a quick menu to select from a list of allowed Resource files."
+msgstr ""
+"Öffnet ein Schnellmenü zur Auswahl aus einer Liste zulässiger "
+"Ressourcendateien."
+
+msgid "Load..."
+msgstr "Laden …"
 
 msgid "Inspect"
 msgstr "Inspizieren"
@@ -4217,14 +4234,14 @@ msgstr "Einzigartig zu machende Ressourcen auswählen:"
 msgid "New %s"
 msgstr "Neu: %s"
 
-msgid "New Script"
-msgstr "Neues Skript"
+msgid "New Script..."
+msgstr "Neues Skript …"
 
-msgid "Extend Script"
-msgstr "Skript erweitern"
+msgid "Extend Script..."
+msgstr "Skript erweitern..."
 
-msgid "New Shader"
-msgstr "Neuer Shader"
+msgid "New Shader..."
+msgstr "Neuer Shader..."
 
 msgid "No Remote Debug export presets configured."
 msgstr "Keine Remote-Debug-Exportprofile konfiguriert."
@@ -4249,12 +4266,6 @@ msgstr "Spiellogik sollte mit der _run()-Methode beginnen."
 
 msgid "There is an edited scene already."
 msgstr "Es besteht bereits eine bearbeitete Szene."
-
-msgid ""
-"Couldn't run editor script, did you forget to override the '_run' method?"
-msgstr ""
-"Editor-Skript konnte nicht ausgeführt werden, wurde möglicherweise vergessen "
-"die ‚_run‘-Methode zu überschreiben?"
 
 msgid "Undo: %s"
 msgstr "Rückgängig: %s"
@@ -5058,9 +5069,6 @@ msgstr "Neuer Ordner …"
 msgid "New Scene..."
 msgstr "Neue Szene …"
 
-msgid "New Script..."
-msgstr "Neues Skript …"
-
 msgid "New Resource..."
 msgstr "Neue Ressource …"
 
@@ -5834,6 +5842,15 @@ msgstr "2D"
 msgid "3D"
 msgstr "3D"
 
+msgid ""
+"%s: Atlas texture significantly larger on one axis (%d), consider changing "
+"the `editor/import/atlas_max_width` Project Setting to allow a wider texture, "
+"making the result more even in size."
+msgstr ""
+"%s: Atlas-Textur auf einer Achse deutlich größer (%d), erwägen Sie, die "
+"Projekteinstellung `editor/import/atlas_max_width` zu ändern, um eine "
+"breitere Textur zu ermöglichen, damit das Ergebnis gleichmäßiger wird."
+
 msgid "<Unnamed Material>"
 msgstr "<unbenanntes Material>"
 
@@ -6384,9 +6401,6 @@ msgstr "Animation hinzufügen"
 msgid "Add %s"
 msgstr "%s hinzufügen"
 
-msgid "Load..."
-msgstr "Laden …"
-
 msgid "Move Node Point"
 msgstr "Node-Punkt verschieben"
 
@@ -6797,6 +6811,9 @@ msgstr "Animations-Tools"
 
 msgid "Animation"
 msgstr "Animation"
+
+msgid "New..."
+msgstr "Neu..."
 
 msgid "Manage Animations..."
 msgstr "Animationen verwalten …"
@@ -7531,6 +7548,9 @@ msgstr "Skalierungsmaske für Einfügen von Keys."
 
 msgid "Insert keys (based on mask)."
 msgstr "Keys einfügen (basierend auf Maske)."
+
+msgid "Insert Key"
+msgstr "Key einfügen"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -9934,20 +9954,17 @@ msgstr "Änderungen in den folgenden Shadern vor dem Schließen speichern?"
 msgid "Shader Editor"
 msgstr "Shader-Editor"
 
-msgid "New Shader Include"
-msgstr "Neues Shader-Include"
+msgid "New Shader Include..."
+msgstr "Neues Shader-Include..."
 
-msgid "Load Shader File"
-msgstr "Shader-Datei laden"
+msgid "Load Shader File..."
+msgstr "Shader-Datei laden..."
 
-msgid "Load Shader Include File"
-msgstr "Shader-Include-Datei laden"
+msgid "Load Shader Include File..."
+msgstr "Shader-Include-Datei laden..."
 
 msgid "Save File"
 msgstr "Datei speichern"
-
-msgid "Save File As"
-msgstr "Datei speichern als"
 
 msgid "Open File in Inspector"
 msgstr "Datei im Inspektor öffnen"
@@ -12585,10 +12602,10 @@ msgstr ""
 "Berechnet das äußere Produkt zweier Vektoren.\n"
 "\n"
 "Führt eine Matrixmultiplikation des ersten Parameters ‚c‘ (interpretiert als "
-"Spaltenvektor = Matrix aus einer Spalte) mit dem zweiten Parameter "
-"‚r‘ (interpretiert als Zeilenvektor = Matrix aus einer Zeile) aus und gibt "
-"eine Matrix zurück die aus ‚cn‘ Zeilen und ‚rn‘ Spalten besteht, wobei ‚cn‘ "
-"und ‚rn‘ die Anzahl der Komponenten von ‚c‘ und ‚r‘ sind."
+"Spaltenvektor = Matrix aus einer Spalte) mit dem zweiten Parameter ‚r‘ "
+"(interpretiert als Zeilenvektor = Matrix aus einer Zeile) aus und gibt eine "
+"Matrix zurück die aus ‚cn‘ Zeilen und ‚rn‘ Spalten besteht, wobei ‚cn‘ und "
+"‚rn‘ die Anzahl der Komponenten von ‚c‘ und ‚r‘ sind."
 
 msgid "Composes transform from four vectors."
 msgstr "Erstellt Transform aus vier Vektoren."
@@ -13996,6 +14013,9 @@ msgstr "<Unbenannt> bei %s"
 msgid "(used %d times)"
 msgstr "(%d mal verwendet)"
 
+msgid "Batch Rename..."
+msgstr "Batch-Umbenennung..."
+
 msgid "Add Child Node..."
 msgstr "Child-Node hinzufügen..."
 
@@ -14014,14 +14034,17 @@ msgstr "Typ ändern..."
 msgid "Attach Script..."
 msgstr "Skript hinzufügen..."
 
-msgid "Extend Script..."
-msgstr "Skript erweitern..."
+msgid "Reparent..."
+msgstr "Umhängen..."
 
-msgid "Reparent to New Node"
-msgstr "Node unter neues Node hängen"
+msgid "Reparent to New Node..."
+msgstr "Node unter neuen Node hängen..."
 
 msgid "Make Scene Root"
 msgstr "Als Szenen-Root festlegen"
+
+msgid "Save Branch as Scene..."
+msgstr "Branch als Szene speichern..."
 
 msgid "Toggle Access as Unique Name"
 msgstr "Zugriff über einzigartigen Namen ein-/ausschalten"
@@ -15031,6 +15054,23 @@ msgstr ""
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "Release-Keystore wurde im Exportprofil nicht korrekt konfiguriert."
 
+msgid "A valid Java SDK path is required in Editor Settings."
+msgstr "Ein gültiger Java-SDK-Pfad ist in den Editoreinstellungen erforderlich."
+
+msgid "Invalid Java SDK path in Editor Settings."
+msgstr "Ungültiger Java SDK-Pfad in den Editor-Einstellungen."
+
+msgid "Missing 'bin' directory!"
+msgstr "'bin'-Verzeichnis fehlt!"
+
+msgid "Unable to find 'java' command using the Java SDK path."
+msgstr "Der Befehl 'java' konnte im Java SDK-Pfad nicht gefunden werden."
+
+msgid "Please check the Java SDK directory specified in Editor Settings."
+msgstr ""
+"Bitte überprüfen Sie das in den Editor-Einstellungen angegebene Java-SDK-"
+"Verzeichnis."
+
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
 "Es wird ein gültiger Android-SDK-Pfad in den Editoreinstellungen benötigt."
@@ -15165,6 +15205,13 @@ msgstr ""
 "installieren."
 
 msgid ""
+"Java SDK path must be configured in Editor Settings at 'export/android/"
+"java_sdk_path'."
+msgstr ""
+"Der Java SDK-Pfad muss in den Editor-Einstellungen unter 'export/android/"
+"java_sdk_path' konfiguriert werden."
+
+msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name."
 msgstr ""
 "res://android/build/res/*.xml-Dateien können nicht mit Projektnamen "
@@ -15226,6 +15273,20 @@ msgstr "App-Store-Team-ID nicht angegeben."
 
 msgid "Invalid Identifier:"
 msgstr "Ungültiger Bezeichner:"
+
+msgid "At least one file timestamp access reason should be selected."
+msgstr ""
+"Es sollte mindestens ein Grund für Zugriff auf Datei-Zeitstempel ausgewählt "
+"werden."
+
+msgid "At least one disk space access reason should be selected."
+msgstr ""
+"Es sollte mindestens ein Grund für Zugriff auf Speicherplatz ausgewählt "
+"werden."
+
+msgid "At least one system boot time access reason should be selected."
+msgstr ""
+"Es sollte mindestens ein Grund für Zugriff bei Systemstart ausgewählt werden."
 
 msgid "Export Icons"
 msgstr "Icons exportieren"
@@ -15293,6 +15354,12 @@ msgstr "ios-deploy-Anwendung konnte nicht gestartet werden."
 msgid "Installation/running failed, see editor log for details."
 msgstr ""
 "Installation/Ausführung fehlgeschlagen, für weitere Details siehe Editor-Log."
+
+msgid "Could not start device executable."
+msgstr "Die ausführbare Datei des Geräts konnte nicht gestartet werden."
+
+msgid "Could not start devicectl executable."
+msgstr "Die ausführbare Datei devicectl konnte nicht gestartet werden."
 
 msgid "Debug Script Export"
 msgstr "Skript-Export debuggen"
@@ -16657,11 +16724,14 @@ msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "XROrigin3D benötigt ein XRCamera3D-Child-Node."
 
 msgid ""
-"XR is not enabled in rendering project settings. Stereoscopic output is not "
-"supported unless this is enabled."
+"XR shaders are not enabled in project settings. Stereoscopic output is not "
+"supported unless they are enabled. Please enable `xr/shaders/enabled` to use "
+"stereoscopic output."
 msgstr ""
-"XR ist in den Projekteinstellungen nicht aktiviert. Stereoskopische Ausgabe "
-"wird daher nicht unterstützt."
+"XR-Shader sind in den Projekteinstellungen nicht aktiviert. Die "
+"stereoskopische Ausgabe wird nicht unterstützt, wenn sie nicht aktiviert "
+"sind. Bitte aktivieren Sie `xr/shaders/enabled`, um die stereoskopische "
+"Ausgabe zu verwenden."
 
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr "In BlendTree-Node ‚%s‘, Animation nicht gefunden: ‚%s‘"

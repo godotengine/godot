@@ -617,32 +617,32 @@ msgstr ""
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "Kan inte ändra loop mode på en animation inbäddad i en annan scen."
 
-msgid "Property Track"
-msgstr "Egenskapsspår"
+msgid "Property Track..."
+msgstr "Egenskapsspår..."
 
-msgid "3D Position Track"
-msgstr "3D positionsspår"
+msgid "3D Position Track..."
+msgstr "3D positionsspår..."
 
-msgid "3D Rotation Track"
-msgstr "3D rotationsspår"
+msgid "3D Rotation Track..."
+msgstr "3D rotationsspår..."
 
-msgid "3D Scale Track"
-msgstr "3D skalspår"
+msgid "3D Scale Track..."
+msgstr "3D skalspår..."
 
-msgid "Blend Shape Track"
-msgstr "Blend Shape Track"
+msgid "Blend Shape Track..."
+msgstr "Blanda Formspår..."
 
-msgid "Call Method Track"
-msgstr "Anropa Metod Spår"
+msgid "Call Method Track..."
+msgstr "Anropa metod spår..."
 
-msgid "Bezier Curve Track"
-msgstr "Bezier kurvspår"
+msgid "Bezier Curve Track..."
+msgstr "Bezier kurvspår..."
 
-msgid "Audio Playback Track"
-msgstr "Ljuduppspelningsspår"
+msgid "Audio Playback Track..."
+msgstr "Ljuduppspelningsspår..."
 
-msgid "Animation Playback Track"
-msgstr "Animation Playback Track"
+msgid "Animation Playback Track..."
+msgstr "Animation uppspelningsspår..."
 
 msgid "Animation length (frames)"
 msgstr "Animation längd (bildrutor)"
@@ -767,14 +767,17 @@ msgstr "Kubik"
 msgid "Linear Angle"
 msgstr "Linjär vinkel"
 
+msgid "Cubic Angle"
+msgstr "Kubikvinkel"
+
 msgid "Clamp Loop Interp"
 msgstr "Begränsa Sling Interpolering"
 
 msgid "Wrap Loop Interp"
 msgstr "Återgåendeslinginterpolering"
 
-msgid "Insert Key"
-msgstr "Lägg till nyckel"
+msgid "Insert Key..."
+msgstr "Lägg till nyckel..."
 
 msgid "Duplicate Key(s)"
 msgstr "Duplicera Nycklar"
@@ -1005,17 +1008,14 @@ msgstr "Redigera"
 msgid "Animation properties."
 msgstr "Animationens egenskaper."
 
-msgid "Copy Tracks"
-msgstr "Kopiera Spår"
+msgid "Copy Tracks..."
+msgstr "Kopiera Spår..."
 
-msgid "Scale Selection"
-msgstr "Skala urval"
+msgid "Scale Selection..."
+msgstr "Skala urval..."
 
-msgid "Scale From Cursor"
-msgstr "Skala Från Muspekare"
-
-msgid "Make Easing Selection"
-msgstr "Gör ett val för lättnader"
+msgid "Scale From Cursor..."
+msgstr "Skala Från Muspekare..."
 
 msgid "Duplicate Selection"
 msgstr "Fördubbla val"
@@ -1035,14 +1035,14 @@ msgstr "Gå till Föregående Steg"
 msgid "Apply Reset"
 msgstr "Verkställ återställning"
 
-msgid "Bake Animation"
-msgstr "Baka Animering"
+msgid "Bake Animation..."
+msgstr "Baka Animering..."
 
-msgid "Optimize Animation (no undo)"
-msgstr "Optimera Animering (ingen ångra)"
+msgid "Optimize Animation (no undo)..."
+msgstr "Optimera Animering (går inte att ångra)..."
 
-msgid "Clean-Up Animation (no undo)"
-msgstr "Uppstädning av Animation (inget att ångra)"
+msgid "Clean-Up Animation (no undo)..."
+msgstr "Uppstädning av Animation (går inte att ångra)..."
 
 msgid "Pick a node to animate:"
 msgstr "Välj nod som ska animeras:"
@@ -1162,8 +1162,14 @@ msgstr "Interpoleringstyp:"
 msgid "FPS:"
 msgstr "FPS:"
 
+msgid "Animation Baker"
+msgstr "Animationsbakare"
+
 msgid "3D Pos/Rot/Scl Track:"
 msgstr "3D Pos/Rot/Skal-spår:"
+
+msgid "Blendshape Track:"
+msgstr "Blendshape-spår:"
 
 msgid "Value Track:"
 msgstr "Värdespår:"
@@ -1526,6 +1532,22 @@ msgstr "Inkluderande"
 msgid "Self"
 msgstr "Själv"
 
+msgid ""
+"Inclusive: Includes time from other functions called by this function.\n"
+"Use this to spot bottlenecks.\n"
+"\n"
+"Self: Only count the time spent in the function itself, not in other "
+"functions called by that function.\n"
+"Use this to find individual functions to optimize."
+msgstr ""
+"Inkluderande: Inkluderar tid från andra funktioner anropade av denna "
+"funktion.\n"
+"Använd det här för att upptäcka flaskhalsar.\n"
+"\n"
+"Själv: Räkna bara tiden tillbringad i funktionen själv, inte i andra "
+"funktioner anropade av den funktionen.\n"
+"Använd det här för att hitta individuella funktioner att optimera."
+
 msgid "Frame #:"
 msgstr "Bildruta #:"
 
@@ -1607,6 +1629,9 @@ msgstr "C++ Källa"
 msgid "Video RAM"
 msgstr "Video RAM"
 
+msgid "Skip Breakpoints"
+msgstr "Hoppa över brytpunkter"
+
 msgid "Step Into"
 msgstr "Stig in"
 
@@ -1627,6 +1652,9 @@ msgstr "Stack Frames"
 
 msgid "Filter Stack Variables"
 msgstr "Filtrera stackvariabler"
+
+msgid "Breakpoints"
+msgstr "Brytpunkter"
 
 msgid "Expand All"
 msgstr "Expandera alla"
@@ -1848,6 +1876,9 @@ msgstr "Utvecklare"
 
 msgid "Authors"
 msgstr "Författare"
+
+msgid "Patrons"
+msgstr "Sponsorer"
 
 msgid "Platinum Sponsors"
 msgstr "Platinumsponsorer"
@@ -2169,6 +2200,9 @@ msgstr "2D-Fysik"
 
 msgid "3D Physics"
 msgstr "3D-Fysik"
+
+msgid "Navigation"
+msgstr "Navigation"
 
 msgid "XR"
 msgstr "XR"
@@ -3285,14 +3319,14 @@ msgstr ""
 "Du kan ändra det senare i \"Projektinställningar\" under 'Applikation'-"
 "kategorin."
 
+msgid "Default"
+msgstr "Standard"
+
 msgid "Save Layout"
 msgstr "Spara Layout"
 
 msgid "Delete Layout"
 msgstr "Ta bort Layout"
-
-msgid "Default"
-msgstr "Standard"
 
 msgid "%d second ago"
 msgid_plural "%d seconds ago"
@@ -3498,9 +3532,6 @@ msgstr "Föreslå en ny funktion"
 msgid "Send Docs Feedback"
 msgstr "Skicka Dokumentations Feedback"
 
-msgid "About Godot"
-msgstr "Om Godot"
-
 msgid "Support Godot Development"
 msgstr "Supporta utvecklingen av Godot"
 
@@ -3672,8 +3703,8 @@ msgstr ""
 "Valda resursen (%s) matchar inte någon förväntad typ för den här egenskapen "
 "(%s)."
 
-msgid "Quick Load"
-msgstr "Snabbladda"
+msgid "Load..."
+msgstr "Ladda..."
 
 msgid "Make Unique"
 msgstr "Gör Unik"
@@ -3690,11 +3721,11 @@ msgstr "Välj resurs att göra unik:"
 msgid "New %s"
 msgstr "Ny %s"
 
-msgid "New Script"
-msgstr "Nytt Skript"
+msgid "New Script..."
+msgstr "Nytt Skript..."
 
-msgid "New Shader"
-msgstr "Ny shader"
+msgid "Extend Script..."
+msgstr "Utöka skript..."
 
 msgid "Remote Debug"
 msgstr "Fjärrdebuggning"
@@ -4227,9 +4258,6 @@ msgstr "Ny Mapp..."
 
 msgid "New Scene..."
 msgstr "Ny Scen..."
-
-msgid "New Script..."
-msgstr "Nytt Skript..."
 
 msgid "New Resource..."
 msgstr "Ny resurs..."
@@ -4864,9 +4892,6 @@ msgstr "Lägg till Animation"
 msgid "Add %s"
 msgstr "Lägg till %s"
 
-msgid "Load..."
-msgstr "Ladda..."
-
 msgid "Triangle already exists."
 msgstr "Triangel existerar redan."
 
@@ -5475,6 +5500,9 @@ msgstr "Projekttema"
 msgid "Insert keys (based on mask)."
 msgstr "Infoga nycklar (baserat på mask)."
 
+msgid "Insert Key"
+msgstr "Lägg till nyckel"
+
 msgid "Animation Key and Pose Options"
 msgstr "Animations Nyckel och Pose Inställningar"
 
@@ -5879,6 +5907,9 @@ msgstr "Gå till Funktion"
 msgid "Pick Color"
 msgstr "Välj Färg"
 
+msgid "Indentation"
+msgstr "Indrag"
+
 msgid "Uppercase"
 msgstr "Versaler"
 
@@ -5902,9 +5933,6 @@ msgstr "Gå till Funktion..."
 
 msgid "Go to Line..."
 msgstr "Gå till Rad..."
-
-msgid "Save File As"
-msgstr "Spara fil som"
 
 msgid "ShaderFile"
 msgstr "Shaderfil"
@@ -7150,12 +7178,6 @@ msgstr "Ändra typ..."
 
 msgid "Attach Script..."
 msgstr "Fäst skript..."
-
-msgid "Extend Script..."
-msgstr "Utöka skript..."
-
-msgid "Reparent to New Node"
-msgstr "Byt föräldernod"
 
 msgid "Make Scene Root"
 msgstr "Skapa Scenrot"

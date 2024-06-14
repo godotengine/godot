@@ -760,32 +760,32 @@ msgid "Can't change loop mode on animation embedded in another scene."
 msgstr ""
 "Невозможно переключить режим зацикливания анимации, встроенной в другую сцену."
 
-msgid "Property Track"
-msgstr "Дорожка свойство"
+msgid "Property Track..."
+msgstr "Дорожка свойства…"
 
-msgid "3D Position Track"
-msgstr "Дорожка позиция 3D"
+msgid "3D Position Track..."
+msgstr "Дорожка положения 3D…"
 
-msgid "3D Rotation Track"
-msgstr "Дорожка вращение 3D"
+msgid "3D Rotation Track..."
+msgstr "Дорожка вращения 3D…"
 
-msgid "3D Scale Track"
-msgstr "Дорожка масштаб 3D"
+msgid "3D Scale Track..."
+msgstr "Дорожка масштабирования 3D…"
 
-msgid "Blend Shape Track"
-msgstr "Дорожка форма смешивания"
+msgid "Blend Shape Track..."
+msgstr "Дорожка формы смешивания…"
 
-msgid "Call Method Track"
-msgstr "Дорожка вызов метода"
+msgid "Call Method Track..."
+msgstr "Дорожка вызова метода…"
 
-msgid "Bezier Curve Track"
-msgstr "Дорожка кривая Безье"
+msgid "Bezier Curve Track..."
+msgstr "Дорожка кривой Безье…"
 
-msgid "Audio Playback Track"
-msgstr "Дорожка воспроизведение аудио"
+msgid "Audio Playback Track..."
+msgstr "Дорожка воспроизведения аудио…"
 
-msgid "Animation Playback Track"
-msgstr "Дорожка воспроизведение анимации"
+msgid "Animation Playback Track..."
+msgstr "Дорожка воспроизведения анимации…"
 
 msgid "Animation length (frames)"
 msgstr "Длина анимации (в кадрах)"
@@ -919,8 +919,8 @@ msgstr "Обрезание перехода зацикливания"
 msgid "Wrap Loop Interp"
 msgstr "Перенос перехода зацикливания"
 
-msgid "Insert Key"
-msgstr "Вставить ключ"
+msgid "Insert Key..."
+msgstr "Вставить ключ…"
 
 msgid "Duplicate Key(s)"
 msgstr "Дублировать ключ(и)"
@@ -1176,17 +1176,17 @@ msgstr "Редактировать"
 msgid "Animation properties."
 msgstr "Свойства анимации."
 
-msgid "Copy Tracks"
-msgstr "Копировать дорожки"
+msgid "Copy Tracks..."
+msgstr "Копировать дорожки…"
 
-msgid "Scale Selection"
-msgstr "Масштабировать выбранное"
+msgid "Scale Selection..."
+msgstr "Масштабировать выбранное…"
 
-msgid "Scale From Cursor"
-msgstr "Масштабировать от курсора"
+msgid "Scale From Cursor..."
+msgstr "Масштабировать от курсора…"
 
-msgid "Make Easing Selection"
-msgstr "Выбрать тип сглаживания"
+msgid "Make Easing Selection..."
+msgstr "Создать выделение плавного перехода…"
 
 msgid "Duplicate Selection"
 msgstr "Дублировать выделенное"
@@ -1206,14 +1206,14 @@ msgstr "Перейти к предыдущему шагу"
 msgid "Apply Reset"
 msgstr "Применить сброс"
 
-msgid "Bake Animation"
-msgstr "Запечь анимацию"
+msgid "Bake Animation..."
+msgstr "Запечь анимацию…"
 
-msgid "Optimize Animation (no undo)"
-msgstr "Оптимизировать анимацию (нельзя отменить)"
+msgid "Optimize Animation (no undo)..."
+msgstr "Оптимизировать анимацию (нельзя отменить)…"
 
-msgid "Clean-Up Animation (no undo)"
-msgstr "Подчистить анимацию (нельзя отменить)"
+msgid "Clean-Up Animation (no undo)..."
+msgstr "Подчистить анимацию (нельзя отменить)…"
 
 msgid "Pick a node to animate:"
 msgstr "Выберите узел для анимации:"
@@ -3632,14 +3632,20 @@ msgstr ""
 "Вы можете изменить главную сцену позже в \"Настройки проекта\" категория "
 "'Приложение'."
 
+msgid "Save Layout..."
+msgstr "Сохранить макет…"
+
+msgid "Delete Layout..."
+msgstr "Удалить макет…"
+
+msgid "Default"
+msgstr "По умолчанию"
+
 msgid "Save Layout"
 msgstr "Сохранить макет"
 
 msgid "Delete Layout"
 msgstr "Удалить макет"
-
-msgid "Default"
-msgstr "По умолчанию"
 
 msgid "This scene was never saved."
 msgstr "Эта сцена никогда не была сохранена."
@@ -3864,6 +3870,9 @@ msgstr "Настроить импортёр FBX..."
 msgid "Help"
 msgstr "Справка"
 
+msgid "Search Help..."
+msgstr "Поиск в справке…"
+
 msgid "Online Documentation"
 msgstr "Онлайн-документация"
 
@@ -3889,8 +3898,8 @@ msgstr "Предложить функцию"
 msgid "Send Docs Feedback"
 msgstr "Отправить отзыв о документации"
 
-msgid "About Godot"
-msgstr "О Godot"
+msgid "About Godot..."
+msgstr "О программе Godot…"
 
 msgid "Support Godot Development"
 msgstr "Поддержать разработку Godot"
@@ -4210,8 +4219,15 @@ msgstr ""
 "Выбранные ресурсы (%s) не соответствуют типам, ожидаемым для данного свойства "
 "(%s)."
 
-msgid "Quick Load"
-msgstr "Быстро загрузить"
+msgid "Quick Load..."
+msgstr "Быстрая загрузка…"
+
+msgid "Opens a quick menu to select from a list of allowed Resource files."
+msgstr ""
+"Открывает быстрое меню для выбора из списка разрешённых файлов ресурсов."
+
+msgid "Load..."
+msgstr "Загрузка..."
 
 msgid "Inspect"
 msgstr "Просмотр"
@@ -4237,14 +4253,14 @@ msgstr "Выберите ресурсы, которые будут уникал�
 msgid "New %s"
 msgstr "Новый %s"
 
-msgid "New Script"
-msgstr "Новый скрипт"
+msgid "New Script..."
+msgstr "Новый скрипт..."
 
-msgid "Extend Script"
-msgstr "Расширить скрипт"
+msgid "Extend Script..."
+msgstr "Расширить скрипт..."
 
-msgid "New Shader"
-msgstr "Новый шейдер"
+msgid "New Shader..."
+msgstr "Новый шейдер…"
 
 msgid "No Remote Debug export presets configured."
 msgstr "Нет настроенных пресетов экспорта для удалённой отладки."
@@ -4269,11 +4285,6 @@ msgstr "Пишите ваш код в методе _run()."
 
 msgid "There is an edited scene already."
 msgstr "Уже существует отредактированная сцена."
-
-msgid ""
-"Couldn't run editor script, did you forget to override the '_run' method?"
-msgstr ""
-"Не удалось запустить скрипт редактора, вы забыли переопределить метод '_run'?"
 
 msgid "Undo: %s"
 msgstr "Отменить: %s"
@@ -5072,9 +5083,6 @@ msgstr "Новая папка..."
 msgid "New Scene..."
 msgstr "Новая сцена..."
 
-msgid "New Script..."
-msgstr "Новый скрипт..."
-
 msgid "New Resource..."
 msgstr "Новый ресурс..."
 
@@ -5840,6 +5848,16 @@ msgstr "2D"
 msgid "3D"
 msgstr "3D"
 
+msgid ""
+"%s: Atlas texture significantly larger on one axis (%d), consider changing "
+"the `editor/import/atlas_max_width` Project Setting to allow a wider texture, "
+"making the result more even in size."
+msgstr ""
+"%s: Текстура атласа значительно больше по одной из осей (%d), рассмотрите "
+"возможность разрешить более широкие текстуры в настройке проекта `editor/"
+"import/atlas_max_width` (Редактор > Импорт > Максимальная ширина атласа), "
+"сделав результат более равным по размеру."
+
 msgid "<Unnamed Material>"
 msgstr "<Безымянный материал>"
 
@@ -6378,9 +6396,6 @@ msgstr "Добавить анимацию"
 msgid "Add %s"
 msgstr "Добавить %s"
 
-msgid "Load..."
-msgstr "Загрузка..."
-
 msgid "Move Node Point"
 msgstr "Передвинуть точку узла"
 
@@ -6792,6 +6807,9 @@ msgstr "Инструменты анимации"
 
 msgid "Animation"
 msgstr "Анимация"
+
+msgid "New..."
+msgstr "Новый..."
 
 msgid "Manage Animations..."
 msgstr "Управление анимациями..."
@@ -7525,6 +7543,9 @@ msgstr "Маска масштаба для добавляемых ключей."
 
 msgid "Insert keys (based on mask)."
 msgstr "Вставить ключи (на основе маски)."
+
+msgid "Insert Key"
+msgstr "Вставить ключ"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -9908,20 +9929,17 @@ msgstr "Сохранить изменения в следующем(их) шей
 msgid "Shader Editor"
 msgstr "Редактор шейдеров"
 
-msgid "New Shader Include"
-msgstr "Новый включаемый файл шейдера"
+msgid "New Shader Include..."
+msgstr "Новый файл включения шейдера…"
 
-msgid "Load Shader File"
-msgstr "Открыть файл шейдера"
+msgid "Load Shader File..."
+msgstr "Загрузить файл шейдера…"
 
-msgid "Load Shader Include File"
-msgstr "Открыть Include файл шейдера"
+msgid "Load Shader Include File..."
+msgstr "Загрузить файл включения шейдера…"
 
 msgid "Save File"
 msgstr "Сохранить файл"
-
-msgid "Save File As"
-msgstr "Сохранить файл как"
 
 msgid "Open File in Inspector"
 msgstr "Открыть файл в инспекторе"
@@ -13928,6 +13946,9 @@ msgstr "<Безымянный> в %s"
 msgid "(used %d times)"
 msgstr "(использовано %d раз)"
 
+msgid "Batch Rename..."
+msgstr "Групповое переименование…"
+
 msgid "Add Child Node..."
 msgstr "Добавить дочерний узел..."
 
@@ -13946,14 +13967,17 @@ msgstr "Изменить тип..."
 msgid "Attach Script..."
 msgstr "Прикрепить скрипт..."
 
-msgid "Extend Script..."
-msgstr "Расширить скрипт..."
+msgid "Reparent..."
+msgstr "Переподчинить…"
 
-msgid "Reparent to New Node"
-msgstr "Переподчинить на новый узел"
+msgid "Reparent to New Node..."
+msgstr "Переподчинить новому узлу…"
 
 msgid "Make Scene Root"
 msgstr "Создать корневой узел сцены"
+
+msgid "Save Branch as Scene..."
+msgstr "Сохранить ветку как сцену…"
 
 msgid "Toggle Access as Unique Name"
 msgstr "Переключить доступ по уникальному имени"
@@ -14948,6 +14972,21 @@ msgstr ""
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "Неправильно настроено хранилище ключей в предустановке экспорта."
 
+msgid "A valid Java SDK path is required in Editor Settings."
+msgstr "Требуется указать верный путь к Java SDK в настройках редактора."
+
+msgid "Invalid Java SDK path in Editor Settings."
+msgstr "Неверный путь к Java SDK в настройках редактора."
+
+msgid "Missing 'bin' directory!"
+msgstr "Каталог «bin» отсутствует!"
+
+msgid "Unable to find 'java' command using the Java SDK path."
+msgstr "Невозможно найти команду «java» по пути к Java SDK."
+
+msgid "Please check the Java SDK directory specified in Editor Settings."
+msgstr "Проверьте каталог Java SDK, указанный в настройках редактора."
+
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
 "Требуется указать действительный путь к Android SDK в Настройках редактора."
@@ -14987,6 +15026,14 @@ msgstr ""
 
 msgid "\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."
 msgstr "\"Min SDK\" должно быть больше или равно %d для рендеринга \"%s\"."
+
+msgid ""
+"The project name does not meet the requirement for the package name format "
+"and will be updated to \"%s\". Please explicitly specify the package name if "
+"needed."
+msgstr ""
+"Название проекта не соответствует требованиям к формату имени пакета и будет "
+"обновлено («%s»). При необходимости укажите имя пакета в явном виде."
 
 msgid "Code Signing"
 msgstr "Подпись кода"
@@ -15066,6 +15113,13 @@ msgstr ""
 "%s. Пожалуйста, переустановите шаблон сборки Android из меню 'Проект'."
 
 msgid ""
+"Java SDK path must be configured in Editor Settings at 'export/android/"
+"java_sdk_path'."
+msgstr ""
+"Путь к Java SDK должен быть настроен в настройках редактора по адресу «export/"
+"android/java_sdk_path»."
+
+msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name."
 msgstr "Невозможно перезаписать res://android/build/res/*.xml с именем проекта."
 
@@ -15122,6 +15176,14 @@ msgstr "Team ID App Store не указан."
 
 msgid "Invalid Identifier:"
 msgstr "Неверный идентификатор:"
+
+msgid "At least one disk space access reason should be selected."
+msgstr ""
+"Должна быть выбрана хотя бы одна причина доступа к дисковому пространству."
+
+msgid "At least one system boot time access reason should be selected."
+msgstr ""
+"Должна быть выбрана хотя бы одна причина доступа ко времени загрузки системы."
 
 msgid "Export Icons"
 msgstr "Экспорт иконок"
@@ -15192,6 +15254,12 @@ msgid "Installation/running failed, see editor log for details."
 msgstr ""
 "Установка/запуск не удался, смотрите журнал редактора для получения "
 "дополнительной информации."
+
+msgid "Could not start device executable."
+msgstr "Не удалось запустить исполняемый файл устройства."
+
+msgid "Could not start devicectl executable."
+msgstr "Не удалось запустить исполняемый файл devicectl."
 
 msgid "Debug Script Export"
 msgstr "Экспорт скрипта отладки"
@@ -16541,13 +16609,6 @@ msgstr "Поза не задана."
 
 msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "XROrigin3D требует наличия дочернего узла XRCamera3D."
-
-msgid ""
-"XR is not enabled in rendering project settings. Stereoscopic output is not "
-"supported unless this is enabled."
-msgstr ""
-"XR не включен в настройках проекта рендеринга. Стереоскопический вывод не "
-"поддерживается, если эта функция не включена."
 
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr "На узле BlendTree '%s' анимация не найдена: '%s'"

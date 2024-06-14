@@ -642,32 +642,32 @@ msgid "Can't change loop mode on animation embedded in another scene."
 msgstr ""
 "Tidak dapat mengubah mode loop pada animasi yang disematkan di adegan lain."
 
-msgid "Property Track"
-msgstr "Track Properti"
+msgid "Property Track..."
+msgstr "Trek Properti..."
 
-msgid "3D Position Track"
-msgstr "Trek Posisi 3D"
+msgid "3D Position Track..."
+msgstr "Trek Posisi 3D..."
 
-msgid "3D Rotation Track"
-msgstr "Trek Rotasi 3D"
+msgid "3D Rotation Track..."
+msgstr "Trek Rotasi 3D..."
 
-msgid "3D Scale Track"
-msgstr "Trek Transformasi 3D"
+msgid "3D Scale Track..."
+msgstr "Trek Skala 3D..."
 
-msgid "Blend Shape Track"
-msgstr "Trek Paduan Bentuk"
+msgid "Blend Shape Track..."
+msgstr "Trek Paduan Bentuk..."
 
-msgid "Call Method Track"
-msgstr "Track Pemanggil Metode"
+msgid "Call Method Track..."
+msgstr "Trek Pemanggil Metode..."
 
-msgid "Bezier Curve Track"
-msgstr "Track Lengkungan Bezier"
+msgid "Bezier Curve Track..."
+msgstr "Trek Lengkungan Bezier..."
 
-msgid "Audio Playback Track"
-msgstr "Track Pemutar Suara"
+msgid "Audio Playback Track..."
+msgstr "Trek Pemutar Suara..."
 
-msgid "Animation Playback Track"
-msgstr "Track Pemutar Animasi"
+msgid "Animation Playback Track..."
+msgstr "Trek Pemutar Animasi..."
 
 msgid "Animation length (frames)"
 msgstr "Panjang Animasi (frame)"
@@ -801,8 +801,8 @@ msgstr "Interpolasi perulangan clamp"
 msgid "Wrap Loop Interp"
 msgstr "Interpolasi perulangan warp"
 
-msgid "Insert Key"
-msgstr "Masukkan Kunci"
+msgid "Insert Key..."
+msgstr "Masukkan Kunci..."
 
 msgid "Duplicate Key(s)"
 msgstr "Duplikat Key"
@@ -1055,17 +1055,17 @@ msgstr "Sunting"
 msgid "Animation properties."
 msgstr "Properti animasi."
 
-msgid "Copy Tracks"
-msgstr "Salin Trek-trek"
+msgid "Copy Tracks..."
+msgstr "Salin Trek-trek..."
 
-msgid "Scale Selection"
-msgstr "Seleksi Skala"
+msgid "Scale Selection..."
+msgstr "Seleksi Skala..."
 
-msgid "Scale From Cursor"
-msgstr "Skala dari Kursor"
+msgid "Scale From Cursor..."
+msgstr "Skala dari Kursor..."
 
-msgid "Make Easing Selection"
-msgstr "Buat Pilihan Pelonggaran"
+msgid "Make Easing Selection..."
+msgstr "Lakukan Seleksi Easing..."
 
 msgid "Duplicate Selection"
 msgstr "Duplikat Pilihan"
@@ -1084,15 +1084,6 @@ msgstr "Pergi ke Langkah Sebelumnya"
 
 msgid "Apply Reset"
 msgstr "Terapkan Reset"
-
-msgid "Bake Animation"
-msgstr "Ubah Animasi"
-
-msgid "Optimize Animation (no undo)"
-msgstr "Optimalkan Animasi (tanpa undo)"
-
-msgid "Clean-Up Animation (no undo)"
-msgstr "Bersihkan Animasi (tanpa undo)"
 
 msgid "Pick a node to animate:"
 msgstr "Pilih node yang ingin dianimasikan:"
@@ -3488,14 +3479,14 @@ msgstr ""
 "Anda dapat menggantinya nanti di \"Pengaturan Proyek\" di bawah kategori "
 "'aplikasi'."
 
+msgid "Default"
+msgstr "Bawaan"
+
 msgid "Save Layout"
 msgstr "Simpan Penampilan"
 
 msgid "Delete Layout"
 msgstr "Hapus Penampilan"
-
-msgid "Default"
-msgstr "Bawaan"
 
 msgid "This scene was never saved."
 msgstr "Tidak bisa memuat ulang adegan yang belum pernah disimpan."
@@ -3539,6 +3530,21 @@ msgid ""
 msgstr ""
 "Tidak dapat menulis ke file '%s', file sedang digunakan, terkunci atau tidak "
 "memiliki izin."
+
+msgid ""
+"Changing the renderer requires restarting the editor.\n"
+"\n"
+"Choosing Save & Restart will change the rendering method to:\n"
+"- Desktop platforms: %s\n"
+"- Mobile platforms: %s\n"
+"- Web platform: gl_compatibility"
+msgstr ""
+"Untuk mengganti renderer, dibutuhkan untuk me-restart editor\n"
+"\n"
+"Memilih Save & Restart akan mengganti metode rendering menjadi:\n"
+"- Platform Desktop: %s\n"
+"- Platform Mobile: %s\n"
+"- Platform Web: gl_compatibility"
 
 msgid "Forward+"
 msgstr "Forward+"
@@ -3720,11 +3726,23 @@ msgstr "Sarankan Fitur"
 msgid "Send Docs Feedback"
 msgstr "Kirim Tanggapan Dokumentasi"
 
-msgid "About Godot"
-msgstr "Tentang Godot"
-
 msgid "Support Godot Development"
 msgstr "Dukung pengembangan Godot"
+
+msgid ""
+"Choose a rendering method.\n"
+"\n"
+"Notes:\n"
+"- On mobile platforms, the Mobile rendering method is used if Forward+ is "
+"selected here.\n"
+"- On the web platform, the Compatibility rendering method is always used."
+msgstr ""
+"Pilih metode rendering\n"
+"\n"
+"Catatan:\n"
+"- Di platform mobile, metode Mobile rendering akan digunakan jika Forward+ "
+"dipilih.\n"
+"- Di platform web, metode Compatibility rendering akan selalu digunakan."
 
 msgid "Update Continuously"
 msgstr "Perbarui Terus-menerus"
@@ -4027,8 +4045,13 @@ msgstr ""
 "Resource yang terpilih (%s) tidak sesuai dengan tipe apapun yang diharapkan "
 "untuk properti ini (%s)."
 
-msgid "Quick Load"
-msgstr "Muat Cepat"
+msgid "Opens a quick menu to select from a list of allowed Resource files."
+msgstr ""
+"Membuka menu cepat untuk memilih dari daftar file sumber daya yang boleh "
+"digunakan."
+
+msgid "Load..."
+msgstr "Muat..."
 
 msgid "Inspect"
 msgstr "Inspektur"
@@ -4054,14 +4077,8 @@ msgstr "Pilih berkas untuk membuatnya unik:"
 msgid "New %s"
 msgstr "%s baru"
 
-msgid "New Script"
-msgstr "Skrip Baru"
-
-msgid "Extend Script"
-msgstr "Extend Skrip"
-
-msgid "New Shader"
-msgstr "Shader Baru"
+msgid "New Script..."
+msgstr "Skrip Baru..."
 
 msgid "No Remote Debug export presets configured."
 msgstr "Tidak ada preset ekspor Debug remote yang dikonfigurasi."
@@ -4085,12 +4102,6 @@ msgstr "Tulis logika di dalam fungsi _run()."
 
 msgid "There is an edited scene already."
 msgstr "Sudah ada skena yang disunting."
-
-msgid ""
-"Couldn't run editor script, did you forget to override the '_run' method?"
-msgstr ""
-"Tidak dapat menjalankan skrip editor, apakah Anda lupa mengganti metode "
-"'_run'?"
 
 msgid "Undo: %s"
 msgstr "Urungkan: %s"
@@ -4860,9 +4871,6 @@ msgstr "Buat Direktori..."
 
 msgid "New Scene..."
 msgstr "Skena Baru…"
-
-msgid "New Script..."
-msgstr "Skrip Baru..."
 
 msgid "New Resource..."
 msgstr "Resource Baru..."
@@ -6054,9 +6062,6 @@ msgstr "Tambah Animasi"
 msgid "Add %s"
 msgstr "Tambah %s"
 
-msgid "Load..."
-msgstr "Muat..."
-
 msgid "Move Node Point"
 msgstr "Pindahkan Titik Node"
 
@@ -7165,6 +7170,9 @@ msgstr "Masker skala untuk menyisipkan key."
 
 msgid "Insert keys (based on mask)."
 msgstr "Sisipkan Kunci (berdasarkan mask)."
+
+msgid "Insert Key"
+msgstr "Masukkan Kunci"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -9353,20 +9361,8 @@ msgstr "Pergi ke Langkah Jeda Sebelumnya"
 msgid "Shader Editor"
 msgstr "Editor Shader"
 
-msgid "New Shader Include"
-msgstr "Termasuk Shader Baru"
-
-msgid "Load Shader File"
-msgstr "Muat File Shader"
-
-msgid "Load Shader Include File"
-msgstr "Muat Shader Sertakan File"
-
 msgid "Save File"
 msgstr "Simpan File"
-
-msgid "Save File As"
-msgstr "Simpan File Sebagai"
 
 msgid "Open File in Inspector"
 msgstr "Buka File di Inspektur"
@@ -11574,9 +11570,6 @@ msgstr "Instansi Adegan Anak..."
 
 msgid "Paste as Sibling"
 msgstr "Tempel sebagai Saudara"
-
-msgid "Reparent to New Node"
-msgstr "Pengindukan Ulang ke Node Baru"
 
 msgid "Make Scene Root"
 msgstr "Jadikan Skena Dasar"

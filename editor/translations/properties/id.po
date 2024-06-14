@@ -198,6 +198,9 @@ msgstr "Kekuatan Panning 3D"
 msgid "iOS"
 msgstr "iOS"
 
+msgid "Session Category"
+msgstr "Kategori Sesi"
+
 msgid "Editor"
 msgstr "Editor"
 
@@ -902,6 +905,9 @@ msgstr "Font Utama Tebal"
 
 msgid "Code Font"
 msgstr "Kode Font"
+
+msgid "Low Processor Mode Sleep (µsec)"
+msgstr "Mode Tidur Prosesor Rendah (µdetik)"
 
 msgid "Separate Distraction Mode"
 msgstr "Mode Gangguan Terpisah"

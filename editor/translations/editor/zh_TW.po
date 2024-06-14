@@ -629,32 +629,32 @@ msgstr "無法更改從導入場景instance的動畫的循環播放模式。"
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "無法更改從其他場景嵌入的動畫的循環播放模式。"
 
-msgid "Property Track"
-msgstr "屬性軌道"
+msgid "Property Track..."
+msgstr "屬性軌道…"
 
-msgid "3D Position Track"
-msgstr "3D座標軌道"
+msgid "3D Position Track..."
+msgstr "3D 位置軌道…"
 
-msgid "3D Rotation Track"
-msgstr "3D旋轉軌道"
+msgid "3D Rotation Track..."
+msgstr "3D 旋轉軌道…"
 
-msgid "3D Scale Track"
-msgstr "3D 尺寸軌道"
+msgid "3D Scale Track..."
+msgstr "3D 尺寸軌道…"
 
-msgid "Blend Shape Track"
-msgstr "混合形狀軌道"
+msgid "Blend Shape Track..."
+msgstr "混合形狀軌道…"
 
-msgid "Call Method Track"
-msgstr "呼叫方法"
+msgid "Call Method Track..."
+msgstr "呼叫方法軌道…"
 
-msgid "Bezier Curve Track"
-msgstr "貝茲曲線軌道"
+msgid "Bezier Curve Track..."
+msgstr "貝茲曲線軌道…"
 
-msgid "Audio Playback Track"
-msgstr "音訊播放軌道"
+msgid "Audio Playback Track..."
+msgstr "音訊播放軌道…"
 
-msgid "Animation Playback Track"
-msgstr "動畫播放軌道"
+msgid "Animation Playback Track..."
+msgstr "動畫播放軌道…"
 
 msgid "Animation length (frames)"
 msgstr "動畫長度（影格）"
@@ -788,8 +788,8 @@ msgstr "鉗制內插循環 (Clamp)"
 msgid "Wrap Loop Interp"
 msgstr "無縫內插循環 (Wrap)"
 
-msgid "Insert Key"
-msgstr "插入關鍵影格"
+msgid "Insert Key..."
+msgstr "插入關鍵影格…"
 
 msgid "Duplicate Key(s)"
 msgstr "複製關鍵影格"
@@ -1035,17 +1035,17 @@ msgstr "編輯"
 msgid "Animation properties."
 msgstr "動畫屬性。"
 
-msgid "Copy Tracks"
-msgstr "複製軌道"
+msgid "Copy Tracks..."
+msgstr "複製軌道…"
 
-msgid "Scale Selection"
-msgstr "縮放所選"
+msgid "Scale Selection..."
+msgstr "縮放所選…"
 
-msgid "Scale From Cursor"
-msgstr "以游標縮放"
+msgid "Scale From Cursor..."
+msgstr "以游標縮放…"
 
-msgid "Make Easing Selection"
-msgstr "清除Easing所選"
+msgid "Make Easing Selection..."
+msgstr "進行寬鬆選擇..."
 
 msgid "Duplicate Selection"
 msgstr "重複所選"
@@ -1065,14 +1065,14 @@ msgstr "跳至上一步"
 msgid "Apply Reset"
 msgstr "套用重設"
 
-msgid "Bake Animation"
-msgstr "烘焙動畫"
+msgid "Bake Animation..."
+msgstr "烘焙動畫…"
 
-msgid "Optimize Animation (no undo)"
-msgstr "最佳化動畫(不能反悔)"
+msgid "Optimize Animation (no undo)..."
+msgstr "優化動畫（不可還原）…"
 
-msgid "Clean-Up Animation (no undo)"
-msgstr "清除動畫(不能反悔)"
+msgid "Clean-Up Animation (no undo)..."
+msgstr "清理動畫（不可還原）…"
 
 msgid "Pick a node to animate:"
 msgstr "選擇欲設定動畫之節點："
@@ -3402,14 +3402,20 @@ msgstr ""
 "所選的場景「%s」並非場景檔案，是否要選擇另一個有效的場景？\n"
 "稍後可在「專案設定」中的 [Application] 中修改。"
 
+msgid "Save Layout..."
+msgstr "儲存畫面佈局…"
+
+msgid "Delete Layout..."
+msgstr "刪除畫面佈局…"
+
+msgid "Default"
+msgstr "預設"
+
 msgid "Save Layout"
 msgstr "儲存配置"
 
 msgid "Delete Layout"
 msgstr "刪除配置"
-
-msgid "Default"
-msgstr "預設"
 
 msgid "This scene was never saved."
 msgstr "該場景從未保存過。"
@@ -3475,6 +3481,9 @@ msgstr "移動裝置"
 
 msgid "Compatibility"
 msgstr "編譯"
+
+msgid "(Overridden)"
+msgstr "（已覆寫）"
 
 msgid "Pan View"
 msgstr "平移檢視"
@@ -3623,6 +3632,9 @@ msgstr "設定FBX匯入器..."
 msgid "Help"
 msgstr "說明"
 
+msgid "Search Help..."
+msgstr "搜尋幫助…"
+
 msgid "Online Documentation"
 msgstr "線上說明文件"
 
@@ -3647,8 +3659,8 @@ msgstr "提出功能建議"
 msgid "Send Docs Feedback"
 msgstr "傳送說明文件回饋"
 
-msgid "About Godot"
-msgstr "關於Godot"
+msgid "About Godot..."
+msgstr "關於 Godot…"
 
 msgid "Support Godot Development"
 msgstr "支援 Godot 開發"
@@ -3943,8 +3955,11 @@ msgid ""
 "(%s)."
 msgstr "所選資源（%s）不符合任該屬性（%s）的任何型別。"
 
-msgid "Quick Load"
-msgstr "快速載入"
+msgid "Quick Load..."
+msgstr "快速載入…"
+
+msgid "Load..."
+msgstr "載入..."
 
 msgid "Inspect"
 msgstr "屬性檢視"
@@ -3970,14 +3985,14 @@ msgstr "選擇要獨一無二的資源："
 msgid "New %s"
 msgstr "新增 %s"
 
-msgid "New Script"
-msgstr "新增腳本"
+msgid "New Script..."
+msgstr "新增腳本..."
 
-msgid "Extend Script"
-msgstr "擴充腳本"
+msgid "Extend Script..."
+msgstr "擴充腳本..."
 
-msgid "New Shader"
-msgstr "新建著色器"
+msgid "New Shader..."
+msgstr "新增著色器…"
 
 msgid "No Remote Debug export presets configured."
 msgstr "沒有遠端除錯輸出預設被設定。"
@@ -4001,10 +4016,6 @@ msgstr "在 _run() 方法中填寫邏輯。"
 
 msgid "There is an edited scene already."
 msgstr "已有一個已編輯的場景。"
-
-msgid ""
-"Couldn't run editor script, did you forget to override the '_run' method?"
-msgstr "沒辦法執行編輯器腳本，是否忘記覆蓋「_run」方法？"
 
 msgid "Undo: %s"
 msgstr "復原：%s"
@@ -4778,9 +4789,6 @@ msgstr "新增資料夾..."
 
 msgid "New Scene..."
 msgstr "新增場景..."
-
-msgid "New Script..."
-msgstr "新增腳本..."
 
 msgid "New Resource..."
 msgstr "新增資源..."
@@ -6020,9 +6028,6 @@ msgstr "動畫"
 msgid "Add %s"
 msgstr "新增 %s"
 
-msgid "Load..."
-msgstr "載入..."
-
 msgid "Move Node Point"
 msgstr "移動節點頂點"
 
@@ -7139,6 +7144,9 @@ msgstr "縮放遮罩以插入關鍵影格。"
 
 msgid "Insert keys (based on mask)."
 msgstr "（基於遮罩）插入關鍵影格。"
+
+msgid "Insert Key"
+msgstr "插入關鍵影格"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -9427,20 +9435,17 @@ msgstr "退出前要儲存以下著色器更改嗎？"
 msgid "Shader Editor"
 msgstr "著色器編輯器"
 
-msgid "New Shader Include"
-msgstr "新著色器包含"
+msgid "New Shader Include..."
+msgstr "新著色器包含…"
 
-msgid "Load Shader File"
-msgstr "載入著色器文件"
+msgid "Load Shader File..."
+msgstr "載入著色器檔案…"
 
-msgid "Load Shader Include File"
-msgstr "加載包含著色器文件"
+msgid "Load Shader Include File..."
+msgstr "載入包含著色器檔案…"
 
 msgid "Save File"
 msgstr "儲存 檔案"
-
-msgid "Save File As"
-msgstr "另存檔案為"
 
 msgid "Open File in Inspector"
 msgstr "在屬性面板中開啟檔案"
@@ -13263,6 +13268,9 @@ msgstr "%s <未命名>"
 msgid "(used %d times)"
 msgstr "（被使用 %d 次）"
 
+msgid "Batch Rename..."
+msgstr "批次重新命名…"
+
 msgid "Add Child Node..."
 msgstr "新增子節點..."
 
@@ -13281,14 +13289,14 @@ msgstr "更改型別..."
 msgid "Attach Script..."
 msgstr "附加腳本..."
 
-msgid "Extend Script..."
-msgstr "擴充腳本..."
-
-msgid "Reparent to New Node"
-msgstr "重新設定父節點為新節點"
+msgid "Reparent..."
+msgstr "重設父節點…"
 
 msgid "Make Scene Root"
 msgstr "設為場景根節點"
+
+msgid "Save Branch as Scene..."
+msgstr "儲存分支為場景…"
 
 msgid "Toggle Access as Unique Name"
 msgstr "切換作為唯一名稱存取"
@@ -14225,6 +14233,13 @@ msgstr "該”%s\" 算繪器專為桌面設備設計，不適用於Android 設�
 
 msgid "\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."
 msgstr "「Min SDK」需要大於等於 %d 才可使用 \"%s\" 算繪引擎。"
+
+msgid ""
+"The project name does not meet the requirement for the package name format "
+"and will be updated to \"%s\". Please explicitly specify the package name if "
+"needed."
+msgstr ""
+"專案名稱不符合套件名稱格式要求，將更新為「%s」。如果需要，請明確指定套件名稱。"
 
 msgid "Code Signing"
 msgstr "程式碼簽章"
@@ -15582,11 +15597,6 @@ msgstr "未設定姿勢。"
 
 msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "XROrigin3D 需要 XRCamera3D 子節點。"
-
-msgid ""
-"XR is not enabled in rendering project settings. Stereoscopic output is not "
-"supported unless this is enabled."
-msgstr "算繪專案設定中未啟用 XR。除非啟用該功能，否則不支援立體輸出。"
 
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr "於 BlendTree 節點「%s」上未找到動畫：「%s」"

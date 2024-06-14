@@ -554,21 +554,6 @@ msgstr "Animáció Hosszának Változtatása"
 msgid "Change Animation Loop"
 msgstr "Animáció Ismétlésének Változtatása"
 
-msgid "Property Track"
-msgstr "Tulajdonság Sáv"
-
-msgid "Call Method Track"
-msgstr "Metódus Hívás Sáv"
-
-msgid "Bezier Curve Track"
-msgstr "Bézier Görbe Sáv"
-
-msgid "Audio Playback Track"
-msgstr "Hang Lejátszás Sáv"
-
-msgid "Animation Playback Track"
-msgstr "Animáció Lejátszás Sáv"
-
 msgid "Animation length (frames)"
 msgstr "Animáció hossza (képkockák)"
 
@@ -640,9 +625,6 @@ msgstr "Átmenet Nélküli Interpoláció"
 
 msgid "Wrap Loop Interp"
 msgstr "Folytatólagos Interpoláció"
-
-msgid "Insert Key"
-msgstr "Kulcs Beszúrása"
 
 msgid "Duplicate Key(s)"
 msgstr "Kulcs(ok) Megkettőzése"
@@ -786,15 +768,6 @@ msgstr "Szerkesztés"
 
 msgid "Animation properties."
 msgstr "Animáció tulajdonságok."
-
-msgid "Copy Tracks"
-msgstr "Sávok Másolása"
-
-msgid "Scale Selection"
-msgstr "Kijelölés Nyújtása"
-
-msgid "Scale From Cursor"
-msgstr "Nyújtás a Kurzortól"
 
 msgid "Duplicate Selection"
 msgstr "Kijelölés Megkettőzése"
@@ -2027,14 +2000,14 @@ msgstr ""
 "Ezt megváltoztathatja később a \"Projekt Beállításokban\" az \"Alkalmazás\" "
 "kategóriában."
 
+msgid "Default"
+msgstr "Alapértelmezett"
+
 msgid "Save Layout"
 msgstr "Elrendezés Mentése"
 
 msgid "Delete Layout"
 msgstr "Elrendezés Törlése"
-
-msgid "Default"
-msgstr "Alapértelmezett"
 
 msgid "Save & Close"
 msgstr "Mentés és Bezárás"
@@ -2307,6 +2280,9 @@ msgstr "Új érték:"
 msgid "Add Key/Value Pair"
 msgstr "Kulcs/érték pár hozzáadása"
 
+msgid "Load..."
+msgstr "Betöltés..."
+
 msgid "Make Unique"
 msgstr "Egyedivé tétel"
 
@@ -2319,11 +2295,8 @@ msgstr "Megjelenítés a fájlrendszerben"
 msgid "New %s"
 msgstr "Új %s"
 
-msgid "New Script"
-msgstr "Új szkript"
-
-msgid "Extend Script"
-msgstr "Szkript kinyitása"
+msgid "New Script..."
+msgstr "Új szkript..."
 
 msgid ""
 "No runnable export preset found for this platform.\n"
@@ -2534,9 +2507,6 @@ msgstr "Új Mappa..."
 
 msgid "New Scene..."
 msgstr "Új jelenet..."
-
-msgid "New Script..."
-msgstr "Új szkript..."
 
 msgid "New Resource..."
 msgstr "Új erőforrás..."
@@ -2905,9 +2875,6 @@ msgstr "Animáció Hozzáadása"
 
 msgid "Add %s"
 msgstr "%s Hozzáadása"
-
-msgid "Load..."
-msgstr "Betöltés..."
 
 msgid "Enable snap and show grid."
 msgstr "Illesztés engedélyezése és rács megjelenítése."
@@ -3454,6 +3421,9 @@ msgstr "Kijelölés középre"
 
 msgid "Frame Selection"
 msgstr "Kijelölés Keretezése"
+
+msgid "Insert Key"
+msgstr "Kulcs Beszúrása"
 
 msgid "Insert Key (Existing Tracks)"
 msgstr "Kulcs Beszúrása (Meglévő Nyomvonalakra)"

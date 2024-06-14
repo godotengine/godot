@@ -624,33 +624,6 @@ msgstr "نمی‌‏توان حالت حلقه را روی انیمیشن نمو
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "نمی‌توان حالت حلقه را در انیمیشن تعبیه شده در صحنه دیگر تغییر داد."
 
-msgid "Property Track"
-msgstr "ویژگی مسیر"
-
-msgid "3D Position Track"
-msgstr "مسیر سه بعدی موقعیت"
-
-msgid "3D Rotation Track"
-msgstr "مسیر چرخش سه بعدی"
-
-msgid "3D Scale Track"
-msgstr "مسیر اندازه سه‌بعدی"
-
-msgid "Blend Shape Track"
-msgstr "مسیر درآمیختن شکل"
-
-msgid "Call Method Track"
-msgstr "فراخوان متد(Method) مسیر"
-
-msgid "Bezier Curve Track"
-msgstr "مسیر منحنی Bezier"
-
-msgid "Audio Playback Track"
-msgstr "مسیر پخش صدا"
-
-msgid "Animation Playback Track"
-msgstr "مسیر پخش انیمیشن"
-
 msgid "Animation length (frames)"
 msgstr "طول انیمیشن (فریم)"
 
@@ -783,7 +756,7 @@ msgstr "رابط گره حلقه(Loop)"
 msgid "Wrap Loop Interp"
 msgstr "رابط پوشش حلقه"
 
-msgid "Insert Key"
+msgid "Insert Key..."
 msgstr "درج کلید"
 
 msgid "Duplicate Key(s)"
@@ -1037,17 +1010,11 @@ msgstr "ویرایش"
 msgid "Animation properties."
 msgstr "ویژگی‌های انیمیشن."
 
-msgid "Copy Tracks"
-msgstr "کپی میسر ها"
+msgid "Scale Selection..."
+msgstr "تغییر اندازه انتخاب..."
 
-msgid "Scale Selection"
-msgstr "انتخاب شده را تغییر مقیاس بده"
-
-msgid "Scale From Cursor"
-msgstr "از مکان‌نما تغییر مقیاس بده"
-
-msgid "Make Easing Selection"
-msgstr "ساخت تسهیل برگزیده"
+msgid "Scale From Cursor..."
+msgstr "تغییر اندازه نسبت به نشانگر"
 
 msgid "Duplicate Selection"
 msgstr "تکثیر برگزیده"
@@ -1067,13 +1034,10 @@ msgstr "برو به گام پیشین"
 msgid "Apply Reset"
 msgstr "بازنشانی را اعمال کنید"
 
-msgid "Bake Animation"
-msgstr "از پیش تعیین کردن انیمیشن"
-
-msgid "Optimize Animation (no undo)"
+msgid "Optimize Animation (no undo)..."
 msgstr "بهینه سازی انیمیشن (بازگردانی نمیشود)"
 
-msgid "Clean-Up Animation (no undo)"
+msgid "Clean-Up Animation (no undo)..."
 msgstr "پاک سازی انیمیشن (بازگردانی نمیشود)"
 
 msgid "Pick a node to animate:"
@@ -2321,6 +2285,21 @@ msgstr ""
 "از چیدمان های پیچیده متن، BiDi و قابلیت های بافتی OpenType فونت پشتیبانی "
 "میکند."
 
+msgid "WOFF2 font format support using FreeType and Brotli libraries."
+msgstr ""
+"پشتیبانی از فرمت WOFF2 برای فونت ها با استفاده از کتابخانه‌های FreeType و "
+"Brotli."
+
+msgid ""
+"SIL Graphite smart font technology support (supported by Advanced Text Server "
+"only)."
+msgstr ""
+"SIL پشتیبانی از فناوری فونت هوشمند گرافیت (پشتیبانی فقط از طریق سرور متن "
+"پیشرفته )"
+
+msgid "General Features:"
+msgstr "ویژگی‌های اصلی:"
+
 msgid "Text Rendering and Font Options:"
 msgstr "گزینه‌های رندر متن و فونت:"
 
@@ -2342,17 +2321,39 @@ msgstr "جدید"
 msgid "Save"
 msgstr "ذخیره"
 
+msgid "Profile:"
+msgstr "پروفایل:"
+
+msgid "Reset to Defaults"
+msgstr "بازگشت به پیشفرض‌ها"
+
 msgid "Configure Engine Build Profile:"
 msgstr "پیکربندی نمایه ساخت موتور:"
 
+msgid "Please Confirm:"
+msgstr "لطفاً تأیید کنید:"
+
 msgid "Engine Build Profile"
 msgstr "نمایه ساخت موتور"
+
+msgid "Load Profile"
+msgstr "بارگزاری پروفایل"
 
 msgid "Export Profile"
 msgstr "صادر کردن نمایه"
 
 msgid "Edit Build Configuration Profile"
 msgstr "ویرایش نمایهٔ پیکربندی ساخت"
+
+msgid ""
+"Failed to execute command \"%s\":\n"
+"%s."
+msgstr ""
+"خطا در اجرای \"%s\":\n"
+"%s"
+
+msgid "Filter Commands"
+msgstr "فیلتر دستورات"
 
 msgid "Paste Params"
 msgstr "چسباندن پارام ها"
@@ -2985,14 +2986,14 @@ msgstr ""
 "بعدا می‌توانید در \"Project Settings\" در زیر بخش 'application' آن را تغییر "
 "دهید."
 
+msgid "Default"
+msgstr "پیش‌فرض"
+
 msgid "Save Layout"
 msgstr "ذخیره لایه"
 
 msgid "Delete Layout"
 msgstr "حذف طرح‌بندی"
-
-msgid "Default"
-msgstr "پیش‌فرض"
 
 msgid "Save & Close"
 msgstr "ذخیره و بستن"
@@ -3008,6 +3009,9 @@ msgstr "موبایل"
 
 msgid "Compatibility"
 msgstr "سازگاری"
+
+msgid "Make Floating"
+msgstr "شناور کردن"
 
 msgid "Distraction Free Mode"
 msgstr "حالت بدون حواس‌پرتی"
@@ -3125,9 +3129,6 @@ msgstr "گزارش یک مشکل"
 
 msgid "Suggest a Feature"
 msgstr "پیشنهاد یک ویژگی"
-
-msgid "About Godot"
-msgstr "درباره گودو"
 
 msgid "Support Godot Development"
 msgstr "از توسعه گودو حمایت کنید"
@@ -3250,8 +3251,8 @@ msgstr "حذف مورد"
 msgid "Dictionary (size %d)"
 msgstr "دیکشنری (اندازه %d)"
 
-msgid "Quick Load"
-msgstr "بارگذاری سریع"
+msgid "Load..."
+msgstr "بارگذاری..."
 
 msgid "Save As..."
 msgstr "ذخیره در..."
@@ -3259,8 +3260,8 @@ msgstr "ذخیره در..."
 msgid "Show in FileSystem"
 msgstr "نمایش در فایل‌سیستم"
 
-msgid "New Script"
-msgstr "اسکریپت جدید"
+msgid "New Script..."
+msgstr "اسکریپت جدید..."
 
 msgid "Project Run"
 msgstr "اجرای پروژه"
@@ -3563,9 +3564,6 @@ msgstr "ساختن پوشه..."
 
 msgid "New Scene..."
 msgstr "صحنه جدید..."
-
-msgid "New Script..."
-msgstr "اسکریپت جدید..."
 
 msgid "New Resource..."
 msgstr "منبع جدید..."
@@ -4021,9 +4019,6 @@ msgstr "اضافه کردن انیمیشن"
 msgid "Add %s"
 msgstr "اضافه کردن %s"
 
-msgid "Load..."
-msgstr "بارگذاری..."
-
 msgid "Blend:"
 msgstr "درآمیختن:"
 
@@ -4377,6 +4372,9 @@ msgstr "نمایش خط‌کش‌ها"
 
 msgid "Frame Selection"
 msgstr "انتخاب فریم"
+
+msgid "Insert Key"
+msgstr "درج کلید"
 
 msgid "Copy Pose"
 msgstr "کپی کردن حالت"
@@ -4901,9 +4899,6 @@ msgstr "ویرایشگر سایه‌زن"
 
 msgid "Save File"
 msgstr "ذخیره فایل"
-
-msgid "Save File As"
-msgstr "ذخیره فایل به‌عنوان"
 
 msgid "Open File in Inspector"
 msgstr "بازکردن فایل در ویرایشگر"

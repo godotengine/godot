@@ -547,33 +547,6 @@ msgstr ""
 "Nie je možné zmeniť mód cyklenia v animácií, inštanciovanej v importovanej "
 "scéne."
 
-msgid "Property Track"
-msgstr "Stopa vlastnosti"
-
-msgid "3D Position Track"
-msgstr "Stopa 3D pozície"
-
-msgid "3D Rotation Track"
-msgstr "Stopa 3D rotácie"
-
-msgid "3D Scale Track"
-msgstr "Stopa 3D škálovania"
-
-msgid "Blend Shape Track"
-msgstr "Stopa prelínania tvarov"
-
-msgid "Call Method Track"
-msgstr "Stopa volania metódy"
-
-msgid "Bezier Curve Track"
-msgstr "Stopa Bézierovej krivky"
-
-msgid "Audio Playback Track"
-msgstr "Stopa Prehrávania zvuku"
-
-msgid "Animation Playback Track"
-msgstr "Stopa Prehrávania animácie"
-
 msgid "Animation length (frames)"
 msgstr "Dĺžka animácie (v snímkoch)"
 
@@ -660,9 +633,6 @@ msgstr "Clamp Loop Interp"
 
 msgid "Wrap Loop Interp"
 msgstr "Wrap Loop Interp"
-
-msgid "Insert Key"
-msgstr "Vložiť Kľúč"
 
 msgid "Duplicate Key(s)"
 msgstr "Duplikovanie Kľúčov"
@@ -795,15 +765,6 @@ msgstr "Upraviť"
 
 msgid "Animation properties."
 msgstr "Vlastnosti Animácie."
-
-msgid "Copy Tracks"
-msgstr "Kopírovať track-y"
-
-msgid "Scale Selection"
-msgstr "Zmeniť veľkosť výberu"
-
-msgid "Scale From Cursor"
-msgstr "Zmeniť veľkosť od kurzora"
 
 msgid "Duplicate Selection"
 msgstr "Duplikovať výber"
@@ -2907,14 +2868,14 @@ msgstr ""
 "Neskôr ju môžete zmeniť v \"Nastaveniach Projekta\" pod kategóriou "
 "'application'."
 
+msgid "Default"
+msgstr "Predvolené"
+
 msgid "Save Layout"
 msgstr "Uložiť Layout"
 
 msgid "Delete Layout"
 msgstr "Odstrániť Layout"
-
-msgid "Default"
-msgstr "Predvolené"
 
 msgid "Save & Close"
 msgstr "Uložiť & Zatvoriť"
@@ -3286,8 +3247,8 @@ msgid ""
 msgstr ""
 "Vybraný prostriedok (%s) sa nezhoduje žiadnemu typu pre túto vlastnosť (%s)."
 
-msgid "Quick Load"
-msgstr "Rýchle načítanie"
+msgid "Load..."
+msgstr "Načítať..."
 
 msgid "Make Unique"
 msgstr "Spraviť Jedinečným"
@@ -3301,11 +3262,8 @@ msgstr "Ukázať v FileSystéme"
 msgid "New %s"
 msgstr "Nový %s"
 
-msgid "New Script"
-msgstr "Nový Script"
-
-msgid "Extend Script"
-msgstr "\"Extendovaný\" Script"
+msgid "New Script..."
+msgstr "Nový Script..."
 
 msgid "Remote Debug"
 msgstr "Vzdialené Ladenie"
@@ -3866,9 +3824,6 @@ msgstr "Nový Priečinok..."
 msgid "New Scene..."
 msgstr "Nová Scéna..."
 
-msgid "New Script..."
-msgstr "Nový Script..."
-
 msgid "New Resource..."
 msgstr "Nový Prostriedok..."
 
@@ -4427,9 +4382,6 @@ msgstr "Pridať Animáciu"
 
 msgid "Add %s"
 msgstr "Pridať %s"
-
-msgid "Load..."
-msgstr "Načítať..."
 
 msgid "Move Node Point"
 msgstr "Presunúť Bod Nodu"
@@ -5200,6 +5152,9 @@ msgstr "Veľkostná maska na vkladanie kľúčov."
 
 msgid "Insert keys (based on mask)."
 msgstr "Vkladanie kľúčov (založené na maske)."
+
+msgid "Insert Key"
+msgstr "Vložiť Kľúč"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -6941,9 +6896,6 @@ msgstr ""
 
 msgid "Can't paste root node into the same scene."
 msgstr "Nedá sa vložiť koreňový node do tej istej scény."
-
-msgid "Reparent to New Node"
-msgstr "Znovu spraviť rodičom Novému Nodu"
 
 msgid "Toggle Access as Unique Name"
 msgstr "Prepnúť Pristúpovať ako Jedinečný Názov"

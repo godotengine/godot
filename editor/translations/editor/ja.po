@@ -646,32 +646,32 @@ msgstr ""
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "別のシーンに埋め込まれたアニメーションのループモードを変更できません。"
 
-msgid "Property Track"
-msgstr "プロパティトラック"
+msgid "Property Track..."
+msgstr "プロパティトラック…"
 
-msgid "3D Position Track"
-msgstr "3Dポジショントラック"
+msgid "3D Position Track..."
+msgstr "3Dポジショントラック…"
 
-msgid "3D Rotation Track"
-msgstr "3D 回転トラック"
+msgid "3D Rotation Track..."
+msgstr "3D 回転トラック…"
 
-msgid "3D Scale Track"
-msgstr "3Dスケールトラック"
+msgid "3D Scale Track..."
+msgstr "3Dスケールトラック…"
 
-msgid "Blend Shape Track"
-msgstr "ブレンドシェイプトラック"
+msgid "Blend Shape Track..."
+msgstr "ブレンドシェイプトラック…"
 
-msgid "Call Method Track"
-msgstr "メソッド呼び出しトラック"
+msgid "Call Method Track..."
+msgstr "メソッド呼び出しトラック…"
 
-msgid "Bezier Curve Track"
-msgstr "ベジェ曲線トラック"
+msgid "Bezier Curve Track..."
+msgstr "ベジェ曲線トラック…"
 
-msgid "Audio Playback Track"
-msgstr "オーディオ再生トラック"
+msgid "Audio Playback Track..."
+msgstr "オーディオ再生トラック…"
 
-msgid "Animation Playback Track"
-msgstr "アニメーション再生トラック"
+msgid "Animation Playback Track..."
+msgstr "アニメーション再生トラック…"
 
 msgid "Animation length (frames)"
 msgstr "アニメーションの長さ (フレーム)"
@@ -805,8 +805,8 @@ msgstr "ループ補間をクランプ"
 msgid "Wrap Loop Interp"
 msgstr "ループ補間をラップ"
 
-msgid "Insert Key"
-msgstr "キーを挿入"
+msgid "Insert Key..."
+msgstr "キーを挿入…"
 
 msgid "Duplicate Key(s)"
 msgstr "キーを複製"
@@ -1065,17 +1065,17 @@ msgstr "編集"
 msgid "Animation properties."
 msgstr "アニメーションプロパティ。"
 
-msgid "Copy Tracks"
-msgstr "トラックをコピー"
+msgid "Copy Tracks..."
+msgstr "トラックをコピー…"
 
-msgid "Scale Selection"
-msgstr "スケールの選択"
+msgid "Scale Selection..."
+msgstr "選択項目をスケール…"
 
-msgid "Scale From Cursor"
-msgstr "カーソル基準でスケール"
+msgid "Scale From Cursor..."
+msgstr "カーソル基準でスケール…"
 
-msgid "Make Easing Selection"
-msgstr "イージング選択を作成"
+msgid "Make Easing Selection..."
+msgstr "選択したものをイージングする…"
 
 msgid "Duplicate Selection"
 msgstr "選択範囲を複製"
@@ -1095,14 +1095,14 @@ msgstr "前のステップへ"
 msgid "Apply Reset"
 msgstr "リセット"
 
-msgid "Bake Animation"
-msgstr "アニメーションをベイク"
+msgid "Bake Animation..."
+msgstr "アニメーションをベイク…"
 
-msgid "Optimize Animation (no undo)"
-msgstr "アニメーションの最適化（アンドゥなし）"
+msgid "Optimize Animation (no undo)..."
+msgstr "アニメーションの最適化 (アンドゥなし)…"
 
-msgid "Clean-Up Animation (no undo)"
-msgstr "アニメーションをクリーンアップ（アンドゥなし）"
+msgid "Clean-Up Animation (no undo)..."
+msgstr "アニメーションをクリーンアップ (アンドゥなし)…"
 
 msgid "Pick a node to animate:"
 msgstr "アニメーションするノードを選択:"
@@ -3506,14 +3506,20 @@ msgstr ""
 "か？\n"
 "'アプリケーション' カテゴリの下の \"プロジェクト設定\" で後から変更できます。"
 
+msgid "Save Layout..."
+msgstr "レイアウトを保存…"
+
+msgid "Delete Layout..."
+msgstr "レイアウトを削除…"
+
+msgid "Default"
+msgstr "デフォルト"
+
 msgid "Save Layout"
 msgstr "レイアウトを保存"
 
 msgid "Delete Layout"
 msgstr "レイアウトを削除"
-
-msgid "Default"
-msgstr "デフォルト"
 
 msgid "This scene was never saved."
 msgstr "このシーンは保存されていません。"
@@ -3732,6 +3738,9 @@ msgstr "FBX Importerの設定..."
 msgid "Help"
 msgstr "ヘルプ"
 
+msgid "Search Help..."
+msgstr "ヘルプを検索…"
+
 msgid "Online Documentation"
 msgstr "オンラインドキュメント"
 
@@ -3756,8 +3765,8 @@ msgstr "機能を提案する"
 msgid "Send Docs Feedback"
 msgstr "ドキュメントのフィードバックを送る"
 
-msgid "About Godot"
-msgstr "Godotについて"
+msgid "About Godot..."
+msgstr "Godotについて…"
 
 msgid "Support Godot Development"
 msgstr "Godotの開発をサポートする"
@@ -4076,8 +4085,14 @@ msgid ""
 msgstr ""
 "選択されたリソース (%s) は、このプロパティ (%s) が求める型に一致していません。"
 
-msgid "Quick Load"
-msgstr "クイックロード"
+msgid "Quick Load..."
+msgstr "クイックロード…"
+
+msgid "Opens a quick menu to select from a list of allowed Resource files."
+msgstr "クイックメニューを開いて許可されたリソースファイルを選択する。"
+
+msgid "Load..."
+msgstr "読み込む.."
 
 msgid "Inspect"
 msgstr "検査"
@@ -4103,14 +4118,14 @@ msgstr "独自性を出すためにリソースを選択する:"
 msgid "New %s"
 msgstr "新規 %s"
 
-msgid "New Script"
-msgstr "新規スクリプト"
+msgid "New Script..."
+msgstr "新規スクリプト..."
 
-msgid "Extend Script"
-msgstr "スクリプトを拡張"
+msgid "Extend Script..."
+msgstr "スクリプトを拡張..."
 
-msgid "New Shader"
-msgstr "新しいシェーダー"
+msgid "New Shader..."
+msgstr "新規シェーダー…"
 
 msgid "No Remote Debug export presets configured."
 msgstr "リモートデバッグエクスポートプリセットが設定されていません。"
@@ -4135,12 +4150,6 @@ msgstr "ロジックを _run() メソッドに記述する。"
 
 msgid "There is an edited scene already."
 msgstr "すでに編集されたシーンがあります。"
-
-msgid ""
-"Couldn't run editor script, did you forget to override the '_run' method?"
-msgstr ""
-"エディタースクリプトを実行できませんでした。'_run'メソッドをオーバーライドする"
-"のを忘れていませんか？"
 
 msgid "Undo: %s"
 msgstr "元に戻す： %s"
@@ -4946,9 +4955,6 @@ msgstr "新規フォルダー..."
 msgid "New Scene..."
 msgstr "新規シーン..."
 
-msgid "New Script..."
-msgstr "新規スクリプト..."
-
 msgid "New Resource..."
 msgstr "新規リソース..."
 
@@ -5706,6 +5712,15 @@ msgstr "2D"
 msgid "3D"
 msgstr "3D"
 
+msgid ""
+"%s: Atlas texture significantly larger on one axis (%d), consider changing "
+"the `editor/import/atlas_max_width` Project Setting to allow a wider texture, "
+"making the result more even in size."
+msgstr ""
+"%s: アトラステクスチャの1軸 (%d) が他の軸より非常に大きくなっています。プロ"
+"ジェクト設定の `editor/import/atlas_max_width` を変えて、より幅広のテクスチャ"
+"を使用できるようにしてみてください。結果のサイズがより均一になります。"
+
 msgid "<Unnamed Material>"
 msgstr "<名前の無いマテリアル>"
 
@@ -6235,9 +6250,6 @@ msgstr "アニメーションを追加"
 msgid "Add %s"
 msgstr "%s を追加"
 
-msgid "Load..."
-msgstr "読み込む.."
-
 msgid "Move Node Point"
 msgstr "ノードポイントを移動"
 
@@ -6645,6 +6657,9 @@ msgstr "アニメーションツール"
 
 msgid "Animation"
 msgstr "アニメーション"
+
+msgid "New..."
+msgstr "新規..."
 
 msgid "Manage Animations..."
 msgstr "アニメーションの管理..."
@@ -7377,6 +7392,9 @@ msgstr "キーを挿入するためのスケールマスク。"
 
 msgid "Insert keys (based on mask)."
 msgstr "(マスクに基づいて)キーを挿入。"
+
+msgid "Insert Key"
+msgstr "キーを挿入"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -9753,20 +9771,11 @@ msgstr "終了する前に、以下のシェーダーへの変更を保存しま
 msgid "Shader Editor"
 msgstr "シェーダーエディター"
 
-msgid "New Shader Include"
-msgstr "新しいシェーダーインクルード"
-
-msgid "Load Shader File"
-msgstr "シェーダーファイルの読み込み"
-
-msgid "Load Shader Include File"
-msgstr "シェーダーインクルード ファイルの読み込み"
+msgid "Load Shader File..."
+msgstr "シェーダーファイルを読み込む…"
 
 msgid "Save File"
 msgstr "ファイルを保存"
-
-msgid "Save File As"
-msgstr "名前を付けて保存"
 
 msgid "Open File in Inspector"
 msgstr "インスペクターでファイルを開く"
@@ -13715,6 +13724,9 @@ msgstr "<名無し> の %s"
 msgid "(used %d times)"
 msgstr "(%d 回利用)"
 
+msgid "Batch Rename..."
+msgstr "名前の一括変更…"
+
 msgid "Add Child Node..."
 msgstr "子ノードを追加..."
 
@@ -13733,14 +13745,14 @@ msgstr "型を変更..."
 msgid "Attach Script..."
 msgstr "スクリプトをアタッチ..."
 
-msgid "Extend Script..."
-msgstr "スクリプトを拡張..."
-
-msgid "Reparent to New Node"
-msgstr "親ノードを新規ノードに変更"
+msgid "Reparent to New Node..."
+msgstr "親ノードを新規ノードに変更…"
 
 msgid "Make Scene Root"
 msgstr "シーンのルートにする"
+
+msgid "Save Branch as Scene..."
+msgstr "ブランチをシーンとして保存…"
 
 msgid "Toggle Access as Unique Name"
 msgstr "固有名でアクセスを切り替える"
@@ -14740,6 +14752,9 @@ msgstr ""
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "エクスポート設定にてリリース キーストアが誤って設定されています。"
 
+msgid "Unable to find 'java' command using the Java SDK path."
+msgstr "Java SDK パスを使用して 'java' コマンドを見つけることができません。"
+
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr "エディター設定でAndroid SDKパスの指定が必要です。"
 
@@ -14865,6 +14880,13 @@ msgstr ""
 "  Godot バージョン: %s\n"
 "「プロジェクト 」メニューからAndroidビルドテンプレートを再インストールしてくだ"
 "さい。"
+
+msgid ""
+"Java SDK path must be configured in Editor Settings at 'export/android/"
+"java_sdk_path'."
+msgstr ""
+"Java SDK パスは、エディタ設定 'export/android/java_sdk_path' にて設定する必要"
+"があります。"
 
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name."
@@ -16322,13 +16344,6 @@ msgstr "ポーズは設定されていません。"
 
 msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "XROrigin3D には XRCamera3D 子ノードが必要です。"
-
-msgid ""
-"XR is not enabled in rendering project settings. Stereoscopic output is not "
-"supported unless this is enabled."
-msgstr ""
-"レンダリング プロジェクト設定で XR が有効になっていません。これが有効になって"
-"いない限り、立体視出力はサポートされません。"
 
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr "BlendTreeノード '%s' で、アニメーションが見つかりません: '%s'"

@@ -2565,6 +2565,9 @@ msgstr "Eksik İçe Aktarılmış Dosyaları Yeniden İçe Aktar"
 msgid "Use Multiple Threads"
 msgstr "Çoklu İş Parçacıklarını Kullan"
 
+msgid "Atlas Max Width"
+msgstr "Atlas En Fazla Genişlik"
+
 msgid "Convert Text Resources to Binary"
 msgstr "Metin Kaynaklarını İkili-tipe Dönüştür"
 
@@ -3002,6 +3005,9 @@ msgstr "Özgün Simgeleri Düzenleyicide Göster"
 
 msgid "Use Thread"
 msgstr "İş Parçası Kullan"
+
+msgid "Poll Limit (µsec)"
+msgstr "Yoklama Sınırı (µsn)"
 
 msgid "glTF"
 msgstr "glTF"
@@ -3630,6 +3636,9 @@ msgstr "Başvuru Uzayı Türü"
 msgid "Visibility State"
 msgstr "Görünebilirlik Durumu"
 
+msgid "Java SDK Path"
+msgstr "Java SDK Yolu"
+
 msgid "Android SDK Path"
 msgstr "Android SDK Yolu"
 
@@ -3950,6 +3959,12 @@ msgstr "Fotoğraf Kitaplığı Kullanım Açıklaması"
 
 msgid "Photolibrary Usage Description Localized"
 msgstr "Fotoğraf Kitaplığı Kullanım Açıklaması Yerelleştirilmiş"
+
+msgid "Tracking Enabled"
+msgstr "İzleme Etkinleştirildi"
+
+msgid "Tracking Domains"
+msgstr "İzleme Etki Alanları"
 
 msgid "Storyboard"
 msgstr "Hikaye tahtası"

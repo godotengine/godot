@@ -289,6 +289,9 @@ msgstr "Zpět"
 msgid "Redo"
 msgstr "Znovu"
 
+msgid "Completion Query"
+msgstr "Dokončovací dotaz"
+
 msgid "New Line"
 msgstr "Nová linka"
 
@@ -300,6 +303,9 @@ msgstr "Nový řádek výše"
 
 msgid "Indent"
 msgstr "Odsazení"
+
+msgid "Dedent"
+msgstr "Snížit odsazení"
 
 msgid "Backspace"
 msgstr "Backspace"
@@ -328,6 +334,15 @@ msgstr "Caret Slovo vlevo"
 msgid "Caret Right"
 msgstr "Caret vpravo"
 
+msgid "Caret Word Right"
+msgstr "Kurzor o slovo doprava"
+
+msgid "Caret Up"
+msgstr "Kurzor o řádku výše"
+
+msgid "Caret Down"
+msgstr "Kurzor o řádku níže"
+
 msgid "Caret Line Start"
 msgstr "Kurzor na začátek řádky"
 
@@ -346,8 +361,17 @@ msgstr "Kurzor na začátek dokumentu"
 msgid "Caret Document End"
 msgstr "Kurzor na konec dokumentu"
 
+msgid "Caret Add Below"
+msgstr "Vložit kurzor níže"
+
 msgid "Caret Add Above"
 msgstr "Přidat kurzor výš"
+
+msgid "Scroll Up"
+msgstr "Posun kolečkem myši nahoru"
+
+msgid "Scroll Down"
+msgstr "Posun kolečkem myši dolů"
 
 msgid "Select All"
 msgstr "Vybrat vše"
@@ -357,6 +381,15 @@ msgstr "Označit slovo pod kurzorem"
 
 msgid "Add Selection for Next Occurrence"
 msgstr "Přidat další výskyt do označení"
+
+msgid "Clear Carets and Selection"
+msgstr "Odnačit kurzory a výběr"
+
+msgid "Toggle Insert Mode"
+msgstr "Přepnout režim vkládání"
+
+msgid "Submit Text"
+msgstr "Potvrdit text"
 
 msgid "Duplicate Nodes"
 msgstr "Duplikovat uzly"
@@ -372,6 +405,9 @@ msgstr "Obnovit"
 
 msgid "Show Hidden"
 msgstr "Zobrazit skryté"
+
+msgid "Swap Input Direction"
+msgstr "Obrátit směr vstupu"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Neplatný vstup %d (nepředán) ve výrazu"
@@ -443,6 +479,9 @@ msgstr "Akce s názvem \"%s\" již existuje."
 msgid "Cannot Revert - Action is same as initial"
 msgstr "Není možný návrat - akce je shodná s původní"
 
+msgid "Revert Action"
+msgstr "Vzít akci zpět"
+
 msgid "Add Event"
 msgstr "Přidat událost"
 
@@ -460,6 +499,9 @@ msgstr "Odstranit událost"
 
 msgid "Filter by name..."
 msgstr "Filtrovat podle jména..."
+
+msgid "Clear All"
+msgstr "Vyčistit vše"
 
 msgid "Add New Action"
 msgstr "Přidat novou akci"
@@ -482,6 +524,9 @@ msgstr "Čas:"
 msgid "Value:"
 msgstr "Hodnota:"
 
+msgid "Update Selected Key Handles"
+msgstr "Duplikovat vybrané úchyty klíč(ů)"
+
 msgid "Insert Key Here"
 msgstr "Vložit klíč zde"
 
@@ -490,6 +535,9 @@ msgstr "Duplikovat vybrané klíč(e)"
 
 msgid "Delete Selected Key(s)"
 msgstr "Smazat vybrané klíč(e)"
+
+msgid "Make Handles Free"
+msgstr "Uvolnit úchyty"
 
 msgid "Make Handles Linear"
 msgstr "Udělat úchyty lineárními"
@@ -512,6 +560,36 @@ msgstr "Přidat bod Bézierovy křivky"
 msgid "Move Bezier Points"
 msgstr "Přesunout body Bézierovy křivky"
 
+msgid "Animation Duplicate Keys"
+msgstr "Animace: Duplikovat klíče"
+
+msgid "Animation Delete Keys"
+msgstr "Animace: Smazat klíče"
+
+msgid "Select All Keys"
+msgstr "Vybrat všechny klíče"
+
+msgid "Deselect All Keys"
+msgstr "Odznačit vybrané klíče"
+
+msgid "Animation Change Transition"
+msgstr "Animace: Změnit přechod"
+
+msgid "Animation Change Position3D"
+msgstr "Animace: Změnit 3D pozici"
+
+msgid "Animation Change Rotation3D"
+msgstr "Animace: Změna 3D Rotaci"
+
+msgid "Animation Change Scale3D"
+msgstr "Animace: Změnit 3D Škálu"
+
+msgid "Animation Change Keyframe Value"
+msgstr "Animace: Změnit hodnotu klíčového snímku"
+
+msgid "Animation Change Call"
+msgstr "Animace: Změnit volání"
+
 msgid "Change Animation Length"
 msgstr "Změnit délku animace"
 
@@ -524,23 +602,20 @@ msgstr "Nelze změnit režim smyčky na instanci animace z importované scény."
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "Nelze změnit režim smyčky na animaci vložené do jiné scény."
 
-msgid "Property Track"
-msgstr "Stopa vlastnosti"
+msgid "Blend Shape Track..."
+msgstr "Stopa prolínání tvarů..."
 
-msgid "Blend Shape Track"
-msgstr "Stopa prolínání tvarů"
+msgid "Call Method Track..."
+msgstr "Stopa volání metody..."
 
-msgid "Call Method Track"
-msgstr "Stopa volání metody"
+msgid "Bezier Curve Track..."
+msgstr "Stopa Bézierovy křivky..."
 
-msgid "Bezier Curve Track"
-msgstr "Stopa Bézierovy křivky"
+msgid "Audio Playback Track..."
+msgstr "Stopa přehrávání zvuku..."
 
-msgid "Audio Playback Track"
-msgstr "Stopa přehrávání zvuku"
-
-msgid "Animation Playback Track"
-msgstr "Stopa přehrávání animace"
+msgid "Animation Playback Track..."
+msgstr "Stopa přehrávání animace..."
 
 msgid "Animation length (frames)"
 msgstr "Délka animace (ve snímcích)"
@@ -559,6 +634,9 @@ msgstr "Funkce:"
 
 msgid "Audio Clips:"
 msgstr "Audio klipy:"
+
+msgid "Animation Clips:"
+msgstr "Animační klipy:"
 
 msgid "Change Track Path"
 msgstr "Změnit cestu stopy"
@@ -593,6 +671,9 @@ msgstr "Rotace:"
 msgid "Scale:"
 msgstr "Zvětšení:"
 
+msgid "Blend Shape:"
+msgstr "Prolnutí tvaru:"
+
 msgid "Type:"
 msgstr "Typ:"
 
@@ -610,6 +691,21 @@ msgstr "Režim úchytu: Vyvážený\n"
 
 msgid "Handle mode: Mirrored\n"
 msgstr "Režim úchytu: Zrcadlený\n"
+
+msgid "Stream:"
+msgstr "Stream:"
+
+msgid "Start (s):"
+msgstr "Počátek (s):"
+
+msgid "End (s):"
+msgstr "Konec (s):"
+
+msgid "Animation Clip:"
+msgstr "Animace:"
+
+msgid "Toggle Track Enabled"
+msgstr "Povolit stopu"
 
 msgid "Don't Use Blend"
 msgstr "Nepoužívat prolínání"
@@ -638,9 +734,6 @@ msgstr "Interpolace svorkové smyčky"
 msgid "Wrap Loop Interp"
 msgstr "Interpolace ovinutou smyčkou"
 
-msgid "Insert Key"
-msgstr "Vložit klíč"
-
 msgid "Duplicate Key(s)"
 msgstr "Duplikovat klíč(e)"
 
@@ -665,6 +758,9 @@ msgstr ""
 
 msgid "Remove Anim Track"
 msgstr "Odstranit stopu animace"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr "Držení Shiftu během klikání na ikonku klíče přeskočí tento dialog."
 
 msgid "Create"
 msgstr "Vytvořit"
@@ -758,6 +854,22 @@ msgstr ""
 "Tato možnost nefunguje pro úpravy Beziérovy křivky, protože se jedná pouze o "
 "jednu stopu."
 
+msgid ""
+"Some AnimationPlayerEditor's options are disabled since this is the dummy "
+"AnimationPlayer for preview.\n"
+"\n"
+"The dummy player is forced active, non-deterministic and doesn't have the "
+"root motion track. Furthermore, the original node is inactive temporary."
+msgstr ""
+"Některé možnost AnimationPlayerEditoru jsou vypnuté v této ukázce "
+"AnimationPlayeru.\n"
+"\n"
+"Ukázkový přehrávač je explicitně aktivován, nedeterministický a nemá žádný "
+"root motion track. Původní uzel je navíc dočasně deaktivovaný."
+
+msgid "AnimationPlayer is inactive. The playback will not be processed."
+msgstr "AnimationPlayer je neaktivní. Přehrávání nebude zpracováno."
+
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr ""
 "Pro přidání a úpravu animací vyberte ze stromu scény uzel AnimationPlayer."
@@ -767,6 +879,9 @@ msgstr "Importovaná scéna"
 
 msgid "Warning: Editing imported animation"
 msgstr "Upozornění: Upravuje se importovaná animace"
+
+msgid "Dummy Player"
+msgstr "Ukázkový přehrávač"
 
 msgid "Toggle between the bezier curve editor and track editor."
 msgstr "Přepnout mezi editorem bézierovy křivky a editorem stopy."
@@ -795,15 +910,6 @@ msgstr "Upravit"
 msgid "Animation properties."
 msgstr "Vlastnosti animace."
 
-msgid "Copy Tracks"
-msgstr "Kopírovat stopy"
-
-msgid "Scale Selection"
-msgstr "Změnit měřítko výběru"
-
-msgid "Scale From Cursor"
-msgstr "Změnit měřítko od kurzoru"
-
 msgid "Duplicate Selection"
 msgstr "Duplikovat výběr"
 
@@ -821,15 +927,6 @@ msgstr "Přejít k předchozímu kroku"
 
 msgid "Apply Reset"
 msgstr "Resetovat"
-
-msgid "Bake Animation"
-msgstr "Zapéct animaci"
-
-msgid "Optimize Animation (no undo)"
-msgstr "Optimalizovat animaci (nelze vrátit zpět)"
-
-msgid "Clean-Up Animation (no undo)"
-msgstr "Pročistit animaci (nelze vrátit zpět)"
 
 msgid "Use Bezier Curves"
 msgstr "Použít Bézierovy křivky"
@@ -867,6 +964,34 @@ msgstr "Vybrat přechod a dynamiku"
 msgctxt "Transition Type"
 msgid "Sine"
 msgstr "Sinus"
+
+msgctxt "Transition Type"
+msgid "Quint"
+msgstr "Kvintický"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "Kvartický"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "Kvadratický"
+
+msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "Elastický"
+
+msgctxt "Transition Type"
+msgid "Circ"
+msgstr "Kruhový"
+
+msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "Skákající"
+
+msgctxt "Transition Type"
+msgid "Spring"
+msgstr "Pružinový"
 
 msgctxt "Ease Type"
 msgid "In"
@@ -1135,6 +1260,15 @@ msgstr "Instance:"
 msgid "Toggle Visibility"
 msgstr "Přepnout viditelnost"
 
+msgid "Updating assets on target device:"
+msgstr "Aktualizace zdrojů na cílovém zařízení:"
+
+msgid "Getting remote file system"
+msgstr "Získávání vzdáleného souborového systému"
+
+msgid "Sending list of changed files:"
+msgstr "Zasílání seznamu změněných souborů:"
+
 msgid "ms"
 msgstr "ms"
 
@@ -1212,6 +1346,9 @@ msgstr "CPU"
 
 msgid "GPU"
 msgstr "GPU"
+
+msgid "Execution resumed."
+msgstr "Provádění obnoveno."
 
 msgid "Bytes:"
 msgstr "Bajtů:"
@@ -1582,6 +1719,9 @@ msgstr[1] ""
 "%d soubory jsou v konfliktu s vaším projektem a nebudou nainstalovány"
 msgstr[2] "%d souborů je v konfliktu s vaším projektem a nebudou nainstalovány"
 
+msgid "This asset doesn't have a root directory, so it can't be ignored."
+msgstr "Tento zdroj nemá kořenový adresář, proto nemůže být ignorován."
+
 msgid "Ignore the root directory when extracting files."
 msgstr "Ignorovat kořenovou složku při extrakci souborů."
 
@@ -1603,14 +1743,34 @@ msgstr "Balíček \"%s\" byl úspěšně nainstalován!"
 msgid "Success!"
 msgstr "Úspěch!"
 
+msgid "Open the list of the asset contents and select which files to install."
+msgstr ""
+"Otevřít seznam obsahů zdrojů a vybrat, které soubory se mají instalovat."
+
 msgid "Change Install Folder"
 msgstr "Změnit složku k instalaci"
+
+msgid ""
+"Change the folder where the contents of the asset are going to be installed."
+msgstr "Změnit složku, do které se instaluje obsah zdrojů."
+
+msgid "Ignore asset root"
+msgstr "Ignorovat kořen zdrojů"
 
 msgid "No files conflict with your project"
 msgstr "Žádné soubory nejsou v konfliktu s vaším projektem"
 
+msgid "Show contents of the asset and conflicting files."
+msgstr "Ukázat obsah zdroje a konfliktní soubory."
+
+msgid "Contents of the asset:"
+msgstr "Obsah zdroje:"
+
 msgid "Installation preview:"
 msgstr "Náhled instalace:"
+
+msgid "Configure Asset Before Installing"
+msgstr "Konfigurovat zdroj před instalací"
 
 msgid "Install"
 msgstr "Instalovat"
@@ -1837,11 +1997,49 @@ msgstr "Fonty WOFF2"
 msgid "SIL Graphite Fonts"
 msgstr "Fonty SIL Grafite"
 
+msgid "3D Nodes as well as RenderingServer access to 3D features."
+msgstr "Přístup 3D Nodů a RenderingServeru k 3D funkcím."
+
+msgid "2D Physics nodes and PhysicsServer2D."
+msgstr "Uzly 2D Fyziky a PhysicsServer2D."
+
+msgid "3D Physics nodes and PhysicsServer3D."
+msgstr "Uzly 3D Fyziky a PhysicsServer3D."
+
 msgid "Navigation, both 2D and 3D."
 msgstr "Navigace, jak 2D, tak i 3D."
 
 msgid "XR (AR and VR)."
 msgstr "XR (AR a VR)."
+
+msgid ""
+"RenderingDevice based rendering (if disabled, the OpenGL back-end is "
+"required)."
+msgstr ""
+"Renderování založené na RenderingDevice (pokud je vypnuté, je požadován "
+"OpenGL back-end)."
+
+msgid "OpenGL back-end (if disabled, the RenderingDevice back-end is required)."
+msgstr ""
+"OpenGL back-end (pokud je vypnutý, je vyžadován back-end Rendering Device)."
+
+msgid "Vulkan back-end of RenderingDevice."
+msgstr "Back-end Vulkan pro RenderingDevice."
+
+msgid ""
+"Fallback implementation of Text Server\n"
+"Supports basic text layouts."
+msgstr ""
+"Záložní implementace Text Serveru\n"
+"Podporuje základní rozložení textu."
+
+msgid ""
+"Text Server implementation powered by ICU and HarfBuzz libraries.\n"
+"Supports complex text layouts, BiDi, and contextual OpenType font features."
+msgstr ""
+"Implementace Text Serveru založená na knihovnách ICU a HarfBuzz\n"
+"Podporuje komplexní textová rozložení, BiDi a vlastnosti kontextuálních "
+"OpenType fontů."
 
 msgid ""
 "TrueType, OpenType, Type 1, and WOFF1 font format support using FreeType "
@@ -1852,6 +2050,9 @@ msgstr ""
 
 msgid "WOFF2 font format support using FreeType and Brotli libraries."
 msgstr "Podpora pro formát fontů WOFF2 pomocí knihoven FreeType a Brotli."
+
+msgid "Text Rendering and Font Options:"
+msgstr "Vykreslování textu a možnosti nastavení fontů:"
 
 msgid "File saving failed."
 msgstr "Ukládání souboru selhalo."
@@ -1970,6 +2171,9 @@ msgid ""
 msgstr ""
 "Umožňuje konfigurovat nastavení importu pro jednotlivé zdroje. Pro svou "
 "funkci vyžaduje dok Souborový systém."
+
+msgid "Provides an overview of the editor's and each scene's undo history."
+msgstr "Poskytuje přehled historie vracení změn editoru a jednotlivých scén."
 
 msgid "(current)"
 msgstr "(aktuální)"
@@ -2188,6 +2392,13 @@ msgstr ""
 
 msgid "Note:"
 msgstr "Poznámka:"
+
+msgid ""
+"There are notable differences when using this API with C#. See [url=%s]C# API "
+"differences to GDScript[/url] for more information."
+msgstr ""
+"Existují významné rozdíly při použití tohoto API s C#. Pro více informací viz "
+"[url=%s]Rozdíly C# API ve srovnání s GDScript[/url]."
 
 msgid "Online Tutorials"
 msgstr "Online návody"
@@ -2423,6 +2634,9 @@ msgstr "Přidat metadata %s"
 msgid "Metadata name can't be empty."
 msgstr "Název metadat nemůže být prázdný."
 
+msgid "Names starting with _ are reserved for editor-only metadata."
+msgstr "Jména začínající _ jsou rezervována pouze pro metadata editoru."
+
 msgid "Name:"
 msgstr "Jméno:"
 
@@ -2493,6 +2707,10 @@ msgstr "Vymazat výstup"
 
 msgid "Copy Selection"
 msgstr "Kopírovat výběr"
+
+msgid ""
+"Collapse duplicate messages into one log entry. Shows number of occurrences."
+msgstr "Sloučit duplicitní zprávy do jednoho záznamu. Zobrazuje počet výskytů."
 
 msgid "Unnamed Project"
 msgstr "Nepojmenovaný projekt"
@@ -2802,14 +3020,21 @@ msgstr ""
 "Vybraná scéna '%s' není platný soubor scény. Vybrat jinou?\n"
 "Můžete ji později změnit v \"Nastavení projektu\" v kategorii \"aplikace\"."
 
+msgid "Default"
+msgstr "Výchozí"
+
 msgid "Save Layout"
 msgstr "Uložit rozložení"
 
 msgid "Delete Layout"
 msgstr "Odstranit rozložení"
 
-msgid "Default"
-msgstr "Výchozí"
+msgid ""
+"Scene \"%s\" has unsaved changes.\n"
+"Last saved: %s."
+msgstr ""
+"Scéna \"%s\" obsahuje neuložené změny\n"
+"Naposledy uloženo: %s."
 
 msgid "Save & Close"
 msgstr "Uložit a zavřít"
@@ -2837,6 +3062,9 @@ msgstr "Přesunout pohled"
 
 msgid "Dock Position"
 msgstr "Pozice doku"
+
+msgid "Make Floating"
+msgstr "Oddokovat"
 
 msgid "Distraction Free Mode"
 msgstr "Nerozptylující režitm"
@@ -2981,9 +3209,6 @@ msgstr "Navrhnout funkci"
 
 msgid "Send Docs Feedback"
 msgstr "Odeslat zpětnou vazbu dokumentace"
-
-msgid "About Godot"
-msgstr "O aplikaci Godot"
 
 msgid "Support Godot Development"
 msgstr "Podpořte projekt Godot"
@@ -3193,8 +3418,8 @@ msgstr ""
 "Vybraný zdroj (%s) neodpovídá žádnému očekávanému typu pro tuto vlastnost "
 "(%s)."
 
-msgid "Quick Load"
-msgstr "Rychlé načtení"
+msgid "Load..."
+msgstr "Načíst..."
 
 msgid "Make Unique"
 msgstr "Vytvořit unikátní"
@@ -3211,11 +3436,8 @@ msgstr "Převést na %s"
 msgid "New %s"
 msgstr "Nový %s"
 
-msgid "New Script"
-msgstr "Nový skript"
-
-msgid "Extend Script"
-msgstr "Rozšířit skript"
+msgid "New Script..."
+msgstr "Nový skript..."
 
 msgid ""
 "No runnable export preset found for this platform.\n"
@@ -3753,9 +3975,6 @@ msgstr "Nová složka..."
 
 msgid "New Scene..."
 msgstr "Nová scéna..."
-
-msgid "New Script..."
-msgstr "Nový skript..."
 
 msgid "New Resource..."
 msgstr "Nový zdroj..."
@@ -4401,9 +4620,6 @@ msgstr "Přidání animace"
 
 msgid "Add %s"
 msgstr "Přidat %s"
-
-msgid "Load..."
-msgstr "Načíst..."
 
 msgid "Move Node Point"
 msgstr "Přesunout body uzlů"
@@ -5265,6 +5481,9 @@ msgstr "Škálovací maska pro vkládání klíčů."
 
 msgid "Insert keys (based on mask)."
 msgstr "Vložit klíč (založený na masce)."
+
+msgid "Insert Key"
+msgstr "Vložit klíč"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -6580,6 +6799,9 @@ msgstr "Přejít na předchozí upravovaný dokument."
 msgid "Go to next edited document."
 msgstr "Přejít na další upravovaný dokument."
 
+msgid "Make the script editor floating."
+msgstr "Změň script editor v plovoucí dok."
+
 msgid "Discard"
 msgstr "Zahodit"
 
@@ -6726,8 +6948,8 @@ msgstr "Přejít na další breakpoint"
 msgid "Go to Previous Breakpoint"
 msgstr "Přejít na předchozí breakpoint"
 
-msgid "Save File As"
-msgstr "Uložit soubor jako"
+msgid "Make the shader editor floating."
+msgstr "Změň shader editor v plovoucí dok."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Kostra nemá žádné kosti, vytvoř nějaké potomky Bone2D."
@@ -8355,9 +8577,6 @@ msgstr "Nelze vložit kořenový uzel do stejné scény."
 msgid "<Unnamed> at %s"
 msgstr "<Nepojmenovaný> v %s"
 
-msgid "Reparent to New Node"
-msgstr "Změnit rodiče na nový uzel"
-
 msgid "Make Scene Root"
 msgstr "Nastav scénu jako zdrojovou"
 
@@ -8464,8 +8683,17 @@ msgstr "Neplatná základní cesta."
 msgid "Wrong extension chosen."
 msgstr "Vybrána špatná přípona."
 
+msgid "Mode:"
+msgstr "Režim:"
+
 msgid "Global shader parameter '%s' already exists'"
 msgstr "Globální parametr shaderu \"%s\" již existuje"
+
+msgid "Make this panel floating in the screen %d."
+msgstr "Otevřít tento panel jako plovoucí dok na obrazovce %d."
+
+msgid "Select Screen"
+msgstr "Vybrat obrazovku"
 
 msgid "Change Cylinder Radius"
 msgstr "Změnit poloměr Cylinder"

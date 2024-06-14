@@ -513,6 +513,9 @@ msgstr "Facer os Manipuladores Lineais"
 msgid "Make Handles Balanced"
 msgstr "Facer os Manipuladores equilibrados"
 
+msgid "Make Handles Mirrored"
+msgstr "Facer os manipuladores simétricos"
+
 msgid "Add Bezier Point"
 msgstr "Engadir Punto Bezier"
 
@@ -524,6 +527,9 @@ msgstr "Duplicar Claves de Animación"
 
 msgid "Animation Delete Keys"
 msgstr "Eliminar Claves de Animación"
+
+msgid "Focus"
+msgstr "Foco"
 
 msgid "Select All Keys"
 msgstr "Seleccionar Todas as Claves"
@@ -569,30 +575,6 @@ msgstr "Cambiar Lonxitude da Animación"
 
 msgid "Change Animation Loop"
 msgstr "Cambiar Ciclo da Animación"
-
-msgid "Property Track"
-msgstr "Pista de Propiedades"
-
-msgid "3D Position Track"
-msgstr "Pista de Posición 3D"
-
-msgid "3D Rotation Track"
-msgstr "Pista de Rotación 3D"
-
-msgid "3D Scale Track"
-msgstr "Pista de Escala 3D"
-
-msgid "Call Method Track"
-msgstr "Pista de Chamadas de Métodos"
-
-msgid "Bezier Curve Track"
-msgstr "Pista de Curva Bezier"
-
-msgid "Audio Playback Track"
-msgstr "Pista de Reprodución de Audio"
-
-msgid "Animation Playback Track"
-msgstr "Pista de Reprodución de Animación"
 
 msgid "Animation length (frames)"
 msgstr "Lonxitude da Animacion (en fotogramas)"
@@ -701,9 +683,6 @@ msgstr "Interpolación de Bucle Recortado"
 
 msgid "Wrap Loop Interp"
 msgstr "Interpolación de Bucle Envolvente"
-
-msgid "Insert Key"
-msgstr "Engadir Chave"
 
 msgid "Duplicate Key(s)"
 msgstr "Duplicar Chave(s)"
@@ -913,18 +892,6 @@ msgstr "Editar"
 msgid "Animation properties."
 msgstr "Propiedades de Animación."
 
-msgid "Copy Tracks"
-msgstr "Copiar Pistas"
-
-msgid "Scale Selection"
-msgstr "Escalar Selección"
-
-msgid "Scale From Cursor"
-msgstr "Escalar desde o Cursor"
-
-msgid "Make Easing Selection"
-msgstr "Fai unha selección simplificada"
-
 msgid "Duplicate Selection"
 msgstr "Duplicar Selección"
 
@@ -942,15 +909,6 @@ msgstr "Ir ao Anterior Paso"
 
 msgid "Apply Reset"
 msgstr "Aplicar Reset"
-
-msgid "Bake Animation"
-msgstr "Bakear Animación"
-
-msgid "Optimize Animation (no undo)"
-msgstr "Optimizar Animación (Non se pode deshacer)"
-
-msgid "Clean-Up Animation (no undo)"
-msgstr "Limpar Animación (Non se pode deshacer)"
 
 msgid "Pick a node to animate:"
 msgstr "Selecciona un nodo para animar:"
@@ -2500,14 +2458,14 @@ msgstr ""
 "Podes cambialo despois en \"Configuración do Proxecto\" na categoría "
 "\"aplicación\"."
 
+msgid "Default"
+msgstr "Por Defecto"
+
 msgid "Save Layout"
 msgstr "Gardar Disposición"
 
 msgid "Delete Layout"
 msgstr "Eliminar Dispoción"
-
-msgid "Default"
-msgstr "Por Defecto"
 
 msgid "Save & Close"
 msgstr "Gardar e Pechar"
@@ -2770,6 +2728,9 @@ msgstr ""
 "O recurso seleccionado (%s) non coincide con ningún tipo esperado para esta "
 "propiedade (%s)."
 
+msgid "Load..."
+msgstr "Cargar..."
+
 msgid "Make Unique"
 msgstr "Facer Único"
 
@@ -2782,11 +2743,8 @@ msgstr "Amosar no Sistema de Arquivos"
 msgid "New %s"
 msgstr "Novo %s"
 
-msgid "New Script"
-msgstr "Novo Script"
-
-msgid "Extend Script"
-msgstr "Estender Script"
+msgid "New Script..."
+msgstr "Novo Script..."
 
 msgid ""
 "No runnable export preset found for this platform.\n"
@@ -3000,9 +2958,6 @@ msgstr "Novo Cartafol..."
 
 msgid "New Scene..."
 msgstr "Nova Escena..."
-
-msgid "New Script..."
-msgstr "Novo Script..."
 
 msgid "New Resource..."
 msgstr "Novo Recurso..."
@@ -3379,9 +3334,6 @@ msgstr "Engadir Animación"
 
 msgid "Add %s"
 msgstr "Engadir %s"
-
-msgid "Load..."
-msgstr "Cargar..."
 
 msgid "This type of node can't be used. Only root nodes are allowed."
 msgstr "Non se pode usar este tipo de nodo. Só nodos raíz están permitidos."
@@ -3786,6 +3738,9 @@ msgstr "Encadrar Selección"
 
 msgid "Preview Canvas Scale"
 msgstr "Vista Previa da Escala do Lenzo (Canvas)"
+
+msgid "Insert Key"
+msgstr "Engadir Chave"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "

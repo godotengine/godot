@@ -412,21 +412,6 @@ msgstr "Thay Độ Dài Hoạt Ảnh"
 msgid "Change Animation Loop"
 msgstr "Chỉnh Vòng Lặp Hoạt Ảnh"
 
-msgid "Property Track"
-msgstr "Theo dõi đặc tính"
-
-msgid "Call Method Track"
-msgstr "Gọi phương thức theo dõi"
-
-msgid "Bezier Curve Track"
-msgstr "Theo dõi đường cong Bezier"
-
-msgid "Audio Playback Track"
-msgstr "Kênh Âm Thanh"
-
-msgid "Animation Playback Track"
-msgstr "Kênh Hoạt Ảnh"
-
 msgid "Animation length (frames)"
 msgstr "Độ dài hoạt ảnh (khung hình)"
 
@@ -498,9 +483,6 @@ msgstr "Kẹp vòng nội suy"
 
 msgid "Wrap Loop Interp"
 msgstr "Bọc vòng lặp nội suy"
-
-msgid "Insert Key"
-msgstr "Chèn khoá"
 
 msgid "Duplicate Key(s)"
 msgstr "Nhân bản các khoá hoạt ảnh"
@@ -630,15 +612,6 @@ msgstr "Chỉnh sửa"
 
 msgid "Animation properties."
 msgstr "Thuộc tính hoạt hình."
-
-msgid "Copy Tracks"
-msgstr "Sao Chép Tracks"
-
-msgid "Scale Selection"
-msgstr "Chọn Scale"
-
-msgid "Scale From Cursor"
-msgstr "Scale từ trỏ chuột"
 
 msgid "Duplicate Selection"
 msgstr "Nhân đôi lựa chọn"
@@ -2069,14 +2042,14 @@ msgstr ""
 "'%s' không phải một tệp phân cảnh, chọn tệp phân cảnh hợp lệ?\n"
 "Bạn có thể thay đổi nó sau trong \"Cài đặt Dự án\", nằm trong mục 'ứng dụng'."
 
+msgid "Default"
+msgstr "Mặc định"
+
 msgid "Save Layout"
 msgstr "Lưu bố cục"
 
 msgid "Delete Layout"
 msgstr "Xoá bố cục"
-
-msgid "Default"
-msgstr "Mặc định"
 
 msgid "Save & Close"
 msgstr "Lưu & Đóng"
@@ -2225,9 +2198,6 @@ msgstr "Gợi ý một tính năng"
 
 msgid "Send Docs Feedback"
 msgstr "Gửi ý kiến phản hồi về hướng dẫn"
-
-msgid "About Godot"
-msgstr "Về Godot"
 
 msgid "Support Godot Development"
 msgstr "Hỗ trợ phát triển Godot"
@@ -2418,8 +2388,8 @@ msgid ""
 msgstr ""
 "Kiểu của tài nguyên đã chọn (%s) không dùng được cho thuộc tính này (%s)."
 
-msgid "Quick Load"
-msgstr "Nạp nhanh"
+msgid "Load..."
+msgstr "Nạp ..."
 
 msgid "Make Unique"
 msgstr "Duy nhất"
@@ -2436,11 +2406,11 @@ msgstr "Chuyển đổi thành %s"
 msgid "New %s"
 msgstr "%s mới"
 
-msgid "New Script"
-msgstr "Tập lệnh mới"
+msgid "New Script..."
+msgstr "Tập lệnh mới..."
 
-msgid "Extend Script"
-msgstr "Mở rộng tập lệnh"
+msgid "Extend Script..."
+msgstr "Mở rộng tập lệnh..."
 
 msgid "Write your logic in the _run() method."
 msgstr "Ghi logic của bạn trong hàm _run()."
@@ -2834,9 +2804,6 @@ msgstr "Thư mục mới ..."
 
 msgid "New Scene..."
 msgstr "Tạo Cảnh Mới..."
-
-msgid "New Script..."
-msgstr "Tập lệnh mới..."
 
 msgid "New Resource..."
 msgstr "Tài nguyên mới ..."
@@ -3298,9 +3265,6 @@ msgstr "Thêm hoạt hình"
 
 msgid "Add %s"
 msgstr "Thêm %s"
-
-msgid "Load..."
-msgstr "Nạp ..."
 
 msgid "Move Node Point"
 msgstr "Di chuyển điểm Nút"
@@ -4043,6 +4007,9 @@ msgstr "Xem trước tỉ lệ bức vẽ"
 
 msgid "Insert keys (based on mask)."
 msgstr "Chèn khóa (dựa trên mặt nạ)."
+
+msgid "Insert Key"
+msgstr "Chèn khoá"
 
 msgid "Auto Insert Key"
 msgstr "Tự chèn khoá"
@@ -6108,12 +6075,6 @@ msgstr "Thêm nút con..."
 
 msgid "Attach Script..."
 msgstr "Đính kèm tập lệnh..."
-
-msgid "Extend Script..."
-msgstr "Mở rộng tập lệnh..."
-
-msgid "Reparent to New Node"
-msgstr "Thay nút mẹ thành nút mới"
 
 msgid "Make Scene Root"
 msgstr "Biến Cảnh thành Gốc"

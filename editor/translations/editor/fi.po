@@ -605,33 +605,6 @@ msgstr ""
 "Ei voida vaihtaa toisto moodia animaatiolta, joka upotettu toiseen "
 "kohtaukseen."
 
-msgid "Property Track"
-msgstr "Ominaisuusraita"
-
-msgid "3D Position Track"
-msgstr "3D Sijainti Raita"
-
-msgid "3D Rotation Track"
-msgstr "3D Kierto Raita"
-
-msgid "3D Scale Track"
-msgstr "3D Koko Raita"
-
-msgid "Blend Shape Track"
-msgstr "Muodonsulautusraita"
-
-msgid "Call Method Track"
-msgstr "Metodikutsuraita"
-
-msgid "Bezier Curve Track"
-msgstr "Bezier-käyräraita"
-
-msgid "Audio Playback Track"
-msgstr "Äänentoistoraita"
-
-msgid "Animation Playback Track"
-msgstr "Animaatiotoistoraita"
-
 msgid "Animation length (frames)"
 msgstr "Animaation pituus (kuvaruutuina)"
 
@@ -763,9 +736,6 @@ msgstr "Leikkaa kierron interpolointi"
 
 msgid "Wrap Loop Interp"
 msgstr "Kiedo kierron interpolointi"
-
-msgid "Insert Key"
-msgstr "Lisää avainruutu"
 
 msgid "Duplicate Key(s)"
 msgstr "Kahdenna avainruudut"
@@ -1021,14 +991,14 @@ msgstr "Muokkaa"
 msgid "Animation properties."
 msgstr "Animaation ominaisuudet."
 
-msgid "Copy Tracks"
-msgstr "Kopioi raidat"
+msgid "Copy Tracks..."
+msgstr "Kopioi raidat..."
 
-msgid "Scale Selection"
-msgstr "Skaalaa valintaa"
+msgid "Scale Selection..."
+msgstr "Skaalaa valintaa..."
 
-msgid "Scale From Cursor"
-msgstr "Skaalaa kursorista"
+msgid "Scale From Cursor..."
+msgstr "Skaalaa kursorista..."
 
 msgid "Duplicate Selection"
 msgstr "Kahdenna valinta"
@@ -1047,12 +1017,6 @@ msgstr "Mene edelliseen askeleeseen"
 
 msgid "Apply Reset"
 msgstr "Tee palautus"
-
-msgid "Optimize Animation (no undo)"
-msgstr "Optimoi animaatio (ei kumoamista)"
-
-msgid "Clean-Up Animation (no undo)"
-msgstr "Siivoa animaatio (ei kumoamista)"
 
 msgid "Pick a node to animate:"
 msgstr "Valitse animoitava solmu:"
@@ -3315,14 +3279,14 @@ msgstr ""
 "Voit muuttaa sitä myöhemmin \"Projektiasetukset\" -kohdassa 'sovellus' -"
 "luokassa."
 
+msgid "Default"
+msgstr "Oletus"
+
 msgid "Save Layout"
 msgstr "Tallenna asettelu"
 
 msgid "Delete Layout"
 msgstr "Poista asettelu"
-
-msgid "Default"
-msgstr "Oletus"
 
 msgid "This scene was never saved."
 msgstr "Tätä kohtausta ei koskaan tallennettu."
@@ -3534,9 +3498,6 @@ msgstr "Ehdota ominaisuutta"
 
 msgid "Send Docs Feedback"
 msgstr "Lähetä palautetta ohjeesta"
-
-msgid "About Godot"
-msgstr "Tietoja Godotista"
 
 msgid "Support Godot Development"
 msgstr "Tue Godotin kehitystä"
@@ -3800,8 +3761,8 @@ msgstr ""
 "Valittu resurssi (%s) ei vastaa mitään odotettua tyyppiä tälle ominaisuudelle "
 "(%s)."
 
-msgid "Quick Load"
-msgstr "Pikalataus"
+msgid "Load..."
+msgstr "Lataa..."
 
 msgid "Inspect"
 msgstr "Tarkastele"
@@ -3827,14 +3788,11 @@ msgstr "Valitse yksilölliseksi tehtävät resurssit:"
 msgid "New %s"
 msgstr "Uusi %s"
 
-msgid "New Script"
-msgstr "Uusi skripti"
+msgid "New Script..."
+msgstr "Uusi skripti..."
 
-msgid "Extend Script"
-msgstr "Laajenna skriptiä"
-
-msgid "New Shader"
-msgstr "Uusi Shader"
+msgid "Extend Script..."
+msgstr "Laajenna Skriptiä..."
 
 msgid "No Remote Debug export presets configured."
 msgstr "Ei Etädebuggaus vientiasetuksia konfiguroitu."
@@ -4606,9 +4564,6 @@ msgstr "Uusi kansio..."
 
 msgid "New Scene..."
 msgstr "Uusi kohtaus..."
-
-msgid "New Script..."
-msgstr "Uusi skripti..."
 
 msgid "New Resource..."
 msgstr "Uusi resurssi..."
@@ -5551,9 +5506,6 @@ msgstr "Lisää animaatio"
 
 msgid "Add %s"
 msgstr "Lisää %s"
-
-msgid "Load..."
-msgstr "Lataa..."
 
 msgid "Move Node Point"
 msgstr "Siirrä solmupistettä"
@@ -6596,6 +6548,9 @@ msgstr "Skaalausmaski avainruutujen lisäämiseen."
 
 msgid "Insert keys (based on mask)."
 msgstr "Lisää avainruutuja (maskiin perustuen)."
+
+msgid "Insert Key"
+msgstr "Lisää avainruutu"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -8346,9 +8301,6 @@ msgstr "Varjostin Editori"
 
 msgid "Save File"
 msgstr "Tallenna Tiedosto"
-
-msgid "Save File As"
-msgstr "Tallenna Tiedosto Nimellä"
 
 msgid "Open File in Inspector"
 msgstr "Avaa Tiedosto Ttarkastelijassa"
@@ -10531,12 +10483,6 @@ msgstr "Muuta Tyyppiä..."
 
 msgid "Attach Script..."
 msgstr "Liitä Skripti..."
-
-msgid "Extend Script..."
-msgstr "Laajenna Skriptiä..."
-
-msgid "Reparent to New Node"
-msgstr "Vaihda solmulle uusi isäntä"
 
 msgid "Make Scene Root"
 msgstr "Tee kohtauksen juuri"

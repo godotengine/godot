@@ -34,6 +34,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.1-dev\n"
 
+msgid "Main Thread"
+msgstr "Ĉefa Fadeno"
+
 msgid "Unset"
 msgstr "malŝalti"
 
@@ -97,6 +100,9 @@ msgstr "Stirstanga moviĝo sur akso %d (%s) kun valoro %.2f"
 msgid "Joypad Button %d"
 msgstr "Butono de ludstrilo %d"
 
+msgid "Accept"
+msgstr "Akceptu"
+
 msgid "Select"
 msgstr "Elekti"
 
@@ -108,6 +114,9 @@ msgstr "Alŝuta"
 
 msgid "Down"
 msgstr "Elŝuta"
+
+msgid "Home"
+msgstr "Hejmo"
 
 msgid "End"
 msgstr "Fino"
@@ -127,8 +136,14 @@ msgstr "Malfari"
 msgid "Redo"
 msgstr "Refari"
 
+msgid "New Line"
+msgstr "Nova Linio"
+
 msgid "Delete"
 msgstr "Forigi"
+
+msgid "Delete Word"
+msgstr "Forigi Vorton"
 
 msgid "Select All"
 msgstr "Elekti tutan"
@@ -224,21 +239,6 @@ msgstr "Aliigi Animadon Longecon"
 msgid "Change Animation Loop"
 msgstr "Aliigi Animadon Iteracion"
 
-msgid "Property Track"
-msgstr "Atributa trako"
-
-msgid "Call Method Track"
-msgstr "Metod-alvoka trako"
-
-msgid "Bezier Curve Track"
-msgstr "Bezier-kurba trako"
-
-msgid "Audio Playback Track"
-msgstr "Aŭdia reproduktada trako"
-
-msgid "Animation Playback Track"
-msgstr "Animacia reproduktada trako"
-
 msgid "Animation length (frames)"
 msgstr "Animado loneco (filmeroj)"
 
@@ -316,9 +316,6 @@ msgstr "Krampi Iteracion Interpolon"
 
 msgid "Wrap Loop Interp"
 msgstr "Ĉirkaŭvolvi Iteracion Interpolon"
-
-msgid "Insert Key"
-msgstr "Enmeti Ŝlosilon"
 
 msgid "Duplicate Key(s)"
 msgstr "Duobligi Ŝlosilo(j)n"
@@ -450,15 +447,6 @@ msgstr "Redakti"
 
 msgid "Animation properties."
 msgstr "Animado atributoj."
-
-msgid "Copy Tracks"
-msgstr "Kopii trakojn"
-
-msgid "Scale Selection"
-msgstr "Skali Elektaron"
-
-msgid "Scale From Cursor"
-msgstr "Skali El Kursoron"
 
 msgid "Duplicate Selection"
 msgstr "Duobligi Elektaron"
@@ -1262,6 +1250,9 @@ msgstr "Doko de dosiersistemo"
 msgid "Import Dock"
 msgstr "Doko de enporto"
 
+msgid "History Dock"
+msgstr "Doko de historio"
+
 msgid "Allows to view and edit 3D scenes."
 msgstr "Permesas vidi kaj redakti 3D-scenojn."
 
@@ -1797,14 +1788,14 @@ msgstr ""
 "Elektita sceno '%s' ne estas scena dosiero, elekti validan unuon?\n"
 "Vi povas ŝanĝi ĝin poste en \"Projektaj agordoj\" en la 'apliko' kategorio."
 
+msgid "Default"
+msgstr "Defaŭlto"
+
 msgid "Save Layout"
 msgstr "Konservi aranĝon"
 
 msgid "Delete Layout"
 msgstr "Forigi aranĝon"
-
-msgid "Default"
-msgstr "Defaŭlto"
 
 msgid "Save & Close"
 msgstr "Konservi kaj fermi"
@@ -1958,6 +1949,9 @@ msgstr "Inspektoro"
 msgid "Node"
 msgstr "Nodo"
 
+msgid "History"
+msgstr "Historio"
+
 msgid "Expand Bottom Panel"
 msgstr "Etendi suban panelon"
 
@@ -2104,6 +2098,9 @@ msgstr ""
 "La elektinta risurco (%s) ne kongruas ian atenditan tipon por ĉi tiu atributo "
 "(%s)."
 
+msgid "Load..."
+msgstr "Ŝargi..."
+
 msgid "Make Unique"
 msgstr "Farigi unikan"
 
@@ -2116,11 +2113,8 @@ msgstr "Montri en dosiersistemo"
 msgid "New %s"
 msgstr "Nova %s"
 
-msgid "New Script"
-msgstr "Nova skripto"
-
-msgid "Extend Script"
-msgstr "Etendi skripton"
+msgid "New Script..."
+msgstr "Nova skripto..."
 
 msgid ""
 "No runnable export preset found for this platform.\n"
@@ -2352,9 +2346,6 @@ msgstr "Nova dosierujo..."
 
 msgid "New Scene..."
 msgstr "Nova sceno..."
-
-msgid "New Script..."
-msgstr "Nova skripto..."
 
 msgid "New Resource..."
 msgstr "Nova risurco..."
@@ -2776,9 +2767,6 @@ msgstr "Aldoni animacion"
 
 msgid "Add %s"
 msgstr "Aldoni %s"
-
-msgid "Load..."
-msgstr "Ŝargi..."
 
 msgid "Move Node Point"
 msgstr "Movi punkton de nodo"
@@ -3431,6 +3419,9 @@ msgstr "Skala masko por enmeti ŝlosilojn."
 msgid "Insert keys (based on mask)."
 msgstr "Enmeti ŝlosilojn (surbaze de masko)."
 
+msgid "Insert Key"
+msgstr "Enmeti Ŝlosilon"
+
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
 "mask).\n"
@@ -3812,11 +3803,56 @@ msgstr "Konservi dosieron kiel..."
 msgid "Save Theme As..."
 msgstr "Konservi etoson kiel..."
 
+msgid "Find Next"
+msgstr "Trovu Sekva"
+
+msgid "Find Previous"
+msgstr "Trovu Antaŭa"
+
+msgid "Filter Scripts"
+msgstr "Filtru Skriptoj"
+
+msgid "Toggle alphabetical sorting of the method list."
+msgstr "Baskuli alfabetan ordigon de la metodolisto."
+
+msgid "Sort"
+msgstr "Ordigi"
+
+msgid "Next Script"
+msgstr "Sekva Skripto"
+
+msgid "Previous Script"
+msgstr "Antaŭa Skripto"
+
 msgid "File"
 msgstr "Dosiero"
 
+msgid "Open..."
+msgstr "Malfermi..."
+
+msgid "Reopen Closed Script"
+msgstr "Remalfermu Fermita Skripto"
+
 msgid "Save All"
 msgstr "Konservi tuton"
+
+msgid "Theme"
+msgstr "Temo"
+
+msgid "Import Theme..."
+msgstr "Importi Temo..."
+
+msgid "Reload Theme"
+msgstr "Reŝargi Temo"
+
+msgid "Save Theme"
+msgstr "Savi Temo"
+
+msgid "Close All"
+msgstr "Fermu Ĉion"
+
+msgid "Close Docs"
+msgstr "Fermu Dokumentaron"
 
 msgid "Run"
 msgstr "Ruli"
@@ -3829,6 +3865,12 @@ msgstr "Enreta dokumentaro"
 
 msgid "Open Godot online documentation."
 msgstr "Malfermi enretan dokumentaron de Godot."
+
+msgid "Go to previous edited document."
+msgstr "Iru al la antaŭa redaktita dokumento."
+
+msgid "Go to next edited document."
+msgstr "Iru al la sekva redaktita dokumento."
 
 msgid "Search Results"
 msgstr "Rezultoj de serĉo"
@@ -3904,6 +3946,9 @@ msgstr "Konverti krommarĝenon al taboj"
 
 msgid "Contextual Help"
 msgstr "Kunteksta Helpo"
+
+msgid "Close File"
+msgstr "Fermu Dosiero"
 
 msgid "Delete Animation?"
 msgstr "Forigi animacion?"
@@ -4314,3 +4359,10 @@ msgstr "La konstanto '%s' estas deklarita sed neniam uzita."
 
 msgid "The function '%s' is declared but never used."
 msgstr "La funkcio '%s' estas deklarita sed neniam uzita."
+
+msgid ""
+"The total size of the %s for this shader on this device has been exceeded (%d/"
+"%d). The shader may not work correctly."
+msgstr ""
+"La entute grandeco de la %s por ĉi tio ombrigilo sur ĉi tiu aparato estis "
+"superita (%d/%d). La ombrigilo majo ne funkcias ĝuste."

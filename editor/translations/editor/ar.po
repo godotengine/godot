@@ -678,33 +678,6 @@ msgstr "لا يمكن تغيير وضع الحلقة التكرارية في ا�
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "لا يمكن تغيير وضع التكرار على الرسوم المتحركة المضمنة في مشهد آخر."
 
-msgid "Property Track"
-msgstr "مسار خاصية"
-
-msgid "3D Position Track"
-msgstr "مسار الموقع ثلاثي الابعاد"
-
-msgid "3D Rotation Track"
-msgstr "مسار الدوران ثلاثي الأبعاد"
-
-msgid "3D Scale Track"
-msgstr "مسار الحجم ثلاثي الأبعاد"
-
-msgid "Blend Shape Track"
-msgstr "مزيج الشكل و المسار"
-
-msgid "Call Method Track"
-msgstr "مسار لاستدعاء دالة"
-
-msgid "Bezier Curve Track"
-msgstr "مسار منحنى بيزيه"
-
-msgid "Audio Playback Track"
-msgstr "شريط ضبط الصوت"
-
-msgid "Animation Playback Track"
-msgstr "شريط ضبط حركة الرسم المتحرك (Animation)"
-
 msgid "Animation length (frames)"
 msgstr "مدة الرسم المتحرك (بالإطارات)"
 
@@ -836,9 +809,6 @@ msgstr "تفسير الحلقة المثبتة"
 
 msgid "Wrap Loop Interp"
 msgstr "التفاف الحلقة المثبتة"
-
-msgid "Insert Key"
-msgstr "أدخل مفتاح"
 
 msgid "Duplicate Key(s)"
 msgstr "تكرار المفتاح (المفاتيح)"
@@ -1094,18 +1064,6 @@ msgstr "تعديل"
 msgid "Animation properties."
 msgstr "خاصيات الحركة."
 
-msgid "Copy Tracks"
-msgstr "انسخ المقاطع"
-
-msgid "Scale Selection"
-msgstr "تكبير المحدد"
-
-msgid "Scale From Cursor"
-msgstr "تكبير من المؤشر"
-
-msgid "Make Easing Selection"
-msgstr "تسهيل المحدد"
-
 msgid "Duplicate Selection"
 msgstr "مضاعفة المحدد"
 
@@ -1123,15 +1081,6 @@ msgstr "عُد إلى الخطوة السابقة"
 
 msgid "Apply Reset"
 msgstr "إعادة تعيين"
-
-msgid "Bake Animation"
-msgstr "حمس التحريك"
-
-msgid "Optimize Animation (no undo)"
-msgstr "تحسين التحريك (لا تراجع)"
-
-msgid "Clean-Up Animation (no undo)"
-msgstr "تنظيف التحريك (لا تراجع)"
 
 msgid "Pick a node to animate:"
 msgstr "اخترْ غُقدة لتحريكها:"
@@ -3534,14 +3483,14 @@ msgstr ""
 "المشهد المُحدد '%s' ليس ملف مشهد. حدد مشهد صالح؟\n"
 "يمكنك تغييره لاحقاً في \"إعدادات المشروع\" تحت قسم 'التطبيق'."
 
+msgid "Default"
+msgstr "افتراضي"
+
 msgid "Save Layout"
 msgstr "حفظ المخطط"
 
 msgid "Delete Layout"
 msgstr "مسح المخطط"
-
-msgid "Default"
-msgstr "افتراضي"
 
 msgid "This scene was never saved."
 msgstr "لم يتم حفظ هذا المشهد مطلقا."
@@ -3757,6 +3706,9 @@ msgstr "تجهيز مستورِد FBX..."
 msgid "Help"
 msgstr "المساعدة"
 
+msgid "Search Help..."
+msgstr "البحث المساعد..."
+
 msgid "Online Documentation"
 msgstr "الوثائق الإلكترونية"
 
@@ -3780,9 +3732,6 @@ msgstr "اقترح ميزة"
 
 msgid "Send Docs Feedback"
 msgstr "إرسال الاستدراكات على \"التوثيقات\""
-
-msgid "About Godot"
-msgstr "حول جَوْدَتْ"
 
 msgid "Support Godot Development"
 msgstr "ادعم تطوير جَوْدَتْ"
@@ -4084,8 +4033,8 @@ msgid ""
 msgstr ""
 "يلا يتطابق نوع المورد المختار (%s) مع أي نوع متوقع لأجل هذه الخاصية (%s)."
 
-msgid "Quick Load"
-msgstr "تحميل سريع"
+msgid "Load..."
+msgstr "تحميل..."
 
 msgid "Inspect"
 msgstr "الفحص"
@@ -4111,14 +4060,11 @@ msgstr "حدد الموارد لجعلها فريدة من نوعها:"
 msgid "New %s"
 msgstr "%s جديدة"
 
-msgid "New Script"
-msgstr "نص برمجي جديد"
+msgid "New Script..."
+msgstr "فتح النص البرمجي..."
 
-msgid "Extend Script"
-msgstr "فتح الكود البرمجي"
-
-msgid "New Shader"
-msgstr "تمويه جديد"
+msgid "Extend Script..."
+msgstr "توسيع البرنامج النصي..."
 
 msgid "No Remote Debug export presets configured."
 msgstr "لم يتم تكوين أي إعدادات مسبقة لتصدير التصحيح عن بعد."
@@ -4143,10 +4089,6 @@ msgstr "أكتب منطقك في الطريقة ()run_."
 
 msgid "There is an edited scene already."
 msgstr "يوجد مشهد معدل عليه بالفعل."
-
-msgid ""
-"Couldn't run editor script, did you forget to override the '_run' method?"
-msgstr "تعذر تشغيل البرنامج النصي للمحرر، هل نسيت تجاوز طريقة \"_run\"؟"
 
 msgid "Undo: %s"
 msgstr "تراجع: %s"
@@ -4930,9 +4872,6 @@ msgstr "مجلد جديد..."
 
 msgid "New Scene..."
 msgstr "مشهد جديد..."
-
-msgid "New Script..."
-msgstr "فتح النص البرمجي..."
 
 msgid "New Resource..."
 msgstr "مصدر جديد..."
@@ -6218,9 +6157,6 @@ msgstr "أضف حركة"
 msgid "Add %s"
 msgstr "أضفْ %s"
 
-msgid "Load..."
-msgstr "تحميل..."
-
 msgid "Move Node Point"
 msgstr "تحريك نقطة العقدة"
 
@@ -7352,6 +7288,9 @@ msgstr "قناع التحجيم لأجل إدخال المفاتيح."
 
 msgid "Insert keys (based on mask)."
 msgstr "أدخل المفاتيح (على أساس القناع)."
+
+msgid "Insert Key"
+msgstr "أدخل مفتاح"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -9710,20 +9649,8 @@ msgstr ""
 msgid "Shader Editor"
 msgstr "محرر التمويه"
 
-msgid "New Shader Include"
-msgstr "إنشاء عُقدة تظليل"
-
-msgid "Load Shader File"
-msgstr "تحميل ملف الظل"
-
-msgid "Load Shader Include File"
-msgstr "تحميل الملف الظيلال"
-
 msgid "Save File"
 msgstr "احفظ الملف"
-
-msgid "Save File As"
-msgstr "حفظ الملف ك"
 
 msgid "Open File in Inspector"
 msgstr "افتح الملف في المُتصفح"
@@ -13679,6 +13606,9 @@ msgstr "<بدون اسم> في %s"
 msgid "(used %d times)"
 msgstr "(تم استخدامه %d مرة)"
 
+msgid "Batch Rename..."
+msgstr "إعادة تسمية الدفعة..."
+
 msgid "Add Child Node..."
 msgstr "إضافة عقدة فرعية..."
 
@@ -13697,14 +13627,11 @@ msgstr "تغيير النوع..."
 msgid "Attach Script..."
 msgstr "إلحاق نص برمجي..."
 
-msgid "Extend Script..."
-msgstr "توسيع البرنامج النصي..."
-
-msgid "Reparent to New Node"
-msgstr "تعين لعقدة جديدة"
-
 msgid "Make Scene Root"
 msgstr "جعل المشهد الرئيس"
+
+msgid "Save Branch as Scene..."
+msgstr "حفظ الفرعِ مشهدًا..."
 
 msgid "Toggle Access as Unique Name"
 msgstr "تبديل الدخول إلى اسم فريد"
@@ -14652,6 +14579,15 @@ msgstr ""
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "تحرر مخزن المفاتيح غير مُهيئ بشكل صحيح في إعدادت المسبقة للتصدير."
 
+msgid "A valid Java SDK path is required in Editor Settings."
+msgstr "مطلوب مسار صحيح للحزمة-التطويرية (SDK) لـ جافا في إعدادات المُحرر."
+
+msgid "Invalid Java SDK path in Editor Settings."
+msgstr "مسار الحزمة-التطويرية (SDK) لـ جافا غير صحيح في إعدادات المُحرر."
+
+msgid "Please check the Java SDK directory specified in Editor Settings."
+msgstr "تأكد من المسار المحدد للحزمة-التطويرية (SDK) لـ جافا في إعدادات المُحرر."
+
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr "مطلوب مسار حزمة أندرويد (SDK) صحيح في إعدادات المُحرر."
 
@@ -14767,6 +14703,13 @@ msgid ""
 msgstr ""
 "نسخ بناء Android غير متوافقة: قوالب مُنصبة: %s إصدار غودوت: %s. من فضلك أعد "
 "تنصيب قالب بناء الأندرويد من قائمة 'المشروع'."
+
+msgid ""
+"Java SDK path must be configured in Editor Settings at 'export/android/"
+"java_sdk_path'."
+msgstr ""
+"مسار الحزمة-التطويرية لـ جافا يجب أن يكون مهيأ في إعدادات المحرر عند 'export/"
+"android/java_sdk_path'."
 
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name."
@@ -16056,13 +15999,6 @@ msgstr "لم يتم تعيين اسم المتعقب."
 
 msgid "No pose is set."
 msgstr "لم يتم تعيين أي وضع."
-
-msgid ""
-"XR is not enabled in rendering project settings. Stereoscopic output is not "
-"supported unless this is enabled."
-msgstr ""
-"لم يتم تمكين XR في عرض إعدادات المشروع. لا يتم دعم الإخراج المجسم ما لم يتم "
-"تمكين ذلك."
 
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr ""

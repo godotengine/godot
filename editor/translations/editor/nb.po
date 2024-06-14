@@ -563,21 +563,6 @@ msgstr "Endre Animasjonslengde"
 msgid "Change Animation Loop"
 msgstr "Endre Animasjonsløkke"
 
-msgid "Property Track"
-msgstr "Egenskapsspor"
-
-msgid "Call Method Track"
-msgstr "Kall Metodespor"
-
-msgid "Bezier Curve Track"
-msgstr "Bézier-kurvespor"
-
-msgid "Audio Playback Track"
-msgstr "Lydavspillingsspor"
-
-msgid "Animation Playback Track"
-msgstr "Animasjonavspillingspor"
-
 msgid "Animation length (frames)"
 msgstr "Animasjonslengde (bilder)"
 
@@ -628,9 +613,6 @@ msgstr "Klem Sløyfeinterp"
 
 msgid "Wrap Loop Interp"
 msgstr "Pakk Inn Sløyfeinterp"
-
-msgid "Insert Key"
-msgstr "Sett Inn Nøkkel"
 
 msgid "Duplicate Key(s)"
 msgstr "Dupliser Nøkler"
@@ -752,15 +734,6 @@ msgstr "Rediger"
 
 msgid "Animation properties."
 msgstr "Animasjon egenskaper."
-
-msgid "Copy Tracks"
-msgstr "Kopier Spor"
-
-msgid "Scale Selection"
-msgstr "Skaler Utvalg"
-
-msgid "Scale From Cursor"
-msgstr "Skaler Fra Peker"
 
 msgid "Duplicate Selection"
 msgstr "Dupliser utvalg"
@@ -1668,14 +1641,14 @@ msgstr ""
 "Du kan endre dette senere i \"Prosjektinnstillinger\" under kategorien "
 "'applikasjon'."
 
+msgid "Default"
+msgstr "Standard"
+
 msgid "Save Layout"
 msgstr "Lagre Layout"
 
 msgid "Delete Layout"
 msgstr "Slett Layout"
-
-msgid "Default"
-msgstr "Standard"
 
 msgid "Save & Close"
 msgstr "Lagre og Lukk"
@@ -1894,6 +1867,9 @@ msgstr "Fjern Gjenstand"
 msgid "Add Key/Value Pair"
 msgstr "Legg Til Nøkkel/Verdi Par"
 
+msgid "Load..."
+msgstr "Last..."
+
 msgid "Make Unique"
 msgstr "Gjør Unik"
 
@@ -1902,9 +1878,6 @@ msgstr "Lagre Som..."
 
 msgid "New %s"
 msgstr "Ny %s"
-
-msgid "New Script"
-msgstr "Nytt Skript"
 
 msgid "Write your logic in the _run() method."
 msgstr "Skriv logikken din i _run() metoden."
@@ -2395,9 +2368,6 @@ msgstr "Legg til Animasjon"
 msgid "Add %s"
 msgstr "Legg til %s"
 
-msgid "Load..."
-msgstr "Last..."
-
 msgid "This type of node can't be used. Only root nodes are allowed."
 msgstr "Denne typen node kan ikke bli brukt. Kun rotnoder er tillatt."
 
@@ -2712,6 +2682,9 @@ msgstr "Vis Veiledere"
 
 msgid "Frame Selection"
 msgstr "Bildeutvalg"
+
+msgid "Insert Key"
+msgstr "Sett Inn Nøkkel"
 
 msgid "Insert Key (Existing Tracks)"
 msgstr "Sett inn Nøkkel (Eksisterende Spor)"

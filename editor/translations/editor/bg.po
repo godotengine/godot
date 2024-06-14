@@ -35,6 +35,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.0-dev\n"
 
+msgid "Main Thread"
+msgstr "Главна нишка"
+
 msgid "Unset"
 msgstr "Незададен"
 
@@ -366,30 +369,6 @@ msgstr "Промяна на продължителността на анимац
 msgid "Change Animation Loop"
 msgstr "Промени анимационния цикъл"
 
-msgid "Property Track"
-msgstr "Пътечка за свойство"
-
-msgid "3D Position Track"
-msgstr "Пътечка за 3-измерна позиция"
-
-msgid "3D Rotation Track"
-msgstr "Пътечка за 3-измерна ротация"
-
-msgid "3D Scale Track"
-msgstr "Пътечка за 3-измерно скалиране"
-
-msgid "Call Method Track"
-msgstr "Пътечка за извикване на метод"
-
-msgid "Bezier Curve Track"
-msgstr "Пътечка за крива на Безие"
-
-msgid "Audio Playback Track"
-msgstr "Пътечка за възпроизвеждане на звук"
-
-msgid "Animation Playback Track"
-msgstr "Пътечка за възпроизвеждане на анимация"
-
 msgid "Animation length (frames)"
 msgstr "Продължителност на анимацията (в кадри)"
 
@@ -477,9 +456,6 @@ msgstr "Линеен ъгъл"
 
 msgid "Cubic Angle"
 msgstr "Кубичен ъгъл"
-
-msgid "Insert Key"
-msgstr "Вмъкване на ключ"
 
 msgid "Duplicate Key(s)"
 msgstr "Дублиране на ключа/ключовете"
@@ -655,15 +631,6 @@ msgstr "Преминаване към следващата стъпка"
 
 msgid "Go to Previous Step"
 msgstr "Преминаване към предходната стъпка"
-
-msgid "Bake Animation"
-msgstr "Изпичане на анимацията"
-
-msgid "Optimize Animation (no undo)"
-msgstr "Оптимизиране на анимацията (не може да бъде отменено)"
-
-msgid "Clean-Up Animation (no undo)"
-msgstr "Почистване на анимацията (не може да бъде отменено)"
 
 msgid "Pick a node to animate:"
 msgstr "Изберете обект, който да бъде анимиран:"
@@ -1820,9 +1787,6 @@ msgstr "Документация в Интернет"
 msgid "Report a Bug"
 msgstr "Докладване на проблем"
 
-msgid "About Godot"
-msgstr "Относно Godot"
-
 msgid "Inspector"
 msgstr "Инспектор"
 
@@ -1908,6 +1872,9 @@ msgstr "Размер:"
 msgid "New Value:"
 msgstr "Нова стойност:"
 
+msgid "Load..."
+msgstr "Зареждане..."
+
 msgid "Save As..."
 msgstr "Запазване като..."
 
@@ -1917,14 +1884,8 @@ msgstr "Показване във файловата система"
 msgid "Convert to %s"
 msgstr "Преобразуване в %s"
 
-msgid "New Script"
-msgstr "Нов скрипт"
-
-msgid "Extend Script"
-msgstr "Разширяване на скрипта"
-
-msgid "New Shader"
-msgstr "Нов шейдър"
+msgid "New Script..."
+msgstr "Нов скрипт..."
 
 msgid "Editor Settings"
 msgstr "Настройки на редактора"
@@ -2219,9 +2180,6 @@ msgstr "Нова папка..."
 
 msgid "New Scene..."
 msgstr "Нова сцена..."
-
-msgid "New Script..."
-msgstr "Нов скрипт..."
 
 msgid "New Resource..."
 msgstr "Нов ресурс..."
@@ -2684,9 +2642,6 @@ msgstr "Добавяне не анимация"
 
 msgid "Add %s"
 msgstr "Добавяне на %s"
-
-msgid "Load..."
-msgstr "Зареждане..."
 
 msgid "Move Node Point"
 msgstr "Преместване на точката на обекта"
@@ -3445,6 +3400,9 @@ msgstr "Центриране върху избраното"
 msgid "Frame Selection"
 msgstr "Мащабиране до побиране на избраното в изгледа"
 
+msgid "Insert Key"
+msgstr "Вмъкване на ключ"
+
 msgid "Adding %s..."
 msgstr "Добавяне на %s..."
 
@@ -4172,9 +4130,6 @@ msgstr "Към следващата точка на прекъсване"
 
 msgid "Go to Previous Breakpoint"
 msgstr "Към предходната точка на прекъсване"
-
-msgid "Save File As"
-msgstr "Запазване на файла като"
 
 msgid "Create Rest Pose from Bones"
 msgstr "Създаване на поза на покоя от костите"
@@ -5079,9 +5034,6 @@ msgstr "Изрязване на обекта/обектите"
 
 msgid "This operation requires a single selected node."
 msgstr "Това действие изисква да е избран само един обект."
-
-msgid "Reparent to New Node"
-msgstr "Преместване под нов обект"
 
 msgid "Make Scene Root"
 msgstr "Превръщане на сцената в коренна"

@@ -585,33 +585,6 @@ msgstr ""
 "No es pot canviar el mode de repetició d'animacions incrustades en una altra "
 "escena."
 
-msgid "Property Track"
-msgstr "Pista de Propietats"
-
-msgid "3D Position Track"
-msgstr "Pista de posició 3D"
-
-msgid "3D Rotation Track"
-msgstr "Pista de rotació 3D"
-
-msgid "3D Scale Track"
-msgstr "Pista de l'escala 3D"
-
-msgid "Blend Shape Track"
-msgstr "Pista de barreja de formes"
-
-msgid "Call Method Track"
-msgstr "Pista de Crida de Mètodes"
-
-msgid "Bezier Curve Track"
-msgstr "Pista de Corbes de Bézier"
-
-msgid "Audio Playback Track"
-msgstr "Pista de reproducció d'Àudio"
-
-msgid "Animation Playback Track"
-msgstr "Pista de reproducció d'Animacions"
-
 msgid "Animation length (frames)"
 msgstr "Longitud de l'animació (fotogrames)"
 
@@ -743,9 +716,6 @@ msgstr "Limita la Interpolació del bucle"
 
 msgid "Wrap Loop Interp"
 msgstr "Embolcalla la interpolació"
-
-msgid "Insert Key"
-msgstr "Insereix una clau"
 
 msgid "Duplicate Key(s)"
 msgstr "Duplica les Claus"
@@ -974,18 +944,6 @@ msgstr "Edita"
 msgid "Animation properties."
 msgstr "Propietats de l'Animació."
 
-msgid "Copy Tracks"
-msgstr "Copia les Pistes"
-
-msgid "Scale Selection"
-msgstr "Escala la Selecció"
-
-msgid "Scale From Cursor"
-msgstr "Escala a partir del Cursor"
-
-msgid "Make Easing Selection"
-msgstr "Selecciona el tipus de suavització"
-
 msgid "Duplicate Selection"
 msgstr "Duplica la Selecció"
 
@@ -1003,15 +961,6 @@ msgstr "Ves al Pas Anterior"
 
 msgid "Apply Reset"
 msgstr "Aplica reinicialització"
-
-msgid "Bake Animation"
-msgstr "Precalcula l'Animació"
-
-msgid "Optimize Animation (no undo)"
-msgstr "Optimitza l'Animació (no es pot desfer)"
-
-msgid "Clean-Up Animation (no undo)"
-msgstr "Poleix l'Animació (No es pot desfer)"
 
 msgid "Pick a node to animate:"
 msgstr "Tria un node a animar:"
@@ -2369,14 +2318,14 @@ msgstr ""
 "És possible triar-ne una altra més endavant a \"Configuració del Projecte\" "
 "en la categoria \"Aplicació\"."
 
+msgid "Default"
+msgstr "Predeterminat"
+
 msgid "Save Layout"
 msgstr "Desar Disseny"
 
 msgid "Delete Layout"
 msgstr "Elimina Disseny"
-
-msgid "Default"
-msgstr "Predeterminat"
 
 msgid "Save & Close"
 msgstr "Desar i Tancar"
@@ -2517,9 +2466,6 @@ msgstr "Suggerir una Característica"
 
 msgid "Send Docs Feedback"
 msgstr "Enviar suggeriments sobre la Documentació"
-
-msgid "About Godot"
-msgstr "Quant a Godot"
 
 msgid "Support Godot Development"
 msgstr "Contribueix al Desenvolupament de Godot"
@@ -2716,8 +2662,8 @@ msgstr ""
 "El recurs seleccionat (%s) no coincideix amb cap tipus esperat per aquesta "
 "propietat (%s)."
 
-msgid "Quick Load"
-msgstr "Carrega Rapida"
+msgid "Load..."
+msgstr "Carregar..."
 
 msgid "Make Unique"
 msgstr "Fes-lo Únic"
@@ -2731,11 +2677,8 @@ msgstr "Mostrar en el Sistema de Fitxers"
 msgid "New %s"
 msgstr "Nou %s"
 
-msgid "New Script"
-msgstr "Script Nou"
-
-msgid "Extend Script"
-msgstr "Estendre l'script"
+msgid "New Script..."
+msgstr "Script Nou..."
 
 msgid "Write your logic in the _run() method."
 msgstr "Escriu la lògica en el mètode _run()."
@@ -3095,9 +3038,6 @@ msgstr "Nou Directori..."
 
 msgid "New Scene..."
 msgstr "Nova Escena..."
-
-msgid "New Script..."
-msgstr "Script Nou..."
 
 msgid "New Resource..."
 msgstr "Recurs Nou..."
@@ -3533,9 +3473,6 @@ msgstr "Afegeix una Animació"
 
 msgid "Add %s"
 msgstr "Afegeix %s"
-
-msgid "Load..."
-msgstr "Carregar..."
 
 msgid "Move Node Point"
 msgstr "Moure Punt de Node"
@@ -4190,6 +4127,9 @@ msgstr "Mascara d'escala per a inserir claus."
 
 msgid "Insert keys (based on mask)."
 msgstr "Inserir claus (basades en mascara)."
+
+msgid "Insert Key"
+msgstr "Insereix una clau"
 
 msgid "Auto Insert Key"
 msgstr "Inserir Clau Automàticament"

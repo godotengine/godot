@@ -628,33 +628,6 @@ msgstr "Неможливо змінити режим циклу для анім�
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "Неможливо змінити режим циклу для анімації, вбудованої в іншу сцену."
 
-msgid "Property Track"
-msgstr "Доріжка властивостей"
-
-msgid "3D Position Track"
-msgstr "Доріжка 3D позицій"
-
-msgid "3D Rotation Track"
-msgstr "Доріжка 3D обертань"
-
-msgid "3D Scale Track"
-msgstr "Доріжка 3D масштабування"
-
-msgid "Blend Shape Track"
-msgstr "Доріжка змішаних форм"
-
-msgid "Call Method Track"
-msgstr "Доріжка виклику методів"
-
-msgid "Bezier Curve Track"
-msgstr "Доріжка кривої Безьє"
-
-msgid "Audio Playback Track"
-msgstr "Доріжка відтворення звуку"
-
-msgid "Animation Playback Track"
-msgstr "Доріжка відтворення анімації"
-
 msgid "Animation length (frames)"
 msgstr "Тривалість анімації (у кадрах)"
 
@@ -786,9 +759,6 @@ msgstr "Затиснута інтерполяція циклу"
 
 msgid "Wrap Loop Interp"
 msgstr "Загорнута інтерполяція циклу"
-
-msgid "Insert Key"
-msgstr "Вставити ключ"
 
 msgid "Duplicate Key(s)"
 msgstr "Дублювати ключі"
@@ -1045,18 +1015,6 @@ msgstr "Редагувати"
 msgid "Animation properties."
 msgstr "Властивості анімації."
 
-msgid "Copy Tracks"
-msgstr "Копіювати доріжки"
-
-msgid "Scale Selection"
-msgstr "Вибір масштабу"
-
-msgid "Scale From Cursor"
-msgstr "Масштаб від курсору"
-
-msgid "Make Easing Selection"
-msgstr "Зробити плавний вибір"
-
 msgid "Duplicate Selection"
 msgstr "Дублювати позначене"
 
@@ -1074,15 +1032,6 @@ msgstr "До попереднього кроку"
 
 msgid "Apply Reset"
 msgstr "Застосувати скидання"
-
-msgid "Bake Animation"
-msgstr "Запекти анімацію"
-
-msgid "Optimize Animation (no undo)"
-msgstr "Оптимізувати анімацію (без скасування)"
-
-msgid "Clean-Up Animation (no undo)"
-msgstr "Очищення анімації (без скасування)"
 
 msgid "Pick a node to animate:"
 msgstr "Виберіть вузол для анімації:"
@@ -3509,14 +3458,14 @@ msgstr ""
 "Ви можете змінити це пізніше в \"Налаштуваннях проєкту\" в категорії "
 "\"Програма\"."
 
+msgid "Default"
+msgstr "Типовий"
+
 msgid "Save Layout"
 msgstr "Зберегти компонування"
 
 msgid "Delete Layout"
 msgstr "Видалити компонування"
-
-msgid "Default"
-msgstr "Типовий"
 
 msgid "This scene was never saved."
 msgstr "Ця сцена так і не була збережена."
@@ -3748,11 +3697,24 @@ msgstr "Запропонувати можливість"
 msgid "Send Docs Feedback"
 msgstr "Надіслати відгук щодо документації"
 
-msgid "About Godot"
-msgstr "Про Godot"
-
 msgid "Support Godot Development"
 msgstr "Підтримати розробку Godot"
+
+msgid ""
+"Choose a rendering method.\n"
+"\n"
+"Notes:\n"
+"- On mobile platforms, the Mobile rendering method is used if Forward+ is "
+"selected here.\n"
+"- On the web platform, the Compatibility rendering method is always used."
+msgstr ""
+"Виберіть метод візуалізації.\n"
+"\n"
+"Примітки:\n"
+"- На мобільних платформах використовується метод рендерингу Mobile, якщо тут "
+"вибрано Forward +.\n"
+"- На веб-платформі завжди використовується метод рендерингу Compatibility "
+"(візуалізації сумісності)."
 
 msgid "Update Continuously"
 msgstr "Оновлювати неперервно"
@@ -4055,8 +4017,13 @@ msgstr ""
 "Тип вибраного ресурсу (%s) не відповідає типу, який є очікуваним для цієї "
 "властивості (%s)."
 
-msgid "Quick Load"
-msgstr "Швидке завантаження"
+msgid "Opens a quick menu to select from a list of allowed Resource files."
+msgstr ""
+"Відкриває швидке меню для вибору зі списку дозволених файлів ресурсів "
+"(resource)."
+
+msgid "Load..."
+msgstr "Завантажити…"
 
 msgid "Inspect"
 msgstr "Оглянути"
@@ -4082,14 +4049,11 @@ msgstr "Виберіть ресурси, щоб зробити їх унікал
 msgid "New %s"
 msgstr "Новий %s"
 
-msgid "New Script"
-msgstr "Новий скрипт"
+msgid "New Script..."
+msgstr "Новий скрипт…"
 
-msgid "Extend Script"
-msgstr "Розширити скрипт"
-
-msgid "New Shader"
-msgstr "Новий шейдер"
+msgid "Extend Script..."
+msgstr "Розширити сценарій..."
 
 msgid "No Remote Debug export presets configured."
 msgstr "Не налаштовано пресети експорту віддаленого налагодження."
@@ -4115,11 +4079,6 @@ msgstr "Напишіть свою логіку в методі _run ()."
 
 msgid "There is an edited scene already."
 msgstr "Редагована сцена вже існує."
-
-msgid ""
-"Couldn't run editor script, did you forget to override the '_run' method?"
-msgstr ""
-"Не вдалося запустити скрипт редактора, ви забули перевизначити метод '_run'?"
 
 msgid "Undo: %s"
 msgstr "Скасувати: %s"
@@ -4915,9 +4874,6 @@ msgstr "Створити теку..."
 
 msgid "New Scene..."
 msgstr "Нова сцена…"
-
-msgid "New Script..."
-msgstr "Новий скрипт…"
 
 msgid "New Resource..."
 msgstr "Створити ресурс…"
@@ -6221,9 +6177,6 @@ msgstr "Додати анімацію"
 msgid "Add %s"
 msgstr "Додати %s"
 
-msgid "Load..."
-msgstr "Завантажити…"
-
 msgid "Move Node Point"
 msgstr "Пересунути вузлову точку"
 
@@ -7367,6 +7320,9 @@ msgstr "Маска масштабування для вставляння клю
 
 msgid "Insert keys (based on mask)."
 msgstr "Вставити ключові кадри (на основі маски)."
+
+msgid "Insert Key"
+msgstr "Вставити ключ"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -9654,20 +9610,8 @@ msgstr "Перейти до попередньої точки зупинки"
 msgid "Shader Editor"
 msgstr "Редактор шейдера"
 
-msgid "New Shader Include"
-msgstr "Новий шейдер у комплекті"
-
-msgid "Load Shader File"
-msgstr "Завантажити файл шейдера"
-
-msgid "Load Shader Include File"
-msgstr "Завантажити файл, що містить шейдер"
-
 msgid "Save File"
 msgstr "Зберегти файл"
-
-msgid "Save File As"
-msgstr "Зберегти файл як"
 
 msgid "Open File in Inspector"
 msgstr "Відкрити файл в Інспекторі"
@@ -13517,12 +13461,6 @@ msgstr "Тип зміни..."
 msgid "Attach Script..."
 msgstr "Прикріпити скрипт..."
 
-msgid "Extend Script..."
-msgstr "Розширити сценарій..."
-
-msgid "Reparent to New Node"
-msgstr "Змінити батьківський вузол на новий"
-
 msgid "Make Scene Root"
 msgstr "Зробити кореневим для сцени"
 
@@ -13897,7 +13835,7 @@ msgid "Can't execute Blender binary."
 msgstr "Не вдається запустити файл Blender'а."
 
 msgid "Unexpected --version output from Blender binary at: %s."
-msgstr "Неочікуване виведення --версії з бінарного файлу Blender'а при: %s."
+msgstr "Неочікуване виведення --version з бінарного файлу Blender'а при: %s."
 
 msgid "Path supplied lacks a Blender binary."
 msgstr "У наданому шляху відсутній бінарний файл Blender."
@@ -13933,20 +13871,6 @@ msgstr ""
 
 msgid "Disabling '.blend' file import requires restarting the editor."
 msgstr "Вимкнення імпорту файлів '.blend' вимагає перезапуску редактора."
-
-msgid ""
-"Blend file import is enabled in the project settings, but no Blender path is "
-"configured in the editor settings. Blend files will not be imported."
-msgstr ""
-"Импорт файлов Blend включен в настройках проекта, но в настройках редактора "
-"не указан путь к Blender. Файлы Blend не будут импортированы."
-
-msgid ""
-"Blend file import is enabled, but the Blender path doesn't point to an "
-"accessible directory. Blend files will not be imported."
-msgstr ""
-"Импорт файлов Blend включен, но путь к Blender не указывает на доступную "
-"директорию. Файлы Blend не будут импортированы."
 
 msgid "Next Plane"
 msgstr "Наступна площина"
@@ -15906,13 +15830,6 @@ msgstr "Поза не встановлена."
 
 msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "XROrigin3D потребує дочірнього вузла XRCamera3D."
-
-msgid ""
-"XR is not enabled in rendering project settings. Stereoscopic output is not "
-"supported unless this is enabled."
-msgstr ""
-"XR не ввімкнено у Параметрах проєкту в Обробці. Стереоскопічний вивід не "
-"підтримується, якщо його не увімкнено."
 
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr "У вузлі BlendTree «%s» не знайдено анімації: «%s»"

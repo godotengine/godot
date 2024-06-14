@@ -477,30 +477,6 @@ msgid "Can't change loop mode on animation instanced from imported scene."
 msgstr ""
 "Nevar mainīt atkārtošanās režīmu animācijai, kas iegūta no importētās ainas."
 
-msgid "Property Track"
-msgstr "Mainīgo Celiņš"
-
-msgid "3D Position Track"
-msgstr "3D Pozīcijas Celiņš"
-
-msgid "3D Rotation Track"
-msgstr "3D Rotācijas Celiņš"
-
-msgid "Blend Shape Track"
-msgstr "Formu Sajaukšanas Celiņš"
-
-msgid "Call Method Track"
-msgstr "Izsaukt Metožu Celiņu"
-
-msgid "Bezier Curve Track"
-msgstr "Bezjē Līkņu Celiņš"
-
-msgid "Audio Playback Track"
-msgstr "Audio atskaņošanas celiņs"
-
-msgid "Animation Playback Track"
-msgstr "Animācijas atskaņošanas celiņs"
-
 msgid "Animation length (frames)"
 msgstr "Animācijas garums (kadri)"
 
@@ -590,9 +566,6 @@ msgstr "Apgriezt Cilpas Interpolāciju"
 
 msgid "Wrap Loop Interp"
 msgstr "Aptīt Cilpas Interpolāciju"
-
-msgid "Insert Key"
-msgstr "Ievietot Atslēgu"
 
 msgid "Duplicate Key(s)"
 msgstr "Dublicēt atslēgvietnes"
@@ -733,15 +706,6 @@ msgstr "Rediģēt"
 
 msgid "Animation properties."
 msgstr "Animācijas īpašības."
-
-msgid "Copy Tracks"
-msgstr "Kopēt celiņus"
-
-msgid "Scale Selection"
-msgstr "Mēroga Izvēle"
-
-msgid "Scale From Cursor"
-msgstr "Skala No Kursora"
 
 msgid "Duplicate Selection"
 msgstr "Izveidot Dublikātu Izvēlētajam"
@@ -2084,14 +2048,14 @@ msgstr ""
 "Izvēlētā aina '%s' nav ainas fails, izvēlieties derīgu?\n"
 "To var mainīt vēlāk projekta iestatījumos sadaļā 'aplikācija'."
 
+msgid "Default"
+msgstr "Noklusējuma"
+
 msgid "Save Layout"
 msgstr "Saglabāt izkārtojumu"
 
 msgid "Delete Layout"
 msgstr "Dzēst izkārtojumu"
-
-msgid "Default"
-msgstr "Noklusējuma"
 
 msgid "Save & Close"
 msgstr "Saglabāt & aizvērt"
@@ -2237,9 +2201,6 @@ msgstr "Ieteikt Iespēju"
 msgid "Send Docs Feedback"
 msgstr "Sūtīt dokumentu atsauksmi"
 
-msgid "About Godot"
-msgstr "Par Godot"
-
 msgid "Support Godot Development"
 msgstr "Atbalstīt Godot izstrādi"
 
@@ -2373,6 +2334,9 @@ msgstr "Jauna atslēga:"
 msgid "New Value:"
 msgstr "Jauna vērtība:"
 
+msgid "Load..."
+msgstr "Ielādē..."
+
 msgid "Save As..."
 msgstr "Saglabāt kā..."
 
@@ -2382,11 +2346,8 @@ msgstr "Parādīt failu sistēmā"
 msgid "Convert to %s"
 msgstr "Konvertēt uz %s"
 
-msgid "New Script"
-msgstr "Jauns skripts"
-
-msgid "Extend Script"
-msgstr "Pagarināt skriptu"
+msgid "New Script..."
+msgstr "Jauns Skripts..."
 
 msgid "Write your logic in the _run() method."
 msgstr "Raksti savu loģiku _run() metodē."
@@ -2565,9 +2526,6 @@ msgstr "Jauna mape..."
 
 msgid "New Scene..."
 msgstr "Jauna Aina..."
-
-msgid "New Script..."
-msgstr "Jauns Skripts..."
 
 msgid "New Resource..."
 msgstr "Jauns Resurss..."
@@ -2812,9 +2770,6 @@ msgstr "Izveidot punktus."
 msgid "Edit Polygon"
 msgstr "Rediģēt Daudzstūri"
 
-msgid "Load..."
-msgstr "Ielādē..."
-
 msgid "Add Node Point"
 msgstr "Pievienot Mezgla Punktu"
 
@@ -3042,6 +2997,9 @@ msgstr "Skatīt"
 
 msgid "Grid"
 msgstr "Režģis"
+
+msgid "Insert Key"
+msgstr "Ievietot Atslēgu"
 
 msgid "Auto Insert Key"
 msgstr "Automātiski Ievietot Atslēgu"
@@ -3713,9 +3671,6 @@ msgstr "Izgriezt mezglu(s)"
 
 msgid "Change type of node(s)"
 msgstr "Mezgla(-u) tipa maiņa"
-
-msgid "Reparent to New Node"
-msgstr "Pakļaut zem jauna mezgla"
 
 msgid "Add/Create a New Node."
 msgstr "Pievienot/Izveidot Jaunu Mezglu."
