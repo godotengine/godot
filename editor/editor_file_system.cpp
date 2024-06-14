@@ -161,6 +161,10 @@ String EditorFileSystemDirectory::get_file_script_class_icon_path(int p_idx) con
 	return files[p_idx]->script_class_icon_path;
 }
 
+String EditorFileSystemDirectory::get_file_icon_path(int p_idx) const {
+	return files[p_idx]->icon_path;
+}
+
 StringName EditorFileSystemDirectory::get_file_type(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, files.size(), "");
 	return files[p_idx]->type;
@@ -740,6 +744,8 @@ void EditorFileSystem::scan() {
 		scanning = false;
 		_update_pending_script_classes();
 		_update_pending_scene_groups();
+		// Update all icons so they are loaded for the FileSystemDock.
+		_update_files_icon_path();
 		emit_signal(SNAME("filesystem_changed"));
 		emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 		first_scan = false;
@@ -1298,6 +1304,8 @@ void EditorFileSystem::_notification(int p_what) {
 					_update_scan_actions();
 					_update_pending_script_classes();
 					_update_pending_scene_groups();
+					// Update all icons so they are loaded for the FileSystemDock.
+					_update_files_icon_path();
 					emit_signal(SNAME("filesystem_changed"));
 					emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 					first_scan = false;
@@ -1578,6 +1586,43 @@ String EditorFileSystem::_get_global_script_class(const String &p_type, const St
 	return String();
 }
 
+void EditorFileSystem::_update_file_icon_path(EditorFileSystemDirectory::FileInfo *file_info) {
+	String icon_path;
+	if (file_info->script_class_icon_path.is_empty() && !file_info->deps.is_empty()) {
+		const String &script_path = file_info->deps[0]; // Assuming the first dependency is a script.
+		if (!script_path.is_empty()) {
+			String *cached = file_icon_cache.getptr(script_path);
+			if (cached) {
+				icon_path = *cached;
+			} else {
+				if (ClassDB::is_parent_class(ResourceLoader::get_resource_type(script_path), SNAME("Script"))) {
+					int script_file;
+					EditorFileSystemDirectory *efsd = find_file(script_path, &script_file);
+					if (efsd) {
+						icon_path = efsd->files[script_file]->script_class_icon_path;
+					}
+				}
+				file_icon_cache.insert(script_path, icon_path);
+			}
+		}
+	}
+
+	file_info->icon_path = icon_path;
+}
+
+void EditorFileSystem::_update_files_icon_path(EditorFileSystemDirectory *edp) {
+	if (!edp) {
+		edp = filesystem;
+		file_icon_cache.clear();
+	}
+	for (EditorFileSystemDirectory *sub_dir : edp->subdirs) {
+		_update_files_icon_path(sub_dir);
+	}
+	for (EditorFileSystemDirectory::FileInfo *fi : edp->files) {
+		_update_file_icon_path(fi);
+	}
+}
+
 void EditorFileSystem::_update_script_classes() {
 	update_script_mutex.lock();
 
@@ -1719,6 +1764,8 @@ void EditorFileSystem::update_file(const String &p_file) {
 
 void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 	bool updated = false;
+	bool update_files_icon_cache = false;
+	Vector<EditorFileSystemDirectory::FileInfo *> files_to_update_icon_path;
 	for (const String &file : p_script_paths) {
 		ERR_CONTINUE(file.is_empty());
 		EditorFileSystemDirectory *fs = nullptr;
@@ -1741,6 +1788,9 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 				}
 				if (ClassDB::is_parent_class(fs->files[cpos]->type, SNAME("Script"))) {
 					_queue_update_script_class(file);
+					if (!fs->files[cpos]->script_class_icon_path.is_empty()) {
+						update_files_icon_cache = true;
+					}
 				}
 				if (fs->files[cpos]->type == SNAME("PackedScene")) {
 					_queue_update_scene_groups(file);
@@ -1789,6 +1839,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 				_save_late_updated_files(); //files need to be updated in the re-scan
 			}
 
+			const String old_script_class_icon_path = fs->files[cpos]->script_class_icon_path;
 			fs->files[cpos]->type = type;
 			fs->files[cpos]->resource_script_class = script_class;
 			fs->files[cpos]->uid = uid;
@@ -1816,6 +1867,11 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			if (fs->files[cpos]->type == SNAME("PackedScene")) {
 				_queue_update_scene_groups(file);
 			}
+			if (fs->files[cpos]->type == SNAME("Resource")) {
+				files_to_update_icon_path.push_back(fs->files[cpos]);
+			} else if (old_script_class_icon_path != fs->files[cpos]->script_class_icon_path) {
+				update_files_icon_cache = true;
+			}
 			updated = true;
 		}
 	}
@@ -1823,6 +1879,13 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 	if (updated) {
 		_update_pending_script_classes();
 		_update_pending_scene_groups();
+		if (update_files_icon_cache) {
+			_update_files_icon_path();
+		} else {
+			for (EditorFileSystemDirectory::FileInfo *fi : files_to_update_icon_path) {
+				_update_file_icon_path(fi);
+			}
+		}
 		call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
 	}
 }
