@@ -91,7 +91,7 @@ void ResourceFormatLoader::get_classes_used(const String &p_path, HashSet<String
 	}
 
 	String res = get_resource_type(p_path);
-	if (!res.is_empty()) {
+	if (res.non_empty()) {
 		r_classes->insert(res);
 	}
 }
@@ -212,7 +212,7 @@ void ResourceLoader::LoadToken::clear() {
 
 	WorkerThreadPool::TaskID task_to_await = 0;
 
-	if (!local_path.is_empty()) { // Empty is used for the special case where the load task is not registered.
+	if (local_path.non_empty()) { // Empty is used for the special case where the load task is not registered.
 		DEV_ASSERT(thread_load_tasks.has(local_path));
 		ThreadLoadTask &load_task = thread_load_tasks[local_path];
 		if (!load_task.awaited) {
@@ -223,7 +223,7 @@ void ResourceLoader::LoadToken::clear() {
 		local_path.clear();
 	}
 
-	if (!user_path.is_empty()) {
+	if (user_path.non_empty()) {
 		DEV_ASSERT(user_load_tokens.has(user_path));
 		user_load_tokens.erase(user_path);
 		user_path.clear();
@@ -244,7 +244,7 @@ ResourceLoader::LoadToken::~LoadToken() {
 Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 	const String &original_path = p_original_path.is_empty() ? p_path : p_original_path;
 	load_nesting++;
-	if (load_paths_stack->size()) {
+	if (load_paths_stack->non_empty()) {
 		thread_load_mutex.lock();
 		const String &parent_task_path = load_paths_stack->get(load_paths_stack->size() - 1);
 		HashMap<String, ThreadLoadTask>::Iterator E = thread_load_tasks.find(parent_task_path);
@@ -307,7 +307,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	if (load_nesting == 0) {
 		load_paths_stack = memnew(Vector<String>);
 
-		if (!load_task.dependent_path.is_empty()) {
+		if (load_task.dependent_path.non_empty()) {
 			load_paths_stack->push_back(load_task.dependent_path);
 		}
 		if (!Thread::is_main_thread()) {
@@ -635,7 +635,7 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 		*r_error = OK;
 	}
 
-	if (!p_load_token.local_path.is_empty()) {
+	if (p_load_token.local_path.non_empty()) {
 		if (!thread_load_tasks.has(p_load_token.local_path)) {
 #ifdef DEV_ENABLED
 			CRASH_NOW();
@@ -891,7 +891,7 @@ String ResourceLoader::get_resource_type(const String &p_path) {
 
 	for (int i = 0; i < loader_count; i++) {
 		String result = loader[i]->get_resource_type(local_path);
-		if (!result.is_empty()) {
+		if (result.non_empty()) {
 			return result;
 		}
 	}
@@ -904,7 +904,7 @@ String ResourceLoader::get_resource_script_class(const String &p_path) {
 
 	for (int i = 0; i < loader_count; i++) {
 		String result = loader[i]->get_resource_script_class(local_path);
-		if (!result.is_empty()) {
+		if (result.non_empty()) {
 			return result;
 		}
 	}
@@ -1080,7 +1080,7 @@ void ResourceLoader::clear_thread_load_tasks() {
 
 	while (true) {
 		bool none_running = true;
-		if (thread_load_tasks.size()) {
+		if (thread_load_tasks.non_empty()) {
 			for (KeyValue<String, ResourceLoader::ThreadLoadTask> &E : thread_load_tasks) {
 				if (E.value.status == THREAD_LOAD_IN_PROGRESS) {
 					if (E.value.cond_var) {

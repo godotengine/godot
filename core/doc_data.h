@@ -85,20 +85,20 @@ public:
 		static Dictionary to_dict(const ArgumentDoc &p_doc) {
 			Dictionary dict;
 
-			if (!p_doc.name.is_empty()) {
+			if (p_doc.name.non_empty()) {
 				dict["name"] = p_doc.name;
 			}
 
-			if (!p_doc.type.is_empty()) {
+			if (p_doc.type.non_empty()) {
 				dict["type"] = p_doc.type;
 			}
 
-			if (!p_doc.enumeration.is_empty()) {
+			if (p_doc.enumeration.non_empty()) {
 				dict["enumeration"] = p_doc.enumeration;
 				dict["is_bitfield"] = p_doc.is_bitfield;
 			}
 
-			if (!p_doc.default_value.is_empty()) {
+			if (p_doc.default_value.non_empty()) {
 				dict["default_value"] = p_doc.default_value;
 			}
 
@@ -219,24 +219,24 @@ public:
 		static Dictionary to_dict(const MethodDoc &p_doc) {
 			Dictionary dict;
 
-			if (!p_doc.name.is_empty()) {
+			if (p_doc.name.non_empty()) {
 				dict["name"] = p_doc.name;
 			}
 
-			if (!p_doc.return_type.is_empty()) {
+			if (p_doc.return_type.non_empty()) {
 				dict["return_type"] = p_doc.return_type;
 			}
 
-			if (!p_doc.return_enum.is_empty()) {
+			if (p_doc.return_enum.non_empty()) {
 				dict["return_enum"] = p_doc.return_enum;
 				dict["return_is_bitfield"] = p_doc.return_is_bitfield;
 			}
 
-			if (!p_doc.qualifiers.is_empty()) {
+			if (p_doc.qualifiers.non_empty()) {
 				dict["qualifiers"] = p_doc.qualifiers;
 			}
 
-			if (!p_doc.description.is_empty()) {
+			if (p_doc.description.non_empty()) {
 				dict["description"] = p_doc.description;
 			}
 
@@ -248,11 +248,11 @@ public:
 				dict["experimental"] = p_doc.experimental_message;
 			}
 
-			if (!p_doc.keywords.is_empty()) {
+			if (p_doc.keywords.non_empty()) {
 				dict["keywords"] = p_doc.keywords;
 			}
 
-			if (!p_doc.arguments.is_empty()) {
+			if (p_doc.arguments.non_empty()) {
 				Array arguments;
 				for (int i = 0; i < p_doc.arguments.size(); i++) {
 					arguments.push_back(ArgumentDoc::to_dict(p_doc.arguments[i]));
@@ -260,7 +260,7 @@ public:
 				dict["arguments"] = arguments;
 			}
 
-			if (!p_doc.errors_returned.is_empty()) {
+			if (p_doc.errors_returned.non_empty()) {
 				Array errors_returned;
 				for (int i = 0; i < p_doc.errors_returned.size(); i++) {
 					errors_returned.push_back(p_doc.errors_returned[i]);
@@ -342,22 +342,22 @@ public:
 		static Dictionary to_dict(const ConstantDoc &p_doc) {
 			Dictionary dict;
 
-			if (!p_doc.name.is_empty()) {
+			if (p_doc.name.non_empty()) {
 				dict["name"] = p_doc.name;
 			}
 
-			if (!p_doc.value.is_empty()) {
+			if (p_doc.value.non_empty()) {
 				dict["value"] = p_doc.value;
 			}
 
 			dict["is_value_valid"] = p_doc.is_value_valid;
 
-			if (!p_doc.enumeration.is_empty()) {
+			if (p_doc.enumeration.non_empty()) {
 				dict["enumeration"] = p_doc.enumeration;
 				dict["is_bitfield"] = p_doc.is_bitfield;
 			}
 
-			if (!p_doc.description.is_empty()) {
+			if (p_doc.description.non_empty()) {
 				dict["description"] = p_doc.description;
 			}
 
@@ -369,7 +369,7 @@ public:
 				dict["experimental"] = p_doc.experimental_message;
 			}
 
-			if (!p_doc.keywords.is_empty()) {
+			if (p_doc.keywords.non_empty()) {
 				dict["keywords"] = p_doc.keywords;
 			}
 
@@ -466,38 +466,38 @@ public:
 		static Dictionary to_dict(const PropertyDoc &p_doc) {
 			Dictionary dict;
 
-			if (!p_doc.name.is_empty()) {
+			if (p_doc.name.non_empty()) {
 				dict["name"] = p_doc.name;
 			}
 
-			if (!p_doc.type.is_empty()) {
+			if (p_doc.type.non_empty()) {
 				dict["type"] = p_doc.type;
 			}
 
-			if (!p_doc.enumeration.is_empty()) {
+			if (p_doc.enumeration.non_empty()) {
 				dict["enumeration"] = p_doc.enumeration;
 				dict["is_bitfield"] = p_doc.is_bitfield;
 			}
 
-			if (!p_doc.description.is_empty()) {
+			if (p_doc.description.non_empty()) {
 				dict["description"] = p_doc.description;
 			}
 
-			if (!p_doc.setter.is_empty()) {
+			if (p_doc.setter.non_empty()) {
 				dict["setter"] = p_doc.setter;
 			}
 
-			if (!p_doc.getter.is_empty()) {
+			if (p_doc.getter.non_empty()) {
 				dict["getter"] = p_doc.getter;
 			}
 
-			if (!p_doc.default_value.is_empty()) {
+			if (p_doc.default_value.non_empty()) {
 				dict["default_value"] = p_doc.default_value;
 			}
 
 			dict["overridden"] = p_doc.overridden;
 
-			if (!p_doc.overrides.is_empty()) {
+			if (p_doc.overrides.non_empty()) {
 				dict["overrides"] = p_doc.overrides;
 			}
 
@@ -509,7 +509,7 @@ public:
 				dict["experimental"] = p_doc.experimental_message;
 			}
 
-			if (!p_doc.keywords.is_empty()) {
+			if (p_doc.keywords.non_empty()) {
 				dict["keywords"] = p_doc.keywords;
 			}
 
@@ -563,27 +563,27 @@ public:
 		static Dictionary to_dict(const ThemeItemDoc &p_doc) {
 			Dictionary dict;
 
-			if (!p_doc.name.is_empty()) {
+			if (p_doc.name.non_empty()) {
 				dict["name"] = p_doc.name;
 			}
 
-			if (!p_doc.type.is_empty()) {
+			if (p_doc.type.non_empty()) {
 				dict["type"] = p_doc.type;
 			}
 
-			if (!p_doc.data_type.is_empty()) {
+			if (p_doc.data_type.non_empty()) {
 				dict["data_type"] = p_doc.data_type;
 			}
 
-			if (!p_doc.description.is_empty()) {
+			if (p_doc.description.non_empty()) {
 				dict["description"] = p_doc.description;
 			}
 
-			if (!p_doc.default_value.is_empty()) {
+			if (p_doc.default_value.non_empty()) {
 				dict["default_value"] = p_doc.default_value;
 			}
 
-			if (!p_doc.keywords.is_empty()) {
+			if (p_doc.keywords.non_empty()) {
 				dict["keywords"] = p_doc.keywords;
 			}
 
@@ -610,11 +610,11 @@ public:
 		static Dictionary to_dict(const TutorialDoc &p_doc) {
 			Dictionary dict;
 
-			if (!p_doc.link.is_empty()) {
+			if (p_doc.link.non_empty()) {
 				dict["link"] = p_doc.link;
 			}
 
-			if (!p_doc.title.is_empty()) {
+			if (p_doc.title.non_empty()) {
 				dict["title"] = p_doc.title;
 			}
 
@@ -660,7 +660,7 @@ public:
 		static Dictionary to_dict(const EnumDoc &p_doc) {
 			Dictionary dict;
 
-			if (!p_doc.description.is_empty()) {
+			if (p_doc.description.non_empty()) {
 				dict["description"] = p_doc.description;
 			}
 
@@ -837,23 +837,23 @@ public:
 		static Dictionary to_dict(const ClassDoc &p_doc) {
 			Dictionary dict;
 
-			if (!p_doc.name.is_empty()) {
+			if (p_doc.name.non_empty()) {
 				dict["name"] = p_doc.name;
 			}
 
-			if (!p_doc.inherits.is_empty()) {
+			if (p_doc.inherits.non_empty()) {
 				dict["inherits"] = p_doc.inherits;
 			}
 
-			if (!p_doc.brief_description.is_empty()) {
+			if (p_doc.brief_description.non_empty()) {
 				dict["brief_description"] = p_doc.brief_description;
 			}
 
-			if (!p_doc.description.is_empty()) {
+			if (p_doc.description.non_empty()) {
 				dict["description"] = p_doc.description;
 			}
 
-			if (!p_doc.tutorials.is_empty()) {
+			if (p_doc.tutorials.non_empty()) {
 				Array tutorials;
 				for (int i = 0; i < p_doc.tutorials.size(); i++) {
 					tutorials.push_back(TutorialDoc::to_dict(p_doc.tutorials[i]));
@@ -861,7 +861,7 @@ public:
 				dict["tutorials"] = tutorials;
 			}
 
-			if (!p_doc.constructors.is_empty()) {
+			if (p_doc.constructors.non_empty()) {
 				Array constructors;
 				for (int i = 0; i < p_doc.constructors.size(); i++) {
 					constructors.push_back(MethodDoc::to_dict(p_doc.constructors[i]));
@@ -869,7 +869,7 @@ public:
 				dict["constructors"] = constructors;
 			}
 
-			if (!p_doc.methods.is_empty()) {
+			if (p_doc.methods.non_empty()) {
 				Array methods;
 				for (int i = 0; i < p_doc.methods.size(); i++) {
 					methods.push_back(MethodDoc::to_dict(p_doc.methods[i]));
@@ -877,7 +877,7 @@ public:
 				dict["methods"] = methods;
 			}
 
-			if (!p_doc.operators.is_empty()) {
+			if (p_doc.operators.non_empty()) {
 				Array operators;
 				for (int i = 0; i < p_doc.operators.size(); i++) {
 					operators.push_back(MethodDoc::to_dict(p_doc.operators[i]));
@@ -885,7 +885,7 @@ public:
 				dict["operators"] = operators;
 			}
 
-			if (!p_doc.signals.is_empty()) {
+			if (p_doc.signals.non_empty()) {
 				Array signals;
 				for (int i = 0; i < p_doc.signals.size(); i++) {
 					signals.push_back(MethodDoc::to_dict(p_doc.signals[i]));
@@ -893,7 +893,7 @@ public:
 				dict["signals"] = signals;
 			}
 
-			if (!p_doc.constants.is_empty()) {
+			if (p_doc.constants.non_empty()) {
 				Array constants;
 				for (int i = 0; i < p_doc.constants.size(); i++) {
 					constants.push_back(ConstantDoc::to_dict(p_doc.constants[i]));
@@ -901,7 +901,7 @@ public:
 				dict["constants"] = constants;
 			}
 
-			if (!p_doc.enums.is_empty()) {
+			if (p_doc.enums.non_empty()) {
 				Dictionary enums;
 				for (const KeyValue<String, EnumDoc> &E : p_doc.enums) {
 					enums[E.key] = EnumDoc::to_dict(E.value);
@@ -909,7 +909,7 @@ public:
 				dict["enums"] = enums;
 			}
 
-			if (!p_doc.properties.is_empty()) {
+			if (p_doc.properties.non_empty()) {
 				Array properties;
 				for (int i = 0; i < p_doc.properties.size(); i++) {
 					properties.push_back(PropertyDoc::to_dict(p_doc.properties[i]));
@@ -917,7 +917,7 @@ public:
 				dict["properties"] = properties;
 			}
 
-			if (!p_doc.annotations.is_empty()) {
+			if (p_doc.annotations.non_empty()) {
 				Array annotations;
 				for (int i = 0; i < p_doc.annotations.size(); i++) {
 					annotations.push_back(MethodDoc::to_dict(p_doc.annotations[i]));
@@ -925,7 +925,7 @@ public:
 				dict["annotations"] = annotations;
 			}
 
-			if (!p_doc.theme_properties.is_empty()) {
+			if (p_doc.theme_properties.non_empty()) {
 				Array theme_properties;
 				for (int i = 0; i < p_doc.theme_properties.size(); i++) {
 					theme_properties.push_back(ThemeItemDoc::to_dict(p_doc.theme_properties[i]));
@@ -943,11 +943,11 @@ public:
 
 			dict["is_script_doc"] = p_doc.is_script_doc;
 
-			if (!p_doc.script_path.is_empty()) {
+			if (p_doc.script_path.non_empty()) {
 				dict["script_path"] = p_doc.script_path;
 			}
 
-			if (!p_doc.keywords.is_empty()) {
+			if (p_doc.keywords.non_empty()) {
 				dict["keywords"] = p_doc.keywords;
 			}
 

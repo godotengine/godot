@@ -92,7 +92,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_back
 		_discard_redo();
 
 		// Check if the merge operation is valid
-		if (p_mode != MERGE_DISABLE && actions.size() && actions[actions.size() - 1].name == p_name && actions[actions.size() - 1].backward_undo_ops == p_backward_undo_ops && actions[actions.size() - 1].last_tick + 800 > ticks) {
+		if (p_mode != MERGE_DISABLE && actions.non_empty() && actions[actions.size() - 1].name == p_name && actions[actions.size() - 1].backward_undo_ops == p_backward_undo_ops && actions[actions.size() - 1].last_tick + 800 > ticks) {
 			current_action = actions.size() - 2;
 
 			if (p_mode == MERGE_ENDS) {
@@ -338,7 +338,7 @@ void UndoRedo::commit_action(bool p_execute) {
 		}
 	}
 
-	if (add_message && callback && actions.size() > 0) {
+	if (add_message && callback && actions.non_empty()) {
 		callback(callback_ud, actions[actions.size() - 1].name);
 	}
 }
@@ -457,7 +457,7 @@ void UndoRedo::clear_history(bool p_increase_version) {
 	ERR_FAIL_COND(action_level > 0);
 	_discard_redo();
 
-	while (actions.size()) {
+	while (actions.non_empty()) {
 		_pop_history_tail();
 	}
 

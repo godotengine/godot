@@ -213,7 +213,7 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 
 	// Encode file cache to send it via network.
 	Vector<uint8_t> file_cache_buffer;
-	if (file_cache.size()) {
+	if (file_cache.non_empty()) {
 		StringBuilder sbuild;
 		for (int i = 0; i < file_cache.size(); i++) {
 			sbuild.append(file_cache[i].path);

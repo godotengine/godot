@@ -1689,7 +1689,7 @@ real_t ConvexHullInternal::shrink(real_t p_amount, real_t p_clamp_amount) {
 	Int128 hull_center_z(0, 0);
 	Int128 volume(0, 0);
 
-	while (stack.size() > 0) {
+	while (stack.non_empty()) {
 		Vertex *v = stack[stack.size() - 1];
 		stack.remove_at(stack.size() - 1);
 		Edge *e = v->edges;
@@ -2090,7 +2090,7 @@ bool ConvexHullInternal::shift_face(Face *p_face, real_t p_amount, LocalVector<V
 		p_stack.push_back(nullptr);
 	}
 
-	CHULL_ASSERT(p_stack.size() > 0);
+	CHULL_ASSERT(p_stack.non_empty());
 	vertex_list = p_stack[0];
 
 #ifdef DEBUG_CONVEX_HULL

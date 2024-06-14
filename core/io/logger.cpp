@@ -132,7 +132,7 @@ void RotatedFileLogger::clear_old_backups() {
 	da->list_dir_begin();
 	String f = da->get_next();
 	HashSet<String> backups;
-	while (!f.is_empty()) {
+	while (f.non_empty()) {
 		if (!da->current_is_dir() && f.begins_with(basename) && f.get_extension() == extension && f != base_path.get_file()) {
 			backups.insert(f);
 		}
@@ -157,7 +157,7 @@ void RotatedFileLogger::rotate_file() {
 		if (max_files > 1) {
 			String timestamp = Time::get_singleton()->get_datetime_string_from_system().replace(":", ".");
 			String backup_name = base_path.get_basename() + timestamp;
-			if (!base_path.get_extension().is_empty()) {
+			if (base_path.get_extension().non_empty()) {
 				backup_name += "." + base_path.get_extension();
 			}
 

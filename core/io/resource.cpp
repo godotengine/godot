@@ -57,7 +57,7 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 
 	ResourceCache::lock.lock();
 
-	if (!path_cache.is_empty()) {
+	if (path_cache.non_empty()) {
 		ResourceCache::resources.erase(path_cache);
 	}
 
@@ -77,7 +77,7 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 
 	path_cache = p_path;
 
-	if (!path_cache.is_empty()) {
+	if (path_cache.non_empty()) {
 		ResourceCache::resources[path_cache] = this;
 	}
 	ResourceCache::lock.unlock();
@@ -579,7 +579,7 @@ RWLock ResourceCache::path_cache_lock;
 #endif
 
 void ResourceCache::clear() {
-	if (!resources.is_empty()) {
+	if (resources.non_empty()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			ERR_PRINT(vformat("%d resources still in use at exit.", resources.size()));
 			for (const KeyValue<String, Resource *> &E : resources) {

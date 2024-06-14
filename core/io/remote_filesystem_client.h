@@ -47,7 +47,7 @@ protected:
 		uint64_t server_modified_time = 0; // MD5 checksum.
 		uint64_t modified_time = 0;
 	};
-	virtual bool _is_configured() { return !cache_path.is_empty(); }
+	virtual bool _is_configured() { return cache_path.non_empty(); }
 	// Can be re-implemented per platform. If so, feel free to ignore get_cache_path()
 	virtual Vector<FileCache> _load_cache_file();
 	virtual Error _store_file(const String &p_path, const LocalVector<uint8_t> &p_file, uint64_t &modified_time);

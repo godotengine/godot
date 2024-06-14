@@ -116,7 +116,7 @@ struct LocalDebugger::ScriptsProfiler {
 void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
 
-	if (!target_function.is_empty()) {
+	if (target_function.non_empty()) {
 		String current_function = script_lang->debug_get_stack_level_function(0);
 		if (current_function != target_function) {
 			script_debugger->set_depth(0);

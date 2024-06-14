@@ -213,7 +213,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 
 	uint32_t debug_stop = debug_stop_after;
 
-	while (debug_stop > 0 && faces.back()->get().points_over.size()) {
+	while (debug_stop > 0 && faces.back()->get().points_over.non_empty()) {
 		debug_stop--;
 		Face &f = faces.back()->get();
 
@@ -313,7 +313,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 
 		//erase lit faces
 
-		while (lit_faces.size()) {
+		while (lit_faces.non_empty()) {
 			faces.erase(lit_faces.front()->get());
 			lit_faces.pop_front();
 		}

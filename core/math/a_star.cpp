@@ -338,7 +338,7 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point) {
 	begin_point->abs_f_score = _estimate_cost(begin_point->id, end_point->id);
 	open_list.push_back(begin_point);
 
-	while (!open_list.is_empty()) {
+	while (open_list.non_empty()) {
 		Point *p = open_list[0]; // The currently processed point.
 
 		// Find point closer to end_point, or same distance to end_point but closer to begin_point.
@@ -835,7 +835,7 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point) {
 	begin_point->abs_f_score = _estimate_cost(begin_point->id, end_point->id);
 	open_list.push_back(begin_point);
 
-	while (!open_list.is_empty()) {
+	while (open_list.non_empty()) {
 		AStar3D::Point *p = open_list[0]; // The currently processed point.
 
 		// Find point closer to end_point, or same distance to end_point but closer to begin_point.

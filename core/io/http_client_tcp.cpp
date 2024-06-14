@@ -289,7 +289,7 @@ Error HTTPClientTCP::poll() {
 					resolving = IP::RESOLVER_INVALID_ID;
 
 					Error err = ERR_BUG; // Should be at least one entry.
-					while (ip_candidates.size() > 0) {
+					while (ip_candidates.non_empty()) {
 						err = tcp_connection->connect_to_host(ip_candidates.pop_front(), server_port);
 						if (err == OK) {
 							break;
@@ -407,7 +407,7 @@ Error HTTPClientTCP::poll() {
 				case StreamPeerTCP::STATUS_ERROR:
 				case StreamPeerTCP::STATUS_NONE: {
 					Error err = ERR_CANT_CONNECT;
-					while (ip_candidates.size() > 0) {
+					while (ip_candidates.non_empty()) {
 						tcp_connection->disconnect_from_host();
 						err = tcp_connection->connect_to_host(ip_candidates.pop_front(), server_port);
 						if (err == OK) {

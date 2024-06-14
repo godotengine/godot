@@ -140,7 +140,7 @@ String ConfigFile::encode_to_text() const {
 		} else {
 			sb.append("\n");
 		}
-		if (!E.key.is_empty()) {
+		if (E.key.non_empty()) {
 			sb.append("[" + E.key + "]\n\n");
 		}
 
@@ -207,7 +207,7 @@ Error ConfigFile::_internal_save(Ref<FileAccess> file) {
 		} else {
 			file->store_string("\n");
 		}
-		if (!E.key.is_empty()) {
+		if (E.key.non_empty()) {
 			file->store_string("[" + E.key.replace("]", "\\]") + "]\n\n");
 		}
 
@@ -305,9 +305,9 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 			return err;
 		}
 
-		if (!assign.is_empty()) {
+		if (assign.non_empty()) {
 			set_value(section, assign, value);
-		} else if (!next_tag.name.is_empty()) {
+		} else if (next_tag.name.non_empty()) {
 			section = next_tag.name.replace("\\]", "]");
 		}
 	}

@@ -125,7 +125,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 							str_start = j + 1;
 						}
 					}
-					if (!plural_msg.is_empty()) {
+					if (plural_msg.non_empty()) {
 						translation->add_plural_message(msg_id, plural_msg, msg_context);
 					}
 				}
@@ -181,7 +181,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 
 				// In PO file, "msgctxt" appears before "msgid". If we encounter a "msgctxt", we add what we have read
 				// and set "entered_context" to true to prevent adding twice.
-				if (!skip_this && !msg_id.is_empty()) {
+				if (!skip_this && msg_id.non_empty()) {
 					if (status == STATUS_READING_STRING) {
 						translation->add_message(msg_id, msg_str, msg_context);
 					} else if (status == STATUS_READING_PLURAL) {
@@ -211,7 +211,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 			} else if (l.begins_with("msgid")) {
 				ERR_FAIL_COND_V_MSG(status == STATUS_READING_ID, Ref<Resource>(), "Unexpected 'msgid', was expecting 'msgstr' while parsing: " + path + ":" + itos(line));
 
-				if (!msg_id.is_empty()) {
+				if (msg_id.non_empty()) {
 					if (!skip_this && !entered_context) {
 						if (status == STATUS_READING_STRING) {
 							translation->add_message(msg_id, msg_str, msg_context);
@@ -305,7 +305,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 
 		// Add the last set of data from last iteration.
 		if (status == STATUS_READING_STRING) {
-			if (!msg_id.is_empty()) {
+			if (msg_id.non_empty()) {
 				if (!skip_this) {
 					translation->add_message(msg_id, msg_str, msg_context);
 				}
@@ -313,7 +313,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 				config = msg_str;
 			}
 		} else if (status == STATUS_READING_PLURAL) {
-			if (!skip_this && !msg_id.is_empty()) {
+			if (!skip_this && msg_id.non_empty()) {
 				ERR_FAIL_COND_V_MSG(plural_index != plural_forms - 1, Ref<Resource>(), "Number of 'msgstr[]' doesn't match with number of plural forms: " + path + ":" + itos(line));
 				translation->add_plural_message(msg_id, msgs_plural, msg_context);
 			}

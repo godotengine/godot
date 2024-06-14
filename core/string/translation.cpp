@@ -290,7 +290,7 @@ void TranslationServer::init_locale_info() {
 	locale_rename_map.clear();
 	idx = 0;
 	while (locale_renames[idx][0] != nullptr) {
-		if (!String(locale_renames[idx][1]).is_empty()) {
+		if (String(locale_renames[idx][1]).non_empty()) {
 			locale_rename_map[locale_renames[idx][0]] = locale_renames[idx][1];
 		}
 		idx++;
@@ -308,7 +308,7 @@ void TranslationServer::init_locale_info() {
 	country_rename_map.clear();
 	idx = 0;
 	while (country_renames[idx][0] != nullptr) {
-		if (!String(country_renames[idx][1]).is_empty()) {
+		if (String(country_renames[idx][1]).non_empty()) {
 			country_rename_map[country_renames[idx][0]] = country_renames[idx][1];
 		}
 		idx++;
@@ -393,7 +393,7 @@ String TranslationServer::_standardize_locale(const String &p_locale, bool p_add
 				}
 			}
 		}
-		if (!script_name.is_empty() && country_name.is_empty()) {
+		if (script_name.non_empty() && country_name.is_empty()) {
 			// Add conntry code based on script for some ambiguous cases.
 			for (int i = 0; i < locale_script_info.size(); i++) {
 				const LocaleScriptInfo &info = locale_script_info[i];
@@ -407,13 +407,13 @@ String TranslationServer::_standardize_locale(const String &p_locale, bool p_add
 
 	// Combine results.
 	String out = lang_name;
-	if (!script_name.is_empty()) {
+	if (script_name.non_empty()) {
 		out = out + "_" + script_name;
 	}
-	if (!country_name.is_empty()) {
+	if (country_name.non_empty()) {
 		out = out + "_" + country_name;
 	}
-	if (!variant_name.is_empty()) {
+	if (variant_name.non_empty()) {
 		out = out + "_" + variant_name;
 	}
 	return out;
@@ -467,10 +467,10 @@ String TranslationServer::get_locale_name(const String &p_locale) const {
 	}
 
 	String name = language_map[lang_name];
-	if (!script_name.is_empty()) {
+	if (script_name.non_empty()) {
 		name = name + " (" + script_map[script_name] + ")";
 	}
-	if (!country_name.is_empty()) {
+	if (country_name.non_empty()) {
 		name = name + ", " + country_name_map[country_name];
 	}
 	return name;
@@ -684,7 +684,7 @@ bool TranslationServer::_load_translations(const String &p_from) {
 void TranslationServer::setup() {
 	String test = GLOBAL_DEF("internationalization/locale/test", "");
 	test = test.strip_edges();
-	if (!test.is_empty()) {
+	if (test.non_empty()) {
 		set_locale(test);
 	} else {
 		set_locale(OS::get_singleton()->get_locale());

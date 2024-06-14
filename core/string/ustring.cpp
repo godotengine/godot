@@ -1139,7 +1139,7 @@ String String::capitalize() const {
 
 String String::to_camel_case() const {
 	String s = to_pascal_case();
-	if (!s.is_empty()) {
+	if (s.non_empty()) {
 		s[0] = _find_lower(s[0]);
 	}
 	return s;

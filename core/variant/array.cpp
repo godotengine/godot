@@ -549,7 +549,7 @@ Array Array::map(const Callable &p_callable) const {
 Variant Array::reduce(const Callable &p_callable, const Variant &p_accum) const {
 	int start = 0;
 	Variant ret = p_accum;
-	if (ret == Variant() && size() > 0) {
+	if (ret == Variant() && non_empty()) {
 		ret = front();
 		start = 1;
 	}
@@ -680,7 +680,7 @@ void Array::push_front(const Variant &p_value) {
 
 Variant Array::pop_back() {
 	ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Array is in read-only state.");
-	if (!_p->array.is_empty()) {
+	if (_p->array.non_empty()) {
 		const int n = _p->array.size() - 1;
 		const Variant ret = _p->array.get(n);
 		_p->array.resize(n);
@@ -691,7 +691,7 @@ Variant Array::pop_back() {
 
 Variant Array::pop_front() {
 	ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Array is in read-only state.");
-	if (!_p->array.is_empty()) {
+	if (_p->array.non_empty()) {
 		const Variant ret = _p->array.get(0);
 		_p->array.remove_at(0);
 		return ret;
@@ -782,7 +782,7 @@ Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_nam
 
 void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
+	ERR_FAIL_COND_MSG(_p->array.non_empty(), "Type can only be set when array is empty.");
 	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
 	ERR_FAIL_COND_MSG(_p->typed.type != Variant::NIL, "Type can only be set once.");
 	ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT, "Class names can only be set for type OBJECT");

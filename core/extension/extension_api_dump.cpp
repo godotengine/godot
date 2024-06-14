@@ -493,7 +493,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			String enum_name = CoreConstants::get_global_constant_enum(i);
 			String name = CoreConstants::get_global_constant_name(i);
 			bool bitfield = CoreConstants::is_global_constant_bitfield(i);
-			if (!enum_name.is_empty()) {
+			if (enum_name.non_empty()) {
 				enum_list[enum_name].push_back(Pair<String, int64_t>(name, value));
 				enum_is_bitfield[enum_name] = bitfield;
 			} else {
@@ -591,7 +591,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 				arguments.push_back(arg);
 			}
 
-			if (arguments.size()) {
+			if (arguments.non_empty()) {
 				func["arguments"] = arguments;
 			}
 
@@ -656,7 +656,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					}
 					members.push_back(d2);
 				}
-				if (members.size()) {
+				if (members.non_empty()) {
 					d["members"] = members;
 				}
 			}
@@ -682,7 +682,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					}
 					constants.push_back(d2);
 				}
-				if (constants.size()) {
+				if (constants.non_empty()) {
 					d["constants"] = constants;
 				}
 			}
@@ -723,13 +723,13 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						}
 					}
 
-					if (values.size()) {
+					if (values.non_empty()) {
 						enum_dict["values"] = values;
 					}
 					enums.push_back(enum_dict);
 				}
 
-				if (enums.size()) {
+				if (enums.non_empty()) {
 					d["enums"] = enums;
 				}
 			}
@@ -767,7 +767,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						}
 					}
 				}
-				if (operators.size()) {
+				if (operators.non_empty()) {
 					d["operators"] = operators;
 				}
 			}
@@ -805,7 +805,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						arguments.push_back(d3);
 					}
 
-					if (arguments.size()) {
+					if (arguments.non_empty()) {
 						d2["arguments"] = arguments;
 					}
 
@@ -820,7 +820,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 
 					methods.push_back(d2);
 				}
-				if (methods.size()) {
+				if (methods.non_empty()) {
 					d["methods"] = methods;
 				}
 			}
@@ -840,7 +840,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						d3["type"] = get_builtin_or_variant_type_name(Variant::get_constructor_argument_type(type, j, k));
 						arguments.push_back(d3);
 					}
-					if (arguments.size()) {
+					if (arguments.non_empty()) {
 						d2["arguments"] = arguments;
 					}
 
@@ -868,7 +868,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					constructors.push_back(d2);
 				}
 
-				if (constructors.size()) {
+				if (constructors.non_empty()) {
 					d["constructors"] = constructors;
 				}
 			}
@@ -950,7 +950,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					constants.push_back(d2);
 				}
 
-				if (constants.size()) {
+				if (constants.non_empty()) {
 					d["constants"] = constants;
 				}
 			}
@@ -996,7 +996,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					enums.push_back(d2);
 				}
 
-				if (enums.size()) {
+				if (enums.non_empty()) {
 					d["enums"] = enums;
 				}
 			}
@@ -1048,7 +1048,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 							arguments.push_back(d3);
 						}
 
-						if (arguments.size()) {
+						if (arguments.non_empty()) {
 							d2["arguments"] = arguments;
 						}
 
@@ -1083,7 +1083,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 
 						Vector<uint32_t> compat_hashes = ClassDB::get_method_compatibility_hashes(class_name, method_name);
 						Array compatibility;
-						if (compat_hashes.size()) {
+						if (compat_hashes.non_empty()) {
 							for (int i = 0; i < compat_hashes.size(); i++) {
 								compatibility.push_back(compat_hashes[i]);
 							}
@@ -1093,7 +1093,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						GDExtensionCompatHashes::get_legacy_hashes(class_name, method_name, compatibility);
 #endif
 
-						if (compatibility.size() > 0) {
+						if (compatibility.non_empty()) {
 							d2["hash_compatibility"] = compatibility;
 						}
 
@@ -1125,7 +1125,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 							}
 						}
 
-						if (arguments.size()) {
+						if (arguments.non_empty()) {
 							d2["arguments"] = arguments;
 						}
 
@@ -1142,7 +1142,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					}
 				}
 
-				if (methods.size()) {
+				if (methods.non_empty()) {
 					d["methods"] = methods;
 				}
 			}
@@ -1169,7 +1169,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						}
 						arguments.push_back(d3);
 					}
-					if (arguments.size()) {
+					if (arguments.non_empty()) {
 						d2["arguments"] = arguments;
 					}
 
@@ -1185,7 +1185,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					signals.push_back(d2);
 				}
 
-				if (signals.size()) {
+				if (signals.non_empty()) {
 					d["signals"] = signals;
 				}
 			}
@@ -1234,7 +1234,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					properties.push_back(d2);
 				}
 
-				if (properties.size()) {
+				if (properties.non_empty()) {
 					d["properties"] = properties;
 				}
 			}
@@ -1268,7 +1268,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			singletons.push_back(d);
 		}
 
-		if (singletons.size()) {
+		if (singletons.non_empty()) {
 			api_dump["singletons"] = singletons;
 		}
 	}

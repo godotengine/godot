@@ -188,7 +188,7 @@ public:
 		set_argument_count(method_info.arguments.size());
 		Variant::Type *at = memnew_arr(Variant::Type, method_info.arguments.size() + 1);
 		at[0] = _gen_return_type_info().type;
-		if (method_info.arguments.size()) {
+		if (method_info.arguments.non_empty()) {
 #ifdef DEBUG_METHODS_ENABLED
 			Vector<StringName> names;
 			names.resize(method_info.arguments.size());

@@ -660,7 +660,7 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 struct _VariantCall {
 	static String func_PackedByteArray_get_string_from_ascii(PackedByteArray *p_instance) {
 		String s;
-		if (p_instance->size() > 0) {
+		if (p_instance->non_empty()) {
 			const uint8_t *r = p_instance->ptr();
 			CharString cs;
 			cs.resize(p_instance->size() + 1);
@@ -674,7 +674,7 @@ struct _VariantCall {
 
 	static String func_PackedByteArray_get_string_from_utf8(PackedByteArray *p_instance) {
 		String s;
-		if (p_instance->size() > 0) {
+		if (p_instance->non_empty()) {
 			const uint8_t *r = p_instance->ptr();
 			s.parse_utf8((const char *)r, p_instance->size());
 		}
@@ -683,7 +683,7 @@ struct _VariantCall {
 
 	static String func_PackedByteArray_get_string_from_utf16(PackedByteArray *p_instance) {
 		String s;
-		if (p_instance->size() > 0) {
+		if (p_instance->non_empty()) {
 			const uint8_t *r = p_instance->ptr();
 			s.parse_utf16((const char16_t *)r, floor((double)p_instance->size() / (double)sizeof(char16_t)));
 		}
@@ -692,7 +692,7 @@ struct _VariantCall {
 
 	static String func_PackedByteArray_get_string_from_utf32(PackedByteArray *p_instance) {
 		String s;
-		if (p_instance->size() > 0) {
+		if (p_instance->non_empty()) {
 			const uint8_t *r = p_instance->ptr();
 			s = String((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t)));
 		}
@@ -701,7 +701,7 @@ struct _VariantCall {
 
 	static String func_PackedByteArray_get_string_from_wchar(PackedByteArray *p_instance) {
 		String s;
-		if (p_instance->size() > 0) {
+		if (p_instance->non_empty()) {
 			const uint8_t *r = p_instance->ptr();
 #ifdef WINDOWS_ENABLED
 			s.parse_utf16((const char16_t *)r, floor((double)p_instance->size() / (double)sizeof(char16_t)));
@@ -715,7 +715,7 @@ struct _VariantCall {
 	static PackedByteArray func_PackedByteArray_compress(PackedByteArray *p_instance, int p_mode) {
 		PackedByteArray compressed;
 
-		if (p_instance->size() > 0) {
+		if (p_instance->non_empty()) {
 			Compression::Mode mode = (Compression::Mode)(p_mode);
 			compressed.resize(Compression::get_max_compressed_buffer_size(p_instance->size(), mode));
 			int result = Compression::compress(compressed.ptrw(), p_instance->ptr(), p_instance->size(), mode);

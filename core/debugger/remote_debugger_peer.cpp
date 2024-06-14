@@ -39,7 +39,7 @@ bool RemoteDebuggerPeerTCP::is_peer_connected() {
 }
 
 bool RemoteDebuggerPeerTCP::has_message() {
-	return in_queue.size() > 0;
+	return in_queue.non_empty();
 }
 
 Array RemoteDebuggerPeerTCP::get_message() {

@@ -130,21 +130,21 @@ void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const Met
 	}
 
 	if (p_methodinfo.flags & METHOD_FLAG_CONST) {
-		if (!p_method.qualifiers.is_empty()) {
+		if (p_method.qualifiers.non_empty()) {
 			p_method.qualifiers += " ";
 		}
 		p_method.qualifiers += "const";
 	}
 
 	if (p_methodinfo.flags & METHOD_FLAG_VARARG) {
-		if (!p_method.qualifiers.is_empty()) {
+		if (p_method.qualifiers.non_empty()) {
 			p_method.qualifiers += " ";
 		}
 		p_method.qualifiers += "vararg";
 	}
 
 	if (p_methodinfo.flags & METHOD_FLAG_STATIC) {
-		if (!p_method.qualifiers.is_empty()) {
+		if (p_method.qualifiers.non_empty()) {
 			p_method.qualifiers += " ";
 		}
 		p_method.qualifiers += "static";

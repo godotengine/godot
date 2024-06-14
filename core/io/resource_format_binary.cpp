@@ -787,7 +787,7 @@ Error ResourceLoaderBinary::load() {
 			}
 
 			res = Ref<Resource>(r);
-			if (!path.is_empty()) {
+			if (path.non_empty()) {
 				if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 					r->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE); // If got here because the resource with same path has different type, replace it.
 				} else {
@@ -856,7 +856,7 @@ Error ResourceLoaderBinary::load() {
 			missing_resource->set_recording_properties(false);
 		}
 
-		if (!missing_resource_properties.is_empty()) {
+		if (missing_resource_properties.non_empty()) {
 			res->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
 		}
 
@@ -949,10 +949,10 @@ void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p
 			dep = external_resources[i].path;
 		}
 
-		if (p_add_types && !external_resources[i].type.is_empty()) {
+		if (p_add_types && external_resources[i].type.non_empty()) {
 			dep += "::" + external_resources[i].type;
 		}
-		if (!fallback_path.is_empty()) {
+		if (fallback_path.non_empty()) {
 			if (!p_add_types) {
 				dep += "::"; // Ensure that path comes third, even if there is no type.
 			}
@@ -1222,7 +1222,7 @@ Ref<Resource> ResourceFormatLoaderBinary::load(const String &p_path, const Strin
 	}
 	loader.use_sub_threads = p_use_sub_threads;
 	loader.progress = r_progress;
-	String path = !p_original_path.is_empty() ? p_original_path : p_path;
+	String path = p_original_path.non_empty() ? p_original_path : p_path;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
 	loader.res_path = loader.local_path;
 	loader.open(f);
@@ -2173,7 +2173,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 			Ref<Script> s = p_resource->get_script();
 			if (s.is_valid()) {
 				script_class = s->get_global_name();
-				if (!script_class.is_empty()) {
+				if (script_class.non_empty()) {
 					format_flags |= ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_SCRIPT_CLASS;
 				}
 			}
@@ -2183,7 +2183,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	}
 	ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(p_path, true);
 	f->store_64(uid);
-	if (!script_class.is_empty()) {
+	if (script_class.non_empty()) {
 		save_unicode_string(f, script_class);
 	}
 
@@ -2277,7 +2277,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 	for (Ref<Resource> &r : saved_resources) {
 		if (r->is_built_in()) {
-			if (!r->get_scene_unique_id().is_empty()) {
+			if (r->get_scene_unique_id().non_empty()) {
 				if (used_unique_ids.has(r->get_scene_unique_id())) {
 					r->set_scene_unique_id("");
 				} else {

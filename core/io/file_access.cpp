@@ -193,7 +193,7 @@ String FileAccess::fix_path(const String &p_path) const {
 			if (ProjectSettings::get_singleton()) {
 				if (r_path.begins_with("res://")) {
 					String resource_path = ProjectSettings::get_singleton()->get_resource_path();
-					if (!resource_path.is_empty()) {
+					if (resource_path.non_empty()) {
 						return r_path.replace("res:/", resource_path);
 					}
 					return r_path.replace("res://", "");
@@ -204,7 +204,7 @@ String FileAccess::fix_path(const String &p_path) const {
 		case ACCESS_USERDATA: {
 			if (r_path.begins_with("user://")) {
 				String data_dir = OS::get_singleton()->get_user_data_dir();
-				if (!data_dir.is_empty()) {
+				if (data_dir.non_empty()) {
 					return r_path.replace("user:/", data_dir);
 				}
 				return r_path.replace("user://", "");

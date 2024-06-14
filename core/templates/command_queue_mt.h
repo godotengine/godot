@@ -422,7 +422,7 @@ public:
 	SPACE_SEP_LIST(DECL_PUSH_AND_SYNC, 15)
 
 	_FORCE_INLINE_ void flush_if_pending() {
-		if (unlikely(command_mem.size() > 0)) {
+		if (unlikely(command_mem.non_empty())) {
 			_flush();
 		}
 	}

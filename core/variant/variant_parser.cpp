@@ -2003,7 +2003,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				}
 
 				//could come up with some sort of text
-				if (!res_text.is_empty()) {
+				if (res_text.non_empty()) {
 					p_store_string_func(p_store_string_ud, res_text);
 					break;
 				}
@@ -2085,7 +2085,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 						resource_text = "Resource(\"" + script->get_path() + "\")";
 					}
 
-					if (!resource_text.is_empty()) {
+					if (resource_text.non_empty()) {
 						p_store_string_func(p_store_string_ud, resource_text);
 					} else {
 						ERR_PRINT("Failed to encode a path to a custom script for an array type.");
@@ -2137,7 +2137,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					}
 					p_store_string_func(p_store_string_ud, itos(ptr[i]));
 				}
-			} else if (data.size() > 0) {
+			} else if (data.non_empty()) {
 				p_store_string_func(p_store_string_ud, "\"");
 				p_store_string_func(p_store_string_ud, CryptoCore::b64_encode_str(data.ptr(), data.size()));
 				p_store_string_func(p_store_string_ud, "\"");

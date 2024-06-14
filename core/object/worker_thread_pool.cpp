@@ -644,7 +644,7 @@ void WorkerThreadPool::thread_exit_command_queue_mt_flush() {
 }
 
 void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio) {
-	ERR_FAIL_COND(threads.size() > 0);
+	ERR_FAIL_COND(threads.non_empty());
 	if (p_thread_count < 0) {
 		p_thread_count = OS::get_singleton()->get_default_thread_pool_size();
 	}

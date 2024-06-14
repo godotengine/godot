@@ -736,7 +736,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 		}
 	}
 
-	while (to_remove.size()) {
+	while (to_remove.non_empty()) {
 		values.erase(to_remove.front()->get());
 		to_remove.pop_front();
 	}

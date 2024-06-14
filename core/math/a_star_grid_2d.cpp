@@ -466,7 +466,7 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 	open_list.push_back(p_begin_point);
 	end = p_end_point;
 
-	while (!open_list.is_empty()) {
+	while (open_list.non_empty()) {
 		Point *p = open_list[0]; // The currently processed point.
 
 		// Find point closer to end_point, or same distance to end_point but closer to begin_point.

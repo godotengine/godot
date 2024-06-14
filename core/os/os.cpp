@@ -662,7 +662,7 @@ void OS::benchmark_dump() {
 		return;
 	}
 
-	if (!benchmark_file.is_empty()) {
+	if (benchmark_file.non_empty()) {
 		Ref<FileAccess> f = FileAccess::open(benchmark_file, FileAccess::WRITE);
 		if (f.is_valid()) {
 			Dictionary benchmark_marks;

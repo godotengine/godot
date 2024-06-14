@@ -56,7 +56,7 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 	String colon = ":";
 	String end_statement = "";
 
-	if (!p_indent.is_empty()) {
+	if (p_indent.non_empty()) {
 		colon += " ";
 		end_statement += "\n";
 	}

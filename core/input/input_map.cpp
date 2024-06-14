@@ -418,7 +418,7 @@ String InputMap::get_builtin_display_name(const String &p_name) const {
 
 const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	// Return cache if it has already been built.
-	if (default_builtin_cache.size()) {
+	if (default_builtin_cache.non_empty()) {
 		return default_builtin_cache;
 	}
 
@@ -781,7 +781,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 }
 
 const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_feature_overrides_applied() {
-	if (default_builtin_with_overrides_cache.size() > 0) {
+	if (default_builtin_with_overrides_cache.non_empty()) {
 		return default_builtin_with_overrides_cache;
 	}
 
@@ -798,7 +798,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_featur
 		const String &name = split[0];
 		String override_for = split.size() > 1 ? split[1] : String();
 
-		if (!override_for.is_empty() && OS::get_singleton()->has_feature(override_for)) {
+		if (override_for.non_empty() && OS::get_singleton()->has_feature(override_for)) {
 			builtins_with_overrides[name].push_back(override_for);
 		}
 	}
@@ -815,7 +815,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_featur
 			continue;
 		}
 
-		if (!override_for.is_empty() && !OS::get_singleton()->has_feature(override_for)) {
+		if (override_for.non_empty() && !OS::get_singleton()->has_feature(override_for)) {
 			// OS does not support this override - skip.
 			continue;
 		}

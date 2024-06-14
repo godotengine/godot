@@ -109,7 +109,7 @@ String GDExtension::find_extension_library(const String &p_path, Ref<ConfigFile>
 			}
 		}
 
-		if (!best_library_path.is_empty()) {
+		if (best_library_path.non_empty()) {
 			if (best_library_path.is_relative_path()) {
 				best_library_path = p_path.get_base_dir().path_join(best_library_path);
 			}
@@ -125,7 +125,7 @@ String GDExtension::find_extension_library(const String &p_path, Ref<ConfigFile>
 	if (p_config->has_section_key("configuration", "autodetect_library_prefix")) {
 		autodetect_library_prefix = p_config->get_value("configuration", "autodetect_library_prefix");
 	}
-	if (!autodetect_library_prefix.is_empty()) {
+	if (autodetect_library_prefix.non_empty()) {
 		String autodetect_path = autodetect_library_prefix;
 		if (autodetect_path.is_relative_path()) {
 			autodetect_path = p_path.get_base_dir().path_join(autodetect_path);
@@ -177,7 +177,7 @@ String GDExtension::find_extension_library(const String &p_path, Ref<ConfigFile>
 			file_name = dir->_get_next();
 		}
 
-		if (!best_file.is_empty()) {
+		if (best_file.non_empty()) {
 			String library_path = folder.path_join(best_file);
 			if (r_tags != nullptr) {
 				r_tags->append_array(best_file_tags);
@@ -775,7 +775,7 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 	String abs_path = ProjectSettings::get_singleton()->globalize_path(p_path);
 
 	Vector<String> abs_dependencies_paths;
-	if (p_dependencies != nullptr && !p_dependencies->is_empty()) {
+	if (p_dependencies != nullptr && p_dependencies->non_empty()) {
 		for (const SharedObject &dependency : *p_dependencies) {
 			abs_dependencies_paths.push_back(ProjectSettings::get_singleton()->globalize_path(dependency.path));
 		}

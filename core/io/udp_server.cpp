@@ -135,7 +135,7 @@ bool UDPServer::is_connection_available() const {
 		return false;
 	}
 
-	return pending.size() > 0;
+	return pending.non_empty();
 }
 
 void UDPServer::set_max_pending_connections(int p_max) {

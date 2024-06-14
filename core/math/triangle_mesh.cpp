@@ -107,7 +107,7 @@ void TriangleMesh::get_indices(Vector<int> *r_triangles_indices) const {
 void TriangleMesh::create(const Vector<Vector3> &p_faces, const Vector<int32_t> &p_surface_indices) {
 	valid = false;
 
-	ERR_FAIL_COND(p_surface_indices.size() && p_surface_indices.size() != p_faces.size());
+	ERR_FAIL_COND(p_surface_indices.non_empty() && p_surface_indices.size() != p_faces.size());
 
 	int fc = p_faces.size();
 	ERR_FAIL_COND(!fc || ((fc % 3) != 0));

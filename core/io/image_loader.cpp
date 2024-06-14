@@ -136,7 +136,7 @@ void ImageLoader::remove_image_format_loader(Ref<ImageFormatLoader> p_loader) {
 }
 
 void ImageLoader::cleanup() {
-	while (loader.size()) {
+	while (loader.non_empty()) {
 		remove_image_format_loader(loader[0]);
 	}
 }

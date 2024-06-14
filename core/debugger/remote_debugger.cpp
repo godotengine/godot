@@ -118,7 +118,7 @@ void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *
 
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		si = ScriptServer::get_language(i)->debug_get_current_stack_info();
-		if (si.size()) {
+		if (si.non_empty()) {
 			break;
 		}
 	}
@@ -201,14 +201,14 @@ void RemoteDebugger::flush_output() {
 		}
 	}
 
-	if (output_strings.size()) {
+	if (output_strings.non_empty()) {
 		// Join output strings so we generate less messages.
 		Vector<String> joined_log_strings;
 		Vector<String> strings;
 		Vector<int> types;
 		for (const OutputString &output_string : output_strings) {
 			if (output_string.type == MESSAGE_TYPE_ERROR) {
-				if (!joined_log_strings.is_empty()) {
+				if (joined_log_strings.non_empty()) {
 					strings.push_back(String("\n").join(joined_log_strings));
 					types.push_back(MESSAGE_TYPE_LOG);
 					joined_log_strings.clear();
@@ -216,7 +216,7 @@ void RemoteDebugger::flush_output() {
 				strings.push_back(output_string.message);
 				types.push_back(MESSAGE_TYPE_ERROR);
 			} else if (output_string.type == MESSAGE_TYPE_LOG_RICH) {
-				if (!joined_log_strings.is_empty()) {
+				if (joined_log_strings.non_empty()) {
 					strings.push_back(String("\n").join(joined_log_strings));
 					types.push_back(MESSAGE_TYPE_LOG_RICH);
 					joined_log_strings.clear();
@@ -228,7 +228,7 @@ void RemoteDebugger::flush_output() {
 			}
 		}
 
-		if (!joined_log_strings.is_empty()) {
+		if (joined_log_strings.non_empty()) {
 			strings.push_back(String("\n").join(joined_log_strings));
 			types.push_back(MESSAGE_TYPE_LOG);
 		}
@@ -240,7 +240,7 @@ void RemoteDebugger::flush_output() {
 		output_strings.clear();
 	}
 
-	while (errors.size()) {
+	while (errors.non_empty()) {
 		ErrorMessage oe = errors.front()->get();
 		_put_msg("error", oe.serialize());
 		errors.pop_front();
@@ -375,7 +375,7 @@ void RemoteDebugger::_poll_messages() {
 
 bool RemoteDebugger::_has_messages() {
 	MutexLock mutex_lock(mutex);
-	return messages.has(Thread::get_caller_id()) && !messages[Thread::get_caller_id()].is_empty();
+	return messages.has(Thread::get_caller_id()) && messages[Thread::get_caller_id()].non_empty();
 }
 
 Array RemoteDebugger::_get_message() {
@@ -596,7 +596,7 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 				ScriptServer::get_language(i)->reload_all_scripts();
 			}
 			reload_all_scripts = false;
-		} else if (!script_paths_to_reload.is_empty()) {
+		} else if (script_paths_to_reload.non_empty()) {
 			Array scripts_to_reload;
 			for (int i = 0; i < script_paths_to_reload.size(); ++i) {
 				String path = script_paths_to_reload[i];

@@ -697,7 +697,7 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 		}
 
 		if (token == "dict") {
-			if (!stack.is_empty()) {
+			if (stack.non_empty()) {
 				// Add subnode end enter it.
 				Ref<PListNode> dict = PListNode::new_dict();
 				dict->data_type = PList::PLNodeType::PL_NODE_TYPE_DICT;
@@ -730,7 +730,7 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 		}
 
 		if (token == "array") {
-			if (!stack.is_empty()) {
+			if (stack.non_empty()) {
 				// Add subnode end enter it.
 				Ref<PListNode> arr = PListNode::new_array();
 				if (!stack.back()->get()->push_subnode(arr, key)) {
@@ -806,7 +806,7 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 			}
 		}
 	}
-	if (!stack.is_empty() || !done_plist) {
+	if (stack.non_empty() || !done_plist) {
 		r_err_out = "Unexpected end of data. Root node is not closed.";
 		return false;
 	}

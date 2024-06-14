@@ -77,7 +77,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 			return err;
 		}
 
-		if (!assign.is_empty()) {
+		if (assign.non_empty()) {
 			if (!path_found && assign.begins_with("path.") && r_path_and_type.path.is_empty()) {
 				String feature = assign.get_slicec('.', 1);
 				if (OS::get_singleton()->has_feature(feature)) {
@@ -110,7 +110,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 	}
 
 #ifdef TOOLS_ENABLED
-	if (r_path_and_type.metadata && !r_path_and_type.path.is_empty()) {
+	if (r_path_and_type.metadata && r_path_and_type.path.non_empty()) {
 		Dictionary meta = r_path_and_type.metadata;
 		if (meta.has("has_editor_variant")) {
 			r_path_and_type.path = r_path_and_type.path.get_basename() + ".editor." + r_path_and_type.path.get_extension();
@@ -304,7 +304,7 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 			return;
 		}
 
-		if (!assign.is_empty()) {
+		if (assign.non_empty()) {
 			if (assign.begins_with("path.")) {
 				r_paths->push_back(value);
 			} else if (assign == "path") {

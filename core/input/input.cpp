@@ -252,7 +252,7 @@ Input::VelocityTrack::VelocityTrack() {
 bool Input::is_anything_pressed() const {
 	_THREAD_SAFE_METHOD_
 
-	if (!keys_pressed.is_empty() || !joy_buttons_pressed.is_empty() || !mouse_button_mask.is_empty()) {
+	if (keys_pressed.non_empty() || joy_buttons_pressed.non_empty() || mouse_button_mask.non_empty()) {
 		return true;
 	}
 
@@ -1644,7 +1644,7 @@ Input::Input() {
 
 	// If defined, parse SDL_GAMECONTROLLERCONFIG for possible new mappings/overrides.
 	String env_mapping = OS::get_singleton()->get_environment("SDL_GAMECONTROLLERCONFIG");
-	if (!env_mapping.is_empty()) {
+	if (env_mapping.non_empty()) {
 		Vector<String> entries = env_mapping.split("\n");
 		for (int i = 0; i < entries.size(); i++) {
 			if (entries[i].is_empty()) {
@@ -1655,7 +1655,7 @@ Input::Input() {
 	}
 
 	String env_ignore_devices = OS::get_singleton()->get_environment("SDL_GAMECONTROLLER_IGNORE_DEVICES");
-	if (!env_ignore_devices.is_empty()) {
+	if (env_ignore_devices.non_empty()) {
 		Vector<String> entries = env_ignore_devices.split(",");
 		for (int i = 0; i < entries.size(); i++) {
 			Vector<String> vid_pid = entries[i].split("/");

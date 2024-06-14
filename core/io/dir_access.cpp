@@ -82,7 +82,7 @@ static Error _erase_recursive(DirAccess *da) {
 
 	da->list_dir_begin();
 	String n = da->get_next();
-	while (!n.is_empty()) {
+	while (n.non_empty()) {
 		if (n != "." && n != "..") {
 			if (da->current_is_dir() && !da->is_link(n)) {
 				dirs.push_back(n);
@@ -194,7 +194,7 @@ String DirAccess::fix_path(const String &p_path) const {
 			if (ProjectSettings::get_singleton()) {
 				if (p_path.begins_with("res://")) {
 					String resource_path = ProjectSettings::get_singleton()->get_resource_path();
-					if (!resource_path.is_empty()) {
+					if (resource_path.non_empty()) {
 						return p_path.replace_first("res:/", resource_path);
 					}
 					return p_path.replace_first("res://", "");
@@ -205,7 +205,7 @@ String DirAccess::fix_path(const String &p_path) const {
 		case ACCESS_USERDATA: {
 			if (p_path.begins_with("user://")) {
 				String data_dir = OS::get_singleton()->get_user_data_dir();
-				if (!data_dir.is_empty()) {
+				if (data_dir.non_empty()) {
 					return p_path.replace_first("user:/", data_dir);
 				}
 				return p_path.replace_first("user://", "");
@@ -413,7 +413,7 @@ Error DirAccess::_copy_dir(Ref<DirAccess> &p_target_da, const String &p_to, int 
 	String curdir = get_current_dir();
 	list_dir_begin();
 	String n = get_next();
-	while (!n.is_empty()) {
+	while (n.non_empty()) {
 		if (n != "." && n != "..") {
 			if (p_copy_links && is_link(get_current_dir().path_join(n))) {
 				create_link(read_link(get_current_dir().path_join(n)), p_to + n);
@@ -511,7 +511,7 @@ PackedStringArray DirAccess::_get_contents(bool p_directories) {
 
 	list_dir_begin();
 	String s = _get_next();
-	while (!s.is_empty()) {
+	while (s.non_empty()) {
 		if (current_is_dir() == p_directories) {
 			ret.append(s);
 		}
@@ -524,7 +524,7 @@ PackedStringArray DirAccess::_get_contents(bool p_directories) {
 
 String DirAccess::_get_next() {
 	String next = get_next();
-	while (!next.is_empty() && ((!include_navigational && (next == "." || next == "..")) || (!include_hidden && current_is_hidden()))) {
+	while (next.non_empty() && ((!include_navigational && (next == "." || next == "..")) || (!include_hidden && current_is_hidden()))) {
 		next = get_next();
 	}
 	return next;

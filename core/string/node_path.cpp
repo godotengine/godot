@@ -50,7 +50,7 @@ void NodePath::_update_hash_cache() const {
 }
 
 void NodePath::prepend_period() {
-	if (data->path.size() && data->path[0].operator String() != ".") {
+	if (data->path.non_empty() && data->path[0].operator String() != ".") {
 		data->path.insert(0, ".");
 		data->hash_cache_valid = false;
 	}

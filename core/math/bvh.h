@@ -647,7 +647,7 @@ private:
 
 		// remove from pairing list for every partner.
 		// can't easily use a for loop here, because removing changes the size of the list
-		while (p_from.extended_pairs.size()) {
+		while (p_from.extended_pairs.non_empty()) {
 			BVHHandle h_to = p_from.extended_pairs[0].handle;
 			_unpair(p_handle, h_to);
 		}

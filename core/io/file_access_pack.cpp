@@ -90,7 +90,7 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 		}
 		String filename = simplified_path.get_file();
 		// Don't add as a file if the path points to a directory
-		if (!filename.is_empty()) {
+		if (filename.non_empty()) {
 			cd->files.insert(filename);
 		}
 	}
@@ -426,12 +426,12 @@ Error DirAccessPack::list_dir_begin() {
 }
 
 String DirAccessPack::get_next() {
-	if (list_dirs.size()) {
+	if (list_dirs.non_empty()) {
 		cdir = true;
 		String d = list_dirs.front()->get();
 		list_dirs.pop_front();
 		return d;
-	} else if (list_files.size()) {
+	} else if (list_files.non_empty()) {
 		cdir = false;
 		String f = list_files.front()->get();
 		list_files.pop_front();

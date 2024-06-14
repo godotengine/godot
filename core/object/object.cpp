@@ -452,7 +452,7 @@ void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_val
 	set(p_names[0], value_stack.back()->get(), r_valid);
 	value_stack.pop_back();
 
-	ERR_FAIL_COND(!value_stack.is_empty());
+	ERR_FAIL_COND(value_stack.non_empty());
 }
 
 Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) const {
@@ -768,7 +768,7 @@ void Object::setvar(const Variant &p_key, const Variant &p_value, bool *r_valid)
 Variant Object::callv(const StringName &p_method, const Array &p_args) {
 	const Variant **argptrs = nullptr;
 
-	if (p_args.size() > 0) {
+	if (p_args.non_empty()) {
 		argptrs = (const Variant **)alloca(sizeof(Variant *) * p_args.size());
 		for (int i = 0; i < p_args.size(); i++) {
 			argptrs[i] = &p_args[i];
@@ -1340,7 +1340,7 @@ void Object::get_signal_list(List<MethodInfo> *p_signals) const {
 	//find maybe usersignals?
 
 	for (const KeyValue<StringName, SignalData> &E : signal_map) {
-		if (!E.value.user.name.is_empty()) {
+		if (E.value.user.name.non_empty()) {
 			//user signal
 			p_signals->push_back(E.value.user);
 		}
@@ -1554,7 +1554,7 @@ String Object::tr(const StringName &p_message, const StringName &p_context) cons
 
 	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
 		String tr_msg = TranslationServer::get_singleton()->extractable_translate(p_message, p_context);
-		if (!tr_msg.is_empty() && tr_msg != p_message) {
+		if (tr_msg.non_empty() && tr_msg != p_message) {
 			return tr_msg;
 		}
 
@@ -1575,7 +1575,7 @@ String Object::tr_n(const StringName &p_message, const StringName &p_message_plu
 
 	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
 		String tr_msg = TranslationServer::get_singleton()->extractable_translate_plural(p_message, p_message_plural, p_n, p_context);
-		if (!tr_msg.is_empty() && tr_msg != p_message && tr_msg != p_message_plural) {
+		if (tr_msg.non_empty() && tr_msg != p_message && tr_msg != p_message_plural) {
 			return tr_msg;
 		}
 
@@ -2112,7 +2112,7 @@ Object::~Object() {
 	}
 
 	// Drop all connections to the signals of this object.
-	while (signal_map.size()) {
+	while (signal_map.non_empty()) {
 		// Avoid regular iteration so erasing is safe.
 		KeyValue<StringName, SignalData> &E = *signal_map.begin();
 		SignalData *s = &E.value;
@@ -2128,7 +2128,7 @@ Object::~Object() {
 	}
 
 	// Disconnect signals that connect to this object.
-	while (connections.size()) {
+	while (connections.non_empty()) {
 		Connection c = connections.front()->get();
 		bool disconnected = c.signal.get_object()->_disconnect(c.signal.get_name(), c.callable, true);
 		if (unlikely(!disconnected)) {
