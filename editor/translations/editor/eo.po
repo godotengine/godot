@@ -1332,6 +1332,12 @@ msgstr "Enporti profilo(j)n"
 msgid "Manage Editor Feature Profiles"
 msgstr "Administri profilojn de funkciaro de redaktilo"
 
+msgid "Restart"
+msgstr "Rekomencigi"
+
+msgid "Save & Restart"
+msgstr "Konservi kaj rekomenci"
+
 msgid "ScanSources"
 msgstr "Esplori fontoj"
 
@@ -1790,11 +1796,6 @@ msgstr "Aranĝo de la redaktilo"
 msgid "Take Screenshot"
 msgstr "Ekranfoti"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr ""
-"Ekrankopioj estas konservintaj en la datumaj/agordaj dosierujo de la "
-"redaktilo."
-
 msgid "Toggle Fullscreen"
 msgstr "Baskuli plenekranon"
 
@@ -1827,9 +1828,6 @@ msgstr "Sendi rimarkojn pri la dokumentaro"
 
 msgid "Support Godot Development"
 msgstr "Subteni Godot ellaboradon"
-
-msgid "Save & Restart"
-msgstr "Konservi kaj rekomenci"
 
 msgid "Update Continuously"
 msgstr "Ĝisdatigi kontinue"
@@ -1867,12 +1865,6 @@ msgid ""
 msgstr ""
 "La jenaj dosieroj estas pli novaj sur disko.\n"
 "Kian agon fari?"
-
-msgid "Reload"
-msgstr "Reŝargi"
-
-msgid "Resave"
-msgstr "Rekonservi"
 
 msgid "New Inherited"
 msgstr "Nova heredita"
@@ -2081,6 +2073,12 @@ msgstr ""
 "Ne elŝutaj ligiloj troviĝis por ĉi tiu versio. Direkta elŝuto estas nur "
 "disponebla por oficaj eldonoj."
 
+msgid "Connecting..."
+msgstr "Konektas..."
+
+msgid "Requesting..."
+msgstr "Demandas..."
+
 msgid "Extracting Export Templates"
 msgstr "Ekstraktas eksportajn ŝablonojn"
 
@@ -2184,6 +2182,9 @@ msgstr "Forigi el favoritaj"
 msgid "Reimport"
 msgstr "Reenporti"
 
+msgid "Open in File Manager"
+msgstr "Malfermi en dosiermastrumilo"
+
 msgid "New Folder..."
 msgstr "Nova dosierujo..."
 
@@ -2201,9 +2202,6 @@ msgstr "Duobligi..."
 
 msgid "Rename..."
 msgstr "Renomi..."
-
-msgid "Open in File Manager"
-msgstr "Malfermi en dosiermastrumilo"
 
 msgid "Re-Scan Filesystem"
 msgstr "Reesplori dosiersistemon"
@@ -2926,12 +2924,6 @@ msgstr "Elŝutas..."
 msgid "Resolving..."
 msgstr "Adrestrovas..."
 
-msgid "Connecting..."
-msgstr "Konektas..."
-
-msgid "Requesting..."
-msgstr "Demandas..."
-
 msgid "Error making request"
 msgstr "Eraro dum petado"
 
@@ -3237,9 +3229,6 @@ msgstr "Dividi kradpaŝon per 2"
 msgid "Adding %s..."
 msgstr "Aldonas %s..."
 
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "Ne eblas generi plurajn nodojn sen radiko."
-
 msgid "Create Node"
 msgstr "Krei nodon"
 
@@ -3296,9 +3285,6 @@ msgstr "Dekstre vaste"
 
 msgid "Full Rect"
 msgstr "Plene rektangula"
-
-msgid "Restart"
-msgstr "Rekomencigi"
 
 msgid "Load Emission Mask"
 msgstr "Ŝargi emisian maskon"
@@ -3564,6 +3550,12 @@ msgstr "Konservi dosieron kiel..."
 msgid "Save Theme As..."
 msgstr "Konservi etoson kiel..."
 
+msgid "Online Docs"
+msgstr "Enreta Dokumentaro"
+
+msgid "Open Godot online documentation."
+msgstr "Malfermi enretan dokumentaron de Godot."
+
 msgid "Find Next"
 msgstr "Trovu Sekva"
 
@@ -3590,9 +3582,6 @@ msgstr "Dosiero"
 
 msgid "Open..."
 msgstr "Malfermi..."
-
-msgid "Reopen Closed Script"
-msgstr "Remalfermu Fermita Skripto"
 
 msgid "Save All"
 msgstr "Konservi tuton"
@@ -3621,20 +3610,26 @@ msgstr "Ruli"
 msgid "Search"
 msgstr "Serĉi"
 
-msgid "Online Docs"
-msgstr "Enreta Dokumentaro"
-
-msgid "Open Godot online documentation."
-msgstr "Malfermi enretan dokumentaron de Godot."
-
 msgid "Go to previous edited document."
 msgstr "Iru al la antaŭa redaktita dokumento."
 
 msgid "Go to next edited document."
 msgstr "Iru al la sekva redaktita dokumento."
 
+msgid "Reopen Closed Script"
+msgstr "Remalfermu Fermita Skripto"
+
 msgid "Clear Recent Scripts"
 msgstr "Vakigi lastajn skriptojn"
+
+msgid "Uppercase"
+msgstr "Majuskla"
+
+msgid "Lowercase"
+msgstr "Minuskla"
+
+msgid "Capitalize"
+msgstr "Kapitaligi"
 
 msgid "Standard"
 msgstr "Norma"
@@ -3659,15 +3654,6 @@ msgstr "Elekti koloron"
 
 msgid "Line"
 msgstr "Linio"
-
-msgid "Uppercase"
-msgstr "Majuskla"
-
-msgid "Lowercase"
-msgstr "Minuskla"
-
-msgid "Capitalize"
-msgstr "Kapitaligi"
 
 msgid "Convert Case"
 msgstr "Konverti usklon"
@@ -3725,6 +3711,12 @@ msgstr "Rekomencigi zomon"
 
 msgid "Size"
 msgstr "Grando"
+
+msgid "Reload"
+msgstr "Reŝargi"
+
+msgid "Resave"
+msgstr "Rekonservi"
 
 msgid "Updating the editor"
 msgstr "Eliras la editilo"

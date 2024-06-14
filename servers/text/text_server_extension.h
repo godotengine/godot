@@ -178,10 +178,10 @@ public:
 	GDVIRTUAL3(_font_set_spacing, const RID &, SpacingType, int64_t);
 	GDVIRTUAL2RC(int64_t, _font_get_spacing, const RID &, SpacingType);
 
-	virtual void font_set_baseline_offset(const RID &p_font_rid, float p_baseline_offset) override;
-	virtual float font_get_baseline_offset(const RID &p_font_rid) const override;
-	GDVIRTUAL2(_font_set_baseline_offset, const RID &, float);
-	GDVIRTUAL1RC(float, _font_get_baseline_offset, const RID &);
+	virtual void font_set_baseline_offset(const RID &p_font_rid, double p_baseline_offset) override;
+	virtual double font_get_baseline_offset(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_baseline_offset, const RID &, double);
+	GDVIRTUAL1RC(double, _font_get_baseline_offset, const RID &);
 
 	virtual void font_set_transform(const RID &p_font_rid, const Transform2D &p_transform) override;
 	virtual Transform2D font_get_transform(const RID &p_font_rid) const override;
@@ -563,8 +563,8 @@ public:
 
 	virtual bool is_valid_identifier(const String &p_string) const override;
 	GDVIRTUAL1RC(bool, _is_valid_identifier, const String &);
-	virtual bool is_valid_letter(char32_t p_unicode) const override;
-	GDVIRTUAL1RC(bool, _is_valid_letter, char32_t);
+	virtual bool is_valid_letter(uint64_t p_unicode) const override;
+	GDVIRTUAL1RC(bool, _is_valid_letter, uint64_t);
 
 	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
 	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;

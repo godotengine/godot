@@ -639,7 +639,7 @@ void ExportTemplateManager::_open_template_folder(const String &p_version) {
 
 void ExportTemplateManager::popup_manager() {
 	_update_template_status();
-	if (downloads_available) {
+	if (downloads_available && !is_downloading_templates) {
 		_refresh_mirrors();
 	}
 	popup_centered(Size2(720, 280) * EDSCALE);

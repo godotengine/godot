@@ -518,7 +518,7 @@ TEST_CASE("[SceneTree][Node]Exported node checks") {
 		ps.instantiate();
 		ps->pack(node);
 
-		String scene_path = OS::get_singleton()->get_cache_path().path_join("test_scene.tscn");
+		String scene_path = TestUtils::get_temp_path("test_scene.tscn");
 		ps->set_path(scene_path);
 
 		Node *root = memnew(Node);
@@ -531,7 +531,7 @@ TEST_CASE("[SceneTree][Node]Exported node checks") {
 		ps2.instantiate();
 		ps2->pack(root);
 
-		scene_path = OS::get_singleton()->get_cache_path().path_join("new_test_scene.tscn");
+		scene_path = TestUtils::get_temp_path("new_test_scene.tscn");
 		ResourceSaver::save(ps2, scene_path);
 		memdelete(root);
 

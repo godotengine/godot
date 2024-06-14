@@ -99,13 +99,16 @@
 # EricManara0 <ericmanara@gmail.com>, 2024.
 # Alessandro Muscio <muscioalex30@gmail.com>, 2024.
 # xShader1374 <shader1374@gmail.com>, 2024.
+# Raffaele <lungarellaraffaele@gmail.com>, 2024.
+# 0rang30rang3z <igbinewekajoel9@gmail.com>, 2024.
+# Luca Ilari <luca.ilari@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-04-05 10:01+0000\n"
-"Last-Translator: xShader1374 <shader1374@gmail.com>\n"
+"PO-Revision-Date: 2024-06-13 19:41+0000\n"
+"Last-Translator: Luca Ilari <luca.ilari@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -113,7 +116,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.5-dev\n"
+"X-Generator: Weblate 5.6-dev\n"
 
 msgid "Main Thread"
 msgstr "Thread Principale"
@@ -434,6 +437,9 @@ msgstr "Seleziona la parola sotto il cursore"
 
 msgid "Add Selection for Next Occurrence"
 msgstr "Aggiungi una selezione per la prossima ricorrenza"
+
+msgid "Skip Selection for Next Occurrence"
+msgstr "Salta selezione per la prossima occorrenza"
 
 msgid "Clear Carets and Selection"
 msgstr "Reimposta i cursori e la selezione"
@@ -1103,6 +1109,9 @@ msgstr "Secondi"
 msgid "FPS"
 msgstr "FPS"
 
+msgid "Fit to panel"
+msgstr "Adatta alla finestra"
+
 msgid "Edit"
 msgstr "Modifica"
 
@@ -1342,6 +1351,15 @@ msgid_plural "%d of %d matches"
 msgstr[0] "%d di %d corrispondenza"
 msgstr[1] "%d di %d corrispondenze"
 
+msgid "Find"
+msgstr "Trova"
+
+msgid "Previous Match"
+msgstr "Corrispondenza precedente"
+
+msgid "Next Match"
+msgstr "Prossima corrispondenza"
+
 msgid "Match Case"
 msgstr "Maiuscole distinte"
 
@@ -1556,6 +1574,9 @@ msgstr "Questa classe è stata segnata come deprecata."
 msgid "This class is marked as experimental."
 msgstr "Questa classe è stata segnata come sperimentale."
 
+msgid "The selected class can't be instantiated."
+msgstr "La classe selezionata non può essere istanziata."
+
 msgid "Favorites:"
 msgstr "Preferiti:"
 
@@ -1588,6 +1609,9 @@ msgstr "Salva Ramo come Scena"
 
 msgid "Copy Node Path"
 msgstr "Copia percorso del nodo"
+
+msgid "Instance:"
+msgstr "Istanza:"
 
 msgid ""
 "This node has been instantiated from a PackedScene file:\n"
@@ -2213,6 +2237,9 @@ msgstr "Ripristina il volume"
 msgid "Delete Effect"
 msgstr "Elimina Effetto"
 
+msgid "Toggle Audio Bottom Panel"
+msgstr "Attiva/Disattiva pannello audio inferiore"
+
 msgid "Add Audio Bus"
 msgstr "Aggiungi un bus audio"
 
@@ -2287,6 +2314,9 @@ msgstr "L'Autoload \"%s\" esiste già!"
 
 msgid "Rename Autoload"
 msgstr "Rinomina Autocaricamento"
+
+msgid "Toggle Autoload Globals"
+msgstr "Attiva/Disattiva Autocaricamenti Globali"
 
 msgid "Move Autoload"
 msgstr "Sposta l'Autocaricamento"
@@ -2441,8 +2471,19 @@ msgstr "Funzionalità generali:"
 msgid "Text Rendering and Font Options:"
 msgstr "Opzioni di rendering di testo e di font:"
 
+msgid "Reset the edited profile?"
+msgstr "Reimpostare il profilo?"
+
 msgid "File saving failed."
 msgstr "Salvataggio del file fallito."
+
+msgid "Create a new profile?"
+msgstr "Creare un nuovo profilo?"
+
+msgid "This will scan all files in the current project to detect used classes."
+msgstr ""
+"Questa operazione scansiona tutti i file del progetto corrente per "
+"individuare le classi utilizzate."
 
 msgid "Nodes and Classes:"
 msgstr "Nodi e Classi:"
@@ -2474,6 +2515,9 @@ msgstr "Azioni:"
 msgid "Please Confirm:"
 msgstr "Per favore conferma:"
 
+msgid "Engine Compilation Profile"
+msgstr "Profilo di costruzione del motore"
+
 msgid "Load Profile"
 msgstr "Carica un profilo"
 
@@ -2482,6 +2526,9 @@ msgstr "Esporta il profilo"
 
 msgid "Forced Classes on Detect:"
 msgstr "Classi Forzate su Rilevamento:"
+
+msgid "Edit Compilation Configuration Profile"
+msgstr "Modifica il profilo di configurazione di costruzione"
 
 msgid ""
 "Failed to execute command \"%s\":\n"
@@ -2525,6 +2572,9 @@ msgstr "Rendi questo pannello floating."
 
 msgid "Move to Bottom"
 msgstr "Spostati in Basso"
+
+msgid "Close this dock."
+msgstr "Rimuovi questo pannelo."
 
 msgid "3D Editor"
 msgstr "Editor 3D"
@@ -2675,8 +2725,20 @@ msgstr "Importa i profili"
 msgid "Manage Editor Feature Profiles"
 msgstr "Gestisci i profili di funzionalità dell'editor"
 
+msgid "Restart"
+msgstr "Ricomincia"
+
+msgid "Save & Restart"
+msgstr "Salva e riavvia"
+
 msgid "ScanSources"
 msgstr "Scansiona i sorgenti"
+
+msgid "Update Scene Groups"
+msgstr "Aggiorna i gruppi di scena"
+
+msgid "Updating Scene Groups..."
+msgstr "Aggiornamento della scena..."
 
 msgid ""
 "There are multiple importers for different types pointing to file %s, import "
@@ -2918,6 +2980,14 @@ msgstr "(valore)"
 msgid "This property may be changed or removed in future versions."
 msgstr "Questa proprietà potrebbe cambiare o essere rimossa in versioni future."
 
+msgid ""
+"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will "
+"not update the original property value. See [%s] for more details."
+msgstr ""
+"[b]Nota:[/b] L'array restituito è [i]copiato[/i] e qualsiasi modifica ad esso "
+"non aggiornerà il valore della proprietà originale. Vedere [%s] per maggiori "
+"dettagli."
+
 msgid "There is currently no description for this property."
 msgstr "Non esiste alcune descrizione per questa proprietà."
 
@@ -2931,6 +3001,9 @@ msgstr ""
 msgid "Editor"
 msgstr "Editor"
 
+msgid "Click to copy."
+msgstr "Premi per copiare."
+
 msgid "No description available."
 msgstr "Nessuna descrizione disponibile."
 
@@ -2939,6 +3012,9 @@ msgstr "Metadati:"
 
 msgid "Property:"
 msgstr "Proprietà:"
+
+msgid "Internal Property:"
+msgstr "Proprietà interna:"
 
 msgid "This property can only be set in the Inspector."
 msgstr "Questa proprietà può essere impostata solo nell'Inspector."
@@ -3659,11 +3735,26 @@ msgstr "Compatibilità"
 msgid "(Overridden)"
 msgstr "(Sovrascritto)"
 
+msgid "Lock Selected Node(s)"
+msgstr "Blocca Nodo/i selezionato/i"
+
+msgid "Unlock Selected Node(s)"
+msgstr "Sblocca Nodo/i Selezionato/i"
+
+msgid "Group Selected Node(s)"
+msgstr "Raggruppa Nodo/i Selezionato(/i"
+
+msgid "Ungroup Selected Node(s)"
+msgstr "Separa Nodo/i Selezionato/i"
+
 msgid "Pan View"
 msgstr "Trasla Visuale"
 
 msgid "Distraction Free Mode"
 msgstr "Modalità senza distrazioni"
+
+msgid "Toggle Last Opened Bottom Panel"
+msgstr "Alterna l'ultimo pannello inferiore aperto"
 
 msgid "Toggle distraction-free mode."
 msgstr "Commuta la modalità senza distrazioni."
@@ -3743,6 +3834,9 @@ msgstr "Strumenti"
 msgid "Orphan Resource Explorer..."
 msgstr "Explorer di risorse orfane…"
 
+msgid "Engine Compilation Configuration Editor..."
+msgstr "Personalizza la configurazione di costruzione del motore..."
+
 msgid "Upgrade Mesh Surfaces..."
 msgstr "Aggiornando le Superfici della Mesh..."
 
@@ -3755,15 +3849,14 @@ msgstr "Esci e torna alla lista dei progetti"
 msgid "Command Palette..."
 msgstr "Tavolozza dei comandi..."
 
+msgid "Editor Docks"
+msgstr "Pannello editoriale"
+
 msgid "Editor Layout"
 msgstr "Disposizione dell'editor"
 
 msgid "Take Screenshot"
 msgstr "Acquisisci la schermata"
-
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr ""
-"Gli screenshot vengono memorizzati nella cartella Data/Settings dell'editor."
 
 msgid "Toggle Fullscreen"
 msgstr "Commuta la modalità a schermo intero"
@@ -3794,6 +3887,9 @@ msgstr "Cerca Aiuto..."
 
 msgid "Online Documentation"
 msgstr "Documentazione in linea"
+
+msgid "Forum"
+msgstr "Forum"
 
 msgid "Community"
 msgstr "Comunità"
@@ -3834,9 +3930,6 @@ msgstr ""
 "si seleziona Forward+.\n"
 "- Sulla piattaforma Web, viene sempre utilizzato il metodo di rendering "
 "Compatibilità."
-
-msgid "Save & Restart"
-msgstr "Salva e riavvia"
 
 msgid "Update Continuously"
 msgstr "Aggiorna Continuamente"
@@ -3894,12 +3987,6 @@ msgid ""
 msgstr ""
 "I seguenti file sono più recenti sul disco.\n"
 "Quale azione dovrebbe essere presa?"
-
-msgid "Reload"
-msgstr "Ricarica"
-
-msgid "Resave"
-msgstr "Risalva"
 
 msgid "Create/Override Version Control Metadata..."
 msgstr "Crea/Sovrascrivi i Metadata del Controllo Versione"
@@ -4197,6 +4284,9 @@ msgstr "Scorciatoie"
 msgid "Binding"
 msgstr "Associazione"
 
+msgid "Failed to check for updates. Error: %d."
+msgstr "Ricerca per aggiornamenti fallita. Errore:%d."
+
 msgid "Left Stick Left, Joystick 0 Left"
 msgstr "Levetta sinistra verso sinistra, joystick 0 verso sinistra"
 
@@ -4425,6 +4515,12 @@ msgid ""
 msgstr ""
 "Nessun link per il download trovato per questa versione. I download diretti "
 "sono disponibili solo per i rilasci ufficiali."
+
+msgid "Connecting..."
+msgstr "Connettendo..."
+
+msgid "Requesting..."
+msgstr "Richiedendo..."
 
 msgid "Can't open the export templates file."
 msgstr "Impossibile aprire il file di esportazione dei modelli."
@@ -4976,8 +5072,14 @@ msgstr "Rimuovi dai Preferiti"
 msgid "Reimport"
 msgstr "Reimporta"
 
+msgid "Open in Terminal"
+msgstr "Apri nel Terminale"
+
 msgid "Open Containing Folder in Terminal"
 msgstr "Apri cartella contenente nel terminale"
+
+msgid "Open in File Manager"
+msgstr "Apri nel gestore dei file"
 
 msgid "New Folder..."
 msgstr "Nuova cartella..."
@@ -5024,14 +5126,8 @@ msgstr "Duplica..."
 msgid "Rename..."
 msgstr "Rinomina..."
 
-msgid "Open in File Manager"
-msgstr "Apri nel gestore dei file"
-
 msgid "Open in External Program"
 msgstr "Apri in un programma esterno"
-
-msgid "Open in Terminal"
-msgstr "Apri nel Terminale"
 
 msgid "Yellow"
 msgstr "Giallo"
@@ -5121,6 +5217,9 @@ msgstr "%d corrispondenze in %d file"
 
 msgid "%d matches in %d files"
 msgstr "%d corrispondenze in %d file"
+
+msgid "Add Group"
+msgstr "Aggiungi Gruppo"
 
 msgid "Removing Group References"
 msgstr "Rimozione dei riferimenti di gruppo"
@@ -5441,9 +5540,6 @@ msgstr ""
 
 msgid "Open in Editor"
 msgstr "Apri nell'editor"
-
-msgid "Instance:"
-msgstr "Istanza:"
 
 msgid "\"%s\" is not a known filter."
 msgstr "\"%s\" non è un filtro conosciuto."
@@ -6762,12 +6858,6 @@ msgstr "Download in corso..."
 msgid "Resolving..."
 msgstr "Risolvendo..."
 
-msgid "Connecting..."
-msgstr "Connettendo..."
-
-msgid "Requesting..."
-msgstr "Richiedendo..."
-
 msgid "Error making request"
 msgstr "Errore nel fare richiesta"
 
@@ -7056,6 +7146,11 @@ msgstr "Vista Centrale"
 msgid "Select Mode"
 msgstr "Modalità di Selezione"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+Tasto Destro del Mouse: Mostra una lista di tutti i nodi presenti nel "
+"posto cliccato, compresi quelli bloccati."
+
 msgid "RMB: Add node at position clicked."
 msgstr "Click destro: Aggiungi nodo alla posizione cliccata."
 
@@ -7140,14 +7235,8 @@ msgstr "Configura l'agganciamento..."
 msgid "Lock selected node, preventing selection and movement."
 msgstr "Blocca il nodo selezionato, impedendo la selezione e il movimento."
 
-msgid "Lock Selected Node(s)"
-msgstr "Blocca Nodo/i selezionato/i"
-
 msgid "Unlock selected node, allowing selection and movement."
 msgstr "Sblocca il nodo selezionato, permettendo la selezione e il movimento."
-
-msgid "Unlock Selected Node(s)"
-msgstr "Sblocca Nodo/i Selezionato/i"
 
 msgid ""
 "Groups the selected node with its children. This causes the parent to be "
@@ -7157,9 +7246,6 @@ msgstr ""
 "venga selezionato quando viene fatto clic su qualsiasi nodo figlio nella "
 "vista 2D e 3D."
 
-msgid "Group Selected Node(s)"
-msgstr "Raggruppa Nodo/i Selezionato(/i"
-
 msgid ""
 "Ungroups the selected node from its children. Child nodes will be individual "
 "items in 2D and 3D view."
@@ -7167,9 +7253,6 @@ msgstr ""
 "Sgruppa il nodo selezionato con i suoi figli. Ciò fa sì che il genitore venga "
 "selezionato quando viene fatto clic su qualsiasi nodo figlio nella vista 2D e "
 "3D."
-
-msgid "Ungroup Selected Node(s)"
-msgstr "Separa Nodo/i Selezionato/i"
 
 msgid "Skeleton Options"
 msgstr "Opzioni Scheletro"
@@ -7272,14 +7355,6 @@ msgstr "Divide per 2 il passo della griglia"
 
 msgid "Adding %s..."
 msgstr "Aggiungendo %s..."
-
-msgid "Hold Shift when dropping to add as sibling of selected node."
-msgstr ""
-"Tenere premuto Shift durante il rilascio per aggiungere come figlio del nodo "
-"selezionato."
-
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "Impossibile istanziare nodi multipli senza una radice."
 
 msgid "Create Node"
 msgstr "Crea Nodo"
@@ -7400,9 +7475,6 @@ msgstr ""
 msgid "Some parents of the selected nodes do not support the Expand flag."
 msgstr "Alcuni parenti dei nodi selezionati non supportano il flag Espandi."
 
-msgid "Align with Expand"
-msgstr "Allinea con l'espansione"
-
 msgid "Change Anchors, Offsets, Grow Direction"
 msgstr "Modificare le ancore, gli offset e la direzione di espansione"
 
@@ -7438,9 +7510,6 @@ msgstr "Allineamento orizzontale"
 
 msgid "Vertical alignment"
 msgstr "Allineamento verticale"
-
-msgid "Restart"
-msgstr "Ricomincia"
 
 msgid "Load Emission Mask"
 msgstr "Carica Maschera Emissione"
@@ -7712,9 +7781,6 @@ msgstr "Modifica Altezza di Forma del Cilindro"
 
 msgid "Change Decal Size"
 msgstr "Cambia dimensione decalcomania"
-
-msgid "Change Particles AABB"
-msgstr "Cambia AABB Particelle"
 
 msgid "Change Radius"
 msgstr "Cambia il raggio"
@@ -8493,11 +8559,6 @@ msgstr ""
 "WorldEnvironment\n"
 "Anteprima disabilitata."
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+Tasto Destro del Mouse: Mostra una lista di tutti i nodi presenti nel "
-"posto cliccato, compresi quelli bloccati."
-
 msgid ""
 "Groups the selected node with its children. This selects the parent when any "
 "child node is clicked in 2D and 3D view."
@@ -8790,14 +8851,14 @@ msgstr "Rimuovi Out-Control dalla Curva"
 msgid "Remove In-Control from Curve"
 msgstr "Rimuovi In-Control dalla Curva"
 
-msgid "Add Point to Curve"
-msgstr "Aggiungi Punto a Curva"
-
 msgid "Split Curve"
 msgstr "Dividi Curva"
 
 msgid "Move Point in Curve"
 msgstr "Sposta Punto in curva"
+
+msgid "Add Point to Curve"
+msgstr "Aggiungi Punto a Curva"
 
 msgid "Move In-Control in Curve"
 msgstr "Sposta In-Control sulla Curva"
@@ -9103,9 +9164,6 @@ msgstr "Incolla Risorsa"
 msgid "Load Resource"
 msgstr "Carica risorsa"
 
-msgid "Clear Recent Files"
-msgstr "Pulisci file recenti"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr ""
 "Impossibile aprire \"%s\". Il file potrebbe essere stato spostato o eliminato."
@@ -9143,6 +9201,12 @@ msgstr "Errore di salvataggio"
 msgid "Save Theme As..."
 msgstr "Salva tema come..."
 
+msgid "Online Docs"
+msgstr "Documentazione online"
+
+msgid "Open Godot online documentation."
+msgstr "Apri la documentazione online di Godot."
+
 msgid "Unsaved file."
 msgstr "File non salvato."
 
@@ -9175,9 +9239,6 @@ msgstr "File"
 
 msgid "Open..."
 msgstr "Apri..."
-
-msgid "Reopen Closed Script"
-msgstr "Riapri script chiuso"
 
 msgid "Save All"
 msgstr "Salva tutto"
@@ -9218,12 +9279,6 @@ msgstr "Esegui"
 msgid "Search"
 msgstr "Cerca"
 
-msgid "Online Docs"
-msgstr "Documentazione online"
-
-msgid "Open Godot online documentation."
-msgstr "Apri la documentazione online di Godot."
-
 msgid "Search the reference documentation."
 msgstr "Cerca riferimenti nella documentazione."
 
@@ -9236,15 +9291,20 @@ msgstr "Vai al documento modificato successivo."
 msgid "Discard"
 msgstr "Scarta"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?:"
-msgstr ""
-"I seguenti file sono più recenti sul disco.\n"
-"Che azione dovrebbe essere intrapresa?:"
+msgid "Reopen Closed Script"
+msgstr "Riapri script chiuso"
 
 msgid "Clear Recent Scripts"
 msgstr "Rimuovi Script Recenti"
+
+msgid "Uppercase"
+msgstr "Maiuscolo"
+
+msgid "Lowercase"
+msgstr "Minuscolo"
+
+msgid "Capitalize"
+msgstr "Rendi la prima lettera maiuscola"
 
 msgid "Standard"
 msgstr "Standard"
@@ -9293,15 +9353,6 @@ msgstr "Riga"
 
 msgid "Folding"
 msgstr "Raggruppamento"
-
-msgid "Uppercase"
-msgstr "Maiuscolo"
-
-msgid "Lowercase"
-msgstr "Minuscolo"
-
-msgid "Capitalize"
-msgstr "Rendi la prima lettera maiuscola"
 
 msgid "Convert Case"
 msgstr "Converti Maiuscole/Minuscole"
@@ -9693,6 +9744,12 @@ msgid ""
 msgstr ""
 "Questo shader è stato modificato sul disco.\n"
 "Cosa andrebbe fatto?"
+
+msgid "Reload"
+msgstr "Ricarica"
+
+msgid "Resave"
+msgstr "Risalva"
 
 msgid "Memory: %s"
 msgstr "Memoria: %s"
@@ -10309,13 +10366,6 @@ msgstr "Incolla i tasselli"
 msgid "Selection"
 msgstr "Selezione"
 
-msgid "Paint"
-msgstr "Disegna"
-
-msgctxt "Tool"
-msgid "Line"
-msgstr "Riga"
-
 msgid "Alternatively use RMB to erase tiles."
 msgstr "In alternativa, utilizzare RMB per cancellare dei tasselli."
 
@@ -10429,6 +10479,9 @@ msgstr ""
 msgid "Select a property editor"
 msgstr "Seleziona un editor delle proprietà"
 
+msgid "Paint properties."
+msgstr "Proprietà di disegno."
+
 msgid "Create tiles"
 msgstr "Crea dei tasselli"
 
@@ -10474,8 +10527,8 @@ msgstr ""
 msgid "Select tiles."
 msgstr "Seleziona dei tasselli."
 
-msgid "Paint properties."
-msgstr "Proprietà di disegno."
+msgid "Paint"
+msgstr "Disegna"
 
 msgid ""
 "No tiles selected.\n"
@@ -10563,6 +10616,10 @@ msgstr "Trascina e rilascia scene qui o usando il pulsante Aggiungi."
 
 msgid "Tile properties:"
 msgstr "Proprietà del tassello:"
+
+msgctxt "Tool"
+msgid "Line"
+msgstr "Riga"
 
 msgid "Error"
 msgstr "Errore"
@@ -12379,9 +12436,6 @@ msgstr ""
 "Impossibile istanziare la scena \"%s\" perché la scena corrente esiste in uno "
 "dei suoi nodi."
 
-msgid "Instantiate Scene(s)"
-msgstr "Istanzia delle scene"
-
 msgid "Replace with Branch Scene"
 msgstr "Sostituisci con Scena Ramo"
 
@@ -13431,11 +13485,11 @@ msgstr "Identificatore non valido:"
 msgid "Export Icons"
 msgstr "Icone Esportazione"
 
-msgid "Export template not found."
-msgstr "Modello di esportazione non trovato."
-
 msgid "Prepare Templates"
 msgstr "Preparazione dei modelli"
+
+msgid "Export template not found."
+msgstr "Modello di esportazione non trovato."
 
 msgid "Code signing failed, see editor log for details."
 msgstr ""
@@ -13564,6 +13618,9 @@ msgstr "Identificatore del bundle non valido:"
 msgid "Apple ID password not specified."
 msgstr "Password dell Apple ID non specificata."
 
+msgid "Notarization"
+msgstr "Autenticazione"
+
 msgid ""
 "rcodesign path is not set. Configure rcodesign path in the Editor Settings "
 "(Export > macOS > rcodesign)."
@@ -13583,9 +13640,6 @@ msgid ""
 msgstr ""
 "Puoi controllare manualmente l'avanzamento aprendo il Terminale e lanciando "
 "il seguente comando:"
-
-msgid "Notarization"
-msgstr "Autenticazione"
 
 msgid ""
 "Run the following command to staple the notarization ticket to the exported "
@@ -14275,6 +14329,9 @@ msgstr "Prevista un'espressione costante."
 msgid "Expected ',' or ')' after argument."
 msgstr "Prevista una \",\" o una \")\" dopo un argomento."
 
+msgid "Constants cannot be modified."
+msgstr "Le constanti non possono essere modificate."
+
 msgid "Cannot convert from '%s' to '%s'."
 msgstr "Impossibile convertire da '%s' a '%s'."
 
@@ -14309,9 +14366,6 @@ msgstr ""
 
 msgid "Can't use function as identifier: '%s'."
 msgstr "Impossibile usare una funzione come identificatore: \"%s\"."
-
-msgid "Constants cannot be modified."
-msgstr "Le constanti non possono essere modificate."
 
 msgid "Only integer expressions are allowed for indexing."
 msgstr "Sono ammesse solo espressioni intere per l'indicizzazione."

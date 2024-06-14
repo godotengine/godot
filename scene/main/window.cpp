@@ -738,6 +738,9 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 				return;
 			}
 			Window *root = get_tree()->get_root();
+			if (mouse_in_window && root->gui.windowmanager_window_over == this) {
+				return;
+			}
 			if (root->gui.windowmanager_window_over) {
 #ifdef DEV_ENABLED
 				WARN_PRINT_ONCE("Entering a window while a window is hovered should never happen in DisplayServer.");
