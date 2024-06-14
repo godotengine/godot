@@ -148,7 +148,8 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (get_viewport()->gui_get_focus_owner() && get_viewport()->gui_get_focus_owner()->is_text_field()) {
+	Control *focus_owner = get_viewport()->gui_get_focus_owner();
+	if (focus_owner && focus_owner->is_text_field()) {
 		return;
 	}
 
@@ -157,7 +158,11 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (ED_IS_SHORTCUT("scene_tree/rename", p_event)) {
-		_tool_selected(TOOL_RENAME);
+		// Prevent renaming if a button is focused
+		// to avoid conflict with Enter shortcut on macOS
+		if (!focus_owner || !Object::cast_to<BaseButton>(focus_owner)) {
+			_tool_selected(TOOL_RENAME);
+		}
 #ifdef MODULE_REGEX_ENABLED
 	} else if (ED_IS_SHORTCUT("scene_tree/batch_rename", p_event)) {
 		_tool_selected(TOOL_BATCH_RENAME);
