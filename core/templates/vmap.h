@@ -151,6 +151,7 @@ public:
 
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 	_FORCE_INLINE_ bool is_empty() const { return _cowdata.is_empty(); }
+	_FORCE_INLINE_ bool non_empty() const { return _cowdata.non_empty(); }
 
 	const Pair *get_array() const {
 		return _cowdata.ptr();

@@ -459,6 +459,9 @@ public:
 	_FORCE_INLINE_ bool is_empty() const {
 		return (!_data || !_data->size_cache);
 	}
+	_FORCE_INLINE_ bool non_empty() const {
+		return !is_empty();
+	}
 
 	/**
 	 * clear the list

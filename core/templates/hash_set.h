@@ -235,6 +235,9 @@ public:
 	bool is_empty() const {
 		return num_elements == 0;
 	}
+	_FORCE_INLINE_ bool non_empty() const {
+		return !is_empty();
+	}
 
 	void clear() {
 		if (keys == nullptr || num_elements == 0) {

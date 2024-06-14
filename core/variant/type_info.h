@@ -257,6 +257,7 @@ public:
 	}
 	_FORCE_INLINE_ bool has_flag(T p_flag) const { return value & (int64_t)p_flag; }
 	_FORCE_INLINE_ bool is_empty() const { return value == 0; }
+	_FORCE_INLINE_ bool non_empty() const { return !is_empty(); }
 	_FORCE_INLINE_ void clear_flag(T p_flag) { value &= ~(int64_t)p_flag; }
 	_FORCE_INLINE_ void clear() { value = 0; }
 	_FORCE_INLINE_ constexpr BitField() = default;

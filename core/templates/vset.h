@@ -127,6 +127,7 @@ public:
 	}
 
 	_FORCE_INLINE_ bool is_empty() const { return _data.is_empty(); }
+	_FORCE_INLINE_ bool non_empty() const { return _data.non_empty(); }
 
 	_FORCE_INLINE_ int size() const { return _data.size(); }
 

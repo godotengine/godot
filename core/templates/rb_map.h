@@ -729,6 +729,9 @@ public:
 	inline bool is_empty() const {
 		return _data.size_cache == 0;
 	}
+	inline bool non_empty() const {
+		return !is_empty();
+	}
 	inline int size() const {
 		return _data.size_cache;
 	}

@@ -192,6 +192,9 @@ public:
 	bool is_empty() const {
 		return num_elements == 0;
 	}
+	_FORCE_INLINE_ bool non_empty() const {
+		return !is_empty();
+	}
 
 	void clear() {
 		for (uint32_t i = 0; i < capacity; i++) {

@@ -81,6 +81,7 @@ public:
 
 	operator String() const;
 	bool is_empty() const;
+	_FORCE_INLINE_ bool non_empty() const { return !is_empty(); }
 
 	bool operator==(const NodePath &p_path) const;
 	bool operator!=(const NodePath &p_path) const;

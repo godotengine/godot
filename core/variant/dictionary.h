@@ -62,6 +62,7 @@ public:
 
 	int size() const;
 	bool is_empty() const;
+	_FORCE_INLINE_ bool non_empty() const { return !is_empty(); }
 	void clear();
 	void merge(const Dictionary &p_dictionary, bool p_overwrite = false);
 	Dictionary merged(const Dictionary &p_dictionary, bool p_overwrite = false) const;

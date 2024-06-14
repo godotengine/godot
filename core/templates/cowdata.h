@@ -188,6 +188,7 @@ public:
 
 	_FORCE_INLINE_ void clear() { resize(0); }
 	_FORCE_INLINE_ bool is_empty() const { return _ptr == nullptr; }
+	_FORCE_INLINE_ bool non_empty() const { return !is_empty(); }
 
 	_FORCE_INLINE_ void set(Size p_index, const T &p_elem) {
 		ERR_FAIL_INDEX(p_index, size());

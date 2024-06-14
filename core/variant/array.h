@@ -120,6 +120,7 @@ public:
 
 	int size() const;
 	bool is_empty() const;
+	_FORCE_INLINE_ bool non_empty() const { return !is_empty(); }
 	void clear();
 
 	bool operator==(const Array &p_array) const;
