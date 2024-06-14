@@ -3354,15 +3354,16 @@ void Tree::_go_up() {
 		prev = selected_item->get_prev_visible();
 	}
 
+	int col = MAX(selected_col, 0);
+
 	if (select_mode == SELECT_MULTI) {
 		if (!prev) {
 			return;
 		}
 
-		select_single_item(prev, get_root(), selected_col);
+		select_single_item(prev, get_root(), col);
 		queue_redraw();
 	} else {
-		int col = selected_col < 0 ? 0 : selected_col;
 		while (prev && !prev->cells[col].selectable) {
 			prev = prev->get_prev_visible();
 		}
@@ -3386,16 +3387,16 @@ void Tree::_go_down() {
 		next = selected_item->get_next_visible();
 	}
 
+	int col = MAX(selected_col, 0);
+
 	if (select_mode == SELECT_MULTI) {
 		if (!next) {
 			return;
 		}
 
-		select_single_item(next, get_root(), selected_col);
+		select_single_item(next, get_root(), col);
 		queue_redraw();
 	} else {
-		int col = selected_col < 0 ? 0 : selected_col;
-
 		while (next && !next->cells[col].selectable) {
 			next = next->get_next_visible();
 		}
@@ -4471,7 +4472,7 @@ TreeItem *Tree::get_last_item() const {
 	while (last) {
 		if (last->next) {
 			last = last->next;
-		} else if (last->first_child) {
+		} else if (last->first_child && !last->collapsed) {
 			last = last->first_child;
 		} else {
 			break;
