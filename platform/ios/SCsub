@@ -61,6 +61,7 @@ def generate_bundle(target, source, env):
 ios_lib = [
     "godot_ios.mm",
     "os_ios.mm",
+    "platform_text_ios.mm",
     "main.m",
     "app_delegate.mm",
     "view_controller.mm",

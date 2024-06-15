@@ -33,6 +33,7 @@
 
 #include "crash_handler_linuxbsd.h"
 #include "joypad_linux.h"
+#include "platform_text_linuxbsd.h"
 
 #include "core/input/input.h"
 #include "drivers/alsa/audio_driver_alsa.h"
@@ -80,6 +81,7 @@ class OS_LinuxBSD : public OS_Unix {
 	CrashHandler crash_handler;
 
 	MainLoop *main_loop = nullptr;
+	PlatformTextLinuxBSD *platform_text_implementation = nullptr;
 
 	String get_systemd_os_release_info_value(const String &key) const;
 
@@ -93,6 +95,7 @@ protected:
 	virtual void finalize() override;
 
 	virtual void initialize_joypads() override;
+	virtual void initialize_platform_text() override;
 
 	virtual void set_main_loop(MainLoop *p_main_loop) override;
 

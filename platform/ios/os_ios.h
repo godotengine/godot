@@ -35,6 +35,7 @@
 
 #import "ios.h"
 #import "joypad_ios.h"
+#import "platform_text_ios.h"
 
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
@@ -61,12 +62,14 @@ private:
 	JoypadIOS *joypad_ios = nullptr;
 
 	MainLoop *main_loop = nullptr;
+	PlatformTextIOS *platform_text_implementation = nullptr;
 
 	virtual void initialize_core() override;
 	virtual void initialize() override;
 
 	virtual void initialize_joypads() override {
 	}
+	virtual void initialize_platform_text() override;
 
 	virtual void set_main_loop(MainLoop *p_main_loop) override;
 	virtual MainLoop *get_main_loop() const override;

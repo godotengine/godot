@@ -33,6 +33,7 @@
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/dir_access.h"
 #include "main/main.h"
+#include "platform/linuxbsd/platform_text_linuxbsd.h"
 #include "servers/display_server.h"
 #include "servers/rendering_server.h"
 
@@ -144,6 +145,11 @@ void OS_LinuxBSD::initialize_joypads() {
 #ifdef JOYDEV_ENABLED
 	joypad = memnew(JoypadLinux(Input::get_singleton()));
 #endif
+}
+
+void OS_LinuxBSD::initialize_platform_text() {
+	platform_text_implementation = memnew(PlatformTextLinuxBSD);
+	PlatformText::get_singleton()->set_implementation(platform_text_implementation);
 }
 
 String OS_LinuxBSD::get_unique_id() const {

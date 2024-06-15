@@ -9,6 +9,7 @@ Import("env")
 
 android_files = [
     "os_android.cpp",
+    "platform_text_android.cpp",
     "android_input_handler.cpp",
     "file_access_android.cpp",
     "file_access_filesystem_jandroid.cpp",
