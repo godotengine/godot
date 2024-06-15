@@ -508,9 +508,8 @@ bool OccluderInstance3D::get_bake_mask_value(int p_layer_number) const {
 }
 
 bool OccluderInstance3D::_bake_material_check(Ref<Material> p_material) {
-	StandardMaterial3D *standard_mat = Object::cast_to<StandardMaterial3D>(p_material.ptr());
-	if (standard_mat && standard_mat->get_transparency() != StandardMaterial3D::TRANSPARENCY_DISABLED) {
-		return false;
+	if (p_material.is_valid()) {
+		return !RS::get_singleton()->material_needs_alpha_pass(p_material->get_rid());
 	}
 	return true;
 }

@@ -251,6 +251,8 @@ public:
 	FUNC2(material_set_render_priority, RID, int)
 	FUNC2(material_set_next_pass, RID, RID)
 
+	FUNC1RC(bool, material_needs_alpha_pass, RID)
+
 	/* MESH API */
 
 //from now on, calls forwarded to this singleton

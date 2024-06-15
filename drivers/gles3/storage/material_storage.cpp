@@ -2471,6 +2471,14 @@ void MaterialStorage::material_set_render_priority(RID p_material, int priority)
 	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 }
 
+bool MaterialStorage::material_needs_alpha_pass(RID p_material) const {
+	const Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL_V(material, false);
+	ERR_FAIL_NULL_V(material->shader, false);
+	ERR_FAIL_NULL_V(material->shader->data, false);
+	return material->shader->data->needs_alpha_pass();
+}
+
 bool MaterialStorage::material_is_animated(RID p_material) {
 	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL_V(material, false);
@@ -2624,6 +2632,10 @@ bool CanvasShaderData::is_animated() const {
 }
 
 bool CanvasShaderData::casts_shadows() const {
+	return false;
+}
+
+bool CanvasShaderData::needs_alpha_pass() const {
 	return false;
 }
 
@@ -2792,6 +2804,10 @@ bool SkyShaderData::is_animated() const {
 }
 
 bool SkyShaderData::casts_shadows() const {
+	return false;
+}
+
+bool SkyShaderData::needs_alpha_pass() const {
 	return false;
 }
 
@@ -3068,6 +3084,14 @@ bool SceneShaderData::casts_shadows() const {
 	return !has_alpha || (uses_depth_prepass_alpha && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test == DEPTH_TEST_DISABLED));
 }
 
+bool SceneShaderData::needs_alpha_pass() const {
+	bool has_read_screen_alpha = uses_screen_texture || uses_depth_texture || uses_normal_texture;
+	bool has_base_alpha = (uses_alpha && !uses_alpha_clip) || has_read_screen_alpha;
+	bool has_alpha = has_base_alpha || uses_blend_alpha;
+
+	return has_alpha || depth_draw == SceneShaderData::DEPTH_DRAW_DISABLED || depth_test == SceneShaderData::DEPTH_TEST_DISABLED;
+}
+
 RS::ShaderNativeSourceCode SceneShaderData::get_native_source_code() const {
 	return MaterialStorage::get_singleton()->shaders.scene_shader.version_get_native_source_code(version);
 }
@@ -3180,6 +3204,10 @@ bool ParticlesShaderData::is_animated() const {
 }
 
 bool ParticlesShaderData::casts_shadows() const {
+	return false;
+}
+
+bool ParticlesShaderData::needs_alpha_pass() const {
 	return false;
 }
 

@@ -123,10 +123,11 @@ private:
 		bool uses_quarter_res = false;
 		bool uses_light = false;
 
-		virtual void set_code(const String &p_Code);
-		virtual bool is_animated() const;
-		virtual bool casts_shadows() const;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual void set_code(const String &p_Code) override;
+		virtual bool is_animated() const override;
+		virtual bool casts_shadows() const override;
+		virtual bool needs_alpha_pass() const override;
+		virtual RS::ShaderNativeSourceCode get_native_source_code() const override;
 
 		SkyShaderData() {}
 		virtual ~SkyShaderData();
