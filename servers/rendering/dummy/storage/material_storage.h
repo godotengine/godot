@@ -107,6 +107,8 @@ public:
 
 	virtual void material_set_next_pass(RID p_material, RID p_next_material) override {}
 
+	virtual bool material_needs_alpha_pass(RID p_material) const override { return false; }
+
 	virtual bool material_is_animated(RID p_material) override { return false; }
 	virtual bool material_casts_shadows(RID p_material) override { return false; }
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override {}

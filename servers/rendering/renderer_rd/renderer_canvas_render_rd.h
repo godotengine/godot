@@ -179,10 +179,11 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		bool uses_sdf = false;
 		bool uses_time = false;
 
-		virtual void set_code(const String &p_Code);
-		virtual bool is_animated() const;
-		virtual bool casts_shadows() const;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual void set_code(const String &p_Code) override;
+		virtual bool is_animated() const override;
+		virtual bool casts_shadows() const override;
+		virtual bool needs_alpha_pass() const override;
+		virtual RS::ShaderNativeSourceCode get_native_source_code() const override;
 
 		CanvasShaderData() {}
 		virtual ~CanvasShaderData();
