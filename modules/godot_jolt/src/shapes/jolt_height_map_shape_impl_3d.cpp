@@ -69,17 +69,17 @@ JPH::ShapeRefC JoltHeightMapShapeImpl3D::_build() const {
 	);
 
 	if (width != depth) {
-		return _build_double_sided(_build_mesh());
+		return JoltShapeImpl3D::with_double_sided(_build_mesh());
 	}
 
 	const int32_t block_size = 2; // Default of JPH::HeightFieldShapeSettings::mBlockSize
 	const int32_t block_count = width / block_size;
 
 	if (block_count < 2) {
-		return _build_double_sided(_build_mesh());
+		return JoltShapeImpl3D::with_double_sided(_build_mesh());
 	}
 
-	return _build_double_sided(_build_height_field());
+	return JoltShapeImpl3D::with_double_sided(_build_height_field());
 }
 
 JPH::ShapeRefC JoltHeightMapShapeImpl3D::_build_height_field() const {
@@ -220,20 +220,3 @@ JPH::ShapeRefC JoltHeightMapShapeImpl3D::_build_mesh() const {
 	return shape_result.Get();
 }
 
-JPH::ShapeRefC JoltHeightMapShapeImpl3D::_build_double_sided(const JPH::Shape* p_shape) const {
-	ERR_FAIL_NULL_D(p_shape);
-
-	const JoltCustomDoubleSidedShapeSettings shape_settings(p_shape);
-	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
-
-	ERR_FAIL_COND_D_MSG(
-		shape_result.HasError(),
-		vformat(
-			"Failed to make shape double-sided. "
-			"It returned the following error: '%s'.",
-			to_godot(shape_result.GetError())
-		)
-	);
-
-	return shape_result.Get();
-}

@@ -31,6 +31,21 @@ class BodySocket
     }
 
 };
+// 角色的阵营 枚举
+enum CharacterCamp
+{
+    CharacterCamp_Player,
+    CharacterCamp_Enemy,
+    CharacterCamp_Friend,
+};
+class CharacterAILogicNode;
+struct CharacterAIContext
+{
+    Ref<CharacterAILogicNode> logic_node;
+    StringName logic_name;
+    CharacterCamp camp;
+    
+};
 
 // 身体主要部件部分
 class CharacterBodyMain : public CharacterBody3D {
@@ -304,6 +319,7 @@ protected:
             }
         }
     }
+    void _process_move();
 
 protected:
     Skeleton3D *skeleton = nullptr;
@@ -320,6 +336,7 @@ protected:
     Ref<Blackboard> player_blackboard;
     Ref<CharacterMovement> character_movement;
     Ref<CharacterNavigationAgent3D> character_agent;
+    CharacterAIContext ai_context;
     Ref<CharacterAI> character_ai;
     // 骨架配置文件
     String skeleton_res;

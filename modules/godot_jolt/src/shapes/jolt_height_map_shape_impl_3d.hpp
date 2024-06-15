@@ -25,8 +25,6 @@ private:
 
 	JPH::ShapeRefC _build_mesh() const;
 
-	JPH::ShapeRefC _build_double_sided(const JPH::Shape* p_shape) const;
-
 #ifdef REAL_T_IS_DOUBLE
 	PackedFloat64Array heights;
 #else // REAL_T_IS_DOUBLE

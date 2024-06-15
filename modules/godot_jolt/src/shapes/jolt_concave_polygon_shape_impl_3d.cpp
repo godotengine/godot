@@ -1,7 +1,6 @@
 #include "jolt_concave_polygon_shape_impl_3d.hpp"
 
 #include "servers/jolt_project_settings.hpp"
-#include "shapes/jolt_custom_double_sided_shape.hpp"
 
 Variant JoltConcavePolygonShapeImpl3D::get_data() const {
 	Dictionary data;
@@ -98,26 +97,9 @@ JPH::ShapeRefC JoltConcavePolygonShapeImpl3D::_build() const {
 	JPH::ShapeRefC shape = shape_result.Get();
 
 	if (backface_collision) {
-		return _build_double_sided(shape);
+		return JoltShapeImpl3D::with_double_sided(shape);
 	}
 
 	return shape;
 }
 
-JPH::ShapeRefC JoltConcavePolygonShapeImpl3D::_build_double_sided(const JPH::Shape* p_shape) const {
-	ERR_FAIL_NULL_D(p_shape);
-
-	const JoltCustomDoubleSidedShapeSettings shape_settings(p_shape);
-	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
-
-	ERR_FAIL_COND_D_MSG(
-		shape_result.HasError(),
-		vformat(
-			"Failed to make shape double-sided. "
-			"It returned the following error: '%s'.",
-			to_godot(shape_result.GetError())
-		)
-	);
-
-	return shape_result.Get();
-}

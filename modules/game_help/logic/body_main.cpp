@@ -59,7 +59,7 @@ void CharacterBodyMain::_bind_methods()
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_RESOURCE_TYPE, "Blackboard",PROPERTY_USAGE_DEFAULT ), "set_blackboard", "get_blackboard");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT ), "set_blackboard_plan", "get_blackboard_plan");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "controller", PROPERTY_HINT_RESOURCE_TYPE, "CharacterController"), "set_controller", "get_controller");
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_agent", PROPERTY_HINT_RESOURCE_TYPE, "CharacterNavigationAgent"), "set_navigation_agent", "get_navigation_agent");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_agent", PROPERTY_HINT_RESOURCE_TYPE, "CharacterNavigationAgent3D"), "set_navigation_agent", "get_navigation_agent");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skeleton", PROPERTY_HINT_NODE_TYPE, "Skeleton",PROPERTY_USAGE_EDITOR), "set_skeleton", "get_skeleton");    
     // 只能編輯不能保存
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_library", PROPERTY_HINT_RESOURCE_TYPE, "AnimationLibrary",PROPERTY_USAGE_DEFAULT ), "set_animation_library", "get_animation_library");
@@ -107,6 +107,10 @@ void CharacterBodyMain::_notification( int p_notification )
 		case NOTIFICATION_PROCESS: {
             // 更新玩家位置
             GDVIRTUAL_CALL(_update_player_position);
+            if(character_ai.is_valid())
+            {
+                character_ai->execute(this,get_blackboard().ptr(),&ai_context);
+            }
             // 更新動畫
             if(animator.is_valid())
             {
@@ -119,10 +123,40 @@ void CharacterBodyMain::_notification( int p_notification )
                     check_area[i]->update_world_move(get_global_position());
                 }
             }
-		} break;
+            _process_move();
+        } break;
     }
 
 }
+void CharacterBodyMain::_process_move()
+{
+    // 处理角色移动
+    bool is_walk = get_blackboard()->get_var("move/using_navigation_target",false);
+    if(is_walk )
+    {
+        // 处理导航行走
+        if(character_agent.is_valid())
+        {
+            if(is_walk)
+            {
+                Vector3 target_pos = get_blackboard()->get_var("move/navigation_target_pos",Vector3());
+                // 设置角色移动速度
+                character_agent->set_velocity(get_velocity());
+                character_agent->set_target_position(target_pos);
+            }
+            else
+            {
+                character_agent->set_navigation_finished(true);
+            }
+        }
+    }
+    else
+    {
+        move_and_slide();
+    }
+
+}
+
 // 初始化身體
 void CharacterBodyMain::init_main_body(String p_skeleton_file_path,StringName p_animation_group)
 {
@@ -353,6 +387,14 @@ void CharacterBodyMain::init_blackboard_plan(Ref<BlackboardPlan> p_plan)
     if(!p_plan->has_var("move/atack_target_pos"))
     {
         p_plan->add_var("move/atack_target_pos",BBVariable(Variant::VECTOR3,Vector3()));
+    }
+    if(!p_plan->has_var("move/navigation_target_pos"))
+    {
+        p_plan->add_var("move/navigation_target_pos",BBVariable(Variant::VECTOR3,Vector3()));
+    }
+    if(!p_plan->has_var("move/using_navigation_target"))
+    {
+        p_plan->add_var("move/using_navigation_target",BBVariable(Variant::BOOL,false));
     }
 
     if(!p_plan->has_var("move/request"))

@@ -179,6 +179,9 @@ public:
 	void set_target_position(Vector3 p_position);
 	Vector3 get_target_position() const;
 
+	void set_navigation_finished(bool p_navigation_finished);
+	bool get_navigation_finished() const;
+
 	void set_simplify_path(bool p_enabled);
 	bool get_simplify_path() const;
 

@@ -67,6 +67,8 @@ public:
 
 	static JPH::ShapeRefC with_user_data(const JPH::Shape* p_shape, uint64_t p_user_data);
 
+	static JPH::ShapeRefC with_double_sided(const JPH::Shape* p_shape);
+
 	static JPH::ShapeRefC without_custom_shapes(const JPH::Shape* p_shape);
 
 protected:

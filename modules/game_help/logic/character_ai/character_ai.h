@@ -502,21 +502,6 @@ class CharacterAILogicNode_Dead : public CharacterAILogicNode
     }
     
 };
-// 角色的阵营 枚举
-enum CharacterCamp
-{
-    CharacterCamp_Player,
-    CharacterCamp_Enemy,
-    CharacterCamp_Friend,
-};
-
-struct CharacterAIContext
-{
-    Ref<CharacterAILogicNode> logic_node;
-    StringName logic_name;
-    CharacterCamp camp;
-    
-};
 
 
 // AI 大脑
@@ -596,66 +581,7 @@ public:
         return ret;
     }
 public:
-    void execute(CharacterBodyMain *node,Blackboard* blackboard,CharacterAIContext* p_context)
-    {
-        bool is_run_brain = false;
-        if(p_context->logic_node.is_valid())
-        {
-            if(p_context->logic_node->execute(node,blackboard))
-            {
-                is_run_brain = true;
-                p_context->logic_node->exit(node,blackboard);
-                p_context->logic_node = Ref<CharacterAILogicNode>();
-                p_context->logic_name = StringName();
-            }
-        }
-        else
-        {
-            is_run_brain = true;
-        }
-        if(inductor.is_valid())
-        {
-            inductor->execute(node,blackboard);
-        }
-
-        if(is_run_brain && brain.is_valid())
-        {
-            brain->execute(node,blackboard);
-            StringName logic_name = blackboard->get_var("ai/curr_logic_node_name",ident_node_name);
-            if(logic_name != StringName() && logic_name != p_context->logic_name)
-            {
-                if(logic_nodes.has(logic_name))
-                {
-                    if(p_context->logic_node.is_valid())
-                    {
-                        p_context->logic_node->exit(node,blackboard);
-                    }
-                    p_context->logic_name = logic_name;
-                    p_context->logic_node = logic_nodes[logic_name];
-                    if(p_context->logic_node.is_valid())
-                    {
-                        p_context->logic_node->enter(node,blackboard);
-                    }
-                    return;
-                }
-            }
-            
-        }
-        // 没有判断出任何状态,强制进入休闲状态
-        if(p_context->logic_node.is_null())
-        {
-            p_context->logic_name = ident_node_name;
-            if(logic_nodes.has(ident_node_name))
-            {
-                p_context->logic_node = logic_nodes[ident_node_name];
-                if(p_context->logic_node.is_valid())
-                {
-                    p_context->logic_node->enter(node,blackboard);
-                }
-            }
-        }
-
-    }
+    void execute(CharacterBodyMain *node,Blackboard* blackboard,class CharacterAIContext* p_context);
     StringName ident_node_name = "ident";
     // 角色感應器
     Ref<CharacterAI_Inductor> inductor;

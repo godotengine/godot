@@ -636,6 +636,16 @@ void CharacterNavigationAgent3D::set_target_position(Vector3 p_position) {
 Vector3 CharacterNavigationAgent3D::get_target_position() const {
 	return target_position;
 }
+void CharacterNavigationAgent3D::set_navigation_finished(bool p_navigation_finished)
+{
+	if(p_navigation_finished){
+		_transition_to_navigation_finished();
+	}
+}
+bool CharacterNavigationAgent3D::get_navigation_finished() const
+{
+	return !target_position_submitted;
+}
 
 Vector3 CharacterNavigationAgent3D::get_next_path_position() {
 	_update_navigation();

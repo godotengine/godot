@@ -27,8 +27,16 @@ bool BlackboardPlan::_set(const StringName &p_name, const Variant &p_value) {
 	String name_str = p_name;
 	// * Storage
 	if (name_str.begins_with("var/")) {
-		StringName var_name = name_str.get_slicec('/', 1);
-		String what = name_str.get_slicec('/', 2);
+		Vector<String> parts = name_str.split("/");
+		String var_name_str = "";
+		for(int i = 1; i < parts.size() - 1; i++) {
+			var_name_str += parts[i];
+			if(i != parts.size() - 2) {
+				var_name_str += "/";
+			}
+		}
+		StringName var_name = var_name_str;
+		String what = parts[parts.size() - 1];
 		if (!var_map.has(var_name) && what == "name") {
 			add_var(var_name, BBVariable());
 		}
@@ -59,20 +67,21 @@ bool BlackboardPlan::_get(const StringName &p_name, Variant &r_ret) const {
 		return true;
 	}
 
+	String name_str = p_name;
 	// * Storage
 	if (!p_name.begins_with("var/")) {
 		return false;
 	}
-	String name_str = p_name;
 	Vector<String> parts = name_str.split("/");
-	String var_name = "";
+	String var_name_str = "";
 	for(int i = 1; i < parts.size() - 1; i++) {
-		var_name += parts[i];
+		var_name_str += parts[i];
 		if(i != parts.size() - 2) {
-			var_name += "/";
+			var_name_str += "/";
 		}
 	}
 	String what = parts[parts.size() - 1];
+		StringName var_name = var_name_str;
 	//StringName var_name = name_str.get_slicec('/', 1);
 	//String what = name_str.get_slicec('/', 2);
 	ERR_FAIL_COND_V(!var_map.has(var_name), false);

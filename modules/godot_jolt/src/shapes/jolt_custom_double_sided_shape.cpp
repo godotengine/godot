@@ -97,10 +97,24 @@ void JoltCustomDoubleSidedShape::register_type() {
 			collide_shape_vs_double_sided
 		);
 
+
+		JPH::CollisionDispatch::sRegisterCollideShape(
+			JoltCustomShapeSubType::DOUBLE_SIDED,
+			sub_type,
+			JPH::CollisionDispatch::sReversedCollideShape
+		);
+
 		JPH::CollisionDispatch::sRegisterCastShape(
 			sub_type,
 			JoltCustomShapeSubType::DOUBLE_SIDED,
 			cast_shape_vs_double_sided
 		);
+
+		JPH::CollisionDispatch::sRegisterCastShape(
+			JoltCustomShapeSubType::DOUBLE_SIDED,
+			sub_type,
+			JPH::CollisionDispatch::sReversedCastShape
+		);
+	
 	}
 }
