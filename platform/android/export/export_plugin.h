@@ -39,18 +39,6 @@
 #include "core/os/os.h"
 #include "editor/export/editor_export_platform.h"
 
-const String SPLASH_CONFIG_XML_CONTENT = R"SPLASH(<?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/splash_bg_color" />
-    <item>
-        <bitmap
-                android:gravity="center"
-                android:filter="%s"
-                android:src="@drawable/splash" />
-    </item>
-</layer-list>
-)SPLASH";
-
 // Optional environment variables for defining confidential information. If any
 // of these is set, they will override the values set in the credentials file.
 const String ENV_ANDROID_KEYSTORE_DEBUG_PATH = "GODOT_ANDROID_KEYSTORE_DEBUG_PATH";
@@ -179,17 +167,12 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	void _process_launcher_icons(const String &p_file_name, const Ref<Image> &p_source_image, int dimension, Vector<uint8_t> &p_data);
 
-	String load_splash_refs(Ref<Image> &splash_image, Ref<Image> &splash_bg_color_image);
-
 	void load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background);
 
 	void _copy_icons_to_gradle_project(const Ref<EditorExportPreset> &p_preset,
-			const String &processed_splash_config_xml,
-			const Ref<Image> &splash_image,
-			const Ref<Image> &splash_bg_color_image,
-			const Ref<Image> &main_image,
-			const Ref<Image> &foreground,
-			const Ref<Image> &background);
+			const Ref<Image> &p_main_image,
+			const Ref<Image> &p_foreground,
+			const Ref<Image> &p_background);
 
 	static void _create_editor_debug_keystore_if_needed();
 

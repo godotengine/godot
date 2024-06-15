@@ -91,7 +91,9 @@ public:
 	bool rt_msaa_multiview_supported = false;
 	bool multiview_supported = false;
 
-	bool adreno_3xx_compatibility = false;
+	// Adreno 3XX compatibility
+	bool disable_particles_workaround = false; // set to 'true' to disable 'GPUParticles'
+	bool flip_xy_workaround = false;
 
 #ifdef ANDROID_ENABLED
 	PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC eglFramebufferTextureMultiviewOVR = nullptr;

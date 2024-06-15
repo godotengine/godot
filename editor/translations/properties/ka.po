@@ -923,6 +923,9 @@ msgstr "Blender"
 msgid "RPC Port"
 msgstr "RPC: პორტი"
 
+msgid "FBX"
+msgstr "FBX"
+
 msgid "Tools"
 msgstr "ხელსაწყოები"
 
@@ -1027,9 +1030,6 @@ msgstr "მონიშვნის დიალოგის ფერი"
 
 msgid "Instantiated"
 msgstr "შექმნილია"
-
-msgid "Shape"
-msgstr "მოხაზულობა"
 
 msgid "Grid Size"
 msgstr "ბადის ზომა"
@@ -1889,6 +1889,24 @@ msgstr "პროექტი"
 msgid "Assembly Name"
 msgstr "აგების სახელი"
 
+msgid "Time"
+msgstr "დრო"
+
+msgid "Video"
+msgstr "ვიდეო"
+
+msgid "Regions"
+msgstr "რეგიონები"
+
+msgid "Agents"
+msgstr "აგენტები"
+
+msgid "Polygons"
+msgstr "მრავალკუთხედები"
+
+msgid "Edges"
+msgstr "წიბოები"
+
 msgid "Operation"
 msgstr "ოპერაცია"
 
@@ -1951,9 +1969,6 @@ msgstr "ბილიკი შეერთდა"
 
 msgid "CSG"
 msgstr "CSG"
-
-msgid "FBX"
-msgstr "FBX"
 
 msgid "GDScript"
 msgstr "GDScript"
@@ -2825,9 +2840,6 @@ msgstr "მინირუკების გამოყენება"
 msgid "Emitting"
 msgstr "გამომსხივებელი"
 
-msgid "Time"
-msgstr "დრო"
-
 msgid "Randomness"
 msgstr "შემთხვევითობა"
 
@@ -2836,6 +2848,9 @@ msgstr "ნახატი"
 
 msgid "Local Coords"
 msgstr "ლოკალური კოორდინატები"
+
+msgid "Shape"
+msgstr "მოხაზულობა"
 
 msgid "Points"
 msgstr "წერტილები"
@@ -3271,9 +3286,6 @@ msgstr "მუდმივი კუთხური სიჩქარე"
 
 msgid "UV"
 msgstr "ულტრაიისფერი გამოსხივება"
-
-msgid "Polygons"
-msgstr "მრავალკუთხედები"
 
 msgid "Remote Path"
 msgstr "დაშორებული ბილიკი"
@@ -4664,9 +4676,6 @@ msgstr "წყარო გეომეტრიის ჯგუფის სა
 msgid "Cells"
 msgstr "უჯრედები"
 
-msgid "Agents"
-msgstr "აგენტები"
-
 msgid "A"
 msgstr "A"
 
@@ -5309,12 +5318,6 @@ msgstr "დანაყოფის ტიპი"
 msgid "Source Group Name"
 msgstr "წყარო ჯგუფის სახელი"
 
-msgid "Regions"
-msgstr "რეგიონები"
-
-msgid "Edges"
-msgstr "წიბოები"
-
 msgid "Max Error"
 msgstr "მაქს შეცდომა"
 
@@ -5569,9 +5572,6 @@ msgstr "ზედაპირის ინდექსი"
 
 msgid "Degrees Mode"
 msgstr "გრადუსების რეჟიმი"
-
-msgid "Panel"
-msgstr "პანელი"
 
 msgid "Font Color"
 msgstr "ფონტის ფერი"
@@ -5987,9 +5987,6 @@ msgstr "ჩოჩიის ვ განცალკევება"
 msgid "Icon Margin"
 msgstr "ხატულის საზღვარი"
 
-msgid "Line Separation"
-msgstr "ხაზის გაყოფა"
-
 msgid "Font Hovered Color"
 msgstr "ფონტი გადატარების ფერი"
 
@@ -6196,9 +6193,6 @@ msgstr "შეყვანის ჩართვა"
 
 msgid "Channel Disable Time"
 msgstr "არხი დროის გამორთვა"
-
-msgid "Video"
-msgstr "ვიდეო"
 
 msgid "Bus Count"
 msgstr "მატარებლების რაოდენობა"

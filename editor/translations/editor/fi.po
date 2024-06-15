@@ -20,13 +20,14 @@
 # Mitja <mitja.leino@hotmail.com>, 2023.
 # Aku <akulaku.ap@gmail.com>, 2023.
 # Jonni Lehtiranta <jonni.lehtiranta@gmail.com>, 2024.
+# Viljami Lokasaari <v.lokasaari13@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-02 09:06+0000\n"
-"Last-Translator: Jonni Lehtiranta <jonni.lehtiranta@gmail.com>\n"
+"PO-Revision-Date: 2024-06-10 12:09+0000\n"
+"Last-Translator: Viljami Lokasaari <v.lokasaari13@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -34,7 +35,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.6-dev\n"
 
 msgid "Main Thread"
 msgstr "Pääsäie"
@@ -455,6 +456,9 @@ msgstr "Muokkaa tapahtumaa"
 msgid "Remove Event"
 msgstr "Poista tapahtuma"
 
+msgid "Filter by Name"
+msgstr "Suodata nimellä"
+
 msgid "Clear All"
 msgstr "Tyhjennä kaikki"
 
@@ -487,6 +491,15 @@ msgstr "Lisää tähän avainruutu"
 
 msgid "Duplicate Selected Key(s)"
 msgstr "Kahdenna valitut avaimet"
+
+msgid "Cut Selected Key(s)"
+msgstr "Leikkaa valitut avaimet"
+
+msgid "Copy Selected Key(s)"
+msgstr "Kopioi valitut avaimet"
+
+msgid "Paste Key(s)"
+msgstr "Liitä avaimet"
 
 msgid "Delete Selected Key(s)"
 msgstr "Poista valitut avaimet"
@@ -964,6 +977,18 @@ msgstr "Muokkaa"
 msgid "Animation properties."
 msgstr "Animaation ominaisuudet."
 
+msgid "Copy Tracks..."
+msgstr "Kopioi raidat..."
+
+msgid "Scale Selection..."
+msgstr "Skaalaa valintaa..."
+
+msgid "Scale From Cursor..."
+msgstr "Skaalaa kursorista..."
+
+msgid "Set Start Offset (Audio)"
+msgstr "Aseta aloitussiirtymä (Ääni)"
+
 msgid "Delete Selection"
 msgstr "Poista valitut"
 
@@ -1364,6 +1389,9 @@ msgstr "Tallenna haara kohtauksena"
 
 msgid "Copy Node Path"
 msgstr "Kopioi solmun polku"
+
+msgid "Instance:"
+msgstr "Ilmentymä:"
 
 msgid ""
 "This node has been instantiated from a PackedScene file:\n"
@@ -2315,6 +2343,12 @@ msgstr "Tuo profiileja"
 msgid "Manage Editor Feature Profiles"
 msgstr "Hallinnoi editorin ominaisuusprofiileja"
 
+msgid "Restart"
+msgstr "Käynnistä uudelleen"
+
+msgid "Save & Restart"
+msgstr "Tallenna & käynnistä uudelleen"
+
 msgid "ScanSources"
 msgstr "Selaa lähdetiedostoja"
 
@@ -3149,6 +3183,18 @@ msgstr "Mobiili"
 msgid "Compatibility"
 msgstr "Yhteensopivuus"
 
+msgid "Lock Selected Node(s)"
+msgstr "Lukitse valitut solmut"
+
+msgid "Unlock Selected Node(s)"
+msgstr "Vapauta valitut solmut"
+
+msgid "Group Selected Node(s)"
+msgstr "Ryhmitä valitut solmut"
+
+msgid "Ungroup Selected Node(s)"
+msgstr "Poista ryhmitys valituilta solmuilta"
+
 msgid "Pan View"
 msgstr "Panorointinäkymä"
 
@@ -3245,9 +3291,6 @@ msgstr "Editorin ulkoasu"
 msgid "Take Screenshot"
 msgstr "Ota kuvakaappaus"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Kuvakaappaukset tallennetaan editorin data/asetuskansioon."
-
 msgid "Toggle Fullscreen"
 msgstr "Vaihda koko näytön tila"
 
@@ -3292,9 +3335,6 @@ msgstr "Lähetä palautetta ohjeesta"
 
 msgid "Support Godot Development"
 msgstr "Tue Godotin kehitystä"
-
-msgid "Save & Restart"
-msgstr "Tallenna & käynnistä uudelleen"
 
 msgid "Update Continuously"
 msgstr "Päivitä jatkuvasti"
@@ -3350,12 +3390,6 @@ msgid ""
 msgstr ""
 "Seuraavat tiedostot ovat uudempia levyllä.\n"
 "Mikä toimenpide tulisi suorittaa?"
-
-msgid "Reload"
-msgstr "Lataa uudelleen"
-
-msgid "Resave"
-msgstr "Tallenna uudelleen"
 
 msgid "Version Control Settings..."
 msgstr "Versionhallintajärjestelmän Asetukset..."
@@ -3804,6 +3838,12 @@ msgstr ""
 "Tälle versiolle ei löytynyt ladattavia linkkejä. Suora lataaminen on "
 "mahdollista vain virallisilla versioilla."
 
+msgid "Connecting..."
+msgstr "Yhdistetään..."
+
+msgid "Requesting..."
+msgstr "Pyydetään..."
+
 msgid "Can't open the export templates file."
 msgstr "Vientimallien tiedostoa ei voida avata."
 
@@ -4245,6 +4285,9 @@ msgstr "Poista suosikeista"
 msgid "Reimport"
 msgstr "Tuo uudelleen"
 
+msgid "Open in File Manager"
+msgstr "Avaa tiedostonhallinnassa"
+
 msgid "New Folder..."
 msgstr "Uusi kansio..."
 
@@ -4289,9 +4332,6 @@ msgstr "Kahdenna..."
 
 msgid "Rename..."
 msgstr "Nimeä uudelleen..."
-
-msgid "Open in File Manager"
-msgstr "Avaa tiedostonhallinnassa"
 
 msgid "Open in External Program"
 msgstr "Avaa Ulkopuolisessa Ohjelmassa"
@@ -4677,9 +4717,6 @@ msgstr ""
 
 msgid "Open in Editor"
 msgstr "Avaa editorissa"
-
-msgid "Instance:"
-msgstr "Ilmentymä:"
 
 msgid "\"%s\" is not a known filter."
 msgstr "\"%s\" ei ole tunnettu suodatin."
@@ -5651,12 +5688,6 @@ msgstr "Ladataan..."
 msgid "Resolving..."
 msgstr "Selvitetään..."
 
-msgid "Connecting..."
-msgstr "Yhdistetään..."
-
-msgid "Requesting..."
-msgstr "Pyydetään..."
-
 msgid "Error making request"
 msgstr "Virhe pyynnön luonnissa"
 
@@ -5917,6 +5948,11 @@ msgstr "Aseta lähennystasoksi 1600%"
 msgid "Select Mode"
 msgstr "Valintatila"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+Hiiren oikea painike: Näytä lista kaikista napsautetussa kohdassa "
+"olevista solmuista, mukaan lukien lukituista."
+
 msgid "RMB: Add node at position clicked."
 msgstr "Hiiren oikea painike: Lisää solmu napsautettuun paikkaan."
 
@@ -5989,20 +6025,8 @@ msgstr "Älykäs tarttuminen"
 msgid "Configure Snap..."
 msgstr "Määrittele tarttuminen..."
 
-msgid "Lock Selected Node(s)"
-msgstr "Lukitse valitut solmut"
-
 msgid "Unlock selected node, allowing selection and movement."
 msgstr "Poista valitun solmun lukitus, sallien valinnan ja liikuttamisen."
-
-msgid "Unlock Selected Node(s)"
-msgstr "Vapauta valitut solmut"
-
-msgid "Group Selected Node(s)"
-msgstr "Ryhmitä valitut solmut"
-
-msgid "Ungroup Selected Node(s)"
-msgstr "Poista ryhmitys valituilta solmuilta"
 
 msgid "Skeleton Options"
 msgstr "Luurangon asetukset"
@@ -6112,12 +6136,6 @@ msgstr "Jaa ruudukon välistys kahdella"
 msgid "Adding %s..."
 msgstr "Lisätään %s..."
 
-msgid "Hold Shift when dropping to add as sibling of selected node."
-msgstr "Pidä Vaihtonäppäin pohjassa lisätäksesi valitun solmun sisarena."
-
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "Ei voida luoda ilmentymiä useasta solmusta ilman juurta."
-
 msgid "Create Node"
 msgstr "Luo solmu"
 
@@ -6213,9 +6231,6 @@ msgstr "Vaakasuora kohdistus"
 
 msgid "Vertical alignment"
 msgstr "Pystysuuntainen kohdistus"
-
-msgid "Restart"
-msgstr "Käynnistä uudelleen"
 
 msgid "Load Emission Mask"
 msgstr "Lataa emissiomaski"
@@ -6442,9 +6457,6 @@ msgstr "Muuta sylinterimuodon sädettä"
 
 msgid "Change Cylinder Shape Height"
 msgstr "Muuta sylinterimuodon korkeutta"
-
-msgid "Change Particles AABB"
-msgstr "Muuta partikkelien AABB"
 
 msgid "Change Radius"
 msgstr "Muuta Sädettä"
@@ -7018,11 +7030,6 @@ msgstr "Lisää Esikatselu Ympäristö Kohtaukseen"
 msgid "Preview disabled."
 msgstr "Esikatselu poistettu käytöstä."
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+Hiiren oikea painike: Näytä lista kaikista napsautetussa kohdassa "
-"olevista solmuista, mukaan lukien lukituista."
-
 msgid "Use Local Space"
 msgstr "Käytä paikallisavaruutta"
 
@@ -7212,14 +7219,14 @@ msgstr "Poista lähtöohjain käyrästä"
 msgid "Remove In-Control from Curve"
 msgstr "Poista tulo-ohjain käyrästä"
 
-msgid "Add Point to Curve"
-msgstr "Lisää käyrään piste"
-
 msgid "Split Curve"
 msgstr "Puolita käyrä"
 
 msgid "Move Point in Curve"
 msgstr "Siirrä pistettä käyrällä"
+
+msgid "Add Point to Curve"
+msgstr "Lisää käyrään piste"
 
 msgid "Move In-Control in Curve"
 msgstr "Siirrä tulo-ohjainta käyrällä"
@@ -7496,9 +7503,6 @@ msgstr "Liitä resurssi"
 msgid "Load Resource"
 msgstr "Lataa resurssi"
 
-msgid "Clear Recent Files"
-msgstr "Tyhjennä viimeisimpien tiedostojen luettelo"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "Ei voida avata tiedostoa '%s'. Se on voitu siirtää tai tuhota."
 
@@ -7536,6 +7540,12 @@ msgstr "Virhe tallennettaessa"
 msgid "Save Theme As..."
 msgstr "Tallenna teema nimellä..."
 
+msgid "Online Docs"
+msgstr "Dokumentaatio"
+
+msgid "Open Godot online documentation."
+msgstr "Avaa Godotin online-dokumentaatio."
+
 msgid "Unsaved file."
 msgstr "Tallentamaton tiedosto."
 
@@ -7568,9 +7578,6 @@ msgstr "Tiedosto"
 
 msgid "Open..."
 msgstr "Avaa..."
-
-msgid "Reopen Closed Script"
-msgstr "Avaa uudelleen suljettu skripti"
 
 msgid "Save All"
 msgstr "Tallenna kaikki"
@@ -7608,12 +7615,6 @@ msgstr "Suorita"
 msgid "Search"
 msgstr "Hae"
 
-msgid "Online Docs"
-msgstr "Dokumentaatio"
-
-msgid "Open Godot online documentation."
-msgstr "Avaa Godotin online-dokumentaatio."
-
 msgid "Search the reference documentation."
 msgstr "Etsi dokumentaatiosta."
 
@@ -7626,15 +7627,20 @@ msgstr "Mene seuraavaan muokattuun dokumenttiin."
 msgid "Discard"
 msgstr "Hylkää"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?:"
-msgstr ""
-"Seuraavat tiedostot ovat uudempia levyllä.\n"
-"Mikä toimenpide tulisi suorittaa?:"
+msgid "Reopen Closed Script"
+msgstr "Avaa uudelleen suljettu skripti"
 
 msgid "Clear Recent Scripts"
 msgstr "Tyhjennä viimeisimmät skriptit"
+
+msgid "Uppercase"
+msgstr "Isot kirjaimet"
+
+msgid "Lowercase"
+msgstr "Pienet kirjaimet"
+
+msgid "Capitalize"
+msgstr "Isot alkukirjaimet"
 
 msgid "Standard"
 msgstr "Standardi"
@@ -7679,15 +7685,6 @@ msgstr "Rivi"
 
 msgid "Folding"
 msgstr "Taittaminen"
-
-msgid "Uppercase"
-msgstr "Isot kirjaimet"
-
-msgid "Lowercase"
-msgstr "Pienet kirjaimet"
-
-msgid "Capitalize"
-msgstr "Isot alkukirjaimet"
 
 msgid "Convert Case"
 msgstr "Muunna aakkoslaji"
@@ -7988,6 +7985,12 @@ msgstr "Luo ruudut sprite-arkista"
 
 msgid "Warnings should be fixed to prevent errors."
 msgstr "Varoitukset tulisi korjata virheiden välttämisen vuoksi."
+
+msgid "Reload"
+msgstr "Lataa uudelleen"
+
+msgid "Resave"
+msgstr "Tallenna uudelleen"
 
 msgid "Memory: %s"
 msgstr "Muisti: %s"
@@ -8491,12 +8494,6 @@ msgstr "Indeksi: %d"
 msgid "Shift: Draw rectangle."
 msgstr "Vaihtonäppäin: Piirrä suorakulmio."
 
-msgid "Bucket"
-msgstr "Ämpäri"
-
-msgid "Eraser"
-msgstr "Pyyhin"
-
 msgid "Place Random Tile"
 msgstr "Aseta Satunnainen Laatta"
 
@@ -8541,6 +8538,12 @@ msgstr "Kyllä"
 
 msgid "Tile properties:"
 msgstr "Laatan ominaisuudet:"
+
+msgid "Bucket"
+msgstr "Ämpäri"
+
+msgid "Eraser"
+msgstr "Pyyhin"
 
 msgid "Error"
 msgstr "Virhe"
@@ -10853,6 +10856,9 @@ msgstr "Virheelliset argumentit sisäänrakennetulle funktiolle \"%s(%s)\"."
 msgid "Recursion is not allowed."
 msgstr "Rekursio ei ole sallittu."
 
+msgid "Constants cannot be modified."
+msgstr "Vakioita ei voi muokata."
+
 msgid "Cannot convert from '%s' to '%s'."
 msgstr "Ei voida muuntaa muodosta '%s' muotoon '%s'."
 
@@ -10867,9 +10873,6 @@ msgstr "Vastaavaa funktiota ei löytynyt: '%s':lle."
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "Tuntematon tunniste lausekkeessa: '%s'."
-
-msgid "Constants cannot be modified."
-msgstr "Vakioita ei voi muokata."
 
 msgid "Unexpected end of expression."
 msgstr "Lausekkeen odottamaton loppu."
