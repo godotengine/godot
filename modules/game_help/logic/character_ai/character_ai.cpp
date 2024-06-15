@@ -32,7 +32,7 @@ bool CharacterAI_CheckGround::_execute_check(CharacterBodyMain *node, Blackboard
     }
     return false;
 }
-void CharacterAI::execute(CharacterBodyMain *node,Blackboard* blackboard,class CharacterAIContext* p_context)
+void CharacterAI::execute(CharacterBodyMain *node,Blackboard* blackboard,CharacterAIContext* p_context)
 {
     bool is_run_brain = false;
     if(p_context->logic_node.is_valid())

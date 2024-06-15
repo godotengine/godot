@@ -534,7 +534,19 @@ class CharacterAI : public Resource
     GDCLASS(CharacterAI,Resource);
     static void _bind_methods()
     {
+        ClassDB::bind_method(D_METHOD("set_inductor", "inductor"), &CharacterAI::set_inductor);
+        ClassDB::bind_method(D_METHOD("get_inductor"), &CharacterAI::get_inductor);
 
+        ClassDB::bind_method(D_METHOD("set_brain", "brain"), &CharacterAI::set_brain);
+        ClassDB::bind_method(D_METHOD("get_brain"), &CharacterAI::get_brain);
+
+        ClassDB::bind_method(D_METHOD("set_logic_node", "logic_node"), &CharacterAI::set_logic_node);
+        ClassDB::bind_method(D_METHOD("get_logic_node"), &CharacterAI::get_logic_node);
+
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "inductor", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAI_Brain"), "set_inductor", "get_inductor");
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "brain", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAI_Brain"), "set_brain", "get_brain");
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "logic_node", PROPERTY_HINT_ARRAY_TYPE, "CharacterAILogicNode"), "set_logic_node", "get_logic_node");
+        
     }
 public:
     void set_inductor(Ref<CharacterAI_Brain> p_inductor)
@@ -581,7 +593,7 @@ public:
         return ret;
     }
 public:
-    void execute(CharacterBodyMain *node,Blackboard* blackboard,class CharacterAIContext* p_context);
+    void execute(CharacterBodyMain *node,Blackboard* blackboard,struct CharacterAIContext* p_context);
     StringName ident_node_name = "ident";
     // 角色感應器
     Ref<CharacterAI_Inductor> inductor;

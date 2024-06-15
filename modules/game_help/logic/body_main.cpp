@@ -457,7 +457,7 @@ void CharacterBodyMain::init_blackboard_plan(Ref<BlackboardPlan> p_plan)
     
     if(!p_plan->has_var("jump/request_jump"))
     {
-        p_plan->add_var("jump/is_jump",BBVariable(Variant::BOOL,false));
+        p_plan->add_var("jump/request_jump",BBVariable(Variant::BOOL,false));
     }  
 
     if(!p_plan->has_var("jump/is_jump"))
