@@ -218,7 +218,7 @@ bool DirAccessJAndroid::dir_exists(String p_dir) {
 	}
 }
 
-Error DirAccessJAndroid::make_dir_recursive(const String &p_dir) {
+Error DirAccessJAndroid::make_dir(String p_dir) {
 	// Check if the directory exists already
 	if (dir_exists(p_dir)) {
 		return ERR_ALREADY_EXISTS;
@@ -242,8 +242,12 @@ Error DirAccessJAndroid::make_dir_recursive(const String &p_dir) {
 	}
 }
 
-Error DirAccessJAndroid::make_dir(String p_dir) {
-	return make_dir_recursive(p_dir);
+Error DirAccessJAndroid::make_dir_recursive(const String &p_dir) {
+	Error err = make_dir(p_dir);
+	if (err != OK && err != ERR_ALREADY_EXISTS) {
+		ERR_FAIL_V_MSG(err, "Could not create directory: " + p_dir);
+	}
+	return OK;
 }
 
 Error DirAccessJAndroid::rename(String p_from, String p_to) {

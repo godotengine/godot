@@ -11,6 +11,7 @@ apply from: "../scripts/publish-module.gradle"
 
 dependencies {
     implementation "androidx.fragment:fragment:$versions.fragmentVersion"
+    implementation "org.bouncycastle:bcprov-jdk15to18:1.77"
 
     testImplementation "junit:junit:4.13.2"
 }

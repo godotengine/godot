@@ -105,7 +105,7 @@ class FileAccessHandler(val context: Context) {
 		}
 	}
 
-	private val storageScopeIdentifier = StorageScope.Identifier(context)
+	internal val storageScopeIdentifier = StorageScope.Identifier(context)
 	private val files = SparseArray<DataAccess>()
 	private var lastFileId = STARTING_FILE_ID
 

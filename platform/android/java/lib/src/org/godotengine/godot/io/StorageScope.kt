@@ -74,6 +74,14 @@ internal enum class StorageScope {
 		private val documentsSharedDir: String? = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).canonicalPath
 
 		/**
+		 * Determine if the given path is accessible.
+		 */
+		fun canAccess(path: String?): Boolean {
+			val storageScope = identifyStorageScope(path)
+			return storageScope == APP || storageScope == SHARED
+		}
+
+		/**
 		 * Determines which [StorageScope] the given path falls under.
 		 */
 		fun identifyStorageScope(path: String?): StorageScope {
