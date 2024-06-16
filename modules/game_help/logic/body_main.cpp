@@ -168,18 +168,10 @@ void CharacterBodyMain::init_main_body(String p_skeleton_file_path,StringName p_
 
 void CharacterBodyMain::set_character_ai(const Ref<CharacterAI> &p_ai)
 {
-    if(character_ai.is_valid() || p_ai.is_null())
-    {
-        return;
-    }
     character_ai = p_ai;
 }
 Ref<CharacterAI> CharacterBodyMain::get_character_ai()
 {
-    if(character_ai.is_valid())
-    {
-        character_ai.instantiate();
-    }
     return character_ai;
 }
 void CharacterBodyMain::load_skeleton()

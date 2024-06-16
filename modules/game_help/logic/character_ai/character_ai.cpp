@@ -92,3 +92,19 @@ void CharacterAI::execute(CharacterBodyMain *node,Blackboard* blackboard,Charact
     }
 
 }
+void CharacterAI::_bind_methods()
+{
+    ClassDB::bind_method(D_METHOD("set_inductor", "inductor"), &CharacterAI::set_inductor);
+    ClassDB::bind_method(D_METHOD("get_inductor"), &CharacterAI::get_inductor);
+
+    ClassDB::bind_method(D_METHOD("set_brain", "brain"), &CharacterAI::set_brain);
+    ClassDB::bind_method(D_METHOD("get_brain"), &CharacterAI::get_brain);
+
+    ClassDB::bind_method(D_METHOD("set_logic_node", "logic_node"), &CharacterAI::set_logic_node);
+    ClassDB::bind_method(D_METHOD("get_logic_node"), &CharacterAI::get_logic_node);
+
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "inductor", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAI_Inductor"), "set_inductor", "get_inductor");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "brain", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAI_Brain"), "set_brain", "get_brain");
+    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "logic_node", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("CharacterAILogicNode")), "set_logic_node", "get_logic_node");
+    
+}

@@ -12,7 +12,13 @@ class CharacterBodyMain;
 class CharacterAI_CheckBase : public RefCounted
 {
     GDCLASS(CharacterAI_CheckBase,RefCounted);
-    static void _bind_methods(){}
+    static void _bind_methods(){
+        
+        ClassDB::bind_method(D_METHOD("set_name","name"),&CharacterAI_CheckBase::set_name);
+        ClassDB::bind_method(D_METHOD("get_name"),&CharacterAI_CheckBase::get_name);
+
+        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME,"name"), "set_name","get_name");
+    }
     public:
     // 返回true 代表立即执行决策,否则大脑根据其他条件决策
     virtual bool execute(CharacterBodyMain *node, Blackboard* blackboard)
@@ -34,8 +40,19 @@ class CharacterAI_CheckBase : public RefCounted
         return false;
     }
 	GDVIRTUAL2R(bool,_execute,CharacterBodyMain*,Blackboard*)
+
+    void set_name(StringName name)
+    {
+        this->name = name;
+    }
+
+    StringName get_name()
+    {
+        return name;
+    }
     // 优先级
     int priority = 0;
+    StringName name;
 
 };
 
@@ -133,7 +150,13 @@ class CharacterAI_CheckPatrol : public CharacterAI_CheckBase
 class CharacterAI_Inductor : public RefCounted
 {
     GDCLASS(CharacterAI_Inductor,RefCounted);
-    static void _bind_methods(){}
+    static void _bind_methods()
+    {
+        ClassDB::bind_method(D_METHOD("set_check","check"),&CharacterAI_Inductor::set_check);
+        ClassDB::bind_method(D_METHOD("get_check"),&CharacterAI_Inductor::get_check);
+
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"check",PROPERTY_HINT_ARRAY_TYPE,MAKE_RESOURCE_TYPE_HINT("CharacterAI_CheckBase"),PROPERTY_USAGE_STORAGE), "set_check","get_check");
+    }
 public:
     struct SortCharacterCheck {
         bool operator()(const Ref<CharacterAI_CheckBase> &l, const Ref<CharacterAI_CheckBase> &r) const {
@@ -162,6 +185,23 @@ public:
         }
         return rs;
     }
+    void set_check(TypedArray<CharacterAI_CheckBase> check)
+    {
+        checks.clear();
+        for(uint32_t i=0;i<check.size();i++)
+        {
+            checks.push_back(check[i]);
+        }
+    }
+    TypedArray<CharacterAI_CheckBase> get_check()
+    {
+        TypedArray<CharacterAI_CheckBase> ret;
+        for(uint32_t i=0;i<checks.size();i++)
+        {
+            ret.push_back(checks[i]);
+        }
+        return ret;
+    }
 
     void sort_check()
     {
@@ -177,13 +217,16 @@ public:
     bool is_sort = false;
 };
 // 角色 AI 逻辑节点
-class CharacterAILogicNode : public Resource
+class CharacterAILogicNode : public RefCounted
 {
-    GDCLASS(CharacterAILogicNode,Resource);
+    GDCLASS(CharacterAILogicNode,RefCounted);
 
     static void _bind_methods()
     {
+        ClassDB::bind_method(D_METHOD("set_name","name"),&CharacterAILogicNode::set_name);
+        ClassDB::bind_method(D_METHOD("get_name"),&CharacterAILogicNode::get_name);
 
+        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME,"name"), "set_name","get_name");
     }
 public:
     void enter(CharacterBodyMain *node,Blackboard* blackboard)
@@ -229,9 +272,20 @@ public:
     {
 
     }
+
+    void set_name(StringName name)
+    {
+        this->name = name;
+    }
+
+    StringName get_name()
+    {
+        return name;
+    }
 	GDVIRTUAL2(_enter,CharacterBodyMain*,Blackboard*)
 	GDVIRTUAL2R(bool,_execute,CharacterBodyMain*,Blackboard*)
 	GDVIRTUAL2(_stop,CharacterBodyMain*,Blackboard*)
+    StringName name;
 };
 // 巡逻 AI 逻辑节点
 class CharacterAILogicNode_Patrol : public CharacterAILogicNode
@@ -532,34 +586,19 @@ public:
 class CharacterAI : public Resource
 {
     GDCLASS(CharacterAI,Resource);
-    static void _bind_methods()
-    {
-        ClassDB::bind_method(D_METHOD("set_inductor", "inductor"), &CharacterAI::set_inductor);
-        ClassDB::bind_method(D_METHOD("get_inductor"), &CharacterAI::get_inductor);
-
-        ClassDB::bind_method(D_METHOD("set_brain", "brain"), &CharacterAI::set_brain);
-        ClassDB::bind_method(D_METHOD("get_brain"), &CharacterAI::get_brain);
-
-        ClassDB::bind_method(D_METHOD("set_logic_node", "logic_node"), &CharacterAI::set_logic_node);
-        ClassDB::bind_method(D_METHOD("get_logic_node"), &CharacterAI::get_logic_node);
-
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "inductor", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAI_Brain"), "set_inductor", "get_inductor");
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "brain", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAI_Brain"), "set_brain", "get_brain");
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "logic_node", PROPERTY_HINT_ARRAY_TYPE, "CharacterAILogicNode"), "set_logic_node", "get_logic_node");
-        
-    }
+    static void _bind_methods();
 public:
-    void set_inductor(Ref<CharacterAI_Brain> p_inductor)
+    void set_inductor(const Ref<CharacterAI_Inductor>& p_inductor)
     {
         inductor = p_inductor;
     }
 
-    Ref<CharacterAI_Brain> get_inductor()
+    Ref<CharacterAI_Inductor> get_inductor()
     {
         return inductor;
     }
 
-    void set_brain(Ref<CharacterAI_Brain> p_brain)
+    void set_brain(const Ref<CharacterAI_Brain>& p_brain)
     {
         brain = p_brain;
     }
