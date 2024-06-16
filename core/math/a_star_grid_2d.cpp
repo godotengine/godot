@@ -127,13 +127,18 @@ void AStarGrid2D::update() {
 	}
 
 	points.clear();
+	solid_mask.clear();
 
 	const int32_t end_x = region.get_end().x;
 	const int32_t end_y = region.get_end().y;
 	const Vector2 half_cell_size = cell_size / 2;
+	for (int32_t x = region.position.x; x < end_x + 2; x++) {
+		solid_mask.push_back(true);
+	}
 
 	for (int32_t y = region.position.y; y < end_y; y++) {
 		LocalVector<Point> line;
+		solid_mask.push_back(true);
 		for (int32_t x = region.position.x; x < end_x; x++) {
 			Vector2 v = offset;
 			switch (cell_shape) {
@@ -150,8 +155,14 @@ void AStarGrid2D::update() {
 					break;
 			}
 			line.push_back(Point(Vector2i(x, y), v));
+			solid_mask.push_back(false);
 		}
+		solid_mask.push_back(true);
 		points.push_back(line);
+	}
+
+	for (int32_t x = region.position.x; x < end_x + 2; x++) {
+		solid_mask.push_back(true);
 	}
 
 	dirty = false;
@@ -207,13 +218,13 @@ AStarGrid2D::Heuristic AStarGrid2D::get_default_estimate_heuristic() const {
 void AStarGrid2D::set_point_solid(const Vector2i &p_id, bool p_solid) {
 	ERR_FAIL_COND_MSG(dirty, "Grid is not initialized. Call the update method.");
 	ERR_FAIL_COND_MSG(!is_in_boundsv(p_id), vformat("Can't set if point is disabled. Point %s out of bounds %s.", p_id, region));
-	_get_point_unchecked(p_id)->solid = p_solid;
+	_set_solid_unchecked(p_id, p_solid);
 }
 
 bool AStarGrid2D::is_point_solid(const Vector2i &p_id) const {
 	ERR_FAIL_COND_V_MSG(dirty, false, "Grid is not initialized. Call the update method.");
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_id), false, vformat("Can't get if point is disabled. Point %s out of bounds %s.", p_id, region));
-	return _get_point_unchecked(p_id)->solid;
+	return _get_solid_unchecked(p_id);
 }
 
 void AStarGrid2D::set_point_weight_scale(const Vector2i &p_id, real_t p_weight_scale) {
@@ -238,7 +249,7 @@ void AStarGrid2D::fill_solid_region(const Rect2i &p_region, bool p_solid) {
 
 	for (int32_t y = safe_region.position.y; y < end_y; y++) {
 		for (int32_t x = safe_region.position.x; x < end_x; x++) {
-			_get_point_unchecked(x, y)->solid = p_solid;
+			_set_solid_unchecked(x, y, p_solid);
 		}
 	}
 }
@@ -259,13 +270,6 @@ void AStarGrid2D::fill_weight_scale_region(const Rect2i &p_region, real_t p_weig
 }
 
 AStarGrid2D::Point *AStarGrid2D::_jump(Point *p_from, Point *p_to) {
-	if (!p_to || p_to->solid) {
-		return nullptr;
-	}
-	if (p_to == end) {
-		return p_to;
-	}
-
 	int32_t from_x = p_from->id.x;
 	int32_t from_y = p_from->id.y;
 
@@ -276,72 +280,109 @@ AStarGrid2D::Point *AStarGrid2D::_jump(Point *p_from, Point *p_to) {
 	int32_t dy = to_y - from_y;
 
 	if (diagonal_mode == DIAGONAL_MODE_ALWAYS || diagonal_mode == DIAGONAL_MODE_AT_LEAST_ONE_WALKABLE) {
-		if (dx != 0 && dy != 0) {
+		if (dx == 0 || dy == 0) {
+			return _forced_successor(to_x, to_y, dx, dy);
+		}
+
+		while (_is_walkable(to_x, to_y) && (diagonal_mode == DIAGONAL_MODE_ALWAYS || _is_walkable(to_x, to_y - dy) || _is_walkable(to_x - dx, to_y))) {
+			if (end->id.x == to_x && end->id.y == to_y) {
+				return end;
+			}
+
 			if ((_is_walkable(to_x - dx, to_y + dy) && !_is_walkable(to_x - dx, to_y)) || (_is_walkable(to_x + dx, to_y - dy) && !_is_walkable(to_x, to_y - dy))) {
-				return p_to;
+				return _get_point_unchecked(to_x, to_y);
 			}
-			if (_jump(p_to, _get_point(to_x + dx, to_y)) != nullptr) {
-				return p_to;
+
+			if (_forced_successor(to_x + dx, to_y, dx, 0) != nullptr || _forced_successor(to_x, to_y + dy, 0, dy) != nullptr) {
+				return _get_point_unchecked(to_x, to_y);
 			}
-			if (_jump(p_to, _get_point(to_x, to_y + dy)) != nullptr) {
-				return p_to;
-			}
-		} else {
-			if (dx != 0) {
-				if ((_is_walkable(to_x + dx, to_y + 1) && !_is_walkable(to_x, to_y + 1)) || (_is_walkable(to_x + dx, to_y - 1) && !_is_walkable(to_x, to_y - 1))) {
-					return p_to;
-				}
-			} else {
-				if ((_is_walkable(to_x + 1, to_y + dy) && !_is_walkable(to_x + 1, to_y)) || (_is_walkable(to_x - 1, to_y + dy) && !_is_walkable(to_x - 1, to_y))) {
-					return p_to;
-				}
-			}
+
+			to_x += dx;
+			to_y += dy;
 		}
-		if (_is_walkable(to_x + dx, to_y + dy) && (diagonal_mode == DIAGONAL_MODE_ALWAYS || (_is_walkable(to_x + dx, to_y) || _is_walkable(to_x, to_y + dy)))) {
-			return _jump(p_to, _get_point(to_x + dx, to_y + dy));
-		}
+
 	} else if (diagonal_mode == DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES) {
-		if (dx != 0 && dy != 0) {
+		if (dx == 0 || dy == 0) {
+			return _forced_successor(from_x, from_y, dx, dy, true);
+		}
+
+		while (_is_walkable(to_x, to_y) && _is_walkable(to_x, to_y - dy) && _is_walkable(to_x - dx, to_y)) {
+			if (end->id.x == to_x && end->id.y == to_y) {
+				return end;
+			}
+
 			if ((_is_walkable(to_x + dx, to_y + dy) && !_is_walkable(to_x, to_y + dy)) || !_is_walkable(to_x + dx, to_y)) {
-				return p_to;
+				return _get_point_unchecked(to_x, to_y);
 			}
-			if (_jump(p_to, _get_point(to_x + dx, to_y)) != nullptr) {
-				return p_to;
+
+			if (_forced_successor(to_x, to_y, dx, 0) != nullptr || _forced_successor(to_x, to_y, 0, dy) != nullptr) {
+				return _get_point_unchecked(to_x, to_y);
 			}
-			if (_jump(p_to, _get_point(to_x, to_y + dy)) != nullptr) {
-				return p_to;
-			}
-		} else {
-			if (dx != 0) {
-				if ((_is_walkable(to_x, to_y + 1) && !_is_walkable(to_x - dx, to_y + 1)) || (_is_walkable(to_x, to_y - 1) && !_is_walkable(to_x - dx, to_y - 1))) {
-					return p_to;
-				}
-			} else {
-				if ((_is_walkable(to_x + 1, to_y) && !_is_walkable(to_x + 1, to_y - dy)) || (_is_walkable(to_x - 1, to_y) && !_is_walkable(to_x - 1, to_y - dy))) {
-					return p_to;
-				}
-			}
+
+			to_x += dx;
+			to_y += dy;
 		}
-		if (_is_walkable(to_x + dx, to_y + dy) && _is_walkable(to_x + dx, to_y) && _is_walkable(to_x, to_y + dy)) {
-			return _jump(p_to, _get_point(to_x + dx, to_y + dy));
-		}
+
 	} else { // DIAGONAL_MODE_NEVER
-		if (dx != 0) {
-			if ((_is_walkable(to_x, to_y - 1) && !_is_walkable(to_x - dx, to_y - 1)) || (_is_walkable(to_x, to_y + 1) && !_is_walkable(to_x - dx, to_y + 1))) {
-				return p_to;
-			}
-		} else if (dy != 0) {
-			if ((_is_walkable(to_x - 1, to_y) && !_is_walkable(to_x - 1, to_y - dy)) || (_is_walkable(to_x + 1, to_y) && !_is_walkable(to_x + 1, to_y - dy))) {
-				return p_to;
-			}
-			if (_jump(p_to, _get_point(to_x + 1, to_y)) != nullptr) {
-				return p_to;
-			}
-			if (_jump(p_to, _get_point(to_x - 1, to_y)) != nullptr) {
-				return p_to;
-			}
+		if (dy == 0) {
+			return _forced_successor(from_x, from_y, dx, 0, true);
 		}
-		return _jump(p_to, _get_point(to_x + dx, to_y + dy));
+
+		while (_is_walkable(to_x, to_y)) {
+			if (end->id.x == to_x && end->id.y == to_y) {
+				return end;
+			}
+
+			if ((_is_walkable(to_x - 1, to_y) && !_is_walkable(to_x - 1, to_y - dy)) || (_is_walkable(to_x + 1, to_y) && !_is_walkable(to_x + 1, to_y - dy))) {
+				return _get_point_unchecked(to_x, to_y);
+			}
+
+			if (_forced_successor(to_x, to_y, 1, 0, true) != nullptr || _forced_successor(to_x, to_y, -1, 0, true) != nullptr) {
+				return _get_point_unchecked(to_x, to_y);
+			}
+
+			to_y += dy;
+		}
+	}
+
+	return nullptr;
+}
+
+AStarGrid2D::Point *AStarGrid2D::_forced_successor(int32_t p_x, int32_t p_y, int32_t p_dx, int32_t p_dy, bool p_inclusive) {
+	// Remembering previous results can improve performance.
+	bool l_prev = false, r_prev = false, l = false, r = false;
+
+	int32_t o_x = p_x, o_y = p_y;
+	if (p_inclusive) {
+		o_x += p_dx;
+		o_y += p_dy;
+	}
+
+	int32_t l_x = p_x - p_dy, l_y = p_y - p_dx;
+	int32_t r_x = p_x + p_dy, r_y = p_y + p_dx;
+
+	while (_is_walkable(o_x, o_y)) {
+		if (end->id.x == o_x && end->id.y == o_y) {
+			return end;
+		}
+
+		l_prev = l || _is_walkable(l_x, l_y);
+		r_prev = r || _is_walkable(r_x, r_y);
+
+		l_x += p_dx;
+		l_y += p_dy;
+		r_x += p_dx;
+		r_y += p_dy;
+
+		l = _is_walkable(l_x, l_y);
+		r = _is_walkable(r_x, r_y);
+
+		if ((l && !l_prev) || (r && !r_prev)) {
+			return _get_point_unchecked(o_x, o_y);
+		}
+
+		o_x += p_dx;
+		o_y += p_dy;
 	}
 	return nullptr;
 }
@@ -394,19 +435,19 @@ void AStarGrid2D::_get_nbors(Point *p_point, LocalVector<Point *> &r_nbors) {
 		}
 	}
 
-	if (top && !top->solid) {
+	if (top && !_get_solid_unchecked(top->id)) {
 		r_nbors.push_back(top);
 		ts0 = true;
 	}
-	if (right && !right->solid) {
+	if (right && !_get_solid_unchecked(right->id)) {
 		r_nbors.push_back(right);
 		ts1 = true;
 	}
-	if (bottom && !bottom->solid) {
+	if (bottom && !_get_solid_unchecked(bottom->id)) {
 		r_nbors.push_back(bottom);
 		ts2 = true;
 	}
-	if (left && !left->solid) {
+	if (left && !_get_solid_unchecked(left->id)) {
 		r_nbors.push_back(left);
 		ts3 = true;
 	}
@@ -436,16 +477,16 @@ void AStarGrid2D::_get_nbors(Point *p_point, LocalVector<Point *> &r_nbors) {
 			break;
 	}
 
-	if (td0 && (top_left && !top_left->solid)) {
+	if (td0 && (top_left && !_get_solid_unchecked(top_left->id))) {
 		r_nbors.push_back(top_left);
 	}
-	if (td1 && (top_right && !top_right->solid)) {
+	if (td1 && (top_right && !_get_solid_unchecked(top_right->id))) {
 		r_nbors.push_back(top_right);
 	}
-	if (td2 && (bottom_right && !bottom_right->solid)) {
+	if (td2 && (bottom_right && !_get_solid_unchecked(bottom_right->id))) {
 		r_nbors.push_back(bottom_right);
 	}
-	if (td3 && (bottom_left && !bottom_left->solid)) {
+	if (td3 && (bottom_left && !_get_solid_unchecked(bottom_left->id))) {
 		r_nbors.push_back(bottom_left);
 	}
 }
@@ -454,7 +495,7 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 	last_closest_point = nullptr;
 	pass++;
 
-	if (p_end_point->solid) {
+	if (_get_solid_unchecked(p_end_point->id)) {
 		return false;
 	}
 
@@ -500,7 +541,7 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 					continue;
 				}
 			} else {
-				if (e->solid || e->closed_pass == pass) {
+				if (_get_solid_unchecked(e->id) || e->closed_pass == pass) {
 					continue;
 				}
 				weight_scale = e->weight_scale;
@@ -580,7 +621,7 @@ TypedArray<Dictionary> AStarGrid2D::get_point_data_in_region(const Rect2i &p_reg
 			Dictionary dict;
 			dict["id"] = p.id;
 			dict["position"] = p.pos;
-			dict["solid"] = p.solid;
+			dict["solid"] = _get_solid_unchecked(p.id);
 			dict["weight_scale"] = p.weight_scale;
 			data.push_back(dict);
 		}
