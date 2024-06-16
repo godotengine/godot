@@ -133,16 +133,16 @@ class HashTable {
   HashTable(const HashTable& other)
       : keys_(other.keys_),
         values_(other.values_),
-        used_(other.used_),
+        used_(other.used_.load()),
         step_(other.step_) {}
 
   HashTable& operator=(const HashTable& other) {
-    if (this == &other) return *this;
-    keys_ = other.keys_;
-    values_ = other.values_;
-    used_.store(other.used_.load());
-    step_ = other.step_;
-    return *this;
+      if (this == &other) return *this;
+      keys_ = other.keys_;
+      values_ = other.values_;
+      used_.store(other.used_.load());
+      step_ = other.step_;
+      return *this;
   }
 
   HashTableD<V, H> D() { return {keys_, values_, used_, step_}; }
