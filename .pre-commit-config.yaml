@@ -162,6 +162,7 @@ repos:
             modules/gdscript/tests/scripts/parser/features/mixed_indentation_on_blank_lines\.gd$|
             modules/gdscript/tests/scripts/parser/warnings/empty_file_newline_comment\.notest\.gd$|
             modules/gdscript/tests/scripts/parser/warnings/empty_file_newline\.notest\.gd$|
+            platform/android/java/editor/src/main/java/com/android/.*|
             platform/android/java/lib/src/com/google/.*
           )
 
