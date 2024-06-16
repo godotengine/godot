@@ -460,32 +460,56 @@ void CSGShape3D::_update_shape() {
 	_update_collision_faces();
 }
 
-void CSGShape3D::_update_collision_faces() {
-	if (use_collision && is_root_shape() && root_collision_shape.is_valid()) {
-		CSGBrush *n = _get_brush();
-		ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
-		Vector<Vector3> physics_faces;
-		physics_faces.resize(n->faces.size() * 3);
-		Vector3 *physicsw = physics_faces.ptrw();
+Vector<Vector3> CSGShape3D::_get_brush_collision_faces() {
+	Vector<Vector3> collision_faces;
+	CSGBrush *n = _get_brush();
+	ERR_FAIL_NULL_V_MSG(n, collision_faces, "Cannot get CSGBrush.");
+	collision_faces.resize(n->faces.size() * 3);
+	Vector3 *collision_faces_ptrw = collision_faces.ptrw();
 
-		for (int i = 0; i < n->faces.size(); i++) {
-			int order[3] = { 0, 1, 2 };
+	for (int i = 0; i < n->faces.size(); i++) {
+		int order[3] = { 0, 1, 2 };
 
-			if (n->faces[i].invert) {
-				SWAP(order[1], order[2]);
-			}
-
-			physicsw[i * 3 + 0] = n->faces[i].vertices[order[0]];
-			physicsw[i * 3 + 1] = n->faces[i].vertices[order[1]];
-			physicsw[i * 3 + 2] = n->faces[i].vertices[order[2]];
+		if (n->faces[i].invert) {
+			SWAP(order[1], order[2]);
 		}
 
-		root_collision_shape->set_faces(physics_faces);
+		collision_faces_ptrw[i * 3 + 0] = n->faces[i].vertices[order[0]];
+		collision_faces_ptrw[i * 3 + 1] = n->faces[i].vertices[order[1]];
+		collision_faces_ptrw[i * 3 + 2] = n->faces[i].vertices[order[2]];
+	}
+
+	return collision_faces;
+}
+
+void CSGShape3D::_update_collision_faces() {
+	if (use_collision && is_root_shape() && root_collision_shape.is_valid()) {
+		root_collision_shape->set_faces(_get_brush_collision_faces());
 
 		if (_is_debug_collision_shape_visible()) {
 			_update_debug_collision_shape();
 		}
 	}
+}
+
+Ref<ArrayMesh> CSGShape3D::bake_static_mesh() {
+	Ref<ArrayMesh> baked_mesh;
+	if (is_root_shape() && root_mesh.is_valid()) {
+		baked_mesh = root_mesh;
+	}
+	return baked_mesh;
+}
+
+Ref<ConcavePolygonShape3D> CSGShape3D::bake_collision_shape() {
+	Ref<ConcavePolygonShape3D> baked_collision_shape;
+	if (is_root_shape() && root_collision_shape.is_valid()) {
+		baked_collision_shape.instantiate();
+		baked_collision_shape->set_faces(root_collision_shape->get_faces());
+	} else if (is_root_shape()) {
+		baked_collision_shape.instantiate();
+		baked_collision_shape->set_faces(_get_brush_collision_faces());
+	}
+	return baked_collision_shape;
 }
 
 bool CSGShape3D::_is_debug_collision_shape_visible() {
@@ -703,6 +727,9 @@ void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_calculating_tangents"), &CSGShape3D::is_calculating_tangents);
 
 	ClassDB::bind_method(D_METHOD("get_meshes"), &CSGShape3D::get_meshes);
+
+	ClassDB::bind_method(D_METHOD("bake_static_mesh"), &CSGShape3D::bake_static_mesh);
+	ClassDB::bind_method(D_METHOD("bake_collision_shape"), &CSGShape3D::bake_collision_shape);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "snap", PROPERTY_HINT_RANGE, "0.000001,1,0.000001,suffix:m"), "set_snap", "get_snap");
