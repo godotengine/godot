@@ -13,8 +13,7 @@ if env_csg["disable_exceptions"]:
         env_csg.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 1)], CCFLAGS=["/EHsc"])
     else:
         env_csg.Append(CXXFLAGS=["-fexceptions"])
-        if env_csg["platform"] == "web":
-            env_csg.Append(CXXFLAGS=["-fwasm-exceptions"])
+
 
 thirdparty_dir = "#thirdparty/manifold/"
 thirdparty_sources = [
@@ -42,6 +41,7 @@ thirdparty_sources = [
 env_csg.Append(CPPDEFINES=["THRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CPP"])
 if env["platform"] == "web":
     env_csg.Append(CPPDEFINES=["_LIBCUDACXX_HAS_THREAD_API_EXTERNAL", "_LIBCUDACXX_HAS_THREAD_API_CUDA"])
+    env_csg.Append(CCFLAGS=["-sDISABLE_EXCEPTION_CATCHING=0"])
     env_csg.Append(LINKFLAGS=["-sERROR_ON_UNDEFINED_SYMBOLS=0"])
 
 env_csg.Prepend(
