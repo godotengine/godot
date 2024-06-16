@@ -50,6 +50,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.vending.expansion.downloader.*
+import org.godotengine.godot.error.Error
 import org.godotengine.godot.input.GodotEditText
 import org.godotengine.godot.input.GodotInputHandler
 import org.godotengine.godot.io.directory.DirectoryAccessHandler
@@ -96,7 +97,6 @@ class Godot(private val context: Context) {
 		fun isEditorBuild() = BuildConfig.FLAVOR == EDITOR_FLAVOR
 	}
 
-	private val windowManager: WindowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 	private val mSensorManager: SensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 	private val mClipboard: ClipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 	private val vibratorService: Vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
@@ -1053,5 +1053,21 @@ class Godot(private val context: Context) {
 	@Keep
 	private fun nativeDumpBenchmark(benchmarkFile: String) {
 		dumpBenchmark(fileAccessHandler, benchmarkFile)
+	}
+
+	@Keep
+	private fun nativeSignApk(inputPath: String,
+							  outputPath: String,
+							  keystorePath: String,
+							  keystoreUser: String,
+							  keystorePassword: String): Int {
+		val signResult = primaryHost?.signApk(inputPath, outputPath, keystorePath, keystoreUser, keystorePassword) ?: Error.ERR_UNAVAILABLE
+		return signResult.toNativeValue()
+	}
+
+	@Keep
+	private fun nativeVerifyApk(apkPath: String): Int {
+		val verifyResult = primaryHost?.verifyApk(apkPath) ?: Error.ERR_UNAVAILABLE
+		return verifyResult.toNativeValue()
 	}
 }
