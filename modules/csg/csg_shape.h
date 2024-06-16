@@ -455,26 +455,4 @@ VARIANT_ENUM_CAST(CSGPolygon3D::Mode)
 VARIANT_ENUM_CAST(CSGPolygon3D::PathRotation)
 VARIANT_ENUM_CAST(CSGPolygon3D::PathIntervalType)
 
-class CSGConvexHull3D : public CSGPrimitive3D {
-	GDCLASS(CSGConvexHull3D, CSGPrimitive3D);
-
-private:
-	virtual CSGBrush *_build_brush() override;
-
-	Vector<Vector3> points;
-	Ref<Material> material;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_points(const Vector<Vector3> &p_points);
-	Vector<Vector3> get_points() const;
-
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
-
-	CSGConvexHull3D();
-};
-
 #endif // CSG_SHAPE_H

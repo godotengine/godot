@@ -48,7 +48,6 @@ void initialize_csg_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(CSGCylinder3D);
 		GDREGISTER_CLASS(CSGTorus3D);
 		GDREGISTER_CLASS(CSGPolygon3D);
-		GDREGISTER_CLASS(CSGConvexHull3D);
 		GDREGISTER_CLASS(CSGCombiner3D);
 	}
 #ifdef TOOLS_ENABLED
