@@ -312,6 +312,10 @@ bool CodeSignCodeResources::add_folder_recursive(const String &p_root, const Str
 					info_path = path.path_join(vformat("Versions/%s/Resources/Info.plist", fmw_ver));
 					main_exe = path.path_join(vformat("Versions/%s", fmw_ver));
 					bundle = true;
+				} else if (da->file_exists(path.path_join("Resources/Info.plist"))) {
+					info_path = path.path_join("Resources/Info.plist");
+					main_exe = path;
+					bundle = true;
 				} else if (da->file_exists(path.path_join("Info.plist"))) {
 					info_path = path.path_join("Info.plist");
 					main_exe = path;
@@ -1309,7 +1313,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 			cr.add_rule2("^_CodeSignature", "omit", 2000, false);
 			cr.add_rule2("^CodeResources", "omit", 2000, false);
 		} else {
-			cr.add_rule1("^Resources/");
+			cr.add_rule1("^Resources($|/)");
 			cr.add_rule1("^Resources/.*\\.lproj/", "optional", 1000);
 			cr.add_rule1("^Resources/.*\\.lproj/locversion.plist$", "omit", 1100);
 			cr.add_rule1("^Resources/Base\\.lproj/", "", 1010);
@@ -1321,7 +1325,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 			cr.add_rule2("^.*");
 			cr.add_rule2("^Info\\.plist$", "omit", 20);
 			cr.add_rule2("^PkgInfo$", "omit", 20);
-			cr.add_rule2("^Resources/", "", 20);
+			cr.add_rule2("^Resources($|/)", "", 20);
 			cr.add_rule2("^Resources/.*\\.lproj/", "optional", 1000);
 			cr.add_rule2("^Resources/.*\\.lproj/locversion.plist$", "omit", 1100);
 			cr.add_rule2("^Resources/Base\\.lproj/", "", 1010);
@@ -1539,6 +1543,11 @@ Error CodeSign::codesign(bool p_use_hardened_runtime, bool p_force, const String
 			info_path = p_path.path_join(vformat("Versions/%s/Resources/Info.plist", fmw_ver));
 			main_exe = p_path.path_join(vformat("Versions/%s", fmw_ver));
 			bundle_path = p_path.path_join(vformat("Versions/%s", fmw_ver));
+			bundle = true;
+		} else if (da->file_exists(p_path.path_join("Resources/Info.plist"))) {
+			info_path = p_path.path_join("Resources/Info.plist");
+			main_exe = p_path;
+			bundle_path = p_path;
 			bundle = true;
 		} else if (da->file_exists(p_path.path_join("Info.plist"))) {
 			info_path = p_path.path_join("Info.plist");

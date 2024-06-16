@@ -19,7 +19,7 @@
 # Guy Dadon <guydadon14@gmail.com>, 2020.
 # bruvzg <bruvzg13@gmail.com>, 2020.
 # Omer I.S. <omeritzicschwartz@gmail.com>, 2021.
-# Ram Tourgeman <ramtorgeman@gmail.com>, 2021, 2023.
+# Ram Tourgeman <ramtorgeman@gmail.com>, 2021, 2023, 2024.
 # Shailee Eliyahu <dev.sle.il@gmail.com>, 2021.
 # Mati Borlak <matiborlak@gmail.com>, 2022.
 # Tamir Livneh <fkeyzuwu@gmail.com>, 2022.
@@ -42,8 +42,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-05-05 16:13+0000\n"
-"Last-Translator: Ofir Tzriker <ofirc36@gmail.com>\n"
+"PO-Revision-Date: 2024-06-10 12:09+0000\n"
+"Last-Translator: Ram Tourgeman <ramtorgeman@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/godot/"
 "he/>\n"
 "Language: he\n"
@@ -52,7 +52,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && n "
 "% 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 5.5.3\n"
+"X-Generator: Weblate 5.6-dev\n"
 
 msgid "Main Thread"
 msgstr "תהליכון ראשי"
@@ -122,6 +122,9 @@ msgstr "ג'ויסטיק 4 ציר-Y"
 
 msgid "Unknown Joypad Axis"
 msgstr "ציר ג'ויפד לא ידוע"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "ג'ויסטיק על ציר %d (%s) עם הערך %.2f"
 
 msgid "D-pad Up"
 msgstr "כרית כיוונית מעלה"
@@ -1572,6 +1575,12 @@ msgstr "ייבוא פרופיל(ים)"
 msgid "Manage Editor Feature Profiles"
 msgstr "נהל פרופילי תכונות העורך"
 
+msgid "Restart"
+msgstr "הפעלה מחדש"
+
+msgid "Save & Restart"
+msgstr "שמירה והפעלה מחדש"
+
 msgid "ScanSources"
 msgstr "סריקת מקורות"
 
@@ -2253,9 +2262,6 @@ msgstr "פריסת עורך"
 msgid "Take Screenshot"
 msgstr "שמירת צילום מסך"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "צילומי מסך נשמרים בתיקיית נתוני/הגדרות העורך."
-
 msgid "Toggle Fullscreen"
 msgstr "הפעלה/ביטול של מסך מלא"
 
@@ -2285,9 +2291,6 @@ msgstr "דיווח על תקלה (באג)"
 
 msgid "Send Docs Feedback"
 msgstr "שליחת משוב על התיעוד"
-
-msgid "Save & Restart"
-msgstr "שמירה והפעלה מחדש"
 
 msgid "Update Continuously"
 msgstr "עדכון רציף"
@@ -2328,12 +2331,6 @@ msgid ""
 msgstr ""
 "הקבצים הבאים הם חדשים בכונן.\n"
 "באילו פעולות לנקוט?"
-
-msgid "Reload"
-msgstr "רענון"
-
-msgid "Resave"
-msgstr "שמירה מחדש"
 
 msgid "New Inherited"
 msgstr "חדש בירושה"
@@ -2553,6 +2550,12 @@ msgid ""
 "for official releases."
 msgstr "לא נמצאו קישורי הורדה לגרסה זו. הורדה ישירה זמינה רק במהדורות הרשמיות."
 
+msgid "Connecting..."
+msgstr "מתבצעת התחברות…"
+
+msgid "Requesting..."
+msgstr "מוגשת בקשה…"
+
 msgid "Invalid version.txt format inside the export templates file: %s."
 msgstr "תבנית ה־version.txt שגויה בתוך קובץ התבניות לייצוא: %s."
 
@@ -2634,6 +2637,9 @@ msgstr "צפייה בבעלים…"
 msgid "Reimport"
 msgstr "ייבוא מחדש"
 
+msgid "Open in File Manager"
+msgstr "פתיחה במנהל הקבצים"
+
 msgid "New Folder..."
 msgstr "תיקייה חדשה…"
 
@@ -2645,9 +2651,6 @@ msgstr "שכפול…"
 
 msgid "Rename..."
 msgstr "שינוי שם…"
-
-msgid "Open in File Manager"
-msgstr "פתיחה במנהל הקבצים"
 
 msgid "Re-Scan Filesystem"
 msgstr "סריקת מערכת הקבצים מחדש"
@@ -3344,12 +3347,6 @@ msgstr "הורדה…"
 msgid "Resolving..."
 msgstr "מברר כתובת..."
 
-msgid "Connecting..."
-msgstr "מתבצעת התחברות…"
-
-msgid "Requesting..."
-msgstr "מוגשת בקשה…"
-
 msgid "Error making request"
 msgstr "שגיאה בביצוע בקשה"
 
@@ -3464,12 +3461,6 @@ msgstr "רשת"
 msgid "Insert Key"
 msgstr "הכנסת מפתח"
 
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "לא ניתן ליצור מפרקים מרובים ללא שורש."
-
-msgid "Restart"
-msgstr "הפעלה מחדש"
-
 msgid "Deploy with Remote Debug"
 msgstr "הטעמה עם ניפוי שגיאות מרחוק"
 
@@ -3517,9 +3508,6 @@ msgstr "שינוי רדיוס לצורת גליל"
 
 msgid "Change Cylinder Shape Height"
 msgstr "שינוי גובה לצורת גליל"
-
-msgid "Change Particles AABB"
-msgstr "שינוי חלקיקים AABB"
 
 msgid "Change Light Radius"
 msgstr "שינוי רדיוס תאורה"
@@ -3693,9 +3681,6 @@ msgstr "הדבקת משאב"
 msgid "Load Resource"
 msgstr "טעינת משאב"
 
-msgid "Clear Recent Files"
-msgstr "מחיקת קבצים אחרונים"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "לא יכול לפתוח את '%s'. יכול להיות שהקובץ הועבר או נמחק."
 
@@ -3725,6 +3710,9 @@ msgstr "שגיאה בשמירה"
 
 msgid "Save Theme As..."
 msgstr "שמירת ערכת עיצוב בשם…"
+
+msgid "Online Docs"
+msgstr "מסמכים מקוונים"
 
 msgid "%s Class Reference"
 msgstr "הפניה למחלקה %s"
@@ -3771,9 +3759,6 @@ msgstr "הרצה"
 msgid "Search"
 msgstr "חיפוש"
 
-msgid "Online Docs"
-msgstr "מסמכים מקוונים"
-
 msgid "Go to previous edited document."
 msgstr "מעבר למסמך הקודם שנערך."
 
@@ -3783,12 +3768,14 @@ msgstr "מעבר למסמך הבא שנערך."
 msgid "Discard"
 msgstr "התעלמות"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?:"
-msgstr ""
-"הקבצים הבאים הם חדשים בכונן.\n"
-"באילו פעולות לנקוט?:"
+msgid "Uppercase"
+msgstr "אותיות גדולות"
+
+msgid "Lowercase"
+msgstr "אותיות קטנות"
+
+msgid "Capitalize"
+msgstr "הגדלת אות ראשונה"
 
 msgid "Standard"
 msgstr "רגיל"
@@ -3798,15 +3785,6 @@ msgstr "עבור לפונקציה"
 
 msgid "Pick Color"
 msgstr "בחירת צבע"
-
-msgid "Uppercase"
-msgstr "אותיות גדולות"
-
-msgid "Lowercase"
-msgstr "אותיות קטנות"
-
-msgid "Capitalize"
-msgstr "הגדלת אות ראשונה"
 
 msgid "Convert Case"
 msgstr "החלפת מצב רשיות"
@@ -3849,6 +3827,12 @@ msgstr "איפוס התקריב"
 
 msgid "Size"
 msgstr "גודל"
+
+msgid "Reload"
+msgstr "רענון"
+
+msgid "Resave"
+msgstr "שמירה מחדש"
 
 msgid "Types:"
 msgstr "סוגים:"

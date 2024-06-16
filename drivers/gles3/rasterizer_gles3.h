@@ -56,7 +56,7 @@ private:
 	float delta = 0;
 
 	double time_total = 0.0;
-	bool flip_xy_bugfix = false;
+	bool flip_xy_workaround = false;
 
 	static bool gles_over_gl;
 

@@ -1718,6 +1718,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 }
 
 void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
+	bool updated = false;
 	for (const String &file : p_script_paths) {
 		ERR_CONTINUE(file.is_empty());
 		EditorFileSystemDirectory *fs = nullptr;
@@ -1747,6 +1748,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 
 				memdelete(fs->files[cpos]);
 				fs->files.remove_at(cpos);
+				updated = true;
 			}
 		} else {
 			String type = ResourceLoader::get_resource_type(file);
@@ -1814,12 +1816,15 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			if (fs->files[cpos]->type == SNAME("PackedScene")) {
 				_queue_update_scene_groups(file);
 			}
+			updated = true;
 		}
 	}
 
-	_update_pending_script_classes();
-	_update_pending_scene_groups();
-	call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
+	if (updated) {
+		_update_pending_script_classes();
+		_update_pending_scene_groups();
+		call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
+	}
 }
 
 HashSet<String> EditorFileSystem::get_valid_extensions() const {

@@ -350,7 +350,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an
 	Error err = internal_scene->pack(internal);
 	REQUIRE(err == OK);
 
-	const String internal_path = OS::get_singleton()->get_cache_path().path_join("instance_placeholder_test_internal.tscn");
+	const String internal_path = TestUtils::get_temp_path("instance_placeholder_test_internal.tscn");
 	err = ResourceSaver::save(internal_scene, internal_path);
 	REQUIRE(err == OK);
 
@@ -379,7 +379,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an
 	err = main_scene->pack(root);
 	REQUIRE(err == OK);
 
-	const String main_path = OS::get_singleton()->get_cache_path().path_join("instance_placeholder_test_main.tscn");
+	const String main_path = TestUtils::get_temp_path("instance_placeholder_test_main.tscn");
 	err = ResourceSaver::save(main_scene, main_path);
 	REQUIRE(err == OK);
 
@@ -439,7 +439,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an
 	Error err = internal_scene->pack(internal);
 	REQUIRE(err == OK);
 
-	const String internal_path = OS::get_singleton()->get_cache_path().path_join("instance_placeholder_test_internal_override.tscn");
+	const String internal_path = TestUtils::get_temp_path("instance_placeholder_test_internal_override.tscn");
 	err = ResourceSaver::save(internal_scene, internal_path);
 	REQUIRE(err == OK);
 
@@ -480,7 +480,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an
 	err = main_scene->pack(root);
 	REQUIRE(err == OK);
 
-	const String main_path = OS::get_singleton()->get_cache_path().path_join("instance_placeholder_test_main_override.tscn");
+	const String main_path = TestUtils::get_temp_path("instance_placeholder_test_main_override.tscn");
 	err = ResourceSaver::save(main_scene, main_path);
 	REQUIRE(err == OK);
 

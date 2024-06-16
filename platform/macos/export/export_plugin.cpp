@@ -1237,8 +1237,16 @@ Error EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPres
 		}
 
 		if (extensions_to_sign.has(current_file.get_extension())) {
-			int ftype = MachO::get_filetype(current_file_path);
-			Error code_sign_error{ _code_sign(p_preset, current_file_path, (ftype == 2 || ftype == 5) ? p_helper_ent_path : p_ent_path, false, (ftype == 2 || ftype == 5)) };
+			String ent_path = p_ent_path;
+			bool set_bundle_id = false;
+			if (FileAccess::exists(current_file_path)) {
+				int ftype = MachO::get_filetype(current_file_path);
+				if (ftype == 2 || ftype == 5) {
+					ent_path = p_helper_ent_path;
+					set_bundle_id = true;
+				}
+			}
+			Error code_sign_error{ _code_sign(p_preset, current_file_path, ent_path, false, set_bundle_id) };
 			if (code_sign_error != OK) {
 				return code_sign_error;
 			}
@@ -1358,8 +1366,16 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 			err = _code_sign_directory(p_preset, p_in_app_path, p_ent_path, p_helper_ent_path, p_should_error_on_non_code_sign);
 		} else {
 			if (extensions_to_sign.has(p_in_app_path.get_extension())) {
-				int ftype = MachO::get_filetype(p_in_app_path);
-				err = _code_sign(p_preset, p_in_app_path, (ftype == 2 || ftype == 5) ? p_helper_ent_path : p_ent_path, false, (ftype == 2 || ftype == 5));
+				String ent_path = p_ent_path;
+				bool set_bundle_id = false;
+				if (FileAccess::exists(p_in_app_path)) {
+					int ftype = MachO::get_filetype(p_in_app_path);
+					if (ftype == 2 || ftype == 5) {
+						ent_path = p_helper_ent_path;
+						set_bundle_id = true;
+					}
+				}
+				err = _code_sign(p_preset, p_in_app_path, ent_path, false, set_bundle_id);
 			}
 			if (dir_access->file_exists(p_in_app_path) && is_executable(p_in_app_path)) {
 				// chmod with 0755 if the file is executable.
