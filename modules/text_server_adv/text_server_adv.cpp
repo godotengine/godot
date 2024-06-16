@@ -6052,6 +6052,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 		unsigned int last_cluster_index = 0;
 		bool last_cluster_valid = true;
 
+		double adv_rem = 0.0;
 		for (unsigned int i = 0; i < glyph_count; i++) {
 			if ((i > 0) && (last_cluster_id != glyph_info[i].cluster)) {
 				if (p_direction == HB_DIRECTION_RTL || p_direction == HB_DIRECTION_BTT) {
@@ -6097,21 +6098,31 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 			gl.index = glyph_info[i].codepoint;
 			if (gl.index != 0) {
 				_ensure_glyph(fd, fss, gl.index | mod);
+				if (subpos) {
+					gl.x_off = (double)glyph_pos[i].x_offset / (64.0 / scale);
+				} else if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
+					gl.x_off = Math::round(adv_rem + ((double)glyph_pos[i].x_offset / (64.0 / scale)));
+				} else {
+					gl.x_off = Math::round((double)glyph_pos[i].x_offset / (64.0 / scale));
+				}
+				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
+					gl.y_off = -Math::round((double)glyph_pos[i].y_offset / (64.0 / scale));
+				} else {
+					gl.y_off = -Math::round(adv_rem + ((double)glyph_pos[i].y_offset / (64.0 / scale)));
+				}
 				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 					if (subpos) {
 						gl.advance = (double)glyph_pos[i].x_advance / (64.0 / scale) + ea;
 					} else {
-						gl.advance = Math::round((double)glyph_pos[i].x_advance / (64.0 / scale) + ea);
+						double full_adv = adv_rem + ((double)glyph_pos[i].x_advance / (64.0 / scale) + ea);
+						gl.advance = Math::round(full_adv);
+						adv_rem = full_adv - gl.advance;
 					}
 				} else {
-					gl.advance = -Math::round((double)glyph_pos[i].y_advance / (64.0 / scale));
+					double full_adv = adv_rem + ((double)glyph_pos[i].y_advance / (64.0 / scale));
+					gl.advance = -Math::round(full_adv);
+					adv_rem = full_adv + gl.advance;
 				}
-				if (subpos) {
-					gl.x_off = (double)glyph_pos[i].x_offset / (64.0 / scale);
-				} else {
-					gl.x_off = Math::round((double)glyph_pos[i].x_offset / (64.0 / scale));
-				}
-				gl.y_off = -Math::round((double)glyph_pos[i].y_offset / (64.0 / scale));
 				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 					gl.y_off += _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
 				} else {
