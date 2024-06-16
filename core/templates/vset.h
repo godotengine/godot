@@ -31,12 +31,11 @@
 #ifndef VSET_H
 #define VSET_H
 
-#include "core/templates/vector.h"
-#include "core/typedefs.h"
+#include "core/templates/local_vector.h"
 
 template <typename T>
 class VSet {
-	Vector<T> _data;
+	LocalVector<T> _data;
 
 	_FORCE_INLINE_ int _find(const T &p_val, bool &r_exact) const {
 		r_exact = false;
@@ -59,16 +58,16 @@ class VSet {
 			middle = (low + high) / 2;
 
 			if (p_val < a[middle]) {
-				high = middle - 1; //search low end of array
+				high = middle - 1; // Search the low end of the array.
 			} else if (a[middle] < p_val) {
-				low = middle + 1; //search high end of array
+				low = middle + 1; // Search the high end of the array.
 			} else {
 				r_exact = true;
 				return middle;
 			}
 		}
 
-		//return the position where this would be inserted
+		// Return the position where this would be inserted.
 		if (a[middle] < p_val) {
 			middle++;
 		}
@@ -89,9 +88,9 @@ class VSet {
 			middle = (low + high) / 2;
 
 			if (p_val < a[middle]) {
-				high = middle - 1; //search low end of array
+				high = middle - 1; // Search the low end of the array.
 			} else if (a[middle] < p_val) {
-				low = middle + 1; //search high end of array
+				low = middle + 1; // Search the high end of the array.
 			} else {
 				return middle;
 			}
@@ -131,7 +130,7 @@ public:
 	_FORCE_INLINE_ int size() const { return _data.size(); }
 
 	inline T &operator[](int p_index) {
-		return _data.write[p_index];
+		return _data[p_index];
 	}
 
 	inline const T &operator[](int p_index) const {
