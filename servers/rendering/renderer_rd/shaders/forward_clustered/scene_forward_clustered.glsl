@@ -186,7 +186,7 @@ vec3 double_add_vec3(vec3 base_a, vec3 prec_a, vec3 base_b, vec3 prec_b, out vec
 }
 #endif
 
-void vertex_shader(vec3 vertex_input,
+void vertex_shader(in bool is_prev_frame, vec3 vertex_input,
 #ifdef NORMAL_USED
 		in vec3 normal_input,
 #endif
@@ -390,6 +390,8 @@ void vertex_shader(vec3 vertex_input,
 	mat4 read_view_matrix = scene_data.view_matrix;
 	vec2 read_viewport_size = scene_data.viewport_size;
 
+	const bool prev_frame_switch = is_prev_frame;
+
 	{
 #CODE : VERTEX
 	}
@@ -581,7 +583,7 @@ void main() {
 			prev_vertex);
 
 	global_time = scene_data_block.prev_data.time;
-	vertex_shader(prev_vertex,
+	vertex_shader(/*is_prev_frame=*/true, prev_vertex,
 #ifdef NORMAL_USED
 			prev_normal,
 #endif
@@ -620,7 +622,7 @@ void main() {
 
 	// Current vertex.
 	global_time = scene_data_block.data.time;
-	vertex_shader(vertex,
+	vertex_shader(/*is_prev_frame=*/false, vertex,
 #ifdef NORMAL_USED
 			normal,
 #endif
