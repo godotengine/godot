@@ -79,7 +79,7 @@ void RendererCanvasCull::_render_canvas_item_tree(RID p_to_render_target, Canvas
 	}
 }
 
-void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, Transform2D p_transform, RendererCanvasCull::Item *p_material_owner, const Color &p_modulate, RendererCanvasCull::Item **r_items, int &r_index, int p_z) {
+void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, const Transform2D &p_transform, RendererCanvasCull::Item *p_material_owner, const Color &p_modulate, RendererCanvasCull::Item **r_items, int &r_index, int p_z) {
 	int child_item_count = p_canvas_item->child_items.size();
 	RendererCanvasCull::Item **child_items = p_canvas_item->child_items.ptrw();
 	for (int i = 0; i < child_item_count; i++) {
@@ -93,6 +93,11 @@ void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, Transform2
 				child_items[i]->ysort_modulate = p_modulate;
 				child_items[i]->ysort_index = r_index;
 				child_items[i]->ysort_parent_abs_z_index = p_z;
+
+				if (!child_items[i]->repeat_source) {
+					child_items[i]->repeat_size = p_canvas_item->repeat_size;
+					child_items[i]->repeat_times = p_canvas_item->repeat_times;
+				}
 
 				// Y sorted canvas items are flattened into r_items. Calculate their absolute z index to use when rendering r_items.
 				if (child_items[i]->z_relative) {
@@ -270,12 +275,12 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	} else {
 		ci->repeat_size = repeat_size;
 		ci->repeat_times = repeat_times;
+	}
 
-		if (repeat_size.x || repeat_size.y) {
-			Size2 scale = final_xform.get_scale();
-			rect.size += repeat_size * repeat_times / scale;
-			rect.position -= repeat_size / scale * (repeat_times / 2);
-		}
+	if (repeat_size.x || repeat_size.y) {
+		Size2 scale = final_xform.get_scale();
+		rect.size += repeat_size * repeat_times / scale;
+		rect.position -= repeat_size / scale * (repeat_times / 2);
 	}
 
 	if (snapping_2d_transforms_to_pixel) {
@@ -352,7 +357,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			sorter.sort(child_items, child_item_count);
 
 			for (i = 0; i < child_item_count; i++) {
-				_cull_canvas_item(child_items[i], final_xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, child_items[i]->ysort_parent_abs_z_index, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner, false, p_canvas_cull_mask, repeat_size, repeat_times);
+				_cull_canvas_item(child_items[i], final_xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, child_items[i]->ysort_parent_abs_z_index, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner, false, p_canvas_cull_mask, child_items[i]->repeat_size, child_items[i]->repeat_times);
 			}
 		} else {
 			RendererCanvasRender::Item *canvas_group_from = nullptr;

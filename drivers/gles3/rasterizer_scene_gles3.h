@@ -428,6 +428,7 @@ private:
 			bool pancake_shadows;
 		};
 		static_assert(sizeof(UBO) % 16 == 0, "Scene UBO size must be a multiple of 16 bytes");
+		static_assert(sizeof(UBO) < 16384, "Scene UBO size must be 16384 bytes or smaller");
 
 		struct MultiviewUBO {
 			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
@@ -435,6 +436,7 @@ private:
 			float eye_offset[RendererSceneRender::MAX_RENDER_VIEWS][4];
 		};
 		static_assert(sizeof(MultiviewUBO) % 16 == 0, "Multiview UBO size must be a multiple of 16 bytes");
+		static_assert(sizeof(MultiviewUBO) < 16384, "MultiviewUBO size must be 16384 bytes or smaller");
 
 		struct TonemapUBO {
 			float exposure = 1.0;

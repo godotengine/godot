@@ -1639,11 +1639,7 @@ void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 
 	if (m.is_valid()) {
-		if (_edit.mode == TRANSFORM_ROTATE) {
-			_edit.mouse_pos = m->get_position(); // rotate should not wrap
-		} else {
-			_edit.mouse_pos += _get_warped_mouse_motion(p_event);
-		}
+		_edit.mouse_pos += _get_warped_mouse_motion(p_event);
 		update_transform(_get_key_modifier(m) == Key::SHIFT);
 	}
 }

@@ -448,6 +448,10 @@ void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const Vect
 AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	_update_triangles();
 
+	if (!blend_points_used) {
+		return NodeTimeInfo();
+	}
+
 	Vector2 blend_pos = get_parameter(blend_position);
 	int cur_closest = get_parameter(closest);
 	NodeTimeInfo mind; //time of min distance point
@@ -455,7 +459,7 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(const AnimationM
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 
 	if (blend_mode == BLEND_MODE_INTERPOLATED) {
-		if (triangles.size() == 0) {
+		if (triangles.is_empty()) {
 			return NodeTimeInfo();
 		}
 

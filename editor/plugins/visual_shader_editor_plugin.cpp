@@ -806,6 +806,11 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		parameter_ref->update_parameter_type();
 	}
 
+	Ref<VisualShaderNodeVarying> varying = vsnode;
+	if (varying.is_valid()) {
+		varying->set_shader_rid(visual_shader->get_rid());
+	}
+
 	Ref<VisualShaderNodeParameter> parameter = vsnode;
 	HBoxContainer *hb = nullptr;
 
@@ -3859,13 +3864,13 @@ void VisualShaderEditor::_remove_varying(const String &p_name) {
 }
 
 void VisualShaderEditor::_update_varyings() {
-	VisualShaderNodeVarying::clear_varyings();
+	VisualShaderNodeVarying::clear_varyings(visual_shader->get_rid());
 
 	for (int i = 0; i < visual_shader->get_varyings_count(); i++) {
 		const VisualShader::Varying *var = visual_shader->get_varying_by_index(i);
 
 		if (var != nullptr) {
-			VisualShaderNodeVarying::add_varying(var->name, var->mode, var->type);
+			VisualShaderNodeVarying::add_varying(visual_shader->get_rid(), var->name, var->mode, var->type);
 		}
 	}
 }
