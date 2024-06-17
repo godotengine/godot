@@ -379,6 +379,9 @@
 		<member name="auto_height" type="bool" setter="set_auto_height" getter="has_auto_height" default="false">
 			If [code]true[/code], the control will automatically resize the height to fit its content.
 		</member>
+		<member name="auto_width" type="bool" setter="set_auto_width" getter="has_auto_width" default="false">
+			If [code]true[/code], the control will automatically resize the width to fit its content.
+		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="fixed_column_width" type="int" setter="set_fixed_column_width" getter="get_fixed_column_width" default="0">
 			The width all columns will be adjusted to.
