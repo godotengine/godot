@@ -62,10 +62,16 @@ EditorInterface *EditorScript::get_editor_interface() const {
 }
 
 void EditorScript::run() {
+	ERR_FAIL_COND_MSG(is_running, "The EditorScript is already running.");
+
+	is_running = true;
 	GDVIRTUAL_REQUIRED_CALL(_run);
+	is_running = false;
 }
 
 void EditorScript::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("run"), &EditorScript::run);
+
 	ClassDB::bind_method(D_METHOD("add_root_node", "node"), &EditorScript::add_root_node);
 	ClassDB::bind_method(D_METHOD("get_scene"), &EditorScript::get_scene);
 	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorScript::get_editor_interface);
