@@ -381,6 +381,8 @@ private:
 	void _deferred_internal_update();
 	void _internal_update(bool p_force_cleanup);
 
+	virtual void _physics_interpolated_changed() override;
+
 protected:
 	void _notification(int p_what);
 
