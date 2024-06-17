@@ -194,6 +194,14 @@ void ResourceSaver::_bind_methods() {
 
 ////// OS //////
 
+PackedByteArray OS::get_entropy(int p_bytes) {
+	PackedByteArray pba;
+	pba.resize(p_bytes);
+	Error err = ::OS::get_singleton()->get_entropy(pba.ptrw(), p_bytes);
+	ERR_FAIL_COND_V(err != OK, PackedByteArray());
+	return pba;
+}
+
 String OS::get_system_ca_certificates() {
 	return ::OS::get_singleton()->get_system_ca_certificates();
 }
@@ -577,6 +585,7 @@ String OS::get_unique_id() const {
 OS *OS::singleton = nullptr;
 
 void OS::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_entropy", "size"), &OS::get_entropy);
 	ClassDB::bind_method(D_METHOD("get_system_ca_certificates"), &OS::get_system_ca_certificates);
 	ClassDB::bind_method(D_METHOD("get_connected_midi_inputs"), &OS::get_connected_midi_inputs);
 	ClassDB::bind_method(D_METHOD("open_midi_inputs"), &OS::open_midi_inputs);
