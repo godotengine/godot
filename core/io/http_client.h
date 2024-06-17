@@ -153,10 +153,9 @@ protected:
 
 	};
 
-	PackedStringArray _get_response_headers();
 	Dictionary _get_response_headers_as_dictionary();
 	Error _request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body);
-	Error _request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body = String());
+	Error _request_string(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body = String());
 
 	static HTTPClient *(*_create)();
 
@@ -169,7 +168,7 @@ public:
 	Error verify_headers(const Vector<String> &p_headers);
 
 	virtual Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_size) = 0;
-	virtual Error connect_to_host(const String &p_host, int p_port = -1, Ref<TLSOptions> p_tls_options = Ref<TLSOptions>()) = 0;
+	virtual Error connect_to_host(const String &p_host, int p_port = -1, const Ref<TLSOptions> &p_tls_options = Ref<TLSOptions>()) = 0;
 
 	virtual void set_connection(const Ref<StreamPeer> &p_connection) = 0;
 	virtual Ref<StreamPeer> get_connection() const = 0;
@@ -181,7 +180,7 @@ public:
 	virtual bool has_response() const = 0;
 	virtual bool is_response_chunked() const = 0;
 	virtual int get_response_code() const = 0;
-	virtual Error get_response_headers(List<String> *r_response) = 0;
+	virtual PackedStringArray get_response_headers() = 0;
 	virtual int64_t get_response_body_length() const = 0;
 
 	virtual PackedByteArray read_response_body_chunk() = 0; // Can't get body as partial text because of most encodings UTF8, gzip, etc.

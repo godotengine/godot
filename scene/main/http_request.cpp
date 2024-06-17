@@ -216,16 +216,10 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 
 	got_response = true;
 	response_code = client->get_response_code();
-	List<String> rheaders;
-	client->get_response_headers(&rheaders);
-	response_headers.clear();
+	response_headers = client->get_response_headers();
 	downloaded.set(0);
 	final_body_size.set(0);
 	decompressor.unref();
-
-	for (const String &E : rheaders) {
-		response_headers.push_back(E);
-	}
 
 	if (response_code == 301 || response_code == 302) {
 		// Handle redirect.
@@ -238,7 +232,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 
 		String new_request;
 
-		for (const String &E : rheaders) {
+		for (const String &E : response_headers) {
 			if (E.containsn("Location: ")) {
 				new_request = E.substr(9, E.length()).strip_edges();
 			}

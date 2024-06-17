@@ -39,7 +39,7 @@ HTTPClient *HTTPClientTCP::_create_func() {
 	return memnew(HTTPClientTCP);
 }
 
-Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, Ref<TLSOptions> p_options) {
+Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, const Ref<TLSOptions> &p_options) {
 	close();
 
 	conn_port = p_port;
@@ -229,18 +229,12 @@ int HTTPClientTCP::get_response_code() const {
 	return response_num;
 }
 
-Error HTTPClientTCP::get_response_headers(List<String> *r_response) {
-	if (!response_headers.size()) {
-		return ERR_INVALID_PARAMETER;
-	}
-
-	for (int i = 0; i < response_headers.size(); i++) {
-		r_response->push_back(response_headers[i]);
-	}
-
+PackedStringArray HTTPClientTCP::get_response_headers() {
+	ERR_FAIL_COND_V(response_headers.is_empty(), response_headers);
+	PackedStringArray out;
+	out.append_array(response_headers);
 	response_headers.clear();
-
-	return OK;
+	return out;
 }
 
 void HTTPClientTCP::close() {
