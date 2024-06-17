@@ -194,6 +194,10 @@ void ResourceSaver::_bind_methods() {
 
 ////// OS //////
 
+String OS::get_system_ca_certificates() {
+	return ::OS::get_singleton()->get_system_ca_certificates();
+}
+
 PackedStringArray OS::get_connected_midi_inputs() {
 	return ::OS::get_singleton()->get_connected_midi_inputs();
 }
@@ -573,6 +577,7 @@ String OS::get_unique_id() const {
 OS *OS::singleton = nullptr;
 
 void OS::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_system_ca_certificates"), &OS::get_system_ca_certificates);
 	ClassDB::bind_method(D_METHOD("get_connected_midi_inputs"), &OS::get_connected_midi_inputs);
 	ClassDB::bind_method(D_METHOD("open_midi_inputs"), &OS::open_midi_inputs);
 	ClassDB::bind_method(D_METHOD("close_midi_inputs"), &OS::close_midi_inputs);
