@@ -41,6 +41,11 @@ class ConfirmationDialog;
 class EditorFileDialog;
 class OptionButton;
 class PanelContainer;
+class HSplitContainer;
+class MarginContainer;
+class HSeparator;
+class CheckBox;
+class AnimationNodeAnimation;
 
 class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeStateMachineEditor, AnimationTreeNodeEditorPlugin);
@@ -64,7 +69,36 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 	OptionButton *play_mode = nullptr;
 
+	HSplitContainer *hsplit = nullptr;
+	MarginContainer *sidepanel_rect = nullptr;
+
 	PanelContainer *panel = nullptr;
+	PanelContainer *sidepanel = nullptr;
+
+	VBoxContainer *sp_vertical_partition = nullptr;
+
+	HBoxContainer *sp_title_container = nullptr;
+	Label *sidepanel_title = nullptr;
+	Label *sidepanel_title_2 = nullptr;
+	HSeparator *h_sep = nullptr;
+	HBoxContainer *visibility_reset_container = nullptr;
+	Button *show_all_node_group_button = nullptr;
+	Button *hide_all_node_group_button = nullptr;
+
+	HBoxContainer *node_group_hor_containers[AnimationNodeStateMachine::STATE_MACHINE_GROUPS_LIMIT] = { nullptr };
+	HBoxContainer *node_group_containers[AnimationNodeStateMachine::STATE_MACHINE_GROUPS_LIMIT] = { nullptr };
+	Button *show_node_group_buttons[AnimationNodeStateMachine::STATE_MACHINE_GROUPS_LIMIT] = { nullptr };
+	Button *hide_node_group_buttons[AnimationNodeStateMachine::STATE_MACHINE_GROUPS_LIMIT] = { nullptr };
+	LineEdit *node_group_name_line[AnimationNodeStateMachine::STATE_MACHINE_GROUPS_LIMIT] = { nullptr };
+	CheckBox *node_group_select_checkboxes[AnimationNodeStateMachine::STATE_MACHINE_GROUPS_LIMIT] = { nullptr };
+	Label *node_group_labels[AnimationNodeStateMachine::STATE_MACHINE_GROUPS_LIMIT] = { nullptr };
+
+	HBoxContainer *spacer = nullptr;
+
+	Button *node_group_selection_menu_button = nullptr;
+	Button *node_group_select_menu_button = nullptr;
+	Button *node_group_name_edit_menu_button = nullptr;
+	Button *return_to_node_group_selection_menu_button = nullptr;
 
 	StringName selected_node;
 	HashSet<StringName> selected_nodes;
@@ -87,6 +121,9 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 		Ref<Texture2D> tool_icon_create;
 		Ref<Texture2D> tool_icon_connect;
 		Ref<Texture2D> tool_icon_erase;
+
+		Ref<Texture2D> toggle_icon_visible;
+		Ref<Texture2D> toggle_icon_hidden;
 
 		Ref<Texture2D> transition_icon_immediate;
 		Ref<Texture2D> transition_icon_sync;
@@ -232,14 +269,32 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 		HOVER_NODE_EDIT = 1,
 	};
 
+	enum SidePanelMode {
+		NODE_GROUP_SELECTION = -1,
+		NODE_GROUP_NAME_EDIT = 0,
+		NODE_GROUP_EDIT = 1,
+	};
+
 	StringName hovered_node_name;
 	HoveredNodeArea hovered_node_area = HOVER_NODE_NONE;
+	SidePanelMode side_panel_mode = NODE_GROUP_SELECTION;
 
 	String prev_name;
 	void _name_edited(const String &p_text);
 	void _name_edited_focus_out();
 	void _open_editor(const String &p_name);
 	void _scroll_changed(double);
+
+	void _draw_sidepanel_node_group();
+	void _draw_sidepanel_edit_node_group();
+	void _draw_sidepanel_node_group_name_edit();
+	void _node_group_edit_redraw(const StringName &p_node_name);
+
+	void _checkbox_pressed();
+	void _show_node_group_pressed();
+	void _hide_node_group_pressed();
+	void _show_all_node_group();
+	void _hide_all_node_group();
 
 	String _get_root_playback_path(String &r_node_directory);
 

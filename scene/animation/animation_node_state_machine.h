@@ -110,6 +110,10 @@ class AnimationNodeStateMachine : public AnimationRootNode {
 	GDCLASS(AnimationNodeStateMachine, AnimationRootNode);
 
 public:
+#ifdef TOOLS_ENABLED
+	static constexpr int STATE_MACHINE_GROUPS_LIMIT = 12;
+#endif //TOOLS_ENABLED
+
 	enum StateMachineType {
 		STATE_MACHINE_TYPE_ROOT,
 		STATE_MACHINE_TYPE_NESTED,
@@ -124,6 +128,10 @@ private:
 	struct State {
 		Ref<AnimationRootNode> node;
 		Vector2 position;
+#ifdef TOOLS_ENABLED
+		PackedInt32Array node_group_selections;
+		bool node_visibility = true;
+#endif //TOOLS_ENABLED
 	};
 
 	HashMap<StringName, State> states;
@@ -142,6 +150,9 @@ private:
 	bool updating_transitions = false;
 
 	Vector2 graph_offset;
+#ifdef TOOLS_ENABLED
+	PackedStringArray node_group_names;
+#endif //TOOLS_ENABLED
 
 	void _remove_transition(const Ref<AnimationNodeStateMachineTransition> p_transition);
 	void _rename_transitions(const StringName &p_name, const StringName &p_new_name);
@@ -183,6 +194,17 @@ public:
 	void set_node_position(const StringName &p_name, const Vector2 &p_position);
 	Vector2 get_node_position(const StringName &p_name) const;
 
+#ifdef TOOLS_ENABLED
+	void _set_node_visibility(const StringName &p_name, bool p_visibility);
+	bool _get_node_visibility(const StringName &p_name) const;
+
+	void _set_node_group_selections(const StringName &p_name, int p_selection_index, int p_selection);
+	PackedInt32Array _get_node_group_selections(const StringName &p_name) const;
+
+	void _set_node_group_names(const PackedStringArray &p_node_group_names);
+	PackedStringArray _get_node_group_names() const;
+#endif //TOOLS_ENABLED
+
 	virtual void get_child_nodes(List<ChildNode> *r_child_nodes) override;
 
 	bool has_transition(const StringName &p_from, const StringName &p_to) const;
@@ -221,7 +243,7 @@ public:
 
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
+#endif //TOOLS_ENABLED
 
 	AnimationNodeStateMachine();
 };
