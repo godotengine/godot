@@ -1148,6 +1148,10 @@ void NavigationAgent3D::_update_debug_path() {
 
 	RS::get_singleton()->instance_set_base(debug_path_instance, debug_path_mesh->get_rid());
 	RS::get_singleton()->instance_set_scenario(debug_path_instance, agent_parent->get_world_3d()->get_scenario());
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(debug_path_instance, RS::SHADOW_CASTING_SETTING_OFF);
+	RS::get_singleton()->instance_set_layer_mask(debug_path_instance, 1 << 26); // GIZMO_EDIT_LAYER
+	RS::get_singleton()->instance_geometry_set_flag(debug_path_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	RS::get_singleton()->instance_geometry_set_flag(debug_path_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 	RS::get_singleton()->instance_set_visible(debug_path_instance, agent_parent->is_visible_in_tree());
 }
 #endif // DEBUG_ENABLED
