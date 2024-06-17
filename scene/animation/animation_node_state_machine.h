@@ -123,7 +123,9 @@ private:
 
 	struct State {
 		Ref<AnimationRootNode> node;
-		Vector2 position;
+		Vector2 position;	
+		PackedInt32Array layer_options;
+		bool node_visibility = true;
 	};
 
 	HashMap<StringName, State> states;
@@ -142,6 +144,8 @@ private:
 	bool updating_transitions = false;
 
 	Vector2 graph_offset;
+	PackedStringArray layer_names;
+	PackedInt32Array toggle_options;
 
 	void _remove_transition(const Ref<AnimationNodeStateMachineTransition> p_transition);
 	void _rename_transitions(const StringName &p_name, const StringName &p_new_name);
@@ -172,6 +176,7 @@ public:
 	virtual bool is_parameter_read_only(const StringName &p_parameter) const override;
 
 	void add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position = Vector2());
+	//void add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position = Vector2(), const PackedInt32Array &p_layer_options = PackedInt32Array(), const bool &p_node_visibility = true);
 	void replace_node(const StringName &p_name, Ref<AnimationNode> p_node);
 	Ref<AnimationNode> get_node(const StringName &p_name) const;
 	void remove_node(const StringName &p_name);
@@ -182,6 +187,19 @@ public:
 
 	void set_node_position(const StringName &p_name, const Vector2 &p_position);
 	Vector2 get_node_position(const StringName &p_name) const;
+
+	void set_node_visibility(const StringName &p_name, const bool &p_visibility);
+	bool get_node_visibility(const StringName &p_name) const;
+
+	void set_layer_options(const StringName &p_name, const int option_index, const int option);
+	PackedInt32Array get_layer_options(const StringName &p_name) const;
+
+	void set_layer_names(const PackedStringArray&p_layer_names);
+	PackedStringArray get_layer_names() const;
+
+	void set_toggle_options(const PackedInt32Array &p_toggle_options);
+	PackedInt32Array get_toggle_options() const;
+
 
 	virtual void get_child_nodes(List<ChildNode> *r_child_nodes) override;
 

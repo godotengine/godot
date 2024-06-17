@@ -41,11 +41,17 @@ class ConfirmationDialog;
 class EditorFileDialog;
 class OptionButton;
 class PanelContainer;
+class HSplitContainer;
+class MarginContainer;
+class HSeparator;
+class CheckBox;
+class AnimationNodeAnimation;
 
 class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeStateMachineEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeStateMachine> state_machine;
+	// Ref<AnimationNodeAnimation> node;
 
 	bool read_only = false;
 
@@ -64,8 +70,33 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 	OptionButton *play_mode = nullptr;
 
-	PanelContainer *panel = nullptr;
+	HSplitContainer *hsplit = nullptr;
+	MarginContainer *sidepanel_rect = nullptr;
 
+	PanelContainer *panel = nullptr;
+	PanelContainer *sidepanel = nullptr;
+
+	VBoxContainer *sp_vertical_partition = nullptr;
+
+	HBoxContainer *sp_title_container = nullptr;
+	Label *sidepanel_title = nullptr;
+	Label *sidepanel_title_2 = nullptr;
+	HSeparator *h_sep = nullptr;
+
+	HBoxContainer *layer_hor_containers[6] = {nullptr};
+	HBoxContainer *layer_containers[12] = {nullptr};
+	Button *toggle_buttons[12] = {nullptr};
+	LineEdit *toggle_buttons_lineEdit[12]={nullptr};
+	CheckBox *layer_option_check_boxes[12]={nullptr};
+	Label *layer_option_layer_labels[12]={nullptr};
+
+	HBoxContainer *spacer = nullptr;
+
+	Button *layer_selection_menu_button = nullptr;
+	Button *edit_layer_options_menu_button = nullptr;
+	Button *edit_layer_names_menu_button = nullptr;
+	Button *return_to_layer_selection_menu_button = nullptr;
+	
 	StringName selected_node;
 	HashSet<StringName> selected_nodes;
 
@@ -232,14 +263,36 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 		HOVER_NODE_EDIT = 1,
 	};
 
+	enum SidePanelMode {
+		LAYER_SELECTION = -1,
+		LAYER_NAME_EDIT = 0,
+		LAYER_NODE_OPTIONS = 1,
+	};
+
 	StringName hovered_node_name;
 	HoveredNodeArea hovered_node_area = HOVER_NODE_NONE;
+	SidePanelMode side_panel_mode=LAYER_SELECTION;
 
 	String prev_name;
 	void _name_edited(const String &p_text);
 	void _name_edited_focus_out();
 	void _open_editor(const String &p_name);
 	void _scroll_changed(double);
+
+	void _draw_sidepanel_layer_selection();
+	void _draw_sidepanel_layer_option();
+	void _draw_sidepanel_layer_name_edit();
+
+	void _set_layer_names(PackedStringArray new_layer_names);
+	PackedStringArray _get_layer_names();
+	void _check_layers_for_visibility();
+	PackedInt32Array _get_layer_options(const StringName &p_name);
+	void _node_layer_options_redraw();
+	void _set_layer_options(const StringName &p_name, const int &option_index, const int &option);
+	void _checkbox_pressed();
+	void _layer_toggle_pressed();
+	void _toggle_change_set_visibility();
+	void _option_change_set_visibility(StringName animation_node);
 
 	String _get_root_playback_path(String &r_node_directory);
 

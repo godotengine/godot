@@ -1259,13 +1259,20 @@ bool AnimationNodeStateMachine::is_parameter_read_only(const StringName &p_param
 }
 
 void AnimationNodeStateMachine::add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position) {
+//void AnimationNodeStateMachine::add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position, const PackedInt32Array &p_layer_options, const bool &p_node_visibility) {
 	ERR_FAIL_COND(states.has(p_name));
 	ERR_FAIL_COND(p_node.is_null());
 	ERR_FAIL_COND(String(p_name).contains("/"));
+	
+	PackedInt32Array layer_options;
+	layer_options.resize(12);
+	layer_options.fill(0);
 
 	State state_new;
 	state_new.node = p_node;
 	state_new.position = p_position;
+	state_new.layer_options = layer_options;
+	state_new.node_visibility = true;
 
 	states[p_name] = state_new;
 
@@ -1653,6 +1660,31 @@ bool AnimationNodeStateMachine::_set(const StringName &p_name, const Variant &p_
 			}
 			return true;
 		}
+
+		if (what == "layer_options") {
+			if (states.has(node_name)) {
+				
+				PackedInt32Array initialArray = p_value;
+
+				if(initialArray.size()!=12){
+					initialArray.resize(12);
+					initialArray.fill(0);
+					states[node_name].layer_options = initialArray;
+				}
+				else{
+				states[node_name].layer_options = p_value;
+				}
+
+			}
+			return true;
+		}
+
+		if (what == "node_visibility") {
+			if (states.has(node_name)) {
+				states[node_name].node_visibility = p_value;
+			}
+			return true;
+		}
 	} else if (prop_name == "transitions") {
 		Array trans = p_value;
 		ERR_FAIL_COND_V(trans.size() % 3 != 0, false);
@@ -1678,6 +1710,20 @@ bool AnimationNodeStateMachine::_get(const StringName &p_name, Variant &r_ret) c
 		if (what == "node") {
 			if (states.has(node_name) && can_edit_node(node_name)) {
 				r_ret = states[node_name].node;
+				return true;
+			}
+		}
+
+		if (what == "layer_options") {
+			if (states.has(node_name)) {
+				r_ret = states[node_name].layer_options;
+				return true;
+			}
+		}
+
+		if (what == "node_visibility") {
+			if (states.has(node_name)) {
+				r_ret = states[node_name].node_visibility;
 				return true;
 			}
 		}
@@ -1719,6 +1765,8 @@ void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) c
 	for (const StringName &prop_name : names) {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "states/" + prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NO_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, "states/" + prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "states/" + prop_name + "/layer_options", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "states/" + prop_name + "/node_visibility", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "transitions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
@@ -1750,6 +1798,8 @@ void AnimationNodeStateMachine::reset_state() {
 	State start;
 	start.node = s;
 	start.position = Vector2(200, 100);
+	start.layer_options.resize(12);
+	start.layer_options.fill(0);
 	states[start_node] = start;
 
 	Ref<AnimationNodeEndState> e;
@@ -1757,7 +1807,18 @@ void AnimationNodeStateMachine::reset_state() {
 	State end;
 	end.node = e;
 	end.position = Vector2(900, 100);
+	end.layer_options.resize(12);
+	end.layer_options.fill(0);
 	states[end_node] = end;
+
+	layer_names.resize(12);
+	toggle_options.resize(12);
+	toggle_options.fill(0);
+
+	layer_names.resize(12);
+	for(int i =0; i<12; i++){
+		layer_names.set(i, String::num(i+1) + " - Layer");
+	}
 
 	emit_changed();
 	emit_signal(SNAME("tree_changed"));
@@ -1771,6 +1832,43 @@ void AnimationNodeStateMachine::set_node_position(const StringName &p_name, cons
 Vector2 AnimationNodeStateMachine::get_node_position(const StringName &p_name) const {
 	ERR_FAIL_COND_V(!states.has(p_name), Vector2());
 	return states[p_name].position;
+}
+
+void AnimationNodeStateMachine::set_node_visibility(const StringName &p_name, const bool &p_node_visibility) {
+	ERR_FAIL_COND(!states.has(p_name));
+	states[p_name].node_visibility = p_node_visibility;
+}
+
+bool AnimationNodeStateMachine::get_node_visibility(const StringName &p_name) const {
+	ERR_FAIL_COND_V(!states.has(p_name), bool());
+	return states[p_name].node_visibility;
+}
+
+void AnimationNodeStateMachine::set_layer_options(const StringName &p_name, const int option_index, const int option) {
+	ERR_FAIL_COND(!states.has(p_name));
+	states[p_name].layer_options.set(option_index, option);
+}
+
+PackedInt32Array AnimationNodeStateMachine::get_layer_options(const StringName &p_name) const {
+	ERR_FAIL_COND_V(!states.has(p_name), PackedInt32Array());
+	return states[p_name].layer_options;
+}
+
+void AnimationNodeStateMachine::set_layer_names(const PackedStringArray &p_layer_names) {
+	layer_names = p_layer_names;
+}
+
+PackedStringArray AnimationNodeStateMachine::get_layer_names() const {
+	return layer_names;
+}
+
+void AnimationNodeStateMachine::set_toggle_options(const PackedInt32Array &p_toggle_options) {
+	
+	toggle_options = p_toggle_options;
+}
+
+PackedInt32Array AnimationNodeStateMachine::get_toggle_options() const {
+	return toggle_options;
 }
 
 void AnimationNodeStateMachine::_tree_changed() {
@@ -1791,7 +1889,7 @@ void AnimationNodeStateMachine::get_argument_options(const StringName &p_functio
 	const String pf = p_function;
 	bool add_state_options = false;
 	if (p_idx == 0) {
-		add_state_options = (pf == "get_node" || pf == "has_node" || pf == "rename_node" || pf == "remove_node" || pf == "replace_node" || pf == "set_node_position" || pf == "get_node_position");
+		add_state_options = (pf == "get_node" || pf == "has_node" || pf == "rename_node" || pf == "remove_node" || pf == "replace_node" || pf == "set_node_position" || pf == "get_node_position" || pf == "get_layer_options" || pf == "set_layer_options" || pf == "get_node_visibility" || pf == "set_node_visibility");
 	} else if (p_idx <= 1) {
 		add_state_options = (pf == "has_transition" || pf == "add_transition" || pf == "remove_transition");
 	}
@@ -1815,6 +1913,17 @@ void AnimationNodeStateMachine::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_node_position", "name", "position"), &AnimationNodeStateMachine::set_node_position);
 	ClassDB::bind_method(D_METHOD("get_node_position", "name"), &AnimationNodeStateMachine::get_node_position);
+	
+	ClassDB::bind_method(D_METHOD("set_node_visibility","node_visibility"), &AnimationNodeStateMachine::set_node_visibility);
+	ClassDB::bind_method(D_METHOD("get_node_visibility"), &AnimationNodeStateMachine::get_node_visibility);
+
+	ClassDB::bind_method(D_METHOD("set_layer_names",  "layer_names"), &AnimationNodeStateMachine::set_layer_names);
+	ClassDB::bind_method(D_METHOD("get_layer_names"), &AnimationNodeStateMachine::get_layer_names);
+
+	ClassDB::bind_method(D_METHOD("set_layer_options", "name", "layer_options"), &AnimationNodeStateMachine::set_layer_options);
+	ClassDB::bind_method(D_METHOD("get_layer_options", "name"), &AnimationNodeStateMachine::get_layer_options);
+	ClassDB::bind_method(D_METHOD("set_toggle_options", "toggle_options"), &AnimationNodeStateMachine::set_toggle_options);
+	ClassDB::bind_method(D_METHOD("get_toggle_options"), &AnimationNodeStateMachine::get_toggle_options);
 
 	ClassDB::bind_method(D_METHOD("has_transition", "from", "to"), &AnimationNodeStateMachine::has_transition);
 	ClassDB::bind_method(D_METHOD("add_transition", "from", "to", "transition"), &AnimationNodeStateMachine::add_transition);
@@ -1840,7 +1949,9 @@ void AnimationNodeStateMachine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "state_machine_type", PROPERTY_HINT_ENUM, "Root,Nested,Grouped"), "set_state_machine_type", "get_state_machine_type");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_transition_to_self"), "set_allow_transition_to_self", "is_allow_transition_to_self");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset_ends"), "set_reset_ends", "are_ends_reset");
-
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "layer_names", PROPERTY_HINT_ARRAY_TYPE, "LayerNames", PROPERTY_USAGE_NO_EDITOR),"set_layer_names", "get_layer_names");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "toggle_options", PROPERTY_HINT_ARRAY_TYPE, "ToggleOptions", PROPERTY_USAGE_NO_EDITOR),"set_toggle_options", "get_toggle_options");
+	
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_ROOT);
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_NESTED);
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_GROUPED);
@@ -1852,6 +1963,8 @@ AnimationNodeStateMachine::AnimationNodeStateMachine() {
 	State start;
 	start.node = s;
 	start.position = Vector2(200, 100);
+	start.layer_options.resize(12);
+	start.layer_options.fill(0);
 	states[start_node] = start;
 
 	Ref<AnimationNodeEndState> e;
@@ -1859,5 +1972,19 @@ AnimationNodeStateMachine::AnimationNodeStateMachine() {
 	State end;
 	end.node = e;
 	end.position = Vector2(900, 100);
+	end.layer_options.resize(12);
+	end.layer_options.fill(0);
 	states[end_node] = end;
+
+	layer_names.resize(12);
+	toggle_options.resize(12);
+	toggle_options.fill(0);
+	
+
+	for(int i = 0; 12>i; i++){
+		layer_names.set(i, String::num(i+1) + " - Layer");
+	}
+
+
+
 }

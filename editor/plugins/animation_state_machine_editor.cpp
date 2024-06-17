@@ -46,7 +46,10 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/tree.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
@@ -210,6 +213,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				selected_node = node_rects[i].node_name;
 
 				if (!selected_nodes.has(selected_node)) {
+					_node_layer_options_redraw();
 					selected_nodes.clear();
 				}
 
@@ -943,43 +947,45 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	//pre pass nodes so we know the rectangles
 	for (const StringName &E : nodes) {
 		String name = E;
-		int name_string_size = theme_cache.node_title_font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.node_title_font_size).width;
+		if (state_machine->get_node_visibility(name)){
+			int name_string_size = theme_cache.node_title_font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.node_title_font_size).width;
 
-		Ref<AnimationNode> anode = state_machine->get_node(name);
-		bool needs_editor = AnimationTreeEditor::get_singleton()->can_edit(anode);
-		bool is_selected = selected_nodes.has(name);
+			Ref<AnimationNode> anode = state_machine->get_node(name);
+			bool needs_editor = AnimationTreeEditor::get_singleton()->can_edit(anode);
+			bool is_selected = selected_nodes.has(name);
 
-		Size2 s = (is_selected ? theme_cache.node_frame_selected : theme_cache.node_frame)->get_minimum_size();
-		s.width += name_string_size;
-		s.height += MAX(theme_cache.node_title_font->get_height(theme_cache.node_title_font_size), theme_cache.play_node->get_height());
-		s.width += sep + theme_cache.play_node->get_width();
+			Size2 s = (is_selected ? theme_cache.node_frame_selected : theme_cache.node_frame)->get_minimum_size();
+			s.width += name_string_size;
+			s.height += MAX(theme_cache.node_title_font->get_height(theme_cache.node_title_font_size), theme_cache.play_node->get_height());
+			s.width += sep + theme_cache.play_node->get_width();
 
-		if (needs_editor) {
-			s.width += sep + theme_cache.edit_node->get_width();
+			if (needs_editor) {
+				s.width += sep + theme_cache.edit_node->get_width();
+			}
+
+			Vector2 offset;
+			offset += state_machine->get_node_position(E) * EDSCALE;
+
+			if (selected_nodes.has(E) && dragging_selected) {
+				offset += drag_ofs;
+			}
+
+			offset -= s / 2;
+			offset = offset.floor();
+
+			//prepre rect
+
+			NodeRect nr;
+			nr.node = Rect2(offset, s);
+			nr.node_name = E;
+
+			scroll_range = scroll_range.merge(nr.node); //merge with range
+
+			//now scroll it to draw
+			nr.node.position -= state_machine->get_graph_offset() * EDSCALE;
+
+			node_rects.push_back(nr);
 		}
-
-		Vector2 offset;
-		offset += state_machine->get_node_position(E) * EDSCALE;
-
-		if (selected_nodes.has(E) && dragging_selected) {
-			offset += drag_ofs;
-		}
-
-		offset -= s / 2;
-		offset = offset.floor();
-
-		//prepre rect
-
-		NodeRect nr;
-		nr.node = Rect2(offset, s);
-		nr.node_name = E;
-
-		scroll_range = scroll_range.merge(nr.node); //merge with range
-
-		//now scroll it to draw
-		nr.node.position -= state_machine->get_graph_offset() * EDSCALE;
-
-		node_rects.push_back(nr);
 	}
 
 	transition_lines.clear();
@@ -1021,6 +1027,10 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		tl.to_node = state_machine->get_transition_to(i);
 		Vector2 ofs_to = (dragging_selected && selected_nodes.has(tl.to_node)) ? drag_ofs : Vector2();
 		tl.to = (state_machine->get_node_position(tl.to_node) * EDSCALE) + ofs_to - state_machine->get_graph_offset() * EDSCALE;
+
+		if(!(state_machine->get_node_visibility(tl.from_node) & state_machine->get_node_visibility(tl.to_node))){
+		continue;
+		}
 
 		Ref<AnimationNodeStateMachineTransition> tr = state_machine->get_transition(i);
 		tl.disabled = bool(tr->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED);
@@ -1095,60 +1105,63 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	//draw actual nodes
 	for (int i = 0; i < node_rects.size(); i++) {
 		String name = node_rects[i].node_name;
-		int name_string_size = theme_cache.node_title_font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.node_title_font_size).width;
+		if (state_machine->get_node_visibility(name))
+		{
+			int name_string_size = theme_cache.node_title_font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.node_title_font_size).width;
 
-		Ref<AnimationNode> anode = state_machine->get_node(name);
-		bool needs_editor = AnimationTreeEditor::get_singleton()->can_edit(anode);
-		bool is_selected = selected_nodes.has(name);
+			Ref<AnimationNode> anode = state_machine->get_node(name);
+			bool needs_editor = AnimationTreeEditor::get_singleton()->can_edit(anode);
+			bool is_selected = selected_nodes.has(name);
 
-		NodeRect &nr = node_rects.write[i];
-		Vector2 offset = nr.node.position;
-		int h = nr.node.size.height;
+			NodeRect &nr = node_rects.write[i];
+			Vector2 offset = nr.node.position;
+			int h = nr.node.size.height;
 
-		//prepre rect
+			//prepre rect
 
-		//now scroll it to draw
-		Ref<StyleBox> node_frame_style = is_selected ? theme_cache.node_frame_selected : theme_cache.node_frame;
-		state_machine_draw->draw_style_box(node_frame_style, nr.node);
+			//now scroll it to draw
+			Ref<StyleBox> node_frame_style = is_selected ? theme_cache.node_frame_selected : theme_cache.node_frame;
+			state_machine_draw->draw_style_box(node_frame_style, nr.node);
 
-		if (!is_selected && state_machine->start_node == name) {
-			state_machine_draw->draw_style_box(theme_cache.node_frame_start, nr.node);
-		}
-		if (!is_selected && state_machine->end_node == name) {
-			state_machine_draw->draw_style_box(theme_cache.node_frame_end, nr.node);
-		}
-		if (playing && (blend_from == name || current == name || travel_path.has(name))) {
-			state_machine_draw->draw_style_box(theme_cache.node_frame_playing, nr.node);
-		}
+			if (!is_selected && state_machine->start_node == name) {
+				state_machine_draw->draw_style_box(theme_cache.node_frame_start, nr.node);
+			}
+			if (!is_selected && state_machine->end_node == name) {
+				state_machine_draw->draw_style_box(theme_cache.node_frame_end, nr.node);
+			}
+			if (playing && (blend_from == name || current == name || travel_path.has(name))) {
+				state_machine_draw->draw_style_box(theme_cache.node_frame_playing, nr.node);
+			}
 
-		offset.x += node_frame_style->get_offset().x;
+			offset.x += node_frame_style->get_offset().x;
 
-		nr.play.position = offset + Vector2(0, (h - theme_cache.play_node->get_height()) / 2).floor();
-		nr.play.size = theme_cache.play_node->get_size();
+			nr.play.position = offset + Vector2(0, (h - theme_cache.play_node->get_height()) / 2).floor();
+			nr.play.size = theme_cache.play_node->get_size();
 
-		if (hovered_node_name == name && hovered_node_area == HOVER_NODE_PLAY) {
-			state_machine_draw->draw_texture(theme_cache.play_node, nr.play.position, theme_cache.highlight_color);
-		} else {
-			state_machine_draw->draw_texture(theme_cache.play_node, nr.play.position);
-		}
-
-		offset.x += sep + theme_cache.play_node->get_width();
-
-		nr.name.position = offset + Vector2(0, (h - theme_cache.node_title_font->get_height(theme_cache.node_title_font_size)) / 2).floor();
-		nr.name.size = Vector2(name_string_size, theme_cache.node_title_font->get_height(theme_cache.node_title_font_size));
-
-		state_machine_draw->draw_string(theme_cache.node_title_font, nr.name.position + Vector2(0, theme_cache.node_title_font->get_ascent(theme_cache.node_title_font_size)), name, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.node_title_font_size, theme_cache.node_title_font_color);
-		offset.x += name_string_size + sep;
-
-		nr.can_edit = needs_editor;
-		if (needs_editor) {
-			nr.edit.position = offset + Vector2(0, (h - theme_cache.edit_node->get_height()) / 2).floor();
-			nr.edit.size = theme_cache.edit_node->get_size();
-
-			if (hovered_node_name == name && hovered_node_area == HOVER_NODE_EDIT) {
-				state_machine_draw->draw_texture(theme_cache.edit_node, nr.edit.position, theme_cache.highlight_color);
+			if (hovered_node_name == name && hovered_node_area == HOVER_NODE_PLAY) {
+				state_machine_draw->draw_texture(theme_cache.play_node, nr.play.position, theme_cache.highlight_color);
 			} else {
-				state_machine_draw->draw_texture(theme_cache.edit_node, nr.edit.position);
+				state_machine_draw->draw_texture(theme_cache.play_node, nr.play.position);
+			}
+
+			offset.x += sep + theme_cache.play_node->get_width();
+
+			nr.name.position = offset + Vector2(0, (h - theme_cache.node_title_font->get_height(theme_cache.node_title_font_size)) / 2).floor();
+			nr.name.size = Vector2(name_string_size, theme_cache.node_title_font->get_height(theme_cache.node_title_font_size));
+
+			state_machine_draw->draw_string(theme_cache.node_title_font, nr.name.position + Vector2(0, theme_cache.node_title_font->get_ascent(theme_cache.node_title_font_size)), name, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.node_title_font_size, theme_cache.node_title_font_color);
+			offset.x += name_string_size + sep;
+
+			nr.can_edit = needs_editor;
+			if (needs_editor) {
+				nr.edit.position = offset + Vector2(0, (h - theme_cache.edit_node->get_height()) / 2).floor();
+				nr.edit.size = theme_cache.edit_node->get_size();
+
+				if (hovered_node_name == name && hovered_node_area == HOVER_NODE_EDIT) {
+					state_machine_draw->draw_texture(theme_cache.edit_node, nr.edit.position, theme_cache.highlight_color);
+				} else {
+					state_machine_draw->draw_texture(theme_cache.edit_node, nr.edit.position);
+				}
 			}
 		}
 	}
@@ -1601,6 +1614,219 @@ void AnimationNodeStateMachineEditor::_update_mode() {
 	}
 }
 
+void AnimationNodeStateMachineEditor::_node_layer_options_redraw (){
+
+	if(side_panel_mode == LAYER_NODE_OPTIONS){
+		if(bool(selected_node)){
+			sidepanel_title_2->set_text(String(selected_node));
+			sidepanel_title_2->add_theme_color_override("font_color", Color(.55,.93,.59));
+			for(int i=0; i<12; i++){
+			layer_option_check_boxes[i]->set_visible(true);
+			layer_option_check_boxes[i]->set_pressed(bool(state_machine->get_layer_options(selected_node)[i]));
+			}
+		}
+	}
+}
+
+void AnimationNodeStateMachineEditor::_draw_sidepanel_layer_option() {
+
+	side_panel_mode = LAYER_NODE_OPTIONS;
+
+	sidepanel_title->set_text("Animation Node:");
+	return_to_layer_selection_menu_button->set_visible(true);
+	sidepanel_title_2->set_visible(true);
+	layer_selection_menu_button->set_visible(false);
+	edit_layer_options_menu_button->set_visible(false);
+	edit_layer_names_menu_button->set_visible(false);
+	layer_selection_menu_button->set_visible(false);
+
+	if(bool(selected_node)){
+		sidepanel_title_2->set_text(String(selected_node));
+		sidepanel_title_2->add_theme_color_override("font_color", Color(.55,.93,.59));
+		for(int i=0; i<12; i++){
+			layer_option_check_boxes[i]->set_visible(true);
+			layer_option_check_boxes[i]->set_pressed(bool(state_machine->get_layer_options(selected_node)[i]));
+		}
+
+	}else{
+		sidepanel_title_2->set_text("Select An Animation Node");
+		sidepanel_title_2->add_theme_color_override("font_color", Color(1,.5,.5));
+	}
+
+	for(int i=0; i<12; i++){
+		toggle_buttons[i]->set_visible(false);
+		toggle_buttons_lineEdit[i]->set_visible(false);
+		layer_option_layer_labels[i]->set_visible(true);
+		layer_option_layer_labels[i]->set_text(state_machine->get_layer_names()[i]);
+	}
+
+}
+
+void AnimationNodeStateMachineEditor::_draw_sidepanel_layer_selection() {
+
+	PackedInt32Array saved_toggles = state_machine->get_toggle_options();
+
+	if(side_panel_mode == LAYER_NAME_EDIT){
+
+		PackedStringArray layer_names = state_machine->get_layer_names();
+
+		for (int i = 0; i < 12; i++) {
+			if(toggle_buttons_lineEdit[i]->get_text() != ""){
+				layer_names.set(i, toggle_buttons_lineEdit[i]->get_text());
+			}
+		}
+		state_machine->set_layer_names(layer_names);
+	}
+
+	side_panel_mode = LAYER_SELECTION;
+
+	PackedStringArray layer_names = state_machine->get_layer_names();
+
+	for (int i = 0; i < 12; i++) {
+		toggle_buttons_lineEdit[i]->set_placeholder(layer_names[i]);
+		toggle_buttons[i]->set_text(layer_names[i]);
+	}
+
+	for (int i = 0; i < 12; i++) {
+		toggle_buttons[i]->set_text(layer_names[i]);
+		toggle_buttons[i]->set_visible(true);
+		toggle_buttons_lineEdit[i]->set_visible(false);
+		layer_option_check_boxes[i]->set_visible(false);
+		layer_option_layer_labels[i]->set_visible(false);
+		
+		toggle_buttons[i]->set_pressed(saved_toggles[i]);	
+	}
+
+	sidepanel_title_2->set_visible(false);
+	edit_layer_options_menu_button->set_visible(true);
+	edit_layer_names_menu_button->set_visible(true);
+	layer_selection_menu_button->set_visible(false);
+	return_to_layer_selection_menu_button-> set_visible(false);
+	sidepanel_title->set_text("Layers");
+}
+
+void AnimationNodeStateMachineEditor::_draw_sidepanel_layer_name_edit() {
+
+	sidepanel_title->set_text("Layer Rename");
+	side_panel_mode = LAYER_NAME_EDIT;
+	PackedStringArray layer_names = state_machine->get_layer_names();
+
+	for (int i = 0; i < 12; i++) {
+		toggle_buttons[i]->set_visible(false);
+		toggle_buttons_lineEdit[i]->set_visible(true);
+		toggle_buttons_lineEdit[i]->set_placeholder(layer_names[i]);
+	}
+
+	edit_layer_options_menu_button->set_visible(false);
+	edit_layer_names_menu_button->set_visible(false);
+	layer_selection_menu_button->set_visible(false);
+	return_to_layer_selection_menu_button-> set_visible(true);
+
+}
+
+void AnimationNodeStateMachineEditor::_checkbox_pressed(){
+	if (bool(selected_node) & LAYER_NODE_OPTIONS){
+		for(int i = 0; i<12; i++){
+			if(layer_option_check_boxes[i]->is_pressing()){
+					state_machine->set_layer_options(selected_node, i, layer_option_check_boxes[i]->is_pressed());
+					_option_change_set_visibility(selected_node);
+			}	
+		}
+	}
+}
+
+void AnimationNodeStateMachineEditor::_layer_toggle_pressed(){
+	PackedInt32Array toggle_options = state_machine->get_toggle_options();
+	for(int i = 0; i<12; i++){
+		if(toggle_buttons[i]->is_pressing()){
+			if(toggle_buttons[i]->is_pressed()){
+				toggle_options.set(i, 1);
+				break;
+			}
+			else{
+				toggle_options.set(i, 0);
+				break;
+			}
+		}	
+	}
+	state_machine->set_toggle_options(toggle_options);
+	_toggle_change_set_visibility();
+
+	//send out pressed button and filter hiddens and show visibles..
+}
+
+void AnimationNodeStateMachineEditor::_toggle_change_set_visibility(){
+
+	List<StringName> nodes;
+	state_machine->get_node_list(&nodes);
+	bool all_untoggled = false;
+	PackedInt32Array layer_options;
+
+	for(int i = 0; i<12 ; i++){		
+		if(toggle_buttons[i]->is_pressed()==true){
+			all_untoggled = false;
+			break;
+		}
+		all_untoggled = true;
+	}
+	if(all_untoggled){
+		for (const StringName &E : nodes){
+			state_machine->set_node_visibility(E, true);
+		}
+		state_machine_draw->queue_redraw();
+		return;
+	}
+
+	for (const StringName &E : nodes) {
+		layer_options = state_machine->get_layer_options(E);
+
+		for (int i = 0; i<12 ; i++) {
+			if (toggle_buttons[i]->is_pressed()){
+				if(bool(layer_options[i])){
+					state_machine->set_node_visibility(E, true);
+				}
+				else{
+					state_machine->set_node_visibility(E, false);
+					break;
+				}
+			}
+		}
+	}
+	state_machine_draw->queue_redraw();
+}
+
+void AnimationNodeStateMachineEditor::_option_change_set_visibility(StringName animation_node){
+	
+	bool all_untoggled = false;
+	
+	for(int i = 0; i<12 ; i++){			
+		if(toggle_buttons[i]->is_pressed()==true){
+			all_untoggled = false;
+			break;
+		}
+		all_untoggled = true;
+	}
+	if(all_untoggled){
+		state_machine->set_node_visibility(animation_node, true);
+		state_machine_draw->queue_redraw();
+		return;
+	}
+
+	for(int i = 0; i<12 ; i++){
+		if(toggle_buttons[i]->is_pressed()){
+			if(layer_option_check_boxes[i]->is_pressed()){
+				state_machine->set_node_visibility(animation_node, true);
+				state_machine_draw->queue_redraw();
+				return;
+			}
+			else{
+				state_machine->set_node_visibility(animation_node, false);
+			}
+		}
+	}		
+	state_machine_draw->queue_redraw();
+}
+
 void AnimationNodeStateMachineEditor::_bind_methods() {
 	ClassDB::bind_method("_update_graph", &AnimationNodeStateMachineEditor::_update_graph);
 
@@ -1726,16 +1952,22 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	play_mode = memnew(OptionButton);
 	top_hb->add_child(play_mode);
 
+	hsplit = memnew(HSplitContainer);
+	add_child(hsplit);
+	hsplit->set_v_size_flags(SIZE_EXPAND_FILL);
+
 	panel = memnew(PanelContainer);
 	panel->set_clip_contents(true);
 	panel->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-	add_child(panel);
-	panel->set_v_size_flags(SIZE_EXPAND_FILL);
+	hsplit->add_child(panel);
+	panel->set_h_size_flags(SIZE_EXPAND_FILL);
+	panel->set_v_size_flags(SIZE_FILL);
 
 	state_machine_draw = memnew(Control);
 	panel->add_child(state_machine_draw);
 	state_machine_draw->connect(SceneStringName(gui_input), callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_gui_input));
 	state_machine_draw->connect(SceneStringName(draw), callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_draw));
+	state_machine_draw->connect(SceneStringName(draw), callable_mp(this, &AnimationNodeStateMachineEditor::_draw_sidepanel_layer_selection)); // I couldn't find a better way to trigger a redraw when switching between animation trees in scene editor. But it works..
 	state_machine_draw->set_focus_mode(FOCUS_ALL);
 	state_machine_draw->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 
@@ -1743,7 +1975,101 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	state_machine_draw->add_child(state_machine_play_pos);
 	state_machine_play_pos->set_mouse_filter(MOUSE_FILTER_PASS); //pass all to parent
 	state_machine_play_pos->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	state_machine_play_pos->connect(SceneStringName(draw), callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_pos_draw_all));
+
+	sidepanel = memnew(PanelContainer);
+	hsplit->add_child(sidepanel);
+	sidepanel->set_clip_contents(true);
+	sidepanel->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+
+	sidepanel_rect = memnew(MarginContainer);
+	sidepanel->add_child(sidepanel_rect);
+	sidepanel_rect->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+
+	sp_vertical_partition = memnew(VBoxContainer);
+	sidepanel_rect->add_child(sp_vertical_partition);
+	sp_vertical_partition->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+
+	sp_title_container = memnew(HBoxContainer);
+	sp_vertical_partition->add_child(sp_title_container);
+	sp_title_container->set_anchors_and_offsets_preset(PRESET_TOP_WIDE);
+
+	sidepanel_title = memnew(Label(TTR("Layers")));
+	sp_title_container->add_child(sidepanel_title);
+	sidepanel_title->set_h_size_flags(SIZE_EXPAND_FILL);
+	sidepanel_title->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	sidepanel_title_2 = memnew(Label);
+	sp_title_container->add_child(sidepanel_title_2);
+	sidepanel_title_2->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	sidepanel_title_2->set_visible(false);
+
+	h_sep = memnew(HSeparator);
+	sp_vertical_partition->add_child(h_sep);
+	h_sep->set_anchors_and_offsets_preset(PRESET_TOP_WIDE);
+	h_sep->set_custom_minimum_size(Size2(0,12));
+
+	for(int i = 0; 12>i; i++){
+		if(i % 2 == 0){
+			layer_hor_containers[static_cast<int>(floor(i/2))] = memnew(HBoxContainer);
+			sp_vertical_partition->add_child(layer_hor_containers[static_cast<int>(floor(i/2))]);
+		}
+		layer_containers[i] = memnew(HBoxContainer);
+		layer_hor_containers[static_cast<int>(floor(i/2))]->add_child(layer_containers[i]);
+		layer_containers[i]->set_h_size_flags(SIZE_EXPAND);
+		toggle_buttons_lineEdit[i] = memnew(LineEdit);
+		layer_containers[i]->add_child(toggle_buttons_lineEdit[i]);
+		toggle_buttons_lineEdit[i]->set_custom_minimum_size(Size2(100,30));
+		toggle_buttons_lineEdit[i]->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+		toggle_buttons_lineEdit[i]->set_visible(false);
+		toggle_buttons[i] = memnew(Button);
+		toggle_buttons[i]->set_toggle_mode(true);
+		toggle_buttons[i]->set_custom_minimum_size(Size2(100,0));
+		toggle_buttons[i]->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_layer_toggle_pressed));
+		layer_containers[i]->add_child(toggle_buttons[i]);
+
+		layer_option_check_boxes[i] = memnew(CheckBox);
+		layer_option_layer_labels[i] = memnew(Label);
+
+		layer_containers[i]->add_child(layer_option_check_boxes[i]);
+		layer_containers[i]->add_child(layer_option_layer_labels[i]);
+		layer_option_check_boxes[i]->set_visible(false);
+		layer_option_layer_labels[i]->set_visible(false);
+		layer_option_check_boxes[i]->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_checkbox_pressed));
+	}
+
+	spacer = memnew(HBoxContainer);
+	spacer->set_v_size_flags(SIZE_EXPAND);
+	sp_vertical_partition->add_child(spacer);
+
+	layer_selection_menu_button = memnew(Button);
+	layer_selection_menu_button->set_text("Select Layers");
+	layer_selection_menu_button->set_custom_minimum_size(Size2(0,25));
+	layer_selection_menu_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	layer_selection_menu_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_draw_sidepanel_layer_selection), CONNECT_DEFERRED);
+	sp_vertical_partition->add_child(layer_selection_menu_button);
+
+	edit_layer_options_menu_button = memnew(Button);
+	edit_layer_options_menu_button->set_text("Edit Layer Options");
+	edit_layer_options_menu_button->set_custom_minimum_size(Size2(0,25));
+	edit_layer_options_menu_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit_layer_options_menu_button->set_visible(false);
+	edit_layer_options_menu_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_draw_sidepanel_layer_option), CONNECT_DEFERRED);
+	sp_vertical_partition->add_child(edit_layer_options_menu_button);
+
+	edit_layer_names_menu_button = memnew(Button);
+	edit_layer_names_menu_button->set_text("Edit Layer Names");
+	edit_layer_names_menu_button->set_custom_minimum_size(Size2(0,25));
+	edit_layer_names_menu_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit_layer_names_menu_button->set_visible(false);
+	edit_layer_names_menu_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_draw_sidepanel_layer_name_edit), CONNECT_DEFERRED);
+	sp_vertical_partition->add_child(edit_layer_names_menu_button);
+
+	return_to_layer_selection_menu_button = memnew(Button);
+	return_to_layer_selection_menu_button->set_text("Return");
+	return_to_layer_selection_menu_button->set_custom_minimum_size(Size2(0,25));
+	return_to_layer_selection_menu_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	return_to_layer_selection_menu_button->set_visible(false);
+	return_to_layer_selection_menu_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_draw_sidepanel_layer_selection), CONNECT_DEFERRED);
+	sp_vertical_partition->add_child(return_to_layer_selection_menu_button);
 
 	v_scroll = memnew(VScrollBar);
 	state_machine_draw->add_child(v_scroll);
