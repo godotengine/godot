@@ -2826,6 +2826,9 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				menu->reset_size();
 
+				moving_selection_attempt = false;
+				moving_selection = false;
+
 				Vector2 popup_pos = get_screen_position() + update_mode_rect.position + Vector2(0, update_mode_rect.size.height);
 				menu->set_position(popup_pos);
 				menu->popup();
@@ -2872,6 +2875,9 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				menu->reset_size();
 
+				moving_selection_attempt = false;
+				moving_selection = false;
+
 				Vector2 popup_pos = get_screen_position() + interp_mode_rect.position + Vector2(0, interp_mode_rect.size.height);
 				menu->set_position(popup_pos);
 				menu->popup();
@@ -2888,6 +2894,9 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->add_icon_item(get_editor_theme_icon(SNAME("InterpWrapClamp")), TTR("Clamp Loop Interp"), MENU_LOOP_CLAMP);
 				menu->add_icon_item(get_editor_theme_icon(SNAME("InterpWrapLoop")), TTR("Wrap Loop Interp"), MENU_LOOP_WRAP);
 				menu->reset_size();
+
+				moving_selection_attempt = false;
+				moving_selection = false;
 
 				Vector2 popup_pos = get_screen_position() + loop_wrap_rect.position + Vector2(0, loop_wrap_rect.size.height);
 				menu->set_position(popup_pos);
@@ -2943,6 +2952,9 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				menu->reset_size();
 
+				moving_selection_attempt = false;
+				moving_selection = false;
+
 				menu->set_position(get_screen_position() + get_local_mouse_position());
 				menu->popup();
 
@@ -2965,6 +2977,10 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		path->set_text(animation->track_get_path(track));
 		Vector2 theme_ofs = path->get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit"))->get_offset();
+
+		moving_selection_attempt = false;
+		moving_selection = false;
+
 		path_popup->set_position(get_screen_position() + path_rect.position - theme_ofs);
 		path_popup->set_size(path_rect.size);
 		path_popup->popup();
