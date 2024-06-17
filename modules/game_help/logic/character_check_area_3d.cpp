@@ -42,17 +42,34 @@ void CharacterCheckArea3D::update_coord()
     boundOtherCharacterByCoord.clear();
     for(auto& node : boundOtherCharacter)
     {
-        auto pos = world_pos_to_cell_pos(node->get_global_position());
+        auto pos = world_pos_to_cell_pos(node.key->get_global_position());
         if(boundOtherCharacterByCoord.has(pos))
         {
-            boundOtherCharacterByCoord[pos].push_back(node);
+            boundOtherCharacterByCoord[pos].push_back(node.value);
         }
         else
         {
-            LocalVector<Node3D*> nodes;
-            nodes.push_back(node);
+            LocalVector<Ref<CharacterCheckArea3DResult>> nodes;
+            nodes.push_back(node.value);
             boundOtherCharacterByCoord.insert(pos,nodes);   
         }
     }
     is_update_coord = false;
+}
+
+
+void CharacterCheckArea3D::get_bound_other_character_by_angle(TypedArray<CharacterCheckArea3DResult>& _array,float angle)
+{
+    _array.clear();
+    Vector3 curr_pos = mainBody->get_global_transform().origin;
+    Vector3 forward = mainBody->get_global_transform().basis.xform(Vector3(0,0,1));
+    float ref_angle = Math_PI * 0.5 * angle;
+    for(auto& node : boundOtherCharacter)
+    {
+        node.value->update(curr_pos,forward);
+        if(node.value->angle < ref_angle)
+        {
+            _array.push_back(node.value);
+        }
+    }
 }

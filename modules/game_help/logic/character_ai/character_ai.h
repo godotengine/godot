@@ -41,9 +41,9 @@ class CharacterAI_CheckBase : public RefCounted
     }
 	GDVIRTUAL2R(bool,_execute,CharacterBodyMain*,Blackboard*)
 
-    void set_name(StringName name)
+    void set_name(StringName p_name)
     {
-        this->name = name;
+        this->name = p_name;
     }
 
     StringName get_name()
@@ -76,13 +76,72 @@ public:
 class CharacterAI_CheckEnemy : public CharacterAI_CheckBase
 {
     GDCLASS(CharacterAI_CheckEnemy, CharacterAI_CheckBase);
-    static void _bind_methods(){}
-    public:
-    bool _execute_check(CharacterBodyMain *node, Blackboard* blackboard)
+    static void _bind_methods()
     {
-        return false;
+        ClassDB::bind_method(D_METHOD("set_enemy_layer","layer"),&CharacterAI_CheckEnemy::set_enemy_layer);
+        ClassDB::bind_method(D_METHOD("get_enemy_layer"),&CharacterAI_CheckEnemy::get_enemy_layer);
+
+        ClassDB::bind_method(D_METHOD("set_is_form_angle","is_form_angle"),&CharacterAI_CheckEnemy::set_is_form_angle);
+        ClassDB::bind_method(D_METHOD("get_is_form_angle"),&CharacterAI_CheckEnemy::get_is_form_angle);
+
+        ClassDB::bind_method(D_METHOD("set_form_angle","form_angle"),&CharacterAI_CheckEnemy::set_form_angle);
+        ClassDB::bind_method(D_METHOD("get_form_angle"),&CharacterAI_CheckEnemy::get_form_angle);
+
+        ClassDB::bind_method(D_METHOD("set_body_area_name","body_area_name"),&CharacterAI_CheckEnemy::set_body_area_name);
+        ClassDB::bind_method(D_METHOD("get_body_area_name"),&CharacterAI_CheckEnemy::get_body_area_name);
+
+        ADD_PROPERTY(PropertyInfo(Variant::INT,"enemy_layer",PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_enemy_layer","get_enemy_layer");
+        ADD_PROPERTY(PropertyInfo(Variant::BOOL,"is_form_angle"), "set_is_form_angle","get_is_form_angle");
+        ADD_PROPERTY(PropertyInfo(Variant::FLOAT,"form_angle"), "set_form_angle","get_form_angle");
+        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME,"body_area_name"), "set_body_area_name","get_body_area_name");
     }
-    
+    public:
+    bool _execute_check(CharacterBodyMain *node, Blackboard* blackboard);
+    void set_enemy_layer(int32_t p_layer)
+    {
+        enemy_layer = p_layer;
+    }
+
+    int32_t get_enemy_layer()
+    {
+        return enemy_layer;
+    }
+
+    void set_is_form_angle(bool p_is_form_angle)
+    {
+        is_form_angle = p_is_form_angle;
+    }
+
+    bool get_is_form_angle()
+    {
+        return is_form_angle;
+    }
+
+    void set_form_angle(float p_form_angle)
+    {
+        form_angle = p_form_angle;
+    }
+
+    float get_form_angle()
+    {
+        return form_angle;
+    }   
+
+    void set_body_area_name(StringName p_body_area_name)
+    {
+        body_area_name = p_body_area_name;
+    }
+
+    StringName get_body_area_name()
+    {
+        return body_area_name;
+    }
+
+    StringName body_area_name;
+    int32_t enemy_layer = 0;
+    bool is_form_angle = false;
+    float form_angle = 1;
+    bool is_sort_check = false;
 };
 // 检测角色跳跃
 class CharacterAI_CheckJump : public CharacterAI_CheckBase
@@ -188,7 +247,7 @@ public:
     void set_check(TypedArray<CharacterAI_CheckBase> check)
     {
         checks.clear();
-        for(uint32_t i=0;i<check.size();i++)
+        for(int32_t i=0;i<check.size();i++)
         {
             checks.push_back(check[i]);
         }
@@ -273,9 +332,9 @@ public:
 
     }
 
-    void set_name(StringName name)
+    void set_name(StringName p_name)
     {
-        this->name = name;
+        this->name = p_name;
     }
 
     StringName get_name()

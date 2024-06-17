@@ -32,6 +32,35 @@ bool CharacterAI_CheckGround::_execute_check(CharacterBodyMain *node, Blackboard
     }
     return false;
 }
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool CharacterAI_CheckEnemy::_execute_check(CharacterBodyMain *node, Blackboard* blackboard)
+{
+    Ref<CharacterCheckArea3D> area = node->get_check_area_by_name(body_area_name);
+    if(area.is_valid())
+    {
+        // 檢測敵人
+        return true;
+    }
+    return false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void CharacterAI::execute(CharacterBodyMain *node,Blackboard* blackboard,CharacterAIContext* p_context)
 {
     bool is_run_brain = false;

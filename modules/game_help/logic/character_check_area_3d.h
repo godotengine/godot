@@ -88,7 +88,36 @@ struct CellPos
 };
 
 
+class CharacterCheckArea3DResult : public RefCounted
+{
+    GDCLASS(CharacterCheckArea3DResult, RefCounted);
+    static void _bind_methods()
+    {
 
+    }
+public:
+
+    void update(const Vector3& pos,const Vector3& forward)
+    {
+        Node3D* node = Object::cast_to<Node3D>(ObjectDB::get_instance(character));
+        if(node)
+        {
+            squareDistance = (node->get_global_transform().origin - pos).length_squared();
+            angle = forward.angle_to(node->get_global_transform().origin - pos);
+        }
+        else
+        {
+            character = ObjectID();
+        }
+    }
+    
+
+public:
+    CellPos cellPos;
+    ObjectID character;
+    float squareDistance;
+    float angle;
+};
 // 角色的检测范围
 class CharacterCheckArea3D : public RefCounted
 {
@@ -174,7 +203,10 @@ public:
 
     void on_body_enter_area(Node3D *p_area)
     {
-        boundOtherCharacter.insert(p_area);
+        Ref<CharacterCheckArea3DResult> result ;
+        result.instantiate();
+        result->character = p_area->get_instance_id();
+        boundOtherCharacter.insert(p_area,result);
         is_update_coord = true;
     }
     void on_body_exit_area(Node3D *p_area)
@@ -184,6 +216,7 @@ public:
     }
     void set_body_main(class CharacterBodyMain* p_mainBody);
     void update_coord();
+    void get_bound_other_character_by_angle(TypedArray<CharacterCheckArea3DResult>& _array,float angle);
     CharacterCheckArea3D()
     {
 
@@ -198,8 +231,8 @@ public:
     CellPos world_page;
     const int WorldPageSize = 1024;
     StringName name;
-    HashSet<Node3D*> boundOtherCharacter;
-    HashMap<CellPos,LocalVector<Node3D*>,CellPos,CellPos> boundOtherCharacterByCoord;
+    HashMap<Node3D*,Ref<CharacterCheckArea3DResult>> boundOtherCharacter;
+    HashMap<CellPos,LocalVector<Ref<CharacterCheckArea3DResult>>,CellPos,CellPos> boundOtherCharacterByCoord;
     class CharacterBodyMain* mainBody = nullptr;
     Area3D * areaCollision = nullptr;
     Ref<CollisionObject3DConnection> area_shape;

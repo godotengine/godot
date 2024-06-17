@@ -142,7 +142,17 @@ public:
         }
         return ret;
     }
-    
+    Ref<CharacterCheckArea3D> get_check_area_by_name(const StringName &p_name)
+    {
+        for(uint32_t i = 0;i<check_area.size();i++)
+        {
+            if(check_area[i]->get_name() == p_name)
+            {
+                return check_area[i];
+            }
+        }
+        return Ref<CharacterCheckArea3D>();
+    }
 
 public:
     // 初始化身體分組信息

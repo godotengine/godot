@@ -41,6 +41,7 @@ void CharacterBodyMain::_bind_methods()
 
     ClassDB::bind_method(D_METHOD("set_check_area", "check_area"), &CharacterBodyMain::set_check_area);
     ClassDB::bind_method(D_METHOD("get_check_area"), &CharacterBodyMain::get_check_area);
+    ClassDB::bind_method(D_METHOD("get_check_area_by_name", "name"), &CharacterBodyMain::get_check_area_by_name);
 
     ClassDB::bind_method(D_METHOD("init_body_part_array", "part_array"), &CharacterBodyMain::init_body_part_array);
     ClassDB::bind_method(D_METHOD("set_body_part", "part"), &CharacterBodyMain::set_body_part);

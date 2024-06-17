@@ -139,6 +139,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<CharacterAnimatorLayerConfig>();
 	ClassDB::register_class<CharacterAnimatorLayer>();
 	ClassDB::register_class<CharacterAnimator>();
+	ClassDB::register_class<CharacterCheckArea3DResult>();
 	ClassDB::register_class<CharacterCheckArea3D>();
 
 
