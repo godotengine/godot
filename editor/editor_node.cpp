@@ -6121,7 +6121,7 @@ bool EditorNode::is_project_exporting() const {
 
 void EditorNode::show_accept(const String &p_text, const String &p_title) {
 	current_menu_option = -1;
-	if (accept) {
+	if (accept && !_is_blocked()) {
 		_close_save_scene_progress();
 		accept->set_ok_button_text(p_title);
 		accept->set_text(p_text);
@@ -6132,7 +6132,7 @@ void EditorNode::show_accept(const String &p_text, const String &p_title) {
 
 void EditorNode::show_save_accept(const String &p_text, const String &p_title) {
 	current_menu_option = -1;
-	if (save_accept) {
+	if (save_accept && !_is_blocked()) {
 		_close_save_scene_progress();
 		save_accept->set_ok_button_text(p_title);
 		save_accept->set_text(p_text);
@@ -6142,7 +6142,7 @@ void EditorNode::show_save_accept(const String &p_text, const String &p_title) {
 }
 
 void EditorNode::show_warning(const String &p_text, const String &p_title) {
-	if (warning) {
+	if (warning && !_is_blocked()) {
 		_close_save_scene_progress();
 		warning->set_text(p_text);
 		warning->set_title(p_title);
