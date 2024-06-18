@@ -542,6 +542,10 @@ void Viewport::_notification(int p_what) {
 				RenderingServer::get_singleton()->instance_set_base(contact_3d_debug_instance, contact_3d_debug_multimesh);
 				RenderingServer::get_singleton()->instance_set_scenario(contact_3d_debug_instance, find_world_3d()->get_scenario());
 				RenderingServer::get_singleton()->instance_geometry_set_flag(contact_3d_debug_instance, RS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
+				RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(contact_3d_debug_instance, RS::SHADOW_CASTING_SETTING_OFF);
+				RenderingServer::get_singleton()->instance_geometry_set_flag(contact_3d_debug_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+				RenderingServer::get_singleton()->instance_geometry_set_flag(contact_3d_debug_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+				RenderingServer::get_singleton()->instance_set_layer_mask(contact_3d_debug_instance, 1 << 26); // GIZMO_EDIT_LAYER
 #endif // _3D_DISABLED
 				set_physics_process_internal(true);
 			}
