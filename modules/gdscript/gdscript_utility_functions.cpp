@@ -98,7 +98,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		} else {
 			Variant::construct(Variant::Type(type), *r_ret, p_args, 1, r_error);
 			if (r_error.error != Callable::CallError::CALL_OK) {
-				*r_ret = vformat(RTR(R"(Cannot convert "%s" to "%s".)"), Variant::get_type_name(p_args[0]->get_type()), Variant::get_type_name(Variant::Type(type)));
+				*r_ret = vformat(RTR(R"(Cannot convert "%s" to "%s".)"), p_args[0]->get_full_type_name(), Variant::get_type_name(Variant::Type(type)));
 			}
 		}
 	}
@@ -527,7 +527,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
 				r_error.expected = Variant::NIL;
-				*r_ret = vformat(RTR("Value of type '%s' can't provide a length."), Variant::get_type_name(p_args[0]->get_type()));
+				*r_ret = vformat(RTR("Value of type '%s' can't provide a length."), p_args[0]->get_full_type_name());
 			}
 		}
 	}
