@@ -75,6 +75,10 @@ public:
 	virtual Variant get_parameter(const StringName &p_name) const;
 
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
+
+	PackedVector2Array mix_audio(float p_rate_scale, int p_frames);
+	void start_playback(double p_from_pos = 0.0);
+	void stop_playback();
 };
 
 class AudioStreamPlaybackResampled : public AudioStreamPlayback {

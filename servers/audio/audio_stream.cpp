@@ -76,6 +76,31 @@ int AudioStreamPlayback::mix(AudioFrame *p_buffer, float p_rate_scale, int p_fra
 	return ret;
 }
 
+PackedVector2Array AudioStreamPlayback::mix_audio(float p_rate_scale, int p_frames) {
+	Vector<AudioFrame> frames_in;
+	frames_in.resize(p_frames);
+
+	int frames = mix(frames_in.ptrw(), p_rate_scale, p_frames);
+
+	PackedVector2Array res;
+	res.resize(frames);
+
+	Vector2 *res_ptrw = res.ptrw();
+	for (int i = 0; i < frames; i++) {
+		res_ptrw[i] = Vector2(frames_in[i].left, frames_in[i].right);
+	}
+
+	return res;
+}
+
+void AudioStreamPlayback::start_playback(double p_from_pos) {
+	start();
+}
+
+void AudioStreamPlayback::stop_playback() {
+	stop();
+}
+
 void AudioStreamPlayback::tag_used_streams() {
 	GDVIRTUAL_CALL(_tag_used_streams);
 }
@@ -101,6 +126,13 @@ void AudioStreamPlayback::_bind_methods() {
 	GDVIRTUAL_BIND(_tag_used_streams);
 	GDVIRTUAL_BIND(_set_parameter, "name", "value");
 	GDVIRTUAL_BIND(_get_parameter, "name");
+
+	ClassDB::bind_method(D_METHOD("mix_audio", "rate_scale", "frames"), &AudioStreamPlayback::mix_audio);
+	ClassDB::bind_method(D_METHOD("start", "from_pos"), &AudioStreamPlayback::start_playback, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("stop"), &AudioStreamPlayback::stop_playback);
+	ClassDB::bind_method(D_METHOD("get_loop_count"), &AudioStreamPlayback::get_loop_count);
+	ClassDB::bind_method(D_METHOD("get_playback_position"), &AudioStreamPlayback::get_playback_position);
+	ClassDB::bind_method(D_METHOD("is_playing"), &AudioStreamPlayback::is_playing);
 }
 //////////////////////////////
 
