@@ -687,6 +687,7 @@ public:
 			int texture_order = 0;
 			int texture_binding = 0;
 			DataType type = TYPE_VOID;
+			String struct_name;
 			DataPrecision precision = PRECISION_DEFAULT;
 			int array_size = 0;
 			Vector<ConstantNode::Value> default_value;
@@ -699,6 +700,24 @@ public:
 			int instance_index = 0;
 			String group;
 			String subgroup;
+			uint32_t comp_count = 0U;
+
+			struct Member {
+				StringName name;
+				DataType type = TYPE_VOID;
+				String struct_name;
+				int array_size = 0;
+				List<Member> members;
+				uint32_t comp_count = 0U;
+
+				Member() {}
+
+				Member(const StringName &p_name, DataType p_type, const String &p_struct_name, int p_array_size) :
+						name(p_name), type(p_type), struct_name(p_struct_name), array_size(p_array_size) {
+				}
+			};
+
+			List<Member> members;
 
 			Uniform() {
 				hint_range[0] = 0.0f;
@@ -795,6 +814,7 @@ public:
 	static Variant constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
 	static PropertyInfo uniform_to_property_info(const ShaderNode::Uniform &p_uniform);
 	static uint32_t get_datatype_size(DataType p_type);
+	static Variant get_default_datatype_value(DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint);
 
 	static void get_keyword_list(List<String> *r_keywords);
 	static bool is_control_flow_keyword(String p_keyword);
@@ -1125,6 +1145,9 @@ private:
 	Error _parse_block(BlockNode *p_block, const FunctionInfo &p_function_info, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
 	String _get_shader_type_list(const HashSet<String> &p_shader_types) const;
 	String _get_qualifier_str(ArgumentQualifier p_qualifier) const;
+
+	void _parse_uniform_member(ShaderNode::Uniform::Member &p_member, const StringName &p_struct_name);
+	Error _parse_uniform_struct_initializer(Node *p_current, const ShaderNode::Uniform::Member &p_member, ConstantNode::Value *p_default_value, uint32_t &r_offset);
 
 	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types);
 
