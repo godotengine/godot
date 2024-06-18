@@ -119,11 +119,11 @@ protected:
 	GDVIRTUAL0(_export_end)
 
 	GDVIRTUAL2RC(bool, _begin_customize_resources, const Ref<EditorExportPlatform> &, const Vector<String> &)
-	GDVIRTUAL2R(Ref<Resource>, _customize_resource, const Ref<Resource> &, String)
+	GDVIRTUAL2R_REQUIRED(Ref<Resource>, _customize_resource, const Ref<Resource> &, String)
 
 	GDVIRTUAL2RC(bool, _begin_customize_scenes, const Ref<EditorExportPlatform> &, const Vector<String> &)
-	GDVIRTUAL2R(Node *, _customize_scene, Node *, String)
-	GDVIRTUAL0RC(uint64_t, _get_customization_configuration_hash)
+	GDVIRTUAL2R_REQUIRED(Node *, _customize_scene, Node *, String)
+	GDVIRTUAL0RC_REQUIRED(uint64_t, _get_customization_configuration_hash)
 
 	GDVIRTUAL0(_end_customize_scenes)
 	GDVIRTUAL0(_end_customize_resources)
@@ -134,7 +134,7 @@ protected:
 	GDVIRTUAL1RC(bool, _should_update_export_options, const Ref<EditorExportPlatform> &);
 	GDVIRTUAL2RC(String, _get_export_option_warning, const Ref<EditorExportPlatform> &, String);
 
-	GDVIRTUAL0RC(String, _get_name)
+	GDVIRTUAL0RC_REQUIRED(String, _get_name)
 
 	GDVIRTUAL1RC(bool, _supports_platform, const Ref<EditorExportPlatform> &);
 

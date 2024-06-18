@@ -1017,6 +1017,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						d2["name"] = String(method_name);
 						d2["is_const"] = (F.flags & METHOD_FLAG_CONST) ? true : false;
 						d2["is_static"] = (F.flags & METHOD_FLAG_STATIC) ? true : false;
+						d2["is_required"] = (F.flags & METHOD_FLAG_VIRTUAL_REQUIRED) ? true : false;
 						d2["is_vararg"] = false;
 						d2["is_virtual"] = true;
 						// virtual functions have no hash since no MethodBind is involved
