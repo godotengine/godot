@@ -45,14 +45,6 @@
 				Once finished with your RID, you will want to free the RID using the VisualServer's [method free_rid] static method.
 			</description>
 		</method>
-		<method name="camera_reset_physics_interpolation">
-			<return type="void" />
-			<argument index="0" name="camera" type="RID" />
-			<description>
-				Prevents physics interpolation for the current physics tick.
-				This is useful when moving a [Camera] to a new location, to give an instantaneous change rather than interpolation from the previous location.
-			</description>
-		</method>
 		<method name="camera_set_cull_mask">
 			<return type="void" />
 			<argument index="0" name="camera" type="RID" />
@@ -78,14 +70,6 @@
 			<argument index="4" name="z_far" type="float" />
 			<description>
 				Sets camera to use frustum projection. This mode allows adjusting the [code]offset[/code] argument to create "tilted frustum" effects.
-			</description>
-		</method>
-		<method name="camera_set_interpolated">
-			<return type="void" />
-			<argument index="0" name="camera" type="RID" />
-			<argument index="1" name="interpolated" type="bool" />
-			<description>
-				Turns on and off physics interpolation for the [Camera].
 			</description>
 		</method>
 		<method name="camera_set_orthogonal">

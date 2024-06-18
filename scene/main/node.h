@@ -209,7 +209,7 @@ private:
 	void _propagate_exit_tree();
 	void _propagate_after_exit_branch(bool p_exiting_tree);
 	void _propagate_physics_interpolated(bool p_interpolated);
-	void _propagate_physics_interpolation_reset_requested();
+	void _propagate_physics_interpolation_reset_requested(bool p_requested);
 	void _print_stray_nodes();
 	void _propagate_pause_owner(Node *p_owner);
 	void _propagate_groups_dirty();

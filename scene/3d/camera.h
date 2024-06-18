@@ -61,6 +61,7 @@ public:
 private:
 	bool force_change;
 	bool current;
+
 	Viewport *viewport;
 
 	Projection mode;
@@ -90,12 +91,43 @@ private:
 	Ref<SpatialVelocityTracker> velocity_tracker;
 	bool affect_lod = true;
 
+	///////////////////////////////////////////////////////
+	// INTERPOLATION FUNCTIONS
+	void _physics_interpolation_ensure_transform_calculated(bool p_force = false) const;
+	void _physics_interpolation_ensure_data_flipped();
+
+	// These can be set by derived Cameras,
+	// if they wish to do processing (while still
+	// allowing physics interpolation to function).
+	bool _desired_process_internal = false;
+	bool _desired_physics_process_internal = false;
+
+	mutable struct InterpolationData {
+		Transform xform_curr;
+		Transform xform_prev;
+		Transform xform_interpolated;
+		Transform camera_xform_interpolated; // After modification according to camera type.
+		uint32_t last_update_physics_tick = 0;
+		uint32_t last_update_frame = UINT32_MAX;
+	} _interpolation_data;
+
+	void _update_process_mode();
+
 protected:
+	// Use from derived classes to set process modes instead of setting directly.
+	// This is because physics interpolation may need to request process modes additionally.
+	void set_desired_process_modes(bool p_process_internal, bool p_physics_process_internal);
+
+	// Opportunity for derived classes to interpolate extra attributes.
+	virtual void physics_interpolation_flip_data() {}
+
+	virtual void _physics_interpolated_changed();
+	virtual Transform _get_adjusted_camera_transform(const Transform &p_xform) const;
+	///////////////////////////////////////////////////////
+
 	void _update_camera();
 	virtual void _request_camera_update();
 	void _update_camera_mode();
-
-	virtual void _physics_interpolated_changed();
 
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &p_property) const;
@@ -135,7 +167,7 @@ public:
 	void set_znear(float p_znear);
 	void set_frustum_offset(Vector2 p_offset);
 
-	virtual Transform get_camera_transform() const;
+	Transform get_camera_transform() const;
 
 	virtual Vector3 project_ray_normal(const Point2 &p_pos) const;
 	virtual Vector3 project_ray_origin(const Point2 &p_pos) const;
@@ -195,7 +227,9 @@ private:
 	ProcessMode process_mode;
 	RID pyramid_shape;
 	float margin;
-	float clip_offset;
+
+	float clip_offset = 0;
+
 	uint32_t collision_mask;
 	bool clip_to_areas;
 	bool clip_to_bodies;
@@ -204,10 +238,21 @@ private:
 
 	Vector<Vector3> points;
 
+	///////////////////////////////////////////////////////
+	// INTERPOLATION FUNCTIONS
+	struct InterpolatedData {
+		float clip_offset_curr = 0;
+		float clip_offset_prev = 0;
+	} _interpolation_data;
+
 protected:
+	virtual Transform _get_adjusted_camera_transform(const Transform &p_xform) const;
+	virtual void physics_interpolation_flip_data();
+	virtual void _physics_interpolated_changed();
+	///////////////////////////////////////////////////////
+
 	void _notification(int p_what);
 	static void _bind_methods();
-	virtual Transform get_camera_transform() const;
 
 public:
 	void set_clip_to_areas(bool p_clip);

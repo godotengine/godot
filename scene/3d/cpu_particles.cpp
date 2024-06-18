@@ -900,14 +900,6 @@ void CPUParticles::_particles_process(float p_delta) {
 				p.velocity.z = 0.0;
 				p.transform.origin.z = 0.0;
 			}
-
-			// Teleport if starting a new particle, so
-			// we don't get a streak from the old position
-			// to this new start.
-			if (_interpolated) {
-				p.copy_to(particles_prev[i]);
-			}
-
 		} else if (!p.active) {
 			continue;
 		} else if (p.time > p.lifetime) {
@@ -1012,6 +1004,13 @@ void CPUParticles::_particles_process(float p_delta) {
 		}
 
 		p.transform.origin += p.velocity * local_delta;
+
+		// Teleport if starting a new particle, so
+		// we don't get a streak from the old position
+		// to this new start.
+		if (restart && _interpolated) {
+			p.copy_to(particles_prev[i]);
+		}
 	}
 }
 
