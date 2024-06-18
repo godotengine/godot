@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamPlaybackRandomizer" inherits="AudioStreamPlayback" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Playback instance for [AudioStreamRandomizer].
+	</brief_description>
+	<description>
+		Playback instance for [AudioStreamRandomizer]. After setting the [code]stream[/code] property of [AudioStreamPlayer], [AudioStreamPlayer2D], or [AudioStreamPlayer3D], the playback instance can be obtained by calling [method AudioStreamPlayer.get_stream_playback], [method AudioStreamPlayer2D.get_stream_playback], or [method AudioStreamPlayer3D.get_stream_playback] methods.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_stream" qualifiers="const">
+			<return type="AudioStream" />
+			<description>
+				Returns the current stream.
+			</description>
+		</method>
+	</methods>
+</class>

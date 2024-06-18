@@ -763,6 +763,14 @@ int AudioStreamPlaybackRandomizer::get_loop_count() const {
 	return 0;
 }
 
+Ref<AudioStream> AudioStreamPlaybackRandomizer::get_stream() const {
+	if (randomizer.is_valid()) {
+		return randomizer->last_playback;
+	}
+
+	return nullptr;
+}
+
 double AudioStreamPlaybackRandomizer::get_playback_position() const {
 	if (playing.is_valid()) {
 		return playing->get_playback_position();
@@ -798,6 +806,10 @@ int AudioStreamPlaybackRandomizer::mix(AudioFrame *p_buffer, float p_rate_scale,
 		}
 		return p_frames;
 	}
+}
+
+void AudioStreamPlaybackRandomizer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_stream"), &AudioStreamPlaybackRandomizer::get_stream);
 }
 
 AudioStreamPlaybackRandomizer::~AudioStreamPlaybackRandomizer() {
