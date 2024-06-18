@@ -8431,6 +8431,7 @@ Node3DEditor::Node3DEditor() {
 	VBoxContainer *vbc = this;
 
 	custom_camera = nullptr;
+	ERR_FAIL_COND_MSG(singleton != nullptr, "A Node3DEditor singleton already exists.");
 	singleton = this;
 	editor_selection = EditorNode::get_singleton()->get_editor_selection();
 	editor_selection->add_editor_plugin(this);
@@ -9060,6 +9061,7 @@ void fragment() {
 	clear(); // Make sure values are initialized. Will call _snap_update() for us.
 }
 Node3DEditor::~Node3DEditor() {
+	singleton = nullptr;
 	memdelete(preview_node);
 	if (preview_sun_dangling && preview_sun) {
 		memdelete(preview_sun);
