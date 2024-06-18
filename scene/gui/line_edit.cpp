@@ -2482,11 +2482,27 @@ bool LineEdit::is_drag_and_drop_selection_enabled() const {
 	return drag_and_drop_selection_enabled;
 }
 
+void LineEdit::_texture_changed() {
+	_fit_to_width();
+	update_minimum_size();
+	queue_redraw();
+}
+
 void LineEdit::set_right_icon(const Ref<Texture2D> &p_icon) {
 	if (right_icon == p_icon) {
 		return;
 	}
+
+	if (right_icon.is_valid()) {
+		right_icon->disconnect_changed(callable_mp(this, &LineEdit::_texture_changed));
+	}
+
 	right_icon = p_icon;
+
+	if (right_icon.is_valid()) {
+		right_icon->connect_changed(callable_mp(this, &LineEdit::_texture_changed));
+	}
+
 	_fit_to_width();
 	update_minimum_size();
 	queue_redraw();
