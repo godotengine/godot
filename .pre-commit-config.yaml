@@ -20,6 +20,22 @@ repos:
             platform/android/java/lib/src/com/.*
           )
 
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.3.5
+    hooks:
+      - id: clang-tidy
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java|glsl)$
+        args: [--fix, --quiet, --use-color]
+        types_or: [text]
+        exclude: |
+          (?x)^(
+            tests/python_build/.*|
+            platform/android/java/lib/src/com/.*
+          )
+        additional_dependencies: [clang-tidy==18.1.1]
+        require_serial: true
+        stages: [manual] # Not automatically triggered, invoked via `pre-commit run --hook-stage manual clang-tidy`
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.4.4
     hooks:
