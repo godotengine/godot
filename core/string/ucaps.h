@@ -34,7 +34,7 @@
 //satan invented unicode?
 #define CAPS_LEN 666
 
-static const int caps_table[CAPS_LEN][2] = {
+inline constexpr int caps_table[CAPS_LEN][2] = {
 	{ 0x0061, 0x0041 },
 	{ 0x0062, 0x0042 },
 	{ 0x0063, 0x0043 },
@@ -703,7 +703,7 @@ static const int caps_table[CAPS_LEN][2] = {
 	{ 0xFF5A, 0xFF3A },
 };
 
-static const int reverse_caps_table[CAPS_LEN - 1][2] = {
+inline constexpr int reverse_caps_table[CAPS_LEN - 1][2] = {
 	{ 0x0041, 0x0061 },
 	{ 0x0042, 0x0062 },
 	{ 0x0043, 0x0063 },
@@ -1372,44 +1372,54 @@ static const int reverse_caps_table[CAPS_LEN - 1][2] = {
 	{ 0xFF3A, 0xFF5A },
 };
 
-static int _find_upper(int ch) {
-	int low = 0;
-	int high = CAPS_LEN - 1;
-	int middle;
+constexpr size_t _get_lookup_size(size_t count) {
+	size_t size = 1;
+	while (size < count * 2) {
+		size *= 2;
+	}
+	return size;
+}
 
-	while (low <= high) {
-		middle = (low + high) / 2;
+template <size_t Count>
+struct UcapsLookup {
+	static constexpr size_t Size = _get_lookup_size(Count);
 
-		if (ch < caps_table[middle][0]) {
-			high = middle - 1; //search low end of array
-		} else if (caps_table[middle][0] < ch) {
-			low = middle + 1; //search high end of array
-		} else {
-			return caps_table[middle][1];
+	constexpr UcapsLookup(const int (&p_pairs)[Count][2]) {
+		for (size_t pair_i = 0; pair_i < Count; pair_i++) {
+			int key = p_pairs[pair_i][0];
+			int value = p_pairs[pair_i][1];
+			size_t array_index = get_index(key);
+			array[array_index][0] = key;
+			array[array_index][1] = value;
 		}
 	}
 
-	return ch;
+	constexpr size_t get_index(int key) const {
+		uint32_t hash = key * 23;
+		size_t array_index = hash & (Size - 1);
+		while (array[array_index][0] && array[array_index][0] != key) {
+			array_index = (array_index + 1) & (Size - 1);
+		}
+		return array_index;
+	}
+
+	constexpr int get(int key) const {
+		size_t i = get_index(key);
+		return array[i][0] ? array[i][1] : key;
+	}
+
+	int array[Size][2] = {};
+};
+
+inline constexpr UcapsLookup<CAPS_LEN> _upper_lookup(caps_table);
+inline constexpr UcapsLookup<CAPS_LEN - 1> _lower_lookup(reverse_caps_table);
+
+static int _find_upper(int ch) {
+	return _upper_lookup.get(ch);
 }
 
 static int _find_lower(int ch) {
-	int low = 0;
-	int high = CAPS_LEN - 2;
-	int middle;
-
-	while (low <= high) {
-		middle = (low + high) / 2;
-
-		if (ch < reverse_caps_table[middle][0]) {
-			high = middle - 1; //search low end of array
-		} else if (reverse_caps_table[middle][0] < ch) {
-			low = middle + 1; //search high end of array
-		} else {
-			return reverse_caps_table[middle][1];
-		}
-	}
-
-	return ch;
+	return _lower_lookup.get(ch);
 }
 
 #endif // UCAPS_H
