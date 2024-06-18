@@ -105,6 +105,8 @@ layout(set = 0, binding = 3, std140) uniform DirectionalLights {
 }
 directional_lights;
 
+#STRUCTS
+
 #ifdef MATERIAL_UNIFORMS_USED
 /* clang-format off */
 layout(set = 1, binding = 0, std140) uniform MaterialUniforms {

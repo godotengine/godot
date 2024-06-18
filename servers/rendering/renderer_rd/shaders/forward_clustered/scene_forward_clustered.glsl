@@ -115,6 +115,8 @@ layout(location = 7) out vec4 screen_position;
 layout(location = 8) out vec4 prev_screen_position;
 #endif
 
+#STRUCTS
+
 #ifdef MATERIAL_UNIFORMS_USED
 /* clang-format off */
 layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms {
@@ -949,6 +951,8 @@ layout(location = 13) highp in vec4 specular_light_interp;
 //both required for transmittance to be enabled
 #define LIGHT_TRANSMITTANCE_USED
 #endif
+
+#STRUCTS
 
 #ifdef MATERIAL_UNIFORMS_USED
 /* clang-format off */

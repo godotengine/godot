@@ -107,6 +107,9 @@ layout(location = 8) highp out vec4 specular_light_interp;
 
 #include "../scene_forward_vertex_lights_inc.glsl"
 #endif // !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
+
+#STRUCTS
+
 #ifdef MATERIAL_UNIFORMS_USED
 /* clang-format off */
 layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms {
@@ -742,6 +745,8 @@ ivec2 multiview_uv(ivec2 uv) {
 //both required for transmittance to be enabled
 #define LIGHT_TRANSMITTANCE_USED
 #endif
+
+#STRUCTS
 
 #ifdef MATERIAL_UNIFORMS_USED
 /* clang-format off */

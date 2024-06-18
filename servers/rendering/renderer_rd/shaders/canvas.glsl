@@ -40,6 +40,8 @@ layout(location = 3) out vec2 pixel_size_interp;
 
 #endif
 
+#STRUCTS
+
 #ifdef MATERIAL_UNIFORMS_USED
 /* clang-format off */
 layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
@@ -254,6 +256,8 @@ layout(location = 3) in vec2 pixel_size_interp;
 #endif
 
 layout(location = 0) out vec4 frag_color;
+
+#STRUCTS
 
 #ifdef MATERIAL_UNIFORMS_USED
 /* clang-format off */

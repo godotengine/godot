@@ -563,9 +563,64 @@ void MaterialStorage::ShaderData::set_default_texture_parameter(const StringName
 	}
 }
 
+static Variant parse_member(const ShaderLanguage::ShaderNode::Uniform::Member &p_member, const ShaderLanguage::Scalar *p_data, uint32_t &r_offset) {
+	if (p_member.type == ShaderLanguage::TYPE_STRUCT) {
+		if (p_member.array_size > 0) {
+			Array array;
+
+			for (int i = 0; i < p_member.array_size; i++) {
+				Dictionary dict;
+
+				for (const ShaderLanguage::ShaderNode::Uniform::Member &member : p_member.members) {
+					dict[member.name] = parse_member(member, p_data, r_offset);
+				}
+				array.push_back(dict);
+			}
+			return array;
+		}
+		Dictionary dict;
+		for (const ShaderLanguage::ShaderNode::Uniform::Member &member : p_member.members) {
+			dict[member.name] = parse_member(member, p_data, r_offset);
+		}
+		return dict;
+	}
+	if (p_data != nullptr) {
+		Vector<ShaderLanguage::Scalar> default_value;
+		for (uint32_t i = 0U; i < p_member.comp_count; i++) {
+			default_value.push_back(p_data[r_offset + i]);
+		}
+		r_offset += p_member.comp_count;
+		return ShaderLanguage::constant_value_to_variant(default_value, p_member.type, p_member.array_size, ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
+	}
+	return ShaderLanguage::get_default_datatype_value(p_member.type, p_member.array_size, ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
+}
+
 Variant MaterialStorage::ShaderData::get_default_parameter(const StringName &p_parameter) const {
 	if (uniforms.has(p_parameter)) {
 		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
+
+		if (uniform.type == ShaderLanguage::TYPE_STRUCT) {
+			uint32_t offset = 0U;
+
+			if (uniform.array_size > 0) {
+				Array array;
+
+				for (int i = 0; i < uniform.array_size; i++) {
+					Dictionary dict;
+					for (const ShaderLanguage::ShaderNode::Uniform::Member &member : uniform.members) {
+						dict[member.name] = parse_member(member, uniform.default_value.ptr(), offset);
+					}
+					array.push_back(dict);
+				}
+				return array;
+			}
+			Dictionary dict;
+			for (const ShaderLanguage::ShaderNode::Uniform::Member &member : uniform.members) {
+				dict[member.name] = parse_member(member, uniform.default_value.ptr(), offset);
+			}
+			return dict;
+		}
+
 		Vector<ShaderLanguage::Scalar> default_value = uniform.default_value;
 		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.array_size, uniform.hint);
 	}
@@ -723,6 +778,109 @@ bool MaterialStorage::ShaderData::blend_mode_uses_blend_alpha(BlendMode p_mode) 
 ///////////////////////////////////////////////////////////////////////////
 // MaterialStorage::MaterialData
 
+// Finds a size recursively.
+static uint32_t _fill_struct_member_sizes(const ShaderLanguage::ShaderNode::Uniform::Member &p_member, LocalVector<uint32_t> &p_sizes) {
+	const bool is_array = p_member.array_size > 0;
+	const int array_size = MAX(1, p_member.array_size);
+
+	if (p_member.type == ShaderLanguage::TYPE_STRUCT) {
+		uint32_t size = 0U;
+
+		for (int i = 0; i < array_size; i++) {
+			uint32_t struct_size = 0U;
+
+			for (const ShaderLanguage::ShaderNode::Uniform::Member &member : p_member.members) {
+				struct_size += _fill_struct_member_sizes(member, p_sizes);
+			}
+
+			size += struct_size;
+
+			// Adds an extra offset required for structs.
+			{
+				// `((struct_size + 15) & -16)` calculates a nearest (to a struct size) 16-byte aligned value.
+				uint32_t extra_offset = ((struct_size + 15) & -16) - struct_size;
+
+				p_sizes.ptr()[p_sizes.size() - 1] += extra_offset;
+
+				size += extra_offset;
+			}
+		}
+		return size;
+	}
+
+	uint32_t size = ShaderLanguage::get_datatype_size(p_member.type) * MAX(1, p_member.array_size);
+
+	if (is_array) {
+		// The following code enforces a 16-byte alignment of struct's array members.
+		const int m = 16 * array_size;
+		if ((size % m) != 0) {
+			size += m - (size % m);
+		}
+	}
+
+	p_sizes.push_back(size);
+	return size;
+}
+
+// Fill struct members recursively.
+static uint32_t _fill_struct_member_buffer(const ShaderLanguage::ShaderNode::Uniform::Member &p_member, uint8_t *p_data, const Dictionary &p_dict, const LocalVector<uint32_t> &p_sizes, uint32_t p_index, uint32_t &r_sub_offset, bool p_use_linear_color) {
+	uint32_t index = p_index;
+
+	if (p_member.type == ShaderLanguage::TYPE_STRUCT) {
+		const int array_size = MAX(1, p_member.array_size);
+
+		if (p_member.array_size > 0) {
+			const Array &array = p_dict[p_member.name].get_type() == Variant::ARRAY ? (Array)p_dict[p_member.name] : Array();
+
+			for (int i = 0; i < array_size; i++) {
+				for (const ShaderLanguage::ShaderNode::Uniform::Member &member : p_member.members) {
+					const Dictionary &dict = (i < array.size() && array[i].get_type() == Variant::DICTIONARY) ? (Dictionary)array[i] : Dictionary();
+
+					index = _fill_struct_member_buffer(member, p_data, dict, p_sizes, index, r_sub_offset, p_use_linear_color);
+				}
+			}
+		} else {
+			for (const ShaderLanguage::ShaderNode::Uniform::Member &member : p_member.members) {
+				const Dictionary &dict = p_dict[p_member.name].get_type() == Variant::DICTIONARY ? (Dictionary)p_dict[p_member.name] : Dictionary();
+
+				index = _fill_struct_member_buffer(member, p_data, dict, p_sizes, index, r_sub_offset, p_use_linear_color);
+			}
+		}
+	} else {
+		if (p_dict.has(p_member.name)) {
+			// User provided.
+			_fill_std140_variant_ubo_value(p_member.type, p_member.array_size, p_dict[p_member.name], &p_data[r_sub_offset], p_use_linear_color);
+		} else {
+			// Zero because it was not provided.
+			_fill_std140_ubo_empty(p_member.type, p_member.array_size, &p_data[r_sub_offset]);
+		}
+		r_sub_offset += p_sizes[index++];
+	}
+
+	return index;
+}
+
+// Fill struct members to zero recursively.
+static uint32_t _clear_struct_member_buffer(const ShaderLanguage::ShaderNode::Uniform::Member &p_member, uint8_t *p_data, const LocalVector<uint32_t> &p_sizes, uint32_t p_index, uint32_t &r_sub_offset) {
+	uint32_t index = p_index;
+
+	if (p_member.type == ShaderLanguage::TYPE_STRUCT) {
+		const int array_size = MAX(1, p_member.array_size);
+
+		for (int i = 0; i < array_size; i++) {
+			for (const ShaderLanguage::ShaderNode::Uniform::Member &member : p_member.members) {
+				index = _clear_struct_member_buffer(member, p_data, p_sizes, index, r_sub_offset);
+			}
+		}
+	} else {
+		_fill_std140_ubo_empty(p_member.type, p_member.array_size, &p_data[r_sub_offset]);
+
+		r_sub_offset += p_sizes[index++];
+	}
+
+	return index;
+}
+
 void MaterialStorage::MaterialData::update_uniform_buffer(const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const HashMap<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color) {
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	bool uses_global_buffer = false;
@@ -759,12 +917,42 @@ void MaterialStorage::MaterialData::update_uniform_buffer(const HashMap<StringNa
 			continue;
 		}
 
+		LocalVector<uint32_t> struct_member_size_cache;
+#ifdef DEBUG_ENABLED
+		uint32_t struct_size = 0U;
+#endif
+		// Calculate struct size and member sizes to be used lately.
+		if (E.value.type == ShaderLanguage::TYPE_STRUCT) {
+			const int array_size = MAX(1, E.value.array_size);
+			uint32_t extra_offset = 0U;
+
+			for (int i = 0; i < array_size; i++) {
+				uint32_t struct_size2 = 0U;
+
+				for (const ShaderLanguage::ShaderNode::Uniform::Member &member : E.value.members) {
+					struct_size2 += _fill_struct_member_sizes(member, struct_member_size_cache);
+				}
+				// Finds an extra offset.
+				if (i == 0) {
+					// `((struct_size + 15) & -16)` calculates a nearest (to a struct size) 16-byte aligned value.
+					extra_offset = ((struct_size2 + 15) & -16) - struct_size2;
+				}
+				struct_member_size_cache.ptr()[struct_member_size_cache.size() - 1] += extra_offset;
+#ifdef DEBUG_ENABLED
+				struct_size += struct_size2;
+				struct_size += extra_offset;
+#endif
+			}
+		}
+
 		//regular uniform
 		uint32_t offset = p_uniform_offsets[E.value.order];
 #ifdef DEBUG_ENABLED
 		uint32_t size = 0U;
-		// The following code enforces a 16-byte alignment of uniform arrays.
-		if (E.value.array_size > 0) {
+		if (E.value.type == ShaderLanguage::TYPE_STRUCT) {
+			size += struct_size;
+		} else if (E.value.array_size > 0) {
+			// The following code enforces a 16-byte alignment of uniform arrays.
 			size = ShaderLanguage::get_datatype_size(E.value.type) * E.value.array_size;
 			int m = (16 * E.value.array_size);
 			if ((size % m) != 0U) {
@@ -779,22 +967,48 @@ void MaterialStorage::MaterialData::update_uniform_buffer(const HashMap<StringNa
 		HashMap<StringName, Variant>::ConstIterator V = p_parameters.find(E.key);
 
 		if (V) {
-			//user provided
-			_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, V->value, data, p_use_linear_color);
+			if (E.value.type == ShaderLanguage::TYPE_STRUCT) {
+				uint32_t sub_offset = 0U;
+				uint32_t index = 0U;
 
-		} else if (E.value.default_value.size()) {
-			//default value
-			_fill_std140_ubo_value(E.value.type, E.value.default_value, data);
-			//value=E.value.default_value;
-		} else {
-			//zero because it was not provided
-			if ((E.value.type == ShaderLanguage::TYPE_VEC3 || E.value.type == ShaderLanguage::TYPE_VEC4) && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
-				//colors must be set as black, with alpha as 1.0
-				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Color(0, 0, 0, 1), data, p_use_linear_color);
+				if (E.value.array_size > 0) {
+					const Array &array = (Array)V->value;
+
+					for (int i = 0; i < E.value.array_size; i++) {
+						const Dictionary &dict = i < array.size() ? (Dictionary)array[i] : Dictionary();
+
+						for (const ShaderLanguage::ShaderNode::Uniform::Member &member : E.value.members) {
+							index = _fill_struct_member_buffer(member, data, dict, struct_member_size_cache, index, sub_offset, p_use_linear_color);
+						}
+					}
+				} else {
+					for (const ShaderLanguage::ShaderNode::Uniform::Member &member : E.value.members) {
+						index = _fill_struct_member_buffer(member, data, V->value, struct_member_size_cache, index, sub_offset, p_use_linear_color);
+					}
+				}
 			} else {
-				//else just zero it out
-				_fill_std140_ubo_empty(E.value.type, E.value.array_size, data);
+				// User provided.
+				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, V->value, data, p_use_linear_color);
 			}
+		} else if (E.value.default_value.size()) {
+			// Default value.
+			_fill_std140_ubo_value(E.value.type, E.value.default_value, data);
+		} else if (E.value.type == ShaderLanguage::TYPE_STRUCT) {
+			uint32_t sub_offset = 0U;
+			uint32_t index = 0U;
+			const int array_size = MAX(1, E.value.array_size);
+
+			for (int i = 0; i < array_size; i++) {
+				for (const ShaderLanguage::ShaderNode::Uniform::Member &member : E.value.members) {
+					index = _clear_struct_member_buffer(member, data, struct_member_size_cache, index, sub_offset);
+				}
+			}
+		} else if ((E.value.type == ShaderLanguage::TYPE_VEC3 || E.value.type == ShaderLanguage::TYPE_VEC4) && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+			// Colors must be set as black, with alpha as 1.0.
+			_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Color(0, 0, 0, 1), data, p_use_linear_color);
+		} else {
+			// Otherwise, just zero it out.
+			_fill_std140_ubo_empty(E.value.type, E.value.array_size, data);
 		}
 	}
 

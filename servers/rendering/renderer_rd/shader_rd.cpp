@@ -55,6 +55,22 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 		if (l.begins_with("#VERSION_DEFINES")) {
 			chunk.type = StageTemplate::Chunk::TYPE_VERSION_DEFINES;
 			push_chunk = true;
+		} else if (l.begins_with("#STRUCTS")) {
+			switch (p_stage_type) {
+				case STAGE_TYPE_VERTEX:
+					chunk.type = StageTemplate::Chunk::TYPE_VERTEX_STRUCTS;
+					break;
+				case STAGE_TYPE_FRAGMENT:
+					chunk.type = StageTemplate::Chunk::TYPE_FRAGMENT_STRUCTS;
+					break;
+				case STAGE_TYPE_COMPUTE:
+					chunk.type = StageTemplate::Chunk::TYPE_COMPUTE_STRUCTS;
+					break;
+				default: {
+				}
+			}
+
+			push_chunk = true;
 		} else if (l.begins_with("#GLOBALS")) {
 			switch (p_stage_type) {
 				case STAGE_TYPE_VERTEX:
@@ -211,11 +227,20 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 			case StageTemplate::Chunk::TYPE_MATERIAL_UNIFORMS: {
 				builder.append(p_version->uniforms.get_data()); //uniforms (same for vertex and fragment)
 			} break;
+			case StageTemplate::Chunk::TYPE_VERTEX_STRUCTS: {
+				builder.append(p_version->vertex_structs.get_data()); // vertex structs
+			} break;
 			case StageTemplate::Chunk::TYPE_VERTEX_GLOBALS: {
 				builder.append(p_version->vertex_globals.get_data()); // vertex globals
 			} break;
+			case StageTemplate::Chunk::TYPE_FRAGMENT_STRUCTS: {
+				builder.append(p_version->fragment_structs.get_data()); // fragment structs
+			} break;
 			case StageTemplate::Chunk::TYPE_FRAGMENT_GLOBALS: {
 				builder.append(p_version->fragment_globals.get_data()); // fragment globals
+			} break;
+			case StageTemplate::Chunk::TYPE_COMPUTE_STRUCTS: {
+				builder.append(p_version->compute_structs.get_data()); // compute structs
 			} break;
 			case StageTemplate::Chunk::TYPE_COMPUTE_GLOBALS: {
 				builder.append(p_version->compute_globals.get_data()); // compute globals
@@ -379,10 +404,16 @@ String ShaderRD::_version_get_sha1(Version *p_version) const {
 
 	hash_build.append("[uniforms]");
 	hash_build.append(p_version->uniforms.get_data());
+	hash_build.append("[vertex_structs]");
+	hash_build.append(p_version->vertex_structs.get_data());
 	hash_build.append("[vertex_globals]");
 	hash_build.append(p_version->vertex_globals.get_data());
+	hash_build.append("[fragment_structs]");
+	hash_build.append(p_version->fragment_structs.get_data());
 	hash_build.append("[fragment_globals]");
 	hash_build.append(p_version->fragment_globals.get_data());
+	hash_build.append("[compute_structs]");
+	hash_build.append(p_version->compute_structs.get_data());
 	hash_build.append("[compute_globals]");
 	hash_build.append(p_version->compute_globals.get_data());
 
@@ -584,7 +615,7 @@ void ShaderRD::_compile_ensure_finished(Version *p_version) {
 	}
 }
 
-void ShaderRD::version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines) {
+void ShaderRD::version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_structs, const String &p_vertex_globals, const String &p_fragment_structs, const String &p_fragment_globals, const Vector<String> &p_custom_defines) {
 	ERR_FAIL_COND(is_compute);
 
 	Version *version = version_owner.get_or_null(p_version);
@@ -592,7 +623,9 @@ void ShaderRD::version_set_code(RID p_version, const HashMap<String, String> &p_
 
 	_compile_ensure_finished(version);
 
+	version->vertex_structs = p_vertex_structs.utf8();
 	version->vertex_globals = p_vertex_globals.utf8();
+	version->fragment_structs = p_fragment_structs.utf8();
 	version->fragment_globals = p_fragment_globals.utf8();
 	version->uniforms = p_uniforms.utf8();
 	version->code_sections.clear();
@@ -619,7 +652,7 @@ void ShaderRD::version_set_code(RID p_version, const HashMap<String, String> &p_
 	}
 }
 
-void ShaderRD::version_set_compute_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_compute_globals, const Vector<String> &p_custom_defines) {
+void ShaderRD::version_set_compute_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_compute_structs, const String &p_compute_globals, const Vector<String> &p_custom_defines) {
 	ERR_FAIL_COND(!is_compute);
 
 	Version *version = version_owner.get_or_null(p_version);
@@ -627,6 +660,7 @@ void ShaderRD::version_set_compute_code(RID p_version, const HashMap<String, Str
 
 	_compile_ensure_finished(version);
 
+	version->compute_structs = p_compute_structs.utf8();
 	version->compute_globals = p_compute_globals.utf8();
 	version->uniforms = p_uniforms.utf8();
 
