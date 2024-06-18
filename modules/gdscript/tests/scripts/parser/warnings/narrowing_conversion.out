@@ -2,4 +2,4 @@ GDTEST_OK
 >> WARNING
 >> Line: 5
 >> NARROWING_CONVERSION
->> Narrowing conversion (float is converted to int and loses precision).
+>> Narrowing conversion (float is converted to int and loses precision). If this is intended, cast the float to an integer: "int(x)".
