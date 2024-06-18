@@ -408,7 +408,7 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 				_set_table_size(table, available_width);
 
 				int row_idx = (table->align_to_row < 0) ? table->rows_baseline.size() - 1 : table->align_to_row;
-				if (table->rows_baseline.size() != 0 && row_idx < (int)table->rows_baseline.size() - 1) {
+				if (table->rows_baseline.size() != 0 && row_idx < (int)table->rows_baseline.size()) {
 					l.text_buf->resize_object(it->rid, Size2(table->total_width, table->total_height), table->inline_align, Math::round(table->rows_baseline[row_idx]));
 				} else {
 					l.text_buf->resize_object(it->rid, Size2(table->total_width, table->total_height), table->inline_align);
@@ -632,7 +632,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				_set_table_size(table, available_width);
 
 				int row_idx = (table->align_to_row < 0) ? table->rows_baseline.size() - 1 : table->align_to_row;
-				if (table->rows_baseline.size() != 0 && row_idx < (int)table->rows_baseline.size() - 1) {
+				if (table->rows_baseline.size() != 0 && row_idx < (int)table->rows_baseline.size()) {
 					l.text_buf->add_object(it->rid, Size2(table->total_width, table->total_height), table->inline_align, t_char_count, Math::round(table->rows_baseline[row_idx]));
 				} else {
 					l.text_buf->add_object(it->rid, Size2(table->total_width, table->total_height), table->inline_align, t_char_count);
