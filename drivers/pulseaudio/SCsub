@@ -2,8 +2,7 @@
 
 Import("env")
 
-if "pulseaudio" in env and env["pulseaudio"]:
-    if env["use_sowrap"]:
-        env.add_source_files(env.drivers_sources, "pulse-so_wrap.c")
+if env["use_sowrap"]:
+    env.add_source_files(env.drivers_sources, "pulse-so_wrap.c")
 
 env.add_source_files(env.drivers_sources, "*.cpp")

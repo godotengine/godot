@@ -210,6 +210,15 @@ const GodotAudio = {
 			GodotAudio.input = null;
 		}
 	},
+
+	godot_audio_get_input_channels__proxy: 'sync',
+	godot_audio_get_input_channels__sig: 'i',
+	godot_audio_get_input_channels: function () {
+		if (GodotAudio.input) {
+			return GodotAudio.input.channelCount;
+		}
+		return 0;
+	},
 };
 
 autoAddDeps(GodotAudio, '$GodotAudio');
@@ -430,12 +439,12 @@ const GodotAudioScript = {
 				// Read input
 				const inb = GodotRuntime.heapSub(HEAPF32, p_in_buf, p_in_size);
 				const input = event.inputBuffer;
+				const input_channels = input.numberOfChannels;
 				if (GodotAudio.input) {
-					const inlen = input.getChannelData(0).length;
-					for (let ch = 0; ch < 2; ch++) {
+					for (let ch = 0; ch < input_channels; ch++) {
 						const data = input.getChannelData(ch);
-						for (let s = 0; s < inlen; s++) {
-							inb[s * 2 + ch] = data[s];
+						for (let sample = 0; sample < data.length; sample++) {
+							inb[sample * input_channels + ch] = data[sample];
 						}
 					}
 				}
@@ -446,12 +455,12 @@ const GodotAudioScript = {
 				// Write the output.
 				const outb = GodotRuntime.heapSub(HEAPF32, p_out_buf, p_out_size);
 				const output = event.outputBuffer;
-				const channels = output.numberOfChannels;
-				for (let ch = 0; ch < channels; ch++) {
+				const output_channels = output.numberOfChannels;
+				for (let ch = 0; ch < output_channels; ch++) {
 					const data = output.getChannelData(ch);
 					// Loop through samples and assign computed values.
 					for (let sample = 0; sample < data.length; sample++) {
-						data[sample] = outb[sample * channels + ch];
+						data[sample] = outb[sample * output_channels + ch];
 					}
 				}
 			};
@@ -474,11 +483,11 @@ const GodotAudioScript = {
 
 	godot_audio_script_create__proxy: 'sync',
 	godot_audio_script_create__sig: 'iii',
-	godot_audio_script_create: function (buffer_length, channel_count) {
-		const buf_len = GodotRuntime.getHeapValue(buffer_length, 'i32');
+	godot_audio_script_create: function (buffer_frames, channel_count) {
+		const buf_len = GodotRuntime.getHeapValue(buffer_frames, 'i32');
 		try {
 			const out_len = GodotAudioScript.create(buf_len, channel_count);
-			GodotRuntime.setHeapValue(buffer_length, out_len, 'i32');
+			GodotRuntime.setHeapValue(buffer_frames, out_len, 'i32');
 		} catch (e) {
 			GodotRuntime.error('Error starting AudioDriverScriptProcessor', e);
 			return 1;

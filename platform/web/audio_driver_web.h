@@ -44,17 +44,23 @@ private:
 		bool inited = false;
 		float output_latency = 0.0;
 		int state = -1;
-		int channel_count = 0;
 		int mix_rate = 0;
+
+		int output_channels = 0;
+		int input_channels = 0;
+
+		bool is_input_active = false;
 	};
 	static AudioContext audio_context;
 
-	float *output_rb = nullptr;
-	float *input_rb = nullptr;
+	LocalVector<float> output_buffer;
+	LocalVector<float> input_buffer;
 
-	int buffer_length = 0;
-	int mix_rate = 0;
-	int channel_count = 0;
+	int buffer_frames = 0;
+
+	// No other format is available.
+	BufferFormat output_buffer_format = BUFFER_FORMAT_FLOAT;
+	BufferFormat input_buffer_format = BUFFER_FORMAT_FLOAT;
 
 	WASM_EXPORT static void _state_change_callback(int p_state);
 	WASM_EXPORT static void _latency_update_callback(float p_latency);
@@ -64,10 +70,10 @@ private:
 protected:
 	void _audio_driver_process(int p_from = 0, int p_samples = 0);
 	void _audio_driver_capture(int p_from = 0, int p_samples = 0);
-	float *get_output_rb() const { return output_rb; }
-	float *get_input_rb() const { return input_rb; }
+	int get_output_buffer_size() const { return output_buffer.size(); }
+	int get_input_buffer_size() const { return input_buffer.size(); }
 
-	virtual Error create(int &p_buffer_samples, int p_channels) = 0;
+	virtual Error create(int &p_buffer_frames, int p_channels) = 0;
 	virtual void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) = 0;
 	virtual void finish_driver() {}
 
@@ -79,11 +85,16 @@ public:
 	virtual void finish() final;
 
 	virtual int get_mix_rate() const override;
-	virtual SpeakerMode get_speaker_mode() const override;
 	virtual float get_latency() override;
+
+	virtual int get_output_channels() const override;
+	virtual BufferFormat get_output_buffer_format() const override;
 
 	virtual Error input_start() override;
 	virtual Error input_stop() override;
+
+	virtual int get_input_channels() const override;
+	virtual BufferFormat get_input_buffer_format() const override;
 
 	static void resume();
 
@@ -108,7 +119,7 @@ private:
 	static void _audio_thread_func(void *p_data);
 
 protected:
-	virtual Error create(int &p_buffer_size, int p_output_channels) override;
+	virtual Error create(int &p_buffer_frames, int p_output_channels) override;
 	virtual void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) override;
 	virtual void finish_driver() override;
 
@@ -131,7 +142,7 @@ private:
 	static AudioDriverWorklet *singleton;
 
 protected:
-	virtual Error create(int &p_buffer_size, int p_output_channels) override;
+	virtual Error create(int &p_buffer_frames, int p_output_channels) override;
 	virtual void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) override;
 
 public:
@@ -154,7 +165,7 @@ private:
 	static AudioDriverScriptProcessor *singleton;
 
 protected:
-	virtual Error create(int &p_buffer_size, int p_output_channels) override;
+	virtual Error create(int &p_buffer_frames, int p_output_channels) override;
 	virtual void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) override;
 	virtual void finish_driver() override;
 

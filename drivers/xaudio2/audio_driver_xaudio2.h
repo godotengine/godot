@@ -36,7 +36,6 @@
 #include "core/templates/safe_refcount.h"
 #include "servers/audio_server.h"
 
-#include <mmsystem.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <wrl/client.h>
@@ -47,48 +46,58 @@ class AudioDriverXAudio2 : public AudioDriver {
 		AUDIO_BUFFERS = 2
 	};
 
+// `IXAudio2VoiceCallback` has a non-virtual destructor.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
 	struct XAudio2DriverVoiceCallback : public IXAudio2VoiceCallback {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 		HANDLE buffer_end_event;
-		XAudio2DriverVoiceCallback() :
-				buffer_end_event(CreateEvent(nullptr, FALSE, FALSE, nullptr)) {}
+
 		void STDMETHODCALLTYPE OnBufferEnd(void *pBufferContext) {
 			SetEvent(buffer_end_event);
 		}
 
-		//Unused methods are stubs
+		// Unused methods are stubs.
 		void STDMETHODCALLTYPE OnStreamEnd() {}
 		void STDMETHODCALLTYPE OnVoiceProcessingPassEnd() {}
 		void STDMETHODCALLTYPE OnVoiceProcessingPassStart(UINT32 SamplesRequired) {}
 		void STDMETHODCALLTYPE OnBufferStart(void *pBufferContext) {}
 		void STDMETHODCALLTYPE OnLoopEnd(void *pBufferContext) {}
 		void STDMETHODCALLTYPE OnVoiceError(void *pBufferContext, HRESULT Error) {}
+
+		XAudio2DriverVoiceCallback() :
+				buffer_end_event(CreateEvent(nullptr, FALSE, FALSE, nullptr)) {}
+		~XAudio2DriverVoiceCallback() {
+			CloseHandle(buffer_end_event);
+		}
 	};
 
 	Thread thread;
 	Mutex mutex;
 
-	int32_t *samples_in = nullptr;
-	int16_t *samples_out[AUDIO_BUFFERS];
+	LocalVector<int8_t> samples_out[AUDIO_BUFFERS];
 
-	static void thread_func(void *p_udata);
-	int buffer_size = 0;
+	int buffer_frames = 0;
 
-	unsigned int mix_rate = 0;
-	SpeakerMode speaker_mode = SpeakerMode::SPEAKER_MODE_STEREO;
-
-	int channels = 0;
+	BufferFormat buffer_format = NO_BUFFER;
 
 	SafeFlag active;
 	SafeFlag exit_thread;
 	bool pcm_open = false;
 
-	WAVEFORMATEX wave_format = { 0 };
+	WAVEFORMATEX wave_format;
 	Microsoft::WRL::ComPtr<IXAudio2> xaudio;
 	int current_buffer = 0;
 	IXAudio2MasteringVoice *mastering_voice = nullptr;
 	XAUDIO2_BUFFER xaudio_buffer[AUDIO_BUFFERS];
 	IXAudio2SourceVoice *source_voice = nullptr;
 	XAudio2DriverVoiceCallback voice_callback;
+
+	static void thread_func(void *p_udata);
 
 public:
 	virtual const char *get_name() const override {
@@ -98,15 +107,14 @@ public:
 	virtual Error init() override;
 	virtual void start() override;
 	virtual int get_mix_rate() const override;
-	virtual SpeakerMode get_speaker_mode() const override;
 	virtual float get_latency() override;
+
+	virtual int get_output_channels() const override;
+	virtual BufferFormat get_output_buffer_format() const override;
 
 	virtual void lock() override;
 	virtual void unlock() override;
 	virtual void finish() override;
-
-	AudioDriverXAudio2();
-	~AudioDriverXAudio2() {}
 };
 
 #endif // AUDIO_DRIVER_XAUDIO2_H
