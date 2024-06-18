@@ -2780,6 +2780,7 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 	}
 
 	ERR_FAIL_COND_V(!importer.is_valid(), nullptr);
+	ERR_FAIL_COND_V(p_options.is_empty(), nullptr);
 
 	Error err = OK;
 
@@ -2838,6 +2839,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	}
 
 	ERR_FAIL_COND_V(!importer.is_valid(), ERR_FILE_UNRECOGNIZED);
+	ERR_FAIL_COND_V(p_options.is_empty(), ERR_BUG);
 
 	int import_flags = 0;
 
