@@ -57,11 +57,12 @@ public:
 	bool use_nearest_mip_filter = false;
 	bool use_depth_prepass = true;
 
-	int64_t max_vertex_texture_image_units = 0;
-	int64_t max_texture_image_units = 0;
-	int64_t max_texture_size = 0;
-	int64_t max_viewport_size[2] = { 0, 0 };
-	int64_t max_uniform_buffer_size = 0;
+	GLint max_vertex_texture_image_units = 0;
+	GLint max_texture_image_units = 0;
+	GLint max_texture_size = 0;
+	GLint max_viewport_size[2] = { 0, 0 };
+	GLint64 max_uniform_buffer_size = 0;
+
 	int64_t max_renderable_elements = 0;
 	int64_t max_renderable_lights = 0;
 	int64_t max_lights_per_object = 0;
