@@ -211,7 +211,7 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_reset->add_theme_style_override(SceneStringName(pressed), empty_stylebox);
 	zoom_reset->add_theme_constant_override("outline_size", Math::ceil(2 * EDSCALE));
 	zoom_reset->add_theme_color_override("font_outline_color", Color(0, 0, 0));
-	zoom_reset->add_theme_color_override("font_color", Color(1, 1, 1));
+	zoom_reset->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1));
 
 	zoom_reset->set_shortcut(ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent"));
 	zoom_reset->set_shortcut_context(this);
