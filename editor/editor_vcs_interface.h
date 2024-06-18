@@ -106,29 +106,29 @@ protected:
 	StatusFile _convert_status_file(const Dictionary &p_status_file);
 
 	// Proxy endpoints for extensions to implement
-	GDVIRTUAL1R(bool, _initialize, String);
-	GDVIRTUAL5(_set_credentials, String, String, String, String, String);
-	GDVIRTUAL0R(TypedArray<Dictionary>, _get_modified_files_data);
-	GDVIRTUAL1(_stage_file, String);
-	GDVIRTUAL1(_unstage_file, String);
-	GDVIRTUAL1(_discard_file, String);
-	GDVIRTUAL1(_commit, String);
-	GDVIRTUAL2R(TypedArray<Dictionary>, _get_diff, String, int);
-	GDVIRTUAL0R(bool, _shut_down);
-	GDVIRTUAL0R(String, _get_vcs_name);
-	GDVIRTUAL1R(TypedArray<Dictionary>, _get_previous_commits, int);
-	GDVIRTUAL0R(TypedArray<String>, _get_branch_list);
-	GDVIRTUAL0R(TypedArray<String>, _get_remotes);
-	GDVIRTUAL1(_create_branch, String);
-	GDVIRTUAL1(_remove_branch, String);
-	GDVIRTUAL2(_create_remote, String, String);
-	GDVIRTUAL1(_remove_remote, String);
-	GDVIRTUAL0R(String, _get_current_branch_name);
-	GDVIRTUAL1R(bool, _checkout_branch, String);
-	GDVIRTUAL1(_pull, String);
-	GDVIRTUAL2(_push, String, bool);
-	GDVIRTUAL1(_fetch, String);
-	GDVIRTUAL2R(TypedArray<Dictionary>, _get_line_diff, String, String);
+	GDVIRTUAL1R_REQUIRED(bool, _initialize, String);
+	GDVIRTUAL5_REQUIRED(_set_credentials, String, String, String, String, String);
+	GDVIRTUAL0R_REQUIRED(TypedArray<Dictionary>, _get_modified_files_data);
+	GDVIRTUAL1_REQUIRED(_stage_file, String);
+	GDVIRTUAL1_REQUIRED(_unstage_file, String);
+	GDVIRTUAL1_REQUIRED(_discard_file, String);
+	GDVIRTUAL1_REQUIRED(_commit, String);
+	GDVIRTUAL2R_REQUIRED(TypedArray<Dictionary>, _get_diff, String, int);
+	GDVIRTUAL0R_REQUIRED(bool, _shut_down);
+	GDVIRTUAL0R_REQUIRED(String, _get_vcs_name);
+	GDVIRTUAL1R_REQUIRED(TypedArray<Dictionary>, _get_previous_commits, int);
+	GDVIRTUAL0R_REQUIRED(TypedArray<String>, _get_branch_list);
+	GDVIRTUAL0R_REQUIRED(TypedArray<String>, _get_remotes);
+	GDVIRTUAL1_REQUIRED(_create_branch, String);
+	GDVIRTUAL1_REQUIRED(_remove_branch, String);
+	GDVIRTUAL2_REQUIRED(_create_remote, String, String);
+	GDVIRTUAL1_REQUIRED(_remove_remote, String);
+	GDVIRTUAL0R_REQUIRED(String, _get_current_branch_name);
+	GDVIRTUAL1R_REQUIRED(bool, _checkout_branch, String);
+	GDVIRTUAL1_REQUIRED(_pull, String);
+	GDVIRTUAL2_REQUIRED(_push, String, bool);
+	GDVIRTUAL1_REQUIRED(_fetch, String);
+	GDVIRTUAL2R_REQUIRED(TypedArray<Dictionary>, _get_line_diff, String, String);
 
 public:
 	static EditorVCSInterface *get_singleton();
