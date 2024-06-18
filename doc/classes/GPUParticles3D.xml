@@ -74,6 +74,11 @@
 			The base diameter for particle collision in meters. If particles appear to sink into the ground when colliding, increase this value. If particles appear to float when colliding, decrease this value. Only effective if [member ParticleProcessMaterial.collision_mode] is [constant ParticleProcessMaterial.COLLISION_RIGID] or [constant ParticleProcessMaterial.COLLISION_HIDE_ON_CONTACT].
 			[b]Note:[/b] Particles always have a spherical collision shape.
 		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="4294967295">
+			The particle collision layers that will affect the particles in this node. By default, all collision shapes and attractors affect this node.
+			After configuring the [member GPUParticlesCollision3D.collision_layer] in particle collision nodes and the [member GPUParticlesAttractor3D.collision_layer] in attractor nodes accordingly, specific layers can be unchecked in this mask to prevent the particles from being affected by the collision shapes and attractors in these layers. For example, this can be used if you're using an attractor as part of a spell effect but don't want the attractor to affect unrelated weather particles at the same position.
+			Particle attraction can also be disabled on a per-process material basis by setting [member ParticleProcessMaterial.attractor_interaction_enabled] on the [GPUParticles3D] node.
+		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="GPUParticles3D.DrawOrder" default="0">
 			Particle draw order. Uses [enum DrawOrder] values.
 			[b]Note:[/b] [constant DRAW_ORDER_INDEX] is the only option that supports motion vectors for effects like TAA. It is suggested to use this draw order if the particles are opaque to fix ghosting artifacts.

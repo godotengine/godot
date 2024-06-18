@@ -172,6 +172,7 @@ private:
 		AABB custom_aabb = AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8));
 		bool use_local_coords = false;
 		bool has_collision_cache = false;
+		uint32_t collision_mask = 0xFFFFFFFF;
 
 		bool has_sdf_collision = false;
 		Transform2D sdf_collision_transform;
@@ -390,7 +391,8 @@ private:
 
 	struct ParticlesCollision {
 		RS::ParticlesCollisionType type = RS::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT;
-		uint32_t cull_mask = 0xFFFFFFFF;
+		uint32_t collision_layer = 1;
+		uint32_t bake_mask = 0xFFFFFFFF;
 		float radius = 1.0;
 		Vector3 extents = Vector3(1, 1, 1);
 		float attractor_strength = 1.0;
@@ -451,6 +453,7 @@ public:
 	virtual void particles_set_interpolate(RID p_particles, bool p_enable) override;
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) override;
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) override;
+	virtual void particles_set_collision_mask(RID p_particles, uint32_t p_collision_mask) override;
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) override;
 
 	virtual void particles_set_trails(RID p_particles, bool p_enable, double p_length) override;
@@ -562,7 +565,7 @@ public:
 	virtual void particles_collision_free(RID p_rid) override;
 
 	virtual void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) override;
-	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) override;
+	virtual void particles_collision_set_collision_layer(RID p_particles_collision, uint32_t p_collision_layer) override;
 	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) override; //for spheres
 	virtual void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) override; //for non-spheres
 	virtual void particles_collision_set_attractor_strength(RID p_particles_collision, real_t p_strength) override;
@@ -571,9 +574,11 @@ public:
 	virtual void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) override; //for SDF and vector field, heightfield is dynamic
 	virtual void particles_collision_height_field_update(RID p_particles_collision) override; //for SDF and vector field
 	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) override; //for SDF and vector field
+	virtual void particles_collision_set_bake_mask(RID p_particles_collision, uint32_t p_bake_mask) override; //for SDF and vector field
 	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const override;
 	Vector3 particles_collision_get_extents(RID p_particles_collision) const;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const override;
+	virtual uint32_t particles_collision_get_bake_mask(RID p_particles_collision) const override;
 	RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const;
 
 	Dependency *particles_collision_get_dependency(RID p_particles) const;
