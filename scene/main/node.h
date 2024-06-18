@@ -313,6 +313,7 @@ private:
 protected:
 	void _block() { data.blocked++; }
 	void _unblock() { data.blocked--; }
+	bool _is_blocked() { return data.blocked > 0; }
 
 	void _notification(int p_notification);
 
