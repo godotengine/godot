@@ -12,6 +12,7 @@ namespace GodotTools.Build
     public static class BuildManager
     {
         private static BuildInfo? _buildInProgress;
+        private static bool _firstBuild = true;
 
         public const string MsBuildIssuesFileName = "msbuild_issues.csv";
         private const string MsBuildLogFileName = "msbuild_log.txt";
@@ -232,7 +233,7 @@ namespace GodotTools.Build
             {
                 ShowBuildErrorDialog("Failed to build project");
             }
-
+            _firstBuild = false;
             return success;
         }
 
@@ -281,7 +282,7 @@ namespace GodotTools.Build
         )
         {
             var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, GodotSharpDirs.ProjectCsProjPath, configuration,
-                restore: true, rebuild, onlyClean);
+                restore: _firstBuild, rebuild, onlyClean);
 
             // If a platform was not specified, try determining the current one. If that fails, let MSBuild auto-detect it.
             if (platform != null || Utils.OS.PlatformNameMap.TryGetValue(OS.GetName(), out platform))
