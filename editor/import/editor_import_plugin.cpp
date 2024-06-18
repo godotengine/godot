@@ -165,7 +165,6 @@ bool EditorImportPlugin::get_option_visibility(const String &p_path, const Strin
 
 Error EditorImportPlugin::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	Dictionary options;
-	TypedArray<String> platform_variants, gen_files;
 
 	HashMap<StringName, Variant>::ConstIterator E = p_options.begin();
 	while (E) {
@@ -173,15 +172,33 @@ Error EditorImportPlugin::import(const String &p_source_file, const String &p_sa
 		++E;
 	}
 
-	Error err = OK;
-	if (GDVIRTUAL_CALL(_import, p_source_file, p_save_path, options, platform_variants, gen_files, err)) {
-		for (int i = 0; i < platform_variants.size(); i++) {
-			r_platform_variants->push_back(platform_variants[i]);
+	Dictionary ret;
+	if (GDVIRTUAL_CALL(_import, p_source_file, p_save_path, options, ret)) {
+		if (!ret.has("result")) {
+			return ERR_UNAVAILABLE;
 		}
-		for (int i = 0; i < gen_files.size(); i++) {
-			r_gen_files->push_back(gen_files[i]);
+
+		if (r_platform_variants != nullptr && ret.has("platform_variants")) {
+			TypedArray<String> platform_variants = ret["platform_variants"];
+			for (const String platform_variant : platform_variants) {
+				r_platform_variants->push_back(platform_variant);
+			}
 		}
-		return err;
+
+		if (r_gen_files != nullptr && ret.has("gen_files")) {
+			TypedArray<String> gen_files = ret["gen_files"];
+			for (const String gen_file : gen_files) {
+				r_gen_files->push_back(gen_file);
+			}
+		}
+
+		if (r_metadata != nullptr && ret.has("metadata")) {
+			*r_metadata = ret["metadata"];
+		}
+
+		Error result = Error(int(ret["result"]));
+
+		return result;
 	}
 	ERR_FAIL_V_MSG(ERR_METHOD_NOT_FOUND, "Unimplemented _import in add-on.");
 }
@@ -221,7 +238,7 @@ void EditorImportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_priority)
 	GDVIRTUAL_BIND(_get_import_order)
 	GDVIRTUAL_BIND(_get_option_visibility, "path", "option_name", "options")
-	GDVIRTUAL_BIND(_import, "source_file", "save_path", "options", "platform_variants", "gen_files");
+	GDVIRTUAL_BIND(_import, "source_file", "save_path", "options");
 	GDVIRTUAL_BIND(_can_import_threaded);
 	ClassDB::bind_method(D_METHOD("append_import_external_resource", "path", "custom_options", "custom_importer", "generator_parameters"), &EditorImportPlugin::_append_import_external_resource, DEFVAL(Dictionary()), DEFVAL(String()), DEFVAL(Variant()));
 }
