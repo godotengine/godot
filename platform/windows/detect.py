@@ -393,7 +393,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
 
         # Ensure we have a location to write captured output to, in case of false positives.
         capture_path = methods.base_folder_path + "platform/windows/msvc_capture.log"
-        with open(capture_path, "wt"):
+        with open(capture_path, "wt", encoding="utf-8"):
             pass
 
         old_spawn = env["SPAWN"]
@@ -417,7 +417,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
             ret = old_spawn(sh, escape, cmd, args, env)
 
             try:
-                with open(tmp_stdout_name, encoding="oem", errors="replace") as tmp_stdout:
+                with open(tmp_stdout_name, "r", encoding=sys.stdout.encoding, errors="replace") as tmp_stdout:
                     lines = tmp_stdout.read().splitlines()
                 os.remove(tmp_stdout_name)
             except OSError:
@@ -436,7 +436,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
                 if not caught and (is_cl and re_cl_capture.match(line)) or (not is_cl and re_link_capture.match(line)):
                     caught = True
                     try:
-                        with open(capture_path, "a") as log:
+                        with open(capture_path, "a", encoding=sys.stdout.encoding) as log:
                             log.write(line + "\n")
                     except OSError:
                         print_warning(f'Failed to log captured line: "{line}".')
