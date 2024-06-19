@@ -38,6 +38,7 @@ class GLTFDocumentExtensionConvertImporterMesh : public GLTFDocumentExtension {
 
 protected:
 	static void _bind_methods();
+	static void _copy_meta(Object *p_src_object, Object *p_dst_object);
 
 public:
 	Error import_post(Ref<GLTFState> p_state, Node *p_root) override;

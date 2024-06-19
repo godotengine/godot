@@ -975,9 +975,9 @@ ProjectDialog::ProjectDialog() {
 	add_child(fdialog_project);
 	add_child(fdialog_install);
 
-	project_name->connect("text_changed", callable_mp(this, &ProjectDialog::_project_name_changed).unbind(1));
-	project_path->connect("text_changed", callable_mp(this, &ProjectDialog::_project_path_changed).unbind(1));
-	install_path->connect("text_changed", callable_mp(this, &ProjectDialog::_install_path_changed).unbind(1));
+	project_name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_project_name_changed).unbind(1));
+	project_path->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_project_path_changed).unbind(1));
+	install_path->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_install_path_changed).unbind(1));
 	fdialog_project->connect("dir_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
 	fdialog_project->connect("file_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
 	fdialog_install->connect("dir_selected", callable_mp(this, &ProjectDialog::_install_path_selected));

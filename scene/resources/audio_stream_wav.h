@@ -78,6 +78,9 @@ class AudioStreamPlaybackWAV : public AudioStreamPlayback {
 	template <typename Depth, bool is_stereo, bool is_ima_adpcm, bool is_qoa>
 	void do_resample(const Depth *p_src, AudioFrame *p_dst, int64_t &p_offset, int32_t &p_increment, uint32_t p_amount, IMA_ADPCM_State *p_ima_adpcm, QOA_State *p_qoa);
 
+	bool _is_sample = false;
+	Ref<AudioSamplePlayback> sample_playback;
+
 public:
 	virtual void start(double p_from_pos = 0.0) override;
 	virtual void stop() override;
@@ -91,6 +94,11 @@ public:
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
 	virtual void tag_used_streams() override;
+
+	virtual void set_is_sample(bool p_is_sample) override;
+	virtual bool get_is_sample() const override;
+	virtual Ref<AudioSamplePlayback> get_sample_playback() const override;
+	virtual void set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) override;
 
 	AudioStreamPlaybackWAV();
 	~AudioStreamPlaybackWAV();
@@ -165,6 +173,11 @@ public:
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
+
+	virtual bool can_be_sampled() const override {
+		return true;
+	}
+	virtual Ref<AudioSample> generate_sample() const override;
 
 	AudioStreamWAV();
 	~AudioStreamWAV();

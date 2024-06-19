@@ -98,11 +98,11 @@ void OpenXRSelectRuntime::_notification(int p_notification) {
 			_update_items();
 
 			// Connect signal
-			connect("item_selected", callable_mp(this, &OpenXRSelectRuntime::_item_selected));
+			connect(SceneStringName(item_selected), callable_mp(this, &OpenXRSelectRuntime::_item_selected));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			// Disconnect signal
-			disconnect("item_selected", callable_mp(this, &OpenXRSelectRuntime::_item_selected));
+			disconnect(SceneStringName(item_selected), callable_mp(this, &OpenXRSelectRuntime::_item_selected));
 		} break;
 	}
 }

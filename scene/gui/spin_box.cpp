@@ -333,9 +333,9 @@ void SpinBox::set_update_on_text_changed(bool p_enabled) {
 	update_on_text_changed = p_enabled;
 
 	if (p_enabled) {
-		line_edit->connect("text_changed", callable_mp(this, &SpinBox::_text_changed), CONNECT_DEFERRED);
+		line_edit->connect(SceneStringName(text_changed), callable_mp(this, &SpinBox::_text_changed), CONNECT_DEFERRED);
 	} else {
-		line_edit->disconnect("text_changed", callable_mp(this, &SpinBox::_text_changed));
+		line_edit->disconnect(SceneStringName(text_changed), callable_mp(this, &SpinBox::_text_changed));
 	}
 }
 

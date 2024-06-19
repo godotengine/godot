@@ -465,6 +465,22 @@ void AudioStreamPlaybackWAV::tag_used_streams() {
 	base->tag_used(get_playback_position());
 }
 
+void AudioStreamPlaybackWAV::set_is_sample(bool p_is_sample) {
+	_is_sample = p_is_sample;
+}
+
+bool AudioStreamPlaybackWAV::get_is_sample() const {
+	return _is_sample;
+}
+
+Ref<AudioSamplePlayback> AudioStreamPlaybackWAV::get_sample_playback() const {
+	return sample_playback;
+}
+
+void AudioStreamPlaybackWAV::set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
+	sample_playback = p_playback;
+}
+
 AudioStreamPlaybackWAV::AudioStreamPlaybackWAV() {}
 
 AudioStreamPlaybackWAV::~AudioStreamPlaybackWAV() {
@@ -694,6 +710,33 @@ Ref<AudioStreamPlayback> AudioStreamWAV::instantiate_playback() {
 
 String AudioStreamWAV::get_stream_name() const {
 	return "";
+}
+
+Ref<AudioSample> AudioStreamWAV::generate_sample() const {
+	Ref<AudioSample> sample;
+	sample.instantiate();
+	sample->stream = this;
+	switch (loop_mode) {
+		case AudioStreamWAV::LoopMode::LOOP_DISABLED: {
+			sample->loop_mode = AudioSample::LoopMode::LOOP_DISABLED;
+		} break;
+
+		case AudioStreamWAV::LoopMode::LOOP_FORWARD: {
+			sample->loop_mode = AudioSample::LoopMode::LOOP_FORWARD;
+		} break;
+
+		case AudioStreamWAV::LoopMode::LOOP_PINGPONG: {
+			sample->loop_mode = AudioSample::LoopMode::LOOP_PINGPONG;
+		} break;
+
+		case AudioStreamWAV::LoopMode::LOOP_BACKWARD: {
+			sample->loop_mode = AudioSample::LoopMode::LOOP_BACKWARD;
+		} break;
+	}
+	sample->loop_begin = loop_begin;
+	sample->loop_end = loop_end;
+	sample->sample_rate = mix_rate;
+	return sample;
 }
 
 void AudioStreamWAV::_bind_methods() {

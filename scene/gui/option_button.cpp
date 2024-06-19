@@ -395,7 +395,7 @@ void OptionButton::_select(int p_which, bool p_emit) {
 	}
 
 	if (is_inside_tree() && p_emit) {
-		emit_signal(SNAME("item_selected"), current);
+		emit_signal(SceneStringName(item_selected), current);
 	}
 }
 

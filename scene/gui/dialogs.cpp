@@ -134,7 +134,7 @@ void AcceptDialog::_ok_pressed() {
 		set_visible(false);
 	}
 	ok_pressed();
-	emit_signal(SNAME("confirmed"));
+	emit_signal(SceneStringName(confirmed));
 	set_input_as_handled();
 }
 
