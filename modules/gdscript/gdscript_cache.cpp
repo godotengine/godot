@@ -344,7 +344,11 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 		}
 	}
 
+	// Allowing lifting the lock might cause a script to be reloaded multiple times,
+	// which, as a last resort deadlock prevention strategy, is a good tradeoff.
+	uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(&singleton->mutex);
 	r_error = script->reload(true);
+	WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
 	if (r_error) {
 		return script;
 	}
