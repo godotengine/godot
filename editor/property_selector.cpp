@@ -410,11 +410,11 @@ void PropertySelector::_hide_requested() {
 void PropertySelector::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			connect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
+			connect(SceneStringName(confirmed), callable_mp(this, &PropertySelector::_confirmed));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
+			disconnect(SceneStringName(confirmed), callable_mp(this, &PropertySelector::_confirmed));
 		} break;
 	}
 }

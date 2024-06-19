@@ -618,7 +618,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	debug_uv->add_child(h_scroll);
 	h_scroll->connect("value_changed", callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
 
-	debug_uv_dialog->connect("confirmed", callable_mp(this, &Sprite2DEditor::_create_node));
+	debug_uv_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Sprite2DEditor::_create_node));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_child(memnew(Label(TTR("Simplification:"))));

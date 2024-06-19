@@ -804,7 +804,7 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	add_library_validate = memnew(Label);
 	dialog_vb->add_child(add_library_validate);
 	add_library_dialog->add_child(dialog_vb);
-	add_library_dialog->connect("confirmed", callable_mp(this, &AnimationLibraryEditor::_add_library_confirm));
+	add_library_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationLibraryEditor::_add_library_confirm));
 	add_library_dialog->register_text_enter(add_library_name);
 
 	VBoxContainer *vb = memnew(VBoxContainer);

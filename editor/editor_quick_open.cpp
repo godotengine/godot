@@ -261,7 +261,7 @@ String EditorQuickOpen::get_base_type() const {
 void EditorQuickOpen::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			connect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
+			connect(SceneStringName(confirmed), callable_mp(this, &EditorQuickOpen::_confirmed));
 
 			search_box->set_clear_button_enabled(true);
 		} break;
@@ -278,7 +278,7 @@ void EditorQuickOpen::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
+			disconnect(SceneStringName(confirmed), callable_mp(this, &EditorQuickOpen::_confirmed));
 		} break;
 	}
 }

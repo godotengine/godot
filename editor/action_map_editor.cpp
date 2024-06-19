@@ -614,7 +614,7 @@ ActionMapEditor::ActionMapEditor() {
 
 	// Adding event dialog
 	event_config_dialog = memnew(InputEventConfigurationDialog);
-	event_config_dialog->connect("confirmed", callable_mp(this, &ActionMapEditor::_event_config_confirmed));
+	event_config_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ActionMapEditor::_event_config_confirmed));
 	add_child(event_config_dialog);
 
 	message = memnew(AcceptDialog);

@@ -342,7 +342,7 @@ EditorCommandPalette *EditorCommandPalette::get_singleton() {
 
 EditorCommandPalette::EditorCommandPalette() {
 	set_hide_on_ok(false);
-	connect("confirmed", callable_mp(this, &EditorCommandPalette::_confirmed));
+	connect(SceneStringName(confirmed), callable_mp(this, &EditorCommandPalette::_confirmed));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);

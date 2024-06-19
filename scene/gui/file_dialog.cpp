@@ -1486,7 +1486,7 @@ FileDialog::FileDialog() {
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	_update_drives();
 
-	connect("confirmed", callable_mp(this, &FileDialog::_action_pressed));
+	connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_action_pressed));
 	tree->connect("multi_selected", callable_mp(this, &FileDialog::_tree_multi_selected), CONNECT_DEFERRED);
 	tree->connect("cell_selected", callable_mp(this, &FileDialog::_tree_selected), CONNECT_DEFERRED);
 	tree->connect("item_activated", callable_mp(this, &FileDialog::_tree_item_activated));
@@ -1498,7 +1498,7 @@ FileDialog::FileDialog() {
 	confirm_save = memnew(ConfirmationDialog);
 	add_child(confirm_save, false, INTERNAL_MODE_FRONT);
 
-	confirm_save->connect("confirmed", callable_mp(this, &FileDialog::_save_confirm_pressed));
+	confirm_save->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_save_confirm_pressed));
 
 	makedialog = memnew(ConfirmationDialog);
 	makedialog->set_title(ETR("Create Folder"));
@@ -1510,7 +1510,7 @@ FileDialog::FileDialog() {
 	makevb->add_margin_child(ETR("Name:"), makedirname);
 	add_child(makedialog, false, INTERNAL_MODE_FRONT);
 	makedialog->register_text_enter(makedirname);
-	makedialog->connect("confirmed", callable_mp(this, &FileDialog::_make_dir_confirm));
+	makedialog->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_make_dir_confirm));
 	mkdirerr = memnew(AcceptDialog);
 	mkdirerr->set_text(ETR("Could not create folder."));
 	add_child(mkdirerr, false, INTERNAL_MODE_FRONT);

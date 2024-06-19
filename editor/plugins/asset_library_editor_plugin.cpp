@@ -620,7 +620,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	asset_installer = memnew(EditorAssetInstaller);
 	panel->add_child(asset_installer);
-	asset_installer->connect("confirmed", callable_mp(this, &EditorAssetLibraryItemDownload::_close));
+	asset_installer->connect(SceneStringName(confirmed), callable_mp(this, &EditorAssetLibraryItemDownload::_close));
 
 	prev_status = -1;
 
@@ -1427,7 +1427,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			description = memnew(EditorAssetLibraryItemDescription);
 			add_child(description);
-			description->connect("confirmed", callable_mp(this, &EditorAssetLibrary::_install_asset));
+			description->connect(SceneStringName(confirmed), callable_mp(this, &EditorAssetLibrary::_install_asset));
 
 			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
 

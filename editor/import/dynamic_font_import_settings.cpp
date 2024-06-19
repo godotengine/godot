@@ -924,7 +924,7 @@ String DynamicFontImportSettingsDialog::_pad_zeros(const String &p_hex) const {
 void DynamicFontImportSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			connect("confirmed", callable_mp(this, &DynamicFontImportSettingsDialog::_re_import));
+			connect(SceneStringName(confirmed), callable_mp(this, &DynamicFontImportSettingsDialog::_re_import));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {

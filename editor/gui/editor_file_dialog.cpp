@@ -2300,7 +2300,7 @@ EditorFileDialog::EditorFileDialog() {
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	_update_drives();
 
-	connect("confirmed", callable_mp(this, &EditorFileDialog::_action_pressed));
+	connect(SceneStringName(confirmed), callable_mp(this, &EditorFileDialog::_action_pressed));
 	item_list->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_item_selected), CONNECT_DEFERRED);
 	item_list->connect("multi_selected", callable_mp(this, &EditorFileDialog::_multi_selected), CONNECT_DEFERRED);
 	item_list->connect("item_activated", callable_mp(this, &EditorFileDialog::_item_dc_selected).bind());
@@ -2311,14 +2311,14 @@ EditorFileDialog::EditorFileDialog() {
 
 	confirm_save = memnew(ConfirmationDialog);
 	add_child(confirm_save);
-	confirm_save->connect("confirmed", callable_mp(this, &EditorFileDialog::_save_confirm_pressed));
+	confirm_save->connect(SceneStringName(confirmed), callable_mp(this, &EditorFileDialog::_save_confirm_pressed));
 
 	dep_remove_dialog = memnew(DependencyRemoveDialog);
 	add_child(dep_remove_dialog);
 
 	global_remove_dialog = memnew(ConfirmationDialog);
 	global_remove_dialog->set_text(TTR("Remove the selected files? For safety only files and empty directories can be deleted from here. (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
-	global_remove_dialog->connect("confirmed", callable_mp(this, &EditorFileDialog::_delete_files_global));
+	global_remove_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorFileDialog::_delete_files_global));
 	add_child(global_remove_dialog);
 
 	makedialog = memnew(ConfirmationDialog);
@@ -2331,7 +2331,7 @@ EditorFileDialog::EditorFileDialog() {
 	makevb->add_margin_child(TTR("Name:"), makedirname);
 	add_child(makedialog);
 	makedialog->register_text_enter(makedirname);
-	makedialog->connect("confirmed", callable_mp(this, &EditorFileDialog::_make_dir_confirm));
+	makedialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorFileDialog::_make_dir_confirm));
 	error_dialog = memnew(AcceptDialog);
 	add_child(error_dialog);
 

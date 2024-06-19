@@ -44,7 +44,7 @@ void FBXImporterManager::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			connect("confirmed", callable_mp(this, &FBXImporterManager::_path_confirmed));
+			connect(SceneStringName(confirmed), callable_mp(this, &FBXImporterManager::_path_confirmed));
 		} break;
 	}
 }
