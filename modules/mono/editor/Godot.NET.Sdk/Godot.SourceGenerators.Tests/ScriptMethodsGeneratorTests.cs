@@ -14,6 +14,15 @@ public class ScriptMethodsGeneratorTests
     }
 
     [Fact]
+    public async void Generic()
+    {
+        await CSharpSourceGeneratorVerifier<ScriptMethodsGenerator>.Verify(
+            "Generic.cs",
+            "Generic_T_ScriptMethods.generated.cs"
+        );
+    }
+
+    [Fact]
     public async void ScriptBoilerplate()
     {
         await CSharpSourceGeneratorVerifier<ScriptMethodsGenerator>.Verify(

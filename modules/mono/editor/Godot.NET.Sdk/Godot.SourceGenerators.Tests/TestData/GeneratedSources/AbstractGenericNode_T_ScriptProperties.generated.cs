@@ -42,7 +42,7 @@ partial class AbstractGenericNode<T>
     internal new static global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo> GetGodotPropertyList()
     {
         var properties = new global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>();
-        properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.MyArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(global::Godot.Bridge.GenericUtils.PropertyInfoFromGenericType<global::Godot.Collections.Array<T>>(name: PropertyName.MyArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         return properties;
     }
 #pragma warning restore CS0109
