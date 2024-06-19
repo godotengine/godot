@@ -193,6 +193,7 @@ static uint64_t quit_after = 0;
 static OS::ProcessID editor_pid = 0;
 #ifdef TOOLS_ENABLED
 static bool found_project = false;
+static bool safe_mode = false;
 static bool auto_build_solutions = false;
 static String debug_server_uri;
 static bool wait_for_import = false;
@@ -526,6 +527,7 @@ void Main::print_help(const char *p_binary) {
 #ifdef TOOLS_ENABLED
 	print_help_option("-e, --editor", "Start the editor instead of running the scene.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("-p, --project-manager", "Start the project manager, even if a project is auto-detected.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--safe-mode", "Start the editor in safe mode, which disables typical features that can cause startup crashes, such as tool scripts, editor plugins, GDExtension addons, and others.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--debug-server <uri>", "Start the editor debug server (<protocol>://<host/IP>[:port], e.g. tcp://127.0.0.1:6007)\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--dap-port <port>", "Use the specified port for the GDScript Debugger Adaptor protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #if defined(MODULE_GDSCRIPT_ENABLED) && !defined(GDSCRIPT_NO_LSP)
@@ -1379,6 +1381,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			editor = true;
 		} else if (arg == "-p" || arg == "--project-manager") { // starts project manager
 			project_manager = true;
+		} else if (arg == "--safe-mode") { // Enables safe mode.
+			safe_mode = true;
 		} else if (arg == "--debug-server") {
 			if (N) {
 				debug_server_uri = N->get();
@@ -1856,6 +1860,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	if (project_manager) {
 		Engine::get_singleton()->set_project_manager_hint(true);
+	}
+
+	if (safe_mode) {
+		Engine::get_singleton()->set_safe_mode_hint(true);
 	}
 #endif
 
@@ -3279,6 +3287,8 @@ int Main::start() {
 			editor = true;
 		} else if (E->get() == "-p" || E->get() == "--project-manager") {
 			project_manager = true;
+		} else if (E->get() == "--safe-mode") {
+			safe_mode = true;
 		} else if (E->get() == "--install-android-build-template") {
 			install_android_build_template = true;
 #endif // TOOLS_ENABLED
@@ -3853,7 +3863,7 @@ int Main::start() {
 
 #ifdef TOOLS_ENABLED
 			if (editor) {
-				if (game_path != String(GLOBAL_GET("application/run/main_scene")) || !editor_node->has_scenes_in_session()) {
+				if (!safe_mode && (game_path != String(GLOBAL_GET("application/run/main_scene")) || !editor_node->has_scenes_in_session())) {
 					Error serr = editor_node->load_scene(local_game_path);
 					if (serr != OK) {
 						ERR_PRINT("Failed to load scene");
@@ -3929,6 +3939,10 @@ int Main::start() {
 			// Load SSL Certificates from Editor Settings (or builtin)
 			Crypto::load_default_certificates(
 					EditorSettings::get_singleton()->get_setting("network/tls/editor_tls_certificates").operator String());
+		}
+
+		if (safe_mode) {
+			Engine::get_singleton()->set_safe_mode_hint(true);
 		}
 #endif
 	}

@@ -152,6 +152,7 @@ class ProjectManager : public Control {
 	Button *import_btn = nullptr;
 	Button *scan_btn = nullptr;
 	Button *open_btn = nullptr;
+	Button *open_safe_mode_btn = nullptr;
 	Button *run_btn = nullptr;
 	Button *rename_btn = nullptr;
 	Button *manage_tags_btn = nullptr;
@@ -168,14 +169,15 @@ class ProjectManager : public Control {
 	ConfirmationDialog *erase_missing_ask = nullptr;
 	ConfirmationDialog *multi_open_ask = nullptr;
 	ConfirmationDialog *multi_run_ask = nullptr;
+	ConfirmationDialog *open_safe_mode_ask = nullptr;
 
 	ProjectDialog *project_dialog = nullptr;
 
 	void _scan_projects();
 	void _run_project();
 	void _run_project_confirm();
-	void _open_selected_projects();
-	void _open_selected_projects_ask();
+	void _open_selected_projects(bool p_safe_mode);
+	void _open_selected_projects_ask(bool p_safe_mode);
 
 	void _install_project(const String &p_zip_path, const String &p_title);
 	void _import_project();
@@ -186,6 +188,7 @@ class ProjectManager : public Control {
 	void _erase_project_confirm();
 	void _erase_missing_projects_confirm();
 	void _update_project_buttons();
+	void _open_safe_mode_ask();
 
 	void _on_project_created(const String &dir);
 	void _on_projects_updated();

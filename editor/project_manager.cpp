@@ -249,6 +249,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			import_btn->set_icon(get_editor_theme_icon(SNAME("Load")));
 			scan_btn->set_icon(get_editor_theme_icon(SNAME("Search")));
 			open_btn->set_icon(get_editor_theme_icon(SNAME("Edit")));
+			open_safe_mode_btn->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			run_btn->set_icon(get_editor_theme_icon(SNAME("Play")));
 			rename_btn->set_icon(get_editor_theme_icon(SNAME("Rename")));
 			manage_tags_btn->set_icon(get_editor_theme_icon("Script"));
@@ -263,6 +264,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			import_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 			scan_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 			open_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			open_safe_mode_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 			run_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 			rename_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 			manage_tags_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
@@ -478,7 +480,7 @@ void ProjectManager::_run_project_confirm() {
 	}
 }
 
-void ProjectManager::_open_selected_projects() {
+void ProjectManager::_open_selected_projects(bool p_safe_mode) {
 	// Show loading text to tell the user that the project manager is busy loading.
 	// This is especially important for the Web project manager.
 	loading_label->show();
@@ -506,6 +508,10 @@ void ProjectManager::_open_selected_projects() {
 
 		args.push_back("--editor");
 
+		if (p_safe_mode) {
+			args.push_back("--safe-mode");
+		}
+
 		Error err = OS::get_singleton()->create_instance(args);
 		if (err != OK) {
 			loading_label->hide();
@@ -521,7 +527,7 @@ void ProjectManager::_open_selected_projects() {
 	get_tree()->quit();
 }
 
-void ProjectManager::_open_selected_projects_ask() {
+void ProjectManager::_open_selected_projects_ask(bool p_safe_mode) {
 	const HashSet<String> &selected_list = project_list->get_selected_project_keys();
 	if (selected_list.size() < 1) {
 		return;
@@ -606,7 +612,7 @@ void ProjectManager::_open_selected_projects_ask() {
 	}
 
 	// Open if the project is up-to-date.
-	_open_selected_projects();
+	_open_selected_projects(p_safe_mode);
 }
 
 void ProjectManager::_install_project(const String &p_zip_path, const String &p_title) {
@@ -691,11 +697,16 @@ void ProjectManager::_update_project_buttons() {
 
 	erase_btn->set_disabled(empty_selection);
 	open_btn->set_disabled(empty_selection || is_missing_project_selected);
+	open_safe_mode_btn->set_disabled(empty_selection || is_missing_project_selected);
 	rename_btn->set_disabled(empty_selection || is_missing_project_selected);
 	manage_tags_btn->set_disabled(empty_selection || is_missing_project_selected || selected_projects.size() > 1);
 	run_btn->set_disabled(empty_selection || is_missing_project_selected);
 
 	erase_missing_btn->set_disabled(!project_list->is_any_project_missing());
+}
+
+void ProjectManager::_open_safe_mode_ask() {
+	open_safe_mode_ask->popup_centered();
 }
 
 void ProjectManager::_on_projects_updated() {
@@ -718,7 +729,7 @@ void ProjectManager::_on_project_created(const String &dir) {
 	int i = project_list->refresh_project(dir);
 	project_list->select_project(i);
 	project_list->ensure_project_visible(i);
-	_open_selected_projects_ask();
+	_open_selected_projects_ask(false);
 
 	project_list->update_dock_menu();
 }
@@ -745,7 +756,7 @@ void ProjectManager::_on_search_term_submitted(const String &p_text) {
 		return;
 	}
 
-	_open_selected_projects_ask();
+	_open_selected_projects_ask(false);
 }
 
 LineEdit *ProjectManager::get_search_box() {
@@ -934,7 +945,7 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 
 		switch (k->get_keycode()) {
 			case Key::ENTER: {
-				_open_selected_projects_ask();
+				_open_selected_projects_ask(false);
 			} break;
 			case Key::HOME: {
 				if (project_list->get_project_count() > 0) {
@@ -1283,7 +1294,7 @@ ProjectManager::ProjectManager() {
 			project_list->connect(ProjectList::SIGNAL_LIST_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
 			project_list->connect(ProjectList::SIGNAL_LIST_CHANGED, callable_mp(this, &ProjectManager::_update_list_placeholder));
 			project_list->connect(ProjectList::SIGNAL_SELECTION_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
-			project_list->connect(ProjectList::SIGNAL_PROJECT_ASK_OPEN, callable_mp(this, &ProjectManager::_open_selected_projects_ask));
+			project_list->connect(ProjectList::SIGNAL_PROJECT_ASK_OPEN, callable_mp(this, &ProjectManager::_open_selected_projects_ask).bind(false));
 
 			// Empty project list placeholder.
 			{
@@ -1345,8 +1356,14 @@ ProjectManager::ProjectManager() {
 			open_btn = memnew(Button);
 			open_btn->set_text(TTR("Edit"));
 			open_btn->set_shortcut(ED_SHORTCUT("project_manager/edit_project", TTR("Edit Project"), KeyModifierMask::CMD_OR_CTRL | Key::E));
-			open_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects_ask));
+			open_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects_ask).bind(false));
 			project_list_sidebar->add_child(open_btn);
+
+			open_safe_mode_btn = memnew(Button);
+			open_safe_mode_btn->set_text(TTR("Edit (Safe Mode)"));
+			open_safe_mode_btn->set_shortcut(ED_SHORTCUT("project_manager/edit_project_safe_mode", TTR("Edit Project In Safe Mode"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::E));
+			open_safe_mode_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_safe_mode_ask));
+			project_list_sidebar->add_child(open_safe_mode_btn);
 
 			run_btn = memnew(Button);
 			run_btn->set_text(TTR("Run"));
@@ -1468,17 +1485,25 @@ ProjectManager::ProjectManager() {
 
 		multi_open_ask = memnew(ConfirmationDialog);
 		multi_open_ask->set_ok_button_text(TTR("Edit"));
-		multi_open_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects));
+		multi_open_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects).bind(false));
 		add_child(multi_open_ask);
 
 		multi_run_ask = memnew(ConfirmationDialog);
 		multi_run_ask->set_ok_button_text(TTR("Run"));
-		multi_run_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_run_project_confirm));
+		multi_run_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_run_project_confirm).bind(false));
 		add_child(multi_run_ask);
+
+		open_safe_mode_ask = memnew(ConfirmationDialog);
+		open_safe_mode_ask->set_min_size(Size2(550, 70));
+		open_safe_mode_ask->set_ok_button_text(TTR("Edit in Safe Mode"));
+		open_safe_mode_ask->set_text(TTR("If you're having problems opening a project, you can try to open it in Safe Mode.\n\nThis is a special mode that may help to recover projects that crash the engine upon initialization. This mode temporarily disables the following features:\n\n- Tool scripts\n- Editor plugins\n- GDExtension addons\n- Automatic scene restoring\n\nThis mode is intended only for basic editing to troubleshoot such issues, and therefore it will not possible to run the project during this mode.\n\nEdit the project in Safe Mode?"));
+		open_safe_mode_ask->set_autowrap(true);
+		open_safe_mode_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects).bind(true));
+		add_child(open_safe_mode_ask);
 
 		ask_update_settings = memnew(ConfirmationDialog);
 		ask_update_settings->set_autowrap(true);
-		ask_update_settings->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects));
+		ask_update_settings->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects).bind(false));
 		full_convert_button = ask_update_settings->add_button(TTR("Convert Full Project"), !GLOBAL_GET("gui/common/swap_cancel_ok"));
 		full_convert_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_full_convert_button_pressed));
 		add_child(ask_update_settings);

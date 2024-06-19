@@ -740,6 +740,10 @@ void EditorNode::_notification(int p_what) {
 			CanvasItemEditor::ThemePreviewMode theme_preview_mode = (CanvasItemEditor::ThemePreviewMode)(int)EditorSettings::get_singleton()->get_project_metadata("2d_editor", "theme_preview", CanvasItemEditor::THEME_PREVIEW_PROJECT);
 			update_preview_themes(theme_preview_mode);
 
+			if (Engine::get_singleton()->is_safe_mode_hint()) {
+				EditorToaster::get_singleton()->popup_str(TTR("Safe Mode is enabled. Editor functionality has been restricted."), EditorToaster::SEVERITY_WARNING);
+			}
+
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
 
@@ -5203,6 +5207,10 @@ void EditorNode::_load_central_editor_layout_from_config(Ref<ConfigFile> p_confi
 }
 
 void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout) {
+	if (Engine::get_singleton()->is_safe_mode_hint()) {
+		return;
+	}
+
 	if (!bool(EDITOR_GET("interface/scene_tabs/restore_scenes_on_load"))) {
 		return;
 	}

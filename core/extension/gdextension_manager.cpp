@@ -69,6 +69,10 @@ GDExtensionManager::LoadStatus GDExtensionManager::_unload_extension_internal(co
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &p_path) {
+	if (Engine::get_singleton()->is_safe_mode_hint()) {
+		return LOAD_STATUS_OK;
+	}
+
 	if (gdextension_map.has(p_path)) {
 		return LOAD_STATUS_ALREADY_LOADED;
 	}
@@ -91,6 +95,10 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 	ERR_FAIL_V_MSG(LOAD_STATUS_FAILED, "GDExtensions can only be reloaded in an editor build.");
 #else
 	ERR_FAIL_COND_V_MSG(!Engine::get_singleton()->is_extension_reloading_enabled(), LOAD_STATUS_FAILED, "GDExtension reloading is disabled.");
+
+	if (Engine::get_singleton()->is_safe_mode_hint()) {
+		return LOAD_STATUS_OK;
+	}
 
 	if (!gdextension_map.has(p_path)) {
 		return LOAD_STATUS_NOT_LOADED;
@@ -134,6 +142,10 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::unload_extension(const String &p_path) {
+	if (Engine::get_singleton()->is_safe_mode_hint()) {
+		return LOAD_STATUS_OK;
+	}
+
 	if (!gdextension_map.has(p_path)) {
 		return LOAD_STATUS_NOT_LOADED;
 	}
@@ -180,6 +192,10 @@ String GDExtensionManager::class_get_icon_path(const String &p_class) const {
 }
 
 void GDExtensionManager::initialize_extensions(GDExtension::InitializationLevel p_level) {
+	if (Engine::get_singleton()->is_safe_mode_hint()) {
+		return;
+	}
+
 	ERR_FAIL_COND(int32_t(p_level) - 1 != level);
 	for (KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
 		E.value->initialize_library(p_level);
@@ -188,6 +204,10 @@ void GDExtensionManager::initialize_extensions(GDExtension::InitializationLevel 
 }
 
 void GDExtensionManager::deinitialize_extensions(GDExtension::InitializationLevel p_level) {
+	if (Engine::get_singleton()->is_safe_mode_hint()) {
+		return;
+	}
+
 	ERR_FAIL_COND(int32_t(p_level) != level);
 	for (KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
 		E.value->deinitialize_library(p_level);
@@ -226,6 +246,10 @@ void GDExtensionManager::_reload_all_scripts() {
 #endif // TOOLS_ENABLED
 
 void GDExtensionManager::load_extensions() {
+	if (Engine::get_singleton()->is_safe_mode_hint()) {
+		return;
+	}
+
 	Ref<FileAccess> f = FileAccess::open(GDExtension::get_extension_list_config_file(), FileAccess::READ);
 	while (f.is_valid() && !f->eof_reached()) {
 		String s = f->get_line().strip_edges();
@@ -240,6 +264,9 @@ void GDExtensionManager::load_extensions() {
 
 void GDExtensionManager::reload_extensions() {
 #ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_safe_mode_hint()) {
+		return;
+	}
 	bool reloaded = false;
 	for (const KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
 		if (!E.value->is_reloadable()) {

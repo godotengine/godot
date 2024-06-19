@@ -151,20 +151,6 @@ public:
 		ACTION_ON_STOP_CLOSE_BUTTOM_PANEL,
 	};
 
-	struct ExecuteThreadArgs {
-		String path;
-		List<String> args;
-		String output;
-		Thread execute_output_thread;
-		Mutex execute_output_mutex;
-		int exitcode = 0;
-		SafeFlag done;
-	};
-
-private:
-	friend class EditorSceneTabs;
-	friend class SurfaceUpgradeTool;
-
 	enum MenuOptions {
 		FILE_NEW_SCENE,
 		FILE_NEW_INHERITED_SCENE,
@@ -253,6 +239,20 @@ private:
 
 		TOOL_MENU_BASE = 1000
 	};
+
+	struct ExecuteThreadArgs {
+		String path;
+		List<String> args;
+		String output;
+		Thread execute_output_thread;
+		Mutex execute_output_mutex;
+		int exitcode = 0;
+		SafeFlag done;
+	};
+
+private:
+	friend class EditorSceneTabs;
+	friend class SurfaceUpgradeTool;
 
 	enum {
 		MAX_INIT_CALLBACKS = 128,
