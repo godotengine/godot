@@ -12,10 +12,15 @@ class CharacterBodyMain;
 class CharacterAI_CheckBase : public RefCounted
 {
     GDCLASS(CharacterAI_CheckBase,RefCounted);
-    static void _bind_methods(){
+    static void _bind_methods() {
+
+        ClassDB::bind_method(D_METHOD("set_priority","priority"),&CharacterAI_CheckBase::set_priority);
+        ClassDB::bind_method(D_METHOD("get_priority"),&CharacterAI_CheckBase::get_priority);
         
         ClassDB::bind_method(D_METHOD("set_name","name"),&CharacterAI_CheckBase::set_name);
         ClassDB::bind_method(D_METHOD("get_name"),&CharacterAI_CheckBase::get_name);
+
+        ADD_PROPERTY(PropertyInfo(Variant::INT,"priority"), "set_priority","get_priority");
 
         ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME,"name"), "set_name","get_name");
     }
@@ -40,6 +45,18 @@ class CharacterAI_CheckBase : public RefCounted
         return false;
     }
 	GDVIRTUAL2R(bool,_execute,CharacterBodyMain*,Blackboard*)
+
+
+    public:
+    void set_priority(int p_priority)
+    {
+        this->priority = p_priority;
+    }
+
+    int get_priority()
+    {
+        return priority;
+    }
 
     void set_name(StringName p_name)
     {
@@ -214,7 +231,7 @@ class CharacterAI_Inductor : public RefCounted
         ClassDB::bind_method(D_METHOD("set_check","check"),&CharacterAI_Inductor::set_check);
         ClassDB::bind_method(D_METHOD("get_check"),&CharacterAI_Inductor::get_check);
 
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"check",PROPERTY_HINT_ARRAY_TYPE,MAKE_RESOURCE_TYPE_HINT("CharacterAI_CheckBase"),PROPERTY_USAGE_STORAGE), "set_check","get_check");
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"check",PROPERTY_HINT_ARRAY_TYPE,MAKE_RESOURCE_TYPE_HINT("CharacterAI_CheckBase")), "set_check","get_check");
     }
 public:
     struct SortCharacterCheck {
@@ -638,8 +655,16 @@ public:
     {
 
     }
+	void set_name(const StringName &p_name) {
+		name = p_name;
+	}
+
+	StringName get_name() const {
+		return name;
+	}
 	GDVIRTUAL2(_execute,CharacterBodyMain*,Blackboard*)
 
+	StringName name;
 };
 
 class CharacterAI : public Resource

@@ -258,14 +258,14 @@ void CharacterBodyMain::set_blackboard(const Ref<Blackboard> &p_blackboard)
     if(player_blackboard.is_null())
     {
         player_blackboard = p_blackboard;
-        if(btPlayer == nullptr)
-        {                
-            btPlayer->get_blackboard()->set_parent(_get_blackboard());
-        }
     }
     else
     {
-        player_blackboard->copy_form(p_blackboard);
+        player_blackboard = p_blackboard;
+    }
+    if(btPlayer != nullptr)
+    {                
+        btPlayer->get_blackboard()->set_parent(player_blackboard);
     }
 }
 

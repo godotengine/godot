@@ -243,7 +243,7 @@ void CollisionObject3DConnectionShape::_bind_methods()
 	ClassDB::bind_method(D_METHOD("get_scale"), &CollisionObject3DConnectionShape::get_scale);
 
 	
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name"), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name"), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"), "set_shape", "get_shape");
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position"), "set_position", "get_position");
@@ -293,8 +293,8 @@ void CollisionObject3DConnection::_bind_methods()
 	ClassDB::bind_method(D_METHOD("set_shapes", "shapes"), &CollisionObject3DConnection::set_shapes);
 	ClassDB::bind_method(D_METHOD("get_shapes"), &CollisionObject3DConnection::get_shapes);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name"), "set_name", "get_name");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "shapes"), "set_shapes", "get_shapes");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name"), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "shapes", PROPERTY_HINT_RESOURCE_TYPE, MAKE_RESOURCE_TYPE_HINT("CollisionObject3DConnectionShape")), "set_shapes", "get_shapes");
 }
 
 void CollisionObject3DConnection::set_link_target(Node3D *p_target) {
