@@ -2696,6 +2696,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 	editor_history->cleanup_history();
 	InspectorDock::get_singleton()->call("_prepare_history");
 	InspectorDock::get_singleton()->update(nullptr);
+	NodeDock::get_singleton()->set_node(nullptr);
 }
 
 void SceneTreeDock::_update_script_button() {

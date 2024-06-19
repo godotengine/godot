@@ -981,7 +981,6 @@ void ConnectionsDock::_make_or_edit_connection() {
 		}
 
 		EditorNode::get_singleton()->emit_signal(SNAME("script_add_function_request"), target, cd.method, script_function_args);
-		hide();
 	}
 
 	update_tree();
@@ -1607,7 +1606,6 @@ ConnectionsDock::ConnectionsDock() {
 	connect_button->connect(SceneStringName(pressed), callable_mp(this, &ConnectionsDock::_connect_pressed));
 
 	connect_dialog = memnew(ConnectDialog);
-	connect_dialog->connect("connected", callable_mp(NodeDock::get_singleton(), &NodeDock::restore_last_valid_node), CONNECT_DEFERRED);
 	connect_dialog->set_process_shortcut_input(true);
 	add_child(connect_dialog);
 
