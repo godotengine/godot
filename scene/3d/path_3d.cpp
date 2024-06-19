@@ -318,7 +318,7 @@ void PathFollow3D::_validate_property(PropertyInfo &p_property) const {
 }
 
 PackedStringArray PathFollow3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!Object::cast_to<Path3D>(get_parent())) {
