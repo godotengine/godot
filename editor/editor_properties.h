@@ -695,7 +695,7 @@ public:
 
 class EditorPropertyButton : public VBoxContainer {
 	GDCLASS(EditorPropertyButton, VBoxContainer);
-	Object * object;
+	Object *object;
 	Button *button = nullptr;
 	Color color;
 	String label;
@@ -704,8 +704,8 @@ class EditorPropertyButton : public VBoxContainer {
 
 	void _button_pressed();
 public:
-	void setup(Object * p_object,const String &p_hit_string);
-	virtual void update_property() ;
+	void setup(Object *p_object,const String &p_hit_string);
+	virtual void update_property();
 
 	virtual Size2 get_minimum_size() const override;
 	EditorPropertyButton();

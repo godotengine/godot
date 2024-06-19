@@ -3019,9 +3019,8 @@ EditorPropertyRID::EditorPropertyRID() {
 
 ///////////////////// Button /////////////////////////
 
-void EditorPropertyButton::update_property() {	
-	button->set_text(label);
-	
+void EditorPropertyButton::update_property() {
+	button->set_text(label);	
 	Ref<StyleBoxFlat> style = button->get_theme_stylebox("normal", "Button")->duplicate();
 	style->set_bg_color(color);
 	button->add_theme_style_override("normal", style);
@@ -3035,24 +3034,21 @@ void EditorPropertyButton::setup(Object * p_object, const String &p_hit_string)
 {
 	object = p_object;
 	Vector<String> sv = p_hit_string.split(";", false);
-	if(sv.size() == 3) {
+	if (sv.size() == 3) {
 		color = Color::html(sv[0]);
 		label = sv[1];
 		expression = sv[2];
 		expr.instantiate();
 		expr->parse(expression);
-	}
-	else
-	{
+	} else {
 		color = Color(0, 1, 1, 1);
 		label = "none_name";
 	}
 	update_property();
 
 }
-void EditorPropertyButton::_button_pressed()
-{
-	if(expr.is_valid())
+void EditorPropertyButton::_button_pressed() {
+	if (expr.is_valid())
 	{
 		expr->execute(Array(), object, true);
 	}
@@ -3498,11 +3494,9 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Varian
 	
 	if (p_hint == PROPERTY_HINT_BUTTON) {
 		EditorPropertyButton *editor = memnew(EditorPropertyButton);
-		editor->setup(p_object,p_hint_text);
+		editor->setup(p_object, p_hint_text);
 		add_custom_control(editor);
-	}
-	else
-	{
+	} else {
 		Control *editor = EditorInspectorDefaultPlugin::get_editor_for_property(p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
 		if (editor) {
 			add_property_editor(p_path, editor);
@@ -3697,15 +3691,12 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				Vector<String> options = p_hint_text.split(",", false);
 				editor->setup(options, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
-			}
-			else if (p_hint == PROPERTY_HINT_ENUM_DYNAMIC_LIST) {
+			} else if (p_hint == PROPERTY_HINT_ENUM_DYNAMIC_LIST) {
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
 				Vector<String> options;
-				if(p_object->has_method(p_hint_text))
-				{
+				if(p_object->has_method(p_hint_text)) {
 					Array options_array = p_object->call(p_hint_text);
-					for(int i=0;i<options_array.size();i++)
-					{
+					for(int i=0;i<options_array.size();i++) {
 						String opt = options_array[i];
 						options.push_back(opt);
 					}
@@ -3865,23 +3856,19 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				Vector<String> options = p_hint_text.split(",", false);
 				editor->setup(options, true, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
-			} 
-			else if (p_hint == PROPERTY_HINT_ENUM_DYNAMIC_LIST) {
+			} else if (p_hint == PROPERTY_HINT_ENUM_DYNAMIC_LIST) {
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
 				Vector<String> options;
-				if(p_object->has_method(p_hint_text))
-				{
+				if(p_object->has_method(p_hint_text)) {
 					Array options_array = p_object->call(p_hint_text);
-					for(int i=0;i<options_array.size();i++)
-					{
+					for(int i=0;i<options_array.size();i++) {
 						String opt = options_array[i];
 						options.push_back(opt);
 					}
 				}
 				editor->setup(options, true, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
-			}			
-			else {
+			} else {
 				EditorPropertyText *editor = memnew(EditorPropertyText);
 				if (p_hint == PROPERTY_HINT_PLACEHOLDER_TEXT) {
 					editor->set_placeholder(p_hint_text);

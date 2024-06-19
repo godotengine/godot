@@ -390,7 +390,7 @@ void AnimationMixer::get_animation_list(List<StringName> *p_animations) const {
 Ref<Animation> AnimationMixer::get_animation(const StringName &p_name) const {
 	ERR_FAIL_COND_V_MSG(!animation_set.has(p_name), Ref<Animation>(), vformat("Animation not found: \"%s\".", p_name));
 
-	cb_get_animation.call(this,p_name);
+	cb_get_animation.call(this, p_name);
 
 
 	const AnimationData &anim_data = animation_set[p_name];
@@ -410,24 +410,20 @@ StringName AnimationMixer::find_animation(const Ref<Animation> &p_animation) con
 	return StringName();
 }
 
-void AnimationMixer::reset_all_animation(const Ref<Animation>& anim)
-{
+void AnimationMixer::reset_all_animation(const Ref<Animation>& anim) {
 	for (KeyValue<StringName, AnimationData> &E : animation_set) {
-		E.value.animation = anim;		
+		E.value.animation = anim;
 	}
 }
 
 
-void AnimationMixer::clear_all_animation()
-{
+void AnimationMixer::clear_all_animation() {
 	_animation_set_cache_update();
 	animation_set.clear();
 }
 
-void AnimationMixer::change_animation(const StringName &p_name,const Ref<Animation>& anim)
-{
-	if(!animation_set.has(p_name))
-	{
+void AnimationMixer::change_animation(const StringName &p_name,const Ref<Animation>& anim) {
+	if(!animation_set.has(p_name)) {
 		ERR_FAIL_MSG(vformat("Animation not found: \"%s\".", p_name));
 	}
 	AnimationData &anim_data = animation_set[p_name];
@@ -660,7 +656,7 @@ bool AnimationMixer::_update_caches() {
 #endif
 
 	Ref<Animation> reset_anim;
-	HashMap<Ref<Animation>,Dictionary> anima;
+	HashMap<Ref<Animation>, Dictionary> anima;
 	bool has_reset_anim = has_animation(SceneStringName(RESET));
 	if (has_reset_anim) {
 		reset_anim = get_animation(SceneStringName(RESET));
@@ -672,11 +668,9 @@ bool AnimationMixer::_update_caches() {
 			anima.insert(anim,Dictionary());
 		}
 	}
-	for(int i = 0; i < animation_instances.size(); ++i)
-	{
+	for(int i = 0; i < animation_instances.size(); ++i) {
 		Ref<Animation> anim = animation_instances[i].animation_data.animation;		
-		if(anim.is_valid())
-		{
+		if(anim.is_valid()) {
 			anima.insert(anim,animation_instances[i].animation_data.bone_map);
 		}
 	}
@@ -782,7 +776,7 @@ bool AnimationMixer::_update_caches() {
 							track_xform->skeleton_id = sk->get_instance_id();
 							// 获取骨骼映射
 							StringName bone_name = path.get_subname(0);
-							if(KV.value.has(bone_name)) {
+							if (KV.value.has(bone_name)) {
 								bone_name = KV.value[bone_name];
 							}
 							int bone_idx = sk->find_bone(bone_name);
@@ -1157,7 +1151,7 @@ void AnimationMixer::_blend_calc_total_weight() {
 			real_t blend = blend_idx < track_weights.size() ? track_weights[blend_idx] * weight : weight;
 
 			// 检查是否禁用
-			if(ai.playback_info.disable_path.has(track->path)) {
+			if (ai.playback_info.disable_path.has(track->path)) {
 				blend = 0.0;
 			}
 			track->total_weight += blend;
@@ -1983,7 +1977,7 @@ void AnimationMixer::make_animation_instance(const StringName &p_name, const Pla
 
 	animation_instances.push_back(ai);
 }
-void AnimationMixer::make_animation_instance_anim(const Ref<Animation> &p_anim, const PlaybackInfo p_playback_info,const Dictionary& bone_map)
+void AnimationMixer::make_animation_instance_anim(const Ref<Animation> &p_anim, const PlaybackInfo p_playback_info,const Dictionary &bone_map)
 {
 	ERR_FAIL_COND(p_anim.is_null());
 	AnimationData ad;
