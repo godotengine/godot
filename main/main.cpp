@@ -2367,13 +2367,13 @@ bool Main::iteration() {
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
-		PhysicsServer::get_singleton()->flush_queries();
-
 		// Prepare the fixed timestep interpolated nodes
-		// BEFORE they are updated by the physics 2D,
+		// BEFORE they are updated by the physics,
 		// otherwise the current and previous transforms
 		// may be the same, and no interpolation takes place.
 		OS::get_singleton()->get_main_loop()->iteration_prepare();
+
+		PhysicsServer::get_singleton()->flush_queries();
 
 		Physics2DServer::get_singleton()->sync();
 		Physics2DServer::get_singleton()->flush_queries();
