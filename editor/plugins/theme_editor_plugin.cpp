@@ -911,7 +911,7 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	import_items_filter->set_placeholder(TTR("Filter Items"));
 	import_items_filter->set_clear_button_enabled(true);
 	add_child(import_items_filter);
-	import_items_filter->connect("text_changed", callable_mp(this, &ThemeItemImportTree::_filter_text_changed));
+	import_items_filter->connect(SceneStringName(text_changed), callable_mp(this, &ThemeItemImportTree::_filter_text_changed));
 
 	HBoxContainer *import_main_hb = memnew(HBoxContainer);
 	import_main_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -2243,7 +2243,7 @@ ThemeTypeDialog::ThemeTypeDialog() {
 
 	add_type_filter = memnew(LineEdit);
 	add_type_vb->add_child(add_type_filter);
-	add_type_filter->connect("text_changed", callable_mp(this, &ThemeTypeDialog::_add_type_filter_cbk));
+	add_type_filter->connect(SceneStringName(text_changed), callable_mp(this, &ThemeTypeDialog::_add_type_filter_cbk));
 	add_type_filter->connect("text_submitted", callable_mp(this, &ThemeTypeDialog::_add_type_dialog_entered));
 
 	Label *add_type_options_label = memnew(Label);
@@ -2298,7 +2298,7 @@ VBoxContainer *ThemeTypeEditor::_create_item_list(Theme::DataType p_data_type) {
 	item_add_hb->add_child(item_add_button);
 	item_add_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_add_cbk).bind(p_data_type, item_add_edit));
 	item_add_edit->set_meta("button", item_add_button);
-	item_add_edit->connect("text_changed", callable_mp(this, &ThemeTypeEditor::_update_add_button).bind(item_add_edit));
+	item_add_edit->connect(SceneStringName(text_changed), callable_mp(this, &ThemeTypeEditor::_update_add_button).bind(item_add_edit));
 
 	return items_list;
 }
@@ -2570,7 +2570,7 @@ void ThemeTypeEditor::_update_type_items() {
 
 			if (E.value) {
 				item_editor->set_value(edited_theme->get_constant(E.key, edited_type));
-				item_editor->connect("value_changed", callable_mp(this, &ThemeTypeEditor::_constant_item_changed).bind(E.key));
+				item_editor->connect(SceneStringName(value_changed), callable_mp(this, &ThemeTypeEditor::_constant_item_changed).bind(E.key));
 			} else {
 				item_editor->set_value(ThemeDB::get_singleton()->get_default_theme()->get_constant(E.key, edited_type));
 				item_editor->set_editable(false);
@@ -2641,7 +2641,7 @@ void ThemeTypeEditor::_update_type_items() {
 
 			if (E.value) {
 				item_editor->set_value(edited_theme->get_font_size(E.key, edited_type));
-				item_editor->connect("value_changed", callable_mp(this, &ThemeTypeEditor::_font_size_item_changed).bind(E.key));
+				item_editor->connect(SceneStringName(value_changed), callable_mp(this, &ThemeTypeEditor::_font_size_item_changed).bind(E.key));
 			} else {
 				item_editor->set_value(ThemeDB::get_singleton()->get_default_theme()->get_font_size(E.key, edited_type));
 				item_editor->set_editable(false);
@@ -3505,7 +3505,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	type_variation_edit = memnew(LineEdit);
 	type_variation_hb->add_child(type_variation_edit);
 	type_variation_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	type_variation_edit->connect("text_changed", callable_mp(this, &ThemeTypeEditor::_type_variation_changed));
+	type_variation_edit->connect(SceneStringName(text_changed), callable_mp(this, &ThemeTypeEditor::_type_variation_changed));
 	type_variation_edit->connect(SceneStringName(focus_exited), callable_mp(this, &ThemeTypeEditor::_update_type_items));
 	type_variation_button = memnew(Button);
 	type_variation_hb->add_child(type_variation_button);

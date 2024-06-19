@@ -381,7 +381,7 @@ void EditorPropertyArray::update_property() {
 			size_slider->set_max(INT32_MAX);
 			size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
 			size_slider->set_read_only(is_read_only());
-			size_slider->connect("value_changed", callable_mp(this, &EditorPropertyArray::_length_changed));
+			size_slider->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyArray::_length_changed));
 			hbox->add_child(size_slider);
 
 			property_vbox = memnew(VBoxContainer);

@@ -1665,7 +1665,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_slider->set_step(1.0 / 100.0);
 	animation_slider->set_value_no_signal(0.0);
 	animation_slider->set_focus_mode(Control::FOCUS_NONE);
-	animation_slider->connect(SNAME("value_changed"), callable_mp(this, &SceneImportSettingsDialog::_animation_slider_value_changed));
+	animation_slider->connect(SceneStringName(value_changed), callable_mp(this, &SceneImportSettingsDialog::_animation_slider_value_changed));
 
 	base_viewport->set_use_own_world_3d(true);
 

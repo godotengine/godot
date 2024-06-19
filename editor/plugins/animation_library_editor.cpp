@@ -798,7 +798,7 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	VBoxContainer *dialog_vb = memnew(VBoxContainer);
 	add_library_name = memnew(LineEdit);
 	dialog_vb->add_child(add_library_name);
-	add_library_name->connect("text_changed", callable_mp(this, &AnimationLibraryEditor::_add_library_validate));
+	add_library_name->connect(SceneStringName(text_changed), callable_mp(this, &AnimationLibraryEditor::_add_library_validate));
 	add_child(add_library_dialog);
 
 	add_library_validate = memnew(Label);

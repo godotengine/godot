@@ -2305,7 +2305,7 @@ void LineEdit::_text_changed() {
 }
 
 void LineEdit::_emit_text_change() {
-	emit_signal(SNAME("text_changed"), text);
+	emit_signal(SceneStringName(text_changed), text);
 	text_changed_dirty = false;
 }
 PackedStringArray LineEdit::get_configuration_warnings() const {

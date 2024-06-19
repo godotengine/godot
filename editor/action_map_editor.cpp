@@ -519,7 +519,7 @@ void ActionMapEditor::show_message(const String &p_message) {
 void ActionMapEditor::use_external_search_box(LineEdit *p_searchbox) {
 	memdelete(action_list_search);
 	action_list_search = p_searchbox;
-	action_list_search->connect("text_changed", callable_mp(this, &ActionMapEditor::_search_term_updated));
+	action_list_search->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_search_term_updated));
 }
 
 void ActionMapEditor::_on_filter_focused() {
@@ -543,7 +543,7 @@ ActionMapEditor::ActionMapEditor() {
 	action_list_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	action_list_search->set_placeholder(TTR("Filter by Name"));
 	action_list_search->set_clear_button_enabled(true);
-	action_list_search->connect("text_changed", callable_mp(this, &ActionMapEditor::_search_term_updated));
+	action_list_search->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_search_term_updated));
 	top_hbox->add_child(action_list_search);
 
 	action_list_search_by_event = memnew(EventListenerLineEdit);
@@ -569,7 +569,7 @@ ActionMapEditor::ActionMapEditor() {
 	add_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_edit->set_placeholder(TTR("Add New Action"));
 	add_edit->set_clear_button_enabled(true);
-	add_edit->connect("text_changed", callable_mp(this, &ActionMapEditor::_add_edit_text_changed));
+	add_edit->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_add_edit_text_changed));
 	add_edit->connect("text_submitted", callable_mp(this, &ActionMapEditor::_add_action));
 	add_hbox->add_child(add_edit);
 

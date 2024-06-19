@@ -6277,7 +6277,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	node_filter = memnew(LineEdit);
 	filter_hb->add_child(node_filter);
-	node_filter->connect("text_changed", callable_mp(this, &VisualShaderEditor::_member_filter_changed));
+	node_filter->connect(SceneStringName(text_changed), callable_mp(this, &VisualShaderEditor::_member_filter_changed));
 	node_filter->connect(SceneStringName(gui_input), callable_mp(this, &VisualShaderEditor::_sbox_input));
 	node_filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	node_filter->set_placeholder(TTR("Search"));
@@ -6367,7 +6367,7 @@ VisualShaderEditor::VisualShaderEditor() {
 		hb->add_child(varying_name);
 		varying_name->set_custom_minimum_size(Size2(150 * EDSCALE, 0));
 		varying_name->set_h_size_flags(SIZE_EXPAND_FILL);
-		varying_name->connect("text_changed", callable_mp(this, &VisualShaderEditor::_varying_name_changed));
+		varying_name->connect(SceneStringName(text_changed), callable_mp(this, &VisualShaderEditor::_varying_name_changed));
 
 		varying_mode = memnew(OptionButton);
 		hb->add_child(varying_mode);
@@ -6418,7 +6418,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	frame_title_change_edit = memnew(LineEdit);
 	frame_title_change_edit->set_expand_to_text_length_enabled(true);
 	frame_title_change_edit->set_select_all_on_focus(true);
-	frame_title_change_edit->connect("text_changed", callable_mp(this, &VisualShaderEditor::_frame_title_text_changed));
+	frame_title_change_edit->connect(SceneStringName(text_changed), callable_mp(this, &VisualShaderEditor::_frame_title_text_changed));
 	frame_title_change_edit->connect("text_submitted", callable_mp(this, &VisualShaderEditor::_frame_title_text_submitted));
 	frame_title_change_popup->add_child(frame_title_change_edit);
 	frame_title_change_edit->reset_size();

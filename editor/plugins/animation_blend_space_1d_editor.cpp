@@ -732,7 +732,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	edit_value->set_min(-1000);
 	edit_value->set_max(1000);
 	edit_value->set_step(0.01);
-	edit_value->connect("value_changed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_edit_point_pos));
+	edit_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_edit_point_pos));
 
 	open_editor = memnew(Button);
 	edit_hb->add_child(open_editor);
@@ -786,10 +786,10 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 		bottom_hb->add_child(max_value);
 	}
 
-	snap_value->connect("value_changed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
-	min_value->connect("value_changed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
-	max_value->connect("value_changed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
-	label_value->connect("text_changed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_labels_changed));
+	snap_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+	min_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+	max_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+	label_value->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_labels_changed));
 
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);

@@ -298,7 +298,7 @@ GradientTexture2DEditor::GradientTexture2DEditor() {
 	snap_count_edit->set_value(DEFAULT_SNAP);
 	snap_count_edit->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 	toolbar->add_child(snap_count_edit);
-	snap_count_edit->connect("value_changed", callable_mp(this, &GradientTexture2DEditor::_set_snap_count));
+	snap_count_edit->connect(SceneStringName(value_changed), callable_mp(this, &GradientTexture2DEditor::_set_snap_count));
 
 	texture_editor_rect = memnew(GradientTexture2DEdit);
 	add_child(texture_editor_rect);

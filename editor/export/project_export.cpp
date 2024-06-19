@@ -1266,7 +1266,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	name = memnew(LineEdit);
 	settings_vb->add_margin_child(TTR("Name:"), name);
-	name->connect("text_changed", callable_mp(this, &ProjectExportDialog::_name_changed));
+	name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_name_changed));
 
 	runnable = memnew(CheckButton);
 	runnable->set_text(TTR("Runnable"));
@@ -1379,13 +1379,13 @@ ProjectExportDialog::ProjectExportDialog() {
 	resources_vb->add_margin_child(
 			TTR("Filters to export non-resource files/folders\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
 			include_filters);
-	include_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_filter_changed));
+	include_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_filter_changed));
 
 	exclude_filters = memnew(LineEdit);
 	resources_vb->add_margin_child(
 			TTR("Filters to exclude files/folders from project\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
 			exclude_filters);
-	exclude_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_filter_changed));
+	exclude_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_filter_changed));
 
 	// Feature tags.
 
@@ -1393,7 +1393,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	feature_vb->set_name(TTR("Features"));
 	feature_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	custom_features = memnew(LineEdit);
-	custom_features->connect("text_changed", callable_mp(this, &ProjectExportDialog::_custom_features_changed));
+	custom_features->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_custom_features_changed));
 	feature_vb->add_margin_child(TTR("Custom (comma-separated):"), custom_features);
 	custom_feature_display = memnew(RichTextLabel);
 	custom_feature_display->set_custom_minimum_size(Size2(1, 75 * EDSCALE));
@@ -1422,19 +1422,19 @@ ProjectExportDialog::ProjectExportDialog() {
 	sec_vb->add_child(enc_directory);
 
 	enc_in_filters = memnew(LineEdit);
-	enc_in_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_enc_filters_changed));
+	enc_in_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_enc_filters_changed));
 	sec_vb->add_margin_child(
 			TTR("Filters to include files/folders\n(comma-separated, e.g: *.tscn, *.tres, scenes/*)"),
 			enc_in_filters);
 
 	enc_ex_filters = memnew(LineEdit);
-	enc_ex_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_enc_filters_changed));
+	enc_ex_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_enc_filters_changed));
 	sec_vb->add_margin_child(
 			TTR("Filters to exclude files/folders\n(comma-separated, e.g: *.ctex, *.import, music/*)"),
 			enc_ex_filters);
 
 	script_key = memnew(LineEdit);
-	script_key->connect("text_changed", callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
+	script_key->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
 	script_key_error = memnew(Label);
 	script_key_error->set_text(String::utf8("•  ") + TTR("Invalid Encryption Key (must be 64 hexadecimal characters long)"));
 	script_key_error->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
@@ -1576,7 +1576,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(export_project);
 	export_project->connect("file_selected", callable_mp(this, &ProjectExportDialog::_export_project_to_path));
-	export_project->get_line_edit()->connect("text_changed", callable_mp(this, &ProjectExportDialog::_validate_export_path));
+	export_project->get_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_validate_export_path));
 
 	export_project->add_option(TTR("Export With Debug"), Vector<String>(), true);
 	export_pck_zip->add_option(TTR("Export With Debug"), Vector<String>(), true);

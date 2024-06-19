@@ -652,7 +652,7 @@ void GroupsEditor::_show_add_group_dialog() {
 		add_validation_panel->set_update_callback(callable_mp(this, &GroupsEditor::_check_add));
 		add_validation_panel->set_accept_button(add_group_dialog->get_ok_button());
 
-		add_group_name->connect("text_changed", callable_mp(add_validation_panel, &EditorValidationPanel::update).unbind(1));
+		add_group_name->connect(SceneStringName(text_changed), callable_mp(add_validation_panel, &EditorValidationPanel::update).unbind(1));
 
 		vbc->add_child(add_validation_panel);
 
@@ -693,7 +693,7 @@ void GroupsEditor::_show_rename_group_dialog() {
 		rename_validation_panel->set_update_callback(callable_mp(this, &GroupsEditor::_check_rename));
 		rename_validation_panel->set_accept_button(rename_group_dialog->get_ok_button());
 
-		rename_group->connect("text_changed", callable_mp(rename_validation_panel, &EditorValidationPanel::update).unbind(1));
+		rename_group->connect(SceneStringName(text_changed), callable_mp(rename_validation_panel, &EditorValidationPanel::update).unbind(1));
 
 		vbc->add_child(rename_validation_panel);
 
@@ -843,7 +843,7 @@ GroupsEditor::GroupsEditor() {
 	filter->set_clear_button_enabled(true);
 	filter->set_placeholder(TTR("Filter Groups"));
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
-	filter->connect("text_changed", callable_mp(this, &GroupsEditor::_update_tree).unbind(1));
+	filter->connect(SceneStringName(text_changed), callable_mp(this, &GroupsEditor::_update_tree).unbind(1));
 	hbc->add_child(filter);
 
 	tree = memnew(Tree);

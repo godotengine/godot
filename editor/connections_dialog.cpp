@@ -737,7 +737,7 @@ ConnectDialog::ConnectDialog() {
 	filter_nodes->set_h_size_flags(Control::SIZE_FILL | Control::SIZE_EXPAND);
 	filter_nodes->set_placeholder(TTR("Filter Nodes"));
 	filter_nodes->set_clear_button_enabled(true);
-	filter_nodes->connect("text_changed", callable_mp(tree, &SceneTreeEditor::set_filter));
+	filter_nodes->connect(SceneStringName(text_changed), callable_mp(tree, &SceneTreeEditor::set_filter));
 
 	Button *focus_current = memnew(Button);
 	hbc_filter->add_child(focus_current);
@@ -769,7 +769,7 @@ ConnectDialog::ConnectDialog() {
 	method_vbc->add_child(method_search);
 	method_search->set_placeholder(TTR("Filter Methods"));
 	method_search->set_clear_button_enabled(true);
-	method_search->connect("text_changed", callable_mp(this, &ConnectDialog::_update_method_tree).unbind(1));
+	method_search->connect(SceneStringName(text_changed), callable_mp(this, &ConnectDialog::_update_method_tree).unbind(1));
 
 	method_tree = memnew(Tree);
 	method_vbc->add_child(method_tree);
@@ -839,7 +839,7 @@ ConnectDialog::ConnectDialog() {
 
 	unbind_count = memnew(SpinBox);
 	unbind_count->set_tooltip_text(TTR("Allows to drop arguments sent by signal emitter."));
-	unbind_count->connect("value_changed", callable_mp(this, &ConnectDialog::_unbind_count_changed));
+	unbind_count->connect(SceneStringName(value_changed), callable_mp(this, &ConnectDialog::_unbind_count_changed));
 
 	vbc_right->add_margin_child(TTR("Unbind Signal Arguments:"), unbind_count);
 
@@ -848,7 +848,7 @@ ConnectDialog::ConnectDialog() {
 
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	dst_method->connect("text_changed", callable_mp(method_tree, &Tree::deselect_all).unbind(1));
+	dst_method->connect(SceneStringName(text_changed), callable_mp(method_tree, &Tree::deselect_all).unbind(1));
 	hbc_method->add_child(dst_method);
 	register_text_enter(dst_method);
 
@@ -1586,7 +1586,7 @@ ConnectionsDock::ConnectionsDock() {
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->set_placeholder(TTR("Filter Signals"));
 	search_box->set_clear_button_enabled(true);
-	search_box->connect("text_changed", callable_mp(this, &ConnectionsDock::_filter_changed));
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &ConnectionsDock::_filter_changed));
 	vbc->add_child(search_box);
 
 	tree = memnew(ConnectionsDockTree);

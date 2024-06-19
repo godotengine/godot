@@ -668,7 +668,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	property_box = memnew(LineEdit);
 	property_box->set_placeholder(TTR("Select a Setting or Type its Name"));
 	property_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	property_box->connect("text_changed", callable_mp(this, &ProjectSettingsEditor::_property_box_changed));
+	property_box->connect(SceneStringName(text_changed), callable_mp(this, &ProjectSettingsEditor::_property_box_changed));
 	custom_properties->add_child(property_box);
 
 	feature_box = memnew(OptionButton);

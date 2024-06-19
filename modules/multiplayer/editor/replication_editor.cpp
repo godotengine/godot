@@ -187,7 +187,7 @@ ReplicationEditor::ReplicationEditor() {
 	pick_node->register_text_enter(pick_node->get_filter_line_edit());
 	pick_node->set_title(TTR("Pick a node to synchronize:"));
 	pick_node->connect("selected", callable_mp(this, &ReplicationEditor::_pick_node_selected));
-	pick_node->get_filter_line_edit()->connect("text_changed", callable_mp(this, &ReplicationEditor::_pick_node_filter_text_changed));
+	pick_node->get_filter_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &ReplicationEditor::_pick_node_filter_text_changed));
 	pick_node->get_filter_line_edit()->connect("gui_input", callable_mp(this, &ReplicationEditor::_pick_node_filter_input));
 
 	prop_selector = memnew(PropertySelector);

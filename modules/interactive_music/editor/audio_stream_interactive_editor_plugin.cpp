@@ -368,7 +368,7 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 	edit_vb->add_margin_child(TTR("Fade Beats:"), fade_beats);
 	fade_beats->set_max(16);
 	fade_beats->set_step(0.1);
-	fade_beats->connect("value_changed", callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited).unbind(1));
+	fade_beats->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited).unbind(1));
 
 	filler_clip = memnew(OptionButton);
 	edit_vb->add_margin_child(TTR("Filler Clip:"), filler_clip);

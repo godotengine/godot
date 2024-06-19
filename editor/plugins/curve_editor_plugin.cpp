@@ -1019,7 +1019,7 @@ CurveEditor::CurveEditor() {
 	snap_count_edit->set_value(DEFAULT_SNAP);
 	snap_count_edit->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 	toolbar->add_child(snap_count_edit);
-	snap_count_edit->connect("value_changed", callable_mp(this, &CurveEditor::_set_snap_count));
+	snap_count_edit->connect(SceneStringName(value_changed), callable_mp(this, &CurveEditor::_set_snap_count));
 
 	presets_button = memnew(MenuButton);
 	presets_button->set_text(TTR("Presets"));

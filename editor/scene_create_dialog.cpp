@@ -292,8 +292,8 @@ SceneCreateDialog::SceneCreateDialog() {
 	validation_panel->set_accept_button(get_ok_button());
 
 	node_type_group->connect(SceneStringName(pressed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
-	scene_name_edit->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
-	root_name_edit->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	scene_name_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	root_name_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 
 	set_title(TTR("Create New Scene"));
 	set_min_size(Size2i(400 * EDSCALE, 0));

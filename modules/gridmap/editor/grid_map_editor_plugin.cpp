@@ -1223,7 +1223,7 @@ GridMapEditor::GridMapEditor() {
 	floor->get_line_edit()->add_theme_constant_override("minimum_character_width", 16);
 
 	spatial_editor_hb->add_child(floor);
-	floor->connect("value_changed", callable_mp(this, &GridMapEditor::_floor_changed));
+	floor->connect(SceneStringName(value_changed), callable_mp(this, &GridMapEditor::_floor_changed));
 	floor->connect(SceneStringName(mouse_exited), callable_mp(this, &GridMapEditor::_floor_mouse_exited));
 	floor->get_line_edit()->connect(SceneStringName(mouse_exited), callable_mp(this, &GridMapEditor::_floor_mouse_exited));
 
@@ -1286,7 +1286,7 @@ GridMapEditor::GridMapEditor() {
 	search_box->set_placeholder(TTR("Filter Meshes"));
 	search_box->set_clear_button_enabled(true);
 	hb->add_child(search_box);
-	search_box->connect("text_changed", callable_mp(this, &GridMapEditor::_text_changed));
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &GridMapEditor::_text_changed));
 	search_box->connect(SceneStringName(gui_input), callable_mp(this, &GridMapEditor::_sbox_input));
 
 	mode_thumbnail = memnew(Button);
@@ -1309,7 +1309,7 @@ GridMapEditor::GridMapEditor() {
 	size_slider->set_max(4.0f);
 	size_slider->set_step(0.1f);
 	size_slider->set_value(1.0f);
-	size_slider->connect("value_changed", callable_mp(this, &GridMapEditor::_icon_size_changed));
+	size_slider->connect(SceneStringName(value_changed), callable_mp(this, &GridMapEditor::_icon_size_changed));
 	add_child(size_slider);
 
 	EDITOR_DEF("editors/grid_map/preview_size", 64);
