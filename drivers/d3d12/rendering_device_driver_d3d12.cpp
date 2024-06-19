@@ -51,6 +51,12 @@
 #pragma GCC diagnostic ignored "-Wshadow"
 #pragma GCC diagnostic ignored "-Wswitch"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#elif defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+#pragma clang diagnostic ignored "-Wstring-plus-int"
+#pragma clang diagnostic ignored "-Wswitch"
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
 #endif
 
 #include "dxil_validator.h"
@@ -63,6 +69,8 @@ extern "C" {
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
+#elif defined(__clang__)
+#pragma clang diagnostic pop
 #endif
 
 #if defined(_MSC_VER)
@@ -95,11 +103,6 @@ static const D3D12_RANGE VOID_RANGE = {};
 
 static const uint32_t ROOT_CONSTANT_REGISTER = GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER * (RDD::MAX_UNIFORM_SETS + 1);
 static const uint32_t RUNTIME_DATA_REGISTER = GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER * (RDD::MAX_UNIFORM_SETS + 2);
-
-#ifdef DEV_ENABLED
-//#define DEBUG_COUNT_BARRIERS
-#define CUSTOM_INFO_QUEUE_ENABLED 0
-#endif
 
 /*****************/
 /**** GENERIC ****/
@@ -1462,7 +1465,7 @@ RDD::TextureID RenderingDeviceDriverD3D12::_texture_create_shared_from_slice(Tex
 		uav_desc.Format = RD_TO_D3D12_FORMAT[p_view.format].general_format;
 	}
 
-	if (p_slice_type != -1) {
+	if (p_slice_type != (TextureSliceType)-1) {
 		// Complete description with slicing.
 
 		switch (p_slice_type) {
@@ -1560,7 +1563,7 @@ RDD::TextureID RenderingDeviceDriverD3D12::_texture_create_shared_from_slice(Tex
 	tex_info->states_ptr = owner_tex_info->states_ptr;
 	tex_info->format = p_view.format;
 	tex_info->desc = new_tex_resource_desc;
-	if (p_slice_type == -1) {
+	if (p_slice_type == (TextureSliceType)-1) {
 		tex_info->base_layer = owner_tex_info->base_layer;
 		tex_info->layers = owner_tex_info->layers;
 		tex_info->base_mip = owner_tex_info->base_mip;
@@ -1741,7 +1744,7 @@ RDD::SamplerID RenderingDeviceDriverD3D12::sampler_create(const SamplerState &p_
 		slot = 1;
 	} else {
 		for (uint32_t i = 1; i < samplers.size(); i++) {
-			if (samplers[i].Filter == INT_MAX) {
+			if ((int)samplers[i].Filter == INT_MAX) {
 				slot = i;
 				break;
 			}
@@ -2703,6 +2706,8 @@ D3D12_UNORDERED_ACCESS_VIEW_DESC RenderingDeviceDriverD3D12::_make_ranged_uav_fo
 			uav_desc.Texture3D.MipSlice = mip;
 			uav_desc.Texture3D.WSize >>= p_mipmap_offset;
 		} break;
+		default:
+			break;
 	}
 
 	return uav_desc;
@@ -4094,7 +4099,6 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 
 	{
 		uniform_set_info->resource_states.reserve(resource_states.size());
-		uint32_t i = 0;
 		for (const KeyValue<ResourceInfo *, NeededState> &E : resource_states) {
 			UniformSetInfo::StateRequirement sr;
 			sr.resource = E.key;
@@ -4102,7 +4106,6 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 			sr.states = E.value.states;
 			sr.shader_uniform_idx_mask = E.value.shader_uniform_idx_mask;
 			uniform_set_info->resource_states.push_back(sr);
-			i++;
 		}
 	}
 
@@ -6635,7 +6638,7 @@ Error RenderingDeviceDriverD3D12::_initialize_frames(uint32_t p_frame_count) {
 	D3D12MA::ALLOCATION_DESC allocation_desc = {};
 	allocation_desc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 
-	CD3DX12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+	//CD3DX12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
 	uint32_t resource_descriptors_per_frame = GLOBAL_GET("rendering/rendering_device/d3d12/max_resource_descriptors_per_frame");
 	uint32_t sampler_descriptors_per_frame = GLOBAL_GET("rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame");
 	uint32_t misc_descriptors_per_frame = GLOBAL_GET("rendering/rendering_device/d3d12/max_misc_descriptors_per_frame");
