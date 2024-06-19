@@ -90,6 +90,10 @@ Variant AudioStreamPlayback::get_parameter(const StringName &p_name) const {
 	return ret;
 }
 
+Ref<AudioSamplePlayback> AudioStreamPlayback::get_sample_playback() const {
+	return nullptr;
+}
+
 void AudioStreamPlayback::_bind_methods() {
 	GDVIRTUAL_BIND(_start, "from_pos")
 	GDVIRTUAL_BIND(_stop)
@@ -101,6 +105,17 @@ void AudioStreamPlayback::_bind_methods() {
 	GDVIRTUAL_BIND(_tag_used_streams);
 	GDVIRTUAL_BIND(_set_parameter, "name", "value");
 	GDVIRTUAL_BIND(_get_parameter, "name");
+
+	ClassDB::bind_method(D_METHOD("set_sample_playback", "playback_sample"), &AudioStreamPlayback::set_sample_playback);
+	ClassDB::bind_method(D_METHOD("get_sample_playback"), &AudioStreamPlayback::get_sample_playback);
+}
+
+AudioStreamPlayback::AudioStreamPlayback() {}
+
+AudioStreamPlayback::~AudioStreamPlayback() {
+	if (get_sample_playback().is_valid() && likely(AudioServer::get_singleton() != nullptr)) {
+		AudioServer::get_singleton()->stop_sample_playback(get_sample_playback());
+	}
 }
 //////////////////////////////
 
@@ -271,10 +286,22 @@ void AudioStream::get_parameter_list(List<Parameter> *r_parameters) {
 	}
 }
 
+Ref<AudioSample> AudioStream::generate_sample() const {
+	ERR_FAIL_COND_V_MSG(!can_be_sampled(), nullptr, "Cannot generate a sample for a stream that cannot be sampled.");
+	Ref<AudioSample> sample;
+	sample.instantiate();
+	sample->stream = this;
+	return sample;
+}
+
 void AudioStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);
 	ClassDB::bind_method(D_METHOD("is_monophonic"), &AudioStream::is_monophonic);
 	ClassDB::bind_method(D_METHOD("instantiate_playback"), &AudioStream::instantiate_playback);
+	ClassDB::bind_method(D_METHOD("can_be_sampled"), &AudioStream::can_be_sampled);
+	ClassDB::bind_method(D_METHOD("generate_sample"), &AudioStream::generate_sample);
+	ClassDB::bind_method(D_METHOD("is_meta_stream"), &AudioStream::is_meta_stream);
+
 	GDVIRTUAL_BIND(_instantiate_playback);
 	GDVIRTUAL_BIND(_get_stream_name);
 	GDVIRTUAL_BIND(_get_length);
