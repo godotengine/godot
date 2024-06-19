@@ -35,9 +35,6 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "scene/resources/2d/capsule_shape_2d.h"
-#include "scene/resources/2d/circle_shape_2d.h"
-#include "scene/resources/2d/concave_polygon_shape_2d.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
 #include "scene/resources/2d/rectangle_shape_2d.h"
 #include "scene/resources/2d/segment_shape_2d.h"
@@ -56,24 +53,6 @@ void CollisionShape2DEditor::_node_removed(Node *p_node) {
 
 Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 	switch (shape_type) {
-		case CAPSULE_SHAPE: {
-			Ref<CapsuleShape2D> capsule = node->get_shape();
-			return Vector2(capsule->get_radius(), capsule->get_height());
-
-		} break;
-
-		case CIRCLE_SHAPE: {
-			Ref<CircleShape2D> circle = node->get_shape();
-
-			if (idx == 0) {
-				return circle->get_radius();
-			}
-
-		} break;
-
-		case CONCAVE_POLYGON_SHAPE: {
-		} break;
-
 		case CONVEX_POLYGON_SHAPE: {
 		} break;
 
@@ -123,29 +102,6 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 
 void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 	switch (shape_type) {
-		case CAPSULE_SHAPE: {
-			if (idx < 2) {
-				Ref<CapsuleShape2D> capsule = node->get_shape();
-
-				real_t parameter = Math::abs(p_point[idx]);
-
-				if (idx == 0) {
-					capsule->set_radius(parameter);
-				} else if (idx == 1) {
-					capsule->set_height(parameter * 2);
-				}
-			}
-
-		} break;
-
-		case CIRCLE_SHAPE: {
-			Ref<CircleShape2D> circle = node->get_shape();
-			circle->set_radius(p_point.length());
-		} break;
-
-		case CONCAVE_POLYGON_SHAPE: {
-		} break;
-
 		case CONVEX_POLYGON_SHAPE: {
 		} break;
 
@@ -212,33 +168,6 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 	undo_redo->create_action(TTR("Set Handle"));
 
 	switch (shape_type) {
-		case CAPSULE_SHAPE: {
-			Ref<CapsuleShape2D> capsule = node->get_shape();
-
-			Vector2 values = p_org;
-
-			if (idx == 0) {
-				undo_redo->add_do_method(capsule.ptr(), "set_radius", capsule->get_radius());
-			} else if (idx == 1) {
-				undo_redo->add_do_method(capsule.ptr(), "set_height", capsule->get_height());
-			}
-			undo_redo->add_undo_method(capsule.ptr(), "set_radius", values[0]);
-			undo_redo->add_undo_method(capsule.ptr(), "set_height", values[1]);
-
-		} break;
-
-		case CIRCLE_SHAPE: {
-			Ref<CircleShape2D> circle = node->get_shape();
-
-			undo_redo->add_do_method(circle.ptr(), "set_radius", circle->get_radius());
-			undo_redo->add_undo_method(circle.ptr(), "set_radius", p_org);
-
-		} break;
-
-		case CONCAVE_POLYGON_SHAPE: {
-			// Cannot be edited directly, use CollisionPolygon2D instead.
-		} break;
-
 		case CONVEX_POLYGON_SHAPE: {
 			// Cannot be edited directly, use CollisionPolygon2D instead.
 		} break;
@@ -403,14 +332,8 @@ void CollisionShape2DEditor::_shape_changed() {
 		return;
 	}
 
-	if (Object::cast_to<CapsuleShape2D>(*current_shape)) {
-		shape_type = CAPSULE_SHAPE;
-	} else if (Object::cast_to<CircleShape2D>(*current_shape)) {
-		shape_type = CIRCLE_SHAPE;
-	} else if (Object::cast_to<ConcavePolygonShape2D>(*current_shape)) {
-		shape_type = CONCAVE_POLYGON_SHAPE;
-	} else if (Object::cast_to<ConvexPolygonShape2D>(*current_shape)) {
-		shape_type = CONVEX_POLYGON_SHAPE;
+	if (Object::cast_to<ConvexPolygonShape2D>(*current_shape)) {
+	shape_type = CONVEX_POLYGON_SHAPE;
 	} else if (Object::cast_to<WorldBoundaryShape2D>(*current_shape)) {
 		shape_type = WORLD_BOUNDARY_SHAPE;
 	} else if (Object::cast_to<SeparationRayShape2D>(*current_shape)) {
@@ -443,34 +366,6 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 	handles.clear();
 
 	switch (shape_type) {
-		case CAPSULE_SHAPE: {
-			Ref<CapsuleShape2D> shape = current_shape;
-
-			handles.resize(2);
-			float radius = shape->get_radius();
-			float height = shape->get_height() / 2;
-
-			handles.write[0] = Point2(radius, 0);
-			handles.write[1] = Point2(0, height);
-
-			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
-			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
-
-		} break;
-
-		case CIRCLE_SHAPE: {
-			Ref<CircleShape2D> shape = current_shape;
-
-			handles.resize(1);
-			handles.write[0] = Point2(shape->get_radius(), 0);
-
-			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
-
-		} break;
-
-		case CONCAVE_POLYGON_SHAPE: {
-		} break;
-
 		case CONVEX_POLYGON_SHAPE: {
 		} break;
 

@@ -33,7 +33,6 @@
 #include "core/math/geometry_2d.h"
 #include "scene/2d/physics/area_2d.h"
 #include "scene/2d/physics/collision_object_2d.h"
-#include "scene/resources/2d/concave_polygon_shape_2d.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
 
 #include "thirdparty/misc/polypartition.h"
@@ -58,24 +57,7 @@ void CollisionPolygon2D::_build_polygon() {
 		}
 
 	} else {
-		if (polygon.size() < 2) {
-			return;
-		}
-
-		Ref<ConcavePolygonShape2D> concave = memnew(ConcavePolygonShape2D);
-
-		Vector<Vector2> segments;
-		segments.resize(polygon.size() * 2);
-		Vector2 *w = segments.ptrw();
-
-		for (int i = 0; i < polygon.size(); i++) {
-			w[(i << 1) + 0] = polygon[i];
-			w[(i << 1) + 1] = polygon[(i + 1) % polygon.size()];
-		}
-
-		concave->set_segments(segments);
-
-		collision_object->shape_owner_add_shape(owner_id, concave);
+		ERR_FAIL_MSG("Only convex shapes are supported");
 	}
 }
 

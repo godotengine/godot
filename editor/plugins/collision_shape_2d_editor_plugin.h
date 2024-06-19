@@ -40,9 +40,6 @@ class CollisionShape2DEditor : public Control {
 	GDCLASS(CollisionShape2DEditor, Control);
 
 	enum ShapeType {
-		CAPSULE_SHAPE,
-		CIRCLE_SHAPE,
-		CONCAVE_POLYGON_SHAPE,
 		CONVEX_POLYGON_SHAPE,
 		WORLD_BOUNDARY_SHAPE,
 		SEPARATION_RAY_SHAPE,
