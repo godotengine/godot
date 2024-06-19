@@ -6712,6 +6712,126 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			AnimationPlayerEditor::get_singleton()->get_player()->apply_reset(true);
 		} break;
 
+		case EDIT_CONVERT_TO_BEZIER: {
+			// HERE WE NEED THE CODE TO GENERATE THE TRACK LIST TO CHOOSE FROM. MOSTLY COPIED THIS CODE FROM COPY TRACKS
+			track_convert_select->clear();
+			TreeItem *troot = track_convert_select->create_item();
+
+			for (int i = 0; i < animation->get_track_count(); i++) {
+				NodePath path = animation->track_get_path(i);
+				Node *node = nullptr;
+
+				if (root) {
+					node = root->get_node_or_null(path);
+				}
+
+				String text;
+				Ref<Texture2D> icon = get_editor_theme_icon(SNAME("Node"));
+				if (node) {
+					if (has_theme_icon(node->get_class(), EditorStringName(EditorIcons))) {
+						icon = get_editor_theme_icon(node->get_class());
+					}
+
+					text = node->get_name();
+					Vector<StringName> sn = path.get_subnames();
+					for (int j = 0; j < sn.size(); j++) {
+						text += ".";
+						text += sn[j];
+					}
+
+					path = NodePath(node->get_path().get_names(), path.get_subnames(), true);
+				} else {
+					text = path;
+					int sep = text.find(":");
+					if (sep != -1) {
+						text = text.substr(sep + 1, text.length());
+					}
+				}
+
+				String track_type;
+				switch (animation->track_get_type(i)) {
+					case Animation::TYPE_POSITION_3D:
+						track_type = TTR("Position");
+						break;
+					case Animation::TYPE_ROTATION_3D:
+						track_type = TTR("Rotation");
+						break;
+					case Animation::TYPE_SCALE_3D:
+						track_type = TTR("Scale");
+						break;
+					case Animation::TYPE_BLEND_SHAPE:
+						track_type = TTR("BlendShape");
+						break;
+					case Animation::TYPE_METHOD:
+						track_type = TTR("Methods");
+						continue;
+					case Animation::TYPE_BEZIER:
+						track_type = TTR("Bezier");
+						continue;
+					case Animation::TYPE_AUDIO:
+						track_type = TTR("Audio");
+						continue;
+					default: {
+					};
+				}
+				if (!track_type.is_empty()) {
+					text += vformat(" (%s)", track_type);
+				}
+
+				TreeItem *it = track_convert_select->create_item(troot);
+				it->set_editable(0, true);
+				it->set_selectable(0, true);
+				it->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+				it->set_icon(0, icon);
+				it->set_text(0, text);
+				Dictionary md;
+				md["track_idx"] = i;
+				md["path"] = path;
+				it->set_metadata(0, md);
+			}
+			//
+			convert_to_bezier_dialog->popup_centered(Size2(350, 500) * EDSCALE);
+		} break;
+
+		case EDIT_CONVERT_TO_BEZIER_CONFIRM: {
+			// CONFIRM CODE
+
+			AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+			Ref<Animation> reset_animation = player->get_animation("RESET");
+			TreeItem *tree_root = track_convert_select->get_root();
+			int mode = track_convert_handles_mode->get_selected();
+			if (tree_root) {
+				TreeItem *it = tree_root->get_first_child();
+				while (it) {
+					Dictionary md = it->get_metadata(0);
+					int idx = md["track_idx"];
+					if (it->is_checked(0) && idx >= 0 && idx < animation->get_track_count()) {
+						// Get the track value. Then based on the variant do a switch statement?
+						int key_type = animation->track_get_type(idx);
+						NodePath n_path = animation->track_get_path(idx);
+
+						create_bezier_track(animation, String(n_path), idx);
+						create_bezier_track(reset_animation, String(n_path), idx);
+					}
+					it = it->get_next();
+				}
+
+				// Go through the list in reverse and remove the original tracks
+				it = tree_root->get_child(-1);
+				while (it) {
+					Dictionary md = it->get_metadata(0);
+					int idx = md["track_idx"];
+					if (it->is_checked(0) && idx >= 0 && idx < animation->get_track_count()) {
+						int reset_index = reset_animation->find_track(animation->track_get_path(idx), animation->track_get_type(idx));
+						animation->remove_track(idx);
+						reset_animation->remove_track(reset_index);
+					}
+					it = it->get_prev();
+				}
+			}
+
+		} break;
+
 		case EDIT_BAKE_ANIMATION: {
 			bake_dialog->popup_centered(Size2(200, 100) * EDSCALE);
 		} break;
@@ -7381,6 +7501,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/apply_reset", TTR("Apply Reset")), EDIT_APPLY_RESET);
 	edit->get_popup()->add_separator();
+	edit->get_popup()->add_item(TTR("Convert to Bezier..."), EDIT_CONVERT_TO_BEZIER);
 	edit->get_popup()->add_item(TTR("Bake Animation..."), EDIT_BAKE_ANIMATION);
 	edit->get_popup()->add_item(TTR("Optimize Animation (no undo)..."), EDIT_OPTIMIZE_ANIMATION);
 	edit->get_popup()->add_item(TTR("Clean-Up Animation (no undo)..."), EDIT_CLEAN_UP_ANIMATION);
@@ -7604,6 +7725,94 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	track_copy_select->set_hide_root(true);
 	track_copy_vbox->add_child(track_copy_select);
 	track_copy_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_COPY_TRACKS_CONFIRM));
+
+	//
+	convert_to_bezier_dialog = memnew(ConfirmationDialog);
+	add_child(convert_to_bezier_dialog);
+	convert_to_bezier_dialog->set_title(TTR("Convert to Bezier..."));
+	convert_to_bezier_dialog->set_ok_button_text(TTR("Convert"));
+
+	VBoxContainer *track_convert_vbox = memnew(VBoxContainer);
+	convert_to_bezier_dialog->add_child(track_convert_vbox);
+
+	track_convert_select = memnew(Tree);
+	track_convert_select->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	track_convert_select->set_h_size_flags(SIZE_EXPAND_FILL);
+	track_convert_select->set_v_size_flags(SIZE_EXPAND_FILL);
+	track_convert_select->set_hide_root(true);
+	track_convert_vbox->add_child(track_convert_select);
+	// track_convert_vbox->add_child(memnew(Label("In Handles")));
+
+	// EditorProperty *in_handles_prop = EditorInspector::instantiate_property_editor(track_convert_vbox, Variant::VECTOR2, "", PropertyHint::PROPERTY_HINT_NONE, "", 0);
+
+	// track_convert_vbox->add_child(in_handles_prop);
+
+	// track_convert_vbox->add_child(memnew(Label("Out Handles")));
+
+	HBoxContainer *handles_type_hbox = memnew(HBoxContainer);
+	track_convert_vbox->add_child(handles_type_hbox);
+
+	handles_type_hbox->add_child(memnew(Label("Handle Mode")));
+
+	Container *handles_type_spacing = memnew(Container);
+	handles_type_spacing->set_h_size_flags(SIZE_EXPAND);
+
+	handles_type_hbox->add_child(handles_type_spacing);
+
+	track_convert_handles_mode = memnew(OptionButton);
+	track_convert_handles_mode->add_item(TTR("Linear"));
+	track_convert_handles_mode->add_item(TTR("Balanced Automatic"));
+	handles_type_hbox->add_child(track_convert_handles_mode);
+
+	convert_to_bezier_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_CONVERT_TO_BEZIER_CONFIRM));
+}
+
+void AnimationTrackEditor::create_bezier_track(Ref<Animation> anim, String path, int idx) {
+	int type = anim->track_get_key_value(idx, 0).get_type();
+	Vector<String> subindices = _get_bezier_subindices_for_type(anim->track_get_key_value(idx, 0).get_type());
+
+	for (int i = 0; i < subindices.size(); i++) {
+		anim->add_track(Animation::TYPE_BEZIER);
+		anim->track_set_path(anim->get_track_count() - 1, path + subindices[i]);
+	}
+
+	int keys = anim->track_get_key_count(idx);
+	for (int i = 0; i < keys; i++) {
+		float key_time = anim->track_get_key_time(idx, i);
+		Variant key_value = anim->track_get_key_value(idx, i);
+		Vector<Variant> key_value_sub_values;
+
+		if (type == Variant::FLOAT || type == Variant::INT) {
+			key_value_sub_values.append(key_value);
+		} else if (type == Variant::VECTOR2) {
+			key_value_sub_values.append(Vector2(key_value).x);
+			key_value_sub_values.append(Vector2(key_value).y);
+		} else if (type == Variant::VECTOR3) {
+			key_value_sub_values.append(Vector3(key_value).x);
+			key_value_sub_values.append(Vector3(key_value).y);
+			key_value_sub_values.append(Vector3(key_value).z);
+		} else if (type == Variant::VECTOR4 || type == Variant::QUATERNION) {
+			key_value_sub_values.append(Vector4(key_value).x);
+			key_value_sub_values.append(Vector4(key_value).y);
+			key_value_sub_values.append(Vector4(key_value).z);
+			key_value_sub_values.append(Vector4(key_value).w);
+		} else if (type == Variant::COLOR) {
+			key_value_sub_values.append(Color(key_value).r);
+			key_value_sub_values.append(Color(key_value).g);
+			key_value_sub_values.append(Color(key_value).b);
+			key_value_sub_values.append(Color(key_value).a);
+		} else if (type == Variant::PLANE) {
+			key_value_sub_values.append(Plane(key_value).normal.x);
+			key_value_sub_values.append(Plane(key_value).normal.y);
+			key_value_sub_values.append(Plane(key_value).normal.z);
+			key_value_sub_values.append(Plane(key_value).d);
+		}
+
+		for (int t = 0; t < subindices.size(); t++) {
+			anim->bezier_track_insert_key(anim->get_track_count() - subindices.size() + t, key_time, key_value_sub_values[t], Vector2(0.0, 0.0), Vector2(0.0, 0.0));
+			anim->bezier_track_set_key_handle_mode(anim->get_track_count() - subindices.size() + t, i, Animation::HANDLE_MODE_LINEAR);
+		}
+	}
 }
 
 AnimationTrackEditor::~AnimationTrackEditor() {
