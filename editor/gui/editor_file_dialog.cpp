@@ -756,7 +756,14 @@ void EditorFileDialog::_item_list_item_rmb_clicked(int p_item, const Vector2 &p_
 	if (single_item_selected) {
 		item_menu->add_separator();
 		Dictionary item_meta = item_list->get_item_metadata(p_item);
-		String item_text = item_meta["dir"] ? TTR("Open in File Manager") : TTR("Show in File Manager");
+
+#if defined(WINDOWS_ENABLED)
+		const String item_text = TTR("Show in File Explorer");
+#elif defined(MACOS_ENABLED)
+		const String item_text = TTR("Show in Finder");
+#else
+		const String item_text = TTR("Show in File Manager");
+#endif
 		item_menu->add_icon_item(theme_cache.filesystem, item_text, ITEM_MENU_SHOW_IN_EXPLORER);
 	}
 #endif
