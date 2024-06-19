@@ -621,12 +621,12 @@ ScrollContainer::ScrollContainer() {
 	h_scroll = memnew(HScrollBar);
 	h_scroll->set_name("_h_scroll");
 	add_child(h_scroll, false, INTERNAL_MODE_BACK);
-	h_scroll->connect("value_changed", callable_mp(this, &ScrollContainer::_scroll_moved));
+	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &ScrollContainer::_scroll_moved));
 
 	v_scroll = memnew(VScrollBar);
 	v_scroll->set_name("_v_scroll");
 	add_child(v_scroll, false, INTERNAL_MODE_BACK);
-	v_scroll->connect("value_changed", callable_mp(this, &ScrollContainer::_scroll_moved));
+	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &ScrollContainer::_scroll_moved));
 
 	deadzone = GLOBAL_GET("gui/common/default_scroll_deadzone");
 

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ResourceImporterImageFont" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Imports a fixed-width bitmap font where all glyphs have the same width and height.
+		Imports a bitmap font where all glyphs have the same width and height.
 	</brief_description>
 	<description>
-		This image-based workflow can be easier to use than [ResourceImporterBMFont], but it requires all glyphs to have the same width and height. This makes [ResourceImporterImageFont] most suited to fixed-width fonts.
+		This image-based workflow can be easier to use than [ResourceImporterBMFont], but it requires all glyphs to have the same width and height, glyph advances and drawing offsets can be customized. This makes [ResourceImporterImageFont] most suited to fixed-width fonts.
 		See also [ResourceImporterDynamicFont].
 	</description>
 	<tutorials>

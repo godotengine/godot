@@ -33,11 +33,15 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "scene/2d/audio_stream_player_2d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/audio/audio_stream_player.h"
 #include "scene/resources/animation.h"
 #include "servers/audio/audio_stream.h"
+#include "servers/audio_server.h"
 
 #ifndef _3D_DISABLED
+#include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
@@ -630,8 +634,8 @@ bool AnimationMixer::_update_caches() {
 	root_motion_cache.rot = Quaternion(0, 0, 0, 1);
 	root_motion_cache.scale = Vector3(1, 1, 1);
 
-	List<StringName> sname;
-	get_animation_list(&sname);
+	List<StringName> sname_list;
+	get_animation_list(&sname_list);
 
 	bool check_path = GLOBAL_GET("animation/warnings/check_invalid_track_paths");
 	bool check_angle_interpolation = GLOBAL_GET("animation/warnings/check_angle_interpolation_type_conflicting");
@@ -660,10 +664,7 @@ bool AnimationMixer::_update_caches() {
 	if (has_reset_anim) {
 		reset_anim = get_animation(SceneStringName(RESET));
 	}
-	HashMap<Ref<Animation>,Dictionary> anima;
-	
-	for (const StringName &E : sname) 
-	{
+	for (const StringName &E : sname_list) {
 		Ref<Animation> anim = get_animation(E);
 		if(anim.is_valid())
 		{
@@ -885,6 +886,8 @@ bool AnimationMixer::_update_caches() {
 						track_audio->object_id = child->get_instance_id();
 						track_audio->audio_stream.instantiate();
 						track_audio->audio_stream->set_polyphony(audio_max_polyphony);
+						track_audio->playback_type = (AudioServer::PlaybackType)(int)(child->call(SNAME("get_playback_type")));
+						track_audio->bus = (StringName)(child->call(SNAME("get_bus")));
 
 						track = track_audio;
 
@@ -1653,6 +1656,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					if (idx < 0) {
 						continue;
 					}
+
 					// Play stream.
 					Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
 					if (stream.is_valid()) {
@@ -1662,6 +1666,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						if (seeked) {
 							start_ofs += time - a->track_get_key_time(i, idx);
 						}
+
 						if (t_obj->call(SNAME("get_stream")) != t->audio_stream) {
 							t_obj->call(SNAME("set_stream"), t->audio_stream);
 							t->audio_stream_playback.unref();
@@ -1679,8 +1684,18 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						if (t->audio_stream_playback.is_null()) {
 							t->audio_stream_playback = t_obj->call(SNAME("get_stream_playback"));
 						}
+
+						if (t_obj->call(SNAME("get_is_sample"))) {
+							Ref<AudioSamplePlayback> sample_playback;
+							sample_playback.instantiate();
+							sample_playback->stream = stream;
+							t->audio_stream_playback->set_sample_playback(sample_playback);
+							AudioServer::get_singleton()->start_sample_playback(sample_playback);
+							continue;
+						}
+
 						PlayingAudioStreamInfo pasi;
-						pasi.index = t->audio_stream_playback->play_stream(stream, start_ofs);
+						pasi.index = t->audio_stream_playback->play_stream(stream, start_ofs, 0, 1.0, t->playback_type, t->bus);
 						pasi.start = time;
 						if (len && end_ofs > 0) { // Force an end at a time.
 							pasi.len = len - start_ofs - end_ofs;
@@ -2338,6 +2353,7 @@ void AnimationMixer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_callback_mode_discrete", "mode"), &AnimationMixer::set_callback_mode_discrete);
 	ClassDB::bind_method(D_METHOD("get_callback_mode_discrete"), &AnimationMixer::get_callback_mode_discrete);
 
+	/* ---- Audio ---- */
 	ClassDB::bind_method(D_METHOD("set_audio_max_polyphony", "max_polyphony"), &AnimationMixer::set_audio_max_polyphony);
 	ClassDB::bind_method(D_METHOD("get_audio_max_polyphony"), &AnimationMixer::get_audio_max_polyphony);
 

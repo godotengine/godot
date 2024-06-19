@@ -212,7 +212,7 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 	filter_dialog = memnew(ConfirmationDialog);
 	add_child(filter_dialog);
 	filter_dialog->set_title(TTR("Edit Filtered Tracks:"));
-	filter_dialog->connect("confirmed", callable_mp(this, &EditorPropertyRootMotion::_confirmed));
+	filter_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorPropertyRootMotion::_confirmed));
 
 	filters = memnew(Tree);
 	filter_dialog->add_child(filters);

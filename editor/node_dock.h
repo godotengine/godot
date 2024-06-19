@@ -47,7 +47,6 @@ class NodeDock : public VBoxContainer {
 	HBoxContainer *mode_hb = nullptr;
 
 	Label *select_a_node = nullptr;
-	Node *last_valid_node = nullptr;
 
 private:
 	static NodeDock *singleton;
@@ -58,11 +57,9 @@ public:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-	void _on_node_tree_exited();
 
 public:
 	void set_node(Node *p_node);
-	void restore_last_valid_node();
 
 	void show_groups();
 	void show_connections();

@@ -1786,7 +1786,7 @@ void EditorFileDialog::_update_option_controls() {
 			}
 			ob->select(opt.default_idx);
 			grid_options->add_child(ob);
-			ob->connect("item_selected", callable_mp(this, &EditorFileDialog::_option_changed_item_selected).bind(opt.name));
+			ob->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_option_changed_item_selected).bind(opt.name));
 			selected_options[opt.name] = opt.default_idx;
 		}
 	}
@@ -2173,7 +2173,7 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(shortcuts_container);
 
 	drives = memnew(OptionButton);
-	drives->connect("item_selected", callable_mp(this, &EditorFileDialog::_select_drive));
+	drives->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_select_drive));
 	pathhb->add_child(drives);
 
 	pathhb->add_child(memnew(VSeparator));
@@ -2225,7 +2225,7 @@ EditorFileDialog::EditorFileDialog() {
 	favorites->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	fav_vb->add_child(favorites);
 	favorites->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	favorites->connect("item_selected", callable_mp(this, &EditorFileDialog::_favorite_selected));
+	favorites->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_favorite_selected));
 
 	VBoxContainer *rec_vb = memnew(VBoxContainer);
 	vsc->add_child(rec_vb);
@@ -2235,7 +2235,7 @@ EditorFileDialog::EditorFileDialog() {
 	recent->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	recent->set_allow_reselect(true);
 	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
-	recent->connect("item_selected", callable_mp(this, &EditorFileDialog::_recent_selected));
+	recent->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_recent_selected));
 
 	VBoxContainer *item_vb = memnew(VBoxContainer);
 	list_hb->add_child(item_vb);
@@ -2300,25 +2300,25 @@ EditorFileDialog::EditorFileDialog() {
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	_update_drives();
 
-	connect("confirmed", callable_mp(this, &EditorFileDialog::_action_pressed));
-	item_list->connect("item_selected", callable_mp(this, &EditorFileDialog::_item_selected), CONNECT_DEFERRED);
+	connect(SceneStringName(confirmed), callable_mp(this, &EditorFileDialog::_action_pressed));
+	item_list->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_item_selected), CONNECT_DEFERRED);
 	item_list->connect("multi_selected", callable_mp(this, &EditorFileDialog::_multi_selected), CONNECT_DEFERRED);
 	item_list->connect("item_activated", callable_mp(this, &EditorFileDialog::_item_dc_selected).bind());
 	item_list->connect("empty_clicked", callable_mp(this, &EditorFileDialog::_items_clear_selection));
 	dir->connect("text_submitted", callable_mp(this, &EditorFileDialog::_dir_submitted));
 	file->connect("text_submitted", callable_mp(this, &EditorFileDialog::_file_submitted));
-	filter->connect("item_selected", callable_mp(this, &EditorFileDialog::_filter_selected));
+	filter->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);
 	add_child(confirm_save);
-	confirm_save->connect("confirmed", callable_mp(this, &EditorFileDialog::_save_confirm_pressed));
+	confirm_save->connect(SceneStringName(confirmed), callable_mp(this, &EditorFileDialog::_save_confirm_pressed));
 
 	dep_remove_dialog = memnew(DependencyRemoveDialog);
 	add_child(dep_remove_dialog);
 
 	global_remove_dialog = memnew(ConfirmationDialog);
 	global_remove_dialog->set_text(TTR("Remove the selected files? For safety only files and empty directories can be deleted from here. (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
-	global_remove_dialog->connect("confirmed", callable_mp(this, &EditorFileDialog::_delete_files_global));
+	global_remove_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorFileDialog::_delete_files_global));
 	add_child(global_remove_dialog);
 
 	makedialog = memnew(ConfirmationDialog);
@@ -2331,7 +2331,7 @@ EditorFileDialog::EditorFileDialog() {
 	makevb->add_margin_child(TTR("Name:"), makedirname);
 	add_child(makedialog);
 	makedialog->register_text_enter(makedirname);
-	makedialog->connect("confirmed", callable_mp(this, &EditorFileDialog::_make_dir_confirm));
+	makedialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorFileDialog::_make_dir_confirm));
 	error_dialog = memnew(AcceptDialog);
 	add_child(error_dialog);
 

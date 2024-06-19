@@ -214,7 +214,7 @@ EditorPropertyAnchorsPreset::EditorPropertyAnchorsPreset() {
 	options->set_flat(true);
 	add_child(options);
 	add_focusable(options);
-	options->connect("item_selected", callable_mp(this, &EditorPropertyAnchorsPreset::_option_selected));
+	options->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyAnchorsPreset::_option_selected));
 }
 
 void EditorPropertySizeFlags::_set_read_only(bool p_read_only) {
@@ -397,7 +397,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 	vb->add_child(flag_presets);
 	add_focusable(flag_presets);
 	set_label_reference(flag_presets);
-	flag_presets->connect("item_selected", callable_mp(this, &EditorPropertySizeFlags::_preset_selected));
+	flag_presets->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertySizeFlags::_preset_selected));
 
 	flag_options = memnew(VBoxContainer);
 	flag_options->hide();

@@ -305,7 +305,7 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 
 	toolbar->add_child(emission_mask);
 
-	emission_mask->connect("confirmed", callable_mp(this, &CPUParticles2DEditorPlugin::_generate_emission_mask));
+	emission_mask->connect(SceneStringName(confirmed), callable_mp(this, &CPUParticles2DEditorPlugin::_generate_emission_mask));
 }
 
 CPUParticles2DEditorPlugin::~CPUParticles2DEditorPlugin() {

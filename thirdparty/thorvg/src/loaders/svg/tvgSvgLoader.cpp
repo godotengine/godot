@@ -709,7 +709,7 @@ static bool _toColor(const char* str, uint8_t* r, uint8_t* g, uint8_t* b, char**
         *ref = _idFromUrl((const char*)(str + 3));
         return true;
     } else if (len >= 10 && (str[0] == 'h' || str[0] == 'H') && (str[1] == 's' || str[1] == 'S') && (str[2] == 'l' || str[2] == 'L') && str[3] == '(' && str[len - 1] == ')') {
-        float_t th, ts, tb;
+        float th, ts, tb;
         const char *content, *hue, *satuation, *brightness;
         content = str + 4;
         content = _skipSpace(content, nullptr);

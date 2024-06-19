@@ -395,7 +395,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				duplicate_resources_dialog = memnew(ConfirmationDialog);
 				add_child(duplicate_resources_dialog);
 				duplicate_resources_dialog->set_title(TTR("Make Unique (Recursive)"));
-				duplicate_resources_dialog->connect("confirmed", callable_mp(this, &EditorResourcePicker::_duplicate_selected_resources));
+				duplicate_resources_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorResourcePicker::_duplicate_selected_resources));
 
 				VBoxContainer *vb = memnew(VBoxContainer);
 				duplicate_resources_dialog->add_child(vb);
@@ -1274,8 +1274,8 @@ void EditorAudioStreamPicker::_notification(int p_what) {
 void EditorAudioStreamPicker::_update_resource() {
 	EditorResourcePicker::_update_resource();
 
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	Ref<AudioStream> audio_stream = get_edited_resource();
 	if (audio_stream.is_valid() && audio_stream->get_length() > 0.0) {
 		set_assign_button_min_size(Size2(1, font->get_height(font_size) * 3));
@@ -1293,12 +1293,12 @@ void EditorAudioStreamPicker::_preview_draw() {
 		return;
 	}
 
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 
 	get_assign_button()->set_text("");
 
 	Size2i size = stream_preview_rect->get_size();
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 
 	Rect2 rect(Point2(), size);
 
