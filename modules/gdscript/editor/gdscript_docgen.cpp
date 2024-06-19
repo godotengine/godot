@@ -84,6 +84,15 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 					return;
 				}
 			}
+			if (p_gdtype.builtin_type == Variant::DICTIONARY && p_gdtype.has_container_element_types()) {
+				String key, value;
+				_doctype_from_gdtype(p_gdtype.get_container_element_type_or_variant(0), key, r_enum);
+				_doctype_from_gdtype(p_gdtype.get_container_element_type_or_variant(1), value, r_enum);
+				if (key != "Variant" && value != "Variant") {
+					r_type = "Dictionary[" + key + "," + value + "]";
+					return;
+				}
+			}
 			r_type = Variant::get_type_name(p_gdtype.builtin_type);
 			return;
 		case GDType::NATIVE:

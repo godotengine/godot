@@ -1140,6 +1140,146 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 			}
+		} else if (id == "Dictionary") {
+			Error err = OK;
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_BRACKET_OPEN) {
+				r_err_str = "Expected '['";
+				return ERR_PARSE_ERROR;
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_IDENTIFIER) {
+				r_err_str = "Expected type identifier for key";
+				return ERR_PARSE_ERROR;
+			}
+
+			static HashMap<StringName, Variant::Type> builtin_types;
+			if (builtin_types.is_empty()) {
+				for (int i = 1; i < Variant::VARIANT_MAX; i++) {
+					builtin_types[Variant::get_type_name((Variant::Type)i)] = (Variant::Type)i;
+				}
+			}
+
+			Dictionary dict = Dictionary();
+			Variant::Type key_type = Variant::NIL;
+			StringName key_class_name = StringName();
+			Variant key_script = Variant();
+			bool got_comma_token = false;
+			if (builtin_types.has(token.value)) {
+				key_type = builtin_types.get(token.value);
+			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
+				Variant resource;
+				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
+				if (err) {
+					if (token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && token.type == TK_COMMA) {
+						err = OK;
+						r_err_str = String();
+						key_type = Variant::OBJECT;
+						key_class_name = token.value;
+						got_comma_token = true;
+					} else {
+						return err;
+					}
+				} else {
+					Ref<Script> script = resource;
+					if (script.is_valid() && script->is_valid()) {
+						key_type = Variant::OBJECT;
+						key_class_name = script->get_instance_base_type();
+						key_script = script;
+					}
+				}
+			} else if (ClassDB::class_exists(token.value)) {
+				key_type = Variant::OBJECT;
+				key_class_name = token.value;
+			}
+
+			if (!got_comma_token) {
+				get_token(p_stream, token, line, r_err_str);
+				if (token.type != TK_COMMA) {
+					r_err_str = "Expected ',' after key type";
+					return ERR_PARSE_ERROR;
+				}
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_IDENTIFIER) {
+				r_err_str = "Expected type identifier for value";
+				return ERR_PARSE_ERROR;
+			}
+
+			Variant::Type value_type = Variant::NIL;
+			StringName value_class_name = StringName();
+			Variant value_script = Variant();
+			bool got_bracket_token = false;
+			if (builtin_types.has(token.value)) {
+				value_type = builtin_types.get(token.value);
+			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
+				Variant resource;
+				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
+				if (err) {
+					if (token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && token.type == TK_BRACKET_CLOSE) {
+						err = OK;
+						r_err_str = String();
+						value_type = Variant::OBJECT;
+						value_class_name = token.value;
+						got_comma_token = true;
+					} else {
+						return err;
+					}
+				} else {
+					Ref<Script> script = resource;
+					if (script.is_valid() && script->is_valid()) {
+						value_type = Variant::OBJECT;
+						value_class_name = script->get_instance_base_type();
+						value_script = script;
+					}
+				}
+			} else if (ClassDB::class_exists(token.value)) {
+				value_type = Variant::OBJECT;
+				value_class_name = token.value;
+			}
+
+			if (key_type != Variant::NIL || value_type != Variant::NIL) {
+				dict.set_typed(key_type, key_class_name, key_script, value_type, value_class_name, value_script);
+			}
+
+			if (!got_bracket_token) {
+				get_token(p_stream, token, line, r_err_str);
+				if (token.type != TK_BRACKET_CLOSE) {
+					r_err_str = "Expected ']'";
+					return ERR_PARSE_ERROR;
+				}
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_PARENTHESIS_OPEN) {
+				r_err_str = "Expected '('";
+				return ERR_PARSE_ERROR;
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_CURLY_BRACKET_OPEN) {
+				r_err_str = "Expected '{'";
+				return ERR_PARSE_ERROR;
+			}
+
+			Dictionary values;
+			err = _parse_dictionary(values, p_stream, line, r_err_str, p_res_parser);
+			if (err) {
+				return err;
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_PARENTHESIS_CLOSE) {
+				r_err_str = "Expected ')'";
+				return ERR_PARSE_ERROR;
+			}
+
+			dict.assign(values);
+
+			value = dict;
 		} else if (id == "Array") {
 			Error err = OK;
 
@@ -2036,6 +2176,62 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 		case Variant::DICTIONARY: {
 			Dictionary dict = p_variant;
+			if (dict.get_typed_key_builtin() != Variant::NIL || dict.get_typed_value_builtin() != Variant::NIL) {
+				p_store_string_func(p_store_string_ud, "Dictionary[");
+
+				Variant::Type key_builtin_type = (Variant::Type)dict.get_typed_key_builtin();
+				StringName key_class_name = dict.get_typed_key_class_name();
+				Ref<Script> key_script = dict.get_typed_key_script();
+				if (key_script.is_valid()) {
+					String resource_text = String();
+					if (p_encode_res_func) {
+						resource_text = p_encode_res_func(p_encode_res_ud, key_script);
+					}
+					if (resource_text.is_empty() && key_script->get_path().is_resource_file()) {
+						resource_text = "Resource(\"" + key_script->get_path() + "\")";
+					}
+
+					if (!resource_text.is_empty()) {
+						p_store_string_func(p_store_string_ud, resource_text);
+					} else {
+						ERR_PRINT("Failed to encode a path to a custom script for a dictionary key type.");
+						p_store_string_func(p_store_string_ud, key_class_name);
+					}
+				} else if (key_class_name != StringName()) {
+					p_store_string_func(p_store_string_ud, key_class_name);
+				} else {
+					p_store_string_func(p_store_string_ud, Variant::get_type_name(key_builtin_type));
+				}
+
+				p_store_string_func(p_store_string_ud, ", ");
+
+				Variant::Type value_builtin_type = (Variant::Type)dict.get_typed_value_builtin();
+				StringName value_class_name = dict.get_typed_value_class_name();
+				Ref<Script> value_script = dict.get_typed_value_script();
+				if (value_script.is_valid()) {
+					String resource_text = String();
+					if (p_encode_res_func) {
+						resource_text = p_encode_res_func(p_encode_res_ud, value_script);
+					}
+					if (resource_text.is_empty() && value_script->get_path().is_resource_file()) {
+						resource_text = "Resource(\"" + value_script->get_path() + "\")";
+					}
+
+					if (!resource_text.is_empty()) {
+						p_store_string_func(p_store_string_ud, resource_text);
+					} else {
+						ERR_PRINT("Failed to encode a path to a custom script for a dictionary value type.");
+						p_store_string_func(p_store_string_ud, value_class_name);
+					}
+				} else if (value_class_name != StringName()) {
+					p_store_string_func(p_store_string_ud, value_class_name);
+				} else {
+					p_store_string_func(p_store_string_ud, Variant::get_type_name(value_builtin_type));
+				}
+
+				p_store_string_func(p_store_string_ud, "](");
+			}
+
 			if (unlikely(p_recursion_count > MAX_RECURSION)) {
 				ERR_PRINT("Max recursion reached");
 				p_store_string_func(p_store_string_ud, "{}");
@@ -2064,6 +2260,10 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				}
 
 				p_store_string_func(p_store_string_ud, "}");
+			}
+
+			if (dict.get_typed_key_builtin() != Variant::NIL || dict.get_typed_value_builtin() != Variant::NIL) {
+				p_store_string_func(p_store_string_ud, ")");
 			}
 		} break;
 
