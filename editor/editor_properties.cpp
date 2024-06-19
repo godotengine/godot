@@ -3020,7 +3020,7 @@ EditorPropertyRID::EditorPropertyRID() {
 ///////////////////// Button /////////////////////////
 
 void EditorPropertyButton::update_property() {	
-	button->set_text(lable);
+	button->set_text(label);
 	
 	Ref<StyleBoxFlat> style = button->get_theme_stylebox("normal", "Button")->duplicate();
 	style->set_bg_color(color);
@@ -3037,7 +3037,7 @@ void EditorPropertyButton::setup(Object * p_object, const String &p_hit_string)
 	Vector<String> sv = p_hit_string.split(";", false);
 	if(sv.size() == 3) {
 		color = Color::html(sv[0]);
-		lable = sv[1];
+		label = sv[1];
 		expression = sv[2];
 		expr.instantiate();
 		expr->parse(expression);
@@ -3045,7 +3045,7 @@ void EditorPropertyButton::setup(Object * p_object, const String &p_hit_string)
 	else
 	{
 		color = Color(0, 1, 1, 1);
-		lable = "none_name";
+		label = "none_name";
 	}
 	update_property();
 

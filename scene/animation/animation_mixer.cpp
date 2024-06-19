@@ -660,6 +660,7 @@ bool AnimationMixer::_update_caches() {
 #endif
 
 	Ref<Animation> reset_anim;
+	HashMap<Ref<Animation>,Dictionary> anima;
 	bool has_reset_anim = has_animation(SceneStringName(RESET));
 	if (has_reset_anim) {
 		reset_anim = get_animation(SceneStringName(RESET));

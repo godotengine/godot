@@ -698,7 +698,7 @@ class EditorPropertyButton : public VBoxContainer {
 	Object * object;
 	Button *button = nullptr;
 	Color color;
-	String lable;
+	String label;
 	String expression;
 	Ref<Expression> expr;
 
