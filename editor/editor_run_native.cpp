@@ -205,7 +205,7 @@ EditorRunNative::EditorRunNative() {
 
 	run_native_confirm = memnew(ConfirmationDialog);
 	add_child(run_native_confirm);
-	run_native_confirm->connect("confirmed", callable_mp(this, &EditorRunNative::_confirm_run_native));
+	run_native_confirm->connect(SceneStringName(confirmed), callable_mp(this, &EditorRunNative::_confirm_run_native));
 
 	set_process(true);
 }

@@ -45,7 +45,7 @@ void Range::_value_changed(double p_value) {
 }
 void Range::_value_changed_notify() {
 	_value_changed(shared->val);
-	emit_signal(SNAME("value_changed"), shared->val);
+	emit_signal(SceneStringName(value_changed), shared->val);
 	queue_redraw();
 }
 

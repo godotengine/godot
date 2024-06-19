@@ -620,7 +620,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	asset_installer = memnew(EditorAssetInstaller);
 	panel->add_child(asset_installer);
-	asset_installer->connect("confirmed", callable_mp(this, &EditorAssetLibraryItemDownload::_close));
+	asset_installer->connect(SceneStringName(confirmed), callable_mp(this, &EditorAssetLibraryItemDownload::_close));
 
 	prev_status = -1;
 
@@ -1427,7 +1427,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			description = memnew(EditorAssetLibraryItemDescription);
 			add_child(description);
-			description->connect("confirmed", callable_mp(this, &EditorAssetLibrary::_install_asset));
+			description->connect(SceneStringName(confirmed), callable_mp(this, &EditorAssetLibrary::_install_asset));
 
 			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
 
@@ -1601,7 +1601,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	filter->set_clear_button_enabled(true);
 	search_hb->add_child(filter);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	filter->connect("text_changed", callable_mp(this, &EditorAssetLibrary::_search_text_changed));
+	filter->connect(SceneStringName(text_changed), callable_mp(this, &EditorAssetLibrary::_search_text_changed));
 
 	// Perform a search automatically if the user hasn't entered any text for a certain duration.
 	// This way, the user doesn't need to press Enter to initiate their search.
@@ -1643,7 +1643,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	sort->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	sort->set_clip_text(true);
-	sort->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_rerun_search));
+	sort->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_rerun_search));
 
 	search_hb2->add_child(memnew(VSeparator));
 
@@ -1653,7 +1653,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(categories);
 	categories->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	categories->set_clip_text(true);
-	categories->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_rerun_search));
+	categories->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_rerun_search));
 
 	search_hb2->add_child(memnew(VSeparator));
 
@@ -1662,7 +1662,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	_update_repository_options();
 
-	repository->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_repository_changed));
+	repository->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_repository_changed));
 
 	search_hb2->add_child(repository);
 	repository->set_h_size_flags(Control::SIZE_EXPAND_FILL);

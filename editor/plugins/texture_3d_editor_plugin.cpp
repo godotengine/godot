@@ -157,7 +157,7 @@ Texture3DEditor::Texture3DEditor() {
 	add_child(layer);
 	layer->set_anchor(SIDE_RIGHT, 1);
 	layer->set_anchor(SIDE_LEFT, 1);
-	layer->connect("value_changed", callable_mp(this, &Texture3DEditor::_layer_changed));
+	layer->connect(SceneStringName(value_changed), callable_mp(this, &Texture3DEditor::_layer_changed));
 
 	info = memnew(Label);
 	info->set_h_grow_direction(GROW_DIRECTION_BEGIN);

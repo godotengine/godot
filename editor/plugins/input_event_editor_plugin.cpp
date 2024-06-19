@@ -94,7 +94,7 @@ InputEventConfigContainer::InputEventConfigContainer() {
 	add_child(memnew(Control));
 
 	config_dialog = memnew(InputEventConfigurationDialog);
-	config_dialog->connect("confirmed", callable_mp(this, &InputEventConfigContainer::_config_dialog_confirmed));
+	config_dialog->connect(SceneStringName(confirmed), callable_mp(this, &InputEventConfigContainer::_config_dialog_confirmed));
 	add_child(config_dialog);
 }
 

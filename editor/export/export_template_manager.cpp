@@ -1051,7 +1051,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	uninstall_confirm = memnew(ConfirmationDialog);
 	uninstall_confirm->set_title(TTR("Uninstall Template"));
 	add_child(uninstall_confirm);
-	uninstall_confirm->connect("confirmed", callable_mp(this, &ExportTemplateManager::_uninstall_template_confirmed));
+	uninstall_confirm->connect(SceneStringName(confirmed), callable_mp(this, &ExportTemplateManager::_uninstall_template_confirmed));
 
 	install_file_dialog = memnew(FileDialog);
 	install_file_dialog->set_title(TTR("Select Template File"));
@@ -1065,5 +1065,5 @@ ExportTemplateManager::ExportTemplateManager() {
 	hide_dialog_accept = memnew(AcceptDialog);
 	hide_dialog_accept->set_text(TTR("The templates will continue to download.\nYou may experience a short editor freeze when they finish."));
 	add_child(hide_dialog_accept);
-	hide_dialog_accept->connect("confirmed", callable_mp(this, &ExportTemplateManager::_hide_dialog));
+	hide_dialog_accept->connect(SceneStringName(confirmed), callable_mp(this, &ExportTemplateManager::_hide_dialog));
 }

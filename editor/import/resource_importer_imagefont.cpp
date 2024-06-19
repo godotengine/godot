@@ -38,7 +38,7 @@ String ResourceImporterImageFont::get_importer_name() const {
 }
 
 String ResourceImporterImageFont::get_visible_name() const {
-	return "Font Data (Monospace Image Font)";
+	return "Font Data (Image Font)";
 }
 
 void ResourceImporterImageFont::get_recognized_extensions(List<String> *p_extensions) const {

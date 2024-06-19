@@ -924,7 +924,7 @@ String DynamicFontImportSettingsDialog::_pad_zeros(const String &p_hex) const {
 void DynamicFontImportSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			connect("confirmed", callable_mp(this, &DynamicFontImportSettingsDialog::_re_import));
+			connect(SceneStringName(confirmed), callable_mp(this, &DynamicFontImportSettingsDialog::_re_import));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1385,7 +1385,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	vars_list->set_column_custom_minimum_width(1, 50 * EDSCALE);
 	vars_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	page2_side_vb->add_child(vars_list);
-	vars_list->connect("item_selected", callable_mp(this, &DynamicFontImportSettingsDialog::_variation_selected));
+	vars_list->connect(SceneStringName(item_selected), callable_mp(this, &DynamicFontImportSettingsDialog::_variation_selected));
 	vars_list->connect("button_clicked", callable_mp(this, &DynamicFontImportSettingsDialog::_variation_remove));
 
 	inspector_vars = memnew(EditorInspector);
@@ -1538,7 +1538,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	}
 	glyphs_split->add_child(glyph_tree);
 	glyph_tree->connect("item_activated", callable_mp(this, &DynamicFontImportSettingsDialog::_range_edited));
-	glyph_tree->connect("item_selected", callable_mp(this, &DynamicFontImportSettingsDialog::_range_selected));
+	glyph_tree->connect(SceneStringName(item_selected), callable_mp(this, &DynamicFontImportSettingsDialog::_range_selected));
 
 	// Common
 

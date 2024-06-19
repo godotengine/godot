@@ -75,6 +75,9 @@ class AudioStreamPlaybackOggVorbis : public AudioStreamPlaybackResampled {
 	Ref<OggPacketSequencePlayback> vorbis_data_playback;
 	Ref<AudioStreamOggVorbis> vorbis_stream;
 
+	bool _is_sample = false;
+	Ref<AudioSamplePlayback> sample_playback;
+
 	int _mix_frames(AudioFrame *p_buffer, int p_frames);
 	int _mix_frames_vorbis(AudioFrame *p_buffer, int p_frames);
 
@@ -99,6 +102,11 @@ public:
 
 	virtual void set_parameter(const StringName &p_name, const Variant &p_value) override;
 	virtual Variant get_parameter(const StringName &p_name) const override;
+
+	virtual void set_is_sample(bool p_is_sample) override;
+	virtual bool get_is_sample() const override;
+	virtual Ref<AudioSamplePlayback> get_sample_playback() const override;
+	virtual void set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) override;
 
 	AudioStreamPlaybackOggVorbis() {}
 	~AudioStreamPlaybackOggVorbis();
@@ -158,6 +166,11 @@ public:
 	virtual bool is_monophonic() const override;
 
 	virtual void get_parameter_list(List<Parameter> *r_parameters) override;
+
+	virtual bool can_be_sampled() const override {
+		return true;
+	}
+	virtual Ref<AudioSample> generate_sample() const override;
 
 	AudioStreamOggVorbis();
 	virtual ~AudioStreamOggVorbis();

@@ -262,5 +262,5 @@ HistoryDock::HistoryDock() {
 	action_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(action_list);
 	action_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	action_list->connect("item_selected", callable_mp(this, &HistoryDock::seek_history));
+	action_list->connect(SceneStringName(item_selected), callable_mp(this, &HistoryDock::seek_history));
 }

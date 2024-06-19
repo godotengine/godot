@@ -401,7 +401,7 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 
 	toolbar->add_child(generate_visibility_rect);
 
-	generate_visibility_rect->connect("confirmed", callable_mp(this, &GPUParticles2DEditorPlugin::_generate_visibility_rect));
+	generate_visibility_rect->connect(SceneStringName(confirmed), callable_mp(this, &GPUParticles2DEditorPlugin::_generate_visibility_rect));
 
 	emission_mask = memnew(ConfirmationDialog);
 	emission_mask->set_title(TTR("Load Emission Mask"));
@@ -423,7 +423,7 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 
 	toolbar->add_child(emission_mask);
 
-	emission_mask->connect("confirmed", callable_mp(this, &GPUParticles2DEditorPlugin::_generate_emission_mask));
+	emission_mask->connect(SceneStringName(confirmed), callable_mp(this, &GPUParticles2DEditorPlugin::_generate_emission_mask));
 }
 
 GPUParticles2DEditorPlugin::~GPUParticles2DEditorPlugin() {
