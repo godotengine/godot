@@ -400,7 +400,7 @@ void GroupSettingsEditor::show_message(const String &p_message) {
 void GroupSettingsEditor::_show_remove_dialog() {
 	if (!remove_dialog) {
 		remove_dialog = memnew(ConfirmationDialog);
-		remove_dialog->connect("confirmed", callable_mp(this, &GroupSettingsEditor::_confirm_delete));
+		remove_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupSettingsEditor::_confirm_delete));
 
 		VBoxContainer *vbox = memnew(VBoxContainer);
 		remove_label = memnew(Label);
@@ -431,7 +431,7 @@ void GroupSettingsEditor::_show_rename_dialog() {
 	if (!rename_group_dialog) {
 		rename_group_dialog = memnew(ConfirmationDialog);
 		rename_group_dialog->set_title(TTR("Rename Group"));
-		rename_group_dialog->connect("confirmed", callable_mp(this, &GroupSettingsEditor::_confirm_rename));
+		rename_group_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupSettingsEditor::_confirm_rename));
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		rename_group_dialog->add_child(vbc);
@@ -451,7 +451,7 @@ void GroupSettingsEditor::_show_rename_dialog() {
 		rename_validation_panel->set_update_callback(callable_mp(this, &GroupSettingsEditor::_check_rename));
 		rename_validation_panel->set_accept_button(rename_group_dialog->get_ok_button());
 
-		rename_group->connect("text_changed", callable_mp(rename_validation_panel, &EditorValidationPanel::update).unbind(1));
+		rename_group->connect(SceneStringName(text_changed), callable_mp(rename_validation_panel, &EditorValidationPanel::update).unbind(1));
 
 		vbc->add_child(rename_validation_panel);
 
@@ -499,7 +499,7 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	group_name = memnew(LineEdit);
 	group_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	group_name->set_clear_button_enabled(true);
-	group_name->connect("text_changed", callable_mp(this, &GroupSettingsEditor::_group_name_text_changed));
+	group_name->connect(SceneStringName(text_changed), callable_mp(this, &GroupSettingsEditor::_group_name_text_changed));
 	group_name->connect("text_submitted", callable_mp(this, &GroupSettingsEditor::_text_submitted));
 	hbc->add_child(group_name);
 

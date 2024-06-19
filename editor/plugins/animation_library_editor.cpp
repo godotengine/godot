@@ -76,7 +76,7 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 	}
 
 	if (error != "") {
-		add_library_validate->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		add_library_validate->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		add_library_validate->set_text(error);
 		add_library_dialog->get_ok_button()->set_disabled(true);
 	} else {
@@ -89,7 +89,7 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 				add_library_validate->set_text(TTR("Library name is valid."));
 			}
 		}
-		add_library_validate->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+		add_library_validate->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 		add_library_dialog->get_ok_button()->set_disabled(false);
 	}
 }
@@ -798,13 +798,13 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	VBoxContainer *dialog_vb = memnew(VBoxContainer);
 	add_library_name = memnew(LineEdit);
 	dialog_vb->add_child(add_library_name);
-	add_library_name->connect("text_changed", callable_mp(this, &AnimationLibraryEditor::_add_library_validate));
+	add_library_name->connect(SceneStringName(text_changed), callable_mp(this, &AnimationLibraryEditor::_add_library_validate));
 	add_child(add_library_dialog);
 
 	add_library_validate = memnew(Label);
 	dialog_vb->add_child(add_library_validate);
 	add_library_dialog->add_child(dialog_vb);
-	add_library_dialog->connect("confirmed", callable_mp(this, &AnimationLibraryEditor::_add_library_confirm));
+	add_library_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationLibraryEditor::_add_library_confirm));
 	add_library_dialog->register_text_enter(add_library_name);
 
 	VBoxContainer *vb = memnew(VBoxContainer);

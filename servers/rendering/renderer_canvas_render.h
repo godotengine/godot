@@ -545,8 +545,13 @@ public:
 
 	virtual void set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) = 0;
 
-	RendererCanvasRender() { singleton = this; }
-	virtual ~RendererCanvasRender() {}
+	RendererCanvasRender() {
+		ERR_FAIL_COND_MSG(singleton != nullptr, "A RendererCanvasRender singleton already exists.");
+		singleton = this;
+	}
+	virtual ~RendererCanvasRender() {
+		singleton = nullptr;
+	}
 };
 
 #endif // RENDERER_CANVAS_RENDER_H

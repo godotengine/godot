@@ -1690,7 +1690,7 @@ void SceneTreeDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			connect("confirmed", callable_mp(this, &SceneTreeDialog::_select));
+			connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDialog::_select));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1702,7 +1702,7 @@ void SceneTreeDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect("confirmed", callable_mp(this, &SceneTreeDialog::_select));
+			disconnect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDialog::_select));
 		} break;
 	}
 }
@@ -1746,7 +1746,7 @@ SceneTreeDialog::SceneTreeDialog() {
 	filter->set_placeholder(TTR("Filter Nodes"));
 	filter->set_clear_button_enabled(true);
 	filter->add_theme_constant_override("minimum_character_width", 0);
-	filter->connect("text_changed", callable_mp(this, &SceneTreeDialog::_filter_changed));
+	filter->connect(SceneStringName(text_changed), callable_mp(this, &SceneTreeDialog::_filter_changed));
 	filter_hbc->add_child(filter);
 
 	// Add 'Show All' button to HBoxContainer next to the filter, visible only when valid_types is defined.

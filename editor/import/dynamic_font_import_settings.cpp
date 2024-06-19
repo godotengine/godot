@@ -487,8 +487,8 @@ void DynamicFontImportSettingsDialog::_main_prop_changed(const String &p_edited_
 		}
 	}
 
-	font_preview_label->add_theme_font_override("font", font_preview);
-	font_preview_label->add_theme_font_size_override("font_size", 200 * EDSCALE);
+	font_preview_label->add_theme_font_override(SceneStringName(font), font_preview);
+	font_preview_label->add_theme_font_size_override(SceneStringName(font_size), 200 * EDSCALE);
 	font_preview_label->queue_redraw();
 }
 
@@ -643,7 +643,7 @@ void DynamicFontImportSettingsDialog::_change_text_opts() {
 	font_main_text->set_variation_face_index(import_variation_data->get("variation_face_index"));
 	font_main_text->set_variation_transform(import_variation_data->get("variation_transform"));
 
-	text_edit->add_theme_font_override("font", font_main_text);
+	text_edit->add_theme_font_override(SceneStringName(font), font_main_text);
 }
 
 void DynamicFontImportSettingsDialog::_glyph_update_lbl() {
@@ -837,7 +837,7 @@ void DynamicFontImportSettingsDialog::_edit_range(int32_t p_start, int32_t p_end
 		item->set_selectable(col + 1, true);
 
 		item->set_custom_font(col + 1, font_main_big);
-		item->set_custom_font_size(col + 1, get_theme_font_size(SNAME("font_size")) * 2);
+		item->set_custom_font_size(col + 1, get_theme_font_size(SceneStringName(font_size)) * 2);
 
 		col++;
 		if (col == 16) {
@@ -924,12 +924,12 @@ String DynamicFontImportSettingsDialog::_pad_zeros(const String &p_hex) const {
 void DynamicFontImportSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			connect("confirmed", callable_mp(this, &DynamicFontImportSettingsDialog::_re_import));
+			connect(SceneStringName(confirmed), callable_mp(this, &DynamicFontImportSettingsDialog::_re_import));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
 			add_var->set_icon(get_editor_theme_icon(SNAME("Add")));
-			label_warn->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			label_warn->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		} break;
 	}
 }
@@ -1097,7 +1097,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 	font_main->set_data(font_data);
 	font_main->set_multichannel_signed_distance_field(false);
 
-	text_edit->add_theme_font_override("font", font_main);
+	text_edit->add_theme_font_override(SceneStringName(font), font_main);
 
 	base_path = p_path;
 
@@ -1119,7 +1119,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 
 	inspector_text->edit(text_settings_data.ptr());
 
-	int gww = get_theme_font(SNAME("font"))->get_string_size("00000").x + 50;
+	int gww = get_theme_font(SceneStringName(font))->get_string_size("00000").x + 50;
 	glyph_table->set_column_custom_minimum_width(0, gww);
 	glyph_table->clear();
 	vars_list->clear();
@@ -1226,8 +1226,8 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 		font_preview->set_subpixel_positioning((TextServer::SubpixelPositioning)import_settings_data->get("subpixel_positioning").operator int());
 		font_preview->set_oversampling(import_settings_data->get("oversampling"));
 	}
-	font_preview_label->add_theme_font_override("font", font_preview);
-	font_preview_label->add_theme_font_size_override("font_size", 200 * EDSCALE);
+	font_preview_label->add_theme_font_override(SceneStringName(font), font_preview);
+	font_preview_label->add_theme_font_size_override(SceneStringName(font_size), 200 * EDSCALE);
 	font_preview_label->queue_redraw();
 
 	_variations_validate();
@@ -1385,7 +1385,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	vars_list->set_column_custom_minimum_width(1, 50 * EDSCALE);
 	vars_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	page2_side_vb->add_child(vars_list);
-	vars_list->connect("item_selected", callable_mp(this, &DynamicFontImportSettingsDialog::_variation_selected));
+	vars_list->connect(SceneStringName(item_selected), callable_mp(this, &DynamicFontImportSettingsDialog::_variation_selected));
 	vars_list->connect("button_clicked", callable_mp(this, &DynamicFontImportSettingsDialog::_variation_remove));
 
 	inspector_vars = memnew(EditorInspector);
@@ -1538,7 +1538,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	}
 	glyphs_split->add_child(glyph_tree);
 	glyph_tree->connect("item_activated", callable_mp(this, &DynamicFontImportSettingsDialog::_range_edited));
-	glyph_tree->connect("item_selected", callable_mp(this, &DynamicFontImportSettingsDialog::_range_selected));
+	glyph_tree->connect(SceneStringName(item_selected), callable_mp(this, &DynamicFontImportSettingsDialog::_range_selected));
 
 	// Common
 

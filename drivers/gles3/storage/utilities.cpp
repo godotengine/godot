@@ -463,10 +463,7 @@ String Utilities::get_video_adapter_api_version() const {
 
 Size2i Utilities::get_maximum_viewport_size() const {
 	Config *config = Config::get_singleton();
-	if (!config) {
-		return Size2i();
-	}
-
+	ERR_FAIL_NULL_V(config, Size2i());
 	return Size2i(config->max_viewport_size[0], config->max_viewport_size[1]);
 }
 

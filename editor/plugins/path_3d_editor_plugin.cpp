@@ -881,7 +881,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	clear_points_dialog = memnew(ConfirmationDialog);
 	clear_points_dialog->set_title(TTR("Please Confirm..."));
 	clear_points_dialog->set_text(TTR("Remove all curve points?"));
-	clear_points_dialog->connect("confirmed", callable_mp(this, &Path3DEditorPlugin::_clear_points));
+	clear_points_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Path3DEditorPlugin::_clear_points));
 	topmenu_bar->add_child(clear_points_dialog);
 
 	handle_menu = memnew(MenuButton);

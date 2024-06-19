@@ -23,7 +23,7 @@
 			<param index="2" name="duration" type="float" default="1.0" />
 			<param index="3" name="at_position" type="int" default="-1" />
 			<description>
-				Adds a frame to the [param anim] animation. If [param at_position] is [code]-1[/code], the frame will be added to the end of the animation.
+				Adds a frame to the [param anim] animation. If [param at_position] is [code]-1[/code], the frame will be added to the end of the animation. [param duration] specifies the relative duration, see [method get_frame_duration] for details.
 			</description>
 		</method>
 		<method name="clear">
@@ -139,7 +139,7 @@
 			<param index="2" name="texture" type="Texture2D" />
 			<param index="3" name="duration" type="float" default="1.0" />
 			<description>
-				Sets the [param texture] and the [param duration] of the frame [param idx] in the [param anim] animation.
+				Sets the [param texture] and the [param duration] of the frame [param idx] in the [param anim] animation. [param duration] specifies the relative duration, see [method get_frame_duration] for details.
 			</description>
 		</method>
 	</methods>

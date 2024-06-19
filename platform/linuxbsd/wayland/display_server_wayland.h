@@ -115,6 +115,9 @@ class DisplayServerWayland : public DisplayServer {
 
 	Context context;
 
+	String ime_text;
+	Vector2i ime_selection;
+
 	bool suspended = false;
 	bool emulate_vsync = false;
 
@@ -258,6 +261,9 @@ public:
 
 	virtual void window_set_ime_active(const bool p_active, WindowID p_window_id = MAIN_WINDOW_ID) override;
 	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window_id = MAIN_WINDOW_ID) override;
+
+	virtual Point2i ime_get_selection() const override;
+	virtual String ime_get_text() const override;
 
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window_id = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_window_id) const override;

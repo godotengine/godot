@@ -45,9 +45,9 @@ Config::Config() {
 	singleton = this;
 
 	{
-		int64_t max_extensions = 0;
-		glGetInteger64v(GL_NUM_EXTENSIONS, &max_extensions);
-		for (int64_t i = 0; i < max_extensions; i++) {
+		GLint max_extensions = 0;
+		glGetIntegerv(GL_NUM_EXTENSIONS, &max_extensions);
+		for (int i = 0; i < max_extensions; i++) {
 			const GLubyte *s = glGetStringi(GL_EXTENSIONS, i);
 			if (!s) {
 				break;
@@ -80,11 +80,14 @@ Config::Config() {
 		rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc") || extensions.has("EXT_texture_compression_rgtc");
 	}
 
-	glGetInteger64v(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &max_vertex_texture_image_units);
-	glGetInteger64v(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_image_units);
-	glGetInteger64v(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &max_vertex_texture_image_units);
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_image_units);
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, max_viewport_size);
 	glGetInteger64v(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_buffer_size);
-	glGetInteger64v(GL_MAX_VIEWPORT_DIMS, max_viewport_size);
+
+	// sanity clamp buffer size to 16K..1MB
+	max_uniform_buffer_size = CLAMP(max_uniform_buffer_size, 16384, 1048576);
 
 	support_anisotropic_filter = extensions.has("GL_EXT_texture_filter_anisotropic");
 	if (support_anisotropic_filter) {
