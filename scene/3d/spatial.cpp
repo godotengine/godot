@@ -407,7 +407,14 @@ Transform Spatial::get_global_transform_interpolated() {
 	// Pass through if physics interpolation is switched off.
 	// This is a convenience, as it allows you to easy turn off interpolation
 	// without changing any code.
-	if (Engine::get_singleton()->is_in_physics_frame() || !is_physics_interpolated_and_enabled()) {
+	if (!is_physics_interpolated_and_enabled()) {
+		return get_global_transform();
+	}
+
+	// If we are in the physics frame, the interpolated global transform is meaningless.
+	// However, there is an exception, we may want to use this as a means of starting off the client
+	// interpolation pump if not already started (when _is_physics_interpolated_client_side() is false).
+	if (Engine::get_singleton()->is_in_physics_frame() && _is_physics_interpolated_client_side()) {
 		return get_global_transform();
 	}
 

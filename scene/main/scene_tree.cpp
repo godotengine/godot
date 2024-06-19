@@ -559,6 +559,11 @@ void SceneTree::iteration_prepare() {
 		// are flushed before pumping the interpolation prev and currents.
 		flush_transform_notifications();
 		VisualServer::get_singleton()->tick();
+
+		// Any objects performing client physics interpolation
+		// should be given an opportunity to keep their previous transforms
+		// up to date before each new physics tick.
+		_client_physics_interpolation.physics_process();
 	}
 }
 
@@ -574,11 +579,6 @@ bool SceneTree::iteration(float p_time) {
 	root_lock++;
 
 	current_frame++;
-
-	// Any objects performing client physics interpolation
-	// should be given an opportunity to keep their previous transforms
-	// up to take before each new physics tick.
-	_client_physics_interpolation.physics_process();
 
 	flush_transform_notifications();
 
