@@ -54,9 +54,9 @@ public:
 class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
 	GDCLASS(AudioStreamPlaybackPolyphonic, AudioStreamPlayback)
 
+	const uint64_t ID_MASK = 0x00FFFFFFFF; // Avoid sign extension. was: 0xFFFFFFFF 
 	enum {
 		INTERNAL_BUFFER_LEN = 128,
-		ID_MASK = 0xFFFFFFFF,
 		INDEX_SHIFT = 32
 	};
 	struct Stream {
@@ -81,15 +81,17 @@ class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
 	bool active = false;
 	uint32_t id_counter = 1;
 
-	_FORCE_INLINE_ Stream *_find_stream(int64_t p_id);
+	_FORCE_INLINE_ Stream *_find_stream(uint64_t p_id);
 
 	friend class AudioStreamPolyphonic;
+
+	void free_stream(Stream &s);
 
 protected:
 	static void _bind_methods();
 
 public:
-	typedef int64_t ID;
+	typedef uint64_t ID;
 	enum {
 		INVALID_ID = -1
 	};

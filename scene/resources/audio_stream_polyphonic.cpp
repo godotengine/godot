@@ -66,6 +66,13 @@ AudioStreamPolyphonic::AudioStreamPolyphonic() {
 
 ////////////////////////
 
+void AudioStreamPlaybackPolyphonic::free_stream(Stream &s) {
+	s.active.clear();
+	s.finish_request.clear();
+	s.stream_playback.unref();
+	s.stream.unref();
+}
+
 void AudioStreamPlaybackPolyphonic::start(double p_from_pos) {
 	if (active) {
 		stop();
@@ -83,13 +90,12 @@ void AudioStreamPlaybackPolyphonic::stop() {
 	for (Stream &s : streams) {
 		if (s.active.is_set()) {
 			// Need locking because something may still be mixing.
-			locked = true;
-			AudioServer::get_singleton()->lock();
+			if (!locked) {
+				AudioServer::get_singleton()->lock();
+				locked = true;
+			}
 		}
-		s.active.clear();
-		s.finish_request.clear();
-		s.stream_playback.unref();
-		s.stream.unref();
+		free_stream(s);
 	}
 	if (locked) {
 		AudioServer::get_singleton()->unlock();
@@ -133,6 +139,9 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 
 	for (Stream &s : streams) {
 		if (!s.active.is_set()) {
+			if (!s.stream.is_null()) {
+				free_stream(s);
+			}
 			continue;
 		}
 
@@ -210,21 +219,26 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 			streams[i].finish_request.clear();
 			streams[i].pending_play.set();
 			streams[i].active.set();
-			return ID(streams[i].id);
+			return (ID(i) << INDEX_SHIFT) | ID(streams[i].id);
 		}
 	}
 
 	return INVALID_ID;
 }
 
-AudioStreamPlaybackPolyphonic::Stream *AudioStreamPlaybackPolyphonic::_find_stream(int64_t p_id) {
-	for (uint32_t i = 0; i < streams.size(); i++) {
-		if (streams[i].active.is_set() && streams[i].id == p_id) {
-			return &streams[i];
-		}
-	}
-
-	return nullptr;
+AudioStreamPlaybackPolyphonic::Stream *AudioStreamPlaybackPolyphonic::_find_stream(uint64_t p_id) {
+       uint32_t index = p_id >> INDEX_SHIFT;
+       if (index >= streams.size()) {
+               return nullptr;
+       }
+	   if (!streams[index].active.is_set()) {
+               return nullptr; // Not active, no longer exists.
+       }
+       int64_t id = p_id & ID_MASK;
+       if (streams[index].id != id) {
+               return nullptr;
+        }
+       return &streams[index];
 }
 
 void AudioStreamPlaybackPolyphonic::set_stream_volume(ID p_stream_id, float p_volume_db) {
