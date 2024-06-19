@@ -33,10 +33,22 @@
 #ifdef EGL_ENABLED
 
 #if defined(EGL_STATIC)
-#define KHRONOS_STATIC 1
+
 #define GLAD_EGL_VERSION_1_5 true
+
+#ifdef EGL_EXT_platform_base
+#define GLAD_EGL_EXT_platform_base 1
+#endif
+
+#define KHRONOS_STATIC 1
 extern "C" EGLAPI void EGLAPIENTRY eglSetBlobCacheFuncsANDROID(EGLDisplay dpy, EGLSetBlobFuncANDROID set, EGLGetBlobFuncANDROID get);
+extern "C" EGLAPI EGLDisplay EGLAPIENTRY eglGetPlatformDisplayEXT(EGLenum platform, void *native_display, const EGLint *attrib_list);
 #undef KHRONOS_STATIC
+
+#endif // defined(EGL_STATIC)
+
+#ifndef EGL_EXT_platform_base
+#define GLAD_EGL_EXT_platform_base 0
 #endif
 
 // Creates and caches a GLDisplay. Returns -1 on error.
@@ -56,10 +68,23 @@ int EGLManager::_get_gldisplay_id(void *p_display) {
 	if (GLAD_EGL_VERSION_1_5) {
 		Vector<EGLAttrib> attribs = _get_platform_display_attributes();
 		new_gldisplay.egl_display = eglGetPlatformDisplay(_get_platform_extension_enum(), new_gldisplay.display, (attribs.size() > 0) ? attribs.ptr() : nullptr);
+	} else if (GLAD_EGL_EXT_platform_base) {
+#ifdef EGL_EXT_platform_base
+		// eglGetPlatformDisplayEXT wants its attributes as EGLint, so we'll truncate
+		// what we already have. It's a bit naughty but I'm really not sure what else
+		// we could do here.
+		Vector<EGLint> attribs;
+		for (const EGLAttrib &attrib : _get_platform_display_attributes()) {
+			attribs.push_back((EGLint)attrib);
+		}
+
+		new_gldisplay.egl_display = eglGetPlatformDisplayEXT(_get_platform_extension_enum(), new_gldisplay.display, (attribs.size() > 0) ? attribs.ptr() : nullptr);
+#endif // EGL_EXT_platform_base
 	} else {
 		NativeDisplayType *native_display_type = (NativeDisplayType *)new_gldisplay.display;
 		new_gldisplay.egl_display = eglGetDisplay(*native_display_type);
 	}
+
 	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, -1);
 
 	ERR_FAIL_COND_V_MSG(new_gldisplay.egl_display == EGL_NO_DISPLAY, -1, "Can't create an EGL display.");
@@ -326,30 +351,51 @@ EGLContext EGLManager::get_context(DisplayServer::WindowID p_window_id) {
 	return display.egl_context;
 }
 
-Error EGLManager::initialize() {
+Error EGLManager::initialize(void *p_native_display) {
 #if defined(GLAD_ENABLED) && !defined(EGL_STATIC)
-	// Passing a null display loads just the bare minimum to create one. We'll have
-	// to create a temporary test display and reload EGL with it to get a good idea
-	// of what version is supported on this machine. Currently we're looking for
-	// 1.5, the latest at the time of writing, which is actually pretty old.
-	if (!gladLoaderLoadEGL(nullptr)) {
+	// Loading EGL with a new display gets us just the bare minimum API. We'll then
+	// have to temporarily get a proper display and reload EGL once again to
+	// initialize everything else.
+	if (!gladLoaderLoadEGL(EGL_NO_DISPLAY)) {
 		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Can't load EGL.");
 	}
 
-	// NOTE: EGL_DEFAULT_DISPLAY returns whatever the O.S. deems suitable. I have
-	// no idea if this may cause problems with multiple display servers and if we
-	// should handle different EGL contexts in another way.
-	EGLDisplay tmp_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-	ERR_FAIL_COND_V(tmp_display == EGL_NO_DISPLAY, ERR_UNAVAILABLE);
+	EGLDisplay tmp_display = EGL_NO_DISPLAY;
+
+	if (GLAD_EGL_EXT_platform_base) {
+#ifdef EGL_EXT_platform_base
+		// eglGetPlatformDisplayEXT wants its attributes as EGLint.
+		Vector<EGLint> attribs;
+		for (const EGLAttrib &attrib : _get_platform_display_attributes()) {
+			attribs.push_back((EGLint)attrib);
+		}
+		tmp_display = eglGetPlatformDisplayEXT(_get_platform_extension_enum(), p_native_display, attribs.ptr());
+#endif // EGL_EXT_platform_base
+	} else {
+		WARN_PRINT("EGL: EGL_EXT_platform_base not found during init, using default platform.");
+		EGLNativeDisplayType *native_display_type = (EGLNativeDisplayType *)p_native_display;
+		tmp_display = eglGetDisplay(*native_display_type);
+	}
+
+	if (tmp_display == EGL_NO_DISPLAY) {
+		eglTerminate(tmp_display);
+		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Can't get a valid initial EGL display.");
+	}
 
 	eglInitialize(tmp_display, nullptr, nullptr);
 
 	int version = gladLoaderLoadEGL(tmp_display);
+	if (!version) {
+		eglTerminate(tmp_display);
+		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Can't load EGL.");
+	}
 
-	ERR_FAIL_COND_V_MSG(!version, ERR_UNAVAILABLE, "Can't load EGL.");
-	print_verbose(vformat("Loaded EGL %d.%d", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version)));
+	int major = GLAD_VERSION_MAJOR(version);
+	int minor = GLAD_VERSION_MINOR(version);
 
-	ERR_FAIL_COND_V_MSG(!GLAD_EGL_VERSION_1_4, ERR_UNAVAILABLE, "EGL version is too old!");
+	print_verbose(vformat("Loaded EGL %d.%d", major, minor));
+
+	ERR_FAIL_COND_V_MSG(!GLAD_EGL_VERSION_1_4, ERR_UNAVAILABLE, vformat("EGL version is too old! %d.%d < 1.4", major, minor));
 
 	eglTerminate(tmp_display);
 #endif
@@ -378,13 +424,14 @@ Error EGLManager::initialize() {
 	}
 #endif
 
-	String extensions_string = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-	// The above method should always work. If it doesn't, something's very wrong.
-	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, ERR_BUG);
+	String client_extensions_string = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 
-	const char *platform = _get_platform_extension_name();
-	if (!extensions_string.split(" ").has(platform)) {
-		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, vformat("EGL platform extension \"%s\" not found.", platform));
+	// If the above method fails, we don't support client extensions, so there's nothing to check.
+	if (eglGetError() == EGL_SUCCESS) {
+		const char *platform = _get_platform_extension_name();
+		if (!client_extensions_string.split(" ").has(platform)) {
+			ERR_FAIL_V_MSG(ERR_UNAVAILABLE, vformat("EGL platform extension \"%s\" not found.", platform));
+		}
 	}
 
 	return OK;

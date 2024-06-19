@@ -6328,6 +6328,7 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene
 			ERR_CONTINUE_MSG(skeleton == nullptr, vformat("Unable to find Skeleton for node %d skin %d", node_i, skin_i));
 
 			mi->get_parent()->remove_child(mi);
+			mi->set_owner(nullptr);
 			skeleton->add_child(mi, true);
 			mi->set_owner(p_scene_root);
 

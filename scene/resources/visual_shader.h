@@ -910,13 +910,16 @@ public:
 	};
 
 protected:
+	RID shader_rid;
 	VisualShader::VaryingType varying_type = VisualShader::VARYING_TYPE_FLOAT;
 	String varying_name = "[None]";
 
 public: // internal
-	static void add_varying(const String &p_name, VisualShader::VaryingMode p_mode, VisualShader::VaryingType p_type);
-	static void clear_varyings();
-	static bool has_varying(const String &p_name);
+	static void add_varying(RID p_shader_rid, const String &p_name, VisualShader::VaryingMode p_mode, VisualShader::VaryingType p_type);
+	static void clear_varyings(RID p_shader_rid);
+	static bool has_varying(RID p_shader_rid, const String &p_name);
+
+	void set_shader_rid(const RID &p_shader);
 
 	int get_varyings_count() const;
 	String get_varying_name_by_index(int p_idx) const;

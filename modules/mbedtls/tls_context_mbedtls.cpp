@@ -152,21 +152,23 @@ Error TLSContextMbedTLS::init_client(int p_transport, const String &p_hostname, 
 	ERR_FAIL_COND_V(p_options.is_null() || p_options->is_server(), ERR_INVALID_PARAMETER);
 
 	int authmode = MBEDTLS_SSL_VERIFY_REQUIRED;
-	if (p_options->get_verify_mode() == TLSOptions::TLS_VERIFY_NONE) {
+	bool unsafe = p_options->is_unsafe_client();
+	if (unsafe && p_options->get_trusted_ca_chain().is_valid()) {
 		authmode = MBEDTLS_SSL_VERIFY_NONE;
 	}
 
 	Error err = _setup(MBEDTLS_SSL_IS_CLIENT, p_transport, authmode);
 	ERR_FAIL_COND_V(err != OK, err);
 
-	if (p_options->get_verify_mode() == TLSOptions::TLS_VERIFY_FULL) {
-		String cn = p_options->get_common_name();
+	if (unsafe) {
+		// No hostname verification for unsafe clients.
+		mbedtls_ssl_set_hostname(&tls, nullptr);
+	} else {
+		String cn = p_options->get_common_name_override();
 		if (cn.is_empty()) {
 			cn = p_hostname;
 		}
 		mbedtls_ssl_set_hostname(&tls, cn.utf8().get_data());
-	} else {
-		mbedtls_ssl_set_hostname(&tls, nullptr);
 	}
 
 	X509CertificateMbedTLS *cas = nullptr;

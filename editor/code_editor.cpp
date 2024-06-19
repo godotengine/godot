@@ -115,7 +115,7 @@ void FindReplaceBar::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			matches_label->add_theme_color_override(SceneStringName(font_color), results_count > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
@@ -338,7 +338,7 @@ void FindReplaceBar::_replace_all() {
 	}
 
 	text_editor->set_v_scroll(vsval);
-	matches_label->add_theme_color_override("font_color", rc > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+	matches_label->add_theme_color_override(SceneStringName(font_color), rc > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 	matches_label->set_text(vformat(TTR("%d replaced."), rc));
 
 	callable_mp((Object *)text_editor, &Object::connect).call_deferred("text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed), 0U);
@@ -437,7 +437,7 @@ void FindReplaceBar::_update_matches_display() {
 	} else {
 		matches_label->show();
 
-		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		matches_label->add_theme_color_override(SceneStringName(font_color), results_count > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 		if (results_count == 0) {
 			matches_label->set_text(TTR("No match"));
@@ -1430,17 +1430,17 @@ void CodeTextEditor::_update_text_editor_theme() {
 	for (int i = 0; i < count; i++) {
 		Control *n = Object::cast_to<Control>(status_bar->get_child(i));
 		if (n) {
-			n->add_theme_font_override(SNAME("font"), status_bar_font);
-			n->add_theme_font_size_override(SNAME("font_size"), status_bar_font_size);
+			n->add_theme_font_override(SceneStringName(font), status_bar_font);
+			n->add_theme_font_size_override(SceneStringName(font_size), status_bar_font_size);
 		}
 	}
 
 	const Color &error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
 	const Color &warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 
-	error->add_theme_color_override(SNAME("font_color"), error_color);
-	error_button->add_theme_color_override(SNAME("font_color"), error_color);
-	warning_button->add_theme_color_override(SNAME("font_color"), warning_color);
+	error->add_theme_color_override(SceneStringName(font_color), error_color);
+	error_button->add_theme_color_override(SceneStringName(font_color), error_color);
+	warning_button->add_theme_color_override(SceneStringName(font_color), warning_color);
 
 	_update_font_ligatures();
 }
@@ -1448,7 +1448,7 @@ void CodeTextEditor::_update_text_editor_theme() {
 void CodeTextEditor::_update_font_ligatures() {
 	int ot_mode = EDITOR_GET("interface/editor/code_font_contextual_ligatures");
 
-	Ref<FontVariation> fc = text_editor->get_theme_font(SNAME("font"));
+	Ref<FontVariation> fc = text_editor->get_theme_font(SceneStringName(font));
 	if (fc.is_valid()) {
 		switch (ot_mode) {
 			case 1: { // Disable ligatures.
@@ -1633,12 +1633,12 @@ void CodeTextEditor::remove_all_bookmarks() {
 }
 
 void CodeTextEditor::_zoom_in() {
-	int s = text_editor->get_theme_font_size("font_size");
+	int s = text_editor->get_theme_font_size(SceneStringName(font_size));
 	_zoom_to(zoom_factor * (s + MAX(1.0f, EDSCALE)) / s);
 }
 
 void CodeTextEditor::_zoom_out() {
-	int s = text_editor->get_theme_font_size("font_size");
+	int s = text_editor->get_theme_font_size(SceneStringName(font_size));
 	_zoom_to(zoom_factor * (s - MAX(1.0f, EDSCALE)) / s);
 }
 
@@ -1664,10 +1664,10 @@ void CodeTextEditor::set_zoom_factor(float p_zoom_factor) {
 
 	zoom_button->set_text(itos(Math::round(zoom_factor * 100)) + " %");
 
-	if (text_editor->has_theme_font_size_override("font_size")) {
-		text_editor->remove_theme_font_size_override("font_size");
+	if (text_editor->has_theme_font_size_override(SceneStringName(font_size))) {
+		text_editor->remove_theme_font_size_override(SceneStringName(font_size));
 	}
-	text_editor->add_theme_font_size_override("font_size", new_font_size);
+	text_editor->add_theme_font_size_override(SceneStringName(font_size), new_font_size);
 }
 
 float CodeTextEditor::get_zoom_factor() {

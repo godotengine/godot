@@ -1116,9 +1116,6 @@ msgstr "تم إنشاء مثيل له"
 msgid "Joint"
 msgstr "مشترك"
 
-msgid "Shape"
-msgstr "شكل"
-
 msgid "Primary Grid Steps"
 msgstr "خطوات الشبكة الاساسية"
 
@@ -1683,6 +1680,12 @@ msgstr "أندرويد"
 msgid "Project"
 msgstr "المشروع"
 
+msgid "Time"
+msgstr "الوقت"
+
+msgid "Polygons"
+msgstr "المُضلعات"
+
 msgid "Operation"
 msgstr "عملية"
 
@@ -1956,11 +1959,11 @@ msgstr "فوق"
 msgid "Right"
 msgstr "يميناً"
 
-msgid "Time"
-msgstr "الوقت"
-
 msgid "One Shot"
 msgstr "محاولة واحدة"
+
+msgid "Shape"
+msgstr "شكل"
 
 msgid "Sphere Radius"
 msgstr "قطر الجسم الكروى"
@@ -2000,9 +2003,6 @@ msgstr "خطي"
 
 msgid "UV"
 msgstr "ال UV"
-
-msgid "Polygons"
-msgstr "المُضلعات"
 
 msgid "Update"
 msgstr "تحديث"

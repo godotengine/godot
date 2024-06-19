@@ -1088,6 +1088,9 @@ msgstr "RPC 포트"
 msgid "RPC Server Uptime"
 msgstr "RPC 서버 업타임"
 
+msgid "FBX"
+msgstr "FBX"
+
 msgid "FBX2glTF Path"
 msgstr "FBX2glTF 경로"
 
@@ -1322,9 +1325,6 @@ msgstr "인스턴스된"
 msgid "Joint"
 msgstr "조인트"
 
-msgid "Shape"
-msgstr "모양"
-
 msgid "AABB"
 msgstr "AABB"
 
@@ -1558,12 +1558,6 @@ msgstr "폰트 크기"
 
 msgid "Always Clear Output on Play"
 msgstr "실행 시 항상 출력 지우기"
-
-msgid "Always Open Output on Play"
-msgstr "실행 시 항상 출력 열기"
-
-msgid "Always Close Output on Stop"
-msgstr "정지 시 항상 출력 닫기"
 
 msgid "HTTP Proxy"
 msgstr "HTTP 프록시"
@@ -2672,6 +2666,15 @@ msgstr "솔루션 디렉토리"
 msgid "Assembly Reload Attempts"
 msgstr "어셈블리 리로드 시도 횟수"
 
+msgid "Time"
+msgstr "시간"
+
+msgid "Video"
+msgstr "비디오"
+
+msgid "Polygons"
+msgstr "폴리곤"
+
 msgid "Operation"
 msgstr "오퍼레이션"
 
@@ -2770,9 +2773,6 @@ msgstr "결합된 경로"
 
 msgid "CSG"
 msgstr "CSG"
-
-msgid "FBX"
-msgstr "FBX"
 
 msgid "Embedded Image Handling"
 msgstr "임베디드 이미지 핸들링"
@@ -4100,9 +4100,6 @@ msgstr "밉맵 사용"
 msgid "Emitting"
 msgstr "방출"
 
-msgid "Time"
-msgstr "시간"
-
 msgid "Lifetime"
 msgstr "수명"
 
@@ -4138,6 +4135,9 @@ msgstr "그리기 순서"
 
 msgid "Emission Shape"
 msgstr "방출 모양"
+
+msgid "Shape"
+msgstr "모양"
 
 msgid "Sphere Radius"
 msgstr "원 반지름"
@@ -4786,9 +4786,6 @@ msgstr "UV"
 
 msgid "Vertex Colors"
 msgstr "버텍스 컬러"
-
-msgid "Polygons"
-msgstr "폴리곤"
 
 msgid "Internal Vertex Count"
 msgstr "내부 꼭짓점 개수"
@@ -7252,9 +7249,6 @@ msgstr "채널 비활성화 역치값 dB"
 
 msgid "Channel Disable Time"
 msgstr "채널 비활성화 시간"
-
-msgid "Video"
-msgstr "비디오"
 
 msgid "Video Delay Compensation (ms)"
 msgstr "비디오 딜레이 보정 (ms)"

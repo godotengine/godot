@@ -113,8 +113,8 @@ void EditorPerformanceProfiler::_monitor_draw() {
 	info_message->hide();
 
 	Ref<StyleBox> graph_style_box = get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit"));
-	Ref<Font> graph_font = get_theme_font(SNAME("font"), SNAME("TextEdit"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("TextEdit"));
+	Ref<Font> graph_font = get_theme_font(SceneStringName(font), SNAME("TextEdit"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("TextEdit"));
 
 	int columns = int(Math::ceil(Math::sqrt(float(active.size()))));
 	int rows = int(Math::ceil(float(active.size()) / float(columns)));

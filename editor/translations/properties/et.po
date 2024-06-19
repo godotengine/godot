@@ -913,6 +913,9 @@ msgstr "RPC Port"
 msgid "RPC Server Uptime"
 msgstr "RPC Serveri Aktiivaeg"
 
+msgid "FBX"
+msgstr "FBX"
+
 msgid "FBX2glTF Path"
 msgstr "FBX2glTF Asukoht"
 
@@ -1114,9 +1117,6 @@ msgstr "Loodud"
 msgid "Joint"
 msgstr "Liigend"
 
-msgid "Shape"
-msgstr "Kuju"
-
 msgid "Primary Grid Steps"
 msgstr "Põhiruudustiku Sammud"
 
@@ -1299,12 +1299,6 @@ msgstr "Fondi Suurus"
 
 msgid "Always Clear Output on Play"
 msgstr "Puhasta Alati Väljund Käivitamisel"
-
-msgid "Always Open Output on Play"
-msgstr "Ava Alati Väljund Käivitamisel"
-
-msgid "Always Close Output on Stop"
-msgstr "Sulge Alati Väljund Peatamisel"
 
 msgid "HTTP Proxy"
 msgstr "HTTP puhverserver"
@@ -2134,6 +2128,12 @@ msgstr "Dotnet"
 msgid "Project"
 msgstr "Projekt"
 
+msgid "Time"
+msgstr "Aeg"
+
+msgid "Polygons"
+msgstr "Hulknurgad"
+
 msgid "Operation"
 msgstr "Operatsioon"
 
@@ -2199,9 +2199,6 @@ msgstr "Tee Pööramine"
 
 msgid "Path Local"
 msgstr "Lokaalne Tee"
-
-msgid "FBX"
-msgstr "FBX"
 
 msgid "GDScript"
 msgstr "GDScript"
@@ -3019,8 +3016,8 @@ msgstr "Ülaosa"
 msgid "Emitting"
 msgstr "Kiirgab"
 
-msgid "Time"
-msgstr "Aeg"
+msgid "Shape"
+msgstr "Kuju"
 
 msgid "Points"
 msgstr "Punktid"
@@ -3048,9 +3045,6 @@ msgstr "Sirgjooneline"
 
 msgid "UV"
 msgstr "UV"
-
-msgid "Polygons"
-msgstr "Hulknurgad"
 
 msgid "Update"
 msgstr "Uuenda"

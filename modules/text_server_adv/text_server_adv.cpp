@@ -851,7 +851,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 		{
 			// Zero texture.
 			uint8_t *w = tex.image->ptrw();
-			ERR_FAIL_COND_V(texsize * texsize * p_color_size > tex.image->data_size(), ret);
+			ERR_FAIL_COND_V(texsize * texsize * p_color_size > tex.image->get_data_size(), ret);
 			// Initialize the texture to all-white pixels to prevent artifacts when the
 			// font is displayed at a non-default scale with filtering enabled.
 			if (p_color_size == 2) {
@@ -1040,7 +1040,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 			for (int i = 0; i < h; i++) {
 				for (int j = 0; j < w; j++) {
 					int ofs = ((i + tex_pos.y + p_rect_margin * 2) * tex.texture_w + j + tex_pos.x + p_rect_margin * 2) * 4;
-					ERR_FAIL_COND_V(ofs >= tex.image->data_size(), FontGlyph());
+					ERR_FAIL_COND_V(ofs >= tex.image->get_data_size(), FontGlyph());
 					wr[ofs + 0] = (uint8_t)(CLAMP(image(j, i)[0] * 256.f, 0.f, 255.f));
 					wr[ofs + 1] = (uint8_t)(CLAMP(image(j, i)[1] * 256.f, 0.f, 255.f));
 					wr[ofs + 2] = (uint8_t)(CLAMP(image(j, i)[2] * 256.f, 0.f, 255.f));
@@ -1118,7 +1118,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 		for (int i = 0; i < h; i++) {
 			for (int j = 0; j < w; j++) {
 				int ofs = ((i + tex_pos.y + p_rect_margin * 2) * tex.texture_w + j + tex_pos.x + p_rect_margin * 2) * color_size;
-				ERR_FAIL_COND_V(ofs >= tex.image->data_size(), FontGlyph());
+				ERR_FAIL_COND_V(ofs >= tex.image->get_data_size(), FontGlyph());
 				switch (p_bitmap.pixel_mode) {
 					case FT_PIXEL_MODE_MONO: {
 						int byte = i * p_bitmap.pitch + (j >> 3);
@@ -2468,7 +2468,7 @@ int64_t TextServerAdvanced::_font_get_spacing(const RID &p_font_rid, SpacingType
 	}
 }
 
-void TextServerAdvanced::_font_set_baseline_offset(const RID &p_font_rid, float p_baseline_offset) {
+void TextServerAdvanced::_font_set_baseline_offset(const RID &p_font_rid, double p_baseline_offset) {
 	FontAdvancedLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
 	if (fdv) {
 		if (fdv->baseline_offset != p_baseline_offset) {
@@ -2486,7 +2486,7 @@ void TextServerAdvanced::_font_set_baseline_offset(const RID &p_font_rid, float 
 	}
 }
 
-float TextServerAdvanced::_font_get_baseline_offset(const RID &p_font_rid) const {
+double TextServerAdvanced::_font_get_baseline_offset(const RID &p_font_rid) const {
 	FontAdvancedLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
 	if (fdv) {
 		return fdv->baseline_offset;
@@ -6052,6 +6052,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 		unsigned int last_cluster_index = 0;
 		bool last_cluster_valid = true;
 
+		double adv_rem = 0.0;
 		for (unsigned int i = 0; i < glyph_count; i++) {
 			if ((i > 0) && (last_cluster_id != glyph_info[i].cluster)) {
 				if (p_direction == HB_DIRECTION_RTL || p_direction == HB_DIRECTION_BTT) {
@@ -6097,21 +6098,31 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 			gl.index = glyph_info[i].codepoint;
 			if (gl.index != 0) {
 				_ensure_glyph(fd, fss, gl.index | mod);
+				if (subpos) {
+					gl.x_off = (double)glyph_pos[i].x_offset / (64.0 / scale);
+				} else if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
+					gl.x_off = Math::round(adv_rem + ((double)glyph_pos[i].x_offset / (64.0 / scale)));
+				} else {
+					gl.x_off = Math::round((double)glyph_pos[i].x_offset / (64.0 / scale));
+				}
+				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
+					gl.y_off = -Math::round((double)glyph_pos[i].y_offset / (64.0 / scale));
+				} else {
+					gl.y_off = -Math::round(adv_rem + ((double)glyph_pos[i].y_offset / (64.0 / scale)));
+				}
 				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 					if (subpos) {
 						gl.advance = (double)glyph_pos[i].x_advance / (64.0 / scale) + ea;
 					} else {
-						gl.advance = Math::round((double)glyph_pos[i].x_advance / (64.0 / scale) + ea);
+						double full_adv = adv_rem + ((double)glyph_pos[i].x_advance / (64.0 / scale) + ea);
+						gl.advance = Math::round(full_adv);
+						adv_rem = full_adv - gl.advance;
 					}
 				} else {
-					gl.advance = -Math::round((double)glyph_pos[i].y_advance / (64.0 / scale));
+					double full_adv = adv_rem + ((double)glyph_pos[i].y_advance / (64.0 / scale));
+					gl.advance = -Math::round(full_adv);
+					adv_rem = full_adv + gl.advance;
 				}
-				if (subpos) {
-					gl.x_off = (double)glyph_pos[i].x_offset / (64.0 / scale);
-				} else {
-					gl.x_off = Math::round((double)glyph_pos[i].x_offset / (64.0 / scale));
-				}
-				gl.y_off = -Math::round((double)glyph_pos[i].y_offset / (64.0 / scale));
 				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 					gl.y_off += _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
 				} else {
@@ -7142,9 +7153,7 @@ PackedInt32Array TextServerAdvanced::_string_get_character_breaks(const String &
 		}
 		ubrk_close(bi);
 	} else {
-		for (int i = 0; i <= p_string.size(); i++) {
-			ret.push_back(i);
-		}
+		return TextServer::string_get_character_breaks(p_string, p_language);
 	}
 
 	return ret;
@@ -7342,7 +7351,7 @@ bool TextServerAdvanced::_is_valid_identifier(const String &p_string) const {
 	return true;
 }
 
-bool TextServerAdvanced::_is_valid_letter(char32_t p_unicode) const {
+bool TextServerAdvanced::_is_valid_letter(uint64_t p_unicode) const {
 #ifndef ICU_STATIC_DATA
 	if (!icu_data_loaded) {
 		return TextServer::is_valid_letter(p_unicode);

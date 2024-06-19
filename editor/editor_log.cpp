@@ -124,7 +124,7 @@ void EditorLog::_update_theme() {
 	theme_cache.error_icon = get_editor_theme_icon(SNAME("Error"));
 	theme_cache.warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 	theme_cache.warning_icon = get_editor_theme_icon(SNAME("Warning"));
-	theme_cache.message_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
+	theme_cache.message_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
 }
 
 void EditorLog::_editor_settings_changed() {

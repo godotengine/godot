@@ -269,7 +269,7 @@ protected:
 
 public:
 	void edit(Ref<SpriteFrames> p_frames);
-	bool is_editing() const;
+	Ref<SpriteFrames> get_sprite_frames() const;
 
 	SpriteFramesEditor();
 };

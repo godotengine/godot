@@ -45,9 +45,9 @@ Config::Config() {
 	singleton = this;
 
 	{
-		int64_t max_extensions = 0;
-		glGetInteger64v(GL_NUM_EXTENSIONS, &max_extensions);
-		for (int64_t i = 0; i < max_extensions; i++) {
+		GLint max_extensions = 0;
+		glGetIntegerv(GL_NUM_EXTENSIONS, &max_extensions);
+		for (int i = 0; i < max_extensions; i++) {
 			const GLubyte *s = glGetStringi(GL_EXTENSIONS, i);
 			if (!s) {
 				break;
@@ -80,11 +80,14 @@ Config::Config() {
 		rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc") || extensions.has("EXT_texture_compression_rgtc");
 	}
 
-	glGetInteger64v(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &max_vertex_texture_image_units);
-	glGetInteger64v(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_image_units);
-	glGetInteger64v(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &max_vertex_texture_image_units);
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_image_units);
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, max_viewport_size);
 	glGetInteger64v(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_buffer_size);
-	glGetInteger64v(GL_MAX_VIEWPORT_DIMS, max_viewport_size);
+
+	// sanity clamp buffer size to 16K..1MB
+	max_uniform_buffer_size = CLAMP(max_uniform_buffer_size, 16384, 1048576);
 
 	support_anisotropic_filter = extensions.has("GL_EXT_texture_filter_anisotropic");
 	if (support_anisotropic_filter) {
@@ -169,8 +172,31 @@ Config::Config() {
 
 	//Adreno 3xx Compatibility
 	const String rendering_device_name = String::utf8((const char *)glGetString(GL_RENDERER));
-	//TODO: Check the number between 300 and 399(?)
-	adreno_3xx_compatibility = (rendering_device_name.left(13) == "Adreno (TM) 3");
+	if (rendering_device_name.left(13) == "Adreno (TM) 3") {
+		flip_xy_workaround = true;
+		disable_particles_workaround = true;
+
+		// ignore driver version 331+
+		const String gl_version = String::utf8((const char *)glGetString(GL_VERSION));
+		// Adreno 3xx examples (https://opengles.gpuinfo.org/listreports.php):
+		// ===========================================================================
+		// OpenGL ES 3.0 V@84.0 AU@ (CL@)
+		// OpenGL ES 3.0 V@127.0 AU@ (GIT@I96aee987eb)
+		// OpenGL ES 3.0 V@140.0 AU@ (GIT@Ifd751822f5)
+		// OpenGL ES 3.0 V@251.0 AU@08.00.00.312.030 (GIT@Ie4790512f3)
+		// OpenGL ES 3.0 V@269.0 AU@ (GIT@I109c45a694)
+		// OpenGL ES 3.0 V@331.0 (GIT@35e467f, Ice9844a736) (Date:04/15/19)
+		// OpenGL ES 3.0 V@415.0 (GIT@d39f783, I79de86aa2c, 1591296226) (Date:06/04/20)
+		// OpenGL ES 3.0 V@0502.0 (GIT@09fef447e8, I1fe547a144, 1661493934) (Date:08/25/22)
+		String driver_version = gl_version.get_slice("V@", 1).get_slice(" ", 0);
+		if (driver_version.is_valid_float() && driver_version.to_float() >= 331.0) {
+			flip_xy_workaround = false;
+
+			//TODO: also 'GPUParticles'?
+			//https://github.com/godotengine/godot/issues/92662#issuecomment-2161199477
+			//disable_particles_workaround = false;
+		}
+	}
 }
 
 Config::~Config() {

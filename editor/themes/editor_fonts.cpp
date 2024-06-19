@@ -36,6 +36,7 @@
 #include "editor/themes/builtin_fonts.gen.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/font.h"
+#include "scene/scene_string_names.h"
 
 Ref<FontFile> load_external_font(const String &p_path, TextServer::Hinting p_hinting, TextServer::FontAntialiasing p_aa, bool p_autohint, TextServer::SubpixelPositioning p_font_subpixel_positioning, bool p_font_disable_embedded_bitmaps, bool p_msdf = false, TypedArray<Font> *r_fallbacks = nullptr) {
 	Ref<FontFile> font;
@@ -401,24 +402,24 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	p_theme->set_font_size("title_size", EditorStringName(EditorFonts), default_font_size + 1 * EDSCALE);
 
 	p_theme->set_type_variation("MainScreenButton", "Button");
-	p_theme->set_font("font", "MainScreenButton", bold_fc);
-	p_theme->set_font_size("font_size", "MainScreenButton", default_font_size + 2 * EDSCALE);
+	p_theme->set_font(SceneStringName(font), "MainScreenButton", bold_fc);
+	p_theme->set_font_size(SceneStringName(font_size), "MainScreenButton", default_font_size + 2 * EDSCALE);
 
 	// Labels.
 
-	p_theme->set_font("font", "Label", default_fc);
+	p_theme->set_font(SceneStringName(font), "Label", default_fc);
 
 	p_theme->set_type_variation("HeaderSmall", "Label");
-	p_theme->set_font("font", "HeaderSmall", bold_fc);
-	p_theme->set_font_size("font_size", "HeaderSmall", default_font_size);
+	p_theme->set_font(SceneStringName(font), "HeaderSmall", bold_fc);
+	p_theme->set_font_size(SceneStringName(font_size), "HeaderSmall", default_font_size);
 
 	p_theme->set_type_variation("HeaderMedium", "Label");
-	p_theme->set_font("font", "HeaderMedium", bold_fc);
-	p_theme->set_font_size("font_size", "HeaderMedium", default_font_size + 1 * EDSCALE);
+	p_theme->set_font(SceneStringName(font), "HeaderMedium", bold_fc);
+	p_theme->set_font_size(SceneStringName(font_size), "HeaderMedium", default_font_size + 1 * EDSCALE);
 
 	p_theme->set_type_variation("HeaderLarge", "Label");
-	p_theme->set_font("font", "HeaderLarge", bold_fc);
-	p_theme->set_font_size("font_size", "HeaderLarge", default_font_size + 3 * EDSCALE);
+	p_theme->set_font(SceneStringName(font), "HeaderLarge", bold_fc);
+	p_theme->set_font_size(SceneStringName(font_size), "HeaderLarge", default_font_size + 3 * EDSCALE);
 
 	p_theme->set_font("normal_font", "RichTextLabel", default_fc);
 	p_theme->set_font("bold_font", "RichTextLabel", bold_fc);

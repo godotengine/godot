@@ -1045,6 +1045,9 @@ msgstr "RPCポート"
 msgid "RPC Server Uptime"
 msgstr "RPCサーバーの稼働時間"
 
+msgid "FBX"
+msgstr "FBX"
+
 msgid "FBX2glTF Path"
 msgstr "FBX2glTFのパス"
 
@@ -1260,9 +1263,6 @@ msgstr "ギズモの色"
 
 msgid "Joint"
 msgstr "ジョイント"
-
-msgid "Shape"
-msgstr "シェイプ"
 
 msgid "Primary Grid Steps"
 msgstr "プライマリグリッドのステップ数"
@@ -2335,6 +2335,12 @@ msgstr "ソリューションのディレクトリ"
 msgid "Assembly Reload Attempts"
 msgstr "アセンブリのリロード試行"
 
+msgid "Time"
+msgstr "時間"
+
+msgid "Polygons"
+msgstr "ポリゴン"
+
 msgid "Operation"
 msgstr "操作"
 
@@ -2385,9 +2391,6 @@ msgstr "パスの角度を容易にする"
 
 msgid "CSG"
 msgstr "CSG"
-
-msgid "FBX"
-msgstr "FBX"
 
 msgid "GDScript"
 msgstr "GDScript"
@@ -2950,9 +2953,6 @@ msgstr "限界を描画する"
 msgid "Draw Drag Margin"
 msgstr "ドラッグマージンを描画する"
 
-msgid "Time"
-msgstr "時間"
-
 msgid "Lifetime"
 msgstr "生存時間"
 
@@ -2970,6 +2970,9 @@ msgstr "ランダム性"
 
 msgid "Lifetime Randomness"
 msgstr "生存時間のランダム性"
+
+msgid "Shape"
+msgstr "シェイプ"
 
 msgid "Points"
 msgstr "点"
@@ -3120,9 +3123,6 @@ msgstr "トルク"
 
 msgid "UV"
 msgstr "UV"
-
-msgid "Polygons"
-msgstr "ポリゴン"
 
 msgid "Update"
 msgstr "更新"

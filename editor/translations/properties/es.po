@@ -1221,8 +1221,8 @@ msgstr "Puerto RPC"
 msgid "RPC Server Uptime"
 msgstr "Tiempo de actividad del servidor RPC"
 
-msgid "FBX2glTF"
-msgstr "FBX2glTF"
+msgid "FBX"
+msgstr "FBX"
 
 msgid "FBX2glTF Path"
 msgstr "Ruta FBX2glTF"
@@ -1476,9 +1476,6 @@ msgstr "Instanciado"
 msgid "Joint"
 msgstr "Articulación"
 
-msgid "Shape"
-msgstr "Forma"
-
 msgid "AABB"
 msgstr "AABB"
 
@@ -1721,12 +1718,6 @@ msgstr "Tamaño de Fuente"
 
 msgid "Always Clear Output on Play"
 msgstr "Siempre Limpiar la Salida en la Reproducción"
-
-msgid "Always Open Output on Play"
-msgstr "Siempre Abrir la Salida en la Reproducción"
-
-msgid "Always Close Output on Stop"
-msgstr "Siempre Cerrar la Salida al Detener"
 
 msgid "Platforms"
 msgstr "Plataformas"
@@ -2037,11 +2028,11 @@ msgstr "Aplicar Transformaciones al Nodo"
 msgid "Normalize Position Tracks"
 msgstr "Normalizar la Posición de las Pistas"
 
-msgid "Overwrite Axis"
-msgstr "Sobreescribir Ejes"
-
 msgid "Reset All Bone Poses After Import"
 msgstr "Restablecer Todas las Poses de Hueso Después de Importar"
+
+msgid "Overwrite Axis"
+msgstr "Sobreescribir Ejes"
 
 msgid "Fix Silhouette"
 msgstr "Reparar la Silueta"
@@ -2988,6 +2979,24 @@ msgstr "Directorio de Soluciones"
 msgid "Assembly Reload Attempts"
 msgstr "Intentos de Recarga de Ensamblados"
 
+msgid "Time"
+msgstr "Tiempo"
+
+msgid "Video"
+msgstr "Vídeo"
+
+msgid "Regions"
+msgstr "Regiones"
+
+msgid "Agents"
+msgstr "Agentes"
+
+msgid "Polygons"
+msgstr "Polígonos"
+
+msgid "Edges"
+msgstr "Aristas"
+
 msgid "Operation"
 msgstr "Operación"
 
@@ -3087,9 +3096,6 @@ msgstr "Ruta Unida"
 msgid "CSG"
 msgstr "CSG"
 
-msgid "FBX"
-msgstr "FBX"
-
 msgid "Importer"
 msgstr "Importador"
 
@@ -3098,6 +3104,9 @@ msgstr "Permitir Nodos Auxiliares de Geometría"
 
 msgid "Embedded Image Handling"
 msgstr "Manejo de Imágenes Embebidas"
+
+msgid "FBX2glTF"
+msgstr "FBX2glTF"
 
 msgid "GDScript"
 msgstr "GDScript"
@@ -4611,9 +4620,6 @@ msgstr "Usar Mipmaps"
 msgid "Emitting"
 msgstr "Emitiendo"
 
-msgid "Time"
-msgstr "Tiempo"
-
 msgid "Lifetime"
 msgstr "Tiempo de vida"
 
@@ -4649,6 +4655,9 @@ msgstr "Orden de dibujo"
 
 msgid "Emission Shape"
 msgstr "Forma de la Emisión"
+
+msgid "Shape"
+msgstr "Forma"
 
 msgid "Sphere Radius"
 msgstr "Radio de la Esfera"
@@ -5318,9 +5327,6 @@ msgstr "UV"
 
 msgid "Vertex Colors"
 msgstr "Color de los Vértices"
-
-msgid "Polygons"
-msgstr "Polígonos"
 
 msgid "Internal Vertex Count"
 msgstr "Conteo de Vértices Internos"
@@ -7614,9 +7620,6 @@ msgstr "Nombre del Grupo de Geometría de Origen"
 msgid "Cells"
 msgstr "Celdas"
 
-msgid "Agents"
-msgstr "Agentes"
-
 msgid "A"
 msgstr "A"
 
@@ -8556,14 +8559,8 @@ msgstr "Escalada Máxima"
 msgid "Max Slope"
 msgstr "Pendiente Máxima"
 
-msgid "Regions"
-msgstr "Regiones"
-
 msgid "Merge Size"
 msgstr "Tamaño de Unión"
-
-msgid "Edges"
-msgstr "Aristas"
 
 msgid "Max Error"
 msgstr "Error Máximo"
@@ -8807,9 +8804,6 @@ msgstr "Índice de Superficie"
 
 msgid "Degrees Mode"
 msgstr "Modo de Grados"
-
-msgid "Panel"
-msgstr "Panel"
 
 msgid "Font Color"
 msgstr "Color de la Fuente"
@@ -9306,9 +9300,6 @@ msgstr "Separación V de Barra de Desplazamiento"
 msgid "Icon Margin"
 msgstr "Margen del Icono"
 
-msgid "Line Separation"
-msgstr "Separación de Líneas"
-
 msgid "Font Hovered Color"
 msgstr "Color de la Fuente Señalada"
 
@@ -9695,9 +9686,6 @@ msgstr "Umbral dB de Deactivación de Canal"
 
 msgid "Channel Disable Time"
 msgstr "Tiempo de Deshabilitación de Canal"
-
-msgid "Video"
-msgstr "Vídeo"
 
 msgid "Video Delay Compensation (ms)"
 msgstr "Compensación de Retraso de Vídeo (ms)"

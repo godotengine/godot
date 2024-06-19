@@ -44,13 +44,14 @@
 # Yulian <yulian.mysko@gmail.com>, 2024.
 # Bogdan <Bgdn.Weblate@users.noreply.hosted.weblate.org>, 2024.
 # Ivan Reshetnikov <ivan.reshetnikov@proton.me>, 2024.
+# Evgen Zukov <searchyou13@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-03-22 22:38+0000\n"
-"Last-Translator: Ivan Reshetnikov <ivan.reshetnikov@proton.me>\n"
+"PO-Revision-Date: 2024-05-15 18:47+0000\n"
+"Last-Translator: Evgen Zukov <searchyou13@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -59,7 +60,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.5-dev\n"
+"X-Generator: Weblate 5.6-dev\n"
 
 msgid "Main Thread"
 msgstr "Головна тема"
@@ -1028,6 +1029,12 @@ msgstr "Максимальна похибка точності:"
 msgid "Optimize"
 msgstr "Оптимізувати"
 
+msgid "Trim keys placed in negative time"
+msgstr "Обрізати клавіші, розміщені в негативний час"
+
+msgid "Trim keys placed exceed the animation length"
+msgstr "Клавіші обрізки, розміщені вище довжини анімації"
+
 msgid "Remove invalid keys"
 msgstr "Вилучити неприпустимі ключі"
 
@@ -1414,6 +1421,9 @@ msgstr "Зберегти гілку як сцену"
 
 msgid "Copy Node Path"
 msgstr "Копіювати вузол шляху"
+
+msgid "Instance:"
+msgstr "Екземпляр:"
 
 msgid ""
 "This node has been instantiated from a PackedScene file:\n"
@@ -2261,6 +2271,11 @@ msgstr "Параметри візуалізації тексту та шрифт
 msgid "File saving failed."
 msgstr "Не вдалося зберегти файл."
 
+msgid "This will scan all files in the current project to detect used classes."
+msgstr ""
+"За допомогою цього пункту можна сканувати всі файли поточного проєкту для "
+"виявлення використаних класів."
+
 msgid "Nodes and Classes:"
 msgstr "Вузли і класи:"
 
@@ -2333,6 +2348,9 @@ msgstr "Положення панелей"
 
 msgid "Make Floating"
 msgstr "Зробити десятковим"
+
+msgid "Move this dock to the bottom panel."
+msgstr "Пересуньте цей dock на нижню панель."
 
 msgid "3D Editor"
 msgstr "3D-редактор"
@@ -2480,6 +2498,12 @@ msgstr "Імпортувати профілі"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Керування профілями можливостей редактора"
+
+msgid "Restart"
+msgstr "Перезапустити"
+
+msgid "Save & Restart"
+msgstr "Зберегти і перезапустити"
 
 msgid "ScanSources"
 msgstr "Сканувати сирці"
@@ -2674,6 +2698,14 @@ msgstr "Описи властивостей"
 msgid "(value)"
 msgstr "(значення)"
 
+msgid ""
+"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will "
+"not update the original property value. See [%s] for more details."
+msgstr ""
+"[b] Примітка: [/b] Повернутий масив [i]скопійований[/i], і будь-які зміни до "
+"нього не оновлюватимуть початкове значення властивості. Докладніше про це "
+"можна дізнатися з розділу тут [%s]."
+
 msgid "There is currently no description for this property."
 msgstr "Наразі для цього об'єкту немає опису."
 
@@ -2686,6 +2718,9 @@ msgstr ""
 
 msgid "Editor"
 msgstr "Редактор"
+
+msgid "Click to copy."
+msgstr "Натисніть, щоб скопіювати."
 
 msgid "No description available."
 msgstr "Опис відсутній."
@@ -3263,6 +3298,27 @@ msgstr ""
 "Підтримка кількох вікон недоступна, оскільки для запуску редактора "
 "використовувався аргумент `--single-window`."
 
+msgid ""
+"Multi-window support is not available because the current platform doesn't "
+"support multiple windows."
+msgstr ""
+"Підтримка декількох вікон недоступна, оскільки поточна платформа не підтримує "
+"декілька вікон."
+
+msgid ""
+"Multi-window support is not available because Interface > Editor > Single "
+"Window Mode is enabled in the editor settings."
+msgstr ""
+"Підтримка декількох вікон недоступна, оскільки в налаштуваннях редактора "
+"Interface > Editor > Single Window Mode активований (enabled)."
+
+msgid ""
+"Multi-window support is not available because Interface > Multi Window > "
+"Enable is disabled in the editor settings."
+msgstr ""
+"Підтримка декількох вікон недоступна, оскільки в налаштуваннях редактора "
+"Interface > Multi Window > Enable вимкнено."
+
 msgid "Clear Recent Scenes"
 msgstr "Очистити недавні сцени"
 
@@ -3363,6 +3419,18 @@ msgstr "Сумісність"
 msgid "(Overridden)"
 msgstr "(Перевизначенно)"
 
+msgid "Lock Selected Node(s)"
+msgstr "Заблокувати вибраний вузол(и)"
+
+msgid "Unlock Selected Node(s)"
+msgstr "Розблокувати позначені вузли"
+
+msgid "Group Selected Node(s)"
+msgstr "Згрупувати позначені вузли"
+
+msgid "Ungroup Selected Node(s)"
+msgstr "Розгрупувати позначені вузли"
+
 msgid "Pan View"
 msgstr "Панорамування зображення"
 
@@ -3462,9 +3530,6 @@ msgstr "Редактор компонування"
 msgid "Take Screenshot"
 msgstr "Зробити знімок вікна"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Знімки зберігаються у теці Data/Settings редактора."
-
 msgid "Toggle Fullscreen"
 msgstr "Перемикач повноекранного режиму"
 
@@ -3492,6 +3557,9 @@ msgstr "Довідка"
 msgid "Online Documentation"
 msgstr "Документація в інтернеті"
 
+msgid "Forum"
+msgstr "Форум"
+
 msgid "Community"
 msgstr "Спільнота"
 
@@ -3514,8 +3582,21 @@ msgstr "Надіслати відгук щодо документації"
 msgid "Support Godot Development"
 msgstr "Підтримати розробку Godot"
 
-msgid "Save & Restart"
-msgstr "Зберегти і перезапустити"
+msgid ""
+"Choose a rendering method.\n"
+"\n"
+"Notes:\n"
+"- On mobile platforms, the Mobile rendering method is used if Forward+ is "
+"selected here.\n"
+"- On the web platform, the Compatibility rendering method is always used."
+msgstr ""
+"Виберіть метод візуалізації.\n"
+"\n"
+"Примітки:\n"
+"- На мобільних платформах використовується метод рендерингу Mobile, якщо тут "
+"вибрано Forward +.\n"
+"- На веб-платформі завжди використовується метод рендерингу Compatibility "
+"(візуалізації сумісності)."
 
 msgid "Update Continuously"
 msgstr "Оновлювати неперервно"
@@ -3573,12 +3654,6 @@ msgid ""
 msgstr ""
 "На диску зберігаються новіші версії вказаних нижче файлів.\n"
 "Що слід зробити?"
-
-msgid "Reload"
-msgstr "Перезавантажити"
-
-msgid "Resave"
-msgstr "Перезаписати"
 
 msgid "Version Control Settings..."
 msgstr "Налаштування контролю версій..."
@@ -3664,6 +3739,9 @@ msgstr ""
 "Це через те, що результат Ейлер->Кватерніон визначається однозначно, а "
 "результат Кватерніон->Ейлер може бути різним."
 
+msgid "Temporary Euler"
+msgstr "Тимчасовий ейлер"
+
 msgid "Assign..."
 msgstr "Призначити…"
 
@@ -3678,6 +3756,17 @@ msgstr "Некоректний RID"
 
 msgid "Recursion detected, unable to assign resource to property."
 msgstr "Виявлено рекурсію, не вдається призначити ресурс властивості."
+
+msgid ""
+"Can't create a ViewportTexture in a Texture2D node because the texture will "
+"not be bound to a scene.\n"
+"Use a Texture2DParameter node instead and set the texture in the \"Shader "
+"Parameters\" tab."
+msgstr ""
+"Неможливо створити ViewportTexture у Texture2D node, оскільки текстура "
+"(texture) не буде прив'язана до scene (сцени).\n"
+"Використовуйте замість цього Texture2DParameter node і встановіть текстуру "
+"(texture) на вкладці \"Shader Parameters\" (\"Параметри шейдера\")."
 
 msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
@@ -3749,6 +3838,11 @@ msgid ""
 msgstr ""
 "Тип вибраного ресурсу (%s) не відповідає типу, який є очікуваним для цієї "
 "властивості (%s)."
+
+msgid "Opens a quick menu to select from a list of allowed Resource files."
+msgstr ""
+"Відкриває швидке меню для вибору зі списку дозволених файлів ресурсів "
+"(resource)."
 
 msgid "Load..."
 msgstr "Завантажити…"
@@ -4053,6 +4147,12 @@ msgid ""
 msgstr ""
 "Не знайдено посилань для завантаження цієї версії. Пряме завантаження "
 "доступне лише для офіційних випусків."
+
+msgid "Connecting..."
+msgstr "З’єднання..."
+
+msgid "Requesting..."
+msgstr "Запит..."
 
 msgid "Can't open the export templates file."
 msgstr "Не вдалося відкрити файл шаблонів експортування."
@@ -4519,6 +4619,9 @@ msgstr "Вилучити з улюблених"
 msgid "Reimport"
 msgstr "Переімпортувати"
 
+msgid "Open in File Manager"
+msgstr "Відкрити у менеджері файлів"
+
 msgid "New Folder..."
 msgstr "Створити теку..."
 
@@ -4563,9 +4666,6 @@ msgstr "Дублювати..."
 
 msgid "Rename..."
 msgstr "Перейменувати..."
-
-msgid "Open in File Manager"
-msgstr "Відкрити у менеджері файлів"
 
 msgid "Open in External Program"
 msgstr "Відкрити в зовнішній програмі"
@@ -4977,9 +5077,6 @@ msgstr ""
 
 msgid "Open in Editor"
 msgstr "Відкрити в редакторі"
-
-msgid "Instance:"
-msgstr "Екземпляр:"
 
 msgid "\"%s\" is not a known filter."
 msgstr "\"%s\" є не відомим фільтром."
@@ -6277,12 +6374,6 @@ msgstr "Отримання даних…"
 msgid "Resolving..."
 msgstr "Вирішення..."
 
-msgid "Connecting..."
-msgstr "З’єднання..."
-
-msgid "Requesting..."
-msgstr "Запит..."
-
 msgid "Error making request"
 msgstr "Помилка створення запиту"
 
@@ -6583,6 +6674,11 @@ msgstr "Вид по центру"
 msgid "Select Mode"
 msgstr "Режим виділення"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+ПКМ: показати список усіх вузлів у позиції клацання, включно із "
+"заблокованими."
+
 msgid "RMB: Add node at position clicked."
 msgstr "ПКМ: додати вузол у позиції клацання."
 
@@ -6667,20 +6763,8 @@ msgstr "Налаштування прив'язки..."
 msgid "Lock selected node, preventing selection and movement."
 msgstr "Блокувати вибраний вузол, запобігаючи виділенню та переміщенню."
 
-msgid "Lock Selected Node(s)"
-msgstr "Заблокувати вибраний вузол(и)"
-
 msgid "Unlock selected node, allowing selection and movement."
 msgstr "Розблокувати вибраний вузол і дозволити виділення та переміщення."
-
-msgid "Unlock Selected Node(s)"
-msgstr "Розблокувати позначені вузли"
-
-msgid "Group Selected Node(s)"
-msgstr "Згрупувати позначені вузли"
-
-msgid "Ungroup Selected Node(s)"
-msgstr "Розгрупувати позначені вузли"
 
 msgid "Skeleton Options"
 msgstr "Параметри каркаса"
@@ -6795,14 +6879,6 @@ msgstr "Розділити крок сітки на 2"
 
 msgid "Adding %s..."
 msgstr "Додавання %s..."
-
-msgid "Hold Shift when dropping to add as sibling of selected node."
-msgstr ""
-"Утримуйте Shift під час перетягування, щоб додати брата вибраному вузлу."
-
-msgid "Cannot instantiate multiple nodes without root."
-msgstr ""
-"Створення екземплярів декількох вузлів є неможливим без кореневого запису."
 
 msgid "Create Node"
 msgstr "Створити вузол"
@@ -6923,9 +6999,6 @@ msgstr ""
 msgid "Some parents of the selected nodes do not support the Expand flag."
 msgstr "Деякі предки вибраних вузлів не підтримують галочку Розгорнути."
 
-msgid "Align with Expand"
-msgstr "Вирівняти Розгортанням"
-
 msgid "Change Anchors, Offsets, Grow Direction"
 msgstr "Змінити прив'язки, зміщення, напрямок розширення"
 
@@ -6970,9 +7043,6 @@ msgstr "Вертикальне вирівнювання"
 
 msgid "Convert to GPUParticles3D"
 msgstr "Перетворити на GPUParticles3D"
-
-msgid "Restart"
-msgstr "Перезапустити"
 
 msgid "Load Emission Mask"
 msgstr "Завантажити маску випромінювання"
@@ -7241,9 +7311,6 @@ msgstr "Змінити довжину форми променя"
 
 msgid "Change Decal Size"
 msgstr "Змінити розмір декалій"
-
-msgid "Change Particles AABB"
-msgstr "Змінити AABB часток"
 
 msgid "Change Radius"
 msgstr "Змінити радіус"
@@ -8088,11 +8155,6 @@ msgstr ""
 "WorldEnvironment.\n"
 "Попередній перегляд вимкнено."
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+ПКМ: показати список усіх вузлів у позиції клацання, включно із "
-"заблокованими."
-
 msgid "Use Local Space"
 msgstr "Використати локальний простір"
 
@@ -8360,14 +8422,14 @@ msgstr "Вилучити з кривої вихідний промінь"
 msgid "Remove In-Control from Curve"
 msgstr "Вилучити з кривої вхідний промінь"
 
-msgid "Add Point to Curve"
-msgstr "Додавання точки до кривої"
-
 msgid "Split Curve"
 msgstr "Розділити криву"
 
 msgid "Move Point in Curve"
 msgstr "Перемістити точку на криву"
+
+msgid "Add Point to Curve"
+msgstr "Додавання точки до кривої"
 
 msgid "Move In-Control in Curve"
 msgstr "Пересунути вхідний промінь кривої"
@@ -8682,9 +8744,6 @@ msgstr "Завантажити ресурс"
 msgid "Path to AnimationMixer is invalid"
 msgstr "Невірний шлях до AnimationMixer"
 
-msgid "Clear Recent Files"
-msgstr "Очистити недавні файли"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "Не вдалося відкрити «%s». Файл могло бути пересунуто або вилучено."
 
@@ -8742,6 +8801,12 @@ msgstr "Помилка збереження"
 msgid "Save Theme As..."
 msgstr "Зберегти тему як..."
 
+msgid "Online Docs"
+msgstr "Онлайн документація"
+
+msgid "Open Godot online documentation."
+msgstr "Відкрити онлайнову документацію Godot."
+
 msgid "Unsaved file."
 msgstr "Незбережений файл."
 
@@ -8774,9 +8839,6 @@ msgstr "Файл"
 
 msgid "Open..."
 msgstr "Відкрити..."
-
-msgid "Reopen Closed Script"
-msgstr "Повторно відкрити закритий скрипт"
 
 msgid "Save All"
 msgstr "Зберегти все"
@@ -8817,12 +8879,6 @@ msgstr "Запустити"
 msgid "Search"
 msgstr "Пошук"
 
-msgid "Online Docs"
-msgstr "Онлайн документація"
-
-msgid "Open Godot online documentation."
-msgstr "Відкрити онлайнову документацію Godot."
-
 msgid "Search the reference documentation."
 msgstr "Пошук довідкової документації."
 
@@ -8835,18 +8891,23 @@ msgstr "Перейти до наступного редагованого док
 msgid "Discard"
 msgstr "Скинути"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?:"
-msgstr ""
-"Такі файли на диску новіші.\n"
-"Що робити?:"
-
 msgid "There are unsaved changes in the following built-in script(s):"
 msgstr "У наступних вбудованих скриптах є незбережені зміни:"
 
+msgid "Reopen Closed Script"
+msgstr "Повторно відкрити закритий скрипт"
+
 msgid "Clear Recent Scripts"
 msgstr "Спорожнити список нещодавніх скриптів"
+
+msgid "Uppercase"
+msgstr "ВЕРХНІЙ РЕГІСТР"
+
+msgid "Lowercase"
+msgstr "нижній регістр"
+
+msgid "Capitalize"
+msgstr "З Великої"
 
 msgid "Standard"
 msgstr "Стандартний"
@@ -8903,15 +8964,6 @@ msgstr "Рядок"
 
 msgid "Folding"
 msgstr "Згортання"
-
-msgid "Uppercase"
-msgstr "ВЕРХНІЙ РЕГІСТР"
-
-msgid "Lowercase"
-msgstr "нижній регістр"
-
-msgid "Capitalize"
-msgstr "З Великої"
 
 msgid "Convert Case"
 msgstr "Перемкнути регістр"
@@ -9311,6 +9363,12 @@ msgid ""
 msgstr ""
 "До цього шейдера внесено зміни на диску.\n"
 "Що слід зробити?"
+
+msgid "Reload"
+msgstr "Перезавантажити"
+
+msgid "Resave"
+msgstr "Перезаписати"
 
 msgid "Memory: %s"
 msgstr "Пам'ять: %s"
@@ -10005,9 +10063,6 @@ msgstr "Властивість малювання плиток"
 msgid "Painting:"
 msgstr "Малювання:"
 
-msgid "Picker"
-msgstr "Вибирач"
-
 msgid "No terrains"
 msgstr "Нема місцевостей"
 
@@ -10072,24 +10127,8 @@ msgstr "Вставити плитки"
 msgid "Selection"
 msgstr "Вибір"
 
-msgid "Paint"
-msgstr "Фарба"
-
-msgctxt "Tool"
-msgid "Line"
-msgstr "Лінія"
-
-msgid "Rect"
-msgstr "Прямокутник"
-
-msgid "Bucket"
-msgstr "Відро"
-
 msgid "Alternatively hold %s with other tools to pick tile."
 msgstr "Або утримуйте %s іншими інструментами, щоб вибрати плитку."
-
-msgid "Eraser"
-msgstr "Гумка"
 
 msgid "Alternatively use RMB to erase tiles."
 msgstr "Або використовуйте ПКМ, щоб стерти плитки."
@@ -10313,6 +10352,9 @@ msgstr ""
 msgid "Select a property editor"
 msgstr "Вибрати редактор властивостей"
 
+msgid "Paint properties."
+msgstr "Властивості малювання."
+
 msgid "Create tiles"
 msgstr "Створити плитки"
 
@@ -10357,8 +10399,8 @@ msgstr ""
 msgid "Select tiles."
 msgstr "Вибрати плитки."
 
-msgid "Paint properties."
-msgstr "Властивості малювання."
+msgid "Paint"
+msgstr "Фарба"
 
 msgid ""
 "No tiles selected.\n"
@@ -10461,6 +10503,22 @@ msgstr "Властивості колекції сцен:"
 
 msgid "Tile properties:"
 msgstr "Властивості плитки:"
+
+msgctxt "Tool"
+msgid "Line"
+msgstr "Лінія"
+
+msgid "Rect"
+msgstr "Прямокутник"
+
+msgid "Bucket"
+msgstr "Відро"
+
+msgid "Eraser"
+msgstr "Гумка"
+
+msgid "Picker"
+msgstr "Вибирач"
 
 msgid "Error"
 msgstr "Помилка"
@@ -12423,9 +12481,6 @@ msgstr ""
 "Не можна створити екземпляр сцени \"%s\", оскільки поточна сцена існує у "
 "одному з його вузлів."
 
-msgid "Instantiate Scene(s)"
-msgstr "Створити Екземпляр(и) Сцен(и)"
-
 msgid "Replace with Branch Scene"
 msgstr "Замінити гілкою сцени"
 
@@ -13644,11 +13699,11 @@ msgstr "Некоректний ідентифікатор:"
 msgid "Export Icons"
 msgstr "Експортування піктограм"
 
-msgid "Export template not found."
-msgstr "Шаблон експорту не знайдено."
-
 msgid "Prepare Templates"
 msgstr "Підготуйте шаблони"
+
+msgid "Export template not found."
+msgstr "Шаблон експорту не знайдено."
 
 msgid "Code signing failed, see editor log for details."
 msgstr "Не вдалося підписати код, подробиці дивіться в журналі редактора."
@@ -13799,6 +13854,9 @@ msgstr "Пароль Apple ID не вказано."
 msgid "App Store Connect API key ID not specified."
 msgstr "Не вказано ідентифікатор ключа API App Store Connect."
 
+msgid "Notarization"
+msgstr "Засвідчення"
+
 msgid ""
 "rcodesign path is not set. Configure rcodesign path in the Editor Settings "
 "(Export > macOS > rcodesign)."
@@ -13825,9 +13883,6 @@ msgid ""
 msgstr ""
 "Ви можете відстежувати прогрес, якщо відкриєте термінал і виконаєте таку "
 "команду:"
-
-msgid "Notarization"
-msgstr "Засвідчення"
 
 msgid ""
 "Run the following command to staple the notarization ticket to the exported "
@@ -15095,6 +15150,9 @@ msgstr "Очікується константний вираз."
 msgid "Expected ',' or ')' after argument."
 msgstr "Очікується ',' або ')' після аргументу."
 
+msgid "Constants cannot be modified."
+msgstr "Константи не можна змінювати."
+
 msgid ""
 "Sampler argument %d of function '%s' called more than once using both built-"
 "ins and uniform textures, this is not supported (use either one or the other)."
@@ -15190,9 +15248,6 @@ msgstr ""
 
 msgid "Can't use function as identifier: '%s'."
 msgstr "Не можна використовувати функцію як ідентифікатор: '%s'."
-
-msgid "Constants cannot be modified."
-msgstr "Константи не можна змінювати."
 
 msgid "Only integer expressions are allowed for indexing."
 msgstr "До індексації допускаються лише цілі вирази."

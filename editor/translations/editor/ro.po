@@ -753,6 +753,9 @@ msgstr "Debugger"
 msgid "Debug"
 msgstr "Depanare"
 
+msgid "Instance:"
+msgstr "Instanță :"
+
 msgid "Value"
 msgstr "Valoare"
 
@@ -1281,6 +1284,12 @@ msgstr "Încarcă Profil(e)"
 msgid "Manage Editor Feature Profiles"
 msgstr "Administrează Profilele Ferestrei de Editare"
 
+msgid "Restart"
+msgstr "Restart"
+
+msgid "Save & Restart"
+msgstr "Salvează și Restartează"
+
 msgid "ScanSources"
 msgstr "SurseScan"
 
@@ -1622,6 +1631,18 @@ msgstr "%d mai multe foldere"
 msgid "%d more files"
 msgstr "%d mai multe fișiere"
 
+msgid "Lock Selected Node(s)"
+msgstr "Blochează Nodurile Selectate"
+
+msgid "Unlock Selected Node(s)"
+msgstr "Deblochează Nodurile Selectate"
+
+msgid "Group Selected Node(s)"
+msgstr "Grupează Nodurile Selectate"
+
+msgid "Ungroup Selected Node(s)"
+msgstr "Degrupează Nodurile Selectate"
+
 msgid "Distraction Free Mode"
 msgstr "Modul Fără Distrageri"
 
@@ -1688,9 +1709,6 @@ msgstr "Schema Editor"
 msgid "Take Screenshot"
 msgstr "Captură de ecran"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Capturile de ecran sunt stocate în folderul Date/Setări editor."
-
 msgid "Toggle Fullscreen"
 msgstr "Comutare ecran complet"
 
@@ -1720,9 +1738,6 @@ msgstr "Raportează o Eroare"
 
 msgid "Send Docs Feedback"
 msgstr "Trimite Feedbackul Docs"
-
-msgid "Save & Restart"
-msgstr "Salvează și Restartează"
 
 msgid "Update Continuously"
 msgstr "Actualizare continuă"
@@ -1881,6 +1896,12 @@ msgstr ""
 "Niciun link pentru descărcare nu a fost găsit pentru această versiune. "
 "Descărcarea directă este disponibilă numai pentru lansări oficiale."
 
+msgid "Connecting..."
+msgstr "Conectare..."
+
+msgid "Requesting..."
+msgstr "Se Solicită..."
+
 msgid "Extracting Export Templates"
 msgstr "Se extrag Șabloanele de Export"
 
@@ -1970,6 +1991,9 @@ msgstr "Eliminare din Preferințe"
 msgid "Reimport"
 msgstr "Reimportă"
 
+msgid "Open in File Manager"
+msgstr "Deschideți în Administratorul de Fișiere"
+
 msgid "New Folder..."
 msgstr "Director Nou..."
 
@@ -1987,9 +2011,6 @@ msgstr "Duplicați..."
 
 msgid "Rename..."
 msgstr "Redenumește..."
-
-msgid "Open in File Manager"
-msgstr "Deschideți în Administratorul de Fișiere"
 
 msgid "Re-Scan Filesystem"
 msgstr "Rescanează Sistemul de Fișiere"
@@ -2156,9 +2177,6 @@ msgstr "Deschide scriptul:"
 
 msgid "Open in Editor"
 msgstr "Deschidere în Editor"
-
-msgid "Instance:"
-msgstr "Instanță :"
 
 msgid "Importing Scene..."
 msgstr "Se Importa Scena..."
@@ -2496,12 +2514,6 @@ msgstr "Descărcare..."
 msgid "Resolving..."
 msgstr "Se Rezolvă..."
 
-msgid "Connecting..."
-msgstr "Conectare..."
-
-msgid "Requesting..."
-msgstr "Se Solicită..."
-
 msgid "Error making request"
 msgstr "Eroare la solicitare"
 
@@ -2633,6 +2645,11 @@ msgstr "Magnificare la 1600%"
 msgid "Select Mode"
 msgstr "Selectare mod"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+RMB: Arată o listă a tuturor nodurilor la poziția clickului, inclusiv "
+"cele blocate."
+
 msgid "RMB: Add node at position clicked."
 msgstr "RMB: Adaugă nod la poziția clickului."
 
@@ -2704,18 +2721,6 @@ msgstr "Snapping Inteligent"
 
 msgid "Configure Snap..."
 msgstr "Configurare Snap..."
-
-msgid "Lock Selected Node(s)"
-msgstr "Blochează Nodurile Selectate"
-
-msgid "Unlock Selected Node(s)"
-msgstr "Deblochează Nodurile Selectate"
-
-msgid "Group Selected Node(s)"
-msgstr "Grupează Nodurile Selectate"
-
-msgid "Ungroup Selected Node(s)"
-msgstr "Degrupează Nodurile Selectate"
 
 msgid "Skeleton Options"
 msgstr "Opțiuni Schelet"
@@ -2792,9 +2797,6 @@ msgstr "Împarte pasul pe grilă cu 2"
 msgid "Adding %s..."
 msgstr "Se adaugă %s..."
 
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "Nu se pot instanția noduri multiple fără o rădacină."
-
 msgid "Create Node"
 msgstr "Creează Nod"
 
@@ -2824,9 +2826,6 @@ msgstr "Stânga Lat"
 
 msgid "Right Wide"
 msgstr "Dreapta Lat"
-
-msgid "Restart"
-msgstr "Restart"
 
 msgid "Load Emission Mask"
 msgstr "Încărcare Mască de Emisie"
@@ -3062,11 +3061,6 @@ msgstr "Creare Poligon de Navigare"
 msgid "Orthogonal"
 msgstr "Ortogonal"
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+RMB: Arată o listă a tuturor nodurilor la poziția clickului, inclusiv "
-"cele blocate."
-
 msgid "Use Snap"
 msgstr "Utilizează Snap"
 
@@ -3100,11 +3094,11 @@ msgstr "Eliminare Out-Control de pe Curbă"
 msgid "Remove In-Control from Curve"
 msgstr "Eliminare In-Control de pe Curbă"
 
-msgid "Add Point to Curve"
-msgstr "Adăugare punct pe curbă"
-
 msgid "Move Point in Curve"
 msgstr "Deplasare punct pe curbă"
+
+msgid "Add Point to Curve"
+msgstr "Adăugare punct pe curbă"
 
 msgid "Move In-Control in Curve"
 msgstr "Deplasare In-Control pe curbă"
@@ -3214,9 +3208,6 @@ msgstr "Clip-board de resurse gol !"
 msgid "Paste Resource"
 msgstr "Lipiți Resursa"
 
-msgid "Clear Recent Files"
-msgstr "Curăță Fișierele Recente"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "'%s' nu poate fi deschis. Fișierul ar putea fi modificat sau șters."
 
@@ -3225,6 +3216,12 @@ msgstr "Eroare La Salvarea"
 
 msgid "Error Importing"
 msgstr "Eroare la importare"
+
+msgid "Online Docs"
+msgstr "Documentație Online"
+
+msgid "Open Godot online documentation."
+msgstr "Deschideți documentația online Godot."
 
 msgid "File"
 msgstr "Fișier"
@@ -3237,12 +3234,6 @@ msgstr "Execută"
 
 msgid "Search"
 msgstr "Căutare"
-
-msgid "Online Docs"
-msgstr "Documentație Online"
-
-msgid "Open Godot online documentation."
-msgstr "Deschideți documentația online Godot."
 
 msgid "Standard"
 msgstr "Standard"

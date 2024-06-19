@@ -195,9 +195,9 @@ void RasterizerGLES3::initialize() {
 	Engine::get_singleton()->print_header(vformat("OpenGL API %s - Compatibility - Using Device: %s - %s", RS::get_singleton()->get_video_adapter_api_version(), RS::get_singleton()->get_video_adapter_vendor(), RS::get_singleton()->get_video_adapter_name()));
 
 	// FLIP XY Bug: Are more devices affected?
-	// Confirmed so far: all Adreno 3xx
+	// Confirmed so far: all Adreno 3xx with old driver (until 2018)
 	// ok on some tested Adreno devices: 4xx, 5xx and 6xx
-	flip_xy_bugfix = GLES3::Config::get_singleton()->adreno_3xx_compatibility;
+	flip_xy_workaround = GLES3::Config::get_singleton()->flip_xy_workaround;
 }
 
 void RasterizerGLES3::finalize() {
@@ -398,8 +398,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 			// Viewport doesn't cover entire window so clear window to black before blitting.
 			// Querying the actual window size from the DisplayServer would deadlock in separate render thread mode,
 			// so let's set the biggest viewport the implementation supports, to be sure the window is fully covered.
-			GLsizei max_vp[2] = {};
-			glGetIntegerv(GL_MAX_VIEWPORT_DIMS, max_vp);
+			Size2i max_vp = GLES3::Utilities::get_singleton()->get_maximum_viewport_size();
 			glViewport(0, 0, max_vp[0], max_vp[1]);
 			glClearColor(0.0, 0.0, 0.0, 1.0);
 			glClear(GL_COLOR_BUFFER_BIT);
@@ -411,7 +410,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 	// Adreno (TM) 3xx devices have a bug that create wrong Landscape rotation of 180 degree
 	// Reversing both the X and Y axis is equivalent to rotating 180 degrees
 	bool flip_x = false;
-	if (flip_xy_bugfix && screen_rect_end.x > screen_rect_end.y) {
+	if (flip_xy_workaround && screen_rect_end.x > screen_rect_end.y) {
 		flip_y = !flip_y;
 		flip_x = !flip_x;
 	}

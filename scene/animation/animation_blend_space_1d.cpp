@@ -278,7 +278,7 @@ void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const Ref<Animatio
 }
 
 AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
-	if (blend_points_used == 0) {
+	if (!blend_points_used) {
 		return NodeTimeInfo();
 	}
 

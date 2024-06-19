@@ -47,8 +47,8 @@ void AudioStreamEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			Ref<Font> font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
 
-			_current_label->add_theme_font_override(SNAME("font"), font);
-			_duration_label->add_theme_font_override(SNAME("font"), font);
+			_current_label->add_theme_font_override(SceneStringName(font), font);
+			_duration_label->add_theme_font_override(SceneStringName(font), font);
 
 			_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			_stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));

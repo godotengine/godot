@@ -162,6 +162,7 @@ enum PreferredAppMode {
 	APPMODE_MAX = 4
 };
 
+typedef const char *(CDECL *WineGetVersionPtr)(void);
 typedef bool(WINAPI *ShouldAppsUseDarkModePtr)();
 typedef DWORD(WINAPI *GetImmersiveColorFromColorSetExPtr)(UINT dwImmersiveColorSet, UINT dwImmersiveColorType, bool bIgnoreHighContrast, UINT dwHighContrastCacheMode);
 typedef int(WINAPI *GetImmersiveColorTypeFromNamePtr)(const WCHAR *name);

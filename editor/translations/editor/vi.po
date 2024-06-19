@@ -869,6 +869,9 @@ msgstr "Lưu Nhánh thành Cảnh"
 msgid "Copy Node Path"
 msgstr "Sao chép đường dẫn nút"
 
+msgid "Instance:"
+msgstr "Thế:"
+
 msgid "Value"
 msgstr "Giá trị"
 
@@ -1480,6 +1483,12 @@ msgstr "Nhập vào hồ sơ"
 msgid "Manage Editor Feature Profiles"
 msgstr "Quản lý trình tính năng"
 
+msgid "Restart"
+msgstr "Khởi động lại"
+
+msgid "Save & Restart"
+msgstr "Lưu & Khởi động lại"
+
 msgid "ScanSources"
 msgstr "Quét nguồn"
 
@@ -2019,10 +2028,6 @@ msgstr "Cài đặt Bố cục"
 msgid "Take Screenshot"
 msgstr "Chụp màn hình"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr ""
-"Ảnh chụp màn hình được lưu ở thư mục Dữ liệu/Cài đặt của trình chỉnh sửa."
-
 msgid "Toggle Fullscreen"
 msgstr "Chế độ Toàn màn hình"
 
@@ -2061,9 +2066,6 @@ msgstr "Gửi ý kiến phản hồi về hướng dẫn"
 
 msgid "Support Godot Development"
 msgstr "Hỗ trợ phát triển Godot"
-
-msgid "Save & Restart"
-msgstr "Lưu & Khởi động lại"
 
 msgid "Update Continuously"
 msgstr "Cập nhật Liên tục"
@@ -2110,12 +2112,6 @@ msgid ""
 msgstr ""
 "Các tệp sau xuất hiện trên ổ cứng gần đây hơn.\n"
 "Bạn muốn làm gì đây?"
-
-msgid "Reload"
-msgstr "Tải lại"
-
-msgid "Resave"
-msgstr "Lưu lại"
 
 msgid "New Inherited"
 msgstr "Kế thừa mới"
@@ -2341,6 +2337,12 @@ msgid ""
 msgstr ""
 "Không tìm thấy liên kết để tải phiên bản này. Chỉ có thể tải trực tiếp các "
 "bản chính thức."
+
+msgid "Connecting..."
+msgstr "Đang kết nối..."
+
+msgid "Requesting..."
+msgstr "Đang yêu cầu..."
 
 msgid "Can't open the export templates file."
 msgstr "Không thể mở tệp bản mẫu xuất."
@@ -2589,6 +2591,9 @@ msgstr "Xóa Ưa thích"
 msgid "Reimport"
 msgstr "Nhập vào lại"
 
+msgid "Open in File Manager"
+msgstr "Mở trong trình quản lý tệp tin"
+
 msgid "New Folder..."
 msgstr "Thư mục mới ..."
 
@@ -2606,9 +2611,6 @@ msgstr "Nhân đôi..."
 
 msgid "Rename..."
 msgstr "Đổi tên..."
-
-msgid "Open in File Manager"
-msgstr "Mở trong trình quản lý tệp tin"
 
 msgid "Re-Scan Filesystem"
 msgstr "Quét lại hệ thống tập tin"
@@ -2836,9 +2838,6 @@ msgstr ""
 
 msgid "Open in Editor"
 msgstr "Mở trong Trình biên soạn"
-
-msgid "Instance:"
-msgstr "Thế:"
 
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Tên nút không hợp lệ, các ký tự sau bị cấm:"
@@ -3411,12 +3410,6 @@ msgstr "Đang tải..."
 msgid "Resolving..."
 msgstr "Đang giải thuật..."
 
-msgid "Connecting..."
-msgstr "Đang kết nối..."
-
-msgid "Requesting..."
-msgstr "Đang yêu cầu..."
-
 msgid "Error making request"
 msgstr "Lỗi tạo yêu cầu"
 
@@ -3615,6 +3608,11 @@ msgstr "Góc nhìn ở Giữa"
 msgid "Select Mode"
 msgstr "Chế độ chọn"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+nút chuột phải: Hiển thị danh sách tất cả các nút tại vị trí được nhấp "
+"chuột vào, kể cả những nút đang bị khóa."
+
 msgid "RMB: Add node at position clicked."
 msgstr "Nút chuột phải: thên nút tại vị trí nhấp chuột."
 
@@ -3751,9 +3749,6 @@ msgstr "Chia đôi bước lưới"
 msgid "Adding %s..."
 msgstr "Đang thêm %s..."
 
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "Không thể khởi tạo nhiều nút mà không có nút gốc."
-
 msgid "Create Node"
 msgstr "Tạo Nút"
 
@@ -3804,9 +3799,6 @@ msgstr "Rộng bên phải"
 
 msgid "Full Rect"
 msgstr "Rộng hết cỡ"
-
-msgid "Restart"
-msgstr "Khởi động lại"
 
 msgid "Solid Pixels"
 msgstr "Điểm ảnh rắn"
@@ -4127,11 +4119,6 @@ msgstr "Nửa độ phân giải"
 msgid "View Rotation Locked"
 msgstr "Đã khóa xoay ở chế độ xem"
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+nút chuột phải: Hiển thị danh sách tất cả các nút tại vị trí được nhấp "
-"chuột vào, kể cả những nút đang bị khóa."
-
 msgid "Use Local Space"
 msgstr "Sử dụng Không gian Cục bộ"
 
@@ -4213,14 +4200,14 @@ msgstr "Sau"
 msgid "Remove Point from Curve"
 msgstr "Xóa điểm khỏi đường cong"
 
-msgid "Add Point to Curve"
-msgstr "Thêm Điểm vào Đường cong"
-
 msgid "Split Curve"
 msgstr "Chia đường Curve"
 
 msgid "Move Point in Curve"
 msgstr "Di chuyển Điểm trên Đường cong"
+
+msgid "Add Point to Curve"
+msgstr "Thêm Điểm vào Đường cong"
 
 msgid "Right Click: Delete Point"
 msgstr "Nhấp chuột phải: Xóa Point"
@@ -4393,9 +4380,6 @@ msgstr "Dán tài nguyên"
 msgid "Load Resource"
 msgstr "Nạp tài nguyên"
 
-msgid "Clear Recent Files"
-msgstr "Xóa lịch sử Tệp gần đây"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "Không thể mở '%s'. Tệp đã được di chuyển hoặc xoá."
 
@@ -4426,6 +4410,12 @@ msgstr "Lỗi khi lưu"
 msgid "Save Theme As..."
 msgstr "Lưu Tông màu thành..."
 
+msgid "Online Docs"
+msgstr "Tài liệu trực tuyến"
+
+msgid "Open Godot online documentation."
+msgstr "Mở tài liệu Godot trực tuyến."
+
 msgid "%s Class Reference"
 msgstr "Tham khảo Lớp %s"
 
@@ -4452,9 +4442,6 @@ msgstr "Tệp"
 
 msgid "Open..."
 msgstr "Mở..."
-
-msgid "Reopen Closed Script"
-msgstr "Mở lại tệp lệnh đã đóng"
 
 msgid "Save All"
 msgstr "Lưu tất cả"
@@ -4486,12 +4473,6 @@ msgstr "Chạy"
 msgid "Search"
 msgstr "Tìm kiếm"
 
-msgid "Online Docs"
-msgstr "Tài liệu trực tuyến"
-
-msgid "Open Godot online documentation."
-msgstr "Mở tài liệu Godot trực tuyến."
-
 msgid "Search the reference documentation."
 msgstr "Tìm tài liệu tham khảo."
 
@@ -4507,18 +4488,20 @@ msgstr "Làm cho tập lệnh nổi lên."
 msgid "Discard"
 msgstr "Hủy"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?:"
-msgstr ""
-"Các tệp sau đây mới hơn trên ổ cứng.\n"
-"Hãy chọn hành động của bạn:"
-
 msgid "Save changes to the following script(s) before quitting?"
 msgstr "Lưu thay đổi trong các tập lệnh sau trước khi thoát không?"
 
+msgid "Reopen Closed Script"
+msgstr "Mở lại tệp lệnh đã đóng"
+
 msgid "Clear Recent Scripts"
 msgstr "Dọn các tệp lệnh gần đây"
+
+msgid "Uppercase"
+msgstr "Chữ hoa"
+
+msgid "Lowercase"
+msgstr "Chữ thường"
 
 msgid "Standard"
 msgstr "Chuẩn"
@@ -4548,12 +4531,6 @@ msgstr "Chọn màu"
 
 msgid "Line"
 msgstr "Dòng"
-
-msgid "Uppercase"
-msgstr "Chữ hoa"
-
-msgid "Lowercase"
-msgstr "Chữ thường"
 
 msgid "Convert Case"
 msgstr "Chuyển đổi Hoa thường"
@@ -4755,6 +4732,12 @@ msgstr "Kích thước"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "Tạo Khung hình từ Sprite Sheet"
+
+msgid "Reload"
+msgstr "Tải lại"
+
+msgid "Resave"
+msgstr "Lưu lại"
 
 msgid "Memory: %s"
 msgstr "Bộ nhớ: %s"
@@ -6125,11 +6108,11 @@ msgstr "Tham số không hợp lệ cho hàm tích hợp sắn: \"%s(%s)\"."
 msgid "Invalid assignment of '%s' to '%s'."
 msgstr "Phép gán không hợp lệ '%s' cho '%s'."
 
-msgid "Void value not allowed in expression."
-msgstr "Dữ liệu kiểu void không được cho phép trong biểu thức."
-
 msgid "Constants cannot be modified."
 msgstr "Không thể chỉnh sửa hằng số."
+
+msgid "Void value not allowed in expression."
+msgstr "Dữ liệu kiểu void không được cho phép trong biểu thức."
 
 msgid "Invalid member for '%s' expression: '.%s'."
 msgstr "Thành viên không hợp lệ cho biểu thực '%s': '.%s'."

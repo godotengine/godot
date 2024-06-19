@@ -57,7 +57,7 @@ class Path2DEditor : public HBoxContainer {
 		MODE_CLEAR_POINTS,
 	};
 
-	Mode mode;
+	Mode mode = MODE_EDIT;
 	Button *curve_clear_points = nullptr;
 	Button *curve_close = nullptr;
 	Button *curve_create = nullptr;
@@ -68,9 +68,9 @@ class Path2DEditor : public HBoxContainer {
 
 	ConfirmationDialog *clear_points_dialog = nullptr;
 
-	bool mirror_handle_angle;
-	bool mirror_handle_length;
-	bool on_edge;
+	bool mirror_handle_angle = true;
+	bool mirror_handle_length = true;
+	bool on_edge = false;
 
 	enum HandleOption {
 		HANDLE_OPTION_ANGLE,
@@ -85,7 +85,7 @@ class Path2DEditor : public HBoxContainer {
 		ACTION_MOVING_OUT,
 	};
 
-	Action action;
+	Action action = ACTION_NONE;
 	int action_point = 0;
 	Point2 moving_from;
 	Point2 moving_screen_from;
@@ -96,6 +96,7 @@ class Path2DEditor : public HBoxContainer {
 
 	void _mode_selected(int p_mode);
 	void _handle_option_pressed(int p_option);
+	void _cancel_current_action();
 
 	void _node_visibility_changed();
 

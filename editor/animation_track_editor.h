@@ -464,6 +464,7 @@ class AnimationTrackEditor : public VBoxContainer {
 		Animation::TrackType type;
 		NodePath path;
 		int track_idx = 0;
+		float time = FLT_MAX; // Defaults to current timeline position.
 		Variant value;
 		String query;
 		bool advance = false;
@@ -727,6 +728,7 @@ public:
 	bool is_key_clipboard_active() const;
 	bool is_moving_selection() const;
 	bool is_snap_enabled() const;
+	bool can_add_reset_key() const;
 	float get_moving_selection_offset() const;
 	float snap_time(float p_value, bool p_relative = false);
 	bool is_grouping_tracks();

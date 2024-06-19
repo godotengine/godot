@@ -659,12 +659,12 @@ int64_t TextServerExtension::font_get_spacing(const RID &p_font_rid, SpacingType
 	return ret;
 }
 
-void TextServerExtension::font_set_baseline_offset(const RID &p_font_rid, float p_baseline_offset) {
+void TextServerExtension::font_set_baseline_offset(const RID &p_font_rid, double p_baseline_offset) {
 	GDVIRTUAL_CALL(_font_set_baseline_offset, p_font_rid, p_baseline_offset);
 }
 
-float TextServerExtension::font_get_baseline_offset(const RID &p_font_rid) const {
-	float ret = 0.0;
+double TextServerExtension::font_get_baseline_offset(const RID &p_font_rid) const {
+	double ret = 0.0;
 	GDVIRTUAL_CALL(_font_get_baseline_offset, p_font_rid, ret);
 	return ret;
 }
@@ -1493,7 +1493,7 @@ bool TextServerExtension::is_valid_identifier(const String &p_string) const {
 	return TextServer::is_valid_identifier(p_string);
 }
 
-bool TextServerExtension::is_valid_letter(char32_t p_unicode) const {
+bool TextServerExtension::is_valid_letter(uint64_t p_unicode) const {
 	bool ret;
 	if (GDVIRTUAL_CALL(_is_valid_letter, p_unicode, ret)) {
 		return ret;

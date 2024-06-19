@@ -141,7 +141,12 @@ bool CSGShape3D::is_root_shape() const {
 }
 
 void CSGShape3D::set_snap(float p_snap) {
+	if (snap == p_snap) {
+		return;
+	}
+
 	snap = p_snap;
+	_make_dirty();
 }
 
 float CSGShape3D::get_snap() const {

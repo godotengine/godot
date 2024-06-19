@@ -83,13 +83,15 @@
 # Frankie McEyes <mceyes@protonmail.com>, 2023.
 # Samuele Righi <blackdestinyx145@gmail.com>, 2023.
 # Ott8v <Ott8v@users.noreply.hosted.weblate.org>, 2024.
+# 0rang30rang3z <igbinewekajoel9@gmail.com>, 2024.
+# Simone Lungarella <simonelungarella@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-30 03:33+0000\n"
-"Last-Translator: Ott8v <Ott8v@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2024-06-01 18:03+0000\n"
+"Last-Translator: Simone Lungarella <simonelungarella@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
 "Language: it\n"
@@ -97,7 +99,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.6-dev\n"
 
 msgid "Application"
 msgstr "Applicazione"
@@ -128,6 +130,12 @@ msgstr "Disabilita stdout"
 
 msgid "Disable stderr"
 msgstr "Disabilita stderr"
+
+msgid "Print Header"
+msgstr "Intestazione di stampa"
+
+msgid "Enable Alt Space Menu"
+msgstr "Abilita il menu Alt Space"
 
 msgid "Use Hidden Project Data Directory"
 msgstr "Utilizza Percorso Nascosto dei Dati del Progetto"
@@ -212,6 +220,12 @@ msgstr "Animazione"
 
 msgid "Warnings"
 msgstr "Avvisi"
+
+msgid "Check Invalid Track Paths"
+msgstr "Verifica tracciati di percorso non validi"
+
+msgid "Check Angle Interpolation Type Conflicting"
+msgstr "Verifica il tipo di interpolazione dell'angolo in conflitto"
 
 msgid "Audio"
 msgstr "Audio"
@@ -738,6 +752,9 @@ msgstr "Dimensione della Miniatura"
 msgid "Import"
 msgstr "Importa"
 
+msgid "FBX"
+msgstr "FBX"
+
 msgid "Tools"
 msgstr "Strumenti"
 
@@ -908,9 +925,6 @@ msgstr "Colori Gizmo"
 
 msgid "Joint"
 msgstr "Unisci"
-
-msgid "Shape"
-msgstr "Forma"
 
 msgid "Primary Grid Steps"
 msgstr "Passo della Griglia Primaria"
@@ -1683,6 +1697,12 @@ msgstr "Progetto"
 msgid "Solution Directory"
 msgstr "Cartella di Soluzione"
 
+msgid "Time"
+msgstr "Tempo"
+
+msgid "Polygons"
+msgstr "Poligoni"
+
 msgid "Operation"
 msgstr "Operazione"
 
@@ -1769,9 +1789,6 @@ msgstr "Percorsi Uniti"
 
 msgid "CSG"
 msgstr "CSG"
-
-msgid "FBX"
-msgstr "FBX"
 
 msgid "GDScript"
 msgstr "GDScript"
@@ -2544,9 +2561,6 @@ msgstr "Verticale Abilitato"
 msgid "Tweaks"
 msgstr "Ritocchi"
 
-msgid "Time"
-msgstr "Tempo"
-
 msgid "One Shot"
 msgstr "One Shot"
 
@@ -2558,6 +2572,9 @@ msgstr "FPS fisso"
 
 msgid "Drawing"
 msgstr "Disegnare"
+
+msgid "Shape"
+msgstr "Forma"
 
 msgid "Sphere Radius"
 msgstr "Raggio della Sfera"
@@ -2606,9 +2623,6 @@ msgstr "Lineare"
 
 msgid "UV"
 msgstr "UV"
-
-msgid "Polygons"
-msgstr "Poligoni"
 
 msgid "Update"
 msgstr "Aggiorna"

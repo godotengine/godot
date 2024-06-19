@@ -2265,6 +2265,7 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(Dictionary, get_or_add, sarray("key", "default"), varray(Variant()));
 	bind_method(Dictionary, make_read_only, sarray(), varray());
 	bind_method(Dictionary, is_read_only, sarray(), varray());
+	bind_method(Dictionary, recursive_equal, sarray("dictionary", "recursion_count"), varray());
 }
 
 static void _register_variant_builtin_methods_array() {

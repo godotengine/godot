@@ -110,7 +110,7 @@ public:
 
 	static RendererCompositor *get_singleton() { return singleton; }
 	RendererCompositor();
-	virtual ~RendererCompositor() {}
+	virtual ~RendererCompositor();
 };
 
 #endif // RENDERER_COMPOSITOR_H

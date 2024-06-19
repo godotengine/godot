@@ -646,7 +646,7 @@ public:
 
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override {
 		int ret = 0;
-		GDVIRTUAL_REQUIRED_CALL(_profiling_get_accumulated_data, p_info_arr, p_info_max, ret);
+		GDVIRTUAL_REQUIRED_CALL(_profiling_get_frame_data, p_info_arr, p_info_max, ret);
 		return ret;
 	}
 

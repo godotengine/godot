@@ -481,10 +481,7 @@ CallQueue::~CallQueue() {
 	if (!allocator_is_custom) {
 		memdelete(allocator);
 	}
-	// This is done here to avoid a circular dependency between the safety checks and the thread singleton pointer.
-	if (this == MessageQueue::thread_singleton) {
-		MessageQueue::thread_singleton = nullptr;
-	}
+	DEV_ASSERT(!is_current_thread_override);
 }
 
 //////////////////////
@@ -493,7 +490,6 @@ CallQueue *MessageQueue::main_singleton = nullptr;
 thread_local CallQueue *MessageQueue::thread_singleton = nullptr;
 
 void MessageQueue::set_thread_singleton_override(CallQueue *p_thread_singleton) {
-	DEV_ASSERT(p_thread_singleton); // To unset the thread singleton, don't call this with nullptr, but just memfree() it.
 #ifdef DEV_ENABLED
 	if (thread_singleton) {
 		thread_singleton->is_current_thread_override = false;

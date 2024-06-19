@@ -1469,6 +1469,9 @@ msgstr "حفظ الفرع مشهدًا"
 msgid "Copy Node Path"
 msgstr "نسخ مسار العُقدة"
 
+msgid "Instance:"
+msgstr "نمذجة:"
+
 msgid ""
 "This node has been instantiated from a PackedScene file:\n"
 "%s\n"
@@ -2516,6 +2519,12 @@ msgstr "استيراد التعريفات"
 msgid "Manage Editor Feature Profiles"
 msgstr "إدارة تعريفة مزايا المحرر"
 
+msgid "Restart"
+msgstr "إعادة التشغيل"
+
+msgid "Save & Restart"
+msgstr "حفظ و إعادة تشغيل"
+
 msgid "ScanSources"
 msgstr "البحث في المصادر"
 
@@ -3374,6 +3383,18 @@ msgstr "المتنقل (كالجوال والأجهزة اللوحية والح�
 msgid "Compatibility"
 msgstr "المتوافق"
 
+msgid "Lock Selected Node(s)"
+msgstr "قفل العُقد المختارة"
+
+msgid "Unlock Selected Node(s)"
+msgstr "تحرير العُقد المختارة"
+
+msgid "Group Selected Node(s)"
+msgstr "جمع العُقد المختارة"
+
+msgid "Ungroup Selected Node(s)"
+msgstr "تفكيك العُقد المختارة"
+
 msgid "Pan View"
 msgstr "إظهار شامل"
 
@@ -3476,9 +3497,6 @@ msgstr "تنسيق المحرّر"
 msgid "Take Screenshot"
 msgstr "أخذ صورة للشاشة"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "لقطات الشاشة تكون محفوظة في مجلّد بيانات/إعدادات المحرّر."
-
 msgid "Toggle Fullscreen"
 msgstr "تبديل وضع الشاشة الكاملة"
 
@@ -3529,9 +3547,6 @@ msgstr "إرسال الاستدراكات على \"التوثيقات\""
 
 msgid "Support Godot Development"
 msgstr "ادعم تطوير جَوْدَتْ"
-
-msgid "Save & Restart"
-msgstr "حفظ و إعادة تشغيل"
 
 msgid "Update Continuously"
 msgstr "تحديث متواصل"
@@ -3587,12 +3602,6 @@ msgid ""
 msgstr ""
 "الملفات التالية هي الأحدث على القرص.\n"
 "ما الإجراء الذي ينبغي اتخاذه؟"
-
-msgid "Reload"
-msgstr "إعادة تحميل"
-
-msgid "Resave"
-msgstr "إعادة حفظ"
 
 msgid "Version Control Settings..."
 msgstr "إعدادات التحكم في الإصدارات..."
@@ -4065,6 +4074,12 @@ msgstr ""
 "لا روابط تحميل تم إيجادها لهذه النسخة. التحميل المباشر متوفر فقط للنسخ "
 "الرسمية."
 
+msgid "Connecting..."
+msgstr "الاتصال..."
+
+msgid "Requesting..."
+msgstr "جار الطلب..."
+
 msgid "Can't open the export templates file."
 msgstr "لا نستطيع فتح ملف القوالب."
 
@@ -4524,6 +4539,9 @@ msgstr "إعادة الاستيراد"
 msgid "Open Containing Folder in Terminal"
 msgstr "افتح المجلد الحاوي في الطرفية"
 
+msgid "Open in File Manager"
+msgstr "افتح في مدير الملفات"
+
 msgid "New Folder..."
 msgstr "مجلد جديد..."
 
@@ -4568,9 +4586,6 @@ msgstr "مضاعفة..."
 
 msgid "Rename..."
 msgstr "إعادة تسمية..."
-
-msgid "Open in File Manager"
-msgstr "افتح في مدير الملفات"
 
 msgid "Open in External Program"
 msgstr "افتح في برنامج خارجي"
@@ -5050,9 +5065,6 @@ msgstr ""
 
 msgid "Open in Editor"
 msgstr "افتح في المُحرر"
-
-msgid "Instance:"
-msgstr "نمذجة:"
 
 msgid "\"%s\" is not a known filter."
 msgstr "\"%s\" ليست تصفية معروفة."
@@ -6324,12 +6336,6 @@ msgstr "‫جاري التنزيل..."
 msgid "Resolving..."
 msgstr "جاري الحل..."
 
-msgid "Connecting..."
-msgstr "الاتصال..."
-
-msgid "Requesting..."
-msgstr "جار الطلب..."
-
 msgid "Error making request"
 msgstr "خطأ في إنشاء الطلب"
 
@@ -6627,6 +6633,11 @@ msgstr "عرض بالمنتصف"
 msgid "Select Mode"
 msgstr "وضع الاختيار"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"البديل(Alt) + الزر-الأيمن: أظهرْ قائمة العقد في الموضع المنقور عليه، بما فيها "
+"العقد المقفولة."
+
 msgid "RMB: Add node at position clicked."
 msgstr "زر-الفأرة-الأيمن: ضف العقد عند موقع الضغط."
 
@@ -6710,14 +6721,8 @@ msgstr "تعديل المحاذاة..."
 msgid "Lock selected node, preventing selection and movement."
 msgstr "قفل العُقدة المختارة، ومنع الحركة والاختيار."
 
-msgid "Lock Selected Node(s)"
-msgstr "قفل العُقد المختارة"
-
 msgid "Unlock selected node, allowing selection and movement."
 msgstr "فتح العُقدة المختارة، وتجويز الحركة والاختيار."
-
-msgid "Unlock Selected Node(s)"
-msgstr "تحرير العُقد المختارة"
 
 msgid ""
 "Groups the selected node with its children. This causes the parent to be "
@@ -6726,18 +6731,12 @@ msgstr ""
 "يجمع العقدة المحددة مع فروعها. وهذا يعني أن الأصل سوف يُحدد عند النقر على أي "
 "عقدة فرعية له في المنظر الثنائي أو الثلاثي."
 
-msgid "Group Selected Node(s)"
-msgstr "جمع العُقد المختارة"
-
 msgid ""
 "Ungroups the selected node from its children. Child nodes will be individual "
 "items in 2D and 3D view."
 msgstr ""
 "يفرق العقدة المختارة عن فروعها. العقد الفرعية ستكون عناصر مستقلة في المنظر "
 "الثنائي والثلاثي."
-
-msgid "Ungroup Selected Node(s)"
-msgstr "تفكيك العُقد المختارة"
 
 msgid "Skeleton Options"
 msgstr "إعدادات الهكيل العظمي"
@@ -6854,12 +6853,6 @@ msgstr "قسم خطوة الشبكة ب 2"
 
 msgid "Adding %s..."
 msgstr "يتم إضافة %s..."
-
-msgid "Hold Shift when dropping to add as sibling of selected node."
-msgstr "اضغط مع الاستمرار على Shift عند الإسقاط للإضافة كأخ للعقدة المحددة."
-
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "لا يمكن تنسيخ عُقد عديدة بدون أصل تقوم عليه."
 
 msgid "Create Node"
 msgstr "إنشاء عُقدة"
@@ -6978,9 +6971,6 @@ msgstr ""
 msgid "Some parents of the selected nodes do not support the Expand flag."
 msgstr "بعض العُقد الأصلية المختارة لا تدعم عَلَم التوسيع."
 
-msgid "Align with Expand"
-msgstr "محاذاة مع التوسيع"
-
 msgid "Change Anchors, Offsets, Grow Direction"
 msgstr "تغيير المراسي والإزاحات والاتجاه النامي"
 
@@ -7021,9 +7011,6 @@ msgstr "محاذاة عمودية"
 
 msgid "Convert to GPUParticles3D"
 msgstr "التحويل إلى جسيمات-بطاقة-ثلاثية"
-
-msgid "Restart"
-msgstr "إعادة التشغيل"
 
 msgid "Load Emission Mask"
 msgstr "حمل قناع الانبعاث"
@@ -7304,9 +7291,6 @@ msgstr "تغيير طول شعاع الانفصال"
 
 msgid "Change Decal Size"
 msgstr "تغيير حجم الطبعة"
-
-msgid "Change Particles AABB"
-msgstr "تعديل جُزيئات AABB"
 
 msgid "Change Radius"
 msgstr "تغيير نصف القُطر"
@@ -8172,11 +8156,6 @@ msgstr ""
 "بيئة-العالم.\n"
 "المعاينة معطلة."
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"البديل(Alt) + الزر-الأيمن: أظهرْ قائمة العقد في الموضع المنقور عليه، بما فيها "
-"العقد المقفولة."
-
 msgid ""
 "Groups the selected node with its children. This selects the parent when any "
 "child node is clicked in 2D and 3D view."
@@ -8449,14 +8428,14 @@ msgstr "أزل Out-Control من المنحنى"
 msgid "Remove In-Control from Curve"
 msgstr "أزل In-Control من المنحنى"
 
-msgid "Add Point to Curve"
-msgstr "أضف نقطة للمنحنى"
-
 msgid "Split Curve"
 msgstr "تقسيم المنحنى"
 
 msgid "Move Point in Curve"
 msgstr "حرك النقطة داخل المنحنى"
+
+msgid "Add Point to Curve"
+msgstr "أضف نقطة للمنحنى"
 
 msgid "Move In-Control in Curve"
 msgstr "حرك In-Control داخل المنحنى"
@@ -8797,9 +8776,6 @@ msgstr ""
 "مشغل الرسومات المتحركة الخاصة باللاعب لا تملك مسار عُقدة صالح، غير قادر على "
 "استرجاع أسماء المقاطع."
 
-msgid "Clear Recent Files"
-msgstr "إزالة الملفات الحديثة"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "لا يمكن فتح '%s'. ربما تم حذف الملف أو نقله."
 
@@ -8855,6 +8831,12 @@ msgstr "خطأ في الحفظ"
 msgid "Save Theme As..."
 msgstr "حفظ الموضوع Theme ك..."
 
+msgid "Online Docs"
+msgstr "مستندات الإنترنت"
+
+msgid "Open Godot online documentation."
+msgstr "افتح وثائق جوْدَتْ على الشبكة."
+
 msgid "Unsaved file."
 msgstr "الملف غير محفوظ."
 
@@ -8887,9 +8869,6 @@ msgstr "ملف"
 
 msgid "Open..."
 msgstr "افتح..."
-
-msgid "Reopen Closed Script"
-msgstr "إعادة فتح النص البرمجي المُغلق"
 
 msgid "Save All"
 msgstr "حفظ الكل"
@@ -8930,12 +8909,6 @@ msgstr "تشغيل"
 msgid "Search"
 msgstr "بحث"
 
-msgid "Online Docs"
-msgstr "مستندات الإنترنت"
-
-msgid "Open Godot online documentation."
-msgstr "افتح وثائق جوْدَتْ على الشبكة."
-
 msgid "Search the reference documentation."
 msgstr "ابحث في الوثائق المرجعية."
 
@@ -8951,13 +8924,6 @@ msgstr "تعويم المحرر البرمجي."
 msgid "Discard"
 msgstr "تجاهل"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?:"
-msgstr ""
-"الملفات التالية أحدث على القرص.\n"
-"ما الإجراء الذي ينبغي اتخاذه؟:"
-
 msgid "There are unsaved changes in the following built-in script(s):"
 msgstr ""
 "توجد تغييرات غير محفوظة في البرنامج النصي (البرامج النصية) المضمن التالي:"
@@ -8967,8 +8933,20 @@ msgstr ""
 "هل تريد حفظ التغييرات التي تم إجراؤها على البرنامج النصي (النصوص البرمجية) "
 "التالي قبل الخروج؟"
 
+msgid "Reopen Closed Script"
+msgstr "إعادة فتح النص البرمجي المُغلق"
+
 msgid "Clear Recent Scripts"
 msgstr "إخلاء النصوص البرمجية الحديثة"
+
+msgid "Uppercase"
+msgstr "الأحرف الكبيرة (Uppercase)"
+
+msgid "Lowercase"
+msgstr "الأحرف الصغيرة (Lowercase)"
+
+msgid "Capitalize"
+msgstr "تكبير الحروف Capitalize"
 
 msgid "Standard"
 msgstr "معياري"
@@ -9028,15 +9006,6 @@ msgstr "خط"
 
 msgid "Folding"
 msgstr "الطي"
-
-msgid "Uppercase"
-msgstr "الأحرف الكبيرة (Uppercase)"
-
-msgid "Lowercase"
-msgstr "الأحرف الصغيرة (Lowercase)"
-
-msgid "Capitalize"
-msgstr "تكبير الحروف Capitalize"
 
 msgid "Convert Case"
 msgstr "حالة التحويل"
@@ -9471,6 +9440,12 @@ msgid ""
 msgstr ""
 "لقد تم تعديل هذا المُظلل على القرص.\n"
 "ما الإجراء الذي ينبغي اتخاذه؟"
+
+msgid "Reload"
+msgstr "إعادة تحميل"
+
+msgid "Resave"
+msgstr "إعادة حفظ"
 
 msgid "Memory: %s"
 msgstr "الذاكرة: %s"
@@ -10167,9 +10142,6 @@ msgstr "خاصية طلاء البلاط"
 msgid "Painting:"
 msgstr "طلاء:"
 
-msgid "Picker"
-msgstr "ملقاط"
-
 msgid "No terrains"
 msgstr "لا تضاريس"
 
@@ -10240,28 +10212,12 @@ msgstr "لصق البلاط"
 msgid "Selection"
 msgstr "الاختيار"
 
-msgid "Paint"
-msgstr "طلاء"
-
 msgid "Shift: Draw rectangle."
 msgstr "التحول: رسم المستطيل."
-
-msgctxt "Tool"
-msgid "Line"
-msgstr "خط"
-
-msgid "Rect"
-msgstr "مستطيل"
-
-msgid "Bucket"
-msgstr "سطل"
 
 msgid "Alternatively hold %s with other tools to pick tile."
 msgstr ""
 "بدلاً من ذلك، اضغط مع الاستمرار على %s باستخدام أدوات أخرى لاختيار المربع."
-
-msgid "Eraser"
-msgstr "مسّاحة"
 
 msgid "Alternatively use RMB to erase tiles."
 msgstr "وبدلاً من ذلك، استخدم RMB لمسح البلاط."
@@ -10498,6 +10454,9 @@ msgstr "قم بإنشاء وتخصيص طبقات البيانات المخصص�
 msgid "Select a property editor"
 msgstr "حدد محرر خاصية"
 
+msgid "Paint properties."
+msgstr "خصائص الطلاء."
+
 msgid "Create tiles"
 msgstr "إنشاء بلاطات"
 
@@ -10544,8 +10503,8 @@ msgstr ""
 msgid "Select tiles."
 msgstr "حدد البلاط."
 
-msgid "Paint properties."
-msgstr "خصائص الطلاء."
+msgid "Paint"
+msgstr "طلاء"
 
 msgid ""
 "No tiles selected.\n"
@@ -10650,6 +10609,22 @@ msgstr "خصائص جميع المشاهد:"
 
 msgid "Tile properties:"
 msgstr "خصائص البلاطة:"
+
+msgctxt "Tool"
+msgid "Line"
+msgstr "خط"
+
+msgid "Rect"
+msgstr "مستطيل"
+
+msgid "Bucket"
+msgstr "سطل"
+
+msgid "Eraser"
+msgstr "مسّاحة"
+
+msgid "Picker"
+msgstr "ملقاط"
 
 msgid "Error"
 msgstr "خطأ"
@@ -12657,9 +12632,6 @@ msgid ""
 "of its nodes."
 msgstr "لا يمكن تنسيخ المشهد '%s' لأن المشهد الحالي مُضَمّن في واحد من عُقده."
 
-msgid "Instantiate Scene(s)"
-msgstr "تنسيخ المشهد(المشاهد)"
-
 msgid "Replace with Branch Scene"
 msgstr "استبدال بمشهد فرعي"
 
@@ -13901,11 +13873,11 @@ msgstr "تصدير الأيقونات"
 msgid "Exporting for iOS"
 msgstr "التصدير لنظام iOS"
 
-msgid "Export template not found."
-msgstr "لم يتم العثور على قالب التصدير."
-
 msgid "Prepare Templates"
 msgstr "إعداد القوالب"
+
+msgid "Export template not found."
+msgstr "لم يتم العثور على قالب التصدير."
 
 msgid "Code signing failed, see editor log for details."
 msgstr "فشل توقيع الرمز، راجع سجل المحرر للحصول على التفاصيل."
@@ -14126,6 +14098,9 @@ msgstr "تم تمكين الوصول إلى التقويم، ولكن لم يت�
 msgid "Photo library access is enabled, but usage description is not specified."
 msgstr "تم تمكين الوصول إلى مكتبة الصور، ولكن لم يتم تحديد وصف الاستخدام."
 
+msgid "Notarization"
+msgstr "توطين/تصديق"
+
 msgid ""
 "rcodesign path is not set. Configure rcodesign path in the Editor Settings "
 "(Export > macOS > rcodesign)."
@@ -14149,9 +14124,6 @@ msgid ""
 "You can check progress manually by opening a Terminal and running the "
 "following command:"
 msgstr "يمكنك متابعت حالة التقدم يدويا عن طريق الترمنال بستخدام الأمر التالي:"
-
-msgid "Notarization"
-msgstr "توطين/تصديق"
 
 msgid ""
 "Run the following command to staple the notarization ticket to the exported "
@@ -15260,6 +15232,9 @@ msgstr "التعبير المستمر المتوقع."
 msgid "Expected ',' or ')' after argument."
 msgstr "من المتوقع '،' أو ')' بعد المعامل."
 
+msgid "Constants cannot be modified."
+msgstr "لا يمكن تعديل الثوابت."
+
 msgid ""
 "Sampler argument %d of function '%s' called more than once using both built-"
 "ins and uniform textures, this is not supported (use either one or the other)."
@@ -15347,9 +15322,6 @@ msgstr ""
 
 msgid "Can't use function as identifier: '%s'."
 msgstr "لا يمكن استخدام دلة كمعرف: '%s'."
-
-msgid "Constants cannot be modified."
-msgstr "لا يمكن تعديل الثوابت."
 
 msgid "Only integer expressions are allowed for indexing."
 msgstr "الافراز يسمح فقط بتعابير الاعداد الصحيحة."

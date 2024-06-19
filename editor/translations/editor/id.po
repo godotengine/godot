@@ -53,18 +53,19 @@
 # GID <ghavind12345@gmail.com>, 2023.
 # Luqman Firmansyah <luqm4n.firm4n@gmail.com>, 2023.
 # Bayu Satiyo <itsyuukunz@gmail.com>, 2023.
-# Avirur Rahman <avirahmandev@gmail.com>, 2023.
+# Avirur Rahman <avirahmandev@gmail.com>, 2023, 2024.
 # Nazan <121859424+nazhard@users.noreply.github.com>, 2023.
 # ekaknl22 <2200018407@webmail.uad.ac.id>, 2023.
 # Stephen Gunawan Susilo <gunawanstephen@yahoo.com>, 2024.
 # the2cguy <the2cguy@proton.me>, 2024.
+# RYP <rizkysaputrapakpahan@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-04-30 14:46+0000\n"
-"Last-Translator: the2cguy <the2cguy@proton.me>\n"
+"PO-Revision-Date: 2024-05-18 06:01+0000\n"
+"Last-Translator: RYP <rizkysaputrapakpahan@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -72,7 +73,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.5.3-dev\n"
+"X-Generator: Weblate 5.6-dev\n"
 
 msgid "Main Thread"
 msgstr "Utas Utama"
@@ -490,7 +491,7 @@ msgid "Cannot Remove Action"
 msgstr "Tidak Dapat Menghapus Tindakan"
 
 msgid "Edit Event"
-msgstr "Edit Event"
+msgstr "Sunting Acara"
 
 msgid "Remove Event"
 msgstr "Menghapus Event"
@@ -620,6 +621,33 @@ msgstr ""
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr ""
 "Tidak dapat mengubah mode loop pada animasi yang disematkan di adegan lain."
+
+msgid "Property Track..."
+msgstr "Trek Properti..."
+
+msgid "3D Position Track..."
+msgstr "Trek Posisi 3D..."
+
+msgid "3D Rotation Track..."
+msgstr "Trek Rotasi 3D..."
+
+msgid "3D Scale Track..."
+msgstr "Trek Skala 3D..."
+
+msgid "Blend Shape Track..."
+msgstr "Trek Paduan Bentuk..."
+
+msgid "Call Method Track..."
+msgstr "Trek Pemanggil Metode..."
+
+msgid "Bezier Curve Track..."
+msgstr "Trek Lengkungan Bezier..."
+
+msgid "Audio Playback Track..."
+msgstr "Trek Pemutar Suara..."
+
+msgid "Animation Playback Track..."
+msgstr "Trek Pemutar Animasi..."
 
 msgid "Animation length (frames)"
 msgstr "Panjang Animasi (frame)"
@@ -752,6 +780,9 @@ msgstr "Interpolasi perulangan clamp"
 
 msgid "Wrap Loop Interp"
 msgstr "Interpolasi perulangan warp"
+
+msgid "Insert Key..."
+msgstr "Masukkan Kunci..."
 
 msgid "Duplicate Key(s)"
 msgstr "Duplikat Key"
@@ -908,6 +939,9 @@ msgstr "Tempel Trek-trek"
 msgid "Animation Scale Keys"
 msgstr "Kunci Skala Animasi"
 
+msgid "Animation Set End Offset"
+msgstr "Tetapkan Offset Akhir Animasi"
+
 msgid "Make Easing Keys"
 msgstr "Buat Kunci Pelonggaran"
 
@@ -999,6 +1033,18 @@ msgstr "Sunting"
 
 msgid "Animation properties."
 msgstr "Properti animasi."
+
+msgid "Copy Tracks..."
+msgstr "Salin Trek-trek..."
+
+msgid "Scale Selection..."
+msgstr "Seleksi Skala..."
+
+msgid "Scale From Cursor..."
+msgstr "Skala dari Kursor..."
+
+msgid "Make Easing Selection..."
+msgstr "Lakukan Seleksi Easing..."
 
 msgid "Delete Selection"
 msgstr "Hapus Pilihan"
@@ -1425,6 +1471,9 @@ msgstr "Simpan Cabang sebagai Skena"
 msgid "Copy Node Path"
 msgstr "Salin Lokasi Node"
 
+msgid "Instance:"
+msgstr "Instansi:"
+
 msgid ""
 "This node has been instantiated from a PackedScene file:\n"
 "%s\n"
@@ -1832,6 +1881,9 @@ msgstr "Klik dua kali untuk membuka di browser."
 
 msgid "Thanks from the Godot community!"
 msgstr "Terimakasih dari komunitas Godot!"
+
+msgid "(unknown)"
+msgstr "(tidak diketahui)"
 
 msgid ""
 "Git commit date: %s\n"
@@ -2484,6 +2536,12 @@ msgstr "Impor Profil"
 msgid "Manage Editor Feature Profiles"
 msgstr "Kelola Editor Profil Fitur"
 
+msgid "Restart"
+msgstr "Mulai Ulang"
+
+msgid "Save & Restart"
+msgstr "Simpan & Mulai Ulang"
+
 msgid "ScanSources"
 msgstr "Sumber Pemindaian"
 
@@ -2689,6 +2747,9 @@ msgstr ""
 
 msgid "Editor"
 msgstr "Editor"
+
+msgid "Click to copy."
+msgstr "Klik untuk menyalin."
 
 msgid "No description available."
 msgstr "Tidak ada deskripsi yang tersedia."
@@ -3237,6 +3298,13 @@ msgstr ""
 msgid "Scene '%s' has broken dependencies:"
 msgstr "Adegan '%s' memiliki dependensi yang rusak:"
 
+msgid ""
+"Multi-window support is not available because the current platform doesn't "
+"support multiple windows."
+msgstr ""
+"Dukungan multi-jendela tidak tersedia karena platform saat ini tidak "
+"mendukung banyak jendela."
+
 msgid "Clear Recent Scenes"
 msgstr "Bersihkan Adegan baru-baru ini"
 
@@ -3343,6 +3411,18 @@ msgstr "Mobile"
 msgid "Compatibility"
 msgstr "Kecocokan"
 
+msgid "Lock Selected Node(s)"
+msgstr "Mengunci Node yang Dipilih"
+
+msgid "Unlock Selected Node(s)"
+msgstr "Buka Kunci Node Terpilih"
+
+msgid "Group Selected Node(s)"
+msgstr "Kelompokkan Node yang Dipilih"
+
+msgid "Ungroup Selected Node(s)"
+msgstr "Pisahkan Node yang Dipilih dari Grup"
+
 msgid "Pan View"
 msgstr "Geser Tampilan"
 
@@ -3445,9 +3525,6 @@ msgstr "Tata Letak Editor"
 msgid "Take Screenshot"
 msgstr "Ambil Tangkapan Layar"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Tangkapan layar disimpan dalam folder Data/Pengaturan Editor."
-
 msgid "Toggle Fullscreen"
 msgstr "Mode Layar Penuh"
 
@@ -3511,9 +3588,6 @@ msgstr ""
 "dipilih.\n"
 "- Di platform web, metode Compatibility rendering akan selalu digunakan."
 
-msgid "Save & Restart"
-msgstr "Simpan & Mulai Ulang"
-
 msgid "Update Continuously"
 msgstr "Perbarui Terus-menerus"
 
@@ -3568,12 +3642,6 @@ msgid ""
 msgstr ""
 "Berkas berikut lebih baru dalam disk.\n"
 "Aksi apa yang ingin diambil?"
-
-msgid "Reload"
-msgstr "Muat Ulang"
-
-msgid "Resave"
-msgstr "Simpan Ulang"
 
 msgid "Version Control Settings..."
 msgstr "Pengaturan Kontrol Versi..."
@@ -4077,6 +4145,12 @@ msgstr ""
 "Tautan unduh tidak ditemukan untuk versi ini. Unduhan langsung hanya tersedia "
 "untuk versi rilis resmi."
 
+msgid "Connecting..."
+msgstr "Menyambungkan..."
+
+msgid "Requesting..."
+msgstr "Melakukan permintaan..."
+
 msgid "Can't open the export templates file."
 msgstr "Tidak dapat membuka file template ekspor."
 
@@ -4545,6 +4619,9 @@ msgstr "Hapus dari Favorit"
 msgid "Reimport"
 msgstr "Impor ulang"
 
+msgid "Open in File Manager"
+msgstr "Tampilkan di Pengelola Berkas"
+
 msgid "New Folder..."
 msgstr "Buat Direktori..."
 
@@ -4589,9 +4666,6 @@ msgstr "Gandakan..."
 
 msgid "Rename..."
 msgstr "Ubah Nama..."
-
-msgid "Open in File Manager"
-msgstr "Tampilkan di Pengelola Berkas"
 
 msgid "Open in External Program"
 msgstr "Buka di Program Eksternal"
@@ -4968,9 +5042,6 @@ msgstr ""
 
 msgid "Open in Editor"
 msgstr "Buka dalam Editor"
-
-msgid "Instance:"
-msgstr "Instansi:"
 
 msgid "\"%s\" is not a known filter."
 msgstr "\"%s\" bukanlah filter yang dikenal."
@@ -6234,12 +6305,6 @@ msgstr "Mengunduh..."
 msgid "Resolving..."
 msgstr "Menyelesaikan..."
 
-msgid "Connecting..."
-msgstr "Menyambungkan..."
-
-msgid "Requesting..."
-msgstr "Melakukan permintaan..."
-
 msgid "Error making request"
 msgstr "Kesalahan saat melakukan permintaan"
 
@@ -6533,6 +6598,11 @@ msgstr "Tampilan Tengah"
 msgid "Select Mode"
 msgstr "Mode Seleksi"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+Klik Kanan: Tampilkan semua daftar node di posisi yang diklik, termasuk "
+"yang dikunci."
+
 msgid "RMB: Add node at position clicked."
 msgstr "Klik Kanan: Tambah node di posisi yang diklik."
 
@@ -6617,20 +6687,8 @@ msgstr "Atur Snap..."
 msgid "Lock selected node, preventing selection and movement."
 msgstr "Mengunci simpul yang dipilih, mencegah pemilihan dan pergerakan."
 
-msgid "Lock Selected Node(s)"
-msgstr "Mengunci Node yang Dipilih"
-
 msgid "Unlock selected node, allowing selection and movement."
 msgstr "Buka kunci node yang dipilih, memungkinkan pemilihan dan pergerakan."
-
-msgid "Unlock Selected Node(s)"
-msgstr "Buka Kunci Node Terpilih"
-
-msgid "Group Selected Node(s)"
-msgstr "Kelompokkan Node yang Dipilih"
-
-msgid "Ungroup Selected Node(s)"
-msgstr "Pisahkan Node yang Dipilih dari Grup"
 
 msgid "Skeleton Options"
 msgstr "Opsi Pertulangan"
@@ -6733,14 +6791,6 @@ msgstr "Bagi langkah kisi demi 2"
 
 msgid "Adding %s..."
 msgstr "Menambahkan %s..."
-
-msgid "Hold Shift when dropping to add as sibling of selected node."
-msgstr ""
-"Tahan Shift saat menjatuhkan untuk menambahkan sebagai saudara dari node yang "
-"dipilih."
-
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "Tidak dapat menginstansiasi beberapa node tanpa root."
 
 msgid "Create Node"
 msgstr "Buat Node"
@@ -6861,9 +6911,6 @@ msgstr ""
 msgid "Some parents of the selected nodes do not support the Expand flag."
 msgstr "Beberapa induk dari node yang dipilih tidak mendukung bendera Perluas."
 
-msgid "Align with Expand"
-msgstr "Sejajarkan dengan Perluas"
-
 msgid "Change Anchors, Offsets, Grow Direction"
 msgstr "Ubah Jangkar, Offset, Arah Tumbuh"
 
@@ -6903,9 +6950,6 @@ msgstr "Penjajaran horizontal"
 
 msgid "Vertical alignment"
 msgstr "Penjajaran vertikal"
-
-msgid "Restart"
-msgstr "Mulai Ulang"
 
 msgid "Load Emission Mask"
 msgstr "Muat Masker Emisi"
@@ -7179,9 +7223,6 @@ msgstr "Ubah Panjang Bentuk Sinar Pemisahan"
 
 msgid "Change Decal Size"
 msgstr "Perubahan Ukuran Decal"
-
-msgid "Change Particles AABB"
-msgstr "Ubah Partikel AABB"
 
 msgid "Change Radius"
 msgstr "Ubah Radius"
@@ -7985,11 +8026,6 @@ msgstr ""
 "WorldEnvironment.\n"
 "Pratinjau dinonaktifkan."
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+Klik Kanan: Tampilkan semua daftar node di posisi yang diklik, termasuk "
-"yang dikunci."
-
 msgid "Use Local Space"
 msgstr "Gunakan Ruang Lokal"
 
@@ -8258,14 +8294,14 @@ msgstr "Hapus Kontrol-Luar dari Kurva"
 msgid "Remove In-Control from Curve"
 msgstr "Hapus Kontrol-Dalam dari Kurva"
 
-msgid "Add Point to Curve"
-msgstr "Tambah Titik ke Kurva"
-
 msgid "Split Curve"
 msgstr "Pisahkan Kurva"
 
 msgid "Move Point in Curve"
 msgstr "Geser Titik dalam Kurva"
+
+msgid "Add Point to Curve"
+msgstr "Tambah Titik ke Kurva"
 
 msgid "Move In-Control in Curve"
 msgstr "Geser Kontrol-Dalam dalam Kurva"
@@ -8510,9 +8546,6 @@ msgstr "Tempel Resource"
 msgid "Load Resource"
 msgstr "Muat Resource"
 
-msgid "Clear Recent Files"
-msgstr "Bersihkan Berkas Akhir-akhir ini"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "Gagal membuka '%s'. Berkas telah dipindah atau dihapus."
 
@@ -8549,6 +8582,12 @@ msgstr "Gagal menyimpan"
 msgid "Save Theme As..."
 msgstr "Simpan Tema sebagai..."
 
+msgid "Online Docs"
+msgstr "Online Dokumentasi"
+
+msgid "Open Godot online documentation."
+msgstr "Buka dokumentasi daring Godot."
+
 msgid "Unsaved file."
 msgstr "File tidak disimpan."
 
@@ -8581,9 +8620,6 @@ msgstr "File"
 
 msgid "Open..."
 msgstr "Buka..."
-
-msgid "Reopen Closed Script"
-msgstr "Buka kembali Skrip yang Ditutup"
 
 msgid "Save All"
 msgstr "Simpan Semua"
@@ -8624,12 +8660,6 @@ msgstr "Menjalankan"
 msgid "Search"
 msgstr "Cari"
 
-msgid "Online Docs"
-msgstr "Online Dokumentasi"
-
-msgid "Open Godot online documentation."
-msgstr "Buka dokumentasi daring Godot."
-
 msgid "Search the reference documentation."
 msgstr "Cari dokumentasi referensi."
 
@@ -8645,15 +8675,20 @@ msgstr "Buat editor skrip mengambang."
 msgid "Discard"
 msgstr "Abaikan"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?:"
-msgstr ""
-"Berkas berikut lebih baru dalam diska.\n"
-"Aksi apa yang ingin diambil?:"
+msgid "Reopen Closed Script"
+msgstr "Buka kembali Skrip yang Ditutup"
 
 msgid "Clear Recent Scripts"
 msgstr "Bersihkan Skrip baru-baru ini"
+
+msgid "Uppercase"
+msgstr "Huruf Besar"
+
+msgid "Lowercase"
+msgstr "Huruf Kecil"
+
+msgid "Capitalize"
+msgstr "Kapitalisasi"
 
 msgid "Standard"
 msgstr "Standar"
@@ -8702,15 +8737,6 @@ msgstr "Baris"
 
 msgid "Folding"
 msgstr "Melipat"
-
-msgid "Uppercase"
-msgstr "Huruf Besar"
-
-msgid "Lowercase"
-msgstr "Huruf Kecil"
-
-msgid "Capitalize"
-msgstr "Kapitalisasi"
 
 msgid "Convert Case"
 msgstr "Konversikan Pengkapitalan"
@@ -9129,6 +9155,12 @@ msgid ""
 msgstr ""
 "Shader ini telah dimodifikasi pada penyimpanan.\n"
 "Tindakan apa yang harus diambil?"
+
+msgid "Reload"
+msgstr "Muat Ulang"
+
+msgid "Resave"
+msgstr "Simpan Ulang"
 
 msgid "Memory: %s"
 msgstr "Memori: %s"
@@ -9628,12 +9660,6 @@ msgstr "Ubah seleksi"
 msgid "Move tiles"
 msgstr "Geser Petak"
 
-msgid "Bucket"
-msgstr "Keranjang"
-
-msgid "Eraser"
-msgstr "Penghapus"
-
 msgid "Tiles"
 msgstr "Petak"
 
@@ -9741,6 +9767,12 @@ msgstr ""
 
 msgid "Add new patterns in the TileMap editing mode."
 msgstr "Tambah pola baru di Mode Sunting TileMap."
+
+msgid "Bucket"
+msgstr "Keranjang"
+
+msgid "Eraser"
+msgstr "Penghapus"
 
 msgid "Error"
 msgstr "Error"
@@ -11269,15 +11301,15 @@ msgstr "Jenis objek tidak diketahui."
 msgid "Invalid bundle identifier:"
 msgstr "Identifier bundel tidak valid:"
 
+msgid "Notarization"
+msgstr "Notarisasi"
+
 msgid ""
 "You can check progress manually by opening a Terminal and running the "
 "following command:"
 msgstr ""
 "Anda dapat memeriksa kemajuan secara manual dengan membuka Terminal dan "
 "menjalankan perintah berikut:"
-
-msgid "Notarization"
-msgstr "Notarisasi"
 
 msgid ""
 "Run the following command to staple the notarization ticket to the exported "

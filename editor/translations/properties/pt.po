@@ -42,13 +42,14 @@
 # Bruno Vieira <bruno.leo516@hotmail.com>, 2024.
 # Leonardo dos Anjos Boslooper <leoprincipalacc@gmail.com>, 2024.
 # Jeyson Hilario da SIlva <jeysonhilario@gmail.com>, 2024.
+# Marcia Perez <cristianemarcia50@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-04-08 23:01+0000\n"
-"Last-Translator: Jeyson Hilario da SIlva <jeysonhilario@gmail.com>\n"
+"PO-Revision-Date: 2024-05-28 16:22+0000\n"
+"Last-Translator: Marcia Perez <cristianemarcia50@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pt/>\n"
 "Language: pt\n"
@@ -56,7 +57,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.5-dev\n"
+"X-Generator: Weblate 5.6-dev\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -90,6 +91,9 @@ msgstr "Desativar stderr"
 
 msgid "Print Header"
 msgstr "Cabeçalho de impressão"
+
+msgid "Enable Alt Space Menu"
+msgstr "Ativar Alt Space Menu"
 
 msgid "Use Hidden Project Data Directory"
 msgstr "Use o diretório de dados ocultos do projeto"
@@ -301,6 +305,9 @@ msgstr "Seleção de Oclusão"
 msgid "BVH Build Quality"
 msgstr "Qualidade de Build do BVH"
 
+msgid "Jitter Projection"
+msgstr "Projeção de Tremor"
+
 msgid "Internationalization"
 msgstr "Internacionalização"
 
@@ -309,6 +316,9 @@ msgstr "Forçar Direção de Layout Direita para Esquerda"
 
 msgid "Root Node Layout Direction"
 msgstr "Direção da Estrutura do Nó Raiz"
+
+msgid "Root Node Auto Translate"
+msgstr "Tradução automática do nó raiz"
 
 msgid "GUI"
 msgstr "Interface Gráfica"
@@ -385,6 +395,12 @@ msgstr "Máximo de Descritores de Recurso por Quadro"
 msgid "Max Sampler Descriptors per Frame"
 msgstr "Máximo de descritores de amostragem por quadro"
 
+msgid "Max Misc Descriptors per Frame"
+msgstr "Máximo de descritores diversos por Quadro"
+
+msgid "Agility SDK Version"
+msgstr "Versão do SDK de agilidade"
+
 msgid "Textures"
 msgstr "Texturas"
 
@@ -405,6 +421,9 @@ msgstr "Usar Ambiente"
 
 msgid "Low Processor Usage Mode"
 msgstr "Modo de Baixa Utilização do Processador"
+
+msgid "Low Processor Usage Mode Sleep (µsec)"
+msgstr "Modo de baixo uso do processador quando em suspensão por (µseg)"
 
 msgid "Delta Smoothing"
 msgstr "Suavização de Deltas"
@@ -523,8 +542,14 @@ msgstr "Caneta Invertida"
 msgid "Relative"
 msgstr "Relativo"
 
+msgid "Screen Relative"
+msgstr "Relativo à tela"
+
 msgid "Velocity"
 msgstr "Velocidade"
+
+msgid "Screen Velocity"
+msgstr "Velocidade da tela"
 
 msgid "Axis"
 msgstr "Eixo"
@@ -622,6 +647,9 @@ msgstr "Deslocamento"
 msgid "Cell Size"
 msgstr "Tamanho da célula"
 
+msgid "Cell Shape"
+msgstr "Forma da Célula"
+
 msgid "Jumping Enabled"
 msgstr "Pulo Ativado"
 
@@ -648,6 +676,9 @@ msgstr "Limites"
 
 msgid "Message Queue"
 msgstr "Fila de mensagens"
+
+msgid "Max Steps"
+msgstr "Máximo de passos"
 
 msgid "Network"
 msgstr "Rede"
@@ -841,6 +872,9 @@ msgstr "Linguagem do Editor"
 msgid "Localize Settings"
 msgstr "Configuração de tradução"
 
+msgid "UI Layout Direction"
+msgstr "Direção do layout da IU"
+
 msgid "Display Scale"
 msgstr "Escala do Editor"
 
@@ -853,11 +887,20 @@ msgstr "Ecrã do Editor"
 msgid "Project Manager Screen"
 msgstr "Ecrã do Gestor de Projetos"
 
+msgid "Connection"
+msgstr "Conexão"
+
+msgid "Engine Version Update Mode"
+msgstr "Modo de Atualização da Versão do Motor"
+
 msgid "Enable Pseudolocalization"
 msgstr "Ativar Pseudo Localização"
 
 msgid "Use Embedded Menu"
 msgstr "Usar Menu Integrado"
+
+msgid "Use Native File Dialogs"
+msgstr "Use caixas de diálogo de arquivos nativos"
 
 msgid "Expand to Title"
 msgstr "Expandir para o Título"
@@ -922,6 +965,9 @@ msgstr "Mostrar Erros Internos em notificações Toast"
 msgid "Show Update Spinner"
 msgstr "Mostra Ícone de Atualização"
 
+msgid "Unfocused Low Processor Mode Sleep (µsec)"
+msgstr "Modo de Baixo Consumo do Processador ao ficar Fora de Foco por (µsec)"
+
 msgid "V-Sync Mode"
 msgstr "Modo V-Sync"
 
@@ -936,6 +982,15 @@ msgstr "Máximo de Itens em Dicionários de Arrays Por Página"
 
 msgid "Show Low Level OpenType Features"
 msgstr "Mostrar atributos de baixo nível OpenType"
+
+msgid "Float Drag Speed"
+msgstr "Velocidade de arrasto em Visão Livre (Float)"
+
+msgid "Nested Color Mode"
+msgstr "Modo de cores aninhadas"
+
+msgid "Delimitate All Container and Resources"
+msgstr "Delimite todos os contêineres e recursos"
 
 msgid "Default Property Name Style"
 msgstr "Estilo de Nome da Propriedade Predefinida"
@@ -966,6 +1021,9 @@ msgstr "Modo Seletor de Cores Padrão"
 
 msgid "Default Color Picker Shape"
 msgstr "Formato Padrão do Seletor de Cores"
+
+msgid "Follow System Theme"
+msgstr "Siga o tema do sistema"
 
 msgid "Preset"
 msgstr "Predefinições"
@@ -1095,6 +1153,9 @@ msgstr "Porta RPC"
 
 msgid "RPC Server Uptime"
 msgstr "Servidor RPC Uptime"
+
+msgid "FBX"
+msgstr "FBX"
 
 msgid "FBX2glTF Path"
 msgstr "Caminho para FBX2glTF"
@@ -1299,9 +1360,6 @@ msgstr "Cores das Bugigangas"
 
 msgid "Joint"
 msgstr "Conjunto"
-
-msgid "Shape"
-msgstr "Forma"
 
 msgid "AABB"
 msgstr "AABB"
@@ -1741,11 +1799,11 @@ msgstr "Aplicar Transformações"
 msgid "Normalize Position Tracks"
 msgstr "Normalizar faixas de posição"
 
-msgid "Overwrite Axis"
-msgstr "Sobrescrever Eixos"
-
 msgid "Reset All Bone Poses After Import"
 msgstr "Redefinir Todas as Poses dos Ossos Após a Importação"
+
+msgid "Overwrite Axis"
+msgstr "Sobrescrever Eixos"
 
 msgid "Fix Silhouette"
 msgstr "Consertar Silhueta"
@@ -2581,6 +2639,18 @@ msgstr "Diretório da Solução"
 msgid "Assembly Reload Attempts"
 msgstr "Tentativas de Recarregamento de Montagem"
 
+msgid "Time"
+msgstr "Tempo"
+
+msgid "Agents"
+msgstr "Agentes"
+
+msgid "Polygons"
+msgstr "Polígonos"
+
+msgid "Edges"
+msgstr "Arestas"
+
 msgid "Operation"
 msgstr "Operação"
 
@@ -2679,9 +2749,6 @@ msgstr "Caminho Unido"
 
 msgid "CSG"
 msgstr "CSG"
-
-msgid "FBX"
-msgstr "FBX"
 
 msgid "Allow Geometry Helper Nodes"
 msgstr "Permitir Nodes Auxiliares de Geometria"
@@ -3910,9 +3977,6 @@ msgstr "Ajustes"
 msgid "Emitting"
 msgstr "Emitindo"
 
-msgid "Time"
-msgstr "Tempo"
-
 msgid "Lifetime"
 msgstr "Tempo de Duração"
 
@@ -3948,6 +4012,9 @@ msgstr "Ordem de Desenho"
 
 msgid "Emission Shape"
 msgstr "Forma de Emissão"
+
+msgid "Shape"
+msgstr "Forma"
 
 msgid "Sphere Radius"
 msgstr "Raio da Esfera"
@@ -4287,9 +4354,6 @@ msgstr "Velocidade Angular Constante"
 
 msgid "UV"
 msgstr "UV"
-
-msgid "Polygons"
-msgstr "Polígonos"
 
 msgid "Remote Path"
 msgstr "Remover Caminho"
@@ -5485,9 +5549,6 @@ msgstr "Modo Geometria Original"
 msgid "Cells"
 msgstr "Células"
 
-msgid "Agents"
-msgstr "Agentes"
-
 msgid "A"
 msgstr "A"
 
@@ -5917,9 +5978,6 @@ msgstr "Máx. Subida"
 msgid "Max Slope"
 msgstr "Máx. Inclinação"
 
-msgid "Edges"
-msgstr "Arestas"
-
 msgid "Sample Distance"
 msgstr "Distância de Amostra"
 
@@ -6012,9 +6070,6 @@ msgstr "Usar Todas as Superfícies"
 
 msgid "Surface Index"
 msgstr "Índice de Superfície"
-
-msgid "Panel"
-msgstr "Painel"
 
 msgid "Font Hover Color"
 msgstr "Cor da Fonte Hover"
@@ -6216,9 +6271,6 @@ msgstr "Borda da Barra de Rolagem"
 
 msgid "Scroll Speed"
 msgstr "Velocidade de Rolagem"
-
-msgid "Line Separation"
-msgstr "Separação de Linha"
 
 msgid "Center Slider Grabbers"
 msgstr "Centralizar Manipuladores de Deslizamento"

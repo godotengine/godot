@@ -238,7 +238,7 @@ TextureLayeredEditor::TextureLayeredEditor() {
 	info = memnew(Label);
 	info->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 	info->set_v_grow_direction(GROW_DIRECTION_BEGIN);
-	info->add_theme_color_override("font_color", Color(1, 1, 1, 1));
+	info->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1, 1));
 	info->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5));
 	info->add_theme_constant_override("shadow_outline_size", 1);
 	info->add_theme_constant_override("shadow_offset_x", 2);
