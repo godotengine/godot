@@ -31,7 +31,9 @@
 #ifndef TEST_NODE_H
 #define TEST_NODE_H
 
+#include "core/object/class_db.h"
 #include "scene/main/node.h"
+#include "scene/resources/packed_scene.h"
 
 #include "tests/test_macros.h"
 
@@ -62,6 +64,12 @@ protected:
 		}
 	}
 
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("set_exported_node", "node"), &TestNode::set_exported_node);
+		ClassDB::bind_method(D_METHOD("get_exported_node"), &TestNode::get_exported_node);
+		ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "exported_node", PROPERTY_HINT_NODE_TYPE, "Node"), "set_exported_node", "get_exported_node");
+	}
+
 private:
 	void push_self() {
 		if (callback_list) {
@@ -75,7 +83,12 @@ public:
 	int process_counter = 0;
 	int physics_process_counter = 0;
 
+	Node *exported_node = nullptr;
+
 	List<Node *> *callback_list = nullptr;
+
+	void set_exported_node(Node *p_node) { exported_node = p_node; }
+	Node *get_exported_node() const { return exported_node; }
 };
 
 TEST_CASE("[SceneTree][Node] Testing node operations with a very simple scene tree") {
@@ -476,6 +489,66 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 	memdelete(node1_1);
 	memdelete(node1);
 	memdelete(node2);
+}
+
+TEST_CASE("[SceneTree][Node]Exported node checks") {
+	TestNode *node = memnew(TestNode);
+	SceneTree::get_singleton()->get_root()->add_child(node);
+
+	Node *child = memnew(Node);
+	child->set_name("Child");
+	node->add_child(child);
+	child->set_owner(node);
+
+	node->set("exported_node", child);
+
+	SUBCASE("Property of duplicated node should point to duplicated child") {
+		GDREGISTER_CLASS(TestNode);
+
+		TestNode *dup = Object::cast_to<TestNode>(node->duplicate());
+		Node *new_exported = Object::cast_to<Node>(dup->get("exported_node"));
+		CHECK(new_exported == dup->get_child(0));
+
+		memdelete(dup);
+	}
+
+	SUBCASE("Saving instance with exported node should not store the unchanged property") {
+		node->set_process_mode(Node::PROCESS_MODE_ALWAYS);
+		Ref<PackedScene> ps;
+		ps.instantiate();
+		ps->pack(node);
+
+		String scene_path = TestUtils::get_temp_path("test_scene.tscn");
+		ps->set_path(scene_path);
+
+		Node *root = memnew(Node);
+
+		Node *sub_child = ps->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
+		root->add_child(sub_child);
+		sub_child->set_owner(root);
+
+		Ref<PackedScene> ps2;
+		ps2.instantiate();
+		ps2->pack(root);
+
+		scene_path = TestUtils::get_temp_path("new_test_scene.tscn");
+		ResourceSaver::save(ps2, scene_path);
+		memdelete(root);
+
+		bool is_wrong = false;
+		Ref<FileAccess> fa = FileAccess::open(scene_path, FileAccess::READ);
+		while (!fa->eof_reached()) {
+			const String line = fa->get_line();
+			if (line.begins_with("exported_node")) {
+				// The property was saved, while it shouldn't.
+				is_wrong = true;
+				break;
+			}
+		}
+		CHECK_FALSE(is_wrong);
+	}
+
+	memdelete(node);
 }
 
 TEST_CASE("[Node] Processing checks") {

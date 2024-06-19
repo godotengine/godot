@@ -78,12 +78,14 @@
 #include "editor/plugins/gizmos/voxel_gi_gizmo_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/scene_tree_dock.h"
+#include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/decal.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/physics_body_3d.h"
+#include "scene/3d/sprite_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/world_environment.h"
 #include "scene/gui/center_container.h"
@@ -737,9 +739,21 @@ void Node3DEditorViewport::_select_clicked(bool p_allow_locked) {
 		return;
 	}
 
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+
+	// Prevent selection of nodes not owned by the edited scene.
+	while (node && node != edited_scene->get_parent()) {
+		Node *node_owner = node->get_owner();
+		if (node_owner == edited_scene || node == edited_scene || (node_owner != nullptr && edited_scene->is_editable_instance(node_owner))) {
+			break;
+		}
+		node = node->get_parent();
+		selected = Object::cast_to<Node3D>(node);
+	}
+
 	if (!p_allow_locked) {
 		// Replace the node by the group if grouped
-		while (node && node != EditorNode::get_singleton()->get_edited_scene()->get_parent()) {
+		while (node && node != edited_scene->get_parent()) {
 			Node3D *selected_tmp = Object::cast_to<Node3D>(node);
 			if (selected_tmp && node->has_meta("_edit_group_")) {
 				selected = selected_tmp;
@@ -1042,25 +1056,34 @@ void Node3DEditorViewport::_select_region() {
 
 		found_nodes.insert(sp);
 
-		Node *item = Object::cast_to<Node>(sp);
-		if (item != edited_scene) {
-			item = edited_scene->get_deepest_editable_node(item);
+		Node *node = Object::cast_to<Node>(sp);
+		if (node != edited_scene) {
+			node = edited_scene->get_deepest_editable_node(node);
+		}
+
+		// Prevent selection of nodes not owned by the edited scene.
+		while (node && node != edited_scene->get_parent()) {
+			Node *node_owner = node->get_owner();
+			if (node_owner == edited_scene || node == edited_scene || (node_owner != nullptr && edited_scene->is_editable_instance(node_owner))) {
+				break;
+			}
+			node = node->get_parent();
 		}
 
 		// Replace the node by the group if grouped
-		if (item->is_class("Node3D")) {
-			Node3D *sel = Object::cast_to<Node3D>(item);
-			while (item && item != EditorNode::get_singleton()->get_edited_scene()->get_parent()) {
-				Node3D *selected_tmp = Object::cast_to<Node3D>(item);
-				if (selected_tmp && item->has_meta("_edit_group_")) {
+		if (node->is_class("Node3D")) {
+			Node3D *sel = Object::cast_to<Node3D>(node);
+			while (node && node != EditorNode::get_singleton()->get_edited_scene()->get_parent()) {
+				Node3D *selected_tmp = Object::cast_to<Node3D>(node);
+				if (selected_tmp && node->has_meta("_edit_group_")) {
 					sel = selected_tmp;
 				}
-				item = item->get_parent();
+				node = node->get_parent();
 			}
-			item = sel;
+			node = sel;
 		}
 
-		if (_is_node_locked(item)) {
+		if (_is_node_locked(node)) {
 			continue;
 		}
 
@@ -1072,7 +1095,7 @@ void Node3DEditorViewport::_select_region() {
 			}
 
 			if (seg->intersect_frustum(camera, frustum)) {
-				selected.push_back(item);
+				selected.push_back(node);
 			}
 		}
 	}
@@ -1529,23 +1552,35 @@ bool Node3DEditorViewport ::_is_node_locked(const Node *p_node) {
 }
 
 void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
-	_find_items_at_pos(b->get_position(), selection_results, spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
+	Vector<_RayResult> potential_selection_results;
+	_find_items_at_pos(b->get_position(), potential_selection_results, spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
 
-	Node *scene = EditorNode::get_singleton()->get_edited_scene();
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
 
-	for (int i = 0; i < selection_results.size(); i++) {
-		Node3D *item = selection_results[i].item;
-		if (item != scene && item->get_owner() != scene && item != scene->get_deepest_editable_node(item)) {
-			//invalid result
-			selection_results.remove_at(i);
-			i--;
+	// Filter to a list of nodes which include either the edited scene or nodes directly owned by the edited scene.
+	// If a node has an invalid owner, recursively check their parents until a valid node is found.
+	for (int i = 0; i < potential_selection_results.size(); i++) {
+		Node3D *node = potential_selection_results[i].item;
+		while (true) {
+			if (node == nullptr || node == edited_scene->get_parent()) {
+				break;
+			} else {
+				Node *node_owner = node->get_owner();
+				if (node == edited_scene || node_owner == edited_scene || (node_owner != nullptr && edited_scene->is_editable_instance(node_owner))) {
+					if (selection_results.has(node)) {
+						selection_results.append(node);
+					}
+					break;
+				}
+			}
+			node = Object::cast_to<Node3D>(node->get_parent());
 		}
 	}
 
 	clicked_wants_append = b->is_shift_pressed();
 
 	if (selection_results.size() == 1) {
-		clicked = selection_results[0].item->get_instance_id();
+		clicked = selection_results[0]->get_instance_id();
 		selection_results.clear();
 
 		if (clicked.is_valid()) {
@@ -1556,7 +1591,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		StringName root_name = root_path.get_name(root_path.get_name_count() - 1);
 
 		for (int i = 0; i < selection_results.size(); i++) {
-			Node3D *spat = selection_results[i].item;
+			Node3D *spat = selection_results[i];
 
 			Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(spat, "Node");
 
@@ -1604,17 +1639,13 @@ void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 
 	if (m.is_valid()) {
-		if (_edit.mode == TRANSFORM_ROTATE) {
-			_edit.mouse_pos = m->get_position(); // rotate should not wrap
-		} else {
-			_edit.mouse_pos += _get_warped_mouse_motion(p_event);
-		}
+		_edit.mouse_pos += _get_warped_mouse_motion(p_event);
 		update_transform(_get_key_modifier(m) == Key::SHIFT);
 	}
 }
 
 void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
-	if (previewing) {
+	if (previewing || get_viewport()->gui_get_drag_data()) {
 		return; //do NONE
 	}
 
@@ -2899,10 +2930,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 			// FPS Counter.
 			bool show_fps = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_FRAME_TIME));
 
-			if (show_fps != fps_label->is_visible()) {
-				cpu_time_label->set_visible(show_fps);
-				gpu_time_label->set_visible(show_fps);
-				fps_label->set_visible(show_fps);
+			if (show_fps != frame_time_panel->is_visible()) {
+				frame_time_panel->set_visible(show_fps);
 				RS::get_singleton()->viewport_set_measure_render_time(viewport->get_viewport_rid(), show_fps);
 				for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
 					// Initialize to 120 FPS, so that the initial estimation until we get enough data is always reasonable.
@@ -2938,14 +2967,14 @@ void Node3DEditorViewport::_notification(int p_what) {
 				// Middle point is at 15 ms.
 				cpu_time_label->set_text(vformat(TTR("CPU Time: %s ms"), rtos(cpu_time).pad_decimals(2)));
 				cpu_time_label->add_theme_color_override(
-						"font_color",
+						SceneStringName(font_color),
 						frame_time_gradient->get_color_at_offset(
 								Math::remap(cpu_time, 0, 30, 0, 1)));
 
 				gpu_time_label->set_text(vformat(TTR("GPU Time: %s ms"), rtos(gpu_time).pad_decimals(2)));
 				// Middle point is at 15 ms.
 				gpu_time_label->add_theme_color_override(
-						"font_color",
+						SceneStringName(font_color),
 						frame_time_gradient->get_color_at_offset(
 								Math::remap(gpu_time, 0, 30, 0, 1)));
 
@@ -2953,7 +2982,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				fps_label->set_text(vformat(TTR("FPS: %d"), fps));
 				// Middle point is at 60 FPS.
 				fps_label->add_theme_color_override(
-						"font_color",
+						SceneStringName(font_color),
 						frame_time_gradient->get_color_at_offset(
 								Math::remap(fps, 110, 10, 0, 1)));
 			}
@@ -2990,6 +3019,10 @@ void Node3DEditorViewport::_notification(int p_what) {
 			update_preview_node = false;
 		} break;
 
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			set_freelook_active(false);
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			surface->connect(SceneStringName(draw), callable_mp(this, &Node3DEditorViewport::_draw));
 			surface->connect(SceneStringName(gui_input), callable_mp(this, &Node3DEditorViewport::_sinput));
@@ -3011,7 +3044,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			Control *gui_base = EditorNode::get_singleton()->get_gui_base();
 
 			view_menu->begin_bulk_theme_override();
-			view_menu->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			view_menu->add_theme_style_override(CoreStringName(normal), gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			view_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			view_menu->add_theme_style_override(SceneStringName(pressed), gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			view_menu->add_theme_style_override("focus", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
@@ -3019,7 +3052,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			view_menu->end_bulk_theme_override();
 
 			preview_camera->begin_bulk_theme_override();
-			preview_camera->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			preview_camera->add_theme_style_override(CoreStringName(normal), gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			preview_camera->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			preview_camera->add_theme_style_override(SceneStringName(pressed), gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			preview_camera->add_theme_style_override("focus", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
@@ -3030,12 +3063,18 @@ void Node3DEditorViewport::_notification(int p_what) {
 			frame_time_gradient->set_color(1, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			frame_time_gradient->set_color(2, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
-			info_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			cpu_time_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			gpu_time_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			fps_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			cinema_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			locked_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			info_label->add_theme_style_override(CoreStringName(normal), gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+
+			frame_time_panel->add_theme_style_override(SceneStringName(panel), gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			// Set a minimum width to prevent the width from changing all the time
+			// when numbers vary rapidly. This minimum width is set based on a
+			// GPU time of 999.99 ms in the current editor language.
+			const float min_width = get_theme_font(SNAME("main"), EditorStringName(EditorFonts))->get_string_size(vformat(TTR("GPU Time: %s ms"), 999.99)).x;
+			frame_time_panel->set_custom_minimum_size(Size2(min_width, 0) * EDSCALE);
+			frame_time_vbox->add_theme_constant_override("separation", Math::round(-1 * EDSCALE));
+
+			cinema_label->add_theme_style_override(CoreStringName(normal), gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			locked_label->add_theme_style_override(CoreStringName(normal), gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
@@ -3107,8 +3146,8 @@ void Node3DEditorViewport::_draw() {
 	RID ci = surface->get_canvas_item();
 
 	if (message_time > 0) {
-		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+		int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 		Point2 msgpos = Point2(5, get_size().y - 20);
 		font->draw_string(ci, msgpos + Point2(1, 1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
 		font->draw_string(ci, msgpos + Point2(-1, -1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
@@ -3186,8 +3225,8 @@ void Node3DEditorViewport::_draw() {
 							*surface,
 							1.0 - logscale_t,
 							get_editor_theme_icon(SNAME("ViewportSpeed")),
-							get_theme_font(SNAME("font"), SNAME("Label")),
-							get_theme_font_size(SNAME("font_size"), SNAME("Label")),
+							get_theme_font(SceneStringName(font), SNAME("Label")),
+							get_theme_font_size(SceneStringName(font_size), SNAME("Label")),
 							vformat("%s m/s", String::num(freelook_speed).pad_decimals(precision)),
 							Color(1.0, 0.95, 0.7));
 				}
@@ -3209,8 +3248,8 @@ void Node3DEditorViewport::_draw() {
 							*surface,
 							logscale_t,
 							get_editor_theme_icon(SNAME("ViewportZoom")),
-							get_theme_font(SNAME("font"), SNAME("Label")),
-							get_theme_font_size(SNAME("font_size"), SNAME("Label")),
+							get_theme_font(SceneStringName(font), SNAME("Label")),
+							get_theme_font_size(SceneStringName(font_size), SNAME("Label")),
 							vformat("%s m", String::num(cursor.distance).pad_decimals(precision)),
 							Color(0.7, 0.95, 1.0));
 				}
@@ -3748,7 +3787,7 @@ void Node3DEditorViewport::_selection_result_pressed(int p_result) {
 		return;
 	}
 
-	clicked = selection_results_menu[p_result].item->get_instance_id();
+	clicked = selection_results_menu[p_result]->get_instance_id();
 
 	if (clicked.is_valid()) {
 		_select_clicked(spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
@@ -4192,25 +4231,35 @@ Node *Node3DEditorViewport::_sanitize_preview_node(Node *p_node) const {
 
 void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) const {
 	bool add_preview = false;
-	for (int i = 0; i < files.size(); i++) {
-		Ref<Resource> res = ResourceLoader::load(files[i]);
+	for (const String &path : files) {
+		Ref<Resource> res = ResourceLoader::load(path);
 		ERR_CONTINUE(res.is_null());
-		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-		Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
-		if (mesh != nullptr || scene != nullptr) {
-			if (mesh != nullptr) {
-				MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
-				mesh_instance->set_mesh(mesh);
-				preview_node->add_child(mesh_instance);
-			} else {
-				if (scene.is_valid()) {
-					Node *instance = scene->instantiate();
-					if (instance) {
-						instance = _sanitize_preview_node(instance);
-						preview_node->add_child(instance);
-					}
-				}
+
+		Ref<PackedScene> scene = res;
+		if (scene.is_valid()) {
+			Node *instance = scene->instantiate();
+			if (instance) {
+				instance = _sanitize_preview_node(instance);
+				preview_node->add_child(instance);
 			}
+			add_preview = true;
+		}
+
+		Ref<Mesh> mesh = res;
+		if (mesh.is_valid()) {
+			MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
+			mesh_instance->set_mesh(mesh);
+			preview_node->add_child(mesh_instance);
+			add_preview = true;
+		}
+
+		Ref<AudioStream> audio = res;
+		if (audio.is_valid()) {
+			Sprite3D *sprite = memnew(Sprite3D);
+			sprite->set_texture(get_editor_theme_icon(SNAME("Gizmo3DSamplePlayer")));
+			sprite->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
+			sprite->set_pixel_size(0.005);
+			preview_node->add_child(sprite);
 			add_preview = true;
 		}
 	}
@@ -4346,12 +4395,12 @@ bool Node3DEditorViewport::_cyclical_dependency_exists(const String &p_target_sc
 	return false;
 }
 
-bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Point2 &p_point) {
-	Ref<Resource> res = ResourceLoader::load(path);
+bool Node3DEditorViewport::_create_instance(Node *p_parent, const String &p_path, const Point2 &p_point) {
+	Ref<Resource> res = ResourceLoader::load(p_path);
 	ERR_FAIL_COND_V(res.is_null(), false);
 
-	Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-	Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
+	Ref<PackedScene> scene = res;
+	Ref<Mesh> mesh = res;
 
 	Node *instantiated_scene = nullptr;
 
@@ -4361,8 +4410,10 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 			mesh_instance->set_mesh(mesh);
 
 			// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
-			String name = path.get_file().get_basename();
-			mesh_instance->set_name(Node::adjust_name_casing(name));
+			const String &node_name = Node::adjust_name_casing(p_path.get_file().get_basename());
+			if (!node_name.is_empty()) {
+				mesh_instance->set_name(node_name);
+			}
 
 			instantiated_scene = mesh_instance;
 		} else {
@@ -4386,25 +4437,25 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 	}
 
 	if (scene != nullptr) {
-		instantiated_scene->set_scene_file_path(ProjectSettings::get_singleton()->localize_path(path));
+		instantiated_scene->set_scene_file_path(ProjectSettings::get_singleton()->localize_path(p_path));
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->add_do_method(parent, "add_child", instantiated_scene, true);
+	undo_redo->add_do_method(p_parent, "add_child", instantiated_scene, true);
 	undo_redo->add_do_method(instantiated_scene, "set_owner", EditorNode::get_singleton()->get_edited_scene());
 	undo_redo->add_do_reference(instantiated_scene);
-	undo_redo->add_undo_method(parent, "remove_child", instantiated_scene);
+	undo_redo->add_undo_method(p_parent, "remove_child", instantiated_scene);
 	undo_redo->add_do_method(editor_selection, "add_node", instantiated_scene);
 
-	String new_name = parent->validate_child_name(instantiated_scene);
+	String new_name = p_parent->validate_child_name(instantiated_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-	undo_redo->add_do_method(ed, "live_debug_instantiate_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent), path, new_name);
-	undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
+	undo_redo->add_do_method(ed, "live_debug_instantiate_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent), p_path, new_name);
+	undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent)) + "/" + new_name));
 
 	Node3D *node3d = Object::cast_to<Node3D>(instantiated_scene);
 	if (node3d) {
 		Transform3D parent_tf;
-		Node3D *parent_node3d = Object::cast_to<Node3D>(parent);
+		Node3D *parent_node3d = Object::cast_to<Node3D>(p_parent);
 		if (parent_node3d) {
 			parent_tf = parent_node3d->get_global_gizmo_transform();
 		}
@@ -4415,6 +4466,46 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 
 		undo_redo->add_do_method(instantiated_scene, "set_transform", new_tf);
 	}
+
+	return true;
+}
+
+bool Node3DEditorViewport::_create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point) {
+	Ref<AudioStream> audio = ResourceLoader::load(p_path);
+	ERR_FAIL_COND_V(audio.is_null(), false);
+
+	AudioStreamPlayer3D *audio_player = memnew(AudioStreamPlayer3D);
+	audio_player->set_stream(audio);
+
+	// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
+	const String &node_name = Node::adjust_name_casing(p_path.get_file().get_basename());
+	if (!node_name.is_empty()) {
+		audio_player->set_name(node_name);
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->add_do_method(p_parent, "add_child", audio_player, true);
+	undo_redo->add_do_method(audio_player, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+	undo_redo->add_do_reference(audio_player);
+	undo_redo->add_undo_method(p_parent, "remove_child", audio_player);
+	undo_redo->add_do_method(editor_selection, "add_node", audio_player);
+
+	const String new_name = p_parent->validate_child_name(audio_player);
+	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
+	undo_redo->add_do_method(ed, "live_debug_create_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent), audio_player->get_class(), new_name);
+	undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent)) + "/" + new_name));
+
+	Transform3D parent_tf;
+	Node3D *parent_node3d = Object::cast_to<Node3D>(p_parent);
+	if (parent_node3d) {
+		parent_tf = parent_node3d->get_global_gizmo_transform();
+	}
+
+	Transform3D new_tf = audio_player->get_transform();
+	new_tf.origin = parent_tf.affine_inverse().xform(preview_node_pos + audio_player->get_position());
+	new_tf.basis = parent_tf.affine_inverse().basis * new_tf.basis;
+
+	undo_redo->add_do_method(audio_player, "set_transform", new_tf);
 
 	return true;
 }
@@ -4453,11 +4544,18 @@ void Node3DEditorViewport::_perform_drop_data() {
 		if (res.is_null()) {
 			continue;
 		}
-		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-		Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
-		if (mesh != nullptr || scene != nullptr) {
-			bool success = _create_instance(target_node, path, drop_pos);
-			if (!success) {
+
+		Ref<PackedScene> scene = res;
+		Ref<Mesh> mesh = res;
+		if (mesh.is_valid() || scene.is_valid()) {
+			if (!_create_instance(target_node, path, drop_pos)) {
+				error_files.push_back(path.get_file());
+			}
+		}
+
+		Ref<AudioStream> audio = res;
+		if (audio.is_valid()) {
+			if (!_create_audio_node(target_node, path, drop_pos)) {
 				error_files.push_back(path.get_file());
 			}
 		}
@@ -4488,12 +4586,14 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 			bool is_other_valid = false;
 			// Check if at least one of the dragged files is a mesh, material, texture or scene.
 			for (int i = 0; i < files.size(); i++) {
-				bool is_scene = ClassDB::is_parent_class(ResourceLoader::get_resource_type(files[i]), "PackedScene");
-				bool is_mesh = ClassDB::is_parent_class(ResourceLoader::get_resource_type(files[i]), "Mesh");
-				bool is_material = ClassDB::is_parent_class(ResourceLoader::get_resource_type(files[i]), "Material");
-				bool is_texture = ClassDB::is_parent_class(ResourceLoader::get_resource_type(files[i]), "Texture");
+				const String &res_type = ResourceLoader::get_resource_type(files[i]);
+				bool is_scene = ClassDB::is_parent_class(res_type, "PackedScene");
+				bool is_mesh = ClassDB::is_parent_class(res_type, "Mesh");
+				bool is_material = ClassDB::is_parent_class(res_type, "Material");
+				bool is_texture = ClassDB::is_parent_class(res_type, "Texture");
+				bool is_audio = ClassDB::is_parent_class(res_type, "AudioStream");
 
-				if (is_mesh || is_scene || is_material || is_texture) {
+				if (is_mesh || is_scene || is_material || is_texture || is_audio) {
 					Ref<Resource> res = ResourceLoader::load(files[i]);
 					if (res.is_null()) {
 						continue;
@@ -4502,6 +4602,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 					Ref<Mesh> mesh = res;
 					Ref<Material> mat = res;
 					Ref<Texture2D> tex = res;
+					Ref<AudioStream> audio = res;
 					if (scn.is_valid()) {
 						Node *instantiated_scene = scn->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
 						if (!instantiated_scene) {
@@ -4537,6 +4638,8 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 						spatial_editor->set_preview_material(new_mat);
 						is_other_valid = true;
 						continue;
+					} else if (!is_other_valid && audio.is_valid()) {
+						is_other_valid = true;
 					} else {
 						continue;
 					}
@@ -5191,8 +5294,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_transform_with_view"), VIEW_ALIGN_TRANSFORM_WITH_VIEW);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_rotation_with_view"), VIEW_ALIGN_ROTATION_WITH_VIEW);
-	view_menu->get_popup()->connect("id_pressed", callable_mp(this, &Node3DEditorViewport::_menu_option));
-	display_submenu->connect("id_pressed", callable_mp(this, &Node3DEditorViewport::_menu_option));
+	view_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditorViewport::_menu_option));
+	display_submenu->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditorViewport::_menu_option));
 	view_menu->set_disable_shortcuts(true);
 
 	// TODO: Re-evaluate with new OpenGL3 renderer, and implement.
@@ -5284,7 +5387,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	zoom_limit_label = memnew(Label);
 	zoom_limit_label->set_text(TTR("To zoom further, change the camera's clipping planes (View -> Settings...)"));
 	zoom_limit_label->set_name("ZoomLimitMessageLabel");
-	zoom_limit_label->add_theme_color_override("font_color", Color(1, 1, 1, 1));
+	zoom_limit_label->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1, 1));
 	zoom_limit_label->hide();
 	bottom_center_vbox->add_child(zoom_limit_label);
 
@@ -5292,7 +5395,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	preview_material_label->set_anchors_and_offsets_preset(LayoutPreset::PRESET_BOTTOM_LEFT);
 	preview_material_label->set_offset(Side::SIDE_TOP, -70 * EDSCALE);
 	preview_material_label->set_text(TTR("Overriding material..."));
-	preview_material_label->add_theme_color_override("font_color", Color(1, 1, 1, 1));
+	preview_material_label->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1, 1));
 	preview_material_label->hide();
 	surface->add_child(preview_material_label);
 
@@ -5301,7 +5404,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	preview_material_label_desc->set_offset(Side::SIDE_TOP, -50 * EDSCALE);
 	Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
 	preview_material_label_desc->set_text(vformat(TTR("Drag and drop to override the material of any geometry node.\nHold %s when dropping to override a specific surface."), find_keycode_name(key)));
-	preview_material_label_desc->add_theme_color_override("font_color", Color(0.8, 0.8, 0.8, 1));
+	preview_material_label_desc->add_theme_color_override(SceneStringName(font_color), Color(0.8, 0.8, 0.8, 1));
 	preview_material_label_desc->add_theme_constant_override("line_spacing", 0);
 	preview_material_label_desc->hide();
 	surface->add_child(preview_material_label_desc);
@@ -5313,10 +5416,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	top_right_vbox = memnew(VBoxContainer);
 	top_right_vbox->set_anchors_and_offsets_preset(PRESET_TOP_RIGHT, PRESET_MODE_MINSIZE, 10.0 * EDSCALE);
 	top_right_vbox->set_h_grow_direction(GROW_DIRECTION_BEGIN);
-	// Make sure frame time labels don't touch the viewport's edge.
-	top_right_vbox->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
-	// Prevent visible spacing between frame time labels.
-	top_right_vbox->add_theme_constant_override("separation", 0);
 
 	const int navigation_control_size = 150;
 
@@ -5348,18 +5447,22 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	rotation_control->set_viewport(this);
 	top_right_vbox->add_child(rotation_control);
 
+	frame_time_panel = memnew(PanelContainer);
+	top_right_vbox->add_child(frame_time_panel);
+	frame_time_panel->hide();
+
+	frame_time_vbox = memnew(VBoxContainer);
+	frame_time_panel->add_child(frame_time_vbox);
+
 	// Individual Labels are used to allow coloring each label with its own color.
 	cpu_time_label = memnew(Label);
-	top_right_vbox->add_child(cpu_time_label);
-	cpu_time_label->hide();
+	frame_time_vbox->add_child(cpu_time_label);
 
 	gpu_time_label = memnew(Label);
-	top_right_vbox->add_child(gpu_time_label);
-	gpu_time_label->hide();
+	frame_time_vbox->add_child(gpu_time_label);
 
 	fps_label = memnew(Label);
-	top_right_vbox->add_child(fps_label);
-	fps_label->hide();
+	frame_time_vbox->add_child(fps_label);
 
 	surface->add_child(top_right_vbox);
 
@@ -5371,7 +5474,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	selection_menu = memnew(PopupMenu);
 	add_child(selection_menu);
 	selection_menu->set_min_size(Size2(100, 0) * EDSCALE);
-	selection_menu->connect("id_pressed", callable_mp(this, &Node3DEditorViewport::_selection_result_pressed));
+	selection_menu->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditorViewport::_selection_result_pressed));
 	selection_menu->connect("popup_hide", callable_mp(this, &Node3DEditorViewport::_selection_menu_hide));
 
 	if (p_index == 0) {
@@ -7699,14 +7802,14 @@ void Node3DEditor::_update_theme() {
 	environ_button->set_icon(get_editor_theme_icon(SNAME("PreviewEnvironment")));
 	sun_environ_settings->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
-	sun_title->add_theme_font_override("font", get_theme_font(SNAME("title_font"), SNAME("Window")));
-	environ_title->add_theme_font_override("font", get_theme_font(SNAME("title_font"), SNAME("Window")));
+	sun_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title_font"), SNAME("Window")));
+	environ_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title_font"), SNAME("Window")));
 
 	sun_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
 	environ_sky_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
 	environ_ground_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
 
-	context_toolbar_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
+	context_toolbar_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
 }
 
 void Node3DEditor::_notification(int p_what) {
@@ -7747,8 +7850,8 @@ void Node3DEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 			_update_gizmos_menu_theme();
-			sun_title->add_theme_font_override("font", get_theme_font(SNAME("title_font"), SNAME("Window")));
-			environ_title->add_theme_font_override("font", get_theme_font(SNAME("title_font"), SNAME("Window")));
+			sun_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title_font"), SNAME("Window")));
+			environ_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title_font"), SNAME("Window")));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -8328,6 +8431,7 @@ Node3DEditor::Node3DEditor() {
 	VBoxContainer *vbc = this;
 
 	custom_camera = nullptr;
+	ERR_FAIL_COND_MSG(singleton != nullptr, "A Node3DEditor singleton already exists.");
 	singleton = this;
 	editor_selection = EditorNode::get_singleton()->get_editor_selection();
 	editor_selection->add_editor_plugin(this);
@@ -8410,7 +8514,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_LOCK_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_LOCK_SELECTED));
 	tool_button[TOOL_LOCK_SELECTED]->set_tooltip_text(TTR("Lock selected node, preventing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	tool_button[TOOL_LOCK_SELECTED]->set_shortcut(ED_SHORTCUT("editor/lock_selected_nodes", TTR("Lock Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | Key::L));
+	tool_button[TOOL_LOCK_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/lock_selected_nodes"));
 
 	tool_button[TOOL_UNLOCK_SELECTED] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_UNLOCK_SELECTED]);
@@ -8418,7 +8522,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_UNLOCK_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNLOCK_SELECTED));
 	tool_button[TOOL_UNLOCK_SELECTED]->set_tooltip_text(TTR("Unlock selected node, allowing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	tool_button[TOOL_UNLOCK_SELECTED]->set_shortcut(ED_SHORTCUT("editor/unlock_selected_nodes", TTR("Unlock Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::L));
+	tool_button[TOOL_UNLOCK_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/unlock_selected_nodes"));
 
 	tool_button[TOOL_GROUP_SELECTED] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_GROUP_SELECTED]);
@@ -8426,7 +8530,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_GROUP_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_GROUP_SELECTED));
 	tool_button[TOOL_GROUP_SELECTED]->set_tooltip_text(TTR("Groups the selected node with its children. This selects the parent when any child node is clicked in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	tool_button[TOOL_GROUP_SELECTED]->set_shortcut(ED_SHORTCUT("editor/group_selected_nodes", TTR("Group Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | Key::G));
+	tool_button[TOOL_GROUP_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/group_selected_nodes"));
 
 	tool_button[TOOL_UNGROUP_SELECTED] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_UNGROUP_SELECTED]);
@@ -8434,7 +8538,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_UNGROUP_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNGROUP_SELECTED));
 	tool_button[TOOL_UNGROUP_SELECTED]->set_tooltip_text(TTR("Ungroups the selected node from its children. Child nodes will be individual items in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	tool_button[TOOL_UNGROUP_SELECTED]->set_shortcut(ED_SHORTCUT("editor/ungroup_selected_nodes", TTR("Ungroup Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::G));
+	tool_button[TOOL_UNGROUP_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/ungroup_selected_nodes"));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -8537,7 +8641,7 @@ Node3DEditor::Node3DEditor() {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/configure_snap", TTR("Configure Snap...")), MENU_TRANSFORM_CONFIGURE_SNAP);
 
-	p->connect("id_pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed));
+	p->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed));
 
 	view_menu = memnew(MenuButton);
 	view_menu->set_flat(false);
@@ -8573,7 +8677,7 @@ Node3DEditor::Node3DEditor() {
 	gizmos_menu = memnew(PopupMenu);
 	gizmos_menu->set_hide_on_checkable_item_selection(false);
 	p->add_submenu_node_item(TTR("Gizmos"), gizmos_menu);
-	gizmos_menu->connect("id_pressed", callable_mp(this, &Node3DEditor::_menu_gizmo_toggled));
+	gizmos_menu->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_gizmo_toggled));
 
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_origin", TTR("View Origin")), MENU_VIEW_ORIGIN);
@@ -8585,7 +8689,7 @@ Node3DEditor::Node3DEditor() {
 	p->set_item_checked(p->get_item_index(MENU_VIEW_ORIGIN), true);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_GRID), true);
 
-	p->connect("id_pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed));
+	p->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed));
 
 	/* REST OF MENU */
 
@@ -8616,7 +8720,7 @@ Node3DEditor::Node3DEditor() {
 	snap_dialog = memnew(ConfirmationDialog);
 	snap_dialog->set_title(TTR("Snap Settings"));
 	add_child(snap_dialog);
-	snap_dialog->connect("confirmed", callable_mp(this, &Node3DEditor::_snap_changed));
+	snap_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Node3DEditor::_snap_changed));
 	snap_dialog->get_cancel_button()->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_snap_update));
 
 	VBoxContainer *snap_dialog_vbc = memnew(VBoxContainer);
@@ -8669,7 +8773,7 @@ Node3DEditor::Node3DEditor() {
 	settings_vbc->add_margin_child(TTR("View Z-Far:"), settings_zfar);
 
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; ++i) {
-		settings_dialog->connect("confirmed", callable_mp(viewports[i], &Node3DEditorViewport::_view_settings_confirmed).bind(0.0));
+		settings_dialog->connect(SceneStringName(confirmed), callable_mp(viewports[i], &Node3DEditorViewport::_view_settings_confirmed).bind(0.0));
 	}
 
 	/* XFORM DIALOG */
@@ -8733,7 +8837,7 @@ Node3DEditor::Node3DEditor() {
 	xform_type->add_item(TTR("Post"));
 	xform_vbc->add_child(xform_type);
 
-	xform_dialog->connect("confirmed", callable_mp(this, &Node3DEditor::_xform_dialog_action));
+	xform_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Node3DEditor::_xform_dialog_action));
 
 	selected = nullptr;
 
@@ -8811,7 +8915,7 @@ void fragment() {
 		sun_angle_altitude->set_max(90);
 		sun_angle_altitude->set_min(-90);
 		sun_angle_altitude->set_step(0.1);
-		sun_angle_altitude->connect("value_changed", callable_mp(this, &Node3DEditor::_sun_direction_angle_set).unbind(1));
+		sun_angle_altitude->connect(SceneStringName(value_changed), callable_mp(this, &Node3DEditor::_sun_direction_angle_set).unbind(1));
 		sun_angle_altitude_vbox->add_child(sun_angle_altitude);
 		sun_angle_hbox->add_child(sun_angle_altitude_vbox);
 		VBoxContainer *sun_angle_azimuth_vbox = memnew(VBoxContainer);
@@ -8825,7 +8929,7 @@ void fragment() {
 		sun_angle_azimuth->set_step(0.1);
 		sun_angle_azimuth->set_allow_greater(true);
 		sun_angle_azimuth->set_allow_lesser(true);
-		sun_angle_azimuth->connect("value_changed", callable_mp(this, &Node3DEditor::_sun_direction_angle_set).unbind(1));
+		sun_angle_azimuth->connect(SceneStringName(value_changed), callable_mp(this, &Node3DEditor::_sun_direction_angle_set).unbind(1));
 		sun_angle_azimuth_vbox->add_child(sun_angle_azimuth);
 		sun_angle_hbox->add_child(sun_angle_azimuth_vbox);
 		sun_angle_hbox->add_theme_constant_override("separation", 10);
@@ -8842,11 +8946,11 @@ void fragment() {
 		sun_energy->set_min(0);
 		sun_energy->set_step(0.05);
 		sun_vb->add_margin_child(TTR("Sun Energy"), sun_energy);
-		sun_energy->connect("value_changed", callable_mp(this, &Node3DEditor::_preview_settings_changed).unbind(1));
+		sun_energy->connect(SceneStringName(value_changed), callable_mp(this, &Node3DEditor::_preview_settings_changed).unbind(1));
 
 		sun_max_distance = memnew(EditorSpinSlider);
 		sun_vb->add_margin_child(TTR("Shadow Max Distance"), sun_max_distance);
-		sun_max_distance->connect("value_changed", callable_mp(this, &Node3DEditor::_preview_settings_changed).unbind(1));
+		sun_max_distance->connect(SceneStringName(value_changed), callable_mp(this, &Node3DEditor::_preview_settings_changed).unbind(1));
 		sun_max_distance->set_min(1);
 		sun_max_distance->set_max(4096);
 
@@ -8894,7 +8998,7 @@ void fragment() {
 		environ_energy->set_max(8.0);
 		environ_energy->set_min(0);
 		environ_energy->set_step(0.05);
-		environ_energy->connect("value_changed", callable_mp(this, &Node3DEditor::_preview_settings_changed).unbind(1));
+		environ_energy->connect(SceneStringName(value_changed), callable_mp(this, &Node3DEditor::_preview_settings_changed).unbind(1));
 		environ_vb->add_margin_child(TTR("Sky Energy"), environ_energy);
 		HBoxContainer *fx_vb = memnew(HBoxContainer);
 		fx_vb->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -8957,6 +9061,7 @@ void fragment() {
 	clear(); // Make sure values are initialized. Will call _snap_update() for us.
 }
 Node3DEditor::~Node3DEditor() {
+	singleton = nullptr;
 	memdelete(preview_node);
 	if (preview_sun_dangling && preview_sun) {
 		memdelete(preview_sun);

@@ -2693,7 +2693,7 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 				c.selected = true;
 				selected_item = p_selected;
 				if (!emitted_row) {
-					emit_signal(SNAME("item_selected"));
+					emit_signal(SceneStringName(item_selected));
 					emitted_row = true;
 				}
 			} else if (c.selected) {
@@ -2717,7 +2717,7 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 					if (select_mode == SELECT_MULTI) {
 						emit_signal(SNAME("multi_selected"), p_current, i, true);
 					} else if (select_mode == SELECT_SINGLE) {
-						emit_signal(SNAME("item_selected"));
+						emit_signal(SceneStringName(item_selected));
 					}
 
 				} else if (select_mode == SELECT_MULTI && (selected_item != p_selected || selected_col != i)) {
@@ -5816,13 +5816,13 @@ Tree::Tree() {
 	range_click_timer->connect("timeout", callable_mp(this, &Tree::_range_click_timeout));
 	add_child(range_click_timer, false, INTERNAL_MODE_FRONT);
 
-	h_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
-	v_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
+	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Tree::_scroll_moved));
+	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Tree::_scroll_moved));
 	line_editor->connect("text_submitted", callable_mp(this, &Tree::_line_editor_submit));
 	text_editor->connect(SceneStringName(gui_input), callable_mp(this, &Tree::_text_editor_gui_input));
 	popup_editor->connect("popup_hide", callable_mp(this, &Tree::_text_editor_popup_modal_close));
-	popup_menu->connect("id_pressed", callable_mp(this, &Tree::popup_select));
-	value_editor->connect("value_changed", callable_mp(this, &Tree::value_editor_changed));
+	popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &Tree::popup_select));
+	value_editor->connect(SceneStringName(value_changed), callable_mp(this, &Tree::value_editor_changed));
 
 	set_notify_transform(true);
 

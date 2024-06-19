@@ -54,7 +54,7 @@ void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 	if (saved_size != Rect2()) {
 		popup(saved_size);
 	} else {
-		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
+		popup_centered_clamped(Size2(1200, 700) * EDSCALE, 0.8);
 	}
 
 	_add_feature_overrides();
@@ -587,9 +587,9 @@ void ProjectSettingsEditor::_update_theme() {
 	del_button->set_icon(get_editor_theme_icon(SNAME("Remove")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 	restart_close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
-	restart_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+	restart_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 	restart_icon->set_texture(get_editor_theme_icon(SNAME("StatusWarning")));
-	restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+	restart_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
 	type_box->clear();
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
@@ -668,12 +668,12 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	property_box = memnew(LineEdit);
 	property_box->set_placeholder(TTR("Select a Setting or Type its Name"));
 	property_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	property_box->connect("text_changed", callable_mp(this, &ProjectSettingsEditor::_property_box_changed));
+	property_box->connect(SceneStringName(text_changed), callable_mp(this, &ProjectSettingsEditor::_property_box_changed));
 	custom_properties->add_child(property_box);
 
 	feature_box = memnew(OptionButton);
 	feature_box->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
-	feature_box->connect("item_selected", callable_mp(this, &ProjectSettingsEditor::_feature_selected));
+	feature_box->connect(SceneStringName(item_selected), callable_mp(this, &ProjectSettingsEditor::_feature_selected));
 	custom_properties->add_child(feature_box);
 
 	type_box = memnew(OptionButton);
@@ -743,20 +743,24 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	localization_editor->connect("localization_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	tab_container->add_child(localization_editor);
 
+	TabContainer *globals_container = memnew(TabContainer);
+	globals_container->set_name(TTR("Globals"));
+	tab_container->add_child(globals_container);
+
 	autoload_settings = memnew(EditorAutoloadSettings);
 	autoload_settings->set_name(TTR("Autoload"));
 	autoload_settings->connect("autoload_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
-	tab_container->add_child(autoload_settings);
+	globals_container->add_child(autoload_settings);
 
 	shaders_global_shader_uniforms_editor = memnew(ShaderGlobalsEditor);
 	shaders_global_shader_uniforms_editor->set_name(TTR("Shader Globals"));
 	shaders_global_shader_uniforms_editor->connect("globals_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
-	tab_container->add_child(shaders_global_shader_uniforms_editor);
+	globals_container->add_child(shaders_global_shader_uniforms_editor);
 
 	group_settings = memnew(GroupSettingsEditor);
-	group_settings->set_name(TTR("Global Groups"));
+	group_settings->set_name(TTR("Groups"));
 	group_settings->connect("group_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
-	tab_container->add_child(group_settings);
+	globals_container->add_child(group_settings);
 
 	plugin_settings = memnew(EditorPluginSettings);
 	plugin_settings->set_name(TTR("Plugins"));

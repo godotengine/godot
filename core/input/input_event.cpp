@@ -1585,6 +1585,14 @@ float InputEventAction::get_strength() const {
 	return strength;
 }
 
+void InputEventAction::set_event_index(int p_index) {
+	event_index = p_index;
+}
+
+int InputEventAction::get_event_index() const {
+	return event_index;
+}
+
 bool InputEventAction::is_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
 	if (p_event.is_null()) {
 		return false;
@@ -1649,9 +1657,13 @@ void InputEventAction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_strength", "strength"), &InputEventAction::set_strength);
 	ClassDB::bind_method(D_METHOD("get_strength"), &InputEventAction::get_strength);
 
+	ClassDB::bind_method(D_METHOD("set_event_index", "index"), &InputEventAction::set_event_index);
+	ClassDB::bind_method(D_METHOD("get_event_index"), &InputEventAction::get_event_index);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action"), "set_action", "get_action");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_strength", "get_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "event_index", PROPERTY_HINT_RANGE, "-1,31,1"), "set_event_index", "get_event_index"); // The max value equals to Input::MAX_EVENT - 1.
 }
 
 ///////////////////////////////////

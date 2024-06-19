@@ -3050,7 +3050,7 @@ void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
 }
 
 int CodeEdit::_is_in_delimiter(int p_line, int p_column, DelimiterType p_type) const {
-	if (delimiters.size() == 0) {
+	if (delimiters.size() == 0 || p_line >= delimiter_cache.size()) {
 		return -1;
 	}
 	ERR_FAIL_INDEX_V(p_line, get_line_count(), 0);
@@ -3645,7 +3645,7 @@ CodeEdit::CodeEdit() {
 
 	connect("lines_edited_from", callable_mp(this, &CodeEdit::_lines_edited_from));
 	connect("text_set", callable_mp(this, &CodeEdit::_text_set));
-	connect("text_changed", callable_mp(this, &CodeEdit::_text_changed));
+	connect(SceneStringName(text_changed), callable_mp(this, &CodeEdit::_text_changed));
 
 	connect("gutter_clicked", callable_mp(this, &CodeEdit::_gutter_clicked));
 	connect("gutter_added", callable_mp(this, &CodeEdit::_update_gutter_indexes));

@@ -63,7 +63,7 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 		return;
 	}
 
-	Array version_data;
+	Array version_array;
 	{
 		String s;
 		const uint8_t *r = p_body.ptr();
@@ -80,23 +80,22 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 			_set_message(TTR("Received JSON data is not a valid version array."), theme_cache.error_color);
 			return;
 		}
-		version_data = result;
+		version_array = result;
 	}
 
 	UpdateMode update_mode = UpdateMode(int(EDITOR_GET("network/connection/engine_version_update_mode")));
 	bool stable_only = update_mode == UpdateMode::NEWEST_STABLE || update_mode == UpdateMode::NEWEST_PATCH;
 
-	const Dictionary version_info = Engine::get_singleton()->get_version_info();
-	int current_major = version_info["major"];
-	int current_minor = version_info["minor"];
-	int current_patch = version_info["patch"];
+	const Dictionary current_version_info = Engine::get_singleton()->get_version_info();
+	int current_major = current_version_info.get("major", 0);
+	int current_minor = current_version_info.get("minor", 0);
+	int current_patch = current_version_info.get("patch", 0);
 
-	Dictionary found_version_info;
-	for (const Variant &data_bit : version_data) {
-		const Dictionary info = data_bit;
+	for (const Variant &data_bit : version_array) {
+		const Dictionary version_info = data_bit;
 
-		const String version_string = info["name"];
-		const PackedStringArray version_bits = version_string.split(".");
+		const String base_version_string = version_info.get("name", "");
+		const PackedStringArray version_bits = base_version_string.split(".");
 
 		if (version_bits.size() < 2) {
 			continue;
@@ -120,55 +119,45 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 			continue;
 		}
 
+		const Array releases = version_info.get("releases", Array());
+		if (releases.is_empty()) {
+			continue;
+		}
+
+		const Dictionary newest_release = releases[0];
+		const String release_string = newest_release.get("name", "unknown");
+
+		int release_index;
+		VersionType release_type = _get_version_type(release_string, &release_index);
+
 		if (minor > current_minor || patch > current_patch) {
-			String version_type = info["flavor"];
-			if (stable_only && _get_version_type(version_type, nullptr) != VersionType::STABLE) {
+			if (stable_only && release_type != VersionType::STABLE) {
 				continue;
 			}
 
-			found_version = version_string;
-			found_version += "-" + version_type;
-			break;
-		} else if (minor == current_minor && patch == current_patch) {
-			found_version_info = info;
-			found_version = version_string;
+			available_newer_version = vformat("%s-%s", base_version_string, release_string);
 			break;
 		}
+
+		int current_version_index;
+		VersionType current_version_type = _get_version_type(current_version_info.get("status", "unknown"), &current_version_index);
+
+		if (int(release_type) > int(current_version_type)) {
+			break;
+		}
+
+		if (int(release_type) == int(current_version_type) && release_index < current_version_index) {
+			break;
+		}
+
+		available_newer_version = vformat("%s-%s", base_version_string, release_string);
+		break;
 	}
 
-	if (found_version_info.is_empty() && !found_version.is_empty()) {
+	if (!available_newer_version.is_empty()) {
 		_set_status(UpdateStatus::UPDATE_AVAILABLE);
-		_set_message(vformat(TTR("Update available: %s."), found_version), theme_cache.update_color);
-		return;
-	} else if (found_version_info.is_empty() || stable_only) {
-		_set_status(UpdateStatus::UP_TO_DATE);
-		return;
-	}
-
-	int current_version_index;
-	VersionType current_version_type = _get_version_type(version_info["status"], &current_version_index);
-
-	const Array releases = found_version_info["releases"];
-	for (const Variant &data_bit : version_data) {
-		const Dictionary info = data_bit;
-
-		const String version_string = info["name"];
-		int version_index;
-		VersionType version_type = _get_version_type(version_string, &version_index);
-
-		if (int(version_type) < int(current_version_type) || version_index > current_version_index) {
-			found_version += "-" + version_string;
-
-			_set_status(UpdateStatus::UPDATE_AVAILABLE);
-			_set_message(vformat(TTR("Update available: %s."), found_version), theme_cache.update_color);
-			return;
-		}
-	}
-
-	if (current_version_index == DEV_VERSION) {
-		// Since version index can't be determined and no strictly newer version exists, display a different status.
-		_set_status(UpdateStatus::DEV);
-	} else {
+		_set_message(vformat(TTR("Update available: %s."), available_newer_version), theme_cache.update_color);
+	} else if (available_newer_version.is_empty()) {
 		_set_status(UpdateStatus::UP_TO_DATE);
 	}
 }
@@ -177,14 +166,14 @@ void EngineUpdateLabel::_set_message(const String &p_message, const Color &p_col
 	if (is_disabled()) {
 		add_theme_color_override("font_disabled_color", p_color);
 	} else {
-		add_theme_color_override("font_color", p_color);
+		add_theme_color_override(SceneStringName(font_color), p_color);
 	}
 	set_text(p_message);
 }
 
 void EngineUpdateLabel::_set_status(UpdateStatus p_status) {
 	status = p_status;
-	if (status == UpdateStatus::DEV || status == UpdateStatus::BUSY || status == UpdateStatus::UP_TO_DATE) {
+	if (status == UpdateStatus::BUSY || status == UpdateStatus::UP_TO_DATE) {
 		// Hide the label to prevent unnecessary distraction.
 		hide();
 		return;
@@ -275,7 +264,7 @@ void EngineUpdateLabel::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			theme_cache.default_color = get_theme_color("font_color", "Button");
+			theme_cache.default_color = get_theme_color(SceneStringName(font_color), "Button");
 			theme_cache.disabled_color = get_theme_color("font_disabled_color", "Button");
 			theme_cache.error_color = get_theme_color("error_color", EditorStringName(Editor));
 			theme_cache.update_color = get_theme_color("warning_color", EditorStringName(Editor));
@@ -306,7 +295,7 @@ void EngineUpdateLabel::pressed() {
 		} break;
 
 		case UpdateStatus::UPDATE_AVAILABLE: {
-			OS::get_singleton()->shell_open("https://godotengine.org/download/archive/" + found_version);
+			OS::get_singleton()->shell_open("https://godotengine.org/download/archive/" + available_newer_version);
 		} break;
 
 		default: {

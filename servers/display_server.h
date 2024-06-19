@@ -82,7 +82,13 @@ public:
 		OPENGL_CONTEXT,
 	};
 
-	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, VSyncMode, uint32_t, const Point2i *, const Size2i &, int p_screen, Error &r_error);
+	enum Context {
+		CONTEXT_EDITOR,
+		CONTEXT_PROJECTMAN,
+		CONTEXT_ENGINE,
+	};
+
+	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, VSyncMode, uint32_t, const Point2i *, const Size2i &, int p_screen, Context, Error &r_error);
 	typedef Vector<String> (*GetRenderingDriversFunction)();
 
 private:
@@ -95,7 +101,7 @@ private:
 protected:
 	static void _bind_methods();
 
-	static Ref<Image> _get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot, Rect2 &r_atlas_rect);
+	static Ref<Image> _get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot);
 
 	enum {
 		MAX_SERVERS = 64
@@ -242,8 +248,8 @@ public:
 	virtual void tts_set_utterance_callback(TTSUtteranceEvent p_event, const Callable &p_callable);
 	virtual void tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id, int p_pos = 0);
 
-	virtual bool is_dark_mode_supported() const { return false; };
-	virtual bool is_dark_mode() const { return false; };
+	virtual bool is_dark_mode_supported() const { return false; }
+	virtual bool is_dark_mode() const { return false; }
 	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); }
 	virtual Color get_base_color() const { return Color(0, 0, 0, 0); }
 	virtual void set_system_theme_change_callback(const Callable &p_callable) {}
@@ -332,8 +338,8 @@ public:
 		return scale;
 	}
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
-	virtual Color screen_get_pixel(const Point2i &p_position) const { return Color(); };
-	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const { return Ref<Image>(); };
+	virtual Color screen_get_pixel(const Point2i &p_position) const { return Color(); }
+	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const { return Ref<Image>(); }
 	virtual bool is_touchscreen_available() const;
 
 	// Keep the ScreenOrientation enum values in sync with the `display/window/handheld/orientation`
@@ -392,9 +398,9 @@ public:
 	virtual void show_window(WindowID p_id);
 	virtual void delete_sub_window(WindowID p_id);
 
-	virtual WindowID window_get_active_popup() const { return INVALID_WINDOW_ID; };
-	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect){};
-	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const { return Rect2i(); };
+	virtual WindowID window_get_active_popup() const { return INVALID_WINDOW_ID; }
+	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) {}
+	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const { return Rect2i(); }
 
 	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const;
 
@@ -549,10 +555,10 @@ public:
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const;
 	virtual Key keyboard_get_label_from_physical(Key p_keycode) const;
 
-	virtual int tablet_get_driver_count() const { return 1; };
-	virtual String tablet_get_driver_name(int p_driver) const { return "default"; };
-	virtual String tablet_get_current_driver() const { return "default"; };
-	virtual void tablet_set_current_driver(const String &p_driver){};
+	virtual int tablet_get_driver_count() const { return 1; }
+	virtual String tablet_get_driver_name(int p_driver) const { return "default"; }
+	virtual String tablet_get_current_driver() const { return "default"; }
+	virtual void tablet_set_current_driver(const String &p_driver) {}
 
 	virtual void process_events() = 0;
 
@@ -572,19 +578,15 @@ public:
 	virtual Rect2 status_indicator_get_rect(IndicatorID p_id) const;
 	virtual void delete_status_indicator(IndicatorID p_id);
 
-	enum Context {
-		CONTEXT_EDITOR,
-		CONTEXT_PROJECTMAN,
-		CONTEXT_ENGINE,
-	};
-
 	virtual void set_context(Context p_context);
+
+	virtual bool is_window_transparency_available() const { return false; }
 
 	static void register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers);
 	static int get_create_function_count();
 	static const char *get_create_function_name(int p_index);
 	static Vector<String> get_create_function_rendering_drivers(int p_index);
-	static DisplayServer *create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
+	static DisplayServer *create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
 
 	DisplayServer();
 	~DisplayServer();

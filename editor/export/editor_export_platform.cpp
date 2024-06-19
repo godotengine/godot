@@ -99,12 +99,12 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 		p_log->set_table_column_expand(1, true);
 		for (int m = 0; m < msg_count; m++) {
 			EditorExportPlatform::ExportMessage msg = get_message(m);
-			Color color = p_log->get_theme_color(SNAME("font_color"), SNAME("Label"));
+			Color color = p_log->get_theme_color(SceneStringName(font_color), SNAME("Label"));
 			Ref<Texture> icon;
 
 			switch (msg.msg_type) {
 				case EditorExportPlatform::EXPORT_MESSAGE_INFO: {
-					color = p_log->get_theme_color(SNAME("font_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
+					color = p_log->get_theme_color(SceneStringName(font_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
 				} break;
 				case EditorExportPlatform::EXPORT_MESSAGE_WARNING: {
 					icon = p_log->get_editor_theme_icon(SNAME("Warning"));
@@ -797,6 +797,10 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 		if (!customize_scenes_plugins.is_empty()) {
 			for (Ref<EditorExportPlugin> &plugin : customize_scenes_plugins) {
 				Node *customized = plugin->_customize_scene(node, p_path);
+				if (plugin->skipped) {
+					plugin->_clear();
+					return String();
+				}
 				if (customized != nullptr) {
 					node = customized;
 					modified = true;
@@ -830,6 +834,10 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 		if (!customize_resources_plugins.is_empty()) {
 			for (Ref<EditorExportPlugin> &plugin : customize_resources_plugins) {
 				Ref<Resource> new_res = plugin->_customize_resource(res, p_path);
+				if (plugin->skipped) {
+					plugin->_clear();
+					return String();
+				}
 				if (new_res.is_valid()) {
 					modified = true;
 					if (new_res != res) {
@@ -1135,6 +1143,10 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			// Before doing this, try to see if it can be customized.
 
 			String export_path = _export_customize(path, customize_resources_plugins, customize_scenes_plugins, export_cache, export_base_path, false);
+			if (export_path.is_empty()) {
+				// Skipped from plugin.
+				continue;
+			}
 
 			if (export_path != path) {
 				// It was actually customized.

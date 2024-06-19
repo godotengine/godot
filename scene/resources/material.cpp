@@ -82,7 +82,7 @@ void Material::_validate_property(PropertyInfo &p_property) const {
 }
 
 void Material::_mark_ready() {
-	init_state = INIT_STATE_INITIALIZING;
+	init_state = INIT_STATE_READY;
 }
 
 void Material::_mark_initialized(const Callable &p_add_to_dirty_list, const Callable &p_update_shader) {
@@ -822,7 +822,18 @@ uniform float distance_fade_max : hint_range(0.0, 4096.0, 0.01);
 )";
 	}
 
-	if (flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && flags[FLAG_UV1_USE_TRIPLANAR]) {
+		String msg = "MSDF is not supported on triplanar materials. Ignoring MSDF in favor of triplanar mapping.";
+		if (textures[TEXTURE_ALBEDO].is_valid()) {
+			WARN_PRINT(vformat("%s (albedo %s): " + msg, get_path(), textures[TEXTURE_ALBEDO]->get_path()));
+		} else if (!get_path().is_empty()) {
+			WARN_PRINT(vformat("%s: " + msg, get_path()));
+		} else {
+			WARN_PRINT(msg);
+		}
+	}
+
+	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += R"(
 uniform float msdf_pixel_range : hint_range(1.0, 100.0, 1.0);
 uniform float msdf_outline_size : hint_range(0.0, 250.0, 1.0);
@@ -1271,7 +1282,7 @@ void vertex() {)";
 
 	code += "}\n";
 
-	if (flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += R"(
 float msdf_median(float r, float g, float b, float a) {
 	return min(max(min(r, g), min(max(r, g), b)), a);
@@ -1414,7 +1425,7 @@ void fragment() {)";
 		}
 	}
 
-	if (flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += R"(
 	{
 		// Albedo Texture MSDF: Enabled
@@ -1427,11 +1438,7 @@ void fragment() {)";
 		if (flags[FLAG_USE_POINT_SIZE]) {
 			code += "		vec2 dest_size = vec2(1.0) / fwidth(POINT_COORD);\n";
 		} else {
-			if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-				code += "		vec2 dest_size = vec2(1.0) / fwidth(uv1_triplanar_pos);\n";
-			} else {
-				code += "		vec2 dest_size = vec2(1.0) / fwidth(base_uv);\n";
-			}
+			code += "		vec2 dest_size = vec2(1.0) / fwidth(base_uv);\n";
 		}
 		code += R"(
 		float px_size = max(0.5 * dot(msdf_size, dest_size), 1.0);

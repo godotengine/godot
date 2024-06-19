@@ -49,6 +49,7 @@ public:
     bool viewport(const RenderRegion& vp) override;
     bool blend(BlendMethod method) override;
     ColorSpace colorSpace() override;
+    const Surface* mainSurface() override;
 
     bool clear() override;
     bool sync() override;

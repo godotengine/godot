@@ -43,6 +43,9 @@
 #else
 #include <wayland-client-core.h>
 #include <wayland-cursor.h>
+#ifdef GLES3_ENABLED
+#include <wayland-egl.h>
+#endif
 #include <xkbcommon/xkbcommon.h>
 #endif // SOWRAP_ENABLED
 
@@ -59,6 +62,7 @@
 #undef pointer
 #include "wayland/protocol/fractional_scale.gen.h"
 #include "wayland/protocol/tablet.gen.h"
+#include "wayland/protocol/text_input.gen.h"
 #include "wayland/protocol/viewporter.gen.h"
 #include "wayland/protocol/wayland.gen.h"
 #include "wayland/protocol/xdg_activation.gen.h"
@@ -107,6 +111,17 @@ public:
 	class DropFilesEventMessage : public Message {
 	public:
 		Vector<String> files;
+	};
+
+	class IMEUpdateEventMessage : public Message {
+	public:
+		String text;
+		Vector2i selection;
+	};
+
+	class IMECommitEventMessage : public Message {
+	public:
+		String text;
 	};
 
 	struct RegistryState {
@@ -167,6 +182,9 @@ public:
 
 		struct zwp_tablet_manager_v2 *wp_tablet_manager = nullptr;
 		uint32_t wp_tablet_manager_name = 0;
+
+		struct zwp_text_input_manager_v3 *wp_text_input_manager = nullptr;
+		uint32_t wp_text_input_manager_name = 0;
 	};
 
 	// General Wayland-specific states. Shouldn't be accessed directly.
@@ -435,6 +453,15 @@ public:
 		struct zwp_tablet_seat_v2 *wp_tablet_seat = nullptr;
 
 		List<struct zwp_tablet_tool_v2 *> tablet_tools;
+
+		// IME.
+		struct zwp_text_input_v3 *wp_text_input = nullptr;
+		bool ime_enabled = false;
+		bool ime_active = false;
+		String ime_text;
+		String ime_text_commit;
+		Vector2i ime_cursor;
+		Rect2i ime_rect;
 	};
 
 	struct CustomCursor {
@@ -615,6 +642,13 @@ private:
 	static void _wp_tablet_tool_on_button(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t serial, uint32_t button, uint32_t state);
 	static void _wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t time);
 
+	static void _wp_text_input_on_enter(void *data, struct zwp_text_input_v3 *wp_text_input_v3, struct wl_surface *surface);
+	static void _wp_text_input_on_leave(void *data, struct zwp_text_input_v3 *wp_text_input_v3, struct wl_surface *surface);
+	static void _wp_text_input_on_preedit_string(void *data, struct zwp_text_input_v3 *wp_text_input_v3, const char *text, int32_t cursor_begin, int32_t cursor_end);
+	static void _wp_text_input_on_commit_string(void *data, struct zwp_text_input_v3 *wp_text_input_v3, const char *text);
+	static void _wp_text_input_on_delete_surrounding_text(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t before_length, uint32_t after_length);
+	static void _wp_text_input_on_done(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t serial);
+
 	static void _xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode);
 
 	static void _xdg_exported_on_exported(void *data, zxdg_exported_v1 *exported, const char *handle);
@@ -776,6 +810,15 @@ private:
 		.frame = _wp_tablet_tool_on_frame,
 	};
 
+	static constexpr struct zwp_text_input_v3_listener wp_text_input_listener = {
+		.enter = _wp_text_input_on_enter,
+		.leave = _wp_text_input_on_leave,
+		.preedit_string = _wp_text_input_on_preedit_string,
+		.commit_string = _wp_text_input_on_commit_string,
+		.delete_surrounding_text = _wp_text_input_on_delete_surrounding_text,
+		.done = _wp_text_input_on_done,
+	};
+
 	static constexpr struct zxdg_exported_v1_listener xdg_exported_listener = {
 		.handle = _xdg_exported_on_exported
 	};
@@ -925,6 +968,9 @@ public:
 	void cursor_set_custom_shape(DisplayServer::CursorShape p_cursor_shape);
 	void cursor_shape_set_custom_image(DisplayServer::CursorShape p_cursor_shape, Ref<Image> p_image, const Point2i &p_hotspot);
 	void cursor_shape_clear_custom_image(DisplayServer::CursorShape p_cursor_shape);
+
+	void window_set_ime_active(const bool p_active, DisplayServer::WindowID p_window_id);
+	void window_set_ime_position(const Point2i &p_pos, DisplayServer::WindowID p_window_id);
 
 	int keyboard_get_layout_count() const;
 	int keyboard_get_current_layout_index() const;

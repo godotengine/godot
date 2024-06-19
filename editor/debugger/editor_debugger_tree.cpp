@@ -31,6 +31,7 @@
 #include "editor_debugger_tree.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/debugger/scene_debugger.h"
@@ -44,7 +45,7 @@ EditorDebuggerTree::EditorDebuggerTree() {
 
 	// Popup
 	item_menu = memnew(PopupMenu);
-	item_menu->connect("id_pressed", callable_mp(this, &EditorDebuggerTree::_item_menu_id_pressed));
+	item_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorDebuggerTree::_item_menu_id_pressed));
 	add_child(item_menu);
 
 	// File Dialog
@@ -61,6 +62,10 @@ void EditorDebuggerTree::_notification(int p_what) {
 			connect("cell_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_selected));
 			connect("item_collapsed", callable_mp(this, &EditorDebuggerTree::_scene_tree_folded));
 			connect("item_mouse_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_rmb_selected));
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			update_icon_max_width();
 		} break;
 	}
 }
@@ -291,6 +296,10 @@ Variant EditorDebuggerTree::get_drag_data(const Point2 &p_point) {
 	}
 
 	return vformat("\"%s\"", path);
+}
+
+void EditorDebuggerTree::update_icon_max_width() {
+	add_theme_constant_override("icon_max_width", get_theme_constant("class_icon_size", EditorStringName(Editor)));
 }
 
 String EditorDebuggerTree::get_selected_path() {

@@ -265,8 +265,8 @@ public:
 	class TerrainsPattern {
 		bool valid = false;
 		int terrain = -1;
-		int bits[TileSet::CELL_NEIGHBOR_MAX];
-		bool is_valid_bit[TileSet::CELL_NEIGHBOR_MAX];
+		int bits[TileSet::CELL_NEIGHBOR_MAX] = {};
+		bool is_valid_bit[TileSet::CELL_NEIGHBOR_MAX] = {};
 
 		int not_empty_terrains_count = 0;
 

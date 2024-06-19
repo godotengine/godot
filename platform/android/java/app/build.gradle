@@ -32,6 +32,7 @@ configurations {
 
 dependencies {
     implementation "androidx.fragment:fragment:$versions.fragmentVersion"
+    implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
 
     if (rootProject.findProject(":lib")) {
         implementation project(":lib")
@@ -124,6 +125,12 @@ android {
             // - https://stackoverflow.com/a/44704840
             useLegacyPackaging shouldUseLegacyPackaging()
         }
+
+        // Always select Godot's version of libc++_shared.so in case deps have their own
+        pickFirst 'lib/x86/libc++_shared.so'
+        pickFirst 'lib/x86_64/libc++_shared.so'
+        pickFirst 'lib/armeabi-v7a/libc++_shared.so'
+        pickFirst 'lib/arm64-v8a/libc++_shared.so'
     }
 
     signingConfigs {

@@ -626,6 +626,7 @@ class EditorPropertyColor : public EditorProperty {
 
 	Color last_color;
 	bool live_changes_enabled = true;
+	bool was_checked = false;
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
@@ -653,7 +654,6 @@ class EditorPropertyNodePath : public EditorProperty {
 	LineEdit *edit = nullptr;
 
 	SceneTreeDialog *scene_tree = nullptr;
-	NodePath base_hint;
 	bool use_path_from_scene_root = false;
 	bool editing_node = false;
 
@@ -679,7 +679,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(const NodePath &p_base_hint, const Vector<StringName> &p_valid_types, bool p_use_path_from_scene_root = true, bool p_editing_node = false);
+	void setup(const Vector<StringName> &p_valid_types, bool p_use_path_from_scene_root = true, bool p_editing_node = false);
 	EditorPropertyNodePath();
 };
 

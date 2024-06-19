@@ -5,7 +5,7 @@ import os.path
 import shlex
 import subprocess
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import List, Optional
 
 
 def find_dotnet_cli():
@@ -304,9 +304,7 @@ def generate_sdk_package_versions():
     <GodotVersionConstants>{1}</GodotVersionConstants>
   </PropertyGroup>
 </Project>
-""".format(
-        version_str, ";".join(version_defines)
-    )
+""".format(version_str, ";".join(version_defines))
 
     # We write in ../SdkPackageVersions.props.
     with open(os.path.join(dirname(script_path), "SdkPackageVersions.props"), "w", encoding="utf-8", newline="\n") as f:
@@ -323,9 +321,7 @@ def generate_sdk_package_versions():
         public const string VersionDocsUrl = "https://docs.godotengine.org/en/{docs_branch}";
     }}
 }}
-""".format(
-        **version_info
-    )
+""".format(**version_info)
 
     generators_dir = os.path.join(
         dirname(script_path),

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-from http.server import HTTPServer, SimpleHTTPRequestHandler, test  # type: ignore
-from pathlib import Path
-import os
-import sys
 import argparse
 import contextlib
+import os
 import socket
 import subprocess
+import sys
+from http.server import HTTPServer, SimpleHTTPRequestHandler, test  # type: ignore
+from pathlib import Path
 
 
 # See cpython GH-17851 and GH-17864.

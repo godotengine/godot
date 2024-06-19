@@ -587,7 +587,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 			split_sheet_zoom_out->set_icon(get_editor_theme_icon(SNAME("ZoomLess")));
 			split_sheet_zoom_reset->set_icon(get_editor_theme_icon(SNAME("ZoomReset")));
 			split_sheet_zoom_in->set_icon(get_editor_theme_icon(SNAME("ZoomMore")));
-			split_sheet_scroll->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			split_sheet_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 
 			_update_show_settings();
 		} break;
@@ -1476,8 +1476,8 @@ void SpriteFramesEditor::edit(Ref<SpriteFrames> p_frames) {
 	_fetch_sprite_node(); // Fetch node after set frames.
 }
 
-bool SpriteFramesEditor::is_editing() const {
-	return frames.is_valid();
+Ref<SpriteFrames> SpriteFramesEditor::get_sprite_frames() const {
+	return frames;
 }
 
 Variant SpriteFramesEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
@@ -1816,7 +1816,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_speed->set_step(0.01);
 	anim_speed->set_custom_arrow_step(1);
 	anim_speed->set_tooltip_text(TTR("Animation Speed"));
-	anim_speed->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_animation_speed_changed));
+	anim_speed->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_animation_speed_changed));
 	hbc_animlist->add_child(anim_speed);
 
 	anim_search_box = memnew(LineEdit);
@@ -1824,7 +1824,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	anim_search_box->set_placeholder(TTR("Filter Animations"));
 	anim_search_box->set_clear_button_enabled(true);
-	anim_search_box->connect("text_changed", callable_mp(this, &SpriteFramesEditor::_animation_search_text_changed));
+	anim_search_box->connect(SceneStringName(text_changed), callable_mp(this, &SpriteFramesEditor::_animation_search_text_changed));
 
 	animations = memnew(Tree);
 	sub_vb->add_child(animations);
@@ -1960,7 +1960,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_duration->set_custom_arrow_step(0.1);
 	frame_duration->set_allow_lesser(false);
 	frame_duration->set_allow_greater(true);
-	frame_duration->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_frame_duration_changed));
+	frame_duration->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_frame_duration_changed));
 	hbc_frame_duration->add_child(frame_duration);
 
 	// Wide empty separation control. (like BoxContainer::add_spacer())
@@ -2058,12 +2058,12 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	delete_dialog = memnew(ConfirmationDialog);
 	add_child(delete_dialog);
-	delete_dialog->connect("confirmed", callable_mp(this, &SpriteFramesEditor::_animation_remove_confirmed));
+	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SpriteFramesEditor::_animation_remove_confirmed));
 
 	split_sheet_dialog = memnew(ConfirmationDialog);
 	add_child(split_sheet_dialog);
 	split_sheet_dialog->set_title(TTR("Select Frames"));
-	split_sheet_dialog->connect("confirmed", callable_mp(this, &SpriteFramesEditor::_sheet_add_frames));
+	split_sheet_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SpriteFramesEditor::_sheet_add_frames));
 
 	HBoxContainer *split_sheet_hb = memnew(HBoxContainer);
 	split_sheet_dialog->add_child(split_sheet_hb);
@@ -2091,7 +2091,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_order->add_item(TTR("Top to Bottom, Right to Left"), FRAME_ORDER_TOP_BOTTOM_RIGHT_LEFT);
 	split_sheet_order->add_item(TTR("Bottom to Top, Left to Right"), FRAME_ORDER_BOTTOM_TOP_LEFT_RIGHT);
 	split_sheet_order->add_item(TTR("Bottom to Top, Right to Left"), FRAME_ORDER_BOTTOM_TOP_RIGHT_LEFT);
-	split_sheet_order->connect("item_selected", callable_mp(this, &SpriteFramesEditor::_sheet_order_selected));
+	split_sheet_order->connect(SceneStringName(item_selected), callable_mp(this, &SpriteFramesEditor::_sheet_order_selected));
 	split_sheet_menu_hb->add_child(split_sheet_order);
 
 	Button *select_all = memnew(Button);
@@ -2181,8 +2181,9 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_h->set_min(1);
 	split_sheet_h->set_max(128);
 	split_sheet_h->set_step(1);
+	split_sheet_h->set_select_all_on_focus(true);
 	split_sheet_h_hb->add_child(split_sheet_h);
-	split_sheet_h->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_FRAME_COUNT));
+	split_sheet_h->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_FRAME_COUNT));
 	split_sheet_settings_vb->add_child(split_sheet_h_hb);
 
 	HBoxContainer *split_sheet_v_hb = memnew(HBoxContainer);
@@ -2197,8 +2198,9 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_v->set_min(1);
 	split_sheet_v->set_max(128);
 	split_sheet_v->set_step(1);
+	split_sheet_v->set_select_all_on_focus(true);
 	split_sheet_v_hb->add_child(split_sheet_v);
-	split_sheet_v->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_FRAME_COUNT));
+	split_sheet_v->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_FRAME_COUNT));
 	split_sheet_settings_vb->add_child(split_sheet_v_hb);
 
 	HBoxContainer *split_sheet_size_hb = memnew(HBoxContainer);
@@ -2216,14 +2218,16 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_size_x->set_min(1);
 	split_sheet_size_x->set_step(1);
 	split_sheet_size_x->set_suffix("px");
-	split_sheet_size_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_SIZE));
+	split_sheet_size_x->set_select_all_on_focus(true);
+	split_sheet_size_x->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_SIZE));
 	split_sheet_size_vb->add_child(split_sheet_size_x);
 	split_sheet_size_y = memnew(SpinBox);
 	split_sheet_size_y->set_h_size_flags(SIZE_EXPAND_FILL);
 	split_sheet_size_y->set_min(1);
 	split_sheet_size_y->set_step(1);
 	split_sheet_size_y->set_suffix("px");
-	split_sheet_size_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_SIZE));
+	split_sheet_size_y->set_select_all_on_focus(true);
+	split_sheet_size_y->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_SIZE));
 	split_sheet_size_vb->add_child(split_sheet_size_y);
 	split_sheet_size_hb->add_child(split_sheet_size_vb);
 	split_sheet_settings_vb->add_child(split_sheet_size_hb);
@@ -2242,13 +2246,15 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_sep_x->set_min(0);
 	split_sheet_sep_x->set_step(1);
 	split_sheet_sep_x->set_suffix("px");
-	split_sheet_sep_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
+	split_sheet_sep_x->set_select_all_on_focus(true);
+	split_sheet_sep_x->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
 	split_sheet_sep_vb->add_child(split_sheet_sep_x);
 	split_sheet_sep_y = memnew(SpinBox);
 	split_sheet_sep_y->set_min(0);
 	split_sheet_sep_y->set_step(1);
 	split_sheet_sep_y->set_suffix("px");
-	split_sheet_sep_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
+	split_sheet_sep_y->set_select_all_on_focus(true);
+	split_sheet_sep_y->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
 	split_sheet_sep_vb->add_child(split_sheet_sep_y);
 	split_sheet_sep_hb->add_child(split_sheet_sep_vb);
 	split_sheet_settings_vb->add_child(split_sheet_sep_hb);
@@ -2267,13 +2273,15 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_offset_x->set_min(0);
 	split_sheet_offset_x->set_step(1);
 	split_sheet_offset_x->set_suffix("px");
-	split_sheet_offset_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
+	split_sheet_offset_x->set_select_all_on_focus(true);
+	split_sheet_offset_x->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
 	split_sheet_offset_vb->add_child(split_sheet_offset_x);
 	split_sheet_offset_y = memnew(SpinBox);
 	split_sheet_offset_y->set_min(0);
 	split_sheet_offset_y->set_step(1);
 	split_sheet_offset_y->set_suffix("px");
-	split_sheet_offset_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
+	split_sheet_offset_y->set_select_all_on_focus(true);
+	split_sheet_offset_y->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
 	split_sheet_offset_vb->add_child(split_sheet_offset_y);
 	split_sheet_offset_hb->add_child(split_sheet_offset_vb);
 	split_sheet_settings_vb->add_child(split_sheet_offset_hb);
@@ -2329,7 +2337,11 @@ bool SpriteFramesEditorPlugin::handles(Object *p_object) const {
 	if (animated_sprite_3d && *animated_sprite_3d->get_sprite_frames()) {
 		return true;
 	}
-	return !frames_editor->is_editing() && Object::cast_to<SpriteFrames>(p_object);
+	SpriteFrames *frames = Object::cast_to<SpriteFrames>(p_object);
+	if (frames && (frames_editor->get_sprite_frames().is_null() || frames_editor->get_sprite_frames() == frames)) {
+		return true;
+	}
+	return false;
 }
 
 void SpriteFramesEditorPlugin::make_visible(bool p_visible) {

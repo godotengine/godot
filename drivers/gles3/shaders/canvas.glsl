@@ -346,14 +346,16 @@ uniform sampler2D color_texture; //texunit:0
 
 layout(location = 0) out vec4 frag_color;
 
+/* clang-format off */
+// This needs to be outside clang-format so the ubo comment is in the right place
 #ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{
-//ubo:4
+layout(std140) uniform MaterialUniforms{ //ubo:4
 
 #MATERIAL_UNIFORMS
 
 };
 #endif
+/* clang-format on */
 
 #GLOBALS
 

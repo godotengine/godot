@@ -474,7 +474,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 		return;
 	}
 
-	if (!NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
+	if (!NavigationServer3D::get_singleton()->get_debug_enabled() || !NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
 		if (debug_instance.is_valid()) {
 			RS::get_singleton()->instance_set_visible(debug_instance, false);
 		}
@@ -640,7 +640,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 
 #ifdef DEBUG_ENABLED
 void NavigationRegion3D::_update_debug_edge_connections_mesh() {
-	if (!NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
+	if (!NavigationServer3D::get_singleton()->get_debug_enabled() || !NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
 		if (debug_edge_connections_instance.is_valid()) {
 			RS::get_singleton()->instance_set_visible(debug_edge_connections_instance, false);
 		}

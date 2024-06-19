@@ -72,17 +72,15 @@ public:
 class TLSOptions : public RefCounted {
 	GDCLASS(TLSOptions, RefCounted);
 
-public:
-	enum TLSVerifyMode {
-		TLS_VERIFY_NONE = 0,
-		TLS_VERIFY_CERT = 1,
-		TLS_VERIFY_FULL = 2,
+private:
+	enum Mode {
+		MODE_CLIENT = 0,
+		MODE_CLIENT_UNSAFE = 1,
+		MODE_SERVER = 2,
 	};
 
-private:
-	bool server_mode = false;
+	Mode mode = MODE_CLIENT;
 	String common_name;
-	TLSVerifyMode verify_mode = TLS_VERIFY_FULL;
 	Ref<X509Certificate> trusted_ca_chain;
 	Ref<X509Certificate> own_certificate;
 	Ref<CryptoKey> private_key;
@@ -95,12 +93,12 @@ public:
 	static Ref<TLSOptions> client_unsafe(Ref<X509Certificate> p_trusted_chain);
 	static Ref<TLSOptions> server(Ref<CryptoKey> p_own_key, Ref<X509Certificate> p_own_certificate);
 
-	TLSVerifyMode get_verify_mode() const { return verify_mode; }
-	String get_common_name() const { return common_name; }
+	String get_common_name_override() const { return common_name; }
 	Ref<X509Certificate> get_trusted_ca_chain() const { return trusted_ca_chain; }
 	Ref<X509Certificate> get_own_certificate() const { return own_certificate; }
 	Ref<CryptoKey> get_private_key() const { return private_key; }
-	bool is_server() const { return server_mode; }
+	bool is_server() const { return mode == MODE_SERVER; }
+	bool is_unsafe_client() const { return mode == MODE_CLIENT_UNSAFE; }
 };
 
 class HMACContext : public RefCounted {

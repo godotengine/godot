@@ -29,7 +29,10 @@
 /**************************************************************************/
 
 #include "audio_stream_polyphonic.h"
+#include "audio_stream_polyphonic.compat.inc"
+
 #include "scene/main/scene_tree.h"
+#include "servers/audio_server.h"
 
 Ref<AudioStreamPlayback> AudioStreamPolyphonic::instantiate_playback() {
 	Ref<AudioStreamPlaybackPolyphonic> playback;
@@ -136,6 +139,10 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 			continue;
 		}
 
+		if (s.stream_playback->get_is_sample()) {
+			continue;
+		}
+
 		float volume_db = s.volume_db; // Copy because it can be overridden at any time.
 		float next_volume = Math::db_to_linear(volume_db);
 		s.prev_volume_db = volume_db;
@@ -195,8 +202,13 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 	return p_frames;
 }
 
-AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(const Ref<AudioStream> &p_stream, float p_from_offset, float p_volume_db, float p_pitch_scale) {
+AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(const Ref<AudioStream> &p_stream, float p_from_offset, float p_volume_db, float p_pitch_scale, AudioServer::PlaybackType p_playback_type, const StringName &p_bus) {
 	ERR_FAIL_COND_V(p_stream.is_null(), INVALID_ID);
+
+	AudioServer::PlaybackType playback_type = p_playback_type == AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT
+			? AudioServer::get_singleton()->get_default_playback_type()
+			: p_playback_type;
+
 	for (uint32_t i = 0; i < streams.size(); i++) {
 		if (!streams[i].active.is_set()) {
 			// Can use this stream, as it's not active.
@@ -210,6 +222,28 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 			streams[i].finish_request.clear();
 			streams[i].pending_play.set();
 			streams[i].active.set();
+
+			// Sample playback.
+			if (playback_type == AudioServer::PlaybackType::PLAYBACK_TYPE_SAMPLE && p_stream->can_be_sampled()) {
+				streams[i].stream_playback->set_is_sample(true);
+				if (!AudioServer::get_singleton()->is_stream_registered_as_sample(p_stream)) {
+					AudioServer::get_singleton()->register_stream_as_sample(p_stream);
+				}
+				float linear_volume = Math::db_to_linear(p_volume_db);
+				Ref<AudioSamplePlayback> sp;
+				sp.instantiate();
+				sp->stream = streams[i].stream;
+				sp->offset = p_from_offset;
+				sp->volume_vector.resize(4);
+				sp->volume_vector.write[0] = AudioFrame(linear_volume, linear_volume);
+				sp->volume_vector.write[1] = AudioFrame(linear_volume, /* LFE= */ 1.0f);
+				sp->volume_vector.write[2] = AudioFrame(linear_volume, linear_volume);
+				sp->volume_vector.write[3] = AudioFrame(linear_volume, linear_volume);
+				sp->bus = p_bus;
+				streams[i].stream_playback->set_sample_playback(sp);
+				AudioServer::get_singleton()->start_sample_playback(sp);
+			}
+
 			return (ID(i) << INDEX_SHIFT) | ID(streams[i].id);
 		}
 	}
@@ -260,8 +294,24 @@ void AudioStreamPlaybackPolyphonic::stop_stream(ID p_stream_id) {
 	s->finish_request.set();
 }
 
+void AudioStreamPlaybackPolyphonic::set_is_sample(bool p_is_sample) {
+	_is_sample = p_is_sample;
+}
+
+bool AudioStreamPlaybackPolyphonic::get_is_sample() const {
+	return _is_sample;
+}
+
+Ref<AudioSamplePlayback> AudioStreamPlaybackPolyphonic::get_sample_playback() const {
+	return sample_playback;
+}
+
+void AudioStreamPlaybackPolyphonic::set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
+	sample_playback = p_playback;
+}
+
 void AudioStreamPlaybackPolyphonic::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("play_stream", "stream", "from_offset", "volume_db", "pitch_scale"), &AudioStreamPlaybackPolyphonic::play_stream, DEFVAL(0), DEFVAL(0), DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("play_stream", "stream", "from_offset", "volume_db", "pitch_scale", "playback_type", "bus"), &AudioStreamPlaybackPolyphonic::play_stream, DEFVAL(0), DEFVAL(0), DEFVAL(1.0), DEFVAL(0), DEFVAL(SceneStringName(Master)));
 	ClassDB::bind_method(D_METHOD("set_stream_volume", "stream", "volume_db"), &AudioStreamPlaybackPolyphonic::set_stream_volume);
 	ClassDB::bind_method(D_METHOD("set_stream_pitch_scale", "stream", "pitch_scale"), &AudioStreamPlaybackPolyphonic::set_stream_pitch_scale);
 	ClassDB::bind_method(D_METHOD("is_stream_playing", "stream"), &AudioStreamPlaybackPolyphonic::is_stream_playing);

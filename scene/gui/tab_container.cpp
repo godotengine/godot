@@ -243,8 +243,8 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_color_override(SNAME("font_disabled_color"), theme_cache.font_disabled_color);
 	tab_bar->add_theme_color_override(SNAME("font_outline_color"), theme_cache.font_outline_color);
 
-	tab_bar->add_theme_font_override(SNAME("font"), theme_cache.tab_font);
-	tab_bar->add_theme_font_size_override(SNAME("font_size"), theme_cache.tab_font_size);
+	tab_bar->add_theme_font_override(SceneStringName(font), theme_cache.tab_font);
+	tab_bar->add_theme_font_size_override(SceneStringName(font_size), theme_cache.tab_font_size);
 
 	tab_bar->add_theme_constant_override(SNAME("h_separation"), theme_cache.icon_separation);
 	tab_bar->add_theme_constant_override(SNAME("icon_max_width"), theme_cache.icon_max_width);
@@ -362,8 +362,8 @@ void TabContainer::_on_mouse_exited() {
 Vector<Control *> TabContainer::_get_tab_controls() const {
 	Vector<Control *> controls;
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *control = Object::cast_to<Control>(get_child(i));
-		if (!control || control->is_set_as_top_level() || control == tab_bar || children_removing.has(control)) {
+		Control *control = as_sortable_control(get_child(i), SortableVisbilityMode::IGNORE);
+		if (!control || control == tab_bar || children_removing.has(control)) {
 			continue;
 		}
 
@@ -539,8 +539,8 @@ void TabContainer::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	Control *c = Object::cast_to<Control>(p_child);
-	if (!c || c->is_set_as_top_level()) {
+	Control *c = as_sortable_control(p_child, SortableVisbilityMode::IGNORE);
+	if (!c) {
 		return;
 	}
 	c->hide();
@@ -569,8 +569,8 @@ void TabContainer::move_child_notify(Node *p_child) {
 		return;
 	}
 
-	Control *c = Object::cast_to<Control>(p_child);
-	if (c && !c->is_set_as_top_level()) {
+	Control *c = as_sortable_control(p_child, SortableVisbilityMode::IGNORE);
+	if (c) {
 		tab_bar->move_tab(c->get_meta("_tab_index"), get_tab_idx_from_control(c));
 	}
 
@@ -584,8 +584,8 @@ void TabContainer::remove_child_notify(Node *p_child) {
 		return;
 	}
 
-	Control *c = Object::cast_to<Control>(p_child);
-	if (!c || c->is_set_as_top_level()) {
+	Control *c = as_sortable_control(p_child, SortableVisbilityMode::IGNORE);
+	if (!c) {
 		return;
 	}
 

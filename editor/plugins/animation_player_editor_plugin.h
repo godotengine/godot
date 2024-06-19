@@ -206,6 +206,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _current_animation_changed(const String &p_name);
 	void _update_animation();
 	void _update_player();
+	void _set_controls_disabled(bool p_disabled);
 	void _update_animation_list_icons();
 	void _update_name_dialog_library_dropdown();
 	void _blend_edited();

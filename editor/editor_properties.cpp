@@ -140,7 +140,7 @@ EditorPropertyText::EditorPropertyText() {
 	hb->add_child(text);
 	add_focusable(text);
 	text->set_h_size_flags(SIZE_EXPAND_FILL);
-	text->connect("text_changed", callable_mp(this, &EditorPropertyText::_text_changed));
+	text->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyText::_text_changed));
 	text->connect("text_submitted", callable_mp(this, &EditorPropertyText::_text_submitted));
 }
 
@@ -165,10 +165,10 @@ void EditorPropertyMultilineText::_open_big_text() {
 		big_text = memnew(TextEdit);
 		if (expression) {
 			big_text->set_syntax_highlighter(text->get_syntax_highlighter());
-			big_text->add_theme_font_override("font", get_theme_font(SNAME("expression"), EditorStringName(EditorFonts)));
-			big_text->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts)));
+			big_text->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("expression"), EditorStringName(EditorFonts)));
+			big_text->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts)));
 		}
-		big_text->connect("text_changed", callable_mp(this, &EditorPropertyMultilineText::_big_text_changed));
+		big_text->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyMultilineText::_big_text_changed));
 		big_text->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
 		big_text_dialog = memnew(AcceptDialog);
 		big_text_dialog->add_child(big_text);
@@ -204,15 +204,15 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 				font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
 				font_size = get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts));
 
-				text->add_theme_font_override("font", font);
-				text->add_theme_font_size_override("font_size", font_size);
+				text->add_theme_font_override(SceneStringName(font), font);
+				text->add_theme_font_size_override(SceneStringName(font_size), font_size);
 				if (big_text) {
-					big_text->add_theme_font_override("font", font);
-					big_text->add_theme_font_size_override("font_size", font_size);
+					big_text->add_theme_font_override(SceneStringName(font), font);
+					big_text->add_theme_font_size_override(SceneStringName(font_size), font_size);
 				}
 			} else {
-				font = get_theme_font(SNAME("font"), SNAME("TextEdit"));
-				font_size = get_theme_font_size(SNAME("font_size"), SNAME("TextEdit"));
+				font = get_theme_font(SceneStringName(font), SNAME("TextEdit"));
+				font_size = get_theme_font_size(SceneStringName(font_size), SNAME("TextEdit"));
 			}
 			text->set_custom_minimum_size(Vector2(0, font->get_height(font_size) * 6));
 		} break;
@@ -228,7 +228,7 @@ EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) {
 	add_child(hb);
 	set_bottom_editor(hb);
 	text = memnew(TextEdit);
-	text->connect("text_changed", callable_mp(this, &EditorPropertyMultilineText::_text_changed));
+	text->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyMultilineText::_text_changed));
 	text->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
 	add_focusable(text);
 	hb->add_child(text);
@@ -376,7 +376,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	option_button->set_flat(true);
 	option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	default_layout->add_child(option_button);
-	option_button->connect("item_selected", callable_mp(this, &EditorPropertyTextEnum::_option_selected));
+	option_button->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyTextEnum::_option_selected));
 
 	edit_button = memnew(Button);
 	edit_button->set_flat(true);
@@ -735,7 +735,7 @@ EditorPropertyEnum::EditorPropertyEnum() {
 	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(options);
 	add_focusable(options);
-	options->connect("item_selected", callable_mp(this, &EditorPropertyEnum::_option_selected));
+	options->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyEnum::_option_selected));
 }
 
 ///////////////////// FLAGS /////////////////////////
@@ -850,16 +850,16 @@ EditorPropertyLayersGrid::EditorPropertyLayersGrid() {
 	rename_dialog->set_ok_button_text(TTR("Rename"));
 	add_child(rename_dialog);
 	rename_dialog->register_text_enter(rename_dialog_text);
-	rename_dialog->connect("confirmed", callable_mp(this, &EditorPropertyLayersGrid::_rename_operation_confirm));
+	rename_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorPropertyLayersGrid::_rename_operation_confirm));
 	layer_rename = memnew(PopupMenu);
 	layer_rename->add_item(TTR("Rename layer"), 0);
 	add_child(layer_rename);
-	layer_rename->connect("id_pressed", callable_mp(this, &EditorPropertyLayersGrid::_rename_pressed));
+	layer_rename->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyLayersGrid::_rename_pressed));
 }
 
 Size2 EditorPropertyLayersGrid::get_grid_size() const {
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	return Vector2(0, font->get_height(font_size) * 3);
 }
 
@@ -998,7 +998,7 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 
 			Color color = get_theme_color(read_only ? SNAME("highlight_disabled_color") : SNAME("highlight_color"), EditorStringName(Editor));
 
-			Color text_color = get_theme_color(read_only ? SNAME("font_disabled_color") : SNAME("font_color"), EditorStringName(Editor));
+			Color text_color = get_theme_color(read_only ? SNAME("font_disabled_color") : SceneStringName(font_color), EditorStringName(Editor));
 			text_color.a *= 0.5;
 
 			Color text_color_on = get_theme_color(read_only ? SNAME("font_disabled_color") : SNAME("font_hover_color"), EditorStringName(Editor));
@@ -1029,8 +1029,8 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 						draw_rect(rect2, color);
 						flag_rects.push_back(rect2);
 
-						Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-						int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+						Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+						int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 						Vector2 offset;
 						offset.y = rect2.size.y * 0.75;
 
@@ -1304,7 +1304,7 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	layers = memnew(PopupMenu);
 	add_child(layers);
 	layers->set_hide_on_checkable_item_selection(false);
-	layers->connect("id_pressed", callable_mp(this, &EditorPropertyLayers::_menu_pressed));
+	layers->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyLayers::_menu_pressed));
 	layers->connect("popup_hide", callable_mp((BaseButton *)button, &BaseButton::set_pressed).bind(false));
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorPropertyLayers::_refresh_names));
 }
@@ -1348,7 +1348,7 @@ EditorPropertyInteger::EditorPropertyInteger() {
 	spin->set_flat(true);
 	add_child(spin);
 	add_focusable(spin);
-	spin->connect("value_changed", callable_mp(this, &EditorPropertyInteger::_value_changed));
+	spin->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyInteger::_value_changed));
 }
 
 ///////////////////// OBJECT ID /////////////////////////
@@ -1485,7 +1485,7 @@ EditorPropertyFloat::EditorPropertyFloat() {
 	spin->set_flat(true);
 	add_child(spin);
 	add_focusable(spin);
-	spin->connect("value_changed", callable_mp(this, &EditorPropertyFloat::_value_changed));
+	spin->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyFloat::_value_changed));
 }
 
 ///////////////////// EASING /////////////////////////
@@ -1570,14 +1570,14 @@ void EditorPropertyEasing::_draw_easing() {
 
 	const float exp = get_edited_property_value();
 
-	const Ref<Font> f = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-	const Color font_color = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SNAME("font_color"), SNAME("LineEdit"));
+	const Ref<Font> f = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+	const Color font_color = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SceneStringName(font_color), SNAME("LineEdit"));
 	Color line_color;
 	if (dragging) {
 		line_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 	} else {
-		line_color = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SNAME("font_color"), SNAME("LineEdit")) * Color(1, 1, 1, 0.9);
+		line_color = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SceneStringName(font_color), SNAME("LineEdit")) * Color(1, 1, 1, 0.9);
 	}
 
 	Vector<Point2> points;
@@ -1670,7 +1670,7 @@ void EditorPropertyEasing::_notification(int p_what) {
 				preset->add_icon_item(get_editor_theme_icon(SNAME("CurveInOut")), "Ease In-Out", EASING_IN_OUT);
 				preset->add_icon_item(get_editor_theme_icon(SNAME("CurveOutIn")), "Ease Out-In", EASING_OUT_IN);
 			}
-			easing_draw->set_custom_minimum_size(Size2(0, get_theme_font(SNAME("font"), SNAME("Label"))->get_height(get_theme_font_size(SNAME("font_size"), SNAME("Label"))) * 2));
+			easing_draw->set_custom_minimum_size(Size2(0, get_theme_font(SceneStringName(font), SNAME("Label"))->get_height(get_theme_font_size(SceneStringName(font_size), SNAME("Label"))) * 2));
 		} break;
 	}
 }
@@ -1687,7 +1687,7 @@ EditorPropertyEasing::EditorPropertyEasing() {
 
 	preset = memnew(PopupMenu);
 	add_child(preset);
-	preset->connect("id_pressed", callable_mp(this, &EditorPropertyEasing::_set_preset));
+	preset->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyEasing::_set_preset));
 
 	spin = memnew(EditorSpinSlider);
 	spin->set_flat(true);
@@ -1697,7 +1697,7 @@ EditorPropertyEasing::EditorPropertyEasing() {
 	spin->set_hide_slider(true);
 	spin->set_allow_lesser(true);
 	spin->set_allow_greater(true);
-	spin->connect("value_changed", callable_mp(this, &EditorPropertyEasing::_spin_value_changed));
+	spin->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyEasing::_spin_value_changed));
 	spin->get_line_edit()->connect(SceneStringName(focus_exited), callable_mp(this, &EditorPropertyEasing::_spin_focus_exited));
 	spin->hide();
 	add_child(spin);
@@ -1789,7 +1789,7 @@ EditorPropertyRect2::EditorPropertyRect2(bool p_force_wide) {
 		}
 
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyRect2::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyRect2::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -1885,7 +1885,7 @@ EditorPropertyRect2i::EditorPropertyRect2i(bool p_force_wide) {
 		}
 
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyRect2i::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyRect2i::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -1972,7 +1972,7 @@ EditorPropertyPlane::EditorPropertyPlane(bool p_force_wide) {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyPlane::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyPlane::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -2078,9 +2078,9 @@ void EditorPropertyQuaternion::_notification(int p_what) {
 				euler[i]->add_theme_color_override("label_color", colors[i]);
 			}
 			edit_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
-			euler_label->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("property_color"), SNAME("EditorProperty")));
+			euler_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("property_color"), SNAME("EditorProperty")));
 			warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
-			warning->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			warning->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		} break;
 	}
 }
@@ -2145,7 +2145,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 		spin[i]->set_label(desc[i]);
 		default_layout->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyQuaternion::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyQuaternion::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -2172,7 +2172,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 		euler[i]->set_label(desc[i]);
 		edit_custom_layout->add_child(euler[i]);
 		add_focusable(euler[i]);
-		euler[i]->connect("value_changed", callable_mp(this, &EditorPropertyQuaternion::_custom_value_changed));
+		euler[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyQuaternion::_custom_value_changed));
 		if (horizontal) {
 			euler[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -2261,7 +2261,7 @@ EditorPropertyAABB::EditorPropertyAABB() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyAABB::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyAABB::_value_changed).bind(desc[i]));
 	}
 	set_bottom_editor(g);
 }
@@ -2345,7 +2345,7 @@ EditorPropertyTransform2D::EditorPropertyTransform2D(bool p_include_origin) {
 		}
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform2D::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyTransform2D::_value_changed).bind(desc[i]));
 	}
 	set_bottom_editor(g);
 }
@@ -2428,7 +2428,7 @@ EditorPropertyBasis::EditorPropertyBasis() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyBasis::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyBasis::_value_changed).bind(desc[i]));
 	}
 	set_bottom_editor(g);
 }
@@ -2520,7 +2520,7 @@ EditorPropertyTransform3D::EditorPropertyTransform3D() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform3D::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyTransform3D::_value_changed).bind(desc[i]));
 	}
 	set_bottom_editor(g);
 }
@@ -2620,7 +2620,7 @@ EditorPropertyProjection::EditorPropertyProjection() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyProjection::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyProjection::_value_changed).bind(desc[i]));
 	}
 	set_bottom_editor(g);
 }
@@ -2645,7 +2645,7 @@ void EditorPropertyColor::_color_changed(const Color &p_color) {
 }
 
 void EditorPropertyColor::_popup_closed() {
-	get_edited_object()->set(get_edited_property(), last_color);
+	get_edited_object()->set(get_edited_property(), was_checked ? Variant(last_color) : Variant());
 	if (!picker->get_pick_color().is_equal_approx(last_color)) {
 		emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
 	}
@@ -2653,6 +2653,7 @@ void EditorPropertyColor::_popup_closed() {
 
 void EditorPropertyColor::_picker_opening() {
 	last_color = picker->get_pick_color();
+	was_checked = !is_checkable() || is_checked();
 }
 
 void EditorPropertyColor::_notification(int p_what) {
@@ -2921,8 +2922,7 @@ void EditorPropertyNodePath::update_property() {
 	assign->set_icon(EditorNode::get_singleton()->get_object_icon(target_node, "Node"));
 }
 
-void EditorPropertyNodePath::setup(const NodePath &p_base_hint, const Vector<StringName> &p_valid_types, bool p_use_path_from_scene_root, bool p_editing_node) {
-	base_hint = p_base_hint;
+void EditorPropertyNodePath::setup(const Vector<StringName> &p_valid_types, bool p_use_path_from_scene_root, bool p_editing_node) {
 	valid_types = p_valid_types;
 	editing_node = p_editing_node;
 	use_path_from_scene_root = p_use_path_from_scene_root;
@@ -2942,10 +2942,6 @@ void EditorPropertyNodePath::_notification(int p_what) {
 }
 
 Node *EditorPropertyNodePath::get_base_node() {
-	if (!base_hint.is_empty() && get_tree()->get_root()->has_node(base_hint)) {
-		return get_tree()->get_root()->get_node(base_hint);
-	}
-
 	Node *base_node = Object::cast_to<Node>(get_edited_object());
 
 	if (!base_node) {
@@ -2994,7 +2990,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	menu->get_popup()->add_item(TTR("Copy as Text"), ACTION_COPY);
 	menu->get_popup()->add_item(TTR("Edit"), ACTION_EDIT);
 	menu->get_popup()->add_item(TTR("Show Node in Tree"), ACTION_SELECT);
-	menu->get_popup()->connect(SNAME("id_pressed"), callable_mp(this, &EditorPropertyNodePath::_menu_option));
+	menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyNodePath::_menu_option));
 
 	edit = memnew(LineEdit);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -3263,7 +3259,7 @@ void EditorPropertyResource::_open_editor_pressed() {
 	Ref<Resource> res = get_edited_property_value();
 	if (res.is_valid()) {
 		// May clear the editor so do it deferred.
-		callable_mp(EditorNode::get_singleton(), &EditorNode::edit_item).bind(res.ptr(), this).call_deferred();
+		callable_mp(EditorNode::get_singleton(), &EditorNode::edit_item).call_deferred(res.ptr(), this);
 	}
 }
 
@@ -3853,7 +3849,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			if (p_hint == PROPERTY_HINT_NODE_PATH_VALID_TYPES && !p_hint_text.is_empty()) {
 				Vector<String> types = p_hint_text.split(",", false);
 				Vector<StringName> sn = Variant(types); //convert via variant
-				editor->setup(NodePath(), sn, (p_usage & PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT));
+				editor->setup(sn, (p_usage & PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT));
 			}
 			return editor;
 
@@ -3867,7 +3863,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyNodePath *editor = memnew(EditorPropertyNodePath);
 				Vector<String> types = p_hint_text.split(",", false);
 				Vector<StringName> sn = Variant(types); //convert via variant
-				editor->setup(NodePath(), sn, false, true);
+				editor->setup(sn, false, true);
 				return editor;
 			} else {
 				EditorPropertyResource *editor = memnew(EditorPropertyResource);

@@ -37,7 +37,7 @@
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
-#include "core/version.h"
+#include "core/version_generated.gen.h"
 #include "editor/doc_data_compressed.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
@@ -345,7 +345,7 @@ void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
 		Ref<StyleBox> class_desc_stylebox = theme_cache.background_style->duplicate();
 		class_desc_stylebox->set_content_margin(SIDE_LEFT, display_margin);
 		class_desc_stylebox->set_content_margin(SIDE_RIGHT, display_margin);
-		class_desc->add_theme_style_override("normal", class_desc_stylebox);
+		class_desc->add_theme_style_override(CoreStringName(normal), class_desc_stylebox);
 		class_desc->add_theme_style_override("focused", class_desc_stylebox);
 	}
 }
@@ -2340,6 +2340,9 @@ void EditorHelp::_help_callback(const String &p_topic) {
 
 	if (class_desc->is_ready()) {
 		// call_deferred() is not enough.
+		if (class_desc->is_connected(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph))) {
+			class_desc->disconnect(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph));
+		}
 		class_desc->connect(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).bind(line), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 	} else {
 		scroll_to = line;
@@ -2890,7 +2893,7 @@ void EditorHelp::_load_doc_thread(void *p_udata) {
 		callable_mp_static(&EditorHelp::_gen_extensions_docs).call_deferred();
 	} else {
 		// We have to go back to the main thread to start from scratch, bypassing any possibly existing cache.
-		callable_mp_static(&EditorHelp::generate_doc).bind(false).call_deferred();
+		callable_mp_static(&EditorHelp::generate_doc).call_deferred(false);
 	}
 
 	OS::get_singleton()->benchmark_end_measure("EditorHelp", vformat("Generate Documentation (Run %d)", doc_generation_count));
@@ -3380,6 +3383,7 @@ EditorHelpBit::HelpData EditorHelpBit::_get_theme_item_help_data(const StringNam
 			if (theme_item.name == p_theme_item_name) {
 				result = current;
 				found = true;
+
 				if (!is_native) {
 					break;
 				}
@@ -3719,7 +3723,7 @@ void EditorHelpBit::set_content_height_limits(float p_min, float p_max) {
 
 void EditorHelpBit::update_content_height() {
 	float content_height = content->get_content_height();
-	const Ref<StyleBox> style = content->get_theme_stylebox("normal");
+	const Ref<StyleBox> style = content->get_theme_stylebox(CoreStringName(normal));
 	if (style.is_valid()) {
 		content_height += style->get_content_margin(SIDE_TOP) + style->get_content_margin(SIDE_BOTTOM);
 	}
@@ -3731,6 +3735,7 @@ EditorHelpBit::EditorHelpBit(const String &p_symbol) {
 
 	title = memnew(RichTextLabel);
 	title->set_theme_type_variation("EditorHelpBitTitle");
+	title->set_custom_minimum_size(Size2(512 * EDSCALE, 0)); // GH-93031. Set the minimum width even if `fit_content` is true.
 	title->set_fit_content(true);
 	title->set_selection_enabled(true);
 	//title->set_context_menu_enabled(true); // TODO: Fix opening context menu hides tooltip.
@@ -3964,12 +3969,12 @@ void EditorHelpHighlighter::reset_cache() {
 
 #ifdef MODULE_GDSCRIPT_ENABLED
 	highlight_data_caches[LANGUAGE_GDSCRIPT].clear();
-	text_edits[LANGUAGE_GDSCRIPT]->add_theme_color_override("font_color", text_color);
+	text_edits[LANGUAGE_GDSCRIPT]->add_theme_color_override(SceneStringName(font_color), text_color);
 #endif
 
 #ifdef MODULE_MONO_ENABLED
 	highlight_data_caches[LANGUAGE_CSHARP].clear();
-	text_edits[LANGUAGE_CSHARP]->add_theme_color_override("font_color", text_color);
+	text_edits[LANGUAGE_CSHARP]->add_theme_color_override(SceneStringName(font_color), text_color);
 #endif
 }
 
@@ -3978,7 +3983,7 @@ EditorHelpHighlighter::EditorHelpHighlighter() {
 
 #ifdef MODULE_GDSCRIPT_ENABLED
 	TextEdit *gdscript_text_edit = memnew(TextEdit);
-	gdscript_text_edit->add_theme_color_override("font_color", text_color);
+	gdscript_text_edit->add_theme_color_override(SceneStringName(font_color), text_color);
 
 	Ref<GDScript> gdscript;
 	gdscript.instantiate();
@@ -3995,7 +4000,7 @@ EditorHelpHighlighter::EditorHelpHighlighter() {
 
 #ifdef MODULE_MONO_ENABLED
 	TextEdit *csharp_text_edit = memnew(TextEdit);
-	csharp_text_edit->add_theme_color_override("font_color", text_color);
+	csharp_text_edit->add_theme_color_override(SceneStringName(font_color), text_color);
 
 	// See GH-89610.
 	//Ref<CSharpScript> csharp;
@@ -4032,7 +4037,7 @@ FindBar::FindBar() {
 	add_child(search_text);
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->set_h_size_flags(SIZE_EXPAND_FILL);
-	search_text->connect("text_changed", callable_mp(this, &FindBar::_search_text_changed));
+	search_text->connect(SceneStringName(text_changed), callable_mp(this, &FindBar::_search_text_changed));
 	search_text->connect("text_submitted", callable_mp(this, &FindBar::_search_text_submitted));
 
 	matches_label = memnew(Label);
@@ -4089,7 +4094,7 @@ void FindBar::_notification(int p_what) {
 			hide_button->set_texture_hover(get_editor_theme_icon(SNAME("Close")));
 			hide_button->set_texture_pressed(get_editor_theme_icon(SNAME("Close")));
 			hide_button->set_custom_minimum_size(hide_button->get_texture_normal()->get_size());
-			matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			matches_label->add_theme_color_override(SceneStringName(font_color), results_count > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -4157,7 +4162,7 @@ void FindBar::_update_matches_label() {
 	} else {
 		matches_label->show();
 
-		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		matches_label->add_theme_color_override(SceneStringName(font_color), results_count > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		matches_label->set_text(vformat(results_count == 1 ? TTR("%d match.") : TTR("%d matches."), results_count));
 	}
 }

@@ -32,6 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/os/time.h"
+#include "core/version.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -55,12 +57,12 @@ void ProjectListItemControl::_notification(int p_what) {
 			}
 
 			project_title->begin_bulk_theme_override();
-			project_title->add_theme_font_override("font", get_theme_font(SNAME("title"), EditorStringName(EditorFonts)));
-			project_title->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("title_size"), EditorStringName(EditorFonts)));
-			project_title->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("Tree")));
+			project_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title"), EditorStringName(EditorFonts)));
+			project_title->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("title_size"), EditorStringName(EditorFonts)));
+			project_title->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("Tree")));
 			project_title->end_bulk_theme_override();
 
-			project_path->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("Tree")));
+			project_path->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("Tree")));
 			project_unsupported_features->set_texture(get_editor_theme_icon(SNAME("NodeWarning")));
 
 			favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Favorites")));
@@ -130,12 +132,29 @@ void ProjectListItemControl::set_project_icon(const Ref<Texture2D> &p_icon) {
 	project_icon->set_texture(p_icon);
 }
 
+void ProjectListItemControl::set_last_edited_info(const String &p_info) {
+	last_edited_info->set_text(p_info);
+}
+
+void ProjectListItemControl::set_project_version(const String &p_info) {
+	project_version->set_text(p_info);
+}
+
 void ProjectListItemControl::set_unsupported_features(PackedStringArray p_features) {
 	if (p_features.size() > 0) {
 		String tooltip_text = "";
 		for (int i = 0; i < p_features.size(); i++) {
 			if (ProjectList::project_feature_looks_like_version(p_features[i])) {
-				tooltip_text += TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
+				PackedStringArray project_version_split = p_features[i].split(".");
+				int project_version_major = 0, project_version_minor = 0;
+				if (project_version_split.size() >= 2) {
+					project_version_major = project_version_split[0].to_int();
+					project_version_minor = project_version_split[1].to_int();
+				}
+				if (VERSION_MAJOR != project_version_major || VERSION_MINOR <= project_version_minor) {
+					// Don't show a warning if the project was last edited in a previous minor version.
+					tooltip_text += TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
+				}
 				p_features.remove_at(i);
 				i--;
 			}
@@ -144,6 +163,10 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 			String unsupported_features_str = String(", ").join(p_features);
 			tooltip_text += TTR("This project uses features unsupported by the current build:") + "\n" + unsupported_features_str;
 		}
+		if (tooltip_text.is_empty()) {
+			return;
+		}
+		project_version->set_tooltip_text(tooltip_text);
 		project_unsupported_features->set_tooltip_text(tooltip_text);
 		project_unsupported_features->show();
 	} else {
@@ -278,6 +301,18 @@ ProjectListItemControl::ProjectListItemControl() {
 		path_hb->add_child(project_unsupported_features);
 		project_unsupported_features->hide();
 
+		project_version = memnew(Label);
+		project_version->set_name("ProjectVersion");
+		project_version->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		path_hb->add_child(project_version);
+
+		last_edited_info = memnew(Label);
+		last_edited_info->set_name("LastEditedInfo");
+		last_edited_info->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		last_edited_info->set_tooltip_text(TTR("Last edited timestamp"));
+		last_edited_info->set_modulate(Color(1, 1, 1, 0.5));
+		path_hb->add_child(last_edited_info);
+
 		Control *spacer = memnew(Control);
 		spacer->set_custom_minimum_size(Size2(10, 10));
 		path_hb->add_child(spacer);
@@ -409,6 +444,24 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	PackedStringArray project_features = cf->get_value("application", "config/features", PackedStringArray());
 	PackedStringArray unsupported_features = ProjectSettings::get_unsupported_features(project_features);
 
+	String project_version = "?";
+	for (int i = 0; i < project_features.size(); i++) {
+		if (ProjectList::project_feature_looks_like_version(project_features[i])) {
+			project_version = project_features[i];
+			break;
+		}
+	}
+
+	if (config_version < ProjectSettings::CONFIG_VERSION) {
+		// Previous versions may not have unsupported features.
+		if (config_version == 4) {
+			unsupported_features.push_back("3.x");
+			project_version = "3.x";
+		} else {
+			unsupported_features.push_back("Unknown version");
+		}
+	}
+
 	uint64_t last_edited = 0;
 	if (cf_err == OK) {
 		// The modification date marks the date the project was last edited.
@@ -433,7 +486,7 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 		ProjectManager::get_singleton()->add_new_tag(tag);
 	}
 
-	return Item(project_name, description, tags, p_path, icon, main_scene, unsupported_features, last_edited, p_favorite, grayed, missing, config_version);
+	return Item(project_name, description, project_version, tags, p_path, icon, main_scene, unsupported_features, last_edited, p_favorite, grayed, missing, config_version);
 }
 
 void ProjectList::_update_icons_async() {
@@ -706,6 +759,8 @@ void ProjectList::_create_project_item_control(int p_index) {
 	hb->set_tooltip_text(item.description);
 	hb->set_tags(item.tags, this);
 	hb->set_unsupported_features(item.unsupported_features.duplicate());
+	hb->set_project_version(item.project_version);
+	hb->set_last_edited_info(Time::get_singleton()->get_datetime_string_from_unix_time(item.last_edited, true));
 
 	hb->set_is_favorite(item.favorite);
 	hb->set_is_missing(item.missing);

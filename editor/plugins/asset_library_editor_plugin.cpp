@@ -91,9 +91,9 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			icon->set_texture_normal(get_editor_theme_icon(SNAME("ProjectIconLoading")));
-			category->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
-			author->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
-			price->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
+			category->add_theme_color_override(SceneStringName(font_color), Color(0.5, 0.5, 0.5));
+			author->add_theme_color_override(SceneStringName(font_color), Color(0.5, 0.5, 0.5));
+			price->add_theme_color_override(SceneStringName(font_color), Color(0.5, 0.5, 0.5));
 
 			if (author->get_default_cursor_shape() == CURSOR_ARROW) {
 				// Disable visible feedback if author link isn't clickable.
@@ -127,7 +127,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	Ref<StyleBoxEmpty> border;
 	border.instantiate();
 	border->set_content_margin_all(5 * EDSCALE);
-	add_theme_style_override("panel", border);
+	add_theme_style_override(SceneStringName(panel), border);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	// Add some spacing to visually separate the icon from the asset details.
@@ -181,7 +181,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	label_margin->set_content_margin_all(0);
 
 	price = memnew(Label);
-	price->add_theme_style_override("normal", label_margin);
+	price->add_theme_style_override(CoreStringName(normal), label_margin);
 	price->set_tooltip_text(TTR("License"));
 	price->set_mouse_filter(MOUSE_FILTER_PASS);
 
@@ -240,7 +240,7 @@ void EditorAssetLibraryItemDescription::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			previews_bg->add_theme_style_override("panel", previews->get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit")));
+			previews_bg->add_theme_style_override(SceneStringName(panel), previews->get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit")));
 		} break;
 	}
 }
@@ -456,8 +456,8 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 void EditorAssetLibraryItemDownload::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("AssetLib")));
-			status->add_theme_color_override("font_color", get_theme_color(SNAME("status_color"), SNAME("AssetLib")));
+			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("AssetLib")));
+			status->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("status_color"), SNAME("AssetLib")));
 			dismiss_button->set_texture_normal(get_theme_icon(SNAME("dismiss"), SNAME("AssetLib")));
 		} break;
 
@@ -620,7 +620,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	asset_installer = memnew(EditorAssetInstaller);
 	panel->add_child(asset_installer);
-	asset_installer->connect("confirmed", callable_mp(this, &EditorAssetLibraryItemDownload::_close));
+	asset_installer->connect(SceneStringName(confirmed), callable_mp(this, &EditorAssetLibraryItemDownload::_close));
 
 	prev_status = -1;
 
@@ -631,7 +631,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 void EditorAssetLibrary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("AssetLib")));
+			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("bg"), SNAME("AssetLib")));
 			error_label->move_to_front();
 		} break;
 
@@ -639,8 +639,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			error_tr->set_texture(get_editor_theme_icon(SNAME("Error")));
 			filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-			library_scroll_bg->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-			downloads_scroll->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			library_scroll_bg->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+			downloads_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			error_label->add_theme_color_override("color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
 
@@ -1427,7 +1427,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			description = memnew(EditorAssetLibraryItemDescription);
 			add_child(description);
-			description->connect("confirmed", callable_mp(this, &EditorAssetLibrary::_install_asset));
+			description->connect(SceneStringName(confirmed), callable_mp(this, &EditorAssetLibrary::_install_asset));
 
 			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
 
@@ -1601,7 +1601,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	filter->set_clear_button_enabled(true);
 	search_hb->add_child(filter);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	filter->connect("text_changed", callable_mp(this, &EditorAssetLibrary::_search_text_changed));
+	filter->connect(SceneStringName(text_changed), callable_mp(this, &EditorAssetLibrary::_search_text_changed));
 
 	// Perform a search automatically if the user hasn't entered any text for a certain duration.
 	// This way, the user doesn't need to press Enter to initiate their search.
@@ -1643,7 +1643,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	sort->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	sort->set_clip_text(true);
-	sort->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_rerun_search));
+	sort->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_rerun_search));
 
 	search_hb2->add_child(memnew(VSeparator));
 
@@ -1653,7 +1653,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(categories);
 	categories->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	categories->set_clip_text(true);
-	categories->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_rerun_search));
+	categories->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_rerun_search));
 
 	search_hb2->add_child(memnew(VSeparator));
 
@@ -1662,7 +1662,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	_update_repository_options();
 
-	repository->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_repository_changed));
+	repository->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_repository_changed));
 
 	search_hb2->add_child(repository);
 	repository->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1679,7 +1679,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_TESTING]), SUPPORT_TESTING);
 	support->get_popup()->set_item_checked(SUPPORT_FEATURED, true);
 	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY, true);
-	support->get_popup()->connect("id_pressed", callable_mp(this, &EditorAssetLibrary::_support_toggled));
+	support->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorAssetLibrary::_support_toggled));
 
 	/////////
 
@@ -1698,7 +1698,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	PanelContainer *library_vb_border = memnew(PanelContainer);
 	library_scroll->add_child(library_vb_border);
-	library_vb_border->add_theme_style_override("panel", border2);
+	library_vb_border->add_theme_style_override(SceneStringName(panel), border2);
 	library_vb_border->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	library_vb = memnew(VBoxContainer);

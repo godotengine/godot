@@ -4,17 +4,16 @@
 
 import argparse
 import os
-import platform
 import re
 import sys
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
-from typing import List, Dict, TextIO, Tuple, Optional, Any, Union
+from typing import Any, Dict, List, Optional, TextIO, Tuple, Union
 
 # Import hardcoded version information from version.py
 root_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 sys.path.append(root_directory)  # Include the root directory
-import version
+import version  # noqa: E402
 
 # $DOCS_URL/path/to/page.html(#fragment-tag)
 GODOT_DOCS_PATTERN = re.compile(r"^\$DOCS_URL/(.*)\.html(#.*)?$")
@@ -706,7 +705,7 @@ def main() -> None:
     # <https://github.com/python/cpython/issues/73245>
     if should_color and sys.stdout.isatty() and sys.platform == "win32":
         try:
-            from ctypes import windll, byref, WinError  # type: ignore
+            from ctypes import WinError, byref, windll  # type: ignore
             from ctypes.wintypes import DWORD  # type: ignore
 
             stdout_handle = windll.kernel32.GetStdHandle(DWORD(-11))
@@ -1111,11 +1110,13 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Create signal signature and anchor point.
 
-                f.write(f".. _class_{class_name}_signal_{signal.name}:\n\n")
+                signal_anchor = f"class_{class_name}_signal_{signal.name}"
+                f.write(f".. _{signal_anchor}:\n\n")
+                self_link = f":ref:`🔗<{signal_anchor}>`"
                 f.write(".. rst-class:: classref-signal\n\n")
 
                 _, signature = make_method_signature(class_def, signal, "", state)
-                f.write(f"{signature}\n\n")
+                f.write(f"{signature} {self_link}\n\n")
 
                 # Add signal description, or a call to action if it's missing.
 
@@ -1148,13 +1149,15 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Create enumeration signature and anchor point.
 
-                f.write(f".. _enum_{class_name}_{e.name}:\n\n")
+                enum_anchor = f"enum_{class_name}_{e.name}"
+                f.write(f".. _{enum_anchor}:\n\n")
+                self_link = f":ref:`🔗<{enum_anchor}>`"
                 f.write(".. rst-class:: classref-enumeration\n\n")
 
                 if e.is_bitfield:
-                    f.write(f"flags **{e.name}**:\n\n")
+                    f.write(f"flags **{e.name}**: {self_link}\n\n")
                 else:
-                    f.write(f"enum **{e.name}**:\n\n")
+                    f.write(f"enum **{e.name}**: {self_link}\n\n")
 
                 for value in e.values.values():
                     # Also create signature and anchor point for each enum constant.
@@ -1192,10 +1195,12 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             for constant in class_def.constants.values():
                 # Create constant signature and anchor point.
 
-                f.write(f".. _class_{class_name}_constant_{constant.name}:\n\n")
+                constant_anchor = f"class_{class_name}_constant_{constant.name}"
+                f.write(f".. _{constant_anchor}:\n\n")
+                self_link = f":ref:`🔗<{constant_anchor}>`"
                 f.write(".. rst-class:: classref-constant\n\n")
 
-                f.write(f"**{constant.name}** = ``{constant.value}``\n\n")
+                f.write(f"**{constant.name}** = ``{constant.value}`` {self_link}\n\n")
 
                 # Add constant description.
 
@@ -1228,13 +1233,16 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                     # Create annotation signature and anchor point.
 
+                    self_link = ""
                     if i == 0:
-                        f.write(f".. _class_{class_name}_annotation_{m.name}:\n\n")
+                        annotation_anchor = f"class_{class_name}_annotation_{m.name}"
+                        f.write(f".. _{annotation_anchor}:\n\n")
+                        self_link = f" :ref:`🔗<{annotation_anchor}>`"
 
                     f.write(".. rst-class:: classref-annotation\n\n")
 
                     _, signature = make_method_signature(class_def, m, "", state)
-                    f.write(f"{signature}\n\n")
+                    f.write(f"{signature}{self_link}\n\n")
 
                     # Add annotation description, or a call to action if it's missing.
 
@@ -1268,13 +1276,17 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Create property signature and anchor point.
 
-                f.write(f".. _class_{class_name}_property_{property_def.name}:\n\n")
+                property_anchor = f"class_{class_name}_property_{property_def.name}"
+                f.write(f".. _{property_anchor}:\n\n")
+                self_link = f":ref:`🔗<{property_anchor}>`"
                 f.write(".. rst-class:: classref-property\n\n")
 
                 property_default = ""
                 if property_def.default_value is not None:
                     property_default = f" = {property_def.default_value}"
-                f.write(f"{property_def.type_name.to_rst(state)} **{property_def.name}**{property_default}\n\n")
+                f.write(
+                    f"{property_def.type_name.to_rst(state)} **{property_def.name}**{property_default} {self_link}\n\n"
+                )
 
                 # Create property setter and getter records.
 
@@ -1328,13 +1340,16 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                     # Create constructor signature and anchor point.
 
+                    self_link = ""
                     if i == 0:
-                        f.write(f".. _class_{class_name}_constructor_{m.name}:\n\n")
+                        constructor_anchor = f"class_{class_name}_constructor_{m.name}"
+                        f.write(f".. _{constructor_anchor}:\n\n")
+                        self_link = f" :ref:`🔗<{constructor_anchor}>`"
 
                     f.write(".. rst-class:: classref-constructor\n\n")
 
                     ret_type, signature = make_method_signature(class_def, m, "", state)
-                    f.write(f"{ret_type} {signature}\n\n")
+                    f.write(f"{ret_type} {signature}{self_link}\n\n")
 
                     # Add constructor description, or a call to action if it's missing.
 
@@ -1367,17 +1382,21 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                     # Create method signature and anchor point.
 
+                    self_link = ""
+
                     if i == 0:
                         method_qualifier = ""
                         if m.name.startswith("_"):
                             method_qualifier = "private_"
-
-                        f.write(f".. _class_{class_name}_{method_qualifier}method_{m.name}:\n\n")
+                        method_anchor = f"class_{class_name}_{method_qualifier}method_{m.name}"
+                        f.write(f".. _{method_anchor}:\n\n")
+                        self_link = f" :ref:`🔗<{method_anchor}>`"
 
                     f.write(".. rst-class:: classref-method\n\n")
 
                     ret_type, signature = make_method_signature(class_def, m, "", state)
-                    f.write(f"{ret_type} {signature}\n\n")
+
+                    f.write(f"{ret_type} {signature}{self_link}\n\n")
 
                     # Add method description, or a call to action if it's missing.
 
@@ -1410,16 +1429,16 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                     # Create operator signature and anchor point.
 
-                    operator_anchor = f".. _class_{class_name}_operator_{sanitize_operator_name(m.name, state)}"
+                    operator_anchor = f"class_{class_name}_operator_{sanitize_operator_name(m.name, state)}"
                     for parameter in m.parameters:
                         operator_anchor += f"_{parameter.type_name.type_name}"
-                    operator_anchor += f":\n\n"
-                    f.write(operator_anchor)
+                    f.write(f".. _{operator_anchor}:\n\n")
+                    self_link = f":ref:`🔗<{operator_anchor}>`"
 
                     f.write(".. rst-class:: classref-operator\n\n")
 
                     ret_type, signature = make_method_signature(class_def, m, "", state)
-                    f.write(f"{ret_type} {signature}\n\n")
+                    f.write(f"{ret_type} {signature} {self_link}\n\n")
 
                     # Add operator description, or a call to action if it's missing.
 
@@ -1452,13 +1471,17 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Create theme property signature and anchor point.
 
-                f.write(f".. _class_{class_name}_theme_{theme_item_def.data_name}_{theme_item_def.name}:\n\n")
+                theme_item_anchor = f"class_{class_name}_theme_{theme_item_def.data_name}_{theme_item_def.name}"
+                f.write(f".. _{theme_item_anchor}:\n\n")
+                self_link = f":ref:`🔗<{theme_item_anchor}>`"
                 f.write(".. rst-class:: classref-themeproperty\n\n")
 
                 theme_item_default = ""
                 if theme_item_def.default_value is not None:
                     theme_item_default = f" = {theme_item_def.default_value}"
-                f.write(f"{theme_item_def.type_name.to_rst(state)} **{theme_item_def.name}**{theme_item_default}\n\n")
+                f.write(
+                    f"{theme_item_def.type_name.to_rst(state)} **{theme_item_def.name}**{theme_item_default} {self_link}\n\n"
+                )
 
                 # Add theme property description, or a call to action if it's missing.
 
@@ -1553,7 +1576,7 @@ def make_method_signature(
             out += f":ref:`{op_name}<class_{class_def.name}_{ref_type}_{sanitize_operator_name(definition.name, state)}"
             for parameter in definition.parameters:
                 out += f"_{parameter.type_name.type_name}"
-            out += f">`"
+            out += ">`"
         elif ref_type == "method":
             ref_type_qualifier = ""
             if definition.name.startswith("_"):

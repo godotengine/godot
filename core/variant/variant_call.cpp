@@ -1631,7 +1631,7 @@ int Variant::get_enum_value(Variant::Type p_type, const StringName &p_enum_name,
 	VARARG_CLASS1(m_type, m_name, m_method, m_arg_type)                \
 	register_builtin_method<Method_##m_type##_##m_name>(sarray(m_arg_name), Vector<Variant>());
 
-static void _register_variant_builtin_methods() {
+static void _register_variant_builtin_methods_string() {
 	_VariantCall::constant_data = memnew_arr(_VariantCall::ConstantData, Variant::VARIANT_MAX);
 	_VariantCall::enum_data = memnew_arr(_VariantCall::EnumData, Variant::VARIANT_MAX);
 	builtin_method_info = memnew_arr(BuiltinMethodMap, Variant::VARIANT_MAX);
@@ -1761,7 +1761,9 @@ static void _register_variant_builtin_methods() {
 	/* StringName */
 
 	bind_method(StringName, hash, sarray(), varray());
+}
 
+static void _register_variant_builtin_methods_math() {
 	/* Vector2 */
 
 	bind_method(Vector2, angle, sarray(), varray());
@@ -2059,7 +2061,9 @@ static void _register_variant_builtin_methods() {
 	bind_static_method(Color, from_ok_hsl, sarray("h", "s", "l", "alpha"), varray(1.0));
 
 	bind_static_method(Color, from_rgbe9995, sarray("rgbe"), varray());
+}
 
+static void _register_variant_builtin_methods_misc() {
 	/* RID */
 
 	bind_method(RID, is_valid, sarray(), varray());
@@ -2261,7 +2265,10 @@ static void _register_variant_builtin_methods() {
 	bind_method(Dictionary, get_or_add, sarray("key", "default"), varray(Variant()));
 	bind_method(Dictionary, make_read_only, sarray(), varray());
 	bind_method(Dictionary, is_read_only, sarray(), varray());
+	bind_method(Dictionary, recursive_equal, sarray("dictionary", "recursion_count"), varray());
+}
 
+static void _register_variant_builtin_methods_array() {
 	/* Array */
 
 	bind_method(Array, size, sarray(), varray());
@@ -2591,7 +2598,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedVector4Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedVector4Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedVector4Array, count, sarray("value"), varray());
+}
 
+static void _register_variant_builtin_constants() {
 	/* Register constants */
 
 	int ncc = Color::get_named_color_count();
@@ -2749,7 +2758,11 @@ static void _register_variant_builtin_methods() {
 }
 
 void Variant::_register_variant_methods() {
-	_register_variant_builtin_methods(); //needs to be out due to namespace
+	_register_variant_builtin_methods_string();
+	_register_variant_builtin_methods_math();
+	_register_variant_builtin_methods_misc();
+	_register_variant_builtin_methods_array();
+	_register_variant_builtin_constants();
 }
 
 void Variant::_unregister_variant_methods() {

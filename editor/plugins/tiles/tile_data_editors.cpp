@@ -144,7 +144,8 @@ void GenericTilePolygonEditor::_base_control_draw() {
 	}
 
 	// Draw tile-related things.
-	Size2 tile_size = tile_set->get_tile_size();
+	const Size2 base_tile_size = tile_set->get_tile_size();
+	const Size2 tile_size = background_region.size;
 
 	Transform2D xform;
 	xform.set_origin(base_control->get_size() / 2 + panning);
@@ -170,12 +171,16 @@ void GenericTilePolygonEditor::_base_control_draw() {
 
 	// Draw grid.
 	if (current_snap_option == SNAP_GRID) {
-		Vector2 spacing = tile_size / snap_subdivision->get_value();
+		Vector2 spacing = base_tile_size / snap_subdivision->get_value();
 		Vector2 offset = -tile_size / 2;
+		int w = snap_subdivision->get_value() * (tile_size / base_tile_size).x;
+		int h = snap_subdivision->get_value() * (tile_size / base_tile_size).y;
 
-		for (int i = 1; i < snap_subdivision->get_value(); i++) {
-			base_control->draw_line(Vector2(spacing.x * i, 0) + offset, Vector2(spacing.x * i, tile_size.y) + offset, Color(1, 1, 1, 0.33));
-			base_control->draw_line(Vector2(0, spacing.y * i) + offset, Vector2(tile_size.x, spacing.y * i) + offset, Color(1, 1, 1, 0.33));
+		for (int y = 1; y < h; y++) {
+			for (int x = 1; x < w; x++) {
+				base_control->draw_line(Vector2(spacing.x * x, 0) + offset, Vector2(spacing.x * x, tile_size.y) + offset, Color(1, 1, 1, 0.33));
+				base_control->draw_line(Vector2(0, spacing.y * y) + offset, Vector2(tile_size.x, spacing.y * y) + offset, Color(1, 1, 1, 0.33));
+			}
 		}
 	}
 
@@ -240,8 +245,8 @@ void GenericTilePolygonEditor::_base_control_draw() {
 
 	// Draw the text on top of the selected point.
 	if (tinted_polygon_index >= 0) {
-		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+		int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 		String text = multiple_polygon_mode ? vformat("%d:%d", tinted_polygon_index, tinted_point_index) : vformat("%d", tinted_point_index);
 		Size2 text_size = font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 		base_control->draw_string(font, xform.xform(polygons[tinted_polygon_index][tinted_point_index]) - text_size * 0.5, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1.0, 1.0, 1.0, 0.5));
@@ -898,7 +903,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_advanced_menu->get_popup()->add_item(TTR("Rotate Left"), ROTATE_LEFT, Key::E);
 	button_advanced_menu->get_popup()->add_item(TTR("Flip Horizontally"), FLIP_HORIZONTALLY, Key::H);
 	button_advanced_menu->get_popup()->add_item(TTR("Flip Vertically"), FLIP_VERTICALLY, Key::V);
-	button_advanced_menu->get_popup()->connect("id_pressed", callable_mp(this, &GenericTilePolygonEditor::_advanced_menu_item_pressed));
+	button_advanced_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GenericTilePolygonEditor::_advanced_menu_item_pressed));
 	button_advanced_menu->set_focus_mode(FOCUS_ALL);
 	toolbar->add_child(button_advanced_menu);
 
@@ -939,8 +944,8 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	base_control->set_clip_contents(true);
 	base_control->set_focus_mode(Control::FOCUS_CLICK);
 	root->add_child(base_control);
-	snap_subdivision->connect("value_changed", callable_mp((CanvasItem *)base_control, &CanvasItem::queue_redraw).unbind(1));
-	snap_subdivision->connect("value_changed", callable_mp(this, &GenericTilePolygonEditor::_store_snap_options).unbind(1));
+	snap_subdivision->connect(SceneStringName(value_changed), callable_mp((CanvasItem *)base_control, &CanvasItem::queue_redraw).unbind(1));
+	snap_subdivision->connect(SceneStringName(value_changed), callable_mp(this, &GenericTilePolygonEditor::_store_snap_options).unbind(1));
 
 	editor_zoom_widget = memnew(EditorZoomWidget);
 	editor_zoom_widget->setup_zoom_limits(0.125, 128.0);
@@ -1320,7 +1325,7 @@ TileDataDefaultEditor::TileDataDefaultEditor() {
 	picker_button = memnew(Button);
 	picker_button->set_theme_type_variation("FlatButton");
 	picker_button->set_toggle_mode(true);
-	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", TTR("Picker"), Key::P));
+	picker_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/picker"));
 	toolbar->add_child(picker_button);
 }
 
@@ -2807,7 +2812,7 @@ TileDataTerrainsEditor::TileDataTerrainsEditor() {
 	picker_button = memnew(Button);
 	picker_button->set_theme_type_variation("FlatButton");
 	picker_button->set_toggle_mode(true);
-	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", TTR("Picker"), Key::P));
+	picker_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/picker"));
 	toolbar->add_child(picker_button);
 
 	// Setup

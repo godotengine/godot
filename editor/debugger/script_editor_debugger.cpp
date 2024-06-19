@@ -154,7 +154,7 @@ void ScriptEditorDebugger::update_tabs() {
 }
 
 void ScriptEditorDebugger::clear_style() {
-	tabs->remove_theme_style_override("panel");
+	tabs->remove_theme_style_override(SceneStringName(panel));
 }
 
 void ScriptEditorDebugger::save_node(ObjectID p_id, const String &p_file) {
@@ -825,13 +825,13 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType p_type) {
 	switch (p_type) {
 		case MESSAGE_ERROR:
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			break;
 		case MESSAGE_WARNING:
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			break;
 		default:
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 	}
 	reason->set_text(p_reason);
 
@@ -851,13 +851,13 @@ void ScriptEditorDebugger::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			le_set->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
 			le_clear->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
-			error_tree->connect("item_selected", callable_mp(this, &ScriptEditorDebugger::_error_selected));
+			error_tree->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_error_selected));
 			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 			breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			tabs->add_theme_style_override("panel", get_theme_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
+			tabs->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 
 			skip_breakpoints->set_icon(get_editor_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff")));
 			copy->set_icon(get_editor_theme_icon(SNAME("ActionCopy")));
@@ -869,7 +869,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			vmem_export->set_icon(get_editor_theme_icon(SNAME("Save")));
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			TreeItem *error_root = error_tree->get_root();
 			if (error_root) {
@@ -1009,7 +1009,6 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	set_process(true);
 	camera_override = CameraOverride::OVERRIDE_NONE;
 
-	tabs->set_current_tab(0);
 	_set_reason_text(TTR("Debug session started."), MESSAGE_SUCCESS);
 	_update_buttons_state();
 	emit_signal(SNAME("started"));
@@ -1887,7 +1886,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		threads = memnew(OptionButton);
 		thread_hb->add_child(threads);
 		threads->set_h_size_flags(SIZE_EXPAND_FILL);
-		threads->connect("item_selected", callable_mp(this, &ScriptEditorDebugger::_select_thread));
+		threads->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_select_thread));
 
 		stack_dump = memnew(Tree);
 		stack_dump->set_allow_reselect(true);
@@ -1938,7 +1937,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		tabs->add_child(dbg);
 
 		breakpoints_menu = memnew(PopupMenu);
-		breakpoints_menu->connect("id_pressed", callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
+		breakpoints_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
 		breakpoints_tree->add_child(breakpoints_menu);
 	}
 
@@ -1991,7 +1990,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		errors_tab->add_child(error_tree);
 
 		item_menu = memnew(PopupMenu);
-		item_menu->connect("id_pressed", callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
+		item_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
 		error_tree->add_child(item_menu);
 
 		tabs->add_child(errors_tab);

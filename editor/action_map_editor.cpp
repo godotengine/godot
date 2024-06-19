@@ -428,6 +428,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 		// Update Tree...
 
 		TreeItem *action_item = action_tree->create_item(root);
+		ERR_FAIL_NULL(action_item);
 		action_item->set_meta("__action", action_info.action);
 		action_item->set_meta("__name", action_info.name);
 
@@ -518,7 +519,7 @@ void ActionMapEditor::show_message(const String &p_message) {
 void ActionMapEditor::use_external_search_box(LineEdit *p_searchbox) {
 	memdelete(action_list_search);
 	action_list_search = p_searchbox;
-	action_list_search->connect("text_changed", callable_mp(this, &ActionMapEditor::_search_term_updated));
+	action_list_search->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_search_term_updated));
 }
 
 void ActionMapEditor::_on_filter_focused() {
@@ -542,7 +543,7 @@ ActionMapEditor::ActionMapEditor() {
 	action_list_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	action_list_search->set_placeholder(TTR("Filter by Name"));
 	action_list_search->set_clear_button_enabled(true);
-	action_list_search->connect("text_changed", callable_mp(this, &ActionMapEditor::_search_term_updated));
+	action_list_search->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_search_term_updated));
 	top_hbox->add_child(action_list_search);
 
 	action_list_search_by_event = memnew(EventListenerLineEdit);
@@ -568,7 +569,7 @@ ActionMapEditor::ActionMapEditor() {
 	add_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_edit->set_placeholder(TTR("Add New Action"));
 	add_edit->set_clear_button_enabled(true);
-	add_edit->connect("text_changed", callable_mp(this, &ActionMapEditor::_add_edit_text_changed));
+	add_edit->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_add_edit_text_changed));
 	add_edit->connect("text_submitted", callable_mp(this, &ActionMapEditor::_add_action));
 	add_hbox->add_child(add_edit);
 
@@ -604,7 +605,7 @@ ActionMapEditor::ActionMapEditor() {
 	action_tree->set_column_custom_minimum_width(1, 80 * EDSCALE);
 	action_tree->set_column_expand(2, false);
 	action_tree->set_column_custom_minimum_width(2, 50 * EDSCALE);
-	action_tree->connect("item_edited", callable_mp(this, &ActionMapEditor::_action_edited));
+	action_tree->connect("item_edited", callable_mp(this, &ActionMapEditor::_action_edited), CONNECT_DEFERRED);
 	action_tree->connect("item_activated", callable_mp(this, &ActionMapEditor::_tree_item_activated));
 	action_tree->connect("button_clicked", callable_mp(this, &ActionMapEditor::_tree_button_pressed));
 	main_vbox->add_child(action_tree);
@@ -613,7 +614,7 @@ ActionMapEditor::ActionMapEditor() {
 
 	// Adding event dialog
 	event_config_dialog = memnew(InputEventConfigurationDialog);
-	event_config_dialog->connect("confirmed", callable_mp(this, &ActionMapEditor::_event_config_confirmed));
+	event_config_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ActionMapEditor::_event_config_confirmed));
 	add_child(event_config_dialog);
 
 	message = memnew(AcceptDialog);

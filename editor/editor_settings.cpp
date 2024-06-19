@@ -571,7 +571,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "filesystem/import/blender/blender_path", "", "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "filesystem/import/blender/rpc_port", 6011, "0,65535,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "filesystem/import/blender/rpc_server_uptime", 5, "0,300,1,or_greater,suffix:s", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
-	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "filesystem/import/fbx2gltf/fbx2gltf_path", "", "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "filesystem/import/fbx/fbx2gltf_path", "", "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	// Tools (denoise)
 	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_DIR, "filesystem/tools/oidn/oidn_denoise_path", "", "", PROPERTY_USAGE_DEFAULT)
@@ -651,6 +651,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Behavior: Files
 	_initial_set("text_editor/behavior/files/trim_trailing_whitespace_on_save", false);
+	_initial_set("text_editor/behavior/files/trim_final_newlines_on_save", true);
 	_initial_set("text_editor/behavior/files/autosave_interval_secs", 0);
 	_initial_set("text_editor/behavior/files/restore_scripts_on_load", true);
 	_initial_set("text_editor/behavior/files/convert_indent_on_save", true);
@@ -818,11 +819,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Auto save
 	_initial_set("run/auto_save/save_before_running", true);
 
+	// Bottom panel
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "run/bottom_panel/action_on_play", EditorNode::ACTION_ON_PLAY_OPEN_OUTPUT, "Do Nothing,Open Output,Open Debugger")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "run/bottom_panel/action_on_stop", EditorNode::ACTION_ON_STOP_DO_NOTHING, "Do Nothing,Close Bottom Panel")
+
 	// Output
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "run/output/font_size", 13, "8,48,1")
 	_initial_set("run/output/always_clear_output_on_play", true);
-	_initial_set("run/output/always_open_output_on_play", true);
-	_initial_set("run/output/always_close_output_on_stop", false);
 
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "run/output/max_lines", 10000, "100,100000,1")
 

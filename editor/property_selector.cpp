@@ -225,11 +225,24 @@ void PropertySelector::_update_search() {
 		} else {
 			Ref<Script> script_ref = Object::cast_to<Script>(ObjectDB::get_instance(script));
 			if (script_ref.is_valid()) {
-				methods.push_back(MethodInfo("*Script Methods"));
 				if (script_ref->is_built_in()) {
 					script_ref->reload(true);
 				}
-				script_ref->get_script_method_list(&methods);
+
+				List<MethodInfo> script_methods;
+				script_ref->get_script_method_list(&script_methods);
+
+				methods.push_back(MethodInfo("*Script Methods")); // TODO: Split by inheritance.
+
+				for (const MethodInfo &mi : script_methods) {
+					if (mi.name.begins_with("@")) {
+						// GH-92782. GDScript inline setters/getters are historically present in `get_method_list()`
+						// and can be called using `Object.call()`. However, these functions are meant to be internal
+						// and their names are not valid identifiers, so let's hide them from the user.
+						continue;
+					}
+					methods.push_back(mi);
+				}
 			}
 
 			StringName base = base_type;
@@ -397,11 +410,11 @@ void PropertySelector::_hide_requested() {
 void PropertySelector::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			connect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
+			connect(SceneStringName(confirmed), callable_mp(this, &PropertySelector::_confirmed));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
+			disconnect(SceneStringName(confirmed), callable_mp(this, &PropertySelector::_confirmed));
 		} break;
 	}
 }
@@ -551,7 +564,7 @@ PropertySelector::PropertySelector() {
 	//set_child_rect(vbc);
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
-	search_box->connect("text_changed", callable_mp(this, &PropertySelector::_text_changed));
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &PropertySelector::_text_changed));
 	search_box->connect(SceneStringName(gui_input), callable_mp(this, &PropertySelector::_sbox_input));
 	search_options = memnew(Tree);
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);

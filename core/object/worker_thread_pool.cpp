@@ -53,7 +53,9 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 	int pool_thread_index = thread_ids[Thread::get_caller_id()];
 	ThreadData &curr_thread = threads[pool_thread_index];
 	Task *prev_task = nullptr; // In case this is recursively called.
+
 	bool safe_for_nodes_backup = is_current_thread_safe_for_nodes();
+	CallQueue *call_queue_backup = MessageQueue::get_singleton() != MessageQueue::get_main_singleton() ? MessageQueue::get_singleton() : nullptr;
 
 	{
 		// Tasks must start with this unset. They are free to set-and-forget otherwise.
@@ -169,6 +171,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 	}
 
 	set_current_thread_safe_for_nodes(safe_for_nodes_backup);
+	MessageQueue::set_thread_singleton_override(call_queue_backup);
 #endif
 }
 

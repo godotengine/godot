@@ -51,6 +51,8 @@ protected:
 
 	void _notification(int p_what);
 
+	void update_transform();
+
 	virtual Ref<Mesh> _create_fallback_mesh() override;
 
 public:

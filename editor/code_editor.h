@@ -224,6 +224,7 @@ protected:
 
 public:
 	void trim_trailing_whitespace();
+	void trim_final_newlines();
 	void insert_final_newline();
 
 	enum CaseStyle {

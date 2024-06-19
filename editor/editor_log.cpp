@@ -59,7 +59,7 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 	MessageType message_type = p_type == ERR_HANDLER_WARNING ? MSG_TYPE_WARNING : MSG_TYPE_ERROR;
 
 	if (self->current != Thread::get_caller_id()) {
-		callable_mp(self, &EditorLog::add_message).bind(err_str, message_type).call_deferred();
+		callable_mp(self, &EditorLog::add_message).call_deferred(err_str, message_type);
 	} else {
 		self->add_message(err_str, message_type);
 	}
@@ -124,7 +124,7 @@ void EditorLog::_update_theme() {
 	theme_cache.error_icon = get_editor_theme_icon(SNAME("Error"));
 	theme_cache.warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 	theme_cache.warning_icon = get_editor_theme_icon(SNAME("Warning"));
-	theme_cache.message_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
+	theme_cache.message_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
 }
 
 void EditorLog::_editor_settings_changed() {
@@ -273,6 +273,10 @@ void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 }
 
 void EditorLog::_rebuild_log() {
+	if (messages.is_empty()) {
+		return;
+	}
+
 	log->clear();
 
 	int line_count = 0;
@@ -467,7 +471,7 @@ EditorLog::EditorLog() {
 	search_box->set_placeholder(TTR("Filter Messages"));
 	search_box->set_clear_button_enabled(true);
 	search_box->set_visible(true);
-	search_box->connect("text_changed", callable_mp(this, &EditorLog::_search_changed));
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorLog::_search_changed));
 	vb_left->add_child(search_box);
 
 	VBoxContainer *vb_right = memnew(VBoxContainer);

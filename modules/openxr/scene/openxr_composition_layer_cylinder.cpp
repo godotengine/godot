@@ -52,6 +52,7 @@ OpenXRCompositionLayerCylinder::OpenXRCompositionLayerCylinder() {
 		aspect_ratio, // aspectRatio
 	};
 	openxr_layer_provider = memnew(OpenXRViewportCompositionLayerProvider((XrCompositionLayerBaseHeader *)&composition_layer));
+	XRServer::get_singleton()->connect("reference_frame_changed", callable_mp(this, &OpenXRCompositionLayerCylinder::update_transform));
 }
 
 OpenXRCompositionLayerCylinder::~OpenXRCompositionLayerCylinder() {
@@ -131,12 +132,13 @@ Ref<Mesh> OpenXRCompositionLayerCylinder::_create_fallback_mesh() {
 void OpenXRCompositionLayerCylinder::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			Transform3D transform = get_transform();
-			Quaternion quat(transform.basis.orthonormalized());
-			composition_layer.pose.orientation = { (float)quat.x, (float)quat.y, (float)quat.z, (float)quat.w };
-			composition_layer.pose.position = { (float)transform.origin.x, (float)transform.origin.y, (float)transform.origin.z };
+			update_transform();
 		} break;
 	}
+}
+
+void OpenXRCompositionLayerCylinder::update_transform() {
+	composition_layer.pose = get_openxr_pose();
 }
 
 void OpenXRCompositionLayerCylinder::set_radius(float p_radius) {

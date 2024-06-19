@@ -6,8 +6,9 @@ Import("env")
 
 # The HTTP server "targets". Run with "scons p=web serve", or "scons p=web run"
 if "serve" in COMMAND_LINE_TARGETS or "run" in COMMAND_LINE_TARGETS:
-    from serve import serve
     import os
+
+    from serve import serve
 
     port = os.environ.get("GODOT_WEB_TEST_PORT", 8060)
     try:
@@ -64,8 +65,8 @@ if env["dlink_enabled"]:
     # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
     sys_env.Append(LIBS=["idbfs.js"])
     # Configure it as a main module (dynamic linking support).
-    sys_env["CCFLAGS"].remove("SIDE_MODULE=2")
-    sys_env["LINKFLAGS"].remove("SIDE_MODULE=2")
+    sys_env["CCFLAGS"].remove("-sSIDE_MODULE=2")
+    sys_env["LINKFLAGS"].remove("-sSIDE_MODULE=2")
     sys_env.Append(CCFLAGS=["-s", "MAIN_MODULE=1"])
     sys_env.Append(LINKFLAGS=["-s", "MAIN_MODULE=1"])
     sys_env.Append(LINKFLAGS=["-s", "EXPORT_ALL=1"])

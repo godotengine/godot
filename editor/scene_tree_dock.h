@@ -239,8 +239,11 @@ class SceneTreeDock : public VBoxContainer {
 	void _inspect_hovered_node();
 	void _reset_hovering_timer();
 	Timer *inspect_hovered_node_delay = nullptr;
+	TreeItem *tree_item_inspected = nullptr;
 	Node *node_hovered_now = nullptr;
 	Node *node_hovered_previously = nullptr;
+	bool select_node_hovered_at_end_of_drag = false;
+	bool hovered_but_reparenting = false;
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
@@ -272,7 +275,8 @@ class SceneTreeDock : public VBoxContainer {
 	void _filter_option_selected(int option);
 	void _append_filter_options_to(PopupMenu *p_menu, bool p_include_separator = true);
 
-	void _perform_instantiate_scenes(const Vector<String> &p_files, Node *parent, int p_pos);
+	void _perform_instantiate_scenes(const Vector<String> &p_files, Node *p_parent, int p_pos);
+	void _perform_create_audio_stream_players(const Vector<String> &p_files, Node *p_parent, int p_pos);
 	void _replace_with_branch_scene(const String &p_file, Node *base);
 
 	void _remote_tree_selected();

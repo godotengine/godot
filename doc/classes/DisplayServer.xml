@@ -63,6 +63,7 @@
 			<param index="2" name="callback" type="Callable" />
 			<description>
 				Creates a new application status indicator with the specified icon, tooltip, and activation callback.
+				[param callback] should take two arguments: the pressed mouse button (one of the [enum MouseButton] constants) and the click position in screen coordinates (a [Vector2i]).
 			</description>
 		</method>
 		<method name="cursor_get_shape" qualifiers="const">
@@ -875,7 +876,7 @@
 			<param index="1" name="open_callback" type="Callable" />
 			<param index="2" name="close_callback" type="Callable" />
 			<description>
-				Registers callables to emit when the menu is respectively about to show or closed.
+				Registers callables to emit when the menu is respectively about to show or closed. Callback methods should have zero arguments.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">
@@ -928,6 +929,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if touch events are available (Android or iOS), the capability is detected on the Web platform or if [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is [code]true[/code].
+			</description>
+		</method>
+		<method name="is_window_transparency_available" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the window background can be made transparent. This method returns [code]false[/code] if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code], or if transparency is not supported by the renderer or OS compositor.
 			</description>
 		</method>
 		<method name="keyboard_get_current_layout" qualifiers="const">
@@ -1181,7 +1188,7 @@
 			<param index="0" name="id" type="int" />
 			<param index="1" name="callback" type="Callable" />
 			<description>
-				Sets the application status indicator activation callback.
+				Sets the application status indicator activation callback. [param callback] should take two arguments: [int] mouse button index (one of [enum MouseButton] values) and [Vector2i] click position in screen coordinates.
 				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
@@ -1562,7 +1569,7 @@
 			<param index="0" name="callback" type="Callable" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the [param callback] that should be called when files are dropped from the operating system's file manager to the window specified by [param window_id].
+				Sets the [param callback] that should be called when files are dropped from the operating system's file manager to the window specified by [param window_id]. [param callback] should take one [PackedStringArray] argument, which is the list of dropped files.
 				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 				[b]Note:[/b] This method is implemented on Windows, macOS, Linux (X11/Wayland), and Web.
 			</description>
@@ -2045,7 +2052,7 @@
 		</constant>
 		<constant name="WINDOW_FLAG_TRANSPARENT" value="3" enum="WindowFlags">
 			The window background can be transparent.
-			[b]Note:[/b] This flag has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
+			[b]Note:[/b] This flag has no effect if [method is_window_transparency_available] returns [code]false[/code].
 			[b]Note:[/b] Transparency support is implemented on Linux (X11/Wayland), macOS, and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
 		</constant>
 		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">

@@ -66,10 +66,13 @@
 	if (cb.is_valid()) {
 		Variant v_button = index;
 		Variant v_pos = ds->mouse_get_position();
-		Variant *v_args[2] = { &v_button, &v_pos };
+		const Variant *v_args[2] = { &v_button, &v_pos };
 		Variant ret;
 		Callable::CallError ce;
 		cb.callp((const Variant **)&v_args, 2, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute status indicator callback: %s.", Variant::get_callable_error_text(cb, v_args, 2, ce)));
+		}
 	}
 }
 

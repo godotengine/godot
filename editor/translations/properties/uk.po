@@ -983,6 +983,9 @@ msgstr "Розмір мініатюр"
 msgid "Import"
 msgstr "Імпорт"
 
+msgid "FBX"
+msgstr "FBX"
+
 msgid "Docks"
 msgstr "Панелі"
 
@@ -1208,9 +1211,6 @@ msgstr "Вставлений екземпляр"
 msgid "Joint"
 msgstr "З’єднання"
 
-msgid "Shape"
-msgstr "Форма"
-
 msgid "Primary Grid Steps"
 msgstr "Кількість кроків основної сітки"
 
@@ -1432,12 +1432,6 @@ msgstr "Розмір шрифту"
 
 msgid "Always Clear Output on Play"
 msgstr "Завжди очищувати вивід при відтворенні"
-
-msgid "Always Open Output on Play"
-msgstr "Завжди відкривати вивід при відтворенні"
-
-msgid "Always Close Output on Stop"
-msgstr "Завжди закривати вивід при зупинці"
 
 msgid "HTTP Proxy"
 msgstr "HTTP-проксі"
@@ -2279,6 +2273,12 @@ msgstr "Назва збірки"
 msgid "Solution Directory"
 msgstr "Каталог проєкту"
 
+msgid "Time"
+msgstr "Час"
+
+msgid "Polygons"
+msgstr "Полігони"
+
 msgid "Operation"
 msgstr "Дія"
 
@@ -2374,9 +2374,6 @@ msgstr "Контур з'єднано"
 
 msgid "CSG"
 msgstr "CSG"
-
-msgid "FBX"
-msgstr "FBX"
 
 msgid "GDScript"
 msgstr "Скрипт"
@@ -3230,9 +3227,6 @@ msgstr "Використовувати MIP-текстурування"
 msgid "Emitting"
 msgstr "Надсилання"
 
-msgid "Time"
-msgstr "Час"
-
 msgid "Lifetime"
 msgstr "Строк служби"
 
@@ -3265,6 +3259,9 @@ msgstr "Порядок малювання"
 
 msgid "Emission Shape"
 msgstr "Маска випромінювання"
+
+msgid "Shape"
+msgstr "Форма"
 
 msgid "Sphere Radius"
 msgstr "Радіус сфери"
@@ -3640,9 +3637,6 @@ msgstr "UV"
 
 msgid "Vertex Colors"
 msgstr "Кольори вершин"
-
-msgid "Polygons"
-msgstr "Полігони"
 
 msgid "Internal Vertex Count"
 msgstr "Створити внутрішню вершину"
@@ -5144,9 +5138,6 @@ msgstr "Використовувати всі поверхні"
 msgid "Surface Index"
 msgstr "Індекс поверхні"
 
-msgid "Panel"
-msgstr "Панель"
-
 msgid "Font Color"
 msgstr "Колір шрифту"
 
@@ -5323,9 +5314,6 @@ msgstr "Швидкість прокрутки"
 
 msgid "Icon Margin"
 msgstr "Поле піктограми"
-
-msgid "Line Separation"
-msgstr "Відокремлення рядків"
 
 msgid "Tab Disabled"
 msgstr "Вкладку вимкнено"

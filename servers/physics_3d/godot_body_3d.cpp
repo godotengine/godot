@@ -675,6 +675,8 @@ void GodotBody3D::integrate_velocities(real_t p_step) {
 		return;
 	}
 
+	ERR_FAIL_NULL(get_space());
+
 	if (fi_callback_data || body_state_callback.is_valid()) {
 		get_space()->body_add_to_state_query_list(&direct_state_query_list);
 	}
@@ -783,6 +785,8 @@ bool GodotBody3D::sleep_test(real_t p_step) {
 	} else if (!can_sleep) {
 		return false;
 	}
+
+	ERR_FAIL_NULL_V(get_space(), true);
 
 	if (Math::abs(angular_velocity.length()) < get_space()->get_body_angular_velocity_sleep_threshold() && Math::abs(linear_velocity.length_squared()) < get_space()->get_body_linear_velocity_sleep_threshold() * get_space()->get_body_linear_velocity_sleep_threshold()) {
 		still_time += p_step;

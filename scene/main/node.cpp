@@ -2584,6 +2584,7 @@ void Node::get_storable_properties(HashSet<StringName> &r_storable_properties) c
 }
 
 String Node::to_string() {
+	// Keep this method in sync with `Object::to_string`.
 	ERR_THREAD_GUARD_V(String());
 	if (get_script_instance()) {
 		bool valid;
@@ -2592,7 +2593,12 @@ String Node::to_string() {
 			return ret;
 		}
 	}
-
+	if (_get_extension() && _get_extension()->to_string) {
+		String ret;
+		GDExtensionBool is_valid;
+		_get_extension()->to_string(_get_extension_instance(), &is_valid, &ret);
+		return ret;
+	}
 	return (get_name() ? String(get_name()) + ":" : "") + Object::to_string();
 }
 
@@ -2818,11 +2824,11 @@ Node *Node::duplicate(int p_flags) const {
 	ERR_THREAD_GUARD_V(nullptr);
 	Node *dupe = _duplicate(p_flags);
 
+	_duplicate_properties(this, this, dupe, p_flags);
+
 	if (dupe && (p_flags & DUPLICATE_SIGNALS)) {
 		_duplicate_signals(this, dupe);
 	}
-
-	_duplicate_properties(this, this, dupe, p_flags);
 
 	return dupe;
 }
@@ -2836,6 +2842,8 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, con
 	int flags = DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANTIATION | DUPLICATE_FROM_EDITOR;
 	Node *dupe = _duplicate(flags, &r_duplimap);
 
+	_duplicate_properties(this, this, dupe, flags);
+
 	// This is used by SceneTreeDock's paste functionality. When pasting to foreign scene, resources are duplicated.
 	if (!p_resource_remap.is_empty()) {
 		remap_node_resources(dupe, p_resource_remap);
@@ -2845,8 +2853,6 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, con
 	// because re-targeting of connections from some descendant to another is not possible
 	// if the emitter node comes later in tree order than the receiver
 	_duplicate_signals(this, dupe);
-
-	_duplicate_properties(this, this, dupe, flags);
 
 	return dupe;
 }

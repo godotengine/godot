@@ -587,7 +587,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	options->get_popup()->add_item(TTR("Create LightOccluder2D Sibling"), MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D);
 	options->set_switch_on_hover(true);
 
-	options->get_popup()->connect("id_pressed", callable_mp(this, &Sprite2DEditor::_menu_option));
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Sprite2DEditor::_menu_option));
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
@@ -613,12 +613,12 @@ Sprite2DEditor::Sprite2DEditor() {
 
 	v_scroll = memnew(VScrollBar);
 	debug_uv->add_child(v_scroll);
-	v_scroll->connect("value_changed", callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
 	h_scroll = memnew(HScrollBar);
 	debug_uv->add_child(h_scroll);
-	h_scroll->connect("value_changed", callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
 
-	debug_uv_dialog->connect("confirmed", callable_mp(this, &Sprite2DEditor::_create_node));
+	debug_uv_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Sprite2DEditor::_create_node));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_child(memnew(Label(TTR("Simplification:"))));

@@ -203,9 +203,9 @@ static bool _appendClipUseNode(SvgLoaderData& loaderData, SvgNode* node, Shape* 
     if (node->transform) finalTransform = *node->transform;
     if (node->node.use.x != 0.0f || node->node.use.y != 0.0f) {
         Matrix m = {1, 0, node->node.use.x, 0, 1, node->node.use.y, 0, 0, 1};
-        finalTransform = mathMultiply(&finalTransform, &m);
+        finalTransform *= m;
     }
-    if (child->transform) finalTransform = mathMultiply(child->transform, &finalTransform);
+    if (child->transform) finalTransform = *child->transform * finalTransform;
 
     return _appendClipShape(loaderData, child, shape, vBox, svgPath, mathIdentity((const Matrix*)(&finalTransform)) ? nullptr : &finalTransform);
 }
@@ -228,13 +228,13 @@ static Matrix _compositionTransform(Paint* paint, const SvgNode* node, const Svg
         m = *node->transform;
     }
     if (compNode->transform) {
-        m = mathMultiply(&m, compNode->transform);
+        m *= *compNode->transform;
     }
     if (!compNode->node.clip.userSpace) {
         float x, y, w, h;
         P(paint)->bounds(&x, &y, &w, &h, false, false);
         Matrix mBBox = {w, 0, x, 0, h, y, 0, 0, 1};
-        m = mathMultiply(&m, &mBBox);
+        m *= mBBox;
     }
     return m;
 }
@@ -474,7 +474,10 @@ static bool _appendClipShape(SvgLoaderData& loaderData, SvgNode* node, Shape* sh
         auto ptsCnt = shape->pathCoords(&pts);
 
         auto p = const_cast<Point*>(pts) + currentPtsCnt;
-        while (currentPtsCnt++ < ptsCnt) mathMultiply(p++, m);
+        while (currentPtsCnt++ < ptsCnt) {
+            *p *= *m;
+            ++p;
+        }
     }
 
     _applyProperty(loaderData, node, shape, vBox, svgPath, true);
@@ -505,6 +508,7 @@ static constexpr struct
 } imageMimeTypes[] = {
     {"jpeg", sizeof("jpeg"), imageMimeTypeEncoding::base64},
     {"png", sizeof("png"), imageMimeTypeEncoding::base64},
+    {"webp", sizeof("webp"), imageMimeTypeEncoding::base64},
     {"svg+xml", sizeof("svg+xml"), imageMimeTypeEncoding::base64 | imageMimeTypeEncoding::utf8},
 };
 
@@ -615,7 +619,7 @@ static unique_ptr<Picture> _imageBuildHelper(SvgLoaderData& loaderData, SvgNode*
         auto sy = node->node.image.h / h;
         m = {sx, 0, node->node.image.x, 0, sy, node->node.image.y, 0, 0, 1};
     }
-    if (node->transform) m = mathMultiply(node->transform, &m);
+    if (node->transform) m = *node->transform * m;
     picture->transform(m);
 
     _applyComposition(loaderData, picture.get(), node, vBox, svgPath);
@@ -708,7 +712,7 @@ static unique_ptr<Scene> _useBuildHelper(SvgLoaderData& loaderData, const SvgNod
     if (node->transform) mUseTransform = *node->transform;
     if (node->node.use.x != 0.0f || node->node.use.y != 0.0f) {
         Matrix mTranslate = {1, 0, node->node.use.x, 0, 1, node->node.use.y, 0, 0, 1};
-        mUseTransform = mathMultiply(&mUseTransform, &mTranslate);
+        mUseTransform *= mTranslate;
     }
 
     if (node->node.use.symbol) {
@@ -732,9 +736,9 @@ static unique_ptr<Scene> _useBuildHelper(SvgLoaderData& loaderData, const SvgNod
         // mSceneTransform = mUseTransform * mSymbolTransform * mViewBox
         Matrix mSceneTransform = mViewBox;
         if (node->node.use.symbol->transform) {
-            mSceneTransform = mathMultiply(node->node.use.symbol->transform, &mViewBox);
+            mSceneTransform = *node->node.use.symbol->transform * mViewBox;
         }
-        mSceneTransform = mathMultiply(&mUseTransform, &mSceneTransform);
+        mSceneTransform = mUseTransform * mSceneTransform;
         scene->transform(mSceneTransform);
 
         if (node->node.use.symbol->node.symbol.overflowVisible) {
@@ -746,7 +750,7 @@ static unique_ptr<Scene> _useBuildHelper(SvgLoaderData& loaderData, const SvgNod
             // mClipTransform = mUseTransform * mSymbolTransform
             Matrix mClipTransform = mUseTransform;
             if (node->node.use.symbol->transform) {
-                mClipTransform = mathMultiply(&mUseTransform, node->node.use.symbol->transform);
+                mClipTransform = mUseTransform * *node->node.use.symbol->transform;
             }
             viewBoxClip->transform(mClipTransform);
 

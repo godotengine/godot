@@ -289,6 +289,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	vbc->add_child(lbl_preview_title);
 
 	lbl_preview = memnew(Label);
+	lbl_preview->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	lbl_preview->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	vbc->add_child(lbl_preview);
 
@@ -318,15 +319,15 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 
 	// Preview
 
-	lne_prefix->connect("text_changed", callable_mp(this, &RenameDialog::_update_preview));
-	lne_suffix->connect("text_changed", callable_mp(this, &RenameDialog::_update_preview));
-	lne_search->connect("text_changed", callable_mp(this, &RenameDialog::_update_preview));
-	lne_replace->connect("text_changed", callable_mp(this, &RenameDialog::_update_preview));
-	spn_count_start->connect("value_changed", callable_mp(this, &RenameDialog::_update_preview_int));
-	spn_count_step->connect("value_changed", callable_mp(this, &RenameDialog::_update_preview_int));
-	spn_count_padding->connect("value_changed", callable_mp(this, &RenameDialog::_update_preview_int));
-	opt_style->connect("item_selected", callable_mp(this, &RenameDialog::_update_preview_int));
-	opt_case->connect("item_selected", callable_mp(this, &RenameDialog::_update_preview_int));
+	lne_prefix->connect(SceneStringName(text_changed), callable_mp(this, &RenameDialog::_update_preview));
+	lne_suffix->connect(SceneStringName(text_changed), callable_mp(this, &RenameDialog::_update_preview));
+	lne_search->connect(SceneStringName(text_changed), callable_mp(this, &RenameDialog::_update_preview));
+	lne_replace->connect(SceneStringName(text_changed), callable_mp(this, &RenameDialog::_update_preview));
+	spn_count_start->connect(SceneStringName(value_changed), callable_mp(this, &RenameDialog::_update_preview_int));
+	spn_count_step->connect(SceneStringName(value_changed), callable_mp(this, &RenameDialog::_update_preview_int));
+	spn_count_padding->connect(SceneStringName(value_changed), callable_mp(this, &RenameDialog::_update_preview_int));
+	opt_style->connect(SceneStringName(item_selected), callable_mp(this, &RenameDialog::_update_preview_int));
+	opt_case->connect(SceneStringName(item_selected), callable_mp(this, &RenameDialog::_update_preview_int));
 	cbut_substitute->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_update_preview).bind(""));
 	cbut_regex->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_update_preview).bind(""));
 	cbut_process->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_update_preview).bind(""));
@@ -398,9 +399,9 @@ void RenameDialog::_update_preview(const String &new_text) {
 			// New name is identical to the old one. Don't color it as much to avoid distracting the user.
 			const Color accent_color = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("accent_color"), EditorStringName(Editor));
 			const Color text_color = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("default_color"), SNAME("RichTextLabel"));
-			lbl_preview->add_theme_color_override("font_color", accent_color.lerp(text_color, 0.5));
+			lbl_preview->add_theme_color_override(SceneStringName(font_color), accent_color.lerp(text_color, 0.5));
 		} else {
-			lbl_preview->add_theme_color_override("font_color", EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("success_color"), EditorStringName(Editor)));
+			lbl_preview->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("success_color"), EditorStringName(Editor)));
 		}
 	}
 
@@ -486,7 +487,7 @@ void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *
 
 	self->has_errors = true;
 	self->lbl_preview_title->set_text(TTR("Regular Expression Error:"));
-	self->lbl_preview->add_theme_color_override("font_color", EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
+	self->lbl_preview->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
 	self->lbl_preview->set_text(vformat(TTR("At character %s"), err_str));
 }
 

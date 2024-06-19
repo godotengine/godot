@@ -183,7 +183,7 @@ void TilesEditorUtils::synchronize_sources_list(Object *p_current_list, Object *
 		} else {
 			item_list->set_current(atlas_sources_lists_current);
 			item_list->ensure_current_is_visible();
-			item_list->emit_signal(SNAME("item_selected"), atlas_sources_lists_current);
+			item_list->emit_signal(SceneStringName(item_selected), atlas_sources_lists_current);
 		}
 	}
 }
@@ -303,6 +303,19 @@ TilesEditorUtils::TilesEditorUtils() {
 	singleton = this;
 	// Pattern preview generation thread.
 	pattern_preview_thread.start(_thread_func, this);
+
+	ED_SHORTCUT("tiles_editor/cut", TTR("Cut"), KeyModifierMask::CMD_OR_CTRL | Key::X);
+	ED_SHORTCUT("tiles_editor/copy", TTR("Copy"), KeyModifierMask::CMD_OR_CTRL | Key::C);
+	ED_SHORTCUT("tiles_editor/paste", TTR("Paste"), KeyModifierMask::CMD_OR_CTRL | Key::V);
+	ED_SHORTCUT("tiles_editor/cancel", TTR("Cancel"), Key::ESCAPE);
+	ED_SHORTCUT("tiles_editor/delete", TTR("Delete"), Key::KEY_DELETE);
+
+	ED_SHORTCUT("tiles_editor/paint_tool", TTR("Paint"), Key::D);
+	ED_SHORTCUT("tiles_editor/line_tool", TTR("Line", "Tool"), Key::L);
+	ED_SHORTCUT("tiles_editor/rect_tool", TTR("Rect"), Key::R);
+	ED_SHORTCUT("tiles_editor/bucket_tool", TTR("Bucket"), Key::B);
+	ED_SHORTCUT("tiles_editor/eraser", TTR("Eraser"), Key::E);
+	ED_SHORTCUT("tiles_editor/picker", TTR("Picker"), Key::P);
 }
 
 TilesEditorUtils::~TilesEditorUtils() {

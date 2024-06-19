@@ -1571,9 +1571,6 @@
 		<member name="Geometry3D" type="Geometry3D" setter="" getter="">
 			The [Geometry3D] singleton.
 		</member>
-		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
-			The [GodotSharp] singleton.
-		</member>
 		<member name="IP" type="IP" setter="" getter="">
 			The [IP] singleton.
 		</member>

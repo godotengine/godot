@@ -11,6 +11,67 @@ namespace_packages = true
 explicit_package_bases = true
 exclude = ["thirdparty/"]
 
-[tool.black]
+[tool.ruff]
+extend-exclude = ["thirdparty"]
+extend-include = ["SConstruct", "SCsub"]
 line-length = 120
-extend-exclude = ".*thirdparty/.*"
+target-version = "py37"
+
+[tool.ruff.lint]
+extend-select = [
+	"I", # isort
+]
+
+[tool.ruff.lint.per-file-ignores]
+"{SConstruct,SCsub}" = [
+	"E402", # Module level import not at top of file
+	"F821", # Undefined name
+]
+
+[tool.codespell]
+enable-colors = ""
+write-changes = ""
+check-hidden = ""
+quiet-level = 3
+builtin = "clear,rare,en-GB_to_en-US"
+skip = """\
+	.mailmap,
+	*.desktop,
+	*.gitignore,
+	*.po,
+	*.pot,
+	*.rc,
+	AUTHORS.md,
+	COPYRIGHT.txt,
+	core/input/gamecontrollerdb.txt,
+	core/string/locales.h,
+	DONORS.md,
+	editor/project_converter_3_to_4.cpp,
+	platform/android/java/lib/src/com/*,
+	platform/web/package-lock.json
+"""
+ignore-words-list = """\
+	breaked,
+	cancelled,
+	checkin,
+	colour,
+	curvelinear,
+	doubleclick,
+	expct,
+	findn,
+	gird,
+	hel,
+	inout,
+	labelin,
+	lod,
+	mis,
+	nd,
+	numer,
+	ot,
+	outin,
+	requestor,
+	te,
+	textin,
+	thirdparty,
+	vai
+"""

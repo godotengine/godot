@@ -80,7 +80,7 @@ enum class Result
     InsufficientCondition, ///< The value returned in case the request cannot be processed - e.g. asking for properties of an object, which does not exist.
     FailedAllocation,      ///< The value returned in case of unsuccessful memory allocation.
     MemoryCorruption,      ///< The value returned in the event of bad memory handling - e.g. failing in pointer releasing or casting
-    NonSupport,            ///< The value returned in case of choosing unsupported options.
+    NonSupport,            ///< The value returned in case of choosing unsupported engine features(options).
     Unknown                ///< The value returned in all other cases.
 };
 
@@ -650,6 +650,30 @@ public:
     virtual Result draw() noexcept;
 
     /**
+     * @brief Sets the drawing region in the canvas.
+     *
+     * This function defines the rectangular area of the canvas that will be used for drawing operations.
+     * The specified viewport is used to clip the rendering output to the boundaries of the rectangle.
+     *
+     * @param[in] x The x-coordinate of the upper-left corner of the rectangle.
+     * @param[in] y The y-coordinate of the upper-left corner of the rectangle.
+     * @param[in] w The width of the rectangle.
+     * @param[in] h The height of the rectangle.
+     *
+     * @retval Result::Success when succeed, Result::InsufficientCondition otherwise.
+     *
+     * @see SwCanvas::target()
+     * @see GlCanvas::target()
+     * @see WgCanvas::target()
+     *
+     * @warning It's not allowed to change the viewport during Canvas::push() - Canvas::sync() or Canvas::update() - Canvas::sync().
+     *
+     * @note When resetting the target, the viewport will also be reset to the target size.
+     * @note Experimental API
+     */
+    virtual Result viewport(int32_t x, int32_t y, int32_t w, int32_t h) noexcept;
+
+    /**
      * @brief Guarantees that drawing task is finished.
      *
      * The Canvas rendering can be performed asynchronously. To make sure that rendering is finished,
@@ -958,7 +982,7 @@ public:
      *
      * @param[in] width The width of the stroke. The default value is 0.
      *
-     * @retval Result::Success when succeed, Result::FailedAllocation otherwise.
+     * @retval Result::Success when succeed.
      */
     Result stroke(float width) noexcept;
 
@@ -970,7 +994,7 @@ public:
      * @param[in] b The blue color channel value in the range [0 ~ 255]. The default value is 0.
      * @param[in] a The alpha channel value in the range [0 ~ 255], where 0 is completely transparent and 255 is opaque. The default value is 0.
      *
-     * @retval Result::Success when succeed, Result::FailedAllocation otherwise.
+     * @retval Result::Success when succeed.
      */
     Result stroke(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) noexcept;
 
@@ -980,8 +1004,7 @@ public:
      * @param[in] f The gradient fill.
      *
      * @retval Result::Success When succeed.
-     * @retval Result::FailedAllocation An internal error with a memory allocation for an object to be filled.
-     * @retval Result::MemoryCorruption In case a @c nullptr is passed as the argument.
+     * @retval Result::MemoryCorruption In case a @c nullptr is passed as the argument or an error with accessing it.
      */
     Result stroke(std::unique_ptr<Fill> f) noexcept;
 
@@ -1005,7 +1028,7 @@ public:
      *
      * @param[in] cap The cap style value. The default value is @c StrokeCap::Square.
      *
-     * @retval Result::Success when succeed, Result::FailedAllocation otherwise.
+     * @retval Result::Success when succeed.
      */
     Result stroke(StrokeCap cap) noexcept;
 
@@ -1016,21 +1039,36 @@ public:
      *
      * @param[in] join The join style value. The default value is @c StrokeJoin::Bevel.
      *
-     * @retval Result::Success when succeed, Result::FailedAllocation otherwise.
+     * @retval Result::Success when succeed.
      */
     Result stroke(StrokeJoin join) noexcept;
-
 
     /**
      * @brief Sets the stroke miterlimit.
      *
      * @param[in] miterlimit The miterlimit imposes a limit on the extent of the stroke join, when the @c StrokeJoin::Miter join style is set. The default value is 4.
      *
-     * @retval Result::Success when succeed, Result::NonSupport unsupported value, Result::FailedAllocation otherwise.
+     * @retval Result::Success when succeed or Result::InvalidArgument for @p miterlimit values less than zero.
      * 
      * @since 0.11
      */
     Result strokeMiterlimit(float miterlimit) noexcept;
+
+    /**
+     * @brief Sets the trim of the stroke along the defined path segment, allowing control over which part of the stroke is visible.
+     *
+     * The values of the arguments @p begin, @p end, and @p offset are in the range of 0.0 to 1.0, representing the beginning of the path and the end, respectively.
+     *
+     * @param[in] begin Specifies the start of the segment to display along the path.
+     * @param[in] end Specifies the end of the segment to display along the path.
+     * @param[in] simultaneous Determines how to trim multiple paths within a single shape. If set to @c true (default), trimming is applied simultaneously to all paths;
+     * Otherwise, all paths are treated as a single entity with a combined length equal to the sum of their individual lengths and are trimmed as such.
+     *
+     * @retval Result::Success when succeed.
+     *
+     * @note Experimental API
+     */
+    Result strokeTrim(float begin, float end, bool simultaneous = true) noexcept;
 
     /**
      * @brief Sets the solid color for all of the figures from the path.
@@ -1071,18 +1109,16 @@ public:
      */
     Result fill(FillRule r) noexcept;
 
-
     /**
      * @brief Sets the rendering order of the stroke and the fill.
      *
      * @param[in] strokeFirst If @c true the stroke is rendered before the fill, otherwise the stroke is rendered as the second one (the default option).
      *
-     * @retval Result::Success when succeed, Result::FailedAllocation otherwise.
+     * @retval Result::Success when succeed.
      *
      * @since 0.10
      */
     Result order(bool strokeFirst) noexcept;
-
 
     /**
      * @brief Gets the commands data of the path.
@@ -1185,6 +1221,18 @@ public:
      * @since 0.11
      */
     float strokeMiterlimit() const noexcept;
+
+    /**
+     * @brief Gets the trim of the stroke along the defined path segment.
+     *
+     * @param[out] begin The starting point of the segment to display along the path.
+     * @param[out] end Specifies the end of the segment to display along the path.
+     *
+     * @retval @c true if trimming is applied simultaneously to all paths of the shape, @c false otherwise.
+     *
+     * @note Experimental API
+     */
+    bool strokeTrim(float* begin, float* end) const noexcept;
 
     /**
      * @brief Creates a new Shape object.
@@ -1660,7 +1708,9 @@ public:
      * @retval Result::InvalidArguments In case no valid pointer is provided or the width, or the height or the stride is zero.
      * @retval Result::NonSupport In case the software engine is not supported.
      *
-     * @warning Do not access @p buffer during Canvas::draw() - Canvas::sync(). It should not be accessed while TVG is writing on it.
+     * @warning Do not access @p buffer during Canvas::push() - Canvas::sync(). It should not be accessed while the engine is writing on it.
+     *
+     * @see Canvas::viewport()
     */
     Result target(uint32_t* buffer, uint32_t stride, uint32_t w, uint32_t h, Colorspace cs) noexcept;
 
@@ -1726,6 +1776,8 @@ public:
      * @warning This API is experimental and not officially supported. It may be modified or removed in future versions.
      * @warning Drawing on the main surface is currently not permitted. If the identifier (@p id) is set to @c 0, the operation will be aborted.
      *
+     * @see Canvas::viewport()
+     *
      * @note Currently, this only allows the GL_RGBA8 color space format.
      * @note Experimental API
     */
@@ -1764,6 +1816,7 @@ public:
      * @warning Please do not use it, this API is not official one. It could be modified in the next version.
      *
      * @note Experimental API
+     * @see Canvas::viewport()
      */
     Result target(void* window, uint32_t w, uint32_t h) noexcept;
 
@@ -1856,6 +1909,7 @@ public:
      *
      * @note For efficiency, ThorVG ignores updates to the new frame value if the difference from the current frame value
      *       is less than 0.001. In such cases, it returns @c Result::InsufficientCondition.
+     *       Values less than 0.001 may be disregarded and may not be accurately retained by the Animation.
      *
      * @see totalFrame()
      *

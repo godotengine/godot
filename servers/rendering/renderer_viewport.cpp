@@ -971,7 +971,7 @@ void RendererViewport::_viewport_set_size(Viewport *p_viewport, int p_width, int
 }
 
 bool RendererViewport::_viewport_requires_motion_vectors(Viewport *p_viewport) {
-	return p_viewport->use_taa || p_viewport->scaling_3d_mode == RenderingServer::VIEWPORT_SCALING_3D_MODE_FSR2;
+	return p_viewport->use_taa || p_viewport->scaling_3d_mode == RenderingServer::VIEWPORT_SCALING_3D_MODE_FSR2 || p_viewport->debug_draw == RenderingServer::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS;
 }
 
 void RendererViewport::viewport_set_active(RID p_viewport, bool p_active) {
@@ -1370,7 +1370,13 @@ void RendererViewport::viewport_set_debug_draw(RID p_viewport, RS::ViewportDebug
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
 
+	bool motion_vectors_before = _viewport_requires_motion_vectors(viewport);
 	viewport->debug_draw = p_draw;
+
+	bool motion_vectors_after = _viewport_requires_motion_vectors(viewport);
+	if (motion_vectors_before != motion_vectors_after) {
+		num_viewports_with_motion_vectors += motion_vectors_after ? 1 : -1;
+	}
 }
 
 void RendererViewport::viewport_set_measure_render_time(RID p_viewport, bool p_enable) {

@@ -160,8 +160,8 @@ struct CellData {
 	}
 };
 
-// For compatibility reasons, we use another comparator for Y-sorted layers.
-struct CellDataYSortedComparator {
+// We use another comparator for Y-sorted layers with reversed X drawing order.
+struct CellDataYSortedXReversedComparator {
 	_FORCE_INLINE_ bool operator()(const CellData &p_a, const CellData &p_b) const {
 		return p_a.coords.x == p_b.coords.x ? (p_a.coords.y < p_b.coords.y) : (p_a.coords.x > p_b.coords.x);
 	}
@@ -245,6 +245,7 @@ public:
 		DIRTY_FLAGS_LAYER_SELF_MODULATE,
 		DIRTY_FLAGS_LAYER_Y_SORT_ENABLED,
 		DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN,
+		DIRTY_FLAGS_LAYER_X_DRAW_ORDER_REVERSED,
 		DIRTY_FLAGS_LAYER_Z_INDEX,
 		DIRTY_FLAGS_LAYER_LIGHT_MASK,
 		DIRTY_FLAGS_LAYER_TEXTURE_FILTER,
@@ -269,6 +270,8 @@ public:
 	};
 
 private:
+	static constexpr float FP_ADJUST = 0.00001;
+
 	// Properties.
 	HashMap<Vector2i, CellData> tile_map_layer_data;
 
@@ -278,6 +281,7 @@ private:
 	HighlightMode highlight_mode = HIGHLIGHT_MODE_DEFAULT;
 
 	int y_sort_origin = 0;
+	bool x_draw_order_reversed = false;
 	int rendering_quadrant_size = 16;
 
 	bool collision_enabled = true;
@@ -377,10 +381,13 @@ private:
 	void _deferred_internal_update();
 	void _internal_update(bool p_force_cleanup);
 
+	virtual void _physics_interpolated_changed() override;
+
 protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 	virtual void _update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter) override;
 	virtual void _update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat) override;
@@ -406,6 +413,8 @@ public:
 
 	// Not exposed to users.
 	TileMapCell get_cell(const Vector2i &p_coords) const;
+
+	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr, real_t p_normalized_animation_offset = 0.0);
 
 	////////////// Exposed functions //////////////
 
@@ -466,6 +475,8 @@ public:
 	virtual void set_y_sort_enabled(bool p_y_sort_enabled) override;
 	void set_y_sort_origin(int p_y_sort_origin);
 	int get_y_sort_origin() const;
+	void set_x_draw_order_reversed(bool p_x_draw_order_reversed);
+	bool is_x_draw_order_reversed() const;
 	virtual void set_z_index(int p_z_index) override;
 	virtual void set_light_mask(int p_light_mask) override;
 	void set_rendering_quadrant_size(int p_size);

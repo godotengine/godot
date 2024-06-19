@@ -446,6 +446,11 @@ void InputEventConfigurationDialog::_key_location_selected(int p_location) {
 	_set_event(k, original_event);
 }
 
+void InputEventConfigurationDialog::_input_list_item_activated() {
+	TreeItem *selected = input_list_tree->get_selected();
+	selected->set_collapsed(!selected->is_collapsed());
+}
+
 void InputEventConfigurationDialog::_input_list_item_selected() {
 	TreeItem *selected = input_list_tree->get_selected();
 
@@ -578,7 +583,7 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 			icon_cache.joypad_button = get_editor_theme_icon(SNAME("JoyButton"));
 			icon_cache.joypad_axis = get_editor_theme_icon(SNAME("JoyAxis"));
 
-			event_as_text->add_theme_font_override("font", get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+			event_as_text->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
 
 			_update_input_list();
 		} break;
@@ -641,7 +646,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	event_as_text->set_custom_minimum_size(Size2(500, 0) * EDSCALE);
 	event_as_text->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	event_as_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	event_as_text->add_theme_font_size_override("font_size", 18 * EDSCALE);
+	event_as_text->add_theme_font_size_override(SceneStringName(font_size), 18 * EDSCALE);
 	main_vbox->add_child(event_as_text);
 
 	event_listener = memnew(EventListenerLineEdit);
@@ -664,13 +669,14 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	input_list_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	input_list_search->set_placeholder(TTR("Filter Inputs"));
 	input_list_search->set_clear_button_enabled(true);
-	input_list_search->connect("text_changed", callable_mp(this, &InputEventConfigurationDialog::_search_term_updated));
+	input_list_search->connect(SceneStringName(text_changed), callable_mp(this, &InputEventConfigurationDialog::_search_term_updated));
 	manual_vbox->add_child(input_list_search);
 
 	input_list_tree = memnew(Tree);
 	input_list_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	input_list_tree->set_custom_minimum_size(Size2(0, 100 * EDSCALE)); // Min height for tree
-	input_list_tree->connect("item_selected", callable_mp(this, &InputEventConfigurationDialog::_input_list_item_selected));
+	input_list_tree->connect("item_activated", callable_mp(this, &InputEventConfigurationDialog::_input_list_item_activated));
+	input_list_tree->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_input_list_item_selected));
 	input_list_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	manual_vbox->add_child(input_list_tree);
 
@@ -702,7 +708,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	for (int i = -1; i < 8; i++) {
 		device_id_option->add_item(EventListenerLineEdit::get_device_string(i));
 	}
-	device_id_option->connect("item_selected", callable_mp(this, &InputEventConfigurationDialog::_device_selection_changed));
+	device_id_option->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_device_selection_changed));
 	_set_current_device(InputMap::ALL_DEVICES);
 	device_container->add_child(device_id_option);
 
@@ -738,7 +744,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	key_mode->add_item(TTR("Keycode (Latin Equivalent)"), KEYMODE_KEYCODE);
 	key_mode->add_item(TTR("Physical Keycode (Position on US QWERTY Keyboard)"), KEYMODE_PHY_KEYCODE);
 	key_mode->add_item(TTR("Key Label (Unicode, Case-Insensitive)"), KEYMODE_UNICODE);
-	key_mode->connect("item_selected", callable_mp(this, &InputEventConfigurationDialog::_key_mode_selected));
+	key_mode->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_key_mode_selected));
 	key_mode->hide();
 	additional_options_container->add_child(key_mode);
 
@@ -756,7 +762,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	key_location->add_item(TTR("Any"), (int)KeyLocation::UNSPECIFIED);
 	key_location->add_item(TTR("Left"), (int)KeyLocation::LEFT);
 	key_location->add_item(TTR("Right"), (int)KeyLocation::RIGHT);
-	key_location->connect("item_selected", callable_mp(this, &InputEventConfigurationDialog::_key_location_selected));
+	key_location->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_key_location_selected));
 
 	location_container->add_child(key_location);
 	additional_options_container->add_child(location_container);

@@ -149,7 +149,7 @@ void EditorToaster::_notification(int p_what) {
 void EditorToaster::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
 	// This may be called from a thread. Since we will deal with non-thread-safe elements,
 	// we have to put it in the queue for safety.
-	callable_mp_static(&EditorToaster::_error_handler_impl).bind(String::utf8(p_file), p_line, String::utf8(p_error), String::utf8(p_errorexp), p_editor_notify, p_type).call_deferred();
+	callable_mp_static(&EditorToaster::_error_handler_impl).call_deferred(String::utf8(p_file), p_line, String::utf8(p_error), String::utf8(p_errorexp), p_editor_notify, p_type);
 }
 
 void EditorToaster::_error_handler_impl(const String &p_file, int p_line, const String &p_error, const String &p_errorexp, bool p_editor_notify, int p_type) {
@@ -348,13 +348,13 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 	panel->set_tooltip_text(p_tooltip);
 	switch (p_severity) {
 		case SEVERITY_INFO:
-			panel->add_theme_style_override("panel", info_panel_style_background);
+			panel->add_theme_style_override(SceneStringName(panel), info_panel_style_background);
 			break;
 		case SEVERITY_WARNING:
-			panel->add_theme_style_override("panel", warning_panel_style_background);
+			panel->add_theme_style_override(SceneStringName(panel), warning_panel_style_background);
 			break;
 		case SEVERITY_ERROR:
-			panel->add_theme_style_override("panel", error_panel_style_background);
+			panel->add_theme_style_override(SceneStringName(panel), error_panel_style_background);
 			break;
 		default:
 			break;
@@ -406,7 +406,7 @@ void EditorToaster::popup_str(const String &p_message, Severity p_severity, cons
 	// Since "_popup_str" adds nodes to the tree, and since the "add_child" method is not
 	// thread-safe, it's better to defer the call to the next cycle to be thread-safe.
 	is_processing_error = true;
-	callable_mp(this, &EditorToaster::_popup_str).call_deferred(p_message, p_severity, p_tooltip);
+	MessageQueue::get_main_singleton()->push_callable(callable_mp(this, &EditorToaster::_popup_str).bind(p_message, p_severity, p_tooltip));
 	is_processing_error = false;
 }
 
@@ -552,7 +552,7 @@ EditorToaster::EditorToaster() {
 	// Disable notification button.
 	disable_notifications_panel = memnew(PanelContainer);
 	disable_notifications_panel->set_as_top_level(true);
-	disable_notifications_panel->add_theme_style_override("panel", info_panel_style_background);
+	disable_notifications_panel->add_theme_style_override(SceneStringName(panel), info_panel_style_background);
 	add_child(disable_notifications_panel);
 
 	disable_notifications_button = memnew(Button);

@@ -1306,7 +1306,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 		userdata_count = particle_shader_data->userdata_count;
 	}
 
-	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0;
+	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0 || (RendererCompositorStorage::get_singleton()->get_num_compositor_effects_with_motion_vectors() > 0);
 	bool index_draw_order = particles->draw_order == RS::ParticlesDrawOrder::PARTICLES_DRAW_ORDER_INDEX;
 	bool enable_motion_vectors = uses_motion_vectors && index_draw_order && !particles->instance_motion_vectors_enabled;
 	bool only_instances_changed = false;
@@ -1389,7 +1389,7 @@ void ParticlesStorage::update_particles() {
 
 	RENDER_TIMESTAMP("Update GPUParticles");
 	uint32_t frame = RSG::rasterizer->get_frame_number();
-	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0;
+	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0 || (RendererCompositorStorage::get_singleton()->get_num_compositor_effects_with_motion_vectors() > 0);
 	while (particle_update_list.first()) {
 		//use transform feedback to process particles
 

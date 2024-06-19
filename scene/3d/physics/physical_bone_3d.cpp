@@ -738,15 +738,7 @@ bool PhysicalBone3D::_get(const StringName &p_name, Variant &r_ret) const {
 void PhysicalBone3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	Skeleton3D *skeleton = get_skeleton();
 	if (skeleton) {
-		String names;
-		for (int i = 0; i < skeleton->get_bone_count(); i++) {
-			if (i > 0) {
-				names += ",";
-			}
-			names += skeleton->get_bone_name(i);
-		}
-
-		p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("bone_name"), PROPERTY_HINT_ENUM, names));
+		p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("bone_name"), PROPERTY_HINT_ENUM, skeleton->get_concatenated_bone_names()));
 	} else {
 		p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("bone_name")));
 	}

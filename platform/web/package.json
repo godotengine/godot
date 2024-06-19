@@ -3,32 +3,22 @@
   "private": true,
   "version": "1.0.0",
   "description": "Development and linting setup for Godot's Web platform code",
-  "scripts": {
-    "docs": "jsdoc --template js/jsdoc2rst/ js/engine/engine.js js/engine/config.js js/engine/features.js --destination ''",
-    "lint": "npm run lint:engine && npm run lint:libs && npm run lint:modules && npm run lint:tools && npm run lint:sw && npm run lint:html",
-    "lint:engine": "eslint \"js/engine/*.js\" --no-eslintrc -c .eslintrc.engine.js",
-    "lint:sw": "eslint \"../../misc/dist/html/service-worker.js\" --no-eslintrc -c .eslintrc.sw.js",
-    "lint:libs": "eslint \"js/libs/*.js\" --no-eslintrc -c .eslintrc.libs.js",
-    "lint:modules": "eslint \"../../modules/**/*.js\" --no-eslintrc -c .eslintrc.libs.js",
-    "lint:tools": "eslint \"js/jsdoc2rst/**/*.js\" --no-eslintrc -c .eslintrc.engine.js",
-    "lint:html": "eslint \"../../misc/dist/html/*.html\" --no-eslintrc -c .eslintrc.html.js",
-    "format": "npm run format:engine && npm run format:libs && npm run format:modules && npm run format:tools && format:sw && npm run format:html",
-    "format:engine": "npm run lint:engine -- --fix",
-    "format:libs": "npm run lint:libs -- --fix",
-    "format:modules": "npm run lint:modules -- --fix",
-    "format:tools": "npm run lint:tools -- --fix",
-    "format:html": "npm run lint:html -- --fix",
-    "format:sw": "npm run lint:sw -- --fix"
-  },
   "author": "Godot Engine contributors",
   "license": "MIT",
+  "scripts": {
+    "docs": "jsdoc --template js/jsdoc2rst/ js/engine/engine.js js/engine/config.js js/engine/features.js --destination ''",
+    "lint": "cd ../.. && eslint --no-config-lookup --config ./platform/web/eslint.config.cjs ./platform/web/js ./modules ./misc/dist/html",
+    "format": "npm run lint -- --fix"
+  },
   "devDependencies": {
-    "@html-eslint/eslint-plugin": "^0.19.1",
-    "@html-eslint/parser": "^0.19.1",
-    "eslint": "^8.46.0",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.28.0",
-    "jsdoc": "^4.0.2",
-    "eslint-plugin-html": "^7.1.0"
+    "@eslint/js": "^9.3.0",
+    "@html-eslint/eslint-plugin": "^0.24.1",
+    "@html-eslint/parser": "^0.24.1",
+    "@stylistic/eslint-plugin": "^2.1.0",
+    "eslint": "^9.3.0",
+    "eslint-plugin-html": "^8.1.1",
+    "espree": "^10.0.1",
+    "globals": "^15.3.0",
+    "jsdoc": "^4.0.3"
   }
 }

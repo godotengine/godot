@@ -70,6 +70,9 @@ public:
 	StringName updated;
 
 	StringName line_separation;
+	StringName font;
+	StringName font_size;
+	StringName font_color;
 
 	StringName mouse_entered;
 	StringName mouse_exited;
@@ -134,7 +137,6 @@ public:
 
 	StringName Master;
 
-	StringName parameters_base_path;
 	StringName window_input;
 
 	StringName theme_changed;
@@ -142,6 +144,16 @@ public:
 	StringName shader_overrides_group_active;
 
 	StringName pressed;
+	StringName id_pressed;
+
+	StringName panel;
+
+	StringName item_selected;
+
+	StringName confirmed;
+
+	StringName text_changed;
+	StringName value_changed;
 };
 
 #define SceneStringName(m_name) SceneStringNames::get_singleton()->m_name

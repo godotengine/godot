@@ -771,8 +771,16 @@ Error GDScript::reload(bool p_keep_state) {
 			if (GDScriptCache::has_parser(source_path)) {
 				Error err = OK;
 				Ref<GDScriptParserRef> parser_ref = GDScriptCache::get_parser(source_path, GDScriptParserRef::EMPTY, err);
-				if (parser_ref.is_valid() && parser_ref->get_source_hash() != source.hash()) {
-					GDScriptCache::remove_parser(source_path);
+				if (parser_ref.is_valid()) {
+					uint32_t source_hash;
+					if (!binary_tokens.is_empty()) {
+						source_hash = hash_djb2_buffer(binary_tokens.ptr(), binary_tokens.size());
+					} else {
+						source_hash = source.hash();
+					}
+					if (parser_ref->get_source_hash() != source_hash) {
+						GDScriptCache::remove_parser(source_path);
+					}
 				}
 			}
 		}
@@ -987,7 +995,7 @@ bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == GDScriptLanguage::get_singleton()->strings._script_source) {
 		set_source_code(p_value);
-		reload();
+		reload(true);
 		return true;
 	}
 

@@ -286,6 +286,7 @@ void TextEdit::Text::invalidate_all_lines() {
 	}
 	tab_size_dirty = false;
 
+	max_width = -1;
 	_calculate_max_line_width();
 }
 
@@ -404,10 +405,12 @@ void TextEdit::Text::remove_range(int p_from_line, int p_to_line) {
 	text.resize(text.size() - diff);
 
 	if (dirty_height) {
+		line_height = -1;
 		_calculate_line_height();
 	}
 
 	if (dirty_width) {
+		max_width = -1;
 		_calculate_max_line_width();
 	}
 }
@@ -1003,23 +1006,12 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					if (str.length() == 0) {
-						// Draw line background if empty as we won't loop at all.
-						if (caret_line_wrap_index_map.has(line) && caret_line_wrap_index_map[line].has(line_wrap_index) && highlight_current_line) {
-							if (rtl) {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - ofs_x - xmargin_end, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
-							} else {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(ofs_x, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
-							}
-						}
-					} else {
-						// If it has text, then draw current line marker in the margin, as line number etc will draw over it, draw the rest of line marker later.
-						if (caret_line_wrap_index_map.has(line) && caret_line_wrap_index_map[line].has(line_wrap_index) && highlight_current_line) {
-							if (rtl) {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - ofs_x - xmargin_end, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
-							} else {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(ofs_x, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
-							}
+					// Draw current line highlight.
+					if (highlight_current_line && caret_line_wrap_index_map.has(line) && caret_line_wrap_index_map[line].has(line_wrap_index)) {
+						if (rtl) {
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - ofs_x - xmargin_end, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
+						} else {
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(ofs_x, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
 						}
 					}
 
@@ -2842,24 +2834,26 @@ void TextEdit::_update_caches() {
 }
 
 void TextEdit::_close_ime_window() {
-	if (get_viewport()->get_window_id() == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+	DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
+	if (wid == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 		return;
 	}
-	DisplayServer::get_singleton()->window_set_ime_position(Point2(), get_viewport()->get_window_id());
-	DisplayServer::get_singleton()->window_set_ime_active(false, get_viewport()->get_window_id());
+	DisplayServer::get_singleton()->window_set_ime_position(Point2(), wid);
+	DisplayServer::get_singleton()->window_set_ime_active(false, wid);
 }
 
 void TextEdit::_update_ime_window_position() {
-	if (get_viewport()->get_window_id() == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+	DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
+	if (wid == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 		return;
 	}
-	DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
+	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
 	Point2 pos = get_global_position() + get_caret_draw_pos();
 	if (get_window()->get_embedder()) {
 		pos += get_viewport()->get_popup_base_transform().get_origin();
 	}
 	// The window will move to the updated position the next time the IME is updated, not immediately.
-	DisplayServer::get_singleton()->window_set_ime_position(pos, get_viewport()->get_window_id());
+	DisplayServer::get_singleton()->window_set_ime_position(pos, wid);
 }
 
 void TextEdit::_update_ime_text() {
@@ -3913,7 +3907,9 @@ void TextEdit::end_complex_operation() {
 	if (complex_operation_count > 0) {
 		return;
 	}
-	ERR_FAIL_COND(undo_stack.is_empty());
+	if (undo_stack.is_empty()) {
+		return;
+	}
 
 	undo_stack.back()->get().end_carets = carets;
 	if (undo_stack.back()->get().chain_forward) {
@@ -4248,8 +4244,11 @@ String TextEdit::get_word_at_pos(const Vector2 &p_pos) const {
 }
 
 Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_of_bounds) const {
-	float rows = p_pos.y;
-	rows -= theme_cache.style_normal->get_margin(SIDE_TOP);
+	float rows = p_pos.y - theme_cache.style_normal->get_margin(SIDE_TOP);
+	if (!editable) {
+		rows -= theme_cache.style_readonly->get_offset().y / 2;
+		rows += theme_cache.style_normal->get_offset().y / 2;
+	}
 	rows /= get_line_height();
 	rows += _get_v_scroll_offset();
 	int first_vis_line = get_first_visible_line();
@@ -4280,6 +4279,10 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_
 	int col = 0;
 	int colx = p_pos.x - (theme_cache.style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding);
 	colx += first_visible_col;
+	if (!editable) {
+		colx -= theme_cache.style_readonly->get_offset().x / 2;
+		colx += theme_cache.style_normal->get_offset().x / 2;
+	}
 	col = _get_char_pos_for_line(colx, row, wrap_index);
 	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE && wrap_index < get_line_wrap_count(row)) {
 		// Move back one if we are at the end of the row.
@@ -4397,13 +4400,7 @@ int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
 		}
 	}
 
-	if (row < 0) {
-		row = 0;
-	}
-
-	if (row >= text.size()) {
-		row = text.size() - 1;
-	}
+	row = CLAMP(row, 0, text.size() - 1);
 
 	return row;
 }
@@ -5182,7 +5179,7 @@ void TextEdit::add_selection_for_next_occurrence() {
 
 	const String &highlighted_text = get_selected_text(caret);
 	int column = get_selection_from_column(caret) + 1;
-	int line = get_caret_line(caret);
+	int line = get_selection_from_line(caret);
 
 	const Point2i next_occurrence = search(highlighted_text, SEARCH_MATCH_CASE, line, column);
 
@@ -5196,6 +5193,7 @@ void TextEdit::add_selection_for_next_occurrence() {
 
 	if (new_caret != -1) {
 		select(next_occurrence.y, next_occurrence.x, next_occurrence.y, end, new_caret);
+		_unhide_carets();
 		adjust_viewport_to_caret(new_caret);
 		merge_overlapping_carets();
 	}
@@ -5219,8 +5217,8 @@ void TextEdit::skip_selection_for_next_occurrence() {
 	// Due to const and &(reference) presence, ternary operator is a way to avoid errors and warnings.
 	const String &searched_text = has_selection(caret) ? get_selected_text(caret) : get_word_under_caret(caret);
 
-	int column = (has_selection(caret) ? get_selection_from_column(caret) : get_caret_column(caret)) + 1;
-	int line = get_caret_line(caret);
+	int column = get_selection_from_column(caret) + 1;
+	int line = get_selection_from_line(caret);
 
 	const Point2i next_occurrence = search(searched_text, SEARCH_MATCH_CASE, line, column);
 
@@ -5228,12 +5226,13 @@ void TextEdit::skip_selection_for_next_occurrence() {
 		return;
 	}
 
-	int to_column = (has_selection(caret) ? get_selection_to_column(caret) : get_caret_column(caret)) + 1;
+	int to_column = get_selection_to_column(caret) + 1;
 	int end = next_occurrence.x + (to_column - column);
 	int new_caret = add_caret(next_occurrence.y, end);
 
 	if (new_caret != -1) {
 		select(next_occurrence.y, next_occurrence.x, next_occurrence.y, end, new_caret);
+		_unhide_carets();
 		adjust_viewport_to_caret(new_caret);
 		merge_overlapping_carets();
 	}
@@ -7192,9 +7191,9 @@ void TextEdit::_generate_context_menu() {
 	menu->add_check_item(ETR("Display Control Characters"), MENU_DISPLAY_UCC);
 	menu->add_submenu_node_item(ETR("Insert Control Character"), menu_ctl, MENU_SUBMENU_INSERT_UCC);
 
-	menu->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
-	menu_dir->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
-	menu_ctl->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextEdit::menu_option));
+	menu_dir->connect(SceneStringName(id_pressed), callable_mp(this, &TextEdit::menu_option));
+	menu_ctl->connect(SceneStringName(id_pressed), callable_mp(this, &TextEdit::menu_option));
 }
 
 void TextEdit::_update_context_menu() {
@@ -7995,7 +7994,7 @@ void TextEdit::_update_minimap_click() {
 	}
 
 	Point2i next_line = get_next_visible_line_index_offset_from(row, 0, -get_visible_line_count() / 2);
-	int first_line = row - next_line.x + 1;
+	int first_line = MAX(0, row - next_line.x + 1);
 	double delta = get_scroll_pos_for_line(first_line, next_line.y) - get_v_scroll();
 	if (delta < 0) {
 		_scroll_up(-delta, true);
@@ -8077,7 +8076,7 @@ void TextEdit::_text_changed() {
 }
 
 void TextEdit::_emit_text_changed() {
-	emit_signal(SNAME("text_changed"));
+	emit_signal(SceneStringName(text_changed));
 	text_changed_dirty = false;
 }
 
@@ -8274,8 +8273,8 @@ TextEdit::TextEdit(const String &p_placeholder) {
 	add_child(h_scroll, false, INTERNAL_MODE_FRONT);
 	add_child(v_scroll, false, INTERNAL_MODE_FRONT);
 
-	h_scroll->connect("value_changed", callable_mp(this, &TextEdit::_scroll_moved));
-	v_scroll->connect("value_changed", callable_mp(this, &TextEdit::_scroll_moved));
+	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &TextEdit::_scroll_moved));
+	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &TextEdit::_scroll_moved));
 
 	v_scroll->connect("scrolling", callable_mp(this, &TextEdit::_v_scroll_input));
 

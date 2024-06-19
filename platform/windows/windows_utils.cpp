@@ -92,7 +92,7 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 			DWORD Offset;
 		};
 
-		const DWORD nb10_magic = '01BN';
+		const DWORD nb10_magic = 0x3031424e; // "01BN" (little-endian)
 		struct CV_INFO_PDB20 {
 			CV_HEADER CvHeader; // CvHeader.Signature = "NB10"
 			DWORD Signature;
@@ -100,7 +100,7 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 			BYTE PdbFileName[1];
 		};
 
-		const DWORD rsds_magic = 'SDSR';
+		const DWORD rsds_magic = 0x53445352; // "SDSR" (little-endian)
 		struct CV_INFO_PDB70 {
 			DWORD Signature; // "RSDS"
 			BYTE Guid[16];

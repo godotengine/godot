@@ -192,6 +192,7 @@ public:
 	void set_deletable(bool p_enable);
 	bool is_deletable() const;
 	void add_focusable(Control *p_control);
+	void grab_focus(int p_focusable = -1);
 	void select(int p_focusable = -1);
 	void deselect();
 	bool is_selected() const;
@@ -252,9 +253,13 @@ protected:
 	GDVIRTUAL7R(bool, _parse_property, Object *, Variant::Type, String, PropertyHint, String, BitField<PropertyUsageFlags>, bool)
 	GDVIRTUAL1(_parse_end, Object *)
 
+#ifndef DISABLE_DEPRECATED
+	void _add_property_editor_bind_compat_92322(const String &p_for_property, Control *p_prop, bool p_add_to_end);
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
 public:
 	void add_custom_control(Control *control);
-	void add_property_editor(const String &p_for_property, Control *p_prop, bool p_add_to_end = false);
+	void add_property_editor(const String &p_for_property, Control *p_prop, bool p_add_to_end = false, const String &p_label = String());
 	void add_property_editor_for_multiple_properties(const String &p_label, const Vector<String> &p_properties, Control *p_prop);
 
 	virtual bool can_handle(Object *p_object);
@@ -344,7 +349,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 		MODE_NONE,
 		MODE_USE_COUNT_PROPERTY,
 		MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION,
-	} mode;
+	} mode = MODE_NONE;
 	StringName count_property;
 	StringName array_element_prefix;
 	String swap_method;

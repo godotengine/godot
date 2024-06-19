@@ -929,7 +929,7 @@ void TileSetAtlasSourceEditor::_tile_data_editor_dropdown_button_draw() {
 				if (tile_data_editor_dropdown_button->has_focus()) {
 					clr = get_theme_color(SNAME("font_focus_color"));
 				} else {
-					clr = get_theme_color(SNAME("font_color"));
+					clr = get_theme_color(SceneStringName(font_color));
 				}
 		}
 	}
@@ -997,7 +997,7 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 			Button *button = memnew(Button);
 			button->set_flat(true);
 			button->set_icon(get_editor_theme_icon(SNAME("Add")));
-			button->add_theme_style_override("normal", memnew(StyleBoxEmpty));
+			button->add_theme_style_override(CoreStringName(normal), memnew(StyleBoxEmpty));
 			button->add_theme_style_override("hover", memnew(StyleBoxEmpty));
 			button->add_theme_style_override("focus", memnew(StyleBoxEmpty));
 			button->add_theme_style_override(SceneStringName(pressed), memnew(StyleBoxEmpty));
@@ -1043,6 +1043,13 @@ void TileSetAtlasSourceEditor::_update_toolbar() {
 		tools_settings_erase_button->hide();
 		tool_advanced_menu_button->hide();
 	}
+}
+
+void TileSetAtlasSourceEditor::_update_buttons() {
+	tool_paint_button->set_disabled(read_only);
+	tool_paint_button->set_tooltip_text(read_only ? TTR("TileSet is in read-only mode. Make the resource unique to edit TileSet properties.") : TTR("Paint properties."));
+	tools_settings_erase_button->set_disabled(read_only);
+	tool_advanced_menu_button->set_disabled(read_only);
 }
 
 void TileSetAtlasSourceEditor::_tile_atlas_control_mouse_exited() {
@@ -2212,10 +2219,7 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 		tool_setup_atlas_source_button->set_pressed(true);
 	}
 
-	// Disable buttons in read-only mode.
-	tool_paint_button->set_disabled(read_only);
-	tools_settings_erase_button->set_disabled(read_only);
-	tool_advanced_menu_button->set_disabled(read_only);
+	_update_buttons();
 
 	// Update everything.
 	_update_source_inspector();
@@ -2458,10 +2462,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 					read_only = EditorNode::get_singleton()->is_resource_read_only(tile_set);
 				}
 
-				// Disable buttons in read-only mode.
-				tool_paint_button->set_disabled(read_only);
-				tools_settings_erase_button->set_disabled(read_only);
-				tool_advanced_menu_button->set_disabled(read_only);
+				_update_buttons();
 
 				// Update everything.
 				_update_source_inspector();
@@ -2545,7 +2546,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_paint_button->set_theme_type_variation("FlatButton");
 	tool_paint_button->set_toggle_mode(true);
 	tool_paint_button->set_button_group(tools_button_group);
-	tool_paint_button->set_tooltip_text(TTR("Paint properties."));
 	toolbox->add_child(tool_paint_button);
 
 	// Tile inspector.
@@ -2595,7 +2595,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_data_editors_tree->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	tile_data_editors_tree->set_h_scroll_enabled(false);
 	tile_data_editors_tree->set_v_scroll_enabled(false);
-	tile_data_editors_tree->connect("item_selected", callable_mp(this, &TileSetAtlasSourceEditor::_tile_data_editors_tree_selected));
+	tile_data_editors_tree->connect(SceneStringName(item_selected), callable_mp(this, &TileSetAtlasSourceEditor::_tile_data_editors_tree_selected));
 	tile_data_editors_popup->add_child(tile_data_editors_tree);
 
 	tile_data_painting_editor_container = memnew(VBoxContainer);
@@ -2627,7 +2627,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tools_settings_erase_button = memnew(Button);
 	tools_settings_erase_button->set_theme_type_variation("FlatButton");
 	tools_settings_erase_button->set_toggle_mode(true);
-	tools_settings_erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", TTR("Eraser"), Key::E));
+	tools_settings_erase_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/eraser"));
 	tools_settings_erase_button->set_shortcut_context(this);
 	tool_settings->add_child(tools_settings_erase_button);
 
@@ -2637,7 +2637,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Create Tiles in Non-Transparent Texture Regions"), ADVANCED_AUTO_CREATE_TILES);
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Remove Tiles in Fully Transparent Texture Regions"), ADVANCED_AUTO_REMOVE_TILES);
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Remove Tiles Outside the Texture"), ADVANCED_CLEANUP_TILES);
-	tool_advanced_menu_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
+	tool_advanced_menu_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
 	tool_settings->add_child(tool_advanced_menu_button);
 
 	outside_tiles_warning = memnew(TextureRect);
@@ -2647,6 +2647,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_settings->add_child(outside_tiles_warning);
 
 	_update_toolbar();
+	_update_buttons();
 
 	// Right side of toolbar.
 	Control *middle_space = memnew(Control);
@@ -2687,14 +2688,14 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_create_help->set_grow_direction_preset(Control::PRESET_BOTTOM_LEFT);
 
 	base_tile_popup_menu = memnew(PopupMenu);
-	base_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete", TTR("Delete"), Key::KEY_DELETE), TILE_DELETE);
+	base_tile_popup_menu->add_shortcut(ED_GET_SHORTCUT("tiles_editor/delete"), TILE_DELETE);
 	base_tile_popup_menu->add_item(TTR("Create an Alternative Tile"), TILE_CREATE_ALTERNATIVE);
-	base_tile_popup_menu->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
+	base_tile_popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
 	tile_atlas_view->add_child(base_tile_popup_menu);
 
 	empty_base_tile_popup_menu = memnew(PopupMenu);
 	empty_base_tile_popup_menu->add_item(TTR("Create a Tile"), TILE_CREATE);
-	empty_base_tile_popup_menu->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
+	empty_base_tile_popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
 	tile_atlas_view->add_child(empty_base_tile_popup_menu);
 
 	tile_atlas_control = memnew(TileAtlasControl(this));
@@ -2710,7 +2711,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	alternative_tile_popup_menu = memnew(PopupMenu);
 	alternative_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete_tile", TTR("Delete"), Key::KEY_DELETE), TILE_DELETE);
-	alternative_tile_popup_menu->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
+	alternative_tile_popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
 	tile_atlas_view->add_child(alternative_tile_popup_menu);
 
 	alternative_tiles_control = memnew(Control);
@@ -2732,7 +2733,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	confirm_auto_create_tiles->set_text(TTR("The atlas's texture was modified.\nWould you like to automatically create tiles in the atlas?"));
 	confirm_auto_create_tiles->set_ok_button_text(TTR("Yes"));
 	confirm_auto_create_tiles->add_cancel_button()->set_text(TTR("No"));
-	confirm_auto_create_tiles->connect("confirmed", callable_mp(this, &TileSetAtlasSourceEditor::_auto_create_tiles));
+	confirm_auto_create_tiles->connect(SceneStringName(confirmed), callable_mp(this, &TileSetAtlasSourceEditor::_auto_create_tiles));
 	confirm_auto_create_tiles->connect("canceled", callable_mp(this, &TileSetAtlasSourceEditor::_cancel_auto_create_tiles));
 	add_child(confirm_auto_create_tiles);
 
@@ -2938,6 +2939,18 @@ bool EditorInspectorPluginTileData::parse_property(Object *p_object, const Varia
 			add_property_editor(p_path, ep);
 			return true;
 		}
+	} else if (p_path.begins_with("custom_data_") && p_path.trim_prefix("custom_data_").is_valid_int()) {
+		// Custom data layers.
+		int layer_index = components[0].trim_prefix("custom_data_").to_int();
+		ERR_FAIL_COND_V(layer_index < 0, false);
+		EditorProperty *ep = EditorInspectorDefaultPlugin::get_editor_for_property(p_object, p_type, p_path, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
+		const TileSetAtlasSourceEditor::AtlasTileProxyObject *proxy_obj = Object::cast_to<TileSetAtlasSourceEditor::AtlasTileProxyObject>(p_object);
+		const TileSetAtlasSource *atlas_source = *proxy_obj->get_edited_tile_set_atlas_source();
+		ERR_FAIL_NULL_V(atlas_source, false);
+		const TileSet *tile_set = atlas_source->get_tile_set();
+		ERR_FAIL_NULL_V(tile_set, false);
+		add_property_editor(p_path, ep, false, tile_set->get_custom_data_layer_name(layer_index));
+		return true;
 	}
 	return false;
 }

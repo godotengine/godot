@@ -41,8 +41,10 @@ void GLTFAccessor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_normalized", "normalized"), &GLTFAccessor::set_normalized);
 	ClassDB::bind_method(D_METHOD("get_count"), &GLTFAccessor::get_count);
 	ClassDB::bind_method(D_METHOD("set_count", "count"), &GLTFAccessor::set_count);
-	ClassDB::bind_method(D_METHOD("get_type"), &GLTFAccessor::get_type);
-	ClassDB::bind_method(D_METHOD("set_type", "type"), &GLTFAccessor::set_type);
+	ClassDB::bind_method(D_METHOD("get_accessor_type"), &GLTFAccessor::get_accessor_type);
+	ClassDB::bind_method(D_METHOD("set_accessor_type", "accessor_type"), &GLTFAccessor::set_accessor_type);
+	ClassDB::bind_method(D_METHOD("get_type"), &GLTFAccessor::get_accessor_type);
+	ClassDB::bind_method(D_METHOD("set_type", "type"), &GLTFAccessor::set_accessor_type);
 	ClassDB::bind_method(D_METHOD("get_min"), &GLTFAccessor::get_min);
 	ClassDB::bind_method(D_METHOD("set_min", "min"), &GLTFAccessor::set_min);
 	ClassDB::bind_method(D_METHOD("get_max"), &GLTFAccessor::get_max);
@@ -65,7 +67,8 @@ void GLTFAccessor::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "component_type"), "set_component_type", "get_component_type"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalized"), "set_normalized", "get_normalized"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "count"), "set_count", "get_count"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type"); // GLTFType
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "accessor_type"), "set_accessor_type", "get_accessor_type"); // GLTFAccessorType
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type"); // Deprecated, GLTFAccessorType
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT64_ARRAY, "min"), "set_min", "get_min"); // Vector<real_t>
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT64_ARRAY, "max"), "set_max", "get_max"); // Vector<real_t>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sparse_count"), "set_sparse_count", "get_sparse_count"); // int
@@ -116,12 +119,12 @@ void GLTFAccessor::set_count(int p_count) {
 	count = p_count;
 }
 
-int GLTFAccessor::get_type() {
-	return (int)type;
+int GLTFAccessor::get_accessor_type() {
+	return (int)accessor_type;
 }
 
-void GLTFAccessor::set_type(int p_type) {
-	type = (GLTFType)p_type; // TODO: Register enum
+void GLTFAccessor::set_accessor_type(int p_accessor_type) {
+	accessor_type = (GLTFAccessorType)p_accessor_type; // TODO: Register enum
 }
 
 Vector<double> GLTFAccessor::get_min() {

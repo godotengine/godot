@@ -115,7 +115,7 @@ void FindReplaceBar::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			matches_label->add_theme_color_override(SceneStringName(font_color), results_count > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
@@ -252,7 +252,7 @@ void FindReplaceBar::_replace() {
 void FindReplaceBar::_replace_all() {
 	text_editor->begin_complex_operation();
 	text_editor->remove_secondary_carets();
-	text_editor->disconnect("text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
+	text_editor->disconnect(SceneStringName(text_changed), callable_mp(this, &FindReplaceBar::_editor_text_changed));
 	// Line as x so it gets priority in comparison, column as y.
 	Point2i orig_cursor(text_editor->get_caret_line(0), text_editor->get_caret_column(0));
 	Point2i prev_match = Point2(-1, -1);
@@ -338,10 +338,10 @@ void FindReplaceBar::_replace_all() {
 	}
 
 	text_editor->set_v_scroll(vsval);
-	matches_label->add_theme_color_override("font_color", rc > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+	matches_label->add_theme_color_override(SceneStringName(font_color), rc > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 	matches_label->set_text(vformat(TTR("%d replaced."), rc));
 
-	callable_mp((Object *)text_editor, &Object::connect).call_deferred("text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed), 0U);
+	callable_mp((Object *)text_editor, &Object::connect).call_deferred(SceneStringName(text_changed), callable_mp(this, &FindReplaceBar::_editor_text_changed), 0U);
 	results_count = -1;
 	results_count_to_current = -1;
 	needs_to_count_results = true;
@@ -437,7 +437,7 @@ void FindReplaceBar::_update_matches_display() {
 	} else {
 		matches_label->show();
 
-		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		matches_label->add_theme_color_override(SceneStringName(font_color), results_count > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 		if (results_count == 0) {
 			matches_label->set_text(TTR("No match"));
@@ -655,7 +655,7 @@ void FindReplaceBar::set_text_edit(CodeTextEditor *p_text_editor) {
 	if (base_text_editor) {
 		base_text_editor->remove_find_replace_bar();
 		base_text_editor = nullptr;
-		text_editor->disconnect("text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
+		text_editor->disconnect(SceneStringName(text_changed), callable_mp(this, &FindReplaceBar::_editor_text_changed));
 		text_editor = nullptr;
 	}
 
@@ -668,7 +668,7 @@ void FindReplaceBar::set_text_edit(CodeTextEditor *p_text_editor) {
 	needs_to_count_results = true;
 	base_text_editor = p_text_editor;
 	text_editor = base_text_editor->get_text_editor();
-	text_editor->connect("text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
+	text_editor->connect(SceneStringName(text_changed), callable_mp(this, &FindReplaceBar::_editor_text_changed));
 
 	_update_results_count();
 	_update_matches_display();
@@ -708,7 +708,7 @@ FindReplaceBar::FindReplaceBar() {
 	search_text->set_placeholder(TTR("Find"));
 	search_text->set_tooltip_text(TTR("Find"));
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-	search_text->connect("text_changed", callable_mp(this, &FindReplaceBar::_search_text_changed));
+	search_text->connect(SceneStringName(text_changed), callable_mp(this, &FindReplaceBar::_search_text_changed));
 	search_text->connect("text_submitted", callable_mp(this, &FindReplaceBar::_search_text_submitted));
 	search_text->connect(SceneStringName(focus_exited), callable_mp(this, &FindReplaceBar::_focus_lost));
 
@@ -1124,6 +1124,31 @@ void CodeTextEditor::trim_trailing_whitespace() {
 	}
 }
 
+void CodeTextEditor::trim_final_newlines() {
+	int final_line = text_editor->get_line_count() - 1;
+	int check_line = final_line;
+
+	String line = text_editor->get_line(check_line);
+
+	while (line.is_empty() && check_line > -1) {
+		--check_line;
+
+		line = text_editor->get_line(check_line);
+	}
+
+	++check_line;
+
+	if (check_line < final_line) {
+		text_editor->begin_complex_operation();
+
+		text_editor->remove_text(check_line, 0, final_line, 0);
+
+		text_editor->merge_overlapping_carets();
+		text_editor->end_complex_operation();
+		text_editor->queue_redraw();
+	}
+}
+
 void CodeTextEditor::insert_final_newline() {
 	int final_line = text_editor->get_line_count() - 1;
 	String line = text_editor->get_line(final_line);
@@ -1405,17 +1430,17 @@ void CodeTextEditor::_update_text_editor_theme() {
 	for (int i = 0; i < count; i++) {
 		Control *n = Object::cast_to<Control>(status_bar->get_child(i));
 		if (n) {
-			n->add_theme_font_override(SNAME("font"), status_bar_font);
-			n->add_theme_font_size_override(SNAME("font_size"), status_bar_font_size);
+			n->add_theme_font_override(SceneStringName(font), status_bar_font);
+			n->add_theme_font_size_override(SceneStringName(font_size), status_bar_font_size);
 		}
 	}
 
 	const Color &error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
 	const Color &warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 
-	error->add_theme_color_override(SNAME("font_color"), error_color);
-	error_button->add_theme_color_override(SNAME("font_color"), error_color);
-	warning_button->add_theme_color_override(SNAME("font_color"), warning_color);
+	error->add_theme_color_override(SceneStringName(font_color), error_color);
+	error_button->add_theme_color_override(SceneStringName(font_color), error_color);
+	warning_button->add_theme_color_override(SceneStringName(font_color), warning_color);
 
 	_update_font_ligatures();
 }
@@ -1423,7 +1448,7 @@ void CodeTextEditor::_update_text_editor_theme() {
 void CodeTextEditor::_update_font_ligatures() {
 	int ot_mode = EDITOR_GET("interface/editor/code_font_contextual_ligatures");
 
-	Ref<FontVariation> fc = text_editor->get_theme_font(SNAME("font"));
+	Ref<FontVariation> fc = text_editor->get_theme_font(SceneStringName(font));
 	if (fc.is_valid()) {
 		switch (ot_mode) {
 			case 1: { // Disable ligatures.
@@ -1608,12 +1633,12 @@ void CodeTextEditor::remove_all_bookmarks() {
 }
 
 void CodeTextEditor::_zoom_in() {
-	int s = text_editor->get_theme_font_size("font_size");
+	int s = text_editor->get_theme_font_size(SceneStringName(font_size));
 	_zoom_to(zoom_factor * (s + MAX(1.0f, EDSCALE)) / s);
 }
 
 void CodeTextEditor::_zoom_out() {
-	int s = text_editor->get_theme_font_size("font_size");
+	int s = text_editor->get_theme_font_size(SceneStringName(font_size));
 	_zoom_to(zoom_factor * (s - MAX(1.0f, EDSCALE)) / s);
 }
 
@@ -1639,10 +1664,10 @@ void CodeTextEditor::set_zoom_factor(float p_zoom_factor) {
 
 	zoom_button->set_text(itos(Math::round(zoom_factor * 100)) + " %");
 
-	if (text_editor->has_theme_font_size_override("font_size")) {
-		text_editor->remove_theme_font_size_override("font_size");
+	if (text_editor->has_theme_font_size_override(SceneStringName(font_size))) {
+		text_editor->remove_theme_font_size_override(SceneStringName(font_size));
 	}
-	text_editor->add_theme_font_size_override("font_size", new_font_size);
+	text_editor->add_theme_font_size_override(SceneStringName(font_size), new_font_size);
 }
 
 float CodeTextEditor::get_zoom_factor() {
@@ -1769,7 +1794,7 @@ CodeTextEditor::CodeTextEditor() {
 		zoom_menu->set_item_metadata(i, z);
 	}
 
-	zoom_menu->connect("id_pressed", callable_mp(this, &CodeTextEditor::_zoom_popup_id_pressed));
+	zoom_menu->connect(SceneStringName(id_pressed), callable_mp(this, &CodeTextEditor::_zoom_popup_id_pressed));
 
 	status_bar->add_child(memnew(VSeparator));
 
@@ -1791,7 +1816,7 @@ CodeTextEditor::CodeTextEditor() {
 
 	text_editor->connect(SceneStringName(gui_input), callable_mp(this, &CodeTextEditor::_text_editor_gui_input));
 	text_editor->connect("caret_changed", callable_mp(this, &CodeTextEditor::_line_col_changed));
-	text_editor->connect("text_changed", callable_mp(this, &CodeTextEditor::_text_changed));
+	text_editor->connect(SceneStringName(text_changed), callable_mp(this, &CodeTextEditor::_text_changed));
 	text_editor->connect("code_completion_requested", callable_mp(this, &CodeTextEditor::_complete_request));
 	TypedArray<String> cs;
 	cs.push_back(".");
