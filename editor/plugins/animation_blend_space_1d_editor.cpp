@@ -713,7 +713,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	top_hb->add_child(memnew(Label(TTR("Sync:"))));
 	sync = memnew(CheckBox);
 	top_hb->add_child(sync);
-	sync->connect("toggled", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+	sync->connect(SceneStringName(toggled), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
 
 	top_hb->add_child(memnew(VSeparator));
 

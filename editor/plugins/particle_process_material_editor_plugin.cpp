@@ -438,7 +438,7 @@ ParticleProcessMaterialMinMaxPropertyEditor::ParticleProcessMaterialMinMaxProper
 	toggle_mode_button->set_toggle_mode(true);
 	toggle_mode_button->set_tooltip_text(TTR("Toggle between minimum/maximum and base value/spread modes."));
 	hb->add_child(toggle_mode_button);
-	toggle_mode_button->connect(SNAME("toggled"), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_toggle_mode));
+	toggle_mode_button->connect(SceneStringName(toggled), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_toggle_mode));
 
 	set_bottom_editor(content_vb);
 }

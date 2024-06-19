@@ -961,7 +961,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	top_hb->add_child(memnew(Label(TTR("Sync:"))));
 	sync = memnew(CheckBox);
 	top_hb->add_child(sync);
-	sync->connect("toggled", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
+	sync->connect(SceneStringName(toggled), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
 
 	top_hb->add_child(memnew(VSeparator));
 
