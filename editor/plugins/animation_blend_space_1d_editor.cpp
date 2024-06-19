@@ -720,7 +720,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	top_hb->add_child(memnew(Label(TTR("Blend:"))));
 	interpolation = memnew(OptionButton);
 	top_hb->add_child(interpolation);
-	interpolation->connect("item_selected", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+	interpolation->connect(SceneStringName(item_selected), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
 
 	edit_hb = memnew(HBoxContainer);
 	top_hb->add_child(edit_hb);

@@ -750,7 +750,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	display_mode = memnew(OptionButton);
 	display_mode->add_item(TTR("Frame Time (ms)"));
 	display_mode->add_item(TTR("Frame %"));
-	display_mode->connect("item_selected", callable_mp(this, &EditorVisualProfiler::_combo_changed));
+	display_mode->connect(SceneStringName(item_selected), callable_mp(this, &EditorVisualProfiler::_combo_changed));
 
 	hb->add_child(display_mode);
 

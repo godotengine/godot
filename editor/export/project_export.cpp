@@ -1246,7 +1246,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	presets->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	SET_DRAG_FORWARDING_GCD(presets, ProjectExportDialog);
 	mc->add_child(presets);
-	presets->connect("item_selected", callable_mp(this, &ProjectExportDialog::_edit_preset));
+	presets->connect(SceneStringName(item_selected), callable_mp(this, &ProjectExportDialog::_edit_preset));
 	duplicate_preset = memnew(Button);
 	duplicate_preset->set_tooltip_text(TTR("Duplicate"));
 	duplicate_preset->set_flat(true);
@@ -1328,7 +1328,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_filter->add_item(TTR("Export all resources in the project except resources checked below"));
 	export_filter->add_item(TTR("Export as dedicated server"));
 	resources_vb->add_margin_child(TTR("Export Mode:"), export_filter);
-	export_filter->connect("item_selected", callable_mp(this, &ProjectExportDialog::_export_type_changed));
+	export_filter->connect(SceneStringName(item_selected), callable_mp(this, &ProjectExportDialog::_export_type_changed));
 
 	include_label = memnew(Label);
 	include_label->set_text(TTR("Resources to export:"));
@@ -1461,7 +1461,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_mode->add_item(TTR("Text (easier debugging)"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
 	script_mode->add_item(TTR("Binary tokens (faster loading)"), (int)EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS);
 	script_mode->add_item(TTR("Compressed binary tokens (smaller files)"), (int)EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED);
-	script_mode->connect("item_selected", callable_mp(this, &ProjectExportDialog::_script_export_mode_changed));
+	script_mode->connect(SceneStringName(item_selected), callable_mp(this, &ProjectExportDialog::_script_export_mode_changed));
 
 	sections->add_child(script_vb);
 
