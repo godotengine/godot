@@ -25,6 +25,8 @@ The config file contains two section:
 
 - `cs: boolean = false`: If `true`, the test will be skipped when running a non C# build.
 - `use_single_quotes: boolean = false`: Configures the corresponding editor setting for the test.
+- `add_node_path_literals: boolean = false`: Configures the corresponding editor setting for the test.
+- `add_string_name_literals: boolean = false`: Configures the corresponding editor setting for the test.
 - `scene: String`: Allows to specify a scene which is opened while autocompletion is performed. If this is not set the test runner will search for a `.tscn` file with the same basename as the GDScript file. If that isn't found either, autocompletion will behave as if no scene was opened.
 - `node_path: String`: The node path of the node which holds the current script inside of the scene. Defaults to the scene root node.
 
