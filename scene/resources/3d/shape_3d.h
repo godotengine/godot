@@ -42,6 +42,7 @@ class Shape3D : public Resource {
 	RID shape;
 	real_t custom_bias = 0.0;
 	real_t margin = 0.04;
+	Color debug_color = Color(0.5, 0.5, 0.5);
 
 	Ref<ArrayMesh> debug_mesh_cache;
 
@@ -68,6 +69,9 @@ public:
 
 	real_t get_margin() const;
 	void set_margin(real_t p_margin);
+
+	void set_debug_color(const Color &p_color);
+	Color get_debug_color() const;
 
 	Shape3D();
 	~Shape3D();

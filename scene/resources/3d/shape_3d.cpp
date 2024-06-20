@@ -79,16 +79,21 @@ Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 		//make mesh
 		Vector<Vector3> array;
 		array.resize(lines.size());
+		Vector<Color> color_array;
+		color_array.resize(lines.size());
 		{
 			Vector3 *w = array.ptrw();
+			Color *c = color_array.ptrw();
 			for (int i = 0; i < lines.size(); i++) {
 				w[i] = lines[i];
+				c[i] = debug_color;
 			}
 		}
 
 		Array arr;
 		arr.resize(Mesh::ARRAY_MAX);
 		arr[Mesh::ARRAY_VERTEX] = array;
+		arr[Mesh::ARRAY_COLOR] = color_array;
 
 		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 
@@ -102,6 +107,15 @@ Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 	return debug_mesh_cache;
 }
 
+void Shape3D::set_debug_color(const Color &p_color)
+{
+	debug_color = p_color;
+	_update_shape();
+}
+Color Shape3D::get_debug_color() const
+{
+	return debug_color;
+}
 void Shape3D::_update_shape() {
 	emit_changed();
 	debug_mesh_cache.unref();
@@ -114,10 +128,14 @@ void Shape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &Shape3D::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &Shape3D::get_margin);
 
+	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &Shape3D::set_debug_color);
+	ClassDB::bind_method(D_METHOD("get_debug_color"), &Shape3D::get_debug_color);
+
 	ClassDB::bind_method(D_METHOD("get_debug_mesh"), &Shape3D::get_debug_mesh);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_solver_bias", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_custom_solver_bias", "get_custom_solver_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater,suffix:m"), "set_margin", "get_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_color"), "set_debug_color", "get_debug_color");
 }
 
 Shape3D::Shape3D() {

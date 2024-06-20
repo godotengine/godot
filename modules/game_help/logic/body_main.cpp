@@ -66,7 +66,7 @@ void CharacterBodyMain::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_library", PROPERTY_HINT_RESOURCE_TYPE, "AnimationLibrary",PROPERTY_USAGE_DEFAULT ), "set_animation_library", "get_animation_library");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animator", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimator",PROPERTY_USAGE_DEFAULT ), "set_animator", "get_animator");
 
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "main_shape", PROPERTY_HINT_RESOURCE_TYPE, "CollisionObject3DConnection",PROPERTY_USAGE_DEFAULT), "set_main_shape", "get_main_shape");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "main_shape", PROPERTY_HINT_RESOURCE_TYPE, "CollisionObject3DConnectionShape",PROPERTY_USAGE_DEFAULT), "set_main_shape", "get_main_shape");
     ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "check_area", PROPERTY_HINT_RESOURCE_TYPE, RESOURCE_TYPE_HINT("CharacterCheckArea3D"),PROPERTY_USAGE_DEFAULT), "set_check_area", "get_check_area");
     ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "body_part", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT), "set_body_part", "get_body_part");
 
@@ -536,10 +536,6 @@ Dictionary CharacterBodyMain::get_body_part()
 CharacterBodyMain::CharacterBodyMain()
 {
     character_movement.instantiate();
-    mainCollision = memnew(CollisionShape3D);
-    mainCollision->set_name("MainCollision");
-    add_child(mainCollision);
-    mainCollision->set_owner(this);
 }
 CharacterBodyMain::~CharacterBodyMain()
 {

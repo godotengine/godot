@@ -113,14 +113,22 @@ public:
     void set_navigation_agent(const Ref<CharacterNavigationAgent3D> &p_navigation_agent);
     Ref<CharacterNavigationAgent3D> get_navigation_agent();
 public:
-    void set_main_shape(const Ref<CollisionObject3DConnection>& p_shape) {
-        if(mainShape.is_null() || p_shape.is_valid())
+    void set_main_shape(const Ref<CollisionObject3DConnectionShape>& p_shape) {
+        if(mainShape == p_shape)
         {
-            mainShape = p_shape;
-            mainShape->set_link_target(mainCollision);
+            return;
+        }
+        if(mainShape.is_valid())
+        {            
+            mainShape->set_link_target(nullptr);
+        }
+        mainShape = p_shape;
+        if(mainShape.is_valid())
+        {            
+            mainShape->set_link_target(this);
         }
     }
-    Ref<CollisionObject3DConnection> get_main_shape()
+    Ref<CollisionObject3DConnectionShape> get_main_shape()
      {
         return mainShape; 
     }
@@ -334,10 +342,7 @@ protected:
 protected:
     Skeleton3D *skeleton = nullptr;
     AnimationPlayer *player = nullptr;
-    CollisionShape3D* mainCollision = nullptr;
-    Ref<CollisionObject3DConnection> mainShape;
-    Area3D * areaCollision = nullptr;
-    Ref<CollisionObject3DConnection> areaShape;
+    Ref<CollisionObject3DConnectionShape> mainShape;
     mutable BTPlayer *btPlayer = nullptr;
     bool is_skill_stop = false;
     // 技能播放器

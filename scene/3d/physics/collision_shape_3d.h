@@ -114,11 +114,11 @@ public:
 	Vector3 get_scale() const {
 		return local_scale;
 	}
+	void set_link_target(Node3D *p_target);
 	CollisionObject3DConnectionShape() {}
 	~CollisionObject3DConnectionShape() {set_link_target(nullptr);}
 protected:
 friend class CollisionObject3DConnection;
-	void set_link_target(Node3D *p_target);
 	void update_transform();
 protected:
 	StringName name;

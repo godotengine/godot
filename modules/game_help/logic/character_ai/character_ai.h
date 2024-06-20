@@ -373,6 +373,10 @@ class CharacterAILogicNode_Patrol : public CharacterAILogicNode
 
     }
  public:
+    CharacterAILogicNode_Patrol()
+    {
+        name = "CharacterAILogicNode_Patrol";
+    }
     virtual void _enter_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
 
@@ -396,6 +400,10 @@ class CharacterAILogicNode_Jump : public CharacterAILogicNode
 
     }
 public:
+    CharacterAILogicNode_Jump()
+    {
+        name = "CharacterAILogicNode_Jump";
+    }
     virtual void _enter_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
 
@@ -418,6 +426,10 @@ class CharacterAILogicNode_Jump2 : public CharacterAILogicNode
 
     }
     public:
+    CharacterAILogicNode_Jump2()
+    {
+        name = "CharacterAILogicNode_Jump2";
+    }
     virtual void _enter_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
 
@@ -442,7 +454,11 @@ class CharacterAILogicNode_Follow : public CharacterAILogicNode
     {
 
     }
-    public:
+public:
+    CharacterAILogicNode_Follow()
+    {
+        name = "CharacterAILogicNode_Follow";
+    }
     virtual void _enter_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
 
@@ -465,7 +481,11 @@ class CharacterAILogicNode_Escape : public CharacterAILogicNode
     {
 
     }
-    public:
+public:
+    CharacterAILogicNode_Escape()
+    {
+        name = "CharacterAILogicNode_Escape";
+    }
     virtual void _enter_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
 
@@ -489,6 +509,10 @@ class CharacterAILogicNode_Battle : public CharacterAILogicNode
 
     }
     public:
+    CharacterAILogicNode_Battle()
+    {
+        name = "CharacterAILogicNode_Battle";
+    }
     virtual void _enter_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
 
@@ -512,6 +536,10 @@ class CharacterAILogicNode_Respawn : public CharacterAILogicNode
 
     }
     public:
+    CharacterAILogicNode_Respawn()
+    {
+        name = "CharacterAILogicNode_Respawn";
+    }
     virtual void _enter_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
 
@@ -535,6 +563,10 @@ class CharacterAILogicNode_Provoke  : public CharacterAILogicNode
 
     }
     public:
+    CharacterAILogicNode_Provoke()
+    {
+        name = "CharacterAILogicNode_Provoke";
+    }
     virtual void _enter_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
     }
@@ -557,6 +589,10 @@ class CharacterAILogicNode_Idle : public CharacterAILogicNode
 
     }
     public:
+    CharacterAILogicNode_Idle()
+    {
+        name = "CharacterAILogicNode_Idle";
+    }
     virtual void _enter_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
         int ident_index = 0;
@@ -608,6 +644,10 @@ class CharacterAILogicNode_Dead : public CharacterAILogicNode
 
     }
     public:
+    CharacterAILogicNode_Dead()
+    {
+        name = "CharacterAILogicNode_Dead";
+    }
     virtual void _enter_logic(CharacterBodyMain *node,Blackboard* blackboard)override
     {
         if(!blackboard->get("dead/is_dead"))
@@ -702,7 +742,11 @@ public:
             logic_node_array.push_back(logic_node);
             if(logic_node.is_valid())
             {
-                logic_nodes[logic_node->get_name()] = logic_node;
+                StringName sn = logic_node->get_name();
+                if(sn != StringName())
+                {
+                    logic_nodes[logic_node->get_name()] = logic_node;
+                }
             }
         }
     }
