@@ -365,6 +365,11 @@ void ShaderEditorPlugin::_shader_selected(int p_index) {
 	if (edited_shaders[p_index].shader_editor) {
 		edited_shaders[p_index].shader_editor->validate_script();
 	}
+
+	if (edited_shaders[p_index].visual_shader_editor) {
+		edited_shaders[p_index].visual_shader_editor->validate_script();
+	}
+
 	shader_tabs->set_current_tab(p_index);
 	shader_list->select(p_index);
 }
