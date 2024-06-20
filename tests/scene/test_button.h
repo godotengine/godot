@@ -38,10 +38,33 @@
 
 namespace TestButton {
 TEST_CASE("[ScenceTree][Button] Button is_hovered()") {
+	// Create a new button instance
 	Button *button = memnew(Button);
 	CHECK(button != nullptr);
 
+	Control *parent = memnew(Control);
+	parent->add_child(button);
+
+	button->set_position(Vector2(10, 10));
+	button->set_size(Vector2(100, 50));
+
+	Node *root = memnew(Node);
+	root->add_child(parent);
+
+	// Simulate mouse hover
+	Ref<InputEventMouseMotion> mouse_motion = InputEventMouseMotion::_new();
+	mouse_motion->set_position(Vector2(50, 25)); // Position inside the button
+	button->_input(mouse_motion);
+	CHECK(button->is_hovered() == true);
+
+	// Mouse not hovered
+	mouse_motion->set_position(Vector2(200, 200)); // Position outside the button
+	button->_input(mouse_motion);
+	CHECK(button->is_hovered() == false);
+
 	memdelete(button);
+	memdelete(parent);
+	memdelete(root);
 }
 } //namespace TestButton
 #endif // TEST_BUTTON_H
