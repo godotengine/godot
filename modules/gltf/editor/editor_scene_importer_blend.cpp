@@ -521,8 +521,8 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 		browse_dialog = memnew(EditorFileDialog);
 		browse_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-		browse_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
-		browse_dialog->connect("dir_selected", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_select_install));
+		browse_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+		browse_dialog->connect("file_selected", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_select_install));
 
 		EditorNode::get_singleton()->get_gui_base()->add_child(browse_dialog);
 
