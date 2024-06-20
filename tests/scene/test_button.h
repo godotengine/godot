@@ -31,40 +31,46 @@
 #ifndef TEST_BUTTON_H
 #define TEST_BUTTON_H
 
-#include "core/input/input_event.h"
 #include "scene/gui/button.h"
-#include "scene/gui/control.h"
+#include "scene/main/window.h"
+
 #include "tests/test_macros.h"
 
 namespace TestButton {
-TEST_CASE("[ScenceTree][Button] Button is_hovered()") {
-	// Create a new button instance
+TEST_CASE("[SceneTree][Button] Button is_hovered() test") {
+	Window *root = SceneTree::get_singleton()->get_root();
+
+	Window *window = memnew(Window);
+	root->add_child(w);
+	window->set_size(Size2i(500, 500));
+	window->set_position(Size2i(0, 0));
+	window->set_content_scale_size(Size2i(500, 500));
+	window->set_content_scale_mode(Window::CONTENT_SCALE_MODE_CANVAS_ITEMS);
+	window->set_content_scale_aspect(Window::CONTENT_SCALE_ASPECT_KEEP);
+
+	// Create new button instance
 	Button *button = memnew(Button);
 	CHECK(button != nullptr);
 
-	Control *parent = memnew(Control);
-	parent->add_child(button);
+	// Set up button's size and position
+	window->add_child(button);
+	button->set_size(Size2i(50, 50));
+	button->set_position(Size2i(10, 10));
 
-	button->set_position(Vector2(10, 10));
-	button->set_size(Vector2(100, 50));
+	// Button should initially be not hovered
+	CHECK(button->is_hovered() == false);
 
-	Node *root = memnew(Node);
-	root->add_child(parent);
-
-	// Simulate mouse hover
-	Ref<InputEventMouseMotion> mouse_motion = InputEventMouseMotion::_new();
-	mouse_motion->set_position(Vector2(50, 25)); // Position inside the button
-	button->_input(mouse_motion);
+	// Simulate mouse entering the button
+	SEND_GUI_MOUSE_MOTION_EVENT(Point2i(25, 25), MouseButtonMask::NONE, Key::NONE);
 	CHECK(button->is_hovered() == true);
 
-	// Mouse not hovered
-	mouse_motion->set_position(Vector2(200, 200)); // Position outside the button
-	button->_input(mouse_motion);
+	// Simulate mouse exiting the button
+	SEND_GUI_MOUSE_MOTION_EVENT(Point2i(150, 150), MouseButtonMask::NONE, Key::NONE);
 	CHECK(button->is_hovered() == false);
 
 	memdelete(button);
-	memdelete(parent);
-	memdelete(root);
+	memdelete(window);
 }
+
 } //namespace TestButton
 #endif // TEST_BUTTON_H
