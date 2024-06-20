@@ -1859,7 +1859,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		editor_spin_label_bg->set_border_width_all(0);
 		p_theme->set_stylebox("label_bg", "EditorSpinSlider", editor_spin_label_bg);
 
-		// Launch Pad and Play buttons
+		// Launch Pad and Play buttons.
 		Ref<StyleBoxFlat> style_launch_pad = make_flat_stylebox(p_config.dark_color_1, 2 * EDSCALE, 0, 2 * EDSCALE, 0, p_config.corner_radius);
 		style_launch_pad->set_corner_radius_all(p_config.corner_radius * EDSCALE);
 		p_theme->set_stylebox("LaunchPadNormal", EditorStringName(EditorStyles), style_launch_pad);
@@ -1879,6 +1879,12 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		style_write_movie_button->set_content_margin(SIDE_RIGHT, 0);
 		style_write_movie_button->set_expand_margin(SIDE_RIGHT, 2 * EDSCALE);
 		p_theme->set_stylebox("MovieWriterButtonPressed", EditorStringName(EditorStyles), style_write_movie_button);
+
+		// Movie writer button colors.
+		p_theme->set_color("movie_writer_icon_normal", EditorStringName(EditorStyles), Color(1, 1, 1, 0.7));
+		p_theme->set_color("movie_writer_icon_pressed", EditorStringName(EditorStyles), Color(0, 0, 0, 0.84));
+		p_theme->set_color("movie_writer_icon_hover", EditorStringName(EditorStyles), Color(1, 1, 1, 0.9));
+		p_theme->set_color("movie_writer_icon_hover_pressed", EditorStringName(EditorStyles), Color(0, 0, 0, 0.84));
 	}
 
 	// Standard GUI variations.
