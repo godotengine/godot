@@ -169,10 +169,10 @@ namespace Godot.SourceGenerators
             {
                 string propertyName = property.PropertySymbol.Name;
 
-                source.Append("        info.AddProperty(PropertyName.")
+                source.Append("        info.AddProperty(PropertyName.@")
                     .Append(propertyName)
                     .Append(", ")
-                    .AppendManagedToVariantExpr(string.Concat("this.", propertyName),
+                    .AppendManagedToVariantExpr(string.Concat("this.@", propertyName),
                         property.PropertySymbol.Type, property.Type)
                     .Append(");\n");
             }
@@ -183,10 +183,10 @@ namespace Godot.SourceGenerators
             {
                 string fieldName = field.FieldSymbol.Name;
 
-                source.Append("        info.AddProperty(PropertyName.")
+                source.Append("        info.AddProperty(PropertyName.@")
                     .Append(fieldName)
                     .Append(", ")
-                    .AppendManagedToVariantExpr(string.Concat("this.", fieldName),
+                    .AppendManagedToVariantExpr(string.Concat("this.@", fieldName),
                         field.FieldSymbol.Type, field.Type)
                     .Append(");\n");
             }
@@ -197,7 +197,7 @@ namespace Godot.SourceGenerators
             {
                 string signalName = signalDelegate.Name;
 
-                source.Append("        info.AddSignalEventDelegate(SignalName.")
+                source.Append("        info.AddSignalEventDelegate(SignalName.@")
                     .Append(signalName)
                     .Append(", this.backing_")
                     .Append(signalName)
@@ -218,12 +218,12 @@ namespace Godot.SourceGenerators
             {
                 string propertyName = property.PropertySymbol.Name;
 
-                source.Append("        if (info.TryGetProperty(PropertyName.")
+                source.Append("        if (info.TryGetProperty(PropertyName.@")
                     .Append(propertyName)
                     .Append(", out var _value_")
                     .Append(propertyName)
                     .Append("))\n")
-                    .Append("            this.")
+                    .Append("            this.@")
                     .Append(propertyName)
                     .Append(" = ")
                     .AppendVariantToManagedExpr(string.Concat("_value_", propertyName),
@@ -237,12 +237,12 @@ namespace Godot.SourceGenerators
             {
                 string fieldName = field.FieldSymbol.Name;
 
-                source.Append("        if (info.TryGetProperty(PropertyName.")
+                source.Append("        if (info.TryGetProperty(PropertyName.@")
                     .Append(fieldName)
                     .Append(", out var _value_")
                     .Append(fieldName)
                     .Append("))\n")
-                    .Append("            this.")
+                    .Append("            this.@")
                     .Append(fieldName)
                     .Append(" = ")
                     .AppendVariantToManagedExpr(string.Concat("_value_", fieldName),
@@ -259,7 +259,7 @@ namespace Godot.SourceGenerators
 
                 source.Append("        if (info.TryGetSignalEventDelegate<")
                     .Append(signalDelegateQualifiedName)
-                    .Append(">(SignalName.")
+                    .Append(">(SignalName.@")
                     .Append(signalName)
                     .Append(", out var _value_")
                     .Append(signalName)
