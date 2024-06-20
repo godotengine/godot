@@ -50,8 +50,8 @@ struct _NO_DISCARD_ PGAVector2 {
 		GRADE_MASK_POINT = GRADE_MASK_2,
 		GRADE_MASK_MOTOR = GRADE_MASK_0 | GRADE_MASK_2
 	};
-	
-    union {
+
+	union {
 		struct {
 			real_t e;
 			real_t e0;
@@ -76,78 +76,58 @@ struct _NO_DISCARD_ PGAVector2 {
 		return coord[p_axis];
 	}
 
-	// Products
-	PGAVector2 gp(const PGAVector2 &p_mv) const; // Geometric
-	PGAVector2 op(const PGAVector2 &p_mv) const; // Outer
-	PGAVector2 ip(const PGAVector2 &p_mv) const; // Inner
-	PGAVector2 rp(const PGAVector2 &p_mv) const; // Regressive
-	PGAVector2 cp(const PGAVector2 &p_mv) const; // Commutator
-	real_t sp(const PGAVector2 &p_mv) const; // Scalar
+	// Mathematical operations
+	_FORCE_INLINE_ PGAVector2 geometric_product(const PGAVector2 &p_mv) const;
+	_FORCE_INLINE_ PGAVector2 outer_product(const PGAVector2 &p_mv) const;
+	_FORCE_INLINE_ PGAVector2 inner_product(const PGAVector2 &p_mv) const;
+	_FORCE_INLINE_ PGAVector2 regressive_product(const PGAVector2 &p_mv) const;
+	_FORCE_INLINE_ PGAVector2 commutator_product(const PGAVector2 &p_mv) const;
+	_FORCE_INLINE_ PGAVector2 sandwich_product(const PGAVector2 &p_mv) const;
 
-	// Following the convention of https://kingdon.readthedocs.io/en/latest/usage.html
-	PGAVector2 operator*(const PGAVector2 &p_mv) const { // Geometric
-        return gp(p_mv);
-	}
-	PGAVector2 operator^(const PGAVector2 &p_mv) const { // Outer
-        return op(p_mv);
-	}
-	PGAVector2 operator|(const PGAVector2 &p_mv) const { // Inner
-        return ip(p_mv);
-	}
-	PGAVector2 operator&(const PGAVector2 &p_mv) const { // Regressive
-        return rp(p_mv);
-	}
+	_FORCE_INLINE_ PGAVector2 reverse() const;
+	_FORCE_INLINE_ PGAVector2 dual() const;
+	_FORCE_INLINE_ PGAVector2 normalize() const;
+	_FORCE_INLINE_ PGAVector2 grade(GradeMask mask) const;
+	_FORCE_INLINE_ real_t norm_square() const;
+	_FORCE_INLINE_ real_t norm() const;
 
-	_FORCE_INLINE_ PGAVector2 sw(const PGAVector2 &p_mv) const { // Sandwich
-		return (*this * p_mv) * reverse();
-	}
-	_FORCE_INLINE_ PGAVector2 proj(const PGAVector2 &p_mv) const { // Projective
-		return (*this | p_mv) * reverse();
-	}
+	_FORCE_INLINE_ void reverse_in_place();
+	_FORCE_INLINE_ void dual_in_place();
+	_FORCE_INLINE_ void normalize_in_place();
+	_FORCE_INLINE_ void grade_in_place(GradeMask mask);
 
-	void operator+=(const PGAVector2 &p_mv);
-	void operator-=(const PGAVector2 &p_mv);
-	void operator*=(const real_t p_s);
-	void operator/=(const real_t p_s);
+	// C++ Operators
+	_FORCE_INLINE_ PGAVector2 operator-() const;
+	_FORCE_INLINE_ PGAVector2 operator~() const;
+	_FORCE_INLINE_ PGAVector2 operator!() const;
 
-	_FORCE_INLINE_ PGAVector2 operator+(const PGAVector2 &p_mv) const {
-		PGAVector2 r = *this;
-		r += p_mv;
-		return r;
-	}
-	_FORCE_INLINE_ PGAVector2 operator-(const PGAVector2 &p_mv) const {
-		PGAVector2 r = *this;
-		r -= p_mv;
-		return r;
-	}
-	_FORCE_INLINE_ PGAVector2 operator*(const real_t p_s) const {
-		PGAVector2 r = *this;
-		r *= p_s;
-		return r;
-	}
-	_FORCE_INLINE_ PGAVector2 operator/(const real_t p_s) const {
-		PGAVector2 r = *this;
-		r /= p_s;
-		return r;
-	}
+	_FORCE_INLINE_ void operator+=(const PGAVector2 &p_mv);
+	_FORCE_INLINE_ void operator-=(const PGAVector2 &p_mv);
+	_FORCE_INLINE_ void operator*=(const real_t p_s);
+	_FORCE_INLINE_ void operator/=(const real_t p_s);
 
-	PGAVector2 reverse() const;
-	PGAVector2 dual() const;
-	real_t norm_square() const {
-        return gp(reverse()).e;
-    }
+	_FORCE_INLINE_ PGAVector2 operator+(const PGAVector2 &p_mv) const;
+	_FORCE_INLINE_ PGAVector2 operator-(const PGAVector2 &p_mv) const;
+	_FORCE_INLINE_ PGAVector2 operator*(const real_t p_s) const;
+	_FORCE_INLINE_ PGAVector2 operator/(const real_t p_s) const;
 
-	_FORCE_INLINE_ real_t norm() const {
-		return Math::sqrt(norm_square());
-	}
+	_FORCE_INLINE_ PGAVector2 operator*(const PGAVector2 &p_mv) const;
+	_FORCE_INLINE_ PGAVector2 operator^(const PGAVector2 &p_mv) const;
+	_FORCE_INLINE_ PGAVector2 operator|(const PGAVector2 &p_mv) const;
+	_FORCE_INLINE_ PGAVector2 operator&(const PGAVector2 &p_mv) const;
 
-	PGAVector2 grade(GradeMask mask) const;
+	// Convertor to subtypes
+	PGALine2 to_line() const;
+	PGAPoint2 to_point() const;
+	PGAMotor2 to_motor() const;
 
-	// Convertor to subtype
-
-    // Constructor
+	// Convertor from subtypes
+	PGAVector2() {}
+	PGAVector2(const PGALine2 &p_line);
+	PGAVector2(const PGAPoint2 &p_point);
+	PGAVector2(const PGAMotor2 &p_motor);
+	PGAVector2(const real_t p_s);
 };
-
 
 struct _NO_DISCARD_ PGALine2 {
 	static const int AXIS_COUNT = 3;
@@ -171,6 +151,49 @@ struct _NO_DISCARD_ PGALine2 {
 		DEV_ASSERT((unsigned int)p_axis < AXIS_COUNT);
 		return coord[p_axis];
 	}
+
+	// Mathematical operations
+	_FORCE_INLINE_ PGAMotor2 geometric_product(const PGALine2 &p_line) const;
+	_FORCE_INLINE_ PGAPoint2 outer_product(const PGALine2 &p_line) const;
+	_FORCE_INLINE_ PGALine2 inner_product(const PGAPoint2 &p_point) const;
+	_FORCE_INLINE_ real_t inner_product(const PGALine2 &p_line) const;
+	_FORCE_INLINE_ PGALine2 sandwich_product(const PGALine2 &p_line) const;
+	_FORCE_INLINE_ PGAPoint2 sandwich_product(const PGAPoint2 &p_point) const;
+
+	_FORCE_INLINE_ PGALine2 reverse() const;
+	_FORCE_INLINE_ PGAPoint2 dual() const;
+	_FORCE_INLINE_ PGALine2 normalize() const;
+	_FORCE_INLINE_ real_t norm_square() const;
+	_FORCE_INLINE_ real_t norm() const;
+
+	_FORCE_INLINE_ void reverse_in_place() {}
+	_FORCE_INLINE_ void normalize_in_place();
+
+	// C++ Operators
+	_FORCE_INLINE_ PGALine2 operator-() const;
+	_FORCE_INLINE_ PGALine2 operator~() const;
+	_FORCE_INLINE_ PGAPoint2 operator!() const;
+
+	_FORCE_INLINE_ void operator+=(const PGALine2 &p_line);
+	_FORCE_INLINE_ void operator-=(const PGALine2 &p_line);
+	_FORCE_INLINE_ void operator*=(const real_t p_s);
+	_FORCE_INLINE_ void operator/=(const real_t p_s);
+
+	_FORCE_INLINE_ PGALine2 operator+(const PGALine2 &p_line) const;
+	_FORCE_INLINE_ PGALine2 operator-(const PGALine2 &p_line) const;
+	_FORCE_INLINE_ PGALine2 operator*(const real_t p_s) const;
+	_FORCE_INLINE_ PGALine2 operator/(const real_t p_s) const;
+
+	_FORCE_INLINE_ PGAMotor2 operator*(const PGALine2 &p_line) const;
+	_FORCE_INLINE_ PGAPoint2 operator^(const PGALine2 &p_line) const;
+	_FORCE_INLINE_ PGALine2 operator|(const PGAPoint2 &p_point) const;
+	_FORCE_INLINE_ real_t operator|(const PGALine2 &p_line) const;
+
+	// Alias
+	_FORCE_INLINE_ PGAPoint2 join(const PGALine2 &p_line) const { return outer_product(p_line); }
+	_FORCE_INLINE_ PGALine2 apply(const PGALine2 &p_line) const { return sandwich_product(p_line); }
+	_FORCE_INLINE_ PGAPoint2 reflect(const PGAPoint2 &p_point) const { return sandwich_product(p_point); }
+	_FORCE_INLINE_ PGALine2 ortho(const PGAPoint2 &p_point) const { return inner_product(p_point); }
 };
 
 struct _NO_DISCARD_ PGAPoint2 {
@@ -195,6 +218,42 @@ struct _NO_DISCARD_ PGAPoint2 {
 		DEV_ASSERT((unsigned int)p_axis < AXIS_COUNT);
 		return coord[p_axis];
 	}
+
+	// Mathematical operations
+	_FORCE_INLINE_ PGALine2 regressive_product(const PGAPoint2 &p_point) const;
+	_FORCE_INLINE_ PGALine2 inner_product(const PGALine2 &p_point) const;
+
+	_FORCE_INLINE_ PGAPoint2 reverse() const;
+	_FORCE_INLINE_ PGALine2 dual() const;
+	_FORCE_INLINE_ PGAVector2 normalize() const;
+	_FORCE_INLINE_ real_t norm_square() const;
+	_FORCE_INLINE_ real_t norm() const;
+
+	_FORCE_INLINE_ void normalize_in_place();
+	_FORCE_INLINE_ void reverse_in_place() {}
+
+	_FORCE_INLINE_ PGAMotor2 exp(real_t &p_s);
+
+	// C++ Operators
+	_FORCE_INLINE_ PGAPoint2 operator-() const;
+	_FORCE_INLINE_ PGAPoint2 operator~() const;
+	_FORCE_INLINE_ PGALine2 operator!() const;
+
+	_FORCE_INLINE_ void operator+=(const PGAPoint2 &p_point);
+	_FORCE_INLINE_ void operator-=(const PGAPoint2 &p_point);
+	_FORCE_INLINE_ void operator*=(const real_t p_s);
+	_FORCE_INLINE_ void operator/=(const real_t p_s);
+
+	_FORCE_INLINE_ PGAPoint2 operator+(const PGAPoint2 &p_point) const;
+	_FORCE_INLINE_ PGAPoint2 operator-(const PGAPoint2 &p_point) const;
+	_FORCE_INLINE_ PGAPoint2 operator*(const real_t p_s) const;
+	_FORCE_INLINE_ PGAPoint2 operator/(const real_t p_s) const;
+
+	_FORCE_INLINE_ PGALine2 operator&(const PGAPoint2 &p_point) const;
+
+	// Alias
+	_FORCE_INLINE_ PGALine2 meet(const PGAPoint2 &p_point) const { return regressive_product(p_point); }
+	_FORCE_INLINE_ PGALine2 ortho(const PGALine2 &p_line) const { return inner_product(p_line); }
 };
 
 struct _NO_DISCARD_ PGAMotor2 {
@@ -203,7 +262,7 @@ struct _NO_DISCARD_ PGAMotor2 {
 	union {
 		struct {
 			real_t e;
-            real_t e01;
+			real_t e01;
 			real_t e02;
 			real_t e12;
 		};
@@ -220,7 +279,40 @@ struct _NO_DISCARD_ PGAMotor2 {
 		DEV_ASSERT((unsigned int)p_axis < AXIS_COUNT);
 		return coord[p_axis];
 	}
-};
 
+	// Mathematical operations
+	_FORCE_INLINE_ PGAMotor2 geometric_product(const PGAMotor2 &p_motor) const;
+	_FORCE_INLINE_ PGAPoint2 sandwich_product(const PGAPoint2 &p_point) const;
+	_FORCE_INLINE_ PGALine2 sandwich_product(const PGALine2 &p_line) const;
+
+	_FORCE_INLINE_ PGAMotor2 reverse() const;
+	_FORCE_INLINE_ PGAMotor2 normalize() const;
+	_FORCE_INLINE_ real_t norm_square() const;
+	_FORCE_INLINE_ real_t norm() const;
+
+	_FORCE_INLINE_ void reverse_in_place();
+	_FORCE_INLINE_ void normalize_in_place();
+
+	// C++ Operators
+	_FORCE_INLINE_ PGAMotor2 operator-() const;
+	_FORCE_INLINE_ PGAMotor2 operator~() const;
+
+	_FORCE_INLINE_ void operator+=(const PGAMotor2 &p_motor);
+	_FORCE_INLINE_ void operator-=(const PGAMotor2 &p_motor);
+	_FORCE_INLINE_ void operator*=(const real_t p_s);
+	_FORCE_INLINE_ void operator/=(const real_t p_s);
+
+	_FORCE_INLINE_ PGAMotor2 operator+(const PGAMotor2 &p_motor) const;
+	_FORCE_INLINE_ PGAMotor2 operator-(const PGAMotor2 &p_motor) const;
+	_FORCE_INLINE_ PGAMotor2 operator*(const real_t p_s) const;
+	_FORCE_INLINE_ PGAMotor2 operator/(const real_t p_s) const;
+
+	_FORCE_INLINE_ PGAMotor2 operator*(const PGAMotor2 &p_motor) const;
+
+	// Alias
+	_FORCE_INLINE_ PGAMotor2 compose(const PGAMotor2 &p_motor) const { return geometric_product(p_motor); }
+	_FORCE_INLINE_ PGAPoint2 apply(const PGAPoint2 &p_point) const { return sandwich_product(p_point); }
+	_FORCE_INLINE_ PGALine2 apply(const PGALine2 &p_line) const { return sandwich_product(p_line); }
+};
 
 #endif // PGA2_H
