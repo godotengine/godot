@@ -74,10 +74,34 @@ void NavRegion::set_transform(Transform3D p_transform) {
 	}
 	transform = p_transform;
 	polygons_dirty = true;
+
+#ifdef DEBUG_ENABLED
+	if (map && Math::rad_to_deg(map->get_up().angle_to(transform.basis.get_column(1))) >= 90.0f) {
+		ERR_PRINT_ONCE("Attempted to update a navigation region transform rotated 90 degrees or more away from the current navigation map UP orientation.");
+	}
+#endif // DEBUG_ENABLED
 }
 
-void NavRegion::set_mesh(Ref<NavigationMesh> p_mesh) {
-	mesh = p_mesh;
+void NavRegion::set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) {
+#ifdef DEBUG_ENABLED
+	if (map && !Math::is_equal_approx(double(map->get_cell_size()), double(p_navigation_mesh->get_cell_size()))) {
+		ERR_PRINT_ONCE(vformat("Attempted to update a navigation region with a navigation mesh that uses a `cell_size` of %s while assigned to a navigation map set to a `cell_size` of %s. The cell size for navigation maps can be changed by using the NavigationServer map_set_cell_size() function. The cell size for default navigation maps can also be changed in the ProjectSettings.", double(p_navigation_mesh->get_cell_size()), double(map->get_cell_size())));
+	}
+
+	if (map && !Math::is_equal_approx(double(map->get_cell_height()), double(p_navigation_mesh->get_cell_height()))) {
+		ERR_PRINT_ONCE(vformat("Attempted to update a navigation region with a navigation mesh that uses a `cell_height` of %s while assigned to a navigation map set to a `cell_height` of %s. The cell height for navigation maps can be changed by using the NavigationServer map_set_cell_height() function. The cell height for default navigation maps can also be changed in the ProjectSettings.", double(p_navigation_mesh->get_cell_height()), double(map->get_cell_height())));
+	}
+#endif // DEBUG_ENABLED
+
+	RWLockWrite write_lock(navmesh_rwlock);
+
+	pending_navmesh_vertices.clear();
+	pending_navmesh_polygons.clear();
+
+	if (p_navigation_mesh.is_valid()) {
+		p_navigation_mesh->get_data(pending_navmesh_vertices, pending_navmesh_polygons);
+	}
+
 	polygons_dirty = true;
 }
 
@@ -202,33 +226,20 @@ void NavRegion::update_polygons() {
 		return;
 	}
 
-	if (mesh.is_null()) {
+	RWLockRead read_lock(navmesh_rwlock);
+
+	if (pending_navmesh_vertices.is_empty() || pending_navmesh_polygons.is_empty()) {
 		return;
 	}
 
-#ifdef DEBUG_ENABLED
-	if (!Math::is_equal_approx(double(map->get_cell_size()), double(mesh->get_cell_size()))) {
-		ERR_PRINT_ONCE(vformat("Navigation map synchronization error. Attempted to update a navigation region with a navigation mesh that uses a `cell_size` of %s while assigned to a navigation map set to a `cell_size` of %s. The cell size for navigation maps can be changed by using the NavigationServer map_set_cell_size() function. The cell size for default navigation maps can also be changed in the ProjectSettings.", double(mesh->get_cell_size()), double(map->get_cell_size())));
-	}
-
-	if (!Math::is_equal_approx(double(map->get_cell_height()), double(mesh->get_cell_height()))) {
-		ERR_PRINT_ONCE(vformat("Navigation map synchronization error. Attempted to update a navigation region with a navigation mesh that uses a `cell_height` of %s while assigned to a navigation map set to a `cell_height` of %s. The cell height for navigation maps can be changed by using the NavigationServer map_set_cell_height() function. The cell height for default navigation maps can also be changed in the ProjectSettings.", double(mesh->get_cell_height()), double(map->get_cell_height())));
-	}
-
-	if (map && Math::rad_to_deg(map->get_up().angle_to(transform.basis.get_column(1))) >= 90.0f) {
-		ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to update a navigation region transform rotated 90 degrees or more away from the current navigation map UP orientation.");
-	}
-#endif // DEBUG_ENABLED
-
-	Vector<Vector3> vertices = mesh->get_vertices();
-	int len = vertices.size();
+	int len = pending_navmesh_vertices.size();
 	if (len == 0) {
 		return;
 	}
 
-	const Vector3 *vertices_r = vertices.ptr();
+	const Vector3 *vertices_r = pending_navmesh_vertices.ptr();
 
-	polygons.resize(mesh->get_polygon_count());
+	polygons.resize(pending_navmesh_polygons.size());
 
 	real_t _new_region_surface_area = 0.0;
 
@@ -238,7 +249,7 @@ void NavRegion::update_polygons() {
 		polygon.owner = this;
 		polygon.surface_area = 0.0;
 
-		Vector<int> navigation_mesh_polygon = mesh->get_polygon(navigation_mesh_polygon_index);
+		Vector<int> navigation_mesh_polygon = pending_navmesh_polygons[navigation_mesh_polygon_index];
 		navigation_mesh_polygon_index += 1;
 
 		int navigation_mesh_polygon_size = navigation_mesh_polygon.size();

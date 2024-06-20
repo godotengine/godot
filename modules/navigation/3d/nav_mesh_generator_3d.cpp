@@ -894,6 +894,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	bake_state = "Converting to native navigation mesh..."; // step #10
 
 	Vector<Vector3> nav_vertices;
+	Vector<Vector<int>> nav_polygons;
 
 	HashMap<Vector3, int> recast_vertex_to_native_index;
 	LocalVector<int> recast_index_to_native_index;
@@ -912,8 +913,6 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 			recast_index_to_native_index[i] = *existing_index_ptr;
 		}
 	}
-	p_navigation_mesh->set_vertices(nav_vertices);
-	p_navigation_mesh->clear_polygons();
 
 	for (int i = 0; i < detail_mesh->nmeshes; i++) {
 		const unsigned int *detail_mesh_m = &detail_mesh->meshes[i * 4];
@@ -933,9 +932,11 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 			nav_indices.write[1] = recast_index_to_native_index[index2];
 			nav_indices.write[2] = recast_index_to_native_index[index3];
 
-			p_navigation_mesh->add_polygon(nav_indices);
+			nav_polygons.push_back(nav_indices);
 		}
 	}
+
+	p_navigation_mesh->set_data(nav_vertices, nav_polygons);
 
 	bake_state = "Cleanup..."; // step #11
 
