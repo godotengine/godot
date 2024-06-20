@@ -59,6 +59,10 @@ class SubViewportContainer;
 class VSeparator;
 class VSplitContainer;
 class ViewportNavigationControl;
+class ViewportZoomGizmoControl;
+class ViewportPOVTranslationControl;
+class ViewportZoomGizmoControl;
+class ViewportPOVTranslationControl;
 class WorldEnvironment;
 
 class ViewportRotationControl : public Control {
@@ -105,6 +109,10 @@ class Node3DEditorViewport : public Control {
 	friend class Node3DEditor;
 	friend class ViewportNavigationControl;
 	friend class ViewportRotationControl;
+	friend class ViewportZoomGizmoControl;
+	friend class ViewportPOVTranslationControl;
+	friend class ViewportZoomGizmoControl;
+	friend class ViewportPOVTranslationControl;
 	enum {
 		VIEW_TOP,
 		VIEW_BOTTOM,
@@ -254,6 +262,8 @@ private:
 	ViewportNavigationControl *position_control = nullptr;
 	ViewportNavigationControl *look_control = nullptr;
 	ViewportRotationControl *rotation_control = nullptr;
+	ViewportZoomGizmoControl *zoom_control = nullptr;
+	ViewportPOVTranslationControl *pov_translation_control = nullptr;
 	Gradient *frame_time_gradient = nullptr;
 	Label *cpu_time_label = nullptr;
 	Label *gpu_time_label = nullptr;
@@ -983,6 +993,56 @@ protected:
 public:
 	void set_navigation_mode(Node3DEditorViewport::NavigationMode p_nav_mode);
 	void set_viewport(Node3DEditorViewport *p_viewport);
+};
+
+class ViewportPOVTranslationControl : public Control {
+	GDCLASS(ViewportPOVTranslationControl, Control);
+
+	Node3DEditorViewport *viewport = nullptr;
+	bool hovered = false;
+	Vector2i focused_mouse_start;
+	Vector2 focused_pos;
+	int focused_index = -1;
+	Node3DEditorViewport::NavigationMode nav_mode = Node3DEditorViewport::NavigationMode::NAVIGATION_NONE;
+
+protected:
+	void _notification(int p_what);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	void _draw();
+	void _on_mouse_entered();
+	void _on_mouse_exited();
+	void _process_click(int p_index, Vector2 p_position, bool p_pressed);
+	void _process_drag(int p_index, Vector2 p_position, Vector2 p_relative_position);
+	void _update_navigation();
+
+public:
+	void set_navigation_mode(Node3DEditorViewport::NavigationMode p_nav_mode);
+	void set_viewport(Node3DEditorViewport *p_viewport);
+};
+
+class ViewportZoomGizmoControl : public Control {
+	GDCLASS(ViewportZoomGizmoControl, Control);
+
+	Node3DEditorViewport *viewport = nullptr;
+	bool hovered = false;
+	Vector2i focused_mouse_start;
+	Vector2 focused_pos;
+	int focused_index = -1;
+	Node3DEditorViewport::NavigationMode nav_mode = Node3DEditorViewport::NavigationMode::NAVIGATION_NONE;
+
+protected:
+	void _notification(int p_what);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	void _draw();
+	void _on_mouse_entered();
+	void _on_mouse_exited();
+	void _process_click(int p_index, Vector2 p_position, bool p_pressed);
+	void _process_drag(int p_index, Vector2 p_position, Vector2 p_relative_position);
+	void _update_navigation();
+
+	public:
+		void set_navigation_mode(Node3DEditorViewport::NavigationMode p_nav_mode);
+		void set_viewport(Node3DEditorViewport *p_viewport);
 };
 
 #endif // NODE_3D_EDITOR_PLUGIN_H
