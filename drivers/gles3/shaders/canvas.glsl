@@ -239,13 +239,6 @@ void main() {
 	model_matrix = model_matrix * transpose(mat4(instance_xform0, instance_xform1, vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)));
 #endif // USE_INSTANCING
 
-#if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
-	if (bool(read_draw_data_flags & FLAGS_USING_PARTICLES)) {
-		//scale by texture size
-		vertex /= read_draw_data_color_texture_pixel_size;
-	}
-#endif
-
 	vec2 color_texture_pixel_size = read_draw_data_color_texture_pixel_size;
 
 #ifdef USE_POINT_SIZE
