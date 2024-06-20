@@ -1545,6 +1545,12 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 	}
 }
 
+void VisualShaderEditor::validate_script() {
+	if (visual_shader.is_valid()) {
+		_update_nodes();
+	}
+}
+
 void VisualShaderEditor::add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin) {
 	if (plugins.has(p_plugin)) {
 		return;
