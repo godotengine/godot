@@ -4251,8 +4251,7 @@ bool Viewport::_camera_3d_add(Camera3D *p_camera) {
 void Viewport::_camera_3d_remove(Camera3D *p_camera) {
 	camera_3d_set.erase(p_camera);
 	if (camera_3d == p_camera) {
-		camera_3d->notification(Camera3D::NOTIFICATION_LOST_CURRENT);
-		camera_3d = nullptr;
+		_camera_3d_set(nullptr);
 	}
 }
 
