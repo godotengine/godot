@@ -386,20 +386,20 @@
     r.e = a.e012;
 
 #define GRADE_0(r, a) \
-    r.e op a.e;
+    r.e = a.e;
 
 #define GRADE_1(r, a) \
-    r.e0 op a.e0;\
-    r.e1 op a.e1;\
-    r.e2 op a.e2;
+    r.e0 = a.e0;\
+    r.e1 = a.e1;\
+    r.e2 = a.e2;
 
 #define GRADE_2(r, a) \
-    r.e01 op a.e01;\
-    r.e02 op a.e02;\
-    r.e12 op a.e12;
+    r.e01 = a.e01;\
+    r.e02 = a.e02;\
+    r.e12 = a.e12;
 
 #define GRADE_3(r, a) \
-    r.e012 op a.e012;
+    r.e012 = a.e012;
 
 #define ADD_0(r, a, b, op) \
     r.e op a.e + b.e;
