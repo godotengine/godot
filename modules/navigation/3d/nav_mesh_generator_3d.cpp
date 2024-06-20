@@ -672,10 +672,16 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 		return;
 	}
 
-	const Vector<float> &vertices = p_source_geometry_data->get_vertices();
-	const Vector<int> &indices = p_source_geometry_data->get_indices();
+	Vector<float> source_geometry_vertices;
+	Vector<int> source_geometry_indices;
+	Vector<NavigationMeshSourceGeometryData3D::ProjectedObstruction> projected_obstructions;
 
-	if (vertices.size() < 3 || indices.size() < 3) {
+	p_source_geometry_data->get_data(
+			source_geometry_vertices,
+			source_geometry_indices,
+			projected_obstructions);
+
+	if (source_geometry_vertices.size() < 3 || source_geometry_indices.size() < 3) {
 		return;
 	}
 
@@ -691,10 +697,10 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	bake_state = "Setting up Configuration..."; // step #1
 
-	const float *verts = vertices.ptr();
-	const int nverts = vertices.size() / 3;
-	const int *tris = indices.ptr();
-	const int ntris = indices.size() / 3;
+	const float *verts = source_geometry_vertices.ptr();
+	const int nverts = source_geometry_vertices.size() / 3;
+	const int *tris = source_geometry_indices.ptr();
+	const int ntris = source_geometry_indices.size() / 3;
 
 	float bmin[3], bmax[3];
 	rcCalcBounds(verts, nverts, bmin, bmax);
@@ -817,8 +823,6 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	rcFreeHeightField(hf);
 	hf = nullptr;
-
-	const Vector<NavigationMeshSourceGeometryData3D::ProjectedObstruction> &projected_obstructions = p_source_geometry_data->_get_projected_obstructions();
 
 	// Add obstacles to the source geometry. Those will be affected by e.g. agent_radius.
 	if (!projected_obstructions.is_empty()) {

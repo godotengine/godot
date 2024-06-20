@@ -31,12 +31,24 @@
 #include "navigation_mesh_source_geometry_data_3d.h"
 
 void NavigationMeshSourceGeometryData3D::set_vertices(const Vector<float> &p_vertices) {
+	RWLockWrite write_lock(geometry_rwlock);
 	vertices = p_vertices;
+}
+
+const Vector<float> &NavigationMeshSourceGeometryData3D::get_vertices() const {
+	RWLockRead read_lock(geometry_rwlock);
+	return vertices;
 }
 
 void NavigationMeshSourceGeometryData3D::set_indices(const Vector<int> &p_indices) {
 	ERR_FAIL_COND(vertices.size() < p_indices.size());
+	RWLockWrite write_lock(geometry_rwlock);
 	indices = p_indices;
+}
+
+const Vector<int> &NavigationMeshSourceGeometryData3D::get_indices() const {
+	RWLockRead read_lock(geometry_rwlock);
+	return indices;
 }
 
 void NavigationMeshSourceGeometryData3D::append_arrays(const Vector<float> &p_vertices, const Vector<int> &p_indices) {
@@ -53,10 +65,16 @@ void NavigationMeshSourceGeometryData3D::append_arrays(const Vector<float> &p_ve
 	}
 }
 
+bool NavigationMeshSourceGeometryData3D::has_data() {
+	RWLockRead read_lock(geometry_rwlock);
+	return vertices.size() && indices.size();
+};
+
 void NavigationMeshSourceGeometryData3D::clear() {
+	RWLockWrite write_lock(geometry_rwlock);
 	vertices.clear();
 	indices.clear();
-	clear_projected_obstructions();
+	_projected_obstructions.clear();
 }
 
 void NavigationMeshSourceGeometryData3D::clear_projected_obstructions() {
@@ -187,40 +205,37 @@ void NavigationMeshSourceGeometryData3D::add_mesh(const Ref<Mesh> &p_mesh, const
 
 void NavigationMeshSourceGeometryData3D::add_mesh_array(const Array &p_mesh_array, const Transform3D &p_xform) {
 	ERR_FAIL_COND(p_mesh_array.size() != Mesh::ARRAY_MAX);
+	RWLockWrite write_lock(geometry_rwlock);
 	_add_mesh_array(p_mesh_array, root_node_transform * p_xform);
 }
 
 void NavigationMeshSourceGeometryData3D::add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform) {
 	ERR_FAIL_COND(p_faces.size() % 3 != 0);
+	RWLockWrite write_lock(geometry_rwlock);
 	_add_faces(p_faces, root_node_transform * p_xform);
 }
 
 void NavigationMeshSourceGeometryData3D::merge(const Ref<NavigationMeshSourceGeometryData3D> &p_other_geometry) {
 	ERR_FAIL_NULL(p_other_geometry);
 
-	append_arrays(p_other_geometry->vertices, p_other_geometry->indices);
+	Vector<float> other_vertices;
+	Vector<int> other_indices;
+	Vector<ProjectedObstruction> other_projected_obstructions;
 
-	if (p_other_geometry->_projected_obstructions.size() > 0) {
-		RWLockWrite write_lock(geometry_rwlock);
+	p_other_geometry->get_data(other_vertices, other_indices, other_projected_obstructions);
 
-		for (const ProjectedObstruction &other_projected_obstruction : p_other_geometry->_projected_obstructions) {
-			ProjectedObstruction projected_obstruction;
-			projected_obstruction.vertices.resize(other_projected_obstruction.vertices.size());
+	RWLockWrite write_lock(geometry_rwlock);
+	const int64_t number_of_vertices_before_merge = vertices.size();
+	const int64_t number_of_indices_before_merge = indices.size();
 
-			const float *other_obstruction_vertices_ptr = other_projected_obstruction.vertices.ptr();
-			float *obstruction_vertices_ptrw = projected_obstruction.vertices.ptrw();
+	vertices.append_array(other_vertices);
+	indices.append_array(other_indices);
 
-			for (int j = 0; j < other_projected_obstruction.vertices.size(); j++) {
-				obstruction_vertices_ptrw[j] = other_obstruction_vertices_ptr[j];
-			}
-
-			projected_obstruction.elevation = other_projected_obstruction.elevation;
-			projected_obstruction.height = other_projected_obstruction.height;
-			projected_obstruction.carve = other_projected_obstruction.carve;
-
-			_projected_obstructions.push_back(projected_obstruction);
-		}
+	for (int64_t i = number_of_indices_before_merge; i < indices.size(); i++) {
+		indices.set(i, indices[i] + number_of_vertices_before_merge / 3);
 	}
+
+	_projected_obstructions.append_array(other_projected_obstructions);
 }
 
 void NavigationMeshSourceGeometryData3D::add_projected_obstruction(const Vector<Vector3> &p_vertices, float p_elevation, float p_height, bool p_carve) {
@@ -314,6 +329,20 @@ bool NavigationMeshSourceGeometryData3D::_get(const StringName &p_name, Variant 
 		return true;
 	}
 	return false;
+}
+
+void NavigationMeshSourceGeometryData3D::set_data(const Vector<float> &p_vertices, const Vector<int> &p_indices, Vector<ProjectedObstruction> &p_projected_obstructions) {
+	RWLockWrite write_lock(geometry_rwlock);
+	vertices = p_vertices;
+	indices = p_indices;
+	_projected_obstructions = p_projected_obstructions;
+}
+
+void NavigationMeshSourceGeometryData3D::get_data(Vector<float> &r_vertices, Vector<int> &r_indices, Vector<ProjectedObstruction> &r_projected_obstructions) {
+	RWLockRead read_lock(geometry_rwlock);
+	r_vertices = vertices;
+	r_indices = indices;
+	r_projected_obstructions = _projected_obstructions;
 }
 
 void NavigationMeshSourceGeometryData3D::_bind_methods() {

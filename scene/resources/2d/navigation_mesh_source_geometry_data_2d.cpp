@@ -33,10 +33,16 @@
 #include "scene/resources/mesh.h"
 
 void NavigationMeshSourceGeometryData2D::clear() {
+	RWLockWrite write_lock(geometry_rwlock);
 	traversable_outlines.clear();
 	obstruction_outlines.clear();
-	clear_projected_obstructions();
+	_projected_obstructions.clear();
 }
+
+bool NavigationMeshSourceGeometryData2D::has_data() {
+	RWLockRead read_lock(geometry_rwlock);
+	return traversable_outlines.size();
+};
 
 void NavigationMeshSourceGeometryData2D::clear_projected_obstructions() {
 	RWLockWrite write_lock(geometry_rwlock);
@@ -44,26 +50,41 @@ void NavigationMeshSourceGeometryData2D::clear_projected_obstructions() {
 }
 
 void NavigationMeshSourceGeometryData2D::_set_traversable_outlines(const Vector<Vector<Vector2>> &p_traversable_outlines) {
+	RWLockWrite write_lock(geometry_rwlock);
 	traversable_outlines = p_traversable_outlines;
 }
 
 void NavigationMeshSourceGeometryData2D::_set_obstruction_outlines(const Vector<Vector<Vector2>> &p_obstruction_outlines) {
+	RWLockWrite write_lock(geometry_rwlock);
 	obstruction_outlines = p_obstruction_outlines;
+}
+
+const Vector<Vector<Vector2>> &NavigationMeshSourceGeometryData2D::_get_traversable_outlines() const {
+	RWLockRead read_lock(geometry_rwlock);
+	return traversable_outlines;
+}
+
+const Vector<Vector<Vector2>> &NavigationMeshSourceGeometryData2D::_get_obstruction_outlines() const {
+	RWLockRead read_lock(geometry_rwlock);
+	return obstruction_outlines;
 }
 
 void NavigationMeshSourceGeometryData2D::_add_traversable_outline(const Vector<Vector2> &p_shape_outline) {
 	if (p_shape_outline.size() > 1) {
+		RWLockWrite write_lock(geometry_rwlock);
 		traversable_outlines.push_back(p_shape_outline);
 	}
 }
 
 void NavigationMeshSourceGeometryData2D::_add_obstruction_outline(const Vector<Vector2> &p_shape_outline) {
 	if (p_shape_outline.size() > 1) {
+		RWLockWrite write_lock(geometry_rwlock);
 		obstruction_outlines.push_back(p_shape_outline);
 	}
 }
 
 void NavigationMeshSourceGeometryData2D::set_traversable_outlines(const TypedArray<Vector<Vector2>> &p_traversable_outlines) {
+	RWLockWrite write_lock(geometry_rwlock);
 	traversable_outlines.resize(p_traversable_outlines.size());
 	for (int i = 0; i < p_traversable_outlines.size(); i++) {
 		traversable_outlines.write[i] = p_traversable_outlines[i];
@@ -71,6 +92,7 @@ void NavigationMeshSourceGeometryData2D::set_traversable_outlines(const TypedArr
 }
 
 TypedArray<Vector<Vector2>> NavigationMeshSourceGeometryData2D::get_traversable_outlines() const {
+	RWLockRead read_lock(geometry_rwlock);
 	TypedArray<Vector<Vector2>> typed_array_traversable_outlines;
 	typed_array_traversable_outlines.resize(traversable_outlines.size());
 	for (int i = 0; i < typed_array_traversable_outlines.size(); i++) {
@@ -81,6 +103,7 @@ TypedArray<Vector<Vector2>> NavigationMeshSourceGeometryData2D::get_traversable_
 }
 
 void NavigationMeshSourceGeometryData2D::set_obstruction_outlines(const TypedArray<Vector<Vector2>> &p_obstruction_outlines) {
+	RWLockWrite write_lock(geometry_rwlock);
 	obstruction_outlines.resize(p_obstruction_outlines.size());
 	for (int i = 0; i < p_obstruction_outlines.size(); i++) {
 		obstruction_outlines.write[i] = p_obstruction_outlines[i];
@@ -88,6 +111,7 @@ void NavigationMeshSourceGeometryData2D::set_obstruction_outlines(const TypedArr
 }
 
 TypedArray<Vector<Vector2>> NavigationMeshSourceGeometryData2D::get_obstruction_outlines() const {
+	RWLockRead read_lock(geometry_rwlock);
 	TypedArray<Vector<Vector2>> typed_array_obstruction_outlines;
 	typed_array_obstruction_outlines.resize(obstruction_outlines.size());
 	for (int i = 0; i < typed_array_obstruction_outlines.size(); i++) {
@@ -117,6 +141,7 @@ void NavigationMeshSourceGeometryData2D::append_obstruction_outlines(const Typed
 
 void NavigationMeshSourceGeometryData2D::add_traversable_outline(const PackedVector2Array &p_shape_outline) {
 	if (p_shape_outline.size() > 1) {
+		RWLockWrite write_lock(geometry_rwlock);
 		Vector<Vector2> traversable_outline;
 		traversable_outline.resize(p_shape_outline.size());
 		for (int i = 0; i < p_shape_outline.size(); i++) {
@@ -128,6 +153,7 @@ void NavigationMeshSourceGeometryData2D::add_traversable_outline(const PackedVec
 
 void NavigationMeshSourceGeometryData2D::add_obstruction_outline(const PackedVector2Array &p_shape_outline) {
 	if (p_shape_outline.size() > 1) {
+		RWLockWrite write_lock(geometry_rwlock);
 		Vector<Vector2> obstruction_outline;
 		obstruction_outline.resize(p_shape_outline.size());
 		for (int i = 0; i < p_shape_outline.size(); i++) {
@@ -140,29 +166,16 @@ void NavigationMeshSourceGeometryData2D::add_obstruction_outline(const PackedVec
 void NavigationMeshSourceGeometryData2D::merge(const Ref<NavigationMeshSourceGeometryData2D> &p_other_geometry) {
 	ERR_FAIL_NULL(p_other_geometry);
 
-	// No need to worry about `root_node_transform` here as the data is already xformed.
-	traversable_outlines.append_array(p_other_geometry->traversable_outlines);
-	obstruction_outlines.append_array(p_other_geometry->obstruction_outlines);
+	Vector<Vector<Vector2>> other_traversable_outlines;
+	Vector<Vector<Vector2>> other_obstruction_outlines;
+	Vector<ProjectedObstruction> other_projected_obstructions;
 
-	if (p_other_geometry->_projected_obstructions.size() > 0) {
-		RWLockWrite write_lock(geometry_rwlock);
+	p_other_geometry->get_data(other_traversable_outlines, other_obstruction_outlines, other_projected_obstructions);
 
-		for (const ProjectedObstruction &other_projected_obstruction : p_other_geometry->_projected_obstructions) {
-			ProjectedObstruction projected_obstruction;
-			projected_obstruction.vertices.resize(other_projected_obstruction.vertices.size());
-
-			const float *other_obstruction_vertices_ptr = other_projected_obstruction.vertices.ptr();
-			float *obstruction_vertices_ptrw = projected_obstruction.vertices.ptrw();
-
-			for (int j = 0; j < other_projected_obstruction.vertices.size(); j++) {
-				obstruction_vertices_ptrw[j] = other_obstruction_vertices_ptr[j];
-			}
-
-			projected_obstruction.carve = other_projected_obstruction.carve;
-
-			_projected_obstructions.push_back(projected_obstruction);
-		}
-	}
+	RWLockWrite write_lock(geometry_rwlock);
+	traversable_outlines.append_array(other_traversable_outlines);
+	obstruction_outlines.append_array(other_obstruction_outlines);
+	_projected_obstructions.append_array(other_projected_obstructions);
 }
 
 void NavigationMeshSourceGeometryData2D::add_projected_obstruction(const Vector<Vector2> &p_vertices, bool p_carve) {
@@ -246,6 +259,20 @@ bool NavigationMeshSourceGeometryData2D::_get(const StringName &p_name, Variant 
 		return true;
 	}
 	return false;
+}
+
+void NavigationMeshSourceGeometryData2D::set_data(const Vector<Vector<Vector2>> &p_traversable_outlines, const Vector<Vector<Vector2>> &p_obstruction_outlines, Vector<ProjectedObstruction> &p_projected_obstructions) {
+	RWLockWrite write_lock(geometry_rwlock);
+	traversable_outlines = p_traversable_outlines;
+	obstruction_outlines = p_obstruction_outlines;
+	_projected_obstructions = p_projected_obstructions;
+}
+
+void NavigationMeshSourceGeometryData2D::get_data(Vector<Vector<Vector2>> &r_traversable_outlines, Vector<Vector<Vector2>> &r_obstruction_outlines, Vector<ProjectedObstruction> &r_projected_obstructions) {
+	RWLockRead read_lock(geometry_rwlock);
+	r_traversable_outlines = traversable_outlines;
+	r_obstruction_outlines = obstruction_outlines;
+	r_projected_obstructions = _projected_obstructions;
 }
 
 void NavigationMeshSourceGeometryData2D::_bind_methods() {
