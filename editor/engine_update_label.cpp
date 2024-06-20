@@ -146,7 +146,7 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 			break;
 		}
 
-		if (int(release_type) == int(current_version_type) && release_index < current_version_index) {
+		if (int(release_type) == int(current_version_type) && release_index <= current_version_index) {
 			break;
 		}
 
