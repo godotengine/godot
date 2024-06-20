@@ -41,7 +41,7 @@ TEST_CASE("[SceneTree][Button] Button is_hovered() test") {
 	Window *root = SceneTree::get_singleton()->get_root();
 
 	Window *window = memnew(Window);
-	root->add_child(w);
+	root->add_child(window);
 	window->set_size(Size2i(500, 500));
 	window->set_position(Size2i(0, 0));
 	window->set_content_scale_size(Size2i(500, 500));
