@@ -45,7 +45,7 @@ Siyuan Hong
 
      test1:
      a link to commit:
-     ![image](https://github.com/SiyuanHong/godot/assets/113177812/7ff70bbb-2e1f-4541-a038-69965651f022)
+     https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
 	 
      old results: 
      ![image](https://github.com/SiyuanHong/godot/assets/113177812/5d6d3622-1eed-482c-a810-3847174bed22)
@@ -62,7 +62,7 @@ Siyuan Hong
     
      test2:
      a link to commit: 
-     ![image](https://github.com/SiyuanHong/godot/assets/113177812/9202d40c-1cda-4ff4-b845-fa7c9eaf8603)
+     https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
 	 
      old results: 
      ![image](https://github.com/SiyuanHong/godot/assets/113177812/7ff70bbb-2e1f-4541-a038-69965651f022)
