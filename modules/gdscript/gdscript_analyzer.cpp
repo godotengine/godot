@@ -3022,6 +3022,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				case Variant::PACKED_FLOAT64_ARRAY:
 				case Variant::PACKED_STRING_ARRAY:
 				case Variant::PACKED_VECTOR2_ARRAY:
+				case Variant::PACKED_VECTOR2I_ARRAY:
 				case Variant::PACKED_VECTOR3_ARRAY:
 				case Variant::PACKED_COLOR_ARRAY:
 				case Variant::PACKED_VECTOR4_ARRAY:
@@ -4473,6 +4474,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 							case Variant::PACKED_INT64_ARRAY:
 							case Variant::PACKED_STRING_ARRAY:
 							case Variant::PACKED_VECTOR2_ARRAY:
+							case Variant::PACKED_VECTOR2I_ARRAY:
 							case Variant::PACKED_VECTOR3_ARRAY:
 							case Variant::PACKED_COLOR_ARRAY:
 							case Variant::PACKED_VECTOR4_ARRAY:
@@ -4587,6 +4589,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 						break;
 					// Return Vector2I.
 					case Variant::RECT2I:
+					case Variant::PACKED_VECTOR2I_ARRAY:
 						result_type.builtin_type = Variant::VECTOR2I;
 						break;
 					// Return Vector3.

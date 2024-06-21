@@ -2527,6 +2527,30 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector2Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedVector2Array, count, sarray("value"), varray());
 
+	/* Vector2i Array */
+
+	bind_method(PackedVector2iArray, size, sarray(), varray());
+	bind_method(PackedVector2iArray, is_empty, sarray(), varray());
+	bind_method(PackedVector2iArray, set, sarray("index", "value"), varray());
+	bind_method(PackedVector2iArray, push_back, sarray("value"), varray());
+	bind_method(PackedVector2iArray, append, sarray("value"), varray());
+	bind_method(PackedVector2iArray, append_array, sarray("array"), varray());
+	bind_method(PackedVector2iArray, remove_at, sarray("index"), varray());
+	bind_method(PackedVector2iArray, insert, sarray("at_index", "value"), varray());
+	bind_method(PackedVector2iArray, fill, sarray("value"), varray());
+	bind_methodv(PackedVector2iArray, resize, &PackedVector2iArray::resize_zeroed, sarray("new_size"), varray());
+	bind_method(PackedVector2iArray, clear, sarray(), varray());
+	bind_method(PackedVector2iArray, has, sarray("value"), varray());
+	bind_method(PackedVector2iArray, reverse, sarray(), varray());
+	bind_method(PackedVector2iArray, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_method(PackedVector2iArray, to_byte_array, sarray(), varray());
+	bind_method(PackedVector2iArray, sort, sarray(), varray());
+	bind_method(PackedVector2iArray, bsearch, sarray("value", "before"), varray(true));
+	bind_method(PackedVector2iArray, duplicate, sarray(), varray());
+	bind_method(PackedVector2iArray, find, sarray("value", "from"), varray(0));
+	bind_method(PackedVector2iArray, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedVector2iArray, count, sarray("value"), varray());
+
 	/* Vector3 Array */
 
 	bind_method(PackedVector3Array, size, sarray(), varray());

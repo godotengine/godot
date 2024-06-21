@@ -119,6 +119,25 @@ public:
 		}
 	}
 
+	static Vector2i get_closest_point_to_segment(const Vector2i &p_point, const Vector2i *p_segment) {
+		Vector2i p = p_point - p_segment[0];
+		Vector2i n = p_segment[1] - p_segment[0];
+		real_t l2 = n.length_squared();
+		if (l2 < 1e-20f) {
+			return p_segment[0]; // Both points are the same, just give any.
+		}
+
+		real_t d = n.dot(p) / l2;
+
+		if (d <= 0.0f) {
+			return p_segment[0]; // Before first point.
+		} else if (d >= 1.0f) {
+			return p_segment[1]; // After first point.
+		} else {
+			return p_segment[0] + n * d; // Inside.
+		}
+	}
+
 	static real_t get_distance_to_segment(const Vector2 &p_point, const Vector2 *p_segment) {
 		return p_point.distance_to(get_closest_point_to_segment(p_point, p_segment));
 	}
@@ -350,6 +369,14 @@ public:
 		return triangles;
 	}
 
+	static Vector<int> triangulate_polygon(const Vector<Vector2i> &p_polygon) {
+		Vector<int> triangles;
+		if (!Triangulate::triangulate(p_polygon, triangles)) {
+			return Vector<int>(); //fail
+		}
+		return triangles;
+	}
+
 	// Assumes cartesian coordinate system with +x to the right, +y up.
 	// If using screen coordinates (+x to the right, +y down) the result will need to be flipped.
 	static bool is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
@@ -368,6 +395,22 @@ public:
 		return sum > 0.0f;
 	}
 
+	static bool is_polygon_clockwise(const Vector<Vector2i> &p_polygon) {
+		int c = p_polygon.size();
+		if (c < 3) {
+			return false;
+		}
+		const Vector2i *p = p_polygon.ptr();
+		int32_t sum = 0;
+		for (int i = 0; i < c; i++) {
+			const Vector2i &v1 = p[i];
+			const Vector2i &v2 = p[(i + 1) % c];
+			sum += (v2.x - v1.x) * (v2.y + v1.y);
+		}
+
+		return sum > 0;
+	}
+
 	// Alternate implementation that should be faster.
 	static bool is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon) {
 		int c = p_polygon.size();
@@ -377,6 +420,41 @@ public:
 		const Vector2 *p = p_polygon.ptr();
 		Vector2 further_away(-1e20, -1e20);
 		Vector2 further_away_opposite(1e20, 1e20);
+
+		for (int i = 0; i < c; i++) {
+			further_away = further_away.max(p[i]);
+			further_away_opposite = further_away_opposite.min(p[i]);
+		}
+
+		// Make point outside that won't intersect with points in segment from p_point.
+		further_away += (further_away - further_away_opposite) * Vector2(1.221313, 1.512312);
+
+		int intersections = 0;
+		for (int i = 0; i < c; i++) {
+			const Vector2 &v1 = p[i];
+			const Vector2 &v2 = p[(i + 1) % c];
+
+			Vector2 res;
+			if (segment_intersects_segment(v1, v2, p_point, further_away, &res)) {
+				intersections++;
+				if (res.is_equal_approx(p_point)) {
+					// Point is in one of the polygon edges.
+					return true;
+				}
+			}
+		}
+
+		return (intersections & 1);
+	}
+
+	static bool is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2i> &p_polygon) {
+		int c = p_polygon.size();
+		if (c < 3) {
+			return false;
+		}
+		const Vector2i *p = p_polygon.ptr();
+		Vector2i further_away(-1e9, -1e9);
+		Vector2i further_away_opposite(1e9, 1e9);
 
 		for (int i = 0; i < c; i++) {
 			further_away = further_away.max(p[i]);
@@ -421,6 +499,10 @@ public:
 		return (real_t)(A.x - O.x) * (B.y - O.y) - (real_t)(A.y - O.y) * (B.x - O.x);
 	}
 
+	static int32_t vec2i_cross(const Point2i &O, const Point2i &A, const Point2i &B) {
+		return (int32_t)(A.x - O.x) * (B.y - O.y) - (int32_t)(A.y - O.y) * (B.x - O.x);
+	}
+
 	// Returns a list of points on the convex hull in counter-clockwise order.
 	// Note: the last point in the returned list is the same as the first one.
 	static Vector<Point2> convex_hull(Vector<Point2> P) {
@@ -442,6 +524,34 @@ public:
 		// Build upper hull.
 		for (int i = n - 2, t = k + 1; i >= 0; i--) {
 			while (k >= t && vec2_cross(H[k - 2], H[k - 1], P[i]) <= 0) {
+				k--;
+			}
+			H.write[k++] = P[i];
+		}
+
+		H.resize(k);
+		return H;
+	}
+
+	static Vector<Point2i> convex_hull(Vector<Point2i> P) {
+		int n = P.size(), k = 0;
+		Vector<Point2i> H;
+		H.resize(2 * n);
+
+		// Sort points lexicographically.
+		P.sort();
+
+		// Build lower hull.
+		for (int i = 0; i < n; ++i) {
+			while (k >= 2 && vec2i_cross(H[k - 2], H[k - 1], P[i]) <= 0) {
+				k--;
+			}
+			H.write[k++] = P[i];
+		}
+
+		// Build upper hull.
+		for (int i = n - 2, t = k + 1; i >= 0; i--) {
+			while (k >= t && vec2i_cross(H[k - 2], H[k - 1], P[i]) <= 0) {
 				k--;
 			}
 			H.write[k++] = P[i];
@@ -490,6 +600,7 @@ public:
 	}
 
 	static Vector<Vector<Vector2>> decompose_polygon_in_convex(const Vector<Point2> &polygon);
+	static Vector<Vector<Vector2i>> decompose_polygon_in_convex(const Vector<Point2i> &polygon);
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
 	static Vector<Vector3i> partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size);

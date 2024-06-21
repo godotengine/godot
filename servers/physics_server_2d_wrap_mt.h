@@ -74,11 +74,8 @@ public:
 	FUNCRID(world_boundary_shape)
 	FUNCRID(separation_ray_shape)
 	FUNCRID(segment_shape)
-	FUNCRID(circle_shape)
 	FUNCRID(rectangle_shape)
-	FUNCRID(capsule_shape)
 	FUNCRID(convex_polygon_shape)
-	FUNCRID(concave_polygon_shape)
 
 	FUNC2(shape_set_data, RID, const Variant &);
 	FUNC2(shape_set_custom_solver_bias, RID, real_t);

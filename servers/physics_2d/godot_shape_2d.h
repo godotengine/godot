@@ -69,8 +69,6 @@ public:
 
 	virtual bool allows_one_way_collision() const { return true; }
 
-	virtual bool is_concave() const { return false; }
-
 	virtual bool contains_point(const Vector2 &p_point) const = 0;
 
 	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const = 0;
@@ -262,44 +260,13 @@ public:
 	}
 };
 
-class GodotCircleShape2D : public GodotShape2D {
-	real_t radius;
-
-public:
-	_FORCE_INLINE_ const real_t &get_radius() const { return radius; }
-
-	virtual PhysicsServer2D::ShapeType get_type() const override { return PhysicsServer2D::SHAPE_CIRCLE; }
-
-	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const override { project_range(p_normal, p_transform, r_min, r_max); }
-	virtual void get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const override;
-
-	virtual bool contains_point(const Vector2 &p_point) const override;
-	virtual bool intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const override;
-	virtual real_t get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const override;
-
-	virtual void set_data(const Variant &p_data) override;
-	virtual Variant get_data() const override;
-
-	_FORCE_INLINE_ void project_range(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const {
-		//real large
-		real_t d = p_normal.dot(p_transform.get_origin());
-
-		// figure out scale at point
-		Vector2 local_normal = p_transform.basis_xform_inv(p_normal);
-		real_t scale = local_normal.length();
-
-		r_min = d - (radius)*scale;
-		r_max = d + (radius)*scale;
-	}
-
-	DEFAULT_PROJECT_RANGE_CAST
-};
-
 class GodotRectangleShape2D : public GodotShape2D {
-	Vector2 half_extents;
+	Vector2i size;
+	Vector2i half_extents_tl;
+	Vector2i half_extents_br;
 
 public:
-	_FORCE_INLINE_ const Vector2 &get_half_extents() const { return half_extents; }
+	_FORCE_INLINE_ const Vector2i &get_size() const { return size; }
 
 	virtual PhysicsServer2D::ShapeType get_type() const override { return PhysicsServer2D::SHAPE_RECTANGLE; }
 
@@ -318,7 +285,7 @@ public:
 		r_max = -1e20;
 		r_min = 1e20;
 		for (int i = 0; i < 4; i++) {
-			real_t d = p_normal.dot(p_transform.xform(Vector2(((i & 1) * 2 - 1) * half_extents.x, ((i >> 1) * 2 - 1) * half_extents.y)));
+			real_t d = p_normal.dot(p_transform.xform(Vector2i(((i & 1) == 1) ? half_extents_br.x : half_extents_tl.x, ((i >> 1) == 1) ? half_extents_br.y : half_extents_tl.y)));
 
 			if (d > r_max) {
 				r_max = d;
@@ -333,8 +300,8 @@ public:
 		Vector2 local_v = p_xform_inv.xform(p_circle);
 
 		Vector2 he(
-				(local_v.x < 0) ? -half_extents.x : half_extents.x,
-				(local_v.y < 0) ? -half_extents.y : half_extents.y);
+				(local_v.x < 0) ? half_extents_tl.x : half_extents_br.x,
+				(local_v.y < 0) ? half_extents_tl.y : half_extents_br.y);
 
 		return (p_xform.xform(he) - p_circle).normalized();
 	}
@@ -346,8 +313,8 @@ public:
 			Vector2 local_v = p_xform_inv.xform(p_B_xform.get_origin());
 
 			Vector2 he(
-					(local_v.x < 0) ? -half_extents.x : half_extents.x,
-					(local_v.y < 0) ? -half_extents.y : half_extents.y);
+					(local_v.x < 0) ? half_extents_tl.x : half_extents_br.x,
+					(local_v.y < 0) ? half_extents_tl.y : half_extents_br.y);
 
 			a = p_xform.xform(he);
 		}
@@ -355,8 +322,8 @@ public:
 			Vector2 local_v = p_B_xform_inv.xform(p_xform.get_origin());
 
 			Vector2 he(
-					(local_v.x < 0) ? -p_B->half_extents.x : p_B->half_extents.x,
-					(local_v.y < 0) ? -p_B->half_extents.y : p_B->half_extents.y);
+					(local_v.x < 0) ? p_B->half_extents_tl.x : p_B->half_extents_br.x,
+					(local_v.y < 0) ? p_B->half_extents_tl.y : p_B->half_extents_br.y);
 
 			b = p_B_xform.xform(he);
 		}
@@ -367,51 +334,10 @@ public:
 	DEFAULT_PROJECT_RANGE_CAST
 };
 
-class GodotCapsuleShape2D : public GodotShape2D {
-	real_t radius = 0.0;
-	real_t height = 0.0;
-
-public:
-	_FORCE_INLINE_ const real_t &get_radius() const { return radius; }
-	_FORCE_INLINE_ const real_t &get_height() const { return height; }
-
-	virtual PhysicsServer2D::ShapeType get_type() const override { return PhysicsServer2D::SHAPE_CAPSULE; }
-
-	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const override { project_range(p_normal, p_transform, r_min, r_max); }
-	virtual void get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const override;
-
-	virtual bool contains_point(const Vector2 &p_point) const override;
-	virtual bool intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const override;
-	virtual real_t get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const override;
-
-	virtual void set_data(const Variant &p_data) override;
-	virtual Variant get_data() const override;
-
-	_FORCE_INLINE_ void project_range(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const {
-		// no matter the angle, the box is mirrored anyway
-		Vector2 n = p_transform.basis_xform_inv(p_normal).normalized();
-		real_t h = height * 0.5 - radius;
-
-		n *= radius;
-		n.y += (n.y > 0) ? h : -h;
-
-		r_max = p_normal.dot(p_transform.xform(n));
-		r_min = p_normal.dot(p_transform.xform(-n));
-
-		if (r_max < r_min) {
-			SWAP(r_max, r_min);
-		}
-
-		//ERR_FAIL_COND( r_max < r_min );
-	}
-
-	DEFAULT_PROJECT_RANGE_CAST
-};
-
 class GodotConvexPolygonShape2D : public GodotShape2D {
 	struct Point {
-		Vector2 pos;
-		Vector2 normal; //normal to next segment
+		Vector2i pos;
+		Vector2i normal; //normal to next segment
 	};
 
 	Point *points = nullptr;
@@ -419,12 +345,12 @@ class GodotConvexPolygonShape2D : public GodotShape2D {
 
 public:
 	_FORCE_INLINE_ int get_point_count() const { return point_count; }
-	_FORCE_INLINE_ const Vector2 &get_point(int p_idx) const { return points[p_idx].pos; }
-	_FORCE_INLINE_ const Vector2 &get_segment_normal(int p_idx) const { return points[p_idx].normal; }
-	_FORCE_INLINE_ Vector2 get_xformed_segment_normal(const Transform2D &p_xform, int p_idx) const {
-		Vector2 a = points[p_idx].pos;
+	_FORCE_INLINE_ const Vector2i &get_point(int p_idx) const { return points[p_idx].pos; }
+	_FORCE_INLINE_ const Vector2i &get_segment_normal(int p_idx) const { return points[p_idx].normal; }
+	_FORCE_INLINE_ Vector2i get_xformed_segment_normal(const Transform2D &p_xform, int p_idx) const {
+		Vector2i a = points[p_idx].pos;
 		p_idx++;
-		Vector2 b = points[p_idx == point_count ? 0 : p_idx].pos;
+		Vector2i b = points[p_idx == point_count ? 0 : p_idx].pos;
 		return (p_xform.xform(b) - p_xform.xform(a)).normalized().orthogonal();
 	}
 
@@ -462,76 +388,6 @@ public:
 
 	GodotConvexPolygonShape2D() {}
 	~GodotConvexPolygonShape2D();
-};
-
-class GodotConcaveShape2D : public GodotShape2D {
-public:
-	virtual bool is_concave() const override { return true; }
-
-	// Returns true to stop the query.
-	typedef bool (*QueryCallback)(void *p_userdata, GodotShape2D *p_convex);
-
-	virtual void cull(const Rect2 &p_local_aabb, QueryCallback p_callback, void *p_userdata) const = 0;
-};
-
-class GodotConcavePolygonShape2D : public GodotConcaveShape2D {
-	struct Segment {
-		int points[2] = {};
-	};
-
-	Vector<Segment> segments;
-	Vector<Point2> points;
-
-	struct BVH {
-		Rect2 aabb;
-		int left = 0, right = 0;
-	};
-
-	Vector<BVH> bvh;
-	int bvh_depth = 0;
-
-	struct BVH_CompareX {
-		_FORCE_INLINE_ bool operator()(const BVH &a, const BVH &b) const {
-			return (a.aabb.position.x + a.aabb.size.x * 0.5) < (b.aabb.position.x + b.aabb.size.x * 0.5);
-		}
-	};
-
-	struct BVH_CompareY {
-		_FORCE_INLINE_ bool operator()(const BVH &a, const BVH &b) const {
-			return (a.aabb.position.y + a.aabb.size.y * 0.5) < (b.aabb.position.y + b.aabb.size.y * 0.5);
-		}
-	};
-
-	int _generate_bvh(BVH *p_bvh, int p_len, int p_depth);
-
-public:
-	virtual PhysicsServer2D::ShapeType get_type() const override { return PhysicsServer2D::SHAPE_CONCAVE_POLYGON; }
-
-	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const override {
-		r_min = 0;
-		r_max = 0;
-		ERR_FAIL_MSG("Unsupported call to project_rangev in GodotConcavePolygonShape2D");
-	}
-
-	void project_range(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const {
-		r_min = 0;
-		r_max = 0;
-		ERR_FAIL_MSG("Unsupported call to project_range in GodotConcavePolygonShape2D");
-	}
-
-	virtual void get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const override;
-
-	virtual bool contains_point(const Vector2 &p_point) const override;
-	virtual bool intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const override;
-
-	virtual real_t get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const override { return 0; }
-
-	virtual void set_data(const Variant &p_data) override;
-	virtual Variant get_data() const override;
-
-	virtual void cull(const Rect2 &p_local_aabb, QueryCallback p_callback, void *p_userdata) const override;
-
-	DEFAULT_PROJECT_RANGE_CAST
 };
 
 #undef DEFAULT_PROJECT_RANGE_CAST

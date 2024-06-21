@@ -137,6 +137,17 @@ void NavigationMeshSourceGeometryData2D::add_obstruction_outline(const PackedVec
 	}
 }
 
+void NavigationMeshSourceGeometryData2D::add_obstruction_outline_i(const PackedVector2iArray &p_shape_outline) {
+	if (p_shape_outline.size() > 1) {
+		Vector<Vector2> obstruction_outline;
+		obstruction_outline.resize(p_shape_outline.size());
+		for (int i = 0; i < p_shape_outline.size(); i++) {
+			obstruction_outline.write[i] = p_shape_outline[i];
+		}
+		obstruction_outlines.push_back(obstruction_outline);
+	}
+}
+
 void NavigationMeshSourceGeometryData2D::merge(const Ref<NavigationMeshSourceGeometryData2D> &p_other_geometry) {
 	ERR_FAIL_NULL(p_other_geometry);
 
@@ -263,6 +274,7 @@ void NavigationMeshSourceGeometryData2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_traversable_outline", "shape_outline"), &NavigationMeshSourceGeometryData2D::add_traversable_outline);
 	ClassDB::bind_method(D_METHOD("add_obstruction_outline", "shape_outline"), &NavigationMeshSourceGeometryData2D::add_obstruction_outline);
+	ClassDB::bind_method(D_METHOD("add_obstruction_outline_i", "shape_outline"), &NavigationMeshSourceGeometryData2D::add_obstruction_outline_i);
 
 	ClassDB::bind_method(D_METHOD("merge", "other_geometry"), &NavigationMeshSourceGeometryData2D::merge);
 

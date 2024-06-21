@@ -31,11 +31,11 @@
 #ifndef COLLISION_POLYGON_2D_EDITOR_PLUGIN_H
 #define COLLISION_POLYGON_2D_EDITOR_PLUGIN_H
 
-#include "editor/plugins/abstract_polygon_2d_editor.h"
+#include "editor/plugins/abstract_polygon_i_2d_editor.h"
 #include "scene/2d/physics/collision_polygon_2d.h"
 
-class CollisionPolygon2DEditor : public AbstractPolygon2DEditor {
-	GDCLASS(CollisionPolygon2DEditor, AbstractPolygon2DEditor);
+class CollisionPolygon2DEditor : public AbstractPolygonI2DEditor {
+	GDCLASS(CollisionPolygon2DEditor, AbstractPolygonI2DEditor);
 
 	CollisionPolygon2D *node = nullptr;
 
@@ -47,8 +47,8 @@ public:
 	CollisionPolygon2DEditor();
 };
 
-class CollisionPolygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
-	GDCLASS(CollisionPolygon2DEditorPlugin, AbstractPolygon2DEditorPlugin);
+class CollisionPolygon2DEditorPlugin : public AbstractPolygonI2DEditorPlugin {
+	GDCLASS(CollisionPolygon2DEditorPlugin, AbstractPolygonI2DEditorPlugin);
 
 public:
 	CollisionPolygon2DEditorPlugin();

@@ -57,7 +57,7 @@ public:
 	PackedVector2Array collide_and_get_contacts(const Transform2D &p_local_xform, const Ref<Shape2D> &p_shape, const Transform2D &p_shape_xform);
 
 	virtual void draw(const RID &p_to_rid, const Color &p_color) {}
-	virtual Rect2 get_rect() const { return Rect2(); }
+	virtual Rect2i get_rect() const { return Rect2i(); }
 	/// Returns the radius of a circle that fully enclose this shape
 	virtual real_t get_enclosing_radius() const = 0;
 	virtual RID get_rid() const override;

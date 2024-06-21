@@ -367,6 +367,7 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 			case Variant::Type::PACKED_FLOAT64_ARRAY:
 			case Variant::Type::PACKED_STRING_ARRAY:
 			case Variant::Type::PACKED_VECTOR2_ARRAY:
+			case Variant::Type::PACKED_VECTOR2I_ARRAY:
 			case Variant::Type::PACKED_VECTOR3_ARRAY:
 			case Variant::Type::PACKED_VECTOR4_ARRAY: {
 				r->set(E.name, p.duplicate(p_subresources));

@@ -198,6 +198,115 @@ public:
 	GenericTilePolygonEditor();
 };
 
+class GenericTilePolygonIEditor : public VBoxContainer {
+GDCLASS(GenericTilePolygonIEditor, VBoxContainer);
+
+private:
+	Ref<TileSet> tile_set;
+	LocalVector<Vector<Point2i>> polygons;
+	bool multiple_polygon_mode = false;
+
+	bool use_undo_redo = true;
+
+	// UI
+	int hovered_polygon_index = -1;
+	int hovered_point_index = -1;
+	int hovered_segment_index = -1;
+	Vector2i hovered_segment_point;
+
+	enum DragType {
+		DRAG_TYPE_NONE,
+		DRAG_TYPE_DRAG_POINT,
+		DRAG_TYPE_CREATE_POINT,
+		DRAG_TYPE_PAN,
+	};
+	DragType drag_type = DRAG_TYPE_NONE;
+	int drag_polygon_index = 0;
+	int drag_point_index = 0;
+	Vector2i drag_last_pos;
+	PackedVector2iArray drag_old_polygon;
+
+	HBoxContainer *toolbar = nullptr;
+	Ref<ButtonGroup> tools_button_group;
+	Button *button_expand = nullptr;
+	Button *button_create = nullptr;
+	Button *button_edit = nullptr;
+	Button *button_delete = nullptr;
+	MenuButton *button_advanced_menu = nullptr;
+
+	enum Snap {
+		SNAP_NONE,
+		SNAP_GRID,
+	};
+	int current_snap_option = SNAP_NONE;
+	MenuButton *button_pixel_snap = nullptr;
+	SpinBox *snap_subdivision = nullptr;
+
+	Vector<Point2i> in_creation_polygon;
+
+	Panel *panel = nullptr;
+	Control *base_control = nullptr;
+	EditorZoomWidget *editor_zoom_widget = nullptr;
+	Button *button_center_view = nullptr;
+	Vector2i panning;
+	bool initializing = true;
+
+	Ref<Texture2D> background_texture;
+	Rect2 background_region;
+	Vector2i background_offset;
+	bool background_h_flip = false;
+	bool background_v_flip = false;
+	bool background_transpose = false;
+	Color background_modulate;
+
+	Color polygon_color = Color(1.0, 0.0, 0.0);
+
+	enum AdvancedMenuOption {
+		RESET_TO_DEFAULT_TILE,
+		CLEAR_TILE,
+		ROTATE_RIGHT,
+		ROTATE_LEFT,
+		FLIP_HORIZONTALLY,
+		FLIP_VERTICALLY,
+	};
+
+	void _base_control_draw();
+	void _zoom_changed();
+	void _advanced_menu_item_pressed(int p_item_pressed);
+	void _center_view();
+	void _base_control_gui_input(Ref<InputEvent> p_event);
+	void _set_snap_option(int p_index);
+	void _store_snap_options();
+	void _toggle_expand(bool p_expand);
+
+	void _snap_to_tile_shape(Point2i &r_point, float &r_current_snapped_dist, float p_snap_dist);
+	void _snap_point(Point2i &r_point);
+	void _grab_polygon_point(Vector2i p_pos, const Transform2D &p_polygon_xform, int &r_polygon_index, int &r_point_index);
+	void _grab_polygon_segment_point(Vector2i p_pos, const Transform2D &p_polygon_xform, int &r_polygon_index, int &r_segment_index, Vector2i &r_point);
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	void set_use_undo_redo(bool p_use_undo_redo);
+
+	void set_tile_set(Ref<TileSet> p_tile_set);
+	void set_background(Ref<Texture2D> p_texture, Rect2 p_region = Rect2(), Vector2i p_offset = Vector2i(), bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false, Color p_modulate = Color(1.0, 1.0, 1.0, 0.0));
+
+	int get_polygon_count();
+	int add_polygon(const Vector<Point2i> &p_polygon, int p_index = -1);
+	void remove_polygon(int p_index);
+	void clear_polygons();
+	void set_polygon(int p_polygon_index, const Vector<Point2i> &p_polygon);
+	Vector<Point2i> get_polygon(int p_polygon_index);
+
+	void set_polygons_color(Color p_color);
+	void set_multiple_polygon_mode(bool p_multiple_polygon_mode);
+
+	GenericTilePolygonIEditor();
+};
+
 class TileDataDefaultEditor : public TileDataEditor {
 	GDCLASS(TileDataDefaultEditor, TileDataEditor);
 
@@ -313,13 +422,13 @@ class TileDataCollisionEditor : public TileDataDefaultEditor {
 	int physics_layer = -1;
 
 	// UI
-	GenericTilePolygonEditor *polygon_editor = nullptr;
+	GenericTilePolygonIEditor *polygon_i_editor = nullptr;
 	DummyObject *dummy_object = memnew(DummyObject);
 	HashMap<StringName, EditorProperty *> property_editors;
 
 	void _property_value_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field);
 	void _property_selected(const StringName &p_path, int p_focusable);
-	void _polygons_changed();
+	void _polygons_i_changed();
 
 	virtual Variant _get_painted_value() override;
 	virtual void _set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) override;

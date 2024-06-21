@@ -330,6 +330,236 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 	return id;
 }
 
+RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Vector<int> &p_indices, const Vector<Point2i> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights) {
+	// Care must be taken to generate array formats
+	// in ways where they could be reused, so we will
+	// put single-occuring elements first, and repeated
+	// elements later. This way the generated formats are
+	// the same no matter the length of the arrays.
+	// This dramatically reduces the amount of pipeline objects
+	// that need to be created for these formats.
+
+	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
+
+	uint32_t vertex_count = p_points.size();
+	uint32_t stride = 2; //vertices always repeat
+	if ((uint32_t)p_colors.size() == vertex_count || p_colors.size() == 1) {
+		stride += 4;
+	}
+	if ((uint32_t)p_uvs.size() == vertex_count) {
+		stride += 2;
+	}
+	if ((uint32_t)p_bones.size() == vertex_count * 4 && (uint32_t)p_weights.size() == vertex_count * 4) {
+		stride += 4;
+	}
+
+	uint32_t buffer_size = stride * p_points.size();
+
+	Vector<uint8_t> polygon_buffer;
+	polygon_buffer.resize(buffer_size * sizeof(float));
+	Vector<RD::VertexAttribute> descriptions;
+	descriptions.resize(5);
+	Vector<RID> buffers;
+	buffers.resize(5);
+
+	{
+		uint8_t *r = polygon_buffer.ptrw();
+		float *fptr = reinterpret_cast<float *>(r);
+		uint32_t *uptr = reinterpret_cast<uint32_t *>(r);
+		uint32_t base_offset = 0;
+		{ //vertices
+			RD::VertexAttribute vd;
+			vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+			vd.offset = base_offset * sizeof(float);
+			vd.location = RS::ARRAY_VERTEX;
+			vd.stride = stride * sizeof(float);
+
+			descriptions.write[0] = vd;
+
+			const Vector2i *points_ptr = p_points.ptr();
+
+			for (uint32_t i = 0; i < vertex_count; i++) {
+				fptr[base_offset + i * stride + 0] = points_ptr[i].x;
+				fptr[base_offset + i * stride + 1] = points_ptr[i].y;
+			}
+
+			base_offset += 2;
+		}
+
+		//colors
+		if ((uint32_t)p_colors.size() == vertex_count || p_colors.size() == 1) {
+			RD::VertexAttribute vd;
+			vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+			vd.offset = base_offset * sizeof(float);
+			vd.location = RS::ARRAY_COLOR;
+			vd.stride = stride * sizeof(float);
+
+			descriptions.write[1] = vd;
+
+			if (p_colors.size() == 1) {
+				Color color = p_colors[0];
+				for (uint32_t i = 0; i < vertex_count; i++) {
+					fptr[base_offset + i * stride + 0] = color.r;
+					fptr[base_offset + i * stride + 1] = color.g;
+					fptr[base_offset + i * stride + 2] = color.b;
+					fptr[base_offset + i * stride + 3] = color.a;
+				}
+			} else {
+				const Color *color_ptr = p_colors.ptr();
+
+				for (uint32_t i = 0; i < vertex_count; i++) {
+					fptr[base_offset + i * stride + 0] = color_ptr[i].r;
+					fptr[base_offset + i * stride + 1] = color_ptr[i].g;
+					fptr[base_offset + i * stride + 2] = color_ptr[i].b;
+					fptr[base_offset + i * stride + 3] = color_ptr[i].a;
+				}
+			}
+			base_offset += 4;
+		} else {
+			RD::VertexAttribute vd;
+			vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+			vd.offset = 0;
+			vd.location = RS::ARRAY_COLOR;
+			vd.stride = 0;
+
+			descriptions.write[1] = vd;
+			buffers.write[1] = mesh_storage->mesh_get_default_rd_buffer(RendererRD::MeshStorage::DEFAULT_RD_BUFFER_COLOR);
+		}
+
+		//uvs
+		if ((uint32_t)p_uvs.size() == vertex_count) {
+			RD::VertexAttribute vd;
+			vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+			vd.offset = base_offset * sizeof(float);
+			vd.location = RS::ARRAY_TEX_UV;
+			vd.stride = stride * sizeof(float);
+
+			descriptions.write[2] = vd;
+
+			const Vector2 *uv_ptr = p_uvs.ptr();
+
+			for (uint32_t i = 0; i < vertex_count; i++) {
+				fptr[base_offset + i * stride + 0] = uv_ptr[i].x;
+				fptr[base_offset + i * stride + 1] = uv_ptr[i].y;
+			}
+			base_offset += 2;
+		} else {
+			RD::VertexAttribute vd;
+			vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+			vd.offset = 0;
+			vd.location = RS::ARRAY_TEX_UV;
+			vd.stride = 0;
+
+			descriptions.write[2] = vd;
+			buffers.write[2] = mesh_storage->mesh_get_default_rd_buffer(RendererRD::MeshStorage::DEFAULT_RD_BUFFER_TEX_UV);
+		}
+
+		//bones
+		if ((uint32_t)p_indices.size() == vertex_count * 4 && (uint32_t)p_weights.size() == vertex_count * 4) {
+			RD::VertexAttribute vd;
+			vd.format = RD::DATA_FORMAT_R16G16B16A16_UINT;
+			vd.offset = base_offset * sizeof(float);
+			vd.location = RS::ARRAY_BONES;
+			vd.stride = stride * sizeof(float);
+
+			descriptions.write[3] = vd;
+
+			const int *bone_ptr = p_bones.ptr();
+
+			for (uint32_t i = 0; i < vertex_count; i++) {
+				uint16_t *bone16w = (uint16_t *)&uptr[base_offset + i * stride];
+
+				bone16w[0] = bone_ptr[i * 4 + 0];
+				bone16w[1] = bone_ptr[i * 4 + 1];
+				bone16w[2] = bone_ptr[i * 4 + 2];
+				bone16w[3] = bone_ptr[i * 4 + 3];
+			}
+
+			base_offset += 2;
+		} else {
+			RD::VertexAttribute vd;
+			vd.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
+			vd.offset = 0;
+			vd.location = RS::ARRAY_BONES;
+			vd.stride = 0;
+
+			descriptions.write[3] = vd;
+			buffers.write[3] = mesh_storage->mesh_get_default_rd_buffer(RendererRD::MeshStorage::DEFAULT_RD_BUFFER_BONES);
+		}
+
+		//weights
+		if ((uint32_t)p_weights.size() == vertex_count * 4) {
+			RD::VertexAttribute vd;
+			vd.format = RD::DATA_FORMAT_R16G16B16A16_UNORM;
+			vd.offset = base_offset * sizeof(float);
+			vd.location = RS::ARRAY_WEIGHTS;
+			vd.stride = stride * sizeof(float);
+
+			descriptions.write[4] = vd;
+
+			const float *weight_ptr = p_weights.ptr();
+
+			for (uint32_t i = 0; i < vertex_count; i++) {
+				uint16_t *weight16w = (uint16_t *)&uptr[base_offset + i * stride];
+
+				weight16w[0] = CLAMP(weight_ptr[i * 4 + 0] * 65535, 0, 65535);
+				weight16w[1] = CLAMP(weight_ptr[i * 4 + 1] * 65535, 0, 65535);
+				weight16w[2] = CLAMP(weight_ptr[i * 4 + 2] * 65535, 0, 65535);
+				weight16w[3] = CLAMP(weight_ptr[i * 4 + 3] * 65535, 0, 65535);
+			}
+
+			base_offset += 2;
+		} else {
+			RD::VertexAttribute vd;
+			vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+			vd.offset = 0;
+			vd.location = RS::ARRAY_WEIGHTS;
+			vd.stride = 0;
+
+			descriptions.write[4] = vd;
+			buffers.write[4] = mesh_storage->mesh_get_default_rd_buffer(RendererRD::MeshStorage::DEFAULT_RD_BUFFER_WEIGHTS);
+		}
+
+		//check that everything is as it should be
+		ERR_FAIL_COND_V(base_offset != stride, 0); //bug
+	}
+
+	RD::VertexFormatID vertex_id = RD::get_singleton()->vertex_format_create(descriptions);
+	ERR_FAIL_COND_V(vertex_id == RD::INVALID_ID, 0);
+
+	PolygonBuffers pb;
+	pb.vertex_buffer = RD::get_singleton()->vertex_buffer_create(polygon_buffer.size(), polygon_buffer);
+	for (int i = 0; i < descriptions.size(); i++) {
+		if (buffers[i] == RID()) { //if put in vertex, use as vertex
+			buffers.write[i] = pb.vertex_buffer;
+		}
+	}
+
+	pb.vertex_array = RD::get_singleton()->vertex_array_create(p_points.size(), vertex_id, buffers);
+	pb.primitive_count = vertex_count;
+
+	if (p_indices.size()) {
+		//create indices, as indices were requested
+		Vector<uint8_t> index_buffer;
+		index_buffer.resize(p_indices.size() * sizeof(int32_t));
+		{
+			uint8_t *w = index_buffer.ptrw();
+			memcpy(w, p_indices.ptr(), sizeof(int32_t) * p_indices.size());
+		}
+		pb.index_buffer = RD::get_singleton()->index_buffer_create(p_indices.size(), RD::INDEX_BUFFER_FORMAT_UINT32, index_buffer);
+		pb.indices = RD::get_singleton()->index_array_create(pb.index_buffer, 0, p_indices.size());
+		pb.primitive_count = p_indices.size();
+	}
+
+	pb.vertex_format_id = vertex_id;
+
+	PolygonID id = polygon_buffers.last_id++;
+
+	polygon_buffers.polygons[id] = pb;
+
+	return id;
+}
+
 void RendererCanvasRenderRD::free_polygon(PolygonID p_polygon) {
 	PolygonBuffers *pb_ptr = polygon_buffers.polygons.getptr(p_polygon);
 	ERR_FAIL_NULL(pb_ptr);
@@ -694,6 +924,58 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 			} break;
 			case Item::Command::TYPE_POLYGON: {
 				const Item::CommandPolygon *polygon = static_cast<const Item::CommandPolygon *>(c);
+
+				PolygonBuffers *pb = polygon_buffers.polygons.getptr(polygon->polygon.polygon_id);
+				ERR_CONTINUE(!pb);
+				//bind pipeline
+				{
+					static const PipelineVariant variant[RS::PRIMITIVE_MAX] = { PIPELINE_VARIANT_ATTRIBUTE_POINTS, PIPELINE_VARIANT_ATTRIBUTE_LINES, PIPELINE_VARIANT_ATTRIBUTE_LINES_STRIP, PIPELINE_VARIANT_ATTRIBUTE_TRIANGLES, PIPELINE_VARIANT_ATTRIBUTE_TRIANGLE_STRIP };
+					ERR_CONTINUE(polygon->primitive < 0 || polygon->primitive >= RS::PRIMITIVE_MAX);
+					RID pipeline = pipeline_variants->variants[light_mode][variant[polygon->primitive]].get_render_pipeline(pb->vertex_format_id, p_framebuffer_format);
+					RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
+				}
+
+				if (polygon->primitive == RS::PRIMITIVE_LINES) {
+					//not supported in most hardware, so pointless
+					//RD::get_singleton()->draw_list_set_line_width(p_draw_list, polygon->line_width);
+				}
+
+				//bind textures
+
+				_bind_canvas_texture(p_draw_list, polygon->texture, current_filter, current_repeat, last_texture, push_constant, texpixel_size);
+
+				Color color = base_color;
+				if (use_linear_colors) {
+					color = color.srgb_to_linear();
+				}
+
+				push_constant.modulation[0] = color.r;
+				push_constant.modulation[1] = color.g;
+				push_constant.modulation[2] = color.b;
+				push_constant.modulation[3] = color.a;
+
+				for (int j = 0; j < 4; j++) {
+					push_constant.src_rect[j] = 0;
+					push_constant.dst_rect[j] = 0;
+					push_constant.ninepatch_margins[j] = 0;
+				}
+
+				RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(PushConstant));
+				RD::get_singleton()->draw_list_bind_vertex_array(p_draw_list, pb->vertex_array);
+				if (pb->indices.is_valid()) {
+					RD::get_singleton()->draw_list_bind_index_array(p_draw_list, pb->indices);
+				}
+				RD::get_singleton()->draw_list_draw(p_draw_list, pb->indices.is_valid());
+
+				if (r_render_info) {
+					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME]++;
+					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += _indices_to_primitives(polygon->primitive, pb->primitive_count);
+					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
+				}
+
+			} break;
+			case Item::Command::TYPE_POLYGON_I: {
+				const Item::CommandPolygonI *polygon = static_cast<const Item::CommandPolygonI *>(c);
 
 				PolygonBuffers *pb = polygon_buffers.polygons.getptr(polygon->polygon.polygon_id);
 				ERR_CONTINUE(!pb);

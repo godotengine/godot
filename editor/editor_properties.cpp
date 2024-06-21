@@ -3890,6 +3890,11 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			editor->setup(Variant::PACKED_VECTOR2_ARRAY, p_hint_text);
 			return editor;
 		} break;
+		case Variant::PACKED_VECTOR2I_ARRAY: {
+			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			editor->setup(Variant::PACKED_VECTOR2I_ARRAY, p_hint_text);
+			return editor;
+		} break;
 		case Variant::PACKED_VECTOR3_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
 			editor->setup(Variant::PACKED_VECTOR3_ARRAY, p_hint_text);

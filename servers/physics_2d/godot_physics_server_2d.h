@@ -86,11 +86,8 @@ public:
 	virtual RID world_boundary_shape_create() override;
 	virtual RID separation_ray_shape_create() override;
 	virtual RID segment_shape_create() override;
-	virtual RID circle_shape_create() override;
 	virtual RID rectangle_shape_create() override;
-	virtual RID capsule_shape_create() override;
 	virtual RID convex_polygon_shape_create() override;
-	virtual RID concave_polygon_shape_create() override;
 
 	static void _shape_col_cbk(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata);
 

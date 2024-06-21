@@ -172,9 +172,9 @@ struct _NO_DISCARD_ Vector2 {
 	}
 
 	Vector2 sign() const;
-	Vector2 floor() const;
-	Vector2 ceil() const;
-	Vector2 round() const;
+	Vector2i floor() const;
+	Vector2i ceil() const;
+	Vector2i round() const;
 	Vector2 snapped(const Vector2 &p_by) const;
 	Vector2 snappedf(real_t p_by) const;
 	Vector2 clamp(const Vector2 &p_min, const Vector2 &p_max) const;

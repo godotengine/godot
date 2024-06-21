@@ -1377,6 +1377,24 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = arr;
+		} else if (id == "PackedVector2iArray" || id == "PoolVector2iArray" || id == "Vector2iArray") {
+			Vector<int32_t> args;
+			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+
+			Vector<Vector2i> arr;
+			{
+				int len = args.size() / 2;
+				arr.resize(len);
+				Vector2i *w = arr.ptrw();
+				for (int i = 0; i < len; i++) {
+					w[i] = Vector2i(args[i * 2 + 0], args[i * 2 + 1]);
+				}
+			}
+
+			value = arr;
 		} else if (id == "PackedVector3Array" || id == "PoolVector3Array" || id == "Vector3Array") {
 			Vector<real_t> args;
 			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
@@ -2226,6 +2244,21 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			Vector<Vector2> data = p_variant;
 			int len = data.size();
 			const Vector2 *ptr = data.ptr();
+
+			for (int i = 0; i < len; i++) {
+				if (i > 0) {
+					p_store_string_func(p_store_string_ud, ", ");
+				}
+				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x) + ", " + rtos_fix(ptr[i].y));
+			}
+
+			p_store_string_func(p_store_string_ud, ")");
+		} break;
+		case Variant::PACKED_VECTOR2I_ARRAY: {
+			p_store_string_func(p_store_string_ud, "PackedVector2iArray(");
+			Vector<Vector2i> data = p_variant;
+			int len = data.size();
+			const Vector2i *ptr = data.ptr();
 
 			for (int i = 0; i < len; i++) {
 				if (i > 0) {

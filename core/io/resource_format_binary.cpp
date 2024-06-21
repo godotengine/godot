@@ -72,6 +72,7 @@ enum {
 	VARIANT_PACKED_VECTOR3_ARRAY = 35,
 	VARIANT_PACKED_COLOR_ARRAY = 36,
 	VARIANT_PACKED_VECTOR2_ARRAY = 37,
+	VARIANT_PACKED_VECTOR2I_ARRAY = 38,
 	VARIANT_INT64 = 40,
 	VARIANT_DOUBLE = 41,
 	VARIANT_CALLABLE = 42,
@@ -1938,6 +1939,18 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			for (int i = 0; i < len; i++) {
 				f->store_real(r[i].x);
 				f->store_real(r[i].y);
+			}
+		} break;
+
+		case Variant::PACKED_VECTOR2I_ARRAY: {
+			f->store_32(VARIANT_PACKED_VECTOR2I_ARRAY);
+			Vector<Vector2i> arr = p_property;
+			int len = arr.size();
+			f->store_32(len);
+			const Vector2i *r = arr.ptr();
+			for (int i = 0; i < len; i++) {
+				f->store_32(r[i].x);
+				f->store_32(r[i].y);
 			}
 		} break;
 

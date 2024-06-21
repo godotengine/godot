@@ -74,6 +74,7 @@ typedef Vector<double> PackedFloat64Array;
 typedef Vector<real_t> PackedRealArray;
 typedef Vector<String> PackedStringArray;
 typedef Vector<Vector2> PackedVector2Array;
+typedef Vector<Vector2i> PackedVector2iArray;
 typedef Vector<Vector3> PackedVector3Array;
 typedef Vector<Color> PackedColorArray;
 typedef Vector<Vector4> PackedVector4Array;
@@ -126,6 +127,7 @@ public:
 		PACKED_FLOAT64_ARRAY,
 		PACKED_STRING_ARRAY,
 		PACKED_VECTOR2_ARRAY,
+		PACKED_VECTOR2I_ARRAY,
 		PACKED_VECTOR3_ARRAY,
 		PACKED_COLOR_ARRAY,
 		PACKED_VECTOR4_ARRAY,
@@ -414,6 +416,7 @@ public:
 	operator PackedStringArray() const;
 	operator PackedVector3Array() const;
 	operator PackedVector2Array() const;
+	operator PackedVector2iArray() const;
 	operator PackedColorArray() const;
 	operator PackedVector4Array() const;
 
@@ -479,6 +482,7 @@ public:
 	Variant(const PackedFloat64Array &p_float64_array);
 	Variant(const PackedStringArray &p_string_array);
 	Variant(const PackedVector2Array &p_vector2_array);
+	Variant(const PackedVector2iArray &p_vector2_array);
 	Variant(const PackedVector3Array &p_vector3_array);
 	Variant(const PackedColorArray &p_color_array);
 	Variant(const PackedVector4Array &p_vector4_array);

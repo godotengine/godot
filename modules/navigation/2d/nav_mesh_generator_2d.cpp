@@ -523,13 +523,13 @@ void NavMeshGenerator2D::generator_parse_staticbody2d_node(const Ref<NavigationP
 
 			ConvexPolygonShape2D *convex_polygon_shape = Object::cast_to<ConvexPolygonShape2D>(*s);
 			if (convex_polygon_shape) {
-				Vector<Vector2> shape_outline = convex_polygon_shape->get_points();
+				Vector<Vector2i> shape_outline = convex_polygon_shape->get_points();
 
 				for (int i = 0; i < shape_outline.size(); i++) {
 					shape_outline.write[i] = static_body_xform.xform(shape_outline[i]);
 				}
 
-				p_source_geometry_data->add_obstruction_outline(shape_outline);
+				p_source_geometry_data->add_obstruction_outline_i(shape_outline);
 			}
 		}
 	}
@@ -607,7 +607,7 @@ void NavMeshGenerator2D::generator_parse_tile_map_layer_node(const Ref<Navigatio
 			if ((parsed_geometry_type == NavigationPolygon::PARSED_GEOMETRY_STATIC_COLLIDERS || parsed_geometry_type == NavigationPolygon::PARSED_GEOMETRY_BOTH) &&
 					(tile_set->get_physics_layer_collision_layer(physics_layer) & parsed_collision_mask)) {
 				for (int collision_polygon_index = 0; collision_polygon_index < tile_data->get_collision_polygons_count(physics_layer); collision_polygon_index++) {
-					PackedVector2Array collision_polygon_points = tile_data->get_collision_polygon_points(physics_layer, collision_polygon_index);
+					PackedVector2iArray collision_polygon_points = tile_data->get_collision_polygon_points(physics_layer, collision_polygon_index);
 					if (collision_polygon_points.is_empty()) {
 						continue;
 					}
@@ -619,7 +619,7 @@ void NavMeshGenerator2D::generator_parse_tile_map_layer_node(const Ref<Navigatio
 					Vector<Vector2> obstruction_outline;
 					obstruction_outline.resize(collision_polygon_points.size());
 
-					const Vector2 *collision_polygon_points_ptr = collision_polygon_points.ptr();
+					const Vector2i *collision_polygon_points_ptr = collision_polygon_points.ptr();
 					Vector2 *obstruction_outline_ptrw = obstruction_outline.ptrw();
 
 					for (int obstruction_outline_index = 0; obstruction_outline_index < obstruction_outline.size(); obstruction_outline_index++) {

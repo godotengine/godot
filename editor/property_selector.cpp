@@ -161,6 +161,7 @@ void PropertySelector::_update_search() {
 			search_options->get_editor_theme_icon(SNAME("PackedFloat64Array")),
 			search_options->get_editor_theme_icon(SNAME("PackedStringArray")),
 			search_options->get_editor_theme_icon(SNAME("PackedVector2Array")),
+			search_options->get_editor_theme_icon(SNAME("PackedVector2iArray")),
 			search_options->get_editor_theme_icon(SNAME("PackedVector3Array")),
 			search_options->get_editor_theme_icon(SNAME("PackedColorArray")),
 			search_options->get_editor_theme_icon(SNAME("PackedVector4Array")),

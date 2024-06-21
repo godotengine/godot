@@ -813,6 +813,26 @@ static Vector2 compute_polyline_segment_dir(const Vector<Point2> &p_points, int 
 	return segment_dir;
 }
 
+static Vector2i compute_polyline_segment_dir(const Vector<Point2i> &p_points, int p_index, const Vector2i &p_prev_segment_dir) {
+	int point_count = p_points.size();
+
+	bool is_last_point = (p_index == point_count - 1);
+
+	Vector2i segment_dir;
+
+	if (is_last_point) {
+		segment_dir = p_prev_segment_dir;
+	} else {
+		segment_dir = (p_points[p_index + 1] - p_points[p_index]).normalized();
+
+		if (segment_dir.is_zero()) {
+			segment_dir = p_prev_segment_dir;
+		}
+	}
+
+	return segment_dir;
+}
+
 static Vector2 compute_polyline_edge_offset_clamped(const Vector2 &p_segment_dir, const Vector2 &p_prev_segment_dir) {
 	Vector2 bisector;
 	float length = 1.0f;
@@ -968,6 +988,269 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 			Vector2 edge_offset = base_edge_offset * (p_width * 0.5f);
 			Vector2 border = base_edge_offset * border_size;
 			Vector2 pos = p_points[i];
+
+			int j = i * 2 + (loop ? 0 : 2);
+
+			points_ptr[j + 0] = pos + edge_offset;
+			points_ptr[j + 1] = pos - edge_offset;
+
+			points_left_ptr[j + 0] = pos + edge_offset;
+			points_left_ptr[j + 1] = pos + edge_offset + border;
+
+			points_right_ptr[j + 0] = pos - edge_offset;
+			points_right_ptr[j + 1] = pos - edge_offset - border;
+
+			if (i < p_colors.size()) {
+				color = p_colors[i];
+				color2 = Color(color.r, color.g, color.b, 0);
+			}
+
+			colors_ptr[j + 0] = color;
+			colors_ptr[j + 1] = color;
+
+			colors_left_ptr[j + 0] = color;
+			colors_left_ptr[j + 1] = color2;
+
+			colors_right_ptr[j + 0] = color;
+			colors_right_ptr[j + 1] = color2;
+
+			if (is_first_point && !loop) {
+				Vector2 begin_border = -segment_dir * border_size;
+
+				points_ptr[0] = pos + edge_offset + begin_border;
+				points_ptr[1] = pos - edge_offset + begin_border;
+
+				colors_ptr[0] = color2;
+				colors_ptr[1] = color2;
+
+				points_left_ptr[0] = pos + edge_offset + begin_border;
+				points_left_ptr[1] = pos + edge_offset + begin_border + border;
+
+				colors_left_ptr[0] = color2;
+				colors_left_ptr[1] = color2;
+
+				points_right_ptr[0] = pos - edge_offset + begin_border;
+				points_right_ptr[1] = pos - edge_offset + begin_border - border;
+
+				colors_right_ptr[0] = color2;
+				colors_right_ptr[1] = color2;
+			}
+
+			if (is_last_point && !loop) {
+				Vector2 end_border = prev_segment_dir * border_size;
+				int end_index = polyline_point_count + 2;
+
+				points_ptr[end_index + 0] = pos + edge_offset + end_border;
+				points_ptr[end_index + 1] = pos - edge_offset + end_border;
+
+				colors_ptr[end_index + 0] = color2;
+				colors_ptr[end_index + 1] = color2;
+
+				// Swap orientation of the triangles within both end corner quads so the visual seams
+				// between triangles goes from the edge corner. Done by going back to the edge corner
+				// (1 additional vertex / zero-area triangle per left/right corner).
+				points_left_ptr[end_index + 0] = pos + edge_offset;
+				points_left_ptr[end_index + 1] = pos + edge_offset + end_border + border;
+				points_left_ptr[end_index + 2] = pos + edge_offset + end_border;
+
+				colors_left_ptr[end_index + 0] = color;
+				colors_left_ptr[end_index + 1] = color2;
+				colors_left_ptr[end_index + 2] = color2;
+
+				points_right_ptr[end_index + 0] = pos - edge_offset;
+				points_right_ptr[end_index + 1] = pos - edge_offset + end_border - border;
+				points_right_ptr[end_index + 2] = pos - edge_offset + end_border;
+
+				colors_right_ptr[end_index + 0] = color;
+				colors_right_ptr[end_index + 1] = color2;
+				colors_right_ptr[end_index + 2] = color2;
+			}
+
+			prev_segment_dir = segment_dir;
+		}
+
+		pline_left->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
+		pline_left->polygon.create(indices, points_left, colors_left);
+
+		pline_right->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
+		pline_right->polygon.create(indices, points_right, colors_right);
+	} else {
+		// Makes a single triangle strip for drawing the line.
+
+		Vector2 prev_segment_dir;
+		for (int i = 0; i < point_count; i++) {
+			bool is_first_point = (i == 0);
+			bool is_last_point = (i == point_count - 1);
+
+			Vector2 segment_dir = compute_polyline_segment_dir(p_points, i, prev_segment_dir);
+			if (is_first_point && loop) {
+				prev_segment_dir = last_segment_dir;
+			} else if (is_last_point && loop) {
+				prev_segment_dir = first_segment_dir;
+			}
+
+			Vector2 base_edge_offset;
+			if (is_first_point && !loop) {
+				base_edge_offset = first_segment_dir.orthogonal();
+			} else if (is_last_point && !loop) {
+				base_edge_offset = last_segment_dir.orthogonal();
+			} else {
+				base_edge_offset = compute_polyline_edge_offset_clamped(segment_dir, prev_segment_dir);
+			}
+
+			Vector2 edge_offset = base_edge_offset * (p_width * 0.5f);
+			Vector2 pos = p_points[i];
+
+			points_ptr[i * 2 + 0] = pos + edge_offset;
+			points_ptr[i * 2 + 1] = pos - edge_offset;
+
+			if (i < p_colors.size()) {
+				color = p_colors[i];
+			}
+
+			colors_ptr[i * 2 + 0] = color;
+			colors_ptr[i * 2 + 1] = color;
+
+			prev_segment_dir = segment_dir;
+		}
+	}
+
+	pline->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
+	pline->polygon.create(indices, points, colors);
+}
+
+void RendererCanvasCull::canvas_item_add_polyline_i(RID p_item, const Vector<Point2i> &p_points, const Vector<Color> &p_colors, float p_width, bool p_antialiased) {
+	ERR_FAIL_COND(p_points.size() < 2);
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	Color color = Color(1, 1, 1, 1);
+
+	Vector<int> indices;
+	int point_count = p_points.size();
+
+	Item::CommandPolygonI *pline = canvas_item->alloc_command<Item::CommandPolygonI>();
+	ERR_FAIL_NULL(pline);
+
+	if (p_width < 0) {
+		if (p_antialiased) {
+			WARN_PRINT("Antialiasing is not supported for thin polylines drawn using line strips (`p_width < 0`).");
+		}
+
+		pline->primitive = RS::PRIMITIVE_LINE_STRIP;
+
+		if (p_colors.size() == 1 || p_colors.size() == point_count) {
+			pline->polygon.create(indices, p_points, p_colors);
+		} else {
+			Vector<Color> colors;
+			if (p_colors.is_empty()) {
+				colors.push_back(color);
+			} else {
+				colors.resize(point_count);
+				Color *colors_ptr = colors.ptrw();
+				for (int i = 0; i < point_count; i++) {
+					if (i < p_colors.size()) {
+						color = p_colors[i];
+					}
+					colors_ptr[i] = color;
+				}
+			}
+			pline->polygon.create(indices, p_points, colors);
+		}
+		return;
+	}
+
+	int polyline_point_count = point_count * 2;
+
+	bool loop = p_points[0].is_equal(p_points[point_count - 1]);
+	Vector2i first_segment_dir;
+	Vector2i last_segment_dir;
+
+	// Search for first non-zero vector between two segments.
+	for (int i = 1; i < point_count; i++) {
+		first_segment_dir = (p_points[i] - p_points[i - 1]).normalized();
+
+		if (!first_segment_dir.is_zero()) {
+			break;
+		}
+	}
+
+	// Search for last non-zero vector between two segments.
+	for (int i = point_count - 1; i >= 1; i--) {
+		last_segment_dir = (p_points[i] - p_points[i - 1]).normalized();
+
+		if (!last_segment_dir.is_zero()) {
+			break;
+		}
+	}
+
+	PackedColorArray colors;
+	PackedVector2iArray points;
+
+	// Additional 2+2 vertices to antialias begin+end of the middle triangle strip.
+	colors.resize(polyline_point_count + ((p_antialiased && !loop) ? 4 : 0));
+	points.resize(polyline_point_count + ((p_antialiased && !loop) ? 4 : 0));
+
+	Vector2i *points_ptr = points.ptrw();
+	Color *colors_ptr = colors.ptrw();
+
+	if (p_antialiased) {
+		float border_size = FEATHER_SIZE;
+		if (p_width < 1.0f) {
+			border_size *= p_width;
+		}
+		Color color2 = Color(1, 1, 1, 0);
+
+		Item::CommandPolygonI *pline_left = canvas_item->alloc_command<Item::CommandPolygonI>();
+		ERR_FAIL_NULL(pline_left);
+
+		Item::CommandPolygonI *pline_right = canvas_item->alloc_command<Item::CommandPolygonI>();
+		ERR_FAIL_NULL(pline_right);
+
+		PackedColorArray colors_left;
+		PackedVector2iArray points_left;
+
+		PackedColorArray colors_right;
+		PackedVector2iArray points_right;
+
+		// 2+2 additional vertices for begin+end corners.
+		// 1 additional vertex to swap the orientation of the triangles within the end corner's quad.
+		colors_left.resize(polyline_point_count + (loop ? 0 : 5));
+		points_left.resize(polyline_point_count + (loop ? 0 : 5));
+
+		colors_right.resize(polyline_point_count + (loop ? 0 : 5));
+		points_right.resize(polyline_point_count + (loop ? 0 : 5));
+
+		Color *colors_left_ptr = colors_left.ptrw();
+		Vector2i *points_left_ptr = points_left.ptrw();
+
+		Vector2i *points_right_ptr = points_right.ptrw();
+		Color *colors_right_ptr = colors_right.ptrw();
+
+		Vector2i prev_segment_dir;
+		for (int i = 0; i < point_count; i++) {
+			bool is_first_point = (i == 0);
+			bool is_last_point = (i == point_count - 1);
+
+			Vector2i segment_dir = compute_polyline_segment_dir(p_points, i, prev_segment_dir);
+			if (is_first_point && loop) {
+				prev_segment_dir = last_segment_dir;
+			} else if (is_last_point && loop) {
+				prev_segment_dir = first_segment_dir;
+			}
+
+			Vector2i base_edge_offset;
+			if (is_first_point && !loop) {
+				base_edge_offset = first_segment_dir.orthogonal();
+			} else if (is_last_point && !loop) {
+				base_edge_offset = last_segment_dir.orthogonal();
+			} else {
+				base_edge_offset = compute_polyline_edge_offset_clamped(segment_dir, prev_segment_dir);
+			}
+
+			Vector2 edge_offset = base_edge_offset * (p_width * 0.5f);
+			Vector2 border = base_edge_offset * border_size;
+			Vector2i pos = p_points[i];
 
 			int j = i * 2 + (loop ? 0 : 2);
 
@@ -1607,6 +1890,32 @@ void RendererCanvasCull::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	ERR_FAIL_COND_MSG(indices.is_empty(), "Invalid polygon data, triangulation failed.");
 
 	Item::CommandPolygon *polygon = canvas_item->alloc_command<Item::CommandPolygon>();
+	ERR_FAIL_NULL(polygon);
+	polygon->primitive = RS::PRIMITIVE_TRIANGLES;
+	polygon->texture = p_texture;
+	polygon->polygon.create(indices, p_points, p_colors, p_uvs);
+}
+
+void RendererCanvasCull::canvas_item_add_polygon_i(RID p_item, const Vector<Point2i> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture) {
+	Vector<Vector2> points;
+	for (int i = 0; i < p_points.size(); ++i) {
+		points.push_back(p_points[i]);
+	}
+
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+#ifdef DEBUG_ENABLED
+	int pointcount = p_points.size();
+	ERR_FAIL_COND(pointcount < 3);
+	int color_size = p_colors.size();
+	int uv_size = p_uvs.size();
+	ERR_FAIL_COND(color_size != 0 && color_size != 1 && color_size != pointcount);
+	ERR_FAIL_COND(uv_size != 0 && (uv_size != pointcount));
+#endif
+	Vector<int> indices = Geometry2D::triangulate_polygon(p_points);
+	ERR_FAIL_COND_MSG(indices.is_empty(), "Invalid polygon data, triangulation failed.");
+
+	Item::CommandPolygonI *polygon = canvas_item->alloc_command<Item::CommandPolygonI>();
 	ERR_FAIL_NULL(polygon);
 	polygon->primitive = RS::PRIMITIVE_TRIANGLES;
 	polygon->texture = p_texture;

@@ -233,6 +233,7 @@ ReplicationEditor::ReplicationEditor() {
 		Variant::PACKED_FLOAT64_ARRAY,
 		Variant::PACKED_STRING_ARRAY,
 		Variant::PACKED_VECTOR2_ARRAY,
+		Variant::PACKED_VECTOR2I_ARRAY,
 		Variant::PACKED_VECTOR3_ARRAY,
 		Variant::PACKED_COLOR_ARRAY,
 		Variant::PACKED_VECTOR4_ARRAY,

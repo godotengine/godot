@@ -87,6 +87,7 @@ public:
 
 	void add_traversable_outline(const PackedVector2Array &p_shape_outline);
 	void add_obstruction_outline(const PackedVector2Array &p_shape_outline);
+	void add_obstruction_outline_i(const PackedVector2iArray &p_shape_outline);
 
 	bool has_data() { return traversable_outlines.size(); };
 	void clear();

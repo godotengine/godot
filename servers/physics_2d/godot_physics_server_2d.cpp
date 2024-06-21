@@ -53,20 +53,11 @@ RID GodotPhysicsServer2D::_shape_create(ShapeType p_shape) {
 		case SHAPE_SEGMENT: {
 			shape = memnew(GodotSegmentShape2D);
 		} break;
-		case SHAPE_CIRCLE: {
-			shape = memnew(GodotCircleShape2D);
-		} break;
 		case SHAPE_RECTANGLE: {
 			shape = memnew(GodotRectangleShape2D);
 		} break;
-		case SHAPE_CAPSULE: {
-			shape = memnew(GodotCapsuleShape2D);
-		} break;
 		case SHAPE_CONVEX_POLYGON: {
 			shape = memnew(GodotConvexPolygonShape2D);
-		} break;
-		case SHAPE_CONCAVE_POLYGON: {
-			shape = memnew(GodotConcavePolygonShape2D);
 		} break;
 		case SHAPE_CUSTOM: {
 			ERR_FAIL_V(RID());
@@ -92,24 +83,12 @@ RID GodotPhysicsServer2D::segment_shape_create() {
 	return _shape_create(SHAPE_SEGMENT);
 }
 
-RID GodotPhysicsServer2D::circle_shape_create() {
-	return _shape_create(SHAPE_CIRCLE);
-}
-
 RID GodotPhysicsServer2D::rectangle_shape_create() {
 	return _shape_create(SHAPE_RECTANGLE);
 }
 
-RID GodotPhysicsServer2D::capsule_shape_create() {
-	return _shape_create(SHAPE_CAPSULE);
-}
-
 RID GodotPhysicsServer2D::convex_polygon_shape_create() {
 	return _shape_create(SHAPE_CONVEX_POLYGON);
-}
-
-RID GodotPhysicsServer2D::concave_polygon_shape_create() {
-	return _shape_create(SHAPE_CONCAVE_POLYGON);
 }
 
 void GodotPhysicsServer2D::shape_set_data(RID p_shape, const Variant &p_data) {

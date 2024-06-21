@@ -32,6 +32,7 @@
 #define TRIANGULATE_H
 
 #include "core/math/vector2.h"
+#include "core/math/vector2i.h"
 #include "core/templates/vector.h"
 
 /*
@@ -43,9 +44,11 @@ public:
 	// triangulate a contour/polygon, places results in STL vector
 	// as series of triangles.
 	static bool triangulate(const Vector<Vector2> &contour, Vector<int> &result);
+	static bool triangulate(const Vector<Vector2i> &contour, Vector<int> &result);
 
 	// compute area of a contour/polygon
 	static real_t get_area(const Vector<Vector2> &contour);
+	static real_t get_area(const Vector<Vector2i> &contour);
 
 	// decide if point Px/Py is inside triangle defined by
 	// (Ax,Ay) (Bx,By) (Cx,Cy)
@@ -54,9 +57,15 @@ public:
 			real_t Cx, real_t Cy,
 			real_t Px, real_t Py,
 			bool include_edges);
+	static bool is_inside_triangle(int32_t Ax, int32_t Ay,
+								   int32_t Bx, int32_t By,
+								   int32_t Cx, int32_t Cy,
+								   int32_t Px, int32_t Py,
+								   bool include_edges);
 
 private:
 	static bool snip(const Vector<Vector2> &p_contour, int u, int v, int w, int n, const Vector<int> &V, bool relaxed);
+	static bool snip(const Vector<Vector2i> &p_contour, int u, int v, int w, int n, const Vector<int> &V, bool relaxed);
 };
 
 #endif // TRIANGULATE_H

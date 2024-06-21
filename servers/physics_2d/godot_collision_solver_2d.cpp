@@ -167,67 +167,15 @@ bool GodotCollisionSolver2D::concave_callback(void *p_userdata, GodotShape2D *p_
 	return !cinfo.result_callback;
 }
 
-bool GodotCollisionSolver2D::solve_concave(const GodotShape2D *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const GodotShape2D *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, Vector2 *r_sep_axis, real_t p_margin_A, real_t p_margin_B) {
-	const GodotConcaveShape2D *concave_B = static_cast<const GodotConcaveShape2D *>(p_shape_B);
-
-	_ConcaveCollisionInfo2D cinfo;
-	cinfo.transform_A = &p_transform_A;
-	cinfo.shape_A = p_shape_A;
-	cinfo.transform_B = &p_transform_B;
-	cinfo.motion_A = p_motion_A;
-	cinfo.result_callback = p_result_callback;
-	cinfo.userdata = p_userdata;
-	cinfo.swap_result = p_swap_result;
-	cinfo.collided = false;
-	cinfo.collisions = 0;
-	cinfo.sep_axis = r_sep_axis;
-	cinfo.margin_A = p_margin_A;
-	cinfo.margin_B = p_margin_B;
-
-	cinfo.aabb_tests = 0;
-
-	Transform2D rel_transform = p_transform_A;
-	rel_transform.columns[2] -= p_transform_B.get_origin();
-
-	// Quickly compute a local Rect2.
-	Rect2 local_aabb;
-	for (int i = 0; i < 2; i++) {
-		Vector2 axis(p_transform_B.columns[i]);
-		real_t axis_scale = 1.0 / axis.length();
-		axis *= axis_scale;
-
-		real_t smin = 0.0, smax = 0.0;
-		p_shape_A->project_rangev(axis, rel_transform, smin, smax);
-		smin *= axis_scale;
-		smax *= axis_scale;
-
-		local_aabb.position[i] = smin;
-		local_aabb.size[i] = smax - smin;
-	}
-	// In case of motion, expand the Rect2 in the motion direction.
-	if (p_motion_A != Vector2()) {
-		Rect2 moved_aabb = local_aabb;
-		moved_aabb.position += p_motion_A;
-		local_aabb = local_aabb.merge(moved_aabb);
-	}
-
-	concave_B->cull(local_aabb, concave_callback, &cinfo);
-
-	return cinfo.collided;
-}
-
 bool GodotCollisionSolver2D::solve(const GodotShape2D *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const GodotShape2D *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CallbackResult p_result_callback, void *p_userdata, Vector2 *r_sep_axis, real_t p_margin_A, real_t p_margin_B) {
 	PhysicsServer2D::ShapeType type_A = p_shape_A->get_type();
 	PhysicsServer2D::ShapeType type_B = p_shape_B->get_type();
-	bool concave_A = p_shape_A->is_concave();
-	bool concave_B = p_shape_B->is_concave();
 	real_t margin_A = p_margin_A, margin_B = p_margin_B;
 
 	bool swap = false;
 
 	if (type_A > type_B) {
 		SWAP(type_A, type_B);
-		SWAP(concave_A, concave_B);
 		SWAP(margin_A, margin_B);
 		swap = true;
 	}
@@ -256,19 +204,7 @@ bool GodotCollisionSolver2D::solve(const GodotShape2D *p_shape_A, const Transfor
 			return solve_separation_ray(p_shape_A, p_motion_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, r_sep_axis, p_margin_A);
 		}
 
-	} else if (concave_B) {
-		if (concave_A) {
-			WARN_PRINT_ONCE("Collisions between two concave shapes are not supported.");
-			return false;
-		}
-
-		if (!swap) {
-			return solve_concave(p_shape_A, p_transform_A, p_motion_A, p_shape_B, p_transform_B, p_motion_B, p_result_callback, p_userdata, false, r_sep_axis, margin_A, margin_B);
-		} else {
-			return solve_concave(p_shape_B, p_transform_B, p_motion_B, p_shape_A, p_transform_A, p_motion_A, p_result_callback, p_userdata, true, r_sep_axis, margin_A, margin_B);
-		}
-
-	} else {
+	}  else {
 		return collision_solver(p_shape_A, p_transform_A, p_motion_A, p_shape_B, p_transform_B, p_motion_B, p_result_callback, p_userdata, false, r_sep_axis, margin_A, margin_B);
 	}
 }

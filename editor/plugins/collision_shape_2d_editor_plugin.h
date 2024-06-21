@@ -47,21 +47,21 @@ class CollisionShape2DEditor : public Control {
 		SEGMENT_SHAPE
 	};
 
-	const Point2 RECT_HANDLES[8] = {
-		Point2(1, 0),
-		Point2(1, 1),
-		Point2(0, 1),
-		Point2(-1, 1),
-		Point2(-1, 0),
-		Point2(-1, -1),
-		Point2(0, -1),
-		Point2(1, -1),
+	const Point2i RECT_HANDLES[8] = {
+		Point2i(1, 0),
+		Point2i(1, 1),
+		Point2i(0, 1),
+		Point2i(-1, 1),
+		Point2i(-1, 0),
+		Point2i(-1, -1),
+		Point2i(0, -1),
+		Point2i(1, -1),
 	};
 
 	CanvasItemEditor *canvas_item_editor = nullptr;
 	CollisionShape2D *node = nullptr;
 
-	Vector<Point2> handles;
+	Vector<Point2i> handles;
 
 	int shape_type = -1;
 	int edit_handle = -1;
@@ -69,14 +69,14 @@ class CollisionShape2DEditor : public Control {
 	real_t grab_threshold = 8;
 	Variant original;
 	Transform2D original_transform;
-	Vector2 original_point;
-	Point2 last_point;
+	Vector2i original_point;
+	Point2i last_point;
 	Vector2 original_mouse_pos;
 
 	Ref<Shape2D> current_shape;
 
 	Variant get_handle_value(int idx) const;
-	void set_handle(int idx, Point2 &p_point);
+	void set_handle(int idx, Point2i &p_point);
 	void commit_handle(int idx, Variant &p_org);
 
 	void _shape_changed();

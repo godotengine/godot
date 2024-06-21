@@ -392,8 +392,14 @@ void Sprite2DEditor::_create_collision_polygon_2d_node() {
 	for (int i = 0; i < computed_outline_lines.size(); i++) {
 		Vector<Vector2> outline = computed_outline_lines[i];
 
+		Vector<Vector2i> outline_i;
+
+		for (int j = 0; j < outline.size(); j++) {
+			outline_i.push_back(outline[j]);
+		}
+
 		CollisionPolygon2D *collision_polygon_2d_instance = memnew(CollisionPolygon2D);
-		collision_polygon_2d_instance->set_polygon(outline);
+		collision_polygon_2d_instance->set_polygon(outline_i);
 
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 		ur->create_action(TTR("Create CollisionPolygon2D Sibling"), UndoRedo::MERGE_DISABLE, node);

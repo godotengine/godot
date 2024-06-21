@@ -70,6 +70,10 @@ const Rect2 &RendererCanvasRender::Item::get_rect() const {
 				const Item::CommandPolygon *polygon = static_cast<const Item::CommandPolygon *>(c);
 				r = polygon->polygon.rect_cache;
 			} break;
+			case Item::Command::TYPE_POLYGON_I: {
+				const Item::CommandPolygonI *polygon = static_cast<const Item::CommandPolygonI *>(c);
+				r = polygon->polygon.rect_cache;
+			} break;
 			case Item::Command::TYPE_PRIMITIVE: {
 				const Item::CommandPrimitive *primitive = static_cast<const Item::CommandPrimitive *>(c);
 				for (uint32_t j = 0; j < primitive->point_count; j++) {

@@ -93,7 +93,14 @@ struct _NO_DISCARD_ Vector2i {
 		return Vector2i(MAX(x, p_scalar), MAX(y, p_scalar));
 	}
 
+	int32_t dot(const Vector2i &p_other) const;
+	int32_t cross(const Vector2i &p_other) const;
+
+	bool is_equal(const Vector2i &p_v) const;
+	bool is_zero() const;
+
     void normalize();
+	Vector2i normalized() const;
     real_t angle() const;
     real_t angle_to_point(const Vector2i &p_vector2) const;
     _FORCE_INLINE_ Vector2i direction_to(const Vector2i &p_to) const;
@@ -136,6 +143,10 @@ struct _NO_DISCARD_ Vector2i {
 
 	int64_t length_squared() const;
 	double length() const;
+
+	Vector2i orthogonal() const {
+		return Vector2i(y, -x);
+	}
 
 	real_t aspect() const { return width / (real_t)height; }
 	Vector2i sign() const { return Vector2i(SIGN(x), SIGN(y)); }

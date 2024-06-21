@@ -968,6 +968,841 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	initializing = false;
 }
 
+void GenericTilePolygonIEditor::_base_control_draw() {
+	ERR_FAIL_COND(!tile_set.is_valid());
+
+	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+
+	Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
+	const Ref<Texture2D> handle = get_editor_theme_icon(SNAME("EditorPathSharpHandle"));
+	const Ref<Texture2D> add_handle = get_editor_theme_icon(SNAME("EditorHandleAdd"));
+	const Ref<StyleBox> focus_stylebox = get_theme_stylebox(SNAME("Focus"), EditorStringName(EditorStyles));
+
+	// Draw the focus rectangle.
+	if (base_control->has_focus()) {
+		base_control->draw_style_box(focus_stylebox, Rect2(Vector2(), base_control->get_size()));
+	}
+
+	// Draw tile-related things.
+	const Size2 base_tile_size = tile_set->get_tile_size();
+	const Size2 tile_size = background_region.size;
+
+	Transform2D xform;
+	xform.set_origin(base_control->get_size() / 2 + panning);
+	xform.set_scale(Vector2(editor_zoom_widget->get_zoom(), editor_zoom_widget->get_zoom()));
+	base_control->draw_set_transform_matrix(xform);
+
+	// Draw the tile shape filled.
+	Transform2D tile_xform;
+	tile_xform.set_scale(tile_size);
+	tile_set->draw_tile_shape(base_control, tile_xform, Color(1.0, 1.0, 1.0, 0.3), true);
+
+	// Draw the background.
+	if (background_texture.is_valid()) {
+		Size2 region_size = background_region.size;
+		if (background_h_flip) {
+			region_size.x = -region_size.x;
+		}
+		if (background_v_flip) {
+			region_size.y = -region_size.y;
+		}
+		base_control->draw_texture_rect_region(background_texture, Rect2(-background_region.size / 2 - background_offset, region_size), background_region, background_modulate, background_transpose);
+	}
+
+	// Draw grid.
+	if (current_snap_option == SNAP_GRID) {
+		Vector2 spacing = base_tile_size / snap_subdivision->get_value();
+		Vector2 offset = -tile_size / 2;
+		int w = snap_subdivision->get_value() * (tile_size / base_tile_size).x;
+		int h = snap_subdivision->get_value() * (tile_size / base_tile_size).y;
+
+		for (int y = 1; y < h; y++) {
+			for (int x = 1; x < w; x++) {
+				base_control->draw_line(Vector2(spacing.x * x, 0) + offset, Vector2(spacing.x * x, tile_size.y) + offset, Color(1, 1, 1, 0.33));
+				base_control->draw_line(Vector2(0, spacing.y * y) + offset, Vector2(tile_size.x, spacing.y * y) + offset, Color(1, 1, 1, 0.33));
+			}
+		}
+	}
+
+	// Draw the polygons.
+	for (const Vector<Vector2i> &polygon : polygons) {
+		Color color = polygon_color;
+		if (!in_creation_polygon.is_empty()) {
+			color = color.darkened(0.3);
+		}
+		color.a = 0.5;
+		Vector<Color> v_color;
+		v_color.push_back(color);
+		base_control->draw_polygon_i(polygon, v_color);
+
+		color.a = 0.7;
+		for (int j = 0; j < polygon.size(); j++) {
+			base_control->draw_line(polygon[j], polygon[(j + 1) % polygon.size()], color);
+		}
+	}
+
+	// Draw the polygon in creation.
+	if (!in_creation_polygon.is_empty()) {
+		for (int i = 0; i < in_creation_polygon.size() - 1; i++) {
+			base_control->draw_line(in_creation_polygon[i], in_creation_polygon[i + 1], Color(1.0, 1.0, 1.0));
+		}
+	}
+
+	Point2i in_creation_point = xform.affine_inverse().xform(base_control->get_local_mouse_position());
+	float in_creation_distance = grab_threshold * 2.0;
+	_snap_to_tile_shape(in_creation_point, in_creation_distance, grab_threshold / editor_zoom_widget->get_zoom());
+	_snap_point(in_creation_point);
+
+	if (drag_type == DRAG_TYPE_CREATE_POINT && !in_creation_polygon.is_empty()) {
+		base_control->draw_line(in_creation_polygon[in_creation_polygon.size() - 1], in_creation_point, Color(1.0, 1.0, 1.0));
+	}
+
+	// Draw the handles.
+	int tinted_polygon_index = -1;
+	int tinted_point_index = -1;
+	if (drag_type == DRAG_TYPE_DRAG_POINT) {
+		tinted_polygon_index = drag_polygon_index;
+		tinted_point_index = drag_point_index;
+	} else if (hovered_point_index >= 0) {
+		tinted_polygon_index = hovered_polygon_index;
+		tinted_point_index = hovered_point_index;
+	}
+
+	base_control->draw_set_transform_matrix(Transform2D());
+	if (!in_creation_polygon.is_empty()) {
+		for (int i = 0; i < in_creation_polygon.size(); i++) {
+			base_control->draw_texture(handle, xform.xform(in_creation_polygon[i]) - handle->get_size() / 2);
+		}
+	} else {
+		for (int i = 0; i < (int)polygons.size(); i++) {
+			const Vector<Vector2i> &polygon = polygons[i];
+			for (int j = 0; j < polygon.size(); j++) {
+				const Color poly_modulate = (tinted_polygon_index == i && tinted_point_index == j) ? Color(0.5, 1, 2) : Color(1, 1, 1);
+				base_control->draw_texture(handle, xform.xform(polygon[j]) - handle->get_size() / 2, poly_modulate);
+			}
+		}
+	}
+
+	// Draw the text on top of the selected point.
+	if (tinted_polygon_index >= 0) {
+		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		String text = multiple_polygon_mode ? vformat("%d:%d", tinted_polygon_index, tinted_point_index) : vformat("%d", tinted_point_index);
+		Size2 text_size = font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+		base_control->draw_string(font, xform.xform(polygons[tinted_polygon_index][tinted_point_index]) - text_size * 0.5, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1.0, 1.0, 1.0, 0.5));
+	}
+
+	if (drag_type == DRAG_TYPE_CREATE_POINT) {
+		base_control->draw_texture(handle, xform.xform(in_creation_point) - handle->get_size() / 2, Color(0.5, 1, 2));
+	}
+
+	// Draw the point creation preview in edit mode.
+	if (hovered_segment_index >= 0) {
+		base_control->draw_texture(add_handle, xform.xform(hovered_segment_point) - add_handle->get_size() / 2);
+	}
+
+	// Draw the tile shape line.
+	base_control->draw_set_transform_matrix(xform);
+	tile_set->draw_tile_shape(base_control, tile_xform, grid_color, false);
+	base_control->draw_set_transform_matrix(Transform2D());
+}
+
+void GenericTilePolygonIEditor::_center_view() {
+	panning = Vector2();
+	base_control->queue_redraw();
+	button_center_view->set_disabled(true);
+}
+
+void GenericTilePolygonIEditor::_zoom_changed() {
+	base_control->queue_redraw();
+}
+
+void GenericTilePolygonIEditor::_advanced_menu_item_pressed(int p_item_pressed) {
+	EditorUndoRedoManager *undo_redo;
+	if (use_undo_redo) {
+		undo_redo = EditorUndoRedoManager::get_singleton();
+	} else {
+		// This nice hack allows for discarding undo actions without making code too complex.
+		undo_redo = memnew(EditorUndoRedoManager);
+	}
+
+	switch (p_item_pressed) {
+		case RESET_TO_DEFAULT_TILE: {
+			undo_redo->create_action(TTR("Reset Polygons"));
+			undo_redo->add_do_method(this, "clear_polygons");
+			Vector<Vector2> polygon = tile_set->get_tile_shape_polygon();
+			for (int i = 0; i < polygon.size(); i++) {
+				polygon.write[i] = polygon[i] * tile_set->get_tile_size();
+			}
+			undo_redo->add_do_method(this, "add_polygon", polygon);
+			undo_redo->add_do_method(base_control, "queue_redraw");
+			undo_redo->add_do_method(this, "emit_signal", "polygons_changed");
+			undo_redo->add_undo_method(this, "clear_polygons");
+			for (const PackedVector2iArray &poly : polygons) {
+				undo_redo->add_undo_method(this, "add_polygon", poly);
+			}
+			undo_redo->add_undo_method(base_control, "queue_redraw");
+			undo_redo->add_undo_method(this, "emit_signal", "polygons_changed");
+			undo_redo->commit_action(true);
+		} break;
+		case CLEAR_TILE: {
+			undo_redo->create_action(TTR("Clear Polygons"));
+			undo_redo->add_do_method(this, "clear_polygons");
+			undo_redo->add_do_method(base_control, "queue_redraw");
+			undo_redo->add_do_method(this, "emit_signal", "polygons_changed");
+			undo_redo->add_undo_method(this, "clear_polygons");
+			for (const PackedVector2iArray &polygon : polygons) {
+				undo_redo->add_undo_method(this, "add_polygon", polygon);
+			}
+			undo_redo->add_undo_method(base_control, "queue_redraw");
+			undo_redo->add_undo_method(this, "emit_signal", "polygons_changed");
+			undo_redo->commit_action(true);
+		} break;
+		case ROTATE_RIGHT:
+		case ROTATE_LEFT:
+		case FLIP_HORIZONTALLY:
+		case FLIP_VERTICALLY: {
+			switch (p_item_pressed) {
+				case ROTATE_RIGHT: {
+					undo_redo->create_action(TTR("Rotate Polygons Right"));
+				} break;
+				case ROTATE_LEFT: {
+					undo_redo->create_action(TTR("Rotate Polygons Left"));
+				} break;
+				case FLIP_HORIZONTALLY: {
+					undo_redo->create_action(TTR("Flip Polygons Horizontally"));
+				} break;
+				case FLIP_VERTICALLY: {
+					undo_redo->create_action(TTR("Flip Polygons Vertically"));
+				} break;
+				default:
+					break;
+			}
+			for (unsigned int i = 0; i < polygons.size(); i++) {
+				Vector<Point2> new_polygon;
+				for (const Vector2 &vec : polygons[i]) {
+					Vector2 point = vec;
+					switch (p_item_pressed) {
+						case ROTATE_RIGHT: {
+							point = Vector2(-point.y, point.x);
+						} break;
+						case ROTATE_LEFT: {
+							point = Vector2(point.y, -point.x);
+						} break;
+						case FLIP_HORIZONTALLY: {
+							point = Vector2(-point.x, point.y);
+						} break;
+						case FLIP_VERTICALLY: {
+							point = Vector2(point.x, -point.y);
+						} break;
+						default:
+							break;
+					}
+					new_polygon.push_back(point);
+				}
+				undo_redo->add_do_method(this, "set_polygon", i, new_polygon);
+			}
+			undo_redo->add_do_method(base_control, "queue_redraw");
+			undo_redo->add_do_method(this, "emit_signal", "polygons_changed");
+			for (unsigned int i = 0; i < polygons.size(); i++) {
+				undo_redo->add_undo_method(this, "set_polygon", i, polygons[i]);
+			}
+			undo_redo->add_undo_method(base_control, "queue_redraw");
+			undo_redo->add_undo_method(this, "emit_signal", "polygons_changed");
+			undo_redo->commit_action(true);
+		} break;
+		default:
+			break;
+	}
+
+	if (!use_undo_redo) {
+		memdelete(undo_redo);
+	}
+}
+
+void GenericTilePolygonIEditor::_grab_polygon_point(Vector2i p_pos, const Transform2D &p_polygon_xform, int &r_polygon_index, int &r_point_index) {
+	const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+	r_polygon_index = -1;
+	r_point_index = -1;
+	float closest_distance = grab_threshold + 1.0;
+	for (unsigned int i = 0; i < polygons.size(); i++) {
+		const Vector<Vector2i> &polygon = polygons[i];
+		for (int j = 0; j < polygon.size(); j++) {
+			float distance = p_pos.distance_to(p_polygon_xform.xform(polygon[j]));
+			if (distance < grab_threshold && distance < closest_distance) {
+				r_polygon_index = i;
+				r_point_index = j;
+				closest_distance = distance;
+			}
+		}
+	}
+}
+
+void GenericTilePolygonIEditor::_grab_polygon_segment_point(Vector2i p_pos, const Transform2D &p_polygon_xform, int &r_polygon_index, int &r_segment_index, Vector2i &r_point) {
+	const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+
+	Point2 point = p_polygon_xform.affine_inverse().xform(p_pos);
+	r_polygon_index = -1;
+	r_segment_index = -1;
+	float closest_distance = grab_threshold * 2.0;
+	for (unsigned int i = 0; i < polygons.size(); i++) {
+		const Vector<Vector2i> &polygon = polygons[i];
+		for (int j = 0; j < polygon.size(); j++) {
+			Vector2i segment[2] = { polygon[j], polygon[(j + 1) % polygon.size()] };
+			Vector2i closest_point = Geometry2D::get_closest_point_to_segment(point, segment);
+			float distance = closest_point.distance_to(point);
+			if (distance < grab_threshold / editor_zoom_widget->get_zoom() && distance < closest_distance) {
+				r_polygon_index = i;
+				r_segment_index = j;
+				r_point = closest_point;
+				closest_distance = distance;
+			}
+		}
+	}
+}
+
+void GenericTilePolygonIEditor::_snap_to_tile_shape(Point2i &r_point, float &r_current_snapped_dist, float p_snap_dist) {
+	ERR_FAIL_COND(!tile_set.is_valid());
+
+	Vector<Point2> polygon = tile_set->get_tile_shape_polygon();
+	for (int i = 0; i < polygon.size(); i++) {
+		polygon.write[i] = polygon[i] * tile_set->get_tile_size();
+	}
+	Point2i snapped_point = r_point;
+
+	// Snap to polygon vertices.
+	bool snapped = false;
+	for (int i = 0; i < polygon.size(); i++) {
+		float distance = r_point.distance_to(polygon[i]);
+		if (distance < p_snap_dist && distance < r_current_snapped_dist) {
+			snapped_point = polygon[i];
+			r_current_snapped_dist = distance;
+			snapped = true;
+		}
+	}
+
+	// Snap to edges if we did not snap to vertices.
+	if (!snapped) {
+		for (int i = 0; i < polygon.size(); i++) {
+			Point2 segment[2] = { polygon[i], polygon[(i + 1) % polygon.size()] };
+			Point2 point = Geometry2D::get_closest_point_to_segment(r_point, segment);
+			float distance = r_point.distance_to(point);
+			if (distance < p_snap_dist && distance < r_current_snapped_dist) {
+				snapped_point = point;
+				r_current_snapped_dist = distance;
+			}
+		}
+	}
+
+	r_point = snapped_point;
+}
+
+void GenericTilePolygonIEditor::_snap_point(Point2i &r_point) {
+	switch (current_snap_option) {
+		case SNAP_NONE:
+			break;
+
+		case SNAP_GRID: {
+			const Vector2 tile_size = tile_set->get_tile_size();
+			r_point = (r_point + tile_size / 2).snapped(tile_size / snap_subdivision->get_value()) - tile_size / 2;
+		} break;
+	}
+}
+
+void GenericTilePolygonIEditor::_base_control_gui_input(Ref<InputEvent> p_event) {
+	EditorUndoRedoManager *undo_redo;
+	if (use_undo_redo) {
+		undo_redo = EditorUndoRedoManager::get_singleton();
+	} else {
+		// This nice hack allows for discarding undo actions without making code too complex.
+		undo_redo = memnew(EditorUndoRedoManager);
+	}
+
+	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+
+	hovered_polygon_index = -1;
+	hovered_point_index = -1;
+	hovered_segment_index = -1;
+	hovered_segment_point = Vector2();
+
+	Transform2D xform;
+	xform.set_origin(base_control->get_size() / 2 + panning);
+	xform.set_scale(Vector2(editor_zoom_widget->get_zoom(), editor_zoom_widget->get_zoom()));
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		if (drag_type == DRAG_TYPE_DRAG_POINT) {
+			ERR_FAIL_INDEX(drag_polygon_index, (int)polygons.size());
+			ERR_FAIL_INDEX(drag_point_index, polygons[drag_polygon_index].size());
+			Point2i point = xform.affine_inverse().xform(mm->get_position());
+			float distance = grab_threshold * 2.0;
+			_snap_to_tile_shape(point, distance, grab_threshold / editor_zoom_widget->get_zoom());
+			_snap_point(point);
+			polygons[drag_polygon_index].write[drag_point_index] = point;
+		} else if (drag_type == DRAG_TYPE_PAN) {
+			panning += mm->get_position() - drag_last_pos;
+			drag_last_pos = mm->get_position();
+			button_center_view->set_disabled(panning.is_zero());
+		} else {
+			// Update hovered point.
+			_grab_polygon_point(mm->get_position(), xform, hovered_polygon_index, hovered_point_index);
+
+			// If we have no hovered point, check if we hover a segment.
+			if (hovered_point_index == -1) {
+				_grab_polygon_segment_point(mm->get_position(), xform, hovered_polygon_index, hovered_segment_index, hovered_segment_point);
+			}
+		}
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_command_or_control_pressed()) {
+			editor_zoom_widget->set_zoom_by_increments(1);
+			_zoom_changed();
+			accept_event();
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_command_or_control_pressed()) {
+			editor_zoom_widget->set_zoom_by_increments(-1);
+			_zoom_changed();
+			accept_event();
+		} else if (mb->get_button_index() == MouseButton::LEFT) {
+			if (mb->is_pressed()) {
+				if (tools_button_group->get_pressed_button() != button_create) {
+					in_creation_polygon.clear();
+				}
+				if (tools_button_group->get_pressed_button() == button_create) {
+					// Create points.
+					if (in_creation_polygon.size() >= 3 && mb->get_position().distance_to(xform.xform(in_creation_polygon[0])) < grab_threshold) {
+						// Closes and create polygon.
+						if (!multiple_polygon_mode) {
+							clear_polygons();
+						}
+						int added = add_polygon(in_creation_polygon);
+
+						in_creation_polygon.clear();
+						button_edit->set_pressed(true);
+						undo_redo->create_action(TTR("Edit Polygons"));
+						if (!multiple_polygon_mode) {
+							undo_redo->add_do_method(this, "clear_polygons");
+						}
+						undo_redo->add_do_method(this, "add_polygon", in_creation_polygon);
+						undo_redo->add_do_method(base_control, "queue_redraw");
+						undo_redo->add_undo_method(this, "remove_polygon", added);
+						undo_redo->add_undo_method(base_control, "queue_redraw");
+						undo_redo->commit_action(false);
+						emit_signal(SNAME("polygons_changed"));
+					} else {
+						// Create a new point.
+						drag_type = DRAG_TYPE_CREATE_POINT;
+					}
+				} else if (tools_button_group->get_pressed_button() == button_edit) {
+					// Edit points.
+					int closest_polygon;
+					int closest_point;
+					_grab_polygon_point(mb->get_position(), xform, closest_polygon, closest_point);
+					if (closest_polygon >= 0) {
+						drag_type = DRAG_TYPE_DRAG_POINT;
+						drag_polygon_index = closest_polygon;
+						drag_point_index = closest_point;
+						drag_old_polygon = polygons[drag_polygon_index];
+					} else {
+						// Create a point.
+						Vector2i point_to_create;
+						_grab_polygon_segment_point(mb->get_position(), xform, closest_polygon, closest_point, point_to_create);
+						if (closest_polygon >= 0) {
+							polygons[closest_polygon].insert(closest_point + 1, point_to_create);
+							drag_type = DRAG_TYPE_DRAG_POINT;
+							drag_polygon_index = closest_polygon;
+							drag_point_index = closest_point + 1;
+							drag_old_polygon = polygons[closest_polygon];
+						}
+					}
+				} else if (tools_button_group->get_pressed_button() == button_delete) {
+					// Remove point.
+					int closest_polygon;
+					int closest_point;
+					_grab_polygon_point(mb->get_position(), xform, closest_polygon, closest_point);
+					if (closest_polygon >= 0) {
+						PackedVector2iArray old_polygon = polygons[closest_polygon];
+						polygons[closest_polygon].remove_at(closest_point);
+						undo_redo->create_action(TTR("Edit Polygons"));
+						if (polygons[closest_polygon].size() < 3) {
+							remove_polygon(closest_polygon);
+							undo_redo->add_do_method(this, "remove_polygon", closest_polygon);
+							undo_redo->add_undo_method(this, "add_polygon", old_polygon, closest_polygon);
+						} else {
+							undo_redo->add_do_method(this, "set_polygon", closest_polygon, polygons[closest_polygon]);
+							undo_redo->add_undo_method(this, "set_polygon", closest_polygon, old_polygon);
+						}
+						undo_redo->add_do_method(base_control, "queue_redraw");
+						undo_redo->add_undo_method(base_control, "queue_redraw");
+						undo_redo->commit_action(false);
+						emit_signal(SNAME("polygons_changed"));
+					}
+				}
+			} else {
+				if (drag_type == DRAG_TYPE_DRAG_POINT) {
+					undo_redo->create_action(TTR("Edit Polygons"));
+					undo_redo->add_do_method(this, "set_polygon", drag_polygon_index, polygons[drag_polygon_index]);
+					undo_redo->add_do_method(base_control, "queue_redraw");
+					undo_redo->add_undo_method(this, "set_polygon", drag_polygon_index, drag_old_polygon);
+					undo_redo->add_undo_method(base_control, "queue_redraw");
+					undo_redo->commit_action(false);
+					emit_signal(SNAME("polygons_changed"));
+				} else if (drag_type == DRAG_TYPE_CREATE_POINT) {
+					Point2i point = xform.affine_inverse().xform(mb->get_position());
+					float distance = grab_threshold * 2;
+					_snap_to_tile_shape(point, distance, grab_threshold / editor_zoom_widget->get_zoom());
+					_snap_point(point);
+					in_creation_polygon.push_back(point);
+				}
+				drag_type = DRAG_TYPE_NONE;
+				drag_point_index = -1;
+			}
+
+		} else if (mb->get_button_index() == MouseButton::RIGHT) {
+			if (mb->is_pressed()) {
+				if (tools_button_group->get_pressed_button() == button_edit) {
+					// Remove point or pan.
+					int closest_polygon;
+					int closest_point;
+					_grab_polygon_point(mb->get_position(), xform, closest_polygon, closest_point);
+					if (closest_polygon >= 0) {
+						PackedVector2iArray old_polygon = polygons[closest_polygon];
+						polygons[closest_polygon].remove_at(closest_point);
+						undo_redo->create_action(TTR("Edit Polygons"));
+						if (polygons[closest_polygon].size() < 3) {
+							remove_polygon(closest_polygon);
+							undo_redo->add_do_method(this, "remove_polygon", closest_polygon);
+							undo_redo->add_undo_method(this, "add_polygon", old_polygon, closest_polygon);
+						} else {
+							undo_redo->add_do_method(this, "set_polygon", closest_polygon, polygons[closest_polygon]);
+							undo_redo->add_undo_method(this, "set_polygon", closest_polygon, old_polygon);
+						}
+						undo_redo->add_do_method(base_control, "queue_redraw");
+						undo_redo->add_undo_method(base_control, "queue_redraw");
+						undo_redo->commit_action(false);
+						emit_signal(SNAME("polygons_changed"));
+						drag_type = DRAG_TYPE_NONE;
+					} else {
+						drag_type = DRAG_TYPE_PAN;
+						drag_last_pos = mb->get_position();
+					}
+				} else {
+					drag_type = DRAG_TYPE_PAN;
+					drag_last_pos = mb->get_position();
+				}
+			} else {
+				drag_type = DRAG_TYPE_NONE;
+			}
+		} else if (mb->get_button_index() == MouseButton::MIDDLE) {
+			if (mb->is_pressed()) {
+				drag_type = DRAG_TYPE_PAN;
+				drag_last_pos = mb->get_position();
+			} else {
+				drag_type = DRAG_TYPE_NONE;
+			}
+		}
+	}
+
+	base_control->queue_redraw();
+
+	if (!use_undo_redo) {
+		memdelete(undo_redo);
+	}
+}
+
+void GenericTilePolygonIEditor::_set_snap_option(int p_index) {
+	current_snap_option = p_index;
+	button_pixel_snap->set_icon(button_pixel_snap->get_popup()->get_item_icon(p_index));
+	snap_subdivision->set_visible(p_index == SNAP_GRID);
+
+	if (initializing) {
+		return;
+	}
+
+	base_control->queue_redraw();
+	_store_snap_options();
+}
+
+void GenericTilePolygonIEditor::_store_snap_options() {
+	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "tile_snap_option", current_snap_option);
+	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "tile_snap_subdiv", snap_subdivision->get_value());
+}
+
+void GenericTilePolygonIEditor::_toggle_expand(bool p_expand) {
+	if (p_expand) {
+		TileSetEditor::get_singleton()->add_expanded_editor(this);
+	} else {
+		TileSetEditor::get_singleton()->remove_expanded_editor();
+	}
+}
+
+void GenericTilePolygonIEditor::set_use_undo_redo(bool p_use_undo_redo) {
+	use_undo_redo = p_use_undo_redo;
+}
+
+void GenericTilePolygonIEditor::set_tile_set(Ref<TileSet> p_tile_set) {
+	ERR_FAIL_COND(!p_tile_set.is_valid());
+	if (tile_set == p_tile_set) {
+		return;
+	}
+
+	// Set the default tile shape
+	clear_polygons();
+	if (p_tile_set.is_valid()) {
+		Vector<Vector2> polygon = p_tile_set->get_tile_shape_polygon();
+		Vector<Vector2i> polygon_i;
+		for (int i = 0; i < polygon.size(); i++) {
+			polygon_i.push_back(polygon[i] * p_tile_set->get_tile_size());
+		}
+		add_polygon(polygon_i);
+	}
+
+	tile_set = p_tile_set;
+
+	// Set the default zoom value.
+	int default_control_y_size = 200 * EDSCALE;
+	Vector2 zoomed_tile = editor_zoom_widget->get_zoom() * tile_set->get_tile_size();
+	while (zoomed_tile.y < default_control_y_size) {
+		editor_zoom_widget->set_zoom_by_increments(6, false);
+		float current_zoom = editor_zoom_widget->get_zoom();
+		zoomed_tile = current_zoom * tile_set->get_tile_size();
+		if (Math::is_equal_approx(current_zoom, editor_zoom_widget->get_max_zoom())) {
+			break;
+		}
+	}
+	while (zoomed_tile.y > default_control_y_size) {
+		editor_zoom_widget->set_zoom_by_increments(-6, false);
+		float current_zoom = editor_zoom_widget->get_zoom();
+		zoomed_tile = current_zoom * tile_set->get_tile_size();
+		if (Math::is_equal_approx(current_zoom, editor_zoom_widget->get_min_zoom())) {
+			break;
+		}
+	}
+	editor_zoom_widget->set_zoom_by_increments(-6, false);
+	_zoom_changed();
+}
+
+void GenericTilePolygonIEditor::set_background(Ref<Texture2D> p_texture, Rect2 p_region, Vector2i p_offset, bool p_flip_h, bool p_flip_v, bool p_transpose, Color p_modulate) {
+	background_texture = p_texture;
+	background_region = p_region;
+	background_offset = p_offset;
+	background_h_flip = p_flip_h;
+	background_v_flip = p_flip_v;
+	background_transpose = p_transpose;
+	background_modulate = p_modulate;
+	base_control->queue_redraw();
+}
+
+int GenericTilePolygonIEditor::get_polygon_count() {
+	return polygons.size();
+}
+
+int GenericTilePolygonIEditor::add_polygon(const Vector<Point2i> &p_polygon, int p_index) {
+	ERR_FAIL_COND_V(p_polygon.size() < 3, -1);
+	ERR_FAIL_COND_V(!multiple_polygon_mode && polygons.size() >= 1, -1);
+
+	if (p_index < 0) {
+		polygons.push_back(p_polygon);
+		base_control->queue_redraw();
+		button_edit->set_pressed(true);
+		return polygons.size() - 1;
+	} else {
+		polygons.insert(p_index, p_polygon);
+		button_edit->set_pressed(true);
+		base_control->queue_redraw();
+		return p_index;
+	}
+}
+
+void GenericTilePolygonIEditor::remove_polygon(int p_index) {
+	ERR_FAIL_INDEX(p_index, (int)polygons.size());
+	polygons.remove_at(p_index);
+
+	if (polygons.size() == 0) {
+		button_create->set_pressed(true);
+	}
+	base_control->queue_redraw();
+}
+
+void GenericTilePolygonIEditor::clear_polygons() {
+	polygons.clear();
+	base_control->queue_redraw();
+}
+
+void GenericTilePolygonIEditor::set_polygon(int p_polygon_index, const Vector<Point2i> &p_polygon) {
+	ERR_FAIL_INDEX(p_polygon_index, (int)polygons.size());
+	ERR_FAIL_COND(p_polygon.size() < 3);
+	polygons[p_polygon_index] = p_polygon;
+	button_edit->set_pressed(true);
+	base_control->queue_redraw();
+}
+
+Vector<Point2i> GenericTilePolygonIEditor::get_polygon(int p_polygon_index) {
+	ERR_FAIL_INDEX_V(p_polygon_index, (int)polygons.size(), Vector<Point2i>());
+	return polygons[p_polygon_index];
+}
+
+void GenericTilePolygonIEditor::set_polygons_color(Color p_color) {
+	polygon_color = p_color;
+	base_control->queue_redraw();
+}
+
+void GenericTilePolygonIEditor::set_multiple_polygon_mode(bool p_multiple_polygon_mode) {
+	multiple_polygon_mode = p_multiple_polygon_mode;
+}
+
+void GenericTilePolygonIEditor::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (!get_meta("reparented", false)) {
+				button_expand->set_pressed_no_signal(false);
+			}
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			button_expand->set_icon(get_editor_theme_icon(SNAME("DistractionFree")));
+			button_create->set_icon(get_editor_theme_icon(SNAME("CurveCreate")));
+			button_edit->set_icon(get_editor_theme_icon(SNAME("CurveEdit")));
+			button_delete->set_icon(get_editor_theme_icon(SNAME("CurveDelete")));
+			button_center_view->set_icon(get_editor_theme_icon(SNAME("CenterView")));
+			button_advanced_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			button_pixel_snap->get_popup()->set_item_icon(0, get_editor_theme_icon(SNAME("SnapDisable")));
+			button_pixel_snap->get_popup()->set_item_icon(1, get_editor_theme_icon(SNAME("SnapGrid")));
+			button_pixel_snap->set_icon(button_pixel_snap->get_popup()->get_item_icon(current_snap_option));
+
+			PopupMenu *p = button_advanced_menu->get_popup();
+			p->set_item_icon(p->get_item_index(ROTATE_RIGHT), get_editor_theme_icon(SNAME("RotateRight")));
+			p->set_item_icon(p->get_item_index(ROTATE_LEFT), get_editor_theme_icon(SNAME("RotateLeft")));
+			p->set_item_icon(p->get_item_index(FLIP_HORIZONTALLY), get_editor_theme_icon(SNAME("MirrorX")));
+			p->set_item_icon(p->get_item_index(FLIP_VERTICALLY), get_editor_theme_icon(SNAME("MirrorY")));
+		} break;
+	}
+}
+
+void GenericTilePolygonIEditor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_polygon_count"), &GenericTilePolygonIEditor::get_polygon_count);
+	ClassDB::bind_method(D_METHOD("add_polygon", "polygon", "index"), &GenericTilePolygonIEditor::add_polygon, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("remove_polygon", "index"), &GenericTilePolygonIEditor::remove_polygon);
+	ClassDB::bind_method(D_METHOD("clear_polygons"), &GenericTilePolygonIEditor::clear_polygons);
+	ClassDB::bind_method(D_METHOD("set_polygon", "index", "polygon"), &GenericTilePolygonIEditor::set_polygon);
+	ClassDB::bind_method(D_METHOD("get_polygon", "index"), &GenericTilePolygonIEditor::get_polygon);
+
+	ADD_SIGNAL(MethodInfo("polygons_changed"));
+}
+
+GenericTilePolygonIEditor::GenericTilePolygonIEditor() {
+	toolbar = memnew(HBoxContainer);
+	add_child(toolbar);
+
+	tools_button_group.instantiate();
+
+	button_expand = memnew(Button);
+	button_expand->set_theme_type_variation("FlatButton");
+	button_expand->set_toggle_mode(true);
+	button_expand->set_pressed(false);
+	button_expand->set_tooltip_text(TTR("Expand editor"));
+	button_expand->connect("toggled", callable_mp(this, &GenericTilePolygonIEditor::_toggle_expand));
+	toolbar->add_child(button_expand);
+
+	toolbar->add_child(memnew(VSeparator));
+
+	button_create = memnew(Button);
+	button_create->set_theme_type_variation("FlatButton");
+	button_create->set_toggle_mode(true);
+	button_create->set_button_group(tools_button_group);
+	button_create->set_pressed(true);
+	button_create->set_tooltip_text(TTR("Add polygon tool"));
+	toolbar->add_child(button_create);
+
+	button_edit = memnew(Button);
+	button_edit->set_theme_type_variation("FlatButton");
+	button_edit->set_toggle_mode(true);
+	button_edit->set_button_group(tools_button_group);
+	button_edit->set_tooltip_text(TTR("Edit points tool"));
+	toolbar->add_child(button_edit);
+
+	button_delete = memnew(Button);
+	button_delete->set_theme_type_variation("FlatButton");
+	button_delete->set_toggle_mode(true);
+	button_delete->set_button_group(tools_button_group);
+	button_delete->set_tooltip_text(TTR("Delete points tool"));
+	toolbar->add_child(button_delete);
+
+	button_advanced_menu = memnew(MenuButton);
+	button_advanced_menu->set_flat(false);
+	button_advanced_menu->set_theme_type_variation("FlatMenuButton");
+	button_advanced_menu->set_toggle_mode(true);
+	button_advanced_menu->get_popup()->add_item(TTR("Reset to default tile shape"), RESET_TO_DEFAULT_TILE, Key::F);
+	button_advanced_menu->get_popup()->add_item(TTR("Clear"), CLEAR_TILE, Key::C);
+	button_advanced_menu->get_popup()->add_separator();
+	button_advanced_menu->get_popup()->add_item(TTR("Rotate Right"), ROTATE_RIGHT, Key::R);
+	button_advanced_menu->get_popup()->add_item(TTR("Rotate Left"), ROTATE_LEFT, Key::E);
+	button_advanced_menu->get_popup()->add_item(TTR("Flip Horizontally"), FLIP_HORIZONTALLY, Key::H);
+	button_advanced_menu->get_popup()->add_item(TTR("Flip Vertically"), FLIP_VERTICALLY, Key::V);
+	button_advanced_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GenericTilePolygonIEditor::_advanced_menu_item_pressed));
+	button_advanced_menu->set_focus_mode(FOCUS_ALL);
+	toolbar->add_child(button_advanced_menu);
+
+	toolbar->add_child(memnew(VSeparator));
+
+	button_pixel_snap = memnew(MenuButton);
+	toolbar->add_child(button_pixel_snap);
+	button_pixel_snap->set_flat(false);
+	button_pixel_snap->set_theme_type_variation("FlatMenuButton");
+	button_pixel_snap->set_tooltip_text(TTR("Toggle Grid Snap"));
+	button_pixel_snap->get_popup()->add_item(TTR("Disable Snap"), SNAP_NONE);
+	button_pixel_snap->get_popup()->add_item(TTR("Grid Snap"), SNAP_GRID);
+	button_pixel_snap->get_popup()->connect("index_pressed", callable_mp(this, &GenericTilePolygonIEditor::_set_snap_option));
+
+	snap_subdivision = memnew(SpinBox);
+	toolbar->add_child(snap_subdivision);
+	snap_subdivision->get_line_edit()->add_theme_constant_override("minimum_character_width", 2);
+	snap_subdivision->set_min(1);
+	snap_subdivision->set_max(99);
+
+	Control *root = memnew(Control);
+	root->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	root->set_custom_minimum_size(Size2(0, 200 * EDSCALE));
+	root->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	add_child(root);
+
+	panel = memnew(Panel);
+	panel->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	panel->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	root->add_child(panel);
+
+	base_control = memnew(Control);
+	base_control->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
+	base_control->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	base_control->connect(SceneStringName(draw), callable_mp(this, &GenericTilePolygonIEditor::_base_control_draw));
+	base_control->connect(SceneStringName(gui_input), callable_mp(this, &GenericTilePolygonIEditor::_base_control_gui_input));
+	base_control->set_clip_contents(true);
+	base_control->set_focus_mode(Control::FOCUS_CLICK);
+	root->add_child(base_control);
+	snap_subdivision->connect("value_changed", callable_mp((CanvasItem *)base_control, &CanvasItem::queue_redraw).unbind(1));
+	snap_subdivision->connect("value_changed", callable_mp(this, &GenericTilePolygonIEditor::_store_snap_options).unbind(1));
+
+	editor_zoom_widget = memnew(EditorZoomWidget);
+	editor_zoom_widget->setup_zoom_limits(0.125, 128.0);
+	editor_zoom_widget->set_position(Vector2(5, 5));
+	editor_zoom_widget->connect("zoom_changed", callable_mp(this, &GenericTilePolygonIEditor::_zoom_changed).unbind(1));
+	editor_zoom_widget->set_shortcut_context(this);
+	root->add_child(editor_zoom_widget);
+
+	button_center_view = memnew(Button);
+	button_center_view->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_MINSIZE, 5);
+	button_center_view->set_grow_direction_preset(Control::PRESET_TOP_RIGHT);
+	button_center_view->connect(SceneStringName(pressed), callable_mp(this, &GenericTilePolygonIEditor::_center_view));
+	button_center_view->set_theme_type_variation("FlatButton");
+	button_center_view->set_tooltip_text(TTR("Center View"));
+	button_center_view->set_disabled(true);
+	root->add_child(button_center_view);
+
+	snap_subdivision->set_value_no_signal(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_snap_subdiv", 4));
+	_set_snap_option(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_snap_option", SNAP_NONE));
+	initializing = false;
+}
+
 void TileDataDefaultEditor::_property_value_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field) {
 	ERR_FAIL_NULL(dummy_object);
 	dummy_object->set(p_property, p_value);
@@ -1514,9 +2349,9 @@ void TileDataCollisionEditor::_property_selected(const StringName &p_path, int p
 	}
 }
 
-void TileDataCollisionEditor::_polygons_changed() {
+void TileDataCollisionEditor::_polygons_i_changed() {
 	// Update the dummy object properties and their editors.
-	for (int i = 0; i < polygon_editor->get_polygon_count(); i++) {
+	for (int i = 0; i < polygon_i_editor->get_polygon_count(); i++) {
 		StringName one_way_property = vformat("polygon_%d_one_way", i);
 		StringName one_way_margin_property = vformat("polygon_%d_one_way_margin", i);
 
@@ -1556,17 +2391,17 @@ void TileDataCollisionEditor::_polygons_changed() {
 	}
 
 	// Remove unneeded properties and their editors.
-	for (int i = polygon_editor->get_polygon_count(); dummy_object->has_dummy_property(vformat("polygon_%d_one_way", i)); i++) {
+	for (int i = polygon_i_editor->get_polygon_count(); dummy_object->has_dummy_property(vformat("polygon_%d_one_way", i)); i++) {
 		dummy_object->remove_dummy_property(vformat("polygon_%d_one_way", i));
 	}
-	for (int i = polygon_editor->get_polygon_count(); dummy_object->has_dummy_property(vformat("polygon_%d_one_way_margin", i)); i++) {
+	for (int i = polygon_i_editor->get_polygon_count(); dummy_object->has_dummy_property(vformat("polygon_%d_one_way_margin", i)); i++) {
 		dummy_object->remove_dummy_property(vformat("polygon_%d_one_way_margin", i));
 	}
-	for (int i = polygon_editor->get_polygon_count(); property_editors.has(vformat("polygon_%d_one_way", i)); i++) {
+	for (int i = polygon_i_editor->get_polygon_count(); property_editors.has(vformat("polygon_%d_one_way", i)); i++) {
 		property_editors[vformat("polygon_%d_one_way", i)]->queue_free();
 		property_editors.erase(vformat("polygon_%d_one_way", i));
 	}
-	for (int i = polygon_editor->get_polygon_count(); property_editors.has(vformat("polygon_%d_one_way_margin", i)); i++) {
+	for (int i = polygon_i_editor->get_polygon_count(); property_editors.has(vformat("polygon_%d_one_way_margin", i)); i++) {
 		property_editors[vformat("polygon_%d_one_way_margin", i)]->queue_free();
 		property_editors.erase(vformat("polygon_%d_one_way_margin", i));
 	}
@@ -1577,10 +2412,10 @@ Variant TileDataCollisionEditor::_get_painted_value() {
 	dict["linear_velocity"] = dummy_object->get("linear_velocity");
 	dict["angular_velocity"] = dummy_object->get("angular_velocity");
 	Array array;
-	for (int i = 0; i < polygon_editor->get_polygon_count(); i++) {
-		ERR_FAIL_COND_V(polygon_editor->get_polygon(i).size() < 3, Variant());
+	for (int i = 0; i < polygon_i_editor->get_polygon_count(); i++) {
+		ERR_FAIL_COND_V(polygon_i_editor->get_polygon(i).size() < 3, Variant());
 		Dictionary polygon_dict;
-		polygon_dict["points"] = polygon_editor->get_polygon(i);
+		polygon_dict["points"] = polygon_i_editor->get_polygon(i);
 		polygon_dict["one_way"] = dummy_object->get(vformat("polygon_%d_one_way", i));
 		polygon_dict["one_way_margin"] = dummy_object->get(vformat("polygon_%d_one_way_margin", i));
 		array.push_back(polygon_dict);
@@ -1594,15 +2429,15 @@ void TileDataCollisionEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_NULL(tile_data);
 
-	polygon_editor->clear_polygons();
+	polygon_i_editor->clear_polygons();
 	for (int i = 0; i < tile_data->get_collision_polygons_count(physics_layer); i++) {
-		Vector<Vector2> polygon = tile_data->get_collision_polygon_points(physics_layer, i);
+		Vector<Vector2i> polygon = tile_data->get_collision_polygon_points(physics_layer, i);
 		if (polygon.size() >= 3) {
-			polygon_editor->add_polygon(polygon);
+			polygon_i_editor->add_polygon(polygon);
 		}
 	}
 
-	_polygons_changed();
+	_polygons_i_changed();
 	dummy_object->set("linear_velocity", tile_data->get_constant_linear_velocity(physics_layer));
 	dummy_object->set("angular_velocity", tile_data->get_constant_angular_velocity(physics_layer));
 	for (int i = 0; i < tile_data->get_collision_polygons_count(physics_layer); i++) {
@@ -1613,7 +2448,7 @@ void TileDataCollisionEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_
 		E.value->update_property();
 	}
 
-	polygon_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), tile_data->get_texture_origin(), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
+	polygon_i_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), tile_data->get_texture_origin(), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
 }
 
 void TileDataCollisionEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, const Variant &p_value) {
@@ -1632,7 +2467,7 @@ void TileDataCollisionEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_so
 		tile_data->set_collision_polygon_one_way_margin(physics_layer, i, polygon_dict["one_way_margin"]);
 	}
 
-	polygon_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), tile_data->get_texture_origin(), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
+	polygon_i_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), tile_data->get_texture_origin(), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
 }
 
 Variant TileDataCollisionEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
@@ -1686,23 +2521,23 @@ void TileDataCollisionEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile
 }
 
 void TileDataCollisionEditor::_tile_set_changed() {
-	polygon_editor->set_tile_set(tile_set);
-	_polygons_changed();
+	polygon_i_editor->set_tile_set(tile_set);
+	_polygons_i_changed();
 }
 
 void TileDataCollisionEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			polygon_editor->set_polygons_color(get_tree()->get_debug_collisions_color());
+			polygon_i_editor->set_polygons_color(get_tree()->get_debug_collisions_color());
 		} break;
 	}
 }
 
 TileDataCollisionEditor::TileDataCollisionEditor() {
-	polygon_editor = memnew(GenericTilePolygonEditor);
-	polygon_editor->set_multiple_polygon_mode(true);
-	polygon_editor->connect("polygons_changed", callable_mp(this, &TileDataCollisionEditor::_polygons_changed));
-	add_child(polygon_editor);
+	polygon_i_editor = memnew(GenericTilePolygonIEditor);
+	polygon_i_editor->set_multiple_polygon_mode(true);
+	polygon_i_editor->connect("polygons_changed", callable_mp(this, &TileDataCollisionEditor::_polygons_i_changed));
+	add_child(polygon_i_editor);
 
 	dummy_object->add_dummy_property("linear_velocity");
 	dummy_object->set("linear_velocity", Vector2());
@@ -1729,7 +2564,7 @@ TileDataCollisionEditor::TileDataCollisionEditor() {
 	add_child(angular_velocity_editor);
 	property_editors["angular_velocity"] = angular_velocity_editor;
 
-	_polygons_changed();
+	_polygons_i_changed();
 }
 
 TileDataCollisionEditor::~TileDataCollisionEditor() {
@@ -1756,12 +2591,12 @@ void TileDataCollisionEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfor
 
 	Ref<Texture2D> one_way_icon = get_editor_theme_icon(SNAME("OneWayTile"));
 	for (int i = 0; i < tile_data->get_collision_polygons_count(physics_layer); i++) {
-		Vector<Vector2> polygon = tile_data->get_collision_polygon_points(physics_layer, i);
+		Vector<Vector2i> polygon = tile_data->get_collision_polygon_points(physics_layer, i);
 		if (polygon.size() < 3) {
 			continue;
 		}
 
-		p_canvas_item->draw_polygon(polygon, color);
+		p_canvas_item->draw_polygon_i(polygon, color);
 
 		if (tile_data->is_collision_polygon_one_way(physics_layer, i)) {
 			PackedVector2Array uvs;
@@ -1774,7 +2609,7 @@ void TileDataCollisionEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfor
 
 			Vector<Color> color2;
 			color2.push_back(Color(1, 1, 1, 0.4));
-			p_canvas_item->draw_polygon(polygon, color2, uvs, one_way_icon);
+			p_canvas_item->draw_polygon_i(polygon, color2, uvs, one_way_icon);
 		}
 	}
 

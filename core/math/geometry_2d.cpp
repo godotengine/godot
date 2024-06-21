@@ -71,6 +71,40 @@ Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(const Vector<Poi
 	return decomp;
 }
 
+Vector<Vector<Vector2i>> Geometry2D::decompose_polygon_in_convex(const Vector<Point2i> &polygon) {
+	Vector<Vector<Vector2i>> decomp;
+	List<TPPLPolyI> in_poly, out_poly;
+
+	TPPLPolyI inp;
+	inp.Init(polygon.size());
+	for (int i = 0; i < polygon.size(); i++) {
+		inp.GetPoint(i) = polygon[i];
+	}
+	inp.SetOrientation(TPPL_ORIENTATION_CCW);
+	in_poly.push_back(inp);
+	TPPLPartitionI tpart;
+	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { // Failed.
+		ERR_PRINT("Convex decomposing failed!");
+		return decomp;
+	}
+
+	decomp.resize(out_poly.size());
+	int idx = 0;
+	for (List<TPPLPolyI>::Element *I = out_poly.front(); I; I = I->next()) {
+		TPPLPolyI &tp = I->get();
+
+		decomp.write[idx].resize(tp.GetNumPoints());
+
+		for (int64_t i = 0; i < tp.GetNumPoints(); i++) {
+			decomp.write[idx].write[i] = tp.GetPoint(i);
+		}
+
+		idx++;
+	}
+
+	return decomp;
+}
+
 struct _AtlasWorkRect {
 	Size2i s;
 	Point2i p;

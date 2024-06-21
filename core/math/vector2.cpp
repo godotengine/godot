@@ -97,16 +97,16 @@ Vector2 Vector2::sign() const {
 	return Vector2(SIGN(x), SIGN(y));
 }
 
-Vector2 Vector2::floor() const {
-	return Vector2(Math::floor(x), Math::floor(y));
+Vector2i Vector2::floor() const {
+	return Vector2i(Math::floor(x), Math::floor(y));
 }
 
-Vector2 Vector2::ceil() const {
-	return Vector2(Math::ceil(x), Math::ceil(y));
+Vector2i Vector2::ceil() const {
+	return Vector2i(Math::ceil(x), Math::ceil(y));
 }
 
-Vector2 Vector2::round() const {
-	return Vector2(Math::round(x), Math::round(y));
+Vector2i Vector2::round() const {
+	return Vector2i(Math::round(x), Math::round(y));
 }
 
 Vector2 Vector2::rotated(real_t p_by) const {

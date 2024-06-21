@@ -885,6 +885,7 @@ public:
 
 	FUNC6(canvas_item_add_line, RID, const Point2 &, const Point2 &, const Color &, float, bool)
 	FUNC5(canvas_item_add_polyline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
+	FUNC5(canvas_item_add_polyline_i, RID, const Vector<Point2i> &, const Vector<Color> &, float, bool)
 	FUNC5(canvas_item_add_multiline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
 	FUNC4(canvas_item_add_rect, RID, const Rect2 &, const Color &, bool)
 	FUNC5(canvas_item_add_circle, RID, const Point2 &, float, const Color &, bool)
@@ -895,6 +896,7 @@ public:
 	FUNC10(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, NinePatchAxisMode, NinePatchAxisMode, bool, const Color &)
 	FUNC5(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID)
 	FUNC5(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID)
+	FUNC5(canvas_item_add_polygon_i, RID, const Vector<Point2i> &, const Vector<Color> &, const Vector<Point2> &, RID)
 	FUNC9(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, const Vector<int> &, const Vector<float> &, RID, int)
 	FUNC5(canvas_item_add_mesh, RID, const RID &, const Transform2D &, const Color &, RID)
 	FUNC3(canvas_item_add_multimesh, RID, RID, RID)

@@ -511,6 +511,10 @@ struct GDScriptUtilityFunctionsDefinitions {
 				Vector<Vector2> d = *p_args[0];
 				*r_ret = d.size();
 			} break;
+			case Variant::PACKED_VECTOR2I_ARRAY: {
+				Vector<Vector2i> d = *p_args[0];
+				*r_ret = d.size();
+			} break;
 			case Variant::PACKED_VECTOR3_ARRAY: {
 				Vector<Vector3> d = *p_args[0];
 				*r_ret = d.size();

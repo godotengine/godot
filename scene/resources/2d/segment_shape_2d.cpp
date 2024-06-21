@@ -48,21 +48,21 @@ void SegmentShape2D::_update_shape() {
 	emit_changed();
 }
 
-void SegmentShape2D::set_a(const Vector2 &p_a) {
+void SegmentShape2D::set_a(const Vector2i &p_a) {
 	a = p_a;
 	_update_shape();
 }
 
-Vector2 SegmentShape2D::get_a() const {
+Vector2i SegmentShape2D::get_a() const {
 	return a;
 }
 
-void SegmentShape2D::set_b(const Vector2 &p_b) {
+void SegmentShape2D::set_b(const Vector2i &p_b) {
 	b = p_b;
 	_update_shape();
 }
 
-Vector2 SegmentShape2D::get_b() const {
+Vector2i SegmentShape2D::get_b() const {
 	return b;
 }
 
@@ -70,8 +70,8 @@ void SegmentShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	RenderingServer::get_singleton()->canvas_item_add_line(p_to_rid, a, b, p_color, 3);
 }
 
-Rect2 SegmentShape2D::get_rect() const {
-	Rect2 rect;
+Rect2i SegmentShape2D::get_rect() const {
+	Rect2i rect;
 	rect.position = a;
 	rect.expand_to(b);
 	return rect;

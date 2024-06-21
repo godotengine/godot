@@ -132,11 +132,8 @@ void PhysicsServer2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_world_boundary_shape_create);
 	GDVIRTUAL_BIND(_separation_ray_shape_create);
 	GDVIRTUAL_BIND(_segment_shape_create);
-	GDVIRTUAL_BIND(_circle_shape_create);
 	GDVIRTUAL_BIND(_rectangle_shape_create);
-	GDVIRTUAL_BIND(_capsule_shape_create);
 	GDVIRTUAL_BIND(_convex_polygon_shape_create);
-	GDVIRTUAL_BIND(_concave_polygon_shape_create);
 
 	GDVIRTUAL_BIND(_shape_set_data, "shape", "data");
 	GDVIRTUAL_BIND(_shape_set_custom_solver_bias, "shape", "bias");

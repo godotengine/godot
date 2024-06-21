@@ -56,9 +56,9 @@ void WorldBoundaryShape2D::_update_shape() {
 	emit_changed();
 }
 
-void WorldBoundaryShape2D::set_normal(const Vector2 &p_normal) {
+void WorldBoundaryShape2D::set_normal(const Vector2i &p_normal) {
 	// Can be non-unit but prevent zero.
-	ERR_FAIL_COND(p_normal.is_zero_approx());
+	ERR_FAIL_COND(p_normal.is_zero());
 	if (normal == p_normal) {
 		return;
 	}
@@ -66,7 +66,7 @@ void WorldBoundaryShape2D::set_normal(const Vector2 &p_normal) {
 	_update_shape();
 }
 
-void WorldBoundaryShape2D::set_distance(real_t p_distance) {
+void WorldBoundaryShape2D::set_distance(int32_t p_distance) {
 	if (distance == p_distance) {
 		return;
 	}
@@ -74,11 +74,11 @@ void WorldBoundaryShape2D::set_distance(real_t p_distance) {
 	_update_shape();
 }
 
-Vector2 WorldBoundaryShape2D::get_normal() const {
+Vector2i WorldBoundaryShape2D::get_normal() const {
 	return normal;
 }
 
-real_t WorldBoundaryShape2D::get_distance() const {
+int32_t WorldBoundaryShape2D::get_distance() const {
 	return distance;
 }
 
@@ -123,12 +123,12 @@ void WorldBoundaryShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	RS::get_singleton()->canvas_item_add_polyline(p_to_rid, arrow_points, { arrow_color }, line_width / 2);
 }
 
-Rect2 WorldBoundaryShape2D::get_rect() const {
-	Vector2 point = distance * normal;
+Rect2i WorldBoundaryShape2D::get_rect() const {
+	Vector2i point = distance * normal;
 
-	Vector2 l1[2] = { point - normal.orthogonal() * 100, point + normal.orthogonal() * 100 };
-	Vector2 l2[2] = { point, point + normal * 30 };
-	Rect2 rect;
+	Vector2i l1[2] = { point - normal.orthogonal() * 100, point + normal.orthogonal() * 100 };
+	Vector2i l2[2] = { point, point + normal * 30 };
+	Rect2i rect;
 	rect.position = l1[0];
 	rect.expand_to(l1[1]);
 	rect.expand_to(l2[0]);

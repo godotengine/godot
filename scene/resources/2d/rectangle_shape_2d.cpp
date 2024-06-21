@@ -33,7 +33,7 @@
 #include "servers/physics_server_2d.h"
 #include "servers/rendering_server.h"
 void RectangleShape2D::_update_shape() {
-	PhysicsServer2D::get_singleton()->shape_set_data(get_rid(), size * 0.5);
+	PhysicsServer2D::get_singleton()->shape_set_data(get_rid(), size);
 	emit_changed();
 }
 
@@ -41,7 +41,7 @@ void RectangleShape2D::_update_shape() {
 bool RectangleShape2D::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "extents") { // Compatibility with Godot 3.x.
 		// Convert to `size`, twice as big.
-		set_size((Size2)p_value * 2);
+		set_size((Size2i)p_value * 2);
 		return true;
 	}
 	return false;
@@ -57,27 +57,27 @@ bool RectangleShape2D::_get(const StringName &p_name, Variant &r_property) const
 }
 #endif // DISABLE_DEPRECATED
 
-void RectangleShape2D::set_size(const Size2 &p_size) {
+void RectangleShape2D::set_size(const Size2i &p_size) {
 	ERR_FAIL_COND_MSG(p_size.x < 0 || p_size.y < 0, "RectangleShape2D size cannot be negative.");
 	size = p_size;
 	_update_shape();
 }
 
-Size2 RectangleShape2D::get_size() const {
+Size2i RectangleShape2D::get_size() const {
 	return size;
 }
 
 void RectangleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
-	RenderingServer::get_singleton()->canvas_item_add_rect(p_to_rid, Rect2(-size * 0.5, size), p_color);
+	RenderingServer::get_singleton()->canvas_item_add_rect(p_to_rid, Rect2(-(size / 2), size), p_color);
 	if (is_collision_outline_enabled()) {
 		// Draw an outlined rectangle to make individual shapes easier to distinguish.
 		Vector<Vector2> stroke_points;
 		stroke_points.resize(5);
-		stroke_points.write[0] = -size * 0.5;
-		stroke_points.write[1] = Vector2(size.x, -size.y) * 0.5;
-		stroke_points.write[2] = size * 0.5;
-		stroke_points.write[3] = Vector2(-size.x, size.y) * 0.5;
-		stroke_points.write[4] = -size * 0.5;
+		stroke_points.write[0] = -(size / 2);
+		stroke_points.write[1] = Vector2i(size.x + 1, -size.y) / 2;
+		stroke_points.write[2] = (size + Vector2i(1, 1)) / 2;
+		stroke_points.write[3] = Vector2i(-size.x, size.y + 1) / 2;
+		stroke_points.write[4] = -(size / 2);
 
 		Vector<Color> stroke_colors = { Color(p_color, 1.0) };
 
@@ -85,8 +85,8 @@ void RectangleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	}
 }
 
-Rect2 RectangleShape2D::get_rect() const {
-	return Rect2(-size * 0.5, size);
+Rect2i RectangleShape2D::get_rect() const {
+	return Rect2i(-(size / 2), size);
 }
 
 real_t RectangleShape2D::get_enclosing_radius() const {
@@ -102,6 +102,6 @@ void RectangleShape2D::_bind_methods() {
 
 RectangleShape2D::RectangleShape2D() :
 		Shape2D(PhysicsServer2D::get_singleton()->rectangle_shape_create()) {
-	size = Size2(20, 20);
+	size = Size2i(20, 20);
 	_update_shape();
 }

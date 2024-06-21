@@ -660,6 +660,14 @@ void CanvasItem::draw_polyline(const Vector<Point2> &p_points, const Color &p_co
 	RenderingServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, colors, p_width, p_antialiased);
 }
 
+void CanvasItem::draw_polyline_i(const Vector<Point2i> &p_points, const Color &p_color, real_t p_width, bool p_antialiased) {
+	ERR_THREAD_GUARD;
+	ERR_DRAW_GUARD;
+
+	Vector<Color> colors = { p_color };
+	RenderingServer::get_singleton()->canvas_item_add_polyline_i(canvas_item, p_points, colors, p_width, p_antialiased);
+}
+
 void CanvasItem::draw_polyline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, real_t p_width, bool p_antialiased) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
@@ -871,8 +879,36 @@ void CanvasItem::draw_polygon(const Vector<Point2> &p_points, const Vector<Color
 	}
 }
 
+void CanvasItem::draw_polygon_i(const Vector<Point2i> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture) {
+	ERR_THREAD_GUARD;
+	ERR_DRAW_GUARD;
+
+	const Ref<AtlasTexture> atlas = p_texture;
+	if (atlas.is_valid() && atlas->get_atlas().is_valid()) {
+		const Ref<Texture2D> &texture = atlas->get_atlas();
+		const Vector2 atlas_size = texture->get_size();
+
+		const Vector2 remap_min = atlas->get_region().position / atlas_size;
+		const Vector2 remap_max = atlas->get_region().get_end() / atlas_size;
+
+		PackedVector2Array uvs = p_uvs;
+		for (Vector2 &p : uvs) {
+			p.x = Math::remap(p.x, 0, 1, remap_min.x, remap_max.x);
+			p.y = Math::remap(p.y, 0, 1, remap_min.y, remap_max.y);
+		}
+		RenderingServer::get_singleton()->canvas_item_add_polygon_i(canvas_item, p_points, p_colors, uvs, texture->get_rid());
+	} else {
+		RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+		RenderingServer::get_singleton()->canvas_item_add_polygon_i(canvas_item, p_points, p_colors, p_uvs, texture_rid);
+	}
+}
+
 void CanvasItem::draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture) {
 	draw_polygon(p_points, { p_color }, p_uvs, p_texture);
+}
+
+void CanvasItem::draw_colored_polygon_i(const Vector<Point2i> &p_points, const Color &p_color, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture) {
+	draw_polygon_i(p_points, { p_color }, p_uvs, p_texture);
 }
 
 void CanvasItem::draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture2D> &p_texture, const Transform2D &p_transform, const Color &p_modulate) {
@@ -1212,7 +1248,9 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_style_box", "style_box", "rect"), &CanvasItem::draw_style_box);
 	ClassDB::bind_method(D_METHOD("draw_primitive", "points", "colors", "uvs", "texture"), &CanvasItem::draw_primitive, DEFVAL(Ref<Texture2D>()));
 	ClassDB::bind_method(D_METHOD("draw_polygon", "points", "colors", "uvs", "texture"), &CanvasItem::draw_polygon, DEFVAL(PackedVector2Array()), DEFVAL(Ref<Texture2D>()));
+	ClassDB::bind_method(D_METHOD("draw_polygon_i", "points", "colors", "uvs", "texture"), &CanvasItem::draw_polygon_i, DEFVAL(PackedVector2iArray()), DEFVAL(Ref<Texture2D>()));
 	ClassDB::bind_method(D_METHOD("draw_colored_polygon", "points", "color", "uvs", "texture"), &CanvasItem::draw_colored_polygon, DEFVAL(PackedVector2Array()), DEFVAL(Ref<Texture2D>()));
+	ClassDB::bind_method(D_METHOD("draw_colored_polygon_i", "points", "color", "uvs", "texture"), &CanvasItem::draw_colored_polygon_i, DEFVAL(PackedVector2iArray()), DEFVAL(Ref<Texture2D>()));
 	ClassDB::bind_method(D_METHOD("draw_string", "font", "pos", "text", "alignment", "width", "font_size", "modulate", "justification_flags", "direction", "orientation"), &CanvasItem::draw_string, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
 	ClassDB::bind_method(D_METHOD("draw_multiline_string", "font", "pos", "text", "alignment", "width", "font_size", "max_lines", "modulate", "brk_flags", "justification_flags", "direction", "orientation"), &CanvasItem::draw_multiline_string, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
 	ClassDB::bind_method(D_METHOD("draw_string_outline", "font", "pos", "text", "alignment", "width", "font_size", "size", "modulate", "justification_flags", "direction", "orientation"), &CanvasItem::draw_string_outline, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));

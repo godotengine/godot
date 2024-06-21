@@ -69,7 +69,8 @@ Rect2 OccluderPolygon2D::_edit_get_rect() const {
 
 bool OccluderPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	if (closed) {
-		return Geometry2D::is_point_in_polygon(p_point, Variant(polygon));
+		Vector<Vector2> p_polygon = Variant(polygon);
+		return Geometry2D::is_point_in_polygon(p_point, p_polygon);
 	} else {
 		const real_t d = LINE_GRAB_WIDTH / 2 + p_tolerance;
 		const Vector2 *points = polygon.ptr();
@@ -136,7 +137,7 @@ void OccluderPolygon2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "closed"), "set_closed", "is_closed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mode", PROPERTY_HINT_ENUM, "Disabled,ClockWise,CounterClockWise"), "set_cull_mode", "get_cull_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2I_ARRAY, "polygon"), "set_polygon", "get_polygon");
 
 	BIND_ENUM_CONSTANT(CULL_DISABLED);
 	BIND_ENUM_CONSTANT(CULL_CLOCKWISE);

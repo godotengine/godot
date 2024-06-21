@@ -221,22 +221,16 @@ public:
 		SHAPE_WORLD_BOUNDARY, ///< plane:"plane"
 		SHAPE_SEPARATION_RAY, ///< float:"length"
 		SHAPE_SEGMENT, ///< float:"length"
-		SHAPE_CIRCLE, ///< float:"radius"
 		SHAPE_RECTANGLE, ///< vec3:"extents"
-		SHAPE_CAPSULE,
 		SHAPE_CONVEX_POLYGON, ///< array of planes:"planes"
-		SHAPE_CONCAVE_POLYGON, ///< Vector2 array:"triangles" , or Dictionary with "indices" (int array) and "triangles" (Vector2 array)
 		SHAPE_CUSTOM, ///< Server-Implementation based custom shape, calling shape_create() with this value will result in an error
 	};
 
 	virtual RID world_boundary_shape_create() = 0;
 	virtual RID separation_ray_shape_create() = 0;
 	virtual RID segment_shape_create() = 0;
-	virtual RID circle_shape_create() = 0;
 	virtual RID rectangle_shape_create() = 0;
-	virtual RID capsule_shape_create() = 0;
 	virtual RID convex_polygon_shape_create() = 0;
-	virtual RID concave_polygon_shape_create() = 0;
 
 	virtual void shape_set_data(RID p_shape, const Variant &p_data) = 0;
 	virtual void shape_set_custom_solver_bias(RID p_shape, real_t p_bias) = 0;

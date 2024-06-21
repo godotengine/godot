@@ -71,7 +71,8 @@ bool NavigationPolygon::_edit_is_selected_on_click(const Point2 &p_point, double
 		if (outline_size < 3) {
 			continue;
 		}
-		if (Geometry2D::is_point_in_polygon(p_point, Variant(outline))) {
+		Vector<Vector2> p_outline = Variant(outline);
+		if (Geometry2D::is_point_in_polygon(p_point, p_outline)) {
 			return true;
 		}
 	}

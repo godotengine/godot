@@ -107,6 +107,7 @@ uint32_t GDScriptByteCodeGenerator::add_temporary(const GDScriptDataType &p_type
 			case Variant::PACKED_FLOAT64_ARRAY:
 			case Variant::PACKED_STRING_ARRAY:
 			case Variant::PACKED_VECTOR2_ARRAY:
+			case Variant::PACKED_VECTOR2I_ARRAY:
 			case Variant::PACKED_VECTOR3_ARRAY:
 			case Variant::PACKED_COLOR_ARRAY:
 			case Variant::PACKED_VECTOR4_ARRAY:
@@ -537,6 +538,9 @@ void GDScriptByteCodeGenerator::write_type_adjust(const Address &p_target, Varia
 			break;
 		case Variant::PACKED_VECTOR2_ARRAY:
 			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_VECTOR2_ARRAY);
+			break;
+		case Variant::PACKED_VECTOR2I_ARRAY:
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_VECTOR2I_ARRAY);
 			break;
 		case Variant::PACKED_VECTOR3_ARRAY:
 			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_VECTOR3_ARRAY);
@@ -1568,6 +1572,10 @@ void GDScriptByteCodeGenerator::write_for(const Address &p_variable, bool p_use_
 				case Variant::PACKED_VECTOR2_ARRAY:
 					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_VECTOR2_ARRAY;
 					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_VECTOR2_ARRAY;
+					break;
+				case Variant::PACKED_VECTOR2I_ARRAY:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_VECTOR2I_ARRAY;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_VECTOR2I_ARRAY;
 					break;
 				case Variant::PACKED_VECTOR3_ARRAY:
 					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_VECTOR3_ARRAY;

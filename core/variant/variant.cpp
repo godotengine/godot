@@ -160,6 +160,9 @@ String Variant::get_type_name(Variant::Type p_type) {
 		case PACKED_VECTOR2_ARRAY: {
 			return "PackedVector2Array";
 		}
+		case PACKED_VECTOR2I_ARRAY: {
+			return "PackedVector2iArray";
+		}
 		case PACKED_VECTOR3_ARRAY: {
 			return "PackedVector3Array";
 		}
@@ -405,6 +408,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 				PACKED_STRING_ARRAY,
 				PACKED_COLOR_ARRAY,
 				PACKED_VECTOR2_ARRAY,
+				PACKED_VECTOR2I_ARRAY,
 				PACKED_VECTOR3_ARRAY,
 				PACKED_VECTOR4_ARRAY,
 				NIL
@@ -462,6 +466,14 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 			static const Type valid[] = {
 				ARRAY,
 				NIL
+			};
+			valid_types = valid;
+
+		} break;
+		case PACKED_VECTOR2I_ARRAY: {
+			static const Type valid[] = {
+					ARRAY,
+					NIL
 			};
 			valid_types = valid;
 
@@ -994,6 +1006,9 @@ bool Variant::is_zero() const {
 		case PACKED_VECTOR2_ARRAY: {
 			return PackedArrayRef<Vector2>::get_array(_data.packed_array).size() == 0;
 		}
+		case PACKED_VECTOR2I_ARRAY: {
+			return PackedArrayRef<Vector2i>::get_array(_data.packed_array).size() == 0;
+		}
 		case PACKED_VECTOR3_ARRAY: {
 			return PackedArrayRef<Vector3>::get_array(_data.packed_array).size() == 0;
 		}
@@ -1247,6 +1262,12 @@ void Variant::reference(const Variant &p_variant) {
 				_data.packed_array = PackedArrayRef<Vector2>::create();
 			}
 		} break;
+		case PACKED_VECTOR2I_ARRAY: {
+			_data.packed_array = static_cast<PackedArrayRef<Vector2i> *>(p_variant._data.packed_array)->reference();
+			if (!_data.packed_array) {
+				_data.packed_array = PackedArrayRef<Vector2i>::create();
+			}
+		} break;
 		case PACKED_VECTOR3_ARRAY: {
 			_data.packed_array = static_cast<PackedArrayRef<Vector3> *>(p_variant._data.packed_array)->reference();
 			if (!_data.packed_array) {
@@ -1431,6 +1452,9 @@ void Variant::_clear_internal() {
 			PackedArrayRefBase::destroy(_data.packed_array);
 		} break;
 		case PACKED_VECTOR2_ARRAY: {
+			PackedArrayRefBase::destroy(_data.packed_array);
+		} break;
+		case PACKED_VECTOR2I_ARRAY: {
 			PackedArrayRefBase::destroy(_data.packed_array);
 		} break;
 		case PACKED_VECTOR3_ARRAY: {
@@ -1784,6 +1808,9 @@ String Variant::stringify(int recursion_count) const {
 		// Packed arrays cannot contain recursive structures, the recursion_count increment is not needed.
 		case PACKED_VECTOR2_ARRAY: {
 			return stringify_vector(operator PackedVector2Array(), recursion_count);
+		}
+		case PACKED_VECTOR2I_ARRAY: {
+			return stringify_vector(operator PackedVector2iArray(), recursion_count);
 		}
 		case PACKED_VECTOR3_ARRAY: {
 			return stringify_vector(operator PackedVector3Array(), recursion_count);
@@ -2220,6 +2247,9 @@ inline DA _convert_array_from_variant(const Variant &p_variant) {
 		case Variant::PACKED_VECTOR2_ARRAY: {
 			return _convert_array<DA, PackedVector2Array>(p_variant.operator PackedVector2Array());
 		}
+		case Variant::PACKED_VECTOR2I_ARRAY: {
+			return _convert_array<DA, PackedVector2iArray>(p_variant.operator PackedVector2iArray());
+		}
 		case Variant::PACKED_VECTOR3_ARRAY: {
 			return _convert_array<DA, PackedVector3Array>(p_variant.operator PackedVector3Array());
 		}
@@ -2296,6 +2326,14 @@ Variant::operator PackedVector2Array() const {
 		return static_cast<PackedArrayRef<Vector2> *>(_data.packed_array)->array;
 	} else {
 		return _convert_array_from_variant<PackedVector2Array>(*this);
+	}
+}
+
+Variant::operator PackedVector2iArray() const {
+	if (type == PACKED_VECTOR2I_ARRAY) {
+		return static_cast<PackedArrayRef<Vector2i> *>(_data.packed_array)->array;
+	} else {
+		return _convert_array_from_variant<PackedVector2iArray>(*this);
 	}
 }
 
@@ -2671,6 +2709,11 @@ Variant::Variant(const PackedVector2Array &p_vector2_array) :
 	_data.packed_array = PackedArrayRef<Vector2>::create(p_vector2_array);
 }
 
+Variant::Variant(const PackedVector2iArray &p_vector2i_array) :
+		type(PACKED_VECTOR2I_ARRAY) {
+	_data.packed_array = PackedArrayRef<Vector2i>::create(p_vector2i_array);
+}
+
 Variant::Variant(const PackedVector3Array &p_vector3_array) :
 		type(PACKED_VECTOR3_ARRAY) {
 	_data.packed_array = PackedArrayRef<Vector3>::create(p_vector3_array);
@@ -2897,6 +2940,9 @@ void Variant::operator=(const Variant &p_variant) {
 		} break;
 		case PACKED_VECTOR2_ARRAY: {
 			_data.packed_array = PackedArrayRef<Vector2>::reference_from(_data.packed_array, p_variant._data.packed_array);
+		} break;
+		case PACKED_VECTOR2I_ARRAY: {
+			_data.packed_array = PackedArrayRef<Vector2i>::reference_from(_data.packed_array, p_variant._data.packed_array);
 		} break;
 		case PACKED_VECTOR3_ARRAY: {
 			_data.packed_array = PackedArrayRef<Vector3>::reference_from(_data.packed_array, p_variant._data.packed_array);
@@ -3186,6 +3232,23 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 				for (int i = 0; i < len; i++) {
 					hash = hash_murmur3_one_real(r[i].x, hash);
 					hash = hash_murmur3_one_real(r[i].y, hash);
+				}
+				hash = hash_fmix32(hash);
+			}
+
+			return hash;
+		} break;
+		case PACKED_VECTOR2I_ARRAY: {
+			uint32_t hash = HASH_MURMUR3_SEED;
+			const PackedVector2iArray &arr = PackedArrayRef<Vector2i>::get_array(_data.packed_array);
+			int len = arr.size();
+
+			if (likely(len)) {
+				const Vector2i *r = arr.ptr();
+
+				for (int i = 0; i < len; i++) {
+					hash = hash_murmur3_one_32(r[i].x, hash);
+					hash = hash_murmur3_one_32(r[i].y, hash);
 				}
 				hash = hash_fmix32(hash);
 			}
@@ -3544,6 +3607,7 @@ bool Variant::identity_compare(const Variant &p_variant) const {
 		case PACKED_FLOAT64_ARRAY:
 		case PACKED_STRING_ARRAY:
 		case PACKED_VECTOR2_ARRAY:
+		case PACKED_VECTOR2I_ARRAY:
 		case PACKED_VECTOR3_ARRAY:
 		case PACKED_COLOR_ARRAY:
 		case PACKED_VECTOR4_ARRAY: {

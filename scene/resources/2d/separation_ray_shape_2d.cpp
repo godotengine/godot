@@ -70,10 +70,10 @@ void SeparationRayShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	RS::get_singleton()->canvas_item_add_primitive(p_to_rid, pts, cols, Vector<Point2>(), RID());
 }
 
-Rect2 SeparationRayShape2D::get_rect() const {
-	Rect2 rect;
-	rect.position = Vector2();
-	rect.expand_to(Vector2(0, length));
+Rect2i SeparationRayShape2D::get_rect() const {
+	Rect2i rect;
+	rect.position = Vector2i();
+	rect.expand_to(Vector2i(0, length));
 	rect = rect.grow(Math_SQRT12 * 4);
 	return rect;
 }
@@ -93,12 +93,12 @@ void SeparationRayShape2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_slope"), "set_slide_on_slope", "get_slide_on_slope");
 }
 
-void SeparationRayShape2D::set_length(real_t p_length) {
+void SeparationRayShape2D::set_length(int32_t p_length) {
 	length = p_length;
 	_update_shape();
 }
 
-real_t SeparationRayShape2D::get_length() const {
+int32_t SeparationRayShape2D::get_length() const {
 	return length;
 }
 

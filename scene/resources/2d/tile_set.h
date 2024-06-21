@@ -848,7 +848,7 @@ private:
 	// Physics
 	struct PhysicsLayerTileData {
 		struct PolygonShapeTileData {
-			LocalVector<Vector2> polygon;
+			LocalVector<Vector2i> polygon;
 			LocalVector<Ref<ConvexPolygonShape2D>> shapes;
 			mutable HashMap<int, LocalVector<Ref<ConvexPolygonShape2D>>> transformed_shapes;
 			bool one_way = false;
@@ -952,8 +952,8 @@ public:
 	int get_collision_polygons_count(int p_layer_id) const;
 	void add_collision_polygon(int p_layer_id);
 	void remove_collision_polygon(int p_layer_id, int p_polygon_index);
-	void set_collision_polygon_points(int p_layer_id, int p_polygon_index, Vector<Vector2> p_polygon);
-	Vector<Vector2> get_collision_polygon_points(int p_layer_id, int p_polygon_index) const;
+	void set_collision_polygon_points(int p_layer_id, int p_polygon_index, Vector<Vector2i> p_polygon);
+	Vector<Vector2i> get_collision_polygon_points(int p_layer_id, int p_polygon_index) const;
 	void set_collision_polygon_one_way(int p_layer_id, int p_polygon_index, bool p_one_way);
 	bool is_collision_polygon_one_way(int p_layer_id, int p_polygon_index) const;
 	void set_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index, float p_one_way_margin);
@@ -988,6 +988,7 @@ public:
 
 	// Polygons.
 	static PackedVector2Array get_transformed_vertices(const PackedVector2Array &p_vertices, bool p_flip_h, bool p_flip_v, bool p_transpose);
+	static PackedVector2iArray get_transformed_vertices(const PackedVector2iArray &p_vertices, bool p_flip_h, bool p_flip_v, bool p_transpose);
 };
 
 VARIANT_ENUM_CAST(TileSet::CellNeighbor);

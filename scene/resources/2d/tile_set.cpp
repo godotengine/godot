@@ -3472,7 +3472,7 @@ void TileSet::_compatibility_conversion() {
 						if (csd.autotile_coords == coords) {
 							Ref<ConvexPolygonShape2D> convex_shape = csd.shape; // Only ConvexPolygonShape2D are supported, which is the default type used by the 3.x editor
 							if (convex_shape.is_valid()) {
-								Vector<Vector2> polygon = convex_shape->get_points();
+								Vector<Vector2i> polygon = convex_shape->get_points();
 								for (int point_index = 0; point_index < polygon.size(); point_index++) {
 									polygon.write[point_index] = xform.xform(csd.transform.xform(polygon[point_index]) - ctd->region.get_size() / 2.0);
 								}
@@ -3590,7 +3590,7 @@ void TileSet::_compatibility_conversion() {
 								if (csd.autotile_coords == coords) {
 									Ref<ConvexPolygonShape2D> convex_shape = csd.shape; // Only ConvexPolygonShape2D are supported, which is the default type used by the 3.x editor
 									if (convex_shape.is_valid()) {
-										Vector<Vector2> polygon = convex_shape->get_points();
+										Vector<Vector2i> polygon = convex_shape->get_points();
 										for (int point_index = 0; point_index < polygon.size(); point_index++) {
 											polygon.write[point_index] = xform.xform(csd.transform.xform(polygon[point_index]) - ctd->autotile_tile_size / 2.0);
 										}
@@ -3628,7 +3628,7 @@ void TileSet::_compatibility_conversion() {
 		for (int k = 0; k < ctd->shapes.size(); k++) {
 			Ref<ConvexPolygonShape2D> convex = ctd->shapes[k].shape;
 			if (convex.is_valid()) {
-				Vector<Vector2> points = convex->get_points();
+				Vector<Vector2i> points = convex->get_points();
 				for (int i_point = 0; i_point < points.size(); i_point++) {
 					points.write[i_point] = points[i_point] - get_tile_size() / 2;
 				}
@@ -6290,7 +6290,7 @@ void TileData::remove_collision_polygon(int p_layer_id, int p_polygon_index) {
 	emit_signal(CoreStringName(changed));
 }
 
-void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index, Vector<Vector2> p_polygon) {
+void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index, Vector<Vector2i> p_polygon) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
 	ERR_FAIL_COND_MSG(p_polygon.size() != 0 && p_polygon.size() < 3, "Invalid polygon. Needs either 0 or more than 3 points.");
@@ -6301,7 +6301,7 @@ void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index,
 		polygon_shape_tile_data.shapes.clear();
 	} else {
 		// Decompose into convex shapes.
-		Vector<Vector<Vector2>> decomp = Geometry2D::decompose_polygon_in_convex(p_polygon);
+		Vector<Vector<Vector2i>> decomp = Geometry2D::decompose_polygon_in_convex(p_polygon);
 		ERR_FAIL_COND_MSG(decomp.is_empty(), "Could not decompose the polygon into convex shapes.");
 
 		polygon_shape_tile_data.shapes.resize(decomp.size());
@@ -6317,9 +6317,9 @@ void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index,
 	emit_signal(CoreStringName(changed));
 }
 
-Vector<Vector2> TileData::get_collision_polygon_points(int p_layer_id, int p_polygon_index) const {
-	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), Vector<Vector2>());
-	ERR_FAIL_INDEX_V(p_polygon_index, physics[p_layer_id].polygons.size(), Vector<Vector2>());
+Vector<Vector2i> TileData::get_collision_polygon_points(int p_layer_id, int p_polygon_index) const {
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), Vector<Vector2i>());
+	ERR_FAIL_INDEX_V(p_polygon_index, physics[p_layer_id].polygons.size(), Vector<Vector2i>());
 	return physics[p_layer_id].polygons[p_polygon_index].polygon;
 }
 
@@ -6569,6 +6569,33 @@ PackedVector2Array TileData::get_transformed_vertices(const PackedVector2Array &
 	return new_points;
 }
 
+PackedVector2iArray TileData::get_transformed_vertices(const PackedVector2iArray &p_vertices, bool p_flip_h, bool p_flip_v, bool p_transpose) {
+	const Vector2i *r = p_vertices.ptr();
+	int size = p_vertices.size();
+
+	PackedVector2iArray new_points;
+	new_points.resize(size);
+	Vector2i *w = new_points.ptrw();
+
+	for (int i = 0; i < size; i++) {
+		Vector2 v;
+		if (p_transpose) {
+			v = Vector2(r[i].y, r[i].x);
+		} else {
+			v = r[i];
+		}
+
+		if (p_flip_h) {
+			v.x *= -1;
+		}
+		if (p_flip_v) {
+			v.y *= -1;
+		}
+		w[i] = v;
+	}
+	return new_points;
+}
+
 bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 #ifndef DISABLE_DEPRECATED
 	if (p_name == "texture_offset") {
@@ -6639,7 +6666,7 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 				}
 			}
 			if (components[2] == "points") {
-				Vector<Vector2> polygon = p_value;
+				Vector<Vector2i> polygon = p_value;
 				set_collision_polygon_points(layer_index, polygon_index, polygon);
 				return true;
 			} else if (components[2] == "one_way") {
