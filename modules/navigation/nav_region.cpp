@@ -84,11 +84,11 @@ void NavRegion::set_transform(Transform3D p_transform) {
 
 void NavRegion::set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) {
 #ifdef DEBUG_ENABLED
-	if (map && !Math::is_equal_approx(double(map->get_cell_size()), double(p_navigation_mesh->get_cell_size()))) {
+	if (map && p_navigation_mesh.is_valid() && !Math::is_equal_approx(double(map->get_cell_size()), double(p_navigation_mesh->get_cell_size()))) {
 		ERR_PRINT_ONCE(vformat("Attempted to update a navigation region with a navigation mesh that uses a `cell_size` of %s while assigned to a navigation map set to a `cell_size` of %s. The cell size for navigation maps can be changed by using the NavigationServer map_set_cell_size() function. The cell size for default navigation maps can also be changed in the ProjectSettings.", double(p_navigation_mesh->get_cell_size()), double(map->get_cell_size())));
 	}
 
-	if (map && !Math::is_equal_approx(double(map->get_cell_height()), double(p_navigation_mesh->get_cell_height()))) {
+	if (map && p_navigation_mesh.is_valid() && !Math::is_equal_approx(double(map->get_cell_height()), double(p_navigation_mesh->get_cell_height()))) {
 		ERR_PRINT_ONCE(vformat("Attempted to update a navigation region with a navigation mesh that uses a `cell_height` of %s while assigned to a navigation map set to a `cell_height` of %s. The cell height for navigation maps can be changed by using the NavigationServer map_set_cell_height() function. The cell height for default navigation maps can also be changed in the ProjectSettings.", double(p_navigation_mesh->get_cell_height()), double(map->get_cell_height())));
 	}
 #endif // DEBUG_ENABLED

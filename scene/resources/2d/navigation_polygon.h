@@ -36,6 +36,7 @@
 
 class NavigationPolygon : public Resource {
 	GDCLASS(NavigationPolygon, Resource);
+	RWLock rwlock;
 
 	Vector<Vector2> vertices;
 	struct Polygon {
@@ -152,6 +153,9 @@ public:
 	Vector2 get_baking_rect_offset() const;
 
 	void clear();
+
+	void set_data(const Vector<Vector2> &p_vertices, const Vector<Vector<int>> &p_polygons);
+	void get_data(Vector<Vector2> &r_vertices, Vector<Vector<int>> &r_polygons);
 
 	NavigationPolygon() {}
 	~NavigationPolygon() {}
