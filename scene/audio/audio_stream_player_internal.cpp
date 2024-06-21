@@ -276,9 +276,6 @@ bool AudioStreamPlayerInternal::is_playing() const {
 		if (AudioServer::get_singleton()->is_playback_active(playback)) {
 			return true;
 		}
-		if (AudioServer::get_singleton()->is_sample_playback_active(playback)) {
-			return true;
-		}
 	}
 	return false;
 }
