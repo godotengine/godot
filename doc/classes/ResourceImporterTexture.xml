@@ -90,9 +90,13 @@
 		<member name="process/size_limit" type="int" setter="" getter="" default="0">
 			If set to a value greater than [code]0[/code], the size of the texture is limited on import to a value smaller than or equal to the value specified here. For non-square textures, the size limit affects the longer dimension, with the shorter dimension scaled to preserve aspect ratio. Resizing is performed using cubic interpolation.
 			This can be used to reduce memory usage without affecting the source images, or avoid issues with textures not displaying on mobile/web platforms (as these usually can't display textures larger than 4096×4096).
+			[b]Note:[/b] Even if this is set to [code]0[/code], import size is limited to the following dimensions for technical reasons. Depending on [member compress/mode], textures will be downsampled on import if necessary:
+			- [b]Lossy:[/b] 16383 pixels width or height, whichever is larger;
+			- [b]Basis Universal:[/b] 16384 pixels width or height, whichever is larger;
+			- [b]All other modes:[/b] 32768 pixels width or height, whichever is larger.
 		</member>
 		<member name="roughness/mode" type="int" setter="" getter="" default="0">
-			The color channel to consider as a roughness map in this texture. Only effective if Roughness &gt; Src Normal is not empty.
+			The color channel to consider as a roughness map in this texture. Only effective if [member roughness/src_normal] is not empty.
 		</member>
 		<member name="roughness/src_normal" type="String" setter="" getter="" default="&quot;&quot;">
 			The path to the texture to consider as a normal map for roughness filtering on import. Specifying this can help decrease specular aliasing slightly in 3D.
