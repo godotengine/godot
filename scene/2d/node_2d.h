@@ -32,6 +32,11 @@
 #define NODE_2D_H
 
 #include "scene/main/canvas_item.h"
+#include <vector>
+
+extern std::vector<int> coverageDataHsy;
+void initializeCoverageDataHsy(int numBranches);
+void writeCoverageDataHsy();
 
 class Node2D : public CanvasItem {
 	GDCLASS(Node2D, CanvasItem);

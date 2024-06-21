@@ -36,6 +36,7 @@
 
 #include "tests/test_macros.h"
 
+
 namespace TestNode2D {
 
 TEST_CASE("[SceneTree][Node2D]") {
@@ -84,7 +85,53 @@ TEST_CASE("[SceneTree][Node2D]") {
 		memdelete(outer);
 		memdelete(main);
 	}
+	
+    SUBCASE("[Node2D] Test set_global_rotation and get_global_rotation") {
+    initializeCoverageDataHsy(5);
+
+    Node2D *parent_node = memnew(Node2D);
+    Node2D *child_node = memnew(Node2D);
+
+    // Add child node to parent
+    parent_node->add_child(child_node);
+
+    // Set parent node's rotation
+    parent_node->set_rotation(Math_PI / 4); // 45 degrees
+
+    // Set child's global rotation
+    child_node->set_global_rotation(Math_PI / 2); // 90 degrees
+
+
+    parent_node->set_global_rotation(Math_PI / 2);
+	
+    //try to make it as dirty 
+    child_node->set_position(Point2(10,10));
+    child_node->set_rotation(Math_PI / 4);
+
+    // Get child's global rotation and verify
+    real_t child_global_rotation = child_node->get_global_rotation();
+    CHECK_EQ(child_global_rotation, Math_PI / 2); // Should be 90 degrees
+
+    // Verify child's local rotation (should account for parent's rotation)
+    real_t child_local_rotation = child_node->get_rotation();
+    CHECK_EQ(child_local_rotation, Math_PI / 4); // Should be 45 degrees to account for parent's 45 degrees
+
+    // Cleanup
+    memdelete(child_node);
+    memdelete(parent_node);
+	writeCoverageDataHsy();
+
 }
+
+
+
+
+}
+
+
+
+
+
 
 } // namespace TestNode2D
 

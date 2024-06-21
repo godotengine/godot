@@ -28,9 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include <vector>
+#include <iostream>
 #include "node_2d.h"
 
 #include "scene/main/viewport.h"
+
+std::vector<int> coverageDataHsy;
+
+void initializeCoverageDataHsy(int numBranches) {
+    coverageDataHsy.resize(numBranches, 0);
+}
+
+void writeCoverageDataHsy() {
+    std::cout << "Coverage Data:" << std::endl;
+    for (size_t i = 0; i < coverageDataHsy.size(); ++i) {
+        std::cout << "Branch " << i << ": " << (coverageDataHsy[i] ? "Executed" : "Not Executed") << std::endl;
+    }
+}
 
 #ifdef TOOLS_ENABLED
 Dictionary Node2D::_edit_get_state() const {
@@ -210,8 +225,10 @@ Point2 Node2D::get_position() const {
 }
 
 real_t Node2D::get_rotation() const {
+	coverageDataHsy[3] = 1;
 	ERR_READ_THREAD_GUARD_V(0);
 	if (_is_xform_dirty()) {
+		coverageDataHsy[4] = 1;
 		_update_xform_values();
 	}
 
@@ -303,7 +320,8 @@ void Node2D::set_global_position(const Point2 &p_pos) {
 }
 
 real_t Node2D::get_global_rotation() const {
-	ERR_READ_THREAD_GUARD_V(0);
+    ERR_READ_THREAD_GUARD_V(0);
+	
 	return get_global_transform().get_rotation();
 }
 
@@ -319,14 +337,17 @@ real_t Node2D::get_global_skew() const {
 
 void Node2D::set_global_rotation(const real_t p_radians) {
 	ERR_THREAD_GUARD;
+	coverageDataHsy[0] = 1;
 	CanvasItem *parent = get_parent_item();
 	if (parent) {
+		coverageDataHsy[1] = 1;
 		Transform2D parent_global_transform = parent->get_global_transform();
 		Transform2D new_transform = parent_global_transform * get_transform();
 		new_transform.set_rotation(p_radians);
 		new_transform = parent_global_transform.affine_inverse() * new_transform;
 		set_rotation(new_transform.get_rotation());
 	} else {
+		coverageDataHsy[2] = 1;
 		set_rotation(p_radians);
 	}
 }
