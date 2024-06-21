@@ -88,7 +88,7 @@ def create_template_zip(env, js, wasm, worker, side):
             "___GODOT_OFFLINE_PAGE___": "offline.html",
             "___GODOT_THREADS_ENABLED___": "true" if env["threads"] else "false",
         }
-        html = env.Substfile(target="#bin/godot${PROGSUFFIX}.html", source=html, SUBST_DICT=subst_dict)
+        html = env.Substfile(target="#bin/${PROGSUFFIX}/godot${PROGSUFFIX}.html", source=html, SUBST_DICT=subst_dict)
         in_files.append(html)
         out_files.append(zip_dir.File(binary_name + ".html"))
         # And logo/favicon
@@ -98,7 +98,7 @@ def create_template_zip(env, js, wasm, worker, side):
         out_files.append(zip_dir.File("favicon.png"))
         # PWA
         service_worker = env.Substfile(
-            target="#bin/godot${PROGSUFFIX}.service.worker.js",
+            target="#bin/${PROGSUFFIX}/godot${PROGSUFFIX}.service.worker.js",
             source=service_worker,
             SUBST_DICT=subst_dict,
         )
@@ -127,7 +127,7 @@ def create_template_zip(env, js, wasm, worker, side):
 
 
 def get_template_zip_path(env):
-    return "#bin/.web_zip"
+    return "#bin/.zip${PROGSUFFIX}"
 
 
 def add_js_libraries(env, libraries):
