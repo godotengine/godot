@@ -37,7 +37,7 @@
 #include "tests/test_macros.h"
 
 namespace TestButton {
-TEST_CASE("[SceneTree][Button] Button is_hovered() test") {
+TEST_CASE("[SceneTree][Button] is_hovered()") {
 	Window *root = SceneTree::get_singleton()->get_root();
 
 	Window *window = memnew(Window);
