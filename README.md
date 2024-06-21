@@ -32,8 +32,11 @@ Siyuan Hong:
   a link to the commit: https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
       
   screenshot:
-      i identified three branches in this function:
+  
+      i identified three branches in this function(branch 0, 1,2):
+      
       ![image](https://github.com/SiyuanHong/godot/assets/113177812/7ff70bbb-2e1f-4541-a038-69965651f022)
+      
       here you can see the first three branches are not reached in the original tests.
       
   Function 2
@@ -43,8 +46,10 @@ Siyuan Hong:
   a link to the commit: https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
       
   screenshot:
-      i identified two branches in this function 
+      i identified two branches in this function(branch 3,4):
+      
       ![image](https://github.com/SiyuanHong/godot/assets/113177812/7ff70bbb-2e1f-4541-a038-69965651f022)
+      
       they are not reached in the original test. 
       
 ## Coverage improvement
