@@ -24,20 +24,29 @@ of that part with OpenCppCoverage.
 
 ### Your own coverage tool
 Siyuan Hong: 
+
   Function 1
+  
       name: set_global_rotation 
+      
       a link to the commit: https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
+      
       screenshot:
       i identified three branches in this function:
       ![image](https://github.com/SiyuanHong/godot/assets/113177812/7ff70bbb-2e1f-4541-a038-69965651f022)
       here you can see the first three branches are not reached in the original tests.
+      
   Function 2
+  
       name:get_rotation
+      
       a link to the commit: https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
+      
       screenshot:
       i identified two branches in this function 
       ![image](https://github.com/SiyuanHong/godot/assets/113177812/7ff70bbb-2e1f-4541-a038-69965651f022)
       they are not reached in the original test. 
+      
 ## Coverage improvement
 
 ### Individual tests
