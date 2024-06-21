@@ -119,6 +119,7 @@ OpenXRSelectRuntime::OpenXRSelectRuntime() {
 	default_runtimes["SteamVR"] = "~/.steam/steam/steamapps/common/SteamVR/steamxr_linux64.json";
 #endif
 
+	// TODO: Move to editor_settings.cpp
 	EDITOR_DEF_RST("xr/openxr/runtime_paths", default_runtimes);
 
 	set_flat(true);
