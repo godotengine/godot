@@ -1519,7 +1519,7 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
 	err = vmaAllocateMemoryForBuffer(allocator, vk_buffer, &alloc_create_info, &allocation, &alloc_info);
 	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't allocate memory for buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
-	err = vmaBindBufferMemory2(allocator, allocation, 0, vk_buffer, NULL);
+	err = vmaBindBufferMemory2(allocator, allocation, 0, vk_buffer, nullptr);
 	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't bind memory to buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
 
 	// Bookkeep.
@@ -1745,7 +1745,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImage failed with error " + itos(err) + ".");
 	err = vmaAllocateMemoryForImage(allocator, vk_image, &alloc_create_info, &allocation, &alloc_info);
 	ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't allocate memory for image, error: " + itos(err) + ".");
-	err = vmaBindImageMemory2(allocator, allocation, 0, vk_image, NULL);
+	err = vmaBindImageMemory2(allocator, allocation, 0, vk_image, nullptr);
 	ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't bind memory to image, error: " + itos(err) + ".");
 
 	// Create view.

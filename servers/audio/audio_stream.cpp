@@ -281,7 +281,7 @@ double AudioStream::get_bpm() const {
 }
 
 bool AudioStream::has_loop() const {
-	bool ret = 0;
+	bool ret = false;
 	GDVIRTUAL_CALL(_has_loop, ret);
 	return ret;
 }

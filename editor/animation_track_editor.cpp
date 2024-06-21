@@ -6337,8 +6337,9 @@ bool AnimationTrackEditor::_is_track_compatible(int p_target_track_idx, Variant:
 					}
 
 					if (path_valid) {
-						if (is_source_bezier)
+						if (is_source_bezier) {
 							p_source_value_type = Variant::FLOAT;
+						}
 						return property_type == p_source_value_type;
 					} else {
 						if (animation->track_get_key_count(p_target_track_idx) > 0) {
