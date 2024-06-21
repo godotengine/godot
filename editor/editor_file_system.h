@@ -66,6 +66,7 @@ class EditorFileSystemDirectory : public Object {
 		String script_class_name;
 		String script_class_extends;
 		String script_class_icon_path;
+		String icon_path;
 	};
 
 	Vector<FileInfo *> files;
@@ -91,6 +92,7 @@ public:
 	String get_file_script_class_name(int p_idx) const; //used for scripts
 	String get_file_script_class_extends(int p_idx) const; //used for scripts
 	String get_file_script_class_icon_path(int p_idx) const; //used for scripts
+	String get_file_icon_path(int p_idx) const; //used for FileSystemDock
 
 	EditorFileSystemDirectory *get_parent();
 
@@ -279,6 +281,7 @@ class EditorFileSystem : public Node {
 	void _move_group_files(EditorFileSystemDirectory *efd, const String &p_group_file, const String &p_new_location);
 
 	HashSet<String> group_file_cache;
+	HashMap<String, String> file_icon_cache;
 
 	struct ImportThreadData {
 		const ImportFile *reimport_files;
@@ -294,6 +297,9 @@ class EditorFileSystem : public Node {
 	bool _scan_import_support(const Vector<String> &reimports);
 
 	Vector<Ref<EditorFileSystemImportFormatSupportQuery>> import_support_queries;
+
+	void _update_file_icon_path(EditorFileSystemDirectory::FileInfo *file_info);
+	void _update_files_icon_path(EditorFileSystemDirectory *edp = nullptr);
 
 protected:
 	void _notification(int p_what);
