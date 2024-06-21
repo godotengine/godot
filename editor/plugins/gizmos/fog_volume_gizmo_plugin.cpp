@@ -40,7 +40,7 @@
 
 FogVolumeGizmoPlugin::FogVolumeGizmoPlugin() {
 	helper.instantiate();
-	Color gizmo_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/fog_volume", Color(0.5, 0.7, 1));
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/fog_volume");
 	create_material("shape_material", gizmo_color);
 	gizmo_color.a = 0.15;
 	create_material("shape_material_internal", gizmo_color);

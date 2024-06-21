@@ -39,12 +39,12 @@
 GPUParticlesCollision3DGizmoPlugin::GPUParticlesCollision3DGizmoPlugin() {
 	helper.instantiate();
 
-	Color gizmo_color_attractor = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/particle_attractor", Color(1, 0.7, 0.5));
+	Color gizmo_color_attractor = EDITOR_GET("editors/3d_gizmos/gizmo_colors/particle_attractor");
 	create_material("shape_material_attractor", gizmo_color_attractor);
 	gizmo_color_attractor.a = 0.15;
 	create_material("shape_material_attractor_internal", gizmo_color_attractor);
 
-	Color gizmo_color_collision = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/particle_collision", Color(0.5, 0.7, 1));
+	Color gizmo_color_collision = EDITOR_GET("editors/3d_gizmos/gizmo_colors/particle_collision");
 	create_material("shape_material_collision", gizmo_color_collision);
 	gizmo_color_collision.a = 0.15;
 	create_material("shape_material_collision_internal", gizmo_color_collision);
