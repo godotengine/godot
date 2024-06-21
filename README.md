@@ -51,6 +51,7 @@ Siyuan Hong:
 
 ### Individual tests
 Siyuan Hong
+
      test1:
 a link to commit:
      https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
@@ -88,5 +89,5 @@ new results :
 
   
   ## Statement of individual contributions
-     Siyuan Hong: write methods for function instrumentation; deal with function set_global_rotation and get_rotation
+Siyuan Hong: write methods for function instrumentation; deal with function set_global_rotation and get_rotation
      
