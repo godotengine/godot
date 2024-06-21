@@ -423,66 +423,36 @@ class SampleNode {
 		this.streamObjectId = params.streamObjectId;
 		/** @type {number} */
 		this.offset = options.offset ?? 0;
-		/** @type {LoopMode} */
+		/** @type {number} */
 		this.startTime = options.startTime ?? 0;
+		/** @type {boolean} */
+		this.isPaused = false;
 		/** @type {number} */
 		this.pauseTime = 0;
 		/** @type {number} */
 		this._playbackRate = 44100;
 		/** @type {LoopMode} */
-		this._loopMode = 'disabled';
+		this.loopMode = 'disabled';
 		/** @type {number} */
 		this._pitchScale = 1;
+		/** @type {number} */
+		this._sourceStartTime = 0;
 		/** @type {Map<Bus, SampleNodeBus>} */
 		this._sampleNodeBuses = new Map();
-		/** @type {AudioBufferSourceNode} */
+		/** @type {AudioBufferSourceNode | null} */
 		this._source = GodotAudio.ctx.createBufferSource();
+		/** @type {AudioBufferSourceNode["onended"]} */
+		this._onended = null;
 
 		this.setPlaybackRate(options.playbackRate ?? 44100);
-		this.setLoopMode(options.loopMode ?? this.getSample().loopMode ?? 'disabled');
+		this.loopMode = options.loopMode ?? this.getSample().loopMode ?? 'disabled';
 		this._source.buffer = this.getSample().getAudioBuffer();
 
-		/** @type {SampleNode} */
-		// eslint-disable-next-line consistent-this
-		const self = this;
-		this._source.addEventListener('ended', (_) => {
-			switch (self.getSample().loopMode) {
-			case 'disabled':
-				GodotAudio.SampleNode.stopSampleNode(self.id);
-				break;
-			default:
-				// do nothing
-			}
-		});
+		this._addEndedListener();
 
 		const bus = GodotAudio.Bus.getBus(params.busIndex);
 		const sampleNodeBus = this.getSampleNodeBus(bus);
 		sampleNodeBus.setVolume(options.volume);
-	}
-
-	/**
-	 * Gets the loop mode of the current instance.
-	 * @returns {LoopMode}
-	 */
-	getLoopMode() {
-		return this._loopMode;
-	}
-
-	/**
-	 * Sets the loop mode of the current instance.
-	 * @param {LoopMode} val Value to set.
-	 * @returns {void}
-	 */
-	setLoopMode(val) {
-		this._loopMode = val;
-		switch (val) {
-		case 'forward':
-		case 'backward':
-			this._source.loop = true;
-			break;
-		default:
-			this._source.loop = false;
-		}
 	}
 
 	/**
@@ -542,7 +512,8 @@ class SampleNode {
 	 * @returns {void}
 	 */
 	start() {
-		this._source.start(this.offset);
+		this._resetSourceStartTime();
+		this._source.start(this.startTime, this.offset);
 	}
 
 	/**
@@ -550,8 +521,17 @@ class SampleNode {
 	 * @returns {void}
 	 */
 	stop() {
-		this._source.stop();
 		this.clear();
+	}
+
+	/**
+	 * Restarts the `SampleNode`.
+	 */
+	restart() {
+		this.isPaused = false;
+		this.pauseTime = 0;
+		this._resetSourceStartTime();
+		this._restart();
 	}
 
 	/**
@@ -561,21 +541,11 @@ class SampleNode {
 	 */
 	pause(enable = true) {
 		if (enable) {
-			this.pauseTime = (GodotAudio.ctx.currentTime - this.startTime) / this.playbackRate;
-			this._source.stop();
+			this._pause();
 			return;
 		}
 
-		if (this.pauseTime === 0) {
-			return;
-		}
-
-		this._source.disconnect();
-		this._source = GodotAudio.ctx.createBufferSource();
-
-		this._source.buffer = this.getSample().getAudioBuffer();
-		this._source.connect(this._gain);
-		this._source.start(this.offset + this.pauseTime);
+		this._unpause();
 	}
 
 	/**
@@ -623,17 +593,31 @@ class SampleNode {
 	 * @returns {void}
 	 */
 	clear() {
-		this._source.stop();
-		this._source.disconnect();
-		this._source = null;
+		this.isPaused = false;
+		this.pauseTime = 0;
+
+		if (this._source != null) {
+			this._source.removeEventListener('ended', this._onended);
+			this._onended = null;
+			this._source.stop();
+			this._source.disconnect();
+			this._source = null;
+		}
 
 		for (const sampleNodeBus of this._sampleNodeBuses.values()) {
 			sampleNodeBus.clear();
 		}
 		this._sampleNodeBuses.clear();
-		this._sampleNodeBuses = null;
 
 		GodotAudio.SampleNode.delete(this.id);
+	}
+
+	/**
+	 * Resets the source start time
+	 * @returns {void}
+	 */
+	_resetSourceStartTime() {
+		this._sourceStartTime = GodotAudio.ctx.currentTime;
 	}
 
 	/**
@@ -642,6 +626,80 @@ class SampleNode {
 	 */
 	_syncPlaybackRate() {
 		this._source.playbackRate.value = this.getPlaybackRate() * this.getPitchScale();
+	}
+
+	/**
+	 * Restarts the `SampleNode`.
+	 * Honors `isPaused` and `pauseTime`.
+	 * @returns {void}
+	 */
+	_restart() {
+		this._source.disconnect();
+		this._source = GodotAudio.ctx.createBufferSource();
+		this._source.buffer = this.getSample().getAudioBuffer();
+
+		// Make sure that we connect the new source to the sample node bus.
+		for (const sampleNodeBus of this._sampleNodeBuses.values()) {
+			this.connect(sampleNodeBus.getInputNode());
+		}
+
+		this._addEndedListener();
+		const pauseTime = this.isPaused
+			? this.pauseTime
+			: 0;
+		this._source.start(this.startTime, this.offset + pauseTime);
+	}
+
+	/**
+	 * Pauses the `SampleNode`.
+	 * @returns {void}
+	 */
+	_pause() {
+		this.isPaused = true;
+		this.pauseTime = (GodotAudio.ctx.currentTime - this._sourceStartTime) / this.getPlaybackRate();
+		this._source.stop();
+	}
+
+	/**
+	 * Unpauses the `SampleNode`.
+	 * @returns {void}
+	 */
+	_unpause() {
+		this._restart();
+		this.isPaused = false;
+		this.pauseTime = 0;
+	}
+
+	/**
+	 * Adds an "ended" listener to the source node to repeat it if necessary.
+	 * @returns {void}
+	 */
+	_addEndedListener() {
+		if (this._onended != null) {
+			this._source.removeEventListener('ended', this._onended);
+		}
+
+		/** @type {SampleNode} */
+		// eslint-disable-next-line consistent-this
+		const self = this;
+		this._onended = (_) => {
+			if (self.isPaused) {
+				return;
+			}
+
+			switch (self.getSample().loopMode) {
+			case 'disabled':
+				self.stop();
+				break;
+			case 'forward':
+			case 'backward':
+				self.restart();
+				break;
+			default:
+				// do nothing
+			}
+		};
+		this._source.addEventListener('ended', this._onended);
 	}
 }
 
