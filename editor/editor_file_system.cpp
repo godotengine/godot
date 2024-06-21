@@ -2468,18 +2468,23 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	int from = 0;
 	for (int i = 0; i < reimport_files.size(); i++) {
 		if (groups_to_reimport.has(reimport_files[i].path)) {
+			from = i + 1;
 			continue;
 		}
 
 		if (use_multiple_threads && reimport_files[i].threaded) {
-			if (i + 1 == reimport_files.size() || reimport_files[i + 1].importer != reimport_files[from].importer) {
+			if (i + 1 == reimport_files.size() || reimport_files[i + 1].importer != reimport_files[from].importer || groups_to_reimport.has(reimport_files[i + 1].path)) {
 				if (from - i == 0) {
 					// Single file, do not use threads.
 					pr.step(reimport_files[i].path.get_file(), i);
 					_reimport_file(reimport_files[i].path);
 				} else {
 					Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(reimport_files[from].importer);
-					ERR_CONTINUE(!importer.is_valid());
+					if (importer.is_null()) {
+						ERR_PRINT(vformat("Invalid importer for \"%s\".", reimport_files[from].importer));
+						from = i + 1;
+						continue;
+					}
 
 					importer->import_threaded_begin();
 
@@ -2509,6 +2514,10 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		} else {
 			pr.step(reimport_files[i].path.get_file(), i);
 			_reimport_file(reimport_files[i].path);
+
+			// We need to increment the counter, maybe the next file is multithreaded
+			// and doesn't have the same importer.
+			from = i + 1;
 		}
 	}
 
