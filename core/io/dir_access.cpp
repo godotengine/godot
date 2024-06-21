@@ -339,6 +339,8 @@ String DirAccess::get_full_path(const String &p_path, AccessType p_access) {
 }
 
 Error DirAccess::copy(const String &p_from, const String &p_to, int p_chmod_flags) {
+	ERR_FAIL_COND_V_MSG(p_from == p_to, ERR_INVALID_PARAMETER, "Source and destination path are equal.");
+
 	//printf("copy %s -> %s\n",p_from.ascii().get_data(),p_to.ascii().get_data());
 	Error err;
 	{

@@ -43,6 +43,13 @@
 #pragma GCC diagnostic ignored "-Wswitch"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#elif defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+#pragma clang diagnostic ignored "-Wstring-plus-int"
+#pragma clang diagnostic ignored "-Wswitch"
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
+#pragma clang diagnostic ignored "-Wimplicit-fallthrough"
 #endif
 
 #include "d3dx12.h"
@@ -59,11 +66,18 @@
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
+#elif defined(__clang__)
+#pragma clang diagnostic pop
 #endif
 
 using Microsoft::WRL::ComPtr;
 
 #define D3D12_BITCODE_OFFSETS_NUM_STAGES 3
+
+#ifdef DEV_ENABLED
+//#define DEBUG_COUNT_BARRIERS
+#define CUSTOM_INFO_QUEUE_ENABLED 0
+#endif
 
 struct dxil_validator;
 class RenderingContextDriverD3D12;
@@ -257,7 +271,7 @@ private:
 	LocalVector<D3D12_RESOURCE_BARRIER> res_barriers;
 	uint32_t res_barriers_count = 0;
 	uint32_t res_barriers_batch = 0;
-#ifdef DEV_ENABLED
+#ifdef DEBUG_COUNT_BARRIERS
 	int frame_barriers_count = 0;
 	int frame_barriers_batches_count = 0;
 	uint64_t frame_barriers_cpu_time = 0;

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MACOS_MACHO_H
-#define MACOS_MACHO_H
+#ifndef MACHO_H
+#define MACHO_H
 
 // Mach-O binary object file format parser and editor.
 
@@ -39,6 +39,7 @@
 #include "core/object/ref_counted.h"
 
 class MachO : public RefCounted {
+public:
 	struct MachHeader {
 		uint32_t cputype;
 		uint32_t cpusubtype;
@@ -98,6 +99,21 @@ class MachO : public RefCounted {
 		LC_LINKER_OPTIMIZATION_HINT = 0x0000002e,
 		LC_VERSION_MIN_TVOS = 0x0000002f,
 		LC_VERSION_MIN_WATCHOS = 0x00000030,
+		LC_BUILD_VERSION = 0x00000032,
+	};
+
+	enum PlatformID {
+		PLATFORM_UNKNOWN = 0,
+		PLATFORM_MACOS = 1,
+		PLATFORM_IOS = 2,
+		PLATFORM_TVOS = 3,
+		PLATFORM_WATCHOS = 4,
+		PLATFORM_BRIDGEOS = 5,
+		PLATFORM_MACCATALYST = 6,
+		PLATFORM_IOSSIMULATOR = 7,
+		PLATFORM_TVOSSIMULATOR = 8,
+		PLATFORM_WATCHOSSIMULATOR = 9,
+		PLATFORM_DRIVERKIT = 10,
 	};
 
 	struct LoadCommandHeader {
@@ -158,6 +174,7 @@ class MachO : public RefCounted {
 		uint32_t reserved3;
 	};
 
+private:
 	Ref<FileAccess> fa;
 	bool swap = false;
 
@@ -208,4 +225,4 @@ public:
 	bool set_signature_size(uint64_t p_size);
 };
 
-#endif // MACOS_MACHO_H
+#endif // MACHO_H

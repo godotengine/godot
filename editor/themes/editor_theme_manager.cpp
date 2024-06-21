@@ -1782,11 +1782,6 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		style_content_panel_vp->set_content_margin_individual(p_config.border_width * 2, p_config.base_margin * EDSCALE, p_config.border_width * 2, p_config.border_width * 2);
 		p_theme->set_stylebox("Content", EditorStringName(EditorStyles), style_content_panel_vp);
 
-		// 2D/CanvasItem editor
-		Ref<StyleBoxFlat> style_canvas_editor_info = make_flat_stylebox(Color(0.0, 0.0, 0.0, 0.2));
-		style_canvas_editor_info->set_expand_margin_all(4 * EDSCALE);
-		p_theme->set_stylebox("CanvasItemInfoOverlay", EditorStringName(EditorStyles), style_canvas_editor_info);
-
 		// 3D/Spatial editor.
 		Ref<StyleBoxFlat> style_info_3d_viewport = p_config.base_style->duplicate();
 		style_info_3d_viewport->set_bg_color(style_info_3d_viewport->get_bg_color() * Color(1, 1, 1, 0.5));
@@ -1859,7 +1854,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		editor_spin_label_bg->set_border_width_all(0);
 		p_theme->set_stylebox("label_bg", "EditorSpinSlider", editor_spin_label_bg);
 
-		// Launch Pad and Play buttons
+		// Launch Pad and Play buttons.
 		Ref<StyleBoxFlat> style_launch_pad = make_flat_stylebox(p_config.dark_color_1, 2 * EDSCALE, 0, 2 * EDSCALE, 0, p_config.corner_radius);
 		style_launch_pad->set_corner_radius_all(p_config.corner_radius * EDSCALE);
 		p_theme->set_stylebox("LaunchPadNormal", EditorStringName(EditorStyles), style_launch_pad);
@@ -1879,6 +1874,12 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		style_write_movie_button->set_content_margin(SIDE_RIGHT, 0);
 		style_write_movie_button->set_expand_margin(SIDE_RIGHT, 2 * EDSCALE);
 		p_theme->set_stylebox("MovieWriterButtonPressed", EditorStringName(EditorStyles), style_write_movie_button);
+
+		// Movie writer button colors.
+		p_theme->set_color("movie_writer_icon_normal", EditorStringName(EditorStyles), Color(1, 1, 1, 0.7));
+		p_theme->set_color("movie_writer_icon_pressed", EditorStringName(EditorStyles), Color(0, 0, 0, 0.84));
+		p_theme->set_color("movie_writer_icon_hover", EditorStringName(EditorStyles), Color(1, 1, 1, 0.9));
+		p_theme->set_color("movie_writer_icon_hover_pressed", EditorStringName(EditorStyles), Color(0, 0, 0, 0.84));
 	}
 
 	// Standard GUI variations.
@@ -2000,17 +2001,34 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			style_inspector_action->set_content_margin(SIDE_RIGHT, action_extra_margin);
 			p_theme->set_stylebox(CoreStringName(normal), "InspectorActionButton", style_inspector_action);
 
+			style_inspector_action = p_config.button_style->duplicate();
+			style_inspector_action->set_bg_color(color_inspector_action);
+			style_inspector_action->set_content_margin(SIDE_LEFT, action_extra_margin);
+			p_theme->set_stylebox("normal_mirrored", "InspectorActionButton", style_inspector_action);
+
 			style_inspector_action = p_config.button_style_hover->duplicate();
 			style_inspector_action->set_content_margin(SIDE_RIGHT, action_extra_margin);
 			p_theme->set_stylebox("hover", "InspectorActionButton", style_inspector_action);
+
+			style_inspector_action = p_config.button_style_hover->duplicate();
+			style_inspector_action->set_content_margin(SIDE_LEFT, action_extra_margin);
+			p_theme->set_stylebox("hover_mirrored", "InspectorActionButton", style_inspector_action);
 
 			style_inspector_action = p_config.button_style_pressed->duplicate();
 			style_inspector_action->set_content_margin(SIDE_RIGHT, action_extra_margin);
 			p_theme->set_stylebox(SceneStringName(pressed), "InspectorActionButton", style_inspector_action);
 
+			style_inspector_action = p_config.button_style_pressed->duplicate();
+			style_inspector_action->set_content_margin(SIDE_LEFT, action_extra_margin);
+			p_theme->set_stylebox("pressed_mirrored", "InspectorActionButton", style_inspector_action);
+
 			style_inspector_action = p_config.button_style_disabled->duplicate();
 			style_inspector_action->set_content_margin(SIDE_RIGHT, action_extra_margin);
 			p_theme->set_stylebox("disabled", "InspectorActionButton", style_inspector_action);
+
+			style_inspector_action = p_config.button_style_disabled->duplicate();
+			style_inspector_action->set_content_margin(SIDE_LEFT, action_extra_margin);
+			p_theme->set_stylebox("disabled_mirrored", "InspectorActionButton", style_inspector_action);
 		}
 
 		// Buttons in material previews.

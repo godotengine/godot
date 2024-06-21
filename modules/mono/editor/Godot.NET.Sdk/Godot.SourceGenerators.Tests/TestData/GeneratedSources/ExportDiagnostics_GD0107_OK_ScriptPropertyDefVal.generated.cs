@@ -13,9 +13,9 @@ partial class ExportDiagnostics_GD0107_OK
     {
         var values = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>(2);
         global::Godot.Node __NodeProperty_default_value = default;
-        values.Add(PropertyName.NodeProperty, global::Godot.Variant.From<global::Godot.Node>(__NodeProperty_default_value));
+        values.Add(PropertyName.@NodeProperty, global::Godot.Variant.From<global::Godot.Node>(__NodeProperty_default_value));
         global::Godot.Node __NodeField_default_value = default;
-        values.Add(PropertyName.NodeField, global::Godot.Variant.From<global::Godot.Node>(__NodeField_default_value));
+        values.Add(PropertyName.@NodeField, global::Godot.Variant.From<global::Godot.Node>(__NodeField_default_value));
         return values;
     }
 #endif // TOOLS

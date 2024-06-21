@@ -3043,29 +3043,45 @@ void Node3DEditorViewport::_notification(int p_what) {
 			preview_camera->set_icon(get_editor_theme_icon(SNAME("Camera3D")));
 			Control *gui_base = EditorNode::get_singleton()->get_gui_base();
 
+			const Ref<StyleBox> &information_3d_stylebox = gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles));
+
 			view_menu->begin_bulk_theme_override();
-			view_menu->add_theme_style_override(CoreStringName(normal), gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			view_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			view_menu->add_theme_style_override(SceneStringName(pressed), gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			view_menu->add_theme_style_override("focus", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			view_menu->add_theme_style_override("disabled", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			view_menu->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
+			view_menu->add_theme_style_override("normal_mirrored", information_3d_stylebox);
+			view_menu->add_theme_style_override("hover", information_3d_stylebox);
+			view_menu->add_theme_style_override("hover_mirrored", information_3d_stylebox);
+			view_menu->add_theme_style_override("hover_pressed", information_3d_stylebox);
+			view_menu->add_theme_style_override("hover_pressed_mirrored", information_3d_stylebox);
+			view_menu->add_theme_style_override(SceneStringName(pressed), information_3d_stylebox);
+			view_menu->add_theme_style_override("pressed_mirrored", information_3d_stylebox);
+			view_menu->add_theme_style_override("focus", information_3d_stylebox);
+			view_menu->add_theme_style_override("focus_mirrored", information_3d_stylebox);
+			view_menu->add_theme_style_override("disabled", information_3d_stylebox);
+			view_menu->add_theme_style_override("disabled_mirrored", information_3d_stylebox);
 			view_menu->end_bulk_theme_override();
 
 			preview_camera->begin_bulk_theme_override();
-			preview_camera->add_theme_style_override(CoreStringName(normal), gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			preview_camera->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			preview_camera->add_theme_style_override(SceneStringName(pressed), gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			preview_camera->add_theme_style_override("focus", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			preview_camera->add_theme_style_override("disabled", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			preview_camera->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
+			preview_camera->add_theme_style_override("normal_mirrored", information_3d_stylebox);
+			preview_camera->add_theme_style_override("hover", information_3d_stylebox);
+			preview_camera->add_theme_style_override("hover_mirrored", information_3d_stylebox);
+			preview_camera->add_theme_style_override("hover_pressed", information_3d_stylebox);
+			preview_camera->add_theme_style_override("hover_pressed_mirrored", information_3d_stylebox);
+			preview_camera->add_theme_style_override(SceneStringName(pressed), information_3d_stylebox);
+			preview_camera->add_theme_style_override("pressed_mirrored", information_3d_stylebox);
+			preview_camera->add_theme_style_override("focus", information_3d_stylebox);
+			preview_camera->add_theme_style_override("focus_mirrored", information_3d_stylebox);
+			preview_camera->add_theme_style_override("disabled", information_3d_stylebox);
+			preview_camera->add_theme_style_override("disabled_mirrored", information_3d_stylebox);
 			preview_camera->end_bulk_theme_override();
 
 			frame_time_gradient->set_color(0, get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 			frame_time_gradient->set_color(1, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			frame_time_gradient->set_color(2, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
-			info_label->add_theme_style_override(CoreStringName(normal), gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			info_label->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
 
-			frame_time_panel->add_theme_style_override(SceneStringName(panel), gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			frame_time_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
 			// Set a minimum width to prevent the width from changing all the time
 			// when numbers vary rapidly. This minimum width is set based on a
 			// GPU time of 999.99 ms in the current editor language.
@@ -3073,8 +3089,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 			frame_time_panel->set_custom_minimum_size(Size2(min_width, 0) * EDSCALE);
 			frame_time_vbox->add_theme_constant_override("separation", Math::round(-1 * EDSCALE));
 
-			cinema_label->add_theme_style_override(CoreStringName(normal), gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			locked_label->add_theme_style_override(CoreStringName(normal), gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			cinema_label->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
+			locked_label->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
@@ -5372,6 +5388,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	cinema_label->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
 	cinema_label->set_h_grow_direction(GROW_DIRECTION_END);
 	cinema_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	cinema_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	surface->add_child(cinema_label);
 	cinema_label->set_text(TTR("Cinematic Preview"));
 	cinema_label->hide();
@@ -5379,6 +5396,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	locked_label = memnew(Label);
 	locked_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	locked_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	locked_label->set_h_size_flags(SIZE_SHRINK_CENTER);
 	bottom_center_vbox->add_child(locked_label);
 	locked_label->set_text(TTR("View Rotation Locked"));
