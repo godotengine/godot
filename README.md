@@ -53,6 +53,7 @@ Siyuan Hong:
 Siyuan Hong
 
 test1:
+
 a link to commit:
      https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
 	 
@@ -69,7 +70,8 @@ new results :
      the condition branches include node with a parent node and without parent node, so i just write a parent node and childe node attached to it, and call set_global_rotation separately,
      then all the three branches are reached. 
     
-     test2:
+test2:
+
 a link to commit: 
      https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
 	 
