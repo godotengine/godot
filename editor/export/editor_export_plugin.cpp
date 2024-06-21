@@ -364,8 +364,3 @@ void EditorExportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_android_manifest_application_element_contents, "platform", "debug");
 	GDVIRTUAL_BIND(_get_android_manifest_element_contents, "platform", "debug");
 }
-
-EditorExportPlugin::EditorExportPlugin() {
-	EDITOR_DEF("export/ssh/ssh", "");
-	EDITOR_DEF("export/ssh/scp", "");
-}

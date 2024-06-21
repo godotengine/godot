@@ -1477,12 +1477,6 @@ void EditorInspectorPluginBoneMap::parse_begin(Object *p_object) {
 }
 
 BoneMapEditorPlugin::BoneMapEditorPlugin() {
-	// Register properties in editor settings.
-	EDITOR_DEF("editors/bone_mapper/handle_colors/unset", Color(0.3, 0.3, 0.3));
-	EDITOR_DEF("editors/bone_mapper/handle_colors/set", Color(0.1, 0.6, 0.25));
-	EDITOR_DEF("editors/bone_mapper/handle_colors/missing", Color(0.8, 0.2, 0.8));
-	EDITOR_DEF("editors/bone_mapper/handle_colors/error", Color(0.8, 0.2, 0.2));
-
 	Ref<EditorInspectorPluginBoneMap> inspector_plugin;
 	inspector_plugin.instantiate();
 	add_inspector_plugin(inspector_plugin);

@@ -4683,10 +4683,6 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	set_process_input(true);
 	set_process(true);
 
-	EDITOR_DEF("interface/editors/show_scene_tree_root_selection", true);
-	EDITOR_DEF("interface/editors/derive_script_globals_by_name", true);
-	EDITOR_DEF("docks/scene_tree/ask_before_deleting_related_animation_tracks", true);
-	EDITOR_DEF("docks/scene_tree/ask_before_revoking_unique_name", true);
 	EDITOR_DEF("_use_favorites_root_selection", false);
 
 	Resource::_update_configuration_warning = _update_configuration_warning;
