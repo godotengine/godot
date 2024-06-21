@@ -31,7 +31,13 @@
 #ifndef NODE_2D_H
 #define NODE_2D_H
 
+#include <map>
+
 #include "scene/main/canvas_item.h"
+
+extern std::map<std::string, bool> coverage_funcs_set_global_skew_scale;
+void init_coverage_funcs_set_global_skew_scale(std::string, int);
+void print_coverage_funcs_set_global_skew_scale();
 
 class Node2D : public CanvasItem {
 	GDCLASS(Node2D, CanvasItem);

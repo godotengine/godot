@@ -84,6 +84,43 @@ TEST_CASE("[SceneTree][Node2D]") {
 		memdelete(outer);
 		memdelete(main);
 	}
+
+    SUBCASE("[Node2D][Global Skew] Global Skew should be correct after inserting node from detached tree into SceneTree.") {
+        init_coverage_funcs_set_global_skew_scale("set_global_skew", 2);
+        Node2D *parent_node = memnew(Node2D);
+        Node2D *child_node = memnew(Node2D);
+        parent_node->add_child(child_node);
+
+        parent_node->set_global_skew(Math_PI / 2);
+        real_t parent_skew = parent_node->get_global_skew();
+        CHECK_EQ(parent_skew, Math_PI / 4);
+        child_node->set_global_skew(Math_PI / 4);
+        real_t child_skew = child_node->get_global_skew();
+        CHECK_EQ(child_skew, Math_PI / 2);
+
+        memdelete(child_node);
+        memdelete(parent_node);
+        print_coverage_funcs_set_global_skew_scale();
+    }
+
+    SUBCASE("[Node2D][Global Scale] Global Scale should be correct after inserting node from detached tree into SceneTree.") {
+        init_coverage_funcs_set_global_skew_scale("set_global_scale", 2);
+        Node2D *parent_node = memnew(Node2D);
+        Node2D *child_node = memnew(Node2D);
+        parent_node->add_child(child_node);
+
+        parent_node->set_global_scale(Size2(100, 100));
+        Size2 parent_scale = parent_node->get_global_scale();
+        CHECK_EQ(parent_scale, Size2(50, 50));
+
+        child_node->set_global_scale(Size2(50, 50));
+        Size2 child_scale = child_node->get_global_scale();
+        CHECK_EQ(child_scale, Size2(100, 100));
+
+        memdelete(child_node);
+        memdelete(parent_node);
+        print_coverage_funcs_set_global_skew_scale();
+    }
 }
 
 } // namespace TestNode2D
