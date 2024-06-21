@@ -420,6 +420,7 @@ static bool _axisAlignedRect(const SwOutline* outline)
 {
     //Fast Track: axis-aligned rectangle?
     if (outline->pts.count != 5) return false;
+    if (outline->types[2] == SW_CURVE_TYPE_CUBIC) return false;
 
     auto pt1 = outline->pts.data + 0;
     auto pt2 = outline->pts.data + 1;
