@@ -2087,6 +2087,9 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 	// Editor inspector.
 	{
+		// Vertical separation between inspector categories and sections.
+		p_theme->set_constant("v_separation", "EditorInspector", 0);
+
 		// EditorProperty.
 
 		Ref<StyleBoxFlat> style_property_bg = p_config.base_style->duplicate();
@@ -2128,6 +2131,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		Ref<StyleBoxFlat> inspector_indent_style = make_flat_stylebox(inspector_indent_color, 2.0 * EDSCALE, 0, 2.0 * EDSCALE, 0);
 		p_theme->set_stylebox("indent_box", "EditorInspectorSection", inspector_indent_style);
 		p_theme->set_constant("indent_size", "EditorInspectorSection", 6.0 * EDSCALE);
+		p_theme->set_constant("h_separation", "EditorInspectorSection", 2.0 * EDSCALE);
 
 		Color prop_category_color = p_config.dark_color_1.lerp(p_config.mono_color, 0.12);
 		Color prop_section_color = p_config.dark_color_1.lerp(p_config.mono_color, 0.09);
@@ -2145,6 +2149,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		Ref<StyleBoxFlat> category_bg = p_config.base_style->duplicate();
 		category_bg->set_bg_color(prop_category_color);
 		category_bg->set_border_color(prop_category_color);
+		category_bg->set_content_margin_all(0);
 		p_theme->set_stylebox("bg", "EditorInspectorCategory", category_bg);
 
 		p_theme->set_constant("inspector_margin", EditorStringName(Editor), 12 * EDSCALE);
