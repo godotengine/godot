@@ -40,14 +40,15 @@ Siyuan Hong:
 ## Coverage improvement
 
 ### Individual tests
-Siyuan Hong:
+Siyuan Hong
 
      test1:
      a link to commit:
-     ![image](https://github.com/SiyuanHong/godot/assets/113177812/9202d40c-1cda-4ff4-b845-fa7c9eaf8603)
+     ![image](https://github.com/SiyuanHong/godot/assets/113177812/7ff70bbb-2e1f-4541-a038-69965651f022)
 	 
      old results: 
-     ![image](https://github.com/SiyuanHong/godot/assets/113177812/7ff70bbb-2e1f-4541-a038-69965651f022)
+     ![image](https://github.com/SiyuanHong/godot/assets/113177812/5d6d3622-1eed-482c-a810-3847174bed22)
+
 	 
      new results :
      ![image](https://github.com/SiyuanHong/godot/assets/113177812/751b8bfe-1a7c-46d7-b379-a9f0ca1c455a)
