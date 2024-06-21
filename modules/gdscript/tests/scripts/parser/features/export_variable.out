@@ -25,8 +25,10 @@ var test_timer: Timer = null
   hint=NODE_TYPE hint_string="Timer" usage=DEFAULT|SCRIPT_VARIABLE class_name=&"Timer"
 var test_global_class: ExportVariableTest = null
   hint=NODE_TYPE hint_string="ExportVariableTest" usage=DEFAULT|SCRIPT_VARIABLE class_name=&"ExportVariableTest"
-var test_preloaded_script: ExportPreloadedClassTest = null
-  hint=NODE_TYPE hint_string="ExportPreloadedClassTest" usage=DEFAULT|SCRIPT_VARIABLE class_name=&"ExportPreloadedClassTest"
+var test_preloaded_global_class: ExportVariableTestGlobalClass = null
+  hint=NODE_TYPE hint_string="ExportVariableTestGlobalClass" usage=DEFAULT|SCRIPT_VARIABLE class_name=&"ExportVariableTestGlobalClass"
+var test_preloaded_unnamed_class: Node2D = null
+  hint=NODE_TYPE hint_string="Node2D" usage=DEFAULT|SCRIPT_VARIABLE class_name=&"Node2D"
 var test_array: Array = []
   hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_array_bool: Array = Array[bool]([])
