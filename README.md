@@ -27,22 +27,22 @@ Siyuan Hong:
 
   Function 1
   
-      name: set_global_rotation 
+  name: set_global_rotation 
       
-      a link to the commit: https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
+  a link to the commit: https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
       
-      screenshot:
+  screenshot:
       i identified three branches in this function:
       ![image](https://github.com/SiyuanHong/godot/assets/113177812/7ff70bbb-2e1f-4541-a038-69965651f022)
       here you can see the first three branches are not reached in the original tests.
       
   Function 2
   
-      name:get_rotation
+  name:get_rotation
       
-      a link to the commit: https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
+  a link to the commit: https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
       
-      screenshot:
+  screenshot:
       i identified two branches in this function 
       ![image](https://github.com/SiyuanHong/godot/assets/113177812/7ff70bbb-2e1f-4541-a038-69965651f022)
       they are not reached in the original test. 
@@ -52,14 +52,14 @@ Siyuan Hong:
 ### Individual tests
 Siyuan Hong
      test1:
-     a link to commit:
+a link to commit:
      https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
 	 
-     old results: 
+old results: 
      ![image](https://github.com/SiyuanHong/godot/assets/113177812/5d6d3622-1eed-482c-a810-3847174bed22)
 
 	 
-     new results :
+new results :
      ![image](https://github.com/SiyuanHong/godot/assets/113177812/751b8bfe-1a7c-46d7-b379-a9f0ca1c455a)
 	 
      the coverage rate improved by 100%.
@@ -69,13 +69,13 @@ Siyuan Hong
      then all the three branches are reached. 
     
      test2:
-     a link to commit: 
+a link to commit: 
      https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
 	 
-     old results: 
+old results: 
      ![image](https://github.com/SiyuanHong/godot/assets/113177812/7ff70bbb-2e1f-4541-a038-69965651f022)
 	 
-     new results :
+new results :
      ![image](https://github.com/SiyuanHong/godot/assets/113177812/751b8bfe-1a7c-46d7-b379-a9f0ca1c455a)
 	 
      the coverage rate improved by 50%.
