@@ -5,7 +5,7 @@ Name: Godot Engine
 
 URL: https://github.com/godotengine/godot.git
 
-Number of lines of code and the tool used to count it: <TODO>
+Number of lines of code and the tool used to count it: 2326 KLOC, tested by lizard with command `lizard -l cpp`
 
 Programming language: C++
 ## Coverage measurement
@@ -15,7 +15,7 @@ name: OpenCppCoverage
 
 The way it was executed: After the development version of Godot compile( enabling it to be tested and be with debugged symbols), 
 run OpenCppCoverage withe command line like this: OpenCppCoverage --  ./bin/godot.windows.editor.dev.x86_64.exe --test
-the execuatable will run with all the tests and the OpenCppCoverage will chech which part of the code is covered. 
+the execuatable will run with all the tests and the OpenCppCoverage will check which part of the code is covered. 
 
 Because it is a really big project(it contains millions of lines of code), so we focus on the one part of the project which is the scene part, so we specificlly measure the coverage 
 of that part with OpenCppCoverage. 
