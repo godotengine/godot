@@ -6781,7 +6781,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 		case EDIT_CONVERT_TO_BEZIER_CONFIRM: {
 			// CONFIRM CODE
-
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Create Bezier Track"));
 			AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
 			Ref<Animation> reset_animation = player->get_animation("RESET");
 			TreeItem *tree_root = track_convert_select->get_root();
@@ -6792,12 +6793,26 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					Dictionary md = it->get_metadata(0);
 					int idx = md["track_idx"];
 					if (it->is_checked(0) && idx >= 0 && idx < animation->get_track_count()) {
-						// Get the track value. Then based on the variant do a switch statement?
 						int key_type = animation->track_get_type(idx);
 						NodePath n_path = animation->track_get_path(idx);
 
-						create_bezier_track(animation, String(n_path), idx);
-						create_bezier_track(reset_animation, String(n_path), idx);
+						create_bezier_track(animation, String(n_path), idx, undo_redo);
+
+						bool create_reset_track = true;
+
+						if (create_reset_track) {
+							Animation *reset_anim = reset_animation.ptr();
+							for (int i = 0; i < reset_anim->get_track_count(); i++) {
+								// We also need to check if it's a bezier track
+								if (reset_anim->track_get_path(i) == n_path && reset_anim->track_get_type(i) == Animation::TYPE_BEZIER) {
+									create_reset_track = false;
+									break;
+								}
+							}
+							if (create_reset_track) {
+								create_bezier_track(reset_animation, String(n_path), idx, undo_redo);
+							}
+						}
 					}
 					it = it->get_next();
 				}
@@ -6808,14 +6823,12 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					Dictionary md = it->get_metadata(0);
 					int idx = md["track_idx"];
 					if (it->is_checked(0) && idx >= 0 && idx < animation->get_track_count()) {
-						int reset_index = reset_animation->find_track(animation->track_get_path(idx), animation->track_get_type(idx));
-						animation->remove_track(idx);
-						reset_animation->remove_track(reset_index);
+						_animation_track_remove_request(idx, animation);
 					}
 					it = it->get_prev();
 				}
 			}
-
+			undo_redo->commit_action();
 		} break;
 
 		case EDIT_BAKE_ANIMATION: {
@@ -7745,13 +7758,20 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	convert_to_bezier_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_CONVERT_TO_BEZIER_CONFIRM));
 }
 
-void AnimationTrackEditor::create_bezier_track(Ref<Animation> anim, String path, int idx) {
-	int type = anim->track_get_key_value(idx, 0).get_type();
-	Vector<String> subindices = _get_bezier_subindices_for_type(anim->track_get_key_value(idx, 0).get_type());
+void AnimationTrackEditor::create_bezier_track(Ref<Animation> anim, String path, int idx, EditorUndoRedoManager *undo_redo) {
+	//int type = anim->track_get_type(idx);
+	// TODO stop function if there are no keys
+	Variant::Type key_type = anim->track_get_key_value(idx, 0).get_type();
+	Vector<String> subindices = _get_bezier_subindices_for_type(key_type);
+
+	//Animation *anim_pointer = anim.ptr();
 
 	for (int i = 0; i < subindices.size(); i++) {
-		anim->add_track(Animation::TYPE_BEZIER);
-		anim->track_set_path(anim->get_track_count() - 1, path + subindices[i]);
+		undo_redo->add_do_method(anim.ptr(), "add_track", Animation::TYPE_BEZIER, -1);
+		undo_redo->add_do_method(anim.ptr(), "track_set_path", anim->get_track_count() + i, path + subindices[i]);
+		undo_redo->add_undo_method(anim.ptr(), "remove_track", anim->get_track_count() - 1 + i);
+		//anim->add_track(Animation::TYPE_BEZIER, -1);
+		//anim->track_set_path(anim->get_track_count() - 1, path + subindices[i]);
 	}
 
 	int keys = anim->track_get_key_count(idx);
@@ -7760,26 +7780,26 @@ void AnimationTrackEditor::create_bezier_track(Ref<Animation> anim, String path,
 		Variant key_value = anim->track_get_key_value(idx, i);
 		Vector<Variant> key_value_sub_values;
 
-		if (type == Variant::FLOAT || type == Variant::INT) {
+		if (key_type == Variant::FLOAT || key_type == Variant::INT) {
 			key_value_sub_values.append(key_value);
-		} else if (type == Variant::VECTOR2) {
+		} else if (key_type == Variant::VECTOR2) {
 			key_value_sub_values.append(Vector2(key_value).x);
 			key_value_sub_values.append(Vector2(key_value).y);
-		} else if (type == Variant::VECTOR3) {
+		} else if (key_type == Variant::VECTOR3) {
 			key_value_sub_values.append(Vector3(key_value).x);
 			key_value_sub_values.append(Vector3(key_value).y);
 			key_value_sub_values.append(Vector3(key_value).z);
-		} else if (type == Variant::VECTOR4 || type == Variant::QUATERNION) {
+		} else if (key_type == Variant::VECTOR4 || key_type == Variant::QUATERNION) {
 			key_value_sub_values.append(Vector4(key_value).x);
 			key_value_sub_values.append(Vector4(key_value).y);
 			key_value_sub_values.append(Vector4(key_value).z);
 			key_value_sub_values.append(Vector4(key_value).w);
-		} else if (type == Variant::COLOR) {
+		} else if (key_type == Variant::COLOR) {
 			key_value_sub_values.append(Color(key_value).r);
 			key_value_sub_values.append(Color(key_value).g);
 			key_value_sub_values.append(Color(key_value).b);
 			key_value_sub_values.append(Color(key_value).a);
-		} else if (type == Variant::PLANE) {
+		} else if (key_type == Variant::PLANE) {
 			key_value_sub_values.append(Plane(key_value).normal.x);
 			key_value_sub_values.append(Plane(key_value).normal.y);
 			key_value_sub_values.append(Plane(key_value).normal.z);
@@ -7787,8 +7807,8 @@ void AnimationTrackEditor::create_bezier_track(Ref<Animation> anim, String path,
 		}
 
 		for (int t = 0; t < subindices.size(); t++) {
-			anim->bezier_track_insert_key(anim->get_track_count() - subindices.size() + t, key_time, key_value_sub_values[t], Vector2(0.0, 0.0), Vector2(0.0, 0.0));
-			anim->bezier_track_set_key_handle_mode(anim->get_track_count() - subindices.size() + t, i, Animation::HANDLE_MODE_LINEAR);
+			//anim->bezier_track_insert_key(anim->get_track_count() - subindices.size() + t, key_time, key_value_sub_values[t], Vector2(0.0, 0.0), Vector2(0.0, 0.0));
+			undo_redo->add_do_method(anim.ptr(), "bezier_track_insert_key", anim->get_track_count() + t, key_time, key_value_sub_values[t], Vector2(0.0, 0.0), Vector2(0.0, 0.0));
 		}
 	}
 }

@@ -722,7 +722,7 @@ public:
 	bool has_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type);
 	void make_insert_queue();
 	void commit_insert_queue();
-	void create_bezier_track(Ref<Animation> anim, String path, int idx);
+	void create_bezier_track(Ref<Animation> anim, String path, int idx, EditorUndoRedoManager *undo_redo);
 
 	void show_select_node_warning(bool p_show);
 	void show_dummy_player_warning(bool p_show);
