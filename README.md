@@ -4,7 +4,9 @@
 Name: Godot Engine 
 
 URL: https://github.com/godotengine/godot.git
+
 Number of lines of code and the tool used to count it: <TODO>
+
 Programming language: C++
 ## Coverage measurement
 
