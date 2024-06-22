@@ -81,8 +81,9 @@ public:
     }
 	int get_update_mode() { return (int)(get_bt_player()->get_update_mode()); }
 
-    void set_skeleton(Skeleton3D *p_skeleton) { }
-    Skeleton3D *get_skeleton() { return skeleton; }
+    void set_skeleton_resource(const String& p_skeleton_path);
+
+    String get_skeleton_resource() { return skeleton_res; }
 
     // 设置黑板
 	void set_blackboard(const Ref<Blackboard> &p_blackboard) ;
@@ -284,7 +285,6 @@ public:
 
     }
 protected:
-    void load_skeleton();
     void load_mesh(const StringName& part_name,String p_mesh_file_path);
     BTPlayer * get_bt_player();
     void _stop_skill()
@@ -340,8 +340,7 @@ protected:
     void _process_move();
 
 protected:
-    Skeleton3D *skeleton = nullptr;
-    AnimationPlayer *player = nullptr;
+    ObjectID skeletonID;
     Ref<CollisionObject3DConnectionShape> mainShape;
     mutable BTPlayer *btPlayer = nullptr;
     bool is_skill_stop = false;

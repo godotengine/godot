@@ -8,24 +8,30 @@ void CharacterCheckArea3D::set_body_main(class CharacterBodyMain* p_mainBody)
     {
         return;
     }
-    if(mainBody)
+    Area3D * areaCollision = nullptr;
+    if(mainBody && areaCollisionID.is_valid())
     {
-        areaCollision->disconnect(SceneStringName(body_entered),callable_mp(this,&CharacterCheckArea3D::on_body_enter_area));
-        areaCollision->disconnect(SceneStringName(body_exited),callable_mp(this,&CharacterCheckArea3D::on_body_exit_area));
-        areaCollision->queue_free();
-        areaCollision = nullptr;
+        areaCollision = Object::cast_to<Area3D>(ObjectDB::get_instance(areaCollisionID));
+        if(areaCollision)
+        {
+            areaCollision->disconnect(SceneStringName(body_entered),callable_mp(this,&CharacterCheckArea3D::on_body_enter_area));
+            areaCollision->disconnect(SceneStringName(body_exited),callable_mp(this,&CharacterCheckArea3D::on_body_exit_area));
+            areaCollision->queue_free();
+        }
+        areaCollisionID = ObjectID();
 
     }
     mainBody = p_mainBody;
     if(mainBody)
-    {            
-        areaCollision = memnew(Area3D);
+    {        
+        areaCollision = memnew(Area3D);    
         mainBody->add_child(areaCollision);
         areaCollision->set_owner(mainBody);
         areaCollision->connect(SceneStringName(body_entered),callable_mp(this,&CharacterCheckArea3D::on_body_enter_area));
         areaCollision->connect(SceneStringName(body_exited),callable_mp(this,&CharacterCheckArea3D::on_body_exit_area));
         areaCollision->set_collision_layer(mainBody->get_collision_layer());
         areaCollision->set_collision_mask(collision_check_mask);
+        areaCollisionID = areaCollision->get_instance_id();
     }
     if(area_shape.is_valid())
     {
@@ -57,6 +63,24 @@ void CharacterCheckArea3D::update_coord()
     is_update_coord = false;
 }
 
+    
+void CharacterCheckArea3D::set_area_shape(Ref<CollisionObject3DConnection> p_shape)
+{
+    if(area_shape == p_shape)
+    {
+        return;
+    }
+    if(area_shape.is_valid())
+    {
+        area_shape->set_link_target(nullptr);
+    }
+    area_shape = p_shape;
+    if(mainBody && areaCollisionID.is_valid() && area_shape.is_valid())
+    {
+        Area3D* areaCollision = Object::cast_to<Area3D>(ObjectDB::get_instance(areaCollisionID));
+        area_shape->set_link_target(areaCollision);
+    }
+}
 
 void CharacterCheckArea3D::get_bound_other_character_by_angle(TypedArray<CharacterCheckArea3DResult>& _array,float angle)
 {

@@ -395,6 +395,9 @@ void CharacterNavigationAgent3D::set_agent_parent(CharacterBodyMain *p_agent_par
 	if (Object::cast_to<CharacterBodyMain>(p_agent_parent) != nullptr) {
 		// place agent on navigation map first or else the RVO agent callback creation fails silently later
 		agent_parent = Object::cast_to<CharacterBodyMain>(p_agent_parent);
+		if(!agent_parent->is_inside_tree()) {
+			return;
+		}
 		if (map_override.is_valid()) {
 			NavigationServer3D::get_singleton()->agent_set_map(get_rid(), map_override);
 		} else {

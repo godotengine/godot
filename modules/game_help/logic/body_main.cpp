@@ -27,9 +27,6 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_navigation_agent", "navigation_agent"), &CharacterBodyMain::set_navigation_agent);
     ClassDB::bind_method(D_METHOD("get_navigation_agent"), &CharacterBodyMain::get_navigation_agent);
 
-    ClassDB::bind_method(D_METHOD("set_skeleton", "skeleton"), &CharacterBodyMain::set_skeleton);
-    ClassDB::bind_method(D_METHOD("get_skeleton"), &CharacterBodyMain::get_skeleton);
-
     ClassDB::bind_method(D_METHOD("set_animation_library", "animation_library"), &CharacterBodyMain::set_animation_library);
     ClassDB::bind_method(D_METHOD("get_animation_library"), &CharacterBodyMain::get_animation_library);
 
@@ -50,25 +47,29 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_character_ai", "ai"), &CharacterBodyMain::set_character_ai);
     ClassDB::bind_method(D_METHOD("get_character_ai"), &CharacterBodyMain::get_character_ai);
 
+    ClassDB::bind_method(D_METHOD("set_skeleton_resource", "skeleton"), &CharacterBodyMain::set_skeleton_resource);
+    ClassDB::bind_method(D_METHOD("get_skeleton_resource"), &CharacterBodyMain::get_skeleton_resource);
+
 
     
 
 
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "behavior_tree", PROPERTY_HINT_RESOURCE_TYPE, "BehaviorTree"), "set_behavior_tree", "get_behavior_tree");
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "character_ai", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAI"), "set_character_ai", "get_character_ai");
+    //ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "behavior_tree", PROPERTY_HINT_RESOURCE_TYPE, "BehaviorTree"), "set_behavior_tree", "get_behavior_tree");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "Idle,Physics,Manual"), "set_update_mode", "get_update_mode");	
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_RESOURCE_TYPE, "Blackboard",PROPERTY_USAGE_DEFAULT ), "set_blackboard", "get_blackboard");
+	//ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_RESOURCE_TYPE, "Blackboard",PROPERTY_USAGE_DEFAULT ), "set_blackboard", "get_blackboard");
+    ADD_GROUP("logic", "");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "character_ai", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAI"), "set_character_ai", "get_character_ai");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT ), "set_blackboard_plan", "get_blackboard_plan");
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "controller", PROPERTY_HINT_RESOURCE_TYPE, "CharacterController"), "set_controller", "get_controller");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_agent", PROPERTY_HINT_RESOURCE_TYPE, "CharacterNavigationAgent3D"), "set_navigation_agent", "get_navigation_agent");
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skeleton", PROPERTY_HINT_NODE_TYPE, "Skeleton",PROPERTY_USAGE_EDITOR), "set_skeleton", "get_skeleton");    
-    // 只能編輯不能保存
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_library", PROPERTY_HINT_RESOURCE_TYPE, "AnimationLibrary",PROPERTY_USAGE_DEFAULT ), "set_animation_library", "get_animation_library");
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animator", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimator",PROPERTY_USAGE_DEFAULT ), "set_animator", "get_animator");
-
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "main_shape", PROPERTY_HINT_RESOURCE_TYPE, "CollisionObject3DConnectionShape",PROPERTY_USAGE_DEFAULT), "set_main_shape", "get_main_shape");
     ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "check_area", PROPERTY_HINT_RESOURCE_TYPE, RESOURCE_TYPE_HINT("CharacterCheckArea3D"),PROPERTY_USAGE_DEFAULT), "set_check_area", "get_check_area");
+    
+
+    ADD_GROUP("show", "");
     ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "body_part", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT), "set_body_part", "get_body_part");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animator", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimator",PROPERTY_USAGE_DEFAULT ), "set_animator", "get_animator"); 
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_library", PROPERTY_HINT_RESOURCE_TYPE, "AnimationLibrary",PROPERTY_USAGE_DEFAULT ), "set_animation_library", "get_animation_library");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "skeleton", PROPERTY_HINT_FILE, "*.tscn,*.scn",PROPERTY_USAGE_DEFAULT ), "set_skeleton_resource", "get_skeleton_resource");
 
 
 	ADD_SIGNAL(MethodInfo("behavior_tree_finished", PropertyInfo(Variant::INT, "status")));
@@ -83,16 +84,15 @@ void CharacterBodyMain::_bind_methods()
 
 void CharacterBodyMain::clear_all()
 {
+    Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeletonID));
+    if(skeleton == nullptr)
+    {
+        return;
+    }
     if(skeleton)
     {
         memdelete(skeleton);
         skeleton = nullptr;
-        
-    }
-    if(player)
-    {
-        memdelete(player);
-        player = nullptr;
         
     }
 }
@@ -163,7 +163,6 @@ void CharacterBodyMain::init_main_body(String p_skeleton_file_path,StringName p_
 {
     skeleton_res = p_skeleton_file_path;
     animation_group = p_animation_group;
-    load_skeleton();
 
 }
 
@@ -174,37 +173,37 @@ void CharacterBodyMain::set_character_ai(const Ref<CharacterAI> &p_ai)
 Ref<CharacterAI> CharacterBodyMain::get_character_ai()
 {
     return character_ai;
-}
-void CharacterBodyMain::load_skeleton()
-{
+} 
+void CharacterBodyMain::set_skeleton_resource(const String& p_skeleton_path)
+{        
+    skeleton_res = p_skeleton_path;
     clear_all();
     Ref<PackedScene> scene = ResourceLoader::load(skeleton_res);
     if(!scene.is_valid())
     {
         ERR_FAIL_MSG("load skeleton failed:" + skeleton_res);
+        skeleton_res = "";
         return ;
     }
     Node* ins = scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
     if (ins == nullptr) {
         ERR_FAIL_MSG("init skeleton instantiate failed:" + skeleton_res);
+        skeleton_res = "";
         return;
     }
-    skeleton = Object::cast_to<Skeleton3D>(ins); 
+    Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(ins); 
     if(skeleton == nullptr)
     {
         ERR_FAIL_MSG("scene is not Skeleton3D:" + skeleton_res);
         memdelete(ins);
+        skeleton_res = "";
         return ;
     }
     skeleton->set_name("Skeleton3D");
 
     add_child(skeleton);
     skeleton->set_owner(this);
-    player = memnew(AnimationPlayer);
-    player->set_name("AnimationPlayer");
-    add_child(player);
-    player->set_owner(this);
-    AnimationManager::setup_animation_tree(this,animation_group);
+    skeleton->set_dont_save(true);
 }
 void CharacterBodyMain::load_mesh(const StringName& part_name,String p_mesh_file_path)
 {
@@ -335,6 +334,11 @@ void CharacterBodyMain::init_body_part_array(const Array& p_part_array)
         a.value->clear();
     }
     bodyPart.clear();
+    Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeletonID));
+    if(skeleton == nullptr)
+    {
+        return;
+    }
 
     for(int i = 0;i < p_part_array.size();i++)
     {
@@ -486,6 +490,11 @@ void CharacterBodyMain::set_body_part(const Dictionary& part)
     
     HashMap<StringName,Ref<CharacterBodyPartInstane>> old_bodyPart = bodyPart;
     bodyPart.clear();
+    Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeletonID));
+    if(skeleton == nullptr)
+    {
+        return;
+    }
     for(int i = 0;i < keys.size();i++)
     {
         StringName part_name = keys[i];

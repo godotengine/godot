@@ -79,28 +79,31 @@ Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 		//make mesh
 		Vector<Vector3> array;
 		array.resize(lines.size());
-		Vector<Color> color_array;
-		color_array.resize(lines.size());
 		{
 			Vector3 *w = array.ptrw();
-			Color *c = color_array.ptrw();
 			for (int i = 0; i < lines.size(); i++) {
 				w[i] = lines[i];
-				c[i] = debug_color;
 			}
 		}
 
 		Array arr;
 		arr.resize(Mesh::ARRAY_MAX);
 		arr[Mesh::ARRAY_VERTEX] = array;
-		arr[Mesh::ARRAY_COLOR] = color_array;
 
 		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 
 		debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, arr);
 
+		Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+		line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+		line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+		line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+		line_material->set_albedo(debug_color);
+
 		if (st) {
-			debug_mesh_cache->surface_set_material(0, st->get_debug_collision_material());
+			debug_mesh_cache->surface_set_material(0, line_material);
 		}
 	}
 

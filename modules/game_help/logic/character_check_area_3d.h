@@ -180,22 +180,7 @@ public:
         return cell_size;
     }
     
-    void set_area_shape(Ref<CollisionObject3DConnection> p_shape)
-    {
-        if(area_shape == p_shape)
-        {
-            return;
-        }
-        if(area_shape.is_valid())
-        {
-            area_shape->set_link_target(nullptr);
-        }
-        area_shape = p_shape;
-        if(area_shape.is_valid())
-        {
-            area_shape->set_link_target(areaCollision);
-        }
-    }
+    void set_area_shape(Ref<CollisionObject3DConnection> p_shape);
     Ref<CollisionObject3DConnection> get_area_shape()
     {
         return area_shape;
@@ -234,7 +219,7 @@ public:
     HashMap<Node3D*,Ref<CharacterCheckArea3DResult>> boundOtherCharacter;
     HashMap<CellPos,LocalVector<Ref<CharacterCheckArea3DResult>>,CellPos,CellPos> boundOtherCharacterByCoord;
     class CharacterBodyMain* mainBody = nullptr;
-    Area3D * areaCollision = nullptr;
+    ObjectID areaCollisionID;
     Ref<CollisionObject3DConnection> area_shape;
     uint32_t collision_check_mask = 0;
     bool is_update_coord = true;

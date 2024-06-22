@@ -275,6 +275,7 @@ void CollisionObject3DConnectionShape::update_transform() {
 	if(shape_node) {
 		Quaternion rot = Quaternion::from_euler(local_rotation);
 		Transform3D local_transform = Transform3D(Basis(rot,local_scale),local_origin);
+		shape_node->set_shape(shape);
 		shape_node->set_transform(local_transform);
 	}
 	
