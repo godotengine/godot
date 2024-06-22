@@ -1010,8 +1010,7 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 	}
 
 	if (new_baked_outlines.size() == 0) {
-		p_navigation_mesh->set_vertices(Vector<Vector2>());
-		p_navigation_mesh->clear_polygons();
+		p_navigation_mesh->clear();
 		return;
 	}
 
@@ -1045,8 +1044,7 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 	TPPLPartition tpart;
 	if (tpart.ConvexPartition_HM(&tppl_in_polygon, &tppl_out_polygon) == 0) { //failed!
 		ERR_PRINT("NavigationPolygon Convex partition failed. Unable to create a valid NavigationMesh from defined polygon outline paths.");
-		p_navigation_mesh->set_vertices(Vector<Vector2>());
-		p_navigation_mesh->clear_polygons();
+		p_navigation_mesh->clear();
 		return;
 	}
 
@@ -1071,11 +1069,7 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 		new_polygons.push_back(new_polygon);
 	}
 
-	p_navigation_mesh->set_vertices(new_vertices);
-	p_navigation_mesh->clear_polygons();
-	for (int i = 0; i < new_polygons.size(); i++) {
-		p_navigation_mesh->add_polygon(new_polygons[i]);
-	}
+	p_navigation_mesh->set_data(new_vertices, new_polygons);
 }
 
 #endif // CLIPPER2_ENABLED

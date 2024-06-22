@@ -662,7 +662,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/script_list/sort_members_outline_alphabetically", false);
 
 	// Completion
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/idle_parse_delay", 2.0, "0.1,10,0.01")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/idle_parse_delay", 1.5, "0.1,10,0.01")
 	_initial_set("text_editor/completion/auto_brace_complete", true);
 	_initial_set("text_editor/completion/code_complete_enabled", true);
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/code_complete_delay", 0.3, "0.01,5,0.01,or_greater")

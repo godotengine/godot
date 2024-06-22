@@ -840,7 +840,7 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 	for (int i = 0; i < boundaries.size(); i += 2) {
 		const int start = boundaries[i];
 		const int end = boundaries[i + 1];
-		lines.append(p_reason.substr(start, end - start + 1));
+		lines.append(p_reason.substr(start, end - start));
 	}
 
 	reason->set_tooltip_text(String("\n").join(lines));

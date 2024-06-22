@@ -709,7 +709,13 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 	}
 
 	if (script.is_valid()) {
-		return script->has_method(p_method);
+		Ref<Script> scr = script;
+		while (scr.is_valid()) {
+			if (scr->has_method(p_method)) {
+				return true;
+			}
+			scr = scr->get_base_script();
+		}
 	}
 	return false;
 }
