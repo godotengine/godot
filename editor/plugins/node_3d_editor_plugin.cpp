@@ -3041,6 +3041,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			view_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			preview_camera->set_icon(get_editor_theme_icon(SNAME("Camera3D")));
+			paste_viewport_transform->set_icon(get_editor_theme_icon(SNAME("ActionCopy")));
+
 			Control *gui_base = EditorNode::get_singleton()->get_gui_base();
 
 			const Ref<StyleBox> &information_3d_stylebox = gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles));
@@ -3074,6 +3076,21 @@ void Node3DEditorViewport::_notification(int p_what) {
 			preview_camera->add_theme_style_override("disabled", information_3d_stylebox);
 			preview_camera->add_theme_style_override("disabled_mirrored", information_3d_stylebox);
 			preview_camera->end_bulk_theme_override();
+
+			paste_viewport_transform->begin_bulk_theme_override();
+			paste_viewport_transform->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
+			paste_viewport_transform->add_theme_style_override("normal_mirrored", information_3d_stylebox);
+			paste_viewport_transform->add_theme_style_override("hover", information_3d_stylebox);
+			paste_viewport_transform->add_theme_style_override("hover_mirrored", information_3d_stylebox);
+			paste_viewport_transform->add_theme_style_override("hover_pressed", information_3d_stylebox);
+			paste_viewport_transform->add_theme_style_override("hover_pressed_mirrored", information_3d_stylebox);
+			paste_viewport_transform->add_theme_style_override(SceneStringName(pressed), information_3d_stylebox);
+			paste_viewport_transform->add_theme_style_override("pressed_mirrored", information_3d_stylebox);
+			paste_viewport_transform->add_theme_style_override("focus", information_3d_stylebox);
+			paste_viewport_transform->add_theme_style_override("focus_mirrored", information_3d_stylebox);
+			paste_viewport_transform->add_theme_style_override("disabled", information_3d_stylebox);
+			paste_viewport_transform->add_theme_style_override("disabled_mirrored", information_3d_stylebox);
+			paste_viewport_transform->end_bulk_theme_override();
 
 			frame_time_gradient->set_color(0, get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 			frame_time_gradient->set_color(1, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
@@ -3499,9 +3516,11 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 
 			if (current) {
 				preview_camera->hide();
+				paste_viewport_transform->hide();
 			} else {
 				if (previewing != nullptr) {
 					preview_camera->show();
+					paste_viewport_transform->show();
 				}
 			}
 		} break;
@@ -3765,10 +3784,14 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
 		if (!preview) {
 			preview_camera->hide();
+		} else {
+			paste_viewport_transform->show();
 		}
 		surface->queue_redraw();
 
 	} else {
+		paste_viewport_transform->hide();
+
 		previewing = preview;
 		previewing->connect(SceneStringName(tree_exiting), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), preview->get_camera()); //replace
@@ -3790,11 +3813,19 @@ void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
 		preview_camera->set_pressed(false);
 		if (!preview) {
 			preview_camera->hide();
+			paste_viewport_transform->hide();
 		} else {
 			preview_camera->show();
+			paste_viewport_transform->show();
 		}
 		view_menu->show();
 		surface->queue_redraw();
+	}
+}
+
+void Node3DEditorViewport::_paste_viewport_transform() {
+	if (preview != nullptr && camera != nullptr) {
+		preview->set_transform(camera->get_transform());
 	}
 }
 
@@ -3823,6 +3854,7 @@ void Node3DEditorViewport::set_can_preview(Camera3D *p_preview) {
 
 	if (!preview_camera->is_pressed() && !previewing_cinema) {
 		preview_camera->set_visible(p_preview);
+		paste_viewport_transform->set_visible(p_preview);
 	}
 }
 
@@ -4032,6 +4064,7 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 			surface->queue_redraw();
 			preview_camera->set_pressed(true);
 			preview_camera->show();
+			paste_viewport_transform->hide();
 		}
 	}
 	preview_camera->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
@@ -5354,13 +5387,24 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	ED_SHORTCUT("spatial_editor/instant_rotate", TTR("Begin Rotate Transformation"));
 	ED_SHORTCUT("spatial_editor/instant_scale", TTR("Begin Scale Transformation"));
 
+	HBoxContainer *camera_hbox = memnew(HBoxContainer);
+	vbox->add_child(camera_hbox);
+
 	preview_camera = memnew(CheckBox);
 	preview_camera->set_text(TTR("Preview"));
 	preview_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_camera_preview", TTR("Toggle Camera Preview"), KeyModifierMask::CMD_OR_CTRL | Key::P));
-	vbox->add_child(preview_camera);
+	camera_hbox->add_child(preview_camera);
 	preview_camera->set_h_size_flags(0);
 	preview_camera->hide();
 	preview_camera->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
+
+	paste_viewport_transform = memnew(Button);
+	paste_viewport_transform->set_tooltip_text(TTR("Paste Viewport Transform To Camera"));
+	camera_hbox->add_child(paste_viewport_transform);
+	paste_viewport_transform->set_h_size_flags(0);
+	paste_viewport_transform->hide();
+	paste_viewport_transform->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditorViewport::_paste_viewport_transform));
+
 	previewing = nullptr;
 	gizmo_scale = 1.0;
 

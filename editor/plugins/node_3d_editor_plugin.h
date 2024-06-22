@@ -223,6 +223,7 @@ private:
 	EditorSelection *editor_selection = nullptr;
 
 	CheckBox *preview_camera = nullptr;
+	Button *paste_viewport_transform = nullptr;
 	SubViewportContainer *subviewport_container = nullptr;
 
 	MenuButton *view_menu = nullptr;
@@ -427,6 +428,7 @@ private:
 	void _preview_exited_scene();
 	void _toggle_camera_preview(bool);
 	void _toggle_cinema_preview(bool);
+	void _paste_viewport_transform();
 	void _init_gizmo_instance(int p_idx);
 	void _finish_gizmo_instances();
 	void _selection_result_pressed(int);
