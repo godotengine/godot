@@ -39,6 +39,8 @@
 namespace TestNode2D {
 
 TEST_CASE("[SceneTree][Node2D]") {
+	initcoverageDataOfPjrs(4);
+
 	SUBCASE("[Node2D][Global Transform] Global Transform should be accessible while not in SceneTree.") { // GH-79453
 		Node2D *test_node = memnew(Node2D);
 		test_node->set_name("node");
@@ -84,6 +86,45 @@ TEST_CASE("[SceneTree][Node2D]") {
 		memdelete(outer);
 		memdelete(main);
 	}
+
+	SUBCASE("[Node2D][get_relative_transform_to_parent] When p_parent == this") {
+		Node2D *node = memnew(Node2D);
+		CHECK_EQ(node->get_relative_transform_to_parent(node), Transform2D());
+		memdelete(node);
+	}
+
+	SUBCASE("[Node2D][get_relative_transform_to_parent] When p_parent == parent_2d") {
+		Node2D *parent = memnew(Node2D);
+		Node2D *child = memnew(Node2D);
+		parent->add_child(child);
+		child->set_transform(Transform2D(-1, 0, 0, 1, 0, 0));	//The Transform2D that will flip something along the X axis.
+
+		CHECK_EQ(child->get_relative_transform_to_parent(parent), Transform2D(-1, 0, 0, 1, 0, 0));
+
+		memdelete(child);
+		memdelete(parent);
+	}
+
+	SUBCASE("[Node2D][get_relative_transform_to_parent] Else") {
+		Node2D *grandparent = memnew(Node2D);
+		Node2D *parent = memnew(Node2D);
+		Node2D *child = memnew(Node2D);
+
+		grandparent->add_child(parent);
+		parent->add_child(child);
+
+		grandparent->set_transform(Transform2D(1, 0, 0, 1, 3, 3));	//No translation, no rotation, offset 3, 3
+		parent->set_transform(Transform2D(1, 0, 0, 1, 2, 2));	//No translation, no rotation, offset 2, 2
+		child->set_transform(Transform2D(1, 0, 0, 1, 1, 1));	//No translation, no rotation, offset 1, 1
+
+		CHECK_EQ(child->get_relative_transform_to_parent(grandparent), Transform2D(1, 0, 0, 1, 6, 6));	//Relative transform 6, 6
+
+		memdelete(child);
+		memdelete(parent);
+		memdelete(grandparent);
+	}
+
+	outputCoverageDataOfPjrs();
 }
 
 } // namespace TestNode2D

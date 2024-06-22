@@ -32,6 +32,22 @@
 
 #include "scene/main/viewport.h"
 
+#include <vector>
+#include <iostream>
+
+std::vector<int> coverageDataOfPjrs(4,0);
+
+void initcoverageDataOfPjrs(int inputNum) {
+	coverageDataOfPjrs.resize(inputNum, 0);
+}
+
+void outputCoverageDataOfPjrs() {
+    std::cout << "Coverage Data:" << std::endl;
+    for (size_t i = 0; i < coverageDataOfPjrs.size(); ++i) {
+        std::cout << "Branch " << i << ": " << (coverageDataOfPjrs.at(i) ? "Executed" : "Not Executed") << std::endl;
+    }
+}
+
 #ifdef TOOLS_ENABLED
 Dictionary Node2D::_edit_get_state() const {
 	Dictionary state;
@@ -391,7 +407,9 @@ void Node2D::set_global_transform(const Transform2D &p_transform) {
 
 Transform2D Node2D::get_relative_transform_to_parent(const Node *p_parent) const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
+	coverageDataOfPjrs.at(0) = 1;
 	if (p_parent == this) {
+		coverageDataOfPjrs.at(1) = 1;
 		return Transform2D();
 	}
 
@@ -399,8 +417,10 @@ Transform2D Node2D::get_relative_transform_to_parent(const Node *p_parent) const
 
 	ERR_FAIL_NULL_V(parent_2d, Transform2D());
 	if (p_parent == parent_2d) {
+		coverageDataOfPjrs.at(2) = 1;
 		return get_transform();
 	} else {
+		coverageDataOfPjrs.at(3) = 1;
 		return parent_2d->get_relative_transform_to_parent(p_parent) * get_transform();
 	}
 }
