@@ -277,9 +277,6 @@ void NavRegion::update_polygons() {
 		polygon.surface_area = _new_polygon_surface_area;
 		_new_region_surface_area += _new_polygon_surface_area;
 
-		Vector3 polygon_center;
-		real_t sum(0);
-
 		for (int j(0); j < navigation_mesh_polygon_size; j++) {
 			int idx = indices[j];
 			if (idx < 0 || idx >= len) {
@@ -290,24 +287,10 @@ void NavRegion::update_polygons() {
 			Vector3 point_position = transform.xform(vertices_r[idx]);
 			polygon.points[j].pos = point_position;
 			polygon.points[j].key = map->get_point_key(point_position);
-
-			polygon_center += point_position; // Composing the center of the polygon
-
-			if (j >= 2) {
-				Vector3 epa = transform.xform(vertices_r[indices[j - 2]]);
-				Vector3 epb = transform.xform(vertices_r[indices[j - 1]]);
-
-				sum += map->get_up().dot((epb - epa).cross(point_position - epa));
-			}
 		}
 
 		if (!valid) {
 			ERR_BREAK_MSG(!valid, "The navigation mesh set in this region is not valid!");
-		}
-
-		polygon.clockwise = sum > 0;
-		if (!navigation_mesh_polygon.is_empty()) {
-			polygon.center = polygon_center / real_t(navigation_mesh_polygon.size());
 		}
 	}
 
