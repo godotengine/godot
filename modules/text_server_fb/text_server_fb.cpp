@@ -4492,65 +4492,105 @@ String TextServerFallback::_string_to_title(const String &p_string, const String
 PackedInt32Array TextServerFallback::_string_get_word_breaks(const String &p_string, const String &p_language, int64_t p_chars_per_line) const {
 	PackedInt32Array ret;
 
-	int line_start = 0;
-	int line_end = 0; // End of last word on current line.
-	int word_start = 0; // -1 if no word encountered. Leading spaces are part of a word.
-	int word_length = 0;
+	if (p_chars_per_line > 0) {
+		int line_start = 0;
+		int last_break = -1;
+		int line_length = 0;
 
-	for (int i = 0; i < p_string.length(); i++) {
-		const char32_t c = p_string[i];
+		for (int i = 0; i < p_string.length(); i++) {
+			const char32_t c = p_string[i];
 
-		if (is_linebreak(c)) {
-			// Force newline.
-			ret.push_back(line_start);
-			ret.push_back(i);
-			line_start = i + 1;
-			line_end = line_start;
-			word_start = line_start;
-			word_length = 0;
-		} else if (c == 0xfffc) {
-			continue;
-		} else if ((is_punct(c) && c != 0x005F) || is_underscore(c) || c == '\t' || is_whitespace(c)) {
-			// A whitespace ends current word.
-			if (word_length > 0) {
-				line_end = i - 1;
-				word_start = -1;
-				word_length = 0;
-			}
-		} else {
-			if (word_start == -1) {
-				word_start = i;
-				if (p_chars_per_line <= 0) {
+			bool is_lb = is_linebreak(c);
+			bool is_ws = is_whitespace(c);
+			bool is_p = (is_punct(c) && c != 0x005F) || is_underscore(c) || c == '\t' || c == 0xfffc;
+
+			if (is_lb) {
+				if (line_length > 0) {
 					ret.push_back(line_start);
-					ret.push_back(line_end + 1);
-					line_start = word_start;
-					line_end = line_start;
+					ret.push_back(i);
 				}
+				line_start = i;
+				line_length = 0;
+				last_break = -1;
+				continue;
+			} else if (is_ws || is_p) {
+				last_break = i;
 			}
-			word_length += 1;
 
-			if (p_chars_per_line > 0) {
-				if (word_length > p_chars_per_line) {
-					// Word too long: wrap before current character.
+			if (line_length == p_chars_per_line) {
+				if (last_break != -1) {
+					int last_break_w_spaces = last_break;
+					while (last_break > line_start && is_whitespace(p_string[last_break - 1])) {
+						last_break--;
+					}
+					if (line_start != last_break) {
+						ret.push_back(line_start);
+						ret.push_back(last_break);
+					}
+					while (last_break_w_spaces < p_string.length() && is_whitespace(p_string[last_break_w_spaces])) {
+						last_break_w_spaces++;
+					}
+					line_start = last_break_w_spaces;
+					if (last_break_w_spaces < i) {
+						line_length = i - last_break_w_spaces;
+					} else {
+						i = last_break_w_spaces;
+						line_length = 0;
+					}
+				} else {
 					ret.push_back(line_start);
 					ret.push_back(i);
 					line_start = i;
-					line_end = i;
-					word_start = i;
-					word_length = 1;
-				} else if (i - line_start + 1 > p_chars_per_line) {
-					// Line too long: wrap after the last word.
-					ret.push_back(line_start);
-					ret.push_back(line_end + 1);
-					line_start = word_start;
-					line_end = line_start;
+					line_length = 0;
 				}
+				last_break = -1;
 			}
+			line_length++;
 		}
-	}
-	if (line_start < p_string.length()) {
-		ret.push_back(line_start);
-		ret.push_back(p_string.length());
+		if (line_length > 0) {
+			ret.push_back(line_start);
+			ret.push_back(p_string.length());
+		}
+	} else {
+		int word_start = 0; // -1 if no word encountered. Leading spaces are part of a word.
+		int word_length = 0;
+
+		for (int i = 0; i < p_string.length(); i++) {
+			const char32_t c = p_string[i];
+
+			bool is_lb = is_linebreak(c);
+			bool is_ws = is_whitespace(c);
+			bool is_p = (is_punct(c) && c != 0x005F) || is_underscore(c) || c == '\t' || c == 0xfffc;
+
+			if (word_start == -1) {
+				if (!is_lb && !is_ws && !is_p) {
+					word_start = i;
+				}
+				continue;
+			}
+
+			if (is_lb) {
+				if (word_start != -1 && word_length > 0) {
+					ret.push_back(word_start);
+					ret.push_back(i);
+				}
+				word_start = -1;
+				word_length = 0;
+			} else if (is_ws || is_p) {
+				if (word_start != -1 && word_length > 0) {
+					ret.push_back(word_start);
+					ret.push_back(i);
+				}
+				word_start = -1;
+				word_length = 0;
+			}
+
+			word_length++;
+		}
+		if (word_start != -1 && word_length > 0) {
+			ret.push_back(word_start);
+			ret.push_back(p_string.length());
+		}
 	}
 	return ret;
 }
