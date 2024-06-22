@@ -153,6 +153,7 @@ public:
 	void tts_stop() override {}
 
 	void mouse_set_mode(MouseMode p_mode) override {}
+	Point2i mouse_get_position() const override { return Point2i(); }
 	void clipboard_set(const String &p_text) override {}
 	void clipboard_set_primary(const String &p_text) override {}
 
