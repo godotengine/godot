@@ -1437,7 +1437,21 @@ void AnimationTimelineEdit::_notification(int p_what) {
 
 			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 			int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-			Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
+
+			Color time_available_bg_color = get_theme_color(SNAME("time_available_bg_color"), SNAME("AnimationTimelineEdit"));
+			Color time_unavailable_bg_color = get_theme_color(SNAME("time_unavailable_bg_color"), SNAME("AnimationTimelineEdit"));
+			Color v_line_primary_color = get_theme_color(SNAME("v_line_primary_color"), SNAME("AnimationTimelineEdit"));
+			Color v_line_secondary_color = get_theme_color(SNAME("v_line_secondary_color"), SNAME("AnimationTimelineEdit"));
+			Color h_line_color = get_theme_color(SNAME("h_line_color"), SNAME("AnimationTimelineEdit"));
+			Color font_primary_color = get_theme_color(SNAME("font_primary_color"), SNAME("AnimationTimelineEdit"));
+			Color font_secondary_color = get_theme_color(SNAME("font_secondary_color"), SNAME("AnimationTimelineEdit"));
+
+			int v_line_primary_margin = get_theme_constant(SNAME("v_line_primary_margin"), SNAME("AnimationTimelineEdit"));
+			int v_line_secondary_margin = get_theme_constant(SNAME("v_line_secondary_margin"), SNAME("AnimationTimelineEdit"));
+			int v_line_primary_width = get_theme_constant(SNAME("v_line_primary_width"), SNAME("AnimationTimelineEdit"));
+			int v_line_secondary_width = get_theme_constant(SNAME("v_line_secondary_width"), SNAME("AnimationTimelineEdit"));
+			int text_primary_margin = get_theme_constant(SNAME("text_primary_margin"), SNAME("AnimationTimelineEdit"));
+			int text_secondary_margin = get_theme_constant(SNAME("text_secondary_margin"), SNAME("AnimationTimelineEdit"));
 
 			int zoomw = key_range;
 			float scale = get_zoom_scale();
@@ -1494,14 +1508,9 @@ void AnimationTimelineEdit::_notification(int p_what) {
 
 			int end_px = (l - get_value()) * scale;
 			int begin_px = -get_value() * scale;
-			Color notimecol = get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor));
-			Color timecolor = color;
-			timecolor.a = 0.2;
-			Color linecolor = color;
-			linecolor.a = 0.2;
 
 			{
-				draw_rect(Rect2(Point2(get_name_limit(), 0), Point2(zoomw - 1, h)), notimecol);
+				draw_rect(Rect2(Point2(get_name_limit(), 0), Point2(zoomw - 1, h)), time_unavailable_bg_color);
 
 				if (begin_px < zoomw && end_px > 0) {
 					if (begin_px < 0) {
@@ -1511,13 +1520,9 @@ void AnimationTimelineEdit::_notification(int p_what) {
 						end_px = zoomw;
 					}
 
-					draw_rect(Rect2(Point2(get_name_limit() + begin_px, 0), Point2(end_px - begin_px, h)), timecolor);
+					draw_rect(Rect2(Point2(get_name_limit() + begin_px, 0), Point2(end_px - begin_px, h)), time_available_bg_color);
 				}
 			}
-
-			Color color_time_sec = color;
-			Color color_time_dec = color;
-			color_time_dec.a *= 0.5;
 #define SC_ADJ 100
 			int dec = 1;
 			int step = 1;
@@ -1572,9 +1577,15 @@ void AnimationTimelineEdit::_notification(int p_what) {
 						bool sub = Math::floor(prev) == Math::floor(pos);
 
 						if (frame != prev_frame && i >= prev_frame_ofs) {
-							draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor, Math::round(EDSCALE));
+							int line_margin = sub ? v_line_secondary_margin : v_line_primary_margin;
+							float line_width = sub ? v_line_secondary_width : v_line_primary_width;
+							Color line_color = sub ? v_line_secondary_color : v_line_primary_color;
 
-							draw_string(font, Point2(get_name_limit() + i + 3 * EDSCALE, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), itos(frame), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, font_size, sub ? color_time_dec : color_time_sec);
+							draw_line(Point2(get_name_limit() + i, 0 + line_margin), Point2(get_name_limit() + i, h - line_margin), line_color, Math::round(line_width));
+
+							int text_margin = sub ? text_secondary_margin : text_primary_margin;
+
+							draw_string(font, Point2(get_name_limit() + i + text_margin, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), itos(frame), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, font_size, sub ? font_secondary_color : font_primary_color);
 							prev_frame_ofs = i + font->get_string_size(itos(frame), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 5 * EDSCALE;
 						}
 					}
@@ -1591,13 +1602,20 @@ void AnimationTimelineEdit::_notification(int p_what) {
 
 					if ((sc / step) != (prev_sc / step) || (prev_sc < 0 && sc >= 0)) {
 						int scd = sc < 0 ? prev_sc : sc;
-						draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor, Math::round(EDSCALE));
-						draw_string(font, Point2(get_name_limit() + i + 3, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), String::num((scd - (scd % step)) / double(SC_ADJ), decimals), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, font_size, sub ? color_time_dec : color_time_sec);
+						int line_margin = sub ? v_line_secondary_margin : v_line_primary_margin;
+						float line_width = sub ? v_line_secondary_width : v_line_primary_width;
+						Color line_color = sub ? v_line_secondary_color : v_line_primary_color;
+
+						draw_line(Point2(get_name_limit() + i, 0 + line_margin), Point2(get_name_limit() + i, h - line_margin), line_color, Math::round(line_width));
+
+						int text_margin = sub ? text_secondary_margin : text_primary_margin;
+
+						draw_string(font, Point2(get_name_limit() + i + text_margin, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), String::num((scd - (scd % step)) / double(SC_ADJ), decimals), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, font_size, sub ? font_secondary_color : font_primary_color);
 					}
 				}
 			}
 
-			draw_line(Vector2(0, get_size().height), get_size(), linecolor, Math::round(EDSCALE));
+			draw_line(Vector2(0, get_size().height), get_size(), h_line_color, Math::round(EDSCALE));
 			update_values();
 		} break;
 	}

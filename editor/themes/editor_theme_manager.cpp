@@ -2224,6 +2224,27 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_stylebox("DictionaryAddItem0", EditorStringName(EditorStyles), style_dictionary_add_item);
 	}
 
+	// Animation Editor.
+	{
+		// AnimationTimelineEdit.
+		// "primary" is used for integer timeline values, "secondary" for decimal values.
+
+		p_theme->set_color("time_available_bg_color", "AnimationTimelineEdit", p_config.font_color * Color(1, 1, 1, 0.2));
+		p_theme->set_color("time_unavailable_bg_color", "AnimationTimelineEdit", p_config.dark_color_2);
+		p_theme->set_color("v_line_primary_color", "AnimationTimelineEdit", p_config.font_color * Color(1, 1, 1, 0.2));
+		p_theme->set_color("v_line_secondary_color", "AnimationTimelineEdit", p_config.font_color * Color(1, 1, 1, 0.2));
+		p_theme->set_color("h_line_color", "AnimationTimelineEdit", p_config.font_color * Color(1, 1, 1, 0.2));
+		p_theme->set_color("font_primary_color", "AnimationTimelineEdit", p_config.font_color);
+		p_theme->set_color("font_secondary_color", "AnimationTimelineEdit", p_config.font_color * Color(1, 1, 1, 0.5));
+
+		p_theme->set_constant("v_line_primary_margin", "AnimationTimelineEdit", 0);
+		p_theme->set_constant("v_line_secondary_margin", "AnimationTimelineEdit", 0);
+		p_theme->set_constant("v_line_primary_width", "AnimationTimelineEdit", 1 * EDSCALE);
+		p_theme->set_constant("v_line_secondary_width", "AnimationTimelineEdit", 1 * EDSCALE);
+		p_theme->set_constant("text_primary_margin", "AnimationTimelineEdit", 3 * EDSCALE);
+		p_theme->set_constant("text_secondary_margin", "AnimationTimelineEdit", 3 * EDSCALE);
+	}
+
 	// Editor help.
 	{
 		Ref<StyleBoxFlat> style_editor_help = p_config.base_style->duplicate();
