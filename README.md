@@ -79,6 +79,28 @@ screenshot:
 
 ![scale_uncovered](https://github.com/SiyuanHong/godot/assets/50838626/16a5f470-637e-423c-aed3-433ac9b14c95)
 
+Jiarui Pan
+
+Function 1
+
+Name: get_relative_transform_to_parent (https://github.com/SiyuanHong/godot/commit/8f3368781a76d6c3722a1ea3a8791a623f629722)
+
+Screenshot:
+
+![image](https://github.com/SiyuanHong/godot/blob/pjr/screenshots/before%20test1.png)
+
+Four branches are identified as 0, 1, 2 and 3, contained by coverageDataOfPjrs. At this stage none of these branches are reached by the exisiting tests.
+
+Function 2
+
+Name: set_current (https://github.com/SiyuanHong/godot/commit/df84fe5b13f9e87a36027155b0462e0ad4b5f1cd)
+
+Screenshot:
+
+![image](https://github.com/SiyuanHong/godot/blob/pjr/screenshots/before%20test2.png)
+
+Three branches are identified as 0, 1 and 2. To seperate, container is differently named as coverageDataOfPjrs2. At this stage none of these branches are reached by the exisiting tests.
+
 ## Coverage improvement
 
 ### Individual tests
@@ -154,6 +176,41 @@ new result: \
    	Use these two node objects to invoke `set_global_scale` function, both branches will be reached, as the condition
 	checks if the node has a parent node.
 
+Jiarui Pan
+
+Test1
+
+a link to the commit: https://github.com/SiyuanHong/godot/commit/8f3368781a76d6c3722a1ea3a8791a623f629722
+
+old results:
+
+![image](https://github.com/SiyuanHong/godot/blob/pjr/screenshots/before%20test1.png)
+
+
+new result:
+![image](https://github.com/SiyuanHong/godot/blob/pjr/screenshots/after%20test1.png)
+
+     The coverage improved by 100%.
+
+     Comment: Initially, no tests are responsible for this function, so a new testcase is created. According to the code, three cases diverge, thus, the testcase consists of three subcases: p_parent == this, p_parent == parent_2d and the rest. For each condition, content of the tests differs: for the first one, check if the transform by get_relative_transform_to_parent(node) returns the same as Transform2D() when p_parent is the node itself; for the second one, by linking the node to its parent node, check if the transform of the parent node is the same as child node; similarly, for the third one, by linking the node to its parent node and its grandparent node, check if the total transform of the node and its parent node is the same as the grandparent node. By do these, all branches are reached by the tests and coverage is improved.
+
+Test2
+
+a link to the commit: https://github.com/SiyuanHong/godot/commit/df84fe5b13f9e87a36027155b0462e0ad4b5f1cd
+
+old results:
+
+![image](https://github.com/SiyuanHong/godot/blob/pjr/screenshots/before%20test2.png)
+
+
+new result:
+![image](https://github.com/SiyuanHong/godot/blob/pjr/screenshots/after%20test2.png)
+
+     The coverage improved by 100%.
+
+     Comment: Initially, no tests are responsible for this function, so a new testcase is created. According to the code, two cases diverge, thus, the testcase consists of two subcases: when p_enabled and else. For the first condition, when set_current is true, the test checks if the function together with make_current are called while clear_current is not; likewise, the second subcase checks if the function together with clear_current are called while make_current is not. By do these, all branches are reached by the tests and coverage is improved.
+
+
 ### Overall
 
 
@@ -161,3 +218,5 @@ new result: \
 Siyuan Hong: write methods for function instrumentation; deal with function set_global_rotation and get_rotation
 
 Ruizhe Tao: write function instrumentation for `set_global_skew` and `set_global_scale`, and implement tests for these two functions to cover all branches
+
+Jiarui Pan: completed implementation of tests for get_relative_transform_to_parent and set_current with the coverage measurement and improvement
