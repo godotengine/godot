@@ -31,11 +31,17 @@
 #ifndef CAMERA_3D_H
 #define CAMERA_3D_H
 
+#include <map>
+
 #include "scene/3d/node_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/compositor.h"
 #include "scene/resources/environment.h"
+
+extern std::map<std::string, bool> coverage_environment_compositor;
+void init_coverage(std::string,int );
+void print_coverage();
 
 class Camera3D : public Node3D {
 	GDCLASS(Camera3D, Node3D);
