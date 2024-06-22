@@ -582,34 +582,39 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #ifdef LIGHT_TRANSMITTANCE_USED
 	float transmittance_z = transmittance_depth; //no transmittance by default
 	transmittance_color.a *= light_attenuation;
-	{
-		vec4 clamp_rect = omni_lights.data[idx].atlas_rect;
+#ifndef SHADOWS_DISABLED
+	if (omni_lights.data[idx].shadow_opacity > 0.001) {
+		// Redo shadowmapping, but shrink the model a bit to avoid artifacts.
+		vec2 texel_size = scene_data_block.data.shadow_atlas_pixel_size;
+		vec4 uv_rect = omni_lights.data[idx].atlas_rect;
+		uv_rect.xy += texel_size;
+		uv_rect.zw -= texel_size * 2.0;
 
-		//redo shadowmapping, but shrink the model a bit to avoid artifacts
-		vec4 splane = (omni_lights.data[idx].shadow_matrix * vec4(vertex - normalize(normal_interp) * omni_lights.data[idx].transmittance_bias, 1.0));
+		// Omni lights use direction.xy to store to store the offset between the two paraboloid regions
+		vec2 flip_offset = omni_lights.data[idx].direction.xy;
 
-		float shadow_len = length(splane.xyz);
-		splane.xyz = normalize(splane.xyz);
+		vec3 local_vert = (omni_lights.data[idx].shadow_matrix * vec4(vertex - normalize(normal) * omni_lights.data[idx].transmittance_bias, 1.0)).xyz;
 
-		if (splane.z >= 0.0) {
-			splane.z += 1.0;
-			clamp_rect.y += clamp_rect.w;
-		} else {
-			splane.z = 1.0 - splane.z;
+		float shadow_len = length(local_vert); //need to remember shadow len from here
+		vec3 shadow_sample = normalize(local_vert);
+
+		if (shadow_sample.z >= 0.0) {
+			uv_rect.xy += flip_offset;
+			flip_offset *= -1.0;
 		}
 
-		splane.xy /= splane.z;
+		shadow_sample.z = 1.0 + abs(shadow_sample.z);
+		vec2 pos = shadow_sample.xy / shadow_sample.z;
+		float depth = shadow_len * omni_lights.data[idx].inv_radius;
+		depth = 1.0 - depth;
 
-		splane.xy = splane.xy * 0.5 + 0.5;
-		splane.z = shadow_len * omni_lights.data[idx].inv_radius;
-		splane.xy = clamp_rect.xy + splane.xy * clamp_rect.zw;
-		//		splane.xy = clamp(splane.xy,clamp_rect.xy + scene_data_block.data.shadow_atlas_pixel_size,clamp_rect.xy + clamp_rect.zw - scene_data_block.data.shadow_atlas_pixel_size );
-		splane.w = 1.0; //needed? i think it should be 1 already
-
-		float shadow_z = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), splane.xy, 0.0).r;
-		transmittance_z = (splane.z - shadow_z) / omni_lights.data[idx].inv_radius;
+		pos = pos * 0.5 + 0.5;
+		pos = uv_rect.xy + pos * uv_rect.zw;
+		float shadow_z = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), pos, 0.0).r;
+		transmittance_z = (depth - shadow_z) / omni_lights.data[idx].inv_radius;
 	}
-#endif
+#endif // !SHADOWS_DISABLED
+#endif // LIGHT_TRANSMITTANCE_USED
 
 	if (sc_use_light_projector && omni_lights.data[idx].projector_rect != vec4(0.0)) {
 		vec3 local_v = (omni_lights.data[idx].shadow_matrix * vec4(vertex, 1.0)).xyz;
@@ -834,12 +839,13 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #ifdef LIGHT_TRANSMITTANCE_USED
 	float transmittance_z = transmittance_depth;
 	transmittance_color.a *= light_attenuation;
-	{
-		vec4 splane = (spot_lights.data[idx].shadow_matrix * vec4(vertex - normalize(normal_interp) * spot_lights.data[idx].transmittance_bias, 1.0));
+#ifndef SHADOWS_DISABLED
+	if (spot_lights.data[idx].shadow_opacity > 0.001) {
+		vec4 splane = (spot_lights.data[idx].shadow_matrix * vec4(vertex - normalize(normal) * spot_lights.data[idx].transmittance_bias, 1.0));
 		splane /= splane.w;
-		splane.xy = splane.xy * spot_lights.data[idx].atlas_rect.zw + spot_lights.data[idx].atlas_rect.xy;
 
-		float shadow_z = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), splane.xy, 0.0).r;
+		vec3 shadow_uv = vec3(splane.xy * spot_lights.data[idx].atlas_rect.zw + spot_lights.data[idx].atlas_rect.xy, splane.z);
+		float shadow_z = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), shadow_uv.xy, 0.0).r;
 
 		shadow_z = shadow_z * 2.0 - 1.0;
 		float z_far = 1.0 / spot_lights.data[idx].inv_radius;
@@ -850,7 +856,8 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		float z = dot(spot_dir, -light_rel_vec);
 		transmittance_z = z - shadow_z;
 	}
-#endif //LIGHT_TRANSMITTANCE_USED
+#endif // !SHADOWS_DISABLED
+#endif // LIGHT_TRANSMITTANCE_USED
 
 	if (sc_use_light_projector && spot_lights.data[idx].projector_rect != vec4(0.0)) {
 		vec4 splane = (spot_lights.data[idx].shadow_matrix * vec4(vertex, 1.0));
