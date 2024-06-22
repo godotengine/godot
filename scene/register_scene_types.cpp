@@ -287,6 +287,12 @@
 #include "scene/3d/xr_face_modifier_3d.h"
 #include "scene/3d/xr_hand_modifier_3d.h"
 #include "scene/3d/xr_nodes.h"
+#include "scene/3d/spicyparticlesystem/SpicyParticleSystem.h"
+#include "scene/3d/spicyparticlesystem/SpicyParticleSystemNode.h"
+#include "scene/3d/spicyparticlesystem/SpicyParticleGenerator.h"
+#include "scene/3d/spicyparticlesystem/SpicyParticleRenderer.h"
+
+
 #include "scene/animation/root_motion_view.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
@@ -590,6 +596,47 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Marker3D);
 	GDREGISTER_CLASS(RootMotionView);
 	GDREGISTER_VIRTUAL_CLASS(SkeletonModifier3D);
+
+
+
+
+
+
+
+
+	ClassDB::register_class<SpicyParticleSystemNode>();
+	ClassDB::register_class<SpicyParticleEmitter>();
+	ClassDB::register_class<SpicyParticleSystem>();
+	ClassDB::register_class<ParticleData>();
+	ClassDB::register_class<SpicyParticleBurst>();
+	ClassDB::register_class<SpicyParticleGenerator>(true);
+	ClassDB::register_class<LifetimeGenerator>();
+	ClassDB::register_class<PositionGenerator>();
+	ClassDB::register_class<ColorGenerator>();
+	ClassDB::register_class<SizeGenerator>();
+	ClassDB::register_class<VelocityGenerator>();
+	ClassDB::register_class<RotationGenerator>();
+	ClassDB::register_class<SpicyParticleUpdater>(true);
+	ClassDB::register_class<LifetimeUpdater>(true);
+	ClassDB::register_class<PositionUpdater>(true);
+	ClassDB::register_class<ColorUpdater>();
+	ClassDB::register_class<VelocityUpdater>();
+	ClassDB::register_class<AccelerationUpdater>();
+	ClassDB::register_class<RotationUpdater>();
+	ClassDB::register_class<SizeUpdater>();
+	ClassDB::register_class<CustomDataUpdater>();
+
+	ClassDB::register_class<SpicyFloatProperty>();
+	ClassDB::register_class<SpicyVector3Property>();
+	ClassDB::register_class<SpicyColorProperty>();
+
+	ClassDB::register_class<SpicyProperty>(true);
+	ClassDB::register_class<EmissionShape>(true);
+	ClassDB::register_class<PointEmissionShape>();
+	ClassDB::register_class<BoxEmissionShape>();
+	ClassDB::register_class<SphereEmissionShape>();
+
+	ClassDB::register_class<MultiMeshParticleRenderer>();
 
 	OS::get_singleton()->yield(); // may take time to init
 
