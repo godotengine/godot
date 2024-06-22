@@ -52,7 +52,6 @@ protected:
 	CollisionObject2D *collision_object = nullptr;
 	bool disabled = false;
 	bool one_way_collision = false;
-	real_t one_way_collision_margin = 1.0;
 
 	Vector<Vector<Vector2i>> _decompose_in_convex();
 
@@ -84,9 +83,6 @@ public:
 
 	void set_one_way_collision(bool p_enable);
 	bool is_one_way_collision_enabled() const;
-
-	void set_one_way_collision_margin(real_t p_margin);
-	real_t get_one_way_collision_margin() const;
 
 	CollisionPolygon2D();
 };

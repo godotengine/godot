@@ -196,21 +196,21 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 
 	// convert mnormal into body A's local xform because get_support requires (and returns) local coordinates.
 	int a;
-	Vector2 s[2];
+	Vector2i s[2];
 	p_A->get_shape(p_shape_A)->get_supports(p_xform_A.basis_xform_inv(mnormal).normalized(), s, a);
-	Vector2 from = p_xform_A.xform(s[0]);
+	Vector2i from = p_xform_A.xform(s[0]);
 	// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
 	// This should ensure the calculated new velocity will really cause a bit of overlap instead of just getting us very close.
-	Vector2 to = from + motion;
+	Vector2i to = from + motion;
 
 	Transform2D from_inv = predicted_xform_B.affine_inverse();
 
 	// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
 	// At high speeds, this may mean we're actually casting from well behind the body instead of inside it, which is odd. But it still works out.
-	Vector2 local_from = from_inv.xform(from - motion * 0.1);
-	Vector2 local_to = from_inv.xform(to);
+	Vector2i local_from = from_inv.xform(from - motion * 0.1);
+	Vector2i local_to = from_inv.xform(to);
 
-	Vector2 rpos, rnorm;
+	Vector2i rpos, rnorm;
 	if (!p_B->get_shape(p_shape_B)->intersect_segment(local_from, local_to, rpos, rnorm)) {
 		// there was no hit. Since the segment is the length of per-frame motion, this means the bodies will not
 		// actually collide yet on next frame. We'll probably check again next frame once they're closer.

@@ -72,6 +72,8 @@ struct _NO_DISCARD_ Rect2i {
 		return true;
 	}
 
+	bool intersects_segment(const Point2i &p_from, const Point2i &p_to, Point2i *r_pos = nullptr, Point2i *r_normal = nullptr) const;
+
 	inline bool encloses(const Rect2i &p_rect) const {
 #ifdef MATH_CHECKS
 		if (unlikely(size.x < 0 || size.y < 0 || p_rect.size.x < 0 || p_rect.size.y < 0)) {

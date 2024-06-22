@@ -83,11 +83,11 @@ public:
 	void rotate(real_t p_radians);
 	void move_x(int32_t p_delta, bool p_scaled = false);
 	void move_y(int32_t p_delta, bool p_scaled = false);
-	void translate(const Vector2 &p_amount);
-	void global_translate(const Vector2 &p_amount);
+	void translate(const Vector2i &p_amount);
+	void global_translate(const Vector2i &p_amount);
 	void apply_scale(const Size2 &p_amount);
 
-	Point2 get_position() const;
+	Point2i get_position() const;
 	real_t get_rotation() const;
 	real_t get_rotation_degrees() const;
 	real_t get_skew() const;

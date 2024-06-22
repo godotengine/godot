@@ -33,7 +33,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/templates/sort_array.h"
 
-void GodotShape2D::configure(const Rect2 &p_aabb) {
+void GodotShape2D::configure(const Rect2i &p_aabb) {
 	aabb = p_aabb;
 	configured = true;
 	for (const KeyValue<GodotShapeOwner2D *, int> &E : owners) {
@@ -42,8 +42,8 @@ void GodotShape2D::configure(const Rect2 &p_aabb) {
 	}
 }
 
-Vector2 GodotShape2D::get_support(const Vector2 &p_normal) const {
-	Vector2 res[2];
+Vector2i GodotShape2D::get_support(const Vector2i &p_normal) const {
+	Vector2i res[2];
 	int amnt;
 	get_supports(p_normal, res, amnt);
 	return res[0];
@@ -83,16 +83,16 @@ GodotShape2D::~GodotShape2D() {
 /*********************************************************/
 /*********************************************************/
 
-void GodotWorldBoundaryShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
+void GodotWorldBoundaryShape2D::get_supports(const Vector2i &p_normal, Vector2i *r_supports, int &r_amount) const {
 	r_amount = 0;
 }
 
-bool GodotWorldBoundaryShape2D::contains_point(const Vector2 &p_point) const {
+bool GodotWorldBoundaryShape2D::contains_point(const Vector2i &p_point) const {
 	return normal.dot(p_point) < d;
 }
 
-bool GodotWorldBoundaryShape2D::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
-	Vector2 segment = p_begin - p_end;
+bool GodotWorldBoundaryShape2D::intersect_segment(const Vector2i &p_begin, const Vector2i &p_end, Vector2i &r_point, Vector2i &r_normal) const {
+	Vector2i segment = p_begin - p_end;
 	real_t den = normal.dot(segment);
 
 	//printf("den is %i\n",den);
@@ -123,7 +123,7 @@ void GodotWorldBoundaryShape2D::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(arr.size() != 2);
 	normal = arr[0];
 	d = arr[1];
-	configure(Rect2(Vector2(-1e15, -1e15), Vector2(1e15 * 2, 1e15 * 2)));
+	configure(Rect2(Vector2i(-1e15, -1e15), Vector2i(1e15 * 2, 1e15 * 2)));
 }
 
 Variant GodotWorldBoundaryShape2D::get_data() const {
@@ -138,21 +138,21 @@ Variant GodotWorldBoundaryShape2D::get_data() const {
 /*********************************************************/
 /*********************************************************/
 
-void GodotSeparationRayShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
+void GodotSeparationRayShape2D::get_supports(const Vector2i &p_normal, Vector2i *r_supports, int &r_amount) const {
 	r_amount = 1;
 
 	if (p_normal.y > 0) {
-		*r_supports = Vector2(0, length);
+		*r_supports = Vector2i(0, length);
 	} else {
-		*r_supports = Vector2();
+		*r_supports = Vector2i();
 	}
 }
 
-bool GodotSeparationRayShape2D::contains_point(const Vector2 &p_point) const {
+bool GodotSeparationRayShape2D::contains_point(const Vector2i &p_point) const {
 	return false;
 }
 
-bool GodotSeparationRayShape2D::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
+bool GodotSeparationRayShape2D::intersect_segment(const Vector2i &p_begin, const Vector2i &p_end, Vector2i &r_point, Vector2i &r_normal) const {
 	return false; //rays can't be intersected
 }
 
@@ -178,7 +178,7 @@ Variant GodotSeparationRayShape2D::get_data() const {
 /*********************************************************/
 /*********************************************************/
 
-void GodotSegmentShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
+void GodotSegmentShape2D::get_supports(const Vector2i &p_normal, Vector2i *r_supports, int &r_amount) const {
 	if (Math::abs(p_normal.dot(n)) > segment_is_valid_support_threshold) {
 		r_supports[0] = a;
 		r_supports[1] = b;
@@ -195,11 +195,11 @@ void GodotSegmentShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_suppo
 	r_amount = 1;
 }
 
-bool GodotSegmentShape2D::contains_point(const Vector2 &p_point) const {
+bool GodotSegmentShape2D::contains_point(const Vector2i &p_point) const {
 	return false;
 }
 
-bool GodotSegmentShape2D::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
+bool GodotSegmentShape2D::intersect_segment(const Vector2i &p_begin, const Vector2i &p_end, Vector2i &r_point, Vector2i &r_normal) const {
 	if (!Geometry2D::segment_intersects_segment(p_begin, p_end, a, b, &r_point)) {
 		return false;
 	}
@@ -248,9 +248,9 @@ Variant GodotSegmentShape2D::get_data() const {
 /*********************************************************/
 /*********************************************************/
 
-void GodotRectangleShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
+void GodotRectangleShape2D::get_supports(const Vector2i &p_normal, Vector2i *r_supports, int &r_amount) const {
 	for (int i = 0; i < 2; i++) {
-		Vector2 ag;
+		Vector2i ag;
 		ag[i] = 1.0;
 		real_t dp = ag.dot(p_normal);
 		if (Math::abs(dp) <= segment_is_valid_support_threshold) {
@@ -273,23 +273,23 @@ void GodotRectangleShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_sup
 	/* USE POINT */
 
 	r_amount = 1;
-	r_supports[0] = Vector2(
+	r_supports[0] = Vector2i(
 			(p_normal.x < 0) ? half_extents_tl.x : half_extents_br.x,
 			(p_normal.y < 0) ? half_extents_tl.y : half_extents_br.y);
 }
 
-bool GodotRectangleShape2D::contains_point(const Vector2 &p_point) const {
+bool GodotRectangleShape2D::contains_point(const Vector2i &p_point) const {
 	real_t x = p_point.x;
 	real_t y = p_point.y;
 	return (x >= half_extents_tl.x) && (x < half_extents_br.x) && (y >= half_extents_tl.y) && (y < half_extents_br.y);
 }
 
-bool GodotRectangleShape2D::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
+bool GodotRectangleShape2D::intersect_segment(const Vector2i &p_begin, const Vector2i &p_end, Vector2i &r_point, Vector2i &r_normal) const {
 	return get_aabb().intersects_segment(p_begin, p_end, &r_point, &r_normal);
 }
 
 real_t GodotRectangleShape2D::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
-	Vector2 he2 = size * p_scale;
+	Vector2i he2 = size * p_scale;
 	return p_mass * he2.dot(he2) / 12.0;
 }
 
@@ -310,7 +310,7 @@ Variant GodotRectangleShape2D::get_data() const {
 /*********************************************************/
 /*********************************************************/
 
-void GodotConvexPolygonShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
+void GodotConvexPolygonShape2D::get_supports(const Vector2i &p_normal, Vector2i *r_supports, int &r_amount) const {
 	int support_idx = -1;
 	real_t d = -1e10;
 	r_amount = 0;
@@ -338,7 +338,7 @@ void GodotConvexPolygonShape2D::get_supports(const Vector2 &p_normal, Vector2 *r
 	r_supports[0] = points[support_idx].pos;
 }
 
-bool GodotConvexPolygonShape2D::contains_point(const Vector2 &p_point) const {
+bool GodotConvexPolygonShape2D::contains_point(const Vector2i &p_point) const {
 	bool out = false;
 	bool in = false;
 
@@ -354,13 +354,13 @@ bool GodotConvexPolygonShape2D::contains_point(const Vector2 &p_point) const {
 	return in != out;
 }
 
-bool GodotConvexPolygonShape2D::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
-	Vector2 n = (p_end - p_begin).normalized();
+bool GodotConvexPolygonShape2D::intersect_segment(const Vector2i &p_begin, const Vector2i &p_end, Vector2i &r_point, Vector2i &r_normal) const {
+	Vector2i n = (p_end - p_begin).normalized();
 	real_t d = 1e10;
 	bool inters = false;
 
 	for (int i = 0; i < point_count; i++) {
-		Vector2 res;
+		Vector2i res;
 
 		if (!Geometry2D::segment_intersects_segment(p_begin, p_end, points[i].pos, points[(i + 1) % point_count].pos, &res)) {
 			continue;
@@ -446,7 +446,7 @@ void GodotConvexPolygonShape2D::set_data(const Variant &p_data) {
 }
 
 Variant GodotConvexPolygonShape2D::get_data() const {
-	Vector<Vector2> dvr;
+	Vector<Vector2i> dvr;
 
 	dvr.resize(point_count);
 

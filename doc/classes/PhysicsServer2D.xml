@@ -650,7 +650,6 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<param index="2" name="enable" type="bool" />
-			<param index="3" name="margin" type="float" />
 			<description>
 				Sets the one-way collision properties of the body's shape with the given index. If [param enable] is [code]true[/code], the one-way collision direction given by the shape's local upward axis [code]body_get_shape_transform(body, shape_idx).y[/code] will be used to ignore collisions with the shape in the opposite direction, and to ensure depenetration of kinematic bodies happens in this direction.
 			</description>

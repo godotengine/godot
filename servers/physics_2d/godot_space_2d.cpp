@@ -152,7 +152,7 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 
 		const GodotShape2D *shape = col_obj->get_shape(shape_idx);
 
-		Vector2 shape_point, shape_normal;
+		Vector2i shape_point, shape_normal;
 
 		if (shape->contains_point(local_from)) {
 			if (p_parameters.hit_from_inside) {
@@ -214,7 +214,6 @@ int GodotPhysicsDirectSpaceState2D::intersect_shape(const ShapeParameters &p_par
 
 	Rect2 aabb = p_parameters.transform.xform(shape->get_aabb());
 	aabb = aabb.merge(Rect2(aabb.position + p_parameters.motion, aabb.size)); //motion
-	aabb = aabb.grow(p_parameters.margin);
 
 	int amount = space->broadphase->cull_aabb(aabb, space->intersection_query_results, GodotSpace2D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
@@ -236,7 +235,7 @@ int GodotPhysicsDirectSpaceState2D::intersect_shape(const ShapeParameters &p_par
 		const GodotCollisionObject2D *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
 
-		if (!GodotCollisionSolver2D::solve(shape, p_parameters.transform, p_parameters.motion, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), nullptr, nullptr, nullptr, p_parameters.margin)) {
+		if (!GodotCollisionSolver2D::solve(shape, p_parameters.transform, p_parameters.motion, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), nullptr, nullptr, nullptr)) {
 			continue;
 		}
 
@@ -259,7 +258,6 @@ bool GodotPhysicsDirectSpaceState2D::cast_motion(const ShapeParameters &p_parame
 
 	Rect2 aabb = p_parameters.transform.xform(shape->get_aabb());
 	aabb = aabb.merge(Rect2(aabb.position + p_parameters.motion, aabb.size)); //motion
-	aabb = aabb.grow(p_parameters.margin);
 
 	int amount = space->broadphase->cull_aabb(aabb, space->intersection_query_results, GodotSpace2D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
@@ -280,12 +278,12 @@ bool GodotPhysicsDirectSpaceState2D::cast_motion(const ShapeParameters &p_parame
 
 		Transform2D col_obj_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 		//test initial overlap, does it collide if going all the way?
-		if (!GodotCollisionSolver2D::solve(shape, p_parameters.transform, p_parameters.motion, col_obj->get_shape(shape_idx), col_obj_xform, Vector2(), nullptr, nullptr, nullptr, p_parameters.margin)) {
+		if (!GodotCollisionSolver2D::solve(shape, p_parameters.transform, p_parameters.motion, col_obj->get_shape(shape_idx), col_obj_xform, Vector2(), nullptr, nullptr, nullptr)) {
 			continue;
 		}
 
 		//test initial overlap, ignore objects it's inside of.
-		if (GodotCollisionSolver2D::solve(shape, p_parameters.transform, Vector2(), col_obj->get_shape(shape_idx), col_obj_xform, Vector2(), nullptr, nullptr, nullptr, p_parameters.margin)) {
+		if (GodotCollisionSolver2D::solve(shape, p_parameters.transform, Vector2(), col_obj->get_shape(shape_idx), col_obj_xform, Vector2(), nullptr, nullptr, nullptr)) {
 			continue;
 		}
 
@@ -299,7 +297,7 @@ bool GodotPhysicsDirectSpaceState2D::cast_motion(const ShapeParameters &p_parame
 			real_t fraction = low + (hi - low) * fraction_coeff;
 
 			Vector2 sep = mnormal; //important optimization for this to work fast enough
-			bool collided = GodotCollisionSolver2D::solve(shape, p_parameters.transform, p_parameters.motion * fraction, col_obj->get_shape(shape_idx), col_obj_xform, Vector2(), nullptr, nullptr, &sep, p_parameters.margin);
+			bool collided = GodotCollisionSolver2D::solve(shape, p_parameters.transform, p_parameters.motion * fraction, col_obj->get_shape(shape_idx), col_obj_xform, Vector2(), nullptr, nullptr, &sep);
 
 			if (collided) {
 				hi = fraction;
@@ -346,7 +344,6 @@ bool GodotPhysicsDirectSpaceState2D::collide_shape(const ShapeParameters &p_para
 
 	Rect2 aabb = p_parameters.transform.xform(shape->get_aabb());
 	aabb = aabb.merge(Rect2(aabb.position + p_parameters.motion, aabb.size)); //motion
-	aabb = aabb.grow(p_parameters.margin);
 
 	int amount = space->broadphase->cull_aabb(aabb, space->intersection_query_results, GodotSpace2D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
@@ -378,7 +375,7 @@ bool GodotPhysicsDirectSpaceState2D::collide_shape(const ShapeParameters &p_para
 		cbk.valid_dir = Vector2();
 		cbk.valid_depth = 0;
 
-		if (GodotCollisionSolver2D::solve(shape, p_parameters.transform, p_parameters.motion, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), cbkres, cbkptr, nullptr, p_parameters.margin)) {
+		if (GodotCollisionSolver2D::solve(shape, p_parameters.transform, p_parameters.motion, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), cbkres, cbkptr, nullptr)) {
 			collided = cbk.amount > 0;
 		}
 	}
@@ -401,6 +398,11 @@ struct _RestCallbackData2D {
 	Vector2 valid_dir;
 	real_t valid_depth = 0.0;
 	real_t min_allowed_depth = 0.0;
+};
+
+struct _CollisionCallbackData2D {
+	Vector2i contact;
+	Vector2i normal;
 };
 
 static void _rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata) {
@@ -437,15 +439,23 @@ static void _rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B,
 	rd->best_local_shape = rd->local_shape;
 }
 
+static void _collision_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata) {
+	_CollisionCallbackData2D *rd = static_cast<_CollisionCallbackData2D *>(p_userdata);
+
+	Vector2i contact_rel = p_point_B - p_point_A;
+
+	Vector2i normal = contact_rel.normalized();
+
+	rd->contact = p_point_B;
+	rd->normal = normal;
+}
+
 bool GodotPhysicsDirectSpaceState2D::rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_info) {
 	GodotShape2D *shape = GodotPhysicsServer2D::godot_singleton->shape_owner.get_or_null(p_parameters.shape_rid);
 	ERR_FAIL_NULL_V(shape, 0);
 
-	real_t margin = MAX(p_parameters.margin, TEST_MOTION_MARGIN_MIN_VALUE);
-
 	Rect2 aabb = p_parameters.transform.xform(shape->get_aabb());
 	aabb = aabb.merge(Rect2(aabb.position + p_parameters.motion, aabb.size)); //motion
-	aabb = aabb.grow(margin);
 
 	int amount = space->broadphase->cull_aabb(aabb, space->intersection_query_results, GodotSpace2D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
@@ -453,8 +463,7 @@ bool GodotPhysicsDirectSpaceState2D::rest_info(const ShapeParameters &p_paramete
 
 	// Allowed depth can't be lower than motion length, in order to handle contacts at low speed.
 	real_t motion_length = p_parameters.motion.length();
-	real_t min_contact_depth = margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
-	rcd.min_allowed_depth = MIN(motion_length, min_contact_depth);
+	rcd.min_allowed_depth = motion_length;
 
 	for (int i = 0; i < amount; i++) {
 		if (!_can_collide_with(space->intersection_query_results[i], p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas)) {
@@ -473,7 +482,7 @@ bool GodotPhysicsDirectSpaceState2D::rest_info(const ShapeParameters &p_paramete
 		rcd.object = col_obj;
 		rcd.shape = shape_idx;
 		rcd.local_shape = 0;
-		bool sc = GodotCollisionSolver2D::solve(shape, p_parameters.transform, p_parameters.motion, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), _rest_cbk_result, &rcd, nullptr, margin);
+		bool sc = GodotCollisionSolver2D::solve(shape, p_parameters.transform, p_parameters.motion, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), _rest_cbk_result, &rcd, nullptr);
 		if (!sc) {
 			continue;
 		}
@@ -570,17 +579,12 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 		return false;
 	}
 
-	real_t margin = MAX(p_parameters.margin, TEST_MOTION_MARGIN_MIN_VALUE);
-
 	// Undo the currently transform the physics server is aware of and apply the provided one
 	body_aabb = p_parameters.from.xform(p_body->get_inv_transform().xform(body_aabb));
-	body_aabb = body_aabb.grow(margin);
 
 	static const int max_excluded_shape_pairs = 32;
 	ExcludedShapeSW excluded_shape_pairs[max_excluded_shape_pairs];
 	int excluded_shape_pair_count = 0;
-
-	real_t min_contact_depth = margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
 
 	real_t motion_length = p_parameters.motion.length();
 	Vector2 motion_normal = p_parameters.motion / motion_length;
@@ -638,8 +642,9 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 					if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
 						cbk.valid_dir = col_obj_shape_xform.columns[1].normalized();
 
-						real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
-						cbk.valid_depth = MAX(owc_margin, margin); //user specified, but never less than actual margin or it won't work
+						// TODO: check if works
+						real_t owc_margin = 1;
+						cbk.valid_depth = owc_margin; //user specified, but never less than actual margin or it won't work
 						cbk.invalid_by_dir = 0;
 
 						if (col_obj->get_type() == GodotCollisionObject2D::TYPE_BODY) {
@@ -664,7 +669,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 					bool did_collide = false;
 
 					GodotShape2D *against_shape = col_obj->get_shape(shape_idx);
-					if (GodotCollisionSolver2D::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), cbkres, cbkptr, nullptr, margin)) {
+					if (GodotCollisionSolver2D::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), cbkres, cbkptr, nullptr)) {
 						did_collide = cbk.passed > current_passed; //more passed, so collision actually existed
 					}
 					while (cbk.amount > priority_amount) {
@@ -712,9 +717,9 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 
 				// Compute depth on recovered motion.
 				real_t depth = n.dot(a + recover_motion) - d;
-				if (depth > min_contact_depth + CMP_EPSILON) {
+				if (depth > CMP_EPSILON) {
 					// Only recover if there is penetration.
-					recover_motion -= n * (depth - min_contact_depth) * 0.4 * priorities[i] * inv_total_weight;
+					recover_motion -= n * (depth) * 0.4 * priorities[i] * inv_total_weight;
 				}
 			}
 
@@ -794,12 +799,12 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 
 				Transform2D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(col_shape_idx);
 				//test initial overlap, does it collide if going all the way?
-				if (!GodotCollisionSolver2D::solve(body_shape, body_shape_xform, p_parameters.motion, against_shape, col_obj_shape_xform, Vector2(), nullptr, nullptr, nullptr, 0)) {
+				if (!GodotCollisionSolver2D::solve(body_shape, body_shape_xform, p_parameters.motion, against_shape, col_obj_shape_xform, Vector2(), nullptr, nullptr, nullptr)) {
 					continue;
 				}
 
 				//test initial overlap
-				if (GodotCollisionSolver2D::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), nullptr, nullptr, nullptr, 0)) {
+				if (GodotCollisionSolver2D::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), nullptr, nullptr, nullptr)) {
 					if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(col_shape_idx)) {
 						Vector2 direction = col_obj_shape_xform.columns[1].normalized();
 						if (motion_normal.dot(direction) < 0) {
@@ -819,7 +824,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 					real_t fraction = low + (hi - low) * fraction_coeff;
 
 					Vector2 sep = motion_normal; //important optimization for this to work fast enough
-					bool collided = GodotCollisionSolver2D::solve(body_shape, body_shape_xform, p_parameters.motion * fraction, against_shape, col_obj_shape_xform, Vector2(), nullptr, nullptr, &sep, 0);
+					bool collided = GodotCollisionSolver2D::solve(body_shape, body_shape_xform, p_parameters.motion * fraction, against_shape, col_obj_shape_xform, Vector2(), nullptr, nullptr, &sep);
 
 					if (collided) {
 						hi = fraction;
@@ -856,7 +861,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 					cbk.valid_depth = 10e20;
 
 					Vector2 sep = motion_normal; //important optimization for this to work fast enough
-					bool collided = GodotCollisionSolver2D::solve(body_shape, body_shape_xform, p_parameters.motion * (hi + contact_max_allowed_penetration), col_obj->get_shape(col_shape_idx), col_obj_shape_xform, Vector2(), GodotPhysicsServer2D::_shape_col_cbk, &cbk, &sep, 0);
+					bool collided = GodotCollisionSolver2D::solve(body_shape, body_shape_xform, p_parameters.motion * (hi + contact_max_allowed_penetration), col_obj->get_shape(col_shape_idx), col_obj_shape_xform, Vector2(), GodotPhysicsServer2D::_shape_col_cbk, &cbk, &sep);
 					if (!collided || cbk.amount == 0) {
 						continue;
 					}
@@ -899,7 +904,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 		_RestCallbackData2D rcd;
 
 		// Allowed depth can't be lower than motion length, in order to handle contacts at low speed.
-		rcd.min_allowed_depth = MIN(motion_length, min_contact_depth);
+		rcd.min_allowed_depth = motion_length;
 
 		body_aabb.position += p_parameters.motion * unsafe;
 		int amount = _cull_aabb_for_body(p_body, body_aabb);
@@ -944,8 +949,9 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 				if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
 					rcd.valid_dir = col_obj_shape_xform.columns[1].normalized();
 
-					real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
-					rcd.valid_depth = MAX(owc_margin, margin); //user specified, but never less than actual margin or it won't work
+					// TODO: check if works
+					real_t owc_margin = 1;
+					rcd.valid_depth = owc_margin; //user specified, but never less than actual margin or it won't work
 
 					if (col_obj->get_type() == GodotCollisionObject2D::TYPE_BODY) {
 						const GodotBody2D *b = static_cast<const GodotBody2D *>(col_obj);
@@ -967,7 +973,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 				rcd.object = col_obj;
 				rcd.shape = shape_idx;
 				rcd.local_shape = j;
-				bool sc = GodotCollisionSolver2D::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), _rest_cbk_result, &rcd, nullptr, margin);
+				bool sc = GodotCollisionSolver2D::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), _rest_cbk_result, &rcd, nullptr);
 				if (!sc) {
 					continue;
 				}
@@ -1008,6 +1014,129 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 	return collided;
 }
 
+bool GodotSpace2D::body_collides_at(GodotBody2D *p_body, const Transform2D from, const Vector2i delta, PhysicsServer2D::CollisionResult *r_result) {
+	//give me back regular physics engine logic
+	//this is madness
+	//and most people using this function will think
+	//what it does is simpler than using physics
+	//this took about a week to get right..
+	//but is it right? who knows at this point..
+
+	if (r_result) {
+		r_result->collider_id = ObjectID();
+		r_result->collider_shape = 0;
+	}
+
+	Rect2i body_aabb;
+
+	bool shapes_found = false;
+
+	for (int i = 0; i < p_body->get_shape_count(); i++) {
+		if (p_body->is_shape_disabled(i)) {
+			continue;
+		}
+
+		if (!shapes_found) {
+			body_aabb = p_body->get_shape_aabb(i);
+			shapes_found = true;
+		} else {
+			body_aabb = body_aabb.merge(p_body->get_shape_aabb(i));
+		}
+	}
+
+	if (!shapes_found) {
+		if (r_result) {
+			*r_result = PhysicsServer2D::CollisionResult();
+		}
+		return false;
+	}
+
+	// Undo the current transform the physics server is aware of and apply the provided one
+	body_aabb = from.xform(p_body->get_inv_transform().xform(body_aabb));
+
+	static const int max_excluded_shape_pairs = 32;
+	ExcludedShapeSW excluded_shape_pairs[max_excluded_shape_pairs];
+	int excluded_shape_pair_count = 0;
+
+	Transform2D body_transform = from;
+
+	bool recovered = false;
+
+	real_t safe = 1.0;
+	real_t unsafe = 1.0;
+	int best_shape = -1;
+
+	{
+		Rect2 moved_aabb = body_aabb;
+		moved_aabb.position += delta;
+		moved_aabb = moved_aabb.merge(body_aabb);
+
+		int amount = _cull_aabb_for_body(p_body, moved_aabb);
+
+		for (int body_shape_idx = 0; body_shape_idx < p_body->get_shape_count(); body_shape_idx++) {
+			if (p_body->is_shape_disabled(body_shape_idx)) {
+				continue;
+			}
+
+			GodotShape2D *body_shape = p_body->get_shape(body_shape_idx);
+
+//			// Colliding separation rays allows to properly snap to the ground,
+//			// otherwise it's not needed in regular motion.
+//			if (!p_parameters.collide_separation_ray && (body_shape->get_type() == PhysicsServer2D::SHAPE_SEPARATION_RAY)) {
+//				// When slide on slope is on, separation ray shape acts like a regular shape.
+//				if (!static_cast<GodotSeparationRayShape2D *>(body_shape)->get_slide_on_slope()) {
+//					continue;
+//				}
+//			}
+
+			Transform2D body_shape_xform = body_transform * p_body->get_shape_transform(body_shape_idx);
+
+			_CollisionCallbackData2D ccd;
+
+			for (int i = 0; i < amount; i++) {
+				const GodotCollisionObject2D *col_obj = intersection_query_results[i];
+//				if (p_parameters.exclude_bodies.has(col_obj->get_self())) {
+//					continue;
+//				}
+//				if (p_parameters.exclude_objects.has(col_obj->get_instance_id())) {
+//					continue;
+//				}
+
+				int col_shape_idx = intersection_query_subindex_results[i];
+				GodotShape2D *against_shape = col_obj->get_shape(col_shape_idx);
+
+				bool excluded = false;
+
+				for (int k = 0; k < excluded_shape_pair_count; k++) {
+					if (excluded_shape_pairs[k].local_shape == body_shape && excluded_shape_pairs[k].against_object == col_obj && excluded_shape_pairs[k].against_shape_index == col_shape_idx) {
+						excluded = true;
+						break;
+					}
+				}
+
+				if (excluded) {
+					continue;
+				}
+
+				Transform2D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(col_shape_idx);
+				if (GodotCollisionSolver2D::solve(body_shape, body_shape_xform, delta, against_shape, col_obj_shape_xform, Vector2(), _collision_cbk_result, &ccd, nullptr)) {
+					if (r_result) {
+						r_result->collider = col_obj->get_self();
+						r_result->collider_id = col_obj->get_instance_id();
+						r_result->collider_shape = col_shape_idx;
+						r_result->collision_local_shape = i;
+						r_result->collision_normal = ccd.normal;
+						r_result->collision_point = ccd.contact;
+					}
+					return true;
+				}
+			}
+		}
+	}
+
+
+	return false;
+}
 // Assumes a valid collision pair, this should have been checked beforehand in the BVH or octree.
 void *GodotSpace2D::_broadphase_pair(GodotCollisionObject2D *A, int p_subindex_A, GodotCollisionObject2D *B, int p_subindex_B, void *p_self) {
 	GodotCollisionObject2D::Type type_A = A->get_type();

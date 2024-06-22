@@ -47,7 +47,6 @@ class ShapeCast2D : public Node2D {
 	Vector2 target_position = Vector2(0, 50);
 
 	HashSet<RID> exclude;
-	real_t margin = 0.0;
 	uint32_t collision_mask = 1;
 	bool exclude_parent_body = true;
 	bool collide_with_areas = false;
@@ -83,9 +82,6 @@ public:
 
 	void set_target_position(const Vector2 &p_point);
 	Vector2 get_target_position() const;
-
-	void set_margin(real_t p_margin);
-	real_t get_margin() const;
 
 	void set_max_results(int p_max_results);
 	int get_max_results() const;

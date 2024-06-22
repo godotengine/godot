@@ -179,7 +179,7 @@ public:
 	FUNC2RC(RID, body_get_shape, RID, int);
 
 	FUNC3(body_set_shape_disabled, RID, int, bool);
-	FUNC4(body_set_shape_as_one_way_collision, RID, int, bool, real_t);
+	FUNC3(body_set_shape_as_one_way_collision, RID, int, bool);
 
 	FUNC2(body_remove_shape, RID, int);
 	FUNC1(body_clear_shapes, RID);
@@ -255,6 +255,11 @@ public:
 	bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override {
 		ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
 		return physics_server_2d->body_test_motion(p_body, p_parameters, r_result);
+	}
+
+	bool body_collides_at(RID p_body, const Transform2D from, const Vector2i delta, CollisionResult *r_result = nullptr) override {
+		ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
+		return physics_server_2d->body_collides_at(p_body, from, delta, r_result);
 	}
 
 	// this function only works on physics process, errors and returns null otherwise

@@ -49,9 +49,9 @@ struct _CollectorCallback2D {
 	}
 };
 
-typedef void (*GenerateContactsFunc)(const Vector2 *, int, const Vector2 *, int, _CollectorCallback2D *);
+typedef void (*GenerateContactsFunc)(const Vector2i *, int, const Vector2i *, int, _CollectorCallback2D *);
 
-_FORCE_INLINE_ static void _generate_contacts_point_point(const Vector2 *p_points_A, int p_point_count_A, const Vector2 *p_points_B, int p_point_count_B, _CollectorCallback2D *p_collector) {
+_FORCE_INLINE_ static void _generate_contacts_point_point(const Vector2i *p_points_A, int p_point_count_A, const Vector2i *p_points_B, int p_point_count_B, _CollectorCallback2D *p_collector) {
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A != 1);
 	ERR_FAIL_COND(p_point_count_B != 1);
@@ -60,13 +60,13 @@ _FORCE_INLINE_ static void _generate_contacts_point_point(const Vector2 *p_point
 	p_collector->call(*p_points_A, *p_points_B);
 }
 
-_FORCE_INLINE_ static void _generate_contacts_point_edge(const Vector2 *p_points_A, int p_point_count_A, const Vector2 *p_points_B, int p_point_count_B, _CollectorCallback2D *p_collector) {
+_FORCE_INLINE_ static void _generate_contacts_point_edge(const Vector2i *p_points_A, int p_point_count_A, const Vector2i *p_points_B, int p_point_count_B, _CollectorCallback2D *p_collector) {
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A != 1);
 	ERR_FAIL_COND(p_point_count_B != 2);
 #endif
 
-	Vector2 closest_B = Geometry2D::get_closest_point_to_segment_uncapped(*p_points_A, p_points_B);
+	Vector2i closest_B = Geometry2D::get_closest_point_to_segment_uncapped(*p_points_A, p_points_B);
 	p_collector->call(*p_points_A, closest_B);
 }
 
@@ -77,14 +77,14 @@ struct _generate_contacts_Pair {
 	_FORCE_INLINE_ bool operator<(const _generate_contacts_Pair &l) const { return d < l.d; }
 };
 
-_FORCE_INLINE_ static void _generate_contacts_edge_edge(const Vector2 *p_points_A, int p_point_count_A, const Vector2 *p_points_B, int p_point_count_B, _CollectorCallback2D *p_collector) {
+_FORCE_INLINE_ static void _generate_contacts_edge_edge(const Vector2i *p_points_A, int p_point_count_A, const Vector2i *p_points_B, int p_point_count_B, _CollectorCallback2D *p_collector) {
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A != 2);
 	ERR_FAIL_COND(p_point_count_B != 2); // circle is actually a 4x3 matrix
 #endif
 
 	Vector2 n = p_collector->normal;
-	Vector2 t = n.orthogonal();
+	Vector2i t = n.orthogonal();
 	real_t dA = n.dot(p_points_A[0]);
 	real_t dB = n.dot(p_points_B[0]);
 
@@ -108,14 +108,14 @@ _FORCE_INLINE_ static void _generate_contacts_edge_edge(const Vector2 *p_points_
 
 	for (int i = 1; i <= 2; i++) {
 		if (dvec[i].a) {
-			Vector2 a = p_points_A[dvec[i].idx];
+			Vector2i a = p_points_A[dvec[i].idx];
 			Vector2 b = n.plane_project(dB, a);
 			if (n.dot(a) > n.dot(b) - CMP_EPSILON) {
 				continue;
 			}
 			p_collector->call(a, b);
 		} else {
-			Vector2 b = p_points_B[dvec[i].idx];
+			Vector2i b = p_points_B[dvec[i].idx];
 			Vector2 a = n.plane_project(dA, b);
 			if (n.dot(a) > n.dot(b) - CMP_EPSILON) {
 				continue;
@@ -125,7 +125,7 @@ _FORCE_INLINE_ static void _generate_contacts_edge_edge(const Vector2 *p_points_
 	}
 }
 
-static void _generate_contacts_from_supports(const Vector2 *p_points_A, int p_point_count_A, const Vector2 *p_points_B, int p_point_count_B, _CollectorCallback2D *p_collector) {
+static void _generate_contacts_from_supports(const Vector2i *p_points_A, int p_point_count_A, const Vector2i *p_points_B, int p_point_count_B, _CollectorCallback2D *p_collector) {
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A < 1);
 	ERR_FAIL_COND(p_point_count_B < 1);
@@ -144,8 +144,8 @@ static void _generate_contacts_from_supports(const Vector2 *p_points_A, int p_po
 
 	int pointcount_B = 0;
 	int pointcount_A = 0;
-	const Vector2 *points_A = nullptr;
-	const Vector2 *points_B = nullptr;
+	const Vector2i *points_A = nullptr;
+	const Vector2i *points_B = nullptr;
 
 	if (p_point_count_A > p_point_count_B) {
 		//swap
@@ -316,7 +316,7 @@ public:
 		}
 		static const int max_supports = 2;
 
-		Vector2 supports_A[max_supports];
+		Vector2i supports_A[max_supports];
 		int support_count_A;
 		if (castA) {
 			shape_A->get_supports_transformed_cast(motion_A, -best_axis, *transform_A, supports_A, support_count_A);
@@ -333,7 +333,7 @@ public:
 			}
 		}
 
-		Vector2 supports_B[max_supports];
+		Vector2i supports_B[max_supports];
 		int support_count_B;
 		if (castB) {
 			shape_B->get_supports_transformed_cast(motion_B, best_axis, *transform_B, supports_B, support_count_B);

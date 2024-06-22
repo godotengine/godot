@@ -169,6 +169,19 @@ public:
 		return p_segment[0] + n * d; // Inside.
 	}
 
+	static Vector2i get_closest_point_to_segment_uncapped(const Vector2i &p_point, const Vector2i *p_segment) {
+		Vector2i p = p_point - p_segment[0];
+		Vector2i n = p_segment[1] - p_segment[0];
+		real_t l2 = n.length_squared();
+		if (l2 < 1e-20f) {
+			return p_segment[0]; // Both points are the same, just give any.
+		}
+
+		real_t d = n.dot(p) / l2;
+
+		return p_segment[0] + n * d; // Inside.
+	}
+
 // Disable False Positives in MSVC compiler; we correctly check for 0 here to prevent a division by 0.
 // See: https://github.com/godotengine/godot/pull/44274
 #ifdef _MSC_VER
@@ -200,6 +213,45 @@ public:
 		Vector2 D = p_to_b - p_from_a;
 
 		real_t ABlen = B.dot(B);
+		if (ABlen <= 0) {
+			return false;
+		}
+		Vector2 Bn = B / ABlen;
+		C = Vector2(C.x * Bn.x + C.y * Bn.y, C.y * Bn.x - C.x * Bn.y);
+		D = Vector2(D.x * Bn.x + D.y * Bn.y, D.y * Bn.x - D.x * Bn.y);
+
+		// Fail if C x B and D x B have the same sign (segments don't intersect).
+		if ((C.y < (real_t)-CMP_EPSILON && D.y < (real_t)-CMP_EPSILON) || (C.y > (real_t)CMP_EPSILON && D.y > (real_t)CMP_EPSILON)) {
+			return false;
+		}
+
+		// Fail if segments are parallel or colinear.
+		// (when A x B == zero, i.e (C - D) x B == zero, i.e C x B == D x B)
+		if (Math::is_equal_approx(C.y, D.y)) {
+			return false;
+		}
+
+		real_t ABpos = D.x + (C.x - D.x) * D.y / (D.y - C.y);
+
+		// Fail if segment C-D crosses line A-B outside of segment A-B.
+		if ((ABpos < 0) || (ABpos > 1)) {
+			return false;
+		}
+
+		// Apply the discovered position to line A-B in the original coordinate system.
+		if (r_result) {
+			*r_result = p_from_a + B * ABpos;
+		}
+
+		return true;
+	}
+
+	static bool segment_intersects_segment(const Vector2i &p_from_a, const Vector2i &p_to_a, const Vector2i &p_from_b, const Vector2i &p_to_b, Vector2i *r_result) {
+		Vector2 B = p_to_a - p_from_a;
+		Vector2 C = p_from_b - p_from_a;
+		Vector2 D = p_to_b - p_from_a;
+
+		int32_t ABlen = B.dot(B);
 		if (ABlen <= 0) {
 			return false;
 		}

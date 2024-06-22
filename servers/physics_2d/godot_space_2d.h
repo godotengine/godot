@@ -191,6 +191,7 @@ public:
 	int get_collision_pairs() const { return collision_pairs; }
 
 	bool test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::MotionParameters &p_parameters, PhysicsServer2D::MotionResult *r_result);
+	bool body_collides_at(GodotBody2D *p_body, const Transform2D from, const Vector2i delta, PhysicsServer2D::CollisionResult *r_result);
 
 	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }
 	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.is_empty(); }

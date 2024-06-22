@@ -34,7 +34,7 @@
 #define collision_solver sat_2d_calculate_penetration
 //#define collision_solver gjk_epa_calculate_penetration
 
-bool GodotCollisionSolver2D::solve_static_world_boundary(const GodotShape2D *p_shape_A, const Transform2D &p_transform_A, const GodotShape2D *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, real_t p_margin) {
+bool GodotCollisionSolver2D::solve_static_world_boundary(const GodotShape2D *p_shape_A, const Transform2D &p_transform_A, const GodotShape2D *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
 	const GodotWorldBoundaryShape2D *world_boundary = static_cast<const GodotWorldBoundaryShape2D *>(p_shape_A);
 	if (p_shape_B->get_type() == PhysicsServer2D::SHAPE_WORLD_BOUNDARY) {
 		return false;
@@ -44,7 +44,7 @@ bool GodotCollisionSolver2D::solve_static_world_boundary(const GodotShape2D *p_s
 	Vector2 p = p_transform_A.xform(world_boundary->get_normal() * world_boundary->get_d());
 	real_t d = n.dot(p);
 
-	Vector2 supports[2];
+	Vector2i supports[2];
 	int support_count;
 
 	p_shape_B->get_supports(p_transform_B.affine_inverse().basis_xform(-n).normalized(), supports, support_count);
@@ -52,7 +52,7 @@ bool GodotCollisionSolver2D::solve_static_world_boundary(const GodotShape2D *p_s
 	bool found = false;
 
 	for (int i = 0; i < support_count; i++) {
-		supports[i] += p_margin * supports[i].normalized();
+		supports[i] += supports[i].normalized();
 		supports[i] = p_transform_B.xform(supports[i]);
 		supports[i] += p_motion_B;
 		real_t pd = n.dot(supports[i]);
@@ -75,14 +75,14 @@ bool GodotCollisionSolver2D::solve_static_world_boundary(const GodotShape2D *p_s
 	return found;
 }
 
-bool GodotCollisionSolver2D::solve_separation_ray(const GodotShape2D *p_shape_A, const Vector2 &p_motion_A, const Transform2D &p_transform_A, const GodotShape2D *p_shape_B, const Transform2D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, Vector2 *r_sep_axis, real_t p_margin) {
+bool GodotCollisionSolver2D::solve_separation_ray(const GodotShape2D *p_shape_A, const Vector2 &p_motion_A, const Transform2D &p_transform_A, const GodotShape2D *p_shape_B, const Transform2D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, Vector2 *r_sep_axis) {
 	const GodotSeparationRayShape2D *ray = static_cast<const GodotSeparationRayShape2D *>(p_shape_A);
 	if (p_shape_B->get_type() == PhysicsServer2D::SHAPE_SEPARATION_RAY) {
 		return false;
 	}
 
 	Vector2 from = p_transform_A.get_origin();
-	Vector2 to = from + p_transform_A[1] * (ray->get_length() + p_margin);
+	Vector2 to = from + p_transform_A[1] * (ray->get_length());
 	if (p_motion_A != Vector2()) {
 		//not the best but should be enough
 		Vector2 normal = (to - from).normalized();
@@ -94,7 +94,7 @@ bool GodotCollisionSolver2D::solve_separation_ray(const GodotShape2D *p_shape_A,
 	from = invb.xform(from);
 	to = invb.xform(to);
 
-	Vector2 p, n;
+	Vector2i p, n;
 	if (!p_shape_B->intersect_segment(from, to, p, n)) {
 		if (r_sep_axis) {
 			*r_sep_axis = p_transform_A[1].normalized();
@@ -167,16 +167,14 @@ bool GodotCollisionSolver2D::concave_callback(void *p_userdata, GodotShape2D *p_
 	return !cinfo.result_callback;
 }
 
-bool GodotCollisionSolver2D::solve(const GodotShape2D *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const GodotShape2D *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CallbackResult p_result_callback, void *p_userdata, Vector2 *r_sep_axis, real_t p_margin_A, real_t p_margin_B) {
+bool GodotCollisionSolver2D::solve(const GodotShape2D *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const GodotShape2D *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CallbackResult p_result_callback, void *p_userdata, Vector2 *r_sep_axis) {
 	PhysicsServer2D::ShapeType type_A = p_shape_A->get_type();
 	PhysicsServer2D::ShapeType type_B = p_shape_B->get_type();
-	real_t margin_A = p_margin_A, margin_B = p_margin_B;
 
 	bool swap = false;
 
 	if (type_A > type_B) {
 		SWAP(type_A, type_B);
-		SWAP(margin_A, margin_B);
 		swap = true;
 	}
 
@@ -187,9 +185,9 @@ bool GodotCollisionSolver2D::solve(const GodotShape2D *p_shape_A, const Transfor
 		}
 
 		if (swap) {
-			return solve_static_world_boundary(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_motion_A, p_result_callback, p_userdata, true, p_margin_A);
+			return solve_static_world_boundary(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_motion_A, p_result_callback, p_userdata, true);
 		} else {
-			return solve_static_world_boundary(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_motion_B, p_result_callback, p_userdata, false, p_margin_B);
+			return solve_static_world_boundary(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_motion_B, p_result_callback, p_userdata, false);
 		}
 
 	} else if (type_A == PhysicsServer2D::SHAPE_SEPARATION_RAY) {
@@ -199,12 +197,12 @@ bool GodotCollisionSolver2D::solve(const GodotShape2D *p_shape_A, const Transfor
 		}
 
 		if (swap) {
-			return solve_separation_ray(p_shape_B, p_motion_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true, r_sep_axis, p_margin_B);
+			return solve_separation_ray(p_shape_B, p_motion_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true, r_sep_axis);
 		} else {
-			return solve_separation_ray(p_shape_A, p_motion_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, r_sep_axis, p_margin_A);
+			return solve_separation_ray(p_shape_A, p_motion_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, r_sep_axis);
 		}
 
 	}  else {
-		return collision_solver(p_shape_A, p_transform_A, p_motion_A, p_shape_B, p_transform_B, p_motion_B, p_result_callback, p_userdata, false, r_sep_axis, margin_A, margin_B);
+		return collision_solver(p_shape_A, p_transform_A, p_motion_A, p_shape_B, p_transform_B, p_motion_B, p_result_callback, p_userdata, false, r_sep_axis);
 	}
 }

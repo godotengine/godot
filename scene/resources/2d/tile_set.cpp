@@ -3479,7 +3479,6 @@ void TileSet::_compatibility_conversion() {
 								tile_data->set_collision_polygons_count(0, tile_data->get_collision_polygons_count(0) + 1);
 								int index = tile_data->get_collision_polygons_count(0) - 1;
 								tile_data->set_collision_polygon_one_way(0, index, csd.one_way);
-								tile_data->set_collision_polygon_one_way_margin(0, index, csd.one_way_margin);
 								tile_data->set_collision_polygon_points(0, index, polygon);
 							}
 						}
@@ -3597,7 +3596,6 @@ void TileSet::_compatibility_conversion() {
 										tile_data->set_collision_polygons_count(0, tile_data->get_collision_polygons_count(0) + 1);
 										int index = tile_data->get_collision_polygons_count(0) - 1;
 										tile_data->set_collision_polygon_one_way(0, index, csd.one_way);
-										tile_data->set_collision_polygon_one_way_margin(0, index, csd.one_way_margin);
 										tile_data->set_collision_polygon_points(0, index, polygon);
 									}
 								}
@@ -3819,8 +3817,6 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 						csd.autotile_coords = d[key];
 					} else if (key == "one_way") {
 						csd.one_way = d[key];
-					} else if (key == "one_way_margin") {
-						csd.one_way_margin = d[key];
 					} else if (key == "shape") {
 						csd.shape = d[key];
 					} else if (key == "shape_transform") {
@@ -6336,19 +6332,6 @@ bool TileData::is_collision_polygon_one_way(int p_layer_id, int p_polygon_index)
 	return physics[p_layer_id].polygons[p_polygon_index].one_way;
 }
 
-void TileData::set_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index, float p_one_way_margin) {
-	ERR_FAIL_INDEX(p_layer_id, physics.size());
-	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
-	physics.write[p_layer_id].polygons.write[p_polygon_index].one_way_margin = p_one_way_margin;
-	emit_signal(CoreStringName(changed));
-}
-
-float TileData::get_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index) const {
-	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0.0);
-	ERR_FAIL_INDEX_V(p_polygon_index, physics[p_layer_id].polygons.size(), 0.0);
-	return physics[p_layer_id].polygons[p_polygon_index].one_way_margin;
-}
-
 int TileData::get_collision_polygon_shapes_count(int p_layer_id, int p_polygon_index) const {
 	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0);
 	ERR_FAIL_INDEX_V(p_polygon_index, physics[p_layer_id].polygons.size(), 0);
@@ -6672,9 +6655,6 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 			} else if (components[2] == "one_way") {
 				set_collision_polygon_one_way(layer_index, polygon_index, p_value);
 				return true;
-			} else if (components[2] == "one_way_margin") {
-				set_collision_polygon_one_way_margin(layer_index, polygon_index, p_value);
-				return true;
 			}
 		}
 	} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_int()) {
@@ -6777,9 +6757,6 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 				} else if (components[2] == "one_way") {
 					r_ret = is_collision_polygon_one_way(layer_index, polygon_index);
 					return true;
-				} else if (components[2] == "one_way_margin") {
-					r_ret = get_collision_polygon_one_way_margin(layer_index, polygon_index);
-					return true;
 				}
 			}
 		} else if (components.size() == 2 && components[0] == "terrains_peering_bit") {
@@ -6865,13 +6842,6 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 					property_info.usage ^= PROPERTY_USAGE_STORAGE;
 				}
 				p_list->push_back(property_info);
-
-				// physics_layer_%d/polygon_%d/one_way_margin
-				property_info = PropertyInfo(Variant::FLOAT, vformat("physics_layer_%d/polygon_%d/%s", i, j, PNAME("one_way_margin")));
-				if (physics[i].polygons[j].one_way_margin == 1.0) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
 			}
 		}
 
@@ -6950,8 +6920,6 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_polygon_points", "layer_id", "polygon_index"), &TileData::get_collision_polygon_points);
 	ClassDB::bind_method(D_METHOD("set_collision_polygon_one_way", "layer_id", "polygon_index", "one_way"), &TileData::set_collision_polygon_one_way);
 	ClassDB::bind_method(D_METHOD("is_collision_polygon_one_way", "layer_id", "polygon_index"), &TileData::is_collision_polygon_one_way);
-	ClassDB::bind_method(D_METHOD("set_collision_polygon_one_way_margin", "layer_id", "polygon_index", "one_way_margin"), &TileData::set_collision_polygon_one_way_margin);
-	ClassDB::bind_method(D_METHOD("get_collision_polygon_one_way_margin", "layer_id", "polygon_index"), &TileData::get_collision_polygon_one_way_margin);
 
 	// Terrain
 	ClassDB::bind_method(D_METHOD("set_terrain_set", "terrain_set"), &TileData::set_terrain_set);

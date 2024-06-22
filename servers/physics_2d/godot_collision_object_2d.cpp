@@ -40,7 +40,6 @@ void GodotCollisionObject2D::add_shape(GodotShape2D *p_shape, const Transform2D 
 	s.bpid = 0; //needs update
 	s.disabled = p_disabled;
 	s.one_way_collision = false;
-	s.one_way_collision_margin = 0;
 	shapes.push_back(s);
 	p_shape->add_owner(this);
 

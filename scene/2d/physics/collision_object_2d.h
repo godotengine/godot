@@ -72,7 +72,6 @@ private:
 
 		bool disabled = false;
 		bool one_way_collision = false;
-		real_t one_way_collision_margin = 0.0;
 	};
 
 	int total_subshapes = 0;
@@ -149,9 +148,6 @@ public:
 
 	void shape_owner_set_one_way_collision(uint32_t p_owner, bool p_enable);
 	bool is_shape_owner_one_way_collision_enabled(uint32_t p_owner) const;
-
-	void shape_owner_set_one_way_collision_margin(uint32_t p_owner, real_t p_margin);
-	real_t get_shape_owner_one_way_collision_margin(uint32_t p_owner) const;
 
 	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape);
 	int shape_owner_get_shape_count(uint32_t p_owner) const;

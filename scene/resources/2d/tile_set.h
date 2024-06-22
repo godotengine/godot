@@ -153,7 +153,6 @@ private:
 	struct CompatibilityShapeData {
 		Vector2i autotile_coords;
 		bool one_way;
-		float one_way_margin;
 		Ref<Shape2D> shape;
 		Transform2D transform;
 	};
@@ -852,7 +851,6 @@ private:
 			LocalVector<Ref<ConvexPolygonShape2D>> shapes;
 			mutable HashMap<int, LocalVector<Ref<ConvexPolygonShape2D>>> transformed_shapes;
 			bool one_way = false;
-			float one_way_margin = 1.0;
 		};
 
 		Vector2 linear_velocity;
@@ -956,8 +954,6 @@ public:
 	Vector<Vector2i> get_collision_polygon_points(int p_layer_id, int p_polygon_index) const;
 	void set_collision_polygon_one_way(int p_layer_id, int p_polygon_index, bool p_one_way);
 	bool is_collision_polygon_one_way(int p_layer_id, int p_polygon_index) const;
-	void set_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index, float p_one_way_margin);
-	float get_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index) const;
 	int get_collision_polygon_shapes_count(int p_layer_id, int p_polygon_index) const;
 	Ref<ConvexPolygonShape2D> get_collision_polygon_shape(int p_layer_id, int p_polygon_index, int shape_index, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false) const;
 

@@ -46,14 +46,6 @@ Vector2 ShapeCast2D::get_target_position() const {
 	return target_position;
 }
 
-void ShapeCast2D::set_margin(real_t p_margin) {
-	margin = p_margin;
-}
-
-real_t ShapeCast2D::get_margin() const {
-	return margin;
-}
-
 void ShapeCast2D::set_max_results(int p_max_results) {
 	max_results = p_max_results;
 }
@@ -299,7 +291,6 @@ void ShapeCast2D::_update_shapecast_state() {
 	params.shape_rid = shape_rid;
 	params.transform = gt;
 	params.motion = gt.basis_xform(target_position);
-	params.margin = margin;
 	params.exclude = exclude;
 	params.collision_mask = collision_mask;
 	params.collide_with_bodies = collide_with_bodies;
@@ -420,9 +411,6 @@ void ShapeCast2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_target_position", "local_point"), &ShapeCast2D::set_target_position);
 	ClassDB::bind_method(D_METHOD("get_target_position"), &ShapeCast2D::get_target_position);
 
-	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &ShapeCast2D::set_margin);
-	ClassDB::bind_method(D_METHOD("get_margin"), &ShapeCast2D::get_margin);
-
 	ClassDB::bind_method(D_METHOD("set_max_results", "max_results"), &ShapeCast2D::set_max_results);
 	ClassDB::bind_method(D_METHOD("get_max_results"), &ShapeCast2D::get_max_results);
 
@@ -469,7 +457,6 @@ void ShapeCast2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "target_position", PROPERTY_HINT_NONE, "suffix:px"), "set_target_position", "get_target_position");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,100,0.01,suffix:px"), "set_margin", "get_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_results"), "set_max_results", "get_max_results");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "collision_result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "", "_get_collision_result");

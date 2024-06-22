@@ -57,11 +57,10 @@ private:
 		Transform2D xform;
 		Transform2D xform_inv;
 		GodotBroadPhase2D::ID bpid = 0;
-		Rect2 aabb_cache; //for rayqueries
+		Rect2i aabb_cache; //for rayqueries
 		GodotShape2D *shape = nullptr;
 		bool disabled = false;
 		bool one_way_collision = false;
-		real_t one_way_collision_margin = 0.0;
 	};
 
 	Vector<Shape> shapes;
@@ -125,7 +124,7 @@ public:
 		CRASH_BAD_INDEX(p_index, shapes.size());
 		return shapes[p_index].xform_inv;
 	}
-	_FORCE_INLINE_ const Rect2 &get_shape_aabb(int p_index) const {
+	_FORCE_INLINE_ const Rect2i &get_shape_aabb(int p_index) const {
 		CRASH_BAD_INDEX(p_index, shapes.size());
 		return shapes[p_index].aabb_cache;
 	}
@@ -140,19 +139,13 @@ public:
 		return shapes[p_idx].disabled;
 	}
 
-	_FORCE_INLINE_ void set_shape_as_one_way_collision(int p_idx, bool p_one_way_collision, real_t p_margin) {
+	_FORCE_INLINE_ void set_shape_as_one_way_collision(int p_idx, bool p_one_way_collision) {
 		CRASH_BAD_INDEX(p_idx, shapes.size());
 		shapes.write[p_idx].one_way_collision = p_one_way_collision;
-		shapes.write[p_idx].one_way_collision_margin = p_margin;
 	}
 	_FORCE_INLINE_ bool is_shape_set_as_one_way_collision(int p_idx) const {
 		CRASH_BAD_INDEX(p_idx, shapes.size());
 		return shapes[p_idx].one_way_collision;
-	}
-
-	_FORCE_INLINE_ real_t get_shape_one_way_collision_margin(int p_idx) const {
-		CRASH_BAD_INDEX(p_idx, shapes.size());
-		return shapes[p_idx].one_way_collision_margin;
 	}
 
 	void set_collision_mask(uint32_t p_mask) {

@@ -31,8 +31,9 @@
 #include "physics_body_2d.h"
 
 void PhysicsBody2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(0.08), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("move_h", "amount", "collision_callback"), &PhysicsBody2D::move_h, DEFVAL(0.0f), DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("move_v", "amount", "collision_callback"), &PhysicsBody2D::move_v, DEFVAL(0.0f), DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "recovery_as_collision"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_gravity"), &PhysicsBody2D::get_gravity);
 
 	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &PhysicsBody2D::get_collision_exceptions);
@@ -46,81 +47,77 @@ PhysicsBody2D::PhysicsBody2D(PhysicsServer2D::BodyMode p_mode) :
 	set_pickable(false);
 }
 
-Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_test_only, real_t p_margin, bool p_recovery_as_collision) {
-	PhysicsServer2D::MotionParameters parameters(get_global_transform(), p_motion, p_margin);
-	parameters.recovery_as_collision = p_recovery_as_collision;
-
-	PhysicsServer2D::MotionResult result;
-
-	if (move_and_collide(parameters, result, p_test_only)) {
-		// Create a new instance when the cached reference is invalid or still in use in script.
-		if (motion_cache.is_null() || motion_cache->get_reference_count() > 1) {
-			motion_cache.instantiate();
-			motion_cache->owner_id = get_instance_id();
-		}
-
-		motion_cache->result = result;
-		return motion_cache;
+bool PhysicsBody2D::move_h(float_t amount, const Callable &collision_callback) {
+	position_delta.x += amount;
+	int whole_move = Math::round(position_delta.x);
+	if (whole_move == 0) {
+		return false;
 	}
-
-	return Ref<KinematicCollision2D>();
+	position_delta.x -= whole_move;
+	return move_h_exact(whole_move, collision_callback);
 }
 
-bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &p_parameters, PhysicsServer2D::MotionResult &r_result, bool p_test_only, bool p_cancel_sliding) {
-	if (is_only_update_transform_changes_enabled()) {
-		ERR_PRINT("Move functions do not work together with 'sync to physics' option. See the documentation for details.");
+bool PhysicsBody2D::move_v(float_t amount, const Callable &collision_callback) {
+	position_delta.y += amount;
+	int whole_move = Math::round(position_delta.y);
+	if (whole_move == 0) {
+		return false;
 	}
-
-	bool colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), p_parameters, &r_result);
-
-	// Restore direction of motion to be along original motion,
-	// in order to avoid sliding due to recovery,
-	// but only if collision depth is low enough to avoid tunneling.
-	if (p_cancel_sliding) {
-		real_t motion_length = p_parameters.motion.length();
-		real_t precision = 0.001;
-
-		if (colliding) {
-			// Can't just use margin as a threshold because collision depth is calculated on unsafe motion,
-			// so even in normal resting cases the depth can be a bit more than the margin.
-			precision += motion_length * (r_result.collision_unsafe_fraction - r_result.collision_safe_fraction);
-
-			if (r_result.collision_depth > p_parameters.margin + precision) {
-				p_cancel_sliding = false;
-			}
-		}
-
-		if (p_cancel_sliding) {
-			// When motion is null, recovery is the resulting motion.
-			Vector2 motion_normal;
-			if (motion_length > CMP_EPSILON) {
-				motion_normal = p_parameters.motion / motion_length;
-			}
-
-			// Check depth of recovery.
-			real_t projected_length = r_result.travel.dot(motion_normal);
-			Vector2 recovery = r_result.travel - motion_normal * projected_length;
-			real_t recovery_length = recovery.length();
-			// Fixes cases where canceling slide causes the motion to go too deep into the ground,
-			// because we're only taking rest information into account and not general recovery.
-			if (recovery_length < p_parameters.margin + precision) {
-				// Apply adjustment to motion.
-				r_result.travel = motion_normal * projected_length;
-				r_result.remainder = p_parameters.motion - r_result.travel;
-			}
-		}
-	}
-
-	if (!p_test_only) {
-		Transform2D gt = p_parameters.from;
-		gt.columns[2] += r_result.travel;
-		set_global_transform(gt);
-	}
-
-	return colliding;
+	position_delta.y -= whole_move;
+	return move_v_exact(whole_move, collision_callback);
 }
 
-bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion, const Ref<KinematicCollision2D> &r_collision, real_t p_margin, bool p_recovery_as_collision) {
+bool PhysicsBody2D::move_h_exact(int32_t amount, const Callable &collision_callback) {
+	Vector2i target_position = get_position() + Vector2i(amount, 0);
+	int move_dir = SIGN(amount);
+	Vector2i move_dir_vector = Vector2i(move_dir, 0);
+	int amount_moved = 0;
+	PhysicsServer2D::CollisionResult r_result;
+	while (amount != 0)
+	{
+		bool colliding = PhysicsServer2D::get_singleton()->body_collides_at(get_rid(), get_global_transform(), move_dir_vector, &r_result);
+		if (colliding)
+		{
+			position_delta.x = 0;
+			if (collision_callback.is_valid())
+			{
+				collision_callback.call(move_dir_vector, Vector2i(0, amount_moved), target_position, r_result.collider);
+			}
+			return true;
+		}
+		amount_moved += move_dir;
+		amount -= move_dir;
+		translate(move_dir_vector);
+	}
+	return false;
+}
+
+bool PhysicsBody2D::move_v_exact(int32_t amount, const Callable &collision_callback) {
+	Vector2i target_position = get_position() + Vector2i(0, amount);
+	int move_dir = SIGN(amount);
+	Vector2i move_dir_vector = Vector2i(0, move_dir);
+	int amount_moved = 0;
+	PhysicsServer2D::CollisionResult r_result;
+	while (amount != 0)
+	{
+		bool colliding = PhysicsServer2D::get_singleton()->body_collides_at(get_rid(), get_global_transform(), move_dir_vector, &r_result);
+		if (colliding)
+		{
+			position_delta.x = 0;
+			if (collision_callback.is_valid())
+			{
+				collision_callback.call(move_dir_vector, Vector2i(0, amount_moved), target_position, r_result.collider);
+			}
+			return true;
+		}
+		amount_moved += move_dir;
+		amount -= move_dir;
+		translate(move_dir_vector);
+	}
+	return false;
+}
+
+bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion, const Ref<KinematicCollision2D> &r_collision, bool p_recovery_as_collision) {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	PhysicsServer2D::MotionResult *r = nullptr;
@@ -132,7 +129,7 @@ bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion
 		r = &temp_result;
 	}
 
-	PhysicsServer2D::MotionParameters parameters(p_from, p_motion, p_margin);
+	PhysicsServer2D::MotionParameters parameters(p_from, p_motion);
 	parameters.recovery_as_collision = p_recovery_as_collision;
 
 	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), parameters, r);

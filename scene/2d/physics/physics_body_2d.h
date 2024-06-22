@@ -44,18 +44,20 @@ protected:
 	static void _bind_methods();
 	PhysicsBody2D(PhysicsServer2D::BodyMode p_mode);
 
-	Ref<KinematicCollision2D> motion_cache;
-
-	Ref<KinematicCollision2D> _move(const Vector2 &p_motion, bool p_test_only = false, real_t p_margin = 0.08, bool p_recovery_as_collision = false);
-
 public:
-	bool move_and_collide(const PhysicsServer2D::MotionParameters &p_parameters, PhysicsServer2D::MotionResult &r_result, bool p_test_only = false, bool p_cancel_sliding = true);
-	bool test_move(const Transform2D &p_from, const Vector2 &p_motion, const Ref<KinematicCollision2D> &r_collision = Ref<KinematicCollision2D>(), real_t p_margin = 0.08, bool p_recovery_as_collision = false);
+	bool move_h(float_t moveH, const Callable &collisionCallback = Callable());
+	bool move_v(float_t moveV, const Callable &collisionCallback = Callable());
+	bool move_h_exact(int32_t moveH, const Callable &collisionCallback);
+	bool move_v_exact(int32_t moveV, const Callable &collisionCallback);
+	bool test_move(const Transform2D &p_from, const Vector2 &p_motion, const Ref<KinematicCollision2D> &r_collision = Ref<KinematicCollision2D>(), bool p_recovery_as_collision = false);
 	Vector2 get_gravity() const;
 
 	TypedArray<PhysicsBody2D> get_collision_exceptions();
 	void add_collision_exception_with(Node *p_node); //must be physicsbody
 	void remove_collision_exception_with(Node *p_node);
+
+private:
+	Vector2 position_delta;
 };
 
 #endif // PHYSICS_BODY_2D_H

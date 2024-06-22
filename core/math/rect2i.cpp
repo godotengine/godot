@@ -40,3 +40,68 @@ Rect2i::operator String() const {
 Rect2i::operator Rect2() const {
 	return Rect2(position, size);
 }
+
+bool Rect2i::intersects_segment(const Point2i &p_from, const Point2i &p_to, Point2i *r_pos, Point2i *r_normal) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0)) {
+		ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
+	}
+#endif
+	int32_t min = 0, max = 1;
+	int axis = 0;
+	int32_t sign = 0;
+
+	for (int i = 0; i < 2; i++) {
+		int32_t seg_from = p_from[i];
+		int32_t seg_to = p_to[i];
+		int32_t box_begin = position[i];
+		int32_t box_end = box_begin + size[i];
+		real_t cmin, cmax;
+		int32_t csign;
+
+		if (seg_from < seg_to) {
+			if (seg_from > box_end || seg_to < box_begin) {
+				return false;
+			}
+			int32_t length = seg_to - seg_from;
+			cmin = (seg_from < box_begin) ? ((box_begin - seg_from) / length) : 0;
+			cmax = (seg_to > box_end) ? ((box_end - seg_from) / length) : 1;
+			csign = -1;
+
+		} else {
+			if (seg_to > box_end || seg_from < box_begin) {
+				return false;
+			}
+			int32_t length = seg_to - seg_from;
+			cmin = (seg_from > box_end) ? (box_end - seg_from) / length : 0;
+			cmax = (seg_to < box_begin) ? (box_begin - seg_from) / length : 1;
+			csign = 1;
+		}
+
+		if (cmin > min) {
+			min = cmin;
+			axis = i;
+			sign = csign;
+		}
+		if (cmax < max) {
+			max = cmax;
+		}
+		if (max < min) {
+			return false;
+		}
+	}
+
+	Vector2i rel = p_to - p_from;
+
+	if (r_normal) {
+		Vector2i normal;
+		normal[axis] = sign;
+		*r_normal = normal;
+	}
+
+	if (r_pos) {
+		*r_pos = p_from + rel * min;
+	}
+
+	return true;
+}

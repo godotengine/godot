@@ -839,13 +839,12 @@ void TileMapLayer::_physics_update_cell(CellData &r_cell_data) {
 						for (int polygon_index = 0; polygon_index < tile_data->get_collision_polygons_count(tile_set_physics_layer); polygon_index++) {
 							// Iterate over the polygons.
 							bool one_way_collision = tile_data->is_collision_polygon_one_way(tile_set_physics_layer, polygon_index);
-							float one_way_collision_margin = tile_data->get_collision_polygon_one_way_margin(tile_set_physics_layer, polygon_index);
 							int shapes_count = tile_data->get_collision_polygon_shapes_count(tile_set_physics_layer, polygon_index);
 							for (int shape_index = 0; shape_index < shapes_count; shape_index++) {
 								// Add decomposed convex shapes.
 								Ref<ConvexPolygonShape2D> shape = tile_data->get_collision_polygon_shape(tile_set_physics_layer, polygon_index, shape_index, flip_h, flip_v, transpose);
 								ps->body_add_shape(body, shape->get_rid());
-								ps->body_set_shape_as_one_way_collision(body, body_shape_index, one_way_collision, one_way_collision_margin);
+								ps->body_set_shape_as_one_way_collision(body, body_shape_index, one_way_collision);
 
 								body_shape_index++;
 							}

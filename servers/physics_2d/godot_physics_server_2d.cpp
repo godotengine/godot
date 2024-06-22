@@ -635,13 +635,13 @@ void GodotPhysicsServer2D::body_set_shape_disabled(RID p_body, int p_shape_idx, 
 	body->set_shape_disabled(p_shape_idx, p_disabled);
 }
 
-void GodotPhysicsServer2D::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, real_t p_margin) {
+void GodotPhysicsServer2D::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 	FLUSH_QUERY_CHECK(body);
 
-	body->set_shape_as_one_way_collision(p_shape_idx, p_enable, p_margin);
+	body->set_shape_as_one_way_collision(p_shape_idx, p_enable);
 }
 
 void GodotPhysicsServer2D::body_set_continuous_collision_detection_mode(RID p_body, CCDMode p_mode) {
@@ -979,6 +979,17 @@ bool GodotPhysicsServer2D::body_test_motion(RID p_body, const MotionParameters &
 	_update_shapes();
 
 	return body->get_space()->test_body_motion(body, p_parameters, r_result);
+}
+
+bool GodotPhysicsServer2D::body_collides_at(RID p_body, const Transform2D from, const Vector2i delta, CollisionResult *r_result) {
+	GodotBody2D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, false);
+	ERR_FAIL_NULL_V(body->get_space(), false);
+	ERR_FAIL_COND_V(body->get_space()->is_locked(), false);
+
+	_update_shapes();
+
+	return body->get_space()->body_collides_at(body, from, delta, r_result);
 }
 
 PhysicsDirectBodyState2D *GodotPhysicsServer2D::body_get_direct_state(RID p_body) {

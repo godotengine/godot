@@ -45,7 +45,6 @@ void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
 	}
 	collision_object->shape_owner_set_disabled(owner_id, disabled);
 	collision_object->shape_owner_set_one_way_collision(owner_id, one_way_collision);
-	collision_object->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
 }
 
 Color CollisionShape2D::_get_default_debug_color() const {
@@ -219,17 +218,6 @@ bool CollisionShape2D::is_one_way_collision_enabled() const {
 	return one_way_collision;
 }
 
-void CollisionShape2D::set_one_way_collision_margin(real_t p_margin) {
-	one_way_collision_margin = p_margin;
-	if (collision_object) {
-		collision_object->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
-	}
-}
-
-real_t CollisionShape2D::get_one_way_collision_margin() const {
-	return one_way_collision_margin;
-}
-
 void CollisionShape2D::set_debug_color(const Color &p_color) {
 	debug_color = p_color;
 	queue_redraw();
@@ -271,15 +259,12 @@ void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionShape2D::is_disabled);
 	ClassDB::bind_method(D_METHOD("set_one_way_collision", "enabled"), &CollisionShape2D::set_one_way_collision);
 	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionShape2D::is_one_way_collision_enabled);
-	ClassDB::bind_method(D_METHOD("set_one_way_collision_margin", "margin"), &CollisionShape2D::set_one_way_collision_margin);
-	ClassDB::bind_method(D_METHOD("get_one_way_collision_margin"), &CollisionShape2D::get_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape2D::set_debug_color);
 	ClassDB::bind_method(D_METHOD("get_debug_color"), &CollisionShape2D::get_debug_color);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1,suffix:px"), "set_one_way_collision_margin", "get_one_way_collision_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_color"), "set_debug_color", "get_debug_color");
 	// Default value depends on a project setting, override for doc generation purposes.
 	ADD_PROPERTY_DEFAULT("debug_color", Color());

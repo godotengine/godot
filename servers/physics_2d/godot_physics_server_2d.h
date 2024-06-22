@@ -183,7 +183,7 @@ public:
 	virtual void body_clear_shapes(RID p_body) override;
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) override;
-	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, real_t p_margin) override;
+	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable) override;
 
 	virtual void body_attach_object_instance_id(RID p_body, ObjectID p_id) override;
 	virtual ObjectID body_get_object_instance_id(RID p_body) const override;
@@ -252,6 +252,7 @@ public:
 	virtual void body_set_pickable(RID p_body, bool p_pickable) override;
 
 	virtual bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override;
+	virtual bool body_collides_at(RID p_body, const Transform2D from, const Vector2i delta, CollisionResult *r_result = nullptr) override;
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState2D *body_get_direct_state(RID p_body) override;

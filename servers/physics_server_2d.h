@@ -176,7 +176,6 @@ public:
 		RID shape_rid;
 		Transform2D transform;
 		Vector2 motion;
-		real_t margin = 0.0;
 		HashSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
@@ -203,6 +202,7 @@ public:
 
 class PhysicsTestMotionParameters2D;
 class PhysicsTestMotionResult2D;
+class PhysicsCollisionResult2D;
 
 class PhysicsServer2D : public Object {
 	GDCLASS(PhysicsServer2D, Object);
@@ -210,6 +210,7 @@ class PhysicsServer2D : public Object {
 	static PhysicsServer2D *singleton;
 
 	virtual bool _body_test_motion(RID p_body, const Ref<PhysicsTestMotionParameters2D> &p_parameters, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>());
+	virtual bool _body_collides_at(RID p_body, const Transform2D from, const Vector2i delta, const Ref<PhysicsCollisionResult2D> &r_result = Ref<PhysicsCollisionResult2D>());
 
 protected:
 	static void _bind_methods();
@@ -367,7 +368,7 @@ public:
 	virtual Transform2D body_get_shape_transform(RID p_body, int p_shape_idx) const = 0;
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape, bool p_disabled) = 0;
-	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape, bool p_enabled, real_t p_margin = 0) = 0;
+	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape, bool p_enabled) = 0;
 
 	virtual void body_remove_shape(RID p_body, int p_shape_idx) = 0;
 	virtual void body_clear_shapes(RID p_body) = 0;
@@ -480,8 +481,7 @@ public:
 
 	struct MotionParameters {
 		Transform2D from;
-		Vector2 motion;
-		real_t margin = 0.08;
+		Vector2i motion;
 		bool collide_separation_ray = false;
 		HashSet<RID> exclude_bodies;
 		HashSet<ObjectID> exclude_objects;
@@ -489,10 +489,9 @@ public:
 
 		MotionParameters() {}
 
-		MotionParameters(const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin = 0.08) :
+		MotionParameters(const Transform2D &p_from, const Vector2i &p_motion) :
 				from(p_from),
-				motion(p_motion),
-				margin(p_margin) {}
+				motion(p_motion) {}
 	};
 
 	struct MotionResult {
@@ -515,7 +514,21 @@ public:
 		}
 	};
 
+	struct CollisionResult {
+		Vector2 collision_point;
+		Vector2 collision_normal;
+		int collision_local_shape = 0;
+		ObjectID collider_id;
+		RID collider;
+		int collider_shape = 0;
+
+		real_t get_angle(Vector2 p_up_direction) const {
+			return Math::acos(collision_normal.dot(p_up_direction));
+		}
+	};
+
 	virtual bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) = 0;
+	virtual bool body_collides_at(RID p_body, const Transform2D from, const Vector2i delta, CollisionResult *r_result = nullptr) = 0;
 
 	/* JOINT API */
 
@@ -696,9 +709,6 @@ public:
 	void set_motion(const Vector2 &p_motion) { parameters.motion = p_motion; }
 	const Vector2 &get_motion() const { return parameters.motion; }
 
-	void set_margin(real_t p_margin) { parameters.margin = p_margin; }
-	real_t get_margin() const { return parameters.margin; }
-
 	void set_collision_mask(uint32_t p_mask) { parameters.collision_mask = p_mask; }
 	uint32_t get_collision_mask() const { return parameters.collision_mask; }
 
@@ -726,11 +736,8 @@ public:
 	const Transform2D &get_from() const { return parameters.from; }
 	void set_from(const Transform2D &p_from) { parameters.from = p_from; }
 
-	const Vector2 &get_motion() const { return parameters.motion; }
-	void set_motion(const Vector2 &p_motion) { parameters.motion = p_motion; }
-
-	real_t get_margin() const { return parameters.margin; }
-	void set_margin(real_t p_margin) { parameters.margin = p_margin; }
+	const Vector2i &get_motion() const { return parameters.motion; }
+	void set_motion(const Vector2i &p_motion) { parameters.motion = p_motion; }
 
 	bool is_collide_separation_ray_enabled() const { return parameters.collide_separation_ray; }
 	void set_collide_separation_ray_enabled(bool p_enabled) { parameters.collide_separation_ray = p_enabled; }
@@ -770,6 +777,26 @@ public:
 	real_t get_collision_depth() const;
 	real_t get_collision_safe_fraction() const;
 	real_t get_collision_unsafe_fraction() const;
+};
+
+class PhysicsCollisionResult2D : public RefCounted {
+GDCLASS(PhysicsCollisionResult2D, RefCounted);
+
+	PhysicsServer2D::CollisionResult result;
+
+protected:
+	static void _bind_methods();
+
+public:
+	PhysicsServer2D::CollisionResult *get_result_ptr() const { return const_cast<PhysicsServer2D::CollisionResult *>(&result); }
+
+	Vector2 get_collision_point() const;
+	Vector2 get_collision_normal() const;
+	ObjectID get_collider_id() const;
+	RID get_collider_rid() const;
+	Object *get_collider() const;
+	int get_collider_shape() const;
+	int get_collision_local_shape() const;
 };
 
 class PhysicsServer2DManager : public Object {

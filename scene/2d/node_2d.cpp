@@ -200,8 +200,8 @@ void Node2D::set_scale(const Size2 &p_scale) {
 	_update_transform();
 }
 
-Point2 Node2D::get_position() const {
-	ERR_READ_THREAD_GUARD_V(Point2());
+Point2i Node2D::get_position() const {
+	ERR_READ_THREAD_GUARD_V(Point2i());
 	if (_is_xform_dirty()) {
 		_update_xform_values();
 	}
@@ -251,12 +251,12 @@ void Node2D::rotate(real_t p_radians) {
 	set_rotation(get_rotation() + p_radians);
 }
 
-void Node2D::translate(const Vector2 &p_amount) {
+void Node2D::translate(const Vector2i &p_amount) {
 	ERR_THREAD_GUARD;
 	set_position(get_position() + p_amount);
 }
 
-void Node2D::global_translate(const Vector2 &p_amount) {
+void Node2D::global_translate(const Vector2i &p_amount) {
 	ERR_THREAD_GUARD;
 	set_global_position(get_global_position() + p_amount);
 }

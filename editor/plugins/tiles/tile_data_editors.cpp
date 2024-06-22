@@ -2442,7 +2442,6 @@ void TileDataCollisionEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_
 	dummy_object->set("angular_velocity", tile_data->get_constant_angular_velocity(physics_layer));
 	for (int i = 0; i < tile_data->get_collision_polygons_count(physics_layer); i++) {
 		dummy_object->set(vformat("polygon_%d_one_way", i), tile_data->is_collision_polygon_one_way(physics_layer, i));
-		dummy_object->set(vformat("polygon_%d_one_way_margin", i), tile_data->get_collision_polygon_one_way_margin(physics_layer, i));
 	}
 	for (const KeyValue<StringName, EditorProperty *> &E : property_editors) {
 		E.value->update_property();
@@ -2464,7 +2463,6 @@ void TileDataCollisionEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_so
 		Dictionary polygon_dict = array[i];
 		tile_data->set_collision_polygon_points(physics_layer, i, polygon_dict["points"]);
 		tile_data->set_collision_polygon_one_way(physics_layer, i, polygon_dict["one_way"]);
-		tile_data->set_collision_polygon_one_way_margin(physics_layer, i, polygon_dict["one_way_margin"]);
 	}
 
 	polygon_i_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), tile_data->get_texture_origin(), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
@@ -2482,7 +2480,6 @@ Variant TileDataCollisionEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas
 		Dictionary polygon_dict;
 		polygon_dict["points"] = tile_data->get_collision_polygon_points(physics_layer, i);
 		polygon_dict["one_way"] = tile_data->is_collision_polygon_one_way(physics_layer, i);
-		polygon_dict["one_way_margin"] = tile_data->get_collision_polygon_one_way_margin(physics_layer, i);
 		array.push_back(polygon_dict);
 	}
 	dict["polygons"] = array;
