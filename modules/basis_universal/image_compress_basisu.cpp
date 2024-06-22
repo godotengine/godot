@@ -65,6 +65,12 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 	params.m_multithreading = true;
 	params.m_check_for_alpha = false;
 
+	if (!OS::get_singleton()->is_stdout_verbose()) {
+		params.m_print_stats = false;
+		params.m_compute_stats = false;
+		params.m_status_output = false;
+	}
+
 	basisu::job_pool job_pool(OS::get_singleton()->get_processor_count());
 	params.m_pJob_pool = &job_pool;
 
