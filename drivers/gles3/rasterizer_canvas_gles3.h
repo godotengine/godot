@@ -63,7 +63,6 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 		FLAGS_TRANSPOSE_RECT = (1 << 10),
 
 		FLAGS_NINEPACH_DRAW_CENTER = (1 << 12),
-		FLAGS_USING_PARTICLES = (1 << 13),
 
 		FLAGS_USE_SKELETON = (1 << 15),
 		FLAGS_NINEPATCH_H_MODE_SHIFT = 16,
@@ -157,6 +156,8 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 		float atlas_rect[4];
 	};
 
+	static_assert(sizeof(LightUniform) % 16 == 0, "2D light UBO size must be a multiple of 16 bytes");
+
 public:
 	enum {
 		BASE_UNIFORM_LOCATION = 0,
@@ -185,6 +186,8 @@ public:
 		uint32_t pad1;
 		uint32_t pad2;
 	};
+
+	static_assert(sizeof(StateBuffer) % 16 == 0, "2D state UBO size must be a multiple of 16 bytes");
 
 	struct PolygonBuffers {
 		GLuint vertex_buffer = 0;
@@ -229,6 +232,8 @@ public:
 		uint32_t specular_shininess;
 		uint32_t lights[4];
 	};
+
+	static_assert(sizeof(InstanceData) == 128, "2D instance data struct size must be 128 bytes");
 
 	struct Data {
 		GLuint canvas_quad_vertices;

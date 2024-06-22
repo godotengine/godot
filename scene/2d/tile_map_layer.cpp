@@ -96,6 +96,7 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 	}
 
 	// Update those quadrants.
+	bool needs_set_not_interpolated = is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && !is_physics_interpolated();
 	for (SelfList<DebugQuadrant> *quadrant_list_element = dirty_debug_quadrant_list.first(); quadrant_list_element;) {
 		SelfList<DebugQuadrant> *next_quadrant_list_element = quadrant_list_element->next(); // "Hack" to clear the list while iterating.
 
@@ -118,6 +119,9 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 				rs->canvas_item_clear(ci);
 			} else {
 				ci = rs->canvas_item_create();
+				if (needs_set_not_interpolated) {
+					rs->canvas_item_set_interpolated(ci, false);
+				}
 				rs->canvas_item_set_z_index(ci, RS::CANVAS_ITEM_Z_MAX - 1);
 				rs->canvas_item_set_parent(ci, get_canvas_item());
 			}
@@ -205,11 +209,12 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 
 	// Check if anything changed that might change the quadrant shape.
 	// If so, recreate everything.
-	bool quandrant_shape_changed = dirty.flags[DIRTY_FLAGS_LAYER_RENDERING_QUADRANT_SIZE] ||
-			(is_y_sort_enabled() && (dirty.flags[DIRTY_FLAGS_LAYER_Y_SORT_ENABLED] || dirty.flags[DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN] || dirty.flags[DIRTY_FLAGS_LAYER_LOCAL_TRANSFORM] || dirty.flags[DIRTY_FLAGS_TILE_SET]));
+	bool quadrant_shape_changed = dirty.flags[DIRTY_FLAGS_LAYER_Y_SORT_ENABLED] || dirty.flags[DIRTY_FLAGS_TILE_SET] ||
+			(is_y_sort_enabled() && (dirty.flags[DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN] || dirty.flags[DIRTY_FLAGS_LAYER_X_DRAW_ORDER_REVERSED] || dirty.flags[DIRTY_FLAGS_LAYER_LOCAL_TRANSFORM])) ||
+			(!is_y_sort_enabled() && dirty.flags[DIRTY_FLAGS_LAYER_RENDERING_QUADRANT_SIZE]);
 
 	// Free all quadrants.
-	if (forced_cleanup || quandrant_shape_changed) {
+	if (forced_cleanup || quadrant_shape_changed) {
 		for (const KeyValue<Vector2i, Ref<RenderingQuadrant>> &kv : rendering_quadrant_map) {
 			for (const RID &ci : kv.value->canvas_items) {
 				if (ci.is_valid()) {
@@ -239,6 +244,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 		}
 
 		// Update all dirty quadrants.
+		bool needs_set_not_interpolated = is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && !is_physics_interpolated();
 		for (SelfList<RenderingQuadrant> *quadrant_list_element = dirty_rendering_quadrant_list.first(); quadrant_list_element;) {
 			SelfList<RenderingQuadrant> *next_quadrant_list_element = quadrant_list_element->next(); // "Hack" to clear the list while iterating.
 
@@ -264,9 +270,8 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 				rendering_quadrant->canvas_items.clear();
 
 				// Sort the quadrant cells.
-				if (is_y_sort_enabled()) {
-					// For compatibility reasons, we use another comparator for Y-sorted layers.
-					rendering_quadrant->cells.sort_custom<CellDataYSortedComparator>();
+				if (is_y_sort_enabled() && x_draw_order_reversed) {
+					rendering_quadrant->cells.sort_custom<CellDataYSortedXReversedComparator>();
 				} else {
 					rendering_quadrant->cells.sort();
 				}
@@ -301,6 +306,9 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 					if (prev_ci == RID() || prev_material != mat || prev_z_index != tile_z_index) {
 						// If so, create a new CanvasItem.
 						ci = rs->canvas_item_create();
+						if (needs_set_not_interpolated) {
+							rs->canvas_item_set_interpolated(ci, false);
+						}
 						if (mat.is_valid()) {
 							rs->canvas_item_set_material(ci, mat->get_rid());
 						}
@@ -446,12 +454,13 @@ void TileMapLayer::_rendering_notification(int p_what) {
 			}
 		}
 	} else if (p_what == NOTIFICATION_RESET_PHYSICS_INTERPOLATION) {
-		for (const KeyValue<Vector2i, Ref<RenderingQuadrant>> &kv : rendering_quadrant_map) {
-			for (const RID &ci : kv.value->canvas_items) {
-				if (ci.is_null()) {
-					continue;
+		if (is_physics_interpolated_and_enabled() && is_visible_in_tree()) {
+			for (const KeyValue<Vector2i, Ref<RenderingQuadrant>> &kv : rendering_quadrant_map) {
+				for (const RID &ci : kv.value->canvas_items) {
+					if (ci.is_valid()) {
+						rs->canvas_item_reset_physics_interpolation(ci);
+					}
 				}
-				rs->canvas_item_reset_physics_interpolation(ci);
 			}
 		}
 	}
@@ -587,6 +596,7 @@ void TileMapLayer::_rendering_occluders_update_cell(CellData &r_cell_data) {
 				bool transpose = (r_cell_data.cell.alternative_tile & TileSetAtlasSource::TRANSFORM_TRANSPOSE);
 
 				// Create, update or clear occluders.
+				bool needs_set_not_interpolated = is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && !is_physics_interpolated();
 				for (uint32_t occlusion_layer_index = 0; occlusion_layer_index < r_cell_data.occluders.size(); occlusion_layer_index++) {
 					Ref<OccluderPolygon2D> occluder_polygon = tile_data->get_occluder(occlusion_layer_index);
 
@@ -598,6 +608,9 @@ void TileMapLayer::_rendering_occluders_update_cell(CellData &r_cell_data) {
 						xform.set_origin(tile_set->map_to_local(r_cell_data.coords));
 						if (!occluder.is_valid()) {
 							occluder = rs->canvas_light_occluder_create();
+							if (needs_set_not_interpolated) {
+								rs->canvas_light_occluder_set_interpolated(occluder, false);
+							}
 						}
 						rs->canvas_light_occluder_set_transform(occluder, get_global_transform() * xform);
 						rs->canvas_light_occluder_set_polygon(occluder, tile_data->get_occluder(occlusion_layer_index, flip_h, flip_v, transpose)->get_rid());
@@ -1678,6 +1691,35 @@ void TileMapLayer::_internal_update(bool p_force_cleanup) {
 	pending_update = false;
 }
 
+void TileMapLayer::_physics_interpolated_changed() {
+	RenderingServer *rs = RenderingServer::get_singleton();
+
+	bool interpolated = is_physics_interpolated();
+	bool needs_reset = interpolated && is_visible_in_tree();
+
+	for (const KeyValue<Vector2i, Ref<RenderingQuadrant>> &kv : rendering_quadrant_map) {
+		for (const RID &ci : kv.value->canvas_items) {
+			if (ci.is_valid()) {
+				rs->canvas_item_set_interpolated(ci, interpolated);
+				if (needs_reset) {
+					rs->canvas_item_reset_physics_interpolation(ci);
+				}
+			}
+		}
+	}
+
+	for (const KeyValue<Vector2i, CellData> &E : tile_map_layer_data) {
+		for (const RID &occluder : E.value.occluders) {
+			if (occluder.is_valid()) {
+				rs->canvas_light_occluder_set_interpolated(occluder, interpolated);
+				if (needs_reset) {
+					rs->canvas_light_occluder_reset_physics_interpolation(occluder);
+				}
+			}
+		}
+	}
+}
+
 void TileMapLayer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
@@ -1770,6 +1812,8 @@ void TileMapLayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_y_sort_origin", "y_sort_origin"), &TileMapLayer::set_y_sort_origin);
 	ClassDB::bind_method(D_METHOD("get_y_sort_origin"), &TileMapLayer::get_y_sort_origin);
+	ClassDB::bind_method(D_METHOD("set_x_draw_order_reversed", "x_draw_order_reversed"), &TileMapLayer::set_x_draw_order_reversed);
+	ClassDB::bind_method(D_METHOD("is_x_draw_order_reversed"), &TileMapLayer::is_x_draw_order_reversed);
 	ClassDB::bind_method(D_METHOD("set_rendering_quadrant_size", "size"), &TileMapLayer::set_rendering_quadrant_size);
 	ClassDB::bind_method(D_METHOD("get_rendering_quadrant_size"), &TileMapLayer::get_rendering_quadrant_size);
 
@@ -1796,6 +1840,7 @@ void TileMapLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, "TileSet"), "set_tile_set", "get_tile_set");
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "y_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "x_draw_order_reversed"), "set_x_draw_order_reversed", "is_x_draw_order_reversed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rendering_quadrant_size"), "set_rendering_quadrant_size", "get_rendering_quadrant_size");
 	ADD_GROUP("Physics", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_enabled"), "set_collision_enabled", "is_collision_enabled");
@@ -1812,6 +1857,18 @@ void TileMapLayer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEBUG_VISIBILITY_MODE_DEFAULT);
 	BIND_ENUM_CONSTANT(DEBUG_VISIBILITY_MODE_FORCE_HIDE);
 	BIND_ENUM_CONSTANT(DEBUG_VISIBILITY_MODE_FORCE_SHOW);
+}
+
+void TileMapLayer::_validate_property(PropertyInfo &p_property) const {
+	if (is_y_sort_enabled()) {
+		if (p_property.name == "rendering_quadrant_size") {
+			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+		}
+	} else {
+		if (p_property.name == "x_draw_order_reversed") {
+			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+		}
+	}
 }
 
 void TileMapLayer::_update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter) {
@@ -2772,6 +2829,7 @@ void TileMapLayer::set_y_sort_enabled(bool p_y_sort_enabled) {
 	_queue_internal_update();
 	emit_signal(CoreStringName(changed));
 
+	notify_property_list_changed();
 	_update_notify_local_transform();
 }
 
@@ -2787,6 +2845,20 @@ void TileMapLayer::set_y_sort_origin(int p_y_sort_origin) {
 
 int TileMapLayer::get_y_sort_origin() const {
 	return y_sort_origin;
+}
+
+void TileMapLayer::set_x_draw_order_reversed(bool p_x_draw_order_reversed) {
+	if (x_draw_order_reversed == p_x_draw_order_reversed) {
+		return;
+	}
+	x_draw_order_reversed = p_x_draw_order_reversed;
+	dirty.flags[DIRTY_FLAGS_LAYER_X_DRAW_ORDER_REVERSED] = true;
+	_queue_internal_update();
+	emit_signal(CoreStringName(changed));
+}
+
+bool TileMapLayer::is_x_draw_order_reversed() const {
+	return x_draw_order_reversed;
 }
 
 void TileMapLayer::set_z_index(int p_z_index) {
@@ -2813,10 +2885,9 @@ void TileMapLayer::set_rendering_quadrant_size(int p_size) {
 	if (rendering_quadrant_size == p_size) {
 		return;
 	}
-	dirty.flags[DIRTY_FLAGS_LAYER_RENDERING_QUADRANT_SIZE] = true;
 	ERR_FAIL_COND_MSG(p_size < 1, "TileMapQuadrant size cannot be smaller than 1.");
-
 	rendering_quadrant_size = p_size;
+	dirty.flags[DIRTY_FLAGS_LAYER_RENDERING_QUADRANT_SIZE] = true;
 	_queue_internal_update();
 	emit_signal(CoreStringName(changed));
 }
@@ -2840,6 +2911,9 @@ bool TileMapLayer::is_collision_enabled() const {
 }
 
 void TileMapLayer::set_use_kinematic_bodies(bool p_use_kinematic_bodies) {
+	if (use_kinematic_bodies == p_use_kinematic_bodies) {
+		return;
+	}
 	use_kinematic_bodies = p_use_kinematic_bodies;
 	dirty.flags[DIRTY_FLAGS_LAYER_USE_KINEMATIC_BODIES] = p_use_kinematic_bodies;
 	_queue_internal_update();

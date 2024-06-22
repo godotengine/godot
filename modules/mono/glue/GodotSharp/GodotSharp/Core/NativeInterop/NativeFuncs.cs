@@ -59,7 +59,7 @@ namespace Godot.NativeInterop
         internal static partial void godotsharp_stack_info_vector_destroy(
             ref DebuggingUtils.godot_stack_info_vector p_stack_info_vector);
 
-        internal static partial void godotsharp_internal_editor_file_system_update_file(in godot_string p_script_path);
+        internal static partial void godotsharp_internal_editor_file_system_update_files(in godot_packed_string_array p_script_paths);
 
         internal static partial void godotsharp_internal_script_debugger_send_error(in godot_string p_func,
             in godot_string p_file, int p_line, in godot_string p_err, in godot_string p_descr,

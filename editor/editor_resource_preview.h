@@ -99,12 +99,9 @@ class EditorResourcePreview : public Node {
 		Ref<Texture2D> preview;
 		Ref<Texture2D> small_preview;
 		Dictionary preview_metadata;
-		int order = 0;
 		uint32_t last_hash = 0;
 		uint64_t modified_time = 0;
 	};
-
-	int order;
 
 	HashMap<String, Item> cache;
 

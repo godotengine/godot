@@ -1504,6 +1504,7 @@ void Input::parse_mapping(const String &p_mapping) {
 		JoyAxis output_axis = _get_output_axis(output);
 		if (output_button == JoyButton::INVALID && output_axis == JoyAxis::INVALID) {
 			print_verbose(vformat("Unrecognized output string \"%s\" in mapping:\n%s", output, p_mapping));
+			continue;
 		}
 		ERR_CONTINUE_MSG(output_button != JoyButton::INVALID && output_axis != JoyAxis::INVALID,
 				vformat("Output string \"%s\" matched both button and axis in mapping:\n%s", output, p_mapping));

@@ -365,6 +365,11 @@ void ShaderEditorPlugin::_shader_selected(int p_index) {
 	if (edited_shaders[p_index].shader_editor) {
 		edited_shaders[p_index].shader_editor->validate_script();
 	}
+
+	if (edited_shaders[p_index].visual_shader_editor) {
+		edited_shaders[p_index].visual_shader_editor->validate_script();
+	}
+
 	shader_tabs->set_current_tab(p_index);
 	shader_list->select(p_index);
 }
@@ -699,7 +704,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	file_menu->get_popup()->add_item(TTR("Open File in Inspector"), FILE_INSPECT);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_item(TTR("Close File"), FILE_CLOSE);
-	file_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditorPlugin::_menu_item_pressed));
+	file_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ShaderEditorPlugin::_menu_item_pressed));
 	menu_hb->add_child(file_menu);
 
 	for (int i = FILE_SAVE; i < FILE_MAX; i++) {
@@ -725,7 +730,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	shader_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	shader_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vb->add_child(shader_list);
-	shader_list->connect("item_selected", callable_mp(this, &ShaderEditorPlugin::_shader_selected));
+	shader_list->connect(SceneStringName(item_selected), callable_mp(this, &ShaderEditorPlugin::_shader_selected));
 	shader_list->connect("item_clicked", callable_mp(this, &ShaderEditorPlugin::_shader_list_clicked));
 	SET_DRAG_FORWARDING_GCD(shader_list, ShaderEditorPlugin);
 
@@ -738,7 +743,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	main_split->add_child(shader_tabs);
 	Ref<StyleBoxEmpty> empty;
 	empty.instantiate();
-	shader_tabs->add_theme_style_override("panel", empty);
+	shader_tabs->add_theme_style_override(SceneStringName(panel), empty);
 
 	button = EditorNode::get_bottom_panel()->add_item(TTR("Shader Editor"), window_wrapper, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_editor_bottom_panel", TTR("Toggle Shader Editor Bottom Panel"), KeyModifierMask::ALT | Key::S));
 

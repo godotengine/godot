@@ -166,7 +166,7 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 	panic_mode = true;
 	// TODO: Improve positional information.
 	if (p_origin == nullptr) {
-		errors.push_back({ p_message, current.start_line, current.start_column });
+		errors.push_back({ p_message, previous.start_line, previous.start_column });
 	} else {
 		errors.push_back({ p_message, p_origin->start_line, p_origin->leftmost_column });
 	}
@@ -4160,6 +4160,64 @@ static String _get_annotation_error_string(const StringName &p_annotation_name, 
 	return vformat(R"("%s" annotation requires a variable of type %s, but type "%s" was given instead.)", p_annotation_name, string, p_provided_type.to_string());
 }
 
+static StringName _find_narrowest_native_or_global_class(const GDScriptParser::DataType &p_type) {
+	switch (p_type.kind) {
+		case GDScriptParser::DataType::NATIVE: {
+			if (p_type.is_meta_type) {
+				return Object::get_class_static(); // `GDScriptNativeClass` is not an exposed class.
+			}
+			return p_type.native_type;
+		} break;
+		case GDScriptParser::DataType::SCRIPT: {
+			Ref<Script> script;
+			if (p_type.script_type.is_valid()) {
+				script = p_type.script_type;
+			} else {
+				script = ResourceLoader::load(p_type.script_path, SNAME("Script"));
+			}
+
+			if (p_type.is_meta_type) {
+				return script.is_valid() ? script->get_class() : Script::get_class_static();
+			}
+			if (script.is_null()) {
+				return p_type.native_type;
+			}
+			if (script->get_global_name() != StringName()) {
+				return script->get_global_name();
+			}
+
+			Ref<Script> base_script = script->get_base_script();
+			if (base_script.is_null()) {
+				return script->get_instance_base_type();
+			}
+
+			GDScriptParser::DataType base_type;
+			base_type.kind = GDScriptParser::DataType::SCRIPT;
+			base_type.builtin_type = Variant::OBJECT;
+			base_type.native_type = base_script->get_instance_base_type();
+			base_type.script_type = base_script;
+			base_type.script_path = base_script->get_path();
+
+			return _find_narrowest_native_or_global_class(base_type);
+		} break;
+		case GDScriptParser::DataType::CLASS: {
+			if (p_type.is_meta_type) {
+				return GDScript::get_class_static();
+			}
+			if (p_type.class_type == nullptr) {
+				return p_type.native_type;
+			}
+			if (p_type.class_type->get_global_name() != StringName()) {
+				return p_type.class_type->get_global_name();
+			}
+			return _find_narrowest_native_or_global_class(p_type.class_type->base_type);
+		} break;
+		default: {
+			ERR_FAIL_V(StringName());
+		} break;
+	}
+}
+
 template <PropertyHint t_hint, Variant::Type t_type>
 bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
 	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
@@ -4302,52 +4360,20 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				variable->export_info.hint_string = String();
 				break;
 			case GDScriptParser::DataType::NATIVE:
+			case GDScriptParser::DataType::SCRIPT:
+			case GDScriptParser::DataType::CLASS: {
+				const StringName class_name = _find_narrowest_native_or_global_class(export_type);
 				if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
-					variable->export_info.type = Variant::OBJECT;
-					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
-					variable->export_info.hint_string = export_type.native_type;
-				} else if (ClassDB::is_parent_class(export_type.native_type, SNAME("Node"))) {
-					variable->export_info.type = Variant::OBJECT;
-					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
-					variable->export_info.hint_string = export_type.native_type;
-				} else {
-					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
-					return false;
-				}
-				break;
-			case GDScriptParser::DataType::CLASS:
-				if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
-					variable->export_info.type = Variant::OBJECT;
-					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
-					variable->export_info.hint_string = export_type.to_string();
-				} else if (ClassDB::is_parent_class(export_type.native_type, SNAME("Node"))) {
-					variable->export_info.type = Variant::OBJECT;
-					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
-					variable->export_info.hint_string = export_type.to_string();
-				} else {
-					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
-					return false;
-				}
-
-				break;
-			case GDScriptParser::DataType::SCRIPT: {
-				StringName class_name;
-				StringName native_base;
-				if (export_type.script_type.is_valid()) {
-					class_name = export_type.script_type->get_language()->get_global_class_name(export_type.script_type->get_path());
-					native_base = export_type.script_type->get_instance_base_type();
-				}
-				if (class_name == StringName()) {
-					Ref<Script> script = ResourceLoader::load(export_type.script_path, SNAME("Script"));
-					if (script.is_valid()) {
-						class_name = script->get_language()->get_global_class_name(export_type.script_path);
-						native_base = script->get_instance_base_type();
-					}
-				}
-				if (class_name != StringName() && native_base != StringName() && ClassDB::is_parent_class(native_base, SNAME("Resource"))) {
 					variable->export_info.type = Variant::OBJECT;
 					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					variable->export_info.hint_string = class_name;
+				} else if (ClassDB::is_parent_class(export_type.native_type, SNAME("Node"))) {
+					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
+					variable->export_info.hint_string = class_name;
+				} else {
+					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
+					return false;
 				}
 			} break;
 			case GDScriptParser::DataType::ENUM: {

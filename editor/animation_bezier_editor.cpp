@@ -242,9 +242,9 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				draw_rect(Rect2(Point2(), get_size()), accent, false, Math::round(EDSCALE));
 			}
 
-			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
+			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+			int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+			Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
 			int hsep = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
 			int vsep = get_theme_constant(SNAME("v_separation"), SNAME("ItemList"));
 			Color linecolor = color;
@@ -1950,5 +1950,5 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->connect("id_pressed", callable_mp(this, &AnimationBezierTrackEdit::_menu_selected));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationBezierTrackEdit::_menu_selected));
 }

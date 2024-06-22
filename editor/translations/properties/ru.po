@@ -171,13 +171,15 @@
 # Dauren <xizet7@gmail.com>, 2024.
 # s <blacktipflora@gmail.com>, 2024.
 # Vyber <vyber777@gmail.com>, 2024.
+# "Nick (OddShapeUnit)" <oddshapeunit@gmail.com>, 2024.
+# EdwardBrok <edikbrok@yandex.ru>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-04-21 15:07+0000\n"
-"Last-Translator: Vyber <vyber777@gmail.com>\n"
+"PO-Revision-Date: 2024-06-11 15:28+0000\n"
+"Last-Translator: EdwardBrok <edikbrok@yandex.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -186,7 +188,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.5-dev\n"
+"X-Generator: Weblate 5.6-dev\n"
 
 msgid "Application"
 msgstr "Приложение"
@@ -446,6 +448,9 @@ msgstr "Таймеры"
 msgid "Incremental Search Max Interval Msec"
 msgstr "Максимальный интервал инкрементного поиска, мс"
 
+msgid "Tooltip Delay (sec)"
+msgstr "Задержка (сек)"
+
 msgid "Common"
 msgstr "Общий"
 
@@ -505,6 +510,12 @@ msgstr "Direct3D 12"
 
 msgid "Max Resource Descriptors per Frame"
 msgstr "Максимум дескрипторов на кадр"
+
+msgid "Max Sampler Descriptors per Frame"
+msgstr "Макс. дескрипторов на кадр"
+
+msgid "Max Misc Descriptors per Frame"
+msgstr "Макс. других дескрипторов на пул"
 
 msgid "Agility SDK Version"
 msgstr "Версия Agility SDK"
@@ -1266,8 +1277,8 @@ msgstr "RPC-порт"
 msgid "RPC Server Uptime"
 msgstr "Время работы сервера RPC"
 
-msgid "FBX2glTF"
-msgstr "FBX2glTF"
+msgid "FBX"
+msgstr "FBX"
 
 msgid "FBX2glTF Path"
 msgstr "FBX2glTF Путь"
@@ -1515,9 +1526,6 @@ msgstr "Цвета гизмо"
 msgid "Joint"
 msgstr "Сустав"
 
-msgid "Shape"
-msgstr "Форма"
-
 msgid "AABB"
 msgstr "ПООП"
 
@@ -1751,12 +1759,6 @@ msgstr "Размер шрифта"
 
 msgid "Always Clear Output on Play"
 msgstr "Всегда Очищать Вывод при Запуске"
-
-msgid "Always Open Output on Play"
-msgstr "Всегда Открывать Вывод при Запуске"
-
-msgid "Always Close Output on Stop"
-msgstr "Всегда Закрывать Вывод при Остановке"
 
 msgid "Platforms"
 msgstr "Платформы"
@@ -1998,6 +2000,9 @@ msgstr "Плоская"
 msgid "Hide Slider"
 msgstr "Скрыть Slider"
 
+msgid "Bone Renamer"
+msgstr "Имя кости"
+
 msgid "Rename Bones"
 msgstr "Переименовать Кости"
 
@@ -2019,11 +2024,11 @@ msgstr "Применить Трансформацию Узлов"
 msgid "Normalize Position Tracks"
 msgstr "Нормализовать Позицию Дорожек"
 
-msgid "Overwrite Axis"
-msgstr "Перезаписать Оси"
-
 msgid "Reset All Bone Poses After Import"
 msgstr "Сбросить все позы костей после импорта"
+
+msgid "Overwrite Axis"
+msgstr "Перезаписать Оси"
 
 msgid "Fix Silhouette"
 msgstr "Исправить силуэт"
@@ -2754,6 +2759,18 @@ msgstr "Проект"
 msgid "Assembly Reload Attempts"
 msgstr "Попытки перезагрузки сборки"
 
+msgid "Time"
+msgstr "Время"
+
+msgid "Regions"
+msgstr "Регионы"
+
+msgid "Polygons"
+msgstr "Полигоны"
+
+msgid "Edges"
+msgstr "Края"
+
 msgid "Operation"
 msgstr "Операция"
 
@@ -2847,14 +2864,14 @@ msgstr "Путь присоединен"
 msgid "CSG"
 msgstr "CSG"
 
-msgid "FBX"
-msgstr "FBX"
-
 msgid "Allow Geometry Helper Nodes"
 msgstr "Разрешить узлы-помощники геометрии"
 
 msgid "Embedded Image Handling"
 msgstr "Обработка встроенных изображений"
+
+msgid "FBX2glTF"
+msgstr "FBX2glTF"
 
 msgid "GDScript"
 msgstr "GDScript код"
@@ -3101,6 +3118,9 @@ msgstr "По центру Z"
 
 msgid "Priority"
 msgstr "Приоритет"
+
+msgid "Shuffle"
+msgstr "Перемешать"
 
 msgid "Lightmapping"
 msgstr "Карты освещения"
@@ -3741,9 +3761,6 @@ msgstr "Использовать MIP-карты"
 msgid "Emitting"
 msgstr "Излучающий"
 
-msgid "Time"
-msgstr "Время"
-
 msgid "Lifetime"
 msgstr "Время жизни"
 
@@ -3779,6 +3796,9 @@ msgstr "Порядок рисования"
 
 msgid "Emission Shape"
 msgstr "Форма излучения"
+
+msgid "Shape"
+msgstr "Форма"
 
 msgid "Sphere Radius"
 msgstr "Радиус сферы"
@@ -4172,9 +4192,6 @@ msgstr "UV"
 
 msgid "Vertex Colors"
 msgstr "Цвета вершин"
-
-msgid "Polygons"
-msgstr "Полигоны"
 
 msgid "Internal Vertex Count"
 msgstr "Внутренний счет вершин"
@@ -5610,14 +5627,8 @@ msgstr "Макс. высота для подъема"
 msgid "Max Slope"
 msgstr "Макс. наклон"
 
-msgid "Regions"
-msgstr "Регионы"
-
 msgid "Merge Size"
 msgstr "Размер слияния"
-
-msgid "Edges"
-msgstr "Края"
 
 msgid "Max Error"
 msgstr "Max Ошибка"
@@ -5720,9 +5731,6 @@ msgstr "Использовать все поверхности"
 
 msgid "Surface Index"
 msgstr "Индекс поверхности"
-
-msgid "Panel"
-msgstr "Панель"
 
 msgid "Font Color"
 msgstr "Цвет шрифта"

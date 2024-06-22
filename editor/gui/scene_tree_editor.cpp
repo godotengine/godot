@@ -232,22 +232,26 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	item->set_icon(0, icon);
 	item->set_metadata(0, p_node->get_path());
 
+	if (connecting_signal) {
+		// Add script icons for all scripted nodes.
+		Ref<Script> scr = p_node->get_script();
+		if (scr.is_valid()) {
+			item->add_button(0, get_editor_theme_icon(SNAME("Script")), BUTTON_SCRIPT);
+			if (EditorNode::get_singleton()->get_object_custom_type_base(p_node) == scr) {
+				// Disable button on custom scripts (pure visual cue).
+				item->set_button_disabled(0, item->get_button_count(0) - 1, true);
+			}
+		}
+	}
+
 	if (connect_to_script_mode) {
 		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 
 		Ref<Script> scr = p_node->get_script();
-		if (!scr.is_null() && EditorNode::get_singleton()->get_object_custom_type_base(p_node) != scr) {
-			//has script
-			item->add_button(0, get_editor_theme_icon(SNAME("Script")), BUTTON_SCRIPT);
-		} else {
-			//has no script (or script is a custom type)
+		bool has_custom_script = scr.is_valid() && EditorNode::get_singleton()->get_object_custom_type_base(p_node) == scr;
+		if (scr.is_null() || has_custom_script) {
 			_set_item_custom_color(item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 			item->set_selectable(0, false);
-
-			if (!scr.is_null()) { // make sure to mark the script if a custom type
-				item->add_button(0, get_editor_theme_icon(SNAME("Script")), BUTTON_SCRIPT);
-				item->set_button_disabled(0, item->get_button_count(0) - 1, true);
-			}
 
 			accent.a *= 0.7;
 		}
@@ -291,7 +295,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		const PackedStringArray warnings = p_node->get_configuration_warnings();
 		const int num_warnings = warnings.size();
 		if (num_warnings > 0) {
-			String warning_icon;
+			StringName warning_icon;
 			if (num_warnings == 1) {
 				warning_icon = SNAME("NodeWarning");
 			} else if (num_warnings <= 3) {
@@ -1686,7 +1690,7 @@ void SceneTreeDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			connect("confirmed", callable_mp(this, &SceneTreeDialog::_select));
+			connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDialog::_select));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1698,7 +1702,7 @@ void SceneTreeDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect("confirmed", callable_mp(this, &SceneTreeDialog::_select));
+			disconnect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDialog::_select));
 		} break;
 	}
 }
@@ -1742,7 +1746,7 @@ SceneTreeDialog::SceneTreeDialog() {
 	filter->set_placeholder(TTR("Filter Nodes"));
 	filter->set_clear_button_enabled(true);
 	filter->add_theme_constant_override("minimum_character_width", 0);
-	filter->connect("text_changed", callable_mp(this, &SceneTreeDialog::_filter_changed));
+	filter->connect(SceneStringName(text_changed), callable_mp(this, &SceneTreeDialog::_filter_changed));
 	filter_hbc->add_child(filter);
 
 	// Add 'Show All' button to HBoxContainer next to the filter, visible only when valid_types is defined.

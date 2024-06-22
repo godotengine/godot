@@ -717,7 +717,7 @@ void GraphEdit::_notification(int p_what) {
 
 			zoom_label->set_custom_minimum_size(Size2(48, 0) * theme_cache.base_scale);
 
-			menu_panel->add_theme_style_override("panel", theme_cache.menu_panel);
+			menu_panel->add_theme_style_override(SceneStringName(panel), theme_cache.menu_panel);
 		} break;
 		case NOTIFICATION_READY: {
 			Size2 hmin = h_scrollbar->get_combined_minimum_size();
@@ -1536,7 +1536,7 @@ void GraphEdit::_minimap_draw() {
 		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style->duplicate();
 
 		// Override default values with colors provided by the GraphNode's stylebox, if possible.
-		Ref<StyleBoxFlat> sb_frame = graph_frame->get_theme_stylebox(graph_frame->is_selected() ? SNAME("panel_selected") : SNAME("panel"));
+		Ref<StyleBoxFlat> sb_frame = graph_frame->get_theme_stylebox(graph_frame->is_selected() ? SNAME("panel_selected") : SceneStringName(panel));
 		if (sb_frame.is_valid()) {
 			Color node_color = sb_frame->get_bg_color();
 			if (graph_frame->is_tint_color_enabled()) {
@@ -2816,8 +2816,8 @@ GraphEdit::GraphEdit() {
 	v_scrollbar->set_min(-10000);
 	v_scrollbar->set_max(10000);
 
-	h_scrollbar->connect("value_changed", callable_mp(this, &GraphEdit::_scroll_moved));
-	v_scrollbar->connect("value_changed", callable_mp(this, &GraphEdit::_scroll_moved));
+	h_scrollbar->connect(SceneStringName(value_changed), callable_mp(this, &GraphEdit::_scroll_moved));
+	v_scrollbar->connect(SceneStringName(value_changed), callable_mp(this, &GraphEdit::_scroll_moved));
 
 	// Toolbar menu.
 
@@ -2893,7 +2893,7 @@ GraphEdit::GraphEdit() {
 	snapping_distance_spinbox->set_value(snapping_distance);
 	snapping_distance_spinbox->set_tooltip_text(ETR("Change the snapping distance."));
 	menu_hbox->add_child(snapping_distance_spinbox);
-	snapping_distance_spinbox->connect("value_changed", callable_mp(this, &GraphEdit::_snapping_distance_changed));
+	snapping_distance_spinbox->connect(SceneStringName(value_changed), callable_mp(this, &GraphEdit::_snapping_distance_changed));
 
 	// Extra controls.
 

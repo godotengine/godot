@@ -852,8 +852,15 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 	}
 
 	int outline_count = p_navigation_mesh->get_outline_count();
-	const Vector<Vector<Vector2>> &traversable_outlines = p_source_geometry_data->_get_traversable_outlines();
-	const Vector<Vector<Vector2>> &obstruction_outlines = p_source_geometry_data->_get_obstruction_outlines();
+
+	Vector<Vector<Vector2>> traversable_outlines;
+	Vector<Vector<Vector2>> obstruction_outlines;
+	Vector<NavigationMeshSourceGeometryData2D::ProjectedObstruction> projected_obstructions;
+
+	p_source_geometry_data->get_data(
+			traversable_outlines,
+			obstruction_outlines,
+			projected_obstructions);
 
 	if (outline_count == 0 && traversable_outlines.size() == 0) {
 		return;
@@ -897,8 +904,6 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 		}
 		obstruction_polygon_paths.push_back(clip_path);
 	}
-
-	const Vector<NavigationMeshSourceGeometryData2D::ProjectedObstruction> &projected_obstructions = p_source_geometry_data->_get_projected_obstructions();
 
 	if (!projected_obstructions.is_empty()) {
 		for (const NavigationMeshSourceGeometryData2D::ProjectedObstruction &projected_obstruction : projected_obstructions) {

@@ -1088,13 +1088,14 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			if (has_focus()) {
-				if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
-					DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
+				DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
+				if (wid != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+					DisplayServer::get_singleton()->window_set_ime_active(true, wid);
 					Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2) + get_global_position();
 					if (get_window()->get_embedder()) {
 						pos += get_viewport()->get_popup_base_transform().get_origin();
 					}
-					DisplayServer::get_singleton()->window_set_ime_position(pos, get_viewport()->get_window_id());
+					DisplayServer::get_singleton()->window_set_ime_position(pos, wid);
 				}
 			}
 		} break;
@@ -1111,13 +1112,14 @@ void LineEdit::_notification(int p_what) {
 				}
 			}
 
-			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
-				DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
+			DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
+			if (wid != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+				DisplayServer::get_singleton()->window_set_ime_active(true, wid);
 				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2) + get_global_position();
 				if (get_window()->get_embedder()) {
 					pos += get_viewport()->get_popup_base_transform().get_origin();
 				}
-				DisplayServer::get_singleton()->window_set_ime_position(pos, get_viewport()->get_window_id());
+				DisplayServer::get_singleton()->window_set_ime_position(pos, wid);
 			}
 
 			show_virtual_keyboard();
@@ -1126,9 +1128,10 @@ void LineEdit::_notification(int p_what) {
 		case NOTIFICATION_FOCUS_EXIT: {
 			_validate_caret_can_draw();
 
-			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
-				DisplayServer::get_singleton()->window_set_ime_position(Point2(), get_viewport()->get_window_id());
-				DisplayServer::get_singleton()->window_set_ime_active(false, get_viewport()->get_window_id());
+			DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
+			if (wid != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+				DisplayServer::get_singleton()->window_set_ime_position(Point2(), wid);
+				DisplayServer::get_singleton()->window_set_ime_active(false, wid);
 			}
 			ime_text = "";
 			ime_selection = Point2();
@@ -2302,7 +2305,7 @@ void LineEdit::_text_changed() {
 }
 
 void LineEdit::_emit_text_change() {
-	emit_signal(SNAME("text_changed"), text);
+	emit_signal(SceneStringName(text_changed), text);
 	text_changed_dirty = false;
 }
 PackedStringArray LineEdit::get_configuration_warnings() const {
@@ -2469,9 +2472,9 @@ void LineEdit::_generate_context_menu() {
 	menu->add_check_item(ETR("Display Control Characters"), MENU_DISPLAY_UCC);
 	menu->add_submenu_node_item(ETR("Insert Control Character"), menu_ctl, MENU_SUBMENU_INSERT_UCC);
 
-	menu->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
-	menu_dir->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
-	menu_ctl->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &LineEdit::menu_option));
+	menu_dir->connect(SceneStringName(id_pressed), callable_mp(this, &LineEdit::menu_option));
+	menu_ctl->connect(SceneStringName(id_pressed), callable_mp(this, &LineEdit::menu_option));
 
 	menu->connect(SceneStringName(focus_entered), callable_mp(this, &LineEdit::_validate_caret_can_draw));
 	menu->connect(SceneStringName(focus_exited), callable_mp(this, &LineEdit::_validate_caret_can_draw));

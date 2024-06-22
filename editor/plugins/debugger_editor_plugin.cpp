@@ -99,7 +99,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	// Multi-instance, start/stop.
 	debug_menu->add_separator();
 	debug_menu->add_item(TTR("Customize Run Instances..."), RUN_MULTIPLE_INSTANCES);
-	debug_menu->connect("id_pressed", callable_mp(this, &DebuggerEditorPlugin::_menu_option));
+	debug_menu->connect(SceneStringName(id_pressed), callable_mp(this, &DebuggerEditorPlugin::_menu_option));
 
 	run_instances_dialog = memnew(RunInstancesDialog);
 	EditorNode::get_singleton()->get_gui_base()->add_child(run_instances_dialog);

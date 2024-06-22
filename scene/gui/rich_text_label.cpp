@@ -228,12 +228,87 @@ String RichTextLabel::_letters(int p_num, bool p_capitalize) const {
 	return s;
 }
 
+String RichTextLabel::_get_prefix(Item *p_item, const Vector<int> &p_list_index, const Vector<ItemList *> &p_list_items) {
+	String prefix;
+	int segments = 0;
+	for (int i = 0; i < p_list_index.size(); i++) {
+		String segment;
+		if (p_list_items[i]->list_type == LIST_DOTS) {
+			if (segments == 0) {
+				prefix = p_list_items[i]->bullet;
+			}
+			break;
+		}
+		prefix = "." + prefix;
+		if (p_list_items[i]->list_type == LIST_NUMBERS) {
+			segment = itos(p_list_index[i]);
+			if (is_localizing_numeral_system()) {
+				segment = TS->format_number(segment, _find_language(p_item));
+			}
+			segments++;
+		} else if (p_list_items[i]->list_type == LIST_LETTERS) {
+			segment = _letters(p_list_index[i], p_list_items[i]->capitalize);
+			segments++;
+		} else if (p_list_items[i]->list_type == LIST_ROMAN) {
+			segment = _roman(p_list_index[i], p_list_items[i]->capitalize);
+			segments++;
+		}
+		prefix = segment + prefix;
+	}
+	return prefix;
+}
+
 void RichTextLabel::_update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size) {
 	ERR_FAIL_NULL(p_frame);
 	ERR_FAIL_COND(p_line < 0 || p_line >= (int)p_frame->lines.size());
 
 	Line &l = p_frame->lines[p_line];
 	MutexLock lock(l.text_buf->get_mutex());
+
+	// Prefix.
+	Vector<int> list_index;
+	Vector<int> list_count;
+	Vector<ItemList *> list_items;
+	_find_list(l.from, list_index, list_count, list_items);
+
+	if (list_items.size() > 0) {
+		if (list_index[0] == 1) {
+			// List level start, shape all prefixes for this level and compute max. prefix width.
+			list_items[0]->max_width = 0;
+			int index = 0;
+			for (int i = p_line; i < (int)p_frame->lines.size(); i++) {
+				Line &list_l = p_frame->lines[i];
+				if (_find_list_item(list_l.from) == list_items[0]) {
+					index++;
+
+					Ref<Font> font = theme_cache.normal_font;
+					int font_size = theme_cache.normal_font_size;
+
+					ItemFont *font_it = _find_font(list_l.from);
+					if (font_it) {
+						if (font_it->font.is_valid()) {
+							font = font_it->font;
+						}
+						if (font_it->font_size > 0) {
+							font_size = font_it->font_size;
+						}
+					}
+					ItemFontSize *font_size_it = _find_font_size(list_l.from);
+					if (font_size_it && font_size_it->font_size > 0) {
+						font_size = font_size_it->font_size;
+					}
+
+					list_index.write[0] = index;
+					String prefix = _get_prefix(list_l.from, list_index, list_items);
+					list_l.text_prefix.instantiate();
+					list_l.text_prefix->set_direction(_find_direction(list_l.from));
+					list_l.text_prefix->add_string(prefix, font, font_size);
+					list_items.write[0]->max_width = MAX(list_items[0]->max_width, list_l.text_prefix->get_size().x);
+				}
+			}
+		}
+		l.prefix_width = list_items[0]->max_width;
+	}
 
 	RID t = l.text_buf->get_rid();
 	int spans = TS->shaped_get_span_count(t);
@@ -287,7 +362,7 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 	Line &l = p_frame->lines[p_line];
 	MutexLock lock(l.text_buf->get_mutex());
 
-	l.offset.x = _find_margin(l.from, p_base_font, p_base_font_size);
+	l.offset.x = _find_margin(l.from, p_base_font, p_base_font_size) + l.prefix_width;
 	l.text_buf->set_width(p_width - l.offset.x);
 
 	PackedFloat32Array tab_stops = _find_tab_stops(l.from);
@@ -318,7 +393,6 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 					table->columns[i].width = 0;
 				}
 
-				int idx = 0;
 				for (Item *E : table->subitems) {
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E);
@@ -328,133 +402,13 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 						int w = _find_margin(frame->lines[i].from, p_base_font, p_base_font_size) + 1;
 						prev_h = _resize_line(frame, i, p_base_font, p_base_font_size, w, prev_h);
 					}
-					idx++;
 				}
 
-				// Compute minimum width for each cell.
 				const int available_width = p_width - theme_cache.table_h_separation * (col_count - 1);
+				_set_table_size(table, available_width);
 
-				// Compute available width and total ratio (for expanders).
-				int total_ratio = 0;
-				int remaining_width = available_width;
-				table->total_width = theme_cache.table_h_separation;
-
-				for (int i = 0; i < col_count; i++) {
-					remaining_width -= table->columns[i].min_width;
-					if (table->columns[i].max_width > table->columns[i].min_width) {
-						table->columns[i].expand = true;
-					}
-					if (table->columns[i].expand) {
-						total_ratio += table->columns[i].expand_ratio;
-					}
-				}
-
-				// Assign actual widths.
-				for (int i = 0; i < col_count; i++) {
-					table->columns[i].width = table->columns[i].min_width;
-					if (table->columns[i].expand && total_ratio > 0 && remaining_width > 0) {
-						table->columns[i].width += table->columns[i].expand_ratio * remaining_width / total_ratio;
-					}
-					if (i != col_count - 1) {
-						table->total_width += table->columns[i].width + theme_cache.table_h_separation;
-					} else {
-						table->total_width += table->columns[i].width;
-					}
-				}
-
-				// Resize to max_width if needed and distribute the remaining space.
-				bool table_need_fit = true;
-				while (table_need_fit) {
-					table_need_fit = false;
-					// Fit slim.
-					for (int i = 0; i < col_count; i++) {
-						if (!table->columns[i].expand) {
-							continue;
-						}
-						int dif = table->columns[i].width - table->columns[i].max_width;
-						if (dif > 0) {
-							table_need_fit = true;
-							table->columns[i].width = table->columns[i].max_width;
-							table->total_width -= dif;
-							total_ratio -= table->columns[i].expand_ratio;
-						}
-					}
-					// Grow.
-					remaining_width = available_width - table->total_width;
-					if (remaining_width > 0 && total_ratio > 0) {
-						for (int i = 0; i < col_count; i++) {
-							if (table->columns[i].expand) {
-								int dif = table->columns[i].max_width - table->columns[i].width;
-								if (dif > 0) {
-									int slice = table->columns[i].expand_ratio * remaining_width / total_ratio;
-									int incr = MIN(dif, slice);
-									table->columns[i].width += incr;
-									table->total_width += incr;
-								}
-							}
-						}
-					}
-				}
-
-				// Update line width and get total height.
-				idx = 0;
-				table->total_height = 0;
-				table->rows.clear();
-				table->rows_baseline.clear();
-
-				Vector2 offset;
-				float row_height = 0.0;
-
-				for (Item *E : table->subitems) {
-					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
-					ItemFrame *frame = static_cast<ItemFrame *>(E);
-
-					int column = idx % col_count;
-
-					offset.x += frame->padding.position.x;
-					float yofs = frame->padding.position.y;
-					float prev_h = 0;
-					float row_baseline = 0.0;
-					for (int i = 0; i < (int)frame->lines.size(); i++) {
-						MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
-						frame->lines[i].text_buf->set_width(table->columns[column].width);
-						table->columns[column].width = MAX(table->columns[column].width, ceil(frame->lines[i].text_buf->get_size().x));
-
-						frame->lines[i].offset.y = prev_h;
-
-						float h = frame->lines[i].text_buf->get_size().y + (frame->lines[i].text_buf->get_line_count() - 1) * theme_cache.line_separation;
-						if (i > 0) {
-							h += theme_cache.line_separation;
-						}
-						if (frame->min_size_over.y > 0) {
-							h = MAX(h, frame->min_size_over.y);
-						}
-						if (frame->max_size_over.y > 0) {
-							h = MIN(h, frame->max_size_over.y);
-						}
-						yofs += h;
-						prev_h = frame->lines[i].offset.y + frame->lines[i].text_buf->get_size().y + frame->lines[i].text_buf->get_line_count() * theme_cache.line_separation;
-
-						frame->lines[i].offset += offset;
-						row_baseline = MAX(row_baseline, frame->lines[i].text_buf->get_line_ascent(frame->lines[i].text_buf->get_line_count() - 1));
-					}
-					yofs += frame->padding.size.y;
-					offset.x += table->columns[column].width + theme_cache.table_h_separation + frame->padding.size.x;
-
-					row_height = MAX(yofs, row_height);
-					if (column == col_count - 1) {
-						offset.x = 0;
-						row_height += theme_cache.table_v_separation;
-						table->total_height += row_height;
-						offset.y += row_height;
-						table->rows.push_back(row_height);
-						table->rows_baseline.push_back(table->total_height - row_height + row_baseline);
-						row_height = 0;
-					}
-					idx++;
-				}
 				int row_idx = (table->align_to_row < 0) ? table->rows_baseline.size() - 1 : table->align_to_row;
-				if (table->rows_baseline.size() != 0 && row_idx < (int)table->rows_baseline.size() - 1) {
+				if (table->rows_baseline.size() != 0 && row_idx < (int)table->rows_baseline.size()) {
 					l.text_buf->resize_object(it->rid, Size2(table->total_width, table->total_height), table->inline_align, Math::round(table->rows_baseline[row_idx]));
 				} else {
 					l.text_buf->resize_object(it->rid, Size2(table->total_width, table->total_height), table->inline_align);
@@ -499,8 +453,53 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	l.char_offset = *r_char_offset;
 	l.char_count = 0;
 
+	// List prefix.
+	Vector<int> list_index;
+	Vector<int> list_count;
+	Vector<ItemList *> list_items;
+	_find_list(l.from, list_index, list_count, list_items);
+
+	if (list_items.size() > 0) {
+		if (list_index[0] == 1) {
+			// List level start, shape all prefixes for this level and compute max. prefix width.
+			list_items[0]->max_width = 0;
+			int index = 0;
+			for (int i = p_line; i < (int)p_frame->lines.size(); i++) {
+				Line &list_l = p_frame->lines[i];
+				if (_find_list_item(list_l.from) == list_items[0]) {
+					index++;
+
+					Ref<Font> font = theme_cache.normal_font;
+					int font_size = theme_cache.normal_font_size;
+
+					ItemFont *font_it = _find_font(list_l.from);
+					if (font_it) {
+						if (font_it->font.is_valid()) {
+							font = font_it->font;
+						}
+						if (font_it->font_size > 0) {
+							font_size = font_it->font_size;
+						}
+					}
+					ItemFontSize *font_size_it = _find_font_size(list_l.from);
+					if (font_size_it && font_size_it->font_size > 0) {
+						font_size = font_size_it->font_size;
+					}
+
+					list_index.write[0] = index;
+					String prefix = _get_prefix(list_l.from, list_index, list_items);
+					list_l.text_prefix.instantiate();
+					list_l.text_prefix->set_direction(_find_direction(list_l.from));
+					list_l.text_prefix->add_string(prefix, font, font_size);
+					list_items.write[0]->max_width = MAX(list_items[0]->max_width, list_l.text_prefix->get_size().x);
+				}
+			}
+		}
+		l.prefix_width = list_items[0]->max_width;
+	}
+
 	// Add indent.
-	l.offset.x = _find_margin(l.from, p_base_font, p_base_font_size);
+	l.offset.x = _find_margin(l.from, p_base_font, p_base_font_size) + l.prefix_width;
 	l.text_buf->set_width(p_width - l.offset.x);
 	l.text_buf->set_alignment(_find_alignment(l.from));
 	l.text_buf->set_direction(_find_direction(l.from));
@@ -630,129 +629,10 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 					idx++;
 				}
 
-				// Compute available width and total ratio (for expanders).
-				int total_ratio = 0;
-				int remaining_width = available_width;
-				table->total_width = theme_cache.table_h_separation;
+				_set_table_size(table, available_width);
 
-				for (int i = 0; i < col_count; i++) {
-					remaining_width -= table->columns[i].min_width;
-					if (table->columns[i].max_width > table->columns[i].min_width) {
-						table->columns[i].expand = true;
-					}
-					if (table->columns[i].expand) {
-						total_ratio += table->columns[i].expand_ratio;
-					}
-				}
-
-				// Assign actual widths.
-				for (int i = 0; i < col_count; i++) {
-					table->columns[i].width = table->columns[i].min_width;
-					if (table->columns[i].expand && total_ratio > 0 && remaining_width > 0) {
-						table->columns[i].width += table->columns[i].expand_ratio * remaining_width / total_ratio;
-					}
-					if (i != col_count - 1) {
-						table->total_width += table->columns[i].width + theme_cache.table_h_separation;
-					} else {
-						table->total_width += table->columns[i].width;
-					}
-				}
-
-				// Resize to max_width if needed and distribute the remaining space.
-				bool table_need_fit = true;
-				while (table_need_fit) {
-					table_need_fit = false;
-					// Fit slim.
-					for (int i = 0; i < col_count; i++) {
-						if (!table->columns[i].expand) {
-							continue;
-						}
-						int dif = table->columns[i].width - table->columns[i].max_width;
-						if (dif > 0) {
-							table_need_fit = true;
-							table->columns[i].width = table->columns[i].max_width;
-							table->total_width -= dif;
-							total_ratio -= table->columns[i].expand_ratio;
-						}
-					}
-					// Grow.
-					remaining_width = available_width - table->total_width;
-					if (remaining_width > 0 && total_ratio > 0) {
-						for (int i = 0; i < col_count; i++) {
-							if (table->columns[i].expand) {
-								int dif = table->columns[i].max_width - table->columns[i].width;
-								if (dif > 0) {
-									int slice = table->columns[i].expand_ratio * remaining_width / total_ratio;
-									int incr = MIN(dif, slice);
-									table->columns[i].width += incr;
-									table->total_width += incr;
-								}
-							}
-						}
-					}
-				}
-
-				// Update line width and get total height.
-				idx = 0;
-				table->total_height = 0;
-				table->rows.clear();
-				table->rows_baseline.clear();
-
-				Vector2 offset;
-				float row_height = 0.0;
-
-				for (const List<Item *>::Element *E = table->subitems.front(); E; E = E->next()) {
-					ERR_CONTINUE(E->get()->type != ITEM_FRAME); // Children should all be frames.
-					ItemFrame *frame = static_cast<ItemFrame *>(E->get());
-
-					int column = idx % col_count;
-
-					offset.x += frame->padding.position.x;
-					float yofs = frame->padding.position.y;
-					float prev_h = 0;
-					float row_baseline = 0.0;
-					for (int i = 0; i < (int)frame->lines.size(); i++) {
-						MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
-
-						frame->lines[i].text_buf->set_width(table->columns[column].width);
-						table->columns[column].width = MAX(table->columns[column].width, ceil(frame->lines[i].text_buf->get_size().x));
-
-						frame->lines[i].offset.y = prev_h;
-
-						float h = frame->lines[i].text_buf->get_size().y + (frame->lines[i].text_buf->get_line_count() - 1) * theme_cache.line_separation;
-						if (i > 0) {
-							h += theme_cache.line_separation;
-						}
-						if (frame->min_size_over.y > 0) {
-							h = MAX(h, frame->min_size_over.y);
-						}
-						if (frame->max_size_over.y > 0) {
-							h = MIN(h, frame->max_size_over.y);
-						}
-						yofs += h;
-						prev_h = frame->lines[i].offset.y + frame->lines[i].text_buf->get_size().y + frame->lines[i].text_buf->get_line_count() * theme_cache.line_separation;
-
-						frame->lines[i].offset += offset;
-						row_baseline = MAX(row_baseline, frame->lines[i].text_buf->get_line_ascent(frame->lines[i].text_buf->get_line_count() - 1));
-					}
-					yofs += frame->padding.size.y;
-					offset.x += table->columns[column].width + theme_cache.table_h_separation + frame->padding.size.x;
-
-					row_height = MAX(yofs, row_height);
-					// Add row height after last column of the row or last cell of the table.
-					if (column == col_count - 1 || E->next() == nullptr) {
-						offset.x = 0;
-						row_height += theme_cache.table_v_separation;
-						table->total_height += row_height;
-						offset.y += row_height;
-						table->rows.push_back(row_height);
-						table->rows_baseline.push_back(table->total_height - row_height + row_baseline);
-						row_height = 0;
-					}
-					idx++;
-				}
 				int row_idx = (table->align_to_row < 0) ? table->rows_baseline.size() - 1 : table->align_to_row;
-				if (table->rows_baseline.size() != 0 && row_idx < (int)table->rows_baseline.size() - 1) {
+				if (table->rows_baseline.size() != 0 && row_idx < (int)table->rows_baseline.size()) {
 					l.text_buf->add_object(it->rid, Size2(table->total_width, table->total_height), table->inline_align, t_char_count, Math::round(table->rows_baseline[row_idx]));
 				} else {
 					l.text_buf->add_object(it->rid, Size2(table->total_width, table->total_height), table->inline_align, t_char_count);
@@ -771,6 +651,132 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 
 	l.offset.y = p_h;
 	return _calculate_line_vertical_offset(l);
+}
+
+void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
+	int col_count = p_table->columns.size();
+
+	// Compute available width and total ratio (for expanders).
+	int total_ratio = 0;
+	int remaining_width = p_available_width;
+	p_table->total_width = theme_cache.table_h_separation;
+
+	for (int i = 0; i < col_count; i++) {
+		remaining_width -= p_table->columns[i].min_width;
+		if (p_table->columns[i].max_width > p_table->columns[i].min_width) {
+			p_table->columns[i].expand = true;
+		}
+		if (p_table->columns[i].expand) {
+			total_ratio += p_table->columns[i].expand_ratio;
+		}
+	}
+
+	// Assign actual widths.
+	for (int i = 0; i < col_count; i++) {
+		p_table->columns[i].width = p_table->columns[i].min_width;
+		if (p_table->columns[i].expand && total_ratio > 0 && remaining_width > 0) {
+			p_table->columns[i].width += p_table->columns[i].expand_ratio * remaining_width / total_ratio;
+		}
+		if (i != col_count - 1) {
+			p_table->total_width += p_table->columns[i].width + theme_cache.table_h_separation;
+		} else {
+			p_table->total_width += p_table->columns[i].width;
+		}
+	}
+
+	// Resize to max_width if needed and distribute the remaining space.
+	bool table_need_fit = true;
+	while (table_need_fit) {
+		table_need_fit = false;
+		// Fit slim.
+		for (int i = 0; i < col_count; i++) {
+			if (!p_table->columns[i].expand) {
+				continue;
+			}
+			int dif = p_table->columns[i].width - p_table->columns[i].max_width;
+			if (dif > 0) {
+				table_need_fit = true;
+				p_table->columns[i].width = p_table->columns[i].max_width;
+				p_table->total_width -= dif;
+				total_ratio -= p_table->columns[i].expand_ratio;
+			}
+		}
+		// Grow.
+		remaining_width = p_available_width - p_table->total_width;
+		if (remaining_width > 0 && total_ratio > 0) {
+			for (int i = 0; i < col_count; i++) {
+				if (p_table->columns[i].expand) {
+					int dif = p_table->columns[i].max_width - p_table->columns[i].width;
+					if (dif > 0) {
+						int slice = p_table->columns[i].expand_ratio * remaining_width / total_ratio;
+						int incr = MIN(dif, slice);
+						p_table->columns[i].width += incr;
+						p_table->total_width += incr;
+					}
+				}
+			}
+		}
+	}
+
+	// Update line width and get total height.
+	int idx = 0;
+	p_table->total_height = 0;
+	p_table->rows.clear();
+	p_table->rows_baseline.clear();
+
+	Vector2 offset = Vector2(theme_cache.table_h_separation * 0.5, theme_cache.table_v_separation * 0.5).floor();
+	float row_height = 0.0;
+
+	for (const List<Item *>::Element *E = p_table->subitems.front(); E; E = E->next()) {
+		ERR_CONTINUE(E->get()->type != ITEM_FRAME); // Children should all be frames.
+		ItemFrame *frame = static_cast<ItemFrame *>(E->get());
+
+		int column = idx % col_count;
+
+		offset.x += frame->padding.position.x;
+		float yofs = frame->padding.position.y;
+		float prev_h = 0;
+		float row_baseline = 0.0;
+		for (int i = 0; i < (int)frame->lines.size(); i++) {
+			MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
+
+			frame->lines[i].text_buf->set_width(p_table->columns[column].width);
+			p_table->columns[column].width = MAX(p_table->columns[column].width, ceil(frame->lines[i].text_buf->get_size().x));
+
+			frame->lines[i].offset.y = prev_h;
+
+			float h = frame->lines[i].text_buf->get_size().y + (frame->lines[i].text_buf->get_line_count() - 1) * theme_cache.line_separation;
+			if (i > 0) {
+				h += theme_cache.line_separation;
+			}
+			if (frame->min_size_over.y > 0) {
+				h = MAX(h, frame->min_size_over.y);
+			}
+			if (frame->max_size_over.y > 0) {
+				h = MIN(h, frame->max_size_over.y);
+			}
+			yofs += h;
+			prev_h = frame->lines[i].offset.y + frame->lines[i].text_buf->get_size().y + frame->lines[i].text_buf->get_line_count() * theme_cache.line_separation;
+
+			frame->lines[i].offset += offset;
+			row_baseline = MAX(row_baseline, frame->lines[i].text_buf->get_line_ascent(frame->lines[i].text_buf->get_line_count() - 1));
+		}
+		yofs += frame->padding.size.y;
+		offset.x += p_table->columns[column].width + theme_cache.table_h_separation + frame->padding.size.x;
+
+		row_height = MAX(yofs, row_height);
+		// Add row height after last column of the row or last cell of the table.
+		if (column == col_count - 1 || E->next() == nullptr) {
+			offset.x = Math::floor(theme_cache.table_h_separation * 0.5);
+			row_height += theme_cache.table_v_separation;
+			p_table->total_height += row_height;
+			offset.y += row_height;
+			p_table->rows.push_back(row_height);
+			p_table->rows_baseline.push_back(p_table->total_height - row_height + row_baseline + Math::floor(theme_cache.table_v_separation * 0.5));
+			row_height = 0;
+		}
+		idx++;
+	}
 }
 
 int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs) {
@@ -798,38 +804,6 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	bool trim_glyphs_rtl = (visible_characters >= 0) && ((visible_chars_behavior == TextServer::VC_GLYPHS_RTL) || ((visible_chars_behavior == TextServer::VC_GLYPHS_AUTO) && lrtl));
 	int total_glyphs = (trim_glyphs_ltr || trim_glyphs_rtl) ? get_total_glyph_count() : 0;
 	int visible_glyphs = total_glyphs * visible_ratio;
-
-	Vector<int> list_index;
-	Vector<ItemList *> list_items;
-	_find_list(l.from, list_index, list_items);
-
-	String prefix;
-	for (int i = 0; i < list_index.size(); i++) {
-		if (rtl) {
-			prefix = prefix + ".";
-		} else {
-			prefix = "." + prefix;
-		}
-		String segment;
-		if (list_items[i]->list_type == LIST_DOTS) {
-			prefix = list_items[i]->bullet;
-			break;
-		} else if (list_items[i]->list_type == LIST_NUMBERS) {
-			segment = itos(list_index[i]);
-			if (is_localizing_numeral_system()) {
-				segment = TS->format_number(segment, _find_language(l.from));
-			}
-		} else if (list_items[i]->list_type == LIST_LETTERS) {
-			segment = _letters(list_index[i], list_items[i]->capitalize);
-		} else if (list_items[i]->list_type == LIST_ROMAN) {
-			segment = _roman(list_index[i], list_items[i]->capitalize);
-		}
-		if (rtl) {
-			prefix = prefix + segment;
-		} else {
-			prefix = segment + prefix;
-		}
-	}
 
 	// Draw dropcap.
 	int dc_lines = l.text_buf->get_dropcap_lines();
@@ -897,27 +871,27 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		}
 
 		bool skip_prefix = (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && l.char_offset == visible_characters) || (trim_chars && l.char_offset > visible_characters) || (trim_glyphs_ltr && (r_processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (r_processed_glyphs < total_glyphs - visible_glyphs));
-		if (!prefix.is_empty() && line == 0 && !skip_prefix) {
-			Ref<Font> font = theme_cache.normal_font;
-			int font_size = theme_cache.normal_font_size;
-
-			ItemFont *font_it = _find_font(l.from);
-			if (font_it) {
-				if (font_it->font.is_valid()) {
-					font = font_it->font;
-				}
-				if (font_it->font_size > 0) {
-					font_size = font_it->font_size;
-				}
-			}
-			ItemFontSize *font_size_it = _find_font_size(l.from);
-			if (font_size_it && font_size_it->font_size > 0) {
-				font_size = font_size_it->font_size;
-			}
+		if (l.text_prefix.is_valid() && line == 0 && !skip_prefix) {
+			Color font_color = _find_color(l.from, p_base_color);
+			int outline_size = _find_outline_size(l.from, p_outline_size);
+			Color font_outline_color = _find_outline_color(l.from, p_outline_color);
+			Color font_shadow_color = p_font_shadow_color * Color(1, 1, 1, font_color.a);
 			if (rtl) {
-				font->draw_string(ci, p_ofs + Vector2(off.x + length, l.text_buf->get_line_ascent(0)), " " + prefix, HORIZONTAL_ALIGNMENT_LEFT, l.offset.x, font_size, _find_color(l.from, p_base_color));
+				if (p_shadow_outline_size > 0 && font_shadow_color.a != 0.0) {
+					l.text_prefix->draw_outline(ci, p_ofs + Vector2(off.x + length, 0) + p_shadow_ofs, p_shadow_outline_size, font_shadow_color);
+				}
+				if (outline_size > 0 && font_outline_color.a != 0.0) {
+					l.text_prefix->draw_outline(ci, p_ofs + Vector2(off.x + length, 0), outline_size, font_outline_color);
+				}
+				l.text_prefix->draw(ci, p_ofs + Vector2(off.x + length, 0), font_color);
 			} else {
-				font->draw_string(ci, p_ofs + Vector2(off.x - l.offset.x, l.text_buf->get_line_ascent(0)), prefix + " ", HORIZONTAL_ALIGNMENT_RIGHT, l.offset.x, font_size, _find_color(l.from, p_base_color));
+				if (p_shadow_outline_size > 0 && font_shadow_color.a != 0.0) {
+					l.text_prefix->draw_outline(ci, p_ofs + Vector2(off.x - l.text_prefix->get_size().x, 0) + p_shadow_ofs, p_shadow_outline_size, font_shadow_color);
+				}
+				if (outline_size > 0 && font_outline_color.a != 0.0) {
+					l.text_prefix->draw_outline(ci, p_ofs + Vector2(off.x - l.text_prefix->get_size().x, 0), outline_size, font_outline_color);
+				}
+				l.text_prefix->draw(ci, p_ofs + Vector2(off.x - l.text_prefix->get_size().x, 0), font_color);
 			}
 		}
 
@@ -968,7 +942,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						Color odd_row_bg = theme_cache.table_odd_row_bg;
 						Color even_row_bg = theme_cache.table_even_row_bg;
 						Color border = theme_cache.table_border;
-						int h_separation = theme_cache.table_h_separation;
+						float h_separation = theme_cache.table_h_separation;
+						float v_separation = theme_cache.table_v_separation;
 
 						int col_count = table->columns.size();
 						int row_count = table->rows.size();
@@ -988,17 +963,17 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 								if (row % 2 == 0) {
 									Color c = frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg;
 									if (c.a > 0.0) {
-										draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), c, true);
+										draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), c, true);
 									}
 								} else {
 									Color c = frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg;
 									if (c.a > 0.0) {
-										draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), c, true);
+										draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), c, true);
 									}
 								}
 								Color bc = frame->border != Color(0, 0, 0, 0) ? frame->border : border;
 								if (bc.a > 0.0) {
-									draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), bc, false);
+									draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), bc, false);
 								}
 							}
 
@@ -1560,7 +1535,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 									if (rtl) {
 										coff.x = rect.size.width - table->columns[col].width - coff.x;
 									}
-									Rect2 crect = Rect2(rect.position + coff - frame->padding.position, Size2(table->columns[col].width + theme_cache.table_h_separation, table->rows[row] + theme_cache.table_v_separation) + frame->padding.position + frame->padding.size);
+									Rect2 crect = Rect2(rect.position + coff - frame->padding.position - Vector2(theme_cache.table_h_separation * 0.5, theme_cache.table_h_separation * 0.5).floor(), Size2(table->columns[col].width + theme_cache.table_h_separation, table->rows[row] + theme_cache.table_v_separation) + frame->padding.position + frame->padding.size);
 									if (col == col_count - 1) {
 										if (rtl) {
 											crect.size.x = crect.position.x + crect.size.x;
@@ -2427,7 +2402,7 @@ RichTextLabel::ItemList *RichTextLabel::_find_list_item(Item *p_item) {
 	return nullptr;
 }
 
-int RichTextLabel::_find_list(Item *p_item, Vector<int> &r_index, Vector<ItemList *> &r_list) {
+int RichTextLabel::_find_list(Item *p_item, Vector<int> &r_index, Vector<int> &r_count, Vector<ItemList *> &r_list) {
 	Item *item = p_item;
 	Item *prev_item = p_item;
 
@@ -2442,15 +2417,20 @@ int RichTextLabel::_find_list(Item *p_item, Vector<int> &r_index, Vector<ItemLis
 			_find_frame(list, &frame, &line);
 
 			int index = 1;
+			int count = 1;
 			if (frame != nullptr) {
-				for (int i = list->line + 1; i <= prev_item->line && i < (int)frame->lines.size(); i++) {
+				for (int i = list->line + 1; i < (int)frame->lines.size(); i++) {
 					if (_find_list_item(frame->lines[i].from) == list) {
-						index++;
+						if (i <= prev_item->line) {
+							index++;
+						}
+						count++;
 					}
 				}
 			}
 
 			r_index.push_back(index);
+			r_count.push_back(count);
 			r_list.push_back(list);
 
 			prev_item = item;
@@ -6309,7 +6289,7 @@ Size2 RichTextLabel::get_minimum_size() const {
 void RichTextLabel::_generate_context_menu() {
 	menu = memnew(PopupMenu);
 	add_child(menu, false, INTERNAL_MODE_FRONT);
-	menu->connect("id_pressed", callable_mp(this, &RichTextLabel::menu_option));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &RichTextLabel::menu_option));
 
 	menu->add_item(ETR("Copy"), MENU_COPY);
 	menu->add_item(ETR("Select All"), MENU_SELECT_ALL);
@@ -6463,7 +6443,7 @@ RichTextLabel::RichTextLabel(const String &p_text) {
 	vscroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
 	vscroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
 	vscroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
-	vscroll->connect("value_changed", callable_mp(this, &RichTextLabel::_scroll_changed));
+	vscroll->connect(SceneStringName(value_changed), callable_mp(this, &RichTextLabel::_scroll_changed));
 	vscroll->set_step(1);
 	vscroll->hide();
 

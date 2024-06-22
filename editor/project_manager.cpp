@@ -220,8 +220,8 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 		root_container->add_theme_constant_override("margin_right", top_bar_separation);
 		main_vbox->add_theme_constant_override("separation", top_bar_separation);
 
-		background_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
-		main_view_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
+		background_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
+		main_view_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("TabContainer")));
 
 		title_bar_logo->set_icon(get_editor_theme_icon(SNAME("TitleBarLogo")));
 
@@ -230,15 +230,15 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 
 		// Project list.
 		{
-			loading_label->add_theme_font_override("font", get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
-			project_list_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("project_list"), SNAME("ProjectManager")));
+			loading_label->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+			project_list_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("project_list"), SNAME("ProjectManager")));
 
 			empty_list_create_project->set_icon(get_editor_theme_icon(SNAME("Add")));
 			empty_list_import_project->set_icon(get_editor_theme_icon(SNAME("Load")));
 			empty_list_open_assetlib->set_icon(get_editor_theme_icon(SNAME("AssetLib")));
 
-			empty_list_online_warning->add_theme_font_override("font", get_theme_font(SNAME("italic"), EditorStringName(EditorFonts)));
-			empty_list_online_warning->add_theme_color_override("font_color", get_theme_color(SNAME("font_placeholder_color"), EditorStringName(Editor)));
+			empty_list_online_warning->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("italic"), EditorStringName(EditorFonts)));
+			empty_list_online_warning->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("font_placeholder_color"), EditorStringName(Editor)));
 
 			// Top bar.
 			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
@@ -256,8 +256,8 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			erase_missing_btn->set_icon(get_editor_theme_icon(SNAME("Clear")));
 			create_tag_btn->set_icon(get_editor_theme_icon("Add"));
 
-			tag_error->add_theme_color_override("font_color", get_theme_color("error_color", EditorStringName(Editor)));
-			tag_edit_error->add_theme_color_override("font_color", get_theme_color("error_color", EditorStringName(Editor)));
+			tag_error->add_theme_color_override(SceneStringName(font_color), get_theme_color("error_color", EditorStringName(Editor)));
+			tag_edit_error->add_theme_color_override(SceneStringName(font_color), get_theme_color("error_color", EditorStringName(Editor)));
 
 			create_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 			import_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
@@ -273,7 +273,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 		// Asset library popup.
 		if (asset_library) {
 			// Removes extra border margins.
-			asset_library->add_theme_style_override("panel", memnew(StyleBoxEmpty));
+			asset_library->add_theme_style_override(SceneStringName(panel), memnew(StyleBoxEmpty));
 		}
 	}
 }
@@ -385,7 +385,7 @@ void ProjectManager::_dim_window() {
 // Quick settings.
 
 void ProjectManager::_show_quick_settings() {
-	quick_settings_dialog->popup_centered(Size2(600, 200) * EDSCALE);
+	quick_settings_dialog->popup_centered(Size2(640, 200) * EDSCALE);
 }
 
 void ProjectManager::_restart_confirmed() {
@@ -1240,7 +1240,7 @@ ProjectManager::ProjectManager() {
 			search_box->set_placeholder(TTR("Filter Projects"));
 			search_box->set_tooltip_text(TTR("This field filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
 			search_box->set_clear_button_enabled(true);
-			search_box->connect("text_changed", callable_mp(this, &ProjectManager::_on_search_term_changed));
+			search_box->connect(SceneStringName(text_changed), callable_mp(this, &ProjectManager::_on_search_term_changed));
 			search_box->connect("text_submitted", callable_mp(this, &ProjectManager::_on_search_term_submitted));
 			search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			hb->add_child(search_box);
@@ -1253,7 +1253,7 @@ ProjectManager::ProjectManager() {
 			filter_option->set_clip_text(true);
 			filter_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			filter_option->set_stretch_ratio(0.3);
-			filter_option->connect("item_selected", callable_mp(this, &ProjectManager::_on_order_option_changed));
+			filter_option->connect(SceneStringName(item_selected), callable_mp(this, &ProjectManager::_on_order_option_changed));
 			hb->add_child(filter_option);
 
 			Vector<String> sort_filter_titles;
@@ -1297,7 +1297,7 @@ ProjectManager::ProjectManager() {
 				empty_list_message->set_use_bbcode(true);
 				empty_list_message->set_fit_content(true);
 				empty_list_message->set_h_size_flags(SIZE_EXPAND_FILL);
-				empty_list_message->add_theme_style_override("normal", memnew(StyleBoxEmpty));
+				empty_list_message->add_theme_style_override(CoreStringName(normal), memnew(StyleBoxEmpty));
 
 				const String line1 = TTR("You don't have any projects yet.");
 				const String line2 = TTR("Get started by creating a new one,\nimporting one that exists, or by downloading a project template from the Asset Library!");
@@ -1486,7 +1486,7 @@ ProjectManager::ProjectManager() {
 		ask_full_convert_dialog = memnew(ConfirmationDialog);
 		ask_full_convert_dialog->set_autowrap(true);
 		ask_full_convert_dialog->set_text(TTR("This option will perform full project conversion, updating scenes, resources and scripts from Godot 3 to work in Godot 4.\n\nNote that this is a best-effort conversion, i.e. it makes upgrading the project easier, but it will not open out-of-the-box and will still require manual adjustments.\n\nIMPORTANT: Make sure to backup your project before converting, as this operation makes it impossible to open it in older versions of Godot."));
-		ask_full_convert_dialog->connect("confirmed", callable_mp(this, &ProjectManager::_perform_full_project_conversion));
+		ask_full_convert_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ProjectManager::_perform_full_project_conversion));
 		add_child(ask_full_convert_dialog);
 
 		project_dialog = memnew(ProjectDialog);
@@ -1558,7 +1558,7 @@ ProjectManager::ProjectManager() {
 
 		new_tag_name = memnew(LineEdit);
 		tag_vb->add_child(new_tag_name);
-		new_tag_name->connect("text_changed", callable_mp(this, &ProjectManager::_set_new_tag_name));
+		new_tag_name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectManager::_set_new_tag_name));
 		new_tag_name->connect("text_submitted", callable_mp(this, &ProjectManager::_create_new_tag).unbind(1));
 		create_tag_dialog->connect("about_to_popup", callable_mp(new_tag_name, &LineEdit::clear));
 		create_tag_dialog->connect("about_to_popup", callable_mp((Control *)new_tag_name, &Control::grab_focus), CONNECT_DEFERRED);

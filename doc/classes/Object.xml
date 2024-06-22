@@ -693,6 +693,7 @@
 			<return type="int" />
 			<description>
 				Returns the object's unique instance ID. This ID can be saved in [EncodedObjectAsID], and can be used to retrieve this object instance with [method @GlobalScope.instance_from_id].
+				[b]Note:[/b] This ID is only useful during the current session. It won't correspond to a similar object if the ID is sent over a network, or loaded from a file at a later time.
 			</description>
 		</method>
 		<method name="get_meta" qualifiers="const">

@@ -30,6 +30,8 @@
 
 #include "skeleton_2d.h"
 
+#include "core/math/transform_interpolator.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/editor_data.h"
 #include "editor/editor_settings.h"
@@ -634,6 +636,30 @@ Bone2D *Skeleton2D::get_bone(int p_idx) {
 	return bones[p_idx].bone;
 }
 
+void Skeleton2D::_update_process_mode() {
+	bool process = modification_stack.is_valid() && is_inside_tree();
+	if (!process) {
+		// We might have another reason to process.
+		process = is_physics_interpolated_and_enabled() && is_visible_in_tree();
+	}
+
+	set_process_internal(process);
+	set_physics_process_internal(process);
+}
+
+void Skeleton2D::_ensure_update_interpolation_data() {
+	uint64_t tick = Engine::get_singleton()->get_physics_frames();
+
+	if (_interpolation_data.last_update_physics_tick != tick) {
+		_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+		_interpolation_data.last_update_physics_tick = tick;
+	}
+}
+
+void Skeleton2D::_physics_interpolated_changed() {
+	_update_process_mode();
+}
+
 void Skeleton2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -646,17 +672,47 @@ void Skeleton2D::_notification(int p_what) {
 			request_ready();
 		} break;
 
+		case NOTIFICATION_ENTER_TREE: {
+			_update_process_mode();
+
+			if (is_physics_interpolated_and_enabled()) {
+				_interpolation_data.xform_curr = get_global_transform();
+				_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+			}
+		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			RS::get_singleton()->skeleton_set_base_transform_2d(skeleton, get_global_transform());
+			if (is_physics_interpolated_and_enabled()) {
+				_ensure_update_interpolation_data();
+				if (Engine::get_singleton()->is_in_physics_frame()) {
+					_interpolation_data.xform_curr = get_global_transform();
+				}
+			} else {
+				RS::get_singleton()->skeleton_set_base_transform_2d(skeleton, get_global_transform());
+			}
+		} break;
+
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			_interpolation_data.xform_curr = get_global_transform();
+			_interpolation_data.xform_prev = _interpolation_data.xform_curr;
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (is_physics_interpolated_and_enabled()) {
+				Transform2D res;
+				TransformInterpolator::interpolate_transform_2d(_interpolation_data.xform_prev, _interpolation_data.xform_curr, res, Engine::get_singleton()->get_physics_interpolation_fraction());
+				RS::get_singleton()->skeleton_set_base_transform_2d(skeleton, res);
+			}
 			if (modification_stack.is_valid()) {
 				execute_modifications(get_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process);
 			}
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (is_physics_interpolated_and_enabled()) {
+				_ensure_update_interpolation_data();
+				_interpolation_data.xform_curr = get_global_transform();
+			}
 			if (modification_stack.is_valid()) {
 				execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process);
 			}
@@ -664,6 +720,10 @@ void Skeleton2D::_notification(int p_what) {
 
 		case NOTIFICATION_POST_ENTER_TREE: {
 			set_modification_stack(modification_stack);
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_update_process_mode();
 		} break;
 
 #ifdef TOOLS_ENABLED
@@ -698,22 +758,17 @@ void Skeleton2D::set_modification_stack(Ref<SkeletonModificationStack2D> p_stack
 	if (modification_stack.is_valid()) {
 		modification_stack->is_setup = false;
 		modification_stack->set_skeleton(nullptr);
-
-		set_process_internal(false);
-		set_physics_process_internal(false);
 	}
 	modification_stack = p_stack;
 	if (modification_stack.is_valid() && is_inside_tree()) {
 		modification_stack->set_skeleton(this);
 		modification_stack->setup();
 
-		set_process_internal(true);
-		set_physics_process_internal(true);
-
 #ifdef TOOLS_ENABLED
 		modification_stack->set_editor_gizmos_dirty(true);
 #endif // TOOLS_ENABLED
 	}
+	_update_process_mode();
 }
 
 Ref<SkeletonModificationStack2D> Skeleton2D::get_modification_stack() const {

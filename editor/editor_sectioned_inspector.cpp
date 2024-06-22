@@ -304,7 +304,7 @@ void SectionedInspector::update_category_list() {
 void SectionedInspector::register_search_box(LineEdit *p_box) {
 	search_box = p_box;
 	inspector->register_text_enter(p_box);
-	search_box->connect("text_changed", callable_mp(this, &SectionedInspector::_search_changed));
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &SectionedInspector::_search_changed));
 }
 
 void SectionedInspector::_search_changed(const String &p_what) {

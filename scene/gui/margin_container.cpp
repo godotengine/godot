@@ -36,8 +36,8 @@ Size2 MarginContainer::get_minimum_size() const {
 	Size2 max;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible() || c->is_set_as_top_level()) {
+		Control *c = as_sortable_control(get_child(i), SortableVisbilityMode::VISIBLE);
+		if (!c) {
 			continue;
 		}
 

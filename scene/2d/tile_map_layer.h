@@ -160,8 +160,8 @@ struct CellData {
 	}
 };
 
-// For compatibility reasons, we use another comparator for Y-sorted layers.
-struct CellDataYSortedComparator {
+// We use another comparator for Y-sorted layers with reversed X drawing order.
+struct CellDataYSortedXReversedComparator {
 	_FORCE_INLINE_ bool operator()(const CellData &p_a, const CellData &p_b) const {
 		return p_a.coords.x == p_b.coords.x ? (p_a.coords.y < p_b.coords.y) : (p_a.coords.x > p_b.coords.x);
 	}
@@ -245,6 +245,7 @@ public:
 		DIRTY_FLAGS_LAYER_SELF_MODULATE,
 		DIRTY_FLAGS_LAYER_Y_SORT_ENABLED,
 		DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN,
+		DIRTY_FLAGS_LAYER_X_DRAW_ORDER_REVERSED,
 		DIRTY_FLAGS_LAYER_Z_INDEX,
 		DIRTY_FLAGS_LAYER_LIGHT_MASK,
 		DIRTY_FLAGS_LAYER_TEXTURE_FILTER,
@@ -280,6 +281,7 @@ private:
 	HighlightMode highlight_mode = HIGHLIGHT_MODE_DEFAULT;
 
 	int y_sort_origin = 0;
+	bool x_draw_order_reversed = false;
 	int rendering_quadrant_size = 16;
 
 	bool collision_enabled = true;
@@ -379,10 +381,13 @@ private:
 	void _deferred_internal_update();
 	void _internal_update(bool p_force_cleanup);
 
+	virtual void _physics_interpolated_changed() override;
+
 protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 	virtual void _update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter) override;
 	virtual void _update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat) override;
@@ -470,6 +475,8 @@ public:
 	virtual void set_y_sort_enabled(bool p_y_sort_enabled) override;
 	void set_y_sort_origin(int p_y_sort_origin);
 	int get_y_sort_origin() const;
+	void set_x_draw_order_reversed(bool p_x_draw_order_reversed);
+	bool is_x_draw_order_reversed() const;
 	virtual void set_z_index(int p_z_index) override;
 	virtual void set_light_mask(int p_light_mask) override;
 	void set_rendering_quadrant_size(int p_size);

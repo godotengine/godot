@@ -263,7 +263,6 @@ class DisplayServerX11 : public DisplayServer {
 	Point2i last_click_pos = Point2i(-100, -100);
 	uint64_t last_click_ms = 0;
 	MouseButton last_click_button_index = MouseButton::NONE;
-	BitField<MouseButtonMask> last_button_state;
 	bool app_focused = false;
 	uint64_t time_since_no_focus = 0;
 
@@ -292,7 +291,6 @@ class DisplayServerX11 : public DisplayServer {
 
 	Rect2i _screen_get_rect(int p_screen) const;
 
-	BitField<MouseButtonMask> _get_mouse_button_state(MouseButton p_x11_button, int p_x11_type);
 	void _get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
 	void _flush_mouse_motion();
 
@@ -332,6 +330,7 @@ class DisplayServerX11 : public DisplayServer {
 	bool xrandr_ext_ok = true;
 	bool xinerama_ext_ok = true;
 	bool xshaped_ext_ok = true;
+	bool xwayland = false;
 
 	struct Property {
 		unsigned char *data;

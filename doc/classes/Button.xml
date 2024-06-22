@@ -118,6 +118,9 @@
 		<theme_item name="icon_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Icon modulate [Color] used when the [Button] is being pressed.
 		</theme_item>
+		<theme_item name="align_to_largest_stylebox" data_type="constant" type="int" default="0">
+			This constant acts as a boolean. If [code]true[/code], text and icon are always aligned to the largest stylebox margins, otherwise it's aligned to the current button state stylebox margins.
+		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal space between [Button]'s icon and text. Negative values will be treated as [code]0[/code] when used.
 		</theme_item>

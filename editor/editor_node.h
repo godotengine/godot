@@ -764,6 +764,7 @@ public:
 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
 	void push_item_no_inspector(Object *p_object);
+	void edit_previous_item();
 	void edit_item(Object *p_object, Object *p_editing_owner);
 	void push_node_item(Node *p_node);
 	void hide_unused_editors(const Object *p_editing_owner = nullptr);
@@ -783,6 +784,7 @@ public:
 	SubViewport *get_scene_root() { return scene_root; } // Root of the scene being edited.
 
 	void set_edited_scene(Node *p_scene);
+	void set_edited_scene_root(Node *p_scene, bool p_auto_add);
 	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
 
 	void fix_dependencies(const String &p_for_file);
@@ -927,12 +929,29 @@ public:
 
 struct EditorProgress {
 	String task;
-	bool step(const String &p_state, int p_step = -1, bool p_force_refresh = true) { return EditorNode::progress_task_step(task, p_state, p_step, p_force_refresh); }
+	bool step(const String &p_state, int p_step = -1, bool p_force_refresh = true) {
+		if (Thread::is_main_thread()) {
+			return EditorNode::progress_task_step(task, p_state, p_step, p_force_refresh);
+		} else {
+			EditorNode::progress_task_step_bg(task, p_step);
+			return false;
+		}
+	}
 	EditorProgress(const String &p_task, const String &p_label, int p_amount, bool p_can_cancel = false) {
-		EditorNode::progress_add_task(p_task, p_label, p_amount, p_can_cancel);
+		if (Thread::is_main_thread()) {
+			EditorNode::progress_add_task(p_task, p_label, p_amount, p_can_cancel);
+		} else {
+			EditorNode::progress_add_task_bg(p_task, p_label, p_amount);
+		}
 		task = p_task;
 	}
-	~EditorProgress() { EditorNode::progress_end_task(task); }
+	~EditorProgress() {
+		if (Thread::is_main_thread()) {
+			EditorNode::progress_end_task(task);
+		} else {
+			EditorNode::progress_end_task_bg(task);
+		}
+	}
 };
 
 class EditorPluginList : public Object {

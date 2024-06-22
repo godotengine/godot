@@ -314,7 +314,7 @@
 				@export var image_array: Array[Image]
 				@export var node_array: Array[Node]
 				[/codeblock]
-				[b]Note:[/b] Custom resources and nodes must be registered as global classes using [code]class_name[/code].
+				[b]Note:[/b] Custom resources and nodes should be registered as global classes using [code]class_name[/code], since the Inspector currently only supports global classes. Otherwise, a less specific type will be exported instead.
 				[b]Note:[/b] Node export is only supported in [Node]-derived classes and has a number of other limitations.
 			</description>
 		</annotation>

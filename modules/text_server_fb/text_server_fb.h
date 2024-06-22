@@ -247,7 +247,7 @@ class TextServerFallback : public TextServerExtension {
 	struct FontFallbackLinkedVariation {
 		RID base_font;
 		int extra_spacing[4] = { 0, 0, 0, 0 };
-		float baseline_offset = 0.0;
+		double baseline_offset = 0.0;
 	};
 
 	struct FontFallback {
@@ -276,7 +276,7 @@ class TextServerFallback : public TextServerExtension {
 		int weight = 400;
 		int stretch = 100;
 		int extra_spacing[4] = { 0, 0, 0, 0 };
-		float baseline_offset = 0.0;
+		double baseline_offset = 0.0;
 
 		HashMap<Vector2i, FontForSizeFallback *, VariantHasher, VariantComparator> cache;
 
@@ -494,7 +494,7 @@ class TextServerFallback : public TextServerExtension {
 		double embolden = 0.0;
 		Transform2D transform;
 		int extra_spacing[4] = { 0, 0, 0, 0 };
-		float baseline_offset = 0.0;
+		double baseline_offset = 0.0;
 
 		bool operator==(const SystemFontKey &p_b) const {
 			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (disable_embedded_bitmaps == p_b.disable_embedded_bitmaps) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (variation_coordinates == p_b.variation_coordinates) && (oversampling == p_b.oversampling) && (embolden == p_b.embolden) && (transform == p_b.transform) && (extra_spacing[SPACING_TOP] == p_b.extra_spacing[SPACING_TOP]) && (extra_spacing[SPACING_BOTTOM] == p_b.extra_spacing[SPACING_BOTTOM]) && (extra_spacing[SPACING_SPACE] == p_b.extra_spacing[SPACING_SPACE]) && (extra_spacing[SPACING_GLYPH] == p_b.extra_spacing[SPACING_GLYPH]) && (baseline_offset == p_b.baseline_offset);
@@ -659,8 +659,8 @@ public:
 	MODBIND3(font_set_spacing, const RID &, SpacingType, int64_t);
 	MODBIND2RC(int64_t, font_get_spacing, const RID &, SpacingType);
 
-	MODBIND2(font_set_baseline_offset, const RID &, float);
-	MODBIND1RC(float, font_get_baseline_offset, const RID &);
+	MODBIND2(font_set_baseline_offset, const RID &, double);
+	MODBIND1RC(double, font_get_baseline_offset, const RID &);
 
 	MODBIND2(font_set_transform, const RID &, const Transform2D &);
 	MODBIND1RC(Transform2D, font_get_transform, const RID &);

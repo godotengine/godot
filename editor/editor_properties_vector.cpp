@@ -31,7 +31,9 @@
 #include "editor_properties_vector.h"
 
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/texture_button.h"
 
@@ -135,8 +137,11 @@ void EditorPropertyVectorN::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+
 			linked->set_texture_normal(get_editor_theme_icon(SNAME("Unlinked")));
 			linked->set_texture_pressed(get_editor_theme_icon(SNAME("Instance")));
+			linked->set_custom_minimum_size(Size2(icon_size + 8 * EDSCALE, 0));
 
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < component_count; i++) {
@@ -217,7 +222,7 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
-		spin[i]->connect(SNAME("value_changed"), callable_mp(this, &EditorPropertyVectorN::_value_changed).bind(String(COMPONENT_LABELS[i])));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyVectorN::_value_changed).bind(String(COMPONENT_LABELS[i])));
 		spin[i]->connect(SNAME("grabbed"), callable_mp(this, &EditorPropertyVectorN::_grab_changed).bind(true));
 		spin[i]->connect(SNAME("ungrabbed"), callable_mp(this, &EditorPropertyVectorN::_grab_changed).bind(false));
 		add_focusable(spin[i]);

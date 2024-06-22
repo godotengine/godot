@@ -617,7 +617,7 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 			const Face3 f(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 			Vector3 inters;
 			if (f.intersects_segment(p_from, p_to, &inters)) {
-				const real_t d = closest_point_d = p_from.distance_to(inters);
+				const real_t d = p_from.distance_to(inters);
 				if (use_collision == false) {
 					closest_point = inters;
 					use_collision = true;
@@ -627,24 +627,20 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 					closest_point_d = d;
 				}
 			}
-		}
+			// If segment does not itersect face, check the distance from segment's endpoints.
+			else if (!use_collision) {
+				const Vector3 p_from_closest = f.get_closest_point_to(p_from);
+				const real_t d_p_from = p_from.distance_to(p_from_closest);
+				if (closest_point_d > d_p_from) {
+					closest_point = p_from_closest;
+					closest_point_d = d_p_from;
+				}
 
-		if (use_collision == false) {
-			for (size_t point_id = 0; point_id < p.points.size(); point_id += 1) {
-				Vector3 a, b;
-
-				Geometry3D::get_closest_points_between_segments(
-						p_from,
-						p_to,
-						p.points[point_id].pos,
-						p.points[(point_id + 1) % p.points.size()].pos,
-						a,
-						b);
-
-				const real_t d = a.distance_to(b);
-				if (d < closest_point_d) {
-					closest_point_d = d;
-					closest_point = b;
+				const Vector3 p_to_closest = f.get_closest_point_to(p_to);
+				const real_t d_p_to = p_to.distance_to(p_to_closest);
+				if (closest_point_d > d_p_to) {
+					closest_point = p_to_closest;
+					closest_point_d = d_p_to;
 				}
 			}
 		}

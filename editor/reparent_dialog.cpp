@@ -38,11 +38,11 @@
 void ReparentDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			connect("confirmed", callable_mp(this, &ReparentDialog::_reparent));
+			connect(SceneStringName(confirmed), callable_mp(this, &ReparentDialog::_reparent));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect("confirmed", callable_mp(this, &ReparentDialog::_reparent));
+			disconnect(SceneStringName(confirmed), callable_mp(this, &ReparentDialog::_reparent));
 		} break;
 	}
 }

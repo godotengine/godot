@@ -236,7 +236,7 @@ struct ReferenceContext {
 	/**
 	 * Include the declaration of the current symbol.
 	 */
-	bool includeDeclaration;
+	bool includeDeclaration = false;
 };
 
 struct ReferenceParams : TextDocumentPositionParams {

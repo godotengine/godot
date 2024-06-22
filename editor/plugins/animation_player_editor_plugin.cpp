@@ -121,20 +121,20 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			tool_anim->get_popup()->connect(SNAME("id_pressed"), callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
+			tool_anim->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
 
-			onion_skinning->get_popup()->connect(SNAME("id_pressed"), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
+			onion_skinning->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
 
-			blend_editor.next->connect(SNAME("item_selected"), callable_mp(this, &AnimationPlayerEditor::_blend_editor_next_changed));
+			blend_editor.next->connect(SceneStringName(item_selected), callable_mp(this, &AnimationPlayerEditor::_blend_editor_next_changed));
 
 			get_tree()->connect(SNAME("node_removed"), callable_mp(this, &AnimationPlayerEditor::_node_removed));
 
-			add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
+			add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorThemeManager::is_generated_theme_outdated()) {
-				add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
+				add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
 			}
 		} break;
 
@@ -172,8 +172,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			pin->set_icon(get_editor_theme_icon(SNAME("Pin")));
 
-			tool_anim->add_theme_style_override("normal", get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
-			track_editor->get_edit_menu()->add_theme_style_override("normal", get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
+			tool_anim->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
+			track_editor->get_edit_menu()->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
 
 #define ITEM_ICON(m_item, m_icon) tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(m_item), get_editor_theme_icon(SNAME(m_icon)))
 
@@ -243,12 +243,12 @@ void AnimationPlayerEditor::_play_from_pressed() {
 	String current = _get_current();
 
 	if (!current.is_empty()) {
-		float time = player->get_current_animation_position();
+		double time = player->get_current_animation_position();
 		if (current == player->get_assigned_animation() && player->is_playing()) {
-			player->stop(); //so it won't blend with itself
+			player->clear_caches(); //so it won't blend with itself
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
-		player->seek(time);
+		player->seek(time, true, true);
 		player->play(current);
 	}
 
@@ -281,12 +281,12 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 	String current = _get_current();
 
 	if (!current.is_empty()) {
-		float time = player->get_current_animation_position();
-		if (current == player->get_assigned_animation()) {
-			player->stop(); //so it won't blend with itself
+		double time = player->get_current_animation_position();
+		if (current == player->get_assigned_animation() && player->is_playing()) {
+			player->clear_caches(); //so it won't blend with itself
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
-		player->seek(time);
+		player->seek(time, true, true);
 		player->play_backwards(current);
 	}
 
@@ -1951,7 +1951,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	delete_dialog = memnew(ConfirmationDialog);
 	add_child(delete_dialog);
-	delete_dialog->connect(SNAME("confirmed"), callable_mp(this, &AnimationPlayerEditor::_animation_remove_confirmed));
+	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationPlayerEditor::_animation_remove_confirmed));
 
 	tool_anim = memnew(MenuButton);
 	tool_anim->set_shortcut_context(this);
@@ -2056,7 +2056,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	error_dialog->set_title(TTR("Error!"));
 	name_dialog->add_child(error_dialog);
 
-	name_dialog->connect(SNAME("confirmed"), callable_mp(this, &AnimationPlayerEditor::_animation_name_edited));
+	name_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationPlayerEditor::_animation_name_edited));
 
 	blend_editor.dialog = memnew(AcceptDialog);
 	blend_editor.dialog->set_title(TTR("Cross-Animation Blend Times"));
@@ -2090,9 +2090,9 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	play_bw_from->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_play_bw_from_pressed));
 	stop->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_stop_pressed));
 
-	animation->connect(SNAME("item_selected"), callable_mp(this, &AnimationPlayerEditor::_animation_selected));
+	animation->connect(SceneStringName(item_selected), callable_mp(this, &AnimationPlayerEditor::_animation_selected));
 
-	frame->connect(SNAME("value_changed"), callable_mp(this, &AnimationPlayerEditor::_seek_value_changed).bind(false));
+	frame->connect(SceneStringName(value_changed), callable_mp(this, &AnimationPlayerEditor::_seek_value_changed).bind(false));
 	scale->connect(SNAME("text_submitted"), callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
 	add_child(track_editor);

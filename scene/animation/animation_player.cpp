@@ -234,6 +234,9 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 		pi.delta = delta;
 		pi.seeked = p_seeked;
 	}
+	if (Math::is_zero_approx(pi.delta) && backwards) {
+		pi.delta = -0.0; // Sign is needed to handle converted Continuous track from Discrete track correctly.
+	}
 	// AnimationPlayer doesn't have internal seeking.
 	// However, immediately after playback, discrete keys should be retrieved with EXACT mode since behind keys must be ignored at that time.
 	pi.is_external_seeking = !p_started;
@@ -257,7 +260,7 @@ void AnimationPlayer::_blend_playback_data(double p_delta, bool p_started) {
 
 	bool seeked = c.seeked; // The animation may be changed during process, so it is safer that the state is changed before process.
 
-	if (p_delta != 0) {
+	if (!Math::is_zero_approx(p_delta)) {
 		c.seeked = false;
 	}
 
@@ -581,6 +584,8 @@ void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
 		return;
 	}
 
+	bool is_backward = p_time < playback.current.pos;
+
 	_check_immediately_after_start();
 
 	playback.current.pos = p_time;
@@ -596,7 +601,7 @@ void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
 
 	playback.seeked = true;
 	if (p_update) {
-		_process_animation(0, p_update_only);
+		_process_animation(is_backward ? -0.0 : 0.0, p_update_only);
 		playback.seeked = false; // If animation was proceeded here, no more seek in internal process.
 	}
 }

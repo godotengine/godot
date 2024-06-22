@@ -1173,6 +1173,9 @@ msgstr "Desa la Branca com un Escena"
 msgid "Copy Node Path"
 msgstr "Copia el Camí del Node"
 
+msgid "Instance:"
+msgstr "Instància:"
+
 msgid "Toggle Visibility"
 msgstr "Visibilitat"
 
@@ -1811,6 +1814,9 @@ msgstr "Importar Perfil(s)"
 msgid "Manage Editor Feature Profiles"
 msgstr "Administra els Perfils de Característiques de l'Editor"
 
+msgid "Save & Restart"
+msgstr "Desa i Reinicia"
+
 msgid "ScanSources"
 msgstr "Escaneja Fonts"
 
@@ -2293,11 +2299,6 @@ msgstr "Disseny de l'Editor"
 msgid "Take Screenshot"
 msgstr "Fer captura de pantalla"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr ""
-"Les captures de pantalla s'emmagatzemen a la carpeta dades/configuració de "
-"l'editor."
-
 msgid "Toggle Fullscreen"
 msgstr "Mode Pantalla Completa"
 
@@ -2336,9 +2337,6 @@ msgstr "Enviar suggeriments sobre la Documentació"
 
 msgid "Support Godot Development"
 msgstr "Contribueix al Desenvolupament de Godot"
-
-msgid "Save & Restart"
-msgstr "Desa i Reinicia"
 
 msgid "Update Continuously"
 msgstr "Actualitzar contínuament"
@@ -2387,12 +2385,6 @@ msgid ""
 msgstr ""
 "El disc conté versions més recents dels fitxer següents.\n"
 "Quina acció voleu seguir?"
-
-msgid "Reload"
-msgstr "Torna a Carregar"
-
-msgid "Resave"
-msgstr "Torna a Desar"
 
 msgid "New Inherited"
 msgstr "Nou Heretat"
@@ -2626,6 +2618,12 @@ msgstr ""
 "No s'ha trobat cap enllaç de baixada per a aquesta versió. Les baixades "
 "directes només són disponibles per a versions oficials."
 
+msgid "Connecting..."
+msgstr "Connexió en marxa..."
+
+msgid "Requesting..."
+msgstr "Sol·licitud en marxa..."
+
 msgid "Extracting Export Templates"
 msgstr "Extraient Plantilles d'Exportació"
 
@@ -2835,6 +2833,9 @@ msgstr "Eliminar de Preferits"
 msgid "Reimport"
 msgstr "ReImportar"
 
+msgid "Open in File Manager"
+msgstr "Obrir en el Gestor de Fitxers"
+
 msgid "New Folder..."
 msgstr "Nou Directori..."
 
@@ -2870,9 +2871,6 @@ msgstr "Duplica..."
 
 msgid "Rename..."
 msgstr "Reanomena..."
-
-msgid "Open in File Manager"
-msgstr "Obrir en el Gestor de Fitxers"
 
 msgid "Re-Scan Filesystem"
 msgstr "ReAnalitza Sistema de Fitxers"
@@ -3068,9 +3066,6 @@ msgstr ""
 
 msgid "Open in Editor"
 msgstr "Obre en l'Editor"
-
-msgid "Instance:"
-msgstr "Instància:"
 
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "El Nom del node no és vàlid. No es permeten els caràcters següents:"
@@ -3619,12 +3614,6 @@ msgstr "Descarregant..."
 msgid "Resolving..."
 msgstr "s'està resolent..."
 
-msgid "Connecting..."
-msgstr "Connexió en marxa..."
-
-msgid "Requesting..."
-msgstr "Sol·licitud en marxa..."
-
 msgid "Error making request"
 msgstr "Error en la sol·licitud"
 
@@ -3759,6 +3748,11 @@ msgstr "Zoom a 1600%"
 
 msgid "Select Mode"
 msgstr "Mode de selecció"
+
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt + RMB: Mostra la llista de tots els nodes a la posició en què es fa clic, "
+"inclòs el bloquejat."
 
 msgid "Move Mode"
 msgstr "Mode de moviment"
@@ -3903,9 +3897,6 @@ msgstr "Divideix l'increment de la quadrícula per 2"
 
 msgid "Adding %s..."
 msgstr "Afegint %s..."
-
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "No es poden instanciar múltiples nodes sense cap arrel."
 
 msgid "Create Node"
 msgstr "Crea un Node"
@@ -4058,9 +4049,6 @@ msgstr "Modifica el radi d'una Forma Càpsula"
 
 msgid "Change Capsule Shape Height"
 msgstr "Modifica l'alçada de la Forma Caixa"
-
-msgid "Change Particles AABB"
-msgstr "Modifica les Partícules AABB"
 
 msgid "Change Light Radius"
 msgstr "Modifica el Radi de Llum"
@@ -4377,11 +4365,6 @@ msgstr "Diàleg XForm"
 msgid "Couldn't find a solid floor to snap the selection to."
 msgstr "No s'ha pogut trobar un sòl sòlid on ajustar la selecció."
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt + RMB: Mostra la llista de tots els nodes a la posició en què es fa clic, "
-"inclòs el bloquejat."
-
 msgid "Use Local Space"
 msgstr "Utilitzar Espai Local"
 
@@ -4505,14 +4488,14 @@ msgstr "Elimina Out-Control de la Corba"
 msgid "Remove In-Control from Curve"
 msgstr "Elimina In-Control de la Corba"
 
-msgid "Add Point to Curve"
-msgstr "Afegeix un Punt a la Corba"
-
 msgid "Split Curve"
 msgstr "Partir Corba"
 
 msgid "Move Point in Curve"
 msgstr "Mou un Punt de la Corba"
+
+msgid "Add Point to Curve"
+msgstr "Afegeix un Punt a la Corba"
 
 msgid "Move In-Control in Curve"
 msgstr "Mou In-Control de la Corba"
@@ -4741,9 +4724,6 @@ msgstr "Enganxa el Recurs"
 msgid "Load Resource"
 msgstr "Carrega un Recurs"
 
-msgid "Clear Recent Files"
-msgstr "Buida la llista de Fitxers recents"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "No es pot obrir '%s'. Comproveu si el fitxer s'ha mogut o eliminat."
 
@@ -4774,6 +4754,12 @@ msgstr "Error en desar"
 msgid "Save Theme As..."
 msgstr "Desa el Tema com a..."
 
+msgid "Online Docs"
+msgstr "Documentació en línia"
+
+msgid "Open Godot online documentation."
+msgstr "Obrir la documentació en línia de Godot."
+
 msgid "%s Class Reference"
 msgstr "Referència de Classe %s"
 
@@ -4794,9 +4780,6 @@ msgstr "Fitxer"
 
 msgid "Open..."
 msgstr "Obrir..."
-
-msgid "Reopen Closed Script"
-msgstr "Reobrir Script Tancat"
 
 msgid "Save All"
 msgstr "Desa-ho Tot"
@@ -4834,12 +4817,6 @@ msgstr "Executar"
 msgid "Search"
 msgstr "Cerca"
 
-msgid "Online Docs"
-msgstr "Documentació en línia"
-
-msgid "Open Godot online documentation."
-msgstr "Obrir la documentació en línia de Godot."
-
 msgid "Search the reference documentation."
 msgstr "Cerca dins la documentació de referència."
 
@@ -4852,12 +4829,17 @@ msgstr "Vés al següent document editat."
 msgid "Discard"
 msgstr "Descarta'l"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?:"
-msgstr ""
-"El disc conté versions més recents dels fitxer següents. \n"
-"Quina acció voleu seguir?:"
+msgid "Reopen Closed Script"
+msgstr "Reobrir Script Tancat"
+
+msgid "Uppercase"
+msgstr "Majúscules"
+
+msgid "Lowercase"
+msgstr "Minúscula"
+
+msgid "Capitalize"
+msgstr "Converteix a Majúscules"
 
 msgid "Standard"
 msgstr "Estàndard"
@@ -4888,15 +4870,6 @@ msgstr "Tria un Color"
 
 msgid "Line"
 msgstr "Línia"
-
-msgid "Uppercase"
-msgstr "Majúscules"
-
-msgid "Lowercase"
-msgstr "Minúscula"
-
-msgid "Capitalize"
-msgstr "Converteix a Majúscules"
 
 msgid "Convert Case"
 msgstr "Converteix Majúscules"
@@ -5071,6 +5044,12 @@ msgstr "Seleccionar Fotogrames"
 
 msgid "Size"
 msgstr "Mida"
+
+msgid "Reload"
+msgstr "Torna a Carregar"
+
+msgid "Resave"
+msgstr "Torna a Desar"
 
 msgid "Set Region Rect"
 msgstr "Defineix la Regió Rectangular"

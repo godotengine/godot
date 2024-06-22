@@ -37,6 +37,7 @@
 #include "core/io/file_access.h"
 
 #include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/gles3/storage/config.h"
 
 static String _mkid(const String &p_id) {
 	String id = "m_" + p_id.replace("__", "_dus_");
@@ -801,7 +802,9 @@ void ShaderGLES3::initialize(const String &p_general_defines, int p_base_texture
 		print_verbose("Shader '" + name + "' SHA256: " + base_sha256);
 	}
 
-	glGetInteger64v(GL_MAX_TEXTURE_IMAGE_UNITS, &max_image_units);
+	GLES3::Config *config = GLES3::Config::get_singleton();
+	ERR_FAIL_NULL(config);
+	max_image_units = config->max_texture_image_units;
 }
 
 void ShaderGLES3::set_shader_cache_dir(const String &p_dir) {

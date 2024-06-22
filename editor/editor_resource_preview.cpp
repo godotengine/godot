@@ -138,7 +138,6 @@ void EditorResourcePreview::_preview_ready(const String &p_path, int p_hash, con
 		}
 
 		Item item;
-		item.order = order++;
 		item.preview = p_texture;
 		item.small_preview = p_small_texture;
 		item.last_hash = p_hash;
@@ -412,7 +411,6 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
 		String path_id = "ID:" + itos(p_res->get_instance_id());
 
 		if (cache.has(path_id) && cache[path_id].last_hash == p_res->hash_edited_version_for_preview()) {
-			cache[path_id].order = order++;
 			p_receiver->call(p_receiver_func, path_id, cache[path_id].preview, cache[path_id].small_preview, p_userdata);
 			return;
 		}
@@ -439,7 +437,6 @@ void EditorResourcePreview::queue_resource_preview(const String &p_path, Object 
 		MutexLock lock(preview_mutex);
 
 		if (cache.has(p_path)) {
-			cache[p_path].order = order++;
 			p_receiver->call(p_receiver_func, p_path, cache[p_path].preview, cache[p_path].small_preview, p_userdata);
 			return;
 		}
@@ -533,7 +530,6 @@ void EditorResourcePreview::stop() {
 
 EditorResourcePreview::EditorResourcePreview() {
 	singleton = this;
-	order = 0;
 }
 
 EditorResourcePreview::~EditorResourcePreview() {

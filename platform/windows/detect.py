@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import sys
 from typing import TYPE_CHECKING
@@ -304,6 +305,7 @@ def setup_msvc_manual(env: "SConsEnvironment"):
     print("Using VCVARS-determined MSVC, arch %s" % (env_arch))
 
 
+# FIXME: Likely overwrites command-line options for the msvc compiler. See #91883.
 def setup_msvc_auto(env: "SConsEnvironment"):
     """Set up MSVC using SCons's auto-detection logic"""
 
@@ -386,15 +388,28 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
 
     env["MAXLINELENGTH"] = 8192  # Windows Vista and beyond, so always applicable.
 
-    if env["silence_msvc"]:
+    if env["silence_msvc"] and not env.GetOption("clean"):
         from tempfile import mkstemp
 
+        # Ensure we have a location to write captured output to, in case of false positives.
+        capture_path = methods.base_folder_path + "platform/windows/msvc_capture.log"
+        with open(capture_path, "wt"):
+            pass
+
         old_spawn = env["SPAWN"]
+        re_redirect_stream = re.compile(r"^[12]?>")
+        re_cl_capture = re.compile(r"^.+\.(c|cc|cpp|cxx|c[+]{2})$", re.IGNORECASE)
+        re_link_capture = re.compile(r'\s{3}\S.+\s(?:"[^"]+.lib"|\S+.lib)\s.+\s(?:"[^"]+.exp"|\S+.exp)')
 
         def spawn_capture(sh, escape, cmd, args, env):
             # We only care about cl/link, process everything else as normal.
             if args[0] not in ["cl", "link"]:
                 return old_spawn(sh, escape, cmd, args, env)
+
+            # Process as normal if the user is manually rerouting output.
+            for arg in args:
+                if re_redirect_stream.match(arg):
+                    return old_spawn(sh, escape, cmd, args, env)
 
             tmp_stdout, tmp_stdout_name = mkstemp()
             os.close(tmp_stdout)
@@ -402,16 +417,34 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
             ret = old_spawn(sh, escape, cmd, args, env)
 
             try:
-                with open(tmp_stdout_name, "rb") as tmp_stdout:
-                    # First line is always bloat, subsequent lines are always errors. If content
-                    # exists after discarding the first line, safely decode & send to stderr.
-                    tmp_stdout.readline()
-                    content = tmp_stdout.read()
-                    if content:
-                        sys.stderr.write(content.decode(sys.stdout.encoding, "replace"))
+                with open(tmp_stdout_name, encoding="oem", errors="replace") as tmp_stdout:
+                    lines = tmp_stdout.read().splitlines()
                 os.remove(tmp_stdout_name)
             except OSError:
                 pass
+
+            # Early process no lines (OSError)
+            if not lines:
+                return ret
+
+            is_cl = args[0] == "cl"
+            content = ""
+            caught = False
+            for line in lines:
+                # These conditions are far from all-encompassing, but are specialized
+                # for what can be reasonably expected to show up in the repository.
+                if not caught and (is_cl and re_cl_capture.match(line)) or (not is_cl and re_link_capture.match(line)):
+                    caught = True
+                    try:
+                        with open(capture_path, "a") as log:
+                            log.write(line + "\n")
+                    except OSError:
+                        print_warning(f'Failed to log captured line: "{line}".')
+                    continue
+                content += line + "\n"
+            # Content remaining assumed to be an error/warning.
+            if content:
+                sys.stderr.write(content)
 
             return ret
 
@@ -645,6 +678,7 @@ def configure_mingw(env: "SConsEnvironment"):
         env["CXX"] = mingw_bin_prefix + "clang++"
         if try_cmd("as --version", env["mingw_prefix"], env["arch"]):
             env["AS"] = mingw_bin_prefix + "as"
+            env.Append(ASFLAGS=["-c"])
         if try_cmd("ar --version", env["mingw_prefix"], env["arch"]):
             env["AR"] = mingw_bin_prefix + "ar"
         if try_cmd("ranlib --version", env["mingw_prefix"], env["arch"]):

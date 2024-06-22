@@ -188,7 +188,7 @@ EditorRunNative::EditorRunNative() {
 	remote_debug = memnew(MenuButton);
 	remote_debug->set_flat(false);
 	remote_debug->set_theme_type_variation("RunBarButton");
-	remote_debug->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::start_run_native));
+	remote_debug->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorRunNative::start_run_native));
 	remote_debug->set_tooltip_text(TTR("Remote Debug"));
 	remote_debug->set_disabled(true);
 
@@ -205,7 +205,7 @@ EditorRunNative::EditorRunNative() {
 
 	run_native_confirm = memnew(ConfirmationDialog);
 	add_child(run_native_confirm);
-	run_native_confirm->connect("confirmed", callable_mp(this, &EditorRunNative::_confirm_run_native));
+	run_native_confirm->connect(SceneStringName(confirmed), callable_mp(this, &EditorRunNative::_confirm_run_native));
 
 	set_process(true);
 }

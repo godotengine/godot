@@ -144,7 +144,7 @@ namespace Godot.SourceGenerators
                     .Append("' property.\n")
                     .Append("        /// </summary>\n");
 
-                source.Append("        public new static readonly global::Godot.StringName ");
+                source.Append("        public new static readonly global::Godot.StringName @");
                 source.Append(propertyName);
                 source.Append(" = \"");
                 source.Append(propertyName);
@@ -161,7 +161,7 @@ namespace Godot.SourceGenerators
                     .Append("' field.\n")
                     .Append("        /// </summary>\n");
 
-                source.Append("        public new static readonly global::Godot.StringName ");
+                source.Append("        public new static readonly global::Godot.StringName @");
                 source.Append(fieldName);
                 source.Append(" = \"");
                 source.Append(fieldName);
@@ -316,10 +316,10 @@ namespace Godot.SourceGenerators
         {
             source.Append("        ");
 
-            source.Append("if (name == PropertyName.")
+            source.Append("if (name == PropertyName.@")
                 .Append(propertyMemberName)
                 .Append(") {\n")
-                .Append("            this.")
+                .Append("            this.@")
                 .Append(propertyMemberName)
                 .Append(" = ")
                 .AppendNativeVariantToManagedExpr("value", propertyTypeSymbol, propertyMarshalType)
@@ -337,11 +337,11 @@ namespace Godot.SourceGenerators
         {
             source.Append("        ");
 
-            source.Append("if (name == PropertyName.")
+            source.Append("if (name == PropertyName.@")
                 .Append(propertyMemberName)
                 .Append(") {\n")
                 .Append("            value = ")
-                .AppendManagedToNativeVariantExpr("this." + propertyMemberName,
+                .AppendManagedToNativeVariantExpr("this.@" + propertyMemberName,
                     propertyTypeSymbol, propertyMarshalType)
                 .Append(";\n")
                 .Append("            return true;\n")
@@ -367,7 +367,7 @@ namespace Godot.SourceGenerators
         {
             source.Append("        properties.Add(new(type: (global::Godot.Variant.Type)")
                 .Append((int)propertyInfo.Type)
-                .Append(", name: PropertyName.")
+                .Append(", name: PropertyName.@")
                 .Append(propertyInfo.Name)
                 .Append(", hint: (global::Godot.PropertyHint)")
                 .Append((int)propertyInfo.Hint)

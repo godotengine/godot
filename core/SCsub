@@ -194,7 +194,7 @@ def version_info_builder(target, source, env):
         )
 
 
-env.CommandNoCache("version_generated.gen.h", "#version.py", env.Run(version_info_builder))
+env.CommandNoCache("version_generated.gen.h", env.Value(env.version_info), env.Run(version_info_builder))
 
 
 # Generate version hash

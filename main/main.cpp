@@ -113,6 +113,10 @@
 #endif // DISABLE_DEPRECATED
 #endif // TOOLS_ENABLED
 
+#if defined(STEAMAPI_ENABLED)
+#include "main/steam_tracker.h"
+#endif
+
 #include "modules/modules_enabled.gen.h" // For mono.
 
 #if defined(MODULE_MONO_ENABLED) && defined(TOOLS_ENABLED)
@@ -142,6 +146,10 @@ static PackedData *packed_data = nullptr;
 static ZipArchive *zip_packed_data = nullptr;
 #endif
 static MessageQueue *message_queue = nullptr;
+
+#if defined(STEAMAPI_ENABLED)
+static SteamTracker *steam_tracker = nullptr;
+#endif
 
 // Initialized in setup2()
 static AudioServer *audio_server = nullptr;
@@ -830,13 +838,15 @@ void Main::test_cleanup() {
 	if (globals) {
 		memdelete(globals);
 	}
-	if (engine) {
-		memdelete(engine);
-	}
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
+
+	if (engine) {
+		memdelete(engine);
+	}
+
 	unregister_core_types();
 
 	OS::get_singleton()->finalize_core();
@@ -2445,6 +2455,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Core");
 
+#if defined(STEAMAPI_ENABLED)
+	if (editor || project_manager) {
+		steam_tracker = memnew(SteamTracker);
+	}
+#endif
+
 	if (p_second_phase) {
 		return setup2();
 	}
@@ -2482,15 +2498,17 @@ error:
 	if (globals) {
 		memdelete(globals);
 	}
-	if (engine) {
-		memdelete(engine);
-	}
 	if (packed_data) {
 		memdelete(packed_data);
 	}
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
+
+	if (engine) {
+		memdelete(engine);
+	}
+
 	unregister_core_types();
 
 	OS::get_singleton()->_cmdline.clear();
@@ -2502,6 +2520,12 @@ error:
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Core");
 	OS::get_singleton()->benchmark_end_measure("Startup", "Setup");
+
+#if defined(STEAMAPI_ENABLED)
+	if (steam_tracker) {
+		memdelete(steam_tracker);
+	}
+#endif
 
 	OS::get_singleton()->finalize_core();
 	locale = String();
@@ -2872,7 +2896,7 @@ Error Main::setup2() {
 
 		MAIN_PRINT("Main: Setup Logo");
 
-#if !defined(TOOLS_ENABLED) && (defined(WEB_ENABLED) || defined(ANDROID_ENABLED))
+#if !defined(TOOLS_ENABLED) && defined(WEB_ENABLED)
 		bool show_logo = false;
 #else
 		bool show_logo = true;
@@ -4336,14 +4360,21 @@ void Main::cleanup(bool p_force) {
 	message_queue->flush();
 	memdelete(message_queue);
 
+#if defined(STEAMAPI_ENABLED)
+	if (steam_tracker) {
+		memdelete(steam_tracker);
+	}
+#endif
+
 	unregister_core_driver_types();
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
-	unregister_core_types();
 
 	if (engine) {
 		memdelete(engine);
 	}
+
+	unregister_core_types();
 
 	OS::get_singleton()->benchmark_end_measure("Shutdown", "Total");
 	OS::get_singleton()->benchmark_dump();

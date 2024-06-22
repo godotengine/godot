@@ -85,6 +85,8 @@ class ProgressDialog : public PopupPanel {
 	void _popup();
 
 	void _cancel_pressed();
+
+	void _update_ui();
 	bool canceled = false;
 
 public:

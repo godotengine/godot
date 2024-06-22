@@ -120,6 +120,7 @@ private:
 
 	Size2 fixed_icon_size;
 	Size2 max_item_size_cache;
+	Size2 fixed_tag_icon_size;
 
 	int defer_select_single = -1;
 	bool allow_rmb_select = false;
@@ -260,6 +261,8 @@ public:
 
 	void set_fixed_icon_size(const Size2i &p_size);
 	Size2i get_fixed_icon_size() const;
+
+	void set_fixed_tag_icon_size(const Size2i &p_size);
 
 	void set_allow_rmb_select(bool p_allow);
 	bool get_allow_rmb_select() const;

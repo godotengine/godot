@@ -378,7 +378,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 
 	popup_menu = memnew(PopupMenu);
 	popup_menu->add_shortcut(ED_GET_SHORTCUT("ui_text_delete"));
-	popup_menu->connect("id_pressed", callable_mp(this, &TileProxiesManagerDialog::_menu_id_pressed));
+	popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TileProxiesManagerDialog::_menu_id_pressed));
 	add_child(popup_menu);
 
 	// Add proxy panel.

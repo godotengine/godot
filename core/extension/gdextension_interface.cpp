@@ -805,10 +805,22 @@ static void gdextension_string_new_with_utf8_chars_and_len(GDExtensionUninitiali
 	dest->parse_utf8(p_contents, p_size);
 }
 
+static GDExtensionInt gdextension_string_new_with_utf8_chars_and_len2(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
+	memnew_placement(r_dest, String);
+	String *dest = reinterpret_cast<String *>(r_dest);
+	return (GDExtensionInt)dest->parse_utf8(p_contents, p_size);
+}
+
 static void gdextension_string_new_with_utf16_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_char_count) {
 	memnew_placement(r_dest, String);
 	String *dest = reinterpret_cast<String *>(r_dest);
 	dest->parse_utf16(p_contents, p_char_count);
+}
+
+static GDExtensionInt gdextension_string_new_with_utf16_chars_and_len2(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_char_count, GDExtensionBool p_default_little_endian) {
+	memnew_placement(r_dest, String);
+	String *dest = reinterpret_cast<String *>(r_dest);
+	return (GDExtensionInt)dest->parse_utf16(p_contents, p_char_count, p_default_little_endian);
 }
 
 static void gdextension_string_new_with_utf32_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_char_count) {
@@ -960,6 +972,16 @@ static void gdextension_file_access_store_buffer(GDExtensionObjectPtr p_instance
 static uint64_t gdextension_file_access_get_buffer(GDExtensionConstObjectPtr p_instance, uint8_t *p_dst, uint64_t p_length) {
 	const FileAccess *fa = (FileAccess *)p_instance;
 	return fa->get_buffer(p_dst, p_length);
+}
+
+static uint8_t *gdextension_image_ptrw(GDExtensionObjectPtr p_instance) {
+	Image *img = (Image *)p_instance;
+	return img->ptrw();
+}
+
+static const uint8_t *gdextension_image_ptr(GDExtensionObjectPtr p_instance) {
+	Image *img = (Image *)p_instance;
+	return img->ptr();
 }
 
 static int64_t gdextension_worker_thread_pool_add_native_group_task(GDExtensionObjectPtr p_instance, void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements, int p_tasks, GDExtensionBool p_high_priority, GDExtensionConstStringPtr p_description) {
@@ -1598,7 +1620,9 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(string_new_with_wide_chars);
 	REGISTER_INTERFACE_FUNC(string_new_with_latin1_chars_and_len);
 	REGISTER_INTERFACE_FUNC(string_new_with_utf8_chars_and_len);
+	REGISTER_INTERFACE_FUNC(string_new_with_utf8_chars_and_len2);
 	REGISTER_INTERFACE_FUNC(string_new_with_utf16_chars_and_len);
+	REGISTER_INTERFACE_FUNC(string_new_with_utf16_chars_and_len2);
 	REGISTER_INTERFACE_FUNC(string_new_with_utf32_chars_and_len);
 	REGISTER_INTERFACE_FUNC(string_new_with_wide_chars_and_len);
 	REGISTER_INTERFACE_FUNC(string_to_latin1_chars);
@@ -1684,6 +1708,8 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(editor_remove_plugin);
 	REGISTER_INTERFACE_FUNC(editor_help_load_xml_from_utf8_chars);
 	REGISTER_INTERFACE_FUNC(editor_help_load_xml_from_utf8_chars_and_len);
+	REGISTER_INTERFACE_FUNC(image_ptrw);
+	REGISTER_INTERFACE_FUNC(image_ptr);
 }
 
 #undef REGISTER_INTERFACE_FUNCTION

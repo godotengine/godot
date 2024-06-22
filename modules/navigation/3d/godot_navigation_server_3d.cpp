@@ -486,7 +486,7 @@ COMMAND_2(region_set_navigation_mesh, RID, p_region, Ref<NavigationMesh>, p_navi
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL(region);
 
-	region->set_mesh(p_navigation_mesh);
+	region->set_navigation_mesh(p_navigation_mesh);
 }
 
 #ifndef DISABLE_DEPRECATED

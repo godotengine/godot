@@ -161,6 +161,10 @@ String EditorFileSystemDirectory::get_file_script_class_icon_path(int p_idx) con
 	return files[p_idx]->script_class_icon_path;
 }
 
+String EditorFileSystemDirectory::get_file_icon_path(int p_idx) const {
+	return files[p_idx]->icon_path;
+}
+
 StringName EditorFileSystemDirectory::get_file_type(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, files.size(), "");
 	return files[p_idx]->type;
@@ -740,6 +744,8 @@ void EditorFileSystem::scan() {
 		scanning = false;
 		_update_pending_script_classes();
 		_update_pending_scene_groups();
+		// Update all icons so they are loaded for the FileSystemDock.
+		_update_files_icon_path();
 		emit_signal(SNAME("filesystem_changed"));
 		emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 		first_scan = false;
@@ -1298,6 +1304,8 @@ void EditorFileSystem::_notification(int p_what) {
 					_update_scan_actions();
 					_update_pending_script_classes();
 					_update_pending_scene_groups();
+					// Update all icons so they are loaded for the FileSystemDock.
+					_update_files_icon_path();
 					emit_signal(SNAME("filesystem_changed"));
 					emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 					first_scan = false;
@@ -1578,6 +1586,43 @@ String EditorFileSystem::_get_global_script_class(const String &p_type, const St
 	return String();
 }
 
+void EditorFileSystem::_update_file_icon_path(EditorFileSystemDirectory::FileInfo *file_info) {
+	String icon_path;
+	if (file_info->script_class_icon_path.is_empty() && !file_info->deps.is_empty()) {
+		const String &script_path = file_info->deps[0]; // Assuming the first dependency is a script.
+		if (!script_path.is_empty()) {
+			String *cached = file_icon_cache.getptr(script_path);
+			if (cached) {
+				icon_path = *cached;
+			} else {
+				if (ClassDB::is_parent_class(ResourceLoader::get_resource_type(script_path), SNAME("Script"))) {
+					int script_file;
+					EditorFileSystemDirectory *efsd = find_file(script_path, &script_file);
+					if (efsd) {
+						icon_path = efsd->files[script_file]->script_class_icon_path;
+					}
+				}
+				file_icon_cache.insert(script_path, icon_path);
+			}
+		}
+	}
+
+	file_info->icon_path = icon_path;
+}
+
+void EditorFileSystem::_update_files_icon_path(EditorFileSystemDirectory *edp) {
+	if (!edp) {
+		edp = filesystem;
+		file_icon_cache.clear();
+	}
+	for (EditorFileSystemDirectory *sub_dir : edp->subdirs) {
+		_update_files_icon_path(sub_dir);
+	}
+	for (EditorFileSystemDirectory::FileInfo *fi : edp->files) {
+		_update_file_icon_path(fi);
+	}
+}
+
 void EditorFileSystem::_update_script_classes() {
 	update_script_mutex.lock();
 
@@ -1714,110 +1759,135 @@ HashSet<StringName> EditorFileSystem::_get_scene_groups(const String &p_path) {
 
 void EditorFileSystem::update_file(const String &p_file) {
 	ERR_FAIL_COND(p_file.is_empty());
-	EditorFileSystemDirectory *fs = nullptr;
-	int cpos = -1;
+	update_files({ p_file });
+}
 
-	if (!_find_file(p_file, &fs, cpos)) {
-		if (!fs) {
-			return;
-		}
-	}
+void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
+	bool updated = false;
+	bool update_files_icon_cache = false;
+	Vector<EditorFileSystemDirectory::FileInfo *> files_to_update_icon_path;
+	for (const String &file : p_script_paths) {
+		ERR_CONTINUE(file.is_empty());
+		EditorFileSystemDirectory *fs = nullptr;
+		int cpos = -1;
 
-	if (!FileAccess::exists(p_file)) {
-		//was removed
-		_delete_internal_files(p_file);
-		if (cpos != -1) { // Might've never been part of the editor file system (*.* files deleted in Open dialog).
-			if (fs->files[cpos]->uid != ResourceUID::INVALID_ID) {
-				if (ResourceUID::get_singleton()->has_id(fs->files[cpos]->uid)) {
-					ResourceUID::get_singleton()->remove_id(fs->files[cpos]->uid);
-				}
+		if (!_find_file(file, &fs, cpos)) {
+			if (!fs) {
+				continue;
 			}
+		}
+
+		if (!FileAccess::exists(file)) {
+			//was removed
+			_delete_internal_files(file);
+			if (cpos != -1) { // Might've never been part of the editor file system (*.* files deleted in Open dialog).
+				if (fs->files[cpos]->uid != ResourceUID::INVALID_ID) {
+					if (ResourceUID::get_singleton()->has_id(fs->files[cpos]->uid)) {
+						ResourceUID::get_singleton()->remove_id(fs->files[cpos]->uid);
+					}
+				}
+				if (ClassDB::is_parent_class(fs->files[cpos]->type, SNAME("Script"))) {
+					_queue_update_script_class(file);
+					if (!fs->files[cpos]->script_class_icon_path.is_empty()) {
+						update_files_icon_cache = true;
+					}
+				}
+				if (fs->files[cpos]->type == SNAME("PackedScene")) {
+					_queue_update_scene_groups(file);
+				}
+
+				memdelete(fs->files[cpos]);
+				fs->files.remove_at(cpos);
+				updated = true;
+			}
+		} else {
+			String type = ResourceLoader::get_resource_type(file);
+			if (type.is_empty() && textfile_extensions.has(file.get_extension())) {
+				type = "TextFile";
+			}
+			String script_class = ResourceLoader::get_resource_script_class(file);
+
+			ResourceUID::ID uid = ResourceLoader::get_resource_uid(file);
+
+			if (cpos == -1) {
+				// The file did not exist, it was added.
+				int idx = 0;
+				String file_name = file.get_file();
+
+				for (int i = 0; i < fs->files.size(); i++) {
+					if (file.filenocasecmp_to(fs->files[i]->file) < 0) {
+						break;
+					}
+					idx++;
+				}
+
+				EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
+				fi->file = file_name;
+				fi->import_modified_time = 0;
+				fi->import_valid = type == "TextFile" ? true : ResourceLoader::is_import_valid(file);
+
+				if (idx == fs->files.size()) {
+					fs->files.push_back(fi);
+				} else {
+					fs->files.insert(idx, fi);
+				}
+				cpos = idx;
+			} else {
+				//the file exists and it was updated, and was not added in this step.
+				//this means we must force upon next restart to scan it again, to get proper type and dependencies
+				late_update_files.insert(file);
+				_save_late_updated_files(); //files need to be updated in the re-scan
+			}
+
+			const String old_script_class_icon_path = fs->files[cpos]->script_class_icon_path;
+			fs->files[cpos]->type = type;
+			fs->files[cpos]->resource_script_class = script_class;
+			fs->files[cpos]->uid = uid;
+			fs->files[cpos]->script_class_name = _get_global_script_class(type, file, &fs->files[cpos]->script_class_extends, &fs->files[cpos]->script_class_icon_path);
+			fs->files[cpos]->import_group_file = ResourceLoader::get_import_group_file(file);
+			fs->files[cpos]->modified_time = FileAccess::get_modified_time(file);
+			fs->files[cpos]->deps = _get_dependencies(file);
+			fs->files[cpos]->import_valid = type == "TextFile" ? true : ResourceLoader::is_import_valid(file);
+
+			if (uid != ResourceUID::INVALID_ID) {
+				if (ResourceUID::get_singleton()->has_id(uid)) {
+					ResourceUID::get_singleton()->set_id(uid, file);
+				} else {
+					ResourceUID::get_singleton()->add_id(uid, file);
+				}
+
+				ResourceUID::get_singleton()->update_cache();
+			}
+			// Update preview
+			EditorResourcePreview::get_singleton()->check_for_invalidation(file);
+
 			if (ClassDB::is_parent_class(fs->files[cpos]->type, SNAME("Script"))) {
-				_queue_update_script_class(p_file);
+				_queue_update_script_class(file);
 			}
 			if (fs->files[cpos]->type == SNAME("PackedScene")) {
-				_queue_update_scene_groups(p_file);
+				_queue_update_scene_groups(file);
 			}
-
-			memdelete(fs->files[cpos]);
-			fs->files.remove_at(cpos);
+			if (fs->files[cpos]->type == SNAME("Resource")) {
+				files_to_update_icon_path.push_back(fs->files[cpos]);
+			} else if (old_script_class_icon_path != fs->files[cpos]->script_class_icon_path) {
+				update_files_icon_cache = true;
+			}
+			updated = true;
 		}
+	}
 
+	if (updated) {
 		_update_pending_script_classes();
 		_update_pending_scene_groups();
-		call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
-		return;
-	}
-
-	String type = ResourceLoader::get_resource_type(p_file);
-	if (type.is_empty() && textfile_extensions.has(p_file.get_extension())) {
-		type = "TextFile";
-	}
-	String script_class = ResourceLoader::get_resource_script_class(p_file);
-
-	ResourceUID::ID uid = ResourceLoader::get_resource_uid(p_file);
-
-	if (cpos == -1) {
-		// The file did not exist, it was added.
-		int idx = 0;
-		String file_name = p_file.get_file();
-
-		for (int i = 0; i < fs->files.size(); i++) {
-			if (p_file.filenocasecmp_to(fs->files[i]->file) < 0) {
-				break;
+		if (update_files_icon_cache) {
+			_update_files_icon_path();
+		} else {
+			for (EditorFileSystemDirectory::FileInfo *fi : files_to_update_icon_path) {
+				_update_file_icon_path(fi);
 			}
-			idx++;
 		}
-
-		EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
-		fi->file = file_name;
-		fi->import_modified_time = 0;
-		fi->import_valid = type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
-
-		if (idx == fs->files.size()) {
-			fs->files.push_back(fi);
-		} else {
-			fs->files.insert(idx, fi);
-		}
-		cpos = idx;
-	} else {
-		//the file exists and it was updated, and was not added in this step.
-		//this means we must force upon next restart to scan it again, to get proper type and dependencies
-		late_update_files.insert(p_file);
-		_save_late_updated_files(); //files need to be updated in the re-scan
+		call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
 	}
-
-	fs->files[cpos]->type = type;
-	fs->files[cpos]->resource_script_class = script_class;
-	fs->files[cpos]->uid = uid;
-	fs->files[cpos]->script_class_name = _get_global_script_class(type, p_file, &fs->files[cpos]->script_class_extends, &fs->files[cpos]->script_class_icon_path);
-	fs->files[cpos]->import_group_file = ResourceLoader::get_import_group_file(p_file);
-	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
-	fs->files[cpos]->deps = _get_dependencies(p_file);
-	fs->files[cpos]->import_valid = type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
-
-	if (uid != ResourceUID::INVALID_ID) {
-		if (ResourceUID::get_singleton()->has_id(uid)) {
-			ResourceUID::get_singleton()->set_id(uid, p_file);
-		} else {
-			ResourceUID::get_singleton()->add_id(uid, p_file);
-		}
-
-		ResourceUID::get_singleton()->update_cache();
-	}
-	// Update preview
-	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
-
-	if (ClassDB::is_parent_class(fs->files[cpos]->type, SNAME("Script"))) {
-		_queue_update_script_class(p_file);
-	}
-	if (fs->files[cpos]->type == SNAME("PackedScene")) {
-		_queue_update_scene_groups(p_file);
-	}
-
-	_update_pending_script_classes();
-	_update_pending_scene_groups();
-	call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
 }
 
 HashSet<String> EditorFileSystem::get_valid_extensions() const {
@@ -2398,18 +2468,23 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	int from = 0;
 	for (int i = 0; i < reimport_files.size(); i++) {
 		if (groups_to_reimport.has(reimport_files[i].path)) {
+			from = i + 1;
 			continue;
 		}
 
 		if (use_multiple_threads && reimport_files[i].threaded) {
-			if (i + 1 == reimport_files.size() || reimport_files[i + 1].importer != reimport_files[from].importer) {
+			if (i + 1 == reimport_files.size() || reimport_files[i + 1].importer != reimport_files[from].importer || groups_to_reimport.has(reimport_files[i + 1].path)) {
 				if (from - i == 0) {
 					// Single file, do not use threads.
 					pr.step(reimport_files[i].path.get_file(), i);
 					_reimport_file(reimport_files[i].path);
 				} else {
 					Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(reimport_files[from].importer);
-					ERR_CONTINUE(!importer.is_valid());
+					if (importer.is_null()) {
+						ERR_PRINT(vformat("Invalid importer for \"%s\".", reimport_files[from].importer));
+						from = i + 1;
+						continue;
+					}
 
 					importer->import_threaded_begin();
 
@@ -2439,6 +2514,10 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		} else {
 			pr.step(reimport_files[i].path.get_file(), i);
 			_reimport_file(reimport_files[i].path);
+
+			// We need to increment the counter, maybe the next file is multithreaded
+			// and doesn't have the same importer.
+			from = i + 1;
 		}
 	}
 

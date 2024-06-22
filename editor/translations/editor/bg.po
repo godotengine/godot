@@ -1257,6 +1257,12 @@ msgstr "Ново име на профила:"
 msgid "Import Profile(s)"
 msgstr "Внасяне на профил(и)"
 
+msgid "Restart"
+msgstr "Рестартиране"
+
+msgid "Save & Restart"
+msgstr "Запазване и рестартиране"
+
 msgid "(Re)Importing Assets"
 msgstr "(Повторно) внасяне на ресурсите"
 
@@ -1624,6 +1630,18 @@ msgstr "Запазване и затваряне"
 msgid "%d more folders"
 msgstr "Още %d папки"
 
+msgid "Lock Selected Node(s)"
+msgstr "Заключване на избрания обект/обекти"
+
+msgid "Unlock Selected Node(s)"
+msgstr "Отключване на избрания обект/обекти"
+
+msgid "Group Selected Node(s)"
+msgstr "Групиране на избрания обект/обекти"
+
+msgid "Ungroup Selected Node(s)"
+msgstr "Разгрупиране на избрания обект/обекти"
+
 msgid "Scene"
 msgstr "Сцена"
 
@@ -1684,9 +1702,6 @@ msgstr "Палитра с команди…"
 msgid "Take Screenshot"
 msgstr "Заснемане на екрана"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Снимките на екрана се пазят в папката с данни/настройки на редактора."
-
 msgid "Open Editor Data/Settings Folder"
 msgstr "Отваряне на папката с данни/настройки на редактора"
 
@@ -1701,9 +1716,6 @@ msgstr "Документация в Интернет"
 
 msgid "Report a Bug"
 msgstr "Докладване на проблем"
-
-msgid "Save & Restart"
-msgstr "Запазване и рестартиране"
 
 msgid "Inspector"
 msgstr "Инспектор"
@@ -1738,12 +1750,6 @@ msgid ""
 msgstr ""
 "Следните файлове са по-нови на диска.\n"
 "Кое действие трябва да се предприеме?"
-
-msgid "Reload"
-msgstr "Презареждане"
-
-msgid "Resave"
-msgstr "Презаписване"
 
 msgid "New Inherited"
 msgstr "Нова наследена сцена"
@@ -1843,6 +1849,12 @@ msgstr "Временният файл не може да бъде премахн
 
 msgid "Error getting the list of mirrors."
 msgstr "Грешка при получаването на списъка от огледални местоположения."
+
+msgid "Connecting..."
+msgstr "Свързване..."
+
+msgid "Requesting..."
+msgstr "Запитване..."
 
 msgid "Can't open the export templates file."
 msgstr "Файлът с шаблоните за изнасяне не може да се отвори."
@@ -2054,6 +2066,9 @@ msgstr "Премахване от любимите"
 msgid "Reimport"
 msgstr "Повторно внасяне"
 
+msgid "Open in File Manager"
+msgstr "Отваряне във файловия мениджър"
+
 msgid "New Folder..."
 msgstr "Нова папка..."
 
@@ -2068,9 +2083,6 @@ msgstr "Нов текстов файл…"
 
 msgid "Sort Files"
 msgstr "Сортиране на файловете"
-
-msgid "Open in File Manager"
-msgstr "Отваряне във файловия мениджър"
 
 msgid "Open in External Program"
 msgstr "Отваряне във външна програма"
@@ -2938,12 +2950,6 @@ msgstr "Сваляне..."
 msgid "Resolving..."
 msgstr "Инициализиране..."
 
-msgid "Connecting..."
-msgstr "Свързване..."
-
-msgid "Requesting..."
-msgstr "Запитване..."
-
 msgid "Error making request"
 msgstr "Грешка при извършването на заявката"
 
@@ -3122,6 +3128,11 @@ msgstr "Мащабиране на 800%"
 msgid "Select Mode"
 msgstr "Режим на избиране"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+Десен бутон: показване на списък с всички обекти на щракнатата позиция, "
+"включително заключените."
+
 msgid "RMB: Add node at position clicked."
 msgstr "Десен бутон: добавяне на обект на щракнатата позиция."
 
@@ -3154,18 +3165,6 @@ msgstr "Прилепване към другите обекти"
 
 msgid "Snap to Guides"
 msgstr "Прилепване към водачите"
-
-msgid "Lock Selected Node(s)"
-msgstr "Заключване на избрания обект/обекти"
-
-msgid "Unlock Selected Node(s)"
-msgstr "Отключване на избрания обект/обекти"
-
-msgid "Group Selected Node(s)"
-msgstr "Групиране на избрания обект/обекти"
-
-msgid "Ungroup Selected Node(s)"
-msgstr "Разгрупиране на избрания обект/обекти"
 
 msgid "Skeleton Options"
 msgstr "Опции на скелета"
@@ -3220,9 +3219,6 @@ msgstr "По средата долу"
 
 msgid "Bottom Right"
 msgstr "Долу вдясно"
-
-msgid "Restart"
-msgstr "Рестартиране"
 
 msgid "Create Emission Points From Node"
 msgstr "Създаване на излъчващи точки от обекта"
@@ -3534,11 +3530,6 @@ msgstr ""
 "WorldEnvironment.\n"
 "Прегледът е невъзможен."
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+Десен бутон: показване на списък с всички обекти на щракнатата позиция, "
-"включително заключените."
-
 msgid "Use Local Space"
 msgstr "Използване на локалното пространство"
 
@@ -3745,9 +3736,6 @@ msgstr "Създаване на Polygon3D"
 msgid "ERROR: Couldn't load resource!"
 msgstr "ГРЕШКА: Ресурсът не може да бъде зареден!"
 
-msgid "Clear Recent Files"
-msgstr "Изчистване на последните файлове"
-
 msgid "Close and save changes?"
 msgstr "Затвяране и запазване на промените?"
 
@@ -3775,6 +3763,9 @@ msgstr "Грешка при запазването"
 msgid "Save Theme As..."
 msgstr "Запазване на темата като..."
 
+msgid "Open Godot online documentation."
+msgstr "Отваряне на документацията на Godot в Интернет."
+
 msgid "Find Next"
 msgstr "Търсене напред"
 
@@ -3792,9 +3783,6 @@ msgstr "Файл"
 
 msgid "Open..."
 msgstr "Отваряне…"
-
-msgid "Reopen Closed Script"
-msgstr "Повторно отваряне на затворения скрипт"
 
 msgid "Save All"
 msgstr "Запазване на всичко"
@@ -3829,9 +3817,6 @@ msgstr "Пускане"
 msgid "Search"
 msgstr "Търсене"
 
-msgid "Open Godot online documentation."
-msgstr "Отваряне на документацията на Godot в Интернет."
-
 msgid "Go to previous edited document."
 msgstr "Към предходния променен документ."
 
@@ -3841,24 +3826,11 @@ msgstr "Към следващия променен документ."
 msgid "Discard"
 msgstr "Отхвърляне"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?:"
-msgstr ""
-"Следните файлове са по-нови на диска.\n"
-"Кое действие трябва да се предприеме?:"
+msgid "Reopen Closed Script"
+msgstr "Повторно отваряне на затворения скрипт"
 
 msgid "Clear Recent Scripts"
 msgstr "Изчистване на последните скриптове"
-
-msgid "Connections to method:"
-msgstr "Връзки към метода:"
-
-msgid "Go to Function"
-msgstr "Към функция"
-
-msgid "Line"
-msgstr "Ред"
 
 msgid "Uppercase"
 msgstr "Главни букви"
@@ -3868,6 +3840,15 @@ msgstr "Малки букви"
 
 msgid "Capitalize"
 msgstr "Всяка дума с главна буква"
+
+msgid "Connections to method:"
+msgstr "Връзки към метода:"
+
+msgid "Go to Function"
+msgstr "Към функция"
+
+msgid "Line"
+msgstr "Ред"
 
 msgid "Delete Line"
 msgstr "Изтриване на ред"
@@ -4027,6 +4008,12 @@ msgstr "Избиране на кадри"
 
 msgid "Size"
 msgstr "Размер"
+
+msgid "Reload"
+msgstr "Презареждане"
+
+msgid "Resave"
+msgstr "Презаписване"
 
 msgid "Set Margin"
 msgstr "Задаване на отстъп"

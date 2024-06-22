@@ -372,7 +372,7 @@ EditorPropertyFontMetaOverride::EditorPropertyFontMetaOverride(bool p_script) {
 		}
 	}
 	add_child(menu);
-	menu->connect("id_pressed", callable_mp(this, &EditorPropertyFontMetaOverride::_add_script));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyFontMetaOverride::_add_script));
 
 	locale_select = memnew(EditorLocaleDialog);
 	locale_select->connect("locale_selected", callable_mp(this, &EditorPropertyFontMetaOverride::_add_lang));
@@ -840,12 +840,12 @@ EditorPropertyOTFeatures::EditorPropertyOTFeatures() {
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->connect("id_pressed", callable_mp(this, &EditorPropertyOTFeatures::_add_feature));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyOTFeatures::_add_feature));
 
 	for (int i = 0; i < FGRP_MAX; i++) {
 		menu_sub[i] = memnew(PopupMenu);
 		menu->add_child(menu_sub[i]);
-		menu_sub[i]->connect("id_pressed", callable_mp(this, &EditorPropertyOTFeatures::_add_feature));
+		menu_sub[i]->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyOTFeatures::_add_feature));
 	}
 
 	group_names[FGRP_STYLISTIC_SET] = TTRC("Stylistic Sets");
@@ -892,9 +892,9 @@ void FontPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 			// Draw font name (style).
-			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-			Color text_color = get_theme_color(SNAME("font_color"), SNAME("Label"));
+			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+			int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+			Color text_color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
 
 			// Draw font preview.
 			bool prev_ok = true;
@@ -1018,7 +1018,7 @@ EditorPropertyFontNamesArray::EditorPropertyFontNamesArray() {
 		}
 	}
 	add_child(menu);
-	menu->connect("id_pressed", callable_mp(this, &EditorPropertyFontNamesArray::_add_font));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyFontNamesArray::_add_font));
 }
 
 /*************************************************************************/

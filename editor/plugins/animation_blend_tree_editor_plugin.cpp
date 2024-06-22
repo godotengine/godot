@@ -165,10 +165,10 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			name->set_editable(!read_only);
 			name->set_expand_to_text_length_enabled(true);
 			node->add_child(name);
-			node->set_slot(0, false, 0, Color(), true, read_only ? -1 : 0, get_theme_color(SNAME("font_color"), SNAME("Label")));
+			node->set_slot(0, false, 0, Color(), true, read_only ? -1 : 0, get_theme_color(SceneStringName(font_color), SNAME("Label")));
 			name->connect("text_submitted", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed).bind(agnode), CONNECT_DEFERRED);
 			name->connect(SceneStringName(focus_exited), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(agnode), CONNECT_DEFERRED);
-			name->connect("text_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed), CONNECT_DEFERRED);
+			name->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed), CONNECT_DEFERRED);
 			base = 1;
 			agnode->set_deletable(true);
 
@@ -186,7 +186,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			Label *in_name = memnew(Label);
 			node->add_child(in_name);
 			in_name->set_text(agnode->get_input_name(i));
-			node->set_slot(base + i, true, read_only ? -1 : 0, get_theme_color(SNAME("font_color"), SNAME("Label")), false, 0, Color());
+			node->set_slot(base + i, true, read_only ? -1 : 0, get_theme_color(SceneStringName(font_color), SNAME("Label")), false, 0, Color());
 		}
 
 		List<PropertyInfo> pinfo;
@@ -265,7 +265,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 		}
 
 		// TODO: Avoid using strings, expose a method on GraphNode instead.
-		Ref<StyleBoxFlat> sb = node->get_theme_stylebox(SNAME("panel"));
+		Ref<StyleBoxFlat> sb = node->get_theme_stylebox(SceneStringName(panel));
 		Color c = sb->get_border_color();
 		Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
 		mono_color.a = 0.85;
@@ -942,8 +942,8 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-			error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			if (is_visible_in_tree()) {
 				update_graph();
@@ -1193,7 +1193,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	graph->get_menu_hbox()->add_child(add_node);
 	add_node->set_text(TTR("Add Node..."));
 	graph->get_menu_hbox()->move_child(add_node, 0);
-	add_node->get_popup()->connect("id_pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_add_node));
+	add_node->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationNodeBlendTreeEditor::_add_node));
 	add_node->get_popup()->connect("popup_hide", callable_mp(this, &AnimationNodeBlendTreeEditor::_popup_hide), CONNECT_DEFERRED);
 	add_node->connect("about_to_popup", callable_mp(this, &AnimationNodeBlendTreeEditor::_update_options_menu).bind(false));
 	add_node->set_disabled(read_only);

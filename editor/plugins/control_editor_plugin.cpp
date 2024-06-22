@@ -65,7 +65,7 @@ void ControlPositioningWarning::_update_warning() {
 		hint_label->set_text(TTR("Use anchors and the rectangle for positioning."));
 	}
 
-	bg_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg_group_note"), SNAME("EditorProperty")));
+	bg_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("bg_group_note"), SNAME("EditorProperty")));
 }
 
 void ControlPositioningWarning::_update_toggler() {
@@ -214,7 +214,7 @@ EditorPropertyAnchorsPreset::EditorPropertyAnchorsPreset() {
 	options->set_flat(true);
 	add_child(options);
 	add_focusable(options);
-	options->connect("item_selected", callable_mp(this, &EditorPropertyAnchorsPreset::_option_selected));
+	options->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyAnchorsPreset::_option_selected));
 }
 
 void EditorPropertySizeFlags::_set_read_only(bool p_read_only) {
@@ -360,9 +360,9 @@ void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vert
 	}
 
 	Control *gui_base = EditorNode::get_singleton()->get_gui_base();
-	String wide_preset_icon = SNAME("ControlAlignHCenterWide");
-	String begin_preset_icon = SNAME("ControlAlignCenterLeft");
-	String end_preset_icon = SNAME("ControlAlignCenterRight");
+	StringName wide_preset_icon = SNAME("ControlAlignHCenterWide");
+	StringName begin_preset_icon = SNAME("ControlAlignCenterLeft");
+	StringName end_preset_icon = SNAME("ControlAlignCenterRight");
 	if (vertical) {
 		wide_preset_icon = SNAME("ControlAlignVCenterWide");
 		begin_preset_icon = SNAME("ControlAlignCenterTop");
@@ -397,7 +397,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 	vb->add_child(flag_presets);
 	add_focusable(flag_presets);
 	set_label_reference(flag_presets);
-	flag_presets->connect("item_selected", callable_mp(this, &EditorPropertySizeFlags::_preset_selected));
+	flag_presets->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertySizeFlags::_preset_selected));
 
 	flag_options = memnew(VBoxContainer);
 	flag_options->hide();

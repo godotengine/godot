@@ -399,7 +399,7 @@ void ScriptEditorQuickOpen::_confirmed() {
 void ScriptEditorQuickOpen::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			connect("confirmed", callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
+			connect(SceneStringName(confirmed), callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
 
 			search_box->set_clear_button_enabled(true);
 			[[fallthrough]];
@@ -409,7 +409,7 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect("confirmed", callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
+			disconnect(SceneStringName(confirmed), callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
 		} break;
 	}
 }
@@ -423,7 +423,7 @@ ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 	add_child(vbc);
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
-	search_box->connect("text_changed", callable_mp(this, &ScriptEditorQuickOpen::_text_changed));
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditorQuickOpen::_text_changed));
 	search_box->connect(SceneStringName(gui_input), callable_mp(this, &ScriptEditorQuickOpen::_sbox_input));
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
@@ -1719,7 +1719,7 @@ void ScriptEditor::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
-			tab_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("ScriptEditor"), EditorStringName(EditorStyles)));
+			tab_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ScriptEditor"), EditorStringName(EditorStyles)));
 
 			help_search->set_icon(get_editor_theme_icon(SNAME("HelpSearch")));
 			site_search->set_icon(get_editor_theme_icon(SNAME("ExternalLink")));
@@ -1737,7 +1737,7 @@ void ScriptEditor::_notification(int p_what) {
 			filter_scripts->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			filter_methods->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-			filename->add_theme_style_override("normal", get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit")));
+			filename->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit")));
 
 			recent_scripts->reset_size();
 
@@ -1748,7 +1748,7 @@ void ScriptEditor::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			// Can't set own styles in NOTIFICATION_THEME_CHANGED, so for now this will do.
-			add_theme_style_override("panel", get_theme_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
+			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
 
 			get_tree()->connect("tree_changed", callable_mp(this, &ScriptEditor::_tree_changed));
 			InspectorDock::get_singleton()->connect("request_help", callable_mp(this, &ScriptEditor::_help_class_open));
@@ -1759,10 +1759,10 @@ void ScriptEditor::_notification(int p_what) {
 			EditorNode::get_singleton()->connect("scene_saved", callable_mp(this, &ScriptEditor::_scene_saved_callback));
 			FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &ScriptEditor::_files_moved));
 			FileSystemDock::get_singleton()->connect("file_removed", callable_mp(this, &ScriptEditor::_file_removed));
-			script_list->connect("item_selected", callable_mp(this, &ScriptEditor::_script_selected));
+			script_list->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditor::_script_selected));
 
-			members_overview->connect("item_selected", callable_mp(this, &ScriptEditor::_members_overview_selected));
-			help_overview->connect("item_selected", callable_mp(this, &ScriptEditor::_help_overview_selected));
+			members_overview->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditor::_members_overview_selected));
+			help_overview->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditor::_help_overview_selected));
 			script_split->connect("dragged", callable_mp(this, &ScriptEditor::_split_dragged));
 			list_split->connect("dragged", callable_mp(this, &ScriptEditor::_split_dragged));
 
@@ -2079,7 +2079,7 @@ void ScriptEditor::_update_script_colors() {
 	int hist_size = EDITOR_GET("text_editor/script_list/script_temperature_history_size");
 	Color hot_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 	hot_color.set_s(hot_color.get_s() * 0.9);
-	Color cold_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+	Color cold_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 
 	for (int i = 0; i < script_list->get_item_count(); i++) {
 		int c = script_list->get_item_metadata(i);
@@ -2856,6 +2856,10 @@ void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const 
 
 		break;
 	}
+
+	// Move back to the previously edited node to reselect it in the Inspector and the NodeDock.
+	// We assume that the previous item is the node on which the callbacks were added.
+	EditorNode::get_singleton()->edit_previous_item();
 }
 
 void ScriptEditor::_save_editor_state(ScriptEditorBase *p_editor) {
@@ -4022,7 +4026,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	filter_scripts = memnew(LineEdit);
 	filter_scripts->set_placeholder(TTR("Filter Scripts"));
 	filter_scripts->set_clear_button_enabled(true);
-	filter_scripts->connect("text_changed", callable_mp(this, &ScriptEditor::_filter_scripts_text_changed));
+	filter_scripts->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditor::_filter_scripts_text_changed));
 	scripts_vbox->add_child(filter_scripts);
 
 	script_list = memnew(ItemList);
@@ -4038,7 +4042,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
-	context_menu->connect("id_pressed", callable_mp(this, &ScriptEditor::_menu_option));
+	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_menu_option));
 
 	overview_vbox = memnew(VBoxContainer);
 	overview_vbox->set_custom_minimum_size(Size2(0, 90));
@@ -4052,7 +4056,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	filename = memnew(Label);
 	filename->set_clip_text(true);
 	filename->set_h_size_flags(SIZE_EXPAND_FILL);
-	filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(CoreStringName(normal), SNAME("LineEdit")));
+	filename->add_theme_style_override(CoreStringName(normal), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(CoreStringName(normal), SNAME("LineEdit")));
 	buttons_hbox->add_child(filename);
 
 	members_overview_alphabeta_sort_button = memnew(Button);
@@ -4067,7 +4071,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	filter_methods = memnew(LineEdit);
 	filter_methods->set_placeholder(TTR("Filter Methods"));
 	filter_methods->set_clear_button_enabled(true);
-	filter_methods->connect("text_changed", callable_mp(this, &ScriptEditor::_filter_methods_text_changed));
+	filter_methods->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditor::_filter_methods_text_changed));
 	overview_vbox->add_child(filter_methods);
 
 	members_overview = memnew(ItemList);
@@ -4122,7 +4126,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	recent_scripts = memnew(PopupMenu);
 	file_menu->get_popup()->add_submenu_node_item(TTR("Open Recent"), recent_scripts, FILE_OPEN_RECENT);
-	recent_scripts->connect("id_pressed", callable_mp(this, &ScriptEditor::_open_recent_script));
+	recent_scripts->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_open_recent_script));
 
 	_update_recent_scripts();
 
@@ -4148,7 +4152,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/import_theme", TTR("Import Theme...")), THEME_IMPORT);
 	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/reload_theme", TTR("Reload Theme")), THEME_RELOAD);
 	file_menu->get_popup()->add_submenu_node_item(TTR("Theme"), theme_submenu, FILE_THEME);
-	theme_submenu->connect("id_pressed", callable_mp(this, &ScriptEditor::_theme_option));
+	theme_submenu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_theme_option));
 
 	theme_submenu->add_separator();
 	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/save_theme", TTR("Save Theme")), THEME_SAVE);
@@ -4165,7 +4169,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTR("Toggle Scripts Panel"), KeyModifierMask::CMD_OR_CTRL | Key::BACKSLASH), TOGGLE_SCRIPTS_PANEL);
-	file_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptEditor::_menu_option));
+	file_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_menu_option));
 	file_menu->get_popup()->connect("about_to_popup", callable_mp(this, &ScriptEditor::_prepare_file_menu));
 	file_menu->get_popup()->connect("popup_hide", callable_mp(this, &ScriptEditor::_file_menu_closed));
 
@@ -4173,7 +4177,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_search_menu->set_text(TTR("Search"));
 	script_search_menu->set_switch_on_hover(true);
 	script_search_menu->set_shortcut_context(this);
-	script_search_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptEditor::_menu_option));
+	script_search_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_menu_option));
 	menu_hb->add_child(script_search_menu);
 
 	MenuButton *debug_menu_btn = memnew(MenuButton);
@@ -4247,7 +4251,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	erase_tab_confirm = memnew(ConfirmationDialog);
 	erase_tab_confirm->set_ok_button_text(TTR("Save"));
 	erase_tab_confirm->add_button(TTR("Discard"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
-	erase_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab).bind(true, true));
+	erase_tab_confirm->connect(SceneStringName(confirmed), callable_mp(this, &ScriptEditor::_close_current_tab).bind(true, true));
 	erase_tab_confirm->connect("custom_action", callable_mp(this, &ScriptEditor::_close_discard_current_tab));
 	add_child(erase_tab_confirm);
 
@@ -4284,7 +4288,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 		disk_changed_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		disk_changed_list->set_v_size_flags(SIZE_EXPAND_FILL);
 
-		disk_changed->connect("confirmed", callable_mp(this, &ScriptEditor::reload_scripts).bind(false));
+		disk_changed->connect(SceneStringName(confirmed), callable_mp(this, &ScriptEditor::reload_scripts).bind(false));
 		disk_changed->set_ok_button_text(TTR("Discard local changes and reload"));
 
 		disk_changed->add_button(TTR("Keep local changes and overwrite"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
@@ -4356,9 +4360,9 @@ void ScriptEditorPlugin::_save_last_editor(const String &p_editor) {
 void ScriptEditorPlugin::_window_visibility_changed(bool p_visible) {
 	_focus_another_editor();
 	if (p_visible) {
-		script_editor->add_theme_style_override("panel", script_editor->get_theme_stylebox("ScriptEditorPanelFloating", EditorStringName(EditorStyles)));
+		script_editor->add_theme_style_override(SceneStringName(panel), script_editor->get_theme_stylebox("ScriptEditorPanelFloating", EditorStringName(EditorStyles)));
 	} else {
-		script_editor->add_theme_style_override("panel", script_editor->get_theme_stylebox("ScriptEditorPanel", EditorStringName(EditorStyles)));
+		script_editor->add_theme_style_override(SceneStringName(panel), script_editor->get_theme_stylebox("ScriptEditorPanel", EditorStringName(EditorStyles)));
 	}
 }
 

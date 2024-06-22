@@ -88,7 +88,7 @@ void AcceptDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			bg_panel->add_theme_style_override("panel", theme_cache.panel_style);
+			bg_panel->add_theme_style_override(SceneStringName(panel), theme_cache.panel_style);
 
 			child_controls_changed();
 			if (is_visible()) {
@@ -134,7 +134,7 @@ void AcceptDialog::_ok_pressed() {
 		set_visible(false);
 	}
 	ok_pressed();
-	emit_signal(SNAME("confirmed"));
+	emit_signal(SceneStringName(confirmed));
 	set_input_as_handled();
 }
 

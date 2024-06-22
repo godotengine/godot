@@ -10,6 +10,8 @@ dependencies {
     implementation project(":lib")
 
     implementation "androidx.window:window:1.2.0"
+    implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
+    implementation "androidx.constraintlayout:constraintlayout:2.1.4"
 }
 
 ext {
@@ -92,6 +94,10 @@ android {
         targetSdkVersion versions.targetSdk
 
         missingDimensionStrategy 'products', 'editor'
+        manifestPlaceholders += [
+            editorAppName: "Godot Editor 4",
+            editorBuildSuffix: ""
+        ]
     }
 
     base {
@@ -124,11 +130,13 @@ android {
         dev {
             initWith debug
             applicationIdSuffix ".dev"
+            manifestPlaceholders += [editorBuildSuffix: " (dev)"]
         }
 
         debug {
             initWith release
             applicationIdSuffix ".debug"
+            manifestPlaceholders += [editorBuildSuffix: " (debug)"]
             signingConfig signingConfigs.debug
         }
 

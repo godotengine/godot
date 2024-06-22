@@ -606,7 +606,7 @@ bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<Ani
 
 	PopupMenu *nodes_menu = memnew(PopupMenu);
 	nodes_menu->set_name(p_name);
-	nodes_menu->connect("id_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_connect_to));
+	nodes_menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_connect_to));
 	p_menu->add_child(nodes_menu);
 
 	bool node_added = false;
@@ -1267,9 +1267,9 @@ void AnimationNodeStateMachineEditor::_update_graph() {
 void AnimationNodeStateMachineEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			panel->add_theme_style_override("panel", theme_cache.panel_style);
-			error_panel->add_theme_style_override("panel", theme_cache.error_panel_style);
-			error_label->add_theme_color_override("font_color", theme_cache.error_color);
+			panel->add_theme_style_override(SceneStringName(panel), theme_cache.panel_style);
+			error_panel->add_theme_style_override(SceneStringName(panel), theme_cache.error_panel_style);
+			error_label->add_theme_color_override(SceneStringName(font_color), theme_cache.error_color);
 
 			tool_select->set_icon(theme_cache.tool_icon_select);
 			tool_create->set_icon(theme_cache.tool_icon_create);
@@ -1748,13 +1748,13 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	v_scroll = memnew(VScrollBar);
 	state_machine_draw->add_child(v_scroll);
 	v_scroll->set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE);
-	v_scroll->connect("value_changed", callable_mp(this, &AnimationNodeStateMachineEditor::_scroll_changed));
+	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeStateMachineEditor::_scroll_changed));
 
 	h_scroll = memnew(HScrollBar);
 	state_machine_draw->add_child(h_scroll);
 	h_scroll->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
 	h_scroll->set_offset(SIDE_RIGHT, -v_scroll->get_size().x * EDSCALE);
-	h_scroll->connect("value_changed", callable_mp(this, &AnimationNodeStateMachineEditor::_scroll_changed));
+	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeStateMachineEditor::_scroll_changed));
 
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);
@@ -1766,7 +1766,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->connect("id_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_add_menu_type));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_add_menu_type));
 	menu->connect("popup_hide", callable_mp(this, &AnimationNodeStateMachineEditor::_stop_connecting));
 
 	animations_menu = memnew(PopupMenu);
@@ -1776,17 +1776,17 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	connect_menu = memnew(PopupMenu);
 	add_child(connect_menu);
-	connect_menu->connect("id_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_connect_to));
+	connect_menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_connect_to));
 	connect_menu->connect("popup_hide", callable_mp(this, &AnimationNodeStateMachineEditor::_stop_connecting));
 
 	state_machine_menu = memnew(PopupMenu);
 	state_machine_menu->set_name("state_machines");
-	state_machine_menu->connect("id_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_connect_to));
+	state_machine_menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_connect_to));
 	connect_menu->add_child(state_machine_menu);
 
 	end_menu = memnew(PopupMenu);
 	end_menu->set_name("end_nodes");
-	end_menu->connect("id_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_connect_to));
+	end_menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_connect_to));
 	connect_menu->add_child(end_menu);
 
 	name_edit_popup = memnew(Popup);

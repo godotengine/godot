@@ -1460,6 +1460,9 @@ msgstr "ذخیرهٔ شاخه به عنوان صحنه"
 msgid "Copy Node Path"
 msgstr "کپی کردن مسیر node"
 
+msgid "Instance:"
+msgstr "نمونه:"
+
 msgid ""
 "This node has been instantiated from a PackedScene file:\n"
 "%s\n"
@@ -2489,6 +2492,12 @@ msgstr "وارد کردن نمایه(ها)"
 msgid "Manage Editor Feature Profiles"
 msgstr "مدیریت ویژگی نمایه‌های ویرایشگر"
 
+msgid "Restart"
+msgstr "راه‌اندازی مجدد"
+
+msgid "Save & Restart"
+msgstr "ذخیره و راه‌اندازی مجدد"
+
 msgid "ScanSources"
 msgstr "منابع‌اسکن"
 
@@ -2990,9 +2999,6 @@ msgstr "طرح‌بندی ویرایشگر"
 msgid "Take Screenshot"
 msgstr "گرفتن اسکرین‌شات"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "عکس‌های صفحه در پوشه دیتا/تنظیمات ویرایشگر ذخیره شده‌اند."
-
 msgid "Toggle Fullscreen"
 msgstr "تبدیل به تمام صفحه"
 
@@ -3026,9 +3032,6 @@ msgstr "پیشنهاد یک ویژگی"
 msgid "Support Godot Development"
 msgstr "از توسعه گودو حمایت کنید"
 
-msgid "Save & Restart"
-msgstr "ذخیره و راه‌اندازی مجدد"
-
 msgid "Update Continuously"
 msgstr "بروزرسانی مستمر"
 
@@ -3058,12 +3061,6 @@ msgstr "صدور کتابخانه"
 
 msgid "Open & Run a Script"
 msgstr "گشودن و اجرای یک اسکریپت"
-
-msgid "Reload"
-msgstr "بارگذاری دوباره"
-
-msgid "Resave"
-msgstr "ذخیره مجدد"
 
 msgid "New Inherited"
 msgstr "وارث جدید"
@@ -3228,6 +3225,12 @@ msgstr "درخواست ناموفق بود:"
 msgid "Cannot remove temporary file:"
 msgstr "امکان حذف فایل موقت وجود ندارد:"
 
+msgid "Connecting..."
+msgstr "در حال اتصال..."
+
+msgid "Requesting..."
+msgstr "در حال درخواست..."
+
 msgid "Importing:"
 msgstr "وارد کردن:"
 
@@ -3382,6 +3385,9 @@ msgstr "حذف از علاقمندی‌ها"
 msgid "Reimport"
 msgstr "وارد کردن دوباره"
 
+msgid "Open in File Manager"
+msgstr "گشودن در مدیر پرونده"
+
 msgid "New Folder..."
 msgstr "ساختن پوشه..."
 
@@ -3399,9 +3405,6 @@ msgstr "تکرار..."
 
 msgid "Rename..."
 msgstr "تغییر نام..."
-
-msgid "Open in File Manager"
-msgstr "گشودن در مدیر پرونده"
 
 msgid "Re-Scan Filesystem"
 msgstr "پویش دوباره سامانه پرونده"
@@ -3636,9 +3639,6 @@ msgstr "باز کردن اسکریپت:"
 
 msgid "Open in Editor"
 msgstr "گشودن در ویرایشگر"
-
-msgid "Instance:"
-msgstr "نمونه:"
 
 msgid "Node Configuration Warning!"
 msgstr "هشدار پیکر‌بندی گره!"
@@ -4016,12 +4016,6 @@ msgstr "در حال دانلود..."
 msgid "Resolving..."
 msgstr "حل کردن..."
 
-msgid "Connecting..."
-msgstr "در حال اتصال..."
-
-msgid "Requesting..."
-msgstr "در حال درخواست..."
-
 msgid "Error making request"
 msgstr "خطای درخواست"
 
@@ -4178,9 +4172,6 @@ msgstr "گسترش دادن"
 msgid "Center"
 msgstr "مرکز"
 
-msgid "Restart"
-msgstr "راه‌اندازی مجدد"
-
 msgid "Generation Time (sec):"
 msgstr "زمان تولید (ثانیه):"
 
@@ -4255,9 +4246,6 @@ msgstr "تغییر شعاع شکل سیلندر"
 
 msgid "Change Cylinder Shape Height"
 msgstr "تغییر ارتفاع شکل سیلندر"
-
-msgid "Change Particles AABB"
-msgstr "تغییر AABB پارتیکل‌ها"
 
 msgid "Change Light Radius"
 msgstr "تغییر شعاع نور"
@@ -4550,6 +4538,9 @@ msgstr "خطا در ذخیره‌سازی"
 msgid "Save Theme As..."
 msgstr "ذخیره زمینه بعنوان..."
 
+msgid "Open Godot online documentation."
+msgstr "بازکردن مستندات آنلاین گودو."
+
 msgid "Filter Scripts"
 msgstr "فیلتر اسکریپت‌ها"
 
@@ -4586,14 +4577,20 @@ msgstr "اجرا"
 msgid "Search"
 msgstr "جستجو"
 
-msgid "Open Godot online documentation."
-msgstr "بازکردن مستندات آنلاین گودو."
-
 msgid "Discard"
 msgstr "رد کردن"
 
 msgid "Clear Recent Scripts"
 msgstr "حذف اسکریپت‌های اخیر"
+
+msgid "Uppercase"
+msgstr "حروف بزرگ"
+
+msgid "Lowercase"
+msgstr "حروف کوچک"
+
+msgid "Capitalize"
+msgstr "بزرگ کردن حروف"
 
 msgid "Standard"
 msgstr "استاندارد"
@@ -4618,15 +4615,6 @@ msgstr "انتخاب رنگ"
 
 msgid "Line"
 msgstr "خط"
-
-msgid "Uppercase"
-msgstr "حروف بزرگ"
-
-msgid "Lowercase"
-msgstr "حروف کوچک"
-
-msgid "Capitalize"
-msgstr "بزرگ کردن حروف"
 
 msgid "Convert Case"
 msgstr "تبدیل مورد"
@@ -4814,6 +4802,12 @@ msgstr "اندازه"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "ساخت فریم‌ها از ورقه اسپرایت"
+
+msgid "Reload"
+msgstr "بارگذاری دوباره"
+
+msgid "Resave"
+msgstr "ذخیره مجدد"
 
 msgid "Set Margin"
 msgstr "تنظیم حاشیه"
@@ -5083,18 +5077,6 @@ msgstr "نقاشی کاشی‌ها"
 msgid "Paste tiles"
 msgstr "چسباندن کاشی‌ها"
 
-msgid "Paint"
-msgstr "نقاشی"
-
-msgid "Rect"
-msgstr "مستطیل"
-
-msgid "Bucket"
-msgstr "سطل"
-
-msgid "Eraser"
-msgstr "پاک‌کن"
-
 msgid "Tiles"
 msgstr "کاشی"
 
@@ -5143,6 +5125,9 @@ msgstr "آماده‌سازی"
 msgid "Select tiles."
 msgstr "انتخاب کاشی‌ها."
 
+msgid "Paint"
+msgstr "نقاشی"
+
 msgid "Paint Properties:"
 msgstr "ویژگی‌های نقاشی:"
 
@@ -5151,6 +5136,15 @@ msgstr "بله"
 
 msgid "Scenes collection properties:"
 msgstr "ویژگی‌های مجموعه صحنه‌ها:"
+
+msgid "Rect"
+msgstr "مستطیل"
+
+msgid "Bucket"
+msgstr "سطل"
+
+msgid "Eraser"
+msgstr "پاک‌کن"
 
 msgid "Error"
 msgstr "خطا"
@@ -6001,11 +5995,11 @@ msgstr "تکرار"
 msgid "Invalid comparison function for that type."
 msgstr "عمل مقایسه نامعتبر بزای این نوع."
 
-msgid "Expected a function name."
-msgstr "نام تابع مورد انتظار است."
-
 msgid "Constants cannot be modified."
 msgstr "ثوابت قابل تغییر نیستند."
+
+msgid "Expected a function name."
+msgstr "نام تابع مورد انتظار است."
 
 msgid "Expected a '{' to begin function."
 msgstr "برای شروع یک تابع '{' انتظار میرود."

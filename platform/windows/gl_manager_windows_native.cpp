@@ -510,10 +510,10 @@ void GLManagerNative_Windows::set_use_vsync(DisplayServer::WindowID p_window_id,
 		win.use_vsync = p_use;
 
 		if (!wglSwapIntervalEXT(p_use ? 1 : 0)) {
-			WARN_PRINT("Could not set V-Sync mode.");
+			WARN_PRINT_ONCE("Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.");
 		}
 	} else {
-		WARN_PRINT("Could not set V-Sync mode. V-Sync is not supported.");
+		WARN_PRINT_ONCE("Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.");
 	}
 }
 
