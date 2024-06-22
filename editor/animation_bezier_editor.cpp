@@ -872,14 +872,14 @@ void AnimationBezierTrackEdit::_change_selected_keys_handle_mode(Animation::Hand
 }
 
 void AnimationBezierTrackEdit::_clear_selection_for_anim(const Ref<Animation> &p_anim) {
-	if (!(animation == p_anim)) {
+	if (!(animation == p_anim) || !is_visible()) {
 		return;
 	}
 	_clear_selection();
 }
 
 void AnimationBezierTrackEdit::_select_at_anim(const Ref<Animation> &p_anim, int p_track, real_t p_pos, bool p_single) {
-	if (!(animation == p_anim)) {
+	if (!(animation == p_anim) || !is_visible()) {
 		return;
 	}
 
