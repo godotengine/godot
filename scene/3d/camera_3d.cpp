@@ -33,6 +33,22 @@
 #include "core/math/projection.h"
 #include "scene/main/viewport.h"
 
+#include <vector>
+#include <iostream>
+
+std::vector<int> coverageDataOfPjrs2(3,0);
+
+void initcoverageDataOfPjrs2(int inputNum) {
+	coverageDataOfPjrs2.resize(inputNum, 0);
+}
+
+void outputCoverageDataOfPjrs2() {
+    std::cout << "Coverage Data (for camera_3d):" << std::endl;
+    for (size_t i = 0; i < coverageDataOfPjrs2.size(); ++i) {
+        std::cout << "Branch " << i << ": " << (coverageDataOfPjrs2.at(i) ? "Executed" : "Not Executed") << std::endl;
+    }
+}
+
 void Camera3D::_update_audio_listener_state() {
 }
 
@@ -278,9 +294,12 @@ void Camera3D::clear_current(bool p_enable_next) {
 }
 
 void Camera3D::set_current(bool p_enabled) {
+	coverageDataOfPjrs2.at(0) = 1;
 	if (p_enabled) {
+		coverageDataOfPjrs2.at(1) = 1;
 		make_current();
 	} else {
+		coverageDataOfPjrs2.at(2) = 1;
 		clear_current();
 	}
 }

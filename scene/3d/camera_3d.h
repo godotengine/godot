@@ -37,6 +37,12 @@
 #include "scene/resources/compositor.h"
 #include "scene/resources/environment.h"
 
+#include <vector>
+
+extern std::vector<int> coverageDataOfPjrs2;
+void initcoverageDataOfPjrs2(int inputNum);
+void outputCoverageDataOfPjrs2();
+
 class Camera3D : public Node3D {
 	GDCLASS(Camera3D, Node3D);
 
