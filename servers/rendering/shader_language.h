@@ -620,7 +620,7 @@ public:
 			DataType type;
 			StringName struct_name;
 			DataPrecision precision;
-			ConstantNode *initializer = nullptr;
+			Node *initializer = nullptr;
 			int array_size;
 		};
 
