@@ -1445,8 +1445,10 @@ void RendererSceneCull::instance_geometry_set_lightmap(RID p_instance, RID p_lig
 
 	if (instance->lightmap) {
 		InstanceLightmapData *lightmap_data = static_cast<InstanceLightmapData *>(((Instance *)instance->lightmap)->base_data);
-		lightmap_data->users.erase(instance);
-		instance->lightmap = nullptr;
+		if (lightmap_data) {
+			lightmap_data->users.erase(instance);
+			instance->lightmap = nullptr;
+		}
 	}
 
 	Instance *lightmap_instance = instance_owner.get_or_null(p_lightmap);
@@ -1459,8 +1461,10 @@ void RendererSceneCull::instance_geometry_set_lightmap(RID p_instance, RID p_lig
 
 	if (lightmap_instance) {
 		InstanceLightmapData *lightmap_data = static_cast<InstanceLightmapData *>(lightmap_instance->base_data);
-		lightmap_data->users.insert(instance);
-		lightmap_instance_rid = lightmap_data->instance;
+		if (lightmap_data) {
+			lightmap_data->users.insert(instance);
+			lightmap_instance_rid = lightmap_data->instance;
+		}
 	}
 
 	if ((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK && instance->base_data) {
