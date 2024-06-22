@@ -55,29 +55,29 @@ they are not reached in the original test.
 
 Ruizhe Tao
 
-  Function 1
+Function 1
 
-  name: set_global_skew
+name: set_global_skew
 
-  a link to the commit: https://github.com/SiyuanHong/godot/commit/069884f925777869f8bf04b8f5257e045245dfa0
+a link to the commit: https://github.com/SiyuanHong/godot/commit/069884f925777869f8bf04b8f5257e045245dfa0
 
-  screenshot:
+screenshot:
 
-  2 branches with unique ids are identified in this function:
+2 branches with unique ids are identified in this function:
   
-  ![skew_uncovered](https://github.com/SiyuanHong/godot/assets/50838626/ba783274-4cb1-4709-b297-b55f52c24516)
+![skew_uncovered](https://github.com/SiyuanHong/godot/assets/50838626/ba783274-4cb1-4709-b297-b55f52c24516)
 
-  Function 2
+Function 2
 
-  name: set_global_scale
+name: set_global_scale
 
-  a link to the commit: https://github.com/SiyuanHong/godot/commit/069884f925777869f8bf04b8f5257e045245dfa0
+a link to the commit: https://github.com/SiyuanHong/godot/commit/069884f925777869f8bf04b8f5257e045245dfa0
 
-  screenshot:
+screenshot:
 
-  2 branches with unique ids are identified in this function:
+2 branches with unique ids are identified in this function:
 
-  ![scale_uncovered](https://github.com/SiyuanHong/godot/assets/50838626/16a5f470-637e-423c-aed3-433ac9b14c95)
+![scale_uncovered](https://github.com/SiyuanHong/godot/assets/50838626/16a5f470-637e-423c-aed3-433ac9b14c95)
 
 ## Coverage improvement
 
@@ -104,10 +104,10 @@ new result:
     
 test2:
 
-a link to the commit: 
+a link to the commit:
      https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
 	 
-old result: 
+old result:
      ![image](https://github.com/SiyuanHong/godot/assets/113177812/7ff70bbb-2e1f-4541-a038-69965651f022)
 	 
 new result:
@@ -121,13 +121,15 @@ new result:
 
 Ruizhe Tao
 
-  Test 1
+Test 1
 
-  a link to the commit: https://github.com/SiyuanHong/godot/commit/069884f925777869f8bf04b8f5257e045245dfa0
+a link to the commit: https://github.com/SiyuanHong/godot/commit/069884f925777869f8bf04b8f5257e045245dfa0
 
-  old result: ![skew_uncovered](https://github.com/SiyuanHong/godot/assets/50838626/f43d6649-cc66-4220-b24e-f156599bae2f)
+old result: \
+![skew_uncovered](https://github.com/SiyuanHong/godot/assets/50838626/f43d6649-cc66-4220-b24e-f156599bae2f)
 
-  new result: ![skew_covered](https://github.com/SiyuanHong/godot/assets/50838626/1246d93a-3152-492f-9b5c-6e02c5ce0a49)
+new result: \
+![skew_covered](https://github.com/SiyuanHong/godot/assets/50838626/1246d93a-3152-492f-9b5c-6e02c5ce0a49)
 
 	The coverage improved by 100%.
  	Since this function is not tested in the original project, a new test dedicated to this function was made.
@@ -135,13 +137,15 @@ Ruizhe Tao
    	Use these two node objects to invoke `set_global_skew` function, both branches will be reached, as the condition
 	checks if the node has a parent node.
 
-  Test 2
+Test 2
 
-  a link to the commit: https://github.com/SiyuanHong/godot/commit/069884f925777869f8bf04b8f5257e045245dfa0
+a link to the commit: https://github.com/SiyuanHong/godot/commit/069884f925777869f8bf04b8f5257e045245dfa0
 
-  old result: ![scale_uncovered](https://github.com/SiyuanHong/godot/assets/50838626/7fa8a1b2-9d23-432d-8418-6e8a94b9f457)
+old result: \
+![scale_uncovered](https://github.com/SiyuanHong/godot/assets/50838626/7fa8a1b2-9d23-432d-8418-6e8a94b9f457)
 
-  new result: ![scale_covered](https://github.com/SiyuanHong/godot/assets/50838626/db7ec6c7-885c-4d2c-8153-be25b8cee24b)
+new result: \
+![scale_covered](https://github.com/SiyuanHong/godot/assets/50838626/db7ec6c7-885c-4d2c-8153-be25b8cee24b)
 
 	The coverage improved by 100%.
  	This function is very similar to the previous one, and it is also not tested in the original project. A new test
