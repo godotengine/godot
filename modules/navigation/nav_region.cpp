@@ -44,8 +44,6 @@ void NavRegion::set_map(NavMap *p_map) {
 	map = p_map;
 	polygons_dirty = true;
 
-	connections.clear();
-
 	if (map) {
 		map->add_region(this);
 	}
@@ -103,25 +101,6 @@ void NavRegion::set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) {
 	}
 
 	polygons_dirty = true;
-}
-
-int NavRegion::get_connections_count() const {
-	if (!map) {
-		return 0;
-	}
-	return connections.size();
-}
-
-Vector3 NavRegion::get_connection_pathway_start(int p_connection_id) const {
-	ERR_FAIL_NULL_V(map, Vector3());
-	ERR_FAIL_INDEX_V(p_connection_id, connections.size(), Vector3());
-	return connections[p_connection_id].pathway_start;
-}
-
-Vector3 NavRegion::get_connection_pathway_end(int p_connection_id) const {
-	ERR_FAIL_NULL_V(map, Vector3());
-	ERR_FAIL_INDEX_V(p_connection_id, connections.size(), Vector3());
-	return connections[p_connection_id].pathway_end;
 }
 
 Vector3 NavRegion::get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const {

@@ -509,22 +509,31 @@ void GodotNavigationServer3D::region_bake_navigation_mesh(Ref<NavigationMesh> p_
 int GodotNavigationServer3D::region_get_connections_count(RID p_region) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL_V(region, 0);
-
-	return region->get_connections_count();
+	NavMap *map = region->get_map();
+	if (map) {
+		return map->get_region_connections_count(region);
+	}
+	return 0;
 }
 
 Vector3 GodotNavigationServer3D::region_get_connection_pathway_start(RID p_region, int p_connection_id) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL_V(region, Vector3());
-
-	return region->get_connection_pathway_start(p_connection_id);
+	NavMap *map = region->get_map();
+	if (map) {
+		return map->get_region_connection_pathway_start(region, p_connection_id);
+	}
+	return Vector3();
 }
 
 Vector3 GodotNavigationServer3D::region_get_connection_pathway_end(RID p_region, int p_connection_id) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL_V(region, Vector3());
-
-	return region->get_connection_pathway_end(p_connection_id);
+	NavMap *map = region->get_map();
+	if (map) {
+		return map->get_region_connection_pathway_end(region, p_connection_id);
+	}
+	return Vector3();
 }
 
 Vector3 GodotNavigationServer3D::region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const {
