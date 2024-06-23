@@ -2850,6 +2850,27 @@ void EditorInspector::update_tree() {
 	for (List<PropertyInfo>::Element *E_property = plist.front(); E_property; E_property = E_property->next()) {
 		PropertyInfo &p = E_property->get();
 
+		if (p.usage & PROPERTY_USAGE_SHOW_IF_ROOT) {
+			// If the user uses the `@export_if_root` annotation, then before
+			// doing any other usage processing, we need to determine whether
+			// or not this property should be displayed at all.
+
+			// EditorInterface::get_singleton()->get_edited_scene_root() gives
+			// an error: "incomplete type "EditorInterface" is not allowed".
+			Node *scene_root = EditorNode::get_singleton()->get_edited_scene();
+
+			// TODO: May need to confirm that this cast is successful??
+			Node *current_node = Object::cast_to<Node>(object);
+
+			// Criteria for hiding:
+			// 1.  It's an ancestor of the root node (aka, it's not the root node
+			//     itself).
+			// 2.  It doesn't have Editable Children enabled.
+			if (scene_root->is_ancestor_of(current_node) && !scene_root->is_editable_instance(current_node)) {
+				p.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		}
+		
 		if (p.usage & PROPERTY_USAGE_SUBGROUP) {
 			// Setup a property sub-group.
 			subgroup = p.name;

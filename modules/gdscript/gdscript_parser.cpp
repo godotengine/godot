@@ -122,6 +122,7 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@export_flags_avoidance"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_AVOIDANCE, Variant::INT>);
 		register_annotation(MethodInfo("@export_storage"), AnnotationInfo::VARIABLE, &GDScriptParser::export_storage_annotation);
 		register_annotation(MethodInfo("@export_custom", PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CLASS_IS_ENUM, "PropertyHint"), PropertyInfo(Variant::STRING, "hint_string"), PropertyInfo(Variant::INT, "usage", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CLASS_IS_BITFIELD, "PropertyUsageFlags")), AnnotationInfo::VARIABLE, &GDScriptParser::export_custom_annotation, varray(PROPERTY_USAGE_DEFAULT));
+		register_annotation(MethodInfo("@export_if_root"), AnnotationInfo::VARIABLE, &GDScriptParser::export_if_root_annotations<PROPERTY_USAGE_SHOW_IF_ROOT>);
 		// Export grouping annotations.
 		register_annotation(MethodInfo("@export_category", PropertyInfo(Variant::STRING, "name")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_CATEGORY>);
 		register_annotation(MethodInfo("@export_group", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_GROUP>, varray(""));
@@ -4453,6 +4454,23 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 	}
 
 	return true;
+}
+
+template <PropertyUsageFlags t_usage>
+bool GDScriptParser::export_if_root_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
+	ERR_FAIL_NULL_V(p_class, false);
+
+	VariableNode *variable = static_cast<VariableNode *>(p_target);
+	if (!variable->exported) {
+		push_error(vformat(R"(Annotation "%s" must be used with an "@export" annotation.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	
+	variable->export_info.usage |= t_usage;
+	return false;
+
+	
 }
 
 // For `@export_storage` and `@export_custom`, there is no need to check the variable type, argument values,

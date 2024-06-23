@@ -1500,6 +1500,8 @@ private:
 	bool export_storage_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_custom_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyUsageFlags t_usage>
+	bool export_if_root_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	template <PropertyUsageFlags t_usage>
 	bool export_group_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool warning_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool rpc_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
