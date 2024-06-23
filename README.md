@@ -52,7 +52,23 @@ i identified three branches in this function(branch 0, 1,2):
 ![image](https://github.com/SiyuanHong/godot/assets/113177812/7ff70bbb-2e1f-4541-a038-69965651f022)
       
 they are not reached in the original test. 
-      
+
+---
+Rui Chen:
+    Function 1:
+        Name: set_environment
+        Link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d
+        Screenshot:
+        Two branches with unique IDs are identified in this function.
+
+
+    Function 2:
+        Name: set_composition
+        Link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d
+        Screenshot:
+        Two branches with unique IDs are identified in this function.
+
+
 ## Coverage improvement
 
 ### Individual tests
@@ -92,10 +108,30 @@ new results :
      comment: because these two functions are highly correlated, so i merged the two test cases into just one, but it indeed tested two functions.
      because the system is complicated, and the arrtibute of "dirty" is protected, hard to figure out how to make its value as dirty, so this test case only
      cover the first branch.
-  
+
+  ---
+  Rui Chen:
+    Test 1:
+        Link to the commit:
+        Old result: \
+        New result: \
+            The coverage improved by 100%.
+            This function was not testeed in orginal project, therefore, a test is designed for this function.
+            In the test case, both branch condition are reached. For the first branch, an new environment object was created and set. For the second branch, a NULL was set to meet the else case. CHECK is done on each condition.
+
+    Test 2
+        Link to the commit:
+        Old result: \
+        New result: \
+            The coverage improved by 100%.
+            This function was not testeed in orginal project, therefore, a test is designed for this function.
+            In the test case, both branch condition are reached. For the first branch, an new compositor object was created and set. For the second branch, to  set an invalid compositor object, I chose to create an compositor_effect. CHECK is done on each condition.
+
   ### Overall
 
   
   ## Statement of individual contributions
 Siyuan Hong: write methods for function instrumentation; deal with function set_global_rotation and get_rotation
      
+Rui Chen:
+Wrote function instrucmentation for 'set_environment' and 'set_compositor' and theior respective tests that coveres all branched conditions.
