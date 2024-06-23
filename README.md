@@ -59,7 +59,6 @@ Rui Chen:
 Function 1:  
 
 Name: 'set_environment'  
-
 Link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d  
 
 Screenshot:  
@@ -68,8 +67,9 @@ Two branches with unique IDs are identified in this function.
  
 Function 2:  
   
-Name: 'set_composition'  
+Name: 'set_composition'
 Link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d  
+
 Screenshot:  
 Two branches with unique IDs are identified in this function.  
 <img width="532" alt="compositor_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/a0e6d918-67c4-4dea-8cba-290498c28c75">  
