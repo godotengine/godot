@@ -54,20 +54,19 @@ i identified three branches in this function(branch 0, 1,2):
 they are not reached in the original test. 
 
 ---
-Rui Chen:
-    Function 1:
-        Name: set_environment
-        Link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d
-        Screenshot:
-        Two branches with unique IDs are identified in this function.
-
-
-    Function 2:
-        Name: set_composition
-        Link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d
-        Screenshot:
-        Two branches with unique IDs are identified in this function.
-
+Rui Chen:\
+    Function 1:\
+        Name: set_environment\
+        Link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d\
+        Screenshot:\
+        Two branches with unique IDs are identified in this function.\
+	<img width="552" alt="environment_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/b0a7fec9-82ff-4398-989e-ddb2e04422c8">\
+	Function 2:\
+        Name: set_composition\
+        Link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d\
+        Screenshot:\
+        Two branches with unique IDs are identified in this function.\
+	<img width="532" alt="compositor_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/a0e6d918-67c4-4dea-8cba-290498c28c75">\
 
 ## Coverage improvement
 
@@ -111,21 +110,24 @@ new results :
 
   ---
   Rui Chen:
-    Test 1:
-        Link to the commit:
-        Old result: \
-        New result: \
-            The coverage improved by 100%.
-            This function was not testeed in orginal project, therefore, a test is designed for this function.
-            In the test case, both branch condition are reached. For the first branch, an new environment object was created and set. For the second branch, a NULL was set to meet the else case. CHECK is done on each condition.
-
+    Test 1:  
+        Link to the commit:  
+        Old result:   
+	<img width="552" alt="environment_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/b0a7fec9-82ff-4398-989e-ddb2e04422c8">  
+        New result:   
+	<img width="673" alt="environment_compositor_covered" src="https://github.com/SiyuanHong/godot/assets/117285044/e4d008e1-4521-4fc9-b00c-2914bc205310">  
+ 	The coverage improved by 100%.  
+        This function was not testeed in orginal project, therefore, a test is designed for this function.  
+        In the test case, both branch condition are reached. For the first branch, an new environment object was created and set. For the second branch, a NULL was set to meet the else case. CHECK is done on each 	condition.  \
     Test 2
-        Link to the commit:
-        Old result: \
-        New result: \
-            The coverage improved by 100%.
-            This function was not testeed in orginal project, therefore, a test is designed for this function.
-            In the test case, both branch condition are reached. For the first branch, an new compositor object was created and set. For the second branch, to  set an invalid compositor object, I chose to create an compositor_effect. CHECK is done on each condition.
+        Link to the commit:  
+        Old result:  
+	<img width="532" alt="compositor_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/ec8baaa5-62f7-4efc-a1de-f5d4c27c16b6">  
+        New result:  
+	<img width="673" alt="environment_compositor_covered" src="https://github.com/SiyuanHong/godot/assets/117285044/48666509-1fab-4f72-8613-9bc9c6df1c22">  
+        The coverage improved by 100%.
+        This function was not testeed in orginal project, therefore, a test is designed for this function.
+        In the test case, both branch condition are reached. For the first branch, an new compositor object was created and set. For the second branch, to  set an invalid compositor object, I chose to create an 	compositor_effect. CHECK is done on each condition.
 
   ### Overall
 
@@ -133,5 +135,5 @@ new results :
   ## Statement of individual contributions
 Siyuan Hong: write methods for function instrumentation; deal with function set_global_rotation and get_rotation
      
-Rui Chen:
-Wrote function instrucmentation for 'set_environment' and 'set_compositor' and theior respective tests that coveres all branched conditions.
+Rui Chen:  
+Wrote function instrucmentation for 'set_environment' and 'set_compositor' and theior respective tests that coveres all branched conditions.  
