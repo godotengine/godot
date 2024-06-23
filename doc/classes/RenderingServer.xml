@@ -515,6 +515,14 @@
 				Sets the index for the [CanvasItem].
 			</description>
 		</method>
+		<method name="canvas_item_set_inherit_visibility_layer">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code], the given canvas item inherits its parent's visibility layers. Equivalent to [member CanvasItem.inherit_visibility_layer].
+			</description>
+		</method>
 		<method name="canvas_item_set_interpolated">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
