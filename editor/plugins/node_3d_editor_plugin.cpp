@@ -590,7 +590,8 @@ void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
 	}
 
 	if (!equal || p_interp_delta == 0 || is_orthogonal != orthogonal) {
-		camera->set_global_transform(to_camera_transform(camera_cursor));
+		last_camera_transform = to_camera_transform(camera_cursor);
+		camera->set_global_transform(last_camera_transform);
 
 		if (orthogonal) {
 			float half_fov = Math::deg_to_rad(get_fov()) / 2.0;
@@ -2908,6 +2909,11 @@ void Node3DEditorViewport::_notification(int p_what) {
 				}
 			}
 
+			if (_camera_moved_externally()) {
+				// If camera moved after this plugin last set it, presumably a tool script has moved it, accept the new camera transform as the cursor position.
+				_apply_camera_transform_to_cursor();
+			}
+
 			_update_camera(delta);
 
 			const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
@@ -3374,6 +3380,19 @@ void Node3DEditorViewport::_draw() {
 			}
 		}
 	}
+}
+
+bool Node3DEditorViewport::_camera_moved_externally() {
+	Transform3D t = camera->get_global_transform();
+	return !t.is_equal_approx(last_camera_transform);
+}
+
+void Node3DEditorViewport::_apply_camera_transform_to_cursor() {
+	// Effectively the reverse of to_camera_transform, use camera transform to set cursor position and rotation.
+	Transform3D camera_transform = camera->get_camera_transform();
+	cursor.pos = camera_transform.origin;
+	cursor.x_rot = -camera_transform.basis.get_euler().x;
+	cursor.y_rot = -camera_transform.basis.get_euler().y;
 }
 
 void Node3DEditorViewport::_menu_option(int p_option) {
