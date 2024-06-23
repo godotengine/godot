@@ -147,4 +147,4 @@ In the test case, both branch condition are reached. For the first branch, an ne
 Siyuan Hong: write methods for function instrumentation; deal with function set_global_rotation and get_rotation
      
 Rui Chen:  
-Wrote function instrucmentation for 'set_environment' and 'set_compositor' and theior respective tests that coveres all branched conditions.  
+Wrote function instrumentation for 'set_environment' and 'set_compositor' and theior respective tests that coveres all branched conditions.  
