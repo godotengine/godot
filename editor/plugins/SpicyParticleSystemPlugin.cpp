@@ -174,14 +174,14 @@ void EditorPropertyRandomInteger::setup(int64_t p_min, int64_t p_max, int64_t p_
 
 EditorPropertyRandomInteger::EditorPropertyRandomInteger()
 {
-	HBoxContainer container = HBoxContainer();
-	container.set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	add_child(&container);
+	HBoxContainer* container = memnew(HBoxContainer);
+	container->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	add_child(container);
 
 	spin = memnew(EditorSpinSlider);
 	spin->set_flat(true);
 	spin->set_h_size_flags(Control::SizeFlags::SIZE_EXPAND_FILL);
-	container.add_child(spin);
+	container->add_child(spin);
 	add_focusable(spin);
 
 	button = memnew(Button);
@@ -189,7 +189,7 @@ EditorPropertyRandomInteger::EditorPropertyRandomInteger()
 	button->set_h_size_flags(Control::SizeFlags::SIZE_SHRINK_END);
 	button->set_icon_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
 
-	container.add_child(button);
+	container->add_child(button);
 
 	add_focusable(button);
 
@@ -438,7 +438,7 @@ void SpicyParticleSystemPlugin::_create_on_screen_editor()
 	on_screen_editor->set_custom_minimum_size(Vector2(220, 140));
 	on_screen_editor->set_v_size_flags(Panel::SIZE_EXPAND);
 	on_screen_editor->set_anchors_preset(Control::PRESET_CENTER_RIGHT);
-	on_screen_editor->set_position(Vector2(-240, 20));
+	on_screen_editor->set_position(Vector2(240, 20));
 
 
 	VBoxContainer* vbox_parent = memnew(VBoxContainer);
