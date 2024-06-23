@@ -59,7 +59,8 @@ static String _get_parent_class_of_script(const String &p_path) {
 
 	// Inherits from a built-in class.
 	if (base.is_null()) {
-		script->get_language()->get_global_class_name(script->get_path(), &class_name);
+		// We only care about the referenced class_name.
+		_ALLOW_DISCARD_ script->get_language()->get_global_class_name(script->get_path(), &class_name);
 		return class_name;
 	}
 

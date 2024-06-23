@@ -127,7 +127,7 @@ constexpr int64_t str_compare(const L *l_ptr, const R *r_ptr) {
 /*************************************************************************/
 
 template <typename T>
-class CharProxy {
+class [[nodiscard]] CharProxy {
 	friend String;
 	friend CharStringT<T>;
 
@@ -170,7 +170,7 @@ public:
 /*************************************************************************/
 
 template <typename T>
-class CharStringT {
+class [[nodiscard]] CharStringT {
 	CowData<T> _cowdata;
 	static constexpr T _null = 0;
 
@@ -265,7 +265,7 @@ using Char16String = CharStringT<char16_t>;
 /*  String                                                               */
 /*************************************************************************/
 
-class String {
+class [[nodiscard]] String {
 	CowData<char32_t> _cowdata;
 	static constexpr char32_t _null = 0;
 	static constexpr char32_t _replacement_char = 0xfffd;
