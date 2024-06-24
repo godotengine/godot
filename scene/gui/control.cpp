@@ -2575,8 +2575,8 @@ Ref<Texture2D> Control::get_theme_icon(const StringName &p_name, const StringNam
 		return data.theme_icon_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	Ref<Texture2D> icon = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_ICON, p_name, theme_types);
 	data.theme_icon_cache[p_theme_type][p_name] = icon;
 	return icon;
@@ -2599,8 +2599,8 @@ Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const String
 		return data.theme_style_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	Ref<StyleBox> style = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 	data.theme_style_cache[p_theme_type][p_name] = style;
 	return style;
@@ -2623,8 +2623,8 @@ Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_
 		return data.theme_font_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	Ref<Font> font = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_FONT, p_name, theme_types);
 	data.theme_font_cache[p_theme_type][p_name] = font;
 	return font;
@@ -2647,8 +2647,8 @@ int Control::get_theme_font_size(const StringName &p_name, const StringName &p_t
 		return data.theme_font_size_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	int font_size = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
 	data.theme_font_size_cache[p_theme_type][p_name] = font_size;
 	return font_size;
@@ -2671,8 +2671,8 @@ Color Control::get_theme_color(const StringName &p_name, const StringName &p_the
 		return data.theme_color_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	Color color = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_COLOR, p_name, theme_types);
 	data.theme_color_cache[p_theme_type][p_name] = color;
 	return color;
@@ -2695,8 +2695,8 @@ int Control::get_theme_constant(const StringName &p_name, const StringName &p_th
 		return data.theme_constant_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	int constant = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 	data.theme_constant_cache[p_theme_type][p_name] = constant;
 	return constant;
@@ -2741,8 +2741,8 @@ bool Control::has_theme_icon(const StringName &p_name, const StringName &p_theme
 		}
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_ICON, p_name, theme_types);
 }
 
@@ -2758,8 +2758,8 @@ bool Control::has_theme_stylebox(const StringName &p_name, const StringName &p_t
 		}
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 }
 
@@ -2775,8 +2775,8 @@ bool Control::has_theme_font(const StringName &p_name, const StringName &p_theme
 		}
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_FONT, p_name, theme_types);
 }
 
@@ -2792,8 +2792,8 @@ bool Control::has_theme_font_size(const StringName &p_name, const StringName &p_
 		}
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
 }
 
@@ -2809,8 +2809,8 @@ bool Control::has_theme_color(const StringName &p_name, const StringName &p_them
 		}
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_COLOR, p_name, theme_types);
 }
 
@@ -2826,8 +2826,8 @@ bool Control::has_theme_constant(const StringName &p_name, const StringName &p_t
 		}
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 }
 
