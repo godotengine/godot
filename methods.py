@@ -347,7 +347,7 @@ def detect_modules(search_path, recursive=False):
         # Godot sources when using `custom_modules` build option.
         version_path = os.path.join(path, "version.py")
         if os.path.exists(version_path):
-            with open(version_path) as f:
+            with open(version_path, "r", encoding="utf-8") as f:
                 if 'short_name = "godot"' in f.read():
                     return True
         return False
@@ -989,7 +989,7 @@ def show_progress(env):
             pass
 
     try:
-        with open(node_count_fname) as f:
+        with open(node_count_fname, "r", encoding="utf-8") as f:
             node_count_max = int(f.readline())
     except Exception:
         pass
