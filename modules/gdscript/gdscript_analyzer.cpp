@@ -5527,6 +5527,9 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 				// A script type cannot be a subtype of a GDScript class.
 				return false;
 			}
+			if (p_source.script_type.is_null()) {
+				return false;
+			}
 			if (p_source.is_meta_type) {
 				src_native = p_source.script_type->get_class_name();
 			} else {
