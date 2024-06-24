@@ -220,7 +220,7 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 
 		int original_path_size = pdb_info.path.utf8().length();
 		// Double-check file bounds.
-		ERR_FAIL_INDEX_V_MSG(pdb_info.address + original_path_size, file->get_length(), FAILED, vformat("Failed to write a new PDB path. Probably '%s' has been changed.", p_dll_path));
+		ERR_FAIL_UNSIGNED_INDEX_V_MSG(pdb_info.address + original_path_size, file->get_length(), FAILED, vformat("Failed to write a new PDB path. Probably '%s' has been changed.", p_dll_path));
 
 		Vector<uint8_t> u8 = new_pdb_name.to_utf8_buffer();
 		file->seek(pdb_info.address);
