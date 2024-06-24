@@ -137,11 +137,22 @@ GDScriptParser::GDScriptParser() {
 #endif
 
 #ifdef TOOLS_ENABLED
-	if (theme_color_names.is_empty()) {
+	if (unlikely(theme_color_names.is_empty())) {
+		// Vectors.
 		theme_color_names.insert("x", "axis_x_color");
 		theme_color_names.insert("y", "axis_y_color");
 		theme_color_names.insert("z", "axis_z_color");
 		theme_color_names.insert("w", "axis_w_color");
+
+		// Color.
+		theme_color_names.insert("r", "axis_x_color");
+		theme_color_names.insert("r8", "axis_x_color");
+		theme_color_names.insert("g", "axis_y_color");
+		theme_color_names.insert("g8", "axis_y_color");
+		theme_color_names.insert("b", "axis_z_color");
+		theme_color_names.insert("b8", "axis_z_color");
+		theme_color_names.insert("a", "axis_w_color");
+		theme_color_names.insert("a8", "axis_w_color");
 	}
 #endif
 }
