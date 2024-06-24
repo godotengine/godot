@@ -2851,26 +2851,29 @@ void EditorInspector::update_tree() {
 		PropertyInfo &p = E_property->get();
 
 		if (p.usage & PROPERTY_USAGE_SHOW_IF_ROOT) {
-			// If the user uses the `@export_if_root` annotation, then before
-			// doing any other usage processing, we need to determine whether
-			// or not this property should be displayed at all.
+			// If the user uses the `@export_if_root` annotation, then before doing any other usage
+			// processing, we need to determine whether or not this property should be displayed at all.
 
-			// EditorInterface::get_singleton()->get_edited_scene_root() gives
-			// an error: "incomplete type "EditorInterface" is not allowed".
+			// HACK: `EditorInterface::get_singleton()->get_edited_scene_root()` gives an error
+			// "incomplete type "EditorInterface" is not allowed".
+			// This code should be equivalent (copied from that function's definition) but it would be
+			// nice to just use `get_edited_scene_root()` to avoid code duplication.
 			Node *scene_root = EditorNode::get_singleton()->get_edited_scene();
 
-			// TODO: May need to confirm that this cast is successful??
+			// TODO: May need to confirm that this cast is successful.
 			Node *current_node = Object::cast_to<Node>(object);
 
 			// Criteria for hiding:
-			// 1.  It's an ancestor of the root node (aka, it's not the root node
-			//     itself).
-			// 2.  It doesn't have Editable Children enabled.
+			// 1. It's an ancestor of the root node (aka, it's not the root node itself). The root node
+			//    should always show all of its properties, since if it's the root, the user presumably
+			//    wants to work with its internals.
+			// 2. It doesn't have Editable Children enabled. If it *does*, then again, the user enabled
+			//    that so they could work with its internals.
 			if (scene_root->is_ancestor_of(current_node) && !scene_root->is_editable_instance(current_node)) {
 				p.usage = PROPERTY_USAGE_NO_EDITOR;
 			}
 		}
-		
+
 		if (p.usage & PROPERTY_USAGE_SUBGROUP) {
 			// Setup a property sub-group.
 			subgroup = p.name;

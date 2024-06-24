@@ -4466,11 +4466,9 @@ bool GDScriptParser::export_if_root_annotations(const AnnotationNode *p_annotati
 		push_error(vformat(R"(Annotation "%s" must be used with an "@export" annotation.)", p_annotation->name), p_annotation);
 		return false;
 	}
-	
+
 	variable->export_info.usage |= t_usage;
 	return false;
-
-	
 }
 
 // For `@export_storage` and `@export_custom`, there is no need to check the variable type, argument values,
