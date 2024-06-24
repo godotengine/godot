@@ -1004,6 +1004,8 @@ Files extracted from upstream source:
 - `unstable/relative-pointer/relative-pointer-unstable-v1.xml`
 - `unstable/tablet/README`
 - `unstable/tablet/tablet-unstable-v2.xml`
+- `unstable/text-input/README`
+- `unstable/text-input/text-input-unstable-v3.xml`
 - `unstable/xdg-decoration/README`
 - `unstable/xdg-decoration/xdg-decoration-unstable-v1.xml`
 - `unstable/xdg-foreign/README`

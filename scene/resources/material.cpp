@@ -1337,7 +1337,7 @@ void fragment() {)";
 	}
 
 	// Heightmapping isn't supported at the same time as triplanar mapping.
-	if (!RenderingServer::get_singleton()->is_low_end() && features[FEATURE_HEIGHT_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
+	if (features[FEATURE_HEIGHT_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
 		// Binormal is negative due to mikktspace. Flipping it "unflips" it.
 		code += R"(
 	{
@@ -1637,21 +1637,20 @@ void fragment() {)";
 		// Use the slightly more expensive circular fade (distance to the object) instead of linear
 		// (Z distance), so that the fade is always the same regardless of the camera angle.
 		if ((distance_fade == DISTANCE_FADE_OBJECT_DITHER || distance_fade == DISTANCE_FADE_PIXEL_DITHER)) {
-			if (!RenderingServer::get_singleton()->is_low_end()) {
-				code += "\n	{";
+			code += "\n	{";
 
-				if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
-					code += R"(
+			if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
+				code += R"(
 		// Distance Fade: Object Dither
 		float fade_distance = length((VIEW_MATRIX * MODEL_MATRIX[3]));
 )";
-				} else {
-					code += R"(
+			} else {
+				code += R"(
 		// Distance Fade: Pixel Dither
 		float fade_distance = length(VERTEX);
 )";
-				}
-				code += R"(
+			}
+			code += R"(
 		// Use interleaved gradient noise, which is fast but still looks good.
 		const vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
 		float fade = clamp(smoothstep(distance_fade_min, distance_fade_max, fade_distance), 0.0, 1.0);
@@ -1661,7 +1660,6 @@ void fragment() {)";
 		}
 	}
 )";
-			}
 		} else {
 			code += R"(
 	// Distance Fade: Pixel Alpha

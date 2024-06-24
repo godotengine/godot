@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MACOS_CODESIGN_H
-#define MACOS_CODESIGN_H
+#ifndef CODESIGN_H
+#define CODESIGN_H
 
 // macOS code signature creation utility.
 //
@@ -364,4 +364,4 @@ public:
 
 #endif // MODULE_REGEX_ENABLED
 
-#endif // MACOS_CODESIGN_H
+#endif // CODESIGN_H

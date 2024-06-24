@@ -63,7 +63,6 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 		FLAGS_TRANSPOSE_RECT = (1 << 10),
 
 		FLAGS_NINEPACH_DRAW_CENTER = (1 << 12),
-		FLAGS_USING_PARTICLES = (1 << 13),
 
 		FLAGS_USE_SKELETON = (1 << 15),
 		FLAGS_NINEPATCH_H_MODE_SHIFT = 16,

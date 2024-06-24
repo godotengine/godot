@@ -11,22 +11,22 @@ partial class ScriptBoilerplate
         /// <summary>
         /// Cached name for the '_nodePath' field.
         /// </summary>
-        public new static readonly global::Godot.StringName _nodePath = "_nodePath";
+        public new static readonly global::Godot.StringName @_nodePath = "_nodePath";
         /// <summary>
         /// Cached name for the '_velocity' field.
         /// </summary>
-        public new static readonly global::Godot.StringName _velocity = "_velocity";
+        public new static readonly global::Godot.StringName @_velocity = "_velocity";
     }
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
     {
-        if (name == PropertyName._nodePath) {
-            this._nodePath = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath>(value);
+        if (name == PropertyName.@_nodePath) {
+            this.@_nodePath = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath>(value);
             return true;
         }
-        if (name == PropertyName._velocity) {
-            this._velocity = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
+        if (name == PropertyName.@_velocity) {
+            this.@_velocity = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
             return true;
         }
         return base.SetGodotClassPropertyValue(name, value);
@@ -35,12 +35,12 @@ partial class ScriptBoilerplate
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
     {
-        if (name == PropertyName._nodePath) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath>(this._nodePath);
+        if (name == PropertyName.@_nodePath) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath>(this.@_nodePath);
             return true;
         }
-        if (name == PropertyName._velocity) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this._velocity);
+        if (name == PropertyName.@_velocity) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this.@_velocity);
             return true;
         }
         return base.GetGodotClassPropertyValue(name, out value);
@@ -54,8 +54,8 @@ partial class ScriptBoilerplate
     internal new static global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo> GetGodotPropertyList()
     {
         var properties = new global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>();
-        properties.Add(new(type: (global::Godot.Variant.Type)22, name: PropertyName._nodePath, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
-        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName._velocity, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)22, name: PropertyName.@_nodePath, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.@_velocity, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
         return properties;
     }
 #pragma warning restore CS0109

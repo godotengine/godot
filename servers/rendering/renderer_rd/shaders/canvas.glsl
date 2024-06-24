@@ -193,13 +193,6 @@ void main() {
 		}
 	}
 
-#if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
-	if (bool(draw_data.flags & FLAGS_USING_PARTICLES)) {
-		//scale by texture size
-		vertex /= draw_data.color_texture_pixel_size;
-	}
-#endif
-
 #ifdef USE_POINT_SIZE
 	float point_size = 1.0;
 #endif

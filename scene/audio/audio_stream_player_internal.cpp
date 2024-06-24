@@ -141,6 +141,24 @@ Ref<AudioStreamPlayback> AudioStreamPlayerInternal::play_basic() {
 		stream_playback->set_parameter(K.value.path, K.value.value);
 	}
 
+	// Sample handling.
+	if (_is_sample()) {
+		if (stream->can_be_sampled()) {
+			stream_playback->set_is_sample(true);
+			if (stream_playback->get_is_sample() && stream_playback->get_sample_playback().is_null()) {
+				if (!AudioServer::get_singleton()->is_stream_registered_as_sample(stream)) {
+					AudioServer::get_singleton()->register_stream_as_sample(stream);
+				}
+				Ref<AudioSamplePlayback> sample_playback;
+				sample_playback.instantiate();
+				sample_playback->stream = stream;
+				stream_playback->set_sample_playback(sample_playback);
+			}
+		} else if (!stream->is_meta_stream()) {
+			WARN_PRINT(vformat(R"(%s is trying to play a sample from a stream that cannot be sampled.)", node->get_path()));
+		}
+	}
+
 	stream_playbacks.push_back(stream_playback);
 	active.set();
 	_set_process(true);
@@ -151,6 +169,9 @@ void AudioStreamPlayerInternal::set_stream_paused(bool p_pause) {
 	// TODO this does not have perfect recall, fix that maybe? If there are zero playbacks registered with the AudioServer, this bool isn't persisted.
 	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 		AudioServer::get_singleton()->set_playback_paused(playback, p_pause);
+		if (_is_sample() && playback->get_sample_playback().is_valid()) {
+			AudioServer::get_singleton()->set_sample_playback_pause(playback->get_sample_playback(), p_pause);
+		}
 	}
 }
 
@@ -240,8 +261,12 @@ void AudioStreamPlayerInternal::seek(float p_seconds) {
 void AudioStreamPlayerInternal::stop() {
 	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 		AudioServer::get_singleton()->stop_playback_stream(playback);
+		if (_is_sample() && playback->get_sample_playback().is_valid()) {
+			AudioServer::get_singleton()->stop_sample_playback(playback->get_sample_playback());
+		}
 	}
 	stream_playbacks.clear();
+
 	active.clear();
 	_set_process(false);
 }
@@ -297,6 +322,14 @@ bool AudioStreamPlayerInternal::has_stream_playback() {
 Ref<AudioStreamPlayback> AudioStreamPlayerInternal::get_stream_playback() {
 	ERR_FAIL_COND_V_MSG(stream_playbacks.is_empty(), Ref<AudioStreamPlayback>(), "Player is inactive. Call play() before requesting get_stream_playback().");
 	return stream_playbacks[stream_playbacks.size() - 1];
+}
+
+void AudioStreamPlayerInternal::set_playback_type(AudioServer::PlaybackType p_playback_type) {
+	playback_type = p_playback_type;
+}
+
+AudioServer::PlaybackType AudioStreamPlayerInternal::get_playback_type() const {
+	return playback_type;
 }
 
 StringName AudioStreamPlayerInternal::get_bus() const {

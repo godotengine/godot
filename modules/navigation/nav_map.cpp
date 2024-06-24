@@ -1127,13 +1127,6 @@ void NavMap::sync() {
 				new_polygon.points.push_back({ closest_end_point, get_point_key(closest_end_point) });
 				new_polygon.points.push_back({ closest_end_point, get_point_key(closest_end_point) });
 
-				Vector3 center;
-				for (int p = 0; p < 4; ++p) {
-					center += new_polygon.points[p].pos;
-				}
-				new_polygon.center = center / real_t(new_polygon.points.size());
-				new_polygon.clockwise = true;
-
 				// Setup connections to go forward in the link.
 				{
 					gd::Edge::Connection entry_connection;

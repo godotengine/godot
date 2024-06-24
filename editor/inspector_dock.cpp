@@ -451,10 +451,10 @@ void InspectorDock::_notification(int p_what) {
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			if (info_is_warning) {
 				info->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
-				info->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+				info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			} else {
 				info->set_icon(get_editor_theme_icon(SNAME("NodeInfo")));
-				info->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), EditorStringName(Editor)));
+				info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
 			}
 		} break;
 	}
@@ -481,10 +481,10 @@ void InspectorDock::set_info(const String &p_button_text, const String &p_messag
 
 	if (info_is_warning) {
 		info->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
-		info->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+		info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 	} else {
 		info->set_icon(get_editor_theme_icon(SNAME("NodeInfo")));
-		info->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), EditorStringName(Editor)));
+		info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
 	}
 
 	if (!p_button_text.is_empty() && !p_message.is_empty()) {
@@ -541,9 +541,10 @@ void InspectorDock::update(Object *p_object) {
 	p->add_shortcut(ED_SHORTCUT("property_editor/expand_revertable", TTR("Expand Non-Default")), EXPAND_REVERTABLE);
 
 	p->add_separator(TTR("Property Name Style"));
-	p->add_radio_check_item(TTR("Raw"), PROPERTY_NAME_STYLE_RAW);
-	p->add_radio_check_item(TTR("Capitalized"), PROPERTY_NAME_STYLE_CAPITALIZED);
-	p->add_radio_check_item(TTR("Localized"), PROPERTY_NAME_STYLE_LOCALIZED);
+	p->add_radio_check_item(vformat(TTR("Raw (e.g. \"%s\")"), "z_index"), PROPERTY_NAME_STYLE_RAW);
+	p->add_radio_check_item(vformat(TTR("Capitalized (e.g. \"%s\")"), "Z Index"), PROPERTY_NAME_STYLE_CAPITALIZED);
+	// TRANSLATORS: "Z Index" should match the existing translated CanvasItem property name in the current language you're working on.
+	p->add_radio_check_item(TTR("Localized (e.g. \"Z Index\")"), PROPERTY_NAME_STYLE_LOCALIZED);
 
 	if (!EditorPropertyNameProcessor::is_localization_available()) {
 		const int index = p->get_item_index(PROPERTY_NAME_STYLE_LOCALIZED);
@@ -774,7 +775,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	bottom_label->set_text(TTR("This cannot be undone. Are you sure?"));
 	container->add_child(bottom_label);
 
-	unique_resources_confirmation->connect("confirmed", callable_mp(this, &InspectorDock::_menu_confirm_current));
+	unique_resources_confirmation->connect(SceneStringName(confirmed), callable_mp(this, &InspectorDock::_menu_confirm_current));
 
 	info_dialog = memnew(AcceptDialog);
 	EditorNode::get_singleton()->get_gui_base()->add_child(info_dialog);

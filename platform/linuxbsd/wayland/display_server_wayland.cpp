@@ -208,6 +208,7 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_HIDPI:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
+		case FEATURE_IME:
 		case FEATURE_CLIPBOARD_PRIMARY: {
 			return true;
 		} break;
@@ -903,13 +904,23 @@ bool DisplayServerWayland::can_any_window_draw() const {
 }
 
 void DisplayServerWayland::window_set_ime_active(const bool p_active, DisplayServer::WindowID p_window_id) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_ime_active active %s", p_active ? "true" : "false"));
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	wayland_thread.window_set_ime_active(p_active, MAIN_WINDOW_ID);
 }
 
 void DisplayServerWayland::window_set_ime_position(const Point2i &p_pos, DisplayServer::WindowID p_window_id) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_ime_position pos %s window %d", p_pos, p_window_id));
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	wayland_thread.window_set_ime_position(p_pos, MAIN_WINDOW_ID);
+}
+
+Point2i DisplayServerWayland::ime_get_selection() const {
+	return ime_selection;
+}
+
+String DisplayServerWayland::ime_get_text() const {
+	return ime_text;
 }
 
 // NOTE: While Wayland is supposed to be tear-free, wayland-protocols version
@@ -1145,6 +1156,37 @@ void DisplayServerWayland::process_events() {
 					ERR_PRINT(vformat("Failed to execute drop files callback: %s.", Variant::get_callable_error_text(wd.drop_files_callback, v_args, 1, ce)));
 				}
 			}
+		}
+
+		Ref<WaylandThread::IMECommitEventMessage> ime_commit_msg = msg;
+		if (ime_commit_msg.is_valid()) {
+			for (int i = 0; i < ime_commit_msg->text.length(); i++) {
+				const char32_t codepoint = ime_commit_msg->text[i];
+
+				Ref<InputEventKey> ke;
+				ke.instantiate();
+				ke->set_window_id(MAIN_WINDOW_ID);
+				ke->set_pressed(true);
+				ke->set_echo(false);
+				ke->set_keycode(Key::NONE);
+				ke->set_physical_keycode(Key::NONE);
+				ke->set_key_label(Key::NONE);
+				ke->set_unicode(codepoint);
+
+				Input::get_singleton()->parse_input_event(ke);
+			}
+			ime_text = String();
+			ime_selection = Vector2i();
+
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+		}
+
+		Ref<WaylandThread::IMEUpdateEventMessage> ime_update_msg = msg;
+		if (ime_update_msg.is_valid()) {
+			ime_text = ime_update_msg->text;
+			ime_selection = ime_update_msg->selection;
+
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 		}
 	}
 

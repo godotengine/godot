@@ -589,7 +589,7 @@ void ProjectSettingsEditor::_update_theme() {
 	restart_close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
 	restart_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 	restart_icon->set_texture(get_editor_theme_icon(SNAME("StatusWarning")));
-	restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+	restart_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
 	type_box->clear();
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
@@ -668,12 +668,12 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	property_box = memnew(LineEdit);
 	property_box->set_placeholder(TTR("Select a Setting or Type its Name"));
 	property_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	property_box->connect("text_changed", callable_mp(this, &ProjectSettingsEditor::_property_box_changed));
+	property_box->connect(SceneStringName(text_changed), callable_mp(this, &ProjectSettingsEditor::_property_box_changed));
 	custom_properties->add_child(property_box);
 
 	feature_box = memnew(OptionButton);
 	feature_box->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
-	feature_box->connect("item_selected", callable_mp(this, &ProjectSettingsEditor::_feature_selected));
+	feature_box->connect(SceneStringName(item_selected), callable_mp(this, &ProjectSettingsEditor::_feature_selected));
 	custom_properties->add_child(feature_box);
 
 	type_box = memnew(OptionButton);

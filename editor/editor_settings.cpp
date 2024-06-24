@@ -483,7 +483,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/inspector/float_drag_speed", 5.0, "0.1,100,0.01")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/nested_color_mode", 0, "Containers & Resources,Resources,External Resources")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/delimitate_all_container_and_resources", true, "")
-	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_property_name_style", EditorPropertyNameProcessor::STYLE_CAPITALIZED, "Raw,Capitalized,Localized", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_property_name_style", EditorPropertyNameProcessor::STYLE_CAPITALIZED, "Raw (e.g. \"z_index\"),Capitalized (e.g. \"Z Index\"),Localized (e.g. \"Z Index\")", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	// The lowest value is equal to the minimum float step for 32-bit floats.
 	// The step must be set manually, as changing this setting should not change the step here.
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/inspector/default_float_step", 0.001, "0.0000001,1,0.0000001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
@@ -662,7 +662,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/script_list/sort_members_outline_alphabetically", false);
 
 	// Completion
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/idle_parse_delay", 2.0, "0.1,10,0.01")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/idle_parse_delay", 1.5, "0.1,10,0.01")
 	_initial_set("text_editor/completion/auto_brace_complete", true);
 	_initial_set("text_editor/completion/code_complete_enabled", true);
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/code_complete_delay", 0.3, "0.01,5,0.01,or_greater")

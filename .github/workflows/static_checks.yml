@@ -37,7 +37,7 @@ jobs:
           fi
           echo "$files" >> changed.txt
           cat changed.txt
-          files=$(echo "$files" | grep -v 'thirdparty' | xargs -I {} sh -c 'echo "./{}"' | tr '\n' ' ')
+          files=$(echo "$files" | grep -v 'thirdparty' | xargs -I {} sh -c 'echo "\"./{}\""' | tr '\n' ' ')
           echo "CHANGED_FILES=$files" >> $GITHUB_ENV
 
       # This needs to happen before Python and npm execution; it must happen before any extra files are written.

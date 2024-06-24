@@ -96,6 +96,7 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 	}
 
 	// Update those quadrants.
+	bool needs_set_not_interpolated = is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && !is_physics_interpolated();
 	for (SelfList<DebugQuadrant> *quadrant_list_element = dirty_debug_quadrant_list.first(); quadrant_list_element;) {
 		SelfList<DebugQuadrant> *next_quadrant_list_element = quadrant_list_element->next(); // "Hack" to clear the list while iterating.
 
@@ -118,6 +119,9 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 				rs->canvas_item_clear(ci);
 			} else {
 				ci = rs->canvas_item_create();
+				if (needs_set_not_interpolated) {
+					rs->canvas_item_set_interpolated(ci, false);
+				}
 				rs->canvas_item_set_z_index(ci, RS::CANVAS_ITEM_Z_MAX - 1);
 				rs->canvas_item_set_parent(ci, get_canvas_item());
 			}
@@ -240,6 +244,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 		}
 
 		// Update all dirty quadrants.
+		bool needs_set_not_interpolated = is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && !is_physics_interpolated();
 		for (SelfList<RenderingQuadrant> *quadrant_list_element = dirty_rendering_quadrant_list.first(); quadrant_list_element;) {
 			SelfList<RenderingQuadrant> *next_quadrant_list_element = quadrant_list_element->next(); // "Hack" to clear the list while iterating.
 
@@ -301,6 +306,9 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 					if (prev_ci == RID() || prev_material != mat || prev_z_index != tile_z_index) {
 						// If so, create a new CanvasItem.
 						ci = rs->canvas_item_create();
+						if (needs_set_not_interpolated) {
+							rs->canvas_item_set_interpolated(ci, false);
+						}
 						if (mat.is_valid()) {
 							rs->canvas_item_set_material(ci, mat->get_rid());
 						}
@@ -446,12 +454,13 @@ void TileMapLayer::_rendering_notification(int p_what) {
 			}
 		}
 	} else if (p_what == NOTIFICATION_RESET_PHYSICS_INTERPOLATION) {
-		for (const KeyValue<Vector2i, Ref<RenderingQuadrant>> &kv : rendering_quadrant_map) {
-			for (const RID &ci : kv.value->canvas_items) {
-				if (ci.is_null()) {
-					continue;
+		if (is_physics_interpolated_and_enabled() && is_visible_in_tree()) {
+			for (const KeyValue<Vector2i, Ref<RenderingQuadrant>> &kv : rendering_quadrant_map) {
+				for (const RID &ci : kv.value->canvas_items) {
+					if (ci.is_valid()) {
+						rs->canvas_item_reset_physics_interpolation(ci);
+					}
 				}
-				rs->canvas_item_reset_physics_interpolation(ci);
 			}
 		}
 	}
@@ -587,6 +596,7 @@ void TileMapLayer::_rendering_occluders_update_cell(CellData &r_cell_data) {
 				bool transpose = (r_cell_data.cell.alternative_tile & TileSetAtlasSource::TRANSFORM_TRANSPOSE);
 
 				// Create, update or clear occluders.
+				bool needs_set_not_interpolated = is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && !is_physics_interpolated();
 				for (uint32_t occlusion_layer_index = 0; occlusion_layer_index < r_cell_data.occluders.size(); occlusion_layer_index++) {
 					Ref<OccluderPolygon2D> occluder_polygon = tile_data->get_occluder(occlusion_layer_index);
 
@@ -598,6 +608,9 @@ void TileMapLayer::_rendering_occluders_update_cell(CellData &r_cell_data) {
 						xform.set_origin(tile_set->map_to_local(r_cell_data.coords));
 						if (!occluder.is_valid()) {
 							occluder = rs->canvas_light_occluder_create();
+							if (needs_set_not_interpolated) {
+								rs->canvas_light_occluder_set_interpolated(occluder, false);
+							}
 						}
 						rs->canvas_light_occluder_set_transform(occluder, get_global_transform() * xform);
 						rs->canvas_light_occluder_set_polygon(occluder, tile_data->get_occluder(occlusion_layer_index, flip_h, flip_v, transpose)->get_rid());
@@ -1675,6 +1688,35 @@ void TileMapLayer::_internal_update(bool p_force_cleanup) {
 	dirty.cell_list.clear();
 
 	pending_update = false;
+}
+
+void TileMapLayer::_physics_interpolated_changed() {
+	RenderingServer *rs = RenderingServer::get_singleton();
+
+	bool interpolated = is_physics_interpolated();
+	bool needs_reset = interpolated && is_visible_in_tree();
+
+	for (const KeyValue<Vector2i, Ref<RenderingQuadrant>> &kv : rendering_quadrant_map) {
+		for (const RID &ci : kv.value->canvas_items) {
+			if (ci.is_valid()) {
+				rs->canvas_item_set_interpolated(ci, interpolated);
+				if (needs_reset) {
+					rs->canvas_item_reset_physics_interpolation(ci);
+				}
+			}
+		}
+	}
+
+	for (const KeyValue<Vector2i, CellData> &E : tile_map_layer_data) {
+		for (const RID &occluder : E.value.occluders) {
+			if (occluder.is_valid()) {
+				rs->canvas_light_occluder_set_interpolated(occluder, interpolated);
+				if (needs_reset) {
+					rs->canvas_light_occluder_reset_physics_interpolation(occluder);
+				}
+			}
+		}
+	}
 }
 
 void TileMapLayer::_notification(int p_what) {

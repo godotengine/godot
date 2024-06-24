@@ -2525,6 +2525,12 @@ bool CanvasItemEditor::_gui_input_ruler_tool(const Ref<InputEvent> &p_event) {
 		ruler_tool_origin = snap_point(viewport->get_local_mouse_position() / zoom + view_offset);
 	}
 
+	if (ruler_tool_active && b.is_valid() && b->get_button_index() == MouseButton::RIGHT) {
+		ruler_tool_active = false;
+		viewport->queue_redraw();
+		return true;
+	}
+
 	if (b.is_valid() && b->get_button_index() == MouseButton::LEFT) {
 		if (b->is_pressed()) {
 			ruler_tool_active = true;
@@ -2623,10 +2629,10 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 			// print_line("Move");
 		} else if (_gui_input_anchors(p_event)) {
 			// print_line("Anchors");
-		} else if (_gui_input_select(p_event)) {
-			// print_line("Selection");
 		} else if (_gui_input_ruler_tool(p_event)) {
 			// print_line("Measure");
+		} else if (_gui_input_select(p_event)) {
+			// print_line("Selection");
 		} else {
 			// print_line("Not accepted");
 			accepted = false;
@@ -2786,10 +2792,10 @@ Control::CursorShape CanvasItemEditor::get_cursor_shape(const Point2 &p_pos) con
 }
 
 void CanvasItemEditor::_draw_text_at_position(Point2 p_position, const String &p_string, Side p_side) {
-	Color color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+	Color color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 	color.a = 0.8;
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	Size2 text_size = font->get_string_size(p_string, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 	switch (p_side) {
 		case SIDE_LEFT:
@@ -2855,7 +2861,7 @@ void CanvasItemEditor::_draw_guides() {
 	}
 
 	// Dragged guide.
-	Color text_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+	Color text_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 	Color outline_color = text_color.inverted();
 	const float outline_size = 2;
 	if (drag_type == DRAG_DOUBLE_GUIDE || drag_type == DRAG_V_GUIDE) {
@@ -2894,8 +2900,8 @@ void CanvasItemEditor::_draw_smart_snapping() {
 
 void CanvasItemEditor::_draw_rulers() {
 	Color bg_color = get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor));
-	Color graduation_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor)).lerp(bg_color, 0.5);
-	Color font_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+	Color graduation_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)).lerp(bg_color, 0.5);
+	Color font_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 	font_color.a = 0.8;
 	Ref<Font> font = get_theme_font(SNAME("rulers"), EditorStringName(EditorFonts));
 	int font_size = get_theme_font_size(SNAME("rulers_size"), EditorStringName(EditorFonts));
@@ -3074,7 +3080,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 
 		Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
 		int font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
-		Color font_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+		Color font_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 		Color font_secondary_color = font_color;
 		font_secondary_color.set_v(font_secondary_color.get_v() > 0.5 ? 0.7 : 0.3);
 		Color outline_color = font_color.inverted();
@@ -3741,8 +3747,8 @@ void CanvasItemEditor::_draw_hover() {
 		Ref<Texture2D> node_icon = hovering_results[i].icon;
 		String node_name = hovering_results[i].name;
 
-		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+		int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 		Size2 node_name_size = font->get_string_size(node_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 		Size2 item_size = Size2(icon_size.x + 4 + node_name_size.x, MAX(icon_size.y, node_name_size.y - 3));
 
@@ -3815,8 +3821,8 @@ void CanvasItemEditor::_draw_message() {
 		return;
 	}
 
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	Point2 msgpos = Point2(RULER_WIDTH + 5 * EDSCALE, viewport->get_size().y - 20 * EDSCALE);
 	viewport->draw_string(font, msgpos + Point2(1, 1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
 	viewport->draw_string(font, msgpos + Point2(-1, -1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
@@ -5275,12 +5281,12 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	h_scroll = memnew(HScrollBar);
 	viewport->add_child(h_scroll);
-	h_scroll->connect("value_changed", callable_mp(this, &CanvasItemEditor::_update_scroll));
+	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &CanvasItemEditor::_update_scroll));
 	h_scroll->hide();
 
 	v_scroll = memnew(VScrollBar);
 	viewport->add_child(v_scroll);
-	v_scroll->connect("value_changed", callable_mp(this, &CanvasItemEditor::_update_scroll));
+	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &CanvasItemEditor::_update_scroll));
 	v_scroll->hide();
 
 	viewport->add_child(controls_vb);
@@ -5609,7 +5615,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/anim_clear_pose", TTR("Clear Pose"), KeyModifierMask::SHIFT | Key::K), ANIM_CLEAR_POSE);
 
 	snap_dialog = memnew(SnapDialog);
-	snap_dialog->connect("confirmed", callable_mp(this, &CanvasItemEditor::_snap_changed));
+	snap_dialog->connect(SceneStringName(confirmed), callable_mp(this, &CanvasItemEditor::_snap_changed));
 	add_child(snap_dialog);
 
 	select_sb = Ref<StyleBoxTexture>(memnew(StyleBoxTexture));
@@ -6218,7 +6224,7 @@ void CanvasItemEditorViewport::_update_theme() {
 		check->set_icon(get_editor_theme_icon(check->get_text()));
 	}
 
-	label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+	label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 }
 
 void CanvasItemEditorViewport::_notification(int p_what) {
@@ -6266,7 +6272,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(CanvasItemEditor *p_canvas_it
 	texture_node_type_selector = memnew(AcceptDialog);
 	EditorNode::get_singleton()->get_gui_base()->add_child(texture_node_type_selector);
 	texture_node_type_selector->set_title(TTR("Change Default Type"));
-	texture_node_type_selector->connect("confirmed", callable_mp(this, &CanvasItemEditorViewport::_on_change_type_confirmed));
+	texture_node_type_selector->connect(SceneStringName(confirmed), callable_mp(this, &CanvasItemEditorViewport::_on_change_type_confirmed));
 	texture_node_type_selector->connect("canceled", callable_mp(this, &CanvasItemEditorViewport::_on_change_type_closed));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
@@ -6295,7 +6301,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(CanvasItemEditor *p_canvas_it
 	canvas_item_editor->get_controls_container()->add_child(label);
 
 	label_desc = memnew(Label);
-	label_desc->add_theme_color_override("font_color", Color(0.6f, 0.6f, 0.6f, 1));
+	label_desc->add_theme_color_override(SceneStringName(font_color), Color(0.6f, 0.6f, 0.6f, 1));
 	label_desc->add_theme_color_override("font_shadow_color", Color(0.2f, 0.2f, 0.2f, 1));
 	label_desc->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
 	label_desc->add_theme_constant_override("line_spacing", 0);

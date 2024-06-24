@@ -612,6 +612,8 @@ public:
 	void edit(VisualShader *p_visual_shader);
 	Ref<VisualShader> get_visual_shader() const { return visual_shader; }
 
+	void validate_script();
+
 	VisualShaderEditor();
 };
 

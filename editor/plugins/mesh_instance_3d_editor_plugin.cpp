@@ -558,7 +558,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	outline_dialog_vbc->add_margin_child(TTR("Outline Size:"), outline_size);
 
 	add_child(outline_dialog);
-	outline_dialog->connect("confirmed", callable_mp(this, &MeshInstance3DEditor::_create_outline_mesh));
+	outline_dialog->connect(SceneStringName(confirmed), callable_mp(this, &MeshInstance3DEditor::_create_outline_mesh));
 
 	shape_dialog = memnew(ConfirmationDialog);
 	shape_dialog->set_title(TTR("Create Collision Shape"));
@@ -596,7 +596,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	shape_dialog_vbc->add_child(shape_type);
 
 	add_child(shape_dialog);
-	shape_dialog->connect("confirmed", callable_mp(this, &MeshInstance3DEditor::_create_collision_shape));
+	shape_dialog->connect(SceneStringName(confirmed), callable_mp(this, &MeshInstance3DEditor::_create_collision_shape));
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);

@@ -425,7 +425,7 @@ void EditorProfiler::_notification(int p_what) {
 			activate->set_icon(get_editor_theme_icon(SNAME("Play")));
 			clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
 
-			theme_cache.seek_line_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+			theme_cache.seek_line_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 			theme_cache.seek_line_color.a = 0.8;
 			theme_cache.seek_line_hover_color = theme_cache.seek_line_color;
 			theme_cache.seek_line_hover_color.a = 0.4;
@@ -640,7 +640,7 @@ EditorProfiler::EditorProfiler() {
 	display_mode->add_item(TTR("Average Time (ms)"));
 	display_mode->add_item(TTR("Frame %"));
 	display_mode->add_item(TTR("Physics Frame %"));
-	display_mode->connect("item_selected", callable_mp(this, &EditorProfiler::_combo_changed));
+	display_mode->connect(SceneStringName(item_selected), callable_mp(this, &EditorProfiler::_combo_changed));
 
 	hb->add_child(display_mode);
 
@@ -652,7 +652,7 @@ EditorProfiler::EditorProfiler() {
 	// TRANSLATORS: This is an option in the profiler to display the time spent in a function, exincluding the time spent in other functions called by that function.
 	display_time->add_item(TTR("Self"));
 	display_time->set_tooltip_text(TTR("Inclusive: Includes time from other functions called by this function.\nUse this to spot bottlenecks.\n\nSelf: Only count the time spent in the function itself, not in other functions called by that function.\nUse this to find individual functions to optimize."));
-	display_time->connect("item_selected", callable_mp(this, &EditorProfiler::_combo_changed));
+	display_time->connect(SceneStringName(item_selected), callable_mp(this, &EditorProfiler::_combo_changed));
 
 	hb->add_child(display_time);
 
@@ -671,7 +671,7 @@ EditorProfiler::EditorProfiler() {
 	cursor_metric_edit->set_value(0);
 	cursor_metric_edit->set_editable(false);
 	hb->add_child(cursor_metric_edit);
-	cursor_metric_edit->connect("value_changed", callable_mp(this, &EditorProfiler::_cursor_metric_changed));
+	cursor_metric_edit->connect(SceneStringName(value_changed), callable_mp(this, &EditorProfiler::_cursor_metric_changed));
 
 	hb->add_theme_constant_override("separation", 8 * EDSCALE);
 

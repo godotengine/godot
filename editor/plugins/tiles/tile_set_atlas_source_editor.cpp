@@ -929,7 +929,7 @@ void TileSetAtlasSourceEditor::_tile_data_editor_dropdown_button_draw() {
 				if (tile_data_editor_dropdown_button->has_focus()) {
 					clr = get_theme_color(SNAME("font_focus_color"));
 				} else {
-					clr = get_theme_color(SNAME("font_color"));
+					clr = get_theme_color(SceneStringName(font_color));
 				}
 		}
 	}
@@ -2595,7 +2595,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_data_editors_tree->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	tile_data_editors_tree->set_h_scroll_enabled(false);
 	tile_data_editors_tree->set_v_scroll_enabled(false);
-	tile_data_editors_tree->connect("item_selected", callable_mp(this, &TileSetAtlasSourceEditor::_tile_data_editors_tree_selected));
+	tile_data_editors_tree->connect(SceneStringName(item_selected), callable_mp(this, &TileSetAtlasSourceEditor::_tile_data_editors_tree_selected));
 	tile_data_editors_popup->add_child(tile_data_editors_tree);
 
 	tile_data_painting_editor_container = memnew(VBoxContainer);
@@ -2733,7 +2733,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	confirm_auto_create_tiles->set_text(TTR("The atlas's texture was modified.\nWould you like to automatically create tiles in the atlas?"));
 	confirm_auto_create_tiles->set_ok_button_text(TTR("Yes"));
 	confirm_auto_create_tiles->add_cancel_button()->set_text(TTR("No"));
-	confirm_auto_create_tiles->connect("confirmed", callable_mp(this, &TileSetAtlasSourceEditor::_auto_create_tiles));
+	confirm_auto_create_tiles->connect(SceneStringName(confirmed), callable_mp(this, &TileSetAtlasSourceEditor::_auto_create_tiles));
 	confirm_auto_create_tiles->connect("canceled", callable_mp(this, &TileSetAtlasSourceEditor::_cancel_auto_create_tiles));
 	add_child(confirm_auto_create_tiles);
 

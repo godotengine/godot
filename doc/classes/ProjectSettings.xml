@@ -344,7 +344,7 @@
 			This setting can be overridden using the [code]--frame-delay &lt;ms;&gt;[/code] command line argument.
 		</member>
 		<member name="application/run/low_processor_mode" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables low-processor usage mode. The screen is not redrawn if nothing changes visually. This is meant for writing applications and editors, but is pretty useless (and can hurt performance) in most games.
+			If [code]true[/code], enables low-processor usage mode. When enabled, the engine takes longer to redraw, but only redraws the screen if necessary. This may lower power consumption, and is intended for editors or mobile applications. For most games, because the screen needs to be redrawn every frame, it is recommended to keep this setting disabled.
 		</member>
 		<member name="application/run/low_processor_mode_sleep_usec" type="int" setter="" getter="" default="6900">
 			Amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
@@ -393,7 +393,7 @@
 			Safer override for [member audio/driver/mix_rate] in the Web platform. Here [code]0[/code] means "let the browser choose" (since some browsers do not like forcing the mix rate).
 		</member>
 		<member name="audio/driver/output_latency" type="int" setter="" getter="" default="15">
-			Specifies the preferred output latency in milliseconds for audio. Lower values will result in lower audio latency at the cost of increased CPU usage. Low values may result in audible cracking on slower hardware.
+			Specifies the preferred output latency in milliseconds for audio. Lower values will result in lower audio latency at the cost of increased CPU usage. Low values may result in audible crackling on slower hardware.
 			Audio output latency may be constrained by the host operating system and audio hardware drivers. If the host can not provide the specified audio output latency then Godot will attempt to use the nearest latency allowed by the host. As such you should always use [method AudioServer.get_output_latency] to determine the actual audio output latency.
 			Audio output latency can be overridden using the [code]--audio-output-latency &lt;ms&gt;[/code] command line argument.
 			[b]Note:[/b] This setting is ignored on Android, and on all versions of Windows prior to Windows 10.
@@ -408,6 +408,15 @@
 		<member name="audio/general/3d_panning_strength" type="float" setter="" getter="" default="0.5">
 			The base strength of the panning effect for all [AudioStreamPlayer3D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
 			The default value of [code]0.5[/code] is tuned for headphones. When using speakers, you may find lower values to sound better as speakers have a lower stereo separation compared to headphones.
+		</member>
+		<member name="audio/general/default_playback_type" type="int" setter="" getter="" default="0" experimental="">
+			Specifies the default playback type of the platform.
+			The default value is set to [b]Stream[/b], as most platforms have no issues mixing streams.
+		</member>
+		<member name="audio/general/default_playback_type.web" type="int" setter="" getter="" default="1" experimental="">
+			Specifies the default playback type of the Web platform.
+			The default value is set to [b]Sample[/b] as the Web platform is not suited to mix audio streams outside of the Web Audio API, especially when exporting a single-threaded game. [b]Sample[/b] allows for lower latency on the web platform at the cost of flexibility ([AudioEffect]s are not supported).
+			[b]Warning:[/b] Forcing [b]Stream[/b] on the Web platform may cause high audio latency and crackling, especially when exporting a multi-threaded game.
 		</member>
 		<member name="audio/general/ios/mix_with_others" type="bool" setter="" getter="" default="false">
 			Sets the [url=https://developer.apple.com/documentation/avfaudio/avaudiosession/categoryoptions/1616611-mixwithothers]mixWithOthers[/url] option for the AVAudioSession on iOS. This will override the mix behavior, if the category is set to [code]Play and Record[/code], [code]Playback[/code], or [code]Multi Route[/code].

@@ -67,6 +67,14 @@ static Box _boundingBox(const Shape* shape)
 }
 
 
+static Box _boundingBox(const Text* text)
+{
+    float x, y, w, h;
+    text->bounds(&x, &y, &w, &h, false);
+    return {x, y, w, h};
+}
+
+
 static void _transformMultiply(const Matrix* mBBox, Matrix* gradTransf)
 {
     gradTransf->e13 = gradTransf->e13 * mBBox->e11 + mBBox->e13;
@@ -79,7 +87,7 @@ static void _transformMultiply(const Matrix* mBBox, Matrix* gradTransf)
 }
 
 
-static unique_ptr<LinearGradient> _applyLinearGradientProperty(SvgStyleGradient* g, const Shape* vg, const Box& vBox, int opacity)
+static unique_ptr<LinearGradient> _applyLinearGradientProperty(SvgStyleGradient* g, const Box& vBox, int opacity)
 {
     Fill::ColorStop* stops;
     int stopCount = 0;
@@ -134,7 +142,7 @@ static unique_ptr<LinearGradient> _applyLinearGradientProperty(SvgStyleGradient*
 }
 
 
-static unique_ptr<RadialGradient> _applyRadialGradientProperty(SvgStyleGradient* g, const Shape* vg, const Box& vBox, int opacity)
+static unique_ptr<RadialGradient> _applyRadialGradientProperty(SvgStyleGradient* g, const Box& vBox, int opacity)
 {
     Fill::ColorStop *stops;
     int stopCount = 0;
@@ -320,14 +328,15 @@ static void _applyProperty(SvgLoaderData& loaderData, SvgNode* node, Shape* vg, 
         if (!style->fill.paint.gradient->userSpace) bBox = _boundingBox(vg);
 
         if (style->fill.paint.gradient->type == SvgGradientType::Linear) {
-             auto linear = _applyLinearGradientProperty(style->fill.paint.gradient, vg, bBox, style->fill.opacity);
-             vg->fill(std::move(linear));
+            auto linear = _applyLinearGradientProperty(style->fill.paint.gradient, bBox, style->fill.opacity);
+            vg->fill(std::move(linear));
         } else if (style->fill.paint.gradient->type == SvgGradientType::Radial) {
-             auto radial = _applyRadialGradientProperty(style->fill.paint.gradient, vg, bBox, style->fill.opacity);
-             vg->fill(std::move(radial));
+            auto radial = _applyRadialGradientProperty(style->fill.paint.gradient, bBox, style->fill.opacity);
+            vg->fill(std::move(radial));
         }
     } else if (style->fill.paint.url) {
         //TODO: Apply the color pointed by url
+        TVGLOG("SVG", "The fill's url not supported.");
     } else if (style->fill.paint.curColor) {
         //Apply the current style color
         vg->fill(style->color.r, style->color.g, style->color.b, style->fill.opacity);
@@ -363,14 +372,15 @@ static void _applyProperty(SvgLoaderData& loaderData, SvgNode* node, Shape* vg, 
         if (!style->stroke.paint.gradient->userSpace) bBox = _boundingBox(vg);
 
         if (style->stroke.paint.gradient->type == SvgGradientType::Linear) {
-             auto linear = _applyLinearGradientProperty(style->stroke.paint.gradient, vg, bBox, style->stroke.opacity);
+             auto linear = _applyLinearGradientProperty(style->stroke.paint.gradient, bBox, style->stroke.opacity);
              vg->stroke(std::move(linear));
         } else if (style->stroke.paint.gradient->type == SvgGradientType::Radial) {
-             auto radial = _applyRadialGradientProperty(style->stroke.paint.gradient, vg, bBox, style->stroke.opacity);
+             auto radial = _applyRadialGradientProperty(style->stroke.paint.gradient, bBox, style->stroke.opacity);
              vg->stroke(std::move(radial));
         }
     } else if (style->stroke.paint.url) {
         //TODO: Apply the color pointed by url
+        TVGLOG("SVG", "The stroke's url not supported.");
     } else if (style->stroke.paint.curColor) {
         //Apply the current style color
         vg->stroke(style->color.r, style->color.g, style->color.b, style->stroke.opacity);
@@ -772,6 +782,61 @@ static unique_ptr<Scene> _useBuildHelper(SvgLoaderData& loaderData, const SvgNod
 }
 
 
+static void _applyTextFill(SvgStyleProperty* style, Text* text, const Box& vBox)
+{
+    //If fill property is nullptr then do nothing
+    if (style->fill.paint.none) {
+        //Do nothing
+    } else if (style->fill.paint.gradient) {
+        Box bBox = vBox;
+        if (!style->fill.paint.gradient->userSpace) bBox = _boundingBox(text);
+
+        if (style->fill.paint.gradient->type == SvgGradientType::Linear) {
+            auto linear = _applyLinearGradientProperty(style->fill.paint.gradient, bBox, style->fill.opacity);
+            text->fill(std::move(linear));
+        } else if (style->fill.paint.gradient->type == SvgGradientType::Radial) {
+            auto radial = _applyRadialGradientProperty(style->fill.paint.gradient, bBox, style->fill.opacity);
+            text->fill(std::move(radial));
+        }
+    } else if (style->fill.paint.url) {
+        //TODO: Apply the color pointed by url
+        TVGLOG("SVG", "The fill's url not supported.");
+    } else if (style->fill.paint.curColor) {
+        //Apply the current style color
+        text->fill(style->color.r, style->color.g, style->color.b);
+        text->opacity(style->fill.opacity);
+    } else {
+        //Apply the fill color
+        text->fill(style->fill.paint.color.r, style->fill.paint.color.g, style->fill.paint.color.b);
+        text->opacity(style->fill.opacity);
+    }
+}
+
+
+static unique_ptr<Text> _textBuildHelper(SvgLoaderData& loaderData, const SvgNode* node, const Box& vBox, const string& svgPath)
+{
+    auto textNode = &node->node.text;
+    if (!textNode->text) return nullptr;
+    auto text = Text::gen();
+
+    Matrix textTransform = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+    if (node->transform) textTransform = *node->transform;
+    mathTranslateR(&textTransform, node->node.text.x, node->node.text.y - textNode->fontSize);
+    text->transform(textTransform);
+
+    //TODO: handle def values of font and size as used in a system?
+    const float ptPerPx = 0.75f; //1 pt = 1/72; 1 in = 96 px; -> 72/96 = 0.75
+    auto fontSizePt = textNode->fontSize * ptPerPx;
+    if (textNode->fontFamily) text->font(textNode->fontFamily, fontSizePt);
+    text->text(textNode->text);
+
+    _applyTextFill(node->style, text.get(), vBox);
+    _applyComposition(loaderData, text.get(), node, vBox, svgPath);
+
+    return text;
+}
+
+
 static unique_ptr<Scene> _sceneBuildHelper(SvgLoaderData& loaderData, const SvgNode* node, const Box& vBox, const string& svgPath, bool mask, int depth, bool* isMaskWhite)
 {
     /* Exception handling: Prevent invalid SVG data input.
@@ -800,6 +865,9 @@ static unique_ptr<Scene> _sceneBuildHelper(SvgLoaderData& loaderData, const SvgN
                         scene->push(std::move(image));
                         if (isMaskWhite) *isMaskWhite = false;
                     }
+                } else if ((*child)->type == SvgNodeType::Text) {
+                    auto text = _textBuildHelper(loaderData, *child, vBox, svgPath);
+                    if (text) scene->push(std::move(text));
                 } else if ((*child)->type != SvgNodeType::Mask) {
                     auto shape = _shapeBuildHelper(loaderData, *child, vBox, svgPath);
                     if (shape) {

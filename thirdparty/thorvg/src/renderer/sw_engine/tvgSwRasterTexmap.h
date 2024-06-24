@@ -34,14 +34,6 @@ struct AASpans
    int32_t yEnd;
 };
 
-static inline void _swap(float& a, float& b, float& tmp)
-{
-    tmp = a;
-    a = b;
-    b = tmp;
-}
-
-
 //Careful! Shared resource, No support threading
 static float dudx, dvdx;
 static float dxdya, dxdyb, dudya, dvdya;
@@ -85,7 +77,7 @@ static bool _rasterMaskedPolygonImageSegment(SwSurface* surface, const SwImage* 
     int32_t sh = image->h;
     int32_t x1, x2, x, y, ar, ab, iru, irv, px, ay;
     int32_t vv = 0, uu = 0;
-    int32_t minx = INT32_MAX, maxx = INT32_MIN;
+    int32_t minx = INT32_MAX, maxx = 0;
     float dx, u, v, iptr;
     SwSpan* span = nullptr;         //used only when rle based.
 
@@ -113,7 +105,7 @@ static bool _rasterMaskedPolygonImageSegment(SwSurface* surface, const SwImage* 
 
         if (!region) {
             minx = INT32_MAX;
-            maxx = INT32_MIN;
+            maxx = 0;
             //one single row, could be consisted of multiple spans.
             while (span->y == y && spanIdx < image->rle->size) {
                 if (minx > span->x) minx = span->x;
@@ -278,7 +270,7 @@ static void _rasterBlendingPolygonImageSegment(SwSurface* surface, const SwImage
     int32_t dw = surface->stride;
     int32_t x1, x2, x, y, ar, ab, iru, irv, px, ay;
     int32_t vv = 0, uu = 0;
-    int32_t minx = INT32_MAX, maxx = INT32_MIN;
+    int32_t minx = INT32_MAX, maxx = 0;
     float dx, u, v, iptr;
     uint32_t* buf;
     SwSpan* span = nullptr;         //used only when rle based.
@@ -307,7 +299,7 @@ static void _rasterBlendingPolygonImageSegment(SwSurface* surface, const SwImage
 
         if (!region) {
             minx = INT32_MAX;
-            maxx = INT32_MIN;
+            maxx = 0;
             //one single row, could be consisted of multiple spans.
             while (span->y == y && spanIdx < image->rle->size) {
                 if (minx > span->x) minx = span->x;
@@ -455,7 +447,7 @@ static void _rasterPolygonImageSegment(SwSurface* surface, const SwImage* image,
     int32_t dw = surface->stride;
     int32_t x1, x2, x, y, ar, ab, iru, irv, px, ay;
     int32_t vv = 0, uu = 0;
-    int32_t minx = INT32_MAX, maxx = INT32_MIN;
+    int32_t minx = INT32_MAX, maxx = 0;
     float dx, u, v, iptr;
     uint32_t* buf;
     SwSpan* span = nullptr;         //used only when rle based.
@@ -489,7 +481,7 @@ static void _rasterPolygonImageSegment(SwSurface* surface, const SwImage* image,
 
         if (!region) {
             minx = INT32_MAX;
-            maxx = INT32_MIN;
+            maxx = 0;
             //one single row, could be consisted of multiple spans.
             while (span->y == y && spanIdx < image->rle->size) {
                 if (minx > span->x) minx = span->x;
@@ -650,28 +642,27 @@ static void _rasterPolygonImage(SwSurface* surface, const SwImage* image, const 
 
     float off_y;
     float dxdy[3] = {0.0f, 0.0f, 0.0f};
-    float tmp;
 
     auto upper = false;
 
     //Sort the vertices in ascending Y order
     if (y[0] > y[1]) {
-        _swap(x[0], x[1], tmp);
-        _swap(y[0], y[1], tmp);
-        _swap(u[0], u[1], tmp);
-        _swap(v[0], v[1], tmp);
+        std::swap(x[0], x[1]);
+        std::swap(y[0], y[1]);
+        std::swap(u[0], u[1]);
+        std::swap(v[0], v[1]);
     }
     if (y[0] > y[2])  {
-        _swap(x[0], x[2], tmp);
-        _swap(y[0], y[2], tmp);
-        _swap(u[0], u[2], tmp);
-        _swap(v[0], v[2], tmp);
+        std::swap(x[0], x[2]);
+        std::swap(y[0], y[2]);
+        std::swap(u[0], u[2]);
+        std::swap(v[0], v[2]);
     }
     if (y[1] > y[2]) {
-        _swap(x[1], x[2], tmp);
-        _swap(y[1], y[2], tmp);
-        _swap(u[1], u[2], tmp);
-        _swap(v[1], v[2], tmp);
+        std::swap(x[1], x[2]);
+        std::swap(y[1], y[2]);
+        std::swap(u[1], u[2]);
+        std::swap(v[1], v[2]);
     }
 
     //Y indexes
@@ -837,7 +828,9 @@ static AASpans* _AASpans(float ymin, float ymax, const SwImage* image, const SwB
 
     for (int32_t i = 0; i < height; i++) {
         aaSpans->lines[i].x[0] = INT32_MAX;
-        aaSpans->lines[i].x[1] = INT32_MIN;
+        aaSpans->lines[i].x[1] = 0;
+        aaSpans->lines[i].length[0] = 0;
+        aaSpans->lines[i].length[1] = 0;
     }
     return aaSpans;
 }

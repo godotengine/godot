@@ -54,15 +54,15 @@ void ProjectDialog::_set_message(const String &p_msg, MessageType p_type, InputT
 	Ref<Texture2D> new_icon;
 	switch (p_type) {
 		case MESSAGE_ERROR: {
-			msg->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			msg->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			new_icon = get_editor_theme_icon(SNAME("StatusError"));
 		} break;
 		case MESSAGE_WARNING: {
-			msg->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			msg->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			new_icon = get_editor_theme_icon(SNAME("StatusWarning"));
 		} break;
 		case MESSAGE_SUCCESS: {
-			msg->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+			msg->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 			new_icon = get_editor_theme_icon(SNAME("StatusSuccess"));
 		} break;
 	}
@@ -975,9 +975,9 @@ ProjectDialog::ProjectDialog() {
 	add_child(fdialog_project);
 	add_child(fdialog_install);
 
-	project_name->connect("text_changed", callable_mp(this, &ProjectDialog::_project_name_changed).unbind(1));
-	project_path->connect("text_changed", callable_mp(this, &ProjectDialog::_project_path_changed).unbind(1));
-	install_path->connect("text_changed", callable_mp(this, &ProjectDialog::_install_path_changed).unbind(1));
+	project_name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_project_name_changed).unbind(1));
+	project_path->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_project_path_changed).unbind(1));
+	install_path->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_install_path_changed).unbind(1));
 	fdialog_project->connect("dir_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
 	fdialog_project->connect("file_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
 	fdialog_install->connect("dir_selected", callable_mp(this, &ProjectDialog::_install_path_selected));

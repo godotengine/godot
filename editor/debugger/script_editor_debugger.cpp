@@ -825,13 +825,13 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType p_type) {
 	switch (p_type) {
 		case MESSAGE_ERROR:
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			break;
 		case MESSAGE_WARNING:
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			break;
 		default:
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 	}
 	reason->set_text(p_reason);
 
@@ -840,7 +840,7 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 	for (int i = 0; i < boundaries.size(); i += 2) {
 		const int start = boundaries[i];
 		const int end = boundaries[i + 1];
-		lines.append(p_reason.substr(start, end - start + 1));
+		lines.append(p_reason.substr(start, end - start));
 	}
 
 	reason->set_tooltip_text(String("\n").join(lines));
@@ -851,7 +851,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			le_set->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
 			le_clear->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
-			error_tree->connect("item_selected", callable_mp(this, &ScriptEditorDebugger::_error_selected));
+			error_tree->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_error_selected));
 			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 			breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
 			[[fallthrough]];
@@ -869,7 +869,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			vmem_export->set_icon(get_editor_theme_icon(SNAME("Save")));
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			TreeItem *error_root = error_tree->get_root();
 			if (error_root) {
@@ -1886,7 +1886,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		threads = memnew(OptionButton);
 		thread_hb->add_child(threads);
 		threads->set_h_size_flags(SIZE_EXPAND_FILL);
-		threads->connect("item_selected", callable_mp(this, &ScriptEditorDebugger::_select_thread));
+		threads->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_select_thread));
 
 		stack_dump = memnew(Tree);
 		stack_dump->set_allow_reselect(true);

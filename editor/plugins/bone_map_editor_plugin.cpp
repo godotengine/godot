@@ -273,7 +273,7 @@ BonePicker::~BonePicker() {
 void BoneMapper::create_editor() {
 	// Create Bone picker.
 	picker = memnew(BonePicker(skeleton));
-	picker->connect("confirmed", callable_mp(this, &BoneMapper::_apply_picker_selection));
+	picker->connect(SceneStringName(confirmed), callable_mp(this, &BoneMapper::_apply_picker_selection));
 	add_child(picker, false, INTERNAL_MODE_FRONT);
 
 	profile_selector = memnew(EditorPropertyResource);
