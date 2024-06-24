@@ -96,6 +96,10 @@ struct _NO_DISCARD_ Vector2i {
 	int32_t dot(const Vector2i &p_other) const;
 	int32_t cross(const Vector2i &p_other) const;
 
+	Vector2i plane_project(real_t p_d, const Vector2i &p_vec) const;
+
+	_FORCE_INLINE_ Vector2i lerp(const Vector2i &p_to, real_t p_weight) const;
+
 	bool is_equal(const Vector2i &p_v) const;
 	bool is_zero() const;
 
@@ -188,6 +192,17 @@ _FORCE_INLINE_ Vector2i operator*(float p_scalar, const Vector2i &p_vector) {
 
 _FORCE_INLINE_ Vector2i operator*(double p_scalar, const Vector2i &p_vector) {
 	return p_vector * p_scalar;
+}
+
+_FORCE_INLINE_ Vector2i Vector2i::plane_project(real_t p_d, const Vector2i &p_vec) const {
+	return p_vec - *this * (dot(p_vec) - p_d);
+}
+
+Vector2i Vector2i::lerp(const Vector2i &p_to, real_t p_weight) const {
+	Vector2i res = *this;
+	res.x = Math::lerp(res.x, p_to.x, p_weight);
+	res.y = Math::lerp(res.y, p_to.y, p_weight);
+	return res;
 }
 
 typedef Vector2i Size2i;

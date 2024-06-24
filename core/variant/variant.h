@@ -44,6 +44,7 @@
 #include "core/math/rect2.h"
 #include "core/math/rect2i.h"
 #include "core/math/transform_2d.h"
+#include "core/math/transform_2d_i.h"
 #include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
 #include "core/math/vector2i.h"
@@ -99,6 +100,7 @@ public:
 		VECTOR3,
 		VECTOR3I,
 		TRANSFORM2D,
+		TRANSFORM2DI,
 		VECTOR4,
 		VECTOR4I,
 		PLANE,
@@ -146,6 +148,7 @@ private:
 			BucketSmall() {}
 			~BucketSmall() {}
 			Transform2D _transform2d;
+			Transform2Di _transform2di;
 			::AABB _aabb;
 		};
 		union BucketMedium {
@@ -246,6 +249,7 @@ private:
 		int64_t _int;
 		double _float;
 		Transform2D *_transform2d;
+		Transform2Di *_transform2di;
 		::AABB *_aabb;
 		Basis *_basis;
 		Transform3D *_transform3d;
@@ -274,6 +278,7 @@ private:
 			false, //VECTOR3,
 			false, //VECTOR3I,
 			true, //TRANSFORM2D,
+			true, //TRANSFORM2DI,
 			false, //VECTOR4,
 			false, //VECTOR4I,
 			false, //PLANE,
@@ -302,6 +307,7 @@ private:
 			true, //PACKED_FLOAT64_ARRAY,
 			true, //PACKED_STRING_ARRAY,
 			true, //PACKED_VECTOR2_ARRAY,
+			true, //PACKED_VECTOR2I_ARRAY,
 			true, //PACKED_VECTOR3_ARRAY,
 			true, //PACKED_COLOR_ARRAY,
 			true, //PACKED_VECTOR4_ARRAY,
@@ -393,6 +399,7 @@ public:
 	operator Quaternion() const;
 	operator Basis() const;
 	operator Transform2D() const;
+	operator Transform2Di() const;
 	operator Transform3D() const;
 	operator Projection() const;
 
@@ -464,6 +471,7 @@ public:
 	Variant(const Quaternion &p_quat);
 	Variant(const Basis &p_matrix);
 	Variant(const Transform2D &p_transform);
+	Variant(const Transform2Di &p_transformi);
 	Variant(const Transform3D &p_transform);
 	Variant(const Projection &p_projection);
 	Variant(const Color &p_color);

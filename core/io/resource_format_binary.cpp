@@ -58,6 +58,7 @@ enum {
 	VARIANT_BASIS = 16,
 	VARIANT_TRANSFORM3D = 17,
 	VARIANT_TRANSFORM2D = 18,
+	VARIANT_TRANSFORM2DI = 19,
 	VARIANT_COLOR = 20,
 	VARIANT_NODE_PATH = 22,
 	VARIANT_RID = 23,
@@ -297,6 +298,17 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			v.columns[1].y = f->get_real();
 			v.columns[2].x = f->get_real();
 			v.columns[2].y = f->get_real();
+			r_v = v;
+
+		} break;
+		case VARIANT_TRANSFORM2DI: {
+			Transform2Di v;
+			v.columns[0].x = f->get_32();
+			v.columns[0].y = f->get_32();
+			v.columns[1].x = f->get_32();
+			v.columns[1].y = f->get_32();
+			v.columns[2].x = f->get_32();
+			v.columns[2].y = f->get_32();
 			r_v = v;
 
 		} break;
@@ -1708,6 +1720,17 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_real(val.columns[1].y);
 			f->store_real(val.columns[2].x);
 			f->store_real(val.columns[2].y);
+
+		} break;
+		case Variant::TRANSFORM2DI: {
+			f->store_32(VARIANT_TRANSFORM2DI);
+			Transform2Di val = p_property;
+			f->store_32(val.columns[0].x);
+			f->store_32(val.columns[0].y);
+			f->store_32(val.columns[1].x);
+			f->store_32(val.columns[1].y);
+			f->store_32(val.columns[2].x);
+			f->store_32(val.columns[2].y);
 
 		} break;
 		case Variant::BASIS: {

@@ -368,6 +368,21 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = val;
 
 		} break;
+		case Variant::TRANSFORM2DI: {
+			Transform2Di val;
+			ERR_FAIL_COND_V((size_t)len < sizeof(int) * 6, ERR_INVALID_DATA);
+			for (int i = 0; i < 3; i++) {
+				for (int j = 0; j < 2; j++) {
+					val.columns[i][j] = decode_uint32(&buf[(i * 2 + j) * sizeof(int)]);
+				}
+			}
+
+			if (r_len) {
+				(*r_len) += sizeof(int) * 6;
+			}
+			r_variant = val;
+
+		} break;
 		case Variant::PLANE: {
 			Plane val;
 			if (header & HEADER_DATA_FLAG_64) {
@@ -1558,6 +1573,19 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 			r_len += 6 * sizeof(real_t);
+
+		} break;
+		case Variant::TRANSFORM2DI: {
+			if (buf) {
+				Transform2Di val = p_variant;
+				for (int i = 0; i < 3; i++) {
+					for (int j = 0; j < 2; j++) {
+						memcpy(&buf[(i * 2 + j) * sizeof(int32_t)], &val.columns[i][j], sizeof(int32_t));
+					}
+				}
+			}
+
+			r_len += 6 * sizeof(int32_t);
 
 		} break;
 		case Variant::VECTOR4: {

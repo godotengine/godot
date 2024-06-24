@@ -824,6 +824,23 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			m[1] = Vector2(args[2], args[3]);
 			m[2] = Vector2(args[4], args[5]);
 			value = m;
+		} else if (id == "Transform2Di") {
+			Vector<int32_t> args;
+			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+
+			if (args.size() != 6) {
+				r_err_str = "Expected 6 arguments for constructor";
+				return ERR_PARSE_ERROR;
+			}
+
+			Transform2Di t;
+			t[0] = Vector2i(args[0], args[1]);
+			t[1] = Vector2i(args[2], args[3]);
+			t[2] = Vector2i(args[4], args[5]);
+			value = t;
 		} else if (id == "Plane") {
 			Vector<real_t> args;
 			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
@@ -1905,6 +1922,20 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 						s += ", ";
 					}
 					s += rtos_fix(m3.columns[i][j]);
+				}
+			}
+
+			p_store_string_func(p_store_string_ud, s + ")");
+		} break;
+		case Variant::TRANSFORM2DI: {
+			String s = "Transform2Di(";
+			Transform2Di t = p_variant;
+			for (int i = 0; i < 3; i++) {
+				for (int j = 0; j < 2; j++) {
+					if (i != 0 || j != 0) {
+						s += ", ";
+					}
+					s += itos(t.columns[i][j]);
 				}
 			}
 

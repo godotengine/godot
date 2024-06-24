@@ -2737,6 +2737,10 @@ static void _register_variant_builtin_constants() {
 	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_X", Transform2D(-1, 0, 0, 1, 0, 0));
 	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_Y", Transform2D(1, 0, 0, -1, 0, 0));
 
+	_VariantCall::add_variant_constant(Variant::TRANSFORM2DI, "IDENTITY", Transform2Di());
+	_VariantCall::add_variant_constant(Variant::TRANSFORM2DI, "FLIP_X", Transform2Di(-1, 0, 0, 1, 0, 0));
+	_VariantCall::add_variant_constant(Variant::TRANSFORM2DI, "FLIP_Y", Transform2Di(1, 0, 0, -1, 0, 0));
+
 	Transform3D identity_transform;
 	Transform3D flip_x_transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0);
 	Transform3D flip_y_transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0);

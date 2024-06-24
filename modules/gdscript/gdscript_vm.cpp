@@ -181,6 +181,7 @@ void (*type_init_function_table[])(Variant *) = {
 	&VariantInitializer<Vector3>::init, // VECTOR3.
 	&VariantInitializer<Vector3i>::init, // VECTOR3I.
 	&VariantInitializer<Transform2D>::init, // TRANSFORM2D.
+	&VariantInitializer<Transform2Di>::init, // TRANSFORM2D.
 	&VariantInitializer<Vector4>::init, // VECTOR4.
 	&VariantInitializer<Vector4i>::init, // VECTOR4I.
 	&VariantInitializer<Plane>::init, // PLANE.
@@ -3505,6 +3506,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_TYPE_ADJUST(VECTOR3, Vector3);
 			OPCODE_TYPE_ADJUST(VECTOR3I, Vector3i);
 			OPCODE_TYPE_ADJUST(TRANSFORM2D, Transform2D);
+			OPCODE_TYPE_ADJUST(TRANSFORM2DI, Transform2Di);
 			OPCODE_TYPE_ADJUST(VECTOR4, Vector4);
 			OPCODE_TYPE_ADJUST(VECTOR4I, Vector4i);
 			OPCODE_TYPE_ADJUST(PLANE, Plane);

@@ -306,6 +306,10 @@ SETGET_STRUCT_CUSTOM(Transform2D, Vector2, x, columns[0])
 SETGET_STRUCT_CUSTOM(Transform2D, Vector2, y, columns[1])
 SETGET_STRUCT_CUSTOM(Transform2D, Vector2, origin, columns[2])
 
+SETGET_STRUCT_CUSTOM(Transform2Di, Vector2i, x, columns[0])
+SETGET_STRUCT_CUSTOM(Transform2Di, Vector2i, y, columns[1])
+SETGET_STRUCT_CUSTOM(Transform2Di, Vector2i, origin, columns[2])
+
 SETGET_NUMBER_STRUCT_CUSTOM(Plane, double, x, normal.x)
 SETGET_NUMBER_STRUCT_CUSTOM(Plane, double, y, normal.y)
 SETGET_NUMBER_STRUCT_CUSTOM(Plane, double, z, normal.z)

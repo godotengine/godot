@@ -105,6 +105,10 @@ void register_named_setters_getters() {
 	REGISTER_MEMBER(Transform2D, y);
 	REGISTER_MEMBER(Transform2D, origin);
 
+	REGISTER_MEMBER(Transform2Di, x);
+	REGISTER_MEMBER(Transform2Di, y);
+	REGISTER_MEMBER(Transform2Di, origin);
+
 	REGISTER_MEMBER(Plane, x);
 	REGISTER_MEMBER(Plane, y);
 	REGISTER_MEMBER(Plane, z);
@@ -844,6 +848,7 @@ INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Quaternion, double, real_t, 4)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Color, double, float, 4)
 
 INDEXED_SETGET_STRUCT_BULTIN_ACCESSOR(Transform2D, Vector2, .columns, 3)
+INDEXED_SETGET_STRUCT_BULTIN_ACCESSOR(Transform2Di, Vector2i, .columns, 3)
 INDEXED_SETGET_STRUCT_BULTIN_FUNC(Basis, Vector3, set_column, get_column, 3)
 INDEXED_SETGET_STRUCT_BULTIN_ACCESSOR(Projection, Vector4, .columns, 4)
 
@@ -912,6 +917,7 @@ void register_indexed_setters_getters() {
 	REGISTER_INDEXED_MEMBER(Quaternion);
 	REGISTER_INDEXED_MEMBER(Color);
 	REGISTER_INDEXED_MEMBER(Transform2D);
+	REGISTER_INDEXED_MEMBER(Transform2Di);
 	REGISTER_INDEXED_MEMBER(Basis);
 	REGISTER_INDEXED_MEMBER(Projection);
 

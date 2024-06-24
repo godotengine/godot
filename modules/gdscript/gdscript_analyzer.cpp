@@ -4500,6 +4500,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 							case Variant::VECTOR4:
 							case Variant::VECTOR4I:
 							case Variant::TRANSFORM2D:
+							case Variant::TRANSFORM2DI:
 							case Variant::TRANSFORM3D:
 							case Variant::PROJECTION:
 								error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::FLOAT &&
@@ -4590,6 +4591,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					// Return Vector2I.
 					case Variant::RECT2I:
 					case Variant::PACKED_VECTOR2I_ARRAY:
+					case Variant::TRANSFORM2DI:
 						result_type.builtin_type = Variant::VECTOR2I;
 						break;
 					// Return Vector3.

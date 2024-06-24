@@ -177,6 +177,19 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
+		case Variant::TRANSFORM2DI: {
+			SETUP_TYPE(Transform2Di)
+
+			/**/ TRY_TRANSFER_FIELD("xx", columns[0][0])
+			else TRY_TRANSFER_FIELD("xy", columns[0][1])
+			else TRY_TRANSFER_FIELD("yx", columns[1][0])
+			else TRY_TRANSFER_FIELD("yy", columns[1][1])
+			else TRY_TRANSFER_FIELD("ox", columns[2][0])
+			else TRY_TRANSFER_FIELD("oy", columns[2][1])
+
+			return target;
+		}
+
 		case Variant::BASIS: {
 			SETUP_TYPE(Basis)
 

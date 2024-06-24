@@ -864,6 +864,8 @@ Variant VariantUtilityFunctions::type_convert(const Variant &p_variant, const Va
 			return p_variant.operator Vector3i();
 		case Variant::Type::TRANSFORM2D:
 			return p_variant.operator Transform2D();
+		case Variant::Type::TRANSFORM2DI:
+			return p_variant.operator Transform2Di();
 		case Variant::Type::VECTOR4:
 			return p_variant.operator Vector4();
 		case Variant::Type::VECTOR4I:

@@ -78,6 +78,9 @@ String Variant::get_type_name(Variant::Type p_type) {
 		case TRANSFORM2D: {
 			return "Transform2D";
 		}
+		case TRANSFORM2DI: {
+			return "Transform2Di";
+		}
 		case VECTOR3: {
 			return "Vector3";
 		}
@@ -273,7 +276,16 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 		} break;
 		case TRANSFORM2D: {
 			static const Type valid[] = {
+				TRANSFORM2DI,
 				TRANSFORM3D,
+				NIL
+			};
+
+			valid_types = valid;
+		} break;
+		case TRANSFORM2DI: {
+			static const Type valid[] = {
+				TRANSFORM2D,
 				NIL
 			};
 
@@ -625,7 +637,16 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 		} break;
 		case TRANSFORM2D: {
 			static const Type valid[] = {
+				TRANSFORM2DI,
 				TRANSFORM3D,
+				NIL
+			};
+
+			valid_types = valid;
+		} break;
+		case TRANSFORM2DI: {
+			static const Type valid[] = {
+				TRANSFORM2D,
 				NIL
 			};
 
@@ -760,6 +781,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 				PACKED_STRING_ARRAY,
 				PACKED_COLOR_ARRAY,
 				PACKED_VECTOR2_ARRAY,
+				PACKED_VECTOR2I_ARRAY,
 				PACKED_VECTOR3_ARRAY,
 				PACKED_VECTOR4_ARRAY,
 				NIL
@@ -817,6 +839,14 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 			static const Type valid[] = {
 				ARRAY,
 				NIL
+			};
+			valid_types = valid;
+
+		} break;
+		case PACKED_VECTOR2I_ARRAY: {
+			static const Type valid[] = {
+					ARRAY,
+					NIL
 			};
 			valid_types = valid;
 
@@ -923,6 +953,9 @@ bool Variant::is_zero() const {
 		}
 		case TRANSFORM2D: {
 			return *_data._transform2d == Transform2D();
+		}
+		case TRANSFORM2DI: {
+			return *_data._transform2di == Transform2Di();
 		}
 		case VECTOR3: {
 			return *reinterpret_cast<const Vector3 *>(_data._mem) == Vector3();
@@ -1142,6 +1175,10 @@ void Variant::reference(const Variant &p_variant) {
 		case TRANSFORM2D: {
 			_data._transform2d = (Transform2D *)Pools::_bucket_small.alloc();
 			memnew_placement(_data._transform2d, Transform2D(*p_variant._data._transform2d));
+		} break;
+		case TRANSFORM2DI: {
+			_data._transform2di = (Transform2Di *)Pools::_bucket_small.alloc();
+			memnew_placement(_data._transform2di, Transform2Di(*p_variant._data._transform2di));
 		} break;
 		case VECTOR3: {
 			memnew_placement(_data._mem, Vector3(*reinterpret_cast<const Vector3 *>(p_variant._data._mem)));
@@ -1364,6 +1401,13 @@ void Variant::_clear_internal() {
 				_data._transform2d->~Transform2D();
 				Pools::_bucket_small.free((Pools::BucketSmall *)_data._transform2d);
 				_data._transform2d = nullptr;
+			}
+		} break;
+		case TRANSFORM2DI: {
+			if (_data._transform2di) {
+				_data._transform2di->~Transform2Di();
+				Pools::_bucket_small.free((Pools::BucketSmall *)_data._transform2di);
+				_data._transform2di = nullptr;
 			}
 		} break;
 		case AABB: {
@@ -1747,6 +1791,8 @@ String Variant::stringify(int recursion_count) const {
 			return operator Rect2i();
 		case TRANSFORM2D:
 			return operator Transform2D();
+		case TRANSFORM2DI:
+			return operator Transform2Di();
 		case VECTOR3:
 			return operator Vector3();
 		case VECTOR3I:
@@ -2108,8 +2154,36 @@ Variant::operator Transform2D() const {
 		m.columns[2][0] = t.origin[0];
 		m.columns[2][1] = t.origin[1];
 		return m;
+	} else if (type == TRANSFORM2DI) {
+		const Transform2Di &t = *_data._transform2di;
+		Transform2D m;
+		m.columns[0][0] = t.columns[0][0];
+		m.columns[0][1] = t.columns[0][1];
+		m.columns[1][0] = t.columns[1][0];
+		m.columns[1][1] = t.columns[1][1];
+		m.columns[2][0] = t.columns[2][0];
+		m.columns[2][1] = t.columns[2][1];
+		return m;
 	} else {
 		return Transform2D();
+	}
+}
+
+Variant::operator Transform2Di() const {
+	if (type == TRANSFORM2DI) {
+		return *_data._transform2di;
+	} else if (type == TRANSFORM2D) {
+		const Transform2D &t = *_data._transform2d;
+		Transform2Di m;
+		m.columns[0][0] = int(t.columns[0][0]);
+		m.columns[0][1] = int(t.columns[0][1]);
+		m.columns[1][0] = int(t.columns[1][0]);
+		m.columns[1][1] = int(t.columns[1][1]);
+		m.columns[2][0] = int(t.columns[2][0]);
+		m.columns[2][1] = int(t.columns[2][1]);
+		return m;
+	} else {
+		return Transform2Di();
 	}
 }
 
@@ -2617,6 +2691,12 @@ Variant::Variant(const Transform2D &p_transform) :
 	memnew_placement(_data._transform2d, Transform2D(p_transform));
 }
 
+Variant::Variant(const Transform2Di &p_transformi) :
+		type(TRANSFORM2DI) {
+	_data._transform2di = (Transform2Di *)Pools::_bucket_small.alloc();
+	memnew_placement(_data._transform2di, Transform2Di(p_transformi));
+}
+
 Variant::Variant(const Color &p_color) :
 		type(COLOR) {
 	memnew_placement(_data._mem, Color(p_color));
@@ -2838,6 +2918,9 @@ void Variant::operator=(const Variant &p_variant) {
 		case TRANSFORM2D: {
 			*_data._transform2d = *(p_variant._data._transform2d);
 		} break;
+		case TRANSFORM2DI: {
+			*_data._transform2di = *(p_variant._data._transform2di);
+		} break;
 		case VECTOR3: {
 			*reinterpret_cast<Vector3 *>(_data._mem) = *reinterpret_cast<const Vector3 *>(p_variant._data._mem);
 		} break;
@@ -3014,6 +3097,9 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			h = hash_murmur3_one_real(t[2].y, h);
 
 			return hash_fmix32(h);
+		} break;
+		case TRANSFORM2DI: {
+			return HashMapHasherDefault::hash(*reinterpret_cast<const Transform2Di *>(_data._mem));
 		} break;
 		case VECTOR3: {
 			return HashMapHasherDefault::hash(*reinterpret_cast<const Vector3 *>(_data._mem));
@@ -3429,6 +3515,13 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool s
 			return true;
 		} break;
 
+		case TRANSFORM2DI: {
+			const Transform2Di *l = reinterpret_cast<const Transform2Di *>(_data._mem);
+			const Transform2Di *r = reinterpret_cast<const Transform2Di *>(p_variant._data._mem);
+
+			return *l == *r;
+		} break;
+
 		case VECTOR3: {
 			const Vector3 *l = reinterpret_cast<const Vector3 *>(_data._mem);
 			const Vector3 *r = reinterpret_cast<const Vector3 *>(p_variant._data._mem);
@@ -3463,11 +3556,10 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool s
 		} break;
 
 		case AABB: {
-			const ::AABB *l = _data._aabb;
-			const ::AABB *r = p_variant._data._aabb;
+			const ::AABB *l = reinterpret_cast<const ::AABB *>(_data._mem);
+			const ::AABB *r = reinterpret_cast<const ::AABB *>(p_variant._data._mem);
 
-			return hash_compare_vector3(l->position, r->position) &&
-					hash_compare_vector3(l->size, r->size);
+			return *l == *r;
 
 		} break;
 

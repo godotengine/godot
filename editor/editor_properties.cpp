@@ -2350,6 +2350,87 @@ EditorPropertyTransform2D::EditorPropertyTransform2D(bool p_include_origin) {
 	set_bottom_editor(g);
 }
 
+///////////////////// TRANSFORM2DI /////////////////////////
+
+void EditorPropertyTransform2DI::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 6; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+}
+
+void EditorPropertyTransform2DI::_value_changed(int32_t val, const String &p_name) {
+	Transform2Di p;
+	p[0][0] = spin[0]->get_value();
+	p[1][0] = spin[1]->get_value();
+	p[2][0] = spin[2]->get_value();
+	p[0][1] = spin[3]->get_value();
+	p[1][1] = spin[4]->get_value();
+	p[2][1] = spin[5]->get_value();
+
+	emit_changed(get_edited_property(), p, p_name);
+}
+
+void EditorPropertyTransform2DI::update_property() {
+	Transform2Di val = get_edited_property_value();
+	spin[0]->set_value_no_signal(val[0][0]);
+	spin[1]->set_value_no_signal(val[1][0]);
+	spin[2]->set_value_no_signal(val[2][0]);
+	spin[3]->set_value_no_signal(val[0][1]);
+	spin[4]->set_value_no_signal(val[1][1]);
+	spin[5]->set_value_no_signal(val[2][1]);
+}
+
+void EditorPropertyTransform2DI::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 6; i++) {
+				// For Transform2D, use the 4th color (cyan) for the origin vector.
+				if (i % 3 == 2) {
+					spin[i]->add_theme_color_override("label_color", colors[3]);
+				} else {
+					spin[i]->add_theme_color_override("label_color", colors[i % 3]);
+				}
+			}
+		} break;
+	}
+}
+
+void EditorPropertyTransform2DI::_bind_methods() {
+}
+
+void EditorPropertyTransform2DI::setup(int p_min, int p_max, const String &p_suffix) {
+	for (int i = 0; i < 4; i++) {
+		spin[i]->set_min(p_min);
+		spin[i]->set_max(p_max);
+		spin[i]->set_step(1);
+		spin[i]->set_allow_greater(true);
+		spin[i]->set_allow_lesser(true);
+		spin[i]->set_suffix(p_suffix);
+	}
+}
+
+EditorPropertyTransform2DI::EditorPropertyTransform2DI(bool p_include_origin) {
+	GridContainer *g = memnew(GridContainer);
+	g->set_columns(p_include_origin ? 3 : 2);
+	add_child(g);
+
+	static const char *desc[6] = { "xx", "xy", "xo", "yx", "yy", "yo" };
+	for (int i = 0; i < 6; i++) {
+		spin[i] = memnew(EditorSpinSlider);
+		spin[i]->set_label(desc[i]);
+		spin[i]->set_flat(true);
+		if (p_include_origin || i % 3 != 2) {
+			g->add_child(spin[i]);
+		}
+		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		add_focusable(spin[i]);
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform2DI::_value_changed).bind(desc[i]));
+	}
+	set_bottom_editor(g);
+}
+
 ///////////////////// BASIS /////////////////////////
 
 void EditorPropertyBasis::_set_read_only(bool p_read_only) {
@@ -3725,6 +3806,12 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D);
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
 			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			return editor;
+		} break;
+		case Variant::TRANSFORM2DI: {
+			EditorPropertyTransform2DI *editor = memnew(EditorPropertyTransform2DI);
+			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
+			editor->setup(hint.min, hint.max, hint.suffix);
 			return editor;
 		} break;
 		case Variant::PLANE: {

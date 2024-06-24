@@ -163,6 +163,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			{ Variant::VECTOR3, vec3_elems * sizeof(float), vec3_elems * sizeof(float), vec3_elems * sizeof(double), vec3_elems * sizeof(double) },
 			{ Variant::VECTOR3I, 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t) },
 			{ Variant::TRANSFORM2D, 6 * sizeof(float), 6 * sizeof(float), 6 * sizeof(double), 6 * sizeof(double) },
+			{ Variant::TRANSFORM2DI, 6 * sizeof(int32_t ), 6 * sizeof(int32_t ), 6 * sizeof(int32_t ), 6 * sizeof(int32_t ) },
 			{ Variant::VECTOR4, 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
 			{ Variant::VECTOR4I, 4 * sizeof(int32_t), 4 * sizeof(int32_t), 4 * sizeof(int32_t), 4 * sizeof(int32_t) },
 			{ Variant::PLANE, (vec3_elems + 1) * sizeof(float), (vec3_elems + 1) * sizeof(float), (vec3_elems + 1) * sizeof(double), (vec3_elems + 1) * sizeof(double) },
@@ -206,6 +207,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 		static_assert(type_size_array[Variant::VECTOR3][sizeof(void *)] == sizeof(Vector3), "Size of Vector3 mismatch");
 		static_assert(type_size_array[Variant::VECTOR3I][sizeof(void *)] == sizeof(Vector3i), "Size of Vector3i mismatch");
 		static_assert(type_size_array[Variant::TRANSFORM2D][sizeof(void *)] == sizeof(Transform2D), "Size of Transform2D mismatch");
+		static_assert(type_size_array[Variant::TRANSFORM2DI][sizeof(void *)] == sizeof(Transform2Di), "Size of Transform2Di mismatch");
 		static_assert(type_size_array[Variant::VECTOR4][sizeof(void *)] == sizeof(Vector4), "Size of Vector4 mismatch");
 		static_assert(type_size_array[Variant::VECTOR4I][sizeof(void *)] == sizeof(Vector4i), "Size of Vector4i mismatch");
 		static_assert(type_size_array[Variant::PLANE][sizeof(void *)] == sizeof(Plane), "Size of Plane mismatch");
@@ -366,6 +368,10 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::TRANSFORM2D, "x", "Vector2", 2),
 			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::TRANSFORM2D, "y", "Vector2", 2),
 			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::TRANSFORM2D, "origin", "Vector2", 2),
+			// Transform2Di
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::TRANSFORM2DI, "x", "Vector2i", 2),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::TRANSFORM2DI, "y", "Vector2i", 2),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::TRANSFORM2DI, "origin", "Vector2i", 2),
 			// Vector4
 			REAL_MEMBER_OFFSET(Variant::VECTOR4, "x"),
 			REAL_MEMBER_OFFSET(Variant::VECTOR4, "y"),

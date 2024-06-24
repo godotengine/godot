@@ -284,6 +284,31 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
+		case Variant::TRANSFORM2DI: {
+			int id = variable_id++;
+			Transform2Di transform = p_var;
+			const String type_vec2i = Variant::get_type_name(Variant::VECTOR2I);
+			DAP::Variable x, y, origin;
+			x.name = "x";
+			y.name = "y";
+			origin.name = "origin";
+			x.type = type_vec2i;
+			y.type = type_vec2i;
+			origin.type = type_vec2i;
+			x.value = transform.columns[0];
+			y.value = transform.columns[1];
+			origin.value = transform.columns[2];
+			x.variablesReference = parse_variant(transform.columns[0]);
+			y.variablesReference = parse_variant(transform.columns[1]);
+			origin.variablesReference = parse_variant(transform.columns[2]);
+
+			Array arr;
+			arr.push_back(x.to_json());
+			arr.push_back(y.to_json());
+			arr.push_back(origin.to_json());
+			variable_list.insert(id, arr);
+			return id;
+		}
 		case Variant::PLANE: {
 			int id = variable_id++;
 			Plane plane = p_var;

@@ -545,6 +545,8 @@ static GDExtensionVariantFromTypeConstructorFunc gdextension_get_variant_from_ty
 			return VariantTypeConstructor<Vector3i>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_TRANSFORM2D:
 			return VariantTypeConstructor<Transform2D>::variant_from_type;
+		case GDEXTENSION_VARIANT_TYPE_TRANSFORM2DI:
+			return VariantTypeConstructor<Transform2Di>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_VECTOR4:
 			return VariantTypeConstructor<Vector4>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_VECTOR4I:
@@ -593,6 +595,8 @@ static GDExtensionVariantFromTypeConstructorFunc gdextension_get_variant_from_ty
 			return VariantTypeConstructor<PackedStringArray>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR2_ARRAY:
 			return VariantTypeConstructor<PackedVector2Array>::variant_from_type;
+		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR2I_ARRAY:
+			return VariantTypeConstructor<PackedVector2iArray>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR3_ARRAY:
 			return VariantTypeConstructor<PackedVector3Array>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR4_ARRAY:
@@ -630,6 +634,8 @@ static GDExtensionTypeFromVariantConstructorFunc gdextension_get_variant_to_type
 			return VariantTypeConstructor<Vector3i>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_TRANSFORM2D:
 			return VariantTypeConstructor<Transform2D>::type_from_variant;
+		case GDEXTENSION_VARIANT_TYPE_TRANSFORM2DI:
+			return VariantTypeConstructor<Transform2Di>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_VECTOR4:
 			return VariantTypeConstructor<Vector4>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_VECTOR4I:
@@ -678,6 +684,8 @@ static GDExtensionTypeFromVariantConstructorFunc gdextension_get_variant_to_type
 			return VariantTypeConstructor<PackedStringArray>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR2_ARRAY:
 			return VariantTypeConstructor<PackedVector2Array>::type_from_variant;
+		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR2I_ARRAY:
+			return VariantTypeConstructor<PackedVector2iArray>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR3_ARRAY:
 			return VariantTypeConstructor<PackedVector3Array>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR4_ARRAY:

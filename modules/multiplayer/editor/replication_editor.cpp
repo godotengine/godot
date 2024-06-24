@@ -208,6 +208,7 @@ ReplicationEditor::ReplicationEditor() {
 		Variant::VECTOR3,
 		Variant::VECTOR3I,
 		Variant::TRANSFORM2D,
+		Variant::TRANSFORM2DI,
 		Variant::VECTOR4,
 		Variant::VECTOR4I,
 		Variant::PLANE,

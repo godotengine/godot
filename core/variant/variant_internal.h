@@ -54,6 +54,9 @@ public:
 			case Variant::TRANSFORM2D:
 				init_transform2d(v);
 				break;
+			case Variant::TRANSFORM2DI:
+				init_transform2di(v);
+				break;
 			case Variant::AABB:
 				init_aabb(v);
 				break;
@@ -161,6 +164,8 @@ public:
 	_FORCE_INLINE_ static const Vector4i *get_vector4i(const Variant *v) { return reinterpret_cast<const Vector4i *>(v->_data._mem); }
 	_FORCE_INLINE_ static Transform2D *get_transform2d(Variant *v) { return v->_data._transform2d; }
 	_FORCE_INLINE_ static const Transform2D *get_transform2d(const Variant *v) { return v->_data._transform2d; }
+	_FORCE_INLINE_ static Transform2Di *get_transform2di(Variant *v) { return v->_data._transform2di; }
+	_FORCE_INLINE_ static const Transform2Di *get_transform2di(const Variant *v) { return v->_data._transform2di; }
 	_FORCE_INLINE_ static Plane *get_plane(Variant *v) { return reinterpret_cast<Plane *>(v->_data._mem); }
 	_FORCE_INLINE_ static const Plane *get_plane(const Variant *v) { return reinterpret_cast<const Plane *>(v->_data._mem); }
 	_FORCE_INLINE_ static Quaternion *get_quaternion(Variant *v) { return reinterpret_cast<Quaternion *>(v->_data._mem); }
@@ -238,6 +243,11 @@ public:
 		v->_data._transform2d = (Transform2D *)Variant::Pools::_bucket_small.alloc();
 		memnew_placement(v->_data._transform2d, Transform2D);
 		v->type = Variant::TRANSFORM2D;
+	}
+	_FORCE_INLINE_ static void init_transform2di(Variant *v) {
+		v->_data._transform2di = (Transform2Di *)Variant::Pools::_bucket_small.alloc();
+		memnew_placement(v->_data._transform2di, Transform2Di);
+		v->type = Variant::TRANSFORM2DI;
 	}
 	_FORCE_INLINE_ static void init_aabb(Variant *v) {
 		v->_data._aabb = (AABB *)Variant::Pools::_bucket_small.alloc();
@@ -393,6 +403,8 @@ public:
 				return get_projection(v);
 			case Variant::TRANSFORM2D:
 				return get_transform2d(v);
+			case Variant::TRANSFORM2DI:
+				return get_transform2di(v);
 			case Variant::QUATERNION:
 				return get_quaternion(v);
 			case Variant::PLANE:
@@ -481,6 +493,8 @@ public:
 				return get_projection(v);
 			case Variant::TRANSFORM2D:
 				return get_transform2d(v);
+			case Variant::TRANSFORM2DI:
+				return get_transform2di(v);
 			case Variant::QUATERNION:
 				return get_quaternion(v);
 			case Variant::PLANE:
@@ -681,6 +695,11 @@ template <>
 struct VariantGetInternalPtr<Transform2D> {
 	static Transform2D *get_ptr(Variant *v) { return VariantInternal::get_transform2d(v); }
 	static const Transform2D *get_ptr(const Variant *v) { return VariantInternal::get_transform2d(v); }
+};
+template <>
+struct VariantGetInternalPtr<Transform2Di> {
+	static Transform2Di *get_ptr(Variant *v) { return VariantInternal::get_transform2di(v); }
+	static const Transform2Di *get_ptr(const Variant *v) { return VariantInternal::get_transform2di(v); }
 };
 
 template <>
@@ -955,6 +974,11 @@ template <>
 struct VariantInternalAccessor<Transform2D> {
 	static _FORCE_INLINE_ const Transform2D &get(const Variant *v) { return *VariantInternal::get_transform2d(v); }
 	static _FORCE_INLINE_ void set(Variant *v, const Transform2D &p_value) { *VariantInternal::get_transform2d(v) = p_value; }
+};
+template <>
+struct VariantInternalAccessor<Transform2Di> {
+	static _FORCE_INLINE_ const Transform2Di &get(const Variant *v) { return *VariantInternal::get_transform2di(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const Transform2Di &p_value) { *VariantInternal::get_transform2di(v) = p_value; }
 };
 
 template <>
@@ -1231,6 +1255,10 @@ template <>
 struct VariantInitializer<Transform2D> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_transform2d(v); }
 };
+template <>
+struct VariantInitializer<Transform2Di> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_transform2di(v); }
+};
 
 template <>
 struct VariantInitializer<Plane> {
@@ -1433,6 +1461,11 @@ struct VariantDefaultInitializer<Vector4i> {
 template <>
 struct VariantDefaultInitializer<Transform2D> {
 	static _FORCE_INLINE_ void init(Variant *v) { *VariantInternal::get_transform2d(v) = Transform2D(); }
+};
+
+template <>
+struct VariantDefaultInitializer<Transform2Di> {
+	static _FORCE_INLINE_ void init(Variant *v) { *VariantInternal::get_transform2di(v) = Transform2Di(); }
 };
 
 template <>

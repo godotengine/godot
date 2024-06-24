@@ -137,6 +137,7 @@ void PropertySelector::_update_search() {
 			search_options->get_editor_theme_icon(SNAME("Vector3")),
 			search_options->get_editor_theme_icon(SNAME("Vector3i")),
 			search_options->get_editor_theme_icon(SNAME("Transform2D")),
+			search_options->get_editor_theme_icon(SNAME("Transform2Di")),
 			search_options->get_editor_theme_icon(SNAME("Vector4")),
 			search_options->get_editor_theme_icon(SNAME("Vector4i")),
 			search_options->get_editor_theme_icon(SNAME("Plane")),

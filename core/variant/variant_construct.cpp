@@ -129,6 +129,12 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructor<Transform2D, float, Size2, float, Vector2>>(sarray("rotation", "scale", "skew", "position"));
 	add_constructor<VariantConstructor<Transform2D, Vector2, Vector2, Vector2>>(sarray("x_axis", "y_axis", "origin"));
 
+	add_constructor<VariantConstructNoArgs<Transform2Di>>(sarray());
+	add_constructor<VariantConstructor<Transform2Di, Transform2Di>>(sarray("from"));
+	add_constructor<VariantConstructor<Transform2Di, Vector2i>>(sarray("position"));
+	add_constructor<VariantConstructor<Transform2Di, Size2i, Vector2i>>(sarray("scale", "position"));
+	add_constructor<VariantConstructor<Transform2Di, Vector2i, Vector2i, Vector2i>>(sarray("x_axis", "y_axis", "origin"));
+
 	add_constructor<VariantConstructNoArgs<Plane>>(sarray());
 	add_constructor<VariantConstructor<Plane, Plane>>(sarray("from"));
 	add_constructor<VariantConstructor<Plane, Vector3>>(sarray("normal"));

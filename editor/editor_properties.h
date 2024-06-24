@@ -566,6 +566,22 @@ public:
 	EditorPropertyTransform2D(bool p_include_origin = true);
 };
 
+class EditorPropertyTransform2DI : public EditorProperty {
+GDCLASS(EditorPropertyTransform2DI, EditorProperty);
+	EditorSpinSlider *spin[6];
+	void _value_changed(int32_t p_val, const String &p_name);
+
+protected:
+	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	virtual void update_property() override;
+	void setup(int p_min, int p_max, const String &p_suffix = String());
+	EditorPropertyTransform2DI(bool p_include_origin = true);
+};
+
 class EditorPropertyBasis : public EditorProperty {
 	GDCLASS(EditorPropertyBasis, EditorProperty);
 	EditorSpinSlider *spin[9];
