@@ -679,6 +679,8 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			singleton->active_plugins.clear();
+
 			if (progress_dialog) {
 				progress_dialog->queue_free();
 			}
