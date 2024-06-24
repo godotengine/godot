@@ -10,6 +10,12 @@
 		<link title="Instancing Demo">https://godotengine.org/asset-library/asset/2716</link>
 	</tutorials>
 	<methods>
+		<method name="get_pivot" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns this sprite's pivot point, as defined by [member pivot_mode].
+			</description>
+		</method>
 		<method name="get_rect" qualifiers="const">
 			<return type="Rect2" />
 			<description>
@@ -50,9 +56,12 @@
 		</method>
 	</methods>
 	<members>
-		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
+		<member name="centered" type="bool" setter="set_centered" getter="is_centered" deprecated="Use [member pivot_mode] instead.">
 			If [code]true[/code], texture is centered.
 			[b]Note:[/b] For games with a pixel art aesthetic, textures may appear deformed when centered. This is caused by their position being between pixels. To prevent this, set this property to [code]false[/code], or consider enabling [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel] and [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
+		</member>
+		<member name="flip_around_pivot" type="bool" setter="set_flip_around_pivot" getter="is_flipped_around_pivot" default="false">
+			If [code]true[/code], the texture is flipped around the current pivot point.
 		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
 			If [code]true[/code], texture is flipped horizontally.
@@ -72,8 +81,12 @@
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The texture's drawing offset.
 		</member>
+		<member name="pivot_mode" type="int" setter="set_pivot_mode" getter="get_pivot_mode" enum="Texture2D.Pivot" default="3">
+			The sprite's pivot point, relative to the texture.
+		</member>
 		<member name="region_enabled" type="bool" setter="set_region_enabled" getter="is_region_enabled" default="false">
 			If [code]true[/code], texture is cut from a larger atlas texture. See [member region_rect].
+			[b]Note:[/b] When [code]true[/code] with [member pivot_mode] set to [code]Anchor[/code] the texture's anchor is ignored.
 		</member>
 		<member name="region_filter_clip_enabled" type="bool" setter="set_region_filter_clip_enabled" getter="is_region_filter_clip_enabled" default="false">
 			If [code]true[/code], the outermost pixels get blurred out. [member region_enabled] must be [code]true[/code].

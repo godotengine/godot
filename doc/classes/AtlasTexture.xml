@@ -5,12 +5,16 @@
 	</brief_description>
 	<description>
 		[Texture2D] resource that draws only part of its [member atlas] texture, as defined by the [member region]. An additional [member margin] can also be set, which is useful for small adjustments.
+		An [member anchor] can be set to automatically offset the resource when drawn by a [Sprite2D] or an [AnimatedSprite2D]. The anchor is defined in pixels relative to the top-left corner of the [AtlasTexture].
 		Multiple [AtlasTexture] resources can be cropped from the same [member atlas]. Packing many smaller textures into a singular large texture helps to optimize video memory costs and render calls.
 		[b]Note:[/b] [AtlasTexture] cannot be used in an [AnimatedTexture], and may not tile properly in nodes such as [TextureRect], when inside other [AtlasTexture] resources.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="anchor" type="Vector2" setter="set_anchor" getter="get_anchor" default="Vector2(0, 0)">
+			The pivot point of the texture. In pixels relative to the top-left corner of the [member region]. In case a [member margin] is defined, the anchor point should account for it.
+		</member>
 		<member name="atlas" type="Texture2D" setter="set_atlas" getter="get_atlas">
 			The texture that contains the atlas. Can be any type inheriting from [Texture2D], including another [AtlasTexture].
 		</member>

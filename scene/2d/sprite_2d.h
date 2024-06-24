@@ -33,6 +33,7 @@
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/texture.h"
+#include "scene/resources/texture_pivot_utils.h"
 
 class Sprite2D : public Node2D {
 	GDCLASS(Sprite2D, Node2D);
@@ -41,11 +42,12 @@ class Sprite2D : public Node2D {
 	Color specular_color;
 	real_t shininess = 0.0;
 
-	bool centered = true;
+	Texture2D::Pivot pivot_mode = Texture2D::PIVOT_CENTER;
 	Point2 offset;
 
 	bool hflip = false;
 	bool vflip = false;
+	bool flip_around_pivot = false;
 	bool region_enabled = false;
 	Rect2 region_rect;
 	bool region_filter_clip_enabled = false;
@@ -56,6 +58,7 @@ class Sprite2D : public Node2D {
 	int hframes = 1;
 
 	void _get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip_enabled) const;
+	Point2 _get_pivot(const Size2 &p_size, const Point2 &p_offset, Texture2D::Pivot p_mode) const;
 
 	void _texture_changed();
 
@@ -85,8 +88,14 @@ public:
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
 
-	void set_centered(bool p_center);
+#ifndef DISABLE_DEPRECATED
+	void set_centered(bool p_centered);
 	bool is_centered() const;
+#endif
+
+	void set_pivot_mode(Texture2D::Pivot p_pivot);
+	Texture2D::Pivot get_pivot_mode() const;
+	Point2 get_pivot() const;
 
 	void set_offset(const Point2 &p_offset);
 	Point2 get_offset() const;
@@ -96,6 +105,9 @@ public:
 
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
+
+	void set_flip_around_pivot(bool p_flip);
+	bool is_flipped_around_pivot() const;
 
 	void set_region_enabled(bool p_enabled);
 	bool is_region_enabled() const;

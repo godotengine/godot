@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  atlas_texture.h                                                       */
+/*  texture_pivot_utils.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,58 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ATLAS_TEXTURE_H
-#define ATLAS_TEXTURE_H
+#ifndef TEXTURE_PIVOT_UTILS_H
+#define TEXTURE_PIVOT_UTILS_H
 
 #include "scene/resources/texture.h"
 
-class AtlasTexture : public Texture2D {
-	GDCLASS(AtlasTexture, Texture2D);
-	RES_BASE_EXTENSION("atlastex");
-
-	Rect2 _get_region_rect() const;
-
-protected:
-	Ref<Texture2D> atlas;
-	Rect2 region;
-	Rect2 margin;
-	Point2 anchor;
-	bool filter_clip = false;
-
-	static void _bind_methods();
-
+class TexturePivotUtils {
 public:
-	virtual int get_width() const override;
-	virtual int get_height() const override;
-	virtual RID get_rid() const override;
-
-	virtual bool has_alpha() const override;
-
-	void set_atlas(const Ref<Texture2D> &p_atlas);
-	Ref<Texture2D> get_atlas() const;
-
-	void set_region(const Rect2 &p_region);
-	Rect2 get_region() const;
-
-	void set_margin(const Rect2 &p_margin);
-	Rect2 get_margin() const;
-
-	virtual void set_anchor(const Point2 &p_anchor);
-	virtual Point2 get_anchor() const override;
-
-	void set_filter_clip(const bool p_enable);
-	bool has_filter_clip() const;
-
-	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
-	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
-	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const override;
-	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const override;
-
-	bool is_pixel_opaque(int p_x, int p_y) const override;
-
-	virtual Ref<Image> get_image() const override;
-
-	AtlasTexture();
+	static Point2 get_pivot(const Ref<Texture2D> &p_texture, const Size2 &p_size, const Point2 &p_offset, Texture2D::Pivot p_mode);
 };
-
-#endif // ATLAS_TEXTURE_H
+#endif // TEXTURE_PIVOT_UTILS_H
