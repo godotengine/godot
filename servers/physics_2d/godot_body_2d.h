@@ -104,7 +104,7 @@ class GodotBody2D : public GodotCollisionObject2D {
 	bool first_time_kinematic = false;
 	void _mass_properties_changed();
 	virtual void _shapes_changed() override;
-	Transform2D new_transform;
+	Transform2Di new_transform;
 
 	List<Pair<GodotConstraint2D *, int>> constraint_list;
 

@@ -62,8 +62,8 @@ public:
 	EXBIND1(set_angular_velocity, real_t)
 	EXBIND0RC(real_t, get_angular_velocity)
 
-	EXBIND1(set_transform, const Transform2D &)
-	EXBIND0RC(Transform2D, get_transform)
+	EXBIND1(set_transform, const Transform2Di &)
+	EXBIND0RC(Transform2Di, get_transform)
 
 	EXBIND1RC(Vector2, get_velocity_at_local_position, const Vector2 &)
 
@@ -129,10 +129,10 @@ protected:
 
 	GDVIRTUAL7R(bool, _intersect_ray, const Vector2 &, const Vector2 &, uint32_t, bool, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionRayResult>)
 	GDVIRTUAL7R(int, _intersect_point, const Vector2 &, ObjectID, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionShapeResult>, int)
-	GDVIRTUAL8R(int, _intersect_shape, RID, const Transform2D &, const Vector2 &, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionShapeResult>, int)
-	GDVIRTUAL8R(bool, _cast_motion, RID, const Transform2D &, const Vector2 &, uint32_t, bool, bool, GDExtensionPtr<real_t>, GDExtensionPtr<real_t>)
-	GDVIRTUAL9R(bool, _collide_shape, RID, const Transform2D &, const Vector2 &, uint32_t, bool, bool, GDExtensionPtr<Vector2>, int, GDExtensionPtr<int>)
-	GDVIRTUAL7R(bool, _rest_info, RID, const Transform2D &, const Vector2 &, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionShapeRestInfo>)
+	GDVIRTUAL8R(int, _intersect_shape, RID, const Transform2Di &, const Vector2i &, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionShapeResult>, int)
+	GDVIRTUAL8R(bool, _cast_motion, RID, const Transform2Di &, const Vector2i &, uint32_t, bool, bool, GDExtensionPtr<real_t>, GDExtensionPtr<real_t>)
+	GDVIRTUAL9R(bool, _collide_shape, RID, const Transform2Di &, const Vector2i &, uint32_t, bool, bool, GDExtensionPtr<Vector2i>, int, GDExtensionPtr<int>)
+	GDVIRTUAL7R(bool, _rest_info, RID, const Transform2Di &, const Vector2i &, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionShapeRestInfo>)
 
 public:
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) override {
@@ -163,7 +163,7 @@ public:
 		exclude = nullptr;
 		return ret;
 	}
-	virtual bool collide_shape(const ShapeParameters &p_parameters, Vector2 *r_results, int p_result_max, int &r_result_count) override {
+	virtual bool collide_shape(const ShapeParameters &p_parameters, Vector2i *r_results, int p_result_max, int &r_result_count) override {
 		exclude = &p_parameters.exclude;
 		bool ret = false;
 		GDVIRTUAL_REQUIRED_CALL(_collide_shape, p_parameters.shape_rid, p_parameters.transform, p_parameters.motion, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, r_results, p_result_max, &r_result_count, ret);
@@ -195,9 +195,9 @@ class PhysicsServer2DExtension : public PhysicsServer2D {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL9R(bool, _shape_collide, RID, const Transform2D &, const Vector2 &, RID, const Transform2D &, const Vector2 &, GDExtensionPtr<Vector2>, int, GDExtensionPtr<int>)
+	GDVIRTUAL9R(bool, _shape_collide, RID, const Transform2Di &, const Vector2i &, RID, const Transform2Di &, const Vector2i &, GDExtensionPtr<Vector2i>, int, GDExtensionPtr<int>)
 
-	GDVIRTUAL8R(bool, _body_collide_shape, RID, int, RID, const Transform2D &, const Vector2 &, GDExtensionPtr<Vector2>, int, GDExtensionPtr<int>)
+	GDVIRTUAL8R(bool, _body_collide_shape, RID, int, RID, const Transform2Di &, const Vector2i &, GDExtensionPtr<Vector2i>, int, GDExtensionPtr<int>)
 
 public:
 	// The warning is valid, but unavoidable. If the function is not overridden it will error anyway.
@@ -217,7 +217,7 @@ public:
 	EXBIND1RC(Variant, shape_get_data, RID)
 	EXBIND1RC(real_t, shape_get_custom_solver_bias, RID)
 
-	virtual bool shape_collide(RID p_shape_A, const Transform2D &p_xform_A, const Vector2 &p_motion_A, RID p_shape_B, const Transform2D &p_xform_B, const Vector2 &p_motion_B, Vector2 *r_results, int p_result_max, int &r_result_count) override {
+	virtual bool shape_collide(RID p_shape_A, const Transform2Di &p_xform_A, const Vector2i &p_motion_A, RID p_shape_B, const Transform2Di &p_xform_B, const Vector2i &p_motion_B, Vector2i *r_results, int p_result_max, int &r_result_count) override {
 		bool ret = false;
 		GDVIRTUAL_REQUIRED_CALL(_shape_collide, p_shape_A, p_xform_A, p_motion_A, p_shape_B, p_xform_B, p_motion_B, r_results, p_result_max, &r_result_count, ret);
 		return ret;
@@ -246,14 +246,14 @@ public:
 	EXBIND2(area_set_space, RID, RID)
 	EXBIND1RC(RID, area_get_space, RID)
 
-	EXBIND4(area_add_shape, RID, RID, const Transform2D &, bool)
+	EXBIND4(area_add_shape, RID, RID, const Transform2Di &, bool)
 	EXBIND3(area_set_shape, RID, int, RID)
-	EXBIND3(area_set_shape_transform, RID, int, const Transform2D &)
+	EXBIND3(area_set_shape_transform, RID, int, const Transform2Di &)
 	EXBIND3(area_set_shape_disabled, RID, int, bool)
 
 	EXBIND1RC(int, area_get_shape_count, RID)
 	EXBIND2RC(RID, area_get_shape, RID, int)
-	EXBIND2RC(Transform2D, area_get_shape_transform, RID, int)
+	EXBIND2RC(Transform2Di, area_get_shape_transform, RID, int)
 
 	EXBIND2(area_remove_shape, RID, int)
 	EXBIND1(area_clear_shapes, RID)
@@ -265,10 +265,10 @@ public:
 	EXBIND1RC(ObjectID, area_get_canvas_instance_id, RID)
 
 	EXBIND3(area_set_param, RID, AreaParameter, const Variant &)
-	EXBIND2(area_set_transform, RID, const Transform2D &)
+	EXBIND2(area_set_transform, RID, const Transform2Di &)
 
 	EXBIND2RC(Variant, area_get_param, RID, AreaParameter)
-	EXBIND1RC(Transform2D, area_get_transform, RID)
+	EXBIND1RC(Transform2Di, area_get_transform, RID)
 
 	EXBIND2(area_set_collision_layer, RID, uint32_t)
 	EXBIND1RC(uint32_t, area_get_collision_layer, RID)
@@ -293,13 +293,13 @@ public:
 	EXBIND2(body_set_mode, RID, BodyMode)
 	EXBIND1RC(BodyMode, body_get_mode, RID)
 
-	EXBIND4(body_add_shape, RID, RID, const Transform2D &, bool)
+	EXBIND4(body_add_shape, RID, RID, const Transform2Di &, bool)
 	EXBIND3(body_set_shape, RID, int, RID)
-	EXBIND3(body_set_shape_transform, RID, int, const Transform2D &)
+	EXBIND3(body_set_shape_transform, RID, int, const Transform2Di &)
 
 	EXBIND1RC(int, body_get_shape_count, RID)
 	EXBIND2RC(RID, body_get_shape, RID, int)
-	EXBIND2RC(Transform2D, body_get_shape_transform, RID, int)
+	EXBIND2RC(Transform2Di, body_get_shape_transform, RID, int)
 
 	EXBIND3(body_set_shape_disabled, RID, int, bool)
 	EXBIND3(body_set_shape_as_one_way_collision, RID, int, bool)
@@ -377,7 +377,7 @@ public:
 	EXBIND2(body_set_state_sync_callback, RID, const Callable &)
 	EXBIND3(body_set_force_integration_callback, RID, const Callable &, const Variant &)
 
-	virtual bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) override {
+	virtual bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2Di &p_shape_xform, const Vector2i &p_motion, Vector2i *r_results, int p_result_max, int &r_result_count) override {
 		bool ret = false;
 		GDVIRTUAL_REQUIRED_CALL(_body_collide_shape, p_body, p_body_shape, p_shape, p_shape_xform, p_motion, r_results, p_result_max, &r_result_count, ret);
 		return ret;
@@ -387,8 +387,8 @@ public:
 
 	EXBIND1R(PhysicsDirectBodyState2D *, body_get_direct_state, RID)
 
-	GDVIRTUAL6RC(bool, _body_test_motion, RID, const Transform2D &, const Vector2 &, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionMotionResult>)
-	GDVIRTUAL4RC(bool, _body_collides_at, RID, const Transform2D &, const Vector2i &, GDExtensionPtr<PhysicsServer2DExtensionCollisionResult>)
+	GDVIRTUAL6RC(bool, _body_test_motion, RID, const Transform2Di &, const Vector2i &, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionMotionResult>)
+	GDVIRTUAL4RC(bool, _body_collides_at, RID, const Transform2Di &, const Vector2i &, GDExtensionPtr<PhysicsServer2DExtensionCollisionResult>)
 
 	thread_local static const HashSet<RID> *exclude_bodies;
 	thread_local static const HashSet<ObjectID> *exclude_objects;
@@ -405,7 +405,7 @@ public:
 		exclude_objects = nullptr;
 		return ret;
 	}
-	bool body_collides_at(RID p_body, const Transform2D from, const Vector2i delta, CollisionResult *r_result = nullptr) override {
+	bool body_collides_at(RID p_body, const Transform2Di from, const Vector2i delta, CollisionResult *r_result = nullptr) override {
 		bool ret = false;
 		GDVIRTUAL_REQUIRED_CALL(_body_collides_at, p_body, from, delta, r_result, ret);
 		return ret;

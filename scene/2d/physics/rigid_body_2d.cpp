@@ -145,7 +145,7 @@ struct _RigidBody2DInOut {
 void RigidBody2D::_sync_body_state(PhysicsDirectBodyState2D *p_state) {
 	if (!freeze || freeze_mode != FREEZE_MODE_KINEMATIC) {
 		set_block_transform_notify(true);
-		set_global_transform(p_state->get_transform());
+		set_global_transform(transform2d_from_transform2di(p_state->get_transform()));
 		set_block_transform_notify(false);
 	}
 
@@ -166,9 +166,9 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 	if (GDVIRTUAL_IS_OVERRIDDEN(_integrate_forces)) {
 		_sync_body_state(p_state);
 
-		Transform2D old_transform = get_global_transform();
+		Transform2Di old_transform = get_global_transform_i();
 		GDVIRTUAL_CALL(_integrate_forces, p_state);
-		Transform2D new_transform = get_global_transform();
+		Transform2Di new_transform = get_global_transform_i();
 
 		if (new_transform != old_transform) {
 			// Update the physics server with the new transform, to prevent it from being overwritten at the sync below.

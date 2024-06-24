@@ -31,14 +31,14 @@
 #include "godot_broad_phase_2d_bvh.h"
 #include "godot_collision_object_2d.h"
 
-GodotBroadPhase2D::ID GodotBroadPhase2DBVH::create(GodotCollisionObject2D *p_object, int p_subindex, const Rect2 &p_aabb, bool p_static) {
+GodotBroadPhase2D::ID GodotBroadPhase2DBVH::create(GodotCollisionObject2D *p_object, int p_subindex, const Rect2i &p_aabb, bool p_static) {
 	uint32_t tree_id = p_static ? TREE_STATIC : TREE_DYNAMIC;
 	uint32_t tree_collision_mask = p_static ? TREE_FLAG_DYNAMIC : (TREE_FLAG_STATIC | TREE_FLAG_DYNAMIC);
 	ID oid = bvh.create(p_object, true, tree_id, tree_collision_mask, p_aabb, p_subindex); // Pair everything, don't care?
 	return oid + 1;
 }
 
-void GodotBroadPhase2DBVH::move(ID p_id, const Rect2 &p_aabb) {
+void GodotBroadPhase2DBVH::move(ID p_id, const Rect2i &p_aabb) {
 	ERR_FAIL_COND(!p_id);
 	bvh.move(p_id - 1, p_aabb);
 }
@@ -73,11 +73,11 @@ int GodotBroadPhase2DBVH::get_subindex(ID p_id) const {
 	return bvh.get_subindex(p_id - 1);
 }
 
-int GodotBroadPhase2DBVH::cull_segment(const Vector2 &p_from, const Vector2 &p_to, GodotCollisionObject2D **p_results, int p_max_results, int *p_result_indices) {
+int GodotBroadPhase2DBVH::cull_segment(const Vector2i &p_from, const Vector2i &p_to, GodotCollisionObject2D **p_results, int p_max_results, int *p_result_indices) {
 	return bvh.cull_segment(p_from, p_to, p_results, p_max_results, nullptr, 0xFFFFFFFF, p_result_indices);
 }
 
-int GodotBroadPhase2DBVH::cull_aabb(const Rect2 &p_aabb, GodotCollisionObject2D **p_results, int p_max_results, int *p_result_indices) {
+int GodotBroadPhase2DBVH::cull_aabb(const Rect2i &p_aabb, GodotCollisionObject2D **p_results, int p_max_results, int *p_result_indices) {
 	return bvh.cull_aabb(p_aabb, p_results, p_max_results, nullptr, 0xFFFFFFFF, p_result_indices);
 }
 

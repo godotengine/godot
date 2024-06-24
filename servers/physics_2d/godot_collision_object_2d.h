@@ -54,8 +54,8 @@ private:
 	bool pickable = true;
 
 	struct Shape {
-		Transform2D xform;
-		Transform2D xform_inv;
+		Transform2Di xform;
+		Transform2Di xform_inv;
 		GodotBroadPhase2D::ID bpid = 0;
 		Rect2i aabb_cache; //for rayqueries
 		GodotShape2D *shape = nullptr;
@@ -65,8 +65,8 @@ private:
 
 	Vector<Shape> shapes;
 	GodotSpace2D *space = nullptr;
-	Transform2D transform;
-	Transform2D inv_transform;
+	Transform2Di transform;
+	Transform2Di inv_transform;
 	uint32_t collision_mask = 1;
 	uint32_t collision_layer = 1;
 	real_t collision_priority = 1.0;
@@ -80,13 +80,13 @@ protected:
 	void _update_shapes_with_motion(const Vector2 &p_motion);
 	void _unregister_shapes();
 
-	_FORCE_INLINE_ void _set_transform(const Transform2D &p_transform, bool p_update_shapes = true) {
+	_FORCE_INLINE_ void _set_transform(const Transform2Di &p_transform, bool p_update_shapes = true) {
 		transform = p_transform;
 		if (p_update_shapes) {
 			_update_shapes();
 		}
 	}
-	_FORCE_INLINE_ void _set_inv_transform(const Transform2D &p_transform) { inv_transform = p_transform; }
+	_FORCE_INLINE_ void _set_inv_transform(const Transform2Di &p_transform) { inv_transform = p_transform; }
 	void _set_static(bool p_static);
 
 	virtual void _shapes_changed() = 0;
@@ -107,20 +107,20 @@ public:
 	void _shape_changed() override;
 
 	_FORCE_INLINE_ Type get_type() const { return type; }
-	void add_shape(GodotShape2D *p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false);
+	void add_shape(GodotShape2D *p_shape, const Transform2Di &p_transform = Transform2Di(), bool p_disabled = false);
 	void set_shape(int p_index, GodotShape2D *p_shape);
-	void set_shape_transform(int p_index, const Transform2D &p_transform);
+	void set_shape_transform(int p_index, const Transform2Di &p_transform);
 
 	_FORCE_INLINE_ int get_shape_count() const { return shapes.size(); }
 	_FORCE_INLINE_ GodotShape2D *get_shape(int p_index) const {
 		CRASH_BAD_INDEX(p_index, shapes.size());
 		return shapes[p_index].shape;
 	}
-	_FORCE_INLINE_ const Transform2D &get_shape_transform(int p_index) const {
+	_FORCE_INLINE_ const Transform2Di &get_shape_transform(int p_index) const {
 		CRASH_BAD_INDEX(p_index, shapes.size());
 		return shapes[p_index].xform;
 	}
-	_FORCE_INLINE_ const Transform2D &get_shape_inv_transform(int p_index) const {
+	_FORCE_INLINE_ const Transform2Di &get_shape_inv_transform(int p_index) const {
 		CRASH_BAD_INDEX(p_index, shapes.size());
 		return shapes[p_index].xform_inv;
 	}
@@ -129,8 +129,8 @@ public:
 		return shapes[p_index].aabb_cache;
 	}
 
-	_FORCE_INLINE_ const Transform2D &get_transform() const { return transform; }
-	_FORCE_INLINE_ const Transform2D &get_inv_transform() const { return inv_transform; }
+	_FORCE_INLINE_ const Transform2Di &get_transform() const { return transform; }
+	_FORCE_INLINE_ const Transform2Di &get_inv_transform() const { return inv_transform; }
 	_FORCE_INLINE_ GodotSpace2D *get_space() const { return space; }
 
 	void set_shape_disabled(int p_idx, bool p_disabled);

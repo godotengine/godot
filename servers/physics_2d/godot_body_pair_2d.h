@@ -56,9 +56,9 @@ class GodotBodyPair2D : public GodotConstraint2D {
 	GodotSpace2D *space = nullptr;
 
 	struct Contact {
-		Vector2 position;
-		Vector2 normal;
-		Vector2 local_A, local_B;
+		Vector2i position;
+		Vector2i normal;
+		Vector2i local_A, local_B;
 		Vector2 acc_impulse; // accumulated impulse
 		real_t acc_normal_impulse = 0.0; // accumulated normal impulse (Pn)
 		real_t acc_tangent_impulse = 0.0; // accumulated tangent impulse (Pt)
@@ -70,11 +70,11 @@ class GodotBodyPair2D : public GodotConstraint2D {
 		real_t depth = 0.0;
 		bool active = false;
 		bool used = false;
-		Vector2 rA, rB;
+		Vector2i rA, rB;
 		real_t bounce = 0.0;
 	};
 
-	Vector2 offset_B; //use local A coordinates to avoid numerical issues on collision detection
+	Vector2i offset_B; //use local A coordinates to avoid numerical issues on collision detection
 
 	Vector2 sep_axis;
 	Contact contacts[MAX_CONTACTS];
@@ -84,10 +84,10 @@ class GodotBodyPair2D : public GodotConstraint2D {
 	bool oneway_disabled = false;
 	bool report_contacts_only = false;
 
-	bool _test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, const Transform2D &p_xform_A, GodotBody2D *p_B, int p_shape_B, const Transform2D &p_xform_B);
+	bool _test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, const Transform2Di &p_xform_A, GodotBody2D *p_B, int p_shape_B, const Transform2Di &p_xform_B);
 	void _validate_contacts();
-	static void _add_contact(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_self);
-	_FORCE_INLINE_ void _contact_added_callback(const Vector2 &p_point_A, const Vector2 &p_point_B);
+	static void _add_contact(const Vector2i &p_point_A, const Vector2i &p_point_B, void *p_self);
+	_FORCE_INLINE_ void _contact_added_callback(const Vector2i &p_point_A, const Vector2i &p_point_B);
 
 public:
 	virtual bool setup(real_t p_step) override;

@@ -67,7 +67,7 @@ void AnimatableBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 		return;
 	}
 
-	last_valid_transform = p_state->get_transform();
+	last_valid_transform = transform2d_from_transform2di(p_state->get_transform());
 	set_notify_local_transform(false);
 	set_global_transform(last_valid_transform);
 	set_notify_local_transform(true);
@@ -87,7 +87,7 @@ void AnimatableBody2D::_notification(int p_what) {
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			// Used by sync to physics, send the new transform to the physics...
-			Transform2D new_transform = get_global_transform();
+			Transform2Di new_transform = get_global_transform_i();
 
 			PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_TRANSFORM, new_transform);
 

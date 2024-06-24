@@ -291,7 +291,7 @@ Point2i Node2D::get_global_position() const {
 	return get_global_transform().get_origin();
 }
 
-void Node2D::set_global_position(const Point2 &p_pos) {
+void Node2D::set_global_position(const Point2i &p_pos) {
 	ERR_THREAD_GUARD;
 	CanvasItem *parent = get_parent_item();
 	if (parent) {

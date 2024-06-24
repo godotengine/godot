@@ -167,6 +167,30 @@ Transform2D CanvasItem::get_screen_transform() const {
 	return get_viewport()->get_popup_base_transform() * get_global_transform_with_canvas();
 }
 
+Transform2Di CanvasItem::get_transform_i() const {
+	ERR_READ_THREAD_GUARD_V(Transform2Di());
+
+	if (_is_transform_i_invalid()) {
+		// This code can enter multiple times from threads if dirty, this is expected.
+		transform_i = transform2di_from_transform2d(get_transform());
+		_set_transform_i_invalid(false);
+	}
+
+	return transform_i;
+}
+
+void CanvasItem::_set_transform_i_invalid(bool p_invalid) const {
+	if (is_group_processing()) {
+		if (p_invalid) {
+			transform_i_invalid.mt.set();
+		} else {
+			transform_i_invalid.mt.clear();
+		}
+	} else {
+		transform_i_invalid.st = p_invalid;
+	}
+}
+
 Transform2D CanvasItem::get_global_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
 
@@ -197,6 +221,44 @@ void CanvasItem::_set_global_invalid(bool p_invalid) const {
 	} else {
 		global_invalid.st = p_invalid;
 	}
+}
+
+Transform2Di CanvasItem::get_global_transform_i() const {
+	ERR_READ_THREAD_GUARD_V(Transform2Di());
+
+	if (_is_global_i_invalid()) {
+		// This code can enter multiple times from threads if dirty, this is expected.
+		const CanvasItem *pi = get_parent_item();
+		Transform2Di new_global;
+		if (pi) {
+			new_global = pi->get_global_transform_i() * get_transform_i();
+		} else {
+			new_global = get_transform_i();
+		}
+
+		global_transform_i = new_global;
+		_set_global_i_invalid(false);
+	}
+
+	return global_transform_i;
+}
+
+void CanvasItem::_set_global_i_invalid(bool p_invalid) const {
+	if (is_group_processing()) {
+		if (p_invalid) {
+			global_i_invalid.mt.set();
+		} else {
+			global_i_invalid.mt.clear();
+		}
+	} else {
+		global_i_invalid.st = p_invalid;
+	}
+}
+
+void CanvasItem::_set_invalid(bool p_invalid) const {
+	_set_transform_i_invalid(p_invalid);
+	_set_global_invalid(p_invalid);
+	_set_global_i_invalid(p_invalid);
 }
 
 void CanvasItem::_top_level_raise_self() {
@@ -318,7 +380,7 @@ void CanvasItem::_notification(int p_what) {
 				}
 			}
 
-			_set_global_invalid(true);
+			_set_invalid(true);
 			_enter_canvas();
 
 			RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, is_visible_in_tree()); // The visibility of the parent may change.
@@ -366,7 +428,7 @@ void CanvasItem::_notification(int p_what) {
 				window->disconnect(SceneStringName(visibility_changed), callable_mp(this, &CanvasItem::_window_visibility_changed));
 				window = nullptr;
 			}
-			_set_global_invalid(true);
+			_set_invalid(true);
 			parent_visible_in_tree = false;
 
 			if (get_viewport()) {
@@ -989,11 +1051,11 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 	 * notification anyway).
 	 */
 
-	if (/*p_node->xform_change.in_list() &&*/ p_node->_is_global_invalid()) {
+	if (/*p_node->xform_change.in_list() &&*/ p_node->_is_all_invalid()) {
 		return; //nothing to do
 	}
 
-	p_node->_set_global_invalid(true);
+	p_node->_set_invalid(true);
 
 	if (p_node->notify_transform && !p_node->xform_change.in_list()) {
 		if (!p_node->block_transform_notify) {
@@ -1265,6 +1327,8 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_end_animation"), &CanvasItem::draw_end_animation);
 	ClassDB::bind_method(D_METHOD("get_transform"), &CanvasItem::get_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &CanvasItem::get_global_transform);
+	ClassDB::bind_method(D_METHOD("get_transform_i"), &CanvasItem::get_transform_i);
+	ClassDB::bind_method(D_METHOD("get_global_transform_i"), &CanvasItem::get_global_transform_i);
 	ClassDB::bind_method(D_METHOD("get_global_transform_with_canvas"), &CanvasItem::get_global_transform_with_canvas);
 	ClassDB::bind_method(D_METHOD("get_viewport_transform"), &CanvasItem::get_viewport_transform);
 	ClassDB::bind_method(D_METHOD("get_viewport_rect"), &CanvasItem::get_viewport_rect);

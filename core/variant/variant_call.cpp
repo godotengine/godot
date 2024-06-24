@@ -2176,8 +2176,9 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(AABB, has_volume, sarray(), varray());
 	bind_method(AABB, has_surface, sarray(), varray());
 	bind_method(AABB, has_point, sarray("point"), varray());
-	bind_method(AABB, is_equal_approx, sarray("aabb"), varray());
-	bind_method(AABB, is_finite, sarray(), varray());
+//	bind_method(AABB, is_equal_approx, sarray("aabb"), varray());
+//	bind_method(AABB, is_finite, sarray(), varray());
+	bind_method(AABB, is_equal, sarray("aabb"), varray());
 	bind_method(AABB, intersects, sarray("with"), varray());
 	bind_method(AABB, encloses, sarray("with"), varray());
 	bind_method(AABB, intersects_plane, sarray("plane"), varray());

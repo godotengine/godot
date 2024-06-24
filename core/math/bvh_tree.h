@@ -42,7 +42,7 @@
 #include "core/math/aabb.h"
 #include "core/math/bvh_abb.h"
 #include "core/math/geometry_3d.h"
-#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/pooled_list.h"
 #include <limits.h>
@@ -170,7 +170,7 @@ public:
 	}
 };
 
-template <typename T, int NUM_TREES, int MAX_CHILDREN, int MAX_ITEMS, typename USER_PAIR_TEST_FUNCTION = BVH_DummyPairTestFunction<T>, typename USER_CULL_TEST_FUNCTION = BVH_DummyCullTestFunction<T>, bool USE_PAIRS = false, typename BOUNDS = AABB, typename POINT = Vector3>
+template <typename T, int NUM_TREES, int MAX_CHILDREN, int MAX_ITEMS, typename USER_PAIR_TEST_FUNCTION = BVH_DummyPairTestFunction<T>, typename USER_CULL_TEST_FUNCTION = BVH_DummyCullTestFunction<T>, bool USE_PAIRS = false, typename BOUNDS = AABB, typename POINT = Vector3i>
 class BVH_Tree {
 	friend class BVH;
 

@@ -143,7 +143,7 @@ void PhysicsDirectBodyState2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sleeping"), "set_sleep_state", "is_sleeping");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform"), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2DI, "transform"), "set_transform", "get_transform");
 }
 
 PhysicsDirectBodyState2D::PhysicsDirectBodyState2D() {}
@@ -315,10 +315,10 @@ void PhysicsShapeQueryParameters2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_exclude", "get_exclude");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion"), "set_motion", "get_motion");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "motion"), "set_motion", "get_motion");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "shape_rid"), "set_shape_rid", "get_shape_rid");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform"), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2DI, "transform"), "set_transform", "get_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 }
@@ -406,17 +406,17 @@ Vector<real_t> PhysicsDirectSpaceState2D::_cast_motion(const Ref<PhysicsShapeQue
 	return ret;
 }
 
-TypedArray<Vector2> PhysicsDirectSpaceState2D::_collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results) {
-	ERR_FAIL_COND_V(!p_shape_query.is_valid(), TypedArray<Vector2>());
+TypedArray<Vector2i> PhysicsDirectSpaceState2D::_collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results) {
+	ERR_FAIL_COND_V(!p_shape_query.is_valid(), TypedArray<Vector2i>());
 
-	Vector<Vector2> ret;
+	Vector<Vector2i> ret;
 	ret.resize(p_max_results * 2);
 	int rc = 0;
 	bool res = collide_shape(p_shape_query->get_parameters(), ret.ptrw(), p_max_results, rc);
 	if (!res) {
-		return TypedArray<Vector2>();
+		return TypedArray<Vector2i>();
 	}
-	TypedArray<Vector2> r;
+	TypedArray<Vector2i> r;
 	r.resize(rc * 2);
 	for (int i = 0; i < rc * 2; i++) {
 		r[i] = ret[i];
@@ -518,8 +518,8 @@ void PhysicsTestMotionParameters2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_recovery_as_collision_enabled"), &PhysicsTestMotionParameters2D::is_recovery_as_collision_enabled);
 	ClassDB::bind_method(D_METHOD("set_recovery_as_collision_enabled", "enabled"), &PhysicsTestMotionParameters2D::set_recovery_as_collision_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "from"), "set_from", "get_from");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion"), "set_motion", "get_motion");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2DI, "from"), "set_from", "get_from");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "motion"), "set_motion", "get_motion");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_separation_ray"), "set_collide_separation_ray_enabled", "is_collide_separation_ray_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_bodies", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_exclude_bodies", "get_exclude_bodies");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_objects"), "set_exclude_objects", "get_exclude_objects");
@@ -650,7 +650,7 @@ bool PhysicsServer2D::_body_test_motion(RID p_body, const Ref<PhysicsTestMotionP
 	return body_test_motion(p_body, p_parameters->get_parameters(), result_ptr);
 }
 
-bool PhysicsServer2D::_body_collides_at(RID p_body, const Transform2D from, const Vector2i delta, const Ref<PhysicsCollisionResult2D> &p_result) {
+bool PhysicsServer2D::_body_collides_at(RID p_body, const Transform2Di from, const Vector2i delta, const Ref<PhysicsCollisionResult2D> &p_result) {
 	CollisionResult *result_ptr = nullptr;
 	if (p_result.is_valid()) {
 		result_ptr = p_result->get_result_ptr();
@@ -682,7 +682,7 @@ void PhysicsServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_set_space", "area", "space"), &PhysicsServer2D::area_set_space);
 	ClassDB::bind_method(D_METHOD("area_get_space", "area"), &PhysicsServer2D::area_get_space);
 
-	ClassDB::bind_method(D_METHOD("area_add_shape", "area", "shape", "transform", "disabled"), &PhysicsServer2D::area_add_shape, DEFVAL(Transform2D()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("area_add_shape", "area", "shape", "transform", "disabled"), &PhysicsServer2D::area_add_shape, DEFVAL(Transform2Di()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("area_set_shape", "area", "shape_idx", "shape"), &PhysicsServer2D::area_set_shape);
 	ClassDB::bind_method(D_METHOD("area_set_shape_transform", "area", "shape_idx", "transform"), &PhysicsServer2D::area_set_shape_transform);
 	ClassDB::bind_method(D_METHOD("area_set_shape_disabled", "area", "shape_idx", "disabled"), &PhysicsServer2D::area_set_shape_disabled);
@@ -724,7 +724,7 @@ void PhysicsServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_mode", "body", "mode"), &PhysicsServer2D::body_set_mode);
 	ClassDB::bind_method(D_METHOD("body_get_mode", "body"), &PhysicsServer2D::body_get_mode);
 
-	ClassDB::bind_method(D_METHOD("body_add_shape", "body", "shape", "transform", "disabled"), &PhysicsServer2D::body_add_shape, DEFVAL(Transform2D()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("body_add_shape", "body", "shape", "transform", "disabled"), &PhysicsServer2D::body_add_shape, DEFVAL(Transform2Di()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("body_set_shape", "body", "shape_idx", "shape"), &PhysicsServer2D::body_set_shape);
 	ClassDB::bind_method(D_METHOD("body_set_shape_transform", "body", "shape_idx", "transform"), &PhysicsServer2D::body_set_shape_transform);
 

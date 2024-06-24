@@ -56,8 +56,8 @@ public:
 	virtual void set_angular_velocity(real_t p_velocity) override;
 	virtual real_t get_angular_velocity() const override;
 
-	virtual void set_transform(const Transform2D &p_transform) override;
-	virtual Transform2D get_transform() const override;
+	virtual void set_transform(const Transform2Di &p_transform) override;
+	virtual Transform2Di get_transform() const override;
 
 	virtual Vector2 get_velocity_at_local_position(const Vector2 &p_position) const override;
 

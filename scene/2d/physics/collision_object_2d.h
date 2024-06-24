@@ -62,7 +62,7 @@ private:
 
 	struct ShapeData {
 		ObjectID owner_id;
-		Transform2D xform;
+		Transform2Di xform;
 		struct Shape {
 			Ref<Shape2D> shape;
 			int index = 0;
@@ -139,8 +139,8 @@ public:
 	void get_shape_owners(List<uint32_t> *r_owners);
 	PackedInt32Array _get_shape_owners();
 
-	void shape_owner_set_transform(uint32_t p_owner, const Transform2D &p_transform);
-	Transform2D shape_owner_get_transform(uint32_t p_owner) const;
+	void shape_owner_set_transform(uint32_t p_owner, const Transform2Di &p_transform);
+	Transform2Di shape_owner_get_transform(uint32_t p_owner) const;
 	Object *shape_owner_get_owner(uint32_t p_owner) const;
 
 	void shape_owner_set_disabled(uint32_t p_owner, bool p_disabled);

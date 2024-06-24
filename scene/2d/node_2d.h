@@ -101,7 +101,7 @@ public:
 
 	void set_transform(const Transform2D &p_transform);
 	void set_global_transform(const Transform2D &p_transform);
-	void set_global_position(const Point2 &p_pos);
+	void set_global_position(const Point2i &p_pos);
 	void set_global_rotation(const real_t p_radians);
 	void set_global_rotation_degrees(const real_t p_degrees);
 	void set_global_skew(const real_t p_radians);

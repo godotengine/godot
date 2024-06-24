@@ -117,11 +117,25 @@ private:
 
 	Ref<Material> material;
 
+	mutable Transform2Di transform_i;
 	mutable Transform2D global_transform;
+	mutable Transform2Di global_transform_i;
+	mutable MTFlag transform_i_invalid;
 	mutable MTFlag global_invalid;
+	mutable MTFlag global_i_invalid;
+
+	_FORCE_INLINE_ bool _is_transform_i_invalid() const { return is_group_processing() ? transform_i_invalid.mt.is_set() : transform_i_invalid.st; }
+	void _set_transform_i_invalid(bool p_invalid) const;
 
 	_FORCE_INLINE_ bool _is_global_invalid() const { return is_group_processing() ? global_invalid.mt.is_set() : global_invalid.st; }
 	void _set_global_invalid(bool p_invalid) const;
+
+	_FORCE_INLINE_ bool _is_global_i_invalid() const { return is_group_processing() ? global_i_invalid.mt.is_set() : global_i_invalid.st; }
+	void _set_global_i_invalid(bool p_invalid) const;
+
+	_FORCE_INLINE_ bool _is_any_invalid() const { return _is_transform_i_invalid() || _is_global_i_invalid() || _is_global_invalid(); }
+	_FORCE_INLINE_ bool _is_all_invalid() const { return _is_transform_i_invalid() && _is_global_i_invalid() && _is_global_invalid(); }
+	void _set_invalid(bool p_invalid) const;
 
 	void _top_level_raise_self();
 
@@ -327,8 +341,10 @@ public:
 	CanvasItem *get_parent_item() const;
 
 	virtual Transform2D get_transform() const = 0;
+	virtual Transform2Di get_transform_i() const;
 
 	virtual Transform2D get_global_transform() const;
+	virtual Transform2Di get_global_transform_i() const;
 	virtual Transform2D get_global_transform_with_canvas() const;
 	virtual Transform2D get_screen_transform() const;
 

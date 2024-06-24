@@ -223,12 +223,12 @@ Vector<Vector2i> Transform2Di::xform_inv(const Vector<Vector2i> &p_array) const 
 
 static Transform2Di transform2di_from_transform2d(const Transform2D &transform2D) {
 	Transform2Di transform2Di = Transform2Di();
-	transform2Di.columns[0][0] = (int)ceil(transform2D.columns[0][0]);
-	transform2Di.columns[0][1] = (int)ceil(transform2D.columns[0][1]);
-	transform2Di.columns[1][0] = (int)ceil(transform2D.columns[1][0]);
-	transform2Di.columns[1][1] = (int)ceil(transform2D.columns[1][1]);
-	transform2Di.columns[2][0] = (int)ceil(transform2D.columns[2][0]);
-	transform2Di.columns[2][1] = (int)ceil(transform2D.columns[2][1]);
+	transform2Di.columns[0][0] = (int)Math::round(transform2D.columns[0][0]);
+	transform2Di.columns[0][1] = (int)Math::round(transform2D.columns[0][1]);
+	transform2Di.columns[1][0] = (int)Math::round(transform2D.columns[1][0]);
+	transform2Di.columns[1][1] = (int)Math::round(transform2D.columns[1][1]);
+	transform2Di.columns[2][0] = (int)Math::round(transform2D.columns[2][0]);
+	transform2Di.columns[2][1] = (int)Math::round(transform2D.columns[2][1]);
 	return transform2Di;
 }
 

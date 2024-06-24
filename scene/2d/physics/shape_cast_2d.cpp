@@ -285,7 +285,7 @@ void ShapeCast2D::_update_shapecast_state() {
 	PhysicsDirectSpaceState2D *dss = PhysicsServer2D::get_singleton()->space_get_direct_state(w2d->get_space());
 	ERR_FAIL_NULL(dss);
 
-	Transform2D gt = get_global_transform();
+	Transform2Di gt = get_global_transform_i();
 
 	PhysicsDirectSpaceState2D::ShapeParameters params;
 	params.shape_rid = shape_rid;

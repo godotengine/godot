@@ -80,7 +80,7 @@ public:
 		int amount = 0;
 		int passed = 0;
 		int invalid_by_dir = 0;
-		Vector2 *ptr = nullptr;
+		Vector2i *ptr = nullptr;
 	};
 
 	virtual RID world_boundary_shape_create() override;
@@ -89,7 +89,7 @@ public:
 	virtual RID rectangle_shape_create() override;
 	virtual RID convex_polygon_shape_create() override;
 
-	static void _shape_col_cbk(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata);
+	static void _shape_col_cbk(const Vector2i &p_point_A, const Vector2i &p_point_B, void *p_userdata);
 
 	virtual void shape_set_data(RID p_shape, const Variant &p_data) override;
 	virtual void shape_set_custom_solver_bias(RID p_shape, real_t p_bias) override;
@@ -98,7 +98,7 @@ public:
 	virtual Variant shape_get_data(RID p_shape) const override;
 	virtual real_t shape_get_custom_solver_bias(RID p_shape) const override;
 
-	virtual bool shape_collide(RID p_shape_A, const Transform2D &p_xform_A, const Vector2 &p_motion_A, RID p_shape_B, const Transform2D &p_xform_B, const Vector2 &p_motion_B, Vector2 *r_results, int p_result_max, int &r_result_count) override;
+	virtual bool shape_collide(RID p_shape_A, const Transform2Di &p_xform_A, const Vector2i &p_motion_A, RID p_shape_B, const Transform2Di &p_xform_B, const Vector2i &p_motion_B, Vector2i *r_results, int p_result_max, int &r_result_count) override;
 
 	/* SPACE API */
 
@@ -123,13 +123,13 @@ public:
 	virtual void area_set_space(RID p_area, RID p_space) override;
 	virtual RID area_get_space(RID p_area) const override;
 
-	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) override;
+	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2Di &p_transform = Transform2Di(), bool p_disabled = false) override;
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape) override;
-	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform2D &p_transform) override;
+	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform2Di &p_transform) override;
 
 	virtual int area_get_shape_count(RID p_area) const override;
 	virtual RID area_get_shape(RID p_area, int p_shape_idx) const override;
-	virtual Transform2D area_get_shape_transform(RID p_area, int p_shape_idx) const override;
+	virtual Transform2Di area_get_shape_transform(RID p_area, int p_shape_idx) const override;
 
 	virtual void area_set_shape_disabled(RID p_area, int p_shape, bool p_disabled) override;
 
@@ -143,10 +143,10 @@ public:
 	virtual ObjectID area_get_canvas_instance_id(RID p_area) const override;
 
 	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value) override;
-	virtual void area_set_transform(RID p_area, const Transform2D &p_transform) override;
+	virtual void area_set_transform(RID p_area, const Transform2Di &p_transform) override;
 
 	virtual Variant area_get_param(RID p_area, AreaParameter p_param) const override;
-	virtual Transform2D area_get_transform(RID p_area) const override;
+	virtual Transform2Di area_get_transform(RID p_area) const override;
 	virtual void area_set_monitorable(RID p_area, bool p_monitorable) override;
 
 	virtual void area_set_collision_layer(RID p_area, uint32_t p_layer) override;
@@ -171,13 +171,13 @@ public:
 	virtual void body_set_mode(RID p_body, BodyMode p_mode) override;
 	virtual BodyMode body_get_mode(RID p_body) const override;
 
-	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) override;
+	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2Di &p_transform = Transform2Di(), bool p_disabled = false) override;
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape) override;
-	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform2D &p_transform) override;
+	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform2Di &p_transform) override;
 
 	virtual int body_get_shape_count(RID p_body) const override;
 	virtual RID body_get_shape(RID p_body, int p_shape_idx) const override;
-	virtual Transform2D body_get_shape_transform(RID p_body, int p_shape_idx) const override;
+	virtual Transform2Di body_get_shape_transform(RID p_body, int p_shape_idx) const override;
 
 	virtual void body_remove_shape(RID p_body, int p_shape_idx) override;
 	virtual void body_clear_shapes(RID p_body) override;
@@ -247,12 +247,12 @@ public:
 	virtual void body_set_state_sync_callback(RID p_body, const Callable &p_callable) override;
 	virtual void body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata = Variant()) override;
 
-	virtual bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) override;
+	virtual bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2Di &p_shape_xform, const Vector2i &p_motion, Vector2i *r_results, int p_result_max, int &r_result_count) override;
 
 	virtual void body_set_pickable(RID p_body, bool p_pickable) override;
 
 	virtual bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override;
-	virtual bool body_collides_at(RID p_body, const Transform2D from, const Vector2i delta, CollisionResult *r_result = nullptr) override;
+	virtual bool body_collides_at(RID p_body, const Transform2Di from, const Vector2i delta, CollisionResult *r_result = nullptr) override;
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState2D *body_get_direct_state(RID p_body) override;

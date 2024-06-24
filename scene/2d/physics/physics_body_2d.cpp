@@ -75,7 +75,7 @@ bool PhysicsBody2D::move_h_exact(int32_t amount, const Callable &collision_callb
 	PhysicsServer2D::CollisionResult r_result;
 	while (amount != 0)
 	{
-		bool colliding = PhysicsServer2D::get_singleton()->body_collides_at(get_rid(), get_global_transform(), move_dir_vector, &r_result);
+		bool colliding = PhysicsServer2D::get_singleton()->body_collides_at(get_rid(), get_global_transform_i(), move_dir_vector, &r_result);
 		if (colliding)
 		{
 			position_delta.x = 0;
@@ -100,7 +100,7 @@ bool PhysicsBody2D::move_v_exact(int32_t amount, const Callable &collision_callb
 	PhysicsServer2D::CollisionResult r_result;
 	while (amount != 0)
 	{
-		bool colliding = PhysicsServer2D::get_singleton()->body_collides_at(get_rid(), get_global_transform(), move_dir_vector, &r_result);
+		bool colliding = PhysicsServer2D::get_singleton()->body_collides_at(get_rid(), get_global_transform_i(), move_dir_vector, &r_result);
 		if (colliding)
 		{
 			position_delta.x = 0;
@@ -117,7 +117,7 @@ bool PhysicsBody2D::move_v_exact(int32_t amount, const Callable &collision_callb
 	return false;
 }
 
-bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion, const Ref<KinematicCollision2D> &r_collision, bool p_recovery_as_collision) {
+bool PhysicsBody2D::test_move(const Transform2Di &p_from, const Vector2i &p_motion, const Ref<KinematicCollision2D> &r_collision, bool p_recovery_as_collision) {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	PhysicsServer2D::MotionResult *r = nullptr;
@@ -135,9 +135,9 @@ bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion
 	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), parameters, r);
 }
 
-Vector2 PhysicsBody2D::get_gravity() const {
+Vector2i PhysicsBody2D::get_gravity() const {
 	PhysicsDirectBodyState2D *state = PhysicsServer2D::get_singleton()->body_get_direct_state(get_rid());
-	ERR_FAIL_NULL_V(state, Vector2());
+	ERR_FAIL_NULL_V(state, Vector2i());
 	return state->get_total_gravity();
 }
 

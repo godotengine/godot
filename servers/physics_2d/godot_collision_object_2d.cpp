@@ -32,7 +32,7 @@
 #include "godot_physics_server_2d.h"
 #include "godot_space_2d.h"
 
-void GodotCollisionObject2D::add_shape(GodotShape2D *p_shape, const Transform2D &p_transform, bool p_disabled) {
+void GodotCollisionObject2D::add_shape(GodotShape2D *p_shape, const Transform2Di &p_transform, bool p_disabled) {
 	Shape s;
 	s.shape = p_shape;
 	s.xform = p_transform;
@@ -60,7 +60,7 @@ void GodotCollisionObject2D::set_shape(int p_index, GodotShape2D *p_shape) {
 	}
 }
 
-void GodotCollisionObject2D::set_shape_transform(int p_index, const Transform2D &p_transform) {
+void GodotCollisionObject2D::set_shape_transform(int p_index, const Transform2Di &p_transform) {
 	ERR_FAIL_INDEX(p_index, shapes.size());
 
 	shapes.write[p_index].xform = p_transform;
@@ -167,11 +167,9 @@ void GodotCollisionObject2D::_update_shapes() {
 			continue;
 		}
 
-		//not quite correct, should compute the next matrix..
-		Rect2 shape_aabb = s.shape->get_aabb();
-		Transform2D xform = transform * s.xform;
+		Rect2i shape_aabb = s.shape->get_aabb();
+		Transform2Di xform = transform * s.xform;
 		shape_aabb = xform.xform(shape_aabb);
-		shape_aabb.grow_by((s.aabb_cache.size.x + s.aabb_cache.size.y) * 0.5 * 0.05);
 		s.aabb_cache = shape_aabb;
 
 		if (s.bpid == 0) {
@@ -195,10 +193,10 @@ void GodotCollisionObject2D::_update_shapes_with_motion(const Vector2 &p_motion)
 		}
 
 		//not quite correct, should compute the next matrix..
-		Rect2 shape_aabb = s.shape->get_aabb();
-		Transform2D xform = transform * s.xform;
+		Rect2i shape_aabb = s.shape->get_aabb();
+		Transform2Di xform = transform * s.xform;
 		shape_aabb = xform.xform(shape_aabb);
-		shape_aabb = shape_aabb.merge(Rect2(shape_aabb.position + p_motion, shape_aabb.size)); //use motion
+		shape_aabb = shape_aabb.merge(Rect2i(shape_aabb.position + p_motion, shape_aabb.size)); //use motion
 		s.aabb_cache = shape_aabb;
 
 		if (s.bpid == 0) {

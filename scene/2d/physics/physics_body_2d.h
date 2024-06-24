@@ -49,8 +49,8 @@ public:
 	bool move_v(float_t moveV, const Callable &collisionCallback = Callable());
 	bool move_h_exact(int32_t moveH, const Callable &collisionCallback);
 	bool move_v_exact(int32_t moveV, const Callable &collisionCallback);
-	bool test_move(const Transform2D &p_from, const Vector2 &p_motion, const Ref<KinematicCollision2D> &r_collision = Ref<KinematicCollision2D>(), bool p_recovery_as_collision = false);
-	Vector2 get_gravity() const;
+	bool test_move(const Transform2Di &p_from, const Vector2i &p_motion, const Ref<KinematicCollision2D> &r_collision = Ref<KinematicCollision2D>(), bool p_recovery_as_collision = false);
+	Vector2i get_gravity() const;
 
 	TypedArray<PhysicsBody2D> get_collision_exceptions();
 	void add_collision_exception_with(Node *p_node); //must be physicsbody

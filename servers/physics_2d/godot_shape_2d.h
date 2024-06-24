@@ -71,8 +71,8 @@ public:
 
 	virtual bool contains_point(const Vector2i &p_point) const = 0;
 
-	virtual void project_rangev(const Vector2i &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const = 0;
-	virtual void project_range_castv(const Vector2i &p_cast, const Vector2i &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const = 0;
+	virtual void project_rangev(const Vector2i &p_normal, const Transform2Di &p_transform, real_t &r_min, real_t &r_max) const = 0;
+	virtual void project_range_castv(const Vector2i &p_cast, const Vector2i &p_normal, const Transform2Di &p_transform, real_t &r_min, real_t &r_max) const = 0;
 	virtual Vector2i get_support(const Vector2i &p_normal) const;
 	virtual void get_supports(const Vector2i &p_normal, Vector2i *r_supports, int &r_amount) const = 0;
 
@@ -89,7 +89,7 @@ public:
 	bool is_owner(GodotShapeOwner2D *p_owner) const;
 	const HashMap<GodotShapeOwner2D *, int> &get_owners() const;
 
-	_FORCE_INLINE_ void get_supports_transformed_cast(const Vector2i &p_cast, const Vector2i &p_normal, const Transform2D &p_xform, Vector2i *r_supports, int &r_amount) const {
+	_FORCE_INLINE_ void get_supports_transformed_cast(const Vector2i &p_cast, const Vector2i &p_normal, const Transform2Di &p_xform, Vector2i *r_supports, int &r_amount) const {
 		get_supports(p_xform.basis_xform_inv(p_normal).normalized(), r_supports, r_amount);
 		for (int i = 0; i < r_amount; i++) {
 			r_supports[i] = p_xform.xform(r_supports[i]);
@@ -128,13 +128,13 @@ public:
 
 //let the optimizer do the magic
 #define DEFAULT_PROJECT_RANGE_CAST                                                                                                                                  \
-	virtual void project_range_castv(const Vector2i &p_cast, const Vector2i &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const override { \
+	virtual void project_range_castv(const Vector2i &p_cast, const Vector2i &p_normal, const Transform2Di &p_transform, real_t &r_min, real_t &r_max) const override { \
 		project_range_cast(p_cast, p_normal, p_transform, r_min, r_max);                                                                                            \
 	}                                                                                                                                                               \
-	_FORCE_INLINE_ void project_range_cast(const Vector2i &p_cast, const Vector2i &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const {    \
+	_FORCE_INLINE_ void project_range_cast(const Vector2i &p_cast, const Vector2i &p_normal, const Transform2Di &p_transform, real_t &r_min, real_t &r_max) const {    \
 		real_t mina, maxa;                                                                                                                                          \
 		real_t minb, maxb;                                                                                                                                          \
-		Transform2D ofsb = p_transform;                                                                                                                             \
+		Transform2Di ofsb = p_transform;                                                                                                                             \
 		ofsb.columns[2] += p_cast;                                                                                                                                  \
 		project_range(p_normal, p_transform, mina, maxa);                                                                                                           \
 		project_range(p_normal, ofsb, minb, maxb);                                                                                                                  \
@@ -152,7 +152,7 @@ public:
 
 	virtual PhysicsServer2D::ShapeType get_type() const override { return PhysicsServer2D::SHAPE_WORLD_BOUNDARY; }
 
-	virtual void project_rangev(const Vector2i &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const override { project_range(p_normal, p_transform, r_min, r_max); }
+	virtual void project_rangev(const Vector2i &p_normal, const Transform2Di &p_transform, real_t &r_min, real_t &r_max) const override { project_range(p_normal, p_transform, r_min, r_max); }
 	virtual void get_supports(const Vector2i &p_normal, Vector2i *r_supports, int &r_amount) const override;
 
 	virtual bool contains_point(const Vector2i &p_point) const override;
@@ -162,17 +162,17 @@ public:
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
 
-	_FORCE_INLINE_ void project_range(const Vector2i &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const {
+	_FORCE_INLINE_ void project_range(const Vector2i &p_normal, const Transform2Di &p_transform, real_t &r_min, real_t &r_max) const {
 		//real large
 		r_min = -1e10;
 		r_max = 1e10;
 	}
 
-	virtual void project_range_castv(const Vector2i &p_cast, const Vector2i &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const override {
+	virtual void project_range_castv(const Vector2i &p_cast, const Vector2i &p_normal, const Transform2Di &p_transform, real_t &r_min, real_t &r_max) const override {
 		project_range_cast(p_cast, p_normal, p_transform, r_min, r_max);
 	}
 
-	_FORCE_INLINE_ void project_range_cast(const Vector2i &p_cast, const Vector2i &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const {
+	_FORCE_INLINE_ void project_range_cast(const Vector2i &p_cast, const Vector2i &p_normal, const Transform2Di &p_transform, real_t &r_min, real_t &r_max) const {
 		//real large
 		r_min = -1e10;
 		r_max = 1e10;
@@ -191,7 +191,7 @@ public:
 
 	virtual bool allows_one_way_collision() const override { return false; }
 
-	virtual void project_rangev(const Vector2i &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const override { project_range(p_normal, p_transform, r_min, r_max); }
+	virtual void project_rangev(const Vector2i &p_normal, const Transform2Di &p_transform, real_t &r_min, real_t &r_max) const override { project_range(p_normal, p_transform, r_min, r_max); }
 	virtual void get_supports(const Vector2i &p_normal, Vector2i *r_supports, int &r_amount) const override;
 
 	virtual bool contains_point(const Vector2i &p_point) const override;
@@ -201,7 +201,7 @@ public:
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
 
-	_FORCE_INLINE_ void project_range(const Vector2i &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const {
+	_FORCE_INLINE_ void project_range(const Vector2i &p_normal, const Transform2Di &p_transform, real_t &r_min, real_t &r_max) const {
 		//real large
 		r_max = p_normal.dot(p_transform.get_origin());
 		r_min = p_normal.dot(p_transform.xform(Vector2i(0, length)));
@@ -228,10 +228,10 @@ public:
 
 	virtual PhysicsServer2D::ShapeType get_type() const override { return PhysicsServer2D::SHAPE_SEGMENT; }
 
-	_FORCE_INLINE_ Vector2i get_xformed_normal(const Transform2D &p_xform) const {
+	_FORCE_INLINE_ Vector2i get_xformed_normal(const Transform2Di &p_xform) const {
 		return (p_xform.xform(b) - p_xform.xform(a)).normalized().orthogonal();
 	}
-	virtual void project_rangev(const Vector2i &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const override { project_range(p_normal, p_transform, r_min, r_max); }
+	virtual void project_rangev(const Vector2i &p_normal, const Transform2Di &p_transform, real_t &r_min, real_t &r_max) const override { project_range(p_normal, p_transform, r_min, r_max); }
 	virtual void get_supports(const Vector2i &p_normal, Vector2i *r_supports, int &r_amount) const override;
 
 	virtual bool contains_point(const Vector2i &p_point) const override;
@@ -241,7 +241,7 @@ public:
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
 
-	_FORCE_INLINE_ void project_range(const Vector2i &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const {
+	_FORCE_INLINE_ void project_range(const Vector2i &p_normal, const Transform2Di &p_transform, real_t &r_min, real_t &r_max) const {
 		//real large
 		r_max = p_normal.dot(p_transform.xform(a));
 		r_min = p_normal.dot(p_transform.xform(b));
@@ -270,7 +270,7 @@ public:
 
 	virtual PhysicsServer2D::ShapeType get_type() const override { return PhysicsServer2D::SHAPE_RECTANGLE; }
 
-	virtual void project_rangev(const Vector2i &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const override { project_range(p_normal, p_transform, r_min, r_max); }
+	virtual void project_rangev(const Vector2i &p_normal, const Transform2Di &p_transform, real_t &r_min, real_t &r_max) const override { project_range(p_normal, p_transform, r_min, r_max); }
 	virtual void get_supports(const Vector2i &p_normal, Vector2i *r_supports, int &r_amount) const override;
 
 	virtual bool contains_point(const Vector2i &p_point) const override;
@@ -280,7 +280,7 @@ public:
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
 
-	_FORCE_INLINE_ void project_range(const Vector2i &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const {
+	_FORCE_INLINE_ void project_range(const Vector2i &p_normal, const Transform2Di &p_transform, real_t &r_min, real_t &r_max) const {
 		// no matter the angle, the box is mirrored anyway
 		r_max = -1e20;
 		r_min = 1e20;
@@ -296,7 +296,7 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ Vector2i get_circle_axis(const Transform2D &p_xform, const Transform2D &p_xform_inv, const Vector2i &p_circle) const {
+	_FORCE_INLINE_ Vector2i get_circle_axis(const Transform2Di &p_xform, const Transform2Di &p_xform_inv, const Vector2i &p_circle) const {
 		Vector2i local_v = p_xform_inv.xform(p_circle);
 
 		Vector2i he(
@@ -306,7 +306,7 @@ public:
 		return (p_xform.xform(he) - p_circle).normalized();
 	}
 
-	_FORCE_INLINE_ Vector2i get_box_axis(const Transform2D &p_xform, const Transform2D &p_xform_inv, const GodotRectangleShape2D *p_B, const Transform2D &p_B_xform, const Transform2D &p_B_xform_inv) const {
+	_FORCE_INLINE_ Vector2i get_box_axis(const Transform2Di &p_xform, const Transform2Di &p_xform_inv, const GodotRectangleShape2D *p_B, const Transform2Di &p_B_xform, const Transform2Di &p_B_xform_inv) const {
 		Vector2i a, b;
 
 		{
@@ -347,7 +347,7 @@ public:
 	_FORCE_INLINE_ int get_point_count() const { return point_count; }
 	_FORCE_INLINE_ const Vector2i &get_point(int p_idx) const { return points[p_idx].pos; }
 	_FORCE_INLINE_ const Vector2i &get_segment_normal(int p_idx) const { return points[p_idx].normal; }
-	_FORCE_INLINE_ Vector2i get_xformed_segment_normal(const Transform2D &p_xform, int p_idx) const {
+	_FORCE_INLINE_ Vector2i get_xformed_segment_normal(const Transform2Di &p_xform, int p_idx) const {
 		Vector2i a = points[p_idx].pos;
 		p_idx++;
 		Vector2i b = points[p_idx == point_count ? 0 : p_idx].pos;
@@ -356,7 +356,7 @@ public:
 
 	virtual PhysicsServer2D::ShapeType get_type() const override { return PhysicsServer2D::SHAPE_CONVEX_POLYGON; }
 
-	virtual void project_rangev(const Vector2i &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const override { project_range(p_normal, p_transform, r_min, r_max); }
+	virtual void project_rangev(const Vector2i &p_normal, const Transform2Di &p_transform, real_t &r_min, real_t &r_max) const override { project_range(p_normal, p_transform, r_min, r_max); }
 	virtual void get_supports(const Vector2i &p_normal, Vector2i *r_supports, int &r_amount) const override;
 
 	virtual bool contains_point(const Vector2i &p_point) const override;
@@ -366,7 +366,7 @@ public:
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
 
-	_FORCE_INLINE_ void project_range(const Vector2i &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const {
+	_FORCE_INLINE_ void project_range(const Vector2i &p_normal, const Transform2Di &p_transform, real_t &r_min, real_t &r_max) const {
 		if (!points || point_count <= 0) {
 			r_min = r_max = 0;
 			return;

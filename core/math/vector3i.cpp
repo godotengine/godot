@@ -30,6 +30,7 @@
 
 #include "vector3i.h"
 
+#include "core/math/basis.h"
 #include "core/math/vector3.h"
 #include "core/string/ustring.h"
 
@@ -75,4 +76,22 @@ Vector3i::operator String() const {
 
 Vector3i::operator Vector3() const {
 	return Vector3(x, y, z);
+}
+
+bool Vector3i::is_equal(const Vector3i &p_v) const {
+	return x == p_v.x && y == p_v.y && z == p_v.z;
+}
+
+bool Vector3i::is_zero() const {
+	return x == 0 && y == 0 && z == 0;
+}
+
+void Vector3i::rotate(const Vector3i &p_axis, real_t p_angle) {
+	*this = Basis(p_axis, p_angle).xform(*this);
+}
+
+Vector3i Vector3i::rotated(const Vector3i &p_axis, real_t p_angle) const {
+	Vector3i r = *this;
+	r.rotate(p_axis, p_angle);
+	return r;
 }

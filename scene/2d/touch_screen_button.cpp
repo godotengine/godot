@@ -272,7 +272,7 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 			pos = texture_normal->get_size() * 0.5;
 		}
 
-		touched = shape->collide(Transform2D().translated_local(pos), unit_rect, Transform2D(0, coord + Vector2(0.5, 0.5)));
+		touched = shape->collide(Transform2Di().translated_local(pos), unit_rect, Transform2Di(coord + Vector2(0.5, 0.5)));
 	}
 
 	if (bitmask.is_valid()) {

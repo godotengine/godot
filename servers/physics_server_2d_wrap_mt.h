@@ -85,7 +85,7 @@ public:
 	FUNC1RC(real_t, shape_get_custom_solver_bias, RID);
 
 	//these work well, but should be used from the main thread only
-	bool shape_collide(RID p_shape_A, const Transform2D &p_xform_A, const Vector2 &p_motion_A, RID p_shape_B, const Transform2D &p_xform_B, const Vector2 &p_motion_B, Vector2 *r_results, int p_result_max, int &r_result_count) override {
+	bool shape_collide(RID p_shape_A, const Transform2Di &p_xform_A, const Vector2i &p_motion_A, RID p_shape_B, const Transform2Di &p_xform_B, const Vector2i &p_motion_B, Vector2i *r_results, int p_result_max, int &r_result_count) override {
 		ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
 		return physics_server_2d->shape_collide(p_shape_A, p_xform_A, p_motion_A, p_shape_B, p_xform_B, p_motion_B, r_results, p_result_max, r_result_count);
 	}
@@ -124,14 +124,14 @@ public:
 	FUNC2(area_set_space, RID, RID);
 	FUNC1RC(RID, area_get_space, RID);
 
-	FUNC4(area_add_shape, RID, RID, const Transform2D &, bool);
+	FUNC4(area_add_shape, RID, RID, const Transform2Di &, bool);
 	FUNC3(area_set_shape, RID, int, RID);
-	FUNC3(area_set_shape_transform, RID, int, const Transform2D &);
+	FUNC3(area_set_shape_transform, RID, int, const Transform2Di &);
 	FUNC3(area_set_shape_disabled, RID, int, bool);
 
 	FUNC1RC(int, area_get_shape_count, RID);
 	FUNC2RC(RID, area_get_shape, RID, int);
-	FUNC2RC(Transform2D, area_get_shape_transform, RID, int);
+	FUNC2RC(Transform2Di, area_get_shape_transform, RID, int);
 	FUNC2(area_remove_shape, RID, int);
 	FUNC1(area_clear_shapes, RID);
 
@@ -142,10 +142,10 @@ public:
 	FUNC1RC(ObjectID, area_get_canvas_instance_id, RID);
 
 	FUNC3(area_set_param, RID, AreaParameter, const Variant &);
-	FUNC2(area_set_transform, RID, const Transform2D &);
+	FUNC2(area_set_transform, RID, const Transform2Di &);
 
 	FUNC2RC(Variant, area_get_param, RID, AreaParameter);
-	FUNC1RC(Transform2D, area_get_transform, RID);
+	FUNC1RC(Transform2Di, area_get_transform, RID);
 
 	FUNC2(area_set_collision_layer, RID, uint32_t);
 	FUNC1RC(uint32_t, area_get_collision_layer, RID);
@@ -170,12 +170,12 @@ public:
 	FUNC2(body_set_mode, RID, BodyMode);
 	FUNC1RC(BodyMode, body_get_mode, RID);
 
-	FUNC4(body_add_shape, RID, RID, const Transform2D &, bool);
+	FUNC4(body_add_shape, RID, RID, const Transform2Di &, bool);
 	FUNC3(body_set_shape, RID, int, RID);
-	FUNC3(body_set_shape_transform, RID, int, const Transform2D &);
+	FUNC3(body_set_shape_transform, RID, int, const Transform2Di &);
 
 	FUNC1RC(int, body_get_shape_count, RID);
-	FUNC2RC(Transform2D, body_get_shape_transform, RID, int);
+	FUNC2RC(Transform2Di, body_get_shape_transform, RID, int);
 	FUNC2RC(RID, body_get_shape, RID, int);
 
 	FUNC3(body_set_shape_disabled, RID, int, bool);
@@ -246,7 +246,7 @@ public:
 	FUNC2(body_set_state_sync_callback, RID, const Callable &);
 	FUNC3(body_set_force_integration_callback, RID, const Callable &, const Variant &);
 
-	bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) override {
+	bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2Di &p_shape_xform, const Vector2i &p_motion, Vector2i *r_results, int p_result_max, int &r_result_count) override {
 		return physics_server_2d->body_collide_shape(p_body, p_body_shape, p_shape, p_shape_xform, p_motion, r_results, p_result_max, r_result_count);
 	}
 
@@ -257,7 +257,7 @@ public:
 		return physics_server_2d->body_test_motion(p_body, p_parameters, r_result);
 	}
 
-	bool body_collides_at(RID p_body, const Transform2D from, const Vector2i delta, CollisionResult *r_result = nullptr) override {
+	bool body_collides_at(RID p_body, const Transform2Di from, const Vector2i delta, CollisionResult *r_result = nullptr) override {
 		ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
 		return physics_server_2d->body_collides_at(p_body, from, delta, r_result);
 	}
@@ -280,9 +280,9 @@ public:
 	FUNC2(joint_disable_collisions_between_bodies, RID, const bool);
 	FUNC1RC(bool, joint_is_disabled_collisions_between_bodies, RID);
 
-	///FUNC3RID(pin_joint,const Vector2&,RID,RID);
-	///FUNC5RID(groove_joint,const Vector2&,const Vector2&,const Vector2&,RID,RID);
-	///FUNC4RID(damped_spring_joint,const Vector2&,const Vector2&,RID,RID);
+	///FUNC3RID(pin_joint,const Vector2i&,RID,RID);
+	///FUNC5RID(groove_joint,const Vector2i&,const Vector2i&,const Vector2i&,RID,RID);
+	///FUNC4RID(damped_spring_joint,const Vector2i&,const Vector2i&,RID,RID);
 
 	//TODO need to convert this to FUNCRID, but it's a hassle..
 

@@ -32,13 +32,13 @@
 #define BVH_ABB_H
 
 // special optimized version of axis aligned bounding box
-template <typename BOUNDS = AABB, typename POINT = Vector3>
+template <typename BOUNDS = AABB, typename POINT = Vector3i>
 struct BVH_ABB {
 	struct ConvexHull {
 		// convex hulls (optional)
 		const Plane *planes;
 		int num_planes;
-		const Vector3 *points;
+		const POINT *points;
 		int num_points;
 	};
 
@@ -88,12 +88,12 @@ struct BVH_ABB {
 	}
 
 	POINT calculate_center() const {
-		return POINT((calculate_size() * 0.5) + min);
+		return POINT((calculate_size() / 2) + min);
 	}
 
-	real_t get_proximity_to(const BVH_ABB &p_b) const {
+	int32_t get_proximity_to(const BVH_ABB &p_b) const {
 		const POINT d = (min - neg_max) - (p_b.min - p_b.neg_max);
-		real_t proximity = 0.0;
+		int32_t proximity = 0;
 		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
 			proximity += Math::abs(d[axis]);
 		}
@@ -142,13 +142,13 @@ struct BVH_ABB {
 	}
 
 	bool intersects_convex_optimized(const ConvexHull &p_hull, const uint32_t *p_plane_ids, uint32_t p_num_planes) const {
-		Vector3 size = calculate_size();
-		Vector3 half_extents = size * 0.5;
-		Vector3 ofs = min + half_extents;
+		Vector3i size = calculate_size();
+		Vector3i half_extents = size / 2;
+		Vector3i ofs = min + half_extents;
 
 		for (unsigned int i = 0; i < p_num_planes; i++) {
 			const Plane &p = p_hull.planes[p_plane_ids[i]];
-			Vector3 point(
+			Vector3i point(
 					(p.normal.x > 0) ? -half_extents.x : half_extents.x,
 					(p.normal.y > 0) ? -half_extents.y : half_extents.y,
 					(p.normal.z > 0) ? -half_extents.z : half_extents.z);
@@ -203,10 +203,10 @@ struct BVH_ABB {
 	}
 
 	bool intersects_point(const POINT &p_pt) const {
-		if (_any_lessthan(-p_pt, neg_max)) {
+		if (_any_lessorequalthan(-p_pt, neg_max)) {
 			return false;
 		}
-		if (_any_lessthan(p_pt, min)) {
+		if (_any_lessorequalthan(p_pt, min)) {
 			return false;
 		}
 		return true;
@@ -214,10 +214,10 @@ struct BVH_ABB {
 
 	// Very hot in profiling, make sure optimized
 	bool intersects(const BVH_ABB &p_o) const {
-		if (_any_morethan(p_o.min, -neg_max)) {
+		if (_any_moreorequalthan(p_o.min, -neg_max)) {
 			return false;
 		}
-		if (_any_morethan(min, -p_o.neg_max)) {
+		if (_any_moreorequalthan(min, -p_o.neg_max)) {
 			return false;
 		}
 		return true;
@@ -225,20 +225,20 @@ struct BVH_ABB {
 
 	// for pre-swizzled tester (this object)
 	bool intersects_swizzled(const BVH_ABB &p_o) const {
-		if (_any_lessthan(min, p_o.min)) {
+		if (_any_lessorequalthan(min, p_o.min)) {
 			return false;
 		}
-		if (_any_lessthan(neg_max, p_o.neg_max)) {
+		if (_any_lessorequalthan(neg_max, p_o.neg_max)) {
 			return false;
 		}
 		return true;
 	}
 
 	bool is_other_within(const BVH_ABB &p_o) const {
-		if (_any_lessthan(p_o.neg_max, neg_max)) {
+		if (_any_lessorequalthan(p_o.neg_max, neg_max)) {
 			return false;
 		}
-		if (_any_lessthan(p_o.min, min)) {
+		if (_any_lessorequalthan(p_o.min, min)) {
 			return false;
 		}
 		return true;
@@ -265,23 +265,23 @@ struct BVH_ABB {
 
 	void set_to_max_opposite_extents() {
 		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
-			neg_max[axis] = FLT_MAX;
+			neg_max[axis] = INT_MAX;
 		}
 		min = neg_max;
 	}
 
-	bool _any_morethan(const POINT &p_a, const POINT &p_b) const {
+	bool _any_moreorequalthan(const POINT &p_a, const POINT &p_b) const {
 		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
-			if (p_a[axis] > p_b[axis]) {
+			if (p_a[axis] >= p_b[axis]) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	bool _any_lessthan(const POINT &p_a, const POINT &p_b) const {
+	bool _any_lessorequalthan(const POINT &p_a, const POINT &p_b) const {
 		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
-			if (p_a[axis] < p_b[axis]) {
+			if (p_a[axis] <= p_b[axis]) {
 				return true;
 			}
 		}

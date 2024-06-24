@@ -52,7 +52,7 @@ void GodotArea2D::_shapes_changed() {
 	}
 }
 
-void GodotArea2D::set_transform(const Transform2D &p_transform) {
+void GodotArea2D::set_transform(const Transform2Di &p_transform) {
 	if (!moved_list.in_list() && get_space()) {
 		get_space()->area_add_to_moved_list(&moved_list);
 	}

@@ -503,7 +503,7 @@ void NavMeshGenerator2D::generator_parse_staticbody2d_node(const Ref<NavigationP
 				continue;
 			}
 
-			const Transform2D static_body_xform = p_source_geometry_data->root_node_transform * static_body->get_global_transform() * static_body->shape_owner_get_transform(shape_owner);
+			const Transform2D static_body_xform = p_source_geometry_data->root_node_transform * static_body->get_global_transform() * transform2d_from_transform2di(static_body->shape_owner_get_transform(shape_owner));
 
 			RectangleShape2D *rectangle_shape = Object::cast_to<RectangleShape2D>(*s);
 			if (rectangle_shape) {

@@ -700,7 +700,7 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 }
 
 void TileMapLayer::_physics_notification(int p_what) {
-	Transform2D gl_transform = get_global_transform();
+	Transform2Di gl_transform = get_global_transform_i();
 	PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
 
 	switch (p_what) {
@@ -712,7 +712,7 @@ void TileMapLayer::_physics_notification(int p_what) {
 
 					for (RID body : cell_data.bodies) {
 						if (body.is_valid()) {
-							Transform2D xform(0, tile_set->map_to_local(kv.key));
+							Transform2Di xform(tile_set->map_to_local(kv.key));
 							xform = gl_transform * xform;
 							ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
 						}
@@ -752,7 +752,7 @@ void TileMapLayer::_physics_clear_cell(CellData &r_cell_data) {
 }
 
 void TileMapLayer::_physics_update_cell(CellData &r_cell_data) {
-	Transform2D gl_transform = get_global_transform();
+	Transform2Di gl_transform = get_global_transform_i();
 	RID space = get_world_2d()->get_space();
 	PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
 
@@ -811,7 +811,7 @@ void TileMapLayer::_physics_update_cell(CellData &r_cell_data) {
 						ps->body_set_mode(body, use_kinematic_bodies ? PhysicsServer2D::BODY_MODE_KINEMATIC : PhysicsServer2D::BODY_MODE_STATIC);
 						ps->body_set_space(body, space);
 
-						Transform2D xform;
+						Transform2Di xform;
 						xform.set_origin(tile_set->map_to_local(r_cell_data.coords));
 						xform = gl_transform * xform;
 						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
@@ -865,7 +865,7 @@ void TileMapLayer::_physics_update_cell(CellData &r_cell_data) {
 }
 
 #ifdef DEBUG_ENABLED
-void TileMapLayer::_physics_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data) {
+void TileMapLayer::_physics_draw_cell_debug(const RID &p_canvas_item, const Vector2i &p_quadrant_pos, const CellData &r_cell_data) {
 	// Draw the debug collision shapes.
 	ERR_FAIL_COND(tile_set.is_null());
 
@@ -896,13 +896,13 @@ void TileMapLayer::_physics_draw_cell_debug(const RID &p_canvas_item, const Vect
 	Vector<Color> color;
 	color.push_back(debug_collision_color);
 
-	Transform2D quadrant_to_local(0, p_quadrant_pos);
-	Transform2D global_to_quadrant = (get_global_transform() * quadrant_to_local).affine_inverse();
+	Transform2Di quadrant_to_local(p_quadrant_pos);
+	Transform2Di global_to_quadrant = (get_global_transform_i() * quadrant_to_local).affine_inverse();
 
 	for (RID body : r_cell_data.bodies) {
 		if (body.is_valid()) {
-			Transform2D body_to_quadrant = global_to_quadrant * Transform2D(ps->body_get_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM));
-			rs->canvas_item_add_set_transform(p_canvas_item, body_to_quadrant);
+			Transform2Di body_to_quadrant = global_to_quadrant * Transform2Di(ps->body_get_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM));
+			rs->canvas_item_add_set_transform(p_canvas_item, transform2d_from_transform2di(body_to_quadrant));
 			for (int shape_index = 0; shape_index < ps->body_get_shape_count(body); shape_index++) {
 				const RID &shape = ps->body_get_shape(body, shape_index);
 				const PhysicsServer2D::ShapeType &type = ps->shape_get_type(shape);

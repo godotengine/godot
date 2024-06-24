@@ -32,7 +32,7 @@
 #define GODOT_BROAD_PHASE_2D_H
 
 #include "core/math/math_funcs.h"
-#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
 
 class GodotCollisionObject2D;
 
@@ -48,8 +48,8 @@ public:
 	typedef void (*UnpairCallback)(GodotCollisionObject2D *A, int p_subindex_A, GodotCollisionObject2D *B, int p_subindex_B, void *p_data, void *p_userdata);
 
 	// 0 is an invalid ID
-	virtual ID create(GodotCollisionObject2D *p_object_, int p_subindex = 0, const Rect2 &p_aabb = Rect2(), bool p_static = false) = 0;
-	virtual void move(ID p_id, const Rect2 &p_aabb) = 0;
+	virtual ID create(GodotCollisionObject2D *p_object_, int p_subindex = 0, const Rect2i &p_aabb = Rect2i(), bool p_static = false) = 0;
+	virtual void move(ID p_id, const Rect2i &p_aabb) = 0;
 	virtual void set_static(ID p_id, bool p_static) = 0;
 	virtual void remove(ID p_id) = 0;
 
@@ -57,8 +57,8 @@ public:
 	virtual bool is_static(ID p_id) const = 0;
 	virtual int get_subindex(ID p_id) const = 0;
 
-	virtual int cull_segment(const Vector2 &p_from, const Vector2 &p_to, GodotCollisionObject2D **p_results, int p_max_results, int *p_result_indices = nullptr) = 0;
-	virtual int cull_aabb(const Rect2 &p_aabb, GodotCollisionObject2D **p_results, int p_max_results, int *p_result_indices = nullptr) = 0;
+	virtual int cull_segment(const Vector2i &p_from, const Vector2i &p_to, GodotCollisionObject2D **p_results, int p_max_results, int *p_result_indices = nullptr) = 0;
+	virtual int cull_aabb(const Rect2i &p_aabb, GodotCollisionObject2D **p_results, int p_max_results, int *p_result_indices = nullptr) = 0;
 
 	virtual void set_pair_callback(PairCallback p_pair_callback, void *p_userdata) = 0;
 	virtual void set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata) = 0;

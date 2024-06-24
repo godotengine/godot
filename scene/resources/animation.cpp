@@ -5620,6 +5620,9 @@ Variant Animation::add_variant(const Variant &a, const Variant &b) {
 		case Variant::TRANSFORM2D: {
 			return (a.operator Transform2D()) * (b.operator Transform2D());
 		} break;
+		case Variant::TRANSFORM2DI: {
+			return (a.operator Transform2Di()) * (b.operator Transform2Di());
+		} break;
 		case Variant::TRANSFORM3D: {
 			return (a.operator Transform3D()) * (b.operator Transform3D());
 		} break;
@@ -5733,6 +5736,9 @@ Variant Animation::subtract_variant(const Variant &a, const Variant &b) {
 		} break;
 		case Variant::TRANSFORM2D: {
 			return (b.operator Transform2D()).affine_inverse() * (a.operator Transform2D());
+		} break;
+		case Variant::TRANSFORM2DI: {
+			return (b.operator Transform2Di()).affine_inverse() * (a.operator Transform2Di());
 		} break;
 		case Variant::TRANSFORM3D: {
 			return (b.operator Transform3D()).affine_inverse() * (a.operator Transform3D());
@@ -5859,6 +5865,9 @@ Variant Animation::blend_variant(const Variant &a, const Variant &b, float c) {
 		} break;
 		case Variant::TRANSFORM2D: {
 			return (a.operator Transform2D()) * Transform2D().interpolate_with((b.operator Transform2D()), c);
+		} break;
+		case Variant::TRANSFORM2DI: {
+			return (a.operator Transform2Di()) * Transform2Di().interpolate_with((b.operator Transform2Di()), c);
 		} break;
 		case Variant::TRANSFORM3D: {
 			return (a.operator Transform3D()) * Transform3D().interpolate_with((b.operator Transform3D()), c);
@@ -5996,6 +6005,9 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 		} break;
 		case Variant::TRANSFORM2D: {
 			return (a.operator Transform2D()).interpolate_with(b.operator Transform2D(), c);
+		} break;
+		case Variant::TRANSFORM2DI: {
+			return (a.operator Transform2Di()).interpolate_with(b.operator Transform2Di(), c);
 		} break;
 		case Variant::TRANSFORM3D: {
 			return (a.operator Transform3D()).interpolate_with(b.operator Transform3D(), c);

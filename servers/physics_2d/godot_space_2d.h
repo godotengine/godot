@@ -52,7 +52,7 @@ public:
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) override;
 	virtual int intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) override;
 	virtual bool cast_motion(const ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe) override;
-	virtual bool collide_shape(const ShapeParameters &p_parameters, Vector2 *r_results, int p_result_max, int &r_result_count) override;
+	virtual bool collide_shape(const ShapeParameters &p_parameters, Vector2i *r_results, int p_result_max, int &r_result_count) override;
 	virtual bool rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_info) override;
 
 	GodotPhysicsDirectSpaceState2D() {}
@@ -123,7 +123,7 @@ private:
 	int active_objects = 0;
 	int collision_pairs = 0;
 
-	int _cull_aabb_for_body(GodotBody2D *p_body, const Rect2 &p_aabb);
+	int _cull_aabb_for_body(GodotBody2D *p_body, const Rect2i &p_aabb);
 
 	Vector<Vector2> contact_debug;
 	int contact_debug_count = 0;
@@ -191,7 +191,7 @@ public:
 	int get_collision_pairs() const { return collision_pairs; }
 
 	bool test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::MotionParameters &p_parameters, PhysicsServer2D::MotionResult *r_result);
-	bool body_collides_at(GodotBody2D *p_body, const Transform2D from, const Vector2i delta, PhysicsServer2D::CollisionResult *r_result);
+	bool body_collides_at(GodotBody2D *p_body, const Transform2Di from, const Vector2i delta, PhysicsServer2D::CollisionResult *r_result);
 
 	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }
 	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.is_empty(); }

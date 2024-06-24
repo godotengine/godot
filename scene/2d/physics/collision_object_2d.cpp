@@ -35,7 +35,7 @@
 void CollisionObject2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			Transform2D gl_transform = get_global_transform();
+			Transform2Di gl_transform = get_global_transform_i();
 
 			if (area) {
 				PhysicsServer2D::get_singleton()->area_set_transform(rid, gl_transform);
@@ -81,7 +81,7 @@ void CollisionObject2D::_notification(int p_what) {
 				return;
 			}
 
-			Transform2D gl_transform = get_global_transform();
+			Transform2Di gl_transform = get_global_transform_i();
 
 			if (area) {
 				PhysicsServer2D::get_singleton()->area_set_transform(rid, gl_transform);
@@ -371,7 +371,7 @@ PackedInt32Array CollisionObject2D::_get_shape_owners() {
 	return ret;
 }
 
-void CollisionObject2D::shape_owner_set_transform(uint32_t p_owner, const Transform2D &p_transform) {
+void CollisionObject2D::shape_owner_set_transform(uint32_t p_owner, const Transform2Di &p_transform) {
 	ERR_FAIL_COND(!shapes.has(p_owner));
 
 	ShapeData &sd = shapes[p_owner];
@@ -386,8 +386,8 @@ void CollisionObject2D::shape_owner_set_transform(uint32_t p_owner, const Transf
 	}
 }
 
-Transform2D CollisionObject2D::shape_owner_get_transform(uint32_t p_owner) const {
-	ERR_FAIL_COND_V(!shapes.has(p_owner), Transform2D());
+Transform2Di CollisionObject2D::shape_owner_get_transform(uint32_t p_owner) const {
+	ERR_FAIL_COND_V(!shapes.has(p_owner), Transform2Di());
 
 	return shapes[p_owner].xform;
 }

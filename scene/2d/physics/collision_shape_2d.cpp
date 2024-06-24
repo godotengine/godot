@@ -39,7 +39,7 @@ void CollisionShape2D::_shape_changed() {
 }
 
 void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
-	collision_object->shape_owner_set_transform(owner_id, get_transform());
+	collision_object->shape_owner_set_transform(owner_id, get_transform_i());
 	if (p_xform_only) {
 		return;
 	}

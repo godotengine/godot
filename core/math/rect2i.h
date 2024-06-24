@@ -36,6 +36,7 @@
 
 class String;
 struct Rect2;
+struct Transform2Di;
 
 struct _NO_DISCARD_ Rect2i {
 	Point2i position;
@@ -151,11 +152,15 @@ struct _NO_DISCARD_ Rect2i {
 
 	Rect2i grow(int p_amount) const {
 		Rect2i g = *this;
-		g.position.x -= p_amount;
-		g.position.y -= p_amount;
-		g.size.width += p_amount * 2;
-		g.size.height += p_amount * 2;
+		g.grow_by(p_amount);
 		return g;
+	}
+
+	inline void grow_by(real_t p_amount) {
+		position.x -= p_amount;
+		position.y -= p_amount;
+		size.width += p_amount * 2;
+		size.height += p_amount * 2;
 	}
 
 	inline Rect2i grow_side(Side p_side, int p_amount) const {

@@ -92,9 +92,9 @@ void GodotBody2D::update_mass_properties() {
 
 					real_t mass_new = area * mass / total_area;
 
-					Transform2D mtx = get_shape_transform(i);
-					Vector2 scale = mtx.get_scale();
-					Vector2 shape_origin = mtx.get_origin() - center_of_mass_local;
+					Transform2Di mtx = get_shape_transform(i);
+					Vector2i scale = mtx.get_scale();
+					Vector2i shape_origin = mtx.get_origin() - center_of_mass_local;
 					inertia += shape->get_moment_of_inertia(mass_new, scale) + mass_new * shape_origin.length_squared();
 				}
 			}
@@ -314,7 +314,7 @@ void GodotBody2D::set_state(PhysicsServer2D::BodyState p_state, const Variant &p
 				_set_inv_transform(get_transform().affine_inverse());
 				wakeup_neighbours();
 			} else {
-				Transform2D t = p_variant;
+				Transform2Di t = p_variant;
 				t.orthonormalize();
 				new_transform = get_transform(); //used as old to compute motion
 				if (t == new_transform) {
@@ -561,8 +561,7 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 		motion = new_transform.get_origin() - get_transform().get_origin();
 		linear_velocity = constant_linear_velocity + motion / p_step;
 
-		real_t rot = new_transform.get_rotation() - get_transform().get_rotation();
-		angular_velocity = constant_angular_velocity + remainder(rot, 2.0 * Math_PI) / p_step;
+		angular_velocity = constant_angular_velocity;
 
 		do_motion = true;
 
@@ -633,7 +632,6 @@ void GodotBody2D::integrate_velocities(real_t p_step) {
 	Vector2 total_linear_velocity = linear_velocity + biased_linear_velocity;
 
 	real_t angle_delta = total_angular_velocity * p_step;
-	real_t angle = get_transform().get_rotation() + angle_delta;
 	Vector2 pos = get_transform().get_origin() + total_linear_velocity * p_step;
 
 	if (center_of_mass.length_squared() > CMP_EPSILON2) {
@@ -641,7 +639,7 @@ void GodotBody2D::integrate_velocities(real_t p_step) {
 		pos += center_of_mass - center_of_mass.rotated(angle_delta);
 	}
 
-	_set_transform(Transform2D(angle, pos), continuous_cd_mode == PhysicsServer2D::CCD_MODE_DISABLED);
+	_set_transform(Transform2Di(pos), continuous_cd_mode == PhysicsServer2D::CCD_MODE_DISABLED);
 	_set_inv_transform(get_transform().inverse());
 
 	if (continuous_cd_mode != PhysicsServer2D::CCD_MODE_DISABLED) {
