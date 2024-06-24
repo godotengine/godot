@@ -6,3 +6,5 @@ Features (WIP):
  * Positions of 2d nodes use ints
  * Overhauled 2d lighting system
  * Overhauled 2d physics system
+
+This fork changes/simplifies a lot of things, so a lot of features/components that are not relevant for my use case might no longer work.
