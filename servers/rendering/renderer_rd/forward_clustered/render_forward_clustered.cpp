@@ -1637,6 +1637,25 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	Transform3D orig_cam_transform = p_render_data->scene_data->cam_transform;
 	for (int panini_i = 0; panini_i < (p_render_data->scene_data->cam_panini ? 6 : 1); panini_i++) {
+		{
+			float fovx, fovy;
+			if (p_render_data->scene_data->cam_keep_width) {
+				fovx = p_render_data->scene_data->cam_panini_fov;
+				fovy = 360.0f;
+			} else {
+				fovy = p_render_data->scene_data->cam_panini_fov / 2.0f;
+				fovx = 360.0f;
+			}
+			if (fovx < 270.0f) {
+				if (panini_i == 5)
+					break;
+				if (fovx < 90.0f && (panini_i == 1 || panini_i == 2))
+					break;
+			}
+			if (fovy < 90.0f && (panini_i == 3 || panini_i == 4))
+				break;
+		}
+
 		RENDER_TIMESTAMP("Prepare 3D Scene");
 
 		// set camera transform
