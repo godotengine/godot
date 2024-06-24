@@ -65,6 +65,10 @@ protected:
 	GDVIRTUAL4C(_draw, RID, Point2, Color, bool)
 	GDVIRTUAL5C(_draw_rect, RID, Rect2, bool, Color, bool)
 	GDVIRTUAL6C(_draw_rect_region, RID, Rect2, Rect2, Color, bool, bool)
+	GDVIRTUAL4C(_get_rect_region, Rect2, Rect2, Rect2, Rect2)
+
+	GDVIRTUAL0RC(int, _get_image)
+	GDVIRTUAL0RC(int, _create_placeholder)
 
 public:
 	virtual int get_width() const;
