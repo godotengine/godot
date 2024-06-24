@@ -577,6 +577,17 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@export_if_root">
+			<return type="void" />
+			<description>
+				When placed between an [code]@export[/code] annotation and the exported property, causes the exported property to only be displayed in the Inspector dock if the currently-selected node is the root node of the current scene.
+				This is helpful for hiding irrelevant properties from the Inspector dock when using nested scenes.
+				See also [constant PROPERTY_USAGE_SHOW_IF_ROOT].
+				[codeblock]
+				@export @export_if_root var sprite: Sprite2D
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export_multiline">
 			<return type="void" />
 			<description>
