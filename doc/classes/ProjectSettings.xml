@@ -271,6 +271,7 @@
 		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="" default="&quot;&quot;">
 			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If a custom directory name is defined, this name will be appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
 			The [member application/config/use_custom_user_dir] setting must be enabled for this to take effect.
+			[b]Note:[/b] If [member application/config/custom_user_dir_name] contains trailing periods, they will be stripped as folder names ending with a period are not allowed on Windows.
 		</member>
 		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's description, displayed as a tooltip in the Project Manager when hovering the project.
