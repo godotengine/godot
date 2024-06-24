@@ -1268,12 +1268,10 @@ void AnimationNodeStateMachine::add_node(const StringName &p_name, Ref<Animation
 	state_new.position = p_position;
 #ifdef TOOLS_ENABLED
 	PackedInt32Array node_group_selections;
-
-	state_new.node_group_selections = node_group_selections;
-	state_new.node_visibility = true;
-
 	node_group_selections.resize(STATE_MACHINE_GROUPS_LIMIT);
 	node_group_selections.fill(0);
+	state_new.node_group_selections = node_group_selections;
+	state_new.node_visibility = true;
 #endif //TOOLS_ENABLED
 
 	states[p_name] = state_new;
@@ -1665,15 +1663,7 @@ bool AnimationNodeStateMachine::_set(const StringName &p_name, const Variant &p_
 #ifdef TOOLS_ENABLED
 		if (what == "node_group_selections") {
 			if (states.has(node_name)) {
-				PackedInt32Array initial_array = p_value;
-
-				if (initial_array.size() != STATE_MACHINE_GROUPS_LIMIT) {
-					initial_array.resize(STATE_MACHINE_GROUPS_LIMIT);
-					initial_array.fill(0);
-					states[node_name].node_group_selections = initial_array;
-				} else {
-					states[node_name].node_group_selections = p_value;
-				}
+				states[node_name].node_group_selections = p_value;
 			}
 			return true;
 		}
