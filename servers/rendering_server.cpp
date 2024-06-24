@@ -1401,6 +1401,7 @@ int32_t RenderingServer::_get_vertex_to_custom_array_length_factor(uint32_t p_fo
 			return s;
 		} break;
 		default: {
+			ERR_FAIL_V_MSG(0, "Invalid texture type.");
 		}
 	}
 }
