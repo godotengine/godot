@@ -4463,7 +4463,7 @@ bool GDScriptParser::export_if_root_annotations(const AnnotationNode *p_annotati
 
 	VariableNode *variable = static_cast<VariableNode *>(p_target);
 	if (!variable->exported) {
-		push_error(vformat(R"(Annotation "%s" must be used with an "@export" annotation.)", p_annotation->name), p_annotation);
+		push_error(vformat(R"(Annotation "%s" must be used after an "@export" annotation.)", p_annotation->name), p_annotation);
 		return false;
 	}
 
