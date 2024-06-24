@@ -82,12 +82,28 @@ void Texture2D::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const R
 }
 
 bool Texture2D::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
+	bool ret = false;
+	if (GDVIRTUAL_CALL(_get_rect_region, ret, p_rect, p_src_rect, r_rect, r_src_rect)) {
+		return ret;
+	}
 	r_rect = p_rect;
 	r_src_rect = p_src_rect;
 	return true;
 }
 
+Ref<Image> Texture2D::get_image() const {
+  Ref<Image> image;
+  if (GDVIRTUAL_REQUIRED_CALL(_get_image, image)) {
+    return image;
+  }
+  return Ref<Image>();
+}
+
 Ref<Resource> Texture2D::create_placeholder() const {
+	Ref<Resource> ret;
+	if (GDVIRTUAL_CALL(_create_placeholder, ret)) {
+		return ret;
+	}
 	Ref<PlaceholderTexture2D> placeholder;
 	placeholder.instantiate();
 	placeholder->set_size(get_size());
@@ -115,6 +131,10 @@ void Texture2D::_bind_methods() {
 	GDVIRTUAL_BIND(_draw, "to_canvas_item", "pos", "modulate", "transpose")
 	GDVIRTUAL_BIND(_draw_rect, "to_canvas_item", "rect", "tile", "modulate", "transpose")
 	GDVIRTUAL_BIND(_draw_rect_region, "to_canvas_item", "rect", "src_rect", "modulate", "transpose", "clip_uv");
+	GDVIRTUAL_BIND(_get_rect_region, "rect", "src_rect", "r_rect", "r_src_rect")
+
+	GDVIRTUAL_BIND(_get_image)
+	GDVIRTUAL_BIND(_create_placeholder)
 }
 
 Texture2D::Texture2D() {
