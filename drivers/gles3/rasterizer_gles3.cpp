@@ -296,7 +296,7 @@ RasterizerGLES3::RasterizerGLES3() {
 		}
 	}
 #endif // GL_API_ENABLED
-#ifdef GLES_API_ENABLED
+#if defined(GLES_API_ENABLED) && defined(EGL_ENABLED)
 	if (!gles_over_gl) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			DebugMessageCallbackARB callback = (DebugMessageCallbackARB)eglGetProcAddress("glDebugMessageCallback");
@@ -312,7 +312,7 @@ RasterizerGLES3::RasterizerGLES3() {
 			}
 		}
 	}
-#endif // GLES_API_ENABLED
+#endif // GLES_API_ENABLED && EGL_ENABLED
 #endif // CAN_DEBUG
 
 	{
