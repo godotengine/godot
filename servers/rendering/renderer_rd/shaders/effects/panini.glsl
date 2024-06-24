@@ -63,12 +63,12 @@ vec2 panini_forward(vec2 latlon) {
 vec3 panini_ray(vec2 p) {
 	float scale;
 	if (params.keep_width) {
-		// horizontal FOV
+		// Horizontal FOV.
 		scale = panini_forward(vec2(0.0, radians(params.fovx) / 2.0)).x;
 	} else {
-		// vertical FOV
-		// further divide FOV by 2 because it's a cylindrical projection
-		// (actual FOV range is up to 180 degrees, half of horizontal FOV)
+		// Vertical FOV.
+		// Further divide FOV by 2 because it's a cylindrical projection
+		// (actual FOV range is up to 180 degrees, half of horizontal FOV).
 		scale = panini_forward(vec2(radians(params.fovx) / 4.0, 0.0)).y;
 	}
 	return panini_inverse(p * scale);
@@ -82,10 +82,10 @@ void main() {
 	vec2 uv = uv_interp * viewport_size / (params.keep_width ? viewport_size.x : viewport_size.y);
 	vec3 pos = vec3(0.0, 0.0, 0.0);
 	if (params.keep_width) {
-		// adjust height
+		// Adjust height.
 		pos = panini_ray(vec2(uv.x - 0.5, uv.y - 0.5 / view_ratio) * 1.0);
 	} else {
-		// adjust width
+		// Adjust width.
 		pos = panini_ray(vec2(uv.x - 0.5 * view_ratio, uv.y - 0.5) * 1.0);
 	}
 	if (pos == vec3(0.0, 0.0, 0.0)) {

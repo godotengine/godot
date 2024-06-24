@@ -3050,7 +3050,7 @@ void RendererSceneCull::_render_scene(RendererSceneRender::CameraData *p_camera_
 	Projection orig_cam_projection;
 	Transform3D orig_cam_transform;
 	if (p_camera_data->is_panini) {
-		// Cull on a cube
+		// Cull on a cube.
 		orig_cam_projection = p_camera_data->main_projection;
 		orig_cam_transform = p_camera_data->main_transform;
 		real_t z_far = p_camera_data->main_projection.get_z_far();
