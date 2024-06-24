@@ -1239,9 +1239,11 @@ void EditorInspectorCategory::_notification(int p_what) {
 
 			int ofs = (get_size().width - w) / 2;
 
+			float v_margin_offset = sb->get_content_margin(SIDE_TOP) - sb->get_content_margin(SIDE_BOTTOM);
+
 			if (icon.is_valid()) {
 				Size2 rect_size = Size2(icon_size, icon_size);
-				Point2 rect_pos = Point2(ofs, (get_size().height - icon_size) / 2).floor();
+				Point2 rect_pos = Point2(ofs, (get_size().height - icon_size) / 2 + v_margin_offset).round();
 				if (is_layout_rtl()) {
 					rect_pos.x = get_size().width - rect_pos.x - icon_size;
 				}
@@ -1255,7 +1257,9 @@ void EditorInspectorCategory::_notification(int p_what) {
 			if (is_layout_rtl()) {
 				ofs = get_size().width - ofs - w;
 			}
-			draw_string(font, Point2(ofs, font->get_ascent(font_size) + (get_size().height - font->get_height(font_size)) / 2).floor(), label, HORIZONTAL_ALIGNMENT_LEFT, w, font_size, color);
+			float text_pos_y = font->get_ascent(font_size) + (get_size().height - font->get_height(font_size)) / 2 + v_margin_offset;
+			Point2 text_pos = Point2(ofs, text_pos_y).round();
+			draw_string(font, text_pos, label, HORIZONTAL_ALIGNMENT_LEFT, w, font_size, color);
 		} break;
 	}
 }
@@ -1282,6 +1286,9 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 		ms.height = MAX(icon_size, ms.height);
 	}
 	ms.height += get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
+
+	const Ref<StyleBox> &bg_style = get_theme_stylebox(SNAME("bg"));
+	ms.height += bg_style->get_content_margin(SIDE_TOP) + bg_style->get_content_margin(SIDE_BOTTOM);
 
 	return ms;
 }
@@ -1425,10 +1432,11 @@ void EditorInspectorSection::_notification(int p_what) {
 
 			// Draw header title, folding arrow and count of revertable properties.
 			{
-				int separation = Math::round(2 * EDSCALE);
+				int outer_margin = Math::round(2 * EDSCALE);
+				int separation = get_theme_constant(SNAME("h_separation"), SNAME("EditorInspectorSection"));
 
-				int margin_start = section_indent + separation;
-				int margin_end = separation;
+				int margin_start = section_indent + outer_margin;
+				int margin_end = outer_margin;
 
 				// - Arrow.
 				Ref<Texture2D> arrow = _get_arrow();
@@ -1441,7 +1449,7 @@ void EditorInspectorSection::_notification(int p_what) {
 					}
 					arrow_position.y = (header_height - arrow->get_height()) / 2;
 					draw_texture(arrow, arrow_position);
-					margin_start += arrow->get_width();
+					margin_start += arrow->get_width() + separation;
 				}
 
 				int available = get_size().width - (margin_start + margin_end);
@@ -1466,27 +1474,25 @@ void EditorInspectorSection::_notification(int p_what) {
 					// Can we fit the long version of the revertable count text?
 					num_revertable_str = vformat(TTRN("(%d change)", "(%d changes)", revertable_properties.size()), revertable_properties.size());
 					num_revertable_width = light_font->get_string_size(num_revertable_str, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size, TextServer::JUSTIFICATION_NONE).x;
-					if (label_width + separation + num_revertable_width > available) {
+					if (label_width + outer_margin + num_revertable_width > available) {
 						// We'll have to use the short version.
 						num_revertable_str = vformat("(%d)", revertable_properties.size());
 						num_revertable_width = light_font->get_string_size(num_revertable_str, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size, TextServer::JUSTIFICATION_NONE).x;
 					}
 
-					Point2 text_offset = Point2(
-							margin_end,
-							light_font->get_ascent(light_font_size) + (header_height - light_font->get_height(light_font_size)) / 2);
+					float text_offset_y = light_font->get_ascent(light_font_size) + (header_height - light_font->get_height(light_font_size)) / 2;
+					Point2 text_offset = Point2(margin_end, text_offset_y).round();
 					if (!rtl) {
 						text_offset.x = get_size().width - (text_offset.x + num_revertable_width);
 					}
 					draw_string(light_font, text_offset, num_revertable_str, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size, light_font_color, TextServer::JUSTIFICATION_NONE);
-					margin_end += num_revertable_width + separation;
-					available -= num_revertable_width + separation;
+					margin_end += num_revertable_width + outer_margin;
+					available -= num_revertable_width + outer_margin;
 				}
 
 				// - Label.
-				Point2 text_offset = Point2(
-						margin_start,
-						font->get_ascent(font_size) + (header_height - font->get_height(font_size)) / 2);
+				float text_offset_y = font->get_ascent(font_size) + (header_height - font->get_height(font_size)) / 2;
+				Point2 text_offset = Point2(margin_start, text_offset_y).round();
 				if (rtl) {
 					text_offset.x = margin_end;
 				}
@@ -4077,6 +4083,10 @@ void EditorInspector::_node_removed(Node *p_node) {
 
 void EditorInspector::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			main_vbox->add_theme_constant_override("separation", get_theme_constant(SNAME("v_separation"), SNAME("EditorInspector")));
+		} break;
+
 		case NOTIFICATION_READY: {
 			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
 			set_process(is_visible_in_tree());
@@ -4340,7 +4350,6 @@ EditorInspector::EditorInspector() {
 	object = nullptr;
 	main_vbox = memnew(VBoxContainer);
 	main_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
-	main_vbox->add_theme_constant_override("separation", 0);
 	add_child(main_vbox);
 	set_horizontal_scroll_mode(SCROLL_MODE_DISABLED);
 	set_follow_focus(true);
