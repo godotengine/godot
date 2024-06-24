@@ -463,25 +463,23 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode) {
 	String local_path = _validate_local_path(p_path);
 
+	bool ignoring_cache = p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE || p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP;
+
 	Ref<LoadToken> load_token;
-	bool must_not_register = false;
 	ThreadLoadTask unregistered_load_task; // Once set, must be valid up to the call to do the load.
 	ThreadLoadTask *load_task_ptr = nullptr;
 	bool run_on_current_thread = false;
 	{
 		MutexLock thread_load_lock(thread_load_mutex);
 
-		if (thread_load_tasks.has(local_path)) {
+		if (!ignoring_cache && thread_load_tasks.has(local_path)) {
 			load_token = Ref<LoadToken>(thread_load_tasks[local_path].load_token);
 			if (!load_token.is_valid()) {
 				// The token is dying (reached 0 on another thread).
 				// Ensure it's killed now so the path can be safely reused right away.
 				thread_load_tasks[local_path].load_token->clear();
-			} else {
-				if (p_cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
-					return load_token;
-				}
 			}
+			return load_token;
 		}
 
 		load_token.instantiate();
@@ -509,19 +507,19 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 				}
 			}
 
-			// If we want to ignore cache, but there's another task loading it, we can't add this one to the map and we also have to finish unconditionally synchronously.
-			must_not_register = thread_load_tasks.has(local_path) && p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE;
-			if (must_not_register) {
+			// Cache-ignoring tasks aren't registered in the map and so must finish within scope.
+			if (ignoring_cache) {
 				load_token->local_path.clear();
 				unregistered_load_task = load_task;
+				load_task_ptr = &unregistered_load_task;
 			} else {
-				thread_load_tasks[local_path] = load_task;
+				DEV_ASSERT(!thread_load_tasks.has(local_path));
+				HashMap<String, ResourceLoader::ThreadLoadTask>::Iterator E = thread_load_tasks.insert(local_path, load_task);
+				load_task_ptr = &E->value;
 			}
-
-			load_task_ptr = must_not_register ? &unregistered_load_task : &thread_load_tasks[local_path];
 		}
 
-		run_on_current_thread = must_not_register || p_thread_mode == LOAD_THREAD_FROM_CURRENT;
+		run_on_current_thread = ignoring_cache || p_thread_mode == LOAD_THREAD_FROM_CURRENT;
 
 		if (run_on_current_thread) {
 			load_task_ptr->thread_id = Thread::get_caller_id();
@@ -532,7 +530,7 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 
 	if (run_on_current_thread) {
 		_thread_load_function(load_task_ptr);
-		if (must_not_register) {
+		if (ignoring_cache) {
 			load_token->res_if_unregistered = load_task_ptr->resource;
 		}
 	}
