@@ -420,7 +420,9 @@ void EditorPlugin::add_import_plugin(const Ref<EditorImportPlugin> &p_importer, 
 void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
 	ERR_FAIL_COND(!p_importer.is_valid());
 	ResourceFormatImporter::get_singleton()->remove_importer(p_importer);
-	callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan).call_deferred();
+	if (!EditorNode::get_singleton()->is_exiting()) {
+		callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan).call_deferred();
+	}
 }
 
 void EditorPlugin::add_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {
