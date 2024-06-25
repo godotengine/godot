@@ -5785,15 +5785,17 @@ struct SceneFormatImporterGLTFInterpolate {
 		return 0.5f * ((2.0f * p1) + (-p0 + p2) * t + (2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t2 + (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
 	}
 
-	T bezier(T start, T control_1, T control_2, T end, float t) {
-		/* Formula from Wikipedia article on Bezier curves. */
-		const real_t omt = (1.0 - t);
-		const real_t omt2 = omt * omt;
-		const real_t omt3 = omt2 * omt;
+	T hermite(T start, T tan_start, T end, T tan_end, float t) {
+		/* Formula from the glTF 2.0 specification. */
 		const real_t t2 = t * t;
 		const real_t t3 = t2 * t;
 
-		return start * omt3 + control_1 * omt2 * t * 3.0 + control_2 * omt * t2 * 3.0 + end * t3;
+		const real_t h00 = 2.0 * t3 - 3.0 * t2 + 1.0;
+		const real_t h10 = t3 - 2.0 * t2 + t;
+		const real_t h01 = -2.0 * t3 + 3.0 * t2;
+		const real_t h11 = t3 - t2;
+
+		return start * h00 + tan_start * h10 + end * h01 + tan_end * h11;
 	}
 };
 
@@ -5814,7 +5816,7 @@ struct SceneFormatImporterGLTFInterpolate<Quaternion> {
 		return p1.slerp(p2, c).normalized();
 	}
 
-	Quaternion bezier(const Quaternion start, const Quaternion control_1, const Quaternion control_2, const Quaternion end, const float t) {
+	Quaternion hermite(const Quaternion start, const Quaternion tan_start, const Quaternion end, const Quaternion tan_end, const float t) {
 		ERR_FAIL_COND_V_MSG(!start.is_normalized(), Quaternion(), vformat("The start quaternion %s must be normalized.", start));
 		ERR_FAIL_COND_V_MSG(!end.is_normalized(), Quaternion(), vformat("The end quaternion %s must be normalized.", end));
 
@@ -5879,14 +5881,15 @@ T GLTFDocument::_interpolate_track(const Vector<real_t> &p_times, const Vector<T
 				return p_values[(p_times.size() - 1) * 3 + 1];
 			}
 
-			const float c = (p_time - p_times[idx]) / (p_times[idx + 1] - p_times[idx]);
+			const float td = (p_times[idx + 1] - p_times[idx]);
+			const float c = (p_time - p_times[idx]) / td;
 
 			const T &from = p_values[idx * 3 + 1];
-			const T c1 = from + p_values[idx * 3 + 2];
+			const T tan_from = td * p_values[idx * 3 + 2];
 			const T &to = p_values[idx * 3 + 4];
-			const T c2 = to + p_values[idx * 3 + 3];
+			const T tan_to = td * p_values[idx * 3 + 3];
 
-			return interp.bezier(from, c1, c2, to, c);
+			return interp.hermite(from, tan_from, to, tan_to, c);
 		} break;
 	}
 
