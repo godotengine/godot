@@ -799,6 +799,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	set_tooltip_text(TTR("Drag & drop to rearrange."));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
+	vb->add_theme_constant_override("separation", 4 * EDSCALE);
 	add_child(vb);
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
@@ -854,8 +855,17 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	separator->set_mouse_filter(MOUSE_FILTER_PASS);
 	vb->add_child(separator);
 
+	Control *spacer_top = memnew(Control);
+	spacer_top->set_custom_minimum_size(Size2(0, 6 * EDSCALE));
+	vb->add_child(spacer_top);
+
 	HBoxContainer *hb = memnew(HBoxContainer);
 	vb->add_child(hb);
+
+	Control *spacer_bottom = memnew(Control);
+	spacer_bottom->set_custom_minimum_size(Size2(0, 2 * EDSCALE));
+	vb->add_child(spacer_bottom);
+
 	slider = memnew(VSlider);
 	slider->set_min(0.0);
 	slider->set_max(1.0);
