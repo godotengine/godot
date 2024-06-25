@@ -34,11 +34,15 @@
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/error/error_macros.h"
 #include "core/io/file_access_compressed.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/object.h"
 #include "core/os/keyboard.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
@@ -1332,6 +1336,80 @@ namespace special {
 
 ////// ClassDB //////
 
+bool StaticClassMethodCallableCustom::_equal_func(const CallableCustom *p_a, const CallableCustom *p_b) {
+	if (p_a == p_b) {
+		return true;
+	}
+	if (p_a == nullptr || p_b == nullptr) {
+		return false;
+	}
+	return p_a->hash() == p_b->hash();
+}
+
+bool StaticClassMethodCallableCustom::_less_func(const CallableCustom *p_a, const CallableCustom *p_b) {
+	return false;
+}
+
+uint32_t StaticClassMethodCallableCustom::hash() const {
+	Array a;
+	a.append(bind->get_instance_class());
+	a.append(bind->get_name());
+	return a.hash();
+}
+
+String StaticClassMethodCallableCustom::get_as_text() const {
+	return String(bind->get_instance_class()) + "::" + String(bind->get_name());
+}
+
+CallableCustom::CompareEqualFunc StaticClassMethodCallableCustom::get_compare_equal_func() const {
+	return _equal_func;
+}
+
+CallableCustom::CompareLessFunc StaticClassMethodCallableCustom::get_compare_less_func() const {
+	return _less_func;
+}
+
+bool StaticClassMethodCallableCustom::is_valid() const {
+	return likely(bind);
+}
+
+StringName StaticClassMethodCallableCustom::get_method() const {
+	return bind->get_name();
+}
+
+ObjectID StaticClassMethodCallableCustom::get_object() const {
+	return ObjectID();
+}
+
+void StaticClassMethodCallableCustom::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
+	r_return_value = bind->call(nullptr, p_arguments, p_argcount, r_call_error);
+}
+
+Error StaticClassMethodCallableCustom::rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const {
+	return Error::ERR_UNAUTHORIZED;
+}
+
+const Callable *StaticClassMethodCallableCustom::get_base_comparator() const {
+	return nullptr;
+}
+
+int StaticClassMethodCallableCustom::get_argument_count(bool &r_is_valid) const {
+	r_is_valid = true;
+	return bind->get_argument_count();
+}
+
+int StaticClassMethodCallableCustom::get_bound_arguments_count() const {
+	return 0;
+}
+
+void StaticClassMethodCallableCustom::get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const {
+	r_argcount = 0;
+}
+
+StaticClassMethodCallableCustom::StaticClassMethodCallableCustom(MethodBind const *p_bind) :
+		bind(p_bind) {
+}
+
 PackedStringArray ClassDB::get_class_list() const {
 	List<StringName> classes;
 	::ClassDB::get_class_list(&classes);
@@ -1478,6 +1556,14 @@ TypedArray<Dictionary> ClassDB::class_get_method_list(const StringName &p_class,
 	return ret;
 }
 
+Callable ClassDB::class_get_static_method(const StringName &p_class, const StringName &p_method) const {
+	const MethodBind *bind = ::ClassDB::get_method(p_class, p_method);
+	ERR_FAIL_NULL_V_MSG(bind, Callable(), "Cannot find static method.");
+	ERR_FAIL_COND_V_MSG(!bind->is_static(), Callable(), "Method is not static.");
+	StaticClassMethodCallableCustom *callable = new (memalloc(sizeof(StaticClassMethodCallableCustom))) StaticClassMethodCallableCustom(bind);
+	return callable;
+}
+
 PackedStringArray ClassDB::class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<String> constants;
 	::ClassDB::get_integer_constant_list(p_class, &constants, p_no_inheritance);
@@ -1595,6 +1681,8 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("class_has_method", "class", "method", "no_inheritance"), &ClassDB::class_has_method, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("class_get_method_argument_count", "class", "method", "no_inheritance"), &ClassDB::class_get_method_argument_count, DEFVAL(false));
+
+	::ClassDB::bind_method(D_METHOD("class_get_static_method", "class", "method"), &ClassDB::class_get_static_method);
 
 	::ClassDB::bind_method(D_METHOD("class_get_method_list", "class", "no_inheritance"), &ClassDB::class_get_method_list, DEFVAL(false));
 
