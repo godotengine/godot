@@ -82,9 +82,12 @@ void Texture2D::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const R
 }
 
 bool Texture2D::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
-	bool ret = false;
-	if (GDVIRTUAL_CALL(_get_rect_region, ret, p_rect, p_src_rect, r_rect, r_src_rect)) {
-		return ret;
+	Dictionary ret;
+	if (GDVIRTUAL_CALL(_get_rect_region, p_rect, p_src_rect, ret)) {
+		ERR_FAIL_COND_MSG(!ret.has("valid") || !ret.has("rect") || !ret.has("src_rect"), "get_rect_region missing return values.");
+		r_rect = ret["src_rect"];
+		r_src_rect = ret["src_rect"];
+		return ret["valid"];
 	}
 	r_rect = p_rect;
 	r_src_rect = p_src_rect;
