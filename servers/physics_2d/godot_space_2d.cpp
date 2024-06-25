@@ -439,7 +439,7 @@ static void _rest_cbk_result(const Vector2i &p_point_A, const Vector2i &p_point_
 	rd->best_local_shape = rd->local_shape;
 }
 
-static void _collision_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata) {
+static void _collision_cbk_result(const Vector2i &p_point_A, const Vector2i &p_point_B, void *p_userdata) {
 	_CollisionCallbackData2D *rd = static_cast<_CollisionCallbackData2D *>(p_userdata);
 
 	Vector2i contact_rel = p_point_B - p_point_A;
@@ -1045,9 +1045,6 @@ bool GodotSpace2D::body_collides_at(GodotBody2D *p_body, const Transform2Di from
 	}
 
 	if (!shapes_found) {
-		if (r_result) {
-			*r_result = PhysicsServer2D::CollisionResult();
-		}
 		return false;
 	}
 
@@ -1072,18 +1069,34 @@ bool GodotSpace2D::body_collides_at(GodotBody2D *p_body, const Transform2Di from
 
 		int amount = _cull_aabb_for_body(p_body, moved_aabb);
 
-		if (amount > 0) {
-			const GodotCollisionObject2D *col_obj = intersection_query_results[0];
-			int col_shape_idx = intersection_query_subindex_results[0];
-			if (r_result) {
-				r_result->collider = col_obj->get_self();
-				r_result->collider_id = col_obj->get_instance_id();
-				r_result->collider_shape = col_shape_idx;
-//				r_result->collision_local_shape = 0;
-//				r_result->collision_normal = ccd.normal;
-//				r_result->collision_point = ccd.contact;
+		if (amount == 0) {
+			return false;
+		}
+
+		for (int body_shape_idx = 0; body_shape_idx < p_body->get_shape_count(); body_shape_idx++) {
+			if (p_body->is_shape_disabled(body_shape_idx)) {
+				continue;
 			}
-			return true;
+
+			Rect2i shape_moved_aabb = p_body->get_shape_aabb(body_shape_idx);
+			shape_moved_aabb = from.xform(p_body->get_inv_transform().xform(shape_moved_aabb));
+			shape_moved_aabb.position += delta;
+
+			amount = _cull_aabb_for_body(p_body, shape_moved_aabb);
+
+			if (amount > 0) {
+				const GodotCollisionObject2D *col_obj = intersection_query_results[0];
+				int col_shape_idx = intersection_query_subindex_results[0];
+				if (r_result) {
+					r_result->collider = col_obj->get_self();
+					r_result->collider_id = col_obj->get_instance_id();
+					r_result->collider_shape = col_shape_idx;
+//					r_result->collision_local_shape = 0;
+//					r_result->collision_normal = ccd.normal;
+//					r_result->collision_point = ccd.contact;
+				}
+				return true;
+			}
 		}
 
 //		for (int body_shape_idx = 0; body_shape_idx < p_body->get_shape_count(); body_shape_idx++) {
@@ -1102,7 +1115,7 @@ bool GodotSpace2D::body_collides_at(GodotBody2D *p_body, const Transform2Di from
 ////				}
 ////			}
 //
-//			Transform2D body_shape_xform = body_transform * p_body->get_shape_transform(body_shape_idx);
+//			Transform2Di body_shape_xform = body_transform * p_body->get_shape_transform(body_shape_idx);
 //
 //			_CollisionCallbackData2D ccd;
 //
@@ -1131,7 +1144,7 @@ bool GodotSpace2D::body_collides_at(GodotBody2D *p_body, const Transform2Di from
 //					continue;
 //				}
 //
-//				Transform2D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(col_shape_idx);
+//				Transform2Di col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(col_shape_idx);
 //				if (GodotCollisionSolver2D::solve(body_shape, body_shape_xform, delta, against_shape, col_obj_shape_xform, Vector2(), _collision_cbk_result, &ccd, nullptr)) {
 //					if (r_result) {
 //						r_result->collider = col_obj->get_self();
