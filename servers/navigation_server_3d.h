@@ -369,6 +369,7 @@ public:
 		INFO_EDGE_MERGE_COUNT,
 		INFO_EDGE_CONNECTION_COUNT,
 		INFO_EDGE_FREE_COUNT,
+		INFO_OBSTACLE_COUNT,
 	};
 
 	virtual int get_process_info(ProcessInfo p_info) const = 0;

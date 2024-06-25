@@ -1167,5 +1167,8 @@
 		<constant name="INFO_EDGE_FREE_COUNT" value="8" enum="ProcessInfo">
 			Constant to get the number of navigation mesh polygon edges that could not be merged but may be still connected by edge proximity or with links.
 		</constant>
+		<constant name="INFO_OBSTACLE_COUNT" value="9" enum="ProcessInfo">
+			Constant to get the number of active navigation obstacles.
+		</constant>
 	</constants>
 </class>
