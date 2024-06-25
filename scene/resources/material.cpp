@@ -862,7 +862,7 @@ uniform ivec2 albedo_texture_size;
 		code += vformat(R"(
 uniform float roughness : hint_range(0.0, 1.0);
 uniform sampler2D texture_metallic : hint_default_white, %s;
-uniform vec4 metallic_texture_channel;
+uniform vec4 metallic_texture_channel = vec4(1.0, 0.0, 0.0, 0.0);
 )",
 				texfilter_str);
 		switch (roughness_texture_channel) {
@@ -914,7 +914,7 @@ uniform float emission_energy : hint_range(0.0, 100.0, 0.01);
 		code += vformat(R"(
 uniform sampler2D texture_refraction : %s;
 uniform float refraction : hint_range(-1.0, 1.0, 0.001);
-uniform vec4 refraction_texture_channel;
+uniform vec4 refraction_texture_channel = vec4(1.0, 0.0, 0.0, 0.0);
 )",
 				texfilter_str);
 	}
@@ -960,7 +960,7 @@ uniform sampler2D texture_flowmap : hint_anisotropy, %s;
 	if (features[FEATURE_AMBIENT_OCCLUSION]) {
 		code += vformat(R"(
 uniform sampler2D texture_ambient_occlusion : hint_default_white, %s;
-uniform vec4 ao_texture_channel;
+uniform vec4 ao_texture_channel = vec4(1.0, 0.0, 0.0, 0.0);
 uniform float ao_light_affect : hint_range(0.0, 1.0, 0.01);
 )",
 				texfilter_str);
