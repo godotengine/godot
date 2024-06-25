@@ -38,7 +38,7 @@
 
 class String;
 
-struct _NO_DISCARD_ Transform2D {
+struct [[nodiscard]] Transform2D {
 	// Warning #1: basis of Transform2D is stored differently from Basis. In terms of columns array, the basis matrix looks like "on paper":
 	// M = (columns[0][0] columns[1][0])
 	//     (columns[0][1] columns[1][1])
