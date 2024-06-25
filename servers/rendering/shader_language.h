@@ -913,6 +913,15 @@ private:
 	Vector<FilePosition> include_positions;
 	HashSet<String> include_markers_handled;
 
+	// Additional function information (eg. call hierarchy). No need to expose it to compiler.
+	struct CallInfo {
+		StringName name;
+		List<Pair<StringName, TkPos>> uses_restricted_functions;
+		List<CallInfo *> calls;
+	};
+
+	RBMap<StringName, CallInfo> calls_info;
+
 #ifdef DEBUG_ENABLED
 	struct Usage {
 		int decl_line;
@@ -1036,6 +1045,10 @@ private:
 	bool _validate_assign(Node *p_node, const FunctionInfo &p_function_info, String *r_message = nullptr);
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = nullptr, int *r_ret_size = nullptr);
 
+	struct BuiltinEntry {
+		const char *name;
+	};
+
 	struct BuiltinFuncDef {
 		enum { MAX_ARGS = 5 };
 		const char *name;
@@ -1078,11 +1091,13 @@ private:
 #endif // DEBUG_ENABLED
 
 	const HashMap<StringName, FunctionInfo> *stages = nullptr;
+	bool is_supported_frag_only_funcs = false;
 
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
 	static const BuiltinFuncDef builtin_func_defs[];
 	static const BuiltinFuncOutArgs builtin_func_out_args[];
 	static const BuiltinFuncConstArgs builtin_func_const_args[];
+	static const BuiltinEntry frag_only_func_defs[];
 
 	static bool is_const_suffix_lut_initialized;
 
@@ -1096,6 +1111,9 @@ private:
 	bool _propagate_function_call_sampler_builtin_reference(const StringName &p_name, int p_argument, const StringName &p_builtin);
 	bool _validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message);
 	bool _check_node_constness(const Node *p_node) const;
+
+	bool _check_restricted_func(const StringName &p_name, const StringName &p_current_function) const;
+	bool _validate_restricted_func(const StringName &p_call_name, const CallInfo *p_func_info, bool p_is_builtin_hint = false);
 
 	Node *_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
 	Error _parse_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, bool p_forbid_unknown_size, Node **r_size_expression, int *r_array_size, bool *r_unknown_size);
