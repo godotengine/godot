@@ -4299,7 +4299,8 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 
 			// Must load GDScript separately to permit cyclic references
 			// as ResourceLoader::load() detects and rejects those.
-			if (ResourceLoader::get_resource_type(p_preload->resolved_path) == "GDScript") {
+			const String &res_type = ResourceLoader::get_resource_type(p_preload->resolved_path);
+			if (res_type == "GDScript") {
 				Error err = OK;
 				Ref<GDScript> res = GDScriptCache::get_shallow_script(p_preload->resolved_path, err, parser->script_path);
 				p_preload->resource = res;
@@ -4307,7 +4308,11 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 					push_error(vformat(R"(Could not preload resource script "%s".)", p_preload->resolved_path), p_preload->path);
 				}
 			} else {
-				p_preload->resource = ResourceLoader::load(p_preload->resolved_path);
+				Error err = OK;
+				p_preload->resource = ResourceLoader::load(p_preload->resolved_path, res_type, ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+				if (err == ERR_BUSY) {
+					p_preload->resource = ResourceLoader::ensure_resource_ref_override_for_outer_load(p_preload->resolved_path, res_type);
+				}
 				if (p_preload->resource.is_null()) {
 					push_error(vformat(R"(Could not preload resource file "%s".)", p_preload->resolved_path), p_preload->path);
 				}

@@ -272,6 +272,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 	}
 
 	load_paths_stack->resize(load_paths_stack->size() - 1);
+	res_ref_overrides.erase(load_nesting);
 	load_nesting--;
 
 	if (!res.is_null()) {
@@ -728,6 +729,40 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 		}
 		return resource;
 	}
+}
+
+Ref<Resource> ResourceLoader::ensure_resource_ref_override_for_outer_load(const String &p_path, const String &p_res_type) {
+	ERR_FAIL_COND_V(load_nesting == 0, Ref<Resource>()); // It makes no sense to use this from nesting level 0.
+	const String &local_path = _validate_local_path(p_path);
+	HashMap<String, Ref<Resource>> &overrides = res_ref_overrides[load_nesting - 1];
+	HashMap<String, Ref<Resource>>::Iterator E = overrides.find(local_path);
+	if (E) {
+		return E->value;
+	} else {
+		Object *obj = ClassDB::instantiate(p_res_type);
+		ERR_FAIL_NULL_V(obj, Ref<Resource>());
+		Ref<Resource> res(obj);
+		if (!res.is_valid()) {
+			memdelete(obj);
+			ERR_FAIL_V(Ref<Resource>());
+		}
+		overrides[local_path] = res;
+		return res;
+	}
+}
+
+Ref<Resource> ResourceLoader::get_resource_ref_override(const String &p_path) {
+	DEV_ASSERT(p_path == _validate_local_path(p_path));
+	HashMap<int, HashMap<String, Ref<Resource>>>::Iterator E = res_ref_overrides.find(load_nesting);
+	if (!E) {
+		return nullptr;
+	}
+	HashMap<String, Ref<Resource>>::Iterator F = E->value.find(p_path);
+	if (!F) {
+		return nullptr;
+	}
+
+	return F->value;
 }
 
 bool ResourceLoader::exists(const String &p_path, const String &p_type_hint) {
@@ -1222,6 +1257,7 @@ bool ResourceLoader::timestamp_on_load = false;
 thread_local int ResourceLoader::load_nesting = 0;
 thread_local WorkerThreadPool::TaskID ResourceLoader::caller_task_id = 0;
 thread_local Vector<String> *ResourceLoader::load_paths_stack;
+thread_local HashMap<int, HashMap<String, Ref<Resource>>> ResourceLoader::res_ref_overrides;
 
 template <>
 thread_local uint32_t SafeBinaryMutex<ResourceLoader::BINARY_MUTEX_TAG>::count = 0;
