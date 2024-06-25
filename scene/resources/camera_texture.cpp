@@ -36,14 +36,14 @@ void CameraTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_camera_feed_id", "feed_id"), &CameraTexture::set_camera_feed_id);
 	ClassDB::bind_method(D_METHOD("get_camera_feed_id"), &CameraTexture::get_camera_feed_id);
 
-	ClassDB::bind_method(D_METHOD("set_which_feed", "which_feed"), &CameraTexture::set_which_feed);
-	ClassDB::bind_method(D_METHOD("get_which_feed"), &CameraTexture::get_which_feed);
+	ClassDB::bind_method(D_METHOD("set_format", "format"), &CameraTexture::set_format);
+	ClassDB::bind_method(D_METHOD("get_format"), &CameraTexture::get_format);
 
 	ClassDB::bind_method(D_METHOD("set_camera_active", "active"), &CameraTexture::set_camera_active);
 	ClassDB::bind_method(D_METHOD("get_camera_active"), &CameraTexture::get_camera_active);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "camera_feed_id"), "set_camera_feed_id", "get_camera_feed_id");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "which_feed"), "set_which_feed", "get_which_feed");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "format_id"), "set_format", "get_format");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "camera_is_active"), "set_camera_active", "get_camera_active");
 }
 
@@ -72,7 +72,7 @@ bool CameraTexture::has_alpha() const {
 RID CameraTexture::get_rid() const {
 	Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
 	if (feed.is_valid()) {
-		return feed->get_texture(which_feed);
+		return feed->get_texture();
 	} else {
 		if (_texture.is_null()) {
 			_texture = RenderingServer::get_singleton()->texture_2d_placeholder_create();
@@ -89,19 +89,32 @@ Ref<Image> CameraTexture::get_image() const {
 void CameraTexture::set_camera_feed_id(int p_new_id) {
 	camera_feed_id = p_new_id;
 	notify_property_list_changed();
+	Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
+	if (feed.is_valid()) {
+		print_line("Selected camera: ", feed->get_name());
+	} else {
+		print_line("No camera selected");
+	}
+	set_format(0);
 }
 
 int CameraTexture::get_camera_feed_id() const {
 	return camera_feed_id;
 }
 
-void CameraTexture::set_which_feed(CameraServer::FeedImage p_which) {
-	which_feed = p_which;
+void CameraTexture::set_format(int p_format_id) {
+	format_id = p_format_id;
 	notify_property_list_changed();
+	Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
+	if (feed.is_valid()) {
+		feed->set_format(p_format_id);
+	} else {
+		print_line("No camera selected");
+	}
 }
 
-CameraServer::FeedImage CameraTexture::get_which_feed() const {
-	return which_feed;
+int CameraTexture::get_format() const {
+	return format_id;
 }
 
 void CameraTexture::set_camera_active(bool p_active) {

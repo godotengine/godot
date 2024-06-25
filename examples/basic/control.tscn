@@ -1,0 +1,45 @@
+[gd_scene load_steps=5 format=3 uid="uid://wcx5rx1sckqy"]
+
+[ext_resource type="Script" path="res://camera.gd" id="1_n0gs1"]
+[ext_resource type="Shader" path="res://control.gdshader" id="2_7jche"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nvqqq"]
+shader = ExtResource("2_7jche")
+
+[sub_resource type="CameraTexture" id="CameraTexture_nlxrt"]
+camera_feed_id = 1
+camera_is_active = true
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_n0gs1")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+material = SubResource("ShaderMaterial_nvqqq")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("CameraTexture_nlxrt")
+expand_mode = 5
+stretch_mode = 6
+flip_h = true
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 42
+text = "Hello World!"
+horizontal_alignment = 1
+vertical_alignment = 1

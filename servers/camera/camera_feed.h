@@ -45,13 +45,6 @@ class CameraFeed : public RefCounted {
 	GDCLASS(CameraFeed, RefCounted);
 
 public:
-	enum FeedDataType {
-		FEED_NOIMAGE, // we don't have an image yet
-		FEED_RGB, // our texture will contain a normal RGB texture that can be used directly
-		FEED_YCBCR, // our texture will contain a YCbCr texture that needs to be converted to RGB before output
-		FEED_YCBCR_SEP // our camera is split into two textures, first plane contains Y data, second plane contains CbCr data
-	};
-
 	enum FeedPosition {
 		FEED_UNSPECIFIED, // we have no idea
 		FEED_FRONT, // this is a camera on the front of the device
@@ -60,22 +53,28 @@ public:
 
 private:
 	int id; // unique id for this, for internal use in case feeds are removed
-	int base_width;
-	int base_height;
 
 protected:
 	String name; // name of our camera feed
-	FeedDataType datatype; // type of texture data stored
 	FeedPosition position; // position of camera on the device
+	int format = 0; // format id
 	Transform2D transform; // display transform
 
 	bool active; // only when active do we actually update the camera texture each frame
-	RID texture[CameraServer::FEED_IMAGES]; // texture images needed for this
+
+	uint32_t base_width; // Base width of camera frames
+	uint32_t base_height; // Base height of camera frames
+
+	RID texture, diffuse_texture, normal_texture; // Canvas textures
 
 	static void _bind_methods();
 
 public:
 	int get_id() const;
+	
+	int get_format() const;
+	virtual void set_format(int type);
+
 	bool is_active() const;
 	void set_active(bool p_is_active);
 
@@ -91,22 +90,16 @@ public:
 	Transform2D get_transform() const;
 	void set_transform(const Transform2D &p_transform);
 
-	RID get_texture(CameraServer::FeedImage p_which);
+	RID get_texture();
+	void set_texture(Ref<Image> &diffuse, Ref<Image> &normal);
 
 	CameraFeed();
-	CameraFeed(String p_name, FeedPosition p_position = CameraFeed::FEED_UNSPECIFIED);
 	virtual ~CameraFeed();
-
-	FeedDataType get_datatype() const;
-	void set_RGB_img(const Ref<Image> &p_rgb_img);
-	void set_YCbCr_img(const Ref<Image> &p_ycbcr_img);
-	void set_YCbCr_imgs(const Ref<Image> &p_y_img, const Ref<Image> &p_cbcr_img);
 
 	virtual bool activate_feed();
 	virtual void deactivate_feed();
 };
 
-VARIANT_ENUM_CAST(CameraFeed::FeedDataType);
 VARIANT_ENUM_CAST(CameraFeed::FeedPosition);
 
 #endif // CAMERA_FEED_H

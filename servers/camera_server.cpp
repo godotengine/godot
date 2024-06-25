@@ -150,15 +150,6 @@ TypedArray<CameraFeed> CameraServer::get_feeds() {
 	return return_feeds;
 };
 
-RID CameraServer::feed_texture(int p_id, CameraServer::FeedImage p_texture) {
-	int index = get_feed_index(p_id);
-	ERR_FAIL_COND_V(index == -1, RID());
-
-	Ref<CameraFeed> feed = get_feed(index);
-
-	return feed->get_texture(p_texture);
-};
-
 CameraServer::CameraServer() {
 	singleton = this;
 };

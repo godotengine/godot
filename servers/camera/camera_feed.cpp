@@ -51,19 +51,12 @@ void CameraFeed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_transform"), &CameraFeed::get_transform);
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &CameraFeed::set_transform);
 
-	ClassDB::bind_method(D_METHOD("_set_RGB_img", "rgb_img"), &CameraFeed::set_RGB_img);
-	ClassDB::bind_method(D_METHOD("_set_YCbCr_img", "ycbcr_img"), &CameraFeed::set_YCbCr_img);
-
-	ClassDB::bind_method(D_METHOD("get_datatype"), &CameraFeed::get_datatype);
+	ClassDB::bind_method(D_METHOD("get_format"), &CameraFeed::get_format);
+	ClassDB::bind_method(D_METHOD("set_format"), &CameraFeed::set_format);
 
 	ADD_GROUP("Feed", "feed_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "feed_is_active"), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "feed_transform"), "set_transform", "get_transform");
-
-	BIND_ENUM_CONSTANT(FEED_NOIMAGE);
-	BIND_ENUM_CONSTANT(FEED_RGB);
-	BIND_ENUM_CONSTANT(FEED_YCBCR);
-	BIND_ENUM_CONSTANT(FEED_YCBCR_SEP);
 
 	BIND_ENUM_CONSTANT(FEED_UNSPECIFIED);
 	BIND_ENUM_CONSTANT(FEED_FRONT);
@@ -111,8 +104,12 @@ int CameraFeed::get_base_height() const {
 	return base_height;
 }
 
-CameraFeed::FeedDataType CameraFeed::get_datatype() const {
-	return datatype;
+int CameraFeed::get_format() const {
+	return format;
+}
+
+void CameraFeed::set_format(int p_format) {
+	format = p_format;
 }
 
 CameraFeed::FeedPosition CameraFeed::get_position() const {
@@ -131,117 +128,45 @@ void CameraFeed::set_transform(const Transform2D &p_transform) {
 	transform = p_transform;
 }
 
-RID CameraFeed::get_texture(CameraServer::FeedImage p_which) {
-	return texture[p_which];
+RID CameraFeed::get_texture() {
+	return texture;
+}
+
+void CameraFeed::set_texture(Ref<Image> &diffuse, Ref<Image> &normal) {
+	if (diffuse != NULL) {
+		if (diffuse_texture.is_null()) {
+			diffuse_texture = RenderingServer::get_singleton()->texture_2d_create(diffuse);
+			RenderingServer::get_singleton()->canvas_texture_set_channel(texture, RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE, diffuse_texture);
+		}
+	}
+
+	if (normal != NULL) {
+		if (normal_texture.is_null()) {
+			normal_texture = RenderingServer::get_singleton()->texture_2d_create(normal);
+			RenderingServer::get_singleton()->canvas_texture_set_channel(texture, RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL, normal_texture);
+		}
+	}
 }
 
 CameraFeed::CameraFeed() {
 	// initialize our feed
 	id = CameraServer::get_singleton()->get_free_id();
+	name = "???";
 	base_width = 0;
 	base_height = 0;
-	name = "???";
+	format = 0;
 	active = false;
-	datatype = CameraFeed::FEED_RGB;
 	position = CameraFeed::FEED_UNSPECIFIED;
 	transform = Transform2D(1.0, 0.0, 0.0, -1.0, 0.0, 1.0);
-	texture[CameraServer::FEED_Y_IMAGE] = RenderingServer::get_singleton()->texture_2d_placeholder_create();
-	texture[CameraServer::FEED_CBCR_IMAGE] = RenderingServer::get_singleton()->texture_2d_placeholder_create();
-}
 
-CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
-	// initialize our feed
-	id = CameraServer::get_singleton()->get_free_id();
-	base_width = 0;
-	base_height = 0;
-	name = p_name;
-	active = false;
-	datatype = CameraFeed::FEED_NOIMAGE;
-	position = p_position;
-	transform = Transform2D(1.0, 0.0, 0.0, -1.0, 0.0, 1.0);
-	texture[CameraServer::FEED_Y_IMAGE] = RenderingServer::get_singleton()->texture_2d_placeholder_create();
-	texture[CameraServer::FEED_CBCR_IMAGE] = RenderingServer::get_singleton()->texture_2d_placeholder_create();
+	// Set textures
+	texture = RenderingServer::get_singleton()->canvas_texture_create();
 }
 
 CameraFeed::~CameraFeed() {
 	// Free our textures
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(texture[CameraServer::FEED_Y_IMAGE]);
-	RenderingServer::get_singleton()->free(texture[CameraServer::FEED_CBCR_IMAGE]);
-}
-
-void CameraFeed::set_RGB_img(const Ref<Image> &p_rgb_img) {
-	ERR_FAIL_COND(p_rgb_img.is_null());
-	if (active) {
-		int new_width = p_rgb_img->get_width();
-		int new_height = p_rgb_img->get_height();
-
-		if ((base_width != new_width) || (base_height != new_height)) {
-			// We're assuming here that our camera image doesn't change around formats etc, allocate the whole lot...
-			base_width = new_width;
-			base_height = new_height;
-
-			RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_rgb_img);
-			RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_RGBA_IMAGE], new_texture);
-		} else {
-			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_RGBA_IMAGE], p_rgb_img);
-		}
-
-		datatype = CameraFeed::FEED_RGB;
-	}
-}
-
-void CameraFeed::set_YCbCr_img(const Ref<Image> &p_ycbcr_img) {
-	ERR_FAIL_COND(p_ycbcr_img.is_null());
-	if (active) {
-		int new_width = p_ycbcr_img->get_width();
-		int new_height = p_ycbcr_img->get_height();
-
-		if ((base_width != new_width) || (base_height != new_height)) {
-			// We're assuming here that our camera image doesn't change around formats etc, allocate the whole lot...
-			base_width = new_width;
-			base_height = new_height;
-
-			RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_ycbcr_img);
-			RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_RGBA_IMAGE], new_texture);
-		} else {
-			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_RGBA_IMAGE], p_ycbcr_img);
-		}
-
-		datatype = CameraFeed::FEED_YCBCR;
-	}
-}
-
-void CameraFeed::set_YCbCr_imgs(const Ref<Image> &p_y_img, const Ref<Image> &p_cbcr_img) {
-	ERR_FAIL_COND(p_y_img.is_null());
-	ERR_FAIL_COND(p_cbcr_img.is_null());
-	if (active) {
-		///@TODO investigate whether we can use thirdparty/misc/yuv2rgb.h here to convert our YUV data to RGB, our shader approach is potentially faster though..
-		// Wondering about including that into multiple projects, may cause issues.
-		// That said, if we convert to RGB, we could enable using texture resources again...
-
-		int new_y_width = p_y_img->get_width();
-		int new_y_height = p_y_img->get_height();
-
-		if ((base_width != new_y_width) || (base_height != new_y_height)) {
-			// We're assuming here that our camera image doesn't change around formats etc, allocate the whole lot...
-			base_width = new_y_width;
-			base_height = new_y_height;
-			{
-				RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_y_img);
-				RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_Y_IMAGE], new_texture);
-			}
-			{
-				RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_cbcr_img);
-				RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_CBCR_IMAGE], new_texture);
-			}
-		} else {
-			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_Y_IMAGE], p_y_img);
-			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_CBCR_IMAGE], p_cbcr_img);
-		}
-
-		datatype = CameraFeed::FEED_YCBCR_SEP;
-	}
+	RenderingServer::get_singleton()->free(texture);
 }
 
 bool CameraFeed::activate_feed() {
