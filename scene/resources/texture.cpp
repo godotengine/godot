@@ -92,11 +92,11 @@ bool Texture2D::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Re
 }
 
 Ref<Image> Texture2D::get_image() const {
-  Ref<Image> image;
-  if (GDVIRTUAL_REQUIRED_CALL(_get_image, image)) {
-    return image;
-  }
-  return Ref<Image>();
+	Ref<Image> image;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_image, image)) {
+		return image;
+	}
+	return Ref<Image>();
 }
 
 Ref<Resource> Texture2D::create_placeholder() const {
