@@ -150,6 +150,7 @@ void AnimationMixer::_animation_set_cache_update() {
 				ad.name = key;
 				ad.last_update = animation_set_update_pass;
 				animation_set.insert(ad.name, ad);
+				cache_valid = false; // No need to delete the cache, but it must be updated to add track caches.
 			} else {
 				AnimationData &ad = animation_set[key];
 				if (ad.last_update != animation_set_update_pass) {
