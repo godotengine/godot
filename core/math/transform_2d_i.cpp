@@ -66,18 +66,18 @@ Transform2Di Transform2Di::affine_inverse() const {
 }
 
 Transform2Di::Transform2Di(const Vector2i &p_pos) {
-	columns[0][0] = 0;
+	columns[0][0] = 1;
 	columns[0][1] = 0;
 	columns[1][0] = 0;
-	columns[1][1] = 0;
+	columns[1][1] = 1;
 	columns[2] = p_pos;
 }
 
 Transform2Di::Transform2Di(const Size2i &p_scale, const Vector2i &p_pos) {
 	columns[0][0] = p_scale.x;
+	columns[0][1] = 0;
+	columns[1][0] = 0;
 	columns[1][1] = p_scale.y;
-	columns[1][0] = p_scale.y;
-	columns[0][1] = p_scale.x;
 	columns[2] = p_pos;
 }
 
