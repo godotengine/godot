@@ -31,6 +31,7 @@
 #include "editor_resource_picker.h"
 
 #include "editor/audio_stream_preview.h"
+#include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_quick_open.h"
 #include "editor/editor_resource_preview.h"
@@ -546,6 +547,11 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 			Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(t, "Object");
 			int id = TYPE_BASE_ID + idx;
 			edit_menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
+
+			HashMap<String, DocData::ClassDoc>::Iterator class_doc = EditorHelp::get_doc_data()->class_list.find(t);
+			if (class_doc) {
+				edit_menu->set_item_tooltip(-1, DTR(class_doc->value.brief_description));
+			}
 
 			idx++;
 		}

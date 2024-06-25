@@ -513,6 +513,10 @@ bool OS::has_feature(const String &p_feature) {
 	if (p_feature == "threads") {
 		return true;
 	}
+#else
+	if (p_feature == "nothreads") {
+		return true;
+	}
 #endif
 
 	if (_check_internal_feature_support(p_feature)) {

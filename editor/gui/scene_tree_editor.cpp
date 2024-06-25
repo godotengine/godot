@@ -589,7 +589,6 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 
 	if (p_node == selected) {
 		selected = nullptr;
-		emit_signal(SNAME("node_selected"));
 	}
 }
 

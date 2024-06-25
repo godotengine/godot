@@ -29,10 +29,10 @@
 			Audio format. See [enum Format] constants for values.
 		</member>
 		<member name="loop_begin" type="int" setter="set_loop_begin" getter="get_loop_begin" default="0">
-			The loop start point (in number of samples, relative to the beginning of the sample). This information will be imported automatically from the WAV file if present.
+			The loop start point (in number of samples, relative to the beginning of the stream). This information will be imported automatically from the WAV file if present.
 		</member>
 		<member name="loop_end" type="int" setter="set_loop_end" getter="get_loop_end" default="0">
-			The loop end point (in number of samples, relative to the beginning of the sample). This information will be imported automatically from the WAV file if present.
+			The loop end point (in number of samples, relative to the beginning of the stream). This information will be imported automatically from the WAV file if present.
 		</member>
 		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="AudioStreamWAV.LoopMode" default="0">
 			The loop mode. This information will be imported automatically from the WAV file if present. See [enum LoopMode] constants for values.

@@ -1,28 +1,30 @@
-#!/usr/bin/env python3
-# Load this file to your GDB session to enable pretty-printing
-# of some Godot C++ types.
-# GDB command: source misc/scripts/godot_gdb_pretty_print.py
-#
-# To load these automatically in Visual Studio Code,
-# add the source command to the setupCommands of your configuration
-# in launch.json.
-# "setupCommands": [
-# ...
-# {
-#     "description": "Load custom pretty-printers for Godot types.",
-#     "text": "source ${workspaceRoot}/misc/scripts/godot_gdb_pretty_print.py"
-# }
-# ]
-# Other UI:s that use GDB under the hood are likely to have their own ways to achieve this.
-#
-# To debug this script it's easiest to use the interactive python from a command-line
-# GDB session. Stop at a breakpoint, then use
-# python-interactive to enter the python shell and
-# acquire a Value object using gdb.selected_frame().read_var("variable name").
-# From there you can figure out how to print it nicely.
+"""
+Load this file to your GDB session to enable pretty-printing of some Godot C++ types.
+
+GDB command: `source misc/utility/godot_gdb_pretty_print.py`.
+
+To load these automatically in Visual Studio Code, add the source command to
+the `setupCommands` of your configuration in `launch.json`:
+```json
+"setupCommands": [
+...
+    {
+        "description": "Load custom pretty-printers for Godot types.",
+        "text": "source ${workspaceFolder}/misc/utility/godot_gdb_pretty_print.py"
+    }
+]
+```
+Other UIs that use GDB under the hood are likely to have their own ways to achieve this.
+
+To debug this script it's easiest to use the interactive python from a command-line
+GDB session. Stop at a breakpoint, then use python-interactive to enter the python shell
+and acquire a `Value` object using `gdb.selected_frame().read_var("variable name")`.
+From there you can figure out how to print it nicely.
+"""
+
 import re
 
-import gdb
+import gdb  # type: ignore
 
 
 # Printer for Godot StringName variables.
