@@ -261,11 +261,11 @@ void GodotRectangleShape2D::get_supports(const Vector2i &p_normal, Vector2i *r_s
 
 		r_amount = 2;
 
-		r_supports[0][i] = half_extents[i];
-		r_supports[0][i ^ 1] = half_extents_br[i ^ 1];
+		r_supports[0][i] = offset.x + half_extents[i];
+		r_supports[0][i ^ 1] = offset.y + half_extents_br[i ^ 1];
 
-		r_supports[1][i] = half_extents[i];
-		r_supports[1][i ^ 1] = half_extents_tl[i ^ 1];
+		r_supports[1][i] = offset.x + half_extents[i];
+		r_supports[1][i ^ 1] = offset.y + half_extents_tl[i ^ 1];
 
 		return;
 	}
@@ -274,14 +274,16 @@ void GodotRectangleShape2D::get_supports(const Vector2i &p_normal, Vector2i *r_s
 
 	r_amount = 1;
 	r_supports[0] = Vector2i(
-			(p_normal.x < 0) ? half_extents_tl.x : half_extents_br.x,
-			(p_normal.y < 0) ? half_extents_tl.y : half_extents_br.y);
+			offset.x +
+			((p_normal.x < 0) ? half_extents_tl.x : half_extents_br.x),
+			offset.y +
+			((p_normal.y < 0) ? half_extents_tl.y : half_extents_br.y));
 }
 
 bool GodotRectangleShape2D::contains_point(const Vector2i &p_point) const {
 	real_t x = p_point.x;
 	real_t y = p_point.y;
-	return (x >= half_extents_tl.x) && (x < half_extents_br.x) && (y >= half_extents_tl.y) && (y < half_extents_br.y);
+	return (x >= offset.x + half_extents_tl.x) && (x < offset.x + half_extents_br.x) && (y >= offset.y + half_extents_tl.y) && (y < offset.y + half_extents_br.y);
 }
 
 bool GodotRectangleShape2D::intersect_segment(const Vector2i &p_begin, const Vector2i &p_end, Vector2i &r_point, Vector2i &r_normal) const {
@@ -294,16 +296,24 @@ real_t GodotRectangleShape2D::get_moment_of_inertia(real_t p_mass, const Size2 &
 }
 
 void GodotRectangleShape2D::set_data(const Variant &p_data) {
-	ERR_FAIL_COND(p_data.get_type() != Variant::VECTOR2I);
+	ERR_FAIL_COND(p_data.get_type() != Variant::ARRAY);
 
-	size = p_data;
+	Array arr = p_data;
+	ERR_FAIL_COND(arr.size() != 2);
+
+	size = arr[0];
+	offset = arr[1];
 	half_extents_tl = -(size / 2);
 	half_extents_br = ((size + Vector2i(1, 1)) / 2);
-	configure(Rect2(half_extents_tl, size));
+	configure(Rect2(offset + half_extents_tl, size));
 }
 
 Variant GodotRectangleShape2D::get_data() const {
-	return size;
+	Array arr;
+	arr.resize(2);
+	arr[0] = size;
+	arr[1] = offset;
+	return arr;
 }
 
 /*********************************************************/

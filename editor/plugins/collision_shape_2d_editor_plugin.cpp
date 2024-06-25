@@ -80,7 +80,7 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 			Ref<RectangleShape2D> rect = node->get_shape();
 
 			if (idx < 8) {
-				return rect->get_size().abs();
+				return rect->get_offset() + rect->get_size().abs();
 			}
 
 		} break;
@@ -197,8 +197,10 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 			Ref<RectangleShape2D> rect = node->get_shape();
 
 			undo_redo->add_do_method(rect.ptr(), "set_size", rect->get_size());
+//			undo_redo->add_do_method(rect.ptr(), "set_offset", rect->get_offset());
 			undo_redo->add_do_method(node, "set_global_transform", node->get_global_transform());
 			undo_redo->add_undo_method(rect.ptr(), "set_size", p_org);
+//			undo_redo->add_undo_method(rect.ptr(), "set_offset", p_org);
 			undo_redo->add_undo_method(node, "set_global_transform", original_transform);
 
 		} break;
@@ -396,8 +398,9 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 
 			handles.resize(8);
 			Vector2i rect_size = shape->get_size();
+			Vector2i offset = shape->get_offset();
 			for (int i = 0; i < handles.size(); i++) {
-				handles.write[i] = (Vector2(RECT_HANDLES[i] * rect_size) * 0.5).ceil();
+				handles.write[i] = offset + (Vector2(RECT_HANDLES[i] * rect_size) * 0.5).ceil();
 				p_overlay->draw_texture(h, gt.xform(handles[i]) - size);
 			}
 

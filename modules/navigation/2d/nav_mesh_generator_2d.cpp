@@ -510,13 +510,14 @@ void NavMeshGenerator2D::generator_parse_staticbody2d_node(const Ref<NavigationP
 				Vector<Vector2> shape_outline;
 
 				const Vector2 &rectangle_size = rectangle_shape->get_size();
+				const Vector2 &rectangle_offset = rectangle_shape->get_offset();
 
 				shape_outline.resize(5);
-				shape_outline.write[0] = static_body_xform.xform(-rectangle_size * 0.5);
-				shape_outline.write[1] = static_body_xform.xform(Vector2(rectangle_size.x, -rectangle_size.y) * 0.5);
-				shape_outline.write[2] = static_body_xform.xform(rectangle_size * 0.5);
-				shape_outline.write[3] = static_body_xform.xform(Vector2(-rectangle_size.x, rectangle_size.y) * 0.5);
-				shape_outline.write[4] = static_body_xform.xform(-rectangle_size * 0.5);
+				shape_outline.write[0] = static_body_xform.xform(rectangle_offset + -rectangle_size * 0.5);
+				shape_outline.write[1] = static_body_xform.xform(rectangle_offset + Vector2(rectangle_size.x, -rectangle_size.y) * 0.5);
+				shape_outline.write[2] = static_body_xform.xform(rectangle_offset + rectangle_size * 0.5);
+				shape_outline.write[3] = static_body_xform.xform(rectangle_offset + Vector2(-rectangle_size.x, rectangle_size.y) * 0.5);
+				shape_outline.write[4] = static_body_xform.xform(rectangle_offset + -rectangle_size * 0.5);
 
 				p_source_geometry_data->add_obstruction_outline(shape_outline);
 			}

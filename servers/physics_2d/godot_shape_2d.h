@@ -262,11 +262,14 @@ public:
 
 class GodotRectangleShape2D : public GodotShape2D {
 	Vector2i size;
+	Vector2i offset;
+
 	Vector2i half_extents_tl;
 	Vector2i half_extents_br;
 
 public:
 	_FORCE_INLINE_ const Vector2i &get_size() const { return size; }
+	_FORCE_INLINE_ const Vector2i &get_offset() const { return offset; }
 
 	virtual PhysicsServer2D::ShapeType get_type() const override { return PhysicsServer2D::SHAPE_RECTANGLE; }
 
@@ -285,7 +288,7 @@ public:
 		r_max = -1e20;
 		r_min = 1e20;
 		for (int i = 0; i < 4; i++) {
-			real_t d = p_normal.dot(p_transform.xform(Vector2i(((i & 1) == 1) ? half_extents_br.x : half_extents_tl.x, ((i >> 1) == 1) ? half_extents_br.y : half_extents_tl.y)));
+			real_t d = p_normal.dot(p_transform.xform(Vector2i(offset.x + (((i & 1) == 1) ? half_extents_br.x : half_extents_tl.x), offset.y + (((i >> 1) == 1) ? half_extents_br.y : half_extents_tl.y))));
 
 			if (d > r_max) {
 				r_max = d;
@@ -300,8 +303,8 @@ public:
 		Vector2i local_v = p_xform_inv.xform(p_circle);
 
 		Vector2i he(
-				(local_v.x < 0) ? half_extents_tl.x : half_extents_br.x,
-				(local_v.y < 0) ? half_extents_tl.y : half_extents_br.y);
+				offset.x + ((local_v.x < 0) ? half_extents_tl.x : half_extents_br.x),
+				offset.y + ((local_v.y < 0) ? half_extents_tl.y : half_extents_br.y));
 
 		return (p_xform.xform(he) - p_circle).normalized();
 	}
@@ -313,8 +316,8 @@ public:
 			Vector2i local_v = p_xform_inv.xform(p_B_xform.get_origin());
 
 			Vector2i he(
-					(local_v.x < 0) ? half_extents_tl.x : half_extents_br.x,
-					(local_v.y < 0) ? half_extents_tl.y : half_extents_br.y);
+					offset.x + ((local_v.x < 0) ? half_extents_tl.x : half_extents_br.x),
+					offset.y + ((local_v.y < 0) ? half_extents_tl.y : half_extents_br.y));
 
 			a = p_xform.xform(he);
 		}
@@ -322,8 +325,8 @@ public:
 			Vector2i local_v = p_B_xform_inv.xform(p_xform.get_origin());
 
 			Vector2i he(
-					(local_v.x < 0) ? p_B->half_extents_tl.x : p_B->half_extents_br.x,
-					(local_v.y < 0) ? p_B->half_extents_tl.y : p_B->half_extents_br.y);
+					offset.x + ((local_v.x < 0) ? p_B->half_extents_tl.x : p_B->half_extents_br.x),
+					offset.y + ((local_v.y < 0) ? p_B->half_extents_tl.y : p_B->half_extents_br.y));
 
 			b = p_B_xform.xform(he);
 		}
