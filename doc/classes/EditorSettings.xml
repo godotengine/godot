@@ -623,10 +623,6 @@
 			The custom editor scale factor to use. This can be used for displays with very high DPI where a scale factor of 200% is not sufficient.
 			[b]Note:[/b] Only effective if [member interface/editor/display_scale] is set to [b]Custom[/b].
 		</member>
-		<member name="interface/editor/debug/enable_pseudolocalization" type="bool" setter="" getter="">
-			If [code]true[/code], lengthens the editor's localizable strings and replaces their characters with accented variants. This allows spotting non-localizable strings easily, while also ensuring the UI layout doesn't break when strings are made longer (as many languages require strings to be longer).
-			This is a debugging feature and should only be enabled when working on the editor itself.
-		</member>
 		<member name="interface/editor/display_scale" type="int" setter="" getter="">
 			The display scale factor to use for the editor interface. Higher values are more suited to hiDPI/Retina displays.
 			If set to [b]Auto[/b], the editor scale is automatically determined based on the screen resolution and reported display DPI. This heuristic is not always ideal, which means you can get better results by setting the editor scale manually.

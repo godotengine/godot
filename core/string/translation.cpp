@@ -752,10 +752,10 @@ StringName TranslationServer::tool_translate(const StringName &p_message, const 
 	if (tool_translation.is_valid()) {
 		StringName r = tool_translation->get_message(p_message, p_context);
 		if (r) {
-			return editor_pseudolocalization ? tool_pseudolocalize(r) : r;
+			return r;
 		}
 	}
-	return editor_pseudolocalization ? tool_pseudolocalize(p_message) : p_message;
+	return p_message;
 }
 
 StringName TranslationServer::tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
@@ -854,10 +854,6 @@ void TranslationServer::set_pseudolocalization_enabled(bool p_enabled) {
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
-}
-
-void TranslationServer::set_editor_pseudolocalization(bool p_enabled) {
-	editor_pseudolocalization = p_enabled;
 }
 
 void TranslationServer::reload_pseudolocalization() {
