@@ -308,6 +308,7 @@ void Skeleton3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_process_changed();
+			_make_dirty();
 			_make_modifiers_dirty();
 			force_update_all_dirty_bones();
 #ifndef DISABLE_DEPRECATED
@@ -331,6 +332,13 @@ void Skeleton3D::_notification(int p_what) {
 					bones_backup[i].save(bones[i]);
 				}
 				_process_modifiers();
+			}
+
+			// Abort if pose is not changed.
+			if (!(update_flags & UPDATE_FLAG_POSE)) {
+				updating = false;
+				update_flags = UPDATE_FLAG_NONE;
+				return;
 			}
 
 			emit_signal(SceneStringName(skeleton_updated));
@@ -400,13 +408,13 @@ void Skeleton3D::_notification(int p_what) {
 			}
 
 			updating = false;
-			is_update_needed = false;
+			update_flags = UPDATE_FLAG_NONE;
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS:
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			_find_modifiers();
 			if (!modifiers.is_empty()) {
-				_update_deferred();
+				_update_deferred(UPDATE_FLAG_MODIFIER);
 			}
 		} break;
 	}
@@ -436,7 +444,7 @@ void Skeleton3D::_process_changed() {
 
 void Skeleton3D::_make_modifiers_dirty() {
 	modifiers_dirty = true;
-	_update_deferred();
+	_update_deferred(UPDATE_FLAG_MODIFIER);
 }
 
 Transform3D Skeleton3D::get_bone_global_pose(int p_bone) const {
@@ -745,10 +753,12 @@ void Skeleton3D::_make_dirty() {
 	_update_deferred();
 }
 
-void Skeleton3D::_update_deferred() {
-	if (!is_update_needed && !updating && is_inside_tree()) {
-		is_update_needed = true;
-		notify_deferred_thread_group(NOTIFICATION_UPDATE_SKELETON); // It must never be called more than once in a single frame.
+void Skeleton3D::_update_deferred(UpdateFlag p_update_flag) {
+	if (is_inside_tree()) {
+		if (update_flags == UPDATE_FLAG_NONE && !updating) {
+			notify_deferred_thread_group(NOTIFICATION_UPDATE_SKELETON); // It must never be called more than once in a single frame.
+		}
+		update_flags |= p_update_flag;
 	}
 }
 
