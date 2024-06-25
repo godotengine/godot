@@ -1043,6 +1043,9 @@
 			The indentation style to use (tabs or spaces).
 			[b]Note:[/b] The [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_styleguide.html]GDScript style guide[/url] recommends using tabs for indentation. It is advised to change this setting only if you need to work on a project that currently uses spaces for indentation.
 		</member>
+		<member name="text_editor/behavior/navigation/custom_word_separators" type="String" setter="" getter="">
+			The characters to consider as word delimiters if [member text_editor/behavior/navigation/use_custom_word_separators] is [code]true[/code]. The characters should be defined without separation, for example [code]#_![/code].
+		</member>
 		<member name="text_editor/behavior/navigation/drag_and_drop_selection" type="bool" setter="" getter="">
 			If [code]true[/code], allows drag-and-dropping text in the script editor to move text. Disable this if you find yourself accidentally drag-and-dropping text in the script editor.
 		</member>
@@ -1061,6 +1064,12 @@
 		</member>
 		<member name="text_editor/behavior/navigation/stay_in_script_editor_on_node_selected" type="bool" setter="" getter="">
 			If [code]true[/code], prevents automatically switching between the Script and 2D/3D screens when selecting a node in the Scene tree dock.
+		</member>
+		<member name="text_editor/behavior/navigation/use_custom_word_separators" type="bool" setter="" getter="">
+			If [code]false[/code], using [kbd]Ctrl + Left[/kbd] or [kbd]Ctrl + Right[/kbd] ([kbd]Cmd + Left[/kbd] or [kbd]Cmd + Right[/kbd] on macOS) bindings will use the behavior of [member text_editor/behavior/navigation/use_default_word_separators]. If [code]true[/code], it will also stop the caret if a character within [member text_editor/behavior/navigation/custom_word_separators] is detected. Useful for subword moving. This behavior also will be applied to the behavior of text selection.
+		</member>
+		<member name="text_editor/behavior/navigation/use_default_word_separators" type="bool" setter="" getter="">
+			If [code]false[/code], using [kbd]Ctrl + Left[/kbd] or [kbd]Ctrl + Right[/kbd] ([kbd]Cmd + Left[/kbd] or [kbd]Cmd + Right[/kbd] on macOS) bindings will stop moving caret only if a space or punctuation is detected. If [code]true[/code], it will also stop the caret if a character is [code]´`~$^=+|&lt;&gt;[/code], a General Punctuation, or CJK Punctuation. Useful for subword moving. This behavior also will be applied to the behavior of text selection.
 		</member>
 		<member name="text_editor/behavior/navigation/v_scroll_speed" type="int" setter="" getter="">
 			The number of pixels to scroll with every mouse wheel increment. Higher values make the script scroll by faster when using the mouse wheel.

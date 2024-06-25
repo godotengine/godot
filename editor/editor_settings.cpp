@@ -639,6 +639,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/behavior/navigation/drag_and_drop_selection", true);
 	_initial_set("text_editor/behavior/navigation/stay_in_script_editor_on_node_selected", true);
 	_initial_set("text_editor/behavior/navigation/open_script_when_connecting_signal_to_existing_method", true);
+	_initial_set("text_editor/behavior/navigation/use_default_word_separators", true); // Includes ´`~$^=+|<> General punctuation and CJK punctuation.
+	_initial_set("text_editor/behavior/navigation/use_custom_word_separators", false);
+	_initial_set("text_editor/behavior/navigation/custom_word_separators", ""); // Custom word separators.
 
 	// Behavior: Indent
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/behavior/indent/type", 0, "Tabs,Spaces")
