@@ -2324,6 +2324,8 @@ void Viewport::_gui_force_drag(Control *p_base, const Variant &p_data, Control *
 		_gui_set_drag_preview(p_base, p_control);
 	}
 	_propagate_viewport_notification(this, NOTIFICATION_DRAG_BEGIN);
+
+	update_mouse_cursor_state();
 }
 
 void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
