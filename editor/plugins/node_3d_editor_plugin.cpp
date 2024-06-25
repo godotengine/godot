@@ -2416,6 +2416,14 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("spatial_editor/reset_fov", p_event)) {
 			reset_fov();
 		}
+
+		if (ED_IS_SHORTCUT("spatial_editor/toggle_display_mode", p_event)) {
+			if (viewport->get_debug_draw() == Viewport::DEBUG_DRAW_DISABLED) {
+				_menu_option(last_display_mode);
+			} else {
+				_menu_option(VIEW_DISPLAY_NORMAL);
+			}
+		}
 	}
 
 	// freelook uses most of the useful shortcuts, like save, so its ok
@@ -3632,7 +3640,15 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_OCCLUDERS,
 				Viewport::DEBUG_DRAW_MOTION_VECTORS,
 				Viewport::DEBUG_DRAW_INTERNAL_BUFFER,
+				Viewport::DEBUG_DRAW_DISABLED, // Matches `VIEW_MAX` (used for `static_assert()` below).
 			};
+			static_assert(sizeof(display_options) == sizeof(debug_draw_modes));
+
+			if (p_option != VIEW_DISPLAY_NORMAL) {
+				last_display_mode = p_option;
+				// Display message to make the toggle shortcut more discoverable.
+				set_message(vformat(TTR("%s: Toggle back and forth to Normal display mode."), ED_GET_SHORTCUT("spatial_editor/toggle_display_mode")->get_as_text()));
+			}
 
 			for (int idx = 0; display_options[idx] != VIEW_MAX; idx++) {
 				int id = display_options[idx];
@@ -5342,6 +5358,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	register_shortcut_action("spatial_editor/freelook_down", TTR("Freelook Down"), Key::Q, true);
 	register_shortcut_action("spatial_editor/freelook_speed_modifier", TTR("Freelook Speed Modifier"), Key::SHIFT);
 	register_shortcut_action("spatial_editor/freelook_slow_modifier", TTR("Freelook Slow Modifier"), Key::ALT);
+
+	ED_SHORTCUT("spatial_editor/toggle_display_mode", TTR("Toggle Display Mode"), Key::Z, true);
 
 	ED_SHORTCUT("spatial_editor/lock_transform_x", TTR("Lock Transformation to X axis"), Key::X);
 	ED_SHORTCUT("spatial_editor/lock_transform_y", TTR("Lock Transformation to Y axis"), Key::Y);
