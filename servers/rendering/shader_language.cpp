@@ -1446,8 +1446,12 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 			*r_struct_name = shader->constants[p_identifier].struct_name;
 		}
 		if (r_constant_value) {
-			if (shader->constants[p_identifier].initializer && shader->constants[p_identifier].initializer->values.size() == 1) {
-				*r_constant_value = shader->constants[p_identifier].initializer->values[0];
+			if (shader->constants[p_identifier].initializer && shader->constants[p_identifier].initializer->type == Node::NODE_TYPE_CONSTANT) {
+				ConstantNode *cnode = static_cast<ConstantNode *>(shader->constants[p_identifier].initializer);
+
+				if (cnode->values.size() == 1) {
+					*r_constant_value = cnode->values[0];
+				}
 			}
 		}
 		if (r_type) {
@@ -9541,7 +9545,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									}
 								}
 
-								constant.initializer = static_cast<ConstantNode *>(expr);
+								constant.initializer = expr;
 
 								if (!_compare_datatypes(type, struct_name, 0, expr->get_datatype(), expr->get_datatype_name(), expr->get_array_size())) {
 									return ERR_PARSE_ERROR;
