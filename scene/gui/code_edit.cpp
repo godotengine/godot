@@ -2331,18 +2331,19 @@ void CodeEdit::move_lines_up() {
 			unfold_line(line);
 			swap_lines(line - 1, line);
 		}
-	}
-
-	// Fix selection if it ended at column 0, since it wasn't moved.
-	for (int i = 0; i < get_caret_count(); i++) {
-		if (has_selection(i) && get_selection_to_column(i) == 0 && get_selection_to_line(i) != 0) {
-			if (is_caret_after_selection_origin(i)) {
-				set_caret_line(get_caret_line(i) - 1, false, true, -1, i);
-			} else {
-				set_selection_origin_line(get_selection_origin_line(i) - 1, true, -1, i);
+		// Fix selection if the last one ends at column 0, since it wasn't moved.
+		for (int i = 0; i < get_caret_count(); i++) {
+			if (has_selection(i) && get_selection_to_column(i) == 0 && get_selection_to_line(i) == line_range.y + 1) {
+				if (is_caret_after_selection_origin(i)) {
+					set_caret_line(get_caret_line(i) - 1, false, true, -1, i);
+				} else {
+					set_selection_origin_line(get_selection_origin_line(i) - 1, true, -1, i);
+				}
+				break;
 			}
 		}
 	}
+	adjust_viewport_to_caret();
 
 	end_multicaret_edit();
 	end_complex_operation();
@@ -2352,30 +2353,41 @@ void CodeEdit::move_lines_down() {
 	begin_complex_operation();
 	begin_multicaret_edit();
 
-	Vector<Point2i> line_ranges = get_line_ranges_from_carets();
-
-	// Fix selection if it ended at column 0, since it won't be moved.
-	for (int i = 0; i < get_caret_count(); i++) {
-		if (has_selection(i) && get_selection_to_column(i) == 0 && get_selection_to_line(i) != get_line_count() - 1) {
-			if (is_caret_after_selection_origin(i)) {
-				set_caret_line(get_caret_line(i) + 1, false, true, -1, i);
-			} else {
-				set_selection_origin_line(get_selection_origin_line(i) + 1, true, -1, i);
-			}
-		}
-	}
-
 	// Move lines down by swapping each line with the one below it.
+	Vector<Point2i> line_ranges = get_line_ranges_from_carets();
+	// Reverse in case line ranges are adjacent, if the first ends at column 0.
+	line_ranges.reverse();
 	for (Point2i line_range : line_ranges) {
 		if (line_range.y == get_line_count() - 1) {
 			continue;
 		}
+		// Fix selection if the last one ends at column 0, since it won't be moved.
+		bool selection_to_line_at_end = false;
+		for (int i = 0; i < get_caret_count(); i++) {
+			if (has_selection(i) && get_selection_to_column(i) == 0 && get_selection_to_line(i) == line_range.y + 1) {
+				selection_to_line_at_end = get_selection_to_line(i) == get_line_count() - 1;
+				if (selection_to_line_at_end) {
+					break;
+				}
+				if (is_caret_after_selection_origin(i)) {
+					set_caret_line(get_caret_line(i) + 1, false, true, -1, i);
+				} else {
+					set_selection_origin_line(get_selection_origin_line(i) + 1, true, -1, i);
+				}
+				break;
+			}
+		}
+		if (selection_to_line_at_end) {
+			continue;
+		}
+
 		unfold_line(line_range.y + 1);
 		for (int line = line_range.y; line >= line_range.x; line--) {
 			unfold_line(line);
 			swap_lines(line + 1, line);
 		}
 	}
+	adjust_viewport_to_caret();
 
 	end_multicaret_edit();
 	end_complex_operation();
