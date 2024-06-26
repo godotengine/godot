@@ -6,7 +6,10 @@ Import("env")
 
 thirdparty_obj = []
 
-thirdparty_sources = "#thirdparty/misc/mikktspace.c"
+thirdparty_sources = [
+    "#thirdparty/misc/mikktspace.c",
+    "#thirdparty/misc/cpp_mikktspace.cpp"
+]
 
 env_thirdparty = env.Clone()
 env_thirdparty.disable_warnings()

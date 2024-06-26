@@ -34,6 +34,12 @@
 #include "core/templates/local_vector.h"
 #include "scene/resources/mesh.h"
 #include "thirdparty/misc/mikktspace.h"
+#include "thirdparty/misc/cpp_mikktspace.h"
+
+//todo: probably dont submit this. Either change my mikktspace names back to match the original and use cpp:: or,
+//remove the namespace and keep the object names different. Currently both are in place and,
+// this global using namespace declaration is in place. This is bad. Check code guidelines.
+using namespace cpp;
 
 class SurfaceTool : public RefCounted {
 	GDCLASS(SurfaceTool, RefCounted);
@@ -162,12 +168,12 @@ private:
 	void _create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat);
 
 	//mikktspace callbacks
-	static int mikktGetNumFaces(const SMikkTSpaceContext *pContext);
-	static int mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace);
-	static void mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert);
-	static void mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert);
-	static void mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert);
-	static void mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
+	static int mikktGetNumFaces(const ScppMikkTSpaceContext *pContext);
+	static int mikktGetNumVerticesOfFace(const ScppMikkTSpaceContext *pContext, const int iFace);
+	static void mikktGetPosition(const ScppMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert);
+	static void mikktGetNormal(const ScppMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert);
+	static void mikktGetTexCoord(const ScppMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert);
+	static void mikktSetTSpaceDefault(const ScppMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
 			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
 
 	void _add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs = Vector<Vector2>(), const Vector<Color> &p_colors = Vector<Color>(), const Vector<Vector2> &p_uv2s = Vector<Vector2>(), const Vector<Vector3> &p_normals = Vector<Vector3>(), const TypedArray<Plane> &p_tangents = TypedArray<Plane>());
