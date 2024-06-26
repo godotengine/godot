@@ -1,1 +1,1 @@
-<dummy file aimed to merge> 
+# Report for Assignment 1
