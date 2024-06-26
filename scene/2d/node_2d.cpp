@@ -28,18 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include <vector>
 #include <iostream>
+#include <sstream>
+
 #include "node_2d.h"
 
 #include "scene/main/viewport.h"
 
 std::vector<int> coverageDataSetGlobalRotation;
 std::vector<int> coverageDataMoveX;
+std::map<std::string, bool> coverage_funcs_set_global_skew_scale;
 
 void initializeCoverageDataSetGlobalRotation(int numBranches) {
     coverageDataSetGlobalRotation.resize(numBranches, 0);
 }
+
 void initializeCoverageDataMoveX(int numBranches) {
     coverageDataMoveX.resize(numBranches, 0);
 }
@@ -58,10 +61,25 @@ void writeCoverageDataMoveX() {
     }
 }
 
+void init_coverage_funcs_set_global_skew_scale(std::string name_func, int num_branch) {
+    std::stringstream ss;
+    std::string branch = name_func + "_branch_";
+    coverage_funcs_set_global_skew_scale.clear();
+    for (int i = 0; i < num_branch; ++i) {
+        ss.str("");
+        ss << branch << i + 1;
+        std::string key = ss.str();
+        coverage_funcs_set_global_skew_scale.insert(std::pair(key, 0));
+    }
+}
 
-
-
-
+void print_coverage_funcs_set_global_skew_scale() {
+    std::cout << "Coverage Data:" << std::endl;
+    for (const auto &pair : coverage_funcs_set_global_skew_scale) {
+        std::cout << pair.first << ": ";
+        std::cout << (pair.second ? "Executed" : "Not Executed") << std::endl;
+    }
+}
 
 #ifdef TOOLS_ENABLED
 Dictionary Node2D::_edit_get_state() const {
@@ -376,12 +394,14 @@ void Node2D::set_global_skew(const real_t p_radians) {
 	ERR_THREAD_GUARD;
 	CanvasItem *parent = get_parent_item();
 	if (parent) {
+        coverage_funcs_set_global_skew_scale["set_global_skew_branch_1"] = 1;
 		Transform2D parent_global_transform = parent->get_global_transform();
 		Transform2D new_transform = parent_global_transform * get_transform();
 		new_transform.set_skew(p_radians);
 		new_transform = parent_global_transform.affine_inverse() * new_transform;
 		set_skew(new_transform.get_skew());
 	} else {
+        coverage_funcs_set_global_skew_scale["set_global_skew_branch_2"] = 1;
 		set_skew(p_radians);
 	}
 }
@@ -395,12 +415,14 @@ void Node2D::set_global_scale(const Size2 &p_scale) {
 	ERR_THREAD_GUARD;
 	CanvasItem *parent = get_parent_item();
 	if (parent) {
+        coverage_funcs_set_global_skew_scale["set_global_scale_branch_1"] = 1;
 		Transform2D parent_global_transform = parent->get_global_transform();
 		Transform2D new_transform = parent_global_transform * get_transform();
 		new_transform.set_scale(p_scale);
 		new_transform = parent_global_transform.affine_inverse() * new_transform;
 		set_scale(new_transform.get_scale());
 	} else {
+        coverage_funcs_set_global_skew_scale["set_global_scale_branch_2"] = 1;
 		set_scale(p_scale);
 	}
 }

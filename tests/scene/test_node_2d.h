@@ -36,7 +36,6 @@
 
 #include "tests/test_macros.h"
 
-
 namespace TestNode2D {
 
 TEST_CASE("[SceneTree][Node2D]") {
@@ -85,68 +84,95 @@ TEST_CASE("[SceneTree][Node2D]") {
 		memdelete(outer);
 		memdelete(main);
 	}
-	
+
+    SUBCASE("[Node2D][Global Skew] Global Skew should be correct after inserting node from detached tree into SceneTree.") {
+        init_coverage_funcs_set_global_skew_scale("set_global_skew", 2);
+        Node2D *parent_node = memnew(Node2D);
+        Node2D *child_node = memnew(Node2D);
+        parent_node->add_child(child_node);
+
+        parent_node->set_global_skew(Math_PI / 2);
+        real_t parent_skew = parent_node->get_global_skew();
+        CHECK_EQ(parent_skew, Math_PI / 4);
+        child_node->set_global_skew(Math_PI / 4);
+        real_t child_skew = child_node->get_global_skew();
+        CHECK_EQ(child_skew, Math_PI / 2);
+
+        memdelete(child_node);
+        memdelete(parent_node);
+        print_coverage_funcs_set_global_skew_scale();
+    }
+
+    SUBCASE("[Node2D][Global Scale] Global Scale should be correct after inserting node from detached tree into SceneTree.") {
+        init_coverage_funcs_set_global_skew_scale("set_global_scale", 2);
+        Node2D *parent_node = memnew(Node2D);
+        Node2D *child_node = memnew(Node2D);
+        parent_node->add_child(child_node);
+
+        parent_node->set_global_scale(Size2(100, 100));
+        Size2 parent_scale = parent_node->get_global_scale();
+        CHECK_EQ(parent_scale, Size2(50, 50));
+
+        child_node->set_global_scale(Size2(50, 50));
+        Size2 child_scale = child_node->get_global_scale();
+        CHECK_EQ(child_scale, Size2(100, 100));
+
+        memdelete(child_node);
+        memdelete(parent_node);
+        print_coverage_funcs_set_global_skew_scale();
+    }
+
     SUBCASE("[Node2D] Test set_global_rotation") {
-    initializeCoverageDataSetGlobalRotation(2);
+        initializeCoverageDataSetGlobalRotation(2);
 
-    Node2D *parent_node = memnew(Node2D);
-    Node2D *child_node = memnew(Node2D);
+        Node2D *parent_node = memnew(Node2D);
+        Node2D *child_node = memnew(Node2D);
 
-    // Add child node to parent
-    parent_node->add_child(child_node);
+        // Add child node to parent
+        parent_node->add_child(child_node);
 
-    // Set parent node's rotation
-    parent_node->set_rotation(Math_PI / 4); // 45 degrees
+        // Set parent node's rotation
+        parent_node->set_rotation(Math_PI / 4); // 45 degrees
 
-    // Set child's global rotation
-    child_node->set_global_rotation(Math_PI / 2); // 90 degrees
-
-
-    parent_node->set_global_rotation(Math_PI / 2);
-	
+        // Set child's global rotation
+        child_node->set_global_rotation(Math_PI / 2); // 90 degrees
 
 
-    // Get child's global rotation and verify
-    real_t child_global_rotation = child_node->get_global_rotation();
-    CHECK_EQ(child_global_rotation, Math_PI / 2); // Should be 90 degrees
+        parent_node->set_global_rotation(Math_PI / 2);
 
-    // Verify child's local rotation (should account for parent's rotation)
-    real_t child_local_rotation = child_node->get_rotation();
-    CHECK_EQ(child_local_rotation, Math_PI / 4); // Should be 45 degrees to account for parent's 45 degrees
+        // Get child's global rotation and verify
+        real_t child_global_rotation = child_node->get_global_rotation();
+        CHECK_EQ(child_global_rotation, Math_PI / 2); // Should be 90 degrees
 
-    // Cleanup
-    memdelete(child_node);
-    memdelete(parent_node);
-	writeCoverageDataSetGlobalRotation();
+        // Verify child's local rotation (should account for parent's rotation)
+        real_t child_local_rotation = child_node->get_rotation();
+        CHECK_EQ(child_local_rotation, Math_PI / 4); // Should be 45 degrees to account for parent's 45 degrees
 
+        // Cleanup
+        memdelete(child_node);
+        memdelete(parent_node);
+        writeCoverageDataSetGlobalRotation();
+    }
+
+    SUBCASE("[Node2D] Test Move_x") {
+        initializeCoverageDataMoveX(2);
+        Node2D *node = memnew(Node2D);
+        node->move_x(10, false);
+
+        // Check the new position
+        CHECK(node->get_position() == Vector2(10, 0));
+
+        // Move the node along the x-axis with scaling
+        node->move_x(5, true);
+
+        // The movement vector should be scaled according to the node's current transform
+        // Since we haven't scaled the node, the movement should be direct addition
+        // Let's verify the current position assuming no scaling effect
+        CHECK(node->get_position() == Vector2(15, 0));
+        memdelete(node);
+        writeCoverageDataMoveX();
+    }
 }
-  SUBCASE("[Node2D] Test Move_x"){
-	initializeCoverageDataMoveX(2);
-    Node2D *node = memnew(Node2D);
-    node->move_x(10, false);
-
-    // Check the new position
-    CHECK(node->get_position() == Vector2(10, 0));
-
-    // Move the node along the x-axis with scaling
-    node->move_x(5, true);
-
-    // The movement vector should be scaled according to the node's current transform
-    // Since we haven't scaled the node, the movement should be direct addition
-    // Let's verify the current position assuming no scaling effect
-    CHECK(node->get_position() == Vector2(15, 0));
-    memdelete(node);
-	writeCoverageDataMoveX();
-  }
-
-
-
-}
-
-
-
-
-
 
 } // namespace TestNode2D
 

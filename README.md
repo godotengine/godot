@@ -23,7 +23,7 @@ of that part with OpenCppCoverage.
 ![image](https://github.com/SiyuanHong/godot/assets/113177812/9202d40c-1cda-4ff4-b845-fa7c9eaf8603)
 
 ### Your own coverage tool
-Siyuan Hong: 
+Siyuan Hong
 
   Function 1
   
@@ -51,28 +51,56 @@ i identified three branches in this function(branch 0, 1,2):
       
 ![image](https://github.com/SiyuanHong/godot/assets/113177812/7ff70bbb-2e1f-4541-a038-69965651f022)
       
-they are not reached in the original test. 
+they are not reached in the original test.
 
----
-Rui Chen: 
+Ruizhe Tao
 
-Function 1:  
+Function 1
 
-Name: 'set_environment'  
-Link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d  
+name: set_global_skew
 
-Screenshot:  
-Two branches with unique IDs are identified in this function.  
-<img width="552" alt="environment_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/b0a7fec9-82ff-4398-989e-ddb2e04422c8">    
- 
-Function 2:  
+a link to the commit: https://github.com/SiyuanHong/godot/commit/069884f925777869f8bf04b8f5257e045245dfa0
+
+screenshot:
+
+2 branches with unique ids are identified in this function:
   
-Name: 'set_composition'
-Link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d  
+![skew_uncovered](https://github.com/SiyuanHong/godot/assets/50838626/ba783274-4cb1-4709-b297-b55f52c24516)
 
-Screenshot:  
-Two branches with unique IDs are identified in this function.  
-<img width="532" alt="compositor_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/a0e6d918-67c4-4dea-8cba-290498c28c75">  
+Function 2
+
+name: set_global_scale
+
+a link to the commit: https://github.com/SiyuanHong/godot/commit/069884f925777869f8bf04b8f5257e045245dfa0
+
+screenshot:
+
+2 branches with unique ids are identified in this function:
+
+![scale_uncovered](https://github.com/SiyuanHong/godot/assets/50838626/16a5f470-637e-423c-aed3-433ac9b14c95)
+
+Rui Chen:
+
+Function 1:
+
+Name: 'set_environment'
+
+Link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d
+
+Screenshot:
+Two branches with unique IDs are identified in this function.
+<img width="552" alt="environment_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/b0a7fec9-82ff-4398-989e-ddb2e04422c8">
+
+Function 2:
+
+Name: 'set_composition'
+
+Link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d
+
+Screenshot:
+Two branches with unique IDs are identified in this function.
+<img width="532" alt="compositor_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/a0e6d918-67c4-4dea-8cba-290498c28c75">
+
 ## Coverage improvement
 
 ### Individual tests
@@ -80,17 +108,17 @@ Siyuan Hong
 
 test1:
 
-a link to commit:
+a link to the commit:
      https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
 	 
-old results: 
+old result: 
      ![image](https://github.com/SiyuanHong/godot/assets/113177812/5d6d3622-1eed-482c-a810-3847174bed22)
 
 	 
-new results :
+new result:
      ![image](https://github.com/SiyuanHong/godot/assets/113177812/751b8bfe-1a7c-46d7-b379-a9f0ca1c455a)
 	 
-     the coverage rate improved by 100%.
+     the coverage improved by 100%.
 		 
      comment: because previously, this function is not covered by any tese case, so i just write a new test case to set one node with a rotation degree and see how does that function works.
      the condition branches include node with a parent node and without parent node, so i just write a parent node and childe node attached to it, and call set_global_rotation separately,
@@ -98,53 +126,92 @@ new results :
     
 test2:
 
-a link to commit: 
+a link to the commit:
      https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
 	 
-old results: 
+old result:
      ![image](https://github.com/SiyuanHong/godot/assets/113177812/7ff70bbb-2e1f-4541-a038-69965651f022)
 	 
-new results :
+new result:
      ![image](https://github.com/SiyuanHong/godot/assets/113177812/751b8bfe-1a7c-46d7-b379-a9f0ca1c455a)
 	 
-     the coverage rate improved by 50%.
+     the coverage improved by 50%.
 		 
      comment: because these two functions are highly correlated, so i merged the two test cases into just one, but it indeed tested two functions.
      because the system is complicated, and the arrtibute of "dirty" is protected, hard to figure out how to make its value as dirty, so this test case only
      cover the first branch.
 
-  ---
+Ruizhe Tao
+
+Test 1
+
+a link to the commit: https://github.com/SiyuanHong/godot/commit/069884f925777869f8bf04b8f5257e045245dfa0
+
+old result: \
+![skew_uncovered](https://github.com/SiyuanHong/godot/assets/50838626/f43d6649-cc66-4220-b24e-f156599bae2f)
+
+new result: \
+![skew_covered](https://github.com/SiyuanHong/godot/assets/50838626/1246d93a-3152-492f-9b5c-6e02c5ce0a49)
+
+	The coverage improved by 100%.
+ 	Since this function is not tested in the original project, a new test dedicated to this function was made.
+  	By creating two nodes, parent node and child node, and assign the child node as the child of the parent node.
+   	Use these two node objects to invoke `set_global_skew` function, both branches will be reached, as the condition
+	checks if the node has a parent node.
+
+Test 2
+
+a link to the commit: https://github.com/SiyuanHong/godot/commit/069884f925777869f8bf04b8f5257e045245dfa0
+
+old result: \
+![scale_uncovered](https://github.com/SiyuanHong/godot/assets/50838626/7fa8a1b2-9d23-432d-8418-6e8a94b9f457)
+
+new result: \
+![scale_covered](https://github.com/SiyuanHong/godot/assets/50838626/db7ec6c7-885c-4d2c-8153-be25b8cee24b)
+
+	The coverage improved by 100%.
+ 	This function is very similar to the previous one, and it is also not tested in the original project. A new test
+  	dedicated to this function was made.
+  	By creating two nodes, parent node and child node, and assign the child node as the child of the parent node.
+   	Use these two node objects to invoke `set_global_scale` function, both branches will be reached, as the condition
+	checks if the node has a parent node.
+
 Rui Chen:
-  
-Test 1:  
-Link to the commit:https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d  
-Old result:  
-<img width="552" alt="environment_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/b0a7fec9-82ff-4398-989e-ddb2e04422c8">  
 
-New result:  
-<img width="673" alt="environment_compositor_covered" src="https://github.com/SiyuanHong/godot/assets/117285044/e4d008e1-4521-4fc9-b00c-2914bc205310">  
+Test 1:
 
-The coverage improved by 100%.  
-This function was not testeed in orginal project, therefore, a test is designed for this function.
-In the test case, both branch condition are reached. For the first branch, an new environment object was created and set. For the second branch, a NULL was set to meet the else case. CHECK is done on each 	condition.  
+a link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d
 
-Test 2:  
-Link to the commit:https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d  
-Old result:  
-<img width="532" alt="compositor_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/ec8baaa5-62f7-4efc-a1de-f5d4c27c16b6">  
+old result: \
+<img width="552" alt="environment_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/b0a7fec9-82ff-4398-989e-ddb2e04422c8">
 
-New result:  
-<img width="673" alt="environment_compositor_covered" src="https://github.com/SiyuanHong/godot/assets/117285044/48666509-1fab-4f72-8613-9bc9c6df1c22">  
+new result: \
+<img width="673" alt="environment_compositor_covered" src="https://github.com/SiyuanHong/godot/assets/117285044/e4d008e1-4521-4fc9-b00c-2914bc205310">
 
-The coverage improved by 100%.
-This function was not testeed in orginal project, therefore, a test is designed for this function.
-In the test case, both branch condition are reached. For the first branch, an new compositor object was created and set. For the second branch, to  set an invalid compositor object, I chose to create an 	compositor_effect. CHECK is done on each condition.
+    The coverage improved by 100%.
+    This function was not tested in orginal project, therefore, a new test is designed for this function.
+    In the test case, both branch condition are reached. For the first branch, an new environment object was created and set. For the second branch, a NULL was set to meet the else case. `CHECK` is done on each condition.
 
-  ### Overall
+Test 2:
 
-  
-  ## Statement of individual contributions
+a link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d
+
+old result: \
+<img width="532" alt="compositor_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/ec8baaa5-62f7-4efc-a1de-f5d4c27c16b6">
+
+new result: \
+<img width="673" alt="environment_compositor_covered" src="https://github.com/SiyuanHong/godot/assets/117285044/48666509-1fab-4f72-8613-9bc9c6df1c22">
+
+    The coverage improved by 100%.
+    This function was not testeed in orginal project, therefore, a new test is designed for this function.
+    In the test case, both branch condition are reached. For the first branch, an new compositor object was created and set. For the second branch, to  set an invalid compositor object, I chose to create an 	compositor_effect. CHECK is done on each condition.
+
+### Overall
+
+
+## Statement of individual contributions
 Siyuan Hong: write methods for function instrumentation; deal with function set_global_rotation and get_rotation
-     
-Rui Chen:  
-Wrote function instrumentation for 'set_environment' and 'set_compositor' and theior respective tests that coveres all branched conditions.  
+
+Ruizhe Tao: write function instrumentation for `set_global_skew` and `set_global_scale`, and implement tests for these two functions to cover all branches
+
+Rui Chen: wrote function instrumentation for `set_environment` and `set_compositor` and their respective tests that coveres all branched conditions.  
