@@ -125,6 +125,27 @@ TEST_CASE("[SceneTree][Camera3D] Getters and setters") {
 		CHECK(test_camera->get_doppler_tracking() == Camera3D::DopplerTracking::DOPPLER_TRACKING_DISABLED);
 	}
 
+    SUBCASE("Environment") {
+        init_coverage("Function: Environment", 2);
+        Ref<Environment> environment = memnew(Environment);
+        test_camera->set_environment(environment);
+        CHECK(test_camera->get_environment() == environment);
+        test_camera->set_environment(NULL);
+        CHECK(test_camera->get_environment() == environment);
+        print_coverage();
+    }
+
+    SUBCASE("Compositor") {
+        init_coverage("Function: Compositor", 2);
+        Ref<Compositor> compositor = memnew(Compositor);
+        test_camera->set_compositor(compositor);
+        CHECK(test_camera->get_compositor() == compositor);
+        Ref<CompositorEffect> compositor_effect = memnew(CompositorEffect);
+        test_camera->set_compositor(compositor_effect);
+        CHECK(test_camera->get_compositor() == compositor_effect);
+        print_coverage();
+    }
+
 	SUBCASE("[Camera3D][set_current] When p_enabled") {
 		test_camera->set_current(true);
 		CHECK(coverageDataOfPjrs2[0] == 1);

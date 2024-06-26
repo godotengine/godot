@@ -24,6 +24,7 @@ of that part with OpenCppCoverage.
 
 ### Your own coverage tool
 Siyuan Hong
+Siyuan Hong
 
   Function 1
 
@@ -50,7 +51,7 @@ i identified three branches in this function(branch 0, 1,2):
  i identified two branches in this function(branch 3,4):
 
 ![image](https://github.com/SiyuanHong/godot/assets/113177812/7ff70bbb-2e1f-4541-a038-69965651f022)
-
+      
 they are not reached in the original test.
 
 Ruizhe Tao
@@ -64,7 +65,7 @@ a link to the commit: https://github.com/SiyuanHong/godot/commit/069884f92577786
 screenshot:
 
 2 branches with unique ids are identified in this function:
-
+  
 ![skew_uncovered](https://github.com/SiyuanHong/godot/assets/50838626/ba783274-4cb1-4709-b297-b55f52c24516)
 
 Function 2
@@ -78,6 +79,28 @@ screenshot:
 2 branches with unique ids are identified in this function:
 
 ![scale_uncovered](https://github.com/SiyuanHong/godot/assets/50838626/16a5f470-637e-423c-aed3-433ac9b14c95)
+
+Rui Chen:
+
+Function 1:
+
+Name: 'set_environment'
+
+Link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d
+
+Screenshot:
+Two branches with unique IDs are identified in this function.
+<img width="552" alt="environment_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/b0a7fec9-82ff-4398-989e-ddb2e04422c8">
+
+Function 2:
+
+Name: 'set_composition'
+
+Link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d
+
+Screenshot:
+Two branches with unique IDs are identified in this function.
+<img width="532" alt="compositor_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/a0e6d918-67c4-4dea-8cba-290498c28c75">
 
 Jiarui Pan
 
@@ -109,6 +132,7 @@ Siyuan Hong
 test1:
 
 a link to the commit:
+a link to the commit:
      https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
 
 old result:
@@ -126,6 +150,7 @@ new result:
 
 test2:
 
+a link to the commit:
 a link to the commit:
      https://github.com/godotengine/godot/compare/master...SiyuanHong:godot:hsy
 
@@ -176,6 +201,36 @@ new result: \
    	Use these two node objects to invoke `set_global_scale` function, both branches will be reached, as the condition
 	checks if the node has a parent node.
 
+Rui Chen:
+
+Test 1:
+
+a link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d
+
+old result: \
+<img width="552" alt="environment_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/b0a7fec9-82ff-4398-989e-ddb2e04422c8">
+
+new result: \
+<img width="673" alt="environment_compositor_covered" src="https://github.com/SiyuanHong/godot/assets/117285044/e4d008e1-4521-4fc9-b00c-2914bc205310">
+
+    The coverage improved by 100%.
+    This function was not tested in orginal project, therefore, a new test is designed for this function.
+    In the test case, both branch condition are reached. For the first branch, an new environment object was created and set. For the second branch, a NULL was set to meet the else case. `CHECK` is done on each condition.
+
+Test 2:
+
+a link to the commit: https://github.com/godotengine/godot/commit/7c6ba1300427b16f14dff541063ebf8962ca251d
+
+old result: \
+<img width="532" alt="compositor_uncovered" src="https://github.com/SiyuanHong/godot/assets/117285044/ec8baaa5-62f7-4efc-a1de-f5d4c27c16b6">
+
+new result: \
+<img width="673" alt="environment_compositor_covered" src="https://github.com/SiyuanHong/godot/assets/117285044/48666509-1fab-4f72-8613-9bc9c6df1c22">
+
+    The coverage improved by 100%.
+    This function was not testeed in orginal project, therefore, a new test is designed for this function.
+    In the test case, both branch condition are reached. For the first branch, an new compositor object was created and set. For the second branch, to  set an invalid compositor object, I chose to create an 	compositor_effect. CHECK is done on each condition.
+
 Jiarui Pan
 
 Test1
@@ -210,7 +265,6 @@ new result:
 
      Comment: Initially, no tests are responsible for this function, so a new testcase is created. According to the code, two cases diverge, thus, the testcase consists of two subcases: when p_enabled and else. For the first condition, when set_current is true, the test checks if the function together with make_current are called while clear_current is not; likewise, the second subcase checks if the function together with clear_current are called while make_current is not. By do these, all branches are reached by the tests and coverage is improved.
 
-
 ### Overall
 
 
@@ -218,5 +272,7 @@ new result:
 Siyuan Hong: write methods for function instrumentation; deal with function set_global_rotation and get_rotation
 
 Ruizhe Tao: write function instrumentation for `set_global_skew` and `set_global_scale`, and implement tests for these two functions to cover all branches
+
+Rui Chen: wrote function instrumentation for `set_environment` and `set_compositor` and their respective tests that coveres all branched conditions.  
 
 Jiarui Pan: completed implementation of tests for get_relative_transform_to_parent and set_current with the coverage measurement and improvement
