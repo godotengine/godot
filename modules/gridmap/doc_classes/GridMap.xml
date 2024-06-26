@@ -71,9 +71,9 @@
 		</method>
 		<method name="get_cell_neighbors" qualifiers="const">
 			<return type="Vector3i[]" />
-			<param index="0" name="position" type="Vector3i" />
+			<param index="0" name="cell" type="Vector3i" />
 			<description>
-				Returns an array of [Vector3i] map coordinates that neighbor the cell at coordinates [param position], including unused cells.  Use [method get_cell_item] to check if the cell is used.
+				Returns an array of [Vector3i] map coordinates that are next to the cell at coordinates [param cell], including empty cells.
 			</description>
 		</method>
 		<method name="get_collision_layer_value" qualifiers="const">
@@ -123,19 +123,19 @@
 				Returns an array of all cells with the given item index specified in [param item].
 			</description>
 		</method>
+		<method name="local_region_to_map" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="local_position_a" type="Vector3" />
+			<param index="1" name="local_position_b" type="Vector3" />
+			<description>
+				Returns an array containing the map coordinates for all cells within the GridMap's local coordinate space that fall within the axis-aligned bounding box defined by the points [param local_position_a] and [param local_position_b]. See also [method local_to_map].
+			</description>
+		</method>
 		<method name="local_to_map" qualifiers="const">
 			<return type="Vector3i" />
 			<param index="0" name="local_position" type="Vector3" />
 			<description>
 				Returns the map coordinates of the cell containing the given [param local_position]. If [param local_position] is in global coordinates, consider using [method Node3D.to_local] before passing it to this method. See also [method map_to_local].
-			</description>
-		</method>
-		<method name="local_region_to_map" qualifiers="const">
-			<return type="Vector3i[]" />
-			<param index="0" name="a" type="Vector3" />
-			<param index="1" name="b" type="Vector3" />
-			<description>
-				Returns an array containing map coordinates for all cells within the GridMap's local coordinate space that fall within the axis-aligned bounding box defined by points [param a] and [param b].  See also [method local_to_map].
 			</description>
 		</method>
 		<method name="make_baked_meshes">
@@ -220,7 +220,7 @@
 		</member>
 		<member name="cell_size" type="Vector3" setter="set_cell_size" getter="get_cell_size" default="Vector3(2, 2, 2)">
 			The dimensions of the grid's cells.
-			When [member cell_shape] is set to Hexagon, the [code]cell_size.x[/code] value represents the radius of the cell (from center to vertex), and the [code]cell_size.y[/code] value represents the height of the cell.  The [code]cell_size.z[/code] value is ignored for hexagonal cells.
+			When [member cell_shape] is set to [constant CELL_SHAPE_HEXAGON], [member Vector3.x] represents the radius of the cell (from center to vertex), [member Vector3.y] represents the height of the cell, and [member Vector3.z] is unused.
 			This does not affect the size of the meshes. See [member cell_scale].
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
@@ -241,6 +241,12 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="cell_shape_changed">
+			<param index="0" name="cell_shape" type="int" />
+			<description>
+				Emitted when [member cell_shape] changes.
+			</description>
+		</signal>
 		<signal name="cell_size_changed">
 			<param index="0" name="cell_size" type="Vector3" />
 			<description>
@@ -261,7 +267,7 @@
 			Hexagonal cell shape.
 		</constant>
 		<constant name="CELL_SHAPE_MAX" value="2" enum="CellShape">
-			Count of all cell shapes. Not a valid selection.
+			Represents the size of the [enum CellShape] enum.
 		</constant>
 		<constant name="INVALID_CELL_ITEM" value="-1">
 			Invalid cell item that can be used in [method set_cell_item] to clear cells (or represent an empty cell in [method get_cell_item]).

@@ -92,21 +92,21 @@ class GridMapEditor : public VBoxContainer {
 	List<SetItem> set_items;
 
 	GridMap *node = nullptr;
-	// caching the node global transform to detect when the node has been
+	// Cache the node's global transform to detect when the node has been
 	// moved/scaled/rotated.
 	Transform3D node_global_transform;
 	Ref<MeshLibrary> mesh_library = nullptr;
 
-	// plane we're editing cells on; depth comes from edit_floor
+	// Plane we're editing cells on; depth comes from edit_floor.
 	Plane edit_plane;
 
 	enum EditAxis {
 		AXIS_X = 0,
 		AXIS_Y,
 		AXIS_Z,
-		AXIS_Q, // axial hex coordinates northwest/southeast
-		AXIS_R, // axial hex coordinates east/west
-		AXIS_S, // axial hex coordinates northeast/southwest
+		AXIS_Q, // Axial hex coordinates northwest/southeast.
+		AXIS_R, // Axial hex coordinates east/west.
+		AXIS_S, // Axial hex coordinates northeast/southwest.
 		AXIS_MAX,
 	};
 	EditAxis edit_axis;

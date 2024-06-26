@@ -30,8 +30,6 @@
 
 #include "grid_map.h"
 
-#include "core/core_string_names.h"
-#include "core/error/error_macros.h"
 #include "core/io/marshalls.h"
 #include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/physics_material.h"
@@ -1430,8 +1428,7 @@ void GridMap::_bind_methods() {
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
-	ADD_SIGNAL(MethodInfo("cell_shape_changed",
-			PropertyInfo(Variant::INT, "cell_shape", PROPERTY_HINT_ENUM, "Square,Hexagon")));
+	ADD_SIGNAL(MethodInfo("cell_shape_changed", PropertyInfo(Variant::INT, "cell_shape", PROPERTY_HINT_ENUM, "Square,Hexagon")));
 	ADD_SIGNAL(MethodInfo(CoreStringName(changed)));
 }
 
