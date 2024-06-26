@@ -97,7 +97,7 @@ public:
 	/* MATERIAL API */
 	virtual RID material_allocate() override { return RID(); }
 	virtual void material_initialize(RID p_rid) override {}
-	virtual void material_free(RID p_rid) override{};
+	virtual void material_free(RID p_rid) override {}
 
 	virtual void material_set_render_priority(RID p_material, int priority) override {}
 	virtual void material_set_shader(RID p_shader_material, RID p_shader) override {}

@@ -61,7 +61,7 @@ public:
 	/* Texture API */
 	virtual bool can_create_resources_async() const = 0;
 
-	virtual ~RendererTextureStorage(){};
+	virtual ~RendererTextureStorage() {}
 
 	virtual RID texture_allocate() = 0;
 	virtual void texture_free(RID p_rid) = 0;

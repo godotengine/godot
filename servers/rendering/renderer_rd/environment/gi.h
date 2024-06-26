@@ -461,7 +461,7 @@ public:
 
 		RID get_voxel_gi_buffer();
 
-		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override{};
+		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override {}
 		virtual void free_data() override;
 	};
 
@@ -675,7 +675,7 @@ public:
 		int32_t cascade_dynamic_light_count[SDFGI::MAX_CASCADES]; //used dynamically
 		RID integrate_sky_uniform_set;
 
-		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override{};
+		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override {}
 		virtual void free_data() override;
 		~SDFGI();
 

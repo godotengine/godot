@@ -316,8 +316,8 @@ public:
 
 		int last_shadow_filter = -1;
 
-		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override{};
-		virtual void free_data() override{};
+		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override {}
+		virtual void free_data() override {}
 
 		bool sync_gi_dependent_sets_validity(bool p_ensure_freed = false);
 

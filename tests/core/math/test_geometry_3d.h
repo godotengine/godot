@@ -87,9 +87,9 @@ TEST_CASE("[Geometry3D] Build Convex Mesh") {
 	struct Case {
 		Vector<Plane> object;
 		int want_faces, want_edges, want_vertices;
-		Case(){};
+		Case() {}
 		Case(Vector<Plane> p_object, int p_want_faces, int p_want_edges, int p_want_vertices) :
-				object(p_object), want_faces(p_want_faces), want_edges(p_want_edges), want_vertices(p_want_vertices){};
+				object(p_object), want_faces(p_want_faces), want_edges(p_want_edges), want_vertices(p_want_vertices) {}
 	};
 	Vector<Case> tt;
 	tt.push_back(Case(Geometry3D::build_box_planes(Vector3(5, 10, 5)), 6, 12, 8));
