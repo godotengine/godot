@@ -33,12 +33,12 @@
 
 #include "core/templates/local_vector.h"
 #include "scene/resources/mesh.h"
-#include "thirdparty/misc/mikktspace.h"
 #include "thirdparty/misc/cpp_mikktspace.h"
+#include "thirdparty/misc/mikktspace.h"
 
-//todo: probably dont submit this. Either change my mikktspace names back to match the original and use cpp:: or,
-//remove the namespace and keep the object names different. Currently both are in place and,
-// this global using namespace declaration is in place. This is bad. Check code guidelines.
+/*todo: probably dont submit this. Either change my mikktspace names back to match the original and use cpp:: or,
+ *remove the namespace and keep the object names different. Currently both are in place and,
+ * this global using namespace declaration is in place. This is bad. Check code guidelines.*/
 using namespace cpp;
 
 class SurfaceTool : public RefCounted {
