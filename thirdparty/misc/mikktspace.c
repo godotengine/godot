@@ -491,14 +491,10 @@ static void GenerateSharedVerticesIndexList(int piTriList_in_and_out[], const SM
 	piHashCount2 = (int *)malloc(sizeof(int) * g_iCells);
 
 	if (piHashTable == NULL || piHashCount == NULL || piHashOffsets == NULL || piHashCount2 == NULL) {
-		if (piHashTable != NULL)
-			free(piHashTable);
-		if (piHashCount != NULL)
-			free(piHashCount);
-		if (piHashOffsets != NULL)
-			free(piHashOffsets);
-		if (piHashCount2 != NULL)
-			free(piHashCount2);
+		if (piHashTable != NULL) free(piHashTable);
+		if (piHashCount != NULL) free(piHashCount);
+		if (piHashOffsets != NULL) free(piHashOffsets);
+		if (piHashCount2 != NULL) free(piHashCount2);
 		GenerateSharedVerticesIndexListSlow(piTriList_in_and_out, pContext, iNrTrianglesIn);
 		return;
 	}
