@@ -32,7 +32,6 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/core_string_names.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -62,16 +61,14 @@ void GridMapEditor::_menu_option(int p_option) {
 		case MENU_OPTION_PREV_LEVEL: {
 			floor->set_value(floor->get_value() - 1);
 			if (selection.active && input_action == INPUT_SELECT) {
-				selection.current[edit_axis]--;
-				_validate_selection();
+				_update_selection();
 			}
 		} break;
 
 		case MENU_OPTION_NEXT_LEVEL: {
 			floor->set_value(floor->get_value() + 1);
 			if (selection.active && input_action == INPUT_SELECT) {
-				selection.current[edit_axis]++;
-				_validate_selection();
+				_update_selection();
 			}
 		} break;
 
@@ -497,8 +494,7 @@ void GridMapEditor::_delete_selection() {
 	undo_redo->create_action(TTR("GridMap Delete Selection"));
 
 	TypedArray<Vector3i> cells = node->local_region_to_map(selection.begin, selection.end);
-	for (int i = 0; i < cells.size(); i++) {
-		Vector3i cell = cells[i];
+	for (const Vector3i cell : cells) {
 		undo_redo->add_do_method(node, "set_cell_item", cell, GridMap::INVALID_CELL_ITEM);
 		undo_redo->add_undo_method(node, "set_cell_item", cell, node->get_cell_item(cell), node->get_cell_item_orientation(cell));
 	}
@@ -517,8 +513,7 @@ void GridMapEditor::_fill_selection() {
 	undo_redo->create_action(TTR("GridMap Fill Selection"));
 
 	TypedArray<Vector3i> cells = node->local_region_to_map(selection.begin, selection.end);
-	for (int i = 0; i < cells.size(); i++) {
-		Vector3i cell = cells[i];
+	for (const Vector3i cell : cells) {
 		undo_redo->add_do_method(node, "set_cell_item", cell, selected_palette, cursor_rot);
 		undo_redo->add_undo_method(node, "set_cell_item", cell, node->get_cell_item(cell), node->get_cell_item_orientation(cell));
 	}
@@ -549,8 +544,7 @@ void GridMapEditor::_set_clipboard_data() {
 	Vector3 offset = node->map_to_local(node->local_to_map(selection_center));
 
 	TypedArray<Vector3i> cells = node->local_region_to_map(selection.begin, selection.end);
-	for (int i = 0; i < cells.size(); i++) {
-		Vector3i cell = cells[i];
+	for (const Vector3i cell : cells) {
 		int id = node->get_cell_item(cell);
 		if (id == GridMap::INVALID_CELL_ITEM) {
 			continue;
@@ -1135,8 +1129,7 @@ void GridMapEditor::_draw_hex_grid(RID p_mesh_id, const Vector3 &p_cell_size) {
 			Vector3i(GRID_CURSOR_SIZE * Math_SQRT3 * p_cell_size.x,
 					0,
 					GRID_CURSOR_SIZE * 1.625 * p_cell_size.x));
-	for (int i = 0; i < cells.size(); i++) {
-		Vector3i cell = cells[i];
+	for (const Vector3i cell : cells) {
 		Vector3 center = node->map_to_local(cell);
 
 		for (int j = 1; j < shape_points.size(); j++) {
@@ -1169,9 +1162,8 @@ void GridMapEditor::_draw_hex_x_axis_grid(RID p_mesh_id, const Vector3 &p_cell_s
 			Vector3(0, 0.002, GRID_CURSOR_SIZE * 1.625 * p_cell_size.x));
 
 	// use the cell list to draw the vertical lines
-	for (int i = 0; i < cells.size(); i++) {
+	for (const Vector3i cell : cells) {
 		// grab the z coordinate for the center of the cell
-		Vector3i cell = cells[i];
 		real_t z = node->map_to_local(cell).z;
 
 		// Adjust from the center of the cell to where the line should fall.
