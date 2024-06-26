@@ -35,7 +35,31 @@
 
 #include "scene/main/viewport.h"
 
+std::vector<int> coverageDataSetGlobalRotation;
+std::vector<int> coverageDataMoveX;
 std::map<std::string, bool> coverage_funcs_set_global_skew_scale;
+
+void initializeCoverageDataSetGlobalRotation(int numBranches) {
+    coverageDataSetGlobalRotation.resize(numBranches, 0);
+}
+
+void initializeCoverageDataMoveX(int numBranches) {
+    coverageDataMoveX.resize(numBranches, 0);
+}
+
+void writeCoverageDataSetGlobalRotation() {
+    std::cout << "Coverage Data:" << std::endl;
+    for (size_t i = 0; i < coverageDataSetGlobalRotation.size(); ++i) {
+        std::cout << "set_global_rotation_branch " << i << ": " << (coverageDataSetGlobalRotation[i] ? "Executed" : "Not Executed") << std::endl;
+    }
+}
+
+void writeCoverageDataMoveX() {
+    std::cout << "Coverage Data:" << std::endl;
+    for (size_t i = 0; i < coverageDataMoveX.size(); ++i) {
+        std::cout << "Move_X_branch " << i << ": " << (coverageDataMoveX[i] ? "Executed" : "Not Executed") << std::endl;
+    }
+}
 
 void init_coverage_funcs_set_global_skew_scale(std::string name_func, int num_branch) {
     std::stringstream ss;
@@ -51,7 +75,6 @@ void init_coverage_funcs_set_global_skew_scale(std::string name_func, int num_br
 
 void print_coverage_funcs_set_global_skew_scale() {
     std::cout << "Coverage Data:" << std::endl;
-
     for (const auto &pair : coverage_funcs_set_global_skew_scale) {
         std::cout << pair.first << ": ";
         std::cout << (pair.second ? "Executed" : "Not Executed") << std::endl;
@@ -297,8 +320,10 @@ void Node2D::move_x(real_t p_delta, bool p_scaled) {
 	Transform2D t = get_transform();
 	Vector2 m = t[0];
 	if (!p_scaled) {
+		coverageDataMoveX[0] = 1;
 		m.normalize();
 	}
+	coverageDataMoveX[1] = 1;
 	set_position(t[2] + m * p_delta);
 }
 
@@ -329,7 +354,8 @@ void Node2D::set_global_position(const Point2 &p_pos) {
 }
 
 real_t Node2D::get_global_rotation() const {
-	ERR_READ_THREAD_GUARD_V(0);
+    ERR_READ_THREAD_GUARD_V(0);
+	
 	return get_global_transform().get_rotation();
 }
 
@@ -347,12 +373,14 @@ void Node2D::set_global_rotation(const real_t p_radians) {
 	ERR_THREAD_GUARD;
 	CanvasItem *parent = get_parent_item();
 	if (parent) {
+		coverageDataSetGlobalRotation[0] = 1;
 		Transform2D parent_global_transform = parent->get_global_transform();
 		Transform2D new_transform = parent_global_transform * get_transform();
 		new_transform.set_rotation(p_radians);
 		new_transform = parent_global_transform.affine_inverse() * new_transform;
 		set_rotation(new_transform.get_rotation());
 	} else {
+		coverageDataSetGlobalRotation[1] = 1;
 		set_rotation(p_radians);
 	}
 }

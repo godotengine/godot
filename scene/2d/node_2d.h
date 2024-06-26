@@ -32,8 +32,16 @@
 #define NODE_2D_H
 
 #include <map>
+#include <vector>
 
 #include "scene/main/canvas_item.h"
+
+extern std::vector<int> coverageDataSetGlobalRotation;
+extern std::vector<int> coverageDataMoveX;
+void initializeCoverageDataSetGlobalRotation(int numBranches);
+void initializeCoverageDataMoveX(int numBranches);
+void writeCoverageDataSetGlobalRotation();
+void writeCoverageDataMoveX();
 
 extern std::map<std::string, bool> coverage_funcs_set_global_skew_scale;
 void init_coverage_funcs_set_global_skew_scale(std::string, int);
