@@ -435,7 +435,7 @@ void EditorPropertyArray::update_property() {
 					editor->setup("Object");
 					new_prop = editor;
 				} else {
-					new_prop = EditorInspector::instantiate_property_editor(nullptr, value_type, "", subtype_hint, subtype_hint_string, PROPERTY_USAGE_NONE);
+					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", subtype_hint, subtype_hint_string, PROPERTY_USAGE_NONE);
 				}
 				new_prop->set_selectable(false);
 				new_prop->set_use_folding(is_using_folding());
@@ -1064,7 +1064,7 @@ void EditorPropertyDictionary::update_property() {
 					editor->setup("Object");
 					new_prop = editor;
 				} else {
-					new_prop = EditorInspector::instantiate_property_editor(nullptr, value_type, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
+					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
 				}
 				new_prop->set_selectable(false);
 				new_prop->set_use_folding(is_using_folding());
