@@ -1737,7 +1737,7 @@ bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_nod
 	return false;
 }
 
-int EditorNode::_save_external_resources() {
+int EditorNode::_save_external_resources(bool p_also_save_external_data) {
 	// Save external resources and its subresources if any was modified.
 
 	int flg = 0;
@@ -1781,6 +1781,16 @@ int EditorNode::_save_external_resources() {
 		}
 		ResourceSaver::save(res, res->get_path(), flg);
 		saved++;
+	}
+
+	if (p_also_save_external_data) {
+		for (int i = 0; i < editor_data.get_editor_plugin_count(); i++) {
+			EditorPlugin *plugin = editor_data.get_editor_plugin(i);
+			if (!plugin->get_unsaved_status().is_empty()) {
+				plugin->save_external_data();
+				saved++;
+			}
+		}
 	}
 
 	EditorUndoRedoManager::get_singleton()->set_history_as_saved(EditorUndoRedoManager::GLOBAL_HISTORY);
@@ -2726,10 +2736,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					ScriptEditor::get_singleton()->save_current_script();
 				}
 
-				const int saved = _save_external_resources();
+				const int saved = _save_external_resources(true);
 				if (saved > 0) {
 					show_accept(
-							vformat(TTR("The current scene has no root node, but %d modified external resource(s) were saved anyway."), saved),
+							vformat(TTR("The current scene has no root node, but %d modified external resource(s) and/or plugin data were saved anyway."), saved),
 							TTR("OK"));
 				} else if (p_option == FILE_SAVE_AS_SCENE) {
 					// Don't show this dialog when pressing Ctrl + S to avoid interfering with script saving.
