@@ -28,10 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include <iostream>
+#include <sstream>
+
 #include "camera_3d.h"
 
 #include "core/math/projection.h"
 #include "scene/main/viewport.h"
+
+std::map<std::string, bool> coverage_environment_compositor;
+
+void init_coverage(std::string name_func,int num_branch) {
+    std::stringstream ss;
+    std::string branch = name_func + "_branch_";
+    coverage_environment_compositor.clear();
+    for (int i = 0; i < num_branch; ++i) {
+        ss.str("");
+        ss << branch << i + 1;
+        std::string key = ss.str();
+        coverage_environment_compositor.insert(std::pair(key, 0));
+    }
+}
+
+void print_coverage() {
+    std::cout << "Coverage Data:" << std::endl;
+
+    for (const auto &pair : coverage_environment_compositor) {
+        std::cout << pair.first << ": ";
+        std::cout << (pair.second ? "Executed" : "Not Executed") << std::endl;
+    }
+}
 
 void Camera3D::_update_audio_listener_state() {
 }
@@ -413,8 +439,10 @@ Vector3 Camera3D::project_position(const Point2 &p_point, real_t p_z_depth) cons
 void Camera3D::set_environment(const Ref<Environment> &p_environment) {
 	environment = p_environment;
 	if (environment.is_valid()) {
+        coverage_environment_compositor["Function: Environment_branch_1"] = 1;
 		RS::get_singleton()->camera_set_environment(camera, environment->get_rid());
 	} else {
+        coverage_environment_compositor["Function: Environment_branch_2"] = 1;
 		RS::get_singleton()->camera_set_environment(camera, RID());
 	}
 	_update_camera_mode();
@@ -467,8 +495,10 @@ void Camera3D::_attributes_changed() {
 void Camera3D::set_compositor(const Ref<Compositor> &p_compositor) {
 	compositor = p_compositor;
 	if (compositor.is_valid()) {
+        coverage_environment_compositor["Function: Compositor_branch_1"] = 1;
 		RS::get_singleton()->camera_set_compositor(camera, compositor->get_rid());
 	} else {
+        coverage_environment_compositor["Function: Compositor_branch_2"] = 1;
 		RS::get_singleton()->camera_set_compositor(camera, RID());
 	}
 	_update_camera_mode();
