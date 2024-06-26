@@ -2265,7 +2265,9 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 	}
 
 	// Send the edited object to the plugins.
-	for (EditorPlugin *plugin : available_plugins) {
+	for (int i = available_plugins.size() - 1; i > -1; i--) {
+		EditorPlugin *plugin = available_plugins[i];
+
 		if (active_plugins[owner_id].has(plugin)) {
 			// Plugin was already active, just change the object.
 			plugin->edit(p_object);
