@@ -46,7 +46,9 @@ typedef struct {
 
 static tbool			veq( const SVec3 v1, const SVec3 v2 )
 {
-	return (v1.x == v2.x) && (v1.y == v2.y) && (v1.z == v2.z);
+	return (fabsf(v1.x - v2.x) <= FLT_EPSILON &&
+			fabsf(v1.y - v2.y) <= FLT_EPSILON &&
+			fabsf(v1.z - v2.z) <= FLT_EPSILON);
 }
 
 static SVec3		vadd( const SVec3 v1, const SVec3 v2 )
@@ -72,28 +74,27 @@ static SVec3		vsub( const SVec3 v1, const SVec3 v2 )
 	return vRes;
 }
 
-static SVec3		vscale(const float fS, const SVec3 v)
+static SVec3		vscale(const float fS, const SVec3* v)
 {
 	SVec3 vRes;
 
-	vRes.x = fS * v.x;
-	vRes.y = fS * v.y;
-	vRes.z = fS * v.z;
+	vRes.x = fS * v->x;
+	vRes.y = fS * v->y;
+	vRes.z = fS * v->z;
 
 	return vRes;
 }
 
-static float			LengthSquared( const SVec3 v )
-{
-	return v.x*v.x + v.y*v.y + v.z*v.z;
+static float LengthSquared(const SVec3 *v) {
+	return v->x * v->x + v->y * v->y + v->z * v->z;
 }
 
-static float			Length( const SVec3 v )
+static float			Length( const SVec3* v )
 {
 	return sqrtf(LengthSquared(v));
 }
 
-static SVec3		Normalize( const SVec3 v )
+static SVec3		Normalize( const SVec3* v )
 {
 	return vscale(1 / Length(v), v);
 }
@@ -202,8 +203,8 @@ static STSpace AvgTSpace(const STSpace * pTS0, const STSpace * pTS1)
 		ts_res.fMagT = 0.5f*(pTS0->fMagT+pTS1->fMagT);
 		ts_res.vOs = vadd(pTS0->vOs,pTS1->vOs);
 		ts_res.vOt = vadd(pTS0->vOt,pTS1->vOt);
-		if ( VNotZero(ts_res.vOs) ) ts_res.vOs = Normalize(ts_res.vOs);
-		if ( VNotZero(ts_res.vOt) ) ts_res.vOt = Normalize(ts_res.vOt);
+		if ( VNotZero(ts_res.vOs) ) ts_res.vOs = Normalize(&ts_res.vOs);
+		if ( VNotZero(ts_res.vOt) ) ts_res.vOt = Normalize(&ts_res.vOt);
 	}
 
 	return ts_res;
@@ -452,17 +453,17 @@ static void GenerateSharedVerticesIndexList(int piTriList_in_and_out[], const SM
 {
 
 	// Generate bounding box
-	int * piHashTable=NULL, * piHashCount=NULL, * piHashOffsets=NULL, * piHashCount2=NULL;
-	STmpVert * pTmpVert = NULL;
-	int i=0, iChannel=0, k=0, e=0;
-	int iMaxCount=0;
+	int *piHashTable = NULL, *piHashCount = NULL, *piHashOffsets = NULL, *piHashCount2 = NULL;
+	STmpVert *pTmpVert = NULL;
+	int i = 0, iChannel = 0, k = 0, e = 0;
+	int iMaxCount = 0;
 	SVec3 vMin = GetPosition(pContext, 0), vMax = vMin, vDim;
 	float fMin, fMax;
-	for (i=1; i<(iNrTrianglesIn*3); i++)
-	{
+	SVec3 vP;
+	for (i = 1; i < (iNrTrianglesIn * 3); i++) {
 		const int index = piTriList_in_and_out[i];
 
-		const SVec3 vP = GetPosition(pContext, index);
+		vP = GetPosition(pContext, index);
 		if (vMin.x > vP.x) vMin.x = vP.x;
 		else if (vMax.x < vP.x) vMax.x = vP.x;
 		if (vMin.y > vP.y) vMin.y = vP.y;
@@ -471,103 +472,101 @@ static void GenerateSharedVerticesIndexList(int piTriList_in_and_out[], const SM
 		else if (vMax.z < vP.z) vMax.z = vP.z;
 	}
 
-	vDim = vsub(vMax,vMin);
+	vDim = vsub(vMax, vMin);
 	iChannel = 0;
-	fMin = vMin.x; fMax=vMax.x;
-	if (vDim.y>vDim.x && vDim.y>vDim.z)
-	{
-		iChannel=1;
-		fMin = vMin.y, fMax=vMax.y;
-	}
-	else if (vDim.z>vDim.x)
-	{
-		iChannel=2;
-		fMin = vMin.z, fMax=vMax.z;
+	fMin = vMin.x;
+	fMax = vMax.x;
+	if (vDim.y > vDim.x && vDim.y > vDim.z) {
+		iChannel = 1;
+		fMin = vMin.y, fMax = vMax.y;
+	} else if (vDim.z > vDim.x) {
+		iChannel = 2;
+		fMin = vMin.z, fMax = vMax.z;
 	}
 
 	// make allocations
-	piHashTable = (int *) malloc(sizeof(int)*iNrTrianglesIn*3);
-	piHashCount = (int *) malloc(sizeof(int)*g_iCells);
-	piHashOffsets = (int *) malloc(sizeof(int)*g_iCells);
-	piHashCount2 = (int *) malloc(sizeof(int)*g_iCells);
+	piHashTable = (int *)malloc(sizeof(int) * iNrTrianglesIn * 3);
+	piHashCount = (int *)malloc(sizeof(int) * g_iCells);
+	piHashOffsets = (int *)malloc(sizeof(int) * g_iCells);
+	piHashCount2 = (int *)malloc(sizeof(int) * g_iCells);
 
-	if (piHashTable==NULL || piHashCount==NULL || piHashOffsets==NULL || piHashCount2==NULL)
-	{
-		if (piHashTable!=NULL) free(piHashTable);
-		if (piHashCount!=NULL) free(piHashCount);
-		if (piHashOffsets!=NULL) free(piHashOffsets);
-		if (piHashCount2!=NULL) free(piHashCount2);
+	if (piHashTable == NULL || piHashCount == NULL || piHashOffsets == NULL || piHashCount2 == NULL) {
+		if (piHashTable != NULL)
+			free(piHashTable);
+		if (piHashCount != NULL)
+			free(piHashCount);
+		if (piHashOffsets != NULL)
+			free(piHashOffsets);
+		if (piHashCount2 != NULL)
+			free(piHashCount2);
 		GenerateSharedVerticesIndexListSlow(piTriList_in_and_out, pContext, iNrTrianglesIn);
 		return;
 	}
-	memset(piHashCount, 0, sizeof(int)*g_iCells);
-	memset(piHashCount2, 0, sizeof(int)*g_iCells);
+	memset(piHashCount, 0, sizeof(int) * g_iCells);
+	memset(piHashCount2, 0, sizeof(int) * g_iCells);
 
 	// count amount of elements in each cell unit
-	for (i=0; i<(iNrTrianglesIn*3); i++)
-	{
+	for (i = 0; i < (iNrTrianglesIn * 3); i++) {
 		const int index = piTriList_in_and_out[i];
-		const SVec3 vP = GetPosition(pContext, index);
-		const float fVal = iChannel==0 ? vP.x : (iChannel==1 ? vP.y : vP.z);
+		vP = GetPosition(pContext, index);
+		const float fVal = iChannel == 0 ? vP.x : (iChannel == 1 ? vP.y : vP.z);
 		const int iCell = FindGridCell(fMin, fMax, fVal);
 		++piHashCount[iCell];
 	}
 
 	// evaluate start index of each cell.
-	piHashOffsets[0]=0;
-	for (k=1; k<g_iCells; k++)
-		piHashOffsets[k]=piHashOffsets[k-1]+piHashCount[k-1];
+	piHashOffsets[0] = 0;
+	for (k = 1; k < g_iCells; k++)
+		piHashOffsets[k] = piHashOffsets[k - 1] + piHashCount[k - 1];
 
 	// insert vertices
-	for (i=0; i<(iNrTrianglesIn*3); i++)
-	{
-		const int index = piTriList_in_and_out[i];
-		const SVec3 vP = GetPosition(pContext, index);
-		const float fVal = iChannel==0 ? vP.x : (iChannel==1 ? vP.y : vP.z);
+	for (i = 0; i < (iNrTrianglesIn * 3); i++) {
+		vP = GetPosition(pContext, piTriList_in_and_out[i]);
+		const float fVal = iChannel == 0 ? vP.x : (iChannel == 1 ? vP.y : vP.z);
 		const int iCell = FindGridCell(fMin, fMax, fVal);
-		int * pTable = NULL;
+		int *pTable = NULL;
 
-		assert(piHashCount2[iCell]<piHashCount[iCell]);
+		assert(piHashCount2[iCell] < piHashCount[iCell]);
 		pTable = &piHashTable[piHashOffsets[iCell]];
-		pTable[piHashCount2[iCell]] = i;	// vertex i has been inserted.
+		pTable[piHashCount2[iCell]] = i; // vertex i has been inserted.
 		++piHashCount2[iCell];
 	}
-	for (k=0; k<g_iCells; k++)
-		assert(piHashCount2[k] == piHashCount[k]);	// verify the count
+	for (k = 0; k < g_iCells; k++)
+		assert(piHashCount2[k] == piHashCount[k]); // verify the count
 	free(piHashCount2);
 
 	// find maximum amount of entries in any hash entry
 	iMaxCount = piHashCount[0];
-	for (k=1; k<g_iCells; k++)
-		if (iMaxCount<piHashCount[k])
-			iMaxCount=piHashCount[k];
-	pTmpVert = (STmpVert *) malloc(sizeof(STmpVert)*iMaxCount);
-	
+	for (k = 1; k < g_iCells; k++)
+		if (iMaxCount < piHashCount[k])
+			iMaxCount = piHashCount[k];
+	pTmpVert = (STmpVert *)malloc(sizeof(STmpVert) * iMaxCount);
 
 	// complete the merge
-	for (k=0; k<g_iCells; k++)
-	{
+	for (k = 0; k < g_iCells; k++) {
 		// extract table of cell k and amount of entries in it
-		int * pTable = &piHashTable[piHashOffsets[k]];
+		int *pTable = &piHashTable[piHashOffsets[k]];
 		const int iEntries = piHashCount[k];
-		if (iEntries < 2) continue;
+		if (iEntries < 2)
+			continue;
 
-		if (pTmpVert!=NULL)
-		{
-			for (e=0; e<iEntries; e++)
-			{
+		if (pTmpVert != NULL) {
+			for (e = 0; e < iEntries; e++) {
 				int i = pTable[e];
-				const SVec3 vP = GetPosition(pContext, piTriList_in_and_out[i]);
-				pTmpVert[e].vert[0] = vP.x; pTmpVert[e].vert[1] = vP.y;
-				pTmpVert[e].vert[2] = vP.z; pTmpVert[e].index = i;
+				vP = GetPosition(pContext, piTriList_in_and_out[i]);
+				pTmpVert[e].vert[0] = vP.x;
+				pTmpVert[e].vert[1] = vP.y;
+				pTmpVert[e].vert[2] = vP.z;
+				pTmpVert[e].index = i;
 			}
-			MergeVertsFast(piTriList_in_and_out, pTmpVert, pContext, 0, iEntries-1);
-		}
-		else
+			MergeVertsFast(piTriList_in_and_out, pTmpVert, pContext, 0, iEntries - 1);
+		} else
 			MergeVertsSlow(piTriList_in_and_out, pContext, pTable, iEntries);
 	}
 
-	if (pTmpVert!=NULL) { free(pTmpVert); }
+	if (pTmpVert != NULL) {
+		free(pTmpVert);
+	}
 	free(piHashTable);
 	free(piHashCount);
 	free(piHashOffsets);
@@ -801,8 +800,10 @@ static int GenerateInitialVerticesIndexList(STriInfo pTriInfos[], int piTriList_
 				const SVec3 T1 = GetTexCoord(pContext, i1);
 				const SVec3 T2 = GetTexCoord(pContext, i2);
 				const SVec3 T3 = GetTexCoord(pContext, i3);
-				const float distSQ_02 = LengthSquared(vsub(T2,T0));
-				const float distSQ_13 = LengthSquared(vsub(T3,T1));
+				const SVec3 Tsub1 = vsub(T2, T0);
+				const SVec3 Tsub2 = vsub(T3, T1);
+				const float distSQ_02 = LengthSquared(&Tsub1);
+				const float distSQ_13 = LengthSquared(&Tsub2);
 				tbool bQuadDiagIs_02;
 				if (distSQ_02<distSQ_13)
 					bQuadDiagIs_02 = TTRUE;
@@ -814,8 +815,10 @@ static int GenerateInitialVerticesIndexList(STriInfo pTriInfos[], int piTriList_
 					const SVec3 P1 = GetPosition(pContext, i1);
 					const SVec3 P2 = GetPosition(pContext, i2);
 					const SVec3 P3 = GetPosition(pContext, i3);
-					const float distSQ_02 = LengthSquared(vsub(P2,P0));
-					const float distSQ_13 = LengthSquared(vsub(P3,P1));
+					const SVec3 Psub1 = vsub(P2, P0);
+					const SVec3 Psub2 = vsub(P3, P1);
+					const float distSQ_02 = LengthSquared(&Psub1);
+					const float distSQ_13 = LengthSquared(&Psub2);
 
 					bQuadDiagIs_02 = distSQ_13<distSQ_02 ? TFALSE : TTRUE;
 				}
@@ -875,10 +878,9 @@ static int GenerateInitialVerticesIndexList(STriInfo pTriInfos[], int piTriList_
 static SVec3 GetPosition(const SMikkTSpaceContext * pContext, const int index)
 {
 	int iF, iI;
-	SVec3 res; float pos[3];
+	SVec3 res;
 	IndexToData(&iF, &iI, index);
-	pContext->m_pInterface->m_getPosition(pContext, pos, iF, iI);
-	res.x=pos[0]; res.y=pos[1]; res.z=pos[2];
+	pContext->m_pInterface->m_getPosition(pContext, &res.x, iF, iI);
 	return res;
 }
 
@@ -887,18 +889,17 @@ static SVec3 GetNormal(const SMikkTSpaceContext * pContext, const int index)
 	int iF, iI;
 	SVec3 res; float norm[3];
 	IndexToData(&iF, &iI, index);
-	pContext->m_pInterface->m_getNormal(pContext, norm, iF, iI);
-	res.x=norm[0]; res.y=norm[1]; res.z=norm[2];
+	pContext->m_pInterface->m_getNormal(pContext, &res.x, iF, iI);
 	return res;
 }
 
 static SVec3 GetTexCoord(const SMikkTSpaceContext * pContext, const int index)
 {
 	int iF, iI;
-	SVec3 res; float texc[2];
+	SVec3 res;
 	IndexToData(&iF, &iI, index);
-	pContext->m_pInterface->m_getTexCoord(pContext, texc, iF, iI);
-	res.x=texc[0]; res.y=texc[1]; res.z=1.0f;
+	pContext->m_pInterface->m_getTexCoord(pContext, &res.x, iF, iI);
+	res.z=1.0f;
 	return res;
 }
 
@@ -974,19 +975,19 @@ static void InitTriInfo(STriInfo pTriInfos[], const int piTriListIn[], const SMi
 
 		const float fSignedAreaSTx2 = t21x*t31y - t21y*t31x;
 		//assert(fSignedAreaSTx2!=0);
-		SVec3 vOs = vsub(vscale(t31y,d1), vscale(t21y,d2));	// eq 18
-		SVec3 vOt = vadd(vscale(-t31x,d1), vscale(t21x,d2)); // eq 19
+		SVec3 vOs = vsub(vscale(t31y,&d1), vscale(t21y,&d2));	// eq 18
+		SVec3 vOt = vadd(vscale(-t31x,&d1), vscale(t21x,&d2)); // eq 19
 
 		pTriInfos[f].iFlag |= (fSignedAreaSTx2>0 ? ORIENT_PRESERVING : 0);
 
 		if ( NotZero(fSignedAreaSTx2) )
 		{
 			const float fAbsArea = fabsf(fSignedAreaSTx2);
-			const float fLenOs = Length(vOs);
-			const float fLenOt = Length(vOt);
+			const float fLenOs = Length(&vOs);
+			const float fLenOt = Length(&vOt);
 			const float fS = (pTriInfos[f].iFlag&ORIENT_PRESERVING)==0 ? (-1.0f) : 1.0f;
-			if ( NotZero(fLenOs) ) pTriInfos[f].vOs = vscale(fS/fLenOs, vOs);
-			if ( NotZero(fLenOt) ) pTriInfos[f].vOt = vscale(fS/fLenOt, vOt);
+			if ( NotZero(fLenOs) ) pTriInfos[f].vOs = vscale(fS/fLenOs, &vOs);
+			if ( NotZero(fLenOt) ) pTriInfos[f].vOt = vscale(fS/fLenOt, &vOt);
 
 			// evaluate magnitudes prior to normalization of vOs and vOt
 			pTriInfos[f].fMagS = fLenOs / fAbsArea;
@@ -1239,10 +1240,10 @@ static tbool GenerateTSpaces(STSpace psTspace[], const STriInfo pTriInfos[], con
 			n = GetNormal(pContext, iVertIndex);
 			
 			// project
-			vOs = vsub(pTriInfos[f].vOs, vscale(vdot(n,pTriInfos[f].vOs), n));
-			vOt = vsub(pTriInfos[f].vOt, vscale(vdot(n,pTriInfos[f].vOt), n));
-			if ( VNotZero(vOs) ) vOs = Normalize(vOs);
-			if ( VNotZero(vOt) ) vOt = Normalize(vOt);
+			vOs = vsub(pTriInfos[f].vOs, vscale(vdot(n,pTriInfos[f].vOs), &n));
+			vOt = vsub(pTriInfos[f].vOt, vscale(vdot(n,pTriInfos[f].vOt), &n));
+			if ( VNotZero(vOs) ) vOs = Normalize(&vOs);
+			if ( VNotZero(vOt) ) vOt = Normalize(&vOt);
 
 			// original face number
 			iOF_1 = pTriInfos[f].iOrgFaceNumber;
@@ -1254,10 +1255,10 @@ static tbool GenerateTSpaces(STSpace psTspace[], const STriInfo pTriInfos[], con
 				const int iOF_2 = pTriInfos[t].iOrgFaceNumber;
 
 				// project
-				SVec3 vOs2 = vsub(pTriInfos[t].vOs, vscale(vdot(n,pTriInfos[t].vOs), n));
-				SVec3 vOt2 = vsub(pTriInfos[t].vOt, vscale(vdot(n,pTriInfos[t].vOt), n));
-				if ( VNotZero(vOs2) ) vOs2 = Normalize(vOs2);
-				if ( VNotZero(vOt2) ) vOt2 = Normalize(vOt2);
+				SVec3 vOs2 = vsub(pTriInfos[t].vOs, vscale(vdot(n,pTriInfos[t].vOs), &n));
+				SVec3 vOt2 = vsub(pTriInfos[t].vOt, vscale(vdot(n,pTriInfos[t].vOt), &n));
+				if ( VNotZero(vOs2) ) vOs2 = Normalize(&vOs2);
+				if ( VNotZero(vOt2) ) vOt2 = Normalize(&vOt2);
 
 				{
 					const tbool bAny = ( (pTriInfos[f].iFlag | pTriInfos[t].iFlag) & GROUP_WITH_ANY )!=0 ? TTRUE : TFALSE;
@@ -1384,10 +1385,10 @@ static STSpace EvalTspace(int face_indices[], const int iFaces, const int piTriL
 			// project
 			index = piTriListIn[3*f+i];
 			n = GetNormal(pContext, index);
-			vOs = vsub(pTriInfos[f].vOs, vscale(vdot(n,pTriInfos[f].vOs), n));
-			vOt = vsub(pTriInfos[f].vOt, vscale(vdot(n,pTriInfos[f].vOt), n));
-			if ( VNotZero(vOs) ) vOs = Normalize(vOs);
-			if ( VNotZero(vOt) ) vOt = Normalize(vOt);
+			vOs = vsub(pTriInfos[f].vOs, vscale(vdot(n,pTriInfos[f].vOs), &n));
+			vOt = vsub(pTriInfos[f].vOt, vscale(vdot(n,pTriInfos[f].vOt), &n));
+			if ( VNotZero(vOs) ) vOs = Normalize(&vOs);
+			if ( VNotZero(vOt) ) vOt = Normalize(&vOt);
 
 			i2 = piTriListIn[3*f + (i<2?(i+1):0)];
 			i1 = piTriListIn[3*f + i];
@@ -1400,8 +1401,8 @@ static STSpace EvalTspace(int face_indices[], const int iFaces, const int piTriL
 			v2 = vsub(p2,p1);
 
 			// project
-			v1 = vsub(v1, vscale(vdot(n,v1),n)); if ( VNotZero(v1) ) v1 = Normalize(v1);
-			v2 = vsub(v2, vscale(vdot(n,v2),n)); if ( VNotZero(v2) ) v2 = Normalize(v2);
+			v1 = vsub(v1, vscale(vdot(n,v1),&n)); if ( VNotZero(v1) ) v1 = Normalize(&v1);
+			v2 = vsub(v2, vscale(vdot(n,v2),&n)); if ( VNotZero(v2) ) v2 = Normalize(&v2);
 
 			// weight contribution by the angle
 			// between the two edge vectors
@@ -1410,8 +1411,8 @@ static STSpace EvalTspace(int face_indices[], const int iFaces, const int piTriL
 			fMagS = pTriInfos[f].fMagS;
 			fMagT = pTriInfos[f].fMagT;
 
-			res.vOs=vadd(res.vOs, vscale(fAngle,vOs));
-			res.vOt=vadd(res.vOt,vscale(fAngle,vOt));
+			res.vOs=vadd(res.vOs, vscale(fAngle,&vOs));
+			res.vOt=vadd(res.vOt,vscale(fAngle,&vOt));
 			res.fMagS+=(fAngle*fMagS);
 			res.fMagT+=(fAngle*fMagT);
 			fAngleSum += fAngle;
@@ -1419,8 +1420,8 @@ static STSpace EvalTspace(int face_indices[], const int iFaces, const int piTriL
 	}
 
 	// normalize
-	if ( VNotZero(res.vOs) ) res.vOs = Normalize(res.vOs);
-	if ( VNotZero(res.vOt) ) res.vOt = Normalize(res.vOt);
+	if ( VNotZero(res.vOs) ) res.vOs = Normalize(&res.vOs);
+	if ( VNotZero(res.vOt) ) res.vOt = Normalize(&res.vOt);
 	if (fAngleSum>0)
 	{
 		res.fMagS /= fAngleSum;
