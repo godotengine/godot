@@ -56,14 +56,14 @@ public:
 	/* Canvas Texture API */
 
 	virtual RID canvas_texture_allocate() override { return RID(); };
-	virtual void canvas_texture_initialize(RID p_rid) override{};
-	virtual void canvas_texture_free(RID p_rid) override{};
+	virtual void canvas_texture_initialize(RID p_rid) override {}
+	virtual void canvas_texture_free(RID p_rid) override {}
 
-	virtual void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) override{};
-	virtual void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) override{};
+	virtual void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) override {}
+	virtual void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) override {}
 
-	virtual void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) override{};
-	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) override{};
+	virtual void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) override {}
+	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) override {}
 
 	/* Texture API */
 
@@ -88,20 +88,20 @@ public:
 		ERR_FAIL_NULL(t);
 		t->image = p_image->duplicate();
 	};
-	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) override{};
-	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override{};
-	virtual void texture_proxy_initialize(RID p_texture, RID p_base) override{}; //all slices, then all the mipmaps, must be coherent
+	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) override {}
+	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override {}
+	virtual void texture_proxy_initialize(RID p_texture, RID p_base) override {} //all slices, then all the mipmaps, must be coherent
 
 	virtual RID texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY) override { return RID(); }
 
-	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override{};
-	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override{};
-	virtual void texture_proxy_update(RID p_proxy, RID p_base) override{};
+	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override {}
+	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override {}
+	virtual void texture_proxy_update(RID p_proxy, RID p_base) override {}
 
 	//these two APIs can be used together or in combination with the others.
-	virtual void texture_2d_placeholder_initialize(RID p_texture) override{};
-	virtual void texture_2d_layered_placeholder_initialize(RID p_texture, RenderingServer::TextureLayeredType p_layered_type) override{};
-	virtual void texture_3d_placeholder_initialize(RID p_texture) override{};
+	virtual void texture_2d_placeholder_initialize(RID p_texture) override {}
+	virtual void texture_2d_layered_placeholder_initialize(RID p_texture, RenderingServer::TextureLayeredType p_layered_type) override {}
+	virtual void texture_3d_placeholder_initialize(RID p_texture) override {}
 
 	virtual Ref<Image> texture_2d_get(RID p_texture) const override {
 		DummyTexture *t = texture_owner.get_or_null(p_texture);
@@ -112,31 +112,31 @@ public:
 	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const override { return Vector<Ref<Image>>(); };
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) override { texture_free(p_by_texture); };
-	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override{};
+	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override {}
 
-	virtual void texture_set_path(RID p_texture, const String &p_path) override{};
+	virtual void texture_set_path(RID p_texture, const String &p_path) override {}
 	virtual String texture_get_path(RID p_texture) const override { return String(); };
 
 	virtual Image::Format texture_get_format(RID p_texture) const override { return Image::FORMAT_MAX; }
 
-	virtual void texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override{};
-	virtual void texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override{};
-	virtual void texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) override{};
+	virtual void texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override {}
+	virtual void texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override {}
+	virtual void texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) override {}
 
-	virtual void texture_debug_usage(List<RS::TextureInfo> *r_info) override{};
+	virtual void texture_debug_usage(List<RS::TextureInfo> *r_info) override {}
 
-	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) override{};
+	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) override {}
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override { return Size2(); };
 
-	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RS::TextureLayeredType p_layer_type = RS::TEXTURE_LAYERED_2D_ARRAY) override{};
+	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RS::TextureLayeredType p_layer_type = RS::TEXTURE_LAYERED_2D_ARRAY) override {}
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override { return RID(); };
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override { return 0; };
 
 	/* DECAL API */
 	virtual RID decal_allocate() override { return RID(); }
 	virtual void decal_initialize(RID p_rid) override {}
-	virtual void decal_free(RID p_rid) override{};
+	virtual void decal_free(RID p_rid) override {}
 
 	virtual void decal_set_size(RID p_decal, const Vector3 &p_size) override {}
 	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) override {}

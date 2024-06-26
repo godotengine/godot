@@ -381,7 +381,7 @@ public:
 		ctls[cid] = p_name;
 	}
 
-	virtual ~FileDialogEventHandler(){};
+	virtual ~FileDialogEventHandler() {}
 };
 
 #if defined(__GNUC__) && !defined(__clang__)
