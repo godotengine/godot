@@ -740,12 +740,20 @@ void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 
 			// WebXR doesn't have a palm joint, so we calculate it by finding the middle of the middle finger metacarpal bone.
 			{
-				// 10 is the WebXR middle finger metacarpal joint, and 12 is the offset to the transform origin.
-				const float *start_pos = hand_joints + (10 * 16) + 12;
-				// 11 is the WebXR middle finger phalanx proximal joint, and 12 is the offset to the transform origin.
-				const float *end_pos = hand_joints + (11 * 16) + 12;
-				Transform3D palm_transform;
-				palm_transform.origin = (Vector3(start_pos[0], start_pos[1], start_pos[2]) + Vector3(end_pos[0], end_pos[1], end_pos[2])) / 2.0;
+				// Start by getting the middle finger metacarpal joint.
+				// Note: 10 is the WebXR middle finger metacarpal joint.
+				Transform3D palm_transform = _js_matrix_to_transform(hand_joints + (10 * 16));
+				palm_transform.basis *= bone_adjustment;
+
+				// Get the middle finger phalanx position.
+				// Note: 11 is the WebXR middle finger phalanx proximal joint and 12 is the origin offset.
+				const float *phalanx_pos = hand_joints + (11 * 16) + 12;
+				Vector3 phalanx(phalanx_pos[0], phalanx_pos[1], phalanx_pos[2]);
+
+				// Offset the palm half-way towards the phalanx joint.
+				palm_transform.origin = (palm_transform.origin + phalanx) / 2.0;
+
+				// Set the palm joint and the pose.
 				hand_tracker->set_hand_joint_transform(XRHandTracker::HAND_JOINT_PALM, palm_transform);
 				hand_tracker->set_pose("default", palm_transform, Vector3(), Vector3());
 			}

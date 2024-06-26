@@ -1156,7 +1156,8 @@ void Skeleton3D::set_animate_physical_bones(bool p_enabled) {
 	if (!sim) {
 		return;
 	}
-	sim->set_active(p_enabled);
+	animate_physical_bones = p_enabled;
+	sim->set_active(animate_physical_bones || sim->is_simulating_physics());
 }
 
 bool Skeleton3D::get_animate_physical_bones() const {
@@ -1164,7 +1165,7 @@ bool Skeleton3D::get_animate_physical_bones() const {
 	if (!sim) {
 		return false;
 	}
-	return sim->is_active();
+	return animate_physical_bones;
 }
 
 void Skeleton3D::physical_bones_stop_simulation() {
@@ -1173,7 +1174,7 @@ void Skeleton3D::physical_bones_stop_simulation() {
 		return;
 	}
 	sim->physical_bones_stop_simulation();
-	sim->set_active(false);
+	sim->set_active(animate_physical_bones || sim->is_simulating_physics());
 }
 
 void Skeleton3D::physical_bones_start_simulation_on(const TypedArray<StringName> &p_bones) {

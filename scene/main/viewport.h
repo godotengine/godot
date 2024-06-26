@@ -340,6 +340,7 @@ private:
 		Window *window = nullptr;
 		RID canvas_item;
 		Rect2i parent_safe_rect;
+		bool pending_window_update = false;
 	};
 
 	// VRS

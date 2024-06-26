@@ -320,7 +320,8 @@ const GodotWebXR = {
 					// next reference space.
 					window.setTimeout(function () {
 						const reference_space_c_str = GodotRuntime.allocString(reference_space_type);
-						const enabled_features_c_str = GodotRuntime.allocString(Array.from(session.enabledFeatures).join(','));
+						const enabled_features = 'enabledFeatures' in session ? Array.from(session.enabledFeatures) : [];
+						const enabled_features_c_str = GodotRuntime.allocString(enabled_features.join(','));
 						onstarted(reference_space_c_str, enabled_features_c_str);
 						GodotRuntime.free(reference_space_c_str);
 						GodotRuntime.free(enabled_features_c_str);

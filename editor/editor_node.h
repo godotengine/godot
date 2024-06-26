@@ -573,7 +573,7 @@ private:
 
 	void _update_undo_redo_allowed();
 
-	int _save_external_resources();
+	int _save_external_resources(bool p_also_save_external_data = false);
 
 	void _set_current_scene(int p_idx);
 	void _set_current_scene_nocheck(int p_idx);
