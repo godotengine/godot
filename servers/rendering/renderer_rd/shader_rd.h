@@ -46,7 +46,7 @@ public:
 		int group = 0;
 		CharString text;
 		bool default_enabled = true;
-		VariantDefine(){};
+		VariantDefine() {}
 		VariantDefine(int p_group, const String &p_text, bool p_default_enabled) {
 			group = p_group;
 			default_enabled = p_default_enabled;
