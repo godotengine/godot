@@ -34,18 +34,34 @@
 
 #include "scene/main/viewport.h"
 
-std::vector<int> coverageDataHsy;
+std::vector<int> coverageDataSetGlobalRotation;
+std::vector<int> coverageDataMoveX;
 
-void initializeCoverageDataHsy(int numBranches) {
-    coverageDataHsy.resize(numBranches, 0);
+void initializeCoverageDataSetGlobalRotation(int numBranches) {
+    coverageDataSetGlobalRotation.resize(numBranches, 0);
+}
+void initializeCoverageDataMoveX(int numBranches) {
+    coverageDataMoveX.resize(numBranches, 0);
 }
 
-void writeCoverageDataHsy() {
+void writeCoverageDataSetGlobalRotation() {
     std::cout << "Coverage Data:" << std::endl;
-    for (size_t i = 0; i < coverageDataHsy.size(); ++i) {
-        std::cout << "Branch " << i << ": " << (coverageDataHsy[i] ? "Executed" : "Not Executed") << std::endl;
+    for (size_t i = 0; i < coverageDataSetGlobalRotation.size(); ++i) {
+        std::cout << "set_global_rotation_branch " << i << ": " << (coverageDataSetGlobalRotation[i] ? "Executed" : "Not Executed") << std::endl;
     }
 }
+
+void writeCoverageDataMoveX() {
+    std::cout << "Coverage Data:" << std::endl;
+    for (size_t i = 0; i < coverageDataMoveX.size(); ++i) {
+        std::cout << "Move_X_branch " << i << ": " << (coverageDataMoveX[i] ? "Executed" : "Not Executed") << std::endl;
+    }
+}
+
+
+
+
+
 
 #ifdef TOOLS_ENABLED
 Dictionary Node2D::_edit_get_state() const {
@@ -225,10 +241,8 @@ Point2 Node2D::get_position() const {
 }
 
 real_t Node2D::get_rotation() const {
-	coverageDataHsy[3] = 1;
 	ERR_READ_THREAD_GUARD_V(0);
 	if (_is_xform_dirty()) {
-		coverageDataHsy[4] = 1;
 		_update_xform_values();
 	}
 
@@ -288,8 +302,10 @@ void Node2D::move_x(real_t p_delta, bool p_scaled) {
 	Transform2D t = get_transform();
 	Vector2 m = t[0];
 	if (!p_scaled) {
+		coverageDataMoveX[0] = 1;
 		m.normalize();
 	}
+	coverageDataMoveX[1] = 1;
 	set_position(t[2] + m * p_delta);
 }
 
@@ -337,17 +353,16 @@ real_t Node2D::get_global_skew() const {
 
 void Node2D::set_global_rotation(const real_t p_radians) {
 	ERR_THREAD_GUARD;
-	coverageDataHsy[0] = 1;
 	CanvasItem *parent = get_parent_item();
 	if (parent) {
-		coverageDataHsy[1] = 1;
+		coverageDataSetGlobalRotation[0] = 1;
 		Transform2D parent_global_transform = parent->get_global_transform();
 		Transform2D new_transform = parent_global_transform * get_transform();
 		new_transform.set_rotation(p_radians);
 		new_transform = parent_global_transform.affine_inverse() * new_transform;
 		set_rotation(new_transform.get_rotation());
 	} else {
-		coverageDataHsy[2] = 1;
+		coverageDataSetGlobalRotation[1] = 1;
 		set_rotation(p_radians);
 	}
 }
