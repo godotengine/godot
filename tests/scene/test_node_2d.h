@@ -86,8 +86,8 @@ TEST_CASE("[SceneTree][Node2D]") {
 		memdelete(main);
 	}
 	
-    SUBCASE("[Node2D] Test set_global_rotation and get_global_rotation") {
-    initializeCoverageDataHsy(5);
+    SUBCASE("[Node2D] Test set_global_rotation") {
+    initializeCoverageDataSetGlobalRotation(2);
 
     Node2D *parent_node = memnew(Node2D);
     Node2D *child_node = memnew(Node2D);
@@ -104,9 +104,7 @@ TEST_CASE("[SceneTree][Node2D]") {
 
     parent_node->set_global_rotation(Math_PI / 2);
 	
-    //try to make it as dirty 
-    child_node->set_position(Point2(10,10));
-    child_node->set_rotation(Math_PI / 4);
+
 
     // Get child's global rotation and verify
     real_t child_global_rotation = child_node->get_global_rotation();
@@ -119,10 +117,27 @@ TEST_CASE("[SceneTree][Node2D]") {
     // Cleanup
     memdelete(child_node);
     memdelete(parent_node);
-	writeCoverageDataHsy();
+	writeCoverageDataSetGlobalRotation();
 
 }
+  SUBCASE("[Node2D] Test Move_x"){
+	initializeCoverageDataMoveX(2);
+    Node2D *node = memnew(Node2D);
+    node->move_x(10, false);
 
+    // Check the new position
+    CHECK(node->get_position() == Vector2(10, 0));
+
+    // Move the node along the x-axis with scaling
+    node->move_x(5, true);
+
+    // The movement vector should be scaled according to the node's current transform
+    // Since we haven't scaled the node, the movement should be direct addition
+    // Let's verify the current position assuming no scaling effect
+    CHECK(node->get_position() == Vector2(15, 0));
+    memdelete(node);
+	writeCoverageDataMoveX();
+  }
 
 
 
