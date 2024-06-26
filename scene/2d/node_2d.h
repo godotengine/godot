@@ -32,6 +32,15 @@
 #define NODE_2D_H
 
 #include "scene/main/canvas_item.h"
+#include <vector>
+
+extern std::vector<int> coverageDataSetGlobalRotation;
+extern std::vector<int> coverageDataMoveX;
+void initializeCoverageDataSetGlobalRotation(int numBranches);
+void initializeCoverageDataMoveX(int numBranches);
+void writeCoverageDataSetGlobalRotation();
+void writeCoverageDataMoveX();
+
 
 class Node2D : public CanvasItem {
 	GDCLASS(Node2D, CanvasItem);
