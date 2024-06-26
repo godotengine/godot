@@ -36,21 +36,17 @@ void CameraTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_camera_feed_id", "feed_id"), &CameraTexture::set_camera_feed_id);
 	ClassDB::bind_method(D_METHOD("get_camera_feed_id"), &CameraTexture::get_camera_feed_id);
 
-	ClassDB::bind_method(D_METHOD("set_format", "format"), &CameraTexture::set_format);
-	ClassDB::bind_method(D_METHOD("get_format"), &CameraTexture::get_format);
-
 	ClassDB::bind_method(D_METHOD("set_camera_active", "active"), &CameraTexture::set_camera_active);
 	ClassDB::bind_method(D_METHOD("get_camera_active"), &CameraTexture::get_camera_active);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "camera_feed_id"), "set_camera_feed_id", "get_camera_feed_id");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "format_id"), "set_format", "get_format");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "camera_is_active"), "set_camera_active", "get_camera_active");
 }
 
 int CameraTexture::get_width() const {
 	Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
 	if (feed.is_valid()) {
-		return feed->get_base_width();
+		return feed->get_width();
 	} else {
 		return 0;
 	}
@@ -59,7 +55,7 @@ int CameraTexture::get_width() const {
 int CameraTexture::get_height() const {
 	Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
 	if (feed.is_valid()) {
-		return feed->get_base_height();
+		return feed->get_height();
 	} else {
 		return 0;
 	}
@@ -95,26 +91,10 @@ void CameraTexture::set_camera_feed_id(int p_new_id) {
 	} else {
 		print_line("No camera selected");
 	}
-	set_format(0);
 }
 
 int CameraTexture::get_camera_feed_id() const {
 	return camera_feed_id;
-}
-
-void CameraTexture::set_format(int p_format_id) {
-	format_id = p_format_id;
-	notify_property_list_changed();
-	Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
-	if (feed.is_valid()) {
-		feed->set_format(p_format_id);
-	} else {
-		print_line("No camera selected");
-	}
-}
-
-int CameraTexture::get_format() const {
-	return format_id;
 }
 
 void CameraTexture::set_camera_active(bool p_active) {

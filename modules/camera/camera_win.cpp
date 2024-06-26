@@ -37,114 +37,6 @@
 // The following code enables you to view the contents of a media type while
 // debugging.
 
-String GetGUIDNameConst(const GUID &guid);
-String GetGUIDName(const GUID &guid);
-String GetGUIDName(const GUID &guid);
-String LogAttributeValueByIndex(IMFAttributes *pAttr, DWORD index);
-String SpecialCaseAttributeValue(GUID guid, const PROPVARIANT &var);
-
-String LogMediaType(IMFMediaType *pType) {
-	String retval = "Media format:\n";
-	UINT32 count = 0;
-	HRESULT hr = pType->GetCount(&count);
-	if (FAILED(hr) || count == 0) {
-		retval += "No attributes";
-	} else {
-		for (UINT32 i = 0; i < count; i++) {
-			retval += LogAttributeValueByIndex(pType, i) + "\n";
-		}
-	}
-	return retval;
-}
-
-String LogAttributeValueByIndex(IMFAttributes *pAttr, DWORD index) {
-	GUID guid = { 0 };
-	PROPVARIANT var;
-	PropVariantInit(&var);
-
-	HRESULT hr = pAttr->GetItemByIndex(index, &guid, &var);
-	if (FAILED(hr)) {
-		return "Unknown";
-	}
-	String retval = vformat("\t%s = ", GetGUIDName(guid));
-
-	String scCase = SpecialCaseAttributeValue(guid, var);
-	if (!scCase.is_empty()) {
-		retval += scCase;
-	} else {
-		switch (var.vt) {
-			case VT_UI4:
-			case VT_UI8:
-				retval += itos(var.ulVal);
-				break;
-
-			case VT_R8:
-				retval += rtos(var.dblVal);
-				break;
-
-			case VT_CLSID:
-				retval += GetGUIDName(*var.puuid);
-				break;
-
-			case VT_LPWSTR:
-				retval += var.pwszVal;
-				break;
-
-			case VT_VECTOR | VT_UI1:
-				retval += "<<byte array>>";
-				break;
-
-			case VT_UNKNOWN:
-				retval += "IUnknown";
-				break;
-
-			default:
-				retval += vformat("Unexpected attribute type (vt = %d)", var.vt);
-				break;
-		}
-	}
-	return retval;
-}
-
-String GetGUIDName(const GUID &guid) {
-	return GetGUIDNameConst(guid);
-}
-
-String LogUINT32AsUINT64(const PROPVARIANT &var) {
-	UINT32 uHigh = 0, uLow = 0;
-	Unpack2UINT32AsUINT64(var.uhVal.QuadPart, &uHigh, &uLow);
-	return vformat("%d x %d", uHigh, uLow);
-}
-
-float OffsetToFloat(const MFOffset &offset) {
-	return offset.value + (static_cast<float>(offset.fract) / 65536.0f);
-}
-
-String LogVideoArea(const PROPVARIANT &var) {
-	if (var.caub.cElems < sizeof(MFVideoArea)) {
-		return "unknown";
-	}
-	MFVideoArea *pArea = (MFVideoArea *)var.caub.pElems;
-	return vformat("(%f,%f) (%d,%d)", OffsetToFloat(pArea->OffsetX), OffsetToFloat(pArea->OffsetY),
-			pArea->Area.cx, pArea->Area.cy);
-}
-
-// Handle certain known special cases.
-String SpecialCaseAttributeValue(GUID guid, const PROPVARIANT &var) {
-	if ((guid == MF_MT_FRAME_RATE) || (guid == MF_MT_FRAME_RATE_RANGE_MAX) ||
-			(guid == MF_MT_FRAME_RATE_RANGE_MIN) || (guid == MF_MT_FRAME_SIZE) ||
-			(guid == MF_MT_PIXEL_ASPECT_RATIO)) {
-		// Attributes that contain two packed 32-bit values.
-		return LogUINT32AsUINT64(var);
-	} else if ((guid == MF_MT_GEOMETRIC_APERTURE) ||
-			(guid == MF_MT_MINIMUM_DISPLAY_APERTURE) ||
-			(guid == MF_MT_PAN_SCAN_APERTURE)) {
-		// Attributes that an MFVideoArea structure.
-		return LogVideoArea(var);
-	}
-	return "";
-}
-
 #ifndef IF_EQUAL_RETURN
 #define IF_EQUAL_RETURN(param, val) \
 	if (val == param)               \
@@ -224,7 +116,6 @@ String GetGUIDNameConst(const GUID &guid) {
 	IF_EQUAL_RETURN(guid, MF_MT_ORIGINAL_WAVE_FORMAT_TAG);
 
 	// Media types
-
 	IF_EQUAL_RETURN(guid, MFMediaType_Audio);
 	IF_EQUAL_RETURN(guid, MFMediaType_Video);
 	IF_EQUAL_RETURN(guid, MFMediaType_Protected);
@@ -303,140 +194,110 @@ String GetGUIDNameConst(const GUID &guid) {
 //////////////////////////////////////////////////////////////////////////
 // CameraFeedWindows - Subclass for our camera feed on windows
 
-CameraFeedWindows::CameraFeedWindows(IMFActivate *device) {
-	UINT32 len;
-
-	// Set camera id
-	WCHAR *szCameraID = NULL;
-	HRESULT hr = device->GetAllocatedString(
-			MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK,
-			&szCameraID, &len);
-	if (SUCCEEDED(hr)) {
-		camera_id = szCameraID;
-	}
-
-	// Set name
-	WCHAR *szFriendlyName = NULL;
-	hr = device->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &szFriendlyName, &len);
-	if (SUCCEEDED(hr)) {
-		name = szFriendlyName;
-	}
-
-	// Set transform
-	transform = Transform2D(-1.0, 0.0, 0.0, -1.0, 1.0, 1.0);
+CameraFeedWindows::CameraFeedWindows(LPCWSTR camera_id, IMFMediaType *type, String name, int width, int height, GUID format) {
+	this->camera_id = camera_id;
+	this->name = name;
+	this->width = width;
+	this->height = height;
+	this->type = type;
+	this->format = format;
 }
 
 CameraFeedWindows::~CameraFeedWindows() {
 	if (is_active()) {
 		deactivate_feed();
 	};
+
+	SafeRelease(&type);
 }
 
-HRESULT CameraFeedWindows::init() {
+bool CameraFeedWindows::activate_feed() {
 	IMFAttributes *pAttributes = NULL;
 	HRESULT hr = MFCreateAttributes(&pAttributes, 2);
-
-	// Set the device type to video.
-	if (SUCCEEDED(hr)) {
-		hr = pAttributes->SetGUID(
-				MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
-				MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
-	}
-
-	// Set the symbolic link.
-	if (SUCCEEDED(hr)) {
-		hr = pAttributes->SetString(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, camera_id);
-	}
-
-	if (SUCCEEDED(hr)) {
-		hr = MFCreateDeviceSource(pAttributes, &source);
-	}
-
-	SafeRelease(&pAttributes);
-	return hr;
-}
-
-void CameraFeedWindows::set_format(int p_format) {
-	IMFPresentationDescriptor *pPD = NULL;
-	IMFStreamDescriptor *pSD = NULL;
-	IMFMediaTypeHandler *pHandler = NULL;
-	IMFMediaType *pType = NULL;
-
-	HRESULT hr = init();
 	if (FAILED(hr)) {
 		goto done;
 	}
 
+	// Set the device type to video.
+	hr = pAttributes->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
+	if (FAILED(hr)) {
+		goto done;
+	}
+
+	// Set the symbolic link.
+	hr = pAttributes->SetString(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, camera_id);
+	if (FAILED(hr)) {
+		goto done;
+	}
+
+	// Create media source
+	hr = MFCreateDeviceSource(pAttributes, &source);
+	if (FAILED(hr)) {
+		goto done;
+	}
+
+	// Get information about device
+	IMFPresentationDescriptor *pPD;
 	hr = source->CreatePresentationDescriptor(&pPD);
 	if (FAILED(hr)) {
 		goto done;
 	}
 
+	// Get information about video stream
 	BOOL fSelected;
+	IMFStreamDescriptor *pSD;
 	hr = pPD->GetStreamDescriptorByIndex(0, &fSelected, &pSD);
 	if (FAILED(hr)) {
 		goto done;
 	}
 
+	// Get information about supported media types
+	IMFMediaTypeHandler *pHandler;
 	hr = pSD->GetMediaTypeHandler(&pHandler);
 	if (FAILED(hr)) {
 		goto done;
 	}
 
-	hr = pHandler->GetMediaTypeByIndex(p_format, &pType);
+	// Set media type
+	hr = pHandler->SetCurrentMediaType(type);
 	if (FAILED(hr)) {
-		print_error("Invalid media format");
 		goto done;
 	}
 
-	// Get subtype
-	GUID subType;
-	hr = pType->GetGUID(MF_MT_SUBTYPE, &subType);
+	// Prepare images and textures
+	if (format == MFVideoFormat_RGB24) {
+		diffuse = Image::create_empty(width, height, false, Image::FORMAT_RGB8);
+		set_texture(diffuse);
+	}
+
+	if (format == MFVideoFormat_NV12) {
+		diffuse = Image::create_empty(width, height, false, Image::FORMAT_R8);
+		set_texture(diffuse);
+
+		normal = Image::create_empty(width / 2, height / 2, false, Image::FORMAT_RG8);
+		set_normal_texture(normal);
+	}
+
+	// Create media reader
+	hr = MFCreateSourceReaderFromMediaSource(source, NULL, &reader);
 	if (FAILED(hr)) {
-		print_error("Invalid media format");
 		goto done;
 	}
 
-	// Get image size
-	hr = MFGetAttributeSize(pType, MF_MT_FRAME_SIZE, &base_width, &base_height);
-	if (FAILED(hr)) {
-		print_error("Unable to retrieve frame size");
-		goto done;
-	}
-	
-	// Prepare images
-	diffuse = Image::create_empty(base_width, base_height, false, Image::FORMAT_R8);
-	normal = Image::create_empty(base_width / 2, base_height / 2, false, Image::FORMAT_RG8);
-	set_texture(diffuse, normal);
+	// Start reading
+	worker = memnew(std::thread(capture, this));
 
-	// Select media type
-	hr = pHandler->SetCurrentMediaType(pType);
-
-	// Feedback
-	print_line(LogMediaType(pType));
 done:
+	SafeRelease(&pAttributes);
 	SafeRelease(&pPD);
 	SafeRelease(&pSD);
 	SafeRelease(&pHandler);
-	SafeRelease(&pType);
-	SafeRelease(&source);
-}
 
-bool CameraFeedWindows::activate_feed() {
-	HRESULT hr = init();
-	if (FAILED(hr)) {
-		goto error;
+	if FAILED (hr) {
+		print_error(vformat("Unable to activate camera feed (%d)", hr));
+		return false;
 	}
-
-	hr = MFCreateSourceReaderFromMediaSource(source, NULL, &reader);
-	if (SUCCEEDED(hr)) {
-		worker = memnew(std::thread(capture, this));
-		return true;
-	}
-
-error:
-	print_error("Unable to activate camera feed");
-	return false;
+	return true;
 }
 
 void CameraFeedWindows::deactivate_feed() {
@@ -511,20 +372,22 @@ void CameraFeedWindows::read() {
 		// Get image buffer
 		buffer->Lock(&data, NULL, &len);
 
-		// Set Y layer
+		// Get RGB or Y plane
 		Vector<uint8_t> dataY = diffuse->get_data();
 		uint8_t *inY = dataY.ptrw();
 		CopyMemory(inY, data, dataY.size());
 		diffuse->set_data(diffuse->get_width(), diffuse->get_height(), false, diffuse->get_format(), dataY);
-		RenderingServer::get_singleton()->texture_2d_update(diffuse_texture, diffuse);
+		set_texture(diffuse);
 
-		// Set UV layer
-		Vector<uint8_t> dataUV = normal->get_data();
-		uint8_t *inUV = dataUV.ptrw();
-		CopyMemory(inUV, data + dataY.size(), dataUV.size());
-		normal->set_data(normal->get_width(), normal->get_height(), false, normal->get_format(), dataUV);
-		RenderingServer::get_singleton()->texture_2d_update(normal_texture, normal);
-		
+		// Get UV plane
+		if (format == MFVideoFormat_NV12) {
+			Vector<uint8_t> dataUV = normal->get_data();
+			uint8_t *inUV = dataUV.ptrw();
+			CopyMemory(inUV, data + dataY.size(), dataUV.size());
+			normal->set_data(normal->get_width(), normal->get_height(), false, normal->get_format(), dataUV);
+			set_normal_texture(normal);
+		}
+
 		buffer->Unlock();
 		buffer->Release();
 		pSample->Release();
@@ -534,11 +397,7 @@ void CameraFeedWindows::read() {
 //////////////////////////////////////////////////////////////////////////
 // CameraWindows - Subclass for our camera server on windows
 
-void CameraWindows::add_active_cameras() {
-	UINT32 count = 0;
-	IMFAttributes *pConfig = NULL;
-	IMFActivate **ppDevices = NULL;
-
+void CameraWindows::update_feeds() {
 	// remove existing devices
 	for (int i = feeds.size() - 1; i >= 0; i--) {
 		Ref<CameraFeedWindows> feed = (Ref<CameraFeedWindows>)feeds[i];
@@ -546,37 +405,132 @@ void CameraWindows::add_active_cameras() {
 	};
 
 	// Create an attribute store to hold the search criteria.
+	IMFAttributes *pConfig = NULL;
 	HRESULT hr = MFCreateAttributes(&pConfig, 1);
+	if (FAILED(hr)) {
+		goto done_all;
+	}
 
 	// Request video capture devices.
-	if (SUCCEEDED(hr)) {
-		hr = pConfig->SetGUID(
-				MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
-				MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
+	hr = pConfig->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
+	if (FAILED(hr)) {
+		goto done_all;
 	}
 
-	// Enumerate the devices,
-	if (SUCCEEDED(hr)) {
-		hr = MFEnumDeviceSources(pConfig, &ppDevices, &count);
+	// Process devices
+	UINT32 count = 0;
+	IMFActivate **ppDevices = NULL;
+	hr = MFEnumDeviceSources(pConfig, &ppDevices, &count);
+	if (FAILED(hr)) {
+		goto done_all;
 	}
+
+	// Create feeds for all supported media sources
+	for (DWORD i = 0; i < count; i++) {
+		IMFActivate *pDevice = ppDevices[i];
+
+		// Get camera id
+		WCHAR *szCameraID = NULL;
+		UINT32 len;
+		hr = pDevice->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &szCameraID, &len);
+		if (FAILED(hr)) {
+			goto done_device;
+		}
+
+		// Get name
+		WCHAR *szFriendlyName = NULL;
+		hr = pDevice->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &szFriendlyName, &len);
+		if (FAILED(hr)) {
+			goto done_device;
+		}
+
+		// Get media source
+		IMFMediaSource *pSource = NULL;
+		hr = pDevice->ActivateObject(IID_PPV_ARGS(&pSource));
+		if (FAILED(hr)) {
+			goto done_device;
+		}
+
+		// Get information about device
+		IMFPresentationDescriptor *pPD = NULL;
+		hr = pSource->CreatePresentationDescriptor(&pPD);
+		if (FAILED(hr)) {
+			goto done_device;
+		}
+
+		// Get information about video stream
+		BOOL fSelected;
+		IMFStreamDescriptor *pSD = NULL;
+		hr = pPD->GetStreamDescriptorByIndex(0, &fSelected, &pSD);
+		if (FAILED(hr)) {
+			goto done_device;
+		}
+
+		// Get information about supported media types
+		IMFMediaTypeHandler *pHandler = NULL;
+		hr = pSD->GetMediaTypeHandler(&pHandler);
+		if (FAILED(hr)) {
+			goto done_device;
+		}
+
+		// Get supported media types
+		DWORD cTypes = 0;
+		hr = pHandler->GetMediaTypeCount(&cTypes);
+		if (FAILED(hr)) {
+			goto done_device;
+		}
+
+		for (DWORD i = 0; i < cTypes; i++) {
+			// Get media type
+			IMFMediaType *pType = NULL;
+			hr = pHandler->GetMediaTypeByIndex(i, &pType);
+			if (FAILED(hr)) {
+				SafeRelease(&pType);
+				break;
+			}
+
+			// Get subtype
+			GUID subType;
+			hr = pType->GetGUID(MF_MT_SUBTYPE, &subType);
+			if (FAILED(hr)) {
+				SafeRelease(&pType);
+				break;
+			}
+
+			// Get image size
+			UINT32 width, height = 0;
+			hr = MFGetAttributeSize(pType, MF_MT_FRAME_SIZE, &width, &height);
+			if (FAILED(hr)) {
+				SafeRelease(&pType);
+				break;
+			}
+
+			// Add feed for supported formats
+			if (subType == MFVideoFormat_RGB24 || subType == MFVideoFormat_NV12) {
+				String format = GetGUIDNameConst(subType);
+				format = format.replace("MFVideoFormat_", "");
+				String name = szFriendlyName + vformat(" (%d x %d, %s)", width, height, format);
+				Ref<CameraFeedWindows> feed = new CameraFeedWindows(szCameraID, pType, name, width, height, subType);
+				add_feed(feed);
+
+				print_line("Added camera feed: ", name);
+			}
+		}
+
+	done_device:
+		SafeRelease(&pPD);
+		SafeRelease(&pSD);
+		SafeRelease(&pHandler);
+		SafeRelease(&pSource);
+		SafeRelease(&pDevice);
+	}
+
+done_all:
+	SafeRelease(&pConfig);
 
 	if (FAILED(hr)) {
-		print_error("Error detecting device cameras");
-		return;
+		print_error(vformat("Error updating feeds (%d)", hr));
 	}
-
-	if (count == 0) {
-		print_line("No device cameras available");
-		return;
-	}
-
-	// Store cameras
-	for (DWORD i = 0; i < count; i++) {
-		Ref<CameraFeedWindows> newfeed = new CameraFeedWindows(ppDevices[i]);
-		add_feed(newfeed);
-		ppDevices[i]->Release();
-	};
-	CoTaskMemFree(ppDevices);
 }
 
 CameraWindows::CameraWindows() {
@@ -587,10 +541,8 @@ CameraWindows::CameraWindows() {
 		return;
 	}
 
-	// Find cameras active right now
-	add_active_cameras();
-
-	// need to add something that will react to devices being connected/removed...
+	// Update feeds
+	update_feeds();
 }
 
 CameraWindows::~CameraWindows() {

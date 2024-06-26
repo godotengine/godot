@@ -37,22 +37,17 @@ void CameraFeed::_bind_methods() {
 	// They should not be called by the end user.
 
 	ClassDB::bind_method(D_METHOD("get_id"), &CameraFeed::get_id);
+	ClassDB::bind_method(D_METHOD("get_name"), &CameraFeed::get_name);
+	ClassDB::bind_method(D_METHOD("get_position"), &CameraFeed::get_position);
+	ClassDB::bind_method(D_METHOD("get_width"), &CameraFeed::get_width);
+	ClassDB::bind_method(D_METHOD("get_heigth"), &CameraFeed::get_height);
 
 	ClassDB::bind_method(D_METHOD("is_active"), &CameraFeed::is_active);
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &CameraFeed::set_active);
 
-	ClassDB::bind_method(D_METHOD("get_name"), &CameraFeed::get_name);
-	ClassDB::bind_method(D_METHOD("_set_name", "name"), &CameraFeed::set_name);
-
-	ClassDB::bind_method(D_METHOD("get_position"), &CameraFeed::get_position);
-	ClassDB::bind_method(D_METHOD("_set_position", "position"), &CameraFeed::set_position);
-
 	// Note, for transform some feeds may override what the user sets (such as ARKit)
 	ClassDB::bind_method(D_METHOD("get_transform"), &CameraFeed::get_transform);
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &CameraFeed::set_transform);
-
-	ClassDB::bind_method(D_METHOD("get_format"), &CameraFeed::get_format);
-	ClassDB::bind_method(D_METHOD("set_format"), &CameraFeed::set_format);
 
 	ADD_GROUP("Feed", "feed_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "feed_is_active"), "set_active", "is_active");
@@ -92,32 +87,16 @@ String CameraFeed::get_name() const {
 	return name;
 }
 
-void CameraFeed::set_name(String p_name) {
-	name = p_name;
+int CameraFeed::get_width() const {
+	return width;
 }
 
-int CameraFeed::get_base_width() const {
-	return base_width;
-}
-
-int CameraFeed::get_base_height() const {
-	return base_height;
-}
-
-int CameraFeed::get_format() const {
-	return format;
-}
-
-void CameraFeed::set_format(int p_format) {
-	format = p_format;
+int CameraFeed::get_height() const {
+	return height;
 }
 
 CameraFeed::FeedPosition CameraFeed::get_position() const {
 	return position;
-}
-
-void CameraFeed::set_position(CameraFeed::FeedPosition p_position) {
-	position = p_position;
 }
 
 Transform2D CameraFeed::get_transform() const {
@@ -132,34 +111,38 @@ RID CameraFeed::get_texture() {
 	return texture;
 }
 
-void CameraFeed::set_texture(Ref<Image> &diffuse, Ref<Image> &normal) {
-	if (diffuse != NULL) {
-		if (diffuse_texture.is_null()) {
-			diffuse_texture = RenderingServer::get_singleton()->texture_2d_create(diffuse);
-			RenderingServer::get_singleton()->canvas_texture_set_channel(texture, RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE, diffuse_texture);
-		}
+void CameraFeed::set_texture(Ref<Image> &diffuse) {
+	if (diffuse_texture.is_null()) {
+		diffuse_texture = RenderingServer::get_singleton()->texture_2d_create(diffuse);
+		RenderingServer::get_singleton()->canvas_texture_set_channel(texture, RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE, diffuse_texture);
+	} else {
+		RenderingServer::get_singleton()->texture_2d_update(diffuse_texture, diffuse);
 	}
+}
 
-	if (normal != NULL) {
-		if (normal_texture.is_null()) {
-			normal_texture = RenderingServer::get_singleton()->texture_2d_create(normal);
-			RenderingServer::get_singleton()->canvas_texture_set_channel(texture, RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL, normal_texture);
-		}
+void CameraFeed::set_normal_texture(Ref<Image> &normal) {
+	if (normal_texture.is_null()) {
+		normal_texture = RenderingServer::get_singleton()->texture_2d_create(normal);
+		RenderingServer::get_singleton()->canvas_texture_set_channel(texture, RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL, normal_texture);
+	} else {
+		RenderingServer::get_singleton()->texture_2d_update(normal_texture, normal);
 	}
+}
+
+RID CameraFeed::get_shader() {
+	// TODO Return shader for camera frames
+	return RID();
 }
 
 CameraFeed::CameraFeed() {
 	// initialize our feed
 	id = CameraServer::get_singleton()->get_free_id();
 	name = "???";
-	base_width = 0;
-	base_height = 0;
-	format = 0;
+	width = 0;
+	height = 0;
 	active = false;
 	position = CameraFeed::FEED_UNSPECIFIED;
 	transform = Transform2D(1.0, 0.0, 0.0, -1.0, 0.0, 1.0);
-
-	// Set textures
 	texture = RenderingServer::get_singleton()->canvas_texture_create();
 }
 
@@ -167,6 +150,8 @@ CameraFeed::~CameraFeed() {
 	// Free our textures
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(texture);
+	RenderingServer::get_singleton()->free(diffuse_texture);
+	RenderingServer::get_singleton()->free(normal_texture);
 }
 
 bool CameraFeed::activate_feed() {

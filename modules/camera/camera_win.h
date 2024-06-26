@@ -44,20 +44,21 @@ class CameraFeedWindows : public CameraFeed {
 private:
 	LPCWSTR camera_id;
 	IMFMediaSource *source = NULL;
+	IMFMediaType *type = NULL;
+	GUID format;
+
 	IMFSourceReader *reader = NULL;
 	std::thread *worker;
+	
 	Ref<Image> diffuse, normal;
 
-	HRESULT init();
 	static void capture(CameraFeedWindows *feed);
 	void read();
 
 protected:
 public:
-	CameraFeedWindows(IMFActivate *device);
+	CameraFeedWindows(LPCWSTR camera_id, IMFMediaType *type, String name, int width, int height, GUID format);
 	virtual ~CameraFeedWindows();
-
-	void set_format(int type);
 
 	bool activate_feed();
 	void deactivate_feed();
@@ -65,7 +66,7 @@ public:
 
 class CameraWindows : public CameraServer {
 private:
-	void add_active_cameras();
+	void update_feeds();
 
 public:
 	CameraWindows();

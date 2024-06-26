@@ -39,7 +39,6 @@ class CameraTexture : public Texture2D {
 private:
 	mutable RID _texture;
 	int camera_feed_id = 0;
-	int format_id = 0;
 
 protected:
 	static void _bind_methods();
@@ -54,9 +53,6 @@ public:
 
 	void set_camera_feed_id(int p_new_id);
 	int get_camera_feed_id() const;
-
-	void set_format(int p_format_id);
-	int get_format() const;
 
 	void set_camera_active(bool p_active);
 	bool get_camera_active() const;

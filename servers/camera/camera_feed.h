@@ -54,44 +54,41 @@ public:
 private:
 	int id; // unique id for this, for internal use in case feeds are removed
 
+	RID texture, diffuse_texture, normal_texture; // canvas textures
+
 protected:
 	String name; // name of our camera feed
 	FeedPosition position; // position of camera on the device
-	int format = 0; // format id
+	int width; // width of camera frames
+	int height; // height of camera frames
+
 	Transform2D transform; // display transform
 
 	bool active; // only when active do we actually update the camera texture each frame
 
-	uint32_t base_width; // Base width of camera frames
-	uint32_t base_height; // Base height of camera frames
-
-	RID texture, diffuse_texture, normal_texture; // Canvas textures
+	RID shader; // shader
 
 	static void _bind_methods();
 
+	void set_texture(Ref<Image> &image);
+	void set_normal_texture(Ref<Image> &image);
+
 public:
 	int get_id() const;
-	
 	int get_format() const;
-	virtual void set_format(int type);
+	String get_name() const;
+	int get_width() const;
+	int get_height() const;
+	FeedPosition get_position() const;
+
+	RID get_texture();
+	RID get_shader();
 
 	bool is_active() const;
 	void set_active(bool p_is_active);
 
-	String get_name() const;
-	void set_name(String p_name);
-
-	int get_base_width() const;
-	int get_base_height() const;
-
-	FeedPosition get_position() const;
-	void set_position(FeedPosition p_position);
-
 	Transform2D get_transform() const;
 	void set_transform(const Transform2D &p_transform);
-
-	RID get_texture();
-	void set_texture(Ref<Image> &diffuse, Ref<Image> &normal);
 
 	CameraFeed();
 	virtual ~CameraFeed();

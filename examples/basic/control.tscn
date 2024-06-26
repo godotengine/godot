@@ -8,7 +8,6 @@ shader = ExtResource("2_7jche")
 
 [sub_resource type="CameraTexture" id="CameraTexture_nlxrt"]
 camera_feed_id = 1
-camera_is_active = true
 
 [node name="Control" type="Control"]
 layout_mode = 3
