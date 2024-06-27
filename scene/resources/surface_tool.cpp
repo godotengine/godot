@@ -1074,7 +1074,7 @@ struct TangentGenerationContextUserData {
 };
 } // namespace
 
-int SurfaceTool::mikktGetNumFaces(const ScppMikkTSpaceContext *pContext) {
+int SurfaceTool::mikktGetNumFaces(const SMikkTSpaceContext *pContext) {
 	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
 
 	if (triangle_data.indices->size() > 0) {
@@ -1084,11 +1084,11 @@ int SurfaceTool::mikktGetNumFaces(const ScppMikkTSpaceContext *pContext) {
 	}
 }
 
-int SurfaceTool::mikktGetNumVerticesOfFace(const ScppMikkTSpaceContext *pContext, const int iFace) {
+int SurfaceTool::mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace) {
 	return 3; //always 3
 }
 
-void SurfaceTool::mikktGetPosition(const ScppMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert) {
+void SurfaceTool::mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert) {
 	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
 	Vector3 v;
 	if (triangle_data.indices->size() > 0) {
@@ -1105,7 +1105,7 @@ void SurfaceTool::mikktGetPosition(const ScppMikkTSpaceContext *pContext, float 
 	fvPosOut[2] = v.z;
 }
 
-void SurfaceTool::mikktGetNormal(const ScppMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert) {
+void SurfaceTool::mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert) {
 	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
 	Vector3 v;
 	if (triangle_data.indices->size() > 0) {
@@ -1122,7 +1122,7 @@ void SurfaceTool::mikktGetNormal(const ScppMikkTSpaceContext *pContext, float fv
 	fvNormOut[2] = v.z;
 }
 
-void SurfaceTool::mikktGetTexCoord(const ScppMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert) {
+void SurfaceTool::mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert) {
 	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
 	Vector2 v;
 	if (triangle_data.indices->size() > 0) {
@@ -1138,7 +1138,7 @@ void SurfaceTool::mikktGetTexCoord(const ScppMikkTSpaceContext *pContext, float 
 	fvTexcOut[1] = v.y;
 }
 
-void SurfaceTool::mikktSetTSpaceDefault(const ScppMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
+void SurfaceTool::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
 		const tbool bIsOrientationPreserving, const int iFace, const int iVert) {
 	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
 	Vertex *vtx = nullptr;
@@ -1161,7 +1161,7 @@ void SurfaceTool::generate_tangents() {
 	ERR_FAIL_COND_MSG(!(format & Mesh::ARRAY_FORMAT_TEX_UV), "UVs are required to generate tangents.");
 	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_NORMAL));
 
-	ScppMikkTSpaceInterface mkif;
+	SMikkTSpaceInterface mkif;
 	mkif.m_getNormal = mikktGetNormal;
 	mkif.m_getNumFaces = mikktGetNumFaces;
 	mkif.m_getNumVerticesOfFace = mikktGetNumVerticesOfFace;
@@ -1170,7 +1170,7 @@ void SurfaceTool::generate_tangents() {
 	mkif.m_setTSpace = mikktSetTSpaceDefault;
 	mkif.m_setTSpaceBasic = nullptr;
 
-	ScppMikkTSpaceContext msc;
+	SMikkTSpaceContext msc;
 	msc.m_pInterface = &mkif;
 
 	TangentGenerationContextUserData triangle_data;
