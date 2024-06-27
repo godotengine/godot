@@ -175,9 +175,8 @@ void Camera3D::_notification(int p_what) {
 			viewport = get_viewport();
 			ERR_FAIL_NULL(viewport);
 
-			bool first_camera = viewport->_camera_3d_add(this);
-			if (current || first_camera) {
-				viewport->_camera_3d_set(this);
+			if (is_node_active_in_tree()) {
+				_add_camera_to_set();
 			}
 
 #ifdef TOOLS_ENABLED
@@ -243,15 +242,7 @@ void Camera3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_WORLD: {
-			if (!is_part_of_edited_scene()) {
-				if (is_current()) {
-					clear_current();
-					current = true; //keep it true
-
-				} else {
-					current = false;
-				}
-			}
+			_remove_camera_from_set();
 
 			if (viewport) {
 #ifdef TOOLS_ENABLED
@@ -259,9 +250,16 @@ void Camera3D::_notification(int p_what) {
 					viewport->disconnect(SNAME("size_changed"), callable_mp((Node3D *)this, &Camera3D::update_gizmos));
 				}
 #endif
-				viewport->_camera_3d_remove(this);
 				viewport = nullptr;
 			}
+		} break;
+
+		case NOTIFICATION_NODE_ACTIVE: {
+			_add_camera_to_set();
+		} break;
+
+		case NOTIFICATION_NODE_INACTIVE: {
+			_remove_camera_from_set();
 		} break;
 
 		case NOTIFICATION_BECAME_CURRENT: {
@@ -277,6 +275,38 @@ void Camera3D::_notification(int p_what) {
 			}
 			_update_process_mode();
 		} break;
+	}
+}
+
+void Camera3D::_add_camera_to_set() {
+	if (added_to_camera_set || viewport == nullptr) {
+		return;
+	}
+
+	added_to_camera_set = true;
+	bool first_camera = viewport->_camera_3d_add(this);
+	if (current || first_camera) {
+		viewport->_camera_3d_set(this);
+	}
+}
+
+void Camera3D::_remove_camera_from_set() {
+	if (!added_to_camera_set) {
+		return;
+	}
+
+	added_to_camera_set = false;
+	if (!is_part_of_edited_scene()) {
+		if (is_current()) {
+			clear_current();
+			current = true; //keep it true
+
+		} else {
+			current = false;
+		}
+	}
+	if (viewport) {
+		viewport->_camera_3d_remove(this);
 	}
 }
 

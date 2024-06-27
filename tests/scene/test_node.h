@@ -892,6 +892,39 @@ TEST_CASE("[SceneTree][Node] Test the process priority") {
 	memdelete(node4);
 }
 
+TEST_CASE("[SceneTree][Node] Test node active operations") {
+	TestNode *node = memnew(TestNode);
+	SceneTree::get_singleton()->get_root()->add_child(node);
+
+	TestNode *child = memnew(TestNode);
+	node->add_child(child);
+
+	SUBCASE("Default active state") {
+		CHECK(node->is_node_active_self());
+		CHECK(node->is_node_active_in_tree());
+		CHECK(child->is_node_active_in_tree());
+		CHECK(node->can_process());
+	}
+
+	SUBCASE("Active changed") {
+		node->set_node_active(false);
+
+		CHECK_FALSE(node->is_node_active_self());
+		CHECK_FALSE(node->is_node_active_in_tree());
+		CHECK(child->is_node_active_self());
+		CHECK_FALSE(child->is_node_active_in_tree());
+		CHECK_FALSE(node->can_process());
+
+		node->set_node_active(true);
+
+		CHECK(node->is_node_active_self());
+		CHECK(node->is_node_active_in_tree());
+		CHECK(child->is_node_active_in_tree());
+	}
+
+	memdelete(node);
+}
+
 } // namespace TestNode
 
 #endif // TEST_NODE_H

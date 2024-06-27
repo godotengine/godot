@@ -215,6 +215,10 @@ private:
 		bool physics_process_internal : 1;
 		bool process_internal : 1;
 
+		bool node_active : 1;
+		bool parent_active_in_tree : 1;
+		bool completed_active_callback : 1;
+
 		bool input : 1;
 		bool shortcut_input : 1;
 		bool unhandled_input : 1;
@@ -280,9 +284,11 @@ private:
 	void _propagate_ready();
 	void _propagate_exit_tree();
 	void _propagate_after_exit_tree();
+	void _propagate_initial_node_active();
 	void _propagate_physics_interpolated(bool p_interpolated);
 	void _propagate_physics_interpolation_reset_requested(bool p_requested);
 	void _propagate_process_owner(Node *p_owner, int p_pause_notification, int p_enabled_notification);
+	void _propagate_node_active(bool p_enabled, bool p_set_parent_active, int p_pause_notification, int p_enabled_notification);
 	void _propagate_groups_dirty();
 	void _propagate_translation_domain_dirty();
 	Array _get_node_and_resource(const NodePath &p_path);
@@ -304,6 +310,7 @@ private:
 
 	_FORCE_INLINE_ bool _can_process(bool p_paused) const;
 	_FORCE_INLINE_ bool _is_enabled() const;
+	_FORCE_INLINE_ bool _is_node_active_in_tree() const;
 
 	void _release_unique_name_in_owner();
 	void _acquire_unique_name_in_owner();
@@ -383,6 +390,8 @@ protected:
 	GDVIRTUAL0(_enter_tree)
 	GDVIRTUAL0(_exit_tree)
 	GDVIRTUAL0(_ready)
+	GDVIRTUAL0(_node_active)
+	GDVIRTUAL0(_node_inactive)
 	GDVIRTUAL0RC(Vector<String>, _get_configuration_warnings)
 
 	GDVIRTUAL1(_input, Ref<InputEvent>)
@@ -413,6 +422,9 @@ public:
 		NOTIFICATION_POST_ENTER_TREE = 27,
 		NOTIFICATION_DISABLED = 28,
 		NOTIFICATION_ENABLED = 29,
+		NOTIFICATION_NODE_ACTIVE_CHANGED = 90,
+		NOTIFICATION_NODE_ACTIVE = 91,
+		NOTIFICATION_NODE_INACTIVE = 92,
 		NOTIFICATION_RESET_PHYSICS_INTERPOLATION = 2001, // A GodotSpace Odyssey.
 		// Keep these linked to Node.
 		NOTIFICATION_WM_MOUSE_ENTER = 1002,
@@ -670,6 +682,10 @@ public:
 	ProcessMode get_process_mode() const;
 	bool can_process() const;
 	bool can_process_notification(int p_what) const;
+
+	void set_node_active(bool p_enable);
+	bool is_node_active_in_tree() const;
+	bool is_node_active_self() const;
 
 	void set_physics_interpolation_mode(PhysicsInterpolationMode p_mode);
 	PhysicsInterpolationMode get_physics_interpolation_mode() const { return data.physics_interpolation_mode; }

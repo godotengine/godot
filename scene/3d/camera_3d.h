@@ -62,6 +62,7 @@ private:
 	bool force_change = false;
 	bool current = false;
 	Viewport *viewport = nullptr;
+	bool added_to_camera_set = false;
 
 	ProjectionType mode = PROJECTION_PERSPECTIVE;
 
@@ -134,6 +135,8 @@ protected:
 	void _update_camera();
 	virtual void _request_camera_update();
 	void _update_camera_mode();
+	void _add_camera_to_set();
+	void _remove_camera_from_set();
 
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;

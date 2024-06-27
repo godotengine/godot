@@ -365,6 +365,16 @@ void Camera2D::_notification(int p_what) {
 			callable_mp(this, &Camera2D::_reset_just_exited).call_deferred();
 		} break;
 
+		case NOTIFICATION_NODE_ACTIVE_CHANGED: {
+			bool enabled_and_active = is_enabled();
+
+			if (enabled_and_active && !viewport->get_camera_2d()) {
+				make_current();
+			} else if (!enabled_and_active && is_current()) {
+				clear_current();
+			}
+		} break;
+
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_DRAW: {
 			if (!is_inside_tree() || !_is_editing_in_editor()) {
@@ -497,15 +507,17 @@ void Camera2D::set_enabled(bool p_enabled) {
 		return;
 	}
 
-	if (enabled && !viewport->get_camera_2d()) {
+	bool enabled_and_active = is_enabled();
+
+	if (enabled_and_active && !viewport->get_camera_2d()) {
 		make_current();
-	} else if (!enabled && is_current()) {
+	} else if (!enabled_and_active && is_current()) {
 		clear_current();
 	}
 }
 
 bool Camera2D::is_enabled() const {
-	return enabled;
+	return enabled && is_node_active_in_tree();
 }
 
 Camera2D::Camera2DProcessCallback Camera2D::get_process_callback() const {
