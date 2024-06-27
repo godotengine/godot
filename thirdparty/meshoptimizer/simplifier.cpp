@@ -5,6 +5,7 @@
 #include <float.h>
 #include <math.h>
 #include <string.h>
+#include "core/error/error_macros.h"
 
 #ifndef TRACE
 #define TRACE 0
@@ -522,69 +523,61 @@ static void quadricAdd(QuadricGrad* G, const QuadricGrad* R, size_t attribute_co
 
 static float quadricError(const Quadric& Q, const Vector3& v)
 {
-	float rx = Q.b0;
-	float ry = Q.b1;
-	float rz = Q.b2;
+	float rx = (Q.b0 + (Q.a10 * v.y) * 2) + Q.a00 * v.x;
+	float ry = (Q.b1 + (Q.a21 * v.z) * 2) + Q.a11 * v.y;
+	float rz = (Q.b2 + (Q.a20 * v.x) * 2) + Q.a22 * v.z;
 
-	rx += Q.a10 * v.y;
-	ry += Q.a21 * v.z;
-	rz += Q.a20 * v.x;
 
-	rx *= 2;
-	ry *= 2;
-	rz *= 2;
+	float r = Q.c + rx * v.x + ry * v.y + rz * v.z;
 
-	rx += Q.a00 * v.x;
-	ry += Q.a11 * v.y;
-	rz += Q.a22 * v.z;
-
-	float r = Q.c;
-	r += rx * v.x;
-	r += ry * v.y;
-	r += rz * v.z;
-
-	float s = Q.w == 0.f ? 0.f : 1.f / Q.w;
+	//TODO: because this is in place, this can give a different result from the below quadricError implementation. Inconsistent
+	float s = Q.w <= FLT_EPSILON ? 0.f : 1.f / Q.w;
 
 	return fabsf(r) * s;
 }
 
-static float quadricError(const Quadric& Q, const QuadricGrad* G, size_t attribute_count, const Vector3& v, const float* va)
+static float quadricError3(const Quadric &Q, const QuadricGrad *G, size_t attribute_count, const Vector3 &v, const float *va)
 {
-	float rx = Q.b0;
-	float ry = Q.b1;
-	float rz = Q.b2;
-
-	rx += Q.a10 * v.y;
-	ry += Q.a21 * v.z;
-	rz += Q.a20 * v.x;
-
-	rx *= 2;
-	ry *= 2;
-	rz *= 2;
-
-	rx += Q.a00 * v.x;
-	ry += Q.a11 * v.y;
-	rz += Q.a22 * v.z;
-
-	float r = Q.c;
-	r += rx * v.x;
-	r += ry * v.y;
-	r += rz * v.z;
+	float r = Q.c + (((Q.b0 + (Q.a10 * v.y)) * 2) + Q.a00 * v.x) * v.x +
+			(((Q.b1 + (Q.a21 * v.z)) * 2) + Q.a11 * v.y) * v.y +
+			(((Q.b2 + (Q.a20 * v.x)) * 2) + Q.a22 * v.z) * v.z;
 
 	// see quadricFromAttributes for general derivation; here we need to add the parts of (eval(pos) - attr)^2 that depend on attr
-	for (size_t k = 0; k < attribute_count; ++k)
-	{
-		float a = va[k];
-		float g = v.x * G[k].gx + v.y * G[k].gy + v.z * G[k].gz + G[k].gw;
+	r +=  (va[0] * va[0] * Q.w) - (2 * va[0] * (v.x * G[0].gx + v.y * G[0].gy + v.z * G[0].gz + G[0].gw))
+		+ (va[1] * va[1] * Q.w) - (2 * va[1] * (v.x * G[1].gx + v.y * G[1].gy + v.z * G[1].gz + G[1].gw))
+		+ (va[2] * va[2] * Q.w) - (2 * va[2] * (v.x * G[2].gx + v.y * G[2].gy + v.z * G[2].gz + G[2].gw));
 
-		r += a * a * Q.w;
-		r -= 2 * a * g;
+	// TODO: weight normalization is breaking attribute error somehow
+	// weight needs to be Q.w < FLT_EPSILON ? It works in the other quadricError or is implemented at least.
+	float s = r < .0f ? -1 : 1; // Q.w == 0.f ? 0.f : 1.f / Q.w;
+
+	return r * s; //handling fabs above since we were already doing this.
+}
+
+static float quadricError(const Quadric &Q, const QuadricGrad *G, size_t attribute_count, const Vector3 &v, const float *va) {
+	float r = Q.c + (((Q.b0 + (Q.a10 * v.y)) * 2) + Q.a00 * v.x) * v.x +
+			(((Q.b1 + (Q.a21 * v.z)) * 2) + Q.a11 * v.y) * v.y +
+			(((Q.b2 + (Q.a20 * v.x)) * 2) + Q.a22 * v.z) * v.z;
+
+	// see quadricFromAttributes for general derivation; here we need to add the parts of (eval(pos) - attr)^2 that depend on attr
+	if (attribute_count == 3) {
+		r += (va[0] * va[0] * Q.w) - (2 * va[0] * (v.x * G[0].gx + v.y * G[0].gy + v.z * G[0].gz + G[0].gw)) + (va[1] * va[1] * Q.w) - (2 * va[1] * (v.x * G[1].gx + v.y * G[1].gy + v.z * G[1].gz + G[1].gw)) + (va[2] * va[2] * Q.w) - (2 * va[2] * (v.x * G[2].gx + v.y * G[2].gy + v.z * G[2].gz + G[2].gw));
+	} else {
+		WARN_PRINT_ONCE("attribute_count != 3 ");
+		float a, g;
+		for (size_t k = 0; k < attribute_count; ++k) {
+			a = va[k];
+			g = v.x * G[k].gx + v.y * G[k].gy + v.z * G[k].gz + G[k].gw;
+
+			r += (a * a * Q.w) - (2 * a * g);
+		}
 	}
 
 	// TODO: weight normalization is breaking attribute error somehow
-	float s = 1;// Q.w == 0.f ? 0.f : 1.f / Q.w;
+	// weight needs to be Q.w < FLT_EPSILON ? It works in the other quadricError or is implemented at least.
+	float s = r < .0f ? -1 : 1; // Q.w == 0.f ? 0.f : 1.f / Q.w;
 
-	return fabsf(r) * s;
+	return r * s; //handling fabs above since we were already doing this.
 }
 
 static void quadricFromPlane(Quadric& Q, float a, float b, float c, float d, float w)
@@ -926,11 +919,42 @@ static size_t pickEdgeCollapses(Collapse* collapses, size_t collapse_capacity, c
 	return collapse_count;
 }
 
-static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const Vector3* vertex_positions, const float* vertex_attributes, const Quadric* vertex_quadrics, const Quadric* attribute_quadrics, const QuadricGrad* attribute_gradients, size_t attribute_count, const unsigned int* remap)
+static void rankEdgeCollapses3(Collapse *collapses, size_t collapse_count, const Vector3 *vertex_positions, const float *vertex_attributes, const Quadric *vertex_quadrics, const Quadric *attribute_quadrics, const QuadricGrad *attribute_gradients, const unsigned int *remap)
 {
-	for (size_t i = 0; i < collapse_count; ++i)
-	{
-		Collapse& c = collapses[i];
+	Collapse& c = collapses[0];
+	for (size_t i = 0; i < collapse_count; ++i) {
+		 c = collapses[i];
+
+		unsigned int i0 = c.v0;
+		unsigned int i1 = c.v1;
+
+		// most edges are bidirectional which means we need to evaluate errors for two collapses
+		// to keep this code branchless we just use the same edge for unidirectional edges
+		//Note: ternary operators are still branches, man.
+		unsigned int j0 = c.bidi ? i1 : i0;
+		unsigned int j1 = c.bidi ? i0 : i1;
+
+		float ei = quadricError(vertex_quadrics[remap[i0]], vertex_positions[i1]);
+		float ej = quadricError(vertex_quadrics[remap[j0]], vertex_positions[j1]);
+
+		float dei = ei, dej = ej;
+
+		ei += quadricError3(attribute_quadrics[remap[i0]], &attribute_gradients[remap[i0] * 3], 3, vertex_positions[i1], &vertex_attributes[i1 * 3]);
+		ej += quadricError3(attribute_quadrics[remap[j0]], &attribute_gradients[remap[j0] * 3], 3, vertex_positions[j1], &vertex_attributes[j1 * 3]);
+
+		// pick edge direction with minimal error
+		//todo: branchless technique here c.v0 *= i0 * (ei <= ej) + j0 * (ei <= ej)
+		c.v0 = ei <= ej ? i0 : j0;
+		c.v1 = ei <= ej ? i1 : j1;
+		c.error = ei <= ej ? ei : ej;
+		c.distance_error = ei <= ej ? dei : dej;
+	}
+}
+static void rankEdgeCollapses(Collapse *collapses, size_t collapse_count, const Vector3 *vertex_positions, const float *vertex_attributes, const Quadric *vertex_quadrics, const Quadric *attribute_quadrics, const QuadricGrad *attribute_gradients, size_t attribute_count, const unsigned int *remap) {
+	for (size_t i = 0; i < collapse_count; ++i) {
+		//Potentially create a Collapse object above the loop, one time
+		//set the data at the bottom. memcpy(&collapses[i], &c, sizeof(c)); Faster for 222k iterations?
+		Collapse &c = collapses[i];
 
 		unsigned int i0 = c.v0;
 		unsigned int i1 = c.v1;
@@ -945,13 +969,13 @@ static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const 
 
 		float dei = ei, dej = ej;
 
-		if (attribute_count)
-		{
+		if (attribute_count) {
 			ei += quadricError(attribute_quadrics[remap[i0]], &attribute_gradients[remap[i0] * attribute_count], attribute_count, vertex_positions[i1], &vertex_attributes[i1 * attribute_count]);
 			ej += quadricError(attribute_quadrics[remap[j0]], &attribute_gradients[remap[j0] * attribute_count], attribute_count, vertex_positions[j1], &vertex_attributes[j1 * attribute_count]);
 		}
 
 		// pick edge direction with minimal error
+		//todo: branchless technique here c.v0 *= i0 * (ei <= ej) + j0 * (ei <= ej)
 		c.v0 = ei <= ej ? i0 : j0;
 		c.v1 = ei <= ej ? i1 : j1;
 		c.error = ei <= ej ? ei : ej;
@@ -997,7 +1021,7 @@ static void sortEdgeCollapses(unsigned int* sort_order, const Collapse* collapse
 	}
 }
 
-static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char* collapse_locked, Quadric* vertex_quadrics, Quadric* attribute_quadrics, QuadricGrad* attribute_gradients, size_t attribute_count, const Collapse* collapses, size_t collapse_count, const unsigned int* collapse_order, const unsigned int* remap, const unsigned int* wedge, const unsigned char* vertex_kind, const Vector3* vertex_positions, const EdgeAdjacency& adjacency, size_t triangle_collapse_goal, float error_limit, float& result_error)
+static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char* collapse_locked, Quadric* vertex_quadrics, Quadric* attribute_quadrics, QuadricGrad* attribute_gradients, size_t attribute_count, Collapse* collapses, size_t collapse_count, const unsigned int* collapse_order, const unsigned int* remap, const unsigned int* wedge, const unsigned char* vertex_kind, const Vector3* vertex_positions, const EdgeAdjacency& adjacency, size_t triangle_collapse_goal, float error_limit, float& result_error)
 {
 	size_t edge_collapses = 0;
 	size_t triangle_collapses = 0;
@@ -1009,10 +1033,10 @@ static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char* 
 #if TRACE
 	size_t stats[4] = {};
 #endif
-
+	Collapse &c = collapses[collapse_order[0]];
 	for (size_t i = 0; i < collapse_count; ++i)
 	{
-		const Collapse& c = collapses[collapse_order[i]];
+		c = collapses[collapse_order[i]];
 
 		TRACESTATS(0);
 
@@ -1585,7 +1609,12 @@ size_t meshopt_simplifyEdge(unsigned int* destination, const unsigned int* indic
 		if (edge_collapse_count == 0)
 			break;
 
-		rankEdgeCollapses(edge_collapses, edge_collapse_count, vertex_positions, vertex_attributes, vertex_quadrics, attribute_quadrics, attribute_gradients, attribute_count, remap);
+		//This appears to be hard coded as three in the engine, when called but could change.
+		if (attribute_count == 3)
+			rankEdgeCollapses3(edge_collapses, edge_collapse_count, vertex_positions, vertex_attributes, vertex_quadrics, attribute_quadrics, attribute_gradients, remap);
+		else
+			rankEdgeCollapses(edge_collapses, edge_collapse_count, vertex_positions, vertex_attributes, vertex_quadrics, attribute_quadrics, attribute_gradients, attribute_count, remap);
+
 
 		sortEdgeCollapses(collapse_order, edge_collapses, edge_collapse_count);
 
