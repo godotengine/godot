@@ -58,7 +58,7 @@ void _emwebxr_on_session_supported(char *p_session_mode, int p_supported) {
 	interface->emit_signal(SNAME("session_supported"), session_mode, p_supported ? true : false);
 }
 
-void _emwebxr_on_session_started(char *p_reference_space_type, char *p_enabled_features) {
+void _emwebxr_on_session_started(char *p_reference_space_type, char *p_enabled_features, char *p_environment_blend_mode) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
@@ -68,6 +68,7 @@ void _emwebxr_on_session_started(char *p_reference_space_type, char *p_enabled_f
 	String reference_space_type = String(p_reference_space_type);
 	interface->_set_reference_space_type(reference_space_type);
 	interface->_set_enabled_features(p_enabled_features);
+	interface->_set_environment_blend_mode(p_environment_blend_mode);
 	interface->emit_signal(SNAME("session_started"));
 }
 
@@ -230,6 +231,44 @@ Array WebXRInterfaceJS::get_available_display_refresh_rates() const {
 	return ret;
 }
 
+Array WebXRInterfaceJS::get_supported_environment_blend_modes() {
+	Array blend_modes;
+	// The blend mode can't be changed, so return the current blend mode as the only supported one.
+	blend_modes.push_back(environment_blend_mode);
+	return blend_modes;
+}
+
+XRInterface::EnvironmentBlendMode WebXRInterfaceJS::get_environment_blend_mode() const {
+	return environment_blend_mode;
+}
+
+bool WebXRInterfaceJS::set_environment_blend_mode(EnvironmentBlendMode p_new_environment_blend_mode) {
+	if (environment_blend_mode == p_new_environment_blend_mode) {
+		// Environment blend mode can't be changed, but we'll consider it a success to set it
+		// to what it already is.
+		return true;
+	}
+	return false;
+}
+
+void WebXRInterfaceJS::_set_environment_blend_mode(String p_blend_mode_string) {
+	if (p_blend_mode_string == "opaque") {
+		environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_OPAQUE;
+	} else if (p_blend_mode_string == "additive") {
+		environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_ADDITIVE;
+	} else if (p_blend_mode_string == "alpha-blend") {
+		environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_ALPHA_BLEND;
+	} else {
+		// Not all browsers can give us this information, so as a fallback,
+		// we'll make some guesses about the blend mode.
+		if (session_mode == "immersive-ar") {
+			environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_ALPHA_BLEND;
+		} else {
+			environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_OPAQUE;
+		}
+	}
+}
+
 StringName WebXRInterfaceJS::get_name() const {
 	return "WebXR";
 };
@@ -336,6 +375,7 @@ void WebXRInterfaceJS::uninitialize() {
 		texture_cache.clear();
 		reference_space_type.clear();
 		enabled_features.clear();
+		environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_OPAQUE;
 		initialized = false;
 	};
 };
