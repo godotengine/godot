@@ -2907,9 +2907,8 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 							arr[i] = p_copy->get_node_or_null(p_original->get_path_to(property_node));
 						}
 					}
-					value = arr;
-					p_copy->set(name, value);
 				}
+				p_copy->set(name, arr);
 			} else {
 				p_copy->set(name, value);
 			}
