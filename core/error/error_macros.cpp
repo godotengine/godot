@@ -136,22 +136,10 @@ struct FunctionInfo {
 	String descriptor;
 };
 
-FunctionInfo calling_function(const char *filter, int frames_to_skip = 0) {
-	constexpr int kBacktraceDepth = 15;
-	constexpr int kDemangledBufferSize = 100;
-	void *backtrace_addrs[kBacktraceDepth];
-	static char s_demangled[kDemangledBufferSize];
-	Dl_info info;
+FunctionInfo describe_function(const Dl_info &info, const void *address) {
 	FunctionInfo result;
-
-	int trace_size = backtrace(backtrace_addrs, kBacktraceDepth);
-
-	int i = frames_to_skip;
-	do {
-		++i;
-		dladdr(backtrace_addrs[i], &info);
-	} while (i < trace_size && strstr(info.dli_sname, filter));
-
+	constexpr int kDemangledBufferSize = 100;
+	static char s_demangled[kDemangledBufferSize];
 	int status;
 	char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
 
@@ -171,7 +159,7 @@ FunctionInfo calling_function(const char *filter, int frames_to_skip = 0) {
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_name() == "macOS") {
 		String pipe;
-		Error error = OS::get_singleton()->execute("atos", { "-o", info.dli_fname, "-l", String::num_uint64(reinterpret_cast<uint64_t>(info.dli_fbase), 16), String::num_uint64(reinterpret_cast<uint64_t>(backtrace_addrs[i]), 16) },
+		Error error = OS::get_singleton()->execute("atos", { "-o", info.dli_fname, "-l", String::num_uint64(reinterpret_cast<uint64_t>(info.dli_fbase), 16), String::num_uint64(reinterpret_cast<uint64_t>(address), 16) },
 				&pipe);
 
 		if (error == OK) {
@@ -181,6 +169,37 @@ FunctionInfo calling_function(const char *filter, int frames_to_skip = 0) {
 #endif
 
 	return result;
+}
+
+FunctionInfo calling_function(const char *filter, int frames_to_skip = 0) {
+	constexpr int kBacktraceDepth = 15;
+	void *backtrace_addrs[kBacktraceDepth];
+	Dl_info info;
+
+	int trace_size = backtrace(backtrace_addrs, kBacktraceDepth);
+
+	int i = frames_to_skip;
+	do {
+		++i;
+		dladdr(backtrace_addrs[i], &info);
+	} while (i < trace_size && strstr(info.dli_sname, filter));
+
+	return describe_function(info, backtrace_addrs[i]);
+}
+
+void _err_print_callstack(const String &p_error, bool p_editor_notify, ErrorHandlerType p_type) {
+	constexpr int kBacktraceDepth = 25;
+	void *backtrace_addrs[kBacktraceDepth];
+	Dl_info info;
+
+	int trace_size = backtrace(backtrace_addrs, kBacktraceDepth);
+
+	for (int i = 0; i < trace_size; ++i) {
+		dladdr(backtrace_addrs[i], &info);
+
+		FunctionInfo func_info = describe_function(info, backtrace_addrs[i]);
+		_err_print_error(func_info.function, func_info.file, func_info.line, "", func_info.descriptor + p_error, p_editor_notify, p_type);
+	}
 }
 
 void _err_print_error_backtrace(const char *filter, const String &p_error, bool p_editor_notify, ErrorHandlerType p_type) {
