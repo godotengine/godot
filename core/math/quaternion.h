@@ -140,25 +140,7 @@ struct _NO_DISCARD_ Quaternion {
 		w = p_q.w;
 	}
 
-	Quaternion(const Vector3 &p_v0, const Vector3 &p_v1) { // Shortest arc.
-		Vector3 c = p_v0.cross(p_v1);
-		real_t d = p_v0.dot(p_v1);
-
-		if (d < -1.0f + (real_t)CMP_EPSILON) {
-			x = 0;
-			y = 1;
-			z = 0;
-			w = 0;
-		} else {
-			real_t s = Math::sqrt((1.0f + d) * 2.0f);
-			real_t rs = 1.0f / s;
-
-			x = c.x * rs;
-			y = c.y * rs;
-			z = c.z * rs;
-			w = s * 0.5f;
-		}
-	}
+	Quaternion(const Vector3 &p_v0, const Vector3 &p_v1); // Shortest arc.
 };
 
 real_t Quaternion::dot(const Quaternion &p_q) const {

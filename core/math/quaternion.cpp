@@ -313,6 +313,42 @@ Quaternion::Quaternion(const Vector3 &p_axis, real_t p_angle) {
 	}
 }
 
+static bool _try_set_perpendicular_to(real_t p_in_x, real_t p_in_y, real_t p_in_z, real_t &r_out_x, real_t &r_out_y, real_t &r_out_z) {
+	real_t threshold = 1.0f / Math::sqrt(3.0f);
+	real_t abs_x = Math::abs(p_in_x);
+	if (abs_x > threshold + (real_t)CMP_EPSILON) {
+		return false;
+	}
+
+	real_t length = Math::sqrt(1.0f - abs_x * abs_x);
+	r_out_x = 0;
+	r_out_y = p_in_z / length;
+	r_out_z = -p_in_y / length;
+	return true;
+}
+
+Quaternion::Quaternion(const Vector3 &p_v0, const Vector3 &p_v1) {
+	Vector3 c = p_v0.cross(p_v1);
+	real_t d = p_v0.dot(p_v1);
+
+	if (unlikely(d < -1.0f + (real_t)CMP_EPSILON)) {
+		// When given two vectors in opposite directions, produce a 180 degree
+		// arc around some arbitrary axis that is orthogonal to the given vectors.
+		// For backwards compatibility we prefer arcs that rotate around the y-axis
+		// when the parameter vectors lay on the XZ plane.
+		_try_set_perpendicular_to(p_v0.x, p_v0.y, p_v0.z, x, y, z) || _try_set_perpendicular_to(p_v0.z, p_v0.x, p_v0.y, z, x, y) || _try_set_perpendicular_to(p_v0.y, p_v0.z, p_v0.x, y, z, x);
+		w = 0;
+	} else {
+		real_t s = Math::sqrt((1.0f + d) * 2.0f);
+		real_t rs = 1.0f / s;
+
+		x = c.x * rs;
+		y = c.y * rs;
+		z = c.z * rs;
+		w = s * 0.5f;
+	}
+}
+
 // Euler constructor expects a vector containing the Euler angles in the format
 // (ax, ay, az), where ax is the angle of rotation around x axis,
 // and similar for other axes.
