@@ -8644,7 +8644,8 @@ Node3DEditor::Node3DEditor() {
 	ED_SHORTCUT("spatial_editor/insert_anim_key", TTR("Insert Animation Key"), Key::K);
 	ED_SHORTCUT("spatial_editor/focus_origin", TTR("Focus Origin"), Key::O);
 	ED_SHORTCUT("spatial_editor/focus_selection", TTR("Focus Selection"), Key::F);
-	ED_SHORTCUT("spatial_editor/align_transform_with_view", TTR("Align Transform with View"), KeyModifierMask::ALT + KeyModifierMask::CMD_OR_CTRL + Key::M);
+	ED_SHORTCUT_ARRAY("spatial_editor/align_transform_with_view", TTR("Align Transform with View"),
+			{ int32_t(KeyModifierMask::ALT | KeyModifierMask::CMD_OR_CTRL | Key::KP_0), int32_t(KeyModifierMask::ALT | KeyModifierMask::CMD_OR_CTRL | Key::M) });
 	ED_SHORTCUT("spatial_editor/align_rotation_with_view", TTR("Align Rotation with View"), KeyModifierMask::ALT + KeyModifierMask::CMD_OR_CTRL + Key::F);
 	ED_SHORTCUT("spatial_editor/freelook_toggle", TTR("Toggle Freelook"), KeyModifierMask::SHIFT + Key::F);
 	ED_SHORTCUT("spatial_editor/decrease_fov", TTR("Decrease Field of View"), KeyModifierMask::CMD_OR_CTRL + Key::EQUAL); // Usually direct access key for `KEY_PLUS`.
