@@ -36,6 +36,11 @@
 #include "../logic/animator/body_animator.h"
 #include "../logic/data_table_manager.h"
 
+#if TOOLS_ENABLED
+#include "editor/import/3d/resource_importer_scene.h"
+#include "core/io/config_file.h"
+#endif
+
 #define FILESYSTEM_PROTOCOL_VERSION 1
 #define PASSWORD_LENGTH 32
 #define MAX_FILE_BUFFER_SIZE 100 * 1024 * 1024 // 100mb max file buffer size (description of files to update, compressed).
@@ -240,8 +245,8 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 
 		Ref<CharacterBoneMap> bone_map;
 		bone_map.instantiate();
-		bone_map->ref_skeleton_file_path = path + "/" + file_name;
-		bone_map->is_by_sekeleton_file = true;
+		//bone_map->ref_skeleton_file_path = path + "/" + file_name;
+		//bone_map->is_by_sekeleton_file = true;
 
 
 		String save_path = "res://" + path + "/" + save_name +  ".bone_map.tres";
@@ -307,6 +312,133 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 		f->store_buffer(msg_buffer.get_u8_ptr(),file_size);	
 	}
 	return true;
+}
+static Node* import_fbx(const String &p_path)
+{
+	
+#if TOOLS_ENABLED
+	HashMap<StringName, Variant> defaults;
+	Dictionary base_subresource_settings;
+	
+	base_subresource_settings.clear();
+
+	Ref<ConfigFile> config;
+	config.instantiate();
+	Error err = config->load(p_path + ".import");
+	if (err == OK) {
+		List<String> keys;
+		config->get_section_keys("params", &keys);
+		for (const String &E : keys) {
+			Variant value = config->get_value("params", E);
+			if (E == "_subresources") {
+				base_subresource_settings = value;
+			} else {
+				defaults[E] = value;
+			}
+		}
+	}
+
+	return ResourceImporterScene::get_scene_singleton()->pre_import(p_path, defaults); // Use the scene singleton here because we want to see the full thing.
+#endif
+	return nullptr;
+
+}
+// 處理導入的骨架
+static Skeleton3D * process_fbx_skeleton(const String &p_path,Node *p_node)
+{
+	Node * node = p_node->find_child("Skeleton3D");
+	Skeleton3D * skeleton = Object::cast_to<Skeleton3D>(node);
+	return skeleton;
+}
+// 保存模型资源
+static void save_fbx_res( const String& group_name,const String& sub_path,const Ref<Resource>& p_resource,bool is_resource = true)
+{
+	String export_root_path = "res://Assets/public";
+	if (!DirAccess::dir_exists_absolute(export_root_path))
+	{
+		print_error("Export Root Path不存在:" + export_root_path);
+		return ;
+
+	}
+	Ref<DirAccess> dir = DirAccess::create_for_path(export_root_path);
+	if (!dir->dir_exists(group_name))
+	{
+		dir->make_dir(group_name);
+
+	}
+	dir->change_dir(group_name);
+	if (!dir->dir_exists(sub_path))
+	{
+			dir->make_dir(sub_path);
+	}
+	dir->change_dir(sub_path);
+	ResourceSaver::save(p_resource,export_root_path.path_join(group_name).path_join(sub_path).path_join(p_resource->get_name() + (is_resource ? "tres" :".tscn")));
+}
+// 處理導入的模型
+static void process_fbx_mesh(const String &p_path,const String & p_group, Node *p_node)
+{
+	String name = p_node->get_name();
+	// 存儲模型的預製體文件
+	Skeleton3D * skeleton = process_fbx_skeleton(p_path,p_node);
+	Dictionary bone_map;
+	if(skeleton != nullptr)
+	{
+		bone_map = skeleton->get_human_bone_mapping();
+		skeleton->set_human_bone_mapping(bone_map);
+
+		// 存儲骨架信息
+		Ref<PackedScene> packed_scene;
+		packed_scene.instantiate();
+		packed_scene->pack(skeleton);
+		save_fbx_res("skeleton",p_group,packed_scene,false);
+		Ref<CharacterBoneMap> bone_map_ref;
+		bone_map_ref.instantiate();
+		bone_map_ref->set_bone_map(bone_map);
+		save_fbx_res("skeleton",p_group,bone_map_ref,true);
+	}
+	HashMap<String,MeshInstance3D* > meshs;
+	// 便利存儲模型文件
+	for(int i = 0;i < p_node->get_child_count();i++){
+		Node* child = p_node->get_child(i);
+		if(child->get_class() == "MeshInstance3D"){
+			MeshInstance3D* mesh = Object::cast_to<MeshInstance3D>(child);
+			if(!meshs.has(mesh->get_name())){
+				meshs[mesh->get_name()] = mesh;
+			}
+			else{
+				String name = mesh->get_name();
+				int index = 1;
+				while(meshs.has(name +"_"+ itos(index))){
+					name = mesh->get_name().str() + "_" + itos(index);
+					index++;
+				}
+				meshs[name] = mesh;
+			}
+		}
+	}
+	LocalVector<String> paths;
+	for(auto it = meshs.begin();it != meshs.end();++it){
+		Ref<CharacterBodyPart> part;
+		part.instantiate();
+		MeshInstance3D* mesh = it->value;
+		part->init_form_mesh_instance(mesh,bone_map);
+		String save_path = p_path + "_" + it->key + ".tres";
+		save_fbx_res("meshe", p_group,part);
+		print_line("UnityLinkServer: save mesh node :" + save_path);	
+	}
+
+
+
+}
+// 處理導入的骨架
+static void process_fbx_animation(const String &p_path,Node *p_node)
+{
+
+}
+// 創建一個預製體
+static void create_fbx_prefab(const String &p_path,const LocalVector<String>& p_paths,const String& p_skeleton_path)
+{
+
 }
 
 bool UnityLinkServer::ClientPeer::poll()

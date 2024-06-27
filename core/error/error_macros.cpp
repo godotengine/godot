@@ -255,7 +255,7 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
             temp += p_message;
         }
 		LocalVector<StackFrame> stackFrame = getStackTrace();
-		for(int i = 0; i < stackFrame.size(); ++i)
+		for(uint32_t i = 0; i < stackFrame.size(); ++i)
 		{
 			stackFrame[i].to_string(temp);
 		}

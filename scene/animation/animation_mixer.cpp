@@ -669,7 +669,7 @@ bool AnimationMixer::_update_caches() {
 			anima.insert(anim,Dictionary());
 		}
 	}
-	for(int i = 0; i < animation_instances.size(); ++i) {
+	for(uint32_t i = 0; i < animation_instances.size(); ++i) {
 		Ref<Animation> anim = animation_instances[i].animation_data.animation;		
 		if(anim.is_valid()) {
 			anima.insert(anim,animation_instances[i].animation_data.bone_map);

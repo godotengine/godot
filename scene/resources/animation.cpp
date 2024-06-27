@@ -3805,11 +3805,11 @@ void Animation::set_human_bone_mapping(const Dictionary &p_mapping,bool is_only_
 		return;
 	}
 	for(int i = 0; i < tracks.size(); i++) {
-		String name = tracks[i]->path;
-		if(!name.begins_with("Skeleton3D:")) {
+		String _name = tracks[i]->path;
+		if(!_name.begins_with("Skeleton3D:")) {
 			continue;
 		}
-		auto sv = name.split(":");
+		auto sv = _name.split(":");
 		if(sv.size() != 2)
 		{
 			continue;

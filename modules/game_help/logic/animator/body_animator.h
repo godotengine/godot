@@ -123,21 +123,13 @@ class CharacterBoneMap : public Resource
 
         ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "bone_map"), "set_bone_map", "get_bone_map");
 
-        IMP_GODOT_PROPERTY(bool,is_init_skeleton);
-        IMP_GODOT_PROPERTY(String, ref_skeleton_file_path);
-        IMP_GODOT_PROPERTY(bool, is_by_sekeleton_file);
     }
 
 public:
     void set_bone_map(const Dictionary& p_bone_map) { bone_map = p_bone_map; }
     Dictionary get_bone_map() { return bone_map; }
-    void init_skeleton_bone_map();
 
 	Dictionary bone_map;
-    Dictionary bone_reset;
-    DECL_GODOT_PROPERTY(bool,is_init_skeleton,false);
-    DECL_GODOT_PROPERTY(String, ref_skeleton_file_path,"");
-    DECL_GODOT_PROPERTY(bool, is_by_sekeleton_file,false);
 };
 class CharacterAnimationItem : public Resource
 {

@@ -65,6 +65,8 @@ public:
 	static uint64_t get_mem_available();
 	static uint64_t get_mem_usage();
 	static uint64_t get_mem_max_usage();
+	// static void memset(void *p_ptr, int p_value, size_t p_size);
+	// static void memcpy(void *p_dest, const void *p_src, size_t p_size);
 };
 
 class DefaultAllocator {

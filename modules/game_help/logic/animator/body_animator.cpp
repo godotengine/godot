@@ -4,37 +4,6 @@
 
 
 
-void CharacterBoneMap::init_skeleton_bone_map()
-{
-    if(!is_by_sekeleton_file)
-    {
-        return;
-    }
-    if(!FileAccess::exists(ref_skeleton_file_path))
-    {
-        return;
-    }
-    Ref<PackedScene> scene = ResourceLoader::load(ref_skeleton_file_path);
-
-    if(!scene.is_valid())
-    {
-        return;
-    }
-    Node* node = scene->instantiate();
-    if(node == nullptr)
-    {
-        return;
-    }
-    Skeleton3D* skele = Object::cast_to<Skeleton3D>( node->get_node(NodePath("Seleton3D")));
-    if(skele == nullptr)
-    {
-        return;
-    }
-    bone_map = skele->get_human_bone_mapping();
-    node->queue_free();
-    is_init_skeleton = true;
-
-}
 
 void CharacterAnimationItem::bind_methods()
 {

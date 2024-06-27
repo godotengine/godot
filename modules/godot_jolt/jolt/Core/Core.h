@@ -69,7 +69,18 @@
 
 // Combine the version and features in a single ID
 #define JPH_VERSION_ID ((JPH_VERSION_FEATURES << 24) | (JPH_VERSION_MAJOR << 16) | (JPH_VERSION_MINOR << 8) | JPH_VERSION_PATCH)
-
+#if defined(__arm__)
+# ifndef (__ARM_NEON)
+#   define __ARM_NEON
+# endif
+#else
+# ifndef __AVX__
+#   define __AVX__
+# endif
+# ifndef __SSE__
+#   define __SSE__
+# endif
+#endif
 // Determine platform
 #if defined(JPH_PLATFORM_BLUE)
 	// Correct define already defined, this overrides everything else

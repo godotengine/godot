@@ -851,6 +851,7 @@ else:  # GCC, Clang
     if env["werror"]:
         env.Append(CCFLAGS=["-Werror"])
 
+
 if hasattr(detect, "get_program_suffix"):
     suffix = "." + detect.get_program_suffix()
 else:

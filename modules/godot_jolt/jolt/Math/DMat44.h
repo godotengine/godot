@@ -29,7 +29,7 @@ public:
 	DMat44 &					operator = (const DMat44 &inM2) = default;
 	JPH_INLINE explicit			DMat44(Mat44Arg inM);
 	JPH_INLINE					DMat44(Mat44Arg inRot, DVec3Arg inT);
-	JPH_INLINE					DMat44(Type inC1, Type inC2, Type inC3, DTypeArg inC4);
+	JPH_INLINE					DMat44(Type inC1, Type inC2, Type inC3, const DTypeArg& inC4);
 
 	/// Zero matrix
 	static JPH_INLINE DMat44	sZero();

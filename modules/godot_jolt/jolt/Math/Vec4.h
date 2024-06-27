@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "CpuDefine.h"
 #include <Jolt/Math/Float4.h>
 #include <Jolt/Math/Swizzle.h>
 #include <Jolt/Math/MathTypes.h>

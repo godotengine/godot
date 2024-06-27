@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "CpuDefine.h"
 #include <Jolt/Math/MathTypes.h>
 
 JPH_NAMESPACE_BEGIN
