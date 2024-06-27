@@ -65,7 +65,7 @@ class ViewportRotationControl : public Control {
 	GDCLASS(ViewportRotationControl, Control);
 
 	struct Axis2D {
-		Vector2i screen_point;
+		Vector2 screen_point;
 		float z_axis = -99.0;
 		int axis = -1;
 	};
