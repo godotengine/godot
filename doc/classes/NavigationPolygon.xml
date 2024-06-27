@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationPolygon" inherits="Resource" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationPolygon" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A 2D navigation mesh that describes a traversable surface for pathfinding.
 	</brief_description>
@@ -43,8 +43,8 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="2D Navigation Demo">https://godotengine.org/asset-library/asset/117</link>
 		<link title="Using NavigationMeshes">$DOCS_URL/tutorials/navigation/navigation_using_navigationmeshes.html</link>
+		<link title="Navigation Polygon 2D Demo">https://godotengine.org/asset-library/asset/2722</link>
 	</tutorials>
 	<methods>
 		<method name="add_outline">
@@ -132,11 +132,10 @@
 				Returns a [PackedVector2Array] containing all the vertices being used to create the polygons.
 			</description>
 		</method>
-		<method name="make_polygons_from_outlines" is_deprecated="true">
+		<method name="make_polygons_from_outlines" deprecated="Use [method NavigationServer2D.parse_source_geometry_data] and [method NavigationServer2D.bake_from_source_geometry_data] instead.">
 			<return type="void" />
 			<description>
 				Creates polygons from the outlines added in the editor or by script.
-				[i]Deprecated.[/i] This function is deprecated, and might be removed in a future release. Use [method NavigationServer2D.parse_source_geometry_data] and [method NavigationServer2D.bake_from_source_geometry_data] instead.
 			</description>
 		</method>
 		<method name="remove_outline">
@@ -173,6 +172,16 @@
 	<members>
 		<member name="agent_radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="10.0">
 			The distance to erode/shrink the walkable surface when baking the navigation mesh.
+		</member>
+		<member name="baking_rect" type="Rect2" setter="set_baking_rect" getter="get_baking_rect" default="Rect2(0, 0, 0, 0)">
+			If the baking [Rect2] has an area the navigation mesh baking will be restricted to its enclosing area.
+		</member>
+		<member name="baking_rect_offset" type="Vector2" setter="set_baking_rect_offset" getter="get_baking_rect_offset" default="Vector2(0, 0)">
+			The position offset applied to the [member baking_rect] [Rect2].
+		</member>
+		<member name="border_size" type="float" setter="set_border_size" getter="get_border_size" default="0.0">
+			The size of the non-navigable border around the bake bounding area defined by the [member baking_rect] [Rect2].
+			In conjunction with the [member baking_rect] the border size can be used to bake tile aligned navigation meshes without the tile edges being shrunk by [member agent_radius].
 		</member>
 		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="1.0">
 			The cell size used to rasterize the navigation mesh vertices. Must match with the cell size on the navigation map.

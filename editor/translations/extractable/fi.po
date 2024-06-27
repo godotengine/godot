@@ -1,0 +1,156 @@
+# Finnish translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-01-02 09:06+0000\n"
+"Last-Translator: Jonni Lehtiranta <jonni.lehtiranta@gmail.com>\n"
+"Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
+"godot/fi/>\n"
+"Language: fi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.4-dev\n"
+
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color\n"
+"RMB: Remove preset"
+msgstr ""
+"Väri: #%s\n"
+"Vasen hiirenkorva: Aseta väri\n"
+"Oikea hiirenkorva: Poista esiasetus"
+
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color"
+msgstr ""
+"Väri: #%s\n"
+"Vasen hiiren painike: Aseta väri"
+
+msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr "Syötä hex koodi (\"#ff0000\") tai nimetty väri (\"red\")."
+
+msgid "Hex code or named color"
+msgstr "Hex koodi tai nimetty väri"
+
+msgid "Add current color as a preset."
+msgstr "Lisää nykyinen väri esiasetukseksi."
+
+msgid "Network"
+msgstr "Verkko"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Tiedosto \"%s\" on jo olemassa.\n"
+"Haluatko ylikirjoittaa sen?"
+
+msgid "Open"
+msgstr "Avaa"
+
+msgid "Select Current Folder"
+msgstr "Valitse nykyinen kansio"
+
+msgid "Select This Folder"
+msgstr "Valitse tämä kansio"
+
+msgid "You don't have permission to access contents of this folder."
+msgstr "Sinulla ei ole oikeuksia tämän kansio sisältöön."
+
+msgid "All Recognized"
+msgstr "Kaikki tunnistetut"
+
+msgid "Open a File"
+msgstr "Avaa tiedosto"
+
+msgid "Open File(s)"
+msgstr "Avaa tiedosto(t)"
+
+msgid "Open a Directory"
+msgstr "Avaa Hakemisto"
+
+msgid "Open a File or Directory"
+msgstr "Avaa Tiedosto tai Hakemisto"
+
+msgid "Save"
+msgstr "Tallenna"
+
+msgid "Save a File"
+msgstr "Tallenna tiedosto"
+
+msgid "Go to previous folder."
+msgstr "Siirry edelliseen kansioon."
+
+msgid "Go to next folder."
+msgstr "Siirry seuraavaan kansioon."
+
+msgid "Go to parent folder."
+msgstr "Siirry yläkansioon."
+
+msgid "Path:"
+msgstr "Polku:"
+
+msgid "Refresh files."
+msgstr "Lataa uudelleen tiedostot."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Aseta piilotiedostojen näyttäminen."
+
+msgid "Directories & Files:"
+msgstr "Hakemistot ja Tiedostot:"
+
+msgid "File:"
+msgstr "Tiedosto:"
+
+msgid "Create Folder"
+msgstr "Luo kansio"
+
+msgid "Name:"
+msgstr "Nimi:"
+
+msgid "Could not create folder."
+msgstr "Kansiota ei voitu luoda."
+
+msgid "Zoom Out"
+msgstr "Loitonna"
+
+msgid "Zoom Reset"
+msgstr "Palauta oletuslähennystaso"
+
+msgid "Zoom In"
+msgstr "Lähennä"
+
+msgid "Right-to-Left"
+msgstr "Oikealta-Vasemmalle"
+
+msgid "Cut"
+msgstr "Leikkaa"
+
+msgid "Copy"
+msgstr "Kopioi"
+
+msgid "Paste"
+msgstr "Liitä"
+
+msgid "Select All"
+msgstr "Valitse kaikki"
+
+msgid "Clear"
+msgstr "Tyhjennä"
+
+msgid "Undo"
+msgstr "Peru"
+
+msgid "Redo"
+msgstr "Tee uudelleen"
+
+msgid "(Other)"
+msgstr "(Muu)"

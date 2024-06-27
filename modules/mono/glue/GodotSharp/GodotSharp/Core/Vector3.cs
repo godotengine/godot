@@ -1,5 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -171,6 +175,24 @@ namespace Godot
                 Mathf.Clamp(X, min.X, max.X),
                 Mathf.Clamp(Y, min.Y, max.Y),
                 Mathf.Clamp(Z, min.Z, max.Z)
+            );
+        }
+
+        /// <summary>
+        /// Returns a new vector with all components clamped between the
+        /// <paramref name="min"/> and <paramref name="max"/> using
+        /// <see cref="Mathf.Clamp(real_t, real_t, real_t)"/>.
+        /// </summary>
+        /// <param name="min">The minimum allowed value.</param>
+        /// <param name="max">The maximum allowed value.</param>
+        /// <returns>The vector with all components clamped.</returns>
+        public readonly Vector3 Clamp(real_t min, real_t max)
+        {
+            return new Vector3
+            (
+                Mathf.Clamp(X, min, max),
+                Mathf.Clamp(Y, min, max),
+                Mathf.Clamp(Z, min, max)
             );
         }
 
@@ -415,6 +437,57 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector3(Mathf.Max(X, with.X), Mathf.Max(Y, with.Y), Mathf.Max(Z, with.Z))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector3 Max(Vector3 with)
+        {
+            return new Vector3
+            (
+                Mathf.Max(X, with.X),
+                Mathf.Max(Y, with.Y),
+                Mathf.Max(Z, with.Z)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector3(Mathf.Max(X, with), Mathf.Max(Y, with), Mathf.Max(Z, with))</c>.
+        /// </summary>
+        /// <param name="with">The other value to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector3 Max(real_t with)
+        {
+            return new Vector3
+            (
+                Mathf.Max(X, with),
+                Mathf.Max(Y, with),
+                Mathf.Max(Z, with)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise minimum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector3(Mathf.Min(X, with.X), Mathf.Min(Y, with.Y), Mathf.Min(Z, with.Z))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting minimum vector.</returns>
+        public readonly Vector3 Min(Vector3 with)
+        {
+            return new Vector3
+            (
+                Mathf.Min(X, with.X),
+                Mathf.Min(Y, with.Y),
+                Mathf.Min(Z, with.Z)
+            );
+        }
+
+        /// <summary>
         /// Returns the axis of the vector's highest value. See <see cref="Axis"/>.
         /// If all components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>
@@ -511,7 +584,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns this vector projected onto another vector <paramref name="onNormal"/>.
+        /// Returns a new vector resulting from projecting this vector onto the given vector <paramref name="onNormal"/>.
+        /// The resulting new vector is parallel to <paramref name="onNormal"/>.
+        /// See also <see cref="Slide(Vector3)"/>.
+        /// Note: If the vector <paramref name="onNormal"/> is a zero vector, the components of the resulting new vector will be <see cref="real_t.NaN"/>.
         /// </summary>
         /// <param name="onNormal">The vector to project onto.</param>
         /// <returns>The projected vector.</returns>
@@ -623,9 +699,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns this vector slid along a plane defined by the given <paramref name="normal"/>.
+        /// Returns a new vector resulting from sliding this vector along a plane with normal <paramref name="normal"/>.
+        /// The resulting new vector is perpendicular to <paramref name="normal"/>, and is equivalent to this vector minus its projection on <paramref name="normal"/>.
+        /// See also <see cref="Project(Vector3)"/>.
+        /// Note: The vector <paramref name="normal"/> must be normalized. See also <see cref="Normalized()"/>.
         /// </summary>
-        /// <param name="normal">The normal vector defining the plane to slide on.</param>
+        /// <param name="normal">The normal vector of the plane to slide on.</param>
         /// <returns>The slid vector.</returns>
         public readonly Vector3 Slide(Vector3 normal)
         {
@@ -633,7 +712,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns this vector with each component snapped to the nearest multiple of <paramref name="step"/>.
+        /// Returns a new vector with each component snapped to the nearest multiple of the corresponding component in <paramref name="step"/>.
         /// This can also be used to round to an arbitrary number of decimals.
         /// </summary>
         /// <param name="step">A vector value representing the step size to snap to.</param>
@@ -645,6 +724,22 @@ namespace Godot
                 Mathf.Snapped(X, step.X),
                 Mathf.Snapped(Y, step.Y),
                 Mathf.Snapped(Z, step.Z)
+            );
+        }
+
+        /// <summary>
+        /// Returns a new vector with each component snapped to the nearest multiple of <paramref name="step"/>.
+        /// This can also be used to round to an arbitrary number of decimals.
+        /// </summary>
+        /// <param name="step">The step size to snap to.</param>
+        /// <returns>The snapped vector.</returns>
+        public readonly Vector3 Snapped(real_t step)
+        {
+            return new Vector3
+            (
+                Mathf.Snapped(X, step),
+                Mathf.Snapped(Y, step),
+                Mathf.Snapped(Z, step)
             );
         }
 
@@ -1056,7 +1151,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Vector3 other && Equals(other);
         }
@@ -1109,18 +1204,15 @@ namespace Godot
         /// Converts this <see cref="Vector3"/> to a string.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public override readonly string ToString()
-        {
-            return $"({X}, {Y}, {Z})";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Vector3"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
-            return $"({X.ToString(format)}, {Y.ToString(format)}, {Z.ToString(format)})";
+            return $"({X.ToString(format, CultureInfo.InvariantCulture)}, {Y.ToString(format, CultureInfo.InvariantCulture)}, {Z.ToString(format, CultureInfo.InvariantCulture)})";
         }
     }
 }

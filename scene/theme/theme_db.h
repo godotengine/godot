@@ -107,10 +107,19 @@ public:
 		bool external = false;
 
 		ThemeItemSetter setter;
+
+		struct SortByType {
+			_FORCE_INLINE_ bool operator()(const ThemeItemBind &l, const ThemeItemBind &r) const {
+				return l.data_type < r.data_type;
+			}
+		};
 	};
 
 private:
 	HashMap<StringName, HashMap<StringName, ThemeItemBind>> theme_item_binds;
+	HashMap<StringName, List<ThemeItemBind>> theme_item_binds_list; // Used for listing purposes.
+
+	void _sort_theme_items();
 
 protected:
 	static void _bind_methods();
@@ -162,7 +171,7 @@ public:
 	void bind_class_external_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, const StringName &p_type_name, ThemeItemSetter p_setter);
 	void update_class_instance_items(Node *p_instance);
 
-	void get_class_own_items(const StringName &p_class_name, List<ThemeItemBind> *r_list);
+	void get_class_items(const StringName &p_class_name, List<ThemeItemBind> *r_list, bool p_include_inherited = false, Theme::DataType p_filter_type = Theme::DATA_TYPE_MAX);
 
 	// Memory management, reference, and initialization.
 

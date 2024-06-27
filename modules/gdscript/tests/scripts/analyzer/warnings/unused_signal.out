@@ -1,0 +1,5 @@
+GDTEST_OK
+>> WARNING
+>> Line: 3
+>> UNUSED_SIGNAL
+>> The signal "s3" is declared but never explicitly used in the class.

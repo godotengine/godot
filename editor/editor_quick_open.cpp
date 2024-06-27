@@ -32,7 +32,7 @@
 
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
+#include "editor/themes/editor_scale.h"
 
 Rect2i EditorQuickOpen::prev_rect = Rect2i();
 bool EditorQuickOpen::was_showed = false;
@@ -91,17 +91,21 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 }
 
 void EditorQuickOpen::_update_search() {
-	const String search_text = search_box->get_text();
-	const bool empty_search = search_text.is_empty();
+	const PackedStringArray search_tokens = search_box->get_text().to_lower().replace("/", " ").split(" ", false);
+	const bool empty_search = search_tokens.is_empty();
 
 	// Filter possible candidates.
 	Vector<Entry> entries;
 	for (int i = 0; i < files.size(); i++) {
-		if (empty_search || search_text.is_subsequence_ofn(files[i])) {
-			Entry r;
-			r.path = files[i];
-			r.score = empty_search ? 0 : _score_path(search_text, files[i].to_lower());
+		Entry r;
+		r.path = files[i];
+		if (empty_search) {
 			entries.push_back(r);
+		} else {
+			r.score = _score_search_result(search_tokens, r.path.to_lower());
+			if (r.score > 0) {
+				entries.push_back(r);
+			}
 		}
 	}
 
@@ -135,23 +139,42 @@ void EditorQuickOpen::_update_search() {
 	}
 }
 
-float EditorQuickOpen::_score_path(const String &p_search, const String &p_path) {
-	float score = 0.9f + .1f * (p_search.length() / (float)p_path.length());
+float EditorQuickOpen::_score_search_result(const PackedStringArray &p_search_tokens, const String &p_path) {
+	float score = 0.0f;
+	int prev_min_match_idx = -1;
 
-	// Exact match.
-	if (p_search == p_path) {
-		return 1.2f;
+	for (const String &s : p_search_tokens) {
+		int min_match_idx = p_path.find(s);
+
+		if (min_match_idx == -1) {
+			return 0.0f;
+		}
+
+		float token_score = s.length();
+
+		int max_match_idx = p_path.rfind(s);
+
+		// Prioritize the actual file name over folder.
+		if (max_match_idx > p_path.rfind("/")) {
+			token_score *= 2.0f;
+		}
+
+		// Prioritize matches at the front of the path token.
+		if (min_match_idx == 0 || p_path.contains("/" + s)) {
+			token_score += 1.0f;
+		}
+
+		score += token_score;
+
+		// Prioritize tokens which appear in order.
+		if (prev_min_match_idx != -1 && max_match_idx > prev_min_match_idx) {
+			score += 1.0f;
+		}
+
+		prev_min_match_idx = min_match_idx;
 	}
 
-	// Positive bias for matches close to the beginning of the file name.
-	String file = p_path.get_file();
-	int pos = file.findn(p_search);
-	if (pos != -1) {
-		return score * (1.0f - 0.1f * (float(pos) / file.length()));
-	}
-
-	// Similarity
-	return p_path.to_lower().similarity(p_search.to_lower());
+	return score;
 }
 
 void EditorQuickOpen::_confirmed() {
@@ -238,7 +261,7 @@ String EditorQuickOpen::get_base_type() const {
 void EditorQuickOpen::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			connect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
+			connect(SceneStringName(confirmed), callable_mp(this, &EditorQuickOpen::_confirmed));
 
 			search_box->set_clear_button_enabled(true);
 		} break;
@@ -255,7 +278,7 @@ void EditorQuickOpen::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
+			disconnect(SceneStringName(confirmed), callable_mp(this, &EditorQuickOpen::_confirmed));
 		} break;
 	}
 }
@@ -269,12 +292,13 @@ EditorQuickOpen::EditorQuickOpen() {
 	add_child(vbc);
 
 	search_box = memnew(LineEdit);
-	search_box->connect("text_changed", callable_mp(this, &EditorQuickOpen::_text_changed));
-	search_box->connect("gui_input", callable_mp(this, &EditorQuickOpen::_sbox_input));
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorQuickOpen::_text_changed));
+	search_box->connect(SceneStringName(gui_input), callable_mp(this, &EditorQuickOpen::_sbox_input));
 	vbc->add_margin_child(TTR("Search:"), search_box);
 	register_text_enter(search_box);
 
 	search_options = memnew(Tree);
+	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->connect("item_activated", callable_mp(this, &EditorQuickOpen::_confirmed));
 	search_options->create_item();
 	search_options->set_hide_root(true);

@@ -66,15 +66,8 @@ class EditorFileSystemDirectory : public Object {
 		String script_class_name;
 		String script_class_extends;
 		String script_class_icon_path;
+		String icon_path;
 	};
-
-	struct FileInfoSort {
-		bool operator()(const FileInfo *p_a, const FileInfo *p_b) const {
-			return p_a->file < p_b->file;
-		}
-	};
-
-	void sort_files();
 
 	Vector<FileInfo *> files;
 
@@ -99,6 +92,7 @@ public:
 	String get_file_script_class_name(int p_idx) const; //used for scripts
 	String get_file_script_class_extends(int p_idx) const; //used for scripts
 	String get_file_script_class_icon_path(int p_idx) const; //used for scripts
+	String get_file_icon_path(int p_idx) const; //used for FileSystemDock
 
 	EditorFileSystemDirectory *get_parent();
 
@@ -165,7 +159,7 @@ class EditorFileSystem : public Node {
 		EditorFileSystemDirectory::FileInfo *new_file = nullptr;
 	};
 
-	bool use_threads = true;
+	bool use_threads = false;
 	Thread thread;
 	static void _thread_func(void *_userdata);
 
@@ -205,6 +199,7 @@ class EditorFileSystem : public Node {
 	};
 
 	HashMap<String, FileCache> file_cache;
+	HashSet<String> dep_update_list;
 
 	struct ScanProgress {
 		float low = 0;
@@ -221,7 +216,7 @@ class EditorFileSystem : public Node {
 
 	void _scan_fs_changes(EditorFileSystemDirectory *p_dir, const ScanProgress &p_progress);
 
-	void _delete_internal_files(String p_file);
+	void _delete_internal_files(const String &p_file);
 
 	HashSet<String> textfile_extensions;
 	HashSet<String> valid_extensions;
@@ -231,7 +226,7 @@ class EditorFileSystem : public Node {
 
 	Thread thread_sources;
 	bool scanning_changes = false;
-	bool scanning_changes_done = false;
+	SafeFlag scanning_changes_done;
 
 	static void _thread_func_sources(void *_userdata);
 
@@ -267,6 +262,14 @@ class EditorFileSystem : public Node {
 	void _update_script_classes();
 	void _update_pending_script_classes();
 
+	Mutex update_scene_mutex;
+	HashSet<String> update_scene_paths;
+	void _queue_update_scene_groups(const String &p_path);
+	void _update_scene_groups();
+	void _update_pending_scene_groups();
+	HashSet<StringName> _get_scene_groups(const String &p_path);
+	void _get_all_scenes(EditorFileSystemDirectory *p_dir, HashSet<String> &r_list);
+
 	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
 
 	static Error _resource_import(const String &p_path);
@@ -278,11 +281,12 @@ class EditorFileSystem : public Node {
 	void _move_group_files(EditorFileSystemDirectory *efd, const String &p_group_file, const String &p_new_location);
 
 	HashSet<String> group_file_cache;
+	HashMap<String, String> file_icon_cache;
 
 	struct ImportThreadData {
 		const ImportFile *reimport_files;
 		int reimport_from;
-		int max_index = 0;
+		SafeNumeric<int> max_index;
 	};
 
 	void _reimport_thread(uint32_t p_index, ImportThreadData *p_import_data);
@@ -290,9 +294,12 @@ class EditorFileSystem : public Node {
 	static ResourceUID::ID _resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate);
 
 	bool _scan_extensions();
-	bool _scan_import_support(Vector<String> reimports);
+	bool _scan_import_support(const Vector<String> &reimports);
 
 	Vector<Ref<EditorFileSystemImportFormatSupportQuery>> import_support_queries;
+
+	void _update_file_icon_path(EditorFileSystemDirectory::FileInfo *file_info);
+	void _update_files_icon_path(EditorFileSystemDirectory *edp = nullptr);
 
 protected:
 	void _notification(int p_what);
@@ -304,11 +311,14 @@ public:
 	EditorFileSystemDirectory *get_filesystem();
 	bool is_scanning() const;
 	bool is_importing() const { return importing; }
+	bool doing_first_scan() const { return first_scan; }
 	float get_scanning_progress() const;
 	void scan();
 	void scan_changes();
 	void update_file(const String &p_file);
+	void update_files(const Vector<String> &p_script_paths);
 	HashSet<String> get_valid_extensions() const;
+	void register_global_class_script(const String &p_search_path, const String &p_target_path);
 
 	EditorFileSystemDirectory *get_filesystem_path(const String &p_path);
 	String get_file_type(const String &p_file) const;

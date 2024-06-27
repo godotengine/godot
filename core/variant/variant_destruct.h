@@ -35,7 +35,7 @@
 
 #include "core/object/class_db.h"
 
-template <class T>
+template <typename T>
 struct VariantDestruct {};
 
 #define MAKE_PTRDESTRUCT(m_type)                               \
@@ -65,6 +65,7 @@ MAKE_PTRDESTRUCT(PackedStringArray);
 MAKE_PTRDESTRUCT(PackedVector2Array);
 MAKE_PTRDESTRUCT(PackedVector3Array);
 MAKE_PTRDESTRUCT(PackedColorArray);
+MAKE_PTRDESTRUCT(PackedVector4Array);
 
 #undef MAKE_PTRDESTRUCT
 

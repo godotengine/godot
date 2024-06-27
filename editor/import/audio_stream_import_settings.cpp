@@ -31,8 +31,8 @@
 #include "audio_stream_import_settings.h"
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_file_system.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
 
 AudioStreamImportSettingsDialog *AudioStreamImportSettingsDialog::singleton = nullptr;
@@ -41,7 +41,7 @@ void AudioStreamImportSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AudioStreamImportSettingsDialog::_preview_changed));
-			connect("confirmed", callable_mp(this, &AudioStreamImportSettingsDialog::_reimport));
+			connect(SceneStringName(confirmed), callable_mp(this, &AudioStreamImportSettingsDialog::_reimport));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -52,13 +52,13 @@ void AudioStreamImportSettingsDialog::_notification(int p_what) {
 			color_rect->set_color(get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor)));
 
 			_current_label->begin_bulk_theme_override();
-			_current_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
-			_current_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
+			_current_label->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
+			_current_label->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
 			_current_label->end_bulk_theme_override();
 
 			_duration_label->begin_bulk_theme_override();
-			_duration_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
-			_duration_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
+			_duration_label->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
+			_duration_label->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
 			_duration_label->end_bulk_theme_override();
 
 			zoom_in->set_icon(get_editor_theme_icon(SNAME("ZoomMore")));
@@ -277,6 +277,8 @@ void AudioStreamImportSettingsDialog::_draw_indicator() {
 		rect.size.height -= y_ofs;
 	}
 
+	_current_label->set_text(String::num(_current, 2).pad_decimals(2) + " /");
+
 	float ofs_x = (_current - zoom_bar->get_value()) * rect.size.width / zoom_bar->get_page();
 	if (ofs_x < 0 || ofs_x >= rect.size.width) {
 		return;
@@ -310,8 +312,6 @@ void AudioStreamImportSettingsDialog::_draw_indicator() {
 			}
 		}
 	}
-
-	_current_label->set_text(String::num(_current, 2).pad_decimals(2) + " /");
 }
 
 void AudioStreamImportSettingsDialog::_on_indicator_mouse_exited() {
@@ -546,7 +546,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	loop_offset->set_step(0.001);
 	loop_offset->set_suffix("sec");
 	loop_offset->set_tooltip_text(TTR("Loop offset (from beginning). Note that if BPM is set, this setting will be ignored."));
-	loop_offset->connect("value_changed", callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
+	loop_offset->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	loop_hb->add_child(loop_offset);
 	main_vbox->add_margin_child(TTR("Loop:"), loop_hb);
 
@@ -560,7 +560,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	bpm_edit->set_max(400);
 	bpm_edit->set_step(0.01);
 	bpm_edit->set_tooltip_text(TTR("Configure the Beats Per Measure (tempo) used for the interactive streams.\nThis is required in order to configure beat information."));
-	bpm_edit->connect("value_changed", callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
+	bpm_edit->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(bpm_edit);
 	interactive_hb->add_spacer();
 	beats_enabled = memnew(CheckBox);
@@ -570,7 +570,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	beats_edit = memnew(SpinBox);
 	beats_edit->set_tooltip_text(TTR("Configure the amount of Beats used for music-aware looping. If zero, it will be autodetected from the length.\nIt is recommended to set this value (either manually or by clicking on a beat number in the preview) to ensure looping works properly."));
 	beats_edit->set_max(99999);
-	beats_edit->connect("value_changed", callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
+	beats_edit->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(beats_edit);
 	bar_beats_label = memnew(Label(TTR("Bar Beats:")));
 	interactive_hb->add_child(bar_beats_label);
@@ -578,7 +578,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	bar_beats_edit->set_tooltip_text(TTR("Configure the Beats Per Bar. This used for music-aware transitions between AudioStreams."));
 	bar_beats_edit->set_min(2);
 	bar_beats_edit->set_max(32);
-	bar_beats_edit->connect("value_changed", callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
+	bar_beats_edit->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(bar_beats_edit);
 	interactive_hb->add_spacer();
 	main_vbox->add_margin_child(TTR("Music Playback:"), interactive_hb);
@@ -590,7 +590,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	color_rect->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	_player = memnew(AudioStreamPlayer);
-	_player->connect("finished", callable_mp(this, &AudioStreamImportSettingsDialog::_on_finished));
+	_player->connect(SceneStringName(finished), callable_mp(this, &AudioStreamImportSettingsDialog::_on_finished));
 	color_rect->add_child(_player);
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
@@ -600,7 +600,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 
 	_preview = memnew(ColorRect);
 	_preview->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	_preview->connect("draw", callable_mp(this, &AudioStreamImportSettingsDialog::_draw_preview));
+	_preview->connect(SceneStringName(draw), callable_mp(this, &AudioStreamImportSettingsDialog::_draw_preview));
 	_preview->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbox->add_child(_preview);
 
@@ -618,17 +618,17 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	zoom_hbox->add_child(zoom_out);
 	zoom_hbox->add_child(zoom_reset);
 	zoom_hbox->add_child(zoom_in);
-	zoom_in->connect("pressed", callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_in));
-	zoom_reset->connect("pressed", callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_reset));
-	zoom_out->connect("pressed", callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_out));
-	zoom_bar->connect("value_changed", callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_offset_changed));
+	zoom_in->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_in));
+	zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_reset));
+	zoom_out->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_out));
+	zoom_bar->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_offset_changed));
 	vbox->add_child(zoom_hbox);
 
 	_indicator = memnew(Control);
 	_indicator->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	_indicator->connect("draw", callable_mp(this, &AudioStreamImportSettingsDialog::_draw_indicator));
-	_indicator->connect("gui_input", callable_mp(this, &AudioStreamImportSettingsDialog::_on_input_indicator));
-	_indicator->connect("mouse_exited", callable_mp(this, &AudioStreamImportSettingsDialog::_on_indicator_mouse_exited));
+	_indicator->connect(SceneStringName(draw), callable_mp(this, &AudioStreamImportSettingsDialog::_draw_indicator));
+	_indicator->connect(SceneStringName(gui_input), callable_mp(this, &AudioStreamImportSettingsDialog::_on_input_indicator));
+	_indicator->connect(SceneStringName(mouse_exited), callable_mp(this, &AudioStreamImportSettingsDialog::_on_indicator_mouse_exited));
 	_preview->add_child(_indicator);
 
 	HBoxContainer *hbox = memnew(HBoxContainer);
@@ -639,13 +639,13 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	_play_button->set_flat(true);
 	hbox->add_child(_play_button);
 	_play_button->set_focus_mode(Control::FOCUS_NONE);
-	_play_button->connect("pressed", callable_mp(this, &AudioStreamImportSettingsDialog::_play));
+	_play_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_play));
 
 	_stop_button = memnew(Button);
 	_stop_button->set_flat(true);
 	hbox->add_child(_stop_button);
 	_stop_button->set_focus_mode(Control::FOCUS_NONE);
-	_stop_button->connect("pressed", callable_mp(this, &AudioStreamImportSettingsDialog::_stop));
+	_stop_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_stop));
 
 	_current_label = memnew(Label);
 	_current_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);

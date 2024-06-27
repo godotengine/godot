@@ -30,8 +30,6 @@
 
 #include "atlas_texture.h"
 
-#include "core/core_string_names.h"
-
 int AtlasTexture::get_width() const {
 	if (region.size.width == 0) {
 		if (atlas.is_valid()) {

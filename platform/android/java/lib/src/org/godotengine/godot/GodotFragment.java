@@ -38,6 +38,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Messenger;
@@ -143,6 +144,13 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 	public void onDetach() {
 		super.onDetach();
 		parentHost = null;
+	}
+
+	@CallSuper
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		godot.onConfigurationChanged(newConfig);
 	}
 
 	@CallSuper
@@ -268,6 +276,32 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 		}
 
 		godot.onPause(this);
+	}
+
+	@Override
+	public void onStop() {
+		super.onStop();
+		if (!godot.isInitialized()) {
+			if (null != mDownloaderClientStub) {
+				mDownloaderClientStub.disconnect(getActivity());
+			}
+			return;
+		}
+
+		godot.onStop(this);
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+		if (!godot.isInitialized()) {
+			if (null != mDownloaderClientStub) {
+				mDownloaderClientStub.connect(getActivity());
+			}
+			return;
+		}
+
+		godot.onStart(this);
 	}
 
 	@Override

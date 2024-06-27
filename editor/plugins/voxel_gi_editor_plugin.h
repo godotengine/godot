@@ -31,7 +31,7 @@
 #ifndef VOXEL_GI_EDITOR_PLUGIN_H
 #define VOXEL_GI_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/3d/voxel_gi.h"
 #include "scene/resources/material.h"
 

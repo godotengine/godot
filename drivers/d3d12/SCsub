@@ -5,36 +5,37 @@ from pathlib import Path
 
 Import("env")
 
-env_d3d12_rd = env.Clone()
+env_d3d12_rdd = env.Clone()
 
 thirdparty_obj = []
 
 
 # DirectX Headers (must take precedence over Windows SDK's).
 
-env.Prepend(CPPPATH=["#thirdparty/directx_headers"])
-env_d3d12_rd.Prepend(CPPPATH=["#thirdparty/directx_headers"])
+env.Prepend(CPPPATH=["#thirdparty/directx_headers/include/directx"])
+env_d3d12_rdd.Prepend(CPPPATH=["#thirdparty/directx_headers/include/directx"])
+env_d3d12_rdd.Prepend(CPPPATH=["#thirdparty/directx_headers/include/dxguids"])
 
 
 # Direct3D 12 Memory Allocator.
 
 env.Append(CPPPATH=["#thirdparty/d3d12ma"])
-env_d3d12_rd.Append(CPPPATH=["#thirdparty/d3d12ma"])
+env_d3d12_rdd.Append(CPPPATH=["#thirdparty/d3d12ma"])
 
 
 # Agility SDK.
 
-if env["agility_sdk_path"] != "":
-    env_d3d12_rd.Append(CPPDEFINES=["AGILITY_SDK_ENABLED"])
+if env["agility_sdk_path"] != "" and os.path.exists(env["agility_sdk_path"]):
+    env_d3d12_rdd.Append(CPPDEFINES=["AGILITY_SDK_ENABLED"])
     if env["agility_sdk_multiarch"]:
-        env_d3d12_rd.Append(CPPDEFINES=["AGILITY_SDK_MULTIARCH_ENABLED"])
+        env_d3d12_rdd.Append(CPPDEFINES=["AGILITY_SDK_MULTIARCH_ENABLED"])
 
 
 # PIX.
 
-if env["pix_path"] != "":
-    env_d3d12_rd.Append(CPPDEFINES=["PIX_ENABLED"])
-    env_d3d12_rd.Append(CPPPATH=[env["pix_path"] + "/Include"])
+if env["use_pix"]:
+    env_d3d12_rdd.Append(CPPDEFINES=["PIX_ENABLED"])
+    env_d3d12_rdd.Append(CPPPATH=[env["pix_path"] + "/Include"])
 
 
 # Mesa (SPIR-V to DXIL functionality).
@@ -105,12 +106,16 @@ extra_defines = [
     "WINDOWS_NO_FUTEX",
 ]
 
+mesa_ver = Path(mesa_absdir + "/VERSION.info")
+if not mesa_ver.is_file():
+    mesa_ver = Path(mesa_absdir + "/VERSION")
+
 # These defines are inspired by the Meson build scripts in the original repo.
 extra_defines += [
     "__STDC_CONSTANT_MACROS",
     "__STDC_FORMAT_MACROS",
     "__STDC_LIMIT_MACROS",
-    ("PACKAGE_VERSION", '\\"' + Path(mesa_absdir + "/VERSION").read_text().strip() + '\\"'),
+    ("PACKAGE_VERSION", '\\"' + mesa_ver.read_text().strip() + '\\"'),
     ("PACKAGE_BUGREPORT", '\\"https://gitlab.freedesktop.org/mesa/mesa/-/issues\\"'),
     "PIPE_SUBSYSTEM_WINDOWS_USER",
     ("_Static_assert", "static_assert"),
@@ -129,11 +134,16 @@ if env.msvc:
         "NOMINMAX",
         "HAVE_STRUCT_TIMESPEC",
     ]
+else:
+    extra_defines += [
+        ("__REQUIRED_RPCNDR_H_VERSION__", 475),
+        "HAVE_STRUCT_TIMESPEC",
+    ]
 
 # This is needed since rendering_device_d3d12.cpp needs to include some Mesa internals.
-env_d3d12_rd.Prepend(CPPPATH=mesa_private_inc_paths)
+env_d3d12_rdd.Prepend(CPPPATH=mesa_private_inc_paths)
 # For the same reason as above, the defines must be the same as in the 3rd-party code itself.
-env_d3d12_rd.Append(CPPDEFINES=extra_defines)
+env_d3d12_rdd.Append(CPPDEFINES=extra_defines)
 
 
 # Add all.
@@ -144,7 +154,7 @@ env.drivers_sources += thirdparty_obj
 # Godot source files.
 
 driver_obj = []
-env_d3d12_rd.add_source_files(driver_obj, "*.cpp")
+env_d3d12_rdd.add_source_files(driver_obj, "*.cpp")
 env.drivers_sources += driver_obj
 
 # Needed to force rebuilding the driver files when the thirdparty code is updated.

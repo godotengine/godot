@@ -4,7 +4,7 @@
 		Imports a glTF, FBX, Collada or Blender 3D scene.
 	</brief_description>
 	<description>
-		See also [ResourceImporterOBJ], which is used for OBJ models that can be imported as a standalone [Mesh] or a scene.
+		See also [ResourceImporterOBJ], which is used for OBJ models that can be imported as an independent [Mesh] or a scene.
 		Additional options (such as extracting individual meshes or materials to files) are available in the [b]Advanced Import Settings[/b] dialog. This dialog can be accessed by double-clicking a 3D scene in the FileSystem dock or by selecting a 3D scene in the FileSystem dock, going to the Import dock and choosing [b]Advanced[/b].
 		[b]Note:[/b] [ResourceImporterScene] is [i]not[/i] used for [PackedScene]s, such as [code].tscn[/code] and [code].scn[/code] files.
 	</description>
@@ -20,6 +20,9 @@
 		</member>
 		<member name="animation/import" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], import animations from the 3D scene.
+		</member>
+		<member name="animation/import_rest_as_RESET" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], adds an [Animation] named [code]RESET[/code], containing the [method Skeleton3D.get_bone_rest] from [Skeleton3D] nodes. This can be useful to extract an animation in the reference pose.
 		</member>
 		<member name="animation/remove_immutable_tracks" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], remove animation tracks that only contain default values. This can reduce output file size and memory usage with certain 3D scenes, depending on the contents of their animation tracks.
@@ -52,6 +55,9 @@
 		</member>
 		<member name="nodes/apply_root_scale" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], [member nodes/root_scale] will be applied to the descendant nodes, meshes, animations, bones, etc. This means that if you add a child node later on within the imported scene, it won't be scaled. If [code]false[/code], [member nodes/root_scale] will multiply the scale of the root node instead.
+		</member>
+		<member name="nodes/import_as_skeleton_bones" type="bool" setter="" getter="" default="false">
+			Treat all nodes in the imported scene as if they are bones within a single [Skeleton3D]. Can be used to guarantee that imported animations target skeleton bones rather than nodes. May also be used to assign the [code]"Root"[/code] bone in a [BoneMap]. See [url=$DOCS_URL/tutorials/assets_pipeline/retargeting_3d_skeletons.html]Retargeting 3D Skeletons[/url] for more information.
 		</member>
 		<member name="nodes/root_name" type="String" setter="" getter="" default="&quot;&quot;">
 			Override for the root node name. If empty, the root node will use what the scene specifies, or the file name if the scene does not specify a root name.

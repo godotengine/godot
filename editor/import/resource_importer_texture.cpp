@@ -36,10 +36,10 @@
 #include "core/version.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
-#include "editor/editor_settings.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/import/resource_importer_texture_settings.h"
+#include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/resources/compressed_texture.h"
 
 void ResourceImporterTexture::_texture_reimport_roughness(const Ref<CompressedTexture2D> &p_tex, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_channel) {
@@ -269,9 +269,9 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 				Vector<uint8_t> data;
 				if (use_webp) {
-					data = Image::webp_lossless_packer(p_image->get_image_from_mipmap(i));
+					data = Image::webp_lossless_packer(i ? p_image->get_image_from_mipmap(i) : p_image);
 				} else {
-					data = Image::png_packer(p_image->get_image_from_mipmap(i));
+					data = Image::png_packer(i ? p_image->get_image_from_mipmap(i) : p_image);
 				}
 				int data_len = data.size();
 				f->store_32(data_len);
@@ -289,7 +289,7 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 			f->store_32(p_image->get_format());
 
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
-				Vector<uint8_t> data = Image::webp_lossy_packer(p_image->get_image_from_mipmap(i), p_lossy_quality);
+				Vector<uint8_t> data = Image::webp_lossy_packer(i ? p_image->get_image_from_mipmap(i) : p_image, p_lossy_quality);
 				int data_len = data.size();
 				f->store_32(data_len);
 
@@ -696,7 +696,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 			editor_meta["editor_scale"] = EDSCALE;
 		}
 		if (convert_editor_colors) {
-			editor_meta["editor_dark_theme"] = EditorSettings::get_singleton()->is_dark_theme();
+			editor_meta["editor_dark_theme"] = EditorThemeManager::is_dark_theme();
 		}
 
 		_save_editor_meta(editor_meta, p_save_path + ".editor.meta");
@@ -745,13 +745,17 @@ bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) co
 
 	if (meta.has("has_editor_variant")) {
 		String imported_path = ResourceFormatImporter::get_singleton()->get_internal_resource_path(p_path);
+		if (!FileAccess::exists(imported_path)) {
+			return false;
+		}
+
 		String editor_meta_path = imported_path.replace(".editor.ctex", ".editor.meta");
 		Dictionary editor_meta = _load_editor_meta(editor_meta_path);
 
 		if (editor_meta.has("editor_scale") && (float)editor_meta["editor_scale"] != EDSCALE) {
 			return false;
 		}
-		if (editor_meta.has("editor_dark_theme") && (bool)editor_meta["editor_dark_theme"] != EditorSettings::get_singleton()->is_dark_theme()) {
+		if (editor_meta.has("editor_dark_theme") && (bool)editor_meta["editor_dark_theme"] != EditorThemeManager::is_dark_theme()) {
 			return false;
 		}
 	}

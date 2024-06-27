@@ -45,7 +45,8 @@ struct cvar
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
-		  version.sanitize (c) && likely (version.major == 1) &&
+		  hb_barrier () &&
+		  likely (version.major == 1) &&
 		  tupleVariationData.sanitize (c));
   }
 

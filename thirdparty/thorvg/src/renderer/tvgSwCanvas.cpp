@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  */
 
 #include "tvgCanvas.h"
+#include "tvgLoadModule.h"
 
 #ifdef THORVG_SW_RASTER_SUPPORT
     #include "tvgSwRenderer.h"
@@ -86,9 +87,14 @@ Result SwCanvas::target(uint32_t* buffer, uint32_t stride, uint32_t w, uint32_t 
     if (!renderer) return Result::MemoryCorruption;
 
     if (!renderer->target(buffer, stride, w, h, static_cast<ColorSpace>(cs))) return Result::InvalidArguments;
+    Canvas::pImpl->vport = {0, 0, (int32_t)w, (int32_t)h};
+    renderer->viewport(Canvas::pImpl->vport);
 
     //Paints must be updated again with this new target.
     Canvas::pImpl->needRefresh();
+
+    //FIXME: The value must be associated with an individual canvas instance.
+    ImageLoader::cs = static_cast<ColorSpace>(cs);
 
     return Result::Success;
 #endif

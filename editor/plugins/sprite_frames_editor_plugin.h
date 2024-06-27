@@ -31,7 +31,7 @@
 #ifndef SPRITE_FRAMES_EDITOR_PLUGIN_H
 #define SPRITE_FRAMES_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/gui/button.h"
@@ -49,12 +49,15 @@
 class OptionButton;
 class EditorFileDialog;
 
-class EditorSpriteFramesFrame : public Resource {
-	GDCLASS(EditorSpriteFramesFrame, Resource);
+class ClipboardSpriteFrames : public Resource {
+	GDCLASS(ClipboardSpriteFrames, Resource);
 
 public:
-	Ref<Texture2D> texture;
-	float duration;
+	struct Frame {
+		Ref<Texture2D> texture;
+		float duration;
+	};
+	Vector<Frame> frames;
 };
 
 class SpriteFramesEditor : public HSplitContainer {
@@ -115,7 +118,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	SpinBox *frame_duration = nullptr;
 	ItemList *frame_list = nullptr;
 	bool loading_scene;
-	int sel;
+	Vector<int> selection;
 
 	Button *add_anim = nullptr;
 	Button *delete_anim = nullptr;
@@ -164,6 +167,8 @@ class SpriteFramesEditor : public HSplitContainer {
 	bool frames_need_sort = false;
 	int last_frame_selected = 0;
 
+	Size2i previous_texture_size;
+
 	float scale_ratio;
 	int thumbnail_default_size;
 	float thumbnail_zoom;
@@ -182,6 +187,9 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _file_load_request(const Vector<String> &p_path, int p_at_pos = -1);
 	void _copy_pressed();
 	void _paste_pressed();
+	void _paste_frame_array(const Ref<ClipboardSpriteFrames> &p_clipboard_frames);
+	void _paste_texture(const Ref<Texture2D> &p_texture);
+
 	void _empty_pressed();
 	void _empty2_pressed();
 	void _delete_pressed();
@@ -209,7 +217,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_speed_changed(double p_value);
 
 	void _frame_list_gui_input(const Ref<InputEvent> &p_event);
-	void _frame_list_item_selected(int p_index);
+	void _frame_list_item_selected(int p_index, bool p_selected);
 
 	void _zoom_in();
 	void _zoom_out();
@@ -245,7 +253,6 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _update_show_settings();
 
 	void _edit();
-	void _regist_scene_undo(EditorUndoRedoManager *undo_redo);
 	void _fetch_sprite_node();
 	void _remove_sprite_node();
 
@@ -262,6 +269,8 @@ protected:
 
 public:
 	void edit(Ref<SpriteFrames> p_frames);
+	Ref<SpriteFrames> get_sprite_frames() const;
+
 	SpriteFramesEditor();
 };
 

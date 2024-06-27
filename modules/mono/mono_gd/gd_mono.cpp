@@ -53,13 +53,6 @@
 #include <dlfcn.h>
 #endif
 
-// TODO mobile
-#if 0
-#ifdef IOS_ENABLED
-#include "support/ios_support.h"
-#endif
-#endif
-
 GDMono *GDMono::singleton = nullptr;
 
 namespace {
@@ -395,6 +388,7 @@ void GDMono::initialize() {
 
 		if (godot_plugins_initialize != nullptr) {
 			is_native_aot = true;
+			runtime_initialized = true;
 		} else {
 			ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 		}
@@ -570,11 +564,7 @@ namespace mono_bind {
 
 GodotSharp *GodotSharp::singleton = nullptr;
 
-bool GodotSharp::_is_runtime_initialized() {
-	return GDMono::get_singleton() != nullptr && GDMono::get_singleton()->is_runtime_initialized();
-}
-
-void GodotSharp::_reload_assemblies(bool p_soft_reload) {
+void GodotSharp::reload_assemblies(bool p_soft_reload) {
 #ifdef GD_MONO_HOT_RELOAD
 	CRASH_COND(CSharpLanguage::get_singleton() == nullptr);
 	// This method may be called more than once with `call_deferred`, so we need to check
@@ -583,11 +573,6 @@ void GodotSharp::_reload_assemblies(bool p_soft_reload) {
 		CSharpLanguage::get_singleton()->reload_assemblies(p_soft_reload);
 	}
 #endif
-}
-
-void GodotSharp::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("is_runtime_initialized"), &GodotSharp::_is_runtime_initialized);
-	ClassDB::bind_method(D_METHOD("_reload_assemblies"), &GodotSharp::_reload_assemblies);
 }
 
 GodotSharp::GodotSharp() {

@@ -2,14 +2,16 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'base'
 }
 
 dependencies {
-    implementation libraries.kotlinStdLib
-    implementation libraries.androidxFragment
+    implementation "androidx.fragment:fragment:$versions.fragmentVersion"
     implementation project(":lib")
 
-    implementation "androidx.window:window:1.0.0"
+    implementation "androidx.window:window:1.2.0"
+    implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
+    implementation "androidx.constraintlayout:constraintlayout:2.1.4"
 }
 
 ext {
@@ -20,7 +22,7 @@ ext {
         String versionStatus = System.getenv("GODOT_VERSION_STATUS")
         if (versionStatus != null && !versionStatus.isEmpty()) {
             try {
-                buildNumber = Integer.parseInt(versionStatus.replaceAll("[^0-9]", ""));
+                buildNumber = Integer.parseInt(versionStatus.replaceAll("[^0-9]", ""))
             } catch (NumberFormatException ignored) {
                 buildNumber = 0
             }
@@ -81,6 +83,8 @@ android {
     buildToolsVersion versions.buildTools
     ndkVersion versions.ndkVersion
 
+    namespace = "org.godotengine.editor"
+
     defaultConfig {
         // The 'applicationId' suffix allows to install Godot 3.x(v3) and 4.x(v4) on the same device
         applicationId "org.godotengine.editor.v4"
@@ -90,7 +94,14 @@ android {
         targetSdkVersion versions.targetSdk
 
         missingDimensionStrategy 'products', 'editor'
-        setProperty("archivesBaseName", "android_editor")
+        manifestPlaceholders += [
+            editorAppName: "Godot Editor 4",
+            editorBuildSuffix: ""
+        ]
+    }
+
+    base {
+        archivesName = "android_editor"
     }
 
     compileOptions {
@@ -111,15 +122,21 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
         dev {
             initWith debug
             applicationIdSuffix ".dev"
+            manifestPlaceholders += [editorBuildSuffix: " (dev)"]
         }
 
         debug {
             initWith release
             applicationIdSuffix ".debug"
+            manifestPlaceholders += [editorBuildSuffix: " (debug)"]
             signingConfig signingConfigs.debug
         }
 

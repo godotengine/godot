@@ -29,13 +29,16 @@
 /**************************************************************************/
 
 #include "audio_stream_player_3d.h"
+#include "audio_stream_player_3d.compat.inc"
 
 #include "core/config/project_settings.h"
-#include "scene/3d/area_3d.h"
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/3d/physics/area_3d.h"
+#include "scene/3d/velocity_tracker_3d.h"
+#include "scene/audio/audio_stream_player_internal.h"
 #include "scene/main/viewport.h"
-#include "scene/scene_string_names.h"
+#include "servers/audio/audio_stream.h"
 
 // Based on "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations" by Ramy Sadek and Chris Kyriakakis (2004)
 // Speaker-Placement Correction Amplitude Panning (SPCAP)
@@ -51,8 +54,8 @@ private:
 
 public:
 	Spcap(unsigned int speaker_count, const Vector3 *speaker_directions) {
-		this->speakers.resize(speaker_count);
-		Speaker *w = this->speakers.ptrw();
+		speakers.resize(speaker_count);
+		Speaker *w = speakers.ptrw();
 		for (unsigned int speaker_num = 0; speaker_num < speaker_count; speaker_num++) {
 			w[speaker_num].direction = speaker_directions[speaker_num];
 			w[speaker_num].squared_gain = 0.0;
@@ -64,23 +67,23 @@ public:
 	}
 
 	unsigned int get_speaker_count() const {
-		return (unsigned int)this->speakers.size();
+		return (unsigned int)speakers.size();
 	}
 
 	Vector3 get_speaker_direction(unsigned int index) const {
-		return this->speakers.ptr()[index].direction;
+		return speakers.ptr()[index].direction;
 	}
 
 	void calculate(const Vector3 &source_direction, real_t tightness, unsigned int volume_count, real_t *volumes) const {
-		const Speaker *r = this->speakers.ptr();
+		const Speaker *r = speakers.ptr();
 		real_t sum_squared_gains = 0.0;
-		for (unsigned int speaker_num = 0; speaker_num < (unsigned int)this->speakers.size(); speaker_num++) {
+		for (unsigned int speaker_num = 0; speaker_num < (unsigned int)speakers.size(); speaker_num++) {
 			real_t initial_gain = 0.5 * powf(1.0 + r[speaker_num].direction.dot(source_direction), tightness) / r[speaker_num].effective_number_of_speakers;
 			r[speaker_num].squared_gain = initial_gain * initial_gain;
 			sum_squared_gains += r[speaker_num].squared_gain;
 		}
 
-		for (unsigned int speaker_num = 0; speaker_num < MIN(volume_count, (unsigned int)this->speakers.size()); speaker_num++) {
+		for (unsigned int speaker_num = 0; speaker_num < MIN(volume_count, (unsigned int)speakers.size()); speaker_num++) {
 			volumes[speaker_num] = sqrtf(r[speaker_num].squared_gain / sum_squared_gains);
 		}
 	}
@@ -120,20 +123,20 @@ void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tig
 
 	switch (AudioServer::get_singleton()->get_speaker_mode()) {
 		case AudioServer::SPEAKER_SURROUND_71:
-			output.write[3].l = volumes[5]; // side-left
-			output.write[3].r = volumes[6]; // side-right
+			output.write[3].left = volumes[5]; // side-left
+			output.write[3].right = volumes[6]; // side-right
 			[[fallthrough]];
 		case AudioServer::SPEAKER_SURROUND_51:
-			output.write[2].l = volumes[3]; // rear-left
-			output.write[2].r = volumes[4]; // rear-right
+			output.write[2].left = volumes[3]; // rear-left
+			output.write[2].right = volumes[4]; // rear-right
 			[[fallthrough]];
 		case AudioServer::SPEAKER_SURROUND_31:
-			output.write[1].r = 1.0; // LFE - always full power
-			output.write[1].l = volumes[2]; // center
+			output.write[1].right = 1.0; // LFE - always full power
+			output.write[1].left = volumes[2]; // center
 			[[fallthrough]];
 		case AudioServer::SPEAKER_MODE_STEREO:
-			output.write[0].r = volumes[1]; // front-right
-			output.write[0].l = volumes[0]; // front-left
+			output.write[0].right = volumes[1]; // front-right
+			output.write[0].left = volumes[0]; // front-left
 			break;
 	}
 }
@@ -165,25 +168,25 @@ void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, Vector3 listener_area_p
 
 			// Stereo pair.
 			float c = rev_pos.x * 0.5 + 0.5;
-			reverb_vol.write[0].l = 1.0 - c;
-			reverb_vol.write[0].r = c;
+			reverb_vol.write[0].left = 1.0 - c;
+			reverb_vol.write[0].right = c;
 
 			if (channel_count >= 3) {
 				// Center pair + Side pair
 				float xl = Vector3(-1, 0, -1).normalized().dot(rev_pos) * 0.5 + 0.5;
 				float xr = Vector3(1, 0, -1).normalized().dot(rev_pos) * 0.5 + 0.5;
 
-				reverb_vol.write[1].l = xl;
-				reverb_vol.write[1].r = xr;
-				reverb_vol.write[2].l = 1.0 - xr;
-				reverb_vol.write[2].r = 1.0 - xl;
+				reverb_vol.write[1].left = xl;
+				reverb_vol.write[1].right = xr;
+				reverb_vol.write[2].left = 1.0 - xr;
+				reverb_vol.write[2].right = 1.0 - xl;
 			}
 
 			if (channel_count >= 4) {
 				// Rear pair
 				// FIXME: Not sure what math should be done here
-				reverb_vol.write[3].l = 1.0 - c;
-				reverb_vol.write[3].r = c;
+				reverb_vol.write[3].left = 1.0 - c;
+				reverb_vol.write[3].right = c;
 			}
 
 			for (int i = 0; i < channel_count; i++) {
@@ -229,7 +232,7 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 		}
 	}
 
-	att += volume_db;
+	att += internal->volume_db;
 	if (att > max_db) {
 		att = max_db;
 	}
@@ -238,34 +241,15 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 }
 
 void AudioStreamPlayer3D::_notification(int p_what) {
+	internal->notification(p_what);
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			velocity_tracker->reset(get_global_transform().origin);
 			AudioServer::get_singleton()->add_listener_changed_callback(_listener_changed_cb, this);
-			if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
-				play();
-			}
-			set_stream_paused(!can_process());
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			set_stream_paused(true);
 			AudioServer::get_singleton()->remove_listener_changed_callback(_listener_changed_cb, this);
-		} break;
-
-		case NOTIFICATION_PREDELETE: {
-			stop();
-		} break;
-
-		case NOTIFICATION_PAUSED: {
-			if (!can_process()) {
-				// Node can't process so we start fading out to silence.
-				set_stream_paused(true);
-			}
-		} break;
-
-		case NOTIFICATION_UNPAUSED: {
-			set_stream_paused(false);
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -277,13 +261,13 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			// Update anything related to position first, if possible of course.
 			Vector<AudioFrame> volume_vector;
-			if (setplay.get() > 0 || (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count()) || force_update_panning) {
+			if (setplay.get() > 0 || (internal->active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count()) || force_update_panning) {
 				force_update_panning = false;
 				volume_vector = _update_panning();
 			}
 
 			if (setplayback.is_valid() && setplay.get() >= 0) {
-				active.set();
+				internal->active.set();
 				HashMap<StringName, Vector<AudioFrame>> bus_map;
 				bus_map[_get_actual_bus()] = volume_vector;
 				AudioServer::get_singleton()->start_playback_stream(setplayback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
@@ -291,32 +275,10 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				setplay.set(-1);
 			}
 
-			if (!stream_playbacks.is_empty() && active.is_set()) {
-				// Stop playing if no longer active.
-				Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
-				for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
-					if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
-						playbacks_to_remove.push_back(playback);
-					}
-				}
-				// Now go through and remove playbacks that have finished. Removing elements from a Vector in a range based for is asking for trouble.
-				for (Ref<AudioStreamPlayback> &playback : playbacks_to_remove) {
-					stream_playbacks.erase(playback);
-				}
-				if (!playbacks_to_remove.is_empty() && stream_playbacks.is_empty()) {
-					// This node is no longer actively playing audio.
-					active.clear();
-					set_physics_process_internal(false);
-				}
-				if (!playbacks_to_remove.is_empty()) {
-					emit_signal(SNAME("finished"));
-				}
+			if (!internal->stream_playbacks.is_empty() && internal->active.is_set()) {
+				internal->process();
 			}
-
-			while (stream_playbacks.size() > max_polyphony) {
-				AudioServer::get_singleton()->stop_playback_stream(stream_playbacks[0]);
-				stream_playbacks.remove_at(0);
-			}
+			internal->ensure_playback_limit();
 		} break;
 	}
 }
@@ -360,16 +322,16 @@ Area3D *AudioStreamPlayer3D::_get_overriding_area() {
 	return nullptr;
 }
 
-// Interacts with PhysicsServer3D, so can only be called during _physics_process
+// Interacts with PhysicsServer3D, so can only be called during _physics_process.
 StringName AudioStreamPlayer3D::_get_actual_bus() {
 	Area3D *overriding_area = _get_overriding_area();
 	if (overriding_area && overriding_area->is_overriding_audio_bus() && !overriding_area->is_using_reverb_bus()) {
 		return overriding_area->get_audio_bus_name();
 	}
-	return bus;
+	return internal->bus;
 }
 
-// Interacts with PhysicsServer3D, so can only be called during _physics_process
+// Interacts with PhysicsServer3D, so can only be called during _physics_process.
 Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	Vector<AudioFrame> output_volume_vector;
 	output_volume_vector.resize(4);
@@ -377,7 +339,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		frame = AudioFrame(0, 0);
 	}
 
-	if (!active.is_set() || stream.is_null()) {
+	if (!internal->active.is_set() || internal->stream.is_null()) {
 		return output_volume_vector;
 	}
 
@@ -461,7 +423,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		}
 
 		linear_attenuation = Math::db_to_linear(db_att);
-		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
 			AudioServer::get_singleton()->set_playback_highshelf_params(playback, linear_attenuation, attenuation_filter_cutoff_hz);
 		}
 		// Bake in a constant factor here to allow the project setting defaults for 2d and 3d to be normalized to 1.0.
@@ -487,10 +449,10 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 				bus_volumes[reverb_bus_name] = reverb_vol;
 			}
 		} else {
-			bus_volumes[bus] = output_volume_vector;
+			bus_volumes[internal->bus] = output_volume_vector;
 		}
 
-		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
 			AudioServer::get_singleton()->set_playback_bus_volumes_linear(playback, bus_volumes);
 		}
 
@@ -508,38 +470,44 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 				float velocity = local_velocity.length();
 				float speed_of_sound = 343.0;
 
-				float doppler_pitch_scale = pitch_scale * speed_of_sound / (speed_of_sound + velocity * approaching);
+				float doppler_pitch_scale = internal->pitch_scale * speed_of_sound / (speed_of_sound + velocity * approaching);
 				doppler_pitch_scale = CLAMP(doppler_pitch_scale, (1 / 8.0), 8.0); //avoid crazy stuff
 
 				actual_pitch_scale = doppler_pitch_scale;
 			} else {
-				actual_pitch_scale = pitch_scale;
+				actual_pitch_scale = internal->pitch_scale;
 			}
 		} else {
-			actual_pitch_scale = pitch_scale;
+			actual_pitch_scale = internal->pitch_scale;
 		}
-		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
 			AudioServer::get_singleton()->set_playback_pitch_scale(playback, actual_pitch_scale);
+			if (playback->get_is_sample()) {
+				Ref<AudioSamplePlayback> sample_playback = playback->get_sample_playback();
+				if (sample_playback.is_valid()) {
+					AudioServer::get_singleton()->update_sample_playback_pitch_scale(sample_playback, actual_pitch_scale);
+				}
+			}
 		}
 	}
 	return output_volume_vector;
 }
 
 void AudioStreamPlayer3D::set_stream(Ref<AudioStream> p_stream) {
-	stop();
-	stream = p_stream;
+	internal->set_stream(p_stream);
 }
 
 Ref<AudioStream> AudioStreamPlayer3D::get_stream() const {
-	return stream;
+	return internal->stream;
 }
 
 void AudioStreamPlayer3D::set_volume_db(float p_volume) {
-	volume_db = p_volume;
+	ERR_FAIL_COND_MSG(Math::is_nan(p_volume), "Volume can't be set to NaN.");
+	internal->volume_db = p_volume;
 }
 
 float AudioStreamPlayer3D::get_volume_db() const {
-	return volume_db;
+	return internal->volume_db;
 }
 
 void AudioStreamPlayer3D::set_unit_size(float p_volume) {
@@ -560,30 +528,29 @@ float AudioStreamPlayer3D::get_max_db() const {
 }
 
 void AudioStreamPlayer3D::set_pitch_scale(float p_pitch_scale) {
-	ERR_FAIL_COND(!(p_pitch_scale > 0.0));
-	pitch_scale = p_pitch_scale;
+	internal->set_pitch_scale(p_pitch_scale);
 }
 
 float AudioStreamPlayer3D::get_pitch_scale() const {
-	return pitch_scale;
+	return internal->pitch_scale;
 }
 
 void AudioStreamPlayer3D::play(float p_from_pos) {
-	if (stream.is_null()) {
+	Ref<AudioStreamPlayback> stream_playback = internal->play_basic();
+	if (stream_playback.is_null()) {
 		return;
 	}
-	ERR_FAIL_COND_MSG(!is_inside_tree(), "Playback can only happen when a node is inside the scene tree");
-	if (stream->is_monophonic() && is_playing()) {
-		stop();
-	}
-	Ref<AudioStreamPlayback> stream_playback = stream->instantiate_playback();
-	ERR_FAIL_COND_MSG(stream_playback.is_null(), "Failed to instantiate playback.");
-
-	stream_playbacks.push_back(stream_playback);
 	setplayback = stream_playback;
 	setplay.set(p_from_pos);
-	active.set();
-	set_physics_process_internal(true);
+
+	// Sample handling.
+	if (stream_playback->get_is_sample()) {
+		Ref<AudioSamplePlayback> sample_playback = stream_playback->get_sample_playback();
+		sample_playback->offset = p_from_pos;
+		sample_playback->bus = _get_actual_bus();
+
+		AudioServer::get_singleton()->start_sample_playback(sample_playback);
+	}
 }
 
 void AudioStreamPlayer3D::seek(float p_seconds) {
@@ -595,83 +562,46 @@ void AudioStreamPlayer3D::seek(float p_seconds) {
 
 void AudioStreamPlayer3D::stop() {
 	setplay.set(-1);
-	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
-		AudioServer::get_singleton()->stop_playback_stream(playback);
-	}
-	stream_playbacks.clear();
-	active.clear();
-	set_physics_process_internal(false);
+	internal->stop();
 }
 
 bool AudioStreamPlayer3D::is_playing() const {
-	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {
-		if (AudioServer::get_singleton()->is_playback_active(playback)) {
-			return true;
-		}
-	}
 	if (setplay.get() >= 0) {
 		return true; // play() has been called this frame, but no playback exists just yet.
 	}
-	return false;
+	return internal->is_playing();
 }
 
 float AudioStreamPlayer3D::get_playback_position() {
-	// Return the playback position of the most recently started playback stream.
-	if (!stream_playbacks.is_empty()) {
-		return AudioServer::get_singleton()->get_playback_position(stream_playbacks[stream_playbacks.size() - 1]);
-	}
-	return 0;
+	return internal->get_playback_position();
 }
 
 void AudioStreamPlayer3D::set_bus(const StringName &p_bus) {
-	//if audio is active, must lock this
-	AudioServer::get_singleton()->lock();
-	bus = p_bus;
-	AudioServer::get_singleton()->unlock();
+	internal->bus = p_bus; // This will be pushed to the audio server during the next physics timestep, which is fast enough.
 }
 
 StringName AudioStreamPlayer3D::get_bus() const {
-	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-		if (AudioServer::get_singleton()->get_bus_name(i) == bus) {
-			return bus;
-		}
-	}
-	return SceneStringNames::get_singleton()->Master;
+	return internal->get_bus();
 }
 
 void AudioStreamPlayer3D::set_autoplay(bool p_enable) {
-	autoplay = p_enable;
+	internal->autoplay = p_enable;
 }
 
-bool AudioStreamPlayer3D::is_autoplay_enabled() {
-	return autoplay;
+bool AudioStreamPlayer3D::is_autoplay_enabled() const {
+	return internal->autoplay;
 }
 
 void AudioStreamPlayer3D::_set_playing(bool p_enable) {
-	if (p_enable) {
-		play();
-	} else {
-		stop();
-	}
+	internal->set_playing(p_enable);
 }
 
 bool AudioStreamPlayer3D::_is_active() const {
-	return active.is_set();
+	return internal->is_active();
 }
 
 void AudioStreamPlayer3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "bus") {
-		String options;
-		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			if (i > 0) {
-				options += ",";
-			}
-			String name = AudioServer::get_singleton()->get_bus_name(i);
-			options += name;
-		}
-
-		p_property.hint_string = options;
-	}
+	internal->validate_property(p_property);
 }
 
 void AudioStreamPlayer3D::set_max_distance(float p_metres) {
@@ -768,37 +698,27 @@ AudioStreamPlayer3D::DopplerTracking AudioStreamPlayer3D::get_doppler_tracking()
 }
 
 void AudioStreamPlayer3D::set_stream_paused(bool p_pause) {
-	// TODO this does not have perfect recall, fix that maybe? If there are zero playbacks registered with the AudioServer, this bool isn't persisted.
-	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
-		AudioServer::get_singleton()->set_playback_paused(playback, p_pause);
-	}
+	internal->set_stream_paused(p_pause);
 }
 
 bool AudioStreamPlayer3D::get_stream_paused() const {
-	// There's currently no way to pause some playback streams but not others. Check the first and don't bother looking at the rest.
-	if (!stream_playbacks.is_empty()) {
-		return AudioServer::get_singleton()->is_playback_paused(stream_playbacks[0]);
-	}
-	return false;
+	return internal->get_stream_paused();
 }
 
 bool AudioStreamPlayer3D::has_stream_playback() {
-	return !stream_playbacks.is_empty();
+	return internal->has_stream_playback();
 }
 
 Ref<AudioStreamPlayback> AudioStreamPlayer3D::get_stream_playback() {
-	ERR_FAIL_COND_V_MSG(stream_playbacks.is_empty(), Ref<AudioStreamPlayback>(), "Player is inactive. Call play() before requesting get_stream_playback().");
-	return stream_playbacks[stream_playbacks.size() - 1];
+	return internal->get_stream_playback();
 }
 
 void AudioStreamPlayer3D::set_max_polyphony(int p_max_polyphony) {
-	if (p_max_polyphony > 0) {
-		max_polyphony = p_max_polyphony;
-	}
+	internal->set_max_polyphony(p_max_polyphony);
 }
 
 int AudioStreamPlayer3D::get_max_polyphony() const {
-	return max_polyphony;
+	return internal->max_polyphony;
 }
 
 void AudioStreamPlayer3D::set_panning_strength(float p_panning_strength) {
@@ -810,12 +730,24 @@ float AudioStreamPlayer3D::get_panning_strength() const {
 	return panning_strength;
 }
 
-void AudioStreamPlayer3D::_on_bus_layout_changed() {
-	notify_property_list_changed();
+AudioServer::PlaybackType AudioStreamPlayer3D::get_playback_type() const {
+	return internal->get_playback_type();
 }
 
-void AudioStreamPlayer3D::_on_bus_renamed(int p_bus_index, const StringName &p_old_name, const StringName &p_new_name) {
-	notify_property_list_changed();
+void AudioStreamPlayer3D::set_playback_type(AudioServer::PlaybackType p_playback_type) {
+	internal->set_playback_type(p_playback_type);
+}
+
+bool AudioStreamPlayer3D::_set(const StringName &p_name, const Variant &p_value) {
+	return internal->set(p_name, p_value);
+}
+
+bool AudioStreamPlayer3D::_get(const StringName &p_name, Variant &r_ret) const {
+	return internal->get(p_name, r_ret);
+}
+
+void AudioStreamPlayer3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	internal->get_property_list(p_list);
 }
 
 void AudioStreamPlayer3D::_bind_methods() {
@@ -889,6 +821,9 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_stream_playback"), &AudioStreamPlayer3D::has_stream_playback);
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer3D::get_stream_playback);
 
+	ClassDB::bind_method(D_METHOD("set_playback_type", "playback_type"), &AudioStreamPlayer3D::set_playback_type);
+	ClassDB::bind_method(D_METHOD("get_playback_type"), &AudioStreamPlayer3D::get_playback_type);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "attenuation_model", PROPERTY_HINT_ENUM, "Inverse,Inverse Square,Logarithmic,Disabled"), "set_attenuation_model", "get_attenuation_model");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,80,suffix:dB"), "set_volume_db", "get_volume_db");
@@ -903,6 +838,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "panning_strength", PROPERTY_HINT_RANGE, "0,3,0.01,or_greater"), "set_panning_strength", "get_panning_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
 	ADD_GROUP("Emission Angle", "emission_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emission_angle_enabled"), "set_emission_angle_enabled", "is_emission_angle_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_angle_degrees", PROPERTY_HINT_RANGE, "0.1,90,0.1,degrees"), "set_emission_angle", "get_emission_angle");
@@ -926,12 +862,12 @@ void AudioStreamPlayer3D::_bind_methods() {
 }
 
 AudioStreamPlayer3D::AudioStreamPlayer3D() {
+	internal = memnew(AudioStreamPlayerInternal(this, callable_mp(this, &AudioStreamPlayer3D::play), true));
 	velocity_tracker.instantiate();
-	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer3D::_on_bus_layout_changed));
-	AudioServer::get_singleton()->connect("bus_renamed", callable_mp(this, &AudioStreamPlayer3D::_on_bus_renamed));
 	set_disable_scale(true);
 	cached_global_panning_strength = GLOBAL_GET("audio/general/3d_panning_strength");
 }
 
 AudioStreamPlayer3D::~AudioStreamPlayer3D() {
+	memdelete(internal);
 }

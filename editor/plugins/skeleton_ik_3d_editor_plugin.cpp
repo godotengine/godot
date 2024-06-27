@@ -82,7 +82,7 @@ SkeletonIK3DEditorPlugin::SkeletonIK3DEditorPlugin() {
 	play_btn->set_text(TTR("Play IK"));
 	play_btn->set_toggle_mode(true);
 	play_btn->hide();
-	play_btn->connect("pressed", callable_mp(this, &SkeletonIK3DEditorPlugin::_play));
+	play_btn->connect(SceneStringName(pressed), callable_mp(this, &SkeletonIK3DEditorPlugin::_play));
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, play_btn);
 	skeleton_ik = nullptr;
 }

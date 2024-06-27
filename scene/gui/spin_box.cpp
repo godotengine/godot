@@ -83,6 +83,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 
 		err = expr->parse(text);
 		if (err != OK) {
+			_update_text();
 			return;
 		}
 	}
@@ -280,8 +281,8 @@ void SpinBox::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			call_deferred(SNAME("update_minimum_size"));
-			get_line_edit()->call_deferred(SNAME("update_minimum_size"));
+			callable_mp((Control *)this, &Control::update_minimum_size).call_deferred();
+			callable_mp((Control *)get_line_edit(), &Control::update_minimum_size).call_deferred();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
@@ -332,9 +333,9 @@ void SpinBox::set_update_on_text_changed(bool p_enabled) {
 	update_on_text_changed = p_enabled;
 
 	if (p_enabled) {
-		line_edit->connect("text_changed", callable_mp(this, &SpinBox::_text_changed), CONNECT_DEFERRED);
+		line_edit->connect(SceneStringName(text_changed), callable_mp(this, &SpinBox::_text_changed), CONNECT_DEFERRED);
 	} else {
-		line_edit->disconnect("text_changed", callable_mp(this, &SpinBox::_text_changed));
+		line_edit->disconnect(SceneStringName(text_changed), callable_mp(this, &SpinBox::_text_changed));
 	}
 }
 
@@ -408,9 +409,9 @@ SpinBox::SpinBox() {
 	line_edit->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 
 	line_edit->connect("text_submitted", callable_mp(this, &SpinBox::_text_submitted), CONNECT_DEFERRED);
-	line_edit->connect("focus_entered", callable_mp(this, &SpinBox::_line_edit_focus_enter), CONNECT_DEFERRED);
-	line_edit->connect("focus_exited", callable_mp(this, &SpinBox::_line_edit_focus_exit), CONNECT_DEFERRED);
-	line_edit->connect("gui_input", callable_mp(this, &SpinBox::_line_edit_input));
+	line_edit->connect(SceneStringName(focus_entered), callable_mp(this, &SpinBox::_line_edit_focus_enter), CONNECT_DEFERRED);
+	line_edit->connect(SceneStringName(focus_exited), callable_mp(this, &SpinBox::_line_edit_focus_exit), CONNECT_DEFERRED);
+	line_edit->connect(SceneStringName(gui_input), callable_mp(this, &SpinBox::_line_edit_input));
 
 	range_click_timer = memnew(Timer);
 	range_click_timer->connect("timeout", callable_mp(this, &SpinBox::_range_click_timeout));

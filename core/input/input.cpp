@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "input.h"
+#include "input.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/input/default_controller_mappings.h"
@@ -120,7 +121,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
 	ClassDB::bind_method(D_METHOD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
-	ClassDB::bind_method(D_METHOD("vibrate_handheld", "duration_ms"), &Input::vibrate_handheld, DEFVAL(500));
+	ClassDB::bind_method(D_METHOD("vibrate_handheld", "duration_ms", "amplitude"), &Input::vibrate_handheld, DEFVAL(500), DEFVAL(-1.0));
 	ClassDB::bind_method(D_METHOD("get_gravity"), &Input::get_gravity);
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
@@ -130,6 +131,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
 	ClassDB::bind_method(D_METHOD("set_gyroscope", "value"), &Input::set_gyroscope);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_velocity"), &Input::get_last_mouse_velocity);
+	ClassDB::bind_method(D_METHOD("get_last_mouse_screen_velocity"), &Input::get_last_mouse_screen_velocity);
 	ClassDB::bind_method(D_METHOD("get_mouse_button_mask"), &Input::get_mouse_button_mask);
 	ClassDB::bind_method(D_METHOD("set_mouse_mode", "mode"), &Input::set_mouse_mode);
 	ClassDB::bind_method(D_METHOD("get_mouse_mode"), &Input::get_mouse_mode);
@@ -143,9 +145,15 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_accumulated_input", "enable"), &Input::set_use_accumulated_input);
 	ClassDB::bind_method(D_METHOD("is_using_accumulated_input"), &Input::is_using_accumulated_input);
 	ClassDB::bind_method(D_METHOD("flush_buffered_events"), &Input::flush_buffered_events);
+	ClassDB::bind_method(D_METHOD("set_emulate_mouse_from_touch", "enable"), &Input::set_emulate_mouse_from_touch);
+	ClassDB::bind_method(D_METHOD("is_emulating_mouse_from_touch"), &Input::is_emulating_mouse_from_touch);
+	ClassDB::bind_method(D_METHOD("set_emulate_touch_from_mouse", "enable"), &Input::set_emulate_touch_from_mouse);
+	ClassDB::bind_method(D_METHOD("is_emulating_touch_from_mouse"), &Input::is_emulating_touch_from_mouse);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_mode"), "set_mouse_mode", "get_mouse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_accumulated_input"), "set_use_accumulated_input", "is_using_accumulated_input");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_mouse_from_touch"), "set_emulate_mouse_from_touch", "is_emulating_mouse_from_touch");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_touch_from_mouse"), "set_emulate_touch_from_mouse", "is_emulating_touch_from_mouse");
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
@@ -174,8 +182,9 @@ void Input::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "device"), PropertyInfo(Variant::BOOL, "connected")));
 }
 
+#ifdef TOOLS_ENABLED
 void Input::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	String pf = p_function;
+	const String pf = p_function;
 
 	if ((p_idx == 0 && (pf == "is_action_pressed" || pf == "action_press" || pf == "action_release" || pf == "is_action_just_pressed" || pf == "is_action_just_released" || pf == "get_action_strength" || pf == "get_action_raw_strength")) ||
 			(p_idx < 2 && pf == "get_axis") ||
@@ -192,9 +201,11 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 			r_options->push_back(name.quote());
 		}
 	}
+	Object::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
-void Input::VelocityTrack::update(const Vector2 &p_delta_p) {
+void Input::VelocityTrack::update(const Vector2 &p_delta_p, const Vector2 &p_screen_delta_p) {
 	uint64_t tick = OS::get_singleton()->get_ticks_usec();
 	uint32_t tdiff = tick - last_tick;
 	float delta_t = tdiff / 1000000.0;
@@ -203,12 +214,15 @@ void Input::VelocityTrack::update(const Vector2 &p_delta_p) {
 	if (delta_t > max_ref_frame) {
 		// First movement in a long time, reset and start again.
 		velocity = Vector2();
+		screen_velocity = Vector2();
 		accum = p_delta_p;
+		screen_accum = p_screen_delta_p;
 		accum_t = 0;
 		return;
 	}
 
 	accum += p_delta_p;
+	screen_accum += p_screen_delta_p;
 	accum_t += delta_t;
 
 	if (accum_t < min_ref_frame) {
@@ -217,6 +231,7 @@ void Input::VelocityTrack::update(const Vector2 &p_delta_p) {
 	}
 
 	velocity = accum / accum_t;
+	screen_velocity = screen_accum / accum_t;
 	accum = Vector2();
 	accum_t = 0;
 }
@@ -443,7 +458,7 @@ static String _hex_str(uint8_t p_byte) {
 	return ret;
 }
 
-void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid, Dictionary p_joypad_info) {
+void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_name, const String &p_guid, const Dictionary &p_joypad_info) {
 	_THREAD_SAFE_METHOD_
 
 	// Clear the pressed status if a Joypad gets disconnected.
@@ -587,7 +602,8 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			set_mouse_position(position);
 		}
 		Vector2 relative = mm->get_relative();
-		mouse_velocity_track.update(relative);
+		Vector2 screen_relative = mm->get_relative_screen_position();
+		mouse_velocity_track.update(relative, screen_relative);
 
 		if (event_dispatch_function && emulate_touch_from_mouse && !p_is_emulated && mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			Ref<InputEventScreenDrag> drag_event;
@@ -595,10 +611,12 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 			drag_event->set_position(position);
 			drag_event->set_relative(relative);
+			drag_event->set_relative_screen_position(screen_relative);
 			drag_event->set_tilt(mm->get_tilt());
 			drag_event->set_pen_inverted(mm->get_pen_inverted());
 			drag_event->set_pressure(mm->get_pressure());
 			drag_event->set_velocity(get_last_mouse_velocity());
+			drag_event->set_screen_velocity(get_last_mouse_screen_velocity());
 			drag_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 
 			_THREAD_SAFE_UNLOCK_
@@ -662,8 +680,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 	if (sd.is_valid()) {
 		VelocityTrack &track = touch_velocity_track[sd->get_index()];
-		track.update(sd->get_relative());
+		track.update(sd->get_relative(), sd->get_relative_screen_position());
 		sd->set_velocity(track.velocity);
+		sd->set_screen_velocity(track.screen_velocity);
 
 		if (emulate_mouse_from_touch && sd->get_index() == mouse_from_touch_index) {
 			Ref<InputEventMouseMotion> motion_event;
@@ -676,7 +695,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			motion_event->set_position(sd->get_position());
 			motion_event->set_global_position(sd->get_position());
 			motion_event->set_relative(sd->get_relative());
+			motion_event->set_relative_screen_position(sd->get_relative_screen_position());
 			motion_event->set_velocity(sd->get_velocity());
+			motion_event->set_screen_velocity(sd->get_screen_velocity());
 			motion_event->set_button_mask(mouse_button_mask);
 
 			_parse_input_event_impl(motion_event, true);
@@ -783,8 +804,8 @@ void Input::stop_joy_vibration(int p_device) {
 	joy_vibration[p_device] = vibration;
 }
 
-void Input::vibrate_handheld(int p_duration_ms) {
-	OS::get_singleton()->vibrate_handheld(p_duration_ms);
+void Input::vibrate_handheld(int p_duration_ms, float p_amplitude) {
+	OS::get_singleton()->vibrate_handheld(p_duration_ms, p_amplitude);
 }
 
 void Input::set_gravity(const Vector3 &p_gravity) {
@@ -820,8 +841,13 @@ Point2 Input::get_mouse_position() const {
 }
 
 Point2 Input::get_last_mouse_velocity() {
-	mouse_velocity_track.update(Vector2());
+	mouse_velocity_track.update(Vector2(), Vector2());
 	return mouse_velocity_track.velocity;
+}
+
+Point2 Input::get_last_mouse_screen_velocity() {
+	mouse_velocity_track.update(Vector2(), Vector2());
+	return mouse_velocity_track.screen_velocity;
 }
 
 BitField<MouseButtonMask> Input::get_mouse_button_mask() const {
@@ -832,7 +858,7 @@ void Input::warp_mouse(const Vector2 &p_position) {
 	warp_mouse_func(p_position);
 }
 
-Point2i Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect) {
+Point2 Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect) {
 	// The relative distance reported for the next event after a warp is in the boundaries of the
 	// size of the rect on that axis, but it may be greater, in which case there's no problem as fmod()
 	// will warp it, but if the pointer has moved in the opposite direction between the pointer relocation
@@ -842,14 +868,14 @@ Point2i Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, con
 	// detect the warp: if the relative distance is greater than the half of the size of the relevant rect
 	// (checked per each axis), it will be considered as the consequence of a former pointer warp.
 
-	const Point2i rel_sign(p_motion->get_relative().x >= 0.0f ? 1 : -1, p_motion->get_relative().y >= 0.0 ? 1 : -1);
-	const Size2i warp_margin = p_rect.size * 0.5f;
-	const Point2i rel_warped(
+	const Point2 rel_sign(p_motion->get_relative().x >= 0.0f ? 1 : -1, p_motion->get_relative().y >= 0.0 ? 1 : -1);
+	const Size2 warp_margin = p_rect.size * 0.5f;
+	const Point2 rel_warped(
 			Math::fmod(p_motion->get_relative().x + rel_sign.x * warp_margin.x, p_rect.size.x) - rel_sign.x * warp_margin.x,
 			Math::fmod(p_motion->get_relative().y + rel_sign.y * warp_margin.y, p_rect.size.y) - rel_sign.y * warp_margin.y);
 
-	const Point2i pos_local = p_motion->get_global_position() - p_rect.position;
-	const Point2i pos_warped(Math::fposmod(pos_local.x, p_rect.size.x), Math::fposmod(pos_local.y, p_rect.size.y));
+	const Point2 pos_local = p_motion->get_global_position() - p_rect.position;
+	const Point2 pos_warped(Math::fposmod(pos_local.x, p_rect.size.x), Math::fposmod(pos_local.y, p_rect.size.y));
 	if (pos_warped != pos_local) {
 		warp_mouse(pos_warped + p_rect.position);
 	}
@@ -858,6 +884,8 @@ Point2i Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, con
 }
 
 void Input::action_press(const StringName &p_action, float p_strength) {
+	ERR_FAIL_COND_MSG(!InputMap::get_singleton()->has_action(p_action), InputMap::get_singleton()->suggest_actions(p_action));
+
 	// Create or retrieve existing action.
 	ActionState &action_state = action_states[p_action];
 
@@ -867,11 +895,13 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 	}
 	action_state.exact = true;
 	action_state.api_pressed = true;
-	action_state.api_strength = p_strength;
+	action_state.api_strength = CLAMP(p_strength, 0.0f, 1.0f);
 	_update_action_cache(p_action, action_state);
 }
 
 void Input::action_release(const StringName &p_action) {
+	ERR_FAIL_COND_MSG(!InputMap::get_singleton()->has_action(p_action), InputMap::get_singleton()->suggest_actions(p_action));
+
 	// Create or retrieve existing action.
 	ActionState &action_state = action_states[p_action];
 	action_state.cache.pressed = 0;
@@ -998,6 +1028,14 @@ void Input::parse_input_event(const Ref<InputEvent> &p_event) {
 		_parse_input_event_impl(p_event, false);
 	}
 }
+
+#ifdef DEBUG_ENABLED
+void Input::flush_frame_parsed_events() {
+	_THREAD_SAFE_METHOD_
+
+	frame_parsed_events.clear();
+}
+#endif
 
 void Input::flush_buffered_events() {
 	_THREAD_SAFE_METHOD_
@@ -1214,7 +1252,7 @@ void Input::_update_action_cache(const StringName &p_action_name, ActionState &r
 	r_action_state.cache.strength = 0.0;
 	r_action_state.cache.raw_strength = 0.0;
 
-	int max_event = InputMap::get_singleton()->action_get_events(p_action_name)->size();
+	int max_event = InputMap::get_singleton()->action_get_events(p_action_name)->size() + 1; // +1 comes from InputEventAction.
 	for (const KeyValue<int, ActionState::DeviceState> &kv : r_action_state.device_states) {
 		const ActionState::DeviceState &device_state = kv.value;
 		for (int i = 0; i < max_event; i++) {
@@ -1387,7 +1425,7 @@ void Input::_get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat
 	}
 }
 
-JoyButton Input::_get_output_button(String output) {
+JoyButton Input::_get_output_button(const String &output) {
 	for (int i = 0; i < (int)JoyButton::SDL_MAX; i++) {
 		if (output == _joy_buttons[i]) {
 			return JoyButton(i);
@@ -1396,7 +1434,7 @@ JoyButton Input::_get_output_button(String output) {
 	return JoyButton::INVALID;
 }
 
-JoyAxis Input::_get_output_axis(String output) {
+JoyAxis Input::_get_output_axis(const String &output) {
 	for (int i = 0; i < (int)JoyAxis::SDL_MAX; i++) {
 		if (output == _joy_axes[i]) {
 			return JoyAxis(i);
@@ -1405,7 +1443,7 @@ JoyAxis Input::_get_output_axis(String output) {
 	return JoyAxis::INVALID;
 }
 
-void Input::parse_mapping(String p_mapping) {
+void Input::parse_mapping(const String &p_mapping) {
 	_THREAD_SAFE_METHOD_;
 	JoyDeviceMapping mapping;
 
@@ -1466,6 +1504,7 @@ void Input::parse_mapping(String p_mapping) {
 		JoyAxis output_axis = _get_output_axis(output);
 		if (output_button == JoyButton::INVALID && output_axis == JoyAxis::INVALID) {
 			print_verbose(vformat("Unrecognized output string \"%s\" in mapping:\n%s", output, p_mapping));
+			continue;
 		}
 		ERR_CONTINUE_MSG(output_button != JoyButton::INVALID && output_axis != JoyAxis::INVALID,
 				vformat("Output string \"%s\" matched both button and axis in mapping:\n%s", output, p_mapping));
@@ -1508,11 +1547,11 @@ void Input::parse_mapping(String p_mapping) {
 	map_db.push_back(mapping);
 }
 
-void Input::add_joy_mapping(String p_mapping, bool p_update_existing) {
+void Input::add_joy_mapping(const String &p_mapping, bool p_update_existing) {
 	parse_mapping(p_mapping);
 	if (p_update_existing) {
 		Vector<String> entry = p_mapping.split(",");
-		String uid = entry[0];
+		const String &uid = entry[0];
 		for (KeyValue<int, Joypad> &E : joy_names) {
 			Joypad &joy = E.value;
 			if (joy.uid == uid) {
@@ -1522,7 +1561,7 @@ void Input::add_joy_mapping(String p_mapping, bool p_update_existing) {
 	}
 }
 
-void Input::remove_joy_mapping(String p_guid) {
+void Input::remove_joy_mapping(const String &p_guid) {
 	for (int i = map_db.size() - 1; i >= 0; i--) {
 		if (p_guid == map_db[i].uid) {
 			map_db.remove_at(i);
@@ -1536,7 +1575,7 @@ void Input::remove_joy_mapping(String p_guid) {
 	}
 }
 
-void Input::set_fallback_mapping(String p_guid) {
+void Input::set_fallback_mapping(const String &p_guid) {
 	for (int i = 0; i < map_db.size(); i++) {
 		if (map_db[i].uid == p_guid) {
 			fallback_mapping = i;

@@ -63,7 +63,6 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 		FLAGS_TRANSPOSE_RECT = (1 << 10),
 
 		FLAGS_NINEPACH_DRAW_CENTER = (1 << 12),
-		FLAGS_USING_PARTICLES = (1 << 13),
 
 		FLAGS_USE_SKELETON = (1 << 15),
 		FLAGS_NINEPATCH_H_MODE_SHIFT = 16,
@@ -157,6 +156,8 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 		float atlas_rect[4];
 	};
 
+	static_assert(sizeof(LightUniform) % 16 == 0, "2D light UBO size must be a multiple of 16 bytes");
+
 public:
 	enum {
 		BASE_UNIFORM_LOCATION = 0,
@@ -185,6 +186,8 @@ public:
 		uint32_t pad1;
 		uint32_t pad2;
 	};
+
+	static_assert(sizeof(StateBuffer) % 16 == 0, "2D state UBO size must be a multiple of 16 bytes");
 
 	struct PolygonBuffers {
 		GLuint vertex_buffer = 0;
@@ -230,6 +233,8 @@ public:
 		uint32_t lights[4];
 	};
 
+	static_assert(sizeof(InstanceData) == 128, "2D instance data struct size must be 128 bytes");
+
 	struct Data {
 		GLuint canvas_quad_vertices;
 		GLuint canvas_quad_array;
@@ -269,6 +274,7 @@ public:
 		RID material;
 		GLES3::CanvasMaterialData *material_data = nullptr;
 		CanvasShaderGLES3::ShaderVariant shader_variant = CanvasShaderGLES3::MODE_QUAD;
+		uint64_t vertex_input_mask = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_COLOR | RS::ARRAY_FORMAT_TEX_UV;
 
 		const Item::Command *command = nullptr;
 		Item::Command::Type command_type = Item::Command::TYPE_ANIMATION_SLICE; // Can default to any type that doesn't form a batch.
@@ -356,7 +362,7 @@ public:
 
 	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
 	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer = false, RenderingMethod::RenderInfo *r_render_info = nullptr);
-	void _record_item_commands(const Item *p_item, RID p_render_target, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, GLES3::CanvasShaderData::BlendMode p_blend_mode, Light *p_lights, uint32_t &r_index, bool &r_break_batch, bool &r_sdf_used);
+	void _record_item_commands(const Item *p_item, RID p_render_target, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, GLES3::CanvasShaderData::BlendMode p_blend_mode, Light *p_lights, uint32_t &r_index, bool &r_break_batch, bool &r_sdf_used, const Point2 &p_offset);
 	void _render_batch(Light *p_lights, uint32_t p_index, RenderingMethod::RenderInfo *r_render_info = nullptr);
 	bool _bind_material(GLES3::CanvasMaterialData *p_material_data, CanvasShaderGLES3::ShaderVariant p_variant, uint64_t p_specialization);
 	void _new_batch(bool &r_batch_broken);

@@ -120,6 +120,13 @@
 		<link title="Import plugins">$DOCS_URL/tutorials/plugins/editor/import_plugins.html</link>
 	</tutorials>
 	<methods>
+		<method name="_can_import_threaded" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Tells whether this importer can be run in parallel on threads, or, on the contrary, it's only safe for the editor to call it from the main thread, for one file at a time.
+				If this method is not overridden, it will return [code]true[/code] by default (i.e., safe for parallel importing).
+			</description>
+		</method>
 		<method name="_get_import_options" qualifiers="virtual const">
 			<return type="Dictionary[]" />
 			<param index="0" name="path" type="String" />

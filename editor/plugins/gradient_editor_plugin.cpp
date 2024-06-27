@@ -30,15 +30,15 @@
 
 #include "gradient_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
-#include "node_3d_editor_plugin.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/popup.h"
@@ -102,7 +102,7 @@ void GradientEdit::_color_changed(const Color &p_color) {
 
 void GradientEdit::set_gradient(const Ref<Gradient> &p_gradient) {
 	gradient = p_gradient;
-	gradient->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+	gradient->connect(CoreStringName(changed), callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 }
 
 const Ref<Gradient> &GradientEdit::get_gradient() const {
@@ -640,11 +640,11 @@ GradientEditor::GradientEditor() {
 	snap_count_edit->set_value(DEFAULT_SNAP);
 	snap_count_edit->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 	toolbar->add_child(snap_count_edit);
-	snap_count_edit->connect("value_changed", callable_mp(this, &GradientEditor::_set_snap_count));
+	snap_count_edit->connect(SceneStringName(value_changed), callable_mp(this, &GradientEditor::_set_snap_count));
 
 	gradient_editor_rect = memnew(GradientEdit);
 	add_child(gradient_editor_rect);
-	reverse_button->connect("pressed", callable_mp(gradient_editor_rect, &GradientEdit::reverse_gradient));
+	reverse_button->connect(SceneStringName(pressed), callable_mp(gradient_editor_rect, &GradientEdit::reverse_gradient));
 
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	_set_snap_enabled(snap_button->is_pressed());

@@ -147,7 +147,7 @@ Texture3DEditor::Texture3DEditor() {
 	texture_rect = memnew(Control);
 	texture_rect->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	add_child(texture_rect);
-	texture_rect->connect("draw", callable_mp(this, &Texture3DEditor::_texture_rect_draw));
+	texture_rect->connect(SceneStringName(draw), callable_mp(this, &Texture3DEditor::_texture_rect_draw));
 
 	layer = memnew(SpinBox);
 	layer->set_step(1);
@@ -157,12 +157,12 @@ Texture3DEditor::Texture3DEditor() {
 	add_child(layer);
 	layer->set_anchor(SIDE_RIGHT, 1);
 	layer->set_anchor(SIDE_LEFT, 1);
-	layer->connect("value_changed", callable_mp(this, &Texture3DEditor::_layer_changed));
+	layer->connect(SceneStringName(value_changed), callable_mp(this, &Texture3DEditor::_layer_changed));
 
 	info = memnew(Label);
 	info->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 	info->set_v_grow_direction(GROW_DIRECTION_BEGIN);
-	info->add_theme_color_override("font_color", Color(1, 1, 1, 1));
+	info->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1, 1));
 	info->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5));
 	info->add_theme_constant_override("shadow_outline_size", 1);
 	info->add_theme_constant_override("shadow_offset_x", 2);

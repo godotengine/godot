@@ -48,6 +48,7 @@ draw_call;
 
 layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 
+#define INSTANCE_FLAGS_DYNAMIC (1 << 3)
 #define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 4)
 #define INSTANCE_FLAGS_USE_GI_BUFFERS (1 << 5)
 #define INSTANCE_FLAGS_USE_SDFGI (1 << 6)
@@ -161,18 +162,9 @@ layout(set = 0, binding = 13, std140) uniform SDFGI {
 }
 sdfgi;
 
-layout(set = 0, binding = 14 + 0) uniform sampler DEFAULT_SAMPLER_NEAREST_CLAMP;
-layout(set = 0, binding = 14 + 1) uniform sampler DEFAULT_SAMPLER_LINEAR_CLAMP;
-layout(set = 0, binding = 14 + 2) uniform sampler DEFAULT_SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP;
-layout(set = 0, binding = 14 + 3) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
-layout(set = 0, binding = 14 + 4) uniform sampler DEFAULT_SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP;
-layout(set = 0, binding = 14 + 5) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP;
-layout(set = 0, binding = 14 + 6) uniform sampler DEFAULT_SAMPLER_NEAREST_REPEAT;
-layout(set = 0, binding = 14 + 7) uniform sampler DEFAULT_SAMPLER_LINEAR_REPEAT;
-layout(set = 0, binding = 14 + 8) uniform sampler DEFAULT_SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT;
-layout(set = 0, binding = 14 + 9) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT;
-layout(set = 0, binding = 14 + 10) uniform sampler DEFAULT_SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
-layout(set = 0, binding = 14 + 11) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
+layout(set = 0, binding = 14) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
+
+layout(set = 0, binding = 15) uniform texture2D best_fit_normal_texture;
 
 /* Set 1: Render Pass (changes per render pass) */
 
@@ -338,6 +330,15 @@ layout(set = 1, binding = 34) uniform texture2D ssil_buffer;
 #endif // USE_MULTIVIEW
 
 #endif
+
+vec4 normal_roughness_compatibility(vec4 p_normal_roughness) {
+	float roughness = p_normal_roughness.w;
+	if (roughness > 0.5) {
+		roughness = 1.0 - roughness;
+	}
+	roughness /= (127.0 / 255.0);
+	return vec4(normalize(p_normal_roughness.xyz * 2.0 - 1.0) * 0.5 + 0.5, roughness);
+}
 
 /* Set 2 Skeleton & Instancing (can change per item) */
 

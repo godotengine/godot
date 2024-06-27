@@ -247,7 +247,10 @@ String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_paths) const
 	for (int i = 0; i < invalid_chars.size(); i++) {
 		safe_dir_name = safe_dir_name.replace(invalid_chars[i], "-");
 	}
-	return safe_dir_name;
+
+	// Trim trailing periods from the returned value as it's not valid for folder names on Windows.
+	// This check is still applied on non-Windows platforms so the returned value is consistent across platforms.
+	return safe_dir_name.rstrip(".");
 }
 
 // Path to data, config, cache, etc. OS-specific folders
@@ -298,7 +301,7 @@ String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";
 }
 
-Error OS::shell_open(String p_uri) {
+Error OS::shell_open(const String &p_uri) {
 	return ERR_UNAVAILABLE;
 }
 
@@ -397,6 +400,11 @@ bool OS::has_feature(const String &p_feature) {
 #ifdef TOOLS_ENABLED
 	if (p_feature == "editor") {
 		return true;
+	}
+	if (p_feature == "editor_hint") {
+		return _in_editor;
+	} else if (p_feature == "editor_runtime") {
+		return !_in_editor;
 	}
 #else
 	if (p_feature == "template") {
@@ -500,6 +508,16 @@ bool OS::has_feature(const String &p_feature) {
 
 #if defined(IOS_SIMULATOR)
 	if (p_feature == "simulator") {
+		return true;
+	}
+#endif
+
+#ifdef THREADS_ENABLED
+	if (p_feature == "threads") {
+		return true;
+	}
+#else
+	if (p_feature == "nothreads") {
 		return true;
 	}
 #endif

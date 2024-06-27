@@ -1,7 +1,9 @@
 using System;
-using System.Runtime.CompilerServices;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
-using Godot.NativeInterop;
+
+#nullable enable
 
 namespace Godot
 {
@@ -71,7 +73,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The other object to compare.</param>
         /// <returns>Whether or not the color and the other object are equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Rid other && Equals(other);
         }
@@ -99,6 +101,6 @@ namespace Godot
         /// Converts this <see cref="Rid"/> to a string.
         /// </summary>
         /// <returns>A string representation of this Rid.</returns>
-        public override string ToString() => $"RID({Id})";
+        public override readonly string ToString() => $"RID({Id.ToString(null, CultureInfo.InvariantCulture)})";
     }
 }

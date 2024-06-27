@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2024, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -323,6 +323,8 @@ static inline std::string PlatformUtilsGetSecureEnv(const char* name) {
     const std::string envValue = PlatformUtilsGetEnv(name);
 
     // Do not allow high integrity processes to act on data that can be controlled by medium integrity processes.
+    // Specifically, medium integrity processes can set environment variables which could then
+    // be read by high integrity processes.
     if (IsHighIntegrityLevel()) {
         if (!envValue.empty()) {
             LogPlatformUtilsError(std::string("!!! WARNING !!! Environment variable ") + name +

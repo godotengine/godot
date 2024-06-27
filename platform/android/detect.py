@@ -1,12 +1,13 @@
 import os
-import sys
 import platform
 import subprocess
-
+import sys
 from typing import TYPE_CHECKING
 
+from methods import print_error, print_warning
+
 if TYPE_CHECKING:
-    from SCons import Environment
+    from SCons.Script.SConscript import SConsEnvironment
 
 
 def get_name():
@@ -28,6 +29,7 @@ def get_opts():
             "android-" + str(get_min_target_api()),
         ),
         BoolVariable("store_release", "Editor build for Google Play Store (for official builds only)", False),
+        BoolVariable("generate_apk", "Generate an APK/AAB after building Android library by calling Gradle", False),
     ]
 
 
@@ -50,7 +52,7 @@ def get_min_sdk_version(platform):
     return int(platform.split("-")[1])
 
 
-def get_android_ndk_root(env):
+def get_android_ndk_root(env: "SConsEnvironment"):
     return env["ANDROID_HOME"] + "/ndk/" + get_ndk_version()
 
 
@@ -65,16 +67,16 @@ def get_min_target_api():
 
 
 def get_flags():
-    return [
-        ("arch", "arm64"),  # Default for convenience.
-        ("target", "template_debug"),
-    ]
+    return {
+        "arch": "arm64",
+        "target": "template_debug",
+        "supported": ["mono"],
+    }
 
 
 # Check if Android NDK version is installed
 # If not, install it.
-def install_ndk_if_needed(env):
-    print("Checking for Android NDK...")
+def install_ndk_if_needed(env: "SConsEnvironment"):
     sdk_root = env["ANDROID_HOME"]
     if not os.path.exists(get_android_ndk_root(env)):
         extension = ".bat" if os.name == "nt" else ""
@@ -85,29 +87,27 @@ def install_ndk_if_needed(env):
             ndk_download_args = "ndk;" + get_ndk_version()
             subprocess.check_call([sdkmanager, ndk_download_args])
         else:
-            print("Cannot find " + sdkmanager)
-            print(
-                "Please ensure ANDROID_HOME is correct and cmdline-tools are installed, or install NDK version "
-                + get_ndk_version()
-                + " manually."
+            print_error(
+                f'Cannot find "{sdkmanager}". Please ensure ANDROID_HOME is correct and cmdline-tools'
+                f' are installed, or install NDK version "{get_ndk_version()}" manually.'
             )
-            sys.exit()
+            sys.exit(255)
     env["ANDROID_NDK_ROOT"] = get_android_ndk_root(env)
 
 
-def configure(env: "Environment"):
+def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
     if env["arch"] not in supported_arches:
-        print(
+        print_error(
             'Unsupported CPU architecture "%s" for Android. Supported architectures are: %s.'
             % (env["arch"], ", ".join(supported_arches))
         )
-        sys.exit()
+        sys.exit(255)
 
     if get_min_sdk_version(env["ndk_platform"]) < get_min_target_api():
-        print(
-            "WARNING: minimum supported Android target api is %d. Forcing target api %d."
+        print_warning(
+            "Minimum supported Android target api is %d. Forcing target api %d."
             % (get_min_target_api(), get_min_target_api())
         )
         env["ndk_platform"] = "android-" + str(get_min_target_api())
@@ -200,7 +200,7 @@ def configure(env: "Environment"):
     env.Append(LIBS=["OpenSLES", "EGL", "android", "log", "z", "dl"])
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
         if not env["use_volk"]:
             env.Append(LIBS=["vulkan"])
 

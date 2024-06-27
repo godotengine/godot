@@ -373,11 +373,6 @@ real_t CameraAttributesPhysical::get_fov() const {
 	return frustum_fov;
 }
 
-#ifdef MINGW_ENABLED
-#undef near
-#undef far
-#endif
-
 void CameraAttributesPhysical::_update_frustum() {
 	//https://en.wikipedia.org/wiki/Circle_of_confusion#Circle_of_confusion_diameter_limit_based_on_d/1500
 	Vector2i sensor_size = Vector2i(36, 24); // Matches high-end DSLR, could be made variable if there is demand.
@@ -393,12 +388,12 @@ void CameraAttributesPhysical::_update_frustum() {
 	// that it is not picked up by the camera sensors.
 	// To be properly physically-based, we would run the DoF shader at all depths. To be efficient, we are only running it where the CoC
 	// will be visible, this introduces some value shifts in the near field that we have to compensate for below.
-	float near = ((hyperfocal_length * u) / (hyperfocal_length + (u - frustum_focal_length))) / 1000.0; // In meters.
-	float far = ((hyperfocal_length * u) / (hyperfocal_length - (u - frustum_focal_length))) / 1000.0; // In meters.
+	float depth_near = ((hyperfocal_length * u) / (hyperfocal_length + (u - frustum_focal_length))) / 1000.0; // In meters.
+	float depth_far = ((hyperfocal_length * u) / (hyperfocal_length - (u - frustum_focal_length))) / 1000.0; // In meters.
 	float scale = (frustum_focal_length / (u - frustum_focal_length)) * (frustum_focal_length / exposure_aperture);
 
-	bool use_far = (far < frustum_far) && (far > 0.0);
-	bool use_near = near > frustum_near;
+	bool use_far = (depth_far < frustum_far) && (depth_far > 0.0);
+	bool use_near = depth_near > frustum_near;
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 		// Force disable DoF in editor builds to suppress warnings.

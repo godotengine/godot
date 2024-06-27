@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../common/primref_mb.h"
+#include "../builders/primref_mb.h"
 #include "../../common/algorithms/parallel_filter.h"
 
 #define MBLUR_TIME_SPLIT_THRESHOLD 1.25f

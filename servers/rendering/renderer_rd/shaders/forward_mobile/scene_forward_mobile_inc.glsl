@@ -29,6 +29,7 @@ draw_call;
 
 layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 
+#define INSTANCE_FLAGS_DYNAMIC (1 << 3)
 #define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 4)
 #define INSTANCE_FLAGS_USE_GI_BUFFERS (1 << 5)
 #define INSTANCE_FLAGS_USE_SDFGI (1 << 6)
@@ -101,18 +102,7 @@ layout(set = 0, binding = 12, std430) restrict readonly buffer GlobalShaderUnifo
 }
 global_shader_uniforms;
 
-layout(set = 0, binding = 13 + 0) uniform sampler DEFAULT_SAMPLER_NEAREST_CLAMP;
-layout(set = 0, binding = 13 + 1) uniform sampler DEFAULT_SAMPLER_LINEAR_CLAMP;
-layout(set = 0, binding = 13 + 2) uniform sampler DEFAULT_SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP;
-layout(set = 0, binding = 13 + 3) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
-layout(set = 0, binding = 13 + 4) uniform sampler DEFAULT_SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP;
-layout(set = 0, binding = 13 + 5) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP;
-layout(set = 0, binding = 13 + 6) uniform sampler DEFAULT_SAMPLER_NEAREST_REPEAT;
-layout(set = 0, binding = 13 + 7) uniform sampler DEFAULT_SAMPLER_LINEAR_REPEAT;
-layout(set = 0, binding = 13 + 8) uniform sampler DEFAULT_SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT;
-layout(set = 0, binding = 13 + 9) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT;
-layout(set = 0, binding = 13 + 10) uniform sampler DEFAULT_SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
-layout(set = 0, binding = 13 + 11) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
+layout(set = 0, binding = 13) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
 
 /* Set 1: Render Pass (changes per render pass) */
 

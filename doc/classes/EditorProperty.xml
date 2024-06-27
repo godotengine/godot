@@ -84,7 +84,7 @@
 		<member name="label" type="String" setter="set_label" getter="get_label" default="&quot;&quot;">
 			Set this property to change the label (if you want to show one).
 		</member>
-		<member name="read_only" type="bool" setter="set_read_only" getter="is_read_only" default="false">
+		<member name="read_only" type="bool" setter="set_read_only" getter="is_read_only" default="false" keywords="enabled, disabled, editable">
 			Used by the inspector, set to [code]true[/code] when the property is read-only.
 		</member>
 	</members>

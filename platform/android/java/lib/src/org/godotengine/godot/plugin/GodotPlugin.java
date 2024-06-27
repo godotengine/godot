@@ -112,19 +112,18 @@ public abstract class GodotPlugin {
 	/**
 	 * Register the plugin with Godot native code.
 	 * <p>
-	 * This method is invoked by the Godot Engine on the render thread.
+	 * This method is invoked on the render thread to register the plugin on engine startup.
 	 */
 	public final void onRegisterPluginWithGodotNative() {
-		registeredSignals.putAll(
-				registerPluginWithGodotNative(this, getPluginName(), getPluginMethods(), getPluginSignals()));
-	}
+		final String pluginName = getPluginName();
+		if (!nativeRegisterSingleton(pluginName, this)) {
+			return;
+		}
 
-	private static Map<String, SignalInfo> registerPluginWithGodotNative(Object pluginObject,
-			String pluginName, List<String> pluginMethods, Set<SignalInfo> pluginSignals) {
-		nativeRegisterSingleton(pluginName, pluginObject);
+		List<String> pluginMethods = getPluginMethods();
 
 		Set<Method> filteredMethods = new HashSet<>();
-		Class<?> clazz = pluginObject.getClass();
+		Class<?> clazz = getClass();
 
 		Method[] methods = clazz.getDeclaredMethods();
 		for (Method method : methods) {
@@ -156,15 +155,14 @@ public abstract class GodotPlugin {
 			nativeRegisterMethod(pluginName, method.getName(), method.getReturnType().getName(), pt);
 		}
 
+		Set<SignalInfo> pluginSignals = getPluginSignals();
+
 		// Register the signals for this plugin.
-		Map<String, SignalInfo> registeredSignals = new HashMap<>();
 		for (SignalInfo signalInfo : pluginSignals) {
 			String signalName = signalInfo.getName();
 			nativeRegisterSignal(pluginName, signalName, signalInfo.getParamTypesNames());
 			registeredSignals.put(signalName, signalInfo);
 		}
-
-		return registeredSignals;
 	}
 
 	/**
@@ -408,7 +406,7 @@ public abstract class GodotPlugin {
 	 * Used to setup a {@link GodotPlugin} instance.
 	 * @param p_name Name of the instance.
 	 */
-	private static native void nativeRegisterSingleton(String p_name, Object object);
+	private static native boolean nativeRegisterSingleton(String p_name, Object object);
 
 	/**
 	 * Used to complete registration of the {@link GodotPlugin} instance's methods.

@@ -33,7 +33,6 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
-#include "core/core_string_names.h"
 #include "core/crypto/aes_context.h"
 #include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
@@ -102,6 +101,7 @@ static core_bind::Marshalls *_marshalls = nullptr;
 static core_bind::EngineDebugger *_engine_debugger = nullptr;
 
 static IP *ip = nullptr;
+static Time *_time = nullptr;
 
 static core_bind::Geometry2D *_geometry_2d = nullptr;
 static core_bind::Geometry3D *_geometry_3d = nullptr;
@@ -128,6 +128,7 @@ void register_core_types() {
 	ObjectDB::setup();
 
 	StringName::setup();
+	_time = memnew(Time);
 	ResourceLoader::initialize();
 
 	register_global_constants();
@@ -307,7 +308,6 @@ void register_core_settings() {
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, "network/tls/certificate_bundle_override", PROPERTY_HINT_FILE, "*.crt"), "");
 
 	GLOBAL_DEF("threading/worker_pool/max_threads", -1);
-	GLOBAL_DEF("threading/worker_pool/use_system_threads_for_low_priority_tasks", true);
 	GLOBAL_DEF("threading/worker_pool/low_priority_thread_ratio", 0.3);
 }
 
@@ -437,14 +437,15 @@ void unregister_core_types() {
 	ResourceLoader::finalize();
 
 	ClassDB::cleanup_defaults();
+	memdelete(_time);
 	ObjectDB::cleanup();
 
 	Variant::unregister_types();
 
 	unregister_global_constants();
 
-	ClassDB::cleanup();
 	ResourceCache::clear();
+	ClassDB::cleanup();
 	CoreStringNames::free();
 	StringName::cleanup();
 

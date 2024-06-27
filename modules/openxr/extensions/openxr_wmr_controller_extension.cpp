@@ -38,6 +38,7 @@ HashMap<String, bool *> OpenXRWMRControllerExtension::get_requested_extensions()
 	// Note HP G2 is available on WMR and SteamVR, but Odessey is only available on WMR
 	request_extensions[XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME] = &available[WMR_HPMR];
 	request_extensions[XR_EXT_SAMSUNG_ODYSSEY_CONTROLLER_EXTENSION_NAME] = &available[WMR_SAMSUNG_ODESSY];
+	request_extensions[XR_MSFT_HAND_INTERACTION_EXTENSION_NAME] = &available[WMR_HAND_INTERACTION];
 
 	return request_extensions;
 }
@@ -117,4 +118,23 @@ void OpenXRWMRControllerExtension::on_register_metadata() {
 
 	metadata->register_io_path("/interaction_profiles/samsung/odyssey_controller", "Haptic output", "/user/hand/left", "/user/hand/left/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
 	metadata->register_io_path("/interaction_profiles/samsung/odyssey_controller", "Haptic output", "/user/hand/right", "/user/hand/right/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
+
+	// MSFT Hand interaction profile, also supported by other headsets
+	metadata->register_interaction_profile("MSFT Hand interaction", "/interaction_profiles/microsoft/hand_interaction", XR_MSFT_HAND_INTERACTION_EXTENSION_NAME);
+	metadata->register_io_path("/interaction_profiles/microsoft/hand_interaction", "Grip pose", "/user/hand/left", "/user/hand/left/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
+	metadata->register_io_path("/interaction_profiles/microsoft/hand_interaction", "Grip pose", "/user/hand/right", "/user/hand/right/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
+	metadata->register_io_path("/interaction_profiles/microsoft/hand_interaction", "Aim pose", "/user/hand/left", "/user/hand/left/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
+	metadata->register_io_path("/interaction_profiles/microsoft/hand_interaction", "Aim pose", "/user/hand/right", "/user/hand/right/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
+	metadata->register_io_path("/interaction_profiles/microsoft/hand_interaction", "Pinch pose", "/user/hand/left", "/user/hand/left/input/pinch_ext/pose", XR_EXT_HAND_INTERACTION_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
+	metadata->register_io_path("/interaction_profiles/microsoft/hand_interaction", "Pinch pose", "/user/hand/right", "/user/hand/right/input/pinch_ext/pose", XR_EXT_HAND_INTERACTION_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
+	metadata->register_io_path("/interaction_profiles/microsoft/hand_interaction", "Poke pose", "/user/hand/left", "/user/hand/left/input/poke_ext/pose", XR_EXT_HAND_INTERACTION_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
+	metadata->register_io_path("/interaction_profiles/microsoft/hand_interaction", "Poke pose", "/user/hand/right", "/user/hand/right/input/poke_ext/pose", XR_EXT_HAND_INTERACTION_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
+	metadata->register_io_path("/interaction_profiles/microsoft/hand_interaction", "Palm pose", "/user/hand/left", "/user/hand/left/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
+	metadata->register_io_path("/interaction_profiles/microsoft/hand_interaction", "Palm pose", "/user/hand/right", "/user/hand/right/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
+
+	metadata->register_io_path("/interaction_profiles/microsoft/hand_interaction", "Select (pinch)", "/user/hand/left", "/user/hand/left/input/select/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
+	metadata->register_io_path("/interaction_profiles/microsoft/hand_interaction", "Select (pinch)", "/user/hand/right", "/user/hand/right/input/select/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
+
+	metadata->register_io_path("/interaction_profiles/microsoft/hand_interaction", "Squeeze (grab)", "/user/hand/left", "/user/hand/left/input/squeeze/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
+	metadata->register_io_path("/interaction_profiles/microsoft/hand_interaction", "Squeeze (grab)", "/user/hand/right", "/user/hand/right/input/squeeze/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
 }

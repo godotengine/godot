@@ -31,7 +31,9 @@
 #ifndef TEST_NODE_H
 #define TEST_NODE_H
 
+#include "core/object/class_db.h"
 #include "scene/main/node.h"
+#include "scene/resources/packed_scene.h"
 
 #include "tests/test_macros.h"
 
@@ -62,6 +64,16 @@ protected:
 		}
 	}
 
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("set_exported_node", "node"), &TestNode::set_exported_node);
+		ClassDB::bind_method(D_METHOD("get_exported_node"), &TestNode::get_exported_node);
+		ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "exported_node", PROPERTY_HINT_NODE_TYPE, "Node"), "set_exported_node", "get_exported_node");
+
+		ClassDB::bind_method(D_METHOD("set_exported_nodes", "node"), &TestNode::set_exported_nodes);
+		ClassDB::bind_method(D_METHOD("get_exported_nodes"), &TestNode::get_exported_nodes);
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exported_nodes", PROPERTY_HINT_TYPE_STRING, "24/34:Node"), "set_exported_nodes", "get_exported_nodes");
+	}
+
 private:
 	void push_self() {
 		if (callback_list) {
@@ -75,7 +87,16 @@ public:
 	int process_counter = 0;
 	int physics_process_counter = 0;
 
+	Node *exported_node = nullptr;
+	Array exported_nodes;
+
 	List<Node *> *callback_list = nullptr;
+
+	void set_exported_node(Node *p_node) { exported_node = p_node; }
+	Node *get_exported_node() const { return exported_node; }
+
+	void set_exported_nodes(const Array &p_nodes) { exported_nodes = p_nodes; }
+	Array get_exported_nodes() const { return exported_nodes; }
 };
 
 TEST_CASE("[SceneTree][Node] Testing node operations with a very simple scene tree") {
@@ -476,6 +497,113 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 	memdelete(node1_1);
 	memdelete(node1);
 	memdelete(node2);
+}
+
+TEST_CASE("[SceneTree][Node]Exported node checks") {
+	TestNode *node = memnew(TestNode);
+	SceneTree::get_singleton()->get_root()->add_child(node);
+
+	Node *child = memnew(Node);
+	child->set_name("Child");
+	node->add_child(child);
+	child->set_owner(node);
+
+	Node *child2 = memnew(Node);
+	child2->set_name("Child2");
+	node->add_child(child2);
+	child2->set_owner(node);
+
+	Array children;
+	children.append(child);
+
+	node->set("exported_node", child);
+	node->set("exported_nodes", children);
+
+	SUBCASE("Property of duplicated node should point to duplicated child") {
+		GDREGISTER_CLASS(TestNode);
+
+		TestNode *dup = Object::cast_to<TestNode>(node->duplicate());
+		Node *new_exported = Object::cast_to<Node>(dup->get("exported_node"));
+		CHECK(new_exported == dup->get_child(0));
+
+		memdelete(dup);
+	}
+
+	SUBCASE("Saving instance with exported nodes should not store the unchanged property") {
+		Ref<PackedScene> ps;
+		ps.instantiate();
+		ps->pack(node);
+
+		String scene_path = TestUtils::get_temp_path("test_scene.tscn");
+		ps->set_path(scene_path);
+
+		Node *root = memnew(Node);
+
+		Node *sub_child = ps->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
+		root->add_child(sub_child);
+		sub_child->set_owner(root);
+
+		Ref<PackedScene> ps2;
+		ps2.instantiate();
+		ps2->pack(root);
+
+		scene_path = TestUtils::get_temp_path("new_test_scene.tscn");
+		ResourceSaver::save(ps2, scene_path);
+		memdelete(root);
+
+		bool is_wrong = false;
+		Ref<FileAccess> fa = FileAccess::open(scene_path, FileAccess::READ);
+		while (!fa->eof_reached()) {
+			const String line = fa->get_line();
+			if (line.begins_with("exported_node")) {
+				// The property was saved, while it shouldn't.
+				is_wrong = true;
+				break;
+			}
+		}
+		CHECK_FALSE(is_wrong);
+	}
+
+	SUBCASE("Saving instance with exported nodes should store property if changed") {
+		Ref<PackedScene> ps;
+		ps.instantiate();
+		ps->pack(node);
+
+		String scene_path = TestUtils::get_temp_path("test_scene.tscn");
+		ps->set_path(scene_path);
+
+		Node *root = memnew(Node);
+
+		Node *sub_child = ps->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
+		root->add_child(sub_child);
+		sub_child->set_owner(root);
+
+		sub_child->set("exported_node", sub_child->get_child(1));
+
+		children = Array();
+		children.append(sub_child->get_child(1));
+		sub_child->set("exported_nodes", children);
+
+		Ref<PackedScene> ps2;
+		ps2.instantiate();
+		ps2->pack(root);
+
+		scene_path = TestUtils::get_temp_path("new_test_scene2.tscn");
+		ResourceSaver::save(ps2, scene_path);
+		memdelete(root);
+
+		int stored_properties = 0;
+		Ref<FileAccess> fa = FileAccess::open(scene_path, FileAccess::READ);
+		while (!fa->eof_reached()) {
+			const String line = fa->get_line();
+			if (line.begins_with("exported_node")) {
+				stored_properties++;
+			}
+		}
+		CHECK_EQ(stored_properties, 2);
+	}
+
+	memdelete(node);
 }
 
 TEST_CASE("[Node] Processing checks") {

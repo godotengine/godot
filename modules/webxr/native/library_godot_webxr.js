@@ -67,7 +67,8 @@ const GodotWebXR = {
 				GodotWebXR.orig_requestAnimationFrame = Browser.requestAnimationFrame;
 			}
 			Browser.requestAnimationFrame = enable
-				? GodotWebXR.requestAnimationFrame : GodotWebXR.orig_requestAnimationFrame;
+				? GodotWebXR.requestAnimationFrame
+				: GodotWebXR.orig_requestAnimationFrame;
 		},
 		pauseResumeMainLoop: () => {
 			// Once both GodotWebXR.session and GodotWebXR.space are set or
@@ -76,9 +77,9 @@ const GodotWebXR = {
 			// gets picked up automatically, however, in the Oculus Browser
 			// on the Quest, we need to pause and resume the main loop.
 			Browser.mainLoop.pause();
-			runtimeKeepalivePush(); // eslint-disable-line no-undef
+			runtimeKeepalivePush();
 			window.setTimeout(function () {
-				runtimeKeepalivePop(); // eslint-disable-line no-undef
+				runtimeKeepalivePop();
 				Browser.mainLoop.resume();
 			}, 0);
 		},
@@ -287,12 +288,12 @@ const GodotWebXR = {
 			// Store onsimpleevent so we can use it later.
 			GodotWebXR.onsimpleevent = onsimpleevent;
 
-			const gl_context_handle = _emscripten_webgl_get_current_context(); // eslint-disable-line no-undef
+			const gl_context_handle = _emscripten_webgl_get_current_context();
 			const gl = GL.getContext(gl_context_handle).GLctx;
 			GodotWebXR.gl = gl;
 
 			gl.makeXRCompatible().then(function () {
-				GodotWebXR.gl_binding = new XRWebGLBinding(session, gl); // eslint-disable-line no-undef
+				GodotWebXR.gl_binding = new XRWebGLBinding(session, gl);
 
 				// This will trigger the layer to get created.
 				GodotWebXR.getLayer();
@@ -318,9 +319,15 @@ const GodotWebXR = {
 					// callback don't bubble up here and cause Godot to try the
 					// next reference space.
 					window.setTimeout(function () {
-						const c_str = GodotRuntime.allocString(reference_space_type);
-						onstarted(c_str);
-						GodotRuntime.free(c_str);
+						const reference_space_c_str = GodotRuntime.allocString(reference_space_type);
+						const enabled_features = 'enabledFeatures' in session ? Array.from(session.enabledFeatures) : [];
+						const enabled_features_c_str = GodotRuntime.allocString(enabled_features.join(','));
+						const environment_blend_mode = 'environmentBlendMode' in session ? session.environmentBlendMode : '';
+						const environment_blend_mode_c_str = GodotRuntime.allocString(environment_blend_mode);
+						onstarted(reference_space_c_str, enabled_features_c_str, environment_blend_mode_c_str);
+						GodotRuntime.free(reference_space_c_str);
+						GodotRuntime.free(enabled_features_c_str);
+						GodotRuntime.free(environment_blend_mode_c_str);
 					}, 0);
 				}
 
@@ -479,8 +486,8 @@ const GodotWebXR = {
 	},
 
 	godot_webxr_update_input_source__proxy: 'sync',
-	godot_webxr_update_input_source__sig: 'iiiiiiiiiiii',
-	godot_webxr_update_input_source: function (p_input_source_id, r_target_pose, r_target_ray_mode, r_touch_index, r_has_grip_pose, r_grip_pose, r_has_standard_mapping, r_button_count, r_buttons, r_axes_count, r_axes) {
+	godot_webxr_update_input_source__sig: 'iiiiiiiiiiiiiii',
+	godot_webxr_update_input_source: function (p_input_source_id, r_target_pose, r_target_ray_mode, r_touch_index, r_has_grip_pose, r_grip_pose, r_has_standard_mapping, r_button_count, r_buttons, r_axes_count, r_axes, r_has_hand_data, r_hand_joints, r_hand_radii) {
 		if (!GodotWebXR.session || !GodotWebXR.frame) {
 			return 0;
 		}
@@ -562,6 +569,19 @@ const GodotWebXR = {
 		GodotRuntime.setHeapValue(r_has_standard_mapping, has_standard_mapping ? 1 : 0, 'i32');
 		GodotRuntime.setHeapValue(r_button_count, button_count, 'i32');
 		GodotRuntime.setHeapValue(r_axes_count, axes_count, 'i32');
+
+		// Hand tracking data.
+		let has_hand_data = false;
+		if (input_source.hand && r_hand_joints !== 0 && r_hand_radii !== 0) {
+			const hand_joint_array = new Float32Array(25 * 16);
+			const hand_radii_array = new Float32Array(25);
+			if (frame.fillPoses(input_source.hand.values(), space, hand_joint_array) && frame.fillJointRadii(input_source.hand.values(), hand_radii_array)) {
+				GodotRuntime.heapCopy(HEAPF32, hand_joint_array, r_hand_joints);
+				GodotRuntime.heapCopy(HEAPF32, hand_radii_array, r_hand_radii);
+				has_hand_data = true;
+			}
+		}
+		GodotRuntime.setHeapValue(r_has_hand_data, has_hand_data ? 1 : 0, 'i32');
 
 		return true;
 	},

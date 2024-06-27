@@ -116,6 +116,7 @@
 			<param index="0" name="polygon" type="PackedVector2Array" />
 			<description>
 				Returns [code]true[/code] if [param polygon]'s vertices are ordered in clockwise order, otherwise returns [code]false[/code].
+				[b]Note:[/b] Assumes a Cartesian coordinate system where [code]+x[/code] is right and [code]+y[/code] is up. If using screen coordinates ([code]+y[/code] is down), the result will need to be flipped (i.e. a [code]true[/code] result will indicate counter-clockwise).
 			</description>
 		</method>
 		<method name="line_intersects_line">

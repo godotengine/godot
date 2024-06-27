@@ -110,7 +110,7 @@ Ref<AudioStreamMP3> ResourceImporterMP3::import_mp3(const String &p_path) {
 	mp3_stream.instantiate();
 
 	mp3_stream->set_data(data);
-	ERR_FAIL_COND_V(!mp3_stream->get_data().size(), Ref<AudioStreamMP3>());
+	ERR_FAIL_COND_V(mp3_stream->get_data().is_empty(), Ref<AudioStreamMP3>());
 
 	return mp3_stream;
 }

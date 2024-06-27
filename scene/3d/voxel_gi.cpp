@@ -31,7 +31,6 @@
 #include "voxel_gi.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "mesh_instance_3d.h"
 #include "multimesh_instance_3d.h"
 #include "scene/resources/camera_attributes.h"
@@ -79,7 +78,7 @@ Dictionary VoxelGIData::_get_data() const {
 	if (otsize != Vector3i()) {
 		Ref<Image> img = Image::create_from_data(otsize.x * otsize.y, otsize.z, false, Image::FORMAT_L8, get_distance_field());
 		Vector<uint8_t> df_png = img->save_png_to_buffer();
-		ERR_FAIL_COND_V(df_png.size() == 0, Dictionary());
+		ERR_FAIL_COND_V(df_png.is_empty(), Dictionary());
 		d["octree_df_png"] = df_png;
 	} else {
 		d["octree_df"] = Vector<uint8_t>();
@@ -294,7 +293,7 @@ VoxelGI::Subdiv VoxelGI::get_subdiv() const {
 
 void VoxelGI::set_size(const Vector3 &p_size) {
 	// Prevent very small size dimensions as these breaks baking if other size dimensions are set very high.
-	size = Vector3(MAX(1.0, p_size.x), MAX(1.0, p_size.y), MAX(1.0, p_size.z));
+	size = p_size.maxf(1.0);
 	update_gizmos();
 }
 

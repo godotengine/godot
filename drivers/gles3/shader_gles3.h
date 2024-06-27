@@ -148,7 +148,7 @@ private:
 	static bool shader_cache_save_debug;
 	bool shader_cache_dir_valid = false;
 
-	int64_t max_image_units = 0;
+	GLint max_image_units = 0;
 
 	enum StageType {
 		STAGE_TYPE_VERTEX,
@@ -209,7 +209,9 @@ protected:
 				_compile_specialization(s, p_variant, version, p_specialization);
 				version->variants[p_variant].insert(p_specialization, s);
 				spec = version->variants[p_variant].lookup_ptr(p_specialization);
-				_save_to_cache(version);
+				if (shader_cache_dir_valid) {
+					_save_to_cache(version);
+				}
 			}
 		} else if (spec->build_queued) {
 			// Still queued, wait

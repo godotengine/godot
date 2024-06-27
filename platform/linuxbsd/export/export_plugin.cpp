@@ -36,9 +36,9 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
+#include "editor/themes/editor_scale.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED
@@ -146,12 +146,19 @@ List<String> EditorExportPlatformLinuxBSD::get_binary_extensions(const Ref<Edito
 }
 
 bool EditorExportPlatformLinuxBSD::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
-	if (p_preset) {
-		// Hide SSH options.
-		bool ssh = p_preset->get("ssh_remote_deploy/enabled");
-		if (!ssh && p_option != "ssh_remote_deploy/enabled" && p_option.begins_with("ssh_remote_deploy/")) {
-			return false;
-		}
+	if (p_preset == nullptr) {
+		return true;
+	}
+
+	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
+
+	// Hide SSH options.
+	bool ssh = p_preset->get("ssh_remote_deploy/enabled");
+	if (!ssh && p_option != "ssh_remote_deploy/enabled" && p_option.begins_with("ssh_remote_deploy/")) {
+		return false;
+	}
+	if (p_option == "dotnet/embed_build_outputs") {
+		return advanced_options_enabled;
 	}
 	return true;
 }

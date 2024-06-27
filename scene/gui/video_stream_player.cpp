@@ -31,8 +31,6 @@
 #include "video_stream_player.h"
 
 #include "core/os/os.h"
-#include "scene/resources/image_texture.h"
-#include "scene/scene_string_names.h"
 #include "servers/audio_server.h"
 
 int VideoStreamPlayer::sp_get_channel_count() const {
@@ -164,7 +162,7 @@ void VideoStreamPlayer::_notification(int p_notification) {
 					play();
 					return;
 				}
-				emit_signal(SceneStringNames::get_singleton()->finished);
+				emit_signal(SceneStringName(finished));
 			}
 		} break;
 
@@ -461,7 +459,7 @@ StringName VideoStreamPlayer::get_bus() const {
 			return bus;
 		}
 	}
-	return SceneStringNames::get_singleton()->Master;
+	return SceneStringName(Master);
 }
 
 void VideoStreamPlayer::_validate_property(PropertyInfo &p_property) const {

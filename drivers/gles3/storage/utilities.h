@@ -39,9 +39,24 @@
 
 namespace GLES3 {
 
+/* VISIBILITY NOTIFIER */
+
+struct VisibilityNotifier {
+	AABB aabb;
+	Callable enter_callback;
+	Callable exit_callback;
+	Dependency dependency;
+};
+
 class Utilities : public RendererUtilities {
 private:
 	static Utilities *singleton;
+
+	/* VISIBILITY NOTIFIER */
+
+	mutable RID_Owner<VisibilityNotifier> visibility_notifier_owner;
+
+	/* MISC */
 
 	struct ResourceAllocation {
 #ifdef DEV_ENABLED
@@ -111,6 +126,7 @@ public:
 	}
 
 	// Records that data was allocated for state tracking purposes.
+	// Size is measured in bytes.
 	_FORCE_INLINE_ void texture_allocated_data(GLuint p_id, uint32_t p_size, String p_name = "") {
 		texture_mem_cache += p_size;
 #ifdef DEV_ENABLED
@@ -148,6 +164,10 @@ public:
 	virtual void base_update_dependency(RID p_base, DependencyTracker *p_instance) override;
 
 	/* VISIBILITY NOTIFIER */
+
+	VisibilityNotifier *get_visibility_notifier(RID p_rid) { return visibility_notifier_owner.get_or_null(p_rid); };
+	bool owns_visibility_notifier(RID p_rid) const { return visibility_notifier_owner.owns(p_rid); };
+
 	virtual RID visibility_notifier_allocate() override;
 	virtual void visibility_notifier_initialize(RID p_notifier) override;
 	virtual void visibility_notifier_free(RID p_notifier) override;

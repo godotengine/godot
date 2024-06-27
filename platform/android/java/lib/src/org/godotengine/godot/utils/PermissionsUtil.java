@@ -41,12 +41,16 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -56,9 +60,9 @@ import java.util.Set;
 public final class PermissionsUtil {
 	private static final String TAG = PermissionsUtil.class.getSimpleName();
 
-	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
-	static final int REQUEST_CAMERA_PERMISSION = 2;
-	static final int REQUEST_VIBRATE_PERMISSION = 3;
+	public static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
+	public static final int REQUEST_CAMERA_PERMISSION = 2;
+	public static final int REQUEST_VIBRATE_PERMISSION = 3;
 	public static final int REQUEST_ALL_PERMISSION_REQ_CODE = 1001;
 	public static final int REQUEST_SINGLE_PERMISSION_REQ_CODE = 1002;
 	public static final int REQUEST_MANAGE_EXTERNAL_STORAGE_REQ_CODE = 2002;
@@ -67,12 +71,74 @@ public final class PermissionsUtil {
 	}
 
 	/**
-	 * Request a dangerous permission. name must be specified in <a href="https://github.com/aosp-mirror/platform_frameworks_base/blob/master/core/res/AndroidManifest.xml">this</a>
-	 * @param permissionName the name of the requested permission.
+	 * Request a list of dangerous permissions. The requested permissions must be included in the app's AndroidManifest
+	 * @param permissions list of the permissions to request.
 	 * @param activity the caller activity for this method.
-	 * @return true/false. "true" if permission was granted otherwise returns "false".
+	 * @return true/false. "true" if permissions are already granted, "false" if a permissions request was dispatched.
+	 */
+	public static boolean requestPermissions(Activity activity, List<String> permissions) {
+		if (activity == null) {
+			return false;
+		}
+
+		if (permissions == null || permissions.isEmpty()) {
+			return true;
+		}
+
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+			// Not necessary, asked on install already
+			return true;
+		}
+
+		Set<String> requestedPermissions = new HashSet<>();
+		for (String permission : permissions) {
+			try {
+				if (permission.equals(Manifest.permission.MANAGE_EXTERNAL_STORAGE)) {
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+						Log.d(TAG, "Requesting permission " + permission);
+						try {
+							Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+							intent.setData(Uri.parse(String.format("package:%s", activity.getPackageName())));
+							activity.startActivityForResult(intent, REQUEST_MANAGE_EXTERNAL_STORAGE_REQ_CODE);
+						} catch (Exception ignored) {
+							Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+							activity.startActivityForResult(intent, REQUEST_MANAGE_EXTERNAL_STORAGE_REQ_CODE);
+						}
+					}
+				} else {
+					PermissionInfo permissionInfo = getPermissionInfo(activity, permission);
+					int protectionLevel = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ? permissionInfo.getProtection() : permissionInfo.protectionLevel;
+					if (protectionLevel == PermissionInfo.PROTECTION_DANGEROUS && ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
+						Log.d(TAG, "Requesting permission " + permission);
+						requestedPermissions.add(permission);
+					}
+				}
+			} catch (PackageManager.NameNotFoundException e) {
+				// Skip this permission and continue.
+				Log.w(TAG, "Unable to identify permission " + permission, e);
+			}
+		}
+
+		if (requestedPermissions.isEmpty()) {
+			// If list is empty, all of dangerous permissions were granted.
+			return true;
+		}
+
+		activity.requestPermissions(requestedPermissions.toArray(new String[0]), REQUEST_ALL_PERMISSION_REQ_CODE);
+		return false;
+	}
+
+	/**
+	 * Request a dangerous permission. The requested permission must be included in the app's AndroidManifest
+	 * @param permissionName the name of the permission to request.
+	 * @param activity the caller activity for this method.
+	 * @return true/false. "true" if permission is already granted, "false" if a permission request was dispatched.
 	 */
 	public static boolean requestPermission(String permissionName, Activity activity) {
+		if (activity == null || TextUtils.isEmpty(permissionName)) {
+			return false;
+		}
+
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
 			// Not necessary, asked on install already
 			return true;
@@ -124,7 +190,7 @@ public final class PermissionsUtil {
 	/**
 	 * Request dangerous permissions which are defined in the Android manifest file from the user.
 	 * @param activity the caller activity for this method.
-	 * @return true/false. "true" if all permissions were granted otherwise returns "false".
+	 * @return true/false. "true" if all permissions were already granted, returns "false" if permissions requests were dispatched.
 	 */
 	public static boolean requestManifestPermissions(Activity activity) {
 		return requestManifestPermissions(activity, null);
@@ -134,14 +200,18 @@ public final class PermissionsUtil {
 	 * Request dangerous permissions which are defined in the Android manifest file from the user.
 	 * @param activity the caller activity for this method.
 	 * @param excludes Set of permissions to exclude from the request
-	 * @return true/false. "true" if all permissions were granted otherwise returns "false".
+	 * @return true/false. "true" if all permissions were already granted, returns "false" if permissions requests were dispatched.
 	 */
 	public static boolean requestManifestPermissions(Activity activity, @Nullable Set<String> excludes) {
+		if (activity == null) {
+			return false;
+		}
+
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
 			return true;
 		}
 
-		String[] manifestPermissions;
+		List<String> manifestPermissions;
 		try {
 			manifestPermissions = getManifestPermissions(activity);
 		} catch (PackageManager.NameNotFoundException e) {
@@ -149,48 +219,17 @@ public final class PermissionsUtil {
 			return false;
 		}
 
-		if (manifestPermissions.length == 0)
-			return true;
-
-		List<String> requestedPermissions = new ArrayList<>();
-		for (String manifestPermission : manifestPermissions) {
-			if (excludes != null && excludes.contains(manifestPermission)) {
-				continue;
-			}
-			try {
-				if (manifestPermission.equals(Manifest.permission.MANAGE_EXTERNAL_STORAGE)) {
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
-						Log.d(TAG, "Requesting permission " + manifestPermission);
-						try {
-							Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-							intent.setData(Uri.parse(String.format("package:%s", activity.getPackageName())));
-							activity.startActivityForResult(intent, REQUEST_MANAGE_EXTERNAL_STORAGE_REQ_CODE);
-						} catch (Exception ignored) {
-							Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-							activity.startActivityForResult(intent, REQUEST_MANAGE_EXTERNAL_STORAGE_REQ_CODE);
-						}
-					}
-				} else {
-					PermissionInfo permissionInfo = getPermissionInfo(activity, manifestPermission);
-					int protectionLevel = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ? permissionInfo.getProtection() : permissionInfo.protectionLevel;
-					if (protectionLevel == PermissionInfo.PROTECTION_DANGEROUS && ContextCompat.checkSelfPermission(activity, manifestPermission) != PackageManager.PERMISSION_GRANTED) {
-						Log.d(TAG, "Requesting permission " + manifestPermission);
-						requestedPermissions.add(manifestPermission);
-					}
-				}
-			} catch (PackageManager.NameNotFoundException e) {
-				// Skip this permission and continue.
-				Log.w(TAG, "Unable to identify permission " + manifestPermission, e);
-			}
-		}
-
-		if (requestedPermissions.isEmpty()) {
-			// If list is empty, all of dangerous permissions were granted.
+		if (manifestPermissions.isEmpty()) {
 			return true;
 		}
 
-		activity.requestPermissions(requestedPermissions.toArray(new String[0]), REQUEST_ALL_PERMISSION_REQ_CODE);
-		return false;
+		if (excludes != null && !excludes.isEmpty()) {
+			for (String excludedPermission : excludes) {
+				manifestPermissions.remove(excludedPermission);
+			}
+		}
+
+		return requestPermissions(activity, manifestPermissions);
 	}
 
 	/**
@@ -199,15 +238,16 @@ public final class PermissionsUtil {
 	 * @return granted permissions list
 	 */
 	public static String[] getGrantedPermissions(Context context) {
-		String[] manifestPermissions;
+		List<String> manifestPermissions;
 		try {
 			manifestPermissions = getManifestPermissions(context);
 		} catch (PackageManager.NameNotFoundException e) {
 			e.printStackTrace();
 			return new String[0];
 		}
-		if (manifestPermissions.length == 0)
-			return manifestPermissions;
+		if (manifestPermissions.isEmpty()) {
+			return new String[0];
+		}
 
 		List<String> grantedPermissions = new ArrayList<>();
 		for (String manifestPermission : manifestPermissions) {
@@ -235,14 +275,15 @@ public final class PermissionsUtil {
 	/**
 	 * Check if the given permission is in the AndroidManifest.xml file.
 	 * @param context the caller context for this method.
-	 * @param permission the permession to look for in the manifest file.
+	 * @param permission the permission to look for in the manifest file.
 	 * @return "true" if the permission is in the manifest file of the activity, "false" otherwise.
 	 */
 	public static boolean hasManifestPermission(Context context, String permission) {
 		try {
 			for (String p : getManifestPermissions(context)) {
-				if (permission.equals(p))
+				if (permission.equals(p)) {
 					return true;
+				}
 			}
 		} catch (PackageManager.NameNotFoundException ignored) {
 		}
@@ -253,15 +294,16 @@ public final class PermissionsUtil {
 	/**
 	 * Returns the permissions defined in the AndroidManifest.xml file.
 	 * @param context the caller context for this method.
-	 * @return manifest permissions list
+	 * @return mutable copy of manifest permissions list
 	 * @throws PackageManager.NameNotFoundException the exception is thrown when a given package, application, or component name cannot be found.
 	 */
-	private static String[] getManifestPermissions(Context context) throws PackageManager.NameNotFoundException {
+	public static ArrayList<String> getManifestPermissions(Context context) throws PackageManager.NameNotFoundException {
 		PackageManager packageManager = context.getPackageManager();
 		PackageInfo packageInfo = packageManager.getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS);
-		if (packageInfo.requestedPermissions == null)
-			return new String[0];
-		return packageInfo.requestedPermissions;
+		if (packageInfo.requestedPermissions == null) {
+			return new ArrayList<>();
+		}
+		return new ArrayList<>(Arrays.asList(packageInfo.requestedPermissions));
 	}
 
 	/**

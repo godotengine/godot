@@ -43,7 +43,7 @@ private:
 
 	ScriptEditorDebugger *debugger = nullptr;
 
-	void _breaked(bool p_really_did, bool p_can_debug, String p_message, bool p_has_stackdump);
+	void _breaked(bool p_really_did, bool p_can_debug, const String &p_message, bool p_has_stackdump);
 	void _started();
 	void _stopped();
 	void _debugger_gone_away();
@@ -61,6 +61,8 @@ public:
 	bool is_breaked();
 	bool is_debuggable();
 	bool is_active();
+
+	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
 
 	EditorDebuggerSession(ScriptEditorDebugger *p_debugger);
 	~EditorDebuggerSession();
@@ -90,7 +92,15 @@ public:
 	GDVIRTUAL1RC(bool, _has_capture, const String &);
 	GDVIRTUAL1(_setup_session, int);
 
-	EditorDebuggerPlugin() {}
+	virtual void goto_script_line(const Ref<Script> &p_script, int p_line);
+	virtual void breakpoints_cleared_in_tree();
+	virtual void breakpoint_set_in_tree(const Ref<Script> &p_script, int p_line, bool p_enabled);
+
+	GDVIRTUAL2(_goto_script_line, const Ref<Script> &, int);
+	GDVIRTUAL0(_breakpoints_cleared_in_tree);
+	GDVIRTUAL3(_breakpoint_set_in_tree, const Ref<Script> &, int, bool);
+
+	EditorDebuggerPlugin();
 	~EditorDebuggerPlugin();
 };
 

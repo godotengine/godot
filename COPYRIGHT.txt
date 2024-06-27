@@ -165,7 +165,7 @@ License: BSD-3-clause
 
 Files: ./thirdparty/astcenc/
 Comment: Arm ASTC Encoder
-Copyright: 2011-2023, Arm Limited
+Copyright: 2011-2024, Arm Limited
 License: Apache-2.0
 
 Files: ./thirdparty/basis_universal/
@@ -185,7 +185,7 @@ License: MPL-2.0
 
 Files: ./thirdparty/clipper2/
 Comment: Clipper2
-Copyright: 2010-2013, Angus Johnson
+Copyright: 2010-2023, Angus Johnson
 License: BSL-1.0
 
 Files: ./thirdparty/cvtt/
@@ -216,7 +216,7 @@ License: Apache-2.0
 
 Files: ./thirdparty/enet/
 Comment: ENet
-Copyright: 2002-2020, Lee Salzman
+Copyright: 2002-2024, Lee Salzman
 License: Expat
 
 Files: ./thirdparty/etcpak/
@@ -285,13 +285,18 @@ License: HarfBuzz
 
 Files: ./thirdparty/icu4c/
 Comment: International Components for Unicode
-Copyright: 1991-2021, Unicode
+Copyright: 2016-2024, Unicode, Inc.
 License: Unicode
 
 Files: ./thirdparty/jpeg-compressor/
 Comment: jpeg-compressor
 Copyright: 2012, Rich Geldreich
 License: public-domain or Apache-2.0
+
+Files: ./thirdparty/libbacktrace/
+Comment: libbacktrace
+Copyright: 2012-2021, Free Software Foundation, Inc.
+License: BSD-3-clause
 
 Files: ./thirdparty/libktx/
 Comment: KTX
@@ -306,8 +311,8 @@ License: BSD-3-clause
 
 Files: ./thirdparty/libpng/
 Comment: libpng
-Copyright: 1995-2019, The PNG Reference Library Authors.
- 2018-2019, Cosmin Truta.
+Copyright: 1995-2024, The PNG Reference Library Authors.
+ 2018-2024, Cosmin Truta.
  2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson.
  1996-1997, Andreas Dilger.
  1995-1996, Guy Eric Schalnat, Group 42, Inc.
@@ -350,7 +355,7 @@ License: CC0-1.0
 
 Files: ./thirdparty/miniupnpc/
 Comment: MiniUPnP Project
-Copyright: 2005-2023, Thomas Bernard
+Copyright: 2005-2024, Thomas Bernard
 License: BSD-3-clause
 
 Files: ./thirdparty/minizip/
@@ -359,12 +364,6 @@ Copyright: 1998-2010, Gilles Vollant
  2007-2008, Even Rouault
  2009-2010, Mathias Svensson
 License: Zlib
-
-Files: ./thirdparty/misc/clipper.cpp
- ./thirdparty/misc/clipper.hpp
-Comment: Clipper
-Copyright: 2010-2017, Angus Johnson
-License: BSL-1.0
 
 Files: ./thirdparty/misc/cubemap_coeffs.h
 Comment: Fast Filtering of Reflection Probes
@@ -397,7 +396,7 @@ License: Expat
 
 Files: ./thirdparty/noise/FastNoiseLite.h
 Comment: FastNoise Lite
-Copyright: 2020, Jordan Peck and contributors
+Copyright: 2023, Jordan Peck and contributors
 License: Expat
 
 Files: ./thirdparty/misc/pcg.cpp
@@ -410,6 +409,11 @@ Files: ./thirdparty/misc/polypartition.cpp
  ./thirdparty/misc/polypartition.h
 Comment: PolyPartition / Triangulator
 Copyright: 2011-2021, Ivan Fratric and contributors
+License: Expat
+
+Files: ./thirdparty/misc/qoa.h
+Comment: Quite OK Audio Format
+Copyright: 2023, Dominic Szablewski
 License: Expat
 
 Files: ./thirdparty/misc/r128.c
@@ -457,8 +461,8 @@ License: Apache-2.0
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2
-Copyright: 1997-2022, University of Cambridge
- 2009-2022, Zoltan Herczeg
+Copyright: 1997-2024, University of Cambridge
+ 2009-2024, Zoltan Herczeg
 License: BSD-3-clause
 
 Files: ./thirdparty/recastnavigation/
@@ -483,7 +487,7 @@ License: Expat
 
 Files: ./thirdparty/thorvg/
 Comment: ThorVG
-Copyright: 2020-2023, The ThorVG Project
+Copyright: 2020-2024, The ThorVG Project
 License: Expat
 
 Files: ./thirdparty/tinyexr/
@@ -491,6 +495,11 @@ Comment: TinyEXR
 Copyright: 2014-2021, Syoyo Fujita
   2002, Industrial Light & Magic, a division of Lucas Digital Ltd. LLC
 License: BSD-3-clause
+
+Files: ./thirdparty/ufbx/
+Comment: ufbx
+Copyright: 2020, Samuli Raivio
+License: Expat
 
 Files: ./thirdparty/vhacd/
 Comment: V-HACD
@@ -500,20 +509,39 @@ License: BSD-3-clause
 
 Files: ./thirdparty/volk/
 Comment: volk
-Copyright: 2018-2023, Arseny Kapoulkine
+Copyright: 2018-2024, Arseny Kapoulkine
 License: Expat
 
 Files: ./thirdparty/vulkan/
 Comment: Vulkan Headers
-Copyright: 2014-2023, The Khronos Group Inc.
-  2014-2023, Valve Corporation
-  2014-2023, LunarG, Inc.
-  2015-2023, Google Inc.
+Copyright: 2014-2024, The Khronos Group Inc.
+  2014-2024, Valve Corporation
+  2014-2024, LunarG, Inc.
 License: Apache-2.0
 
 Files: ./thirdparty/vulkan/vk_mem_alloc.h
 Comment: Vulkan Memory Allocator
-Copyright: 2017-2021, Advanced Micro Devices, Inc.
+Copyright: 2017-2024, Advanced Micro Devices, Inc.
+License: Expat
+
+Files: ./thirdparty/wayland/
+Comment: Wayland core protocol
+Copyright: 2008-2012, Kristian Høgsberg
+  2010-2012, Intel Corporation
+  2011, Benjamin Franzke
+  2012, Collabora, Ltd.
+License: Expat
+
+Files: ./thirdparty/wayland-protocols/
+Comment: Wayland protocols that add functionality not available in the core protocol
+Copyright: 2008-2013, Kristian Høgsberg
+  2010-2013, Intel Corporation
+  2013,      Rafael Antognolli
+  2013,      Jasper St. Pierre
+  2014,      Jonas Ådahl
+  2014,      Jason Ekstrand
+  2014-2015, Collabora, Ltd.
+  2015,      Red Hat Inc.
 License: Expat
 
 Files: ./thirdparty/wslay/
@@ -530,7 +558,7 @@ License: Expat
 
 Files: ./thirdparty/zlib/
 Comment: zlib
-Copyright: 1995-2023, Jean-loup Gailly and Mark Adler
+Copyright: 1995-2024, Jean-loup Gailly and Mark Adler
 License: Zlib
 
 Files: ./thirdparty/zstd/

@@ -14,6 +14,7 @@
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce" default="0.0">
 			The body's bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness).
+			[b]Note:[/b] Even with [member bounce] set to [code]1.0[/code], some energy will be lost over time due to linear and angular damping. To have a physics body that preserves all its energy over time, set [member bounce] to [code]1.0[/code], the body's linear damp mode to [b]Replace[/b] (if applicable), its linear damp to [code]0.0[/code], its angular damp mode to [b]Replace[/b] (if applicable), and its angular damp to [code]0.0[/code].
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction" default="1.0">
 			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction).

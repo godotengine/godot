@@ -7,7 +7,7 @@ on:
 env:
   # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes d3d12=yes "dxc_path=${{github.workspace}}/dxc" "mesa_libs=${{github.workspace}}/godot-nir-static"
+  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes d3d12=yes "angle_libs=${{github.workspace}}/"
   SCONS_CACHE_MSVC_CONFIG: true
 
 concurrency:
@@ -28,7 +28,7 @@ jobs:
             target: editor
             tests: true
             # Skip debug symbols, they're way too big with MSVC.
-            sconsflags: debug_symbols=no vsproj=yes windows_subsystem=console
+            sconsflags: debug_symbols=no vsproj=yes vsproj_gen_only=no windows_subsystem=console
             bin: "./bin/godot.windows.editor.x86_64.exe"
 
           - name: Template (target=template_release)
@@ -39,6 +39,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
@@ -46,30 +48,22 @@ jobs:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
-      - name: Setup python and scons
+      - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
-      - name: Download pre-built DirectX Shader Compiler
-        uses: dsaltares/fetch-gh-release-asset@1.0.0
+      - name: Download Direct3D 12 SDK components
+        run: python ./misc/scripts/install_d3d12_sdk_windows.py
+
+      - name: Download pre-built ANGLE static libraries
+        uses: dsaltares/fetch-gh-release-asset@1.1.2
         with:
-          repo: Microsoft/DirectXShaderCompiler
-          version: tags/v1.7.2308
-          file: dxc_2023_08_14.zip
-          target: dxc.zip
+          repo: godotengine/godot-angle-static
+          version: tags/chromium/6029
+          file: Windows.6029-1.MSVC_17.x86_64.x86_32.zip
+          target: angle/angle.zip
 
-      - name: Extract pre-built DirectX Shader Compiler
-        run: 7z x dxc.zip -o${{github.workspace}}/dxc
-
-      - name: Download pre-built Mesa-NIR
-        uses: dsaltares/fetch-gh-release-asset@1.0.0
-        with:
-          repo: godotengine/godot-nir-static
-          version: tags/23.1.0-devel
-          file: godot-nir-23.1.0-1-devel.zip
-          target: godot-nir-static.zip
-
-      - name: Extract pre-built Mesa-NIR
-        run: 7z x godot-nir-static.zip -o${{github.workspace}}/godot-nir-static
+      - name: Extract pre-built ANGLE static libraries
+        run: Expand-Archive -Force angle/angle.zip ${{github.workspace}}/
 
       - name: Setup MSVC problem matcher
         uses: ammaraskar/msvc-problem-matcher@master

@@ -200,7 +200,7 @@ struct LocationLink {
 
 	/**
 	 * The range that should be selected and revealed when this link is being followed, e.g the name of a function.
-	 * Must be contained by the the `targetRange`. See also `DocumentSymbol#range`
+	 * Must be contained by the `targetRange`. See also `DocumentSymbol#range`
 	 */
 	Range targetSelectionRange;
 };
@@ -236,7 +236,7 @@ struct ReferenceContext {
 	/**
 	 * Include the declaration of the current symbol.
 	 */
-	bool includeDeclaration;
+	bool includeDeclaration = false;
 };
 
 struct ReferenceParams : TextDocumentPositionParams {

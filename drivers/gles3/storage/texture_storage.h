@@ -191,6 +191,7 @@ struct Texture {
 	RenderTarget *render_target = nullptr;
 
 	Ref<Image> image_cache_2d;
+	Vector<Ref<Image>> image_cache_3d;
 
 	bool redraw_if_visible = false;
 
@@ -346,9 +347,11 @@ struct RenderTarget {
 	GLuint backbuffer = 0;
 	GLuint backbuffer_depth = 0;
 
+	bool hdr = false; // For Compatibility this effects both 2D and 3D rendering!
 	GLuint color_internal_format = GL_RGBA8;
 	GLuint color_format = GL_RGBA;
 	GLuint color_type = GL_UNSIGNED_BYTE;
+	uint32_t color_format_size = 4;
 	Image::Format image_format = Image::FORMAT_RGBA8;
 
 	GLuint sdf_texture_write = 0;
@@ -403,8 +406,8 @@ private:
 	RID_Owner<CanvasTexture, true> canvas_texture_owner;
 
 	/* Texture API */
-
-	mutable RID_Owner<Texture> texture_owner;
+	// Textures can be created from threads, so this RID_Owner is thread safe.
+	mutable RID_Owner<Texture, true> texture_owner;
 
 	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const;
 
@@ -451,7 +454,10 @@ private:
 	void _render_target_clear_sdf(RenderTarget *rt);
 	Rect2i _render_target_get_sdf_rect(const RenderTarget *rt) const;
 
-	void _texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer, bool initialize);
+	void _texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer, bool p_initialize);
+	void _texture_set_3d_data(RID p_texture, const Vector<Ref<Image>> &p_data, bool p_initialize);
+	void _texture_set_swizzle(Texture *p_texture, Image::Format p_real_format);
+	Vector<Ref<Image>> _texture_3d_read_framebuffer(Texture *p_texture) const;
 
 	struct RenderTargetSDF {
 		CanvasSdfShaderGLES3 shader;
@@ -494,6 +500,10 @@ public:
 	};
 	bool owns_texture(RID p_rid) { return texture_owner.owns(p_rid); };
 
+	void texture_2d_initialize_from_texture(RID p_texture, Texture &p_tex) {
+		texture_owner.initialize_rid(p_texture, p_tex);
+	}
+
 	virtual bool can_create_resources_async() const override;
 
 	virtual RID texture_allocate() override;
@@ -507,7 +517,7 @@ public:
 	RID texture_create_external(Texture::Type p_type, Image::Format p_format, unsigned int p_image, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY);
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override;
-	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override{};
+	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override;
 
 	//these two APIs can be used together or in combination with the others.
@@ -516,8 +526,8 @@ public:
 	virtual void texture_3d_placeholder_initialize(RID p_texture) override;
 
 	virtual Ref<Image> texture_2d_get(RID p_texture) const override;
-	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const override { return Ref<Image>(); };
-	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const override { return Vector<Ref<Image>>(); };
+	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const override;
+	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const override;
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) override;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override;
@@ -623,13 +633,18 @@ public:
 	virtual void render_target_set_msaa_needs_resolve(RID p_render_target, bool p_needs_resolve) override {}
 	virtual bool render_target_get_msaa_needs_resolve(RID p_render_target) const override { return false; }
 	virtual void render_target_do_msaa_resolve(RID p_render_target) override {}
-	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) override {}
-	virtual bool render_target_is_using_hdr(RID p_render_target) const override { return false; }
+	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) override;
+	virtual bool render_target_is_using_hdr(RID p_render_target) const override;
 
 	// new
 	void render_target_set_as_unused(RID p_render_target) override {
 		render_target_clear_used(p_render_target);
 	}
+
+	GLuint render_target_get_color_internal_format(RID p_render_target) const;
+	GLuint render_target_get_color_format(RID p_render_target) const;
+	GLuint render_target_get_color_type(RID p_render_target) const;
+	uint32_t render_target_get_color_format_size(RID p_render_target) const;
 
 	void render_target_request_clear(RID p_render_target, const Color &p_clear_color) override;
 	bool render_target_is_clear_requested(RID p_render_target) override;
@@ -657,6 +672,8 @@ public:
 
 	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) override {}
 	virtual RS::ViewportVRSMode render_target_get_vrs_mode(RID p_render_target) const override { return RS::VIEWPORT_VRS_DISABLED; }
+	virtual void render_target_set_vrs_update_mode(RID p_render_target, RS::ViewportVRSUpdateMode p_mode) override {}
+	virtual RS::ViewportVRSUpdateMode render_target_get_vrs_update_mode(RID p_render_target) const override { return RS::VIEWPORT_VRS_UPDATE_DISABLED; }
 	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override {}
 	virtual RID render_target_get_vrs_texture(RID p_render_target) const override { return RID(); }
 
