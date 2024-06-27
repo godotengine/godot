@@ -130,16 +130,16 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 }
 
 struct FunctionInfo {
-	const char* function;
-	const char* file;
+	const char *function;
+	const char *file;
 	int line;
 	String descriptor;
 };
 
-FunctionInfo calling_function(const char* filter, int frames_to_skip = 0) {
+FunctionInfo calling_function(const char *filter, int frames_to_skip = 0) {
 	constexpr int kBacktraceDepth = 15;
 	constexpr int kDemangledBufferSize = 100;
-	void* backtrace_addrs[kBacktraceDepth];
+	void *backtrace_addrs[kBacktraceDepth];
 	static char s_demangled[kDemangledBufferSize];
 	Dl_info info;
 	FunctionInfo result;
@@ -153,7 +153,7 @@ FunctionInfo calling_function(const char* filter, int frames_to_skip = 0) {
 	} while (i < trace_size && strstr(info.dli_sname, filter));
 
 	int status;
-	char* demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
+	char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
 
 	if (status == 0) {
 		// Have to do it this way to avoid a memory leak, as abi::__cxa_demangle returns a `malloc`ed c-string.
@@ -166,15 +166,13 @@ FunctionInfo calling_function(const char* filter, int frames_to_skip = 0) {
 	free(demangled);
 
 	result.file = info.dli_fname;
-	result.line = static_cast<const char*>(info.dli_saddr) - static_cast<const char*>(info.dli_fbase);
+	result.line = static_cast<const char *>(info.dli_saddr) - static_cast<const char *>(info.dli_fbase);
 
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_name() == "macOS") {
 		String pipe;
-		Error error = OS::get_singleton()->execute("atos", { "-o", info.dli_fname, "-l",
-			String::num_uint64(reinterpret_cast<uint64_t>(info.dli_fbase), 16),
-			String::num_uint64(reinterpret_cast<uint64_t>(backtrace_addrs[i]), 16)},
-			&pipe);
+		Error error = OS::get_singleton()->execute("atos", { "-o", info.dli_fname, "-l", String::num_uint64(reinterpret_cast<uint64_t>(info.dli_fbase), 16), String::num_uint64(reinterpret_cast<uint64_t>(backtrace_addrs[i]), 16) },
+				&pipe);
 
 		if (error == OK) {
 			result.descriptor = pipe + " - ";
@@ -185,7 +183,7 @@ FunctionInfo calling_function(const char* filter, int frames_to_skip = 0) {
 	return result;
 }
 
-void _err_print_error_backtrace(const char *filter, const String& p_error, bool p_editor_notify, ErrorHandlerType p_type) {
+void _err_print_error_backtrace(const char *filter, const String &p_error, bool p_editor_notify, ErrorHandlerType p_type) {
 	FunctionInfo info = calling_function(filter, 1);
 	_err_print_error(info.function, info.file, info.line, "", info.descriptor + p_error, p_editor_notify, p_type);
 }

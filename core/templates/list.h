@@ -764,7 +764,7 @@ public:
 	}
 
 	List(std::initializer_list<T> init) {
-		for (const auto& i : init) {
+		for (const T &i : init) {
 			push_back(i);
 		}
 	}
