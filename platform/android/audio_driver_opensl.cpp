@@ -102,8 +102,7 @@ void AudioDriverOpenSL::start() {
 	buffer_size = 1024;
 
 	for (int i = 0; i < BUFFER_COUNT; i++) {
-		buffers[i] = memnew_arr(int16_t, buffer_size * 2);
-		memset(buffers[i], 0, buffer_size * 4);
+		buffers[i] = memnew_arr_template<int16_t>(buffer_size * 2, true);
 	}
 
 	mixdown_buffer = memnew_arr(int32_t, buffer_size * 2);

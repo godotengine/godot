@@ -1554,27 +1554,25 @@ void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
 	if (multimesh->motion_vectors_enabled) {
 		buffer_size *= 2;
 	}
-	multimesh->data_cache.resize(buffer_size);
-	{
-		float *w = multimesh->data_cache.ptrw();
 
+	{
 		if (multimesh->buffer_set) {
+			multimesh->data_cache.resize(buffer_size);
+			float *w = multimesh->data_cache.ptrw();
 			Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
 			{
 				const uint8_t *r = buffer.ptr();
 				memcpy(w, r, buffer.size());
 			}
 		} else {
-			memset(w, 0, buffer_size * sizeof(float));
+			multimesh->data_cache.resize_zeroed(buffer_size);
 		}
 	}
 	uint32_t data_cache_dirty_region_count = Math::division_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
-	multimesh->data_cache_dirty_regions = memnew_arr(bool, data_cache_dirty_region_count);
-	memset(multimesh->data_cache_dirty_regions, 0, data_cache_dirty_region_count * sizeof(bool));
+	multimesh->data_cache_dirty_regions = memnew_arr_template<bool>(data_cache_dirty_region_count, true);
 	multimesh->data_cache_dirty_region_count = 0;
 
-	multimesh->previous_data_cache_dirty_regions = memnew_arr(bool, data_cache_dirty_region_count);
-	memset(multimesh->previous_data_cache_dirty_regions, 0, data_cache_dirty_region_count * sizeof(bool));
+	multimesh->previous_data_cache_dirty_regions = memnew_arr_template<bool>(data_cache_dirty_region_count, true);
 	multimesh->previous_data_cache_dirty_region_count = 0;
 }
 

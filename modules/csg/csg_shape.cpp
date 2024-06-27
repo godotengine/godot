@@ -310,10 +310,7 @@ void CSGShape3D::_update_shape() {
 	OAHashMap<Vector3, Vector3> vec_map;
 
 	Vector<int> face_count;
-	face_count.resize(n->materials.size() + 1);
-	for (int i = 0; i < face_count.size(); i++) {
-		face_count.write[i] = 0;
-	}
+	face_count.resize_zeroed(n->materials.size() + 1);
 
 	for (int i = 0; i < n->faces.size(); i++) {
 		int mat = n->faces[i].material;

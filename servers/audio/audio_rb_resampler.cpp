@@ -177,8 +177,12 @@ Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_m
 		rb_len = (1 << rb_bits);
 		rb_mask = rb_len - 1;
 		const size_t array_size = rb_len * (size_t)p_channels;
-		rb = memnew_arr(float, array_size);
-		read_buf = memnew_arr(float, array_size);
+		rb = memnew_arr_template<float>(array_size, true);
+		read_buf = memnew_arr_template<float>(array_size, true);
+	} else {
+		//avoid maybe strange noises upon load
+		memset(rb, 0, rb_len * channels * sizeof(float));
+		memset(read_buf, 0, rb_len * channels * sizeof(float));
 	}
 
 	src_mix_rate = p_src_mix_rate;
@@ -186,12 +190,6 @@ Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_m
 	offset = 0;
 	rb_read_pos.set(0);
 	rb_write_pos.set(0);
-
-	//avoid maybe strange noises upon load
-	for (unsigned int i = 0; i < (rb_len * channels); i++) {
-		rb[i] = 0;
-		read_buf[i] = 0;
-	}
 
 	return OK;
 }

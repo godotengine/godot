@@ -1903,8 +1903,7 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 		int32_t command_index;
 
 		// Count all the incoming connections to every node by traversing their adjacency list.
-		command_degrees.resize(command_count);
-		memset(command_degrees.ptr(), 0, sizeof(uint32_t) * command_degrees.size());
+		command_degrees.init_with_zeros(command_count);
 		for (uint32_t i = 0; i < command_count; i++) {
 			const RecordedCommand &recorded_command = *reinterpret_cast<const RecordedCommand *>(&command_data[command_data_offsets[i]]);
 			adjacency_list_index = recorded_command.adjacent_command_list_index;

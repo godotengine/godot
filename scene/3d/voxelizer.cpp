@@ -762,12 +762,9 @@ Vector<int> Voxelizer::get_voxel_gi_level_cell_count() const {
 	uint32_t cell_count = bake_cells.size();
 	const Cell *cells = bake_cells.ptr();
 	Vector<int> level_count;
-	level_count.resize(cell_subdiv + 1); //remember, always x+1 levels for x subdivisions
+	level_count.resize_zeroed(cell_subdiv + 1); //remember, always x+1 levels for x subdivisions
 	{
 		int *w = level_count.ptrw();
-		for (int i = 0; i < cell_subdiv + 1; i++) {
-			w[i] = 0;
-		}
 
 		for (uint32_t i = 0; i < cell_count; i++) {
 			w[cells[i].level]++;

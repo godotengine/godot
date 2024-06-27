@@ -498,8 +498,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	Vector<uint32_t> triangle_indices;
 	triangle_indices.resize(triangle_sort.size());
 	Vector<uint32_t> grid_indices;
-	grid_indices.resize(grid_size * grid_size * grid_size * 2);
-	memset(grid_indices.ptrw(), 0, grid_indices.size() * sizeof(uint32_t));
+	grid_indices.resize_zeroed(grid_size * grid_size * grid_size * 2);
 
 	{
 		// Fill grid with cell indices.

@@ -141,8 +141,6 @@ void Polygon2D::_notification(int p_what) {
 
 			Vector<Vector2> points;
 			Vector<Vector2> uvs;
-			Vector<int> bones;
-			Vector<float> weights;
 
 			int len = polygon.size();
 			if ((invert || polygons.size() == 0) && internal_vertices > 0) {
@@ -234,19 +232,16 @@ void Polygon2D::_notification(int p_what) {
 				}
 			}
 
+			Vector<int> bones;
+			Vector<float> weights;
 			if (skeleton_node && !invert && bone_weights.size()) {
 				//a skeleton is set! fill indices and weights
 				int vc = len;
-				bones.resize(vc * 4);
-				weights.resize(vc * 4);
+				bones.resize_zeroed(vc * 4);
+				weights.resize_zeroed(vc * 4);
 
 				int *bonesw = bones.ptrw();
 				float *weightsw = weights.ptrw();
-
-				for (int i = 0; i < vc * 4; i++) {
-					bonesw[i] = 0;
-					weightsw[i] = 0;
-				}
 
 				for (int i = 0; i < bone_weights.size(); i++) {
 					if (bone_weights[i].weights.size() != points.size()) {

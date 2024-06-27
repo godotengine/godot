@@ -2002,18 +2002,15 @@ void OpenXRAPI::_allocate_view_buffers(uint32_t p_view_count, bool p_submit_dept
 	openxr_api->render_state.submit_depth_buffer = p_submit_depth_buffer;
 
 	// Allocate buffers we'll be populating with view information.
-	openxr_api->render_state.views = (XrView *)memalloc(sizeof(XrView) * p_view_count);
+	openxr_api->render_state.views = (XrView *)Memory::calloc_static(sizeof(XrView) * p_view_count);
 	ERR_FAIL_NULL_MSG(openxr_api->render_state.views, "OpenXR Couldn't allocate memory for views");
-	memset(openxr_api->render_state.views, 0, sizeof(XrView) * p_view_count);
 
-	openxr_api->render_state.projection_views = (XrCompositionLayerProjectionView *)memalloc(sizeof(XrCompositionLayerProjectionView) * p_view_count);
+	openxr_api->render_state.projection_views = (XrCompositionLayerProjectionView *)Memory::calloc_static(sizeof(XrCompositionLayerProjectionView) * p_view_count);
 	ERR_FAIL_NULL_MSG(openxr_api->render_state.projection_views, "OpenXR Couldn't allocate memory for projection views");
-	memset(openxr_api->render_state.projection_views, 0, sizeof(XrCompositionLayerProjectionView) * p_view_count);
 
 	if (p_submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available()) {
-		openxr_api->render_state.depth_views = (XrCompositionLayerDepthInfoKHR *)memalloc(sizeof(XrCompositionLayerDepthInfoKHR) * p_view_count);
+		openxr_api->render_state.depth_views = (XrCompositionLayerDepthInfoKHR *)Memory::calloc_static(sizeof(XrCompositionLayerDepthInfoKHR) * p_view_count);
 		ERR_FAIL_NULL_MSG(openxr_api->render_state.depth_views, "OpenXR Couldn't allocate memory for depth views");
-		memset(openxr_api->render_state.depth_views, 0, sizeof(XrCompositionLayerDepthInfoKHR) * p_view_count);
 	}
 }
 

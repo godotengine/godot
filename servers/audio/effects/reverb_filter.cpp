@@ -239,11 +239,8 @@ void Reverb::configure_buffers() {
 			len = 5; //may this happen?
 		}
 
-		c.buffer = memnew_arr(float, len);
+		c.buffer = memnew_arr_template<float>(len, true);
 		c.pos = 0;
-		for (int j = 0; j < len; j++) {
-			c.buffer[j] = 0;
-		}
 		c.size = len;
 	}
 
@@ -257,19 +254,13 @@ void Reverb::configure_buffers() {
 			len = 5; //may this happen?
 		}
 
-		a.buffer = memnew_arr(float, len);
+		a.buffer = memnew_arr_template<float>(len, true);
 		a.pos = 0;
-		for (int j = 0; j < len; j++) {
-			a.buffer[j] = 0;
-		}
 		a.size = len;
 	}
 
 	echo_buffer_size = (int)(((float)MAX_ECHO_MS / 1000.0) * params.mix_rate + 1.0);
-	echo_buffer = memnew_arr(float, echo_buffer_size);
-	for (int i = 0; i < echo_buffer_size; i++) {
-		echo_buffer[i] = 0;
-	}
+	echo_buffer = memnew_arr_template<float>(echo_buffer_size, true);
 
 	echo_buffer_pos = 0;
 }

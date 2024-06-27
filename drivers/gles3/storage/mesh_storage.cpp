@@ -1538,19 +1538,18 @@ void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
 	ERR_FAIL_COND(multimesh->data_cache.size() > 0);
 	// this means that the user wants to load/save individual elements,
 	// for this, the data must reside on CPU, so just copy it there.
-	multimesh->data_cache.resize(multimesh->instances * multimesh->stride_cache);
+
 	{
-		float *w = multimesh->data_cache.ptrw();
-
 		if (multimesh->buffer_set) {
+			multimesh->data_cache.resize(multimesh->instances * multimesh->stride_cache);
+			float *w = multimesh->data_cache.ptrw();
 			Vector<uint8_t> buffer = Utilities::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer, multimesh->instances * multimesh->stride_cache * sizeof(float));
-
 			{
 				const uint8_t *r = buffer.ptr();
 				memcpy(w, r, buffer.size());
 			}
 		} else {
-			memset(w, 0, (size_t)multimesh->instances * multimesh->stride_cache * sizeof(float));
+			multimesh->data_cache.resize_zeroed(multimesh->instances * multimesh->stride_cache);
 		}
 	}
 	uint32_t data_cache_dirty_region_count = Math::division_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);

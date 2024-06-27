@@ -2177,9 +2177,10 @@ void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Forma
 
 	int mm = 0;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
-	data.resize(size);
-
-	{
+	if (data.is_empty()) {
+		data.resize_zeroed(size);
+	} else {
+		data.resize(size);
 		uint8_t *w = data.ptrw();
 		memset(w, 0, size);
 	}

@@ -2601,10 +2601,9 @@ void TextureStorage::update_decal_atlas() {
 
 		while (true) {
 			Vector<int> v_offsetsv;
-			v_offsetsv.resize(base_size);
+			v_offsetsv.resize_zeroed(base_size);
 
 			int *v_offsets = v_offsetsv.ptrw();
-			memset(v_offsets, 0, sizeof(int) * base_size);
 
 			int max_height = 0;
 
@@ -3601,9 +3600,6 @@ RID TextureStorage::render_target_get_sdf_texture(RID p_render_target) {
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
 		tformat.texture_type = RD::TEXTURE_TYPE_2D;
 
-		Vector<uint8_t> pv;
-		pv.resize(16 * 4);
-		memset(pv.ptrw(), 0, 16 * 4);
 		Vector<Vector<uint8_t>> vpv;
 
 		rt->sdf_buffer_read = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);

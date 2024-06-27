@@ -1811,10 +1811,8 @@ void TextureStorage::update_texture_atlas() {
 
 		while (true) {
 			Vector<int> v_offsetsv;
-			v_offsetsv.resize(base_size);
-
+			v_offsetsv.resize_zeroed(base_size);
 			int *v_offsets = v_offsetsv.ptrw();
-			memset(v_offsets, 0, sizeof(int) * base_size);
 
 			int max_height = 0;
 

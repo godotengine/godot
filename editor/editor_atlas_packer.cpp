@@ -178,10 +178,7 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 
 		//do a tetris
 		Vector<int> heights;
-		heights.resize(atlas_w);
-		for (int i = 0; i < atlas_w; i++) {
-			heights.write[i] = 0;
-		}
+		heights.resize_zeroed(atlas_w);
 
 		int *atlas_ptr = heights.ptrw();
 
