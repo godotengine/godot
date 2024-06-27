@@ -758,6 +758,8 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 
 	// Ensure that the FileSystem dock is visible.
 	EditorDockManager::get_singleton()->focus_dock(this);
+	import_dock_needs_update = true;
+	_update_import_dock();
 }
 
 void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
