@@ -5194,10 +5194,11 @@
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_LIGHTING" value="2" enum="ViewportDebugDraw">
 			Objects are displayed with only light information.
+			[b]Note:[/b] When using this debug draw mode, custom shaders are ignored since all materials in the scene temporarily use a debug material. This means the result from custom shader functions (such as vertex displacement) won't be visible anymore when using this debug draw mode.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_OVERDRAW" value="3" enum="ViewportDebugDraw">
 			Objects are displayed semi-transparent with additive blending so you can see where they are drawing over top of one another. A higher overdraw (represented by brighter colors) means you are wasting performance on drawing pixels that are being hidden behind others.
-			[b]Note:[/b] When using this debug draw mode, custom shaders will be ignored. This means vertex displacement won't be visible anymore.
+			[b]Note:[/b] When using this debug draw mode, custom shaders are ignored since all materials in the scene temporarily use a debug material. This means the result from custom shader functions (such as vertex displacement) won't be visible anymore when using this debug draw mode.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_WIREFRAME" value="4" enum="ViewportDebugDraw">
 			Debug draw draws objects in wireframe.
@@ -5207,13 +5208,16 @@
 			Normal buffer is drawn instead of regular scene so you can see the per-pixel normals that will be used by post-processing effects.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_VOXEL_GI_ALBEDO" value="6" enum="ViewportDebugDraw">
-			Objects are displayed with only the albedo value from [VoxelGI]s.
+			Objects are displayed with only the albedo value from [VoxelGI]s. Requires at least one visible [VoxelGI] node that has been baked to have a visible effect.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING" value="7" enum="ViewportDebugDraw">
-			Objects are displayed with only the lighting value from [VoxelGI]s.
+			Objects are displayed with only the lighting value from [VoxelGI]s. Requires at least one visible [VoxelGI] node that has been baked to have a visible effect.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION" value="8" enum="ViewportDebugDraw">
-			Objects are displayed with only the emission color from [VoxelGI]s.
+			Objects are displayed with only the emission color from [VoxelGI]s. Requires at least one visible [VoxelGI] node that has been baked to have a visible effect.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS" value="9" enum="ViewportDebugDraw">
 			Draws the shadow atlas that stores shadows from [OmniLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].
@@ -5225,51 +5229,67 @@
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE" value="11" enum="ViewportDebugDraw">
 			Draws the estimated scene luminance. This is a 1×1 texture that is generated when autoexposure is enabled to control the scene's exposure.
+			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SSAO" value="12" enum="ViewportDebugDraw">
 			Draws the screen space ambient occlusion texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssao_enabled] set in your [WorldEnvironment].
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SSIL" value="13" enum="ViewportDebugDraw">
 			Draws the screen space indirect lighting texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssil_enabled] set in your [WorldEnvironment].
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_PSSM_SPLITS" value="14" enum="ViewportDebugDraw">
-			Colors each PSSM split for the [DirectionalLight3D]s in the scene a different color so you can see where the splits are. In order they will be colored red, green, blue, yellow.
+			Colors each PSSM split for the [DirectionalLight3D]s in the scene a different color so you can see where the splits are. In order (from closest to furthest from the camera), they are colored red, green, blue, and yellow.
+			[b]Note:[/b] When using this debug draw mode, custom shaders are ignored since all materials in the scene temporarily use a debug material. This means the result from custom shader functions (such as vertex displacement) won't be visible anymore when using this debug draw mode.
+			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DECAL_ATLAS" value="15" enum="ViewportDebugDraw">
 			Draws the decal atlas that stores decal textures from [Decal]s.
+			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI" value="16" enum="ViewportDebugDraw">
 			Draws SDFGI cascade data. This is the data structure that is used to bounce lighting against and create reflections.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI_PROBES" value="17" enum="ViewportDebugDraw">
 			Draws SDFGI probe data. This is the data structure that is used to give indirect lighting dynamic objects moving within the scene.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_GI_BUFFER" value="18" enum="ViewportDebugDraw">
-			Draws the global illumination buffer ([VoxelGI] or SDFGI).
+			Draws the global illumination buffer from [VoxelGI] or SDFGI. Requires [VoxelGI] (at least one visible baked VoxelGI node) or SDFGI ([member Environment.sdfgi_enabled]) to be enabled to have a visible effect.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DISABLE_LOD" value="19" enum="ViewportDebugDraw">
 			Disable mesh LOD. All meshes are drawn with full detail, which can be used to compare performance.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="20" enum="ViewportDebugDraw">
 			Draws the [OmniLight3D] cluster. Clustering determines where lights are positioned in screen-space, which allows the engine to only process these portions of the screen for lighting.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="21" enum="ViewportDebugDraw">
 			Draws the [SpotLight3D] cluster. Clustering determines where lights are positioned in screen-space, which allows the engine to only process these portions of the screen for lighting.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS" value="22" enum="ViewportDebugDraw">
 			Draws the [Decal] cluster. Clustering determines where decals are positioned in screen-space, which allows the engine to only process these portions of the screen for decals.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="23" enum="ViewportDebugDraw">
 			Draws the [ReflectionProbe] cluster. Clustering determines where reflection probes are positioned in screen-space, which allows the engine to only process these portions of the screen for reflection probes.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_OCCLUDERS" value="24" enum="ViewportDebugDraw">
 			Draws the occlusion culling buffer. This low-resolution occlusion culling buffer is rasterized on the CPU and is used to check whether instances are occluded by other objects.
+			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_MOTION_VECTORS" value="25" enum="ViewportDebugDraw">
 			Draws the motion vectors buffer. This is used by temporal antialiasing to correct for motion that occurs during gameplay.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER" value="26" enum="ViewportDebugDraw">
 			Internal buffer is drawn instead of regular scene so you can see the per-pixel output that will be used by post-processing effects.
+			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
 		<constant name="VIEWPORT_VRS_DISABLED" value="0" enum="ViewportVRSMode">
 			Variable rate shading is disabled.

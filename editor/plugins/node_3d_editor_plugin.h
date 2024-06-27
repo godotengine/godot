@@ -523,7 +523,15 @@ private:
 	void register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode, bool p_physical = false);
 	void shortcut_changed_callback(const Ref<Shortcut> p_shortcut, const String &p_shortcut_path);
 
+	// Supported rendering methods for advanced debug draw mode items.
+	enum SupportedRenderingMethods {
+		ALL,
+		FORWARD_PLUS,
+		FORWARD_PLUS_MOBILE,
+	};
+
 	void _set_lock_view_rotation(bool p_lock_rotation);
+	void _add_advanced_debug_draw_mode_item(PopupMenu *p_popup, const String &p_name, int p_value, SupportedRenderingMethods p_rendering_methods = SupportedRenderingMethods::ALL, const String &p_tooltip = "");
 
 protected:
 	void _notification(int p_what);
