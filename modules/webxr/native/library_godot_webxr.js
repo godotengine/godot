@@ -322,9 +322,12 @@ const GodotWebXR = {
 						const reference_space_c_str = GodotRuntime.allocString(reference_space_type);
 						const enabled_features = 'enabledFeatures' in session ? Array.from(session.enabledFeatures) : [];
 						const enabled_features_c_str = GodotRuntime.allocString(enabled_features.join(','));
-						onstarted(reference_space_c_str, enabled_features_c_str);
+						const environment_blend_mode = 'environmentBlendMode' in session ? session.environmentBlendMode : '';
+						const environment_blend_mode_c_str = GodotRuntime.allocString(environment_blend_mode);
+						onstarted(reference_space_c_str, enabled_features_c_str, environment_blend_mode_c_str);
 						GodotRuntime.free(reference_space_c_str);
 						GodotRuntime.free(enabled_features_c_str);
+						GodotRuntime.free(environment_blend_mode_c_str);
 					}, 0);
 				}
 

@@ -3138,6 +3138,7 @@ void EditorInspector::update_tree() {
 		// Recreate the category vbox if it was reset.
 		if (category_vbox == nullptr) {
 			category_vbox = memnew(VBoxContainer);
+			category_vbox->hide();
 			main_vbox->add_child(category_vbox);
 		}
 
@@ -3210,6 +3211,7 @@ void EditorInspector::update_tree() {
 
 		// If we did not find a section to add the property to, add it to the category vbox instead (the category vbox handles margins correctly).
 		if (current_vbox == main_vbox) {
+			category_vbox->show();
 			current_vbox = category_vbox;
 		}
 

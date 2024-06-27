@@ -191,8 +191,10 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 }
 
 Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourceParser &parser) {
-	Ref<PackedScene> packed_scene;
-	packed_scene.instantiate();
+	Ref<PackedScene> packed_scene = ResourceLoader::get_resource_ref_override(local_path);
+	if (packed_scene.is_null()) {
+		packed_scene.instantiate();
+	}
 
 	while (true) {
 		if (next_tag.name == "node") {
@@ -664,39 +666,42 @@ Error ResourceLoaderText::load() {
 			return error;
 		}
 
-		Ref<Resource> cache = ResourceCache::get_ref(local_path);
-		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && cache.is_valid() && cache->get_class() == res_type) {
-			cache->reset_state();
-			resource = cache;
-		}
-
 		MissingResource *missing_resource = nullptr;
 
-		if (!resource.is_valid()) {
-			Object *obj = ClassDB::instantiate(res_type);
-			if (!obj) {
-				if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
-					missing_resource = memnew(MissingResource);
-					missing_resource->set_original_class(res_type);
-					missing_resource->set_recording_properties(true);
-					obj = missing_resource;
-				} else {
-					error_text += "Can't create sub resource of type: " + res_type;
+		resource = ResourceLoader::get_resource_ref_override(local_path);
+		if (resource.is_null()) {
+			Ref<Resource> cache = ResourceCache::get_ref(local_path);
+			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && cache.is_valid() && cache->get_class() == res_type) {
+				cache->reset_state();
+				resource = cache;
+			}
+
+			if (!resource.is_valid()) {
+				Object *obj = ClassDB::instantiate(res_type);
+				if (!obj) {
+					if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+						missing_resource = memnew(MissingResource);
+						missing_resource->set_original_class(res_type);
+						missing_resource->set_recording_properties(true);
+						obj = missing_resource;
+					} else {
+						error_text += "Can't create sub resource of type: " + res_type;
+						_printerr();
+						error = ERR_FILE_CORRUPT;
+						return error;
+					}
+				}
+
+				Resource *r = Object::cast_to<Resource>(obj);
+				if (!r) {
+					error_text += "Can't create sub resource of type, because not a resource: " + res_type;
 					_printerr();
 					error = ERR_FILE_CORRUPT;
 					return error;
 				}
-			}
 
-			Resource *r = Object::cast_to<Resource>(obj);
-			if (!r) {
-				error_text += "Can't create sub resource of type, because not a resource: " + res_type;
-				_printerr();
-				error = ERR_FILE_CORRUPT;
-				return error;
+				resource = Ref<Resource>(r);
 			}
-
-			resource = Ref<Resource>(r);
 		}
 
 		Dictionary missing_resource_properties;
