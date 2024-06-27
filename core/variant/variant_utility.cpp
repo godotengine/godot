@@ -1089,7 +1089,7 @@ void VariantUtilityFunctions::push_error(const Variant **p_args, int p_arg_count
 		}
 	}
 
-	ERR_PRINT(s);
+	_err_print_error_backtrace(FUNCTION_STR, s);
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
@@ -1109,7 +1109,7 @@ void VariantUtilityFunctions::push_warning(const Variant **p_args, int p_arg_cou
 		}
 	}
 
-	WARN_PRINT(s);
+	_err_print_error_backtrace(FUNCTION_STR, s, false, ERR_HANDLER_WARNING);
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
