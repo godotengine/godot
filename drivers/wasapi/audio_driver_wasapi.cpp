@@ -901,7 +901,6 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 		ad->unlock();
 
 		// Let the thread rest a while if we haven't read or write anything
-		//Todo: Why?
 		if (written_frames == 0 && read_frames == 0) {
 			OS::get_singleton()->delay_usec(1000);
 		}

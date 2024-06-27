@@ -515,7 +515,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 					Vector3 face_normal = vec3_cross(v0 - v2, v0 - v1);
 					float face_area = face_normal.length(); // Actually twice the face area, since it's the same error_factor on all faces, we don't care
 					if (!Math::is_finite(face_area) || face_area == 0) {
-						WARN_PRINT_ONCE("Ignoring face with non-finite or zero normal in LOD generation.");
+						WARN_PRINT_ONCE("Ignoring face with non-finite normal in LOD generation.");
 						continue;
 					}
 

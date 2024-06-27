@@ -76,8 +76,8 @@ namespace embree
         NodeRef cur = NodeRef(stackPtr->ptr);
 
         /* if popped node is too far, pop next one */
-		if (unlikely(stackPtr->dist > ray.tfar))
-			continue;
+        if (unlikely(*(float*)&stackPtr->dist > ray.tfar))
+          continue;
 
         /* downtraversal loop */
         while (true)

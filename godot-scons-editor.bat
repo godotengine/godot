@@ -1,1 +1,0 @@
-scons platform=windows vsproj=yes dev_build=yes

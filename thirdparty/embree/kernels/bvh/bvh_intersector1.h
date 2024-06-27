@@ -26,9 +26,9 @@ namespace embree
       static const size_t stackSize = 1+(N-1)*BVH::maxDepth+3; // +3 due to 16-wide store
 
     public:
-      inline static void intersect (const Accel::Intersectors* This, RayHit& ray, RayQueryContext* context);
-      inline static void occluded  (const Accel::Intersectors* This, Ray& ray, RayQueryContext* context);
-      inline static bool pointQuery(const Accel::Intersectors* This, PointQuery* query, PointQueryContext* context);
+      static void intersect (const Accel::Intersectors* This, RayHit& ray, RayQueryContext* context);
+      static void occluded  (const Accel::Intersectors* This, Ray& ray, RayQueryContext* context);
+      static bool pointQuery(const Accel::Intersectors* This, PointQuery* query, PointQueryContext* context);
     };
   }
 }
