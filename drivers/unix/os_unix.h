@@ -53,11 +53,7 @@ protected:
 
 	virtual void finalize_core() override;
 
-#ifdef __APPLE__
-	virtual StackInfo describe_function(const struct dl_info &info, const void *address) const;
-#else
-	virtual StackInfo describe_function(const struct Dl_info &info, const void *address) const;
-#endif
+	virtual StackInfo describe_function(const char *dli_fname, const void *dli_fbase, const char *dli_sname, const void *dli_saddr, const void *address) const;
 
 public:
 	OS_Unix();

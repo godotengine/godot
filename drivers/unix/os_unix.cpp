@@ -1008,24 +1008,24 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 	}
 }
 
-OS::StackInfo OS_Unix::describe_function(const Dl_info &info, const void *address) const {
+OS::StackInfo OS_Unix::describe_function(const char *dli_fname, const void *dli_fbase, const char *dli_sname, const void *dli_saddr, const void *address) const {
 	StackInfo result;
 
 	// Demangle C++ symbols
 	int status;
-	char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
+	char *demangled = abi::__cxa_demangle(dli_sname, nullptr, nullptr, &status);
 
 	if (status == 0) {
 		result.function = demangled;
 	} else {
-		result.function = info.dli_sname;
+		result.function = dli_sname;
 	}
 	free(demangled);
 
 	// Get file info
-	result.file = info.dli_fname;
-	result.offset = static_cast<const char *>(address) - static_cast<const char *>(info.dli_fbase);
-	result.load_address = info.dli_fbase;
+	result.file = dli_fname;
+	result.offset = static_cast<const char *>(address) - static_cast<const char *>(dli_fbase);
+	result.load_address = dli_fbase;
 	result.symbol_address = address;
 
 	return result;
@@ -1043,7 +1043,7 @@ Vector<OS::StackInfo> OS_Unix::get_cpp_stack_info() const {
 	for (int i = 1; i < trace_size; ++i) {
 		Dl_info info;
 		dladdr(backtrace_addrs[i], &info);
-		result.write[i - 1] = describe_function(info, backtrace_addrs[i]);
+		result.write[i - 1] = describe_function(info.dli_fname, info.dli_fbase, info.dli_sname, info.dli_saddr, backtrace_addrs[i]);
 	}
 
 	return result;
