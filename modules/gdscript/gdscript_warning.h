@@ -85,6 +85,7 @@ public:
 		CONFUSABLE_IDENTIFIER, // The identifier contains misleading characters that can be confused. E.g. "usеr" (has Cyrillic "е" instead of Latin "e").
 		CONFUSABLE_LOCAL_DECLARATION, // The parent block declares an identifier with the same name below.
 		CONFUSABLE_LOCAL_USAGE, // The identifier will be shadowed below in the block.
+		CONFUSABLE_CAPTURE_REASSIGNMENT, // Reassigning lambda capture does not modify the outer local variable.
 		INFERENCE_ON_VARIANT, // The declaration uses type inference but the value is typed as Variant.
 		NATIVE_METHOD_OVERRIDE, // The script method overrides a native one, this may not work as intended.
 		GET_NODE_DEFAULT_WITHOUT_ONREADY, // A class variable uses `get_node()` (or the `$` notation) as its default value, but does not use the @onready annotation.
@@ -137,6 +138,7 @@ public:
 		WARN, // CONFUSABLE_IDENTIFIER
 		WARN, // CONFUSABLE_LOCAL_DECLARATION
 		WARN, // CONFUSABLE_LOCAL_USAGE
+		WARN, // CONFUSABLE_CAPTURE_REASSIGNMENT
 		ERROR, // INFERENCE_ON_VARIANT // Most likely done by accident, usually inference is trying for a particular type.
 		ERROR, // NATIVE_METHOD_OVERRIDE // May not work as expected.
 		ERROR, // GET_NODE_DEFAULT_WITHOUT_ONREADY // May not work as expected.
