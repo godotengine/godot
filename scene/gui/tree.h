@@ -641,6 +641,7 @@ private:
 	String incr_search;
 	bool cursor_can_exit_tree = true;
 	void _do_incr_search(const String &p_add);
+	void _incr_search(const Ref<InputEventKey> &p_event_key);
 
 	TreeItem *_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards = false);
 

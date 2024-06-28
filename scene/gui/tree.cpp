@@ -3620,9 +3620,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (k->get_unicode() > 0) {
-			_do_incr_search(String::chr(k->get_unicode()));
-			accept_event();
-
+			callable_mp(this, &Tree::_incr_search).call_deferred(k);
 			return;
 		} else {
 			if (k->get_keycode() != Key::SHIFT) {
@@ -5243,6 +5241,13 @@ void Tree::_do_incr_search(const String &p_add) {
 		item->select(col);
 	}
 	ensure_cursor_is_visible();
+}
+
+void Tree::_incr_search(const Ref<InputEventKey> &p_event_key) {
+	if (get_viewport()->is_input_handled()) {
+		return;
+	}
+	_do_incr_search(String::chr(p_event_key->get_unicode()));
 }
 
 TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &h, int &section) const {
