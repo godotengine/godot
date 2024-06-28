@@ -46,9 +46,9 @@ struct SwCanvas::Impl
 /************************************************************************/
 
 #ifdef THORVG_SW_RASTER_SUPPORT
-SwCanvas::SwCanvas() : Canvas(SwRenderer::gen()), pImpl(new Impl)
+SwCanvas::SwCanvas() : Canvas(SwRenderer::gen()), pImpl(nullptr)
 #else
-SwCanvas::SwCanvas() : Canvas(nullptr), pImpl(new Impl)
+SwCanvas::SwCanvas() : Canvas(nullptr), pImpl(nullptr)
 #endif
 {
 }
@@ -82,6 +82,10 @@ Result SwCanvas::mempool(MempoolPolicy policy) noexcept
 Result SwCanvas::target(uint32_t* buffer, uint32_t stride, uint32_t w, uint32_t h, Colorspace cs) noexcept
 {
 #ifdef THORVG_SW_RASTER_SUPPORT
+    if (Canvas::pImpl->status != Status::Damanged && Canvas::pImpl->status != Status::Synced) {
+        return Result::InsufficientCondition;
+    }
+
     //We know renderer type, avoid dynamic_cast for performance.
     auto renderer = static_cast<SwRenderer*>(Canvas::pImpl->renderer);
     if (!renderer) return Result::MemoryCorruption;
@@ -90,11 +94,11 @@ Result SwCanvas::target(uint32_t* buffer, uint32_t stride, uint32_t w, uint32_t 
     Canvas::pImpl->vport = {0, 0, (int32_t)w, (int32_t)h};
     renderer->viewport(Canvas::pImpl->vport);
 
-    //Paints must be updated again with this new target.
-    Canvas::pImpl->needRefresh();
-
     //FIXME: The value must be associated with an individual canvas instance.
     ImageLoader::cs = static_cast<ColorSpace>(cs);
+
+    //Paints must be updated again with this new target.
+    Canvas::pImpl->status = Status::Damanged;
 
     return Result::Success;
 #endif

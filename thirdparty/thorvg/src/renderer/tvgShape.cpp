@@ -88,6 +88,8 @@ Result Shape::appendPath(const PathCommand *cmds, uint32_t cmdCnt, const Point* 
     pImpl->grow(cmdCnt, ptsCnt);
     pImpl->append(cmds, cmdCnt, pts, ptsCnt);
 
+    pImpl->flag |= RenderUpdateFlag::Path;
+
     return Result::Success;
 }
 
@@ -104,6 +106,8 @@ Result Shape::lineTo(float x, float y) noexcept
 {
     pImpl->lineTo(x, y);
 
+    pImpl->flag |= RenderUpdateFlag::Path;
+
     return Result::Success;
 }
 
@@ -112,6 +116,8 @@ Result Shape::cubicTo(float cx1, float cy1, float cx2, float cy2, float x, float
 {
     pImpl->cubicTo(cx1, cy1, cx2, cy2, x, y);
 
+    pImpl->flag |= RenderUpdateFlag::Path;
+
     return Result::Success;
 }
 
@@ -119,6 +125,8 @@ Result Shape::cubicTo(float cx1, float cy1, float cx2, float cy2, float x, float
 Result Shape::close() noexcept
 {
     pImpl->close();
+
+    pImpl->flag |= RenderUpdateFlag::Path;
 
     return Result::Success;
 }
@@ -137,8 +145,11 @@ Result Shape::appendCircle(float cx, float cy, float rx, float ry) noexcept
     pImpl->cubicTo(cx + rxKappa, cy - ry, cx + rx, cy - ryKappa, cx + rx, cy);
     pImpl->close();
 
+    pImpl->flag |= RenderUpdateFlag::Path;
+
     return Result::Success;
 }
+
 
 Result Shape::appendArc(float cx, float cy, float radius, float startAngle, float sweep, bool pie) noexcept
 {
@@ -196,6 +207,8 @@ Result Shape::appendArc(float cx, float cy, float radius, float startAngle, floa
 
     if (pie) pImpl->close();
 
+    pImpl->flag |= RenderUpdateFlag::Path;
+
     return Result::Success;
 }
 
@@ -233,6 +246,8 @@ Result Shape::appendRect(float x, float y, float w, float h, float rx, float ry)
         pImpl->cubicTo(x, y + ry - hry, x + rx - hrx, y, x + rx, y);
         pImpl->close();
     }
+
+    pImpl->flag |= RenderUpdateFlag::Path;
 
     return Result::Success;
 }
