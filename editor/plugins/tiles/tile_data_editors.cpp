@@ -249,7 +249,7 @@ void GenericTilePolygonEditor::_base_control_draw() {
 		for (int i = 0; i < (int)polygons.size(); i++) {
 			const Vector<Vector2> &polygon = polygons[i];
 			for (int j = 0; j < polygon.size(); j++) {
-				const Color poly_modulate = (tinted_polygon_index == i && tinted_point_index == j) ? Color(0.5, 1, 2) : Color(1, 1, 1);
+				const Color poly_modulate = (tinted_polygon_index == i && tinted_point_index == j) ? Color(0.4, 1, 1) : Color(1, 1, 1);
 				base_control->draw_texture(handle, xform.xform(polygon[j]) - handle->get_size() / 2, poly_modulate);
 			}
 		}
@@ -265,7 +265,7 @@ void GenericTilePolygonEditor::_base_control_draw() {
 	}
 
 	if (drag_type == DRAG_TYPE_CREATE_POINT) {
-		base_control->draw_texture(handle, xform.xform(in_creation_point) - handle->get_size() / 2, Color(0.5, 1, 2));
+		base_control->draw_texture(handle, xform.xform(in_creation_point) - handle->get_size() / 2, Color(0.4, 1, 1));
 	}
 
 	// Draw the point creation preview in edit mode.
