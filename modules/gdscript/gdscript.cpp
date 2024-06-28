@@ -662,6 +662,12 @@ String GDScript::_get_debug_path() const {
 }
 
 Error GDScript::_static_init() {
+	for (KeyValue<StringName, Ref<GDScript>> &inner : subclasses) {
+		Error err = inner.value->_static_init();
+		if (err) {
+			return err;
+		}
+	}
 	if (static_initializer) {
 		Callable::CallError call_err;
 		static_initializer->call(nullptr, nullptr, 0, call_err);
@@ -669,14 +675,7 @@ Error GDScript::_static_init() {
 			return ERR_CANT_CREATE;
 		}
 	}
-	Error err = OK;
-	for (KeyValue<StringName, Ref<GDScript>> &inner : subclasses) {
-		err = inner.value->_static_init();
-		if (err) {
-			break;
-		}
-	}
-	return err;
+	return OK;
 }
 
 #ifdef TOOLS_ENABLED
