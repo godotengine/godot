@@ -2663,6 +2663,21 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 
 	reduce_expression(p_assignment->assignee);
 
+#ifdef DEBUG_ENABLED
+	{
+		GDScriptParser::ExpressionNode *base = p_assignment->assignee;
+		while (base && base->type == GDScriptParser::Node::SUBSCRIPT) {
+			base = static_cast<GDScriptParser::SubscriptNode *>(base)->base;
+		}
+		if (base && base->type == GDScriptParser::Node::IDENTIFIER) {
+			GDScriptParser::IdentifierNode *id = static_cast<GDScriptParser::IdentifierNode *>(base);
+			if (current_lambda && current_lambda->captures_indices.has(id->name)) {
+				parser->push_warning(p_assignment, GDScriptWarning::CONFUSABLE_CAPTURE_REASSIGNMENT, id->name);
+			}
+		}
+	}
+#endif
+
 	if (p_assignment->assigned_value == nullptr || p_assignment->assignee == nullptr) {
 		return;
 	}
