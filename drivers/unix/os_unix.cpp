@@ -68,10 +68,13 @@
 #include <uvm/uvm_extern.h>
 #endif
 
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+#include <execinfo.h>
+#endif
+
 #include <cxxabi.h>
 #include <dlfcn.h>
 #include <errno.h>
-#include <execinfo.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -1031,6 +1034,7 @@ OS::StackInfo OS_Unix::describe_function(const char *dli_fname, const void *dli_
 	return result;
 }
 
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 Vector<OS::StackInfo> OS_Unix::get_cpp_stack_info() const {
 	constexpr int kMaxBacktraceDepth = 25;
 	void *backtrace_addrs[kMaxBacktraceDepth];
@@ -1048,6 +1052,7 @@ Vector<OS::StackInfo> OS_Unix::get_cpp_stack_info() const {
 
 	return result;
 }
+#endif
 
 UnixTerminalLogger::~UnixTerminalLogger() {}
 
