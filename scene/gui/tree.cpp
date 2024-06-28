@@ -3621,8 +3621,6 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (k->get_unicode() > 0) {
 			_do_incr_search(String::chr(k->get_unicode()));
-			accept_event();
-
 			return;
 		} else {
 			if (k->get_keycode() != Key::SHIFT) {
