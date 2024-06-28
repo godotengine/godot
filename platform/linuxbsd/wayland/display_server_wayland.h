@@ -154,6 +154,8 @@ class DisplayServerWayland : public DisplayServer {
 
 	virtual void _show_window();
 
+	void try_suspend();
+
 public:
 	virtual bool has_feature(Feature p_feature) const override;
 

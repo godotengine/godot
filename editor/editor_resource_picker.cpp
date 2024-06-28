@@ -1108,7 +1108,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	}
 
 	edit_button = memnew(Button);
-	edit_button->set_flat(true);
+	edit_button->set_flat(false);
 	edit_button->set_toggle_mode(true);
 	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_update_menu));
 	add_child(edit_button);
@@ -1311,8 +1311,6 @@ void EditorAudioStreamPicker::_preview_draw() {
 	if (audio_stream->get_length() > 0 && size.width > 0) {
 		rect.size.height *= 0.5;
 
-		stream_preview_rect->draw_rect(rect, Color(0, 0, 0, 1));
-
 		Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(audio_stream);
 		float preview_len = preview->get_length();
 
@@ -1368,8 +1366,8 @@ void EditorAudioStreamPicker::_preview_draw() {
 		text = audio_stream->get_class().replace_first("AudioStream", "");
 	}
 
-	stream_preview_rect->draw_texture(icon, Point2i(EDSCALE * 2, rect.position.y + (rect.size.height - icon->get_height()) / 2), icon_modulate);
-	stream_preview_rect->draw_string(font, Point2i(EDSCALE * 2 + icon->get_width(), rect.position.y + font->get_ascent(font_size) + (rect.size.height - font->get_height(font_size)) / 2), text, HORIZONTAL_ALIGNMENT_CENTER, size.width - 4 * EDSCALE - icon->get_width());
+	stream_preview_rect->draw_texture(icon, Point2i(EDSCALE * 4, rect.position.y + (rect.size.height - icon->get_height()) / 2), icon_modulate);
+	stream_preview_rect->draw_string(font, Point2i(EDSCALE * 4 + icon->get_width(), rect.position.y + font->get_ascent(font_size) + (rect.size.height - font->get_height(font_size)) / 2), text, HORIZONTAL_ALIGNMENT_CENTER, size.width - 4 * EDSCALE - icon->get_width(), font_size, get_theme_color(SNAME("font_color"), EditorStringName(Editor)));
 }
 
 EditorAudioStreamPicker::EditorAudioStreamPicker() :

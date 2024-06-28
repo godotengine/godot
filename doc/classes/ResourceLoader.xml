@@ -87,7 +87,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns the resource loaded by [method load_threaded_request].
-				If this is called before the loading thread is done (i.e. [method load_threaded_get_status] is not [constant THREAD_LOAD_LOADED]), the calling thread will be blocked until the resource has finished loading.
+				If this is called before the loading thread is done (i.e. [method load_threaded_get_status] is not [constant THREAD_LOAD_LOADED]), the calling thread will be blocked until the resource has finished loading. However, it's recommended to use [method load_threaded_get_status] to known when the load has actually completed.
 			</description>
 		</method>
 		<method name="load_threaded_get_status">
@@ -97,6 +97,7 @@
 			<description>
 				Returns the status of a threaded loading operation started with [method load_threaded_request] for the resource at [param path]. See [enum ThreadLoadStatus] for possible return values.
 				An array variable can optionally be passed via [param progress], and will return a one-element array containing the percentage of completion of the threaded loading.
+				[b]Note:[/b] The recommended way of using this method is to call it during different frames (e.g., in [method Node._process], instead of a loop).
 			</description>
 		</method>
 		<method name="load_threaded_request">

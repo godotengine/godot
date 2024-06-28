@@ -546,7 +546,7 @@ void FileSystemDock::_notification(int p_what) {
 
 		case NOTIFICATION_PROCESS: {
 			if (EditorFileSystem::get_singleton()->is_scanning()) {
-				scanning_progress->set_value(EditorFileSystem::get_singleton()->get_scanning_progress() * 100);
+				scanning_progress->set_value(EditorFileSystem::get_singleton()->get_scanning_progress() * 100.0f);
 			}
 		} break;
 

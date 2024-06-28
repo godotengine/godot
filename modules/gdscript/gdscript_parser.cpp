@@ -313,13 +313,14 @@ void GDScriptParser::set_last_completion_call_arg(int p_argument) {
 	completion_call_stack.back()->get().argument = p_argument;
 }
 
-Error GDScriptParser::parse(const String &p_source_code, const String &p_script_path, bool p_for_completion) {
+Error GDScriptParser::parse(const String &p_source_code, const String &p_script_path, bool p_for_completion, bool p_parse_body) {
 	clear();
 
 	String source = p_source_code;
 	int cursor_line = -1;
 	int cursor_column = -1;
 	for_completion = p_for_completion;
+	parse_body = p_parse_body;
 
 	int tab_size = 4;
 #ifdef TOOLS_ENABLED
@@ -691,6 +692,12 @@ void GDScriptParser::parse_program() {
 		if (panic_mode) {
 			synchronize();
 		}
+	}
+
+	// When the only thing needed is the class name and the icon, we don't need to parse the hole file.
+	// It really speed up the call to GDScriptLanguage::get_global_class_name especially for large script.
+	if (!parse_body) {
+		return;
 	}
 
 #undef PUSH_PENDING_ANNOTATIONS_TO_HEAD

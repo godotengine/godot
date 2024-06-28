@@ -40,6 +40,7 @@
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "core/variant/variant_parser.h"
+#include "servers/rendering_server.h"
 
 #ifdef DEBUG_LOAD_THREADED
 #define print_lt(m_text) print_line(m_text)
@@ -585,6 +586,16 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 		*r_progress = _dependency_get_progress(local_path);
 	}
 
+	// Support userland polling in a loop on the main thread.
+	if (Thread::is_main_thread() && status == THREAD_LOAD_IN_PROGRESS) {
+		uint64_t frame = Engine::get_singleton()->get_process_frames();
+		if (frame == load_task.last_progress_check_main_thread_frame) {
+			_ensure_load_progress();
+		} else {
+			load_task.last_progress_check_main_thread_frame = frame;
+		}
+	}
+
 	return status;
 }
 
@@ -613,6 +624,21 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 			}
 			return Ref<Resource>();
 		}
+
+		// Support userland requesting on the main thread before the load is reported to be complete.
+		if (Thread::is_main_thread() && !load_token->local_path.is_empty()) {
+			const ThreadLoadTask &load_task = thread_load_tasks[load_token->local_path];
+			while (load_task.status == THREAD_LOAD_IN_PROGRESS) {
+				if (!_ensure_load_progress()) {
+					// This local poll loop is not needed.
+					break;
+				}
+				thread_load_lock.~MutexLock();
+				OS::get_singleton()->delay_usec(1000);
+				new (&thread_load_lock) MutexLock(thread_load_mutex);
+			}
+		}
+
 		res = _load_complete_inner(*load_token, r_error, thread_load_lock);
 		if (load_token->unreference()) {
 			memdelete(load_token);
@@ -729,6 +755,17 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 		}
 		return resource;
 	}
+}
+
+bool ResourceLoader::_ensure_load_progress() {
+	// Some servers may need a new engine iteration to allow the load to progress.
+	// Since the only known one is the rendering server (in single thread mode), let's keep it simple and just sync it.
+	// This may be refactored in the future to support other servers and have less coupling.
+	if (OS::get_singleton()->get_render_thread_mode() == OS::RENDER_SEPARATE_THREAD) {
+		return false; // Not needed.
+	}
+	RenderingServer::get_singleton()->sync();
+	return true;
 }
 
 Ref<Resource> ResourceLoader::ensure_resource_ref_override_for_outer_load(const String &p_path, const String &p_res_type) {

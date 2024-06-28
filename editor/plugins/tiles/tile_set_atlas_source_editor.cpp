@@ -651,7 +651,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	tile_data_editors_tree->add_theme_constant_override("v_separation", 1);
 	tile_data_editors_tree->add_theme_constant_override("h_separation", 3);
 
-	Color group_color = get_theme_color(SNAME("prop_category"), EditorStringName(Editor));
+	Color group_color = get_theme_color(SNAME("separator_color"), EditorStringName(Editor));
 
 	// List of editors.
 	// --- Rendering ---
@@ -2451,6 +2451,8 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 
 			resize_handle = get_editor_theme_icon(SNAME("EditorHandle"));
 			resize_handle_disabled = get_editor_theme_icon(SNAME("EditorHandleDisabled"));
+
+			tile_data_editors_tree->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), "PopupPanel"));
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
