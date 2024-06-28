@@ -1810,6 +1810,10 @@ void ColorPicker::_bind_methods() {
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover, "tab_selected", "TabContainer");
 }
 
+Button * ColorPicker::get_pick_btn() {
+        return btn_pick;
+}
+
 ColorPicker::ColorPicker() {
 	internal_margin = memnew(MarginContainer);
 	add_child(internal_margin, false, INTERNAL_MODE_FRONT);
@@ -2155,7 +2159,7 @@ ColorPicker *ColorPickerButton::get_picker() {
 	return picker;
 }
 
-PopupPanel *ColorPickerButton::get_popup() {
+PopupPanel *ColorPickerButton::get_popup_panel() {
 	_update_picker();
 	return popup;
 }
@@ -2183,7 +2187,7 @@ void ColorPickerButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pick_color", "color"), &ColorPickerButton::set_pick_color);
 	ClassDB::bind_method(D_METHOD("get_pick_color"), &ColorPickerButton::get_pick_color);
 	ClassDB::bind_method(D_METHOD("get_picker"), &ColorPickerButton::get_picker);
-	ClassDB::bind_method(D_METHOD("get_popup"), &ColorPickerButton::get_popup);
+	ClassDB::bind_method(D_METHOD("get_popup_panel"), &ColorPickerButton::get_popup_panel);
 	ClassDB::bind_method(D_METHOD("set_edit_alpha", "show"), &ColorPickerButton::set_edit_alpha);
 	ClassDB::bind_method(D_METHOD("is_editing_alpha"), &ColorPickerButton::is_editing_alpha);
 	ClassDB::bind_method(D_METHOD("_about_to_popup"), &ColorPickerButton::_about_to_popup);
@@ -2199,8 +2203,7 @@ void ColorPickerButton::_bind_methods() {
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, ColorPickerButton, overbright_indicator, "overbright_indicator", "ColorPicker");
 }
 
-ColorPickerButton::ColorPickerButton(const String &p_text) :
-		Button(p_text) {
+ColorPickerButton::ColorPickerButton(const String &p_text) : OptionButton(p_text) {
 	set_toggle_mode(true);
 }
 
