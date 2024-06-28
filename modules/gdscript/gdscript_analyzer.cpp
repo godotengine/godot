@@ -2665,14 +2665,37 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 
 #ifdef DEBUG_ENABLED
 	{
+		bool is_subscript = false;
 		GDScriptParser::ExpressionNode *base = p_assignment->assignee;
 		while (base && base->type == GDScriptParser::Node::SUBSCRIPT) {
+			is_subscript = true;
 			base = static_cast<GDScriptParser::SubscriptNode *>(base)->base;
 		}
 		if (base && base->type == GDScriptParser::Node::IDENTIFIER) {
 			GDScriptParser::IdentifierNode *id = static_cast<GDScriptParser::IdentifierNode *>(base);
 			if (current_lambda && current_lambda->captures_indices.has(id->name)) {
-				parser->push_warning(p_assignment, GDScriptWarning::CONFUSABLE_CAPTURE_REASSIGNMENT, id->name);
+				bool need_warn = false;
+				if (is_subscript) {
+					const GDScriptParser::DataType &id_type = id->datatype;
+					if (id_type.is_hard_type()) {
+						switch (id_type.kind) {
+							case GDScriptParser::DataType::BUILTIN:
+								// TODO: Change `Variant::is_type_shared()` to include packed arrays?
+								need_warn = !Variant::is_type_shared(id_type.builtin_type) && id_type.builtin_type < Variant::PACKED_BYTE_ARRAY;
+								break;
+							case GDScriptParser::DataType::ENUM:
+								need_warn = true;
+								break;
+							default:
+								break;
+						}
+					}
+				} else {
+					need_warn = true;
+				}
+				if (need_warn) {
+					parser->push_warning(p_assignment, GDScriptWarning::CONFUSABLE_CAPTURE_REASSIGNMENT, id->name);
+				}
 			}
 		}
 	}
