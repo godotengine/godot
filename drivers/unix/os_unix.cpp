@@ -68,8 +68,10 @@
 #include <uvm/uvm_extern.h>
 #endif
 
+#include <cxxabi.h>
 #include <dlfcn.h>
 #include <errno.h>
+#include <execinfo.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -1004,6 +1006,47 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 			logf_error("%s   at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
 			break;
 	}
+}
+
+OS::StackInfo OS_Unix::describe_function(const Dl_info &info, const void *address) const {
+	StackInfo result;
+
+	// Demangle C++ symbols
+	int status;
+	char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
+
+	if (status == 0) {
+		result.function = demangled;
+	} else {
+		result.function = info.dli_sname;
+	}
+	free(demangled);
+
+	// Get file info
+	result.file = info.dli_fname;
+	result.offset = static_cast<const char *>(address) - static_cast<const char *>(info.dli_fbase);
+	result.load_address = info.dli_fbase;
+	result.symbol_address = address;
+
+	return result;
+}
+
+Vector<OS::StackInfo> OS_Unix::get_cpp_stack_info() const {
+	constexpr int kMaxBacktraceDepth = 25;
+	void *backtrace_addrs[kMaxBacktraceDepth];
+	int trace_size = backtrace(backtrace_addrs, kMaxBacktraceDepth);
+
+	Vector<StackInfo> result;
+	result.resize(trace_size - 1);
+
+	// Skip the current stack frame and return the stack frame of the calling function
+	for (int i = 1; i < trace_size; ++i) {
+		Dl_info info;
+		dladdr(backtrace_addrs[i], &info);
+		result.write[i - 1] = describe_function(info, backtrace_addrs[i]);
+	}
+
+	return result;
 }
 
 UnixTerminalLogger::~UnixTerminalLogger() {}

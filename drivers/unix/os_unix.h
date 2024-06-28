@@ -53,6 +53,8 @@ protected:
 
 	virtual void finalize_core() override;
 
+	virtual StackInfo describe_function(const struct dl_info &info, const void *address) const;
+
 public:
 	OS_Unix();
 
@@ -101,6 +103,8 @@ public:
 
 	virtual String get_executable_path() const override;
 	virtual String get_user_data_dir() const override;
+
+	virtual Vector<StackInfo> get_cpp_stack_info() const override;
 };
 
 class UnixTerminalLogger : public StdLogger {

@@ -75,6 +75,10 @@ protected:
 	virtual void set_main_loop(MainLoop *p_main_loop) override;
 	virtual void delete_main_loop() override;
 
+#ifdef DEBUG_ENABLED
+	virtual String get_debug_descriptor(const StackInfo &info) override;
+#endif
+
 public:
 	virtual void set_cmdline_platform_args(const List<String> &p_args);
 	virtual List<String> get_cmdline_platform_args() const override;

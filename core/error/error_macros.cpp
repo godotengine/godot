@@ -31,12 +31,9 @@
 #include "error_macros.h"
 
 #include "core/io/logger.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/string/ustring.h"
-
-#include <cxxabi.h>
-#include <dlfcn.h>
-#include <execinfo.h>
 
 static ErrorHandlerList *error_handler_list = nullptr;
 
@@ -129,82 +126,65 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 	_err_print_index_error(p_function, p_file, p_line, p_index, p_size, p_index_str, p_size_str, p_message.utf8().get_data(), p_editor_notify, p_fatal);
 }
 
-struct FunctionInfo {
-	const char *function;
-	const char *file;
-	int line;
-	String descriptor;
-};
+void _err_print_callstack(const String &p_error, bool p_editor_notify, ErrorHandlerType p_type) {
+	// Print detailed call stack information from everywhere available. It is recommended to only
+	// use this for debugging, as it has a fairly high overhead.
+	String callstack;
 
-FunctionInfo describe_function(const Dl_info &info, const void *address) {
-	FunctionInfo result;
-	constexpr int kDemangledBufferSize = 100;
-	static char s_demangled[kDemangledBufferSize];
-	int status;
-	char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
-
-	if (status == 0) {
-		// Have to do it this way to avoid a memory leak, as abi::__cxa_demangle returns a `malloc`ed c-string.
-		strncpy(s_demangled, demangled, kDemangledBufferSize);
-		s_demangled[kDemangledBufferSize - 1] = 0;
-		result.function = s_demangled;
-	} else {
-		result.function = info.dli_sname;
-	}
-	free(demangled);
-
-	result.file = info.dli_fname;
-	result.line = static_cast<const char *>(info.dli_saddr) - static_cast<const char *>(info.dli_fbase);
-
-#ifdef DEBUG_ENABLED
-	if (OS::get_singleton()->get_name() == "macOS") {
-		String pipe;
-		Error error = OS::get_singleton()->execute("atos", { "-o", info.dli_fname, "-l", String::num_uint64(reinterpret_cast<uint64_t>(info.dli_fbase), 16), String::num_uint64(reinterpret_cast<uint64_t>(address), 16) },
-				&pipe);
-
-		if (error == OK) {
-			result.descriptor = pipe + " - ";
+	// Print script stack frames, if available.
+	Vector<ScriptLanguage::StackInfo> si;
+	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+		si = ScriptServer::get_language(i)->debug_get_current_stack_info();
+		if (si.size()) {
+			callstack += "Callstack from " + ScriptServer::get_language(i)->get_name() + ":\n";
+			for (int j = 0; j < si.size(); ++j) {
+				callstack += si[i].file + ':' + itos(si[i].line) + " @ " + si[i].func + '\n';
+			}
+			callstack += '\n';
 		}
 	}
-#endif
 
-	return result;
-}
-
-FunctionInfo calling_function(const char *filter, int frames_to_skip = 0) {
-	constexpr int kBacktraceDepth = 15;
-	void *backtrace_addrs[kBacktraceDepth];
-	Dl_info info;
-
-	int trace_size = backtrace(backtrace_addrs, kBacktraceDepth);
-
-	int i = frames_to_skip;
-	do {
-		++i;
-		dladdr(backtrace_addrs[i], &info);
-	} while (i < trace_size && strstr(info.dli_sname, filter));
-
-	return describe_function(info, backtrace_addrs[i]);
-}
-
-void _err_print_callstack(const String &p_error, bool p_editor_notify, ErrorHandlerType p_type) {
-	constexpr int kBacktraceDepth = 25;
-	void *backtrace_addrs[kBacktraceDepth];
-	Dl_info info;
-
-	int trace_size = backtrace(backtrace_addrs, kBacktraceDepth);
-
-	for (int i = 0; i < trace_size; ++i) {
-		dladdr(backtrace_addrs[i], &info);
-
-		FunctionInfo func_info = describe_function(info, backtrace_addrs[i]);
-		_err_print_error(func_info.function, func_info.file, func_info.line, "", func_info.descriptor + p_error, p_editor_notify, p_type);
+	// Print C++ call stack.
+	Vector<OS::StackInfo> cpp_stack = OS::get_singleton()->get_cpp_stack_info();
+	callstack += "C++ call stack:\n";
+	for (int i = 0; i < cpp_stack.size(); ++i) {
+		String descriptor = OS::get_singleton()->get_debug_descriptor(cpp_stack[i]);
+		callstack += descriptor + " (" + cpp_stack[i].file + ":0x" + String::num_uint64(cpp_stack[i].offset, 16) + " @ " + cpp_stack[i].function + ")\n";
 	}
+
+	_err_print_error(__FUNCTION__, __FILE__, __LINE__, p_error + '\n' + callstack, p_editor_notify, p_type);
 }
 
 void _err_print_error_backtrace(const char *filter, const String &p_error, bool p_editor_notify, ErrorHandlerType p_type) {
-	FunctionInfo info = calling_function(filter, 1);
-	_err_print_error(info.function, info.file, info.line, "", info.descriptor + p_error, p_editor_notify, p_type);
+	// Print script stack frame, if available.
+	Vector<ScriptLanguage::StackInfo> si;
+	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+		si = ScriptServer::get_language(i)->debug_get_current_stack_info();
+		if (si.size()) {
+			_err_print_error(si[0].func.utf8(), si[0].file.utf8(), si[0].line, p_error, p_editor_notify, p_type);
+			return;
+		}
+	}
+
+	// If there is not a script stack frame, use the C++ stack frame.
+	Vector<OS::StackInfo> cpp_stack = OS::get_singleton()->get_cpp_stack_info();
+
+	for (int i = 1; i < cpp_stack.size(); ++i) {
+		if (!cpp_stack[i].function.contains(filter)) {
+			String descriptor = OS::get_singleton()->get_debug_descriptor(cpp_stack[i]);
+			if (descriptor.is_empty()) {
+				// If we can't get debug info, just print binary file name and address.
+				_err_print_error(cpp_stack[i].function.utf8(), cpp_stack[i].file.utf8(), cpp_stack[i].offset, p_error, p_editor_notify, p_type);
+			} else {
+				// Expect debug descriptor to replace file and line info.
+				_err_print_error(cpp_stack[i].function.utf8(), cpp_stack[i].file.utf8(), cpp_stack[i].offset, "", descriptor + ": " + p_error, p_editor_notify, p_type);
+			}
+			return;
+		}
+	}
+
+	// If there is no usable stack frame (this should basically never happen), fall back to using the current stack frame.
+	_err_print_error(__FUNCTION__, __FILE__, __LINE__, p_error, p_editor_notify, p_type);
 }
 
 void _err_flush_stdout() {

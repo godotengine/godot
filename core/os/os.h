@@ -339,6 +339,16 @@ public:
 
 	virtual PreferredTextureFormat get_preferred_texture_format() const;
 
+	struct StackInfo {
+		String function;
+		String file;
+		uint64_t offset;
+		const void *load_address;
+		const void *symbol_address;
+	};
+	virtual Vector<StackInfo> get_cpp_stack_info() const { return Vector<StackInfo>(); }
+	virtual String get_debug_descriptor(const StackInfo &info) { return String(); }
+
 	// Load GDExtensions specific to this platform.
 	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.
 	virtual void load_platform_gdextensions() const {}
