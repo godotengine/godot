@@ -55,11 +55,6 @@ void EditorAutoloadSettings::_notification(int p_what) {
 				file_dialog->add_filter("*." + E);
 			}
 
-			for (const AutoloadInfo &info : autoload_cache) {
-				if (info.node && info.in_editor) {
-					callable_mp((Node *)get_tree()->get_root(), &Node::add_child).call_deferred(info.node, false, Node::INTERNAL_MODE_DISABLED);
-				}
-			}
 			browse_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 
@@ -419,6 +414,8 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 
 		Ref<Script> scr = res;
 		if (scr.is_valid()) {
+			ERR_FAIL_COND_V_MSG(!scr->is_valid(), nullptr, vformat("Failed to create an autoload, script '%s' is not compiling.", p_path));
+
 			StringName ibt = scr->get_instance_base_type();
 			bool valid_type = ClassDB::is_parent_class(ibt, "Node");
 			ERR_FAIL_COND_V_MSG(!valid_type, nullptr, vformat("Failed to create an autoload, script '%s' does not inherit from 'Node'.", p_path));
@@ -434,6 +431,35 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 	ERR_FAIL_NULL_V_MSG(n, nullptr, vformat("Failed to create an autoload, path is not pointing to a scene or a script: %s.", p_path));
 
 	return n;
+}
+
+void EditorAutoloadSettings::init_autoloads() {
+	for (AutoloadInfo &info : autoload_cache) {
+		info.node = _create_autoload(info.path);
+
+		if (info.node) {
+			Ref<Script> scr = info.node->get_script();
+			info.in_editor = scr.is_valid() && scr->is_tool();
+			info.node->set_name(info.name);
+		}
+
+		if (info.is_singleton) {
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				ScriptServer::get_language(i)->add_named_global_constant(info.name, info.node);
+			}
+		}
+
+		if (!info.is_singleton && !info.in_editor && info.node != nullptr) {
+			memdelete(info.node);
+			info.node = nullptr;
+		}
+	}
+
+	for (const AutoloadInfo &info : autoload_cache) {
+		if (info.node && info.in_editor) {
+			callable_mp((Node *)get_tree()->get_root(), &Node::add_child).call_deferred(info.node, false, Node::INTERNAL_MODE_DISABLED);
+		}
+	}
 }
 
 void EditorAutoloadSettings::update_autoload() {
@@ -855,27 +881,6 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		}
 
 		autoload_cache.push_back(info);
-	}
-
-	for (AutoloadInfo &info : autoload_cache) {
-		info.node = _create_autoload(info.path);
-
-		if (info.node) {
-			Ref<Script> scr = info.node->get_script();
-			info.in_editor = scr.is_valid() && scr->is_tool();
-			info.node->set_name(info.name);
-		}
-
-		if (info.is_singleton) {
-			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				ScriptServer::get_language(i)->add_named_global_constant(info.name, info.node);
-			}
-		}
-
-		if (!info.is_singleton && !info.in_editor && info.node != nullptr) {
-			memdelete(info.node);
-			info.node = nullptr;
-		}
 	}
 
 	HBoxContainer *hbc = memnew(HBoxContainer);

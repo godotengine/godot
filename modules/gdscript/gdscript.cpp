@@ -2759,7 +2759,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	String source = f->get_as_utf8_string();
 
 	GDScriptParser parser;
-	err = parser.parse(source, p_path, false);
+	err = parser.parse(source, p_path, false, false);
 
 	const GDScriptParser::ClassNode *c = parser.get_tree();
 	if (!c) {
