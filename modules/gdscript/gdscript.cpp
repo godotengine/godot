@@ -30,6 +30,9 @@
 
 #include "gdscript.h"
 
+#include "core/object/object.h"
+#include "core/templates/hash_set.h"
+#include "core/variant/callable.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
 #include "gdscript_compiler.h"
@@ -37,6 +40,8 @@
 #include "gdscript_rpc_callable.h"
 #include "gdscript_tokenizer_buffer.h"
 #include "gdscript_warning.h"
+#include "modules/gdscript/gdscript_function.h"
+#include "scene/main/node.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/gdscript_docgen.h"
@@ -1821,6 +1826,13 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 		sptr = sptr->_base;
 	}
 
+	{ //GDScript soft methods
+		if (owner != nullptr && (p_name == "cancel_coroutine" || p_name == "cancel_all_coroutines")) {
+			r_ret = Callable(owner, p_name);
+			return true;
+		}
+	}
+
 	return false;
 }
 
@@ -1990,11 +2002,31 @@ bool GDScriptInstance::property_get_revert(const StringName &p_name, Variant &r_
 
 void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 	const GDScript *sptr = script.ptr();
+
+	HashSet<String> overridable_methods;
+	{
+		overridable_methods.insert("cancel_coroutine");
+		overridable_methods.insert("cancel_all_coroutines");
+	}
+
 	while (sptr) {
 		for (const KeyValue<StringName, GDScriptFunction *> &E : sptr->member_functions) {
-			p_list->push_back(E.value->get_method_info());
+			const MethodInfo &mi = E.value->get_method_info();
+			if (overridable_methods.has(mi.name)) {
+				overridable_methods.erase(mi.name);
+			}
+			p_list->push_back(mi);
 		}
 		sptr = sptr->_base;
+	}
+
+	{ //Append methods if not overridden.
+		if (overridable_methods.has("cancel_coroutine")) {
+			p_list->push_back(MethodInfo("cancel_coroutine", PropertyInfo(Variant::STRING_NAME, "coroutine_name")));
+		}
+		if (overridable_methods.has("cancel_all_coroutines")) {
+			p_list->push_back(MethodInfo("cancel_all_coroutines"));
+		}
 	}
 }
 
@@ -2006,6 +2038,10 @@ bool GDScriptInstance::has_method(const StringName &p_method) const {
 			return true;
 		}
 		sptr = sptr->_base;
+	}
+	//Overridable methods by GDScript
+	if (p_method == "cancel_coroutine" || p_method == "cancel_all_coroutines") {
+		return true;
 	}
 
 	return false;
@@ -2022,6 +2058,15 @@ int GDScriptInstance::get_method_argument_count(const StringName &p_method, bool
 			return E->value->get_argument_count();
 		}
 		sptr = sptr->_base;
+	}
+
+	{ //Overridable methods by GDScript
+		if (p_method == "cancel_coroutine") {
+			return 1;
+		}
+		if (p_method == "cancel_all_coroutines") {
+			return 0;
+		}
 	}
 
 	if (r_is_valid) {
@@ -2058,6 +2103,50 @@ Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_ar
 			return E->value->call(this, p_args, p_argcount, r_error);
 		}
 		sptr = sptr->_base;
+	}
+	{ // Overridable methods only for GDScript go here.
+		if (p_method == "cancel_coroutine") {
+			if (p_argcount > 1) {
+				r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			} else if (p_argcount == 0) {
+				r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+			} else if (!p_args[0]->is_string()) {
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			} else {
+				MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
+
+				StringName coroutine_name = *p_args[0];
+
+				SelfList<GDScriptFunctionState> *iterator = pending_func_states.first();
+				while (iterator != nullptr) {
+					GDScriptFunctionState *gdfs = iterator->self();
+					iterator = iterator->next();
+					if (gdfs->function->get_name() == coroutine_name) {
+						gdfs->cancel();
+					}
+				}
+				pending_func_states.clear();
+
+				r_error.error = Callable::CallError::CALL_OK;
+			}
+			return Variant();
+		} else if (p_method == "cancel_all_coroutines") {
+			if (p_argcount > 0) {
+				r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			} else {
+				MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
+
+				SelfList<GDScriptFunctionState> *iterator = pending_func_states.first();
+				while (iterator != nullptr) {
+					GDScriptFunctionState *gdfs = iterator->self();
+					iterator = iterator->next();
+					gdfs->cancel();
+				}
+
+				r_error.error = Callable::CallError::CALL_OK;
+			}
+			return Variant();
+		}
 	}
 	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 	return Variant();

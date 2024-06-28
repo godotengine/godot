@@ -558,6 +558,8 @@ public:
 class GDScriptFunctionState : public RefCounted {
 	GDCLASS(GDScriptFunctionState, RefCounted);
 	friend class GDScriptFunction;
+	friend class GDScriptInstance;
+
 	GDScriptFunction *function = nullptr;
 	GDScriptFunction::CallState state;
 	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
@@ -566,12 +568,19 @@ class GDScriptFunctionState : public RefCounted {
 	SelfList<GDScriptFunctionState> scripts_list;
 	SelfList<GDScriptFunctionState> instances_list;
 
+	bool completed = false;
+
+	bool cancelled = false; // This is reserved only for the first state
+	bool running = false; // safeguard
+
 protected:
 	static void _bind_methods();
 
 public:
 	bool is_valid(bool p_extended_check = false) const;
+
 	Variant resume(const Variant &p_arg = Variant());
+	void cancel();
 
 	void _clear_stack();
 	void _clear_connections();
