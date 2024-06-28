@@ -983,7 +983,7 @@ void EditorFileDialog::update_file_list() {
 	files.sort_custom<FileNoCaseComparator>();
 
 	while (!dirs.is_empty()) {
-		const String &dir_name = dirs.front()->get();
+		const String &dir_name = dirs.get_front();
 
 		item_list->add_item(dir_name);
 
@@ -1034,21 +1034,21 @@ void EditorFileDialog::update_file_list() {
 		bool match = patterns.is_empty();
 
 		for (const String &E : patterns) {
-			if (files.front()->get().matchn(E)) {
+			if (files.get_front().matchn(E)) {
 				match = true;
 				break;
 			}
 		}
 
 		if (match) {
-			item_list->add_item(files.front()->get());
+			item_list->add_item(files.get_front());
 
 			if (get_icon_func) {
-				Ref<Texture2D> icon = get_icon_func(cdir.path_join(files.front()->get()));
+				Ref<Texture2D> icon = get_icon_func(cdir.path_join(files.get_front()));
 				if (display_mode == DISPLAY_THUMBNAILS) {
 					Ref<Texture2D> thumbnail;
 					if (get_thumbnail_func) {
-						thumbnail = get_thumbnail_func(cdir.path_join(files.front()->get()));
+						thumbnail = get_thumbnail_func(cdir.path_join(files.get_front()));
 					}
 					if (thumbnail.is_null()) {
 						thumbnail = file_thumbnail;
@@ -1062,9 +1062,9 @@ void EditorFileDialog::update_file_list() {
 			}
 
 			Dictionary d;
-			d["name"] = files.front()->get();
+			d["name"] = files.get_front();
 			d["dir"] = false;
-			String fullpath = cdir.path_join(files.front()->get());
+			String fullpath = cdir.path_join(files.get_front());
 			d["path"] = fullpath;
 			item_list->set_item_metadata(-1, d);
 
@@ -1072,7 +1072,7 @@ void EditorFileDialog::update_file_list() {
 				EditorResourcePreview::get_singleton()->queue_resource_preview(fullpath, this, "_thumbnail_result", fullpath);
 			}
 
-			if (file->get_text() == files.front()->get()) {
+			if (file->get_text() == files.get_front()) {
 				item_list->set_current(item_list->get_item_count() - 1);
 			}
 		}

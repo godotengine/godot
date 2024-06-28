@@ -693,7 +693,7 @@ void FileDialog::update_file_list() {
 	files.sort_custom<FileNoCaseComparator>();
 
 	while (!dirs.is_empty()) {
-		String &dir_name = dirs.front()->get();
+		String &dir_name = dirs.get_front();
 		TreeItem *ti = tree->create_item(root);
 		ti->set_text(0, dir_name);
 		ti->set_icon(0, theme_cache.folder);
@@ -741,7 +741,7 @@ void FileDialog::update_file_list() {
 		String match_str;
 
 		for (const String &E : patterns) {
-			if (files.front()->get().matchn(E)) {
+			if (files.get_front().matchn(E)) {
 				match_str = E;
 				match = true;
 				break;
@@ -750,10 +750,10 @@ void FileDialog::update_file_list() {
 
 		if (match) {
 			TreeItem *ti = tree->create_item(root);
-			ti->set_text(0, files.front()->get());
+			ti->set_text(0, files.get_front());
 
 			if (get_icon_func) {
-				Ref<Texture2D> icon = get_icon_func(base_dir.path_join(files.front()->get()));
+				Ref<Texture2D> icon = get_icon_func(base_dir.path_join(files.get_front()));
 				ti->set_icon(0, icon);
 			} else {
 				ti->set_icon(0, theme_cache.file);
@@ -765,11 +765,11 @@ void FileDialog::update_file_list() {
 				ti->set_selectable(0, false);
 			}
 			Dictionary d;
-			d["name"] = files.front()->get();
+			d["name"] = files.get_front();
 			d["dir"] = false;
 			ti->set_metadata(0, d);
 
-			if (file->get_text() == files.front()->get() || match_str == files.front()->get()) {
+			if (file->get_text() == files.get_front() || match_str == files.get_front()) {
 				ti->select(0);
 			}
 		}

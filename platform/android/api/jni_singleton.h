@@ -187,7 +187,7 @@ public:
 		}
 
 		while (to_erase.size()) {
-			env->DeleteLocalRef(to_erase.front()->get());
+			env->DeleteLocalRef(to_erase.get_front());
 			to_erase.pop_front();
 		}
 
