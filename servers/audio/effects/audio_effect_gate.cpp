@@ -38,8 +38,8 @@ void AudioEffectGateInstance::process(const AudioFrame *p_src_frames, AudioFrame
 	float signal_total_l_sqr = 0.f;
 	float signal_total_r_sqr = 0.f;
 	for (int i = 0; i < p_frame_count; i++) {
-		signal_total_l_sqr += p_src_frames[i].l * p_src_frames[i].l;
-		signal_total_r_sqr += p_src_frames[i].r * p_src_frames[i].r;
+		signal_total_l_sqr += p_src_frames[i].left * p_src_frames[i].left;
+		signal_total_r_sqr += p_src_frames[i].right * p_src_frames[i].right;
 	}
 
 	float rms_l = Math::sqrt(signal_total_l_sqr / p_frame_count);
