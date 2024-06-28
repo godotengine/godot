@@ -5084,17 +5084,7 @@ void AnimationTrackEditor::_fetch_value_track_options(const NodePath &p_path, An
 	PropertyInfo h = _find_hint_for_track(animation->get_track_count() - 1, np);
 	animation->remove_track(animation->get_track_count() - 1); // Hack.
 	switch (h.type) {
-		case Variant::FLOAT: {
-#ifdef DISABLE_DEPRECATED
-			bool is_angle = h.type == Variant::FLOAT && h.hint_string.contains("radians_as_degrees");
-#else
-			bool is_angle = h.type == Variant::FLOAT && h.hint_string.contains("radians");
-#endif // DISABLE_DEPRECATED
-			if (is_angle) {
-				*r_interpolation_type = Animation::INTERPOLATION_LINEAR_ANGLE;
-			}
-			[[fallthrough]];
-		}
+		case Variant::FLOAT:
 		case Variant::VECTOR2:
 		case Variant::RECT2:
 		case Variant::VECTOR3:
