@@ -91,12 +91,8 @@ Error GDScriptParserRef::raise_status(Status p_new_status) {
 				result = get_analyzer()->resolve_interface();
 			} break;
 			case INTERFACE_SOLVED: {
-				status = BODY_SOLVED;
-				result = get_analyzer()->resolve_body();
-			} break;
-			case BODY_SOLVED: {
 				status = FULLY_SOLVED;
-				result = get_analyzer()->resolve_dependencies();
+				result = get_analyzer()->resolve_body();
 			} break;
 			case FULLY_SOLVED: {
 				return result;
