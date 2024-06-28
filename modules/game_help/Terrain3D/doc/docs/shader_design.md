@@ -5,14 +5,18 @@ Our shader combines a lot of ideas and code from [cdxntchou's IndexMapTerrain](h
 
 Note that you can find the minimum shader needed to enable the terrain to function in `addons/terrain_3D/extras/minimum.gdshader`.
 
+At its core, the current texture painting and rendering system is a vertex painter, not a pixel painter. We paint codes at each vertex, 1m apart by default, represented as a pixel on the control map. Then the shader uses its many parameters to control how each pixel between the vertices blend together. For an artist, it's not as nice to use as a multi-layer, pixel based painter you might find in photoshop, but the dynamic nature of the system does afford other benefits.
+
+The following describes the various elements of the shader in a linear fashion to help you understand how the various elements are used.
+
 ## Uniforms
 
 [Terrain3DMaterial](../api/class_terrain3dmaterial.rst) exposes uniforms found in the shader, whether we put them there or you do with your own custom shader. Uniforms that begin with `_` are considered private and are not exposed. However you can access them via code. You can create your own private uniforms.
 
-These notable [Terrain3DStorage](](../api/class_terrain3dstorage.rst) variables are passed in as uniforms:
+These notable [Terrain3DStorage](../api/class_terrain3dstorage.rst) variables are passed in as uniforms:
 * `_region_map`, `_region_offsets` define the location and IDs of regions (sculpted areas)
-* `_height_maps`, `_control_maps`, and `_color_maps` texture arrays define the elevation, textures, and colors of the terrain
-* `_texture_array_albedo`, `_normal` are the texture arrays compiling all individual textures
+* `_height_maps`, `_control_maps`, and `_color_maps` texture arrays define the elevation, textures, and colors of the terrain, indexed by region ID
+* `_texture_array_albedo`, `_texture_array_normal` are the texture arrays that combine all of the individual textures, indexed by texture ID
 
 ## Vertex() & Supporting functions
 
@@ -20,11 +24,11 @@ These notable [Terrain3DStorage](](../api/class_terrain3dstorage.rst) variables 
 
 First are `get_region_uv/_uv2()` which take in UV coordinates and return region coordinates, either absolute or normalized. It also returns the region ID, which is used in the map texture arrays above.
 
-Optionally, world noise is inserted here, which generates fractal brownian noise to be used for background hills outside of your regions. It's a visual gimmick only and does not generate collision.
+Optionally, world noise is inserted here, which generates fractal brownian noise to be used for background hills outside of your regions. It's an expensive visual gimmick only and does not generate collision.
 
 `get_height()` returns the value of the heightmap at the given location. If world noise is enabled, it is blended into the height here.
 
-Finally `vertex()` sets the UV and UV2 coordinates, and the height of the mesh vertex. Elsewhere the CPU creates flat meshe components and a mountainous collision mesh. Here is where the flat meshe vertices have their heights set to match the collision mesh with `VERTEX.y = get_height(UV2)`.
+Finally `vertex()` sets the UV and UV2 coordinates, and the height of the mesh vertex. Elsewhere the CPU creates flat mesh components and a collision mesh with heights. Here is where the flat mesh vertices have their heights set to match the collision mesh.
 
 ## Fragment()
 
@@ -32,9 +36,11 @@ Finally `vertex()` sets the UV and UV2 coordinates, and the height of the mesh v
 
 ### Normal calculation
 
-The first step is calculating the terrain normals. This is not done at all in `vertex()`. On other terrain systems there might be optimizations to be had by doing so, however this does not work on a clipmap terrain because the vertices spread out on lower LODs. Certain things like normals look strange when you look in the distance and the vertices used for calculation suddenly separate on further LODs. So we calculate normals per pixel.
+The first step is calculating the terrain normals. This shared between the `vertex()` and `fragment()` functions. Clipmap terrain vertices spread out at lower LODs causing certain things like normals look strange when you look in the distance as the vertices used for calculation suddenly separate at further LODs. So we switch from normals calculated per vertex to per pixel when the pixel is farther than `vertex_normal_distance`.
 
-Normally, generating normals in the shader works fine and modern GPUs can handle the load of 4 additional height lookups and the on-the-fly calculations. However, because we do some processing by region, there is an evasive bug in [#185](https://github.com/TokisanGames/Terrain3D/issues/185) that is caused by the GPU's linear interpolation of the edges of our region maps when calculating heights using pixels across region boundaries. So we may have to switch to generating normal maps on the CPU and passing them in as a texture as many terrain systems do. The difference is 4 fewer texture lookups per pixel vs consuming another 3-4MB VRAM per region.
+The exact distance that the transition from per vertex to per pixel normal calculations occurs can be adjusted from the default of 192m via the `vertex_normals_distance` uniform.
+
+Generating normals in the shader works fine and modern GPUs can handle the load of 2 - 3 additional height lookups and the on-the-fly calculations. Doing this saves 3-4MB VRAM per region.
 
 ### Grid creation
 

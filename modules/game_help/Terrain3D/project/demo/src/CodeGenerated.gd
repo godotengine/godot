@@ -11,7 +11,7 @@ func _ready():
 	var terrain := Terrain3D.new()
 	terrain.set_collision_enabled(false)
 	terrain.storage = Terrain3DStorage.new()
-	terrain.texture_list = Terrain3DTextureList.new()
+	terrain.assets = Terrain3DAssets.new()
 	terrain.name = "Terrain3D"
 	add_child(terrain, true)
 	terrain.material.world_background = Terrain3DMaterial.NONE
@@ -26,7 +26,7 @@ func _ready():
 	terrain.storage.import_images([img, null, null], Vector3(-1024, 0, -1024), 0.0, 300.0)
 
 	# Enable collision. Enable the first if you wish to see it with Debug/Visible Collision Shapes
-#	terrain.set_show_debug_collision(true)
+	#terrain.set_show_debug_collision(true)
 	terrain.set_collision_enabled(true)
 	
 	# Enable runtime navigation baking using the terrain

@@ -1,0 +1,93 @@
+[gd_scene load_steps=2 format=3 uid="uid://dkb6hii5e48m2"]
+
+[ext_resource type="Script" path="res://addons/terrain_3d/src/asset_dock.gd" id="1_e23pg"]
+
+[node name="Terrain3D" type="PanelContainer"]
+custom_minimum_size = Vector2(256, 95)
+offset_right = 766.0
+offset_bottom = 100.0
+script = ExtResource("1_e23pg")
+
+[node name="Box" type="BoxContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+vertical = true
+
+[node name="Buttons" type="BoxContainer" parent="Box"]
+layout_mode = 2
+
+[node name="TexturesBtn" type="Button" parent="Box/Buttons"]
+custom_minimum_size = Vector2(80, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 16
+toggle_mode = true
+button_pressed = true
+text = "Textures"
+
+[node name="MeshesBtn" type="Button" parent="Box/Buttons"]
+custom_minimum_size = Vector2(80, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 16
+toggle_mode = true
+text = "Meshes"
+
+[node name="PlacementOpt" type="OptionButton" parent="Box/Buttons"]
+custom_minimum_size = Vector2(80, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+item_count = 9
+selected = 7
+popup/item_0/text = "Left_UL"
+popup/item_0/id = 0
+popup/item_1/text = "Left_BL"
+popup/item_1/id = 1
+popup/item_2/text = "Left_UR"
+popup/item_2/id = 2
+popup/item_3/text = "Left_BR"
+popup/item_3/id = 3
+popup/item_4/text = "Right_UL"
+popup/item_4/id = 4
+popup/item_5/text = "Right_BL "
+popup/item_5/id = 5
+popup/item_6/text = "Right_UR"
+popup/item_6/id = 6
+popup/item_7/text = "Right_BR"
+popup/item_7/id = 7
+popup/item_8/text = "Bottom"
+popup/item_8/id = 8
+
+[node name="SizeSlider" type="HSlider" parent="Box/Buttons"]
+custom_minimum_size = Vector2(80, 10)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 56.0
+max_value = 230.0
+value = 83.0
+
+[node name="Floating" type="Button" parent="Box/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+tooltip_text = "Pop this dock out to a floating window."
+toggle_mode = true
+text = "F"
+flat = true
+
+[node name="Pinned" type="Button" parent="Box/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+tooltip_text = "Make this window \"Always on top\"."
+toggle_mode = true
+text = "P"
+flat = true
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Box"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3

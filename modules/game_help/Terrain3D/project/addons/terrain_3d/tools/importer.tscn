@@ -7,10 +7,10 @@
 [sub_resource type="Terrain3DMaterial" id="Terrain3DMaterial_cjpaa"]
 show_checkered = true
 
-[sub_resource type="Terrain3DTextureList" id="Terrain3DTextureList_yjkn1"]
+[sub_resource type="Terrain3DAssets" id="Terrain3DAssets_gbxcd"]
 
 [node name="Importer" type="Terrain3D"]
 storage = SubResource("Terrain3DStorage_rmuvl")
 material = SubResource("Terrain3DMaterial_cjpaa")
-texture_list = SubResource("Terrain3DTextureList_yjkn1")
+assets = SubResource("Terrain3DAssets_gbxcd")
 script = ExtResource("1_60b8f")

@@ -19,7 +19,7 @@ func reset_settings(p_value) -> void:
 		r16_size = Vector2i(1024, 1024)
 		storage = null
 		material = null
-		texture_list = null
+		assets = null
 
 
 func reset_terrain(p_value) -> void:
@@ -54,16 +54,16 @@ func start_import(p_value: bool) -> void:
 		var min_max := Vector2(0, 1)
 		var img: Image
 		if height_file_name:
-			img = Terrain3DStorage.load_image(height_file_name, ResourceLoader.CACHE_MODE_IGNORE, r16_range, r16_size)
-			min_max = Terrain3D.get_min_max(img)
+			img = Terrain3DUtil.load_image(height_file_name, ResourceLoader.CACHE_MODE_IGNORE, r16_range, r16_size)
+			min_max = Terrain3DUtil.get_min_max(img)
 			imported_images[Terrain3DStorage.TYPE_HEIGHT] = img
 		if control_file_name:
-			img = Terrain3DStorage.load_image(control_file_name, ResourceLoader.CACHE_MODE_IGNORE)
+			img = Terrain3DUtil.load_image(control_file_name, ResourceLoader.CACHE_MODE_IGNORE)
 			imported_images[Terrain3DStorage.TYPE_CONTROL] = img
 		if color_file_name:
-			img = Terrain3DStorage.load_image(color_file_name, ResourceLoader.CACHE_MODE_IGNORE)
+			img = Terrain3DUtil.load_image(color_file_name, ResourceLoader.CACHE_MODE_IGNORE)
 			imported_images[Terrain3DStorage.TYPE_COLOR] = img
-			if texture_list.get_texture_count() == 0:
+			if assets.get_texture_count() == 0:
 				material.show_checkered = false
 				material.show_colormap = true
 		storage.import_images(imported_images, import_position, import_offset, import_scale)

@@ -10,7 +10,7 @@
 	<methods>
 		<method name="apply_undo">
 			<return type="void" />
-			<param index="0" name="maps" type="Array" />
+			<param index="0" name="maps" type="Dictionary" />
 			<description>
 				Undo the previous changes, with the reverted images in the array. Used by Godot, not users.
 			</description>
@@ -126,19 +126,28 @@
 		<constant name="ROUGHNESS" value="3" enum="Tool">
 			Paint a roughness modifier, aka wetness.
 		</constant>
-		<constant name="AUTOSHADER" value="4" enum="Tool">
+		<constant name="ANGLE" value="4" enum="Tool">
+			Paint textures rotated by an angle.
+		</constant>
+		<constant name="SCALE" value="5" enum="Tool">
+			Paint textures scaled by a value.
+		</constant>
+		<constant name="AUTOSHADER" value="6" enum="Tool">
 			Paint where the shader automatically textures.
 		</constant>
-		<constant name="HOLES" value="5" enum="Tool">
+		<constant name="HOLES" value="7" enum="Tool">
 			Paint where vertices will be invalidated to leave holes.
 		</constant>
-		<constant name="NAVIGATION" value="6" enum="Tool">
+		<constant name="NAVIGATION" value="8" enum="Tool">
 			Paint where navigation will be generated.
 		</constant>
-		<constant name="REGION" value="7" enum="Tool">
+		<constant name="INSTANCER" value="9" enum="Tool">
+			Paint MultiMesh instances on the ground.
+		</constant>
+		<constant name="REGION" value="10" enum="Tool">
 			Add/remove regions.
 		</constant>
-		<constant name="TOOL_MAX" value="8" enum="Tool">
+		<constant name="TOOL_MAX" value="11" enum="Tool">
 			The number of elements in this enum.
 		</constant>
 	</constants>

@@ -99,12 +99,30 @@ jobs:
         run: |
           cp '${{ github.workspace }}/README.md' '${{ github.workspace }}/LICENSE.txt' ${{ github.workspace }}/project/addons/terrain_3d/
 
+#      - name: Upload Package
+#        uses: Wandalen/wretry.action@master
+#        with:
+#            action: actions/upload-artifact@v3
+#            attempt_limit: 3
+#            attempt_delay: 1000
+#            with: |
+#              name: ${{ github.event.repository.name }}
+#              path: ${{ github.workspace }}/project/
+
       - name: Upload Package
-        uses: Wandalen/wretry.action@master
+        uses: actions/upload-artifact@v4
         with:
-            action: actions/upload-artifact@v3
-            attempt_limit: 3
-            attempt_delay: 1000
-            with: |
-              name: ${{ github.event.repository.name }}
-              path: ${{ github.workspace }}/project/
+          name: t3d-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.target }}
+          path: |
+            ${{ github.workspace }}/project/
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: ${{ github.event.repository.name }}
+          pattern: t3d-*
+          delete-merged: true

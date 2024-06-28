@@ -61,6 +61,34 @@ R"(
 	SPECULAR = 0.;
 	NORMAL_MAP = vec3(0.5, 0.5, 1.0);
 
+//INSERT: DEBUG_CONTROL_ANGLE
+	ivec3 __auv = get_region_uv(floor(uv));
+	uint __a_control = texelFetch(_control_maps, __auv, 0).r;
+	uint __angle = (__a_control >>10u & 0xFu);
+	vec3 __a_colors[16] = {
+		vec3(1., .2, .0), vec3(.8, 0., .2), vec3(.6, .0, .4), vec3(.4, .0, .6),
+		vec3(.2, 0., .8), vec3(.1, .1, .8), vec3(0., .2, .8), vec3(0., .4, .6),
+		vec3(0., .6, .4), vec3(0., .8, .2), vec3(0., 1., 0.), vec3(.2, 1., 0.),
+		vec3(.4, 1., 0.), vec3(.6, 1., 0.), vec3(.8, .6, 0.), vec3(1., .4, 0.)
+	};
+	ALBEDO = __a_colors[__angle];
+	ROUGHNESS = 1.;
+	SPECULAR = 0.;
+	NORMAL_MAP = vec3(0.5, 0.5, 1.0);
+
+//INSERT: DEBUG_CONTROL_SCALE
+	ivec3 __suv = get_region_uv(floor(uv));
+	uint __s_control = texelFetch(_control_maps, __suv, 0).r;
+	uint __scale = (__s_control >>7u & 0x7u);
+	vec3 __s_colors[8] = {
+		vec3(.5, .5, .5), vec3(.675, .25, .375), vec3(.75, .125, .25), vec3(.875, .0, .125), vec3(1., 0., 0.),
+		vec3(0., 0., 1.), vec3(.0, .166, .833), vec3(.166, .333, .666)
+	};
+	ALBEDO = __s_colors[__scale];
+	ROUGHNESS = 1.;
+	SPECULAR = 0.;
+	NORMAL_MAP = vec3(0.5 ,0.5 ,1.0);
+
 //INSERT: DEBUG_CONTROL_BLEND
 	// Show control map blend values
 	float __ctrl_blend = weight_inv * (

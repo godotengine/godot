@@ -28,9 +28,12 @@ Resources
     :name: toc-class-ref-resources
 
     class_resource
+    class_terrain3dassets
     class_terrain3dmaterial
+    class_terrain3dmeshasset
     class_terrain3dstorage
     class_terrain3dtexture
+    class_terrain3dtextureasset
     class_terrain3dtexturelist
 
 Other objects
@@ -42,4 +45,6 @@ Other objects
 
     class_object
     class_terrain3deditor
+    class_terrain3dinstancer
+    class_terrain3dutil
 

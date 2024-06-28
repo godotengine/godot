@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Terrain3D"
 run/main_scene="res://demo/Demo.tscn"
-config/features=PackedStringArray("4.1")
+config/features=PackedStringArray("4.2")
 config/icon="res://icon.svg"
 
 [display]

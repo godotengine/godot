@@ -17,7 +17,7 @@ Terrain3DTextureList
 Description
 -----------
 
-This class contains an array of ``Terrain3DTexture`` objects in 32 slots. It is a savable resource, so you can save it to disk and use the same texture list in multiple scenes that use Terrain3D. The amount of data is small, so it can be saved as a git-friendly, text based .tres file or left within the scene file.
+This class is deprecated and has been replaced by :ref:`Terrain3DAssets<class_Terrain3DAssets>`.
 
 .. rst-class:: classref-reftable-group
 
@@ -27,61 +27,9 @@ Properties
 .. table::
    :widths: auto
 
-   +---------------------------------------------------+---------------------------------------------------------------+--------+
-   | :ref:`Terrain3DTexture[]<class_Terrain3DTexture>` | :ref:`textures<class_Terrain3DTextureList_property_textures>` | ``[]`` |
-   +---------------------------------------------------+---------------------------------------------------------------+--------+
-
-.. rst-class:: classref-reftable-group
-
-Methods
--------
-
-.. table::
-   :widths: auto
-
-   +-------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`Terrain3DTexture<class_Terrain3DTexture>` | :ref:`get_texture<class_Terrain3DTextureList_method_get_texture>` **(** :ref:`int<class_int>` index **)**                                                          |
-   +-------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`int<class_int>`                           | :ref:`get_texture_count<class_Terrain3DTextureList_method_get_texture_count>` **(** **)**                                                                          |
-   +-------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | void                                            | :ref:`save<class_Terrain3DTextureList_method_save>` **(** **)**                                                                                                    |
-   +-------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | void                                            | :ref:`set_texture<class_Terrain3DTextureList_method_set_texture>` **(** :ref:`int<class_int>` index, :ref:`Terrain3DTexture<class_Terrain3DTexture>` texture **)** |
-   +-------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-
-.. rst-class:: classref-section-separator
-
-----
-
-.. rst-class:: classref-descriptions-group
-
-Signals
--------
-
-.. _class_Terrain3DTextureList_signal_textures_changed:
-
-.. rst-class:: classref-signal
-
-**textures_changed** **(** **)**
-
-Emitted when this list is updated due to changes in the texture slots, or the files or settings in any of the Terrain3DTextures.
-
-.. rst-class:: classref-section-separator
-
-----
-
-.. rst-class:: classref-descriptions-group
-
-Constants
----------
-
-.. _class_Terrain3DTextureList_constant_MAX_TEXTURES:
-
-.. rst-class:: classref-constant
-
-**MAX_TEXTURES** = ``32``
-
-Hard coded maximum number of textures, with IDs in the range of 0-31.
+   +----------------------------------------------------------------------------------------+---------------------------------------------------------------+--------+
+   | :ref:`Array<class_Array>`\[:ref:`Terrain3DTextureAsset<class_Terrain3DTextureAsset>`\] | :ref:`textures<class_Terrain3DTextureList_property_textures>` | ``[]`` |
+   +----------------------------------------------------------------------------------------+---------------------------------------------------------------+--------+
 
 .. rst-class:: classref-section-separator
 
@@ -96,67 +44,16 @@ Property Descriptions
 
 .. rst-class:: classref-property
 
-:ref:`Terrain3DTexture[]<class_Terrain3DTexture>` **textures** = ``[]``
+:ref:`Array<class_Array>`\[:ref:`Terrain3DTextureAsset<class_Terrain3DTextureAsset>`\] **textures** = ``[]`` :ref:`🔗<class_Terrain3DTextureList_property_textures>`
 
 .. rst-class:: classref-property-setget
 
-- void **set_textures** **(** :ref:`Terrain3DTexture[]<class_Terrain3DTexture>` value **)**
-- :ref:`Terrain3DTexture[]<class_Terrain3DTexture>` **get_textures** **(** **)**
+- |void| **set_textures**\ (\ value\: :ref:`Array<class_Array>`\[:ref:`Terrain3DTextureAsset<class_Terrain3DTextureAsset>`\]\ )
+- :ref:`Array<class_Array>`\[:ref:`Terrain3DTextureAsset<class_Terrain3DTextureAsset>`\] **get_textures**\ (\ )
 
-The array of Terrain3DTextures.
+.. container:: contribute
 
-.. rst-class:: classref-section-separator
-
-----
-
-.. rst-class:: classref-descriptions-group
-
-Method Descriptions
--------------------
-
-.. _class_Terrain3DTextureList_method_get_texture:
-
-.. rst-class:: classref-method
-
-:ref:`Terrain3DTexture<class_Terrain3DTexture>` **get_texture** **(** :ref:`int<class_int>` index **)**
-
-Returns the Terrain3DTexture with the requested ID.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_Terrain3DTextureList_method_get_texture_count:
-
-.. rst-class:: classref-method
-
-:ref:`int<class_int>` **get_texture_count** **(** **)**
-
-Returns the number of texture slots used.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_Terrain3DTextureList_method_save:
-
-.. rst-class:: classref-method
-
-void **save** **(** **)**
-
-Saves this texture list resource to disk, if saved as an external ``.tres`` or ``.res`` resource file.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_Terrain3DTextureList_method_set_texture:
-
-.. rst-class:: classref-method
-
-void **set_texture** **(** :ref:`int<class_int>` index, :ref:`Terrain3DTexture<class_Terrain3DTexture>` texture **)**
-
-Adds a Terrain3DTexture at the specified ID slot. The texture can be null to clear the slot, or remove it if its the last in the list. If the specified slot is full, it will be swapped with the source texture ID, or will find the next available ID.
+	There is currently no description for this property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!
 
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |const| replace:: :abbr:`const (This method has no side effects. It doesn't modify any of the instance's member variables.)`
@@ -165,3 +62,4 @@ Adds a Terrain3DTexture at the specified ID slot. The texture can be null to cle
 .. |static| replace:: :abbr:`static (This method doesn't need an instance to be called, so it can be called directly using the class name.)`
 .. |operator| replace:: :abbr:`operator (This method describes a valid operator to use with this type as left-hand operand.)`
 .. |bitfield| replace:: :abbr:`BitField (This value is an integer composed as a bitmask of the following flags.)`
+.. |void| replace:: :abbr:`void (No return value.)`

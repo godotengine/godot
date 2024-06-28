@@ -25,20 +25,17 @@
 
 #include "terrain_3d_material.h"
 #include "terrain_3d_storage.h"
-#include "terrain_3d_texture_list.h"
+#include "terrain_3d_assets.h"
+#include "terrain_3d_instancer.h"
 
 using namespace godot;
 
 class Terrain3D : public Node3D {
 	GDCLASS(Terrain3D, Node3D);
+	CLASS_NAME();
 
-public:
-	// Constants
-	static inline const char *__class__ = "Terrain3D";
-
-private:
 	// Terrain state
-	String _version = "0.9.1-dev";
+	String _version = "0.9.2-dev";
 	bool _is_inside_world = false;
 	bool _initialized = false;
 
@@ -47,9 +44,10 @@ private:
 	int _mesh_lods = 7;
 	real_t _mesh_vertex_spacing = 1.0f;
 
-	Ref<Terrain3DStorage> _storage;
 	Ref<Terrain3DMaterial> _material;
-	Ref<Terrain3DTextureList> _texture_list;
+	Ref<Terrain3DStorage> _storage;
+	Ref<Terrain3DAssets> _assets;
+	Terrain3DInstancer *_instancer = nullptr;
 
 	// Editor components
 	EditorPlugin *_plugin = nullptr;
@@ -70,7 +68,7 @@ private:
 
 	// Renderer settings
 	uint32_t _render_layers = 1 | (1 << 31); // Bit 1 and 32 for the cursor
-	GeometryInstance3D::ShadowCastingSetting _shadow_casting = GeometryInstance3D::SHADOW_CASTING_SETTING_ON;
+	GeometryInstance3D::ShadowCastingSetting _cast_shadows = GeometryInstance3D::SHADOW_CASTING_SETTING_ON;
 	real_t _cull_margin = 0.0f;
 
 	// Mouse cursor
@@ -95,16 +93,16 @@ private:
 	void _setup_mouse_picking();
 	void _destroy_mouse_picking();
 	void _grab_camera();
-	void _find_cameras(TypedArray<Node> from_nodes, Node *excluded_node, TypedArray<Camera3D> &cam_array);
 
-	void _clear(bool p_clear_meshes = true, bool p_clear_collision = true);
-	void _build(int p_mesh_lods, int p_mesh_size);
+	void _build_meshes(int p_mesh_lods, int p_mesh_size);
+	void _update_mesh_instances();
+	void _clear_meshes();
 
 	void _build_collision();
 	void _update_collision();
 	void _destroy_collision();
 
-	void _update_instances();
+	void _destroy_instancer();
 
 	void _generate_triangles(PackedVector3Array &p_vertices, PackedVector2Array *p_uvs, int32_t p_lod, Terrain3DStorage::HeightFilter p_filter, bool require_nav, AABB const &p_global_aabb) const;
 	void _generate_triangle_pair(PackedVector3Array &p_vertices, PackedVector2Array *p_uvs, int32_t p_lod, Terrain3DStorage::HeightFilter p_filter, bool require_nav, int32_t x, int32_t z) const;
@@ -126,12 +124,13 @@ public:
 	void set_mesh_vertex_spacing(real_t p_spacing);
 	real_t get_mesh_vertex_spacing() const { return _mesh_vertex_spacing; }
 
-	void set_storage(const Ref<Terrain3DStorage> &p_storage);
-	Ref<Terrain3DStorage> get_storage() const { return _storage; }
 	void set_material(const Ref<Terrain3DMaterial> &p_material);
 	Ref<Terrain3DMaterial> get_material() const { return _material; }
-	void set_texture_list(const Ref<Terrain3DTextureList> &p_texture_list);
-	Ref<Terrain3DTextureList> get_texture_list() const { return _texture_list; }
+	void set_storage(const Ref<Terrain3DStorage> &p_storage);
+	Ref<Terrain3DStorage> get_storage() const { return _storage; }
+	void set_assets(const Ref<Terrain3DAssets> &p_assets);
+	Ref<Terrain3DAssets> get_assets() const { return _assets; }
+	Terrain3DInstancer *get_instancer() const { return _instancer; }
 
 	// Editor components
 	void set_plugin(EditorPlugin *p_plugin);
@@ -144,8 +143,8 @@ public:
 	uint32_t get_render_layers() const { return _render_layers; };
 	void set_mouse_layer(uint32_t p_layer);
 	uint32_t get_mouse_layer() const { return _mouse_layer; };
-	void set_cast_shadows(GeometryInstance3D::ShadowCastingSetting p_shadow_casting);
-	GeometryInstance3D::ShadowCastingSetting get_cast_shadows() const { return _shadow_casting; };
+	void set_cast_shadows(GeometryInstance3D::ShadowCastingSetting p_cast_shadows);
+	GeometryInstance3D::ShadowCastingSetting get_cast_shadows() const { return _cast_shadows; };
 	void set_cull_margin(real_t p_margin);
 	real_t get_cull_margin() const { return _cull_margin; };
 
@@ -154,11 +153,11 @@ public:
 	bool get_collision_enabled() const { return _collision_enabled; }
 	void set_show_debug_collision(bool p_enabled);
 	bool get_show_debug_collision() const { return _show_debug_collision; }
-	void set_collision_layer(uint32_t p_layers) { _collision_layer = p_layers; }
+	void set_collision_layer(uint32_t p_layers);
 	uint32_t get_collision_layer() const { return _collision_layer; };
-	void set_collision_mask(uint32_t p_mask) { _collision_mask = p_mask; }
+	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const { return _collision_mask; };
-	void set_collision_priority(real_t p_priority) { _collision_priority = p_priority; }
+	void set_collision_priority(real_t p_priority);
 	real_t get_collision_priority() const { return _collision_priority; }
 
 	// Terrain methods
@@ -170,7 +169,12 @@ public:
 	Ref<Mesh> bake_mesh(int p_lod, Terrain3DStorage::HeightFilter p_filter = Terrain3DStorage::HEIGHT_FILTER_NEAREST) const;
 	PackedVector3Array generate_nav_mesh_source_geometry(AABB const &p_global_aabb, bool p_require_nav = true) const;
 
-	PackedStringArray _get_configuration_warnings() const;
+	// Misc
+	PackedStringArray get_configuration_warnings() const override;
+
+	// DEPRECATED 0.9.2 - Remove 0.9.3+
+	void set_texture_list(const Ref<Terrain3DTextureList> &p_texture_list);
+	Ref<Terrain3DTextureList> get_texture_list() { return Ref<Terrain3DTextureList>(); }
 
 protected:
 	void _notification(int p_what);

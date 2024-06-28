@@ -17,7 +17,7 @@ See [Project Status](https://terrain3d.readthedocs.io/en/stable/docs/project_sta
 
 ## Getting Started
 
-1. Read through our [documentation](https://terrain3d.readthedocs.io/en/stable/index.html), starting with [Installation](https://terrain3d.readthedocs.io/en/stable/docs/installation.html).
+1. Read the [Installation](https://terrain3d.readthedocs.io/en/stable/docs/installation.html) instructions, and the rest of the [documentation](https://terrain3d.readthedocs.io/en/stable/index.html).
 
 2. For support, read [Getting Help](https://terrain3d.readthedocs.io/en/stable/docs/getting_help.html) or join our [Discord server](https://tokisan.com/discord).
 

@@ -77,8 +77,14 @@
 		<member name="show_colormap" type="bool" setter="set_show_colormap" getter="get_show_colormap" default="false">
 			Places the color map in the albedo channel.
 		</member>
+		<member name="show_control_angle" type="bool" setter="set_show_control_angle" getter="get_show_control_angle" default="false">
+			Albedo shows the painted angle. Orange means 0°, Yellow 270°, Cyan 180°, Violet 90°. Or warm colors towards -Z, cool colors +Z, greens/yellows +X, reds/blues -X. Draw all angles coming from the center of a circle for a better understanding.
+		</member>
 		<member name="show_control_blend" type="bool" setter="set_show_control_blend" getter="get_show_control_blend" default="false">
 			Albedo shows the blend value used to blend the base and overlay textures as greyscale. This is especially helpful to see how the noise texture adjusts the blending edges.
+		</member>
+		<member name="show_control_scale" type="bool" setter="set_show_control_scale" getter="get_show_control_scale" default="false">
+			Albedo shows the painted scale. Larger scales are more red, smaller scales are more blue. 0.5 middle grey is the default 100% scale.
 		</member>
 		<member name="show_control_texture" type="bool" setter="set_show_control_texture" getter="get_show_control_texture" default="false">
 			Albedo shows the base and overlay texture indices defined by the control map. Red pixels indicate the base texture, with brightness showing texture ids 0 to 31. Green pixels indicate the overlay texture. Yellow indicates both.

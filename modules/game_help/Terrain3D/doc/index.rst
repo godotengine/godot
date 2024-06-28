@@ -76,8 +76,9 @@ Geometry clipmap mesh code created by `Mike J. Savage <https://mikejsavage.co.uk
    :caption: About
 
    docs/project_status
-   docs/authors
+   docs/games
    docs/press
+   docs/authors
    docs/license
 
 
@@ -90,6 +91,7 @@ Geometry clipmap mesh code created by `Mike J. Savage <https://mikejsavage.co.uk
    docs/texture_prep
    docs/texture_painting
    docs/import_export
+   docs/instancer
    docs/tips
    docs/troubleshooting
    docs/getting_help
@@ -101,6 +103,7 @@ Geometry clipmap mesh code created by `Mike J. Savage <https://mikejsavage.co.uk
 
    docs/double_precision
    docs/integrating
+   docs/misc
    docs/mobile_web
    docs/navigation
    docs/occlusion_culling
@@ -115,7 +118,6 @@ Geometry clipmap mesh code created by `Mike J. Savage <https://mikejsavage.co.uk
    docs/shader_design
    docs/controlmap_format
    docs/storage_format
-   docs/previous_engines
    docs/contributing
 
 

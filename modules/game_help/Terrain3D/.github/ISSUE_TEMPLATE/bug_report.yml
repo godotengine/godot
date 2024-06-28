@@ -5,7 +5,7 @@ body:
 - type: markdown
   attributes:
     value: |
-      Has your issue already been addressed in [Setting up textures](https://terrain3d.readthedocs.io/en/latest/docs/textures.html), [Troubleshooting](https://terrain3d.readthedocs.io/en/latest/docs/troubleshooting.html), or [Tips](https://terrain3d.readthedocs.io/en/latest/docs/tips.html)?
+      Has your issue already been addressed in [Installation](https://terrain3d.readthedocs.io/en/latest/docs/installation.html), [Preparing textures](https://terrain3d.readthedocs.io/en/latest/docs/texture_prep.html), [Troubleshooting](https://terrain3d.readthedocs.io/en/latest/docs/troubleshooting.html), or [Tips](https://terrain3d.readthedocs.io/en/latest/docs/tips.html)?
 
 - type: input
   attributes:

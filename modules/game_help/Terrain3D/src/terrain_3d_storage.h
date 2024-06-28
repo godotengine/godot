@@ -9,20 +9,19 @@
 #include "scene/resources/shader.h"
 
 #include "constants.h"
-#include "generated_tex.h"
-#include "terrain_3d_texture_list.h"
-#include "util.h"
+#include "generated_texture.h"
+#include "terrain_3d_util.h"
+
+class Terrain3D;
 
 using namespace godot;
 
 class Terrain3DStorage : public Resource {
 	GDCLASS(Terrain3DStorage, Resource);
+	CLASS_NAME();
 
-public:
-	// Constants
-	static inline const char *__class__ = "Terrain3DStorage";
-
-	static inline const real_t CURRENT_VERSION = 0.842f;
+public: // Constants
+	static inline const real_t CURRENT_VERSION = 0.915f; // Dev version
 	static inline const int REGION_MAP_SIZE = 16;
 	static inline const Vector2i REGION_MAP_VSIZE = Vector2i(REGION_MAP_SIZE, REGION_MAP_SIZE);
 
@@ -69,16 +68,27 @@ public:
 	};
 
 private:
-	// Storage Settings & flags
-	real_t _version = 0.8f; // Set to ensure Godot always saves this
+	Terrain3D *_terrain = nullptr;
+
+	// Work data
 	bool _modified = false;
-	bool _save_16_bit = false;
-	RegionSize _region_size = SIZE_1024;
-	Vector2i _region_sizev = Vector2i(_region_size, _region_size);
+	bool _region_map_dirty = true;
+	PackedInt32Array _region_map; // 16x16 Region grid with index into region_offsets (1 based array)
+	// Generated Texture RIDs
+	// These contain the TextureLayered RID from the RenderingServer, no Image
+	GeneratedTexture _generated_height_maps;
+	GeneratedTexture _generated_control_maps;
+	GeneratedTexture _generated_color_maps;
+
+	AABB _edited_area;
+	uint64_t _last_region_bounds_error = 0;
 
 	// Stored Data
+	real_t _version = 0.8f; // Set to ensure Godot always saves this
+	RegionSize _region_size = SIZE_1024;
+	Vector2i _region_sizev = Vector2i(_region_size, _region_size);
+	bool _save_16_bit = false;
 	Vector2 _height_range = Vector2(0.f, 0.f);
-	AABB _edited_area;
 
 	/**
 	 * These arrays house all of the map data.
@@ -86,24 +96,21 @@ private:
 	 * location is tracked by region_offsets. The region data are combined into one large
 	 * texture in generated_*_maps.
 	 */
-	bool _region_map_dirty = true;
-	PackedInt32Array _region_map; // 16x16 Region grid with index into region_offsets (1 based array)
 	TypedArray<Vector2i> _region_offsets; // Array of active region coordinates
 	TypedArray<Image> _height_maps;
 	TypedArray<Image> _control_maps;
 	TypedArray<Image> _color_maps;
 
-	// Generated Texture RIDs
-	// These contain the TextureLayered RID from the RenderingServer, no Image
-	GeneratedTex _generated_height_maps;
-	GeneratedTex _generated_control_maps;
-	GeneratedTex _generated_color_maps;
+	// Foliage Instancer contains MultiMeshes saved to disk
+	// Dictionary[region_offset:Vector2i] -> Dictionary[mesh_id:int] -> MultiMesh
+	Dictionary _multimeshes;
 
 	// Functions
 	void _clear();
 
 public:
-	Terrain3DStorage();
+	Terrain3DStorage() {}
+	void initialize(Terrain3D *p_terrain);
 	~Terrain3DStorage();
 
 	void set_version(real_t p_version);
@@ -124,11 +131,15 @@ public:
 	// Regions
 	void set_region_size(RegionSize p_size);
 	RegionSize get_region_size() const { return _region_size; }
+	Vector2i get_region_sizev() const { return _region_sizev; }
 	void set_region_offsets(const TypedArray<Vector2i> &p_offsets);
 	TypedArray<Vector2i> get_region_offsets() const { return _region_offsets; }
+	PackedInt32Array get_region_map() const { return _region_map; }
 	int get_region_count() const { return _region_offsets.size(); }
 	Vector2i get_region_offset(Vector3 p_global_position);
+	Vector2i get_region_offset_from_index(int p_index);
 	int get_region_index(Vector3 p_global_position);
+	int get_region_index_from_offset(Vector2i p_region_offset);
 	bool has_region(Vector3 p_global_position) { return get_region_index(p_global_position) != -1; }
 	Error add_region(Vector3 p_global_position, const TypedArray<Image> &p_images = TypedArray<Image>(), bool p_update = true);
 	void remove_region(Vector3 p_global_position, bool p_update = true);
@@ -142,10 +153,13 @@ public:
 	TypedArray<Image> get_maps_copy(MapType p_map_type) const;
 	void set_height_maps(const TypedArray<Image> &p_maps) { set_maps(TYPE_HEIGHT, p_maps); }
 	TypedArray<Image> get_height_maps() const { return _height_maps; }
+	RID get_height_rid() { return _generated_height_maps.get_rid(); }
 	void set_control_maps(const TypedArray<Image> &p_maps) { set_maps(TYPE_CONTROL, p_maps); }
 	TypedArray<Image> get_control_maps() const { return _control_maps; }
+	RID get_control_rid() { return _generated_control_maps.get_rid(); }
 	void set_color_maps(const TypedArray<Image> &p_maps) { set_maps(TYPE_COLOR, p_maps); }
 	TypedArray<Image> get_color_maps() const { return _color_maps; }
+	RID get_color_rid() { return _generated_color_maps.get_rid(); }
 	void set_pixel(MapType p_map_type, Vector3 p_global_position, Color p_pixel);
 	Color get_pixel(MapType p_map_type, Vector3 p_global_position);
 	void set_height(Vector3 p_global_position, real_t p_height);
@@ -157,15 +171,19 @@ public:
 	void set_roughness(Vector3 p_global_position, real_t p_roughness);
 	real_t get_roughness(Vector3 p_global_position);
 	Vector3 get_texture_id(Vector3 p_global_position);
+	real_t get_angle(Vector3 p_global_position);
+	real_t get_scale(Vector3 p_global_position);
 	TypedArray<Image> sanitize_maps(MapType p_map_type, const TypedArray<Image> &p_maps);
 	void force_update_maps(MapType p_map = TYPE_MAX);
+
+	// Instancer
+	void set_multimeshes(Dictionary p_multimeshes);
+	Dictionary get_multimeshes() { return _multimeshes; }
 
 	// File I/O
 	void save();
 	void clear_modified() { _modified = false; }
 	void set_modified() { _modified = true; }
-	static Ref<Image> load_image(String p_file_name, int p_cache_mode = ResourceFormatLoader::CACHE_MODE_IGNORE,
-			Vector2 p_r16_height_range = Vector2(0.f, 255.f), Vector2i p_r16_size = Vector2i(0, 0));
 	void import_images(const TypedArray<Image> &p_images, Vector3 p_global_position = Vector3(0.f, 0.f, 0.f),
 			real_t p_offset = 0.f, real_t p_scale = 1.f);
 	Error export_image(String p_file_name, MapType p_map_type = TYPE_HEIGHT);
@@ -190,13 +208,6 @@ inline void Terrain3DStorage::set_height(Vector3 p_global_position, real_t p_hei
 	set_pixel(TYPE_HEIGHT, p_global_position, Color(p_height, 0.f, 0.f, 1.f));
 }
 
-inline real_t Terrain3DStorage::get_height(Vector3 p_global_position) {
-	if (Util::is_hole(get_control(p_global_position))) {
-		return NAN;
-	}
-	return get_pixel(TYPE_HEIGHT, p_global_position).r;
-}
-
 inline void Terrain3DStorage::set_color(Vector3 p_global_position, Color p_color) {
 	p_color.a = get_roughness(p_global_position);
 	set_pixel(TYPE_COLOR, p_global_position, p_color);
@@ -209,11 +220,11 @@ inline Color Terrain3DStorage::get_color(Vector3 p_global_position) {
 }
 
 inline void Terrain3DStorage::set_control(Vector3 p_global_position, uint32_t p_control) {
-	set_pixel(TYPE_CONTROL, p_global_position, Color(Util::as_float(p_control), 0.f, 0.f, 1.f));
+	set_pixel(TYPE_CONTROL, p_global_position, Color(as_float(p_control), 0.f, 0.f, 1.f));
 }
 
 inline uint32_t Terrain3DStorage::get_control(Vector3 p_global_position) {
-	return Util::as_uint(get_pixel(TYPE_CONTROL, p_global_position).r);
+	return as_uint(get_pixel(TYPE_CONTROL, p_global_position).r);
 }
 
 inline void Terrain3DStorage::set_roughness(Vector3 p_global_position, real_t p_roughness) {

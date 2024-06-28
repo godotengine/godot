@@ -16,3 +16,6 @@ Contributors
 * [@directedchaossoftware](https://github.com/directedchaossoftware)
 * Jacob Coughenour [@jacobcoughenour](https://github.com/jacobcoughenour)
 * [@stakira](https://github.com/stakira) / [@lfxu](https://github.com/lfxu)
+* Brian [@epitaque](https://github.com/epitaque)
+* [@XTarsia](https://github.com/XTarsia)
+* Matt [@FishOfTheNorthStar](https://github.com/FishOfTheNorthStar)

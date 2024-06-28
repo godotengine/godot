@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://domhm87hbhbg1" path="res://demo/components/Player.tscn" id="3_ht63y"]
 [ext_resource type="PackedScene" uid="uid://d2jihfohphuue" path="res://demo/components/UI.tscn" id="4_gk532"]
 [ext_resource type="Terrain3DStorage" uid="uid://lalq1xnmbjdl" path="res://demo/data/terrain_storage.res" id="5_sl43a"]
-[ext_resource type="Terrain3DTextureList" uid="uid://dal3jhw6241qg" path="res://demo/data/texture_list.tres" id="7_mnexy"]
+[ext_resource type="Terrain3DAssets" uid="uid://dal3jhw6241qg" path="res://demo/data/assets.tres" id="7_mnexy"]
 
 [sub_resource type="Gradient" id="Gradient_vs32v"]
 offsets = PackedFloat32Array(0.3, 1)
@@ -31,6 +31,7 @@ noise = SubResource("FastNoiseLite_7glc1")
 
 [sub_resource type="Terrain3DMaterial" id="Terrain3DMaterial_q2wt2"]
 _shader_parameters = {
+"_mouse_layer": 2147483648,
 "blend_sharpness": 0.87,
 "height_blending": true,
 "macro_variation1": Color(1, 1, 1, 1),
@@ -59,5 +60,5 @@ transform = Transform3D(0.134125, 0, -0.990965, 0, 1, 0, 0.990965, 0, 0.134125, 
 [node name="Terrain3D" type="Terrain3D" parent="."]
 storage = ExtResource("5_sl43a")
 material = SubResource("Terrain3DMaterial_q2wt2")
-texture_list = ExtResource("7_mnexy")
+assets = ExtResource("7_mnexy")
 collision_mask = 3

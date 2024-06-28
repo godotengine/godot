@@ -13,9 +13,10 @@ _patches/
 # Docs
 doc/_build
 
-# Godot-specific ignores
+# Godot-specific ignores (Include script cache. See godot issue #75388)
 /project/.import/
-/project/.godot/
+/project/.godot/*
+!/project/.godot/global_script_class_cache.cfg
 export.cfg
 export_presets.cfg
 
@@ -35,3 +36,4 @@ export_presets.cfg
 # Editors
 .vscode/
 .vs/
+project/addons/explore-editor-theme/

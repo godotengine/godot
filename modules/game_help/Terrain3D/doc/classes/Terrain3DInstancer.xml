@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Terrain3DInstancer" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+		This class places mesh instances into MultiMeshInstance3Ds. When providing a scene file, currently only the first mesh found is used. LODs will be supported later. Multimeshes only support one mesh object, so complex objects like tree trunks and leaves, or a door frame and door either need to be combined into one object with multiple materials, or placed by another method. Read the [url=https://docs.godotengine.org/en/stable/classes/class_multimesh.html]Godot MultiMesh docs[/url] for more information.
+		Data is currently stored in MultiMeshes within a Dictionary [member Terrain3DStorage.multimeshes], per region offset, per mesh type. These MultiMeshes are loaded into MultiMeshInstances, which are attached to the scene tree and managed by this class.
+		The methods available for adding instances are:
+		* [method add_instances] - A feature rich function built for hand editing via Terrain3DEditor.
+		* [method add_transforms] - Accepts your list of transforms and parses them into our storage system.
+		* Creating your own MultiMesh resources and inserting them directly into the [member Terrain3DStorage.multimeshes] dictionary. It's not difficult to do this in GDScript, but a thorough understanding of the C++ code in this class is recommended. Specifically look at `update_multimesh()`.
+		The methods available for removing instances are:
+		* [method remove_instances] - Like add_instances, this is can be used procedurally but is designed for hand editing.
+		* [method clear_by_mesh], [method clear_by_region_id], [method clear_by_offset] - To erase large sections of instances
+		* [code skip-lint]storage.set_multimeshes(Dictionary())[/code] - This will erase all instancer data and destroy all MultiMeshInstances. Run it in a @tool script to clear the data within the editor.
+		Note: one caveat about editing MultiMeshes is the instance count cannot be changed after creation. Should you wish to remove 50% of the transforms, you would need to make a new MultiMesh, copy over the mesh and settings, copy the 50% of the transforms you wish to keep, and assign it to the MultiMeshInstance3D. That is how the instancer updates the MMIs in C++.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_instances">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="params" type="Dictionary" />
+			<description>
+				Used by Terrain3DEditor to place instances given many brush parameters. In addition to the brush position, it also uses the following parameters: asset_id, size, strength, fixed_scale, random_scale, fixed_spin, random_spin, fixed_angle, random_angle, align_to_normal, height_offset, random_height, vertex_color, random_hue, random_darken. All of these settings are set in the editor through tool_settings.gd.
+			</description>
+		</method>
+		<method name="add_multimesh">
+			<return type="void" />
+			<param index="0" name="mesh_id" type="int" />
+			<param index="1" name="multimesh" type="MultiMesh" />
+			<param index="2" name="transform" type="Transform3D" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)" />
+			<description>
+				Allows procedural placement of meshes. The [Terrain3DMeshAsset] mesh_id should already be setup. This extracts the instance transforms and colors from a multimesh and passes it to [method add_transforms].
+			</description>
+		</method>
+		<method name="add_transforms">
+			<return type="void" />
+			<param index="0" name="mesh_id" type="int" />
+			<param index="1" name="transforms" type="Transform3D[]" />
+			<param index="2" name="colors" type="Color[]" default="[]" />
+			<description>
+				Allows procedural placement of meshes. The [Terrain3DMeshAsset] mesh_id should already be setup. Then you provide the array of Transform3Ds and optional Colors, which will be parsed into our region based storage system and fed directly into the appropriate MultiMeshInstances.
+				This function adds the [member Terrain3DMeshAsset.height_offset] to the transform along its local Y axis.
+			</description>
+		</method>
+		<method name="clear_by_mesh">
+			<return type="void" />
+			<param index="0" name="mesh_id" type="int" />
+			<description>
+				Removes both MultiMeshInstance nodes attached to the tree, and MultiMeshes in Storage for all regions that match mesh id.
+			</description>
+		</method>
+		<method name="clear_by_offset">
+			<return type="void" />
+			<param index="0" name="region_offset" type="Vector2i" />
+			<param index="1" name="mesh_id" type="int" />
+			<description>
+				Removes both MultiMeshInstance nodes attached to the tree, and MultiMeshes in Storage for the specified region offset and mesh id.
+			</description>
+		</method>
+		<method name="clear_by_region_id">
+			<return type="void" />
+			<param index="0" name="region_id" type="int" />
+			<param index="1" name="mesh_id" type="int" />
+			<description>
+				Removes both MultiMeshInstance nodes attached to the tree, and MultiMeshes in Storage for the specified region id and mesh id.
+			</description>
+		</method>
+		<method name="remove_instances">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="params" type="Dictionary" />
+			<description>
+				Uses parameters asset_id, size, strength, fixed_scale, random_scale, to randomly remove instances within the indicated brush position and size.
+			</description>
+		</method>
+	</methods>
+</class>

@@ -1,8 +1,9 @@
 # This script is an addon for HungryProton's Scatter https://github.com/HungryProton/scatter
-# It allows Scatter to detect the terrain height from Terrain3D
+# It provides a `Project on Terrain3D` modifier, which allows Scatter 
+# to detect the terrain height from Terrain3D without using collision.
 # Copy this file into /addons/proton_scatter/src/modifiers
 # Then uncomment everything below
-# In the editor, add this modifier, then set your Terrain3D node
+# In the editor, add this modifier to Scatter, then set your Terrain3D node
 
 #@tool
 #extends "base_modifier.gd"

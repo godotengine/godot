@@ -8,7 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://d2jihfohphuue" path="res://demo/components/UI.tscn" id="5_rc7e2"]
 [ext_resource type="Terrain3DStorage" uid="uid://lalq1xnmbjdl" path="res://demo/data/terrain_storage.res" id="7_d7eri"]
 [ext_resource type="NavigationMesh" uid="uid://yf3fu23666k8" path="res://demo/data/nav_mesh.res" id="8_6jfdr"]
-[ext_resource type="Terrain3DTextureList" uid="uid://dal3jhw6241qg" path="res://demo/data/texture_list.tres" id="10_qmhh8"]
+[ext_resource type="Terrain3DAssets" uid="uid://dal3jhw6241qg" path="res://demo/data/assets.tres" id="10_qmhh8"]
 [ext_resource type="PackedScene" uid="uid://di5fovhcyd7re" path="res://demo/components/Enemy.tscn" id="12_b2xl8"]
 
 [sub_resource type="Gradient" id="Gradient_vr1m7"]
@@ -34,6 +34,7 @@ noise = SubResource("FastNoiseLite_d8lcj")
 
 [sub_resource type="Terrain3DMaterial" id="Terrain3DMaterial_s5mq5"]
 _shader_parameters = {
+"_mouse_layer": 2147483648,
 "auto_base_texture": 0,
 "auto_height_reduction": 0.1,
 "auto_overlay_texture": 1,
@@ -83,6 +84,6 @@ navigation_mesh = ExtResource("8_6jfdr")
 [node name="Terrain3D" type="Terrain3D" parent="NavigationRegion3D"]
 storage = ExtResource("7_d7eri")
 material = SubResource("Terrain3DMaterial_s5mq5")
-texture_list = ExtResource("10_qmhh8")
+assets = ExtResource("10_qmhh8")
 collision_mask = 3
 mesh_size = 64

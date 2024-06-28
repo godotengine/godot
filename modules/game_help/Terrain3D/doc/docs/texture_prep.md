@@ -1,13 +1,12 @@
-Preparing Textures
+﻿Preparing Textures
 =========================
 
 Terrain3D supports up to 32 texture sets using albedo, height, normal, and roughness textures. This page describes everything you need to know to prepare your texture files. Continue on to [Texture Painting](texture_painting.md) to learn how to use them.
 
-TLDR: Just read channel pack textures with Gimp.
-
 **Table of Contents**
 * [Texture Requirements](#texture-requirements)
 * [Texture Content](#texture-content)
+* [Channel Pack Textures in Terrain3D](#channel-pack-textures-in-terrain3d)
 * [Channel Pack Textures with Gimp](#channel-pack-textures-with-gimp)
 * [Where to Get Textures](#where-to-get-textures)
 * [Frequently Asked Questions](#faq)
@@ -25,7 +24,7 @@ You need two files per texture set. Terrain3D is designed for textures that are 
 
 The terrain can work without the alpha channels, however it won't have height blending or roughness. That may be fine for a low-poly or stylized terrain, but not for a realistic one.
 
-Textures can be channel packed in in tools like Photoshop, [Krita](https://krita.org/), [Gimp](https://www.gimp.org/), or similar tools. Working with alpha channels in Photoshop and Krita can be a bit challenging, so we recommend Gimp. See [Channel Pack Textures with Gimp](#channel-pack-textures-with-gimp) below.
+Textures can be channel packed using the Pack Textures option in the Terrain3D Tools menu at the top of the viewport, or in tools like [Gimp](https://www.gimp.org/). Photoshop or [Krita](https://krita.org/) are possible, but working with alpha channels can be a bit challenging. See [Channel Pack Textures with Gimp](#channel-pack-textures-with-gimp) below.
 
 ### Texture Sizes
 All albedo textures must be the same size, and all normal textures must be the same size. Each type gets combined into separate Texture2DArrays, so their sizes can differ.
@@ -62,23 +61,62 @@ You can create KTX files with [Khronos' KTX tools](https://github.com/KhronosGro
 
 Make sure you have seamless textures that can be repeated without an obvious seam.
 
+### Height Textures
+
+If creating your own height textures, aim for a central point of grey (0.5) with bumps and divots above and below that value. Adjust the contrast so that troughs and peaks reach just about 0 and 1.
+
 ### Normal Map Format
 
 Normal maps come in two formats: DirectX with -Y, and OpenGL with +Y. 
 
-They can often be identified visually by whether bumps appear to stick out (OpenGL) or appear pushed in (DirectX). The sphere and pyramid on the left in the image below are the clearest examples. Natural textures like rock or grass can be very difficult to tell.
+DirectX can be converted to OpenGL and vice versa by inverting the green channel in a photo editing app.
 
-DirectX can be converted to OpenGL and vice versa by inverting the green channel in a photo editing app. 
+They can often be identified visually by whether bumps appear to stick out (OpenGL) or appear pushed in (DirectX). The sphere and pyramid on the left in the image below are the clearest examples. 
 
 ```{image} images/tex_normalmap.png
 :target: ../_images/tex_normalmap.png
 ```
+
+Natural textures like rock or grass can be very difficult to tell. However if you get assets made for a certain engine like Unreal or Unity, you can generally assume their format and convert as needed. On occasion artists get it wrong though, so if the lighting looks off on your object, try inverting the normal map.
+
+| Software | DirectX | OpenGL |
+|----------|---------|--------|
+| 3DS Max				| ✓ | |
+| Blender				| | ✓ |
+| Cinema 4D				| | ✓ |
+| CryEngine				| ✓ | |
+| Godot Engine			| | ✓ |
+| Houdini				| | ✓ |
+| Marmoset Toolbag		| | ✓ |
+| Maya					| | ✓ |
+| Substance Painter		| ✓ | |
+| Unity					| | ✓ |
+| Unreal Engine			| ✓ | |
+| Zbrush				| | ✓ |
 
 ### Roughness vs Smoothness
 
 Some "roughness" textures are actually smoothness or gloss textures. You can convert between them by inverting the image.
 
 You can tell which is which just by looking at distinctive textures and thinking about the material. If it's glass it should be glossy, so on a roughness texture values are near 0 and should appear mostly black. If it's dry rock or dirt, it should be mostly white, which is near 1 roughness. A smoothness texture would show the opposite. 
+
+
+## Channel Pack Textures in Terrain3D
+
+You can use our built in tool to pack textures for you.
+
+1. At the top of your viewport, click the `Terrain3D Tools` menu, then `Pack Textures`.
+2. Select your textures for albedo and height.
+3. Optionally, also select textures for normal and roughness.
+4. Optionally, convert a DirectX normal map to OpenGL.
+5. Click `Pack Textures As...` and save the resulting PNG files to disk.
+6. Go to the Import tab and one at a time, select your new PNG files, specify the following settings and click `reimport`. 
+	* `Mode: VRAM Compressed`
+	* Optional: `High Quality: On` if you wish BPTC instead of DXT5.
+	* `Normal Map: Disabled`
+	* `Mipmaps Generate: On`
+
+Make sure to reimport both files. Double click each file in the filesystem and ensure the inspector reveals the expected format and size. All of the files you put in your texture list must match.
 
 
 ## Channel Pack Textures with Gimp
@@ -139,19 +177,19 @@ There are numerous websites where you can download high quality, royalty free te
 
 ## FAQ
 
-### Why can't we just use regular textures? Why is this so difficult / impossible to do?
+### Why do we have to channel pack textures? Why is this so difficult?
 
 Regular textures are now supported from v0.9.1. However if you want a realistic terrain with height blending and roughness, you need to channel pack textures.
 
-We provide easy, [5-step instructions](#channel-pack-textures-with-gimp) that take less than 2 minutes once you're familiar with the process. 
-
 Channel packing is a very common task done by professional game developers. Every pro asset pack you've used has channel packed textures. When you download texture packs from websites, they provide individual textures so you can pack them how you want. They are not intended to be used individually!
 
-We want high performance games, right? Then, we need to optimize our systems for the graphics hardware. A shader can retrieve four channels RGBA from a texture at once. Albedo and normal textures only have RGB. Thus, reading Alpha is free, and a waste if not used. So, we put height / roughness in the Alpha channel.
+We offer a built in `Pack Textures` tool, found in the Terrain3D Tools menu at the top of the viewport that facilitates the texture creation process within Godot.
 
-Efficiency is also why we want power of 2 textures.
+Finally, we provide easy, 5-step instructions for packing textures with Gimp, which takes less than 2 minutes once you're familiar with the process. 
 
-We could have the system channel pack for you, however that would mean processing up to 128 images every time any scene with Terrain3D loads, both in the editor and running games. Exported games may not even work since Godot's image compression libraries only exist in the editor. The most reasonable path is for gamedevs to learn a simple process that they'll use for their entire career and use it to set up terrain textures one time. In the future we may add a [channel packing tool](https://github.com/TokisanGames/Terrain3D/issues/125) to facilitate file creation within Godot.
+We want high performance games, so we need to optimize our systems for the graphics hardware. A shader can retrieve four channels RGBA from a texture at once. Albedo and normal textures only have RGB. Thus, reading Alpha is free, and a waste if not used. So, we put height / roughness in the Alpha channel.
+
+We could have the system channel pack for you at startup, however that would mean processing up to 128 images every time any scene with Terrain3D loads, both in the editor and running games. Exported games may not even work since Godot's image compression libraries only exist in the editor. The most reasonable path is for gamedevs to learn a simple process that they'll use for their entire career and use it to set up terrain textures one time.
 
 ### What about AO, Emissive, Metal, and other texture maps?
 

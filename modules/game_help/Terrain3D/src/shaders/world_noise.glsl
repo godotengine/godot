@@ -53,7 +53,7 @@ float world_noise(vec2 p) {
     vec2  d = vec2(0.0);
 
     int octaves = int( clamp(
-	float(world_noise_max_octaves) - floor(v_vertex_dist/(world_noise_lod_distance)),
+	float(world_noise_max_octaves) - floor(v_vertex_xz_dist/(world_noise_lod_distance)),
     float(world_noise_min_octaves), float(world_noise_max_octaves)) );
 	
     for( int i=0; i < octaves; i++ ) {
@@ -70,21 +70,21 @@ float world_noise(vec2 p) {
 
 //INSERT: WORLD_NOISE2
 	// World Noise
-   	if(_background_mode == 2u) {
-	    float weight = texture(_region_blend_map, (uv/float(_region_map_size))+0.5).r;
-	    float rmap_half_size = float(_region_map_size)*.5;
-	    if(abs(uv.x) > rmap_half_size+.5 || abs(uv.y) > rmap_half_size+.5) {
+   	if (_background_mode == 2u) {
+	    float weight = texture(_region_blend_map, (uv / float(_region_map_size)) + 0.5).r;
+	    float rmap_half_size = float(_region_map_size) * .5;
+	    if (abs(uv.x) > rmap_half_size + .5 || abs(uv.y) > rmap_half_size + .5) {
 		    weight = 0.;
 	    } else {
-		    if(abs(uv.x) > rmap_half_size-.5) {
+		    if (abs(uv.x) > rmap_half_size - .5) {
 			    weight = mix(weight, 0., abs(uv.x) - (rmap_half_size-.5));
 		    }
-		    if(abs(uv.y) > rmap_half_size-.5) {
+		    if (abs(uv.y) > rmap_half_size - .5) {
 			    weight = mix(weight, 0., abs(uv.y) - (rmap_half_size-.5));
 		    }
 	    }
-	    height = mix(height, world_noise((uv+world_noise_offset.xz) * world_noise_scale*.1) *
-            world_noise_height*10. + world_noise_offset.y*100.,
+	    height = mix(height, world_noise((uv + world_noise_offset.xz) * world_noise_scale * .1) *
+            world_noise_height * 10. + world_noise_offset.y * 100.,
 		    clamp(smoothstep(world_noise_blend_near, world_noise_blend_far, 1.0 - weight), 0.0, 1.0));
     }
 )"

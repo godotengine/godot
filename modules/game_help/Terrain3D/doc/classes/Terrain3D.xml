@@ -35,21 +35,6 @@
 				Returns the camera the terrain is currently snapping to.
 			</description>
 		</method>
-		<method name="get_filled_image" qualifiers="static">
-			<return type="Image" />
-			<param index="0" name="size" type="Vector2i" />
-			<param index="1" name="color" type="Color" />
-			<param index="2" name="create_mipmaps" type="bool" />
-			<param index="3" name="format" type="int" enum="Image.Format" />
-			<description>
-				A utility function that returns an Image filled with a specified color and format.
-				If [code skip-lint]color.a &lt; 0[/code], its filled with a checkered pattern multiplied by [code skip-lint]color.rgb[/code].
-				The behavior changes if a compressed format is requested:
-				- If the editor is running and the format is DXT1, DXT5, or BPTC_RGBA, it returns a filled image in the requested color and format.
-				- All other compressed formats return a blank image in that format.
-				The reason for this is the Image compression library is available only in the editor. And it is unreliable, offering little control over the output format, choosing automatically and often wrong. We have selected a few compressed formats it gets right.
-			</description>
-		</method>
 		<method name="get_intersection">
 			<return type="Vector3" />
 			<param index="0" name="src_pos" type="Vector3" />
@@ -65,37 +50,10 @@
 				It does require the use of an editor render layer (21-32) that should be dedicated while using this function. See [member render_mouse_layer].
 			</description>
 		</method>
-		<method name="get_min_max" qualifiers="static">
-			<return type="Vector2" />
-			<param index="0" name="image" type="Image" />
-			<description>
-				A utility function that returns the minimum and maximum r channel values of an Image. Used for heightmaps.
-			</description>
-		</method>
 		<method name="get_plugin">
 			<return type="EditorPlugin" />
 			<description>
 				Returns the EditorPlugin connected to Terrain3D.
-			</description>
-		</method>
-		<method name="get_thumbnail" qualifiers="static">
-			<return type="Image" />
-			<param index="0" name="image" type="Image" />
-			<param index="1" name="size" type="Vector2i" default="Vector2i(256, 256)" />
-			<description>
-				A utility function that returns an Image normalized and converted to RGB8. Used for creating a human viewable thumbnail of a heightmap.
-			</description>
-		</method>
-		<method name="pack_image" qualifiers="static">
-			<return type="Image" />
-			<param index="0" name="src_rgb" type="Image" />
-			<param index="1" name="src_r" type="Image" />
-			<param index="2" name="invert_green_channel" type="bool" default="false" />
-			<description>
-				A utility function that returns an Image with the following content:
-				- RGB channels from [code skip-lint]src_rgb[/code].
-				- A channel from [code skip-lint]src_r[/code].
-				- G inverted, if specified (eg for converting normal maps between DirectX and OpenGL).
 			</description>
 		</method>
 		<method name="set_camera">
@@ -112,14 +70,11 @@
 				Sets the EditorPlugin connected to Terrain3D.
 			</description>
 		</method>
-		<method name="update_aabbs">
-			<return type="void" />
-			<description>
-				Sets the bounding boxes (AABBs) for the terrain meshes so they won't be culled. Also see [member render_cull_margin].
-			</description>
-		</method>
 	</methods>
 	<members>
+		<member name="assets" type="Terrain3DAssets" setter="set_assets" getter="get_assets">
+			The list of texture files used by Terrain3D. You can optionally save this as an external [code skip-lint].tres[/code] text file if you wish to share it with instances of Terrain3D in other scenes.
+		</member>
 		<member name="collision_enabled" type="bool" setter="set_collision_enabled" getter="get_collision_enabled" default="true">
 			If enabled, collision is generated according to the mode selected. By default collision is generated for all regions at run time only using the physics server. Also see [member debug_show_collision].
 		</member>
@@ -138,6 +93,9 @@
 		<member name="debug_show_collision" type="bool" setter="set_show_debug_collision" getter="get_show_debug_collision" default="false">
 			If collision is enabled, this generates collision in the editor and in game. It can be visible in the editor by enabling [code skip-lint]View Gizmos[/code] in the viewport menu.
 		</member>
+		<member name="instancer" type="Terrain3DInstancer" setter="" getter="get_instancer">
+			The active [Terrain3DInstancer] object.
+		</member>
 		<member name="material" type="Terrain3DMaterial" setter="set_material" getter="get_material">
 			A custom material for Terrain3D. You can optionally save this as an external [code skip-lint].tres[/code] text file if you wish to share it with instances of Terrain3D in other scenes. See [Terrain3DMaterial].
 		</member>
@@ -149,6 +107,9 @@
 		</member>
 		<member name="mesh_vertex_spacing" type="float" setter="set_mesh_vertex_spacing" getter="get_mesh_vertex_spacing" default="1.0">
 			The distance between vertices. Godot units are typically considered to be meters. This scales the terrain on X and Z axes.
+			This variable changes the global position of landscape features. A mountain peak might be at (512, 512), but with a vertex spacing of 2.0 it is now located at (1024, 1024).
+			All Terrain3D functions with a global_position expect an absolute global value. If you would normally use [method Terrain3DStorage.import_images] to import an image in the region at (-1024, -1024), with a mesh_vertex_spacing of 2, you'll need to import that image at (-2048, -2048) to place it in the same region.
+			To scale heights, export the height map and reimport it with a new height scale.
 		</member>
 		<member name="render_cast_shadows" type="int" setter="set_cast_shadows" getter="get_cast_shadows" enum="GeometryInstance3D.ShadowCastingSetting" default="1">
 			Tells the renderer how to cast shadows from the terrain onto other objects. This sets [code skip-lint]GeometryInstance3D.ShadowCastingSetting[/code] in the engine.
@@ -169,13 +130,18 @@
 			The object that houses all Terrain3D region, height, control, and color maps. Make sure to save this as an external [code skip-lint].res[/code] binary file.
 		</member>
 		<member name="texture_list" type="Terrain3DTextureList" setter="set_texture_list" getter="get_texture_list">
-			The list of texture files used by Terrain3D. You can optionally save this as an external [code skip-lint].tres[/code] text file if you wish to share it with instances of Terrain3D in other scenes.
+			Deprecated. See [member assets].
 		</member>
-		<member name="version" type="String" setter="" getter="get_version" default="&quot;0.9.1-dev&quot;">
+		<member name="version" type="String" setter="" getter="get_version" default="&quot;0.9.2-dev&quot;">
 			The current version of Terrain3D.
 		</member>
 	</members>
 	<signals>
+		<signal name="assets_changed">
+			<description>
+				Emitted when [member assets] is changed.
+			</description>
+		</signal>
 		<signal name="material_changed">
 			<description>
 				Emitted when [member material] is changed.
@@ -184,11 +150,6 @@
 		<signal name="storage_changed">
 			<description>
 				Emitted when [member storage] is changed.
-			</description>
-		</signal>
-		<signal name="texture_list_changed">
-			<description>
-				Emitted when [member texture_list] is changed.
 			</description>
 		</signal>
 	</signals>

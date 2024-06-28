@@ -1,0 +1,41 @@
+[gd_scene load_steps=2 format=3 uid="uid://bhvrrmb8bk1bt"]
+
+[ext_resource type="Script" path="res://addons/terrain_3d/src/bake_lod_dialog.gd" id="1_sf76d"]
+
+[node name="bake_lod_dialog" type="ConfirmationDialog"]
+title = "Bake Terrain3D Mesh"
+position = Vector2i(0, 36)
+size = Vector2i(400, 115)
+visible = true
+script = ExtResource("1_sf76d")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -49.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "LOD:"
+
+[node name="LodBox" type="SpinBox" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 8.0
+value = 4.0
+
+[node name="DescriptionLabel" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2

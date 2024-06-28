@@ -82,12 +82,12 @@ protected:
 	static void _bind_methods();
 
 	void _set_path(const String &p_path);
-	void _take_over_path(const String &p_path);
 
 	virtual void reset_local_to_scene();
 	GDVIRTUAL0(_setup_local_to_scene);
 
 public:
+	void _take_over_path(const String &p_path);
 	static Node *(*_get_local_scene_func)(); //used by editor
 	static void (*_update_configuration_warning)(); //used by editor
 

@@ -15,7 +15,7 @@ They are exactly the same construction as the releases except for the commit use
 :target: ../_images/build_workflow.png
 ```
 
-3. Download the artifact, which is just a zip file with a "nightly" build.
+3. Download the artifact, which is just a zip file with a "nightly" build. You must be logged in to github to download it.
 
 ```{image} images/build_artifact.png
 :target: ../_images/build_artifact.png

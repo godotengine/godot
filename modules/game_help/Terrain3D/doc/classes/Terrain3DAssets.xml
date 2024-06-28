@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Terrain3DAssets" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+		This class contains an array of [Terrain3DTextureAsset] objects in 32 slots. It is a savable resource, so you can save it to disk and use the same texture list in multiple scenes that use Terrain3D. The amount of data is small, so it can be saved as a git-friendly, text based .tres file or left within the scene file.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create_mesh_thumbnails">
+			<return type="void" />
+			<param index="0" name="id" type="int" default="-1" />
+			<param index="1" name="size" type="Vector2i" default="Vector2i(128, 128)" />
+			<description>
+				Generates mesh asset preview thumbnails for the asset dock, stored within each mesh asset. Specify id -1 to generate all.
+			</description>
+		</method>
+		<method name="get_mesh_asset">
+			<return type="Terrain3DMeshAsset" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the specified Terrain3DMeshAsset resource.
+			</description>
+		</method>
+		<method name="get_mesh_count">
+			<return type="int" />
+			<description>
+				Returns the count of mesh assets in the list.
+			</description>
+		</method>
+		<method name="get_texture">
+			<return type="Terrain3DTextureAsset" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the Terrain3DTextureAsset with the requested ID.
+			</description>
+		</method>
+		<method name="get_texture_count">
+			<return type="int" />
+			<description>
+				Returns the number of texture slots used.
+			</description>
+		</method>
+		<method name="save">
+			<return type="void" />
+			<description>
+				Saves this texture list resource to disk, if saved as an external [code skip-lint].tres[/code] or [code skip-lint].res[/code] resource file.
+			</description>
+		</method>
+		<method name="set_mesh_asset">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="mesh" type="Terrain3DMeshAsset" />
+			<description>
+				Assigns the mesh asset to the specified ID slot. It can be null to clear the slot. See [method set_texture].
+			</description>
+		</method>
+		<method name="set_texture">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="texture" type="Terrain3DTextureAsset" />
+			<description>
+				Adds a Terrain3DTextureAsset at the specified ID slot. The texture can be null to clear the slot, or remove it if its the last in the list. If the specified slot is full, it will be swapped with the source texture ID, or will find the next available ID.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="mesh_list" type="Terrain3DMeshAsset[]" setter="set_mesh_list" getter="get_mesh_list" default="[]">
+			The list of mesh assets.
+		</member>
+		<member name="texture_list" type="Terrain3DTextureAsset[]" setter="set_texture_list" getter="get_texture_list" default="[]">
+			The list of texture assets.
+		</member>
+	</members>
+	<signals>
+		<signal name="meshes_changed">
+			<description>
+				Emitted when the mesh list is updated, which happens as a result of a [Terrain3DMeshAsset] changing.
+			</description>
+		</signal>
+		<signal name="textures_changed">
+			<description>
+				Emitted when this list is updated due to changes in the texture slots, or the files or settings of any [Terrain3DTextureAsset].
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="TYPE_TEXTURE" value="0" enum="AssetType">
+			Asset is type Terrain3DTextureAsset.
+		</constant>
+		<constant name="TYPE_MESH" value="1" enum="AssetType">
+			Asset is type Terrain3DMeshAsset.
+		</constant>
+		<constant name="MAX_TEXTURES" value="32">
+			Hard coded maximum number of textures, with IDs in the range of 0-31. Cannot easily be expanded.
+		</constant>
+		<constant name="MAX_MESHES" value="128">
+			Limit of the maximum number of meshes. Arbitrary, easily expanded.
+		</constant>
+	</constants>
+</class>

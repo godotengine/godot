@@ -351,7 +351,7 @@ static Skeleton3D * process_fbx_skeleton(const String &p_path,Node *p_node)
 	return skeleton;
 }
 // 保存模型资源
-static void save_fbx_res( const String& group_name,const String& sub_path,const Ref<Resource>& p_resource,bool is_resource = true)
+static void save_fbx_res( const String& group_name,const String& sub_path,const Ref<Resource>& p_resource,String& fbx_path, bool is_resource = true)
 {
 	String export_root_path = "res://Assets/public";
 	if (!DirAccess::dir_exists_absolute(export_root_path))
@@ -372,36 +372,18 @@ static void save_fbx_res( const String& group_name,const String& sub_path,const 
 			dir->make_dir(sub_path);
 	}
 	dir->change_dir(sub_path);
-	ResourceSaver::save(p_resource,export_root_path.path_join(group_name).path_join(sub_path).path_join(p_resource->get_name() + (is_resource ? "tres" :".tscn")));
+	fbx_path = export_root_path.path_join(group_name).path_join(sub_path).path_join(p_resource->get_name() + (is_resource ? "tres" :".tscn"));
+	ResourceSaver::save(p_resource,fbx_path);
 }
-// 處理導入的模型
-static void process_fbx_mesh(const String &p_path,const String & p_group, Node *p_node)
+static void get_fbx_meshs(Node *p_node,HashMap<String,MeshInstance3D* > &meshs)
 {
-	String name = p_node->get_name();
-	// 存儲模型的預製體文件
-	Skeleton3D * skeleton = process_fbx_skeleton(p_path,p_node);
-	Dictionary bone_map;
-	if(skeleton != nullptr)
-	{
-		bone_map = skeleton->get_human_bone_mapping();
-		skeleton->set_human_bone_mapping(bone_map);
 
-		// 存儲骨架信息
-		Ref<PackedScene> packed_scene;
-		packed_scene.instantiate();
-		packed_scene->pack(skeleton);
-		save_fbx_res("skeleton",p_group,packed_scene,false);
-		Ref<CharacterBoneMap> bone_map_ref;
-		bone_map_ref.instantiate();
-		bone_map_ref->set_bone_map(bone_map);
-		save_fbx_res("skeleton",p_group,bone_map_ref,true);
-	}
-	HashMap<String,MeshInstance3D* > meshs;
-	// 便利存儲模型文件
-	for(int i = 0;i < p_node->get_child_count();i++){
-		Node* child = p_node->get_child(i);
-		if(child->get_class() == "MeshInstance3D"){
-			MeshInstance3D* mesh = Object::cast_to<MeshInstance3D>(child);
+	for(int i=0;i<p_node->get_child_count();i++)
+	{
+		Node * child = p_node->get_child(i);
+		if(child->get_class() == "MeshInstance3D")
+		{
+			MeshInstance3D * mesh = Object::cast_to<MeshInstance3D>(child);
 			if(!meshs.has(mesh->get_name())){
 				meshs[mesh->get_name()] = mesh;
 			}
@@ -415,17 +397,53 @@ static void process_fbx_mesh(const String &p_path,const String & p_group, Node *
 				meshs[name] = mesh;
 			}
 		}
+		get_fbx_meshs(child,meshs);
 	}
-	LocalVector<String> paths;
+}
+// 處理導入的模型
+static void process_fbx_mesh(const String &p_path,const String & p_group, Node *p_node)
+{
+	String name = p_node->get_name();
+	// 存儲模型的預製體文件
+	Skeleton3D * skeleton = process_fbx_skeleton(p_path,p_node);
+	Dictionary bone_map;
+	String ske_save_path,bone_map_save_path;
+	if(skeleton != nullptr)
+	{
+		bone_map = skeleton->get_human_bone_mapping();
+		skeleton->set_human_bone_mapping(bone_map);
+
+		// 存儲骨架信息
+		Ref<PackedScene> packed_scene;
+		packed_scene.instantiate();
+		packed_scene->pack(skeleton);
+		save_fbx_res("skeleton",p_group,packed_scene,ske_save_path,false);
+		Ref<CharacterBoneMap> bone_map_ref;
+		bone_map_ref.instantiate();
+		bone_map_ref->set_bone_map(bone_map);
+		save_fbx_res("skeleton",p_group,bone_map_ref,bone_map_save_path,true);
+	}
+	HashMap<String,MeshInstance3D* > meshs;
+	// 便利存儲模型文件
+	get_fbx_meshs(p_node,meshs);
+
+	Ref<CharacterBodyPrefab> prefab;
+	prefab->set_name("prefab_" + name);
+	prefab.instantiate();
 	for(auto it = meshs.begin();it != meshs.end();++it){
 		Ref<CharacterBodyPart> part;
 		part.instantiate();
 		MeshInstance3D* mesh = it->value;
 		part->init_form_mesh_instance(mesh,bone_map);
 		String save_path = p_path + "_" + it->key + ".tres";
-		save_fbx_res("meshe", p_group,part);
+		String temp;
+		save_fbx_res("mesh", p_group,part,temp,false);
+		prefab->parts.push_back(part);
 		print_line("UnityLinkServer: save mesh node :" + save_path);	
 	}
+
+	// 保存预制体
+	save_fbx_res("prefab",p_group,prefab,bone_map_save_path,true);
 
 
 

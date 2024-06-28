@@ -328,6 +328,11 @@ public:
 			erase(_data->last);
 		}
 	}
+	void append(const List &p_list) {
+		for(auto it : p_list) {
+			push_back(it);
+		}
+	}
 
 	/**
 	 * store a new element at the beginning of the list

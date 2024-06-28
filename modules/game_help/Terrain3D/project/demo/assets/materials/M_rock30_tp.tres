@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://cr72kjil43vgj" path="res://demo/assets/textures/rock030_nrm_rgh.png" id="2_yyurh"]
 
 [resource]
+vertex_color_use_as_albedo = true
 albedo_color = Color(1.351, 1.321, 1.27, 1)
 albedo_texture = ExtResource("1_j5sdo")
 normal_enabled = true

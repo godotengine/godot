@@ -71,10 +71,10 @@ protected:
 	void _set_custom_data_array(const Vector<Color> &p_array);
 	Vector<Color> _get_custom_data_array() const;
 #endif
+public:
 	void set_buffer(const Vector<float> &p_buffer);
 	Vector<float> get_buffer() const;
 
-public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 

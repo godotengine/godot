@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Terrain3DUtil" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+		This class contains static utility functions. Reference them with the full class name. Eg. [code skip-lint]Terrain3DUtil.as_float()[/code].
+		Or you can instance the class for a shorter alias:
+		[codeblock]
+		var util := Terrain3DUtil.new()
+		var my_float: float = util.as_float(my_int)
+		[/codeblock]
+		[b]Note on uints[/b]: Various functions refer to unsigned integers as uint. Though GDScript doesn't support unsigned integers as a type, the C++ that receives and returns these values will interpret them all as unsigned.
+		[b]Note on bitwise-ORing[/b]: To write back to a control map, encode your values and bitwise OR the results, then reinterpret that uint as a float. The shader will interpret the float as uint and extract the bits.
+		[codeblock]
+		var bits: int = util.enc_base(base_id) | util.enc_overlay(over_id) | \
+		util.enc_blend(blend) | util.enc_uv_rotation(uvrotation) | \
+		util.enc_uv_scale(uvscale) | util.enc_auto(autoshader) | \
+		util.enc_nav(navigation) | util.enc_hole(hole)
+		var color: Color = Color(util.as_float(bits), 0., 0., 1.)
+		storage.set_control(global_pos, color)
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="as_float" qualifiers="static">
+			<return type="float" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Returns a float typed variable with the contents of the memory stored in value, an integer typed variable.
+				This function does not convert integer values to float values (e.g. 4 -&gt; 4.0). It reinterprets the memory block as if it were a float. If the data in value was a valid integer, it is now an invalid float.
+				[code skip-lint]my_float == util.as_float(util.as_uint(my_float))[/code]
+				See [method as_uint] for the opposite.
+			</description>
+		</method>
+		<method name="as_uint" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="value" type="float" />
+			<description>
+				Returns an integer typed variable with the contents of the memory stored in value, a float typed variable.
+				This function does not convert float values to integer values (e.g. 4.0 -&gt; 4). It reinterprets the memory block as if it were an integer. If the data in value was a valid float, it is now a valid integer, but probably an unexepctedly large value.
+				[code skip-lint]my_int == util.as_uint(util.as_float(my_int))[/code]
+				See [method as_float] for the opposite.
+			</description>
+		</method>
+		<method name="black_to_alpha" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="image" type="Image" />
+			<description>
+				Receives an image with a black background and returns one with a transparent background, aka an alpha mask.
+			</description>
+		</method>
+		<method name="enc_auto" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="pixel" type="bool" />
+			<description>
+				Returns a control map uint with the auto shader bit set. See the top description for usage.
+			</description>
+		</method>
+		<method name="enc_base" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="base" type="int" />
+			<description>
+				Returns a control map uint with the base texture ID encoded. See the top description for usage.
+			</description>
+		</method>
+		<method name="enc_blend" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="blend" type="int" />
+			<description>
+				Returns a control map uint with the blend value encoded. See the top description for usage.
+			</description>
+		</method>
+		<method name="enc_hole" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="pixel" type="bool" />
+			<description>
+				Returns a control map uint with the hole bit set. See the top description for usage.
+			</description>
+		</method>
+		<method name="enc_nav" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="pixel" type="bool" />
+			<description>
+				Returns a control map uint with the nav bit set. See the top description for usage.
+			</description>
+		</method>
+		<method name="enc_overlay" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="overlay" type="int" />
+			<description>
+				Returns a control map uint with the overlay texture ID encoded. See the top description for usage.
+			</description>
+		</method>
+		<method name="enc_uv_rotation" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="rotation" type="int" />
+			<description>
+				Returns a control map uint with the texture rotation encoded. See the top description for usage.  See [method get_uv_rotation] for values.
+			</description>
+		</method>
+		<method name="enc_uv_scale" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="scale" type="int" />
+			<description>
+				Returns a control map uint with the texture scale encoded. See the top description for usage. See [method get_uv_scale] for values.
+			</description>
+		</method>
+		<method name="get_base" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="pixel" type="int" />
+			<description>
+				Returns the base texture ID from a control map pixel.
+			</description>
+		</method>
+		<method name="get_blend" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="pixel" type="int" />
+			<description>
+				Returns the blend value from a control map pixel.
+			</description>
+		</method>
+		<method name="get_filled_image" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="size" type="Vector2i" />
+			<param index="1" name="color" type="Color" />
+			<param index="2" name="create_mipmaps" type="bool" />
+			<param index="3" name="format" type="int" enum="Image.Format" />
+			<description>
+				Returns an Image filled with a specified color and format.
+				If [code skip-lint]color.a &lt; 0[/code], its filled with a checkered pattern multiplied by [code skip-lint]color.rgb[/code].
+				The behavior changes if a compressed format is requested:
+				- If the editor is running and the format is DXT1, DXT5, or BPTC_RGBA, it returns a filled image in the requested color and format.
+				- All other compressed formats return a blank image in that format.
+				The reason for this is the Image compression library is available only in the editor. And it is unreliable, offering little control over the output format, choosing automatically and often wrong. We have selected a few compressed formats it gets right.
+			</description>
+		</method>
+		<method name="get_min_max" qualifiers="static">
+			<return type="Vector2" />
+			<param index="0" name="image" type="Image" />
+			<description>
+				Returns the minimum and maximum r channel values of an Image. Used for heightmaps.
+			</description>
+		</method>
+		<method name="get_overlay" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="pixel" type="int" />
+			<description>
+				Returns the overlay texture ID from a control map pixel.
+			</description>
+		</method>
+		<method name="get_thumbnail" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="image" type="Image" />
+			<param index="1" name="size" type="Vector2i" default="Vector2i(256, 256)" />
+			<description>
+				Returns an Image normalized and converted to RGB8. Used for creating a human viewable image of a heightmap, at any size.
+			</description>
+		</method>
+		<method name="get_uv_rotation" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="pixel" type="int" />
+			<description>
+				Returns the texture rotation from a control map pixel. Values are 0 - 15, which provides degrees when multiplied by 22.5. (360/16).
+			</description>
+		</method>
+		<method name="get_uv_scale" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="pixel" type="int" />
+			<description>
+				Returns the texture scale modification from a control map pixel. Values are an index into the array `{ 0, 20, 40, 60, 80, -60, -40, -20 }`. 0 indicates no scale modification. Index 2 indicates a 40% increase in texture scale at that pixel. Index -1 or 7 indicates a -20% texture scale change.
+			</description>
+		</method>
+		<method name="is_auto" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="pixel" type="int" />
+			<description>
+				Returns true if the control map pixel has the autoshader bit set.
+			</description>
+		</method>
+		<method name="is_hole" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="pixel" type="int" />
+			<description>
+				Returns true if the control map pixel has the hole bit set.
+			</description>
+		</method>
+		<method name="is_nav" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="pixel" type="int" />
+			<description>
+				Returns true if the control map pixel has the nav bit set.
+			</description>
+		</method>
+		<method name="load_image" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="file_name" type="String" />
+			<param index="1" name="cache_mode" type="int" default="0" />
+			<param index="2" name="r16_height_range" type="Vector2" default="Vector2(0, 255)" />
+			<param index="3" name="r16_size" type="Vector2i" default="Vector2i(0, 0)" />
+			<description>
+				Loads a file from disk and returns an Image.
+				[code skip-lint]filename[/code] - The file name on disk to load. Loads EXR, R16/RAW, PNG, or a ResourceLoader format (jpg, res, tres, etc).
+				[code skip-lint]cache_mode[/code] - Send this flag to the resource loader to force caching or not.
+				[code skip-lint]height_range[/code] - Heights for R16 format. x=Min &amp; y=Max value ranges. Required for R16 import.
+				[code skip-lint]size[/code] - Image dimensions for R16 format. Default (0,0) auto detects size, assuming square images. Required for non-square R16.
+			</description>
+		</method>
+		<method name="pack_image" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="src_rgb" type="Image" />
+			<param index="1" name="src_r" type="Image" />
+			<param index="2" name="invert_green_channel" type="bool" default="false" />
+			<description>
+				Returns an Image with the following content:
+				- RGB channels from [code skip-lint]src_rgb[/code].
+				- A channel from [code skip-lint]src_r[/code].
+				- G will be inverted if specified. Used for converting normal maps between DirectX and OpenGL.
+			</description>
+		</method>
+	</methods>
+</class>

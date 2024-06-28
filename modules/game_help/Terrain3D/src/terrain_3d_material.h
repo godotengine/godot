@@ -3,20 +3,21 @@
 #ifndef TERRAIN3D_MATERIAL_CLASS_H
 #define TERRAIN3D_MATERIAL_CLASS_H
 
-//#include <godot_cpp/classes/shader.hpp>
 #include "scene/resources/shader.h"
+#include "constants.h"
+#include "generated_texture.h"
 
-#include "generated_tex.h"
+class Terrain3D;
+class Terrain3DTextureList;
 
 using namespace godot;
 
 class Terrain3DMaterial : public Resource {
 	GDCLASS(Terrain3DMaterial, Resource);
+	CLASS_NAME();
+	friend class Terrain3D;
 
-public:
-	// Constants
-	static inline const char *__class__ = "Terrain3DMaterial";
-
+public: // Constants
 	enum WorldBackground {
 		NONE,
 		FLAT,
@@ -29,7 +30,8 @@ public:
 	};
 
 private:
-	bool _initialized = false;
+	Terrain3D *_terrain = nullptr;
+
 	RID _material;
 	RID _shader;
 	bool _shader_override_enabled = false;
@@ -38,6 +40,7 @@ private:
 	Dictionary _shader_code;
 	mutable TypedArray<StringName> _active_params; // All shader params in the current shader
 	mutable Dictionary _shader_params; // Public shader params saved to disk
+	GeneratedTexture _generated_region_blend_map; // 512x512 blurred image of region_map
 
 	// Material Features
 	WorldBackground _world_background = FLAT;
@@ -53,6 +56,8 @@ private:
 	bool _debug_view_colormap = false;
 	bool _debug_view_roughmap = false;
 	bool _debug_view_control_texture = false;
+	bool _debug_view_control_angle = false;
+	bool _debug_view_control_scale = false;
 	bool _debug_view_control_blend = false;
 	bool _debug_view_autoshader = false;
 	bool _debug_view_holes = false;
@@ -61,14 +66,6 @@ private:
 	bool _debug_view_tex_rough = false;
 	bool _debug_view_vertex_grid = false;
 
-	// Cached data from Storage
-	int _texture_count = 0;
-	int _region_size = 1024;
-	real_t _mesh_vertex_spacing = 1.0f;
-	Vector2i _region_sizev = Vector2i(_region_size, _region_size);
-	PackedInt32Array _region_map;
-	GeneratedTex _generated_region_blend_map; // 512x512 blurred image of region_map
-
 	// Functions
 	void _preload_shaders();
 	void _parse_shader(String p_shader, String p_name);
@@ -76,16 +73,15 @@ private:
 	String _generate_shader_code();
 	String _inject_editor_code(String p_shader);
 	void _update_shader();
-	void _update_regions(const Array &p_args);
+	void _update_regions();
 	void _generate_region_blend_map();
-	void _update_texture_arrays(const Array &p_args);
-	void _set_region_size(int p_size);
+	void _update_texture_arrays();
 	void _set_shader_parameters(const Dictionary &p_dict);
 	Dictionary _get_shader_parameters() const { return _shader_params; }
 
 public:
 	Terrain3DMaterial(){};
-	void initialize(int p_region_size);
+	void initialize(Terrain3D *p_terrain);
 	~Terrain3DMaterial();
 
 	RID get_material_rid() const { return _material; }
@@ -110,8 +106,6 @@ public:
 	void set_shader_param(const StringName &p_name, const Variant &p_value);
 	Variant get_shader_param(const StringName &p_name) const;
 
-	void set_mesh_vertex_spacing(real_t p_spacing);
-
 	// Editor functions / Debug views
 	void set_show_checkered(bool p_enabled);
 	bool get_show_checkered() const { return _debug_view_checkered; }
@@ -125,6 +119,10 @@ public:
 	bool get_show_roughmap() const { return _debug_view_roughmap; }
 	void set_show_control_texture(bool p_enabled);
 	bool get_show_control_texture() const { return _debug_view_control_texture; }
+	void set_show_control_angle(bool p_enabled);
+	bool get_show_control_angle() const { return _debug_view_control_angle; }
+	void set_show_control_scale(bool p_enabled);
+	bool get_show_control_scale() const { return _debug_view_control_scale; }
 	void set_show_control_blend(bool p_enabled);
 	bool get_show_control_blend() const { return _debug_view_control_blend; }
 	void set_show_autoshader(bool p_enabled);
