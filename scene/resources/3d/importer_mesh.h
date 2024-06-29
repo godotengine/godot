@@ -86,6 +86,8 @@ protected:
 	void _set_data(const Dictionary &p_data);
 	Dictionary _get_data() const;
 
+	void _generate_lods_bind(float p_normal_merge_angle, float p_normal_split_angle, Array p_skin_pose_transform_array);
+
 	static void _bind_methods();
 
 public:
@@ -114,7 +116,7 @@ public:
 
 	void optimize_indices_for_cache();
 
-	void generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Array p_skin_pose_transform_array);
+	void generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Array p_skin_pose_transform_array, bool p_raycast_normals = false);
 
 	void create_shadow_mesh();
 	Ref<ImporterMesh> get_shadow_mesh() const;
