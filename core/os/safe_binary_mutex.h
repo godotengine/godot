@@ -102,6 +102,7 @@ public:
 	}
 
 	_ALWAYS_INLINE_ ~MutexLock() {
+		DEV_ASSERT(SafeBinaryMutex<Tag>::count);
 		SafeBinaryMutex<Tag>::count--;
 	}
 
