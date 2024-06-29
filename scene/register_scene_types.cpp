@@ -402,8 +402,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VSlider);
 	GDREGISTER_CLASS(Popup);
 	GDREGISTER_CLASS(PopupPanel);
-	GDREGISTER_CLASS(MenuBar);
-	GDREGISTER_CLASS(MenuButton);
 	GDREGISTER_CLASS(CheckBox);
 	GDREGISTER_CLASS(CheckButton);
 	GDREGISTER_CLASS(LinkButton);
@@ -458,6 +456,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CodeHighlighter);
 
 	GDREGISTER_ABSTRACT_CLASS(TreeItem);
+	GDREGISTER_CLASS(MenuBar);
+	GDREGISTER_CLASS(MenuButton);
 	GDREGISTER_CLASS(OptionButton);
 	GDREGISTER_CLASS(SpinBox);
 	GDREGISTER_CLASS(ColorPicker);
