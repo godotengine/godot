@@ -81,11 +81,16 @@ const GodotJSWrapper = {
 			case 0:
 				return null;
 			case 1:
-				return !!GodotRuntime.getHeapValue(val, 'i64');
-			case 2:
-				return GodotRuntime.getHeapValue(val, 'i64');
+				return Boolean(GodotRuntime.getHeapValue(val, 'i64'));
+			case 2: {
+				// `heap_value` may be a bigint.
+				const heap_value = GodotRuntime.getHeapValue(val, 'i64');
+				return heap_value >= Number.MIN_SAFE_INTEGER && heap_value <= Number.MAX_SAFE_INTEGER
+					? Number(heap_value)
+					: heap_value;
+			}
 			case 3:
-				return GodotRuntime.getHeapValue(val, 'double');
+				return Number(GodotRuntime.getHeapValue(val, 'double'));
 			case 4:
 				return GodotRuntime.parseString(GodotRuntime.getHeapValue(val, '*'));
 			case 24: // OBJECT
@@ -110,6 +115,9 @@ const GodotJSWrapper = {
 				}
 				GodotRuntime.setHeapValue(p_exchange, p_val, 'double');
 				return 3; // FLOAT
+			} else if (type === 'bigint') {
+				GodotRuntime.setHeapValue(p_exchange, p_val, 'i64');
+				return 2; // INT
 			} else if (type === 'string') {
 				const c_str = GodotRuntime.allocString(p_val);
 				GodotRuntime.setHeapValue(p_exchange, c_str, '*');
