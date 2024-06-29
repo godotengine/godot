@@ -2459,6 +2459,325 @@ Vector<Transform3D> GLTFDocument::_decode_accessor_as_xform(Ref<GLTFState> p_sta
 	return ret;
 }
 
+Vector<Variant> GLTFDocument::_decode_accessor_as_variant(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, Variant::Type p_variant_type, GLTFAccessor::GLTFAccessorType p_accessor_type) {
+	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, false);
+	Vector<Variant> ret;
+	ERR_FAIL_COND_V_MSG(attribs.is_empty(), ret, "glTF: The accessor was empty.");
+	const int component_count = COMPONENT_COUNT_FOR_ACCESSOR_TYPE[p_accessor_type];
+	ERR_FAIL_COND_V_MSG(attribs.size() % component_count != 0, ret, "glTF: The accessor size was not a multiple of the component count.");
+	const int ret_size = attribs.size() / component_count;
+	ret.resize(ret_size);
+	for (int i = 0; i < ret_size; i++) {
+		switch (p_variant_type) {
+			case Variant::BOOL: {
+				ret.write[i] = attribs[i * component_count] != 0.0;
+			} break;
+			case Variant::INT: {
+				ret.write[i] = (int64_t)attribs[i * component_count];
+			} break;
+			case Variant::FLOAT: {
+				ret.write[i] = attribs[i * component_count];
+			} break;
+			case Variant::VECTOR2:
+			case Variant::RECT2:
+			case Variant::VECTOR3:
+			case Variant::VECTOR4:
+			case Variant::PLANE:
+			case Variant::QUATERNION: {
+				// General-purpose code for importing glTF accessor data with any component count into structs up to 4 `real_t`s in size.
+				Variant v;
+				switch (component_count) {
+					case 1: {
+						v = Vector4(attribs[i * component_count], 0.0f, 0.0f, 0.0f);
+					} break;
+					case 2: {
+						v = Vector4(attribs[i * component_count], attribs[i * component_count + 1], 0.0f, 0.0f);
+					} break;
+					case 3: {
+						v = Vector4(attribs[i * component_count], attribs[i * component_count + 1], attribs[i * component_count + 2], 0.0f);
+					} break;
+					default: {
+						v = Vector4(attribs[i * component_count], attribs[i * component_count + 1], attribs[i * component_count + 2], attribs[i * component_count + 3]);
+					} break;
+				}
+				// Evil hack that relies on the structure of Variant, but it's the
+				// only way to accomplish this without a ton of code duplication.
+				*(Variant::Type *)&v = p_variant_type;
+				ret.write[i] = v;
+			} break;
+			case Variant::VECTOR2I:
+			case Variant::RECT2I:
+			case Variant::VECTOR3I:
+			case Variant::VECTOR4I: {
+				// General-purpose code for importing glTF accessor data with any component count into structs up to 4 `int32_t`s in size.
+				Variant v;
+				switch (component_count) {
+					case 1: {
+						v = Vector4i((int32_t)attribs[i * component_count], 0, 0, 0);
+					} break;
+					case 2: {
+						v = Vector4i((int32_t)attribs[i * component_count], (int32_t)attribs[i * component_count + 1], 0, 0);
+					} break;
+					case 3: {
+						v = Vector4i((int32_t)attribs[i * component_count], (int32_t)attribs[i * component_count + 1], (int32_t)attribs[i * component_count + 2], 0);
+					} break;
+					default: {
+						v = Vector4i((int32_t)attribs[i * component_count], (int32_t)attribs[i * component_count + 1], (int32_t)attribs[i * component_count + 2], (int32_t)attribs[i * component_count + 3]);
+					} break;
+				}
+				// Evil hack that relies on the structure of Variant, but it's the
+				// only way to accomplish this without a ton of code duplication.
+				*(Variant::Type *)&v = p_variant_type;
+				ret.write[i] = v;
+			} break;
+			// No more generalized hacks, each of the below types needs a lot of repetitive code.
+			case Variant::COLOR: {
+				Variant v;
+				switch (component_count) {
+					case 1: {
+						v = Color(attribs[i * component_count], 0.0f, 0.0f, 1.0f);
+					} break;
+					case 2: {
+						v = Color(attribs[i * component_count], attribs[i * component_count + 1], 0.0f, 1.0f);
+					} break;
+					case 3: {
+						v = Color(attribs[i * component_count], attribs[i * component_count + 1], attribs[i * component_count + 2], 1.0f);
+					} break;
+					default: {
+						v = Color(attribs[i * component_count], attribs[i * component_count + 1], attribs[i * component_count + 2], attribs[i * component_count + 3]);
+					} break;
+				}
+				ret.write[i] = v;
+			} break;
+			case Variant::TRANSFORM2D: {
+				Transform2D t;
+				switch (component_count) {
+					case 4: {
+						t.columns[0] = Vector2(attribs[i * component_count + 0], attribs[i * component_count + 1]);
+						t.columns[1] = Vector2(attribs[i * component_count + 2], attribs[i * component_count + 3]);
+					} break;
+					case 9: {
+						t.columns[0] = Vector2(attribs[i * component_count + 0], attribs[i * component_count + 1]);
+						t.columns[1] = Vector2(attribs[i * component_count + 3], attribs[i * component_count + 4]);
+						t.columns[2] = Vector2(attribs[i * component_count + 6], attribs[i * component_count + 7]);
+					} break;
+					case 16: {
+						t.columns[0] = Vector2(attribs[i * component_count + 0], attribs[i * component_count + 1]);
+						t.columns[1] = Vector2(attribs[i * component_count + 4], attribs[i * component_count + 5]);
+						t.columns[2] = Vector2(attribs[i * component_count + 12], attribs[i * component_count + 13]);
+					} break;
+				}
+				ret.write[i] = t;
+			} break;
+			case Variant::BASIS: {
+				Basis b;
+				switch (component_count) {
+					case 4: {
+						b.rows[0] = Vector3(attribs[i * component_count + 0], attribs[i * component_count + 2], 0.0f);
+						b.rows[1] = Vector3(attribs[i * component_count + 1], attribs[i * component_count + 3], 0.0f);
+					} break;
+					case 9: {
+						b.rows[0] = Vector3(attribs[i * component_count + 0], attribs[i * component_count + 3], attribs[i * component_count + 6]);
+						b.rows[1] = Vector3(attribs[i * component_count + 1], attribs[i * component_count + 4], attribs[i * component_count + 7]);
+						b.rows[2] = Vector3(attribs[i * component_count + 2], attribs[i * component_count + 5], attribs[i * component_count + 8]);
+					} break;
+					case 16: {
+						b.rows[0] = Vector3(attribs[i * component_count + 0], attribs[i * component_count + 4], attribs[i * component_count + 8]);
+						b.rows[1] = Vector3(attribs[i * component_count + 1], attribs[i * component_count + 5], attribs[i * component_count + 9]);
+						b.rows[2] = Vector3(attribs[i * component_count + 2], attribs[i * component_count + 6], attribs[i * component_count + 10]);
+					} break;
+				}
+				ret.write[i] = b;
+			} break;
+			case Variant::TRANSFORM3D: {
+				Transform3D t;
+				switch (component_count) {
+					case 4: {
+						t.basis.rows[0] = Vector3(attribs[i * component_count + 0], attribs[i * component_count + 2], 0.0f);
+						t.basis.rows[1] = Vector3(attribs[i * component_count + 1], attribs[i * component_count + 3], 0.0f);
+					} break;
+					case 9: {
+						t.basis.rows[0] = Vector3(attribs[i * component_count + 0], attribs[i * component_count + 3], attribs[i * component_count + 6]);
+						t.basis.rows[1] = Vector3(attribs[i * component_count + 1], attribs[i * component_count + 4], attribs[i * component_count + 7]);
+						t.basis.rows[2] = Vector3(attribs[i * component_count + 2], attribs[i * component_count + 5], attribs[i * component_count + 8]);
+					} break;
+					case 16: {
+						t.basis.rows[0] = Vector3(attribs[i * component_count + 0], attribs[i * component_count + 4], attribs[i * component_count + 8]);
+						t.basis.rows[1] = Vector3(attribs[i * component_count + 1], attribs[i * component_count + 5], attribs[i * component_count + 9]);
+						t.basis.rows[2] = Vector3(attribs[i * component_count + 2], attribs[i * component_count + 6], attribs[i * component_count + 10]);
+						t.origin = Vector3(attribs[i * component_count + 12], attribs[i * component_count + 13], attribs[i * component_count + 14]);
+					} break;
+				}
+				ret.write[i] = t;
+			} break;
+			case Variant::PROJECTION: {
+				Projection p;
+				switch (component_count) {
+					case 4: {
+						p.columns[0] = Vector4(attribs[i * component_count + 0], attribs[i * component_count + 1], 0.0f, 0.0f);
+						p.columns[1] = Vector4(attribs[i * component_count + 4], attribs[i * component_count + 5], 0.0f, 0.0f);
+					} break;
+					case 9: {
+						p.columns[0] = Vector4(attribs[i * component_count + 0], attribs[i * component_count + 1], attribs[i * component_count + 2], 0.0f);
+						p.columns[1] = Vector4(attribs[i * component_count + 4], attribs[i * component_count + 5], attribs[i * component_count + 6], 0.0f);
+						p.columns[2] = Vector4(attribs[i * component_count + 8], attribs[i * component_count + 9], attribs[i * component_count + 10], 0.0f);
+					} break;
+					case 16: {
+						p.columns[0] = Vector4(attribs[i * component_count + 0], attribs[i * component_count + 1], attribs[i * component_count + 2], attribs[i * component_count + 3]);
+						p.columns[1] = Vector4(attribs[i * component_count + 4], attribs[i * component_count + 5], attribs[i * component_count + 6], attribs[i * component_count + 7]);
+						p.columns[2] = Vector4(attribs[i * component_count + 8], attribs[i * component_count + 9], attribs[i * component_count + 10], attribs[i * component_count + 11]);
+						p.columns[3] = Vector4(attribs[i * component_count + 12], attribs[i * component_count + 13], attribs[i * component_count + 14], attribs[i * component_count + 15]);
+					} break;
+				}
+				ret.write[i] = p;
+			} break;
+			default: {
+				ERR_FAIL_V_MSG(ret, "glTF: Cannot decode accessor as Variant of type " + Variant::get_type_name(p_variant_type) + ".");
+			}
+		}
+	}
+	return ret;
+}
+
+GLTFAccessorIndex GLTFDocument::_encode_accessor_as_variant(Ref<GLTFState> p_state, Vector<Variant> p_attribs, Variant::Type p_variant_type, GLTFAccessor::GLTFAccessorType p_accessor_type, GLTFAccessor::GLTFComponentType p_component_type) {
+	const int accessor_component_count = COMPONENT_COUNT_FOR_ACCESSOR_TYPE[p_accessor_type];
+	Vector<double> encoded_attribs;
+	for (const Variant &v : p_attribs) {
+		switch (p_variant_type) {
+			case Variant::NIL:
+			case Variant::BOOL:
+			case Variant::INT:
+			case Variant::FLOAT: {
+				// For scalar values, just append them. Variant can convert all of these to double. Some padding may also be needed.
+				encoded_attribs.append(v);
+				if (unlikely(accessor_component_count > 1)) {
+					for (int i = 1; i < accessor_component_count; i++) {
+						encoded_attribs.append(0.0);
+					}
+				}
+			} break;
+			case Variant::VECTOR2:
+			case Variant::VECTOR2I:
+			case Variant::VECTOR3:
+			case Variant::VECTOR3I:
+			case Variant::VECTOR4:
+			case Variant::VECTOR4I: {
+				// Variant can handle converting Vector2/2i/3/3i/4/4i to Vector4 for us.
+				Vector4 vec = v;
+				if (likely(accessor_component_count < 5)) {
+					for (int i = 0; i < accessor_component_count; i++) {
+						encoded_attribs.append(vec[i]);
+					}
+				}
+			} break;
+			case Variant::PLANE: {
+				Plane p = v;
+				if (likely(accessor_component_count == 4)) {
+					encoded_attribs.append(p.normal.x);
+					encoded_attribs.append(p.normal.y);
+					encoded_attribs.append(p.normal.z);
+					encoded_attribs.append(p.d);
+				}
+			} break;
+			case Variant::QUATERNION: {
+				Quaternion q = v;
+				if (likely(accessor_component_count < 5)) {
+					for (int i = 0; i < accessor_component_count; i++) {
+						encoded_attribs.append(q[i]);
+					}
+				}
+			} break;
+			case Variant::COLOR: {
+				Color c = v;
+				if (likely(accessor_component_count < 5)) {
+					for (int i = 0; i < accessor_component_count; i++) {
+						encoded_attribs.append(c[i]);
+					}
+				}
+			} break;
+			case Variant::RECT2:
+			case Variant::RECT2I: {
+				// Variant can handle converting Rect2i to Rect2 for us.
+				Rect2 r = v;
+				if (likely(accessor_component_count == 4)) {
+					encoded_attribs.append(r.position.x);
+					encoded_attribs.append(r.position.y);
+					encoded_attribs.append(r.size.x);
+					encoded_attribs.append(r.size.y);
+				}
+			} break;
+			case Variant::TRANSFORM2D:
+			case Variant::BASIS:
+			case Variant::TRANSFORM3D:
+			case Variant::PROJECTION: {
+				// Variant can handle converting Transform2D/Transform3D/Basis to Projection for us.
+				Projection p = v;
+				if (accessor_component_count == 16) {
+					for (int i = 0; i < 4; i++) {
+						encoded_attribs.append(p.columns[i][0]);
+						encoded_attribs.append(p.columns[i][1]);
+						encoded_attribs.append(p.columns[i][2]);
+						encoded_attribs.append(p.columns[i][3]);
+					}
+				} else if (accessor_component_count == 9) {
+					for (int i = 0; i < 3; i++) {
+						encoded_attribs.append(p.columns[i][0]);
+						encoded_attribs.append(p.columns[i][1]);
+						encoded_attribs.append(p.columns[i][2]);
+					}
+				} else if (accessor_component_count == 4) {
+					encoded_attribs.append(p.columns[0][0]);
+					encoded_attribs.append(p.columns[0][1]);
+					encoded_attribs.append(p.columns[1][0]);
+					encoded_attribs.append(p.columns[1][1]);
+				}
+			} break;
+			default: {
+				ERR_FAIL_V_MSG(-1, "glTF: Cannot encode accessor from Variant of type " + Variant::get_type_name(p_variant_type) + ".");
+			}
+		}
+	}
+	// Determine the min and max values for the accessor.
+	Vector<double> type_max;
+	type_max.resize(accessor_component_count);
+	Vector<double> type_min;
+	type_min.resize(accessor_component_count);
+	for (int i = 0; i < encoded_attribs.size(); i++) {
+		if (Math::is_zero_approx(encoded_attribs[i])) {
+			encoded_attribs.write[i] = 0.0;
+		} else {
+			encoded_attribs.write[i] = _filter_number(encoded_attribs[i]);
+		}
+	}
+	for (int i = 0; i < p_attribs.size(); i++) {
+		_calc_accessor_min_max(i, accessor_component_count, type_max, encoded_attribs, type_min);
+	}
+	_round_min_max_components(type_min, type_max);
+	// Encode the data in a buffer view.
+	GLTFBufferIndex buffer_view_index = 0;
+	if (p_state->buffers.is_empty()) {
+		p_state->buffers.push_back(Vector<uint8_t>());
+	}
+	const int64_t buffer_size = p_state->buffers[buffer_view_index].size();
+	Error err = _encode_buffer_view(p_state, encoded_attribs.ptr(), p_attribs.size(), p_accessor_type, p_component_type, false, buffer_size, false, buffer_view_index);
+	if (err != OK) {
+		return -1;
+	}
+	// Create the accessor and fill it with the data.
+	Ref<GLTFAccessor> accessor;
+	accessor.instantiate();
+	accessor->max = type_max;
+	accessor->min = type_min;
+	accessor->count = p_attribs.size();
+	accessor->accessor_type = p_accessor_type;
+	accessor->component_type = p_component_type;
+	accessor->byte_offset = 0;
+	accessor->buffer_view = buffer_view_index;
+	const GLTFAccessorIndex new_accessor_index = p_state->accessors.size();
+	p_state->accessors.push_back(accessor);
+	return new_accessor_index;
+}
+
 Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 	Array meshes;
 	for (GLTFMeshIndex gltf_mesh_i = 0; gltf_mesh_i < p_state->meshes.size(); gltf_mesh_i++) {
