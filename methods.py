@@ -676,6 +676,17 @@ def generate_cpp_hint_file(filename):
         try:
             with open(filename, "w", encoding="utf-8", newline="\n") as fd:
                 fd.write("#define GDCLASS(m_class, m_inherits)\n")
+                for name in ["GDVIRTUAL", "EXBIND", "MODBIND"]:
+                    for count in range(13):
+                        for suffix in ["", "R", "C", "RC"]:
+                            fd.write(f"#define {name}{count}{suffix}(")
+                            if "R" in suffix:
+                                fd.write("m_ret, ")
+                            fd.write("m_name")
+                            for idx in range(1, count + 1):
+                                fd.write(f", type{idx}")
+                            fd.write(")\n")
+
         except OSError:
             print_warning("Could not write cpp.hint file.")
 
@@ -1034,7 +1045,7 @@ def dump(env):
 # skip the build process. This lets project files be quickly generated even if there are build errors.
 #
 # To generate AND build from the command line:
-#   scons vsproj=yes vsproj_gen_only=yes
+#   scons vsproj=yes vsproj_gen_only=no
 def generate_vs_project(env, original_args, project_name="godot"):
     # Augmented glob_recursive that also fills the dirs argument with traversed directories that have content.
     def glob_recursive_2(pattern, dirs, node="."):
@@ -1502,7 +1513,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         proj_template = proj_template.replace("%%DEFAULT_ITEMS%%", "\n    ".join(all_items))
         proj_template = proj_template.replace("%%PROPERTIES%%", "\n  ".join(properties))
 
-        with open(f"{project_name}.vcxproj", "w", encoding="utf-8", newline="\n") as f:
+        with open(f"{project_name}.vcxproj", "w", encoding="utf-8", newline="\r\n") as f:
             f.write(proj_template)
 
     if not get_bool(original_args, "vsproj_props_only", False):
