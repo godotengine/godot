@@ -93,16 +93,44 @@ template <int Tag>
 class MutexLock<SafeBinaryMutex<Tag>> {
 	friend class ConditionVariable;
 
-	THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> lock;
+	mutable THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> _lock;
 
 public:
 	_ALWAYS_INLINE_ explicit MutexLock(const SafeBinaryMutex<Tag> &p_mutex) :
-			lock(p_mutex.mutex) {
+			_lock(p_mutex.mutex) {
 		SafeBinaryMutex<Tag>::count++;
-	};
+	}
+
 	_ALWAYS_INLINE_ ~MutexLock() {
 		SafeBinaryMutex<Tag>::count--;
-	};
+	}
+
+	_ALWAYS_INLINE_ void lock() const {
+		if (++SafeBinaryMutex<Tag>::count == 1) {
+			_lock.lock();
+		}
+	}
+
+	_ALWAYS_INLINE_ void unlock() const {
+		DEV_ASSERT(SafeBinaryMutex<Tag>::count);
+		if (--SafeBinaryMutex<Tag>::count == 0) {
+			_lock.unlock();
+		}
+	}
+
+	_ALWAYS_INLINE_ bool try_lock() const {
+		if (SafeBinaryMutex<Tag>::count) {
+			SafeBinaryMutex<Tag>::count++;
+			return true;
+		} else {
+			if (_lock.try_lock()) {
+				SafeBinaryMutex<Tag>::count++;
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
 };
 
 #else // No threads.
@@ -117,6 +145,10 @@ class MutexLock<SafeBinaryMutex<Tag>> {
 public:
 	MutexLock(const SafeBinaryMutex<Tag> &p_mutex) {}
 	~MutexLock() {}
+
+	void lock() const {}
+	void unlock() const {}
+	bool try_lock() const { return true; }
 };
 
 #endif // THREADS_ENABLED
