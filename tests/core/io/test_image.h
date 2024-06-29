@@ -37,6 +37,8 @@
 #include "tests/test_utils.h"
 #include "thirdparty/doctest/doctest.h"
 
+#include "modules/modules_enabled.gen.h"
+
 namespace TestImage {
 
 TEST_CASE("[Image] Instantiation") {
@@ -107,6 +109,7 @@ TEST_CASE("[Image] Saving and loading") {
 			image->get_data() == image_load->get_data(),
 			"The loaded image should have the same data as the one that got saved.");
 
+#ifdef MODULE_BMP_ENABLED
 	// Load BMP
 	Ref<Image> image_bmp = memnew(Image());
 	Ref<FileAccess> f_bmp = FileAccess::open(TestUtils::get_data_path("images/icon.bmp"), FileAccess::READ, &err);
@@ -117,7 +120,9 @@ TEST_CASE("[Image] Saving and loading") {
 	CHECK_MESSAGE(
 			image_bmp->load_bmp_from_buffer(data_bmp) == OK,
 			"The BMP image should load successfully.");
+#endif // MODULE_BMP_ENABLED
 
+#ifdef MODULE_JPG_ENABLED
 	// Load JPG
 	Ref<Image> image_jpg = memnew(Image());
 	Ref<FileAccess> f_jpg = FileAccess::open(TestUtils::get_data_path("images/icon.jpg"), FileAccess::READ, &err);
@@ -128,7 +133,9 @@ TEST_CASE("[Image] Saving and loading") {
 	CHECK_MESSAGE(
 			image_jpg->load_jpg_from_buffer(data_jpg) == OK,
 			"The JPG image should load successfully.");
+#endif // MODULE_JPG_ENABLED
 
+#ifdef MODULE_WEBP_ENABLED
 	// Load WebP
 	Ref<Image> image_webp = memnew(Image());
 	Ref<FileAccess> f_webp = FileAccess::open(TestUtils::get_data_path("images/icon.webp"), FileAccess::READ, &err);
@@ -139,6 +146,7 @@ TEST_CASE("[Image] Saving and loading") {
 	CHECK_MESSAGE(
 			image_webp->load_webp_from_buffer(data_webp) == OK,
 			"The WebP image should load successfully.");
+#endif // MODULE_WEBP_ENABLED
 
 	// Load PNG
 	Ref<Image> image_png = memnew(Image());
@@ -151,6 +159,7 @@ TEST_CASE("[Image] Saving and loading") {
 			image_png->load_png_from_buffer(data_png) == OK,
 			"The PNG image should load successfully.");
 
+#ifdef MODULE_TGA_ENABLED
 	// Load TGA
 	Ref<Image> image_tga = memnew(Image());
 	Ref<FileAccess> f_tga = FileAccess::open(TestUtils::get_data_path("images/icon.tga"), FileAccess::READ, &err);
@@ -161,6 +170,7 @@ TEST_CASE("[Image] Saving and loading") {
 	CHECK_MESSAGE(
 			image_tga->load_tga_from_buffer(data_tga) == OK,
 			"The TGA image should load successfully.");
+#endif // MODULE_TGA_ENABLED
 }
 
 TEST_CASE("[Image] Basic getters") {
