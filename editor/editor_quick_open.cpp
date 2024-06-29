@@ -32,6 +32,7 @@
 
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 
 Rect2i EditorQuickOpen::prev_rect = Rect2i();
@@ -119,10 +120,12 @@ void EditorQuickOpen::_update_search() {
 			sorter.sort(entries.ptrw(), entries.size());
 		}
 
+		const int class_icon_size = search_options->get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 		const int entry_limit = MIN(entries.size(), 300);
 		for (int i = 0; i < entry_limit; i++) {
 			TreeItem *ti = search_options->create_item(root);
 			ti->set_text(0, entries[i].path);
+			ti->set_icon_max_width(0, class_icon_size);
 			ti->set_icon(0, *icons.lookup_ptr(entries[i].path.get_extension()));
 		}
 
