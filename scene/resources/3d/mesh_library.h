@@ -55,9 +55,19 @@ public:
 		Ref<NavigationMesh> navigation_mesh;
 		Transform3D navigation_mesh_transform;
 		uint32_t navigation_layers = 1;
+		// Custom data
+		Vector<Variant> custom_data;
 	};
 
 	RBMap<int, Item> item_map;
+
+	// CustomData
+	struct CustomDataLayer {
+		String name;
+		Variant::Type type = Variant::NIL;
+	};
+	Vector<CustomDataLayer> custom_data_layers;
+	HashMap<String, int> custom_data_layers_by_name;
 
 	void _set_item_shapes(int p_item, const Array &p_shapes);
 	Array _get_item_shapes(int p_item) const;
@@ -98,6 +108,26 @@ public:
 
 	Vector<int> get_item_list() const;
 	int get_last_unused_item_id() const;
+
+	// Custom data
+	void notify_mesh_library_properties_should_change();
+	int get_custom_data_layers_count() const;
+	void add_custom_data_layer(int p_index = -1);
+	void move_custom_data_layer(int p_from_index, int p_to_pos);
+	void remove_custom_data_layer(int p_index);
+	int get_custom_data_layer_by_name(String p_value) const;
+	void set_custom_data_layer_name(int p_layer_id, String p_value);
+	String get_custom_data_layer_name(int p_layer_id) const;
+	void set_custom_data_layer_type(int p_layer_id, Variant::Type p_value);
+	Variant::Type get_custom_data_layer_type(int p_layer_id) const;
+
+	// Custom data. Item specific
+	void set_custom_data(int p_item, String p_layer_name, Variant p_value);
+	Variant get_custom_data(int p_item, String p_layer_name) const;
+
+	// probably private of the class item when refactored
+	void set_custom_data_by_layer_id(int p_item, int p_layer_id, Variant p_value);
+	Variant get_custom_data_by_layer_id(int p_item, int p_layer_id) const;
 
 	MeshLibrary();
 	~MeshLibrary();
