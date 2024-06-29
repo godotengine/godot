@@ -96,14 +96,19 @@ class MutexLock<SafeBinaryMutex<Tag>> {
 	mutable THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> _lock;
 
 public:
+	// Defer locking to ensure locking is done correctly.
 	_ALWAYS_INLINE_ explicit MutexLock(const SafeBinaryMutex<Tag> &p_mutex) :
-			_lock(p_mutex.mutex) {
-		SafeBinaryMutex<Tag>::count++;
+			_lock(p_mutex.mutex, THREADING_NAMESPACE::defer_lock_t()) {
+		lock();
 	}
 
 	_ALWAYS_INLINE_ ~MutexLock() {
 		DEV_ASSERT(SafeBinaryMutex<Tag>::count);
+		// Do not unlock if the count is still non-zero.
 		SafeBinaryMutex<Tag>::count--;
+		if (SafeBinaryMutex<Tag>::count && _lock.owns_lock()) {
+			_lock.release();
+		}
 	}
 
 	_ALWAYS_INLINE_ void lock() const {
@@ -115,6 +120,7 @@ public:
 	_ALWAYS_INLINE_ void unlock() const {
 		DEV_ASSERT(SafeBinaryMutex<Tag>::count);
 		if (--SafeBinaryMutex<Tag>::count == 0) {
+			DEV_ASSERT(_lock.owns_lock());
 			_lock.unlock();
 		}
 	}
