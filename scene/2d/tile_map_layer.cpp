@@ -1889,7 +1889,7 @@ void TileMapLayer::_update_self_texture_repeat(RS::CanvasItemTextureRepeat p_tex
 
 #ifdef TOOLS_ENABLED
 bool TileMapLayer::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-	return get_cell_source_id(local_to_map(p_point)) != TileSet::INVALID_SOURCE;
+	return tile_set.is_valid() && get_cell_source_id(local_to_map(p_point)) != TileSet::INVALID_SOURCE;
 }
 #endif
 
