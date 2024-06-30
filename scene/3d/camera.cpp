@@ -226,6 +226,12 @@ void Camera::_notification(int p_what) {
 				_interpolation_data.xform_prev = _interpolation_data.xform_curr;
 			}
 		} break;
+		case NOTIFICATION_PAUSED: {
+			if (is_physics_interpolated_and_enabled() && is_inside_tree() && is_visible_in_tree()) {
+				_physics_interpolation_ensure_transform_calculated(true);
+				VisualServer::get_singleton()->camera_set_transform(camera, _interpolation_data.camera_xform_interpolated);
+			}
+		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 			if (!get_tree()->is_node_being_edited(this)) {
 				if (is_current()) {
