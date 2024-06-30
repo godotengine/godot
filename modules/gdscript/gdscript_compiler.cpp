@@ -2378,7 +2378,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			}
 
 			const GDScriptParser::VariableNode *field = member.variable;
-			if (field->is_static) {
+			if (field->is_static || field->is_override) {
 				continue;
 			}
 
@@ -2426,14 +2426,19 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 					return nullptr;
 				}
 
-				GDScriptDataType field_type = _gdtype_from_datatype(field->get_datatype(), codegen.script);
-				GDScriptCodeGenerator::Address dst_address(GDScriptCodeGenerator::Address::MEMBER, codegen.script->member_indices[field->identifier->name].index, field_type);
-
-				if (field->use_conversion_assign) {
-					codegen.generator->write_assign_with_conversion(dst_address, src_address);
+				if (_is_class_member_property(codegen, field->identifier->name)) { // `@override var` for a native property.
+					codegen.generator->write_set_member(src_address, field->identifier->name);
 				} else {
-					codegen.generator->write_assign(dst_address, src_address);
+					GDScriptDataType field_type = _gdtype_from_datatype(field->get_datatype(), codegen.script);
+					GDScriptCodeGenerator::Address dst_address(GDScriptCodeGenerator::Address::MEMBER, codegen.script->member_indices[field->identifier->name].index, field_type);
+
+					if (field->use_conversion_assign) {
+						codegen.generator->write_assign_with_conversion(dst_address, src_address);
+					} else {
+						codegen.generator->write_assign(dst_address, src_address);
+					}
 				}
+
 				if (src_address.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
 				}
@@ -2890,7 +2895,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 				if (variable->is_static) {
 					minfo.index = p_script->static_variables_indices.size();
 					p_script->static_variables_indices[name] = minfo;
-				} else {
+				} else if (!variable->is_override) {
 					minfo.index = p_script->member_indices.size();
 					p_script->member_indices[name] = minfo;
 					p_script->members.insert(name);

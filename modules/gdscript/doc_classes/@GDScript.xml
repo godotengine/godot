@@ -782,6 +782,11 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@override">
+			<return type="void" />
+			<description>
+			</description>
+		</annotation>
 		<annotation name="@rpc">
 			<return type="void" />
 			<param index="0" name="mode" type="String" default="&quot;authority&quot;" />

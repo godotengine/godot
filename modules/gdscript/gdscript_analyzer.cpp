@@ -229,90 +229,143 @@ static GDScriptParser::DataType make_builtin_meta_type(Variant::Type p_type) {
 	return type;
 }
 
-bool GDScriptAnalyzer::has_member_name_conflict_in_script_class(const StringName &p_member_name, const GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_member) {
-	if (p_class->members_indices.has(p_member_name)) {
-		int index = p_class->members_indices[p_member_name];
-		const GDScriptParser::ClassNode::Member *member = &p_class->members[index];
+GDScriptAnalyzer::MemberConflict GDScriptAnalyzer::_check_member_conflict_gdscript(const GDScriptParser::ClassNode *p_class, const StringName &p_member_name, const GDScriptParser::Node *p_member_node, GDScriptParser::DataType *r_override_type) {
+	if (p_class->has_member(p_member_name)) {
+		const GDScriptParser::ClassNode::Member found_member = p_class->get_member(p_member_name);
 
-		if (member->type == GDScriptParser::ClassNode::Member::VARIABLE ||
-				member->type == GDScriptParser::ClassNode::Member::CONSTANT ||
-				member->type == GDScriptParser::ClassNode::Member::ENUM ||
-				member->type == GDScriptParser::ClassNode::Member::ENUM_VALUE ||
-				member->type == GDScriptParser::ClassNode::Member::CLASS ||
-				member->type == GDScriptParser::ClassNode::Member::SIGNAL) {
-			return true;
+		if (p_member_node->type == GDScriptParser::Node::FUNCTION) {
+			if (found_member.type == GDScriptParser::ClassNode::Member::FUNCTION) {
+				return MemberConflict::OVERRIDE;
+			}
+		} else if (p_member_node->type == GDScriptParser::Node::VARIABLE) {
+			const GDScriptParser::VariableNode *variable = static_cast<const GDScriptParser::VariableNode *>(p_member_node);
+			if (variable->is_override) {
+				if (found_member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
+					if (found_member.variable->is_static) {
+						push_error(R"(A variable cannot override a static variable.)", p_member_node);
+						return MemberConflict::FOUND;
+					}
+					if (r_override_type) {
+						*r_override_type = found_member.variable->datatype;
+					}
+					return MemberConflict::OVERRIDE;
+				} else {
+					push_error(vformat("(A variable cannot override %s.)", found_member.get_type_name()), p_member_node);
+					return MemberConflict::FOUND;
+				}
+			} else if (found_member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
+				push_error(R"(Use explicit "@override" if you want to override the variable.)", p_member_node);
+				return MemberConflict::FOUND;
+			}
 		}
-		if (p_member->type != GDScriptParser::Node::FUNCTION && member->type == GDScriptParser::ClassNode::Member::FUNCTION) {
-			return true;
-		}
+
+		return MemberConflict::FOUND;
 	}
 
-	return false;
+	return MemberConflict::NOT_FOUND;
 }
 
-bool GDScriptAnalyzer::has_member_name_conflict_in_native_type(const StringName &p_member_name, const StringName &p_native_type_string) {
-	if (ClassDB::has_signal(p_native_type_string, p_member_name)) {
-		return true;
-	}
-	if (ClassDB::has_property(p_native_type_string, p_member_name)) {
-		return true;
-	}
-	if (ClassDB::has_integer_constant(p_native_type_string, p_member_name)) {
-		return true;
-	}
+GDScriptAnalyzer::MemberConflict GDScriptAnalyzer::_check_member_conflict_native(const StringName &p_class, const StringName &p_member_name, const GDScriptParser::Node *p_member_node, GDScriptParser::DataType *r_override_type) {
 	if (p_member_name == CoreStringName(script)) {
-		return true;
+		return MemberConflict::FOUND; // Never allowed to override.
 	}
 
-	return false;
+	GDScriptParser::ClassNode::Member::Type found_member_type = GDScriptParser::ClassNode::Member::UNDEFINED;
+	const char *found_member_type_name = nullptr;
+
+	if (ClassDB::has_property(p_class, p_member_name)) {
+		found_member_type = GDScriptParser::ClassNode::Member::VARIABLE;
+		found_member_type_name = "variable";
+	} else if (ClassDB::has_method(p_class, p_member_name)) {
+		found_member_type = GDScriptParser::ClassNode::Member::FUNCTION;
+		found_member_type_name = "function";
+	} else if (ClassDB::has_signal(p_class, p_member_name)) {
+		found_member_type = GDScriptParser::ClassNode::Member::SIGNAL;
+		found_member_type_name = "signal";
+	} else if (ClassDB::has_integer_constant(p_class, p_member_name)) {
+		found_member_type = GDScriptParser::ClassNode::Member::CONSTANT;
+		found_member_type_name = "constant";
+	}
+
+	if (found_member_type != GDScriptParser::ClassNode::Member::UNDEFINED) {
+		if (p_member_node->type == GDScriptParser::Node::FUNCTION) {
+			if (found_member_type == GDScriptParser::ClassNode::Member::FUNCTION) {
+				return MemberConflict::OVERRIDE;
+			}
+		} else if (p_member_node->type == GDScriptParser::Node::VARIABLE) {
+			const GDScriptParser::VariableNode *variable = static_cast<const GDScriptParser::VariableNode *>(p_member_node);
+			if (variable->is_override) {
+				if (found_member_type == GDScriptParser::ClassNode::Member::VARIABLE) {
+					// NOTE: Native static properties are not currently supported.
+					if (r_override_type) {
+						const MethodBind *getter = ClassDB::get_method(p_class, ClassDB::get_property_getter(p_class, p_member_name));
+						if (getter) {
+							*r_override_type = type_from_property(getter->get_return_info());
+						}
+					}
+					return MemberConflict::OVERRIDE;
+				} else {
+					push_error(vformat("(A variable cannot override %s.)", found_member_type_name), p_member_node);
+					return MemberConflict::FOUND;
+				}
+			} else if (found_member_type == GDScriptParser::ClassNode::Member::VARIABLE) {
+				push_error(R"(Use an explicit "@override" if you want to override the variable.)", p_member_node);
+				return MemberConflict::FOUND;
+			}
+		}
+
+		return MemberConflict::FOUND;
+	}
+
+	return MemberConflict::NOT_FOUND;
 }
 
-Error GDScriptAnalyzer::check_native_member_name_conflict(const StringName &p_member_name, const GDScriptParser::Node *p_member_node, const StringName &p_native_type_string) {
-	if (has_member_name_conflict_in_native_type(p_member_name, p_native_type_string)) {
-		push_error(vformat(R"(Member "%s" redefined (original in native class '%s'))", p_member_name, p_native_type_string), p_member_node);
-		return ERR_PARSE_ERROR;
-	}
-
-	if (class_exists(p_member_name)) {
-		push_error(vformat(R"(The member "%s" shadows a native class.)", p_member_name), p_member_node);
-		return ERR_PARSE_ERROR;
-	}
-
+void GDScriptAnalyzer::check_member_conflict(const GDScriptParser::ClassNode *p_class, const StringName &p_member_name, const GDScriptParser::Node *p_member_node, GDScriptParser::DataType *r_override_type) {
+	// First, check built-in types and native classes. These names are not allowed to be shadowed.
 	if (GDScriptParser::get_builtin_type(p_member_name) < Variant::VARIANT_MAX) {
 		push_error(vformat(R"(The member "%s" cannot have the same name as a builtin type.)", p_member_name), p_member_node);
-		return ERR_PARSE_ERROR;
+		return;
+	}
+	if (class_exists(p_member_name)) {
+		push_error(vformat(R"(The member "%s" shadows a native class.)", p_member_name), p_member_node);
+		return;
 	}
 
-	return OK;
-}
+	MemberConflict member_conflict = MemberConflict::NOT_FOUND;
 
-Error GDScriptAnalyzer::check_class_member_name_conflict(const GDScriptParser::ClassNode *p_class_node, const StringName &p_member_name, const GDScriptParser::Node *p_member_node) {
-	// TODO check outer classes for static members only
-	const GDScriptParser::DataType *current_data_type = &p_class_node->base_type;
+	// TODO: Check outer classes for static members only.
+
+	const GDScriptParser::DataType *current_data_type = &p_class->base_type;
 	while (current_data_type && current_data_type->kind == GDScriptParser::DataType::Kind::CLASS) {
-		GDScriptParser::ClassNode *current_class_node = current_data_type->class_type;
-		if (has_member_name_conflict_in_script_class(p_member_name, current_class_node, p_member_node)) {
-			String parent_class_name = current_class_node->fqcn;
-			if (current_class_node->identifier != nullptr) {
-				parent_class_name = current_class_node->identifier->name;
+		GDScriptParser::ClassNode *current_class = current_data_type->class_type;
+		member_conflict = _check_member_conflict_gdscript(current_class, p_member_name, p_member_node, r_override_type);
+		if (member_conflict == MemberConflict::FOUND) {
+			String parent_class_name = current_class->fqcn;
+			if (current_class->identifier != nullptr) {
+				parent_class_name = current_class->identifier->name;
 			}
-			push_error(vformat(R"(The member "%s" already exists in parent class %s.)", p_member_name, parent_class_name), p_member_node);
-			return ERR_PARSE_ERROR;
+			push_error(vformat(R"(The member "%s" already exists in base class "%s".)", p_member_name, parent_class_name), p_member_node);
+			return;
+		} else if (member_conflict == MemberConflict::OVERRIDE) {
+			break;
 		}
-		current_data_type = &current_class_node->base_type;
+		current_data_type = &current_class->base_type;
 	}
 
-	// No need for native class recursion because Node exposes all Object's properties.
-	if (current_data_type && current_data_type->kind == GDScriptParser::DataType::Kind::NATIVE) {
-		if (current_data_type->native_type != StringName()) {
-			return check_native_member_name_conflict(
-					p_member_name,
-					p_member_node,
-					current_data_type->native_type);
+	// No need for recursion because `ClassDB` methods have parameter `p_no_inheritance = false`.
+	if (member_conflict == MemberConflict::NOT_FOUND && current_data_type && current_data_type->kind == GDScriptParser::DataType::Kind::NATIVE) {
+		member_conflict = _check_member_conflict_native(current_data_type->native_type, p_member_name, p_member_node, r_override_type);
+		if (member_conflict == MemberConflict::FOUND) {
+			push_error(vformat(R"(The member "%s" already exists in base class "%s".)", p_member_name, current_data_type->native_type), p_member_node);
+			return;
 		}
 	}
 
-	return OK;
+	if (p_member_node->type == GDScriptParser::Node::VARIABLE && static_cast<const GDScriptParser::VariableNode *>(p_member_node)->is_override) {
+		if (member_conflict == MemberConflict::NOT_FOUND) {
+			push_error(vformat(R"(Could not find variable "%s" to override in base class.)", p_member_name), p_member_node);
+		}
+	}
 }
 
 void GDScriptAnalyzer::get_class_node_current_scope_classes(GDScriptParser::ClassNode *p_node, List<GDScriptParser::ClassNode *> *p_list, GDScriptParser::Node *p_source) {
@@ -1039,21 +1092,37 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				}
 			}
 		}
-#endif // DEBUG_ENABLED
+#endif
+
 		switch (member.type) {
 			case GDScriptParser::ClassNode::Member::VARIABLE: {
 				bool previous_static_context = static_context;
 				static_context = member.variable->is_static;
 
-				check_class_member_name_conflict(p_class, member.variable->identifier->name, member.variable);
+				// Apply `@override` annotations before `check_class_member_name_conflict()`. No `break` to check duplicates.
+				for (GDScriptParser::AnnotationNode *&E : member.variable->annotations) {
+					if (E->name == SNAME("@override")) {
+						resolve_annotation(E);
+						E->apply(parser, member.variable, p_class);
+					}
+				}
+
+				GDScriptParser::DataType override_type;
+				check_member_conflict(p_class, member.variable->identifier->name, member.variable, &override_type);
 
 				member.variable->set_datatype(resolving_datatype);
 				resolve_variable(member.variable, false);
 				resolve_pending_lambda_bodies();
 
+				if (member.variable->is_override) {
+					if (member.variable->datatype_specifier && member.variable->datatype != override_type) {
+						push_error(vformat(R"(The overridden variable "%s" must have the same type as the base variable, i.e. "%s".)", member.variable->identifier->name, override_type.to_string()), member.variable);
+					}
+				}
+
 				// Apply annotations.
 				for (GDScriptParser::AnnotationNode *&E : member.variable->annotations) {
-					if (E->name != SNAME("@warning_ignore")) {
+					if (E->name != SNAME("@warning_ignore") && E->name != SNAME("@override")) {
 						resolve_annotation(E);
 						E->apply(parser, member.variable, p_class);
 					}
@@ -1105,7 +1174,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 #endif // DEBUG_ENABLED
 			} break;
 			case GDScriptParser::ClassNode::Member::CONSTANT: {
-				check_class_member_name_conflict(p_class, member.constant->identifier->name, member.constant);
+				check_member_conflict(p_class, member.constant->identifier->name, member.constant);
 				member.constant->set_datatype(resolving_datatype);
 				resolve_constant(member.constant, false);
 
@@ -1116,7 +1185,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				}
 			} break;
 			case GDScriptParser::ClassNode::Member::SIGNAL: {
-				check_class_member_name_conflict(p_class, member.signal->identifier->name, member.signal);
+				check_member_conflict(p_class, member.signal->identifier->name, member.signal);
 
 				member.signal->set_datatype(resolving_datatype);
 
@@ -1146,7 +1215,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				}
 			} break;
 			case GDScriptParser::ClassNode::Member::ENUM: {
-				check_class_member_name_conflict(p_class, member.m_enum->identifier->name, member.m_enum);
+				check_member_conflict(p_class, member.m_enum->identifier->name, member.m_enum);
 
 				member.m_enum->set_datatype(resolving_datatype);
 				GDScriptParser::DataType enum_type = make_class_enum_type(member.m_enum->identifier->name, p_class, parser->script_path, true);
@@ -1211,7 +1280,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				member.enum_value.identifier->set_datatype(resolving_datatype);
 
 				if (member.enum_value.custom_value) {
-					check_class_member_name_conflict(p_class, member.enum_value.identifier->name, member.enum_value.custom_value);
+					check_member_conflict(p_class, member.enum_value.identifier->name, member.enum_value.custom_value);
 
 					const GDScriptParser::EnumNode *prev_enum = current_enum;
 					current_enum = member.enum_value.parent_enum;
@@ -1227,7 +1296,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 						member.enum_value.resolved = true;
 					}
 				} else {
-					check_class_member_name_conflict(p_class, member.enum_value.identifier->name, member.enum_value.parent_enum);
+					check_member_conflict(p_class, member.enum_value.identifier->name, member.enum_value.parent_enum);
 
 					if (member.enum_value.index > 0) {
 						const GDScriptParser::EnumNode::Value &prev_value = member.enum_value.parent_enum->values[member.enum_value.index - 1];
@@ -1245,7 +1314,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				member.enum_value.identifier->set_datatype(make_class_enum_type(UNNAMED_ENUM, p_class, parser->script_path, false));
 			} break;
 			case GDScriptParser::ClassNode::Member::CLASS:
-				check_class_member_name_conflict(p_class, member.m_class->identifier->name, member.m_class);
+				check_member_conflict(p_class, member.m_class->identifier->name, member.m_class);
 				// If it's already resolving, that's ok.
 				if (!member.m_class->base_type.is_resolving()) {
 					resolve_class_inheritance(member.m_class, p_source);
