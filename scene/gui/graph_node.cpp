@@ -656,9 +656,6 @@ void GraphNode::_port_pos_update() {
 	right_port_cache.clear();
 	int vertical_ofs = titlebar_hbox->get_size().height + sb_titlebar->get_minimum_size().height + sb_panel->get_margin(SIDE_TOP);
 	int slot_index = 0;
-	real_t rotation = get_rotation();
-	real_t cos_rot = Math::cos(rotation);
-	real_t sin_rot = Math::sin(rotation);
 
 	for (int i = 0; i < get_child_count(false); i++) {
 		Control *child = as_sortable_control(get_child(i, false), SortableVisbilityMode::IGNORE);
@@ -671,12 +668,7 @@ void GraphNode::_port_pos_update() {
 		if (slot_table.has(slot_index)) {
 			if (slot_table[slot_index].enable_left) {
 				PortCache port_cache;
-				port_cache.pos = Point2i(edgeofs, vertical_ofs + size.height / 2);
-				// Apply rotation.
-				Vector2 rotated_pos = Vector2(
-						port_cache.pos.x * cos_rot - port_cache.pos.y * sin_rot,
-						port_cache.pos.x * sin_rot + port_cache.pos.y * cos_rot);
-				port_cache.pos = rotated_pos;
+				port_cache.pos = Vector2(port_cache.pos).rotated(get_rotation());
 				port_cache.type = slot_table[slot_index].type_left;
 				port_cache.color = slot_table[slot_index].color_left;
 				port_cache.slot_index = slot_index;
@@ -684,12 +676,7 @@ void GraphNode::_port_pos_update() {
 			}
 			if (slot_table[slot_index].enable_right) {
 				PortCache port_cache;
-				port_cache.pos = Point2i(get_size().width - edgeofs, vertical_ofs + size.height / 2);
-				// Apply rotation.
-				Vector2 rotated_pos = Vector2(
-						port_cache.pos.x * cos_rot - port_cache.pos.y * sin_rot,
-						port_cache.pos.x * sin_rot + port_cache.pos.y * cos_rot);
-				port_cache.pos = rotated_pos;
+				port_cache.pos = Vector2(port_cache.pos).rotated(get_rotation());
 				port_cache.type = slot_table[slot_index].type_right;
 				port_cache.color = slot_table[slot_index].color_right;
 				port_cache.slot_index = slot_index;
