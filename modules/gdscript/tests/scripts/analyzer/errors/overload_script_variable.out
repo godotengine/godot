@@ -1,2 +1,2 @@
 GDTEST_ANALYZER_ERROR
-Member "script" redefined (original in native class 'Node')
+The member "script" already exists in base class "Node".
