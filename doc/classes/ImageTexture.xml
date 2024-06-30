@@ -26,6 +26,7 @@
 		[/codeblock]
 		An [ImageTexture] is not meant to be operated from within the editor interface directly, and is mostly useful for rendering images on screen dynamically via code. If you need to generate images procedurally from within the editor, consider saving and importing images as custom texture resources implementing a new [EditorImportPlugin].
 		[b]Note:[/b] The maximum texture size is 16384×16384 pixels due to graphics hardware limitations.
+		[b]Note:[/b] Mipmap generation can fail with some graphics drivers (especially on Android), resulting in black textures. In these cases, consider either calling [method Image.generate_mipmaps], or creating an [ImageTexture] without [constant Texture.FLAG_MIPMAPS].
 	</description>
 	<tutorials>
 		<link title="Importing images">$DOCS_URL/tutorials/assets_pipeline/importing_images.html</link>
