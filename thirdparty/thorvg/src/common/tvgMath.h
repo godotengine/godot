@@ -152,9 +152,9 @@ static inline void operator*=(Matrix& lhs, const Matrix& rhs)
 }
 
 
-static inline void mathLog(Matrix* m)
+static inline void mathLog(const Matrix& m)
 {
-    TVGLOG("MATH", "Matrix: [%f %f %f] [%f %f %f] [%f %f %f]", m->e11, m->e12, m->e13, m->e21, m->e22, m->e23, m->e31, m->e32, m->e33);
+    TVGLOG("COMMON", "Matrix: [%f %f %f] [%f %f %f] [%f %f %f]", m.e11, m.e12, m.e13, m.e21, m.e22, m.e23, m.e31, m.e32, m.e33);
 }
 
 
@@ -163,6 +163,7 @@ static inline void mathLog(Matrix* m)
 /************************************************************************/
 
 void operator*=(Point& pt, const Matrix& m);
+Point operator*(const Point& pt, const Matrix& m);
 
 
 static inline bool mathZero(const Point& p)
@@ -230,6 +231,11 @@ static inline Point operator/(const Point& lhs, const float rhs)
     return {lhs.x / rhs, lhs.y / rhs};
 }
 
+
+static inline void mathLog(const Point& pt)
+{
+    TVGLOG("COMMON", "Point: [%f %f]", pt.x, pt.y);
+}
 
 /************************************************************************/
 /* Interpolation functions                                              */

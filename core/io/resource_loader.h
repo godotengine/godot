@@ -174,6 +174,7 @@ private:
 		String type_hint;
 		float progress = 0.0f;
 		float max_reported_progress = 0.0f;
+		uint64_t last_progress_check_main_thread_frame = UINT64_MAX;
 		ThreadLoadStatus status = THREAD_LOAD_IN_PROGRESS;
 		ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
 		Error error = OK;
@@ -196,6 +197,8 @@ private:
 	static HashMap<String, LoadToken *> user_load_tokens;
 
 	static float _dependency_get_progress(const String &p_path);
+
+	static bool _ensure_load_progress();
 
 public:
 	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE);

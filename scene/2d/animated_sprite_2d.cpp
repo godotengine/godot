@@ -267,7 +267,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 			}
 
 			if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-				ofs = ofs.round();
+				ofs = (ofs + Point2(0.5, 0.5)).floor();
 			}
 
 			Rect2 dst_rect(ofs, s);

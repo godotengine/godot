@@ -3040,7 +3040,7 @@ void DisplayServerX11::window_set_ime_active(const bool p_active, WindowID p_win
 		XWindowAttributes xwa;
 		XSync(x11_display, False);
 		XGetWindowAttributes(x11_display, wd.x11_xim_window, &xwa);
-		if (xwa.map_state == IsViewable && _window_focus_check()) {
+		if (xwa.map_state == IsViewable) {
 			_set_input_focus(wd.x11_xim_window, RevertToParent);
 		}
 		XSetICFocus(wd.xic);
@@ -6262,7 +6262,14 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) != OK) {
+			memdelete(rendering_device);
+			rendering_device = nullptr;
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
 		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();

@@ -324,6 +324,21 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 					is_uniform_type_compatible = E->get().type == cached.get_type();
 				}
 
+#ifndef DISABLE_DEPRECATED
+				// PackedFloat32Array -> PackedVector4Array conversion.
+				if (!is_uniform_type_compatible && E->get().type == Variant::PACKED_VECTOR4_ARRAY && cached.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
+					PackedVector4Array varray;
+					PackedFloat32Array array = (PackedFloat32Array)cached;
+
+					for (int i = 0; i + 3 < array.size(); i += 4) {
+						varray.push_back(Vector4(array[i], array[i + 1], array[i + 2], array[i + 3]));
+					}
+
+					param_cache.insert(E->get().name, varray);
+					is_uniform_type_compatible = true;
+				}
+#endif
+
 				if (is_uniform_type_compatible && E->get().type == Variant::OBJECT && cached.get_type() == Variant::OBJECT) {
 					// Check if the Object class (hint string) changed, for example Texture2D sampler to Texture3D.
 					// Allow inheritance, Texture2D type sampler should also accept CompressedTexture2D.

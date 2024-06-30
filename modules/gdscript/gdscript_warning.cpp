@@ -145,6 +145,9 @@ String GDScriptWarning::get_message() const {
 		case CONFUSABLE_LOCAL_USAGE:
 			CHECK_SYMBOLS(1);
 			return vformat(R"(The identifier "%s" will be shadowed below in the block.)", symbols[0]);
+		case CONFUSABLE_CAPTURE_REASSIGNMENT:
+			CHECK_SYMBOLS(1);
+			return vformat(R"(Reassigning lambda capture does not modify the outer local variable "%s".)", symbols[0]);
 		case INFERENCE_ON_VARIANT:
 			CHECK_SYMBOLS(1);
 			return vformat("The %s type is being inferred from a Variant value, so it will be typed as Variant.", symbols[0]);
@@ -231,6 +234,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"CONFUSABLE_IDENTIFIER",
 		"CONFUSABLE_LOCAL_DECLARATION",
 		"CONFUSABLE_LOCAL_USAGE",
+		"CONFUSABLE_CAPTURE_REASSIGNMENT",
 		"INFERENCE_ON_VARIANT",
 		"NATIVE_METHOD_OVERRIDE",
 		"GET_NODE_DEFAULT_WITHOUT_ONREADY",

@@ -159,11 +159,21 @@ class EditorFileSystem : public Node {
 		EditorFileSystemDirectory::FileInfo *new_file = nullptr;
 	};
 
+	struct ScannedDirectory {
+		String name;
+		String full_path;
+		Vector<ScannedDirectory *> subdirs;
+		List<String> files;
+
+		~ScannedDirectory();
+	};
+
 	bool use_threads = false;
 	Thread thread;
 	static void _thread_func(void *_userdata);
 
 	EditorFileSystemDirectory *new_filesystem = nullptr;
+	ScannedDirectory *first_scan_root_dir = nullptr;
 
 	bool scanning = false;
 	bool importing = false;
@@ -172,8 +182,11 @@ class EditorFileSystem : public Node {
 	float scan_total;
 	String filesystem_settings_version_for_import;
 	bool revalidate_import_files = false;
+	int nb_files_total = 0;
 
 	void _scan_filesystem();
+	void _first_scan_filesystem();
+	void _first_scan_process_scripts(const ScannedDirectory *p_scan_dir, HashSet<String> &p_existing_class_names);
 
 	HashSet<String> late_update_files;
 
@@ -202,11 +215,10 @@ class EditorFileSystem : public Node {
 	HashSet<String> dep_update_list;
 
 	struct ScanProgress {
-		float low = 0;
 		float hi = 0;
-		mutable EditorProgressBG *progress = nullptr;
-		void update(int p_current, int p_total) const;
-		ScanProgress get_sub(int p_current, int p_total) const;
+		int current = 0;
+		EditorProgressBG *progress = nullptr;
+		void increment();
 	};
 
 	void _save_filesystem_cache();
@@ -214,15 +226,17 @@ class EditorFileSystem : public Node {
 
 	bool _find_file(const String &p_file, EditorFileSystemDirectory **r_d, int &r_file_pos) const;
 
-	void _scan_fs_changes(EditorFileSystemDirectory *p_dir, const ScanProgress &p_progress);
+	void _scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanProgress &p_progress);
 
 	void _delete_internal_files(const String &p_file);
+	int _insert_actions_delete_files_directory(EditorFileSystemDirectory *p_dir);
 
 	HashSet<String> textfile_extensions;
 	HashSet<String> valid_extensions;
 	HashSet<String> import_extensions;
 
-	void _scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAccess> &da, const ScanProgress &p_progress);
+	int _scan_new_dir(ScannedDirectory *p_dir, Ref<DirAccess> &da);
+	void _process_file_system(const ScannedDirectory *p_scan_dir, EditorFileSystemDirectory *p_dir, ScanProgress &p_progress);
 
 	Thread thread_sources;
 	bool scanning_changes = false;
@@ -256,11 +270,20 @@ class EditorFileSystem : public Node {
 		}
 	};
 
+	struct ScriptInfo {
+		String type;
+		String script_class_name;
+		String script_class_extends;
+		String script_class_icon_path;
+	};
+
 	Mutex update_script_mutex;
-	HashSet<String> update_script_paths;
-	void _queue_update_script_class(const String &p_path);
+	HashMap<String, ScriptInfo> update_script_paths;
+	HashSet<String> update_script_paths_documentation;
+	void _queue_update_script_class(const String &p_path, const String &p_type, const String &p_script_class_name, const String &p_script_class_extends, const String &p_script_class_icon_path);
 	void _update_script_classes();
-	void _update_pending_script_classes();
+	void _update_script_documentation();
+	void _process_update_pending();
 
 	Mutex update_scene_mutex;
 	HashSet<String> update_scene_paths;
@@ -300,6 +323,10 @@ class EditorFileSystem : public Node {
 
 	void _update_file_icon_path(EditorFileSystemDirectory::FileInfo *file_info);
 	void _update_files_icon_path(EditorFileSystemDirectory *edp = nullptr);
+	void _remove_invalid_global_class_names(const HashSet<String> &p_existing_class_names);
+	String _get_file_by_class_name(EditorFileSystemDirectory *p_dir, const String &p_class_name, EditorFileSystemDirectory::FileInfo *&r_file_info);
+
+	void _register_global_class_script(const String &p_search_path, const String &p_target_path, const String &p_type, const String &p_script_class_name, const String &p_script_class_extends, const String &p_script_class_icon_path);
 
 protected:
 	void _notification(int p_what);
