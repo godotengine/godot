@@ -368,7 +368,7 @@ public:
 	void set_hex_visible(bool p_visible);
 	bool is_hex_visible() const;
 
-	Button * get_pick_btn(); 
+	Button *get_pick_btn();
 	void set_focus_on_line_edit();
 
 	ColorPicker();

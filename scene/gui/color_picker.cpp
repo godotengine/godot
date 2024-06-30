@@ -1810,8 +1810,8 @@ void ColorPicker::_bind_methods() {
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover, "tab_selected", "TabContainer");
 }
 
-Button * ColorPicker::get_pick_btn() {
-        return btn_pick;
+Button *ColorPicker::get_pick_btn() {
+	return btn_pick;
 }
 
 ColorPicker::ColorPicker() {
@@ -2203,7 +2203,8 @@ void ColorPickerButton::_bind_methods() {
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, ColorPickerButton, overbright_indicator, "overbright_indicator", "ColorPicker");
 }
 
-ColorPickerButton::ColorPickerButton(const String &p_text) : OptionButton(p_text) {
+ColorPickerButton::ColorPickerButton(const String &p_text) :
+		OptionButton(p_text) {
 	set_toggle_mode(true);
 }
 
