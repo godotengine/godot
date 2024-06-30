@@ -142,8 +142,9 @@ def detect_build_env_arch():
         if os.getenv("VCTOOLSINSTALLDIR"):
             host_path_index = os.getenv("PATH").upper().find(os.getenv("VCTOOLSINSTALLDIR").upper() + "BIN\\HOST")
             if host_path_index > -1:
-                first_path_arch = os.getenv("PATH").split(";")[0].rsplit("\\", 1)[-1].lower()
-                return msvc_target_aliases[first_path_arch]
+                first_path_arch = os.getenv("PATH")[host_path_index:].split(";")[0].rsplit("\\", 1)[-1].lower()
+                if first_path_arch in msvc_target_aliases.keys():
+                    return msvc_target_aliases[first_path_arch]
 
     msys_target_aliases = {
         "mingw32": "x86_32",

@@ -472,7 +472,7 @@ String TextEdit::Text::get_custom_word_separators() const {
 }
 
 String TextEdit::Text::get_default_word_separators() const {
-	String concat_separators = "´`~$^=+|<>";
+	String concat_separators = "!\"#$%&'()*+,-./:;<=>?@[\\]^`{|}~";
 	for (char32_t ch = 0x2000; ch <= 0x206F; ++ch) { // General punctuation block.
 		concat_separators += ch;
 	}

@@ -477,6 +477,9 @@
 		<member name="debug/gdscript/warnings/assert_always_true" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to true.
 		</member>
+		<member name="debug/gdscript/warnings/confusable_capture_reassignment" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable captured by a lambda is reassigned, since this does not modify the outer local variable.
+		</member>
 		<member name="debug/gdscript/warnings/confusable_identifier" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an identifier contains characters that can be confused with something else, like when mixing different alphabets.
 		</member>
@@ -2352,7 +2355,6 @@
 		</member>
 		<member name="rendering/anti_aliasing/quality/msaa_3d" type="int" setter="" getter="" default="0">
 			Sets the number of MSAA samples to use for 3D rendering (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware, especially integrated graphics due to their limited memory bandwidth. See also [member rendering/scaling_3d/mode] for supersampling, which provides higher quality but is much more expensive. This has no effect on shader-induced aliasing or texture aliasing.
-			[b]Note:[/b] MSAA is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="rendering/anti_aliasing/quality/screen_space_aa" type="int" setter="" getter="" default="0">
 			Sets the screen-space antialiasing mode for the default screen [Viewport]. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry. The blurriness is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]).
@@ -2924,11 +2926,11 @@
 		</member>
 		<member name="xr/openxr/foveation_dynamic" type="bool" setter="" getter="" default="false">
 			If true and foveation is supported, will automatically adjust foveation level based on framerate up to the level set on [member xr/openxr/foveation_level].
-			[b]Note:[/b] Only works on compatibility renderer.
+			[b]Note:[/b] Only works on the Compatibility rendering method.
 		</member>
 		<member name="xr/openxr/foveation_level" type="int" setter="" getter="" default="&quot;0&quot;">
 			Applied foveation level if supported: 0 = off, 1 = low, 2 = medium, 3 = high.
-			[b]Note:[/b] Only works on compatibility renderer.
+			[b]Note:[/b] Only works on the Compatibility rendering method. On platforms other than Android, if [member rendering/anti_aliasing/quality/msaa_3d] is enabled, this feature will be disabled.
 		</member>
 		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">
 			Specify the default reference space.

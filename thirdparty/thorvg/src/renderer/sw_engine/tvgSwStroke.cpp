@@ -238,7 +238,7 @@ static void _outside(SwStroke& stroke, int32_t side, SwFixed lineLength)
     } else {
         //this is a mitered (pointed) or beveled (truncated) corner
         auto rotate = SIDE_TO_ROTATE(side);
-        auto bevel = (stroke.join == StrokeJoin::Bevel) ? true : false;
+        auto bevel = stroke.join == StrokeJoin::Bevel;
         SwFixed phi = 0;
         SwFixed thcos = 0;
 
@@ -816,7 +816,7 @@ void strokeReset(SwStroke* stroke, const RenderShape* rshape, const Matrix* tran
 
     stroke->width = HALF_STROKE(rshape->strokeWidth());
     stroke->cap = rshape->strokeCap();
-    stroke->miterlimit = static_cast<SwFixed>(rshape->strokeMiterlimit()) << 16;
+    stroke->miterlimit = static_cast<SwFixed>(rshape->strokeMiterlimit() * 65536.0f);
 
     //Save line join: it can be temporarily changed when stroking curves...
     stroke->joinSaved = stroke->join = rshape->strokeJoin();

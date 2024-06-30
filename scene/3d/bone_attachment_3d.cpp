@@ -239,9 +239,20 @@ int BoneAttachment3D::get_bone_idx() const {
 }
 
 void BoneAttachment3D::set_override_pose(bool p_override) {
+	if (override_pose == p_override) {
+		return;
+	}
+
 	override_pose = p_override;
 	set_notify_transform(override_pose);
 	set_process_internal(override_pose);
+	if (!override_pose && bone_idx >= 0) {
+		Skeleton3D *sk = _get_skeleton3d();
+		if (sk) {
+			sk->reset_bone_pose(bone_idx);
+		}
+	}
+
 	notify_property_list_changed();
 }
 

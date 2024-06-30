@@ -144,7 +144,7 @@ class AnimationBezierTrackEdit : public Control {
 
 	void _clear_selection();
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
-	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, real_t p_pos);
+	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, real_t p_pos, bool p_single);
 	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
 	void _change_selected_keys_handle_mode(Animation::HandleMode p_mode, bool p_auto = false);
 

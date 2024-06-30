@@ -1887,6 +1887,12 @@ void TileMapLayer::_update_self_texture_repeat(RS::CanvasItemTextureRepeat p_tex
 	emit_signal(CoreStringName(changed));
 }
 
+#ifdef TOOLS_ENABLED
+bool TileMapLayer::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	return tile_set.is_valid() && get_cell_source_id(local_to_map(p_point)) != TileSet::INVALID_SOURCE;
+}
+#endif
+
 void TileMapLayer::set_as_tile_map_internal_node(int p_index) {
 	// Compatibility with TileMap.
 	ERR_FAIL_NULL(get_parent());
