@@ -218,13 +218,14 @@ private:
 	};
 
 	struct ComputeInstructionList : InstructionList {
-		// No extra contents.
+		uint32_t breadcrumb;
 	};
 
 	struct DrawInstructionList : InstructionList {
 		RDD::RenderPassID render_pass;
 		RDD::FramebufferID framebuffer;
 		Rect2i region;
+		uint32_t breadcrumb;
 		LocalVector<RDD::RenderPassClearValue> clear_values;
 	};
 
@@ -296,6 +297,7 @@ private:
 
 	struct RecordedComputeListCommand : RecordedCommand {
 		uint32_t instruction_data_size = 0;
+		uint32_t breadcrumb = 0;
 
 		_FORCE_INLINE_ uint8_t *instruction_data() {
 			return reinterpret_cast<uint8_t *>(&this[1]);
@@ -312,6 +314,7 @@ private:
 		RDD::FramebufferID framebuffer;
 		RDD::CommandBufferType command_buffer_type;
 		Rect2i region;
+		uint32_t breadcrumb = 0;
 		uint32_t clear_values_count = 0;
 
 		_FORCE_INLINE_ RDD::RenderPassClearValue *clear_values() {
@@ -654,7 +657,7 @@ public:
 	void add_buffer_copy(RDD::BufferID p_src, ResourceTracker *p_src_tracker, RDD::BufferID p_dst, ResourceTracker *p_dst_tracker, RDD::BufferCopyRegion p_region);
 	void add_buffer_get_data(RDD::BufferID p_src, ResourceTracker *p_src_tracker, RDD::BufferID p_dst, RDD::BufferCopyRegion p_region);
 	void add_buffer_update(RDD::BufferID p_dst, ResourceTracker *p_dst_tracker, VectorView<RecordedBufferCopy> p_buffer_copies);
-	void add_compute_list_begin();
+	void add_compute_list_begin(RDD::BreadcrumbMarker p_phase = RDD::BreadcrumbMarker::NONE, uint32_t p_breadcrumb_data = 0);
 	void add_compute_list_bind_pipeline(RDD::PipelineID p_pipeline);
 	void add_compute_list_bind_uniform_set(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index);
 	void add_compute_list_dispatch(uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups);
@@ -664,7 +667,7 @@ public:
 	void add_compute_list_usage(ResourceTracker *p_tracker, ResourceUsage p_usage);
 	void add_compute_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages);
 	void add_compute_list_end();
-	void add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<RDD::RenderPassClearValue> p_clear_values, bool p_uses_color, bool p_uses_depth);
+	void add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<RDD::RenderPassClearValue> p_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb = 0);
 	void add_draw_list_bind_index_buffer(RDD::BufferID p_buffer, RDD::IndexBufferFormat p_format, uint32_t p_offset);
 	void add_draw_list_bind_pipeline(RDD::PipelineID p_pipeline, BitField<RDD::PipelineStageBits> p_pipeline_stage_bits);
 	void add_draw_list_bind_uniform_set(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index);

@@ -83,3 +83,43 @@ void RenderingContextDriver::window_destroy(DisplayServer::WindowID p_window) {
 
 	window_surface_map.erase(p_window);
 }
+
+const char *RenderingContextDriver::get_tracked_object_name(uint32_t p_type_index) const {
+	return "Tracking Unsupported by API";
+}
+
+uint64_t RenderingContextDriver::get_tracked_object_type_count() const {
+	return 0;
+}
+
+uint64_t RenderingContextDriver::get_driver_total_memory() const {
+	return 0;
+}
+
+uint64_t RenderingContextDriver::get_driver_allocation_count() const {
+	return 0;
+}
+
+uint64_t RenderingContextDriver::get_driver_memory_by_object_type(uint32_t) const {
+	return 0;
+}
+
+uint64_t RenderingContextDriver::get_driver_allocs_by_object_type(uint32_t) const {
+	return 0;
+}
+
+uint64_t RenderingContextDriver::get_device_total_memory() const {
+	return 0;
+}
+
+uint64_t RenderingContextDriver::get_device_allocation_count() const {
+	return 0;
+}
+
+uint64_t RenderingContextDriver::get_device_memory_by_object_type(uint32_t) const {
+	return 0;
+}
+
+uint64_t RenderingContextDriver::get_device_allocs_by_object_type(uint32_t) const {
+	return 0;
+}

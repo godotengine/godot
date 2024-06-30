@@ -42,7 +42,6 @@ Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/InitialActi
 Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/InitialAction/values/INITIAL_ACTION_MAX': value changed value in new API, from 6.0 to 3.
 Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/buffer_clear/arguments': size changed value in new API, from 4 to 3.
 Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/buffer_update/arguments': size changed value in new API, from 5 to 4.
-Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_begin/arguments': size changed value in new API, from 10 to 9.
 Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_clear/arguments': size changed value in new API, from 7 to 6.
 Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_copy/arguments': size changed value in new API, from 10 to 9.
 Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_resolve_multisample/arguments': size changed value in new API, from 3 to 2.
@@ -372,3 +371,14 @@ GH-91382
 Validate extension JSON: Error: Field 'classes/AudioStreamPlaybackPolyphonic/methods/play_stream/arguments': size changed value in new API, from 4 to 6.
 
 Optional arguments added. Compatibility methods registered.
+
+
+GH-90993
+--------
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_begin/arguments/9': type changed value in new API, from "Array" to "int".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_begin/arguments/9': default_value changed value in new API, from "Array[RID]([])" to "0".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_begin/arguments/9': type changed value in new API, from "typedarray::RID" to "int".
+
+draw_list_begin added a new optional debug argument called breadcrumb.
+There used to be an RID argument as arg #9 which was removed in GH-84976 but now we're adding a new one in the same location.
+No compatibility method was registered because the one created for GH-84976 is already handling this case.

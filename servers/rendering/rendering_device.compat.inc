@@ -86,7 +86,7 @@ RenderingDevice::FinalAction RenderingDevice::_convert_final_action_84976(FinalA
 }
 
 RenderingDevice::DrawListID RenderingDevice::_draw_list_begin_bind_compat_84976(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const TypedArray<RID> &p_storage_textures) {
-	return draw_list_begin(p_framebuffer, _convert_initial_action_84976(p_initial_color_action), _convert_final_action_84976(p_final_color_action), _convert_initial_action_84976(p_initial_depth_action), _convert_final_action_84976(p_final_depth_action), p_clear_color_values, p_clear_depth, p_clear_stencil, p_region);
+	return draw_list_begin(p_framebuffer, _convert_initial_action_84976(p_initial_color_action), _convert_final_action_84976(p_final_color_action), _convert_initial_action_84976(p_initial_depth_action), _convert_final_action_84976(p_final_depth_action), p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, RDD::BreadcrumbMarker::NONE);
 }
 
 RenderingDevice::ComputeListID RenderingDevice::_compute_list_begin_bind_compat_84976(bool p_allow_draw_overlap) {
