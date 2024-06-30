@@ -40,21 +40,340 @@
 #include "rendering_device_driver_vulkan.h"
 #include "vulkan_hooks.h"
 
+#if defined(VK_TRACK_DRIVER_MEMORY)
+/*************************************************/
+// Driver memory tracking
+/*************************************************/
+// Total driver memory and allocation amount.
+SafeNumeric<size_t> driver_memory_total_memory;
+SafeNumeric<size_t> driver_memory_total_alloc_count;
+// Amount of driver memory for every object type.
+SafeNumeric<size_t> driver_memory_tracker[RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_COUNT][RenderingContextDriverVulkan::VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT];
+// Amount of allocations for every object type.
+SafeNumeric<uint32_t> driver_memory_allocation_count[RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_COUNT][RenderingContextDriverVulkan::VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT];
+#endif
+
+#if defined(VK_TRACK_DEVICE_MEMORY)
+/*************************************************/
+// Device memory report
+/*************************************************/
+// Total device memory and allocation amount.
+HashMap<uint64_t, size_t> memory_report_table;
+// Total memory and allocation amount.
+SafeNumeric<uint64_t> memory_report_total_memory;
+SafeNumeric<uint64_t> memory_report_total_alloc_count;
+// Amount of device memory for every object type.
+SafeNumeric<size_t> memory_report_mem_usage[RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_COUNT];
+// Amount of device memory allocations for every object type.
+SafeNumeric<size_t> memory_report_allocation_count[RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_COUNT];
+#endif
+
+const char *RenderingContextDriverVulkan::get_tracked_object_name(uint32_t p_type_index) const {
+#if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
+	static constexpr const char *vkTrackedObjectTypeNames[] = { "UNKNOWN",
+		"INSTANCE",
+		"PHYSICAL_DEVICE",
+		"DEVICE",
+		"QUEUE",
+		"SEMAPHORE",
+		"COMMAND_BUFFER",
+		"FENCE",
+		"DEVICE_MEMORY",
+		"BUFFER",
+		"IMAGE",
+		"EVENT",
+		"QUERY_POOL",
+		"BUFFER_VIEW",
+		"IMAGE_VIEW",
+		"SHADER_MODULE",
+		"PIPELINE_CACHE",
+		"PIPELINE_LAYOUT",
+		"RENDER_PASS",
+		"PIPELINE",
+		"DESCRIPTOR_SET_LAYOUT",
+		"SAMPLER",
+		"DESCRIPTOR_POOL",
+		"DESCRIPTOR_SET",
+		"FRAMEBUFFER",
+		"COMMAND_POOL",
+		"DESCRIPTOR_UPDATE_TEMPLATE_KHR",
+		"SURFACE_KHR",
+		"SWAPCHAIN_KHR",
+		"DEBUG_UTILS_MESSENGER_EXT",
+		"DEBUG_REPORT_CALLBACK_EXT",
+		"ACCELERATION_STRUCTURE",
+		"VMA_BUFFER_OR_IMAGE" };
+
+	return vkTrackedObjectTypeNames[p_type_index];
+#else
+	return "VK_TRACK_DRIVER_* disabled at build time";
+#endif
+}
+
+#if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
+uint64_t RenderingContextDriverVulkan::get_tracked_object_type_count() const {
+	return VK_TRACKED_OBJECT_TYPE_COUNT;
+}
+#endif
+
+#if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
+RenderingContextDriverVulkan::VkTrackedObjectType vk_object_to_tracked_object(VkObjectType p_type) {
+	if (p_type > VK_OBJECT_TYPE_COMMAND_POOL && p_type != (VkObjectType)RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_VMA) {
+		switch (p_type) {
+			case VK_OBJECT_TYPE_SURFACE_KHR:
+				return RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_SURFACE;
+			case VK_OBJECT_TYPE_SWAPCHAIN_KHR:
+				return RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_SWAPCHAIN;
+			case VK_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT:
+				return RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT;
+			case VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT:
+				return RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT;
+			default:
+				_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Unknown VkObjectType enum value " + itos((uint32_t)p_type) + ".Please add it to VkTrackedObjectType, switch statement in "
+																																 "vk_object_to_tracked_object and get_tracked_object_name.",
+						(int)p_type);
+				return (RenderingContextDriverVulkan::VkTrackedObjectType)VK_OBJECT_TYPE_UNKNOWN;
+		}
+	}
+
+	return (RenderingContextDriverVulkan::VkTrackedObjectType)p_type;
+}
+#endif
+
+#if defined(VK_TRACK_DEVICE_MEMORY)
+uint64_t RenderingContextDriverVulkan::get_device_total_memory() const {
+	return memory_report_total_memory.get();
+}
+
+uint64_t RenderingContextDriverVulkan::get_device_allocation_count() const {
+	return memory_report_total_alloc_count.get();
+}
+
+uint64_t RenderingContextDriverVulkan::get_device_memory_by_object_type(uint32_t p_type) const {
+	return memory_report_mem_usage[p_type].get();
+}
+
+uint64_t RenderingContextDriverVulkan::get_device_allocs_by_object_type(uint32_t p_type) const {
+	return memory_report_allocation_count[p_type].get();
+}
+#endif
+
+#if defined(VK_TRACK_DRIVER_MEMORY)
+uint64_t RenderingContextDriverVulkan::get_driver_total_memory() const {
+	return driver_memory_total_memory.get();
+}
+
+uint64_t RenderingContextDriverVulkan::get_driver_allocation_count() const {
+	return driver_memory_total_alloc_count.get();
+}
+
+uint64_t RenderingContextDriverVulkan::get_driver_memory_by_object_type(uint32_t p_type) const {
+	uint64_t ret = 0;
+	for (uint32_t i = 0; i < VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT; i++) {
+		ret += driver_memory_tracker[p_type][i].get();
+	}
+
+	return ret;
+}
+
+uint64_t RenderingContextDriverVulkan::get_driver_allocs_by_object_type(uint32_t p_type) const {
+	uint64_t ret = 0;
+	for (uint32_t i = 0; i < VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT; i++) {
+		ret += driver_memory_allocation_count[p_type][i].get();
+	}
+
+	return ret;
+}
+#endif
+
+#if defined(VK_TRACK_DEVICE_MEMORY)
+void RenderingContextDriverVulkan::memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT *p_callback_data, void *p_user_data) {
+	if (!p_callback_data) {
+		return;
+	}
+	const RenderingContextDriverVulkan::VkTrackedObjectType obj_type = vk_object_to_tracked_object(p_callback_data->objectType);
+	uint64_t obj_id = p_callback_data->memoryObjectId;
+
+	if (p_callback_data->type == VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_ALLOCATE_EXT) {
+		// Realloc, update size
+		if (memory_report_table.has(obj_id)) {
+			memory_report_total_memory.sub(memory_report_table[obj_id]);
+			memory_report_mem_usage[obj_type].sub(memory_report_table[obj_id]);
+
+			memory_report_total_memory.add(p_callback_data->size);
+			memory_report_mem_usage[obj_type].add(p_callback_data->size);
+
+			memory_report_table[p_callback_data->memoryObjectId] = p_callback_data->size;
+		} else {
+			memory_report_table[obj_id] = p_callback_data->size;
+
+			memory_report_total_alloc_count.increment();
+			memory_report_allocation_count[obj_type].increment();
+			memory_report_mem_usage[obj_type].add(p_callback_data->size);
+			memory_report_total_memory.add(p_callback_data->size);
+		}
+	} else if (p_callback_data->type == VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_FREE_EXT) {
+		if (memory_report_table.has(obj_id)) {
+			memory_report_total_alloc_count.decrement();
+			memory_report_allocation_count[obj_type].decrement();
+			memory_report_mem_usage[obj_type].sub(p_callback_data->size);
+			memory_report_total_memory.sub(p_callback_data->size);
+
+			memory_report_table.remove(memory_report_table.find(obj_id));
+		}
+	}
+}
+#endif
+
+VkAllocationCallbacks *RenderingContextDriverVulkan::get_allocation_callbacks(VkObjectType p_type) {
+#if !defined(VK_TRACK_DRIVER_MEMORY)
+	return nullptr;
+#else
+	struct TrackedMemHeader {
+		size_t size;
+		VkSystemAllocationScope allocation_scope;
+		VkTrackedObjectType type;
+	};
+	VkAllocationCallbacks tracking_callbacks = {
+		// Allocation function
+		nullptr,
+		[](
+				void *p_user_data,
+				size_t size,
+				size_t alignment,
+				VkSystemAllocationScope allocation_scope) -> void * {
+			static constexpr size_t tracking_data_size = 32;
+			VkTrackedObjectType type = static_cast<VkTrackedObjectType>(*reinterpret_cast<VkTrackedObjectType *>(p_user_data));
+
+			driver_memory_total_memory.add(size);
+			driver_memory_total_alloc_count.increment();
+			driver_memory_tracker[type][allocation_scope].add(size);
+			driver_memory_allocation_count[type][allocation_scope].increment();
+
+			alignment = MAX(alignment, tracking_data_size);
+
+			uint8_t *ret = reinterpret_cast<uint8_t *>(Memory::alloc_aligned_static(size + alignment, alignment));
+			if (ret == nullptr) {
+				return nullptr;
+			}
+
+			// Track allocation
+			TrackedMemHeader *header = reinterpret_cast<TrackedMemHeader *>(ret);
+			header->size = size;
+			header->allocation_scope = allocation_scope;
+			header->type = type;
+			*reinterpret_cast<size_t *>(ret + alignment - sizeof(size_t)) = alignment;
+
+			// Return first available chunk of memory
+			return ret + alignment;
+		},
+
+		// Reallocation function
+		[](
+				void *p_user_data,
+				void *p_original,
+				size_t size,
+				size_t alignment,
+				VkSystemAllocationScope allocation_scope) -> void * {
+			if (p_original == nullptr) {
+				VkObjectType type = static_cast<VkObjectType>(*reinterpret_cast<uint32_t *>(p_user_data));
+				return get_allocation_callbacks(type)->pfnAllocation(p_user_data, size, alignment, allocation_scope);
+			}
+
+			uint8_t *mem = reinterpret_cast<uint8_t *>(p_original);
+			// Retrieve alignment
+			alignment = *reinterpret_cast<size_t *>(mem - sizeof(size_t));
+			// Retrieve allocation data
+			TrackedMemHeader *header = reinterpret_cast<TrackedMemHeader *>(mem - alignment);
+
+			// Update allocation size
+			driver_memory_total_memory.sub(header->size);
+			driver_memory_total_memory.add(size);
+			driver_memory_tracker[header->type][header->allocation_scope].sub(header->size);
+			driver_memory_tracker[header->type][header->allocation_scope].add(size);
+
+			uint8_t *ret = reinterpret_cast<uint8_t *>(Memory::realloc_aligned_static(header, size + alignment, header->size + alignment, alignment));
+			if (ret == nullptr) {
+				return nullptr;
+			}
+			// Update tracker
+			header = reinterpret_cast<TrackedMemHeader *>(ret);
+			header->size = size;
+			return ret + alignment;
+		},
+
+		// Free function
+		[](
+				void *p_user_data,
+				void *p_memory) {
+			if (!p_memory) {
+				return;
+			}
+
+			uint8_t *mem = reinterpret_cast<uint8_t *>(p_memory);
+			size_t alignment = *reinterpret_cast<size_t *>(mem - sizeof(size_t));
+			TrackedMemHeader *header = reinterpret_cast<TrackedMemHeader *>(mem - alignment);
+
+			driver_memory_total_alloc_count.decrement();
+			driver_memory_total_memory.sub(header->size);
+			driver_memory_tracker[header->type][header->allocation_scope].sub(header->size);
+			driver_memory_allocation_count[header->type][header->allocation_scope].decrement();
+
+			Memory::free_aligned_static(header);
+		},
+		// Internal allocation / deallocation. We don't track them as they cannot really be controlled or optimized by the programmer.
+		[](
+				void *p_user_data,
+				size_t size,
+				VkInternalAllocationType allocation_type,
+				VkSystemAllocationScope allocation_scope) {
+		},
+		[](
+				void *p_user_data,
+				size_t size,
+				VkInternalAllocationType allocation_type,
+				VkSystemAllocationScope allocation_scope) {
+		},
+	};
+
+	// Create a callback per object type
+	static VkAllocationCallbacks object_callbacks[VK_TRACKED_OBJECT_TYPE_COUNT] = {};
+	static uint32_t object_user_data[VK_TRACKED_OBJECT_TYPE_COUNT] = {};
+
+	// Only build the first time
+	if (!object_callbacks[0].pfnAllocation) {
+		for (uint32_t c = 0; c < VK_TRACKED_OBJECT_TYPE_COUNT; ++c) {
+			object_callbacks[c] = tracking_callbacks;
+			object_user_data[c] = c;
+			object_callbacks[c].pUserData = &object_user_data[c];
+
+			for (uint32_t i = 0; i < VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT; i++) {
+				driver_memory_tracker[c][i].set(0);
+				driver_memory_allocation_count[c][i].set(0);
+			}
+		}
+	}
+
+	uint32_t type_index = vk_object_to_tracked_object(p_type);
+	return &object_callbacks[type_index];
+#endif
+}
+
 RenderingContextDriverVulkan::RenderingContextDriverVulkan() {
 	// Empty constructor.
 }
 
 RenderingContextDriverVulkan::~RenderingContextDriverVulkan() {
 	if (debug_messenger != VK_NULL_HANDLE && functions.DestroyDebugUtilsMessengerEXT != nullptr) {
-		functions.DestroyDebugUtilsMessengerEXT(instance, debug_messenger, nullptr);
+		functions.DestroyDebugUtilsMessengerEXT(instance, debug_messenger, get_allocation_callbacks(VK_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT));
 	}
 
 	if (debug_report != VK_NULL_HANDLE && functions.DestroyDebugReportCallbackEXT != nullptr) {
-		functions.DestroyDebugReportCallbackEXT(instance, debug_report, nullptr);
+		functions.DestroyDebugReportCallbackEXT(instance, debug_report, get_allocation_callbacks(VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT));
 	}
 
 	if (instance != VK_NULL_HANDLE) {
-		vkDestroyInstance(instance, nullptr);
+		vkDestroyInstance(instance, get_allocation_callbacks(VK_OBJECT_TYPE_INSTANCE));
 	}
 }
 
@@ -441,7 +760,7 @@ Error RenderingContextDriverVulkan::_initialize_instance() {
 			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "GetProcAddr: Failed to init VK_EXT_debug_utils\nGetProcAddr: Failure");
 		}
 
-		VkResult res = functions.CreateDebugUtilsMessengerEXT(instance, &debug_messenger_create_info, nullptr, &debug_messenger);
+		VkResult res = functions.CreateDebugUtilsMessengerEXT(instance, &debug_messenger_create_info, get_allocation_callbacks(VK_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT), &debug_messenger);
 		switch (res) {
 			case VK_SUCCESS:
 				break;
@@ -461,7 +780,7 @@ Error RenderingContextDriverVulkan::_initialize_instance() {
 			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "GetProcAddr: Failed to init VK_EXT_debug_report\nGetProcAddr: Failure");
 		}
 
-		VkResult res = functions.CreateDebugReportCallbackEXT(instance, &debug_report_callback_create_info, nullptr, &debug_report);
+		VkResult res = functions.CreateDebugReportCallbackEXT(instance, &debug_report_callback_create_info, get_allocation_callbacks(VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT), &debug_report);
 		switch (res) {
 			case VK_SUCCESS:
 				break;
@@ -560,7 +879,7 @@ Error RenderingContextDriverVulkan::_create_vulkan_instance(const VkInstanceCrea
 	if (VulkanHooks::get_singleton() != nullptr) {
 		return VulkanHooks::get_singleton()->create_vulkan_instance(p_create_info, r_instance) ? OK : ERR_CANT_CREATE;
 	} else {
-		VkResult err = vkCreateInstance(p_create_info, nullptr, r_instance);
+		VkResult err = vkCreateInstance(p_create_info, get_allocation_callbacks(VK_OBJECT_TYPE_INSTANCE), r_instance);
 		ERR_FAIL_COND_V_MSG(err == VK_ERROR_INCOMPATIBLE_DRIVER, ERR_CANT_CREATE,
 				"Cannot find a compatible Vulkan installable client driver (ICD).\n\n"
 				"vkCreateInstance Failure");
@@ -679,7 +998,7 @@ bool RenderingContextDriverVulkan::surface_get_needs_resize(SurfaceID p_surface)
 
 void RenderingContextDriverVulkan::surface_destroy(SurfaceID p_surface) {
 	Surface *surface = (Surface *)(p_surface);
-	vkDestroySurfaceKHR(instance, surface->vk_surface, nullptr);
+	vkDestroySurfaceKHR(instance, surface->vk_surface, get_allocation_callbacks(VK_OBJECT_TYPE_SURFACE_KHR));
 	memdelete(surface);
 }
 

@@ -500,6 +500,8 @@ Error RenderingDevice::buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t 
 Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data) {
 	_THREAD_SAFE_METHOD_
 
+	copy_bytes_count += p_size;
+
 	ERR_FAIL_COND_V_MSG(draw_list, ERR_INVALID_PARAMETER,
 			"Updating buffers is forbidden during creation of a draw list");
 	ERR_FAIL_COND_V_MSG(compute_list, ERR_INVALID_PARAMETER,
@@ -513,7 +515,21 @@ Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p
 	ERR_FAIL_COND_V_MSG(p_offset + p_size > buffer->size, ERR_INVALID_PARAMETER,
 			"Attempted to write buffer (" + itos((p_offset + p_size) - buffer->size) + " bytes) past the end.");
 
+	gpu_copy_count++;
+
 	return _buffer_update(buffer, p_buffer, p_offset, (uint8_t *)p_data, p_size, true);
+}
+
+String RenderingDevice::get_perf_report() const {
+	return perf_report_text;
+}
+
+void RenderingDevice::update_perf_report() {
+	perf_report_text = " gpu:" + String::num_int64(gpu_copy_count);
+	perf_report_text += " bytes:" + String::num_int64(copy_bytes_count);
+
+	gpu_copy_count = 0;
+	copy_bytes_count = 0;
 }
 
 Error RenderingDevice::buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size) {
@@ -3575,7 +3591,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin_for_screen(DisplayS
 	clear_value.color = p_clear_color;
 
 	RDD::RenderPassID render_pass = driver->swap_chain_get_render_pass(sc_it->value);
-	draw_graph.add_draw_list_begin(render_pass, fb_it->value, viewport, clear_value, true, false);
+	draw_graph.add_draw_list_begin(render_pass, fb_it->value, viewport, clear_value, true, false, RDD::BreadcrumbMarker::BLIT_PASS);
 
 	_draw_list_set_viewport(viewport);
 	_draw_list_set_scissor(viewport);
@@ -3624,7 +3640,7 @@ Error RenderingDevice::_draw_list_setup_framebuffer(Framebuffer *p_framebuffer, 
 	return OK;
 }
 
-Error RenderingDevice::_draw_list_render_pass_begin(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i p_viewport_offset, Point2i p_viewport_size, RDD::FramebufferID p_framebuffer_driver_id, RDD::RenderPassID p_render_pass) {
+Error RenderingDevice::_draw_list_render_pass_begin(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i p_viewport_offset, Point2i p_viewport_size, RDD::FramebufferID p_framebuffer_driver_id, RDD::RenderPassID p_render_pass, uint32_t p_breadcrumb) {
 	thread_local LocalVector<RDD::RenderPassClearValue> clear_values;
 	thread_local LocalVector<RDG::ResourceTracker *> resource_trackers;
 	thread_local LocalVector<RDG::ResourceUsage> resource_usages;
@@ -3672,7 +3688,7 @@ Error RenderingDevice::_draw_list_render_pass_begin(Framebuffer *p_framebuffer, 
 		}
 	}
 
-	draw_graph.add_draw_list_begin(p_render_pass, p_framebuffer_driver_id, Rect2i(p_viewport_offset, p_viewport_size), clear_values, uses_color, uses_depth);
+	draw_graph.add_draw_list_begin(p_render_pass, p_framebuffer_driver_id, Rect2i(p_viewport_offset, p_viewport_size), clear_values, uses_color, uses_depth, p_breadcrumb);
 	draw_graph.add_draw_list_usages(resource_trackers, resource_usages);
 
 	// Mark textures as bound.
@@ -3734,7 +3750,7 @@ void RenderingDevice::_draw_list_insert_clear_region(DrawList *p_draw_list, Fram
 	draw_graph.add_draw_list_clear_attachments(clear_attachments, rect);
 }
 
-RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region) {
+RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, uint32_t p_breadcrumb) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V_MSG(draw_list != nullptr, INVALID_ID, "Only one draw list can be active at the same time.");
@@ -3780,7 +3796,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 	Error err = _draw_list_setup_framebuffer(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, &fb_driver_id, &render_pass, &draw_list_subpass_count);
 	ERR_FAIL_COND_V(err != OK, INVALID_ID);
 
-	err = _draw_list_render_pass_begin(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, viewport_offset, viewport_size, fb_driver_id, render_pass);
+	err = _draw_list_render_pass_begin(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, viewport_offset, viewport_size, fb_driver_id, render_pass, p_breadcrumb);
 
 	if (err != OK) {
 		return INVALID_ID;
@@ -5195,6 +5211,8 @@ void RenderingDevice::_begin_frame() {
 		frames[frame].draw_fence_signaled = false;
 	}
 
+	update_perf_report();
+
 	// Begin recording on the frame's command buffers.
 	driver->begin_segment(frame, frames_drawn++);
 	driver->command_buffer_begin(frames[frame].setup_command_buffer);
@@ -5705,6 +5723,46 @@ uint64_t RenderingDevice::get_driver_resource(DriverResource p_resource, RID p_r
 	return driver->get_resource_native_handle(p_resource, driver_id);
 }
 
+String RenderingDevice::get_tracked_object_name(uint32_t p_type_index) const {
+	return context->get_tracked_object_name(p_type_index);
+}
+
+uint64_t RenderingDevice::get_tracked_object_type_count() const {
+	return context->get_tracked_object_type_count();
+}
+
+uint64_t RenderingDevice::get_driver_total_memory() const {
+	return context->get_driver_total_memory();
+}
+
+uint64_t RenderingDevice::get_driver_allocation_count() const {
+	return context->get_driver_allocation_count();
+}
+
+uint64_t RenderingDevice::get_driver_memory_by_object_type(uint32_t p_type) const {
+	return context->get_driver_memory_by_object_type(p_type);
+}
+
+uint64_t RenderingDevice::get_driver_allocs_by_object_type(uint32_t p_type) const {
+	return context->get_driver_allocs_by_object_type(p_type);
+}
+
+uint64_t RenderingDevice::get_device_total_memory() const {
+	return context->get_device_total_memory();
+}
+
+uint64_t RenderingDevice::get_device_allocation_count() const {
+	return context->get_device_allocation_count();
+}
+
+uint64_t RenderingDevice::get_device_memory_by_object_type(uint32_t type) const {
+	return context->get_device_memory_by_object_type(type);
+}
+
+uint64_t RenderingDevice::get_device_allocs_by_object_type(uint32_t type) const {
+	return context->get_device_allocs_by_object_type(type);
+}
+
 uint32_t RenderingDevice::get_captured_timestamps_count() const {
 	return frames[frame].timestamp_result_count;
 }
@@ -5947,7 +6005,7 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("draw_list_begin_for_screen", "screen", "clear_color"), &RenderingDevice::draw_list_begin_for_screen, DEFVAL(DisplayServer::MAIN_WINDOW_ID), DEFVAL(Color()));
 
-	ClassDB::bind_method(D_METHOD("draw_list_begin", "framebuffer", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region"), &RenderingDevice::draw_list_begin, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2()));
+	ClassDB::bind_method(D_METHOD("draw_list_begin", "framebuffer", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "breadcrumb"), &RenderingDevice::draw_list_begin, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2()), DEFVAL(0));
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("draw_list_begin_split", "framebuffer", "splits", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::_draw_list_begin_split, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2()), DEFVAL(TypedArray<RID>()));
 #endif
@@ -6016,6 +6074,19 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_memory_usage", "type"), &RenderingDevice::get_memory_usage);
 
 	ClassDB::bind_method(D_METHOD("get_driver_resource", "resource", "rid", "index"), &RenderingDevice::get_driver_resource);
+
+	ClassDB::bind_method(D_METHOD("get_perf_report"), &RenderingDevice::get_perf_report);
+
+	ClassDB::bind_method(D_METHOD("get_tracked_object_name", "type_index"), &RenderingDevice::get_tracked_object_name);
+	ClassDB::bind_method(D_METHOD("get_tracked_object_type_count"), &RenderingDevice::get_tracked_object_type_count);
+	ClassDB::bind_method(D_METHOD("get_driver_total_memory"), &RenderingDevice::get_driver_total_memory);
+	ClassDB::bind_method(D_METHOD("get_driver_allocation_count"), &RenderingDevice::get_driver_allocation_count);
+	ClassDB::bind_method(D_METHOD("get_driver_memory_by_object_type", "type"), &RenderingDevice::get_driver_memory_by_object_type);
+	ClassDB::bind_method(D_METHOD("get_driver_allocs_by_object_type", "type"), &RenderingDevice::get_driver_allocs_by_object_type);
+	ClassDB::bind_method(D_METHOD("get_device_total_memory"), &RenderingDevice::get_device_total_memory);
+	ClassDB::bind_method(D_METHOD("get_device_allocation_count"), &RenderingDevice::get_device_allocation_count);
+	ClassDB::bind_method(D_METHOD("get_device_memory_by_object_type", "type"), &RenderingDevice::get_device_memory_by_object_type);
+	ClassDB::bind_method(D_METHOD("get_device_allocs_by_object_type", "type"), &RenderingDevice::get_device_allocs_by_object_type);
 
 	BIND_ENUM_CONSTANT(DEVICE_TYPE_OTHER);
 	BIND_ENUM_CONSTANT(DEVICE_TYPE_INTEGRATED_GPU);
@@ -6539,6 +6610,20 @@ void RenderingDevice::_bind_methods() {
 
 	BIND_CONSTANT(INVALID_ID);
 	BIND_CONSTANT(INVALID_FORMAT_ID);
+
+	BIND_ENUM_CONSTANT(NONE);
+	BIND_ENUM_CONSTANT(REFLECTION_PROBES);
+	BIND_ENUM_CONSTANT(SKY_PASS);
+	BIND_ENUM_CONSTANT(LIGHTMAPPER_PASS);
+	BIND_ENUM_CONSTANT(SHADOW_PASS_DIRECTIONAL);
+	BIND_ENUM_CONSTANT(SHADOW_PASS_CUBE);
+	BIND_ENUM_CONSTANT(OPAQUE_PASS);
+	BIND_ENUM_CONSTANT(ALPHA_PASS);
+	BIND_ENUM_CONSTANT(TRANSPARENT_PASS);
+	BIND_ENUM_CONSTANT(POST_PROCESSING_PASS);
+	BIND_ENUM_CONSTANT(BLIT_PASS);
+	BIND_ENUM_CONSTANT(UI_PASS);
+	BIND_ENUM_CONSTANT(DEBUG_PASS);
 }
 
 RenderingDevice::~RenderingDevice() {
