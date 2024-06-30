@@ -651,7 +651,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	tile_data_editors_tree->add_theme_constant_override("v_separation", 1);
 	tile_data_editors_tree->add_theme_constant_override("h_separation", 3);
 
-	Color group_color = get_theme_color(SNAME("prop_category"), EditorStringName(Editor));
+	Color group_color = get_theme_color(SNAME("separator_color"), EditorStringName(Editor));
 
 	// List of editors.
 	// --- Rendering ---
@@ -2451,6 +2451,8 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 
 			resize_handle = get_editor_theme_icon(SNAME("EditorHandle"));
 			resize_handle_disabled = get_editor_theme_icon(SNAME("EditorHandleDisabled"));
+
+			tile_data_editors_tree->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), "PopupPanel"));
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -2820,13 +2822,15 @@ void EditorPropertyTilePolygon::update_property() {
 	ERR_FAIL_COND(atlas_tile_proxy_object->get_edited_tiles().is_empty());
 
 	Ref<TileSetAtlasSource> tile_set_atlas_source = atlas_tile_proxy_object->get_edited_tile_set_atlas_source();
-	generic_tile_polygon_editor->set_tile_set(Ref<TileSet>(tile_set_atlas_source->get_tile_set()));
+	Ref<TileSet> tile_set(tile_set_atlas_source->get_tile_set());
+
+	// Update the polyugon editor tile_set.
+	generic_tile_polygon_editor->set_tile_set(tile_set);
 
 	// Set the background
 	Vector2i coords = atlas_tile_proxy_object->get_edited_tiles().front()->get().tile;
 	int alternative = atlas_tile_proxy_object->get_edited_tiles().front()->get().alternative;
-	TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
-	generic_tile_polygon_editor->set_background(tile_set_atlas_source->get_texture(), tile_set_atlas_source->get_tile_texture_region(coords), tile_data->get_texture_origin(), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
+	generic_tile_polygon_editor->set_background_tile(*tile_set_atlas_source, coords, alternative);
 
 	// Reset the polygons.
 	generic_tile_polygon_editor->clear_polygons();

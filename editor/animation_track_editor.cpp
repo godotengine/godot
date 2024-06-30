@@ -874,15 +874,15 @@ bool AnimationMultiTrackKeyEdit::_set(const StringName &p_name, const Variant &p
 							undo_redo->create_action(TTR("Animation Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 						}
 						Vector2 prev = animation->bezier_track_get_key_out_handle(track, key);
-						undo_redo->add_do_method(this, "_bezier_track_set_key_out_handle", track, key, value);
-						undo_redo->add_undo_method(this, "_bezier_track_set_key_out_handle", track, key, prev);
+						undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_out_handle", track, key, value);
+						undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_out_handle", track, key, prev);
 						update_obj = true;
 					} else if (name == "handle_mode") {
 						const Variant &value = p_value;
 
 						if (!setting) {
 							setting = true;
-							undo_redo->create_action(TTR("Animation Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+							undo_redo->create_action(TTR("Animation Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS, animation.ptr());
 						}
 						int prev_mode = animation->bezier_track_get_key_handle_mode(track, key);
 						Vector2 prev_in_handle = animation->bezier_track_get_key_in_handle(track, key);
@@ -5084,17 +5084,7 @@ void AnimationTrackEditor::_fetch_value_track_options(const NodePath &p_path, An
 	PropertyInfo h = _find_hint_for_track(animation->get_track_count() - 1, np);
 	animation->remove_track(animation->get_track_count() - 1); // Hack.
 	switch (h.type) {
-		case Variant::FLOAT: {
-#ifdef DISABLE_DEPRECATED
-			bool is_angle = h.type == Variant::FLOAT && h.hint_string.contains("radians_as_degrees");
-#else
-			bool is_angle = h.type == Variant::FLOAT && h.hint_string.contains("radians");
-#endif // DISABLE_DEPRECATED
-			if (is_angle) {
-				*r_interpolation_type = Animation::INTERPOLATION_LINEAR_ANGLE;
-			}
-			[[fallthrough]];
-		}
+		case Variant::FLOAT:
 		case Variant::VECTOR2:
 		case Variant::RECT2:
 		case Variant::VECTOR3:

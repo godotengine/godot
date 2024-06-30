@@ -992,6 +992,8 @@ public:
 
 	void primary_set_text(const String &p_text);
 
+	void commit_surfaces();
+
 	void set_frame();
 	bool get_reset_frame();
 	bool wait_frame_suspend_ms(int p_timeout);

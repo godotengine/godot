@@ -824,7 +824,7 @@ static AASpans* _AASpans(float ymin, float ymax, const SwImage* image, const SwB
     //Initialize X range
     auto height = yEnd - yStart;
 
-    aaSpans->lines = static_cast<AALine*>(calloc(height, sizeof(AALine)));
+    aaSpans->lines = static_cast<AALine*>(malloc(height * sizeof(AALine)));
 
     for (int32_t i = 0; i < height; i++) {
         aaSpans->lines[i].x[0] = INT32_MAX;
@@ -878,7 +878,7 @@ static void _calcHorizCoverage(AALine *lines, int32_t eidx, int32_t y, int32_t x
 /*
  * This Anti-Aliasing mechanism is originated from Hermet Park's idea.
  * To understand this AA logic, you can refer this page:
- * www.hermet.pe.kr/122 (hermetpark@gmail.com)
+ * https://uigraphics.tistory.com/1
 */
 static void _calcAAEdge(AASpans *aaSpans, int32_t eidx)
 {
@@ -924,6 +924,9 @@ static void _calcAAEdge(AASpans *aaSpans, int32_t eidx)
 
     //Calculates AA Edges
     for (y++; y < yEnd; y++) {
+
+        if (lines[y].x[0] == INT32_MAX) continue;
+
         //Ready tx
         if (eidx == 0) {
             tx[0] = pEdge.x;

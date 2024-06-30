@@ -284,8 +284,8 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	}
 
 	if (snapping_2d_transforms_to_pixel) {
-		final_xform.columns[2] = final_xform.columns[2].round();
-		parent_xform.columns[2] = parent_xform.columns[2].round();
+		final_xform.columns[2] = (final_xform.columns[2] + Point2(0.5, 0.5)).floor();
+		parent_xform.columns[2] = (parent_xform.columns[2] + Point2(0.5, 0.5)).floor();
 	}
 
 	final_xform = parent_xform * final_xform;

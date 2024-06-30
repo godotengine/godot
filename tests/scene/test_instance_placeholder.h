@@ -333,6 +333,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instantiate from placeholder with ov
 	}
 }
 
+#ifdef TOOLS_ENABLED
 TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an InstancePlaceholder with no overrides") {
 	GDREGISTER_CLASS(_TestInstancePlaceholderNode);
 
@@ -526,6 +527,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an
 	DirAccess::remove_file_or_error(internal_path);
 	DirAccess::remove_file_or_error(main_path);
 }
+#endif // TOOLS_ENABLED
 
 } //namespace TestInstancePlaceholder
 

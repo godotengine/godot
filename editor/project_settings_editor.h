@@ -123,6 +123,7 @@ public:
 	void set_plugins_page();
 	void set_general_page(const String &p_category);
 	void update_plugins();
+	void init_autoloads();
 
 	EditorAutoloadSettings *get_autoload_settings() { return autoload_settings; }
 	GroupSettingsEditor *get_group_settings() { return group_settings; }
