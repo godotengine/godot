@@ -227,7 +227,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	String shortcut;
 	VariantWriter::write_to_string(ED_GET_SHORTCUT("editor/stop_running_project"), shortcut);
 	OS::get_singleton()->set_environment("__GODOT_EDITOR_STOP_SHORTCUT__", shortcut);
-	// Pass the debugger run default scene shortcut to the running instance(s).		//changed by andre
+	// Pass the debugger run default scene shortcut to the running instance(s).
 	VariantWriter::write_to_string(ED_GET_SHORTCUT("editor/run_project"), shortcut);
 	OS::get_singleton()->set_environment("__GODOT_EDITOR_RUN_MAIN_SHORTCUT__", shortcut);
 	// Pass the debugger run current scene shortcut to the running instance(s).

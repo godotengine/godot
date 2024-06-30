@@ -795,14 +795,14 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		} else {
 			profiler->add_frame_metric(metric, true);
 		}
-	} else if (p_msg == "request_quit") {			// F8
+	} else if (p_msg == "request_quit") {
 		emit_signal(SNAME("stop_requested"));
 		_stop_and_notify();
 
-	} else if (p_msg == "play_main_scene") { 		// F5
+	} else if (p_msg == "play_main_scene") {
 		emit_signal(SNAME("play_main_scene_requested"));
 
-	} else if (p_msg == "play_current_scene") {		// F6
+	} else if (p_msg == "play_current_scene") {
 		emit_signal(SNAME("play_current_scene_requested"));
 
 	} else if (p_msg == "performance:profile_names") {
