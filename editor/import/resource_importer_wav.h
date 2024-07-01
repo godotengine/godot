@@ -32,11 +32,17 @@
 #define RESOURCE_IMPORTER_WAV_H
 
 #include "core/io/resource_importer.h"
+#include "scene/resources/audio_stream_wav.h"
 
 class ResourceImporterWAV : public ResourceImporter {
 	GDCLASS(ResourceImporterWAV, ResourceImporter);
 
+protected:
+	static void _bind_methods();
+
 public:
+	static Ref<AudioStreamWAV> load_from_file(const String &p_path, const Dictionary &p_options);
+
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;

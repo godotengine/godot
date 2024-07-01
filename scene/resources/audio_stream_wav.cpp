@@ -32,6 +32,7 @@
 
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
+#include "editor/import/resource_importer_wav.h"
 
 void AudioStreamPlaybackWAV::start(double p_from_pos) {
 	if (base->format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
@@ -740,6 +741,8 @@ Ref<AudioSample> AudioStreamWAV::generate_sample() const {
 }
 
 void AudioStreamWAV::_bind_methods() {
+	ClassDB::bind_static_method("AudioStreamWAV", D_METHOD("load_from_file", "path", "options"), &AudioStreamWAV::load_from_file, DEFVAL(Dictionary()));
+
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamWAV::set_data);
 	ClassDB::bind_method(D_METHOD("get_data"), &AudioStreamWAV::get_data);
 
@@ -780,6 +783,10 @@ void AudioStreamWAV::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOOP_FORWARD);
 	BIND_ENUM_CONSTANT(LOOP_PINGPONG);
 	BIND_ENUM_CONSTANT(LOOP_BACKWARD);
+}
+
+Ref<AudioStreamWAV> AudioStreamWAV::load_from_file(const String &p_path, const Dictionary &p_options) {
+	return ResourceImporterWAV::load_from_file(p_path, p_options);
 }
 
 AudioStreamWAV::AudioStreamWAV() {}
