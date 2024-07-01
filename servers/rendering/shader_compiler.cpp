@@ -185,7 +185,7 @@ static String f2sp0(float p_float) {
 	return num;
 }
 
-static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNode::Value> &p_values) {
+static String get_constant_text(SL::DataType p_type, const Vector<SL::Scalar> &p_values) {
 	switch (p_type) {
 		case SL::TYPE_BOOL:
 			return p_values[0].boolean ? "true" : "false";
