@@ -27,6 +27,13 @@
 			<param index="1" name="library" type="AnimationLibrary" />
 			<description>
 				Adds [param library] to the animation player, under the key [param name].
+				AnimationMixer has a global library by default with an empty string as key. For adding an animation to the global library:
+				[codeblocks]
+				[gdscript]
+				var global_library = mixer.get_animation_library("")
+				global_library.add_animation("animation_name", animation_resource)
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="advance">
