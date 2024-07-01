@@ -1862,6 +1862,53 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 	return ret;
 }
 
+bool Node::is_child_of_exposed_node(const Node *p_owner) const {
+	HashSet<const Node *> visited;
+	if (p_owner) {
+		const Node *n = p_owner->get_parent();
+		while (n) {
+			visited.insert(n);
+			n = n->data.parent;
+		}
+	}
+	const Node *common_parent = data.parent;
+	while (common_parent) {
+		if (!common_parent->get_scene_file_path().is_empty() || (p_owner && visited.has(common_parent))) {
+			break;
+		}
+		if (common_parent->is_exposed_in_owner()) {
+			return true;
+		}
+		common_parent = common_parent->data.parent;
+	}
+	return false;
+}
+
+bool Node::contains_exposed_nodes() const {
+	return !get_exposed_nodes().is_empty();
+}
+
+TypedArray<Node> Node::get_exposed_nodes(bool p_recursive) const {
+	ERR_THREAD_GUARD_V(TypedArray<Node>())
+	TypedArray<Node> ret;
+	_update_children_cache();
+	Node *const *cptr = data.children_cache.ptr();
+	int ccount = data.children_cache.size();
+	for (int i = 0; i < ccount; i++) {
+		if (!cptr[i]->get_scene_file_path().is_empty()) {
+			continue;
+		}
+		if (cptr[i]->is_exposed_in_owner()) {
+			ret.append(cptr[i]);
+		}
+		if (p_recursive) {
+			ret.append_array(cptr[i]->get_exposed_nodes(true));
+		}
+	}
+
+	return ret;
+}
+
 void Node::reparent(Node *p_parent, bool p_keep_global_transform) {
 	ERR_THREAD_GUARD
 	ERR_FAIL_NULL(p_parent);
@@ -1951,7 +1998,6 @@ bool Node::is_ancestor_of(const Node *p_node) const {
 		}
 		p = p->data.parent;
 	}
-
 	return false;
 }
 
@@ -2053,6 +2099,11 @@ void Node::_acquire_unique_name_in_owner() {
 		WARN_PRINT(vformat("Setting node name '%s' to be unique within scene for '%s', but it's already claimed by '%s'.\n'%s' is no longer set as having a unique name.",
 				get_name(), is_inside_tree() ? get_path() : data.owner->get_path_to(this), which_path, which_path));
 		data.unique_name_in_owner = false;
+		if (data.exposed_in_owner) {
+			WARN_PRINT(vformat("Setting node name '%s' to be exposed within scene for '%s', but it's already claimed by '%s'.\n'%s' is no longer set as being exposed.",
+					get_name(), is_inside_tree() ? get_path() : data.owner->get_path_to(this), which_path, which_path));
+			data.exposed_in_owner = false;
+		}
 		return;
 	}
 	data.owner->data.owned_unique_nodes[key] = this;
@@ -2060,6 +2111,9 @@ void Node::_acquire_unique_name_in_owner() {
 
 void Node::set_unique_name_in_owner(bool p_enabled) {
 	ERR_MAIN_THREAD_GUARD
+	if (!p_enabled && data.exposed_in_owner) {
+		set_exposed_in_owner(false);
+	}
 	if (data.unique_name_in_owner == p_enabled) {
 		return;
 	}
@@ -2078,6 +2132,23 @@ void Node::set_unique_name_in_owner(bool p_enabled) {
 
 bool Node::is_unique_name_in_owner() const {
 	return data.unique_name_in_owner;
+}
+
+void Node::set_exposed_in_owner(bool p_enabled) {
+	ERR_MAIN_THREAD_GUARD
+	if (data.exposed_in_owner == p_enabled) {
+		return;
+	}
+	data.exposed_in_owner = p_enabled;
+	if (p_enabled) {
+		set_unique_name_in_owner(p_enabled);
+	}
+
+	update_configuration_warnings();
+}
+
+bool Node::is_exposed_in_owner() const {
+	return data.exposed_in_owner;
 }
 
 void Node::set_owner(Node *p_owner) {
@@ -2190,17 +2261,30 @@ NodePath Node::get_path_to(const Node *p_node, bool p_use_unique_path) const {
 	Vector<StringName> path;
 	StringName up = String("..");
 
-	if (p_use_unique_path) {
+	if (p_use_unique_path || p_node->is_exposed_in_owner() || p_node->is_child_of_exposed_node(this)) {
 		n = p_node;
 
 		bool is_detected = false;
+		const Node *exposed = nullptr;
 		while (n != common_parent) {
-			if (n->is_unique_name_in_owner() && n->get_owner() == get_owner()) {
+			if (!exposed && n->is_exposed_in_owner()) {
+				exposed = n;
 				path.push_back(UNIQUE_NODE_PREFIX + String(n->get_name()));
-				is_detected = true;
-				break;
 			}
-			path.push_back(n->get_name());
+			if (!exposed) {
+				if (n->is_unique_name_in_owner() && n->get_owner() == get_owner()) {
+					path.push_back(UNIQUE_NODE_PREFIX + String(n->get_name()));
+					is_detected = true;
+					break;
+				}
+				path.push_back(n->get_name());
+			} else {
+				bool accessible = n == exposed || n->get_owner()->get_node_or_null(NodePath(UNIQUE_NODE_PREFIX + String(exposed->get_name())));
+				if (!accessible) {
+					exposed = nullptr;
+					path.push_back(n->get_name());
+				}
+			}
 			n = n->data.parent;
 		}
 
@@ -2495,6 +2579,10 @@ void Node::set_editable_instance(Node *p_node, bool p_editable) {
 	ERR_THREAD_GUARD
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_COND(!is_ancestor_of(p_node));
+	if (is_exposed_in_owner()) {
+		p_node->data.editable_instance = true;
+		return;
+	}
 	if (!p_editable) {
 		p_node->data.editable_instance = false;
 		// Avoid this flag being needlessly saved;
@@ -3502,6 +3590,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
 	ClassDB::bind_method(D_METHOD("find_child", "pattern", "recursive", "owned"), &Node::find_child, DEFVAL(true), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("find_children", "pattern", "type", "recursive", "owned"), &Node::find_children, DEFVAL(""), DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("find_exposed_nodes", "recursive"), &Node::get_exposed_nodes, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("find_parent", "pattern"), &Node::find_parent);
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
@@ -3613,6 +3702,9 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_unique_name_in_owner", "enable"), &Node::set_unique_name_in_owner);
 	ClassDB::bind_method(D_METHOD("is_unique_name_in_owner"), &Node::is_unique_name_in_owner);
+
+	ClassDB::bind_method(D_METHOD("set_exposed_in_owner", "enable"), &Node::set_exposed_in_owner);
+	ClassDB::bind_method(D_METHOD("is_exposed_in_owner"), &Node::is_exposed_in_owner);
 
 	ClassDB::bind_method(D_METHOD("atr", "message", "context"), &Node::atr, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("atr_n", "message", "plural_message", "n", "context"), &Node::atr_n, DEFVAL(""));
@@ -3750,6 +3842,7 @@ void Node::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exposed_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_exposed_in_owner", "is_exposed_in_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "", "get_multiplayer");
