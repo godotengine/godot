@@ -36,7 +36,7 @@
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 // Specialized DisplayServer for unittests based on DisplayServerHeadless, that
-// additionally supports rudimentary InputEvent handling and mouse position.
+// additionally supports things like mouse enter/exit events and clipboard.
 class DisplayServerMock : public DisplayServerHeadless {
 private:
 	friend class DisplayServer;
@@ -45,7 +45,6 @@ private:
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 	bool window_over = false;
 	Callable event_callback;
-	Callable input_event_callback;
 
 	String clipboard_text;
 	String primary_clipboard_text;
@@ -60,16 +59,6 @@ private:
 		r_error = OK;
 		RasterizerDummy::make_current();
 		return memnew(DisplayServerMock());
-	}
-
-	static void _dispatch_input_events(const Ref<InputEvent> &p_event) {
-		static_cast<DisplayServerMock *>(get_singleton())->_dispatch_input_event(p_event);
-	}
-
-	void _dispatch_input_event(const Ref<InputEvent> &p_event) {
-		if (input_event_callback.is_valid()) {
-			input_event_callback.call(p_event);
-		}
 	}
 
 	void _set_mouse_position(const Point2i &p_position) {
@@ -153,18 +142,9 @@ public:
 		event_callback = p_callable;
 	}
 
-	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override {
-		input_event_callback = p_callable;
-	}
-
 	static void register_mock_driver() {
 		register_create_function("mock", create_func, get_rendering_drivers_func);
 	}
-
-	DisplayServerMock() {
-		Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
-	}
-	~DisplayServerMock() {}
 };
 
 #endif // DISPLAY_SERVER_MOCK_H
