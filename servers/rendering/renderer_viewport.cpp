@@ -291,6 +291,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 			// Calculate the frames needed for volumetric fog to converge.
 			if (p_viewport->size != p_viewport->old_size && can_draw_3d) {
+				p_viewport->old_size = p_viewport->size;
 				float temporal_amount = RSG::scene->environment_get_volumetric_fog_temporal_reprojection_amount(environment);
 				float convergence_threshold = 0.01f;
 				p_viewport->frames_needed = Math::ceil(Math::log(convergence_threshold) / Math::log(temporal_amount));
