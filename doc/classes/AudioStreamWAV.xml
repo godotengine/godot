@@ -21,7 +21,7 @@
 				[codeblock]
 				func _ready():
 				    get_window().files_dropped.connect(_on_files_dropped)
-				
+
 				# This function will load the first file dropped as a WAV and play it in a new AudioStreamPlayer
 				# with a max Hz rate of 11025.
 				func _on_files_dropped(files):
