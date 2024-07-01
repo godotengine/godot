@@ -16,8 +16,20 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="options" type="Dictionary" default="{}" />
 			<description>
-				Creates a new AudioStreamWAV instance from the given file path.
-				The keys and values of [param options] match with the properties of [ResourceImporterWAV].
+				Creates a new AudioStreamWAV instance from the given file path. The keys and values of [param options] match with the properties of [ResourceImporterWAV]:
+				Example Usage:
+				[codeblock]
+				func _ready():
+				    get_window().files_dropped.connect(_on_files_dropped)
+				
+				# This function will load the first file dropped as a WAV and play it in a new AudioStreamPlayer
+				# with a max Hz rate of 11025.
+				func _on_files_dropped(files):
+				    var audio = AudioStreamPlayer.new()
+				    audio.stream = AudioStreamWAV.load_from_file(files[0], {"force/max_rate": true,
+				            "force/max_rate_hz": 11025})
+				    audio.play()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="save_to_wav">

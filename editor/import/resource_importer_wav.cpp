@@ -560,7 +560,3 @@ Ref<AudioStreamWAV> ResourceImporterWAV::load_from_file(const String &p_path, co
 
 ResourceImporterWAV::ResourceImporterWAV() {
 }
-
-void ResourceImporterWAV::_bind_methods() {
-	ClassDB::bind_static_method("ResourceImporterWAV", D_METHOD("load_from_file", "path", "options"), &ResourceImporterWAV::load_from_file, DEFVAL(Dictionary()));
-}

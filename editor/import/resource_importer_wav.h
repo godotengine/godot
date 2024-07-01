@@ -37,9 +37,6 @@
 class ResourceImporterWAV : public ResourceImporter {
 	GDCLASS(ResourceImporterWAV, ResourceImporter);
 
-protected:
-	static void _bind_methods();
-
 public:
 	static Ref<AudioStreamWAV> load_from_file(const String &p_path, const Dictionary &p_options);
 
