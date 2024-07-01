@@ -70,7 +70,7 @@ class NavigationAgent2D : public Node {
 	bool target_reached = false;
 	bool navigation_finished = true;
 	// No initialized on purpose
-	uint32_t update_frame_id = 0;
+	uint32_t update_frame_id = UINT32_MAX;
 
 protected:
 	static void _bind_methods();
