@@ -548,14 +548,14 @@ public:
 class OperatorEvaluatorEqualObject {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const ObjectID &a = VariantInternal::get_object_id(&p_left);
-		const ObjectID &b = VariantInternal::get_object_id(&p_right);
+		const Object *a = p_left.get_validated_object();
+		const Object *b = p_right.get_validated_object();
 		*r_ret = a == b;
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		const ObjectID &a = VariantInternal::get_object_id(left);
-		const ObjectID &b = VariantInternal::get_object_id(right);
+		const Object *a = left->get_validated_object();
+		const Object *b = right->get_validated_object();
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = a == b;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
@@ -567,12 +567,12 @@ public:
 class OperatorEvaluatorEqualObjectNil {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const Object *a = p_left.operator Object *();
+		const Object *a = p_left.get_validated_object();
 		*r_ret = a == nullptr;
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		const Object *a = left->operator Object *();
+		const Object *a = left->get_validated_object();
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = a == nullptr;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
@@ -584,12 +584,12 @@ public:
 class OperatorEvaluatorEqualNilObject {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const Object *b = p_right.operator Object *();
+		const Object *b = p_right.get_validated_object();
 		*r_ret = nullptr == b;
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		const Object *b = right->operator Object *();
+		const Object *b = right->get_validated_object();
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = nullptr == b;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
@@ -619,14 +619,14 @@ public:
 class OperatorEvaluatorNotEqualObject {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const ObjectID &a = VariantInternal::get_object_id(&p_left);
-		const ObjectID &b = VariantInternal::get_object_id(&p_right);
+		Object *a = p_left.get_validated_object();
+		Object *b = p_right.get_validated_object();
 		*r_ret = a != b;
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		const ObjectID &a = VariantInternal::get_object_id(left);
-		const ObjectID &b = VariantInternal::get_object_id(right);
+		Object *a = left->get_validated_object();
+		Object *b = right->get_validated_object();
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = a != b;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
@@ -638,12 +638,12 @@ public:
 class OperatorEvaluatorNotEqualObjectNil {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		Object *a = p_left.operator Object *();
+		Object *a = p_left.get_validated_object();
 		*r_ret = a != nullptr;
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		Object *a = left->operator Object *();
+		Object *a = left->get_validated_object();
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = a != nullptr;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
@@ -655,12 +655,12 @@ public:
 class OperatorEvaluatorNotEqualNilObject {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		Object *b = p_right.operator Object *();
+		Object *b = p_right.get_validated_object();
 		*r_ret = nullptr != b;
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		Object *b = right->operator Object *();
+		Object *b = right->get_validated_object();
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = nullptr != b;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
