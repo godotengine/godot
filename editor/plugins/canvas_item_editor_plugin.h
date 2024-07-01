@@ -188,6 +188,9 @@ private:
 		GRID_VISIBILITY_HIDE,
 	};
 
+	bool is_right_button_down = false;
+	Vector2 mouse_move_record;
+
 	bool selection_menu_additive_selection = false;
 
 	Tool tool = TOOL_SELECT;
