@@ -854,71 +854,8 @@ void MeshInstance::create_debug_tangents() {
 	}
 }
 
-bool MeshInstance::split_by_surface(Vector<Variant> p_destination_mesh_instances) {
-	ERR_FAIL_COND_V_MSG(!is_inside_tree(), false, "Source MeshInstance must be inside the SceneTree.");
-
-	// For simplicity we are requiring that the destination MeshInstances have the same parent
-	// as the source. This means we can use identical transforms.
-	Node *parent = get_parent();
-	ERR_FAIL_NULL_V_MSG(parent, false, "Source MeshInstance must have a parent node.");
-
-	// Bound function only support variants, so we need to convert to a list of MeshInstances.
-	Vector<MeshInstance *> mis;
-
-	for (int n = 0; n < p_destination_mesh_instances.size(); n++) {
-		MeshInstance *mi = Object::cast_to<MeshInstance>(p_destination_mesh_instances[n]);
-		if (mi) {
-			if (mi != this) {
-				ERR_FAIL_COND_V_MSG(mi->get_parent() != parent, false, "Destination MeshInstances must be siblings of the source MeshInstance.");
-
-				mis.push_back(mi);
-			} else {
-				ERR_FAIL_V_MSG(false, "Source MeshInstance cannot be a destination.");
-			}
-		} else {
-			ERR_FAIL_V_MSG(false, "Only MeshInstances can be split.");
-		}
-	}
-
-	ERR_FAIL_COND_V_MSG(!get_mesh().is_valid(), false, "Mesh is invalid.");
-	ERR_FAIL_COND_V_MSG(mis.size() != get_mesh()->get_surface_count(), false, "Number of surfaces and number of destination MeshInstances must match.");
-
-	// Go through each surface, and fill the relevant mesh instance.
-	const Mesh *source_mesh = get_mesh().ptr();
-	DEV_ASSERT(source_mesh);
-
-	ERR_FAIL_COND_V_MSG(source_mesh->get_surface_count() <= 1, false, "Source MeshInstance must contain multiple surfaces.");
-
-	for (int s = 0; s < source_mesh->get_surface_count(); s++) {
-		MergingTool::split_surface_to_mesh_instance(*this, s, *mis[s]);
-	}
-
-	return true;
-}
-
 bool MeshInstance::merge_meshes(Vector<Variant> p_list, bool p_use_global_space, bool p_check_compatibility, bool p_shadows_only) {
-	// Bound function only support variants, so we need to convert to a list of MeshInstances.
-	Vector<MeshInstance *> mis;
-
-	for (int n = 0; n < p_list.size(); n++) {
-		MeshInstance *mi = Object::cast_to<MeshInstance>(p_list[n]);
-		if (mi) {
-			if (mi != this) {
-				mis.push_back(mi);
-			} else {
-				ERR_PRINT("Destination MeshInstance cannot be a source.");
-			}
-		} else {
-			ERR_PRINT("Only MeshInstances can be merged.");
-		}
-	}
-
-	ERR_FAIL_COND_V(!mis.size(), "Array contains no MeshInstances");
-
-	if (p_shadows_only) {
-		return MergingTool::merge_shadow_meshes(*this, mis, p_use_global_space, p_check_compatibility);
-	}
-	return MergingTool::merge_meshes(*this, mis, p_use_global_space, p_check_compatibility);
+	return MergingTool::wrapped_merge_meshes(*this, p_list, p_use_global_space, p_check_compatibility, p_shadows_only, Mesh::STORAGE_MODE_GPU);
 }
 
 bool MeshInstance::is_mergeable_with(Node *p_other, bool p_shadows_only) const {

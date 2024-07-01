@@ -40,6 +40,87 @@
 #include "modules/csg/csg_shape.h"
 #endif
 
+bool MergingTool::wrapped_split_by_surface(const MeshInstance &p_source_mi, Vector<Variant> p_destination_mesh_instances, Mesh::StorageMode p_storage_mode) {
+	ERR_FAIL_COND_V_MSG(!p_source_mi.is_inside_tree(), false, "Source MeshInstance must be inside the SceneTree.");
+	ERR_FAIL_COND_V_MSG(!p_source_mi.get_mesh().is_valid(), false, "Source MeshInstance must have a valid mesh to split.");
+
+	// For simplicity we are requiring that the destination MeshInstances have the same parent
+	// as the source. This means we can use identical transforms.
+	Node *parent = p_source_mi.get_parent();
+	ERR_FAIL_NULL_V_MSG(parent, false, "Source MeshInstance must have a parent node.");
+
+	// Bound function only support variants, so we need to convert to a list of MeshInstances.
+	Vector<MeshInstance *> mis;
+
+	for (int n = 0; n < p_destination_mesh_instances.size(); n++) {
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_destination_mesh_instances[n]);
+
+		ERR_FAIL_NULL_V_MSG(mi, false, "Can only be split to MeshInstances.");
+		ERR_FAIL_COND_V_MSG(mi == &p_source_mi, false, "Source MeshInstance cannot be a destination.");
+		ERR_FAIL_COND_V_MSG(mi->get_parent() != parent, false, "Destination MeshInstances must be siblings of the source MeshInstance.");
+		mis.push_back(mi);
+	}
+
+	ERR_FAIL_COND_V_MSG(mis.size() != p_source_mi.get_mesh()->get_surface_count(), false, "Number of source surfaces and number of destination MeshInstances must match.");
+
+	// Go through each surface, and fill the relevant mesh instance.
+	const Mesh *source_mesh = p_source_mi.get_mesh().ptr();
+	DEV_ASSERT(source_mesh);
+
+	ERR_FAIL_COND_V_MSG(source_mesh->get_surface_count() <= 1, false, "Source MeshInstance must contain multiple surfaces.");
+
+	for (int s = 0; s < source_mesh->get_surface_count(); s++) {
+		MeshInstance &dest_mi = *mis[s];
+		if (split_surface_to_mesh_instance(p_source_mi, s, dest_mi)) {
+			// Change storage mode if required.
+#ifdef TOOLS_ENABLED
+			Ref<Mesh> rmesh = dest_mi.get_mesh();
+			if (rmesh.is_valid()) {
+				_mesh_set_storage_mode(rmesh.ptr(), p_storage_mode);
+			}
+#endif
+		}
+	}
+
+	return true;
+}
+
+bool MergingTool::wrapped_merge_meshes(MeshInstance &r_dest_mi, Vector<Variant> p_list, bool p_use_global_space, bool p_check_compatibility, bool p_shadows_only, Mesh::StorageMode p_storage_mode) {
+	// Bound function only support variants, so we need to convert to a list of MeshInstances.
+	Vector<MeshInstance *> mis;
+
+	for (int n = 0; n < p_list.size(); n++) {
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_list[n]);
+		if (mi) {
+			ERR_FAIL_COND_V_MSG(mi == &r_dest_mi, false, "Destination MeshInstance cannot be a source.");
+			mis.push_back(mi);
+		} else {
+			ERR_PRINT("Only MeshInstances can be merged.");
+		}
+	}
+
+	ERR_FAIL_COND_V_MSG(!mis.size(), false, "Array contains no MeshInstances");
+
+	bool result;
+	if (p_shadows_only) {
+		result = merge_shadow_meshes(r_dest_mi, mis, p_use_global_space, p_check_compatibility);
+	} else {
+		result = merge_meshes(r_dest_mi, mis, p_use_global_space, p_check_compatibility);
+	}
+
+	// Change storage mode if required.
+	if (result) {
+#ifdef TOOLS_ENABLED
+		Ref<Mesh> rmesh = r_dest_mi.get_mesh();
+		if (rmesh.is_valid()) {
+			_mesh_set_storage_mode(rmesh.ptr(), p_storage_mode);
+		}
+#endif
+	}
+
+	return result;
+}
+
 bool MergingTool::_is_material_opaque(const Ref<Material> &p_mat) {
 	if (p_mat.is_null()) {
 		return true;

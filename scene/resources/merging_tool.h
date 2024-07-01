@@ -46,9 +46,19 @@ struct CSGBrush;
 // #define GODOT_MERGING_VERBOSE
 #endif
 
-// NOTE : These merging and joining functions DO NOT move children, or delete source nodes. That is the responsibility of the caller.
+// NOTE : These merging and joining functions DO NOT move children, or delete source nodes.
+// That is the responsibility of the caller.
+
 class MergingTool {
 public:
+	////////////////////////////////////////////////////////////////////////////////////
+	// WRAPPED versions are accessible via script via MeshInstance.
+	// These have to cope with Variants as lists of MeshInstances is not easy from script.
+	static bool wrapped_merge_meshes(MeshInstance &r_dest_mi, Vector<Variant> p_list, bool p_use_global_space, bool p_check_compatibility, bool p_shadows_only, Mesh::StorageMode p_storage_mode);
+	static bool wrapped_split_by_surface(const MeshInstance &p_source_mi, Vector<Variant> p_destination_mesh_instances, Mesh::StorageMode p_storage_mode);
+
+	////////////////////////////////////////////////////////////////////////////////////
+
 	// Are two mesh instances mergeable with each other?
 	static bool is_mergeable_with(const MeshInstance &p_mi, const MeshInstance &p_other, bool p_check_surface_material_match);
 	static bool is_shadow_mergeable_with(const MeshInstance &p_mi, const MeshInstance &p_other);
