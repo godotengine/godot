@@ -85,7 +85,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	PopupMenu *highlighter_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
 
-	GotoLineDialog *goto_line_dialog = nullptr;
+	GotoLinePopup *goto_line_popup = nullptr;
 	ScriptEditorQuickOpen *quick_open = nullptr;
 	ConnectionInfoDialog *connection_info_dialog = nullptr;
 
