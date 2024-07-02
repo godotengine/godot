@@ -4463,6 +4463,20 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 			array[2] = 0;
 			array[3] = 0.25;
 			array[4] = 0;
+			if (created == false) {
+				int existing = animation->track_find_key(p_id.track_idx, time, Animation::FIND_MODE_APPROX);
+				if (existing != -1) {
+					Variant v = animation->track_get_key_value(p_id.track_idx, existing);
+					if (v.get_type() == Variant::ARRAY) {
+						Array vArray;
+						vArray = Array(v, 0, StringName(), Variant());
+						array[1] = vArray[1];
+						array[2] = vArray[2];
+						array[3] = vArray[3];
+						array[4] = vArray[4];
+					}
+				}
+			}
 			value = array;
 			bezier_edit_icon->set_disabled(false);
 
