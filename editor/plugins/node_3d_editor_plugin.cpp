@@ -5296,14 +5296,14 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_menu->get_popup()->add_submenu_node_item(TTR("Display Advanced..."), display_submenu, VIEW_DISPLAY_ADVANCED);
 
 	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_environment", TTR("View Environment")), VIEW_ENVIRONMENT);
-	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_gizmos", TTR("View Gizmos")), VIEW_GIZMOS);
-	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid_lines", TTR("View Grid")), VIEW_GRID);
-	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_information", TTR("View Information")), VIEW_INFORMATION);
-	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_fps", TTR("View Frame Time")), VIEW_FRAME_TIME);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_environment", TTR("View Environment"), KeyModifierMask::CMD_OR_CTRL | Key::E), VIEW_ENVIRONMENT);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_gizmos", TTR("View Gizmos"), KeyModifierMask::CMD_OR_CTRL | Key::I), VIEW_GIZMOS);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid_lines", TTR("View Grid"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::I), VIEW_GRID);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_information", TTR("View Information"), KeyModifierMask::CMD_OR_CTRL | Key::F), VIEW_INFORMATION);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_fps", TTR("View Frame Time"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F), VIEW_FRAME_TIME);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_ENVIRONMENT), true);
 	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_half_resolution", TTR("Half Resolution")), VIEW_HALF_RESOLUTION);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_half_resolution", TTR("Half Resolution"), KeyModifierMask::CMD_OR_CTRL | Key::U), VIEW_HALF_RESOLUTION);
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_audio_listener", TTR("Audio Listener")), VIEW_AUDIO_LISTENER);
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_audio_doppler", TTR("Enable Doppler")), VIEW_AUDIO_DOPPLER);
@@ -5311,7 +5311,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_GRID), true);
 
 	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_cinematic_preview", TTR("Cinematic Preview")), VIEW_CINEMATIC_PREVIEW);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT_ARRAY("spatial_editor/view_cinematic_preview", TTR("Cinematic Preview"), { int32_t(Key::KP_0) }), VIEW_CINEMATIC_PREVIEW);
 
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
@@ -8672,7 +8672,7 @@ Node3DEditor::Node3DEditor() {
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/transform_dialog", TTR("Transform Dialog...")), MENU_TRANSFORM_DIALOG);
 
 	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("spatial_editor/configure_snap", TTR("Configure Snap...")), MENU_TRANSFORM_CONFIGURE_SNAP);
+	p->add_shortcut(ED_SHORTCUT("spatial_editor/configure_snap", TTR("Configure Snap..."), KeyModifierMask::CMD_OR_CTRL | Key::NUMBERSIGN), MENU_TRANSFORM_CONFIGURE_SNAP);
 
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed));
 
