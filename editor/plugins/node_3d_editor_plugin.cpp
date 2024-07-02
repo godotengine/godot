@@ -1051,6 +1051,9 @@ void Node3DEditorViewport::_select_region() {
 	Vector<Node *> selected;
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
+	if (edited_scene == nullptr) {
+		return;
+	}
 
 	for (int i = 0; i < instances.size(); i++) {
 		Node3D *sp = Object::cast_to<Node3D>(ObjectDB::get_instance(instances[i]));
