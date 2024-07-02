@@ -5586,7 +5586,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	for (uint32_t i = 0; i < frames.size(); i++) {
 		// Staging was never used, create a block.
 		err = _insert_staging_block();
-		ERR_CONTINUE(err != OK);
+		ERR_FAIL_COND_V(err, FAILED);
 	}
 
 	draw_list = nullptr;

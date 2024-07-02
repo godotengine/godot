@@ -763,8 +763,13 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 				}
 
 			} else {
-				// Released
-				_stop_dragging();
+				// Released.
+				if (drag_type == DRAG_TYPE_NONE) {
+					drag_erasing = false;
+					return false;
+				} else {
+					_stop_dragging();
+				}
 				drag_erasing = false;
 			}
 

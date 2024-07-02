@@ -529,6 +529,7 @@ TEST_CASE("[SceneTree][Node]Exported node checks") {
 		memdelete(dup);
 	}
 
+#ifdef TOOLS_ENABLED
 	SUBCASE("Saving instance with exported nodes should not store the unchanged property") {
 		Ref<PackedScene> ps;
 		ps.instantiate();
@@ -602,6 +603,7 @@ TEST_CASE("[SceneTree][Node]Exported node checks") {
 		}
 		CHECK_EQ(stored_properties, 2);
 	}
+#endif // TOOLS_ENABLED
 
 	memdelete(node);
 }

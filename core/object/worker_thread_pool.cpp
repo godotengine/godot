@@ -427,7 +427,7 @@ void WorkerThreadPool::_lock_unlockable_mutexes() {
 			if ((((uintptr_t)unlockable_mutexes[i]) & 1) == 0) {
 				((Mutex *)unlockable_mutexes[i])->lock();
 			} else {
-				((BinaryMutex *)unlockable_mutexes[i])->lock();
+				((BinaryMutex *)(unlockable_mutexes[i] & ~1))->lock();
 			}
 		}
 	}
@@ -441,7 +441,7 @@ void WorkerThreadPool::_unlock_unlockable_mutexes() {
 			if ((((uintptr_t)unlockable_mutexes[i]) & 1) == 0) {
 				((Mutex *)unlockable_mutexes[i])->unlock();
 			} else {
-				((BinaryMutex *)unlockable_mutexes[i])->unlock();
+				((BinaryMutex *)(unlockable_mutexes[i] & ~1))->unlock();
 			}
 		}
 	}

@@ -1547,7 +1547,7 @@ bool ShaderLanguage::_validate_operator(OperatorNode *p_op, DataType *r_ret_type
 			}
 
 			DataType na = p_op->arguments[0]->get_datatype();
-			valid = na > TYPE_BOOL && na < TYPE_MAT2;
+			valid = na > TYPE_BVEC4 && na < TYPE_MAT2;
 			ret_type = na;
 		} break;
 		case OP_ADD:
@@ -1567,7 +1567,7 @@ bool ShaderLanguage::_validate_operator(OperatorNode *p_op, DataType *r_ret_type
 			}
 
 			if (na == nb) {
-				valid = (na > TYPE_BOOL && na <= TYPE_MAT4);
+				valid = (na > TYPE_BVEC4 && na <= TYPE_MAT4);
 				ret_type = na;
 			} else if (na == TYPE_INT && nb == TYPE_IVEC2) {
 				valid = true;
@@ -1776,7 +1776,7 @@ bool ShaderLanguage::_validate_operator(OperatorNode *p_op, DataType *r_ret_type
 			DataType nb = p_op->arguments[1]->get_datatype();
 
 			if (na == nb) {
-				valid = (na > TYPE_BOOL && na <= TYPE_MAT4);
+				valid = (na > TYPE_BVEC4 && na <= TYPE_MAT4);
 				ret_type = na;
 			} else if (na == TYPE_IVEC2 && nb == TYPE_INT) {
 				valid = true;
@@ -10837,4 +10837,5 @@ ShaderLanguage::ShaderLanguage() {
 
 ShaderLanguage::~ShaderLanguage() {
 	clear();
+	global_func_set.clear();
 }

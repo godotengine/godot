@@ -644,6 +644,26 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 				}
 			}
 		}
+		// Finally, check for a case when shortest distance is between some point located on a face's edge and some point located on a line segment.
+		if (!use_collision) {
+			for (size_t point_id = 0; point_id < p.points.size(); point_id += 1) {
+				Vector3 a, b;
+
+				Geometry3D::get_closest_points_between_segments(
+						p_from,
+						p_to,
+						p.points[point_id].pos,
+						p.points[(point_id + 1) % p.points.size()].pos,
+						a,
+						b);
+
+				const real_t d = a.distance_to(b);
+				if (d < closest_point_d) {
+					closest_point_d = d;
+					closest_point = b;
+				}
+			}
+		}
 	}
 
 	return closest_point;
