@@ -3293,6 +3293,7 @@ EditorHelpBit::HelpData EditorHelpBit::_get_method_help_data(const StringName &p
 				const DocType argument_type = { argument.type, argument.enumeration, argument.is_bitfield };
 				current.arguments.push_back({ argument.name, argument_type, argument.default_value });
 			}
+			current.is_vararg = method.qualifiers.contains("vararg");
 
 			if (method.name == p_method_name) {
 				result = current;
@@ -3474,6 +3475,18 @@ void EditorHelpBit::_update_labels() {
 					title->add_text(argument.default_value);
 					title->pop(); // color
 				}
+			}
+
+			if (help_data.is_vararg) {
+				if (!help_data.arguments.is_empty()) {
+					title->push_color(symbol_color);
+					title->add_text(", ");
+					title->pop(); // color
+				}
+
+				title->push_color(symbol_color);
+				title->add_text("...");
+				title->pop(); // color
 			}
 
 			title->push_color(symbol_color);
