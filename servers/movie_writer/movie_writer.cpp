@@ -185,6 +185,10 @@ void MovieWriter::add_frame() {
 	RID main_vp_rid = RenderingServer::get_singleton()->viewport_find_from_screen_attachment(DisplayServer::MAIN_WINDOW_ID);
 	RID main_vp_texture = RenderingServer::get_singleton()->viewport_get_texture(main_vp_rid);
 	Ref<Image> vp_tex = RenderingServer::get_singleton()->texture_2d_get(main_vp_texture);
+	if (RenderingServer::get_singleton()->viewport_is_using_hdr_2d(main_vp_rid)) {
+		vp_tex->convert(Image::FORMAT_RGBA8);
+		vp_tex->linear_to_srgb();
+	}
 
 	RenderingServer::get_singleton()->viewport_set_measure_render_time(main_vp_rid, true);
 	cpu_time += RenderingServer::get_singleton()->viewport_get_measured_render_time_cpu(main_vp_rid);
