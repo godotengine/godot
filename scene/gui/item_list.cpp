@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "core/string/translation.h"
+#include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"
 
 void ItemList::_shape_text(int p_idx) {
@@ -1509,6 +1510,11 @@ void ItemList::_mouse_exited() {
 	}
 }
 
+int ItemList::get_item_at_mouse_position(bool p_exact) const {
+	Point2 mouse_position = get_viewport()->get_mouse_position() - get_global_position();
+	return get_item_at_position(mouse_position, p_exact);
+}
+
 int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 	Vector2 pos = p_pos;
 	pos -= theme_cache.panel_style->get_offset();
@@ -1835,6 +1841,7 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_anything_selected"), &ItemList::is_anything_selected);
 
 	ClassDB::bind_method(D_METHOD("get_item_at_position", "position", "exact"), &ItemList::get_item_at_position, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_item_at_mouse_position", "exact"), &ItemList::get_item_at_position, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("ensure_current_is_visible"), &ItemList::ensure_current_is_visible);
 

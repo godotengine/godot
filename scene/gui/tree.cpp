@@ -5440,6 +5440,11 @@ int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
 	return -100;
 }
 
+TreeItem *Tree::get_item_at_mouse_position() const {
+	Point2 mouse_position = get_viewport()->get_mouse_position() - get_global_position();
+	return get_item_at_position(mouse_position);
+}
+
 TreeItem *Tree::get_item_at_position(const Point2 &p_pos) const {
 	if (root) {
 		Point2 pos = p_pos;
@@ -5615,6 +5620,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_custom_popup_rect"), &Tree::get_custom_popup_rect);
 	ClassDB::bind_method(D_METHOD("get_item_area_rect", "item", "column", "button_index"), &Tree::get_item_rect, DEFVAL(-1), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_item_at_position", "position"), &Tree::get_item_at_position);
+	ClassDB::bind_method(D_METHOD("get_item_at_mouse_position"), &Tree::get_item_at_mouse_position);
 	ClassDB::bind_method(D_METHOD("get_column_at_position", "position"), &Tree::get_column_at_position);
 	ClassDB::bind_method(D_METHOD("get_drop_section_at_position", "position"), &Tree::get_drop_section_at_position);
 	ClassDB::bind_method(D_METHOD("get_button_id_at_position", "position"), &Tree::get_button_id_at_position);

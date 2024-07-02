@@ -420,6 +420,7 @@ public:
 	FileListDisplayMode get_file_list_display_mode() const { return file_list_display_mode; };
 
 	Tree *get_tree_control() { return tree; }
+	ItemList *get_file_list_control() { return files; }
 
 	void add_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
 	void remove_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);

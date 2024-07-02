@@ -191,7 +191,13 @@
 			<return type="TreeItem" />
 			<param index="0" name="position" type="Vector2" />
 			<description>
-				Returns the tree item at the specified position (relative to the tree origin position).
+				Returns the [TreeItem] at the specified position (relative to the tree origin position).
+			</description>
+		</method>
+		<method name="get_item_at_mouse_position" qualifiers="const">
+			<return type="TreeItem" />
+			<description>
+				Returns the [TreeItem] at the current mouse position (as determined by this tree's viewport).
 			</description>
 		</method>
 		<method name="get_next_selected">
