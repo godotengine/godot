@@ -1381,6 +1381,14 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			tx->unfold_all_lines();
 			tx->queue_redraw();
 		} break;
+		case EDIT_FOLD_ALL_COMMENTS: {
+			tx->fold_all_comments();
+			tx->queue_redraw();
+		} break;
+		case EDIT_UNFOLD_ALL_COMMENTS: {
+			tx->unfold_all_comments();
+			tx->queue_redraw();
+		} break;
 		case EDIT_CREATE_CODE_REGION: {
 			tx->create_code_region();
 		} break;
@@ -2305,6 +2313,8 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_all_lines"), EDIT_FOLD_ALL_LINES);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
+		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_all_comments"), EDIT_FOLD_ALL_COMMENTS);
+		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_comments"), EDIT_UNFOLD_ALL_COMMENTS);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/create_code_region"), EDIT_CREATE_CODE_REGION);
 		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 		edit_menu->get_popup()->add_submenu_node_item(TTR("Folding"), sub_menu);
@@ -2491,6 +2501,8 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/fold_all_lines", TTR("Fold All Lines"), Key::NONE);
 	ED_SHORTCUT("script_text_editor/create_code_region", TTR("Create Code Region"), KeyModifierMask::ALT | Key::R);
 	ED_SHORTCUT("script_text_editor/unfold_all_lines", TTR("Unfold All Lines"), Key::NONE);
+	ED_SHORTCUT("script_text_editor/fold_all_comments", TTR("Fold All Comments"), Key::NONE);
+	ED_SHORTCUT("script_text_editor/unfold_all_comments", TTR("Unfold All Comments"), Key::NONE);
 	ED_SHORTCUT("script_text_editor/duplicate_selection", TTR("Duplicate Selection"), KeyModifierMask::SHIFT | KeyModifierMask::CTRL | Key::D);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/duplicate_selection", "macos", KeyModifierMask::SHIFT | KeyModifierMask::META | Key::C);
 	ED_SHORTCUT("script_text_editor/duplicate_lines", TTR("Duplicate Lines"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::DOWN);

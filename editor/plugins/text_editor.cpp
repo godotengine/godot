@@ -415,6 +415,14 @@ void TextEditor::_edit_option(int p_op) {
 			tx->unfold_all_lines();
 			tx->queue_redraw();
 		} break;
+		case EDIT_FOLD_ALL_COMMENTS: {
+			tx->fold_all_comments();
+			tx->queue_redraw();
+		} break;
+		case EDIT_UNFOLD_ALL_COMMENTS: {
+			tx->unfold_all_comments();
+			tx->queue_redraw();
+		} break;
 		case EDIT_TRIM_TRAILING_WHITESAPCE: {
 			trim_trailing_whitespace();
 		} break;
@@ -643,6 +651,8 @@ TextEditor::TextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_all_lines"), EDIT_FOLD_ALL_LINES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_all_comments"), EDIT_FOLD_ALL_COMMENTS);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_comments"), EDIT_UNFOLD_ALL_COMMENTS);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_lines"), EDIT_DUPLICATE_LINES);
