@@ -39,6 +39,8 @@
 
 #define HAS_WARNING(flag) (warning_flags & flag)
 
+int ShaderLanguage::instance_counter = 0;
+
 String ShaderLanguage::get_operator_text(Operator p_op) {
 	static const char *op_names[OP_MAX] = { "==",
 		"!=",
@@ -10812,17 +10814,16 @@ ShaderLanguage::ShaderLanguage() {
 	nodes = nullptr;
 	completion_class = TAG_GLOBAL;
 
-	int idx = 0;
-	while (builtin_func_defs[idx].name) {
-		if (builtin_func_defs[idx].tag == SubClassTag::TAG_GLOBAL) {
-			const StringName &name = StringName(builtin_func_defs[idx].name);
-
-			if (!global_func_set.has(name)) {
-				global_func_set.insert(name);
+	if (instance_counter == 0) {
+		int idx = 0;
+		while (builtin_func_defs[idx].name) {
+			if (builtin_func_defs[idx].tag == SubClassTag::TAG_GLOBAL) {
+				global_func_set.insert(builtin_func_defs[idx].name);
 			}
+			idx++;
 		}
-		idx++;
 	}
+	instance_counter++;
 
 #ifdef DEBUG_ENABLED
 	warnings_check_map.insert(ShaderWarning::UNUSED_CONSTANT, &used_constants);
@@ -10837,5 +10838,8 @@ ShaderLanguage::ShaderLanguage() {
 
 ShaderLanguage::~ShaderLanguage() {
 	clear();
-	global_func_set.clear();
+	instance_counter--;
+	if (instance_counter == 0) {
+		global_func_set.clear();
+	}
 }
