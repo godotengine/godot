@@ -1102,6 +1102,58 @@ struct _VariantCall {
 _VariantCall::ConstantData *_VariantCall::constant_data = nullptr;
 _VariantCall::EnumData *_VariantCall::enum_data = nullptr;
 
+template <class T>
+struct ArrayBind {
+	static Error resize(T *p_self, int64_t p_size) {
+		ERR_FAIL_COND_V(p_size != int(p_size), ERR_INVALID_PARAMETER);
+		return p_self->resize(p_size);
+	};
+	static Error resize_zeroed(T *p_self, int64_t p_size) {
+		ERR_FAIL_COND_V(p_size != int(p_size), ERR_INVALID_PARAMETER);
+		return p_self->resize_zeroed(p_size);
+	};
+	template <class E>
+	static Error insert(T *p_self, int64_t p_pos, const E &p_value) {
+		ERR_FAIL_COND_V(p_pos != int(p_pos), ERR_INVALID_PARAMETER);
+		return p_self->insert(p_pos, p_value);
+	};
+	static void remove_at(T *p_self, int64_t p_pos) {
+		ERR_FAIL_COND(p_pos != int(p_pos));
+		p_self->remove_at(p_pos);
+	};
+	template <class E>
+	static int64_t find(T *p_self, const E &p_value, int64_t p_from) {
+		ERR_FAIL_COND_V(p_from != int(p_from), -1);
+		return p_self->find(p_value, p_from);
+	};
+	template <class E>
+	static int64_t rfind(T *p_self, const E &p_value, int64_t p_from) {
+		ERR_FAIL_COND_V(p_from != int(p_from), -1);
+		return p_self->rfind(p_value, p_from);
+	};
+	template <class E>
+	static E pop_at(T *p_self, int64_t p_pos) {
+		ERR_FAIL_COND_V(p_pos != int(p_pos), E());
+		return p_self->pop_at(p_pos);
+	};
+	static T slice(T *p_self, int64_t p_begin, int64_t p_end, int64_t p_step, bool p_deep) {
+		ERR_FAIL_COND_V(p_step != int(p_step), T());
+		p_begin = CLAMP(p_begin, INT_MIN, INT_MAX);
+		p_end = CLAMP(p_end, INT_MIN, INT_MAX);
+		return p_self->slice(p_begin, p_end, p_step, p_deep);
+	};
+	static T slice_vector(T *p_self, int64_t p_begin, int64_t p_end) {
+		p_begin = CLAMP(p_begin, INT_MIN, INT_MAX);
+		p_end = CLAMP(p_end, INT_MIN, INT_MAX);
+		return p_self->slice(p_begin, p_end);
+	};
+	template <class E>
+	static void set(T *p_self, int64_t p_index, const E &p_elem) {
+		ERR_FAIL_COND(p_index != int(p_index));
+		return p_self->set(p_index, p_elem);
+	};
+};
+
 struct VariantBuiltInMethodInfo {
 	void (*call)(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) = nullptr;
 	Variant::ValidatedBuiltInMethod validated_call = nullptr;
@@ -2280,21 +2332,21 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(Array, push_front, sarray("value"), varray());
 	bind_method(Array, append, sarray("value"), varray());
 	bind_method(Array, append_array, sarray("array"), varray());
-	bind_method(Array, resize, sarray("size"), varray());
-	bind_method(Array, insert, sarray("position", "value"), varray());
-	bind_method(Array, remove_at, sarray("position"), varray());
+	bind_functionnc(Array, resize, &ArrayBind<Array>::resize, sarray("size"), varray());
+	bind_functionnc(Array, insert, &ArrayBind<Array>::template insert<Variant>, sarray("position", "value"), varray());
+	bind_functionnc(Array, remove_at, &ArrayBind<Array>::remove_at, sarray("position"), varray());
 	bind_method(Array, fill, sarray("value"), varray());
 	bind_method(Array, erase, sarray("value"), varray());
 	bind_method(Array, front, sarray(), varray());
 	bind_method(Array, back, sarray(), varray());
 	bind_method(Array, pick_random, sarray(), varray());
-	bind_method(Array, find, sarray("what", "from"), varray(0));
-	bind_method(Array, rfind, sarray("what", "from"), varray(-1));
+	bind_function(Array, find, &ArrayBind<Array>::template find<Variant>, sarray("what", "from"), varray(0));
+	bind_function(Array, rfind, &ArrayBind<Array>::template rfind<Variant>, sarray("what", "from"), varray(-1));
 	bind_method(Array, count, sarray("value"), varray());
 	bind_method(Array, has, sarray("value"), varray());
 	bind_method(Array, pop_back, sarray(), varray());
 	bind_method(Array, pop_front, sarray(), varray());
-	bind_method(Array, pop_at, sarray("position"), varray());
+	bind_functionnc(Array, pop_at, &ArrayBind<Array>::template pop_at<Variant>, sarray("position"), varray());
 	bind_method(Array, sort, sarray(), varray());
 	bind_method(Array, sort_custom, sarray("func"), varray());
 	bind_method(Array, shuffle, sarray(), varray());
@@ -2302,7 +2354,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(Array, bsearch_custom, sarray("value", "func", "before"), varray(true));
 	bind_method(Array, reverse, sarray(), varray());
 	bind_method(Array, duplicate, sarray("deep"), varray(false));
-	bind_method(Array, slice, sarray("begin", "end", "step", "deep"), varray(INT_MAX, 1, false));
+	bind_function(Array, slice, &ArrayBind<Array>::slice, sarray("begin", "end", "step", "deep"), varray(INT_MAX, 1, false));
 	bind_method(Array, filter, sarray("method"), varray());
 	bind_method(Array, map, sarray("method"), varray());
 	bind_method(Array, reduce, sarray("method", "accum"), varray(Variant()));
@@ -2321,23 +2373,23 @@ static void _register_variant_builtin_methods_array() {
 	/* Byte Array */
 	bind_method(PackedByteArray, size, sarray(), varray());
 	bind_method(PackedByteArray, is_empty, sarray(), varray());
-	bind_method(PackedByteArray, set, sarray("index", "value"), varray());
+	bind_functionnc(PackedByteArray, set, &ArrayBind<PackedByteArray>::template set<uint8_t>, sarray("index", "value"), varray());
 	bind_method(PackedByteArray, push_back, sarray("value"), varray());
 	bind_method(PackedByteArray, append, sarray("value"), varray());
 	bind_method(PackedByteArray, append_array, sarray("array"), varray());
-	bind_method(PackedByteArray, remove_at, sarray("index"), varray());
-	bind_method(PackedByteArray, insert, sarray("at_index", "value"), varray());
+	bind_functionnc(PackedByteArray, remove_at, &ArrayBind<PackedByteArray>::remove_at, sarray("index"), varray());
+	bind_functionnc(PackedByteArray, insert, &ArrayBind<PackedByteArray>::template insert<uint8_t>, sarray("at_index", "value"), varray());
 	bind_method(PackedByteArray, fill, sarray("value"), varray());
-	bind_methodv(PackedByteArray, resize, &PackedByteArray::resize_zeroed, sarray("new_size"), varray());
+	bind_functionnc(PackedByteArray, resize, &ArrayBind<PackedByteArray>::resize_zeroed, sarray("new_size"), varray());
 	bind_method(PackedByteArray, clear, sarray(), varray());
 	bind_method(PackedByteArray, has, sarray("value"), varray());
 	bind_method(PackedByteArray, reverse, sarray(), varray());
-	bind_method(PackedByteArray, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_function(PackedByteArray, slice, &ArrayBind<PackedByteArray>::slice_vector, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedByteArray, sort, sarray(), varray());
 	bind_method(PackedByteArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedByteArray, duplicate, sarray(), varray());
-	bind_method(PackedByteArray, find, sarray("value", "from"), varray(0));
-	bind_method(PackedByteArray, rfind, sarray("value", "from"), varray(-1));
+	bind_function(PackedByteArray, find, &ArrayBind<PackedByteArray>::template find<uint8_t>, sarray("value", "from"), varray(0));
+	bind_function(PackedByteArray, rfind, &ArrayBind<PackedByteArray>::template rfind<uint8_t>, sarray("value", "from"), varray(-1));
 	bind_method(PackedByteArray, count, sarray("value"), varray());
 
 	bind_function(PackedByteArray, get_string_from_ascii, _VariantCall::func_PackedByteArray_get_string_from_ascii, sarray(), varray());
@@ -2387,192 +2439,192 @@ static void _register_variant_builtin_methods_array() {
 
 	bind_method(PackedInt32Array, size, sarray(), varray());
 	bind_method(PackedInt32Array, is_empty, sarray(), varray());
-	bind_method(PackedInt32Array, set, sarray("index", "value"), varray());
+	bind_functionnc(PackedInt32Array, set, &ArrayBind<PackedInt32Array>::template set<int32_t>, sarray("index", "value"), varray());
 	bind_method(PackedInt32Array, push_back, sarray("value"), varray());
 	bind_method(PackedInt32Array, append, sarray("value"), varray());
 	bind_method(PackedInt32Array, append_array, sarray("array"), varray());
-	bind_method(PackedInt32Array, remove_at, sarray("index"), varray());
-	bind_method(PackedInt32Array, insert, sarray("at_index", "value"), varray());
+	bind_functionnc(PackedInt32Array, remove_at, &ArrayBind<PackedInt32Array>::remove_at, sarray("index"), varray());
+	bind_functionnc(PackedInt32Array, insert, &ArrayBind<PackedInt32Array>::template insert<int32_t>, sarray("at_index", "value"), varray());
 	bind_method(PackedInt32Array, fill, sarray("value"), varray());
-	bind_methodv(PackedInt32Array, resize, &PackedInt32Array::resize_zeroed, sarray("new_size"), varray());
+	bind_functionnc(PackedInt32Array, resize, &ArrayBind<PackedInt32Array>::resize_zeroed, sarray("new_size"), varray());
 	bind_method(PackedInt32Array, clear, sarray(), varray());
 	bind_method(PackedInt32Array, has, sarray("value"), varray());
 	bind_method(PackedInt32Array, reverse, sarray(), varray());
-	bind_method(PackedInt32Array, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_function(PackedInt32Array, slice, &ArrayBind<PackedInt32Array>::slice_vector, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedInt32Array, to_byte_array, sarray(), varray());
 	bind_method(PackedInt32Array, sort, sarray(), varray());
 	bind_method(PackedInt32Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedInt32Array, duplicate, sarray(), varray());
-	bind_method(PackedInt32Array, find, sarray("value", "from"), varray(0));
-	bind_method(PackedInt32Array, rfind, sarray("value", "from"), varray(-1));
+	bind_function(PackedInt32Array, find, &ArrayBind<PackedInt32Array>::template find<int32_t>, sarray("value", "from"), varray(0));
+	bind_function(PackedInt32Array, rfind, &ArrayBind<PackedInt32Array>::template rfind<int32_t>, sarray("value", "from"), varray(-1));
 	bind_method(PackedInt32Array, count, sarray("value"), varray());
 
 	/* Int64 Array */
 
 	bind_method(PackedInt64Array, size, sarray(), varray());
 	bind_method(PackedInt64Array, is_empty, sarray(), varray());
-	bind_method(PackedInt64Array, set, sarray("index", "value"), varray());
+	bind_functionnc(PackedInt64Array, set, &ArrayBind<PackedInt64Array>::template set<int64_t>, sarray("index", "value"), varray());
 	bind_method(PackedInt64Array, push_back, sarray("value"), varray());
 	bind_method(PackedInt64Array, append, sarray("value"), varray());
 	bind_method(PackedInt64Array, append_array, sarray("array"), varray());
-	bind_method(PackedInt64Array, remove_at, sarray("index"), varray());
-	bind_method(PackedInt64Array, insert, sarray("at_index", "value"), varray());
+	bind_functionnc(PackedInt64Array, remove_at, &ArrayBind<PackedInt64Array>::remove_at, sarray("index"), varray());
+	bind_functionnc(PackedInt64Array, insert, &ArrayBind<PackedInt64Array>::template insert<int64_t>, sarray("at_index", "value"), varray());
 	bind_method(PackedInt64Array, fill, sarray("value"), varray());
-	bind_methodv(PackedInt64Array, resize, &PackedInt64Array::resize_zeroed, sarray("new_size"), varray());
+	bind_functionnc(PackedInt64Array, resize, &ArrayBind<PackedInt64Array>::resize_zeroed, sarray("new_size"), varray());
 	bind_method(PackedInt64Array, clear, sarray(), varray());
 	bind_method(PackedInt64Array, has, sarray("value"), varray());
 	bind_method(PackedInt64Array, reverse, sarray(), varray());
-	bind_method(PackedInt64Array, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_function(PackedInt64Array, slice, &ArrayBind<PackedInt64Array>::slice_vector, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedInt64Array, to_byte_array, sarray(), varray());
 	bind_method(PackedInt64Array, sort, sarray(), varray());
 	bind_method(PackedInt64Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedInt64Array, duplicate, sarray(), varray());
-	bind_method(PackedInt64Array, find, sarray("value", "from"), varray(0));
-	bind_method(PackedInt64Array, rfind, sarray("value", "from"), varray(-1));
+	bind_function(PackedInt64Array, find, &ArrayBind<PackedInt64Array>::template find<int64_t>, sarray("value", "from"), varray(0));
+	bind_function(PackedInt64Array, rfind, &ArrayBind<PackedInt64Array>::template rfind<int64_t>, sarray("value", "from"), varray(-1));
 	bind_method(PackedInt64Array, count, sarray("value"), varray());
 
 	/* Float32 Array */
 
 	bind_method(PackedFloat32Array, size, sarray(), varray());
 	bind_method(PackedFloat32Array, is_empty, sarray(), varray());
-	bind_method(PackedFloat32Array, set, sarray("index", "value"), varray());
+	bind_functionnc(PackedFloat32Array, set, &ArrayBind<PackedFloat32Array>::template set<float>, sarray("index", "value"), varray());
 	bind_method(PackedFloat32Array, push_back, sarray("value"), varray());
 	bind_method(PackedFloat32Array, append, sarray("value"), varray());
 	bind_method(PackedFloat32Array, append_array, sarray("array"), varray());
-	bind_method(PackedFloat32Array, remove_at, sarray("index"), varray());
-	bind_method(PackedFloat32Array, insert, sarray("at_index", "value"), varray());
+	bind_functionnc(PackedFloat32Array, remove_at, &ArrayBind<PackedFloat32Array>::remove_at, sarray("index"), varray());
+	bind_functionnc(PackedFloat32Array, insert, &ArrayBind<PackedFloat32Array>::template insert<float>, sarray("at_index", "value"), varray());
 	bind_method(PackedFloat32Array, fill, sarray("value"), varray());
-	bind_methodv(PackedFloat32Array, resize, &PackedFloat32Array::resize_zeroed, sarray("new_size"), varray());
+	bind_functionnc(PackedFloat32Array, resize, &ArrayBind<PackedFloat32Array>::resize_zeroed, sarray("new_size"), varray());
 	bind_method(PackedFloat32Array, clear, sarray(), varray());
 	bind_method(PackedFloat32Array, has, sarray("value"), varray());
 	bind_method(PackedFloat32Array, reverse, sarray(), varray());
-	bind_method(PackedFloat32Array, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_function(PackedFloat32Array, slice, &ArrayBind<PackedFloat32Array>::slice_vector, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedFloat32Array, to_byte_array, sarray(), varray());
 	bind_method(PackedFloat32Array, sort, sarray(), varray());
 	bind_method(PackedFloat32Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedFloat32Array, duplicate, sarray(), varray());
-	bind_method(PackedFloat32Array, find, sarray("value", "from"), varray(0));
-	bind_method(PackedFloat32Array, rfind, sarray("value", "from"), varray(-1));
+	bind_function(PackedFloat32Array, find, &ArrayBind<PackedFloat32Array>::template find<float>, sarray("value", "from"), varray(0));
+	bind_function(PackedFloat32Array, rfind, &ArrayBind<PackedFloat32Array>::template rfind<float>, sarray("value", "from"), varray(-1));
 	bind_method(PackedFloat32Array, count, sarray("value"), varray());
 
 	/* Float64 Array */
 
 	bind_method(PackedFloat64Array, size, sarray(), varray());
 	bind_method(PackedFloat64Array, is_empty, sarray(), varray());
-	bind_method(PackedFloat64Array, set, sarray("index", "value"), varray());
+	bind_functionnc(PackedFloat64Array, set, &ArrayBind<PackedFloat64Array>::template set<double>, sarray("index", "value"), varray());
 	bind_method(PackedFloat64Array, push_back, sarray("value"), varray());
 	bind_method(PackedFloat64Array, append, sarray("value"), varray());
 	bind_method(PackedFloat64Array, append_array, sarray("array"), varray());
-	bind_method(PackedFloat64Array, remove_at, sarray("index"), varray());
-	bind_method(PackedFloat64Array, insert, sarray("at_index", "value"), varray());
+	bind_functionnc(PackedFloat64Array, remove_at, &ArrayBind<PackedFloat64Array>::remove_at, sarray("index"), varray());
+	bind_functionnc(PackedFloat64Array, insert, &ArrayBind<PackedFloat64Array>::template insert<double>, sarray("at_index", "value"), varray());
 	bind_method(PackedFloat64Array, fill, sarray("value"), varray());
-	bind_methodv(PackedFloat64Array, resize, &PackedFloat64Array::resize_zeroed, sarray("new_size"), varray());
+	bind_functionnc(PackedFloat64Array, resize, &ArrayBind<PackedFloat64Array>::resize_zeroed, sarray("new_size"), varray());
 	bind_method(PackedFloat64Array, clear, sarray(), varray());
 	bind_method(PackedFloat64Array, has, sarray("value"), varray());
 	bind_method(PackedFloat64Array, reverse, sarray(), varray());
-	bind_method(PackedFloat64Array, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_function(PackedFloat64Array, slice, &ArrayBind<PackedFloat64Array>::slice_vector, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedFloat64Array, to_byte_array, sarray(), varray());
 	bind_method(PackedFloat64Array, sort, sarray(), varray());
 	bind_method(PackedFloat64Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedFloat64Array, duplicate, sarray(), varray());
-	bind_method(PackedFloat64Array, find, sarray("value", "from"), varray(0));
-	bind_method(PackedFloat64Array, rfind, sarray("value", "from"), varray(-1));
+	bind_function(PackedFloat64Array, find, &ArrayBind<PackedFloat64Array>::template find<double>, sarray("value", "from"), varray(0));
+	bind_function(PackedFloat64Array, rfind, &ArrayBind<PackedFloat64Array>::template rfind<double>, sarray("value", "from"), varray(-1));
 	bind_method(PackedFloat64Array, count, sarray("value"), varray());
 
 	/* String Array */
 
 	bind_method(PackedStringArray, size, sarray(), varray());
 	bind_method(PackedStringArray, is_empty, sarray(), varray());
-	bind_method(PackedStringArray, set, sarray("index", "value"), varray());
+	bind_functionnc(PackedStringArray, set, &ArrayBind<PackedStringArray>::template set<String>, sarray("index", "value"), varray());
 	bind_method(PackedStringArray, push_back, sarray("value"), varray());
 	bind_method(PackedStringArray, append, sarray("value"), varray());
 	bind_method(PackedStringArray, append_array, sarray("array"), varray());
-	bind_method(PackedStringArray, remove_at, sarray("index"), varray());
-	bind_method(PackedStringArray, insert, sarray("at_index", "value"), varray());
+	bind_functionnc(PackedStringArray, remove_at, &ArrayBind<PackedStringArray>::remove_at, sarray("index"), varray());
+	bind_functionnc(PackedStringArray, insert, &ArrayBind<PackedStringArray>::template insert<String>, sarray("at_index", "value"), varray());
 	bind_method(PackedStringArray, fill, sarray("value"), varray());
-	bind_methodv(PackedStringArray, resize, &PackedStringArray::resize_zeroed, sarray("new_size"), varray());
+	bind_functionnc(PackedStringArray, resize, &ArrayBind<PackedStringArray>::resize_zeroed, sarray("new_size"), varray());
 	bind_method(PackedStringArray, clear, sarray(), varray());
 	bind_method(PackedStringArray, has, sarray("value"), varray());
 	bind_method(PackedStringArray, reverse, sarray(), varray());
-	bind_method(PackedStringArray, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_function(PackedStringArray, slice, &ArrayBind<PackedStringArray>::slice_vector, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedStringArray, to_byte_array, sarray(), varray());
 	bind_method(PackedStringArray, sort, sarray(), varray());
 	bind_method(PackedStringArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedStringArray, duplicate, sarray(), varray());
-	bind_method(PackedStringArray, find, sarray("value", "from"), varray(0));
-	bind_method(PackedStringArray, rfind, sarray("value", "from"), varray(-1));
+	bind_function(PackedStringArray, find, &ArrayBind<PackedStringArray>::template find<String>, sarray("value", "from"), varray(0));
+	bind_function(PackedStringArray, rfind, &ArrayBind<PackedStringArray>::template rfind<String>, sarray("value", "from"), varray(-1));
 	bind_method(PackedStringArray, count, sarray("value"), varray());
 
 	/* Vector2 Array */
 
 	bind_method(PackedVector2Array, size, sarray(), varray());
 	bind_method(PackedVector2Array, is_empty, sarray(), varray());
-	bind_method(PackedVector2Array, set, sarray("index", "value"), varray());
+	bind_functionnc(PackedVector2Array, set, &ArrayBind<PackedVector2Array>::template set<Vector2>, sarray("index", "value"), varray());
 	bind_method(PackedVector2Array, push_back, sarray("value"), varray());
 	bind_method(PackedVector2Array, append, sarray("value"), varray());
 	bind_method(PackedVector2Array, append_array, sarray("array"), varray());
-	bind_method(PackedVector2Array, remove_at, sarray("index"), varray());
-	bind_method(PackedVector2Array, insert, sarray("at_index", "value"), varray());
+	bind_functionnc(PackedVector2Array, remove_at, &ArrayBind<PackedVector2Array>::remove_at, sarray("index"), varray());
+	bind_functionnc(PackedVector2Array, insert, &ArrayBind<PackedVector2Array>::template insert<Vector2>, sarray("at_index", "value"), varray());
 	bind_method(PackedVector2Array, fill, sarray("value"), varray());
-	bind_methodv(PackedVector2Array, resize, &PackedVector2Array::resize_zeroed, sarray("new_size"), varray());
+	bind_functionnc(PackedVector2Array, resize, &ArrayBind<PackedVector2Array>::resize_zeroed, sarray("new_size"), varray());
 	bind_method(PackedVector2Array, clear, sarray(), varray());
 	bind_method(PackedVector2Array, has, sarray("value"), varray());
 	bind_method(PackedVector2Array, reverse, sarray(), varray());
-	bind_method(PackedVector2Array, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_function(PackedVector2Array, slice, &ArrayBind<PackedVector2Array>::slice_vector, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedVector2Array, to_byte_array, sarray(), varray());
 	bind_method(PackedVector2Array, sort, sarray(), varray());
 	bind_method(PackedVector2Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector2Array, duplicate, sarray(), varray());
-	bind_method(PackedVector2Array, find, sarray("value", "from"), varray(0));
-	bind_method(PackedVector2Array, rfind, sarray("value", "from"), varray(-1));
+	bind_function(PackedVector2Array, find, &ArrayBind<PackedVector2Array>::template find<Vector2>, sarray("value", "from"), varray(0));
+	bind_function(PackedVector2Array, rfind, &ArrayBind<PackedVector2Array>::template rfind<Vector2>, sarray("value", "from"), varray(-1));
 	bind_method(PackedVector2Array, count, sarray("value"), varray());
 
 	/* Vector3 Array */
 
 	bind_method(PackedVector3Array, size, sarray(), varray());
 	bind_method(PackedVector3Array, is_empty, sarray(), varray());
-	bind_method(PackedVector3Array, set, sarray("index", "value"), varray());
+	bind_functionnc(PackedVector3Array, set, &ArrayBind<PackedVector3Array>::template set<Vector3>, sarray("index", "value"), varray());
 	bind_method(PackedVector3Array, push_back, sarray("value"), varray());
 	bind_method(PackedVector3Array, append, sarray("value"), varray());
 	bind_method(PackedVector3Array, append_array, sarray("array"), varray());
-	bind_method(PackedVector3Array, remove_at, sarray("index"), varray());
-	bind_method(PackedVector3Array, insert, sarray("at_index", "value"), varray());
+	bind_functionnc(PackedVector3Array, remove_at, &ArrayBind<PackedVector3Array>::remove_at, sarray("index"), varray());
+	bind_functionnc(PackedVector3Array, insert, &ArrayBind<PackedVector3Array>::template insert<Vector3>, sarray("at_index", "value"), varray());
 	bind_method(PackedVector3Array, fill, sarray("value"), varray());
-	bind_methodv(PackedVector3Array, resize, &PackedVector3Array::resize_zeroed, sarray("new_size"), varray());
+	bind_functionnc(PackedVector3Array, resize, &ArrayBind<PackedVector3Array>::resize_zeroed, sarray("new_size"), varray());
 	bind_method(PackedVector3Array, clear, sarray(), varray());
 	bind_method(PackedVector3Array, has, sarray("value"), varray());
 	bind_method(PackedVector3Array, reverse, sarray(), varray());
-	bind_method(PackedVector3Array, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_function(PackedVector3Array, slice, &ArrayBind<PackedVector3Array>::slice_vector, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedVector3Array, to_byte_array, sarray(), varray());
 	bind_method(PackedVector3Array, sort, sarray(), varray());
 	bind_method(PackedVector3Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector3Array, duplicate, sarray(), varray());
-	bind_method(PackedVector3Array, find, sarray("value", "from"), varray(0));
-	bind_method(PackedVector3Array, rfind, sarray("value", "from"), varray(-1));
+	bind_function(PackedVector3Array, find, &ArrayBind<PackedVector3Array>::template find<Vector3>, sarray("value", "from"), varray(0));
+	bind_function(PackedVector3Array, rfind, &ArrayBind<PackedVector3Array>::template rfind<Vector3>, sarray("value", "from"), varray(-1));
 	bind_method(PackedVector3Array, count, sarray("value"), varray());
 
 	/* Color Array */
 
 	bind_method(PackedColorArray, size, sarray(), varray());
 	bind_method(PackedColorArray, is_empty, sarray(), varray());
-	bind_method(PackedColorArray, set, sarray("index", "value"), varray());
+	bind_functionnc(PackedColorArray, set, &ArrayBind<PackedColorArray>::template set<Color>, sarray("index", "value"), varray());
 	bind_method(PackedColorArray, push_back, sarray("value"), varray());
 	bind_method(PackedColorArray, append, sarray("value"), varray());
 	bind_method(PackedColorArray, append_array, sarray("array"), varray());
-	bind_method(PackedColorArray, remove_at, sarray("index"), varray());
-	bind_method(PackedColorArray, insert, sarray("at_index", "value"), varray());
+	bind_functionnc(PackedColorArray, remove_at, &ArrayBind<PackedColorArray>::remove_at, sarray("index"), varray());
+	bind_functionnc(PackedColorArray, insert, &ArrayBind<PackedColorArray>::template insert<Color>, sarray("at_index", "value"), varray());
 	bind_method(PackedColorArray, fill, sarray("value"), varray());
-	bind_methodv(PackedColorArray, resize, &PackedColorArray::resize_zeroed, sarray("new_size"), varray());
+	bind_functionnc(PackedColorArray, resize, &ArrayBind<PackedColorArray>::resize_zeroed, sarray("new_size"), varray());
 	bind_method(PackedColorArray, clear, sarray(), varray());
 	bind_method(PackedColorArray, has, sarray("value"), varray());
 	bind_method(PackedColorArray, reverse, sarray(), varray());
-	bind_method(PackedColorArray, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_function(PackedColorArray, slice, &ArrayBind<PackedColorArray>::slice_vector, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedColorArray, to_byte_array, sarray(), varray());
 	bind_method(PackedColorArray, sort, sarray(), varray());
 	bind_method(PackedColorArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedColorArray, duplicate, sarray(), varray());
-	bind_method(PackedColorArray, find, sarray("value", "from"), varray(0));
-	bind_method(PackedColorArray, rfind, sarray("value", "from"), varray(-1));
+	bind_function(PackedColorArray, find, &ArrayBind<PackedColorArray>::template find<Color>, sarray("value", "from"), varray(0));
+	bind_function(PackedColorArray, rfind, &ArrayBind<PackedColorArray>::template rfind<Color>, sarray("value", "from"), varray(-1));
 	bind_method(PackedColorArray, count, sarray("value"), varray());
 
 	/* Vector4 Array */
