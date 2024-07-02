@@ -251,11 +251,10 @@ _FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
 	return x != p_vec2.x || y != p_vec2.y;
 }
 
-Vector2 Vector2::lerp(const Vector2 &p_to, real_t p_weight) const {
-	Vector2 res = *this;
-	res.x = Math::lerp(res.x, p_to.x, p_weight);
-	res.y = Math::lerp(res.y, p_to.y, p_weight);
-	return res;
+_FORCE_INLINE_ Vector2 Vector2::lerp(const Vector2 &p_to, real_t p_weight) const {
+	return Vector2(
+			Math::lerp(x, p_to.x, p_weight),
+			Math::lerp(y, p_to.y, p_weight));
 }
 
 Vector2 Vector2::slerp(const Vector2 &p_to, real_t p_weight) const {
