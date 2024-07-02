@@ -250,6 +250,10 @@ public:
 		custom_defines.erase(p_define.utf8());
 	}
 
+	void clear_custom_defines() {
+		custom_defines.clear();
+	}
+
 	virtual ~ShaderGLES2();
 };
 
