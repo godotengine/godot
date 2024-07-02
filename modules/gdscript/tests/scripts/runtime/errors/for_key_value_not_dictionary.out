@@ -1,0 +1,6 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR
+>> on function: test()
+>> runtime/errors/for_key_value_not_dictionary.gd
+>> 6
+>> Unable to iterate "Array" as a key-value pair.

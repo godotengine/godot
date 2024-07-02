@@ -831,9 +831,12 @@ public:
 	};
 
 	struct ForNode : public Node {
-		IdentifierNode *variable = nullptr;
-		TypeNode *datatype_specifier = nullptr;
-		bool use_conversion_assign = false;
+		IdentifierNode *first_variable = nullptr;
+		IdentifierNode *second_variable = nullptr;
+		TypeNode *first_datatype_specifier = nullptr;
+		TypeNode *second_datatype_specifier = nullptr;
+		bool first_use_conversion_assign = false;
+		bool second_use_conversion_assign = false;
 		ExpressionNode *list = nullptr;
 		SuiteNode *loop = nullptr;
 

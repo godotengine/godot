@@ -2010,27 +2010,40 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 			case GDScriptParser::Node::FOR: {
 				const GDScriptParser::ForNode *for_n = static_cast<const GDScriptParser::ForNode *>(s);
 
-				codegen.start_block(); // Add an extra block, since the iterator and @special variables belong to the loop scope.
+				codegen.start_block(); // Add an extra block, since the first_iterator and @special variables belong to the loop scope.
 
-				GDScriptCodeGenerator::Address iterator = codegen.add_local(for_n->variable->name, _gdtype_from_datatype(for_n->variable->get_datatype(), codegen.script));
+				GDScriptCodeGenerator::Address first_iterator = codegen.add_local(for_n->first_variable->name, _gdtype_from_datatype(for_n->first_variable->get_datatype(), codegen.script));
+				GDScriptCodeGenerator::Address second_iterator;
 
-				gen->start_for(iterator.type, _gdtype_from_datatype(for_n->list->get_datatype(), codegen.script));
+				gen->start_for(first_iterator.type, _gdtype_from_datatype(for_n->list->get_datatype(), codegen.script));
 
 				GDScriptCodeGenerator::Address list = _parse_expression(codegen, err, for_n->list);
 				if (err) {
 					return err;
 				}
 
-				gen->write_for_assignment(list);
+				gen->write_for_container_assignment(list);
+
+				if (for_n->second_variable) {
+					second_iterator = codegen.add_local(for_n->second_variable->name, _gdtype_from_datatype(for_n->second_variable->get_datatype(), codegen.script));
+					if (for_n->list->get_datatype().is_variant()) {
+						gen->write_for_dictionary_type_check(second_iterator);
+					}
+				}
 
 				if (list.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
 				}
 
-				gen->write_for(iterator, for_n->use_conversion_assign);
+				gen->write_for(first_iterator, for_n->first_use_conversion_assign);
 
 				// Loop variables must be cleared even when `break`/`continue` is used.
 				List<GDScriptCodeGenerator::Address> loop_locals = _add_block_locals(codegen, for_n->loop);
+
+				if (for_n->second_variable) {
+					second_iterator = codegen.add_local(for_n->second_variable->name, _gdtype_from_datatype(for_n->second_variable->get_datatype(), codegen.script));
+					gen->write_for_second_variable_assignment(second_iterator, for_n->second_use_conversion_assign);
+				}
 
 				//_clear_block_locals(codegen, loop_locals); // Inside loop, before block - for `continue`. // TODO
 

@@ -1484,13 +1484,40 @@ void GDScriptByteCodeGenerator::start_for(const GDScriptDataType &p_iterator_typ
 	for_container_variables.push_back(container);
 }
 
-void GDScriptByteCodeGenerator::write_for_assignment(const Address &p_list) {
+void GDScriptByteCodeGenerator::write_for_container_assignment(const Address &p_list) {
 	const Address &container = for_container_variables.back()->get();
 
 	// Assign container.
 	append_opcode(GDScriptFunction::OPCODE_ASSIGN);
 	append(container);
 	append(p_list);
+}
+
+void GDScriptByteCodeGenerator::write_for_dictionary_type_check(const Address &p_second_variable) {
+	const Address &container = for_container_variables.back()->get();
+	Address temp;
+
+	append_opcode(GDScriptFunction::OPCODE_FOR_SECOND_VARIABLE_DICT_TYPE_TEST);
+	append(container);
+}
+
+void GDScriptByteCodeGenerator::write_for_second_variable_assignment(const Address &p_second_variable, const bool p_use_conversion) {
+	const Address &counter = for_counter_variables.back()->get();
+	const Address &container = for_container_variables.back()->get();
+	Address temp;
+
+	if (p_use_conversion) {
+		temp = Address(Address::LOCAL_VARIABLE, add_local("@second_variable_temp", GDScriptDataType()));
+	}
+
+	write_get(p_use_conversion ? temp : p_second_variable, counter, container);
+
+	if (p_use_conversion) {
+		write_assign_with_conversion(p_second_variable, temp);
+		if (p_second_variable.type.can_contain_object()) {
+			clear_address(temp); // Can contain `RefCounted`, so clear it.
+		}
+	}
 }
 
 void GDScriptByteCodeGenerator::write_for(const Address &p_variable, bool p_use_conversion) {
