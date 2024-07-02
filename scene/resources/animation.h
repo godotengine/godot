@@ -181,6 +181,7 @@ private:
 
 	struct MethodKey : public Key {
 		StringName method;
+		bool call_in_editor = false;
 		Vector<Variant> params;
 	};
 
@@ -491,6 +492,7 @@ public:
 	UpdateMode value_track_get_update_mode(int p_track) const;
 
 	Vector<Variant> method_track_get_params(int p_track, int p_key_idx) const;
+	bool method_track_get_call_in_editor(int p_track, int p_key_idx) const;
 	StringName method_track_get_name(int p_track, int p_key_idx) const;
 
 	void copy_track(int p_track, Ref<Animation> p_to_animation);

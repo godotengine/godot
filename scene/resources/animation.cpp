@@ -1722,6 +1722,7 @@ int Animation::track_insert_key(int p_track, double p_time, const Variant &p_key
 
 			Dictionary d = p_key;
 			ERR_FAIL_COND_V(!d.has("method") || (d["method"].get_type() != Variant::STRING_NAME && d["method"].get_type() != Variant::STRING), -1);
+			ERR_FAIL_COND_V(!d.has("call_in_editor") || d["call_in_editor"].get_type() != Variant::BOOL, -1);
 			ERR_FAIL_COND_V(!d.has("args") || !d["args"].is_array(), -1);
 
 			MethodKey k;
@@ -1729,6 +1730,7 @@ int Animation::track_insert_key(int p_track, double p_time, const Variant &p_key
 			k.time = p_time;
 			k.transition = p_transition;
 			k.method = d["method"];
+			k.call_in_editor = d["call_in_editor"];
 			k.params = d["args"];
 
 			ret = _insert(p_time, mt->methods, k);
@@ -1886,6 +1888,7 @@ Variant Animation::track_get_key_value(int p_track, int p_key_idx) const {
 			ERR_FAIL_INDEX_V(p_key_idx, mt->methods.size(), Variant());
 			Dictionary d;
 			d["method"] = mt->methods[p_key_idx].method;
+			d["call_in_editor"] = mt->methods[p_key_idx].call_in_editor;
 			d["args"] = mt->methods[p_key_idx].params;
 			return d;
 
@@ -2256,6 +2259,9 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 
 			if (d.has("method")) {
 				mt->methods.write[p_key_idx].method = d["method"];
+			}
+			if (d.has("call_in_editor")) {
+				mt->methods.write[p_key_idx].call_in_editor = d["call_in_editor"];
 			}
 			if (d.has("args")) {
 				mt->methods.write[p_key_idx].params = d["args"];
@@ -3177,6 +3183,22 @@ Vector<Variant> Animation::method_track_get_params(int p_track, int p_key_idx) c
 	return mk.params;
 }
 
+
+bool Animation::method_track_get_call_in_editor(int p_track, int p_key_idx) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), false);
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_METHOD, false);
+
+	MethodTrack *pm = static_cast<MethodTrack *>(t);
+
+	if (pm->methods.size() == 0) {
+		return false;
+	}
+
+	return pm->methods[p_key_idx].call_in_editor;
+}
+
+
 StringName Animation::method_track_get_name(int p_track, int p_key_idx) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), StringName());
 	Track *t = tracks[p_track];
@@ -3852,6 +3874,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("value_track_interpolate", "track_idx", "time_sec", "backward"), &Animation::value_track_interpolate, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("method_track_get_name", "track_idx", "key_idx"), &Animation::method_track_get_name);
+	ClassDB::bind_method(D_METHOD("method_track_get_call_in_editor", "track_idx", "key_idx"), &Animation::method_track_get_call_in_editor);
 	ClassDB::bind_method(D_METHOD("method_track_get_params", "track_idx", "key_idx"), &Animation::method_track_get_params);
 
 	ClassDB::bind_method(D_METHOD("bezier_track_insert_key", "track_idx", "time", "value", "in_handle", "out_handle"), &Animation::bezier_track_insert_key, DEFVAL(Vector2()), DEFVAL(Vector2()));
