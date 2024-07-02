@@ -4318,7 +4318,14 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 	if (p_preload->path->reduced_value.get_type() != Variant::STRING) {
 		push_error("Preloaded path must be a constant string.", p_preload->path);
 	} else {
-		p_preload->resolved_path = p_preload->path->reduced_value;
+		String resolved_path = p_preload->path->reduced_value;
+
+		// TODO: refactor into reusable method
+		if (resolved_path.begins_with("uid://")) {
+			resolved_path = ResourceUID::get_singleton()->get_id_path(ResourceUID::get_singleton()->text_to_id(resolved_path));
+		}
+
+		p_preload->resolved_path = resolved_path;
 		// TODO: Save this as script dependency.
 		if (p_preload->resolved_path.is_relative_path()) {
 			p_preload->resolved_path = parser->script_path.get_base_dir().path_join(p_preload->resolved_path);
