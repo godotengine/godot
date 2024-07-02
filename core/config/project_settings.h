@@ -52,6 +52,16 @@ public:
 		NO_BUILTIN_ORDER_BASE = 1 << 16
 	};
 
+	enum LayerType {
+		LAYER_PHYSICS_2D,
+		LAYER_RENDER_2D,
+		LAYER_NAVIGATION_2D,
+		LAYER_PHYSICS_3D,
+		LAYER_RENDER_3D,
+		LAYER_NAVIGATION_3D,
+		LAYER_AVOIDANCE,
+	};
+
 #ifdef TOOLS_ENABLED
 	const static PackedStringArray get_required_features();
 	const static PackedStringArray get_unsupported_features(const PackedStringArray &p_project_features);
@@ -219,6 +229,9 @@ public:
 	String get_scene_groups_cache_path() const;
 	void load_scene_groups_cache();
 
+	int find_layer(LayerType p_type, const String &p_name) const;
+	int get_layer_count(LayerType p_type) const;
+
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
@@ -227,6 +240,8 @@ public:
 	ProjectSettings(const String &p_path);
 	~ProjectSettings();
 };
+
+VARIANT_ENUM_CAST(ProjectSettings::LayerType);
 
 // Not a macro any longer.
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false, bool p_basic = false, bool p_internal = false);
