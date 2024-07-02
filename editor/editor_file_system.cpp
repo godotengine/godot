@@ -150,6 +150,11 @@ uint64_t EditorFileSystemDirectory::get_file_modified_time(int p_idx) const {
 	return files[p_idx]->modified_time;
 }
 
+uint64_t EditorFileSystemDirectory::get_file_import_modified_time(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, files.size(), 0);
+	return files[p_idx]->import_modified_time;
+}
+
 String EditorFileSystemDirectory::get_file_script_class_name(int p_idx) const {
 	return files[p_idx]->script_class_name;
 }
@@ -720,7 +725,16 @@ bool EditorFileSystem::_update_scan_actions() {
 				int idx = ia.dir->find_file_index(ia.file);
 				ERR_CONTINUE(idx == -1);
 				String full_path = ia.dir->get_file_path(idx);
-				if (_test_for_reimport(full_path, false)) {
+
+				bool need_reimport = _test_for_reimport(full_path, false);
+				if (!need_reimport && FileAccess::exists(full_path + ".import")) {
+					uint64_t import_mt = ia.dir->get_file_import_modified_time(idx);
+					if (import_mt != FileAccess::get_modified_time(full_path + ".import")) {
+						need_reimport = true;
+					}
+				}
+
+				if (need_reimport) {
 					//must reimport
 					reimports.push_back(full_path);
 					Vector<String> dependencies = _get_dependencies(full_path);
