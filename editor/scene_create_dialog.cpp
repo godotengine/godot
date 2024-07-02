@@ -176,6 +176,7 @@ Node *SceneCreateDialog::create_scene_root() {
 
 	ERR_FAIL_NULL_V(root, nullptr);
 	root->set_name(root_name);
+	root->notification(NOTIFICATION_EDITOR_CREATED);
 	return root;
 }
 
