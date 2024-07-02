@@ -144,9 +144,9 @@ Error EditorRunNative::start_run_native(int p_id) {
 	int flags = 0;
 
 	bool deploy_debug_remote = is_deploy_debug_remote_enabled();
-	bool deploy_dumb = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
-	bool debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisions", false);
-	bool debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
+	bool deploy_dumb = GET_PROJECT_META("debug_options", "run_file_server", false);
+	bool debug_collisions = GET_PROJECT_META("debug_options", "run_debug_collisions", false);
+	bool debug_navigation = GET_PROJECT_META("debug_options", "run_debug_navigation", false);
 
 	if (deploy_debug_remote) {
 		flags |= EditorExportPlatform::DEBUG_FLAG_REMOTE_DEBUG;
@@ -181,7 +181,7 @@ void EditorRunNative::_bind_methods() {
 }
 
 bool EditorRunNative::is_deploy_debug_remote_enabled() const {
-	return EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", false);
+	return GET_PROJECT_META("debug_options", "run_deploy_remote_debug", false);
 }
 
 EditorRunNative::EditorRunNative() {

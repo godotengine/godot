@@ -104,7 +104,7 @@ void EditorSettingsDialog::popup_edit_settings() {
 	set_process_shortcut_input(true);
 
 	// Restore valid window bounds or pop up at default size.
-	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "editor_settings", Rect2());
+	Rect2 saved_size = GET_PROJECT_META("dialog_bounds", "editor_settings", Rect2());
 	if (saved_size != Rect2()) {
 		popup(saved_size);
 	} else {
@@ -132,7 +132,7 @@ void EditorSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
-				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "editor_settings", Rect2(get_position(), get_size()));
+				SET_PROJECT_META("dialog_bounds", "editor_settings", Rect2(get_position(), get_size()));
 				set_process_shortcut_input(false);
 			}
 		} break;

@@ -95,7 +95,7 @@ void ProjectExportDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
-				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "export", Rect2(get_position(), get_size()));
+				SET_PROJECT_META("dialog_bounds", "export", Rect2(get_position(), get_size()));
 			}
 		} break;
 
@@ -127,7 +127,7 @@ void ProjectExportDialog::popup_export() {
 	}
 
 	// Restore valid window bounds or pop up at default size.
-	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "export", Rect2());
+	Rect2 saved_size = GET_PROJECT_META("dialog_bounds", "export", Rect2());
 	if (saved_size != Rect2()) {
 		popup(saved_size);
 	} else {
@@ -1120,7 +1120,7 @@ void ProjectExportDialog::_export_project() {
 void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 	// Save this name for use in future exports (but drop the file extension)
 	default_filename = p_path.get_file().get_basename();
-	EditorSettings::get_singleton()->set_project_metadata("export_options", "default_filename", default_filename);
+	SET_PROJECT_META("export_options", "default_filename", default_filename);
 
 	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND_MSG(current.is_null(), "Failed to start the export: current preset is invalid.");
@@ -1583,7 +1583,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	set_hide_on_ok(false);
 
-	default_filename = EditorSettings::get_singleton()->get_project_metadata("export_options", "default_filename", "");
+	default_filename = GET_PROJECT_META("export_options", "default_filename", "");
 	// If no default set, use project name
 	if (default_filename.is_empty()) {
 		// If no project name defined, use a sane default

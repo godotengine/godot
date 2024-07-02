@@ -120,7 +120,7 @@ void ScriptCreateDialog::_notification(int p_what) {
 				}
 			}
 
-			String last_language = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
+			String last_language = GET_PROJECT_META("script_setup", "last_selected_language", "");
 			if (!last_language.is_empty()) {
 				for (int i = 0; i < language_menu->get_item_count(); i++) {
 					if (language_menu->get_item_text(i) == last_language) {
@@ -292,9 +292,9 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 	if (is_using_templates && !parent_name->get_text().begins_with("\"res:")) {
 		if (sinfo.origin == ScriptLanguage::TemplateLocation::TEMPLATE_PROJECT) {
 			// Save the last used template for this node into the project dictionary.
-			Dictionary dic_templates_project = EditorSettings::get_singleton()->get_project_metadata("script_setup", "templates_dictionary", Dictionary());
+			Dictionary dic_templates_project = GET_PROJECT_META("script_setup", "templates_dictionary", Dictionary());
 			dic_templates_project[parent_name->get_text()] = sinfo.get_hash();
-			EditorSettings::get_singleton()->set_project_metadata("script_setup", "templates_dictionary", dic_templates_project);
+			SET_PROJECT_META("script_setup", "templates_dictionary", dic_templates_project);
 		} else {
 			// Save template info to editor dictionary (not a project template).
 			Dictionary dic_templates;
@@ -304,10 +304,10 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 			dic_templates[parent_name->get_text()] = sinfo.get_hash();
 			EditorSettings::get_singleton()->set_meta("script_setup_templates_dictionary", dic_templates);
 			// Remove template from project dictionary as we last used an editor level template.
-			Dictionary dic_templates_project = EditorSettings::get_singleton()->get_project_metadata("script_setup", "templates_dictionary", Dictionary());
+			Dictionary dic_templates_project = GET_PROJECT_META("script_setup", "templates_dictionary", Dictionary());
 			if (dic_templates_project.has(parent_name->get_text())) {
 				dic_templates_project.erase(parent_name->get_text());
-				EditorSettings::get_singleton()->set_project_metadata("script_setup", "templates_dictionary", dic_templates_project);
+				SET_PROJECT_META("script_setup", "templates_dictionary", dic_templates_project);
 			}
 		}
 	}
@@ -396,7 +396,7 @@ void ScriptCreateDialog::_language_changed(int l) {
 	_path_changed(path);
 	file_path->set_text(path);
 
-	EditorSettings::get_singleton()->set_project_metadata("script_setup", "last_selected_language", language_menu->get_item_text(language_menu->get_selected()));
+	SET_PROJECT_META("script_setup", "last_selected_language", language_menu->get_item_text(language_menu->get_selected()));
 
 	_parent_name_changed(parent_name->get_text());
 	validation_panel->update();
@@ -508,7 +508,7 @@ void ScriptCreateDialog::_update_template_menu() {
 
 	if (is_language_using_templates) {
 		// Get the latest templates used for each type of node from project settings then global settings.
-		Dictionary last_local_templates = EditorSettings::get_singleton()->get_project_metadata("script_setup", "templates_dictionary", Dictionary());
+		Dictionary last_local_templates = GET_PROJECT_META("script_setup", "templates_dictionary", Dictionary());
 		Dictionary last_global_templates;
 		if (EditorSettings::get_singleton()->has_meta("script_setup_templates_dictionary")) {
 			last_global_templates = (Dictionary)EditorSettings::get_singleton()->get_meta("script_setup_templates_dictionary");

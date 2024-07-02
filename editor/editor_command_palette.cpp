@@ -262,7 +262,7 @@ void EditorCommandPalette::_add_command(String p_command_name, String p_key_name
 	command.shortcut_text = p_shortcut_text;
 
 	// Commands added from plugins don't exist yet when the history is loaded, so we assign the last use time here if it was recorded.
-	Dictionary command_history = EditorSettings::get_singleton()->get_project_metadata("command_palette", "command_history", Dictionary());
+	Dictionary command_history = GET_PROJECT_META("command_palette", "command_history", Dictionary());
 	if (command_history.has(p_key_name)) {
 		command.last_used = command_history[p_key_name];
 	}
@@ -297,7 +297,7 @@ void EditorCommandPalette::register_shortcuts_as_command() {
 	unregistered_shortcuts.clear();
 
 	// Load command use history.
-	Dictionary command_history = EditorSettings::get_singleton()->get_project_metadata("command_palette", "command_history", Dictionary());
+	Dictionary command_history = GET_PROJECT_META("command_palette", "command_history", Dictionary());
 	Array history_entries = command_history.keys();
 	for (int i = 0; i < history_entries.size(); i++) {
 		const String &history_key = history_entries[i];
@@ -330,7 +330,7 @@ void EditorCommandPalette::_save_history() const {
 			command_history[E.key] = E.value.last_used;
 		}
 	}
-	EditorSettings::get_singleton()->set_project_metadata("command_palette", "command_history", command_history);
+	SET_PROJECT_META("command_palette", "command_history", command_history);
 }
 
 EditorCommandPalette *EditorCommandPalette::get_singleton() {

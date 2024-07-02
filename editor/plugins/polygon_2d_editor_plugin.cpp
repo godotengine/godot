@@ -293,7 +293,7 @@ void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
 }
 
 void Polygon2DEditor::_uv_edit_popup_hide() {
-	EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "uv_editor", Rect2(uv_edit->get_position(), uv_edit->get_size()));
+	SET_PROJECT_META("dialog_bounds", "uv_editor", Rect2(uv_edit->get_position(), uv_edit->get_size()));
 	_cancel_editing();
 }
 
@@ -320,7 +320,7 @@ void Polygon2DEditor::_menu_option(int p_option) {
 				undo_redo->commit_action();
 			}
 
-			const Rect2 bounds = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "uv_editor", Rect2());
+			const Rect2 bounds = GET_PROJECT_META("dialog_bounds", "uv_editor", Rect2());
 			if (bounds.has_area()) {
 				uv_edit->popup(bounds);
 			} else {
@@ -425,36 +425,36 @@ void Polygon2DEditor::_commit_action() {
 
 void Polygon2DEditor::_set_use_snap(bool p_use) {
 	use_snap = p_use;
-	EditorSettings::get_singleton()->set_project_metadata("polygon_2d_uv_editor", "snap_enabled", p_use);
+	SET_PROJECT_META("polygon_2d_uv_editor", "snap_enabled", p_use);
 }
 
 void Polygon2DEditor::_set_show_grid(bool p_show) {
 	snap_show_grid = p_show;
-	EditorSettings::get_singleton()->set_project_metadata("polygon_2d_uv_editor", "show_grid", p_show);
+	SET_PROJECT_META("polygon_2d_uv_editor", "show_grid", p_show);
 	uv_edit_draw->queue_redraw();
 }
 
 void Polygon2DEditor::_set_snap_off_x(real_t p_val) {
 	snap_offset.x = p_val;
-	EditorSettings::get_singleton()->set_project_metadata("polygon_2d_uv_editor", "snap_offset", snap_offset);
+	SET_PROJECT_META("polygon_2d_uv_editor", "snap_offset", snap_offset);
 	uv_edit_draw->queue_redraw();
 }
 
 void Polygon2DEditor::_set_snap_off_y(real_t p_val) {
 	snap_offset.y = p_val;
-	EditorSettings::get_singleton()->set_project_metadata("polygon_2d_uv_editor", "snap_offset", snap_offset);
+	SET_PROJECT_META("polygon_2d_uv_editor", "snap_offset", snap_offset);
 	uv_edit_draw->queue_redraw();
 }
 
 void Polygon2DEditor::_set_snap_step_x(real_t p_val) {
 	snap_step.x = p_val;
-	EditorSettings::get_singleton()->set_project_metadata("polygon_2d_uv_editor", "snap_step", snap_step);
+	SET_PROJECT_META("polygon_2d_uv_editor", "snap_step", snap_step);
 	uv_edit_draw->queue_redraw();
 }
 
 void Polygon2DEditor::_set_snap_step_y(real_t p_val) {
 	snap_step.y = p_val;
-	EditorSettings::get_singleton()->set_project_metadata("polygon_2d_uv_editor", "snap_step", snap_step);
+	SET_PROJECT_META("polygon_2d_uv_editor", "snap_step", snap_step);
 	uv_edit_draw->queue_redraw();
 }
 
@@ -1292,11 +1292,11 @@ Vector2 Polygon2DEditor::snap_point(Vector2 p_target) const {
 }
 
 Polygon2DEditor::Polygon2DEditor() {
-	snap_offset = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_offset", Vector2());
+	snap_offset = GET_PROJECT_META("polygon_2d_uv_editor", "snap_offset", Vector2());
 	// A power-of-two value works better as a default grid size.
-	snap_step = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_step", Vector2(8, 8));
-	use_snap = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_enabled", false);
-	snap_show_grid = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "show_grid", false);
+	snap_step = GET_PROJECT_META("polygon_2d_uv_editor", "snap_step", Vector2(8, 8));
+	use_snap = GET_PROJECT_META("polygon_2d_uv_editor", "snap_enabled", false);
+	snap_show_grid = GET_PROJECT_META("polygon_2d_uv_editor", "show_grid", false);
 
 	button_uv = memnew(Button);
 	button_uv->set_theme_type_variation("FlatButton");

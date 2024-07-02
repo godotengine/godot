@@ -140,7 +140,7 @@ void MaterialEditor::_on_sphere_switch_pressed() {
 	sphere_instance->show();
 	box_switch->set_pressed(false);
 	sphere_switch->set_pressed(true);
-	EditorSettings::get_singleton()->set_project_metadata("inspector_options", "material_preview_on_sphere", true);
+	SET_PROJECT_META("inspector_options", "material_preview_on_sphere", true);
 }
 
 void MaterialEditor::_on_box_switch_pressed() {
@@ -148,7 +148,7 @@ void MaterialEditor::_on_box_switch_pressed() {
 	sphere_instance->hide();
 	box_switch->set_pressed(true);
 	sphere_switch->set_pressed(false);
-	EditorSettings::get_singleton()->set_project_metadata("inspector_options", "material_preview_on_sphere", false);
+	SET_PROJECT_META("inspector_options", "material_preview_on_sphere", false);
 }
 
 MaterialEditor::MaterialEditor() {
@@ -270,7 +270,7 @@ MaterialEditor::MaterialEditor() {
 	vb_light->add_child(light_2_switch);
 	light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_light_2_switch_pressed));
 
-	if (EditorSettings::get_singleton()->get_project_metadata("inspector_options", "material_preview_on_sphere", true)) {
+	if (GET_PROJECT_META("inspector_options", "material_preview_on_sphere", true)) {
 		box_instance->hide();
 	} else {
 		box_instance->show();

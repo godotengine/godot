@@ -212,4 +212,7 @@ void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_k
 void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, const PackedInt32Array &p_keycodes, bool p_physical = false);
 Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path);
 
+#define SET_PROJECT_META(m_section, m_key, m_data) EditorSettings::get_singleton()->set_project_metadata(m_section, m_key, m_data)
+#define GET_PROJECT_META(m_section, m_key, m_default) EditorSettings::get_singleton()->get_project_metadata(m_section, m_key, m_default)
+
 #endif // EDITOR_SETTINGS_H
