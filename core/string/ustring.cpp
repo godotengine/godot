@@ -1772,7 +1772,11 @@ String String::num(double p_num, int p_decimals) {
 				if (buf[z] == '0') {
 					buf[z] = 0;
 				} else if (buf[z] == '.') {
-					buf[z] = 0;
+					if (z == 254) {
+						buf[z] = 0;
+					} else {
+						buf[z + 1] = '0';
+					}
 					break;
 				} else {
 					break;
