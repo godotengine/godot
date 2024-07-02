@@ -229,6 +229,8 @@ public:
 	virtual Transform2D _edit_get_transform() const;
 #endif
 
+	PackedStringArray get_configuration_warnings() const override;
+
 	void update_draw_order();
 
 	/* VISIBILITY */
