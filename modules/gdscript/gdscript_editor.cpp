@@ -402,7 +402,11 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 		}
 
 		const Variant &var = gl_array[E.value];
-		if (Object *obj = var) {
+		bool freed = false;
+		if (Object *obj = var.get_validated_object_with_check(freed)) {
+			if (freed) {
+				continue;
+			}
 			if (Object::cast_to<GDScriptNativeClass>(obj)) {
 				continue;
 			}
