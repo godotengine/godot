@@ -1257,6 +1257,11 @@ void main() {
 				break;
 			}
 
+			if (!bool(reflections.data[reflection_index].mask & instances.data[draw_call.instance_index].layer_mask)) {
+				// Not masked; don't render the reflection on this instance.
+				continue;
+			}
+
 			reflection_process(reflection_index, vertex, ref_vec, bent_normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
 		}
 
