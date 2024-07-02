@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRVisibilityMask" inherits="VisualInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Draws a stereo correct visibility mask.
+	</brief_description>
+	<description>
+		The visibility mask allows us to black out the part of the render result that is invisible due to lens distortion.
+		As this is rendered first, it prevents fragments with expensive lighting calculations to be processed as they are discarded through z-checking.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

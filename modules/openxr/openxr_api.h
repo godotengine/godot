@@ -434,6 +434,7 @@ public:
 	void set_form_factor(XrFormFactor p_form_factor);
 	XrFormFactor get_form_factor() const { return form_factor; }
 
+	uint32_t get_view_count();
 	void set_view_configuration(XrViewConfigurationType p_view_configuration);
 	XrViewConfigurationType get_view_configuration() const { return view_configuration; }
 
