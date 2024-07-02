@@ -1914,7 +1914,14 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
 						//clicking is always deferred to either move or release
-						clicked = _select_ray(b->get_position());
+
+						//single item selection
+						Vector<_RayResult> selection;
+						_find_items_at_pos(b->get_position(), selection, false);
+						if (!selection.is_empty()) {
+							clicked = selection[0].item->get_instance_id();
+						}
+
 						selection_in_progress = true;
 
 						if (clicked.is_null()) {
