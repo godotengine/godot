@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="HTTPClientExtension" inherits="HTTPClient" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_close" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_connect_to_host" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" />
+			<param index="2" name="tls_options" type="TLSOptions" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_connection" qualifiers="virtual const">
+			<return type="StreamPeer" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_read_chunk_size" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_response_body_length" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_response_code" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_response_headers" qualifiers="virtual">
+			<return type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_status" qualifiers="virtual const">
+			<return type="int" enum="HTTPClient.Status" />
+			<description>
+			</description>
+		</method>
+		<method name="_has_response" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_blocking_mode_enabled" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_response_chunked" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_poll" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<description>
+			</description>
+		</method>
+		<method name="_read_response_body_chunk" qualifiers="virtual">
+			<return type="PackedByteArray" />
+			<description>
+			</description>
+		</method>
+		<method name="_request" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="method" type="int" enum="HTTPClient.Method" />
+			<param index="1" name="url" type="String" />
+			<param index="2" name="headers" type="PackedStringArray" />
+			<param index="3" name="body" type="const uint8_t*" />
+			<param index="4" name="body_size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_blocking_mode" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_connection" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="connection" type="StreamPeer" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_http_proxy" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_https_proxy" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_read_chunk_size" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="chunk_size" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>
