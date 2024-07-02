@@ -138,6 +138,8 @@ protected:
 	void _convert_to_last_version(int p_from_version);
 
 	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0);
+	bool _unload_resource_pack(const String &p_pack);
+	bool _is_pack_loaded(const String &p_pack);
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
