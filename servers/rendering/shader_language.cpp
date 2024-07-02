@@ -1300,7 +1300,7 @@ void ShaderLanguage::_parse_used_identifier(const StringName &p_identifier, Iden
 }
 #endif // DEBUG_ENABLED
 
-bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type, IdentifierType *r_type, bool *r_is_const, int *r_array_size, StringName *r_struct_name, ConstantNode::Value *r_constant_value) {
+bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type, IdentifierType *r_type, bool *r_is_const, int *r_array_size, StringName *r_struct_name, Scalar *r_constant_value) {
 	if (is_shader_inc) {
 		for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
 			for (const KeyValue<StringName, FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(i))) {
@@ -1446,12 +1446,8 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 			*r_struct_name = shader->constants[p_identifier].struct_name;
 		}
 		if (r_constant_value) {
-			if (shader->constants[p_identifier].initializer && shader->constants[p_identifier].initializer->type == Node::NODE_TYPE_CONSTANT) {
-				ConstantNode *cnode = static_cast<ConstantNode *>(shader->constants[p_identifier].initializer);
-
-				if (cnode->values.size() == 1) {
-					*r_constant_value = cnode->values[0];
-				}
+			if (shader->constants[p_identifier].initializer && shader->constants[p_identifier].initializer->get_values().size() == 1) {
+				*r_constant_value = shader->constants[p_identifier].initializer->get_values()[0];
 			}
 		}
 		if (r_type) {
@@ -1482,7 +1478,7 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 	return false;
 }
 
-bool ShaderLanguage::_validate_operator(OperatorNode *p_op, DataType *r_ret_type, int *r_ret_size) {
+bool ShaderLanguage::_validate_operator(const BlockNode *p_block, OperatorNode *p_op, DataType *r_ret_type, int *r_ret_size) {
 	bool valid = false;
 	DataType ret_type = TYPE_VOID;
 	int ret_size = 0;
@@ -1945,7 +1941,398 @@ bool ShaderLanguage::_validate_operator(OperatorNode *p_op, DataType *r_ret_type
 	if (r_ret_size) {
 		*r_ret_size = ret_size;
 	}
+
+	if (valid) {
+		// Need to be placed here and not in the `_reduce_expression` because otherwise expressions like `1 + 2 / 2` will not work correctly.
+		_eval_operator(p_block, p_op);
+	}
+
 	return valid;
+}
+
+void ShaderLanguage::_eval_operator(const BlockNode *p_block, OperatorNode *p_op) {
+	DataType ret = p_op->get_datatype();
+
+	switch (p_op->op) {
+		case OP_EQUAL:
+		case OP_NOT_EQUAL:
+		case OP_LESS:
+		case OP_LESS_EQUAL:
+		case OP_GREATER:
+		case OP_GREATER_EQUAL:
+		case OP_AND:
+		case OP_OR:
+		case OP_ADD:
+		case OP_SUB:
+		case OP_MUL:
+		case OP_DIV:
+		case OP_MOD:
+		case OP_SHIFT_LEFT:
+		case OP_SHIFT_RIGHT:
+		case OP_BIT_AND:
+		case OP_BIT_OR:
+		case OP_BIT_XOR: {
+			DataType a = p_op->arguments[0]->get_datatype();
+			DataType b = p_op->arguments[1]->get_datatype();
+
+			bool is_op_vec_transform = false;
+			if (p_op->op == OP_MUL && a == TYPE_VEC2 && b == TYPE_MAT2) {
+				is_op_vec_transform = true;
+			} else if (p_op->op == OP_MUL && a == TYPE_VEC3 && b == TYPE_MAT3) {
+				is_op_vec_transform = true;
+			} else if (p_op->op == OP_MUL && a == TYPE_VEC4 && b == TYPE_MAT4) {
+				is_op_vec_transform = true;
+			}
+
+			Vector<Scalar> va;
+			if (shader && p_op->arguments[0]->type == Node::NODE_TYPE_VARIABLE) {
+				VariableNode *vn = static_cast<VariableNode *>(p_op->arguments[0]);
+
+				IdentifierType ident_type;
+				bool is_const = false;
+				Scalar value;
+
+				_find_identifier(p_block, false, FunctionInfo(), vn->name, nullptr, &ident_type, &is_const, nullptr, nullptr, &value);
+
+				if (ident_type == IDENTIFIER_CONSTANT || (ident_type == IDENTIFIER_LOCAL_VAR && is_const)) {
+					va.push_back(value);
+				}
+			} else {
+				va = p_op->arguments[0]->get_values();
+			}
+
+			Vector<Scalar> vb;
+			if (shader && p_op->arguments[1]->type == Node::NODE_TYPE_VARIABLE) {
+				VariableNode *vn = static_cast<VariableNode *>(p_op->arguments[1]);
+
+				IdentifierType ident_type;
+				bool is_const = false;
+				Scalar value;
+
+				_find_identifier(p_block, false, FunctionInfo(), vn->name, nullptr, &ident_type, &is_const, nullptr, nullptr, &value);
+
+				if (ident_type == IDENTIFIER_CONSTANT || (ident_type == IDENTIFIER_LOCAL_VAR && is_const)) {
+					vb.push_back(value);
+				}
+			} else {
+				vb = p_op->arguments[1]->get_values();
+			}
+
+			if (is_op_vec_transform) {
+				p_op->values = _eval_vector_transform(va, vb, a, b, ret);
+			} else {
+				p_op->values = _eval_vector(va, vb, a, b, ret, p_op->op);
+			}
+		} break;
+		case OP_NOT:
+		case OP_NEGATE:
+		case OP_BIT_INVERT: {
+			Vector<Scalar> va;
+			if (shader && p_op->arguments[0]->type == Node::NODE_TYPE_VARIABLE) {
+				VariableNode *vn = static_cast<VariableNode *>(p_op->arguments[0]);
+
+				IdentifierType ident_type;
+				bool is_const = false;
+				Scalar value;
+
+				_find_identifier(p_block, false, FunctionInfo(), vn->name, nullptr, &ident_type, &is_const, nullptr, nullptr, &value);
+
+				if (ident_type == IDENTIFIER_CONSTANT || (ident_type == IDENTIFIER_LOCAL_VAR && is_const)) {
+					va.push_back(value);
+				}
+			} else {
+				va = p_op->arguments[0]->get_values();
+			}
+
+			p_op->values = _eval_unary_vector(va, ret, p_op->op);
+		} break;
+		default: {
+		} break;
+	}
+}
+
+ShaderLanguage::Scalar ShaderLanguage::_eval_unary_scalar(const Scalar &p_a, Operator p_op, DataType p_ret_type) {
+	Scalar scalar;
+
+	switch (p_op) {
+		case OP_NOT: {
+			scalar.boolean = !p_a.boolean;
+		} break;
+		case OP_NEGATE: {
+			if (p_ret_type >= TYPE_INT && p_ret_type <= TYPE_IVEC4) {
+				scalar.sint = -p_a.sint;
+			} else if (p_ret_type >= TYPE_UINT && p_ret_type <= TYPE_UVEC4) {
+				// Intentionally wrap the unsigned int value, because GLSL does.
+				scalar.uint = 0 - p_a.uint;
+			} else { // float types
+				scalar.real = -scalar.real;
+			}
+		} break;
+		case OP_BIT_INVERT: {
+			if (p_ret_type >= TYPE_INT && p_ret_type <= TYPE_IVEC4) {
+				scalar.sint = ~p_a.sint;
+			} else { // uint types
+				scalar.uint = ~p_a.uint;
+			}
+		} break;
+		default: {
+		} break;
+	}
+
+	return scalar;
+}
+
+ShaderLanguage::Scalar ShaderLanguage::_eval_scalar(const Scalar &p_a, const Scalar &p_b, Operator p_op, DataType p_ret_type) {
+	Scalar scalar;
+
+	switch (p_op) {
+		case OP_EQUAL: {
+			scalar.boolean = p_a.boolean == p_b.boolean;
+		} break;
+		case OP_NOT_EQUAL: {
+			scalar.boolean = p_a.boolean != p_b.boolean;
+		} break;
+		case OP_LESS: {
+			if (p_ret_type == TYPE_INT) {
+				scalar.boolean = p_a.sint < p_b.sint;
+			} else if (p_ret_type == TYPE_UINT) {
+				scalar.boolean = p_a.uint < p_b.uint;
+			} else {
+				scalar.boolean = p_a.real < p_b.real;
+			}
+		} break;
+		case OP_LESS_EQUAL: {
+			if (p_ret_type == TYPE_INT) {
+				scalar.boolean = p_a.sint <= p_b.sint;
+			} else if (p_ret_type == TYPE_UINT) {
+				scalar.boolean = p_a.uint <= p_b.uint;
+			} else {
+				scalar.boolean = p_a.real <= p_b.real;
+			}
+		} break;
+		case OP_GREATER: {
+			if (p_ret_type == TYPE_INT) {
+				scalar.boolean = p_a.sint > p_b.sint;
+			} else if (p_ret_type == TYPE_UINT) {
+				scalar.boolean = p_a.uint > p_b.uint;
+			} else {
+				scalar.boolean = p_a.real > p_b.real;
+			}
+		} break;
+		case OP_GREATER_EQUAL: {
+			if (p_ret_type == TYPE_INT) {
+				scalar.boolean = p_a.sint >= p_b.sint;
+			} else if (p_ret_type == TYPE_UINT) {
+				scalar.boolean = p_a.uint >= p_b.uint;
+			} else {
+				scalar.boolean = p_a.real >= p_b.real;
+			}
+		} break;
+		case OP_AND: {
+			scalar.boolean = p_a.boolean && p_b.boolean;
+		} break;
+		case OP_OR: {
+			scalar.boolean = p_a.boolean || p_b.boolean;
+		} break;
+		case OP_ADD: {
+			if (p_ret_type >= TYPE_INT && p_ret_type <= TYPE_IVEC4) {
+				scalar.sint = p_a.sint + p_b.sint;
+			} else if (p_ret_type >= TYPE_UINT && p_ret_type <= TYPE_UVEC4) {
+				scalar.uint = p_a.uint + p_b.uint;
+			} else { // float + matrix types
+				scalar.real = p_a.real + p_b.real;
+			}
+		} break;
+		case OP_SUB: {
+			if (p_ret_type >= TYPE_INT && p_ret_type <= TYPE_IVEC4) {
+				scalar.sint = p_a.sint - p_b.sint;
+			} else if (p_ret_type >= TYPE_UINT && p_ret_type <= TYPE_UVEC4) {
+				scalar.uint = p_a.uint - p_b.uint;
+			} else { // float + matrix types
+				scalar.real = p_a.real - p_b.real;
+			}
+		} break;
+		case OP_MUL: {
+			if (p_ret_type >= TYPE_INT && p_ret_type <= TYPE_IVEC4) {
+				scalar.sint = p_a.sint * p_b.sint;
+			} else if (p_ret_type >= TYPE_UINT && p_ret_type <= TYPE_UVEC4) {
+				scalar.uint = p_a.uint * p_b.uint;
+			} else { // float + matrix types
+				scalar.real = p_a.real * p_b.real;
+			}
+		} break;
+		case OP_DIV: {
+			if (p_ret_type >= TYPE_INT && p_ret_type <= TYPE_IVEC4) {
+				if (p_b.sint == 0) {
+					scalar.sint = 0; // Division by zero, eval to zero.
+					break;
+				}
+				scalar.sint = p_a.sint / p_b.sint;
+			} else if (p_ret_type == TYPE_UINT && p_ret_type <= TYPE_UVEC4) {
+				if (p_b.uint == 0U) {
+					scalar.uint = 0U; // Division by zero, eval to zero.
+					break;
+				}
+				scalar.uint = p_a.uint / p_b.uint;
+			} else { // float + matrix types
+				scalar.real = p_a.real / p_b.real;
+			}
+		} break;
+		case OP_MOD: {
+			if (p_ret_type >= TYPE_INT && p_ret_type <= TYPE_IVEC4) {
+				if (p_b.sint == 0) {
+					scalar.sint = 0; // Modulo by zero, eval to zero.
+					break;
+				}
+				scalar.sint = p_a.sint % p_b.sint;
+			} else { // uint types
+				if (p_b.uint == 0U) {
+					scalar.uint = 0U; // Modulo by zero, eval to zero.
+					break;
+				}
+				scalar.uint = p_a.uint % p_b.uint;
+			}
+		} break;
+		case OP_SHIFT_LEFT: {
+			if (p_ret_type >= TYPE_INT && p_ret_type <= TYPE_IVEC4) {
+				scalar.sint = p_a.sint << p_b.sint;
+			} else { // uint types
+				scalar.uint = p_a.uint << p_b.uint;
+			}
+		} break;
+		case OP_SHIFT_RIGHT: {
+			if (p_ret_type >= TYPE_INT && p_ret_type <= TYPE_IVEC4) {
+				scalar.sint = p_a.sint >> p_b.sint;
+			} else { // uint types
+				scalar.uint = p_a.uint >> p_b.uint;
+			}
+		} break;
+		case OP_BIT_AND: {
+			if (p_ret_type >= TYPE_INT && p_ret_type <= TYPE_IVEC4) {
+				scalar.sint = p_a.sint & p_b.sint;
+			} else { // uint types
+				scalar.uint = p_a.uint & p_b.uint;
+			}
+		} break;
+		case OP_BIT_OR: {
+			if (p_ret_type >= TYPE_INT && p_ret_type <= TYPE_IVEC4) {
+				scalar.sint = p_a.sint | p_b.sint;
+			} else { // uint types
+				scalar.uint = p_a.uint | p_b.uint;
+			}
+		} break;
+		case OP_BIT_XOR: {
+			if (p_ret_type >= TYPE_INT && p_ret_type <= TYPE_IVEC4) {
+				scalar.sint = p_a.sint ^ p_b.sint;
+			} else { // uint types
+				scalar.uint = p_a.uint ^ p_b.uint;
+			}
+		} break;
+		default: {
+		} break;
+	}
+
+	return scalar;
+}
+
+Vector<ShaderLanguage::Scalar> ShaderLanguage::_eval_unary_vector(const Vector<Scalar> &p_va, DataType p_ret_type, Operator p_op) {
+	uint32_t size = get_datatype_component_count(p_ret_type);
+	if (p_va.size() != p_ret_type) {
+		return Vector<Scalar>(); // Non-evaluable values should not be parsed further.
+	}
+	Vector<Scalar> value;
+	value.resize(size);
+
+	Scalar *w = value.ptrw();
+	for (uint32_t i = 0U; i < size; i++) {
+		w[i] = _eval_unary_scalar(p_va[i], p_op, p_ret_type);
+	}
+	return value;
+}
+
+Vector<ShaderLanguage::Scalar> ShaderLanguage::_eval_vector(const Vector<Scalar> &p_va, const Vector<Scalar> &p_vb, DataType p_left_type, DataType p_right_type, DataType p_ret_type, Operator p_op) {
+	uint32_t left_size = get_datatype_component_count(p_left_type);
+	uint32_t right_size = get_datatype_component_count(p_right_type);
+
+	if (p_va.size() != left_size || p_vb.size() != right_size) {
+		return Vector<Scalar>(); // Non-evaluable values should not be parsed further.
+	}
+
+	uint32_t ret_size = get_datatype_component_count(p_ret_type);
+	Vector<Scalar> value;
+	value.resize(ret_size);
+
+	Scalar *w = value.ptrw();
+	for (uint32_t i = 0U; i < ret_size; i++) {
+		w[i] = _eval_scalar(p_va[MIN(i, left_size - 1)], p_vb[MIN(i, right_size - 1)], p_op, p_ret_type);
+	}
+	return value;
+}
+
+Vector<ShaderLanguage::Scalar> ShaderLanguage::_eval_vector_transform(const Vector<Scalar> &p_va, const Vector<Scalar> &p_vb, DataType p_left_type, DataType p_right_type, DataType p_ret_type) {
+	uint32_t left_size = get_datatype_component_count(p_left_type);
+	uint32_t right_size = get_datatype_component_count(p_right_type);
+
+	if (p_va.size() != left_size || p_vb.size() != right_size) {
+		return Vector<Scalar>(); // Non-evaluable values should not be parsed further.
+	}
+
+	uint32_t ret_size = get_datatype_component_count(p_ret_type);
+	Vector<Scalar> value;
+	value.resize_zeroed(ret_size);
+
+	Scalar *w = value.ptrw();
+	switch (p_ret_type) {
+		case TYPE_VEC2: {
+			if (left_size == 2) { // v * m
+				Vector2 v = Vector2(p_va[0].real, p_va[1].real);
+
+				w[0].real = (p_vb[0].real * v.x + p_vb[1].real * v.y);
+				w[1].real = (p_vb[2].real * v.x + p_vb[3].real * v.y);
+			} else { // m * v
+				Vector2 v = Vector2(p_vb[0].real, p_vb[1].real);
+
+				w[0].real = (p_va[0].real * v.x + p_va[2].real * v.y);
+				w[1].real = (p_va[1].real * v.x + p_va[3].real * v.y);
+			}
+		} break;
+		case TYPE_VEC3: {
+			if (left_size == 3) { // v * m
+				Vector3 v = Vector3(p_va[0].real, p_va[1].real, p_va[2].real);
+
+				w[0].real = (p_vb[0].real * v.x + p_vb[1].real * v.y + p_vb[2].real * v.z);
+				w[1].real = (p_vb[3].real * v.x + p_vb[4].real * v.y + p_vb[5].real * v.z);
+				w[2].real = (p_vb[6].real * v.x + p_vb[7].real * v.y + p_vb[8].real * v.z);
+			} else { // m * v
+				Vector3 v = Vector3(p_vb[0].real, p_vb[1].real, p_vb[2].real);
+
+				w[0].real = (p_va[0].real * v.x + p_va[3].real * v.y + p_va[6].real * v.z);
+				w[1].real = (p_va[1].real * v.x + p_va[4].real * v.y + p_va[7].real * v.z);
+				w[2].real = (p_va[2].real * v.x + p_va[5].real * v.y + p_va[8].real * v.z);
+			}
+		} break;
+		case TYPE_VEC4: {
+			if (left_size == 4) { // v * m
+				Vector4 v = Vector4(p_va[0].real, p_va[1].real, p_va[2].real, p_va[3].real);
+
+				w[0].real = (p_vb[0].real * v.x + p_vb[1].real * v.y + p_vb[2].real * v.z + p_vb[3].real * v.w);
+				w[1].real = (p_vb[4].real * v.x + p_vb[5].real * v.y + p_vb[6].real * v.z + p_vb[7].real * v.w);
+				w[2].real = (p_vb[8].real * v.x + p_vb[9].real * v.y + p_vb[10].real * v.z + p_vb[11].real * v.w);
+				w[3].real = (p_vb[12].real * v.x + p_vb[13].real * v.y + p_vb[14].real * v.z + p_vb[15].real * v.w);
+			} else { // m * v
+				Vector4 v = Vector4(p_vb[0].real, p_vb[1].real, p_vb[2].real, p_vb[3].real);
+
+				w[0].real = (p_vb[0].real * v.x + p_vb[4].real * v.y + p_vb[8].real * v.z + p_vb[12].real * v.w);
+				w[1].real = (p_vb[1].real * v.x + p_vb[5].real * v.y + p_vb[9].real * v.z + p_vb[13].real * v.w);
+				w[2].real = (p_vb[2].real * v.x + p_vb[6].real * v.y + p_vb[10].real * v.z + p_vb[14].real * v.w);
+				w[3].real = (p_vb[3].real * v.x + p_vb[7].real * v.y + p_vb[11].real * v.z + p_vb[15].real * v.w);
+			}
+		} break;
+		default: {
+		} break;
+	}
+
+	return value;
 }
 
 const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
@@ -3213,7 +3600,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 									const VariableNode *vn = static_cast<VariableNode *>(p_func->arguments[arg]);
 
 									bool is_const = false;
-									ConstantNode::Value value;
+									Scalar value;
 									value.sint = -1;
 
 									_find_identifier(p_block, false, p_function_info, vn->name, nullptr, nullptr, &is_const, nullptr, nullptr, &value);
@@ -3698,7 +4085,7 @@ bool ShaderLanguage::is_token_hint(TokenType p_type) {
 	return int(p_type) > int(TK_RENDER_MODE) && int(p_type) < int(TK_SHADER_TYPE);
 }
 
-bool ShaderLanguage::convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value) {
+bool ShaderLanguage::convert_constant(ConstantNode *p_constant, DataType p_to_type, Scalar *p_value) {
 	if (p_constant->datatype == p_to_type) {
 		if (p_value) {
 			for (int i = 0; i < p_constant->values.size(); i++) {
@@ -3766,7 +4153,7 @@ bool ShaderLanguage::is_sampler_type(DataType p_type) {
 	return p_type > TYPE_MAT4 && p_type < TYPE_STRUCT;
 }
 
-Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint) {
+Variant ShaderLanguage::constant_value_to_variant(const Vector<Scalar> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint) {
 	int array_size = p_array_size;
 
 	if (p_value.size() > 0) {
@@ -4370,6 +4757,52 @@ uint32_t ShaderLanguage::get_datatype_size(ShaderLanguage::DataType p_type) {
 	ERR_FAIL_V(0);
 }
 
+uint32_t ShaderLanguage::get_datatype_component_count(ShaderLanguage::DataType p_type) {
+	switch (p_type) {
+		case TYPE_BOOL:
+			return 1U;
+		case TYPE_BVEC2:
+			return 2U;
+		case TYPE_BVEC3:
+			return 3U;
+		case TYPE_BVEC4:
+			return 4U;
+		case TYPE_INT:
+			return 1U;
+		case TYPE_IVEC2:
+			return 2U;
+		case TYPE_IVEC3:
+			return 3U;
+		case TYPE_IVEC4:
+			return 4U;
+		case TYPE_UINT:
+			return 1U;
+		case TYPE_UVEC2:
+			return 2U;
+		case TYPE_UVEC3:
+			return 3U;
+		case TYPE_UVEC4:
+			return 4U;
+		case TYPE_FLOAT:
+			return 1U;
+		case TYPE_VEC2:
+			return 2U;
+		case TYPE_VEC3:
+			return 3U;
+		case TYPE_VEC4:
+			return 4U;
+		case TYPE_MAT2:
+			return 4U;
+		case TYPE_MAT3:
+			return 9U;
+		case TYPE_MAT4:
+			return 16U;
+		default:
+			break;
+	}
+	return 0U;
+}
+
 void ShaderLanguage::get_keyword_list(List<String> *r_keywords) {
 	HashSet<String> kws;
 
@@ -4843,45 +5276,40 @@ Error ShaderLanguage::_parse_array_size(BlockNode *p_block, const FunctionInfo &
 			*r_unknown_size = true;
 		}
 	} else {
+		_set_tkpos(pos);
+
 		int array_size = 0;
+		Node *expr = _parse_and_reduce_expression(p_block, p_function_info);
 
-		if (!tk.is_integer_constant() || ((int)tk.constant) <= 0) {
-			_set_tkpos(pos);
-			Node *n = _parse_and_reduce_expression(p_block, p_function_info);
-			if (n) {
-				if (n->type == Node::NODE_TYPE_VARIABLE) {
-					VariableNode *vn = static_cast<VariableNode *>(n);
-					if (vn) {
-						ConstantNode::Value v;
-						DataType data_type;
-						bool is_const = false;
-
-						_find_identifier(p_block, false, p_function_info, vn->name, &data_type, nullptr, &is_const, nullptr, nullptr, &v);
-
-						if (is_const) {
-							if (data_type == TYPE_INT) {
-								int32_t value = v.sint;
-								if (value > 0) {
-									array_size = value;
-								}
-							} else if (data_type == TYPE_UINT) {
-								uint32_t value = v.uint;
-								if (value > 0U) {
-									array_size = value;
-								}
-							}
-						}
+		if (expr) {
+			if (expr->type == Node::NODE_TYPE_CONSTANT || expr->type == Node::NODE_TYPE_OPERATOR) {
+				if (expr->get_values().size() == 1) {
+					if (expr->get_datatype() == TYPE_INT) {
+						array_size = expr->get_values()[0].sint;
+					} else if (expr->get_datatype() == TYPE_UINT) {
+						array_size = (int)expr->get_values()[0].uint;
 					}
-				} else if (n->type == Node::NODE_TYPE_OPERATOR) {
-					_set_error(vformat(RTR("Array size expressions are not supported.")));
-					return ERR_PARSE_ERROR;
 				}
-				if (r_size_expression != nullptr) {
-					*r_size_expression = n;
+			} else if (expr->type == Node::NODE_TYPE_VARIABLE) {
+				VariableNode *vn = static_cast<VariableNode *>(expr);
+
+				Scalar value;
+				DataType datatype;
+				bool is_const = false;
+
+				_find_identifier(p_block, false, p_function_info, vn->name, &datatype, nullptr, &is_const, nullptr, nullptr, &value);
+
+				if (is_const) {
+					if (datatype == TYPE_INT) {
+						array_size = value.sint;
+					} else if (datatype == TYPE_UINT) {
+						array_size = (int)value.uint;
+					}
 				}
 			}
-		} else if (((int)tk.constant) > 0) {
-			array_size = (uint32_t)tk.constant;
+			if (r_size_expression != nullptr) {
+				*r_size_expression = expr;
+			}
 		}
 
 		if (array_size <= 0) {
@@ -4978,7 +5406,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_array_constructor(BlockNode *p_bloc
 			idx++;
 		}
 		if (!auto_size && !undefined_size && an->initializer.size() != array_size) {
-			_set_error(RTR("Array size mismatch."));
+			_set_error(vformat(RTR("Array size mismatch. Expected %d elements (found %d)."), array_size, an->initializer.size()));
 			return nullptr;
 		}
 	} else {
@@ -5099,7 +5527,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_array_constructor(BlockNode *p_bloc
 			}
 		}
 		if (an->initializer.size() != p_array_size) {
-			_set_error(RTR("Array size mismatch."));
+			_set_error(vformat(RTR("Array size mismatch. Expected %d elements (found %d)."), p_array_size, an->initializer.size()));
 			return nullptr;
 		}
 	} else {
@@ -5144,7 +5572,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 		} else if (tk.type == TK_FLOAT_CONSTANT) {
 			ConstantNode *constant = alloc_node<ConstantNode>();
-			ConstantNode::Value v;
+			Scalar v;
 			v.real = tk.constant;
 			constant->values.push_back(v);
 			constant->datatype = TYPE_FLOAT;
@@ -5152,7 +5580,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 		} else if (tk.type == TK_INT_CONSTANT) {
 			ConstantNode *constant = alloc_node<ConstantNode>();
-			ConstantNode::Value v;
+			Scalar v;
 			v.sint = tk.constant;
 			constant->values.push_back(v);
 			constant->datatype = TYPE_INT;
@@ -5160,7 +5588,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 		} else if (tk.type == TK_UINT_CONSTANT) {
 			ConstantNode *constant = alloc_node<ConstantNode>();
-			ConstantNode::Value v;
+			Scalar v;
 			v.uint = tk.constant;
 			constant->values.push_back(v);
 			constant->datatype = TYPE_UINT;
@@ -5169,7 +5597,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 		} else if (tk.type == TK_TRUE) {
 			//handle true constant
 			ConstantNode *constant = alloc_node<ConstantNode>();
-			ConstantNode::Value v;
+			Scalar v;
 			v.boolean = true;
 			constant->values.push_back(v);
 			constant->datatype = TYPE_BOOL;
@@ -5178,7 +5606,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 		} else if (tk.type == TK_FALSE) {
 			//handle false constant
 			ConstantNode *constant = alloc_node<ConstantNode>();
-			ConstantNode::Value v;
+			Scalar v;
 			v.boolean = false;
 			constant->values.push_back(v);
 			constant->datatype = TYPE_BOOL;
@@ -6432,7 +6860,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				op->op = tk.type == TK_OP_DECREMENT ? OP_POST_DECREMENT : OP_POST_INCREMENT;
 				op->arguments.push_back(expr);
 
-				if (!_validate_operator(op, &op->return_cache, &op->return_array_size)) {
+				if (!_validate_operator(p_block, op, &op->return_cache, &op->return_array_size)) {
 					_set_error(RTR("Invalid base type for increment/decrement operator."));
 					return nullptr;
 				}
@@ -6752,7 +7180,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				expression.write[i].is_op = false;
 				expression.write[i].node = op;
 
-				if (!_validate_operator(op, &op->return_cache, &op->return_array_size)) {
+				if (!_validate_operator(p_block, op, &op->return_cache, &op->return_array_size)) {
 					String at;
 					for (int j = 0; j < op->arguments.size(); j++) {
 						if (j > 0) {
@@ -6790,7 +7218,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 			expression.write[next_op - 1].is_op = false;
 			expression.write[next_op - 1].node = op;
-			if (!_validate_operator(op, &op->return_cache, &op->return_array_size)) {
+			if (!_validate_operator(p_block, op, &op->return_cache, &op->return_array_size)) {
 				String at;
 				for (int i = 0; i < op->arguments.size(); i++) {
 					if (i > 0) {
@@ -6848,7 +7276,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 			//replace all 3 nodes by this operator and make it an expression
 
-			if (!_validate_operator(op, &op->return_cache, &op->return_array_size)) {
+			if (!_validate_operator(p_block, op, &op->return_cache, &op->return_array_size)) {
 				String at;
 				for (int i = 0; i < op->arguments.size(); i++) {
 					if (i > 0) {
@@ -6892,7 +7320,7 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 		DataType base = get_scalar_type(type);
 		int cardinality = get_cardinality(type);
 
-		Vector<ConstantNode::Value> values;
+		Vector<Scalar> values;
 
 		for (int i = 1; i < op->arguments.size(); i++) {
 			op->arguments.write[i] = _reduce_expression(p_block, op->arguments[i]);
@@ -6904,7 +7332,7 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 						values.push_back(cn->values[j]);
 					}
 				} else if (get_scalar_type(cn->datatype) == cn->datatype) {
-					ConstantNode::Value v;
+					Scalar v;
 					if (!convert_constant(cn, base, &v)) {
 						return p_node;
 					}
@@ -6920,8 +7348,8 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 
 		if (values.size() == 1) {
 			if (type >= TYPE_MAT2 && type <= TYPE_MAT4) {
-				ConstantNode::Value value = values[0];
-				ConstantNode::Value zero;
+				Scalar value = values[0];
+				Scalar zero;
 				zero.real = 0.0f;
 				int size = 2 + (type - TYPE_MAT2);
 
@@ -6932,7 +7360,7 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 					}
 				}
 			} else {
-				ConstantNode::Value value = values[0];
+				Scalar value = values[0];
 				for (int i = 1; i < cardinality; i++) {
 					values.push_back(value);
 				}
@@ -6953,10 +7381,10 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 
 			DataType base = get_scalar_type(cn->datatype);
 
-			Vector<ConstantNode::Value> values;
+			Vector<Scalar> values;
 
 			for (int i = 0; i < cn->values.size(); i++) {
-				ConstantNode::Value nv;
+				Scalar nv;
 				switch (base) {
 					case TYPE_BOOL: {
 						nv.boolean = !cn->values[i].boolean;
@@ -7387,7 +7815,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 									decl.size = decl.initializer.size();
 									var.array_size = decl.initializer.size();
 								} else if (decl.initializer.size() != var.array_size) {
-									_set_error(RTR("Array size mismatch."));
+									_set_error(vformat(RTR("Array size mismatch. Expected %d elements (found %d)."), var.array_size, decl.initializer.size()));
 									return ERR_PARSE_ERROR;
 								}
 								tk = _get_token();
@@ -7603,7 +8031,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 									if (!vn) {
 										return ERR_PARSE_ERROR;
 									}
-									ConstantNode::Value v;
+									Scalar v;
 									_find_identifier(p_block, false, p_function_info, vn->name, nullptr, nullptr, nullptr, nullptr, nullptr, &v);
 									if (constants.has(v.sint)) {
 										_set_error(vformat(RTR("Duplicated case label: %d."), v.sint));
@@ -7670,7 +8098,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				vn->name = tk.text;
 				n = vn;
 			} else {
-				ConstantNode::Value v;
+				Scalar v;
 				if (tk.type == TK_UINT_CONSTANT) {
 					v.uint = (uint32_t)tk.constant;
 				} else {
@@ -9497,7 +9925,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 										decl.size = decl.initializer.size();
 										constant.array_size = decl.initializer.size();
 									} else if (decl.initializer.size() != constant.array_size) {
-										_set_error(RTR("Array size mismatch."));
+										_set_error(vformat(RTR("Array size mismatch. Expected %d elements (found %d)."), constant.array_size, decl.initializer.size()));
 										return ERR_PARSE_ERROR;
 									}
 								}
