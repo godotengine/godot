@@ -47,6 +47,10 @@
 #include <vulkan/vulkan.h>
 #endif
 #endif // VULKAN_ENABLED
+
+#if defined(METAL_ENABLED)
+#include "drivers/metal/rendering_context_driver_metal.h"
+#endif // METAL_ENABLED
 #endif // RD_ENABLED
 
 #if defined(GLES3_ENABLED)

@@ -237,8 +237,17 @@ def configure(env: "SConsEnvironment"):
 
     env.Append(LINKFLAGS=["-rpath", "@executable_path/../Frameworks", "-rpath", "@executable_path"])
 
+    if env["metal"] and env["arch"] != "arm64":
+        print("Metal is only supported on arm64.")
+        sys.exit(255)
+
+    if env["metal"]:
+        env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
+        env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "MetalKit"])
+        env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])
+
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
         env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "IOSurface"])
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-lMoltenVK"])

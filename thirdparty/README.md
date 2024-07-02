@@ -827,6 +827,13 @@ and solve conflicts and also enrich the feature set originally
 proposed by these libraries and better integrate them with Godot.
 
 
+## spirv-cross
+
+- Upstream: https://github.com/KhronosGroup/SPIRV-Cross
+- Version: main (b8fcf307f1f347089e3c46eb4451d27f32ebc8d3, 2024)
+- License: Apache 2.0
+
+
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect

@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_spirv = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+if env["metal"]:
+    thirdparty_dir = "#thirdparty/spirv-cross/"
+    thirdparty_sources = [
+        "spirv_cfg.cpp",
+        "spirv_cross_util.cpp",
+        "spirv_cross.cpp",
+        "spirv_parser.cpp",
+        "spirv_msl.cpp",
+        "spirv_reflect.cpp",
+        "spirv_glsl.cpp",
+        "spirv_cross_parsed_ir.cpp",
+        "spirv_cpp.cpp",
+    ]
+
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    env_spirv.Prepend(CPPPATH=["#thirdparty/spirv-cross/"])
+
+    env_thirdparty = env_spirv.Clone()
+    env_thirdparty.disable_warnings()
+    # Must enable exceptions for SPIRV-Cross; otherwise, it will abort the process on errors
+    if "-fno-exceptions" in env_thirdparty["CXXFLAGS"]:
+        env_thirdparty["CXXFLAGS"].remove("-fno-exceptions")
+    env_thirdparty.Append(CXXFLAGS=["-fexceptions"])
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    env.modules_sources += thirdparty_obj
+
+
+# Godot source files
+
+module_obj = []
+
+env_spirv.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+Export("env_spirv")
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

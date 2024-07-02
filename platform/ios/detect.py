@@ -154,8 +154,18 @@ def configure(env: "SConsEnvironment"):
     env.Prepend(CPPPATH=["#platform/ios"])
     env.Append(CPPDEFINES=["IOS_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
 
+    if env["metal"]:
+        env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
+        env.Prepend(
+            CPPPATH=[
+                "$IOS_SDK_PATH/System/Library/Frameworks/Metal.framework/Headers",
+                "$IOS_SDK_PATH/System/Library/Frameworks/QuartzCore.framework/Headers",
+            ]
+        )
+        env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])
+
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED", "GLES_SILENCE_DEPRECATION"])

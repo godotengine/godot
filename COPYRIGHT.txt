@@ -475,6 +475,11 @@ Comment: RVO2
 Copyright: 2016, University of North Carolina at Chapel Hill
 License: Apache-2.0
 
+Files: ./thirdparty/spirv-cross/
+Comment: SPIRV-Cross
+Copyright: 2015-2021, Arm Limited
+License: Apache-2.0 or Expat
+
 Files: ./thirdparty/spirv-reflect/
 Comment: SPIRV-Reflect
 Copyright: 2017-2022, Google Inc.

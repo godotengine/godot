@@ -61,7 +61,7 @@ jobs:
       - name: Compilation (arm64)
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }} arch=arm64
+          sconsflags: ${{ env.SCONSFLAGS }} arch=arm64 metal=yes
           platform: macos
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}

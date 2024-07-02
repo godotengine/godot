@@ -4928,6 +4928,8 @@ String EditorNode::_get_system_info() const {
 		driver_name = "Vulkan";
 	} else if (driver_name.begins_with("opengl3")) {
 		driver_name = "GLES3";
+	} else if (driver_name == "metal") {
+		driver_name = "Metal";
 	}
 
 	// Join info.
