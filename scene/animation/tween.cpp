@@ -149,6 +149,14 @@ Ref<MethodTweener> Tween::tween_method(const Callable &p_callback, const Variant
 	return tweener;
 }
 
+Ref<AwaitTweener> Tween::tween_await(const Signal &p_signal) {
+	CHECK_VALID();
+
+	Ref<AwaitTweener> tweener = memnew(AwaitTweener(p_signal));
+	append(tweener);
+	return tweener;
+}
+
 void Tween::append(Ref<Tweener> p_tweener) {
 	p_tweener->set_tween(this);
 
@@ -433,6 +441,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tween_interval", "time"), &Tween::tween_interval);
 	ClassDB::bind_method(D_METHOD("tween_callback", "callback"), &Tween::tween_callback);
 	ClassDB::bind_method(D_METHOD("tween_method", "method", "from", "to", "duration"), &Tween::tween_method);
+	ClassDB::bind_method(D_METHOD("tween_await", "signal"), &Tween::tween_await);
 
 	ClassDB::bind_method(D_METHOD("custom_step", "delta"), &Tween::custom_step);
 	ClassDB::bind_method(D_METHOD("stop"), &Tween::stop);
@@ -839,4 +848,65 @@ MethodTweener::MethodTweener(const Callable &p_callback, const Variant &p_from, 
 
 MethodTweener::MethodTweener() {
 	ERR_FAIL_MSG("MethodTweener can't be created directly. Use the tween_method() method in Tween.");
+}
+
+Ref<AwaitTweener> AwaitTweener::set_timeout(double p_timeout) {
+	timeout = p_timeout;
+	return this;
+}
+
+Ref<AwaitTweener> AwaitTweener::set_unbinds(int p_unbinds) {
+	unbinds = p_unbinds;
+	return this;
+}
+
+void AwaitTweener::start() {
+	if (unbinds == 0) {
+		signal.connect(target_callable);
+	} else {
+		signal.connect(target_callable.unbind(unbinds));
+	}
+}
+
+bool AwaitTweener::step(double &r_delta) {
+	if (timeout >= 0) {
+		timeout -= r_delta;
+		if (timeout <= 0) {
+			return false;
+		}
+	}
+
+	if (!signal.get_object() || !signal.is_connected(target_callable)) { // In case object was destroyed before emitting.
+		return false;
+	}
+
+	if (received) {
+		return false;
+	}
+
+	r_delta = 0; // "Consume" all remaining time to prevent infinite loops.
+	return true;
+}
+
+AwaitTweener::AwaitTweener(const Signal &p_signal) {
+	signal = p_signal;
+	target_callable = callable_mp(this, &AwaitTweener::_signal_received);
+
+	Object *signal_instance = p_signal.get_object();
+	if (signal_instance && signal_instance->is_ref_counted()) {
+		ref_copy = signal_instance;
+	}
+}
+
+AwaitTweener::AwaitTweener() {
+	ERR_FAIL_MSG("AwaitTweener can't be created directly. Use the tween_await() method in Tween.");
+}
+
+void AwaitTweener::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_timeout", "timeout"), &AwaitTweener::set_timeout);
+	ClassDB::bind_method(D_METHOD("set_unbinds", "unbinds"), &AwaitTweener::set_unbinds);
+}
+
+void AwaitTweener::_signal_received() {
+	received = true;
 }
