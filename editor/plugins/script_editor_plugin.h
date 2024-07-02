@@ -234,6 +234,7 @@ class ScriptEditor : public PanelContainer {
 		CLOSE_OTHER_TABS,
 		TOGGLE_SCRIPTS_PANEL,
 		SHOW_IN_FILE_SYSTEM,
+		OPEN_GENERATED_DOCUMENTATION,
 		FILE_COPY_PATH,
 		FILE_TOOL_RELOAD_SOFT,
 		SEARCH_IN_FILES,
@@ -383,6 +384,7 @@ class ScriptEditor : public PanelContainer {
 	void _queue_close_tabs();
 
 	void _copy_script_path();
+	bool _script_has_doc(const Ref<Script> &p_script, String *r_name = nullptr) const;
 
 	void _ask_close_current_unsaved_tab(ScriptEditorBase *current);
 
