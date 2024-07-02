@@ -96,10 +96,8 @@ void TreeItem::_change_tree(Tree *p_tree) {
 		return;
 	}
 
-	TreeItem *c = first_child;
-	while (c) {
+	for (auto& c : children) {
 		c->_change_tree(p_tree);
-		c = c->next;
 	}
 
 	if (tree) {
@@ -241,14 +239,12 @@ void TreeItem::propagate_check(int p_column, bool p_emit_signal) {
 }
 
 void TreeItem::_propagate_check_through_children(int p_column, bool p_checked, bool p_emit_signal) {
-	TreeItem *current = get_first_child();
-	while (current) {
+	for(auto& current : children ) {
 		current->set_checked(p_column, p_checked);
 		if (p_emit_signal) {
 			current->tree->emit_signal(SNAME("check_propagated_to_item"), current, p_column);
 		}
 		current->_propagate_check_through_children(p_column, p_checked, p_emit_signal);
-		current = current->get_next();
 	}
 }
 
@@ -262,8 +258,7 @@ void TreeItem::_propagate_check_through_parents(int p_column, bool p_emit_signal
 	bool any_unchecked = false;
 	bool any_indeterminate = false;
 
-	TreeItem *child_item = current->get_first_child();
-	while (child_item) {
+	for(auto& child_item : current->children) {
 		if (!child_item->is_checked(p_column)) {
 			any_unchecked = true;
 			if (child_item->is_indeterminate(p_column)) {
@@ -273,7 +268,6 @@ void TreeItem::_propagate_check_through_parents(int p_column, bool p_emit_signal
 		} else {
 			any_checked = true;
 		}
-		child_item = child_item->get_next();
 	}
 
 	if (any_indeterminate || (any_checked && any_unchecked)) {
@@ -657,32 +651,24 @@ void TreeItem::set_collapsed_recursive(bool p_collapsed) {
 
 	set_collapsed(p_collapsed);
 
-	TreeItem *child = get_first_child();
-	while (child) {
+	for (auto& child : children) {
 		child->set_collapsed_recursive(p_collapsed);
-		child = child->get_next();
 	}
 }
 
 bool TreeItem::_is_any_collapsed(bool p_only_visible) {
-	TreeItem *child = get_first_child();
-
 	// Check on children directly first (avoid recursing if possible).
-	while (child) {
+	for (auto& child : children) {
 		if (child->get_first_child() && child->is_collapsed() && (!p_only_visible || (child->is_visible() && child->get_visible_child_count()))) {
 			return true;
 		}
-		child = child->get_next();
 	}
 
-	child = get_first_child();
-
 	// Otherwise recurse on children.
-	while (child) {
+	for (auto& child : children) {
 		if (child->get_first_child() && (!p_only_visible || (child->is_visible() && child->get_visible_child_count())) && child->_is_any_collapsed(p_only_visible)) {
 			return true;
 		}
-		child = child->get_next();
 	}
 
 	return false;
@@ -723,10 +709,8 @@ bool TreeItem::is_visible_in_tree() const {
 }
 
 void TreeItem::_handle_visibility_changed(bool p_visible) {
-	TreeItem *child = get_first_child();
-	while (child) {
+	for (auto& child : children) {
 		child->_propagate_visibility_changed(p_visible);
-		child = child->get_next();
 	}
 }
 
@@ -770,37 +754,17 @@ TreeItem *TreeItem::create_child(int p_index) {
 		tree->queue_redraw();
 	}
 
-	TreeItem *item_prev = nullptr;
-	TreeItem *item_next = first_child;
-
-	int idx = 0;
-	while (item_next) {
-		if (idx == p_index) {
-			item_next->prev = ti;
-			ti->next = item_next;
-			break;
-		}
-
-		item_prev = item_next;
-		item_next = item_next->next;
-		idx++;
+	if (p_index == -1 || children.size() == p_index+1) {
+		children.append(ti);
+	} else {
+		children.insert(p_index, ti);
 	}
 
-	if (item_prev) {
-		item_prev->next = ti;
-		ti->prev = item_prev;
-
-		if (!children_cache.is_empty()) {
-			if (ti->next) {
-				children_cache.insert(p_index, ti);
-			} else {
-				children_cache.append(ti);
-			}
-		}
-	} else {
-		first_child = ti;
-		if (!children_cache.is_empty()) {
-			children_cache.insert(0, ti);
+	if (!children_cache.is_empty()) {
+		if (p_index == -1 || children_cache.size() == p_index+1) {
+			children_cache.append(ti);
+		} else {
+			children_cache.insert(p_index, ti);
 		}
 	}
 
@@ -820,17 +784,7 @@ void TreeItem::add_child(TreeItem *p_item) {
 	p_item->parent_visible_in_tree = is_visible_in_tree();
 	p_item->_handle_visibility_changed(p_item->parent_visible_in_tree);
 
-	TreeItem *item_prev = first_child;
-	while (item_prev && item_prev->next) {
-		item_prev = item_prev->next;
-	}
-
-	if (item_prev) {
-		item_prev->next = p_item;
-		p_item->prev = item_prev;
-	} else {
-		first_child = p_item;
-	}
+	children.append(p_item);
 
 	if (!children_cache.is_empty()) {
 		children_cache.append(p_item);
@@ -845,8 +799,9 @@ void TreeItem::remove_child(TreeItem *p_item) {
 
 	p_item->_unlink_from_tree();
 	p_item->_change_tree(nullptr);
-	p_item->prev = nullptr;
-	p_item->next = nullptr;
+
+	children.remove_at(get_index());
+
 	p_item->parent = nullptr;
 
 	validate_cache();
@@ -857,26 +812,27 @@ Tree *TreeItem::get_tree() const {
 }
 
 TreeItem *TreeItem::get_next() const {
-	return next;
+	if (parent == nullptr) {
+		return nullptr;
+	}
+	if (get_index() == parent->children.size() - 1) {
+		return nullptr;
+	}
+	return parent->children[
+		get_index() + 1
+	];
 }
 
 TreeItem *TreeItem::get_prev() {
-	if (prev) {
-		return prev;
-	}
-
-	if (!parent || parent->first_child == this) {
+	if (parent == nullptr) {
 		return nullptr;
 	}
-	// This is an edge case
-	TreeItem *l_prev = parent->first_child;
-	while (l_prev && l_prev->next != this) {
-		l_prev = l_prev->next;
+	if (get_index() == 0) {
+		return nullptr;
 	}
-
-	prev = l_prev;
-
-	return prev;
+	return parent->children[
+		get_index() - 1
+	];
 }
 
 TreeItem *TreeItem::get_parent() const {
@@ -884,98 +840,52 @@ TreeItem *TreeItem::get_parent() const {
 }
 
 TreeItem *TreeItem::get_first_child() const {
-	return first_child;
+	if (children.size() == 0) {
+		return nullptr;
+	}
+	return children[0];
 }
 
 TreeItem *TreeItem::_get_prev_in_tree(bool p_wrap, bool p_include_invisible) {
-	TreeItem *current = this;
-
-	TreeItem *prev_item = current->get_prev();
-
-	if (!prev_item) {
-		current = current->parent;
-		if (current == tree->root && tree->hide_root) {
-			return nullptr;
-		} else if (!current) {
-			if (p_wrap) {
-				current = this;
-				TreeItem *temp = get_next_visible();
-				while (temp) {
-					current = temp;
-					temp = temp->get_next_visible();
-				}
-			} else {
-				return nullptr;
-			}
-		}
-	} else {
-		current = prev_item;
-		while ((!current->collapsed || p_include_invisible) && current->first_child) {
-			//go to the very end
-
-			current = current->first_child;
-			while (current->next) {
-				current = current->next;
+	if (get_index() != 0) {
+		for (uint64_t idx = get_index();idx > 0;idx--) {
+			TreeItem *current = parent->children[idx];
+			if (current->visible || p_include_invisible) {
+				return current;
 			}
 		}
 	}
+	if (!parent) {
+		return nullptr;
+	}
 
-	return current;
+	return parent->_get_prev_in_tree(p_wrap, p_include_invisible);
 }
 
 TreeItem *TreeItem::get_prev_visible(bool p_wrap) {
-	TreeItem *loop = this;
-	TreeItem *prev_item = _get_prev_in_tree(p_wrap);
-	while (prev_item && !prev_item->is_visible_in_tree()) {
-		prev_item = prev_item->_get_prev_in_tree(p_wrap);
-		if (prev_item == loop) {
-			// Check that we haven't looped all the way around to the start.
-			prev_item = nullptr;
-			break;
-		}
-	}
-	return prev_item;
+	return _get_prev_in_tree(p_wrap, false);
 }
 
 TreeItem *TreeItem::_get_next_in_tree(bool p_wrap, bool p_include_invisible) {
-	TreeItem *current = this;
+	TreeItem *current_item = this;
 
-	if ((!current->collapsed || p_include_invisible) && current->first_child) {
-		current = current->first_child;
-
-	} else if (current->next) {
-		current = current->next;
-	} else {
-		while (current && !current->next) {
-			current = current->parent;
+	while (true) {
+		TreeItem *next_item = current_item->get_next();
+		if (next_item && (next_item->visible || p_include_invisible)) {
+			return (next_item);
 		}
 
-		if (!current) {
-			if (p_wrap) {
-				return tree->root;
-			} else {
-				return nullptr;
+		while (!current_item->get_next()) {
+			current_item = current_item->parent;
+			if (current_item == nullptr) {
+				return (nullptr);
 			}
-		} else {
-			current = current->next;
 		}
 	}
-
-	return current;
 }
 
 TreeItem *TreeItem::get_next_visible(bool p_wrap) {
-	TreeItem *loop = this;
-	TreeItem *next_item = _get_next_in_tree(p_wrap);
-	while (next_item && !next_item->is_visible_in_tree()) {
-		next_item = next_item->_get_next_in_tree(p_wrap);
-		if (next_item == loop) {
-			// Check that we haven't looped all the way around to the start.
-			next_item = nullptr;
-			break;
-		}
-	}
-	return next_item;
+	return _get_next_in_tree(p_wrap, false);
 }
 
 TreeItem *TreeItem::get_prev_in_tree(bool p_wrap) {
@@ -1028,26 +938,26 @@ TypedArray<TreeItem> TreeItem::get_children() {
 }
 
 void TreeItem::clear_children() {
-	TreeItem *c = first_child;
-	while (c) {
-		TreeItem *aux = c;
-		c = c->get_next();
-		aux->parent = nullptr; // So it won't try to recursively auto-remove from me in here.
-		memdelete(aux);
+	for (auto& ch : children) {
+		ch->parent = nullptr;
+		memdelete(ch);
 	}
 
-	first_child = nullptr;
+	children.clear(); // Just to be sure.
 };
 
-int TreeItem::get_index() {
-	int idx = 0;
-	TreeItem *c = this;
+int TreeItem::get_index() const {
+	ERR_FAIL_COND_V(parent == nullptr, 0);
 
-	while (c) {
-		c = c->get_prev();
+	int idx = 0;
+
+	for (const auto& ch : parent->children) {
+		if (ch == this) {
+			return (idx);
+		}
 		idx++;
 	}
-	return idx - 1;
+	return (-1);
 }
 
 #ifdef DEV_ENABLED
@@ -1055,12 +965,10 @@ void TreeItem::validate_cache() const {
 	if (!parent || parent->children_cache.is_empty()) {
 		return;
 	}
-	TreeItem *scan = parent->first_child;
 	int index = 0;
-	while (scan) {
+	for (auto& scan : parent->children) {
 		DEV_ASSERT(parent->children_cache[index] == scan);
 		++index;
-		scan = scan->get_next();
 	}
 	DEV_ASSERT(index == parent->children_cache.size());
 }
@@ -1087,22 +995,13 @@ void TreeItem::move_before(TreeItem *p_item) {
 
 	parent = p_item->parent;
 
-	TreeItem *item_prev = p_item->get_prev();
-	if (item_prev) {
-		item_prev->next = this;
-		parent->children_cache.clear();
-	} else {
-		parent->first_child = this;
-		// If the cache is empty, it has not been built but there
-		// are items in the tree (note p_item != nullptr) so we cannot update it.
-		if (!parent->children_cache.is_empty()) {
-			parent->children_cache.insert(0, this);
-		}
-	}
+	p_item->parent->children.insert(p_item->get_index(), this);
 
-	prev = item_prev;
-	next = p_item;
-	p_item->prev = this;
+	// If the cache is empty, it has not been built but there
+	// are items in the tree (note p_item != nullptr) so we cannot update it.
+	if (!parent->children_cache.is_empty()) {
+		parent->children_cache.insert(0, this);
+	};
 
 	if (tree && old_tree == tree) {
 		tree->queue_redraw();
@@ -1130,22 +1029,14 @@ void TreeItem::move_after(TreeItem *p_item) {
 	_unlink_from_tree();
 	_change_tree(p_item->tree);
 
-	if (p_item->next) {
-		p_item->next->prev = this;
-	}
-	parent = p_item->parent;
-	prev = p_item;
-	next = p_item->next;
-	p_item->next = this;
+	p_item->parent->children.insert(p_item->get_index() + 1, this);
 
-	if (next) {
-		parent->children_cache.clear();
-	} else {
-		// If the cache is empty, it has not been built but there
-		// are items in the tree (note p_item != nullptr,) so we cannot update it.
-		if (!parent->children_cache.is_empty()) {
-			parent->children_cache.append(this);
-		}
+	parent = p_item->parent;
+
+	// If the cache is empty, it has not been built but there
+	// are items in the tree (note p_item != nullptr,) so we cannot update it.
+	if (!parent->children_cache.is_empty()) {
+		parent->children_cache.append(this);
 	}
 
 	if (tree && old_tree == tree) {
@@ -1574,20 +1465,11 @@ void TreeItem::_call_recursive_bind(const Variant **p_args, int p_argcount, Call
 	call_recursive(method, &p_args[1], p_argcount - 1, r_error);
 }
 
-void recursive_call_aux(TreeItem *p_item, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	if (!p_item) {
-		return;
-	}
-	p_item->callp(p_method, p_args, p_argcount, r_error);
-	TreeItem *c = p_item->get_first_child();
-	while (c) {
-		recursive_call_aux(c, p_method, p_args, p_argcount, r_error);
-		c = c->get_next();
-	}
-}
-
 void TreeItem::call_recursive(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	recursive_call_aux(this, p_method, p_args, p_argcount, r_error);
+	callp(p_method, p_args, p_argcount, r_error);
+	for (auto& ch : children) {
+		ch->call_recursive(p_method, p_args, p_argcount, r_error);
+	}
 }
 
 void TreeItem::_bind_methods() {
@@ -1775,7 +1657,6 @@ TreeItem::~TreeItem() {
 	_change_tree(nullptr);
 
 	validate_cache();
-	prev = nullptr;
 	clear_children();
 }
 
@@ -1877,13 +1758,8 @@ int Tree::get_item_height(TreeItem *p_item) const {
 	height += theme_cache.v_separation;
 
 	if (!p_item->collapsed) { /* if not collapsed, check the children */
-
-		TreeItem *c = p_item->first_child;
-
-		while (c) {
+		for (auto& c : p_item->children) {
 			height += get_item_height(c);
-
-			c = c->next;
 		}
 	}
 
@@ -2060,10 +1936,8 @@ void Tree::update_item_cache(TreeItem *p_item) {
 		update_item_cell(p_item, i);
 	}
 
-	TreeItem *c = p_item->first_child;
-	while (c) {
-		update_item_cache(c);
-		c = c->next;
+	for (auto& ch : p_item->children) {
+		update_item_cache(ch);
 	}
 }
 
@@ -2480,7 +2354,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 		}
 
-		if (!p_item->disable_folding && !hide_folding && p_item->first_child && p_item->get_visible_child_count() != 0) { //has visible children, draw the guide box
+		if (!p_item->disable_folding && !hide_folding && p_item->children.size() && p_item->get_visible_child_count() != 0) { //has visible children, draw the guide box
 
 			Ref<Texture2D> arrow;
 
@@ -2514,13 +2388,11 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 	}
 
 	if (!p_item->collapsed) { /* if not collapsed, check the children */
-		TreeItem *c = p_item->first_child;
-
 		int base_ofs = children_pos.y - theme_cache.offset.y + p_draw_ofs.y;
 		int prev_ofs = base_ofs;
 		int prev_hl_ofs = base_ofs;
 
-		while (c) {
+		for (auto& c : p_item->children) {
 			int child_h = -1;
 			int child_self_height = 0;
 			if (htotal >= 0) {
@@ -2615,8 +2487,6 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				htotal += child_h;
 				children_pos.y += child_h;
 			}
-
-			c = c->next;
 		}
 	}
 
@@ -2631,8 +2501,8 @@ int Tree::_count_selected_items(TreeItem *p_from) const {
 		}
 	}
 
-	for (TreeItem *c = p_from->get_first_child(); c; c = c->get_next()) {
-		count += _count_selected_items(c);
+	for (auto& ch : p_from->children) {
+		count += _count_selected_items(ch);
 	}
 
 	return count;
@@ -2645,24 +2515,20 @@ bool Tree::_is_branch_selected(TreeItem *p_from) const {
 		}
 	}
 
-	TreeItem *child_item = p_from->get_first_child();
-	while (child_item) {
-		if (_is_branch_selected(child_item)) {
+	for (auto& ch : p_from->children) {
+		if (_is_branch_selected(ch)) {
 			return true;
 		}
-		child_item = child_item->get_next();
 	}
 
 	return false;
 }
 
 bool Tree::_is_sibling_branch_selected(TreeItem *p_from) const {
-	TreeItem *sibling_item = p_from->get_next();
-	while (sibling_item) {
+	for (auto& sibling_item : p_from->children) {
 		if (_is_branch_selected(sibling_item)) {
 			return true;
 		}
-		sibling_item = sibling_item->get_next();
 	}
 
 	return false;
@@ -2747,11 +2613,8 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 		*r_in_range = false;
 	}
 
-	TreeItem *c = p_current->first_child;
-
-	while (c) {
+	for (auto& c : p_current->children) {
 		select_single_item(p_selected, c, p_col, p_prev, r_in_range, p_current->is_collapsed() || p_force_deselect);
-		c = c->next;
 	}
 }
 
@@ -2828,7 +2691,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 			return -1;
 		}
 
-		if (!p_item->disable_folding && !hide_folding && p_item->first_child && (p_pos.x < (x_ofs + theme_cache.item_margin))) {
+		if (!p_item->disable_folding && !hide_folding && p_item->children.size() && (p_pos.x < (x_ofs + theme_cache.item_margin))) {
 			if (enable_recursive_folding && p_mod->is_shift_pressed()) {
 				p_item->set_collapsed_recursive(!p_item->is_collapsed());
 			} else {
@@ -3127,10 +2990,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 		}
 
 		if (!p_item->collapsed) { /* if not collapsed, check the children */
-
-			TreeItem *c = p_item->first_child;
-
-			while (c) {
+			for (auto& c : p_item->children) {
 				int child_h = propagate_mouse_event(new_pos, x_ofs, y_ofs, x_limit, p_double_click, c, p_button, p_mod);
 
 				if (child_h < 0) {
@@ -3139,7 +2999,6 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 
 				new_pos.y -= child_h;
 				y_ofs += child_h;
-				c = c->next;
 				item_h += child_h;
 			}
 		}
@@ -4470,10 +4329,9 @@ TreeItem *Tree::get_last_item() const {
 	TreeItem *last = root;
 
 	while (last) {
-		if (last->next) {
-			last = last->next;
-		} else if (last->first_child && !last->collapsed) {
-			last = last->first_child;
+		if (last->children.size() != 0) {
+			last = last->children[last->children.size()-1];
+			continue;
 		} else {
 			break;
 		}
@@ -4721,20 +4579,19 @@ TreeItem *Tree::get_next_selected(TreeItem *p_item) {
 		if (!p_item) {
 			p_item = root;
 		} else {
-			if (p_item->first_child) {
-				p_item = p_item->first_child;
-
-			} else if (p_item->next) {
-				p_item = p_item->next;
+			if (p_item->children.size() != 0) {
+				p_item = p_item->get_first_child();
+			} else if (p_item->get_next()) {
+				p_item = p_item->get_next();
 			} else {
-				while (!p_item->next) {
+				while (!p_item->get_next()) {
 					p_item = p_item->parent;
 					if (p_item == nullptr) {
 						return nullptr;
 					}
 				}
 
-				p_item = p_item->next;
+				p_item = p_item->get_next();
 			}
 		}
 
@@ -4828,10 +4685,8 @@ int Tree::get_column_width(int p_column) const {
 void Tree::propagate_set_columns(TreeItem *p_item) {
 	p_item->cells.resize(columns.size());
 
-	TreeItem *c = p_item->get_first_child();
-	while (c) {
+	for (auto& c : p_item->children) {
 		propagate_set_columns(c);
-		c = c->next;
 	}
 }
 
@@ -4878,24 +4733,24 @@ int Tree::get_item_offset(TreeItem *p_item) const {
 			ofs += theme_cache.v_separation;
 		}
 
-		if (it->first_child && !it->collapsed) {
-			it = it->first_child;
+		if (it->children.size() && !it->collapsed) {
+			it = it->get_first_child();
 
-		} else if (it->next) {
-			it = it->next;
+		} else if (it->get_next()) {
+			it = it->get_next();
 		} else {
-			while (!it->next) {
+			while (!it->get_next()) {
 				it = it->parent;
 				if (it == nullptr) {
 					return 0;
 				}
 			}
 
-			it = it->next;
+			it = it->get_next();
 		}
 	}
 
-	return -1; //not found
+	return -1; // Not found.
 }
 
 void Tree::ensure_cursor_is_visible() {
@@ -4956,7 +4811,7 @@ Rect2 Tree::get_item_rect(TreeItem *p_item, int p_column, int p_button) const {
 		ERR_FAIL_INDEX_V(p_column, columns.size(), Rect2());
 	}
 	if (p_button != -1) {
-		ERR_FAIL_COND_V(p_column == -1, Rect2()); // pass a column if you want to pass a button
+		ERR_FAIL_COND_V(p_column == -1, Rect2()); // pass a column if you want to pass a button.
 		ERR_FAIL_INDEX_V(p_button, p_item->cells[p_column].buttons.size(), Rect2());
 	}
 
@@ -5285,8 +5140,7 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 		return nullptr; // do not try children, it's collapsed
 	}
 
-	TreeItem *n = p_item->get_first_child();
-	while (n) {
+	for (auto& n : p_item->children) {
 		int ch;
 		TreeItem *r = _find_item_at_pos(n, pos, r_column, ch, section);
 		pos.y -= ch;
@@ -5294,7 +5148,6 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 		if (r) {
 			return r;
 		}
-		n = n->get_next();
 	}
 
 	return nullptr;

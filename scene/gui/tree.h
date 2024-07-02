@@ -133,9 +133,8 @@ private:
 	int custom_min_height = 0;
 
 	TreeItem *parent = nullptr; // parent item
-	TreeItem *prev = nullptr; // previous in list
-	TreeItem *next = nullptr; // next in list
-	TreeItem *first_child = nullptr;
+	Vector<TreeItem *> children;
+	
 
 	Vector<TreeItem *> children_cache;
 	bool is_root = false; // for tree root
@@ -154,29 +153,17 @@ private:
 
 	_FORCE_INLINE_ void _create_children_cache() {
 		if (children_cache.is_empty()) {
-			TreeItem *c = first_child;
-			while (c) {
-				children_cache.append(c);
-				c = c->next;
-			}
+			children_cache = children;
 		}
 	}
 
 	_FORCE_INLINE_ void _unlink_from_tree() {
-		TreeItem *p = get_prev();
-		if (p) {
-			p->next = next;
+		if (parent == nullptr) {
+			return;
 		}
-		if (next) {
-			next->prev = p;
-		}
-		if (parent) {
-			if (!parent->children_cache.is_empty()) {
-				parent->children_cache.remove_at(get_index());
-			}
-			if (parent->first_child == this) {
-				parent->first_child = next;
-			}
+		parent->children.remove_at(get_index());
+		if (!parent->children_cache.is_empty()) {
+			parent->children_cache.remove_at(get_index());
 		}
 	}
 
@@ -375,7 +362,7 @@ public:
 	int get_child_count();
 	TypedArray<TreeItem> get_children();
 	void clear_children();
-	int get_index();
+	int get_index() const;
 
 #ifdef DEV_ENABLED
 	// This debugging code can be removed once the current refactoring of this class is complete.
