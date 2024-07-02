@@ -44,6 +44,18 @@
 				Returns the blend time (in seconds) between two animations, referenced by their keys.
 			</description>
 		</method>
+		<method name="get_current_section_end_time" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the end time of the section currently being played by the AnimationPlayer.
+			</description>
+		</method>
+		<method name="get_current_section_start_time" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the start time of the section currently being played by the AnimationPlayer.
+			</description>
+		</method>
 		<method name="get_method_call_mode" qualifiers="const" deprecated="Use [member AnimationMixer.callback_mode_method] instead.">
 			<return type="int" enum="AnimationPlayer.AnimationMethodCallMode" />
 			<description>
@@ -110,6 +122,55 @@
 				This method is a shorthand for [method play] with [code]custom_speed = -1.0[/code] and [code]from_end = true[/code], so see its description for more information.
 			</description>
 		</method>
+		<method name="play_section">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="1" name="start_time" type="float" default="0" />
+			<param index="2" name="end_time" type="float" default="1.0" />
+			<param index="3" name="custom_blend" type="float" default="-1" />
+			<param index="4" name="custom_speed" type="float" default="1.0" />
+			<param index="5" name="from_end" type="bool" default="false" />
+			<description>
+				Plays the animation with key [param name] and the section starting from [param start_time] and ending on [param end_time]. See also [method play].
+			</description>
+		</method>
+		<method name="play_section_backwards">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="1" name="start_time" type="float" default="0" />
+			<param index="2" name="end_time" type="float" default="1.0" />
+			<param index="3" name="custom_blend" type="float" default="-1" />
+			<description>
+				Plays the animation with key [param name] and the section starting from [param start_time] and ending on [param end_time] in reverse.
+				This method is a shorthand for [method play_section] with [code]custom_speed = -1.0[/code] and [code]from_end = true[/code], so see its description for more information.
+			</description>
+		</method>
+		<method name="play_section_with_markers">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="1" name="start_marker" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="2" name="end_marker" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="3" name="custom_blend" type="float" default="-1" />
+			<param index="4" name="custom_speed" type="float" default="1.0" />
+			<param index="5" name="from_end" type="bool" default="false" />
+			<description>
+				Plays the animation with key [param name] and the section starting from [param start_marker] and ending on [param end_marker].
+				If the start marker is empty, the section starts from the beginning of the animation.
+				If the end marker is empty, the section ends on the end of the animation.
+				See also [method play].
+			</description>
+		</method>
+		<method name="play_section_with_markers_backwards">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="1" name="start_marker" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="2" name="end_marker" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="3" name="custom_blend" type="float" default="-1" />
+			<description>
+				Plays the animation with key [param name] and the section starting from [param start_marker] and ending on [param end_marker] in reverse.
+				This method is a shorthand for [method play_section_with_markers] with [code]custom_speed = -1.0[/code] and [code]from_end = true[/code], so see its description for more information.
+			</description>
+		</method>
 		<method name="play_with_capture">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" default="&amp;&quot;&quot;" />
@@ -157,6 +218,22 @@
 			<param index="2" name="sec" type="float" />
 			<description>
 				Specifies a blend time (in seconds) between two animations, referenced by their keys.
+			</description>
+		</method>
+		<method name="set_current_marker_section">
+			<return type="void" />
+			<param index="0" name="start_marker" type="StringName" />
+			<param index="1" name="end_marker" type="StringName" />
+			<description>
+				Change the start and end markers of the section being played. The current playback position will be clamped within the new section. See also [method play_section_with_markers].
+			</description>
+		</method>
+		<method name="set_current_section">
+			<return type="void" />
+			<param index="0" name="start_time" type="float" />
+			<param index="1" name="end_time" type="float" />
+			<description>
+				Change the start and end times of the section being played. The current playback position will be clamped within the new section. See also [method play_section].
 			</description>
 		</method>
 		<method name="set_method_call_mode" deprecated="Use [member AnimationMixer.callback_mode_method] instead.">

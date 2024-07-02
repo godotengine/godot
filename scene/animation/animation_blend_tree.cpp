@@ -88,6 +88,11 @@ void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const 
 	}
 }
 
+void AnimationNodeAnimation::_get_property_list(List<PropertyInfo> *p_list) const {
+	// Exists just to make it easier to insert button after the custom timeline properties.
+	p_list->push_back(PropertyInfo(Variant::NIL, "custom_timeline_button_slot", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+}
+
 AnimationNode::NodeTimeInfo AnimationNodeAnimation::process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	process_state->is_testing = p_test_only;
 

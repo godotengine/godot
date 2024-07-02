@@ -68,6 +68,8 @@ private:
 		AnimationData *from = nullptr;
 		double pos = 0.0;
 		float speed_scale = 1.0;
+		double start_time = 0.0;
+		double end_time = 0.0;
 	};
 
 	struct Blend {
@@ -125,6 +127,10 @@ private:
 
 	bool playing = false;
 
+#ifdef TOOLS_ENABLED
+	bool playing_section = false;
+#endif
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -176,7 +182,11 @@ public:
 	Tween::EaseType get_auto_capture_ease_type() const;
 
 	void play(const StringName &p_name = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
+	void play_section_with_markers(const StringName &p_name = StringName(), const StringName &p_start_marker = StringName(), const StringName &p_end_marker = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
+	void play_section(const StringName &p_name = StringName(), double p_start_time = 0, double p_end_time = 1.0, double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
 	void play_backwards(const StringName &p_name = StringName(), double p_custom_blend = -1);
+	void play_section_with_markers_backwards(const StringName &p_name = StringName(), const StringName &p_start_marker = StringName(), const StringName &p_end_marker = StringName(), double p_custom_blend = -1);
+	void play_section_backwards(const StringName &p_name = StringName(), double p_start_time = 0, double p_end_time = 1.0, double p_custom_blend = -1);
 	void play_with_capture(const StringName &p_name = StringName(), double p_duration = -1.0, double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false, Tween::TransitionType p_trans_type = Tween::TRANS_LINEAR, Tween::EaseType p_ease_type = Tween::EASE_IN);
 	void queue(const StringName &p_name);
 	Vector<String> get_queue();
@@ -204,6 +214,16 @@ public:
 
 	double get_current_animation_position() const;
 	double get_current_animation_length() const;
+
+	void set_current_marker_section(const StringName &p_start_marker, const StringName &p_end_marker);
+	void set_current_section(double p_start_time, double p_end_time);
+
+	double get_current_section_start_time() const;
+	double get_current_section_end_time() const;
+
+#ifdef TOOLS_ENABLED
+	bool is_playing_section() const;
+#endif
 
 #ifdef TOOLS_ENABLED
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;

@@ -32,6 +32,7 @@
 #define ANIMATION_BLEND_TREE_EDITOR_PLUGIN_H
 
 #include "core/object/script_language.h"
+#include "editor/editor_inspector.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
@@ -47,6 +48,7 @@ class EditorFileDialog;
 class EditorProperty;
 class MenuButton;
 class PanelContainer;
+class EditorInspectorPluginAnimationNodeAnimation;
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);
@@ -147,6 +149,8 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 		MENU_LOAD_FILE_CONFIRM = 1002
 	};
 
+	Ref<EditorInspectorPluginAnimationNodeAnimation> animation_node_inspector_plugin;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -165,6 +169,23 @@ public:
 	void update_graph();
 
 	AnimationNodeBlendTreeEditor();
+	~AnimationNodeBlendTreeEditor();
+};
+
+// EditorPluginAnimationNodeAnimation
+
+class EditorInspectorPluginAnimationNodeAnimation : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginAnimationNodeAnimation, EditorInspectorPlugin);
+	AnimationNodeAnimation *node = nullptr;
+	OptionButton *select_start = nullptr;
+	OptionButton *select_end = nullptr;
+	void _open_set_custom_timeline_from_marker_dialog(Object *p_object, Control *p_control);
+	void _validate_markers(int p_id);
+	void _confirm_set_custom_timeline_from_marker_dialog();
+
+public:
+	virtual bool can_handle(Object *p_object) override;
+	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
 };
 
 #endif // ANIMATION_BLEND_TREE_EDITOR_PLUGIN_H
