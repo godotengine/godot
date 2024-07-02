@@ -502,6 +502,24 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 		_register_requested_device_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, true);
 	}
 
+#if defined(VK_TRACK_DEVICE_MEMORY)
+	_register_requested_device_extension(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME, false);
+#endif
+	_register_requested_device_extension(VK_EXT_DEVICE_FAULT_EXTENSION_NAME, false);
+
+	{
+		// Debug marker extensions.
+		// Should be last element in the array.
+#ifdef DEV_ENABLED
+		bool want_debug_markers = true;
+#else
+		bool want_debug_markers = OS::get_singleton()->is_stdout_verbose();
+#endif
+		if (want_debug_markers) {
+			_register_requested_device_extension(VK_EXT_DEBUG_MARKER_EXTENSION_NAME, false);
+		}
+	}
+
 	uint32_t device_extension_count = 0;
 	VkResult err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, nullptr);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
@@ -745,6 +763,15 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		if (enabled_device_extension_names.has(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME)) {
 			pipeline_cache_control_support = pipeline_cache_control_features.pipelineCreationCacheControl;
 		}
+
+		if (enabled_device_extension_names.has(VK_EXT_DEVICE_FAULT_EXTENSION_NAME)) {
+			device_fault_support = true;
+		}
+#if defined(VK_TRACK_DEVICE_MEMORY)
+		if (enabled_device_extension_names.has(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME)) {
+			device_memory_report_support = true;
+		}
+#endif
 	}
 
 	if (functions.GetPhysicalDeviceProperties2 != nullptr) {
@@ -913,6 +940,26 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		create_info_next = &pipeline_cache_control_features;
 	}
 
+	VkPhysicalDeviceFaultFeaturesEXT device_fault_features = {};
+	if (device_fault_support) {
+		device_fault_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT;
+		device_fault_features.pNext = create_info_next;
+		create_info_next = &device_fault_features;
+	}
+
+#if defined(VK_TRACK_DEVICE_MEMORY)
+	VkDeviceDeviceMemoryReportCreateInfoEXT memory_report_info = {};
+	if (device_memory_report_support) {
+		memory_report_info.sType = VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT;
+		memory_report_info.pfnUserCallback = RenderingContextDriverVulkan::memory_report_callback;
+		memory_report_info.pNext = create_info_next;
+		memory_report_info.flags = 0;
+		memory_report_info.pUserData = this;
+
+		create_info_next = &memory_report_info;
+	}
+#endif
+
 	VkPhysicalDeviceVulkan11Features vulkan_1_1_features = {};
 	VkPhysicalDevice16BitStorageFeaturesKHR storage_features = {};
 	VkPhysicalDeviceMultiviewFeatures multiview_features = {};
@@ -968,7 +1015,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		bool device_created = VulkanHooks::get_singleton()->create_vulkan_device(&create_info, &vk_device);
 		ERR_FAIL_COND_V(!device_created, ERR_CANT_CREATE);
 	} else {
-		VkResult err = vkCreateDevice(physical_device, &create_info, nullptr, &vk_device);
+		VkResult err = vkCreateDevice(physical_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE), &vk_device);
 		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 	}
 
@@ -988,6 +1035,19 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 
 		if (enabled_device_extension_names.has(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME)) {
 			device_functions.CreateRenderPass2KHR = PFN_vkCreateRenderPass2KHR(functions.GetDeviceProcAddr(vk_device, "vkCreateRenderPass2KHR"));
+		}
+
+		// Debug marker extensions.
+		if (enabled_device_extension_names.has(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+			device_functions.CmdDebugMarkerBeginEXT = (PFN_vkCmdDebugMarkerBeginEXT)functions.GetDeviceProcAddr(vk_device, "vkCmdDebugMarkerBeginEXT");
+			device_functions.CmdDebugMarkerEndEXT = (PFN_vkCmdDebugMarkerEndEXT)functions.GetDeviceProcAddr(vk_device, "vkCmdDebugMarkerEndEXT");
+			device_functions.CmdDebugMarkerInsertEXT = (PFN_vkCmdDebugMarkerInsertEXT)functions.GetDeviceProcAddr(vk_device, "vkCmdDebugMarkerInsertEXT");
+			device_functions.DebugMarkerSetObjectNameEXT = (PFN_vkDebugMarkerSetObjectNameEXT)functions.GetDeviceProcAddr(vk_device, "vkDebugMarkerSetObjectNameEXT");
+		}
+
+		// Debug device fault extension.
+		if (device_fault_support) {
+			device_functions.GetDeviceFaultInfoEXT = (PFN_vkGetDeviceFaultInfoEXT)functions.GetDeviceProcAddr(vk_device, "vkGetDeviceFaultInfoEXT");
 		}
 	}
 
@@ -1148,16 +1208,101 @@ bool RenderingDeviceDriverVulkan::_recreate_image_semaphore(CommandQueue *p_comm
 	VkSemaphore semaphore;
 	VkSemaphoreCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	VkResult err = vkCreateSemaphore(vk_device, &create_info, nullptr, &semaphore);
+	VkResult err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, false);
 
 	// Indicate the semaphore is free again and destroy the previous one before storing the new one.
-	vkDestroySemaphore(vk_device, p_command_queue->image_semaphores[p_semaphore_index], nullptr);
+	vkDestroySemaphore(vk_device, p_command_queue->image_semaphores[p_semaphore_index], VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
 
 	p_command_queue->image_semaphores[p_semaphore_index] = semaphore;
 	p_command_queue->free_image_semaphores.push_back(p_semaphore_index);
 
 	return true;
+}
+// Debug marker extensions.
+VkDebugReportObjectTypeEXT RenderingDeviceDriverVulkan::_convert_to_debug_report_objectType(VkObjectType p_object_type) {
+	switch (p_object_type) {
+		case VK_OBJECT_TYPE_UNKNOWN:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT;
+		case VK_OBJECT_TYPE_INSTANCE:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT;
+		case VK_OBJECT_TYPE_PHYSICAL_DEVICE:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_PHYSICAL_DEVICE_EXT;
+		case VK_OBJECT_TYPE_DEVICE:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_EXT;
+		case VK_OBJECT_TYPE_QUEUE:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_QUEUE_EXT;
+		case VK_OBJECT_TYPE_SEMAPHORE:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_SEMAPHORE_EXT;
+		case VK_OBJECT_TYPE_COMMAND_BUFFER:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT;
+		case VK_OBJECT_TYPE_FENCE:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_FENCE_EXT;
+		case VK_OBJECT_TYPE_DEVICE_MEMORY:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT;
+		case VK_OBJECT_TYPE_BUFFER:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT;
+		case VK_OBJECT_TYPE_IMAGE:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT;
+		case VK_OBJECT_TYPE_EVENT:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_EVENT_EXT;
+		case VK_OBJECT_TYPE_QUERY_POOL:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT;
+		case VK_OBJECT_TYPE_BUFFER_VIEW:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_VIEW_EXT;
+		case VK_OBJECT_TYPE_IMAGE_VIEW:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT;
+		case VK_OBJECT_TYPE_SHADER_MODULE:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT;
+		case VK_OBJECT_TYPE_PIPELINE_CACHE:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT;
+		case VK_OBJECT_TYPE_PIPELINE_LAYOUT:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT;
+		case VK_OBJECT_TYPE_RENDER_PASS:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT;
+		case VK_OBJECT_TYPE_PIPELINE:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT;
+		case VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT;
+		case VK_OBJECT_TYPE_SAMPLER:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT;
+		case VK_OBJECT_TYPE_DESCRIPTOR_POOL:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT;
+		case VK_OBJECT_TYPE_DESCRIPTOR_SET:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT;
+		case VK_OBJECT_TYPE_FRAMEBUFFER:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_FRAMEBUFFER_EXT;
+		case VK_OBJECT_TYPE_COMMAND_POOL:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_POOL_EXT;
+		case VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_EXT;
+		case VK_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_EXT;
+		case VK_OBJECT_TYPE_SURFACE_KHR:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_SURFACE_KHR_EXT;
+		case VK_OBJECT_TYPE_SWAPCHAIN_KHR:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT;
+		case VK_OBJECT_TYPE_DISPLAY_KHR:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_KHR_EXT;
+		case VK_OBJECT_TYPE_DISPLAY_MODE_KHR:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT;
+		case VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT;
+		case VK_OBJECT_TYPE_CU_MODULE_NVX:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_CU_MODULE_NVX_EXT;
+		case VK_OBJECT_TYPE_CU_FUNCTION_NVX:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_CU_FUNCTION_NVX_EXT;
+		case VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR_EXT;
+		case VK_OBJECT_TYPE_VALIDATION_CACHE_EXT:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT_EXT;
+		case VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_NV:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_ACCELERATION_STRUCTURE_NV_EXT;
+		default:
+			break;
+	}
+
+	return VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT;
 }
 
 void RenderingDeviceDriverVulkan::_set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name) {
@@ -1171,6 +1316,16 @@ void RenderingDeviceDriverVulkan::_set_object_name(VkObjectType p_object_type, u
 		name_info.objectHandle = p_object_handle;
 		name_info.pObjectName = obj_data.get_data();
 		functions.SetDebugUtilsObjectNameEXT(vk_device, &name_info);
+	} else if (functions.DebugMarkerSetObjectNameEXT != nullptr) {
+		// Debug marker extensions.
+		CharString obj_data = p_object_name.utf8();
+		VkDebugMarkerObjectNameInfoEXT name_info;
+		name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+		name_info.pNext = nullptr;
+		name_info.objectType = _convert_to_debug_report_objectType(p_object_type);
+		name_info.object = p_object_handle;
+		name_info.pObjectName = obj_data.get_data();
+		functions.DebugMarkerSetObjectNameEXT(vk_device, &name_info);
 	}
 }
 
@@ -1211,6 +1366,7 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 	ERR_FAIL_COND_V(err != OK, err);
 
 	max_descriptor_sets_per_pool = GLOBAL_GET("rendering/rendering_device/vulkan/max_descriptors_per_pool");
+	breadcrumb_buffer = buffer_create(sizeof(uint32_t), BufferUsageBits::BUFFER_USAGE_TRANSFER_TO_BIT, MemoryAllocationType::MEMORY_ALLOCATION_TYPE_CPU);
 
 	return OK;
 }
@@ -1279,11 +1435,10 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 				// Looks like a readback buffer: GPU copies from VRAM, then CPU maps and reads.
 				alloc_create_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
 			}
-			alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
 			alloc_create_info.requiredFlags = (VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		} break;
 		case MEMORY_ALLOCATION_TYPE_GPU: {
-			alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+			alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 			if (p_size <= SMALL_ALLOCATION_MAX_SIZE) {
 				uint32_t mem_type_index = 0;
 				vmaFindMemoryTypeIndexForBufferInfo(allocator, &create_info, &alloc_create_info, &mem_type_index);
@@ -1295,11 +1450,15 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 	VkBuffer vk_buffer = VK_NULL_HANDLE;
 	VmaAllocation allocation = nullptr;
 	VmaAllocationInfo alloc_info = {};
-	VkResult err = vmaCreateBuffer(allocator, &create_info, &alloc_create_info, &vk_buffer, &allocation, &alloc_info);
+
+	VkResult err = vkCreateBuffer(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER), &vk_buffer);
 	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+	err = vmaAllocateMemoryForBuffer(allocator, vk_buffer, &alloc_create_info, &allocation, &alloc_info);
+	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't allocate memory for buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+	err = vmaBindBufferMemory2(allocator, allocation, 0, vk_buffer, NULL);
+	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't bind memory to buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
 
 	// Bookkeep.
-
 	BufferInfo *buf_info = VersatileResource::allocate<BufferInfo>(resources_allocator);
 	buf_info->vk_buffer = vk_buffer;
 	buf_info->allocation.handle = allocation;
@@ -1320,7 +1479,7 @@ bool RenderingDeviceDriverVulkan::buffer_set_texel_format(BufferID p_buffer, Dat
 	view_create_info.format = RD_TO_VK_FORMAT[p_format];
 	view_create_info.range = buf_info->allocation.size;
 
-	VkResult res = vkCreateBufferView(vk_device, &view_create_info, nullptr, &buf_info->vk_view);
+	VkResult res = vkCreateBufferView(vk_device, &view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER_VIEW), &buf_info->vk_view);
 	ERR_FAIL_COND_V_MSG(res, false, "Unable to create buffer view, error " + itos(res) + ".");
 
 	return true;
@@ -1329,9 +1488,12 @@ bool RenderingDeviceDriverVulkan::buffer_set_texel_format(BufferID p_buffer, Dat
 void RenderingDeviceDriverVulkan::buffer_free(BufferID p_buffer) {
 	BufferInfo *buf_info = (BufferInfo *)p_buffer.id;
 	if (buf_info->vk_view) {
-		vkDestroyBufferView(vk_device, buf_info->vk_view, nullptr);
+		vkDestroyBufferView(vk_device, buf_info->vk_view, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER_VIEW));
 	}
-	vmaDestroyBuffer(allocator, buf_info->vk_buffer, buf_info->allocation.handle);
+
+	vkDestroyBuffer(vk_device, buf_info->vk_buffer, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER));
+	vmaFreeMemory(allocator, buf_info->allocation.handle);
+
 	VersatileResource::free(resources_allocator, buf_info);
 }
 
@@ -1502,7 +1664,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 
 	VmaAllocationCreateInfo alloc_create_info = {};
 	alloc_create_info.flags = (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) ? VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT : 0;
-	alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+	alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 	if (image_size <= SMALL_ALLOCATION_MAX_SIZE) {
 		uint32_t mem_type_index = 0;
 		vmaFindMemoryTypeIndexForImageInfo(allocator, &create_info, &alloc_create_info, &mem_type_index);
@@ -1514,8 +1676,13 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	VkImage vk_image = VK_NULL_HANDLE;
 	VmaAllocation allocation = nullptr;
 	VmaAllocationInfo alloc_info = {};
-	VkResult err = vmaCreateImage(allocator, &create_info, &alloc_create_info, &vk_image, &allocation, &alloc_info);
-	ERR_FAIL_COND_V_MSG(err, TextureID(), "vmaCreateImage failed with error " + itos(err) + ".");
+
+	VkResult err = vkCreateImage(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE), &vk_image);
+	ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImage failed with error " + itos(err) + ".");
+	err = vmaAllocateMemoryForImage(allocator, vk_image, &alloc_create_info, &allocation, &alloc_info);
+	ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't allocate memory for image, error: " + itos(err) + ".");
+	err = vmaBindImageMemory2(allocator, allocation, 0, vk_image, NULL);
+	ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't bind memory to image, error: " + itos(err) + ".");
 
 	// Create view.
 
@@ -1537,15 +1704,17 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	}
 
 	VkImageView vk_image_view = VK_NULL_HANDLE;
-	err = vkCreateImageView(vk_device, &image_view_create_info, nullptr, &vk_image_view);
+	err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
 	if (err) {
-		vmaDestroyImage(allocator, vk_image, allocation);
+		vkDestroyImage(vk_device, vk_image, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE));
+		vmaFreeMemory(allocator, allocation);
 		ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
 	}
 
 	// Bookkeep.
 
 	TextureInfo *tex_info = VersatileResource::allocate<TextureInfo>(resources_allocator);
+	tex_info->vk_image = vk_image;
 	tex_info->vk_view = vk_image_view;
 	tex_info->rd_format = p_format.format;
 	tex_info->vk_create_info = create_info;
@@ -1579,7 +1748,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_from_extension(uint64
 	image_view_create_info.subresourceRange.aspectMask = p_depth_stencil ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 
 	VkImageView vk_image_view = VK_NULL_HANDLE;
-	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, nullptr, &vk_image_view);
+	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
 	if (err) {
 		ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
 	}
@@ -1634,7 +1803,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared(TextureID p_or
 	}
 
 	VkImageView new_vk_image_view = VK_NULL_HANDLE;
-	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, nullptr, &new_vk_image_view);
+	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &new_vk_image_view);
 	ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
 
 	// Bookkeep.
@@ -1687,7 +1856,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared_from_slice(Tex
 	image_view_create_info.subresourceRange.layerCount = p_layers;
 
 	VkImageView new_vk_image_view = VK_NULL_HANDLE;
-	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, nullptr, &new_vk_image_view);
+	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &new_vk_image_view);
 	ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
 
 	// Bookkeep.
@@ -1707,9 +1876,10 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared_from_slice(Tex
 
 void RenderingDeviceDriverVulkan::texture_free(TextureID p_texture) {
 	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
-	vkDestroyImageView(vk_device, tex_info->vk_view, nullptr);
+	vkDestroyImageView(vk_device, tex_info->vk_view, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW));
 	if (tex_info->allocation.handle) {
-		vmaDestroyImage(allocator, tex_info->vk_view_create_info.image, tex_info->allocation.handle);
+		vkDestroyImage(vk_device, tex_info->vk_image, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER));
+		vmaFreeMemory(allocator, tex_info->allocation.handle);
 	}
 	VersatileResource::free(resources_allocator, tex_info);
 }
@@ -1788,7 +1958,7 @@ uint8_t *RenderingDeviceDriverVulkan::texture_map(TextureID p_texture, const Tex
 
 void RenderingDeviceDriverVulkan::texture_unmap(TextureID p_texture) {
 	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
-	vkUnmapMemory(vk_device, tex_info->allocation.info.deviceMemory);
+	vmaUnmapMemory(allocator, tex_info->allocation.handle);
 }
 
 BitField<RDD::TextureUsageBits> RenderingDeviceDriverVulkan::texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) {
@@ -1869,14 +2039,14 @@ RDD::SamplerID RenderingDeviceDriverVulkan::sampler_create(const SamplerState &p
 	sampler_create_info.unnormalizedCoordinates = p_state.unnormalized_uvw;
 
 	VkSampler vk_sampler = VK_NULL_HANDLE;
-	VkResult res = vkCreateSampler(vk_device, &sampler_create_info, nullptr, &vk_sampler);
+	VkResult res = vkCreateSampler(vk_device, &sampler_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER), &vk_sampler);
 	ERR_FAIL_COND_V_MSG(res, SamplerID(), "vkCreateSampler failed with error " + itos(res) + ".");
 
 	return SamplerID(vk_sampler);
 }
 
 void RenderingDeviceDriverVulkan::sampler_free(SamplerID p_sampler) {
-	vkDestroySampler(vk_device, (VkSampler)p_sampler.id, nullptr);
+	vkDestroySampler(vk_device, (VkSampler)p_sampler.id, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER));
 }
 
 bool RenderingDeviceDriverVulkan::sampler_is_format_supported_for_filter(DataFormat p_format, SamplerFilter p_filter) {
@@ -2051,7 +2221,7 @@ RDD::FenceID RenderingDeviceDriverVulkan::fence_create() {
 	VkFence vk_fence = VK_NULL_HANDLE;
 	VkFenceCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	VkResult err = vkCreateFence(vk_device, &create_info, nullptr, &vk_fence);
+	VkResult err = vkCreateFence(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FENCE), &vk_fence);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, FenceID());
 
 	Fence *fence = memnew(Fence);
@@ -2062,10 +2232,13 @@ RDD::FenceID RenderingDeviceDriverVulkan::fence_create() {
 
 Error RenderingDeviceDriverVulkan::fence_wait(FenceID p_fence) {
 	Fence *fence = (Fence *)(p_fence.id);
-	VkResult err = vkWaitForFences(vk_device, 1, &fence->vk_fence, VK_TRUE, UINT64_MAX);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+	VkResult fence_status = vkGetFenceStatus(vk_device, fence->vk_fence);
+	if (fence_status == VK_NOT_READY) {
+		VkResult err = vkWaitForFences(vk_device, 1, &fence->vk_fence, VK_TRUE, UINT64_MAX);
+		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+	}
 
-	err = vkResetFences(vk_device, 1, &fence->vk_fence);
+	VkResult err = vkResetFences(vk_device, 1, &fence->vk_fence);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
 
 	if (fence->queue_signaled_from != nullptr) {
@@ -2090,7 +2263,7 @@ Error RenderingDeviceDriverVulkan::fence_wait(FenceID p_fence) {
 
 void RenderingDeviceDriverVulkan::fence_free(FenceID p_fence) {
 	Fence *fence = (Fence *)(p_fence.id);
-	vkDestroyFence(vk_device, fence->vk_fence, nullptr);
+	vkDestroyFence(vk_device, fence->vk_fence, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FENCE));
 	memdelete(fence);
 }
 
@@ -2102,14 +2275,14 @@ RDD::SemaphoreID RenderingDeviceDriverVulkan::semaphore_create() {
 	VkSemaphore semaphore = VK_NULL_HANDLE;
 	VkSemaphoreCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	VkResult err = vkCreateSemaphore(vk_device, &create_info, nullptr, &semaphore);
+	VkResult err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, SemaphoreID());
 
 	return SemaphoreID(semaphore);
 }
 
 void RenderingDeviceDriverVulkan::semaphore_free(SemaphoreID p_semaphore) {
-	vkDestroySemaphore(vk_device, VkSemaphore(p_semaphore.id), nullptr);
+	vkDestroySemaphore(vk_device, VkSemaphore(p_semaphore.id), VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
 }
 
 /******************/
@@ -2236,7 +2409,7 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 				create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
 				for (uint32_t i = 0; i < frame_count; i++) {
-					err = vkCreateSemaphore(vk_device, &create_info, nullptr, &semaphore);
+					err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
 					ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
 					command_queue->present_semaphores.push_back(semaphore);
 				}
@@ -2263,6 +2436,11 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		device_queue.submit_mutex.lock();
 		err = vkQueueSubmit(device_queue.queue, 1, &submit_info, vk_fence);
 		device_queue.submit_mutex.unlock();
+
+		if (err == VK_ERROR_DEVICE_LOST) {
+			print_lost_device_info();
+			CRASH_NOW_MSG("Vulkan device was lost.");
+		}
 		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
 
 		if (fence != nullptr && !command_queue->pending_semaphores_for_fence.is_empty()) {
@@ -2354,12 +2532,12 @@ void RenderingDeviceDriverVulkan::command_queue_free(CommandQueueID p_cmd_queue)
 
 	// Erase all the semaphores used for presentation.
 	for (VkSemaphore semaphore : command_queue->present_semaphores) {
-		vkDestroySemaphore(vk_device, semaphore, nullptr);
+		vkDestroySemaphore(vk_device, semaphore, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
 	}
 
 	// Erase all the semaphores used for image acquisition.
 	for (VkSemaphore semaphore : command_queue->image_semaphores) {
-		vkDestroySemaphore(vk_device, semaphore, nullptr);
+		vkDestroySemaphore(vk_device, semaphore, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
 	}
 
 	// Retrieve the queue family corresponding to the virtual queue.
@@ -2387,7 +2565,7 @@ RDD::CommandPoolID RenderingDeviceDriverVulkan::command_pool_create(CommandQueue
 	cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 	VkCommandPool vk_command_pool = VK_NULL_HANDLE;
-	VkResult res = vkCreateCommandPool(vk_device, &cmd_pool_info, nullptr, &vk_command_pool);
+	VkResult res = vkCreateCommandPool(vk_device, &cmd_pool_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_COMMAND_POOL), &vk_command_pool);
 	ERR_FAIL_COND_V_MSG(res, CommandPoolID(), "vkCreateCommandPool failed with error " + itos(res) + ".");
 
 	CommandPool *command_pool = memnew(CommandPool);
@@ -2400,7 +2578,7 @@ void RenderingDeviceDriverVulkan::command_pool_free(CommandPoolID p_cmd_pool) {
 	DEV_ASSERT(p_cmd_pool);
 
 	CommandPool *command_pool = (CommandPool *)(p_cmd_pool.id);
-	vkDestroyCommandPool(vk_device, command_pool->vk_command_pool, nullptr);
+	vkDestroyCommandPool(vk_device, command_pool->vk_command_pool, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_COMMAND_POOL));
 	memdelete(command_pool);
 }
 
@@ -2480,7 +2658,7 @@ void RenderingDeviceDriverVulkan::_swap_chain_release(SwapChain *swap_chain) {
 	}
 
 	for (VkImageView view : swap_chain->image_views) {
-		vkDestroyImageView(vk_device, view, nullptr);
+		vkDestroyImageView(vk_device, view, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW));
 	}
 
 	swap_chain->image_index = UINT_MAX;
@@ -2489,7 +2667,7 @@ void RenderingDeviceDriverVulkan::_swap_chain_release(SwapChain *swap_chain) {
 	swap_chain->framebuffers.clear();
 
 	if (swap_chain->vk_swapchain != VK_NULL_HANDLE) {
-		device_functions.DestroySwapchainKHR(vk_device, swap_chain->vk_swapchain, nullptr);
+		device_functions.DestroySwapchainKHR(vk_device, swap_chain->vk_swapchain, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SWAPCHAIN_KHR));
 		swap_chain->vk_swapchain = VK_NULL_HANDLE;
 	}
 
@@ -2571,7 +2749,7 @@ RenderingDeviceDriver::SwapChainID RenderingDeviceDriverVulkan::swap_chain_creat
 	pass_info.pSubpasses = &subpass;
 
 	VkRenderPass render_pass = VK_NULL_HANDLE;
-	err = _create_render_pass(vk_device, &pass_info, nullptr, &render_pass);
+	err = _create_render_pass(vk_device, &pass_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS), &render_pass);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, SwapChainID());
 
 	SwapChain *swap_chain = memnew(SwapChain);
@@ -2714,7 +2892,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	swap_create_info.compositeAlpha = composite_alpha;
 	swap_create_info.presentMode = present_mode;
 	swap_create_info.clipped = true;
-	err = device_functions.CreateSwapchainKHR(vk_device, &swap_create_info, nullptr, &swap_chain->vk_swapchain);
+	err = device_functions.CreateSwapchainKHR(vk_device, &swap_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SWAPCHAIN_KHR), &swap_chain->vk_swapchain);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 
 	uint32_t image_count = 0;
@@ -2742,7 +2920,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	VkImageView image_view;
 	for (uint32_t i = 0; i < image_count; i++) {
 		view_create_info.image = swap_chain->images[i];
-		err = vkCreateImageView(vk_device, &view_create_info, nullptr, &image_view);
+		err = vkCreateImageView(vk_device, &view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &image_view);
 		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 
 		swap_chain->image_views.push_back(image_view);
@@ -2761,7 +2939,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	VkFramebuffer framebuffer;
 	for (uint32_t i = 0; i < image_count; i++) {
 		fb_create_info.pAttachments = &swap_chain->image_views[i];
-		err = vkCreateFramebuffer(vk_device, &fb_create_info, nullptr, &framebuffer);
+		err = vkCreateFramebuffer(vk_device, &fb_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FRAMEBUFFER), &framebuffer);
 		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 
 		swap_chain->framebuffers.push_back(RDD::FramebufferID(framebuffer));
@@ -2792,7 +2970,7 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::swap_chain_acquire_framebuffer(C
 		// Add a new semaphore if none are free.
 		VkSemaphoreCreateInfo create_info = {};
 		create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		err = vkCreateSemaphore(vk_device, &create_info, nullptr, &semaphore);
+		err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
 		ERR_FAIL_COND_V(err != VK_SUCCESS, FramebufferID());
 
 		semaphore_index = command_queue->image_semaphores.size();
@@ -2864,7 +3042,7 @@ void RenderingDeviceDriverVulkan::swap_chain_free(SwapChainID p_swap_chain) {
 	_swap_chain_release(swap_chain);
 
 	if (swap_chain->render_pass.id != 0) {
-		vkDestroyRenderPass(vk_device, VkRenderPass(swap_chain->render_pass.id), nullptr);
+		vkDestroyRenderPass(vk_device, VkRenderPass(swap_chain->render_pass.id), VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS));
 	}
 
 	memdelete(swap_chain);
@@ -2890,7 +3068,7 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::framebuffer_create(RenderPassID 
 	framebuffer_create_info.layers = 1;
 
 	VkFramebuffer vk_framebuffer = VK_NULL_HANDLE;
-	VkResult err = vkCreateFramebuffer(vk_device, &framebuffer_create_info, nullptr, &vk_framebuffer);
+	VkResult err = vkCreateFramebuffer(vk_device, &framebuffer_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FRAMEBUFFER), &vk_framebuffer);
 	ERR_FAIL_COND_V_MSG(err, FramebufferID(), "vkCreateFramebuffer failed with error " + itos(err) + ".");
 
 #if PRINT_NATIVE_COMMANDS
@@ -2905,7 +3083,7 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::framebuffer_create(RenderPassID 
 }
 
 void RenderingDeviceDriverVulkan::framebuffer_free(FramebufferID p_framebuffer) {
-	vkDestroyFramebuffer(vk_device, (VkFramebuffer)p_framebuffer.id, nullptr);
+	vkDestroyFramebuffer(vk_device, (VkFramebuffer)p_framebuffer.id, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FRAMEBUFFER));
 }
 
 /****************/
@@ -3282,7 +3460,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 		shader_module_create_info.pCode = (const uint32_t *)stages_spirv[i].ptr();
 
 		VkShaderModule vk_module = VK_NULL_HANDLE;
-		VkResult res = vkCreateShaderModule(vk_device, &shader_module_create_info, nullptr, &vk_module);
+		VkResult res = vkCreateShaderModule(vk_device, &shader_module_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SHADER_MODULE), &vk_module);
 		if (res) {
 			error_text = "Error (" + itos(res) + ") creating shader module for stage: " + String(SHADER_STAGE_NAMES[r_shader_desc.stages[i]]);
 			break;
@@ -3309,7 +3487,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 			layout_create_info.pBindings = vk_set_bindings[i].ptr();
 
 			VkDescriptorSetLayout layout = VK_NULL_HANDLE;
-			VkResult res = vkCreateDescriptorSetLayout(vk_device, &layout_create_info, nullptr, &layout);
+			VkResult res = vkCreateDescriptorSetLayout(vk_device, &layout_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT), &layout);
 			if (res) {
 				error_text = "Error (" + itos(res) + ") creating descriptor set layout for set " + itos(i);
 				break;
@@ -3336,7 +3514,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 			pipeline_layout_create_info.pPushConstantRanges = push_constant_range;
 		}
 
-		VkResult err = vkCreatePipelineLayout(vk_device, &pipeline_layout_create_info, nullptr, &shader_info.vk_pipeline_layout);
+		VkResult err = vkCreatePipelineLayout(vk_device, &pipeline_layout_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE_LAYOUT), &shader_info.vk_pipeline_layout);
 		if (err) {
 			error_text = "Error (" + itos(err) + ") creating pipeline layout.";
 		}
@@ -3345,10 +3523,10 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 	if (!error_text.is_empty()) {
 		// Clean up if failed.
 		for (uint32_t i = 0; i < shader_info.vk_stages_create_info.size(); i++) {
-			vkDestroyShaderModule(vk_device, shader_info.vk_stages_create_info[i].module, nullptr);
+			vkDestroyShaderModule(vk_device, shader_info.vk_stages_create_info[i].module, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SHADER_MODULE));
 		}
 		for (uint32_t i = 0; i < binary_data.set_count; i++) {
-			vkDestroyDescriptorSetLayout(vk_device, shader_info.vk_descriptor_set_layouts[i], nullptr);
+			vkDestroyDescriptorSetLayout(vk_device, shader_info.vk_descriptor_set_layouts[i], VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT));
 		}
 
 		ERR_FAIL_V_MSG(ShaderID(), error_text);
@@ -3365,16 +3543,27 @@ void RenderingDeviceDriverVulkan::shader_free(ShaderID p_shader) {
 	ShaderInfo *shader_info = (ShaderInfo *)p_shader.id;
 
 	for (uint32_t i = 0; i < shader_info->vk_descriptor_set_layouts.size(); i++) {
-		vkDestroyDescriptorSetLayout(vk_device, shader_info->vk_descriptor_set_layouts[i], nullptr);
+		vkDestroyDescriptorSetLayout(vk_device, shader_info->vk_descriptor_set_layouts[i], VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT));
 	}
 
-	vkDestroyPipelineLayout(vk_device, shader_info->vk_pipeline_layout, nullptr);
+	vkDestroyPipelineLayout(vk_device, shader_info->vk_pipeline_layout, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE_LAYOUT));
 
-	for (uint32_t i = 0; i < shader_info->vk_stages_create_info.size(); i++) {
-		vkDestroyShaderModule(vk_device, shader_info->vk_stages_create_info[i].module, nullptr);
-	}
+	shader_destroy_modules(p_shader);
 
 	VersatileResource::free(resources_allocator, shader_info);
+}
+
+void RenderingDeviceDriverVulkan::shader_destroy_modules(ShaderID p_shader) {
+	ShaderInfo *si = (ShaderInfo *)p_shader.id;
+
+	for (uint32_t i = 0; i < si->vk_stages_create_info.size(); i++) {
+		if (si->vk_stages_create_info[i].module) {
+			vkDestroyShaderModule(vk_device, si->vk_stages_create_info[i].module,
+					VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SHADER_MODULE));
+			si->vk_stages_create_info[i].module = VK_NULL_HANDLE;
+		}
+	}
+	si->vk_stages_create_info.clear();
 }
 
 /*********************/
@@ -3474,7 +3663,7 @@ VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_creat
 	descriptor_set_pool_create_info.pPoolSizes = vk_sizes;
 
 	VkDescriptorPool vk_pool = VK_NULL_HANDLE;
-	VkResult res = vkCreateDescriptorPool(vk_device, &descriptor_set_pool_create_info, nullptr, &vk_pool);
+	VkResult res = vkCreateDescriptorPool(vk_device, &descriptor_set_pool_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL), &vk_pool);
 	if (res) {
 		ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateDescriptorPool failed with error " + itos(res) + ".");
 	}
@@ -3494,7 +3683,7 @@ void RenderingDeviceDriverVulkan::_descriptor_set_pool_unreference(DescriptorSet
 	HashMap<VkDescriptorPool, uint32_t>::Iterator pool_rcs_it = p_pool_sets_it->value.find(p_vk_descriptor_pool);
 	pool_rcs_it->value--;
 	if (pool_rcs_it->value == 0) {
-		vkDestroyDescriptorPool(vk_device, p_vk_descriptor_pool, nullptr);
+		vkDestroyDescriptorPool(vk_device, p_vk_descriptor_pool, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL));
 		p_pool_sets_it->value.erase(p_vk_descriptor_pool);
 		if (p_pool_sets_it->value.is_empty()) {
 			descriptor_set_pools.remove(p_pool_sets_it);
@@ -3839,7 +4028,7 @@ void RenderingDeviceDriverVulkan::command_copy_texture_to_buffer(CommandBufferID
 /******************/
 
 void RenderingDeviceDriverVulkan::pipeline_free(PipelineID p_pipeline) {
-	vkDestroyPipeline(vk_device, (VkPipeline)p_pipeline.id, nullptr);
+	vkDestroyPipeline(vk_device, (VkPipeline)p_pipeline.id, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE));
 }
 
 // ----- BINDING -----
@@ -3904,7 +4093,7 @@ bool RenderingDeviceDriverVulkan::pipeline_cache_create(const Vector<uint8_t> &p
 			cache_info.flags = VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
 		}
 
-		VkResult err = vkCreatePipelineCache(vk_device, &cache_info, nullptr, &pipelines_cache.vk_cache);
+		VkResult err = vkCreatePipelineCache(vk_device, &cache_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE_CACHE), &pipelines_cache.vk_cache);
 		if (err != VK_SUCCESS) {
 			WARN_PRINT("vkCreatePipelinecache failed with error " + itos(err) + ".");
 			return false;
@@ -3917,7 +4106,7 @@ bool RenderingDeviceDriverVulkan::pipeline_cache_create(const Vector<uint8_t> &p
 void RenderingDeviceDriverVulkan::pipeline_cache_free() {
 	DEV_ASSERT(pipelines_cache.vk_cache);
 
-	vkDestroyPipelineCache(vk_device, pipelines_cache.vk_cache, nullptr);
+	vkDestroyPipelineCache(vk_device, pipelines_cache.vk_cache, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE_CACHE));
 	pipelines_cache.vk_cache = VK_NULL_HANDLE;
 
 	DEV_ASSERT(caching_instance_count > 0);
@@ -4101,14 +4290,14 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 	}
 
 	VkRenderPass vk_render_pass = VK_NULL_HANDLE;
-	VkResult res = _create_render_pass(vk_device, &create_info, nullptr, &vk_render_pass);
+	VkResult res = _create_render_pass(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS), &vk_render_pass);
 	ERR_FAIL_COND_V_MSG(res, RenderPassID(), "vkCreateRenderPass2KHR failed with error " + itos(res) + ".");
 
 	return RenderPassID(vk_render_pass);
 }
 
 void RenderingDeviceDriverVulkan::render_pass_free(RenderPassID p_render_pass) {
-	vkDestroyRenderPass(vk_device, (VkRenderPass)p_render_pass.id, nullptr);
+	vkDestroyRenderPass(vk_device, (VkRenderPass)p_render_pass.id, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS));
 }
 
 // ----- COMMANDS -----
@@ -4550,6 +4739,8 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 	pipeline_create_info.pNext = graphics_pipeline_nextptr;
 	pipeline_create_info.stageCount = shader_info->vk_stages_create_info.size();
 
+	ERR_FAIL_COND_V_MSG(pipeline_create_info.stageCount == 0, PipelineID(),
+			"Cannot create pipeline without shader module, please make sure shader modules are destroyed only after all associated pipelines are created.");
 	VkPipelineShaderStageCreateInfo *vk_pipeline_stages = ALLOCA_ARRAY(VkPipelineShaderStageCreateInfo, shader_info->vk_stages_create_info.size());
 
 	for (uint32_t i = 0; i < shader_info->vk_stages_create_info.size(); i++) {
@@ -4592,7 +4783,7 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 	// ---
 
 	VkPipeline vk_pipeline = VK_NULL_HANDLE;
-	VkResult err = vkCreateGraphicsPipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, nullptr, &vk_pipeline);
+	VkResult err = vkCreateGraphicsPipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE), &vk_pipeline);
 	ERR_FAIL_COND_V_MSG(err, PipelineID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + ".");
 
 	return PipelineID(vk_pipeline);
@@ -4653,7 +4844,7 @@ RDD::PipelineID RenderingDeviceDriverVulkan::compute_pipeline_create(ShaderID p_
 	}
 
 	VkPipeline vk_pipeline = VK_NULL_HANDLE;
-	VkResult err = vkCreateComputePipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, nullptr, &vk_pipeline);
+	VkResult err = vkCreateComputePipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE), &vk_pipeline);
 	ERR_FAIL_COND_V_MSG(err, PipelineID(), "vkCreateComputePipelines failed with error " + itos(err) + ".");
 
 	return PipelineID(vk_pipeline);
@@ -4672,12 +4863,12 @@ RDD::QueryPoolID RenderingDeviceDriverVulkan::timestamp_query_pool_create(uint32
 	query_pool_create_info.queryCount = p_query_count;
 
 	VkQueryPool vk_query_pool = VK_NULL_HANDLE;
-	vkCreateQueryPool(vk_device, &query_pool_create_info, nullptr, &vk_query_pool);
+	vkCreateQueryPool(vk_device, &query_pool_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_QUERY_POOL), &vk_query_pool);
 	return RDD::QueryPoolID(vk_query_pool);
 }
 
 void RenderingDeviceDriverVulkan::timestamp_query_pool_free(QueryPoolID p_pool_id) {
-	vkDestroyQueryPool(vk_device, (VkQueryPool)p_pool_id.id, nullptr);
+	vkDestroyQueryPool(vk_device, (VkQueryPool)p_pool_id.id, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_QUERY_POOL));
 }
 
 void RenderingDeviceDriverVulkan::timestamp_query_pool_get_results(QueryPoolID p_pool_id, uint32_t p_query_count, uint64_t *r_results) {
@@ -4732,6 +4923,21 @@ void RenderingDeviceDriverVulkan::command_timestamp_write(CommandBufferID p_cmd_
 
 void RenderingDeviceDriverVulkan::command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) {
 	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+	if (!functions.CmdBeginDebugUtilsLabelEXT) {
+		if (functions.CmdDebugMarkerBeginEXT) {
+			// Debug marker extensions.
+			VkDebugMarkerMarkerInfoEXT marker;
+			marker.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+			marker.pNext = nullptr;
+			marker.pMarkerName = p_label_name;
+			marker.color[0] = p_color[0];
+			marker.color[1] = p_color[1];
+			marker.color[2] = p_color[2];
+			marker.color[3] = p_color[3];
+			functions.CmdDebugMarkerBeginEXT((VkCommandBuffer)p_cmd_buffer.id, &marker);
+		}
+		return;
+	}
 	VkDebugUtilsLabelEXT label;
 	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
 	label.pNext = nullptr;
@@ -4745,7 +4951,163 @@ void RenderingDeviceDriverVulkan::command_begin_label(CommandBufferID p_cmd_buff
 
 void RenderingDeviceDriverVulkan::command_end_label(CommandBufferID p_cmd_buffer) {
 	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+	if (!functions.CmdEndDebugUtilsLabelEXT) {
+		if (functions.CmdDebugMarkerEndEXT) {
+			// Debug marker extensions.
+			functions.CmdDebugMarkerEndEXT((VkCommandBuffer)p_cmd_buffer.id);
+		}
+		return;
+	}
 	functions.CmdEndDebugUtilsLabelEXT((VkCommandBuffer)p_cmd_buffer.id);
+}
+
+/****************/
+/**** DEBUG *****/
+/****************/
+void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) {
+	if (p_data == BreadcrumbMarker::NONE) {
+		return;
+	}
+	vkCmdFillBuffer((VkCommandBuffer)p_cmd_buffer.id, ((BufferInfo *)breadcrumb_buffer.id)->vk_buffer, 0, sizeof(uint32_t), p_data);
+}
+
+void RenderingDeviceDriverVulkan::on_device_lost() const {
+	if (device_functions.GetDeviceFaultInfoEXT == nullptr) {
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "VK_EXT_device_fault not available.");
+		return;
+	}
+
+	VkDeviceFaultCountsEXT fault_counts = {};
+	fault_counts.sType = VK_STRUCTURE_TYPE_DEVICE_FAULT_COUNTS_EXT;
+	VkResult vkres = device_functions.GetDeviceFaultInfoEXT(vk_device, &fault_counts, nullptr);
+
+	if (vkres != VK_SUCCESS) {
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "vkGetDeviceFaultInfoEXT returned " + itos(vkres) + " when getting fault count, skipping VK_EXT_device_fault report...");
+		return;
+	}
+
+	String err_msg;
+	VkDeviceFaultInfoEXT fault_info = {};
+	fault_info.sType = VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT;
+	fault_info.pVendorInfos = fault_counts.vendorInfoCount
+			? (VkDeviceFaultVendorInfoEXT *)memalloc(fault_counts.vendorInfoCount * sizeof(VkDeviceFaultVendorInfoEXT))
+			: nullptr;
+	fault_info.pAddressInfos =
+			fault_counts.addressInfoCount
+			? (VkDeviceFaultAddressInfoEXT *)memalloc(fault_counts.addressInfoCount * sizeof(VkDeviceFaultAddressInfoEXT))
+			: nullptr;
+	fault_counts.vendorBinarySize = 0;
+	vkres = device_functions.GetDeviceFaultInfoEXT(vk_device, &fault_counts, &fault_info);
+	if (vkres != VK_SUCCESS) {
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "vkGetDeviceFaultInfoEXT returned " + itos(vkres) + " when getting fault info, skipping VK_EXT_device_fault report...");
+	} else {
+		err_msg += "** Report from VK_EXT_device_fault **";
+		err_msg += "\nDescription: " + String(fault_info.description);
+		err_msg += "\nVendor infos:";
+		for (uint32_t vd = 0; vd < fault_counts.vendorInfoCount; ++vd) {
+			const VkDeviceFaultVendorInfoEXT *vendor_info = &fault_info.pVendorInfos[vd];
+			err_msg += "\nInfo " + itos(vd);
+			err_msg += "\n   Description: " + String(vendor_info->description);
+			err_msg += "\n   Fault code : " + itos(vendor_info->vendorFaultCode);
+			err_msg += "\n   Fault data : " + itos(vendor_info->vendorFaultData);
+		}
+
+		static constexpr const char *addressTypeNames[] = {
+			"NONE",
+			"READ_INVALID",
+			"WRITE_INVALID",
+			"EXECUTE_INVALID",
+			"INSTRUCTION_POINTER_UNKNOWN",
+			"INSTRUCTION_POINTER_INVALID",
+			"INSTRUCTION_POINTER_FAULT",
+		};
+		err_msg += "\nAddresses info:";
+		for (uint32_t ad = 0; ad < fault_counts.addressInfoCount; ++ad) {
+			const VkDeviceFaultAddressInfoEXT *addr_info = &fault_info.pAddressInfos[ad];
+			// From https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkDeviceFaultAddressInfoEXT.html
+			const VkDeviceAddress lower = (addr_info->reportedAddress & ~(addr_info->addressPrecision - 1));
+			const VkDeviceAddress upper = (addr_info->reportedAddress | (addr_info->addressPrecision - 1));
+			err_msg += "\nInfo " + itos(ad);
+			err_msg += "\n   Type            : " + String(addressTypeNames[addr_info->addressType]);
+			err_msg += "\n   Reported address: " + itos(addr_info->reportedAddress);
+			err_msg += "\n   Lower address   : " + itos(lower);
+			err_msg += "\n   Upper address   : " + itos(upper);
+			err_msg += "\n   Precision       : " + itos(addr_info->addressPrecision);
+		}
+	}
+
+	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, err_msg);
+
+	if (fault_info.pVendorInfos) {
+		memfree(fault_info.pVendorInfos);
+	}
+	if (fault_info.pAddressInfos) {
+		memfree(fault_info.pAddressInfos);
+	}
+}
+
+void RenderingDeviceDriverVulkan::print_lost_device_info() {
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+	void *breadcrumb_ptr;
+	vmaFlushAllocation(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, 0, sizeof(uint32_t));
+	vmaInvalidateAllocation(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, 0, sizeof(uint32_t));
+
+	vmaMapMemory(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, &breadcrumb_ptr);
+	uint32_t last_breadcrumb = *(uint32_t *)breadcrumb_ptr;
+	vmaUnmapMemory(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle);
+	uint32_t phase = last_breadcrumb & uint32_t(~((1 << 16) - 1));
+	uint32_t user_data = last_breadcrumb & ((1 << 16) - 1);
+	String error_msg = "Last known breadcrumb: ";
+
+	switch (phase) {
+		case BreadcrumbMarker::ALPHA_PASS:
+			error_msg += "ALPHA_PASS";
+			break;
+		case BreadcrumbMarker::BLIT_PASS:
+			error_msg += "BLIT_PASS";
+			break;
+		case BreadcrumbMarker::DEBUG_PASS:
+			error_msg += "DEBUG_PASS";
+			break;
+		case BreadcrumbMarker::LIGHTMAPPER_PASS:
+			error_msg += "LIGHTMAPPER_PASS";
+			break;
+		case BreadcrumbMarker::OPAQUE_PASS:
+			error_msg += "OPAQUE_PASS";
+			break;
+		case BreadcrumbMarker::POST_PROCESSING_PASS:
+			error_msg += "POST_PROCESSING_PASS";
+			break;
+		case BreadcrumbMarker::REFLECTION_PROBES:
+			error_msg += "REFLECTION_PROBES";
+			break;
+		case BreadcrumbMarker::SHADOW_PASS_CUBE:
+			error_msg += "SHADOW_PASS_CUBE";
+			break;
+		case BreadcrumbMarker::SHADOW_PASS_DIRECTIONAL:
+			error_msg += "SHADOW_PASS_DIRECTIONAL";
+			break;
+		case BreadcrumbMarker::SKY_PASS:
+			error_msg += "SKY_PASS";
+			break;
+		case BreadcrumbMarker::TRANSPARENT_PASS:
+			error_msg += "TRANSPARENT_PASS";
+			break;
+		case BreadcrumbMarker::UI_PASS:
+			error_msg += "UI_PASS";
+			break;
+		default:
+			error_msg += "UNKNOWN_BREADCRUMB(" + itos((uint32_t)phase) + ')';
+			break;
+	}
+
+	if (user_data != 0) {
+		error_msg += " | User data: " + itos(user_data);
+	}
+
+	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, error_msg);
+#endif
+	on_device_lost();
 }
 
 /********************/
@@ -5010,9 +5372,12 @@ RenderingDeviceDriverVulkan::RenderingDeviceDriverVulkan(RenderingContextDriverV
 	DEV_ASSERT(p_context_driver != nullptr);
 
 	context_driver = p_context_driver;
+	max_descriptor_sets_per_pool = GLOBAL_GET("rendering/rendering_device/vulkan/max_descriptors_per_pool");
 }
 
 RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
+	buffer_free(breadcrumb_buffer);
+
 	while (small_allocs_pools.size()) {
 		HashMap<uint32_t, VmaPool>::Iterator E = small_allocs_pools.begin();
 		vmaDestroyPool(allocator, E->value);
@@ -5021,6 +5386,6 @@ RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
 	vmaDestroyAllocator(allocator);
 
 	if (vk_device != VK_NULL_HANDLE) {
-		vkDestroyDevice(vk_device, nullptr);
+		vkDestroyDevice(vk_device, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE));
 	}
 }

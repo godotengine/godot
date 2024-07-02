@@ -476,6 +476,7 @@ public:
 	// Only meaningful if API_TRAIT_SHADER_CHANGE_INVALIDATION is SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH.
 	virtual uint32_t shader_get_layout_hash(ShaderID p_shader) { return 0; }
 	virtual void shader_free(ShaderID p_shader) = 0;
+	virtual void shader_destroy_modules(ShaderID p_shader) = 0;
 
 protected:
 	// An optional service to implementations.
@@ -708,6 +709,11 @@ public:
 
 	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) = 0;
 	virtual void command_end_label(CommandBufferID p_cmd_buffer) = 0;
+
+	/****************/
+	/**** DEBUG *****/
+	/****************/
+	virtual void command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) = 0;
 
 	/********************/
 	/**** SUBMISSION ****/

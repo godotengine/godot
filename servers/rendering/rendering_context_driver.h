@@ -101,6 +101,19 @@ public:
 	virtual bool surface_get_needs_resize(SurfaceID p_surface) const = 0;
 	virtual void surface_destroy(SurfaceID p_surface) = 0;
 	virtual bool is_debug_utils_enabled() const = 0;
+
+	virtual const char *get_tracked_object_name(uint32_t p_type_index) const;
+	virtual uint64_t get_tracked_object_type_count() const;
+
+	virtual uint64_t get_driver_total_memory() const;
+	virtual uint64_t get_driver_allocation_count() const;
+	virtual uint64_t get_driver_memory_by_object_type(uint32_t p_type) const;
+	virtual uint64_t get_driver_allocs_by_object_type(uint32_t p_type) const;
+
+	virtual uint64_t get_device_total_memory() const;
+	virtual uint64_t get_device_allocation_count() const;
+	virtual uint64_t get_device_memory_by_object_type(uint32_t p_type) const;
+	virtual uint64_t get_device_allocs_by_object_type(uint32_t p_type) const;
 };
 
 #endif // RENDERING_CONTEXT_DRIVER_H

@@ -714,6 +714,7 @@ public:
 	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) override final;
 	virtual uint32_t shader_get_layout_hash(ShaderID p_shader) override final;
 	virtual void shader_free(ShaderID p_shader) override final;
+	virtual void shader_destroy_modules(ShaderID p_shader) override final;
 
 	/*********************/
 	/**** UNIFORM SET ****/
@@ -944,6 +945,11 @@ public:
 
 	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) override final;
 	virtual void command_end_label(CommandBufferID p_cmd_buffer) override final;
+
+	/****************/
+	/**** DEBUG *****/
+	/****************/
+	virtual void command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) override final;
 
 	/********************/
 	/**** SUBMISSION ****/
