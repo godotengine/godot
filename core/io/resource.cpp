@@ -91,6 +91,7 @@ String Resource::get_path() const {
 
 void Resource::set_path_cache(const String &p_path) {
 	path_cache = p_path;
+	GDVIRTUAL_CALL(_set_path_cache, p_path);
 }
 
 String Resource::generate_scene_unique_id() {
@@ -173,6 +174,7 @@ void Resource::disconnect_changed(const Callable &p_callable) {
 }
 
 void Resource::reset_state() {
+	GDVIRTUAL_CALL(_reset_state);
 }
 
 Error Resource::copy_from(const Ref<Resource> &p_resource) {
@@ -519,6 +521,7 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &Resource::_set_path);
 	ClassDB::bind_method(D_METHOD("take_over_path", "path"), &Resource::_take_over_path);
 	ClassDB::bind_method(D_METHOD("get_path"), &Resource::get_path);
+	ClassDB::bind_method(D_METHOD("set_path_cache", "path"), &Resource::set_path_cache);
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Resource::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Resource::get_name);
 	ClassDB::bind_method(D_METHOD("get_rid"), &Resource::get_rid);
@@ -526,6 +529,14 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_local_to_scene"), &Resource::is_local_to_scene);
 	ClassDB::bind_method(D_METHOD("get_local_scene"), &Resource::get_local_scene);
 	ClassDB::bind_method(D_METHOD("setup_local_to_scene"), &Resource::setup_local_to_scene);
+	ClassDB::bind_method(D_METHOD("reset_state"), &Resource::reset_state);
+
+#ifdef TOOLS_ENABLED
+	ClassDB::bind_method(D_METHOD("set_id_for_path", "path", "id"), &Resource::set_id_for_path);
+	ClassDB::bind_method(D_METHOD("get_id_for_path", "path"), &Resource::get_id_for_path);
+#endif
+
+	ClassDB::bind_method(D_METHOD("is_built_in"), &Resource::is_built_in);
 
 	ClassDB::bind_static_method("Resource", D_METHOD("generate_scene_unique_id"), &Resource::generate_scene_unique_id);
 	ClassDB::bind_method(D_METHOD("set_scene_unique_id", "id"), &Resource::set_scene_unique_id);
@@ -548,6 +559,8 @@ void Resource::_bind_methods() {
 
 	::ClassDB::add_virtual_method(get_class_static(), get_rid_bind, true, Vector<String>(), true);
 	GDVIRTUAL_BIND(_setup_local_to_scene);
+	GDVIRTUAL_BIND(_reset_state);
+	GDVIRTUAL_BIND(_set_path_cache, "path");
 }
 
 Resource::Resource() :
