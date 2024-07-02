@@ -94,6 +94,9 @@ public:
 	void set_data(const Variant &p_data);
 	inline int get_error_line() const { return err_line; }
 	inline String get_error_message() const { return err_str; }
+
+	static Variant from_native(const Variant &p_variant, bool p_allow_classes = false, bool p_allow_scripts = false);
+	static Variant to_native(const Variant &p_json, bool p_allow_classes = false, bool p_allow_scripts = false);
 };
 
 class ResourceFormatLoaderJSON : public ResourceFormatLoader {
