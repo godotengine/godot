@@ -101,15 +101,6 @@ void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, V
 		args.resize(p_argcount + captures_amount);
 		for (int i = 0; i < captures_amount; i++) {
 			args.write[i] = &captures[i];
-			if (captures[i].get_type() == Variant::OBJECT) {
-				bool was_freed = false;
-				captures[i].get_validated_object_with_check(was_freed);
-				if (was_freed) {
-					ERR_PRINT(vformat(R"(Lambda capture at index %d was freed. Passed "null" instead.)", i));
-					static Variant nil;
-					args.write[i] = &nil;
-				}
-			}
 		}
 		for (int i = 0; i < p_argcount; i++) {
 			args.write[i + captures_amount] = p_arguments[i];
@@ -229,15 +220,6 @@ void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcoun
 		args.resize(p_argcount + captures_amount);
 		for (int i = 0; i < captures_amount; i++) {
 			args.write[i] = &captures[i];
-			if (captures[i].get_type() == Variant::OBJECT) {
-				bool was_freed = false;
-				captures[i].get_validated_object_with_check(was_freed);
-				if (was_freed) {
-					ERR_PRINT(vformat(R"(Lambda capture at index %d was freed. Passed "null" instead.)", i));
-					static Variant nil;
-					args.write[i] = &nil;
-				}
-			}
 		}
 		for (int i = 0; i < p_argcount; i++) {
 			args.write[i + captures_amount] = p_arguments[i];
