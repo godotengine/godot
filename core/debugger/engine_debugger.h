@@ -31,6 +31,7 @@
 #ifndef ENGINE_DEBUGGER_H
 #define ENGINE_DEBUGGER_H
 
+#include "core/object/ref_counted.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
@@ -38,7 +39,9 @@
 #include "core/variant/array.h"
 #include "core/variant/variant.h"
 
+class InputEvent;
 class RemoteDebuggerPeer;
+class Shortcut;
 class ScriptDebugger;
 
 class EngineDebugger {
@@ -92,6 +95,8 @@ private:
 
 	uint32_t poll_every = 0;
 
+	Ref<Shortcut> stop_shortcut;
+
 protected:
 	static EngineDebugger *singleton;
 	static ScriptDebugger *script_debugger;
@@ -125,6 +130,8 @@ public:
 	void iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks, uint64_t p_physics_ticks, double p_physics_frame_time);
 	void profiler_enable(const StringName &p_name, bool p_enabled, const Array &p_opts = Array());
 	Error capture_parse(const StringName &p_name, const String &p_msg, const Array &p_args, bool &r_captured);
+
+	void check_stop_shortcut(const Ref<InputEvent> &p_ev);
 
 	void line_poll() {
 		// The purpose of this is just processing events every now and then when the script might get too busy otherwise bugs like infinite loops can't be caught.
