@@ -764,12 +764,13 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 
 			} else {
 				// Released.
-				drag_erasing = false;
 				if (drag_type == DRAG_TYPE_NONE) {
+					drag_erasing = false;
 					return false;
 				} else {
 					_stop_dragging();
 				}
+				drag_erasing = false;
 			}
 
 			CanvasItemEditor::get_singleton()->update_viewport();
