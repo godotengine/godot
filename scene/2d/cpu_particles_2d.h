@@ -80,10 +80,20 @@ private:
 	bool emitting = false;
 	bool active = false;
 
-	struct Particle {
+	struct ParticleBase {
 		Transform2D transform;
 		Color color;
 		real_t custom[4] = {};
+		void blank() {
+			for (int n = 0; n < 4; n++) {
+				custom[n] = real_t(0.0);
+			}
+		}
+	};
+
+	// Warning - beware of adding non-trivial types to this structure
+	// as it is zeroed to initialize in set_amount().
+	struct Particle : public ParticleBase {
 		real_t rotation = 0.0;
 		Vector2 velocity;
 		bool active = false;
@@ -97,6 +107,12 @@ private:
 		Color base_color;
 
 		uint32_t seed = 0;
+
+		void copy_to(ParticleBase &r_other) {
+			r_other.transform = transform;
+			r_other.color = color;
+			memcpy(r_other.custom, custom, sizeof(real_t) * 4);
+		}
 	};
 
 	double time = 0.0;
@@ -108,7 +124,9 @@ private:
 	RID multimesh;
 
 	Vector<Particle> particles;
+	Vector<Particle> particles_prev;
 	Vector<float> particle_data;
+	Vector<float> particle_data_prev;
 	Vector<int> particle_order;
 
 	struct SortLifetime {
@@ -176,11 +194,14 @@ private:
 
 	Vector2 gravity = Vector2(0, 980);
 
-	void _update_internal();
+	void _update_internal(bool p_on_physics_tick);
 	void _particles_process(double p_delta);
+	void _particle_process(Particle &r_p, const Transform2D &p_emission_xform, double p_local_delta, float &r_tv);
 	void _update_particle_data_buffer();
 
 	Mutex update_mutex;
+
+	bool _interpolated = false;
 
 	void _update_render_thread();
 
@@ -189,6 +210,37 @@ private:
 	void _set_do_redraw(bool p_do_redraw);
 
 	void _texture_changed();
+
+	void _refresh_interpolation_state();
+
+	void _fill_particle_data(const ParticleBase &p_source, float *r_dest, bool p_active) const {
+		if (p_active) {
+			Transform2D t = p_source.transform;
+
+			r_dest[0] = t.columns[0][0];
+			r_dest[1] = t.columns[1][0];
+			r_dest[2] = 0;
+			r_dest[3] = t.columns[2][0];
+			r_dest[4] = t.columns[0][1];
+			r_dest[5] = t.columns[1][1];
+			r_dest[6] = 0;
+			r_dest[7] = t.columns[2][1];
+
+			Color c = p_source.color;
+
+			r_dest[8] = c.r;
+			r_dest[9] = c.g;
+			r_dest[10] = c.b;
+			r_dest[11] = c.a;
+
+			r_dest[12] = p_source.custom[0];
+			r_dest[13] = p_source.custom[1];
+			r_dest[14] = p_source.custom[2];
+			r_dest[15] = p_source.custom[3];
+		} else {
+			memset(r_dest, 0, sizeof(float) * 16);
+		}
+	}
 
 protected:
 	static void _bind_methods();

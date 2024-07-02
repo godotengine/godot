@@ -162,6 +162,8 @@ protected:
 		}
 	}
 
+	void set_use_identity_transform(bool p_enable);
+
 	void item_rect_changed(bool p_size_changed = true);
 
 	void _notification(int p_what);
