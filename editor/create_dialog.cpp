@@ -289,7 +289,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		r_item->set_metadata(0, p_type);
 		r_item->set_text(0, p_type);
 		String script_path = ScriptServer::get_global_class_path(p_type);
-		r_item->set_suffix(0, "(" + script_path.get_file() + ")");
+		r_item->add_button(0, get_editor_theme_icon("Script"), 0, false, vformat(TTR("Class \"%s\" is provided by a script in the current project:\n%s"), p_type, script_path));
 
 		Ref<Script> scr = ResourceLoader::load(script_path, "Script");
 		ERR_FAIL_COND(!scr.is_valid());
@@ -297,6 +297,9 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 	} else {
 		r_item->set_metadata(0, custom_type_parents[p_type]);
 		r_item->set_text(0, p_type);
+		r_item->add_button(0, get_editor_theme_icon("Script"), 0, false, vformat(TTR("Class \"%s\" is a custom type provided by an editor plugin."), p_type));
+		// Match coloring in the Scene tree dock for custom types.
+		r_item->set_button_color(0, r_item->get_button_count(0) - 1, Color(1, 1, 1, 0.5));
 	}
 
 	bool can_instantiate = (p_type_category == TypeCategory::CPP_TYPE && ClassDB::can_instantiate(p_type)) ||
@@ -316,9 +319,9 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 	bool is_experimental = (class_doc && class_doc->value.is_experimental);
 
 	if (is_deprecated) {
-		r_item->add_button(0, get_editor_theme_icon("StatusError"), 0, false, TTR("This class is marked as deprecated."));
+		r_item->add_button(0, get_editor_theme_icon("StatusError"), 0, false, vformat(TTR("Class \"%s\" is marked as deprecated."), p_type));
 	} else if (is_experimental) {
-		r_item->add_button(0, get_editor_theme_icon("NodeWarning"), 0, false, TTR("This class is marked as experimental."));
+		r_item->add_button(0, get_editor_theme_icon("NodeWarning"), 0, false, vformat(TTR("Class \"%s\" is marked as experimental."), p_type));
 	}
 
 	if (!search_box->get_text().is_empty()) {
