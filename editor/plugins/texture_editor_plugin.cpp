@@ -145,12 +145,13 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		p_texture->connect_changed(callable_mp(this, &TexturePreview::_update_metadata_label_text));
 
 		// It's okay that these colors are static since the grid color is static too.
-		metadata_label->add_theme_color_override(SceneStringName(font_color), Color::named("white"));
-		metadata_label->add_theme_color_override("font_shadow_color", Color::named("black"));
+		metadata_label->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1));
+		metadata_label->add_theme_color_override("font_shadow_color", Color(0, 0, 0));
 
 		metadata_label->add_theme_font_size_override(SceneStringName(font_size), 14 * EDSCALE);
-		metadata_label->add_theme_color_override("font_outline_color", Color::named("black"));
+		metadata_label->add_theme_color_override("font_outline_color", Color(0, 0, 0));
 		metadata_label->add_theme_constant_override("outline_size", 8 * EDSCALE);
+
 		metadata_label->set_h_size_flags(Control::SIZE_SHRINK_END);
 		metadata_label->set_v_size_flags(Control::SIZE_SHRINK_END);
 
