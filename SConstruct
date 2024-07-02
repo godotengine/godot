@@ -812,6 +812,8 @@ else:  # GCC, Clang
             common_warnings += ["-Wno-type-limits"]
         if cc_version_major >= 12:  # False positives in our error macros, see GH-58747.
             common_warnings += ["-Wno-return-type"]
+        if cc_version_major < 13:  # region & endregion not recognized as valid pragmas.
+            common_warnings += ["-Wno-unknown-pragmas"]
     elif methods.using_clang(env) or methods.using_emcc(env):
         common_warnings += ["-Wshadow-field-in-constructor", "-Wshadow-uncaptured-local"]
         # We often implement `operator<` for structs of pointers as a requirement
