@@ -391,9 +391,9 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point) {
 	return found_route;
 }
 
-real_t AStar3D::_estimate_cost(int64_t p_from_id, int64_t p_to_id) {
+real_t AStar3D::_estimate_cost(int64_t p_from_id, int64_t p_end_id) {
 	real_t scost;
-	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_to_id, scost)) {
+	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_end_id, scost)) {
 		return scost;
 	}
 
@@ -401,11 +401,11 @@ real_t AStar3D::_estimate_cost(int64_t p_from_id, int64_t p_to_id) {
 	bool from_exists = points.lookup(p_from_id, from_point);
 	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_from_id));
 
-	Point *to_point = nullptr;
-	bool to_exists = points.lookup(p_to_id, to_point);
-	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_to_id));
+	Point *end_point = nullptr;
+	bool end_exists = points.lookup(p_end_id, end_point);
+	ERR_FAIL_COND_V_MSG(!end_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_end_id));
 
-	return from_point->pos.distance_to(to_point->pos);
+	return from_point->pos.distance_to(end_point->pos);
 }
 
 real_t AStar3D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
@@ -579,7 +579,7 @@ void AStar3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStar3D::get_point_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStar3D::get_id_path, DEFVAL(false));
 
-	GDVIRTUAL_BIND(_estimate_cost, "from_id", "to_id")
+	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 }
 
@@ -675,9 +675,9 @@ Vector2 AStar2D::get_closest_position_in_segment(const Vector2 &p_point) const {
 	return Vector2(p.x, p.y);
 }
 
-real_t AStar2D::_estimate_cost(int64_t p_from_id, int64_t p_to_id) {
+real_t AStar2D::_estimate_cost(int64_t p_from_id, int64_t p_end_id) {
 	real_t scost;
-	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_to_id, scost)) {
+	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_end_id, scost)) {
 		return scost;
 	}
 
@@ -685,11 +685,11 @@ real_t AStar2D::_estimate_cost(int64_t p_from_id, int64_t p_to_id) {
 	bool from_exists = astar.points.lookup(p_from_id, from_point);
 	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_from_id));
 
-	AStar3D::Point *to_point = nullptr;
-	bool to_exists = astar.points.lookup(p_to_id, to_point);
-	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_to_id));
+	AStar3D::Point *end_point = nullptr;
+	bool to_exists = astar.points.lookup(p_end_id, end_point);
+	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_end_id));
 
-	return from_point->pos.distance_to(to_point->pos);
+	return from_point->pos.distance_to(end_point->pos);
 }
 
 real_t AStar2D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
@@ -918,6 +918,6 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStar2D::get_point_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStar2D::get_id_path, DEFVAL(false));
 
-	GDVIRTUAL_BIND(_estimate_cost, "from_id", "to_id")
+	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 }
