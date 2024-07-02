@@ -2835,26 +2835,32 @@ void Variant::operator=(const Variant &p_variant) {
 			*reinterpret_cast<::RID *>(_data._mem) = *reinterpret_cast<const ::RID *>(p_variant._data._mem);
 		} break;
 		case OBJECT: {
+			// Mirrors Ref::ref in refcounted.h
+			if (p_variant._get_obj().id == _get_obj().id) {
+				break;
+			}
+
+			RefCounted *cleanup_ref = nullptr;
 			if (_get_obj().id.is_ref_counted()) {
 				//we are safe that there is a reference here
-				RefCounted *ref_counted = static_cast<RefCounted *>(_get_obj().obj);
-				if (ref_counted->unreference()) {
-					memdelete(ref_counted);
+				cleanup_ref = static_cast<RefCounted *>(_get_obj().obj);
+			}
+
+			ObjData new_obj_data{ p_variant._get_obj().id, p_variant._get_obj().obj };
+			if (p_variant._get_obj().id.is_ref_counted()) {
+				RefCounted *other_ref_counted = static_cast<RefCounted *>(p_variant._get_obj().obj);
+				if (other_ref_counted && !other_ref_counted->reference()) {
+					new_obj_data = ObjData{ ObjectID(), nullptr };
 				}
 			}
 
-			if (p_variant._get_obj().obj && p_variant._get_obj().id.is_ref_counted()) {
-				RefCounted *ref_counted = static_cast<RefCounted *>(p_variant._get_obj().obj);
-				if (!ref_counted->reference()) {
-					_get_obj().obj = nullptr;
-					_get_obj().id = ObjectID();
-					break;
+			_get_obj() = new_obj_data;
+
+			if (cleanup_ref) {
+				if (cleanup_ref->unreference()) {
+					memdelete(cleanup_ref);
 				}
 			}
-
-			_get_obj().obj = const_cast<Object *>(p_variant._get_obj().obj);
-			_get_obj().id = p_variant._get_obj().id;
-
 		} break;
 		case CALLABLE: {
 			*reinterpret_cast<Callable *>(_data._mem) = *reinterpret_cast<const Callable *>(p_variant._data._mem);
