@@ -69,6 +69,13 @@ AudioStreamPolyphonic::AudioStreamPolyphonic() {
 
 ////////////////////////
 
+void AudioStreamPlaybackPolyphonic::free_stream(Stream &s) {
+	s.active.clear();
+	s.finish_request.clear();
+	s.stream_playback.unref();
+	s.stream.unref();
+}
+
 void AudioStreamPlaybackPolyphonic::start(double p_from_pos) {
 	if (active) {
 		stop();
@@ -86,13 +93,12 @@ void AudioStreamPlaybackPolyphonic::stop() {
 	for (Stream &s : streams) {
 		if (s.active.is_set()) {
 			// Need locking because something may still be mixing.
-			locked = true;
-			AudioServer::get_singleton()->lock();
+			if (!locked) {
+				AudioServer::get_singleton()->lock();
+				locked = true;
+			}
 		}
-		s.active.clear();
-		s.finish_request.clear();
-		s.stream_playback.unref();
-		s.stream.unref();
+		free_stream(s);
 	}
 	if (locked) {
 		AudioServer::get_singleton()->unlock();
@@ -136,6 +142,9 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 
 	for (Stream &s : streams) {
 		if (!s.active.is_set()) {
+			if (!s.stream.is_null()) {
+				free_stream(s);
+			}
 			continue;
 		}
 
@@ -251,7 +260,7 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 	return INVALID_ID;
 }
 
-AudioStreamPlaybackPolyphonic::Stream *AudioStreamPlaybackPolyphonic::_find_stream(int64_t p_id) {
+AudioStreamPlaybackPolyphonic::Stream *AudioStreamPlaybackPolyphonic::_find_stream(uint64_t p_id) {
 	uint32_t index = p_id >> INDEX_SHIFT;
 	if (index >= streams.size()) {
 		return nullptr;
