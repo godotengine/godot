@@ -110,6 +110,7 @@ public:
 	_FORCE_INLINE_ bool is_built_in() const { return path_cache.is_empty() || path_cache.contains("::") || path_cache.begins_with("local://"); }
 
 	static String generate_scene_unique_id();
+	static String generate_consistent_scene_unique_id(String name);
 	void set_scene_unique_id(const String &p_id);
 	String get_scene_unique_id() const;
 
