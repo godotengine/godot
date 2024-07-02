@@ -2551,6 +2551,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 	ERR_FAIL_NULL(camera);
 
 	Vector2 jitter;
+	float jitter_fraction = 0.0f;
 	if (p_jitter_phase_count > 0) {
 		uint32_t current_jitter_count = camera_jitter_array.size();
 		if (p_jitter_phase_count != current_jitter_count) {
@@ -2564,6 +2565,8 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		}
 
 		jitter = camera_jitter_array[RSG::rasterizer->get_frame_number() % p_jitter_phase_count] / p_viewport_size;
+		// TODO: Figure out better formula for calculating jitter fraction.
+		jitter_fraction = camera_jitter_array[RSG::rasterizer->get_frame_number() % p_jitter_phase_count].length_squared();
 	}
 
 	RendererSceneRender::CameraData camera_data;
@@ -2606,7 +2609,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 			} break;
 		}
 
-		camera_data.set_camera(transform, projection, is_orthogonal, vaspect, jitter, camera->visible_layers);
+		camera_data.set_camera(transform, projection, is_orthogonal, vaspect, jitter, jitter_fraction, camera->visible_layers);
 	} else {
 		// Setup our camera for our XR interface.
 		// We can support multiple views here each with their own camera
@@ -2628,7 +2631,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		}
 
 		if (view_count == 1) {
-			camera_data.set_camera(transforms[0], projections[0], false, camera->vaspect, jitter, camera->visible_layers);
+			camera_data.set_camera(transforms[0], projections[0], false, camera->vaspect, jitter, p_jitter_phase_count, camera->visible_layers);
 		} else if (view_count == 2) {
 			camera_data.set_multiview_camera(view_count, transforms, projections, false, camera->vaspect);
 		} else {
