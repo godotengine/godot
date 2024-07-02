@@ -163,7 +163,7 @@ void Decal::_validate_property(PropertyInfo &p_property) const {
 }
 
 PackedStringArray Decal::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 		warnings.push_back(RTR("Decals are only available when using the Forward+ or Mobile rendering backends."));
