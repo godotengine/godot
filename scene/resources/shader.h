@@ -58,7 +58,7 @@ private:
 	String code;
 	String include_path;
 
-	HashMap<StringName, HashMap<int, Ref<Texture2D>>> default_textures;
+	HashMap<StringName, HashMap<int, Ref<Texture>>> default_textures;
 
 	void _dependency_changed();
 	void _recompile();
@@ -80,7 +80,7 @@ public:
 
 	void get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_groups = false) const;
 
-	void set_default_texture_parameter(const StringName &p_name, const Ref<Texture2D> &p_texture, int p_index = 0);
+	void set_default_texture_parameter(const StringName &p_name, const Ref<Texture> &p_texture, int p_index = 0);
 	Ref<Texture2D> get_default_texture_parameter(const StringName &p_name, int p_index = 0) const;
 	void get_default_texture_parameter_list(List<StringName> *r_textures) const;
 
