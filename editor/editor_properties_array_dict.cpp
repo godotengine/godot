@@ -112,11 +112,29 @@ bool EditorPropertyDictionaryObject::_set(const StringName &p_name, const Varian
 		return true;
 	}
 
-	if (name.begins_with("indices")) {
+	if (name.contains("_")) {
 		dict = dict.duplicate();
-		int index = name.get_slicec('/', 1).to_int();
-		Variant key = dict.get_key_at_index(index);
-		dict[key] = p_value;
+		String type = name.get_slicec('_', 0);
+		int index = name.get_slicec('_', 1).to_int();
+		if (type == "indices") {
+			if (index == editing_key_index) {
+				type = "keys";
+			} else {
+				type = "values";
+			}
+		}
+
+		if (type == "keys") {
+			if (index == editing_key_index) {
+				set_edited_key(p_value);
+			} else {
+				dict.set_key_at_index(index, p_value);
+			}
+		} else if (type == "values") {
+			dict[dict.get_key_at_index(index)] = p_value;
+		} else {
+			return false;
+		}
 		return true;
 	}
 
@@ -136,10 +154,29 @@ bool EditorPropertyDictionaryObject::_get(const StringName &p_name, Variant &r_r
 		return true;
 	}
 
-	if (name.begins_with("indices")) {
-		int index = name.get_slicec('/', 1).to_int();
+	if (name.contains("_")) {
+		String type = name.get_slicec('_', 0);
+		int index = name.get_slicec('_', 1).to_int();
 		Variant key = dict.get_key_at_index(index);
 		r_ret = dict[key];
+		if (type == "indices") {
+			if (index == editing_key_index) {
+				type = "keys";
+			} else {
+				type = "values";
+			}
+		}
+		if (type == "keys") {
+			if (index == editing_key_index) {
+				r_ret = edited_key;
+			} else {
+				r_ret = dict.get_key_at_index(index);
+			}
+		} else if (type == "values") {
+			r_ret = dict.get_value_at_index(index);
+		} else {
+			return false;
+		}
 		if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
 			r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
 		}
@@ -181,7 +218,7 @@ String EditorPropertyDictionaryObject::get_property_name_for_index(int p_index) 
 		case NEW_VALUE_INDEX:
 			return "new_item_value";
 		default:
-			return "indices/" + itos(p_index);
+			return "indices_" + itos(p_index);
 	}
 }
 
@@ -194,9 +231,62 @@ String EditorPropertyDictionaryObject::get_label_for_index(int p_index) {
 			return TTR("New Value:");
 			break;
 		default:
-			return dict.get_key_at_index(p_index).get_construct_string();
+			if (p_index == editing_key_index) {
+				return dict.get_value_at_index(p_index).get_construct_string();
+			} else {
+				return dict.get_key_at_index(p_index).get_construct_string();
+			}
 			break;
 	}
+}
+void EditorPropertyDictionaryObject::set_edited_key(Variant p_edited_key) {
+	edited_key = p_edited_key;
+	if (!dict.has(edited_key)) {
+		dict.set_key_at_index(editing_key_index, edited_key);
+	}
+}
+
+Variant EditorPropertyDictionaryObject::get_edited_key() {
+	return edited_key;
+}
+
+bool EditorPropertyDictionaryObject::has_unsaved_edited_key() {
+	return editing_key_index > -1 && edited_key != dict.get_key_at_index(editing_key_index);
+}
+
+void EditorPropertyDictionaryObject::edit_key_at_index(int p_index) {
+	ERR_FAIL_COND_MSG(has_unsaved_edited_key(), "The currently edited key has conflict with an already existing key!");
+	if (p_index == editing_key_index) {
+		editing_key_index = -1;
+		edited_key = Variant();
+	} else {
+		editing_key_index = p_index;
+		edited_key = dict.get_key_at_index(p_index);
+	}
+}
+
+int EditorPropertyDictionaryObject::get_editing_key_index() {
+	return editing_key_index;
+}
+
+void EditorPropertyDictionaryObject::set_layout_direction_on_child(Node *node, bool p_edited_key) {
+	Control *c = Object::cast_to<Control>(node);
+	Window *w = Object::cast_to<Window>(node);
+	if (c) {
+		c->set_layout_direction(p_edited_key ? c->LAYOUT_DIRECTION_LOCALE : c->LAYOUT_DIRECTION_INHERITED);
+	} else if (w) {
+		w->set_layout_direction(p_edited_key ? w->LAYOUT_DIRECTION_LOCALE : w->LAYOUT_DIRECTION_INHERITED);
+	}
+}
+String EditorPropertyDictionaryObject::_get_property_warning(const StringName &p_property) {
+	if (p_property == get_property_name_for_index(editing_key_index) && has_unsaved_edited_key()) {
+		return "The currently edited key has conflict with an already existing key!";
+	}
+	return "";
+}
+
+void EditorPropertyDictionaryObject::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_get_property_warning", "name"), &EditorPropertyDictionaryObject::_get_property_warning);
 }
 
 EditorPropertyDictionaryObject::EditorPropertyDictionaryObject() {
@@ -872,8 +962,11 @@ void EditorPropertyDictionary::_property_changed(const String &p_property, Varia
 void EditorPropertyDictionary::_change_type(Object *p_button, int p_slot_index) {
 	Button *button = Object::cast_to<Button>(p_button);
 	int index = slots[p_slot_index].index;
+	int edited_index = object->get_editing_key_index();
 	Rect2 rect = button->get_screen_rect();
-	change_type->set_item_disabled(change_type->get_item_index(Variant::VARIANT_MAX), index < 0);
+	change_type->set_item_disabled(change_type->get_item_index(MENU_DELETE), index < 0);
+	change_type->set_item_disabled(change_type->get_item_index(MENU_EDIT_KEY), index < 0);
+	change_type->set_item_text(change_type->get_item_index(MENU_EDIT_KEY), index == edited_index ? "Edit Value" : "Edit Key");
 	change_type->reset_size();
 	change_type->set_position(rect.get_end() - Vector2(change_type->get_contents_minimum_size().x, 0));
 	change_type->popup();
@@ -928,6 +1021,20 @@ void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 	slots.push_back(slot);
 }
 
+void EditorPropertyDictionary::_edit_key_at_slot_index(int p_slot_index) {
+	if (!object->has_unsaved_edited_key()) {
+		int old_slot_index = object->get_editing_key_index() % page_length;
+		object->edit_key_at_index(p_slot_index);
+		if (old_slot_index > -1) {
+			slots[old_slot_index].set_editing_key(false);
+		}
+		if (p_slot_index != old_slot_index) {
+			slots[p_slot_index].set_editing_key(true);
+		}
+		update_property();
+	}
+}
+
 void EditorPropertyDictionary::_change_type_menu(int p_index) {
 	ERR_FAIL_COND_MSG(
 			changing_type_index == EditorPropertyDictionaryObject::NOT_CHANGING_TYPE,
@@ -947,16 +1054,26 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 			break;
 
 		default:
-			Dictionary dict = object->get_dict().duplicate();
-			Variant key = dict.get_key_at_index(changing_type_index);
-			if (p_index < Variant::VARIANT_MAX) {
-				VariantInternal::initialize(&value, Variant::Type(p_index));
-				dict[key] = value;
-			} else {
-				dict.erase(key);
-			}
+			Dictionary dict;
+			Variant key;
+			switch (p_index) {
+				case MENU_EDIT_KEY:
+					_edit_key_at_slot_index(changing_type_index);
+					break;
 
-			emit_changed(get_edited_property(), dict);
+				case MENU_DELETE:
+					dict = object->get_dict().duplicate();
+					key = dict.get_key_at_index(changing_type_index);
+					dict.erase(key);
+					emit_changed(get_edited_property(), dict);
+					break;
+
+				default:
+					VariantInternal::initialize(&value, Variant::Type(p_index));
+					object->set("indices_" + itos(changing_type_index), value);
+					emit_changed(get_edited_property(), object->get_dict());
+					break;
+			}
 	}
 }
 
@@ -1083,6 +1200,7 @@ void EditorPropertyDictionary::update_property() {
 			}
 
 			slot.prop->update_property();
+			slot.prop->update_editor_property_status();
 		}
 		updating = false;
 
@@ -1117,7 +1235,8 @@ void EditorPropertyDictionary::_notification(int p_what) {
 				change_type->add_icon_item(get_editor_theme_icon(type), type, i);
 			}
 			change_type->add_separator();
-			change_type->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Remove Item"), Variant::VARIANT_MAX);
+			change_type->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Remove Item"), MENU_DELETE);
+			change_type->add_icon_item(get_editor_theme_icon(SNAME("Edit")), TTR("Edit Key"), MENU_EDIT_KEY);
 
 			if (button_add_item) {
 				button_add_item->set_icon(get_editor_theme_icon(SNAME("Add")));
