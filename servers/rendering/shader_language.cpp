@@ -10837,4 +10837,5 @@ ShaderLanguage::ShaderLanguage() {
 
 ShaderLanguage::~ShaderLanguage() {
 	clear();
+	global_func_set.clear();
 }
