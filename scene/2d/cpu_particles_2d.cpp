@@ -428,6 +428,10 @@ void CPUParticles2D::set_emission_shape(EmissionShape p_shape) {
 	notify_property_list_changed();
 }
 
+void CPUParticles2D::set_emission_circle_mode(EmissionCircleMode p_circle_mode) {
+	emission_circle_mode = p_circle_mode;
+}
+
 void CPUParticles2D::set_emission_sphere_radius(real_t p_radius) {
 	emission_sphere_radius = p_radius;
 }
@@ -472,6 +476,10 @@ CPUParticles2D::EmissionShape CPUParticles2D::get_emission_shape() const {
 	return emission_shape;
 }
 
+CPUParticles2D::EmissionCircleMode CPUParticles2D::get_emission_circle_mode() const {
+	return emission_circle_mode;
+}
+
 void CPUParticles2D::set_gravity(const Vector2 &p_gravity) {
 	gravity = p_gravity;
 }
@@ -506,7 +514,11 @@ bool CPUParticles2D::get_split_scale() {
 }
 
 void CPUParticles2D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
+	if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE && emission_shape != EMISSION_SHAPE_CIRCLE)) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+
+	if (p_property.name == "emission_circle_mode" && emission_shape != EMISSION_SHAPE_CIRCLE) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
@@ -766,6 +778,21 @@ void CPUParticles2D::_particles_process(double p_delta) {
 					real_t t = Math_TAU * Math::randf();
 					real_t radius = emission_sphere_radius * Math::randf();
 					p.transform[2] = Vector2(Math::cos(t), Math::sin(t)) * radius;
+				} break;
+				case EMISSION_SHAPE_CIRCLE: {
+					real_t t = 0;
+					switch (emission_circle_mode) {
+						case EMISSION_CIRCLE_MODE_RANDOM: {
+							t = Math_TAU * Math::randf();
+						} break;
+						case EMISSION_CIRCLE_MODE_CW: {
+							t = Math_TAU * (i / float(pcount));
+						} break;
+						case EMISSION_CIRCLE_MODE_CCW: {
+							t = Math_TAU * (1 - i / float(pcount));
+						} break;
+					}
+					p.transform[2] = Vector2(Math::cos(t), Math::sin(t)) * emission_sphere_radius;
 				} break;
 				case EMISSION_SHAPE_SPHERE_SURFACE: {
 					real_t s = Math::randf(), t = Math_TAU * Math::randf();
@@ -1338,6 +1365,9 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emission_shape", "shape"), &CPUParticles2D::set_emission_shape);
 	ClassDB::bind_method(D_METHOD("get_emission_shape"), &CPUParticles2D::get_emission_shape);
 
+	ClassDB::bind_method(D_METHOD("set_emission_circle_mode", "mode"), &CPUParticles2D::set_emission_circle_mode);
+	ClassDB::bind_method(D_METHOD("get_emission_circle_mode"), &CPUParticles2D::get_emission_circle_mode);
+
 	ClassDB::bind_method(D_METHOD("set_emission_sphere_radius", "radius"), &CPUParticles2D::set_emission_sphere_radius);
 	ClassDB::bind_method(D_METHOD("get_emission_sphere_radius"), &CPUParticles2D::get_emission_sphere_radius);
 
@@ -1370,8 +1400,9 @@ void CPUParticles2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("finished"));
 
 	ADD_GROUP("Emission Shape", "emission_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Sphere Surface,Rectangle,Points,Directed Points", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_emission_shape", "get_emission_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Sphere Surface,Rectangle,Points,Directed Points,Circle", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01,suffix:px"), "set_emission_sphere_radius", "get_emission_sphere_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_circle_mode", PROPERTY_HINT_ENUM, "Random,Clockwise,Counter Clockwise", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_emission_circle_mode", "get_emission_circle_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "emission_rect_extents", PROPERTY_HINT_NONE, "suffix:px"), "set_emission_rect_extents", "get_emission_rect_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "emission_points"), "set_emission_points", "get_emission_points");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "emission_normals"), "set_emission_normals", "get_emission_normals");
@@ -1464,7 +1495,12 @@ void CPUParticles2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_RECTANGLE);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINTS);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_DIRECTED_POINTS);
+	BIND_ENUM_CONSTANT(EMISSION_SHAPE_CIRCLE);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_MAX);
+
+	BIND_ENUM_CONSTANT(EMISSION_CIRCLE_MODE_RANDOM);
+	BIND_ENUM_CONSTANT(EMISSION_CIRCLE_MODE_CW);
+	BIND_ENUM_CONSTANT(EMISSION_CIRCLE_MODE_CCW);
 }
 
 CPUParticles2D::CPUParticles2D() {
