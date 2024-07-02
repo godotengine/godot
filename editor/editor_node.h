@@ -360,6 +360,7 @@ private:
 
 	RichTextLabel *load_errors = nullptr;
 	AcceptDialog *load_error_dialog = nullptr;
+	AcceptDialog *long_load_dialog = nullptr;
 
 	RichTextLabel *execute_outputs = nullptr;
 	AcceptDialog *execute_output_dialog = nullptr;
@@ -527,6 +528,7 @@ private:
 	void _enable_pending_addons();
 
 	void _dialog_action(String p_file);
+	void _long_load_action(bool p_disable_restore, const Control *p_dont_ask);
 
 	void _add_to_history(const Object *p_object, const String &p_property, bool p_inspector_only);
 	void _edit_current(bool p_skip_foreign = false, bool p_skip_inspector_update = false);
