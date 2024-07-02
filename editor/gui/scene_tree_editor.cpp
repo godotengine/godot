@@ -334,7 +334,9 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 		if (p_node->is_exposed_in_owner()) {
 			item->add_button(0, get_editor_theme_icon(SNAME("SceneExposedNode")), BUTTON_EXPOSED, p_node->get_owner() != EditorNode::get_singleton()->get_edited_scene(), TTR("This node will exposed when this scene is instantiated.\nClick to disable this."));
-			_set_item_custom_color(item, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			if(p_node->get_owner() != get_scene_node()) {
+				_set_item_custom_color(item, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			}
 		}
 		int num_connections = p_node->get_persistent_signal_connection_count();
 		int num_groups = p_node->get_persistent_group_count();
