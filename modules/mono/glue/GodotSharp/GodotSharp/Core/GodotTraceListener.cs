@@ -4,17 +4,17 @@ namespace Godot
 {
     internal class GodotTraceListener : TraceListener
     {
-        public override void Write(string message)
+        public override void Write(string? message)
         {
-            GD.PrintRaw(message);
+            GD.PrintRaw(message!);
         }
 
-        public override void WriteLine(string message)
+        public override void WriteLine(string? message)
         {
-            GD.Print(message);
+            GD.Print(message!);
         }
 
-        public override void Fail(string message, string detailMessage)
+        public override void Fail(string? message, string? detailMessage)
         {
             GD.PrintErr("Assertion failed: ", message);
             GD.PrintErr("  Details: ", detailMessage);

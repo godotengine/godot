@@ -571,7 +571,7 @@ namespace Godot.NativeInterop
             return _data == other._data;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is StringName s && s.Equals(this);
         }

@@ -7,8 +7,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Godot.NativeInterop;
 
-#nullable enable
-
 namespace Godot
 {
     /// <summary>

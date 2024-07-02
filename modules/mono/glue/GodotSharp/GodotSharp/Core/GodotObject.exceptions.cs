@@ -2,8 +2,6 @@ using System;
 using System.Globalization;
 using System.Text;
 
-#nullable enable
-
 namespace Godot
 {
     public partial class GodotObject
@@ -137,6 +135,25 @@ namespace Godot
 
                     return sb.ToString();
                 }
+            }
+        }
+
+        public class InvalidNullReturnException : NullReferenceException
+        {
+            // ReSharper disable once InconsistentNaming
+            private const string Arg_InvalidNullReturnException = "A method attempted to return null in a non-nullable context.";
+
+            public InvalidNullReturnException() : base(Arg_InvalidNullReturnException)
+            {
+            }
+
+            public InvalidNullReturnException(string? message) : base(message)
+            {
+            }
+
+            public InvalidNullReturnException(string? message, Exception? innerException)
+                : base(message, innerException)
+            {
             }
         }
     }

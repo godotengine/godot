@@ -20,6 +20,6 @@ namespace Godot
     {
         bool IsCompleted { get; }
 
-        TResult GetResult();
+        TResult? GetResult();
     }
 }

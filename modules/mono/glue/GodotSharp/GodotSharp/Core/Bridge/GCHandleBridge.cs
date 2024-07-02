@@ -31,7 +31,7 @@ namespace Godot.Bridge
                 if (target is Delegate @delegate)
                     return DelegateUtils.IsDelegateCollectible(@delegate).ToGodotBool();
 
-                return target.GetType().IsCollectible.ToGodotBool();
+                return target!.GetType().IsCollectible.ToGodotBool();
             }
             catch (Exception e)
             {

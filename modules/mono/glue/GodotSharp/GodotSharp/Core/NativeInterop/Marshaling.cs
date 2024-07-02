@@ -10,8 +10,6 @@ using Array = System.Array;
 // We want to use full name qualifiers here even if redundant for clarity
 // ReSharper disable RedundantNameQualifier
 
-#nullable enable
-
 namespace Godot.NativeInterop
 {
     public static class Marshaling
@@ -297,7 +295,7 @@ namespace Godot.NativeInterop
 
         public static godot_signal ConvertSignalToNative(in Signal p_managed_signal)
         {
-            ulong ownerId = p_managed_signal.Owner.GetInstanceId();
+            ulong ownerId = p_managed_signal.Owner?.GetInstanceId() ?? default;
             godot_string_name name;
 
             if (p_managed_signal.Name != null && !p_managed_signal.Name.IsEmpty)
@@ -323,17 +321,17 @@ namespace Godot.NativeInterop
 
         // Array
 
-        internal static T[] ConvertNativeGodotArrayToSystemArrayOfGodotObjectType<T>(in godot_array p_array)
+        internal static T?[] ConvertNativeGodotArrayToSystemArrayOfGodotObjectType<T>(in godot_array p_array)
             where T : GodotObject
         {
             var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
                 NativeFuncs.godotsharp_array_new_copy(p_array));
 
             int length = array.Count;
-            var ret = new T[length];
+            var ret = new T?[length];
 
             for (int i = 0; i < length; i++)
-                ret[i] = (T)array[i].AsGodotObject();
+                ret[i] = (T?)array[i].AsGodotObject();
 
             return ret;
         }

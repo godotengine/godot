@@ -2,8 +2,6 @@ using System.Collections.Generic;
 
 namespace Godot.Bridge;
 
-#nullable enable
-
 public readonly struct MethodInfo
 {
     public StringName Name { get; init; }
