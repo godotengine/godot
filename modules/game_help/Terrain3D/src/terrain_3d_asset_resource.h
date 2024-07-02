@@ -17,8 +17,6 @@ public:
 	~Terrain3DAssetResource(){};
 
 	virtual void clear() = 0;
-	virtual void set_name(String p_name) = 0;
-	virtual String get_name() const = 0;
 	virtual void set_id(int p_id) = 0;
 	virtual int get_id() const = 0;
 

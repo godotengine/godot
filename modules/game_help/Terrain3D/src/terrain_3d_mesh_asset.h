@@ -48,8 +48,8 @@ public:
 
 	void clear();
 
-	void set_name(String p_name);
-	String get_name() const { return _name; }
+	// void set_name(String p_name);
+	// String get_name() const { return _name; }
 
 	void set_id(int p_new_id);
 	int get_id() const { return _id; }

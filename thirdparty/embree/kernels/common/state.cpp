@@ -84,6 +84,8 @@ namespace embree
     max_spatial_split_replications = 1.2f;
     useSpatialPreSplits = false;
 
+    max_triangles_per_leaf = inf;
+
     tessellation_cache_size = 128*1024*1024;
 
     subdiv_accel = "default";
@@ -194,15 +196,13 @@ namespace embree
   bool State::parseFile(const FileName& fileName)
   { 
     Ref<Stream<int> > file;
-    // -- GODOT start --
-    // try {
+    try {
       file = new FileStream(fileName);
-    // }
-    // catch (std::runtime_error& e) {
-    //   (void) e;
-    //   return false;
-    // }
-    // -- GODOT end --
+    }
+    catch (std::runtime_error& e) {
+      (void) e;
+      return false;
+    }
     
     std::vector<std::string> syms;
     for (size_t i=0; i<sizeof(symbols)/sizeof(void*); i++) 
@@ -429,6 +429,9 @@ namespace embree
 
       else if (tok == Token::Id("max_spatial_split_replications") && cin->trySymbol("="))
         max_spatial_split_replications = cin->get().Float();
+
+      else if (tok == Token::Id("max_triangles_per_leaf") && cin->trySymbol("="))
+        max_triangles_per_leaf = cin->get().Float();
 
       else if (tok == Token::Id("presplits") && cin->trySymbol("="))
         useSpatialPreSplits = cin->get().Int() != 0 ? true : false;

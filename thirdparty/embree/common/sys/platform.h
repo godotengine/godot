@@ -22,22 +22,6 @@
 #include <functional>
 #include <mutex>
 
-// #if defined(__arm__)
-// # ifndef (__ARM_NEON)
-// #   define __ARM_NEON
-// # endif
-// #else
-// # ifndef __AVX__
-// #   define __AVX__
-// # endif
-// # ifndef __SSE__
-// #   define __SSE__
-// # endif
-// # ifndef __SSE4_1__
-// #   define __SSE4_1__
-// # endif
-// #endif
-
 #if defined(EMBREE_SYCL_SUPPORT)
 
 #define __SYCL_USE_NON_VARIADIC_SPIRV_OCL_PRINTF__
@@ -229,19 +213,11 @@
 #define UPRINT4(x,y,z,w) embree_cout_uniform << STRING(x) << " = " << (x) << ", " << STRING(y) << " = " << (y) << ", " << STRING(z) << " = " << (z) << ", " << STRING(w) << " = " << (w) << embree_endl
 
 #if defined(DEBUG) // only report file and line in debug mode
-  // -- GODOT start --
-  // #define THROW_RUNTIME_ERROR(str) \
-  //   throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
   #define THROW_RUNTIME_ERROR(str) \
-    printf("%s (%d): %s", __FILE__, __LINE__, std::string(str).c_str()), abort();
-  // -- GODOT end --
+    throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
 #else
-  // -- GODOT start --
-  // #define THROW_RUNTIME_ERROR(str) \
-  //   throw std::runtime_error(str);
   #define THROW_RUNTIME_ERROR(str) \
-    abort();
-  // -- GODOT end --
+    throw std::runtime_error(str);
 #endif
 
 #define FATAL(x)   THROW_RUNTIME_ERROR(x)

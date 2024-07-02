@@ -109,6 +109,7 @@ namespace embree
     float max_spatial_split_replications;  //!< maximally replications*N many primitives in accel for spatial splits
     bool useSpatialPreSplits;              //!< use spatial pre-splits instead of the full spatial split builder
     size_t tessellation_cache_size;        //!< size of the shared tessellation cache 
+    size_t max_triangles_per_leaf;
 
   public:
     size_t instancing_open_min;            //!< instancing opens tree to minimally that number of subtrees

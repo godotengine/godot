@@ -154,11 +154,11 @@ void Terrain3DMeshAsset::clear() {
 	notify_property_list_changed();
 }
 
-void Terrain3DMeshAsset::set_name(String p_name) {
-	LOG(INFO, "Setting name: ", p_name);
-	_name = p_name;
-	emit_signal("setting_changed");
-}
+// void Terrain3DMeshAsset::set_name(String p_name) {
+// 	LOG(INFO, "Setting name: ", p_name);
+// 	_name = p_name;
+// 	emit_signal("setting_changed");
+// }
 
 void Terrain3DMeshAsset::set_id(int p_new_id) {
 	int old_id = _id;
@@ -303,8 +303,8 @@ void Terrain3DMeshAsset::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("cast_shadows_changed"));
 
 	ClassDB::bind_method(D_METHOD("clear"), &Terrain3DMeshAsset::clear);
-	ClassDB::bind_method(D_METHOD("set_name", "name"), &Terrain3DMeshAsset::set_name);
-	ClassDB::bind_method(D_METHOD("get_name"), &Terrain3DMeshAsset::get_name);
+	// ClassDB::bind_method(D_METHOD("set_name", "name"), &Terrain3DMeshAsset::set_name);
+	// ClassDB::bind_method(D_METHOD("get_name"), &Terrain3DMeshAsset::get_name);
 	ClassDB::bind_method(D_METHOD("set_id", "id"), &Terrain3DMeshAsset::set_id);
 	ClassDB::bind_method(D_METHOD("get_id"), &Terrain3DMeshAsset::get_id);
 	ClassDB::bind_method(D_METHOD("set_height_offset", "offset"), &Terrain3DMeshAsset::set_height_offset);

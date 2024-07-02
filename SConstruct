@@ -22,7 +22,6 @@ from SCons import __version__ as scons_raw_version
 # folder when doing `import editor.template_builder`)
 
 
-
 def _helper_module(name, path):
     spec = spec_from_file_location(name, path)
     module = module_from_spec(spec)
@@ -850,7 +849,6 @@ else:  # GCC, Clang
 
     if env["werror"]:
         env.Append(CCFLAGS=["-Werror"])
-
 
 if hasattr(detect, "get_program_suffix"):
     suffix = "." + detect.get_program_suffix()

@@ -229,6 +229,7 @@ namespace embree
 #endif
     std::cout << std::endl;
 
+#if defined(__X86_64__)
     /* check of FTZ and DAZ flags are set in CSR */
     if (!hasFTZ || !hasDAZ) 
     {
@@ -252,6 +253,7 @@ namespace embree
         std::cout << std::endl;
       }
     }
+#endif
     std::cout << std::endl;
   }
 
@@ -568,6 +570,22 @@ namespace embree
     case RTC_DEVICE_PROPERTY_PARALLEL_COMMIT_SUPPORTED: return 1;
 #else
     case RTC_DEVICE_PROPERTY_PARALLEL_COMMIT_SUPPORTED: return 0;
+#endif
+
+#if defined(EMBREE_SYCL_SUPPORT)
+    case RTC_DEVICE_PROPERTY_CPU_DEVICE:  {
+      if (!dynamic_cast<DeviceGPU*>(this))
+        return 1;
+      return 0;
+    };
+    case RTC_DEVICE_PROPERTY_SYCL_DEVICE: {
+      if (!dynamic_cast<DeviceGPU*>(this))
+        return 0;
+      return 1;
+    };
+#else
+    case RTC_DEVICE_PROPERTY_CPU_DEVICE:  return 1;
+    case RTC_DEVICE_PROPERTY_SYCL_DEVICE: return 0;
 #endif
 
     default: throw_RTCError(RTC_ERROR_INVALID_ARGUMENT, "unknown readable property"); break;
