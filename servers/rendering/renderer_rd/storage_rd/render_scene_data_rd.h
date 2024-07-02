@@ -50,6 +50,7 @@ public:
 	Vector2 taa_jitter;
 	uint32_t camera_visible_layers;
 	bool cam_orthogonal = false;
+	bool cam_frustum = false;
 
 	// For billboards to cast correct shadows.
 	Transform3D main_cam_transform;
