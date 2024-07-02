@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="text_paused_cellular">您想启用通过蜂窝连接下载吗？ 根据您的数据计划，这可能会花费您金钱。</string>
+    <string name="text_paused_cellular_2">如果您选择不启用通过蜂窝连接下载，则当 Wi-Fi 可用时，下载将自动恢复。</string>
+    <string name="text_button_resume_cellular">继续下载</string>
+    <string name="text_button_wifi_settings">Wi-Fi 设置</string>
+    <string name="text_verifying_download">验证下载</string>
+    <string name="text_validation_complete">XAPK 文件验证完成。 选择确定退出。</string>
+    <string name="text_validation_failed">XAPK 文件验证失败。</string>
+    <string name="text_button_pause">暂停下载</string>
+    <string name="text_button_resume">继续下载</string>
+    <string name="text_button_cancel">取消</string>
+    <string name="text_button_cancel_verify">取消验证</string>
+    <string name="text_error_title">错误!</string>
+    <string name="error_engine_setup_message">无法启动 Godot 引擎！ 正在退出…</string>
+    <string name="error_missing_vulkan_requirements_message">警告 - 该设备不满足支持 Vulkan 的要求</string>
+
+    <!-- APK Expansion Strings -->
+
+    <!-- When a download completes, a notification is displayed, and this
+        string is used to indicate that the download successfully completed.
+        Note that such a download could have been initiated by a variety of
+        applications, including (but not limited to) the browser, an email
+        application, a content marketplace. -->
+    <string name="notification_download_complete">下载完成</string>
+
+    <!-- When a download completes, a notification is displayed, and this
+        string is used to indicate that the download failed.
+        Note that such a download could have been initiated by a variety of
+        applications, including (but not limited to) the browser, an email
+        application, a content marketplace. -->
+    <string name="notification_download_failed">下载失败</string>
+
+
+    <string name="state_unknown">启动…</string>
+    <string name="state_idle">等待下载开始</string>
+	<string name="state_fetching_url">寻找要下载的资源</string>
+	<string name="state_connecting">连接到下载服务器</string>
+	<string name="state_downloading">下载资源</string>
+	<string name="state_completed">下载完成</string>
+	<string name="state_paused_network_unavailable">由于没有可用网络，下载已暂停</string>
+	<string name="state_paused_network_setup_failure">下载已暂停。 在浏览器中测试网站</string>
+	<string name="state_paused_by_request">下载已暂停</string>
+	<string name="state_paused_wifi_unavailable">由于 wifi 不可用，下载已暂停</string>
+	<string name="state_paused_wifi_disabled">下载已暂停，因为 wifi 已禁用</string>
+	<string name="state_paused_roaming">下载已暂停，因为您正在漫游</string>
+	<string name="state_paused_sdcard_unavailable">由于外部存储不可用，下载已暂停</string>
+	<string name="state_failed_unlicensed">下载失败，因为您可能尚未购买此应用</string>
+	<string name="state_failed_fetching_url">由于找不到资源，下载失败</string>
+	<string name="state_failed_sdcard_full">外部存储已满，下载失败</string>
+	<string name="state_failed_cancelled">下载已取消</string>
+	<string name="state_failed">下载失败</string>
+
+    <string name="kilobytes_per_second">%1$s KB/s</string>
+    <string name="time_remaining">时间剩余: %1$s</string>
+    <string name="time_remaining_notification">还有 %1$s</string>
+</resources>
