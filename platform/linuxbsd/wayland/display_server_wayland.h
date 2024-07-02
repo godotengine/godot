@@ -152,7 +152,7 @@ class DisplayServerWayland : public DisplayServer {
 
 	void _resize_window(const Size2i &p_size);
 
-	virtual void _show_window();
+	bool _show_window();
 
 	void try_suspend();
 

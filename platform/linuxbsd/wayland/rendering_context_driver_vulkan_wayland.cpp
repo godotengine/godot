@@ -31,6 +31,8 @@
 #ifdef VULKAN_ENABLED
 
 #include "rendering_context_driver_vulkan_wayland.h"
+#include "drivers/vulkan/rendering_native_surface_vulkan.h"
+#include "rendering_native_surface_wayland.h"
 
 #ifdef USE_VOLK
 #include <volk.h>
@@ -42,21 +44,22 @@ const char *RenderingContextDriverVulkanWayland::_get_platform_surface_extension
 	return VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME;
 }
 
-RenderingContextDriver::SurfaceID RenderingContextDriverVulkanWayland::surface_create(const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
+RenderingContextDriver::SurfaceID RenderingContextDriverVulkanWayland::surface_create(Ref<RenderingNativeSurface> p_native_surface) {
+	Ref<RenderingNativeSurfaceWayland> wayland_native_surface = Object::cast_to<RenderingNativeSurfaceWayland>(*p_native_surface);
+	ERR_FAIL_COND_V(wayland_native_surface.is_null(), SurfaceID());
 
 	VkWaylandSurfaceCreateInfoKHR create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
-	create_info.display = wpd->display;
-	create_info.surface = wpd->surface;
+	create_info.display = wayland_native_surface->get_display();
+	create_info.surface = wayland_native_surface->get_surface();
 
 	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
 	VkResult err = vkCreateWaylandSurfaceKHR(instance_get(), &create_info, nullptr, &vk_surface);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, SurfaceID());
 
-	Surface *surface = memnew(Surface);
-	surface->vk_surface = vk_surface;
-	return SurfaceID(surface);
+	Ref<RenderingNativeSurfaceVulkan> vulkan_surface = RenderingNativeSurfaceVulkan::create(vk_surface);
+	RenderingContextDriver::SurfaceID result = RenderingContextDriverVulkan::surface_create(vulkan_surface);
+	return result;
 }
 
 RenderingContextDriverVulkanWayland::RenderingContextDriverVulkanWayland() {

@@ -69,11 +69,7 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 
 	CALayer *layer = nullptr;
 
-	union {
-#ifdef VULKAN_ENABLED
-		RenderingContextDriverVulkanIOS::WindowPlatformData vulkan;
-#endif
-	} wpd;
+	Ref<RenderingNativeSurfaceApple> apple_surface;
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
@@ -81,8 +77,8 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 		if (!layer) {
 			ERR_FAIL_MSG("Failed to create iOS Vulkan rendering layer.");
 		}
-		wpd.vulkan.layer_ptr = (CAMetalLayer *const *)&layer;
-		rendering_context = memnew(RenderingContextDriverVulkanIOS);
+		apple_surface = RenderingNativeSurfaceApple::create((CAMetalLayer *const *)&layer);
+		rendering_context = apple_surface->create_rendering_context();
 	}
 #endif
 
@@ -95,7 +91,7 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 			return;
 		}
 
-		if (rendering_context->window_create(MAIN_WINDOW_ID, &wpd) != OK) {
+		if (rendering_context->window_create(MAIN_WINDOW_ID, apple_surface) != OK) {
 			ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
 			memdelete(rendering_context);
 			rendering_context = nullptr;

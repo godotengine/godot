@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rendering_context_driver_vulkan_macos.mm                              */
+/*  rendering_native_surface_vulkan.h                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "rendering_context_driver_vulkan_macos.h"
+#ifndef RENDERING_NATIVE_SURFACE_VULKAN_H
+#define RENDERING_NATIVE_SURFACE_VULKAN_H
+
+#include "core/variant/native_ptr.h"
+#include "servers/rendering/rendering_native_surface.h"
 
 #ifdef VULKAN_ENABLED
-
 #ifdef USE_VOLK
 #include <volk.h>
 #else
-#include <vulkan/vulkan_metal.h>
+#include <vulkan/vulkan.h>
+#endif
 #endif
 
-const char *RenderingContextDriverVulkanMacOS::_get_platform_surface_extension() const {
-	return VK_EXT_METAL_SURFACE_EXTENSION_NAME;
-}
+class RenderingNativeSurfaceVulkan : public RenderingNativeSurface {
+	GDCLASS(RenderingNativeSurfaceVulkan, RenderingNativeSurface);
 
-RenderingContextDriver::SurfaceID RenderingContextDriverVulkanMacOS::surface_create(const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
+	static void _bind_methods();
 
-	VkMetalSurfaceCreateInfoEXT create_info = {};
-	create_info.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
-	create_info.pLayer = *wpd->layer_ptr;
+#ifdef VULKAN_ENABLED
+	VkSurfaceKHR vulkan_surface = VK_NULL_HANDLE;
+#endif
 
-	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
-	VkResult err = vkCreateMetalSurfaceEXT(instance_get(), &create_info, nullptr, &vk_surface);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, SurfaceID());
+public:
+	static Ref<RenderingNativeSurfaceVulkan> create_api(GDExtensionConstPtr<const void> vulkan_surface);
 
-	Surface *surface = memnew(Surface);
-	surface->vk_surface = vk_surface;
-	return SurfaceID(surface);
-}
+#ifdef VULKAN_ENABLED
+	static Ref<RenderingNativeSurfaceVulkan> create(VkSurfaceKHR vulkan_surface);
 
-RenderingContextDriverVulkanMacOS::RenderingContextDriverVulkanMacOS() {
-	// Does nothing.
-}
+	VkSurfaceKHR get_vulkan_surface() const {
+		return vulkan_surface;
+	};
+#endif
 
-RenderingContextDriverVulkanMacOS::~RenderingContextDriverVulkanMacOS() {
-	// Does nothing.
-}
+	RenderingContextDriver *create_rendering_context() override;
 
-#endif // VULKAN_ENABLED
+	RenderingNativeSurfaceVulkan();
+	~RenderingNativeSurfaceVulkan();
+};
+
+#endif // RENDERING_NATIVE_SURFACE_VULKAN_H

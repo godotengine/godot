@@ -30,8 +30,10 @@
 
 #import "ios.h"
 
+#ifndef IOS_SHARED_LIBRARY_ENABLED
 #import "app_delegate.h"
 #import "view_controller.h"
+#endif
 
 #import <CoreHaptics/CoreHaptics.h>
 #import <UIKit/UIKit.h>
@@ -159,6 +161,7 @@ void iOS::stop_haptic_engine() {
 }
 
 void iOS::alert(const char *p_alert, const char *p_title) {
+#ifndef IOS_SHARED_LIBRARY_ENABLED
 	NSString *title = [NSString stringWithUTF8String:p_title];
 	NSString *message = [NSString stringWithUTF8String:p_alert];
 
@@ -171,6 +174,7 @@ void iOS::alert(const char *p_alert, const char *p_title) {
 	[alert addAction:button];
 
 	[AppDelegate.viewController presentViewController:alert animated:YES completion:nil];
+#endif
 }
 
 String iOS::get_model() const {

@@ -50,6 +50,8 @@
 #include "wayland/egl_manager_wayland_gles.h"
 #endif
 
+#include "rendering_native_surface_wayland.h"
+
 String DisplayServerWayland::_get_app_id_from_context(Context p_context) {
 	String app_id;
 
@@ -118,7 +120,7 @@ void DisplayServerWayland::_resize_window(const Size2i &p_size) {
 	}
 }
 
-void DisplayServerWayland::_show_window() {
+bool DisplayServerWayland::_show_window() {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	WindowData &wd = main_window;
@@ -142,30 +144,41 @@ void DisplayServerWayland::_show_window() {
 		// the only acceptable way of implementing window showing is to move the
 		// graphics context window creation logic here.
 #ifdef RD_ENABLED
+		Ref<RenderingNativeSurfaceWayland> wayland_surface;
+#ifdef VULKAN_ENABLED
+		if (rendering_driver == "vulkan") {
+			wayland_surface = RenderingNativeSurfaceWayland::create(
+					wayland_thread.get_wl_display(),
+					wayland_thread.window_get_wl_surface(wd.id));
+		}
+#endif
+
+#ifdef VULKAN_ENABLED
+		if (wayland_surface.is_valid()) {
+			rendering_context = wayland_surface->create_rendering_context();
+		}
+#endif
+
 		if (rendering_context) {
-			union {
-#ifdef VULKAN_ENABLED
-				RenderingContextDriverVulkanWayland::WindowPlatformData vulkan;
-#endif
-			} wpd;
-#ifdef VULKAN_ENABLED
-			if (rendering_driver == "vulkan") {
-				wpd.vulkan.surface = wayland_thread.window_get_wl_surface(wd.id);
-				wpd.vulkan.display = wayland_thread.get_wl_display();
+			if (rendering_context->initialize() != OK) {
+				ERR_PRINT(vformat("Could not initialize %s", rendering_driver));
+				memdelete(rendering_context);
+				rendering_context = nullptr;
+				return false;
 			}
-#endif
-			Error err = rendering_context->window_create(wd.id, &wpd);
-			ERR_FAIL_COND_MSG(err != OK, vformat("Can't create a %s window", rendering_driver));
+		}
 
-			rendering_context->window_set_size(wd.id, wd.rect.size.width, wd.rect.size.height);
-			rendering_context->window_set_vsync_mode(wd.id, wd.vsync_mode);
+		Error err = rendering_context->window_create(wd.id, wayland_surface);
+		ERR_FAIL_COND_V_MSG(err != OK, false, vformat("Can't create a %s window", rendering_driver));
 
-			emulate_vsync = (rendering_context->window_get_vsync_mode(wd.id) == DisplayServer::VSYNC_ENABLED);
+		rendering_context->window_set_size(wd.id, wd.rect.size.width, wd.rect.size.height);
+		rendering_context->window_set_vsync_mode(wd.id, wd.vsync_mode);
 
-			if (emulate_vsync) {
-				print_verbose("VSYNC: manually throttling frames using MAILBOX.");
-				rendering_context->window_set_vsync_mode(wd.id, DisplayServer::VSYNC_MAILBOX);
-			}
+		emulate_vsync = (rendering_context->window_get_vsync_mode(wd.id) == DisplayServer::VSYNC_ENABLED);
+
+		if (emulate_vsync) {
+			print_verbose("VSYNC: manually throttling frames using MAILBOX.");
+			rendering_context->window_set_vsync_mode(wd.id, DisplayServer::VSYNC_MAILBOX);
 		}
 #endif
 
@@ -175,7 +188,7 @@ void DisplayServerWayland::_show_window() {
 			wd.wl_egl_window = wl_egl_window_create(wl_surface, wd.rect.size.width, wd.rect.size.height);
 
 			Error err = egl_manager->window_create(MAIN_WINDOW_ID, wayland_thread.get_wl_display(), wd.wl_egl_window, wd.rect.size.width, wd.rect.size.height);
-			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a GLES3 window.");
+			ERR_FAIL_COND_V_MSG(err == ERR_CANT_CREATE, false, "Can't show a GLES3 window.");
 
 			window_set_vsync_mode(wd.vsync_mode, MAIN_WINDOW_ID);
 		}
@@ -189,6 +202,8 @@ void DisplayServerWayland::_show_window() {
 
 		wayland_thread.window_set_title(MAIN_WINDOW_ID, wd.title);
 	}
+
+	return true;
 }
 // Interface methods.
 
@@ -1349,24 +1364,6 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	rendering_driver = p_rendering_driver;
 
-#ifdef RD_ENABLED
-#ifdef VULKAN_ENABLED
-	if (rendering_driver == "vulkan") {
-		rendering_context = memnew(RenderingContextDriverVulkanWayland);
-	}
-#endif
-
-	if (rendering_context) {
-		if (rendering_context->initialize() != OK) {
-			ERR_PRINT(vformat("Could not initialize %s", rendering_driver));
-			memdelete(rendering_context);
-			rendering_context = nullptr;
-			r_error = ERR_CANT_CREATE;
-			return;
-		}
-	}
-#endif
-
 #ifdef GLES3_ENABLED
 	if (rendering_driver == "opengl3" || rendering_driver == "opengl3_es") {
 #ifdef SOWRAP_ENABLED
@@ -1464,7 +1461,10 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	wd.rect.size = p_resolution;
 	wd.title = "Godot";
 
-	_show_window();
+	if (!_show_window()) {
+		r_error = ERR_CANT_CREATE;
+		ERR_FAIL_MSG("Could not initialize window.");
+	}
 
 #ifdef RD_ENABLED
 	if (rendering_context) {

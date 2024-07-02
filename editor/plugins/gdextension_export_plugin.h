@@ -31,6 +31,7 @@
 #ifndef GDEXTENSION_EXPORT_PLUGIN_H
 #define GDEXTENSION_EXPORT_PLUGIN_H
 
+#include "core/extension/gdextension_library_loader.h"
 #include "editor/export/editor_export.h"
 
 class GDExtensionExportPlugin : public EditorExportPlugin {
@@ -92,7 +93,7 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 
 	for (const String &arch_tag : archs) {
 		PackedStringArray tags;
-		String library_path = GDExtension::find_extension_library(
+		String library_path = GDExtensionLibraryLoader::find_extension_library(
 				p_path, config, [features_wo_arch, arch_tag](const String &p_feature) { return features_wo_arch.has(p_feature) || (p_feature == arch_tag); }, &tags);
 		if (libs_added.has(library_path)) {
 			continue; // Universal library, already added for another arch, do not duplicate.
@@ -129,7 +130,7 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 			ERR_FAIL_MSG(vformat("No suitable library found for GDExtension: %s. Possible feature flags for your platform: %s", p_path, String(", ").join(features_vector)));
 		}
 
-		Vector<SharedObject> dependencies_shared_objects = GDExtension::find_extension_dependencies(p_path, config, [p_features](String p_feature) { return p_features.has(p_feature); });
+		Vector<SharedObject> dependencies_shared_objects = GDExtensionLibraryLoader::find_extension_dependencies(p_path, config, [p_features](String p_feature) { return p_features.has(p_feature); });
 		for (const SharedObject &shared_object : dependencies_shared_objects) {
 			_add_shared_object(shared_object);
 		}

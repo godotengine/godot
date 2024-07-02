@@ -190,6 +190,7 @@ source_files = [
     "wayland_thread.cpp",
     "key_mapping_xkb.cpp",
     "detect_prime_egl.cpp",
+    "rendering_native_surface_wayland.cpp",
 ]
 
 if env["use_sowrap"]:

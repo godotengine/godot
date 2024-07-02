@@ -42,6 +42,8 @@
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 
+#include "rendering_native_surface_x11.h"
+
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
@@ -5717,19 +5719,29 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		_update_size_hints(id);
 
 #if defined(RD_ENABLED)
-		if (rendering_context) {
-			union {
+		Ref<RenderingNativeSurfaceX11> x11_surface = nullptr;
 #ifdef VULKAN_ENABLED
-				RenderingContextDriverVulkanX11::WindowPlatformData vulkan;
+		if (rendering_driver == "vulkan") {
+			x11_surface = RenderingNativeSurfaceX11::create(wd.x11_window, x11_display);
+		}
 #endif
-			} wpd;
-#ifdef VULKAN_ENABLED
-			if (rendering_driver == "vulkan") {
-				wpd.vulkan.window = wd.x11_window;
-				wpd.vulkan.display = x11_display;
+
+		if (!rendering_context) {
+			if (x11_surface.is_valid()) {
+				rendering_context = x11_surface->create_rendering_context();
 			}
-#endif
-			Error err = rendering_context->window_create(id, &wpd);
+
+			if (rendering_context) {
+				if (rendering_context->initialize() != OK) {
+					memdelete(rendering_context);
+					rendering_context = nullptr;
+					ERR_FAIL_V_MSG(INVALID_WINDOW_ID, vformat("Could not initialize %s", rendering_driver));
+				}
+			}
+		}
+
+		if (rendering_context) {
+			Error err = rendering_context->window_create(id, x11_surface);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, vformat("Can't create a %s window", rendering_driver));
 
 			rendering_context->window_set_size(id, win_rect.size.width, win_rect.size.height);
@@ -6138,22 +6150,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	bool driver_found = false;
 #if defined(RD_ENABLED)
-#if defined(VULKAN_ENABLED)
+#ifdef VULKAN_ENABLED
 	if (rendering_driver == "vulkan") {
-		rendering_context = memnew(RenderingContextDriverVulkanX11);
-	}
-#endif
-
-	if (rendering_context) {
-		if (rendering_context->initialize() != OK) {
-			ERR_PRINT(vformat("Could not initialize %s", rendering_driver));
-			memdelete(rendering_context);
-			rendering_context = nullptr;
-			r_error = ERR_CANT_CREATE;
-			return;
-		}
 		driver_found = true;
 	}
+#endif
 #endif
 	// Initialize context and rendering device.
 #if defined(GLES3_ENABLED)
