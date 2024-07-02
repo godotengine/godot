@@ -70,6 +70,7 @@ class GodotBodyPair2D : public GodotConstraint2D {
 		real_t depth = 0.0;
 		bool active = false;
 		bool used = false;
+		Vector2 initial_rA, initial_rB;
 		Vector2 rA, rB;
 		real_t bounce = 0.0;
 	};
@@ -93,6 +94,7 @@ public:
 	virtual bool setup(real_t p_step) override;
 	virtual bool pre_solve(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
+	virtual void post_solve(real_t p_step) override;
 
 	GodotBodyPair2D(GodotBody2D *p_A, int p_shape_A, GodotBody2D *p_B, int p_shape_B);
 	~GodotBodyPair2D();
