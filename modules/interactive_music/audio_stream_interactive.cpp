@@ -976,6 +976,10 @@ void AudioStreamPlaybackInteractive::switch_to_clip_by_name(const StringName &p_
 		return;
 	}
 
+	if (stream.is_null()) {
+		return;
+	}
+
 	for (int i = 0; i < stream->get_clip_count(); i++) {
 		if (stream->get_clip_name(i) == p_name) {
 			switch_request = i;
