@@ -152,7 +152,9 @@ public:
 	void reverse();
 
 	int find(const Variant &p_value, int p_from = 0) const;
+	int find_custom(const Callable &p_callable, int p_from = 0) const;
 	int rfind(const Variant &p_value, int p_from = -1) const;
+	int rfind_custom(const Callable &p_callable, int p_from = -1) const;
 	int count(const Variant &p_value) const;
 	bool has(const Variant &p_value) const;
 
