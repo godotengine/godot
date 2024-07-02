@@ -2054,4 +2054,53 @@ void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_breakpoints"), &EngineDebugger::clear_breakpoints);
 }
 
+////// LogManager //////
+// This is the client-facing part of the user log hooking system.
+// It's basically just a shunt that passes callbacks to the persistent UserLogManagerLogger singleton.
+
+LogManager *LogManager::singleton = nullptr;
+
+LogManager::LogManager() {
+	ERR_FAIL_COND_MSG(singleton != nullptr, "Somehow created two LogManagers.");
+
+	singleton = this;
+}
+
+LogManager::~LogManager() {
+	ERR_FAIL_COND_MSG(singleton != this, "LogManager::singleton not correct on exit.");
+
+	singleton = nullptr;
+}
+
+void LogManager::register_log_capture_non_thread_safe(const Callable &p_callable) {
+	UserLogManagerLogger *log_manager = UserLogManagerLogger::get_singleton();
+	ERR_FAIL_NULL_MSG(log_manager, "log_manager not yet initialized. This shouldn't be possible.");
+	log_manager->register_log_capture_non_thread_safe(p_callable);
+}
+
+void LogManager::unregister_log_capture_non_thread_safe(const Callable &p_callable) {
+	UserLogManagerLogger *log_manager = UserLogManagerLogger::get_singleton();
+	ERR_FAIL_NULL_MSG(log_manager, "log_manager not yet initialized. This shouldn't be possible.");
+	log_manager->unregister_log_capture_non_thread_safe(p_callable);
+}
+
+void LogManager::register_log_capture_buffered(const Callable &p_callable) {
+	UserLogManagerLogger *log_manager = UserLogManagerLogger::get_singleton();
+	ERR_FAIL_NULL_MSG(log_manager, "log_manager not yet initialized. This shouldn't be possible.");
+	log_manager->register_log_capture_buffered(p_callable);
+}
+
+void LogManager::unregister_log_capture_buffered(const Callable &p_callable) {
+	UserLogManagerLogger *log_manager = UserLogManagerLogger::get_singleton();
+	ERR_FAIL_NULL_MSG(log_manager, "log_manager not yet initialized. This shouldn't be possible.");
+	log_manager->unregister_log_capture_buffered(p_callable);
+}
+
+void LogManager::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("register_log_capture_non_thread_safe", "callable"), &LogManager::register_log_capture_non_thread_safe);
+	ClassDB::bind_method(D_METHOD("unregister_log_capture_non_thread_safe", "callable"), &LogManager::unregister_log_capture_non_thread_safe);
+	ClassDB::bind_method(D_METHOD("register_log_capture_buffered", "callable"), &LogManager::register_log_capture_buffered);
+	ClassDB::bind_method(D_METHOD("unregister_log_capture_buffered", "callable"), &LogManager::unregister_log_capture_buffered);
+}
+
 } // namespace core_bind

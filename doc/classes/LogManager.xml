@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LogManager" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Exposes the internal logging systems.
+	</brief_description>
+	<description>
+		[LogManager] provides callbacks to receive log messages, both from scripts and from internal editor functionality.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="register_log_capture_buffered">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Registers a buffered callback for the log capture system.
+				Your callback will occasionally be called when log messages have been output. This is guaranteed to happen on the main thread and preserve message order; however, there may be some delay (at most, one frame) between the message being sent and the callback being called.
+				Your callback will be called with a single Variant containing a dictionary with fields. It is guaranteed to include:
+				[code]type[/code]: The type of message. Currently "error", "warning", "info", "script", and "shader".
+				[code]text[/code]: The message text.
+				Optionally, the dictionary may contain:
+				[code]file[/code]: The source file the message originated from.
+				[code]line[/code]: The line number the message originated from.
+				[code]function[/code]: The function the message originated from.
+				[code]rationale[/code]: Further detailed information about the message.
+				If the callback is registered before the first frame, it will immediately replay all messages from the start of the game, in order.
+				[b]Note:[/b] This function may be called on the main thread only.
+			</description>
+		</method>
+		<method name="register_log_capture_non_thread_safe">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Registers a non_thread_safe callback for the log capture system.
+				Your callback will be called whenever a log message is output. This may happen in any thread or in any situation. [b]Your callback must be fully thread-safe, and it must not block.[/b] It may be called from any thread, including the main thread, even if another callback is currently being called. It may be called twice in parallel. It may be called in scenarios where you are disallowed from modifying Node values or creating Nodes. If you do anything to create a log message from this function, it may be called recursively, and this can potentially result in a stack overflow. Any or all of these things may happen before this register call returns. [b]Treat this function with extreme care.[/b]
+				Your callback will be called with a single Variant containing a dictionary with fields, containing the same information as the dictionary passed to [method register_log_capture_buffered].
+				If the callback is registered before the first frame, it will immediately replay all messages from the start of the game, in order.
+				[b]Note:[/b] This function may be called on the main thread only.
+			</description>
+		</method>
+		<method name="unregister_log_capture_buffered">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Unregisters a buffered callback for the log capture system. Messages being sent to the callback will cease immediately.
+				[b]Note:[/b] This function may be called on the main thread only.
+			</description>
+		</method>
+		<method name="unregister_log_capture_non_thread_safe">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Unregisters a non_thread_safe callback for the log capture system. Your callback may continue to receive messages for a short time after this function is called.
+				[b]Note:[/b] This function may be called on the main thread only.
+			</description>
+		</method>
+	</methods>
+</class>

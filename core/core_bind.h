@@ -602,6 +602,26 @@ public:
 	~EngineDebugger();
 };
 
+class LogManager : public Object {
+	GDCLASS(LogManager, Object);
+
+protected:
+	static void _bind_methods();
+	static LogManager *singleton;
+
+public:
+	LogManager();
+	~LogManager();
+
+	static LogManager *get_singleton() { return singleton; }
+
+	void register_log_capture_non_thread_safe(const Callable &p_callable);
+	void unregister_log_capture_non_thread_safe(const Callable &p_callable);
+
+	void register_log_capture_buffered(const Callable &p_callable);
+	void unregister_log_capture_buffered(const Callable &p_callable);
+};
+
 } // namespace core_bind
 
 VARIANT_ENUM_CAST(core_bind::ResourceLoader::ThreadLoadStatus);
