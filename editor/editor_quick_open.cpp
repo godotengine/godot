@@ -92,7 +92,7 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 }
 
 void EditorQuickOpen::_update_search() {
-	const PackedStringArray search_tokens = search_box->get_text().to_lower().replace("/", " ").split(" ", false);
+	const PackedStringArray search_tokens = search_box->get_text().to_lower().replace_char('/', ' ').split(" ", false);
 	const bool empty_search = search_tokens.is_empty();
 
 	// Filter possible candidates.

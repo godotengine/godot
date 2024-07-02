@@ -1786,7 +1786,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 								  "  <ItemGroup>\n");
 
 	for (int i = 0; i < compile_items.size(); i++) {
-		String include = path::relative_to(compile_items[i], p_proj_dir).replace("/", "\\");
+		String include = path::relative_to(compile_items[i], p_proj_dir).replace_char('/', '\\');
 		includes_props_content.append("    <Compile Include=\"" + include + "\" />\n");
 	}
 
@@ -1895,7 +1895,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 								  "  <ItemGroup>\n");
 
 	for (int i = 0; i < compile_items.size(); i++) {
-		String include = path::relative_to(compile_items[i], p_proj_dir).replace("/", "\\");
+		String include = path::relative_to(compile_items[i], p_proj_dir).replace_char('/', '\\');
 		includes_props_content.append("    <Compile Include=\"" + include + "\" />\n");
 	}
 
