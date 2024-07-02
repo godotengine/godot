@@ -31,11 +31,8 @@
 #include "project_manager.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/io/resource_saver.h"
-#include "core/io/stream_peer_tls.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
@@ -51,12 +48,10 @@
 #include "editor/project_manager/project_list.h"
 #include "editor/project_manager/project_tag.h"
 #include "editor/project_manager/quick_settings_dialog.h"
-#include "editor/themes/editor_icons.h"
+#include "editor/project_manager/remove_missing_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "main/main.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/color_rect.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
@@ -64,7 +59,6 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/texture_rect.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display_server.h"
@@ -661,8 +655,7 @@ void ProjectManager::_erase_project() {
 }
 
 void ProjectManager::_erase_missing_projects() {
-	erase_missing_ask->set_text(TTR("Remove all missing projects from the list?\nThe project folders' contents won't be modified."));
-	erase_missing_ask->popup_centered();
+	remove_missing_dialog->show_dialog(project_list->get_missing_project_paths());
 }
 
 void ProjectManager::_erase_project_confirm() {
@@ -671,8 +664,8 @@ void ProjectManager::_erase_project_confirm() {
 	_update_list_placeholder();
 }
 
-void ProjectManager::_erase_missing_projects_confirm() {
-	project_list->erase_missing_projects();
+void ProjectManager::_erase_missing_projects_confirm(const Vector<String> &p_paths) {
+	project_list->erase_missing_projects(p_paths);
 	_update_project_buttons();
 	_update_list_placeholder();
 }
@@ -695,7 +688,7 @@ void ProjectManager::_update_project_buttons() {
 	manage_tags_btn->set_disabled(empty_selection || is_missing_project_selected || selected_projects.size() > 1);
 	run_btn->set_disabled(empty_selection || is_missing_project_selected);
 
-	erase_missing_btn->set_disabled(!project_list->is_any_project_missing());
+	erase_missing_btn->set_visible(project_list->is_any_project_missing());
 }
 
 void ProjectManager::_on_projects_updated() {
@@ -1231,6 +1224,12 @@ ProjectManager::ProjectManager() {
 			scan_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_scan_projects));
 			hb->add_child(scan_btn);
 
+			erase_missing_btn = memnew(Button);
+			erase_missing_btn->set_text(TTR("Clean"));
+			erase_missing_btn->set_tooltip_text(TTR("Remove missing projects."));
+			erase_missing_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects));
+			hb->add_child(erase_missing_btn);
+
 			loading_label = memnew(Label(TTR("Loading, please wait...")));
 			loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			loading_label->hide();
@@ -1374,11 +1373,6 @@ ProjectManager::ProjectManager() {
 			Control *filler = memnew(Control);
 			filler->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 			project_list_sidebar->add_child(filler);
-
-			erase_missing_btn = memnew(Button);
-			erase_missing_btn->set_text(TTR("Remove Missing"));
-			erase_missing_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_erase_missing_projects));
-			project_list_sidebar->add_child(erase_missing_btn);
 		}
 	}
 
@@ -1444,10 +1438,9 @@ ProjectManager::ProjectManager() {
 		add_child(scan_dir);
 		scan_dir->connect("dir_selected", callable_mp(project_list, &ProjectList::find_projects));
 
-		erase_missing_ask = memnew(ConfirmationDialog);
-		erase_missing_ask->set_ok_button_text(TTR("Remove All"));
-		erase_missing_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
-		add_child(erase_missing_ask);
+		remove_missing_dialog = memnew(RemoveMissingDialog);
+		remove_missing_dialog->connect("remove_missing_projects", callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
+		add_child(remove_missing_dialog);
 
 		erase_ask = memnew(ConfirmationDialog);
 		erase_ask->set_ok_button_text(TTR("Remove"));
