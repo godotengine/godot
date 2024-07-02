@@ -301,7 +301,7 @@ task generateGodotTemplates {
  */
 task generateDevTemplate {
     // add parameter to set symbols to true
-    gradle.startParameter.projectProperties += [doNotStrip: "true"]
+    project.ext.doNotStrip = "true"
 
     gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
     dependsOn = generateBuildTasks("template")
