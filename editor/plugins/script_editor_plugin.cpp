@@ -57,6 +57,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector_dock.h"
 #include "editor/node_dock.h"
+#include "editor/plugins/script_editor/syntax_highlighters/editor_syntax_highlighter_gettext.h"
 #include "editor/plugins/shader_editor_plugin.h"
 #include "editor/plugins/text_shader_editor.h"
 #include "editor/themes/editor_scale.h"
@@ -4330,6 +4331,10 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	Ref<EditorJSONSyntaxHighlighter> json_syntax_highlighter;
 	json_syntax_highlighter.instantiate();
 	register_syntax_highlighter(json_syntax_highlighter);
+
+	Ref<EditorSyntaxHighlighterGettext> gettext_syntax_highlighter;
+	gettext_syntax_highlighter.instantiate();
+	register_syntax_highlighter(gettext_syntax_highlighter);
 
 	_update_online_doc();
 }
