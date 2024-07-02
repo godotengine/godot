@@ -490,7 +490,7 @@ namespace Godot.Collections
         IReadOnlyDictionary<TKey, TValue>,
         IGenericGodotDictionary
     {
-        private static godot_variant ToVariantFunc(in Dictionary<TKey, TValue> godotDictionary) =>
+        private static godot_variant ToVariantFunc(scoped in Dictionary<TKey, TValue> godotDictionary) =>
             VariantUtils.CreateFromDictionary(godotDictionary);
 
         private static Dictionary<TKey, TValue> FromVariantFunc(in godot_variant variant) =>
@@ -498,8 +498,8 @@ namespace Godot.Collections
 
         static unsafe Dictionary()
         {
-            VariantUtils.GenericConversion<Dictionary<TKey, TValue>>.ToVariantCb = &ToVariantFunc;
-            VariantUtils.GenericConversion<Dictionary<TKey, TValue>>.FromVariantCb = &FromVariantFunc;
+            VariantUtils.GenericConversion<Dictionary<TKey, TValue>>.ToVariantCb = ToVariantFunc;
+            VariantUtils.GenericConversion<Dictionary<TKey, TValue>>.FromVariantCb = FromVariantFunc;
         }
 
         private readonly Dictionary _underlyingDict;
@@ -531,8 +531,7 @@ namespace Godot.Collections
         /// <returns>A new Godot Dictionary.</returns>
         public Dictionary(IDictionary<TKey, TValue> dictionary)
         {
-            if (dictionary == null)
-                throw new ArgumentNullException(nameof(dictionary));
+            ArgumentNullException.ThrowIfNull(dictionary);
 
             _underlyingDict = new Dictionary();
 
@@ -550,8 +549,7 @@ namespace Godot.Collections
         /// <returns>A new Godot Dictionary.</returns>
         public Dictionary(Dictionary dictionary)
         {
-            if (dictionary == null)
-                throw new ArgumentNullException(nameof(dictionary));
+            ArgumentNullException.ThrowIfNull(dictionary);
 
             _underlyingDict = dictionary;
         }

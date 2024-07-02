@@ -230,7 +230,7 @@ namespace Godot.NativeInterop
 
         // Callable
 
-        public static godot_callable ConvertCallableToNative(in Callable p_managed_callable)
+        public static godot_callable ConvertCallableToNative(scoped in Callable p_managed_callable)
         {
             if (p_managed_callable.Delegate != null)
             {
@@ -295,7 +295,7 @@ namespace Godot.NativeInterop
 
         // Signal
 
-        public static godot_signal ConvertSignalToNative(in Signal p_managed_signal)
+        public static godot_signal ConvertSignalToNative(scoped in Signal p_managed_signal)
         {
             ulong ownerId = p_managed_signal.Owner.GetInstanceId();
             godot_string_name name;
@@ -394,7 +394,7 @@ namespace Godot.NativeInterop
             return array;
         }
 
-        public static unsafe godot_packed_byte_array ConvertSystemArrayToNativePackedByteArray(Span<byte> p_array)
+        public static unsafe godot_packed_byte_array ConvertSystemArrayToNativePackedByteArray(scoped Span<byte> p_array)
         {
             if (p_array.IsEmpty)
                 return new godot_packed_byte_array();
@@ -417,7 +417,7 @@ namespace Godot.NativeInterop
             return array;
         }
 
-        public static unsafe godot_packed_int32_array ConvertSystemArrayToNativePackedInt32Array(Span<int> p_array)
+        public static unsafe godot_packed_int32_array ConvertSystemArrayToNativePackedInt32Array(scoped Span<int> p_array)
         {
             if (p_array.IsEmpty)
                 return new godot_packed_int32_array();
@@ -440,7 +440,7 @@ namespace Godot.NativeInterop
             return array;
         }
 
-        public static unsafe godot_packed_int64_array ConvertSystemArrayToNativePackedInt64Array(Span<long> p_array)
+        public static unsafe godot_packed_int64_array ConvertSystemArrayToNativePackedInt64Array(scoped Span<long> p_array)
         {
             if (p_array.IsEmpty)
                 return new godot_packed_int64_array();
@@ -464,7 +464,7 @@ namespace Godot.NativeInterop
         }
 
         public static unsafe godot_packed_float32_array ConvertSystemArrayToNativePackedFloat32Array(
-            Span<float> p_array)
+            scoped Span<float> p_array)
         {
             if (p_array.IsEmpty)
                 return new godot_packed_float32_array();
@@ -488,7 +488,7 @@ namespace Godot.NativeInterop
         }
 
         public static unsafe godot_packed_float64_array ConvertSystemArrayToNativePackedFloat64Array(
-            Span<double> p_array)
+            scoped Span<double> p_array)
         {
             if (p_array.IsEmpty)
                 return new godot_packed_float64_array();
@@ -510,7 +510,7 @@ namespace Godot.NativeInterop
             return array;
         }
 
-        public static godot_packed_string_array ConvertSystemArrayToNativePackedStringArray(Span<string> p_array)
+        public static godot_packed_string_array ConvertSystemArrayToNativePackedStringArray(scoped Span<string> p_array)
         {
             godot_packed_string_array dest = new godot_packed_string_array();
 
@@ -545,7 +545,7 @@ namespace Godot.NativeInterop
         }
 
         public static unsafe godot_packed_vector2_array ConvertSystemArrayToNativePackedVector2Array(
-            Span<Vector2> p_array)
+            scoped Span<Vector2> p_array)
         {
             if (p_array.IsEmpty)
                 return new godot_packed_vector2_array();
@@ -569,7 +569,7 @@ namespace Godot.NativeInterop
         }
 
         public static unsafe godot_packed_vector3_array ConvertSystemArrayToNativePackedVector3Array(
-            Span<Vector3> p_array)
+            scoped Span<Vector3> p_array)
         {
             if (p_array.IsEmpty)
                 return new godot_packed_vector3_array();
@@ -592,8 +592,7 @@ namespace Godot.NativeInterop
             return array;
         }
 
-        public static unsafe godot_packed_vector4_array ConvertSystemArrayToNativePackedVector4Array(
-            Span<Vector4> p_array)
+        public static unsafe godot_packed_vector4_array ConvertSystemArrayToNativePackedVector4Array(scoped Span<Vector4> p_array)
         {
             if (p_array.IsEmpty)
                 return new godot_packed_vector4_array();
@@ -616,7 +615,7 @@ namespace Godot.NativeInterop
             return array;
         }
 
-        public static unsafe godot_packed_color_array ConvertSystemArrayToNativePackedColorArray(Span<Color> p_array)
+        public static unsafe godot_packed_color_array ConvertSystemArrayToNativePackedColorArray(scoped Span<Color> p_array)
         {
             if (p_array.IsEmpty)
                 return new godot_packed_color_array();
