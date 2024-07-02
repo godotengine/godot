@@ -949,9 +949,6 @@ Vector2 VisualShader::get_node_position(Type p_type, int p_id) const {
 Ref<VisualShaderNode> VisualShader::get_node(Type p_type, int p_id) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, Ref<VisualShaderNode>());
 	const Graph *g = &graph[p_type];
-	if (!g->nodes.has(p_id)) {
-		return Ref<VisualShaderNode>();
-	}
 	ERR_FAIL_COND_V(!g->nodes.has(p_id), Ref<VisualShaderNode>());
 	return g->nodes[p_id].node;
 }
@@ -971,7 +968,7 @@ Vector<int> VisualShader::get_node_list(Type p_type) const {
 int VisualShader::get_valid_node_id(Type p_type) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, NODE_ID_INVALID);
 	const Graph *g = &graph[p_type];
-	return g->nodes.size() ? MAX(2, g->nodes.back()->key() + 1) : 2;
+	return g->nodes.size() ? MAX(2, g->nodes.back()->key() + 1) : 2; // Always start from 2 because 1 is reserved for the output node (All nodes are closable except the output node).
 }
 
 int VisualShader::find_node_id(Type p_type, const Ref<VisualShaderNode> &p_node) const {
