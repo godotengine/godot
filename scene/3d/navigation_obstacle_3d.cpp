@@ -380,6 +380,10 @@ void NavigationObstacle3D::_update_fake_agent_radius_debug() {
 
 	if (!fake_agent_radius_debug_instance.is_valid()) {
 		fake_agent_radius_debug_instance = RenderingServer::get_singleton()->instance_create();
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(fake_agent_radius_debug_instance, RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_set_layer_mask(fake_agent_radius_debug_instance, 1 << 26); // GIZMO_EDIT_LAYER
+		RS::get_singleton()->instance_geometry_set_flag(fake_agent_radius_debug_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		RS::get_singleton()->instance_geometry_set_flag(fake_agent_radius_debug_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 	}
 	if (!fake_agent_radius_debug_mesh.is_valid()) {
 		fake_agent_radius_debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
@@ -478,6 +482,10 @@ void NavigationObstacle3D::_update_static_obstacle_debug() {
 
 	if (!static_obstacle_debug_instance.is_valid()) {
 		static_obstacle_debug_instance = RenderingServer::get_singleton()->instance_create();
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(static_obstacle_debug_instance, RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_set_layer_mask(static_obstacle_debug_instance, 1 << 26); // GIZMO_EDIT_LAYER
+		RS::get_singleton()->instance_geometry_set_flag(static_obstacle_debug_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		RS::get_singleton()->instance_geometry_set_flag(static_obstacle_debug_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 	}
 	if (!static_obstacle_debug_mesh.is_valid()) {
 		static_obstacle_debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
