@@ -250,6 +250,21 @@
 				Returns [code]true[/code] if the column has enabled expanding (see [method set_column_expand]).
 			</description>
 		</method>
+		<method name="is_column_visible">
+			<return type="bool" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns [code]true[/code] if the column is visible (see [method set_column_visible]).
+			</description>
+		</method>
+		<method name="move_column">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Moves the given [param column] to the given [param index], and reorders the columns accordingly for the root item and all of its descendants.
+			</description>
+		</method>
 		<method name="scroll_to_item">
 			<return type="void" />
 			<param index="0" name="item" type="TreeItem" />
@@ -322,12 +337,28 @@
 				Sets language code of column title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 			</description>
 		</method>
+		<method name="set_column_visible">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="visible" type="bool" />
+			<description>
+				Sets the visibility for the given [param column] with the given [param visible] value.
+			</description>
+		</method>
 		<method name="set_selected">
 			<return type="void" />
 			<param index="0" name="item" type="TreeItem" />
 			<param index="1" name="column" type="int" />
 			<description>
 				Selects the specified [TreeItem] and column.
+			</description>
+		</method>
+		<method name="swap_columns">
+			<return type="void" />
+			<param index="0" name="column1" type="int" />
+			<param index="1" name="column2" type="int" />
+			<description>
+				Swaps the given [param column1] with the given [param column2], for the root item and all of its descendants.
 			</description>
 		</method>
 	</methods>

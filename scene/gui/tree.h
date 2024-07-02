@@ -99,6 +99,7 @@ private:
 
 		Variant meta;
 		String tooltip;
+		bool tooltip_visible = true;
 
 		Callable custom_draw_callback;
 
@@ -317,6 +318,9 @@ public:
 	void deselect(int p_column);
 	void set_as_cursor(int p_column);
 
+	void move_column(int p_column, int p_index);
+	void swap_columns(int p_column1, int p_column2);
+
 	void set_editable(int p_column, bool p_editable);
 	bool is_editable(int p_column);
 
@@ -339,6 +343,9 @@ public:
 
 	void set_tooltip_text(int p_column, const String &p_tooltip);
 	String get_tooltip_text(int p_column) const;
+
+	void set_tooltip_visible(int p_column, bool p_visible);
+	bool is_tooltip_visible(int p_column) const;
 
 	void set_text_alignment(int p_column, HorizontalAlignment p_alignment);
 	HorizontalAlignment get_text_alignment(int p_column) const;
@@ -460,6 +467,7 @@ private:
 		int expand_ratio = 1;
 		bool expand = true;
 		bool clip_content = false;
+		bool visible = true;
 		String title;
 		String xl_title;
 		HorizontalAlignment title_alignment = HORIZONTAL_ALIGNMENT_CENTER;
@@ -775,6 +783,12 @@ public:
 	bool is_h_scroll_enabled() const;
 	void set_v_scroll_enabled(bool p_enable);
 	bool is_v_scroll_enabled() const;
+
+	void set_column_visible(int p_column, bool p_visible);
+	bool is_column_visible(int p_column);
+
+	void move_column(int p_column, int p_index);
+	void swap_columns(int p_column1, int p_column2);
 
 	void set_cursor_can_exit_tree(bool p_enable);
 
