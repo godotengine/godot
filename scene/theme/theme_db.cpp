@@ -105,12 +105,16 @@ void ThemeDB::finalize_theme() {
 		WARN_PRINT("Finalizing theme when there is no RenderingServer is an error; check the order of operations.");
 	}
 
-	_finalize_theme_contexts();
-	default_theme.unref();
+	// For technical reasons unit tests recreate and destroy the default
+	// theme over and over again. Make sure that finalize_theme() also
+	// frees any objects that can be recreated by initialize_theme*().
 
-	fallback_font.unref();
-	fallback_icon.unref();
-	fallback_stylebox.unref();
+	_finalize_theme_contexts();
+	default_theme = Ref<Theme>();
+
+	fallback_font = Ref<Font>();
+	fallback_icon = Ref<Texture2D>();
+	fallback_stylebox = Ref<StyleBox>();
 }
 
 // Global Theme resources.
@@ -461,12 +465,12 @@ ThemeDB::~ThemeDB() {
 
 	_finalize_theme_contexts();
 
-	default_theme.unref();
-	project_theme.unref();
+	default_theme = Ref<Theme>();
+	project_theme = Ref<Theme>();
 
-	fallback_font.unref();
-	fallback_icon.unref();
-	fallback_stylebox.unref();
+	fallback_font = Ref<Font>();
+	fallback_icon = Ref<Texture2D>();
+	fallback_stylebox = Ref<StyleBox>();
 
 	singleton = nullptr;
 }
