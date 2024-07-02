@@ -6803,7 +6803,6 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 						if (create_reset_track) {
 							Animation *reset_anim = reset_animation.ptr();
 							for (int i = 0; i < reset_anim->get_track_count(); i++) {
-								// We also need to check if it's a bezier track
 								if (reset_anim->track_get_path(i) == n_path && reset_anim->track_get_type(i) == Animation::TYPE_BEZIER) {
 									create_reset_track = false;
 									break;
@@ -7764,12 +7763,10 @@ void AnimationTrackEditor::create_bezier_track(Ref<Animation> anim, String path,
 	Variant::Type key_type = anim->track_get_key_value(idx, 0).get_type();
 	Vector<String> subindices = _get_bezier_subindices_for_type(key_type);
 
-	//Animation *anim_pointer = anim.ptr();
-
 	for (int i = 0; i < subindices.size(); i++) {
 		undo_redo->add_do_method(anim.ptr(), "add_track", Animation::TYPE_BEZIER, -1);
 		undo_redo->add_do_method(anim.ptr(), "track_set_path", anim->get_track_count() + i, path + subindices[i]);
-		undo_redo->add_undo_method(anim.ptr(), "remove_track", anim->get_track_count() - 1 + i);
+		undo_redo->add_undo_method(anim.ptr(), "remove_track", anim->get_track_count() - 1);
 		//anim->add_track(Animation::TYPE_BEZIER, -1);
 		//anim->track_set_path(anim->get_track_count() - 1, path + subindices[i]);
 	}
