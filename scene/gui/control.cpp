@@ -1760,6 +1760,11 @@ void Control::_size_changed() {
 	}
 }
 
+void Control::_project_settings_changed() {
+	update_minimum_size();
+	_size_changed();
+}
+
 void Control::_clear_size_warning() {
 	data.size_warning = false;
 }
@@ -3259,6 +3264,10 @@ void Control::_notification(int p_notification) {
 				data.RI = viewport->_gui_add_root_control(this);
 
 				get_parent()->connect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::gui_set_root_order_dirty), CONNECT_REFERENCE_COUNTED);
+
+				if (Engine::get_singleton()->is_editor_hint()) {
+					ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Control::_project_settings_changed));
+				}
 			}
 
 			data.parent_canvas_item = get_parent_item();
@@ -3288,6 +3297,12 @@ void Control::_notification(int p_notification) {
 				get_viewport()->_gui_remove_root_control(data.RI);
 				data.RI = nullptr;
 				get_parent()->disconnect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::gui_set_root_order_dirty));
+			}
+
+			if (Engine::get_singleton()->is_editor_hint()) {
+				if (!Object::cast_to<Control>(get_parent())) {
+					ProjectSettings::get_singleton()->disconnect("settings_changed", callable_mp(this, &Control::_project_settings_changed));
+				}
 			}
 
 			data.parent_canvas_item = nullptr;
