@@ -34,11 +34,52 @@
 #include "core/object/script_language.h"
 #include "core/variant/variant.h"
 
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_GDSCRIPT_ENABLED
+#include "modules/gdscript/gdscript.h"
+#endif // MODULE_GDSCRIPT_ENABLED
+
 struct ContainerTypeValidate {
 	Variant::Type type = Variant::NIL;
 	StringName class_name;
 	Ref<Script> script;
 	const char *where = "container";
+
+	String get_contained_type_name() const {
+		if (type == Variant::NIL) {
+			return "";
+		}
+
+		String contained_typename;
+		if (type != Variant::OBJECT) {
+			contained_typename = Variant::get_type_name(type);
+		} else {
+			contained_typename = class_name;
+			if (contained_typename.is_empty()) {
+				contained_typename = "Object";
+			}
+
+			if (!script.is_null()) {
+				String script_name;
+#ifdef MODULE_GDSCRIPT_ENABLED
+				Ref<GDScript> gdscript = script;
+				if (!gdscript.is_null()) {
+					script_name = gdscript->get_fully_qualified_name();
+				} else
+#endif // MODULE_GDSCRIPT_ENABLED
+				{
+					script_name = script->get_global_name();
+					if (script_name.is_empty()) {
+						script_name = script->get_path();
+					}
+				}
+				contained_typename += " (" + script_name + ")";
+			}
+		}
+
+		return contained_typename;
+	}
 
 	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {
 		if (type != p_type.type) {
@@ -94,7 +135,7 @@ struct ContainerTypeValidate {
 				return true;
 			}
 
-			ERR_FAIL_V_MSG(false, "Attempted to " + String(p_operation) + " a variable of type '" + Variant::get_type_name(inout_variant.get_type()) + "' into a " + where + " of type '" + Variant::get_type_name(type) + "'.");
+			ERR_FAIL_V_MSG(false, "Attempted to " + String(p_operation) + " a variable of type '" + inout_variant.get_full_type_name() + "' into a " + where + " of type '" + get_contained_type_name() + "'.");
 		}
 
 		if (type != Variant::OBJECT) {
