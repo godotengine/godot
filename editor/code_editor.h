@@ -161,6 +161,7 @@ class CodeTextEditor : public VBoxContainer {
 	HBoxContainer *status_bar = nullptr;
 
 	Button *toggle_scripts_button = nullptr;
+	Control *toggle_scripts_list = nullptr;
 	Button *error_button = nullptr;
 	Button *warning_button = nullptr;
 
@@ -285,6 +286,7 @@ public:
 
 	void validate_script();
 
+	void set_toggle_list_control(Control *p_control);
 	void show_toggle_scripts_button();
 	void update_toggle_scripts_button();
 

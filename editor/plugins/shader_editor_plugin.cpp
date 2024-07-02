@@ -142,6 +142,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 		}
 		es.shader_inc = Ref<ShaderInclude>(si);
 		es.shader_editor = memnew(TextShaderEditor);
+		es.shader_editor->get_code_editor()->set_toggle_list_control(left_panel);
 		es.shader_editor->edit(si);
 		shader_tabs->add_child(es.shader_editor);
 	} else {
@@ -161,6 +162,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 			es.visual_shader_editor->edit(vs.ptr());
 		} else {
 			es.shader_editor = memnew(TextShaderEditor);
+			es.shader_editor->get_code_editor()->set_toggle_list_control(left_panel);
 			shader_tabs->add_child(es.shader_editor);
 			es.shader_editor->edit(s);
 		}
@@ -387,6 +389,10 @@ void ShaderEditorPlugin::_close_shader(int p_index) {
 	edited_shaders.remove_at(p_index);
 	_update_shader_list();
 	EditorUndoRedoManager::get_singleton()->clear_history(); // To prevent undo on deleted graphs.
+
+	if (shader_tabs->get_tab_count() == 0) {
+		left_panel->show(); // Make sure the panel is visible, because it can't be toggled without open shaders.
+	}
 }
 
 void ShaderEditorPlugin::_close_builtin_shaders_from_scene(const String &p_scene) {
@@ -686,10 +692,10 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	Ref<Shortcut> make_floating_shortcut = ED_SHORTCUT_AND_COMMAND("shader_editor/make_floating", TTR("Make Floating"));
 	window_wrapper->set_wrapped_control(main_split, make_floating_shortcut);
 
-	VBoxContainer *vb = memnew(VBoxContainer);
+	left_panel = memnew(VBoxContainer);
 
 	HBoxContainer *menu_hb = memnew(HBoxContainer);
-	vb->add_child(menu_hb);
+	left_panel->add_child(menu_hb);
 	file_menu = memnew(MenuButton);
 	file_menu->set_text(TTR("File"));
 	file_menu->set_shortcut_context(main_split);
@@ -729,13 +735,13 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	shader_list = memnew(ItemList);
 	shader_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	shader_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	vb->add_child(shader_list);
+	left_panel->add_child(shader_list);
 	shader_list->connect(SceneStringName(item_selected), callable_mp(this, &ShaderEditorPlugin::_shader_selected));
 	shader_list->connect("item_clicked", callable_mp(this, &ShaderEditorPlugin::_shader_list_clicked));
 	SET_DRAG_FORWARDING_GCD(shader_list, ShaderEditorPlugin);
 
-	main_split->add_child(vb);
-	vb->set_custom_minimum_size(Size2(200, 300) * EDSCALE);
+	main_split->add_child(left_panel);
+	left_panel->set_custom_minimum_size(Size2(200, 300) * EDSCALE);
 
 	shader_tabs = memnew(TabContainer);
 	shader_tabs->set_tabs_visible(false);
@@ -748,7 +754,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	button = EditorNode::get_bottom_panel()->add_item(TTR("Shader Editor"), window_wrapper, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_editor_bottom_panel", TTR("Toggle Shader Editor Bottom Panel"), KeyModifierMask::ALT | Key::S));
 
 	shader_create_dialog = memnew(ShaderCreateDialog);
-	vb->add_child(shader_create_dialog);
+	main_split->add_child(shader_create_dialog);
 	shader_create_dialog->connect("shader_created", callable_mp(this, &ShaderEditorPlugin::_shader_created));
 	shader_create_dialog->connect("shader_include_created", callable_mp(this, &ShaderEditorPlugin::_shader_include_created));
 }
