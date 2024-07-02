@@ -123,15 +123,15 @@ public:
 		m_relaxationFactor = _relaxationFactor;
 	}
 
-	inline int getSolveTwistLimit() {
+	inline int getSolveTwistLimit() const {
 		return m_solveTwistLimit;
 	}
 
-	inline int getSolveSwingLimit() {
-		return m_solveTwistLimit;
+	inline int getSolveSwingLimit() const {
+		return m_solveSwingLimit;
 	}
 
-	inline real_t getTwistLimitSign() {
+	inline real_t getTwistLimitSign() const {
 		return m_twistLimitSign;
 	}
 
