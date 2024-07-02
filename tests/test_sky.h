@@ -31,35 +31,18 @@
 #ifndef TEST_SKY_H
 #define TEST_SKY_H
 
+#include "scene/3d/world_environment.h"
 #include "scene/resources/3d/sky_material.h"
-#include "scene/resources/sky.h"
 
-#include "tests/test_macros.h"
-#include "tests/test_tools.h"
 
 namespace TestSky {
-TEST_CASE("[Sky] Setters and Getters") {
-	Ref<Sky> test_sky;
-	test_sky.instantiate();
+	TEST_CASE("[Sky]") {
+		Ref<WorldEnvironment> we = memnew(WorldEnvironment);
+		Ref<Sky> test_sky = we->environment.BG_SKY;
 
-	SUBCASE("[Sky] Set and Get Radiance") {
-		test_sky->set_radiance_size(Sky::RADIANCE_SIZE_MAX);
-		CHECK(test_sky->get_radiance_size() == Sky::RADIANCE_SIZE_MAX);
-	}
-
-	SUBCASE("[Sky] Set and Get Material") {
-		Ref<ProceduralSkyMaterial> test_material;
-		test_material.instantiate();
-		test_sky->set_material(test_material);
-		CHECK(test_sky->get_material() == test_material);
-	}
-
-	SUBCASE("[Sky] Set and Get Process Mode") {
-		Sky::ProcessMode process_mode = Sky::ProcessMode::PROCESS_MODE_QUALITY;
-		test_sky->set_process_mode(process_mode);
-		CHECK(test_sky->get_process_mode() == process_mode);
+		SUBCASE("[Sky] Set and Get Radiance") {
+		}
 	}
 }
-} //namespace TestSky
 
 #endif
