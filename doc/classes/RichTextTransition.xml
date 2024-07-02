@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RichTextTransition" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides enter/exit effects for [RichTextLabel].
+	</brief_description>
+	<description>
+		Provides enter/exit effects for characters that are shown/hidden via [member RichTextLabel.visible_characters]. This resource can be applied using [member RichTextLabel.visiblity_transition].
+		[b]Note:[/b] To preview [member RichTextLabel.visiblity_transition] in the editor, the script attatched to this resource must be marked with [code]@tool[/code].
+		[codeblock]
+		@tool
+		class_name FadeInFadeOut
+		extends RichTextTransition
+
+		@export var speed:float = 2.5;
+
+		# Fade in
+		func _process_enter_fx(char_fx: CharFXTransform) -> bool:
+            char_fx.color.a = lerp(0.0, 1.0, char_fx.elapsed_time * speed);
+            return char_fx.color.a == 1; # Stop when alpha reaches 1
+
+		# Fade out
+		func _process_exit_fx(char_fx: CharFXTransform) -> bool:
+            char_fx.color.a = lerp(1.0, 0.0, char_fx.elapsed_time * speed);
+            return char_fx.color.a == 0; # Stop when alpha reaches 0
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_process_enter_fx" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="char_fx" type="CharFXTransform" />
+			<description>
+				Override this method to animate new characters shown when [member RichTextLabel.visible_characters] increases. Modified properties in [param char_fx] will be applied until this method returns [code]true[/code]. Return [code]true[/code] when the enter fx has finished.
+			</description>
+		</method>
+		<method name="_process_exit_fx" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="char_fx" type="CharFXTransform" />
+			<description>
+				Override this method to animate characters before they're hidden when [member RichTextLabel.visible_characters] decreases. Modified properties in [param char_fx] will be applied until this method returns [code]true[/code]. Return [code]true[/code] when the exit fx has finished.
+			</description>
+		</method>
+	</methods>
+</class>
