@@ -98,27 +98,31 @@
 #undef MAX
 #undef CLAMP
 
-// Generic ABS function, for math uses please use Math::abs.
+// DEPRECATED. Use `Math::abs` instead.
 template <typename T>
 constexpr T ABS(T m_v) {
 	return m_v < 0 ? -m_v : m_v;
 }
 
+// DEPRECATED. Use `Math::sign` instead.
 template <typename T>
 constexpr const T SIGN(const T m_v) {
 	return m_v > 0 ? +1.0f : (m_v < 0 ? -1.0f : 0.0f);
 }
 
+// DEPRECATED. Use `Math::min` instead.
 template <typename T, typename T2>
 constexpr auto MIN(const T m_a, const T2 m_b) {
 	return m_a < m_b ? m_a : m_b;
 }
 
+// DEPRECATED. Use `Math::max` instead.
 template <typename T, typename T2>
 constexpr auto MAX(const T m_a, const T2 m_b) {
 	return m_a > m_b ? m_a : m_b;
 }
 
+// DEPRECATED. Use `Math::clamp` instead.
 template <typename T, typename T2, typename T3>
 constexpr auto CLAMP(const T m_a, const T2 m_min, const T3 m_max) {
 	return m_a < m_min ? m_min : (m_a > m_max ? m_max : m_a);
