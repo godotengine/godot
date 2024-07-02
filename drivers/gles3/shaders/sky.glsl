@@ -194,9 +194,7 @@ void main() {
 #endif
 
 	{
-
 #CODE : SKY
-
 	}
 
 	color *= sky_energy_multiplier;

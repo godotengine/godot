@@ -35,11 +35,10 @@ layout(location = 3) out vec2 pixel_size_interp;
 #endif
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(set = 1, binding = 0, std140) uniform MaterialUniforms{
-
+layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
-
-} material;
+}
+material;
 #endif
 
 #GLOBALS
@@ -254,11 +253,10 @@ layout(location = 3) in vec2 pixel_size_interp;
 layout(location = 0) out vec4 frag_color;
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(set = 1, binding = 0, std140) uniform MaterialUniforms{
-
+layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
-
-} material;
+}
+material;
 #endif
 
 vec2 screen_uv_to_sdf(vec2 p_uv) {
