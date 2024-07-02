@@ -38,7 +38,7 @@ class StreamPeerTLS : public StreamPeer {
 	GDCLASS(StreamPeerTLS, StreamPeer);
 
 protected:
-	static StreamPeerTLS *(*_create)();
+	static StreamPeerTLS *(*_create)(bool p_notify_postinitialize);
 	static void _bind_methods();
 
 public:
@@ -58,7 +58,7 @@ public:
 
 	virtual void disconnect_from_stream() = 0;
 
-	static StreamPeerTLS *create();
+	static StreamPeerTLS *create(bool p_notify_postinitialize = true);
 
 	static bool is_available();
 

@@ -42,9 +42,9 @@ const char *HTTPClient::_methods[METHOD_MAX] = {
 	"PATCH"
 };
 
-HTTPClient *HTTPClient::create() {
+HTTPClient *HTTPClient::create(bool p_notify_postinitialize) {
 	if (_create) {
-		return _create();
+		return _create(p_notify_postinitialize);
 	}
 	return nullptr;
 }

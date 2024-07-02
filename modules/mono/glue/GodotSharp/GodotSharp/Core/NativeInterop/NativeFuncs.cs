@@ -47,7 +47,7 @@ namespace Godot.NativeInterop
         public static partial IntPtr godotsharp_method_bind_get_method_with_compatibility(
             in godot_string_name p_classname, in godot_string_name p_methodname, ulong p_hash);
 
-        public static partial delegate* unmanaged<IntPtr> godotsharp_get_class_constructor(
+        public static partial delegate* unmanaged<godot_bool, IntPtr> godotsharp_get_class_constructor(
             in godot_string_name p_classname);
 
         public static partial IntPtr godotsharp_engine_get_singleton(in godot_string p_name);

@@ -2184,7 +2184,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			// Add native constructor static field
 
 			output << MEMBER_BEGIN << "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
-				   << INDENT1 "private static readonly unsafe delegate* unmanaged<IntPtr> "
+				   << INDENT1 "private static readonly unsafe delegate* unmanaged<godot_bool, IntPtr> "
 				   << CS_STATIC_FIELD_NATIVE_CTOR " = " ICALL_CLASSDB_GET_CONSTRUCTOR
 				   << "(" BINDINGS_NATIVE_NAME_FIELD ");\n";
 		}

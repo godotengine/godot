@@ -35,8 +35,8 @@
 #include "core/io/stream_peer_tls.h"
 #include "core/version.h"
 
-HTTPClient *HTTPClientTCP::_create_func() {
-	return memnew(HTTPClientTCP);
+HTTPClient *HTTPClientTCP::_create_func(bool p_notify_postinitialize) {
+	return static_cast<HTTPClient *>(ClassDB::creator<HTTPClientTCP>(p_notify_postinitialize));
 }
 
 Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, Ref<TLSOptions> p_options) {
@@ -792,6 +792,6 @@ HTTPClientTCP::HTTPClientTCP() {
 	request_buffer.instantiate();
 }
 
-HTTPClient *(*HTTPClient::_create)() = HTTPClientTCP::_create_func;
+HTTPClient *(*HTTPClient::_create)(bool p_notify_postinitialize) = HTTPClientTCP::_create_func;
 
 #endif // WEB_ENABLED
