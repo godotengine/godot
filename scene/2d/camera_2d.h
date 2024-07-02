@@ -197,6 +197,9 @@ public:
 	void set_margin_drawing_enabled(bool enable);
 	bool is_margin_drawing_enabled() const;
 
+	static StringName get_camera_group_for_viewport(const RID &p_viewport);
+	static StringName get_camera_group_for_canvas(const RID &p_canvas);
+
 	Camera2D();
 };
 

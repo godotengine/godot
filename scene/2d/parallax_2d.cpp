@@ -31,11 +31,12 @@
 #include "parallax_2d.h"
 
 #include "core/config/project_settings.h"
+#include "scene/2d/camera_2d.h"
 
 void Parallax2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			group_name = "__cameras_" + itos(get_viewport_rid().get_id());
+			group_name = Camera2D::get_camera_group_for_viewport(get_viewport_rid());
 			add_to_group(group_name);
 			_update_repeat();
 			_update_scroll();
