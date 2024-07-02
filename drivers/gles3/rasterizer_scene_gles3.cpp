@@ -884,6 +884,15 @@ void RasterizerSceneGLES3::environment_set_glow(RID p_env, bool p_enable, int p_
 	env->glow_bicubic_upscale = p_bicubic_upscale;
 	env->glow_high_quality = p_high_quality;
 }
+
+void RasterizerSceneGLES3::environment_set_glow_map(RID p_env, float p_glow_map_strength, RID p_glow_map) {
+	Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->glow_map_strength = p_glow_map_strength;
+	env->glow_map = p_glow_map;
+}
+
 void RasterizerSceneGLES3::environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {
 }
 
@@ -4022,7 +4031,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		RasterizerStorageGLES3::Texture *tex = storage->texture_owner.getornull(env->color_correction);
 		if (tex) {
 			state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_COLOR_CORRECTION, true);
-			WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE3);
+			WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE4);
 			glBindTexture(tex->target, tex->tex_id);
 		}
 	}
@@ -4037,6 +4046,14 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 
 		if (max_glow_level >= 0) {
 			state.tonemap_shader.set_uniform(TonemapShaderGLES3::GLOW_INTENSITY, env->glow_intensity);
+			state.tonemap_shader.set_uniform(TonemapShaderGLES3::GLOW_MAP_STRENGTH, env->glow_map_strength);
+
+			RasterizerStorageGLES3::Texture *tex = storage->texture_owner.getornull(env->glow_map);
+			if (tex) {
+				WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE3);
+				glBindTexture(tex->target, tex->tex_id);
+			}
+
 			int ss[2] = {
 				storage->frame.current_rt->width,
 				storage->frame.current_rt->height,

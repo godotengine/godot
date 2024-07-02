@@ -848,6 +848,11 @@ void RasterizerSceneGLES2::environment_set_glow(RID p_env, bool p_enable, int p_
 	env->glow_high_quality = p_high_quality;
 }
 
+void RasterizerSceneGLES2::environment_set_glow_map(RID p_env, float p_glow_map_strength, RID p_glow_map) {
+	Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+}
+
 void RasterizerSceneGLES2::environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
