@@ -82,6 +82,24 @@ void Transform2D::set_rotation(real_t p_rot) {
 	set_scale(scale);
 }
 
+void Transform2D::set_skew(real_t p_angle) {
+	real_t det = determinant();
+	elements[1] = SGN(det) * elements[0].rotated(((real_t)Math_PI * 0.5f + p_angle)).normalized() * elements[1].length();
+}
+
+real_t Transform2D::get_skew() const {
+	real_t det = determinant();
+	return Math::acos(elements[0].normalized().dot(SGN(det) * elements[1].normalized())) - (real_t)Math_PI * 0.5f;
+}
+
+Transform2D::Transform2D(real_t p_rot, const Size2 &p_scale, real_t p_skew, const Vector2 &p_pos) {
+	elements[0][0] = Math::cos(p_rot) * p_scale.x;
+	elements[1][1] = Math::cos(p_rot + p_skew) * p_scale.y;
+	elements[1][0] = -Math::sin(p_rot + p_skew) * p_scale.y;
+	elements[0][1] = Math::sin(p_rot) * p_scale.x;
+	elements[2] = p_pos;
+}
+
 Transform2D::Transform2D(real_t p_rot, const Vector2 &p_pos) {
 	real_t cr = Math::cos(p_rot);
 	real_t sr = Math::sin(p_rot);
@@ -219,41 +237,6 @@ Transform2D Transform2D::rotated(real_t p_angle) const {
 
 real_t Transform2D::determinant() const {
 	return elements[0].x * elements[1].y - elements[0].y * elements[1].x;
-}
-
-Transform2D Transform2D::interpolate_with(const Transform2D &p_transform, real_t p_c) const {
-	//extract parameters
-	Vector2 p1 = get_origin();
-	Vector2 p2 = p_transform.get_origin();
-
-	real_t r1 = get_rotation();
-	real_t r2 = p_transform.get_rotation();
-
-	Size2 s1 = get_scale();
-	Size2 s2 = p_transform.get_scale();
-
-	//slerp rotation
-	Vector2 v1(Math::cos(r1), Math::sin(r1));
-	Vector2 v2(Math::cos(r2), Math::sin(r2));
-
-	real_t dot = v1.dot(v2);
-
-	dot = CLAMP(dot, -1, 1);
-
-	Vector2 v;
-
-	if (dot > 0.9995f) {
-		v = Vector2::linear_interpolate(v1, v2, p_c).normalized(); //linearly interpolate to avoid numerical precision issues
-	} else {
-		real_t angle = p_c * Math::acos(dot);
-		Vector2 v3 = (v2 - v1 * dot).normalized();
-		v = v1 * Math::cos(angle) + v3 * Math::sin(angle);
-	}
-
-	//construct matrix
-	Transform2D res(Math::atan2(v.y, v.x), Vector2::linear_interpolate(p1, p2, p_c));
-	res.scale_basis(Vector2::linear_interpolate(s1, s2, p_c));
-	return res;
 }
 
 Transform2D::operator String() const {
