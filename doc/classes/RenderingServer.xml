@@ -3078,6 +3078,14 @@
 				If [code]true[/code], computes shadows in the reflection probe. This makes the reflection much slower to compute. Equivalent to [member ReflectionProbe.enable_shadows].
 			</description>
 		</method>
+		<method name="reflection_probe_set_fade_start">
+			<return type="void" />
+			<param index="0" name="probe" type="RID" />
+			<param index="1" name="fade_start" type="float" />
+			<description>
+				Sets the percentage of the distance from the origin at which reflections will start fading to other reflection sources (such as other [ReflectionProbe]s or the environment sky reflections). Higher values make the [ReflectionProbe] more visible, with more aggressive fading in the corners. If you have trouble with sky reflections being visible in partially indoor areas, increase [method reflection_probe_set_fade_start]. Equivalent to [member ReflectionProbe.fade_start].
+			</description>
+		</method>
 		<method name="reflection_probe_set_intensity">
 			<return type="void" />
 			<param index="0" name="probe" type="RID" />
