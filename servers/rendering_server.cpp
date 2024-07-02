@@ -2646,6 +2646,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_set_lifetime", "particles", "lifetime"), &RenderingServer::particles_set_lifetime);
 	ClassDB::bind_method(D_METHOD("particles_set_one_shot", "particles", "one_shot"), &RenderingServer::particles_set_one_shot);
 	ClassDB::bind_method(D_METHOD("particles_set_pre_process_time", "particles", "time"), &RenderingServer::particles_set_pre_process_time);
+	ClassDB::bind_method(D_METHOD("particles_request_process_time", "particles", "time"), &RenderingServer::particles_request_process_time);
 	ClassDB::bind_method(D_METHOD("particles_set_explosiveness_ratio", "particles", "ratio"), &RenderingServer::particles_set_explosiveness_ratio);
 	ClassDB::bind_method(D_METHOD("particles_set_randomness_ratio", "particles", "ratio"), &RenderingServer::particles_set_randomness_ratio);
 	ClassDB::bind_method(D_METHOD("particles_set_interp_to_end", "particles", "factor"), &RenderingServer::particles_set_interp_to_end);
@@ -2661,6 +2662,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_set_transform_align", "particles", "align"), &RenderingServer::particles_set_transform_align);
 	ClassDB::bind_method(D_METHOD("particles_set_trails", "particles", "enable", "length_sec"), &RenderingServer::particles_set_trails);
 	ClassDB::bind_method(D_METHOD("particles_set_trail_bind_poses", "particles", "bind_poses"), &RenderingServer::_particles_set_trail_bind_poses);
+	ClassDB::bind_method(D_METHOD("particles_set_seed", "particles", "seed"), &RenderingServer::particles_set_seed);
 
 	ClassDB::bind_method(D_METHOD("particles_is_inactive", "particles"), &RenderingServer::particles_is_inactive);
 	ClassDB::bind_method(D_METHOD("particles_request_process", "particles"), &RenderingServer::particles_request_process);
@@ -2677,6 +2679,9 @@ void RenderingServer::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(PARTICLES_MODE_2D);
 	BIND_ENUM_CONSTANT(PARTICLES_MODE_3D);
+
+	BIND_ENUM_CONSTANT(PARTICLES_SEED_MODE_RANDOM);
+	BIND_ENUM_CONSTANT(PARTICLES_SEED_MODE_CUSTOM);
 
 	BIND_ENUM_CONSTANT(PARTICLES_TRANSFORM_ALIGN_DISABLED);
 	BIND_ENUM_CONSTANT(PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD);

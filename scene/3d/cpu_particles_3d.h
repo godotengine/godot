@@ -79,6 +79,11 @@ public:
 		EMISSION_SHAPE_MAX
 	};
 
+	enum ParticlesSeedMode {
+		PARTICLES_SEED_MODE_RANDOM = RenderingServer::PARTICLES_SEED_MODE_RANDOM,
+		PARTICLES_SEED_MODE_CUSTOM = RenderingServer::PARTICLES_SEED_MODE_CUSTOM,
+	};
+
 private:
 	bool emitting = false;
 	bool active = false;
@@ -134,6 +139,7 @@ private:
 
 	double lifetime = 1.0;
 	double pre_process_time = 0.0;
+	double _requested_process_time = 0.0;
 	real_t explosiveness_ratio = 0.0;
 	real_t randomness_ratio = 0.0;
 	double lifetime_randomness = 0.0;
@@ -142,6 +148,8 @@ private:
 	bool local_coords = false;
 	int fixed_fps = 0;
 	bool fractional_delta = true;
+	uint32_t seed = 0;
+	ParticlesSeedMode seed_mode = PARTICLES_SEED_MODE_RANDOM;
 
 	Transform3D inv_emission_transform;
 
@@ -240,6 +248,14 @@ public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 
+	void set_seed_mode(ParticlesSeedMode p_mode);
+	ParticlesSeedMode get_seed_mode() const;
+
+	void set_seed(uint32_t p_seed);
+	uint32_t get_seed() const;
+
+	void request_particles_process(real_t p_requested_process_time);
+
 	///////////////////
 
 	void set_direction(Vector3 p_direction);
@@ -321,5 +337,6 @@ VARIANT_ENUM_CAST(CPUParticles3D::DrawOrder)
 VARIANT_ENUM_CAST(CPUParticles3D::Parameter)
 VARIANT_ENUM_CAST(CPUParticles3D::ParticleFlags)
 VARIANT_ENUM_CAST(CPUParticles3D::EmissionShape)
+VARIANT_ENUM_CAST(CPUParticles3D::ParticlesSeedMode)
 
 #endif // CPU_PARTICLES_3D_H
