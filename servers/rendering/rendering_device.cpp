@@ -137,16 +137,7 @@ RenderingDevice::ShaderSPIRVGetCacheKeyFunction RenderingDevice::get_spirv_cache
 /***************************/
 
 void RenderingDevice::_add_dependency(RID p_id, RID p_depends_on) {
-	if (!dependency_map.has(p_depends_on)) {
-		dependency_map[p_depends_on] = HashSet<RID>();
-	}
-
 	dependency_map[p_depends_on].insert(p_id);
-
-	if (!reverse_dependency_map.has(p_id)) {
-		reverse_dependency_map[p_id] = HashSet<RID>();
-	}
-
 	reverse_dependency_map[p_id].insert(p_depends_on);
 }
 
@@ -168,8 +159,7 @@ void RenderingDevice::_free_dependencies(RID p_id) {
 		for (const RID &F : E->value) {
 			HashMap<RID, HashSet<RID>>::Iterator G = dependency_map.find(F);
 			ERR_CONTINUE(!G);
-			ERR_CONTINUE(!G->value.has(p_id));
-			G->value.erase(p_id);
+			ERR_CONTINUE_MSG(!G->value.erase(p_id), "Attempted to erase non-existing dependency, bug?");
 		}
 
 		reverse_dependency_map.remove(E);
