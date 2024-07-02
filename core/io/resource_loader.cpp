@@ -633,9 +633,9 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 					// This local poll loop is not needed.
 					break;
 				}
-				thread_load_lock.~MutexLock();
+				thread_load_lock.unlock();
 				OS::get_singleton()->delay_usec(1000);
-				new (&thread_load_lock) MutexLock(thread_load_mutex);
+				thread_load_lock.lock();
 			}
 		}
 
@@ -691,7 +691,7 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 			Error wtp_task_err = FAILED;
 			if (loader_is_wtp) {
 				// Loading thread is in the worker pool.
-				thread_load_mutex.unlock();
+				p_thread_load_lock.unlock();
 				wtp_task_err = WorkerThreadPool::get_singleton()->wait_for_task_completion(load_task.task_id);
 			}
 
@@ -710,11 +710,11 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 						if (r_error) {
 							*r_error = wtp_task_err;
 						}
-						thread_load_mutex.lock();
+						p_thread_load_lock.lock();
 						return resource;
 					} else {
 						DEV_ASSERT(wtp_task_err == OK);
-						thread_load_mutex.lock();
+						p_thread_load_lock.lock();
 						load_task.awaited = true;
 					}
 				} else {
@@ -729,7 +729,7 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 				}
 			} else {
 				if (loader_is_wtp) {
-					thread_load_mutex.lock();
+					p_thread_load_lock.lock();
 				}
 			}
 		}
@@ -1145,7 +1145,7 @@ void ResourceLoader::clear_translation_remaps() {
 void ResourceLoader::clear_thread_load_tasks() {
 	// Bring the thing down as quickly as possible without causing deadlocks or leaks.
 
-	thread_load_mutex.lock();
+	MutexLock thread_load_lock(thread_load_mutex);
 	cleaning_tasks = true;
 
 	while (true) {
@@ -1165,9 +1165,9 @@ void ResourceLoader::clear_thread_load_tasks() {
 		if (none_running) {
 			break;
 		}
-		thread_load_mutex.unlock();
+		thread_load_lock.unlock();
 		OS::get_singleton()->delay_usec(1000);
-		thread_load_mutex.lock();
+		thread_load_lock.lock();
 	}
 
 	while (user_load_tokens.begin()) {
@@ -1179,7 +1179,6 @@ void ResourceLoader::clear_thread_load_tasks() {
 	thread_load_tasks.clear();
 
 	cleaning_tasks = false;
-	thread_load_mutex.unlock();
 }
 
 void ResourceLoader::load_path_remaps() {
