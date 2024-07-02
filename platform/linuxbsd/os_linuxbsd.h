@@ -83,8 +83,8 @@ class OS_LinuxBSD : public OS_Unix {
 
 	String get_systemd_os_release_info_value(const String &key) const;
 
-	Vector<String> lspci_device_filter(Vector<String> vendor_device_id_mapping, String class_suffix, String check_column, String whitelist) const;
-	Vector<String> lspci_get_device_value(Vector<String> vendor_device_id_mapping, String check_column, String blacklist) const;
+	Vector<String> lspci_device_filter(const Vector<String> &vendor_device_id_mapping, const String &class_suffix, const String &check_column, const String &whitelist) const;
+	Vector<String> lspci_get_device_value(const Vector<String> &vendor_device_id_mapping, const String &check_column, const String &blacklist) const;
 
 	String system_dir_desktop_cache;
 

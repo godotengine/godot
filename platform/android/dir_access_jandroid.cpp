@@ -336,7 +336,7 @@ DirAccessJAndroid::~DirAccessJAndroid() {
 	list_dir_end();
 }
 
-int DirAccessJAndroid::dir_open(String p_path) {
+int DirAccessJAndroid::dir_open(const String &p_path) {
 	if (_dir_open) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, 0);
