@@ -56,9 +56,16 @@ void CameraFeed::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_datatype"), &CameraFeed::get_datatype);
 
+	ClassDB::bind_method(D_METHOD("get_formats"), &CameraFeed::get_formats);
+	ClassDB::bind_method(D_METHOD("set_format", "index", "parameters"), &CameraFeed::set_format);
+
+	ADD_SIGNAL(MethodInfo("frame_changed"));
+	ADD_SIGNAL(MethodInfo("format_changed"));
+
 	ADD_GROUP("Feed", "feed_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "feed_is_active"), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "feed_transform"), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "formats"), "", "get_formats");
 
 	BIND_ENUM_CONSTANT(FEED_NOIMAGE);
 	BIND_ENUM_CONSTANT(FEED_RGB);
@@ -84,13 +91,11 @@ void CameraFeed::set_active(bool p_is_active) {
 	} else if (p_is_active) {
 		// attempt to activate this feed
 		if (activate_feed()) {
-			print_line("Activate " + name);
 			active = true;
 		}
 	} else {
 		// just deactivate it
 		deactivate_feed();
-		print_line("Deactivate " + name);
 		active = false;
 	}
 }
@@ -183,6 +188,8 @@ void CameraFeed::set_RGB_img(const Ref<Image> &p_rgb_img) {
 
 			RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_rgb_img);
 			RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_RGBA_IMAGE], new_texture);
+
+			emit_signal(SNAME("format_changed"));
 		} else {
 			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_RGBA_IMAGE], p_rgb_img);
 		}
@@ -204,6 +211,8 @@ void CameraFeed::set_YCbCr_img(const Ref<Image> &p_ycbcr_img) {
 
 			RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_ycbcr_img);
 			RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_RGBA_IMAGE], new_texture);
+
+			emit_signal(SNAME("format_changed"));
 		} else {
 			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_RGBA_IMAGE], p_ycbcr_img);
 		}
@@ -235,6 +244,8 @@ void CameraFeed::set_YCbCr_imgs(const Ref<Image> &p_y_img, const Ref<Image> &p_c
 				RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_cbcr_img);
 				RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_CBCR_IMAGE], new_texture);
 			}
+
+			emit_signal(SNAME("format_changed"));
 		} else {
 			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_Y_IMAGE], p_y_img);
 			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_CBCR_IMAGE], p_cbcr_img);
@@ -251,4 +262,17 @@ bool CameraFeed::activate_feed() {
 
 void CameraFeed::deactivate_feed() {
 	// nothing to do here
+}
+
+bool CameraFeed::set_format(int p_index, const Dictionary &p_parameters) {
+	return false;
+}
+
+Array CameraFeed::get_formats() const {
+	return Array();
+}
+
+CameraFeed::FeedFormat CameraFeed::get_format() const {
+	FeedFormat feed_format = {};
+	return feed_format;
 }

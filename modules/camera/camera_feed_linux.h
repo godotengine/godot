@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  camera_feed_linux.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,36 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#ifndef CAMERA_FEED_LINUX_H
+#define CAMERA_FEED_LINUX_H
 
-#if defined(LINUXBSD_ENABLED)
-#include "camera_linux.h"
-#endif
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(MACOS_ENABLED)
-#include "camera_macos.h"
-#endif
+#include "buffer_decoder.h"
 
-void initialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+#include "core/os/thread.h"
+#include "servers/camera/camera_feed.h"
 
-#if defined(LINUXBSD_ENABLED)
-	CameraServer::make_default<CameraLinux>();
-#endif
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(MACOS_ENABLED)
-	CameraServer::make_default<CameraMacOS>();
-#endif
-}
+#include <linux/videodev2.h>
 
-void uninitialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+struct StreamingBuffer;
+
+class CameraFeedLinux : public CameraFeed {
+private:
+	SafeFlag exit_flag;
+	Thread *thread = nullptr;
+	String device_name;
+	int file_descriptor = -1;
+	StreamingBuffer *buffers = nullptr;
+	unsigned int buffer_count = 0;
+	BufferDecoder *buffer_decoder = nullptr;
+
+	static void update_buffer_thread_func(void *p_func);
+
+	void _update_buffer();
+	void _query_device(const String &p_device_name);
+	void _add_format(v4l2_fmtdesc description, v4l2_frmsize_discrete size, int frame_numerator, int frame_denominator);
+	bool _request_buffers();
+	bool _start_capturing();
+	void _read_frame();
+	void _stop_capturing();
+	void _unmap_buffers(unsigned int p_count);
+	BufferDecoder *_create_buffer_decoder();
+	void _start_thread();
+
+public:
+	String get_device_name() const;
+	bool activate_feed();
+	void deactivate_feed();
+	bool set_format(int p_index, const Dictionary &p_parameters);
+	Array get_formats() const;
+	FeedFormat get_format() const;
+
+	CameraFeedLinux(const String &p_device_name);
+	virtual ~CameraFeedLinux();
+};
+
+#endif // CAMERA_FEED_LINUX_H

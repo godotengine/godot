@@ -60,14 +60,26 @@ public:
 
 private:
 	int id; // unique id for this, for internal use in case feeds are removed
-	int base_width;
-	int base_height;
 
 protected:
+	struct FeedFormat {
+		int width = 0;
+		int height = 0;
+		String format;
+		int frame_numerator = 0;
+		int frame_denominator = 0;
+		uint32_t pixel_format = 0;
+	};
+
 	String name; // name of our camera feed
 	FeedDataType datatype; // type of texture data stored
 	FeedPosition position; // position of camera on the device
 	Transform2D transform; // display transform
+	int base_width = 0;
+	int base_height = 0;
+	Vector<FeedFormat> formats;
+	Dictionary parameters;
+	int selected_format = -1;
 
 	bool active; // only when active do we actually update the camera texture each frame
 	RID texture[CameraServer::FEED_IMAGES]; // texture images needed for this
@@ -101,6 +113,10 @@ public:
 	void set_RGB_img(const Ref<Image> &p_rgb_img);
 	void set_YCbCr_img(const Ref<Image> &p_ycbcr_img);
 	void set_YCbCr_imgs(const Ref<Image> &p_y_img, const Ref<Image> &p_cbcr_img);
+
+	virtual bool set_format(int p_index, const Dictionary &p_parameters);
+	virtual Array get_formats() const;
+	virtual FeedFormat get_format() const;
 
 	virtual bool activate_feed();
 	virtual void deactivate_feed();
