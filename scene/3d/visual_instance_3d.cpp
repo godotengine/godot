@@ -382,12 +382,11 @@ AABB GeometryInstance3D::get_custom_aabb() const {
 	return custom_aabb;
 }
 
-void GeometryInstance3D::set_lightmap_scale(LightmapScale p_scale) {
-	ERR_FAIL_INDEX(p_scale, LIGHTMAP_SCALE_MAX);
+void GeometryInstance3D::set_lightmap_scale(float p_scale) {
 	lightmap_scale = p_scale;
 }
 
-GeometryInstance3D::LightmapScale GeometryInstance3D::get_lightmap_scale() const {
+float GeometryInstance3D::get_lightmap_scale() const {
 	return lightmap_scale;
 }
 
@@ -519,7 +518,7 @@ void GeometryInstance3D::_bind_methods() {
 
 	ADD_GROUP("Global Illumination", "gi_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Static,Dynamic"), "set_gi_mode", "get_gi_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_lightmap_scale", PROPERTY_HINT_ENUM, String::utf8("1×,2×,4×,8×")), "set_lightmap_scale", "get_lightmap_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gi_lightmap_scale", PROPERTY_HINT_RANGE, "0.01,10,0.0001,or_greater"), "set_lightmap_scale", "get_lightmap_scale");
 
 	ADD_GROUP("Visibility Range", "visibility_range_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_begin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_visibility_range_begin", "get_visibility_range_begin");
@@ -536,12 +535,6 @@ void GeometryInstance3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(GI_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(GI_MODE_STATIC);
 	BIND_ENUM_CONSTANT(GI_MODE_DYNAMIC);
-
-	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_1X);
-	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_2X);
-	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_4X);
-	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_8X);
-	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_MAX);
 
 	BIND_ENUM_CONSTANT(VISIBILITY_RANGE_FADE_DISABLED);
 	BIND_ENUM_CONSTANT(VISIBILITY_RANGE_FADE_SELF);
