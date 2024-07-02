@@ -578,7 +578,7 @@ void _err_flush_stdout();
  * The current function returns.
  */
 #define ERR_FAIL()                                                                     \
-	if (true) {                                                                        \
+	if constexpr (true) {                                                              \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed."); \
 		return;                                                                        \
 	} else                                                                             \
@@ -591,7 +591,7 @@ void _err_flush_stdout();
  * Prints `m_msg`, and the current function returns.
  */
 #define ERR_FAIL_MSG(m_msg)                                                                   \
-	if (true) {                                                                               \
+	if constexpr (true) {                                                                     \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed.", m_msg); \
 		return;                                                                               \
 	} else                                                                                    \
@@ -601,7 +601,7 @@ void _err_flush_stdout();
  * Same as `ERR_FAIL_MSG` but also notifies the editor.
  */
 #define ERR_FAIL_EDMSG(m_msg)                                                                       \
-	if (true) {                                                                                     \
+	if constexpr (true) {                                                                           \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed.", m_msg, true); \
 		return;                                                                                     \
 	} else                                                                                          \
@@ -615,7 +615,7 @@ void _err_flush_stdout();
  * The current function returns `m_retval`.
  */
 #define ERR_FAIL_V(m_retval)                                                                                      \
-	if (true) {                                                                                                   \
+	if constexpr (true) {                                                                                         \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed. Returning: " _STR(m_retval)); \
 		return m_retval;                                                                                          \
 	} else                                                                                                        \
@@ -628,7 +628,7 @@ void _err_flush_stdout();
  * Prints `m_msg`, and the current function returns `m_retval`.
  */
 #define ERR_FAIL_V_MSG(m_retval, m_msg)                                                                                  \
-	if (true) {                                                                                                          \
+	if constexpr (true) {                                                                                                \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed. Returning: " _STR(m_retval), m_msg); \
 		return m_retval;                                                                                                 \
 	} else                                                                                                               \
@@ -638,7 +638,7 @@ void _err_flush_stdout();
  * Same as `ERR_FAIL_V_MSG` but also notifies the editor.
  */
 #define ERR_FAIL_V_EDMSG(m_retval, m_msg)                                                                                      \
-	if (true) {                                                                                                                \
+	if constexpr (true) {                                                                                                      \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed. Returning: " _STR(m_retval), m_msg, true); \
 		return m_retval;                                                                                                       \
 	} else                                                                                                                     \
@@ -664,7 +664,7 @@ void _err_flush_stdout();
  * Prints `m_msg` once during the application lifetime.
  */
 #define ERR_PRINT_ONCE(m_msg)                                          \
-	if (true) {                                                        \
+	if constexpr (true) {                                              \
 		static bool first_print = true;                                \
 		if (first_print) {                                             \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_msg); \
@@ -677,7 +677,7 @@ void _err_flush_stdout();
  * Same as `ERR_PRINT_ONCE` but also notifies the editor.
  */
 #define ERR_PRINT_ONCE_ED(m_msg)                                             \
-	if (true) {                                                              \
+	if constexpr (true) {                                                    \
 		static bool first_print = true;                                      \
 		if (first_print) {                                                   \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_msg, true); \
@@ -708,7 +708,7 @@ void _err_flush_stdout();
  * If warning about deprecated usage, use `WARN_DEPRECATED` or `WARN_DEPRECATED_MSG` instead.
  */
 #define WARN_PRINT_ONCE(m_msg)                                                                     \
-	if (true) {                                                                                    \
+	if constexpr (true) {                                                                          \
 		static bool first_print = true;                                                            \
 		if (first_print) {                                                                         \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_msg, false, ERR_HANDLER_WARNING); \
@@ -721,7 +721,7 @@ void _err_flush_stdout();
  * Same as `WARN_PRINT_ONCE` but also notifies the editor.
  */
 #define WARN_PRINT_ONCE_ED(m_msg)                                                                 \
-	if (true) {                                                                                   \
+	if constexpr (true) {                                                                         \
 		static bool first_print = true;                                                           \
 		if (first_print) {                                                                        \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_msg, true, ERR_HANDLER_WARNING); \
@@ -746,7 +746,7 @@ void _err_flush_stdout();
  * Warns that the current function is deprecated.
  */
 #define WARN_DEPRECATED                                                                                                                                           \
-	if (true) {                                                                                                                                                   \
+	if constexpr (true) {                                                                                                                                         \
 		static std::atomic<bool> warning_shown;                                                                                                                   \
 		if (!warning_shown.load()) {                                                                                                                              \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future.", false, ERR_HANDLER_WARNING); \
@@ -759,7 +759,7 @@ void _err_flush_stdout();
  * Warns that the current function is deprecated and prints `m_msg`.
  */
 #define WARN_DEPRECATED_MSG(m_msg)                                                                                                                                       \
-	if (true) {                                                                                                                                                          \
+	if constexpr (true) {                                                                                                                                                \
 		static std::atomic<bool> warning_shown;                                                                                                                          \
 		if (!warning_shown.load()) {                                                                                                                                     \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future.", m_msg, false, ERR_HANDLER_WARNING); \
@@ -775,7 +775,7 @@ void _err_flush_stdout();
  * The application crashes.
  */
 #define CRASH_NOW()                                                                           \
-	if (true) {                                                                               \
+	if constexpr (true) {                                                                     \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Method/function failed."); \
 		_err_flush_stdout();                                                                  \
 		GENERATE_TRAP();                                                                      \
@@ -788,7 +788,7 @@ void _err_flush_stdout();
  * Prints `m_msg`, and then the application crashes.
  */
 #define CRASH_NOW_MSG(m_msg)                                                                         \
-	if (true) {                                                                                      \
+	if constexpr (true) {                                                                            \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Method/function failed.", m_msg); \
 		_err_flush_stdout();                                                                         \
 		GENERATE_TRAP();                                                                             \
