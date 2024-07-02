@@ -121,6 +121,7 @@ public:
 
 	virtual void disable_crash_handler() override;
 	virtual bool is_disable_crash_handler() const override;
+	virtual void decode_trace(const String &p_trace) const override;
 
 	virtual Error move_to_trash(const String &p_path) override;
 
