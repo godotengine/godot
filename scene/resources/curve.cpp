@@ -55,48 +55,28 @@ void Curve::set_point_count(int p_count) {
 	notify_property_list_changed();
 }
 
+int Curve::predict_insertion_index(Vector2 &p_position) const {
+	p_position.x = CLAMP(p_position.x, MIN_X, MAX_X);
+
+	int ret = 0;
+
+	// If the target point is not at the far left, the point found by get_index is to the left of the target point.
+	if (_points.size() > 0 && p_position.x >= _points[0].position.x) {
+		ret = get_index(p_position.x) + 1;
+	}
+
+	return ret;
+}
+
 int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_tangent, TangentMode p_left_mode, TangentMode p_right_mode) {
 	// Add a point and preserve order
 
-	// Curve bounds is in 0..1
-	if (p_position.x > MAX_X) {
-		p_position.x = MAX_X;
-	} else if (p_position.x < MIN_X) {
-		p_position.x = MIN_X;
-	}
+	int ret = predict_insertion_index(p_position);
 
-	int ret = -1;
-
-	if (_points.size() == 0) {
+	if (_points.size() == ret) { // The position is at the end of the array.
 		_points.push_back(Point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode));
-		ret = 0;
-
-	} else if (_points.size() == 1) {
-		// TODO Is the `else` able to handle this block already?
-
-		real_t diff = p_position.x - _points[0].position.x;
-
-		if (diff > 0) {
-			_points.push_back(Point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode));
-			ret = 1;
-		} else {
-			_points.insert(0, Point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode));
-			ret = 0;
-		}
-
 	} else {
-		int i = get_index(p_position.x);
-
-		if (i == 0 && p_position.x < _points[0].position.x) {
-			// Insert before anything else
-			_points.insert(0, Point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode));
-			ret = 0;
-		} else {
-			// Insert between i and i+1
-			++i;
-			_points.insert(i, Point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode));
-			ret = i;
-		}
+		_points.insert(ret, Point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode));
 	}
 
 	update_auto_tangents(ret);
@@ -121,10 +101,19 @@ int Curve::add_point_no_update(Vector2 p_position, real_t p_left_tangent, real_t
 }
 
 int Curve::get_index(real_t p_offset) const {
+	ERR_FAIL_COND_V(_points.size() == 0, -1);
 	// Lower-bound float binary search
 
 	int imin = 0;
 	int imax = _points.size() - 1;
+	const int max_index = imax;
+	// Will happen if the offset is out of bounds
+	if (p_offset >= _points[imax].position.x) {
+		return imax;
+	}
+	if (p_offset < _points[imin].position.x) {
+		return imin;
+	}
 
 	while (imax - imin > 1) {
 		int m = (imin + imax) / 2;
@@ -134,19 +123,17 @@ int Curve::get_index(real_t p_offset) const {
 
 		if (a < p_offset && b < p_offset) {
 			imin = m;
-
 		} else if (a > p_offset) {
 			imax = m;
-
 		} else {
+			// For the extreme case where there are multiple consecutive points with equal x, find the last one.
+			while (m < max_index && p_offset == _points[m + 1].position.x) {
+				m++;
+			}
 			return m;
 		}
 	}
 
-	// Will happen if the offset is out of bounds
-	if (p_offset > _points[imax].position.x) {
-		return imax;
-	}
 	return imin;
 }
 
