@@ -111,6 +111,7 @@ public:
 
 	/* SSAO */
 	void ssao_set_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to);
+	RS::EnvironmentSSAOQuality ssao_get_quality() const;
 
 	struct SSAORenderBuffers {
 		bool half_size = false;

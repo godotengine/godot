@@ -969,6 +969,10 @@ void SSEffects::ssao_set_quality(RS::EnvironmentSSAOQuality p_quality, bool p_ha
 	ssao_fadeout_to = p_fadeout_to;
 }
 
+RS::EnvironmentSSAOQuality SSEffects::ssao_get_quality() const {
+	return ssao_quality;
+}
+
 void SSEffects::gather_ssao(RD::ComputeListID p_compute_list, const RID *p_ao_slices, const SSAOSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);

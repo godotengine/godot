@@ -727,6 +727,7 @@ public:
 
 	FUNC10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
 	FUNC6(environment_set_ssao_quality, EnvironmentSSAOQuality, bool, float, int, float, float)
+	FUNC0RC(EnvironmentSSAOQuality, environment_get_ssao_quality)
 
 	FUNC6(environment_set_ssil, RID, bool, float, float, float, float)
 	FUNC6(environment_set_ssil_quality, EnvironmentSSILQuality, bool, float, int, float, float)

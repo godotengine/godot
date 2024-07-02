@@ -1211,6 +1211,13 @@
 				[b]Note:[/b] The equivalent resource is [Environment].
 			</description>
 		</method>
+		<method name="environment_get_ssao_quality" qualifiers="const">
+			<return type="int" enum="RenderingServer.EnvironmentSSAOQuality" />
+			<description>
+				Returns the quality of the screen-space ambient occlusion setting, which is set globally (and not on a per-[Environment] basis). See also [method environment_set_ssao_quality].
+				[b]Note:[/b] Calling this method forces synchronization between the CPU and GPU, which is slow and can cause stuttering. Do not call this method every frame or on regular intervals to avoid performance issues.
+			</description>
+		</method>
 		<method name="environment_glow_set_use_bicubic_upscale">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
@@ -1399,7 +1406,7 @@
 			<param index="4" name="fadeout_from" type="float" />
 			<param index="5" name="fadeout_to" type="float" />
 			<description>
-				Sets the quality level of the screen-space ambient occlusion (SSAO) post-process effect. See [Environment] for more details.
+				Sets the quality level of the screen-space ambient occlusion (SSAO) post-process effect. See [Environment] for more details. See also [method environment_get_ssao_quality].
 			</description>
 		</method>
 		<method name="environment_set_ssil_quality">

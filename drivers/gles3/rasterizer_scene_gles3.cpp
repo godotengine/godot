@@ -1088,6 +1088,10 @@ void RasterizerSceneGLES3::environment_set_ssr_roughness_quality(RS::Environment
 void RasterizerSceneGLES3::environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
 }
 
+RS::EnvironmentSSAOQuality RasterizerSceneGLES3::environment_get_ssao_quality() const {
+	return ssao_quality;
+}
+
 void RasterizerSceneGLES3::environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
 }
 
