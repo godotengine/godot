@@ -27,5 +27,11 @@
 			The collision margin for the shape. This is not used in Godot Physics.
 			Collision margins allow collision detection to be more efficient by adding an extra shell around shapes. Collision algorithms are more expensive when objects overlap by more than their margin, so a higher value for margins is better for performance, at the cost of accuracy around edges as it makes them less sharp.
 		</member>
+		<member name="debug_color" type="Color" setter="set_debug_color" getter="get_debug_color" default="Color(0, 0, 0, 0)">
+			The collision shape color. If this is reset to its default value of [code]Color(0, 0, 0, 0)[/code], the value of [member ProjectSettings.debug/shapes/collision/shape_color] will be used instead.
+		</member>
+		<member name="debug_fill" type="bool" setter="set_enable_debug_fill" getter="get_enable_debug_fill" default="false">
+			Show a solid preview collision in addition to the wireframe.
+		</member>
 	</members>
 </class>

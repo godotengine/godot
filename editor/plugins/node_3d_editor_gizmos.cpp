@@ -264,14 +264,11 @@ void EditorNode3DGizmo::add_vertices(const Vector<Vector3> &p_vertices, const Re
 
 	Vector<Color> color;
 	color.resize(p_vertices.size());
+	const Color vertex_color = is_selected() ? Color(1, 1, 1, 0.8) * p_modulate : Color(1, 1, 1, 0.2) * p_modulate;
 	{
 		Color *w = color.ptrw();
 		for (int i = 0; i < p_vertices.size(); i++) {
-			if (is_selected()) {
-				w[i] = Color(1, 1, 1, 0.8) * p_modulate;
-			} else {
-				w[i] = Color(1, 1, 1, 0.2) * p_modulate;
-			}
+			w[i] = vertex_color;
 		}
 	}
 

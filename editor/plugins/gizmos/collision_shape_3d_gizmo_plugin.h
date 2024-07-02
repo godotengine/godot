@@ -38,6 +38,8 @@ class Gizmo3DHelper;
 class CollisionShape3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(CollisionShape3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
+	void create_collision_material(const String &p_name, const float p_alpha);
+
 	Ref<Gizmo3DHelper> helper;
 
 public:
