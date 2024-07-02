@@ -41,6 +41,7 @@
 #include "core/os/time.h"
 #include "core/version.h"
 #include "editor/editor_about.h"
+#include "editor/editor_property_name_processor.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/engine_update_label.h"
@@ -1041,6 +1042,8 @@ void ProjectManager::_titlebar_resized() {
 ProjectManager::ProjectManager() {
 	singleton = this;
 
+	EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
+	add_child(epnp);
 	// Turn off some servers we aren't going to be using in the Project Manager.
 	NavigationServer3D::get_singleton()->set_active(false);
 	PhysicsServer3D::get_singleton()->set_active(false);
