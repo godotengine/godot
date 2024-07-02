@@ -24,6 +24,14 @@ layout(location = 11) in vec4 weight_attrib;
 
 #include "canvas_uniforms_inc.glsl"
 
+#ifdef USE_BATCHING
+#ifndef USE_ATTRIBUTES
+
+layout(location = 4) out flat uint instance_index_interp;
+
+#endif // USE_ATTRIBUTES
+#endif // USE_BATCHING
+
 layout(location = 0) out vec2 uv_interp;
 layout(location = 1) out vec4 color_interp;
 layout(location = 2) out vec2 vertex_interp;
@@ -58,6 +66,16 @@ void main() {
 #if defined(CUSTOM1_USED)
 	vec4 custom1 = vec4(0.0);
 #endif
+
+#ifdef USE_BATCHING
+#ifdef USE_ATTRIBUTES
+	uint instance_index = params.base_instance_index;
+#else
+	uint instance_index = gl_InstanceIndex + params.base_instance_index;
+	instance_index_interp = instance_index;
+#endif // USE_ATTRIBUTES
+	const InstanceData draw_data = instances.data[instance_index];
+#endif // USE_BATCHING
 
 #ifdef USE_PRIMITIVE
 
@@ -241,6 +259,12 @@ void main() {
 
 #include "canvas_uniforms_inc.glsl"
 
+#ifdef USE_BATCHING
+#ifndef USE_ATTRIBUTES
+layout(location = 4) in flat uint instance_index;
+#endif // USE_ATTRIBUTES
+#endif // USE_BATCHING
+
 layout(location = 0) in vec2 uv_interp;
 layout(location = 1) in vec4 color_interp;
 layout(location = 2) in vec2 vertex_interp;
@@ -320,6 +344,14 @@ vec4 light_compute(
 #ifdef USE_NINEPATCH
 
 float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, float margin_begin, float margin_end, int np_repeat, inout int draw_center) {
+#ifdef USE_BATCHING
+#ifdef USE_ATTRIBUTES
+	const InstanceData draw_data = instances.data[params.base_instance_index];
+#else
+	const InstanceData draw_data = instances.data[instance_index];
+#endif // USE_ATTRIBUTES
+#endif // USE_BATCHING
+
 	float tex_size = 1.0 / tex_pixel_size;
 
 	if (pixel < margin_begin) {
@@ -461,6 +493,14 @@ void main() {
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
 	vec2 vertex = vertex_interp;
+
+#ifdef USE_BATCHING
+#ifdef USE_ATTRIBUTES
+	const InstanceData draw_data = instances.data[params.base_instance_index];
+#else
+	const InstanceData draw_data = instances.data[instance_index];
+#endif // USE_ATTRIBUTES
+#endif // USE_BATCHING
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 
