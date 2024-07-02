@@ -1882,10 +1882,12 @@ void RichTextLabel::_notification(int p_what) {
 			visible_paragraph_count = 0;
 			visible_line_count = 0;
 
+			//bottom margin for text clipping
+			float v_limit = theme_cache.normal_style->get_margin(SIDE_BOTTOM);
 			// New cache draw.
 			Point2 ofs = text_rect.get_position() + Vector2(0, main->lines[from_line].offset.y - vofs);
 			int processed_glyphs = 0;
-			while (ofs.y < size.height && from_line < to_line) {
+			while (ofs.y < size.height - vLimit && from_line < to_line) {
 				MutexLock lock(main->lines[from_line].text_buf->get_mutex());
 
 				visible_paragraph_count++;
