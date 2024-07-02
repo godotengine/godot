@@ -42,7 +42,11 @@ Transform3D RenderSceneDataRD::get_cam_transform() const {
 }
 
 Projection RenderSceneDataRD::get_cam_projection() const {
-	return cam_projection;
+	Projection correction;
+	correction.set_depth_correction(flip_y);
+	correction.add_jitter_offset(taa_jitter);
+
+	return correction * cam_projection;
 }
 
 uint32_t RenderSceneDataRD::get_view_count() const {
@@ -58,14 +62,18 @@ Vector3 RenderSceneDataRD::get_view_eye_offset(uint32_t p_view) const {
 Projection RenderSceneDataRD::get_view_projection(uint32_t p_view) const {
 	ERR_FAIL_UNSIGNED_INDEX_V(p_view, view_count, Projection());
 
-	return view_projection[p_view];
+	Projection correction;
+	correction.set_depth_correction(flip_y);
+	correction.add_jitter_offset(taa_jitter);
+
+	return correction * view_projection[p_view];
 }
 
 RID RenderSceneDataRD::create_uniform_buffer() {
 	return RD::get_singleton()->uniform_buffer_create(sizeof(UBODATA));
 }
 
-void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_flip_y, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers, bool p_apply_alpha_multiplier) {
+void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers, bool p_apply_alpha_multiplier) {
 	RendererSceneRenderRD *render_scene_render = RendererSceneRenderRD::get_singleton();
 
 	UBODATA ubo_data;
@@ -76,7 +84,7 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 	UBO &prev_ubo = ubo_data.prev_ubo;
 
 	Projection correction;
-	correction.set_depth_correction(p_flip_y);
+	correction.set_depth_correction(flip_y);
 	correction.add_jitter_offset(taa_jitter);
 	Projection projection = correction * cam_projection;
 
