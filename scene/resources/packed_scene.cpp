@@ -501,6 +501,9 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					if (node->data.unique_name_in_owner) {
 						node->_acquire_unique_name_in_owner();
 					}
+					if (node->data.exposed_in_owner) {
+						node->_acquire_exposed_in_owner();
+					}
 				}
 			}
 

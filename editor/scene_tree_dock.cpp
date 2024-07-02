@@ -1454,7 +1454,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					}
 
 					StringName name = node->get_name();
-					if (new_unique_names.has(name) || get_tree()->get_edited_scene_root()->get_node_or_null(UNIQUE_NODE_PREFIX + String(name)) != nullptr) {
+					Node *uniqueNode = get_tree()->get_edited_scene_root()->get_node_or_null(UNIQUE_NODE_PREFIX + String(name));
+					if (new_unique_names.has(name) || (uniqueNode != nullptr && uniqueNode != this && uniqueNode->is_exposed_in_owner())) {
 						cant_be_set_unique_names.push_back(name);
 					} else {
 						new_exposed_nodes.push_back(node);
@@ -1464,6 +1465,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				if (new_exposed_nodes.size()) {
 					undo_redo->create_action("Enable Exposed Node(s)");
 					for (Node *node : new_exposed_nodes) {
+						if (!node->is_unique_name_in_owner()) {
+							undo_redo->add_undo_method(node, "set_unique_name_in_owner", false);
+						}
 						undo_redo->add_do_method(node, "set_exposed_in_owner", true);
 						undo_redo->add_undo_method(node, "set_exposed_in_owner", false);
 					}

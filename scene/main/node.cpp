@@ -1887,18 +1887,10 @@ bool Node::is_child_of_exposed_node(const Node *p_owner) const {
 TypedArray<Node> Node::get_exposed_nodes(bool p_recursive) const {
 	ERR_THREAD_GUARD_V(TypedArray<Node>())
 	TypedArray<Node> ret;
-	_update_children_cache();
-	Node *const *cptr = data.children_cache.ptr();
-	int ccount = data.children_cache.size();
-	for (int i = 0; i < ccount; i++) {
-		if (!cptr[i]->get_scene_file_path().is_empty()) {
-			continue;
-		}
-		if (cptr[i]->is_exposed_in_owner()) {
-			ret.append(cptr[i]);
-		}
+	for (Node *node : data.owned_exposed_nodes) {
+		ret.append(node);
 		if (p_recursive) {
-			ret.append_array(cptr[i]->get_exposed_nodes(true));
+			ret.append_array(node->get_exposed_nodes(true));
 		}
 	}
 
@@ -2076,6 +2068,20 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 	owner_changed_notify();
 }
 
+void Node::_release_exposed_in_owner() {
+	data.owner->data.owned_exposed_nodes.erase(this);
+}
+
+void Node::_acquire_exposed_in_owner() {
+	ERR_FAIL_NULL(data.owner); // Safety check.
+	if (data.owner->data.owned_exposed_nodes.has(this)) {
+		WARN_PRINT(vformat("Setting node name '%s' to be exposed within scene for '%s', but it's already claimed",
+				get_name(), is_inside_tree() ? get_path() : data.owner->get_path_to(this)));
+		return;
+	}
+	data.owner->data.owned_exposed_nodes.insert(this);
+}
+
 void Node::_release_unique_name_in_owner() {
 	ERR_FAIL_NULL(data.owner); // Safety check.
 	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
@@ -2137,10 +2143,17 @@ void Node::set_exposed_in_owner(bool p_enabled) {
 	if (data.exposed_in_owner == p_enabled) {
 		return;
 	}
+	if (data.exposed_in_owner && data.owner != nullptr) {
+		_release_exposed_in_owner();
+	}
 	data.exposed_in_owner = p_enabled;
 	if (p_enabled) {
 		set_unique_name_in_owner(p_enabled);
 	}
+	if (data.exposed_in_owner && data.owner != nullptr) {
+		_acquire_exposed_in_owner();
+	}
+	update_configuration_warnings();
 }
 
 bool Node::is_exposed_in_owner() const {
@@ -2189,6 +2202,9 @@ void Node::_clean_up_owner() {
 
 	if (data.unique_name_in_owner) {
 		_release_unique_name_in_owner();
+		if (data.exposed_in_owner) {
+			_release_exposed_in_owner();
+		}
 	}
 	data.owner->data.owned.erase(data.OW);
 	data.owner = nullptr;

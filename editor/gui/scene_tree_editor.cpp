@@ -178,6 +178,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->add_do_method(n, "set_unique_name_in_owner", false);
 		undo_redo->add_undo_method(n, "set_unique_name_in_owner", true);
 		if (n->is_exposed_in_owner()) {
+			undo_redo->add_do_method(n, "set_exposed_in_owner", false);
 			undo_redo->add_undo_method(n, "set_exposed_in_owner", true);
 		}
 		undo_redo->add_do_method(this, "_update_tree");

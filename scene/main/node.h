@@ -169,6 +169,7 @@ private:
 		mutable bool children_cache_dirty = true;
 		mutable LocalVector<Node *> children_cache;
 		HashMap<StringName, Node *> owned_unique_nodes;
+		HashSet<Node *> owned_exposed_nodes;
 		bool unique_name_in_owner = false;
 		bool exposed_in_owner = false;
 		InternalMode internal_mode = INTERNAL_MODE_DISABLED;
@@ -285,6 +286,8 @@ private:
 	_FORCE_INLINE_ bool _can_process(bool p_paused) const;
 	_FORCE_INLINE_ bool _is_enabled() const;
 
+	void _release_exposed_in_owner();
+	void _acquire_exposed_in_owner();
 	void _release_unique_name_in_owner();
 	void _acquire_unique_name_in_owner();
 

@@ -287,16 +287,6 @@
 				[b]Note:[/b] To find a single descendant node matching a pattern, see [method find_child].
 			</description>
 		</method>
-		<method name="find_exposed_nodes" qualifiers="const">
-			<return type="Node[]" />
-			<param index="0" name="recursive" type="bool" default="true" />
-			<description>
-				Finds descendants of this node whose exposed flag is enabled, Internal children are also searched over (see [code]internal[/code] parameter in [method add_child]).
-				If [param recursive] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [param recursive] is [code]false[/code], only this node's direct children are checked.
-				Returns an empty array if no matching nodes are found.
-				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get references to other nodes. Whenever possible, consider caching the node references into variables.
-			</description>
-		</method>
 		<method name="find_parent" qualifiers="const">
 			<return type="Node" />
 			<param index="0" name="pattern" type="String" />
