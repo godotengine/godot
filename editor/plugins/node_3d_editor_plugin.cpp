@@ -2435,10 +2435,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 void Node3DEditorViewport::_nav_pan(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative) {
 	const NavigationScheme nav_scheme = (NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
+	float sensitivity = EDITOR_GET("editors/3d/navigation/pan_sensitivity").operator float();
 
-	real_t pan_speed = 1 / 150.0;
+	real_t pan_speed = sensitivity / 35;
 	if (p_event.is_valid() && nav_scheme == NAVIGATION_MAYA && p_event->is_shift_pressed()) {
-		pan_speed *= 10;
+		pan_speed *= 10.0;
 	}
 
 	Transform3D camera_transform;
@@ -2459,10 +2460,11 @@ void Node3DEditorViewport::_nav_pan(Ref<InputEventWithModifiers> p_event, const 
 
 void Node3DEditorViewport::_nav_zoom(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative) {
 	const NavigationScheme nav_scheme = (NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
+	float sensitivity = EDITOR_GET("editors/3d/navigation/zoom_sensitivity").operator float();
 
-	real_t zoom_speed = 1 / 80.0;
+	real_t zoom_speed = sensitivity / 20.0;
 	if (p_event.is_valid() && nav_scheme == NAVIGATION_MAYA && p_event->is_shift_pressed()) {
-		zoom_speed *= 10;
+		zoom_speed *= 10.0;
 	}
 
 	NavigationZoomStyle zoom_style = (NavigationZoomStyle)EDITOR_GET("editors/3d/navigation/zoom_style").operator int();
