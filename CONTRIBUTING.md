@@ -33,6 +33,33 @@ If you run into a bug which wasn't present in an earlier Godot version (what we
 call a _regression_), please mention it and clarify which versions you tested
 (both the one(s) working and the one(s) exhibiting the bug).
 
+### Sharing system information
+
+In the bug report, it's important to share your system information, specifically
+the OS version, and when relevant hardware information.
+
+**Bug reports not including the required information may be closed at the 
+maintainers' discretion.** If in doubt, always include all the requested 
+information; it's better to include too much information than not enough 
+information.
+
+Since Godot 4.1, you just have to copy and paste system information by clicking 
+on *Help > Copy System Info* at the top of the editor window.
+
+<details>
+  <summary>For Godot 4.0 and prior</summary>
+
+  Prior to Godot 4.1, the *Help > Copy System Info* button doesn't exist. So you
+  must manually collect and share the following with us:
+
+  - your Godot version
+  - your OS (e.g. Windows 11, macOS Sonoma, Ubuntu 23.10)
+    - if you're using Linux, please specify if you're using X11 or Wayland
+  - the rendering backend you're using (GLES2, GLES3, Vulkan)
+  - the GPU model, driver version
+  - the CPU model and architecture
+</details>
+
 ## Proposing features or improvements
 
 **The main issue tracker is for bug reports and does not accept feature proposals.**
@@ -200,9 +227,9 @@ or a bug you want to fix), the following channels can be used:
   for an overview of public channels focusing on various engine areas which you
   might be interested in.
 - [Bug tracker](https://github.com/godotengine/godot/issues): If there is an
-  existing issue about a topic you want to discuss, you can participate directly.
-  If not, you can open a new issue. Please mind the guidelines outlined above
-  for bug reporting.
+  existing issue about a topic you want to discuss, you can participate 
+	directly. If not, you can open a new issue. Please mind the guidelines 
+	outlined above for bug reporting.
 - [Feature proposals](https://github.com/godotengine/godot-proposals/issues):
   To propose a new feature, we have a dedicated issue tracker for that. Don't
   hesitate to start by talking about your idea on the Godot Contributors Chat
