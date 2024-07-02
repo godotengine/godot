@@ -127,6 +127,9 @@ public:
 	void set_time_scale(double p_scale);
 	double get_time_scale() const;
 
+	void set_print_to_stdout(bool p_enabled);
+	bool is_printing_to_stdout() const;
+
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
 	void print_header(const String &p_string) const;
