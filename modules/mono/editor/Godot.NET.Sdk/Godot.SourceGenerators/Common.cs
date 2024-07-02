@@ -186,5 +186,75 @@ namespace Godot.SourceGenerators
                 isEnabledByDefault: true,
                 "The class must not be generic. Make the class non-generic, or remove the '[GlobalClass]' attribute.",
                 helpLinkUri: string.Format(_helpLinkFormat, "GD0402"));
+
+        public static readonly DiagnosticDescriptor GetNodeMemberIsStaticRule =
+            new DiagnosticDescriptor(id: "GD0501",
+                title: "The GetNode member is static",
+                messageFormat: "The GetNode member '{0}' is static",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "The GetNode member is static. Only instance fields and properties can be GetNode. Remove the 'static' modifier, or the '[GetNode]' attribute.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0501"));
+
+        public static readonly DiagnosticDescriptor GetNodeMemberIsReadOnlyRule =
+            new DiagnosticDescriptor(id: "GD0502",
+                title: "The GetNode member is read-only",
+                messageFormat: "The GetNode member '{0}' is read-only",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "The GetNode member is read-only. GetNode member must be writable.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0501"));
+
+        public static readonly DiagnosticDescriptor GetNodeMemberIsIndexerRule =
+            new DiagnosticDescriptor(id: "GD0503",
+                title: "The GetNode property is an indexer",
+                messageFormat: "The GetNode property '{0}' is an indexer",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "The GetNode property is an indexer. Remove the '[GetNode]' attribute.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0503"));
+
+        public static readonly DiagnosticDescriptor GetNodeMemberIsExplicitInterfaceImplementationRule =
+            new DiagnosticDescriptor(id: "GD0504",
+                title: "The GetNode property is an explicit interface implementation",
+                messageFormat: "The GetNode property '{0}' is an explicit interface implementation",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "The GetNode property is an explicit interface implementation. Remove the '[GetNode]' attribute.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0504"));
+
+        public static readonly DiagnosticDescriptor GetNodeAttributePathIsEmpty =
+            new DiagnosticDescriptor(id: "GD0505",
+                title: "The GetNode attribute path is empty",
+                messageFormat: "The GetNode attribute path for member '{0}' is empty",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "The GetNode attribute path is empty. Set the 'Path' parameter in the '[GetNode]' attribute.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0505"));
+
+        public static readonly DiagnosticDescriptor OnlyNodesShouldHaveGetNodeRule =
+            new DiagnosticDescriptor(id: "GD0506",
+                title: "Types not derived from Node should not have GetNode members",
+                messageFormat: "Types not derived from Node should not have GetNode members",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "Types not derived from Node should not have GetNode members. GetNode is only supported in Node-derived classes.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0506"));
+
+        public static readonly DiagnosticDescriptor GetNodeMemberShouldBeNodes =
+            new DiagnosticDescriptor(id: "GD0507",
+                title: "The GetNode member type should derived from Node",
+                messageFormat: "The GetNode member type for member '{0}' should derived from Node",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "The GetNode member type should derived from Node. Remove the '[GetNode]' attribute or use a member type deriving from Node.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0507"));
     }
 }
