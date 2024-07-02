@@ -36,12 +36,15 @@
 #include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
+#include "servers/navigation_server_3d.h"
 
 void NavigationMeshEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -64,14 +67,14 @@ void NavigationMeshEditor::_bake_pressed() {
 	button_bake->set_pressed(false);
 
 	ERR_FAIL_NULL(node);
-	Ref<NavigationMesh> navmesh = node->get_navigation_mesh();
-	if (!navmesh.is_valid()) {
+	Ref<NavigationMesh> navigation_mesh = node->get_navigation_mesh();
+	if (!navigation_mesh.is_valid()) {
 		err_dialog->set_text(TTR("A NavigationMesh resource must be set or created for this node to work."));
 		err_dialog->popup_centered();
 		return;
 	}
 
-	String path = navmesh->get_path();
+	String path = navigation_mesh->get_path();
 	if (!path.is_resource_file()) {
 		int srpos = path.find("::");
 		if (srpos != -1) {
@@ -98,7 +101,46 @@ void NavigationMeshEditor::_bake_pressed() {
 		}
 	}
 
-	node->bake_navigation_mesh(true);
+	Vector<Vector3> undo_vertices = navigation_mesh->get_vertices();
+	Vector<Vector<int>> undo_polygon_indices;
+	int undo_polygon_count = navigation_mesh->get_polygon_count();
+	undo_polygon_indices.resize(undo_polygon_count);
+	for (int i = 0; i < undo_polygon_count; i++) {
+		undo_polygon_indices.write[i] = navigation_mesh->get_polygon(i);
+	}
+
+	Ref<NavigationMeshSourceGeometryData3D> source_geometry_data;
+	source_geometry_data.instantiate();
+
+	NavigationServer3D::get_singleton()->parse_source_geometry_data(navigation_mesh, source_geometry_data, node);
+	NavigationServer3D::get_singleton()->bake_from_source_geometry_data(navigation_mesh, source_geometry_data);
+
+	Vector<Vector3> redo_vertices = navigation_mesh->get_vertices();
+	Vector<Vector<int>> redo_polygon_indices;
+	int redo_polygon_count = navigation_mesh->get_polygon_count();
+	redo_polygon_indices.resize(redo_polygon_count);
+	for (int i = 0; i < redo_polygon_count; i++) {
+		redo_polygon_indices.write[i] = navigation_mesh->get_polygon(i);
+	}
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Bake NavigationMesh"));
+
+	ur->add_do_method(navigation_mesh.ptr(), "set_vertices", redo_vertices);
+	ur->add_do_method(navigation_mesh.ptr(), "clear_polygons");
+	for (int i = 0; i < redo_polygon_count; i++) {
+		ur->add_do_method(navigation_mesh.ptr(), "add_polygon", redo_polygon_indices[i]);
+	}
+	ur->add_do_method(node, "set_navigation_mesh", navigation_mesh);
+
+	ur->add_undo_method(navigation_mesh.ptr(), "set_vertices", undo_vertices);
+	ur->add_undo_method(navigation_mesh.ptr(), "clear_polygons");
+	for (int i = 0; i < undo_polygon_count; i++) {
+		ur->add_undo_method(navigation_mesh.ptr(), "add_polygon", undo_polygon_indices[i]);
+	}
+	ur->add_undo_method(node, "set_navigation_mesh", navigation_mesh);
+
+	ur->commit_action();
 
 	node->update_gizmos();
 }
