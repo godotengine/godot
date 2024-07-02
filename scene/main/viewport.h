@@ -488,6 +488,7 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:
+	void force_can_drop_data_check();
 	void canvas_parent_mark_dirty(Node *p_node);
 	void canvas_item_top_level_changed();
 

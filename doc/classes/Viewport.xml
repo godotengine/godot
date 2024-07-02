@@ -33,6 +33,12 @@
 				Returns the first valid [World3D] for this viewport, searching the [member world_3d] property of itself and any Viewport ancestor.
 			</description>
 		</method>
+		<method name="force_can_drop_data_check">
+			<return type="void" />
+			<description>
+				Forces [method Control._can_drop_data] to be called again. Useful to update the cursor without moving it.
+			</description>
+		</method>
 		<method name="get_camera_2d" qualifiers="const">
 			<return type="Camera2D" />
 			<description>
