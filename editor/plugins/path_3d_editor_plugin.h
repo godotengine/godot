@@ -138,7 +138,6 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Path3D *path = nullptr;
 
 	void _update_theme();
-
 	void _mode_changed(int p_mode);
 	void _close_curve();
 	void _handle_option_pressed(int p_option);
