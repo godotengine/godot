@@ -1884,10 +1884,6 @@ bool Node::is_child_of_exposed_node(const Node *p_owner) const {
 	return false;
 }
 
-bool Node::contains_exposed_nodes() const {
-	return !get_exposed_nodes().is_empty();
-}
-
 TypedArray<Node> Node::get_exposed_nodes(bool p_recursive) const {
 	ERR_THREAD_GUARD_V(TypedArray<Node>())
 	TypedArray<Node> ret;
@@ -2111,11 +2107,13 @@ void Node::_acquire_unique_name_in_owner() {
 
 void Node::set_unique_name_in_owner(bool p_enabled) {
 	ERR_MAIN_THREAD_GUARD
-	if (!p_enabled && data.exposed_in_owner) {
-		set_exposed_in_owner(false);
-	}
+
 	if (data.unique_name_in_owner == p_enabled) {
 		return;
+	}
+
+	if (!p_enabled && data.exposed_in_owner) {
+		set_exposed_in_owner(false);
 	}
 
 	if (data.unique_name_in_owner && data.owner != nullptr) {
@@ -2143,8 +2141,6 @@ void Node::set_exposed_in_owner(bool p_enabled) {
 	if (p_enabled) {
 		set_unique_name_in_owner(p_enabled);
 	}
-
-	update_configuration_warnings();
 }
 
 bool Node::is_exposed_in_owner() const {
@@ -3590,7 +3586,6 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
 	ClassDB::bind_method(D_METHOD("find_child", "pattern", "recursive", "owned"), &Node::find_child, DEFVAL(true), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("find_children", "pattern", "type", "recursive", "owned"), &Node::find_children, DEFVAL(""), DEFVAL(true), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("find_exposed_nodes", "recursive"), &Node::get_exposed_nodes, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("find_parent", "pattern"), &Node::find_parent);
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
