@@ -2759,6 +2759,9 @@
 		<constant name="ERR_PRINTER_ON_FIRE" value="48" enum="Error">
 			Printer on fire error (This is an easter egg, no built-in methods return this error code).
 		</constant>
+		<constant name="ERR_PARSE_ERROR_INVALID_SURROGATE" value="49" enum="Error">
+			String parsing error, invalid surrogate (any surrogate in UTF-8/UTF-32 data or unpaired surrogate in UTF-16 data).
+		</constant>
 		<constant name="PROPERTY_HINT_NONE" value="0" enum="PropertyHint">
 			The property has no hint for the editor.
 		</constant>

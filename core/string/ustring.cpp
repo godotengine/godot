@@ -1996,12 +1996,10 @@ String String::utf8(const char *p_utf8, int p_len) {
 	return ret;
 }
 
-Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
+Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr, bool p_keep_unpaired) {
 	if (!p_utf8) {
 		return ERR_INVALID_DATA;
 	}
-
-	String aux;
 
 	int cstr_size = 0;
 	int str_size = 0;
@@ -2020,6 +2018,7 @@ Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 
 	bool decode_error = false;
 	bool decode_failed = false;
+	bool decode_surrogate_error = false;
 	{
 		const char *ptrtmp = p_utf8;
 		const char *ptrtmp_limit = p_len >= 0 ? &p_utf8[p_len] : nullptr;
@@ -2148,12 +2147,16 @@ Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 						unichar = _replacement_char;
 					} else if ((unichar & 0xfffff800) == 0xd800) {
 						print_unicode_error(vformat("Unpaired surrogate (%x)", unichar), true);
-						decode_failed = true;
-						unichar = _replacement_char;
+						decode_surrogate_error = true;
+						if (!p_keep_unpaired) {
+							unichar = _replacement_char;
+						}
 					} else if (unichar > 0x10ffff) {
 						print_unicode_error(vformat("Invalid unicode codepoint (%x)", unichar), true);
-						decode_failed = true;
-						unichar = _replacement_char;
+						decode_surrogate_error = true;
+						if (!p_keep_unpaired) {
+							unichar = _replacement_char;
+						}
 					}
 					*(dst++) = unichar;
 				}
@@ -2164,16 +2167,117 @@ Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 		p_utf8++;
 	}
 	if (skip) {
-		*(dst++) = 0x20;
+		*(dst++) = _replacement_char;
 	}
 
 	if (decode_failed) {
 		return ERR_INVALID_DATA;
 	} else if (decode_error) {
 		return ERR_PARSE_ERROR;
+	} else if (decode_surrogate_error) {
+		return ERR_PARSE_ERROR_INVALID_SURROGATE;
 	} else {
 		return OK;
 	}
+}
+
+Error String::validate_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
+	if (!p_utf8) {
+		return ERR_INVALID_DATA;
+	}
+
+	/* HANDLE BOM (Byte Order Mark) */
+	if (p_len < 0 || p_len >= 3) {
+		bool has_bom = uint8_t(p_utf8[0]) == 0xef && uint8_t(p_utf8[1]) == 0xbb && uint8_t(p_utf8[2]) == 0xbf;
+		if (has_bom) {
+			//8-bit encoding, byte order has no meaning in UTF-8, just skip it
+			if (p_len >= 0) {
+				p_len -= 3;
+			}
+			p_utf8 += 3;
+		}
+	}
+
+	bool decode_surrogate_error = false;
+	{
+		const char *ptrtmp = p_utf8;
+		const char *ptrtmp_limit = p_len >= 0 ? &p_utf8[p_len] : nullptr;
+		int skip = 0;
+		uint32_t unichar = 0;
+		uint8_t c_start = 0;
+		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
+#if CHAR_MIN == 0
+			uint8_t c = *ptrtmp;
+#else
+			uint8_t c = *ptrtmp >= 0 ? *ptrtmp : uint8_t(256 + *ptrtmp);
+#endif
+
+			if (skip == 0) {
+				if (p_skip_cr && c == '\r') {
+					ptrtmp++;
+					continue;
+				}
+				/* Determine the number of characters in sequence */
+				if ((c & 0x80) == 0) {
+					unichar = 0;
+					skip = 0;
+				} else if ((c & 0xe0) == 0xc0) {
+					unichar = (0xff >> 3) & c;
+					skip = 1;
+				} else if ((c & 0xf0) == 0xe0) {
+					unichar = (0xff >> 4) & c;
+					skip = 2;
+				} else if ((c & 0xf8) == 0xf0) {
+					unichar = (0xff >> 5) & c;
+					skip = 3;
+				} else if ((c & 0xfc) == 0xf8) {
+					unichar = (0xff >> 6) & c;
+					skip = 4;
+				} else if ((c & 0xfe) == 0xfc) {
+					unichar = (0xff >> 7) & c;
+					skip = 5;
+				} else {
+					return ERR_INVALID_DATA;
+				}
+				c_start = c;
+
+				if (skip == 1 && (c & 0x1e) == 0) {
+					return ERR_PARSE_ERROR;
+				}
+			} else {
+				if ((c_start == 0xe0 && skip == 2 && c < 0xa0) || (c_start == 0xf0 && skip == 3 && c < 0x90) || (c_start == 0xf8 && skip == 4 && c < 0x88) || (c_start == 0xfc && skip == 5 && c < 0x84)) {
+					return ERR_PARSE_ERROR;
+				}
+				if (c < 0x80 || c > 0xbf) {
+					return ERR_INVALID_DATA;
+				} else {
+					unichar = (unichar << 6) | (c & 0x3f);
+					--skip;
+					if (skip == 0) {
+						if (unichar == 0) {
+							return ERR_INVALID_DATA;
+						} else if ((unichar & 0xfffff800) == 0xd800) {
+							decode_surrogate_error = true;
+						} else if (unichar > 0x10ffff) {
+							decode_surrogate_error = true;
+						}
+					}
+				}
+			}
+
+			ptrtmp++;
+		}
+
+		if (skip) {
+			return ERR_INVALID_DATA;
+		}
+	}
+
+	if (decode_surrogate_error) {
+		return ERR_PARSE_ERROR_INVALID_SURROGATE;
+	}
+
+	return OK;
 }
 
 CharString String::utf8() const {
@@ -2267,12 +2371,10 @@ String String::utf16(const char16_t *p_utf16, int p_len) {
 	return ret;
 }
 
-Error String::parse_utf16(const char16_t *p_utf16, int p_len, bool p_default_little_endian) {
+Error String::parse_utf16(const char16_t *p_utf16, int p_len, bool p_default_little_endian, bool p_keep_unpaired) {
 	if (!p_utf16) {
 		return ERR_INVALID_DATA;
 	}
-
-	String aux;
 
 	int cstr_size = 0;
 	int str_size = 0;
@@ -2301,6 +2403,7 @@ Error String::parse_utf16(const char16_t *p_utf16, int p_len, bool p_default_lit
 	}
 
 	bool decode_error = false;
+	bool decode_surrogate_error = false;
 	{
 		const char16_t *ptrtmp = p_utf16;
 		const char16_t *ptrtmp_limit = p_len >= 0 ? &p_utf16[p_len] : nullptr;
@@ -2312,7 +2415,7 @@ Error String::parse_utf16(const char16_t *p_utf16, int p_len, bool p_default_lit
 			if ((c & 0xfffffc00) == 0xd800) { // lead surrogate
 				if (skip) {
 					print_unicode_error(vformat("Unpaired lead surrogate (%x [trail?] %x)", c_prev, c));
-					decode_error = true;
+					decode_surrogate_error = true;
 				}
 				skip = true;
 			} else if ((c & 0xfffffc00) == 0xdc00) { // trail surrogate
@@ -2320,7 +2423,7 @@ Error String::parse_utf16(const char16_t *p_utf16, int p_len, bool p_default_lit
 					str_size--;
 				} else {
 					print_unicode_error(vformat("Unpaired trail surrogate (%x [lead?] %x)", c_prev, c));
-					decode_error = true;
+					decode_surrogate_error = true;
 				}
 				skip = false;
 			} else {
@@ -2355,14 +2458,22 @@ Error String::parse_utf16(const char16_t *p_utf16, int p_len, bool p_default_lit
 
 		if ((c & 0xfffffc00) == 0xd800) { // lead surrogate
 			if (skip) {
-				*(dst++) = c_prev; // unpaired, store as is
+				if (p_keep_unpaired) {
+					*(dst++) = c_prev; // unpaired, store as is
+				} else {
+					*(dst++) = _replacement_char;
+				}
 			}
 			skip = true;
 		} else if ((c & 0xfffffc00) == 0xdc00) { // trail surrogate
 			if (skip) {
 				*(dst++) = (c_prev << 10UL) + c - ((0xd800 << 10UL) + 0xdc00 - 0x10000); // decode pair
 			} else {
-				*(dst++) = c; // unpaired, store as is
+				if (p_keep_unpaired) {
+					*(dst++) = c; // unpaired, store as is
+				} else {
+					*(dst++) = _replacement_char;
+				}
 			}
 			skip = false;
 		} else {
@@ -2376,14 +2487,85 @@ Error String::parse_utf16(const char16_t *p_utf16, int p_len, bool p_default_lit
 	}
 
 	if (skip) {
-		*(dst++) = c_prev;
+		if (p_keep_unpaired) {
+			*(dst++) = c_prev;
+		} else {
+			*(dst++) = _replacement_char;
+		}
 	}
 
 	if (decode_error) {
 		return ERR_PARSE_ERROR;
+	} else if (decode_surrogate_error) {
+		return ERR_PARSE_ERROR_INVALID_SURROGATE;
 	} else {
 		return OK;
 	}
+}
+
+Error String::validate_utf16(const char16_t *p_utf16, int p_len, bool p_default_little_endian) {
+	if (!p_utf16) {
+		return ERR_INVALID_DATA;
+	}
+
+#ifdef BIG_ENDIAN_ENABLED
+	bool byteswap = p_default_little_endian;
+#else
+	bool byteswap = !p_default_little_endian;
+#endif
+	/* HANDLE BOM (Byte Order Mark) */
+	if (p_len < 0 || p_len >= 1) {
+		bool has_bom = false;
+		if (uint16_t(p_utf16[0]) == 0xfeff) { // correct BOM, read as is
+			has_bom = true;
+			byteswap = false;
+		} else if (uint16_t(p_utf16[0]) == 0xfffe) { // backwards BOM, swap bytes
+			has_bom = true;
+			byteswap = true;
+		}
+		if (has_bom) {
+			if (p_len >= 0) {
+				p_len -= 1;
+			}
+			p_utf16 += 1;
+		}
+	}
+
+	bool decode_surrogate_error = false;
+	{
+		const char16_t *ptrtmp = p_utf16;
+		const char16_t *ptrtmp_limit = p_len >= 0 ? &p_utf16[p_len] : nullptr;
+		bool skip = false;
+		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
+			uint32_t c = (byteswap) ? BSWAP16(*ptrtmp) : *ptrtmp;
+
+			if ((c & 0xfffffc00) == 0xd800) { // lead surrogate
+				if (skip) {
+					decode_surrogate_error = true;
+				}
+				skip = true;
+			} else if ((c & 0xfffffc00) == 0xdc00) { // trail surrogate
+				if (!skip) {
+					decode_surrogate_error = true;
+				}
+				skip = false;
+			} else {
+				skip = false;
+			}
+
+			ptrtmp++;
+		}
+
+		if (skip) {
+			return ERR_PARSE_ERROR;
+		}
+	}
+
+	if (decode_surrogate_error) {
+		return ERR_PARSE_ERROR_INVALID_SURROGATE;
+	}
+
+	return OK;
 }
 
 Char16String String::utf16() const {
@@ -2437,6 +2619,85 @@ Char16String String::utf16() const {
 	*cdst = 0; //trailing zero
 
 	return utf16s;
+}
+
+Error String::parse_utf32(const char32_t *p_utf32, int p_len, bool p_keep_unpaired) {
+	if (!p_utf32) {
+		return ERR_INVALID_DATA;
+	}
+
+	int len = 0;
+	const char32_t *ptr = p_utf32;
+	const char32_t *ptr_limit = p_len >= 0 ? &p_utf32[p_len] : nullptr;
+	while (ptr != ptr_limit && *ptr) {
+		len++;
+		ptr++;
+	}
+
+	if (len == 0) {
+		clear();
+		return OK;
+	}
+
+	resize(len + 1);
+	char32_t *dst = ptrw();
+	dst[len] = 0;
+
+	bool decode_error = false;
+	bool decode_surrogate_error = false;
+	for (int i = 0; i < len; i++) {
+		if ((p_utf32[i] & 0xfffff800) == 0xd800) {
+			print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_utf32[i]));
+			decode_surrogate_error = true;
+			if (p_keep_unpaired) {
+				dst[i] = p_utf32[i];
+			} else {
+				dst[i] = _replacement_char;
+			}
+			continue;
+		}
+		if (p_utf32[i] > 0x10ffff) {
+			print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_utf32[i]));
+			decode_error = true;
+			dst[i] = _replacement_char;
+			continue;
+		}
+		dst[i] = p_utf32[i];
+	}
+
+	if (decode_error) {
+		return ERR_PARSE_ERROR;
+	} else if (decode_surrogate_error) {
+		return ERR_PARSE_ERROR_INVALID_SURROGATE;
+	} else {
+		return OK;
+	}
+}
+
+Error String::validate_utf32(const char32_t *p_utf32, int p_len) {
+	if (!p_utf32) {
+		return ERR_INVALID_DATA;
+	}
+
+	bool decode_surrogate_error = false;
+	const char32_t *ptr = p_utf32;
+	const char32_t *ptr_limit = p_len >= 0 ? &p_utf32[p_len] : nullptr;
+	while (ptr != ptr_limit && *ptr) {
+		if ((*ptr & 0xfffff800) == 0xd800) {
+			decode_surrogate_error = true;
+			continue;
+		}
+		if (*ptr > 0x10ffff) {
+			return ERR_PARSE_ERROR;
+		}
+		ptr++;
+	}
+
+	if (decode_surrogate_error) {
+		return ERR_PARSE_ERROR_INVALID_SURROGATE;
+	}
+
+	return OK;
 }
 
 String::String(const char *p_str) {

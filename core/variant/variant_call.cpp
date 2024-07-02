@@ -657,6 +657,8 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 		}                                                                                                                                                         \
 	};
 
+thread_local Error last_string_parse_error = OK;
+
 struct _VariantCall {
 	static String func_PackedByteArray_get_string_from_ascii(PackedByteArray *p_instance) {
 		String s;
@@ -668,6 +670,7 @@ struct _VariantCall {
 			cs[(int)p_instance->size()] = 0;
 
 			s = cs.get_data();
+			last_string_parse_error = OK;
 		}
 		return s;
 	}
@@ -676,7 +679,7 @@ struct _VariantCall {
 		String s;
 		if (p_instance->size() > 0) {
 			const uint8_t *r = p_instance->ptr();
-			s.parse_utf8((const char *)r, p_instance->size());
+			last_string_parse_error = s.parse_utf8((const char *)r, p_instance->size(), false, true);
 		}
 		return s;
 	}
@@ -685,7 +688,7 @@ struct _VariantCall {
 		String s;
 		if (p_instance->size() > 0) {
 			const uint8_t *r = p_instance->ptr();
-			s.parse_utf16((const char16_t *)r, floor((double)p_instance->size() / (double)sizeof(char16_t)));
+			last_string_parse_error = s.parse_utf16((const char16_t *)r, floor((double)p_instance->size() / (double)sizeof(char16_t)), true, true);
 		}
 		return s;
 	}
@@ -694,7 +697,7 @@ struct _VariantCall {
 		String s;
 		if (p_instance->size() > 0) {
 			const uint8_t *r = p_instance->ptr();
-			s = String((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t)));
+			last_string_parse_error = s.parse_utf32((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t)), true);
 		}
 		return s;
 	}
@@ -704,12 +707,93 @@ struct _VariantCall {
 		if (p_instance->size() > 0) {
 			const uint8_t *r = p_instance->ptr();
 #ifdef WINDOWS_ENABLED
-			s.parse_utf16((const char16_t *)r, floor((double)p_instance->size() / (double)sizeof(char16_t)));
+			last_string_parse_error = s.parse_utf16((const char16_t *)r, floor((double)p_instance->size() / (double)sizeof(char16_t)), true, true);
 #else
-			s = String((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t)));
+			last_string_parse_error = s.parse_utf32((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t)), true);
 #endif
 		}
 		return s;
+	}
+
+	static String func_PackedByteArray_get_string_from_utf8_strict(PackedByteArray *p_instance) {
+		String s;
+		if (p_instance->size() > 0) {
+			const uint8_t *r = p_instance->ptr();
+			last_string_parse_error = s.parse_utf8((const char *)r, p_instance->size(), false, false);
+		}
+		return s;
+	}
+
+	static String func_PackedByteArray_get_string_from_utf16_strict(PackedByteArray *p_instance) {
+		String s;
+		if (p_instance->size() > 0) {
+			const uint8_t *r = p_instance->ptr();
+			last_string_parse_error = s.parse_utf16((const char16_t *)r, floor((double)p_instance->size() / (double)sizeof(char16_t)), true, false);
+		}
+		return s;
+	}
+
+	static String func_PackedByteArray_get_string_from_utf32_strict(PackedByteArray *p_instance) {
+		String s;
+		if (p_instance->size() > 0) {
+			const uint8_t *r = p_instance->ptr();
+			last_string_parse_error = s.parse_utf32((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t)), false);
+		}
+		return s;
+	}
+
+	static String func_PackedByteArray_get_string_from_wchar_strict(PackedByteArray *p_instance) {
+		String s;
+		if (p_instance->size() > 0) {
+			const uint8_t *r = p_instance->ptr();
+#ifdef WINDOWS_ENABLED
+			last_string_parse_error = s.parse_utf16((const char16_t *)r, floor((double)p_instance->size() / (double)sizeof(char16_t)), true, false);
+#else
+			last_string_parse_error = s.parse_utf32((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t)), false);
+#endif
+		}
+		return s;
+	}
+
+	static Error func_PackedByteArray_get_string_parse_error() {
+		return last_string_parse_error;
+	}
+
+	static Error func_PackedByteArray_validate_utf8(PackedByteArray *p_instance) {
+		if (p_instance->size() > 0) {
+			const uint8_t *r = p_instance->ptr();
+			return String::validate_utf8((const char *)r, p_instance->size(), false);
+		}
+		return OK;
+	}
+
+	static Error func_PackedByteArray_validate_utf16(PackedByteArray *p_instance) {
+		if (p_instance->size() > 0) {
+			const uint8_t *r = p_instance->ptr();
+			return String::validate_utf16((const char16_t *)r, floor((double)p_instance->size() / (double)sizeof(char16_t)));
+		}
+		return OK;
+	}
+
+	static Error func_PackedByteArray_validate_utf32(PackedByteArray *p_instance) {
+		String s;
+		if (p_instance->size() > 0) {
+			const uint8_t *r = p_instance->ptr();
+			return String::validate_utf32((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t)));
+		}
+		return OK;
+	}
+
+	static Error func_PackedByteArray_validate_wchar(PackedByteArray *p_instance) {
+		if (p_instance->size() > 0) {
+			const uint8_t *r = p_instance->ptr();
+#ifdef WINDOWS_ENABLED
+			return String::validate_utf16((const char16_t *)r, floor((double)p_instance->size() / (double)sizeof(char16_t)));
+#else
+			return String::validate_utf32((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t)));
+#endif
+		}
+		return OK;
 	}
 
 	static PackedByteArray func_PackedByteArray_compress(PackedByteArray *p_instance, int p_mode) {
@@ -1576,6 +1660,16 @@ int Variant::get_enum_value(Variant::Type p_type, const StringName &p_enum_name,
 #endif
 
 #ifdef DEBUG_METHODS_ENABLED
+#define bind_static_methodv(m_type, m_name, m_method, m_arg_names, m_default_args) \
+	STATIC_METHOD_CLASS(m_type, m_name, m_method);                                 \
+	register_builtin_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
+#else
+#define bind_static_methodv(m_type, m_name, m_method, m_arg_names, m_default_args) \
+	STATIC_METHOD_CLASS(m_type, m_name, m_method);                                 \
+	register_builtin_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
+#endif
+
+#ifdef DEBUG_METHODS_ENABLED
 #define bind_methodv(m_type, m_name, m_method, m_arg_names, m_default_args) \
 	METHOD_CLASS(m_type, m_name, m_method);                                 \
 	register_builtin_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
@@ -2341,10 +2435,24 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedByteArray, count, sarray("value"), varray());
 
 	bind_function(PackedByteArray, get_string_from_ascii, _VariantCall::func_PackedByteArray_get_string_from_ascii, sarray(), varray());
+
 	bind_function(PackedByteArray, get_string_from_utf8, _VariantCall::func_PackedByteArray_get_string_from_utf8, sarray(), varray());
 	bind_function(PackedByteArray, get_string_from_utf16, _VariantCall::func_PackedByteArray_get_string_from_utf16, sarray(), varray());
 	bind_function(PackedByteArray, get_string_from_utf32, _VariantCall::func_PackedByteArray_get_string_from_utf32, sarray(), varray());
 	bind_function(PackedByteArray, get_string_from_wchar, _VariantCall::func_PackedByteArray_get_string_from_wchar, sarray(), varray());
+
+	bind_function(PackedByteArray, get_string_from_utf8_strict, _VariantCall::func_PackedByteArray_get_string_from_utf8_strict, sarray(), varray());
+	bind_function(PackedByteArray, get_string_from_utf16_strict, _VariantCall::func_PackedByteArray_get_string_from_utf16_strict, sarray(), varray());
+	bind_function(PackedByteArray, get_string_from_utf32_strict, _VariantCall::func_PackedByteArray_get_string_from_utf32_strict, sarray(), varray());
+	bind_function(PackedByteArray, get_string_from_wchar_strict, _VariantCall::func_PackedByteArray_get_string_from_wchar_strict, sarray(), varray());
+
+	bind_static_methodv(PackedByteArray, get_string_parse_error, _VariantCall::func_PackedByteArray_get_string_parse_error, sarray(), varray());
+
+	bind_function(PackedByteArray, validate_utf8, _VariantCall::func_PackedByteArray_validate_utf8, sarray(), varray());
+	bind_function(PackedByteArray, validate_utf16, _VariantCall::func_PackedByteArray_validate_utf16, sarray(), varray());
+	bind_function(PackedByteArray, validate_utf32, _VariantCall::func_PackedByteArray_validate_utf32, sarray(), varray());
+	bind_function(PackedByteArray, validate_wchar, _VariantCall::func_PackedByteArray_validate_wchar, sarray(), varray());
+
 	bind_function(PackedByteArray, hex_encode, _VariantCall::func_PackedByteArray_hex_encode, sarray(), varray());
 	bind_function(PackedByteArray, compress, _VariantCall::func_PackedByteArray_compress, sarray("compression_mode"), varray(0));
 	bind_function(PackedByteArray, decompress, _VariantCall::func_PackedByteArray_decompress, sarray("buffer_size", "compression_mode"), varray(0));

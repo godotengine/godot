@@ -80,6 +80,7 @@ const char *error_names[] = {
 	"Help", // ERR_HELP
 	"Bug", // ERR_BUG
 	"Printer on fire", // ERR_PRINTER_ON_FIRE
+	"Invalid surrogate", // ERR_PARSE_ERROR_INVALID_SURROGATE
 };
 
 static_assert(sizeof(error_names) / sizeof(*error_names) == ERR_MAX);
