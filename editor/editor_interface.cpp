@@ -86,6 +86,10 @@ Ref<EditorSettings> EditorInterface::get_editor_settings() const {
 	return EditorSettings::get_singleton();
 }
 
+EditorUndoRedoManager *EditorInterface::get_editor_undo_redo() const {
+	return EditorUndoRedoManager::get_singleton();
+}
+
 TypedArray<Texture2D> EditorInterface::_make_mesh_previews(const TypedArray<Mesh> &p_meshes, int p_preview_size) {
 	Vector<Ref<Mesh>> meshes;
 
@@ -525,6 +529,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_resource_previewer"), &EditorInterface::get_resource_previewer);
 	ClassDB::bind_method(D_METHOD("get_selection"), &EditorInterface::get_selection);
 	ClassDB::bind_method(D_METHOD("get_editor_settings"), &EditorInterface::get_editor_settings);
+	ClassDB::bind_method(D_METHOD("get_editor_undo_redo"), &EditorInterface::get_editor_undo_redo);
 
 	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
 

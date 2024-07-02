@@ -68,6 +68,21 @@
 				Register a reference for "undo" that will be erased if the "undo" history is lost. This is useful mostly for nodes removed with the "do" call (not the "undo" call!).
 			</description>
 		</method>
+		<method name="clear_history">
+			<return type="void" />
+			<param index="0" name="id" type="int" default="-99" />
+			<param index="1" name="increase_version" type="bool" default="true" />
+			<description>
+				Clears the given undo history. You can clear history for a specific scene, global history, or for all scenes at once if [param id] is [constant INVALID_HISTORY].
+				If [param increase_version] is [code]true[/code], the undo history version will be increased, marking it as unsaved. Useful for operations that modify the scene, but don't support undo.
+				[codeblock]
+				var scene_root = EditorInterface.get_edited_scene_root()
+				var undo_redo = EditorInterface.get_editor_undo_redo()
+				undo_redo.clear_history(undo_redo.get_object_history_id(scene_root))
+				[/codeblock]
+				[b]Note:[/b] If you want to mark an edited scene as unsaved without clearing its history, use [method EditorInterface.mark_scene_as_unsaved] instead.
+			</description>
+		</method>
 		<method name="commit_action">
 			<return type="void" />
 			<param index="0" name="execute" type="bool" default="true" />
