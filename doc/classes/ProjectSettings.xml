@@ -633,6 +633,9 @@
 		<member name="debug/settings/profiler/max_functions" type="int" setter="" getter="" default="16384">
 			Maximum number of functions per frame allowed when profiling.
 		</member>
+		<member name="debug/settings/profiler/max_timestamp_query_elements" type="int" setter="" getter="" default="256">
+			Maximum number of timestamp query elements allowed per frame for visual profiling.
+		</member>
 		<member name="debug/settings/stdout/print_fps" type="bool" setter="" getter="" default="false">
 			Print frames per second to standard output every second.
 		</member>
