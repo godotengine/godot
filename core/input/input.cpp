@@ -904,7 +904,7 @@ void Input::action_release(const StringName &p_action) {
 
 	// Create or retrieve existing action.
 	ActionState &action_state = action_states[p_action];
-	action_state.cache.pressed = 0;
+	action_state.cache.pressed = false;
 	action_state.cache.strength = 0.0;
 	action_state.cache.raw_strength = 0.0;
 	action_state.released_physics_frame = Engine::get_singleton()->get_physics_frames();

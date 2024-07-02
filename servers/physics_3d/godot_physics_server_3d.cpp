@@ -826,7 +826,7 @@ void GodotPhysicsServer3D::body_set_axis_lock(RID p_body, BodyAxis p_axis, bool 
 
 bool GodotPhysicsServer3D::body_is_axis_locked(RID p_body, BodyAxis p_axis) const {
 	const GodotBody3D *body = body_owner.get_or_null(p_body);
-	ERR_FAIL_NULL_V(body, 0);
+	ERR_FAIL_NULL_V(body, false);
 	return body->is_axis_locked(p_axis);
 }
 

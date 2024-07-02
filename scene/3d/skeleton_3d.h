@@ -157,7 +157,7 @@ private:
 	Vector<int> parentless_bones;
 	HashMap<String, int> name_to_bone_index;
 
-	mutable StringName concatenated_bone_names = StringName();
+	mutable StringName concatenated_bone_names;
 	void _update_bone_names() const;
 
 	void _make_dirty();

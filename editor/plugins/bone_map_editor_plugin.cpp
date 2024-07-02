@@ -862,7 +862,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 
 	// 4-1. Guess Finger
 	int tips_index = -1;
-	bool thumb_tips_size = 0;
+	bool thumb_tips_size = false;
 	bool named_finger_is_found = false;
 	LocalVector<String> fingers;
 	fingers.push_back("thumb|pollex");
@@ -997,7 +997,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	}
 
 	tips_index = -1;
-	thumb_tips_size = 0;
+	thumb_tips_size = false;
 	named_finger_is_found = false;
 	if (right_hand_or_palm != -1) {
 		LocalVector<LocalVector<String>> right_fingers_map;

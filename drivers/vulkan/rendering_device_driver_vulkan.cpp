@@ -3661,7 +3661,7 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 	}
 
 	// Need a descriptor pool.
-	DescriptorSetPools::Iterator pool_sets_it = {};
+	DescriptorSetPools::Iterator pool_sets_it;
 	VkDescriptorPool vk_pool = _descriptor_set_pool_find_or_create(pool_key, &pool_sets_it);
 	DEV_ASSERT(vk_pool);
 	pool_sets_it->value[vk_pool]++;

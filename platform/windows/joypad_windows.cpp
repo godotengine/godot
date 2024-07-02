@@ -122,8 +122,9 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 			memcmp(p_guid, &IID_XOneSWirelessGamepad, sizeof(*p_guid)) == 0 ||
 			memcmp(p_guid, &IID_XOneSBluetoothGamepad, sizeof(*p_guid)) == 0 ||
 			memcmp(p_guid, &IID_XOneEliteWirelessGamepad, sizeof(*p_guid)) == 0 ||
-			memcmp(p_guid, &IID_XOneElite2WirelessGamepad, sizeof(*p_guid)) == 0)
+			memcmp(p_guid, &IID_XOneElite2WirelessGamepad, sizeof(*p_guid)) == 0) {
 		return true;
+	}
 
 	PRAWINPUTDEVICELIST dev_list = nullptr;
 	unsigned int dev_list_count = 0;
