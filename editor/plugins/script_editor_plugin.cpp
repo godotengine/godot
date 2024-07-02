@@ -701,6 +701,17 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 
 	tab_container->set_current_tab(p_idx);
 
+	ScriptSortBy sort_by = (ScriptSortBy)(int)EDITOR_GET("text_editor/script_list/sort_scripts_by");
+	if (sort_by == ScriptSortBy::SORT_BY_RECENCY) {
+		int ignore_threshold = EDITOR_GET("text_editor/script_list/script_recency_ignore_threshold");
+		if (p_idx >= ignore_threshold) {
+			tab_container->move_child(c, 0);
+			// Needed, to rebuild the script list
+			_update_script_names();
+			p_idx = 0;
+		}
+	}
+
 	c = tab_container->get_current_tab_control();
 
 	if (Object::cast_to<ScriptEditorBase>(c)) {
@@ -950,7 +961,7 @@ void ScriptEditor::_close_other_tabs() {
 	int current_idx = tab_container->get_current_tab();
 	for (int i = tab_container->get_tab_count() - 1; i >= 0; i--) {
 		if (i != current_idx) {
-			script_close_queue.push_back(i);
+			script_close_queue.push_back(tab_container->get_tab_control(i));
 		}
 	}
 	_queue_close_tabs();
@@ -958,18 +969,18 @@ void ScriptEditor::_close_other_tabs() {
 
 void ScriptEditor::_close_all_tabs() {
 	for (int i = tab_container->get_tab_count() - 1; i >= 0; i--) {
-		script_close_queue.push_back(i);
+		script_close_queue.push_back(tab_container->get_tab_control(i));
 	}
 	_queue_close_tabs();
 }
 
 void ScriptEditor::_queue_close_tabs() {
 	while (!script_close_queue.is_empty()) {
-		int idx = script_close_queue.front()->get();
+		Control *c = script_close_queue.front()->get();
 		script_close_queue.pop_front();
 
-		tab_container->set_current_tab(idx);
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(idx));
+		tab_container->set_current_tab(tab_container->get_tab_idx_from_control(c));
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(c);
 		if (se) {
 			// Maybe there are unsaved changes.
 			if (se->is_unsaved()) {
@@ -2158,6 +2169,9 @@ void ScriptEditor::_update_script_names() {
 				case SORT_BY_NONE: {
 					sd.sort_key = "";
 				} break;
+				case SORT_BY_RECENCY: {
+					sd.sort_key = "";
+				} break;
 			}
 
 			switch (display_as) {
@@ -2232,7 +2246,7 @@ void ScriptEditor::_update_script_names() {
 		}
 	}
 
-	if (_sort_list_on_update && !sedata.is_empty()) {
+	if (_sort_list_on_update && !sedata.is_empty() && sort_by != SORT_BY_NONE && sort_by != SORT_BY_RECENCY) {
 		sedata.sort();
 
 		// change actual order of tab_container so that the order can be rearranged by user
@@ -4554,8 +4568,9 @@ ScriptEditorPlugin::ScriptEditorPlugin() {
 	EDITOR_DEF("text_editor/script_list/script_temperature_enabled", true);
 	EDITOR_DEF("text_editor/script_list/script_temperature_history_size", 15);
 	EDITOR_DEF("text_editor/script_list/group_help_pages", true);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "text_editor/script_list/sort_scripts_by", PROPERTY_HINT_ENUM, "Name,Path,None"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "text_editor/script_list/sort_scripts_by", PROPERTY_HINT_ENUM, "Name,Path,None,Recency"));
 	EDITOR_DEF("text_editor/script_list/sort_scripts_by", 0);
+	EDITOR_DEF("text_editor/script_list/script_recency_ignore_threshold", 8);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "text_editor/script_list/list_script_names_as", PROPERTY_HINT_ENUM, "Name,Parent Directory And Name,Full Path"));
 	EDITOR_DEF("text_editor/script_list/list_script_names_as", 0);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "text_editor/external/exec_path", PROPERTY_HINT_GLOBAL_FILE));
