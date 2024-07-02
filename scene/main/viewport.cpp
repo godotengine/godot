@@ -4712,6 +4712,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("gui_get_focus_owner"), &Viewport::gui_get_focus_owner);
 	ClassDB::bind_method(D_METHOD("gui_get_hovered_control"), &Viewport::gui_get_hovered_control);
 
+	ClassDB::bind_method(D_METHOD("gui_find_control", "point"), &Viewport::gui_find_control);
+
 	ClassDB::bind_method(D_METHOD("set_disable_input", "disable"), &Viewport::set_disable_input);
 	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);
 
