@@ -58,6 +58,7 @@ void NavObstacle::set_avoidance_enabled(bool p_enabled) {
 	internal_update_agent();
 }
 
+#ifndef _3D_DISABLED
 void NavObstacle::set_use_3d_avoidance(bool p_enabled) {
 	if (use_3d_avoidance == p_enabled) {
 		return;
@@ -70,6 +71,7 @@ void NavObstacle::set_use_3d_avoidance(bool p_enabled) {
 		agent->set_use_3d_avoidance(use_3d_avoidance);
 	}
 }
+#endif
 
 void NavObstacle::set_map(NavMap *p_map) {
 	if (map == p_map) {
@@ -192,7 +194,9 @@ void NavObstacle::internal_update_agent() {
 		agent->set_position(position);
 		agent->set_avoidance_layers(avoidance_layers);
 		agent->set_avoidance_enabled(avoidance_enabled);
+#ifndef _3D_DISABLED
 		agent->set_use_3d_avoidance(use_3d_avoidance);
+#endif
 	}
 }
 
