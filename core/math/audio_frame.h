@@ -53,6 +53,7 @@ static const float AUDIO_MIN_PEAK_DB = -200.0f; // linear_to_db(AUDIO_PEAK_OFFSE
 struct AudioFrame {
 	// Left and right samples.
 	union {
+		// NOLINTBEGIN(modernize-use-default-member-init)
 		struct {
 			float left;
 			float right;
@@ -64,6 +65,7 @@ struct AudioFrame {
 		};
 #endif
 		float levels[2] = { 0.0 };
+		// NOLINTEND(modernize-use-default-member-init)
 	};
 
 	_ALWAYS_INLINE_ const float &operator[](int p_idx) const {
@@ -133,14 +135,12 @@ struct AudioFrame {
 		return res;
 	}
 
-	_ALWAYS_INLINE_ AudioFrame(float p_left, float p_right) {
-		left = p_left;
-		right = p_right;
-	}
-	_ALWAYS_INLINE_ AudioFrame(const AudioFrame &p_frame) {
-		left = p_frame.left;
-		right = p_frame.right;
-	}
+	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
+	constexpr AudioFrame(float p_left, float p_right) :
+			left(p_left), right(p_right) {}
+	constexpr AudioFrame(const AudioFrame &p_frame) :
+			left(p_frame.left), right(p_frame.right) {}
+	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 
 	_ALWAYS_INLINE_ void operator=(const AudioFrame &p_frame) {
 		left = p_frame.left;
@@ -151,11 +151,12 @@ struct AudioFrame {
 		return Vector2(left, right);
 	}
 
-	_ALWAYS_INLINE_ AudioFrame(const Vector2 &p_v2) {
-		left = p_v2.x;
-		right = p_v2.y;
-	}
-	_ALWAYS_INLINE_ AudioFrame() {}
+	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
+	constexpr AudioFrame(const Vector2 &p_v2) :
+			left(p_v2.x), right(p_v2.y) {}
+	constexpr AudioFrame() :
+			left(0), right(0) {}
+	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 };
 
 _ALWAYS_INLINE_ AudioFrame operator*(float p_scalar, const AudioFrame &p_frame) {

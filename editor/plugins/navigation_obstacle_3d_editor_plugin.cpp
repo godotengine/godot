@@ -472,7 +472,6 @@ void NavigationObstacle3DEditor::_polygon_draw() {
 
 	for (int i = 0; i < poly.size(); i++) {
 		Vector2 point_2d;
-		Vector2 p2;
 
 		if (i == edited_point) {
 			point_2d = edited_point_pos;
