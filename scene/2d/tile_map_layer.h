@@ -328,7 +328,7 @@ private:
 	void _debug_quadrants_update_cell(CellData &r_cell_data, SelfList<DebugQuadrant>::List &r_dirty_debug_quadrant_list);
 #endif // DEBUG_ENABLED
 
-	HashMap<Vector2i, Ref<RenderingQuadrant>> rendering_quadrant_map;
+	AHashMap<Vector2i, Ref<RenderingQuadrant>> rendering_quadrant_map;
 	bool _rendering_was_cleaned_up = false;
 	void _rendering_update(bool p_force_cleanup);
 	void _rendering_notification(int p_what);
@@ -339,7 +339,7 @@ private:
 	void _rendering_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
 #endif // DEBUG_ENABLED
 
-	HashMap<RID, Vector2i> bodies_coords; // Mapping for RID to coords.
+	AHashMap<RID, Vector2i> bodies_coords; // Mapping for RID to coords.
 	bool _physics_was_cleaned_up = false;
 	void _physics_update(bool p_force_cleanup);
 	void _physics_notification(int p_what);

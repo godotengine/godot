@@ -83,7 +83,7 @@ Vector3 GodotShape3D::get_support(const Vector3 &p_normal) const {
 }
 
 void GodotShape3D::add_owner(GodotShapeOwner3D *p_owner) {
-	HashMap<GodotShapeOwner3D *, int>::Iterator E = owners.find(p_owner);
+	AHashMap<GodotShapeOwner3D *, int>::Iterator E = owners.find(p_owner);
 	if (E) {
 		E->value++;
 	} else {
@@ -92,7 +92,7 @@ void GodotShape3D::add_owner(GodotShapeOwner3D *p_owner) {
 }
 
 void GodotShape3D::remove_owner(GodotShapeOwner3D *p_owner) {
-	HashMap<GodotShapeOwner3D *, int>::Iterator E = owners.find(p_owner);
+	AHashMap<GodotShapeOwner3D *, int>::Iterator E = owners.find(p_owner);
 	ERR_FAIL_COND(!E);
 	E->value--;
 	if (E->value == 0) {
@@ -104,7 +104,7 @@ bool GodotShape3D::is_owner(GodotShapeOwner3D *p_owner) const {
 	return owners.has(p_owner);
 }
 
-const HashMap<GodotShapeOwner3D *, int> &GodotShape3D::get_owners() const {
+const AHashMap<GodotShapeOwner3D *, int> &GodotShape3D::get_owners() const {
 	return owners;
 }
 

@@ -34,6 +34,7 @@
 #include "core/object/method_bind.h"
 #include "core/object/object.h"
 #include "core/string/print_string.h"
+#include "core/templates/a_hash_map.h"
 
 // Makes callable_mp readily available in all classes connecting signals.
 // Needs to come after method_bind and object have been included.
@@ -104,9 +105,9 @@ public:
 
 		ObjectGDExtension *gdextension = nullptr;
 
-		HashMap<StringName, MethodBind *> method_map;
-		HashMap<StringName, LocalVector<MethodBind *>> method_map_compatibility;
-		HashMap<StringName, int64_t> constant_map;
+		AHashMap<StringName, MethodBind *> method_map;
+		AHashMap<StringName, LocalVector<MethodBind *>> method_map_compatibility;
+		AHashMap<StringName, int64_t> constant_map;
 		struct EnumInfo {
 			List<StringName> constants;
 			bool is_bitfield = false;
@@ -115,7 +116,7 @@ public:
 		HashMap<StringName, EnumInfo> enum_map;
 		HashMap<StringName, MethodInfo> signal_map;
 		List<PropertyInfo> property_list;
-		HashMap<StringName, PropertyInfo> property_map;
+		AHashMap<StringName, PropertyInfo> property_map;
 #ifdef DEBUG_METHODS_ENABLED
 		List<StringName> constant_order;
 		List<StringName> method_order;
@@ -125,7 +126,7 @@ public:
 		HashMap<StringName, Vector<Error>> method_error_values;
 		HashMap<StringName, List<StringName>> linked_properties;
 #endif
-		HashMap<StringName, PropertySetGet> property_setget;
+		AHashMap<StringName, PropertySetGet> property_setget;
 
 		StringName inherits;
 		StringName name;
@@ -147,8 +148,8 @@ public:
 
 	static RWLock lock;
 	static HashMap<StringName, ClassInfo> classes;
-	static HashMap<StringName, StringName> resource_base_extensions;
-	static HashMap<StringName, StringName> compat_classes;
+	static AHashMap<StringName, StringName> resource_base_extensions;
+	static AHashMap<StringName, StringName> compat_classes;
 
 #ifdef TOOLS_ENABLED
 	static HashMap<StringName, ObjectGDExtension> placeholder_extensions;
@@ -161,11 +162,11 @@ public:
 #endif
 
 	static APIType current_api;
-	static HashMap<APIType, uint32_t> api_hashes_cache;
+	static AHashMap<APIType, uint32_t> api_hashes_cache;
 
 	static void _add_class2(const StringName &p_class, const StringName &p_inherits);
 
-	static HashMap<StringName, HashMap<StringName, Variant>> default_values;
+	static HashMap<StringName, AHashMap<StringName, Variant>> default_values;
 	static HashSet<StringName> default_values_cached;
 
 	// Native structs, used by binder
@@ -173,7 +174,7 @@ public:
 		String ccode; // C code to create the native struct, fields separated by ; Arrays accepted (even containing other structs), also function pointers. All types must be Godot types.
 		uint64_t struct_size; // local size of struct, for comparison
 	};
-	static HashMap<StringName, NativeStruct> native_structs;
+	static AHashMap<StringName, NativeStruct> native_structs;
 
 private:
 	// Non-locking variants of get_parent_class and is_parent_class.

@@ -33,6 +33,7 @@
 
 #ifdef GLES3_ENABLED
 
+#include "core/templates/a_hash_map.h"
 #include "servers/rendering/storage/utilities.h"
 
 #include "platform_gl.h"
@@ -64,9 +65,9 @@ private:
 #endif
 		uint32_t size = 0;
 	};
-	HashMap<GLuint, ResourceAllocation> buffer_allocs_cache;
-	HashMap<GLuint, ResourceAllocation> render_buffer_allocs_cache;
-	HashMap<GLuint, ResourceAllocation> texture_allocs_cache;
+	AHashMap<GLuint, ResourceAllocation> buffer_allocs_cache;
+	AHashMap<GLuint, ResourceAllocation> render_buffer_allocs_cache;
+	AHashMap<GLuint, ResourceAllocation> texture_allocs_cache;
 
 	uint64_t buffer_mem_cache = 0;
 	uint64_t render_buffer_mem_cache = 0;

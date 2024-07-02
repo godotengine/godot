@@ -33,6 +33,7 @@
 
 #include "godot_collision_object_2d.h"
 
+#include "core/templates/a_hash_map.h"
 #include "core/templates/self_list.h"
 #include "servers/physics_server_2d.h"
 
@@ -89,8 +90,8 @@ class GodotArea2D : public GodotCollisionObject2D {
 		_FORCE_INLINE_ void dec() { state--; }
 	};
 
-	HashMap<BodyKey, BodyState, BodyKey> monitored_bodies;
-	HashMap<BodyKey, BodyState, BodyKey> monitored_areas;
+	AHashMap<BodyKey, BodyState, BodyKey> monitored_bodies;
+	AHashMap<BodyKey, BodyState, BodyKey> monitored_areas;
 
 	HashSet<GodotConstraint2D *> constraints;
 

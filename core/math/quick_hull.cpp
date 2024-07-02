@@ -30,6 +30,7 @@
 
 #include "quick_hull.h"
 
+#include "core/templates/a_hash_map.h"
 #include "core/templates/rb_map.h"
 
 uint32_t QuickHull::debug_stop_after = 0xFFFFFFFF;
@@ -237,7 +238,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 		//find lit faces and lit edges
 		List<List<Face>::Element *> lit_faces; //lit face is a death sentence
 
-		HashMap<Edge, FaceConnect, Edge> lit_edges; //create this on the flight, should not be that bad for performance and simplifies code a lot
+		AHashMap<Edge, FaceConnect, Edge> lit_edges; //create this on the flight, should not be that bad for performance and simplifies code a lot
 
 		for (List<Face>::Element *E = faces.front(); E; E = E->next()) {
 			if (E->get().plane.distance_to(v) > 0) {
@@ -248,7 +249,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 					uint32_t b = E->get().vertices[(i + 1) % 3];
 					Edge e(a, b);
 
-					HashMap<Edge, FaceConnect, Edge>::Iterator F = lit_edges.find(e);
+					AHashMap<Edge, FaceConnect, Edge>::Iterator F = lit_edges.find(e);
 					if (!F) {
 						F = lit_edges.insert(e, FaceConnect());
 					}
@@ -333,7 +334,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	/* CREATE MESHDATA */
 
 	//make a map of edges again
-	HashMap<Edge, RetFaceConnect, Edge> ret_edges;
+	AHashMap<Edge, RetFaceConnect, Edge> ret_edges;
 	List<Geometry3D::MeshData::Face> ret_faces;
 
 	for (const Face &E : faces) {
@@ -351,7 +352,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 			uint32_t b = E.vertices[(i + 1) % 3];
 			Edge e(a, b);
 
-			HashMap<Edge, RetFaceConnect, Edge>::Iterator G = ret_edges.find(e);
+			AHashMap<Edge, RetFaceConnect, Edge>::Iterator G = ret_edges.find(e);
 			if (!G) {
 				G = ret_edges.insert(e, RetFaceConnect());
 			}
@@ -374,7 +375,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 			int b = E->get().indices[(i + 1) % f.indices.size()];
 			Edge e(a, b);
 
-			HashMap<Edge, RetFaceConnect, Edge>::Iterator F = ret_edges.find(e);
+			AHashMap<Edge, RetFaceConnect, Edge>::Iterator F = ret_edges.find(e);
 
 			ERR_CONTINUE(!F);
 			List<Geometry3D::MeshData::Face>::Element *O = F->value.left == E ? F->value.right : F->value.left;
@@ -401,7 +402,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 							}
 							Edge e2(idx, idxn);
 
-							HashMap<Edge, RetFaceConnect, Edge>::Iterator F2 = ret_edges.find(e2);
+							AHashMap<Edge, RetFaceConnect, Edge>::Iterator F2 = ret_edges.find(e2);
 							ERR_CONTINUE(!F2);
 							//change faceconnect, point to this face instead
 							if (F2->value.left == O) {
@@ -436,7 +437,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	r_mesh.faces.clear();
 	r_mesh.faces.resize(ret_faces.size());
 
-	HashMap<List<Geometry3D::MeshData::Face>::Element *, int> face_indices;
+	AHashMap<List<Geometry3D::MeshData::Face>::Element *, int> face_indices;
 
 	int idx = 0;
 	for (List<Geometry3D::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {

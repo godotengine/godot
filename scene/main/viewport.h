@@ -31,6 +31,8 @@
 #ifndef VIEWPORT_H
 #define VIEWPORT_H
 
+#include "core/templates/a_hash_map.h"
+
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
@@ -352,7 +354,7 @@ private:
 		bool forced_mouse_focus = false; //used for menu buttons
 		bool mouse_in_viewport = false;
 		bool key_event_accepted = false;
-		HashMap<int, ObjectID> touch_focus;
+		AHashMap<int, ObjectID> touch_focus;
 		Control *mouse_focus = nullptr;
 		Control *mouse_click_grabber = nullptr;
 		BitField<MouseButtonMask> mouse_focus_mask;
@@ -693,9 +695,9 @@ private:
 	void _camera_2d_set(Camera2D *p_camera_2d);
 
 	// Collider to frame
-	HashMap<ObjectID, uint64_t> physics_2d_mouseover;
+	AHashMap<ObjectID, uint64_t> physics_2d_mouseover;
 	// Collider & shape to frame
-	HashMap<Pair<ObjectID, int>, uint64_t, PairHash<ObjectID, int>> physics_2d_shape_mouseover;
+	AHashMap<Pair<ObjectID, int>, uint64_t, PairHash<ObjectID, int>> physics_2d_shape_mouseover;
 	// Cleans up colliders corresponding to old frames or all of them.
 	void _cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference = 0);
 

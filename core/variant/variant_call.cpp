@@ -36,6 +36,7 @@
 #include "core/io/marshalls.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
 
@@ -1062,11 +1063,11 @@ struct _VariantCall {
 	}
 
 	struct ConstantData {
-		HashMap<StringName, int64_t> value;
+		AHashMap<StringName, int64_t> value;
 #ifdef DEBUG_ENABLED
 		List<StringName> value_ordered;
 #endif
-		HashMap<StringName, Variant> variant_value;
+		AHashMap<StringName, Variant> variant_value;
 #ifdef DEBUG_ENABLED
 		List<StringName> variant_value_ordered;
 #endif
@@ -1089,7 +1090,7 @@ struct _VariantCall {
 	}
 
 	struct EnumData {
-		HashMap<StringName, HashMap<StringName, int>> value;
+		HashMap<StringName, AHashMap<StringName, int>> value;
 	};
 
 	static EnumData *enum_data;
@@ -1478,9 +1479,9 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
 
-	HashMap<StringName, int64_t>::Iterator E = cd.value.find(p_value);
+	AHashMap<StringName, int64_t>::Iterator E = cd.value.find(p_value);
 	if (!E) {
-		HashMap<StringName, Variant>::Iterator F = cd.variant_value.find(p_value);
+		AHashMap<StringName, Variant>::Iterator F = cd.variant_value.find(p_value);
 		if (F) {
 			if (r_valid) {
 				*r_valid = true;
@@ -1502,7 +1503,7 @@ void Variant::get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums
 
 	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
 
-	for (const KeyValue<StringName, HashMap<StringName, int>> &E : enum_data.value) {
+	for (const KeyValue<StringName, AHashMap<StringName, int>> &E : enum_data.value) {
 		p_enums->push_back(E.key);
 	}
 }
@@ -1512,7 +1513,7 @@ void Variant::get_enumerations_for_enum(Variant::Type p_type, const StringName &
 
 	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
 
-	for (const KeyValue<StringName, HashMap<StringName, int>> &E : enum_data.value) {
+	for (const KeyValue<StringName, AHashMap<StringName, int>> &E : enum_data.value) {
 		for (const KeyValue<StringName, int> &V : E.value) {
 			p_enumerations->push_back(V.key);
 		}
@@ -1528,12 +1529,12 @@ int Variant::get_enum_value(Variant::Type p_type, const StringName &p_enum_name,
 
 	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
 
-	HashMap<StringName, HashMap<StringName, int>>::Iterator E = enum_data.value.find(p_enum_name);
+	HashMap<StringName, AHashMap<StringName, int>>::Iterator E = enum_data.value.find(p_enum_name);
 	if (!E) {
 		return -1;
 	}
 
-	HashMap<StringName, int>::Iterator V = E->value.find(p_enumeration);
+	AHashMap<StringName, int>::Iterator V = E->value.find(p_enumeration);
 	if (!V) {
 		return -1;
 	}

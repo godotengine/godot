@@ -30,6 +30,7 @@
 
 #include "triangle_mesh.h"
 
+#include "core/templates/a_hash_map.h"
 #include "core/templates/sort_array.h"
 
 int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, int p_depth, int &r_max_depth, int &r_max_alloc) {
@@ -125,7 +126,7 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces, const Vector<int32_t> 
 		const Vector3 *r = p_faces.ptr();
 		const int32_t *si = p_surface_indices.ptr();
 		Triangle *w = triangles.ptrw();
-		HashMap<Vector3, int> db;
+		AHashMap<Vector3, int> db(fc);
 
 		for (int i = 0; i < fc; i++) {
 			Triangle &f = w[i];
@@ -134,7 +135,7 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces, const Vector<int32_t> 
 			for (int j = 0; j < 3; j++) {
 				int vidx = -1;
 				Vector3 vs = v[j].snappedf(0.0001);
-				HashMap<Vector3, int>::Iterator E = db.find(vs);
+				AHashMap<Vector3, int>::Iterator E = db.find(vs);
 				if (E) {
 					vidx = E->value;
 				} else {

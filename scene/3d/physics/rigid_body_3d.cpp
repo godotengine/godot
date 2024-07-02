@@ -35,7 +35,7 @@ void RigidBody3D::_body_enter_tree(ObjectID p_id) {
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_NULL(node);
 	ERR_FAIL_NULL(contact_monitor);
-	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(p_id);
+	AHashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(E->value.in_tree);
 
@@ -57,7 +57,7 @@ void RigidBody3D::_body_exit_tree(ObjectID p_id) {
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_NULL(node);
 	ERR_FAIL_NULL(contact_monitor);
-	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(p_id);
+	AHashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(!E->value.in_tree);
 	E->value.in_tree = false;
@@ -81,7 +81,7 @@ void RigidBody3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 	Node *node = Object::cast_to<Node>(obj);
 
 	ERR_FAIL_NULL(contact_monitor);
-	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(objid);
+	AHashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(objid);
 
 	ERR_FAIL_COND(!body_in && !E);
 
@@ -203,7 +203,7 @@ void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 			int local_shape = p_state->get_contact_local_shape(i);
 			int col_shape = p_state->get_contact_collider_shape(i);
 
-			HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(col_obj);
+			AHashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(col_obj);
 			if (!E) {
 				toadd[toadd_count].rid = col_rid;
 				toadd[toadd_count].local_shape = local_shape;

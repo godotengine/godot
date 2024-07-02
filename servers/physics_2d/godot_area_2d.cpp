@@ -206,9 +206,9 @@ void GodotArea2D::call_queries() {
 				resptr[i] = &res[i];
 			}
 
-			for (HashMap<BodyKey, BodyState, BodyKey>::Iterator E = monitored_bodies.begin(); E;) {
+			for (AHashMap<BodyKey, BodyState, BodyKey>::Iterator E = monitored_bodies.begin(); E;) {
 				if (E->value.state == 0) { // Nothing happened
-					HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
+					AHashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
 					++next;
 					monitored_bodies.remove(E);
 					E = next;
@@ -221,7 +221,7 @@ void GodotArea2D::call_queries() {
 				res[3] = E->key.body_shape;
 				res[4] = E->key.area_shape;
 
-				HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
+				AHashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
 				++next;
 				monitored_bodies.remove(E);
 				E = next;
@@ -248,9 +248,9 @@ void GodotArea2D::call_queries() {
 				resptr[i] = &res[i];
 			}
 
-			for (HashMap<BodyKey, BodyState, BodyKey>::Iterator E = monitored_areas.begin(); E;) {
+			for (AHashMap<BodyKey, BodyState, BodyKey>::Iterator E = monitored_areas.begin(); E;) {
 				if (E->value.state == 0) { // Nothing happened
-					HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
+					AHashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
 					++next;
 					monitored_areas.remove(E);
 					E = next;
@@ -263,7 +263,7 @@ void GodotArea2D::call_queries() {
 				res[3] = E->key.body_shape;
 				res[4] = E->key.area_shape;
 
-				HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
+				AHashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
 				++next;
 				monitored_areas.remove(E);
 				E = next;

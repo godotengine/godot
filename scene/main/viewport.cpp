@@ -846,7 +846,7 @@ void Viewport::_process_picking() {
 						if (co && co->can_process()) {
 							bool send_event = true;
 							if (is_mouse) {
-								HashMap<ObjectID, uint64_t>::Iterator F = physics_2d_mouseover.find(res[i].collider_id);
+								AHashMap<ObjectID, uint64_t>::Iterator F = physics_2d_mouseover.find(res[i].collider_id);
 								if (!F) {
 									physics_2d_mouseover.insert(res[i].collider_id, frame);
 									co->_mouse_enter();
@@ -857,7 +857,7 @@ void Viewport::_process_picking() {
 										send_event = false;
 									}
 								}
-								HashMap<Pair<ObjectID, int>, uint64_t, PairHash<ObjectID, int>>::Iterator SF = physics_2d_shape_mouseover.find(Pair(res[i].collider_id, res[i].shape));
+								AHashMap<Pair<ObjectID, int>, uint64_t, PairHash<ObjectID, int>>::Iterator SF = physics_2d_shape_mouseover.find(Pair(res[i].collider_id, res[i].shape));
 								if (!SF) {
 									physics_2d_shape_mouseover.insert(Pair(res[i].collider_id, res[i].shape), frame);
 									co->_mouse_shape_enter(res[i].shape);

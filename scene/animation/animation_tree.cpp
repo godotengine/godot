@@ -602,7 +602,7 @@ Ref<AnimationRootNode> AnimationTree::get_root_animation_node() const {
 	return root_animation_node;
 }
 
-bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const HashMap<NodePath, int> &p_track_map) {
+bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const AHashMap<NodePath, int> &p_track_map) {
 	_update_properties(); // If properties need updating, update them.
 
 	if (!root_animation_node.is_valid()) {
@@ -731,7 +731,7 @@ void AnimationTree::_animation_node_removed(const ObjectID &p_oid, const StringN
 void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<AnimationNode> p_node) {
 	ERR_FAIL_COND(p_node.is_null());
 	if (!property_parent_map.has(p_base_path)) {
-		property_parent_map[p_base_path] = HashMap<StringName, StringName>();
+		property_parent_map[p_base_path] = AHashMap<StringName, StringName>();
 	}
 	if (!property_reference_map.has(p_node->get_instance_id())) {
 		property_reference_map[p_node->get_instance_id()] = p_base_path;

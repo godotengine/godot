@@ -1350,7 +1350,7 @@ Variant SceneState::get_property_value(int p_node, const StringName &p_property,
 	}
 
 	// Property not found, try on instance.
-	HashMap<int, int>::ConstIterator I = base_scene_node_remap.find(p_node);
+	AHashMap<int, int>::ConstIterator I = base_scene_node_remap.find(p_node);
 	if (I) {
 		return get_base_scene_state()->get_property_value(I->value, p_property, r_found, r_node_deferred);
 	}
@@ -1756,7 +1756,7 @@ Vector<String> SceneState::get_node_deferred_nodepath_properties(int p_idx) cons
 	}
 
 	// Property not found, try on instance.
-	HashMap<int, int>::ConstIterator I = base_scene_node_remap.find(p_idx);
+	AHashMap<int, int>::ConstIterator I = base_scene_node_remap.find(p_idx);
 	if (I) {
 		return get_base_scene_state()->get_node_deferred_nodepath_properties(I->value);
 	}
