@@ -162,7 +162,7 @@ static Error _jpgd_save_to_output_stream(jpge::output_stream *p_output_stream, c
 		ERR_FAIL_COND_V_MSG(error != OK, error, "Couldn't decompress image.");
 	}
 	if (image->get_format() != Image::FORMAT_RGB8) {
-		image = p_img->duplicate();
+		image = image->duplicate();
 		image->convert(Image::FORMAT_RGB8);
 	}
 
