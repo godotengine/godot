@@ -195,6 +195,8 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_REPARENT_TO_NEW_NODE);
 	} else if (ED_IS_SHORTCUT("scene_tree/save_branch_as_scene", p_event)) {
 		_tool_selected(TOOL_NEW_SCENE_FROM);
+	} else if (ED_IS_SHORTCUT("scene_tree/editor_only", p_event)) {
+		_tool_selected(TOOL_EDITOR_ONLY);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete_no_confirm", p_event)) {
 		_tool_selected(TOOL_ERASE, true);
 	} else if (ED_IS_SHORTCUT("scene_tree/copy_node_path", p_event)) {
@@ -542,6 +544,20 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 			[[fallthrough]];
+		case TOOL_EDITOR_ONLY: {
+			List<Node *> selection = editor_selection->get_selected_node_list();
+			if (selection.size() == 0) {
+				break;
+			}
+
+			for (Node *node : selection) {
+				node->set_scene_editor_only(!node->get_scene_editor_only());
+				scene_tree->_update_tree();
+				emit_signal("node_changed");
+			}
+
+			scene_tree->update_tree();
+		} break;
 		case TOOL_NEW: {
 			if (!profile_allow_editing) {
 				break;
@@ -3583,6 +3599,8 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		}
 	}
 
+	menu->add_icon_shortcut(get_theme_icon(SNAME("GuiExistenceDisabled"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/editor_only"), TOOL_EDITOR_ONLY);
+
 	if (profile_allow_editing) {
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
 
@@ -4396,6 +4414,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/reparent_to_new_node", TTR("Reparent to New Node..."));
 	ED_SHORTCUT("scene_tree/make_root", TTR("Make Scene Root"));
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTR("Save Branch as Scene..."));
+	ED_SHORTCUT("scene_tree/editor_only", TTR("Toggle Editor-Only"));
 	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("scene_tree/show_in_file_system", TTR("Show in FileSystem"));
 	ED_SHORTCUT("scene_tree/toggle_unique_name", TTR("Toggle Access as Unique Name"));

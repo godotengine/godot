@@ -626,6 +626,9 @@ public:
 	void set_scene_instance_load_placeholder(bool p_enable);
 	bool get_scene_instance_load_placeholder() const;
 
+	void set_scene_editor_only(bool p_enable);
+	bool get_scene_editor_only() const;
+
 	template <typename... VarArgs>
 	Vector<Variant> make_binds(VarArgs... p_args) {
 		Vector<Variant> binds = { p_args... };

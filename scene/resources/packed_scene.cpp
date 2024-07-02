@@ -192,7 +192,19 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		MissingNode *missing_node = nullptr;
 		bool is_inherited_scene = false;
 
-		if (i == 0 && base_scene_idx >= 0) {
+		bool editor_only = false;
+		if (!Engine::get_singleton()->is_editor_hint()) {
+			editor_only = n.editor_only > 0;
+			if (parent) {
+				if (parent->get_scene_editor_only()) {
+					editor_only = true;
+				}
+			}
+		}
+		if (editor_only) {
+			node = Object::cast_to<Node>(memnew(Node));
+			node->set_scene_editor_only(true);
+		} else if (i == 0 && base_scene_idx >= 0) {
 			// Scene inheritance on root node.
 			Ref<PackedScene> sdata = props[base_scene_idx];
 			ERR_FAIL_COND_V(!sdata.is_valid(), nullptr);
@@ -300,6 +312,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			// may not have found the node (part of instantiated scene and removed)
 			// if found all is good, otherwise ignore
 
+			node->set_scene_editor_only(editor_only || n.editor_only > 0);
+
 			//properties
 			int nprop_count = n.properties.size();
 			if (nprop_count) {
@@ -336,6 +350,15 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					}
 
 					ERR_FAIL_INDEX_V(nprops[j].name, sname_count, nullptr);
+
+					if (!Engine::get_singleton()->is_editor_hint()) {
+						if (snames[nprops[j].name] == "metadata/_editor_only_" && props[nprops[j].value]) {
+							editor_only = true;
+							node = Object::cast_to<Node>(memnew(Node));
+							node->set_scene_editor_only(true);
+							break;
+						}
+					}
 
 					if (snames[nprops[j].name] == CoreStringName(script)) {
 						//work around to avoid old script variables from disappearing, should be the proper fix to:
@@ -897,6 +920,8 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		// instead, save that it was instantiated
 		nd.type = TYPE_INSTANTIATED;
 	}
+
+	nd.editor_only = p_node->get_scene_editor_only();
 
 	// determine whether to save this node or not
 	// if this node is part of an instantiated sub-scene, we can skip storing it if basically
@@ -1675,6 +1700,10 @@ String SceneState::get_node_instance_placeholder(int p_idx) const {
 	}
 
 	return String();
+}
+
+bool SceneState::get_node_editor_only(int p_idx) const {
+	return nodes[p_idx].editor_only > 0;
 }
 
 Vector<StringName> SceneState::get_node_groups(int p_idx) const {

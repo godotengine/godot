@@ -2627,6 +2627,14 @@ bool Node::get_scene_instance_load_placeholder() const {
 	return data.use_placeholder;
 }
 
+void Node::set_scene_editor_only(bool p_enable) {
+	set_meta("_editor_only_", p_enable);
+}
+
+bool Node::get_scene_editor_only() const {
+	return get_meta("_editor_only_", false);
+}
+
 Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) const {
 	ERR_THREAD_GUARD_V(nullptr);
 	Node *node = nullptr;

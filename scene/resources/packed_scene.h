@@ -59,6 +59,7 @@ class SceneState : public RefCounted {
 		int name = 0;
 		int instance = 0;
 		int index = 0;
+		int editor_only = 0;
 
 		struct Property {
 			int name = 0;
@@ -175,6 +176,7 @@ public:
 	Ref<PackedScene> get_node_instance(int p_idx) const;
 	String get_node_instance_placeholder(int p_idx) const;
 	bool is_node_instance_placeholder(int p_idx) const;
+	bool get_node_editor_only(int p_idx) const;
 	Vector<StringName> get_node_groups(int p_idx) const;
 	int get_node_index(int p_idx) const;
 

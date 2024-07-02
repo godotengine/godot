@@ -290,6 +290,21 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 	}
 
+	Node *node = p_node;
+	bool editor_only = false;
+	while (node) {
+		if (node->get_scene_editor_only()) {
+			editor_only = true;
+			break;
+		}
+		node = node->get_parent();
+	}
+	if (p_node->get_scene_editor_only()) {
+		_set_item_custom_color(item, Color(0.28, 0.6, 1.0));
+	} else if (editor_only) {
+		_set_item_custom_color(item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
+	}
+
 	if (can_rename) { //should be can edit..
 
 		const PackedStringArray warnings = p_node->get_configuration_warnings();
