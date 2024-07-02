@@ -47,6 +47,15 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 
+#if defined(VULKAN_ENABLED)
+#undef VK_USE_PLATFORM_XLIB_KHR
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#endif
+
+#if defined(D3D12_ENABLED)
+#include "drivers/d3d12/rendering_context_driver_d3d12.h"
+#endif
+
 void ProjectDialog::_set_message(const String &p_msg, MessageType p_type, InputType p_input_type) {
 	msg->set_text(p_msg);
 	get_ok_button()->set_disabled(p_type == MESSAGE_ERROR);
@@ -888,17 +897,54 @@ ProjectDialog::ProjectDialog() {
 	Container *rvb = memnew(VBoxContainer);
 	rshc->add_child(rvb);
 
+	// Check for rendering device support.
+	bool rendering_device_supported = false;
+#if defined(RD_ENABLED)
+	Error err;
+	RenderingContextDriver *rcd = nullptr;
+
+#if defined(VULKAN_ENABLED)
+	rcd = memnew(RenderingContextDriverVulkan);
+#endif
+#ifdef D3D12_ENABLED
+	if (rcd == nullptr) {
+		rcd = memnew(RenderingContextDriverD3D12);
+	}
+#endif
+
+	if (rcd != nullptr) {
+		err = rcd->initialize();
+		if (err == OK) {
+			RenderingDevice *rd = memnew(RenderingDevice);
+			err = rd->initialize(rcd);
+			memdelete(rd);
+			rd = nullptr;
+			if (err == OK) {
+				rendering_device_supported = true;
+			}
+		}
+
+		memdelete(rcd);
+		rcd = nullptr;
+	}
+
+#endif
+
 	String default_renderer_type = "forward_plus";
 	if (EditorSettings::get_singleton()->has_setting("project_manager/default_renderer")) {
 		default_renderer_type = EditorSettings::get_singleton()->get_setting("project_manager/default_renderer");
 	}
 
+	if (!rendering_device_supported) {
+		default_renderer_type = "gl_compatibility";
+	}
+
 	Button *rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTR("Forward+"));
-#if defined(WEB_ENABLED)
-	rs_button->set_disabled(true);
-#endif
+	if (!rendering_device_supported) {
+		rs_button->set_disabled(true);
+	}
 	rs_button->set_meta(SNAME("rendering_method"), "forward_plus");
 	rs_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_renderer_selected));
 	rvb->add_child(rs_button);
@@ -908,9 +954,9 @@ ProjectDialog::ProjectDialog() {
 	rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTR("Mobile"));
-#if defined(WEB_ENABLED)
-	rs_button->set_disabled(true);
-#endif
+	if (!rendering_device_supported) {
+		rs_button->set_disabled(true);
+	}
 	rs_button->set_meta(SNAME("rendering_method"), "mobile");
 	rs_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_renderer_selected));
 	rvb->add_child(rs_button);
