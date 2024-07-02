@@ -439,12 +439,12 @@ PackedStringArray GeometryInstance3D::get_configuration_warnings() const {
 		warnings.push_back(RTR("The GeometryInstance3D is configured to fade out smoothly over distance, but the fade transition distance is set to 0.\nTo resolve this, increase Visibility Range End Margin above 0."));
 	}
 
-	if (!Math::is_zero_approx(transparency) && OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
-		warnings.push_back(RTR("GeometryInstance3D transparency is only available when using the Forward+ rendering method."));
+	if (!Math::is_zero_approx(transparency) && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("GeometryInstance3D transparency is only available when using the Forward+ or Mobile rendering methods."));
 	}
 
-	if ((visibility_range_fade_mode == VISIBILITY_RANGE_FADE_SELF || visibility_range_fade_mode == VISIBILITY_RANGE_FADE_DEPENDENCIES) && OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
-		warnings.push_back(RTR("GeometryInstance3D visibility range transparency fade is only available when using the Forward+ rendering method."));
+	if ((visibility_range_fade_mode == VISIBILITY_RANGE_FADE_SELF || visibility_range_fade_mode == VISIBILITY_RANGE_FADE_DEPENDENCIES) && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("GeometryInstance3D visibility range transparency fade is only available when using the Forward+ or Mobile rendering methods."));
 	}
 
 	return warnings;
