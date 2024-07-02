@@ -35,113 +35,14 @@ ext {
     // `./gradlew generateGodotTemplates` build command instead after running the `scons` command(s).
     // The {selectedAbis} values must be from the {supportedAbis} values.
     selectedAbis = ["arm64"]
-}
 
-def rootDir = "../../.."
-def binDir = "$rootDir/bin/"
-def androidEditorBuildsDir = "$binDir/android_editor_builds/"
+    rootDir = "../../.."
+    binDir = "$rootDir/bin/"
+    androidEditorBuildsDir = "$binDir/android_editor_builds/"
+}
 
 def getSconsTaskName(String flavor, String buildType, String abi) {
     return "compileGodotNativeLibs" + flavor.capitalize() + buildType.capitalize() + abi.capitalize()
-}
-
-/**
- * Copy the generated 'android_debug.apk' binary template into the Godot bin directory.
- * Depends on the app build task to ensure the binary is generated prior to copying.
- */
-task copyDebugBinaryToBin(type: Copy) {
-    dependsOn ':app:assembleDebug'
-    from('app/build/outputs/apk/debug')
-    into(binDir)
-    include('android_debug.apk')
-}
-
-/**
- * Copy the generated 'android_dev.apk' binary template into the Godot bin directory.
- * Depends on the app build task to ensure the binary is generated prior to copying.
- */
-task copyDevBinaryToBin(type: Copy) {
-    dependsOn ':app:assembleDev'
-    from('app/build/outputs/apk/dev')
-    into(binDir)
-    include('android_dev.apk')
-}
-
-/**
- * Copy the generated 'android_release.apk' binary template into the Godot bin directory.
- * Depends on the app build task to ensure the binary is generated prior to copying.
- */
-task copyReleaseBinaryToBin(type: Copy) {
-    dependsOn ':app:assembleRelease'
-    from('app/build/outputs/apk/release')
-    into(binDir)
-    include('android_release.apk')
-}
-
-/**
- * Copy the Godot android library archive debug file into the app module debug libs directory.
- * Depends on the library build task to ensure the AAR file is generated prior to copying.
- */
-task copyDebugAARToAppModule(type: Copy) {
-    dependsOn ':lib:assembleTemplateDebug'
-    from('lib/build/outputs/aar')
-    into('app/libs/debug')
-    include('godot-lib.template_debug.aar')
-}
-
-/**
- * Copy the Godot android library archive debug file into the root bin directory.
- * Depends on the library build task to ensure the AAR file is generated prior to copying.
- */
-task copyDebugAARToBin(type: Copy) {
-    dependsOn ':lib:assembleTemplateDebug'
-    from('lib/build/outputs/aar')
-    into(binDir)
-    include('godot-lib.template_debug.aar')
-}
-
-/**
- * Copy the Godot android library archive dev file into the app module dev libs directory.
- * Depends on the library build task to ensure the AAR file is generated prior to copying.
- */
-task copyDevAARToAppModule(type: Copy) {
-    dependsOn ':lib:assembleTemplateDev'
-    from('lib/build/outputs/aar')
-    into('app/libs/dev')
-    include('godot-lib.template_debug.dev.aar')
-}
-
-/**
- * Copy the Godot android library archive dev file into the root bin directory.
- * Depends on the library build task to ensure the AAR file is generated prior to copying.
- */
-task copyDevAARToBin(type: Copy) {
-    dependsOn ':lib:assembleTemplateDev'
-    from('lib/build/outputs/aar')
-    into(binDir)
-    include('godot-lib.template_debug.dev.aar')
-}
-
-/**
- * Copy the Godot android library archive release file into the app module release libs directory.
- * Depends on the library build task to ensure the AAR file is generated prior to copying.
- */
-task copyReleaseAARToAppModule(type: Copy) {
-    dependsOn ':lib:assembleTemplateRelease'
-    from('lib/build/outputs/aar')
-    into('app/libs/release')
-    include('godot-lib.template_release.aar')
-}
-
-/**
- * Copy the Godot android library archive release file into the root bin directory.
- * Depends on the library build task to ensure the AAR file is generated prior to copying.
- */
-task copyReleaseAARToBin(type: Copy) {
-    dependsOn ':lib:assembleTemplateRelease'
-    from('lib/build/outputs/aar')
-    into(binDir)
-    include('godot-lib.template_release.aar')
 }
 
 /**
@@ -197,7 +98,7 @@ def generateBuildTasks(String flavor = "template") {
         throw new GradleException("Invalid build flavor: $flavor")
     }
 
-    def tasks = []
+    def buildTasks = []
 
     // Only build the apks and aar files for which we have native shared libraries unless we intend
     // to run the scons build tasks.
@@ -206,72 +107,93 @@ def generateBuildTasks(String flavor = "template") {
     String libsDir = isTemplate ? "lib/libs/" : "lib/libs/tools/"
     for (String target : supportedFlavorsBuildTypes[flavor]) {
         File targetLibs = new File(libsDir + target)
+
+        String targetSuffix = target
+        if (target == "dev") {
+            targetSuffix = "debug.dev"
+        }
+
         if (!excludeSconsBuildTasks || (targetLibs != null
             && targetLibs.isDirectory()
             && targetLibs.listFiles() != null
             && targetLibs.listFiles().length > 0)) {
+
             String capitalizedTarget = target.capitalize()
             if (isTemplate) {
-                // Copy the generated aar library files to the build directory.
-                tasks += "copy${capitalizedTarget}AARToAppModule"
-                // Copy the generated aar library files to the bin directory.
-                tasks += "copy${capitalizedTarget}AARToBin"
-                // Copy the prebuilt binary templates to the bin directory.
-                tasks += "copy${capitalizedTarget}BinaryToBin"
+                // Copy the Godot android library archive file into the app module libs directory.
+                // Depends on the library build task to ensure the AAR file is generated prior to copying.
+                String copyAARTaskName = "copy${capitalizedTarget}AARToAppModule"
+                if (tasks.findByName(copyAARTaskName) != null) {
+                    buildTasks += tasks.getByName(copyAARTaskName)
+                } else {
+                    buildTasks += tasks.create(name: copyAARTaskName, type: Copy) {
+                        dependsOn ":lib:assembleTemplate${capitalizedTarget}"
+                        from('lib/build/outputs/aar')
+                        include("godot-lib.template_${targetSuffix}.aar")
+                        into("app/libs/${target}")
+                    }
+                }
+
+                // Copy the Godot android library archive file into the root bin directory.
+                // Depends on the library build task to ensure the AAR file is generated prior to copying.
+                String copyAARToBinTaskName = "copy${capitalizedTarget}AARToBin"
+                if (tasks.findByName(copyAARToBinTaskName) != null) {
+                    buildTasks += tasks.getByName(copyAARToBinTaskName)
+                } else {
+                    buildTasks += tasks.create(name: copyAARToBinTaskName, type: Copy) {
+                        dependsOn ":lib:assembleTemplate${capitalizedTarget}"
+                        from('lib/build/outputs/aar')
+                        include("godot-lib.template_${targetSuffix}.aar")
+                        into(binDir)
+                    }
+                }
+
+                // Copy the generated binary template into the Godot bin directory.
+                // Depends on the app build task to ensure the binary is generated prior to copying.
+                String copyBinaryTaskName = "copy${capitalizedTarget}BinaryToBin"
+                if (tasks.findByName(copyBinaryTaskName) != null) {
+                    buildTasks += tasks.getByName(copyBinaryTaskName)
+                } else {
+                    buildTasks += tasks.create(name: copyBinaryTaskName, type: Copy) {
+                        dependsOn ":app:assemble${capitalizedTarget}"
+                        from("app/build/outputs/apk/${target}")
+                        into(binDir)
+                        include("android_${target}.apk")
+                    }
+                }
             } else {
                 // Copy the generated editor apk to the bin directory.
-                tasks += "copyEditor${capitalizedTarget}ApkToBin"
+                String copyEditorApkTaskName = "copyEditor${capitalizedTarget}ApkToBin"
+                if (tasks.findByName(copyEditorApkTaskName) != null) {
+                    buildTasks += tasks.getByName(copyEditorApkTaskName)
+                } else {
+                    buildTasks += tasks.create(name: copyEditorApkTaskName, type: Copy) {
+                        dependsOn ":editor:assemble${capitalizedTarget}"
+                        from("editor/build/outputs/apk/${target}")
+                        into(androidEditorBuildsDir)
+                        include("android_editor-${target}*.apk")
+                    }
+                }
+
                 // Copy the generated editor aab to the bin directory.
-                tasks += "copyEditor${capitalizedTarget}AabToBin"
+                String copyEditorAabTaskName = "copyEditor${capitalizedTarget}AabToBin"
+                if (tasks.findByName(copyEditorAabTaskName) != null) {
+                    buildTasks += tasks.getByName(copyEditorAabTaskName)
+                } else {
+                    buildTasks += tasks.create(name: copyEditorAabTaskName, type: Copy) {
+                        dependsOn ":editor:bundle${capitalizedTarget}"
+                        from("editor/build/outputs/bundle/${target}")
+                        into(androidEditorBuildsDir)
+                        include("android_editor-${target}*.aab")
+                    }
+                }
             }
         } else {
             logger.lifecycle("No native shared libs for target $target. Skipping build.")
         }
     }
 
-    return tasks
-}
-
-task copyEditorReleaseApkToBin(type: Copy) {
-    dependsOn ':editor:assembleRelease'
-    from('editor/build/outputs/apk/release')
-    into(androidEditorBuildsDir)
-    include('android_editor-release*.apk')
-}
-
-task copyEditorReleaseAabToBin(type: Copy) {
-    dependsOn ':editor:bundleRelease'
-    from('editor/build/outputs/bundle/release')
-    into(androidEditorBuildsDir)
-    include('android_editor-release*.aab')
-}
-
-task copyEditorDebugApkToBin(type: Copy) {
-    dependsOn ':editor:assembleDebug'
-    from('editor/build/outputs/apk/debug')
-    into(androidEditorBuildsDir)
-    include('android_editor-debug.apk')
-}
-
-task copyEditorDebugAabToBin(type: Copy) {
-    dependsOn ':editor:bundleDebug'
-    from('editor/build/outputs/bundle/debug')
-    into(androidEditorBuildsDir)
-    include('android_editor-debug.aab')
-}
-
-task copyEditorDevApkToBin(type: Copy) {
-    dependsOn ':editor:assembleDev'
-    from('editor/build/outputs/apk/dev')
-    into(androidEditorBuildsDir)
-    include('android_editor-dev.apk')
-}
-
-task copyEditorDevAabToBin(type: Copy) {
-    dependsOn ':editor:bundleDev'
-    from('editor/build/outputs/bundle/dev')
-    into(androidEditorBuildsDir)
-    include('android_editor-dev.aab')
+    return buildTasks
 }
 
 /**
