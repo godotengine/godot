@@ -290,7 +290,6 @@ class EditorFileSystem : public Node {
 	void _queue_update_scene_groups(const String &p_path);
 	void _update_scene_groups();
 	void _update_pending_scene_groups();
-	HashSet<StringName> _get_scene_groups(const String &p_path);
 	void _get_all_scenes(EditorFileSystemDirectory *p_dir, HashSet<String> &r_list);
 
 	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
