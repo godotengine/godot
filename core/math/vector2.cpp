@@ -41,40 +41,9 @@ Vector2 Vector2::from_angle(real_t p_angle) {
 	return Vector2(Math::cos(p_angle), Math::sin(p_angle));
 }
 
-real_t Vector2::length() const {
-	return Math::sqrt(x * x + y * y);
-}
-
-real_t Vector2::length_squared() const {
-	return x * x + y * y;
-}
-
-void Vector2::normalize() {
-	real_t l = x * x + y * y;
-	if (l != 0) {
-		l = Math::sqrt(l);
-		x /= l;
-		y /= l;
-	}
-}
-
-Vector2 Vector2::normalized() const {
-	Vector2 v = *this;
-	v.normalize();
-	return v;
-}
-
 bool Vector2::is_normalized() const {
-	// use length_squared() instead of length() to avoid sqrt(), makes it more stringent.
+	// Use length_squared() instead of length() to avoid sqrt(), makes it more stringent.
 	return Math::is_equal_approx(length_squared(), 1, (real_t)UNIT_EPSILON);
-}
-
-real_t Vector2::distance_to(const Vector2 &p_vector2) const {
-	return Math::sqrt((x - p_vector2.x) * (x - p_vector2.x) + (y - p_vector2.y) * (y - p_vector2.y));
-}
-
-real_t Vector2::distance_squared_to(const Vector2 &p_vector2) const {
-	return (x - p_vector2.x) * (x - p_vector2.x) + (y - p_vector2.y) * (y - p_vector2.y);
 }
 
 real_t Vector2::angle_to(const Vector2 &p_vector2) const {
@@ -83,30 +52,6 @@ real_t Vector2::angle_to(const Vector2 &p_vector2) const {
 
 real_t Vector2::angle_to_point(const Vector2 &p_vector2) const {
 	return (p_vector2 - *this).angle();
-}
-
-real_t Vector2::dot(const Vector2 &p_other) const {
-	return x * p_other.x + y * p_other.y;
-}
-
-real_t Vector2::cross(const Vector2 &p_other) const {
-	return x * p_other.y - y * p_other.x;
-}
-
-Vector2 Vector2::sign() const {
-	return Vector2(SIGN(x), SIGN(y));
-}
-
-Vector2 Vector2::floor() const {
-	return Vector2(Math::floor(x), Math::floor(y));
-}
-
-Vector2 Vector2::ceil() const {
-	return Vector2(Math::ceil(x), Math::ceil(y));
-}
-
-Vector2 Vector2::round() const {
-	return Vector2(Math::round(x), Math::round(y));
 }
 
 Vector2 Vector2::rotated(real_t p_by) const {
@@ -129,18 +74,6 @@ Vector2 Vector2::project(const Vector2 &p_to) const {
 	return p_to * (dot(p_to) / p_to.length_squared());
 }
 
-Vector2 Vector2::clamp(const Vector2 &p_min, const Vector2 &p_max) const {
-	return Vector2(
-			CLAMP(x, p_min.x, p_max.x),
-			CLAMP(y, p_min.y, p_max.y));
-}
-
-Vector2 Vector2::clampf(real_t p_min, real_t p_max) const {
-	return Vector2(
-			CLAMP(x, p_min, p_max),
-			CLAMP(y, p_min, p_max));
-}
-
 Vector2 Vector2::snapped(const Vector2 &p_step) const {
 	return Vector2(
 			Math::snapped(x, p_step.x),
@@ -160,7 +93,6 @@ Vector2 Vector2::limit_length(real_t p_len) const {
 		v /= l;
 		v *= p_len;
 	}
-
 	return v;
 }
 
@@ -190,16 +122,17 @@ Vector2 Vector2::reflect(const Vector2 &p_normal) const {
 	return 2.0f * p_normal * dot(p_normal) - *this;
 }
 
-bool Vector2::is_equal_approx(const Vector2 &p_v) const {
-	return Math::is_equal_approx(x, p_v.x) && Math::is_equal_approx(y, p_v.y);
-}
-
-bool Vector2::is_zero_approx() const {
-	return Math::is_zero_approx(x) && Math::is_zero_approx(y);
-}
-
-bool Vector2::is_finite() const {
-	return Math::is_finite(x) && Math::is_finite(y);
+Vector2 Vector2::slerp(const Vector2 &p_to, real_t p_weight) const {
+	real_t start_length_sq = length_squared();
+	real_t end_length_sq = p_to.length_squared();
+	if (unlikely(start_length_sq == 0.0f || end_length_sq == 0.0f)) {
+		// Zero length vectors have no angle, so the best we can do is either lerp or throw an error.
+		return lerp(p_to, p_weight);
+	}
+	real_t start_length = Math::sqrt(start_length_sq);
+	real_t result_length = Math::lerp(start_length, Math::sqrt(end_length_sq), p_weight);
+	real_t angle = angle_to(p_to);
+	return rotated(angle * p_weight) * (result_length / start_length);
 }
 
 Vector2::operator String() const {
@@ -208,4 +141,32 @@ Vector2::operator String() const {
 
 Vector2::operator Vector2i() const {
 	return Vector2i(x, y);
+}
+
+Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_weight) const {
+	return Vector2(
+			Math::cubic_interpolate(x, p_b.x, p_pre_a.x, p_post_b.x, p_weight),
+			Math::cubic_interpolate(y, p_b.y, p_pre_a.y, p_post_b.y, p_weight));
+}
+
+Vector2 Vector2::cubic_interpolate_in_time(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_weight, real_t p_b_t, real_t p_pre_a_t, real_t p_post_b_t) const {
+	return Vector2(
+			Math::cubic_interpolate_in_time(x, p_b.x, p_pre_a.x, p_post_b.x, p_weight, p_b_t, p_pre_a_t, p_post_b_t),
+			Math::cubic_interpolate_in_time(y, p_b.y, p_pre_a.y, p_post_b.y, p_weight, p_b_t, p_pre_a_t, p_post_b_t));
+}
+
+Vector2 Vector2::bezier_interpolate(const Vector2 &p_control_1, const Vector2 &p_control_2, const Vector2 &p_end, real_t p_t) const {
+	return Vector2(
+			Math::bezier_interpolate(x, p_control_1.x, p_control_2.x, p_end.x, p_t),
+			Math::bezier_interpolate(y, p_control_1.y, p_control_2.y, p_end.y, p_t));
+}
+
+Vector2 Vector2::bezier_derivative(const Vector2 &p_control_1, const Vector2 &p_control_2, const Vector2 &p_end, real_t p_t) const {
+	return Vector2(
+			Math::bezier_derivative(x, p_control_1.x, p_control_2.x, p_end.x, p_t),
+			Math::bezier_derivative(y, p_control_1.y, p_control_2.y, p_end.y, p_t));
+}
+
+Vector2 Vector2::plane_project(real_t p_d, const Vector2 &p_vec) const {
+	return p_vec - *this * (dot(p_vec) - p_d);
 }
