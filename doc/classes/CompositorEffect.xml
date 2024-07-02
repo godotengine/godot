@@ -35,13 +35,13 @@
 			var depth_buffer = render_scene_buffers.get_texture("render_buffers", "depth")
 			[/codeblock]
 		</member>
-		<member name="effect_callback_type" type="int" setter="set_effect_callback_type" getter="get_effect_callback_type" enum="CompositorEffect.EffectCallbackType">
+		<member name="effect_callback_type" type="int" setter="set_effect_callback_type" getter="get_effect_callback_type" enum="CompositorEffect.EffectCallbackType" default="4">
 			The type of effect that is implemented, determines at what stage of rendering the callback is called.
 		</member>
-		<member name="enabled" type="bool" setter="set_enabled" getter="get_enabled">
+		<member name="enabled" type="bool" setter="set_enabled" getter="get_enabled" default="true">
 			If [code]true[/code] this rendering effect is applied to any viewport it is added to.
 		</member>
-		<member name="needs_motion_vectors" type="bool" setter="set_needs_motion_vectors" getter="get_needs_motion_vectors">
+		<member name="needs_motion_vectors" type="bool" setter="set_needs_motion_vectors" getter="get_needs_motion_vectors" default="true">
 			If [code]true[/code] this triggers motion vectors being calculated during the opaque render state.
 			[b]Note:[/b] In [method _render_callback], to access the motion vector buffer use:
 			[codeblock]
@@ -49,7 +49,7 @@
 			var motion_buffer = render_scene_buffers.get_velocity_texture()
 			[/codeblock]
 		</member>
-		<member name="needs_normal_roughness" type="bool" setter="set_needs_normal_roughness" getter="get_needs_normal_roughness">
+		<member name="needs_normal_roughness" type="bool" setter="set_needs_normal_roughness" getter="get_needs_normal_roughness" default="false">
 			If [code]true[/code] this triggers normal and roughness data to be output during our depth pre-pass, only applicable for the Forward+ renderer.
 			[b]Note:[/b] In [method _render_callback], to access the roughness buffer use:
 			[codeblock]

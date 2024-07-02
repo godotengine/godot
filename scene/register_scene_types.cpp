@@ -126,6 +126,7 @@
 #include "scene/resources/material.h"
 #include "scene/resources/mesh_data_tool.h"
 #include "scene/resources/mesh_texture.h"
+#include "scene/resources/motion_blur_compositor_effect.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/navigation_mesh.h"
 #include "scene/resources/packed_scene.h"
@@ -586,6 +587,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(GPUParticlesAttractorSphere3D);
 	GDREGISTER_CLASS(GPUParticlesAttractorVectorField3D);
 	GDREGISTER_CLASS(CPUParticles3D);
+	GDREGISTER_CLASS(MotionBlurCompositorEffect);
 	GDREGISTER_CLASS(Marker3D);
 	GDREGISTER_CLASS(RootMotionView);
 	GDREGISTER_VIRTUAL_CLASS(SkeletonModifier3D);
