@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -46,6 +47,21 @@ namespace Godot.SourceGenerators
             }
 
             return false;
+        }
+
+        public static string? GetDocumentationSummaryText(this ISymbol symbol)
+        {
+            var syntax = symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
+            while (syntax is VariableDeclaratorSyntax vds)
+            {
+                syntax = vds.Parent?.Parent;
+            }
+            var trivia = syntax?.GetLeadingTrivia();
+
+            string summaryContent = Regex.Match(trivia.ToString(), "(?<=<summary>)[.\\s\\S]*?(?=</summary>)", RegexOptions.Singleline).Value;
+            string cleanedSummary = Regex.Replace(summaryContent, @"^\s*///\s?", "", RegexOptions.Multiline);
+
+            return cleanedSummary.Trim().Replace("\n", "\\n");
         }
 
         public static INamedTypeSymbol? GetGodotScriptNativeClass(this INamedTypeSymbol classTypeSymbol)

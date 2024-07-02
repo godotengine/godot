@@ -1181,6 +1181,170 @@ namespace Godot.Bridge
             return godot_bool.False;
         }
 
+        // ReSharper disable once InconsistentNaming
+        [SuppressMessage("ReSharper", "NotAccessedField.Local")]
+        [StructLayout(LayoutKind.Sequential)]
+        private ref struct godotsharp_doc
+        {
+            public godot_string Type;
+            public godot_string_name Name;
+            public godot_string Description;
+        }
+
+        [UnmanagedCallersOnly]
+        internal static unsafe void GetDocs(IntPtr scriptPtr,
+            delegate* unmanaged<IntPtr, void*, int, void> addDocFunc)
+        {
+            try
+            {
+                Type scriptType = _scriptTypeBiMap.GetScriptType(scriptPtr);
+                GetDocForType(scriptType, scriptPtr, addDocFunc);
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+            }
+        }
+
+        [SkipLocalsInit]
+        private static unsafe void GetDocForType(Type type, IntPtr scriptPtr,
+            delegate* unmanaged<IntPtr, void*, int, void> addDocFunc)
+        {
+            try
+            {
+                var getGetGodotClassDocsMethod = type.GetMethod(
+                    "GetGodotClassDocs",
+                    BindingFlags.DeclaredOnly | BindingFlags.Static |
+                    BindingFlags.NonPublic | BindingFlags.Public);
+
+                if (getGetGodotClassDocsMethod == null)
+                    return;
+
+                Dictionary<StringName, string>? classDocsObj = (Dictionary<StringName, string>?)getGetGodotClassDocsMethod.Invoke(null, null);
+
+                if (classDocsObj == null)
+                    return;
+
+                int length = classDocsObj.Count;
+
+                var getGetGodotPropertyDocsMethod = type.GetMethod(
+                    "GetGodotPropertyDocs",
+                    BindingFlags.DeclaredOnly | BindingFlags.Static |
+                    BindingFlags.NonPublic | BindingFlags.Public);
+                Dictionary<StringName, string>? propertyDocsObj = null;
+                if (getGetGodotPropertyDocsMethod != null)
+                {
+                    propertyDocsObj = (Dictionary<StringName, string>?)getGetGodotPropertyDocsMethod.Invoke(null, null);
+                    if (propertyDocsObj != null && propertyDocsObj.Count > 0)
+                    {
+                        length += propertyDocsObj.Count;
+                    }
+                }
+
+                var getGetGodotSignalDocsMethod = type.GetMethod(
+                    "GetGodotSignalDocs",
+                    BindingFlags.DeclaredOnly | BindingFlags.Static |
+                    BindingFlags.NonPublic | BindingFlags.Public);
+                Dictionary<StringName, string>? signalDocsObj = null;
+                if (getGetGodotSignalDocsMethod != null)
+                {
+                    signalDocsObj = (Dictionary<StringName, string>?)getGetGodotSignalDocsMethod.Invoke(null, null);
+                    if (signalDocsObj != null && signalDocsObj.Count > 0)
+                    {
+                        length += signalDocsObj.Count;
+                    }
+                }
+
+                // There's no recursion here, so it's ok to go with a big enough number for most cases
+                // stackMaxSize = stackMaxLength * sizeof(godotsharp_doc)
+                const int stackMaxLength = 32;
+                bool useStack = length < stackMaxLength;
+
+                godotsharp_doc* interopDocs;
+
+                if (useStack)
+                {
+                    // Weird limitation, hence the need for aux:
+                    // "In the case of pointer types, you can use a stackalloc expression only in a local variable declaration to initialize the variable."
+                    var aux = stackalloc godotsharp_doc[stackMaxLength];
+                    interopDocs = aux;
+                }
+                else
+                {
+                    interopDocs = ((godotsharp_doc*)NativeMemory.Alloc(
+                        (nuint)length, (nuint)sizeof(godotsharp_doc)))!;
+                }
+
+                try
+                {
+                    int i = 0;
+
+                    foreach (var item in classDocsObj)
+                    {
+                        godotsharp_doc interopDoc = new()
+                        {
+                            Type = Marshaling.ConvertStringToNative("class"),
+                            Name = (godot_string_name)item.Key.NativeValue,
+                            Description = Marshaling.ConvertStringToNative(item.Value)
+                        };
+
+                        interopDocs[i] = interopDoc;
+
+                        i++;
+                    }
+                    if (propertyDocsObj != null)
+                    {
+                        foreach (var item in propertyDocsObj)
+                        {
+                            godotsharp_doc interopDoc = new()
+                            {
+                                Type = Marshaling.ConvertStringToNative("property"),
+                                Name = (godot_string_name)item.Key.NativeValue,
+                                Description = Marshaling.ConvertStringToNative(item.Value)
+                            };
+
+                            interopDocs[i] = interopDoc;
+
+                            i++;
+                        }
+                    }
+                    if (signalDocsObj != null)
+                    {
+                        foreach (var item in signalDocsObj)
+                        {
+                            godotsharp_doc interopDoc = new()
+                            {
+                                Type = Marshaling.ConvertStringToNative("signal"),
+                                Name = (godot_string_name)item.Key.NativeValue,
+                                Description = Marshaling.ConvertStringToNative(item.Value)
+                            };
+
+                            interopDocs[i] = interopDoc;
+
+                            i++;
+                        }
+                    }
+
+                    addDocFunc(scriptPtr, interopDocs, length);
+
+                    // We're borrowing the native value of the StringName and Variant entries.
+                    // The dictionary needs to be kept alive until `addDefValFunc` returns.
+                    GC.KeepAlive(classDocsObj);
+                    GC.KeepAlive(propertyDocsObj);
+                    GC.KeepAlive(signalDocsObj);
+                }
+                finally
+                {
+                    if (!useStack)
+                        NativeMemory.Free(interopDocs);
+                }
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+            }
+        }
+
         [UnmanagedCallersOnly]
         internal static unsafe void GetPropertyDefaultValues(IntPtr scriptPtr,
             delegate* unmanaged<IntPtr, void*, int, void> addDefValFunc)

@@ -2025,7 +2025,7 @@ void GD_CLR_STDCALL CSharpScript::_add_property_info_list_callback(CSharpScript 
 #ifdef TOOLS_ENABLED
 	p_script->exported_members_cache.push_back(PropertyInfo(
 			Variant::NIL, p_script->type_info.class_name, PROPERTY_HINT_NONE,
-			p_script->get_path(), PROPERTY_USAGE_CATEGORY));
+			p_script->get_path().is_empty() ? p_script->get_class_name() : StringName(p_script->get_path()), PROPERTY_USAGE_CATEGORY));
 #endif
 
 	for (int i = 0; i < p_count; i++) {
@@ -2063,6 +2063,34 @@ void GD_CLR_STDCALL CSharpScript::_add_property_default_values_callback(CSharpSc
 		p_script->exported_members_defval_cache[name] = value;
 	}
 }
+
+void GD_CLR_STDCALL CSharpScript::_add_docs_callback(CSharpScript *p_script, void *p_docs, int32_t p_count) {
+	GDMonoCache::godotsharp_doc *godotsharp_docs = (GDMonoCache::godotsharp_doc *)p_docs;
+	DocData::ClassDoc class_doc = DocData::ClassDoc();
+	class_doc.is_script_doc = true;
+	for (int i = 0; i < p_count; i++) {
+		const GDMonoCache::godotsharp_doc &doc = godotsharp_docs[i];
+		String type = *reinterpret_cast<const String *>(&doc.type);
+		String name = *reinterpret_cast<const StringName *>(&doc.name);
+		String description = *reinterpret_cast<const String *>(&doc.description);
+		if (type == "class") {
+			class_doc.name = name;
+			class_doc.brief_description = description;
+			class_doc.is_script_doc = true;
+		} else if (type == "property") {
+			DocData::PropertyDoc prop_doc;
+			prop_doc.name = name;
+			prop_doc.description = description;
+			class_doc.properties.push_back(prop_doc);
+		} else if (type == "signal") {
+			DocData::MethodDoc signal_doc;
+			signal_doc.name = name;
+			signal_doc.description = description;
+			class_doc.signals.push_back(signal_doc);
+		}
+	}
+	p_script->docs.append(class_doc);
+}
 #endif
 
 bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_update) {
@@ -2093,6 +2121,7 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 #ifdef TOOLS_ENABLED
 		exported_members_cache.clear();
 		exported_members_defval_cache.clear();
+		docs.clear();
 #endif
 
 		if (GDMonoCache::godot_api_cache_updated) {
@@ -2100,6 +2129,7 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 
 #ifdef TOOLS_ENABLED
 			GDMonoCache::managed_callbacks.ScriptManagerBridge_GetPropertyDefaultValues(this, &_add_property_default_values_callback);
+			GDMonoCache::managed_callbacks.ScriptManagerBridge_GetDocs(this, &_add_docs_callback);
 #endif
 		}
 	}
@@ -2121,6 +2151,13 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 			} else {
 				p_instance_to_update->update(propnames, values);
 			}
+
+			if (EditorHelp::get_doc_data()) {
+				for (int i = 0; i < docs.size(); i++) {
+					EditorHelp::get_doc_data()->add_doc(docs[i]);
+				}
+			}
+
 		} else if (placeholders.size()) {
 			uint64_t script_modified_time = FileAccess::get_modified_time(get_path());
 			uint64_t last_valid_build_time = GDMono::get_singleton()->get_project_assembly_modified_time();
