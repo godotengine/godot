@@ -43,6 +43,7 @@ protected:
 		Vector3 position;
 		Vector3 normal;
 		int index_A = 0, index_B = 0;
+		int contact_index_A = -1, contact_index_B = -1;
 		Vector3 local_A, local_B;
 		Vector3 acc_impulse; // accumulated impulse - only one of the object's impulse is needed as impulse_a == -impulse_b
 		real_t acc_normal_impulse = 0.0; // accumulated normal impulse (Pn)
