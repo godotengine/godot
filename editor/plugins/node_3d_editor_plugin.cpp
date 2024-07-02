@@ -4258,13 +4258,24 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 	for (const String &path : files) {
 		Ref<Resource> res = ResourceLoader::load(path);
 		ERR_CONTINUE(res.is_null());
-
-		Ref<PackedScene> scene = res;
-		if (scene.is_valid()) {
-			Node *instance = scene->instantiate();
-			if (instance) {
-				instance = _sanitize_preview_node(instance);
-				preview_node->add_child(instance);
+		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
+		if (scene != nullptr) {
+			if (scene.is_valid()) {
+				Node *instance = scene->instantiate();
+				if (instance) {
+					if (instance->has_method("_get_custom_preview_node")) {
+						Node3D *custom_preview = Object::cast_to<Node3D>(instance->call("_get_custom_preview_node"));
+						if (custom_preview) {
+							memdelete(instance);
+							instance = custom_preview;
+						} else {
+							instance = _sanitize_preview_node(instance);
+						}
+					} else {
+						instance = _sanitize_preview_node(instance);
+					}
+					preview_node->add_child(instance);
+				}
 			}
 			add_preview = true;
 		}
