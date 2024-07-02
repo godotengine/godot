@@ -1959,11 +1959,14 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 						break;
 					}
 
-					if (base.value.in(index.value)) {
-						Variant value = base.value.get(index.value);
-						r_type = _type_from_variant(value, p_context);
-						found = true;
-						break;
+					{
+						bool valid;
+						Variant value = base.value.get(index.value, &valid);
+						if (valid) {
+							r_type = _type_from_variant(value, p_context);
+							found = true;
+							break;
+						}
 					}
 
 					// Look if it is a dictionary node.
