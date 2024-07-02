@@ -4,6 +4,8 @@
 
 #VERSION_DEFINES
 
+#include "../vertex_base_inc.glsl"
+
 layout(push_constant, std430) uniform Params {
 	float z_far;
 	float z_near;
@@ -15,8 +17,8 @@ params;
 layout(location = 0) out vec2 uv_interp;
 
 void main() {
-	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
-	uv_interp = base_arr[gl_VertexIndex];
+	SET_VERTEX_BASE_QUAD(); // vec2 vertex_base;
+	uv_interp = vertex_base;
 	vec2 screen_pos = uv_interp * params.screen_rect.zw + params.screen_rect.xy;
 	gl_Position = vec4(screen_pos * 2.0 - 1.0, 0.0, 1.0);
 }

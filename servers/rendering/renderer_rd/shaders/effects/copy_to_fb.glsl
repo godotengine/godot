@@ -4,6 +4,8 @@
 
 #VERSION_DEFINES
 
+#include "../vertex_base_inc.glsl"
+
 #ifdef USE_MULTIVIEW
 #ifdef has_VK_KHR_multiview
 #extension GL_EXT_multiview : enable
@@ -40,8 +42,8 @@ layout(push_constant, std430) uniform Params {
 params;
 
 void main() {
-	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
-	uv_interp.xy = base_arr[gl_VertexIndex];
+	SET_VERTEX_BASE_QUAD(); // vec2 vertex_base;
+	uv_interp.xy = vertex_base;
 #ifdef USE_MULTIVIEW
 	uv_interp.z = ViewIndex;
 #endif

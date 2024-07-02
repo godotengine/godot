@@ -4,6 +4,8 @@
 
 #VERSION_DEFINES
 
+#include "../vertex_base_inc.glsl"
+
 #define MAX_VIEWS 2
 
 #if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
@@ -23,8 +25,8 @@ layout(push_constant, std430) uniform Params {
 params;
 
 void main() {
-	vec2 base_arr[3] = vec2[](vec2(-1.0, -3.0), vec2(-1.0, 1.0), vec2(3.0, 1.0));
-	uv_interp = base_arr[gl_VertexIndex];
+	SET_VERTEX_BASE_SKY_TRIANGLE(); // vec2 vertex_base;
+	uv_interp = vertex_base;
 	gl_Position = vec4(uv_interp, 0.0, 1.0);
 }
 

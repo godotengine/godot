@@ -72,6 +72,7 @@ void main() {
 			vec3(-1.0f, 1.0f, 1.0f),
 			vec3(1.0f, -1.0f, 1.0f));
 
+	//TODO: 'array[gl_VertexIndex]' maybe buggy on some devices or driver versions
 	vec3 vertex = cube_triangles[gl_VertexIndex] * 0.5 + 0.5;
 #ifdef MODE_DEBUG_LIGHT_FULL
 	uvec3 posu = uvec3(gl_InstanceIndex % params.bounds.x, (gl_InstanceIndex / params.bounds.x) % params.bounds.y, gl_InstanceIndex / (params.bounds.y * params.bounds.x));

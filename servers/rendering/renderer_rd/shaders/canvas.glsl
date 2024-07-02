@@ -4,6 +4,8 @@
 
 #VERSION_DEFINES
 
+#include "vertex_base_inc.glsl"
+
 #ifdef USE_ATTRIBUTES
 layout(location = 0) in vec2 vertex_attrib;
 layout(location = 3) in vec4 color_attrib;
@@ -105,8 +107,7 @@ void main() {
 	vec4 bone_weights = weight_attrib;
 #else // !USE_ATTRIBUTES
 
-	vec2 vertex_base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
-	vec2 vertex_base = vertex_base_arr[gl_VertexIndex];
+	SET_VERTEX_BASE_QUAD(); // vec2 vertex_base;
 
 	vec2 uv = draw_data.src_rect.xy + abs(draw_data.src_rect.zw) * ((draw_data.flags & FLAGS_TRANSPOSE_RECT) != 0 ? vertex_base.yx : vertex_base.xy);
 	vec4 color = draw_data.modulation;
