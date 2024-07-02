@@ -86,6 +86,7 @@ public:
 
 	StringName finished;
 	StringName animation_finished;
+	StringName animation_looped;
 	StringName animation_changed;
 	StringName animation_started;
 	StringName RESET;

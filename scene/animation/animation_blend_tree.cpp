@@ -146,6 +146,7 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 			if (!Math::is_zero_approx(cur_len)) {
 				if (prev_time <= cur_len && cur_time > cur_len) {
 					is_just_looped = true; // Don't break with negative timescale since remain will not be 0.
+					process_state->tree->call_deferred(SNAME("emit_signal"), SceneStringNames::get_singleton()->animation_looped, animation, node_backward);
 				}
 				cur_time = Math::fposmod(cur_time, cur_len);
 			}
@@ -154,9 +155,11 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 			if (!Math::is_zero_approx(cur_len)) {
 				if (prev_time >= 0 && cur_time < 0) {
 					backward = !backward;
+					process_state->tree->call_deferred(SNAME("emit_signal"), SceneStringNames::get_singleton()->animation_looped, animation, !node_backward);
 				} else if (prev_time <= cur_len && cur_time > cur_len) {
 					backward = !backward;
 					is_just_looped = true; // Don't break with negative timescale since remain will not be 0.
+					process_state->tree->call_deferred(SNAME("emit_signal"), SceneStringNames::get_singleton()->animation_looped, animation, node_backward);
 				}
 				cur_time = Math::pingpong(cur_time, cur_len);
 			}
