@@ -22,8 +22,10 @@ USE_LIGHTMAP_CAPTURE = false
 USE_MULTIVIEW = false
 RENDER_SHADOWS = false
 RENDER_SHADOWS_LINEAR = false
-SHADOW_MODE_PCF_5 = false
-SHADOW_MODE_PCF_13 = false
+// If both `SHADOW_MODE_PCF_LOW` and `SHADOW_MODE_PCF_HIGH` are enabled,
+// ultra shadow quality is used.
+SHADOW_MODE_PCF_LOW = false
+SHADOW_MODE_PCF_HIGH = false
 LIGHT_USE_PSSM2 = false
 LIGHT_USE_PSSM4 = false
 LIGHT_USE_PSSM_BLEND = false
@@ -870,7 +872,53 @@ uniform lowp uint directional_shadow_index;
 #if !defined(ADDITIVE_OMNI)
 float sample_shadow(highp sampler2DShadow shadow, float shadow_pixel_size, vec4 pos) {
 	float avg = textureProj(shadow, pos);
-#ifdef SHADOW_MODE_PCF_13
+#ifdef SHADOW_MODE_PCF_LOW
+#ifdef SHADOW_MODE_PCF_HIGH
+	// PCF25 (used at Ultra quality level).
+	pos /= pos.w;
+	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size * 3.0, 0.0), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size * 3.0, 0.0), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(0.0, shadow_pixel_size * 3.0), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(0.0, -shadow_pixel_size * 3.0), pos.zw));
+	// Early bail if distant samples are fully shaded (or none are shaded) to improve performance.
+	if (avg <= 0.000001) {
+		// None shaded at all.
+		return 0.0;
+	} else if (avg >= 4.999999) {
+		// All fully shaded.
+		return 1.0;
+	}
+
+	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size, 0.0), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size, 0.0), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(0.0, shadow_pixel_size), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(0.0, -shadow_pixel_size), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size, shadow_pixel_size), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size, shadow_pixel_size), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size, -shadow_pixel_size), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size, -shadow_pixel_size), pos.zw));
+
+	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size * 2.0, 0.0), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size * 2.0, 0.0), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(0.0, shadow_pixel_size * 2.0), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(0.0, -shadow_pixel_size * 2.0), pos.zw));
+
+	// Outer ring (excluding the points at each end).
+	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size * 2.0, -shadow_pixel_size), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size * 2.0, -shadow_pixel_size), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size * 2.0, shadow_pixel_size), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size * 2.0, shadow_pixel_size), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size, -shadow_pixel_size * 2.0), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size, -shadow_pixel_size * 2.0), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size, shadow_pixel_size * 2.0), pos.zw));
+	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size, shadow_pixel_size * 2.0), pos.zw));
+	return avg * (1.0 / 25.0);
+#endif // SHADOW_MODE_PCF_HIGH
+#endif // SHADOW_PODE_PCF_LOW
+
+#ifndef SHADOW_MODE_PCF_LOW
+#ifdef SHADOW_MODE_PCF_HIGH
+	// PCF13 (used at High quality level).
 	pos /= pos.w;
 	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size * 2.0, 0.0), pos.zw));
 	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size * 2.0, 0.0), pos.zw));
@@ -895,18 +943,22 @@ float sample_shadow(highp sampler2DShadow shadow, float shadow_pixel_size, vec4 
 	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size, -shadow_pixel_size), pos.zw));
 	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size, -shadow_pixel_size), pos.zw));
 	return avg * (1.0 / 13.0);
-#endif
+#endif // SHADOW_MODE_PCF_HIGH
+#endif // !SHADOW_MODE_PCF_LOW
 
-#ifdef SHADOW_MODE_PCF_5
+#ifndef SHADOW_MODE_PCF_HIGH
+#ifdef SHADOW_MODE_PCF_LOW
+	// PCF5 (used at Low and Medium quality levels).
 	pos /= pos.w;
 	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size, 0.0), pos.zw));
 	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size, 0.0), pos.zw));
 	avg += textureProj(shadow, vec4(pos.xy + vec2(0.0, shadow_pixel_size), pos.zw));
 	avg += textureProj(shadow, vec4(pos.xy + vec2(0.0, -shadow_pixel_size), pos.zw));
 	return avg * (1.0 / 5.0);
+#endif // SHADOW_MODE_PCF_LOW
+#endif // !SHADOW_MODE_PCF_HIGH
 
-#endif
-
+	// Standard bilinear filter (used at Hard and Very Low quality levels).
 	return avg;
 }
 #endif //!defined(ADDITIVE_OMNI)

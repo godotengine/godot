@@ -4614,19 +4614,19 @@
 			[b]Note:[/b] The variable shadow blur performed by [member Light3D.light_size] and [member Light3D.light_angular_distance] is still effective when using hard shadow filtering. In this case, [member Light3D.shadow_blur] [i]is[/i] taken into account. However, the results will not be blurred, instead the blur amount is treated as a maximum radius for the penumbra.
 		</constant>
 		<constant name="SHADOW_QUALITY_SOFT_VERY_LOW" value="1" enum="ShadowQuality">
-			Very low shadow filtering quality (faster). When using this quality setting, [member Light3D.shadow_blur] is automatically multiplied by 0.75× to avoid introducing too much noise. This division only applies to lights whose [member Light3D.light_size] or [member Light3D.light_angular_distance] is [code]0.0[/code]).
+			Very low shadow filtering quality (faster). When using this quality setting, [member Light3D.shadow_blur] is automatically multiplied by 0.75× to avoid introducing too much noise. This division only applies to lights whose [member Light3D.light_size] or [member Light3D.light_angular_distance] is [code]0.0[/code]). When using the Compatibility rendering method, this is identical to [constant SHADOW_QUALITY_HARD].
 		</constant>
 		<constant name="SHADOW_QUALITY_SOFT_LOW" value="2" enum="ShadowQuality">
-			Low shadow filtering quality (fast).
+			Low shadow filtering quality (fast). When using the Compatibility rendering method, this uses PCF5 shadow filtering.
 		</constant>
 		<constant name="SHADOW_QUALITY_SOFT_MEDIUM" value="3" enum="ShadowQuality">
-			Medium low shadow filtering quality (average).
+			Medium low shadow filtering quality (average). When using the Compatibility rendering method, this is identical to [constant SHADOW_QUALITY_SOFT_LOW].
 		</constant>
 		<constant name="SHADOW_QUALITY_SOFT_HIGH" value="4" enum="ShadowQuality">
-			High low shadow filtering quality (slow). When using this quality setting, [member Light3D.shadow_blur] is automatically multiplied by 1.5× to better make use of the high sample count. This increased blur also improves the stability of dynamic object shadows. This multiplier only applies to lights whose [member Light3D.light_size] or [member Light3D.light_angular_distance] is [code]0.0[/code]).
+			High low shadow filtering quality (slow). When using this quality setting, [member Light3D.shadow_blur] is automatically multiplied by 1.5× to better make use of the high sample count. This increased blur also improves the stability of dynamic object shadows. This multiplier only applies to lights whose [member Light3D.light_size] or [member Light3D.light_angular_distance] is [code]0.0[/code]). When using the Compatibility rendering method, this uses PCF13 shadow filtering.
 		</constant>
 		<constant name="SHADOW_QUALITY_SOFT_ULTRA" value="5" enum="ShadowQuality">
-			Highest low shadow filtering quality (slowest). When using this quality setting, [member Light3D.shadow_blur] is automatically multiplied by 2× to better make use of the high sample count. This increased blur also improves the stability of dynamic object shadows. This multiplier only applies to lights whose [member Light3D.light_size] or [member Light3D.light_angular_distance] is [code]0.0[/code]).
+			Highest low shadow filtering quality (slowest). When using this quality setting, [member Light3D.shadow_blur] is automatically multiplied by 2× to better make use of the high sample count. This increased blur also improves the stability of dynamic object shadows. This multiplier only applies to lights whose [member Light3D.light_size] or [member Light3D.light_angular_distance] is [code]0.0[/code]). When using the Compatibility rendering method, this uses PCF25 shadow filtering.
 		</constant>
 		<constant name="SHADOW_QUALITY_MAX" value="6" enum="ShadowQuality">
 			Represents the size of the [enum ShadowQuality] enum.
