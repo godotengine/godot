@@ -1406,6 +1406,36 @@ void fragment_shader(in SceneData scene_data) {
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 #ifdef USE_LIGHTMAP
+	if (sc_use_forward_gi && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_VOXEL_GI)) { // inherit VoxelGI reflections
+		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
+		// Make vertex orientation the world one, but still align to camera.
+		vec3 cam_pos = mat3(scene_data.inv_view_matrix) * vertex;
+		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * normal;
+		vec3 ref_vec = mat3(scene_data.inv_view_matrix) * normalize(reflect(-view, normal));
+
+		//find arbitrary tangent and bitangent, then build a matrix
+		vec3 v0 = abs(cam_normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
+		vec3 tangent = normalize(cross(v0, cam_normal));
+		vec3 bitangent = normalize(cross(tangent, cam_normal));
+		mat3 normal_mat = mat3(tangent, bitangent, cam_normal);
+
+		vec4 spec_accum = vec4(0.0);
+		voxel_gi_compute_irradiance_only(index1, cam_pos, cam_normal, ref_vec, normal_mat, roughness * roughness, specular_light, spec_accum);
+
+		uint index2 = instances.data[instance_index].gi_offset >> 16;
+
+		if (index2 != 0xFFFF) {
+			voxel_gi_compute_irradiance_only(index2, cam_pos, cam_normal, ref_vec, normal_mat, roughness * roughness, specular_light, spec_accum);
+		}
+
+		if (spec_accum.a > 0.0) {
+			spec_accum.rgb /= spec_accum.a;
+		}
+
+		specular_light = spec_accum.rgb;
+	}
+
+	float specular_occlusion;
 
 	//lightmap
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
@@ -1417,17 +1447,33 @@ void fragment_shader(in SceneData scene_data) {
 		const float c3 = 0.743125;
 		const float c4 = 0.886227;
 		const float c5 = 0.247708;
-		ambient_light += (c1 * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y) +
-								 c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
-								 c4 * lightmap_captures.data[index].sh[0].rgb -
-								 c5 * lightmap_captures.data[index].sh[6].rgb +
-								 2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
-								 2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
-								 2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
-								 2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
-								 2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
-								 2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z) *
+
+		vec3 c = (c1 * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y) +
+						 c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
+						 c4 * lightmap_captures.data[index].sh[0].rgb -
+						 c5 * lightmap_captures.data[index].sh[6].rgb +
+						 2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
+						 2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
+						 2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
+						 2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
+						 2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
+						 2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z) *
 				scene_data.emissive_exposure_normalization;
+
+#if defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CONSERVATIVE)
+		specular_occlusion = (c.r * 0.3 + c.g * 0.59 + c.b * 0.11) * 2.0; // brightness from lightmap color
+		specular_occlusion = min(1.0, specular_occlusion * scene_data.emissive_exposure_normalization);
+
+#if defined(SPECULAR_OCCLUSION_CONSERVATIVE)
+		float reflective_f = (1.0 - roughness) * metallic;
+		// 10.0 is a number picked by hand, it gives the intended effect in most scenarios
+		//     (low enough for occlusion, high enough for reaction to lights and shadows)
+		specular_occlusion = max(min(reflective_f * specular_occlusion * 10.0, 1.0), specular_occlusion);
+#endif // defined(SPECULAR_OCCLUSION_CONSERVATIVE)
+
+		specular_light *= specular_occlusion;
+#endif // defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CONSERVATIVE)
+		ambient_light += c;
 
 	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
@@ -1459,9 +1505,69 @@ void fragment_shader(in SceneData scene_data) {
 			}
 
 		} else {
+#if defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CONSERVATIVE)
+			vec3 c = textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
+
+			specular_occlusion = (c.r * 0.3 + c.g * 0.59 + c.b * 0.11) * 2.0; // brightness from lightmap color
+			specular_occlusion = min(1.0, specular_occlusion * lightmaps.data[ofs].exposure_normalization);
+
+#if defined(SPECULAR_OCCLUSION_CONSERVATIVE)
+			float reflective_f = (1.0 - roughness) * metallic;
+			// 10.0 is a number picked by hand, it gives the intended effect in most scenarios
+			//     (low enough for occlusion, high enough for reaction to lights and shadows)
+			specular_occlusion = max(min(reflective_f * specular_occlusion * 10.0, 1.0), specular_occlusion);
+#endif // defined(SPECULAR_OCCLUSION_CONSERVATIVE)
+
+			specular_light *= specular_occlusion;
+			ambient_light += c;
+#else // defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CONSERVATIVE)
 			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
+#endif // defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CONSERVATIVE)
 		}
 	}
+
+	if (!sc_use_forward_gi && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GI_BUFFERS)) { // Inherit gi reflections on lightmapped objects
+		vec2 coord;
+
+		if (implementation_data.gi_upscale_for_msaa) {
+			vec2 base_coord = screen_uv;
+			vec2 closest_coord = base_coord;
+#ifdef USE_MULTIVIEW
+			float closest_ang = dot(normal, textureLod(sampler2DArray(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), vec3(base_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0);
+#else // USE_MULTIVIEW
+			float closest_ang = dot(normal, textureLod(sampler2D(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), base_coord, 0.0).xyz * 2.0 - 1.0);
+#endif // USE_MULTIVIEW
+
+			for (int i = 0; i < 4; i++) {
+				const vec2 neighbors[4] = vec2[](vec2(-1, 0), vec2(1, 0), vec2(0, -1), vec2(0, 1));
+				vec2 neighbour_coord = base_coord + neighbors[i] * scene_data.screen_pixel_size;
+#ifdef USE_MULTIVIEW
+				float neighbour_ang = dot(normal, textureLod(sampler2DArray(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), vec3(neighbour_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0);
+#else // USE_MULTIVIEW
+				float neighbour_ang = dot(normal, textureLod(sampler2D(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), neighbour_coord, 0.0).xyz * 2.0 - 1.0);
+#endif // USE_MULTIVIEW
+				if (neighbour_ang > closest_ang) {
+					closest_ang = neighbour_ang;
+					closest_coord = neighbour_coord;
+				}
+			}
+
+			coord = closest_coord;
+
+		} else {
+			coord = screen_uv;
+		}
+
+#ifdef USE_MULTIVIEW
+		vec4 buffer_reflection = textureLod(sampler2DArray(reflection_buffer, SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0);
+#else // USE_MULTIVIEW
+		vec4 buffer_reflection = textureLod(sampler2D(reflection_buffer, SAMPLER_LINEAR_CLAMP), coord, 0.0);
+#endif // USE_MULTIVIEW
+
+		// try to keep SDFGI reflections while making sure dark areas from the lightmap should be dark
+		specular_light = mix(specular_light, buffer_reflection.rgb * min(specular_occlusion * specular_occlusion * 8.0, 1.0), buffer_reflection.a);
+	}
+
 #else
 
 	if (sc_use_forward_gi && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SDFGI)) { //has lightmap capture
