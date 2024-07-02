@@ -34,6 +34,7 @@
 #include "core/io/config_file.h"
 #include "core/math/delaunay_3d.h"
 #include "lightmap_probe.h"
+#include "modules/gridmap/grid_map.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
@@ -339,12 +340,12 @@ void LightmapGI::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &m
 		}
 	}
 
-	Node3D *s = Object::cast_to<Node3D>(p_at_node);
+	GridMap *gm = Object::cast_to<GridMap>(p_at_node);
 
-	if (!mi && s) {
-		Array bmeshes = p_at_node->call("get_bake_meshes");
+	if (!mi && gm) {
+		Array bmeshes = gm->get_bake_meshes();
 		if (bmeshes.size() && (bmeshes.size() & 1) == 0) {
-			Transform3D xf = get_global_transform().affine_inverse() * s->get_global_transform();
+			Transform3D xf = get_global_transform().affine_inverse() * gm->get_global_transform();
 			for (int i = 0; i < bmeshes.size(); i += 2) {
 				Ref<Mesh> mesh = bmeshes[i];
 				if (!mesh.is_valid()) {
@@ -355,7 +356,7 @@ void LightmapGI::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &m
 
 				Transform3D mesh_xf = bmeshes[i + 1];
 				mf.xform = xf * mesh_xf;
-				mf.node_path = get_path_to(s);
+				mf.node_path = get_path_to(gm);
 				mf.subindex = i / 2;
 				mf.lightmap_scale = 1;
 				mf.mesh = mesh;
