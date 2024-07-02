@@ -372,3 +372,10 @@ GH-91382
 Validate extension JSON: Error: Field 'classes/AudioStreamPlaybackPolyphonic/methods/play_stream/arguments': size changed value in new API, from 4 to 6.
 
 Optional arguments added. Compatibility methods registered.
+
+
+GH-76560
+--------
+Validate extension JSON: Error: Field 'classes/Node/methods/set_name/arguments/0': type changed value in new API, from "String" to "StringName".
+
+Change Node `set_name` to use StringName to improve performance.
