@@ -94,6 +94,9 @@
 			[b]Note:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
 			[b]Note:[/b] This only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
 		</member>
+		<member name="repeat" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
+			If [code]true[/code], the texture will repeat.
+		</member>
 		<member name="shaded" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
 			If [code]true[/code], the [Light3D] in the [Environment] has effects on the sprite.
 		</member>
@@ -121,7 +124,10 @@
 		<constant name="FLAG_FIXED_SIZE" value="4" enum="DrawFlags">
 			Label is scaled by depth so that it always appears the same size on screen.
 		</constant>
-		<constant name="FLAG_MAX" value="5" enum="DrawFlags">
+		<constant name="FLAG_REPEAT" value="5" enum="DrawFlags">
+			If set, the texture will repeat.
+		</constant>
+		<constant name="FLAG_MAX" value="6" enum="DrawFlags">
 			Represents the size of the [enum DrawFlags] enum.
 		</constant>
 		<constant name="ALPHA_CUT_DISABLED" value="0" enum="AlphaCutMode">
