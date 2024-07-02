@@ -327,7 +327,9 @@ bool EditorExportPlatformMacOS::get_export_option_visibility(const EditorExportP
 		}
 
 		bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
-		if (p_option.begins_with("privacy")) {
+		if (p_option.begins_with("privacy") ||
+				p_option == "custom_template/debug" ||
+				p_option == "custom_template/release") {
 			return advanced_options_enabled;
 		}
 	}
