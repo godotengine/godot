@@ -1013,20 +1013,13 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 		return;
 	}
 
-	Rect2 rc = region;
+	Rect2 src_rect = Rect2(0, 0, get_width(), get_height());
 
-	if (rc.size.width == 0) {
-		rc.size.width = atlas->get_width();
+	Rect2 dst;
+	Rect2 src;
+	if (get_rect_region(p_rect, src_rect, dst, src)) {
+		atlas->draw_rect_region(p_canvas_item, dst, src, p_modulate, p_transpose, p_normal_map);
 	}
-
-	if (rc.size.height == 0) {
-		rc.size.height = atlas->get_height();
-	}
-
-	Vector2 scale = p_rect.size / (region.size + margin.size);
-	Rect2 dr(p_rect.position + margin.position * scale, rc.size * scale);
-
-	atlas->draw_rect_region(p_canvas_item, dr, rc, p_modulate, p_transpose, p_normal_map);
 }
 
 Texture::RefineRectResult AtlasTexture::refine_rect_region(Rect2 &r_dst_rect, Rect2 &r_src_rect) const {
