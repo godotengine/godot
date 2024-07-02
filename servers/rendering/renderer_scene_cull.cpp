@@ -90,6 +90,15 @@ void RendererSceneCull::camera_set_frustum(RID p_camera, float p_size, Vector2 p
 	camera->zfar = p_z_far;
 }
 
+void RendererSceneCull::camera_set_panini(RID p_camera, float p_panini_fovy_degrees, float p_z_near, float p_z_far) {
+	Camera *camera = camera_owner.get_or_null(p_camera);
+	ERR_FAIL_NULL(camera);
+	camera->type = Camera::PANINI;
+	camera->panini_fov = p_panini_fovy_degrees;
+	camera->znear = p_z_near;
+	camera->zfar = p_z_far;
+}
+
 void RendererSceneCull::camera_set_transform(RID p_camera, const Transform3D &p_transform) {
 	Camera *camera = camera_owner.get_or_null(p_camera);
 	ERR_FAIL_NULL(camera);
@@ -2575,6 +2584,8 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		Projection projection;
 		bool vaspect = camera->vaspect;
 		bool is_orthogonal = false;
+		bool is_panini = false;
+		float panini_fov = 150.0f;
 
 		switch (camera->type) {
 			case Camera::ORTHOGONAL: {
@@ -2604,9 +2615,19 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 						camera->zfar,
 						camera->vaspect);
 			} break;
+			case Camera::PANINI: {
+				projection.set_perspective(
+						100.0f,
+						1.0f,
+						camera->znear,
+						camera->zfar,
+						camera->vaspect);
+				is_panini = true;
+				panini_fov = camera->panini_fov;
+			} break;
 		}
 
-		camera_data.set_camera(transform, projection, is_orthogonal, vaspect, jitter, camera->visible_layers);
+		camera_data.set_camera(transform, projection, is_orthogonal, vaspect, jitter, camera->visible_layers, is_panini, panini_fov);
 	} else {
 		// Setup our camera for our XR interface.
 		// We can support multiple views here each with their own camera
@@ -2628,9 +2649,9 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		}
 
 		if (view_count == 1) {
-			camera_data.set_camera(transforms[0], projections[0], false, camera->vaspect, jitter, camera->visible_layers);
+			camera_data.set_camera(transforms[0], projections[0], false, camera->vaspect, jitter, camera->visible_layers, false);
 		} else if (view_count == 2) {
-			camera_data.set_multiview_camera(view_count, transforms, projections, false, camera->vaspect);
+			camera_data.set_multiview_camera(view_count, transforms, projections, false, camera->vaspect, false, camera->panini_fov);
 		} else {
 			// this won't be called (see fail check above) but keeping this comment to indicate we may support more then 2 views in the future...
 		}
@@ -3023,8 +3044,24 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 	}
 }
 
-void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, RID p_compositor, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows, RenderingMethod::RenderInfo *r_render_info) {
+void RendererSceneCull::_render_scene(RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, RID p_compositor, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows, RenderingMethod::RenderInfo *r_render_info) {
 	Instance *render_reflection_probe = instance_owner.get_or_null(p_reflection_probe); //if null, not rendering to it
+
+	Projection orig_cam_projection;
+	Transform3D orig_cam_transform;
+	if (p_camera_data->is_panini) {
+		// Cull on a cube.
+		orig_cam_projection = p_camera_data->main_projection;
+		orig_cam_transform = p_camera_data->main_transform;
+		real_t z_far = p_camera_data->main_projection.get_z_far();
+		p_camera_data->main_projection.set_orthogonal(
+				z_far * 2.0f,
+				1.0f,
+				p_camera_data->main_projection.get_z_near(),
+				z_far * 2.0f,
+				false);
+		p_camera_data->main_transform.translate_local(0.0f, 0.0f, z_far);
+	}
 
 	// Prepare the light - camera volume culling system.
 	light_culler->prepare_camera(p_camera_data->main_transform, p_camera_data->main_projection);
@@ -3080,6 +3117,11 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 	Vector<Plane> planes = p_camera_data->main_projection.get_projection_planes(p_camera_data->main_transform);
 	cull.frustum = Frustum(planes);
+
+	if (p_camera_data->is_panini) {
+		p_camera_data->main_projection = orig_cam_projection;
+		p_camera_data->main_transform = orig_cam_transform;
+	}
 
 	Vector<RID> directional_lights;
 	// directional lights

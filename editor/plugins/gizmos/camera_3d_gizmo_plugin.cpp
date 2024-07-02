@@ -253,6 +253,28 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			Vector3 tup(0, up.y + hsize / 2, side.z);
 			ADD_TRIANGLE(tup + offset, side + up + offset, nside + up + offset);
 		} break;
+
+		case Camera3D::PROJECTION_PANINI: {
+			// Panini isn't linear, show the front view
+			float fov = 100.0f / 2.0;
+
+			const float hsize = Math::sin(Math::deg_to_rad(fov));
+			const float depth = -Math::cos(Math::deg_to_rad(fov));
+			Vector3 side = Vector3(hsize * size_factor.x, 0, depth);
+			Vector3 nside = Vector3(-side.x, side.y, side.z);
+			Vector3 up = Vector3(0, hsize * size_factor.y, 0);
+
+			ADD_TRIANGLE(Vector3(), side + up, side - up);
+			ADD_TRIANGLE(Vector3(), nside + up, nside - up);
+			ADD_TRIANGLE(Vector3(), side + up, nside + up);
+			ADD_TRIANGLE(Vector3(), side - up, nside - up);
+
+			handles.push_back(side);
+			side.x = MIN(side.x, hsize * 0.25);
+			nside.x = -side.x;
+			Vector3 tup(0, up.y + hsize / 2, side.z);
+			ADD_TRIANGLE(tup, side + up, nside + up);
+		} break;
 	}
 
 #undef ADD_TRIANGLE

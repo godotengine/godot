@@ -140,6 +140,7 @@ private:
 	real_t frustum_near = 0.05;
 	real_t frustum_far = 4000.0;
 	real_t frustum_fov = 75.0;
+	real_t panini_fov = 150.0;
 	void _update_frustum();
 
 	virtual void _update_auto_exposure() override;
@@ -168,6 +169,8 @@ public:
 	real_t get_far() const;
 
 	real_t get_fov() const;
+
+	real_t get_panini_fov() const;
 
 	void set_auto_exposure_min_exposure_value(float p_min);
 	float get_auto_exposure_min_exposure_value() const;

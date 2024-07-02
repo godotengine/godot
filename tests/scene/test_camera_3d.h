@@ -97,6 +97,8 @@ TEST_CASE("[SceneTree][Camera3D] Getters and setters") {
 		CHECK(test_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_ORTHOGONAL);
 		test_camera->set_projection(Camera3D::ProjectionType::PROJECTION_PERSPECTIVE);
 		CHECK(test_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_PERSPECTIVE);
+		test_camera->set_projection(Camera3D::ProjectionType::PROJECTION_PANINI);
+		CHECK(test_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_PANINI);
 	}
 
 	SUBCASE("Helper setters") {
@@ -113,6 +115,11 @@ TEST_CASE("[SceneTree][Camera3D] Getters and setters") {
 		CHECK(test_camera->get_near() == near2);
 		CHECK(test_camera->get_far() == far2);
 		CHECK(test_camera->get_size() == size);
+		test_camera->set_panini(fov, near1, far1);
+		CHECK(test_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_PANINI);
+		CHECK(test_camera->get_near() == near1);
+		CHECK(test_camera->get_far() == far1);
+		CHECK(test_camera->get_panini_fov() == fov);
 	}
 
 	SUBCASE("Doppler tracking") {
@@ -210,6 +217,29 @@ TEST_CASE("[SceneTree][Camera3D] Position queries") {
 		}
 	}
 
+	SUBCASE("Panini projection") {
+		test_camera->set_projection(Camera3D::ProjectionType::PROJECTION_PANINI);
+		// Camera at origin, looking at +Z.
+		test_camera->set_global_position(Vector3(0, 0, 0));
+		test_camera->set_global_rotation(Vector3(0, 0, 0));
+		// fov = 240, so max visible latitude/longitude should be +-120
+		test_camera->set_panini(240.0f, 1.0f, 1000.0f);
+
+		SUBCASE("is_position_behind") {
+			CHECK_FALSE(test_camera->is_position_behind(Vector3(2, 0.5f, 1)));
+			CHECK(test_camera->is_position_behind(Vector3(0.5f, 0, 0.5f)));
+		}
+
+		SUBCASE("is_position_in_frustum") {
+			CHECK(test_camera->is_position_in_frustum(Vector3(-1, 1, -1)));
+			CHECK_FALSE(test_camera->is_position_in_frustum(Vector3(2, 0.5f, 3)));
+			CHECK(test_camera->is_position_in_frustum(Vector3(1.5f, 0, 0.7f)));
+			CHECK_FALSE(test_camera->is_position_in_frustum(Vector3(-1, 0, 2.1f)));
+			CHECK(test_camera->is_position_in_frustum(Vector3(0, 2, 0)));
+			CHECK_FALSE(test_camera->is_position_in_frustum(Vector3(0, 1, 3)));
+		}
+	}
+
 	memdelete(test_camera);
 	memdelete(mock_viewport);
 }
@@ -249,6 +279,13 @@ TEST_CASE("[SceneTree][Camera3D] Project/Unproject position") {
 			CHECK(test_camera->project_position(Vector2(300, 150), 0.5f).is_equal_approx(Vector3(SQRT3 * 0.5f, -SQRT3 * 0.25f, -0.5f)));
 			CHECK(test_camera->project_position(Vector2(300, 150), 1.0f).is_equal_approx(Vector3(SQRT3, -SQRT3 * 0.5f, -1.0f)));
 		}
+
+		SUBCASE("Panini projection") {
+			test_camera->set_panini(240.0f, 0.5f, 1000.0f);
+			// Center.
+			CHECK(test_camera->project_position(Vector2(200, 100), 0.5f).is_equal_approx(Vector3(0, 0, -0.5f)));
+			CHECK(test_camera->project_position(Vector2(200, 100), 100.0f).is_equal_approx(Vector3(0, 0, -100.0f)));
+		}
 	}
 
 	// Uses cases that are the inverse of the above sub-case.
@@ -274,6 +311,13 @@ TEST_CASE("[SceneTree][Camera3D] Project/Unproject position") {
 			// 3/4th way to Bottom right.
 			CHECK(test_camera->unproject_position(Vector3(SQRT3 * 0.5f, -SQRT3 * 0.25f, -0.5f)).is_equal_approx(Vector2(300, 150)));
 			CHECK(test_camera->unproject_position(Vector3(SQRT3, -SQRT3 * 0.5f, -1.0f)).is_equal_approx(Vector2(300, 150)));
+		}
+
+		SUBCASE("Panini projection") {
+			test_camera->set_panini(240.0f, 0.5f, 1000.0f);
+			// Center.
+			CHECK(test_camera->unproject_position(Vector3(0, 0, -0.5f)).is_equal_approx(Vector2(200, 100)));
+			CHECK(test_camera->unproject_position(Vector3(0, 0, -100.0f)).is_equal_approx(Vector2(200, 100)));
 		}
 	}
 
@@ -313,6 +357,16 @@ TEST_CASE("[SceneTree][Camera3D] Project ray") {
 			// Bottom right.
 			CHECK(test_camera->project_ray_origin(Vector2(400, 200)).is_equal_approx(Vector3(0, 0, 0)));
 		}
+
+		SUBCASE("Panini projection") {
+			test_camera->set_panini(240.0f, 0.5f, 1000.0f);
+			// Center.
+			CHECK(test_camera->project_ray_origin(Vector2(200, 100)).is_equal_approx(Vector3(0, 0, 0)));
+			// Top left.
+			CHECK(test_camera->project_ray_origin(Vector2(0, 0)).is_equal_approx(Vector3(0, 0, 0)));
+			// Bottom right.
+			CHECK(test_camera->project_ray_origin(Vector2(400, 200)).is_equal_approx(Vector3(0, 0, 0)));
+		}
 	}
 
 	SUBCASE("project_ray_normal") {
@@ -334,6 +388,12 @@ TEST_CASE("[SceneTree][Camera3D] Project ray") {
 			CHECK(test_camera->project_ray_normal(Vector2(0, 0)).is_equal_approx(Vector3(-SQRT3, SQRT3 / 2, -0.5f).normalized()));
 			// Bottom right.
 			CHECK(test_camera->project_ray_normal(Vector2(400, 200)).is_equal_approx(Vector3(SQRT3, -SQRT3 / 2, -0.5f).normalized()));
+		}
+
+		SUBCASE("Panini projection") {
+			test_camera->set_panini(240.0f, 0.5f, 1000.0f);
+			// Center.
+			CHECK(test_camera->project_ray_normal(Vector2(200, 100)).is_equal_approx(Vector3(0, 0, -1)));
 		}
 	}
 
@@ -358,6 +418,12 @@ TEST_CASE("[SceneTree][Camera3D] Project ray") {
 			CHECK(test_camera->project_local_ray_normal(Vector2(0, 0)).is_equal_approx(Vector3(-SQRT3, SQRT3 / 2, -0.5f).normalized()));
 			// Bottom right.
 			CHECK(test_camera->project_local_ray_normal(Vector2(400, 200)).is_equal_approx(Vector3(SQRT3, -SQRT3 / 2, -0.5f).normalized()));
+		}
+
+		SUBCASE("Panini projection") {
+			test_camera->set_panini(240.0f, 0.5f, 1000.0f);
+			// Center.
+			CHECK(test_camera->project_local_ray_normal(Vector2(200, 100)).is_equal_approx(Vector3(0, 0, -1)));
 		}
 	}
 

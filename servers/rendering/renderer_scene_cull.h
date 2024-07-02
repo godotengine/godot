@@ -72,10 +72,12 @@ public:
 		enum Type {
 			PERSPECTIVE,
 			ORTHOGONAL,
-			FRUSTUM
+			FRUSTUM,
+			PANINI
 		};
 		Type type;
 		float fov;
+		float panini_fov;
 		float znear, zfar;
 		float size;
 		Vector2 offset;
@@ -90,6 +92,7 @@ public:
 		Camera() {
 			visible_layers = 0xFFFFFFFF;
 			fov = 75;
+			panini_fov = 150;
 			type = PERSPECTIVE;
 			znear = 0.05;
 			zfar = 4000;
@@ -107,6 +110,7 @@ public:
 	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far);
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
 	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far);
+	virtual void camera_set_panini(RID p_camera, float p_panini_fovy_degrees, float p_z_near, float p_z_far);
 	virtual void camera_set_transform(RID p_camera, const Transform3D &p_transform);
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers);
 	virtual void camera_set_environment(RID p_camera, RID p_env);
@@ -1149,7 +1153,7 @@ public:
 	_FORCE_INLINE_ bool _visibility_parent_check(const CullData &p_cull_data, const InstanceData &p_instance_data);
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, RID p_compositor, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
+	void _render_scene(RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, RID p_compositor, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
 	void render_empty_scene(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
 	void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderingMethod::RenderInfo *r_render_info = nullptr);

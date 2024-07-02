@@ -53,12 +53,19 @@ void Camera3D::_update_camera_mode() {
 		case PROJECTION_FRUSTUM: {
 			set_frustum(size, frustum_offset, _near, _far);
 		} break;
+		case PROJECTION_PANINI: {
+			set_panini(panini_fov, _near, _far);
+		} break;
 	}
 }
 
 void Camera3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "fov") {
 		if (mode != PROJECTION_PERSPECTIVE) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "panini_fov") {
+		if (mode != PROJECTION_PANINI) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	} else if (p_property.name == "size") {
@@ -74,7 +81,7 @@ void Camera3D::_validate_property(PropertyInfo &p_property) const {
 	if (attributes.is_valid()) {
 		const CameraAttributesPhysical *physical_attributes = Object::cast_to<CameraAttributesPhysical>(attributes.ptr());
 		if (physical_attributes) {
-			if (p_property.name == "near" || p_property.name == "far" || p_property.name == "fov" || p_property.name == "keep_aspect") {
+			if (p_property.name == "near" || p_property.name == "far" || p_property.name == "fov" || p_property.name == "panini_fov" || p_property.name == "keep_aspect") {
 				p_property.usage = PROPERTY_USAGE_READ_ONLY | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR;
 			}
 		}
@@ -182,6 +189,9 @@ Projection Camera3D::_get_camera_projection(real_t p_near) const {
 		case PROJECTION_FRUSTUM: {
 			cm.set_frustum(size, viewport_size.aspect(), frustum_offset, p_near, _far);
 		} break;
+		case PROJECTION_PANINI: {
+			cm.set_perspective(100.0f, viewport_size.aspect(), p_near, _far, keep_aspect == KEEP_WIDTH);
+		} break;
 	}
 
 	return cm;
@@ -240,8 +250,23 @@ void Camera3D::set_frustum(real_t p_size, Vector2 p_offset, real_t p_z_near, rea
 	update_gizmos();
 }
 
+void Camera3D::set_panini(real_t p_panini_fovy_degrees, real_t p_z_near, real_t p_z_far) {
+	if (!force_change && panini_fov == p_panini_fovy_degrees && p_z_near == _near && p_z_far == _far && mode == PROJECTION_PANINI) {
+		return;
+	}
+
+	panini_fov = p_panini_fovy_degrees;
+	_near = p_z_near;
+	_far = p_z_far;
+	mode = PROJECTION_PANINI;
+
+	RenderingServer::get_singleton()->camera_set_panini(camera, panini_fov, _near, _far);
+	update_gizmos();
+	force_change = false;
+}
+
 void Camera3D::set_projection(ProjectionType p_mode) {
-	if (p_mode == PROJECTION_PERSPECTIVE || p_mode == PROJECTION_ORTHOGONAL || p_mode == PROJECTION_FRUSTUM) {
+	if (p_mode == PROJECTION_PERSPECTIVE || p_mode == PROJECTION_ORTHOGONAL || p_mode == PROJECTION_FRUSTUM || p_mode == PROJECTION_PANINI) {
 		mode = p_mode;
 		_update_camera_mode();
 		notify_property_list_changed();
@@ -307,6 +332,8 @@ Vector3 Camera3D::project_local_ray_normal(const Point2 &p_pos) const {
 
 	if (mode == PROJECTION_ORTHOGONAL) {
 		ray = Vector3(0, 0, -1);
+	} else if (mode == PROJECTION_PANINI) {
+		ray = _panini_ray(Vector2(cpos.x / viewport_size.width - 0.5, cpos.y / viewport_size.height - 0.5));
 	} else {
 		Projection cm = _get_camera_projection(_near);
 		Vector2 screen_he = cm.get_viewport_half_extents();
@@ -347,6 +374,12 @@ Vector3 Camera3D::project_ray_origin(const Point2 &p_pos) const {
 
 bool Camera3D::is_position_behind(const Vector3 &p_pos) const {
 	Transform3D t = get_global_transform();
+
+	if (mode == PROJECTION_PANINI) {
+		Vector3 ray = p_pos - t.origin;
+		return ray.length_squared() < _near * _near;
+	}
+
 	Vector3 eyedir = -t.basis.get_column(2).normalized();
 	return eyedir.dot(p_pos - t.origin) < _near;
 }
@@ -369,10 +402,43 @@ Vector<Vector3> Camera3D::get_near_plane_points() const {
 	return points;
 }
 
+Vector2 Camera3D::_panini_forward(Vector2 latlon) const {
+	float d = 1.0;
+	float s = (d + 1.0) / (d + Math::cos(latlon.y));
+	float x = s * Math::sin(latlon.y);
+	float y = s * Math::tan(latlon.x);
+	return Vector2(x, y);
+}
+
+Vector3 Camera3D::_panini_ray(Vector2 p) const {
+	Vector2 latlon = Vector2(0.0, Math::deg_to_rad(panini_fov) / 2.0);
+	real_t scale = _panini_forward(latlon).x;
+
+	Vector2 scaled_p = p * scale;
+	float d = 1.0;
+	float k = scaled_p.x * scaled_p.x / ((d + 1.0) * (d + 1.0));
+	float dscr = k * k * d * d - (k + 1.0) * (k * d * d - 1.0);
+	float clon = (-k * d + Math::sqrt(dscr)) / (k + 1.0);
+	float s = (d + 1.0) / (d + clon);
+	float lon = Math::atan2(static_cast<float>(scaled_p.x), static_cast<float>(s * clon));
+	float lat = Math::atan2(static_cast<float>(scaled_p.y), static_cast<float>(s));
+
+	return Vector3(Math::sin(lon) * Math::cos(lat), Math::sin(lat), -Math::cos(lon) * Math::cos(lat));
+}
+
+Vector2 Camera3D::_panini_inverse_ray(Vector3 p_pos) const {
+	Vector3 ray_normalized = p_pos.normalized();
+	Vector2 latlon = Vector2(Math::asin(ray_normalized.y), Math::atan2(ray_normalized.x, -ray_normalized.z));
+	return _panini_forward(latlon) / _panini_forward(Vector2(0.0, Math::deg_to_rad(panini_fov) / 2.0)).x;
+}
+
 Point2 Camera3D::unproject_position(const Vector3 &p_pos) const {
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector2(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
+	if (mode == PROJECTION_PANINI) {
+		return (_panini_inverse_ray(p_pos) + Vector2(0.5, 0.5)) * viewport_size;
+	}
 
 	Projection cm = _get_camera_projection(_near);
 
@@ -395,6 +461,9 @@ Vector3 Camera3D::project_position(const Point2 &p_point, real_t p_z_depth) cons
 		return get_global_transform().origin;
 	}
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
+	if (mode == PROJECTION_PANINI) {
+		return _panini_ray(Vector2(p_point.x / viewport_size.x - 0.5, p_point.y / viewport_size.y - 0.5)) * p_z_depth;
+	}
 
 	Projection cm = _get_camera_projection(p_z_depth);
 
@@ -458,6 +527,7 @@ void Camera3D::_attributes_changed() {
 	ERR_FAIL_NULL(physical_attributes);
 
 	fov = physical_attributes->get_fov();
+	panini_fov = physical_attributes->get_panini_fov();
 	_near = physical_attributes->get_near();
 	_far = physical_attributes->get_far();
 	keep_aspect = KEEP_HEIGHT;
@@ -518,6 +588,7 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_perspective", "fov", "z_near", "z_far"), &Camera3D::set_perspective);
 	ClassDB::bind_method(D_METHOD("set_orthogonal", "size", "z_near", "z_far"), &Camera3D::set_orthogonal);
 	ClassDB::bind_method(D_METHOD("set_frustum", "size", "offset", "z_near", "z_far"), &Camera3D::set_frustum);
+	ClassDB::bind_method(D_METHOD("set_panini", "panini_fov", "z_near", "z_far"), &Camera3D::set_panini);
 	ClassDB::bind_method(D_METHOD("make_current"), &Camera3D::make_current);
 	ClassDB::bind_method(D_METHOD("clear_current", "enable_next"), &Camera3D::clear_current, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_current", "enabled"), &Camera3D::set_current);
@@ -525,11 +596,13 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_camera_transform"), &Camera3D::get_camera_transform);
 	ClassDB::bind_method(D_METHOD("get_camera_projection"), &Camera3D::get_camera_projection);
 	ClassDB::bind_method(D_METHOD("get_fov"), &Camera3D::get_fov);
+	ClassDB::bind_method(D_METHOD("get_panini_fov"), &Camera3D::get_panini_fov);
 	ClassDB::bind_method(D_METHOD("get_frustum_offset"), &Camera3D::get_frustum_offset);
 	ClassDB::bind_method(D_METHOD("get_size"), &Camera3D::get_size);
 	ClassDB::bind_method(D_METHOD("get_far"), &Camera3D::get_far);
 	ClassDB::bind_method(D_METHOD("get_near"), &Camera3D::get_near);
 	ClassDB::bind_method(D_METHOD("set_fov", "fov"), &Camera3D::set_fov);
+	ClassDB::bind_method(D_METHOD("set_panini_fov", "panini_fov"), &Camera3D::set_panini_fov);
 	ClassDB::bind_method(D_METHOD("set_frustum_offset", "offset"), &Camera3D::set_frustum_offset);
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &Camera3D::set_size);
 	ClassDB::bind_method(D_METHOD("set_far", "far"), &Camera3D::set_far);
@@ -570,9 +643,10 @@ void Camera3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal,Frustum"), "set_projection", "get_projection");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal,Frustum,Panini"), "set_projection", "get_projection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fov", PROPERTY_HINT_RANGE, "1,179,0.1,degrees"), "set_fov", "get_fov");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "panini_fov", PROPERTY_HINT_RANGE, "1,359,0.1,degrees"), "set_panini_fov", "get_panini_fov");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frustum_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_frustum_offset", "get_frustum_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "near", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater,exp,suffix:m"), "set_near", "get_near");
@@ -581,6 +655,7 @@ void Camera3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PROJECTION_PERSPECTIVE);
 	BIND_ENUM_CONSTANT(PROJECTION_ORTHOGONAL);
 	BIND_ENUM_CONSTANT(PROJECTION_FRUSTUM);
+	BIND_ENUM_CONSTANT(PROJECTION_PANINI);
 
 	BIND_ENUM_CONSTANT(KEEP_WIDTH);
 	BIND_ENUM_CONSTANT(KEEP_HEIGHT);
@@ -592,6 +667,10 @@ void Camera3D::_bind_methods() {
 
 real_t Camera3D::get_fov() const {
 	return fov;
+}
+
+real_t Camera3D::get_panini_fov() const {
+	return panini_fov;
 }
 
 real_t Camera3D::get_size() const {
@@ -617,6 +696,12 @@ Camera3D::ProjectionType Camera3D::get_projection() const {
 void Camera3D::set_fov(real_t p_fov) {
 	ERR_FAIL_COND(p_fov < 1 || p_fov > 179);
 	fov = p_fov;
+	_update_camera_mode();
+}
+
+void Camera3D::set_panini_fov(real_t p_panini_fov) {
+	ERR_FAIL_COND(p_panini_fov < 1 || p_panini_fov > 359);
+	panini_fov = p_panini_fov;
 	_update_camera_mode();
 }
 
@@ -683,6 +768,19 @@ TypedArray<Plane> Camera3D::_get_frustum() const {
 }
 
 bool Camera3D::is_position_in_frustum(const Vector3 &p_position) const {
+	if (mode == PROJECTION_PANINI) {
+		Transform3D t = get_global_transform();
+		Vector3 ray = p_position - t.origin;
+
+		double lat = Math::rad_to_deg(Math::asin(ray.normalized().y));
+		if (Math::is_zero_approx(ray.z)) {
+			return ray.length_squared() >= _near * _near && Math::abs(lat) <= panini_fov / 2.0f;
+		}
+
+		double lon = Math::rad_to_deg(Math::atan2(ray.x, -ray.z));
+		return ray.length_squared() >= _near * _near && Math::abs(lon) <= panini_fov / 2.0f && Math::abs(lat) <= panini_fov / 2.0f;
+	}
+
 	Vector<Plane> frustum = get_frustum();
 	for (int i = 0; i < frustum.size(); i++) {
 		if (frustum[i].is_point_over(p_position)) {

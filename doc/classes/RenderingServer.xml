@@ -163,6 +163,16 @@
 				Sets camera to use orthogonal projection, also known as orthographic projection. Objects remain the same size on the screen no matter how far away they are.
 			</description>
 		</method>
+		<method name="camera_set_panini">
+			<return type="void" />
+			<param index="0" name="camera" type="RID" />
+			<param index="1" name="panini_fovy_degrees" type="float" />
+			<param index="2" name="z_near" type="float" />
+			<param index="3" name="z_far" type="float" />
+			<description>
+				Sets camera to use panini projection. Supports higher FOV values than perspective, but has a large performance cost due to having to render multiple views.
+			</description>
+		</method>
 		<method name="camera_set_perspective">
 			<return type="void" />
 			<param index="0" name="camera" type="RID" />

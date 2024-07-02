@@ -19,6 +19,12 @@
 				Returns the vertical field of view that corresponds to the [member frustum_focal_length]. This value is calculated internally whenever [member frustum_focal_length] is changed.
 			</description>
 		</method>
+		<method name="get_panini_fov" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the spherical field of view used for Panini projection, corresponding to the maximum latidude/longitude visible on the sphere.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="auto_exposure_max_exposure_value" type="float" setter="set_auto_exposure_max_exposure_value" getter="get_auto_exposure_max_exposure_value" default="10.0">

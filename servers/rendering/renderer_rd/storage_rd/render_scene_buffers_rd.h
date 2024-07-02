@@ -47,7 +47,19 @@
 
 #define RB_TEXTURE SNAME("texture")
 #define RB_TEX_COLOR SNAME("color")
+#define RB_TEX_COLOR_PANINI_0 SNAME("color_panini_0")
+#define RB_TEX_COLOR_PANINI_1 SNAME("color_panini_1")
+#define RB_TEX_COLOR_PANINI_2 SNAME("color_panini_2")
+#define RB_TEX_COLOR_PANINI_3 SNAME("color_panini_3")
+#define RB_TEX_COLOR_PANINI_4 SNAME("color_panini_4")
+#define RB_TEX_COLOR_PANINI_5 SNAME("color_panini_5")
 #define RB_TEX_COLOR_MSAA SNAME("color_msaa")
+#define RB_TEX_COLOR_MSAA_PANINI_0 SNAME("color_msaa_panini_0")
+#define RB_TEX_COLOR_MSAA_PANINI_1 SNAME("color_msaa_panini_1")
+#define RB_TEX_COLOR_MSAA_PANINI_2 SNAME("color_msaa_panini_2")
+#define RB_TEX_COLOR_MSAA_PANINI_3 SNAME("color_msaa_panini_3")
+#define RB_TEX_COLOR_MSAA_PANINI_4 SNAME("color_msaa_panini_4")
+#define RB_TEX_COLOR_MSAA_PANINI_5 SNAME("color_msaa_panini_5")
 #define RB_TEX_COLOR_UPSCALED SNAME("color_upscaled")
 #define RB_TEX_DEPTH SNAME("depth")
 #define RB_TEX_DEPTH_MSAA SNAME("depth_msaa")
@@ -254,6 +266,76 @@ public:
 	}
 	_FORCE_INLINE_ RID get_color_msaa(uint32_t p_layer) {
 		return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA, p_layer, 0);
+	}
+
+	RID get_panini_texture(int i) const {
+		switch (i) {
+			case 1:
+				return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_1);
+			case 2:
+				return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_2);
+			case 3:
+				return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_3);
+			case 4:
+				return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_4);
+			case 5:
+				return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_5);
+
+			default:
+				return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_0);
+		}
+	}
+	RID get_panini_texture(int i, const uint32_t p_layer) {
+		switch (i) {
+			case 1:
+				return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_1, p_layer, 0);
+			case 2:
+				return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_2, p_layer, 0);
+			case 3:
+				return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_3, p_layer, 0);
+			case 4:
+				return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_4, p_layer, 0);
+			case 5:
+				return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_5, p_layer, 0);
+
+			default:
+				return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_0, p_layer, 0);
+		}
+	}
+
+	RID get_panini_msaa_texture(int i) const {
+		switch (i) {
+			case 1:
+				return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_1);
+			case 2:
+				return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_2);
+			case 3:
+				return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_3);
+			case 4:
+				return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_4);
+			case 5:
+				return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_5);
+
+			default:
+				return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_0);
+		}
+	}
+	RID get_panini_msaa_texture(int i, const uint32_t p_layer) {
+		switch (i) {
+			case 1:
+				return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_1, p_layer, 0);
+			case 2:
+				return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_2, p_layer, 0);
+			case 3:
+				return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_3, p_layer, 0);
+			case 4:
+				return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_4, p_layer, 0);
+			case 5:
+				return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_5, p_layer, 0);
+
+			default:
+				return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_0, p_layer, 0);
+		}
 	}
 
 	bool has_depth_texture();

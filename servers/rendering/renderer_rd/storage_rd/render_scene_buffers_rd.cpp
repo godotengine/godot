@@ -181,6 +181,12 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 		}
 
 		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR, base_data_format, usage_bits);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_0, base_data_format, usage_bits);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_1, base_data_format, usage_bits);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_2, base_data_format, usage_bits);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_3, base_data_format, usage_bits);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_4, base_data_format, usage_bits);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_PANINI_5, base_data_format, usage_bits);
 	}
 
 	// Create our depth buffer
@@ -218,6 +224,12 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 		texture_samples = ts[msaa_3d];
 
 		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA, format, usage_bits, texture_samples);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_0, format, usage_bits, texture_samples);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_1, format, usage_bits, texture_samples);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_2, format, usage_bits, texture_samples);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_3, format, usage_bits, texture_samples);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_4, format, usage_bits, texture_samples);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_PANINI_5, format, usage_bits, texture_samples);
 
 		usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 		format = RD::get_singleton()->texture_is_format_supported_for_usage(preferred_format[0], usage_bits) ? preferred_format[0] : preferred_format[1];
