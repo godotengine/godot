@@ -131,6 +131,7 @@
 #ifndef _3D_DISABLED
 #include "tests/scene/test_arraymesh.h"
 #include "tests/scene/test_camera_3d.h"
+#include "tests/scene/test_mesh_library.h"
 #include "tests/scene/test_navigation_agent_2d.h"
 #include "tests/scene/test_navigation_agent_3d.h"
 #include "tests/scene/test_navigation_obstacle_2d.h"

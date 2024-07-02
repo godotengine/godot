@@ -11,6 +11,13 @@
 		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
 	</tutorials>
 	<methods>
+		<method name="add_custom_data_layer">
+			<return type="void" />
+			<param index="0" name="index" type="int" default="-1" />
+			<description>
+				Adds a custom data layer to the library at the specified index.
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
@@ -30,6 +37,49 @@
 			<param index="0" name="name" type="String" />
 			<description>
 				Returns the first item with the given name, or [code]-1[/code] if no item is found.
+			</description>
+		</method>
+		<method name="get_custom_data" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="item" type="int" />
+			<param index="1" name="layer_name" type="String" />
+			<description>
+				Returns the custom data for the specified item and layer name.
+			</description>
+		</method>
+		<method name="get_custom_data_by_layer_id" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="item" type="int" />
+			<param index="1" name="layer_id" type="int" />
+			<description>
+				Returns the custom data for the specified item and layer ID.
+			</description>
+		</method>
+		<method name="get_custom_data_layer_by_name" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="value" type="String" />
+			<description>
+				Returns the ID of the custom data layer with the given name.
+			</description>
+		</method>
+		<method name="get_custom_data_layer_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="layer_id" type="int" />
+			<description>
+				Returns the name of the custom data layer with the given ID.
+			</description>
+		</method>
+		<method name="get_custom_data_layer_type" qualifiers="const">
+			<return type="int" enum="Variant.Type" />
+			<param index="0" name="layer_id" type="int" />
+			<description>
+				Returns the type of the custom data layer with the given ID.
+			</description>
+		</method>
+		<method name="get_custom_data_layers_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of custom data layers in the library.
 			</description>
 		</method>
 		<method name="get_item_list" qualifiers="const">
@@ -101,11 +151,54 @@
 				Gets an unused ID for a new item.
 			</description>
 		</method>
+		<method name="move_custom_data_layer">
+			<return type="void" />
+			<param index="0" name="from_index" type="int" />
+			<param index="1" name="to_pos" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_custom_data_layer">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="remove_item">
 			<return type="void" />
 			<param index="0" name="id" type="int" />
 			<description>
 				Removes the item.
+			</description>
+		</method>
+		<method name="set_custom_data">
+			<return type="void" />
+			<param index="0" name="item" type="int" />
+			<param index="1" name="layer_name" type="String" />
+			<param index="2" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_data_by_layer_id">
+			<return type="void" />
+			<param index="0" name="item" type="int" />
+			<param index="1" name="layer_id" type="int" />
+			<param index="2" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_data_layer_name">
+			<return type="void" />
+			<param index="0" name="layer_id" type="int" />
+			<param index="1" name="value" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_data_layer_type">
+			<return type="void" />
+			<param index="0" name="layer_id" type="int" />
+			<param index="1" name="value" type="int" enum="Variant.Type" />
+			<description>
 			</description>
 		</method>
 		<method name="set_item_mesh">
