@@ -132,6 +132,17 @@ Variant *Dictionary::getptr(const Variant &p_key) {
 	}
 }
 
+void Dictionary::set(const Variant &p_key, const Variant &p_value) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
+	operator[](p_key) = p_value;
+}
+
+Error Dictionary::set_safe(const Variant &p_key, const Variant &p_value) {
+	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Dictionary is in read-only state.");
+	operator[](p_key) = p_value;
+	return OK;
+}
+
 Variant Dictionary::get_valid(const Variant &p_key) const {
 	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(p_key));
 
@@ -153,6 +164,7 @@ Variant Dictionary::get(const Variant &p_key, const Variant &p_default) const {
 Variant Dictionary::get_or_add(const Variant &p_key, const Variant &p_default) {
 	const Variant *result = getptr(p_key);
 	if (!result) {
+		ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Dictionary is in read-only state.");
 		operator[](p_key) = p_default;
 		return p_default;
 	}
