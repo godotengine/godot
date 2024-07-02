@@ -5,12 +5,29 @@
 	</brief_description>
 	<description>
 		This is the CSG base class that provides CSG operation support to the various CSG nodes in Godot.
-		[b]Note:[/b] CSG nodes are intended to be used for level prototyping. Creating CSG nodes has a significant CPU cost compared to creating a [MeshInstance3D] with a [PrimitiveMesh]. Moving a CSG node within another CSG node also has a significant CPU cost, so it should be avoided during gameplay.
+		[b]Performance:[/b] CSG nodes are only intended for prototyping as they have a significant CPU performance cost.
+		Consider baking final CSG operation results into static geometry that replaces the CSG nodes.
+		Individual CSG root node results can be baked to nodes with static resources with the editor menu that appears when a CSG root node is selected.
+		Individual CSG root nodes can also be baked to static resources with scripts by calling [method bake_static_mesh] for the visual mesh or [method bake_collision_shape] for the physics collision.
+		Entire scenes of CSG nodes can be baked to static geometry and exported with the editor gltf scene exporter.
 	</description>
 	<tutorials>
 		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
 	</tutorials>
 	<methods>
+		<method name="bake_collision_shape">
+			<return type="ConcavePolygonShape3D" />
+			<description>
+				Returns a baked physics [ConcavePolygonShape3D] of this node's CSG operation result. Returns an empty shape if the node is not a CSG root node or has no valid geometry.
+				[b]Performance:[/b] If the CSG operation results in a very detailed geometry with many faces physics performance will be very slow. Concave shapes should in general only be used for static level geometry and not with dynamic objects that are moving.
+			</description>
+		</method>
+		<method name="bake_static_mesh">
+			<return type="ArrayMesh" />
+			<description>
+				Returns a baked static [ArrayMesh] of this node's CSG operation result. Materials from involved CSG nodes are added as extra mesh surfaces. Returns an empty mesh if the node is not a CSG root node or has no valid geometry.
+			</description>
+		</method>
 		<method name="get_collision_layer_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
