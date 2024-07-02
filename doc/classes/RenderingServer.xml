@@ -5456,6 +5456,12 @@
 		<constant name="CANVAS_LIGHT_BLEND_MODE_MIX" value="2" enum="CanvasLightBlendMode">
 			The light adds color depending on transparency.
 		</constant>
+		<constant name="CANVAS_LIGHT_BLEND_MODE_ADD_MAX" value="3" enum="CanvasLightBlendMode">
+			Adds light color to the canvas, limited to the maximum amount set by all lights using the same blend mode.
+		</constant>
+		<constant name="CANVAS_LIGHT_BLEND_MODE_SUB_MAX" value="4" enum="CanvasLightBlendMode">
+			Subtracts light color from the canvas, limited to the maximum amount set by all lights using the same blend mode.
+		</constant>
 		<constant name="CANVAS_LIGHT_FILTER_NONE" value="0" enum="CanvasLightShadowFilter">
 			Do not apply a filter to canvas light shadows.
 		</constant>
