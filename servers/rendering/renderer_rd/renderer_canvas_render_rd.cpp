@@ -2379,6 +2379,10 @@ bool RendererCanvasRenderRD::CanvasShaderData::casts_shadows() const {
 	return false;
 }
 
+bool RendererCanvasRenderRD::CanvasShaderData::needs_alpha_pass() const {
+	return false;
+}
+
 RS::ShaderNativeSourceCode RendererCanvasRenderRD::CanvasShaderData::get_native_source_code() const {
 	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
 	return canvas_singleton->shader.canvas_shader.version_get_native_source_code(version);

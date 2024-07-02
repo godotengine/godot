@@ -2188,6 +2188,14 @@ void MaterialStorage::material_set_render_priority(RID p_material, int priority)
 	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 }
 
+bool MaterialStorage::material_needs_alpha_pass(RID p_material) const {
+	const Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL_V(material, false);
+	ERR_FAIL_NULL_V(material->shader, false);
+	ERR_FAIL_NULL_V(material->shader->data, false);
+	return material->shader->data->needs_alpha_pass();
+}
+
 bool MaterialStorage::material_is_animated(RID p_material) {
 	Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL_V(material, false);

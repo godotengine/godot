@@ -66,6 +66,7 @@ struct ShaderData {
 	virtual void set_code(const String &p_Code) = 0;
 	virtual bool is_animated() const = 0;
 	virtual bool casts_shadows() const = 0;
+	virtual bool needs_alpha_pass() const = 0;
 	virtual RS::ShaderNativeSourceCode get_native_source_code() const { return RS::ShaderNativeSourceCode(); }
 
 	virtual ~ShaderData() {}
@@ -172,10 +173,11 @@ struct CanvasShaderData : public ShaderData {
 
 	uint64_t vertex_input_mask;
 
-	virtual void set_code(const String &p_Code);
-	virtual bool is_animated() const;
-	virtual bool casts_shadows() const;
-	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+	virtual void set_code(const String &p_Code) override;
+	virtual bool is_animated() const override;
+	virtual bool casts_shadows() const override;
+	virtual bool needs_alpha_pass() const override;
+	virtual RS::ShaderNativeSourceCode get_native_source_code() const override;
 
 	CanvasShaderData();
 	virtual ~CanvasShaderData();
@@ -217,10 +219,11 @@ struct SkyShaderData : public ShaderData {
 	bool uses_quarter_res;
 	bool uses_light;
 
-	virtual void set_code(const String &p_Code);
-	virtual bool is_animated() const;
-	virtual bool casts_shadows() const;
-	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+	virtual void set_code(const String &p_Code) override;
+	virtual bool is_animated() const override;
+	virtual bool casts_shadows() const override;
+	virtual bool needs_alpha_pass() const override;
+	virtual RS::ShaderNativeSourceCode get_native_source_code() const override;
 	SkyShaderData();
 	virtual ~SkyShaderData();
 };
@@ -332,10 +335,11 @@ struct SceneShaderData : public ShaderData {
 
 	uint64_t vertex_input_mask;
 
-	virtual void set_code(const String &p_Code);
-	virtual bool is_animated() const;
-	virtual bool casts_shadows() const;
-	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+	virtual void set_code(const String &p_Code) override;
+	virtual bool is_animated() const override;
+	virtual bool casts_shadows() const override;
+	virtual bool needs_alpha_pass() const override;
+	virtual RS::ShaderNativeSourceCode get_native_source_code() const override;
 
 	SceneShaderData();
 	virtual ~SceneShaderData();
@@ -384,10 +388,11 @@ struct ParticlesShaderData : public ShaderData {
 	bool userdatas_used[PARTICLES_MAX_USERDATAS] = {};
 	uint32_t userdata_count;
 
-	virtual void set_code(const String &p_Code);
-	virtual bool is_animated() const;
-	virtual bool casts_shadows() const;
-	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+	virtual void set_code(const String &p_Code) override;
+	virtual bool is_animated() const override;
+	virtual bool casts_shadows() const override;
+	virtual bool needs_alpha_pass() const override;
+	virtual RS::ShaderNativeSourceCode get_native_source_code() const override;
 
 	ParticlesShaderData() {}
 	virtual ~ParticlesShaderData();
@@ -615,6 +620,8 @@ public:
 
 	virtual void material_set_next_pass(RID p_material, RID p_next_material) override;
 	virtual void material_set_render_priority(RID p_material, int priority) override;
+
+	virtual bool material_needs_alpha_pass(RID p_material) const override;
 
 	virtual bool material_is_animated(RID p_material) override;
 	virtual bool material_casts_shadows(RID p_material) override;

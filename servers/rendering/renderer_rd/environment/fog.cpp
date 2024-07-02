@@ -362,6 +362,10 @@ bool Fog::FogShaderData::casts_shadows() const {
 	return false;
 }
 
+bool Fog::FogShaderData::needs_alpha_pass() const {
+	return false;
+}
+
 RS::ShaderNativeSourceCode Fog::FogShaderData::get_native_source_code() const {
 	Fog *fog_singleton = Fog::get_singleton();
 
