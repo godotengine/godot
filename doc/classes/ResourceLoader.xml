@@ -51,6 +51,12 @@
 				Returns the list of recognized extensions for a resource type.
 			</description>
 		</method>
+		<method name="get_requested_paths">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a list of the paths of all currently cached resources loaded by [method load_threaded_request].
+			</description>
+		</method>
 		<method name="get_resource_uid">
 			<return type="int" />
 			<param index="0" name="path" type="String" />
@@ -80,6 +86,13 @@
 				GDScript has a simplified [method @GDScript.load] built-in method which can be used in most situations, leaving the use of [ResourceLoader] for more advanced scenarios.
 				[b]Note:[/b] If [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to read converted files in an exported project. If you rely on run-time loading of files present within the PCK, set [member ProjectSettings.editor/export/convert_text_resources_to_binary] to [code]false[/code].
 				[b]Note:[/b] Relative paths will be prefixed with [code]"res://"[/code] before loading, to avoid unexpected results make sure your paths are absolute.
+			</description>
+		</method>
+		<method name="load_threaded_forget">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Unloads the resource previously loaded by [method load_threaded_request].
 			</description>
 		</method>
 		<method name="load_threaded_get">
