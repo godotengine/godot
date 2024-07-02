@@ -48,20 +48,26 @@
 		</method>
 		<method name="char">
 			<return type="String" />
-			<param index="0" name="char" type="int" />
+			<param index="0" name="code" type="int" />
 			<description>
-				Returns a single character (as a [String]) of the given Unicode code point (which is compatible with ASCII code).
+				Returns a single character (as a [String] of length 1) of the given Unicode code point [param code].
 				[codeblock]
-				a = char(65)      # a is "A"
-				a = char(65 + 32) # a is "a"
-				a = char(8364)    # a is "€"
+				a = char(65)   # a is "A"
+				a = char(8364) # a is "€"
+
+				# 0x20AC == 8364
+				a = char(0x20AC) # a is "€"
+				a = "\u20AC"     # a is "€"
 				[/codeblock]
+				This is the inverse of [method ord]. See also [method String.chr] and [method String.unicode_at].
+				[b]Note:[/b] [code]char(0)[/code] returns an empty string.
+				[b]Note:[/b] Unicode is compatible with ASCII for the first 128 characters.
 			</description>
 		</method>
 		<method name="convert" deprecated="Use [method @GlobalScope.type_convert] instead.">
 			<return type="Variant" />
 			<param index="0" name="what" type="Variant" />
-			<param index="1" name="type" type="int" />
+			<param index="1" name="type" type="int" enum="Variant.Type" />
 			<description>
 				Converts [param what] to [param type] in the best way possible. The [param type] uses the [enum Variant.Type] values.
 				[codeblock]
@@ -172,6 +178,23 @@
 				This function is a simplified version of [method ResourceLoader.load], which can be used for more advanced scenarios.
 				[b]Note:[/b] Files have to be imported into the engine first to load them using this function. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data].
 				[b]Note:[/b] If [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to read converted files in an exported project. If you rely on run-time loading of files present within the PCK, set [member ProjectSettings.editor/export/convert_text_resources_to_binary] to [code]false[/code].
+			</description>
+		</method>
+		<method name="ord">
+			<return type="int" />
+			<param index="0" name="char" type="String" />
+			<description>
+				Returns an integer representing the Unicode code point of the given character [param char] (as a [String] of length 1).
+				[codeblock]
+				a = ord("A") # a is 65
+				a = ord("€") # a is 8364
+
+				# 0x20AC == 8364
+				a = ord("\u20AC") # a is 8364
+				a = 0x20AC        # a is 8364
+				[/codeblock]
+				This is the inverse of [method char]. See also [method String.chr] and [method String.unicode_at].
+				[b]Note:[/b] Unicode is compatible with ASCII for the first 128 characters.
 			</description>
 		</method>
 		<method name="preload">
