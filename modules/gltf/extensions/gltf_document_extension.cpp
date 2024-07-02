@@ -34,18 +34,18 @@
 
 void GLTFDocumentExtension::_bind_methods() {
 	// Import process.
-	BIND_VMETHOD(MethodInfo(Variant::INT, "_import_preflight", PropertyInfo(Variant::OBJECT, "state"), PropertyInfo(Variant::POOL_STRING_ARRAY, "extensions")));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "_import_preflight", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "GLTFState"), PropertyInfo(Variant::POOL_STRING_ARRAY, "extensions")));
 	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_supported_extensions"));
-	BIND_VMETHOD(MethodInfo(Variant::INT, "_parse_node_extensions", PropertyInfo(Variant::OBJECT, "state"), PropertyInfo(Variant::OBJECT, "gltf_node"), PropertyInfo(Variant::DICTIONARY, "extensions")));
-	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "_generate_scene_node", PropertyInfo(Variant::OBJECT, "state"), PropertyInfo(Variant::OBJECT, "gltf_node"), PropertyInfo(Variant::OBJECT, "scene_parent")));
-	BIND_VMETHOD(MethodInfo(Variant::INT, "_import_post_parse", PropertyInfo(Variant::OBJECT, "state")));
-	BIND_VMETHOD(MethodInfo(Variant::INT, "_import_node", PropertyInfo(Variant::OBJECT, "state"), PropertyInfo(Variant::OBJECT, "gltf_node"), PropertyInfo(Variant::DICTIONARY, "json"), PropertyInfo(Variant::OBJECT, "node")));
-	BIND_VMETHOD(MethodInfo(Variant::INT, "_import_post", PropertyInfo(Variant::OBJECT, "state"), PropertyInfo(Variant::OBJECT, "root")));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "_parse_node_extensions", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "GLTFState"), PropertyInfo(Variant::OBJECT, "gltf_node", PROPERTY_HINT_RESOURCE_TYPE, "GLTFNode"), PropertyInfo(Variant::DICTIONARY, "extensions")));
+	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "_generate_scene_node", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "GLTFState"), PropertyInfo(Variant::OBJECT, "gltf_node", PROPERTY_HINT_RESOURCE_TYPE, "GLTFNode"), PropertyInfo(Variant::OBJECT, "scene_parent", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "_import_post_parse", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "GLTFState")));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "_import_node", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "GLTFState"), PropertyInfo(Variant::OBJECT, "gltf_node", PROPERTY_HINT_RESOURCE_TYPE, "GLTFNode"), PropertyInfo(Variant::DICTIONARY, "json"), PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "_import_post", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "GLTFState"), PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	// Export process.
-	BIND_VMETHOD(MethodInfo(Variant::INT, "_export_preflight", PropertyInfo(Variant::OBJECT, "state"), PropertyInfo(Variant::OBJECT, "root")));
-	BIND_VMETHOD(MethodInfo("_convert_scene_node", PropertyInfo(Variant::OBJECT, "state"), PropertyInfo(Variant::OBJECT, "gltf_node"), PropertyInfo(Variant::OBJECT, "scene_node")));
-	BIND_VMETHOD(MethodInfo(Variant::INT, "_export_node", PropertyInfo(Variant::OBJECT, "state"), PropertyInfo(Variant::OBJECT, "gltf_node"), PropertyInfo(Variant::DICTIONARY, "json"), PropertyInfo(Variant::OBJECT, "node")));
-	BIND_VMETHOD(MethodInfo(Variant::INT, "_export_post", PropertyInfo(Variant::OBJECT, "state")));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "_export_preflight", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "GLTFState"), PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	BIND_VMETHOD(MethodInfo("_convert_scene_node", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "GLTFState"), PropertyInfo(Variant::OBJECT, "gltf_node", PROPERTY_HINT_RESOURCE_TYPE, "GLTFNode"), PropertyInfo(Variant::OBJECT, "scene_node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "_export_node", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "GLTFState"), PropertyInfo(Variant::OBJECT, "gltf_node", PROPERTY_HINT_RESOURCE_TYPE, "GLTFNode"), PropertyInfo(Variant::DICTIONARY, "json"), PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "_export_post", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "GLTFState")));
 }
 
 // Import process.
