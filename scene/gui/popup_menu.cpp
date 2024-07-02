@@ -221,8 +221,8 @@ Size2 PopupMenu::_get_item_icon_size(int p_idx) const {
 }
 
 Size2 PopupMenu::_get_contents_minimum_size() const {
-	Size2 minsize = theme_cache.panel_style->get_minimum_size();
-	minsize.width += scroll_container->get_v_scroll_bar()->get_size().width;
+	Size2 minsize = theme_cache.panel_style->get_minimum_size(); // Accounts for margin in the margin container
+	minsize.x += scroll_container->get_v_scroll_bar()->get_size().width * 2; // Adds a buffer so that the scrollbar does not render over the top of content
 
 	float max_w = 0.0;
 	float icon_w = 0.0;
@@ -314,11 +314,16 @@ int PopupMenu::_get_items_total_height() const {
 
 int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 	float win_scale = get_content_scale_factor();
-	if (p_over.x < 0 || p_over.x >= get_size().width * win_scale || p_over.y < theme_cache.panel_style->get_margin(Side::SIDE_TOP) * win_scale) {
+	if (p_over.x < 0 || p_over.x >= get_size().width * win_scale) {
 		return -1;
 	}
 
-	Point2 ofs = Point2(0, theme_cache.v_separation * 0.5) * win_scale;
+	// Accounts for margin in the margin container
+	Point2 ofs = theme_cache.panel_style->get_offset();
+
+	if (ofs.y > p_over.y) {
+		return -1;
+	}
 
 	for (int i = 0; i < items.size(); i++) {
 		ofs.y += i > 0 ? (float)theme_cache.v_separation * win_scale : (float)theme_cache.v_separation * win_scale * 0.5;
@@ -583,32 +588,24 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {
-		MouseButton button_idx = b->get_button_index();
-		// Activate the item on release of either the left mouse button or
-		// any mouse button held down when the popup was opened.
-		// This allows for opening the popup and triggering an action in a single mouse click.
-		if (button_idx == MouseButton::LEFT || initial_button_mask.has_flag(mouse_button_to_mask(button_idx))) {
-			if (b->is_pressed()) {
-				is_scrolling = is_layout_rtl() ? b->get_position().x < item_clickable_area.position.x : b->get_position().x > item_clickable_area.size.width;
+		if (!item_clickable_area.has_point(b->get_position())) {
+			return;
+		}
 
-				if (!item_clickable_area.has_point(b->get_position())) {
-					return;
-				}
-				_mouse_over_update(b->get_position());
-			} else {
-				if (is_scrolling) {
-					is_scrolling = false;
-					return;
-				}
+		MouseButton button_idx = b->get_button_index();
+		if (!b->is_pressed()) {
+			// Activate the item on release of either the left mouse button or
+			// any mouse button held down when the popup was opened.
+			// This allows for opening the popup and triggering an action in a single mouse click.
+			if (button_idx == MouseButton::LEFT || initial_button_mask.has_flag(mouse_button_to_mask(button_idx))) {
 				bool was_during_grabbed_click = during_grabbed_click;
 				during_grabbed_click = false;
 				initial_button_mask.clear();
 
-				if (!item_clickable_area.has_point(b->get_position())) {
-					return;
-				}
 				// Disable clicks under a time threshold to avoid selection right when opening the popup.
-				if (was_during_grabbed_click && OS::get_singleton()->get_ticks_msec() - popup_time_msec < 150) {
+				uint64_t now = OS::get_singleton()->get_ticks_msec();
+				uint64_t diff = now - popup_time_msec;
+				if (diff < 150) {
 					return;
 				}
 
@@ -657,7 +654,25 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 		if (!item_clickable_area.has_point(m->get_position())) {
 			return;
 		}
-		_mouse_over_update(m->get_position());
+
+		int over = _get_mouse_over(m->get_position());
+		int id = (over < 0 || items[over].separator || items[over].disabled) ? -1 : (items[over].id >= 0 ? items[over].id : over);
+
+		if (id < 0) {
+			mouse_over = -1;
+			control->queue_redraw();
+			return;
+		}
+
+		if (items[over].submenu && submenu_over != over) {
+			submenu_over = over;
+			submenu_timer->start();
+		}
+
+		if (over != mouse_over) {
+			mouse_over = over;
+			control->queue_redraw();
+		}
 	}
 
 	Ref<InputEventKey> k = p_event;
@@ -701,30 +716,13 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void PopupMenu::_mouse_over_update(const Point2 &p_over) {
-	int over = _get_mouse_over(p_over);
-	int id = (over < 0 || items[over].separator || items[over].disabled) ? -1 : (items[over].id >= 0 ? items[over].id : over);
-
-	if (id < 0) {
-		mouse_over = -1;
-		control->queue_redraw();
-		return;
-	}
-
-	if (!is_scrolling && items[over].submenu && submenu_over != over) {
-		submenu_over = over;
-		submenu_timer->start();
-	}
-
-	if (over != mouse_over) {
-		mouse_over = over;
-		control->queue_redraw();
-	}
-}
-
 void PopupMenu::_draw_items() {
 	control->set_custom_minimum_size(Size2(0, _get_items_total_height()));
 	RID ci = control->get_canvas_item();
+
+	Size2 margin_size;
+	margin_size.width = margin_container->get_margin_size(SIDE_LEFT) + margin_container->get_margin_size(SIDE_RIGHT);
+	margin_size.height = margin_container->get_margin_size(SIDE_TOP) + margin_container->get_margin_size(SIDE_BOTTOM);
 
 	// Space between the item content and the sides of popup menu.
 	bool rtl = control->is_layout_rtl();
@@ -738,7 +736,8 @@ void PopupMenu::_draw_items() {
 		submenu = theme_cache.submenu;
 	}
 
-	float display_width = control->get_size().width;
+	float scroll_width = scroll_container->get_v_scroll_bar()->is_visible_in_tree() ? scroll_container->get_v_scroll_bar()->get_size().width : 0;
+	float display_width = control->get_size().width - scroll_width;
 
 	// Find the widest icon and whether any items have a checkbox, and store the offsets for each.
 	float icon_ofs = 0.0;
@@ -782,7 +781,11 @@ void PopupMenu::_draw_items() {
 		float h = _get_item_height(i);
 
 		if (i == mouse_over) {
-			theme_cache.hover_style->draw(ci, Rect2(item_ofs + Point2(0, -theme_cache.v_separation / 2), Size2(display_width, h + theme_cache.v_separation)));
+			if (rtl) {
+				theme_cache.hover_style->draw(ci, Rect2(item_ofs + Point2(scroll_width, -theme_cache.v_separation / 2), Size2(display_width, h + theme_cache.v_separation)));
+			} else {
+				theme_cache.hover_style->draw(ci, Rect2(item_ofs + Point2(0, -theme_cache.v_separation / 2), Size2(display_width, h + theme_cache.v_separation)));
+			}
 		}
 
 		String text = items[i].xl_text;
@@ -864,7 +867,7 @@ void PopupMenu::_draw_items() {
 		// Submenu arrow on right hand side.
 		if (items[i].submenu) {
 			if (rtl) {
-				submenu->draw(ci, Point2(theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.item_end_padding, item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
+				submenu->draw(ci, Point2(scroll_width + theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.item_end_padding, item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
 			} else {
 				submenu->draw(ci, Point2(display_width - theme_cache.panel_style->get_margin(SIDE_RIGHT) - submenu->get_width() - theme_cache.item_end_padding, item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
 			}
@@ -901,7 +904,7 @@ void PopupMenu::_draw_items() {
 		// Accelerator / Shortcut
 		if (items[i].accel != Key::NONE || (items[i].shortcut.is_valid() && items[i].shortcut->has_valid_event())) {
 			if (rtl) {
-				item_ofs.x = theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.item_end_padding;
+				item_ofs.x = scroll_width + theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.item_end_padding;
 			} else {
 				item_ofs.x = display_width - theme_cache.panel_style->get_margin(SIDE_RIGHT) - items[i].accel_text_buf->get_size().x - theme_cache.item_end_padding;
 			}
@@ -918,6 +921,11 @@ void PopupMenu::_draw_items() {
 
 		ofs.y += h;
 	}
+}
+
+void PopupMenu::_draw_background() {
+	RID ci2 = margin_container->get_canvas_item();
+	theme_cache.panel_style->draw(ci2, Rect2(Point2(), margin_container->get_size()));
 }
 
 void PopupMenu::_minimum_lifetime_timeout() {
@@ -1178,6 +1186,14 @@ void PopupMenu::_notification(int p_what) {
 				if (!is_embedded()) {
 					set_process_internal(true);
 				}
+
+				// Set margin on the margin container
+				margin_container->begin_bulk_theme_override();
+				margin_container->add_theme_constant_override("margin_left", theme_cache.panel_style->get_margin(Side::SIDE_LEFT));
+				margin_container->add_theme_constant_override("margin_top", theme_cache.panel_style->get_margin(Side::SIDE_TOP));
+				margin_container->add_theme_constant_override("margin_right", theme_cache.panel_style->get_margin(Side::SIDE_RIGHT));
+				margin_container->add_theme_constant_override("margin_bottom", theme_cache.panel_style->get_margin(Side::SIDE_BOTTOM));
+				margin_container->end_bulk_theme_override();
 			}
 		} break;
 	}
@@ -2862,11 +2878,16 @@ void PopupMenu::set_visible(bool p_visible) {
 }
 
 PopupMenu::PopupMenu() {
+	// Margin Container
+	margin_container = memnew(MarginContainer);
+	margin_container->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	add_child(margin_container, false, INTERNAL_MODE_FRONT);
+	margin_container->connect("draw", callable_mp(this, &PopupMenu::_draw_background));
+
 	// Scroll Container
 	scroll_container = memnew(ScrollContainer);
-	scroll_container->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	scroll_container->set_clip_contents(true);
-	add_child(scroll_container, false, INTERNAL_MODE_FRONT);
+	margin_container->add_child(scroll_container);
 
 	// The control which will display the items
 	control = memnew(Control);
