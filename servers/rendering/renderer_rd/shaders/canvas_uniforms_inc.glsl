@@ -31,7 +31,15 @@
 
 // Push Constant
 
-layout(push_constant, std430) uniform DrawData {
+layout(push_constant, std430) uniform DrawDataIndex {
+	uint index;
+	uint pad1;
+	uint pad2;
+	uint pad3;
+}
+draw_data_index;
+
+struct DrawData {
 	vec2 world_x;
 	vec2 world_y;
 	vec2 world_ofs;
@@ -51,8 +59,7 @@ layout(push_constant, std430) uniform DrawData {
 #endif
 	vec2 color_texture_pixel_size;
 	uint lights[4];
-}
-draw_data;
+};
 
 // In vulkan, sets should always be ordered using the following logic:
 // Lower Sets: Sets that change format and layout less often
@@ -132,6 +139,11 @@ layout(set = 0, binding = 9, std430) restrict readonly buffer GlobalShaderUnifor
 	vec4 data[];
 }
 global_shader_uniforms;
+
+layout(set = 0, binding = 10, std430) restrict readonly buffer DrawDataBuffer {
+	DrawData data[];
+}
+draw_data_buffer;
 
 /* SET1: Is reserved for the material */
 

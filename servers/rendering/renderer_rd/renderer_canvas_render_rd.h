@@ -48,7 +48,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		CANVAS_TEXTURE_UNIFORM_SET = 3,
 	};
 
-	const int SAMPLERS_BINDING_FIRST_INDEX = 10;
+	const int SAMPLERS_BINDING_FIRST_INDEX = 11;
 
 	enum ShaderVariant {
 		SHADER_VARIANT_QUAD,
@@ -111,7 +111,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		MAX_RENDER_ITEMS = 256 * 1024,
 		MAX_LIGHT_TEXTURES = 1024,
 		MAX_LIGHTS_PER_ITEM = 16,
-		DEFAULT_MAX_LIGHTS_PER_RENDER = 256
+		DEFAULT_MAX_LIGHTS_PER_RENDER = 256,
+		MIN_PER_INSTANCE_BUFFERS = 256
 	};
 
 	/****************/
@@ -376,7 +377,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	} state;
 
-	struct PushConstant {
+	struct PerInstanceBuffer {
 		float world[6];
 		uint32_t flags;
 		uint32_t specular_shininess;
@@ -403,6 +404,13 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		uint32_t lights[4];
 	};
 
+	struct PushConstant {
+		uint32_t index;
+		uint32_t pad1;
+		uint32_t pad2;
+		uint32_t pad3;
+	};
+
 	Item *items[MAX_RENDER_ITEMS];
 
 	bool using_directional_lights = false;
@@ -416,14 +424,20 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	RS::CanvasItemTextureFilter default_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 	RS::CanvasItemTextureRepeat default_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
+	LocalVector<PerInstanceBuffer> per_instance_buffers;
+	RID per_instance_buffers_buffer;
+	uint32_t per_instance_buffers_buffer_size;
+
 	RID _create_base_uniform_set(RID p_to_render_target, bool p_backbuffer);
 
 	bool debug_redraw = false;
 	Color debug_redraw_color;
 	double debug_redraw_time = 1.0;
 
-	inline void _bind_canvas_texture(RD::DrawListID p_draw_list, RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, PushConstant &push_constant, Size2 &r_texpixel_size, bool p_texture_is_data = false); //recursive, so regular inline used instead.
-	void _render_item(RenderingDevice::DrawListID p_draw_list, RID p_render_target, const Item *p_item, RenderingDevice::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants, bool &r_sdf_used, const Point2 &p_offset, RenderingMethod::RenderInfo *r_render_info = nullptr);
+	inline void _prepare_canvas_texture_data(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, PerInstanceBuffer &per_instance_buffer, Size2 &r_texpixel_size, bool p_texture_is_data = false); //recursive, so regular inline used instead.
+	inline void _bind_canvas_texture(RD::DrawListID p_draw_list, RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, const PerInstanceBuffer &per_instance_buffer, bool p_texture_is_data = false); //recursive, so regular inline used instead.
+	void _prepare_item_data(RID p_render_target, const Item *p_item, const Transform2D &p_canvas_transform_inverse, Light *p_lights, const Point2 &p_offset);
+	void _render_item(RenderingDevice::DrawListID p_draw_list, PushConstant &p_push_constant, RID p_render_target, const Item *p_item, RenderingDevice::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info = nullptr);
 	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer = false, RenderingMethod::RenderInfo *r_render_info = nullptr);
 
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4);
