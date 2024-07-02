@@ -1514,6 +1514,7 @@ void ColorPicker::_pick_button_pressed() {
 		add_child(picker_window, false, INTERNAL_MODE_FRONT);
 	}
 	picker_window->popup();
+	Input::get_singleton()->set_default_cursor_shape(Input::CURSOR_CROSS);
 }
 
 void ColorPicker::_pick_finished() {
@@ -1529,6 +1530,7 @@ void ColorPicker::_pick_finished() {
 	is_picking_color = false;
 	set_process_internal(false);
 	picker_window->hide();
+	Input::get_singleton()->set_default_cursor_shape(Input::CURSOR_ARROW);
 }
 
 void ColorPicker::_pick_button_pressed_legacy() {
@@ -1545,7 +1547,6 @@ void ColorPicker::_pick_button_pressed_legacy() {
 		picker_texture_rect = memnew(TextureRect);
 		picker_texture_rect->set_anchors_preset(Control::PRESET_FULL_RECT);
 		picker_window->add_child(picker_texture_rect);
-		picker_texture_rect->set_default_cursor_shape(CURSOR_POINTING_HAND);
 		picker_texture_rect->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_picker_texture_input));
 
 		picker_preview = memnew(Panel);
@@ -1604,6 +1605,8 @@ void ColorPicker::_pick_button_pressed_legacy() {
 	picker_window->set_size(screen_rect.size);
 	picker_preview->set_size(screen_rect.size / 10.0); // 10% of size in each axis.
 	picker_window->popup();
+
+	Input::get_singleton()->set_default_cursor_shape(Input::CURSOR_CROSS);
 }
 
 void ColorPicker::_picker_texture_input(const Ref<InputEvent> &p_event) {
