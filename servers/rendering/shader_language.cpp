@@ -9500,6 +9500,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 										_set_error(RTR("Array size mismatch."));
 										return ERR_PARSE_ERROR;
 									}
+								} else {
+									_set_expected_error("(,{");
+									return ERR_PARSE_ERROR;
 								}
 
 								array_size = constant.array_size;
