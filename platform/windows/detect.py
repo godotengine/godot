@@ -387,6 +387,15 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
 
     ## Compile/link flags
 
+    if env["use_llvm"]:
+        env["CC"] = "clang-cl"
+        env["CXX"] = "clang-cl"
+        env["LINK"] = "lld-link"
+        env["AR"] = "llvm-lib"
+
+        env.AppendUnique(CPPDEFINES=["R128_STDC_ONLY"])
+        env.extra_suffix = ".llvm" + env.extra_suffix
+
     env["MAXLINELENGTH"] = 8192  # Windows Vista and beyond, so always applicable.
 
     if env["silence_msvc"] and not env.GetOption("clean"):
@@ -593,6 +602,9 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     if env["target"] in ["editor", "template_debug"]:
         LIBS += ["psapi", "dbghelp"]
 
+    if env["use_llvm"]:
+        LIBS += [f"clang_rt.builtins-{env['arch']}"]
+
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
     if vcvars_msvc_config:
@@ -608,14 +620,22 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
-            print_error("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
-            sys.exit(255)
-        env.AppendUnique(CCFLAGS=["/GL"])
-        env.AppendUnique(ARFLAGS=["/LTCG"])
-        if env["progress"]:
-            env.AppendUnique(LINKFLAGS=["/LTCG:STATUS"])
+            if not env["use_llvm"]:
+                print("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
+                sys.exit(255)
+
+            env.Append(CCFLAGS=["-flto=thin"])
+            env.Append(LINKFLAGS=["-flto=thin"])
+        elif env["use_llvm"]:
+            env.Append(CCFLAGS=["-flto"])
+            env.Append(LINKFLAGS=["-flto"])
         else:
-            env.AppendUnique(LINKFLAGS=["/LTCG"])
+            env.AppendUnique(CCFLAGS=["/GL"])
+            env.AppendUnique(ARFLAGS=["/LTCG"])
+            if env["progress"]:
+                env.AppendUnique(LINKFLAGS=["/LTCG:STATUS"])
+            else:
+                env.AppendUnique(LINKFLAGS=["/LTCG"])
 
     if vcvars_msvc_config:
         env.Prepend(CPPPATH=[p for p in str(os.getenv("INCLUDE")).split(";")])
