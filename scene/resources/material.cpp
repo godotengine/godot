@@ -938,7 +938,7 @@ uniform vec4 refraction_texture_channel;
 		code += "uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear_mipmap;\n";
 	}
 
-	if (proximity_fade_enabled) {
+	if (features[FEATURE_REFRACTION] || proximity_fade_enabled) {
 		code += "uniform sampler2D depth_texture : hint_depth_texture, repeat_disable, filter_nearest;\n";
 	}
 
@@ -1613,13 +1613,20 @@ void fragment() {)";
 )";
 		}
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "	vec2 ref_ofs = SCREEN_UV - ref_normal.xy * dot(triplanar_texture(texture_refraction, uv1_power_normal, uv1_triplanar_pos), refraction_texture_channel) * refraction;\n";
+			code += "	vec2 ref_ofs = SCREEN_UV - ref_normal.xx * dot(triplanar_texture(texture_refraction, uv1_power_normal, uv1_triplanar_pos), refraction_texture_channel) * refraction;\n";
 		} else {
-			code += "	vec2 ref_ofs = SCREEN_UV - ref_normal.xy * dot(texture(texture_refraction, base_uv), refraction_texture_channel) * refraction;\n";
+			code += "	vec2 ref_ofs = SCREEN_UV - ref_normal.xx * dot(texture(texture_refraction, base_uv), refraction_texture_channel) * refraction;\n";
 		}
 		code += R"(
 	float ref_amount = 1.0 - albedo.a * albedo_tex.a;
-	EMISSION += textureLod(screen_texture, ref_ofs, ROUGHNESS * 8.0).rgb * ref_amount * EXPOSURE;
+
+	float refraction_depth_tex = textureLod(depth_texture, ref_ofs, 0.0).r;
+	vec4 refraction_world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, refraction_depth_tex, 1.0);
+	refraction_world_pos.xyz /= refraction_world_pos.w;
+
+	// If the depth buffer is lower then the model's Z position, use the refracted UV, otherwise use the normal screen UV.
+	// At low depth differences, decrease refraction intensity to avoid sudden discontinuities.
+	EMISSION += textureLod(screen_texture, mix(SCREEN_UV, ref_ofs, smoothstep(0.0, 1.0, VERTEX.z - refraction_world_pos.z)), ROUGHNESS * 8.0).rgb * albedo.rgb * ref_amount * EXPOSURE;
 	ALBEDO *= 1.0 - ref_amount;
 	// Force transparency on the material (required for refraction).
 	ALPHA = 1.0;
@@ -1641,10 +1648,10 @@ void fragment() {)";
 	if (proximity_fade_enabled) {
 		code += R"(
 	// Proximity Fade: Enabled
-	float depth_tex = textureLod(depth_texture, SCREEN_UV, 0.0).r;
-	vec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, depth_tex, 1.0);
-	world_pos.xyz /= world_pos.w;
-	ALPHA *= clamp(1.0 - smoothstep(world_pos.z + proximity_fade_distance, world_pos.z, VERTEX.z), 0.0, 1.0);
+	float proximity_depth_tex = textureLod(depth_texture, SCREEN_UV, 0.0).r;
+	vec4 proximity_world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, proximity_depth_tex, 1.0);
+	proximity_world_pos.xyz /= proximity_world_pos.w;
+	ALPHA *= clamp(1.0 - smoothstep(proximity_world_pos.z + proximity_fade_distance, proximity_world_pos.z, VERTEX.z), 0.0, 1.0);
 )";
 	}
 
