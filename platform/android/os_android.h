@@ -31,7 +31,7 @@
 #ifndef OS_ANDROID_H
 #define OS_ANDROID_H
 
-#include "audio_driver_opensl.h"
+#include "audio_driver_oboe.h"
 
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
@@ -60,7 +60,7 @@ private:
 	mutable String cache_dir_cache;
 	mutable String remote_fs_dir;
 
-	AudioDriverOpenSL audio_driver_android;
+	AudioDriverOboe audio_driver_android;
 
 	MainLoop *main_loop = nullptr;
 

@@ -390,6 +390,9 @@
 		<member name="audio/driver/mix_rate" type="int" setter="" getter="" default="44100">
 			The mixing rate used for audio (in Hz). In general, it's better to not touch this and leave it to the host operating system.
 		</member>
+		<member name="audio/driver/mix_rate.android" type="int" setter="" getter="" default="0">
+			Safer override for [member audio/driver/mix_rate] in the Android platform. Here [code]0[/code] means "let the device choose" (since enforcing mix rate could result in a higher latency or may not work).
+		</member>
 		<member name="audio/driver/mix_rate.web" type="int" setter="" getter="" default="0">
 			Safer override for [member audio/driver/mix_rate] in the Web platform. Here [code]0[/code] means "let the browser choose" (since some browsers do not like forcing the mix rate).
 		</member>

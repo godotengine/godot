@@ -33,6 +33,7 @@ package org.godotengine.godot
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.media.AudioManager
 import android.content.*
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -122,6 +123,7 @@ class Godot(private val context: Context) : SensorEventListener {
 		}}
 
 	val tts = GodotTTS(context)
+	val audio = GodotAudio(context)
 	val directoryAccessHandler = DirectoryAccessHandler(context)
 	val fileAccessHandler = FileAccessHandler(context)
 	val netUtils = GodotNetUtils(context)
@@ -342,7 +344,8 @@ class Godot(private val context: Context) : SensorEventListener {
 		}
 
 		if (nativeLayerInitializeCompleted && !nativeLayerSetupCompleted) {
-			nativeLayerSetupCompleted = GodotLib.setup(commandLine.toTypedArray(), tts)
+			var audioManager: AudioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+			nativeLayerSetupCompleted = GodotLib.setup(commandLine.toTypedArray(), tts, audioManager)
 			if (!nativeLayerSetupCompleted) {
 				Log.e(TAG, "Unable to setup the Godot engine! Aborting...")
 				alert(R.string.error_engine_setup_message, R.string.text_error_title, this::forceQuit)

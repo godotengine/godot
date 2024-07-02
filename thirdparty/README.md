@@ -745,6 +745,23 @@ with the provided patch.
   unnecessary code.
 
 
+## oboe
+
+- Upstream: https://github.com/google/oboe
+- Version: git (16d72c89be9eb8a7d617a7be531a31dba3db74f1, 2024)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- The `include/oboe` folder (minus `Fifo*.h`, `FullDuplexStream.h`, `OboeExtensions.h`, `StabilizedCallback.h` files)
+- The `src/aaudio` folder
+- The `src/common` folder (minus `AudioSourceCaller.{cpp,h}`, `DataConversionFlowgraph.{cpp,h}`, `FilterAudioStream.{cpp,h}`, `FixedBlock*.{cpp,h}`, `OboeExtensions.cpp`, `Source*Caller.{cpp,h}`, `StabilizedCallback.cpp`, `Trace.{cpp,h}` files)
+- The `src/opensles` folder (minus `AudioStreamBuffered.{cpp,h}` files)
+- The `LICENSE` file
+
+Some changes have been made in order to disable Flowgraph, FIFO and exclude not exctracted headers.
+See the patch in the `patches` directory.
+
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
@@ -976,7 +993,7 @@ Files extracted from upstream source:
 - `COPYING`
 
 
-# wayland-protocols
+## wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
 - Version: 1.33 (54346071a5f211f2c482889f2c8ee3b5ecda63ab, 2024)

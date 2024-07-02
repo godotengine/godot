@@ -39,6 +39,7 @@ import org.godotengine.godot.utils.GodotNetUtils;
 import android.app.Activity;
 import android.content.res.AssetManager;
 import android.hardware.SensorEvent;
+import android.media.AudioManager;
 import android.view.Surface;
 
 import javax.microedition.khronos.opengles.GL10;
@@ -73,7 +74,7 @@ public class GodotLib {
 	 * Invoked on the GL thread to complete setup for the Godot native layer logic.
 	 * @param p_cmdline Command line arguments used to configure Godot native layer components.
 	 */
-	public static native boolean setup(String[] p_cmdline, GodotTTS tts);
+	public static native boolean setup(String[] p_cmdline, GodotTTS tts, AudioManager audioManager);
 
 	/**
 	 * Invoked on the GL thread when the underlying Android surface has changed size.
@@ -105,6 +106,11 @@ public class GodotLib {
 	 * TTS callback.
 	 */
 	public static native void ttsCallback(int event, int id, int pos);
+
+	/**
+	 * SCO callback.
+	 */
+	public static native void scoCallback(int scoState);
 
 	/**
 	 * Forward touch events.

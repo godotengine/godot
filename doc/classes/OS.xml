@@ -693,7 +693,7 @@
 			<param index="0" name="name" type="String" />
 			<description>
 				Requests permission from the OS for the given [param name]. Returns [code]true[/code] if the permission has been successfully granted.
-				[b]Note:[/b] This method is currently only implemented on Android, to specifically request permission for [code]"RECORD_AUDIO"[/code] by [code]AudioDriverOpenSL[/code].
+				[b]Note:[/b] This method is currently only implemented on Android and is used by [code]AudioDriverOboe[/code].
 			</description>
 		</method>
 		<method name="request_permissions">
