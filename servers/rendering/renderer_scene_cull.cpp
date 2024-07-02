@@ -90,6 +90,13 @@ void RendererSceneCull::camera_set_frustum(RID p_camera, float p_size, Vector2 p
 	camera->zfar = p_z_far;
 }
 
+void RendererSceneCull::camera_set_custom(RID p_camera, Projection p_proj) {
+	Camera *camera = camera_owner.get_or_null(p_camera);
+	ERR_FAIL_NULL(camera);
+	camera->type = Camera::CUSTOM;
+	camera->c_proj = p_proj;
+}
+
 void RendererSceneCull::camera_set_transform(RID p_camera, const Transform3D &p_transform) {
 	Camera *camera = camera_owner.get_or_null(p_camera);
 	ERR_FAIL_NULL(camera);
@@ -2603,6 +2610,10 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 						camera->znear,
 						camera->zfar,
 						camera->vaspect);
+			} break;
+			case Camera::CUSTOM: {
+				projection = camera->c_proj;
+				is_orthogonal = projection.is_orthogonal();
 			} break;
 		}
 
