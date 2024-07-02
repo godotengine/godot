@@ -803,6 +803,10 @@ bool Array::is_same_typed(const Array &p_other) const {
 	return _p->typed == p_other._p->typed;
 }
 
+bool Array::is_same_instance(const Array &p_other) const {
+	return _p == p_other._p;
+}
+
 uint32_t Array::get_typed_builtin() const {
 	return _p->typed.type;
 }

@@ -50,6 +50,8 @@ namespace core_bind {
 class ResourceLoader : public Object {
 	GDCLASS(ResourceLoader, Object);
 
+	static Array default_array;
+
 protected:
 	static void _bind_methods();
 	static ResourceLoader *singleton;
@@ -73,7 +75,7 @@ public:
 	static ResourceLoader *get_singleton() { return singleton; }
 
 	Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, CacheMode p_cache_mode = CACHE_MODE_REUSE);
-	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = Array());
+	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = ResourceLoader::default_array);
 	Ref<Resource> load_threaded_get(const String &p_path);
 
 	Ref<Resource> load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
@@ -123,6 +125,8 @@ class OS : public Object {
 
 	mutable HashMap<String, bool> feature_cache;
 
+	static Array default_array;
+
 protected:
 	static void _bind_methods();
 	static OS *singleton;
@@ -158,7 +162,7 @@ public:
 	Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const;
 	String get_executable_path() const;
 	String read_string_from_stdin();
-	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
+	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = OS::default_array, bool p_read_stderr = false, bool p_open_console = false);
 	Dictionary execute_with_pipe(const String &p_path, const Vector<String> &p_arguments);
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
 	int create_instance(const Vector<String> &p_arguments);
