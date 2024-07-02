@@ -48,6 +48,12 @@
 				[b]Note:[/b] This is only used in 2D rendering, not 3D.
 			</description>
 		</method>
+		<method name="_get_anchor" qualifiers="virtual const">
+			<return type="Vector2" />
+			<description>
+				Called when the [Texture2D]'s anchor is queried.
+			</description>
+		</method>
 		<method name="_get_height" qualifiers="virtual const">
 			<return type="int" />
 			<description>
@@ -113,6 +119,12 @@
 				Draws a part of the texture using a [CanvasItem] with the [RenderingServer] API.
 			</description>
 		</method>
+		<method name="get_anchor" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the texture pivot point relative to the texture top-left corner, in pixels.
+			</description>
+		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -146,4 +158,60 @@
 			</description>
 		</method>
 	</methods>
+	<constants>
+		<constant name="PIVOT_ANCHOR" value="0" enum="Pivot">
+			Use the texture's anchor as pivot.
+		</constant>
+		<constant name="PIVOT_FREE" value="1" enum="Pivot">
+			Use the node's offset as pivot.
+		</constant>
+		<constant name="PIVOT_FREE_RELATIVE" value="2" enum="Pivot">
+			Use the node's offset multiplied by the texture's size as pivot.
+
+			[b]Note:[/b] For games with a pixel art aesthetic, textures may appear deformed. This is caused by their position being between pixels. To prevent this, use [constant PIVOT_FREE] instead, or consider enabling [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel] and [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
+		</constant>
+		<constant name="PIVOT_CENTER" value="3" enum="Pivot">
+			Use the texture's center as pivot.
+
+			[b]Note:[/b] For games with a pixel art aesthetic, textures may appear deformed when centered. This is caused by their position being between pixels. To prevent this, use a different pivot mode, or consider enabling [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel] and [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
+		</constant>
+		<constant name="PIVOT_TOP_LEFT" value="4" enum="Pivot">
+			Use the texture's top left corner as pivot.
+		</constant>
+		<constant name="PIVOT_TOP_CENTER" value="5" enum="Pivot">
+			Use the center of the texture's top edge as pivot.
+
+			[b]Note:[/b] For games with a pixel art aesthetic, textures may appear deformed when centered. This is caused by their position being between pixels. To prevent this, use a different pivot mode, or consider enabling [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel] and [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
+		</constant>
+		<constant name="PIVOT_TOP_RIGHT" value="6" enum="Pivot">
+			Use the texture's top right corner as pivot.
+		</constant>
+		<constant name="PIVOT_CENTER_RIGHT" value="7" enum="Pivot">
+			Use the center of the texture's right edge as pivot.
+
+			[b]Note:[/b] For games with a pixel art aesthetic, textures may appear deformed when centered. This is caused by their position being between pixels. To prevent this, use a different pivot mode, or consider enabling [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel] and [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
+		</constant>
+		<constant name="PIVOT_BOTTOM_RIGHT" value="8" enum="Pivot">
+			Use the texture's bottom right corner as pivot.
+		</constant>
+		<constant name="PIVOT_BOTTOM_CENTER" value="9" enum="Pivot">
+			Use the center of the texture's bottom edge as pivot.
+
+			[b]Note:[/b] For games with a pixel art aesthetic, textures may appear deformed when centered. This is caused by their position being between pixels. To prevent this, use a different pivot mode, or consider enabling [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel] and [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
+		</constant>
+		<constant name="PIVOT_BOTTOM_LEFT" value="10" enum="Pivot">
+			Use the texture's bottom left corner as pivot.
+		</constant>
+		<constant name="PIVOT_CENTER_LEFT" value="11" enum="Pivot">
+			Use the center of the texture's left edge as pivot.
+
+			[b]Note:[/b] For games with a pixel art aesthetic, textures may appear deformed when centered. This is caused by their position being between pixels. To prevent this, use a different pivot mode, or consider enabling [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel] and [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
+		</constant>
+		<constant name="PIVOT_LEGACY_CENTER" value="12" enum="Pivot">
+			Use the center of the texture and the node's offset as pivot.
+			This is a compatibility mode for sprites that still use the [member Sprite2D.centered] property.
+
+			[b]Note:[/b] For games with a pixel art aesthetic, textures may appear deformed when centered. This is caused by their position being between pixels. To prevent this, use a different pivot mode, or consider enabling [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel] and [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
+		</constant>
+	</constants>
 </class>
