@@ -5693,7 +5693,11 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			SetProcessDpiAwareness_t SetProcessDpiAwareness = (SetProcessDpiAwareness_t)GetProcAddress(Shcore, "SetProcessDpiAwareness");
 
 			if (SetProcessDpiAwareness) {
-				SetProcessDpiAwareness(SHC_PROCESS_SYSTEM_DPI_AWARE);
+				if ((os_ver.dwMajorVersion > 6) || ((os_ver.dwMajorVersion == 6) && (os_ver.dwMajorVersion >= 3))) {
+					SetProcessDpiAwareness(SHC_PROCESS_PER_MONITOR_DPI_AWARE);
+				} else {
+					SetProcessDpiAwareness(SHC_PROCESS_SYSTEM_DPI_AWARE);
+				}
 			}
 		}
 	}
