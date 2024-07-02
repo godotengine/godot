@@ -611,6 +611,22 @@ print(f'Building for platform "{env["platform"]}", architecture "{env["arch"]}",
 if env.dev_build:
     print("NOTE: Developer build, with debug optimization level and debug symbols (unless overridden).")
 
+# Set x86 CPU instruction sets to use by the compiler's autovectorization.
+if env["arch"] == "x86_64" or env["arch"] == "x86_32":
+    if env.msvc and env["arch"] == "x86_64":
+        # https://stackoverflow.com/questions/64053597/how-do-i-enable-sse4-1-and-sse3-but-not-avx-in-msvc/69328426#69328426
+        env.Append(CCFLAGS=["/d2archSSE42"])
+    else:
+        # Be more conservative with instruction sets on 32-bit x86 to improve compatibility.
+        # SSE and SSE2 are present on all CPUs that support 64-bit, even if running a 32-bit OS.
+        env.Append(CCFLAGS=["-msse", "-msse2", "-mxsave"])
+
+        if env["arch"] == "x86_64":
+            # On 64-bit x86, enable SSE 4.2 and prior instruction sets to improve performance.
+            # This is supported on most CPUs released after 2009-2011 (Intel Nehalem, AMD Bulldozer).
+            # AVX and AVX2 aren't enforced because they aren't available on more recent low-end Intel CPUs.
+            env.Append(CCFLAGS=["-msse3", "-mssse3", "-msse4", "-msse4.1", "-msse4.2"])
+
 # Enforce our minimal compiler version requirements
 cc_version = methods.get_compiler_version(env) or {
     "major": None,
