@@ -389,6 +389,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool multiwindow_fs = false;
 		bool borderless = false;
 		bool resizable = true;
+		bool minimizable = true;
 		bool window_focused = false;
 		int activate_state = 0;
 		bool was_maximized = false;
@@ -475,7 +476,7 @@ class DisplayServerWindows : public DisplayServer {
 	HashMap<IndicatorID, IndicatorData> indicators;
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
+	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimizable, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
 
 	MouseMode mouse_mode;
 	int restore_mouse_trails = 0;

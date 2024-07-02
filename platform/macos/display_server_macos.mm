@@ -2229,6 +2229,9 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			if (wd.resize_disabled) { // Restore resize disabled.
 				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskResizable];
 			}
+			if (wd.minimize_disabled) { // Restore minimize disabled.
+				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskMiniaturizable];
+			}
 			if (wd.min_size != Size2i()) {
 				Size2i size = wd.min_size / screen_get_max_scale();
 				[wd.window_object setContentMinSize:NSMakeSize(size.x, size.y)];
@@ -2415,6 +2418,16 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:YES];
 			}
 		} break;
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			wd.minimize_disabled = p_enabled;
+			if (p_enabled) {
+				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskMiniaturizable];
+				[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:NO];
+			} else {
+				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskMiniaturizable];
+				[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:YES];
+			}
+		} break;
 		case WINDOW_FLAG_EXTEND_TO_TITLE: {
 			NSRect rect = [wd.window_object frame];
 			wd.extend_to_title = p_enabled;
@@ -2454,7 +2467,7 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 					wd.layered_window = false;
 					set_window_per_pixel_transparency_enabled(false, p_window);
 				}
-				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | (wd.minimize_disabled ? 0 : NSWindowStyleMaskMiniaturizable) | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
 				// Force update of the window styles.
 				NSRect frameRect = [wd.window_object frame];
 				[wd.window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
@@ -2529,6 +2542,9 @@ bool DisplayServerMacOS::window_get_flag(WindowFlags p_flag, WindowID p_window) 
 	switch (p_flag) {
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			return wd.resize_disabled;
+		} break;
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			return wd.minimize_disabled;
 		} break;
 		case WINDOW_FLAG_EXTEND_TO_TITLE: {
 			return [wd.window_object styleMask] & NSWindowStyleMaskFullSizeContentView;
