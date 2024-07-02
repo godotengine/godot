@@ -41,6 +41,8 @@ class Node;
 class EditorScript : public RefCounted {
 	GDCLASS(EditorScript, RefCounted);
 
+	bool is_running = false;
+
 protected:
 	static void _bind_methods();
 

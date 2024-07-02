@@ -59,5 +59,16 @@
 				Returns the edited (current) scene's root [Node]. Equivalent of [method EditorInterface.get_edited_scene_root].
 			</description>
 		</method>
+		<method name="run">
+			<return type="void" />
+			<description>
+				Runs this [EditorScript], by calling its [method _run] method. Fails if called inside [method _run].
+				This method is intended to run the script without having to open it in script editor. You can call it from a plugin or a tool script.
+				[codeblock]
+				var editor_script = load("res://editor_script.gd").new()
+				editor_script.run()
+				[/codeblock]
+			</description>
+		</method>
 	</methods>
 </class>
