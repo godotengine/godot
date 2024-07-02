@@ -671,6 +671,19 @@ bool ClassDB::can_instantiate(const StringName &p_class) {
 	return (!ti->disabled && ti->creation_func != nullptr && !(ti->gdextension && !ti->gdextension->create_instance));
 }
 
+bool ClassDB::is_abstract(const StringName &p_class) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *ti = classes.getptr(p_class);
+	if (!ti) {
+		if (!ScriptServer::is_global_class(p_class)) {
+			ERR_FAIL_V_MSG(false, "Cannot get class '" + String(p_class) + "'.");
+		}
+		return false;
+	}
+	return (ti->creation_func == nullptr && (!ti->gdextension || ti->gdextension->create_instance == nullptr));
+}
+
 bool ClassDB::is_virtual(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
