@@ -191,6 +191,7 @@ public:
 		NAVIGATION_GODOT,
 		NAVIGATION_MAYA,
 		NAVIGATION_MODO,
+		NAVIGATION_TEMP,
 	};
 
 	enum FreelookNavigationScheme {
