@@ -434,6 +434,14 @@ protected:
 	static void _bind_methods();
 
 public:
+	enum APIType {
+		API_CORE,
+		API_EDITOR,
+		API_EXTENSION,
+		API_EDITOR_EXTENSION,
+		API_NONE,
+	};
+
 	PackedStringArray get_class_list() const;
 	PackedStringArray get_inheriters_from_class(const StringName &p_class) const;
 	StringName get_parent_class(const StringName &p_class) const;
@@ -442,6 +450,7 @@ public:
 	bool can_instantiate(const StringName &p_class) const;
 	Variant instantiate(const StringName &p_class) const;
 
+	APIType class_get_api_type(const StringName &p_class) const;
 	bool class_has_signal(const StringName &p_class, const StringName &p_signal) const;
 	Dictionary class_get_signal(const StringName &p_class, const StringName &p_signal) const;
 	TypedArray<Dictionary> class_get_signal_list(const StringName &p_class, bool p_no_inheritance = false) const;
@@ -451,6 +460,9 @@ public:
 	Error class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
 
 	Variant class_get_property_default_value(const StringName &p_class, const StringName &p_property) const;
+
+	StringName class_get_property_setter(const StringName &p_class, const StringName &p_property) const;
+	StringName class_get_property_getter(const StringName &p_class, const StringName &p_property) const;
 
 	bool class_has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
 
@@ -617,5 +629,7 @@ VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyJoinType);
 VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyEndType);
 
 VARIANT_ENUM_CAST(core_bind::Thread::Priority);
+
+VARIANT_ENUM_CAST(core_bind::special::ClassDB::APIType);
 
 #endif // CORE_BIND_H
