@@ -369,6 +369,7 @@ void GroupsEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			filter->set_right_icon(get_editor_theme_icon("Search"));
 			add->set_icon(get_editor_theme_icon("Add"));
+			_update_tree();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (groups_dirty && is_visible_in_tree()) {
