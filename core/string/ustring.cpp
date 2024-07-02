@@ -310,8 +310,8 @@ void String::copy_from(const char *p_cstr) {
 #else
 		uint8_t c = p_cstr[i] >= 0 ? p_cstr[i] : uint8_t(256 + p_cstr[i]);
 #endif
-		if (c == 0 && i < len) {
-			print_unicode_error("NUL character", true);
+		if (c == '\0' && i < len) {
+			print_unicode_error("Unexpected NUL character", true);
 			dst[i] = _replacement_char;
 		} else {
 			dst[i] = c;
@@ -319,7 +319,7 @@ void String::copy_from(const char *p_cstr) {
 	}
 }
 
-void String::copy_from(const char *p_cstr, const int p_clip_to) {
+void String::copy_from(const char *p_cstr, const int p_len) {
 	// copy Latin-1 encoded c-string directly
 	if (!p_cstr) {
 		resize(0);
@@ -328,8 +328,12 @@ void String::copy_from(const char *p_cstr, const int p_clip_to) {
 
 	int len = 0;
 	const char *ptr = p_cstr;
-	while ((p_clip_to < 0 || len < p_clip_to) && *(ptr++) != 0) {
-		len++;
+	if (p_len >= 0) {
+		len = p_len;
+	} else {
+		while (len < p_len && *(ptr++) != '\0') {
+			len++;
+		}
 	}
 
 	if (len == 0) {
@@ -347,8 +351,8 @@ void String::copy_from(const char *p_cstr, const int p_clip_to) {
 #else
 		uint8_t c = p_cstr[i] >= 0 ? p_cstr[i] : uint8_t(256 + p_cstr[i]);
 #endif
-		if (c == 0) {
-			print_unicode_error("NUL character", true);
+		if (c == '\0' && p_len < 0) {
+			print_unicode_error("Unexpected NUL character", true);
 			dst[i] = _replacement_char;
 		} else {
 			dst[i] = c;
@@ -367,31 +371,26 @@ void String::copy_from(const wchar_t *p_cstr) {
 #endif
 }
 
-void String::copy_from(const wchar_t *p_cstr, const int p_clip_to) {
+void String::copy_from(const wchar_t *p_cstr, const int p_len) {
 #ifdef WINDOWS_ENABLED
 	// wchar_t is 16-bit, parse as UTF-16
-	parse_utf16((const char16_t *)p_cstr, p_clip_to);
+	parse_utf16((const char16_t *)p_cstr, p_len);
 #else
 	// wchar_t is 32-bit, copy directly
-	copy_from((const char32_t *)p_cstr, p_clip_to);
+	copy_from((const char32_t *)p_cstr, p_len);
 #endif
 }
 
 void String::copy_from(const char32_t &p_char) {
-	if (p_char == 0) {
-		print_unicode_error("NUL character", true);
-		return;
-	}
-
 	resize(2);
 
 	char32_t *dst = ptrw();
 
 	if ((p_char & 0xfffff800) == 0xd800) {
-		print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char));
+		print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char), true);
 		dst[0] = _replacement_char;
 	} else if (p_char > 0x10ffff) {
-		print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char));
+		print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char), true);
 		dst[0] = _replacement_char;
 	} else {
 		dst[0] = p_char;
@@ -417,10 +416,10 @@ void String::copy_from(const char32_t *p_cstr) {
 		return;
 	}
 
-	copy_from_unchecked(p_cstr, len);
+	copy_from_unchecked(p_cstr, len, false);
 }
 
-void String::copy_from(const char32_t *p_cstr, const int p_clip_to) {
+void String::copy_from(const char32_t *p_cstr, const int p_len) {
 	if (!p_cstr) {
 		resize(0);
 		return;
@@ -428,8 +427,12 @@ void String::copy_from(const char32_t *p_cstr, const int p_clip_to) {
 
 	int len = 0;
 	const char32_t *ptr = p_cstr;
-	while ((p_clip_to < 0 || len < p_clip_to) && *(ptr++) != 0) {
-		len++;
+	if (p_len >= 0) {
+		len = p_len;
+	} else {
+		while (len < p_len && *(ptr++) != '\0') {
+			len++;
+		}
 	}
 
 	if (len == 0) {
@@ -437,31 +440,31 @@ void String::copy_from(const char32_t *p_cstr, const int p_clip_to) {
 		return;
 	}
 
-	copy_from_unchecked(p_cstr, len);
+	copy_from_unchecked(p_cstr, len, p_len >= 0);
 }
 
 // assumes the following have already been validated:
 // p_char != nullptr
 // p_length > 0
 // p_length <= p_char strlen
-void String::copy_from_unchecked(const char32_t *p_char, const int p_length) {
+void String::copy_from_unchecked(const char32_t *p_char, const int p_length, const bool p_allow_null) {
 	resize(p_length + 1);
 	char32_t *dst = ptrw();
 	dst[p_length] = 0;
 
 	for (int i = 0; i < p_length; i++) {
-		if (p_char[i] == 0) {
-			print_unicode_error("NUL character", true);
+		if (p_char[i] == '\0' && !p_allow_null) {
+			print_unicode_error("Unexpected NUL character", true);
 			dst[i] = _replacement_char;
 			continue;
 		}
 		if ((p_char[i] & 0xfffff800) == 0xd800) {
-			print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char[i]));
+			print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char[i]), true);
 			dst[i] = _replacement_char;
 			continue;
 		}
 		if (p_char[i] > 0x10ffff) {
-			print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char[i]));
+			print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char[i]), true);
 			dst[i] = _replacement_char;
 			continue;
 		}
@@ -557,8 +560,8 @@ String &String::operator+=(const char *p_str) {
 #else
 		uint8_t c = p_str[i] >= 0 ? p_str[i] : uint8_t(256 + p_str[i]);
 #endif
-		if (c == 0 && i < rhs_len) {
-			print_unicode_error("NUL character", true);
+		if (c == '\0' && i < rhs_len) {
+			print_unicode_error("Unexpected NUL character", true);
 			dst[i] = _replacement_char;
 		} else {
 			dst[i] = c;
@@ -585,20 +588,15 @@ String &String::operator+=(const char32_t *p_str) {
 }
 
 String &String::operator+=(char32_t p_char) {
-	if (p_char == 0) {
-		print_unicode_error("NUL character", true);
-		return *this;
-	}
-
 	const int lhs_len = length();
 	resize(lhs_len + 2);
 	char32_t *dst = ptrw();
 
 	if ((p_char & 0xfffff800) == 0xd800) {
-		print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char));
+		print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char), true);
 		dst[lhs_len] = _replacement_char;
 	} else if (p_char > 0x10ffff) {
-		print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char));
+		print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char), true);
 		dst[lhs_len] = _replacement_char;
 	} else {
 		dst[lhs_len] = p_char;
@@ -1687,7 +1685,7 @@ String String::to_lower() const {
 
 String String::chr(char32_t p_char) {
 	char32_t c[2] = { p_char, 0 };
-	return String(c);
+	return String(c, 1);
 }
 
 String String::num(double p_num, int p_decimals) {
@@ -1976,16 +1974,22 @@ CharString String::ascii(bool p_allow_extended) const {
 	CharString cs;
 	cs.resize(size());
 
-	for (int i = 0; i < size(); i++) {
+	for (int i = 0; i < length(); i++) {
 		char32_t c = operator[](i);
 		if ((c <= 0x7f) || (c <= 0xff && p_allow_extended)) {
 			cs[i] = c;
+			if (c == '\0') {
+				print_unicode_error("ASCII treats NUL as termination, truncating result.");
+				cs.resize(i + 1);
+				return cs;
+			}
 		} else {
 			print_unicode_error(vformat("Invalid unicode codepoint (%x), cannot represent as ASCII/Latin-1", (uint32_t)c));
 			cs[i] = 0x20; // ascii doesn't have a replacement character like unicode, 0x1a is sometimes used but is kinda arcane
 		}
 	}
 
+	cs[length()] = 0;
 	return cs;
 }
 
@@ -2025,7 +2029,7 @@ Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 		const char *ptrtmp_limit = p_len >= 0 ? &p_utf8[p_len] : nullptr;
 		int skip = 0;
 		uint8_t c_start = 0;
-		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
+		while (ptrtmp != ptrtmp_limit && (p_len >= 0 || *ptrtmp != '\0')) {
 #if CHAR_MIN == 0
 			uint8_t c = *ptrtmp;
 #else
@@ -2142,8 +2146,8 @@ Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 				unichar = (unichar << 6) | (c & 0x3f);
 				--skip;
 				if (skip == 0) {
-					if (unichar == 0) {
-						print_unicode_error("NUL character", true);
+					if (unichar == '\0' && p_len < 0) {
+						print_unicode_error("Unexpected NUL character", true);
 						decode_failed = true;
 						unichar = _replacement_char;
 					} else if ((unichar & 0xfffff800) == 0xd800) {
@@ -2306,7 +2310,7 @@ Error String::parse_utf16(const char16_t *p_utf16, int p_len, bool p_default_lit
 		const char16_t *ptrtmp_limit = p_len >= 0 ? &p_utf16[p_len] : nullptr;
 		uint32_t c_prev = 0;
 		bool skip = false;
-		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
+		while (ptrtmp != ptrtmp_limit && (p_len >= 0 || *ptrtmp != '\0')) {
 			uint32_t c = (byteswap) ? BSWAP16(*ptrtmp) : *ptrtmp;
 
 			if ((c & 0xfffffc00) == 0xd800) { // lead surrogate
@@ -2451,16 +2455,16 @@ String::String(const char32_t *p_str) {
 	copy_from(p_str);
 }
 
-String::String(const char *p_str, int p_clip_to_len) {
-	copy_from(p_str, p_clip_to_len);
+String::String(const char *p_str, int p_len) {
+	copy_from(p_str, p_len);
 }
 
-String::String(const wchar_t *p_str, int p_clip_to_len) {
-	copy_from(p_str, p_clip_to_len);
+String::String(const wchar_t *p_str, int p_len) {
+	copy_from(p_str, p_len);
 }
 
-String::String(const char32_t *p_str, int p_clip_to_len) {
-	copy_from(p_str, p_clip_to_len);
+String::String(const char32_t *p_str, int p_len) {
+	copy_from(p_str, p_len);
 }
 
 String::String(const StrRange &p_range) {
@@ -3194,7 +3198,7 @@ String String::substr(int p_from, int p_chars) const {
 	}
 
 	String s;
-	s.copy_from_unchecked(&get_data()[p_from], p_chars);
+	s.copy_from_unchecked(&get_data()[p_from], p_chars, true);
 	return s;
 }
 
@@ -3756,7 +3760,7 @@ int String::_count(const String &p_string, int p_from, int p_to, bool p_case_ins
 		}
 		if (p_from == 0 && p_to == len) {
 			str = String();
-			str.copy_from_unchecked(&get_data()[0], len);
+			str.copy_from_unchecked(&get_data()[0], len, true);
 		} else {
 			str = substr(p_from, p_to - p_from);
 		}
@@ -4151,7 +4155,7 @@ String String::left(int p_len) const {
 	}
 
 	String s;
-	s.copy_from_unchecked(&get_data()[0], p_len);
+	s.copy_from_unchecked(&get_data()[0], p_len, true);
 	return s;
 }
 
@@ -4169,7 +4173,7 @@ String String::right(int p_len) const {
 	}
 
 	String s;
-	s.copy_from_unchecked(&get_data()[length() - p_len], p_len);
+	s.copy_from_unchecked(&get_data()[length() - p_len], p_len, true);
 	return s;
 }
 
@@ -4566,6 +4570,7 @@ String String::uri_decode() const {
 
 String String::c_unescape() const {
 	String escaped = *this;
+	escaped = escaped.replace("\\0", String::chr('\0'));
 	escaped = escaped.replace("\\a", "\a");
 	escaped = escaped.replace("\\b", "\b");
 	escaped = escaped.replace("\\f", "\f");
@@ -4583,6 +4588,7 @@ String String::c_unescape() const {
 String String::c_escape() const {
 	String escaped = *this;
 	escaped = escaped.replace("\\", "\\\\");
+	escaped = escaped.replace(String::chr('\0'), "\\0");
 	escaped = escaped.replace("\a", "\\a");
 	escaped = escaped.replace("\b", "\\b");
 	escaped = escaped.replace("\f", "\\f");
@@ -5322,7 +5328,8 @@ String String::lpad(int min_length, const String &character) const {
 // In case of an error, the string returned is the error description and "error" is true.
 String String::sprintf(const Array &values, bool *error) const {
 	String formatted;
-	char32_t *self = (char32_t *)get_data();
+	const char32_t *self = &operator[](0);
+	const char32_t *self_limit = &operator[](length());
 	bool in_format = false;
 	int value_index = 0;
 	int min_chars = 0;
@@ -5337,8 +5344,8 @@ String String::sprintf(const Array &values, bool *error) const {
 		*error = true;
 	}
 
-	for (; *self; self++) {
-		const char32_t c = *self;
+	while (self != self_limit) {
+		const char32_t c = *(self++);
 
 		if (in_format) { // We have % - let's see what else we get.
 			switch (c) {
