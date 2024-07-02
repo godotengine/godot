@@ -68,7 +68,12 @@ void initialize_fbx_module(ModuleInitializationLevel p_level) {
 
 		GDREGISTER_CLASS(EditorSceneFormatImporterUFBX);
 
-		GLOBAL_DEF_RST_BASIC("filesystem/import/fbx2gltf/enabled", true);
+		PropertyUsageFlags disabled_on_mobile_and_web = PROPERTY_USAGE_NONE;
+#if defined(ANDROID_ENABLED) || defined(IOS_ENABLED) || defined(WEB_ENABLED)
+		disabled_on_mobile_and_web = PROPERTY_USAGE_READ_ONLY;
+#endif
+
+		GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::BOOL, "filesystem/import/fbx2gltf/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | disabled_on_mobile_and_web), true);
 		GDREGISTER_CLASS(EditorSceneFormatImporterFBX2GLTF);
 		GLOBAL_DEF_RST("filesystem/import/fbx2gltf/enabled.android", false);
 		GLOBAL_DEF_RST("filesystem/import/fbx2gltf/enabled.web", false);
