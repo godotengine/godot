@@ -69,7 +69,10 @@ void AudioEffectCapture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_discarded_frames"), &AudioEffectCapture::get_discarded_frames);
 	ClassDB::bind_method(D_METHOD("get_buffer_length_frames"), &AudioEffectCapture::get_buffer_length_frames);
 	ClassDB::bind_method(D_METHOD("get_pushed_frames"), &AudioEffectCapture::get_pushed_frames);
+	ClassDB::bind_method(D_METHOD("set_active_channel", "channel"), &AudioEffectCapture::set_active_channel);
+	ClassDB::bind_method(D_METHOD("get_active_channel"), &AudioEffectCapture::get_active_channel);
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "active_channel", PROPERTY_HINT_ENUM, "Stereo,3.1,5.1,7.1"), "set_active_channel", "get_active_channel");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "buffer_length", PROPERTY_HINT_RANGE, "0.01,10,0.01,suffix:s"), "set_buffer_length", "get_buffer_length");
 }
 
@@ -116,11 +119,23 @@ int64_t AudioEffectCapture::get_pushed_frames() const {
 	return pushed_frames.get();
 }
 
+void AudioEffectCapture::set_active_channel(int p_channel) {
+	active_channel = p_channel;
+}
+
+int AudioEffectCapture::get_active_channel() const {
+	return active_channel;
+}
+
 void AudioEffectCaptureInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	RingBuffer<AudioFrame> &buffer = base->buffer;
 
 	for (int i = 0; i < p_frame_count; i++) {
 		p_dst_frames[i] = p_src_frames[i];
+	}
+
+	if (base->get_active_channel() != current_channel) {
+		return;
 	}
 
 	if (buffer.space_left() >= p_frame_count) {

@@ -44,6 +44,7 @@ class AudioEffectRecord;
 class AudioEffectRecordInstance : public AudioEffectInstance {
 	GDCLASS(AudioEffectRecordInstance, AudioEffectInstance);
 	friend class AudioEffectRecord;
+	Ref<AudioEffectRecord> base;
 
 	bool is_recording;
 	Thread io_thread;
@@ -67,6 +68,7 @@ public:
 	void finish();
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 	virtual bool process_silence() const override;
+	virtual void set_current_channel(int p_channel) override;
 };
 
 class AudioEffectRecord : public AudioEffect {
@@ -78,10 +80,14 @@ class AudioEffectRecord : public AudioEffect {
 		IO_BUFFER_SIZE_MS = 1500
 	};
 
+	HashMap<int, Ref<AudioEffectRecordInstance>> channel_instances;
 	Ref<AudioEffectRecordInstance> current_instance;
+	int active_channel = 0;
 
 	AudioStreamWAV::Format format;
 
+	void set_current_instance(Ref<AudioEffectRecordInstance> p_instance);
+	void register_channel_instance(int p_channel, Ref<AudioEffectRecordInstance> p_instance);
 	void ensure_thread_stopped();
 
 protected:
@@ -93,6 +99,8 @@ public:
 	bool is_recording_active() const;
 	void set_format(AudioStreamWAV::Format p_format);
 	AudioStreamWAV::Format get_format() const;
+	void set_active_channel(int p_channel);
+	int get_active_channel() const;
 	Ref<AudioStreamWAV> get_recording() const;
 	AudioEffectRecord();
 	~AudioEffectRecord();
