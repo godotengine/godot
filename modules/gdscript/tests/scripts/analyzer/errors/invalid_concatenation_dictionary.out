@@ -1,2 +1,2 @@
 GDTEST_ANALYZER_ERROR
-Invalid operands "Dictionary" and "Dictionary" for "+" operator.
+Invalid operands to operator +, Dictionary and Dictionary.
