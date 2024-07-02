@@ -2698,7 +2698,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("particles_collision_create"), &RenderingServer::particles_collision_create);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_collision_type", "particles_collision", "type"), &RenderingServer::particles_collision_set_collision_type);
-	ClassDB::bind_method(D_METHOD("particles_collision_set_cull_mask", "particles_collision", "mask"), &RenderingServer::particles_collision_set_cull_mask);
+	ClassDB::bind_method(D_METHOD("particles_collision_set_collision_layer", "particles_collision", "layer"), &RenderingServer::particles_collision_set_collision_layer);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_sphere_radius", "particles_collision", "radius"), &RenderingServer::particles_collision_set_sphere_radius);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_box_extents", "particles_collision", "extents"), &RenderingServer::particles_collision_set_box_extents);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_attractor_strength", "particles_collision", "strength"), &RenderingServer::particles_collision_set_attractor_strength);
@@ -2708,6 +2708,10 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("particles_collision_height_field_update", "particles_collision"), &RenderingServer::particles_collision_height_field_update);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_height_field_resolution", "particles_collision", "resolution"), &RenderingServer::particles_collision_set_height_field_resolution);
+
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("particles_collision_set_cull_mask", "particles_collision", "mask"), &RenderingServer::particles_collision_set_cull_mask);
+#endif // DISABLE_DEPRECATED
 
 	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT);
 	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_TYPE_BOX_ATTRACT);
