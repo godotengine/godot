@@ -109,7 +109,7 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		if (is_dragging) {
-			if (p_canvas_rect != Rect2()) {
+			if (warped_panning_allowed && p_canvas_rect.has_area()) {
 				pan_callback.call(Input::get_singleton()->warp_mouse_motion(mm, p_canvas_rect), p_event);
 			} else {
 				pan_callback.call(mm->get_relative(), p_event);
@@ -177,6 +177,10 @@ void ViewPanner::set_callbacks(Callable p_pan_callback, Callable p_zoom_callback
 
 void ViewPanner::set_control_scheme(ControlScheme p_scheme) {
 	control_scheme = p_scheme;
+}
+
+void ViewPanner::set_warped_panning_allowed(bool p_allowed) {
+	warped_panning_allowed = p_allowed;
 }
 
 void ViewPanner::set_enable_rmb(bool p_enable) {

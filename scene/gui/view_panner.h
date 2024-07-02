@@ -69,10 +69,12 @@ private:
 	Callable zoom_callback;
 
 	ControlScheme control_scheme = SCROLL_ZOOMS;
+	bool warped_panning_allowed = true;
 
 public:
 	void set_callbacks(Callable p_pan_callback, Callable p_zoom_callback);
 	void set_control_scheme(ControlScheme p_scheme);
+	void set_warped_panning_allowed(bool p_allowed);
 	void set_enable_rmb(bool p_enable);
 	void set_pan_shortcut(Ref<Shortcut> p_shortcut);
 	void set_simple_panning_enabled(bool p_enabled);
