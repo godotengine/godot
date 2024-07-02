@@ -628,6 +628,9 @@
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
+		<member name="mb_click_scrolling_rate" type="float" setter="set_mb_click_scrolling_rate" getter="get_mb_click_scrolling_rate" default="0.5">
+			Middle mouse button click-and-drag scrolling rate, in text lines (using default normal font and font size) per pixel per second.
+		</member>
 		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined" default="true">
 			If [code]true[/code], the label underlines meta tags such as [code skip-lint][url]{text}[/url][/code]. These tags can call a function when clicked if [signal meta_clicked] is connected to a function.
 		</member>
@@ -851,6 +854,9 @@
 		</theme_item>
 		<theme_item name="normal_font_size" data_type="font_size" type="int">
 			The default text font size.
+		</theme_item>
+		<theme_item name="scroll" data_type="icon" type="Texture2D">
+			Middle mouse button click-and-drag scrolling icon texture.
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
 			The background used when the [RichTextLabel] is focused. The [theme_item focus] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
