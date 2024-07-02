@@ -2258,6 +2258,11 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), theme_cache.drop_position_color);
 					}
 				}
+
+				if (drop_mode_section == 2) {
+					// This rect is the same as the drop_mode_section == 1 but sums the item height considering children
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + get_item_height(p_item), r.size.x, 2), cache.drop_position_color);
+				}
 			}
 
 			Color cell_color;
@@ -5275,7 +5280,33 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 
 			return nullptr;
 		} else {
-			pos.y -= h;
+			if (p_item != root && !p_item->is_collapsed() && !p_item->get_children() && !p_item->get_next() && p_item->get_parent() != root && pos.y < h + cache.vseparation // pos.y < compute_item_height() + 2*vseparation
+					&& drop_mode_flags != DROP_MODE_ON_ITEM) {
+				// This section considers drawing the line on the bottom of the tree
+				section = 2;
+
+				for (int i = 0; i < columns.size(); i++) {
+					int w = get_column_width(i);
+					if (pos.x < w) {
+						r_column = i;
+
+						TreeItem *parent = p_item->get_parent();
+
+						// Second parent to get node at the same tree level as the one dragged on
+						TreeItem *parent2 = parent->get_parent();
+						if (parent2)
+							return parent2;
+						else
+							return parent;
+					}
+
+					pos.x -= w;
+				}
+
+				return NULL;
+			} else {
+				pos.y -= h;
+			}
 		}
 	} else {
 		h = 0;
