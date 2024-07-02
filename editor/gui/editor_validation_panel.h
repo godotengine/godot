@@ -80,6 +80,7 @@ public:
 
 	void update();
 	void set_message(int p_id, const String &p_text, MessageType p_type, bool p_auto_prefix = true);
+	int get_message_count() const;
 	bool is_valid() const;
 
 	EditorValidationPanel();
