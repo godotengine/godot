@@ -55,6 +55,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	int blend_mode = BLEND_MODE_MIX;
 	int depth_testi = DEPTH_TEST_ENABLED;
+	int motion_drawi = MOTION_DRAW_ENABLED;
 	int alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 	int cull = CULL_BACK;
 
@@ -101,6 +102,8 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["depth_draw_always"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_ALWAYS);
 
 	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_testi, DEPTH_TEST_DISABLED);
+
+	actions.render_mode_values["motion_draw_disabled"] = Pair<int *, int>(&motion_drawi, MOTION_DRAW_DISABLED);
 
 	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull, CULL_DISABLED);
 	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull, CULL_FRONT);
@@ -152,6 +155,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	depth_draw = DepthDraw(depth_drawi);
 	depth_test = DepthTest(depth_testi);
+	motion_draw = MotionDraw(motion_drawi);
 	uses_vertex_time = gen_code.uses_vertex_time;
 	uses_fragment_time = gen_code.uses_fragment_time;
 	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
@@ -612,7 +616,9 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.render_mode_defines["cull_front"] = "#define DO_SIDE_CHECK\n";
 		actions.render_mode_defines["cull_disabled"] = "#define DO_SIDE_CHECK\n";
 		actions.render_mode_defines["particle_trails"] = "#define USE_PARTICLE_TRAILS\n";
+
 		actions.render_mode_defines["depth_prepass_alpha"] = "#define USE_OPAQUE_PREPASS\n";
+		actions.render_mode_defines["motion_draw_disabled"] = "#define MOTION_DRAW_DISABLED\n";
 
 		bool force_lambert = GLOBAL_GET("rendering/shading/overrides/force_lambert_over_burley");
 		if (!force_lambert) {
