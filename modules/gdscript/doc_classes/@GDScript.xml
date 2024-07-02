@@ -32,7 +32,7 @@
 			<param index="0" name="condition" type="bool" />
 			<param index="1" name="message" type="String" default="&quot;&quot;" />
 			<description>
-				Asserts that the [param condition] is [code]true[/code]. If the [param condition] is [code]false[/code], an error is generated. When running from the editor, the running project will also be paused until you resume it. This can be used as a stronger form of [method @GlobalScope.push_error] for reporting errors to project developers or add-on users.
+				Asserts that the [param condition] is [code]true[/code] [i]at runtime[/i]. If the [param condition] is [code]false[/code], an error is generated. When running from the editor, the running project will also be paused until you resume it. This can be used as a stronger form of [method @GlobalScope.push_error] for reporting errors to project developers or add-on users.
 				An optional [param message] can be shown in addition to the generic "Assertion failed" message. You can use this to provide additional details about why the assertion failed.
 				[b]Warning:[/b] For performance reasons, the code inside [method assert] is only executed in debug builds or when running the project from the editor. Don't include code that has side effects in an [method assert] call. Otherwise, the project will behave differently when exported in release mode.
 				[codeblock]
@@ -41,8 +41,9 @@
 				assert(speed &lt; 20) # True, the program will continue.
 				assert(speed &gt;= 0) # False, the program will stop.
 				assert(speed &gt;= 0 and speed &lt; 20) # You can also combine the two conditional statements in one check.
-				assert(speed &lt; 20, "the speed limit is 20") # Show a message.
+				assert(speed &lt; 20, "The speed limit is 20.") # Show a message.
 				[/codeblock]
+				See also [annotation @static_assert] for [i]compile time[/i] assertions.
 				[b]Note:[/b] [method assert] is a keyword, not a function. So you cannot access it as a [Callable] or use it inside expressions.
 			</description>
 		</method>
@@ -713,6 +714,26 @@
 
 				@rpc("authority", "call_remote", "unreliable", 0) # Equivalent to @rpc
 				func fn_default(): pass
+				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@static_assert">
+			<return type="void" />
+			<param index="0" name="condition" type="bool" />
+			<param index="1" name="message" type="String" default="&quot;&quot;" />
+			<description>
+				Asserts that the [param condition] is [code]true[/code] [i]at compile time[/i]. If the [param condition] is [code]false[/code], an error is generated. Unlike [method assert], the check is performed once during static analysis of the script and does not affect runtime execution. Since [annotation @static_assert] is an annotation, its arguments must be constant expressions.
+				An optional [param message] can be shown in addition to the generic "Static assertion failed" message. You can use this to provide additional details about why the assertion failed.
+				[codeblock]
+				enum Element {FIRE, WATER, EARTH, WIND}
+				const ELEMENT_COLORS = [Color.RED, Color.BLUE, Color.GREEN, Color.CYAN]
+				@static_assert(len(Element) == len(ELEMENT_COLORS), "Desync detected.")
+
+				const GRAVITY = 980.0
+				const MAX_SPEED = 700.0
+				const JUMP_HEIGHT = 200.0
+				const JUMP_INITIAL_SPEED = -sqrt(2 * GRAVITY * JUMP_HEIGHT)
+				@static_assert(absf(JUMP_INITIAL_SPEED) &lt;= MAX_SPEED)
 				[/codeblock]
 			</description>
 		</annotation>
