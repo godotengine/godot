@@ -800,6 +800,8 @@ public:
 	static bool is_control_flow_keyword(String p_keyword);
 	static void get_builtin_funcs(List<String> *r_keywords);
 
+	static int instance_counter;
+
 	struct BuiltInInfo {
 		DataType type = TYPE_VOID;
 		bool constant = false;
