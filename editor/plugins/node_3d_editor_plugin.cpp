@@ -5293,7 +5293,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	display_submenu->add_radio_check_item(TTR("Occlusion Culling Buffer"), VIEW_DISPLAY_DEBUG_OCCLUDERS);
 	display_submenu->add_radio_check_item(TTR("Motion Vectors"), VIEW_DISPLAY_MOTION_VECTORS);
 	display_submenu->add_radio_check_item(TTR("Internal Buffer"), VIEW_DISPLAY_INTERNAL_BUFFER);
-	view_menu->get_popup()->add_submenu_node_item(TTR("Display Advanced..."), display_submenu, VIEW_DISPLAY_ADVANCED);
+	view_menu->get_popup()->add_submenu_node_item(TTR("Display Advanced"), display_submenu, VIEW_DISPLAY_ADVANCED);
 
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_environment", TTR("View Environment")), VIEW_ENVIRONMENT);
@@ -8669,10 +8669,10 @@ Node3DEditor::Node3DEditor() {
 
 	p = transform_menu->get_popup();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/snap_to_floor", TTR("Snap Object to Floor"), Key::PAGEDOWN), MENU_SNAP_TO_FLOOR);
-	p->add_shortcut(ED_SHORTCUT("spatial_editor/transform_dialog", TTR("Transform Dialog...")), MENU_TRANSFORM_DIALOG);
+	p->add_shortcut(ED_SHORTCUT("spatial_editor/transform_dialog", TTR("Transform Dialog")), MENU_TRANSFORM_DIALOG);
 
 	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("spatial_editor/configure_snap", TTR("Configure Snap...")), MENU_TRANSFORM_CONFIGURE_SNAP);
+	p->add_shortcut(ED_SHORTCUT("spatial_editor/configure_snap", TTR("Configure Snap")), MENU_TRANSFORM_CONFIGURE_SNAP);
 
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed));
 
@@ -8717,7 +8717,7 @@ Node3DEditor::Node3DEditor() {
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid", TTR("View Grid"), Key::NUMBERSIGN), MENU_VIEW_GRID);
 
 	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("spatial_editor/settings", TTR("Settings...")), MENU_VIEW_CAMERA_SETTINGS);
+	p->add_shortcut(ED_SHORTCUT("spatial_editor/settings", TTR("Settings")), MENU_VIEW_CAMERA_SETTINGS);
 
 	p->set_item_checked(p->get_item_index(MENU_VIEW_ORIGIN), true);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_GRID), true);

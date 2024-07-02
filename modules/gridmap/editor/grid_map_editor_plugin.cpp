@@ -1254,7 +1254,7 @@ GridMapEditor::GridMapEditor() {
 	options->get_popup()->add_shortcut(ED_GET_SHORTCUT("grid_map/fill_selection"), MENU_OPTION_SELECTION_FILL);
 
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Settings..."), MENU_OPTION_GRIDMAP_SETTINGS);
+	options->get_popup()->add_item(TTR("Settings"), MENU_OPTION_GRIDMAP_SETTINGS);
 
 	settings_dialog = memnew(ConfirmationDialog);
 	settings_dialog->set_title(TTR("GridMap Settings"));
