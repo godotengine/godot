@@ -3194,6 +3194,34 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 	}
 }
 
+void EditorPropertyResource::_node_changed(const NodePath &p_path) {
+	// Similar to EditorPropertyNodePath::_node_selected
+	EditorInterfacePicker *interface_picker = Object::cast_to<EditorInterfacePicker>(resource_picker);
+
+	if (!interface_picker) {
+		return;
+	}
+	Node *base_node = Object::cast_to<Node>(get_edited_object());
+	NodePath path = p_path;
+
+	if (!base_node && Object::cast_to<RefCounted>(get_edited_object())) {
+		Node *to_node = get_node(p_path);
+		ERR_FAIL_NULL(to_node);
+		path = get_tree()->get_edited_scene_root()->get_path_to(to_node);
+	}
+
+	if (base_node) { // for AnimationTrackKeyEdit
+		path = base_node->get_path().rel_path_to(p_path);
+	}
+
+	if (!base_node) {
+		emit_changed(get_edited_property(), get_tree()->get_edited_scene_root()->get_node(path));
+	} else {
+		emit_changed(get_edited_property(), base_node->get_node(path));
+	}
+	update_property();
+}
+
 void EditorPropertyResource::_sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool p_advance) {
 	// The second parameter could be null, causing the event to fire with less arguments, so use the pointer call which preserves it.
 	const Variant args[3] = { String(get_edited_property()) + ":" + p_property, p_value, p_advance };
@@ -3261,13 +3289,18 @@ void EditorPropertyResource::_viewport_selected(const NodePath &p_path) {
 	update_property();
 }
 
-void EditorPropertyResource::setup(Object *p_object, const String &p_path, const String &p_base_type) {
+void EditorPropertyResource::setup(Object *p_object, const String &p_path, const String &p_base_type, const String &p_interface_hint_string) {
 	if (resource_picker) {
 		memdelete(resource_picker);
 		resource_picker = nullptr;
 	}
 
-	if (p_path == "script" && p_base_type == "Script" && Object::cast_to<Node>(p_object)) {
+	if (!p_interface_hint_string.is_empty()) {
+		EditorInterfacePicker *interface_picker = memnew(EditorInterfacePicker);
+		interface_picker->set_is_editing_node(Object::cast_to<Node>(p_object));
+		interface_picker->connect("node_changed", callable_mp(this, &EditorPropertyResource::_node_changed));
+		resource_picker = interface_picker;
+	} else if (p_path == "script" && p_base_type == "Script" && Object::cast_to<Node>(p_object)) {
 		EditorScriptPicker *script_picker = memnew(EditorScriptPicker);
 		script_picker->set_script_owner(Object::cast_to<Node>(p_object));
 		resource_picker = script_picker;
@@ -3284,6 +3317,7 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 	}
 
 	resource_picker->set_base_type(p_base_type);
+	resource_picker->set_interface_hint_string(p_interface_hint_string);
 	resource_picker->set_editable(true);
 	resource_picker->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(resource_picker);
@@ -3361,6 +3395,13 @@ void EditorPropertyResource::update_property() {
 				}
 			}
 		}
+	}
+
+	// For interface picker, also set node or null if possible
+	EditorInterfacePicker *interface_picker = Object::cast_to<EditorInterfacePicker>(resource_picker);
+	if (interface_picker) {
+		Node *n = Object::cast_to<Node>(get_edited_property_value());
+		interface_picker->set_edited_property(n); // or null
 	}
 
 	resource_picker->set_edited_resource_no_check(res);
@@ -3813,9 +3854,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 			} else {
 				EditorPropertyResource *editor = memnew(EditorPropertyResource);
-				editor->setup(p_object, p_path, p_hint == PROPERTY_HINT_RESOURCE_TYPE ? p_hint_text : "Resource");
+				editor->setup(p_object, p_path, p_hint == PROPERTY_HINT_RESOURCE_TYPE ? p_hint_text : "Resource", p_hint == PROPERTY_HINT_INTERFACE ? p_hint_text : String());
 
-				if (p_hint == PROPERTY_HINT_RESOURCE_TYPE) {
+				if (p_hint == PROPERTY_HINT_RESOURCE_TYPE || p_hint == PROPERTY_HINT_INTERFACE) {
 					const PackedStringArray open_in_new_inspector = EDITOR_GET("interface/inspector/resources_to_open_in_new_inspector");
 
 					for (const String &type : open_in_new_inspector) {

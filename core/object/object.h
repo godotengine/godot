@@ -86,6 +86,7 @@ enum PropertyHint {
 	PROPERTY_HINT_HIDE_QUATERNION_EDIT, /// Only Node3D::transform should hide the quaternion editor.
 	PROPERTY_HINT_PASSWORD,
 	PROPERTY_HINT_LAYERS_AVOIDANCE,
+	PROPERTY_HINT_INTERFACE, ///< hint_text="language_name,interface1,interface2,..."
 	PROPERTY_HINT_MAX,
 };
 

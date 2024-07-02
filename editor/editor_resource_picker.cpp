@@ -136,7 +136,7 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 	Ref<Resource> loaded_resource = ResourceLoader::load(p_path);
 	ERR_FAIL_COND_MSG(loaded_resource.is_null(), "Cannot load resource from path '" + p_path + "'.");
 
-	if (!base_type.is_empty()) {
+	if (!base_type.is_empty() || !interface_type_hint_string.is_empty()) {
 		bool any_type_matches = false;
 
 		String res_type = loaded_resource->get_class();
@@ -163,6 +163,14 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 		if (!any_type_matches) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("The selected resource (%s) does not match any type expected for this property (%s)."), res_type, base_type));
 			return;
+		}
+
+		if (!interface_type_hint_string.is_empty()) {
+			if (!EditorNode::get_editor_data().script_class_implements_interface(res_type, interface_type_hint_string)) {
+				any_type_matches = false;
+				EditorNode::get_singleton()->show_warning(vformat(TTR("The selected resource (%s) does not match the required interface types: (%s)."), res_type, interface_type_hint_string));
+				return;
+			}
 		}
 	}
 
@@ -336,7 +344,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				quick_open->connect("quick_open", callable_mp(this, &EditorResourcePicker::_file_quick_selected));
 			}
 
-			quick_open->popup_dialog(base_type);
+			quick_open->popup_dialog(base_type, false, false, interface_type_hint_string);
 			quick_open->set_title(TTR("Resource"));
 		} break;
 
@@ -569,13 +577,13 @@ String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource)
 	return res_type;
 }
 
-static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_vector) {
+static void _add_allowed_type(const StringName &p_type, const String &p_interface_hint_string, HashSet<StringName> *p_vector) {
 	if (p_vector->has(p_type)) {
 		// Already added
 		return;
 	}
 
-	if (ClassDB::class_exists(p_type)) {
+	if (ClassDB::class_exists(p_type) && p_interface_hint_string.is_empty()) { // Engine classes cannot implement interfaces
 		// Engine class,
 
 		if (!ClassDB::is_virtual(p_type)) {
@@ -585,17 +593,24 @@ static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_v
 		List<StringName> inheriters;
 		ClassDB::get_inheriters_from_class(p_type, &inheriters);
 		for (const StringName &S : inheriters) {
-			_add_allowed_type(S, p_vector);
+			_add_allowed_type(S, p_interface_hint_string, p_vector);
 		}
 	} else {
 		// Script class.
-		p_vector->insert(p_type);
+		bool is_valid = true;
+		// Filter out scripts that don't implement the required interfaces, if any
+		if (!p_interface_hint_string.is_empty() && !EditorNode::get_editor_data().script_class_implements_interface(p_type, p_interface_hint_string)) {
+			is_valid = false;
+		}
+		if (is_valid) {
+			p_vector->insert(p_type);
+		}
 	}
 
 	List<StringName> inheriters;
 	ScriptServer::get_inheriters_list(p_type, &inheriters);
 	for (const StringName &S : inheriters) {
-		_add_allowed_type(S, p_vector);
+		_add_allowed_type(S, p_interface_hint_string, p_vector);
 	}
 }
 
@@ -609,7 +624,7 @@ void EditorResourcePicker::_ensure_allowed_types() const {
 
 	for (int i = 0; i < size; i++) {
 		const String base = allowed_types[i].strip_edges();
-		_add_allowed_type(base, &allowed_types_without_convert);
+		_add_allowed_type(base, interface_type_hint_string, &allowed_types_without_convert);
 	}
 
 	allowed_types_with_convert = HashSet<StringName>(allowed_types_without_convert);
@@ -866,6 +881,14 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 
 String EditorResourcePicker::get_base_type() const {
 	return base_type;
+}
+
+void EditorResourcePicker::set_interface_hint_string(const String &p_interface_hint_string) {
+	interface_type_hint_string = p_interface_hint_string;
+}
+
+String EditorResourcePicker::get_interface_hint_string() const {
+	return interface_type_hint_string;
 }
 
 Vector<String> EditorResourcePicker::get_allowed_types() const {
@@ -1341,4 +1364,94 @@ EditorAudioStreamPicker::EditorAudioStreamPicker() :
 	get_assign_button()->add_child(stream_preview_rect);
 	get_assign_button()->move_child(stream_preview_rect, 0);
 	set_process_internal(true);
+}
+
+// EditorInterfacePicker
+
+void EditorInterfacePicker::_node_assign() {
+	if (!scene_tree) {
+		scene_tree = memnew(SceneTreeDialog);
+		scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
+		scene_tree->set_interface_hint_string(get_interface_hint_string());
+		add_child(scene_tree);
+		scene_tree->connect("selected", callable_mp(this, &EditorInterfacePicker::_node_selected));
+	}
+	scene_tree->popup_scenetree_dialog();
+}
+
+void EditorInterfacePicker::_node_selected(const NodePath &p_path) {
+	set_edited_resource(nullptr);
+	emit_signal("node_changed", p_path);
+}
+
+void EditorInterfacePicker::set_create_options(Object *p_menu_node) {
+	PopupMenu *menu_node = Object::cast_to<PopupMenu>(p_menu_node);
+	if (!menu_node) {
+		return;
+	}
+
+	// Only Nodes can be assigned to NodePath properties.
+	if (is_editing_node) {
+		menu_node->add_icon_item(get_editor_theme_icon(SNAME("Node")), TTR("Assign a node..."), OBJ_MENU_SELECT_NODE);
+		if (edited_node != nullptr) {
+			menu_node->add_icon_item(get_editor_theme_icon(SNAME("Clear")), TTR("Clear node"), OBJ_MENU_CLEAR_NODE);
+		}
+
+		menu_node->add_separator();
+	}
+
+	EditorResourcePicker::set_create_options(p_menu_node);
+}
+
+bool EditorInterfacePicker::handle_menu_selected(int p_which) {
+	switch (p_which) {
+		case OBJ_MENU_SELECT_NODE: {
+			_node_assign();
+			return true;
+		}
+		case OBJ_MENU_CLEAR_NODE: {
+			edited_node = nullptr;
+			emit_signal(SNAME("resource_changed"), Ref<Resource>());
+			return true;
+		}
+	}
+
+	return false;
+}
+
+// Needed for NodePath/Node selection.
+void EditorInterfacePicker::set_is_editing_node(bool p_editing) {
+	is_editing_node = p_editing;
+}
+
+void EditorInterfacePicker::_update_resource() {
+	if (get_edited_resource().is_valid()) {
+		edited_node = nullptr;
+	}
+
+	if (edited_node != nullptr && !edited_node->is_inside_tree()) {
+		edited_node = nullptr;
+	}
+
+	EditorResourcePicker::_update_resource();
+
+	// Update the button text/icon if property is a Node
+	if (edited_node != nullptr) {
+		get_assign_button()->set_text(edited_node->get_name());
+		get_assign_button()->set_icon(EditorNode::get_singleton()->get_object_icon(edited_node, SNAME("Node")));
+		get_assign_button()->set_tooltip_text("");
+	}
+}
+
+void EditorInterfacePicker::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("node_changed", PropertyInfo(Variant::NODE_PATH, "node_path")));
+}
+
+void EditorInterfacePicker::set_edited_property(Object *p_property) {
+	set_edited_resource(nullptr);
+	edited_node = Object::cast_to<Node>(p_property);
+	_update_resource();
+}
+
+EditorInterfacePicker::EditorInterfacePicker() {
 }

@@ -38,10 +38,11 @@
 Rect2i EditorQuickOpen::prev_rect = Rect2i();
 bool EditorQuickOpen::was_showed = false;
 
-void EditorQuickOpen::popup_dialog(const String &p_base, bool p_enable_multi, bool p_dont_clear) {
+void EditorQuickOpen::popup_dialog(const String &p_base, bool p_enable_multi, bool p_dont_clear, const String &p_interface_hint) {
 	base_type = p_base;
 	allow_multi_select = p_enable_multi;
 	search_options->set_select_mode(allow_multi_select ? Tree::SELECT_MULTI : Tree::SELECT_SINGLE);
+	interface_hint_string = p_interface_hint;
 
 	if (was_showed) {
 		popup(prev_rect);
@@ -76,6 +77,10 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 		// Iterate all possible base types.
 		for (String &parent_type : base_types) {
 			if (ClassDB::is_parent_class(engine_type, parent_type) || EditorNode::get_editor_data().script_class_is_parent(script_type, parent_type)) {
+				if (!interface_hint_string.is_empty() && !EditorNode::get_editor_data().script_class_implements_interface(script_type, interface_hint_string)) {
+					continue;
+				}
+
 				files.push_back(file.substr(6, file.length()));
 
 				// Store refs to used icons.

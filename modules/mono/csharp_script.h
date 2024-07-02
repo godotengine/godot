@@ -103,6 +103,11 @@ public:
 		bool is_generic_type_definition = false;
 
 		/**
+		 * List of fully qualified interface names that the C# class implements.
+		 */
+		Array interfaces;
+
+		/**
 		 * The C# type that corresponds to this script contains generic type parameters,
 		 * regardless of whether the type parameters are bound or not.
 		 */
@@ -268,6 +273,7 @@ public:
 	bool is_abstract() const override {
 		return type_info.is_abstract;
 	}
+	void get_interfaces(HashSet<StringName> *p_interfaces) override;
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
