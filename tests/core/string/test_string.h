@@ -1795,14 +1795,14 @@ TEST_CASE("[String] Join") {
 }
 
 TEST_CASE("[String] Is_*") {
-	static const char *data[12] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1" };
-	static bool isnum[12] = { true, true, true, false, false, false, false, false, false, false, false, false };
-	static bool isint[12] = { true, true, false, false, false, false, false, false, false, false, false, false };
-	static bool ishex[12] = { true, true, false, false, true, false, true, false, true, false, false, false };
-	static bool ishex_p[12] = { false, false, false, false, false, false, false, true, false, false, false, false };
-	static bool isflt[12] = { true, true, true, false, true, true, false, false, false, false, false, false };
-	static bool isid[12] = { false, false, false, false, false, false, false, false, true, true, false, false };
-	for (int i = 0; i < 12; i++) {
+	static const char *data[13] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1", "1000000000000000000000000000000" };
+	static bool isnum[13] = { true, true, true, false, false, false, false, false, false, false, false, false, true };
+	static bool isint[13] = { true, true, false, false, false, false, false, false, false, false, false, false, false };
+	static bool ishex[13] = { true, true, false, false, true, false, true, false, true, false, false, false, false };
+	static bool ishex_p[13] = { false, false, false, false, false, false, false, true, false, false, false, false, false };
+	static bool isflt[13] = { true, true, true, false, true, true, false, false, false, false, false, false, true };
+	static bool isid[13] = { false, false, false, false, false, false, false, false, true, true, false, false, false };
+	for (int i = 0; i < 13; i++) {
 		String s = String(data[i]);
 		CHECK(s.is_numeric() == isnum[i]);
 		CHECK(s.is_valid_int() == isint[i]);
