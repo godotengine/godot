@@ -98,6 +98,30 @@
 				[b]Note:[/b] A [Tween] created using this method is not bound to any [Node]. It may keep working until there is nothing left to animate. If you want the [Tween] to be automatically killed when the [Node] is freed, use [method Node.create_tween] or [method Tween.bind_node].
 			</description>
 		</method>
+		<method name="get_debug_collision_contact_color" qualifiers="const">
+			<return type="Color" />
+			<description>
+				Gets the color used to draw collision contacts when using "Visible Collision Shapes".
+			</description>
+		</method>
+		<method name="get_debug_collisions_color" qualifiers="const">
+			<return type="Color" />
+			<description>
+				Gets the color used to draw collision shapes when using "Visible Collision Shapes".
+			</description>
+		</method>
+		<method name="get_debug_paths_color" qualifiers="const">
+			<return type="Color" />
+			<description>
+				Gets the color used to draw paths when using "Visible Paths".
+			</description>
+		</method>
+		<method name="get_debug_paths_width" qualifiers="const">
+			<return type="float" />
+			<description>
+				Gets the line width used to draw paths when using "Visible Paths".
+			</description>
+		</method>
 		<method name="get_first_node_in_group">
 			<return type="Node" />
 			<param index="0" name="group" type="StringName" />
@@ -190,6 +214,34 @@
 			<description>
 				Reloads the currently active scene, replacing [member current_scene] with a new instance of its original [PackedScene].
 				Returns [constant OK] on success, [constant ERR_UNCONFIGURED] if no [member current_scene] is defined, [constant ERR_CANT_OPEN] if [member current_scene] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if the scene cannot be instantiated.
+			</description>
+		</method>
+		<method name="set_debug_collision_contact_color">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Sets the color used to draw collision contacts when using "Visible Collision Shapes".
+			</description>
+		</method>
+		<method name="set_debug_collisions_color">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Sets the color used to draw collision shapes when using "Visible Collision Shapes".
+			</description>
+		</method>
+		<method name="set_debug_paths_color">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Sets the color used to draw paths when using "Visible Paths".
+			</description>
+		</method>
+		<method name="set_debug_paths_width">
+			<return type="void" />
+			<param index="0" name="width" type="float" />
+			<description>
+				Sets the line width used to draw paths when using "Visible Paths".
 			</description>
 		</method>
 		<method name="set_group">

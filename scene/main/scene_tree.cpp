@@ -1599,6 +1599,15 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_debug_navigation_hint", "enable"), &SceneTree::set_debug_navigation_hint);
 	ClassDB::bind_method(D_METHOD("is_debugging_navigation_hint"), &SceneTree::is_debugging_navigation_hint);
 
+	ClassDB::bind_method(D_METHOD("set_debug_collisions_color", "color"), &SceneTree::set_debug_collisions_color);
+	ClassDB::bind_method(D_METHOD("get_debug_collisions_color"), &SceneTree::get_debug_collisions_color);
+	ClassDB::bind_method(D_METHOD("set_debug_collision_contact_color", "color"), &SceneTree::set_debug_collision_contact_color);
+	ClassDB::bind_method(D_METHOD("get_debug_collision_contact_color"), &SceneTree::get_debug_collision_contact_color);
+	ClassDB::bind_method(D_METHOD("set_debug_paths_color", "color"), &SceneTree::set_debug_paths_color);
+	ClassDB::bind_method(D_METHOD("get_debug_paths_color"), &SceneTree::get_debug_paths_color);
+	ClassDB::bind_method(D_METHOD("set_debug_paths_width", "width"), &SceneTree::set_debug_paths_width);
+	ClassDB::bind_method(D_METHOD("get_debug_paths_width"), &SceneTree::get_debug_paths_width);
+
 	ClassDB::bind_method(D_METHOD("set_edited_scene_root", "scene"), &SceneTree::set_edited_scene_root);
 	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &SceneTree::get_edited_scene_root);
 
