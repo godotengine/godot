@@ -413,6 +413,11 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	RID default_clip_children_material;
 	RID default_clip_children_shader;
 
+	// Adreno 5XX workaround, uniform GdShader crash
+	bool enable_workaround;
+	RID workaround_shader;
+	RID workaround_material;
+
 	RS::CanvasItemTextureFilter default_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 	RS::CanvasItemTextureRepeat default_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 

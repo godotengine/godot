@@ -1189,6 +1189,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, state.default_transforms_uniform_set, TRANSFORMS_UNIFORM_SET);
 
 	RID prev_material;
+	bool added_material_uniform_set = false;
 
 	PipelineVariants *pipeline_variants = &shader.pipeline_variants;
 
@@ -1221,6 +1222,8 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 					}
 				}
 			}
+		} else if (enable_workaround && added_material_uniform_set && material.is_null() && prev_material.is_valid()) {
+			material = workaround_material;
 		}
 
 		if (material != prev_material) {
@@ -1237,6 +1240,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 					if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) { // Material may not have a uniform set.
 						RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set, MATERIAL_UNIFORM_SET);
 						material_data->set_as_used();
+						added_material_uniform_set = true;
 					}
 				} else {
 					pipeline_variants = &shader.pipeline_variants;
@@ -2839,6 +2843,18 @@ void fragment() {
 	}
 
 	static_assert(sizeof(PushConstant) == 128);
+
+	// Adreno 5XX workaround, uniform GdShader crash
+	enable_workaround = RD::get_singleton()->get_device_workarounds().force_material_uniform_set;
+	if (enable_workaround) {
+		workaround_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(workaround_shader);
+		material_storage->shader_set_code(workaround_shader, "shader_type canvas_item;\n");
+
+		workaround_material = material_storage->material_allocate();
+		material_storage->material_initialize(workaround_material);
+		material_storage->material_set_shader(workaround_material, workaround_shader);
+	}
 }
 
 bool RendererCanvasRenderRD::free(RID p_rid) {
@@ -2897,6 +2913,11 @@ RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 
 	material_storage->material_free(default_clip_children_material);
 	material_storage->shader_free(default_clip_children_shader);
+
+	if (enable_workaround) {
+		material_storage->material_free(workaround_material);
+		material_storage->shader_free(workaround_shader);
+	}
 
 	{
 		if (state.canvas_state_buffer.is_valid()) {

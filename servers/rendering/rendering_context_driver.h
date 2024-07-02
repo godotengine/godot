@@ -75,6 +75,7 @@ public:
 
 	struct Workarounds {
 		bool avoid_compute_after_draw = false;
+		bool force_material_uniform_set = false;
 	};
 
 	struct Device {

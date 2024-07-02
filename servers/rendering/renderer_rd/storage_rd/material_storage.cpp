@@ -1850,8 +1850,23 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_NULL(shader);
 
-	shader->code = p_code;
 	String mode_string = ShaderLanguage::get_shader_type(p_code);
+
+	// Adreno 5XX workaround
+	bool enable_workaround = RD::get_singleton()->get_device_workarounds().force_material_uniform_set;
+	String workaround_code;
+	if (enable_workaround) {
+		String uniform_var = "\n\nuniform int __ADRENO_5XX_WORKAROUND;\n";
+		String shader_type = "shader_type " + mode_string + ";";
+		int insert_pos = p_code.find(shader_type) + shader_type.length();
+		workaround_code = p_code.insert(insert_pos, uniform_var);
+	}
+
+	if (!enable_workaround) {
+		shader->code = p_code;
+	} else {
+		shader->code = workaround_code;
+	}
 
 	ShaderType new_type;
 	if (mode_string == "canvas_item") {
@@ -1913,7 +1928,11 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 
 	if (shader->data) {
 		shader->data->set_path_hint(shader->path_hint);
-		shader->data->set_code(p_code);
+		if (!enable_workaround) {
+			shader->data->set_code(p_code);
+		} else {
+			shader->data->set_code(workaround_code);
+		}
 	}
 
 	for (Material *E : shader->owners) {

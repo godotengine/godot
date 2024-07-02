@@ -541,6 +541,27 @@ void RenderingContextDriverVulkan::_check_driver_workarounds(const VkPhysicalDev
 			p_device_properties.deviceID >= 0x6000000 && // Adreno 6xx
 			p_device_properties.driverVersion < VK_MAKE_VERSION(512, 503, 0) &&
 			r_device.name.find("Turnip") < 0;
+
+	// Workaround for the Adreno 5XX family of devices.
+	//
+	// An issue occurs when the 'vkCmdDrawIndexed' function is called multiple times between 'vkCmdBeginRenderPass'
+	// and 'vkCmdEndRenderPass', using a shader that includes a 'uniform' variable (#define MATERIAL_UNIFORMS_USED enabled).
+	// The crash is caused if the subsequent render operations ('Nodes') within the same render pass do not use material shaders with
+	// a 'uniform' variable.
+	//
+	// In other words, if a shader with 'uniform' variables is used within a render pass, all following render operations up to the end
+	// of the render pass must also use shaders with 'uniform' variables. Otherwise, this can lead to a crash. This workaround ensures
+	// that this does not happen by making sure that shaders with 'uniform' variables are consistently used between 'vkCmdBeginRenderPass'
+	// and 'vkCmdEndRenderPass'.
+	//
+	//TODO: check 'driverVersion'?
+	// no crash on Fujitsu F-01L - Adreno (TM) 506, Vulkan 1.0.61, driverVersion = 54185879
+	r_device.workarounds.force_material_uniform_set =
+			r_device.vendor == VENDOR_QUALCOMM &&
+			p_device_properties.deviceID >= 0x5000000 && // Adreno 5xx
+			p_device_properties.deviceID <= 0x5999999;
+
+	//r_device.workarounds.force_material_uniform_set = true; //TODO: Dev-TEST, remove later
 }
 
 bool RenderingContextDriverVulkan::_use_validation_layers() const {
