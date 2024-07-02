@@ -169,8 +169,6 @@ public:
 
 	virtual bool eof_reached() const override;
 
-	virtual uint8_t get_8() const override;
-
 	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
 
 	virtual void set_big_endian(bool p_big_endian) override;
@@ -179,8 +177,6 @@ public:
 
 	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override;
-	virtual void store_8(uint8_t p_dest) override;
-
 	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override;
 
 	virtual bool file_exists(const String &p_name) override;

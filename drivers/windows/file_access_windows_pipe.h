@@ -64,14 +64,12 @@ public:
 
 	virtual bool eof_reached() const override { return false; }
 
-	virtual uint8_t get_8() const override; ///< get a byte
 	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
 
 	virtual Error get_error() const override; ///< get last error
 
 	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override {}
-	virtual void store_8(uint8_t p_src) override; ///< store a byte
 	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
 
 	virtual bool file_exists(const String &p_name) override { return false; }

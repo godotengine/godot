@@ -113,87 +113,6 @@ bool FileAccessAndroid::eof_reached() const {
 	return eof;
 }
 
-uint8_t FileAccessAndroid::get_8() const {
-	if (pos >= len) {
-		eof = true;
-		return 0;
-	}
-
-	uint8_t byte;
-	AAsset_read(asset, &byte, 1);
-	pos++;
-	return byte;
-}
-
-uint16_t FileAccessAndroid::get_16() const {
-	if (pos >= len) {
-		eof = true;
-		return 0;
-	}
-
-	uint16_t bytes = 0;
-	int r = AAsset_read(asset, &bytes, 2);
-
-	if (r >= 0) {
-		pos += r;
-		if (pos >= len) {
-			eof = true;
-		}
-	}
-
-	if (big_endian) {
-		bytes = BSWAP16(bytes);
-	}
-
-	return bytes;
-}
-
-uint32_t FileAccessAndroid::get_32() const {
-	if (pos >= len) {
-		eof = true;
-		return 0;
-	}
-
-	uint32_t bytes = 0;
-	int r = AAsset_read(asset, &bytes, 4);
-
-	if (r >= 0) {
-		pos += r;
-		if (pos >= len) {
-			eof = true;
-		}
-	}
-
-	if (big_endian) {
-		bytes = BSWAP32(bytes);
-	}
-
-	return bytes;
-}
-
-uint64_t FileAccessAndroid::get_64() const {
-	if (pos >= len) {
-		eof = true;
-		return 0;
-	}
-
-	uint64_t bytes = 0;
-	int r = AAsset_read(asset, &bytes, 8);
-
-	if (r >= 0) {
-		pos += r;
-		if (pos >= len) {
-			eof = true;
-		}
-	}
-
-	if (big_endian) {
-		bytes = BSWAP64(bytes);
-	}
-
-	return bytes;
-}
-
 uint64_t FileAccessAndroid::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 
@@ -209,6 +128,7 @@ uint64_t FileAccessAndroid::get_buffer(uint8_t *p_dst, uint64_t p_length) const 
 			pos = len;
 		}
 	}
+
 	return r;
 }
 
@@ -220,19 +140,7 @@ void FileAccessAndroid::flush() {
 	ERR_FAIL();
 }
 
-void FileAccessAndroid::store_8(uint8_t p_dest) {
-	ERR_FAIL();
-}
-
-void FileAccessAndroid::store_16(uint16_t p_dest) {
-	ERR_FAIL();
-}
-
-void FileAccessAndroid::store_32(uint32_t p_dest) {
-	ERR_FAIL();
-}
-
-void FileAccessAndroid::store_64(uint64_t p_dest) {
+void FileAccessAndroid::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL();
 }
 
