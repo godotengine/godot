@@ -142,9 +142,10 @@ static void _digest_job_queue(void *p_job_queue, uint32_t p_index) {
 }
 
 void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
-	if (p_image->is_compressed()) {
-		return; //do not compress, already compressed
-	}
+	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
+
+	ERR_FAIL_COND_MSG(p_image->is_compressed(), "Image is already compressed.");
+
 	int w = p_image->get_width();
 	int h = p_image->get_height();
 
@@ -250,6 +251,8 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 	p_image->set_data(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
+
+	print_verbose(vformat("CVTT: Encoding took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
 }
 
 void image_decompress_cvtt(Image *p_image) {
