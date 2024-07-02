@@ -226,7 +226,7 @@ template <typename T>
 class VariantConstructorFromString {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
-		if (p_args[0]->get_type() != Variant::STRING) {
+		if (!p_args[0]->is_string()) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
 			r_error.expected = Variant::STRING;
@@ -234,7 +234,7 @@ public:
 		}
 
 		VariantTypeChanger<T>::change(&r_ret);
-		const String &src_str = *VariantGetInternalPtr<String>::get_ptr(p_args[0]);
+		const String src_str = *p_args[0];
 
 		if (r_ret.get_type() == Variant::Type::INT) {
 			r_ret = src_str.to_int();
@@ -411,7 +411,7 @@ public:
 			return;
 		}
 
-		if (p_args[2]->get_type() != Variant::STRING_NAME) {
+		if (!p_args[2]->is_string()) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 2;
 			r_error.expected = Variant::STRING_NAME;
@@ -420,8 +420,7 @@ public:
 
 		const Array &base_arr = *VariantGetInternalPtr<Array>::get_ptr(p_args[0]);
 		const uint32_t type = p_args[1]->operator uint32_t();
-		const StringName &class_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[2]);
-		r_ret = Array(base_arr, type, class_name, *p_args[3]);
+		r_ret = Array(base_arr, type, *p_args[2], *p_args[3]);
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {

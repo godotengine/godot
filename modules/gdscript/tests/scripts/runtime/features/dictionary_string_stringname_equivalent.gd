@@ -7,7 +7,7 @@ func test():
 	stringname_dict[&"abc"] = 24
 
 	print("String key is TYPE_STRING: ", typeof(string_dict.keys()[0]) == TYPE_STRING)
-	print("StringName key is TYPE_STRING: ", typeof(stringname_dict.keys()[0]) == TYPE_STRING)
+	print("StringName key is TYPE_STRING_NAME: ", typeof(stringname_dict.keys()[0]) == TYPE_STRING_NAME)
 
 	print("StringName gets String: ", string_dict.get(&"abc"))
 	print("String gets StringName: ", stringname_dict.get("abc"))
