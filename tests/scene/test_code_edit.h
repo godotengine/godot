@@ -4609,6 +4609,26 @@ TEST_CASE("[SceneTree][CodeEdit] text manipulation") {
 		CHECK(code_edit->get_text() == "line 1\nline 2\nline 3");
 		CHECK(code_edit->get_caret_line() == 0);
 		CHECK(code_edit->get_caret_column() == 0);
+
+		// Unfold previous folded line on backspace if the caret is at the first column.
+		code_edit->set_line_folding_enabled(true);
+		code_edit->set_text("line 1\n\tline 2\nline 3");
+		code_edit->set_caret_line(2);
+		code_edit->set_caret_column(0);
+		code_edit->fold_line(0);
+		code_edit->backspace();
+		CHECK_FALSE(code_edit->is_line_folded(0));
+		code_edit->set_line_folding_enabled(false);
+
+		// Do not unfold previous line on backspace if the caret is not at the first column.
+		code_edit->set_line_folding_enabled(true);
+		code_edit->set_text("line 1\n\tline 2\nline 3");
+		code_edit->set_caret_line(2);
+		code_edit->set_caret_column(4);
+		code_edit->fold_line(0);
+		code_edit->backspace();
+		CHECK(code_edit->is_line_folded(0));
+		code_edit->set_line_folding_enabled(false);
 	}
 
 	SUBCASE("[TextEdit] cut") {
