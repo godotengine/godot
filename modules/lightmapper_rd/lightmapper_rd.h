@@ -36,9 +36,79 @@
 #include "scene/resources/mesh.h"
 #include "servers/rendering/rendering_device.h"
 
+typedef enum {
+	OIDN_DEVICE_TYPE_DEFAULT = 0, // select device automatically
+
+	OIDN_DEVICE_TYPE_CPU = 1, // CPU device
+	OIDN_DEVICE_TYPE_SYCL = 2, // SYCL device
+	OIDN_DEVICE_TYPE_CUDA = 3, // CUDA device
+	OIDN_DEVICE_TYPE_HIP = 4, // HIP device
+} OIDNDeviceType;
+
+typedef enum {
+	OIDN_FORMAT_UNDEFINED = 0,
+
+	// 32-bit single-precision floating-point scalar and vector formats
+	OIDN_FORMAT_FLOAT = 1,
+	OIDN_FORMAT_FLOAT2,
+	OIDN_FORMAT_FLOAT3,
+	OIDN_FORMAT_FLOAT4,
+
+	// 16-bit half-precision floating-point scalar and vector formats
+	OIDN_FORMAT_HALF = 257,
+	OIDN_FORMAT_HALF2,
+	OIDN_FORMAT_HALF3,
+	OIDN_FORMAT_HALF4,
+} OIDNFormat;
+
+typedef enum {
+	OIDN_ERROR_NONE = 0, // no error occurred
+	OIDN_ERROR_UNKNOWN = 1, // an unknown error occurred
+	OIDN_ERROR_INVALID_ARGUMENT = 2, // an invalid argument was specified
+	OIDN_ERROR_INVALID_OPERATION = 3, // the operation is not allowed
+	OIDN_ERROR_OUT_OF_MEMORY = 4, // not enough memory to execute the operation
+	OIDN_ERROR_UNSUPPORTED_HARDWARE = 5, // the hardware (e.g. CPU) is not supported
+	OIDN_ERROR_CANCELLED = 6, // the operation was cancelled by the user
+} OIDNError;
+
+typedef void *(*oidnNewDevicePtr)(OIDNDeviceType type);
+typedef void (*oidnCommitDevicePtr)(void *device);
+typedef void *(*oidnNewFilterPtr)(void *device, const char *type);
+typedef void (*oidnSetSharedFilterImagePtr)(void *filter, const char *name, void *devPtr, OIDNFormat format, size_t width, size_t height, size_t byteOffset, size_t pixelByteStride, size_t rowByteStride);
+typedef void (*oidnSetFilterBoolPtr)(void *filter, const char *name, bool value);
+typedef void (*oidnCommitFilterPtr)(void *filter);
+typedef void (*oidnExecuteFilterPtr)(void *filter);
+typedef OIDNError (*oidnGetDeviceErrorPtr)(void *device, const char **outMessage);
+typedef void (*oidnReleaseFilterPtr)(void *filter);
+typedef void (*oidnReleaseDevicePtr)(void *device);
+typedef void *(*oidnNewBufferPtr)(void *device, size_t byteSize);
+typedef void *(*oidnGetBufferDataPtr)(void *buffer);
+typedef void (*oidnReadBufferPtr)(void *buffer, size_t byteOffset, size_t byteSize, void *dstHostPtr);
+typedef void (*oidnWriteBufferPtr)(void *buffer, size_t byteOffset, size_t byteSize, const void *srcHostPtr);
+typedef void (*oidnReleaseBufferPtr)(void *buffer);
+
 class RDShaderFile;
 class LightmapperRD : public Lightmapper {
 	GDCLASS(LightmapperRD, Lightmapper)
+
+	String oidn_lib_path;
+	void *oidn_lib_handle = nullptr;
+	void *oidn_device = nullptr;
+	oidnNewDevicePtr oidnNewDevice = nullptr;
+	oidnCommitDevicePtr oidnCommitDevice = nullptr;
+	oidnNewFilterPtr oidnNewFilter = nullptr;
+	oidnSetSharedFilterImagePtr oidnSetSharedFilterImage = nullptr;
+	oidnSetFilterBoolPtr oidnSetFilterBool = nullptr;
+	oidnCommitFilterPtr oidnCommitFilter = nullptr;
+	oidnExecuteFilterPtr oidnExecuteFilter = nullptr;
+	oidnGetDeviceErrorPtr oidnGetDeviceError = nullptr;
+	oidnReleaseFilterPtr oidnReleaseFilter = nullptr;
+	oidnReleaseDevicePtr oidnReleaseDevice = nullptr;
+	oidnNewBufferPtr oidnNewBuffer = nullptr;
+	oidnGetBufferDataPtr oidnGetBufferData = nullptr;
+	oidnReadBufferPtr oidnReadBuffer = nullptr;
+	oidnWriteBufferPtr oidnWriteBuffer = nullptr;
+	oidnReleaseBufferPtr oidnReleaseBuffer = nullptr;
 
 	struct BakeParameters {
 		float world_size[3] = {};
@@ -274,9 +344,10 @@ class LightmapperRD : public Lightmapper {
 	BakeError _dilate(RenderingDevice *rd, Ref<RDShaderFile> &compute_shader, RID &compute_base_uniform_set, PushConstant &push_constant, RID &source_light_tex, RID &dest_light_tex, const Size2i &atlas_size, int atlas_slices);
 	BakeError _denoise(RenderingDevice *p_rd, Ref<RDShaderFile> &p_compute_shader, const RID &p_compute_base_uniform_set, PushConstant &p_push_constant, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, float p_denoiser_strength, int p_denoiser_range, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh, BakeStepFunc p_step_function);
 
-	Error _store_pfm(RenderingDevice *p_rd, RID p_atlas_tex, int p_index, const Size2i &p_atlas_size, const String &p_name);
-	Ref<Image> _read_pfm(const String &p_name);
-	BakeError _denoise_oidn(RenderingDevice *p_rd, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh, const String &p_exe);
+	bool _load_oidn(const String &p_library_path);
+	void _unload_oidn();
+
+	BakeError _denoise_oidn(RenderingDevice *p_rd, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh);
 
 public:
 	virtual void add_mesh(const MeshData &p_mesh) override;
@@ -297,6 +368,7 @@ public:
 	Vector<Color> get_bake_probe_sh(int p_probe) const override;
 
 	LightmapperRD();
+	~LightmapperRD();
 };
 
 #endif // LIGHTMAPPER_RD_H
