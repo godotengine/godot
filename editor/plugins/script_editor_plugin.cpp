@@ -1079,8 +1079,10 @@ void ScriptEditor::_mark_built_in_scripts_as_saved(const String &p_parent_path) 
 		}
 
 		Ref<Script> scr = edited_res;
-		if (scr.is_valid() && scr->is_tool()) {
+		if (scr.is_valid()) {
+			clear_docs_from_script(scr);
 			scr->reload(true);
+			update_docs_from_script(scr);
 		}
 	}
 }
@@ -2665,30 +2667,31 @@ void ScriptEditor::save_all_scripts() {
 			se->apply_code();
 		}
 
+		Ref<Script> scr = edited_res;
+
+		if (scr.is_valid()) {
+			clear_docs_from_script(scr);
+		}
+
 		if (!edited_res->is_built_in()) {
 			Ref<TextFile> text_file = edited_res;
-			Ref<Script> scr = edited_res;
-
 			if (text_file != nullptr) {
 				_save_text_file(text_file, text_file->get_path());
 				continue;
 			}
 
-			if (scr.is_valid()) {
-				clear_docs_from_script(scr);
-			}
-
-			EditorNode::get_singleton()->save_resource(edited_res); //external script, save it
-
-			if (scr.is_valid()) {
-				update_docs_from_script(scr);
-			}
+			// External script, save it.
+			EditorNode::get_singleton()->save_resource(edited_res);
 		} else {
 			// For built-in scripts, save their scenes instead.
 			const String scene_path = edited_res->get_path().get_slice("::", 0);
 			if (!scene_path.is_empty() && !scenes_to_save.has(scene_path)) {
 				scenes_to_save.insert(scene_path);
 			}
+		}
+
+		if (scr.is_valid()) {
+			update_docs_from_script(scr);
 		}
 	}
 
