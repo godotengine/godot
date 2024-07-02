@@ -163,7 +163,7 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 		text_edit->set_current_search_result(line, col);
 	}
 
-	_update_matches_label();
+	_update_matches_display();
 
 	return found;
 }
@@ -353,7 +353,7 @@ void FindReplaceBar::_update_results_count() {
 	}
 }
 
-void FindReplaceBar::_update_matches_label() {
+void FindReplaceBar::_update_matches_display() {
 	if (search_text->get_text().empty() || results_count == -1) {
 		matches_label->hide();
 	} else {
@@ -362,6 +362,10 @@ void FindReplaceBar::_update_matches_label() {
 		matches_label->add_color_override("font_color", results_count > 0 ? get_color("font_color", "Label") : get_color("error_color", "Editor"));
 		matches_label->set_text(vformat(results_count == 1 ? TTR("%d match.") : TTR("%d matches."), results_count));
 	}
+	find_prev->set_disabled(results_count < 1);
+	find_next->set_disabled(results_count < 1);
+	replace->set_disabled(search_text->get_text().empty());
+	replace_all->set_disabled(search_text->get_text().empty());
 }
 
 bool FindReplaceBar::search_current() {
@@ -463,13 +467,16 @@ void FindReplaceBar::_hide_bar() {
 	hide();
 }
 
-void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
+void FindReplaceBar::_show_search(bool p_with_replace, bool p_show_only) {
 	show();
 	if (p_show_only) {
 		return;
 	}
 
-	if (p_focus_replace) {
+	const bool on_one_line = text_edit->is_selection_active() && text_edit->get_selection_from_line() == text_edit->get_selection_to_line();
+	const bool focus_replace = p_with_replace && on_one_line;
+
+	if (focus_replace) {
 		search_text->deselect();
 		replace_text->call_deferred("grab_focus");
 	} else {
@@ -477,12 +484,12 @@ void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
 		search_text->call_deferred("grab_focus");
 	}
 
-	if (text_edit->is_selection_active() && !selection_only->is_pressed()) {
+	if (on_one_line) {
 		search_text->set_text(text_edit->get_selection_text());
 	}
 
 	if (!get_search_text().empty()) {
-		if (p_focus_replace) {
+		if (focus_replace) {
 			replace_text->select_all();
 			replace_text->set_cursor_position(replace_text->get_text().length());
 		} else {
@@ -492,7 +499,7 @@ void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
 
 		results_count = -1;
 		_update_results_count();
-		_update_matches_label();
+		_update_matches_display();
 	}
 }
 
@@ -511,9 +518,9 @@ void FindReplaceBar::popup_replace() {
 		hbc_option_replace->show();
 	}
 
-	selection_only->set_pressed((text_edit->is_selection_active() && text_edit->get_selection_from_line() < text_edit->get_selection_to_line()));
+	selection_only->set_pressed(text_edit->is_selection_active() && text_edit->get_selection_from_line() < text_edit->get_selection_to_line());
 
-	_show_search(is_visible() || text_edit->is_selection_active());
+	_show_search(true, false);
 }
 
 void FindReplaceBar::_search_options_changed(bool p_pressed) {
@@ -628,6 +635,8 @@ FindReplaceBar::FindReplaceBar() {
 	// search toolbar
 	search_text = memnew(LineEdit);
 	vbc_lineedit->add_child(search_text);
+	search_text->set_placeholder(TTR("Find"));
+	search_text->set_tooltip(TTR("Find"));
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->connect("text_changed", this, "_search_text_changed");
 	search_text->connect("text_entered", this, "_search_text_entered");
@@ -638,11 +647,13 @@ FindReplaceBar::FindReplaceBar() {
 
 	find_prev = memnew(ToolButton);
 	hbc_button_search->add_child(find_prev);
+	find_prev->set_tooltip(TTR("Previous Match"));
 	find_prev->set_focus_mode(FOCUS_NONE);
 	find_prev->connect("pressed", this, "_search_prev");
 
 	find_next = memnew(ToolButton);
 	hbc_button_search->add_child(find_next);
+	find_next->set_tooltip(TTR("Next Match"));
 	find_next->set_focus_mode(FOCUS_NONE);
 	find_next->connect("pressed", this, "_search_next");
 
@@ -661,6 +672,8 @@ FindReplaceBar::FindReplaceBar() {
 	// replace toolbar
 	replace_text = memnew(LineEdit);
 	vbc_lineedit->add_child(replace_text);
+	replace_text->set_placeholder(TTR("Replace"));
+	replace_text->set_tooltip(TTR("Replace"));
 	replace_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	replace_text->connect("text_entered", this, "_replace_text_entered");
 
@@ -682,6 +695,7 @@ FindReplaceBar::FindReplaceBar() {
 
 	hide_button = memnew(TextureButton);
 	add_child(hide_button);
+	hide_button->set_tooltip(TTR("Hide"));
 	hide_button->set_focus_mode(FOCUS_NONE);
 	hide_button->connect("pressed", this, "_hide_pressed");
 	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);
