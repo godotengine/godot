@@ -65,6 +65,8 @@ private:
 
 	void _resort();
 
+	Vector<Control *> cached_children_nodes;
+
 protected:
 	bool is_fixed = false;
 
@@ -88,6 +90,7 @@ public:
 	bool is_reverse_fill() const;
 
 	virtual Size2 get_minimum_size() const override;
+	virtual Vector<CanvasItem *> get_children_at_pos(const Point2 &p_pos) const override;
 
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
 	virtual Vector<int> get_allowed_size_flags_vertical() const override;
