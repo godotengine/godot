@@ -216,6 +216,7 @@ private:
 
 		MouseFilter mouse_filter = MOUSE_FILTER_STOP;
 		bool force_pass_scroll_events = true;
+		bool mouse_force_focus_from_keyboard = false;
 
 		bool clip_contents = false;
 		bool disable_visibility_clip = false;
@@ -514,6 +515,9 @@ public:
 
 	void set_force_pass_scroll_events(bool p_force_pass_scroll_events);
 	bool is_force_pass_scroll_events() const;
+
+	void set_mouse_force_focus_from_keyboard(bool p_mouse_force_focus_from_keyboard);
+	bool is_mouse_force_focus_from_keyboard() const;
 
 	void warp_mouse(const Point2 &p_position);
 
