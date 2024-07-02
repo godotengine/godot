@@ -796,8 +796,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("focus", "Tree", focus);
 	theme->set_stylebox("selected", "Tree", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("selected_focus", "Tree", make_flat_stylebox(style_selected_color));
-	theme->set_stylebox("cursor", "Tree", focus);
-	theme->set_stylebox("cursor_unfocused", "Tree", focus);
+	theme->set_stylebox("cursor", "Tree", make_empty_stylebox());
+	theme->set_stylebox("cursor_unfocused", "Tree", make_empty_stylebox());
 	theme->set_stylebox("button_pressed", "Tree", button_pressed);
 	theme->set_stylebox("title_button_normal", "Tree", make_flat_stylebox(style_pressed_color, 4, 4, 4, 4));
 	theme->set_stylebox("title_button_pressed", "Tree", make_flat_stylebox(style_hover_color, 4, 4, 4, 4));
