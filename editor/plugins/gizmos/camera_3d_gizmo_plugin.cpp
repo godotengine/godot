@@ -39,7 +39,7 @@
 #include "scene/3d/camera_3d.h"
 
 Camera3DGizmoPlugin::Camera3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/camera", Color(0.8, 0.4, 0.8));
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/camera");
 
 	create_material("camera_material", gizmo_color);
 	create_icon_material("camera_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoCamera3D"), EditorStringName(EditorIcons)));

@@ -37,6 +37,7 @@ void register_macos_exporter_types() {
 }
 
 void register_macos_exporter() {
+	// TODO: Move to editor_settings.cpp
 #ifndef ANDROID_ENABLED
 	EDITOR_DEF("export/macos/rcodesign", "");
 #ifdef WINDOWS_ENABLED
