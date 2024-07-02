@@ -2,7 +2,6 @@ proto = """#define GDVIRTUAL$VER($RET m_name $ARG)\\
 	StringName _gdvirtual_##m_name##_sn = #m_name;\\
 	mutable bool _gdvirtual_##m_name##_initialized = false;\\
 	mutable void *_gdvirtual_##m_name = nullptr;\\
-	template <bool required>\\
 	_FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST {\\
 		ScriptInstance *_script_instance = ((Object *)(this))->get_script_instance();\\
 		if (_script_instance) {\\
@@ -36,10 +35,8 @@ proto = """#define GDVIRTUAL$VER($RET m_name $ARG)\\
 			}\\
 			return true;\\
 		}\\
-		if (required) {\\
-			ERR_PRINT_ONCE("Required virtual method " + get_class() + "::" + #m_name + " must be overridden before calling.");\\
-			$RVOID\\
-		}\\
+		$REQCHECK\\
+		$RVOID\\
 		return false;\\
 	}\\
 	_FORCE_INLINE_ bool _gdvirtual_##m_name##_overridden() const {\\
@@ -73,10 +70,11 @@ proto = """#define GDVIRTUAL$VER($RET m_name $ARG)\\
 """
 
 
-def generate_version(argcount, const=False, returns=False):
+def generate_version(argcount, const=False, returns=False, required=False):
     s = proto
     sproto = str(argcount)
     method_info = ""
+    method_flags = "METHOD_FLAG_VIRTUAL"
     if returns:
         sproto += "R"
         s = s.replace("$RET", "m_ret,")
@@ -86,17 +84,27 @@ def generate_version(argcount, const=False, returns=False):
         method_info += "\t\tmethod_info.return_val_metadata = GetTypeInfo<m_ret>::METADATA;"
     else:
         s = s.replace("$RET ", "")
-        s = s.replace("\t\t\t$RVOID\\\n", "")
+        s = s.replace("\t\t$RVOID\\\n", "")
         s = s.replace("\t\t\t$CALLPTRRETDEF\\\n", "")
 
     if const:
         sproto += "C"
+        method_flags += " | METHOD_FLAG_CONST"
         s = s.replace("$CONST", "const")
-        s = s.replace("$METHOD_FLAGS", "METHOD_FLAG_VIRTUAL | METHOD_FLAG_CONST")
     else:
         s = s.replace("$CONST ", "")
-        s = s.replace("$METHOD_FLAGS", "METHOD_FLAG_VIRTUAL")
 
+    if required:
+        sproto += "_REQUIRED"
+        method_flags += " | METHOD_FLAG_VIRTUAL_REQUIRED"
+        s = s.replace(
+            "$REQCHECK",
+            'ERR_PRINT_ONCE("Required virtual method " + get_class() + "::" + #m_name + " must be overridden before calling.");',
+        )
+    else:
+        s = s.replace("\t\t$REQCHECK\\\n", "")
+
+    s = s.replace("$METHOD_FLAGS", method_flags)
     s = s.replace("$VER", sproto)
     argtext = ""
     callargtext = ""
@@ -198,6 +206,10 @@ def run(target, source, env):
         txt += generate_version(i, False, True)
         txt += generate_version(i, True, False)
         txt += generate_version(i, True, True)
+        txt += generate_version(i, False, False, True)
+        txt += generate_version(i, False, True, True)
+        txt += generate_version(i, True, False, True)
+        txt += generate_version(i, True, True, True)
 
     txt += "#endif // GDVIRTUAL_GEN_H\n"
 
