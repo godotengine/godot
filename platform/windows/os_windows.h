@@ -33,6 +33,7 @@
 
 #include "crash_handler_windows.h"
 #include "key_mapping_windows.h"
+#include "platform_text_windows.h"
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
@@ -100,6 +101,7 @@ class OS_Windows : public OS {
 
 	HINSTANCE hInstance;
 	MainLoop *main_loop = nullptr;
+	PlatformTextWindows *platform_text_implementation = nullptr;
 
 #ifdef WASAPI_ENABLED
 	AudioDriverWASAPI driver_wasapi;
@@ -137,6 +139,8 @@ class OS_Windows : public OS {
 	// functions used by main to initialize/deinitialize the OS
 protected:
 	virtual void initialize() override;
+
+	virtual void initialize_platform_text() override;
 
 	virtual void set_main_loop(MainLoop *p_main_loop) override;
 	virtual void delete_main_loop() override;

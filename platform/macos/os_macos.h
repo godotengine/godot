@@ -33,6 +33,7 @@
 
 #include "crash_handler_macos.h"
 #import "joypad_macos.h"
+#include "platform_text_macos.h"
 
 #include "core/input/input.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
@@ -55,6 +56,7 @@ class OS_MacOS : public OS_Unix {
 	CFRunLoopObserverRef pre_wait_observer;
 
 	MainLoop *main_loop = nullptr;
+	PlatformTextMacOS *platform_text_implementation = nullptr;
 
 	List<String> launch_service_args;
 
@@ -71,6 +73,7 @@ protected:
 	virtual void finalize() override;
 
 	virtual void initialize_joypads() override;
+	virtual void initialize_platform_text() override;
 
 	virtual void set_main_loop(MainLoop *p_main_loop) override;
 	virtual void delete_main_loop() override;

@@ -3025,6 +3025,8 @@ Error Main::setup2() {
 
 		ResourceLoader::load_path_remaps();
 
+		OS::get_singleton()->initialize_platform_text();
+
 		OS::get_singleton()->benchmark_end_measure("Startup", "Translations and Remaps");
 	}
 

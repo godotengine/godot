@@ -243,6 +243,11 @@ void OS_Windows::initialize() {
 	FileAccessWindows::initialize();
 }
 
+void OS_Windows::initialize_platform_text() {
+	platform_text_implementation = memnew(PlatformTextWindows);
+	PlatformText::get_singleton()->set_implementation(platform_text_implementation);
+}
+
 void OS_Windows::delete_main_loop() {
 	if (main_loop) {
 		memdelete(main_loop);

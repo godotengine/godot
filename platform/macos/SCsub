@@ -100,6 +100,7 @@ def generate_bundle(target, source, env):
 
 files = [
     "os_macos.mm",
+    "platform_text_macos.mm",
     "godot_application.mm",
     "godot_application_delegate.mm",
     "crash_handler_macos.mm",
