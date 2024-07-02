@@ -436,6 +436,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		uint32_t flags = 0;
 		uint32_t surface_index = 0;
 		uint32_t color_pass_inclusion_mask = 0;
+		uint64_t pass_index : 8;
 
 		void *surface = nullptr;
 		RID material_uniform_set;
@@ -552,7 +553,16 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 		struct SortByReverseDepthAndPriority {
 			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurfaceDataCache *A, const GeometryInstanceSurfaceDataCache *B) const {
-				return (A->sort.priority == B->sort.priority) ? (A->owner->depth > B->owner->depth) : (A->sort.priority < B->sort.priority);
+				if (A->sort.priority == B->sort.priority) {
+					if (Math::abs(A->owner->depth - B->owner->depth) < 0.001) {
+						return A->pass_index < B->pass_index;
+					} else {
+						return A->owner->depth > B->owner->depth;
+					}
+				} else {
+					return A->sort.priority < B->sort.priority;
+				}
+				//return (A->sort.priority == B->sort.priority) ? (A->owner->depth > B->owner->depth) : (A->sort.priority < B->sort.priority);
 			}
 		};
 
