@@ -411,6 +411,9 @@ public:
 
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
+	virtual void window_set_mode_will_change_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) {}
+	virtual void window_set_mode_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) {}
+
 	enum WindowEvent {
 		WINDOW_EVENT_MOUSE_ENTER,
 		WINDOW_EVENT_MOUSE_EXIT,
