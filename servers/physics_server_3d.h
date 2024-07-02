@@ -802,6 +802,7 @@ public:
 	virtual void end_sync() = 0;
 	virtual void finish() = 0;
 
+	virtual bool is_active() const = 0;
 	virtual bool is_flushing_queries() const = 0;
 
 	enum ProcessInfo {
