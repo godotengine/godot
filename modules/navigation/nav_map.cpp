@@ -907,6 +907,7 @@ void NavMap::sync() {
 	int _new_pm_edge_merge_count = pm_edge_merge_count;
 	int _new_pm_edge_connection_count = pm_edge_connection_count;
 	int _new_pm_edge_free_count = pm_edge_free_count;
+	int _new_pm_obstacle_count = obstacles.size();
 
 	// Check if we need to update the links.
 	if (regenerate_polygons) {
@@ -1219,6 +1220,7 @@ void NavMap::sync() {
 	pm_edge_merge_count = _new_pm_edge_merge_count;
 	pm_edge_connection_count = _new_pm_edge_connection_count;
 	pm_edge_free_count = _new_pm_edge_free_count;
+	pm_obstacle_count = _new_pm_obstacle_count;
 }
 
 void NavMap::_update_rvo_obstacles_tree_2d() {

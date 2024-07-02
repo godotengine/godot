@@ -1298,6 +1298,7 @@ void GodotNavigationServer3D::process(real_t p_delta_time) {
 	int _new_pm_edge_merge_count = 0;
 	int _new_pm_edge_connection_count = 0;
 	int _new_pm_edge_free_count = 0;
+	int _new_pm_obstacle_count = 0;
 
 	// In c++ we can't be sure that this is performed in the main thread
 	// even with mutable functions.
@@ -1315,6 +1316,7 @@ void GodotNavigationServer3D::process(real_t p_delta_time) {
 		_new_pm_edge_merge_count += active_maps[i]->get_pm_edge_merge_count();
 		_new_pm_edge_connection_count += active_maps[i]->get_pm_edge_connection_count();
 		_new_pm_edge_free_count += active_maps[i]->get_pm_edge_free_count();
+		_new_pm_obstacle_count += active_maps[i]->get_pm_obstacle_count();
 
 		// Emit a signal if a map changed.
 		const uint32_t new_map_iteration_id = active_maps[i]->get_iteration_id();
@@ -1332,6 +1334,7 @@ void GodotNavigationServer3D::process(real_t p_delta_time) {
 	pm_edge_merge_count = _new_pm_edge_merge_count;
 	pm_edge_connection_count = _new_pm_edge_connection_count;
 	pm_edge_free_count = _new_pm_edge_free_count;
+	pm_obstacle_count = _new_pm_obstacle_count;
 }
 
 void GodotNavigationServer3D::init() {
@@ -1565,6 +1568,9 @@ int GodotNavigationServer3D::get_process_info(ProcessInfo p_info) const {
 		} break;
 		case INFO_EDGE_FREE_COUNT: {
 			return pm_edge_free_count;
+		} break;
+		case INFO_OBSTACLE_COUNT: {
+			return pm_obstacle_count;
 		} break;
 	}
 
