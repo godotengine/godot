@@ -1355,38 +1355,23 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 
 		GeometryInstanceSurface *surf = inst->surface_caches;
 
+		float lod_distance = 0.0;
+
+		if (p_render_data->cam_orthogonal) {
+			lod_distance = 1.0;
+		} else if (!inst->transformed_aabb.has_point(p_render_data->main_cam_transform.origin)) {
+			// Get the distance to the closest corner of the AABB.
+			Vector3 direction_to_aabb = (inst->transformed_aabb.position + (inst->transformed_aabb.size * 0.5)) - p_render_data->main_cam_transform.origin;
+			Vector3 lod_support_min = inst->transformed_aabb.get_support(-direction_to_aabb);
+			lod_distance = (float)p_render_data->main_cam_transform.origin.distance_to(lod_support_min);
+		}
+
 		while (surf) {
 			// LOD
 
 			if (p_render_data->screen_mesh_lod_threshold > 0.0 && mesh_storage->mesh_surface_has_lod(surf->surface)) {
-				float distance = 0.0;
-
-				// Check if camera is NOT inside the mesh AABB.
-				if (!inst->transformed_aabb.has_point(p_render_data->main_cam_transform.origin)) {
-					// Get the LOD support points on the mesh AABB.
-					Vector3 lod_support_min = inst->transformed_aabb.get_support(p_render_data->main_cam_transform.basis.get_column(Vector3::AXIS_Z));
-					Vector3 lod_support_max = inst->transformed_aabb.get_support(-p_render_data->main_cam_transform.basis.get_column(Vector3::AXIS_Z));
-
-					// Get the distances to those points on the AABB from the camera origin.
-					float distance_min = (float)p_render_data->main_cam_transform.origin.distance_to(lod_support_min);
-					float distance_max = (float)p_render_data->main_cam_transform.origin.distance_to(lod_support_max);
-
-					if (distance_min * distance_max < 0.0) {
-						//crossing plane
-						distance = 0.0;
-					} else if (distance_min >= 0.0) {
-						distance = distance_min;
-					} else if (distance_max <= 0.0) {
-						distance = -distance_max;
-					}
-				}
-
-				if (p_render_data->cam_orthogonal) {
-					distance = 1.0;
-				}
-
 				uint32_t indices = 0;
-				surf->lod_index = mesh_storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, distance * p_render_data->lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, indices);
+				surf->lod_index = mesh_storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, lod_distance * p_render_data->lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, indices);
 				surf->index_count = indices;
 
 				if (p_render_data->render_info) {
