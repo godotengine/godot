@@ -34,6 +34,7 @@
 #include "editor/editor_properties.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
+#include "editor/plugins/shader/shader_language_editor_plugin.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/visual_shader.h"
@@ -195,8 +196,8 @@ public:
 	VisualShaderEditedProperty() {}
 };
 
-class VisualShaderEditor : public VBoxContainer {
-	GDCLASS(VisualShaderEditor, VBoxContainer);
+class VisualShaderEditor : public ShaderLanguageEditorBase {
+	GDCLASS(VisualShaderEditor, ShaderLanguageEditorBase);
 	friend class VisualShaderGraphPlugin;
 
 	PopupPanel *property_editor_popup = nullptr;
@@ -596,6 +597,12 @@ protected:
 	static void _bind_methods();
 
 public:
+	void edit_shader(const Ref<Shader> &p_shader) override;
+	void apply_shaders() override;
+	bool is_unsaved() const override;
+	void save_external_data(const String &p_str = "") override;
+	void validate_script() override;
+
 	void add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
 	void remove_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
 
@@ -609,10 +616,7 @@ public:
 
 	virtual Size2 get_minimum_size() const override;
 
-	void edit(VisualShader *p_visual_shader);
 	Ref<VisualShader> get_visual_shader() const { return visual_shader; }
-
-	void validate_script();
 
 	VisualShaderEditor();
 };
