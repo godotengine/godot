@@ -317,7 +317,7 @@
 		<method name="skip">
 			<return type="void" />
 			<description>
-				To be called inside [method _export_file], [method _customize_resource], or [method _customize_scene]. Skips the current file, so it's not included in the export.
+				To be called inside [method _export_file]. Skips the current file, so it's not included in the export.
 			</description>
 		</method>
 	</methods>

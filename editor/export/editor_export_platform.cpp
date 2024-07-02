@@ -797,10 +797,6 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 		if (!customize_scenes_plugins.is_empty()) {
 			for (Ref<EditorExportPlugin> &plugin : customize_scenes_plugins) {
 				Node *customized = plugin->_customize_scene(node, p_path);
-				if (plugin->skipped) {
-					plugin->_clear();
-					return String();
-				}
 				if (customized != nullptr) {
 					node = customized;
 					modified = true;
@@ -834,10 +830,6 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 		if (!customize_resources_plugins.is_empty()) {
 			for (Ref<EditorExportPlugin> &plugin : customize_resources_plugins) {
 				Ref<Resource> new_res = plugin->_customize_resource(res, p_path);
-				if (plugin->skipped) {
-					plugin->_clear();
-					return String();
-				}
 				if (new_res.is_valid()) {
 					modified = true;
 					if (new_res != res) {
@@ -1143,10 +1135,6 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			// Before doing this, try to see if it can be customized.
 
 			String export_path = _export_customize(path, customize_resources_plugins, customize_scenes_plugins, export_cache, export_base_path, false);
-			if (export_path.is_empty()) {
-				// Skipped from plugin.
-				continue;
-			}
 
 			if (export_path != path) {
 				// It was actually customized.
