@@ -687,6 +687,7 @@ Collection of single-file libraries used in Godot components.
 - `r128.{c,h}`
   * Upstream: https://github.com/fahickman/r128
   * Version: git (6fc177671c47640d5bb69af10cf4ee91050015a1, 2023)
+  * Modifications: Deprecated wrapper for C++23 (see provided patch).
   * License: Public Domain or Unlicense
 - `smaz.{c,h}`
   * Upstream: https://github.com/antirez/smaz
@@ -889,6 +890,9 @@ Files extracted from upstream source:
 
 See `thorvg/update-thorvg.sh` for extraction instructions. Set the version
 number and run the script.
+
+The `tvgRender.h` file was modified to change a `==` operator to const,
+allowing it to function as expected in C++20.
 
 
 ## ufbx

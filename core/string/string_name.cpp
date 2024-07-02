@@ -163,20 +163,6 @@ bool StringName::operator==(const char *p_name) const {
 	return (_data->get_name() == p_name);
 }
 
-bool StringName::operator!=(const String &p_name) const {
-	return !(operator==(p_name));
-}
-
-bool StringName::operator!=(const char *p_name) const {
-	return !(operator==(p_name));
-}
-
-bool StringName::operator!=(const StringName &p_name) const {
-	// the real magic of all this mess happens here.
-	// this is why path comparisons are very fast
-	return _data != p_name._data;
-}
-
 void StringName::operator=(const StringName &p_name) {
 	if (this == &p_name) {
 		return;
@@ -483,16 +469,12 @@ StringName StringName::search(const String &p_name) {
 	return StringName(); //does not exist
 }
 
+#ifndef CPP20_ENABLED
 bool operator==(const String &p_name, const StringName &p_string_name) {
 	return p_name == p_string_name.operator String();
-}
-bool operator!=(const String &p_name, const StringName &p_string_name) {
-	return p_name != p_string_name.operator String();
 }
 
 bool operator==(const char *p_name, const StringName &p_string_name) {
 	return p_name == p_string_name.operator String();
 }
-bool operator!=(const char *p_name, const StringName &p_string_name) {
-	return p_name != p_string_name.operator String();
-}
+#endif

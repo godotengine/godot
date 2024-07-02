@@ -54,7 +54,7 @@ public:
 		_FORCE_INLINE_ ConstIterator &operator--();
 
 		_FORCE_INLINE_ bool operator==(const ConstIterator &p_other) const { return element_ptr == p_other.element_ptr; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return element_ptr != p_other.element_ptr; }
+		INEQUALITY_OPERATOR(const ConstIterator &)
 
 		_FORCE_INLINE_ ConstIterator(const Variant *p_element_ptr, Variant *p_read_only = nullptr) :
 				element_ptr(p_element_ptr), read_only(p_read_only) {}
@@ -81,7 +81,7 @@ public:
 		_FORCE_INLINE_ Iterator &operator--();
 
 		_FORCE_INLINE_ bool operator==(const Iterator &p_other) const { return element_ptr == p_other.element_ptr; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return element_ptr != p_other.element_ptr; }
+		INEQUALITY_OPERATOR(const Iterator &)
 
 		_FORCE_INLINE_ Iterator(Variant *p_element_ptr, Variant *p_read_only = nullptr) :
 				element_ptr(p_element_ptr), read_only(p_read_only) {}
@@ -123,7 +123,7 @@ public:
 	void clear();
 
 	bool operator==(const Array &p_array) const;
-	bool operator!=(const Array &p_array) const;
+	INEQUALITY_OPERATOR(const Array &)
 	bool recursive_equal(const Array &p_array, int recursion_count) const;
 
 	uint32_t hash() const;
