@@ -1795,6 +1795,7 @@
 			<param index="1" name="lightmap" type="RID" />
 			<param index="2" name="lightmap_uv_scale" type="Rect2" />
 			<param index="3" name="lightmap_slice" type="int" />
+			<param index="4" name="lightmap_texture_size" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Sets the lightmap GI instance to use for the specified 3D geometry instance. The lightmap UV scale for the specified instance (equivalent to [member GeometryInstance3D.gi_lightmap_scale]) and lightmap atlas slice must also be specified.
 			</description>
@@ -2188,6 +2189,13 @@
 			<param index="2" name="uses_sh" type="bool" />
 			<description>
 				Set the textures on the given [param lightmap] GI instance to the texture array pointed to by the [param light] RID. If the lightmap texture was baked with [member LightmapGI.directional] set to [code]true[/code], then [param uses_sh] must also be [code]true[/code].
+			</description>
+		</method>
+		<method name="lightmaps_set_bicubic_filter">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+				Toggles whether a bicubic filter should be used when lightmaps are sampled. This smoothens their appearance at a performance cost.
 			</description>
 		</method>
 		<method name="make_sphere_mesh">

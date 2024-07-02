@@ -1732,6 +1732,8 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 		instance_data.lightmap_uv_scale[1] = inst->lightmap_uv_scale.position.y;
 		instance_data.lightmap_uv_scale[2] = inst->lightmap_uv_scale.size.x;
 		instance_data.lightmap_uv_scale[3] = inst->lightmap_uv_scale.size.y;
+		instance_data.lightmap_texture_size[0] = inst->lightmap_texture_size.x;
+		instance_data.lightmap_texture_size[1] = inst->lightmap_texture_size.y;
 
 		AABB surface_aabb = AABB(Vector3(0.0, 0.0, 0.0), Vector3(1.0, 1.0, 1.0));
 		uint64_t format = RendererRD::MeshStorage::get_singleton()->mesh_surface_get_format(surface->surface);
@@ -2255,9 +2257,10 @@ RenderGeometryInstance *RenderForwardMobile::geometry_instance_create(RID p_base
 	return ginstance;
 }
 
-void RenderForwardMobile::GeometryInstanceForwardMobile::set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) {
+void RenderForwardMobile::GeometryInstanceForwardMobile::set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index, const Vector2 &p_lightmap_texture_size) {
 	lightmap_instance = p_lightmap_instance;
 	lightmap_uv_scale = p_lightmap_uv_scale;
+	lightmap_texture_size = p_lightmap_texture_size;
 	lightmap_slice_index = p_lightmap_slice_index;
 
 	_mark_dirty();
@@ -2772,6 +2775,11 @@ void RenderForwardMobile::_update_shader_quality_settings() {
 			light_projectors_get_filter() == RS::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS ||
 			light_projectors_get_filter() == RS::LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS_ANISOTROPIC ||
 			light_projectors_get_filter() == RS::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS_ANISOTROPIC;
+
+	spec_constants.push_back(sc);
+
+	sc.constant_id = SPEC_CONSTANT_USE_LIGHTMAP_BICUBIC_FILTER;
+	sc.bool_value = lightmap_filter_bicubic_get();
 
 	spec_constants.push_back(sc);
 

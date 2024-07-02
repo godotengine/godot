@@ -81,7 +81,7 @@ private:
 		SPEC_CONSTANT_DISABLE_DECALS = 13,
 		SPEC_CONSTANT_DISABLE_FOG = 14,
 		SPEC_CONSTANT_USE_DEPTH_FOG = 16,
-
+		SPEC_CONSTANT_USE_LIGHTMAP_BICUBIC_FILTER = 17,
 	};
 
 	enum {
@@ -240,6 +240,8 @@ private:
 			float compressed_aabb_position[4];
 			float compressed_aabb_size[4];
 			float uv_scale[4];
+			float lightmap_texture_size[2];
+			uint32_t padding[2];
 		};
 
 		RID instance_buffer[RENDER_LIST_MAX];
@@ -469,6 +471,7 @@ protected:
 		uint32_t gi_offset_cache = 0; // !BAS! Should rename this to lightmap_offset_cache, in forward clustered this was shared between gi and lightmap
 		RID lightmap_instance;
 		Rect2 lightmap_uv_scale;
+		Vector2 lightmap_texture_size; // Used for bicubic filtering in the scene shader.
 		uint32_t lightmap_slice_index;
 		GeometryInstanceLightmapSH *lightmap_sh = nullptr;
 
@@ -492,7 +495,7 @@ protected:
 
 		virtual void _mark_dirty() override;
 
-		virtual void set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override;
+		virtual void set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index, const Vector2 &p_lightmap_texture_size) override;
 		virtual void set_lightmap_capture(const Color *p_sh9) override;
 
 		virtual void pair_light_instances(const RID *p_light_instances, uint32_t p_light_instance_count) override;

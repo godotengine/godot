@@ -761,6 +761,7 @@ public:
 	FUNC1(directional_soft_shadow_filter_set_quality, ShadowQuality);
 	FUNC1(decals_set_filter, RS::DecalFilter);
 	FUNC1(light_projectors_set_filter, RS::LightProjectorFilter);
+	FUNC1(lightmaps_set_bicubic_filter, bool);
 
 	/* CAMERA ATTRIBUTES */
 
@@ -827,7 +828,7 @@ public:
 	FUNC2(instance_geometry_set_material_overlay, RID, RID)
 
 	FUNC6(instance_geometry_set_visibility_range, RID, float, float, float, float, VisibilityRangeFadeMode)
-	FUNC4(instance_geometry_set_lightmap, RID, RID, const Rect2 &, int)
+	FUNC5(instance_geometry_set_lightmap, RID, RID, const Rect2 &, int, const Vector2 &)
 	FUNC2(instance_geometry_set_lod_bias, RID, float)
 	FUNC2(instance_geometry_set_transparency, RID, float)
 	FUNC3(instance_geometry_set_shader_parameter, RID, const StringName &, const Variant &)
