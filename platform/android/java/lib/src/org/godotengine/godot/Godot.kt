@@ -65,7 +65,9 @@ import org.godotengine.godot.utils.beginBenchmarkMeasure
 import org.godotengine.godot.utils.benchmarkFile
 import org.godotengine.godot.utils.dumpBenchmark
 import org.godotengine.godot.utils.endBenchmarkMeasure
+import org.godotengine.godot.utils.signApk
 import org.godotengine.godot.utils.useBenchmark
+import org.godotengine.godot.utils.verifyApk
 import org.godotengine.godot.xr.XRMode
 import java.io.File
 import java.io.FileInputStream
@@ -84,6 +86,10 @@ class Godot(private val context: Context) : SensorEventListener {
 
 	private companion object {
 		private val TAG = Godot::class.java.simpleName
+
+		// Supported build flavors
+		const val EDITOR_FLAVOR = "editor"
+		const val TEMPLATE_FLAVOR = "template"
 	}
 
 	private val windowManager: WindowManager by lazy {
@@ -759,6 +765,11 @@ class Godot(private val context: Context) : SensorEventListener {
 		return mClipboard.hasPrimaryClip()
 	}
 
+	/**
+	 * @return true if this is an editor build, false if this is a template build
+	 */
+	fun isEditorBuild() = BuildConfig.FLAVOR == EDITOR_FLAVOR
+
 	fun getClipboard(): String {
 		val clipData = mClipboard.primaryClip ?: return ""
 		val text = clipData.getItemAt(0).text ?: return ""
@@ -1030,4 +1041,16 @@ class Godot(private val context: Context) : SensorEventListener {
 	private fun nativeDumpBenchmark(benchmarkFile: String) {
 		dumpBenchmark(fileAccessHandler, benchmarkFile)
 	}
+
+	@Keep
+	private fun nativeSignApk(inputPath: String,
+							  outputPath: String,
+							  keystorePath: String,
+							  keystoreUser: String,
+							  keystorePassword: String): Boolean {
+		return signApk(fileAccessHandler, inputPath, outputPath, keystorePath, keystoreUser, keystorePassword)
+	}
+
+	@Keep
+	private fun nativeVerifyApk(apkPath: String) = verifyApk(fileAccessHandler, apkPath)
 }

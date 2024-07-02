@@ -130,9 +130,7 @@ void ProgressDialog::_update_ui() {
 	// Run main loop for two frames.
 	if (is_inside_tree()) {
 		DisplayServer::get_singleton()->process_events();
-#ifndef ANDROID_ENABLED
 		Main::iteration();
-#endif
 	}
 }
 

@@ -76,7 +76,7 @@ internal enum class FileAccessFlags(val nativeValue: Int) {
 
     companion object {
         fun fromNativeModeFlags(modeFlag: Int): FileAccessFlags? {
-            for (flag in values()) {
+            for (flag in entries) {
                 if (flag.nativeValue == modeFlag) {
                     return flag
                 }
