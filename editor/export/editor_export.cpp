@@ -124,7 +124,17 @@ void EditorExport::_bind_methods() {
 
 void EditorExport::add_export_platform(const Ref<EditorExportPlatform> &p_platform) {
 	export_platforms.push_back(p_platform);
+
 	should_update_presets = true;
+	should_reload_presets = true;
+}
+
+void EditorExport::remove_export_platform(const Ref<EditorExportPlatform> &p_platform) {
+	export_platforms.erase(p_platform);
+	p_platform->cleanup();
+
+	should_update_presets = true;
+	should_reload_presets = true;
 }
 
 int EditorExport::get_export_platform_count() {
@@ -244,7 +254,7 @@ void EditorExport::load_config() {
 
 		if (!preset.is_valid()) {
 			index++;
-			ERR_CONTINUE(!preset.is_valid());
+			continue; // Unknown platform, skip without error (platform might be loaded later).
 		}
 
 		preset->set_name(config->get_value(section, "name"));
@@ -342,6 +352,12 @@ void EditorExport::load_config() {
 
 void EditorExport::update_export_presets() {
 	HashMap<StringName, List<EditorExportPlatform::ExportOption>> platform_options;
+
+	if (should_reload_presets) {
+		should_reload_presets = false;
+		export_presets.clear();
+		load_config();
+	}
 
 	for (int i = 0; i < export_platforms.size(); i++) {
 		Ref<EditorExportPlatform> platform = export_platforms[i];

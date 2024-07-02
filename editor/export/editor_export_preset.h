@@ -168,6 +168,9 @@ public:
 	void set_script_export_mode(int p_mode);
 	int get_script_export_mode() const;
 
+	Variant _get_or_env(const StringName &p_name, const String &p_env_var) const {
+		return get_or_env(p_name, p_env_var);
+	}
 	Variant get_or_env(const StringName &p_name, const String &p_env_var, bool *r_valid = nullptr) const;
 
 	// Return the preset's version number, or fall back to the
@@ -182,5 +185,9 @@ public:
 
 	EditorExportPreset();
 };
+
+VARIANT_ENUM_CAST(EditorExportPreset::ExportFilter);
+VARIANT_ENUM_CAST(EditorExportPreset::FileExportMode);
+VARIANT_ENUM_CAST(EditorExportPreset::ScriptExportMode);
 
 #endif // EDITOR_EXPORT_PRESET_H

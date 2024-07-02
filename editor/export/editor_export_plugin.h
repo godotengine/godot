@@ -91,6 +91,7 @@ class EditorExportPlugin : public RefCounted {
 protected:
 	void set_export_preset(const Ref<EditorExportPreset> &p_preset);
 	Ref<EditorExportPreset> get_export_preset() const;
+	Ref<EditorExportPlatform> get_export_platform() const;
 
 	void add_file(const String &p_path, const Vector<uint8_t> &p_file, bool p_remap);
 	void add_shared_object(const String &p_path, const Vector<String> &tags, const String &p_target = String());

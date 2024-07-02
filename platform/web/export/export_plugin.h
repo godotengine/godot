@@ -98,7 +98,7 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 
 	Error _extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa);
 	void _replace_strings(const HashMap<String, String> &p_replaces, Vector<uint8_t> &r_template);
-	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes);
+	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, BitField<EditorExportPlatform::DebugFlags> p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes);
 	Error _add_manifest_icon(const String &p_path, const String &p_icon, int p_size, Array &r_arr);
 	Error _build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects);
 	Error _write_or_error(const uint8_t *p_content, int p_len, String p_path);
@@ -120,14 +120,14 @@ public:
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
-	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0) override;
 
 	virtual bool poll_export() override;
 	virtual int get_options_count() const override;
 	virtual String get_option_label(int p_index) const override;
 	virtual String get_option_tooltip(int p_index) const override;
 	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
-	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags) override;
+	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_option, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
 	virtual Ref<Texture2D> get_run_icon() const override;
 
 	virtual void get_platform_features(List<String> *r_features) const override {

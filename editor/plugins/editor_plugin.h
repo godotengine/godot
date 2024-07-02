@@ -41,6 +41,7 @@ class PopupMenu;
 class EditorDebuggerPlugin;
 class EditorExport;
 class EditorExportPlugin;
+class EditorExportPlatform;
 class EditorImportPlugin;
 class EditorInspectorPlugin;
 class EditorInterface;
@@ -223,6 +224,9 @@ public:
 
 	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 	void remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
+
+	void add_export_platform(const Ref<EditorExportPlatform> &p_platform);
+	void remove_export_platform(const Ref<EditorExportPlatform> &p_platform);
 
 	void add_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
 	void remove_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);

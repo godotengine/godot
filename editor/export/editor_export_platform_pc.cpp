@@ -115,7 +115,7 @@ bool EditorExportPlatformPC::has_valid_project_configuration(const Ref<EditorExp
 	return true;
 }
 
-Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 	Error err = prepare_template(p_preset, p_debug, p_path, p_flags);
@@ -129,7 +129,7 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 	return err;
 }
 
-Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	if (!DirAccess::exists(p_path.get_base_dir())) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), TTR("The given export path doesn't exist."));
 		return ERR_FILE_BAD_PATH;
@@ -182,7 +182,7 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 	return err;
 }
 
-Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	String pck_path;
 	if (p_preset->get("binary_format/embed_pck")) {
 		pck_path = p_path;
