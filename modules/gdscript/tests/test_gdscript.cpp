@@ -185,16 +185,21 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 static void recursively_disassemble_functions(const Ref<GDScript> script, const Vector<String> &p_lines) {
 	for (const KeyValue<StringName, GDScriptFunction *> &E : script->get_member_functions()) {
 		const GDScriptFunction *func = E.value;
-
 		const MethodInfo &mi = func->get_method_info();
-		String signature = "Disassembling " + mi.name + "(";
+
+		String signature = mi.name + "(";
 		for (List<PropertyInfo>::ConstIterator arg_itr = mi.arguments.begin(); arg_itr != mi.arguments.end(); ++arg_itr) {
 			if (arg_itr != mi.arguments.begin()) {
 				signature += ", ";
 			}
 			signature += arg_itr->name;
 		}
-		print_line(signature + ")");
+		if (mi.flags & METHOD_FLAG_VARARG) {
+			signature += mi.arguments.is_empty() ? "..." : ", ...";
+		}
+		signature += ")";
+
+		print_line("Disassembling " + signature);
 #ifdef TOOLS_ENABLED
 		func->disassemble(p_lines);
 #endif

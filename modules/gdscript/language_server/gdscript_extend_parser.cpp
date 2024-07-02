@@ -500,8 +500,14 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 		}
 	}
 	r_symbol.detail += parameters + ")";
-	if (p_func->get_datatype().is_hard_type()) {
-		r_symbol.detail += " -> " + p_func->get_datatype().to_string();
+
+	const DataType return_type = p_func->get_datatype();
+	if (return_type.is_hard_type()) {
+		if (return_type.kind == DataType::BUILTIN && return_type.builtin_type == Variant::NIL) {
+			r_symbol.detail += " -> void";
+		} else {
+			r_symbol.detail += " -> " + return_type.to_string();
+		}
 	}
 
 	List<GDScriptParser::SuiteNode *> function_nodes;

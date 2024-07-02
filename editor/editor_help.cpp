@@ -572,11 +572,11 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	}
 
 	if (is_vararg) {
-		class_desc->push_color(theme_cache.text_color);
 		if (!p_method.arguments.is_empty()) {
+			class_desc->push_color(theme_cache.text_color);
 			class_desc->add_text(", ");
+			class_desc->pop(); // color
 		}
-		class_desc->pop(); // color
 
 		class_desc->push_color(theme_cache.symbol_color);
 		class_desc->add_text("...");
@@ -1983,11 +1983,11 @@ void EditorHelp::_update_doc() {
 				}
 
 				if (annotation.qualifiers.contains("vararg")) {
-					class_desc->push_color(theme_cache.text_color);
 					if (!annotation.arguments.is_empty()) {
+						class_desc->push_color(theme_cache.text_color);
 						class_desc->add_text(", ");
+						class_desc->pop(); // color
 					}
-					class_desc->pop(); // color
 
 					class_desc->push_color(theme_cache.symbol_color);
 					class_desc->add_text("...");
@@ -3293,6 +3293,7 @@ EditorHelpBit::HelpData EditorHelpBit::_get_method_help_data(const StringName &p
 				const DocType argument_type = { argument.type, argument.enumeration, argument.is_bitfield };
 				current.arguments.push_back({ argument.name, argument_type, argument.default_value });
 			}
+			current.is_vararg = method.qualifiers.contains("vararg");
 
 			if (method.name == p_method_name) {
 				result = current;
@@ -3438,6 +3439,7 @@ void EditorHelpBit::_update_labels() {
 		title->pop(); // font
 
 		if (symbol_type == "method" || symbol_type == "signal") {
+			const Color text_color = get_theme_color(SNAME("text_color"), SNAME("EditorHelp"));
 			const Color symbol_color = get_theme_color(SNAME("symbol_color"), SNAME("EditorHelp"));
 			const Color value_color = get_theme_color(SNAME("value_color"), SNAME("EditorHelp"));
 
@@ -3452,7 +3454,7 @@ void EditorHelpBit::_update_labels() {
 				const ArgumentData &argument = help_data.arguments[i];
 
 				if (i > 0) {
-					title->push_color(symbol_color);
+					title->push_color(text_color);
 					title->add_text(", ");
 					title->pop(); // color
 				}
@@ -3474,6 +3476,18 @@ void EditorHelpBit::_update_labels() {
 					title->add_text(argument.default_value);
 					title->pop(); // color
 				}
+			}
+
+			if (help_data.is_vararg) {
+				if (!help_data.arguments.is_empty()) {
+					title->push_color(text_color);
+					title->add_text(", ");
+					title->pop(); // color
+				}
+
+				title->push_color(symbol_color);
+				title->add_text("...");
+				title->pop(); // color
 			}
 
 			title->push_color(symbol_color);
