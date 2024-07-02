@@ -113,6 +113,8 @@ void EditorSceneFormatImporterBlend::get_extensions(List<String> *r_extensions) 
 Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_t p_flags,
 		const HashMap<StringName, Variant> &p_options,
 		List<String> *r_missing_deps, Error *r_err) {
+	ERR_FAIL_COND_V(p_options.is_empty(), nullptr);
+
 	String blender_path = EDITOR_GET("filesystem/import/blender/blender_path");
 
 	if (blender_major_version == -1 || blender_minor_version == -1) {
