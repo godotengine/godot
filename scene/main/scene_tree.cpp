@@ -122,6 +122,10 @@ void SceneTree::tree_changed() {
 	emit_signal(tree_changed_name);
 }
 
+void SceneTree::node_adding(Node *p_node) {
+	emit_signal(node_adding_name, p_node);
+}
+
 void SceneTree::node_added(Node *p_node) {
 	emit_signal(node_added_name, p_node);
 }
@@ -1671,6 +1675,7 @@ void SceneTree::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 	ADD_SIGNAL(MethodInfo("tree_process_mode_changed")); //editor only signal, but due to API hash it can't be removed in run-time
+	ADD_SIGNAL(MethodInfo("node_adding", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_removed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_renamed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
