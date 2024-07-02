@@ -123,6 +123,14 @@
 				Returns an array with all the signals of [param class] or its ancestry if [param no_inheritance] is [code]false[/code]. Every element of the array is a [Dictionary] as described in [method class_get_signal].
 			</description>
 		</method>
+		<method name="class_get_static_method" qualifiers="const">
+			<return type="Callable" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="method" type="StringName" />
+			<description>
+				Returns a class static method as a callable.
+			</description>
+		</method>
 		<method name="class_has_enum" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="class" type="StringName" />
