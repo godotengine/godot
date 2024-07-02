@@ -639,6 +639,17 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
+#ifdef LINUXBSD_ENABLED
+		if (DisplayServer::get_singleton()->get_name() == "Wayland") {
+			return;
+		}
+#endif
+		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_MINIMIZE_DISABLED, true, window_id);
+	}
+#endif
+
 	if (is_in_edited_scene_root()) {
 		DisplayServer::get_singleton()->window_set_exclusive(window_id, false);
 	} else {
@@ -3000,6 +3011,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transient_to_focused"), "set_transient_to_focused", "is_transient_to_focused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclusive"), "set_exclusive", "is_exclusive");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unresizable"), "set_flag", "get_flag", FLAG_RESIZE_DISABLED);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unminimizable"), "set_flag", "get_flag", FLAG_MINIMIZE_DISABLED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "borderless"), "set_flag", "get_flag", FLAG_BORDERLESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "always_on_top"), "set_flag", "get_flag", FLAG_ALWAYS_ON_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_flag", "get_flag", FLAG_TRANSPARENT);
@@ -3060,6 +3072,7 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_POPUP);
 	BIND_ENUM_CONSTANT(FLAG_EXTEND_TO_TITLE);
 	BIND_ENUM_CONSTANT(FLAG_MOUSE_PASSTHROUGH);
+	BIND_ENUM_CONSTANT(FLAG_MINIMIZE_DISABLED);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_DISABLED);

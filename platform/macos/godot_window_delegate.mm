@@ -82,7 +82,7 @@
 
 	// Temporary disable borderless and transparent state.
 	if ([wd.window_object styleMask] == NSWindowStyleMaskBorderless) {
-		[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable];
+		[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | (wd.minimize_disabled ? 0 : NSWindowStyleMaskMiniaturizable) | NSWindowStyleMaskResizable];
 	}
 	if (wd.layered_window) {
 		ds->set_window_per_pixel_transparency_enabled(false, window_id);
@@ -187,7 +187,7 @@
 	if (wd.borderless || wd.layered_window) {
 		[wd.window_object setStyleMask:NSWindowStyleMaskBorderless];
 	} else {
-		[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+		[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | (wd.minimize_disabled ? 0 : NSWindowStyleMaskMiniaturizable) | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
 	}
 	if (wd.layered_window) {
 		ds->set_window_per_pixel_transparency_enabled(true, window_id);

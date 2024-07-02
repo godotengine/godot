@@ -2816,6 +2816,18 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 
 			XFlush(x11_display);
 		} break;
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			wd.minimize_disabled = p_enabled;
+
+			XWMHints *xwmh = XAllocWMHints();
+			if (wd.minimize_disabled) {
+				xwmh->flags |= 1; // PUnminimizable? That doesn't seem to be existed.
+			}
+			XSetWMHints(x11_display, wd.x11_window, xwmh);
+
+			XFree(xwmh);
+			XFlush(x11_display);
+		} break;
 		case WINDOW_FLAG_BORDERLESS: {
 			Hints hints;
 			Atom property;
@@ -2891,6 +2903,9 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 	switch (p_flag) {
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			return wd.resize_disabled;
+		} break;
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			return wd.minimize_disabled;
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
 			bool borderless = wd.borderless;

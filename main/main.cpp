@@ -2237,6 +2237,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (!bool(GLOBAL_GET("display/window/size/resizable"))) {
 			window_flags |= DisplayServer::WINDOW_FLAG_RESIZE_DISABLED_BIT;
 		}
+		if (!bool(GLOBAL_GET("display/window/size/minimizable"))) {
+			window_flags |= DisplayServer::WINDOW_FLAG_MINIMIZE_DISABLED_BIT;
+		}
 		if (bool(GLOBAL_GET("display/window/size/borderless"))) {
 			window_flags |= DisplayServer::WINDOW_FLAG_BORDERLESS_BIT;
 		}

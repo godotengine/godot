@@ -861,6 +861,12 @@
 			Main window initial screen, this setting is used only if [member display/window/size/initial_position_type] is set to "Other Screen Center" ([code]2[/code]).
 			[b]Note:[/b] This setting only affects the exported project, or when the project is run from the command line. In the editor, the value of [member EditorSettings.run/window_placement/screen] is used instead.
 		</member>
+		<member name="display/window/size/minimizable" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], allows the window to be minimizable by default.
+			[b]Note:[/b] This property is only read when the project starts. To change whether the window is minimizable at runtime, set [member Window.unminimizable] instead on the root Window, which can be retrieved using [code]get_viewport().get_window()[/code]. [member Window.unminimizable] takes the opposite value of this setting.
+			[b]Note:[/b] Certain window managers can be configured to ignore the non-minimizable status of a window. Do not rely on this setting as a guarantee that the window will [i]never[/i] be minimizable.
+			[b]Note:[/b] This setting is implemented only on Windows, macOS, and Linux/X11.
+		</member>
 		<member name="display/window/size/mode" type="int" setter="" getter="" default="0">
 			Main window mode. See [enum DisplayServer.WindowMode] for possible values and how each mode behaves.
 		</member>

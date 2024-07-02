@@ -1316,6 +1316,9 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	if (p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT) {
 		wd.resizable = false;
 	}
+	if (p_flags & WINDOW_FLAG_MINIMIZE_DISABLED_BIT) {
+		wd.minimizable = false;
+	}
 	if (p_flags & WINDOW_FLAG_BORDERLESS_BIT) {
 		wd.borderless = true;
 	}
@@ -1895,7 +1898,7 @@ Size2i DisplayServerWindows::window_get_size_with_decorations(WindowID p_window)
 	return Size2();
 }
 
-void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex) {
+void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimizable, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex) {
 	// Windows docs for window styles:
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/window-styles
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
@@ -1924,13 +1927,17 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 		}
 	} else {
 		if (p_resizable) {
+			r_style |= WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MAXIMIZEBOX;
+
 			if (p_maximized) {
-				r_style = WS_OVERLAPPEDWINDOW | WS_MAXIMIZE;
-			} else {
-				r_style = WS_OVERLAPPEDWINDOW;
+				r_style |= WS_MAXIMIZE;
 			}
 		} else {
-			r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+			r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
+		}
+
+		if (p_minimizable) {
+			r_style |= WS_MINIMIZEBOX;
 		}
 	}
 
@@ -1955,7 +1962,7 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	DWORD style = 0;
 	DWORD style_ex = 0;
 
-	_get_window_style(p_window == MAIN_WINDOW_ID, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, style, style_ex);
+	_get_window_style(p_window == MAIN_WINDOW_ID, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.minimizable, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, style, style_ex);
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
@@ -2105,6 +2112,10 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 			wd.resizable = !p_enabled;
 			_update_window_style(p_window);
 		} break;
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			wd.minimizable = !p_enabled;
+			_update_window_style(p_window);
+		} break;
 		case WINDOW_FLAG_BORDERLESS: {
 			wd.borderless = p_enabled;
 			_update_window_style(p_window);
@@ -2168,6 +2179,9 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 	switch (p_flag) {
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			return !wd.resizable;
+		} break;
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			return !wd.minimizable;
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
 			return wd.borderless;
@@ -5163,7 +5177,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	_get_window_style(window_id_counter == MAIN_WINDOW_ID, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, false, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP), dwStyle, dwExStyle);
+	_get_window_style(window_id_counter == MAIN_WINDOW_ID, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), !(p_flags & WINDOW_FLAG_MINIMIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, false, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP), dwStyle, dwExStyle);
 
 	RECT WindowRect;
 
