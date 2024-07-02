@@ -840,6 +840,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 		Vector<RID> textures;
 
 		if (p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+				p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_MASK_TEXTURE ||
 				p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
 				p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
 			continue;
@@ -2542,6 +2543,8 @@ void CanvasShaderData::set_code(const String &p_code) {
 
 	uses_screen_texture = false;
 	uses_screen_texture_mipmaps = false;
+	uses_mask_texture = false;
+	uses_mask_texture_mipmaps = false;
 	uses_sdf = false;
 	uses_time = false;
 	uses_custom0 = false;
@@ -2584,6 +2587,8 @@ void CanvasShaderData::set_code(const String &p_code) {
 	blend_mode = BlendMode(blend_modei);
 	uses_screen_texture = gen_code.uses_screen_texture;
 	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
+	uses_mask_texture = gen_code.uses_mask_texture;
+	uses_mask_texture_mipmaps = gen_code.uses_mask_texture_mipmaps;
 
 #if 0
 	print_line("**compiling shader:");

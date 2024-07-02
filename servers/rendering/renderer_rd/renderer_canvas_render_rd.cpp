@@ -483,6 +483,32 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 	light_mode = (light_count > 0 || using_directional_lights) ? PIPELINE_LIGHT_MODE_ENABLED : PIPELINE_LIGHT_MODE_DISABLED;
 
+	if (p_item->use_canvas_group) {
+		switch (p_item->canvas_group->mode) {
+			case RS::CANVAS_GROUP_MODE_CLIP_ONLY: {
+				light_mode = PIPELINE_LIGHT_MODE_DISABLED_WITH_MASK;
+				base_flags |= 1 << FLAGS_MASK_MODE_SHIFT;
+
+			} break;
+			case RS::CANVAS_GROUP_MODE_CLIP_AND_DRAW: {
+				light_mode = (light_mode == PIPELINE_LIGHT_MODE_ENABLED) ? PIPELINE_LIGHT_MODE_ENABLED_WITH_MASK : PIPELINE_LIGHT_MODE_DISABLED_WITH_MASK;
+				base_flags |= 2 << FLAGS_MASK_MODE_SHIFT;
+
+			} break;
+			case RS::CANVAS_GROUP_MODE_SUBTRACT: {
+				light_mode = (light_mode == PIPELINE_LIGHT_MODE_ENABLED) ? PIPELINE_LIGHT_MODE_ENABLED_WITH_MASK : PIPELINE_LIGHT_MODE_DISABLED_WITH_MASK;
+				base_flags |= 3 << FLAGS_MASK_MODE_SHIFT;
+
+			} break;
+			case RS::CANVAS_GROUP_MODE_TRANSPARENT: {
+				light_mode = PIPELINE_LIGHT_MODE_DISABLED_WITH_MASK;
+
+			} break;
+			case RS::CANVAS_GROUP_MODE_DISABLED: {
+			} break;
+		}
+	}
+
 	PipelineVariants *pipeline_variants = p_pipeline_variants;
 
 	bool reclip = false;
@@ -1055,7 +1081,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 	}
 }
 
-RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, bool p_backbuffer) {
+RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, uint32_t p_canvas_group_level, bool p_alias_screen_to_mask) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
@@ -1107,8 +1133,11 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 6;
 		RID screen;
-		if (p_backbuffer) {
-			screen = texture_storage->render_target_get_rd_texture(p_to_render_target);
+		if (p_alias_screen_to_mask) {
+			screen = texture_storage->render_target_get_rd_canvas_group(p_to_render_target, p_canvas_group_level);
+			if (screen.is_null()) { //treat missing mask as clear mask
+				screen = RendererRD::TextureStorage::get_singleton()->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_TRANSPARENT);
+			}
 		} else {
 			screen = texture_storage->render_target_get_rd_backbuffer(p_to_render_target);
 			if (screen.is_null()) { //unallocated backbuffer
@@ -1123,6 +1152,19 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 7;
+		RID mask;
+		mask = texture_storage->render_target_get_rd_canvas_group(p_to_render_target, p_canvas_group_level);
+		if (mask.is_null()) { //treat missing mask as clear mask
+			mask = RendererRD::TextureStorage::get_singleton()->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_TRANSPARENT);
+		}
+		u.append_id(mask);
+		uniforms.push_back(u);
+	}
+
+	{
+		RD::Uniform u;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+		u.binding = 8;
 		RID sdf = texture_storage->render_target_get_sdf_texture(p_to_render_target);
 		u.append_id(sdf);
 		uniforms.push_back(u);
@@ -1139,16 +1181,16 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 	uniforms.append_array(material_storage->samplers_rd_get_default().get_uniforms(SAMPLERS_BINDING_FIRST_INDEX));
 
 	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader.default_version_rd_shader, BASE_UNIFORM_SET);
-	if (p_backbuffer) {
-		texture_storage->render_target_set_backbuffer_uniform_set(p_to_render_target, uniform_set);
+	if (p_canvas_group_level) {
+		texture_storage->render_target_set_canvas_group_uniform_set(p_to_render_target, uniform_set, p_alias_screen_to_mask);
 	} else {
-		texture_storage->render_target_set_framebuffer_uniform_set(p_to_render_target, uniform_set);
+		texture_storage->render_target_set_framebuffer_uniform_set(p_to_render_target, uniform_set, p_alias_screen_to_mask);
 	}
 
 	return uniform_set;
 }
 
-void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer, RenderingMethod::RenderInfo *r_render_info) {
+void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, uint32_t p_canvas_group_level, bool p_alias_screen_to_mask, RenderingMethod::RenderInfo *r_render_info) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
@@ -1161,9 +1203,9 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 	bool clear = false;
 	Vector<Color> clear_colors;
 
-	if (p_to_backbuffer) {
-		framebuffer = texture_storage->render_target_get_rd_backbuffer_framebuffer(p_to_render_target);
-		fb_uniform_set = texture_storage->render_target_get_backbuffer_uniform_set(p_to_render_target);
+	if (p_canvas_group_level) {
+		framebuffer = texture_storage->render_target_get_rd_canvas_group_framebuffer(p_to_render_target, p_canvas_group_level - 1);
+		fb_uniform_set = texture_storage->render_target_get_canvas_group_uniform_set(p_to_render_target, p_alias_screen_to_mask);
 	} else {
 		framebuffer = texture_storage->render_target_get_rd_framebuffer(p_to_render_target);
 		texture_storage->render_target_set_msaa_needs_resolve(p_to_render_target, false); // If MSAA is enabled, our framebuffer will be resolved!
@@ -1174,11 +1216,11 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 			texture_storage->render_target_disable_clear_request(p_to_render_target);
 		}
 		// TODO: Obtain from framebuffer format eventually when this is implemented.
-		fb_uniform_set = texture_storage->render_target_get_framebuffer_uniform_set(p_to_render_target);
+		fb_uniform_set = texture_storage->render_target_get_framebuffer_uniform_set(p_to_render_target, p_alias_screen_to_mask);
 	}
 
 	if (fb_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(fb_uniform_set)) {
-		fb_uniform_set = _create_base_uniform_set(p_to_render_target, p_to_backbuffer);
+		fb_uniform_set = _create_base_uniform_set(p_to_render_target, p_canvas_group_level, p_alias_screen_to_mask);
 	}
 
 	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
@@ -1189,6 +1231,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, state.default_transforms_uniform_set, TRANSFORMS_UNIFORM_SET);
 
 	RID prev_material;
+	bool uses_mask_texture = false;
 
 	PipelineVariants *pipeline_variants = &shader.pipeline_variants;
 
@@ -1209,20 +1252,6 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 
 		RID material = ci->material_owner == nullptr ? ci->material : ci->material_owner->material;
 
-		if (ci->use_canvas_group) {
-			if (ci->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
-				material = default_clip_children_material;
-			} else {
-				if (material.is_null()) {
-					if (ci->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_ONLY) {
-						material = default_clip_children_material;
-					} else {
-						material = default_canvas_group_material;
-					}
-				}
-			}
-		}
-
 		if (material != prev_material) {
 			CanvasMaterialData *material_data = nullptr;
 			if (material.is_valid()) {
@@ -1238,12 +1267,18 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 						RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set, MATERIAL_UNIFORM_SET);
 						material_data->set_as_used();
 					}
+					uses_mask_texture = material_data->shader_data->uses_mask_texture || (p_alias_screen_to_mask && material_data->shader_data->uses_screen_texture);
 				} else {
 					pipeline_variants = &shader.pipeline_variants;
 				}
 			} else {
 				pipeline_variants = &shader.pipeline_variants;
 			}
+		}
+
+		if (uses_mask_texture) {
+			// If the shader uses the mask, disable the default handling
+			ci->use_canvas_group = false;
 		}
 
 		if (!ci->repeat_size.x && !ci->repeat_size.y) {
@@ -1495,23 +1530,27 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 	Item *ci = p_item_list;
 
 	//fill the list until rendering is possible.
-	bool material_screen_texture_cached = false;
+	uint32_t material_screen_texture_cached = -1;
 	bool material_screen_texture_mipmaps_cached = false;
 
 	Rect2 back_buffer_rect;
 	bool backbuffer_copy = false;
 	bool backbuffer_gen_mipmaps = false;
 
-	Item *canvas_group_owner = nullptr;
+	const bool alias_screen_to_mask = true; // FIXME: Control this with a project setting?
+	uint32_t canvas_group_level = 0;
+	uint32_t canvas_group_max_level = 0;
 	bool skip_item = false;
 
 	bool update_skeletons = false;
 	bool time_used = false;
-
-	bool backbuffer_cleared = false;
+	bool uses_mask_texture = false;
+	bool uses_mask_texture_mipmaps = false;
 
 	while (ci) {
-		if (ci->copy_back_buffer && canvas_group_owner == nullptr) {
+		bool uses_mask_texture_explicit = false;
+
+		if (ci->copy_back_buffer) {
 			backbuffer_copy = true;
 
 			if (ci->copy_back_buffer->full) {
@@ -1526,8 +1565,8 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		if (material.is_valid()) {
 			CanvasMaterialData *md = static_cast<CanvasMaterialData *>(material_storage->material_get_data(material, RendererRD::MaterialStorage::SHADER_TYPE_2D));
 			if (md && md->shader_data->valid) {
-				if (md->shader_data->uses_screen_texture && canvas_group_owner == nullptr) {
-					if (!material_screen_texture_cached) {
+				if (md->shader_data->uses_screen_texture) {
+					if (material_screen_texture_cached != ci->canvas_group_level) {
 						backbuffer_copy = true;
 						back_buffer_rect = Rect2();
 						backbuffer_gen_mipmaps = md->shader_data->uses_screen_texture_mipmaps;
@@ -1541,6 +1580,28 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				}
 				if (md->shader_data->uses_time) {
 					time_used = true;
+				}
+				if (ci->canvas_group != nullptr) {
+					if (md->shader_data->uses_mask_texture) {
+						uses_mask_texture_explicit = uses_mask_texture = true;
+						if (md->shader_data->uses_mask_texture_mipmaps) {
+							uses_mask_texture_mipmaps = true;
+						}
+					} else {
+						if (alias_screen_to_mask && md->shader_data->uses_screen_texture) {
+							uses_mask_texture = true;
+						}
+						if (md->shader_data->uses_mask_texture_mipmaps || (alias_screen_to_mask && md->shader_data->uses_screen_texture_mipmaps)) {
+							uses_mask_texture_mipmaps = true;
+						}
+					}
+				} else if (md->shader_data->uses_mask_texture) {
+					// An item that hasn't defined a canvas group receives an empty mask
+					texture_storage->render_target_clear_canvas_group(p_to_render_target, canvas_group_level, false);
+					if (md->shader_data->uses_mask_texture_mipmaps) {
+						// Clear the mipmaps too, if needed
+						texture_storage->render_target_gen_canvas_group_mipmaps(p_to_render_target, ci->global_rect_cache, canvas_group_level);
+					}
 				}
 			}
 		}
@@ -1561,61 +1622,75 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			}
 		}
 
-		if (ci->canvas_group_owner != nullptr) {
-			if (canvas_group_owner == nullptr) {
-				// Canvas group begins here, render until before this item
-				if (update_skeletons) {
-					mesh_storage->update_mesh_instances();
-					update_skeletons = false;
-				}
-
-				_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false, r_render_info);
-				item_count = 0;
-
-				if (ci->canvas_group_owner->canvas_group->mode != RS::CANVAS_GROUP_MODE_TRANSPARENT) {
-					Rect2i group_rect = ci->canvas_group_owner->global_rect_cache;
-					texture_storage->render_target_copy_to_back_buffer(p_to_render_target, group_rect, false);
-					if (ci->canvas_group_owner->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
-						ci->canvas_group_owner->use_canvas_group = false;
-						items[item_count++] = ci->canvas_group_owner;
-					}
-				} else if (!backbuffer_cleared) {
-					texture_storage->render_target_clear_back_buffer(p_to_render_target, Rect2i(), Color(0, 0, 0, 0));
-					backbuffer_cleared = true;
-				}
-
-				backbuffer_copy = false;
-				canvas_group_owner = ci->canvas_group_owner; //continue until owner found
-			}
-
-			ci->canvas_group_owner = nullptr; //must be cleared
-		}
-
-		if (canvas_group_owner == nullptr && ci->canvas_group != nullptr && ci->canvas_group->mode != RS::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
-			skip_item = true;
-		}
-
-		if (ci == canvas_group_owner) {
+		if (ci->canvas_group_level > canvas_group_level) {
+			// Canvas group begins here, render until before this item
 			if (update_skeletons) {
 				mesh_storage->update_mesh_instances();
 				update_skeletons = false;
 			}
 
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, true, r_render_info);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, canvas_group_level, false, r_render_info);
 			item_count = 0;
 
-			if (ci->canvas_group->blur_mipmaps) {
-				texture_storage->render_target_gen_back_buffer_mipmaps(p_to_render_target, ci->global_rect_cache);
+			while (ci->canvas_group_level > canvas_group_level) {
+				texture_storage->render_target_clear_canvas_group(p_to_render_target, canvas_group_level);
+				canvas_group_level++;
+			}
+			texture_storage->render_target_clear_canvas_group_uniform_set(p_to_render_target);
+
+			if (canvas_group_max_level < canvas_group_level) {
+				canvas_group_max_level = canvas_group_level;
+			}
+		}
+
+		if (ci->canvas_group_level < canvas_group_level) {
+			if (update_skeletons) {
+				mesh_storage->update_mesh_instances();
+				update_skeletons = false;
 			}
 
-			canvas_group_owner = nullptr;
-			// Backbuffer is dirty now and needs to be re-cleared if another CanvasGroup needs it.
-			backbuffer_cleared = false;
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, canvas_group_level, false, r_render_info);
+			item_count = 0;
+
+			if (material_screen_texture_cached > ci->canvas_group_level) {
+				// A backbuffer from a canvas group that ended is no longer valid
+				material_screen_texture_cached = -1;
+			}
+
+			// Every reduction in canvas group level must be accompanied by a canvas group parent being drawn
+			DEV_ASSERT(ci->canvas_group != nullptr);
+			DEV_ASSERT(canvas_group_level - 1 == ci->canvas_group_level);
+			canvas_group_level = ci->canvas_group_level;
+
+			if (ci->canvas_group->blur_mipmaps || uses_mask_texture_mipmaps) {
+				texture_storage->render_target_gen_canvas_group_mipmaps(p_to_render_target, ci->global_rect_cache, canvas_group_level);
+			}
+			texture_storage->render_target_clear_canvas_group_uniform_set(p_to_render_target);
+
+			// The mask buffer is dirty now and needs to be cleared if another element tries to use it
+			texture_storage->render_target_set_canvas_group_needs_clear(p_to_render_target, canvas_group_level);
+			uses_mask_texture = false;
+			uses_mask_texture_mipmaps = false;
 
 			// Tell the renderer to paint this as a canvas group
 			ci->use_canvas_group = true;
 		} else {
 			ci->use_canvas_group = false;
+			if (ci->canvas_group != nullptr) {
+				if (uses_mask_texture) {
+					// A canvas group with no children, and a custom shader. Prevent it from receiving a dirty mask texture
+					texture_storage->render_target_clear_canvas_group(p_to_render_target, canvas_group_level, false);
+					if (uses_mask_texture_mipmaps) {
+						// Clear the mipmaps too, if needed
+						texture_storage->render_target_gen_canvas_group_mipmaps(p_to_render_target, ci->global_rect_cache, canvas_group_level);
+					}
+					uses_mask_texture = false;
+					uses_mask_texture_mipmaps = false;
+				} else if (ci->canvas_group->mode != RS::CANVAS_GROUP_MODE_CLIP_AND_DRAW && ci->canvas_group->mode != RS::CANVAS_GROUP_MODE_SUBTRACT) {
+					// Skip CanvasGroup or clip-only parent with no children if it isn't using a custom blend for the mask
+					skip_item = true;
+				}
+			}
 		}
 
 		if (backbuffer_copy) {
@@ -1625,13 +1700,17 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				update_skeletons = false;
 			}
 
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false, r_render_info);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, canvas_group_level, false, r_render_info);
 			item_count = 0;
 
-			texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, backbuffer_gen_mipmaps);
+			if (canvas_group_level > 0) {
+				texture_storage->render_target_copy_to_back_buffer_from_canvas_group(p_to_render_target, back_buffer_rect, backbuffer_gen_mipmaps, canvas_group_level - 1);
+			} else {
+				texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, backbuffer_gen_mipmaps);
+			}
 
 			backbuffer_copy = false;
-			material_screen_texture_cached = true; // After a backbuffer copy, screen texture makes no further copies.
+			material_screen_texture_cached = ci->canvas_group_level; // After a backbuffer copy, screen texture makes no further copies.
 			material_screen_texture_mipmaps_cached = backbuffer_gen_mipmaps;
 			backbuffer_gen_mipmaps = false;
 		}
@@ -1649,19 +1728,21 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			items[item_count++] = ci;
 		}
 
-		if (!ci->next || item_count == MAX_RENDER_ITEMS - 1) {
+		if (!ci->next || item_count == MAX_RENDER_ITEMS - 1 || (alias_screen_to_mask && ci->use_canvas_group && !uses_mask_texture_explicit)) {
 			if (update_skeletons) {
 				mesh_storage->update_mesh_instances();
 				update_skeletons = false;
 			}
 
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, canvas_group_owner != nullptr, r_render_info);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, canvas_group_level, alias_screen_to_mask && ci->use_canvas_group && !uses_mask_texture_explicit, r_render_info);
 			//then reset
 			item_count = 0;
 		}
 
 		ci = ci->next;
 	}
+
+	texture_storage->render_target_set_canvas_groups_used(p_to_render_target, canvas_group_max_level);
 
 	if (time_used) {
 		RenderingServerDefault::redraw_request();
@@ -2169,6 +2250,8 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	uniforms.clear();
 	uses_screen_texture = false;
 	uses_screen_texture_mipmaps = false;
+	uses_mask_texture = false;
+	uses_mask_texture_mipmaps = false;
 	uses_sdf = false;
 	uses_time = false;
 
@@ -2204,6 +2287,8 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 
 	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
 	uses_screen_texture = gen_code.uses_screen_texture;
+	uses_mask_texture_mipmaps = gen_code.uses_mask_texture_mipmaps;
+	uses_mask_texture = gen_code.uses_mask_texture;
 
 	if (version.is_null()) {
 		version = canvas_singleton->shader.canvas_shader.version_create();
@@ -2357,6 +2442,34 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 						SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT,
 						SHADER_VARIANT_QUAD_LIGHT,
 				},
+				{
+						//non lit masked
+						SHADER_VARIANT_QUAD_MASK,
+						SHADER_VARIANT_NINEPATCH_MASK,
+						SHADER_VARIANT_PRIMITIVE_MASK,
+						SHADER_VARIANT_PRIMITIVE_MASK,
+						SHADER_VARIANT_PRIMITIVE_POINTS_MASK,
+						SHADER_VARIANT_ATTRIBUTES_MASK,
+						SHADER_VARIANT_ATTRIBUTES_MASK,
+						SHADER_VARIANT_ATTRIBUTES_MASK,
+						SHADER_VARIANT_ATTRIBUTES_MASK,
+						SHADER_VARIANT_ATTRIBUTES_POINTS_MASK,
+						SHADER_VARIANT_QUAD_MASK,
+				},
+				{
+						//lit masked
+						SHADER_VARIANT_QUAD_LIGHT_MASK,
+						SHADER_VARIANT_NINEPATCH_LIGHT_MASK,
+						SHADER_VARIANT_PRIMITIVE_LIGHT_MASK,
+						SHADER_VARIANT_PRIMITIVE_LIGHT_MASK,
+						SHADER_VARIANT_PRIMITIVE_POINTS_LIGHT_MASK,
+						SHADER_VARIANT_ATTRIBUTES_LIGHT_MASK,
+						SHADER_VARIANT_ATTRIBUTES_LIGHT_MASK,
+						SHADER_VARIANT_ATTRIBUTES_LIGHT_MASK,
+						SHADER_VARIANT_ATTRIBUTES_LIGHT_MASK,
+						SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT_MASK,
+						SHADER_VARIANT_QUAD_LIGHT_MASK,
+				},
 			};
 
 			RID shader_variant = canvas_singleton->shader.canvas_shader.version_get_shader(version, shader_variants[i][j]);
@@ -2466,6 +2579,20 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		variants.push_back("#define USE_LIGHTING\n#define USE_PRIMITIVE\n#define USE_POINT_SIZE\n"); //points need point size
 		variants.push_back("#define USE_LIGHTING\n#define USE_ATTRIBUTES\n"); // attributes for vertex arrays
 		variants.push_back("#define USE_LIGHTING\n#define USE_ATTRIBUTES\n#define USE_POINT_SIZE\n"); //attributes with point size
+		//non light masked variants
+		variants.push_back("#define USE_MASK\n"); //none by default is first variant
+		variants.push_back("#define USE_MASK\n#define USE_NINEPATCH\n"); //ninepatch is the second variant
+		variants.push_back("#define USE_MASK\n#define USE_PRIMITIVE\n"); //primitive is the third
+		variants.push_back("#define USE_MASK\n#define USE_PRIMITIVE\n#define USE_POINT_SIZE\n"); //points need point size
+		variants.push_back("#define USE_MASK\n#define USE_ATTRIBUTES\n"); // attributes for vertex arrays
+		variants.push_back("#define USE_MASK\n#define USE_ATTRIBUTES\n#define USE_POINT_SIZE\n"); //attributes with point size
+		//light masked variants
+		variants.push_back("#define USE_MASK\n#define USE_LIGHTING\n"); //none by default is first variant
+		variants.push_back("#define USE_MASK\n#define USE_LIGHTING\n#define USE_NINEPATCH\n"); //ninepatch is the second variant
+		variants.push_back("#define USE_MASK\n#define USE_LIGHTING\n#define USE_PRIMITIVE\n"); //primitive is the third
+		variants.push_back("#define USE_MASK\n#define USE_LIGHTING\n#define USE_PRIMITIVE\n#define USE_POINT_SIZE\n"); //points need point size
+		variants.push_back("#define USE_MASK\n#define USE_LIGHTING\n#define USE_ATTRIBUTES\n"); // attributes for vertex arrays
+		variants.push_back("#define USE_MASK\n#define USE_LIGHTING\n#define USE_ATTRIBUTES\n#define USE_POINT_SIZE\n"); //attributes with point size
 
 		shader.canvas_shader.initialize(variants, global_defines);
 
@@ -2542,6 +2669,34 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 							SHADER_VARIANT_ATTRIBUTES_LIGHT,
 							SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT,
 							SHADER_VARIANT_QUAD_LIGHT,
+					},
+					{
+							//non lit masked
+							SHADER_VARIANT_QUAD_MASK,
+							SHADER_VARIANT_NINEPATCH_MASK,
+							SHADER_VARIANT_PRIMITIVE_MASK,
+							SHADER_VARIANT_PRIMITIVE_MASK,
+							SHADER_VARIANT_PRIMITIVE_POINTS_MASK,
+							SHADER_VARIANT_ATTRIBUTES_MASK,
+							SHADER_VARIANT_ATTRIBUTES_MASK,
+							SHADER_VARIANT_ATTRIBUTES_MASK,
+							SHADER_VARIANT_ATTRIBUTES_MASK,
+							SHADER_VARIANT_ATTRIBUTES_POINTS_MASK,
+							SHADER_VARIANT_QUAD_MASK,
+					},
+					{
+							//lit masked
+							SHADER_VARIANT_QUAD_LIGHT_MASK,
+							SHADER_VARIANT_NINEPATCH_LIGHT_MASK,
+							SHADER_VARIANT_PRIMITIVE_LIGHT_MASK,
+							SHADER_VARIANT_PRIMITIVE_LIGHT_MASK,
+							SHADER_VARIANT_PRIMITIVE_POINTS_LIGHT_MASK,
+							SHADER_VARIANT_ATTRIBUTES_LIGHT_MASK,
+							SHADER_VARIANT_ATTRIBUTES_LIGHT_MASK,
+							SHADER_VARIANT_ATTRIBUTES_LIGHT_MASK,
+							SHADER_VARIANT_ATTRIBUTES_LIGHT_MASK,
+							SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT_MASK,
+							SHADER_VARIANT_QUAD_LIGHT_MASK,
 					},
 				};
 
@@ -2787,58 +2942,9 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 
 	state.time = 0;
 
-	{
-		default_canvas_group_shader = material_storage->shader_allocate();
-		material_storage->shader_initialize(default_canvas_group_shader);
-
-		material_storage->shader_set_code(default_canvas_group_shader, R"(
-// Default CanvasGroup shader.
-
-shader_type canvas_item;
-render_mode unshaded;
-
-uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_nearest;
-
-void fragment() {
-	vec4 c = textureLod(screen_texture, SCREEN_UV, 0.0);
-
-	if (c.a > 0.0001) {
-		c.rgb /= c.a;
-	}
-
-	COLOR *= c;
-}
-)");
-		default_canvas_group_material = material_storage->material_allocate();
-		material_storage->material_initialize(default_canvas_group_material);
-
-		material_storage->material_set_shader(default_canvas_group_material, default_canvas_group_shader);
-	}
-
-	{
-		default_clip_children_shader = material_storage->shader_allocate();
-		material_storage->shader_initialize(default_clip_children_shader);
-
-		material_storage->shader_set_code(default_clip_children_shader, R"(
-// Default clip children shader.
-
-shader_type canvas_item;
-render_mode unshaded;
-
-uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_nearest;
-
-void fragment() {
-	vec4 c = textureLod(screen_texture, SCREEN_UV, 0.0);
-	COLOR.rgb = c.rgb;
-}
-)");
-		default_clip_children_material = material_storage->material_allocate();
-		material_storage->material_initialize(default_clip_children_material);
-
-		material_storage->material_set_shader(default_clip_children_material, default_clip_children_shader);
-	}
-
-	static_assert(sizeof(PushConstant) == 128);
+	// This is the minimum push constant size the Vulkan spec guarantees
+	// Any larger, and some devices might not be supported
+	static_assert(sizeof(PushConstant) <= 128);
 }
 
 bool RendererCanvasRenderRD::free(RID p_rid) {
@@ -2889,14 +2995,7 @@ void RendererCanvasRenderRD::set_debug_redraw(bool p_enabled, double p_time, con
 }
 
 RendererCanvasRenderRD::~RendererCanvasRenderRD() {
-	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	//canvas state
-
-	material_storage->material_free(default_canvas_group_material);
-	material_storage->shader_free(default_canvas_group_shader);
-
-	material_storage->material_free(default_clip_children_material);
-	material_storage->shader_free(default_clip_children_shader);
 
 	{
 		if (state.canvas_state_buffer.is_valid()) {

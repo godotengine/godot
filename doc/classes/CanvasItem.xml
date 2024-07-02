@@ -586,6 +586,21 @@
 	<members>
 		<member name="clip_children" type="int" setter="set_clip_children_mode" getter="get_clip_children_mode" enum="CanvasItem.ClipChildrenMode" default="0">
 			Allows the current node to clip child nodes, essentially acting as a mask.
+			When set to anything other than [constant CanvasItem.CLIP_CHILDREN_DISABLED] it is possible to set a custom blending for the masked children using a custom [Shader] with a [code]sampler2D[/code] with [code]hint_mask_texture[/code]. Doing so disables the default masking operation.
+			For example, the following multiplies the parent's color with that of its children:
+			[codeblock]
+			shader_type canvas_item;
+			render_mode blend_premul_alpha;
+
+			uniform sampler2D mask_texture : hint_mask_texture, repeat_disable, filter_nearest;
+
+			void fragment() {
+			    vec4 c = textureLod(mask_texture, SCREEN_UV, 0.0);
+
+			    COLOR.rgb *= COLOR.a;
+			    COLOR *= c;
+			}
+			[/codeblock]
 		</member>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" default="1">
 			The rendering layers in which this [CanvasItem] responds to [Light2D] nodes.
@@ -732,7 +747,10 @@
 		<constant name="CLIP_CHILDREN_AND_DRAW" value="2" enum="ClipChildrenMode">
 			Parent is used for clipping child, but parent is also drawn underneath child as normal before clipping child to its visible area.
 		</constant>
-		<constant name="CLIP_CHILDREN_MAX" value="3" enum="ClipChildrenMode">
+		<constant name="CLIP_CHILDREN_SUBTRACT" value="4" enum="ClipChildrenMode">
+			Child cuts hole into the parent, causing it to be transparent where the child is opaque. Child is not drawn.
+		</constant>
+		<constant name="CLIP_CHILDREN_MAX" value="5" enum="ClipChildrenMode">
 			Represents the size of the [enum ClipChildrenMode] enum.
 		</constant>
 	</constants>
