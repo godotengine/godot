@@ -2438,6 +2438,7 @@ class VisualShaderNodeTransformParameter : public VisualShaderNodeParameter {
 
 private:
 	bool default_value_enabled = false;
+	bool hint_triplanar_enabled = false;
 	Transform3D default_value = Transform3D(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
 
 protected:
@@ -2462,6 +2463,9 @@ public:
 
 	void set_default_value_enabled(bool p_enabled);
 	bool is_default_value_enabled() const;
+
+	void set_hint_triplanar_enabled(bool p_enabled);
+	bool is_hint_triplanar_enabled() const;
 
 	void set_default_value(const Transform3D &p_value);
 	Transform3D get_default_value() const;
@@ -2593,6 +2597,12 @@ public:
 class VisualShaderNodeTextureParameterTriplanar : public VisualShaderNodeTextureParameter {
 	GDCLASS(VisualShaderNodeTextureParameterTriplanar, VisualShaderNodeTextureParameter);
 
+private:
+	bool world_triplanar_enabled = false;
+
+protected:
+	static void _bind_methods();
+
 public:
 	virtual String get_caption() const override;
 
@@ -2604,7 +2614,13 @@ public:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
+	Vector<StringName> get_editable_properties() const override;
+	HashMap<StringName, String> get_editable_properties_names() const override;
+
 	virtual bool is_input_port_default(int p_port, Shader::Mode p_mode) const override;
+
+	void set_world_triplanar_enabled(bool p_enabled);
+	bool is_world_triplanar_enabled() const;
 
 	virtual String generate_global_per_node(Shader::Mode p_mode, int p_id) const override;
 	virtual String generate_global_per_func(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
