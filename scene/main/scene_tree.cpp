@@ -59,6 +59,7 @@
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
 #ifndef _3D_DISABLED
+#include "scene/3d/node_3d.h"
 #include "scene/resources/3d/world_3d.h"
 #include "servers/physics_server_3d.h"
 #endif // _3D_DISABLED
@@ -117,6 +118,29 @@ void SceneTreeTimer::release_connections() {
 }
 
 SceneTreeTimer::SceneTreeTimer() {}
+
+#ifndef _3D_DISABLED
+// This should be called once per physics tick, to make sure the transform previous and current
+// is kept up to date on the few Node3Ds that are using client side physics interpolation.
+void SceneTree::ClientPhysicsInterpolation::physics_process() {
+	for (SelfList<Node3D> *E = _node_3d_list.first(); E;) {
+		Node3D *node_3d = E->self();
+
+		SelfList<Node3D> *current = E;
+
+		// Get the next element here BEFORE we potentially delete one.
+		E = E->next();
+
+		// This will return false if the Node3D has timed out ..
+		// i.e. if get_global_transform_interpolated() has not been called
+		// for a few seconds, we can delete from the list to keep processing
+		// to a minimum.
+		if (!node_3d->update_client_physics_interpolation_data()) {
+			_node_3d_list.remove(current);
+		}
+	}
+}
+#endif
 
 void SceneTree::tree_changed() {
 	emit_signal(tree_changed_name);
@@ -466,9 +490,31 @@ bool SceneTree::is_physics_interpolation_enabled() const {
 	return _physics_interpolation_enabled;
 }
 
+#ifndef _3D_DISABLED
+void SceneTree::client_physics_interpolation_add_node_3d(SelfList<Node3D> *p_elem) {
+	// This ensures that _update_physics_interpolation_data() will be called at least once every
+	// physics tick, to ensure the previous and current transforms are kept up to date.
+	_client_physics_interpolation._node_3d_list.add(p_elem);
+}
+
+void SceneTree::client_physics_interpolation_remove_node_3d(SelfList<Node3D> *p_elem) {
+	_client_physics_interpolation._node_3d_list.remove(p_elem);
+}
+#endif
+
 void SceneTree::iteration_prepare() {
 	if (_physics_interpolation_enabled) {
+		// Make sure any pending transforms from the last tick / frame
+		// are flushed before pumping the interpolation prev and currents.
+		flush_transform_notifications();
 		RenderingServer::get_singleton()->tick();
+
+#ifndef _3D_DISABLED
+		// Any objects performing client physics interpolation
+		// should be given an opportunity to keep their previous transforms
+		// up to date before each new physics tick.
+		_client_physics_interpolation.physics_process();
+#endif
 	}
 }
 
@@ -501,6 +547,14 @@ bool SceneTree::physics_process(double p_time) {
 	_call_idle_callbacks();
 
 	return _quit;
+}
+
+void SceneTree::iteration_end() {
+	// When physics interpolation is active, we want all pending transforms
+	// to be flushed to the RenderingServer before finishing a physics tick.
+	if (_physics_interpolation_enabled) {
+		flush_transform_notifications();
+	}
 }
 
 bool SceneTree::process(double p_time) {
@@ -569,6 +623,10 @@ bool SceneTree::process(double p_time) {
 	}
 #endif // _3D_DISABLED
 #endif // TOOLS_ENABLED
+
+	if (_physics_interpolation_enabled) {
+		RenderingServer::get_singleton()->pre_draw(true);
+	}
 
 	return _quit;
 }
@@ -1760,6 +1818,13 @@ SceneTree::SceneTree() {
 #endif // _3D_DISABLED
 
 	set_physics_interpolation_enabled(GLOBAL_DEF("physics/common/physics_interpolation", false));
+
+	// Always disable jitter fix if physics interpolation is enabled -
+	// Jitter fix will interfere with interpolation, and is not necessary
+	// when interpolation is active.
+	if (is_physics_interpolation_enabled()) {
+		Engine::get_singleton()->set_physics_jitter_fix(0);
+	}
 
 	// Initialize network state.
 	set_multiplayer(MultiplayerAPI::create_default_interface());
