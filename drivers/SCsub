@@ -34,6 +34,9 @@ if env["opengl3"]:
     SConscript("gles3/SCsub")
     SConscript("egl/SCsub")
 
+# Input drivers
+SConscript("sdl/SCsub")
+
 # Core dependencies
 SConscript("png/SCsub")
 
