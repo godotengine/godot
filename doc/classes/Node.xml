@@ -982,6 +982,9 @@
 		<member name="editor_description" type="String" setter="set_editor_description" getter="get_editor_description" default="&quot;&quot;">
 			An optional description to the node. It will be displayed as a tooltip when hovering over the node in the editor's Scene dock.
 		</member>
+		<member name="exposed_in_owner" type="bool" setter="set_exposed_in_owner" getter="is_exposed_in_owner" default="false">
+			Sets this node's state as an exposed node in its [member owner]. This allows the node to be accessed in the editor when the scene is instantiated in another. It also enforces the node to become unique, see [member unique_name_in_owner].
+		</member>
 		<member name="multiplayer" type="MultiplayerAPI" setter="" getter="get_multiplayer">
 			The [MultiplayerAPI] instance associated with this node. See [method SceneTree.get_multiplayer].
 			[b]Note:[/b] Renaming the node, or moving it in the tree, will not move the [MultiplayerAPI] to the new path, you will have to update this manually.

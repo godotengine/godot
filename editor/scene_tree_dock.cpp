@@ -203,6 +203,8 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_SHOW_IN_FILE_SYSTEM);
 	} else if (ED_IS_SHORTCUT("scene_tree/toggle_unique_name", p_event)) {
 		_tool_selected(TOOL_TOGGLE_SCENE_UNIQUE_NAME);
+	} else if (ED_IS_SHORTCUT("scene_tree/toggle_exposed_node", p_event)) {
+		_tool_selected(TOOL_TOGGLE_SCENE_EXPOSED);
 	} else if (ED_IS_SHORTCUT("scene_tree/toggle_editable_children", p_event)) {
 		_tool_selected(TOOL_SCENE_EDITABLE_CHILDREN);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
@@ -612,7 +614,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_CUT:
 		case TOOL_COPY: {
-			if (!edited_scene || (p_tool == TOOL_CUT && !_validate_no_foreign())) {
+			if (!edited_scene || !_validate_no_foreign()) {
 				break;
 			}
 
@@ -825,6 +827,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			if (!edited_scene) {
+				break;
+			}
+
+			if (!_validate_no_foreign()) {
 				break;
 			}
 
@@ -1408,6 +1414,82 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					}
 					undo_redo->add_do_method(node, "set_unique_name_in_owner", false);
 					undo_redo->add_undo_method(node, "set_unique_name_in_owner", true);
+					if (node->is_exposed_in_owner()) {
+						undo_redo->add_undo_method(node, "set_exposed_in_owner", true);
+					}
+				}
+				undo_redo->commit_action();
+			}
+		} break;
+		case TOOL_TOGGLE_SCENE_EXPOSED: {
+			// Enabling/disabling based on the same node based on which the checkbox in the menu is checked/unchecked.
+			List<Node *>::Element *first_selected = editor_selection->get_selected_node_list().front();
+			if (first_selected == nullptr) {
+				return;
+			}
+			if (first_selected->get() == EditorNode::get_singleton()->get_edited_scene()) {
+				// Exclude Root Node. It should never be unique name in its own scene!
+				editor_selection->remove_node(first_selected->get());
+				first_selected = editor_selection->get_selected_node_list().front();
+				if (first_selected == nullptr) {
+					return;
+				}
+			}
+			bool enabling = !first_selected->get()->is_exposed_in_owner();
+
+			List<Node *> full_selection = editor_selection->get_full_selected_node_list();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+			if (enabling) {
+				Vector<Node *> new_exposed_nodes;
+				Vector<StringName> new_unique_names;
+				Vector<StringName> cant_be_set_unique_names;
+
+				for (Node *node : full_selection) {
+					if (node->is_exposed_in_owner()) {
+						continue;
+					}
+					if (node->get_owner() != get_tree()->get_edited_scene_root()) {
+						continue;
+					}
+
+					StringName name = node->get_name();
+					Node *uniqueNode = get_tree()->get_edited_scene_root()->get_node_or_null(UNIQUE_NODE_PREFIX + String(name));
+					if (new_unique_names.has(name) || (uniqueNode != nullptr && uniqueNode != this && uniqueNode->is_exposed_in_owner())) {
+						cant_be_set_unique_names.push_back(name);
+					} else {
+						new_exposed_nodes.push_back(node);
+						new_unique_names.push_back(name);
+					}
+				}
+				if (new_exposed_nodes.size()) {
+					undo_redo->create_action("Enable Exposed Node(s)");
+					for (Node *node : new_exposed_nodes) {
+						if (!node->is_unique_name_in_owner()) {
+							undo_redo->add_undo_method(node, "set_unique_name_in_owner", false);
+						}
+						undo_redo->add_do_method(node, "set_exposed_in_owner", true);
+						undo_redo->add_undo_method(node, "set_exposed_in_owner", false);
+					}
+					undo_redo->commit_action();
+				}
+				if (cant_be_set_unique_names.size()) {
+					String popup_text = TTR("Unique names already used by another node in the scene:");
+					popup_text += "\n";
+					for (const StringName &name : cant_be_set_unique_names) {
+						popup_text += "\n" + String(name);
+					}
+					accept->set_text(popup_text);
+					accept->popup_centered();
+				}
+			} else { // Disabling.
+				undo_redo->create_action(TTR("Disable Exposed Node(s)"));
+				for (Node *node : full_selection) {
+					if (!node->is_unique_name_in_owner()) {
+						continue;
+					}
+					undo_redo->add_do_method(node, "set_exposed_in_owner", false);
+					undo_redo->add_undo_method(node, "set_exposed_in_owner", true);
 				}
 				undo_redo->commit_action();
 			}
@@ -2155,7 +2237,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	for (Node *E : selection) {
-		if (E != edited_scene && E->get_owner() != edited_scene) {
+		if (E != edited_scene && E->get_owner() != edited_scene && !E->is_child_of_exposed_node()) {
 			accept->set_text(TTR("Can't operate on nodes from a foreign scene!"));
 			accept->popup_centered();
 			return false;
@@ -2575,7 +2657,7 @@ void SceneTreeDock::_toggle_editable_children(Node *p_node) {
 		Array name_array;
 
 		for (Node *owned_node : owned) {
-			if (owned_node != p_node && owned_node != edited_scene && owned_node->get_owner() == edited_scene && owned_node->get_parent()->get_owner() != edited_scene) {
+			if (owned_node != p_node && owned_node != edited_scene && owned_node->get_owner() == edited_scene && owned_node->get_parent()->get_owner() != edited_scene && owned_node->is_exposed_in_owner()) {
 				owned_nodes_array.push_back(owned_node);
 				paths_array.push_back(p_node->get_path_to(owned_node->get_parent()));
 				name_array.push_back(owned_node->get_name());
@@ -3646,6 +3728,8 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			Node *node = full_selection.front()->get();
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("SceneUniqueName")), ED_GET_SHORTCUT("scene_tree/toggle_unique_name"), TOOL_TOGGLE_SCENE_UNIQUE_NAME);
 			menu->set_item_text(menu->get_item_index(TOOL_TOGGLE_SCENE_UNIQUE_NAME), node->is_unique_name_in_owner() ? TTR("Revoke Unique Name") : TTR("Access as Unique Name"));
+			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("SceneExposedNode")), ED_GET_SHORTCUT("scene_tree/toggle_exposed_node"), TOOL_TOGGLE_SCENE_EXPOSED);
+			menu->set_item_text(menu->get_item_index(TOOL_TOGGLE_SCENE_EXPOSED), node->is_exposed_in_owner() ? TTR("Unexpose Node in Instantiated Scenes") : TTR("Expose Node in Instantiated Scenes"));
 		}
 	}
 
@@ -4399,7 +4483,8 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("scene_tree/show_in_file_system", TTR("Show in FileSystem"));
 	ED_SHORTCUT("scene_tree/toggle_unique_name", TTR("Toggle Access as Unique Name"));
-	ED_SHORTCUT("scene_tree/toggle_editable_children", TTR("Toggle Editable Children"));
+	ED_SHORTCUT("scene_tree/toggle_exposed_node", TTR("Toggle node as Exposed in scene"));
+	ED_SHORTCUT("scene_tree/toggle_editable_children", TTR("Toggle Editable children"));
 	ED_SHORTCUT("scene_tree/delete_no_confirm", TTR("Delete (No Confirm)"), KeyModifierMask::SHIFT | Key::KEY_DELETE);
 	ED_SHORTCUT("scene_tree/delete", TTR("Delete"), Key::KEY_DELETE);
 

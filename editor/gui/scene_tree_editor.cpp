@@ -177,6 +177,17 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->create_action(TTR("Disable Scene Unique Name"));
 		undo_redo->add_do_method(n, "set_unique_name_in_owner", false);
 		undo_redo->add_undo_method(n, "set_unique_name_in_owner", true);
+		if (n->is_exposed_in_owner()) {
+			undo_redo->add_do_method(n, "set_exposed_in_owner", false);
+			undo_redo->add_undo_method(n, "set_exposed_in_owner", true);
+		}
+		undo_redo->add_do_method(this, "_update_tree");
+		undo_redo->add_undo_method(this, "_update_tree");
+		undo_redo->commit_action();
+	} else if (p_id == BUTTON_EXPOSED) {
+		undo_redo->create_action(TTR("Disable Scene Exposed Node"));
+		undo_redo->add_do_method(n, "set_exposed_in_owner", false);
+		undo_redo->add_undo_method(n, "set_exposed_in_owner", true);
 		undo_redo->add_do_method(this, "_update_tree");
 		undo_redo->add_undo_method(this, "_update_tree");
 		undo_redo->commit_action();
@@ -207,7 +218,9 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			part_of_subscene = true;
 			//allow
 		} else {
-			return;
+			if (!p_node->is_exposed_in_owner()) {
+				return;
+			}
 		}
 	} else {
 		part_of_subscene = p_node != get_scene_node() && get_scene_node()->get_scene_inherited_state().is_valid() && get_scene_node()->get_scene_inherited_state()->find_node_by_path(get_scene_node()->get_path_to(p_node)) >= 0;
@@ -216,7 +229,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	TreeItem *item = tree->create_item(p_parent);
 
 	item->set_text(0, p_node->get_name());
-	if (can_rename && !part_of_subscene) {
+	if (can_rename && !part_of_subscene && (!p_node->is_exposed_in_owner() || p_node->get_owner() == get_scene_node())) {
 		item->set_editable(0, true);
 	}
 
@@ -320,7 +333,12 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		if (p_node->is_unique_name_in_owner()) {
 			item->add_button(0, get_editor_theme_icon(SNAME("SceneUniqueName")), BUTTON_UNIQUE, p_node->get_owner() != EditorNode::get_singleton()->get_edited_scene(), vformat(TTR("This node can be accessed from within anywhere in the scene by preceding it with the '%s' prefix in a node path.\nClick to disable this."), UNIQUE_NODE_PREFIX));
 		}
-
+		if (p_node->is_exposed_in_owner()) {
+			item->add_button(0, get_editor_theme_icon(SNAME("SceneExposedNode")), BUTTON_EXPOSED, p_node->get_owner() != EditorNode::get_singleton()->get_edited_scene(), TTR("This node will exposed when this scene is instantiated.\nClick to disable this."));
+			if (p_node->get_owner() != get_scene_node()) {
+				_set_item_custom_color(item, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			}
+		}
 		int num_connections = p_node->get_persistent_signal_connection_count();
 		int num_groups = p_node->get_persistent_group_count();
 
@@ -441,8 +459,29 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		item->set_as_cursor(0);
 	}
 
+	TypedArray<Node> done;
+	if (p_node->get_owner() && p_node->get_scene_instance_state().is_valid() && !p_node->get_owner()->is_editable_instance(p_node)) {
+		TypedArray<Node> exposed_nodes = p_node->get_exposed_nodes();
+		while (!exposed_nodes.is_empty()) {
+			Node *current_node = cast_to<Node>(exposed_nodes.pop_front());
+			_add_nodes(current_node, item);
+			done.push_back(current_node);
+		}
+	}
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_add_nodes(p_node->get_child(i), item);
+		Node *child_node = p_node->get_child(i);
+		bool already_done = false;
+
+		for (int j = 0; j < done.size(); j++) {
+			if (cast_to<Node>(done[j]) == child_node) {
+				already_done = true;
+				break;
+			}
+		}
+
+		if (!already_done) {
+			_add_nodes(child_node, item);
+		}
 	}
 
 	if (valid_types.size()) {
