@@ -1612,7 +1612,7 @@ Size2 Window::_get_contents_minimum_size() const {
 		}
 	}
 
-	return max;
+	return max * content_scale_factor;
 }
 
 void Window::child_controls_changed() {
