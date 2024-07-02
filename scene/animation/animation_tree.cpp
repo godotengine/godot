@@ -203,10 +203,11 @@ AnimationNode::NodeTimeInfo AnimationNode::_blend_node(Ref<AnimationNode> p_node
 		}
 
 		for (const KeyValue<NodePath, bool> &E : filter) {
-			if (!process_state->track_map.has(E.key)) {
+			const HashMap<NodePath, int> &map = *process_state->track_map;
+			if (!map.has(E.key)) {
 				continue;
 			}
-			int idx = process_state->track_map[E.key];
+			int idx = map[E.key];
 			blendw[idx] = 1.0; // Filtered goes to one.
 		}
 
@@ -618,7 +619,7 @@ bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const 
 		process_state.valid = true;
 		process_state.invalid_reasons = "";
 		process_state.last_pass = process_pass;
-		process_state.track_map = p_track_map;
+		process_state.track_map = &p_track_map;
 
 		// Init node state for root AnimationNode.
 		root_animation_node->node_state.track_weights.resize(p_track_count);
