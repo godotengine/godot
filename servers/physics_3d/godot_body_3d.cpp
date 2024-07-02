@@ -65,6 +65,13 @@ void GodotBody3D::update_mass_properties() {
 
 				total_area += get_shape_area(i);
 			}
+			for (int i = 0; i < get_negative_shape_count(); i++) {
+				if (is_negative_shape_disabled(i)) {
+					continue;
+				}
+
+				total_area -= get_negative_shape_area(i);
+			}
 
 			if (calculate_center_of_mass) {
 				// We have to recompute the center of mass.
@@ -82,6 +89,18 @@ void GodotBody3D::update_mass_properties() {
 
 						// NOTE: we assume that the shape origin is also its center of mass.
 						center_of_mass_local += mass_new * get_shape_transform(i).origin;
+					}
+					for (int i = 0; i < get_negative_shape_count(); i++) {
+						if (is_negative_shape_disabled(i)) {
+							continue;
+						}
+
+						real_t area = get_negative_shape_area(i);
+
+						real_t mass = area * this->mass / total_area;
+
+						// NOTE: we assume that the shape origin is also its center of mass.
+						center_of_mass_local -= mass * get_negative_shape_transform(i).origin;
 					}
 
 					center_of_mass_local /= mass;
@@ -119,6 +138,32 @@ void GodotBody3D::update_mass_properties() {
 
 					Vector3 shape_origin = shape_transform.origin - center_of_mass_local;
 					inertia_tensor += shape_inertia_tensor + (Basis() * shape_origin.dot(shape_origin) - shape_origin.outer(shape_origin)) * mass_new;
+				}
+				for (int i = 0; i < get_negative_shape_count(); i++) {
+					if (is_negative_shape_disabled(i)) {
+						continue;
+					}
+
+					real_t area = get_negative_shape_area(i);
+					if (area == 0.0) {
+						continue;
+					}
+
+					inertia_set = true;
+
+					const GodotShape3D *shape = get_negative_shape(i);
+
+					real_t mass = area * this->mass / total_area;
+
+					Basis shape_inertia_tensor = Basis::from_scale(shape->get_moment_of_inertia(mass));
+					Transform3D shape_transform = get_negative_shape_transform(i);
+					Basis shape_basis = shape_transform.basis.orthonormalized();
+
+					// NOTE: we don't take the scale of collision shapes into account when computing the inertia tensor!
+					shape_inertia_tensor = shape_basis * shape_inertia_tensor * shape_basis.transposed();
+
+					Vector3 shape_origin = shape_transform.origin - center_of_mass_local;
+					inertia_tensor -= shape_inertia_tensor + (Basis() * shape_origin.dot(shape_origin) - shape_origin.outer(shape_origin)) * mass;
 				}
 
 				// Set the inertia to a valid value when there are no valid shapes.
