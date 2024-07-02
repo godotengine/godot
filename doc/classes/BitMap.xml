@@ -9,6 +9,36 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="bitwise_and" qualifiers="const">
+			<return type="BitMap" />
+			<param index="0" name="other" type="BitMap" />
+			<description>
+				Creates a new bitmap from the boolean AND operation with [param other].
+				Throws an error if the two bitmaps are not exactly the same size.
+			</description>
+		</method>
+		<method name="bitwise_not" qualifiers="const">
+			<return type="BitMap" />
+			<description>
+				Creates a new bitmap from the boolean NOT operation (i.e. every bit has been flipped from [code]true[/code] to [code]false[/code] and [code]false[/code] to [code]true[/code]).
+			</description>
+		</method>
+		<method name="bitwise_or" qualifiers="const">
+			<return type="BitMap" />
+			<param index="0" name="other" type="BitMap" />
+			<description>
+				Creates a new bitmap from the boolean OR operation with [param other].
+				Throws an error if the two bitmaps are not exactly the same size.
+			</description>
+		</method>
+		<method name="bitwise_xor" qualifiers="const">
+			<return type="BitMap" />
+			<param index="0" name="other" type="BitMap" />
+			<description>
+				Creates a new bitmap from the boolean XOR operation with [param other].
+				Throws an error if the two bitmaps are not exactly the same size.
+			</description>
+		</method>
 		<method name="convert_to_image" qualifiers="const">
 			<return type="Image" />
 			<description>
