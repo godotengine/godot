@@ -1327,7 +1327,10 @@
 			Text shown when the [TextEdit] is empty. It is [b]not[/b] the [TextEdit]'s default value (see [member text]).
 		</member>
 		<member name="scroll_fit_content_height" type="bool" setter="set_fit_content_height_enabled" getter="is_fit_content_height_enabled" default="false">
-			If [code]true[/code], [TextEdit] will disable vertical scroll and fit minimum height to the number of visible lines.
+			If [code]true[/code], [TextEdit] will disable vertical scroll and fit minimum height to the number of visible lines. When both this property and [member scroll_fit_content_width] are [code]true[/code], no scrollbars will be displayed.
+		</member>
+		<member name="scroll_fit_content_width" type="bool" setter="set_fit_content_width_enabled" getter="is_fit_content_width_enabled" default="false">
+			If [code]true[/code], [TextEdit] will disable horizontal scroll and fit minimum width to the widest line in the text. When both this property and [member scroll_fit_content_height] are [code]true[/code], no scrollbars will be displayed.
 		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
 			If there is a horizontal scrollbar, this determines the current horizontal scroll value in pixels.

@@ -2931,7 +2931,10 @@ void TextEdit::_update_ime_text() {
 Size2 TextEdit::get_minimum_size() const {
 	Size2 size = theme_cache.style_normal->get_minimum_size();
 	if (fit_content_height) {
-		size.y += content_height_cache;
+		size.y += content_size_cache.y;
+	}
+	if (fit_content_width) {
+		size.x += content_size_cache.x;
 	}
 	return size;
 }
@@ -5771,6 +5774,18 @@ bool TextEdit::is_fit_content_height_enabled() const {
 	return fit_content_height;
 }
 
+void TextEdit::set_fit_content_width_enabled(const bool p_enabled) {
+	if (fit_content_width == p_enabled) {
+		return;
+	}
+	fit_content_width = p_enabled;
+	update_minimum_size();
+}
+
+bool TextEdit::is_fit_content_width_enabled() const {
+	return fit_content_width;
+}
+
 double TextEdit::get_scroll_pos_for_line(int p_line, int p_wrap_index) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
 	ERR_FAIL_COND_V(p_wrap_index < 0, 0);
@@ -6737,6 +6752,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fit_content_height_enabled", "enabled"), &TextEdit::set_fit_content_height_enabled);
 	ClassDB::bind_method(D_METHOD("is_fit_content_height_enabled"), &TextEdit::is_fit_content_height_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_fit_content_width_enabled", "enabled"), &TextEdit::set_fit_content_width_enabled);
+	ClassDB::bind_method(D_METHOD("is_fit_content_width_enabled"), &TextEdit::is_fit_content_width_enabled);
+
 	ClassDB::bind_method(D_METHOD("get_scroll_pos_for_line", "line", "wrap_index"), &TextEdit::get_scroll_pos_for_line, DEFVAL(0));
 
 	// Visible lines.
@@ -6861,6 +6879,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical", PROPERTY_HINT_NONE, "suffix:px"), "set_v_scroll", "get_v_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal", PROPERTY_HINT_NONE, "suffix:px"), "set_h_scroll", "get_h_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_fit_content_height"), "set_fit_content_height_enabled", "is_fit_content_height_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_fit_content_width"), "set_fit_content_width_enabled", "is_fit_content_width_enabled");
 
 	ADD_GROUP("Minimap", "minimap_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_draw"), "set_draw_minimap", "is_drawing_minimap");
@@ -7848,8 +7867,8 @@ void TextEdit::_update_scrollbars() {
 		total_width += minimap_width;
 	}
 
-	content_height_cache = MAX(total_rows, 1) * get_line_height();
-	if (fit_content_height) {
+	content_size_cache = Vector2i(total_width + 10, MAX(total_rows, 1) * get_line_height());
+	if (fit_content_height || fit_content_width) {
 		update_minimum_size();
 	}
 
