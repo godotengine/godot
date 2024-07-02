@@ -90,6 +90,27 @@ void _err_flush_stdout();
 #define GENERATE_TRAP() __builtin_trap()
 #endif
 
+template <class T>
+class RequiredPtr;
+
+#ifdef DEBUG_ENABLED
+struct RequiredPtrChecker {
+	template <class T>
+	_FORCE_INLINE_ static bool was_null_initialized(const T &p_value) {
+		return false;
+	}
+
+	template <class T>
+	_FORCE_INLINE_ static bool was_null_initialized(const RequiredPtr<T> &p_value) {
+		return p_value.was_null_initialized();
+	}
+};
+
+#define REQUIRED_PTR_WAS_NULL_INITIALIZED(m_value) RequiredPtrChecker::was_null_initialized(m_value)
+#else
+#define REQUIRED_PTR_WAS_NULL_INITIALIZED(m_value) (false)
+#endif // DEBUG_ENABLED
+
 /**
  * Error macros.
  * WARNING: These macros work in the opposite way to assert().
@@ -325,7 +346,7 @@ void _err_flush_stdout();
  * If it is null, the current function returns.
  */
 #define ERR_FAIL_NULL(m_param)                                                                          \
-	if (unlikely(m_param == nullptr)) {                                                                 \
+	if (unlikely(m_param == nullptr || REQUIRED_PTR_WAS_NULL_INITIALIZED(m_param))) {                   \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null."); \
 		return;                                                                                         \
 	} else                                                                                              \
@@ -336,7 +357,7 @@ void _err_flush_stdout();
  * If it is null, prints `m_msg` and the current function returns.
  */
 #define ERR_FAIL_NULL_MSG(m_param, m_msg)                                                                      \
-	if (unlikely(m_param == nullptr)) {                                                                        \
+	if (unlikely(m_param == nullptr || REQUIRED_PTR_WAS_NULL_INITIALIZED(m_param))) {                          \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null.", m_msg); \
 		return;                                                                                                \
 	} else                                                                                                     \
@@ -346,7 +367,7 @@ void _err_flush_stdout();
  * Same as `ERR_FAIL_NULL_MSG` but also notifies the editor.
  */
 #define ERR_FAIL_NULL_EDMSG(m_param, m_msg)                                                                          \
-	if (unlikely(m_param == nullptr)) {                                                                              \
+	if (unlikely(m_param == nullptr || REQUIRED_PTR_WAS_NULL_INITIALIZED(m_param))) {                                \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null.", m_msg, true); \
 		return;                                                                                                      \
 	} else                                                                                                           \
@@ -360,7 +381,7 @@ void _err_flush_stdout();
  * If it is null, the current function returns `m_retval`.
  */
 #define ERR_FAIL_NULL_V(m_param, m_retval)                                                              \
-	if (unlikely(m_param == nullptr)) {                                                                 \
+	if (unlikely(m_param == nullptr || REQUIRED_PTR_WAS_NULL_INITIALIZED(m_param))) {                   \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null."); \
 		return m_retval;                                                                                \
 	} else                                                                                              \
@@ -371,7 +392,7 @@ void _err_flush_stdout();
  * If it is null, prints `m_msg` and the current function returns `m_retval`.
  */
 #define ERR_FAIL_NULL_V_MSG(m_param, m_retval, m_msg)                                                          \
-	if (unlikely(m_param == nullptr)) {                                                                        \
+	if (unlikely(m_param == nullptr || REQUIRED_PTR_WAS_NULL_INITIALIZED(m_param))) {                          \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null.", m_msg); \
 		return m_retval;                                                                                       \
 	} else                                                                                                     \
@@ -381,7 +402,7 @@ void _err_flush_stdout();
  * Same as `ERR_FAIL_NULL_V_MSG` but also notifies the editor.
  */
 #define ERR_FAIL_NULL_V_EDMSG(m_param, m_retval, m_msg)                                                              \
-	if (unlikely(m_param == nullptr)) {                                                                              \
+	if (unlikely(m_param == nullptr || REQUIRED_PTR_WAS_NULL_INITIALIZED(m_param))) {                                \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null.", m_msg, true); \
 		return m_retval;                                                                                             \
 	} else                                                                                                           \
