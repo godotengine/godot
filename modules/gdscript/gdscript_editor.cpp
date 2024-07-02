@@ -2765,6 +2765,12 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 				base_type = base_type.class_type->base_type;
 			} break;
+			case GDScriptParser::DataType::SCRIPT:
+				if (base_type.script_type->is_valid() && base_type.script_type->has_method(p_method)) {
+					r_arghint = _make_arguments_hint(base_type.script_type->get_method_info(p_method), p_argidx);
+					return;
+				}
+				break;
 			case GDScriptParser::DataType::NATIVE: {
 				StringName class_name = base_type.native_type;
 				if (!ClassDB::class_exists(class_name)) {
