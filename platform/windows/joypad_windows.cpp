@@ -200,8 +200,12 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 	joy->di_joy->EnumObjects(objectsCallback, this, 0);
 	joy->joy_axis.sort();
 
+	Dictionary joypad_info;
+	joypad_info["vendor_id"] = (int64_t)LOWORD(guid.Data1);
+	joypad_info["product_id"] = (int64_t)HIWORD(guid.Data1);
+
 	joy->guid = instance->guidInstance;
-	input->joy_connection_changed(num, true, instance->tszProductName, uid);
+	input->joy_connection_changed(num, true, instance->tszProductName, uid, joypad_info);
 	joy->attached = true;
 	joy->id = num;
 	attached_joypads[num] = true;
@@ -322,6 +326,13 @@ void JoypadWindows::probe_joypads() {
 				attached_joypads[id] = true;
 				Dictionary joypad_info;
 				joypad_info["xinput_index"] = (int)i;
+				if (XInputGetCapabilitiesEx) {
+					xinput_capabilities_ex xcapex;
+					if (XInputGetCapabilitiesEx(1, i, 0, &xcapex) == ERROR_SUCCESS) {
+						joypad_info["product_id"] = (int64_t)xcapex.productId;
+						joypad_info["vendor_id"] = (int64_t)xcapex.vendorId;
+					}
+				}
 				input->joy_connection_changed(id, true, "XInput Gamepad", "__XINPUT_DEVICE__", joypad_info);
 			}
 		} else if (x_joypads[i].attached) {
@@ -536,7 +547,9 @@ void JoypadWindows::load_xinput() {
 	xinput_set_state = &_xinput_set_state;
 	bool legacy_xinput = false;
 	xinput_dll = LoadLibrary("XInput1_4.dll");
-	if (!xinput_dll) {
+	if (xinput_dll) {
+		XInputGetCapabilitiesEx = (_XInputGetCapabilitiesEx)GetProcAddress((HMODULE)xinput_dll, (char *)108);
+	} else {
 		xinput_dll = LoadLibrary("XInput1_3.dll");
 		if (!xinput_dll) {
 			xinput_dll = LoadLibrary("XInput9_1_0.dll");
