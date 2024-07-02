@@ -497,7 +497,7 @@ class DisplayServerWindows : public DisplayServer {
 	void _drag_event(WindowID p_window, float p_x, float p_y, int idx);
 	void _touch_event(WindowID p_window, bool p_pressed, float p_x, float p_y, int idx);
 
-	void _update_window_style(WindowID p_window, bool p_repaint = true);
+	void _update_window_style(WindowID p_window, bool p_repaint = true, bool p_keep_client_rect = false);
 	void _update_window_mouse_passthrough(WindowID p_window);
 
 	void _update_real_mouse_position(WindowID p_window);
