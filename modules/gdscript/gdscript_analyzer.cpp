@@ -42,7 +42,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hash_map.h"
-#include "scene/resources/packed_scene.h"
+#include "scene/main/node.h"
 
 #if defined(TOOLS_ENABLED) && !defined(DISABLE_DEPRECATED)
 #define SUGGEST_GODOT4_RENAMES
@@ -1378,9 +1378,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 						} else {
 							has_valid_getter = true;
 #ifdef DEBUG_ENABLED
-							if (member.variable->datatype.builtin_type == Variant::INT && return_datatype.builtin_type == Variant::FLOAT) {
-								parser->push_warning(member.variable, GDScriptWarning::NARROWING_CONVERSION);
-							}
+							check_conversion(member.variable, return_datatype.builtin_type, member.variable->datatype.builtin_type);
 #endif
 						}
 					}
@@ -1404,9 +1402,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 						has_valid_setter = true;
 
 #ifdef DEBUG_ENABLED
-						if (member.variable->datatype.builtin_type == Variant::FLOAT && setter_function->parameters[0]->datatype.builtin_type == Variant::INT) {
-							parser->push_warning(member.variable, GDScriptWarning::NARROWING_CONVERSION);
-						}
+						check_conversion(member.variable, member.variable->datatype.builtin_type, setter_function->parameters[0]->datatype.builtin_type);
 #endif
 					}
 				}
@@ -1564,9 +1560,7 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 
 		if (value.get_type() != argument_info.type) {
 #ifdef DEBUG_ENABLED
-			if (argument_info.type == Variant::INT && value.get_type() == Variant::FLOAT) {
-				parser->push_warning(argument, GDScriptWarning::NARROWING_CONVERSION);
-			}
+			check_conversion(argument, value.get_type(), argument_info.type);
 #endif
 
 			if (!Variant::can_convert_strict(value.get_type(), argument_info.type)) {
@@ -1959,8 +1953,8 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 			} else if (specified_type.has_container_element_type(0) && !initializer_type.has_container_element_type(0)) {
 				mark_node_unsafe(p_assignable->initializer);
 #ifdef DEBUG_ENABLED
-			} else if (specified_type.builtin_type == Variant::INT && initializer_type.builtin_type == Variant::FLOAT) {
-				parser->push_warning(p_assignable->initializer, GDScriptWarning::NARROWING_CONVERSION);
+			} else {
+				check_conversion(p_assignable->initializer, initializer_type.builtin_type, specified_type.builtin_type);
 #endif
 			}
 		}
@@ -2427,8 +2421,8 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 				push_error(vformat(R"(Cannot return value of type "%s" because the function return type is "%s".)", result.to_string(), expected_type.to_string()), p_return);
 			}
 #ifdef DEBUG_ENABLED
-		} else if (expected_type.builtin_type == Variant::INT && result.builtin_type == Variant::FLOAT) {
-			parser->push_warning(p_return, GDScriptWarning::NARROWING_CONVERSION);
+		} else {
+			check_conversion(p_return->return_value, result.builtin_type, expected_type.builtin_type);
 #endif
 		}
 	}
@@ -2607,9 +2601,7 @@ void GDScriptAnalyzer::update_const_expression_builtin_type(GDScriptParser::Expr
 	}
 
 #ifdef DEBUG_ENABLED
-	if (p_type.builtin_type == Variant::INT && value_type.builtin_type == Variant::FLOAT) {
-		parser->push_warning(p_expression, GDScriptWarning::NARROWING_CONVERSION);
-	}
+	check_conversion(p_expression, value_type.builtin_type, p_type.builtin_type);
 #endif
 
 	p_expression->reduced_value = converted_to;
@@ -2834,8 +2826,8 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 	}
 
 #ifdef DEBUG_ENABLED
-	if (assignee_type.is_hard_type() && assignee_type.builtin_type == Variant::INT && assigned_value_type.builtin_type == Variant::FLOAT) {
-		parser->push_warning(p_assignment->assigned_value, GDScriptWarning::NARROWING_CONVERSION);
+	if (assignee_type.is_hard_type()) {
+		check_conversion(p_assignment->assigned_value, assigned_value_type.builtin_type, assignee_type.builtin_type);
 	}
 	// Check for assignment with operation before assignment.
 	if (p_assignment->operation != GDScriptParser::AssignmentNode::OP_NONE && p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
@@ -5343,8 +5335,8 @@ void GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 #endif
 			}
 #ifdef DEBUG_ENABLED
-		} else if (par_type.kind == GDScriptParser::DataType::BUILTIN && par_type.builtin_type == Variant::INT && arg_type.kind == GDScriptParser::DataType::BUILTIN && arg_type.builtin_type == Variant::FLOAT) {
-			parser->push_warning(p_call->arguments[i], GDScriptWarning::NARROWING_CONVERSION, p_call->function_name);
+		} else if (par_type.kind == GDScriptParser::DataType::BUILTIN && arg_type.kind == GDScriptParser::DataType::BUILTIN) {
+			check_conversion(p_call->arguments[i], arg_type.builtin_type, par_type.builtin_type);
 #endif
 		}
 	}
@@ -5413,6 +5405,30 @@ void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_identifier
 			return;
 		}
 		parent = ClassDB::get_parent_class(parent);
+	}
+}
+
+void GDScriptAnalyzer::check_conversion(const GDScriptParser::Node *p_source, Variant::Type p_from_type, Variant::Type p_to_type) {
+	if (p_from_type == p_to_type) {
+		return;
+	}
+
+	if (p_from_type == Variant::NIL || p_to_type == Variant::NIL) {
+		return;
+	}
+
+	if (p_from_type == Variant::FLOAT && p_to_type == Variant::INT) {
+		parser->push_warning(p_source, GDScriptWarning::NARROWING_CONVERSION);
+		return;
+	}
+
+	bool conversion_causes_copy = (Variant::is_type_shared(p_from_type) || p_from_type >= Variant::PACKED_BYTE_ARRAY) && (Variant::is_type_shared(p_to_type) || p_to_type >= Variant::PACKED_BYTE_ARRAY);
+	// We only want to warn about a copy if the use comes from a variable access.
+	bool from_variable = p_source && p_source->type == GDScriptParser::Node::IDENTIFIER;
+	if (from_variable && conversion_causes_copy) {
+		String from_name = Variant::get_type_name(p_from_type);
+		String to_name = Variant::get_type_name(p_to_type);
+		parser->push_warning(p_source, GDScriptWarning::IMPLICIT_CONVERSION_CAUSES_COPY, from_name, to_name);
 	}
 }
 #endif
