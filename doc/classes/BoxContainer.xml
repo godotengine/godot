@@ -22,6 +22,9 @@
 		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="BoxContainer.AlignmentMode" default="0">
 			The alignment of the container's children (must be one of [constant ALIGNMENT_BEGIN], [constant ALIGNMENT_CENTER], or [constant ALIGNMENT_END]).
 		</member>
+		<member name="reverse_fill" type="bool" setter="set_reverse_fill" getter="is_reverse_fill" default="false">
+			If [code]true[/code], the container's children are arranged in reverse order.
+		</member>
 		<member name="vertical" type="bool" setter="set_vertical" getter="is_vertical" default="false">
 			If [code]true[/code], the [BoxContainer] will arrange its children vertically, rather than horizontally.
 			Can't be changed when using [HBoxContainer] and [VBoxContainer].

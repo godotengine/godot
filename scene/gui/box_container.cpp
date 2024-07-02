@@ -184,7 +184,7 @@ void BoxContainer::_resort() {
 	int start;
 	int end;
 	int delta;
-	if (!rtl || vertical) {
+	if ((!rtl || vertical) != reverse_fill) {
 		start = 0;
 		end = get_child_count();
 		delta = +1;
@@ -319,6 +319,15 @@ bool BoxContainer::is_vertical() const {
 	return vertical;
 }
 
+void BoxContainer::set_reverse_fill(bool p_reverse_fill) {
+	reverse_fill = p_reverse_fill;
+	_resort();
+}
+
+bool BoxContainer::is_reverse_fill() const {
+	return reverse_fill;
+}
+
 Control *BoxContainer::add_spacer(bool p_begin) {
 	Control *c = memnew(Control);
 	c->set_mouse_filter(MOUSE_FILTER_PASS); //allow spacer to pass mouse events
@@ -371,6 +380,8 @@ void BoxContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_alignment"), &BoxContainer::get_alignment);
 	ClassDB::bind_method(D_METHOD("set_vertical", "vertical"), &BoxContainer::set_vertical);
 	ClassDB::bind_method(D_METHOD("is_vertical"), &BoxContainer::is_vertical);
+	ClassDB::bind_method(D_METHOD("set_reverse_fill", "reverse_fill"), &BoxContainer::set_reverse_fill);
+	ClassDB::bind_method(D_METHOD("is_reverse_fill"), &BoxContainer::is_reverse_fill);
 
 	BIND_ENUM_CONSTANT(ALIGNMENT_BEGIN);
 	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);
@@ -378,6 +389,7 @@ void BoxContainer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment", "get_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reverse_fill"), "set_reverse_fill", "is_reverse_fill");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, BoxContainer, separation);
 }
