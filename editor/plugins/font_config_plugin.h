@@ -52,7 +52,7 @@ public:
 	void set_dict(const Dictionary &p_dict);
 	Dictionary get_dict();
 
-	EditorPropertyFontMetaObject(){};
+	EditorPropertyFontMetaObject() {}
 };
 
 /*************************************************************************/
@@ -76,7 +76,7 @@ public:
 	void set_defaults(const Dictionary &p_dict);
 	Dictionary get_defaults();
 
-	EditorPropertyFontOTObject(){};
+	EditorPropertyFontOTObject() {}
 };
 
 /*************************************************************************/
@@ -104,7 +104,7 @@ class EditorPropertyFontMetaOverride : public EditorProperty {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods(){};
+	static void _bind_methods() {}
 
 	void _edit_pressed();
 	void _page_changed(int p_page);
@@ -139,7 +139,7 @@ class EditorPropertyOTVariation : public EditorProperty {
 	EditorPaginator *paginator = nullptr;
 
 protected:
-	static void _bind_methods(){};
+	static void _bind_methods() {}
 
 	void _edit_pressed();
 	void _page_changed(int p_page);
@@ -188,7 +188,7 @@ class EditorPropertyOTFeatures : public EditorProperty {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods(){};
+	static void _bind_methods() {}
 
 	void _edit_pressed();
 	void _page_changed(int p_page);
@@ -255,7 +255,7 @@ protected:
 	virtual void _add_element() override;
 
 	void _add_font(int p_option);
-	static void _bind_methods(){};
+	static void _bind_methods() {}
 
 public:
 	EditorPropertyFontNamesArray();

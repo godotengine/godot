@@ -165,6 +165,17 @@ repos:
             platform/android/java/lib/src/com/google/.*
           )
 
+      - id: semicolon-cleanup
+        name: semicolon-cleanup
+        language: python
+        entry: python misc/scripts/semicolon_cleanup.py
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java|glsl)$
+        exclude: |
+          (?x)^(
+            tests/python_build/.*|
+            platform/android/java/lib/src/com/.*
+          )
+
       - id: dotnet-format
         name: dotnet-format
         language: python

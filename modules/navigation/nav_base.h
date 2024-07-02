@@ -64,7 +64,7 @@ public:
 	void set_owner_id(ObjectID p_owner_id) { owner_id = p_owner_id; }
 	ObjectID get_owner_id() const { return owner_id; }
 
-	virtual ~NavBase(){};
+	virtual ~NavBase() {}
 };
 
 #endif // NAV_BASE_H
