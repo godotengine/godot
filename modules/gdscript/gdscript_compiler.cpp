@@ -2672,7 +2672,10 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 	int native_idx = GDScriptLanguage::get_singleton()->get_global_map()[base_type.native_type];
 
 	p_script->native = GDScriptLanguage::get_singleton()->get_global_array()[native_idx];
-	ERR_FAIL_COND_V(p_script->native.is_null(), ERR_BUG);
+	if (p_script->native.is_null()) {
+		_set_error("Compiler bug: script native type is null!", nullptr);
+		return ERR_BUG;
+	}
 
 	// Inheritance
 	switch (base_type.kind) {
@@ -2682,7 +2685,8 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 		case GDScriptDataType::GDSCRIPT: {
 			Ref<GDScript> base = Ref<GDScript>(base_type.script_type);
 			if (base.is_null()) {
-				return ERR_COMPILATION_FAILED;
+				_set_error("Compiler bug: base script type is null!", nullptr);
+				return ERR_BUG;
 			}
 
 			if (main_script->has_class(base.ptr())) {
