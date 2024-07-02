@@ -355,24 +355,23 @@ namespace GodotTools.Export
                 if (outputPaths.Count > 2)
                 {
                     // lipo the simulator binaries together
-                    // TODO: Move this to the native lipo implementation we have in the macos export plugin.
-                    var lipoArgs = new List<string>();
-                    lipoArgs.Add("-create");
-                    lipoArgs.AddRange(outputPaths.Skip(1).Select(x => Path.Combine(x, $"{GodotSharpDirs.ProjectAssemblyName}.dylib")));
-                    lipoArgs.Add("-output");
-                    lipoArgs.Add(Path.Combine(outputPaths[1], $"{GodotSharpDirs.ProjectAssemblyName}.dylib"));
 
-                    int lipoExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("lipo"), lipoArgs);
-                    if (lipoExitCode != 0)
-                        throw new InvalidOperationException($"Command 'lipo' exited with code: {lipoExitCode}.");
+                    string outputPath = Path.Combine(outputPaths[1], $"{GodotSharpDirs.ProjectAssemblyName}.dylib");
+                    string[] files = outputPaths
+                        .Skip(1)
+                        .Select(path => Path.Combine(path, $"{GodotSharpDirs.ProjectAssemblyName}.dylib"))
+                        .ToArray();
+
+                    if (!Internal.LipOCreateFile(outputPath, files))
+                    {
+                        throw new InvalidOperationException($"Failed to 'lipo' simulator binaries.");
+                    }
 
                     outputPaths.RemoveRange(2, outputPaths.Count - 2);
                 }
 
-                var xcFrameworkPath = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, publishConfig.BuildConfig,
-                    $"{GodotSharpDirs.ProjectAssemblyName}_aot.xcframework");
-                if (!BuildManager.GenerateXCFrameworkBlocking(outputPaths,
-                        Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, publishConfig.BuildConfig, xcFrameworkPath)))
+                string xcFrameworkPath = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, publishConfig.BuildConfig, $"{GodotSharpDirs.ProjectAssemblyName}_aot.xcframework");
+                if (!BuildManager.GenerateXCFrameworkBlocking(outputPaths, xcFrameworkPath))
                 {
                     throw new InvalidOperationException("Failed to generate xcframework.");
                 }
