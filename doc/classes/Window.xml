@@ -684,6 +684,9 @@
 		<member name="unfocusable" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] can't be focused nor interacted with. It can still be visible.
 		</member>
+		<member name="unminimizable" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the window can't be minimized. Minimize button is disabled.
+		</member>
 		<member name="unresizable" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the window can't be resized. Minimize and maximize buttons are disabled.
 		</member>
@@ -790,7 +793,7 @@
 			Windowed mode, i.e. [Window] doesn't occupy the whole screen (unless set to the size of the screen).
 		</constant>
 		<constant name="MODE_MINIMIZED" value="1" enum="Mode">
-			Minimized window mode, i.e. [Window] is not visible and available on window manager's window list. Normally happens when the minimize button is pressed.
+			Minimized window mode, i.e. [Window] is not visible and available on window manager's window list. Normally happens when the minimize button is pressed, unless [member unminimizable] is enabled.
 		</constant>
 		<constant name="MODE_MAXIMIZED" value="2" enum="Mode">
 			Maximized window mode, i.e. [Window] will occupy whole screen area except task bar and still display its borders. Normally happens when the maximize button is pressed.
@@ -839,7 +842,10 @@
 			All mouse events are passed to the underlying window of the same application.
 			[b]Note:[/b] This flag has no effect in embedded windows.
 		</constant>
-		<constant name="FLAG_MAX" value="8" enum="Flags">
+		<constant name="FLAG_MINIMIZE_DISABLED" value="8" enum="Flags">
+			The window can't be minimized by clicking its minimize button as it will hides anyway. It's still possible to minimize the window using [constant MODE_MINIMIZED]. This flag is ignored for full screen windows. Set with [member unminimizable].
+		</constant>
+		<constant name="FLAG_MAX" value="9" enum="Flags">
 			Max value of the [enum Flags].
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">
