@@ -140,12 +140,10 @@ TEST_CASE("[Expression] Scientific notation") {
 			double(expression.execute()) == doctest::Approx(2e5),
 			"The expression should return the expected result.");
 
+	// 2e.5 is not a valid expression because the exponent after e must be an integer in scientific notation.
 	CHECK_MESSAGE(
-			expression.parse("2e.5") == OK,
-			"The expression should parse successfully.");
-	CHECK_MESSAGE(
-			double(expression.execute()) == doctest::Approx(2),
-			"The expression should return the expected result.");
+			expression.parse("2e.5") == ERR_INVALID_PARAMETER,
+			"The exponent after e must be an integer in scientific notation.");
 }
 
 TEST_CASE("[Expression] Underscored numeric literals") {
@@ -155,11 +153,120 @@ TEST_CASE("[Expression] Underscored numeric literals") {
 			expression.parse("1_000_000") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
+			int(expression.execute()) == 1'000'000,
+			"The expression should work with underscored numeric literals.");
+	CHECK_MESSAGE(
 			expression.parse("1_000.000") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(1'000.000),
+			"The expression should work with underscored numeric literals.");
+	CHECK_MESSAGE(
 			expression.parse("0xff_99_00") == OK,
 			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			int(expression.execute()) == 0xff'99'00,
+			"The expression should work with underscored numeric literals.");
+}
+
+TEST_CASE("[Expression] Invalid underscored numeric literals") {
+	Expression expression;
+
+	CHECK_MESSAGE(
+			expression.parse("3_.1415") == ERR_INVALID_PARAMETER,
+			"Cannot put underscores adjacent to a decimal point.");
+
+	CHECK_MESSAGE(
+			expression.parse("3._1415") == ERR_INVALID_PARAMETER,
+			"Cannot put underscores adjacent to a decimal point.");
+
+	CHECK_MESSAGE(
+			expression.parse("1_2.3_4") == OK,
+			"The expression should parse successfully.");
+
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(12.34),
+			"The expression should work with underscored numeric literals.");
+
+	CHECK_MESSAGE(
+			expression.parse("3_e2") == ERR_INVALID_PARAMETER,
+			"Cannot put underscores adjacent to an exponent.");
+
+	CHECK_MESSAGE(
+			expression.parse("3e_2") == ERR_INVALID_PARAMETER,
+			"Cannot put underscores adjacent to an exponent.");
+
+	CHECK_MESSAGE(
+			expression.parse("1.1e-_12") == ERR_INVALID_PARAMETER,
+			"Cannot put underscores at the beginning of a number.");
+
+	CHECK_MESSAGE(
+			expression.parse("1_2.3_4e-1_2") == OK,
+			"The expression should parse successfully.");
+
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(12.34e-12),
+			"The expression should work with underscored numeric literals.");
+
+	CHECK_MESSAGE(
+			expression.parse("5_2") == OK,
+			"The expression should parse successfully.");
+
+	CHECK_MESSAGE(
+			int(expression.execute()) == 52,
+			"The expression should work with underscored numeric literals.");
+
+	CHECK_MESSAGE(
+			expression.parse("52_") == ERR_INVALID_PARAMETER,
+			"Cannot put underscores at the end of a literal.");
+
+	CHECK_MESSAGE(
+			expression.parse("5_______2") == OK,
+			"The expression should parse successfully.");
+
+	CHECK_MESSAGE(
+			int(expression.execute()) == 52,
+			"The expression should work with underscored numeric literals.");
+
+	CHECK_MESSAGE(
+			expression.parse("0_x52") == ERR_INVALID_PARAMETER,
+			"Cannot put underscores in the 0x radix prefix.");
+
+	CHECK_MESSAGE(
+			expression.parse("0x_52") == ERR_INVALID_PARAMETER,
+			"Cannot put underscores at the beginning of a number.");
+
+	CHECK_MESSAGE(
+			expression.parse("0x52_") == ERR_INVALID_PARAMETER,
+			"Cannot put underscores at the end of a number.");
+
+	CHECK_MESSAGE(
+			expression.parse("0x5_2__A") == OK,
+			"The expression should parse successfully.");
+
+	CHECK_MESSAGE(
+			int(expression.execute()) == 0x52A,
+			"The expression should work with underscored numeric literals.");
+
+	CHECK_MESSAGE(
+			expression.parse("0_b101") == ERR_INVALID_PARAMETER,
+			"Cannot put underscores in the 0b radix prefix.");
+
+	CHECK_MESSAGE(
+			expression.parse("0b_101") == ERR_INVALID_PARAMETER,
+			"Cannot put underscores at the beginning of a number.");
+
+	CHECK_MESSAGE(
+			expression.parse("0b101_") == ERR_INVALID_PARAMETER,
+			"Cannot put underscores at the end of a number.");
+
+	CHECK_MESSAGE(
+			expression.parse("0b1__0_1") == OK,
+			"The expression should parse successfully.");
+
+	CHECK_MESSAGE(
+			int(expression.execute()) == 0b101,
+			"The expression should work with underscored numeric literals.");
 }
 
 TEST_CASE("[Expression] Built-in functions") {
@@ -369,40 +476,28 @@ TEST_CASE("[Expression] Unusual expressions") {
 			expression.parse("(((((((((((((((666)))))))))))))))") == OK,
 			"The expression should parse successfully.");
 
-	// Using invalid identifiers doesn't cause a parse error.
+	// Using invalid identifiers should cause a parse error.
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
-			expression.parse("hello + hello") == OK,
-			"The expression should parse successfully.");
-	CHECK_MESSAGE(
-			int(expression.execute()) == 0,
-			"The expression should return the expected result.");
+			expression.parse("hello + hello") == ERR_INVALID_PARAMETER,
+			"The expression should fail to parse.");
 	ERR_PRINT_ON;
 
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
-			expression.parse("$1.00 + ???5") == OK,
-			"The expression should parse successfully.");
-	CHECK_MESSAGE(
-			int(expression.execute()) == 0,
-			"The expression should return the expected result.");
+			expression.parse("$1.00 + ???5") == ERR_INVALID_PARAMETER,
+			"The expression should fail to parse.");
 	ERR_PRINT_ON;
 
 	// Commas can't be used as a decimal parameter.
 	CHECK_MESSAGE(
-			expression.parse("123,456") == OK,
-			"The expression should parse successfully.");
-	CHECK_MESSAGE(
-			int(expression.execute()) == 123,
-			"The expression should return the expected result.");
+			expression.parse("123,456") == ERR_INVALID_PARAMETER,
+			"The expression should fail to parse a literal with commas.");
 
 	// Spaces can't be used as a separator for large numbers.
 	CHECK_MESSAGE(
-			expression.parse("123 456") == OK,
-			"The expression should parse successfully.");
-	CHECK_MESSAGE(
-			int(expression.execute()) == 123,
-			"The expression should return the expected result.");
+			expression.parse("123 456") == ERR_INVALID_PARAMETER,
+			"The expression should fail to parse a literal with spaces.");
 
 	// Division by zero is accepted, even though it prints an error message normally.
 	CHECK_MESSAGE(
