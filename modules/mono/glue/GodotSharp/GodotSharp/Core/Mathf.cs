@@ -1299,6 +1299,18 @@ namespace Godot
         }
 
         /// <summary>
+        /// Moves <paramref name="from"/> toward <paramref name="to"/> smoothly (fast to slow) by the <paramref name="delta"/> amount. The function is defined as <code>lerp(from, to, 1 - exp(-delta))</code>.
+        /// </summary>
+        /// <param name="from">The start value.</param>
+        /// <param name="to">The value to move towards.</param>
+        /// <param name="delta">The amount to move by.</param>
+        /// <returns>The value after moving smoothly.</returns>
+        public static float MoveTowardSmooth(float from, float to, float delta)
+        {
+            return Lerp(from, to, -ExpM1(-delta));
+        }
+
+        /// <summary>
         /// Moves <paramref name="from"/> toward <paramref name="to"/> by the <paramref name="delta"/> value.
         ///
         /// Use a negative <paramref name="delta"/> value to move away.
@@ -1314,6 +1326,19 @@ namespace Godot
 
             return from + (Math.Sign(to - from) * delta);
         }
+
+        /// <summary>
+        /// Moves <paramref name="from"/> toward <paramref name="to"/> smoothly (fast to slow) by the <paramref name="delta"/> amount. The function is defined as <code>lerp(from, to, 1 - exp(-delta))</code>.
+        /// </summary>
+        /// <param name="from">The start value.</param>
+        /// <param name="to">The value to move towards.</param>
+        /// <param name="delta">The amount to move by.</param>
+        /// <returns>The value after moving smoothly.</returns>
+        public static double MoveTowardSmooth(double from, double to, double delta)
+        {
+            return Lerp(from, to, -ExpM1(-delta));
+        }
+
 
         /// <summary>
         /// Returns the nearest larger power of 2 for the integer <paramref name="value"/>.
