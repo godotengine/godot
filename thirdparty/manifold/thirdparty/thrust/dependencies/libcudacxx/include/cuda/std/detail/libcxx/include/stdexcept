@@ -1,0 +1,321 @@
+// -*- C++ -*-
+//===--------------------------- stdexcept --------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCUDACXX_STDEXCEPT
+#define _LIBCUDACXX_STDEXCEPT
+
+/*
+    stdexcept synopsis
+
+namespace std
+{
+
+class logic_error;
+    class domain_error;
+    class invalid_argument;
+    class length_error;
+    class out_of_range;
+class runtime_error;
+    class range_error;
+    class overflow_error;
+    class underflow_error;
+
+for each class xxx_error:
+
+class xxx_error : public exception // at least indirectly
+{
+public:
+    explicit xxx_error(const string& what_arg);
+    explicit xxx_error(const char*   what_arg);
+
+    virtual const char* what() const noexcept // returns what_arg
+};
+
+}  // std
+
+*/
+
+#ifndef __cuda_std__
+#include <__config>
+#include <exception>
+#include <iosfwd>  // for string forward decl
+#ifdef _LIBCUDACXX_NO_EXCEPTIONS
+#include <cstdlib>
+#endif
+#include <__pragma_push>
+#endif //__cuda_std__
+
+#if defined(_LIBCUDACXX_USE_PRAGMA_GCC_SYSTEM_HEADER)
+#pragma GCC system_header
+#endif
+
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
+
+#ifndef _LIBCUDACXX_ABI_VCRUNTIME
+class _LIBCUDACXX_HIDDEN __libcpp_refstring
+{
+    const char* __imp_;
+
+    _LIBCUDACXX_EXECUTION_SPACE_SPECIFIER bool __uses_refcount() const;
+public:
+    _LIBCUDACXX_EXECUTION_SPACE_SPECIFIER explicit __libcpp_refstring(const char* __msg);
+    _LIBCUDACXX_EXECUTION_SPACE_SPECIFIER __libcpp_refstring(const __libcpp_refstring& __s) _NOEXCEPT;
+    _LIBCUDACXX_EXECUTION_SPACE_SPECIFIER __libcpp_refstring& operator=(const __libcpp_refstring& __s) _NOEXCEPT;
+    _LIBCUDACXX_EXECUTION_SPACE_SPECIFIER ~__libcpp_refstring();
+
+    _LIBCUDACXX_EXECUTION_SPACE_SPECIFIER const char* c_str() const _NOEXCEPT {return __imp_;}
+};
+#endif // !_LIBCUDACXX_ABI_VCRUNTIME
+
+_LIBCUDACXX_END_NAMESPACE_STD
+
+#ifndef __cuda_std__
+#ifdef _LIBCUDACXX_BEGIN_NAMESPACE_STD_NOVERSION
+_LIBCUDACXX_BEGIN_NAMESPACE_STD_NOVERSION
+#else
+namespace std  // purposefully not versioned
+{
+#endif //_LIBCUDACXX_BEGIN_NAMESPACE_STD_NOVERSION
+
+class _LIBCUDACXX_EXCEPTION_ABI logic_error
+    : public exception
+{
+#ifndef _LIBCUDACXX_ABI_VCRUNTIME
+private:
+    _CUDA_VSTD::__libcpp_refstring __imp_;
+public:
+    explicit logic_error(const string&);
+    explicit logic_error(const char*);
+
+    logic_error(const logic_error&) _NOEXCEPT;
+    logic_error& operator=(const logic_error&) _NOEXCEPT;
+
+    virtual ~logic_error() _NOEXCEPT;
+
+    virtual const char* what() const _NOEXCEPT;
+#else
+public:
+    explicit logic_error(const _CUDA_VSTD::string&); // Symbol uses versioned std::string
+    _LIBCUDACXX_INLINE_VISIBILITY explicit logic_error(const char* __s) : exception(__s) {}
+#endif
+};
+
+class _LIBCUDACXX_EXCEPTION_ABI runtime_error
+    : public exception
+{
+#ifndef _LIBCUDACXX_ABI_VCRUNTIME
+private:
+    _CUDA_VSTD::__libcpp_refstring __imp_;
+public:
+    explicit runtime_error(const string&);
+    explicit runtime_error(const char*);
+
+    runtime_error(const runtime_error&) _NOEXCEPT;
+    runtime_error& operator=(const runtime_error&) _NOEXCEPT;
+
+    virtual ~runtime_error() _NOEXCEPT;
+
+    virtual const char* what() const _NOEXCEPT;
+#else
+public:
+   explicit runtime_error(const _CUDA_VSTD::string&); // Symbol uses versioned std::string
+   _LIBCUDACXX_INLINE_VISIBILITY explicit runtime_error(const char* __s) : exception(__s) {}
+#endif // _LIBCUDACXX_ABI_VCRUNTIME
+};
+
+class _LIBCUDACXX_EXCEPTION_ABI domain_error
+    : public logic_error
+{
+public:
+    _LIBCUDACXX_INLINE_VISIBILITY explicit domain_error(const string& __s) : logic_error(__s) {}
+    _LIBCUDACXX_INLINE_VISIBILITY explicit domain_error(const char* __s)   : logic_error(__s) {}
+
+#ifndef _LIBCUDACXX_ABI_VCRUNTIME
+    virtual ~domain_error() _NOEXCEPT;
+#endif
+};
+
+class _LIBCUDACXX_EXCEPTION_ABI invalid_argument
+    : public logic_error
+{
+public:
+    _LIBCUDACXX_INLINE_VISIBILITY explicit invalid_argument(const string& __s) : logic_error(__s) {}
+    _LIBCUDACXX_INLINE_VISIBILITY explicit invalid_argument(const char* __s)   : logic_error(__s) {}
+
+#ifndef _LIBCUDACXX_ABI_VCRUNTIME
+    virtual ~invalid_argument() _NOEXCEPT;
+#endif
+};
+
+class _LIBCUDACXX_EXCEPTION_ABI length_error
+    : public logic_error
+{
+public:
+    _LIBCUDACXX_INLINE_VISIBILITY explicit length_error(const string& __s) : logic_error(__s) {}
+    _LIBCUDACXX_INLINE_VISIBILITY explicit length_error(const char* __s)   : logic_error(__s) {}
+#ifndef _LIBCUDACXX_ABI_VCRUNTIME
+    virtual ~length_error() _NOEXCEPT;
+#endif
+};
+
+class _LIBCUDACXX_EXCEPTION_ABI out_of_range
+    : public logic_error
+{
+public:
+    _LIBCUDACXX_INLINE_VISIBILITY explicit out_of_range(const string& __s) : logic_error(__s) {}
+    _LIBCUDACXX_INLINE_VISIBILITY explicit out_of_range(const char* __s)   : logic_error(__s) {}
+
+#ifndef _LIBCUDACXX_ABI_VCRUNTIME
+    virtual ~out_of_range() _NOEXCEPT;
+#endif
+};
+
+class _LIBCUDACXX_EXCEPTION_ABI range_error
+    : public runtime_error
+{
+public:
+    _LIBCUDACXX_INLINE_VISIBILITY explicit range_error(const string& __s) : runtime_error(__s) {}
+    _LIBCUDACXX_INLINE_VISIBILITY explicit range_error(const char* __s)   : runtime_error(__s) {}
+
+#ifndef _LIBCUDACXX_ABI_VCRUNTIME
+    virtual ~range_error() _NOEXCEPT;
+#endif
+};
+
+class _LIBCUDACXX_EXCEPTION_ABI overflow_error
+    : public runtime_error
+{
+public:
+    _LIBCUDACXX_INLINE_VISIBILITY explicit overflow_error(const string& __s) : runtime_error(__s) {}
+    _LIBCUDACXX_INLINE_VISIBILITY explicit overflow_error(const char* __s)   : runtime_error(__s) {}
+
+#ifndef _LIBCUDACXX_ABI_VCRUNTIME
+    virtual ~overflow_error() _NOEXCEPT;
+#endif
+};
+
+class _LIBCUDACXX_EXCEPTION_ABI underflow_error
+    : public runtime_error
+{
+public:
+    _LIBCUDACXX_INLINE_VISIBILITY explicit underflow_error(const string& __s) : runtime_error(__s) {}
+    _LIBCUDACXX_INLINE_VISIBILITY explicit underflow_error(const char* __s)   : runtime_error(__s) {}
+
+#ifndef _LIBCUDACXX_ABI_VCRUNTIME
+    virtual ~underflow_error() _NOEXCEPT;
+#endif
+};
+
+#ifdef _LIBCUDACXX_END_NAMESPACE_STD_NOVERSION
+_LIBCUDACXX_END_NAMESPACE_STD_NOVERSION
+#else
+}
+#endif //_LIBCUDACXX_END_NAMESPACE_STD_NOVERSION
+#endif //__cuda_std__
+
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
+
+// in the dylib
+_LIBCUDACXX_NORETURN _LIBCUDACXX_FUNC_VIS void __throw_runtime_error(const char*);
+
+_LIBCUDACXX_NORETURN inline _LIBCUDACXX_INLINE_VISIBILITY
+void __throw_logic_error(const char*__msg)
+{
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
+    throw logic_error(__msg);
+#else
+    ((void)__msg);
+    _LIBCUDACXX_UNREACHABLE();
+#endif
+}
+
+_LIBCUDACXX_NORETURN inline _LIBCUDACXX_INLINE_VISIBILITY
+void __throw_domain_error(const char*__msg)
+{
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
+    throw domain_error(__msg);
+#else
+    ((void)__msg);
+    _LIBCUDACXX_UNREACHABLE();
+#endif
+}
+
+_LIBCUDACXX_NORETURN inline _LIBCUDACXX_INLINE_VISIBILITY
+void __throw_invalid_argument(const char*__msg)
+{
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
+    throw invalid_argument(__msg);
+#else
+    ((void)__msg);
+    _LIBCUDACXX_UNREACHABLE();
+#endif
+}
+
+_LIBCUDACXX_NORETURN inline _LIBCUDACXX_INLINE_VISIBILITY
+void __throw_length_error(const char*__msg)
+{
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
+    throw length_error(__msg);
+#else
+    ((void)__msg);
+    _LIBCUDACXX_UNREACHABLE();
+#endif
+}
+
+_LIBCUDACXX_NORETURN inline _LIBCUDACXX_INLINE_VISIBILITY
+void __throw_out_of_range(const char*__msg)
+{
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
+    throw out_of_range(__msg);
+#else
+    ((void)__msg);
+    _LIBCUDACXX_UNREACHABLE();
+#endif
+}
+
+_LIBCUDACXX_NORETURN inline _LIBCUDACXX_INLINE_VISIBILITY
+void __throw_range_error(const char*__msg)
+{
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
+    throw range_error(__msg);
+#else
+    ((void)__msg);
+    _LIBCUDACXX_UNREACHABLE();
+#endif
+}
+
+_LIBCUDACXX_NORETURN inline _LIBCUDACXX_INLINE_VISIBILITY
+void __throw_overflow_error(const char*__msg)
+{
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
+    throw overflow_error(__msg);
+#else
+    ((void)__msg);
+    _LIBCUDACXX_UNREACHABLE();
+#endif
+}
+
+_LIBCUDACXX_NORETURN inline _LIBCUDACXX_INLINE_VISIBILITY
+void __throw_underflow_error(const char*__msg)
+{
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
+    throw underflow_error(__msg);
+#else
+    ((void)__msg);
+    _LIBCUDACXX_UNREACHABLE();
+#endif
+}
+
+_LIBCUDACXX_END_NAMESPACE_STD
+
+#ifndef __cuda_std__
+#include <__pragma_pop>
+#endif //__cuda_std__
+
+#endif  // _LIBCUDACXX_STDEXCEPT

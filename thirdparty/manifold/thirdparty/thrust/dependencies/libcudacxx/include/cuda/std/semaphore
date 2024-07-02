@@ -1,0 +1,47 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ < 700
+#  error "CUDA synchronization primitives are only supported for sm_70 and up."
+#endif
+
+#ifndef _CUDA_SEMAPHORE
+#define _CUDA_SEMAPHORE
+
+#include "atomic"
+
+#include "detail/__config"
+
+#include "detail/__pragma_push"
+
+#include "detail/libcxx/include/semaphore"
+
+_LIBCUDACXX_BEGIN_NAMESPACE_CUDA
+
+template<thread_scope _Sco, ptrdiff_t __least_max_value = INT_MAX>
+class counting_semaphore : public std::__semaphore_base<__least_max_value, _Sco>
+{
+    static_assert(__least_max_value <= std::__semaphore_base<__least_max_value, _Sco>::max(), "");
+public:
+    _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR
+    counting_semaphore(ptrdiff_t __count = 0) : std::__semaphore_base<__least_max_value, _Sco>(__count) { }
+    ~counting_semaphore() = default;
+
+    counting_semaphore(const counting_semaphore&) = delete;
+    counting_semaphore& operator=(const counting_semaphore&) = delete;
+};
+
+template<thread_scope _Sco>
+using binary_semaphore = counting_semaphore<_Sco, 1>;
+
+_LIBCUDACXX_END_NAMESPACE_CUDA
+
+#include "detail/__pragma_pop"
+
+#endif //_CUDA_SEMAPHORE

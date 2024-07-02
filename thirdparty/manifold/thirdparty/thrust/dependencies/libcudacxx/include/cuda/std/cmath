@@ -1,0 +1,27 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of the CUDA Toolkit, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _CUDA_CMATH
+#define _CUDA_CMATH
+
+#include "limits"
+#include "type_traits"
+
+#include "detail/__config"
+
+#include "detail/__pragma_push"
+
+#ifndef _LIBCUDACXX_COMPILER_NVRTC
+#include <math.h>
+#endif
+#include "detail/libcxx/include/cmath"
+
+#include "detail/__pragma_pop"
+
+#endif //_CUDA_CMATH
+

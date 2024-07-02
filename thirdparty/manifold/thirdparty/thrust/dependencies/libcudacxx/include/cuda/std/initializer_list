@@ -1,0 +1,25 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of the CUDA Toolkit, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _CUDA_INITIALIZER_LIST
+#define _CUDA_INITIALIZER_LIST
+
+#include "detail/__config"
+
+#if !defined(_LIBCUDACXX_COMPILER_NVRTC)
+#include <initializer_list>
+#endif
+
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
+    using ::std::initializer_list;
+_LIBCUDACXX_END_NAMESPACE_STD
+
+
+#endif //_CUDA_INITIALIZER_LIST
+
+

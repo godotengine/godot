@@ -1,0 +1,61 @@
+// -*- C++ -*-
+//===--------------------------- __nullptr --------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCUDACXX_NULLPTR
+#define _LIBCUDACXX_NULLPTR
+
+#include <__config>
+
+#if defined(_LIBCUDACXX_USE_PRAGMA_GCC_SYSTEM_HEADER)
+#pragma GCC system_header
+#endif
+
+#ifdef _LIBCUDACXX_HAS_NO_NULLPTR
+
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
+
+struct _LIBCUDACXX_TEMPLATE_VIS nullptr_t
+{
+    void* __lx;
+
+    struct __nat {int __for_bool_;};
+
+    _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR nullptr_t() : __lx(0) {}
+    _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR nullptr_t(int __nat::*) : __lx(0) {}
+
+    _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR operator int __nat::*() const {return 0;}
+
+    template <class _Tp>
+        _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR
+        operator _Tp* () const {return 0;}
+
+    template <class _Tp, class _Up>
+        _LIBCUDACXX_INLINE_VISIBILITY
+        operator _Tp _Up::* () const {return 0;}
+
+    friend _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR bool operator==(nullptr_t, nullptr_t) {return true;}
+    friend _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR bool operator!=(nullptr_t, nullptr_t) {return false;}
+};
+
+inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR nullptr_t __get_nullptr_t() {return nullptr_t(0);}
+
+#define nullptr _CUDA_VSTD::__get_nullptr_t()
+
+_LIBCUDACXX_END_NAMESPACE_STD
+
+#else  // _LIBCUDACXX_HAS_NO_NULLPTR
+
+namespace std
+{
+    typedef decltype(nullptr) nullptr_t;
+}
+
+#endif  // _LIBCUDACXX_HAS_NO_NULLPTR
+
+#endif  // _LIBCUDACXX_NULLPTR

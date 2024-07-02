@@ -1,0 +1,1943 @@
+// -*- C++ -*-
+//===--------------------------- __config ---------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCUDACXX_CONFIG
+#define _LIBCUDACXX_CONFIG
+
+#if defined(_MSC_VER) && !defined(__clang__)
+  #define _LIBCUDACXX_HAS_PRAGMA_MSVC_WARNING
+  #if !defined(_LIBCUDACXX_DISABLE_PRAGMA_MSVC_WARNING)
+    #define _LIBCUDACXX_USE_PRAGMA_MSVC_WARNING
+  #endif
+#else
+  #define _LIBCUDACXX_HAS_PRAGMA_GCC_SYSTEM_HEADER
+  #if !defined(_LIBCUDACXX_DISABLE_PRAGMA_GCC_SYSTEM_HEADER)
+    #define _LIBCUDACXX_USE_PRAGMA_GCC_SYSTEM_HEADER
+  #endif
+#endif
+
+#if defined(_LIBCUDACXX_USE_PRAGMA_GCC_SYSTEM_HEADER)
+#pragma GCC system_header
+#endif
+
+#ifdef __cplusplus
+
+// __config may be included in `extern "C"` contexts, switch back to include <nv/target>
+extern "C++" {
+#include <nv/target>
+}
+
+#ifdef __GNUC__
+#  define _GNUC_VER (__GNUC__ * 100 + __GNUC_MINOR__)
+// The _GNUC_VER_NEW macro better represents the new GCC versioning scheme
+// introduced in GCC 5.0.
+#  define _GNUC_VER_NEW (_GNUC_VER * 10 + __GNUC_PATCHLEVEL__)
+#else
+#  define _GNUC_VER 0
+#  define _GNUC_VER_NEW 0
+#endif
+
+#define _LIBCUDACXX_VERSION 10000
+
+#ifndef _LIBCUDACXX_ABI_VERSION
+#  define _LIBCUDACXX_ABI_VERSION 1
+#endif
+
+#ifndef __STDC_HOSTED__
+#  define _LIBCUDACXX_FREESTANDING
+#endif
+
+#ifndef _LIBCUDACXX_STD_VER
+#  if defined(_MSC_VER)
+#    if   _MSVC_LANG <= 201103L
+#      define _LIBCUDACXX_STD_VER 11
+#    elif _MSVC_LANG <= 201402L
+#      define _LIBCUDACXX_STD_VER 14
+#    elif _MSVC_LANG <= 201703L
+#      define _LIBCUDACXX_STD_VER 17
+#    else
+#      define _LIBCUDACXX_STD_VER 19  // current year, or date of c++2a ratification
+#    endif
+#  else
+#    if   __cplusplus <= 201103L
+#      define _LIBCUDACXX_STD_VER 11
+#    elif __cplusplus <= 201402L
+#      define _LIBCUDACXX_STD_VER 14
+#    elif __cplusplus <= 201703L
+#      define _LIBCUDACXX_STD_VER 17
+#    else
+#      define _LIBCUDACXX_STD_VER 19  // current year, or date of c++2a ratification
+#    endif
+#  endif
+#endif  // _LIBCUDACXX_STD_VER
+
+#if _LIBCUDACXX_STD_VER < 11
+#define _LIBCUDACXX_CXX03_LANG
+#endif
+
+#if defined(__PGIC__) && defined(__linux__)
+    #define __ELF__
+#endif
+
+#if defined(__ELF__)
+#  define _LIBCUDACXX_OBJECT_FORMAT_ELF   1
+#elif defined(__MACH__)
+#  define _LIBCUDACXX_OBJECT_FORMAT_MACHO 1
+#elif defined(_WIN32)
+#  define _LIBCUDACXX_OBJECT_FORMAT_COFF  1
+#elif defined(__wasm__)
+#  define _LIBCUDACXX_OBJECT_FORMAT_WASM  1
+#else
+#  error Unknown object file format
+#endif
+
+#if defined(_LIBCUDACXX_ABI_UNSTABLE) || _LIBCUDACXX_ABI_VERSION >= 2
+// Change short string representation so that string data starts at offset 0,
+// improving its alignment in some cases.
+#  define _LIBCUDACXX_ABI_ALTERNATE_STRING_LAYOUT
+// Fix deque iterator type in order to support incomplete types.
+#  define _LIBCUDACXX_ABI_INCOMPLETE_TYPES_IN_DEQUE
+// Fix undefined behavior in how std::list stores its linked nodes.
+#  define _LIBCUDACXX_ABI_LIST_REMOVE_NODE_POINTER_UB
+// Fix undefined behavior in  how __tree stores its end and parent nodes.
+#  define _LIBCUDACXX_ABI_TREE_REMOVE_NODE_POINTER_UB
+// Fix undefined behavior in how __hash_table stores its pointer types.
+#  define _LIBCUDACXX_ABI_FIX_UNORDERED_NODE_POINTER_UB
+#  define _LIBCUDACXX_ABI_FORWARD_LIST_REMOVE_NODE_POINTER_UB
+#  define _LIBCUDACXX_ABI_FIX_UNORDERED_CONTAINER_SIZE_TYPE
+// Don't use a nullptr_t simulation type in C++03 instead using C++11 nullptr
+// provided under the alternate keyword __nullptr, which changes the mangling
+// of nullptr_t. This option is ABI incompatible with GCC in C++03 mode.
+#  define _LIBCUDACXX_ABI_ALWAYS_USE_CXX11_NULLPTR
+// Define the `pointer_safety` enum as a C++11 strongly typed enumeration
+// instead of as a class simulating an enum. If this option is enabled
+// `pointer_safety` and `get_pointer_safety()` will no longer be available
+// in C++03.
+#  define _LIBCUDACXX_ABI_POINTER_SAFETY_ENUM_TYPE
+// Define a key function for `bad_function_call` in the library, to centralize
+// its vtable and typeinfo to libc++ rather than having all other libraries
+// using that class define their own copies.
+#  define _LIBCUDACXX_ABI_BAD_FUNCTION_CALL_KEY_FUNCTION
+// Enable optimized version of __do_get_(un)signed which avoids redundant copies.
+#  define _LIBCUDACXX_ABI_OPTIMIZED_LOCALE_NUM_GET
+// Use the smallest possible integer type to represent the index of the variant.
+// Previously libc++ used "unsigned int" exclusively.
+#  define _LIBCUDACXX_ABI_VARIANT_INDEX_TYPE_OPTIMIZATION
+// Unstable attempt to provide a more optimized std::function
+#  define _LIBCUDACXX_ABI_OPTIMIZED_FUNCTION
+// All the regex constants must be distinct and nonzero.
+#  define _LIBCUDACXX_ABI_REGEX_CONSTANTS_NONZERO
+#elif _LIBCUDACXX_ABI_VERSION == 1
+#  if !defined(_LIBCUDACXX_OBJECT_FORMAT_COFF)
+// Enable compiling copies of now inline methods into the dylib to support
+// applications compiled against older libraries. This is unnecessary with
+// COFF dllexport semantics, since dllexport forces a non-inline definition
+// of inline functions to be emitted anyway. Our own non-inline copy would
+// conflict with the dllexport-emitted copy, so we disable it.
+#    define _LIBCUDACXX_DEPRECATED_ABI_LEGACY_LIBRARY_DEFINITIONS_FOR_INLINE_FUNCTIONS
+#  endif
+// Feature macros for disabling pre ABI v1 features. All of these options
+// are deprecated.
+#  if defined(__FreeBSD__)
+#    define _LIBCUDACXX_DEPRECATED_ABI_DISABLE_PAIR_TRIVIAL_COPY_CTOR
+#  endif
+#endif
+
+#ifdef _LIBCUDACXX_TRIVIAL_PAIR_COPY_CTOR
+#error "_LIBCUDACXX_TRIVIAL_PAIR_COPY_CTOR" is no longer supported. \
+       use _LIBCUDACXX_DEPRECATED_ABI_DISABLE_PAIR_TRIVIAL_COPY_CTOR instead
+#endif
+
+#define _LIBCUDACXX_CONCAT1(_LIBCUDACXX_X,_LIBCUDACXX_Y) _LIBCUDACXX_X##_LIBCUDACXX_Y
+#define _LIBCUDACXX_CONCAT(_LIBCUDACXX_X,_LIBCUDACXX_Y) _LIBCUDACXX_CONCAT1(_LIBCUDACXX_X,_LIBCUDACXX_Y)
+
+#ifndef _LIBCUDACXX_ABI_NAMESPACE
+# define _LIBCUDACXX_ABI_NAMESPACE _LIBCUDACXX_CONCAT(__,_LIBCUDACXX_ABI_VERSION)
+#endif
+
+#ifndef __has_attribute
+#define __has_attribute(__x) 0
+#endif
+
+#ifndef __has_builtin
+#define __has_builtin(__x) 0
+#endif
+
+#ifndef __has_extension
+#define __has_extension(__x) 0
+#endif
+
+#ifndef __has_feature
+#define __has_feature(__x) 0
+#endif
+
+#ifndef __has_cpp_attribute
+#define __has_cpp_attribute(__x) 0
+#endif
+
+// '__is_identifier' returns '0' if '__x' is a reserved identifier provided by
+// the compiler and '1' otherwise.
+#ifndef __is_identifier
+#define __is_identifier(__x) 1
+#endif
+
+#ifndef __has_declspec_attribute
+#define __has_declspec_attribute(__x) 0
+#endif
+
+#define __has_keyword(__x) !(__is_identifier(__x))
+
+#ifndef __has_include
+#define __has_include(...) 0
+#endif
+
+#if defined(__PGIC__)
+#  define _LIBCUDACXX_COMPILER_PGI
+#elif defined(__clang__)
+#  define _LIBCUDACXX_COMPILER_CLANG
+#  ifndef __apple_build_version__
+#    define _LIBCUDACXX_CLANG_VER (__clang_major__ * 100 + __clang_minor__)
+#  endif
+#elif defined(__GNUC__)
+#  define _LIBCUDACXX_COMPILER_GCC
+#elif defined(_MSC_VER)
+#  define _LIBCUDACXX_COMPILER_MSVC
+#elif defined(__IBMCPP__)
+#  define _LIBCUDACXX_COMPILER_IBM
+#elif defined(__CUDACC_RTC__)
+#  define _LIBCUDACXX_COMPILER_NVRTC
+#endif
+
+#if defined(__NVCC__)
+// This is not mutually exclusive with other compilers, as NVCC uses a host
+// compiler.
+#  define _LIBCUDACXX_COMPILER_NVCC
+#endif
+
+#if !defined(_LIBCUDACXX_COMPILER_NVCC) && !defined(_LIBCUDACXX_COMPILER_NVRTC)
+// If NVCC is not being used <complex> can safely use `long double` without warnings
+#  define _LIBCUDACXX_HAS_COMPLEX_LONG_DOUBLE
+// NVCC does not have a way of silencing non '_' prefixed UDLs
+#  define _LIBCUDACXX_HAS_STL_LITERALS
+#endif
+
+#if defined(_LIBCUDACXX_COMPILER_GCC) && __cplusplus < 201103L
+#error "libc++ does not support using GCC with C++03. Please enable C++11"
+#endif
+
+// FIXME: ABI detection should be done via compiler builtin macros. This
+// is just a placeholder until Clang implements such macros. For now assume
+// that Windows compilers pretending to be MSVC++ target the Microsoft ABI,
+// and allow the user to explicitly specify the ABI to handle cases where this
+// heuristic falls short.
+#if defined(_LIBCUDACXX_ABI_FORCE_ITANIUM) && defined(_LIBCUDACXX_ABI_FORCE_MICROSOFT)
+#  error "Only one of _LIBCUDACXX_ABI_FORCE_ITANIUM and _LIBCUDACXX_ABI_FORCE_MICROSOFT can be defined"
+#elif defined(_LIBCUDACXX_ABI_FORCE_ITANIUM)
+#  define _LIBCUDACXX_ABI_ITANIUM
+#elif defined(_LIBCUDACXX_ABI_FORCE_MICROSOFT)
+#  define _LIBCUDACXX_ABI_MICROSOFT
+#else
+#  if defined(_WIN32) && defined(_MSC_VER)
+#    define _LIBCUDACXX_ABI_MICROSOFT
+#  else
+#    define _LIBCUDACXX_ABI_ITANIUM
+#  endif
+#endif
+
+#if defined(_LIBCUDACXX_ABI_MICROSOFT) && !defined(_LIBCUDACXX_NO_VCRUNTIME)
+# define _LIBCUDACXX_ABI_VCRUNTIME
+#endif
+
+// Need to detect which libc we're using if we're on Linux.
+#if defined(__linux__)
+#  include <features.h>
+#  if defined(__GLIBC_PREREQ)
+#    define _LIBCUDACXX_GLIBC_PREREQ(a, b) __GLIBC_PREREQ(a, b)
+#  else
+#    define _LIBCUDACXX_GLIBC_PREREQ(a, b) 0
+#  endif // defined(__GLIBC_PREREQ)
+#endif // defined(__linux__)
+
+#ifdef __LITTLE_ENDIAN__
+#  if __LITTLE_ENDIAN__
+#    define _LIBCUDACXX_LITTLE_ENDIAN
+#  endif  // __LITTLE_ENDIAN__
+#endif  // __LITTLE_ENDIAN__
+
+#ifdef __BIG_ENDIAN__
+#  if __BIG_ENDIAN__
+#    define _LIBCUDACXX_BIG_ENDIAN
+#  endif  // __BIG_ENDIAN__
+#endif  // __BIG_ENDIAN__
+
+#ifdef __BYTE_ORDER__
+#  if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#    define _LIBCUDACXX_LITTLE_ENDIAN
+#  elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#    define _LIBCUDACXX_BIG_ENDIAN
+#  endif // __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#endif // __BYTE_ORDER__
+
+#ifdef __FreeBSD__
+#  include <sys/endian.h>
+#  if _BYTE_ORDER == _LITTLE_ENDIAN
+#    define _LIBCUDACXX_LITTLE_ENDIAN
+#  else  // _BYTE_ORDER == _LITTLE_ENDIAN
+#    define _LIBCUDACXX_BIG_ENDIAN
+#  endif  // _BYTE_ORDER == _LITTLE_ENDIAN
+#  ifndef __LONG_LONG_SUPPORTED
+#    define _LIBCUDACXX_HAS_NO_LONG_LONG
+#  endif  // __LONG_LONG_SUPPORTED
+#endif  // __FreeBSD__
+
+#ifdef __NetBSD__
+#  include <sys/endian.h>
+#  if _BYTE_ORDER == _LITTLE_ENDIAN
+#    define _LIBCUDACXX_LITTLE_ENDIAN
+#  else  // _BYTE_ORDER == _LITTLE_ENDIAN
+#    define _LIBCUDACXX_BIG_ENDIAN
+#  endif  // _BYTE_ORDER == _LITTLE_ENDIAN
+#  define _LIBCUDACXX_HAS_QUICK_EXIT
+#endif  // __NetBSD__
+
+#if defined(_WIN32)
+#  define _LIBCUDACXX_WIN32API
+#  define _LIBCUDACXX_LITTLE_ENDIAN
+#  define _LIBCUDACXX_SHORT_WCHAR   1
+// Both MinGW and native MSVC provide a "MSVC"-like environment
+#  define _LIBCUDACXX_MSVCRT_LIKE
+// If mingw not explicitly detected, assume using MS C runtime only if
+// a MS compatibility version is specified.
+#  if defined(_MSC_VER) && !defined(__MINGW32__)
+#    define _LIBCUDACXX_MSVCRT // Using Microsoft's C Runtime library
+#  endif
+#  if (defined(_M_AMD64) || defined(__x86_64__)) || (defined(_M_ARM) || defined(__arm__))
+#    define _LIBCUDACXX_HAS_BITSCAN64
+#  endif
+#  define _LIBCUDACXX_HAS_OPEN_WITH_WCHAR
+#  if defined(_LIBCUDACXX_MSVCRT)
+#    define _LIBCUDACXX_HAS_QUICK_EXIT
+#  endif
+
+// Some CRT APIs are unavailable to store apps
+#  if defined(WINAPI_FAMILY)
+#    include <winapifamily.h>
+#    if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) &&                  \
+        (!defined(WINAPI_PARTITION_SYSTEM) ||                                  \
+         !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_SYSTEM))
+#      define _LIBCUDACXX_WINDOWS_STORE_APP
+#    endif
+#  endif
+#endif // defined(_WIN32)
+
+#ifdef __sun__
+#  include <sys/isa_defs.h>
+#  ifdef _LITTLE_ENDIAN
+#    define _LIBCUDACXX_LITTLE_ENDIAN
+#  else
+#    define _LIBCUDACXX_BIG_ENDIAN
+#  endif
+#endif // __sun__
+
+#if defined(__CloudABI__)
+   // Certain architectures provide arc4random(). Prefer using
+   // arc4random() over /dev/{u,}random to make it possible to obtain
+   // random data even when using sandboxing mechanisms such as chroots,
+   // Capsicum, etc.
+#  define _LIBCUDACXX_USING_ARC4_RANDOM
+#elif defined(__Fuchsia__) || defined(__wasi__)
+#  define _LIBCUDACXX_USING_GETENTROPY
+#elif defined(__native_client__)
+   // NaCl's sandbox (which PNaCl also runs in) doesn't allow filesystem access,
+   // including accesses to the special files under /dev. C++11's
+   // std::random_device is instead exposed through a NaCl syscall.
+#  define _LIBCUDACXX_USING_NACL_RANDOM
+#elif defined(_LIBCUDACXX_WIN32API)
+#  define _LIBCUDACXX_USING_WIN32_RANDOM
+#else
+#  define _LIBCUDACXX_USING_DEV_RANDOM
+#endif
+
+#if !defined(_LIBCUDACXX_LITTLE_ENDIAN) && !defined(_LIBCUDACXX_BIG_ENDIAN)
+#  include <endian.h>
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+#    define _LIBCUDACXX_LITTLE_ENDIAN
+#  elif __BYTE_ORDER == __BIG_ENDIAN
+#    define _LIBCUDACXX_BIG_ENDIAN
+#  else  // __BYTE_ORDER == __BIG_ENDIAN
+#    error unable to determine endian
+#  endif
+#endif  // !defined(_LIBCUDACXX_LITTLE_ENDIAN) && !defined(_LIBCUDACXX_BIG_ENDIAN)
+
+#if __has_attribute(__no_sanitize__) && !defined(_LIBCUDACXX_COMPILER_GCC)
+#  define _LIBCUDACXX_NO_CFI __attribute__((__no_sanitize__("cfi")))
+#else
+#  define _LIBCUDACXX_NO_CFI
+#endif
+
+#if __ISO_C_VISIBLE >= 2011 || __cplusplus >= 201103L
+#  if defined(__FreeBSD__)
+#    define _LIBCUDACXX_HAS_QUICK_EXIT
+#    define _LIBCUDACXX_HAS_C11_FEATURES
+#  elif defined(__Fuchsia__) || defined(__wasi__)
+#    define _LIBCUDACXX_HAS_QUICK_EXIT
+#    define _LIBCUDACXX_HAS_TIMESPEC_GET
+#    define _LIBCUDACXX_HAS_C11_FEATURES
+#  elif defined(__linux__)
+#    if !defined(_LIBCUDACXX_HAS_MUSL_LIBC)
+#      if _LIBCUDACXX_GLIBC_PREREQ(2, 15) || defined(__BIONIC__)
+#        define _LIBCUDACXX_HAS_QUICK_EXIT
+#      endif
+#      if _LIBCUDACXX_GLIBC_PREREQ(2, 17)
+#        define _LIBCUDACXX_HAS_C11_FEATURES
+#        define _LIBCUDACXX_HAS_TIMESPEC_GET
+#      endif
+#    else // defined(_LIBCUDACXX_HAS_MUSL_LIBC)
+#      define _LIBCUDACXX_HAS_QUICK_EXIT
+#      define _LIBCUDACXX_HAS_TIMESPEC_GET
+#      define _LIBCUDACXX_HAS_C11_FEATURES
+#    endif
+#  endif // __linux__
+#endif
+
+#ifndef _LIBCUDACXX_CXX03_LANG
+# define _LIBCUDACXX_ALIGNOF(_Tp) alignof(_Tp)
+#elif defined(_LIBCUDACXX_COMPILER_CLANG)
+# define _LIBCUDACXX_ALIGNOF(_Tp) _Alignof(_Tp)
+#else
+// This definition is potentially buggy, but it's only taken with GCC in C++03,
+// which we barely support anyway. See llvm.org/PR39713
+# define _LIBCUDACXX_ALIGNOF(_Tp) __alignof(_Tp)
+#endif
+
+#define _LIBCUDACXX_PREFERRED_ALIGNOF(_Tp) __alignof(_Tp)
+
+#if defined(_LIBCUDACXX_COMPILER_NVRTC)
+#define _LIBCUDACXX_OFFSET_IS_ZERO(type, member) !(&(((type *)0)->member))
+#else
+#define _LIBCUDACXX_OFFSET_IS_ZERO(type, member) !offsetof(type, member)
+#endif
+
+#if defined(_LIBCUDACXX_COMPILER_CLANG)
+
+// _LIBCUDACXX_ALTERNATE_STRING_LAYOUT is an old name for
+// _LIBCUDACXX_ABI_ALTERNATE_STRING_LAYOUT left here for backward compatibility.
+#if (defined(__APPLE__) && !defined(__i386__) && !defined(__x86_64__) &&       \
+     (!defined(__arm__) || __ARM_ARCH_7K__ >= 2)) ||                           \
+    defined(_LIBCUDACXX_ALTERNATE_STRING_LAYOUT)
+#define _LIBCUDACXX_ABI_ALTERNATE_STRING_LAYOUT
+#endif
+
+#if __has_feature(cxx_alignas)
+#  define _ALIGNAS_TYPE(x) alignas(x)
+#  define _ALIGNAS(x) alignas(x)
+#else
+#  define _ALIGNAS_TYPE(x) __attribute__((__aligned__(_LIBCUDACXX_ALIGNOF(x))))
+#  define _ALIGNAS(x) __attribute__((__aligned__(x)))
+#endif
+
+#if __cplusplus < 201103L
+typedef __char16_t char16_t;
+typedef __char32_t char32_t;
+#endif
+
+#if !(__has_feature(cxx_exceptions)) && !defined(_LIBCUDACXX_NO_EXCEPTIONS)
+#define _LIBCUDACXX_NO_EXCEPTIONS
+#endif
+
+#if !(__has_feature(cxx_rtti)) && !defined(_LIBCUDACXX_NO_RTTI)
+#define _LIBCUDACXX_NO_RTTI
+#endif
+
+#if !(__has_feature(cxx_strong_enums))
+#define _LIBCUDACXX_HAS_NO_STRONG_ENUMS
+#endif
+
+#if __has_feature(cxx_attributes)
+#  define _LIBCUDACXX_NORETURN [[noreturn]]
+#else
+#  define _LIBCUDACXX_NORETURN __attribute__ ((noreturn))
+#endif
+
+#if !(__has_feature(cxx_lambdas))
+#define _LIBCUDACXX_HAS_NO_LAMBDAS
+#endif
+
+#if !(__has_feature(cxx_nullptr))
+#  if (__has_extension(cxx_nullptr) || __has_keyword(__nullptr)) && defined(_LIBCUDACXX_ABI_ALWAYS_USE_CXX11_NULLPTR)
+#    define nullptr __nullptr
+#  else
+#    define _LIBCUDACXX_HAS_NO_NULLPTR
+#  endif
+#endif
+
+#if !(__has_feature(cxx_rvalue_references))
+#define _LIBCUDACXX_HAS_NO_RVALUE_REFERENCES
+#endif
+
+#if !(__has_feature(cxx_auto_type))
+#define _LIBCUDACXX_HAS_NO_AUTO_TYPE
+#endif
+
+#if !(__has_feature(cxx_variadic_templates))
+#define _LIBCUDACXX_HAS_NO_VARIADICS
+#endif
+
+#if !(__has_feature(cxx_generalized_initializers))
+#define _LIBCUDACXX_HAS_NO_GENERALIZED_INITIALIZERS
+#endif
+
+#if __has_feature(is_base_of)
+#define _LIBCUDACXX_IS_BASE_OF(...) __is_base_of(__VA_ARGS__)
+#endif
+
+#if __has_feature(is_final)
+#define _LIBCUDACXX_IS_FINAL(...) __is_final(__VA_ARGS__)
+#endif
+
+// Objective-C++ features (opt-in)
+#if __has_feature(objc_arc)
+#define _LIBCUDACXX_HAS_OBJC_ARC
+#endif
+
+#if __has_feature(objc_arc_weak)
+#define _LIBCUDACXX_HAS_OBJC_ARC_WEAK
+#endif
+
+#if !(__has_feature(cxx_relaxed_constexpr))
+#define _LIBCUDACXX_HAS_NO_CXX14_CONSTEXPR
+#endif
+
+#if !(__has_feature(cxx_variable_templates))
+#define _LIBCUDACXX_HAS_NO_VARIABLE_TEMPLATES
+#endif
+
+#if !(__has_feature(cxx_noexcept))
+#define _LIBCUDACXX_HAS_NO_NOEXCEPT
+#endif
+
+#if __has_feature(underlying_type)
+#define _LIBCUDACXX_UNDERLYING_TYPE(...) __underlying_type(__VA_ARGS__)
+#endif
+
+#if __has_feature(is_constructible)
+#define _LIBCUDACXX_IS_CONSTRUCTIBLE(...) __is_constructible(__VA_ARGS__)
+#endif
+
+#if __has_keyword(__is_destructible)
+#define _LIBCUDACXX_IS_DESTRUCTIBLE(...) __is_destructible(__VA_ARGS__)
+#endif
+
+#if __has_feature(is_trivially_constructible)
+#define _LIBCUDACXX_IS_TRIVIALLY_CONSTRUCTIBLE(...) __is_trivially_constructible(__VA_ARGS__)
+#endif
+
+// https://bugs.llvm.org/show_bug.cgi?id=44517
+#if __has_keyword(__is_trivially_destructible)
+#define _LIBCUDACXX_IS_TRIVIALLY_DESTRUCTIBLE(...) __is_trivially_destructible(__VA_ARGS__)
+#endif
+
+// https://bugs.llvm.org/show_bug.cgi?id=44517
+#if __has_keyword(__is_nothrow_constructible)
+#define _LIBCUDACXX_IS_NOTHROW_CONSTRUCTIBLE(...) __is_nothrow_constructible(__VA_ARGS__)
+#endif
+
+// https://bugs.llvm.org/show_bug.cgi?id=44517
+#if __has_keyword(__is_nothrow_assignable)
+#define _LIBCUDACXX_IS_NOTHROW_ASSIGNABLE(...) __is_nothrow_assignable(__VA_ARGS__)
+#endif
+
+// https://bugs.llvm.org/show_bug.cgi?id=44517
+#if __has_keyword(__is_assignable)
+#define _LIBCUDACXX_IS_ASSIGNABLE(...) __is_assignable(__VA_ARGS__)
+#endif
+
+// https://bugs.llvm.org/show_bug.cgi?id=44517
+#if __has_keyword(__is_same) && !defined(_LIBCUDACXX_COMPILER_NVCC)
+#define _LIBCUDACXX_IS_SAME(...) __is_same(__VA_ARGS__)
+#endif
+
+#if __has_feature(has_trivial_constructor)
+#define _LIBCUDACXX_HAS_TRIVIAL_CONSTRUCTOR(...) __has_trivial_constructor(__VA_ARGS__)
+#endif
+
+#if __has_feature(has_nothrow_constructor)
+#define _LIBCUDACXX_HAS_NOTHROW_CONSTRUCTOR(...) __has_nothrow_constructor(__VA_ARGS__)
+#endif
+
+#if __has_feature(has_nothrow_copy)
+#define _LIBCUDACXX_HAS_NOTHROW_COPY(...) __has_nothrow_copy(__VA_ARGS__)
+#endif
+
+#if __has_feature(has_nothrow_assign)
+#define _LIBCUDACXX_HAS_NOTHROW_ASSIGN(...) __has_nothrow_assign(__VA_ARGS__)
+#endif
+
+#if __has_feature(has_trivial_destructor)
+#define _LIBCUDACXX_HAS_TRIVIAL_DESTRUCTOR(...) __has_trivial_destructor(__VA_ARGS__)
+#endif
+
+#if __has_feature(is_trivially_assignable)
+#define _LIBCUDACXX_IS_TRIVIALLY_ASSIGNABLE(...) __is_trivially_assignable(__VA_ARGS__)
+#endif
+
+#if __has_feature(is_trivially_copyable)
+#define _LIBCUDACXX_IS_TRIVIALLY_COPYABLE(...) __is_trivially_copyable(__VA_ARGS__)
+#endif
+
+#if __has_feature(is_trivial)
+#define _LIBCUDACXX_IS_TRIVIAL(...) __is_trivial(__VA_ARGS__)
+#endif
+
+#if __has_feature(is_convertible_to)
+#define _LIBCUDACXX_IS_CONVERTIBLE_TO(...) __is_convertible_to(__VA_ARGS__)
+#endif
+
+// https://bugs.llvm.org/show_bug.cgi?id=44517
+#if __has_keyword(__is_function) && !defined(_LIBCUDACXX_COMPILER_NVCC)
+#define _LIBCUDACXX_IS_FUNCTION(...) __is_function(__VA_ARGS__)
+#endif
+
+#if __has_feature(is_union)
+#define _LIBCUDACXX_IS_UNION(...) __is_union(__VA_ARGS__)
+#endif
+
+#if __has_feature(is_class)
+#define _LIBCUDACXX_IS_CLASS(...) __is_class(__VA_ARGS__)
+#endif
+
+#if __has_keyword(__is_aggregate)
+#define _LIBCUDACXX_IS_AGGREGATE(...) __is_aggregate(__VA_ARGS__)
+#endif
+
+#if __has_feature(is_pod)
+#define _LIBCUDACXX_IS_POD(...) __is_pod(__VA_ARGS__)
+#endif
+
+#if __has_feature(is_standard_layout)
+#define _LIBCUDACXX_IS_STANDARD_LAYOUT(...) __is_standard_layout(__VA_ARGS__)
+#endif
+
+#if __has_feature(is_enum)
+#define _LIBCUDACXX_IS_ENUM(...) __is_enum(__VA_ARGS__)
+#endif
+
+#if __has_feature(is_empty)
+#define _LIBCUDACXX_IS_EMPTY(...) __is_empty(__VA_ARGS__)
+#endif
+
+#if __has_feature(is_polymorphic)
+#define _LIBCUDACXX_IS_POLYMORPHIC(...) __is_polymorphic(__VA_ARGS__)
+#endif
+
+#if __has_feature(has_virtual_destructor)
+#define _LIBCUDACXX_HAS_VIRTUAL_DESTRUCTOR(...) __has_virtual_destructor(__VA_ARGS__)
+#endif
+
+#if __has_feature(is_literal)
+#define _LIBCUDACXX_IS_LITERAL(...) __is_literal(__VA_ARGS__)
+#endif
+
+#if !defined(_LIBCUDACXX_HAS_NO_ASAN) && !__has_feature(address_sanitizer)
+#define _LIBCUDACXX_HAS_NO_ASAN
+#endif
+
+// Allow for build-time disabling of unsigned integer sanitization
+#if !defined(_LIBCUDACXX_DISABLE_UBSAN_UNSIGNED_INTEGER_CHECK) && __has_attribute(no_sanitize)
+#define _LIBCUDACXX_DISABLE_UBSAN_UNSIGNED_INTEGER_CHECK __attribute__((__no_sanitize__("unsigned-integer-overflow")))
+#endif
+
+#if __has_builtin(__builtin_launder)
+#define _LIBCUDACXX_LAUNDER(...) __builtin_launder(__VA_ARGS__)
+#endif
+
+#if !__is_identifier(__has_unique_object_representations)
+#define _LIBCUDACXX_HAS_UNIQUE_OBJECT_REPRESENTATIONS(...) __has_unique_object_representations(__VA_ARGS__)
+#endif
+
+#if !defined(_LIBCUDACXX_ATOMIC_ALWAYS_LOCK_FREE)
+#define _LIBCUDACXX_ATOMIC_ALWAYS_LOCK_FREE(...) __atomic_always_lock_free(__VA_ARGS__)
+#endif
+
+// NVCC in C++11 mode freaks out about `__builtin_is_constant_evaluated`.
+#if __has_builtin(__builtin_is_constant_evaluated) && !(defined(_LIBCUDACXX_COMPILER_NVCC) && _LIBCUDACXX_STD_VER < 14)
+#define _LIBCUDACXX_IS_CONSTANT_EVALUATED(...) __builtin_is_constant_evaluated(__VA_ARGS__)
+#endif
+
+#if __has_builtin(__builtin_addressof)
+#define _LIBCUDACXX_ADDRESSOF(...) __builtin_addressof(__VA_ARGS__)
+#endif
+
+#define _LIBCUDACXX_ALWAYS_INLINE __attribute__ ((__always_inline__))
+
+// Literal operators ""d and ""y are supported starting with LLVM Clang 8 and AppleClang 10.0.1
+#if (defined(_LIBCUDACXX_CLANG_VER) && _LIBCUDACXX_CLANG_VER < 800) ||         \
+    (defined(__apple_build_version__) && __apple_build_version__ < 10010000)
+#define _LIBCUDACXX_HAS_NO_CXX20_CHRONO_LITERALS
+#endif
+
+#if __has_feature(cxx_reference_qualified_functions)
+#define _LIBCUDACXX_HAS_REFERENCE_QUALIFIED_FUNCTIONS
+#endif
+
+#define _LIBCUDACXX_DISABLE_EXTENSION_WARNING __extension__
+
+#elif defined(_LIBCUDACXX_COMPILER_GCC)
+
+#define _ALIGNAS(x) __attribute__((__aligned__(x)))
+#define _ALIGNAS_TYPE(x) __attribute__((__aligned__(_LIBCUDACXX_ALIGNOF(x))))
+
+#define _LIBCUDACXX_NORETURN __attribute__((noreturn))
+
+#if _GNUC_VER >= 403
+#define _LIBCUDACXX_IS_UNION(...) __is_union(__VA_ARGS__)
+#define _LIBCUDACXX_IS_CLASS(...) __is_class(__VA_ARGS__)
+#define _LIBCUDACXX_IS_POD(...) __is_pod(__VA_ARGS__)
+#define _LIBCUDACXX_IS_ENUM(...) __is_enum(__VA_ARGS__)
+#define _LIBCUDACXX_IS_EMPTY(...) __is_empty(__VA_ARGS__)
+#define _LIBCUDACXX_IS_POLYMORPHIC(...) __is_polymorphic(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_VIRTUAL_DESTRUCTOR(...) __has_virtual_destructor(__VA_ARGS__)
+#define _LIBCUDACXX_IS_BASE_OF(...) __is_base_of(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_TRIVIAL_CONSTRUCTOR(...) __has_trivial_constructor(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_NOTHROW_CONSTRUCTOR(...) __has_nothrow_constructor(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_NOTHROW_COPY(...) __has_nothrow_copy(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_NOTHROW_ASSIGN(...) __has_nothrow_assign(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_TRIVIAL_DESTRUCTOR(...) __has_trivial_destructor(__VA_ARGS__)
+#endif
+
+#if _GNUC_VER >= 405
+#define _LIBCUDACXX_IS_TRIVIAL(...) __is_trivial(__VA_ARGS__)
+#endif
+
+#if _GNUC_VER >= 406
+#define _LIBCUDACXX_IS_LITERAL(...) __is_literal_type(__VA_ARGS__)
+#endif
+
+#if _GNUC_VER >= 407
+#define _LIBCUDACXX_UNDERLYING_TYPE(...) __underlying_type(__VA_ARGS__)
+#define _LIBCUDACXX_IS_FINAL(...) __is_final(__VA_ARGS__)
+#define _LIBCUDACXX_IS_STANDARD_LAYOUT(...) __is_standard_layout(__VA_ARGS__)
+#endif
+
+#if _GNUC_VER >= 409
+#define _LIBCUDACXX_HAS_REFERENCE_QUALIFIED_FUNCTIONS
+#endif
+
+#if _GNUC_VER >= 501
+#define _LIBCUDACXX_IS_TRIVIALLY_CONSTRUCTIBLE(...) __is_trivially_constructible(__VA_ARGS__)
+#define _LIBCUDACXX_IS_TRIVIALLY_ASSIGNABLE(...) __is_trivially_assignable(__VA_ARGS__)
+#define _LIBCUDACXX_IS_TRIVIALLY_COPYABLE(...) __is_trivially_copyable(__VA_ARGS__)
+#endif
+
+// FIXME: GCC 8.0 supports this trait, but it has a bug.
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=91592
+// https://godbolt.org/z/IljfIw
+//#if _GNUC_VER >= 800
+//#define _LIBCUDACXX_IS_ASSIGNABLE(...) __is_assignable(__VA_ARGS__)
+//#endif
+
+#if _GNUC_VER >= 1000
+// __is_same_as is useless: GCC complains when you try to use it in a SFINAE condition
+// which is the primary place where libc++ tries to use it. Disable.
+// #define _LIBCUDACXX_IS_SAME(...) __is_same_as(__VA_ARGS__)
+#endif
+
+#if !__EXCEPTIONS && !defined(_LIBCUDACXX_NO_EXCEPTIONS)
+#define _LIBCUDACXX_NO_EXCEPTIONS
+#endif
+
+// Determine if GCC supports relaxed constexpr
+#if !defined(__cpp_constexpr) || __cpp_constexpr < 201304L
+#define _LIBCUDACXX_HAS_NO_CXX14_CONSTEXPR
+#endif
+
+// GCC 5 supports variable templates
+#if !defined(__cpp_variable_templates) || __cpp_variable_templates < 201304L
+#define _LIBCUDACXX_HAS_NO_VARIABLE_TEMPLATES
+#endif
+
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+
+#define _LIBCUDACXX_HAS_NO_DECLTYPE
+#define _LIBCUDACXX_HAS_NO_NULLPTR
+#define _LIBCUDACXX_HAS_NO_UNICODE_CHARS
+#define _LIBCUDACXX_HAS_NO_VARIADICS
+#define _LIBCUDACXX_HAS_NO_RVALUE_REFERENCES
+#define _LIBCUDACXX_HAS_NO_STRONG_ENUMS
+#define _LIBCUDACXX_HAS_NO_NOEXCEPT
+
+#else  // __GXX_EXPERIMENTAL_CXX0X__
+
+#if _GNUC_VER < 403
+#define _LIBCUDACXX_HAS_NO_RVALUE_REFERENCES
+#endif
+
+#if _GNUC_VER < 404
+#define _LIBCUDACXX_HAS_NO_DECLTYPE
+#define _LIBCUDACXX_HAS_NO_UNICODE_CHARS
+#define _LIBCUDACXX_HAS_NO_VARIADICS
+#define _LIBCUDACXX_HAS_NO_GENERALIZED_INITIALIZERS
+#endif  // _GNUC_VER < 404
+
+#if _GNUC_VER < 406
+#define _LIBCUDACXX_HAS_NO_NOEXCEPT
+#define _LIBCUDACXX_HAS_NO_NULLPTR
+#endif
+
+#endif  // __GXX_EXPERIMENTAL_CXX0X__
+
+#if !defined(_LIBCUDACXX_HAS_NO_ASAN) && !defined(__SANITIZE_ADDRESS__)
+#define _LIBCUDACXX_HAS_NO_ASAN
+#endif
+
+#if _GNUC_VER < 600 && defined(_LIBCUDACXX_COMPILER_NVCC)
+#define _LIBCUDACXX_MISSING_GCC_MATH_INTRINSICS
+#endif
+
+#if _GNUC_VER >= 700
+#define _LIBCUDACXX_LAUNDER(...) __builtin_launder(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_UNIQUE_OBJECT_REPRESENTATIONS(...) __has_unique_object_representations(__VA_ARGS__)
+#define _LIBCUDACXX_IS_AGGREGATE(...) __is_aggregate(__VA_ARGS__)
+#define _LIBCUDACXX_ADDRESSOF(...) __builtin_addressof(__VA_ARGS__)
+#endif
+
+#if !defined(_LIBCUDACXX_ATOMIC_ALWAYS_LOCK_FREE)
+#define _LIBCUDACXX_ATOMIC_ALWAYS_LOCK_FREE(...) __atomic_always_lock_free(__VA_ARGS__)
+#endif
+
+// NVCC in C++11 mode freaks out about `__builtin_is_constant_evaluated`.
+#if _GNUC_VER >= 900 && !(defined(_LIBCUDACXX_COMPILER_NVCC) && _LIBCUDACXX_STD_VER < 14)
+#define _LIBCUDACXX_IS_CONSTANT_EVALUATED(...) __builtin_is_constant_evaluated(__VA_ARGS__)
+#endif
+
+// NVCC cannot properly handle some deductions occuring within NOEXCEPT
+// C++17 mode causes reference instatiation errors in tuple
+#if (_GNUC_VER >= 702 && _GNUC_VER <= 805)
+#if defined(_LIBCUDACXX_COMPILER_NVCC) && _LIBCUDACXX_STD_VER == 17
+#define _LIBCUDACXX_NO_TUPLE_NOEXCEPT
+#endif
+#endif
+
+#define _LIBCUDACXX_ALWAYS_INLINE __attribute__ ((__always_inline__))
+
+#define _LIBCUDACXX_DISABLE_EXTENSION_WARNING __extension__
+
+#elif defined(_LIBCUDACXX_COMPILER_MSVC)
+
+#define _LIBCUDACXX_TOSTRING2(x) #x
+#define _LIBCUDACXX_TOSTRING(x) _LIBCUDACXX_TOSTRING2(x)
+#define _LIBCUDACXX_WARNING(x) __pragma(message(__FILE__ "(" _LIBCUDACXX_TOSTRING(__LINE__) ") : warning note: " x))
+
+#define _LIBCUDACXX_ADDRESSOF(...) __builtin_addressof(__VA_ARGS__)
+
+// https://github.com/microsoft/STL/blob/master/stl/inc/yvals_core.h#L353
+// warning C4100: 'quack': unreferenced formal parameter
+// warning C4127: conditional expression is constant
+// warning C4180: qualifier applied to function type has no meaning; ignored
+// warning C4197: 'purr': top-level volatile in cast is ignored
+// warning C4324: 'roar': structure was padded due to alignment specifier
+// warning C4455: literal suffix identifiers that do not start with an underscore are reserved
+// warning C4503: 'hum': decorated name length exceeded, name was truncated
+// warning C4522: 'woof' : multiple assignment operators specified
+// warning C4668: 'meow' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+// warning C4800: 'boo': forcing value to bool 'true' or 'false' (performance warning)
+// warning C4996: 'meow': was declared deprecated
+#define _LIBCUDACXX_MSVC_DISABLED_WARNINGS \
+  4100 \
+  4127 \
+  4180 \
+  4197 \
+  4296 \
+  4324 \
+  4455 \
+  4503 \
+  4522 \
+  4668 \
+  4800 \
+  4996 \
+  /**/
+
+#if _MSC_VER < 1900
+#error "MSVC versions prior to Visual Studio 2015 are not supported"
+#endif
+
+// MSVC implemented P0030R1 in 15.7, only available under C++17
+#if _MSC_VER < 1914
+#define _LIBCUDACXX_NO_HOST_CPP17_HYPOT
+#endif
+
+#if _MSC_VER < 1920
+#define _LIBCUDACXX_HAS_NO_NOEXCEPT_SFINAE
+#define _LIBCUDACXX_HAS_NO_PRAGMA_PUSH_POP_MACRO // This is conservative but correct.
+#define _LIBCUDACXX_HAS_NO_LOGICAL_METAFUNCTION_ALIASES
+#endif
+
+// MSVC exposed __iso_volatile intrinsics beginning on 1924 for x86
+#if _MSC_VER < 1924
+    #define _LIBCUDACXX_MSVC_HAS_NO_ISO_INTRIN
+#endif
+
+#if _MSC_VER > 1924
+#  define _LIBCUDACXX_IS_CONSTANT_EVALUATED(...) __builtin_is_constant_evaluated(__VA_ARGS__)
+#endif
+
+#define _LIBCUDACXX_UNDERLYING_TYPE(...) __underlying_type(__VA_ARGS__)
+#define _LIBCUDACXX_IS_CONSTRUCTIBLE(...) __is_constructible(__VA_ARGS__)
+#define _LIBCUDACXX_IS_DESTRUCTIBLE(...) __is_destructible(__VA_ARGS__)
+#define _LIBCUDACXX_IS_TRIVIALLY_CONSTRUCTIBLE(...) __is_trivially_constructible(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_TRIVIAL_CONSTRUCTOR(...) __has_trivial_constructor(__VA_ARGS__)
+#define _LIBCUDACXX_IS_NOTHROW_CONSTRUCTIBLE(...) __is_nothrow_constructible(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_NOTHROW_CONSTRUCTOR(...) __has_nothrow_constructor(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_NOTHROW_COPY(...) __has_nothrow_copy(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_NOTHROW_ASSIGN(...) __has_nothrow_assign(__VA_ARGS__)
+#define _LIBCUDACXX_IS_NOTHROW_ASSIGNABLE(...) __is_nothrow_assignable(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_TRIVIAL_DESTRUCTOR(...) __has_trivial_destructor(__VA_ARGS__)
+#define _LIBCUDACXX_IS_NOTHROW_DESTRUCTIBLE(...) __is_nothrow_destructible(__VA_ARGS__)
+#define _LIBCUDACXX_IS_TRIVIALLY_DESTRUCTIBLE(...) __is_trivially_destructible(__VA_ARGS__)
+#define _LIBCUDACXX_IS_TRIVIALLY_ASSIGNABLE(...) __is_trivially_assignable(__VA_ARGS__)
+#define _LIBCUDACXX_IS_TRIVIALLY_COPYABLE(...) __is_trivially_copyable(__VA_ARGS__)
+#define _LIBCUDACXX_IS_TRIVIAL(...) __is_trivial(__VA_ARGS__)
+#define _LIBCUDACXX_IS_LITERAL(...) __is_literal_type(__VA_ARGS__)
+#define _LIBCUDACXX_IS_UNION(...) __is_union(__VA_ARGS__)
+#define _LIBCUDACXX_IS_CLASS(...) __is_class(__VA_ARGS__)
+#if _MSC_VER > 1914 // MSVC doesn't include __is_aggregate until 19.15
+#define _LIBCUDACXX_IS_AGGREGATE(...) __is_aggregate(__VA_ARGS__)
+#endif // _MSC_VER > 1914
+#define _LIBCUDACXX_IS_POD(...) __is_pod(__VA_ARGS__)
+#define _LIBCUDACXX_IS_STANDARD_LAYOUT(...) __is_standard_layout(__VA_ARGS__)
+#define _LIBCUDACXX_IS_ENUM(...) __is_enum(__VA_ARGS__)
+#define _LIBCUDACXX_IS_EMPTY(...) __is_empty(__VA_ARGS__)
+#define _LIBCUDACXX_IS_POLYMORPHIC(...) __is_polymorphic(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_VIRTUAL_DESTRUCTOR(...) __has_virtual_destructor(__VA_ARGS__)
+#define _LIBCUDACXX_IS_BASE_OF(...) __is_base_of(__VA_ARGS__)
+#define _LIBCUDACXX_IS_FINAL(...) __is_final(__VA_ARGS__)
+#define _LIBCUDACXX_IS_CONVERTIBLE_TO(...) __is_convertible_to(__VA_ARGS__)
+#define _LIBCUDACXX_IS_ASSIGNABLE(...) __is_assignable(__VA_ARGS__)
+#define __alignof__ __alignof
+#define _LIBCUDACXX_NORETURN __declspec(noreturn)
+#define _ALIGNAS(x) __declspec(align(x))
+#define _ALIGNAS_TYPE(x) alignas(x)
+
+#if _LIBCUDACXX_STD_VER < 14
+#define _LIBCUDACXX_HAS_NO_CXX14_CONSTEXPR
+#define _LIBCUDACXX_HAS_NO_VARIABLE_TEMPLATES
+#endif
+
+#define _LIBCUDACXX_WEAK
+
+#define _LIBCUDACXX_HAS_NO_ASAN
+
+#define _LIBCUDACXX_ALWAYS_INLINE __forceinline
+
+#define _LIBCUDACXX_HAS_NO_VECTOR_EXTENSION
+
+#define _LIBCUDACXX_HAS_REFERENCE_QUALIFIED_FUNCTIONS
+#define _LIBCUDACXX_DISABLE_EXTENSION_WARNING
+
+#elif defined(_LIBCUDACXX_COMPILER_IBM)
+
+#define _ALIGNAS(x) __attribute__((__aligned__(x)))
+#define _ALIGNAS_TYPE(x) __attribute__((__aligned__(_LIBCUDACXX_ALIGNOF(x))))
+#define _ATTRIBUTE(x) __attribute__((x))
+#define _LIBCUDACXX_NORETURN __attribute__((noreturn))
+
+#define _LIBCUDACXX_HAS_NO_UNICODE_CHARS
+#define _LIBCUDACXX_IS_BASE_OF(...) __is_base_of(__VA_ARGS__)
+#define _LIBCUDACXX_IS_FINAL(...) __is_final(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_NO_VARIABLE_TEMPLATES
+
+#if defined(_AIX)
+#define __MULTILOCALE_API
+#endif
+
+#define _LIBCUDACXX_HAS_NO_ASAN
+
+#define _LIBCUDACXX_ALWAYS_INLINE __attribute__ ((__always_inline__))
+
+#define _LIBCUDACXX_HAS_NO_VECTOR_EXTENSION
+
+#elif defined(_LIBCUDACXX_COMPILER_NVRTC) || defined(_LIBCUDACXX_COMPILER_PGI)
+
+#if !defined(__cpp_constexpr) || __cpp_constexpr < 201304L
+#define _LIBCUDACXX_HAS_NO_CXX14_CONSTEXPR
+#endif
+
+#if !defined(__cpp_variable_templates) || __cpp_variable_templates < 201304L
+#define _LIBCUDACXX_HAS_NO_VARIABLE_TEMPLATES
+#endif
+
+#define _ALIGNAS_TYPE(x) alignas(x)
+#define _ALIGNAS(x) alignas(x)
+
+#define _LIBCUDACXX_UNDERLYING_TYPE(...) __underlying_type(__VA_ARGS__)
+#define _LIBCUDACXX_IS_CONSTRUCTIBLE(...) __is_constructible(__VA_ARGS__)
+#define _LIBCUDACXX_IS_TRIVIALLY_CONSTRUCTIBLE(...) __is_trivially_constructible(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_TRIVIAL_CONSTRUCTOR(...) __has_trivial_constructor(__VA_ARGS__)
+#define _LIBCUDACXX_IS_NOTHROW_CONSTRUCTIBLE(...) __is_nothrow_constructible(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_NOTHROW_CONSTRUCTOR(...) __has_nothrow_constructor(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_NOTHROW_COPY(...) __has_nothrow_copy(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_NOTHROW_ASSIGN(...) __has_nothrow_assign(__VA_ARGS__)
+#define _LIBCUDACXX_IS_NOTHROW_ASSIGNABLE(...) __is_nothrow_assignable(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_TRIVIAL_DESTRUCTOR(...) __has_trivial_destructor(__VA_ARGS__)
+#define _LIBCUDACXX_IS_NOTHROW_DESTRUCTIBLE(...) __is_nothrow_destructible(__VA_ARGS__)
+#define _LIBCUDACXX_IS_TRIVIALLY_DESTRUCTIBLE(...) __is_trivially_destructible(__VA_ARGS__)
+#define _LIBCUDACXX_IS_TRIVIALLY_ASSIGNABLE(...) __is_trivially_assignable(__VA_ARGS__)
+#define _LIBCUDACXX_IS_TRIVIALLY_COPYABLE(...) __is_trivially_copyable(__VA_ARGS__)
+#define _LIBCUDACXX_IS_TRIVIAL(...) __is_trivial(__VA_ARGS__)
+#define _LIBCUDACXX_IS_LITERAL(...) __is_literal_type(__VA_ARGS__)
+#define _LIBCUDACXX_IS_UNION(...) __is_union(__VA_ARGS__)
+#define _LIBCUDACXX_IS_CLASS(...) __is_class(__VA_ARGS__)
+#define _LIBCUDACXX_IS_AGGREGATE(...) __is_aggregate(__VA_ARGS__)
+#define _LIBCUDACXX_IS_POD(...) __is_pod(__VA_ARGS__)
+#define _LIBCUDACXX_IS_STANDARD_LAYOUT(...) __is_standard_layout(__VA_ARGS__)
+#define _LIBCUDACXX_IS_ENUM(...) __is_enum(__VA_ARGS__)
+#define _LIBCUDACXX_IS_EMPTY(...) __is_empty(__VA_ARGS__)
+#define _LIBCUDACXX_IS_POLYMORPHIC(...) __is_polymorphic(__VA_ARGS__)
+#define _LIBCUDACXX_HAS_VIRTUAL_DESTRUCTOR(...) __has_virtual_destructor(__VA_ARGS__)
+#define _LIBCUDACXX_IS_BASE_OF(...) __is_base_of(__VA_ARGS__)
+#define _LIBCUDACXX_IS_FINAL(...) __is_final(__VA_ARGS__)
+#define _LIBCUDACXX_IS_CONVERTIBLE_TO(...) __is_convertible_to(__VA_ARGS__)
+#define _LIBCUDACXX_DISABLE_EXTENSION_WARNING
+
+#define _LIBCUDACXX_HAS_REFERENCE_QUALIFIED_FUNCTIONS
+
+#define _LIBCUDACXX_HAS_NO_ASAN
+
+#define _LIBCUDACXX_ALWAYS_INLINE __attribute__ ((__always_inline__))
+#define _LIBCUDACXX_NORETURN __attribute__ ((noreturn))
+
+#define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
+
+#endif // _LIBCUDACXX_COMPILER_[CLANG|GCC|MSVC|IBM|NVRTC]
+
+#if defined(_LIBCUDACXX_COMPILER_PGI) && !defined(__cuda_std__)
+// Forcefully disable visibility controls when used as the standard library with NVC++.
+// TODO: reevaluate.
+#define _LIBCUDACXX_HIDE_FROM_ABI
+#ifndef _LIBCUDACXX_DISABLE_EXTERN_TEMPLATE
+#define _LIBCUDACXX_DISABLE_EXTERN_TEMPLATE
+#endif
+#define _LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS
+#endif
+
+#if defined(_LIBCUDACXX_OBJECT_FORMAT_COFF)
+
+#ifdef _DLL
+#  define _LIBCUDACXX_CRT_FUNC __declspec(dllimport)
+#else
+#  define _LIBCUDACXX_CRT_FUNC
+#endif
+
+#if defined(_LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS)
+#  define _LIBCUDACXX_DLL_VIS
+#  define _LIBCUDACXX_EXTERN_TEMPLATE_TYPE_VIS
+#  define _LIBCUDACXX_CLASS_TEMPLATE_INSTANTIATION_VIS
+#  define _LIBCUDACXX_OVERRIDABLE_FUNC_VIS
+#  define _LIBCUDACXX_EXPORTED_FROM_ABI
+#elif defined(_LIBCUDACXX_BUILDING_LIBRARY)
+#  define _LIBCUDACXX_DLL_VIS __declspec(dllexport)
+#  if defined(__MINGW32__)
+#    define _LIBCUDACXX_EXTERN_TEMPLATE_TYPE_VIS _LIBCUDACXX_DLL_VIS
+#    define _LIBCUDACXX_CLASS_TEMPLATE_INSTANTIATION_VIS
+#  else
+#    define _LIBCUDACXX_EXTERN_TEMPLATE_TYPE_VIS
+#    define _LIBCUDACXX_CLASS_TEMPLATE_INSTANTIATION_VIS _LIBCUDACXX_DLL_VIS
+#  endif
+#  define _LIBCUDACXX_OVERRIDABLE_FUNC_VIS _LIBCUDACXX_DLL_VIS
+#  define _LIBCUDACXX_EXPORTED_FROM_ABI __declspec(dllexport)
+#else
+#  define _LIBCUDACXX_DLL_VIS __declspec(dllimport)
+#  define _LIBCUDACXX_EXTERN_TEMPLATE_TYPE_VIS _LIBCUDACXX_DLL_VIS
+#  define _LIBCUDACXX_CLASS_TEMPLATE_INSTANTIATION_VIS
+#  define _LIBCUDACXX_OVERRIDABLE_FUNC_VIS
+#  define _LIBCUDACXX_EXPORTED_FROM_ABI __declspec(dllimport)
+#endif
+
+#define _LIBCUDACXX_TYPE_VIS            _LIBCUDACXX_DLL_VIS
+#define _LIBCUDACXX_FUNC_VIS            _LIBCUDACXX_DLL_VIS
+#define _LIBCUDACXX_EXCEPTION_ABI       _LIBCUDACXX_DLL_VIS
+#define _LIBCUDACXX_HIDDEN
+#define _LIBCUDACXX_METHOD_TEMPLATE_IMPLICIT_INSTANTIATION_VIS
+#define _LIBCUDACXX_TEMPLATE_VIS
+#define _LIBCUDACXX_ENUM_VIS
+
+#endif // defined(_LIBCUDACXX_OBJECT_FORMAT_COFF)
+
+#ifndef _LIBCUDACXX_HIDDEN
+#  if !defined(_LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS)
+#    define _LIBCUDACXX_HIDDEN __attribute__ ((__visibility__("hidden")))
+#  else
+#    define _LIBCUDACXX_HIDDEN
+#  endif
+#endif
+
+#ifndef _LIBCUDACXX_METHOD_TEMPLATE_IMPLICIT_INSTANTIATION_VIS
+#  if !defined(_LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS)
+// The inline should be removed once PR32114 is resolved
+#    define _LIBCUDACXX_METHOD_TEMPLATE_IMPLICIT_INSTANTIATION_VIS inline _LIBCUDACXX_HIDDEN
+#  else
+#    define _LIBCUDACXX_METHOD_TEMPLATE_IMPLICIT_INSTANTIATION_VIS
+#  endif
+#endif
+
+#ifndef _LIBCUDACXX_FUNC_VIS
+#  if !defined(_LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS)
+#    define _LIBCUDACXX_FUNC_VIS __attribute__ ((__visibility__("default")))
+#  else
+#    define _LIBCUDACXX_FUNC_VIS
+#  endif
+#endif
+
+#ifndef _LIBCUDACXX_TYPE_VIS
+#  if !defined(_LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS)
+#    define _LIBCUDACXX_TYPE_VIS __attribute__ ((__visibility__("default")))
+#  else
+#    define _LIBCUDACXX_TYPE_VIS
+#  endif
+#endif
+
+#ifndef _LIBCUDACXX_TEMPLATE_VIS
+#  if !defined(_LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS)
+#    if __has_attribute(__type_visibility__)
+#      define _LIBCUDACXX_TEMPLATE_VIS __attribute__ ((__type_visibility__("default")))
+#    else
+#      define _LIBCUDACXX_TEMPLATE_VIS __attribute__ ((__visibility__("default")))
+#    endif
+#  else
+#    define _LIBCUDACXX_TEMPLATE_VIS
+#  endif
+#endif
+
+#ifndef _LIBCUDACXX_EXPORTED_FROM_ABI
+#  if !defined(_LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS)
+#    define _LIBCUDACXX_EXPORTED_FROM_ABI __attribute__((__visibility__("default")))
+#  else
+#    define _LIBCUDACXX_EXPORTED_FROM_ABI
+#  endif
+#endif
+
+#ifndef _LIBCUDACXX_OVERRIDABLE_FUNC_VIS
+#define _LIBCUDACXX_OVERRIDABLE_FUNC_VIS _LIBCUDACXX_FUNC_VIS
+#endif
+
+#ifndef _LIBCUDACXX_EXCEPTION_ABI
+#  if !defined(_LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS)
+#    define _LIBCUDACXX_EXCEPTION_ABI __attribute__ ((__visibility__("default")))
+#  else
+#    define _LIBCUDACXX_EXCEPTION_ABI
+#  endif
+#endif
+
+#ifndef _LIBCUDACXX_ENUM_VIS
+#  if !defined(_LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS) && __has_attribute(__type_visibility__)
+#    define _LIBCUDACXX_ENUM_VIS __attribute__ ((__type_visibility__("default")))
+#  else
+#    define _LIBCUDACXX_ENUM_VIS
+#  endif
+#endif
+
+#ifndef _LIBCUDACXX_EXTERN_TEMPLATE_TYPE_VIS
+#  if !defined(_LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS) && __has_attribute(__type_visibility__)
+#    define _LIBCUDACXX_EXTERN_TEMPLATE_TYPE_VIS __attribute__ ((__visibility__("default")))
+#  else
+#    define _LIBCUDACXX_EXTERN_TEMPLATE_TYPE_VIS
+#  endif
+#endif
+
+#ifndef _LIBCUDACXX_CLASS_TEMPLATE_INSTANTIATION_VIS
+#define _LIBCUDACXX_CLASS_TEMPLATE_INSTANTIATION_VIS
+#endif
+
+#if __has_attribute(internal_linkage)
+#  define _LIBCUDACXX_INTERNAL_LINKAGE __attribute__ ((internal_linkage))
+#else
+#  define _LIBCUDACXX_INTERNAL_LINKAGE _LIBCUDACXX_ALWAYS_INLINE
+#endif
+
+#if __has_attribute(exclude_from_explicit_instantiation)
+#  define _LIBCUDACXX_EXCLUDE_FROM_EXPLICIT_INSTANTIATION __attribute__ ((__exclude_from_explicit_instantiation__))
+#else
+   // Try to approximate the effect of exclude_from_explicit_instantiation
+   // (which is that entities are not assumed to be provided by explicit
+   // template instantiations in the dylib) by always inlining those entities.
+#  define _LIBCUDACXX_EXCLUDE_FROM_EXPLICIT_INSTANTIATION _LIBCUDACXX_ALWAYS_INLINE
+#endif
+
+#ifndef _LIBCUDACXX_HIDE_FROM_ABI_PER_TU
+#  ifndef _LIBCUDACXX_HIDE_FROM_ABI_PER_TU_BY_DEFAULT
+#    define _LIBCUDACXX_HIDE_FROM_ABI_PER_TU 0
+#  else
+#    define _LIBCUDACXX_HIDE_FROM_ABI_PER_TU 1
+#  endif
+#endif
+
+#ifndef _LIBCUDACXX_HAS_MERGED_TYPEINFO_NAMES_DEFAULT
+# ifdef _LIBCUDACXX_OBJECT_FORMAT_COFF // Windows binaries can't merge typeinfos.
+# define _LIBCUDACXX_HAS_MERGED_TYPEINFO_NAMES_DEFAULT 0
+#else
+// TODO: This isn't strictly correct on ELF platforms due to llvm.org/PR37398
+// And we should consider defaulting to OFF.
+# define _LIBCUDACXX_HAS_MERGED_TYPEINFO_NAMES_DEFAULT 1
+#endif
+#endif
+
+#ifndef _LIBCUDACXX_HIDE_FROM_ABI
+#  if _LIBCUDACXX_HIDE_FROM_ABI_PER_TU
+#    define _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_HIDDEN _LIBCUDACXX_INTERNAL_LINKAGE
+#  else
+#    define _LIBCUDACXX_HIDE_FROM_ABI _LIBCUDACXX_HIDDEN _LIBCUDACXX_EXCLUDE_FROM_EXPLICIT_INSTANTIATION
+#  endif
+#endif
+
+#ifdef _LIBCUDACXX_BUILDING_LIBRARY
+#  if _LIBCUDACXX_ABI_VERSION > 1
+#    define _LIBCUDACXX_HIDE_FROM_ABI_AFTER_V1 _LIBCUDACXX_HIDE_FROM_ABI
+#  else
+#    define _LIBCUDACXX_HIDE_FROM_ABI_AFTER_V1
+#  endif
+#else
+#  define _LIBCUDACXX_HIDE_FROM_ABI_AFTER_V1 _LIBCUDACXX_HIDE_FROM_ABI
+#endif
+
+// Just so we can migrate to the new macros gradually.
+#define _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_HIDE_FROM_ABI
+
+#define _LIBCUDACXX_EXECUTION_SPACE_SPECIFIER
+
+// Inline namespaces are available in Clang/GCC/MSVC regardless of C++ dialect.
+#define _LIBCUDACXX_BEGIN_NAMESPACE_STD namespace std { inline namespace _LIBCUDACXX_ABI_NAMESPACE {
+#define _LIBCUDACXX_END_NAMESPACE_STD  } }
+#define _CUDA_VSTD std::_LIBCUDACXX_ABI_NAMESPACE
+_LIBCUDACXX_BEGIN_NAMESPACE_STD _LIBCUDACXX_END_NAMESPACE_STD
+
+#define _LIBCUDACXX_BEGIN_NAMESPACE_STD_NOVERSION namespace std {
+#define _LIBCUDACXX_END_NAMESPACE_STD_NOVERSION }
+
+#if _LIBCUDACXX_STD_VER >= 17
+#define _LIBCUDACXX_BEGIN_NAMESPACE_FILESYSTEM \
+  _LIBCUDACXX_BEGIN_NAMESPACE_STD inline namespace __fs { namespace filesystem {
+#else
+#define _LIBCUDACXX_BEGIN_NAMESPACE_FILESYSTEM \
+  _LIBCUDACXX_BEGIN_NAMESPACE_STD namespace __fs { namespace filesystem {
+#endif
+
+#define _LIBCUDACXX_END_NAMESPACE_FILESYSTEM \
+  _LIBCUDACXX_END_NAMESPACE_STD } }
+
+#define _CUDA_VSTD_FS _CUDA_VSTD::__fs::filesystem
+
+#ifndef _LIBCUDACXX_PREFERRED_OVERLOAD
+#  if __has_attribute(__enable_if__)
+#    define _LIBCUDACXX_PREFERRED_OVERLOAD __attribute__ ((__enable_if__(true, "")))
+#  endif
+#endif
+
+#ifndef _LIBCUDACXX_HAS_NO_NOEXCEPT
+#  define _NOEXCEPT noexcept
+#  define _NOEXCEPT_(x) noexcept(x)
+#else
+#  define _NOEXCEPT throw()
+#  define _NOEXCEPT_(x)
+#endif
+
+#ifdef _LIBCUDACXX_HAS_NO_UNICODE_CHARS
+typedef unsigned short char16_t;
+typedef unsigned int   char32_t;
+#endif  // _LIBCUDACXX_HAS_NO_UNICODE_CHARS
+
+#ifndef __SIZEOF_INT128__
+#define _LIBCUDACXX_HAS_NO_INT128
+#endif
+
+#ifdef _LIBCUDACXX_CXX03_LANG
+# define static_assert(...) _Static_assert(__VA_ARGS__)
+# define decltype(...) __decltype(__VA_ARGS__)
+#endif  // _LIBCUDACXX_CXX03_LANG
+
+#ifdef _LIBCUDACXX_CXX03_LANG
+#  define _LIBCUDACXX_CONSTEXPR
+#else
+#  define _LIBCUDACXX_CONSTEXPR constexpr
+#endif
+
+#ifdef _LIBCUDACXX_CXX03_LANG
+#  define _LIBCUDACXX_DEFAULT {}
+#else
+#  define _LIBCUDACXX_DEFAULT = default;
+#endif
+
+#ifdef _LIBCUDACXX_CXX03_LANG
+#  define _LIBCUDACXX_EQUAL_DELETE
+#else
+#  define _LIBCUDACXX_EQUAL_DELETE = delete
+#endif
+
+#ifdef __GNUC__
+#  define _LIBCUDACXX_NOALIAS __attribute__((__malloc__))
+#else
+#  define _LIBCUDACXX_NOALIAS
+#endif
+
+#if __has_feature(cxx_explicit_conversions) || defined(__IBMCPP__) || \
+    (!defined(_LIBCUDACXX_CXX03_LANG) && defined(__GNUC__)) // All supported GCC versions
+#  define _LIBCUDACXX_EXPLICIT explicit
+#else
+#  define _LIBCUDACXX_EXPLICIT
+#endif
+
+#if !__has_builtin(__builtin_operator_new) || !__has_builtin(__builtin_operator_delete)
+#define _LIBCUDACXX_HAS_NO_BUILTIN_OPERATOR_NEW_DELETE
+#endif
+
+#ifdef _LIBCUDACXX_HAS_NO_STRONG_ENUMS
+#  define _LIBCUDACXX_DECLARE_STRONG_ENUM(x) struct _LIBCUDACXX_TYPE_VIS x { enum __lx
+#  define _LIBCUDACXX_DECLARE_STRONG_ENUM_EPILOG(x) \
+     __lx __v_; \
+     _LIBCUDACXX_INLINE_VISIBILITY x(__lx __v) : __v_(__v) {} \
+     _LIBCUDACXX_INLINE_VISIBILITY explicit x(int __v) : __v_(static_cast<__lx>(__v)) {} \
+     _LIBCUDACXX_INLINE_VISIBILITY operator int() const {return __v_;} \
+     };
+#else  // _LIBCUDACXX_HAS_NO_STRONG_ENUMS
+#  define _LIBCUDACXX_DECLARE_STRONG_ENUM(x) enum class _LIBCUDACXX_ENUM_VIS x
+#  define _LIBCUDACXX_DECLARE_STRONG_ENUM_EPILOG(x)
+#endif  // _LIBCUDACXX_HAS_NO_STRONG_ENUMS
+
+#ifdef _LIBCUDACXX_DEBUG
+#  if _LIBCUDACXX_DEBUG == 0
+#    define _LIBCUDACXX_DEBUG_LEVEL 1
+#  elif _LIBCUDACXX_DEBUG == 1
+#    define _LIBCUDACXX_DEBUG_LEVEL 2
+#  else
+#    error Supported values for _LIBCUDACXX_DEBUG are 0 and 1
+#  endif
+#  if !defined(_LIBCUDACXX_BUILDING_LIBRARY)
+#    define _LIBCUDACXX_EXTERN_TEMPLATE(...)
+#  endif
+#endif
+
+#ifdef _LIBCUDACXX_DISABLE_EXTERN_TEMPLATE
+#define _LIBCUDACXX_EXTERN_TEMPLATE(...)
+#define _LIBCUDACXX_EXTERN_TEMPLATE2(...)
+#endif
+
+#ifndef _LIBCUDACXX_EXTERN_TEMPLATE
+#define _LIBCUDACXX_EXTERN_TEMPLATE(...) extern template __VA_ARGS__;
+#endif
+
+#ifndef _LIBCUDACXX_EXTERN_TEMPLATE2
+#define _LIBCUDACXX_EXTERN_TEMPLATE2(...) extern template __VA_ARGS__;
+#endif
+
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(_LIBCUDACXX_MSVCRT_LIKE) || \
+    defined(__sun__) || defined(__NetBSD__) || defined(__CloudABI__)
+#define _LIBCUDACXX_LOCALE__L_EXTENSIONS 1
+#endif
+
+#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+// Most unix variants have catopen.  These are the specific ones that don't.
+#  if !defined(__BIONIC__) && !defined(_NEWLIB_VERSION)
+#    define _LIBCUDACXX_HAS_CATOPEN 1
+#  endif
+#endif
+
+#ifdef __FreeBSD__
+#define _DECLARE_C99_LDBL_MATH 1
+#endif
+
+#if defined(_LIBCUDACXX_ABI_MICROSOFT) && !defined(_LIBCUDACXX_NO_VCRUNTIME)
+#  define _LIBCUDACXX_DEFER_NEW_TO_VCRUNTIME
+#endif
+
+// If we are getting operator new from the MSVC CRT, then allocation overloads
+// for align_val_t were added in 19.12, aka VS 2017 version 15.3.
+#if defined(_LIBCUDACXX_MSVCRT) && defined(_MSC_VER) && _MSC_VER < 1912
+#  define _LIBCUDACXX_HAS_NO_LIBRARY_ALIGNED_ALLOCATION
+#elif defined(_LIBCUDACXX_ABI_VCRUNTIME) && !defined(__cpp_aligned_new)
+   // We're deferring to Microsoft's STL to provide aligned new et al. We don't
+   // have it unless the language feature test macro is defined.
+#  define _LIBCUDACXX_HAS_NO_LIBRARY_ALIGNED_ALLOCATION
+#endif
+
+#if defined(__APPLE__)
+#  if !defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && \
+      defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
+#    define __MAC_OS_X_VERSION_MIN_REQUIRED __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+#  endif
+#endif // defined(__APPLE__)
+
+#if !defined(_LIBCUDACXX_HAS_NO_ALIGNED_ALLOCATION) && \
+    (defined(_LIBCUDACXX_HAS_NO_LIBRARY_ALIGNED_ALLOCATION) || \
+    (!defined(__cpp_aligned_new) || __cpp_aligned_new < 201606))
+#  define _LIBCUDACXX_HAS_NO_ALIGNED_ALLOCATION
+#endif
+
+#if defined(__APPLE__) || defined(__FreeBSD__)
+#define _LIBCUDACXX_HAS_DEFAULTRUNELOCALE
+#endif
+
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__sun__)
+#define _LIBCUDACXX_WCTYPE_IS_MASK
+#endif
+
+#if _LIBCUDACXX_STD_VER <= 17 || !defined(__cpp_char8_t)
+#define _LIBCUDACXX_NO_HAS_CHAR8_T
+#endif
+
+// Deprecation macros.
+//
+// Deprecations warnings are always enabled, except when users explicitly opt-out
+// by defining _LIBCUDACXX_DISABLE_DEPRECATION_WARNINGS.
+#if !defined(_LIBCUDACXX_DISABLE_DEPRECATION_WARNINGS)
+#  if __has_attribute(deprecated)
+#    define _LIBCUDACXX_DEPRECATED __attribute__ ((deprecated))
+#  elif _LIBCUDACXX_STD_VER > 11
+#    define _LIBCUDACXX_DEPRECATED [[deprecated]]
+#  else
+#    define _LIBCUDACXX_DEPRECATED
+#  endif
+#else
+#  define _LIBCUDACXX_DEPRECATED
+#endif
+
+#if !defined(_LIBCUDACXX_CXX03_LANG)
+#  define _LIBCUDACXX_DEPRECATED_IN_CXX11 _LIBCUDACXX_DEPRECATED
+#else
+#  define _LIBCUDACXX_DEPRECATED_IN_CXX11
+#endif
+
+#if _LIBCUDACXX_STD_VER >= 14
+#  define _LIBCUDACXX_DEPRECATED_IN_CXX14 _LIBCUDACXX_DEPRECATED
+#else
+#  define _LIBCUDACXX_DEPRECATED_IN_CXX14
+#endif
+
+#if _LIBCUDACXX_STD_VER >= 17
+#  define _LIBCUDACXX_DEPRECATED_IN_CXX17 _LIBCUDACXX_DEPRECATED
+#else
+#  define _LIBCUDACXX_DEPRECATED_IN_CXX17
+#endif
+
+#if _LIBCUDACXX_STD_VER <= 11
+#  define _LIBCUDACXX_EXPLICIT_AFTER_CXX11
+#else
+#  define _LIBCUDACXX_EXPLICIT_AFTER_CXX11 explicit
+#endif
+
+#if _LIBCUDACXX_STD_VER > 11 && !defined(_LIBCUDACXX_HAS_NO_CXX14_CONSTEXPR)
+#  define _LIBCUDACXX_CONSTEXPR_AFTER_CXX11 constexpr
+#else
+#  define _LIBCUDACXX_CONSTEXPR_AFTER_CXX11
+#endif
+
+#if _LIBCUDACXX_STD_VER > 14 && !defined(_LIBCUDACXX_HAS_NO_CXX14_CONSTEXPR)
+#  define _LIBCUDACXX_CONSTEXPR_AFTER_CXX14 constexpr
+#else
+#  define _LIBCUDACXX_CONSTEXPR_AFTER_CXX14
+#endif
+
+#if _LIBCUDACXX_STD_VER > 17 && !defined(_LIBCUDACXX_HAS_NO_CXX14_CONSTEXPR)
+#  define _LIBCUDACXX_CONSTEXPR_AFTER_CXX17 constexpr
+#else
+#  define _LIBCUDACXX_CONSTEXPR_AFTER_CXX17
+#endif
+
+// Macros to enter and leave a state where deprecation warnings are suppressed.
+#if defined(_LIBCUDACXX_COMPILER_CLANG) || defined(_LIBCUDACXX_COMPILER_GCC)
+#   define _LIBCUDACXX_SUPPRESS_DEPRECATED_PUSH \
+        _Pragma("GCC diagnostic push") \
+        _Pragma("GCC diagnostic ignored \"-Wdeprecated\"") \
+        _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+#   define _LIBCUDACXX_SUPPRESS_DEPRECATED_POP \
+        _Pragma("GCC diagnostic pop")
+#else
+#   define _LIBCUDACXX_SUPPRESS_DEPRECATED_PUSH
+#   define _LIBCUDACXX_SUPPRESS_DEPRECATED_POP
+#endif
+
+// The _LIBCUDACXX_NODISCARD_ATTRIBUTE should only be used to define other
+// NODISCARD macros to the correct attribute.
+#if __has_cpp_attribute(nodiscard) || (defined(_LIBCUDACXX_COMPILER_MSVC) && _LIBCUDACXX_STD_VER > 14)
+#  define _LIBCUDACXX_NODISCARD_ATTRIBUTE [[nodiscard]]
+#elif defined(_LIBCUDACXX_COMPILER_CLANG) && !defined(_LIBCUDACXX_CXX03_LANG)
+#  define _LIBCUDACXX_NODISCARD_ATTRIBUTE [[clang::warn_unused_result]]
+#else
+// We can't use GCC's [[gnu::warn_unused_result]] and
+// __attribute__((warn_unused_result)), because GCC does not silence them via
+// (void) cast.
+#  define _LIBCUDACXX_NODISCARD_ATTRIBUTE
+#endif
+
+// _LIBCUDACXX_NODISCARD_EXT may be used to apply [[nodiscard]] to entities not
+// specified as such as an extension.
+#if defined(_LIBCUDACXX_ENABLE_NODISCARD) && !defined(_LIBCUDACXX_DISABLE_NODISCARD_EXT)
+#  define _LIBCUDACXX_NODISCARD_EXT _LIBCUDACXX_NODISCARD_ATTRIBUTE
+#else
+#  define _LIBCUDACXX_NODISCARD_EXT
+#endif
+
+#if !defined(_LIBCUDACXX_DISABLE_NODISCARD_AFTER_CXX17) && \
+    (_LIBCUDACXX_STD_VER > 17 || defined(_LIBCUDACXX_ENABLE_NODISCARD))
+#  define _LIBCUDACXX_NODISCARD_AFTER_CXX17 _LIBCUDACXX_NODISCARD_ATTRIBUTE
+#else
+#  define _LIBCUDACXX_NODISCARD_AFTER_CXX17
+#endif
+
+#if _LIBCUDACXX_STD_VER > 14 && defined(__cpp_inline_variables) && (__cpp_inline_variables >= 201606L)
+#  define _LIBCUDACXX_INLINE_VAR inline
+#else
+#  define _LIBCUDACXX_INLINE_VAR
+#endif
+
+#ifdef _LIBCUDACXX_HAS_NO_RVALUE_REFERENCES
+#  define _LIBCUDACXX_EXPLICIT_MOVE(x) _CUDA_VSTD::move(x)
+#else
+#  define _LIBCUDACXX_EXPLICIT_MOVE(x) (x)
+#endif
+
+#ifndef _LIBCUDACXX_CONSTEXPR_IF_NODEBUG
+#if defined(_LIBCUDACXX_DEBUG) || defined(_LIBCUDACXX_HAS_NO_CXX14_CONSTEXPR)
+#define _LIBCUDACXX_CONSTEXPR_IF_NODEBUG
+#else
+#define _LIBCUDACXX_CONSTEXPR_IF_NODEBUG constexpr
+#endif
+#endif
+
+#if __has_attribute(no_destroy)
+#  define _LIBCUDACXX_NO_DESTROY __attribute__((__no_destroy__))
+#else
+#  define _LIBCUDACXX_NO_DESTROY
+#endif
+
+#ifndef _LIBCUDACXX_HAS_NO_ASAN
+extern "C" _LIBCUDACXX_FUNC_VIS void __sanitizer_annotate_contiguous_container(
+  const void *, const void *, const void *, const void *);
+#endif
+
+// Try to find out if RTTI is disabled.
+// g++ and cl.exe have RTTI on by default and define a macro when it is.
+// g++ only defines the macro in 4.3.2 and onwards.
+#if !defined(_LIBCUDACXX_NO_RTTI)
+#  if defined(__GNUC__) && \
+      ((__GNUC__ >= 5) || \
+       (__GNUC__ == 4 && (__GNUC_MINOR__ >= 3 || __GNUC_PATCHLEVEL__ >= 2))) && \
+      !defined(__GXX_RTTI)
+#    define _LIBCUDACXX_NO_RTTI
+#  elif defined(_LIBCUDACXX_COMPILER_MSVC) && !defined(_CPPRTTI)
+#    define _LIBCUDACXX_NO_RTTI
+#  endif
+#endif
+
+#ifndef _LIBCUDACXX_WEAK
+#define _LIBCUDACXX_WEAK __attribute__((__weak__))
+#endif
+
+// Thread API
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS) && \
+    !defined(_LIBCUDACXX_HAS_THREAD_API_PTHREAD) && \
+    !defined(_LIBCUDACXX_HAS_THREAD_API_WIN32) && \
+    !defined(_LIBCUDACXX_HAS_THREAD_API_EXTERNAL)
+#  if defined(__FreeBSD__) || \
+      defined(__Fuchsia__) || \
+      defined(__wasi__) || \
+      defined(__NetBSD__) || \
+      defined(__linux__) || \
+      defined(__GNU__) || \
+      defined(__APPLE__) || \
+      defined(__CloudABI__) || \
+      defined(__sun__) || \
+      (defined(__MINGW32__) && __has_include(<pthread.h>))
+#    define _LIBCUDACXX_HAS_THREAD_API_PTHREAD
+#  elif defined(_LIBCUDACXX_WIN32API)
+#    define _LIBCUDACXX_HAS_THREAD_API_WIN32
+#  else
+#    error "No thread API"
+#  endif // _LIBCUDACXX_HAS_THREAD_API
+#endif // _LIBCUDACXX_HAS_NO_THREADS
+
+#if defined(_LIBCUDACXX_HAS_THREAD_API_PTHREAD)
+#if defined(__ANDROID__) && __ANDROID_API__ >= 30
+#define _LIBCUDACXX_HAS_COND_CLOCKWAIT
+#elif defined(_LIBCUDACXX_GLIBC_PREREQ)
+#if _LIBCUDACXX_GLIBC_PREREQ(2, 30)
+#define _LIBCUDACXX_HAS_COND_CLOCKWAIT
+#endif
+#endif
+#endif
+
+#if defined(_LIBCUDACXX_HAS_NO_THREADS) && defined(_LIBCUDACXX_HAS_THREAD_API_PTHREAD)
+#error _LIBCUDACXX_HAS_THREAD_API_PTHREAD may only be defined when \
+       _LIBCUDACXX_HAS_NO_THREADS is not defined.
+#endif
+
+#if defined(_LIBCUDACXX_HAS_NO_THREADS) && defined(_LIBCUDACXX_HAS_THREAD_API_EXTERNAL)
+#error _LIBCUDACXX_HAS_THREAD_API_EXTERNAL may not be defined when \
+       _LIBCUDACXX_HAS_NO_THREADS is defined.
+#endif
+
+#if defined(__STDCPP_THREADS__) && defined(_LIBCUDACXX_HAS_NO_THREADS)
+#error _LIBCUDACXX_HAS_NO_THREADS cannot be set when __STDCPP_THREADS__ is set.
+#endif
+
+#if !defined(_LIBCUDACXX_HAS_NO_THREADS) && !defined(__STDCPP_THREADS__)
+#define __STDCPP_THREADS__ 1
+#endif
+
+// The glibc and Bionic implementation of pthreads implements
+// pthread_mutex_destroy as nop for regular mutexes. Additionally, Win32
+// mutexes have no destroy mechanism.
+//
+// This optimization can't be performed on Apple platforms, where
+// pthread_mutex_destroy can allow the kernel to release resources.
+// See https://llvm.org/D64298 for details.
+//
+// TODO(EricWF): Enable this optimization on Bionic after speaking to their
+//               respective stakeholders.
+#if (defined(_LIBCUDACXX_HAS_THREAD_API_PTHREAD) && defined(__GLIBC__)) \
+  || defined(_LIBCUDACXX_HAS_THREAD_API_WIN32)
+# define _LIBCUDACXX_HAS_TRIVIAL_MUTEX_DESTRUCTION
+#endif
+
+// Destroying a condvar is a nop on Windows.
+//
+// This optimization can't be performed on Apple platforms, where
+// pthread_cond_destroy can allow the kernel to release resources.
+// See https://llvm.org/D64298 for details.
+//
+// TODO(EricWF): This is potentially true for some pthread implementations
+// as well.
+#if defined(_LIBCUDACXX_HAS_THREAD_API_WIN32)
+# define _LIBCUDACXX_HAS_TRIVIAL_CONDVAR_DESTRUCTION
+#endif
+
+// Systems that use capability-based security (FreeBSD with Capsicum,
+// Nuxi CloudABI) may only provide local filesystem access (using *at()).
+// Functions like open(), rename(), unlink() and stat() should not be
+// used, as they attempt to access the global filesystem namespace.
+#ifdef __CloudABI__
+#define _LIBCUDACXX_HAS_NO_GLOBAL_FILESYSTEM_NAMESPACE
+#endif
+
+// CloudABI is intended for running networked services. Processes do not
+// have standard input and output channels.
+#ifdef __CloudABI__
+#define _LIBCUDACXX_HAS_NO_STDIN
+#define _LIBCUDACXX_HAS_NO_STDOUT
+#endif
+
+// Some systems do not provide gets() in their C library, for security reasons.
+#ifndef _LIBCUDACXX_C_HAS_NO_GETS
+#  if defined(_LIBCUDACXX_MSVCRT) || (defined(__FreeBSD__) && __FreeBSD__ >= 13)
+#    define _LIBCUDACXX_C_HAS_NO_GETS
+#  endif
+#endif
+
+#if defined(__BIONIC__) || defined(__CloudABI__) ||                            \
+    defined(__Fuchsia__) || defined(__wasi__) || defined(_LIBCUDACXX_HAS_MUSL_LIBC)
+#define _LIBCUDACXX_PROVIDES_DEFAULT_RUNE_TABLE
+#endif
+
+// Thread-unsafe functions such as strtok() and localtime()
+// are not available.
+#ifdef __CloudABI__
+#define _LIBCUDACXX_HAS_NO_THREAD_UNSAFE_C_FUNCTIONS
+#endif
+
+// TODO: Support C11 Atomics?
+// #if __has_feature(cxx_atomic) || __has_extension(c_atomic) || __has_keyword(_Atomic)
+// #  define _LIBCUDACXX_HAS_C_ATOMIC_IMP
+#if defined(_LIBCUDACXX_COMPILER_CLANG)
+#  define _LIBCUDACXX_HAS_GCC_ATOMIC_IMP
+#elif defined(_LIBCUDACXX_COMPILER_GCC) || defined(_LIBCUDACXX_COMPILER_PGI)
+#  define _LIBCUDACXX_HAS_GCC_ATOMIC_IMP
+#elif defined(_LIBCUDACXX_COMPILER_PGI)
+#  define _LIBCUDACXX_HAS_GCC_ATOMIC_IMP
+#elif defined(_LIBCUDACXX_COMPILER_MSVC)
+#  define _LIBCUDACXX_HAS_MSVC_ATOMIC_IMPL
+#endif
+
+// CUDA Atomics supersede host atomics in order to insert the host/device dispatch layer
+#if defined(_LIBCUDACXX_COMPILER_NVCC) || defined(_LIBCUDACXX_COMPILER_NVRTC) || defined(_LIBCUDACXX_COMPILER_PGI)
+#  define _LIBCUDACXX_HAS_CUDA_ATOMIC_IMPL
+#endif
+
+#if (!defined(_LIBCUDACXX_HAS_C_ATOMIC_IMP) && \
+     !defined(_LIBCUDACXX_HAS_GCC_ATOMIC_IMP) && \
+     !defined(_LIBCUDACXX_HAS_EXTERNAL_ATOMIC_IMP)) \
+     || defined(_LIBCUDACXX_HAS_NO_THREADS)
+#  define _LIBCUDACXX_HAS_NO_ATOMIC_HEADER
+#else
+#  ifndef _LIBCUDACXX_ATOMIC_FLAG_TYPE
+#    define _LIBCUDACXX_ATOMIC_FLAG_TYPE bool
+#  endif
+#  ifdef _LIBCUDACXX_FREESTANDING
+#    define _LIBCUDACXX_ATOMIC_ONLY_USE_BUILTINS
+#  endif
+#endif
+
+#ifndef _LIBCUDACXX_DISABLE_UBSAN_UNSIGNED_INTEGER_CHECK
+#define _LIBCUDACXX_DISABLE_UBSAN_UNSIGNED_INTEGER_CHECK
+#endif
+
+#if defined(_LIBCUDACXX_ENABLE_THREAD_SAFETY_ANNOTATIONS)
+#  if defined(__clang__) && __has_attribute(acquire_capability)
+// Work around the attribute handling in clang.  When both __declspec and
+// __attribute__ are present, the processing goes awry preventing the definition
+// of the types.
+#    if !defined(_LIBCUDACXX_OBJECT_FORMAT_COFF)
+#      define _LIBCUDACXX_HAS_THREAD_SAFETY_ANNOTATIONS
+#    endif
+#  endif
+#endif
+
+#if __has_attribute(require_constant_initialization)
+#  define _LIBCUDACXX_SAFE_STATIC __attribute__((__require_constant_initialization__))
+#else
+#  define _LIBCUDACXX_SAFE_STATIC
+#endif
+
+#if !defined(_LIBCUDACXX_HAS_NO_OFF_T_FUNCTIONS)
+#  if defined(_LIBCUDACXX_MSVCRT) || defined(_NEWLIB_VERSION)
+#    define _LIBCUDACXX_HAS_NO_OFF_T_FUNCTIONS
+#  endif
+#endif
+
+#if __has_attribute(diagnose_if) && !defined(_LIBCUDACXX_DISABLE_ADDITIONAL_DIAGNOSTICS)
+#  define _LIBCUDACXX_DIAGNOSE_WARNING(...) \
+     __attribute__((diagnose_if(__VA_ARGS__, "warning")))
+#  define _LIBCUDACXX_DIAGNOSE_ERROR(...) \
+     __attribute__((diagnose_if(__VA_ARGS__, "error")))
+#else
+#  define _LIBCUDACXX_DIAGNOSE_WARNING(...)
+#  define _LIBCUDACXX_DIAGNOSE_ERROR(...)
+#endif
+
+// Use a function like macro to imply that it must be followed by a semicolon
+#if __cplusplus > 201402L && __has_cpp_attribute(fallthrough)
+#  define _LIBCUDACXX_FALLTHROUGH() [[fallthrough]]
+#elif defined(__CUDACC_RTC__)
+#  define _LIBCUDACXX_FALLTHROUGH() ((void)0)
+#elif __has_cpp_attribute(clang::fallthrough)
+#  define _LIBCUDACXX_FALLTHROUGH() [[clang::fallthrough]]
+#elif defined(_LIBCUDACXX_COMPILER_PGI)
+#  define _LIBCUDACXX_FALLTHROUGH()
+#elif __has_attribute(fallthough) || _GNUC_VER >= 700
+#  define _LIBCUDACXX_FALLTHROUGH() __attribute__((__fallthrough__))
+#else
+#  define _LIBCUDACXX_FALLTHROUGH() ((void)0)
+#endif
+
+#if __has_attribute(__nodebug__)
+#define _LIBCUDACXX_NODEBUG __attribute__((__nodebug__))
+#else
+#define _LIBCUDACXX_NODEBUG
+#endif
+
+#ifndef _LIBCUDACXX_NODEBUG_TYPE
+#if __has_attribute(__nodebug__) && \
+    (defined(_LIBCUDACXX_CLANG_VER) && _LIBCUDACXX_CLANG_VER >= 1210)
+#define _LIBCUDACXX_NODEBUG_TYPE __attribute__((nodebug))
+#else
+#define _LIBCUDACXX_NODEBUG_TYPE
+#endif
+#endif // !defined(_LIBCUDACXX_NODEBUG_TYPE)
+
+#if defined(_LIBCUDACXX_ABI_MICROSOFT) && \
+    (defined(_LIBCUDACXX_COMPILER_MSVC) || __has_declspec_attribute(empty_bases))
+#  define _LIBCUDACXX_DECLSPEC_EMPTY_BASES __declspec(empty_bases)
+#else
+#  define _LIBCUDACXX_DECLSPEC_EMPTY_BASES
+#endif
+
+#if defined(_LIBCUDACXX_ENABLE_CXX17_REMOVED_FEATURES)
+#define _LIBCUDACXX_ENABLE_CXX17_REMOVED_AUTO_PTR
+#define _LIBCUDACXX_ENABLE_CXX17_REMOVED_UNEXPECTED_FUNCTIONS
+#define _LIBCUDACXX_ENABLE_CXX17_REMOVED_RANDOM_SHUFFLE
+#define _LIBCUDACXX_ENABLE_CXX17_REMOVED_BINDERS
+#endif // _LIBCUDACXX_ENABLE_CXX17_REMOVED_FEATURES
+
+#if !defined(__cpp_deduction_guides) || __cpp_deduction_guides < 201611
+#define _LIBCUDACXX_HAS_NO_DEDUCTION_GUIDES
+#endif
+
+#if !defined(__cpp_coroutines) || __cpp_coroutines < 201703L
+#define _LIBCUDACXX_HAS_NO_COROUTINES
+#endif
+
+// FIXME: Correct this macro when either (A) a feature test macro for the
+// spaceship operator is provided, or (B) a compiler provides a complete
+// implementation.
+#define _LIBCUDACXX_HAS_NO_SPACESHIP_OPERATOR
+
+// Decide whether to use availability macros.
+#if !defined(_LIBCUDACXX_BUILDING_LIBRARY) &&                                      \
+    !defined(_LIBCUDACXX_DISABLE_AVAILABILITY) &&                                  \
+    __has_feature(attribute_availability_with_strict) &&                       \
+    __has_feature(attribute_availability_in_templates) &&                      \
+    __has_extension(pragma_clang_attribute_external_declaration)
+#  ifdef __APPLE__
+#    define _LIBCUDACXX_USE_AVAILABILITY_APPLE
+#  endif
+#endif
+
+// Define availability macros.
+#if defined(_LIBCUDACXX_USE_AVAILABILITY_APPLE)
+#  define _LIBCUDACXX_AVAILABILITY_SHARED_MUTEX                                    \
+     __attribute__((availability(macosx,strict,introduced=10.12)))             \
+     __attribute__((availability(ios,strict,introduced=10.0)))                 \
+     __attribute__((availability(tvos,strict,introduced=10.0)))                \
+     __attribute__((availability(watchos,strict,introduced=3.0)))
+#  define _LIBCUDACXX_AVAILABILITY_BAD_OPTIONAL_ACCESS                             \
+     __attribute__((availability(macosx,strict,introduced=10.14)))             \
+     __attribute__((availability(ios,strict,introduced=12.0)))                 \
+     __attribute__((availability(tvos,strict,introduced=12.0)))                \
+     __attribute__((availability(watchos,strict,introduced=5.0)))
+#  define _LIBCUDACXX_AVAILABILITY_BAD_VARIANT_ACCESS                              \
+     _LIBCUDACXX_AVAILABILITY_BAD_OPTIONAL_ACCESS
+#  define _LIBCUDACXX_AVAILABILITY_BAD_ANY_CAST                                    \
+     _LIBCUDACXX_AVAILABILITY_BAD_OPTIONAL_ACCESS
+#  define _LIBCUDACXX_AVAILABILITY_UNCAUGHT_EXCEPTIONS                             \
+     __attribute__((availability(macosx,strict,introduced=10.12)))             \
+     __attribute__((availability(ios,strict,introduced=10.0)))                 \
+     __attribute__((availability(tvos,strict,introduced=10.0)))                \
+     __attribute__((availability(watchos,strict,introduced=3.0)))
+#  define _LIBCUDACXX_AVAILABILITY_SIZED_NEW_DELETE                                \
+     __attribute__((availability(macosx,strict,introduced=10.12)))             \
+     __attribute__((availability(ios,strict,introduced=10.0)))                 \
+     __attribute__((availability(tvos,strict,introduced=10.0)))                \
+     __attribute__((availability(watchos,strict,introduced=3.0)))
+#  define _LIBCUDACXX_AVAILABILITY_FUTURE_ERROR                                    \
+     __attribute__((availability(ios,strict,introduced=6.0)))
+#  define _LIBCUDACXX_AVAILABILITY_TYPEINFO_VTABLE                                 \
+     __attribute__((availability(macosx,strict,introduced=10.9)))              \
+     __attribute__((availability(ios,strict,introduced=7.0)))
+#  define _LIBCUDACXX_AVAILABILITY_LOCALE_CATEGORY                                 \
+     __attribute__((availability(macosx,strict,introduced=10.9)))              \
+     __attribute__((availability(ios,strict,introduced=7.0)))
+#  define _LIBCUDACXX_AVAILABILITY_ATOMIC_SHARED_PTR                               \
+     __attribute__((availability(macosx,strict,introduced=10.9)))              \
+     __attribute__((availability(ios,strict,introduced=7.0)))
+#  define _LIBCUDACXX_AVAILABILITY_FILESYSTEM                                      \
+     __attribute__((availability(macosx,strict,introduced=10.15)))             \
+     __attribute__((availability(ios,strict,introduced=13.0)))                 \
+     __attribute__((availability(tvos,strict,introduced=13.0)))                \
+     __attribute__((availability(watchos,strict,introduced=6.0)))
+#  define _LIBCUDACXX_AVAILABILITY_FILESYSTEM_PUSH                                 \
+     _Pragma("clang attribute push(__attribute__((availability(macosx,strict,introduced=10.15))), apply_to=any(function,record))") \
+     _Pragma("clang attribute push(__attribute__((availability(ios,strict,introduced=13.0))), apply_to=any(function,record))")     \
+     _Pragma("clang attribute push(__attribute__((availability(tvos,strict,introduced=13.0))), apply_to=any(function,record))")    \
+     _Pragma("clang attribute push(__attribute__((availability(watchos,strict,introduced=6.0))), apply_to=any(function,record))")
+#  define _LIBCUDACXX_AVAILABILITY_FILESYSTEM_POP                                  \
+     _Pragma("clang attribute pop")                                            \
+     _Pragma("clang attribute pop")                                            \
+     _Pragma("clang attribute pop")                                            \
+     _Pragma("clang attribute pop")
+#else
+#  define _LIBCUDACXX_AVAILABILITY_SHARED_MUTEX
+#  define _LIBCUDACXX_AVAILABILITY_BAD_VARIANT_ACCESS
+#  define _LIBCUDACXX_AVAILABILITY_BAD_OPTIONAL_ACCESS
+#  define _LIBCUDACXX_AVAILABILITY_BAD_ANY_CAST
+#  define _LIBCUDACXX_AVAILABILITY_UNCAUGHT_EXCEPTIONS
+#  define _LIBCUDACXX_AVAILABILITY_SIZED_NEW_DELETE
+#  define _LIBCUDACXX_AVAILABILITY_FUTURE_ERROR
+#  define _LIBCUDACXX_AVAILABILITY_TYPEINFO_VTABLE
+#  define _LIBCUDACXX_AVAILABILITY_LOCALE_CATEGORY
+#  define _LIBCUDACXX_AVAILABILITY_ATOMIC_SHARED_PTR
+#  define _LIBCUDACXX_AVAILABILITY_FILESYSTEM
+#  define _LIBCUDACXX_AVAILABILITY_FILESYSTEM_PUSH
+#  define _LIBCUDACXX_AVAILABILITY_FILESYSTEM_POP
+#endif
+
+// Define availability that depends on _LIBCUDACXX_NO_EXCEPTIONS.
+#ifdef _LIBCUDACXX_NO_EXCEPTIONS
+#  define _LIBCUDACXX_AVAILABILITY_FUTURE
+#  define _LIBCUDACXX_AVAILABILITY_THROW_BAD_ANY_CAST
+#  define _LIBCUDACXX_AVAILABILITY_THROW_BAD_OPTIONAL_ACCESS
+#  define _LIBCUDACXX_AVAILABILITY_THROW_BAD_VARIANT_ACCESS
+#else
+#  define _LIBCUDACXX_AVAILABILITY_FUTURE                    _LIBCUDACXX_AVAILABILITY_FUTURE_ERROR
+#  define _LIBCUDACXX_AVAILABILITY_THROW_BAD_ANY_CAST        _LIBCUDACXX_AVAILABILITY_BAD_ANY_CAST
+#  define _LIBCUDACXX_AVAILABILITY_THROW_BAD_OPTIONAL_ACCESS _LIBCUDACXX_AVAILABILITY_BAD_OPTIONAL_ACCESS
+#  define _LIBCUDACXX_AVAILABILITY_THROW_BAD_VARIANT_ACCESS  _LIBCUDACXX_AVAILABILITY_BAD_VARIANT_ACCESS
+#endif
+
+// The stream API was dropped and re-added in the dylib shipped on macOS
+// and iOS. We can only assume the dylib to provide these definitions for
+// macosx >= 10.9 and ios >= 7.0. Otherwise, the definitions are available
+// from the headers, but not from the dylib. Explicit instantiation
+// declarations for streams exist conditionally to this; if we provide
+// an explicit instantiation declaration and we try to deploy to a dylib
+// that does not provide those symbols, we'll get a load-time error.
+#if !defined(_LIBCUDACXX_BUILDING_LIBRARY) &&                                      \
+    ((defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) &&                \
+      __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1090) ||                 \
+     (defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__) &&               \
+      __ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__ < 70000))
+#  define _LIBCUDACXX_DO_NOT_ASSUME_STREAMS_EXPLICIT_INSTANTIATION_IN_DYLIB
+#endif
+
+#if defined(_LIBCUDACXX_COMPILER_IBM)
+#define _LIBCUDACXX_HAS_NO_PRAGMA_PUSH_POP_MACRO
+#endif
+
+#if defined(_LIBCUDACXX_HAS_NO_PRAGMA_PUSH_POP_MACRO)
+#  define _LIBCUDACXX_PUSH_MACROS
+#  define _LIBCUDACXX_POP_MACROS
+#else
+  // Don't warn about macro conflicts when we can restore them at the
+  // end of the header.
+#  ifndef _LIBCUDACXX_DISABLE_MACRO_CONFLICT_WARNINGS
+#    define _LIBCUDACXX_DISABLE_MACRO_CONFLICT_WARNINGS
+#  endif
+#  if defined(_LIBCUDACXX_COMPILER_MSVC)
+#    define _LIBCUDACXX_PUSH_MACROS    \
+       __pragma(push_macro("min")) \
+       __pragma(push_macro("max"))
+#    define _LIBCUDACXX_POP_MACROS     \
+       __pragma(pop_macro("min"))  \
+       __pragma(pop_macro("max"))
+#  else
+#    define _LIBCUDACXX_PUSH_MACROS        \
+       _Pragma("push_macro(\"min\")")  \
+       _Pragma("push_macro(\"max\")")
+#    define _LIBCUDACXX_POP_MACROS         \
+       _Pragma("pop_macro(\"min\")")   \
+       _Pragma("pop_macro(\"max\")")
+#  endif
+#endif // defined(_LIBCUDACXX_HAS_NO_PRAGMA_PUSH_POP_MACRO)
+
+#ifndef _LIBCUDACXX_NO_AUTO_LINK
+#  if defined(_LIBCUDACXX_ABI_MICROSOFT) && !defined(_LIBCUDACXX_BUILDING_LIBRARY)
+#    if defined(_DLL)
+#      pragma comment(lib, "c++.lib")
+#    else
+#      pragma comment(lib, "libc++.lib")
+#    endif
+#  endif // defined(_LIBCUDACXX_ABI_MICROSOFT) && !defined(_LIBCUDACXX_BUILDING_LIBRARY)
+#endif // _LIBCUDACXX_NO_AUTO_LINK
+
+#define _LIBCUDACXX_UNUSED_VAR(x) ((void)(x))
+
+// Configures the fopen close-on-exec mode character, if any. This string will
+// be appended to any mode string used by fstream for fopen/fdopen.
+//
+// Not all platforms support this, but it helps avoid fd-leaks on platforms that
+// do.
+#if defined(__BIONIC__)
+#  define _LIBCUDACXX_FOPEN_CLOEXEC_MODE "e"
+#else
+#  define _LIBCUDACXX_FOPEN_CLOEXEC_MODE
+#endif
+
+#ifndef _LIBCUDACXX_SYS_CLOCK_DURATION
+#  define _LIBCUDACXX_SYS_CLOCK_DURATION microseconds
+#endif
+
+#endif // __cplusplus
+
+#endif // _LIBCUDACXX_CONFIG

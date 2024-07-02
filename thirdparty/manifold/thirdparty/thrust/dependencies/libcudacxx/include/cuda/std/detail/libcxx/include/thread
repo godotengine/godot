@@ -1,0 +1,420 @@
+// -*- C++ -*-
+//===--------------------------- thread -----------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCUDACXX_THREAD
+#define _LIBCUDACXX_THREAD
+
+/*
+
+    thread synopsis
+
+namespace std
+{
+
+class thread
+{
+public:
+    class id;
+    typedef pthread_t native_handle_type;
+
+    thread() noexcept;
+    template <class F, class ...Args> explicit thread(F&& f, Args&&... args);
+    ~thread();
+
+    thread(const thread&) = delete;
+    thread(thread&& t) noexcept;
+
+    thread& operator=(const thread&) = delete;
+    thread& operator=(thread&& t) noexcept;
+
+    void swap(thread& t) noexcept;
+
+    bool joinable() const noexcept;
+    void join();
+    void detach();
+    id get_id() const noexcept;
+    native_handle_type native_handle();
+
+    static unsigned hardware_concurrency() noexcept;
+};
+
+void swap(thread& x, thread& y) noexcept;
+
+class thread::id
+{
+public:
+    id() noexcept;
+};
+
+bool operator==(thread::id x, thread::id y) noexcept;
+bool operator!=(thread::id x, thread::id y) noexcept;
+bool operator< (thread::id x, thread::id y) noexcept;
+bool operator<=(thread::id x, thread::id y) noexcept;
+bool operator> (thread::id x, thread::id y) noexcept;
+bool operator>=(thread::id x, thread::id y) noexcept;
+
+template<class charT, class traits>
+basic_ostream<charT, traits>&
+operator<<(basic_ostream<charT, traits>& out, thread::id id);
+
+namespace this_thread
+{
+
+thread::id get_id() noexcept;
+
+void yield() noexcept;
+
+template <class Clock, class Duration>
+void sleep_until(const chrono::time_point<Clock, Duration>& abs_time);
+
+template <class Rep, class Period>
+void sleep_for(const chrono::duration<Rep, Period>& rel_time);
+
+}  // this_thread
+
+}  // std
+
+*/
+
+#include <__config>
+#include <iosfwd>
+#include <__functional_base>
+#include <type_traits>
+#include <cstddef>
+#include <functional>
+#include <memory>
+#include <system_error>
+#include <chrono>
+#include <__mutex_base>
+#ifndef _LIBCUDACXX_CXX03_LANG
+#include <tuple>
+#endif
+#include <__threading_support>
+#include <__debug>
+
+#if defined(_LIBCUDACXX_USE_PRAGMA_GCC_SYSTEM_HEADER)
+#pragma GCC system_header
+#endif
+
+_LIBCUDACXX_PUSH_MACROS
+#include <__undef_macros>
+
+#ifdef _LIBCUDACXX_HAS_NO_THREADS
+#error <thread> is not supported on this single threaded system
+#else // !_LIBCUDACXX_HAS_NO_THREADS
+
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
+
+template <class _Tp> class __thread_specific_ptr;
+class _LIBCUDACXX_TYPE_VIS __thread_struct;
+class _LIBCUDACXX_HIDDEN __thread_struct_imp;
+class __assoc_sub_state;
+
+_LIBCUDACXX_FUNC_VIS __thread_specific_ptr<__thread_struct>& __thread_local_data();
+
+class _LIBCUDACXX_TYPE_VIS __thread_struct
+{
+    __thread_struct_imp* __p_;
+
+    __thread_struct(const __thread_struct&);
+    __thread_struct& operator=(const __thread_struct&);
+public:
+    __thread_struct();
+    ~__thread_struct();
+
+    void notify_all_at_thread_exit(condition_variable*, mutex*);
+    void __make_ready_at_thread_exit(__assoc_sub_state*);
+};
+
+template <class _Tp>
+class __thread_specific_ptr
+{
+    __libcpp_tls_key __key_;
+
+     // Only __thread_local_data() may construct a __thread_specific_ptr
+     // and only with _Tp == __thread_struct.
+    static_assert((is_same<_Tp, __thread_struct>::value), "");
+    __thread_specific_ptr();
+    friend _LIBCUDACXX_FUNC_VIS __thread_specific_ptr<__thread_struct>& __thread_local_data();
+
+    __thread_specific_ptr(const __thread_specific_ptr&);
+    __thread_specific_ptr& operator=(const __thread_specific_ptr&);
+
+    _LIBCUDACXX_HIDDEN static void _LIBCUDACXX_TLS_DESTRUCTOR_CC __at_thread_exit(void*);
+
+public:
+    typedef _Tp* pointer;
+
+    ~__thread_specific_ptr();
+
+    _LIBCUDACXX_INLINE_VISIBILITY
+    pointer get() const {return static_cast<_Tp*>(__libcpp_tls_get(__key_));}
+    _LIBCUDACXX_INLINE_VISIBILITY
+    pointer operator*() const {return *get();}
+    _LIBCUDACXX_INLINE_VISIBILITY
+    pointer operator->() const {return get();}
+    void set_pointer(pointer __p);
+};
+
+template <class _Tp>
+void _LIBCUDACXX_TLS_DESTRUCTOR_CC
+__thread_specific_ptr<_Tp>::__at_thread_exit(void* __p)
+{
+    delete static_cast<pointer>(__p);
+}
+
+template <class _Tp>
+__thread_specific_ptr<_Tp>::__thread_specific_ptr()
+{
+  int __ec =
+      __libcpp_tls_create(&__key_, &__thread_specific_ptr::__at_thread_exit);
+  if (__ec)
+    __throw_system_error(__ec, "__thread_specific_ptr construction failed");
+}
+
+template <class _Tp>
+__thread_specific_ptr<_Tp>::~__thread_specific_ptr()
+{
+    // __thread_specific_ptr is only created with a static storage duration
+    // so this destructor is only invoked during program termination. Invoking
+    // pthread_key_delete(__key_) may prevent other threads from deleting their
+    // thread local data. For this reason we leak the key.
+}
+
+template <class _Tp>
+void
+__thread_specific_ptr<_Tp>::set_pointer(pointer __p)
+{
+    _LIBCUDACXX_ASSERT(get() == nullptr,
+                   "Attempting to overwrite thread local data");
+    __libcpp_tls_set(__key_, __p);
+}
+
+template<>
+struct _LIBCUDACXX_TEMPLATE_VIS hash<__thread_id>
+    : public unary_function<__thread_id, size_t>
+{
+    _LIBCUDACXX_INLINE_VISIBILITY
+    size_t operator()(__thread_id __v) const _NOEXCEPT
+    {
+        return hash<__libcpp_thread_id>()(__v.__id_);
+    }
+};
+
+template<class _CharT, class _Traits>
+_LIBCUDACXX_INLINE_VISIBILITY
+basic_ostream<_CharT, _Traits>&
+operator<<(basic_ostream<_CharT, _Traits>& __os, __thread_id __id)
+{return __os << __id.__id_;}
+
+class _LIBCUDACXX_TYPE_VIS thread
+{
+    __libcpp_thread_t __t_;
+
+    thread(const thread&);
+    thread& operator=(const thread&);
+public:
+    typedef __thread_id id;
+    typedef __libcpp_thread_t native_handle_type;
+
+    _LIBCUDACXX_INLINE_VISIBILITY
+    thread() _NOEXCEPT : __t_(_LIBCUDACXX_NULL_THREAD) {}
+#ifndef _LIBCUDACXX_CXX03_LANG
+    template <class _Fp, class ..._Args,
+              class = typename enable_if
+              <
+                   !is_same<typename __uncvref<_Fp>::type, thread>::value
+              >::type
+             >
+        _LIBCUDACXX_METHOD_TEMPLATE_IMPLICIT_INSTANTIATION_VIS
+        explicit thread(_Fp&& __f, _Args&&... __args);
+#else  // _LIBCUDACXX_CXX03_LANG
+    template <class _Fp>
+    _LIBCUDACXX_METHOD_TEMPLATE_IMPLICIT_INSTANTIATION_VIS
+    explicit thread(_Fp __f);
+#endif
+    ~thread();
+
+#ifndef _LIBCUDACXX_CXX03_LANG
+    _LIBCUDACXX_INLINE_VISIBILITY
+    thread(thread&& __t) _NOEXCEPT : __t_(__t.__t_) {__t.__t_ = _LIBCUDACXX_NULL_THREAD;}
+    _LIBCUDACXX_INLINE_VISIBILITY
+    thread& operator=(thread&& __t) _NOEXCEPT;
+#endif  // _LIBCUDACXX_CXX03_LANG
+
+    _LIBCUDACXX_INLINE_VISIBILITY
+    void swap(thread& __t) _NOEXCEPT {_CUDA_VSTD::swap(__t_, __t.__t_);}
+
+    _LIBCUDACXX_INLINE_VISIBILITY
+    bool joinable() const _NOEXCEPT {return !__libcpp_thread_isnull(&__t_);}
+    void join();
+    void detach();
+    _LIBCUDACXX_INLINE_VISIBILITY
+    id get_id() const _NOEXCEPT {return __libcpp_thread_get_id(&__t_);}
+    _LIBCUDACXX_INLINE_VISIBILITY
+    native_handle_type native_handle() _NOEXCEPT {return __t_;}
+
+    static unsigned hardware_concurrency() _NOEXCEPT;
+};
+
+#ifndef _LIBCUDACXX_CXX03_LANG
+
+template <class _TSp, class _Fp, class ..._Args, size_t ..._Indices>
+inline _LIBCUDACXX_INLINE_VISIBILITY
+void
+__thread_execute(tuple<_TSp, _Fp, _Args...>& __t, __tuple_indices<_Indices...>)
+{
+    __invoke(_CUDA_VSTD::move(_CUDA_VSTD::get<1>(__t)), _CUDA_VSTD::move(_CUDA_VSTD::get<_Indices>(__t))...);
+}
+
+template <class _Fp>
+void* __thread_proxy(void* __vp)
+{
+    // _Fp = std::tuple< unique_ptr<__thread_struct>, Functor, Args...>
+    std::unique_ptr<_Fp> __p(static_cast<_Fp*>(__vp));
+    __thread_local_data().set_pointer(_CUDA_VSTD::get<0>(*__p).release());
+    typedef typename __make_tuple_indices<tuple_size<_Fp>::value, 2>::type _Index;
+    __thread_execute(*__p, _Index());
+    return nullptr;
+}
+
+template <class _Fp, class ..._Args,
+          class
+         >
+thread::thread(_Fp&& __f, _Args&&... __args)
+{
+    typedef unique_ptr<__thread_struct> _TSPtr;
+    _TSPtr __tsp(new __thread_struct);
+    typedef tuple<_TSPtr, typename decay<_Fp>::type, typename decay<_Args>::type...> _Gp;
+    _CUDA_VSTD::unique_ptr<_Gp> __p(
+            new _Gp(std::move(__tsp),
+                    __decay_copy(_CUDA_VSTD::forward<_Fp>(__f)),
+                    __decay_copy(_CUDA_VSTD::forward<_Args>(__args))...));
+    int __ec = __libcpp_thread_create(&__t_, &__thread_proxy<_Gp>, __p.get());
+    if (__ec == 0)
+        __p.release();
+    else
+        __throw_system_error(__ec, "thread constructor failed");
+}
+
+inline
+thread&
+thread::operator=(thread&& __t) _NOEXCEPT
+{
+    if (!__libcpp_thread_isnull(&__t_))
+        terminate();
+    __t_ = __t.__t_;
+    __t.__t_ = _LIBCUDACXX_NULL_THREAD;
+    return *this;
+}
+
+#else  // _LIBCUDACXX_CXX03_LANG
+
+template <class _Fp>
+struct __thread_invoke_pair {
+    // This type is used to pass memory for thread local storage and a functor
+    // to a newly created thread because std::pair doesn't work with
+    // std::unique_ptr in C++03.
+    __thread_invoke_pair(_Fp& __f) : __tsp_(new __thread_struct), __fn_(__f) {}
+    unique_ptr<__thread_struct> __tsp_;
+    _Fp __fn_;
+};
+
+template <class _Fp>
+void* __thread_proxy_cxx03(void* __vp)
+{
+    std::unique_ptr<_Fp> __p(static_cast<_Fp*>(__vp));
+    __thread_local_data().set_pointer(__p->__tsp_.release());
+    (__p->__fn_)();
+    return nullptr;
+}
+
+template <class _Fp>
+thread::thread(_Fp __f)
+{
+
+    typedef __thread_invoke_pair<_Fp> _InvokePair;
+    typedef std::unique_ptr<_InvokePair> _PairPtr;
+    _PairPtr __pp(new _InvokePair(__f));
+    int __ec = __libcpp_thread_create(&__t_, &__thread_proxy_cxx03<_InvokePair>, __pp.get());
+    if (__ec == 0)
+        __pp.release();
+    else
+        __throw_system_error(__ec, "thread constructor failed");
+}
+
+#endif  // _LIBCUDACXX_CXX03_LANG
+
+inline _LIBCUDACXX_INLINE_VISIBILITY
+void swap(thread& __x, thread& __y) _NOEXCEPT {__x.swap(__y);}
+
+namespace this_thread
+{
+
+_LIBCUDACXX_FUNC_VIS void sleep_for(const chrono::nanoseconds& __ns);
+
+template <class _Rep, class _Period>
+void
+sleep_for(const chrono::duration<_Rep, _Period>& __d)
+{
+    using namespace chrono;
+    if (__d > duration<_Rep, _Period>::zero())
+    {
+#if defined(_LIBCUDACXX_COMPILER_GCC) && (__powerpc__ || __POWERPC__)
+    //  GCC's long double const folding is incomplete for IBM128 long doubles.
+        _LIBCUDACXX_CONSTEXPR duration<long double> _Max = nanoseconds::max();
+#else
+        _LIBCUDACXX_CONSTEXPR duration<long double> _Max = duration<long double>(ULLONG_MAX/1000000000ULL) ;
+#endif
+        nanoseconds __ns;
+        if (__d < _Max)
+        {
+            __ns = duration_cast<nanoseconds>(__d);
+            if (__ns < __d)
+                ++__ns;
+        }
+        else
+            __ns = nanoseconds::max();
+        sleep_for(__ns);
+    }
+}
+
+template <class _Clock, class _Duration>
+void
+sleep_until(const chrono::time_point<_Clock, _Duration>& __t)
+{
+    using namespace chrono;
+    mutex __mut;
+    condition_variable __cv;
+    unique_lock<mutex> __lk(__mut);
+    while (_Clock::now() < __t)
+        __cv.wait_until(__lk, __t);
+}
+
+template <class _Duration>
+inline _LIBCUDACXX_INLINE_VISIBILITY
+void
+sleep_until(const chrono::time_point<chrono::steady_clock, _Duration>& __t)
+{
+    using namespace chrono;
+    sleep_for(__t - steady_clock::now());
+}
+
+inline _LIBCUDACXX_INLINE_VISIBILITY
+void yield() _NOEXCEPT {__libcpp_thread_yield();}
+
+}  // this_thread
+
+_LIBCUDACXX_END_NAMESPACE_STD
+
+#endif // !_LIBCUDACXX_HAS_NO_THREADS
+
+_LIBCUDACXX_POP_MACROS
+
+#endif  // _LIBCUDACXX_THREAD

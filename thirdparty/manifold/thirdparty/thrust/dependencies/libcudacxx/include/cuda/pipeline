@@ -1,0 +1,635 @@
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ *
+ * NVIDIA SOFTWARE LICENSE
+ *
+ * This license is a legal agreement between you and NVIDIA Corporation ("NVIDIA") and governs your use of the NVIDIA/CUDA C++ Library software and materials provided hereunder (“SOFTWARE”).
+ *
+ * This license can be accepted only by an adult of legal age of majority in the country in which the SOFTWARE is used. If you are under the legal age of majority, you must ask your parent or legal guardian to consent to this license. By taking delivery of the SOFTWARE, you affirm that you have reached the legal age of majority, you accept the terms of this license, and you take legal and financial responsibility for the actions of your permitted users.
+ *
+ * You agree to use the SOFTWARE only for purposes that are permitted by (a) this license, and (b) any applicable law, regulation or generally accepted practices or guidelines in the relevant jurisdictions.
+ *
+ * 1. LICENSE. Subject to the terms of this license, NVIDIA grants you a non-exclusive limited license to: (a) install and use the SOFTWARE, and (b) distribute the SOFTWARE subject to the distribution requirements described in this license. NVIDIA reserves all rights, title and interest in and to the SOFTWARE not expressly granted to you under this license.
+ *
+ * 2. DISTRIBUTION REQUIREMENTS. These are the distribution requirements for you to exercise the distribution grant:
+ * a.      The terms under which you distribute the SOFTWARE must be consistent with the terms of this license, including (without limitation) terms relating to the license grant and license restrictions and protection of NVIDIA’s intellectual property rights.
+ * b.      You agree to notify NVIDIA in writing of any known or suspected distribution or use of the SOFTWARE not in compliance with the requirements of this license, and to enforce the terms of your agreements with respect to distributed SOFTWARE.
+ *
+ * 3. LIMITATIONS. Your license to use the SOFTWARE is restricted as follows:
+ * a.      The SOFTWARE is licensed for you to develop applications only for use in systems with NVIDIA GPUs.
+ * b.      You may not reverse engineer, decompile or disassemble, or remove copyright or other proprietary notices from any portion of the SOFTWARE or copies of the SOFTWARE.
+ * c.      You may not modify or create derivative works of any portion of the SOFTWARE.
+ * d.      You may not bypass, disable, or circumvent any technical measure, encryption, security, digital rights management or authentication mechanism in the SOFTWARE.
+ * e.      You may not use the SOFTWARE in any manner that would cause it to become subject to an open source software license. As examples, licenses that require as a condition of use, modification, and/or distribution that the SOFTWARE be (i) disclosed or distributed in source code form; (ii) licensed for the purpose of making derivative works; or (iii) redistributable at no charge.
+ * f.      Unless you have an agreement with NVIDIA for this purpose, you may not use the SOFTWARE with any system or application where the use or failure of the system or application can reasonably be expected to threaten or result in personal injury, death, or catastrophic loss. Examples include use in avionics, navigation, military, medical, life support or other life critical applications. NVIDIA does not design, test or manufacture the SOFTWARE for these critical uses and NVIDIA shall not be liable to you or any third party, in whole or in part, for any claims or damages arising from such uses.
+ * g.      You agree to defend, indemnify and hold harmless NVIDIA and its affiliates, and their respective employees, contractors, agents, officers and directors, from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, fines, restitutions and expenses (including but not limited to attorney’s fees and costs incident to establishing the right of indemnification) arising out of or related to use of the SOFTWARE outside of the scope of this Agreement, or not in compliance with its terms.
+ *
+ * 4. PRE-RELEASE. SOFTWARE versions identified as alpha, beta, preview, early access or otherwise as pre-release may not be fully functional, may contain errors or design flaws, and may have reduced or different security, privacy, availability, and reliability standards relative to commercial versions of NVIDIA software and materials. You may use a pre-release SOFTWARE version at your own risk, understanding that these versions are not intended for use in production or business-critical systems.
+ *
+ * 5. OWNERSHIP. The SOFTWARE and the related intellectual property rights therein are and will remain the sole and exclusive property of NVIDIA or its licensors. The SOFTWARE is copyrighted and protected by the laws of the United States and other countries, and international treaty provisions. NVIDIA may make changes to the SOFTWARE, at any time without notice, but is not obligated to support or update the SOFTWARE.
+ *
+ * 6. COMPONENTS UNDER OTHER LICENSES. The SOFTWARE may include NVIDIA or third-party components with separate legal notices or terms as may be described in proprietary notices accompanying the SOFTWARE. If and to the extent there is a conflict between the terms in this license and the license terms associated with a component, the license terms associated with the components control only to the extent necessary to resolve the conflict.
+ *
+ * 7. FEEDBACK. You may, but don’t have to, provide to NVIDIA any Feedback. “Feedback” means any suggestions, bug fixes, enhancements, modifications, feature requests or other feedback regarding the SOFTWARE. For any Feedback that you voluntarily provide, you hereby grant NVIDIA and its affiliates a perpetual, non-exclusive, worldwide, irrevocable license to use, reproduce, modify, license, sublicense (through multiple tiers of sublicensees), and distribute (through multiple tiers of distributors) the Feedback without the payment of any royalties or fees to you. NVIDIA will use Feedback at its choice.
+ *
+ * 8. NO WARRANTIES. THE SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY EXPRESS OR IMPLIED WARRANTY OF ANY KIND INCLUDING, BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY, NONINFRINGEMENT, OR FITNESS FOR A PARTICULAR PURPOSE. NVIDIA DOES NOT WARRANT THAT THE SOFTWARE WILL MEET YOUR REQUIREMENTS OR THAT THE OPERATION THEREOF WILL BE UNINTERRUPTED OR ERROR-FREE, OR THAT ALL ERRORS WILL BE CORRECTED.
+ *
+ * 9. LIMITATIONS OF LIABILITY. TO THE MAXIMUM EXTENT PERMITTED BY LAW, NVIDIA AND ITS AFFILIATES SHALL NOT BE LIABLE FOR ANY SPECIAL, INCIDENTAL, PUNITIVE OR CONSEQUENTIAL DAMAGES, OR ANY LOST PROFITS, PROJECT DELAYS, LOSS OF USE, LOSS OF DATA OR LOSS OF GOODWILL, OR THE COSTS OF PROCURING SUBSTITUTE PRODUCTS, ARISING OUT OF OR IN CONNECTION WITH THIS LICENSE OR THE USE OR PERFORMANCE OF THE SOFTWARE, WHETHER SUCH LIABILITY ARISES FROM ANY CLAIM BASED UPON BREACH OF CONTRACT, BREACH OF WARRANTY, TORT (INCLUDING NEGLIGENCE), PRODUCT LIABILITY OR ANY OTHER CAUSE OF ACTION OR THEORY OF LIABILITY, EVEN IF NVIDIA HAS PREVIOUSLY BEEN ADVISED OF, OR COULD REASONABLY HAVE FORESEEN, THE POSSIBILITY OF SUCH DAMAGES. IN NO EVENT WILL NVIDIA’S AND ITS AFFILIATES TOTAL CUMULATIVE LIABILITY UNDER OR ARISING OUT OF THIS LICENSE EXCEED US$10.00. THE NATURE OF THE LIABILITY OR THE NUMBER OF CLAIMS OR SUITS SHALL NOT ENLARGE OR EXTEND THIS LIMIT.
+ *
+ * 10. TERMINATION. Your rights under this license will terminate automatically without notice from NVIDIA if you fail to comply with any term and condition of this license or if you commence or participate in any legal proceeding against NVIDIA with respect to the SOFTWARE. NVIDIA may terminate this license with advance written notice to you if NVIDIA decides to no longer provide the SOFTWARE in a country or, in NVIDIA’s sole discretion, the continued use of it is no longer commercially viable. Upon any termination of this license, you agree to promptly discontinue use of the SOFTWARE and destroy all copies in your possession or control. Your prior distributions in accordance with this license are not affected by the termination of this license. All provisions of this license will survive termination, except for the license granted to you.
+ *
+ * 11. APPLICABLE LAW. This license will be governed in all respects by the laws of the United States and of the State of Delaware as those laws are applied to contracts entered into and performed entirely within Delaware by Delaware residents, without regard to the conflicts of laws principles. The United Nations Convention on Contracts for the International Sale of Goods is specifically disclaimed. You agree to all terms of this Agreement in the English language. The state or federal courts residing in Santa Clara County, California shall have exclusive jurisdiction over any dispute or claim arising out of this license. Notwithstanding this, you agree that NVIDIA shall still be allowed to apply for injunctive remedies or an equivalent type of urgent legal relief in any jurisdiction.
+ *
+ * 12. NO ASSIGNMENT. This license and your rights and obligations thereunder may not be assigned by you by any means or operation of law without NVIDIA’s permission. Any attempted assignment not approved by NVIDIA in writing shall be void and of no effect.
+ *
+ * 13. EXPORT. The SOFTWARE is subject to United States export laws and regulations. You agree that you will not ship, transfer or export the SOFTWARE into any country, or use the SOFTWARE in any manner, prohibited by the United States Bureau of Industry and Security or economic sanctions regulations administered by the U.S. Department of Treasury’s Office of Foreign Assets Control (OFAC), or any applicable export laws, restrictions or regulations. These laws include restrictions on destinations, end users and end use. By accepting this license, you confirm that you are not a resident or citizen of any country currently embargoed by the U.S. and that you are not otherwise prohibited from receiving the SOFTWARE.
+ *
+ * 14. GOVERNMENT USE. The SOFTWARE has been developed entirely at private expense and is “commercial items” consisting of “commercial computer software” and “commercial computer software documentation” provided with RESTRICTED RIGHTS. Use, duplication or disclosure by the U.S. Government or a U.S. Government subcontractor is subject to the restrictions in this license pursuant to DFARS 227.7202-3(a) or as set forth in subparagraphs (b)(1) and (2) of the Commercial Computer Software - Restricted Rights clause at FAR 52.227-19, as applicable. Contractor/manufacturer is NVIDIA, 2788 San Tomas Expressway, Santa Clara, CA 95051.
+ *
+ * 15. ENTIRE AGREEMENT. This license is the final, complete and exclusive agreement between the parties relating to the subject matter of this license and supersedes all prior or contemporaneous understandings and agreements relating to this subject matter, whether oral or written. If any court of competent jurisdiction determines that any provision of this license is illegal, invalid or unenforceable, the remaining provisions will remain in full force and effect. This license may only be modified in a writing signed by an authorized representative of each party.
+ *
+ * (v. August 20, 2021)
+ */
+#ifndef _CUDA_PIPELINE
+#define _CUDA_PIPELINE
+
+#include <nv/target>
+#include <cuda/barrier>
+#include <cuda/atomic>
+
+_LIBCUDACXX_BEGIN_NAMESPACE_CUDA
+
+    template<thread_scope _Scope>
+    class pipeline;
+
+    enum class pipeline_role {
+        producer,
+        consumer
+    };
+
+    template<thread_scope _Scope>
+    struct __pipeline_stage {
+        barrier<_Scope> __produced;
+        barrier<_Scope> __consumed;
+    };
+
+    template<thread_scope _Scope, uint8_t _Stages_count>
+    class pipeline_shared_state {
+    public:
+        pipeline_shared_state() = default;
+        pipeline_shared_state(const pipeline_shared_state &) = delete;
+        pipeline_shared_state(pipeline_shared_state &&) = delete;
+        pipeline_shared_state & operator=(pipeline_shared_state &&) = delete;
+        pipeline_shared_state & operator=(const pipeline_shared_state &) =  delete;
+
+    private:
+        __pipeline_stage<_Scope> __stages[_Stages_count];
+        atomic<uint32_t, _Scope> __refcount;
+
+        template<thread_scope _Pipeline_scope>
+        friend class pipeline;
+
+        template<class _Group, thread_scope _Pipeline_scope, uint8_t _Pipeline_stages_count>
+        friend _LIBCUDACXX_INLINE_VISIBILITY
+        pipeline<_Pipeline_scope> make_pipeline(const _Group & __group, pipeline_shared_state<_Pipeline_scope, _Pipeline_stages_count> * __shared_state);
+
+        template<class _Group, thread_scope _Pipeline_scope, uint8_t _Pipeline_stages_count>
+        friend _LIBCUDACXX_INLINE_VISIBILITY
+        pipeline<_Pipeline_scope> make_pipeline(const _Group & __group, pipeline_shared_state<_Pipeline_scope, _Pipeline_stages_count> * __shared_state, size_t __producer_count);
+     
+        template<class _Group, thread_scope _Pipeline_scope, uint8_t _Pipeline_stages_count>
+        friend _LIBCUDACXX_INLINE_VISIBILITY
+        pipeline<_Pipeline_scope> make_pipeline(const _Group & __group, pipeline_shared_state<_Pipeline_scope, _Pipeline_stages_count> * __shared_state, pipeline_role __role);
+    };
+
+    struct __pipeline_asm_helper {
+        __device__
+        static inline uint32_t __lane_id()
+        {
+            uint32_t __lane_id;
+            asm volatile ("mov.u32 %0, %%laneid;" : "=r"(__lane_id));
+            return __lane_id;
+        }
+    };
+
+    template<thread_scope _Scope>
+    class pipeline {
+    public:
+        pipeline(pipeline &&) = default;
+        pipeline(const pipeline &) = delete;
+        pipeline & operator=(pipeline &&) = delete;
+        pipeline & operator=(const pipeline &) = delete;
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        ~pipeline()
+        {
+            if (__active) {
+                (void)quit();
+            }
+        }
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        bool quit()
+        {
+            bool __elected;
+            uint32_t __sub_count;
+NV_IF_TARGET(NV_IS_DEVICE,
+            const uint32_t __match_mask = __match_any_sync(__activemask(), reinterpret_cast<uintptr_t>(__shared_state_get_refcount()));
+            const uint32_t __elected_id = __ffs(__match_mask) - 1;
+            __elected = (__pipeline_asm_helper::__lane_id() == __elected_id);
+            __sub_count = __popc(__match_mask);
+,
+            __elected = true;
+            __sub_count = 1;
+)
+            bool __released = false;
+            if (__elected) {
+                const uint32_t __old = __shared_state_get_refcount()->fetch_sub(__sub_count);
+                const bool __last = (__old == __sub_count);
+                if (__last) {
+                    for (uint8_t __stage = 0; __stage < __stages_count; ++__stage) {
+                        __shared_state_get_stage(__stage)->__produced.~barrier();
+                        if (__partitioned) {
+                            __shared_state_get_stage(__stage)->__consumed.~barrier();
+                        }
+                    }
+                    __released = true;
+                }
+            }
+            __active = false;
+            return __released;
+        }
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        void producer_acquire()
+        {
+            if (__partitioned) {
+                barrier<_Scope> & __stage_barrier = __shared_state_get_stage(__head)->__consumed;
+                (void)_CUDA_VSTD::__libcpp_thread_poll_with_backoff(__poll_tester(__stage_barrier, __consumed_phase_parity));
+            }
+        }
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        void producer_commit()
+        {
+            barrier<_Scope> & __stage_barrier = __shared_state_get_stage(__head)->__produced;
+            __memcpy_async_synchronize(__stage_barrier, true);
+            (void)__stage_barrier.arrive();
+            if (++__head == __stages_count) {
+                __head = 0;
+                if (__partitioned) {
+                    __consumed_phase_parity = !__consumed_phase_parity;
+                }
+            }
+        }
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        void consumer_wait()
+        {
+            barrier<_Scope> & __stage_barrier = __shared_state_get_stage(__tail)->__produced;
+            (void)_CUDA_VSTD::__libcpp_thread_poll_with_backoff(__poll_tester(__stage_barrier, __produced_phase_parity));
+        }
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        void consumer_release()
+        {
+            if (__partitioned) {
+                (void)__shared_state_get_stage(__tail)->__consumed.arrive();
+            }
+            if (++__tail == __stages_count) {
+                __tail = 0;
+                __produced_phase_parity = !__produced_phase_parity;
+            }
+        }
+
+        template<class _Rep, class _Period>
+        _LIBCUDACXX_INLINE_VISIBILITY
+        bool consumer_wait_for(const _CUDA_VSTD::chrono::duration<_Rep, _Period> & __duration)
+        {
+            barrier<_Scope> & __stage_barrier = __shared_state_get_stage(__tail)->__produced;
+            return _CUDA_VSTD::__libcpp_thread_poll_with_backoff(
+                __poll_tester(__stage_barrier, __produced_phase_parity),
+                _CUDA_VSTD::chrono::duration_cast<_CUDA_VSTD::chrono::nanoseconds>(__duration)
+            );
+        }
+
+        template<class _Clock, class _Duration> 
+        _LIBCUDACXX_INLINE_VISIBILITY
+        bool consumer_wait_until(const _CUDA_VSTD::chrono::time_point<_Clock, _Duration> & __time_point)
+        {
+            return consumer_wait_for(__time_point - _Clock::now());
+        }
+
+    private:
+        uint8_t __head               : 8;
+        uint8_t __tail               : 8;
+        const uint8_t __stages_count : 8;
+        bool __consumed_phase_parity : 1;
+        bool __produced_phase_parity : 1;
+        bool __active                : 1;
+        const bool __partitioned     : 1;
+        char * const __shared_state;
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        pipeline(char * __shared_state, uint8_t __stages_count, bool __partitioned)
+            : __head(0)
+            , __tail(0)
+            , __stages_count(__stages_count)
+            , __consumed_phase_parity(true)
+            , __produced_phase_parity(false)
+            , __active(true)
+            , __partitioned(__partitioned)
+            , __shared_state(__shared_state)
+        {}
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        static bool __barrier_try_wait_parity_impl(barrier<_Scope> & __barrier, bool __phase_parity)
+        {
+            typename barrier<_Scope>::arrival_token __synthesized_token = (__phase_parity ? 1ull : 0ull) << 63;
+            return __barrier.__try_wait(_CUDA_VSTD::move(__synthesized_token));
+        }
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        static bool __barrier_try_wait_parity(barrier<_Scope> & __barrier, bool __phase_parity)
+        {
+            return __barrier_try_wait_parity_impl(__barrier, __phase_parity);
+        }
+
+        struct __poll_tester {
+            barrier<_Scope> & __barrier;
+            bool __phase_parity;
+
+            _LIBCUDACXX_INLINE_VISIBILITY
+            __poll_tester(barrier<_Scope> & __barrier, bool __phase_parity)
+              : __barrier(__barrier)
+              , __phase_parity(__phase_parity)
+            {}
+
+            _LIBCUDACXX_INLINE_VISIBILITY
+            bool operator()() const
+            {
+                return __barrier_try_wait_parity(__barrier, __phase_parity);
+            }
+        };
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        __pipeline_stage<_Scope> * __shared_state_get_stage(uint8_t __stage)
+        {
+            ptrdiff_t __stage_offset = __stage * sizeof(__pipeline_stage<_Scope>);
+            return reinterpret_cast<__pipeline_stage<_Scope>*>(__shared_state + __stage_offset);
+        }
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        atomic<uint32_t, _Scope> * __shared_state_get_refcount()
+        {
+            ptrdiff_t __refcount_offset = __stages_count * sizeof(__pipeline_stage<_Scope>);
+            return reinterpret_cast<atomic<uint32_t, _Scope>*>(__shared_state + __refcount_offset);
+        }
+
+        template<class _Group, thread_scope _Pipeline_scope, uint8_t _Pipeline_stages_count>
+        friend _LIBCUDACXX_INLINE_VISIBILITY
+        pipeline<_Pipeline_scope> make_pipeline(const _Group & __group, pipeline_shared_state<_Pipeline_scope, _Pipeline_stages_count> * __shared_state);
+
+        template<class _Group, thread_scope _Pipeline_scope, uint8_t _Pipeline_stages_count>
+        friend _LIBCUDACXX_INLINE_VISIBILITY
+        pipeline<_Pipeline_scope> make_pipeline(const _Group & __group, pipeline_shared_state<_Pipeline_scope, _Pipeline_stages_count> * __shared_state, size_t __producer_count);
+     
+        template<class _Group, thread_scope _Pipeline_scope, uint8_t _Pipeline_stages_count>
+        friend _LIBCUDACXX_INLINE_VISIBILITY
+        pipeline<_Pipeline_scope> make_pipeline(const _Group & __group, pipeline_shared_state<_Pipeline_scope, _Pipeline_stages_count> * __shared_state, pipeline_role __role);
+    };
+
+    template<>
+    _LIBCUDACXX_INLINE_VISIBILITY
+    inline bool pipeline<thread_scope_block>::__barrier_try_wait_parity(barrier<thread_scope_block> & __barrier, bool __phase_parity)
+    {
+NV_IF_TARGET(NV_PROVIDES_SM_80,
+        if (__isShared(&__barrier)) {
+            uint64_t * __mbarrier = device::barrier_native_handle(__barrier);
+            uint16_t __wait_complete;
+
+            asm volatile ("{"
+                          "     .reg .pred %p;"
+                          "     mbarrier.test_wait.parity.shared.b64 %p, [%1], %2;"
+                          "     selp.u16 %0, 1, 0, %p;"
+                          "}"
+                : "=h"(__wait_complete)
+                : "r"(static_cast<uint32_t>(__cvta_generic_to_shared(__mbarrier))), "r"(static_cast<uint32_t>(__phase_parity))
+                : "memory");
+
+            return bool(__wait_complete);
+        } else
+        {
+            return __barrier_try_wait_parity_impl(__barrier, __phase_parity);
+        }
+,
+        return __barrier_try_wait_parity_impl(__barrier, __phase_parity);
+)
+    }
+
+    template<class _Group, thread_scope _Scope, uint8_t _Stages_count>
+    _LIBCUDACXX_INLINE_VISIBILITY
+    pipeline<_Scope> make_pipeline(const _Group & __group, pipeline_shared_state<_Scope, _Stages_count> * __shared_state)
+    {
+        const uint32_t __group_size = static_cast<uint32_t>(__group.size());
+        const uint32_t __thread_rank = static_cast<uint32_t>(__group.thread_rank());
+
+        if (__thread_rank == 0) {
+            for (uint8_t __stage = 0; __stage < _Stages_count; ++__stage) {
+                init(&__shared_state->__stages[__stage].__produced, __group_size);
+            }
+            __shared_state->__refcount.store(__group_size, std::memory_order_relaxed);
+        }
+        __group.sync();
+
+        return pipeline<_Scope>(reinterpret_cast<char*>(__shared_state->__stages), _Stages_count, false);
+    }
+
+    template<class _Group, thread_scope _Scope, uint8_t _Stages_count>
+    _LIBCUDACXX_INLINE_VISIBILITY
+    pipeline<_Scope> make_pipeline(const _Group & __group, pipeline_shared_state<_Scope, _Stages_count> * __shared_state, size_t __producer_count)
+    {
+        const uint32_t __group_size = static_cast<uint32_t>(__group.size());
+        const uint32_t __thread_rank = static_cast<uint32_t>(__group.thread_rank());
+
+        if (__thread_rank == 0) {
+            const size_t __consumer_count = __group_size - __producer_count;
+            for (uint8_t __stage = 0; __stage < _Stages_count; ++__stage) {
+                init(&__shared_state->__stages[__stage].__consumed, __consumer_count);
+                init(&__shared_state->__stages[__stage].__produced, __producer_count);
+            }
+            __shared_state->__refcount.store(__group_size, std::memory_order_relaxed);
+        }
+        __group.sync();
+
+        return pipeline<_Scope>(reinterpret_cast<char*>(__shared_state->__stages), _Stages_count, true);
+    }
+ 
+    template<class _Group, thread_scope _Scope, uint8_t _Stages_count>
+    _LIBCUDACXX_INLINE_VISIBILITY
+    pipeline<_Scope> make_pipeline(const _Group & __group, pipeline_shared_state<_Scope, _Stages_count> * __shared_state, pipeline_role __role)
+    {
+        const uint32_t __group_size = static_cast<uint32_t>(__group.size());
+        const uint32_t __thread_rank = static_cast<uint32_t>(__group.thread_rank());
+
+        if (__thread_rank == 0) {
+            __shared_state->__refcount.store(0, std::memory_order_relaxed);
+        }
+        __group.sync();
+
+        if (__role == pipeline_role::producer) {
+            bool __elected;
+            uint32_t __add_count;
+NV_IF_TARGET(NV_IS_DEVICE,
+            const uint32_t __match_mask = __match_any_sync(__activemask(), reinterpret_cast<uintptr_t>(&__shared_state->__refcount));
+            const uint32_t __elected_id = __ffs(__match_mask) - 1;
+            __elected = (__pipeline_asm_helper::__lane_id() == __elected_id);
+            __add_count = __popc(__match_mask);
+,
+            __elected = true;
+            __add_count = 1;
+)
+            if (__elected) {
+                (void)__shared_state->__refcount.fetch_add(__add_count, std::memory_order_relaxed);
+            }
+        }
+        __group.sync();
+
+        if (__thread_rank == 0) {
+            const uint32_t __producer_count = __shared_state->__refcount.load(std::memory_order_relaxed);
+            const uint32_t __consumer_count = __group_size - __producer_count;
+            for (uint8_t __stage = 0; __stage < _Stages_count; ++__stage) {
+                init(&__shared_state->__stages[__stage].__consumed, __consumer_count);
+                init(&__shared_state->__stages[__stage].__produced, __producer_count);
+            }
+            __shared_state->__refcount.store(__group_size, std::memory_order_relaxed);
+        }
+        __group.sync();
+
+        return pipeline<_Scope>(reinterpret_cast<char*>(__shared_state->__stages), _Stages_count, true);
+    }
+
+_LIBCUDACXX_END_NAMESPACE_CUDA
+
+_LIBCUDACXX_BEGIN_NAMESPACE_CUDA_DEVICE
+
+    template<uint8_t _Prior>
+    __device__
+    void __pipeline_consumer_wait(pipeline<thread_scope_thread> & __pipeline);
+
+    __device__
+    inline void __pipeline_consumer_wait(pipeline<thread_scope_thread> & __pipeline, uint8_t __prior);
+
+_LIBCUDACXX_END_NAMESPACE_CUDA_DEVICE
+
+_LIBCUDACXX_BEGIN_NAMESPACE_CUDA
+
+    template<>
+    class pipeline<thread_scope_thread> {
+    public:
+        pipeline(pipeline &&) = default;
+        pipeline(const pipeline &) = delete;
+        pipeline & operator=(pipeline &&) = delete;
+        pipeline & operator=(const pipeline &) = delete;
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        ~pipeline() {}
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        bool quit()
+        {
+            return true;
+        }
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        void producer_acquire() {}
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        void producer_commit()
+        {
+NV_IF_TARGET(NV_PROVIDES_SM_80,
+            asm volatile ("cp.async.commit_group;");
+            ++__head;
+)
+        }
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        void consumer_wait()
+        {
+NV_IF_TARGET(NV_PROVIDES_SM_80,
+            if (__head == __tail) {
+                return;
+            }
+
+            const uint8_t __prior = __head - __tail - 1;
+            device::__pipeline_consumer_wait(*this, __prior);
+            ++__tail;
+)
+        }
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        void consumer_release() {}
+    
+        template<class _Rep, class _Period>
+        _LIBCUDACXX_INLINE_VISIBILITY
+        bool consumer_wait_for(const _CUDA_VSTD::chrono::duration<_Rep, _Period> & __duration)
+        {
+            (void)__duration;
+            consumer_wait();
+            return true;
+        }
+
+        template<class _Clock, class _Duration> 
+        _LIBCUDACXX_INLINE_VISIBILITY
+        bool consumer_wait_until(const _CUDA_VSTD::chrono::time_point<_Clock, _Duration> & __time_point)
+        {
+            (void)__time_point;
+            consumer_wait();
+            return true;
+        }
+
+    private:
+        uint8_t __head;
+        uint8_t __tail;
+
+        _LIBCUDACXX_INLINE_VISIBILITY
+        pipeline()
+            : __head(0)
+            , __tail(0)
+        {}
+
+        friend _LIBCUDACXX_INLINE_VISIBILITY inline pipeline<thread_scope_thread> make_pipeline();
+
+        template<uint8_t _Prior>
+        friend _LIBCUDACXX_INLINE_VISIBILITY
+        void pipeline_consumer_wait_prior(pipeline<thread_scope_thread> & __pipeline);
+    };
+
+_LIBCUDACXX_END_NAMESPACE_CUDA
+
+_LIBCUDACXX_BEGIN_NAMESPACE_CUDA_DEVICE
+
+    template<uint8_t _Prior>
+    __device__
+    void __pipeline_consumer_wait(pipeline<thread_scope_thread> & __pipeline)
+    {
+        (void)__pipeline;
+NV_IF_TARGET(NV_PROVIDES_SM_80,
+        constexpr uint8_t __max_prior = 8;
+
+        asm volatile ("cp.async.wait_group %0;"
+            :
+            : "n"(_Prior < __max_prior ? _Prior : __max_prior));
+)
+    }
+
+    __device__
+    inline void __pipeline_consumer_wait(pipeline<thread_scope_thread> & __pipeline, uint8_t __prior)
+    {
+        switch (__prior) {
+        case 0:  device::__pipeline_consumer_wait<0>(__pipeline); break;
+        case 1:  device::__pipeline_consumer_wait<1>(__pipeline); break;
+        case 2:  device::__pipeline_consumer_wait<2>(__pipeline); break;
+        case 3:  device::__pipeline_consumer_wait<3>(__pipeline); break;
+        case 4:  device::__pipeline_consumer_wait<4>(__pipeline); break;
+        case 5:  device::__pipeline_consumer_wait<5>(__pipeline); break;
+        case 6:  device::__pipeline_consumer_wait<6>(__pipeline); break;
+        case 7:  device::__pipeline_consumer_wait<7>(__pipeline); break;
+        default: device::__pipeline_consumer_wait<8>(__pipeline); break;
+        }
+    }
+
+_LIBCUDACXX_END_NAMESPACE_CUDA_DEVICE
+
+_LIBCUDACXX_BEGIN_NAMESPACE_CUDA
+
+    _LIBCUDACXX_INLINE_VISIBILITY
+    inline pipeline<thread_scope_thread> make_pipeline()
+    {
+        return pipeline<thread_scope_thread>();
+    }
+
+    template<uint8_t _Prior>
+    _LIBCUDACXX_INLINE_VISIBILITY
+    void pipeline_consumer_wait_prior(pipeline<thread_scope_thread> & __pipeline)
+    {
+NV_IF_TARGET(NV_PROVIDES_SM_80,
+        device::__pipeline_consumer_wait<_Prior>(__pipeline);
+        __pipeline.__tail = __pipeline.__head - _Prior;
+)
+    }
+
+    template<thread_scope _Scope>
+    _LIBCUDACXX_INLINE_VISIBILITY
+    void pipeline_producer_commit(pipeline<thread_scope_thread> & __pipeline, barrier<_Scope> & __barrier)
+    {
+        (void)__pipeline;
+NV_IF_TARGET(NV_PROVIDES_SM_80,
+        __memcpy_async_synchronize(__barrier, true);
+)
+    }
+
+    template<thread_scope _Scope>
+    _LIBCUDACXX_INLINE_VISIBILITY
+    void __memcpy_async_synchronize(pipeline<_Scope> & __pipeline, bool __is_async) {
+        // memcpy_async submissions never synchronize on their own in the pipeline path.
+        (void)__pipeline;
+        (void)__is_async;
+    }
+
+    template<typename _Group, class _Type, thread_scope _Scope>
+    _LIBCUDACXX_INLINE_VISIBILITY
+    void memcpy_async(_Group const & __group, _Type * __destination, _Type const * __source, std::size_t __size, pipeline<_Scope> & __pipeline)
+    {
+        // When compiling with NVCC and GCC 4.8, certain user defined types that _are_ trivially copyable are
+        // incorrectly classified as not trivially copyable. Remove this assertion to allow for their usage with
+        // memcpy_async when compiling with GCC 4.8.
+        // FIXME: remove the #if once GCC 4.8 is no longer supported.
+    #if !defined(_LIBCUDACXX_COMPILER_GCC) || _GNUC_VER > 408
+        static_assert(_CUDA_VSTD::is_trivially_copyable<_Type>::value, "memcpy_async requires a trivially copyable type");
+    #endif
+
+        __memcpy_async<alignof(_Type)>(__group, reinterpret_cast<char *>(__destination), reinterpret_cast<char const *>(__source), __size, __pipeline);
+    }
+
+    template<typename _Group, class _Type, std::size_t _Alignment, thread_scope _Scope, std::size_t _Larger_alignment = (alignof(_Type) > _Alignment) ? alignof(_Type) : _Alignment>
+    _LIBCUDACXX_INLINE_VISIBILITY
+    void memcpy_async(_Group const & __group, _Type * __destination, _Type const * __source, aligned_size_t<_Alignment> __size, pipeline<_Scope> & __pipeline) {
+        // When compiling with NVCC and GCC 4.8, certain user defined types that _are_ trivially copyable are
+        // incorrectly classified as not trivially copyable. Remove this assertion to allow for their usage with
+        // memcpy_async when compiling with GCC 4.8.
+        // FIXME: remove the #if once GCC 4.8 is no longer supported.
+    #if !defined(_LIBCUDACXX_COMPILER_GCC) || _GNUC_VER > 408
+        static_assert(_CUDA_VSTD::is_trivially_copyable<_Type>::value, "memcpy_async requires a trivially copyable type");
+    #endif
+
+        __memcpy_async<_Larger_alignment>(__group, reinterpret_cast<char *>(__destination), reinterpret_cast<char const *>(__source), __size, __pipeline);
+    }
+
+    template<class _Type, typename _Size, thread_scope _Scope>
+    _LIBCUDACXX_INLINE_VISIBILITY
+    void memcpy_async(_Type * __destination, _Type const * __source, _Size __size, pipeline<_Scope> & __pipeline) {
+        memcpy_async(__single_thread_group{}, __destination, __source, __size, __pipeline);
+    }
+
+    template<typename _Group, thread_scope _Scope>
+    _LIBCUDACXX_INLINE_VISIBILITY
+    void memcpy_async(_Group const & __group, void * __destination, void const * __source, std::size_t __size, pipeline<_Scope> & __pipeline) {
+        __memcpy_async<1>(__group, reinterpret_cast<char *>(__destination), reinterpret_cast<char const *>(__source), __size, __pipeline);
+    }
+
+    template<typename _Group, std::size_t _Alignment, thread_scope _Scope>
+    _LIBCUDACXX_INLINE_VISIBILITY
+    void memcpy_async(_Group const & __group, void * __destination, void const * __source, aligned_size_t<_Alignment> __size, pipeline<_Scope> & __pipeline) {
+        __memcpy_async<_Alignment>(__group, reinterpret_cast<char *>(__destination), reinterpret_cast<char const *>(__source), __size, __pipeline);
+    }
+
+    template<typename _Size, thread_scope _Scope>
+    _LIBCUDACXX_INLINE_VISIBILITY
+    void memcpy_async(void * __destination, void const * __source, _Size __size, pipeline<_Scope> & __pipeline) {
+        memcpy_async(__single_thread_group{}, __destination, __source, __size, __pipeline);
+    }
+
+_LIBCUDACXX_END_NAMESPACE_CUDA
+
+#endif //_CUDA_PIPELINE

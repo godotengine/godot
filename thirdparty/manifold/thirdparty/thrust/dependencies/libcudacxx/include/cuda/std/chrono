@@ -1,0 +1,83 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _CUDA_CHRONO
+#define _CUDA_CHRONO
+
+#ifndef __CUDACC_RTC__
+    #include <chrono>
+#endif //__CUDACC_RTC__
+
+#include "ctime"
+#include "type_traits"
+#include "ratio"
+#include "limits"
+#include "version"
+
+#include "detail/__config"
+
+#include "detail/__pragma_push"
+
+// Silence NVCC warnings `long double` arising from chrono floating pointer
+// user-defined literals which are defined in terms of `long double`.
+
+// FIXME: There is currently no way to disable this diagnostic in a fine-grained
+// fashion; if you include this header, the diagnostic will be suppressed
+// throughout the translation unit. The alternative is loosing (conforming)
+// chrono user-defined literals; this seems like the lesser of two evils, so...
+#if defined(_LIBCUDACXX_COMPILER_NVCC)
+#  if (CUDART_VERSION >= 11050)
+#    pragma nv_diag_suppress cuda_demote_unsupported_floating_point
+#  else
+#    pragma diag_suppress cuda_demote_unsupported_floating_point
+#  endif
+#endif
+
+#include "detail/libcxx/include/chrono"
+
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
+
+namespace chrono {
+
+inline _LIBCUDACXX_INLINE_VISIBILITY
+system_clock::time_point system_clock::now() _NOEXCEPT
+{
+#ifdef __CUDA_ARCH__
+    uint64_t __time;
+    asm volatile("mov.u64 %0, %globaltimer;":"=l"(__time)::);
+    return time_point(duration_cast<duration>(nanoseconds(__time)));
+#else
+    return time_point(duration_cast<duration>(nanoseconds(
+            ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
+                ::std::chrono::system_clock::now().time_since_epoch()
+            ).count()
+           )));
+#endif
+}
+
+inline _LIBCUDACXX_INLINE_VISIBILITY
+time_t system_clock::to_time_t(const system_clock::time_point& __t) _NOEXCEPT
+{
+    return time_t(duration_cast<seconds>(__t.time_since_epoch()).count());
+}
+
+inline _LIBCUDACXX_INLINE_VISIBILITY
+system_clock::time_point system_clock::from_time_t(time_t __t) _NOEXCEPT
+{
+    return time_point(seconds(__t));;
+}
+}
+
+_LIBCUDACXX_END_NAMESPACE_STD
+
+#include "detail/__pragma_pop"
+
+#endif //_CUDA_CHRONO
+
+

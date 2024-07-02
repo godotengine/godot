@@ -1,0 +1,33 @@
+// -*- C++ -*-
+//===------------------------ __undef_macros ------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+
+#ifdef min
+#if !defined(_LIBCUDACXX_DISABLE_MACRO_CONFLICT_WARNINGS)
+#if defined(_LIBCUDACXX_WARNING)
+_LIBCUDACXX_WARNING("macro min is incompatible with C++.  Try #define NOMINMAX "
+                "before any Windows header. #undefing min")
+#else
+#warning: macro min is incompatible with C++.  #undefing min
+#endif
+#endif
+#undef min
+#endif
+
+#ifdef max
+#if !defined(_LIBCUDACXX_DISABLE_MACRO_CONFLICT_WARNINGS)
+#if defined(_LIBCUDACXX_WARNING)
+_LIBCUDACXX_WARNING("macro max is incompatible with C++.  Try #define NOMINMAX "
+                "before any Windows header. #undefing max")
+#else
+#warning: macro max is incompatible with C++.  #undefing max
+#endif
+#endif
+#undef max
+#endif

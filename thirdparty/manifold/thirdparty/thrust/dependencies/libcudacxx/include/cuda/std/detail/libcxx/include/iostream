@@ -1,0 +1,63 @@
+// -*- C++ -*-
+//===--------------------------- iostream ---------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCUDACXX_IOSTREAM
+#define _LIBCUDACXX_IOSTREAM
+
+/*
+    iostream synopsis
+
+#include <ios>
+#include <streambuf>
+#include <istream>
+#include <ostream>
+
+namespace std {
+
+extern istream cin;
+extern ostream cout;
+extern ostream cerr;
+extern ostream clog;
+extern wistream wcin;
+extern wostream wcout;
+extern wostream wcerr;
+extern wostream wclog;
+
+}  // std
+
+*/
+
+#include <__config>
+#include <ios>
+#include <streambuf>
+#include <istream>
+#include <ostream>
+
+#if defined(_LIBCUDACXX_USE_PRAGMA_GCC_SYSTEM_HEADER)
+#pragma GCC system_header
+#endif
+
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
+
+#ifndef _LIBCUDACXX_HAS_NO_STDIN
+extern _LIBCUDACXX_FUNC_VIS istream cin;
+extern _LIBCUDACXX_FUNC_VIS wistream wcin;
+#endif
+#ifndef _LIBCUDACXX_HAS_NO_STDOUT
+extern _LIBCUDACXX_FUNC_VIS ostream cout;
+extern _LIBCUDACXX_FUNC_VIS wostream wcout;
+#endif
+extern _LIBCUDACXX_FUNC_VIS ostream cerr;
+extern _LIBCUDACXX_FUNC_VIS wostream wcerr;
+extern _LIBCUDACXX_FUNC_VIS ostream clog;
+extern _LIBCUDACXX_FUNC_VIS wostream wclog;
+
+_LIBCUDACXX_END_NAMESPACE_STD
+
+#endif  // _LIBCUDACXX_IOSTREAM

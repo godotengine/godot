@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/NVIDIA/thrust.git
+	branch = 2.1.0
+	commit = 3cd56842c94de4926157f6ccdfbbf03ef7e5d5dc
+	parent = 2150401aec548d8d3ca01554d59b2e3e113db527
+	method = merge
+	cmdver = 0.4.6

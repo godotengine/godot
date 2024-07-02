@@ -1,0 +1,36 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCUDACXX_CONFIG_SITE
+#define _LIBCUDACXX_CONFIG_SITE
+
+#cmakedefine _LIBCUDACXX_ABI_VERSION @_LIBCUDACXX_ABI_VERSION@
+#cmakedefine _LIBCUDACXX_ABI_UNSTABLE
+#cmakedefine _LIBCUDACXX_ABI_FORCE_ITANIUM
+#cmakedefine _LIBCUDACXX_ABI_FORCE_MICROSOFT
+#cmakedefine _LIBCUDACXX_HIDE_FROM_ABI_PER_TU_BY_DEFAULT
+#cmakedefine _LIBCUDACXX_HAS_NO_GLOBAL_FILESYSTEM_NAMESPACE
+#cmakedefine _LIBCUDACXX_HAS_NO_STDIN
+#cmakedefine _LIBCUDACXX_HAS_NO_STDOUT
+#cmakedefine _LIBCUDACXX_HAS_NO_THREADS
+#cmakedefine _LIBCUDACXX_HAS_NO_MONOTONIC_CLOCK
+#cmakedefine _LIBCUDACXX_HAS_NO_THREAD_UNSAFE_C_FUNCTIONS
+#cmakedefine _LIBCUDACXX_HAS_MUSL_LIBC
+#cmakedefine _LIBCUDACXX_HAS_THREAD_API_PTHREAD
+#cmakedefine _LIBCUDACXX_HAS_THREAD_API_EXTERNAL
+#cmakedefine _LIBCUDACXX_HAS_THREAD_API_WIN32
+#cmakedefine _LIBCUDACXX_HAS_THREAD_LIBRARY_EXTERNAL
+#cmakedefine _LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS
+#cmakedefine _LIBCUDACXX_NO_VCRUNTIME
+#cmakedefine01 _LIBCUDACXX_HAS_MERGED_TYPEINFO_NAMES_DEFAULT
+#cmakedefine _LIBCUDACXX_ABI_NAMESPACE @_LIBCUDACXX_ABI_NAMESPACE@
+#cmakedefine _LIBCUDACXX_HAS_PARALLEL_ALGORITHMS
+
+@_LIBCUDACXX_ABI_DEFINES@
+
+#endif // _LIBCUDACXX_CONFIG_SITE

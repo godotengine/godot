@@ -6,6 +6,65 @@ Import("env_modules")
 env_csg = env_modules.Clone()
 
 # Godot source files
+
+if env_csg["disable_exceptions"]:
+    # Enable exceptions for only manifold.
+    if env_csg.msvc:
+        env_csg.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 1)], CCFLAGS=["/EHsc"])
+    else:
+        env_csg.Append(CXXFLAGS=["-fexceptions"])
+
+
+thirdparty_dir = "#thirdparty/manifold/"
+thirdparty_sources = [
+    thirdparty_dir + file
+    for file in [
+        "src/polygon/src/polygon.cpp",
+        "src/manifold/src/constructors.cpp",
+        "src/manifold/src/edge_op.cpp",
+        "src/manifold/src/face_op.cpp",
+        "src/manifold/src/impl.cpp",
+        "src/manifold/src/boolean_result.cpp",
+        "src/manifold/src/boolean3.cpp",
+        "src/manifold/src/manifold.cpp",
+        "src/manifold/src/properties.cpp",
+        "src/manifold/src/smoothing.cpp",
+        "src/manifold/src/sort.cpp",
+        "src/collider/src/collider.cpp",
+        "src/manifold/src/subdivision.cpp",
+        "src/manifold/src/csg_tree.cpp",
+        "src/cross_section/src/cross_section.cpp",
+        "src/third_party/quickhull/QuickHull.cpp",
+    ]
+]
+
+env_csg.Append(CPPDEFINES=["THRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CPP"])
+if env["platform"] == "web":
+    env_csg.Append(CPPDEFINES=["_LIBCUDACXX_HAS_THREAD_API_EXTERNAL", "_LIBCUDACXX_HAS_THREAD_API_CUDA"])
+    env_csg.Append(CCFLAGS=["-sDISABLE_EXCEPTION_CATCHING=0"])
+    env_csg.Append(LINKFLAGS=["-sERROR_ON_UNDEFINED_SYMBOLS=0"])
+
+env_csg.Prepend(
+    CPPPATH=[
+        thirdparty_dir + path
+        for path in [
+            "src/third_party/quickhull",
+            "src/manifold/include",
+            "src/utilities/include",
+            "src/cross_section/include",
+            "src/polygon/include",
+            "src/collider/include",
+            "thirdparty/thrust/dependencies/libcudacxx/include",
+            "thirdparty/thrust",
+            "thirdparty/glm",
+        ]
+    ]
+)
+
+env_thirdparty = env_csg.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+
 env_csg.add_source_files(env.modules_sources, "*.cpp")
 if env.editor_build:
     env_csg.add_source_files(env.modules_sources, "editor/*.cpp")

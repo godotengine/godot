@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/NVIDIA/libcudacxx.git
+	branch = 55dd2c99346baa3a14949a0f7e9c41865e434eda
+	commit = 55dd2c99346baa3a14949a0f7e9c41865e434eda
+	parent = 2308846c6cc63451eee7932ca936b112aad00c4e
+	method = merge
+	cmdver = 0.4.6

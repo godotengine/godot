@@ -1,0 +1,196 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef __cuda_std__
+#define __cuda_std__
+
+#ifdef __CUDACC__
+    #if defined(__clang__)
+        #include <cuda_fp16.h>
+        #define __fp16 __half
+    #endif
+    #if defined(__FLT16_MANT_DIG__)
+        #include <cuda_fp16.h>
+        #define _Float16 __half
+    #endif
+    #define _LIBCUDACXX_CUDACC_VER_MAJOR __CUDACC_VER_MAJOR__
+    #define _LIBCUDACXX_CUDACC_VER_MINOR __CUDACC_VER_MINOR__
+    #define _LIBCUDACXX_CUDACC_VER_BUILD __CUDACC_VER_BUILD__
+    #define _LIBCUDACXX_CUDACC_VER                                                  \
+        _LIBCUDACXX_CUDACC_VER_MAJOR * 100000 + _LIBCUDACXX_CUDACC_VER_MINOR * 1000 + \
+        _LIBCUDACXX_CUDACC_VER_BUILD
+
+    #define _LIBCUDACXX_HAS_NO_LONG_DOUBLE
+#else
+    #ifndef __host__
+        #define __host__
+    #endif
+    #ifndef __device__
+        #define __device__
+    #endif
+    #ifndef __forceinline__
+        #define __forceinline__
+    #endif
+#endif
+
+#ifdef _MSC_VER
+    #undef __cpp_lib_transparent_operators
+#endif
+
+// request these outcomes
+#define _LIBCUDACXX_NO_AUTO_LINK
+#ifndef _LIBCUDACXX_NO_EXCEPTIONS
+    #define _LIBCUDACXX_NO_EXCEPTIONS
+#endif
+#ifndef _LIBCUDACXX_NO_RTTI
+    #define _LIBCUDACXX_NO_RTTI
+#endif
+// Disable the nodebug type
+#ifndef _LIBCUDACXX_NODEBUG_TYPE
+    #define _LIBCUDACXX_NODEBUG_TYPE
+#endif
+
+#if defined(__CUDACC_RTC__)
+#  if defined(__CUDACC_RTC_INT128__)
+#    define __SIZEOF_INT128__ 16 // This macro is required in order to use int128 within the library
+#  else
+#    define _LIBCUDACXX_HAS_NO_INT128
+#  endif
+#endif
+
+#if defined(_LIBCUDACXX_COMPILER_MSVC) || (defined(_LIBCUDACXX_CUDACC_VER) && (_LIBCUDACXX_CUDACC_VER < 1105000))
+#  define _LIBCUDACXX_HAS_NO_INT128
+#endif
+
+#ifndef _LIBCUDACXX_ASSERT
+#   define _LIBCUDACXX_ASSERT(x, m) ((void)0)
+#endif
+#define _LIBCUDACXX_FREESTANDING
+#define _LIBCUDACXX_HAS_NO_WCHAR_H
+#define _LIBCUDACXX_HAS_NO_THREAD_CONTENTION_TABLE
+#define _LIBCUDACXX_HAS_NO_PLATFORM_WAIT
+#define _LIBCUDACXX_HAS_NO_MONOTONIC_CLOCK
+#define _LIBCUDACXX_HAS_NO_TREE_BARRIER
+#ifdef __CUDACC_RTC__
+    #define __ELF__
+    #define _LIBCUDACXX_DISABLE_PRAGMA_GCC_SYSTEM_HEADER
+    #define _LIBCUDACXX_HAS_THREAD_API_EXTERNAL
+    #define __alignof(x) alignof(x)
+    #define _LIBCUDACXX_LITTLE_ENDIAN
+    #define _LIBCUDACXX_DISABLE_VISIBILITY_ANNOTATIONS
+    #define _LIBCUDACXX_HAS_NO_PRAGMA_PUSH_POP_MACRO
+#endif
+#define _LIBCUDACXX_HAS_EXTERNAL_ATOMIC_IMP
+#define _LIBCUDACXX_ATOMIC_ALWAYS_LOCK_FREE(size, ptr) (size <= 8)
+#define _LIBCUDACXX_HAS_NO_CXX20_CHRONO_LITERALS
+
+#define _LIBCUDACXX_SYS_CLOCK_DURATION nanoseconds
+
+#if defined(__PGIC__) && defined(__linux__)
+    #define __ELF__
+#endif
+
+#define _LIBCUDACXX_ENABLE_BIT_BACKPORT
+
+#define _LIBCUDACXX_HAS_CUDA_ATOMIC_EXT
+
+#include "libcxx/include/__config"
+
+#if defined(__CUDA_ARCH__)
+    #define _LIBCUDACXX_HAS_THREAD_API_CUDA
+#elif defined(_LIBCUDACXX_COMPILER_MSVC)
+    #define _LIBCUDACXX_HAS_THREAD_API_WIN32
+#endif
+
+#if _GNUC_VER <= 409
+    #define _LIBCUDACXX_CUDA_HAS_NO_HOST_STD_ATOMIC_INIT
+#endif
+
+// force this outcome
+#undef _LIBCUDACXX_EXECUTION_SPACE_SPECIFIER
+#define _LIBCUDACXX_EXECUTION_SPACE_SPECIFIER __host__ __device__
+#undef _LIBCUDACXX_ATOMIC_FLAG_TYPE
+#define _LIBCUDACXX_ATOMIC_FLAG_TYPE int
+#undef _LIBCUDACXX_INLINE_VISIBILITY
+#define _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_EXECUTION_SPACE_SPECIFIER
+#undef _LIBCUDACXX_FUNC_VIS
+#define _LIBCUDACXX_FUNC_VIS _LIBCUDACXX_INLINE_VISIBILITY
+#undef _LIBCUDACXX_TYPE_VIS
+#define _LIBCUDACXX_TYPE_VIS
+
+#ifndef _LIBCUDACXX_ABI_UNSTABLE
+#  define _LIBCUDACXX_ABI_UNSTABLE
+#endif
+
+#define _LIBCUDACXX_CUDA_API_VERSION 1008001
+
+#define _LIBCUDACXX_CUDA_API_VERSION_MAJOR \
+  (_LIBCUDACXX_CUDA_API_VERSION / 1000000)
+
+#define _LIBCUDACXX_CUDA_API_VERSION_MINOR \
+  (_LIBCUDACXX_CUDA_API_VERSION / 1000 % 1000)
+
+#define _LIBCUDACXX_CUDA_API_VERSION_PATCH \
+  (_LIBCUDACXX_CUDA_API_VERSION % 1000)
+
+#ifndef _LIBCUDACXX_CUDA_ABI_VERSION_LATEST
+#  define _LIBCUDACXX_CUDA_ABI_VERSION_LATEST 4
+#endif
+
+#ifdef _LIBCUDACXX_CUDA_ABI_VERSION
+#  if _LIBCUDACXX_CUDA_ABI_VERSION != 2 && _LIBCUDACXX_CUDA_ABI_VERSION != 3 && _LIBCUDACXX_CUDA_ABI_VERSION != 4
+#    error Unsupported libcu++ ABI version requested. Please define _LIBCUDACXX_CUDA_ABI_VERSION to either 2 or 3.
+#  endif
+#else
+#  define _LIBCUDACXX_CUDA_ABI_VERSION _LIBCUDACXX_CUDA_ABI_VERSION_LATEST
+#endif
+
+#ifdef _LIBCUDACXX_PIPELINE_ASSUMED_ABI_VERSION
+#  if _LIBCUDACXX_PIPELINE_ASSUMED_ABI_VERSION != _LIBCUDACXX_CUDA_ABI_VERSION
+#    error cuda_pipeline.h has assumed a different libcu++ ABI version than provided by this library. To fix this, please include a libcu++ header before including cuda_pipeline.h, or upgrade to a version of the toolkit this version of libcu++ shipped in.
+#  endif
+#endif
+
+#ifndef _LIBCUDACXX_CUDA_ABI_NAMESPACE
+#  define _LIBCUDACXX_CUDA_ABI_NAMESPACE _LIBCUDACXX_CONCAT(__,_LIBCUDACXX_CUDA_ABI_VERSION)
+#endif
+
+#ifndef _LIBCUDACXX_BEGIN_NAMESPACE_CUDA
+#  define _LIBCUDACXX_BEGIN_NAMESPACE_CUDA \
+      namespace cuda { inline namespace _LIBCUDACXX_CUDA_ABI_NAMESPACE {
+#endif
+#ifndef _LIBCUDACXX_END_NAMESPACE_CUDA
+#  define _LIBCUDACXX_END_NAMESPACE_CUDA } }
+#endif
+
+#ifndef _LIBCUDACXX_BEGIN_NAMESPACE_CUDA_DEVICE
+#  define _LIBCUDACXX_BEGIN_NAMESPACE_CUDA_DEVICE \
+     namespace cuda { namespace device { inline namespace _LIBCUDACXX_CUDA_ABI_NAMESPACE {
+#endif
+#ifndef _LIBCUDACXX_END_NAMESPACE_CUDA_DEVICE
+#  define _LIBCUDACXX_END_NAMESPACE_CUDA_DEVICE } } }
+#endif
+
+// redefine namespace std::
+#undef _LIBCUDACXX_BEGIN_NAMESPACE_STD
+#define _LIBCUDACXX_BEGIN_NAMESPACE_STD \
+   namespace cuda { namespace std { inline namespace _LIBCUDACXX_CUDA_ABI_NAMESPACE {
+
+#undef _LIBCUDACXX_END_NAMESPACE_STD
+#define _LIBCUDACXX_END_NAMESPACE_STD } } }
+
+#undef _CUDA_VSTD
+#define _CUDA_VSTD cuda::std::_LIBCUDACXX_CUDA_ABI_NAMESPACE
+
+#undef _LIBCUDACXX_BEGIN_NAMESPACE_STD_NOVERSION
+#define _LIBCUDACXX_BEGIN_NAMESPACE_STD_NOVERSION namespace cuda { namespace std {
+#undef _LIBCUDACXX_END_NAMESPACE_STD_NOVERSION
+#define _LIBCUDACXX_END_NAMESPACE_STD_NOVERSION } }
+
+#endif //__cuda_std__

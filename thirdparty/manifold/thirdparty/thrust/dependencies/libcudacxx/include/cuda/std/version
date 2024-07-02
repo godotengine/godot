@@ -1,0 +1,21 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _CUDA_VERSION
+#define _CUDA_VERSION
+
+#include "detail/__config"
+
+#include "detail/__pragma_push"
+
+#include "detail/libcxx/include/version"
+
+#include "detail/__pragma_pop"
+
+#endif //_CUDA_VERSION
