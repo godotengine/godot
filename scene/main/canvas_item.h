@@ -138,6 +138,8 @@ private:
 
 	void _window_visibility_changed();
 
+	void _notify_z_index();
+
 	void _notify_transform(CanvasItem *p_node);
 
 	virtual void _physics_interpolated_changed() override;
@@ -191,6 +193,7 @@ public:
 		NOTIFICATION_EXIT_CANVAS = 33,
 		NOTIFICATION_LOCAL_TRANSFORM_CHANGED = 35,
 		NOTIFICATION_WORLD_2D_CHANGED = 36,
+		NOTIFICATION_Z_INDEX_CHANGED = 37,
 	};
 
 	/* EDITOR */

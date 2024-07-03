@@ -680,6 +680,9 @@
 		<constant name="NOTIFICATION_WORLD_2D_CHANGED" value="36">
 			The [CanvasItem]'s active [World2D] changed.
 		</constant>
+		<constant name="NOTIFICATION_Z_INDEX_CHANGED" value="37">
+			The [CanvasItem]'s z_index changed.
+		</constant>
 		<constant name="TEXTURE_FILTER_PARENT_NODE" value="0" enum="TextureFilter">
 			The [CanvasItem] will inherit the filter from its parent.
 		</constant>

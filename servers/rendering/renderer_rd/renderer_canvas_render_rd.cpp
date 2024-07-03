@@ -1148,7 +1148,29 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 	return uniform_set;
 }
 
-void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer, RenderingMethod::RenderInfo *r_render_info) {
+void RendererCanvasRenderRD::update_shadow_map(Light *p_lights, Light *p_directional_lights, LightOccluderInstance *p_occluders, const Rect2 &p_clip_rect, int p_z_end) {
+	RENDER_TIMESTAMP("Render Shadow Map");
+	RD::get_singleton()->texture_clear(state.shadow_texture, Color(0, 0, 0, 0), 0, 1, 0, 1);
+
+	int shadow_index = 0;
+	RendererCanvasRender::Light *light = p_lights;
+	while (light) {
+		if (light->use_shadow) {
+			light_update_shadow(light->light_internal, shadow_index++, light->xform_cache.affine_inverse(), light->item_shadow_mask, light->radius_cache / 1000.0, light->radius_cache * 1.1, p_z_end, p_occluders);
+		}
+		light = light->next_ptr;
+	}
+
+	RendererCanvasRender::Light *dir_light = p_directional_lights;
+	while (dir_light) {
+		if (dir_light->use_shadow) {
+			light_update_directional_shadow(dir_light->light_internal, shadow_index++, dir_light->xform_cache, dir_light->item_shadow_mask, dir_light->directional_distance, p_clip_rect, p_z_end, p_occluders);
+		}
+		dir_light = dir_light->next_ptr;
+	}
+}
+
+void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, const Rect2 &p_clip_rect, Light *p_lights, Light *p_directional_lights, LightOccluderInstance *p_occluders, bool &r_sdf_used, bool p_to_backbuffer, RenderingMethod::RenderInfo *r_render_info, int p_start_index) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
@@ -1160,6 +1182,23 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 	RID fb_uniform_set;
 	bool clear = false;
 	Vector<Color> clear_colors;
+
+	if (p_item_count == 0) {
+		return; // this should never happen
+	}
+	int start_z = items[p_start_index]->z_final;
+	update_shadow_map(p_lights, p_directional_lights, p_occluders, p_clip_rect, start_z);
+
+	// find next z where we have to redraw the shadow map
+	LightOccluderInstance *instance = p_occluders;
+	int min_occulder_z = RS::CANVAS_ITEM_Z_MAX + 1;
+	while (instance) {
+		int occluder_z = instance->z_index;
+		if (occluder_z >= start_z && occluder_z < min_occulder_z) {
+			min_occulder_z = occluder_z;
+		}
+		instance = instance->next;
+	}
 
 	if (p_to_backbuffer) {
 		framebuffer = texture_storage->render_target_get_rd_backbuffer_framebuffer(p_to_render_target);
@@ -1192,8 +1231,16 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 
 	PipelineVariants *pipeline_variants = &shader.pipeline_variants;
 
-	for (int i = 0; i < p_item_count; i++) {
+	for (int i = p_start_index; i < p_item_count; i++) {
 		Item *ci = items[i];
+
+		if (ci->z_final > min_occulder_z) {
+			RD::get_singleton()->draw_list_end();
+
+			// no real need for recurrsion, but it avoids RenderingDevice errors
+			_render_items(p_to_render_target, p_item_count, p_canvas_transform_inverse, p_clip_rect, p_lights, p_directional_lights, p_occluders, r_sdf_used, p_to_backbuffer, r_render_info, i);
+			return;
+		}
 
 		if (current_clip != ci->final_clip_owner) {
 			current_clip = ci->final_clip_owner;
@@ -1270,7 +1317,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 	RD::get_singleton()->draw_list_end();
 }
 
-void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info) {
+void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, LightOccluderInstance *p_occluders, const Transform2D &p_canvas_transform, const Rect2 &p_clip_rect, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
@@ -1569,7 +1616,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 					update_skeletons = false;
 				}
 
-				_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false, r_render_info);
+				_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_clip_rect, p_light_list, p_directional_light_list, p_occluders, r_sdf_used, false, r_render_info);
 				item_count = 0;
 
 				if (ci->canvas_group_owner->canvas_group->mode != RS::CANVAS_GROUP_MODE_TRANSPARENT) {
@@ -1601,7 +1648,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				update_skeletons = false;
 			}
 
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, true, r_render_info);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_clip_rect, p_light_list, p_directional_light_list, p_occluders, r_sdf_used, true, r_render_info);
 			item_count = 0;
 
 			if (ci->canvas_group->blur_mipmaps) {
@@ -1625,7 +1672,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				update_skeletons = false;
 			}
 
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false, r_render_info);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_clip_rect, p_light_list, p_directional_light_list, p_occluders, r_sdf_used, false, r_render_info);
 			item_count = 0;
 
 			texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, backbuffer_gen_mipmaps);
@@ -1655,7 +1702,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				update_skeletons = false;
 			}
 
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, canvas_group_owner != nullptr, r_render_info);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_clip_rect, p_light_list, p_directional_light_list, p_occluders, r_sdf_used, canvas_group_owner != nullptr, r_render_info);
 			//then reset
 			item_count = 0;
 		}
@@ -1713,7 +1760,7 @@ void RendererCanvasRenderRD::_update_shadow_atlas() {
 			tf.texture_type = RD::TEXTURE_TYPE_2D;
 			tf.width = state.shadow_texture_size;
 			tf.height = state.max_lights_per_render * 2;
-			tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+			tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 			tf.format = RD::DATA_FORMAT_R32_SFLOAT;
 
 			state.shadow_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
@@ -1734,7 +1781,7 @@ void RendererCanvasRenderRD::_update_shadow_atlas() {
 		state.shadow_fb = RD::get_singleton()->framebuffer_create(fb_textures);
 	}
 }
-void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) {
+void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, int p_z_end, LightOccluderInstance *p_occluders) {
 	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
 	ERR_FAIL_COND(!cl->shadow.enabled);
 
@@ -1788,7 +1835,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 		while (instance) {
 			OccluderPolygon *co = occluder_polygon_owner.get_or_null(instance->occluder);
 
-			if (!co || co->index_array.is_null() || !(p_light_mask & instance->light_mask)) {
+			if (!co || co->index_array.is_null() || !(p_light_mask & instance->light_mask) || instance->z_index < p_z_end) {
 				instance = instance->next;
 				continue;
 			}
@@ -1809,7 +1856,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 	}
 }
 
-void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) {
+void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, int p_z_end, LightOccluderInstance *p_occluders) {
 	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
 	ERR_FAIL_COND(!cl->shadow.enabled);
 
@@ -1863,7 +1910,7 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 	while (instance) {
 		OccluderPolygon *co = occluder_polygon_owner.get_or_null(instance->occluder);
 
-		if (!co || co->index_array.is_null() || !(p_light_mask & instance->light_mask)) {
+		if (!co || co->index_array.is_null() || !(p_light_mask & instance->light_mask) || instance->z_index < p_z_end) {
 			instance = instance->next;
 			continue;
 		}
@@ -2756,7 +2803,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		tf.texture_type = RD::TEXTURE_TYPE_2D;
 		tf.width = 4;
 		tf.height = 4;
-		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 		tf.format = RD::DATA_FORMAT_R32_SFLOAT;
 
 		state.shadow_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());

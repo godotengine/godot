@@ -105,14 +105,36 @@ void RasterizerCanvasGLES3::_update_transform_to_mat4(const Transform3D &p_trans
 	p_mat4[15] = 1;
 }
 
-void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info) {
+void RasterizerCanvasGLES3::update_shadow_map(Light *p_lights, Light *p_directional_lights, LightOccluderInstance *p_occluders, const Rect2 &p_clip_rect, int p_z_end) {
+	RENDER_TIMESTAMP("Render Shadow Map");
+	glClear(state.shadow_texture);
+
+	int shadow_index = 0;
+	RendererCanvasRender::Light *light = p_lights;
+	while (light) {
+		if (light->use_shadow) {
+			light_update_shadow(light->light_internal, shadow_index++, light->xform_cache.affine_inverse(), light->item_shadow_mask, light->radius_cache / 1000.0, light->radius_cache * 1.1, p_z_end, p_occluders);
+		}
+		light = light->next_ptr;
+	}
+
+	RendererCanvasRender::Light *dir_light = p_directional_lights;
+	while (dir_light) {
+		if (dir_light->use_shadow) {
+			light_update_directional_shadow(dir_light->light_internal, shadow_index++, dir_light->xform_cache, dir_light->item_shadow_mask, dir_light->directional_distance, p_clip_rect, p_z_end, p_occluders);
+		}
+		dir_light = dir_light->next_ptr;
+	}
+}
+
+void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, LightOccluderInstance *p_occluders, const Transform2D &p_canvas_transform, const Rect2 &p_clip_rect, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	GLES3::MeshStorage *mesh_storage = GLES3::MeshStorage::get_singleton();
 
 	Transform2D canvas_transform_inverse = p_canvas_transform.affine_inverse();
 
-	// Clear out any state that may have been left from the 3D pass.
+	update_shadow_map(p_light_list, p_directional_light_list, p_occluders, p_clip_rect, -1000);
 	reset_canvas();
 
 	if (state.canvas_instance_data_buffers[state.current_data_buffer_index].fence != GLsync()) {
@@ -468,7 +490,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 					update_skeletons = false;
 				}
 				// Canvas group begins here, render until before this item
-				_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false, r_render_info);
+				_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_clip_rect, p_light_list, p_directional_light_list, p_occluders, r_sdf_used, false, r_render_info);
 				item_count = 0;
 
 				if (ci->canvas_group_owner->canvas_group->mode != RS::CANVAS_GROUP_MODE_TRANSPARENT) {
@@ -499,7 +521,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 				mesh_storage->update_mesh_instances();
 				update_skeletons = false;
 			}
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, true, r_render_info);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_clip_rect, p_light_list, p_directional_light_list, p_occluders, r_sdf_used, true, r_render_info);
 			item_count = 0;
 
 			if (ci->canvas_group->blur_mipmaps) {
@@ -523,7 +545,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 			}
 			//render anything pending, including clearing if no items
 
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false, r_render_info);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_clip_rect, p_light_list, p_directional_light_list, p_occluders, r_sdf_used, false, r_render_info);
 			item_count = 0;
 
 			texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, backbuffer_gen_mipmaps);
@@ -553,7 +575,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 				mesh_storage->update_mesh_instances();
 				update_skeletons = false;
 			}
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, canvas_group_owner != nullptr, r_render_info);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_clip_rect, p_light_list, p_directional_light_list, p_occluders, r_sdf_used, canvas_group_owner != nullptr, r_render_info);
 			//then reset
 			item_count = 0;
 		}
@@ -573,7 +595,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 	state.current_instance_buffer_index = 0;
 }
 
-void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer, RenderingMethod::RenderInfo *r_render_info) {
+void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, const Rect2 &p_clip_rect, Light *p_lights, Light *p_directional_lights, LightOccluderInstance *p_occluders, bool &r_sdf_used, bool p_to_backbuffer, RenderingMethod::RenderInfo *r_render_info, int p_start_index) {
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 
 	canvas_begin(p_to_render_target, p_to_backbuffer);
@@ -1619,7 +1641,7 @@ void RasterizerCanvasGLES3::light_set_use_shadow(RID p_rid, bool p_enable) {
 	cl->shadow.enabled = p_enable;
 }
 
-void RasterizerCanvasGLES3::light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) {
+void RasterizerCanvasGLES3::light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, int p_z_end, LightOccluderInstance *p_occluders) {
 	GLES3::Config *config = GLES3::Config::get_singleton();
 
 	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
@@ -1723,7 +1745,7 @@ void RasterizerCanvasGLES3::light_update_shadow(RID p_rid, int p_shadow_index, c
 	glDisable(GL_SCISSOR_TEST);
 }
 
-void RasterizerCanvasGLES3::light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) {
+void RasterizerCanvasGLES3::light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, int p_z_end, LightOccluderInstance *p_occluders) {
 	GLES3::Config *config = GLES3::Config::get_singleton();
 
 	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);

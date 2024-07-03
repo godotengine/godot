@@ -727,6 +727,14 @@
 				Sets a light occluder's [Transform2D].
 			</description>
 		</method>
+		<method name="canvas_light_occluder_set_z_index">
+			<return type="void" />
+			<param index="0" name="occluder" type="RID" />
+			<param index="1" name="z_index" type="int" />
+			<description>
+				Sets a light occluder's z_index.
+			</description>
+		</method>
 		<method name="canvas_light_occluder_transform_physics_interpolation">
 			<return type="void" />
 			<param index="0" name="occluder" type="RID" />

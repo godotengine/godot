@@ -565,6 +565,8 @@ void CanvasItem::set_z_index(int p_z) {
 	z_index = p_z;
 	RS::get_singleton()->canvas_item_set_z_index(canvas_item, z_index);
 	update_configuration_warnings();
+
+	_notify_z_index();
 }
 
 void CanvasItem::set_z_as_relative(bool p_enabled) {
@@ -946,6 +948,16 @@ void CanvasItem::_notify_transform_deferred() {
 	}
 }
 
+void CanvasItem::_notify_z_index() {
+	notification(NOTIFICATION_Z_INDEX_CHANGED);
+	for (CanvasItem *ci : children_items) {
+		if (ci->top_level) {
+			continue;
+		}
+		ci->_notify_z_index();
+	}
+}
+
 void CanvasItem::_notify_transform(CanvasItem *p_node) {
 	/* This check exists to avoid re-propagating the transform
 	 * notification down the tree on dirty nodes. It provides
@@ -1308,6 +1320,7 @@ void CanvasItem::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_ENTER_CANVAS);
 	BIND_CONSTANT(NOTIFICATION_EXIT_CANVAS);
 	BIND_CONSTANT(NOTIFICATION_WORLD_2D_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_Z_INDEX_CHANGED);
 
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_PARENT_NODE);
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_NEAREST);

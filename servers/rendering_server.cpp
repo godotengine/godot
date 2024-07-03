@@ -3333,6 +3333,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_light_occluder_set_as_sdf_collision", "occluder", "enable"), &RenderingServer::canvas_light_occluder_set_as_sdf_collision);
 	ClassDB::bind_method(D_METHOD("canvas_light_occluder_set_transform", "occluder", "transform"), &RenderingServer::canvas_light_occluder_set_transform);
 	ClassDB::bind_method(D_METHOD("canvas_light_occluder_set_light_mask", "occluder", "mask"), &RenderingServer::canvas_light_occluder_set_light_mask);
+	ClassDB::bind_method(D_METHOD("canvas_light_occluder_set_z_index", "occluder", "z_index"), &RenderingServer::canvas_light_occluder_set_z_index);
 	ClassDB::bind_method(D_METHOD("canvas_light_occluder_set_interpolated", "occluder", "interpolated"), &RenderingServer::canvas_light_occluder_set_interpolated);
 	ClassDB::bind_method(D_METHOD("canvas_light_occluder_reset_physics_interpolation", "occluder"), &RenderingServer::canvas_light_occluder_reset_physics_interpolation);
 	ClassDB::bind_method(D_METHOD("canvas_light_occluder_transform_physics_interpolation", "occluder", "transform"), &RenderingServer::canvas_light_occluder_transform_physics_interpolation);
