@@ -1968,6 +1968,7 @@ void EditorFileDialog::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "name"), defaults.name, &EditorFileDialog::set_option_name, &EditorFileDialog::get_option_name);
 	base_property_helper.register_property(PropertyInfo(Variant::PACKED_STRING_ARRAY, "values"), defaults.values, &EditorFileDialog::set_option_values, &EditorFileDialog::get_option_values);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "default"), defaults.default_idx, &EditorFileDialog::set_option_default, &EditorFileDialog::get_option_default);
+	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
 void EditorFileDialog::set_show_hidden_files(bool p_show) {

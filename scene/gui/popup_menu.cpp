@@ -2824,6 +2824,7 @@ void PopupMenu::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater"), defaults.id, &PopupMenu::set_item_id, &PopupMenu::get_item_id);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &PopupMenu::set_item_disabled, &PopupMenu::is_item_disabled);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "separator"), defaults.separator, &PopupMenu::set_item_as_separator, &PopupMenu::is_item_separator);
+	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
 void PopupMenu::popup(const Rect2i &p_bounds) {

@@ -741,6 +741,7 @@ void AudioStreamRandomizer::_bind_methods() {
 	base_property_helper.set_array_length_getter(&AudioStreamRandomizer::get_streams_count);
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), defaults.stream, &AudioStreamRandomizer::set_stream, &AudioStreamRandomizer::get_stream);
 	base_property_helper.register_property(PropertyInfo(Variant::FLOAT, "weight", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), defaults.weight, &AudioStreamRandomizer::set_stream_probability_weight, &AudioStreamRandomizer::get_stream_probability_weight);
+	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
 AudioStreamRandomizer::AudioStreamRandomizer() {
