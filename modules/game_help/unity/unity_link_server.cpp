@@ -202,117 +202,8 @@ static bool read_string(StreamPeerConstBuffer& msg_buffer,String &str)
 	return true;
 
 }
-static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
-	int tag = msg_buffer.get_u32();
-	int size = msg_buffer.get_u32();
-	int type = msg_buffer.get_u32();
-	String path;
-	if (!read_string(msg_buffer, path))
-	{
-		ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + path);
-
-	}
-	path = path.to_lower();
-	path = path.replace("assets", "Assets");
-	if(!DirAccess::exists("res://" + path))
-	{
-		// 创建目录
-		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::AccessType::ACCESS_RESOURCES);
-		dir_access->make_dir_recursive(path);
-	}
 
 
-	if(type == 1){
-		// 1 代表是动画节点
-		Ref<CharacterAnimatorNodeBase> anima_node;
-		Error err;
-		_buffer_to_animationNode(msg_buffer,anima_node,err);
-		if(err != OK){
-			ERR_FAIL_V_MSG(false,"UnityLinkServer: create animation node error " + itos(err) + " " + path);
-		}
-		String save_path = "res://" + path + "/" + anima_node->get_name() + "_" + anima_node->get_class() + "anim_node.tres";
-		ResourceSaver::save(anima_node,save_path);
-	}
-	else if(type == 2){
-		// 解析骨骼映射文件
-		int file_size = msg_buffer.get_32();
-		if(file_size < 0 || file_size > 10240){
-			ERR_FAIL_V_MSG(false,"UnityLinkServer: create bone map error :" + path);
-			
-		}
-		String file_name = msg_buffer.get_utf8_string(file_size);
-		String save_name = file_name.get_basename();
-
-		Ref<CharacterBoneMap> bone_map;
-		bone_map.instantiate();
-		//bone_map->ref_skeleton_file_path = path + "/" + file_name;
-		//bone_map->is_by_sekeleton_file = true;
-
-
-		String save_path = "res://" + path + "/" + save_name +  ".bone_map.tres";
-		ResourceSaver::save(bone_map,save_path);		
-		print_line("UnityLinkServer: save bone map :" + save_path);
-	}
-	else if(type == 3){
-		Callable on_load_animation =  DataTableManager::get_singleton()->get_animation_load_cb();
-		if(on_load_animation.is_null()){
-			return true;
-		}
-		String name;
-		if (!read_string(msg_buffer, name))
-		{
-			ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);
-
-		}
-
-		// 解析动画文件
-		int mirror = msg_buffer.get_32();
-		
-		int file_size = size - msg_buffer.get_position();
-		String yaml_anim = msg_buffer.get_utf8_string(file_size);
-		Ref<Animation> anim;
-		anim.instantiate();
-		Ref<JSON> json = DataTableManager::get_singleton()->parse_yaml(yaml_anim);
-		auto data = json->get_data();
-		if(data.get_type() == Variant::DICTIONARY)
-		{
-			Dictionary dict = data;
-			if(dict.has("AnimationClip"))
-			{
-				Dictionary clip = dict["AnimationClip"];
-				on_load_animation.call(clip,mirror,anim);
-				anim->optimize();
-				String save_path = "res://" + path + "/" + name + ".tres";
-				ResourceSaver::save(anim,save_path);
-				print_line("UnityLinkServer: save animation node :" + save_path);	
-			}
-			else
-			{
-				ERR_FAIL_V_MSG(false,"UnityLinkServer: create animation error " + path);
-			}
-
-		}	
-		else
-		{
-			ERR_FAIL_V_MSG(false,"UnityLinkServer: create animation error " + path);
-		}
-	}
-	else if(type == 4){
-		// 直接存儲的文件，fbx，png。。。。
-
-		String name;
-		if (!read_string(msg_buffer, name))
-		{
-			ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);
-
-		}
-		int file_size = size - msg_buffer.get_position();
-
-		Ref<FileAccess> f = FileAccess::open("res://" + path + "/" + name,FileAccess::WRITE);
-		f->store_buffer(msg_buffer.get_u8_ptr(),file_size);	
-	}
-	return true;
-}
 static Node* import_fbx(const String &p_path)
 {
 	
@@ -430,7 +321,7 @@ static void process_fbx_mesh(const String &p_path,const String & p_group, Node *
 	Ref<CharacterBodyPrefab> prefab;
 	prefab->set_name("prefab_" + name);
 	prefab.instantiate();
-	for(auto it = meshs.begin();it != meshs.end();++it){
+	for(auto it = meshs.begin(); it != meshs.end(); ++it){
 		Ref<CharacterBodyPart> part;
 		part.instantiate();
 		MeshInstance3D* mesh = it->value;
@@ -438,9 +329,10 @@ static void process_fbx_mesh(const String &p_path,const String & p_group, Node *
 		String save_path = p_path + "_" + it->key + ".tres";
 		String temp;
 		save_fbx_res("mesh", p_group,part,temp,false);
-		prefab->parts.push_back(part);
+		prefab->parts.push_back(save_path);
 		print_line("UnityLinkServer: save mesh node :" + save_path);	
 	}
+	prefab->skeleton_path = ske_save_path;
 
 	// 保存预制体
 	save_fbx_res("prefab",p_group,prefab,bone_map_save_path,true);
@@ -448,17 +340,244 @@ static void process_fbx_mesh(const String &p_path,const String & p_group, Node *
 
 
 }
-// 處理導入的骨架
-static void process_fbx_animation(const String &p_path,Node *p_node)
-{
-
-}
 // 創建一個預製體
-static void create_fbx_prefab(const String &p_path,const LocalVector<String>& p_paths,const String& p_skeleton_path)
+static void create_fbx_prefab(const String &p_path,const String& name, const LocalVector<String>& p_paths,const String& p_skeleton_path)
 {
-
+	Ref<CharacterBodyPrefab> prefab;
+	prefab->set_name("prefab_" + name);
+	for(int i=0; i<p_paths.size(); i++) {
+		prefab->parts.push_back(p_paths[i]);
+	}
+	prefab->skeleton_path = p_skeleton_path;
+	String temp;
+	// 保存预制体
+	save_fbx_res("prefab",p_path,prefab,temp,true);
 }
 
+
+static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
+	int tag = msg_buffer.get_u32();
+	int size = msg_buffer.get_u32();
+	int type = msg_buffer.get_u32();
+	String path;
+	if (!read_string(msg_buffer, path))
+	{
+		ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + path);
+
+	}
+	path = path.to_lower();
+	path = path.replace("assets", "Assets");
+	if(!DirAccess::exists("res://" + path))
+	{
+		// 创建目录
+		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::AccessType::ACCESS_RESOURCES);
+		dir_access->make_dir_recursive(path);
+	}
+
+
+	if(type == 1) {
+		// 1 代表是动画节点
+		Ref<CharacterAnimatorNodeBase> anima_node;
+		Error err;
+		_buffer_to_animationNode(msg_buffer,anima_node,err);
+		if(err != OK){
+			ERR_FAIL_V_MSG(false,"UnityLinkServer: create animation node error " + itos(err) + " " + path);
+		}
+		String save_path = "res://" + path + "/" + anima_node->get_name() + "_" + anima_node->get_class() + "anim_node.tres";
+		ResourceSaver::save(anima_node,save_path);
+	}
+	else if(type == 2) {
+		// 解析骨骼映射文件
+		int file_size = msg_buffer.get_32();
+		if(file_size < 0 || file_size > 10240){
+			ERR_FAIL_V_MSG(false,"UnityLinkServer: create bone map error :" + path);
+			
+		}
+		String file_name = msg_buffer.get_utf8_string(file_size);
+		String save_name = file_name.get_basename();
+
+		Ref<CharacterBoneMap> bone_map;
+		bone_map.instantiate();
+		//bone_map->ref_skeleton_file_path = path + "/" + file_name;
+		//bone_map->is_by_sekeleton_file = true;
+
+
+		String save_path = "res://" + path + "/" + save_name +  ".bone_map.tres";
+		ResourceSaver::save(bone_map,save_path);		
+		print_line("UnityLinkServer: save bone map :" + save_path);
+	}
+	else if(type == 3) {
+		Callable on_load_animation =  DataTableManager::get_singleton()->get_animation_load_cb();
+		if(on_load_animation.is_null()){
+			return true;
+		}
+		String name;
+		if (!read_string(msg_buffer, name))
+		{
+			ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);
+
+		}
+
+		// 解析动画文件
+		int mirror = msg_buffer.get_32();
+		
+		int file_size = size - msg_buffer.get_position();
+		String yaml_anim = msg_buffer.get_utf8_string(file_size);
+		Ref<Animation> anim;
+		anim.instantiate();
+		Ref<JSON> json = DataTableManager::get_singleton()->parse_yaml(yaml_anim);
+		auto data = json->get_data();
+		if(data.get_type() == Variant::DICTIONARY)
+		{
+			Dictionary dict = data;
+			if(dict.has("AnimationClip"))
+			{
+				Dictionary clip = dict["AnimationClip"];
+				on_load_animation.call(clip,mirror,anim);
+				anim->optimize();
+				String save_path = "res://" + path + "/" + name + ".tres";
+				ResourceSaver::save(anim,save_path);
+				print_line("UnityLinkServer: save animation node :" + save_path);	
+			}
+			else
+			{
+				ERR_FAIL_V_MSG(false,"UnityLinkServer: create animation error " + path);
+			}
+
+		}	
+		else
+		{
+			ERR_FAIL_V_MSG(false,"UnityLinkServer: create animation error " + path);
+		}
+	}
+	else if(type == 4) {
+		// fbx 模型
+
+		String name,group;
+		if (!read_string(msg_buffer, name))
+		{
+			ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);
+
+		}
+		if (!read_string(msg_buffer, group))
+		{
+			ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);
+
+		}
+		int file_size = size - msg_buffer.get_position();
+
+		Ref<FileAccess> f = FileAccess::open("res://" + path + "/" + name,FileAccess::WRITE);
+		f->store_buffer(msg_buffer.get_u8_ptr(),file_size);	
+		Node* p_node = import_fbx("res://" + path + "/" + name);
+		if(p_node != nullptr){
+			process_fbx_mesh("res://" + path + "/" + name,group,p_node);			
+		}
+	}
+	else if(type == 5) {
+		// 预制体信息
+
+		String name,group,skeleton_path;
+		if (!read_string(msg_buffer, name))
+		{
+			ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);
+
+		}
+		if (!read_string(msg_buffer, group))
+		{
+			ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);	
+		}
+		if (!read_string(msg_buffer, skeleton_path))
+		{
+			ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);	
+		}
+		
+		Ref<CharacterBodyPrefab> prefab;
+		prefab->set_name("prefab_" + name);
+		prefab.instantiate();
+		prefab->skeleton_path = skeleton_path;
+
+		int mesh_count = msg_buffer.get_32();
+		for(int i = 0;i < mesh_count;i++)
+		{
+			String mesh_path,mesh_name;
+			if (!read_string(msg_buffer, mesh_path))
+			{
+				ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);
+
+			}
+			if (!read_string(msg_buffer, mesh_name))
+			{
+				ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);
+			}
+			String save_path = mesh_path + "_" + mesh_name + ".tres";
+			prefab->parts.push_back(mesh_path + "/" + mesh_name);
+		}
+		String bone_map_save_path;
+		save_fbx_res("prefab",group,prefab,bone_map_save_path,true);
+
+	}
+	else if(type == 6) {
+
+		// 骨架文件
+		String name,group;
+		if (!read_string(msg_buffer, name))
+		{
+			ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);
+
+		}
+		if (!read_string(msg_buffer, group))
+		{
+			ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);
+
+		}
+		int file_size = size - msg_buffer.get_position();
+
+		Ref<FileAccess> f = FileAccess::open("res://" + path + "/" + name,FileAccess::WRITE);
+		f->store_buffer(msg_buffer.get_u8_ptr(),file_size);	
+		
+		Node* p_node = import_fbx("res://" + path + "/" + name);
+		if(p_node != nullptr){
+			String name = p_node->get_name();
+			// 存儲模型的預製體文件
+			Skeleton3D * skeleton = process_fbx_skeleton(path,p_node);
+			Dictionary bone_map;
+			String ske_save_path,bone_map_save_path;
+			if(skeleton != nullptr)
+			{
+				bone_map = skeleton->get_human_bone_mapping();
+				skeleton->set_human_bone_mapping(bone_map);
+
+				// 存儲骨架信息
+				Ref<PackedScene> packed_scene;
+				packed_scene.instantiate();
+				packed_scene->pack(skeleton);
+				save_fbx_res("skeleton", group,packed_scene,ske_save_path,false);
+				Ref<CharacterBoneMap> bone_map_ref;
+				bone_map_ref.instantiate();
+				bone_map_ref->set_bone_map(bone_map);
+				save_fbx_res("skeleton", group,bone_map_ref,bone_map_save_path,true);
+			}
+
+			
+		}
+	}
+	else if(type == 7) {
+		// 直接存儲的文件，png。。。。
+
+		String name;
+		if (!read_string(msg_buffer, name))
+		{
+			ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);
+
+		}
+		int file_size = size - msg_buffer.get_position();
+
+		Ref<FileAccess> f = FileAccess::open("res://" + path + "/" + name,FileAccess::WRITE);
+		f->store_buffer(msg_buffer.get_u8_ptr(),file_size);	
+
+	}
+	return true;
+}
 bool UnityLinkServer::ClientPeer::poll()
 {
 	

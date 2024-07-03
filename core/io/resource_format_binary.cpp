@@ -1572,7 +1572,7 @@ void ResourceFormatSaverBinaryInstance::_pad_buffer(Ref<FileAccess> f, int p_byt
 	}
 }
 
-void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint) {
+void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, const HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint) {
 	switch (p_property.get_type()) {
 		case Variant::NIL: {
 			f->store_32(VARIANT_NIL);
@@ -2161,6 +2161,8 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	local_path = p_path.get_base_dir();
 	path = ProjectSettings::get_singleton()->localize_path(p_path);
 
+	external_resources.clear();
+
 	_find_resources(p_resource, true);
 
 	if (!(p_flags & ResourceSaver::FLAG_COMPRESS)) {
@@ -2282,9 +2284,11 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	f->store_32(external_resources.size()); //amount of external resources
 	Vector<Ref<Resource>> save_order;
 	save_order.resize(external_resources.size());
-
-	for (const KeyValue<Ref<Resource>, int> &E : external_resources) {
-		save_order.write[E.value] = E.key;
+	int idx = 0;
+	for (auto &E : external_resources) {
+		save_order.write[idx] = E.key;
+		E.value = idx;
+		++idx;
 	}
 
 	for (int i = 0; i < save_order.size(); i++) {

@@ -175,7 +175,7 @@ public:
 	};
 	Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
 	Error set_uid(const String &p_path, ResourceUID::ID p_uid);
-	static void write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint = PropertyInfo());
+	static void write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, const HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint = PropertyInfo());
 };
 
 class ResourceFormatSaverBinary : public ResourceFormatSaver {
