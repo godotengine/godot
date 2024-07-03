@@ -95,9 +95,9 @@ private:
 		}
 		bool operator<(const BlendKey &bk) const {
 			if (from == bk.from) {
-				return to < bk.to;
+				return StringName::AlphCompare()(to, bk.to);
 			} else {
-				return from < bk.from;
+				return StringName::AlphCompare()(from, bk.from);
 			}
 		}
 	};
