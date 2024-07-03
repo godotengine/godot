@@ -939,20 +939,10 @@ String VariantUtilityFunctions::str(const Variant **p_args, int p_arg_count, Cal
 		r_error.expected = 1;
 		return String();
 	}
-	String s;
-	for (int i = 0; i < p_arg_count; i++) {
-		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
-	}
 
 	r_error.error = Callable::CallError::CALL_OK;
 
-	return s;
+	return join(p_args, p_arg_count);
 }
 
 String VariantUtilityFunctions::error_string(Error error) {
@@ -969,72 +959,28 @@ String VariantUtilityFunctions::type_string(Variant::Type p_type) {
 }
 
 void VariantUtilityFunctions::print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-	String s;
-	for (int i = 0; i < p_arg_count; i++) {
-		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
-	}
-
-	print_line(s);
+	print_line(join(p_args, p_arg_count));
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
 void VariantUtilityFunctions::print_rich(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-	String s;
-	for (int i = 0; i < p_arg_count; i++) {
-		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
-	}
-
-	print_line_rich(s);
+	print_line_rich(join(p_args, p_arg_count));
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
 void VariantUtilityFunctions::_print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 	if (OS::get_singleton()->is_stdout_verbose()) {
-		String s;
-		for (int i = 0; i < p_arg_count; i++) {
-			String os = p_args[i]->operator String();
-
-			if (i == 0) {
-				s = os;
-			} else {
-				s += os;
-			}
-		}
-
 		// No need to use `print_verbose()` as this call already only happens
 		// when verbose mode is enabled. This avoids performing string argument concatenation
 		// when not needed.
-		print_line(s);
+		print_line(join(p_args, p_arg_count));
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
 void VariantUtilityFunctions::printerr(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-	String s;
-	for (int i = 0; i < p_arg_count; i++) {
-		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
-	}
-
-	print_error(s);
+	print_error(join(p_args, p_arg_count));
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
@@ -1065,18 +1011,7 @@ void VariantUtilityFunctions::prints(const Variant **p_args, int p_arg_count, Ca
 }
 
 void VariantUtilityFunctions::printraw(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-	String s;
-	for (int i = 0; i < p_arg_count; i++) {
-		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
-	}
-
-	OS::get_singleton()->print("%s", s.utf8().get_data());
+	OS::get_singleton()->print("%s", join(p_args, p_arg_count).utf8().get_data());
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
@@ -1085,18 +1020,8 @@ void VariantUtilityFunctions::push_error(const Variant **p_args, int p_arg_count
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.expected = 1;
 	}
-	String s;
-	for (int i = 0; i < p_arg_count; i++) {
-		String os = p_args[i]->operator String();
 
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
-	}
-
-	ERR_PRINT(s);
+	ERR_PRINT(join(p_args, p_arg_count));
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
@@ -1105,18 +1030,8 @@ void VariantUtilityFunctions::push_warning(const Variant **p_args, int p_arg_cou
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.expected = 1;
 	}
-	String s;
-	for (int i = 0; i < p_arg_count; i++) {
-		String os = p_args[i]->operator String();
 
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
-	}
-
-	WARN_PRINT(s);
+	WARN_PRINT(join(p_args, p_arg_count));
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
@@ -1233,6 +1148,15 @@ RID VariantUtilityFunctions::rid_from_int64(uint64_t p_base) {
 
 bool VariantUtilityFunctions::is_same(const Variant &p_a, const Variant &p_b) {
 	return p_a.identity_compare(p_b);
+}
+
+String VariantUtilityFunctions::join(const Variant **p_args, int p_arg_count) {
+	String s;
+	for (int i = 0; i < p_arg_count; i++) {
+		String os = p_args[i]->operator String();
+		s += os;
+	}
+	return s;
 }
 
 #ifdef DEBUG_METHODS_ENABLED
