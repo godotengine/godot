@@ -22,6 +22,7 @@
 		Lastly, every object can also contain metadata (data about data). [method set_meta] can be useful to store information that the object itself does not depend on. To keep your code clean, making excessive use of metadata is discouraged.
 		[b]Note:[/b] Unlike references to a [RefCounted], references to an object stored in a variable can become invalid without being set to [code]null[/code]. To check if an object has been deleted, do [i]not[/i] compare it against [code]null[/code]. Instead, use [method @GlobalScope.is_instance_valid]. It's also recommended to inherit from [RefCounted] for classes storing data instead of [Object].
 		[b]Note:[/b] The [code]script[/code] is not exposed like most properties. To set or get an object's [Script] in code, use [method set_script] and [method get_script], respectively.
+		[b]Note:[/b] In a boolean context, an [Object] will evaluate to [code]false[/code] if it is equal to [code]null[/code]. Otherwise, an [Object] will always evaluate to [code]true[/code], even if it has been freed. This behavior may change in future releases. See also [method @GlobalScope.is_instance_valid].
 	</description>
 	<tutorials>
 		<link title="Object class introduction">$DOCS_URL/contributing/development/core_and_modules/object_class.html</link>
