@@ -1238,7 +1238,15 @@ void Window::_update_viewport_size() {
 		}
 	}
 
-	notification(NOTIFICATION_WM_SIZE_CHANGED);
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		_propagate_window_notification(this, NOTIFICATION_WM_SIZE_CHANGED);
+	} else {
+#endif
+		notification(NOTIFICATION_WM_SIZE_CHANGED);
+#ifdef TOOLS_ENABLED
+	}
+#endif
 
 	if (embedder) {
 		embedder->_sub_window_update(this);

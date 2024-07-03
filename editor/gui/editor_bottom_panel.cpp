@@ -50,7 +50,31 @@ static const String META_TEXT_TO_COPY = "text_to_copy";
 void EditorBottomPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			expand_button->set_icon(get_editor_theme_icon(SNAME("ExpandBottomDock")));
+			SplitContainer *center_split = Object::cast_to<SplitContainer>(get_parent());
+			ERR_FAIL_NULL(center_split);
+
+			if (center_split->is_vertical()) {
+				expand_button->set_icon(get_editor_theme_icon(SNAME("ExpandBottomDock")));
+				move_button->set_icon(get_editor_theme_icon(SNAME("ArrowRight")));
+			} else {
+				expand_button->set_icon(get_editor_theme_icon(SNAME("ExpandBottomRightDock")));
+				move_button->set_icon(get_editor_theme_icon(SNAME("ArrowDown")));
+			}
+		} break;
+
+		case NOTIFICATION_READY:
+		case NOTIFICATION_WM_SIZE_CHANGED: {
+			SplitContainer *center_split = Object::cast_to<SplitContainer>(get_parent());
+			ERR_FAIL_NULL(center_split);
+
+			if (DisplayServer::get_singleton()->window_get_size().width < 1800 && move_button->is_visible()) {
+				if (!center_split->is_vertical()) {
+					_move_button_pressed();
+				}
+				move_button->set_visible(false);
+			} else if (DisplayServer::get_singleton()->window_get_size().width > 1800 && !move_button->is_visible()) {
+				move_button->set_visible(true);
+			}
 		} break;
 	}
 }
@@ -85,18 +109,26 @@ void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx) {
 		} else {
 			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 		}
-		center_split->set_dragger_visibility(SplitContainer::DRAGGER_VISIBLE);
-		center_split->set_collapsed(false);
+		if (center_split->is_vertical()) {
+			center_split->set_dragger_visibility(SplitContainer::DRAGGER_VISIBLE);
+			center_split->set_collapsed(false);
+		}
 		if (expand_button->is_pressed()) {
 			EditorNode::get_top_split()->hide();
 		}
 		expand_button->show();
 	} else {
+		if (!center_split->is_vertical()) {
+			items[p_idx].button->set_pressed_no_signal(true);
+			return; // Can't do it while at the right.
+		}
 		add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 		items[p_idx].button->set_pressed_no_signal(false);
 		items[p_idx].control->set_visible(false);
-		center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
-		center_split->set_collapsed(true);
+		if (center_split->is_vertical()) {
+			center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
+			center_split->set_collapsed(true);
+		}
 		expand_button->hide();
 		if (expand_button->is_pressed()) {
 			EditorNode::get_top_split()->show();
@@ -108,6 +140,36 @@ void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx) {
 
 void EditorBottomPanel::_expand_button_toggled(bool p_pressed) {
 	EditorNode::get_top_split()->set_visible(!p_pressed);
+}
+
+void EditorBottomPanel::_move_button_pressed() {
+	// To prevent the crash for missing previous tab.
+	if (!last_opened_control) {
+		_switch_to_item(true, 0);
+	}
+
+	SplitContainer *center_split = Object::cast_to<SplitContainer>(get_parent());
+	ERR_FAIL_NULL(center_split);
+
+	if (center_split->is_vertical()) {
+		if (!last_opened_control->is_visible()) {
+			_switch_by_control(true, last_opened_control);
+		}
+		// Move the bottom panel to the right to make better use of wide displays.
+		center_split->set_vertical(false);
+		center_split->add_theme_icon_override("grabber", get_editor_theme_icon("GuiHsplitter"));
+		expand_button->set_icon(get_editor_theme_icon(SNAME("ExpandBottomRightDock")));
+		move_button->set_icon(get_editor_theme_icon(SNAME("ArrowDown")));
+	} else {
+		// Move the bottom panel back to the bottom.
+		center_split->set_vertical(true);
+		if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
+			_switch_by_control(false, last_opened_control);
+		}
+		center_split->add_theme_icon_override("grabber", get_editor_theme_icon("GuiVsplitter"));
+		expand_button->set_icon(get_editor_theme_icon(SNAME("ExpandBottomDock")));
+		move_button->set_icon(get_editor_theme_icon(SNAME("ArrowRight")));
+	}
 }
 
 void EditorBottomPanel::_version_button_pressed() {
@@ -234,6 +296,8 @@ void EditorBottomPanel::toggle_last_opened_bottom_panel() {
 
 EditorBottomPanel::EditorBottomPanel() {
 	item_vbox = memnew(VBoxContainer);
+	// Make tabs display at the bottom when the bottom bar is moved to the right.
+	item_vbox->set_alignment(BoxContainer::ALIGNMENT_END);
 	add_child(item_vbox);
 
 	bottom_hbox = memnew(HBoxContainer);
@@ -281,4 +345,11 @@ EditorBottomPanel::EditorBottomPanel() {
 	expand_button->set_toggle_mode(true);
 	expand_button->set_shortcut(ED_SHORTCUT_AND_COMMAND("editor/bottom_panel_expand", TTR("Expand Bottom Panel"), KeyModifierMask::SHIFT | Key::F12));
 	expand_button->connect("toggled", callable_mp(this, &EditorBottomPanel::_expand_button_toggled));
+
+	move_button = memnew(Button);
+	bottom_hbox->add_child(move_button);
+	move_button->set_flat(false);
+	move_button->set_theme_type_variation("FlatMenuButton");
+	move_button->set_shortcut(ED_SHORTCUT_AND_COMMAND("editor/bottom_panel_move", TTR("Toggle Bottom Panel Position"), KeyModifierMask::SHIFT | Key::F10));
+	move_button->connect("pressed", callable_mp(this, &EditorBottomPanel::_move_button_pressed));
 }
