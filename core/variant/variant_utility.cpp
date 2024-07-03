@@ -933,12 +933,7 @@ String VariantUtilityFunctions::str(const Variant **p_args, int p_arg_count, Cal
 	String s;
 	for (int i = 0; i < p_arg_count; i++) {
 		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
+		s += os;
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
@@ -963,12 +958,7 @@ void VariantUtilityFunctions::print(const Variant **p_args, int p_arg_count, Cal
 	String s;
 	for (int i = 0; i < p_arg_count; i++) {
 		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
+		s += os;
 	}
 
 	print_line(s);
@@ -979,12 +969,7 @@ void VariantUtilityFunctions::print_rich(const Variant **p_args, int p_arg_count
 	String s;
 	for (int i = 0; i < p_arg_count; i++) {
 		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
+		s += os;
 	}
 
 	print_line_rich(s);
@@ -998,12 +983,7 @@ void VariantUtilityFunctions::print_verbose(const Variant **p_args, int p_arg_co
 		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
-
-			if (i == 0) {
-				s = os;
-			} else {
-				s += os;
-			}
+			s += os;
 		}
 
 		// No need to use `print_verbose()` as this call already only happens
@@ -1019,12 +999,7 @@ void VariantUtilityFunctions::printerr(const Variant **p_args, int p_arg_count, 
 	String s;
 	for (int i = 0; i < p_arg_count; i++) {
 		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
+		s += os;
 	}
 
 	print_error(s);
@@ -1061,12 +1036,7 @@ void VariantUtilityFunctions::printraw(const Variant **p_args, int p_arg_count, 
 	String s;
 	for (int i = 0; i < p_arg_count; i++) {
 		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
+		s += os;
 	}
 
 	OS::get_singleton()->print("%s", s.utf8().get_data());
@@ -1081,12 +1051,7 @@ void VariantUtilityFunctions::push_error(const Variant **p_args, int p_arg_count
 	String s;
 	for (int i = 0; i < p_arg_count; i++) {
 		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
+		s += os;
 	}
 
 	_err_print_error_backtrace(FUNCTION_STR, s);
@@ -1101,12 +1066,7 @@ void VariantUtilityFunctions::push_warning(const Variant **p_args, int p_arg_cou
 	String s;
 	for (int i = 0; i < p_arg_count; i++) {
 		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
+		s += os;
 	}
 
 	_err_print_error_backtrace(FUNCTION_STR, s, false, ERR_HANDLER_WARNING);
