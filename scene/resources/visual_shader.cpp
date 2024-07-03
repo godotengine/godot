@@ -2632,9 +2632,12 @@ void VisualShader::_update_shader() const {
 		}
 
 		//make it faster to go around through shader
+		// Each connected input port for any node is stored inside the input_connections and the same for output_connections.
 		VMap<ConnectionKey, const List<Connection>::Element *> input_connections;
 		VMap<ConnectionKey, const List<Connection>::Element *> output_connections;
 
+		// Godot has multiple shader functions: https://docs.godotengine.org/en/stable/tutorials/shaders/introduction_to_shaders.html#shaders-in-godot.
+		// func_code variable will contain the code generated for i function.
 		StringBuilder func_code;
 		HashSet<int> processed;
 
