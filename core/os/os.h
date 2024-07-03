@@ -347,7 +347,7 @@ public:
 		const void *symbol_address;
 	};
 	virtual Vector<StackInfo> get_cpp_stack_info() const { return Vector<StackInfo>(); }
-	virtual String get_debug_descriptor(const StackInfo &info) { return String(); }
+	virtual String get_debug_descriptor(const StackInfo &p_info) { return String(); }
 
 	// Load GDExtensions specific to this platform.
 	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.

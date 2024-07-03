@@ -76,7 +76,7 @@ protected:
 	virtual void delete_main_loop() override;
 
 #ifdef DEBUG_ENABLED
-	virtual String get_debug_descriptor(const StackInfo &info) override;
+	virtual String get_debug_descriptor(const StackInfo &p_info) override;
 #endif
 
 public:

@@ -758,9 +758,9 @@ OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
 }
 
 #ifdef DEBUG_ENABLED
-String OS_MacOS::get_debug_descriptor(const StackInfo &info) {
+String OS_MacOS::get_debug_descriptor(const StackInfo &p_info) {
 	String pipe;
-	Error error = execute("atos", { "-o", info.file, "-l", String::num_uint64(reinterpret_cast<uint64_t>(info.load_address), 16), String::num_uint64(reinterpret_cast<uint64_t>(info.symbol_address), 16) }, &pipe);
+	Error error = execute("atos", { "-o", p_info.file, "-l", String::num_uint64(reinterpret_cast<uint64_t>(p_info.load_address), 16), String::num_uint64(reinterpret_cast<uint64_t>(p_info.symbol_address), 16) }, &pipe);
 
 	if (error == OK) {
 		return pipe.strip_edges();

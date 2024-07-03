@@ -763,8 +763,8 @@ public:
 		}
 	}
 
-	List(std::initializer_list<T> init) {
-		for (const T &i : init) {
+	List(std::initializer_list<T> p_init) {
+		for (const T &i : p_init) {
 			push_back(i);
 		}
 	}

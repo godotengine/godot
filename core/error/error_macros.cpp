@@ -155,7 +155,7 @@ void _err_print_callstack(const String &p_error, bool p_editor_notify, ErrorHand
 	_err_print_error(__FUNCTION__, __FILE__, __LINE__, p_error + '\n' + callstack, p_editor_notify, p_type);
 }
 
-void _err_print_error_backtrace(const char *filter, const String &p_error, bool p_editor_notify, ErrorHandlerType p_type) {
+void _err_print_error_backtrace(const char *p_filter, const String &p_error, bool p_editor_notify, ErrorHandlerType p_type) {
 	// Print script stack frame, if available.
 	Vector<ScriptLanguage::StackInfo> si;
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -170,7 +170,7 @@ void _err_print_error_backtrace(const char *filter, const String &p_error, bool 
 	Vector<OS::StackInfo> cpp_stack = OS::get_singleton()->get_cpp_stack_info();
 
 	for (int i = 1; i < cpp_stack.size(); ++i) {
-		if (!cpp_stack[i].function.contains(filter)) {
+		if (!cpp_stack[i].function.contains(p_filter)) {
 			String descriptor = OS::get_singleton()->get_debug_descriptor(cpp_stack[i]);
 			if (descriptor.is_empty()) {
 				// If we can't get debug info, just print binary file name and address.
