@@ -1030,10 +1030,6 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Vector2 ofs_to = (dragging_selected && selected_nodes.has(tl.to_node)) ? drag_ofs : Vector2();
 		tl.to = (state_machine->get_node_position(tl.to_node) * EDSCALE) + ofs_to - state_machine->get_graph_offset() * EDSCALE;
 
-		if (!state_machine->_get_node_visibility(tl.from_node) || !state_machine->_get_node_visibility(tl.to_node)) {
-			continue;
-		}
-
 		Ref<AnimationNodeStateMachineTransition> tr = state_machine->get_transition(i);
 		tl.disabled = bool(tr->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED);
 		tl.auto_advance = bool(tr->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_AUTO);
@@ -1045,6 +1041,10 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		tl.fade_ratio = 0.0;
 		tl.hidden = false;
 		tl.is_across_group = state_machine->is_transition_across_group(i);
+
+		if (!state_machine->_get_node_visibility(tl.from_node) || !state_machine->_get_node_visibility(tl.to_node)) {
+			tl.hidden = true;
+		}
 
 		if (state_machine->has_transition(tl.to_node, tl.from_node)) { //offset if same exists
 			Vector2 offset = -(tl.from - tl.to).normalized().orthogonal() * tr_bidi_offset;
