@@ -18,6 +18,18 @@
 				Returns [code]null[/code] if the wheel is not in contact with a surface, or the contact body is not a [PhysicsBody3D].
 			</description>
 		</method>
+		<method name="get_contact_normal" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the normal of the suspension's collision in world space if the wheel is in contact. If the wheel isn't in contact with anything, returns a vector pointing directly along the suspension axis toward the vehicle in world space.
+			</description>
+		</method>
+		<method name="get_contact_point" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the point of the suspension's collision in world space if the wheel is in contact. If the wheel isn't in contact with anything, returns the maximum point of the wheel's ray cast in world space, which is defined by [code]wheel_rest_length + wheel_radius[/code].
+			</description>
+		</method>
 		<method name="get_rpm" qualifiers="const">
 			<return type="float" />
 			<description>
