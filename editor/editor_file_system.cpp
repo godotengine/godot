@@ -326,8 +326,8 @@ void EditorFileSystem::_scan_filesystem() {
 					FileCache fc;
 					fc.type = split[1];
 					if (fc.type.contains("/")) {
-						fc.type = fc.type.get_slice("/", 0);
-						fc.resource_script_class = fc.type.get_slice("/", 1);
+						fc.type = split[1].get_slice("/", 0);
+						fc.resource_script_class = split[1].get_slice("/", 1);
 					}
 					fc.uid = split[2].to_int();
 					fc.modification_time = split[3].to_int();
