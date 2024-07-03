@@ -96,7 +96,7 @@ void TreeItem::_change_tree(Tree *p_tree) {
 		return;
 	}
 
-	for (auto& c : children) {
+	for (TreeItem* &c : children) {
 		c->_change_tree(p_tree);
 	}
 
@@ -239,7 +239,7 @@ void TreeItem::propagate_check(int p_column, bool p_emit_signal) {
 }
 
 void TreeItem::_propagate_check_through_children(int p_column, bool p_checked, bool p_emit_signal) {
-	for(auto& current : children ) {
+	for(TreeItem* &current : children ) {
 		current->set_checked(p_column, p_checked);
 		if (p_emit_signal) {
 			current->tree->emit_signal(SNAME("check_propagated_to_item"), current, p_column);
@@ -258,7 +258,7 @@ void TreeItem::_propagate_check_through_parents(int p_column, bool p_emit_signal
 	bool any_unchecked = false;
 	bool any_indeterminate = false;
 
-	for(auto& child_item : current->children) {
+	for(TreeItem* &child_item : current->children) {
 		if (!child_item->is_checked(p_column)) {
 			any_unchecked = true;
 			if (child_item->is_indeterminate(p_column)) {
@@ -308,7 +308,7 @@ void TreeItem::set_text(int p_column, String p_text) {
 		}
 		cells.write[p_column].step = 0;
 	} else {
-		// Don't auto translate if it's in string mode and editable, as the text can be changed to anything by the user.
+		// Don't TreeItem* translate if it's in string mode and editable, as the text can be changed to anything by the user.
 		if (tree && (!cells[p_column].editable || cells[p_column].mode != TreeItem::CELL_MODE_STRING)) {
 			cells.write[p_column].xl_text = tree->atr(p_text);
 		} else {
@@ -345,23 +345,23 @@ Control::TextDirection TreeItem::get_text_direction(int p_column) const {
 	return cells[p_column].text_direction;
 }
 
-void TreeItem::set_autowrap_mode(int p_column, TextServer::AutowrapMode p_mode) {
+void TreeItem::set_TreeItem*wrap_mode(int p_column, TextServer::AutowrapMode p_mode) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	ERR_FAIL_COND(p_mode < TextServer::AUTOWRAP_OFF || p_mode > TextServer::AUTOWRAP_WORD_SMART);
 
-	if (cells[p_column].autowrap_mode == p_mode) {
+	if (cells[p_column].TreeItem*wrap_mode == p_mode) {
 		return;
 	}
 
-	cells.write[p_column].autowrap_mode = p_mode;
+	cells.write[p_column].TreeItem*wrap_mode = p_mode;
 	cells.write[p_column].dirty = true;
 	_changed_notify(p_column);
 	cells.write[p_column].cached_minimum_size_dirty = true;
 }
 
-TextServer::AutowrapMode TreeItem::get_autowrap_mode(int p_column) const {
+TextServer::AutowrapMode TreeItem::get_TreeItem*wrap_mode(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), TextServer::AUTOWRAP_OFF);
-	return cells[p_column].autowrap_mode;
+	return cells[p_column].TreeItem*wrap_mode;
 }
 
 void TreeItem::set_text_overrun_behavior(int p_column, TextServer::OverrunBehavior p_behavior) {
@@ -651,21 +651,21 @@ void TreeItem::set_collapsed_recursive(bool p_collapsed) {
 
 	set_collapsed(p_collapsed);
 
-	for (auto& child : children) {
+	for (TreeItem* &child : children) {
 		child->set_collapsed_recursive(p_collapsed);
 	}
 }
 
 bool TreeItem::_is_any_collapsed(bool p_only_visible) {
 	// Check on children directly first (avoid recursing if possible).
-	for (auto& child : children) {
+	for (TreeItem* &child : children) {
 		if (child->get_first_child() && child->is_collapsed() && (!p_only_visible || (child->is_visible() && child->get_visible_child_count()))) {
 			return true;
 		}
 	}
 
 	// Otherwise recurse on children.
-	for (auto& child : children) {
+	for (TreeItem* &child : children) {
 		if (child->get_first_child() && (!p_only_visible || (child->is_visible() && child->get_visible_child_count())) && child->_is_any_collapsed(p_only_visible)) {
 			return true;
 		}
@@ -709,7 +709,7 @@ bool TreeItem::is_visible_in_tree() const {
 }
 
 void TreeItem::_handle_visibility_changed(bool p_visible) {
-	for (auto& child : children) {
+	for (TreeItem* &child : children) {
 		child->_propagate_visibility_changed(p_visible);
 	}
 }
@@ -754,14 +754,14 @@ TreeItem *TreeItem::create_child(int p_index) {
 		tree->queue_redraw();
 	}
 
-	if (p_index == -1 || children.size() == p_index+1) {
+	if (p_index == -1 || children.size() == p_index + 1) {
 		children.append(ti);
 	} else {
 		children.insert(p_index, ti);
 	}
 
 	if (!children_cache.is_empty()) {
-		if (p_index == -1 || children_cache.size() == p_index+1) {
+		if (p_index == -1 || children_cache.size() == p_index + 1) {
 			children_cache.append(ti);
 		} else {
 			children_cache.insert(p_index, ti);
@@ -818,9 +818,7 @@ TreeItem *TreeItem::get_next() const {
 	if (get_index() == parent->children.size() - 1) {
 		return nullptr;
 	}
-	return parent->children[
-		get_index() + 1
-	];
+	return parent->children[get_index() + 1];
 }
 
 TreeItem *TreeItem::get_prev() {
@@ -830,9 +828,7 @@ TreeItem *TreeItem::get_prev() {
 	if (get_index() == 0) {
 		return nullptr;
 	}
-	return parent->children[
-		get_index() - 1
-	];
+	return parent->children[get_index() - 1];
 }
 
 TreeItem *TreeItem::get_parent() const {
@@ -847,23 +843,48 @@ TreeItem *TreeItem::get_first_child() const {
 }
 
 TreeItem *TreeItem::_get_prev_in_tree(bool p_wrap, bool p_include_invisible) {
-	if (get_index() != 0) {
-		for (uint64_t idx = get_index();idx > 0;idx--) {
-			TreeItem *current = parent->children[idx];
-			if (current->visible || p_include_invisible) {
-				return current;
+	TreeItem *current = this;
+
+	TreeItem *prev_item = current->get_prev();
+
+	if (!prev_item) {
+		current = current->parent;
+		if (current == tree->root && tree->hide_root) {
+			return nullptr;
+		} else if (!current) {
+			if (p_wrap) {
+				current = this;
+				TreeItem *temp = get_next_visible();
+				while (temp) {
+					current = temp;
+					temp = temp->get_next_visible();
+				}
+			} else {
+				return nullptr;
 			}
 		}
-	}
-	if (!parent) {
-		return nullptr;
+	} else {
+		current = prev_item;
+		while ((!current->collapsed || p_include_invisible) && current->children.size()) {
+			// Go to the very end.
+			current = current->children[current->children.size() - 1];
+		}
 	}
 
-	return parent->_get_prev_in_tree(p_wrap, p_include_invisible);
+	return current;
 }
 
 TreeItem *TreeItem::get_prev_visible(bool p_wrap) {
-	return _get_prev_in_tree(p_wrap, false);
+	TreeItem *loop = this;
+	TreeItem *prev_item = _get_prev_in_tree(p_wrap);
+	while (prev_item && !prev_item->is_visible_in_tree()) {
+		prev_item = prev_item->_get_prev_in_tree(p_wrap);
+		if (prev_item == loop) {
+			// Check that we haven't looped all the way around to the start.
+			return nullptr;
+		}
+	}
+	return prev_item;
 }
 
 TreeItem *TreeItem::_get_next_in_tree(bool p_wrap, bool p_include_invisible) {
@@ -938,7 +959,7 @@ TypedArray<TreeItem> TreeItem::get_children() {
 }
 
 void TreeItem::clear_children() {
-	for (auto& ch : children) {
+	for (TreeItem &ch : children) {
 		ch->parent = nullptr;
 		memdelete(ch);
 	}
@@ -951,7 +972,7 @@ int TreeItem::get_index() const {
 
 	int idx = 0;
 
-	for (const auto& ch : parent->children) {
+	for (const TreeItem &ch : parent->children) {
 		if (ch == this) {
 			return (idx);
 		}
@@ -966,7 +987,7 @@ void TreeItem::validate_cache() const {
 		return;
 	}
 	int index = 0;
-	for (auto& scan : parent->children) {
+	for (TreeItem &scan : parent->children) {
 		DEV_ASSERT(parent->children_cache[index] == scan);
 		++index;
 	}
@@ -1467,7 +1488,7 @@ void TreeItem::_call_recursive_bind(const Variant **p_args, int p_argcount, Call
 
 void TreeItem::call_recursive(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	callp(p_method, p_args, p_argcount, r_error);
-	for (auto& ch : children) {
+	for (TreeItem* &ch : children) {
 		ch->call_recursive(p_method, p_args, p_argcount, r_error);
 	}
 }
@@ -1492,8 +1513,8 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text_direction", "column", "direction"), &TreeItem::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction", "column"), &TreeItem::get_text_direction);
 
-	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "column", "autowrap_mode"), &TreeItem::set_autowrap_mode);
-	ClassDB::bind_method(D_METHOD("get_autowrap_mode", "column"), &TreeItem::get_autowrap_mode);
+	ClassDB::bind_method(D_METHOD("set_TreeItem*wrap_mode", "column", "TreeItem*wrap_mode"), &TreeItem::set_TreeItem*wrap_mode);
+	ClassDB::bind_method(D_METHOD("get_TreeItem*wrap_mode", "column"), &TreeItem::get_TreeItem*wrap_mode);
 
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "column", "overrun_behavior"), &TreeItem::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior", "column"), &TreeItem::get_text_overrun_behavior);
@@ -1758,7 +1779,7 @@ int Tree::get_item_height(TreeItem *p_item) const {
 	height += theme_cache.v_separation;
 
 	if (!p_item->collapsed) { /* if not collapsed, check the children */
-		for (auto& c : p_item->children) {
+		for (TreeItem* &c : p_item->children) {
 			height += get_item_height(c);
 		}
 	}
@@ -1872,7 +1893,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 			valtext = String::num(p_item->cells[p_col].val, Math::range_step_decimals(p_item->cells[p_col].step));
 		}
 	} else {
-		// Don't auto translate if it's in string mode and editable, as the text can be changed to anything by the user.
+		// Don't TreeItem* translate if it's in string mode and editable, as the text can be changed to anything by the user.
 		if (!p_item->cells[p_col].editable || p_item->cells[p_col].mode != TreeItem::CELL_MODE_STRING) {
 			p_item->cells.write[p_col].xl_text = atr(p_item->cells[p_col].text);
 		} else {
@@ -1911,7 +1932,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 	p_item->cells.write[p_col].text_buf->add_string(valtext, font, font_size, p_item->cells[p_col].language);
 
 	BitField<TextServer::LineBreakFlag> break_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_EDGE_SPACES;
-	switch (p_item->cells.write[p_col].autowrap_mode) {
+	switch (p_item->cells.write[p_col].TreeItem*wrap_mode) {
 		case TextServer::AUTOWRAP_OFF:
 			break;
 		case TextServer::AUTOWRAP_ARBITRARY:
@@ -1936,7 +1957,7 @@ void Tree::update_item_cache(TreeItem *p_item) {
 		update_item_cell(p_item, i);
 	}
 
-	for (auto& ch : p_item->children) {
+	for (TreeItem* &ch : p_item->children) {
 		update_item_cache(ch);
 	}
 }
@@ -2392,7 +2413,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		int prev_ofs = base_ofs;
 		int prev_hl_ofs = base_ofs;
 
-		for (auto& c : p_item->children) {
+		for (TreeItem* &c : p_item->children) {
 			int child_h = -1;
 			int child_self_height = 0;
 			if (htotal >= 0) {
@@ -2501,7 +2522,7 @@ int Tree::_count_selected_items(TreeItem *p_from) const {
 		}
 	}
 
-	for (auto& ch : p_from->children) {
+	for (TreeItem* &ch : p_from->children) {
 		count += _count_selected_items(ch);
 	}
 
@@ -2515,7 +2536,7 @@ bool Tree::_is_branch_selected(TreeItem *p_from) const {
 		}
 	}
 
-	for (auto& ch : p_from->children) {
+	for (TreeItem* &ch : p_from->children) {
 		if (_is_branch_selected(ch)) {
 			return true;
 		}
@@ -2525,7 +2546,7 @@ bool Tree::_is_branch_selected(TreeItem *p_from) const {
 }
 
 bool Tree::_is_sibling_branch_selected(TreeItem *p_from) const {
-	for (auto& sibling_item : p_from->children) {
+	for (TreeItem* &sibling_item : p_from->children) {
 		if (_is_branch_selected(sibling_item)) {
 			return true;
 		}
@@ -2613,7 +2634,7 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 		*r_in_range = false;
 	}
 
-	for (auto& c : p_current->children) {
+	for (TreeItem* &c : p_current->children) {
 		select_single_item(p_selected, c, p_col, p_prev, r_in_range, p_current->is_collapsed() || p_force_deselect);
 	}
 }
@@ -2990,7 +3011,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 		}
 
 		if (!p_item->collapsed) { /* if not collapsed, check the children */
-			for (auto& c : p_item->children) {
+			for (TreeItem* &c : p_item->children) {
 				int child_h = propagate_mouse_event(new_pos, x_ofs, y_ofs, x_limit, p_double_click, c, p_button, p_mod);
 
 				if (child_h < 0) {
@@ -4330,7 +4351,7 @@ TreeItem *Tree::get_last_item() const {
 
 	while (last) {
 		if (last->children.size() != 0) {
-			last = last->children[last->children.size()-1];
+			last = last->children[last->children.size() - 1];
 			continue;
 		} else {
 			break;
@@ -4685,7 +4706,7 @@ int Tree::get_column_width(int p_column) const {
 void Tree::propagate_set_columns(TreeItem *p_item) {
 	p_item->cells.resize(columns.size());
 
-	for (auto& c : p_item->children) {
+	for (TreeItem* &c : p_item->children) {
 		propagate_set_columns(c);
 	}
 }
@@ -5140,7 +5161,7 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 		return nullptr; // do not try children, it's collapsed
 	}
 
-	for (auto& n : p_item->children) {
+	for (TreeItem* &n : p_item->children) {
 		int ch;
 		TreeItem *r = _find_item_at_pos(n, pos, r_column, ch, section);
 		pos.y -= ch;
