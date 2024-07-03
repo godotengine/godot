@@ -1686,6 +1686,14 @@ int CanvasTexture::get_height() const {
 	}
 }
 
+Point2 CanvasTexture::get_anchor() const {
+	if (diffuse_texture.is_valid()) {
+		return diffuse_texture->get_anchor();
+	} else {
+		return Point2();
+	}
+}
+
 bool CanvasTexture::is_pixel_opaque(int p_x, int p_y) const {
 	if (diffuse_texture.is_valid()) {
 		return diffuse_texture->is_pixel_opaque(p_x, p_y);
