@@ -2552,7 +2552,7 @@ Error _parse_resource_dummy(void *p_data, VariantParser::Stream *p_stream, Ref<R
 	return OK;
 }
 
-Error Main::setup2() {
+Error Main::setup2(bool p_show_boot_logo) {
 	Thread::make_main_thread(); // Make whatever thread call this the main thread.
 	set_current_thread_safe_for_nodes(true);
 
@@ -2896,12 +2896,6 @@ Error Main::setup2() {
 
 		MAIN_PRINT("Main: Setup Logo");
 
-#if !defined(TOOLS_ENABLED) && defined(WEB_ENABLED)
-		bool show_logo = false;
-#else
-		bool show_logo = true;
-#endif
-
 		if (init_windowed) {
 			//do none..
 		} else if (init_maximized) {
@@ -2913,67 +2907,11 @@ Error Main::setup2() {
 			DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP, true);
 		}
 
-		MAIN_PRINT("Main: Load Boot Image");
-
 		Color clear = GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3));
 		RenderingServer::get_singleton()->set_default_clear_color(clear);
 
-		if (show_logo) { //boot logo!
-			const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
-			const String boot_logo_path = String(GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String())).strip_edges();
-			const bool boot_logo_scale = GLOBAL_DEF_BASIC("application/boot_splash/fullsize", true);
-			const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
-
-			Ref<Image> boot_logo;
-
-			if (boot_logo_image) {
-				if (!boot_logo_path.is_empty()) {
-					boot_logo.instantiate();
-					Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
-					if (load_err) {
-						ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
-					}
-				}
-			} else {
-				// Create a 1×1 transparent image. This will effectively hide the splash image.
-				boot_logo.instantiate();
-				boot_logo->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
-				boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
-			}
-
-			Color boot_bg_color = GLOBAL_GET("application/boot_splash/bg_color");
-
-#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
-			boot_bg_color =
-					GLOBAL_DEF_BASIC("application/boot_splash/bg_color",
-							(editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
-#endif
-			if (boot_logo.is_valid()) {
-				RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale,
-						boot_logo_filter);
-
-			} else {
-#ifndef NO_DEFAULT_BOOT_LOGO
-				MAIN_PRINT("Main: Create bootsplash");
-#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
-				Ref<Image> splash = (editor || project_manager) ? memnew(Image(boot_splash_editor_png)) : memnew(Image(boot_splash_png));
-#else
-				Ref<Image> splash = memnew(Image(boot_splash_png));
-#endif
-
-				MAIN_PRINT("Main: ClearColor");
-				RenderingServer::get_singleton()->set_default_clear_color(boot_bg_color);
-				MAIN_PRINT("Main: Image");
-				RenderingServer::get_singleton()->set_boot_image(splash, boot_bg_color, false);
-#endif
-			}
-
-#if defined(TOOLS_ENABLED) && defined(MACOS_ENABLED)
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ICON) && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
-				Ref<Image> icon = memnew(Image(app_icon_png));
-				DisplayServer::get_singleton()->set_icon(icon);
-			}
-#endif
+		if (p_show_boot_logo) {
+			setup_boot_logo();
 		}
 
 		MAIN_PRINT("Main: Clear Color");
@@ -3214,6 +3152,71 @@ Error Main::setup2() {
 	OS::get_singleton()->benchmark_end_measure("Startup", "Setup");
 
 	return OK;
+}
+
+void Main::setup_boot_logo() {
+	MAIN_PRINT("Main: Load Boot Image");
+
+#if !defined(TOOLS_ENABLED) && defined(WEB_ENABLED)
+	bool show_logo = false;
+#else
+	bool show_logo = true;
+#endif
+
+	if (show_logo) { //boot logo!
+		const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
+		const String boot_logo_path = String(GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String())).strip_edges();
+		const bool boot_logo_scale = GLOBAL_DEF_BASIC("application/boot_splash/fullsize", true);
+		const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
+
+		Ref<Image> boot_logo;
+
+		if (boot_logo_image) {
+			if (!boot_logo_path.is_empty()) {
+				boot_logo.instantiate();
+				Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
+				if (load_err) {
+					ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
+				}
+			}
+		} else {
+			// Create a 1×1 transparent image. This will effectively hide the splash image.
+			boot_logo.instantiate();
+			boot_logo->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
+			boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
+		}
+
+		Color boot_bg_color = GLOBAL_GET("application/boot_splash/bg_color");
+
+#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
+		boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", (editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
+#endif
+		if (boot_logo.is_valid()) {
+			RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale, boot_logo_filter);
+
+		} else {
+#ifndef NO_DEFAULT_BOOT_LOGO
+			MAIN_PRINT("Main: Create bootsplash");
+#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
+			Ref<Image> splash = (editor || project_manager) ? memnew(Image(boot_splash_editor_png)) : memnew(Image(boot_splash_png));
+#else
+			Ref<Image> splash = memnew(Image(boot_splash_png));
+#endif
+
+			MAIN_PRINT("Main: ClearColor");
+			RenderingServer::get_singleton()->set_default_clear_color(boot_bg_color);
+			MAIN_PRINT("Main: Image");
+			RenderingServer::get_singleton()->set_boot_image(splash, boot_bg_color, false);
+#endif
+		}
+
+#if defined(TOOLS_ENABLED) && defined(MACOS_ENABLED)
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ICON) && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
+			Ref<Image> icon = memnew(Image(app_icon_png));
+			DisplayServer::get_singleton()->set_icon(icon);
+		}
+#endif
+	}
 }
 
 String Main::get_rendering_driver_name() {
