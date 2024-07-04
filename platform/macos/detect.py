@@ -195,32 +195,19 @@ def configure(env: "SConsEnvironment"):
     env.Append(CPPDEFINES=["MACOS_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED", "COREMIDI_ENABLED"])
     env.Append(
         LINKFLAGS=[
-            "-framework",
-            "Cocoa",
-            "-framework",
-            "Carbon",
-            "-framework",
-            "AudioUnit",
-            "-framework",
-            "CoreAudio",
-            "-framework",
-            "CoreMIDI",
-            "-framework",
-            "IOKit",
-            "-framework",
-            "GameController",
-            "-framework",
-            "CoreHaptics",
-            "-framework",
-            "CoreVideo",
-            "-framework",
-            "AVFoundation",
-            "-framework",
-            "CoreMedia",
-            "-framework",
-            "QuartzCore",
-            "-framework",
-            "Security",
+            "-Wl,-framework,Cocoa",
+            "-Wl,-framework,Carbon",
+            "-Wl,-framework,AudioUnit",
+            "-Wl,-framework,CoreAudio",
+            "-Wl,-framework,CoreMIDI",
+            "-Wl,-framework,IOKit",
+            "-Wl,-framework,GameController",
+            "-Wl,-framework,CoreHaptics",
+            "-Wl,-framework,CoreVideo",
+            "-Wl,-framework,AVFoundation",
+            "-Wl,-framework,CoreMedia",
+            "-Wl,-framework,QuartzCore",
+            "-Wl,-framework,Security",
         ]
     )
     env.Append(LIBS=["pthread", "z"])
@@ -235,11 +222,11 @@ def configure(env: "SConsEnvironment"):
             env.Append(LINKFLAGS=["-lGLES.macos." + env["arch"]])
         env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
-    env.Append(LINKFLAGS=["-rpath", "@executable_path/../Frameworks", "-rpath", "@executable_path"])
+    env.Append(LINKFLAGS=["-Wl,-rpath,@executable_path/../Frameworks", "-Wl,-rpath,@executable_path"])
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
-        env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "IOSurface"])
+        env.Append(LINKFLAGS=["-Wl,-framework,Metal", "-Wl,-framework,IOSurface"])
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-lMoltenVK"])
 
