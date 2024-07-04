@@ -386,15 +386,8 @@ EditorPropertyFontMetaOverride::EditorPropertyFontMetaOverride(bool p_script) {
 void EditorPropertyOTVariation::_property_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("keys")) {
 		Dictionary dict = object->get_dict();
-		Dictionary defaults_dict = object->get_defaults();
 		int key = p_property.get_slice("/", 1).to_int();
 		dict[key] = (int)p_value;
-		if (defaults_dict.has(key)) {
-			Vector3i range = defaults_dict[key];
-			if (range.z == (int)p_value) {
-				dict.erase(key);
-			}
-		}
 
 		emit_changed(get_edited_property(), dict, "", true);
 
@@ -421,6 +414,14 @@ void EditorPropertyOTVariation::update_property() {
 	}
 
 	Dictionary supported = (fd.is_valid()) ? fd->get_supported_variation_list() : Dictionary();
+
+	for (int i = 0; i < supported.size(); i++) {
+		int name_tag = supported.get_key_at_index(i);
+		Vector3i range = supported.get_value_at_index(i);
+		if ((dict.has(name_tag) && dict[name_tag].get_type() == Variant::NIL) || !dict.has(name_tag)) {
+			dict[name_tag] = range.z;
+		}
+	}
 
 	edit->set_text(vformat(TTR("Variation Coordinates (%d)"), supported.size()));
 
@@ -481,7 +482,21 @@ void EditorPropertyOTVariation::update_property() {
 			prop->set_object_and_property(object.ptr(), "keys/" + itos(name_tag));
 
 			String name = TS->tag_to_name(name_tag);
-			prop->set_label(name.capitalize());
+			String name_cap;
+			{
+				String aux = name.replace("_", " ").strip_edges();
+				for (int j = 0; j < aux.get_slice_count(" "); j++) {
+					String slice = aux.get_slicec(' ', j);
+					if (slice.length() > 0) {
+						slice[0] = String::char_uppercase(slice[0]);
+						if (i > 0) {
+							name_cap += " ";
+						}
+						name_cap += slice;
+					}
+				}
+			}
+			prop->set_label(name_cap);
 			prop->set_tooltip_text(name);
 			prop->set_selectable(false);
 
