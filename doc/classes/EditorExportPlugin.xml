@@ -314,6 +314,12 @@
 				Returns the current value of an export option supplied by [method _get_export_options].
 			</description>
 		</method>
+		<method name="get_preset_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns name of the current exporting preset.
+			</description>
+		</method>
 		<method name="skip">
 			<return type="void" />
 			<description>
