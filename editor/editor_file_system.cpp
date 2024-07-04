@@ -1891,7 +1891,7 @@ void EditorFileSystem::_update_scene_groups() {
 			continue;
 		}
 
-		const HashSet<StringName> scene_groups = _get_scene_groups(path);
+		const HashSet<StringName> scene_groups = PackedScene::get_scene_groups(path);
 		if (!scene_groups.is_empty()) {
 			ProjectSettings::get_singleton()->add_scene_groups_cache(path, scene_groups);
 		}
@@ -1933,12 +1933,6 @@ void EditorFileSystem::_get_all_scenes(EditorFileSystemDirectory *p_dir, HashSet
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 		_get_all_scenes(p_dir->get_subdir(i), r_list);
 	}
-}
-
-HashSet<StringName> EditorFileSystem::_get_scene_groups(const String &p_path) {
-	Ref<PackedScene> packed_scene = ResourceLoader::load(p_path);
-	ERR_FAIL_COND_V(packed_scene.is_null(), HashSet<StringName>());
-	return packed_scene->get_state()->get_all_groups();
 }
 
 void EditorFileSystem::update_file(const String &p_file) {
