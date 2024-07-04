@@ -117,6 +117,10 @@ open class GodotEditor : GodotActivity() {
 		val longPressEnabled = enableLongPressGestures()
 		val panScaleEnabled = enablePanAndScaleGestures()
 
+		val useInputBuffering = useInputBuffering()
+		val useAccumulatedInput = useAccumulatedInput()
+		GodotLib.updateInputDispatchSettings(useAccumulatedInput, useInputBuffering)
+
 		checkForProjectPermissionsToEnable()
 
 		runOnUiThread {
@@ -124,6 +128,7 @@ open class GodotEditor : GodotActivity() {
 			godotFragment?.godot?.renderView?.inputHandler?.apply {
 				enableLongPress(longPressEnabled)
 				enablePanningAndScalingGestures(panScaleEnabled)
+				enableInputDispatchToRenderThread(!useInputBuffering && !useAccumulatedInput)
 			}
 		}
 	}
@@ -273,6 +278,13 @@ open class GodotEditor : GodotActivity() {
 	 */
 	protected open fun enablePanAndScaleGestures() =
 		java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/touchscreen/enable_pan_and_scale_gestures"))
+
+	/**
+	 * Use input buffering for the Godot Android editor.
+	 */
+	protected open fun useInputBuffering() = java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/editor/android/use_input_buffering"))
+
+	protected open fun useAccumulatedInput() = java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/editor/android/use_accumulated_input"))
 
 	/**
 	 * Whether we should launch the new godot instance in an adjacent window
