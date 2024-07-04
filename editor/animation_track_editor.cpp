@@ -4456,16 +4456,8 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 
 		} break;
 		case Animation::TYPE_BEZIER: {
-			Array array;
-			array.resize(5);
-			array[0] = p_id.value;
-			array[1] = -0.25;
-			array[2] = 0;
-			array[3] = 0.25;
-			array[4] = 0;
-			value = array;
+			value = animation->make_default_bezier_key(p_id.value);
 			bezier_edit_icon->set_disabled(false);
-
 		} break;
 		default: {
 			// Other track types shouldn't use this code path.
@@ -5267,15 +5259,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 			NodePath bp;
 			Variant value;
 			_find_hint_for_track(p_track, bp, &value);
-			Array arr;
-			arr.resize(5);
-			arr[0] = value;
-			arr[1] = -0.25;
-			arr[2] = 0;
-			arr[3] = 0.25;
-			arr[4] = 0;
-
-			id.value = arr;
+			id.value = animation->make_default_bezier_key(value);
 		} break;
 		case Animation::TYPE_AUDIO: {
 			Dictionary ak;
@@ -5819,7 +5803,7 @@ void AnimationTrackEditor::_anim_duplicate_keys(float p_ofs, bool p_ofs_valid, i
 			if (key_is_bezier && !track_is_bezier) {
 				value = AnimationBezierTrackEdit::get_bezier_key_value(value);
 			} else if (!key_is_bezier && track_is_bezier) {
-				value = AnimationBezierTrackEdit::make_default_bezier_key(value);
+				value = animation->make_default_bezier_key(value);
 			}
 
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", dst_track, dst_time, value, animation->track_get_key_transition(E->key().track, E->key().key));
@@ -5963,7 +5947,7 @@ void AnimationTrackEditor::_anim_paste_keys(float p_ofs, bool p_ofs_valid, int p
 			if (key_is_bezier && !track_is_bezier) {
 				value = AnimationBezierTrackEdit::get_bezier_key_value(value);
 			} else if (!key_is_bezier && track_is_bezier) {
-				value = AnimationBezierTrackEdit::make_default_bezier_key(value);
+				value = animation->make_default_bezier_key(value);
 			}
 
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", dst_track, dst_time, value, key.transition);

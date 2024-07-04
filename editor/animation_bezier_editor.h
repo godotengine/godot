@@ -198,7 +198,6 @@ protected:
 	void _notification(int p_what);
 
 public:
-	static Array make_default_bezier_key(float p_value);
 	static float get_bezier_key_value(Array p_bezier_key_array);
 
 	virtual String get_tooltip(const Point2 &p_pos) const override;
