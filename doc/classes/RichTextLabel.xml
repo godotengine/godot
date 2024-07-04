@@ -70,7 +70,7 @@
 			<param index="0" name="character" type="int" />
 			<description>
 				Returns the line number of the character position provided. Line and character numbers are both zero-indexed.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_character_paragraph">
@@ -78,28 +78,28 @@
 			<param index="0" name="character" type="int" />
 			<description>
 				Returns the paragraph number of the character position provided. Paragraph and character numbers are both zero-indexed.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_content_height" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the height of the content.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_content_width" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the width of the content.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the total number of lines in the text. Wrapped text is counted as multiple lines.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_line_offset">
@@ -107,7 +107,7 @@
 			<param index="0" name="line" type="int" />
 			<description>
 				Returns the vertical offset of the line found at the provided index.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
@@ -167,7 +167,7 @@
 			<param index="0" name="paragraph" type="int" />
 			<description>
 				Returns the vertical offset of the paragraph found at the provided index.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_parsed_text" qualifiers="const">
@@ -211,14 +211,14 @@
 			<return type="int" />
 			<description>
 				Returns the number of visible lines.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_visible_paragraph_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number of visible paragraphs. A paragraph is considered visible if at least one of its lines is visible.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="install_effect">
@@ -256,13 +256,19 @@
 				Invalidates [param paragraph] and all subsequent paragraphs cache.
 			</description>
 		</method>
+		<method name="is_finished" qualifiers="const">
+			<return type="bool" />
+			<description>
+				If [member threaded] is enabled, returns [code]true[/code] if the background thread has finished text processing, otherwise always return [code]true[/code].
+			</description>
+		</method>
 		<method name="is_menu_visible" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns whether the menu is visible. Use this instead of [code]get_menu().visible[/code] to improve performance (so the creation of the menu is avoided).
 			</description>
 		</method>
-		<method name="is_ready" qualifiers="const">
+		<method name="is_ready" qualifiers="const" deprecated="Use [method is_finished] instead.">
 			<return type="bool" />
 			<description>
 				If [member threaded] is enabled, returns [code]true[/code] if the background thread has finished text processing, otherwise always return [code]true[/code].
