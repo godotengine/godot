@@ -121,7 +121,7 @@ public class GodotIO {
 
 			activity.startActivity(intent);
 			return 0;
-		} catch (ActivityNotFoundException e) {
+		} catch (Exception e) {
 			Log.e(TAG, "Unable to open uri " + uriString, e);
 			return 1;
 		}
