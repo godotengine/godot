@@ -81,7 +81,8 @@ fun beginBenchmarkMeasure(scope: String, label: String) {
  *
  * * Note: Only enabled on 'editorDev' build variant.
  */
-fun endBenchmarkMeasure(scope: String, label: String) {
+@JvmOverloads
+fun endBenchmarkMeasure(scope: String, label: String, dumpBenchmark: Boolean = false) {
 	if (BuildConfig.FLAVOR != "editor" || BuildConfig.BUILD_TYPE != "dev") {
 		return
 	}
@@ -93,6 +94,10 @@ fun endBenchmarkMeasure(scope: String, label: String) {
 	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 		Trace.endAsyncSection("[$scope] $label", 0)
 	}
+
+	if (dumpBenchmark) {
+		dumpBenchmark()
+	}
 }
 
 /**
@@ -102,11 +107,11 @@ fun endBenchmarkMeasure(scope: String, label: String) {
  * * Note: Only enabled on 'editorDev' build variant.
  */
 @JvmOverloads
-fun dumpBenchmark(fileAccessHandler: FileAccessHandler?, filepath: String? = benchmarkFile) {
+fun dumpBenchmark(fileAccessHandler: FileAccessHandler? = null, filepath: String? = benchmarkFile) {
 	if (BuildConfig.FLAVOR != "editor" || BuildConfig.BUILD_TYPE != "dev") {
 		return
 	}
-	if (!useBenchmark) {
+	if (!useBenchmark || benchmarkTracker.isEmpty()) {
 		return
 	}
 

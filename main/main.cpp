@@ -909,13 +909,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// Benchmark tracking must be done after `OS::get_singleton()->initialize()` as on some
 	// platforms, it's used to set up the time utilities.
-	OS::get_singleton()->benchmark_begin_measure("Startup", "Total");
-	OS::get_singleton()->benchmark_begin_measure("Startup", "Setup");
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Setup");
 
 	engine = memnew(Engine);
 
 	MAIN_PRINT("Main: Initialize CORE");
-	OS::get_singleton()->benchmark_begin_measure("Startup", "Core");
 
 	register_core_types();
 	register_core_driver_types();
@@ -2453,8 +2451,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Thread::release_main_thread(); // If setup2() is called from another thread, that one will become main thread, so preventively release this one.
 	set_current_thread_safe_for_nodes(false);
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Core");
-
 #if defined(STEAMAPI_ENABLED)
 	if (editor || project_manager) {
 		steam_tracker = memnew(SteamTracker);
@@ -2465,7 +2461,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		return setup2();
 	}
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Setup");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
 	return OK;
 
 error:
@@ -2519,7 +2515,7 @@ error:
 	}
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Core");
-	OS::get_singleton()->benchmark_end_measure("Startup", "Setup");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
 
 #if defined(STEAMAPI_ENABLED)
 	if (steam_tracker) {
@@ -2553,6 +2549,8 @@ Error _parse_resource_dummy(void *p_data, VariantParser::Stream *p_stream, Ref<R
 }
 
 Error Main::setup2(bool p_show_boot_logo) {
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Setup2");
+
 	Thread::make_main_thread(); // Make whatever thread call this the main thread.
 	set_current_thread_safe_for_nodes(true);
 
@@ -3149,7 +3147,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 	print_verbose("EDITOR API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_EDITOR)));
 	MAIN_PRINT("Main: Done");
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Setup");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup2");
 
 	return OK;
 }
@@ -3230,6 +3228,8 @@ static MainTimerSync main_timer_sync;
 // and should move on to `OS::run`, and EXIT_FAILURE otherwise for
 // an early exit with that error code.
 int Main::start() {
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Start");
+
 	ERR_FAIL_COND_V(!_start_success, false);
 
 	bool has_icon = false;
@@ -3953,7 +3953,7 @@ int Main::start() {
 		}
 	}
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Total");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Start");
 	OS::get_singleton()->benchmark_dump();
 
 	return EXIT_SUCCESS;
@@ -4221,7 +4221,7 @@ void Main::force_redraw() {
  * The order matters as some of those steps are linked with each other.
  */
 void Main::cleanup(bool p_force) {
-	OS::get_singleton()->benchmark_begin_measure("Shutdown", "Total");
+	OS::get_singleton()->benchmark_begin_measure("Shutdown", "Main::Cleanup");
 	if (!p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
@@ -4379,7 +4379,7 @@ void Main::cleanup(bool p_force) {
 
 	unregister_core_types();
 
-	OS::get_singleton()->benchmark_end_measure("Shutdown", "Total");
+	OS::get_singleton()->benchmark_end_measure("Shutdown", "Main::Cleanup");
 	OS::get_singleton()->benchmark_dump();
 
 	OS::get_singleton()->finalize_core();
