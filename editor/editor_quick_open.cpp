@@ -286,6 +286,41 @@ void EditorQuickOpen::_notification(int p_what) {
 	}
 }
 
+void EditorQuickOpen::_item_menu_id_pressed(int p_option) {
+	switch (p_option) {
+		case ITEM_MENU_COPY_PATH: {
+			Dictionary item_meta = item_list->get_item_metadata(item_list->get_current());
+			DisplayServer::get_singleton()->clipboard_set(item_meta["path"]);
+		} break;
+
+		case ITEM_MENU_DELETE: {
+			_delete_items();
+		} break;
+
+		case ITEM_MENU_REFRESH: {
+			invalidate();
+		} break;
+
+		case ITEM_MENU_NEW_FOLDER: {
+			_make_dir();
+		} break;
+
+		case ITEM_MENU_SHOW_IN_EXPLORER: {
+			String path;
+			int idx = item_list->get_current();
+			if (idx == -1 || item_list->get_selected_items().size() == 0) {
+				// Folder background was clicked. Open this folder.
+				path = ProjectSettings::get_singleton()->globalize_path(dir_access->get_current_dir());
+			} else {
+				// Specific item was clicked. Open folders directly, or the folder containing a selected file.
+				Dictionary item_meta = item_list->get_item_metadata(idx);
+				path = ProjectSettings::get_singleton()->globalize_path(item_meta["path"]);
+			}
+			OS::get_singleton()->shell_show_in_file_manager(path, true);
+		} break;
+	}
+}
+
 void EditorQuickOpen::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("quick_open"));
 }
@@ -312,3 +347,4 @@ EditorQuickOpen::EditorQuickOpen() {
 	set_ok_button_text(TTR("Open"));
 	set_hide_on_ok(false);
 }
+
