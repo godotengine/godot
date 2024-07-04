@@ -2066,7 +2066,6 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 	}
 
 	if (updated) {
-		_process_update_pending();
 		if (update_files_icon_cache) {
 			_update_files_icon_path();
 		} else {
@@ -2074,7 +2073,10 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 				_update_file_icon_path(fi);
 			}
 		}
-		call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
+		if (!is_scanning()) {
+			_process_update_pending();
+			call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
+		}
 	}
 }
 
