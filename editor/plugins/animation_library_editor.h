@@ -108,6 +108,8 @@ class AnimationLibraryEditor : public AcceptDialog {
 
 	void _file_popup_selected(int p_id);
 
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+
 	bool updating = false;
 
 protected:

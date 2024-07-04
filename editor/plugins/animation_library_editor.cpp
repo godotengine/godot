@@ -30,6 +30,7 @@
 
 #include "animation_library_editor.h"
 
+#include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -298,6 +299,38 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 		case FILE_MENU_EDIT_ANIMATION: {
 			EditorNode::get_singleton()->push_item(anim.ptr());
 		} break;
+	}
+}
+
+void AnimationLibraryEditor::shortcut_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	const Ref<InputEventKey> key = p_event;
+	if (key.is_valid() && key->is_pressed()) {
+		bool handled = false;
+
+		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
+			String action = undo_redo->get_current_action_name();
+			if (!action.is_empty()) {
+				EditorNode::get_log()->add_message(vformat(TTR("Undo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
+			}
+			undo_redo->undo();
+			handled = true;
+		}
+
+		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
+			undo_redo->redo();
+			String action = undo_redo->get_current_action_name();
+			if (!action.is_empty()) {
+				EditorNode::get_log()->add_message(vformat(TTR("Redo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
+			}
+			handled = true;
+		}
+
+		if (handled) {
+			set_input_as_handled();
+		}
 	}
 }
 
@@ -770,10 +803,17 @@ void AnimationLibraryEditor::show_dialog() {
 
 void AnimationLibraryEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				set_process_shortcut_input(true);
+			} else {
+				set_process_shortcut_input(false);
+			}
+		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			new_library_button->set_icon(get_editor_theme_icon(SNAME("Add")));
 			load_library_button->set_icon(get_editor_theme_icon(SNAME("Load")));
-		}
+		} break;
 	}
 }
 
