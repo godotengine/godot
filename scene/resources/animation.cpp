@@ -3189,6 +3189,20 @@ StringName Animation::method_track_get_name(int p_track, int p_key_idx) const {
 	return pm->methods[p_key_idx].method;
 }
 
+Array Animation::make_default_bezier_key(float p_value) {
+	const double max_width = length / 2.0;
+	Array new_point;
+	new_point.resize(5);
+
+	new_point[0] = p_value;
+	new_point[1] = MAX(-0.25, -max_width);
+	new_point[2] = 0;
+	new_point[3] = MIN(0.25, max_width);
+	new_point[4] = 0;
+
+	return new_point;
+}
+
 int Animation::bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle) {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
