@@ -66,8 +66,6 @@ protected:
 
 	bool active; // only when active do we actually update the camera texture each frame
 
-	RID shader; // shader
-
 	static void _bind_methods();
 
 	void set_texture(Ref<Image> &image);
@@ -82,7 +80,6 @@ public:
 	FeedPosition get_position() const;
 
 	RID get_texture();
-	RID get_shader();
 
 	bool is_active() const;
 	void set_active(bool p_is_active);
