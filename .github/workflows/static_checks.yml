@@ -106,5 +106,5 @@ jobs:
         uses: codespell-project/actions-codespell@v2
         with:
           skip: "./bin,./thirdparty,*.desktop,*.gen.*,*.po,*.pot,*.rc,./AUTHORS.md,./COPYRIGHT.txt,./DONORS.md,./core/input/gamecontrollerdb.txt,./core/string/locales.h,./editor/project_converter_3_to_4.cpp,./misc/scripts/codespell.sh,./platform/android/java/lib/src/com,./platform/web/node_modules,./platform/web/package-lock.json"
-          ignore_words_list: "curvelinear,doubleclick,expct,findn,gird,hel,inout,lod,mis,nd,numer,ot,requestor,te,vai"
+          ignore_words_list: "breaked,checkin,curvelinear,doubleclick,expct,findn,gird,hel,inout,labelin,lod,mis,nd,numer,ot,pointin,requestor,te,textin,thirdparty,vai"
           path: ${{ env.CHANGED_FILES }}

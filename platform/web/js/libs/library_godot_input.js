@@ -137,7 +137,7 @@ const GodotInputGamepads = {
 			const id = pad.id;
 			// Chrom* style: NAME (Vendor: xxxx Product: xxxx)
 			const exp1 = /vendor: ([0-9a-f]{4}) product: ([0-9a-f]{4})/i;
-			// Firefox/Safari style (safari may remove leading zeores)
+			// Firefox/Safari style (safari may remove leading zeroes)
 			const exp2 = /^([0-9a-f]+)-([0-9a-f]+)-/i;
 			let vendor = '';
 			let product = '';
