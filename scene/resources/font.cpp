@@ -3213,7 +3213,6 @@ void SystemFont::_update_base_font() {
 	}
 
 	_invalidate_rids();
-	notify_property_list_changed();
 }
 
 void SystemFont::reset_state() {
@@ -3454,7 +3453,18 @@ real_t SystemFont::get_oversampling() const {
 void SystemFont::set_font_names(const PackedStringArray &p_names) {
 	if (names != p_names) {
 		names = p_names;
-		_update_base_font();
+		bool all_valid = true;
+		for (const String &E : names) {
+			String path = OS::get_singleton()->get_system_font_path(E, weight, stretch, italic);
+			if (path.is_empty()) {
+				all_valid = false;
+				break;
+			}
+		}
+		if (all_valid) {
+			_update_base_font();
+			notify_property_list_changed();
+		}
 	}
 }
 
