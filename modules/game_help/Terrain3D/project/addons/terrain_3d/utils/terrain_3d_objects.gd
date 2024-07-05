@@ -13,9 +13,18 @@ var _terrain_id: int
 var _offsets: Dictionary # Object ID -> Vector3(X, Y offset relative to terrain height, Z)
 var _ignore_transform_change: bool = false
 
+func _enter_tree() -> void:
+	if not Engine.is_editor_hint():
+		return
+
+	for child in get_children():
+		_on_child_entered_tree(child)
+
+	child_entered_tree.connect(_on_child_entered_tree)
+	child_exiting_tree.connect(_on_child_exiting_tree)
 
 func _exit_tree() -> void:
-	if not Engine.is_editor_hint() or not _editor_interface:
+	if not Engine.is_editor_hint():
 		return
 	
 	child_entered_tree.disconnect(_on_child_entered_tree)
@@ -25,24 +34,15 @@ func _exit_tree() -> void:
 		_on_child_exiting_tree(child)
 
 
+
 func editor_setup(p_plugin) -> void:
-	if _editor_interface:
-		return
-	
-	_editor_interface = p_plugin.get_editor_interface()
 	_undo_redo = p_plugin.get_undo_redo()
-	
-	for child in get_children():
-		_on_child_entered_tree(child)
-	
-	child_entered_tree.connect(_on_child_entered_tree)
-	child_exiting_tree.connect(_on_child_exiting_tree)
 
 
 func get_terrain() -> Terrain3D:
 	var terrain := instance_from_id(_terrain_id) as Terrain3D
 	if not terrain or terrain.is_queued_for_deletion() or not terrain.is_inside_tree():
-		var terrains: Array[Node] = _editor_interface.get_edited_scene_root().find_children("", "Terrain3D")
+		var terrains: Array[Node] = EditorInterface.get_edited_scene_root().find_children("", "Terrain3D")
 		if terrains.size() > 0:
 			terrain = terrains[0]
 		_terrain_id = terrain.get_instance_id() if terrain else 0
@@ -74,14 +74,21 @@ func _on_child_entered_tree(p_node: Node) -> void:
 		helper = TransformChangedNotifier.new()
 		helper.name = CHILD_HELPER_NAME
 		p_node.add_child(helper, true, INTERNAL_MODE_BACK)
-	helper.transform_changed.connect(_on_child_transform_changed.bind(p_node))
 	assert(p_node.has_node(CHILD_HELPER_PATH))
-	
-	var id: int = p_node.get_instance_id()
-	if not _offsets.has(id):
-		_update_child_offset(p_node)
-	else:
-		_update_child_position(p_node)
+
+	# When reparenting a Node3D, Godot changes its transform _after_ reparenting it. So here,
+	# we must use call_deferred, to avoid receiving transform_changed as a result of reparenting.
+	_setup_child_signal.call_deferred(p_node, helper)
+
+
+func _setup_child_signal(p_node: Node, helper: TransformChangedNotifier) -> void:
+	if not p_node.is_inside_tree():
+		return
+	if helper.transform_changed.is_connected(_on_child_transform_changed):
+		return
+
+	helper.transform_changed.connect(_on_child_transform_changed.bind(p_node))
+	_update_child_offset(p_node)
 
 
 func _on_child_exiting_tree(p_node: Node) -> void:
@@ -90,12 +97,15 @@ func _on_child_exiting_tree(p_node: Node) -> void:
 	
 	var helper: TransformChangedNotifier = p_node.get_node_or_null(CHILD_HELPER_PATH)
 	if helper:
+		helper.transform_changed.disconnect(_on_child_transform_changed)
 		p_node.remove_child(helper)
 		helper.queue_free()
 
+	_offsets.erase(p_node.get_instance_id())
 
-func _is_node_selected(p_node: Node) -> bool:
-	var editor_sel = _editor_interface.get_selection()
+
+func _is_node_selected(p_node: Node) -> bool:ion()
+	var editor_sel = EditorInterface.get_selection()
 	return editor_sel.get_transformable_selected_nodes().has(p_node)
 
 
@@ -129,16 +139,20 @@ func _on_child_transform_changed(p_node: Node3D) -> void:
 	
 	# Make sure that when the user undo's the translation, the offset change gets undone too!
 	_undo_redo.create_action("Translate", UndoRedo.MERGE_ALL)
-	_undo_redo.add_do_property(self, &"_ignore_transform_change", true)
-	_undo_redo.add_undo_property(self, &"_ignore_transform_change", true)
-	_undo_redo.add_do_property(p_node, &"global_position", new_position)
-	_undo_redo.add_undo_property(p_node, &"global_position", old_position)
-	_undo_redo.add_do_method(self, &"_set_offset", p_node.get_instance_id(), new_offset)
-	_undo_redo.add_undo_method(self, &"_set_offset", p_node.get_instance_id(), old_offset)
-	_undo_redo.add_do_property(self, &"_ignore_transform_change", false)
-	_undo_redo.add_undo_property(self, &"_ignore_transform_change", false)
+	_undo_redo.add_do_method(self, &"_set_offset_and_position", p_node.get_instance_id(), new_offset, new_position)
+	_undo_redo.add_undo_method(self, &"_set_offset_and_position", p_node.get_instance_id(), old_offset, old_position)
 	_undo_redo.commit_action()
 
+
+func _set_offset_and_position(p_id: int, p_offset: Vector3, p_position: Vector3) -> void:
+	var node := instance_from_id(p_id) as Node
+	if not is_instance_valid(node):
+		return
+
+	_ignore_transform_change = true
+	node.global_position = p_position
+	_offsets[p_id] = p_offset
+	_ignore_transform_change = false
 
 func _set_offset(p_id: int, p_offset: Vector3) -> void:
 	_offsets[p_id] = p_offset

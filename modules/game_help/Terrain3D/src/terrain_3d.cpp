@@ -1167,7 +1167,9 @@ void Terrain3D::_notification(int p_what) {
 		}
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			set_transform(Transform3D());
+				if (get_transform() != Transform3D()) {
+					set_transform(Transform3D());
+			}
 			break;
 		}
 

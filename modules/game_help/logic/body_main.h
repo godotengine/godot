@@ -169,6 +169,10 @@ public:
     // 身體部位
     void set_body_part(const Dictionary& part);
     Dictionary get_body_part();
+    
+    void set_body_prefab(const Ref<CharacterBodyPrefab> &p_body_prefab);
+    Ref<CharacterBodyPrefab> get_body_prefab();
+
     // 技能相关
 public:
     bool play_skill(String p_skill_name);
@@ -367,6 +371,7 @@ protected:
     
     Ref<CharacterAnimationLibrary> animation_library;
     Ref<class CharacterController>  controller;
+    Ref<CharacterBodyPrefab> body_prefab;
     // 初始化数据
     Dictionary init_data;
 };

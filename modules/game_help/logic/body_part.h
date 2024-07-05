@@ -232,6 +232,19 @@ public:
     {
         return skeleton_path;
     }
+    TypedArray<CharacterBodyPart> load_part()
+    {
+        TypedArray<CharacterBodyPart> parts;
+        for(int i=0;i<parts.size();i++)
+        {
+            Ref<CharacterBodyPart> part = ResourceLoader::load(parts[i]);
+            if(part.is_valid())
+            {
+                parts.push_back(part);
+            }
+        }
+        return parts;
+    }
 
     TypedArray<String> parts;
     String skeleton_path;

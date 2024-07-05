@@ -40,6 +40,10 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_check_area"), &CharacterBodyMain::get_check_area);
     ClassDB::bind_method(D_METHOD("get_check_area_by_name", "name"), &CharacterBodyMain::get_check_area_by_name);
 
+
+    ClassDB::bind_method(D_METHOD("set_body_prefab", "body_prefab"), &CharacterBodyMain::set_body_prefab);
+    ClassDB::bind_method(D_METHOD("get_body_prefab"), &CharacterBodyMain::get_body_prefab);
+
     ClassDB::bind_method(D_METHOD("init_body_part_array", "part_array"), &CharacterBodyMain::init_body_part_array);
     ClassDB::bind_method(D_METHOD("set_body_part", "part"), &CharacterBodyMain::set_body_part);
     ClassDB::bind_method(D_METHOD("get_body_part"), &CharacterBodyMain::get_body_part);
@@ -66,6 +70,7 @@ void CharacterBodyMain::_bind_methods()
     
 
     ADD_GROUP("show", "");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "body_prefab", PROPERTY_HINT_RESOURCE_TYPE, "CharacterBodyPrefab",PROPERTY_USAGE_DEFAULT ), "set_body_prefab", "get_body_prefab");
     ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "body_part", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT), "set_body_part", "get_body_part");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animator", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimator",PROPERTY_USAGE_DEFAULT ), "set_animator", "get_animator"); 
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_library", PROPERTY_HINT_RESOURCE_TYPE, "AnimationLibrary",PROPERTY_USAGE_DEFAULT ), "set_animation_library", "get_animation_library");
@@ -353,6 +358,42 @@ void CharacterBodyMain::init_body_part_array(const Array& p_part_array)
         bodyPart[part_name] = p;
     }
 }
+
+
+void CharacterBodyMain::set_body_prefab(const Ref<CharacterBodyPrefab> &p_body_prefab)
+{
+    if(p_body_prefab.is_null() || p_body_prefab == body_prefab)
+    {
+        return;
+    }
+    
+    bodyPart.clear();
+    body_prefab = p_body_prefab;
+
+    if(body_prefab.is_valid())
+    {
+        set_skeleton_resource(body_prefab->get_skeleton_path());
+        Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeletonID));
+        // 
+        TypedArray<CharacterBodyPart> part_array = body_prefab->load_part();
+        for(int i = 0;i<part_array.size();i++)
+        {
+            
+            Ref<CharacterBodyPartInstane> p;
+            p.instantiate();
+            p->set_skeleton(skeleton);
+            p->set_part(part_array[i]);
+			Ref< CharacterBodyPart> part = part_array[i];
+            bodyPart[part->get_name()] = p;
+        }
+    }
+
+}
+Ref<CharacterBodyPrefab> CharacterBodyMain::get_body_prefab()
+{
+    return body_prefab;
+}
+
 void CharacterBodyMain::init_blackboard_plan(Ref<BlackboardPlan> p_plan)
 {
     if(!p_plan.is_valid())
