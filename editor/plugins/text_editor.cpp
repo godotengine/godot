@@ -304,8 +304,8 @@ void TextEditor::tag_saved_version() {
 	code_editor->get_text_editor()->tag_saved_version();
 }
 
-void TextEditor::goto_line(int p_line, bool p_with_error) {
-	code_editor->goto_line(p_line);
+void TextEditor::goto_line(int p_line, int p_column) {
+	code_editor->goto_line(p_line, p_column);
 }
 
 void TextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {

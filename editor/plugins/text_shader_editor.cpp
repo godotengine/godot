@@ -779,7 +779,7 @@ void TextShaderEditor::_show_warnings_panel(bool p_show) {
 
 void TextShaderEditor::_warning_clicked(const Variant &p_line) {
 	if (p_line.get_type() == Variant::INT) {
-		code_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
+		code_editor->goto_line_centered(p_line.operator int64_t());
 	}
 }
 
