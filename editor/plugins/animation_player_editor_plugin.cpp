@@ -308,6 +308,7 @@ void AnimationPlayerEditor::_stop_pressed() {
 		frame->set_value(0);
 		track_editor->set_anim_pos(0);
 	}
+	timeline_position = player->get_current_animation_position();
 	stop->set_icon(stop_icon);
 }
 
