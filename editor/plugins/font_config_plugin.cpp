@@ -935,6 +935,12 @@ void FontPreview::_notification(int p_what) {
 				font->draw_string(get_canvas_item(), Point2(0, font->get_height(font_size) + 2 * EDSCALE), TTR("Unable to preview font"), HORIZONTAL_ALIGNMENT_CENTER, get_size().x, font_size, text_color);
 			}
 		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			if (prev_font.is_valid()) {
+				prev_font->disconnect_changed(callable_mp(this, &FontPreview::_preview_changed));
+			}
+		} break;
 	}
 }
 
@@ -945,7 +951,17 @@ Size2 FontPreview::get_minimum_size() const {
 }
 
 void FontPreview::set_data(const Ref<Font> &p_f) {
+	if (prev_font.is_valid()) {
+		prev_font->disconnect_changed(callable_mp(this, &FontPreview::_preview_changed));
+	}
 	prev_font = p_f;
+	if (prev_font.is_valid()) {
+		prev_font->connect_changed(callable_mp(this, &FontPreview::_preview_changed));
+	}
+	queue_redraw();
+}
+
+void FontPreview::_preview_changed() {
 	queue_redraw();
 }
 
