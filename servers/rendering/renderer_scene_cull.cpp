@@ -1594,9 +1594,9 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 			}
 		}
 
-		uint32_t max_sdfgi_cascade = RSG::light_storage->light_get_max_sdfgi_cascade(p_instance->base);
-		if (light->max_sdfgi_cascade != max_sdfgi_cascade) {
-			light->max_sdfgi_cascade = max_sdfgi_cascade; //should most likely make sdfgi dirty in scenario
+		uint32_t max_hddagi_cascade = RSG::light_storage->light_get_max_hddagi_cascade(p_instance->base);
+		if (light->max_hddagi_cascade != max_hddagi_cascade) {
+			light->max_hddagi_cascade = max_hddagi_cascade; //should most likely make hddagi dirty in scenario
 		}
 	} else if (p_instance->base_type == RS::INSTANCE_REFLECTION_PROBE) {
 		InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(p_instance->base_data);
@@ -2756,8 +2756,8 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 	uint64_t frame_number = RSG::rasterizer->get_frame_number();
 	float lightmap_probe_update_speed = RSG::light_storage->lightmap_get_probe_capture_update_speed() * RSG::rasterizer->get_frame_delta_time();
 
-	uint32_t sdfgi_last_light_index = 0xFFFFFFFF;
-	uint32_t sdfgi_last_light_cascade = 0xFFFFFFFF;
+	uint32_t hddagi_last_light_index = 0xFFFFFFFF;
+	uint32_t hddagi_last_light_cascade = 0xFFFFFFFF;
 
 	RID instance_pair_buffer[MAX_INSTANCE_PAIRS];
 
@@ -2995,22 +2995,22 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 #undef VIS_CHECK
 #undef OCCLUSION_CULLED
 
-		for (uint32_t j = 0; j < cull_data.cull->sdfgi.region_count; j++) {
-			if (cull_data.scenario->instance_aabbs[i].in_aabb(cull_data.cull->sdfgi.region_aabb[j])) {
+		for (uint32_t j = 0; j < cull_data.cull->hddagi.region_count; j++) {
+			if (cull_data.scenario->instance_aabbs[i].in_aabb(cull_data.cull->hddagi.region_aabb[j])) {
 				uint32_t base_type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
 
 				if (base_type == RS::INSTANCE_LIGHT) {
 					InstanceLightData *instance_light = (InstanceLightData *)idata.instance->base_data;
-					if (instance_light->bake_mode == RS::LIGHT_BAKE_STATIC && cull_data.cull->sdfgi.region_cascade[j] <= instance_light->max_sdfgi_cascade) {
-						if (sdfgi_last_light_index != i || sdfgi_last_light_cascade != cull_data.cull->sdfgi.region_cascade[j]) {
-							sdfgi_last_light_index = i;
-							sdfgi_last_light_cascade = cull_data.cull->sdfgi.region_cascade[j];
-							cull_result.sdfgi_cascade_lights[sdfgi_last_light_cascade].push_back(instance_light->instance);
+					if (instance_light->bake_mode == RS::LIGHT_BAKE_STATIC && cull_data.cull->hddagi.region_cascade[j] <= instance_light->max_hddagi_cascade) {
+						if (hddagi_last_light_index != i || hddagi_last_light_cascade != cull_data.cull->hddagi.region_cascade[j]) {
+							hddagi_last_light_index = i;
+							hddagi_last_light_cascade = cull_data.cull->hddagi.region_cascade[j];
+							cull_result.hddagi_cascade_lights[hddagi_last_light_cascade].push_back(instance_light->instance);
 						}
 					}
 				} else if ((1 << base_type) & RS::INSTANCE_GEOMETRY_MASK) {
 					if (idata.flags & InstanceData::FLAG_USES_BAKED_LIGHT) {
-						cull_result.sdfgi_region_geometry_instances[j].push_back(idata.instance_geometry);
+						cull_result.hddagi_region_geometry_instances[j].push_back(idata.instance_geometry);
 						mesh_visible = true;
 					}
 				}
@@ -3040,7 +3040,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 	if (p_reflection_probe.is_null()) {
 		//no rendering code here, this is only to set up what needs to be done, request regions, etc.
-		scene_render->sdfgi_update(p_render_buffers, p_environment, camera_position); //update conditions for SDFGI (whether its used or not)
+		scene_render->hddagi_update(p_render_buffers, p_environment, p_camera_data->main_transform.origin); //update conditions for HDDAGI (whether its used or not)
 	}
 
 	RENDER_TIMESTAMP("Update Visibility Dependencies");
@@ -3117,28 +3117,27 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 		}
 	}
 
-	{ //sdfgi
-		cull.sdfgi.region_count = 0;
+	{ //hddagi
+		cull.hddagi.region_count = 0;
 
 		if (p_reflection_probe.is_null()) {
-			cull.sdfgi.cascade_light_count = 0;
+			cull.hddagi.cascade_light_count = 0;
 
 			uint32_t prev_cascade = 0xFFFFFFFF;
-			uint32_t pending_region_count = scene_render->sdfgi_get_pending_region_count(p_render_buffers);
-
+			uint32_t pending_region_count = scene_render->hddagi_get_pending_region_count(p_render_buffers);
 			for (uint32_t i = 0; i < pending_region_count; i++) {
-				cull.sdfgi.region_aabb[i] = scene_render->sdfgi_get_pending_region_bounds(p_render_buffers, i);
-				uint32_t region_cascade = scene_render->sdfgi_get_pending_region_cascade(p_render_buffers, i);
-				cull.sdfgi.region_cascade[i] = region_cascade;
+				cull.hddagi.region_aabb[i] = scene_render->hddagi_get_pending_region_bounds(p_render_buffers, i);
+				uint32_t region_cascade = scene_render->hddagi_get_pending_region_cascade(p_render_buffers, i);
+				cull.hddagi.region_cascade[i] = region_cascade;
 
 				if (region_cascade != prev_cascade) {
-					cull.sdfgi.cascade_light_index[cull.sdfgi.cascade_light_count] = region_cascade;
-					cull.sdfgi.cascade_light_count++;
+					cull.hddagi.cascade_light_index[cull.hddagi.cascade_light_count] = region_cascade;
+					cull.hddagi.cascade_light_count++;
 					prev_cascade = region_cascade;
 				}
 			}
 
-			cull.sdfgi.region_count = pending_region_count;
+			cull.hddagi.region_count = pending_region_count;
 		}
 	}
 
@@ -3350,40 +3349,40 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 		}
 	}
 
-	//render SDFGI
+	//render HDDAGI
 
 	{
 		// Q: Should this whole block be skipped if we're rendering our reflection probe?
 
-		sdfgi_update_data.update_static = false;
+		hddagi_update_data.update_static = false;
 
-		if (cull.sdfgi.region_count > 0) {
+		if (cull.hddagi.region_count > 0) {
 			//update regions
-			for (uint32_t i = 0; i < cull.sdfgi.region_count; i++) {
-				render_sdfgi_data[i].instances.merge_unordered(scene_cull_result.sdfgi_region_geometry_instances[i]);
-				render_sdfgi_data[i].region = i;
+			for (uint32_t i = 0; i < cull.hddagi.region_count; i++) {
+				render_hddagi_data[i].instances.merge_unordered(scene_cull_result.hddagi_region_geometry_instances[i]);
+				render_hddagi_data[i].region = i;
 			}
 			//check if static lights were culled
 			bool static_lights_culled = false;
-			for (uint32_t i = 0; i < cull.sdfgi.cascade_light_count; i++) {
-				if (scene_cull_result.sdfgi_cascade_lights[i].size()) {
+			for (uint32_t i = 0; i < cull.hddagi.cascade_light_count; i++) {
+				if (scene_cull_result.hddagi_cascade_lights[i].size()) {
 					static_lights_culled = true;
 					break;
 				}
 			}
 
 			if (static_lights_culled) {
-				sdfgi_update_data.static_cascade_count = cull.sdfgi.cascade_light_count;
-				sdfgi_update_data.static_cascade_indices = cull.sdfgi.cascade_light_index;
-				sdfgi_update_data.static_positional_lights = scene_cull_result.sdfgi_cascade_lights;
-				sdfgi_update_data.update_static = true;
+				hddagi_update_data.static_cascade_count = cull.hddagi.cascade_light_count;
+				hddagi_update_data.static_cascade_indices = cull.hddagi.cascade_light_index;
+				hddagi_update_data.static_positional_lights = scene_cull_result.hddagi_cascade_lights;
+				hddagi_update_data.update_static = true;
 			}
 		}
 
 		if (p_reflection_probe.is_null()) {
-			sdfgi_update_data.directional_lights = &directional_lights;
-			sdfgi_update_data.positional_light_instances = scenario->dynamic_lights.ptr();
-			sdfgi_update_data.positional_light_count = scenario->dynamic_lights.size();
+			hddagi_update_data.directional_lights = &directional_lights;
+			hddagi_update_data.positional_light_instances = scenario->dynamic_lights.ptr();
+			hddagi_update_data.positional_light_count = scenario->dynamic_lights.size();
 		}
 	}
 
@@ -3409,7 +3408,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 	}
 
 	RENDER_TIMESTAMP("Render 3D Scene");
-	scene_render->render_scene(p_render_buffers, p_camera_data, prev_camera_data, scene_cull_result.geometry_instances, scene_cull_result.light_instances, scene_cull_result.reflections, scene_cull_result.voxel_gi_instances, scene_cull_result.decals, scene_cull_result.lightmaps, scene_cull_result.fog_volumes, p_environment, camera_attributes, p_compositor, p_shadow_atlas, occluders_tex, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass, p_screen_mesh_lod_threshold, render_shadow_data, max_shadows_used, render_sdfgi_data, cull.sdfgi.region_count, &sdfgi_update_data, r_render_info);
+	scene_render->render_scene(p_render_buffers, p_camera_data, prev_camera_data, scene_cull_result.geometry_instances, scene_cull_result.light_instances, scene_cull_result.reflections, scene_cull_result.voxel_gi_instances, scene_cull_result.decals, scene_cull_result.lightmaps, scene_cull_result.fog_volumes, p_environment, camera_attributes, p_compositor, p_shadow_atlas, occluders_tex, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass, p_screen_mesh_lod_threshold, render_shadow_data, max_shadows_used, render_hddagi_data, cull.hddagi.region_count, &hddagi_update_data, r_render_info);
 
 	if (p_viewport.is_valid()) {
 		RSG::viewport->viewport_set_prev_camera_data(p_viewport, p_camera_data);
@@ -3420,8 +3419,8 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 	}
 	max_shadows_used = 0;
 
-	for (uint32_t i = 0; i < cull.sdfgi.region_count; i++) {
-		render_sdfgi_data[i].instances.clear();
+	for (uint32_t i = 0; i < cull.hddagi.region_count; i++) {
+		render_hddagi_data[i].instances.clear();
 	}
 }
 
@@ -4250,8 +4249,8 @@ RendererSceneCull::RendererSceneCull() {
 	for (uint32_t i = 0; i < MAX_UPDATE_SHADOWS; i++) {
 		render_shadow_data[i].instances.set_page_pool(&geometry_instance_cull_page_pool);
 	}
-	for (uint32_t i = 0; i < SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE; i++) {
-		render_sdfgi_data[i].instances.set_page_pool(&geometry_instance_cull_page_pool);
+	for (uint32_t i = 0; i < HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE; i++) {
+		render_hddagi_data[i].instances.set_page_pool(&geometry_instance_cull_page_pool);
 	}
 
 	scene_cull_result.init(&rid_cull_page_pool, &geometry_instance_cull_page_pool, &instance_cull_page_pool);
@@ -4281,8 +4280,8 @@ RendererSceneCull::~RendererSceneCull() {
 	for (uint32_t i = 0; i < MAX_UPDATE_SHADOWS; i++) {
 		render_shadow_data[i].instances.reset();
 	}
-	for (uint32_t i = 0; i < SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE; i++) {
-		render_sdfgi_data[i].instances.reset();
+	for (uint32_t i = 0; i < HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE; i++) {
+		render_hddagi_data[i].instances.reset();
 	}
 
 	scene_cull_result.reset();

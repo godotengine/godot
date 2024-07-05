@@ -141,3 +141,73 @@ Vector2i::operator String() const {
 Vector2i::operator Vector2() const {
 	return Vector2((int32_t)x, (int32_t)y);
 }
+
+Vector2i &Vector2i::operator>>=(const Vector2i &p_v) {
+	x >>= p_v.x;
+	y >>= p_v.y;
+	return *this;
+}
+
+Vector2i Vector2i::operator>>(const Vector2i &p_v) const {
+	return Vector2i(x >> p_v.x, y >> p_v.y);
+}
+
+Vector2i &Vector2i::operator<<=(const Vector2i &p_v) {
+	x <<= p_v.x;
+	y <<= p_v.y;
+	return *this;
+}
+
+Vector2i Vector2i::operator<<(const Vector2i &p_v) const {
+	return Vector2i(x << p_v.x, y << p_v.y);
+}
+
+Vector2i &Vector2i::operator<<=(const int32_t p_scalar) {
+	x <<= p_scalar;
+	y <<= p_scalar;
+	return *this;
+}
+
+Vector2i Vector2i::operator<<(const int32_t p_scalar) const {
+	return Vector2i(x << p_scalar, y << p_scalar);
+}
+
+Vector2i &Vector2i::operator>>=(const int32_t p_scalar) {
+	x >>= p_scalar;
+	y >>= p_scalar;
+	return *this;
+}
+
+Vector2i Vector2i::operator>>(const int32_t p_scalar) const {
+	return Vector2i(x >> p_scalar, y >> p_scalar);
+}
+
+Vector2i Vector2i::operator|(const Vector2i &p_v) const {
+	return Vector2i(x | p_v.x, y | p_v.y);
+}
+
+Vector2i &Vector2i::operator|=(const Vector2i &p_v) {
+	x |= p_v.x;
+	y |= p_v.y;
+	return *this;
+}
+
+Vector2i Vector2i::operator&(const Vector2i &p_v) const {
+	return Vector2i(x & p_v.x, y & p_v.y);
+}
+
+Vector2i &Vector2i::operator&=(const Vector2i &p_v) {
+	x &= p_v.x;
+	y &= p_v.y;
+	return *this;
+}
+
+Vector2i Vector2i::operator^(const Vector2i &p_v) const {
+	return Vector2i(x ^ p_v.x, y ^ p_v.y);
+}
+
+Vector2i &Vector2i::operator^=(const Vector2i &p_v) {
+	x ^= p_v.x;
+	y ^= p_v.y;
+	return *this;
+}

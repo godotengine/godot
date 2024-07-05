@@ -564,13 +564,9 @@
 		<constant name="DEBUG_DRAW_DECAL_ATLAS" value="15" enum="DebugDraw">
 			Draws the decal atlas used by [Decal]s and light projector textures in the upper left quadrant of the [Viewport].
 		</constant>
-		<constant name="DEBUG_DRAW_SDFGI" value="16" enum="DebugDraw">
-			Draws the cascades used to render signed distance field global illumination (SDFGI).
-			Does nothing if the current environment's [member Environment.sdfgi_enabled] is [code]false[/code] or SDFGI is not supported on the platform.
+		<constant name="DEBUG_DRAW_HDDAGI" value="16" enum="DebugDraw">
 		</constant>
-		<constant name="DEBUG_DRAW_SDFGI_PROBES" value="17" enum="DebugDraw">
-			Draws the probes used for signed distance field global illumination (SDFGI).
-			Does nothing if the current environment's [member Environment.sdfgi_enabled] is [code]false[/code] or SDFGI is not supported on the platform.
+		<constant name="DEBUG_DRAW_HDDAGI_PROBES" value="17" enum="DebugDraw">
 		</constant>
 		<constant name="DEBUG_DRAW_GI_BUFFER" value="18" enum="DebugDraw">
 			Draws the buffer used for global illumination (GI).
