@@ -36,6 +36,7 @@
 #include "core/io/resource_loader.h"
 #include "main/main.h"
 #include "scene/main/scene_tree.h"
+#include "scene/main/window.h" // SceneTree only forward declares it.
 
 #include <emscripten/emscripten.h>
 #include <stdlib.h>
