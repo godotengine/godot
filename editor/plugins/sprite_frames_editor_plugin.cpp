@@ -953,7 +953,7 @@ void SpriteFramesEditor::_sync_animation() {
 }
 
 void SpriteFramesEditor::_select_animation(const String &p_name, bool p_update_node) {
-	if (!frames->has_animation(p_name)) {
+	if (frames.is_null() || !frames->has_animation(p_name)) {
 		return;
 	}
 	edited_anim = p_name;

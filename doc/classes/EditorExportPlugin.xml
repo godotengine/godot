@@ -17,7 +17,7 @@
 			<param index="1" name="features" type="PackedStringArray" />
 			<description>
 				Return [code]true[/code] if this plugin will customize resources based on the platform and features used.
-				When enabled, [method _get_customization_configuration_hash], [method _customize_resource] and [method _customize_scene] will be called and must be implemented.
+				When enabled, [method _get_customization_configuration_hash] and [method _customize_resource] will be called and must be implemented.
 			</description>
 		</method>
 		<method name="_begin_customize_scenes" qualifiers="virtual const">
@@ -25,7 +25,8 @@
 			<param index="0" name="platform" type="EditorExportPlatform" />
 			<param index="1" name="features" type="PackedStringArray" />
 			<description>
-				Return true if this plugin will customize scenes based on the platform and features used.
+				Return [code]true[/code] if this plugin will customize scenes based on the platform and features used.
+				When enabled, [method _get_customization_configuration_hash] and [method _customize_scene] will be called and must be implemented.
 			</description>
 		</method>
 		<method name="_customize_resource" qualifiers="virtual">
@@ -35,6 +36,7 @@
 			<description>
 				Customize a resource. If changes are made to it, return the same or a new resource. Otherwise, return [code]null[/code].
 				The [i]path[/i] argument is only used when customizing an actual file, otherwise this means that this resource is part of another one and it will be empty.
+				Calling [method skip] inside this callback will make the file not included in the export.
 				Implementing this method is required if [method _begin_customize_resources] returns [code]true[/code].
 			</description>
 		</method>
@@ -44,6 +46,7 @@
 			<param index="1" name="path" type="String" />
 			<description>
 				Customize a scene. If changes are made to it, return the same or a new scene. Otherwise, return [code]null[/code]. If a new scene is returned, it is up to you to dispose of the old one.
+				Calling [method skip] inside this callback will make the file not included in the export.
 				Implementing this method is required if [method _begin_customize_scenes] returns [code]true[/code].
 			</description>
 		</method>
@@ -81,8 +84,9 @@
 			<param index="1" name="type" type="String" />
 			<param index="2" name="features" type="PackedStringArray" />
 			<description>
-				Virtual method to be overridden by the user. Called for each exported file, providing arguments that can be used to identify the file. [param path] is the path of the file, [param type] is the [Resource] represented by the file (e.g. [PackedScene]) and [param features] is the list of features for the export.
+				Virtual method to be overridden by the user. Called for each exported file, except for imported resources (resources that have an associated [code].import[/code] file). The arguments can be used to identify the file. [param path] is the path of the file, [param type] is the [Resource] represented by the file (e.g. [PackedScene]), and [param features] is the list of features for the export.
 				Calling [method skip] inside this callback will make the file not included in the export.
+				Use [method _customize_resource] for imported resources that are not handled by this function.
 			</description>
 		</method>
 		<method name="_get_android_dependencies" qualifiers="virtual const">

@@ -270,6 +270,7 @@ public:
 		state->set_last_modified_time(p_time);
 	}
 
+	static HashSet<StringName> get_scene_groups(const String &p_path);
 #endif
 	Ref<SceneState> get_state() const;
 

@@ -326,8 +326,8 @@ void EditorFileSystem::_scan_filesystem() {
 					FileCache fc;
 					fc.type = split[1];
 					if (fc.type.contains("/")) {
-						fc.type = fc.type.get_slice("/", 0);
-						fc.resource_script_class = fc.type.get_slice("/", 1);
+						fc.type = split[1].get_slice("/", 0);
+						fc.resource_script_class = split[1].get_slice("/", 1);
 					}
 					fc.uid = split[2].to_int();
 					fc.modification_time = split[3].to_int();
@@ -1891,7 +1891,7 @@ void EditorFileSystem::_update_scene_groups() {
 			continue;
 		}
 
-		const HashSet<StringName> scene_groups = _get_scene_groups(path);
+		const HashSet<StringName> scene_groups = PackedScene::get_scene_groups(path);
 		if (!scene_groups.is_empty()) {
 			ProjectSettings::get_singleton()->add_scene_groups_cache(path, scene_groups);
 		}
@@ -1933,12 +1933,6 @@ void EditorFileSystem::_get_all_scenes(EditorFileSystemDirectory *p_dir, HashSet
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 		_get_all_scenes(p_dir->get_subdir(i), r_list);
 	}
-}
-
-HashSet<StringName> EditorFileSystem::_get_scene_groups(const String &p_path) {
-	Ref<PackedScene> packed_scene = ResourceLoader::load(p_path);
-	ERR_FAIL_COND_V(packed_scene.is_null(), HashSet<StringName>());
-	return packed_scene->get_state()->get_all_groups();
 }
 
 void EditorFileSystem::update_file(const String &p_file) {
@@ -2072,7 +2066,6 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 	}
 
 	if (updated) {
-		_process_update_pending();
 		if (update_files_icon_cache) {
 			_update_files_icon_path();
 		} else {
@@ -2080,7 +2073,10 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 				_update_file_icon_path(fi);
 			}
 		}
-		call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
+		if (!is_scanning()) {
+			_process_update_pending();
+			call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
+		}
 	}
 }
 

@@ -783,7 +783,9 @@ Rect2 GraphEdit::_compute_shrinked_frame_rect(const GraphFrame *p_frame) {
 		return Rect2(p_frame->get_position_offset(), Size2());
 	}
 
-	min_point -= Size2(autoshrink_margin, autoshrink_margin);
+	const Size2 titlebar_size = p_frame->get_titlebar_size();
+
+	min_point -= Size2(autoshrink_margin, MAX(autoshrink_margin, titlebar_size.y));
 	max_point += Size2(autoshrink_margin, autoshrink_margin);
 
 	return Rect2(min_point, max_point - min_point);

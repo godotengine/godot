@@ -52,6 +52,31 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/view_panner.h"
 
+class UVEditDialog : public AcceptDialog {
+	GDCLASS(UVEditDialog, AcceptDialog);
+
+	void shortcut_input(const Ref<InputEvent> &p_event) override {
+		const Ref<InputEventKey> k = p_event;
+		if (k.is_valid() && k->is_pressed()) {
+			bool handled = false;
+
+			if (ED_IS_SHORTCUT("ui_undo", p_event)) {
+				EditorNode::get_singleton()->undo();
+				handled = true;
+			}
+
+			if (ED_IS_SHORTCUT("ui_redo", p_event)) {
+				EditorNode::get_singleton()->redo();
+				handled = true;
+			}
+
+			if (handled) {
+				set_input_as_handled();
+			}
+		}
+	}
+};
+
 Node2D *Polygon2DEditor::_get_node() const {
 	return node;
 }
@@ -1305,9 +1330,10 @@ Polygon2DEditor::Polygon2DEditor() {
 	button_uv->connect(SceneStringName(pressed), callable_mp(this, &Polygon2DEditor::_menu_option).bind(MODE_EDIT_UV));
 
 	uv_mode = UV_MODE_EDIT_POINT;
-	uv_edit = memnew(AcceptDialog);
-	add_child(uv_edit);
+	uv_edit = memnew(UVEditDialog);
 	uv_edit->set_title(TTR("Polygon 2D UV Editor"));
+	uv_edit->set_process_shortcut_input(true);
+	add_child(uv_edit);
 	uv_edit->connect(SceneStringName(confirmed), callable_mp(this, &Polygon2DEditor::_uv_edit_popup_hide));
 	uv_edit->connect("canceled", callable_mp(this, &Polygon2DEditor::_uv_edit_popup_hide));
 
