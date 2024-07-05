@@ -137,6 +137,7 @@ public:
 	int get_display_driver_id() const { return _display_driver_id; }
 
 	virtual Vector<String> get_video_adapter_driver_info() const = 0;
+	virtual bool get_user_prefers_integrated_gpu() const { return false; }
 
 	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, Logger::ErrorType p_type = Logger::ERR_ERROR);
 	void print(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;

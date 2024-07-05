@@ -622,6 +622,54 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 	return info;
 }
 
+bool OS_Windows::get_user_prefers_integrated_gpu() const {
+	// On Windows 10, the preferred GPU configured in Windows Settings is
+	// stored in the registry under the key
+	// `HKEY_CURRENT_USER\SOFTWARE\Microsoft\DirectX\UserGpuPreferences`
+	// with the name being the EXE path. The value is in the form of
+	// `GpuPreference=1;`, with the value being 1 for integrated GPU and 2
+	// for discrete GPU. On Windows 11, there may be more flags, separated
+	// by semicolons.
+
+	WCHAR exe_path[32768];
+	if (GetModuleFileNameW(nullptr, exe_path, sizeof(exe_path) / sizeof(exe_path[0])) >= sizeof(exe_path) / sizeof(exe_path[0])) {
+		// Paths should never be longer than 32767, but just in case.
+		return false;
+	}
+
+	LPCWSTR subkey = L"SOFTWARE\\Microsoft\\DirectX\\UserGpuPreferences";
+	HKEY hkey = nullptr;
+	LSTATUS result = RegOpenKeyExW(HKEY_CURRENT_USER, subkey, 0, KEY_READ, &hkey);
+	if (result != ERROR_SUCCESS) {
+		return false;
+	}
+
+	DWORD size = 0;
+	result = RegGetValueW(hkey, nullptr, exe_path, RRF_RT_REG_SZ, nullptr, nullptr, &size);
+	if (result != ERROR_SUCCESS || size == 0) {
+		RegCloseKey(hkey);
+		return false;
+	}
+
+	Vector<WCHAR> buffer;
+	buffer.resize(size / sizeof(WCHAR));
+	result = RegGetValueW(hkey, nullptr, exe_path, RRF_RT_REG_SZ, nullptr, (LPBYTE)buffer.ptrw(), &size);
+	if (result != ERROR_SUCCESS) {
+		RegCloseKey(hkey);
+		return false;
+	}
+
+	RegCloseKey(hkey);
+	const String flags = String::utf16((const char16_t *)buffer.ptr(), size / sizeof(WCHAR));
+
+	for (const String &flag : flags.split(";", false)) {
+		if (flag == "GpuPreference=1") {
+			return true;
+		}
+	}
+	return false;
+}
+
 OS::DateTime OS_Windows::get_datetime(bool p_utc) const {
 	SYSTEMTIME systemtime;
 	if (p_utc) {

@@ -82,11 +82,12 @@ static String _get_device_type_name(const RenderingContextDriver::Device &p_devi
 }
 
 static uint32_t _get_device_type_score(const RenderingContextDriver::Device &p_device) {
+	static const bool prefer_integrated = OS::get_singleton()->get_user_prefers_integrated_gpu();
 	switch (p_device.type) {
 		case RenderingContextDriver::DEVICE_TYPE_INTEGRATED_GPU:
-			return 4;
+			return prefer_integrated ? 5 : 4;
 		case RenderingContextDriver::DEVICE_TYPE_DISCRETE_GPU:
-			return 5;
+			return prefer_integrated ? 4 : 5;
 		case RenderingContextDriver::DEVICE_TYPE_VIRTUAL_GPU:
 			return 3;
 		case RenderingContextDriver::DEVICE_TYPE_CPU:
