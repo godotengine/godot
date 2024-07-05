@@ -31,6 +31,14 @@
 #include "gltf_accessor.h"
 
 void GLTFAccessor::_bind_methods() {
+	BIND_ENUM_CONSTANT(TYPE_SCALAR);
+	BIND_ENUM_CONSTANT(TYPE_VEC2);
+	BIND_ENUM_CONSTANT(TYPE_VEC3);
+	BIND_ENUM_CONSTANT(TYPE_VEC4);
+	BIND_ENUM_CONSTANT(TYPE_MAT2);
+	BIND_ENUM_CONSTANT(TYPE_MAT3);
+	BIND_ENUM_CONSTANT(TYPE_MAT4);
+
 	ClassDB::bind_method(D_METHOD("get_buffer_view"), &GLTFAccessor::get_buffer_view);
 	ClassDB::bind_method(D_METHOD("set_buffer_view", "buffer_view"), &GLTFAccessor::set_buffer_view);
 	ClassDB::bind_method(D_METHOD("get_byte_offset"), &GLTFAccessor::get_byte_offset);
@@ -43,8 +51,8 @@ void GLTFAccessor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_count", "count"), &GLTFAccessor::set_count);
 	ClassDB::bind_method(D_METHOD("get_accessor_type"), &GLTFAccessor::get_accessor_type);
 	ClassDB::bind_method(D_METHOD("set_accessor_type", "accessor_type"), &GLTFAccessor::set_accessor_type);
-	ClassDB::bind_method(D_METHOD("get_type"), &GLTFAccessor::get_accessor_type);
-	ClassDB::bind_method(D_METHOD("set_type", "type"), &GLTFAccessor::set_accessor_type);
+	ClassDB::bind_method(D_METHOD("get_type"), &GLTFAccessor::get_type);
+	ClassDB::bind_method(D_METHOD("set_type", "type"), &GLTFAccessor::set_type);
 	ClassDB::bind_method(D_METHOD("get_min"), &GLTFAccessor::get_min);
 	ClassDB::bind_method(D_METHOD("set_min", "min"), &GLTFAccessor::set_min);
 	ClassDB::bind_method(D_METHOD("get_max"), &GLTFAccessor::get_max);
@@ -67,8 +75,8 @@ void GLTFAccessor::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "component_type"), "set_component_type", "get_component_type"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalized"), "set_normalized", "get_normalized"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "count"), "set_count", "get_count"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "accessor_type"), "set_accessor_type", "get_accessor_type"); // GLTFAccessorType
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type"); // Deprecated, GLTFAccessorType
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "accessor_type"), "set_accessor_type", "get_accessor_type"); // GLTFAccessor::GLTFAccessorType
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_type", "get_type"); // Deprecated, int for GLTFAccessor::GLTFAccessorType
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT64_ARRAY, "min"), "set_min", "get_min"); // Vector<real_t>
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT64_ARRAY, "max"), "set_max", "get_max"); // Vector<real_t>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sparse_count"), "set_sparse_count", "get_sparse_count"); // int
@@ -119,11 +127,19 @@ void GLTFAccessor::set_count(int p_count) {
 	count = p_count;
 }
 
-int GLTFAccessor::get_accessor_type() {
+GLTFAccessor::GLTFAccessorType GLTFAccessor::get_accessor_type() {
+	return accessor_type;
+}
+
+void GLTFAccessor::set_accessor_type(GLTFAccessorType p_accessor_type) {
+	accessor_type = p_accessor_type;
+}
+
+int GLTFAccessor::get_type() {
 	return (int)accessor_type;
 }
 
-void GLTFAccessor::set_accessor_type(int p_accessor_type) {
+void GLTFAccessor::set_type(int p_accessor_type) {
 	accessor_type = (GLTFAccessorType)p_accessor_type; // TODO: Register enum
 }
 

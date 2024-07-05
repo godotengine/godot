@@ -1643,21 +1643,14 @@ void TextEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
-			if (is_drag_successful()) {
-				if (selection_drag_attempt) {
-					// Dropped elsewhere.
-					if (is_editable() && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
-						delete_selection();
-					} else if (deselect_on_focus_loss_enabled) {
-						deselect();
-					}
+			remove_drag_caret();
+			if (selection_drag_attempt && is_drag_successful()) {
+				// Dropped elsewhere.
+				if (is_editable() && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+					delete_selection();
+				} else if (deselect_on_focus_loss_enabled) {
+					deselect();
 				}
-			}
-			if (drag_caret_index >= 0) {
-				if (drag_caret_index < carets.size()) {
-					remove_caret(drag_caret_index);
-				}
-				drag_caret_index = -1;
 			}
 			selection_drag_attempt = false;
 			drag_action = false;
@@ -4603,6 +4596,15 @@ void TextEdit::remove_caret(int p_caret) {
 		} else if (p_caret < drag_caret_index) {
 			drag_caret_index -= 1;
 		}
+	}
+}
+
+void TextEdit::remove_drag_caret() {
+	if (drag_caret_index >= 0) {
+		if (drag_caret_index < carets.size()) {
+			remove_caret(drag_caret_index);
+		}
+		drag_caret_index = -1;
 	}
 }
 
