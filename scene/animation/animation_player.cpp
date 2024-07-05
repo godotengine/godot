@@ -149,7 +149,7 @@ void AnimationPlayer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
-				set_active(true);
+				set_active(active);
 				play(autoplay);
 				_check_immediately_after_start();
 			}
