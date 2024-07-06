@@ -200,6 +200,7 @@ PackedSceneEditorTranslationParserPlugin::PackedSceneEditorTranslationParserPlug
 	lookup_properties.insert("title");
 	lookup_properties.insert("filters");
 	lookup_properties.insert("script");
+	lookup_properties.insert("item_*/text");
 
 	// Exception list (to prevent false positives).
 	exception_list.insert("LineEdit", { "text" });

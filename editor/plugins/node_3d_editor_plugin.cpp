@@ -325,11 +325,11 @@ void ViewportRotationControl::_notification(int p_what) {
 }
 
 void ViewportRotationControl::_draw() {
-	const Vector2i center = get_size() / 2.0;
+	const Vector2 center = get_size() / 2.0;
 	const real_t radius = get_size().x / 2.0;
 
 	if (focused_axis > -2 || orbiting_index != -1) {
-		draw_circle(center, radius, Color(0.5, 0.5, 0.5, 0.25));
+		draw_circle(center, radius, Color(0.5, 0.5, 0.5, 0.25), true, -1.0, true);
 	}
 
 	Vector<Axis2D> axis_to_draw;
@@ -345,34 +345,42 @@ void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 	const int direction = p_axis.axis % 3;
 
 	const Color axis_color = axis_colors[direction];
-	const double alpha = focused ? 1.0 : ((p_axis.z_axis + 1.0) / 2.0) * 0.5 + 0.5;
-	const Color c = focused ? Color(0.9, 0.9, 0.9) : Color(axis_color, alpha);
+	const double min_alpha = 0.35;
+	const double alpha = focused ? 1.0 : Math::remap((p_axis.z_axis + 1.0) / 2.0, 0, 0.5, min_alpha, 1.0);
+	const Color c = focused ? Color(axis_color.lightened(0.75), 1.0) : Color(axis_color, alpha);
 
 	if (positive) {
 		// Draw axis lines for the positive axes.
-		const Vector2i center = get_size() / 2.0;
-		draw_line(center, p_axis.screen_point, c, 1.5 * EDSCALE);
+		const Vector2 center = get_size() / 2.0;
+		const Vector2 diff = p_axis.screen_point - center;
+		const float line_length = MAX(diff.length() - AXIS_CIRCLE_RADIUS - 0.5 * EDSCALE, 0);
 
-		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS, c);
+		draw_line(center + diff.limit_length(0.5 * EDSCALE), center + diff.limit_length(line_length), c, 1.5 * EDSCALE, true);
+
+		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS, c, true, -1.0, true);
 
 		// Draw the axis letter for the positive axes.
 		const String axis_name = direction == 0 ? "X" : (direction == 1 ? "Y" : "Z");
-		draw_char(get_theme_font(SNAME("rotation_control"), EditorStringName(EditorFonts)), p_axis.screen_point + Vector2i(Math::round(-4.0 * EDSCALE), Math::round(5.0 * EDSCALE)), axis_name, get_theme_font_size(SNAME("rotation_control_size"), EditorStringName(EditorFonts)), Color(0.0, 0.0, 0.0, alpha));
+		const Ref<Font> &font = get_theme_font(SNAME("rotation_control"), EditorStringName(EditorFonts));
+		const int font_size = get_theme_font_size(SNAME("rotation_control_size"), EditorStringName(EditorFonts));
+		const Size2 char_size = font->get_char_size(axis_name[0], font_size);
+		const Vector2 char_offset = Vector2(-char_size.width / 2.0, char_size.height * 0.25);
+		draw_char(font, p_axis.screen_point + char_offset, axis_name, font_size, Color(0.0, 0.0, 0.0, alpha * 0.6));
 	} else {
 		// Draw an outline around the negative axes.
-		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS, c);
-		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS * 0.8, c.darkened(0.4));
+		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS, c, true, -1.0, true);
+		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS * 0.8, c.darkened(0.4), true, -1.0, true);
 	}
 }
 
 void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
-	const Vector2i center = get_size() / 2.0;
+	const Vector2 center = get_size() / 2.0;
 	const real_t radius = get_size().x / 2.0 - AXIS_CIRCLE_RADIUS - 2.0 * EDSCALE;
 	const Basis camera_basis = viewport->to_camera_transform(viewport->cursor).get_basis().inverse();
 
 	for (int i = 0; i < 3; ++i) {
 		Vector3 axis_3d = camera_basis.get_column(i);
-		Vector2i axis_vector = Vector2(axis_3d.x, -axis_3d.y) * radius;
+		Vector2 axis_vector = Vector2(axis_3d.x, -axis_3d.y) * radius;
 
 		if (Math::abs(axis_3d.z) <= 1.0) {
 			Axis2D pos_axis;
@@ -2895,8 +2903,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 			}
 
 			bool show_info = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
-			if (show_info != info_label->is_visible()) {
-				info_label->set_visible(show_info);
+			if (show_info != info_panel->is_visible()) {
+				info_panel->set_visible(show_info);
 			}
 
 			Camera3D *current_camera;
@@ -3079,7 +3087,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			frame_time_gradient->set_color(1, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			frame_time_gradient->set_color(2, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
-			info_label->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
+			info_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
 
 			frame_time_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
 			// Set a minimum width to prevent the width from changing all the time
@@ -5374,15 +5382,19 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	bottom_center_vbox->set_v_grow_direction(GROW_DIRECTION_BEGIN);
 	surface->add_child(bottom_center_vbox);
 
+	info_panel = memnew(PanelContainer);
+	info_panel->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -90 * EDSCALE);
+	info_panel->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -90 * EDSCALE);
+	info_panel->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -10 * EDSCALE);
+	info_panel->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -10 * EDSCALE);
+	info_panel->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+	info_panel->set_v_grow_direction(GROW_DIRECTION_BEGIN);
+	info_panel->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	surface->add_child(info_panel);
+	info_panel->hide();
+
 	info_label = memnew(Label);
-	info_label->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -90 * EDSCALE);
-	info_label->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -90 * EDSCALE);
-	info_label->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -10 * EDSCALE);
-	info_label->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -10 * EDSCALE);
-	info_label->set_h_grow_direction(GROW_DIRECTION_BEGIN);
-	info_label->set_v_grow_direction(GROW_DIRECTION_BEGIN);
-	surface->add_child(info_label);
-	info_label->hide();
+	info_panel->add_child(info_label);
 
 	cinema_label = memnew(Label);
 	cinema_label->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
@@ -5432,6 +5444,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	frame_time_gradient->add_point(0.5, Color());
 
 	top_right_vbox = memnew(VBoxContainer);
+	top_right_vbox->add_theme_constant_override("separation", 10.0 * EDSCALE);
 	top_right_vbox->set_anchors_and_offsets_preset(PRESET_TOP_RIGHT, PRESET_MODE_MINSIZE, 10.0 * EDSCALE);
 	top_right_vbox->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 
@@ -5466,6 +5479,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	top_right_vbox->add_child(rotation_control);
 
 	frame_time_panel = memnew(PanelContainer);
+	frame_time_panel->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	top_right_vbox->add_child(frame_time_panel);
 	frame_time_panel->hide();
 
@@ -8635,7 +8649,8 @@ Node3DEditor::Node3DEditor() {
 	ED_SHORTCUT("spatial_editor/insert_anim_key", TTR("Insert Animation Key"), Key::K);
 	ED_SHORTCUT("spatial_editor/focus_origin", TTR("Focus Origin"), Key::O);
 	ED_SHORTCUT("spatial_editor/focus_selection", TTR("Focus Selection"), Key::F);
-	ED_SHORTCUT("spatial_editor/align_transform_with_view", TTR("Align Transform with View"), KeyModifierMask::ALT + KeyModifierMask::CMD_OR_CTRL + Key::M);
+	ED_SHORTCUT_ARRAY("spatial_editor/align_transform_with_view", TTR("Align Transform with View"),
+			{ int32_t(KeyModifierMask::ALT | KeyModifierMask::CMD_OR_CTRL | Key::KP_0), int32_t(KeyModifierMask::ALT | KeyModifierMask::CMD_OR_CTRL | Key::M) });
 	ED_SHORTCUT("spatial_editor/align_rotation_with_view", TTR("Align Rotation with View"), KeyModifierMask::ALT + KeyModifierMask::CMD_OR_CTRL + Key::F);
 	ED_SHORTCUT("spatial_editor/freelook_toggle", TTR("Toggle Freelook"), KeyModifierMask::SHIFT + Key::F);
 	ED_SHORTCUT("spatial_editor/decrease_fov", TTR("Decrease Field of View"), KeyModifierMask::CMD_OR_CTRL + Key::EQUAL); // Usually direct access key for `KEY_PLUS`.

@@ -102,6 +102,10 @@ Error RenderingContextDriverVulkan::_initialize_instance_extensions() {
 	// This extension allows us to use the properties2 features to query additional device capabilities.
 	_register_requested_instance_extension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, false);
 
+#if defined(USE_VOLK) && (defined(MACOS_ENABLED) || defined(IOS_ENABLED))
+	_register_requested_instance_extension(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, true);
+#endif
+
 	// Only enable debug utils in verbose mode or DEV_ENABLED.
 	// End users would get spammed with messages of varying verbosity due to the
 	// mess that thirdparty layers/extensions and drivers seem to leave in their
@@ -360,6 +364,11 @@ Error RenderingContextDriverVulkan::_initialize_instance() {
 
 	VkInstanceCreateInfo instance_info = {};
 	instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+
+#if defined(USE_VOLK) && (defined(MACOS_ENABLED) || defined(IOS_ENABLED))
+	instance_info.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+#endif
+
 	instance_info.pApplicationInfo = &app_info;
 	instance_info.enabledExtensionCount = enabled_extension_names.size();
 	instance_info.ppEnabledExtensionNames = enabled_extension_names.ptr();

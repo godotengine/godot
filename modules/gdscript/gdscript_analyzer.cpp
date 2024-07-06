@@ -2663,6 +2663,44 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 
 	reduce_expression(p_assignment->assignee);
 
+#ifdef DEBUG_ENABLED
+	{
+		bool is_subscript = false;
+		GDScriptParser::ExpressionNode *base = p_assignment->assignee;
+		while (base && base->type == GDScriptParser::Node::SUBSCRIPT) {
+			is_subscript = true;
+			base = static_cast<GDScriptParser::SubscriptNode *>(base)->base;
+		}
+		if (base && base->type == GDScriptParser::Node::IDENTIFIER) {
+			GDScriptParser::IdentifierNode *id = static_cast<GDScriptParser::IdentifierNode *>(base);
+			if (current_lambda && current_lambda->captures_indices.has(id->name)) {
+				bool need_warn = false;
+				if (is_subscript) {
+					const GDScriptParser::DataType &id_type = id->datatype;
+					if (id_type.is_hard_type()) {
+						switch (id_type.kind) {
+							case GDScriptParser::DataType::BUILTIN:
+								// TODO: Change `Variant::is_type_shared()` to include packed arrays?
+								need_warn = !Variant::is_type_shared(id_type.builtin_type) && id_type.builtin_type < Variant::PACKED_BYTE_ARRAY;
+								break;
+							case GDScriptParser::DataType::ENUM:
+								need_warn = true;
+								break;
+							default:
+								break;
+						}
+					}
+				} else {
+					need_warn = true;
+				}
+				if (need_warn) {
+					parser->push_warning(p_assignment, GDScriptWarning::CONFUSABLE_CAPTURE_REASSIGNMENT, id->name);
+				}
+			}
+		}
+	}
+#endif
+
 	if (p_assignment->assigned_value == nullptr || p_assignment->assignee == nullptr) {
 		return;
 	}
@@ -4299,7 +4337,8 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 
 			// Must load GDScript separately to permit cyclic references
 			// as ResourceLoader::load() detects and rejects those.
-			if (ResourceLoader::get_resource_type(p_preload->resolved_path) == "GDScript") {
+			const String &res_type = ResourceLoader::get_resource_type(p_preload->resolved_path);
+			if (res_type == "GDScript") {
 				Error err = OK;
 				Ref<GDScript> res = GDScriptCache::get_shallow_script(p_preload->resolved_path, err, parser->script_path);
 				p_preload->resource = res;
@@ -4307,7 +4346,11 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 					push_error(vformat(R"(Could not preload resource script "%s".)", p_preload->resolved_path), p_preload->path);
 				}
 			} else {
-				p_preload->resource = ResourceLoader::load(p_preload->resolved_path);
+				Error err = OK;
+				p_preload->resource = ResourceLoader::load(p_preload->resolved_path, res_type, ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+				if (err == ERR_BUSY) {
+					p_preload->resource = ResourceLoader::ensure_resource_ref_override_for_outer_load(p_preload->resolved_path, res_type);
+				}
 				if (p_preload->resource.is_null()) {
 					push_error(vformat(R"(Could not preload resource file "%s".)", p_preload->resolved_path), p_preload->path);
 				}
@@ -5525,6 +5568,9 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 		case GDScriptParser::DataType::SCRIPT:
 			if (p_target.kind == GDScriptParser::DataType::CLASS) {
 				// A script type cannot be a subtype of a GDScript class.
+				return false;
+			}
+			if (p_source.script_type.is_null()) {
 				return false;
 			}
 			if (p_source.is_meta_type) {

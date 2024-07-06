@@ -142,8 +142,9 @@ def detect_build_env_arch():
         if os.getenv("VCTOOLSINSTALLDIR"):
             host_path_index = os.getenv("PATH").upper().find(os.getenv("VCTOOLSINSTALLDIR").upper() + "BIN\\HOST")
             if host_path_index > -1:
-                first_path_arch = os.getenv("PATH").split(";")[0].rsplit("\\", 1)[-1].lower()
-                return msvc_target_aliases[first_path_arch]
+                first_path_arch = os.getenv("PATH")[host_path_index:].split(";")[0].rsplit("\\", 1)[-1].lower()
+                if first_path_arch in msvc_target_aliases.keys():
+                    return msvc_target_aliases[first_path_arch]
 
     msys_target_aliases = {
         "mingw32": "x86_32",
@@ -393,7 +394,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
 
         # Ensure we have a location to write captured output to, in case of false positives.
         capture_path = methods.base_folder_path + "platform/windows/msvc_capture.log"
-        with open(capture_path, "wt"):
+        with open(capture_path, "wt", encoding="utf-8"):
             pass
 
         old_spawn = env["SPAWN"]
@@ -417,7 +418,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
             ret = old_spawn(sh, escape, cmd, args, env)
 
             try:
-                with open(tmp_stdout_name, encoding="oem", errors="replace") as tmp_stdout:
+                with open(tmp_stdout_name, "r", encoding=sys.stdout.encoding, errors="replace") as tmp_stdout:
                     lines = tmp_stdout.read().splitlines()
                 os.remove(tmp_stdout_name)
             except OSError:
@@ -436,7 +437,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
                 if not caught and (is_cl and re_cl_capture.match(line)) or (not is_cl and re_link_capture.match(line)):
                     caught = True
                     try:
-                        with open(capture_path, "a") as log:
+                        with open(capture_path, "a", encoding=sys.stdout.encoding) as log:
                             log.write(line + "\n")
                     except OSError:
                         print_warning(f'Failed to log captured line: "{line}".')
@@ -498,6 +499,14 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     env.AppendUnique(CPPDEFINES=["NOMINMAX"])  # disable bogus min/max WinDef.h macros
     if env["arch"] == "x86_64":
         env.AppendUnique(CPPDEFINES=["_WIN64"])
+
+    # Sanitizers
+    prebuilt_lib_extra_suffix = ""
+    if env["use_asan"]:
+        env.extra_suffix += ".san"
+        prebuilt_lib_extra_suffix = ".san"
+        env.Append(CCFLAGS=["/fsanitize=address"])
+        env.Append(LINKFLAGS=["/INFERASANLIBS"])
 
     ## Libs
 
@@ -566,7 +575,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
             LIBS += ["WinPixEventRuntime"]
 
         env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
-        LIBS += ["libNIR.windows." + env["arch"]]
+        LIBS += ["libNIR.windows." + env["arch"] + prebuilt_lib_extra_suffix]
 
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
@@ -574,9 +583,9 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
             env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
             env.Append(LIBPATH=[env["angle_libs"]])
             LIBS += [
-                "libANGLE.windows." + env["arch"],
-                "libEGL.windows." + env["arch"],
-                "libGLES.windows." + env["arch"],
+                "libANGLE.windows." + env["arch"] + prebuilt_lib_extra_suffix,
+                "libEGL.windows." + env["arch"] + prebuilt_lib_extra_suffix,
+                "libGLES.windows." + env["arch"] + prebuilt_lib_extra_suffix,
             ]
             LIBS += ["dxgi", "d3d9", "d3d11"]
         env.Prepend(CPPPATH=["#thirdparty/angle/include"])
@@ -611,12 +620,6 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     if vcvars_msvc_config:
         env.Prepend(CPPPATH=[p for p in str(os.getenv("INCLUDE")).split(";")])
         env.Append(LIBPATH=[p for p in str(os.getenv("LIB")).split(";")])
-
-    # Sanitizers
-    if env["use_asan"]:
-        env.extra_suffix += ".san"
-        env.Append(LINKFLAGS=["/INFERASANLIBS"])
-        env.Append(CCFLAGS=["/fsanitize=address"])
 
     # Incremental linking fix
     env["BUILDERS"]["ProgramOriginal"] = env["BUILDERS"]["Program"]

@@ -174,6 +174,9 @@ private:
 		TextServer::Direction direction = TextServer::DIRECTION_AUTO;
 		BitField<TextServer::LineBreakFlag> brk_flags = TextServer::BREAK_MANDATORY;
 		bool draw_control_chars = false;
+		String custom_word_separators;
+		bool use_default_word_separators = true;
+		bool use_custom_word_separators = false;
 
 		int line_height = -1;
 		int max_width = -1;
@@ -200,6 +203,18 @@ private:
 		int get_line_height() const;
 		int get_line_width(int p_line, int p_wrap_index = -1) const;
 		int get_max_width() const;
+
+		void set_use_default_word_separators(bool p_enabled);
+		bool is_default_word_separators_enabled() const;
+
+		void set_use_custom_word_separators(bool p_enabled);
+		bool is_custom_word_separators_enabled() const;
+
+		void set_word_separators(const String &p_separators);
+		void set_custom_word_separators(const String &p_separators);
+		String get_enabled_word_separators() const;
+		String get_custom_word_separators() const;
+		String get_default_word_separators() const;
 
 		void set_width(float p_width);
 		float get_width() const;
@@ -866,6 +881,7 @@ public:
 
 	int add_caret(int p_line, int p_column);
 	void remove_caret(int p_caret);
+	void remove_drag_caret();
 	void remove_secondary_carets();
 	int get_caret_count() const;
 	void add_caret_at_carets(bool p_below);
@@ -1067,6 +1083,19 @@ public:
 	bool is_drawing_spaces() const;
 
 	Color get_font_color() const;
+
+	/* Behavior */
+
+	String get_default_word_separators() const;
+
+	void set_use_default_word_separators(bool p_enabled);
+	bool is_default_word_separators_enabled() const;
+
+	void set_custom_word_separators(const String &p_separators);
+	void set_use_custom_word_separators(bool p_enabled);
+	bool is_custom_word_separators_enabled() const;
+
+	String get_custom_word_separators() const;
 
 	/* Deprecated. */
 #ifndef DISABLE_DEPRECATED

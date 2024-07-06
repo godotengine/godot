@@ -72,7 +72,7 @@
 
 #if !defined(IOS_ENABLED) && !defined(WEB_ENABLED)
 // We include EGL below to get debug callback on GLES2 platforms,
-// but EGL is not available on iOS.
+// but EGL is not available on iOS or the web.
 #define CAN_DEBUG
 #endif
 

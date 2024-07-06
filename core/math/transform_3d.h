@@ -36,7 +36,7 @@
 #include "core/math/plane.h"
 #include "core/templates/vector.h"
 
-struct _NO_DISCARD_ Transform3D {
+struct [[nodiscard]] Transform3D {
 	Basis basis;
 	Vector3 origin;
 

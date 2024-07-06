@@ -267,7 +267,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 			}
 
 			if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-				ofs = ofs.round();
+				ofs = (ofs + Point2(0.5, 0.5)).floor();
 			}
 
 			Rect2 dst_rect(ofs, s);
@@ -473,9 +473,10 @@ void AnimatedSprite2D::play(const StringName &p_name, float p_custom_scale, bool
 	playing = true;
 	custom_speed_scale = p_custom_scale;
 
-	int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
 	if (name != animation) {
 		animation = name;
+		int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
+
 		if (p_from_end) {
 			set_frame_and_progress(end_frame, 1.0);
 		} else {
@@ -483,7 +484,9 @@ void AnimatedSprite2D::play(const StringName &p_name, float p_custom_scale, bool
 		}
 		emit_signal(SceneStringName(animation_changed));
 	} else {
+		int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
 		bool is_backward = signbit(speed_scale * custom_speed_scale);
+
 		if (p_from_end && is_backward && frame == 0 && frame_progress <= 0.0) {
 			set_frame_and_progress(end_frame, 1.0);
 		} else if (!p_from_end && !is_backward && frame == end_frame && frame_progress >= 1.0) {

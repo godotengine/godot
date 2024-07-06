@@ -443,7 +443,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	p_theme->set_font("rulers", EditorStringName(EditorFonts), default_fc);
 
 	// Rotation widget font
-	p_theme->set_font_size("rotation_control_size", EditorStringName(EditorFonts), 14 * EDSCALE);
+	p_theme->set_font_size("rotation_control_size", EditorStringName(EditorFonts), 13 * EDSCALE);
 	p_theme->set_font("rotation_control", EditorStringName(EditorFonts), default_fc);
 
 	// Code font

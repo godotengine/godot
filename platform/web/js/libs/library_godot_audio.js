@@ -142,7 +142,7 @@ class Sample {
 	 * @returns {void}
 	 */
 	clear() {
-		this.audioBuffer = null;
+		this.setAudioBuffer(null);
 		GodotAudio.Sample.delete(this.id);
 	}
 
@@ -432,7 +432,7 @@ class SampleNode {
 		/** @type {number} */
 		this._playbackRate = 44100;
 		/** @type {LoopMode} */
-		this.loopMode = 'disabled';
+		this.loopMode = options.loopMode ?? this.getSample().loopMode ?? 'disabled';
 		/** @type {number} */
 		this._pitchScale = 1;
 		/** @type {number} */
@@ -445,7 +445,6 @@ class SampleNode {
 		this._onended = null;
 
 		this.setPlaybackRate(options.playbackRate ?? 44100);
-		this.loopMode = options.loopMode ?? this.getSample().loopMode ?? 'disabled';
 		this._source.buffer = this.getSample().getAudioBuffer();
 
 		this._addEndedListener();
@@ -777,8 +776,7 @@ class Bus {
 	 */
 	static move(fromIndex, toIndex) {
 		const movedBus = GodotAudio.Bus.getBus(fromIndex);
-		let buses = GodotAudio.buses;
-		buses = buses.filter((_, i) => i !== fromIndex);
+		const buses = GodotAudio.buses.filter((_, i) => i !== fromIndex);
 		// Inserts at index.
 		buses.splice(toIndex - 1, 0, movedBus);
 		GodotAudio.buses = buses;
@@ -1369,7 +1367,7 @@ const _GodotAudio = {
 		 */
 		set_sample_bus_volume_db: function (busIndex, volumeDb) {
 			const bus = GodotAudio.Bus.getBus(busIndex);
-			bus.volumeDb = volumeDb;
+			bus.setVolumeDb(volumeDb);
 		},
 
 		/**

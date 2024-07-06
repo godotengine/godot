@@ -77,12 +77,12 @@ void SceneTreeDock::_quick_open() {
 
 void SceneTreeDock::_inspect_hovered_node() {
 	select_node_hovered_at_end_of_drag = true;
-	if (tree_item_inspected != nullptr) {
-		tree_item_inspected->clear_custom_color(0);
-	}
 	Tree *tree = scene_tree->get_scene_tree();
 	TreeItem *item = tree->get_item_with_metadata(node_hovered_now->get_path());
 	if (item) {
+		if (tree_item_inspected) {
+			tree_item_inspected->clear_custom_color(0);
+		}
 		tree_item_inspected = item;
 		tree_item_inspected->set_custom_color(0, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 	}
@@ -133,8 +133,9 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (mb->is_released()) {
-			if (tree_item_inspected != nullptr) {
+			if (tree_item_inspected) {
 				tree_item_inspected->clear_custom_color(0);
+				tree_item_inspected = nullptr;
 			}
 			_reset_hovering_timer();
 		}
@@ -4495,6 +4496,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	scene_tree->set_v_size_flags(SIZE_EXPAND | SIZE_FILL);
 	scene_tree->connect("rmb_pressed", callable_mp(this, &SceneTreeDock::_tree_rmb));
 
+	scene_tree->connect("node_selected", callable_mp(this, &SceneTreeDock::_node_selected), CONNECT_DEFERRED);
 	scene_tree->connect("node_renamed", callable_mp(this, &SceneTreeDock::_node_renamed), CONNECT_DEFERRED);
 	scene_tree->connect("node_prerename", callable_mp(this, &SceneTreeDock::_node_prerenamed));
 	scene_tree->connect("open", callable_mp(this, &SceneTreeDock::_load_request));

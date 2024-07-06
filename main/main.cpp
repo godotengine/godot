@@ -909,13 +909,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// Benchmark tracking must be done after `OS::get_singleton()->initialize()` as on some
 	// platforms, it's used to set up the time utilities.
-	OS::get_singleton()->benchmark_begin_measure("Startup", "Total");
-	OS::get_singleton()->benchmark_begin_measure("Startup", "Setup");
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Setup");
 
 	engine = memnew(Engine);
 
 	MAIN_PRINT("Main: Initialize CORE");
-	OS::get_singleton()->benchmark_begin_measure("Startup", "Core");
 
 	register_core_types();
 	register_core_driver_types();
@@ -2453,8 +2451,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Thread::release_main_thread(); // If setup2() is called from another thread, that one will become main thread, so preventively release this one.
 	set_current_thread_safe_for_nodes(false);
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Core");
-
 #if defined(STEAMAPI_ENABLED)
 	if (editor || project_manager) {
 		steam_tracker = memnew(SteamTracker);
@@ -2465,7 +2461,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		return setup2();
 	}
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Setup");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
 	return OK;
 
 error:
@@ -2519,7 +2515,7 @@ error:
 	}
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Core");
-	OS::get_singleton()->benchmark_end_measure("Startup", "Setup");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
 
 #if defined(STEAMAPI_ENABLED)
 	if (steam_tracker) {
@@ -2552,7 +2548,9 @@ Error _parse_resource_dummy(void *p_data, VariantParser::Stream *p_stream, Ref<R
 	return OK;
 }
 
-Error Main::setup2() {
+Error Main::setup2(bool p_show_boot_logo) {
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Setup2");
+
 	Thread::make_main_thread(); // Make whatever thread call this the main thread.
 	set_current_thread_safe_for_nodes(true);
 
@@ -2896,12 +2894,6 @@ Error Main::setup2() {
 
 		MAIN_PRINT("Main: Setup Logo");
 
-#if !defined(TOOLS_ENABLED) && defined(WEB_ENABLED)
-		bool show_logo = false;
-#else
-		bool show_logo = true;
-#endif
-
 		if (init_windowed) {
 			//do none..
 		} else if (init_maximized) {
@@ -2913,67 +2905,11 @@ Error Main::setup2() {
 			DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP, true);
 		}
 
-		MAIN_PRINT("Main: Load Boot Image");
-
 		Color clear = GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3));
 		RenderingServer::get_singleton()->set_default_clear_color(clear);
 
-		if (show_logo) { //boot logo!
-			const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
-			const String boot_logo_path = String(GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String())).strip_edges();
-			const bool boot_logo_scale = GLOBAL_DEF_BASIC("application/boot_splash/fullsize", true);
-			const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
-
-			Ref<Image> boot_logo;
-
-			if (boot_logo_image) {
-				if (!boot_logo_path.is_empty()) {
-					boot_logo.instantiate();
-					Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
-					if (load_err) {
-						ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
-					}
-				}
-			} else {
-				// Create a 1×1 transparent image. This will effectively hide the splash image.
-				boot_logo.instantiate();
-				boot_logo->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
-				boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
-			}
-
-			Color boot_bg_color = GLOBAL_GET("application/boot_splash/bg_color");
-
-#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
-			boot_bg_color =
-					GLOBAL_DEF_BASIC("application/boot_splash/bg_color",
-							(editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
-#endif
-			if (boot_logo.is_valid()) {
-				RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale,
-						boot_logo_filter);
-
-			} else {
-#ifndef NO_DEFAULT_BOOT_LOGO
-				MAIN_PRINT("Main: Create bootsplash");
-#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
-				Ref<Image> splash = (editor || project_manager) ? memnew(Image(boot_splash_editor_png)) : memnew(Image(boot_splash_png));
-#else
-				Ref<Image> splash = memnew(Image(boot_splash_png));
-#endif
-
-				MAIN_PRINT("Main: ClearColor");
-				RenderingServer::get_singleton()->set_default_clear_color(boot_bg_color);
-				MAIN_PRINT("Main: Image");
-				RenderingServer::get_singleton()->set_boot_image(splash, boot_bg_color, false);
-#endif
-			}
-
-#if defined(TOOLS_ENABLED) && defined(MACOS_ENABLED)
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ICON) && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
-				Ref<Image> icon = memnew(Image(app_icon_png));
-				DisplayServer::get_singleton()->set_icon(icon);
-			}
-#endif
+		if (p_show_boot_logo) {
+			setup_boot_logo();
 		}
 
 		MAIN_PRINT("Main: Clear Color");
@@ -3003,6 +2939,8 @@ Error Main::setup2() {
 			id->set_emulate_mouse_from_touch(bool(GLOBAL_DEF_BASIC("input_devices/pointing/emulate_mouse_from_touch", true)));
 		}
 
+		GLOBAL_DEF("input_devices/buffering/android/use_accumulated_input", true);
+		GLOBAL_DEF("input_devices/buffering/android/use_input_buffering", true);
 		GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_long_press_as_right_click", false);
 		GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
 		GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
@@ -3211,9 +3149,74 @@ Error Main::setup2() {
 	print_verbose("EDITOR API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_EDITOR)));
 	MAIN_PRINT("Main: Done");
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Setup");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup2");
 
 	return OK;
+}
+
+void Main::setup_boot_logo() {
+	MAIN_PRINT("Main: Load Boot Image");
+
+#if !defined(TOOLS_ENABLED) && defined(WEB_ENABLED)
+	bool show_logo = false;
+#else
+	bool show_logo = true;
+#endif
+
+	if (show_logo) { //boot logo!
+		const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
+		const String boot_logo_path = String(GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String())).strip_edges();
+		const bool boot_logo_scale = GLOBAL_DEF_BASIC("application/boot_splash/fullsize", true);
+		const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
+
+		Ref<Image> boot_logo;
+
+		if (boot_logo_image) {
+			if (!boot_logo_path.is_empty()) {
+				boot_logo.instantiate();
+				Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
+				if (load_err) {
+					ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
+				}
+			}
+		} else {
+			// Create a 1×1 transparent image. This will effectively hide the splash image.
+			boot_logo.instantiate();
+			boot_logo->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
+			boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
+		}
+
+		Color boot_bg_color = GLOBAL_GET("application/boot_splash/bg_color");
+
+#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
+		boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", (editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
+#endif
+		if (boot_logo.is_valid()) {
+			RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale, boot_logo_filter);
+
+		} else {
+#ifndef NO_DEFAULT_BOOT_LOGO
+			MAIN_PRINT("Main: Create bootsplash");
+#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
+			Ref<Image> splash = (editor || project_manager) ? memnew(Image(boot_splash_editor_png)) : memnew(Image(boot_splash_png));
+#else
+			Ref<Image> splash = memnew(Image(boot_splash_png));
+#endif
+
+			MAIN_PRINT("Main: ClearColor");
+			RenderingServer::get_singleton()->set_default_clear_color(boot_bg_color);
+			MAIN_PRINT("Main: Image");
+			RenderingServer::get_singleton()->set_boot_image(splash, boot_bg_color, false);
+#endif
+		}
+
+#if defined(TOOLS_ENABLED) && defined(MACOS_ENABLED)
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ICON) && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
+			Ref<Image> icon = memnew(Image(app_icon_png));
+			DisplayServer::get_singleton()->set_icon(icon);
+		}
+#endif
+	}
 }
 
 String Main::get_rendering_driver_name() {
@@ -3227,6 +3230,8 @@ static MainTimerSync main_timer_sync;
 // and should move on to `OS::run`, and EXIT_FAILURE otherwise for
 // an early exit with that error code.
 int Main::start() {
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Start");
+
 	ERR_FAIL_COND_V(!_start_success, false);
 
 	bool has_icon = false;
@@ -3950,7 +3955,7 @@ int Main::start() {
 		}
 	}
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Total");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Start");
 	OS::get_singleton()->benchmark_dump();
 
 	return EXIT_SUCCESS;
@@ -4218,7 +4223,7 @@ void Main::force_redraw() {
  * The order matters as some of those steps are linked with each other.
  */
 void Main::cleanup(bool p_force) {
-	OS::get_singleton()->benchmark_begin_measure("Shutdown", "Total");
+	OS::get_singleton()->benchmark_begin_measure("Shutdown", "Main::Cleanup");
 	if (!p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
@@ -4376,7 +4381,7 @@ void Main::cleanup(bool p_force) {
 
 	unregister_core_types();
 
-	OS::get_singleton()->benchmark_end_measure("Shutdown", "Total");
+	OS::get_singleton()->benchmark_end_measure("Shutdown", "Main::Cleanup");
 	OS::get_singleton()->benchmark_dump();
 
 	OS::get_singleton()->finalize_core();

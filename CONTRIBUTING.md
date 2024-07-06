@@ -113,10 +113,11 @@ specify the engine area affected by the commit. Some examples:
 - Core: Fix `Object::has_method()` for script static methods
 
 If your commit fixes a reported issue, please include it in the _description_
-of the commit (not in the title) using one of the
+of the PR (not in the title, or the commit message) using one of the
 [GitHub closing keywords](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)
 such as "Fixes #1234". This will cause the issue to be closed automatically if
-the PR is merged.
+the PR is merged. Adding it to the commit message is easier, but adds a lot of
+unnecessary updates in the issue distracting from the thread.
 
 Here's an example of a well-formatted commit message (note how the extended
 description is also manually wrapped at 80 chars for readability):
@@ -131,8 +132,6 @@ unwanted side effects in the physics engine.
 By fixing the regulation system via an added binding to the internal feature,
 this commit now ensures that Godot will not go past the ebullition temperature
 of cooking oil under normal atmospheric conditions.
-
-Fixes #1340.
 ```
 
 **Note:** When using the GitHub online editor or its drag-and-drop

@@ -111,3 +111,11 @@ void operator*=(Point& pt, const Matrix& m)
     pt.x = tx;
     pt.y = ty;
 }
+
+
+Point operator*(const Point& pt, const Matrix& m)
+{
+    auto tx = pt.x * m.e11 + pt.y * m.e12 + m.e13;
+    auto ty = pt.x * m.e21 + pt.y * m.e22 + m.e23;
+    return {tx, ty};
+}

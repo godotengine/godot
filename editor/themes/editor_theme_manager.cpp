@@ -1665,7 +1665,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			// GraphFrame's title Label.
 			p_theme->set_type_variation("GraphFrameTitleLabel", "Label");
 			p_theme->set_stylebox(CoreStringName(normal), "GraphFrameTitleLabel", memnew(StyleBoxEmpty));
-			p_theme->set_font_size(SceneStringName(font_size), "GraphFrameTitleLabel", 22);
+			p_theme->set_font_size(SceneStringName(font_size), "GraphFrameTitleLabel", 22 * EDSCALE);
 			p_theme->set_color(SceneStringName(font_color), "GraphFrameTitleLabel", Color(1, 1, 1));
 			p_theme->set_color("font_shadow_color", "GraphFrameTitleLabel", Color(0, 0, 0, 0));
 			p_theme->set_color("font_outline_color", "GraphFrameTitleLabel", Color(1, 1, 1));
@@ -1680,7 +1680,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		{
 			Ref<StyleBox> vs_reroute_panel_style = make_empty_stylebox();
 			Ref<StyleBox> vs_reroute_titlebar_style = vs_reroute_panel_style->duplicate();
-			vs_reroute_titlebar_style->set_content_margin_all(16);
+			vs_reroute_titlebar_style->set_content_margin_all(16 * EDSCALE);
 			p_theme->set_stylebox(SceneStringName(panel), "VSRerouteNode", vs_reroute_panel_style);
 			p_theme->set_stylebox("panel_selected", "VSRerouteNode", vs_reroute_panel_style);
 			p_theme->set_stylebox("titlebar", "VSRerouteNode", vs_reroute_titlebar_style);
@@ -1817,9 +1817,13 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			main_screen_button_hover->set_content_margin((Side)i, p_config.button_style_hover->get_content_margin((Side)i));
 		}
 		p_theme->set_stylebox(CoreStringName(normal), "MainScreenButton", menu_transparent_style);
+		p_theme->set_stylebox("normal_mirrored", "MainScreenButton", menu_transparent_style);
 		p_theme->set_stylebox(SceneStringName(pressed), "MainScreenButton", menu_transparent_style);
+		p_theme->set_stylebox("pressed_mirrored", "MainScreenButton", menu_transparent_style);
 		p_theme->set_stylebox("hover", "MainScreenButton", main_screen_button_hover);
+		p_theme->set_stylebox("hover_mirrored", "MainScreenButton", main_screen_button_hover);
 		p_theme->set_stylebox("hover_pressed", "MainScreenButton", main_screen_button_hover);
+		p_theme->set_stylebox("hover_pressed_mirrored", "MainScreenButton", main_screen_button_hover);
 
 		p_theme->set_type_variation("MainMenuBar", "FlatMenuButton");
 		p_theme->set_stylebox(CoreStringName(normal), "MainMenuBar", menu_transparent_style);
@@ -2087,6 +2091,9 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 	// Editor inspector.
 	{
+		// Vertical separation between inspector categories and sections.
+		p_theme->set_constant("v_separation", "EditorInspector", 0);
+
 		// EditorProperty.
 
 		Ref<StyleBoxFlat> style_property_bg = p_config.base_style->duplicate();
@@ -2128,6 +2135,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		Ref<StyleBoxFlat> inspector_indent_style = make_flat_stylebox(inspector_indent_color, 2.0 * EDSCALE, 0, 2.0 * EDSCALE, 0);
 		p_theme->set_stylebox("indent_box", "EditorInspectorSection", inspector_indent_style);
 		p_theme->set_constant("indent_size", "EditorInspectorSection", 6.0 * EDSCALE);
+		p_theme->set_constant("h_separation", "EditorInspectorSection", 2.0 * EDSCALE);
 
 		Color prop_category_color = p_config.dark_color_1.lerp(p_config.mono_color, 0.12);
 		Color prop_section_color = p_config.dark_color_1.lerp(p_config.mono_color, 0.09);
@@ -2145,6 +2153,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		Ref<StyleBoxFlat> category_bg = p_config.base_style->duplicate();
 		category_bg->set_bg_color(prop_category_color);
 		category_bg->set_border_color(prop_category_color);
+		category_bg->set_content_margin_all(0);
 		p_theme->set_stylebox("bg", "EditorInspectorCategory", category_bg);
 
 		p_theme->set_constant("inspector_margin", EditorStringName(Editor), 12 * EDSCALE);

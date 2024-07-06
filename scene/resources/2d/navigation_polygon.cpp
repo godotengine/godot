@@ -38,6 +38,7 @@
 
 #ifdef TOOLS_ENABLED
 Rect2 NavigationPolygon::_edit_get_rect() const {
+	RWLockRead read_lock(rwlock);
 	if (rect_cache_dirty) {
 		item_rect = Rect2();
 		bool first = true;
@@ -65,6 +66,7 @@ Rect2 NavigationPolygon::_edit_get_rect() const {
 }
 
 bool NavigationPolygon::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	RWLockRead read_lock(rwlock);
 	for (int i = 0; i < outlines.size(); i++) {
 		const Vector<Vector2> &outline = outlines[i];
 		const int outline_size = outline.size();
@@ -80,6 +82,7 @@ bool NavigationPolygon::_edit_is_selected_on_click(const Point2 &p_point, double
 #endif
 
 void NavigationPolygon::set_vertices(const Vector<Vector2> &p_vertices) {
+	RWLockWrite write_lock(rwlock);
 	{
 		MutexLock lock(navigation_mesh_generation);
 		navigation_mesh.unref();
@@ -89,10 +92,12 @@ void NavigationPolygon::set_vertices(const Vector<Vector2> &p_vertices) {
 }
 
 Vector<Vector2> NavigationPolygon::get_vertices() const {
+	RWLockRead read_lock(rwlock);
 	return vertices;
 }
 
 void NavigationPolygon::_set_polygons(const TypedArray<Vector<int32_t>> &p_array) {
+	RWLockWrite write_lock(rwlock);
 	{
 		MutexLock lock(navigation_mesh_generation);
 		navigation_mesh.unref();
@@ -104,6 +109,7 @@ void NavigationPolygon::_set_polygons(const TypedArray<Vector<int32_t>> &p_array
 }
 
 TypedArray<Vector<int32_t>> NavigationPolygon::_get_polygons() const {
+	RWLockRead read_lock(rwlock);
 	TypedArray<Vector<int32_t>> ret;
 	ret.resize(polygons.size());
 	for (int i = 0; i < ret.size(); i++) {
@@ -114,6 +120,7 @@ TypedArray<Vector<int32_t>> NavigationPolygon::_get_polygons() const {
 }
 
 void NavigationPolygon::_set_outlines(const TypedArray<Vector<Vector2>> &p_array) {
+	RWLockWrite write_lock(rwlock);
 	outlines.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
 		outlines.write[i] = p_array[i];
@@ -122,6 +129,7 @@ void NavigationPolygon::_set_outlines(const TypedArray<Vector<Vector2>> &p_array
 }
 
 TypedArray<Vector<Vector2>> NavigationPolygon::_get_outlines() const {
+	RWLockRead read_lock(rwlock);
 	TypedArray<Vector<Vector2>> ret;
 	ret.resize(outlines.size());
 	for (int i = 0; i < ret.size(); i++) {
@@ -132,6 +140,7 @@ TypedArray<Vector<Vector2>> NavigationPolygon::_get_outlines() const {
 }
 
 void NavigationPolygon::add_polygon(const Vector<int> &p_polygon) {
+	RWLockWrite write_lock(rwlock);
 	Polygon polygon;
 	polygon.indices = p_polygon;
 	polygons.push_back(polygon);
@@ -142,20 +151,24 @@ void NavigationPolygon::add_polygon(const Vector<int> &p_polygon) {
 }
 
 void NavigationPolygon::add_outline_at_index(const Vector<Vector2> &p_outline, int p_index) {
+	RWLockWrite write_lock(rwlock);
 	outlines.insert(p_index, p_outline);
 	rect_cache_dirty = true;
 }
 
 int NavigationPolygon::get_polygon_count() const {
+	RWLockRead read_lock(rwlock);
 	return polygons.size();
 }
 
 Vector<int> NavigationPolygon::get_polygon(int p_idx) {
+	RWLockRead read_lock(rwlock);
 	ERR_FAIL_INDEX_V(p_idx, polygons.size(), Vector<int>());
 	return polygons[p_idx].indices;
 }
 
 void NavigationPolygon::clear_polygons() {
+	RWLockWrite write_lock(rwlock);
 	polygons.clear();
 	{
 		MutexLock lock(navigation_mesh_generation);
@@ -164,11 +177,30 @@ void NavigationPolygon::clear_polygons() {
 }
 
 void NavigationPolygon::clear() {
+	RWLockWrite write_lock(rwlock);
 	polygons.clear();
 	vertices.clear();
 	{
 		MutexLock lock(navigation_mesh_generation);
 		navigation_mesh.unref();
+	}
+}
+
+void NavigationPolygon::set_data(const Vector<Vector2> &p_vertices, const Vector<Vector<int>> &p_polygons) {
+	RWLockWrite write_lock(rwlock);
+	vertices = p_vertices;
+	polygons.resize(p_polygons.size());
+	for (int i = 0; i < p_polygons.size(); i++) {
+		polygons.write[i].indices = p_polygons[i];
+	}
+}
+
+void NavigationPolygon::get_data(Vector<Vector2> &r_vertices, Vector<Vector<int>> &r_polygons) {
+	RWLockRead read_lock(rwlock);
+	r_vertices = vertices;
+	r_polygons.resize(polygons.size());
+	for (int i = 0; i < polygons.size(); i++) {
+		r_polygons.write[i] = polygons[i].indices;
 	}
 }
 
@@ -178,6 +210,7 @@ Ref<NavigationMesh> NavigationPolygon::get_navigation_mesh() {
 	if (navigation_mesh.is_null()) {
 		navigation_mesh.instantiate();
 		Vector<Vector3> verts;
+		Vector<Vector<int>> polys;
 		{
 			verts.resize(get_vertices().size());
 			Vector3 *w = verts.ptrw();
@@ -188,11 +221,12 @@ Ref<NavigationMesh> NavigationPolygon::get_navigation_mesh() {
 				w[i] = Vector3(r[i].x, 0.0, r[i].y);
 			}
 		}
-		navigation_mesh->set_vertices(verts);
 
 		for (int i(0); i < get_polygon_count(); i++) {
-			navigation_mesh->add_polygon(get_polygon(i));
+			polys.push_back(get_polygon(i));
 		}
+
+		navigation_mesh->set_data(verts, polys);
 		navigation_mesh->set_cell_size(cell_size); // Needed to not fail the cell size check on the server
 	}
 
@@ -200,38 +234,45 @@ Ref<NavigationMesh> NavigationPolygon::get_navigation_mesh() {
 }
 
 void NavigationPolygon::add_outline(const Vector<Vector2> &p_outline) {
+	RWLockWrite write_lock(rwlock);
 	outlines.push_back(p_outline);
 	rect_cache_dirty = true;
 }
 
 int NavigationPolygon::get_outline_count() const {
+	RWLockRead read_lock(rwlock);
 	return outlines.size();
 }
 
 void NavigationPolygon::set_outline(int p_idx, const Vector<Vector2> &p_outline) {
+	RWLockWrite write_lock(rwlock);
 	ERR_FAIL_INDEX(p_idx, outlines.size());
 	outlines.write[p_idx] = p_outline;
 	rect_cache_dirty = true;
 }
 
 void NavigationPolygon::remove_outline(int p_idx) {
+	RWLockWrite write_lock(rwlock);
 	ERR_FAIL_INDEX(p_idx, outlines.size());
 	outlines.remove_at(p_idx);
 	rect_cache_dirty = true;
 }
 
 Vector<Vector2> NavigationPolygon::get_outline(int p_idx) const {
+	RWLockRead read_lock(rwlock);
 	ERR_FAIL_INDEX_V(p_idx, outlines.size(), Vector<Vector2>());
 	return outlines[p_idx];
 }
 
 void NavigationPolygon::clear_outlines() {
+	RWLockWrite write_lock(rwlock);
 	outlines.clear();
 	rect_cache_dirty = true;
 }
 
 #ifndef DISABLE_DEPRECATED
 void NavigationPolygon::make_polygons_from_outlines() {
+	RWLockWrite write_lock(rwlock);
 	WARN_PRINT("Function make_polygons_from_outlines() is deprecated."
 			   "\nUse NavigationServer2D.parse_source_geometry_data() and NavigationServer2D.bake_from_source_geometry_data() instead.");
 

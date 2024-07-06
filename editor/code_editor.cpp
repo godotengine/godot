@@ -347,18 +347,18 @@ void FindReplaceBar::_replace_all() {
 	needs_to_count_results = true;
 }
 
-void FindReplaceBar::_get_search_from(int &r_line, int &r_col, bool p_is_searching_next) {
+void FindReplaceBar::_get_search_from(int &r_line, int &r_col, SearchMode p_search_mode) {
 	if (!text_editor->has_selection(0) || is_selection_only()) {
 		r_line = text_editor->get_caret_line(0);
 		r_col = text_editor->get_caret_column(0);
 
-		if (!p_is_searching_next && r_line == result_line && r_col >= result_col && r_col <= result_col + get_search_text().length()) {
+		if (p_search_mode == SEARCH_PREV && r_line == result_line && r_col >= result_col && r_col <= result_col + get_search_text().length()) {
 			r_col = result_col;
 		}
 		return;
 	}
 
-	if (p_is_searching_next) {
+	if (p_search_mode == SEARCH_NEXT) {
 		r_line = text_editor->get_selection_to_line();
 		r_col = text_editor->get_selection_to_column();
 	} else {
@@ -368,7 +368,11 @@ void FindReplaceBar::_get_search_from(int &r_line, int &r_col, bool p_is_searchi
 }
 
 void FindReplaceBar::_update_results_count() {
-	if (!needs_to_count_results && (result_line != -1) && results_count_to_current > 0) {
+	int caret_line, caret_column;
+	_get_search_from(caret_line, caret_column, SEARCH_CURRENT);
+	bool match_selected = caret_line == result_line && caret_column == result_col && !is_selection_only() && text_editor->has_selection(0);
+
+	if (match_selected && !needs_to_count_results && result_line != -1 && results_count_to_current > 0) {
 		results_count_to_current += (flags & TextEdit::SEARCH_BACKWARDS) ? -1 : 1;
 
 		if (results_count_to_current > results_count) {
@@ -385,9 +389,10 @@ void FindReplaceBar::_update_results_count() {
 		return;
 	}
 
-	needs_to_count_results = false;
+	needs_to_count_results = !match_selected;
 
 	results_count = 0;
+	results_count_to_current = 0;
 
 	for (int i = 0; i < text_editor->get_line_count(); i++) {
 		String line_text = text_editor->get_line(i);
@@ -417,16 +422,24 @@ void FindReplaceBar::_update_results_count() {
 
 			results_count++;
 
-			if (i == result_line) {
-				if (col_pos == result_col) {
-					results_count_to_current = results_count;
-				} else if (col_pos < result_col && col_pos + searched.length() > result_col) {
-					col_pos = result_col;
-					results_count_to_current = results_count;
-				}
+			if (i <= result_line && col_pos <= result_col) {
+				results_count_to_current = results_count;
 			}
-
+			if (i == result_line && col_pos < result_col && col_pos + searched.length() > result_col) {
+				// Searching forwards and backwards with repeating text can lead to different matches.
+				col_pos = result_col;
+			}
 			col_pos += searched.length();
+		}
+	}
+	if (!match_selected) {
+		// Current result should refer to the match before the caret, if the caret is not on a match.
+		if (caret_line != result_line || caret_column != result_col) {
+			results_count_to_current -= 1;
+		}
+		if (results_count_to_current == 0 && (caret_line > result_line || (caret_line == result_line && caret_column > result_col))) {
+			// Caret is after all matches.
+			results_count_to_current = results_count;
 		}
 	}
 }
@@ -457,7 +470,7 @@ bool FindReplaceBar::search_current() {
 	_update_flags(false);
 
 	int line, col;
-	_get_search_from(line, col);
+	_get_search_from(line, col, SEARCH_CURRENT);
 
 	return _search(flags, line, col);
 }
@@ -473,10 +486,14 @@ bool FindReplaceBar::search_prev() {
 
 	String text = get_search_text();
 
+	if ((flags & TextEdit::SEARCH_BACKWARDS) == 0) {
+		needs_to_count_results = true;
+	}
+
 	_update_flags(true);
 
 	int line, col;
-	_get_search_from(line, col);
+	_get_search_from(line, col, SEARCH_PREV);
 
 	col -= text.length();
 	if (col < 0) {
@@ -499,10 +516,14 @@ bool FindReplaceBar::search_next() {
 		popup_search(true);
 	}
 
+	if (flags & TextEdit::SEARCH_BACKWARDS) {
+		needs_to_count_results = true;
+	}
+
 	_update_flags(false);
 
 	int line, col;
-	_get_search_from(line, col, true);
+	_get_search_from(line, col, SEARCH_NEXT);
 
 	return _search(flags, line, col);
 }
@@ -653,6 +674,7 @@ void FindReplaceBar::set_text_edit(CodeTextEditor *p_text_editor) {
 	}
 
 	if (base_text_editor) {
+		text_editor->set_search_text(String());
 		base_text_editor->remove_find_replace_bar();
 		base_text_editor = nullptr;
 		text_editor->disconnect(SceneStringName(text_changed), callable_mp(this, &FindReplaceBar::_editor_text_changed));
@@ -670,8 +692,7 @@ void FindReplaceBar::set_text_edit(CodeTextEditor *p_text_editor) {
 	text_editor = base_text_editor->get_text_editor();
 	text_editor->connect(SceneStringName(text_changed), callable_mp(this, &FindReplaceBar::_editor_text_changed));
 
-	_update_results_count();
-	_update_matches_display();
+	_editor_text_changed();
 }
 
 void FindReplaceBar::_bind_methods() {
@@ -1049,6 +1070,9 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_smooth_scroll_enabled(EDITOR_GET("text_editor/behavior/navigation/smooth_scrolling"));
 	text_editor->set_v_scroll_speed(EDITOR_GET("text_editor/behavior/navigation/v_scroll_speed"));
 	text_editor->set_drag_and_drop_selection_enabled(EDITOR_GET("text_editor/behavior/navigation/drag_and_drop_selection"));
+	text_editor->set_use_default_word_separators(EDITOR_GET("text_editor/behavior/navigation/use_default_word_separators"));
+	text_editor->set_use_custom_word_separators(EDITOR_GET("text_editor/behavior/navigation/use_custom_word_separators"));
+	text_editor->set_custom_word_separators(EDITOR_GET("text_editor/behavior/navigation/custom_word_separators"));
 
 	// Behavior: Indent
 	set_indent_using_spaces(EDITOR_GET("text_editor/behavior/indent/type"));

@@ -444,7 +444,7 @@
 			<param index="2" name="script" type="Script" />
 			<param index="3" name="icon" type="Texture2D" />
 			<description>
-				Adds a custom type, which will appear in the list of nodes or resources. An icon can be optionally passed.
+				Adds a custom type, which will appear in the list of nodes or resources.
 				When a given node or resource is selected, the base type will be instantiated (e.g. "Node3D", "Control", "Resource"), then the script will be loaded and set to this object.
 				[b]Note:[/b] The base type is the base engine class which this type's class hierarchy inherits, not any custom type parent classes.
 				You can use the virtual method [method _handles] to check if your custom object is being edited by checking the script or using the [code]is[/code] keyword.

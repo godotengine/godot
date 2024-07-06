@@ -1278,6 +1278,9 @@
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="true">
 			If [code]true[/code], a right-click displays the context menu.
 		</member>
+		<member name="custom_word_separators" type="String" setter="set_custom_word_separators" getter="get_custom_word_separators" default="&quot;&quot;">
+			The characters to consider as word delimiters if [member use_custom_word_separators] is [code]true[/code]. The characters should be defined without separation, for example [code]#_![/code].
+		</member>
 		<member name="deselect_on_focus_loss_enabled" type="bool" setter="set_deselect_on_focus_loss_enabled" getter="is_deselect_on_focus_loss_enabled" default="true">
 			If [code]true[/code], the selected text will be deselected when focus is lost.
 		</member>
@@ -1362,6 +1365,12 @@
 		</member>
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
 			Base text writing direction.
+		</member>
+		<member name="use_custom_word_separators" type="bool" setter="set_use_custom_word_separators" getter="is_custom_word_separators_enabled" default="false">
+			If [code]false[/code], using [kbd]Ctrl + Left[/kbd] or [kbd]Ctrl + Right[/kbd] ([kbd]Cmd + Left[/kbd] or [kbd]Cmd + Right[/kbd] on macOS) bindings will use the behavior of [member use_default_word_separators]. If [code]true[/code], it will also stop the caret if a character within [member custom_word_separators] is detected. Useful for subword moving. This behavior also will be applied to the behavior of text selection.
+		</member>
+		<member name="use_default_word_separators" type="bool" setter="set_use_default_word_separators" getter="is_default_word_separators_enabled" default="true">
+			If [code]false[/code], using [kbd]Ctrl + Left[/kbd] or [kbd]Ctrl + Right[/kbd] ([kbd]Cmd + Left[/kbd] or [kbd]Cmd + Right[/kbd] on macOS) bindings will stop moving caret only if a space or punctuation is detected. If [code]true[/code], it will also stop the caret if a character is part of [code]!"#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^`{|}~[/code], the Unicode General Punctuation table, or the Unicode CJK Punctuation table. Useful for subword moving. This behavior also will be applied to the behavior of text selection.
 		</member>
 		<member name="virtual_keyboard_enabled" type="bool" setter="set_virtual_keyboard_enabled" getter="is_virtual_keyboard_enabled" default="true">
 			If [code]true[/code], the native virtual keyboard is shown when focused on platforms that support it.

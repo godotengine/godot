@@ -872,6 +872,7 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 
 	D3D12MA::ALLOCATION_DESC allocation_desc = {};
 	allocation_desc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+	D3D12_RESOURCE_STATES initial_state = D3D12_RESOURCE_STATE_COMMON;
 	switch (p_allocation_type) {
 		case MEMORY_ALLOCATION_TYPE_CPU: {
 			bool is_src = p_usage.has_flag(BUFFER_USAGE_TRANSFER_FROM_BIT);
@@ -879,10 +880,12 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 			if (is_src && !is_dst) {
 				// Looks like a staging buffer: CPU maps, writes sequentially, then GPU copies to VRAM.
 				allocation_desc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+				initial_state = D3D12_RESOURCE_STATE_GENERIC_READ;
 			}
 			if (is_dst && !is_src) {
 				// Looks like a readback buffer: GPU copies from VRAM, then CPU maps and reads.
 				allocation_desc.HeapType = D3D12_HEAP_TYPE_READBACK;
+				initial_state = D3D12_RESOURCE_STATE_COPY_DEST;
 			}
 		} break;
 		case MEMORY_ALLOCATION_TYPE_GPU: {
@@ -911,7 +914,7 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 		res = allocator->CreateResource(
 				&allocation_desc,
 				reinterpret_cast<const D3D12_RESOURCE_DESC *>(&resource_desc),
-				D3D12_RESOURCE_STATE_COMMON,
+				initial_state,
 				nullptr,
 				allocation.GetAddressOf(),
 				IID_PPV_ARGS(buffer.GetAddressOf()));
@@ -925,7 +928,7 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 	buf_info->resource = buffer.Get();
 	buf_info->owner_info.resource = buffer;
 	buf_info->owner_info.allocation = allocation;
-	buf_info->owner_info.states.subresource_states.push_back(D3D12_RESOURCE_STATE_COMMON);
+	buf_info->owner_info.states.subresource_states.push_back(initial_state);
 	buf_info->states_ptr = &buf_info->owner_info.states;
 	buf_info->size = p_size;
 	buf_info->flags.usable_as_uav = (resource_desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);

@@ -271,6 +271,7 @@
 		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="" default="&quot;&quot;">
 			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If a custom directory name is defined, this name will be appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
 			The [member application/config/use_custom_user_dir] setting must be enabled for this to take effect.
+			[b]Note:[/b] If [member application/config/custom_user_dir_name] contains trailing periods, they will be stripped as folder names ending with a period are not allowed on Windows.
 		</member>
 		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's description, displayed as a tooltip in the Project Manager when hovering the project.
@@ -344,7 +345,7 @@
 			This setting can be overridden using the [code]--frame-delay &lt;ms;&gt;[/code] command line argument.
 		</member>
 		<member name="application/run/low_processor_mode" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables low-processor usage mode. The screen is not redrawn if nothing changes visually. This is meant for writing applications and editors, but is pretty useless (and can hurt performance) in most games.
+			If [code]true[/code], enables low-processor usage mode. When enabled, the engine takes longer to redraw, but only redraws the screen if necessary. This may lower power consumption, and is intended for editors or mobile applications. For most games, because the screen needs to be redrawn every frame, it is recommended to keep this setting disabled.
 		</member>
 		<member name="application/run/low_processor_mode_sleep_usec" type="int" setter="" getter="" default="6900">
 			Amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
@@ -475,6 +476,9 @@
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_true" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to true.
+		</member>
+		<member name="debug/gdscript/warnings/confusable_capture_reassignment" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable captured by a lambda is reassigned, since this does not modify the outer local variable.
 		</member>
 		<member name="debug/gdscript/warnings/confusable_identifier" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an identifier contains characters that can be confused with something else, like when mixing different alphabets.
@@ -1386,6 +1390,12 @@
 			If [code]false[/code], such events will be flushed only once per process frame, between iterations of the engine.
 			Enabling this can greatly improve the responsiveness to input, specially in devices that need to run multiple physics frames per visible (process) frame, because they can't run at the target frame rate.
 			[b]Note:[/b] Currently implemented only on Android.
+		</member>
+		<member name="input_devices/buffering/android/use_accumulated_input" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], multiple input events will be accumulated into a single input event when possible.
+		</member>
+		<member name="input_devices/buffering/android/use_input_buffering" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], input events will be buffered prior to being dispatched.
 		</member>
 		<member name="input_devices/compatibility/legacy_just_pressed_behavior" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], [method Input.is_action_just_pressed] and [method Input.is_action_just_released] will only return [code]true[/code] if the action is still in the respective state, i.e. an action that is pressed [i]and[/i] released on the same frame will be missed.
@@ -2351,7 +2361,6 @@
 		</member>
 		<member name="rendering/anti_aliasing/quality/msaa_3d" type="int" setter="" getter="" default="0">
 			Sets the number of MSAA samples to use for 3D rendering (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware, especially integrated graphics due to their limited memory bandwidth. See also [member rendering/scaling_3d/mode] for supersampling, which provides higher quality but is much more expensive. This has no effect on shader-induced aliasing or texture aliasing.
-			[b]Note:[/b] MSAA is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="rendering/anti_aliasing/quality/screen_space_aa" type="int" setter="" getter="" default="0">
 			Sets the screen-space antialiasing mode for the default screen [Viewport]. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry. The blurriness is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]).
@@ -2923,11 +2932,11 @@
 		</member>
 		<member name="xr/openxr/foveation_dynamic" type="bool" setter="" getter="" default="false">
 			If true and foveation is supported, will automatically adjust foveation level based on framerate up to the level set on [member xr/openxr/foveation_level].
-			[b]Note:[/b] Only works on compatibility renderer.
+			[b]Note:[/b] Only works on the Compatibility rendering method.
 		</member>
 		<member name="xr/openxr/foveation_level" type="int" setter="" getter="" default="&quot;0&quot;">
 			Applied foveation level if supported: 0 = off, 1 = low, 2 = medium, 3 = high.
-			[b]Note:[/b] Only works on compatibility renderer.
+			[b]Note:[/b] Only works on the Compatibility rendering method. On platforms other than Android, if [member rendering/anti_aliasing/quality/msaa_3d] is enabled, this feature will be disabled.
 		</member>
 		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">
 			Specify the default reference space.

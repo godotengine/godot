@@ -243,6 +243,8 @@
 			<return type="void" />
 			<param index="0" name="enabled" type="bool" />
 			<description>
+				This method exists for compatibility with old structures in which the [Skeleton3D] does not have a [PhysicalBoneSimulator3D] as a child, but directly has [PhysicalBone3D]s as children.
+				In case you need to raycast to it without running [method physical_bones_start_simulation], call this method with [code]enabled == true[/code].
 			</description>
 		</method>
 		<method name="set_bone_enabled">

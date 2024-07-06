@@ -749,44 +749,54 @@ Error ResourceLoaderBinary::load() {
 		String t = get_unicode_string();
 
 		Ref<Resource> res;
-
-		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(path)) {
-			//use the existing one
-			Ref<Resource> cached = ResourceCache::get_ref(path);
-			if (cached->get_class() == t) {
-				cached->reset_state();
-				res = cached;
-			}
-		}
+		Resource *r = nullptr;
 
 		MissingResource *missing_resource = nullptr;
 
-		if (res.is_null()) {
-			//did not replace
-
-			Object *obj = ClassDB::instantiate(t);
-			if (!obj) {
-				if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
-					//create a missing resource
-					missing_resource = memnew(MissingResource);
-					missing_resource->set_original_class(t);
-					missing_resource->set_recording_properties(true);
-					obj = missing_resource;
-				} else {
-					error = ERR_FILE_CORRUPT;
-					ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");
+		if (main) {
+			res = ResourceLoader::get_resource_ref_override(local_path);
+			r = res.ptr();
+		}
+		if (!r) {
+			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(path)) {
+				//use the existing one
+				Ref<Resource> cached = ResourceCache::get_ref(path);
+				if (cached->get_class() == t) {
+					cached->reset_state();
+					res = cached;
 				}
 			}
 
-			Resource *r = Object::cast_to<Resource>(obj);
-			if (!r) {
-				String obj_class = obj->get_class();
-				error = ERR_FILE_CORRUPT;
-				memdelete(obj); //bye
-				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource type in resource field not a resource, type is: " + obj_class + ".");
-			}
+			if (res.is_null()) {
+				//did not replace
 
-			res = Ref<Resource>(r);
+				Object *obj = ClassDB::instantiate(t);
+				if (!obj) {
+					if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+						//create a missing resource
+						missing_resource = memnew(MissingResource);
+						missing_resource->set_original_class(t);
+						missing_resource->set_recording_properties(true);
+						obj = missing_resource;
+					} else {
+						error = ERR_FILE_CORRUPT;
+						ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");
+					}
+				}
+
+				r = Object::cast_to<Resource>(obj);
+				if (!r) {
+					String obj_class = obj->get_class();
+					error = ERR_FILE_CORRUPT;
+					memdelete(obj); //bye
+					ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource type in resource field not a resource, type is: " + obj_class + ".");
+				}
+
+				res = Ref<Resource>(r);
+			}
+		}
+
+		if (r) {
 			if (!path.is_empty()) {
 				if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 					r->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE); // If got here because the resource with same path has different type, replace it.

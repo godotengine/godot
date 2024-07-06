@@ -133,9 +133,9 @@ void VSRerouteNode::_notification(int p_what) {
 			connect(SceneStringName(mouse_exited), callable_mp(this, &VSRerouteNode::_on_mouse_exited));
 		} break;
 		case NOTIFICATION_DRAW: {
-			Vector2 offset = Vector2(0, -16);
+			Vector2 offset = Vector2(0, -16 * EDSCALE);
 			Color drag_bg_color = get_theme_color(SNAME("drag_background"), SNAME("VSRerouteNode"));
-			draw_circle(get_size() * 0.5 + offset, 16, Color(drag_bg_color, selected ? 1 : icon_opacity));
+			draw_circle(get_size() * 0.5 + offset, 16 * EDSCALE, Color(drag_bg_color, selected ? 1 : icon_opacity), true, -1, true);
 
 			Ref<Texture2D> icon = get_editor_theme_icon(SNAME("ToolMove"));
 			Point2 icon_offset = -icon->get_size() * 0.5 + get_size() * 0.5 + offset;
@@ -154,6 +154,7 @@ VSRerouteNode::VSRerouteNode() {
 	title_lbl->hide();
 
 	const Size2 size = Size2(32, 32) * EDSCALE;
+	print_line("VSRerouteNode size: " + size);
 
 	Control *slot_area = memnew(Control);
 	slot_area->set_custom_minimum_size(size);
@@ -3649,12 +3650,15 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, cons
 
 			if (output_port_type == VisualShaderNode::PORT_TYPE_SAMPLER) {
 				if (is_texture2d) {
+					undo_redo->force_fixed_history(); // vsnode is freshly created and has no path, so history can't be correctly determined.
 					undo_redo->add_do_method(vsnode.ptr(), "set_source", VisualShaderNodeTexture::SOURCE_PORT);
 				}
 				if (is_texture3d || is_texture2d_array) {
+					undo_redo->force_fixed_history();
 					undo_redo->add_do_method(vsnode.ptr(), "set_source", VisualShaderNodeSample3D::SOURCE_PORT);
 				}
 				if (is_cubemap) {
+					undo_redo->force_fixed_history();
 					undo_redo->add_do_method(vsnode.ptr(), "set_source", VisualShaderNodeCubemap::SOURCE_PORT);
 				}
 			}
@@ -3754,16 +3758,19 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, cons
 		//post-initialization
 
 		if (is_texture2d || is_texture3d || is_curve || is_curve_xyz) {
+			undo_redo->force_fixed_history();
 			undo_redo->add_do_method(vsnode.ptr(), "set_texture", ResourceLoader::load(p_resource_path));
 			return;
 		}
 
 		if (is_cubemap) {
+			undo_redo->force_fixed_history();
 			undo_redo->add_do_method(vsnode.ptr(), "set_cube_map", ResourceLoader::load(p_resource_path));
 			return;
 		}
 
 		if (is_texture2d_array) {
+			undo_redo->force_fixed_history();
 			undo_redo->add_do_method(vsnode.ptr(), "set_texture_array", ResourceLoader::load(p_resource_path));
 		}
 	}

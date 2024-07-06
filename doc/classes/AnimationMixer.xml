@@ -27,6 +27,13 @@
 			<param index="1" name="library" type="AnimationLibrary" />
 			<description>
 				Adds [param library] to the animation player, under the key [param name].
+				AnimationMixer has a global library by default with an empty string as key. For adding an animation to the global library:
+				[codeblocks]
+				[gdscript]
+				var global_library = mixer.get_animation_library("")
+				global_library.add_animation("animation_name", animation_resource)
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="advance">
@@ -182,10 +189,10 @@
 				func _process(delta):
 				    if Input.is_action_just_pressed("animate"):
 				        state_machine.travel("Animate")
-				    var current_root_motion_rotation_accumulator: Quaternion = animation_tree.get_root_motion_Quaternion_accumulator()
+				    var current_root_motion_rotation_accumulator: Quaternion = animation_tree.get_root_motion_rotation_accumulator()
 				    var difference: Quaternion = prev_root_motion_rotation_accumulator.inverse() * current_root_motion_rotation_accumulator
 				    prev_root_motion_rotation_accumulator = current_root_motion_rotation_accumulator
-				    transform.basis *= difference
+				    transform.basis *=  Basis(difference)
 				[/gdscript]
 				[/codeblocks]
 				However, if the animation loops, an unintended discrete change may occur, so this is only useful for some simple use cases.

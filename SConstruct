@@ -566,7 +566,7 @@ if env["build_profile"] != "":
     import json
 
     try:
-        ft = json.load(open(env["build_profile"]))
+        ft = json.load(open(env["build_profile"], "r", encoding="utf-8"))
         if "disabled_classes" in ft:
             env.disabled_classes = ft["disabled_classes"]
         if "disabled_build_options" in ft:

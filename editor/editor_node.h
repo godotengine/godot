@@ -573,7 +573,7 @@ private:
 
 	void _update_undo_redo_allowed();
 
-	int _save_external_resources();
+	int _save_external_resources(bool p_also_save_external_data = false);
 
 	void _set_current_scene(int p_idx);
 	void _set_current_scene_nocheck(int p_idx);
@@ -683,6 +683,7 @@ protected:
 
 public:
 	// Public for use with callable_mp.
+	void init_plugins();
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
 
 	void editor_select(int p_which);
@@ -914,6 +915,9 @@ public:
 	void edit_current() { _edit_current(); };
 
 	bool has_scenes_in_session();
+
+	void undo();
+	void redo();
 
 	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false, String *r_output = nullptr);
 

@@ -763,8 +763,13 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 				}
 
 			} else {
-				// Released
-				_stop_dragging();
+				// Released.
+				if (drag_type == DRAG_TYPE_NONE) {
+					drag_erasing = false;
+					return false;
+				} else {
+					_stop_dragging();
+				}
 				drag_erasing = false;
 			}
 
@@ -1295,7 +1300,7 @@ void TileMapLayerEditorTilesPlugin::_stop_dragging() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	switch (drag_type) {
 		case DRAG_TYPE_SELECT: {
-			undo_redo->create_action(TTR("Change selection"));
+			undo_redo->create_action_for_history(TTR("Change selection"), EditorNode::get_editor_data().get_current_edited_scene_history_id());
 			undo_redo->add_undo_method(this, "_set_tile_map_selection", _get_tile_map_selection());
 
 			if (!Input::get_singleton()->is_key_pressed(Key::SHIFT) && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
