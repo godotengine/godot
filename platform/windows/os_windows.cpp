@@ -626,13 +626,31 @@ bool OS_Windows::get_user_prefers_integrated_gpu() const {
 	// On Windows 10, the preferred GPU configured in Windows Settings is
 	// stored in the registry under the key
 	// `HKEY_CURRENT_USER\SOFTWARE\Microsoft\DirectX\UserGpuPreferences`
-	// with the name being the EXE path. The value is in the form of
+	// with the name being the app ID or EXE path. The value is in the form of
 	// `GpuPreference=1;`, with the value being 1 for integrated GPU and 2
 	// for discrete GPU. On Windows 11, there may be more flags, separated
 	// by semicolons.
 
-	WCHAR exe_path[32768];
-	if (GetModuleFileNameW(nullptr, exe_path, sizeof(exe_path) / sizeof(exe_path[0])) >= sizeof(exe_path) / sizeof(exe_path[0])) {
+	// If this is a packaged app, use the "application user model ID".
+	// Otherwise, use the EXE path.
+	WCHAR value_name[32768];
+	bool is_packaged = false;
+	{
+		HMODULE kernel32 = GetModuleHandleW(L"kernel32.dll");
+		if (kernel32) {
+			using GetCurrentApplicationUserModelIdPtr = LONG(WINAPI *)(UINT32 * length, PWSTR id);
+			GetCurrentApplicationUserModelIdPtr GetCurrentApplicationUserModelId = (GetCurrentApplicationUserModelIdPtr)GetProcAddress(kernel32, "GetCurrentApplicationUserModelId");
+
+			if (GetCurrentApplicationUserModelId) {
+				UINT32 length = sizeof(value_name) / sizeof(value_name[0]);
+				LONG result = GetCurrentApplicationUserModelId(&length, value_name);
+				if (result == ERROR_SUCCESS) {
+					is_packaged = true;
+				}
+			}
+		}
+	}
+	if (!is_packaged && GetModuleFileNameW(nullptr, value_name, sizeof(value_name) / sizeof(value_name[0])) >= sizeof(value_name) / sizeof(value_name[0])) {
 		// Paths should never be longer than 32767, but just in case.
 		return false;
 	}
@@ -645,7 +663,7 @@ bool OS_Windows::get_user_prefers_integrated_gpu() const {
 	}
 
 	DWORD size = 0;
-	result = RegGetValueW(hkey, nullptr, exe_path, RRF_RT_REG_SZ, nullptr, nullptr, &size);
+	result = RegGetValueW(hkey, nullptr, value_name, RRF_RT_REG_SZ, nullptr, nullptr, &size);
 	if (result != ERROR_SUCCESS || size == 0) {
 		RegCloseKey(hkey);
 		return false;
@@ -653,7 +671,7 @@ bool OS_Windows::get_user_prefers_integrated_gpu() const {
 
 	Vector<WCHAR> buffer;
 	buffer.resize(size / sizeof(WCHAR));
-	result = RegGetValueW(hkey, nullptr, exe_path, RRF_RT_REG_SZ, nullptr, (LPBYTE)buffer.ptrw(), &size);
+	result = RegGetValueW(hkey, nullptr, value_name, RRF_RT_REG_SZ, nullptr, (LPBYTE)buffer.ptrw(), &size);
 	if (result != ERROR_SUCCESS) {
 		RegCloseKey(hkey);
 		return false;
