@@ -1732,11 +1732,15 @@ void Control::_size_changed() {
 		new_size_cache.height = minimum_size.height;
 	}
 
-	bool pos_changed = new_pos_cache != data.pos_cache;
-	bool size_changed = new_size_cache != data.size_cache;
+	bool pos_changed = !new_pos_cache.is_equal_approx(data.pos_cache);
+	bool size_changed = !new_size_cache.is_equal_approx(data.size_cache);
 
-	data.pos_cache = new_pos_cache;
-	data.size_cache = new_size_cache;
+	if (pos_changed) {
+		data.pos_cache = new_pos_cache;
+	}
+	if (size_changed) {
+		data.size_cache = new_size_cache;
+	}
 
 	if (is_inside_tree()) {
 		if (pos_changed || size_changed) {
@@ -1751,12 +1755,10 @@ void Control::_size_changed() {
 		}
 
 		if (pos_changed && !size_changed) {
-			_update_canvas_item_transform(); //move because it won't be updated
+			_update_canvas_item_transform();
 		}
-	} else {
-		if (pos_changed) {
-			_notify_transform();
-		}
+	} else if (pos_changed) {
+		_notify_transform();
 	}
 }
 
