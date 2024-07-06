@@ -188,10 +188,18 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_map["export_lights"] = false;
 	}
-	if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
-		parameters_map["export_colors"] = true;
+	if (blender_major_version > 4 || (blender_major_version == 4 && blender_minor_version >= 2)) {
+		if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
+			parameters_map["export_vertex_color"] = "MATERIAL";
+		} else {
+			parameters_map["export_vertex_color"] = "NONE";
+		}
 	} else {
-		parameters_map["export_colors"] = false;
+		if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
+			parameters_map["export_colors"] = true;
+		} else {
+			parameters_map["export_colors"] = false;
+		}
 	}
 	if (p_options.has(SNAME("blender/nodes/visible"))) {
 		int32_t visible = p_options["blender/nodes/visible"];
