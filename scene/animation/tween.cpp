@@ -438,6 +438,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("stop"), &Tween::stop);
 	ClassDB::bind_method(D_METHOD("pause"), &Tween::pause);
 	ClassDB::bind_method(D_METHOD("play"), &Tween::play);
+	ClassDB::bind_method(D_METHOD("clear"), &Tween::clear);
 	ClassDB::bind_method(D_METHOD("kill"), &Tween::kill);
 	ClassDB::bind_method(D_METHOD("get_total_elapsed_time"), &Tween::get_total_time);
 
