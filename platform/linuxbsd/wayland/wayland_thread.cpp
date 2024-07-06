@@ -2905,6 +2905,8 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 	bool scale_changed = false;
 	bool size_changed = false;
 
+	Size2i old_size = p_ws->rect.size;
+
 	if (p_ws->rect.size.width != p_width || p_ws->rect.size.height != p_height) {
 		p_ws->rect.size.width = p_width;
 		p_ws->rect.size.height = p_height;
@@ -2956,8 +2958,16 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 			DEBUG_LOG_WAYLAND_THREAD(vformat("Resizing the window from %s to %s (buffer scale x%d).", p_ws->rect.size, scaled_size, p_ws->buffer_scale));
 		}
 
-		// FIXME: Actually resize the hint instead of centering it.
-		p_ws->wayland_thread->pointer_set_hint(scaled_size / 2);
+		SeatState *ss = wl_seat_get_seat_state(p_ws->wayland_thread->wl_seat_current);
+
+		if (ss->wp_locked_pointer && ss->pointer_hint.x >= 0 && ss->pointer_hint.y >= 0) {
+			// We have to resize the hint accordingly as it's not done by the compositor.
+			Vector2 resize_factor = (Vector2)p_ws->rect.size / old_size;
+
+			Point2 scaled_hint = ss->pointer_hint * resize_factor;
+
+			ss->wayland_thread->seat_state_set_hint(ss, scaled_hint.x, scaled_hint.y);
+		}
 
 		Ref<WindowRectMessage> rect_msg;
 		rect_msg.instantiate();
@@ -3023,15 +3033,20 @@ void WaylandThread::seat_state_lock_pointer(SeatState *p_ss) {
 		ERR_FAIL_NULL(locked_surface);
 
 		p_ss->wp_locked_pointer = zwp_pointer_constraints_v1_lock_pointer(registry.wp_pointer_constraints, locked_surface, p_ss->wl_pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+		p_ss->pointer_hint.x = -1;
+		p_ss->pointer_hint.y = -1;
 	}
 }
 
-void WaylandThread::seat_state_set_hint(SeatState *p_ss, int p_x, int p_y) {
+void WaylandThread::seat_state_set_hint(SeatState *p_ss, double p_x, double p_y) {
 	if (p_ss->wp_locked_pointer == nullptr) {
 		return;
 	}
 
-	zwp_locked_pointer_v1_set_cursor_position_hint(p_ss->wp_locked_pointer, wl_fixed_from_int(p_x), wl_fixed_from_int(p_y));
+	p_ss->pointer_hint.x = p_x;
+	p_ss->pointer_hint.y = p_y;
+
+	zwp_locked_pointer_v1_set_cursor_position_hint(p_ss->wp_locked_pointer, wl_fixed_from_double(p_x), wl_fixed_from_double(p_y));
 }
 
 void WaylandThread::seat_state_confine_pointer(SeatState *p_ss) {
@@ -3607,7 +3622,7 @@ void WaylandThread::pointer_set_constraint(PointerConstraint p_constraint) {
 	pointer_constraint = p_constraint;
 }
 
-void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
+void WaylandThread::pointer_set_hint(const Point2 &p_hint) {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 	if (!ss) {
 		return;
@@ -3615,8 +3630,8 @@ void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
 
 	WindowState *ws = wl_surface_get_window_state(ss->pointed_surface);
 
-	int hint_x = 0;
-	int hint_y = 0;
+	double hint_x = 0;
+	double hint_y = 0;
 
 	if (ws) {
 		// NOTE: It looks like it's not really recommended to convert from
@@ -3624,8 +3639,8 @@ void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
 		// discussing about this. I'm not really sure about the maths behind this but,
 		// oh well, we're setting a cursor hint. ¯\_(ツ)_/¯
 		// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
-		hint_x = round(p_hint.x / window_state_get_scale_factor(ws));
-		hint_y = round(p_hint.y / window_state_get_scale_factor(ws));
+		hint_x = p_hint.x / window_state_get_scale_factor(ws);
+		hint_y = p_hint.y / window_state_get_scale_factor(ws);
 	}
 
 	if (ss) {
