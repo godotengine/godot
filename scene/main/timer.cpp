@@ -105,9 +105,20 @@ bool Timer::has_autostart() const {
 	return autostart;
 }
 
+void Timer::set_prevent_retrigger(bool p_prevent_retrigger) {
+	prevent_retrigger = p_prevent_retrigger;
+}
+
+bool Timer::is_prevent_retrigger() const {
+	return prevent_retrigger;
+}
+
 void Timer::start(double p_time) {
 	ERR_FAIL_COND_MSG(!is_inside_tree(), "Timer was not added to the SceneTree. Either add it or set autostart to true.");
 
+	if (prevent_retrigger && processing) {
+		return;
+	}
 	if (p_time > 0) {
 		set_wait_time(p_time);
 	}
@@ -213,6 +224,9 @@ void Timer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_timer_process_callback", "callback"), &Timer::set_timer_process_callback);
 	ClassDB::bind_method(D_METHOD("get_timer_process_callback"), &Timer::get_timer_process_callback);
 
+	ClassDB::bind_method(D_METHOD("set_prevent_retrigger", "prevent_retrigger"), &Timer::set_prevent_retrigger);
+	ClassDB::bind_method(D_METHOD("is_prevent_retrigger"), &Timer::is_prevent_retrigger);
+
 	ADD_SIGNAL(MethodInfo("timeout"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_timer_process_callback", "get_timer_process_callback");
@@ -220,7 +234,10 @@ void Timer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "is_one_shot");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autostart"), "set_autostart", "has_autostart");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_paused", "is_paused");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "prevent_retrigger"), "set_prevent_retrigger", "is_prevent_retrigger");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_left", PROPERTY_HINT_NONE, "suffix:s", PROPERTY_USAGE_NONE), "", "get_time_left");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "prevent_retrigger", PROPERTY_HINT_NONE, "Prevents the timer from retriggering if already active."), "set_prevent_retrigger", "is_prevent_retrigger");
 
 	BIND_ENUM_CONSTANT(TIMER_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(TIMER_PROCESS_IDLE);

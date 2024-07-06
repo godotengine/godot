@@ -61,6 +61,9 @@
 			The time required for the timer to end, in seconds. This property can also be set every time [method start] is called.
 			[b]Note:[/b] Timers can only process once per physics or process frame (depending on the [member process_callback]). An unstable framerate may cause the timer to end inconsistently, which is especially noticeable if the wait time is lower than roughly [code]0.05[/code] seconds. For very short timers, it is recommended to write your own code instead of using a [Timer] node. Timers are also affected by [member Engine.time_scale].
 		</member>
+		<member name="prevent_retrigger" type="float" setter="set_wait_time" getter="get_wait_time" default="1.0">
+			Prevents the timer from retriggering if already active.
+		</member>
 	</members>
 	<signals>
 		<signal name="timeout">

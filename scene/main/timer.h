@@ -41,6 +41,7 @@ class Timer : public Node {
 	bool autostart = false;
 	bool processing = false;
 	bool paused = false;
+	bool prevent_retrigger = false;
 
 	double time_left = -1.0;
 
@@ -68,6 +69,9 @@ public:
 
 	void set_paused(bool p_paused);
 	bool is_paused() const;
+
+	void set_prevent_retrigger(bool p_paused);
+	bool is_prevent_retrigger() const;
 
 	bool is_stopped() const;
 
