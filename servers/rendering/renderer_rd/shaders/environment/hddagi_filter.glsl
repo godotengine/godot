@@ -143,7 +143,8 @@ void main() {
 
 		float weight = exp(-abs(depth - d));
 		float dp = max(0.0, dot(nr.rgb, normal_roughness.rgb));
-		dp = pow(dp, 4.0); // The more curvature, the less filter.
+		//dp = pow(dp, 4.0); // The more curvature, the less filter.
+		dp = dp * dp * dp * dp;
 		weight *= dp;
 		weight *= max(0.0, 1.0 - abs(nr.a - normal_roughness.a) * 4.0);
 

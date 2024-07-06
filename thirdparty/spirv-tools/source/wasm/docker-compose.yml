@@ -1,0 +1,10 @@
+version: "3"
+services:
+  build:
+    image: emscripten/emsdk:3.1.28
+    environment:
+      GITHUB_RUN_NUMBER: ${GITHUB_RUN_NUMBER:-}
+    working_dir: /app
+    command: ./source/wasm/build.sh
+    volumes:
+      - ./:/app

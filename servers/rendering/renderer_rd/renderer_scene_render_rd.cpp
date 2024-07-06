@@ -794,7 +794,7 @@ bool RendererSceneRenderRD::_debug_draw_can_use_effects(RS::ViewportDebugDraw p_
 		case RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER:
 		case RS::VIEWPORT_DEBUG_DRAW_SSAO:
 		case RS::VIEWPORT_DEBUG_DRAW_SSIL:
-		case RS::VIEWPORT_DEBUG_DRAW_SDFGI:
+		case RS::VIEWPORT_DEBUG_DRAW_HDDAGI:
 		case RS::VIEWPORT_DEBUG_DRAW_GI_BUFFER:
 		case RS::VIEWPORT_DEBUG_DRAW_OCCLUDERS:
 			can_use_effects = true;
@@ -805,7 +805,7 @@ bool RendererSceneRenderRD::_debug_draw_can_use_effects(RS::ViewportDebugDraw p_
 		case RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION:
 		case RS::VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE:
 		case RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS:
-		case RS::VIEWPORT_DEBUG_DRAW_SDFGI_PROBES:
+		case RS::VIEWPORT_DEBUG_DRAW_HDDAGI_PROBES:
 		case RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD:
 			can_use_effects = true;
 			break;

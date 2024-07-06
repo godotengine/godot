@@ -1,0 +1,8 @@
+includedir=@SPIRV_HEADERS_PKGCONFIG_INCLUDE_DIR@
+
+Name: SPIRV-Headers
+Description: Header files from the SPIR-V registry
+Version: @CMAKE_PROJECT_VERSION@
+Requires:
+Libs:
+Cflags: -I${includedir}

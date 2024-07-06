@@ -1365,7 +1365,7 @@ uint32_t MResource::flatten_section_ols(float* data,MPixelRegion px_region,uint3
             uint32_t index = gx + gy*window_width;
             if(IS_HOLE(data[index])){
                 float af = FLOAT_HOLE;
-                uint16_t ah = float_to_half(ah);
+                uint16_t ah = float_to_half(af);
                 uint8_t* header_ptr = (uint8_t*)&header;
                 encode_uint16(ah,header_ptr);
                 encode_uint16(ah,header_ptr+2);

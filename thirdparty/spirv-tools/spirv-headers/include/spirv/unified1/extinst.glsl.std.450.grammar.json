@@ -1,0 +1,642 @@
+{
+  "copyright" : [
+    "Copyright (c) 2014-2024 The Khronos Group Inc.",
+    "",
+    "Permission is hereby granted, free of charge, to any person obtaining a copy",
+    "of this software and/or associated documentation files (the \"Materials\"),",
+    "to deal in the Materials without restriction, including without limitation",
+    "the rights to use, copy, modify, merge, publish, distribute, sublicense,",
+    "and/or sell copies of the Materials, and to permit persons to whom the",
+    "Materials are furnished to do so, subject to the following conditions:",
+    "",
+    "The above copyright notice and this permission notice shall be included in",
+    "all copies or substantial portions of the Materials.",
+    "",
+    "MODIFICATIONS TO THIS FILE MAY MEAN IT NO LONGER ACCURATELY REFLECTS KHRONOS",
+    "STANDARDS. THE UNMODIFIED, NORMATIVE VERSIONS OF KHRONOS SPECIFICATIONS AND",
+    "HEADER INFORMATION ARE LOCATED AT https://www.khronos.org/registry/ ",
+    "",
+    "THE MATERIALS ARE PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS",
+    "OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,",
+    "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL",
+    "THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER",
+    "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING",
+    "FROM,OUT OF OR IN CONNECTION WITH THE MATERIALS OR THE USE OR OTHER DEALINGS",
+    "IN THE MATERIALS."
+  ],
+  "version" : 100,
+  "revision" : 2,
+  "instructions" : [
+    {
+      "opname" : "Round",
+      "opcode" : 1,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "RoundEven",
+      "opcode" : 2,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Trunc",
+      "opcode" : 3,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "FAbs",
+      "opcode" : 4,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "SAbs",
+      "opcode" : 5,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "FSign",
+      "opcode" : 6,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "SSign",
+      "opcode" : 7,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Floor",
+      "opcode" : 8,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Ceil",
+      "opcode" : 9,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Fract",
+      "opcode" : 10,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Radians",
+      "opcode" : 11,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'degrees'" }
+      ]
+    },
+    {
+      "opname" : "Degrees",
+      "opcode" : 12,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'radians'" }
+      ]
+    },
+    {
+      "opname" : "Sin",
+      "opcode" : 13,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Cos",
+      "opcode" : 14,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Tan",
+      "opcode" : 15,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Asin",
+      "opcode" : 16,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Acos",
+      "opcode" : 17,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Atan",
+      "opcode" : 18,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'y_over_x'" }
+      ]
+    },
+    {
+      "opname" : "Sinh",
+      "opcode" : 19,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Cosh",
+      "opcode" : 20,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Tanh",
+      "opcode" : 21,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Asinh",
+      "opcode" : 22,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Acosh",
+      "opcode" : 23,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Atanh",
+      "opcode" : 24,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Atan2",
+      "opcode" : 25,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'y'" },
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Pow",
+      "opcode" : 26,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" }
+      ]
+    },
+    {
+      "opname" : "Exp",
+      "opcode" : 27,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Log",
+      "opcode" : 28,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Exp2",
+      "opcode" : 29,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Log2",
+      "opcode" : 30,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Sqrt",
+      "opcode" : 31,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "InverseSqrt",
+      "opcode" : 32,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Determinant",
+      "opcode" : 33,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "MatrixInverse",
+      "opcode" : 34,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Modf",
+      "opcode" : 35,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'i'" }
+      ]
+    },
+    {
+      "opname" : "ModfStruct",
+      "opcode" : 36,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "FMin",
+      "opcode" : 37,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" }
+      ]
+    },
+    {
+      "opname" : "UMin",
+      "opcode" : 38,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" }
+      ]
+    },
+    {
+      "opname" : "SMin",
+      "opcode" : 39,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" }
+      ]
+    },
+    {
+      "opname" : "FMax",
+      "opcode" : 40,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" }
+      ]
+    },
+    {
+      "opname" : "UMax",
+      "opcode" : 41,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" }
+      ]
+    },
+    {
+      "opname" : "SMax",
+      "opcode" : 42,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" }
+      ]
+    },
+    {
+      "opname" : "FClamp",
+      "opcode" : 43,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'minVal'" },
+        { "kind" : "IdRef", "name" : "'maxVal'" }
+      ]
+    },
+    {
+      "opname" : "UClamp",
+      "opcode" : 44,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'minVal'" },
+        { "kind" : "IdRef", "name" : "'maxVal'" }
+      ]
+    },
+    {
+      "opname" : "SClamp",
+      "opcode" : 45,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'minVal'" },
+        { "kind" : "IdRef", "name" : "'maxVal'" }
+      ]
+    },
+    {
+      "opname" : "FMix",
+      "opcode" : 46,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" },
+        { "kind" : "IdRef", "name" : "'a'" }
+      ]
+    },
+    {
+      "opname" : "IMix",
+      "opcode" : 47,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" },
+        { "kind" : "IdRef", "name" : "'a'" }
+      ]
+    },
+    {
+      "opname" : "Step",
+      "opcode" : 48,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'edge'" },
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "SmoothStep",
+      "opcode" : 49,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'edge0'" },
+        { "kind" : "IdRef", "name" : "'edge1'" },
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Fma",
+      "opcode" : 50,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'a'" },
+        { "kind" : "IdRef", "name" : "'b'" },
+        { "kind" : "IdRef", "name" : "'c'" }
+      ]
+    },
+    {
+      "opname" : "Frexp",
+      "opcode" : 51,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'exp'" }
+      ]
+    },
+    {
+      "opname" : "FrexpStruct",
+      "opcode" : 52,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Ldexp",
+      "opcode" : 53,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'exp'" }
+      ]
+    },
+    {
+      "opname" : "PackSnorm4x8",
+      "opcode" : 54,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'v'" }
+      ]
+    },
+    {
+      "opname" : "PackUnorm4x8",
+      "opcode" : 55,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'v'" }
+      ]
+    },
+    {
+      "opname" : "PackSnorm2x16",
+      "opcode" : 56,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'v'" }
+      ]
+    },
+    {
+      "opname" : "PackUnorm2x16",
+      "opcode" : 57,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'v'" }
+      ]
+    },
+    {
+      "opname" : "PackHalf2x16",
+      "opcode" : 58,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'v'" }
+      ]
+    },
+    {
+      "opname" : "PackDouble2x32",
+      "opcode" : 59,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'v'" }
+      ],
+      "capabilities" : [ "Float64" ]
+    },
+    {
+      "opname" : "UnpackSnorm2x16",
+      "opcode" : 60,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'p'" }
+      ]
+    },
+    {
+      "opname" : "UnpackUnorm2x16",
+      "opcode" : 61,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'p'" }
+      ]
+    },
+    {
+      "opname" : "UnpackHalf2x16",
+      "opcode" : 62,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'v'" }
+      ]
+    },
+    {
+      "opname" : "UnpackSnorm4x8",
+      "opcode" : 63,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'p'" }
+      ]
+    },
+    {
+      "opname" : "UnpackUnorm4x8",
+      "opcode" : 64,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'p'" }
+      ]
+    },
+    {
+      "opname" : "UnpackDouble2x32",
+      "opcode" : 65,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'v'" }
+      ],
+      "capabilities" : [ "Float64" ]
+    },
+    {
+      "opname" : "Length",
+      "opcode" : 66,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "Distance",
+      "opcode" : 67,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'p0'" },
+        { "kind" : "IdRef", "name" : "'p1'" }
+      ]
+    },
+    {
+      "opname" : "Cross",
+      "opcode" : 68,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" }
+      ]
+    },
+    {
+      "opname" : "Normalize",
+      "opcode" : 69,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" }
+      ]
+    },
+    {
+      "opname" : "FaceForward",
+      "opcode" : 70,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'N'" },
+        { "kind" : "IdRef", "name" : "'I'" },
+        { "kind" : "IdRef", "name" : "'Nref'" }
+      ]
+    },
+    {
+      "opname" : "Reflect",
+      "opcode" : 71,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'I'" },
+        { "kind" : "IdRef", "name" : "'N'" }
+      ]
+    },
+    {
+      "opname" : "Refract",
+      "opcode" : 72,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'I'" },
+        { "kind" : "IdRef", "name" : "'N'" },
+        { "kind" : "IdRef", "name" : "'eta'" }
+      ]
+    },
+    {
+      "opname" : "FindILsb",
+      "opcode" : 73,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Value'" }
+      ]
+    },
+    {
+      "opname" : "FindSMsb",
+      "opcode" : 74,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Value'" }
+      ]
+    },
+    {
+      "opname" : "FindUMsb",
+      "opcode" : 75,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Value'" }
+      ]
+    },
+    {
+      "opname" : "InterpolateAtCentroid",
+      "opcode" : 76,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'interpolant'" }
+      ],
+      "capabilities" : [ "InterpolationFunction" ]
+    },
+    {
+      "opname" : "InterpolateAtSample",
+      "opcode" : 77,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'interpolant'" },
+        { "kind" : "IdRef", "name" : "'sample'" }
+      ],
+      "capabilities" : [ "InterpolationFunction" ]
+    },
+    {
+      "opname" : "InterpolateAtOffset",
+      "opcode" : 78,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'interpolant'" },
+        { "kind" : "IdRef", "name" : "'offset'" }
+      ],
+      "capabilities" : [ "InterpolationFunction" ]
+    },
+    {
+      "opname" : "NMin",
+      "opcode" : 79,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" }
+      ]
+    },
+    {
+      "opname" : "NMax",
+      "opcode" : 80,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" }
+      ]
+    },
+    {
+      "opname" : "NClamp",
+      "opcode" : 81,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'minVal'" },
+        { "kind" : "IdRef", "name" : "'maxVal'" }
+      ]
+    }
+  ]
+}

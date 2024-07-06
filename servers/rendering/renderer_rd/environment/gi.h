@@ -579,7 +579,7 @@ public:
 	public:
 		enum {
 			MAX_CASCADES = 8,
-			CASCADE_SIZE = 128,
+			CASCADE_SIZE = 256,
 			REGION_CELLS = 8,
 			MAX_DYNAMIC_LIGHTS = 128,
 			MAX_STATIC_LIGHTS = 1024,
