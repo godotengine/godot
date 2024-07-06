@@ -2963,6 +2963,8 @@ void VisualShader::_bind_methods() {
 
 VisualShader::VisualShader() {
 	dirty.set();
+
+	// Initialize the graphs with the output node.
 	for (int i = 0; i < TYPE_MAX; i++) {
 		if (i > (int)TYPE_LIGHT && i < (int)TYPE_SKY) {
 			Ref<VisualShaderNodeParticleOutput> output;
@@ -3258,7 +3260,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_SCALAR, "sdf", "SDF" },
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
-	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
+	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_MAX, nullptr, nullptr },
 };
 
 const VisualShaderNodeInput::Port VisualShaderNodeInput::preview_ports[] = {
@@ -3336,7 +3338,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::preview_ports[] = {
 
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
-	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
+	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_MAX, nullptr, nullptr },
 };
 
 int VisualShaderNodeInput::get_input_port_count() const {
