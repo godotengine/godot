@@ -33,6 +33,7 @@
 
 #include "scene/gui/control.h"
 #include "scene/gui/scroll_bar.h"
+#include "scene/property_list_helper.h"
 #include "scene/resources/text_paragraph.h"
 
 class ItemList : public Control {
@@ -57,6 +58,7 @@ private:
 		Color icon_modulate = Color(1, 1, 1, 1);
 		Ref<Texture2D> tag_icon;
 		String text;
+		String xl_text;
 		Ref<TextParagraph> text_buf;
 		String language;
 		TextDirection text_direction = TEXT_DIRECTION_AUTO;
@@ -81,7 +83,12 @@ private:
 		Item() {
 			text_buf.instantiate();
 		}
+
+		Item(bool p_dummy) {}
 	};
+
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
 
 	int current = -1;
 	int hovered = -1;
@@ -113,6 +120,7 @@ private:
 
 	Size2 fixed_icon_size;
 	Size2 max_item_size_cache;
+	Size2 fixed_tag_icon_size;
 
 	int defer_select_single = -1;
 	bool allow_rmb_select = false;
@@ -148,17 +156,16 @@ private:
 	} theme_cache;
 
 	void _scroll_changed(double);
-	void _check_shape_changed();
 	void _shape_text(int p_idx);
 	void _mouse_exited();
 
 protected:
-	virtual void _update_theme_item_cache() override;
-
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list); }
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	static void _bind_methods();
 
 public:
@@ -255,6 +262,8 @@ public:
 	void set_fixed_icon_size(const Size2i &p_size);
 	Size2i get_fixed_icon_size() const;
 
+	void set_fixed_tag_icon_size(const Size2i &p_size);
+
 	void set_allow_rmb_select(bool p_allow);
 	bool get_allow_rmb_select() const;
 
@@ -282,6 +291,8 @@ public:
 	Size2 get_minimum_size() const override;
 
 	void set_autoscroll_to_bottom(const bool p_enable);
+
+	void force_update_list_size();
 
 	VScrollBar *get_v_scroll_bar() { return scroll_bar; }
 

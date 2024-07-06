@@ -14,6 +14,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_edited_object">
+			<return type="Object" />
+			<description>
+				Returns the object currently selected in this inspector.
+			</description>
+		</method>
 		<method name="get_selected_path" qualifiers="const">
 			<return type="String" />
 			<description>

@@ -35,7 +35,7 @@
 Error HashingContext::start(HashType p_type) {
 	ERR_FAIL_COND_V(ctx != nullptr, ERR_ALREADY_IN_USE);
 	_create_ctx(p_type);
-	ERR_FAIL_COND_V(ctx == nullptr, ERR_UNAVAILABLE);
+	ERR_FAIL_NULL_V(ctx, ERR_UNAVAILABLE);
 	switch (type) {
 		case HASH_MD5:
 			return ((CryptoCore::MD5Context *)ctx)->start();
@@ -47,8 +47,8 @@ Error HashingContext::start(HashType p_type) {
 	return ERR_UNAVAILABLE;
 }
 
-Error HashingContext::update(PackedByteArray p_chunk) {
-	ERR_FAIL_COND_V(ctx == nullptr, ERR_UNCONFIGURED);
+Error HashingContext::update(const PackedByteArray &p_chunk) {
+	ERR_FAIL_NULL_V(ctx, ERR_UNCONFIGURED);
 	size_t len = p_chunk.size();
 	ERR_FAIL_COND_V(len == 0, FAILED);
 	const uint8_t *r = p_chunk.ptr();
@@ -64,7 +64,7 @@ Error HashingContext::update(PackedByteArray p_chunk) {
 }
 
 PackedByteArray HashingContext::finish() {
-	ERR_FAIL_COND_V(ctx == nullptr, PackedByteArray());
+	ERR_FAIL_NULL_V(ctx, PackedByteArray());
 	PackedByteArray out;
 	Error err = FAILED;
 	switch (type) {

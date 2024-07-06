@@ -111,13 +111,13 @@ struct TrackData
 	break;
       }
     }
-    if (!trackTableEntry) return 0.;
+    if (!trackTableEntry) return 0;
 
     /*
      * Choose size.
      */
     unsigned int sizes = nSizes;
-    if (!sizes) return 0.;
+    if (!sizes) return 0;
     if (sizes == 1) return trackTableEntry->get_value (base, 0, sizes);
 
     hb_array_t<const F16DOT16> size_table ((base+sizeTable).arrayZ, sizes);
@@ -134,6 +134,7 @@ struct TrackData
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  sizeTable.sanitize (c, base, nSizes) &&
 			  trackTable.sanitize (c, nTracks, base, nSizes)));
   }
@@ -203,6 +204,7 @@ struct trak
     TRACE_SANITIZE (this);
 
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  version.major == 1 &&
 			  horizData.sanitize (c, this, this) &&
 			  vertData.sanitize (c, this, this)));

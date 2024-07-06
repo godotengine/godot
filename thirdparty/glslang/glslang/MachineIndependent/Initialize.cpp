@@ -2,7 +2,7 @@
 // Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 // Copyright (C) 2012-2016 LunarG, Inc.
 // Copyright (C) 2015-2020 Google, Inc.
-// Copyright (C) 2017 ARM Limited.
+// Copyright (C) 2017, 2022-2024 Arm Limited.
 // Modifications Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights reserved.
 //
 // All rights reserved.
@@ -51,8 +51,9 @@
 //                                                including identifying what extensions are needed if a version does not allow a symbol
 //
 
-#include "../Include/intermediate.h"
+#include <array>
 #include "Initialize.h"
+#include "span.h"
 
 namespace glslang {
 
@@ -60,10 +61,6 @@ namespace glslang {
 const bool ARBCompatibility = true;
 
 const bool ForwardCompatibility = false;
-
-// change this back to false if depending on textual spellings of texturing calls when consuming the AST
-// Using PureOperatorBuiltins=false is deprecated.
-bool PureOperatorBuiltins = true;
 
 namespace {
 
@@ -144,25 +141,17 @@ struct Versioning {
 EProfile EDesktopProfile = static_cast<EProfile>(ENoProfile | ECoreProfile | ECompatibilityProfile);
 
 // Declare pointers to put into the table for versioning.
-#ifdef GLSLANG_WEB
-    const Versioning* Es300Desktop130 = nullptr;
-    const Versioning* Es310Desktop420 = nullptr;
-#else
-    const Versioning Es300Desktop130Version[] = { { EEsProfile,      0, 300, 0, nullptr },
-                                                  { EDesktopProfile, 0, 130, 0, nullptr },
-                                                  { EBadProfile } };
-    const Versioning* Es300Desktop130 = &Es300Desktop130Version[0];
+    const std::array Es300Desktop130Version = { Versioning{ EEsProfile,      0, 300, 0, nullptr },
+                                                Versioning{ EDesktopProfile, 0, 130, 0, nullptr },
+                                              };
 
-    const Versioning Es310Desktop420Version[] = { { EEsProfile,      0, 310, 0, nullptr },
-                                                  { EDesktopProfile, 0, 420, 0, nullptr },
-                                                  { EBadProfile } };
-    const Versioning* Es310Desktop420 = &Es310Desktop420Version[0];
+    const std::array Es310Desktop400Version = { Versioning{ EEsProfile,      0, 310, 0, nullptr },
+                                                Versioning{ EDesktopProfile, 0, 400, 0, nullptr },
+                                              };
 
-    const Versioning Es310Desktop450Version[] = { { EEsProfile,      0, 310, 0, nullptr },
-                                                  { EDesktopProfile, 0, 450, 0, nullptr },
-                                                  { EBadProfile } };
-    const Versioning* Es310Desktop450 = &Es310Desktop450Version[0];
-#endif
+    const std::array Es310Desktop450Version = { Versioning{ EEsProfile,      0, 310, 0, nullptr },
+                                                Versioning{ EDesktopProfile, 0, 450, 0, nullptr },
+                                              };
 
 // The main descriptor of what a set of function prototypes can look like, and
 // a pointer to extra versioning information, when needed.
@@ -172,7 +161,7 @@ struct BuiltInFunction {
     int numArguments;             // number of arguments (overloads with varying arguments need different entries)
     ArgType types;                // ArgType mask
     ArgClass classes;             // the ways this particular function entry manifests
-    const Versioning* versioning; // nullptr means always a valid version
+    const span<const Versioning> versioning; // An empty span means always a valid version
 };
 
 // The tables can have the same built-in function name more than one time,
@@ -184,153 +173,146 @@ struct BuiltInFunction {
 //
 // Table is terminated by an OpNull TOperator.
 
-const BuiltInFunction BaseFunctions[] = {
+const std::array BaseFunctions = {
 //    TOperator,           name,       arg-count,   ArgType,   ArgClass,     versioning
 //    ---------            ----        ---------    -------    --------      ----------
-    { EOpRadians,          "radians",          1,   TypeF,     ClassRegular, nullptr },
-    { EOpDegrees,          "degrees",          1,   TypeF,     ClassRegular, nullptr },
-    { EOpSin,              "sin",              1,   TypeF,     ClassRegular, nullptr },
-    { EOpCos,              "cos",              1,   TypeF,     ClassRegular, nullptr },
-    { EOpTan,              "tan",              1,   TypeF,     ClassRegular, nullptr },
-    { EOpAsin,             "asin",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpAcos,             "acos",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpAtan,             "atan",             2,   TypeF,     ClassRegular, nullptr },
-    { EOpAtan,             "atan",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpPow,              "pow",              2,   TypeF,     ClassRegular, nullptr },
-    { EOpExp,              "exp",              1,   TypeF,     ClassRegular, nullptr },
-    { EOpLog,              "log",              1,   TypeF,     ClassRegular, nullptr },
-    { EOpExp2,             "exp2",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpLog2,             "log2",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpSqrt,             "sqrt",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpInverseSqrt,      "inversesqrt",      1,   TypeF,     ClassRegular, nullptr },
-    { EOpAbs,              "abs",              1,   TypeF,     ClassRegular, nullptr },
-    { EOpSign,             "sign",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpFloor,            "floor",            1,   TypeF,     ClassRegular, nullptr },
-    { EOpCeil,             "ceil",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpFract,            "fract",            1,   TypeF,     ClassRegular, nullptr },
-    { EOpMod,              "mod",              2,   TypeF,     ClassLS,      nullptr },
-    { EOpMin,              "min",              2,   TypeF,     ClassLS,      nullptr },
-    { EOpMax,              "max",              2,   TypeF,     ClassLS,      nullptr },
-    { EOpClamp,            "clamp",            3,   TypeF,     ClassLS2,     nullptr },
-    { EOpMix,              "mix",              3,   TypeF,     ClassLS,      nullptr },
-    { EOpStep,             "step",             2,   TypeF,     ClassFS,      nullptr },
-    { EOpSmoothStep,       "smoothstep",       3,   TypeF,     ClassFS2,     nullptr },
-    { EOpNormalize,        "normalize",        1,   TypeF,     ClassRegular, nullptr },
-    { EOpFaceForward,      "faceforward",      3,   TypeF,     ClassRegular, nullptr },
-    { EOpReflect,          "reflect",          2,   TypeF,     ClassRegular, nullptr },
-    { EOpRefract,          "refract",          3,   TypeF,     ClassXLS,     nullptr },
-    { EOpLength,           "length",           1,   TypeF,     ClassRS,      nullptr },
-    { EOpDistance,         "distance",         2,   TypeF,     ClassRS,      nullptr },
-    { EOpDot,              "dot",              2,   TypeF,     ClassRS,      nullptr },
-    { EOpCross,            "cross",            2,   TypeF,     ClassV3,      nullptr },
-    { EOpLessThan,         "lessThan",         2,   TypeFI,    ClassBNS,     nullptr },
-    { EOpLessThanEqual,    "lessThanEqual",    2,   TypeFI,    ClassBNS,     nullptr },
-    { EOpGreaterThan,      "greaterThan",      2,   TypeFI,    ClassBNS,     nullptr },
-    { EOpGreaterThanEqual, "greaterThanEqual", 2,   TypeFI,    ClassBNS,     nullptr },
-    { EOpVectorEqual,      "equal",            2,   TypeFIB,   ClassBNS,     nullptr },
-    { EOpVectorNotEqual,   "notEqual",         2,   TypeFIB,   ClassBNS,     nullptr },
-    { EOpAny,              "any",              1,   TypeB,     ClassRSNS,    nullptr },
-    { EOpAll,              "all",              1,   TypeB,     ClassRSNS,    nullptr },
-    { EOpVectorLogicalNot, "not",              1,   TypeB,     ClassNS,      nullptr },
-    { EOpSinh,             "sinh",             1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpCosh,             "cosh",             1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpTanh,             "tanh",             1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpAsinh,            "asinh",            1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpAcosh,            "acosh",            1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpAtanh,            "atanh",            1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpAbs,              "abs",              1,   TypeI,     ClassRegular, Es300Desktop130 },
-    { EOpSign,             "sign",             1,   TypeI,     ClassRegular, Es300Desktop130 },
-    { EOpTrunc,            "trunc",            1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpRound,            "round",            1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpRoundEven,        "roundEven",        1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpModf,             "modf",             2,   TypeF,     ClassLO,      Es300Desktop130 },
-    { EOpMin,              "min",              2,   TypeIU,    ClassLS,      Es300Desktop130 },
-    { EOpMax,              "max",              2,   TypeIU,    ClassLS,      Es300Desktop130 },
-    { EOpClamp,            "clamp",            3,   TypeIU,    ClassLS2,     Es300Desktop130 },
-    { EOpMix,              "mix",              3,   TypeF,     ClassLB,      Es300Desktop130 },
-    { EOpIsInf,            "isinf",            1,   TypeF,     ClassB,       Es300Desktop130 },
-    { EOpIsNan,            "isnan",            1,   TypeF,     ClassB,       Es300Desktop130 },
-    { EOpLessThan,         "lessThan",         2,   TypeU,     ClassBNS,     Es300Desktop130 },
-    { EOpLessThanEqual,    "lessThanEqual",    2,   TypeU,     ClassBNS,     Es300Desktop130 },
-    { EOpGreaterThan,      "greaterThan",      2,   TypeU,     ClassBNS,     Es300Desktop130 },
-    { EOpGreaterThanEqual, "greaterThanEqual", 2,   TypeU,     ClassBNS,     Es300Desktop130 },
-    { EOpVectorEqual,      "equal",            2,   TypeU,     ClassBNS,     Es300Desktop130 },
-    { EOpVectorNotEqual,   "notEqual",         2,   TypeU,     ClassBNS,     Es300Desktop130 },
-    { EOpAtomicAdd,        "atomicAdd",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicMin,        "atomicMin",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicMax,        "atomicMax",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicAnd,        "atomicAnd",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicOr,         "atomicOr",         2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicXor,        "atomicXor",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicExchange,   "atomicExchange",   2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicCompSwap,   "atomicCompSwap",   3,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-#ifndef GLSLANG_WEB
-    { EOpMix,              "mix",              3,   TypeB,     ClassRegular, Es310Desktop450 },
-    { EOpMix,              "mix",              3,   TypeIU,    ClassLB,      Es310Desktop450 },
-#endif
-
-    { EOpNull }
+    BuiltInFunction{ EOpRadians,          "radians",          1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpDegrees,          "degrees",          1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpSin,              "sin",              1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpCos,              "cos",              1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpTan,              "tan",              1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpAsin,             "asin",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpAcos,             "acos",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpAtan,             "atan",             2,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpAtan,             "atan",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpPow,              "pow",              2,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpExp,              "exp",              1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpLog,              "log",              1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpExp2,             "exp2",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpLog2,             "log2",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpSqrt,             "sqrt",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpInverseSqrt,      "inversesqrt",      1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpAbs,              "abs",              1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpSign,             "sign",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpFloor,            "floor",            1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpCeil,             "ceil",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpFract,            "fract",            1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpMod,              "mod",              2,   TypeF,     ClassLS,      {} },
+    BuiltInFunction{ EOpMin,              "min",              2,   TypeF,     ClassLS,      {} },
+    BuiltInFunction{ EOpMax,              "max",              2,   TypeF,     ClassLS,      {} },
+    BuiltInFunction{ EOpClamp,            "clamp",            3,   TypeF,     ClassLS2,     {} },
+    BuiltInFunction{ EOpMix,              "mix",              3,   TypeF,     ClassLS,      {} },
+    BuiltInFunction{ EOpStep,             "step",             2,   TypeF,     ClassFS,      {} },
+    BuiltInFunction{ EOpSmoothStep,       "smoothstep",       3,   TypeF,     ClassFS2,     {} },
+    BuiltInFunction{ EOpNormalize,        "normalize",        1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpFaceForward,      "faceforward",      3,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpReflect,          "reflect",          2,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpRefract,          "refract",          3,   TypeF,     ClassXLS,     {} },
+    BuiltInFunction{ EOpLength,           "length",           1,   TypeF,     ClassRS,      {} },
+    BuiltInFunction{ EOpDistance,         "distance",         2,   TypeF,     ClassRS,      {} },
+    BuiltInFunction{ EOpDot,              "dot",              2,   TypeF,     ClassRS,      {} },
+    BuiltInFunction{ EOpCross,            "cross",            2,   TypeF,     ClassV3,      {} },
+    BuiltInFunction{ EOpLessThan,         "lessThan",         2,   TypeFI,    ClassBNS,     {} },
+    BuiltInFunction{ EOpLessThanEqual,    "lessThanEqual",    2,   TypeFI,    ClassBNS,     {} },
+    BuiltInFunction{ EOpGreaterThan,      "greaterThan",      2,   TypeFI,    ClassBNS,     {} },
+    BuiltInFunction{ EOpGreaterThanEqual, "greaterThanEqual", 2,   TypeFI,    ClassBNS,     {} },
+    BuiltInFunction{ EOpVectorEqual,      "equal",            2,   TypeFIB,   ClassBNS,     {} },
+    BuiltInFunction{ EOpVectorNotEqual,   "notEqual",         2,   TypeFIB,   ClassBNS,     {} },
+    BuiltInFunction{ EOpAny,              "any",              1,   TypeB,     ClassRSNS,    {} },
+    BuiltInFunction{ EOpAll,              "all",              1,   TypeB,     ClassRSNS,    {} },
+    BuiltInFunction{ EOpVectorLogicalNot, "not",              1,   TypeB,     ClassNS,      {} },
+    BuiltInFunction{ EOpSinh,             "sinh",             1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpCosh,             "cosh",             1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpTanh,             "tanh",             1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpAsinh,            "asinh",            1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpAcosh,            "acosh",            1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpAtanh,            "atanh",            1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpAbs,              "abs",              1,   TypeI,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpSign,             "sign",             1,   TypeI,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpTrunc,            "trunc",            1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpRound,            "round",            1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpRoundEven,        "roundEven",        1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpModf,             "modf",             2,   TypeF,     ClassLO,      {Es300Desktop130Version} },
+    BuiltInFunction{ EOpMin,              "min",              2,   TypeIU,    ClassLS,      {Es300Desktop130Version} },
+    BuiltInFunction{ EOpMax,              "max",              2,   TypeIU,    ClassLS,      {Es300Desktop130Version} },
+    BuiltInFunction{ EOpClamp,            "clamp",            3,   TypeIU,    ClassLS2,     {Es300Desktop130Version} },
+    BuiltInFunction{ EOpMix,              "mix",              3,   TypeF,     ClassLB,      {Es300Desktop130Version} },
+    BuiltInFunction{ EOpIsInf,            "isinf",            1,   TypeF,     ClassB,       {Es300Desktop130Version} },
+    BuiltInFunction{ EOpIsNan,            "isnan",            1,   TypeF,     ClassB,       {Es300Desktop130Version} },
+    BuiltInFunction{ EOpLessThan,         "lessThan",         2,   TypeU,     ClassBNS,     {Es300Desktop130Version} },
+    BuiltInFunction{ EOpLessThanEqual,    "lessThanEqual",    2,   TypeU,     ClassBNS,     {Es300Desktop130Version} },
+    BuiltInFunction{ EOpGreaterThan,      "greaterThan",      2,   TypeU,     ClassBNS,     {Es300Desktop130Version} },
+    BuiltInFunction{ EOpGreaterThanEqual, "greaterThanEqual", 2,   TypeU,     ClassBNS,     {Es300Desktop130Version} },
+    BuiltInFunction{ EOpVectorEqual,      "equal",            2,   TypeU,     ClassBNS,     {Es300Desktop130Version} },
+    BuiltInFunction{ EOpVectorNotEqual,   "notEqual",         2,   TypeU,     ClassBNS,     {Es300Desktop130Version} },
+    BuiltInFunction{ EOpAtomicAdd,        "atomicAdd",        2,   TypeIU,    ClassV1FIOCV, {Es310Desktop400Version} },
+    BuiltInFunction{ EOpAtomicMin,        "atomicMin",        2,   TypeIU,    ClassV1FIOCV, {Es310Desktop400Version} },
+    BuiltInFunction{ EOpAtomicMax,        "atomicMax",        2,   TypeIU,    ClassV1FIOCV, {Es310Desktop400Version} },
+    BuiltInFunction{ EOpAtomicAnd,        "atomicAnd",        2,   TypeIU,    ClassV1FIOCV, {Es310Desktop400Version} },
+    BuiltInFunction{ EOpAtomicOr,         "atomicOr",         2,   TypeIU,    ClassV1FIOCV, {Es310Desktop400Version} },
+    BuiltInFunction{ EOpAtomicXor,        "atomicXor",        2,   TypeIU,    ClassV1FIOCV, {Es310Desktop400Version} },
+    BuiltInFunction{ EOpAtomicExchange,   "atomicExchange",   2,   TypeIU,    ClassV1FIOCV, {Es310Desktop400Version} },
+    BuiltInFunction{ EOpAtomicCompSwap,   "atomicCompSwap",   3,   TypeIU,    ClassV1FIOCV, {Es310Desktop400Version} },
+    BuiltInFunction{ EOpMix,              "mix",              3,   TypeB,     ClassRegular, {Es310Desktop450Version} },
+    BuiltInFunction{ EOpMix,              "mix",              3,   TypeIU,    ClassLB,      {Es310Desktop450Version} },
 };
 
-const BuiltInFunction DerivativeFunctions[] = {
-    { EOpDPdx,             "dFdx",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpDPdy,             "dFdy",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpFwidth,           "fwidth",           1,   TypeF,     ClassRegular, nullptr },
-    { EOpNull }
+const std::array DerivativeFunctions = {
+    BuiltInFunction{ EOpDPdx,             "dFdx",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpDPdy,             "dFdy",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpFwidth,           "fwidth",           1,   TypeF,     ClassRegular, {} },
 };
 
 // For functions declared some other way, but still use the table to relate to operator.
 struct CustomFunction {
     TOperator op;                 // operator to map the name to
     const char* name;             // function name
-    const Versioning* versioning; // nullptr means always a valid version
+    const span<const Versioning> versioning; // An empty span means always a valid version
 };
 
 const CustomFunction CustomFunctions[] = {
-    { EOpBarrier,             "barrier",             nullptr },
-    { EOpMemoryBarrierShared, "memoryBarrierShared", nullptr },
-    { EOpGroupMemoryBarrier,  "groupMemoryBarrier",  nullptr },
-    { EOpMemoryBarrier,       "memoryBarrier",       nullptr },
-    { EOpMemoryBarrierBuffer, "memoryBarrierBuffer", nullptr },
+    { EOpBarrier,             "barrier",             {} },
+    { EOpMemoryBarrierShared, "memoryBarrierShared", {} },
+    { EOpGroupMemoryBarrier,  "groupMemoryBarrier",  {} },
+    { EOpMemoryBarrier,       "memoryBarrier",       {} },
+    { EOpMemoryBarrierBuffer, "memoryBarrierBuffer", {} },
 
-    { EOpPackSnorm2x16,       "packSnorm2x16",       nullptr },
-    { EOpUnpackSnorm2x16,     "unpackSnorm2x16",     nullptr },
-    { EOpPackUnorm2x16,       "packUnorm2x16",       nullptr },
-    { EOpUnpackUnorm2x16,     "unpackUnorm2x16",     nullptr },
-    { EOpPackHalf2x16,        "packHalf2x16",        nullptr },
-    { EOpUnpackHalf2x16,      "unpackHalf2x16",      nullptr },
+    { EOpPackSnorm2x16,       "packSnorm2x16",       {} },
+    { EOpUnpackSnorm2x16,     "unpackSnorm2x16",     {} },
+    { EOpPackUnorm2x16,       "packUnorm2x16",       {} },
+    { EOpUnpackUnorm2x16,     "unpackUnorm2x16",     {} },
+    { EOpPackHalf2x16,        "packHalf2x16",        {} },
+    { EOpUnpackHalf2x16,      "unpackHalf2x16",      {} },
 
-    { EOpMul,                 "matrixCompMult",      nullptr },
-    { EOpOuterProduct,        "outerProduct",        nullptr },
-    { EOpTranspose,           "transpose",           nullptr },
-    { EOpDeterminant,         "determinant",         nullptr },
-    { EOpMatrixInverse,       "inverse",             nullptr },
-    { EOpFloatBitsToInt,      "floatBitsToInt",      nullptr },
-    { EOpFloatBitsToUint,     "floatBitsToUint",     nullptr },
-    { EOpIntBitsToFloat,      "intBitsToFloat",      nullptr },
-    { EOpUintBitsToFloat,     "uintBitsToFloat",     nullptr },
+    { EOpMul,                 "matrixCompMult",      {} },
+    { EOpOuterProduct,        "outerProduct",        {} },
+    { EOpTranspose,           "transpose",           {} },
+    { EOpDeterminant,         "determinant",         {} },
+    { EOpMatrixInverse,       "inverse",             {} },
+    { EOpFloatBitsToInt,      "floatBitsToInt",      {} },
+    { EOpFloatBitsToUint,     "floatBitsToUint",     {} },
+    { EOpIntBitsToFloat,      "intBitsToFloat",      {} },
+    { EOpUintBitsToFloat,     "uintBitsToFloat",     {} },
 
-    { EOpTextureQuerySize,      "textureSize",           nullptr },
-    { EOpTextureQueryLod,       "textureQueryLod",       nullptr },
-    { EOpTextureQueryLod,       "textureQueryLOD",       nullptr }, // extension GL_ARB_texture_query_lod
-    { EOpTextureQueryLevels,    "textureQueryLevels",    nullptr },
-    { EOpTextureQuerySamples,   "textureSamples",        nullptr },
-    { EOpTexture,               "texture",               nullptr },
-    { EOpTextureProj,           "textureProj",           nullptr },
-    { EOpTextureLod,            "textureLod",            nullptr },
-    { EOpTextureOffset,         "textureOffset",         nullptr },
-    { EOpTextureFetch,          "texelFetch",            nullptr },
-    { EOpTextureFetchOffset,    "texelFetchOffset",      nullptr },
-    { EOpTextureProjOffset,     "textureProjOffset",     nullptr },
-    { EOpTextureLodOffset,      "textureLodOffset",      nullptr },
-    { EOpTextureProjLod,        "textureProjLod",        nullptr },
-    { EOpTextureProjLodOffset,  "textureProjLodOffset",  nullptr },
-    { EOpTextureGrad,           "textureGrad",           nullptr },
-    { EOpTextureGradOffset,     "textureGradOffset",     nullptr },
-    { EOpTextureProjGrad,       "textureProjGrad",       nullptr },
-    { EOpTextureProjGradOffset, "textureProjGradOffset", nullptr },
-
-    { EOpNull }
+    { EOpTextureQuerySize,      "textureSize",           {} },
+    { EOpTextureQueryLod,       "textureQueryLod",       {} },
+    { EOpTextureQueryLod,       "textureQueryLOD",       {} }, // extension GL_ARB_texture_query_lod
+    { EOpTextureQueryLevels,    "textureQueryLevels",    {} },
+    { EOpTextureQuerySamples,   "textureSamples",        {} },
+    { EOpTexture,               "texture",               {} },
+    { EOpTextureProj,           "textureProj",           {} },
+    { EOpTextureLod,            "textureLod",            {} },
+    { EOpTextureOffset,         "textureOffset",         {} },
+    { EOpTextureFetch,          "texelFetch",            {} },
+    { EOpTextureFetchOffset,    "texelFetchOffset",      {} },
+    { EOpTextureProjOffset,     "textureProjOffset",     {} },
+    { EOpTextureLodOffset,      "textureLodOffset",      {} },
+    { EOpTextureProjLod,        "textureProjLod",        {} },
+    { EOpTextureProjLodOffset,  "textureProjLodOffset",  {} },
+    { EOpTextureGrad,           "textureGrad",           {} },
+    { EOpTextureGradOffset,     "textureGradOffset",     {} },
+    { EOpTextureProjGrad,       "textureProjGrad",       {} },
+    { EOpTextureProjGradOffset, "textureProjGradOffset", {} },
 };
 
 // For the given table of functions, add all the indicated prototypes for each
@@ -386,10 +368,8 @@ void AddTabledBuiltin(TString& decls, const BuiltInFunction& function)
                 if (arg == function.numArguments - 1 && (function.classes & ClassLO))
                     decls.append("out ");
                 if (arg == 0) {
-#ifndef GLSLANG_WEB
                     if (function.classes & ClassCV)
                         decls.append("coherent volatile ");
-#endif
                     if (function.classes & ClassFIO)
                         decls.append("inout ");
                     if (function.classes & ClassFO)
@@ -416,19 +396,14 @@ void AddTabledBuiltin(TString& decls, const BuiltInFunction& function)
 // See if the tabled versioning information allows the current version.
 bool ValidVersion(const BuiltInFunction& function, int version, EProfile profile, const SpvVersion& /* spVersion */)
 {
-#if defined(GLSLANG_WEB)
-    // all entries in table are valid
-    return true;
-#endif
-
     // nullptr means always valid
-    if (function.versioning == nullptr)
+    if (function.versioning.empty())
         return true;
 
     // check for what is said about our current profile
-    for (const Versioning* v = function.versioning; v->profiles != EBadProfile; ++v) {
-        if ((v->profiles & profile) != 0) {
-            if (v->minCoreVersion <= version || (v->numExtensions > 0 && v->minExtendedVersion <= version))
+    for (const auto& v : function.versioning) {
+        if ((v.profiles & profile) != 0) {
+            if (v.minCoreVersion <= version || (v.numExtensions > 0 && v.minExtendedVersion <= version))
                 return true;
         }
     }
@@ -441,12 +416,11 @@ bool ValidVersion(const BuiltInFunction& function, int version, EProfile profile
 // called once per stage). This is a performance issue only, not a correctness
 // concern.  It is done for quality arising from simplicity, as there are subtleties
 // to get correct if instead trying to do it surgically.
-template<class FunctionT>
-void RelateTabledBuiltins(const FunctionT* functions, TSymbolTable& symbolTable)
+template<class FunctionContainer>
+void RelateTabledBuiltins(const FunctionContainer& functions, TSymbolTable& symbolTable)
 {
-    while (functions->op != EOpNull) {
-        symbolTable.relateToOperator(functions->name, functions->op);
-        ++functions;
+    for (const auto& fn : functions) {
+        symbolTable.relateToOperator(fn.name, fn.op);
     }
 }
 
@@ -455,11 +429,10 @@ void RelateTabledBuiltins(const FunctionT* functions, TSymbolTable& symbolTable)
 // Add declarations for all tables of built-in functions.
 void TBuiltIns::addTabledBuiltins(int version, EProfile profile, const SpvVersion& spvVersion)
 {
-    const auto forEachFunction = [&](TString& decls, const BuiltInFunction* function) {
-        while (function->op != EOpNull) {
-            if (ValidVersion(*function, version, profile, spvVersion))
-                AddTabledBuiltin(decls, *function);
-            ++function;
+    const auto forEachFunction = [&](TString& decls, const span<const BuiltInFunction>& functions) {
+        for (const auto& fn : functions) {
+            if (ValidVersion(fn, version, profile, spvVersion))
+                AddTabledBuiltin(decls, fn);
         }
     };
 
@@ -501,7 +474,6 @@ TBuiltIns::TBuiltIns()
     prefixes[EbtFloat] =  "";
     prefixes[EbtInt]   = "i";
     prefixes[EbtUint]  = "u";
-#if !defined(GLSLANG_WEB)
     prefixes[EbtFloat16] = "f16";
     prefixes[EbtInt8]  = "i8";
     prefixes[EbtUint8] = "u8";
@@ -509,7 +481,6 @@ TBuiltIns::TBuiltIns()
     prefixes[EbtUint16] = "u16";
     prefixes[EbtInt64]  = "i64";
     prefixes[EbtUint64] = "u64";
-#endif
 
     postfixes[2] = "2";
     postfixes[3] = "3";
@@ -519,13 +490,11 @@ TBuiltIns::TBuiltIns()
     dimMap[Esd2D] = 2;
     dimMap[Esd3D] = 3;
     dimMap[EsdCube] = 3;
-#ifndef GLSLANG_WEB
     dimMap[Esd1D] = 1;
     dimMap[EsdRect] = 2;
     dimMap[EsdBuffer] = 1;
     dimMap[EsdSubpass] = 2;  // potentially unused for now
     dimMap[EsdAttachmentEXT] = 2;  // potentially unused for now
-#endif
 }
 
 TBuiltIns::~TBuiltIns()
@@ -543,10 +512,6 @@ TBuiltIns::~TBuiltIns()
 //
 void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvVersion)
 {
-#ifdef GLSLANG_WEB
-    version = 310;
-    profile = EEsProfile;
-#endif
     addTabledBuiltins(version, profile, spvVersion);
 
     //============================================================================
@@ -555,7 +520,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
     //
     //============================================================================
 
-#ifndef GLSLANG_WEB
     //
     // Derivatives Functions.
     //
@@ -1500,7 +1464,20 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "void atomicStore(coherent volatile out double, double, int, int, int);"
             "\n");
     }
-#endif // !GLSLANG_WEB
+
+    // NV_shader_atomic_fp16_vector
+    if (profile != EEsProfile && version >= 430) {
+        commonBuiltins.append(
+            "f16vec2 atomicAdd(coherent volatile inout f16vec2, f16vec2);"
+            "f16vec4 atomicAdd(coherent volatile inout f16vec4, f16vec4);"
+            "f16vec2 atomicMin(coherent volatile inout f16vec2, f16vec2);"
+            "f16vec4 atomicMin(coherent volatile inout f16vec4, f16vec4);"
+            "f16vec2 atomicMax(coherent volatile inout f16vec2, f16vec2);"
+            "f16vec4 atomicMax(coherent volatile inout f16vec4, f16vec4);"
+            "f16vec2 atomicExchange(coherent volatile inout f16vec2, f16vec2);"
+            "f16vec4 atomicExchange(coherent volatile inout f16vec4, f16vec4);"
+            "\n");
+    }
 
     if ((profile == EEsProfile && version >= 300) ||
         (profile != EEsProfile && version >= 150)) { // GL_ARB_shader_bit_encoding
@@ -1528,7 +1505,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "\n");
     }
 
-#ifndef GLSLANG_WEB
     if ((profile != EEsProfile && version >= 400) ||
         (profile == EEsProfile && version >= 310)) {    // GL_OES_gpu_shader5
 
@@ -1606,7 +1582,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 
             "\n");
     }
-#endif
 
     if ((profile == EEsProfile && version >= 300) ||
         (profile != EEsProfile && version >= 150)) {
@@ -1635,7 +1610,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "\n");
     }
 
-#ifndef GLSLANG_WEB
     if ((profile == EEsProfile && version >= 310) ||
         (profile != EEsProfile && version >= 150)) {
         commonBuiltins.append(
@@ -1655,7 +1629,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                     "vec4 unpackUnorm4x8(highp uint);"
             "\n");
     }
-#endif
 
     //
     // Matrix Functions.
@@ -1714,7 +1687,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
         }
     }
 
-#ifndef GLSLANG_WEB
     //
     // Original-style texture functions existing in all stages.
     // (Per-stage functions below.)
@@ -1760,6 +1732,16 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "vec4 shadow2DRect(sampler2DRectShadow, vec3);"     // GL_ARB_texture_rectangle, caught by keyword check
                 "vec4 shadow2DRectProj(sampler2DRectShadow, vec4);" // GL_ARB_texture_rectangle, caught by keyword check
 
+                "vec4 texture1DArray(sampler1DArray, vec2);"      // GL_EXT_texture_array
+                "vec4 texture2DArray(sampler2DArray, vec3);"      // GL_EXT_texture_array
+                "vec4 shadow1DArray(sampler1DArrayShadow, vec3);" // GL_EXT_texture_array
+                "vec4 shadow2DArray(sampler2DArrayShadow, vec4);" // GL_EXT_texture_array
+                "vec4 texture1DArray(sampler1DArray, vec2, float);"                // GL_EXT_texture_array
+                "vec4 texture2DArray(sampler2DArray, vec3, float);"                // GL_EXT_texture_array
+                "vec4 shadow1DArray(sampler1DArrayShadow, vec3, float);"           // GL_EXT_texture_array
+                "vec4 texture1DArrayLod(sampler1DArray, vec2, float);"      // GL_EXT_texture_array
+                "vec4 texture2DArrayLod(sampler2DArray, vec3, float);"      // GL_EXT_texture_array
+                "vec4 shadow1DArrayLod(sampler1DArrayShadow, vec3, float);" // GL_EXT_texture_array
                 "\n");
         }
     }
@@ -2131,6 +2113,8 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "%s     subgroupShuffleXor(%s, uint);\n",
             "%s     subgroupShuffleUp(%s, uint delta);\n",
             "%s     subgroupShuffleDown(%s, uint delta);\n",
+            "%s     subgroupRotate(%s, uint);\n",
+            "%s     subgroupClusteredRotate(%s, uint, uint);\n",
             "%s     subgroupAdd(%s);\n",
             "%s     subgroupMul(%s);\n",
             "%s     subgroupMin(%s);\n",
@@ -2256,6 +2240,15 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
         stageBuiltins[EShLangTask].append(
             "void subgroupMemoryBarrierShared();"
             "\n"
+            );
+    }
+
+    // GL_EXT_shader_quad_control
+    if ((profile == EEsProfile && version >= 310) ||
+        (profile != EEsProfile && version >= 140)) {
+        commonBuiltins.append(
+            "bool subgroupQuadAll(bool);\n"
+            "bool subgroupQuadAny(bool);\n"
             );
     }
 
@@ -4139,6 +4132,50 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "u16vec4  unpack16(uint64_t);"
             "i32vec2  unpack32(int64_t);"
             "u32vec2  unpack32(uint64_t);"
+
+            // GL_EXT_expect_assume
+            "int8_t expectEXT(int8_t, int8_t);"
+            "i8vec2 expectEXT(i8vec2, i8vec2);"
+            "i8vec3 expectEXT(i8vec3, i8vec3);"
+            "i8vec4 expectEXT(i8vec4, i8vec4);"
+
+            "uint8_t expectEXT(uint8_t, uint8_t);"
+            "u8vec2 expectEXT(u8vec2, u8vec2);"
+            "u8vec3 expectEXT(u8vec3, u8vec3);"
+            "u8vec4 expectEXT(u8vec4, u8vec4);"
+
+            "int16_t expectEXT(int16_t, int16_t);"
+            "i16vec2 expectEXT(i16vec2, i16vec2);"
+            "i16vec3 expectEXT(i16vec3, i16vec3);"
+            "i16vec4 expectEXT(i16vec4, i16vec4);"
+
+            "uint16_t expectEXT(uint16_t, uint16_t);"
+            "u16vec2 expectEXT(u16vec2, u16vec2);"
+            "u16vec3 expectEXT(u16vec3, u16vec3);"
+            "u16vec4 expectEXT(u16vec4, u16vec4);"
+
+            "int64_t expectEXT(int64_t, int64_t);"
+            "i64vec2 expectEXT(i64vec2, i64vec2);"
+            "i64vec3 expectEXT(i64vec3, i64vec3);"
+            "i64vec4 expectEXT(i64vec4, i64vec4);"
+
+            "uint64_t expectEXT(uint64_t, uint64_t);"
+            "u64vec2 expectEXT(u64vec2, u64vec2);"
+            "u64vec3 expectEXT(u64vec3, u64vec3);"
+            "u64vec4 expectEXT(u64vec4, u64vec4);"
+            "\n");
+    }
+
+    // Builtins for GL_EXT_texture_shadow_lod
+    if ((profile == EEsProfile && version >= 300) || ((profile != EEsProfile && version >= 130))) { 
+        commonBuiltins.append(
+            "float texture(sampler2DArrayShadow, vec4, float);"
+            "float texture(samplerCubeArrayShadow, vec4, float, float);"
+            "float textureLod(sampler2DArrayShadow, vec4, float);"
+            "float textureLod(samplerCubeShadow, vec4, float);"
+            "float textureLod(samplerCubeArrayShadow, vec4, float, float);"
+            "float textureLodOffset(sampler2DArrayShadow, vec4, float, ivec2);"
+            "float textureOffset(sampler2DArrayShadow, vec4 , ivec2, float);"
             "\n");
     }
 
@@ -4162,6 +4199,46 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 
             "\n");
 
+    }
+
+    // GL_EXT_expect_assume
+    if ((profile == EEsProfile && version >= 310) ||
+         ((profile != EEsProfile && version >= 140))) {
+        commonBuiltins.append(
+            "void assumeEXT(bool);"
+
+            "bool expectEXT(bool, bool);"
+            "bvec2 expectEXT(bvec2, bvec2);"
+            "bvec3 expectEXT(bvec3, bvec3);"
+            "bvec4 expectEXT(bvec4, bvec4);"
+
+            "int expectEXT(int, int);"
+            "ivec2 expectEXT(ivec2, ivec2);"
+            "ivec3 expectEXT(ivec3, ivec3);"
+            "ivec4 expectEXT(ivec4, ivec4);"
+
+            "uint expectEXT(uint, uint);"
+            "uvec2 expectEXT(uvec2, uvec2);"
+            "uvec3 expectEXT(uvec3, uvec3);"
+            "uvec4 expectEXT(uvec4, uvec4);"
+            "\n");
+    }
+
+    // QCOM_image_processing
+    if ((profile == EEsProfile && version >= 310) ||
+         (profile != EEsProfile && version >= 140)) {
+        commonBuiltins.append(
+           "vec4 textureWeightedQCOM(sampler2D, vec2, sampler2DArray);"
+           "vec4 textureWeightedQCOM(sampler2D, vec2, sampler1DArray);"
+           "vec4 textureBoxFilterQCOM(sampler2D, vec2, vec2);"
+           "vec4 textureBlockMatchSADQCOM(sampler2D, uvec2, sampler2D, uvec2, uvec2);"
+           "vec4 textureBlockMatchSSDQCOM(sampler2D, uvec2, sampler2D, uvec2, uvec2);"
+
+           "vec4 textureBlockMatchWindowSSDQCOM(sampler2D, uvec2, sampler2D, uvec2, uvec2);"
+           "vec4 textureBlockMatchWindowSADQCOM(sampler2D, uvec2, sampler2D, uvec2, uvec2);"
+           "vec4 textureBlockMatchGatherSSDQCOM(sampler2D, uvec2, sampler2D, uvec2, uvec2);"
+           "vec4 textureBlockMatchGatherSADQCOM(sampler2D, uvec2, sampler2D, uvec2, uvec2);"
+           "\n");
     }
 
     //============================================================================
@@ -4257,7 +4334,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "void EndPrimitive();"
             "\n");
     }
-#endif // !GLSLANG_WEB
 
     //============================================================================
     //
@@ -4294,7 +4370,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "void groupMemoryBarrier();"
             );
     }
-#ifndef GLSLANG_WEB
     if ((profile != EEsProfile && version >= 420) || esBarrier) {
         if (spvVersion.vulkan == 0 || spvVersion.vulkanRelaxed) {
             commonBuiltins.append("void memoryBarrierAtomicCounter();");
@@ -4396,6 +4471,94 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 
             "icoopmatNV coopMatMulAddNV(icoopmatNV A, icoopmatNV B, icoopmatNV C);\n"
             "ucoopmatNV coopMatMulAddNV(ucoopmatNV A, ucoopmatNV B, ucoopmatNV C);\n"
+            );
+
+        std::string cooperativeMatrixFuncs =
+            "void coopMatLoad(out coopmat m, volatile coherent int8_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent int16_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent int32_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent int64_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent uint8_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent uint16_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent uint32_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent uint64_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent float16_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent float[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent float64_t[] buf, uint element, uint stride, int matrixLayout);\n"
+
+            "void coopMatLoad(out coopmat m, volatile coherent i8vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent i16vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent i32vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent i64vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent u8vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent u16vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent u32vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent u64vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent f16vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent f32vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent f64vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+
+            "void coopMatLoad(out coopmat m, volatile coherent i8vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent i16vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent i32vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent i64vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent u8vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent u16vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent u32vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent u64vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent f16vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent f32vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatLoad(out coopmat m, volatile coherent f64vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+
+            "void coopMatStore(coopmat m, volatile coherent int8_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent int16_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent int32_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent int64_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent uint8_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent uint16_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent uint32_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent uint64_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent float16_t[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent float[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent float64_t[] buf, uint element, uint stride, int matrixLayout);\n"
+
+            "void coopMatStore(coopmat m, volatile coherent i8vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent i16vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent i32vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent i64vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent u8vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent u16vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent u32vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent u64vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent f16vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent f32vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent f64vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+
+            "void coopMatStore(coopmat m, volatile coherent i8vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent i16vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent i32vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent i64vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent u8vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent u16vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent u32vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent u64vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent f16vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent f32vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+            "void coopMatStore(coopmat m, volatile coherent f64vec4[] buf, uint element, uint stride, int matrixLayout);\n"
+
+            "coopmat coopMatMulAdd(coopmat A, coopmat B, coopmat C);\n"
+            "coopmat coopMatMulAdd(coopmat A, coopmat B, coopmat C, int matrixOperands);\n";
+
+        commonBuiltins.append(cooperativeMatrixFuncs.c_str());
+
+        commonBuiltins.append(
+            "const int gl_MatrixUseA = 0;\n"
+            "const int gl_MatrixUseB = 1;\n"
+            "const int gl_MatrixUseAccumulator = 2;\n"
+            "const int gl_MatrixOperandsSaturatingAccumulation = 0x10;\n"
+            "const int gl_CooperativeMatrixLayoutRowMajor = 0;\n"
+            "const int gl_CooperativeMatrixLayoutColumnMajor = 1;\n"
+            "\n"
             );
     }
 
@@ -4567,7 +4730,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "uvec4 fragmentFetchAMD(usubpassInputMS, uint);"
 
             "\n");
-        }
+    }
 
     // Builtins for GL_NV_ray_tracing/GL_NV_ray_tracing_motion_blur/GL_EXT_ray_tracing/GL_EXT_ray_query/
     // GL_NV_shader_invocation_reorder/GL_KHR_ray_tracing_position_Fetch
@@ -4637,6 +4800,8 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "void reorderThreadNV(uint, uint);"
             "void reorderThreadNV(hitObjectNV);"
             "void reorderThreadNV(hitObjectNV, uint, uint);"
+            "vec3 fetchMicroTriangleVertexPositionNV(accelerationStructureEXT, int, int, int, ivec2);"
+            "vec2 fetchMicroTriangleVertexBarycentricNV(accelerationStructureEXT, int, int, int, ivec2);"
             "\n");
         stageBuiltins[EShLangIntersect].append(
             "bool reportIntersectionNV(float, uint);"
@@ -4754,7 +4919,20 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "void SetMeshOutputsEXT(uint, uint);"
             "\n");
     }
-#endif // !GLSLANG_WEB
+    // Builtins for GL_NV_displacement_micromap
+    if ((profile != EEsProfile && version >= 460) || (profile == EEsProfile && version >= 320)) {
+        stageBuiltins[EShLangMesh].append(
+            "vec3 fetchMicroTriangleVertexPositionNV(accelerationStructureEXT, int, int, int, ivec2);"
+            "vec2 fetchMicroTriangleVertexBarycentricNV(accelerationStructureEXT, int, int, int, ivec2);"
+            "\n");
+
+        stageBuiltins[EShLangCompute].append(
+            "vec3 fetchMicroTriangleVertexPositionNV(accelerationStructureEXT, int, int, int, ivec2);"
+            "vec2 fetchMicroTriangleVertexBarycentricNV(accelerationStructureEXT, int, int, int, ivec2);"
+            "\n");
+
+    }
+
 
     //============================================================================
     //
@@ -4776,13 +4954,11 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "highp float diff;"   // f - n
                 );
         } else {
-#ifndef GLSLANG_WEB
             commonBuiltins.append(
                 "float near;"  // n
                 "float far;"   // f
                 "float diff;"  // f - n
                 );
-#endif
         }
 
         commonBuiltins.append(
@@ -4791,7 +4967,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "\n");
     }
 
-#if !defined(GLSLANG_WEB)
     if (spvVersion.spv == 0 && IncludeLegacy(version, profile, spvVersion)) {
         //
         // Matrix state. p. 31, 32, 37, 39, 40.
@@ -4909,7 +5084,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 
             "\n");
     }
-#endif // !GLSLANG_WEB
 
     //============================================================================
     //
@@ -4939,7 +5113,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "\n");
     }
 
-#ifndef GLSLANG_WEB
     //============================================================================
     //
     // Define the interface to the mesh/task shader.
@@ -5159,7 +5332,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             stageBuiltins[EShLangVertex].append(
                 "int gl_VertexID;"            // needs qualifier fixed later
                 );
-        if (version >= 140 && spvVersion.vulkan == 0)
+        if (spvVersion.vulkan == 0)
             stageBuiltins[EShLangVertex].append(
                 "int gl_InstanceID;"          // needs qualifier fixed later
                 );
@@ -5214,6 +5387,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             stageBuiltins[EShLangVertex].append(
                 "highp   vec4  gl_Position;"  // needs qualifier fixed later
                 "mediump float gl_PointSize;" // needs qualifier fixed later
+                "highp int gl_InstanceID;" // needs qualifier fixed later
                 );
         } else {
             if (spvVersion.vulkan == 0 || spvVersion.vulkanRelaxed)
@@ -5222,19 +5396,15 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                     "in highp int gl_InstanceID;"    // needs qualifier fixed later
                     );
             if (spvVersion.vulkan > 0)
-#endif
                 stageBuiltins[EShLangVertex].append(
                     "in highp int gl_VertexIndex;"
                     "in highp int gl_InstanceIndex;"
                     );
-#ifndef GLSLANG_WEB
             if (version < 310)
-#endif
                 stageBuiltins[EShLangVertex].append(
                     "highp vec4  gl_Position;"    // needs qualifier fixed later
                     "highp float gl_PointSize;"   // needs qualifier fixed later
                     );
-#ifndef GLSLANG_WEB
             else
                 stageBuiltins[EShLangVertex].append(
                     "out gl_PerVertex {"
@@ -5712,7 +5882,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "mediump vec2 gl_PointCoord;"   // needs qualifier fixed later
                 );
         }
-#endif
         if (version >= 300) {
             stageBuiltins[EShLangFragment].append(
                 "highp   vec4  gl_FragCoord;"    // needs qualifier fixed later
@@ -5721,7 +5890,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "highp   float gl_FragDepth;"    // needs qualifier fixed later
                 );
         }
-#ifndef GLSLANG_WEB
         if (version >= 310) {
             stageBuiltins[EShLangFragment].append(
                 "bool gl_HelperInvocation;"          // needs qualifier fixed later
@@ -5766,14 +5934,11 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "flat in highp int gl_ShadingRateEXT;" // GL_EXT_fragment_shading_rate
             );
     }
-#endif
 
     stageBuiltins[EShLangFragment].append("\n");
 
     if (version >= 130)
         add2ndGenerationSamplingImaging(version, profile, spvVersion);
-
-#ifndef GLSLANG_WEB
 
     if ((profile != EEsProfile && version >= 140) ||
         (profile == EEsProfile && version >= 310)) {
@@ -5951,6 +6116,8 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "const uint gl_RayFlagsForceOpacityMicromap2StateEXT = 1024U;"
             "const uint gl_HitKindFrontFacingTriangleEXT = 254U;"
             "const uint gl_HitKindBackFacingTriangleEXT = 255U;"
+            "in    uint gl_HitKindFrontFacingMicroTriangleNV;"
+            "in    uint gl_HitKindBackFacingMicroTriangleNV;"
             "\n";
 
         const char *constRayQueryIntersection =
@@ -6039,7 +6206,10 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "in    float  gl_CurrentRayTimeNV;"
             "in    uint   gl_CullMaskEXT;"
             "in    vec3   gl_HitTriangleVertexPositionsEXT[3];"
+            "in    vec3   gl_HitMicroTriangleVertexPositionsNV[3];"
+            "in    vec2   gl_HitMicroTriangleVertexBarycentricsNV[3];"
             "\n";
+
         const char *missDecls =
             "in    uvec3  gl_LaunchIDNV;"
             "in    uvec3  gl_LaunchIDEXT;"
@@ -6166,7 +6336,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             }
         }
     }
-#endif // !GLSLANG_WEB
 
     // printf("%s\n", commonBuiltins.c_str());
     // printf("%s\n", stageBuiltins[EShLangFragment].c_str());
@@ -6185,30 +6354,18 @@ void TBuiltIns::add2ndGenerationSamplingImaging(int version, EProfile profile, c
 
     // enumerate all the types
     const TBasicType bTypes[] = { EbtFloat, EbtInt, EbtUint,
-#if !defined(GLSLANG_WEB)
-        EbtFloat16
-#endif
+         EbtFloat16
     };
-#ifdef GLSLANG_WEB
-    bool skipBuffer = true;
-    bool skipCubeArrayed = true;
-    const int image = 0;
-#else
     bool skipBuffer = (profile == EEsProfile && version < 310) || (profile != EEsProfile && version < 140);
     bool skipCubeArrayed = (profile == EEsProfile && version < 310) || (profile != EEsProfile && version < 130);
     for (int image = 0; image <= 1; ++image) // loop over "bool" image vs sampler
-#endif
     {
         for (int shadow = 0; shadow <= 1; ++shadow) { // loop over "bool" shadow or not
-#ifdef GLSLANG_WEB
-            const int ms = 0;
-#else
             for (int ms = 0; ms <= 1; ++ms) // loop over "bool" multisample or not
-#endif
             {
                 if ((ms || image) && shadow)
                     continue;
-                if (ms && profile != EEsProfile && version < 150)
+                if (ms && profile != EEsProfile && version < 140)
                     continue;
                 if (ms && image && profile == EEsProfile)
                     continue;
@@ -6216,9 +6373,6 @@ void TBuiltIns::add2ndGenerationSamplingImaging(int version, EProfile profile, c
                     continue;
 
                 for (int arrayed = 0; arrayed <= 1; ++arrayed) { // loop over "bool" arrayed or not
-#ifdef GLSLANG_WEB
-                    for (int dim = Esd2D; dim <= EsdCube; ++dim) { // 2D, 3D, and Cube
-#else
                     for (int dim = Esd1D; dim < EsdNumDims; ++dim) { // 1D, ..., buffer, subpass
                         if (dim == EsdAttachmentEXT)
                             continue;
@@ -6242,7 +6396,6 @@ void TBuiltIns::add2ndGenerationSamplingImaging(int version, EProfile profile, c
                             continue;
                         if (ms && arrayed && profile == EEsProfile && version < 310)
                             continue;
-#endif
                         if (dim == Esd3D && shadow)
                             continue;
                         if (dim == EsdCube && arrayed && skipCubeArrayed)
@@ -6252,25 +6405,21 @@ void TBuiltIns::add2ndGenerationSamplingImaging(int version, EProfile profile, c
 
                         // Loop over the bTypes
                         for (size_t bType = 0; bType < sizeof(bTypes)/sizeof(TBasicType); ++bType) {
-#ifndef GLSLANG_WEB
                             if (bTypes[bType] == EbtFloat16 && (profile == EEsProfile || version < 450))
                                 continue;
                             if (dim == EsdRect && version < 140 && bType > 0)
                                 continue;
-#endif
                             if (shadow && (bTypes[bType] == EbtInt || bTypes[bType] == EbtUint))
                                 continue;
                             //
                             // Now, make all the function prototypes for the type we just built...
                             //
                             TSampler sampler;
-#ifndef GLSLANG_WEB
                             if (dim == EsdSubpass) {
                                 sampler.setSubpass(bTypes[bType], ms ? true : false);
                             } else if (dim == EsdAttachmentEXT) {
                                 sampler.setAttachmentEXT(bTypes[bType]);
                             } else
-#endif
                             if (image) {
                                 sampler.setImage(bTypes[bType], (TSamplerDim)dim, arrayed ? true : false,
                                                                                   shadow  ? true : false,
@@ -6283,12 +6432,10 @@ void TBuiltIns::add2ndGenerationSamplingImaging(int version, EProfile profile, c
 
                             TString typeName = sampler.getString();
 
-#ifndef GLSLANG_WEB
                             if (dim == EsdSubpass) {
                                 addSubpassSampling(sampler, typeName, version, profile);
                                 continue;
                             }
-#endif
 
                             addQueryFunctions(sampler, typeName, version, profile);
 
@@ -6296,7 +6443,6 @@ void TBuiltIns::add2ndGenerationSamplingImaging(int version, EProfile profile, c
                                 addImageFunctions(sampler, typeName, version, profile);
                             else {
                                 addSamplingFunctions(sampler, typeName, version, profile);
-#ifndef GLSLANG_WEB
                                 addGatherFunctions(sampler, typeName, version, profile);
                                 if (spvVersion.vulkan > 0 && sampler.isCombined() && !sampler.shadow) {
                                     // Base Vulkan allows texelFetch() for
@@ -6312,7 +6458,6 @@ void TBuiltIns::add2ndGenerationSamplingImaging(int version, EProfile profile, c
                                     addSamplingFunctions(sampler, textureTypeName, version, profile);
                                     addQueryFunctions(sampler, textureTypeName, version, profile);
                                 }
-#endif
                             }
                         }
                     }
@@ -6342,16 +6487,6 @@ void TBuiltIns::addQueryFunctions(TSampler sampler, const TString& typeName, int
     //
 
     int sizeDims = dimMap[sampler.dim] + (sampler.arrayed ? 1 : 0) - (sampler.dim == EsdCube ? 1 : 0);
-
-#ifdef GLSLANG_WEB
-    commonBuiltins.append("highp ");
-    commonBuiltins.append("ivec");
-    commonBuiltins.append(postfixes[sizeDims]);
-    commonBuiltins.append(" textureSize(");
-    commonBuiltins.append(typeName);
-    commonBuiltins.append(",int);\n");
-    return;
-#endif
 
     if (sampler.isImage() && ((profile == EEsProfile && version < 310) || (profile != EEsProfile && version < 420)))
         return;
@@ -6562,6 +6697,34 @@ void TBuiltIns::addImageFunctions(TSampler sampler, const TString& typeName, int
                 commonBuiltins.append(imageParams);
                 commonBuiltins.append(", float);\n");
             }
+
+            // GL_NV_shader_atomic_fp16_vector
+            if (profile != EEsProfile && version >= 430) {
+                const int numFp16Builtins = 4;
+                const char* atomicFp16Func[numFp16Builtins] = {
+                    " imageAtomicAdd(volatile coherent ",
+                    " imageAtomicMin(volatile coherent ",
+                    " imageAtomicMax(volatile coherent ",
+                    " imageAtomicExchange(volatile coherent "
+                };
+                const int numFp16DataTypes = 2;
+                const char* atomicFp16DataTypes[numFp16DataTypes] = {
+                    "f16vec2",
+                    "f16vec4"
+                };
+                // Loop twice to add prototypes with/without scope/semantics
+                for (int j = 0; j < numFp16DataTypes; ++j) {
+                    for (int i = 0; i < numFp16Builtins; ++i) {
+                        commonBuiltins.append(atomicFp16DataTypes[j]);
+                        commonBuiltins.append(atomicFp16Func[i]);
+                        commonBuiltins.append(imageParams);
+                        commonBuiltins.append(", ");
+                        commonBuiltins.append(atomicFp16DataTypes[j]);
+                        commonBuiltins.append(");\n");
+                    }
+                }
+            }
+
             if (profile != EEsProfile && version >= 450) {
                 commonBuiltins.append("float imageAtomicAdd(volatile coherent ");
                 commonBuiltins.append(imageParams);
@@ -6672,11 +6835,6 @@ void TBuiltIns::addSubpassSampling(TSampler sampler, const TString& typeName, in
 //
 void TBuiltIns::addSamplingFunctions(TSampler sampler, const TString& typeName, int version, EProfile profile)
 {
-#ifdef GLSLANG_WEB
-    profile = EEsProfile;
-    version = 310;
-#endif
-
     //
     // texturing
     //
@@ -6751,11 +6909,7 @@ void TBuiltIns::addSamplingFunctions(TSampler sampler, const TString& typeName, 
                                     continue;
 
                                 // loop over 16-bit floating-point texel addressing
-#if defined(GLSLANG_WEB)
-                                const int f16TexAddr = 0;
-#else
                                 for (int f16TexAddr = 0; f16TexAddr <= 1; ++f16TexAddr)
-#endif
                                 {
                                     if (f16TexAddr && sampler.type != EbtFloat16)
                                         continue;
@@ -6764,11 +6918,7 @@ void TBuiltIns::addSamplingFunctions(TSampler sampler, const TString& typeName, 
                                         totalDims--;
                                     }
                                     // loop over "bool" lod clamp
-#if defined(GLSLANG_WEB)
-                                    const int lodClamp = 0;
-#else
                                     for (int lodClamp = 0; lodClamp <= 1 ;++lodClamp)
-#endif
                                     {
                                         if (lodClamp && (profile == EEsProfile || version < 450))
                                             continue;
@@ -6776,11 +6926,7 @@ void TBuiltIns::addSamplingFunctions(TSampler sampler, const TString& typeName, 
                                             continue;
 
                                         // loop over "bool" sparse or not
-#if defined(GLSLANG_WEB)
-                                        const int sparse = 0;
-#else
                                         for (int sparse = 0; sparse <= 1; ++sparse)
-#endif
                                         {
                                             if (sparse && (profile == EEsProfile || version < 450))
                                                 continue;
@@ -6957,11 +7103,6 @@ void TBuiltIns::addSamplingFunctions(TSampler sampler, const TString& typeName, 
 //
 void TBuiltIns::addGatherFunctions(TSampler sampler, const TString& typeName, int version, EProfile profile)
 {
-#ifdef GLSLANG_WEB
-    profile = EEsProfile;
-    version = 310;
-#endif
-
     switch (sampler.dim) {
     case Esd2D:
     case EsdRect:
@@ -7200,11 +7341,6 @@ void TBuiltIns::addGatherFunctions(TSampler sampler, const TString& typeName, in
 //
 void TBuiltIns::initialize(const TBuiltInResource &resources, int version, EProfile profile, const SpvVersion& spvVersion, EShLanguage language)
 {
-#ifdef GLSLANG_WEB
-    version = 310;
-    profile = EEsProfile;
-#endif
-
     //
     // Initialize the context-dependent (resource-dependent) built-in strings for parsing.
     //
@@ -7262,7 +7398,6 @@ void TBuiltIns::initialize(const TBuiltInResource &resources, int version, EProf
             s.append(builtInConstant);
         }
 
-#ifndef GLSLANG_WEB
         if (version >= 310) {
             // geometry
 
@@ -7585,7 +7720,6 @@ void TBuiltIns::initialize(const TBuiltInResource &resources, int version, EProf
             snprintf(builtInConstant, maxSize, "const int gl_MaxTransformFeedbackInterleavedComponents = %d;", resources.maxTransformFeedbackInterleavedComponents);
             s.append(builtInConstant);
         }
-#endif
     }
 
     // compute
@@ -7607,7 +7741,6 @@ void TBuiltIns::initialize(const TBuiltInResource &resources, int version, EProf
         s.append("\n");
     }
 
-#ifndef GLSLANG_WEB
     // images (some in compute below)
     if ((profile == EEsProfile && version >= 310) ||
         (profile != EEsProfile && version >= 130)) {
@@ -7709,7 +7842,6 @@ void TBuiltIns::initialize(const TBuiltInResource &resources, int version, EProf
 
         s.append("\n");
     }
-#endif
 
     s.append("\n");
 }
@@ -7812,11 +7944,6 @@ static void BuiltInVariable(const char* blockName, const char* name, TBuiltInVar
 //
 void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion& spvVersion, EShLanguage language, TSymbolTable& symbolTable)
 {
-#ifdef GLSLANG_WEB
-    version = 310;
-    profile = EEsProfile;
-#endif
-
     //
     // Tag built-in variables and functions with additional qualifier and extension information
     // that cannot be declared with the text strings.
@@ -7836,10 +7963,11 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             BuiltInVariable("gl_InstanceIndex", EbvInstanceIndex, symbolTable);
         }
 
-#ifndef GLSLANG_WEB
         if (spvVersion.vulkan == 0) {
             SpecialQualifier("gl_VertexID",   EvqVertexId,   EbvVertexId,   symbolTable);
             SpecialQualifier("gl_InstanceID", EvqInstanceId, EbvInstanceId, symbolTable);
+            if (version < 140)
+                symbolTable.setVariableExtensions("gl_InstanceID", 1, &E_GL_EXT_draw_instanced);
         }
 
         if (spvVersion.vulkan > 0 && spvVersion.vulkanRelaxed) {
@@ -7991,7 +8119,19 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("shadow2DEXT",        1, &E_GL_EXT_shadow_samplers);
             symbolTable.setFunctionExtensions("shadow2DProjEXT",    1, &E_GL_EXT_shadow_samplers);
         }
-        // Fall through
+
+        // E_GL_EXT_texture_array
+        if (profile != EEsProfile && spvVersion.spv == 0) {
+            symbolTable.setFunctionExtensions("texture1DArray", 1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("texture2DArray", 1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("shadow1DArray", 1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("shadow2DArray", 1, &E_GL_EXT_texture_array);
+
+            symbolTable.setFunctionExtensions("texture1DArrayLod", 1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("texture2DArrayLod", 1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("shadow1DArrayLod", 1, &E_GL_EXT_texture_array);
+        }
+        [[fallthrough]];
 
     case EShLangTessControl:
         if (profile == EEsProfile && version >= 310) {
@@ -8006,11 +8146,10 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
                 BuiltInVariable("gl_BoundingBox", EbvBoundingBox, symbolTable);
             }
         }
-        // Fall through
+        [[fallthrough]];
 
     case EShLangTessEvaluation:
     case EShLangGeometry:
-#endif // !GLSLANG_WEB
         SpecialQualifier("gl_Position",   EvqPosition,   EbvPosition,   symbolTable);
         SpecialQualifier("gl_PointSize",  EvqPointSize,  EbvPointSize,  symbolTable);
 
@@ -8020,7 +8159,6 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         BuiltInVariable("gl_out", "gl_Position",     EbvPosition,     symbolTable);
         BuiltInVariable("gl_out", "gl_PointSize",    EbvPointSize,    symbolTable);
 
-#ifndef GLSLANG_WEB
         SpecialQualifier("gl_ClipVertex", EvqClipVertex, EbvClipVertex, symbolTable);
 
         BuiltInVariable("gl_in",  "gl_ClipDistance", EbvClipDistance, symbolTable);
@@ -8127,7 +8265,7 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             BuiltInVariable("gl_ViewIndex", EbvViewIndex, symbolTable);
         }
 
-	if (profile != EEsProfile) {
+        if (profile != EEsProfile) {
             BuiltInVariable("gl_SubGroupInvocationARB", EbvSubGroupInvocation, symbolTable);
             BuiltInVariable("gl_SubGroupEqMaskARB",     EbvSubGroupEqMask,     symbolTable);
             BuiltInVariable("gl_SubGroupGeMaskARB",     EbvSubGroupGeMask,     symbolTable);
@@ -8200,8 +8338,6 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
 				symbolTable.setVariableExtensions("gl_ShadingRateFlag4HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
 			}
 		}
-
-#endif // !GLSLANG_WEB
         break;
 
     case EShLangFragment:
@@ -8218,7 +8354,6 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             }
         }
         SpecialQualifier("gl_FragDepth",        EvqFragDepth,  EbvFragDepth,        symbolTable);
-#ifndef GLSLANG_WEB
         SpecialQualifier("gl_FragDepthEXT",     EvqFragDepth,  EbvFragDepth,        symbolTable);
         SpecialQualifier("gl_FragStencilRefARB", EvqFragStencil, EbvFragStencilRef, symbolTable);
         SpecialQualifier("gl_HelperInvocation", EvqVaryingIn,  EbvHelperInvocation, symbolTable);
@@ -8597,6 +8732,13 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
                 BuiltInVariable("gl_SubGroupSizeARB", EbvSubGroupSize, symbolTable);
         }
 
+        // GL_EXT_expect_assume
+        if ((profile == EEsProfile && version >= 310) ||
+            (profile != EEsProfile && version >= 140)) {
+            symbolTable.setFunctionExtensions("assumeEXT", 1, &E_GL_EXT_expect_assume);
+            symbolTable.setFunctionExtensions("expectEXT", 1, &E_GL_EXT_expect_assume);
+        }
+
         // GL_KHR_shader_subgroup
         if ((profile == EEsProfile && version >= 310) ||
             (profile != EEsProfile && version >= 140)) {
@@ -8638,6 +8780,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("subgroupShuffleXor",              1, &E_GL_KHR_shader_subgroup_shuffle);
             symbolTable.setFunctionExtensions("subgroupShuffleUp",               1, &E_GL_KHR_shader_subgroup_shuffle_relative);
             symbolTable.setFunctionExtensions("subgroupShuffleDown",             1, &E_GL_KHR_shader_subgroup_shuffle_relative);
+            symbolTable.setFunctionExtensions("subgroupRotate",                  1, &E_GL_KHR_shader_subgroup_rotate);
+            symbolTable.setFunctionExtensions("subgroupClusteredRotate",         1, &E_GL_KHR_shader_subgroup_rotate);
             symbolTable.setFunctionExtensions("subgroupAdd",                     1, &E_GL_KHR_shader_subgroup_arithmetic);
             symbolTable.setFunctionExtensions("subgroupMul",                     1, &E_GL_KHR_shader_subgroup_arithmetic);
             symbolTable.setFunctionExtensions("subgroupMin",                     1, &E_GL_KHR_shader_subgroup_arithmetic);
@@ -8756,11 +8900,31 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setVariableExtensions("gl_ShadingRateFlag4HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
         }
 
+        // GL_EXT_shader_quad_control
+        if ((profile != EEsProfile && version >= 140) ||
+            (profile == EEsProfile && version >= 310)) {
+            symbolTable.setFunctionExtensions("subgroupQuadAll",                     1,  &E_GL_KHR_shader_subgroup_vote);
+            symbolTable.setFunctionExtensions("subgroupQuadAny",                     1,  &E_GL_KHR_shader_subgroup_vote);
+        }
+
         // GL_EXT_shader_tile_image
         symbolTable.setFunctionExtensions("stencilAttachmentReadEXT", 1, &E_GL_EXT_shader_tile_image);
         symbolTable.setFunctionExtensions("depthAttachmentReadEXT", 1, &E_GL_EXT_shader_tile_image);
         symbolTable.setFunctionExtensions("colorAttachmentReadEXT", 1, &E_GL_EXT_shader_tile_image);
-#endif // !GLSLANG_WEB
+
+        if ((profile == EEsProfile && version >= 310) ||
+            (profile != EEsProfile && version >= 140)) {
+
+            symbolTable.setFunctionExtensions("textureWeightedQCOM",      1, &E_GL_QCOM_image_processing);
+            symbolTable.setFunctionExtensions("textureBoxFilterQCOM",     1, &E_GL_QCOM_image_processing);
+            symbolTable.setFunctionExtensions("textureBlockMatchSADQCOM", 1, &E_GL_QCOM_image_processing);
+            symbolTable.setFunctionExtensions("textureBlockMatchSSDQCOM", 1, &E_GL_QCOM_image_processing);
+
+            symbolTable.setFunctionExtensions("textureBlockMatchWindowSSDQCOM", 1, &E_GL_QCOM_image_processing2);
+            symbolTable.setFunctionExtensions("textureBlockMatchWindowSADQCOM", 1, &E_GL_QCOM_image_processing2);
+            symbolTable.setFunctionExtensions("textureBlockMatchGatherSSDQCOM", 1, &E_GL_QCOM_image_processing2);
+            symbolTable.setFunctionExtensions("textureBlockMatchGatherSADQCOM", 1, &E_GL_QCOM_image_processing2);
+        }
         break;
 
     case EShLangCompute:
@@ -8773,7 +8937,6 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         BuiltInVariable("gl_DeviceIndex",           EbvDeviceIndex,          symbolTable);
         BuiltInVariable("gl_ViewIndex",             EbvViewIndex,            symbolTable);
 
-#ifndef GLSLANG_WEB
         if ((profile != EEsProfile && version >= 140) ||
             (profile == EEsProfile && version >= 310)) {
             symbolTable.setVariableExtensions("gl_DeviceIndex",  1, &E_GL_EXT_device_group);
@@ -8897,6 +9060,12 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("coopMatMulAddNV", 2, coopExt);
         }
 
+        {
+            symbolTable.setFunctionExtensions("coopMatLoad",   1, &E_GL_KHR_cooperative_matrix);
+            symbolTable.setFunctionExtensions("coopMatStore",  1, &E_GL_KHR_cooperative_matrix);
+            symbolTable.setFunctionExtensions("coopMatMulAdd", 1, &E_GL_KHR_cooperative_matrix);
+        }
+
         if ((profile != EEsProfile && version >= 450) || (profile == EEsProfile && version >= 320)) {
             symbolTable.setFunctionExtensions("dFdx",                   1, &E_GL_NV_compute_shader_derivatives);
             symbolTable.setFunctionExtensions("dFdy",                   1, &E_GL_NV_compute_shader_derivatives);
@@ -8916,10 +9085,13 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setVariableExtensions("gl_ShadingRateFlag2HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
             symbolTable.setVariableExtensions("gl_ShadingRateFlag4HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
         }
-#endif // !GLSLANG_WEB
+
+        if ((profile != EEsProfile && version >= 460)) {
+            symbolTable.setFunctionExtensions("fetchMicroTriangleVertexPositionNV", 1, &E_GL_NV_displacement_micromap);
+            symbolTable.setFunctionExtensions("fetchMicroTriangleVertexBarycentricNV", 1, &E_GL_NV_displacement_micromap);
+        }
         break;
 
-#if !defined(GLSLANG_WEB)
     case EShLangRayGen:
     case EShLangIntersect:
     case EShLangAnyHit:
@@ -8964,6 +9136,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setVariableExtensions("gl_IncomingRayFlagsEXT", 1, &E_GL_EXT_ray_tracing);
             symbolTable.setVariableExtensions("gl_CurrentRayTimeNV", 1, &E_GL_NV_ray_tracing_motion_blur);
             symbolTable.setVariableExtensions("gl_HitTriangleVertexPositionsEXT", 1, &E_GL_EXT_ray_tracing_position_fetch);
+            symbolTable.setVariableExtensions("gl_HitMicroTriangleVertexPositionsNV", 1, &E_GL_NV_displacement_micromap);
+            symbolTable.setVariableExtensions("gl_HitMicroTriangleVertexBarycentricsNV", 1, &E_GL_NV_displacement_micromap);
 
             symbolTable.setVariableExtensions("gl_DeviceIndex", 1, &E_GL_EXT_device_group);
 
@@ -9009,6 +9183,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("hitObjectGetShaderBindingTableRecordIndexNV", 1, &E_GL_NV_shader_invocation_reorder);
             symbolTable.setFunctionExtensions("hitObjectGetShaderRecordBufferHandleNV", 1, &E_GL_NV_shader_invocation_reorder);
             symbolTable.setFunctionExtensions("reorderThreadNV", 1, &E_GL_NV_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("fetchMicroTriangleVertexPositionNV", 1, &E_GL_NV_displacement_micromap);
+            symbolTable.setFunctionExtensions("fetchMicroTriangleVertexBarycentricNV", 1, &E_GL_NV_displacement_micromap);
 
 
             BuiltInVariable("gl_LaunchIDNV",             EbvLaunchId,           symbolTable);
@@ -9048,6 +9224,10 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             BuiltInVariable("gl_DeviceIndex",            EbvDeviceIndex,        symbolTable);
             BuiltInVariable("gl_CurrentRayTimeNV",       EbvCurrentRayTimeNV,   symbolTable);
             BuiltInVariable("gl_HitTriangleVertexPositionsEXT", EbvPositionFetch, symbolTable);
+            BuiltInVariable("gl_HitMicroTriangleVertexPositionsNV", EbvMicroTrianglePositionNV, symbolTable);
+            BuiltInVariable("gl_HitMicroTriangleVertexBarycentricsNV", EbvMicroTriangleBaryNV, symbolTable);
+            BuiltInVariable("gl_HitKindFrontFacingMicroTriangleNV", EbvHitKindFrontFacingMicroTriangleNV, symbolTable);
+            BuiltInVariable("gl_HitKindBackFacingMicroTriangleNV", EbvHitKindBackFacingMicroTriangleNV, symbolTable);
 
             // GL_ARB_shader_ballot
             symbolTable.setVariableExtensions("gl_SubGroupSizeARB",       1, &E_GL_ARB_shader_ballot);
@@ -9239,7 +9419,11 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setVariableExtensions("gl_MeshPrimitivesEXT", "gl_Layer",                   1, &E_GL_EXT_mesh_shader);
             symbolTable.setVariableExtensions("gl_MeshPrimitivesEXT", "gl_ViewportIndex",           1, &E_GL_EXT_mesh_shader);
             symbolTable.setVariableExtensions("gl_MeshPrimitivesEXT", "gl_CullPrimitiveEXT",        1, &E_GL_EXT_mesh_shader);
-            symbolTable.setVariableExtensions("gl_MeshPrimitivesEXT", "gl_PrimitiveShadingRateEXT", 1, &E_GL_EXT_mesh_shader);
+
+            // note: technically this member requires both GL_EXT_mesh_shader and GL_EXT_fragment_shading_rate
+            // since setVariableExtensions only needs *one of* the extensions to validate, it's more useful to specify EXT_fragment_shading_rate
+            // GL_EXT_mesh_shader will be required in practice by use of other fields of gl_MeshPrimitivesEXT
+            symbolTable.setVariableExtensions("gl_MeshPrimitivesEXT", "gl_PrimitiveShadingRateEXT", 1, &E_GL_EXT_fragment_shading_rate);
 
             BuiltInVariable("gl_MeshPrimitivesEXT", "gl_PrimitiveID",              EbvPrimitiveId,    symbolTable);
             BuiltInVariable("gl_MeshPrimitivesEXT", "gl_Layer",                    EbvLayer,          symbolTable);
@@ -9345,6 +9529,13 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setVariableExtensions("gl_ShadingRateFlag2HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
             symbolTable.setVariableExtensions("gl_ShadingRateFlag4HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
         }
+
+        // Builtins for GL_NV_displacment_micromap
+        if ((profile != EEsProfile && version >= 460)) {
+            symbolTable.setFunctionExtensions("fetchMicroTriangleVertexPositionNV", 1, &E_GL_NV_displacement_micromap);
+            symbolTable.setFunctionExtensions("fetchMicroTriangleVertexBarycentricNV", 1, &E_GL_NV_displacement_micromap);
+        }
+
         break;
 
     case EShLangTask:
@@ -9488,7 +9679,6 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setVariableExtensions("gl_ShadingRateFlag4HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
         }
         break;
-#endif
 
     default:
         assert(false && "Language not supported");
@@ -9504,7 +9694,6 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
 
     relateTabledBuiltins(version, profile, spvVersion, language, symbolTable);
 
-#ifndef GLSLANG_WEB
     symbolTable.relateToOperator("doubleBitsToInt64",  EOpDoubleBitsToInt64);
     symbolTable.relateToOperator("doubleBitsToUint64", EOpDoubleBitsToUint64);
     symbolTable.relateToOperator("int64BitsToDouble",  EOpInt64BitsToDouble);
@@ -9657,6 +9846,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
     symbolTable.relateToOperator("averageRounded",     EOpAverageRounded);
     symbolTable.relateToOperator("multiply32x16",      EOpMul32x16);
     symbolTable.relateToOperator("debugPrintfEXT",     EOpDebugPrintf);
+    symbolTable.relateToOperator("assumeEXT",          EOpAssumeEXT);
+    symbolTable.relateToOperator("expectEXT",          EOpExpectEXT);
 
 
     if (PureOperatorBuiltins) {
@@ -9860,6 +10051,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.relateToOperator("subgroupShuffleXor",              EOpSubgroupShuffleXor);
             symbolTable.relateToOperator("subgroupShuffleUp",               EOpSubgroupShuffleUp);
             symbolTable.relateToOperator("subgroupShuffleDown",             EOpSubgroupShuffleDown);
+            symbolTable.relateToOperator("subgroupRotate",                  EOpSubgroupRotate);
+            symbolTable.relateToOperator("subgroupClusteredRotate",         EOpSubgroupClusteredRotate);
             symbolTable.relateToOperator("subgroupAdd",                     EOpSubgroupAdd);
             symbolTable.relateToOperator("subgroupMul",                     EOpSubgroupMul);
             symbolTable.relateToOperator("subgroupMin",                     EOpSubgroupMin);
@@ -9920,6 +10113,37 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         if (profile == EEsProfile) {
             symbolTable.relateToOperator("shadow2DEXT",              EOpTexture);
             symbolTable.relateToOperator("shadow2DProjEXT",          EOpTextureProj);
+        }
+
+        // GL_EXT_shader_quad_control
+        if ((profile == EEsProfile && version >= 310) ||
+            (profile != EEsProfile && version >= 140)) {
+            symbolTable.relateToOperator("subgroupQuadAll",                     EOpSubgroupQuadAll);
+            symbolTable.relateToOperator("subgroupQuadAny",                     EOpSubgroupQuadAny);
+        }
+
+        if ((profile == EEsProfile && version >= 310) ||
+            (profile != EEsProfile && version >= 140)) {
+            symbolTable.relateToOperator("textureWeightedQCOM",      EOpImageSampleWeightedQCOM);
+            symbolTable.relateToOperator("textureBoxFilterQCOM",     EOpImageBoxFilterQCOM);
+            symbolTable.relateToOperator("textureBlockMatchSADQCOM", EOpImageBlockMatchSADQCOM);
+            symbolTable.relateToOperator("textureBlockMatchSSDQCOM", EOpImageBlockMatchSSDQCOM);
+
+            symbolTable.relateToOperator("textureBlockMatchWindowSSDQCOM", EOpImageBlockMatchWindowSSDQCOM);
+            symbolTable.relateToOperator("textureBlockMatchWindowSADQCOM", EOpImageBlockMatchWindowSADQCOM);
+            symbolTable.relateToOperator("textureBlockMatchGatherSSDQCOM", EOpImageBlockMatchGatherSSDQCOM);
+            symbolTable.relateToOperator("textureBlockMatchGatherSADQCOM", EOpImageBlockMatchGatherSADQCOM);
+        }
+
+        if (profile != EEsProfile && spvVersion.spv == 0) {
+            symbolTable.relateToOperator("texture1DArray", EOpTexture);
+            symbolTable.relateToOperator("texture2DArray", EOpTexture);
+            symbolTable.relateToOperator("shadow1DArray", EOpTexture);
+            symbolTable.relateToOperator("shadow2DArray", EOpTexture);
+
+            symbolTable.relateToOperator("texture1DArrayLod", EOpTextureLod);
+            symbolTable.relateToOperator("texture2DArrayLod", EOpTextureLod);
+            symbolTable.relateToOperator("shadow1DArrayLod", EOpTextureLod);
         }
     }
 
@@ -10005,12 +10229,26 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.relateToOperator("dFdyCoarse",  EOpDPdyCoarse);
             symbolTable.relateToOperator("fwidthCoarse",EOpFwidthCoarse);
         }
-        symbolTable.relateToOperator("coopMatLoadNV",              EOpCooperativeMatrixLoad);
-        symbolTable.relateToOperator("coopMatStoreNV",             EOpCooperativeMatrixStore);
-        symbolTable.relateToOperator("coopMatMulAddNV",            EOpCooperativeMatrixMulAdd);
+        symbolTable.relateToOperator("coopMatLoadNV",              EOpCooperativeMatrixLoadNV);
+        symbolTable.relateToOperator("coopMatStoreNV",             EOpCooperativeMatrixStoreNV);
+        symbolTable.relateToOperator("coopMatMulAddNV",            EOpCooperativeMatrixMulAddNV);
+
+        symbolTable.relateToOperator("coopMatLoad",                EOpCooperativeMatrixLoad);
+        symbolTable.relateToOperator("coopMatStore",               EOpCooperativeMatrixStore);
+        symbolTable.relateToOperator("coopMatMulAdd",              EOpCooperativeMatrixMulAdd);
+
+        if (profile != EEsProfile && version >= 460) {
+            symbolTable.relateToOperator("fetchMicroTriangleVertexPositionNV", EOpFetchMicroTriangleVertexPositionNV);
+            symbolTable.relateToOperator("fetchMicroTriangleVertexBarycentricNV", EOpFetchMicroTriangleVertexBarycentricNV);
+        }
         break;
 
     case EShLangRayGen:
+        if (profile != EEsProfile && version >= 460) {
+            symbolTable.relateToOperator("fetchMicroTriangleVertexPositionNV", EOpFetchMicroTriangleVertexPositionNV);
+            symbolTable.relateToOperator("fetchMicroTriangleVertexBarycentricNV", EOpFetchMicroTriangleVertexBarycentricNV);
+        }
+        [[fallthrough]];
     case EShLangClosestHit:
     case EShLangMiss:
         if (profile != EEsProfile && version >= 460) {
@@ -10057,7 +10295,7 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         if (profile != EEsProfile && version >= 460) {
             symbolTable.relateToOperator("reportIntersectionNV", EOpReportIntersection);
             symbolTable.relateToOperator("reportIntersectionEXT", EOpReportIntersection);
-	}
+        }
         break;
     case EShLangAnyHit:
         if (profile != EEsProfile && version >= 460) {
@@ -10082,6 +10320,12 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         if (profile != EEsProfile && version >= 450) {
             symbolTable.relateToOperator("SetMeshOutputsEXT", EOpSetMeshOutputsEXT);
         }
+
+        if (profile != EEsProfile && version >= 460) {
+            // Builtins for GL_NV_displacement_micromap.
+            symbolTable.relateToOperator("fetchMicroTriangleVertexPositionNV", EOpFetchMicroTriangleVertexPositionNV);
+            symbolTable.relateToOperator("fetchMicroTriangleVertexBarycentricNV", EOpFetchMicroTriangleVertexBarycentricNV);
+        }
         break;
     case EShLangTask:
         if ((profile != EEsProfile && version >= 450) || (profile == EEsProfile && version >= 320)) {
@@ -10097,7 +10341,6 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
     default:
         assert(false && "Language not supported");
     }
-#endif // !GLSLANG_WEB
 }
 
 //
@@ -10111,7 +10354,6 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
 //
 void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion& spvVersion, EShLanguage language, TSymbolTable& symbolTable, const TBuiltInResource &resources)
 {
-#ifndef GLSLANG_WEB
     if (profile != EEsProfile && version >= 430 && version < 440) {
         symbolTable.setVariableExtensions("gl_MaxTransformFeedbackBuffers", 1, &E_GL_ARB_enhanced_layouts);
         symbolTable.setVariableExtensions("gl_MaxTransformFeedbackInterleavedComponents", 1, &E_GL_ARB_enhanced_layouts);
@@ -10183,7 +10425,6 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
     default:
         break;
     }
-#endif
 }
 
 } // end namespace glslang

@@ -11,10 +11,9 @@ layout(location = 0) out vec2 uv_interp;
 /* clang-format on */
 
 void main() {
-	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
-	uv_interp = base_arr[gl_VertexIndex];
-
-	gl_Position = vec4(uv_interp * 2.0 - 1.0, 0.0, 1.0);
+	vec2 base_arr[3] = vec2[](vec2(-1.0, -1.0), vec2(-1.0, 3.0), vec2(3.0, -1.0));
+	gl_Position = vec4(base_arr[gl_VertexIndex], 0.0, 1.0);
+	uv_interp = clamp(gl_Position.xy, vec2(0.0, 0.0), vec2(1.0, 1.0)) * 2.0; // saturate(x) * 2.0
 }
 
 /* clang-format off */
@@ -54,9 +53,9 @@ layout(set = 2, binding = 0) uniform sampler2D original_weight;
 float get_depth_at_pos(vec2 uv) {
 	float depth = textureLod(source_depth, uv, 0.0).x * 2.0 - 1.0;
 	if (params.orthogonal) {
-		depth = ((depth + (params.z_far + params.z_near) / (params.z_far - params.z_near)) * (params.z_far - params.z_near)) / 2.0;
+		depth = -(depth * (params.z_far - params.z_near) - (params.z_far + params.z_near)) / 2.0;
 	} else {
-		depth = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near - depth * (params.z_far - params.z_near));
+		depth = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near + depth * (params.z_far - params.z_near));
 	}
 	return depth;
 }

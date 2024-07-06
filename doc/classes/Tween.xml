@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Tweens are mostly useful for animations requiring a numerical property to be interpolated over a range of values. The name [i]tween[/i] comes from [i]in-betweening[/i], an animation technique where you specify [i]keyframes[/i] and the computer interpolates the frames that appear between them. Animating something with a [Tween] is called tweening.
-		[Tween] is more suited than [AnimationPlayer] for animations where you don't know the final values in advance. For example, interpolating a dynamically-chosen camera zoom value is best done with a [Tween]; it would be difficult to do the same thing with an [AnimationPlayer] node. Tweens are also more light-weight than [AnimationPlayer], so they are very much suited for simple animations or general tasks that don't require visual tweaking provided by the editor. They can be used in a fire-and-forget manner for some logic that normally would be done by code. You can e.g. make something shoot periodically by using a looped [CallbackTweener] with a delay.
+		[Tween] is more suited than [AnimationPlayer] for animations where you don't know the final values in advance. For example, interpolating a dynamically-chosen camera zoom value is best done with a [Tween]; it would be difficult to do the same thing with an [AnimationPlayer] node. Tweens are also more light-weight than [AnimationPlayer], so they are very much suited for simple animations or general tasks that don't require visual tweaking provided by the editor. They can be used in a "fire-and-forget" manner for some logic that normally would be done by code. You can e.g. make something shoot periodically by using a looped [CallbackTweener] with a delay.
 		A [Tween] can be created by using either [method SceneTree.create_tween] or [method Node.create_tween]. [Tween]s created manually (i.e. by using [code]Tween.new()[/code]) are invalid and can't be used for tweening values.
 		A tween animation is created by adding [Tweener]s to the [Tween] object, using [method tween_property], [method tween_interval], [method tween_callback] or [method tween_method]:
 		[codeblocks]
@@ -90,7 +90,7 @@
 		Some [Tweener]s use transitions and eases. The first accepts a [enum TransitionType] constant, and refers to the way the timing of the animation is handled (see [url=https://easings.net/]easings.net[/url] for some examples). The second accepts an [enum EaseType] constant, and controls where the [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different [enum TransitionType] constants with [constant EASE_IN_OUT], and use the one that looks best.
 		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/tween_cheatsheet.webp]Tween easing and transition types cheatsheet[/url]
 		[b]Note:[/b] Tweens are not designed to be re-used and trying to do so results in an undefined behavior. Create a new Tween for each animation and every time you replay an animation from start. Keep in mind that Tweens start immediately, so only create a Tween when you want to start animating.
-		[b]Note:[/b] The tween is processed after all of the nodes in the current frame, i.e. node's [method Node._process] method would be called before the timer (or [method Node._physics_process] depending on the value passed to [method set_process_mode]).
+		[b]Note:[/b] The tween is processed after all of the nodes in the current frame, i.e. node's [method Node._process] method would be called before the tween (or [method Node._physics_process] depending on the value passed to [method set_process_mode]).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -206,6 +206,7 @@
 			<return type="void" />
 			<description>
 				Pauses the tweening. The animation can be resumed by using [method play].
+				[b]Note:[/b] If a Tween is paused and not bound to any node, it will exist indefinitely until manually started or invalidated. If you lose a reference to such Tween, you can retrieve it using [method SceneTree.get_processed_tweens].
 			</description>
 		</method>
 		<method name="play">
@@ -236,6 +237,12 @@
 			<param index="0" name="parallel" type="bool" default="true" />
 			<description>
 				If [param parallel] is [code]true[/code], the [Tweener]s appended after this method will by default run simultaneously, as opposed to sequentially.
+				[b]Note:[/b] Just like with [method parallel], the tweener added right before this method will also be part of the parallel step.
+				[codeblock]
+				tween.tween_property(self, "position", Vector2(300, 0), 0.5)
+				tween.set_parallel()
+				tween.tween_property(self, "modulate", Color.GREEN, 0.5) # Runs together with the position tweener.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_pause_mode">
@@ -273,6 +280,7 @@
 			<return type="void" />
 			<description>
 				Stops the tweening and resets the [Tween] to its initial state. This will not remove any appended [Tweener]s.
+				[b]Note:[/b] If a Tween is stopped and not bound to any node, it will exist indefinitely until manually started or invalidated. If you lose a reference to such Tween, you can retrieve it using [method SceneTree.get_processed_tweens].
 			</description>
 		</method>
 		<method name="tween_callback">
@@ -364,7 +372,7 @@
 				[/gdscript]
 				[csharp]
 				Tween tween = CreateTween();
-				tween.TweenMethod(Callable.From(() =&gt; LookAt(Vector3.Up)), new Vector3(-1.0f, 0.0f, -1.0f), new Vector3(1.0f, 0.0f, -1.0f), 1.0f); // The LookAt() method takes up vector as second argument.
+				tween.TweenMethod(Callable.From((Vector3 target) =&gt; LookAt(target, Vector3.Up)), new Vector3(-1.0f, 0.0f, -1.0f), new Vector3(1.0f, 0.0f, -1.0f), 1.0f); // Use lambdas to bind additional arguments for the call.
 				[/csharp]
 				[/codeblocks]
 				[b]Example:[/b] Setting the text of a [Label], using an intermediate method and after a delay:

@@ -44,11 +44,10 @@
 			<return type="void" />
 			<param index="0" name="node" type="Node" />
 			<description>
-				Adds [param node] as a child of the root node in the editor context.
-				[b]Warning:[/b] The implementation of this method is currently disabled.
+				Makes [param node] root of the currently opened scene. Only works if the scene is empty. If the [param node] is a scene instance, an inheriting scene will be created.
 			</description>
 		</method>
-		<method name="get_editor_interface" qualifiers="const">
+		<method name="get_editor_interface" qualifiers="const" deprecated="[EditorInterface] is a global singleton and can be accessed directly by its name.">
 			<return type="EditorInterface" />
 			<description>
 				Returns the [EditorInterface] singleton instance.
@@ -57,7 +56,7 @@
 		<method name="get_scene" qualifiers="const">
 			<return type="Node" />
 			<description>
-				Returns the Editor's currently active scene.
+				Returns the edited (current) scene's root [Node]. Equivalent of [method EditorInterface.get_edited_scene_root].
 			</description>
 		</method>
 	</methods>

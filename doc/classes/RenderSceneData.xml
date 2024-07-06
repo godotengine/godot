@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RenderSceneData" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract render data object, holds scene data related to rendering a single frame of a viewport.
+	</brief_description>
+	<description>
+		Abstract scene data object, exists for the duration of rendering a single viewport.
+		[b]Note:[/b] This is an internal rendering server object, do not instantiate this from script.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_cam_projection" qualifiers="const">
+			<return type="Projection" />
+			<description>
+				Returns the camera projection used to render this frame.
+				[b]Note:[/b] If more than one view is rendered, this will return a combined projection.
+			</description>
+		</method>
+		<method name="get_cam_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<description>
+				Returns the camera transform used to render this frame.
+				[b]Note:[/b] If more than one view is rendered, this will return a centered transform.
+			</description>
+		</method>
+		<method name="get_uniform_buffer" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Return the [RID] of the uniform buffer containing the scene data as a UBO.
+			</description>
+		</method>
+		<method name="get_view_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of views being rendered.
+			</description>
+		</method>
+		<method name="get_view_eye_offset" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="view" type="int" />
+			<description>
+				Returns the eye offset per view used to render this frame. This is the offset between our camera transform and the eye transform.
+			</description>
+		</method>
+		<method name="get_view_projection" qualifiers="const">
+			<return type="Projection" />
+			<param index="0" name="view" type="int" />
+			<description>
+				Returns the view projection per view used to render this frame.
+				[b]Note:[/b] If a single view is rendered, this returns the camera projection. If more than one view is rendered, this will return a projection for the given view including the eye offset.
+			</description>
+		</method>
+	</methods>
+</class>

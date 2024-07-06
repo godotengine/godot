@@ -31,8 +31,9 @@
 #include "shader_create_dialog.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_scale.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_validation_panel.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/resources/shader_include.h"
 #include "scene/resources/visual_shader.h"
 #include "servers/rendering/shader_types.h"
@@ -47,8 +48,6 @@ enum ShaderType {
 void ShaderCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			_update_theme();
-
 			String last_lang = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_language", "");
 			if (!last_lang.is_empty()) {
 				for (int i = 0; i < type_menu->get_item_count(); i++) {
@@ -67,29 +66,17 @@ void ShaderCreateDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			_update_theme();
+			static const char *shader_types[3] = { "Shader", "VisualShader", "TextFile" };
+			for (int i = 0; i < 3; i++) {
+				Ref<Texture2D> icon = get_editor_theme_icon(shader_types[i]);
+				if (icon.is_valid()) {
+					type_menu->set_item_icon(i, icon);
+				}
+			}
+
+			path_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 	}
-}
-
-void ShaderCreateDialog::_update_theme() {
-	Ref<Texture2D> shader_icon = gc->get_theme_icon(SNAME("Shader"), SNAME("EditorIcons"));
-	if (shader_icon.is_valid()) {
-		type_menu->set_item_icon(0, shader_icon);
-	}
-
-	Ref<Texture2D> visual_shader_icon = gc->get_theme_icon(SNAME("VisualShader"), SNAME("EditorIcons"));
-	if (visual_shader_icon.is_valid()) {
-		type_menu->set_item_icon(1, visual_shader_icon);
-	}
-
-	Ref<Texture2D> include_icon = gc->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
-	if (include_icon.is_valid()) {
-		type_menu->set_item_icon(2, include_icon);
-	}
-
-	path_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
-	status_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 }
 
 void ShaderCreateDialog::_update_language_info() {
@@ -147,7 +134,7 @@ void ShaderCreateDialog::ok_pressed() {
 	}
 
 	is_new_shader_created = true;
-	_update_dialog();
+	validation_panel->update();
 }
 
 void ShaderCreateDialog::_create_new() {
@@ -164,37 +151,66 @@ void ShaderCreateDialog::_create_new() {
 			code += vformat("shader_type %s;\n", mode_menu->get_text().to_snake_case());
 
 			if (current_template == 0) { // Default template.
-				code += "\n";
 				switch (current_mode) {
 					case Shader::MODE_SPATIAL:
-						code += "void fragment() {\n";
-						code += "\t// Place fragment code here.\n";
-						code += "}\n";
+						code += R"(
+void vertex() {
+	// Called for every vertex the material is visible on.
+}
+
+void fragment() {
+	// Called for every pixel the material is visible on.
+}
+
+//void light() {
+	// Called for every pixel for every light affecting the material.
+	// Uncomment to replace the default light processing function with this one.
+//}
+)";
 						break;
 					case Shader::MODE_CANVAS_ITEM:
-						code += "void fragment() {\n";
-						code += "\t// Place fragment code here.\n";
-						code += "}\n";
+						code += R"(
+void vertex() {
+	// Called for every vertex the material is visible on.
+}
+
+void fragment() {
+	// Called for every pixel the material is visible on.
+}
+
+//void light() {
+	// Called for every pixel for every light affecting the CanvasItem.
+	// Uncomment to replace the default light processing function with this one.
+//}
+)";
 						break;
 					case Shader::MODE_PARTICLES:
-						code += "void start() {\n";
-						code += "\t// Place start code here.\n";
-						code += "}\n";
-						code += "\n";
-						code += "void process() {\n";
-						code += "\t// Place process code here.\n";
-						code += "}\n";
+						code += R"(
+void start() {
+	// Called when a particle is spawned.
+}
+
+void process() {
+	// Called every frame on existing particles (according to the Fixed FPS property).
+}
+)";
 						break;
 					case Shader::MODE_SKY:
-						code += "void sky() {\n";
-						code += "\t// Place sky code here.\n";
-						code += "}\n";
+						code += R"(
+void sky() {
+	// Called for every visible pixel in the sky background, as well as all pixels
+	// in the radiance cubemap.
+}
+)";
 						break;
 					case Shader::MODE_FOG:
-						code += "void fog() {\n";
-						code += "\t// Place fog code here.\n";
-						code += "}\n";
-						break;
+						code += R"(
+void fog() {
+	// Called once for every froxel that is touched by an axis-aligned bounding box
+	// of the associated FogVolume. This means that froxels that just barely touch
+	// a given FogVolume will still be used.
+}
+)";
 				}
 			}
 			text_shader->set_code(code.as_string());
@@ -227,7 +243,12 @@ void ShaderCreateDialog::_create_new() {
 
 		emit_signal(SNAME("shader_include_created"), shader_inc);
 	} else {
-		if (!is_built_in) {
+		if (is_built_in) {
+			Node *edited_scene = get_tree()->get_edited_scene_root();
+			if (likely(edited_scene)) {
+				shader->set_path(edited_scene->get_scene_file_path() + "::");
+			}
+		} else {
 			String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
 			shader->set_path(lpath);
 
@@ -261,7 +282,7 @@ void ShaderCreateDialog::_load_exist() {
 
 void ShaderCreateDialog::_type_changed(int p_language) {
 	current_type = p_language;
-	ShaderTypeData shader_type_data = type_data[p_language];
+	ShaderTypeData shader_type_data = type_data.get(p_language);
 
 	String selected_ext = "." + shader_type_data.default_extension;
 	String path = file_path->get_text();
@@ -300,7 +321,7 @@ void ShaderCreateDialog::_type_changed(int p_language) {
 	}
 
 	EditorSettings::get_singleton()->set_project_metadata("shader_setup", "last_selected_language", type_menu->get_item_text(type_menu->get_selected()));
-	_update_dialog();
+	validation_panel->update();
 }
 
 void ShaderCreateDialog::_built_in_toggled(bool p_enabled) {
@@ -310,7 +331,7 @@ void ShaderCreateDialog::_built_in_toggled(bool p_enabled) {
 	} else {
 		_path_changed(file_path->get_text());
 	}
-	_update_dialog();
+	validation_panel->update();
 }
 
 void ShaderCreateDialog::_browse_path() {
@@ -321,7 +342,7 @@ void ShaderCreateDialog::_browse_path() {
 	file_browse->set_disable_overwrite_warning(true);
 	file_browse->clear_filters();
 
-	List<String> extensions = type_data[type_menu->get_selected()].extensions;
+	List<String> extensions = type_data.get(type_menu->get_selected()).extensions;
 
 	for (const String &E : extensions) {
 		file_browse->add_filter("*." + E);
@@ -351,10 +372,9 @@ void ShaderCreateDialog::_path_changed(const String &p_path) {
 	is_path_valid = false;
 	is_new_shader_created = true;
 
-	String path_error = _validate_path(p_path);
+	path_error = _validate_path(p_path);
 	if (!path_error.is_empty()) {
-		_msg_path_valid(false, path_error);
-		_update_dialog();
+		validation_panel->update();
 		return;
 	}
 
@@ -362,21 +382,22 @@ void ShaderCreateDialog::_path_changed(const String &p_path) {
 	String p = ProjectSettings::get_singleton()->localize_path(p_path.strip_edges());
 	if (f->file_exists(p)) {
 		is_new_shader_created = false;
-		_msg_path_valid(true, TTR("File exists, it will be reused."));
 	}
 
 	is_path_valid = true;
-	_update_dialog();
+	validation_panel->update();
 }
 
 void ShaderCreateDialog::_path_submitted(const String &p_path) {
-	ok_pressed();
+	if (!get_ok_button()->is_disabled()) {
+		ok_pressed();
+	}
 }
 
 void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled, int p_preferred_type, int p_preferred_mode) {
 	if (!p_base_path.is_empty()) {
 		initial_base_path = p_base_path.get_basename();
-		file_path->set_text(initial_base_path + "." + type_data[type_menu->get_selected()].default_extension);
+		file_path->set_text(initial_base_path + "." + type_data.get(type_menu->get_selected()).default_extension);
 		current_type = type_menu->get_selected();
 	} else {
 		initial_base_path = "";
@@ -429,8 +450,9 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 	String extension = p.get_extension();
 	HashSet<String> extensions;
 
-	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
-		for (const String &ext : type_data[i].extensions) {
+	List<ShaderCreateDialog::ShaderTypeData>::ConstIterator itr = type_data.begin();
+	for (int i = 0; i < SHADER_TYPE_MAX; ++itr, ++i) {
+		for (const String &ext : itr->extensions) {
 			if (!extensions.has(ext)) {
 				extensions.insert(ext);
 			}
@@ -443,7 +465,7 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 	for (const String &ext : extensions) {
 		if (ext.nocasecmp_to(extension) == 0) {
 			found = true;
-			for (const String &type_ext : type_data[current_type].extensions) {
+			for (const String &type_ext : type_data.get(current_type).extensions) {
 				if (type_ext.nocasecmp_to(extension) == 0) {
 					match = true;
 					break;
@@ -463,33 +485,14 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 	return "";
 }
 
-void ShaderCreateDialog::_msg_script_valid(bool valid, const String &p_msg) {
-	error_label->set_text(String::utf8("•  ") + p_msg);
-	if (valid) {
-		error_label->add_theme_color_override("font_color", gc->get_theme_color(SNAME("success_color"), SNAME("Editor")));
-	} else {
-		error_label->add_theme_color_override("font_color", gc->get_theme_color(SNAME("error_color"), SNAME("Editor")));
-	}
-}
-
-void ShaderCreateDialog::_msg_path_valid(bool valid, const String &p_msg) {
-	path_error_label->set_text(String::utf8("•  ") + p_msg);
-	if (valid) {
-		path_error_label->add_theme_color_override("font_color", gc->get_theme_color(SNAME("success_color"), SNAME("Editor")));
-	} else {
-		path_error_label->add_theme_color_override("font_color", gc->get_theme_color(SNAME("error_color"), SNAME("Editor")));
-	}
-}
-
 void ShaderCreateDialog::_update_dialog() {
-	bool shader_ok = true;
-
 	if (!is_built_in && !is_path_valid) {
-		_msg_script_valid(false, TTR("Invalid path."));
-		shader_ok = false;
+		validation_panel->set_message(MSG_ID_SHADER, TTR("Invalid path."), EditorValidationPanel::MSG_ERROR);
 	}
-	if (shader_ok) {
-		_msg_script_valid(true, TTR("Shader path/name is valid."));
+	if (!is_built_in && !path_error.is_empty()) {
+		validation_panel->set_message(MSG_ID_PATH, path_error, EditorValidationPanel::MSG_ERROR);
+	} else if (validation_panel->is_valid() && !is_new_shader_created) {
+		validation_panel->set_message(MSG_ID_SHADER, TTR("File exists, it will be reused."), EditorValidationPanel::MSG_OK);
 	}
 	if (!built_in_enabled) {
 		internal->set_pressed(false);
@@ -510,37 +513,23 @@ void ShaderCreateDialog::_update_dialog() {
 
 	internal->set_disabled(!built_in_enabled);
 
-	builtin_warning_label->set_visible(is_built_in);
+	if (is_built_in) {
+		validation_panel->set_message(MSG_ID_BUILT_IN, TTR("Note: Built-in shaders can't be edited using an external editor."), EditorValidationPanel::MSG_INFO, false);
+	}
 
 	if (is_built_in) {
 		set_ok_button_text(TTR("Create"));
-		_msg_path_valid(true, TTR("Built-in shader (into scene file)."));
+		validation_panel->set_message(MSG_ID_PATH, TTR("Built-in shader (into scene file)."), EditorValidationPanel::MSG_OK);
 	} else if (is_new_shader_created) {
 		set_ok_button_text(TTR("Create"));
-		if (is_path_valid) {
-			_msg_path_valid(true, TTR("Will create a new shader file."));
-		}
 	} else if (load_enabled) {
 		set_ok_button_text(TTR("Load"));
 		if (is_path_valid) {
-			_msg_path_valid(true, TTR("Will load an existing shader file."));
+			validation_panel->set_message(MSG_ID_PATH, TTR("Will load an existing shader file."), EditorValidationPanel::MSG_OK);
 		}
 	} else {
 		set_ok_button_text(TTR("Create"));
-		_msg_path_valid(false, TTR("Shader file already exists."));
-
-		shader_ok = false;
-	}
-
-	get_ok_button()->set_disabled(!shader_ok);
-
-	Callable entered_call = callable_mp(this, &ShaderCreateDialog::_path_submitted);
-	if (shader_ok) {
-		if (!file_path->is_connected("text_submitted", entered_call)) {
-			file_path->connect("text_submitted", entered_call);
-		}
-	} else if (file_path->is_connected("text_submitted", entered_call)) {
-		file_path->disconnect("text_submitted", entered_call);
+		validation_panel->set_message(MSG_ID_PATH, TTR("Shader file already exists."), EditorValidationPanel::MSG_ERROR);
 	}
 }
 
@@ -561,35 +550,22 @@ ShaderCreateDialog::ShaderCreateDialog() {
 
 	// Error Fields.
 
-	VBoxContainer *vb = memnew(VBoxContainer);
-
-	error_label = memnew(Label);
-	vb->add_child(error_label);
-
-	path_error_label = memnew(Label);
-	vb->add_child(path_error_label);
-
-	builtin_warning_label = memnew(Label);
-	builtin_warning_label->set_text(
-			TTR("Note: Built-in shaders can't be edited using an external editor."));
-	vb->add_child(builtin_warning_label);
-	builtin_warning_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-	builtin_warning_label->hide();
-
-	status_panel = memnew(PanelContainer);
-	status_panel->set_h_size_flags(Control::SIZE_FILL);
-	status_panel->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	status_panel->add_child(vb);
+	validation_panel = memnew(EditorValidationPanel);
+	validation_panel->add_line(MSG_ID_SHADER, TTR("Shader path/name is valid."));
+	validation_panel->add_line(MSG_ID_PATH, TTR("Will create a new shader file."));
+	validation_panel->add_line(MSG_ID_BUILT_IN);
+	validation_panel->set_update_callback(callable_mp(this, &ShaderCreateDialog::_update_dialog));
+	validation_panel->set_accept_button(get_ok_button());
 
 	// Spacing.
 
 	Control *spacing = memnew(Control);
 	spacing->set_custom_minimum_size(Size2(0, 10 * EDSCALE));
 
-	vb = memnew(VBoxContainer);
+	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->add_child(gc);
 	vb->add_child(spacing);
-	vb->add_child(status_panel);
+	vb->add_child(validation_panel);
 	add_child(vb);
 
 	// Type.
@@ -630,7 +606,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 		type_menu->select(default_type);
 	}
 	current_type = default_type;
-	type_menu->connect("item_selected", callable_mp(this, &ShaderCreateDialog::_type_changed));
+	type_menu->connect(SceneStringName(item_selected), callable_mp(this, &ShaderCreateDialog::_type_changed));
 
 	// Modes.
 
@@ -640,14 +616,14 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	}
 	gc->add_child(memnew(Label(TTR("Mode:"))));
 	gc->add_child(mode_menu);
-	mode_menu->connect("item_selected", callable_mp(this, &ShaderCreateDialog::_mode_changed));
+	mode_menu->connect(SceneStringName(item_selected), callable_mp(this, &ShaderCreateDialog::_mode_changed));
 
 	// Templates.
 
 	template_menu = memnew(OptionButton);
 	gc->add_child(memnew(Label(TTR("Template:"))));
 	gc->add_child(template_menu);
-	template_menu->connect("item_selected", callable_mp(this, &ShaderCreateDialog::_template_changed));
+	template_menu->connect(SceneStringName(item_selected), callable_mp(this, &ShaderCreateDialog::_template_changed));
 
 	// Built-in Shader.
 
@@ -661,13 +637,14 @@ ShaderCreateDialog::ShaderCreateDialog() {
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	hb->connect("sort_children", callable_mp(this, &ShaderCreateDialog::_path_hbox_sorted));
+	hb->connect(SceneStringName(sort_children), callable_mp(this, &ShaderCreateDialog::_path_hbox_sorted));
 	file_path = memnew(LineEdit);
-	file_path->connect("text_changed", callable_mp(this, &ShaderCreateDialog::_path_changed));
+	file_path->connect(SceneStringName(text_changed), callable_mp(this, &ShaderCreateDialog::_path_changed));
 	file_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(file_path);
+	register_text_enter(file_path);
 	path_button = memnew(Button);
-	path_button->connect("pressed", callable_mp(this, &ShaderCreateDialog::_browse_path));
+	path_button->connect(SceneStringName(pressed), callable_mp(this, &ShaderCreateDialog::_browse_path));
 	hb->add_child(path_button);
 	gc->add_child(memnew(Label(TTR("Path:"))));
 	gc->add_child(hb);

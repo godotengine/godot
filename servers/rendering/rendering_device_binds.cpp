@@ -157,9 +157,6 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 		}
 	}
 
-	Ref<RDShaderFile> shader_file;
-	shader_file.instantiate();
-
 	if (base_error.is_empty()) {
 		if (stage_found[RD::SHADER_STAGE_COMPUTE] && stages_found > 1) {
 			ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "When writing compute shaders, [compute] mustbe the only stage present.");

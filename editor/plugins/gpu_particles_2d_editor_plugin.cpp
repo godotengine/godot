@@ -33,6 +33,7 @@
 #include "canvas_item_editor_plugin.h"
 #include "core/io/image_loader.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/scene_tree_dock.h"
@@ -115,12 +116,9 @@ void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 			cpu_particles->set_z_index(particles->get_z_index());
 
 			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-			ur->create_action(TTR("Convert to CPUParticles2D"));
-			ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", particles, cpu_particles, true, false);
-			ur->add_do_reference(cpu_particles);
-			ur->add_undo_method(SceneTreeDock::get_singleton(), "replace_node", cpu_particles, particles, false, false);
-			ur->add_undo_reference(particles);
-			ur->commit_action();
+			ur->create_action(TTR("Convert to CPUParticles2D"), UndoRedo::MERGE_DISABLE, particles);
+			SceneTreeDock::get_singleton()->replace_node(particles, cpu_particles);
+			ur->commit_action(false);
 
 		} break;
 		case MENU_RESTART: {
@@ -145,7 +143,7 @@ void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
 	Rect2 rect;
 	while (running < time) {
 		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-		ep.step("Generating...", int(running), true);
+		ep.step(TTR("Generating..."), int(running), true);
 		OS::get_singleton()->delay_usec(1000);
 
 		Rect2 capture = particles->capture_rect();
@@ -283,7 +281,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 		valid_normals.resize(vpc);
 	}
 
-	ERR_FAIL_COND_MSG(valid_positions.size() == 0, "No pixels with transparency > 128 in image...");
+	ERR_FAIL_COND_MSG(valid_positions.is_empty(), "No pixels with transparency > 128 in image...");
 
 	Vector<uint8_t> texdata;
 
@@ -293,11 +291,16 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 	texdata.resize(w * h * 2 * sizeof(float));
 
 	{
+		Vector2 offset;
+		if (emission_mask_centered->is_pressed()) {
+			offset = Vector2(-s.width * 0.5, -s.height * 0.5);
+		}
+
 		uint8_t *tw = texdata.ptrw();
 		float *twf = reinterpret_cast<float *>(tw);
 		for (int i = 0; i < vpc; i++) {
-			twf[i * 2 + 0] = valid_positions[i].x;
-			twf[i * 2 + 1] = valid_positions[i].y;
+			twf[i * 2 + 0] = valid_positions[i].x + offset.x;
+			twf[i * 2 + 1] = valid_positions[i].y + offset.y;
 		}
 	}
 
@@ -349,8 +352,8 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 void GPUParticles2DEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			menu->get_popup()->connect("id_pressed", callable_mp(this, &GPUParticles2DEditorPlugin::_menu_callback));
-			menu->set_icon(menu->get_theme_icon(SNAME("GPUParticles2D"), SNAME("EditorIcons")));
+			menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GPUParticles2DEditorPlugin::_menu_callback));
+			menu->set_icon(menu->get_editor_theme_icon(SNAME("GPUParticles2D")));
 			file->connect("file_selected", callable_mp(this, &GPUParticles2DEditorPlugin::_file_selected));
 			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &GPUParticles2DEditorPlugin::_selection_changed));
 		} break;
@@ -367,10 +370,8 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);
 	toolbar->hide();
 
-	toolbar->add_child(memnew(VSeparator));
-
 	menu = memnew(MenuButton);
-	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
+	menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("particles/restart_emission"), MENU_RESTART);
 	menu->get_popup()->add_item(TTR("Generate Visibility Rect"), MENU_GENERATE_VISIBILITY_RECT);
 	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);
 	//	menu->get_popup()->add_item(TTR("Clear Emission Mask"), MENU_CLEAR_EMISSION_MASK);
@@ -388,13 +389,6 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	toolbar->add_child(file);
 
-	epoints = memnew(SpinBox);
-	epoints->set_min(1);
-	epoints->set_max(8192);
-	epoints->set_step(1);
-	epoints->set_value(512);
-	file->get_vbox()->add_margin_child(TTR("Generated Point Count:"), epoints);
-
 	generate_visibility_rect = memnew(ConfirmationDialog);
 	generate_visibility_rect->set_title(TTR("Generate Visibility Rect"));
 	VBoxContainer *genvb = memnew(VBoxContainer);
@@ -407,7 +401,7 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 
 	toolbar->add_child(generate_visibility_rect);
 
-	generate_visibility_rect->connect("confirmed", callable_mp(this, &GPUParticles2DEditorPlugin::_generate_visibility_rect));
+	generate_visibility_rect->connect(SceneStringName(confirmed), callable_mp(this, &GPUParticles2DEditorPlugin::_generate_visibility_rect));
 
 	emission_mask = memnew(ConfirmationDialog);
 	emission_mask->set_title(TTR("Load Emission Mask"));
@@ -418,13 +412,18 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	emission_mask_mode->add_item(TTR("Solid Pixels"), EMISSION_MODE_SOLID);
 	emission_mask_mode->add_item(TTR("Border Pixels"), EMISSION_MODE_BORDER);
 	emission_mask_mode->add_item(TTR("Directed Border Pixels"), EMISSION_MODE_BORDER_DIRECTED);
+	VBoxContainer *optionsvb = memnew(VBoxContainer);
+	emvb->add_margin_child(TTR("Options"), optionsvb);
+	emission_mask_centered = memnew(CheckBox);
+	emission_mask_centered->set_text(TTR("Centered"));
+	optionsvb->add_child(emission_mask_centered);
 	emission_colors = memnew(CheckBox);
-	emission_colors->set_text(TTR("Capture from Pixel"));
-	emvb->add_margin_child(TTR("Emission Colors"), emission_colors);
+	emission_colors->set_text(TTR("Capture Colors from Pixel"));
+	optionsvb->add_child(emission_colors);
 
 	toolbar->add_child(emission_mask);
 
-	emission_mask->connect("confirmed", callable_mp(this, &GPUParticles2DEditorPlugin::_generate_emission_mask));
+	emission_mask->connect(SceneStringName(confirmed), callable_mp(this, &GPUParticles2DEditorPlugin::_generate_emission_mask));
 }
 
 GPUParticles2DEditorPlugin::~GPUParticles2DEditorPlugin() {

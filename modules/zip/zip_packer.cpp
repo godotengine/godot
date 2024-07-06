@@ -33,7 +33,7 @@
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
 
-Error ZIPPacker::open(String p_path, ZipAppend p_append) {
+Error ZIPPacker::open(const String &p_path, ZipAppend p_append) {
 	if (fa.is_valid()) {
 		close();
 	}
@@ -55,7 +55,7 @@ Error ZIPPacker::close() {
 	return err;
 }
 
-Error ZIPPacker::start_file(String p_path) {
+Error ZIPPacker::start_file(const String &p_path) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker must be opened before use.");
 
 	zip_fileinfo zipfi;
@@ -72,11 +72,28 @@ Error ZIPPacker::start_file(String p_path) {
 	zipfi.internal_fa = 0;
 	zipfi.external_fa = 0;
 
-	int err = zipOpenNewFileInZip(zf, p_path.utf8().get_data(), &zipfi, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
+	int err = zipOpenNewFileInZip4(zf,
+			p_path.utf8().get_data(),
+			&zipfi,
+			nullptr,
+			0,
+			nullptr,
+			0,
+			nullptr,
+			Z_DEFLATED,
+			Z_DEFAULT_COMPRESSION,
+			0,
+			-MAX_WBITS,
+			DEF_MEM_LEVEL,
+			Z_DEFAULT_STRATEGY,
+			nullptr,
+			0,
+			0, // "version made by", indicates the compatibility of the file attribute information (the `external_fa` field above).
+			1 << 11); // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
 	return err == ZIP_OK ? OK : FAILED;
 }
 
-Error ZIPPacker::write_file(Vector<uint8_t> p_data) {
+Error ZIPPacker::write_file(const Vector<uint8_t> &p_data) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker must be opened before use.");
 
 	return zipWriteInFileInZip(zf, p_data.ptr(), p_data.size()) == ZIP_OK ? OK : FAILED;

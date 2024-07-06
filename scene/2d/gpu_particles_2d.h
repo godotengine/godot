@@ -49,9 +49,10 @@ private:
 
 	bool emitting = false;
 	bool active = false;
-	bool signal_cancled = false;
+	bool signal_canceled = false;
 	bool one_shot = false;
 	int amount = 0;
+	float amount_ratio = 1.0;
 	double lifetime = 0.0;
 	double pre_process_time = 0.0;
 	real_t explosiveness_ratio = 0.0;
@@ -62,6 +63,9 @@ private:
 	int fixed_fps = 0;
 	bool fractional_delta = false;
 	bool interpolate = true;
+	float interp_to_end_factor = 0;
+	Vector3 previous_velocity;
+	Vector2 previous_position;
 #ifdef TOOLS_ENABLED
 	bool show_visibility_rect = false;
 #endif
@@ -114,6 +118,7 @@ public:
 	void set_trail_lifetime(double p_seconds);
 	void set_trail_sections(int p_sections);
 	void set_trail_section_subdivisions(int p_subdivisions);
+	void set_interp_to_end(float p_interp);
 
 #ifdef TOOLS_ENABLED
 	void set_show_visibility_rect(bool p_show_visibility_rect);
@@ -136,6 +141,7 @@ public:
 	double get_trail_lifetime() const;
 	int get_trail_sections() const;
 	int get_trail_section_subdivisions() const;
+	float get_interp_to_end() const;
 
 	void set_fixed_fps(int p_count);
 	int get_fixed_fps() const;
@@ -151,6 +157,9 @@ public:
 
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
+
+	void set_amount_ratio(float p_ratio);
+	float get_amount_ratio() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 
@@ -169,6 +178,8 @@ public:
 
 	void restart();
 	Rect2 capture_rect() const;
+	void convert_from_particles(Node *p_particles);
+
 	GPUParticles2D();
 	~GPUParticles2D();
 };

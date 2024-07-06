@@ -30,8 +30,9 @@
 
 #include "editor/input_event_configuration_dialog.h"
 #include "core/input/input_map.h"
-#include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "editor/event_listener_line_edit.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
@@ -63,6 +64,7 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 		bool show_mods = false;
 		bool show_device = false;
 		bool show_key = false;
+		bool show_location = false;
 
 		if (mod.is_valid()) {
 			show_mods = true;
@@ -76,12 +78,17 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 
 		if (k.is_valid()) {
 			show_key = true;
-			if (k->get_keycode() == Key::NONE && k->get_physical_keycode() == Key::NONE && k->get_key_label() != Key::NONE) {
+			Key phys_key = k->get_physical_keycode();
+			if (k->get_keycode() == Key::NONE && phys_key == Key::NONE && k->get_key_label() != Key::NONE) {
 				key_mode->select(KEYMODE_UNICODE);
 			} else if (k->get_keycode() != Key::NONE) {
 				key_mode->select(KEYMODE_KEYCODE);
-			} else if (k->get_physical_keycode() != Key::NONE) {
+			} else if (phys_key != Key::NONE) {
 				key_mode->select(KEYMODE_PHY_KEYCODE);
+				if (phys_key == Key::SHIFT || phys_key == Key::CTRL || phys_key == Key::ALT || phys_key == Key::META) {
+					key_location->select((int)k->get_location());
+					show_location = true;
+				}
 			} else {
 				// Invalid key.
 				event = Ref<InputEvent>();
@@ -102,6 +109,7 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 		mod_container->set_visible(show_mods);
 		device_container->set_visible(show_device);
 		key_mode->set_visible(show_key);
+		location_container->set_visible(show_location);
 		additional_options_container->show();
 
 		// Update mode selector based on original key event.
@@ -239,6 +247,9 @@ void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEven
 			k->set_physical_keycode(Key::NONE);
 			k->set_keycode(Key::NONE);
 		}
+		if (key_location->get_selected_id() == (int)KeyLocation::UNSPECIFIED) {
+			k->set_location(KeyLocation::UNSPECIFIED);
+		}
 	}
 
 	Ref<InputEventWithModifiers> mod = received_event;
@@ -250,14 +261,6 @@ void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEven
 	received_event->set_device(_get_current_device());
 
 	_set_event(received_event, received_original_event);
-}
-
-void InputEventConfigurationDialog::_on_listen_focus_changed() {
-	if (event_listener->has_focus()) {
-		set_close_on_escape(false);
-	} else {
-		set_close_on_escape(true);
-	}
 }
 
 void InputEventConfigurationDialog::_search_term_updated(const String &) {
@@ -282,7 +285,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 		for (int i = 0; i < keycode_get_count(); i++) {
 			String name = keycode_get_name_by_index(i);
 
-			if (!search_term.is_empty() && name.findn(search_term) == -1) {
+			if (!search_term.is_empty() && !name.containsn(search_term)) {
 				continue;
 			}
 
@@ -306,7 +309,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			mb->set_button_index(mouse_buttons[i]);
 			String desc = EventListenerLineEdit::get_event_text(mb, false);
 
-			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
+			if (!search_term.is_empty() && !desc.containsn(search_term)) {
 				continue;
 			}
 
@@ -329,7 +332,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			joyb->set_button_index((JoyButton)i);
 			String desc = EventListenerLineEdit::get_event_text(joyb, false);
 
-			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
+			if (!search_term.is_empty() && !desc.containsn(search_term)) {
 				continue;
 			}
 
@@ -355,7 +358,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			joym->set_axis_value(direction);
 			String desc = EventListenerLineEdit::get_event_text(joym, false);
 
-			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
+			if (!search_term.is_empty() && !desc.containsn(search_term)) {
 				continue;
 			}
 
@@ -430,6 +433,22 @@ void InputEventConfigurationDialog::_key_mode_selected(int p_mode) {
 	}
 
 	_set_event(k, original_event);
+}
+
+void InputEventConfigurationDialog::_key_location_selected(int p_location) {
+	Ref<InputEventKey> k = event;
+	if (k.is_null()) {
+		return;
+	}
+
+	k->set_location((KeyLocation)p_location);
+
+	_set_event(k, original_event);
+}
+
+void InputEventConfigurationDialog::_input_list_item_activated() {
+	TreeItem *selected = input_list_tree->get_selected();
+	selected->set_collapsed(!selected->is_collapsed());
 }
 
 void InputEventConfigurationDialog::_input_list_item_selected() {
@@ -552,29 +571,28 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 			event_listener->grab_focus();
 		} break;
 
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			input_list_search->set_right_icon(input_list_search->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			input_list_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-			key_mode->set_item_icon(KEYMODE_KEYCODE, get_theme_icon(SNAME("Keyboard"), SNAME("EditorIcons")));
-			key_mode->set_item_icon(KEYMODE_PHY_KEYCODE, get_theme_icon(SNAME("KeyboardPhysical"), SNAME("EditorIcons")));
-			key_mode->set_item_icon(KEYMODE_UNICODE, get_theme_icon(SNAME("KeyboardLabel"), SNAME("EditorIcons")));
+			key_mode->set_item_icon(KEYMODE_KEYCODE, get_editor_theme_icon(SNAME("Keyboard")));
+			key_mode->set_item_icon(KEYMODE_PHY_KEYCODE, get_editor_theme_icon(SNAME("KeyboardPhysical")));
+			key_mode->set_item_icon(KEYMODE_UNICODE, get_editor_theme_icon(SNAME("KeyboardLabel")));
 
-			icon_cache.keyboard = get_theme_icon(SNAME("Keyboard"), SNAME("EditorIcons"));
-			icon_cache.mouse = get_theme_icon(SNAME("Mouse"), SNAME("EditorIcons"));
-			icon_cache.joypad_button = get_theme_icon(SNAME("JoyButton"), SNAME("EditorIcons"));
-			icon_cache.joypad_axis = get_theme_icon(SNAME("JoyAxis"), SNAME("EditorIcons"));
+			icon_cache.keyboard = get_editor_theme_icon(SNAME("Keyboard"));
+			icon_cache.mouse = get_editor_theme_icon(SNAME("Mouse"));
+			icon_cache.joypad_button = get_editor_theme_icon(SNAME("JoyButton"));
+			icon_cache.joypad_axis = get_editor_theme_icon(SNAME("JoyAxis"));
 
-			event_as_text->add_theme_font_override("font", get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+			event_as_text->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
 
 			_update_input_list();
 		} break;
 	}
 }
 
-void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p_event) {
+void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p_event, const String &p_current_action_name) {
 	if (p_event.is_valid()) {
-		_set_event(p_event->duplicate(), p_event);
+		_set_event(p_event->duplicate(), p_event->duplicate());
 	} else {
 		// Clear Event
 		_set_event(Ref<InputEvent>(), Ref<InputEvent>());
@@ -594,6 +612,14 @@ void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p
 
 		// Select "All Devices" by default.
 		device_id_option->select(0);
+		// Also "all locations".
+		key_location->select(0);
+	}
+
+	if (!p_current_action_name.is_empty()) {
+		set_title(vformat(TTR("Event Configuration for \"%s\""), p_current_action_name));
+	} else {
+		set_title(TTR("Event Configuration"));
 	}
 
 	popup_centered(Size2(0, 400) * EDSCALE);
@@ -611,24 +637,24 @@ void InputEventConfigurationDialog::set_allowed_input_types(int p_type_masks) {
 InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
 
-	set_title(TTR("Event Configuration"));
-	set_min_size(Size2i(550 * EDSCALE, 0)); // Min width
+	set_min_size(Size2i(550, 0) * EDSCALE);
 
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
 	add_child(main_vbox);
 
 	event_as_text = memnew(Label);
+	event_as_text->set_custom_minimum_size(Size2(500, 0) * EDSCALE);
 	event_as_text->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	event_as_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	event_as_text->add_theme_font_size_override("font_size", 18 * EDSCALE);
+	event_as_text->add_theme_font_size_override(SceneStringName(font_size), 18 * EDSCALE);
 	main_vbox->add_child(event_as_text);
 
 	event_listener = memnew(EventListenerLineEdit);
 	event_listener->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	event_listener->set_stretch_ratio(0.75);
 	event_listener->connect("event_changed", callable_mp(this, &InputEventConfigurationDialog::_on_listen_input_changed));
-	event_listener->connect("focus_entered", callable_mp(this, &InputEventConfigurationDialog::_on_listen_focus_changed));
-	event_listener->connect("focus_exited", callable_mp(this, &InputEventConfigurationDialog::_on_listen_focus_changed));
+	event_listener->connect(SceneStringName(focus_entered), callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(false));
+	event_listener->connect(SceneStringName(focus_exited), callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(true));
 	main_vbox->add_child(event_listener);
 
 	main_vbox->add_child(memnew(HSeparator));
@@ -643,12 +669,14 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	input_list_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	input_list_search->set_placeholder(TTR("Filter Inputs"));
 	input_list_search->set_clear_button_enabled(true);
-	input_list_search->connect("text_changed", callable_mp(this, &InputEventConfigurationDialog::_search_term_updated));
+	input_list_search->connect(SceneStringName(text_changed), callable_mp(this, &InputEventConfigurationDialog::_search_term_updated));
 	manual_vbox->add_child(input_list_search);
 
 	input_list_tree = memnew(Tree);
+	input_list_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	input_list_tree->set_custom_minimum_size(Size2(0, 100 * EDSCALE)); // Min height for tree
-	input_list_tree->connect("item_selected", callable_mp(this, &InputEventConfigurationDialog::_input_list_item_selected));
+	input_list_tree->connect("item_activated", callable_mp(this, &InputEventConfigurationDialog::_input_list_item_activated));
+	input_list_tree->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_input_list_item_selected));
 	input_list_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	manual_vbox->add_child(input_list_tree);
 
@@ -680,7 +708,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	for (int i = -1; i < 8; i++) {
 		device_id_option->add_item(EventListenerLineEdit::get_device_string(i));
 	}
-	device_id_option->connect("item_selected", callable_mp(this, &InputEventConfigurationDialog::_device_selection_changed));
+	device_id_option->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_device_selection_changed));
 	_set_current_device(InputMap::ALL_DEVICES);
 	device_container->add_child(device_id_option);
 
@@ -716,9 +744,28 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	key_mode->add_item(TTR("Keycode (Latin Equivalent)"), KEYMODE_KEYCODE);
 	key_mode->add_item(TTR("Physical Keycode (Position on US QWERTY Keyboard)"), KEYMODE_PHY_KEYCODE);
 	key_mode->add_item(TTR("Key Label (Unicode, Case-Insensitive)"), KEYMODE_UNICODE);
-	key_mode->connect("item_selected", callable_mp(this, &InputEventConfigurationDialog::_key_mode_selected));
+	key_mode->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_key_mode_selected));
 	key_mode->hide();
 	additional_options_container->add_child(key_mode);
+
+	// Key Location Selection
+
+	location_container = memnew(HBoxContainer);
+	location_container->hide();
+
+	Label *location_label = memnew(Label);
+	location_label->set_text(TTR("Physical location"));
+	location_container->add_child(location_label);
+
+	key_location = memnew(OptionButton);
+	key_location->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	key_location->add_item(TTR("Any"), (int)KeyLocation::UNSPECIFIED);
+	key_location->add_item(TTR("Left"), (int)KeyLocation::LEFT);
+	key_location->add_item(TTR("Right"), (int)KeyLocation::RIGHT);
+	key_location->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_key_location_selected));
+
+	location_container->add_child(key_location);
+	additional_options_container->add_child(location_container);
 
 	main_vbox->add_child(additional_options_container);
 }

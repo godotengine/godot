@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/extension/gdextension.h"
+#include "core/extension/gdextension_compat_hashes.h"
 #include "core/io/file_access.h"
 #include "core/io/xml_parser.h"
 #include "core/object/class_db.h"
@@ -40,6 +41,199 @@
 #include "core/os/memory.h"
 #include "core/variant/variant.h"
 #include "core/version.h"
+
+#include <string.h>
+
+class CallableCustomExtension : public CallableCustom {
+	void *userdata;
+	void *token;
+
+	ObjectID object;
+
+	GDExtensionCallableCustomCall call_func;
+	GDExtensionCallableCustomIsValid is_valid_func;
+	GDExtensionCallableCustomFree free_func;
+
+	GDExtensionCallableCustomEqual equal_func;
+	GDExtensionCallableCustomLessThan less_than_func;
+
+	GDExtensionCallableCustomToString to_string_func;
+
+	GDExtensionCallableCustomGetArgumentCount get_argument_count_func;
+
+	uint32_t _hash;
+
+	static bool default_compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomExtension *a = static_cast<const CallableCustomExtension *>(p_a);
+		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
+
+		if (a->call_func != b->call_func || a->userdata != b->userdata) {
+			return false;
+		}
+		return true;
+	}
+
+	static bool default_compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomExtension *a = static_cast<const CallableCustomExtension *>(p_a);
+		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
+
+		if (a->call_func != b->call_func) {
+			return a->call_func < b->call_func;
+		}
+		return a->userdata < b->userdata;
+	}
+
+	static bool custom_compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomExtension *a = static_cast<const CallableCustomExtension *>(p_a);
+		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
+
+		if (a->equal_func != b->equal_func) {
+			return false;
+		}
+		return a->equal_func(a->userdata, b->userdata);
+	}
+
+	static bool custom_compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomExtension *a = static_cast<const CallableCustomExtension *>(p_a);
+		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
+
+		if (a->less_than_func != b->less_than_func) {
+			return default_compare_less(p_a, p_b);
+		}
+		return a->less_than_func(a->userdata, b->userdata);
+	}
+
+public:
+	uint32_t hash() const override {
+		return _hash;
+	}
+
+	String get_as_text() const override {
+		if (to_string_func != nullptr) {
+			String out;
+			GDExtensionBool is_valid = false;
+
+			to_string_func(userdata, &is_valid, (GDExtensionStringPtr)&out);
+
+			if (is_valid) {
+				return out;
+			}
+		}
+		return "<CallableCustom>";
+	}
+
+	CompareEqualFunc get_compare_equal_func() const override {
+		return (equal_func != nullptr) ? custom_compare_equal : default_compare_equal;
+	}
+
+	CompareLessFunc get_compare_less_func() const override {
+		return (less_than_func != nullptr) ? custom_compare_less : default_compare_less;
+	}
+
+	bool is_valid() const override {
+		if (is_valid_func != nullptr && !is_valid_func(userdata)) {
+			return false;
+		}
+		return call_func != nullptr;
+	}
+
+	StringName get_method() const override {
+		return StringName();
+	}
+
+	ObjectID get_object() const override {
+		return object;
+	}
+
+	int get_argument_count(bool &r_is_valid) const override {
+		if (get_argument_count_func != nullptr) {
+			GDExtensionBool is_valid = false;
+
+			GDExtensionInt ret = get_argument_count_func(userdata, &is_valid);
+
+			if (is_valid) {
+				r_is_valid = true;
+				return ret;
+			}
+		}
+		r_is_valid = false;
+		return 0;
+	}
+
+	void *get_userdata(void *p_token) const {
+		return (p_token == token) ? userdata : nullptr;
+	}
+
+	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
+		GDExtensionCallError error;
+
+		call_func(userdata, (GDExtensionConstVariantPtr *)p_arguments, p_argcount, (GDExtensionVariantPtr)&r_return_value, &error);
+
+		r_call_error.error = (Callable::CallError::Error)error.error;
+		r_call_error.argument = error.argument;
+		r_call_error.expected = error.expected;
+	}
+
+#ifndef DISABLE_DEPRECATED
+	CallableCustomExtension(GDExtensionCallableCustomInfo *p_info) {
+		userdata = p_info->callable_userdata;
+		token = p_info->token;
+
+		object = p_info->object_id;
+
+		call_func = p_info->call_func;
+		is_valid_func = p_info->is_valid_func;
+		free_func = p_info->free_func;
+
+		equal_func = p_info->equal_func;
+		less_than_func = p_info->less_than_func;
+
+		to_string_func = p_info->to_string_func;
+
+		get_argument_count_func = nullptr;
+
+		// Pre-calculate the hash.
+		if (p_info->hash_func != nullptr) {
+			_hash = p_info->hash_func(userdata);
+		} else {
+			_hash = hash_murmur3_one_64((uint64_t)call_func);
+			_hash = hash_murmur3_one_64((uint64_t)userdata, _hash);
+		}
+	}
+#endif
+
+	CallableCustomExtension(GDExtensionCallableCustomInfo2 *p_info) {
+		userdata = p_info->callable_userdata;
+		token = p_info->token;
+
+		object = p_info->object_id;
+
+		call_func = p_info->call_func;
+		is_valid_func = p_info->is_valid_func;
+		free_func = p_info->free_func;
+
+		equal_func = p_info->equal_func;
+		less_than_func = p_info->less_than_func;
+
+		to_string_func = p_info->to_string_func;
+
+		get_argument_count_func = p_info->get_argument_count_func;
+
+		// Pre-calculate the hash.
+		if (p_info->hash_func != nullptr) {
+			_hash = p_info->hash_func(userdata);
+		} else {
+			_hash = hash_murmur3_one_64((uint64_t)call_func);
+			_hash = hash_murmur3_one_64((uint64_t)userdata, _hash);
+		}
+	}
+
+	~CallableCustomExtension() {
+		if (free_func != nullptr) {
+			free_func(userdata);
+		}
+	}
+};
 
 // Core interface functions.
 GDExtensionInterfaceFunctionPtr gdextension_get_proc_address(const char *p_name) {
@@ -253,7 +447,7 @@ static void gdextension_variant_iter_get(GDExtensionConstVariantPtr p_self, GDEx
 	Variant *iter = (Variant *)r_iter;
 
 	bool valid;
-	memnew_placement(r_ret, Variant(self->iter_next(*iter, valid)));
+	memnew_placement(r_ret, Variant(self->iter_get(*iter, valid)));
 	*r_valid = valid;
 }
 
@@ -401,6 +595,8 @@ static GDExtensionVariantFromTypeConstructorFunc gdextension_get_variant_from_ty
 			return VariantTypeConstructor<PackedVector2Array>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR3_ARRAY:
 			return VariantTypeConstructor<PackedVector3Array>::variant_from_type;
+		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR4_ARRAY:
+			return VariantTypeConstructor<PackedVector4Array>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_COLOR_ARRAY:
 			return VariantTypeConstructor<PackedColorArray>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_NIL:
@@ -484,6 +680,8 @@ static GDExtensionTypeFromVariantConstructorFunc gdextension_get_variant_to_type
 			return VariantTypeConstructor<PackedVector2Array>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR3_ARRAY:
 			return VariantTypeConstructor<PackedVector3Array>::type_from_variant;
+		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR4_ARRAY:
+			return VariantTypeConstructor<PackedVector4Array>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_COLOR_ARRAY:
 			return VariantTypeConstructor<PackedColorArray>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_NIL:
@@ -607,25 +805,37 @@ static void gdextension_string_new_with_utf8_chars_and_len(GDExtensionUninitiali
 	dest->parse_utf8(p_contents, p_size);
 }
 
-static void gdextension_string_new_with_utf16_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_size) {
+static GDExtensionInt gdextension_string_new_with_utf8_chars_and_len2(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
 	memnew_placement(r_dest, String);
 	String *dest = reinterpret_cast<String *>(r_dest);
-	dest->parse_utf16(p_contents, p_size);
+	return (GDExtensionInt)dest->parse_utf8(p_contents, p_size);
 }
 
-static void gdextension_string_new_with_utf32_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_size) {
-	memnew_placement(r_dest, String((const char32_t *)p_contents, p_size));
+static void gdextension_string_new_with_utf16_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_char_count) {
+	memnew_placement(r_dest, String);
+	String *dest = reinterpret_cast<String *>(r_dest);
+	dest->parse_utf16(p_contents, p_char_count);
 }
 
-static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_size) {
+static GDExtensionInt gdextension_string_new_with_utf16_chars_and_len2(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_char_count, GDExtensionBool p_default_little_endian) {
+	memnew_placement(r_dest, String);
+	String *dest = reinterpret_cast<String *>(r_dest);
+	return (GDExtensionInt)dest->parse_utf16(p_contents, p_char_count, p_default_little_endian);
+}
+
+static void gdextension_string_new_with_utf32_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_char_count) {
+	memnew_placement(r_dest, String((const char32_t *)p_contents, p_char_count));
+}
+
+static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_char_count) {
 	if constexpr (sizeof(wchar_t) == 2) {
 		// wchar_t is 16 bit, parse.
 		memnew_placement(r_dest, String);
 		String *dest = reinterpret_cast<String *>(r_dest);
-		dest->parse_utf16((const char16_t *)p_contents, p_size);
+		dest->parse_utf16((const char16_t *)p_contents, p_char_count);
 	} else {
 		// wchar_t is 32 bit, copy.
-		memnew_placement(r_dest, String((const char32_t *)p_contents, p_size));
+		memnew_placement(r_dest, String((const char32_t *)p_contents, p_char_count));
 	}
 }
 
@@ -726,6 +936,29 @@ static void gdextension_string_operator_plus_eq_c32str(GDExtensionStringPtr p_se
 	*self += p_b;
 }
 
+static GDExtensionInt gdextension_string_resize(GDExtensionStringPtr p_self, GDExtensionInt p_length) {
+	String *self = (String *)p_self;
+	return (*self).resize(p_length);
+}
+
+static void gdextension_string_name_new_with_latin1_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionBool p_is_static) {
+	memnew_placement(r_dest, StringName(p_contents, static_cast<bool>(p_is_static)));
+}
+
+static void gdextension_string_name_new_with_utf8_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents) {
+	String tmp;
+	tmp.parse_utf8(p_contents);
+
+	memnew_placement(r_dest, StringName(tmp));
+}
+
+static void gdextension_string_name_new_with_utf8_chars_and_len(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionInt p_size) {
+	String tmp;
+	tmp.parse_utf8(p_contents, p_size);
+
+	memnew_placement(r_dest, StringName(tmp));
+}
+
 static GDExtensionInt gdextension_xml_parser_open_buffer(GDExtensionObjectPtr p_instance, const uint8_t *p_buffer, size_t p_size) {
 	XMLParser *xml = (XMLParser *)p_instance;
 	return (GDExtensionInt)xml->_open_buffer(p_buffer, p_size);
@@ -739,6 +972,16 @@ static void gdextension_file_access_store_buffer(GDExtensionObjectPtr p_instance
 static uint64_t gdextension_file_access_get_buffer(GDExtensionConstObjectPtr p_instance, uint8_t *p_dst, uint64_t p_length) {
 	const FileAccess *fa = (FileAccess *)p_instance;
 	return fa->get_buffer(p_dst, p_length);
+}
+
+static uint8_t *gdextension_image_ptrw(GDExtensionObjectPtr p_instance) {
+	Image *img = (Image *)p_instance;
+	return img->ptrw();
+}
+
+static const uint8_t *gdextension_image_ptr(GDExtensionObjectPtr p_instance) {
+	Image *img = (Image *)p_instance;
+	return img->ptr();
 }
 
 static int64_t gdextension_worker_thread_pool_add_native_group_task(GDExtensionObjectPtr p_instance, void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements, int p_tasks, GDExtensionBool p_high_priority, GDExtensionConstStringPtr p_description) {
@@ -899,6 +1142,22 @@ static GDExtensionTypePtr gdextension_packed_vector3_array_operator_index_const(
 	return (GDExtensionTypePtr)&self->ptr()[p_index];
 }
 
+static GDExtensionTypePtr gdextension_packed_vector4_array_operator_index(GDExtensionTypePtr p_self, GDExtensionInt p_index) {
+	PackedVector4Array *self = (PackedVector4Array *)p_self;
+	if (unlikely(p_index < 0 || p_index >= self->size())) {
+		return nullptr;
+	}
+	return (GDExtensionTypePtr)&self->ptrw()[p_index];
+}
+
+static GDExtensionTypePtr gdextension_packed_vector4_array_operator_index_const(GDExtensionConstTypePtr p_self, GDExtensionInt p_index) {
+	const PackedVector4Array *self = (const PackedVector4Array *)p_self;
+	if (unlikely(p_index < 0 || p_index >= self->size())) {
+		return nullptr;
+	}
+	return (GDExtensionTypePtr)&self->ptr()[p_index];
+}
+
 static GDExtensionVariantPtr gdextension_array_operator_index(GDExtensionTypePtr p_self, GDExtensionInt p_index) {
 	Array *self = (Array *)p_self;
 	if (unlikely(p_index < 0 || p_index >= self->size())) {
@@ -982,6 +1241,11 @@ static void gdextension_object_set_instance_binding(GDExtensionObjectPtr p_objec
 	o->set_instance_binding(p_token, p_binding, p_callbacks);
 }
 
+static void gdextension_object_free_instance_binding(GDExtensionObjectPtr p_object, void *p_token) {
+	Object *o = (Object *)p_object;
+	o->free_instance_binding(p_token);
+}
+
 static void gdextension_object_set_instance(GDExtensionObjectPtr p_object, GDExtensionConstStringNamePtr p_classname, GDExtensionClassInstancePtr p_instance) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	Object *o = (Object *)p_object;
@@ -1019,6 +1283,33 @@ static GDObjectInstanceID gdextension_object_get_instance_id(GDExtensionConstObj
 	return (GDObjectInstanceID)o->get_instance_id();
 }
 
+static GDExtensionBool gdextension_object_has_script_method(GDExtensionConstObjectPtr p_object, GDExtensionConstStringNamePtr p_method) {
+	Object *o = (Object *)p_object;
+	const StringName method = *reinterpret_cast<const StringName *>(p_method);
+
+	ScriptInstance *script_instance = o->get_script_instance();
+	if (script_instance) {
+		return script_instance->has_method(method);
+	}
+	return false;
+}
+
+static void gdextension_object_call_script_method(GDExtensionObjectPtr p_object, GDExtensionConstStringNamePtr p_method, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionUninitializedVariantPtr r_return, GDExtensionCallError *r_error) {
+	Object *o = (Object *)p_object;
+	const StringName method = *reinterpret_cast<const StringName *>(p_method);
+	const Variant **args = (const Variant **)p_args;
+
+	Callable::CallError error;
+	memnew_placement(r_return, Variant);
+	*(Variant *)r_return = o->callp(method, args, p_argument_count, error);
+
+	if (r_error) {
+		r_error->error = (GDExtensionCallErrorType)(error.error);
+		r_error->argument = error.argument;
+		r_error->expected = error.expected;
+	}
+}
+
 static GDExtensionObjectPtr gdextension_ref_get_object(GDExtensionConstRefPtr p_ref) {
 	const Ref<RefCounted> *ref = (const Ref<RefCounted> *)p_ref;
 	if (ref == nullptr || ref->is_null()) {
@@ -1036,11 +1327,168 @@ static void gdextension_ref_set_object(GDExtensionRefPtr p_ref, GDExtensionObjec
 	ref->reference_ptr(o);
 }
 
+#ifndef DISABLE_DEPRECATED
 static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDExtensionScriptInstanceInfo *p_info, GDExtensionScriptInstanceDataPtr p_instance_data) {
+	GDExtensionScriptInstanceInfo3 *info_3 = memnew(GDExtensionScriptInstanceInfo3);
+	info_3->set_func = p_info->set_func;
+	info_3->get_func = p_info->get_func;
+	info_3->get_property_list_func = p_info->get_property_list_func;
+	info_3->free_property_list_func = nullptr;
+	info_3->get_class_category_func = nullptr;
+	info_3->property_can_revert_func = p_info->property_can_revert_func;
+	info_3->property_get_revert_func = p_info->property_get_revert_func;
+	info_3->get_owner_func = p_info->get_owner_func;
+	info_3->get_property_state_func = p_info->get_property_state_func;
+	info_3->get_method_list_func = p_info->get_method_list_func;
+	info_3->free_method_list_func = nullptr;
+	info_3->get_property_type_func = p_info->get_property_type_func;
+	info_3->validate_property_func = nullptr;
+	info_3->has_method_func = p_info->has_method_func;
+	info_3->get_method_argument_count_func = nullptr;
+	info_3->call_func = p_info->call_func;
+	info_3->notification_func = nullptr;
+	info_3->to_string_func = p_info->to_string_func;
+	info_3->refcount_incremented_func = p_info->refcount_incremented_func;
+	info_3->refcount_decremented_func = p_info->refcount_decremented_func;
+	info_3->get_script_func = p_info->get_script_func;
+	info_3->is_placeholder_func = p_info->is_placeholder_func;
+	info_3->set_fallback_func = p_info->set_fallback_func;
+	info_3->get_fallback_func = p_info->get_fallback_func;
+	info_3->get_language_func = p_info->get_language_func;
+	info_3->free_func = p_info->free_func;
+
+	ScriptInstanceExtension *script_instance_extension = memnew(ScriptInstanceExtension);
+	script_instance_extension->instance = p_instance_data;
+	script_instance_extension->native_info = info_3;
+	script_instance_extension->free_native_info = true;
+	script_instance_extension->deprecated_native_info = memnew(ScriptInstanceExtension::DeprecatedNativeInfo);
+	script_instance_extension->deprecated_native_info->notification_func = p_info->notification_func;
+	script_instance_extension->deprecated_native_info->free_property_list_func = p_info->free_property_list_func;
+	script_instance_extension->deprecated_native_info->free_method_list_func = p_info->free_method_list_func;
+	return reinterpret_cast<GDExtensionScriptInstancePtr>(script_instance_extension);
+}
+
+static GDExtensionScriptInstancePtr gdextension_script_instance_create2(const GDExtensionScriptInstanceInfo2 *p_info, GDExtensionScriptInstanceDataPtr p_instance_data) {
+	GDExtensionScriptInstanceInfo3 *info_3 = memnew(GDExtensionScriptInstanceInfo3);
+	info_3->set_func = p_info->set_func;
+	info_3->get_func = p_info->get_func;
+	info_3->get_property_list_func = p_info->get_property_list_func;
+	info_3->free_property_list_func = nullptr;
+	info_3->get_class_category_func = nullptr;
+	info_3->property_can_revert_func = p_info->property_can_revert_func;
+	info_3->property_get_revert_func = p_info->property_get_revert_func;
+	info_3->get_owner_func = p_info->get_owner_func;
+	info_3->get_property_state_func = p_info->get_property_state_func;
+	info_3->get_method_list_func = p_info->get_method_list_func;
+	info_3->free_method_list_func = nullptr;
+	info_3->get_property_type_func = p_info->get_property_type_func;
+	info_3->validate_property_func = nullptr;
+	info_3->has_method_func = p_info->has_method_func;
+	info_3->get_method_argument_count_func = nullptr;
+	info_3->call_func = p_info->call_func;
+	info_3->notification_func = p_info->notification_func;
+	info_3->to_string_func = p_info->to_string_func;
+	info_3->refcount_incremented_func = p_info->refcount_incremented_func;
+	info_3->refcount_decremented_func = p_info->refcount_decremented_func;
+	info_3->get_script_func = p_info->get_script_func;
+	info_3->is_placeholder_func = p_info->is_placeholder_func;
+	info_3->set_fallback_func = p_info->set_fallback_func;
+	info_3->get_fallback_func = p_info->get_fallback_func;
+	info_3->get_language_func = p_info->get_language_func;
+	info_3->free_func = p_info->free_func;
+
+	ScriptInstanceExtension *script_instance_extension = memnew(ScriptInstanceExtension);
+	script_instance_extension->instance = p_instance_data;
+	script_instance_extension->native_info = info_3;
+	script_instance_extension->free_native_info = true;
+	script_instance_extension->deprecated_native_info = memnew(ScriptInstanceExtension::DeprecatedNativeInfo);
+	script_instance_extension->deprecated_native_info->free_property_list_func = p_info->free_property_list_func;
+	script_instance_extension->deprecated_native_info->free_method_list_func = p_info->free_method_list_func;
+	return reinterpret_cast<GDExtensionScriptInstancePtr>(script_instance_extension);
+}
+#endif // DISABLE_DEPRECATED
+
+static GDExtensionScriptInstancePtr gdextension_script_instance_create3(const GDExtensionScriptInstanceInfo3 *p_info, GDExtensionScriptInstanceDataPtr p_instance_data) {
 	ScriptInstanceExtension *script_instance_extension = memnew(ScriptInstanceExtension);
 	script_instance_extension->instance = p_instance_data;
 	script_instance_extension->native_info = p_info;
 	return reinterpret_cast<GDExtensionScriptInstancePtr>(script_instance_extension);
+}
+
+static GDExtensionScriptInstancePtr gdextension_placeholder_script_instance_create(GDExtensionObjectPtr p_language, GDExtensionObjectPtr p_script, GDExtensionObjectPtr p_owner) {
+	ScriptLanguage *language = (ScriptLanguage *)p_language;
+	Ref<Script> script;
+	script.reference_ptr((Script *)p_script);
+	Object *owner = (Object *)p_owner;
+
+	PlaceHolderScriptInstance *placeholder = memnew(PlaceHolderScriptInstance(language, script, owner));
+	return reinterpret_cast<GDExtensionScriptInstancePtr>(placeholder);
+}
+
+static void gdextension_placeholder_script_instance_update(GDExtensionScriptInstancePtr p_placeholder, GDExtensionConstTypePtr p_properties, GDExtensionConstTypePtr p_values) {
+	PlaceHolderScriptInstance *placeholder = dynamic_cast<PlaceHolderScriptInstance *>(reinterpret_cast<ScriptInstance *>(p_placeholder));
+	ERR_FAIL_NULL_MSG(placeholder, "Unable to update placeholder, expected a PlaceHolderScriptInstance but received an invalid type.");
+
+	const Array &properties = *reinterpret_cast<const Array *>(p_properties);
+	const Dictionary &values = *reinterpret_cast<const Dictionary *>(p_values);
+
+	List<PropertyInfo> properties_list;
+	HashMap<StringName, Variant> values_map;
+
+	for (int i = 0; i < properties.size(); i++) {
+		Dictionary d = properties[i];
+		properties_list.push_back(PropertyInfo::from_dict(d));
+	}
+
+	List<Variant> keys;
+	values.get_key_list(&keys);
+
+	for (const Variant &E : keys) {
+		values_map.insert(E, values[E]);
+	}
+
+	placeholder->update(properties_list, values_map);
+}
+
+static GDExtensionScriptInstancePtr gdextension_object_get_script_instance(GDExtensionConstObjectPtr p_object, GDExtensionConstObjectPtr p_language) {
+	if (!p_object || !p_language) {
+		return nullptr;
+	}
+
+	const Object *o = (const Object *)p_object;
+	ScriptInstanceExtension *script_instance_extension = reinterpret_cast<ScriptInstanceExtension *>(o->get_script_instance());
+	if (!script_instance_extension) {
+		return nullptr;
+	}
+
+	const ScriptLanguage *language = script_instance_extension->get_language();
+	if (language != p_language) {
+		return nullptr;
+	}
+
+	return script_instance_extension->instance;
+}
+
+#ifndef DISABLE_DEPRECATED
+static void gdextension_callable_custom_create(GDExtensionUninitializedTypePtr r_callable, GDExtensionCallableCustomInfo *p_custom_callable_info) {
+	memnew_placement(r_callable, Callable(memnew(CallableCustomExtension(p_custom_callable_info))));
+}
+#endif
+
+static void gdextension_callable_custom_create2(GDExtensionUninitializedTypePtr r_callable, GDExtensionCallableCustomInfo2 *p_custom_callable_info) {
+	memnew_placement(r_callable, Callable(memnew(CallableCustomExtension(p_custom_callable_info))));
+}
+
+static void *gdextension_callable_custom_get_userdata(GDExtensionTypePtr p_callable, void *p_token) {
+	const Callable &callable = *reinterpret_cast<const Callable *>(p_callable);
+	if (!callable.is_custom()) {
+		return nullptr;
+	}
+	const CallableCustomExtension *custom_callable = dynamic_cast<const CallableCustomExtension *>(callable.get_custom());
+	if (!custom_callable) {
+		return nullptr;
+	}
+	return custom_callable->get_userdata(p_token);
 }
 
 static GDExtensionMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionConstStringNamePtr p_classname, GDExtensionConstStringNamePtr p_methodname, GDExtensionInt p_hash) {
@@ -1048,21 +1496,28 @@ static GDExtensionMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionC
 	const StringName methodname = *reinterpret_cast<const StringName *>(p_methodname);
 	bool exists = false;
 	MethodBind *mb = ClassDB::get_method_with_compatibility(classname, methodname, p_hash, &exists);
+
+#ifndef DISABLE_DEPRECATED
+	// If lookup failed, see if this is one of the broken hashes from issue #81386.
+	if (!mb && exists) {
+		uint32_t mapped_hash;
+		if (GDExtensionCompatHashes::lookup_current_hash(classname, methodname, p_hash, &mapped_hash)) {
+			mb = ClassDB::get_method_with_compatibility(classname, methodname, mapped_hash, &exists);
+		}
+	}
+#endif
+
 	if (!mb && exists) {
 		ERR_PRINT("Method '" + classname + "." + methodname + "' has changed and no compatibility fallback has been provided. Please open an issue.");
 		return nullptr;
 	}
-	ERR_FAIL_COND_V(!mb, nullptr);
-	if (mb->get_hash() != p_hash) {
-		ERR_PRINT("Hash mismatch for method '" + classname + "." + methodname + "'.");
-		return nullptr;
-	}
+	ERR_FAIL_NULL_V(mb, nullptr);
 	return (GDExtensionMethodBindPtr)mb;
 }
 
 static GDExtensionObjectPtr gdextension_classdb_construct_object(GDExtensionConstStringNamePtr p_classname) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
-	return (GDExtensionObjectPtr)ClassDB::instantiate(classname);
+	return (GDExtensionObjectPtr)ClassDB::instantiate_no_placeholders(classname);
 }
 
 static void *gdextension_classdb_get_class_tag(GDExtensionConstStringNamePtr p_classname) {
@@ -1085,7 +1540,20 @@ static void gdextension_editor_remove_plugin(GDExtensionConstStringNamePtr p_cla
 #endif
 }
 
-#define REGISTER_INTERFACE_FUNC(m_name) GDExtension::register_interface_function(#m_name, (GDExtensionInterfaceFunctionPtr)&gdextension_##m_name)
+static void gdextension_editor_help_load_xml_from_utf8_chars_and_len(const char *p_data, GDExtensionInt p_size) {
+#ifdef TOOLS_ENABLED
+	GDExtensionEditorHelp::load_xml_buffer((const uint8_t *)p_data, p_size);
+#endif
+}
+
+static void gdextension_editor_help_load_xml_from_utf8_chars(const char *p_data) {
+#ifdef TOOLS_ENABLED
+	size_t len = strlen(p_data);
+	gdextension_editor_help_load_xml_from_utf8_chars_and_len(p_data, len);
+#endif
+}
+
+#define REGISTER_INTERFACE_FUNC(m_name) GDExtension::register_interface_function(#m_name, (GDExtensionInterfaceFunctionPtr) & gdextension_##m_name)
 
 void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(get_godot_version);
@@ -1152,7 +1620,9 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(string_new_with_wide_chars);
 	REGISTER_INTERFACE_FUNC(string_new_with_latin1_chars_and_len);
 	REGISTER_INTERFACE_FUNC(string_new_with_utf8_chars_and_len);
+	REGISTER_INTERFACE_FUNC(string_new_with_utf8_chars_and_len2);
 	REGISTER_INTERFACE_FUNC(string_new_with_utf16_chars_and_len);
+	REGISTER_INTERFACE_FUNC(string_new_with_utf16_chars_and_len2);
 	REGISTER_INTERFACE_FUNC(string_new_with_utf32_chars_and_len);
 	REGISTER_INTERFACE_FUNC(string_new_with_wide_chars_and_len);
 	REGISTER_INTERFACE_FUNC(string_to_latin1_chars);
@@ -1167,6 +1637,10 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_cstr);
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_wcstr);
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_c32str);
+	REGISTER_INTERFACE_FUNC(string_resize);
+	REGISTER_INTERFACE_FUNC(string_name_new_with_latin1_chars);
+	REGISTER_INTERFACE_FUNC(string_name_new_with_utf8_chars);
+	REGISTER_INTERFACE_FUNC(string_name_new_with_utf8_chars_and_len);
 	REGISTER_INTERFACE_FUNC(xml_parser_open_buffer);
 	REGISTER_INTERFACE_FUNC(file_access_store_buffer);
 	REGISTER_INTERFACE_FUNC(file_access_get_buffer);
@@ -1190,6 +1664,8 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(packed_vector2_array_operator_index_const);
 	REGISTER_INTERFACE_FUNC(packed_vector3_array_operator_index);
 	REGISTER_INTERFACE_FUNC(packed_vector3_array_operator_index_const);
+	REGISTER_INTERFACE_FUNC(packed_vector4_array_operator_index);
+	REGISTER_INTERFACE_FUNC(packed_vector4_array_operator_index_const);
 	REGISTER_INTERFACE_FUNC(array_operator_index);
 	REGISTER_INTERFACE_FUNC(array_operator_index_const);
 	REGISTER_INTERFACE_FUNC(array_ref);
@@ -1202,19 +1678,38 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(global_get_singleton);
 	REGISTER_INTERFACE_FUNC(object_get_instance_binding);
 	REGISTER_INTERFACE_FUNC(object_set_instance_binding);
+	REGISTER_INTERFACE_FUNC(object_free_instance_binding);
 	REGISTER_INTERFACE_FUNC(object_set_instance);
 	REGISTER_INTERFACE_FUNC(object_get_class_name);
 	REGISTER_INTERFACE_FUNC(object_cast_to);
 	REGISTER_INTERFACE_FUNC(object_get_instance_from_id);
 	REGISTER_INTERFACE_FUNC(object_get_instance_id);
+	REGISTER_INTERFACE_FUNC(object_has_script_method);
+	REGISTER_INTERFACE_FUNC(object_call_script_method);
 	REGISTER_INTERFACE_FUNC(ref_get_object);
 	REGISTER_INTERFACE_FUNC(ref_set_object);
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(script_instance_create);
+	REGISTER_INTERFACE_FUNC(script_instance_create2);
+#endif // DISABLE_DEPRECATED
+	REGISTER_INTERFACE_FUNC(script_instance_create3);
+	REGISTER_INTERFACE_FUNC(placeholder_script_instance_create);
+	REGISTER_INTERFACE_FUNC(placeholder_script_instance_update);
+	REGISTER_INTERFACE_FUNC(object_get_script_instance);
+#ifndef DISABLE_DEPRECATED
+	REGISTER_INTERFACE_FUNC(callable_custom_create);
+#endif // DISABLE_DEPRECATED
+	REGISTER_INTERFACE_FUNC(callable_custom_create2);
+	REGISTER_INTERFACE_FUNC(callable_custom_get_userdata);
 	REGISTER_INTERFACE_FUNC(classdb_construct_object);
 	REGISTER_INTERFACE_FUNC(classdb_get_method_bind);
 	REGISTER_INTERFACE_FUNC(classdb_get_class_tag);
 	REGISTER_INTERFACE_FUNC(editor_add_plugin);
 	REGISTER_INTERFACE_FUNC(editor_remove_plugin);
+	REGISTER_INTERFACE_FUNC(editor_help_load_xml_from_utf8_chars);
+	REGISTER_INTERFACE_FUNC(editor_help_load_xml_from_utf8_chars_and_len);
+	REGISTER_INTERFACE_FUNC(image_ptrw);
+	REGISTER_INTERFACE_FUNC(image_ptr);
 }
 
 #undef REGISTER_INTERFACE_FUNCTION

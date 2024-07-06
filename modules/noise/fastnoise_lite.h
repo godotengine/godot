@@ -116,7 +116,7 @@ private:
 	// Cellular specific.
 	CellularDistanceFunction cellular_distance_function = DISTANCE_EUCLIDEAN;
 	CellularReturnType cellular_return_type = RETURN_DISTANCE;
-	real_t cellular_jitter = 0.45;
+	real_t cellular_jitter = 1.0;
 
 	// Domain warp specific.
 	bool domain_warp_enabled = false;

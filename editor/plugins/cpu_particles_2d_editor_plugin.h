@@ -31,9 +31,9 @@
 #ifndef CPU_PARTICLES_2D_EDITOR_PLUGIN_H
 #define CPU_PARTICLES_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
-#include "scene/2d/collision_polygon_2d.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/2d/cpu_particles_2d.h"
+#include "scene/2d/physics/collision_polygon_2d.h"
 #include "scene/gui/box_container.h"
 
 class CheckBox;
@@ -49,7 +49,8 @@ class CPUParticles2DEditorPlugin : public EditorPlugin {
 	enum {
 		MENU_LOAD_EMISSION_MASK,
 		MENU_CLEAR_EMISSION_MASK,
-		MENU_RESTART
+		MENU_RESTART,
+		MENU_CONVERT_TO_GPU_PARTICLES,
 	};
 
 	enum EmissionMode {
@@ -65,10 +66,9 @@ class CPUParticles2DEditorPlugin : public EditorPlugin {
 	HBoxContainer *toolbar = nullptr;
 	MenuButton *menu = nullptr;
 
-	SpinBox *epoints = nullptr;
-
 	ConfirmationDialog *emission_mask = nullptr;
 	OptionButton *emission_mask_mode = nullptr;
+	CheckBox *emission_mask_centered = nullptr;
 	CheckBox *emission_colors = nullptr;
 
 	String source_emission_file;

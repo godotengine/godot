@@ -33,30 +33,30 @@ if env["builtin_libpng"]:
     # Needed for drivers includes and in platform/web.
     env.Prepend(CPPPATH=[thirdparty_dir])
 
-    # Currently .ASM filter_neon.S does not compile on NT.
-    import os
-
-    # Enable ARM NEON instructions on 32-bit Android to compile more optimized code.
-    use_neon = env["platform"] == "android" and env["arch"] == "arm32" and os.name != "nt"
-    if use_neon:
-        env_png.Append(CPPDEFINES=[("PNG_ARM_NEON_OPT", 2)])
-    else:
-        env_png.Append(CPPDEFINES=[("PNG_ARM_NEON_OPT", 0)])
-
     env_thirdparty = env_png.Clone()
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 
-    if use_neon:
-        env_neon = env_thirdparty.Clone()
-        if "S_compiler" in env:
-            env_neon["CC"] = env["S_compiler"]
-        neon_sources = []
-        neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/arm_init.c"))
-        neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/filter_neon_intrinsics.c"))
-        neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/filter_neon.S"))
-        neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/palette_neon_intrinsics.c"))
-        thirdparty_obj += neon_sources
+    if env["arch"].startswith("arm"):
+        if env.msvc:  # Can't compile assembly files with MSVC.
+            env_thirdparty.Append(CPPDEFINES=[("PNG_ARM_NEON_OPT", 0)])
+        else:
+            env_neon = env_thirdparty.Clone()
+            if "S_compiler" in env:
+                env_neon["CC"] = env["S_compiler"]
+            neon_sources = []
+            neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/arm_init.c"))
+            neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/filter_neon_intrinsics.c"))
+            neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/filter_neon.S"))
+            neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/palette_neon_intrinsics.c"))
+            thirdparty_obj += neon_sources
+    elif env["arch"].startswith("x86"):
+        env_thirdparty.Append(CPPDEFINES=["PNG_INTEL_SSE"])
+        env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/intel/intel_init.c")
+        env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/intel/filter_sse2_intrinsics.c")
+    elif env["arch"] == "ppc64":
+        env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/powerpc/powerpc_init.c")
+        env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/powerpc/filter_vsx_intrinsics.c")
 
     env.drivers_sources += thirdparty_obj
 

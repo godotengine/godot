@@ -31,11 +31,19 @@
 #include "shader.h"
 
 #include "core/io/file_access.h"
-#include "scene/scene_string_names.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering_server.h"
 #include "texture.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_help.h"
+
+#include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif
+#endif
 
 Shader::Mode Shader::get_mode() const {
 	return mode;
@@ -121,6 +129,12 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 	List<PropertyInfo> local;
 	RenderingServer::get_singleton()->get_shader_parameter_list(shader, &local);
 
+#ifdef TOOLS_ENABLED
+	DocData::ClassDoc class_doc;
+	class_doc.name = get_path();
+	class_doc.is_script_doc = true;
+#endif
+
 	for (PropertyInfo &pi : local) {
 		bool is_group = pi.usage == PROPERTY_USAGE_GROUP || pi.usage == PROPERTY_USAGE_SUBGROUP;
 		if (!p_get_groups && is_group) {
@@ -136,9 +150,33 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 			if (pi.type == Variant::RID) {
 				pi.type = Variant::OBJECT;
 			}
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint()) {
+				DocData::PropertyDoc prop_doc;
+				prop_doc.name = "shader_parameter/" + pi.name;
+#ifdef MODULE_REGEX_ENABLED
+				const RegEx pattern("/\\*\\*\\s([^*]|[\\r\\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/\\s*uniform\\s+\\w+\\s+" + pi.name + "(?=[\\s:;=])");
+				Ref<RegExMatch> pattern_ref = pattern.search(code);
+				if (pattern_ref != nullptr) {
+					RegExMatch *match = pattern_ref.ptr();
+					const RegEx pattern_tip("\\/\\*\\*([\\s\\S]*?)\\*/");
+					Ref<RegExMatch> pattern_tip_ref = pattern_tip.search(match->get_string(0));
+					RegExMatch *match_tip = pattern_tip_ref.ptr();
+					const RegEx pattern_stripped("\\n\\s*\\*\\s*");
+					prop_doc.description = pattern_stripped.sub(match_tip->get_string(1), "\n", true);
+				}
+#endif
+				class_doc.properties.push_back(prop_doc);
+			}
+#endif
 			p_params->push_back(pi);
 		}
 	}
+#ifdef TOOLS_ENABLED
+	if (EditorHelp::get_doc_data() != nullptr && Engine::get_singleton()->is_editor_hint() && !class_doc.name.is_empty() && p_params) {
+		EditorHelp::get_doc_data()->add_doc(class_doc);
+	}
+#endif
 }
 
 RID Shader::get_rid() const {
@@ -234,13 +272,18 @@ Ref<Resource> ResourceFormatLoaderShader::load(const String &p_path, const Strin
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
 
-	Ref<Shader> shader;
-	shader.instantiate();
-
-	Vector<uint8_t> buffer = FileAccess::get_file_as_bytes(p_path);
+	Error error = OK;
+	Vector<uint8_t> buffer = FileAccess::get_file_as_bytes(p_path, &error);
+	ERR_FAIL_COND_V_MSG(error, nullptr, "Cannot load shader: " + p_path);
 
 	String str;
-	str.parse_utf8((const char *)buffer.ptr(), buffer.size());
+	if (buffer.size() > 0) {
+		error = str.parse_utf8((const char *)buffer.ptr(), buffer.size());
+		ERR_FAIL_COND_V_MSG(error, nullptr, "Cannot parse shader: " + p_path);
+	}
+
+	Ref<Shader> shader;
+	shader.instantiate();
 
 	shader->set_include_path(p_path);
 	shader->set_code(str);

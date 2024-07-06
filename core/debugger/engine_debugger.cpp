@@ -111,14 +111,6 @@ Error EngineDebugger::capture_parse(const StringName &p_name, const String &p_ms
 	return cap.capture(cap.data, p_msg, p_args, r_captured);
 }
 
-void EngineDebugger::line_poll() {
-	// The purpose of this is just processing events every now and then when the script might get too busy otherwise bugs like infinite loops can't be caught
-	if (poll_every % 2048 == 0) {
-		poll_events(false);
-	}
-	poll_every++;
-}
-
 void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks, uint64_t p_physics_ticks, double p_physics_frame_time) {
 	frame_time = USEC_TO_SEC(p_frame_ticks);
 	process_time = USEC_TO_SEC(p_process_ticks);
@@ -135,7 +127,7 @@ void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks,
 	singleton->poll_events(true);
 }
 
-void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Vector<String> p_breakpoints, void (*p_allow_focus_steal_fn)()) {
+void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, const Vector<String> &p_breakpoints, void (*p_allow_focus_steal_fn)()) {
 	register_uri_handler("tcp://", RemoteDebuggerPeerTCP::create); // TCP is the default protocol. Platforms/modules can add more.
 	if (p_uri.is_empty()) {
 		return;
@@ -145,7 +137,7 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 		script_debugger = memnew(ScriptDebugger);
 		// Tell the OS that we want to handle termination signals.
 		OS::get_singleton()->initialize_debugging();
-	} else if (p_uri.find("://") >= 0) {
+	} else if (p_uri.contains("://")) {
 		const String proto = p_uri.substr(0, p_uri.find("://") + 3);
 		if (!protocols.has(proto)) {
 			return;
@@ -170,7 +162,7 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 	singleton_script_debugger->set_skip_breakpoints(p_skip_breakpoints);
 
 	for (int i = 0; i < p_breakpoints.size(); i++) {
-		String bp = p_breakpoints[i];
+		const String &bp = p_breakpoints[i];
 		int sp = bp.rfind(":");
 		ERR_CONTINUE_MSG(sp == -1, "Invalid breakpoint: '" + bp + "', expected file:line format.");
 

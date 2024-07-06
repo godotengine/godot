@@ -103,7 +103,7 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 
 	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte *)"glXCreateContextAttribsARB");
 
-	ERR_FAIL_COND_V(!glXCreateContextAttribsARB, ERR_UNCONFIGURED);
+	ERR_FAIL_NULL_V(glXCreateContextAttribsARB, ERR_UNCONFIGURED);
 
 	static int visual_attribs[] = {
 		GLX_RENDER_TYPE, GLX_RGBA_BIT,
@@ -134,7 +134,7 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 
 	if (OS::get_singleton()->is_layered_allowed()) {
 		GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs_layered, &fbcount);
-		ERR_FAIL_COND_V(!fbc, ERR_UNCONFIGURED);
+		ERR_FAIL_NULL_V(fbc, ERR_UNCONFIGURED);
 
 		for (int i = 0; i < fbcount; i++) {
 			vi = (XVisualInfo *)glXGetVisualFromFBConfig(x11_display, fbc[i]);
@@ -156,10 +156,10 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 		}
 		XFree(fbc);
 
-		ERR_FAIL_COND_V(!fbconfig, ERR_UNCONFIGURED);
+		ERR_FAIL_NULL_V(fbconfig, ERR_UNCONFIGURED);
 	} else {
 		GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs, &fbcount);
-		ERR_FAIL_COND_V(!fbc, ERR_UNCONFIGURED);
+		ERR_FAIL_NULL_V(fbc, ERR_UNCONFIGURED);
 
 		vi = glXGetVisualFromFBConfig(x11_display, fbc[0]);
 
@@ -206,6 +206,15 @@ XVisualInfo GLManager_X11::get_vi(Display *p_display, Error &r_error) {
 	}
 	r_error = OK;
 	return _displays[display_id].x_vi;
+}
+
+Error GLManager_X11::open_display(Display *p_display) {
+	int gldisplay_id = _find_or_create_display(p_display);
+	if (gldisplay_id < 0) {
+		return ERR_CANT_CREATE;
+	} else {
+		return OK;
+	}
 }
 
 Error GLManager_X11::window_create(DisplayServer::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height) {
@@ -302,20 +311,6 @@ void GLManager_X11::window_make_current(DisplayServer::WindowID p_window_id) {
 	_internal_set_current_window(&win);
 }
 
-void GLManager_X11::make_current() {
-	if (!_current_window) {
-		return;
-	}
-	if (!_current_window->in_use) {
-		WARN_PRINT("current window not in use!");
-		return;
-	}
-	const GLDisplay &disp = get_current_display();
-	if (!glXMakeCurrent(_x_windisp.x11_display, _x_windisp.x11_window, disp.context->glx_context)) {
-		ERR_PRINT("glXMakeCurrent failed");
-	}
-}
-
 void GLManager_X11::swap_buffers() {
 	if (!_current_window) {
 		return;
@@ -347,12 +342,6 @@ Error GLManager_X11::initialize(Display *p_display) {
 }
 
 void GLManager_X11::set_use_vsync(bool p_use) {
-	// force vsync in the editor for now, as a safety measure
-	bool is_editor = Engine::get_singleton()->is_editor_hint();
-	if (is_editor) {
-		p_use = true;
-	}
-
 	// we need an active window to get a display to set the vsync
 	if (!_current_window) {
 		return;
@@ -368,6 +357,7 @@ void GLManager_X11::set_use_vsync(bool p_use) {
 		GLXDrawable drawable = glXGetCurrentDrawable();
 		glXSwapIntervalEXT(disp.x11_display, drawable, val);
 	} else {
+		WARN_PRINT_ONCE("Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.");
 		return;
 	}
 	use_vsync = p_use;

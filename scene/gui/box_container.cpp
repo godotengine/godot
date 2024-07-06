@@ -30,8 +30,9 @@
 
 #include "box_container.h"
 
-#include "label.h"
-#include "margin_container.h"
+#include "scene/gui/label.h"
+#include "scene/gui/margin_container.h"
+#include "scene/theme/theme_db.h"
 
 struct _MinSizeCache {
 	int min_size = 0;
@@ -54,11 +55,8 @@ void BoxContainer::_resort() {
 	HashMap<Control *, _MinSizeCache> min_size_cache;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible_in_tree()) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
+		Control *c = as_sortable_control(get_child(i));
+		if (!c) {
 			continue;
 		}
 
@@ -108,11 +106,8 @@ void BoxContainer::_resort() {
 		float error = 0.0; // Keep track of accumulated error in pixels
 
 		for (int i = 0; i < get_child_count(); i++) {
-			Control *c = Object::cast_to<Control>(get_child(i));
-			if (!c || !c->is_visible_in_tree()) {
-				continue;
-			}
-			if (c->is_set_as_top_level()) {
+			Control *c = as_sortable_control(get_child(i));
+			if (!c) {
 				continue;
 			}
 
@@ -200,11 +195,8 @@ void BoxContainer::_resort() {
 	}
 
 	for (int i = start; i != end; i += delta) {
-		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible_in_tree()) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
+		Control *c = as_sortable_control(get_child(i));
+		if (!c) {
 			continue;
 		}
 
@@ -251,15 +243,8 @@ Size2 BoxContainer::get_minimum_size() const {
 	bool first = true;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
+		Control *c = as_sortable_control(get_child(i), SortableVisbilityMode::VISIBLE);
 		if (!c) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
-			continue;
-		}
-
-		if (!c->is_visible()) {
 			continue;
 		}
 
@@ -286,12 +271,6 @@ Size2 BoxContainer::get_minimum_size() const {
 	}
 
 	return minimum;
-}
-
-void BoxContainer::_update_theme_item_cache() {
-	Container::_update_theme_item_cache();
-
-	theme_cache.separation = get_theme_constant(SNAME("separation"));
 }
 
 void BoxContainer::_notification(int p_what) {
@@ -399,6 +378,8 @@ void BoxContainer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment", "get_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, BoxContainer, separation);
 }
 
 MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control *p_control, bool p_expand) {

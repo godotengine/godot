@@ -35,7 +35,7 @@
 #include "core/templates/vector.h"
 
 /* This DisjointSet class uses Find with path compression and Union by rank */
-template <typename T, class H = HashMapHasherDefault, class C = HashMapComparatorDefault<T>, class AL = DefaultAllocator>
+template <typename T, typename H = HashMapHasherDefault, typename C = HashMapComparatorDefault<T>, typename AL = DefaultAllocator>
 class DisjointSet {
 	struct Element {
 		T object;
@@ -65,14 +65,14 @@ public:
 
 /* FUNCTIONS */
 
-template <typename T, class H, class C, class AL>
+template <typename T, typename H, typename C, typename AL>
 DisjointSet<T, H, C, AL>::~DisjointSet() {
 	for (KeyValue<T, Element *> &E : elements) {
 		memdelete_allocator<Element, AL>(E.value);
 	}
 }
 
-template <typename T, class H, class C, class AL>
+template <typename T, typename H, typename C, typename AL>
 typename DisjointSet<T, H, C, AL>::Element *DisjointSet<T, H, C, AL>::get_parent(Element *element) {
 	if (element->parent != element) {
 		element->parent = get_parent(element->parent);
@@ -81,7 +81,7 @@ typename DisjointSet<T, H, C, AL>::Element *DisjointSet<T, H, C, AL>::get_parent
 	return element->parent;
 }
 
-template <typename T, class H, class C, class AL>
+template <typename T, typename H, typename C, typename AL>
 typename DisjointSet<T, H, C, AL>::Element *DisjointSet<T, H, C, AL>::insert_or_get(T object) {
 	typename MapT::Iterator itr = elements.find(object);
 	if (itr != nullptr) {
@@ -96,7 +96,7 @@ typename DisjointSet<T, H, C, AL>::Element *DisjointSet<T, H, C, AL>::insert_or_
 	return new_element;
 }
 
-template <typename T, class H, class C, class AL>
+template <typename T, typename H, typename C, typename AL>
 void DisjointSet<T, H, C, AL>::create_union(T a, T b) {
 	Element *x = insert_or_get(a);
 	Element *y = insert_or_get(b);
@@ -121,7 +121,7 @@ void DisjointSet<T, H, C, AL>::create_union(T a, T b) {
 	}
 }
 
-template <typename T, class H, class C, class AL>
+template <typename T, typename H, typename C, typename AL>
 void DisjointSet<T, H, C, AL>::get_representatives(Vector<T> &out_representatives) {
 	for (KeyValue<T, Element *> &E : elements) {
 		Element *element = E.value;
@@ -131,10 +131,10 @@ void DisjointSet<T, H, C, AL>::get_representatives(Vector<T> &out_representative
 	}
 }
 
-template <typename T, class H, class C, class AL>
+template <typename T, typename H, typename C, typename AL>
 void DisjointSet<T, H, C, AL>::get_members(Vector<T> &out_members, T representative) {
 	typename MapT::Iterator rep_itr = elements.find(representative);
-	ERR_FAIL_COND(rep_itr == nullptr);
+	ERR_FAIL_NULL(rep_itr);
 
 	Element *rep_element = rep_itr->value;
 	ERR_FAIL_COND(rep_element->parent != rep_element);

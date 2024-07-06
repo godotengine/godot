@@ -1,3 +1,5 @@
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+
 using System;
 using System.Runtime.InteropServices;
 using Godot.Collections;
@@ -131,6 +133,9 @@ namespace Godot.NativeInterop
                         if (type == typeof(Vector3[]))
                             return Variant.Type.PackedVector3Array;
 
+                        if (type == typeof(Vector4[]))
+                            return Variant.Type.PackedVector4Array;
+
                         if (type == typeof(Color[]))
                             return Variant.Type.PackedColorArray;
 
@@ -213,13 +218,13 @@ namespace Godot.NativeInterop
             if (p_string.Buffer == IntPtr.Zero)
                 return string.Empty;
 
-            const int sizeOfChar32 = 4;
+            const int SizeOfChar32 = 4;
             byte* bytes = (byte*)p_string.Buffer;
             int size = p_string.Size;
             if (size == 0)
                 return string.Empty;
             size -= 1; // zero at the end
-            int sizeInBytes = size * sizeOfChar32;
+            int sizeInBytes = size * SizeOfChar32;
             return System.Text.Encoding.UTF32.GetString(bytes, sizeInBytes);
         }
 
@@ -259,7 +264,7 @@ namespace Godot.NativeInterop
                 }
 
                 return new godot_callable(method /* Takes ownership of disposable */,
-                    p_managed_callable.Target.GetInstanceId());
+                    p_managed_callable.Target?.GetInstanceId() ?? 0);
             }
         }
 
@@ -570,6 +575,30 @@ namespace Godot.NativeInterop
                 return new godot_packed_vector3_array();
             fixed (Vector3* src = p_array)
                 return NativeFuncs.godotsharp_packed_vector3_array_new_mem_copy(src, p_array.Length);
+        }
+
+        // PackedVector4Array
+
+        public static unsafe Vector4[] ConvertNativePackedVector4ArrayToSystemArray(godot_packed_vector4_array p_array)
+        {
+            Vector4* buffer = p_array.Buffer;
+            int size = p_array.Size;
+            if (size == 0)
+                return Array.Empty<Vector4>();
+            int sizeInBytes = size * sizeof(Vector4);
+            var array = new Vector4[size];
+            fixed (Vector4* dest = array)
+                Buffer.MemoryCopy(buffer, dest, sizeInBytes, sizeInBytes);
+            return array;
+        }
+
+        public static unsafe godot_packed_vector4_array ConvertSystemArrayToNativePackedVector4Array(
+            Span<Vector4> p_array)
+        {
+            if (p_array.IsEmpty)
+                return new godot_packed_vector4_array();
+            fixed (Vector4* src = p_array)
+                return NativeFuncs.godotsharp_packed_vector4_array_new_mem_copy(src, p_array.Length);
         }
 
         // PackedColorArray

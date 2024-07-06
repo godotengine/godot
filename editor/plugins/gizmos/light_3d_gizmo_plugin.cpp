@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/light_3d.h"
@@ -43,9 +44,9 @@ Light3DGizmoPlugin::Light3DGizmoPlugin() {
 	create_material("lines_secondary", Color(1, 1, 1, 0.35), false, false, true);
 	create_material("lines_billboard", Color(1, 1, 1), true, false, true);
 
-	create_icon_material("light_directional_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoDirectionalLight"), SNAME("EditorIcons")));
-	create_icon_material("light_omni_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoLight"), SNAME("EditorIcons")));
-	create_icon_material("light_spot_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoSpotLight"), SNAME("EditorIcons")));
+	create_icon_material("light_directional_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoDirectionalLight"), EditorStringName(EditorIcons)));
+	create_icon_material("light_omni_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoLight"), EditorStringName(EditorIcons)));
+	create_icon_material("light_spot_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoSpotLight"), EditorStringName(EditorIcons)));
 
 	create_handle_material("handles");
 	create_handle_material("handles_billboard", true);
@@ -158,124 +159,133 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 
 	if (Object::cast_to<DirectionalLight3D>(light)) {
-		Ref<Material> material = get_material("lines_primary", p_gizmo);
-		Ref<Material> icon = get_material("light_directional_icon", p_gizmo);
+		if (p_gizmo->is_selected()) {
+			Ref<Material> material = get_material("lines_primary", p_gizmo);
 
-		const int arrow_points = 7;
-		const float arrow_length = 1.5;
+			const int arrow_points = 7;
+			const float arrow_length = 1.5;
 
-		Vector3 arrow[arrow_points] = {
-			Vector3(0, 0, -1),
-			Vector3(0, 0.8, 0),
-			Vector3(0, 0.3, 0),
-			Vector3(0, 0.3, arrow_length),
-			Vector3(0, -0.3, arrow_length),
-			Vector3(0, -0.3, 0),
-			Vector3(0, -0.8, 0)
-		};
+			Vector3 arrow[arrow_points] = {
+				Vector3(0, 0, -1),
+				Vector3(0, 0.8, 0),
+				Vector3(0, 0.3, 0),
+				Vector3(0, 0.3, arrow_length),
+				Vector3(0, -0.3, arrow_length),
+				Vector3(0, -0.3, 0),
+				Vector3(0, -0.8, 0)
+			};
 
-		int arrow_sides = 2;
+			int arrow_sides = 2;
 
-		Vector<Vector3> lines;
+			Vector<Vector3> lines;
 
-		for (int i = 0; i < arrow_sides; i++) {
-			for (int j = 0; j < arrow_points; j++) {
-				Basis ma(Vector3(0, 0, 1), Math_PI * i / arrow_sides);
+			for (int i = 0; i < arrow_sides; i++) {
+				for (int j = 0; j < arrow_points; j++) {
+					Basis ma(Vector3(0, 0, 1), Math_PI * i / arrow_sides);
 
-				Vector3 v1 = arrow[j] - Vector3(0, 0, arrow_length);
-				Vector3 v2 = arrow[(j + 1) % arrow_points] - Vector3(0, 0, arrow_length);
+					Vector3 v1 = arrow[j] - Vector3(0, 0, arrow_length);
+					Vector3 v2 = arrow[(j + 1) % arrow_points] - Vector3(0, 0, arrow_length);
 
-				lines.push_back(ma.xform(v1));
-				lines.push_back(ma.xform(v2));
+					lines.push_back(ma.xform(v1));
+					lines.push_back(ma.xform(v2));
+				}
 			}
+
+			p_gizmo->add_lines(lines, material, false, color);
 		}
 
-		p_gizmo->add_lines(lines, material, false, color);
+		Ref<Material> icon = get_material("light_directional_icon", p_gizmo);
 		p_gizmo->add_unscaled_billboard(icon, 0.05, color);
 	}
 
 	if (Object::cast_to<OmniLight3D>(light)) {
-		// Use both a billboard circle and 3 non-billboard circles for a better sphere-like representation
-		const Ref<Material> lines_material = get_material("lines_secondary", p_gizmo);
-		const Ref<Material> lines_billboard_material = get_material("lines_billboard", p_gizmo);
-		const Ref<Material> icon = get_material("light_omni_icon", p_gizmo);
+		if (p_gizmo->is_selected()) {
+			// Use both a billboard circle and 3 non-billboard circles for a better sphere-like representation
+			const Ref<Material> lines_material = get_material("lines_secondary", p_gizmo);
+			const Ref<Material> lines_billboard_material = get_material("lines_billboard", p_gizmo);
 
-		OmniLight3D *on = Object::cast_to<OmniLight3D>(light);
-		const float r = on->get_param(Light3D::PARAM_RANGE);
-		Vector<Vector3> points;
-		Vector<Vector3> points_billboard;
+			OmniLight3D *on = Object::cast_to<OmniLight3D>(light);
+			const float r = on->get_param(Light3D::PARAM_RANGE);
+			Vector<Vector3> points;
+			Vector<Vector3> points_billboard;
 
-		for (int i = 0; i < 120; i++) {
-			// Create a circle
-			const float ra = Math::deg_to_rad((float)(i * 3));
-			const float rb = Math::deg_to_rad((float)((i + 1) * 3));
-			const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
-			const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
+			for (int i = 0; i < 120; i++) {
+				// Create a circle
+				const float ra = Math::deg_to_rad((float)(i * 3));
+				const float rb = Math::deg_to_rad((float)((i + 1) * 3));
+				const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
+				const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
-			// Draw axis-aligned circles
-			points.push_back(Vector3(a.x, 0, a.y));
-			points.push_back(Vector3(b.x, 0, b.y));
-			points.push_back(Vector3(0, a.x, a.y));
-			points.push_back(Vector3(0, b.x, b.y));
-			points.push_back(Vector3(a.x, a.y, 0));
-			points.push_back(Vector3(b.x, b.y, 0));
+				// Draw axis-aligned circles
+				points.push_back(Vector3(a.x, 0, a.y));
+				points.push_back(Vector3(b.x, 0, b.y));
+				points.push_back(Vector3(0, a.x, a.y));
+				points.push_back(Vector3(0, b.x, b.y));
+				points.push_back(Vector3(a.x, a.y, 0));
+				points.push_back(Vector3(b.x, b.y, 0));
 
-			// Draw a billboarded circle
-			points_billboard.push_back(Vector3(a.x, a.y, 0));
-			points_billboard.push_back(Vector3(b.x, b.y, 0));
+				// Draw a billboarded circle
+				points_billboard.push_back(Vector3(a.x, a.y, 0));
+				points_billboard.push_back(Vector3(b.x, b.y, 0));
+			}
+
+			p_gizmo->add_lines(points, lines_material, true, color);
+			p_gizmo->add_lines(points_billboard, lines_billboard_material, true, color);
+
+			Vector<Vector3> handles;
+			handles.push_back(Vector3(r, 0, 0));
+			p_gizmo->add_handles(handles, get_material("handles_billboard"), Vector<int>(), true);
 		}
 
-		p_gizmo->add_lines(points, lines_material, true, color);
-		p_gizmo->add_lines(points_billboard, lines_billboard_material, true, color);
+		const Ref<Material> icon = get_material("light_omni_icon", p_gizmo);
 		p_gizmo->add_unscaled_billboard(icon, 0.05, color);
-
-		Vector<Vector3> handles;
-		handles.push_back(Vector3(r, 0, 0));
-		p_gizmo->add_handles(handles, get_material("handles_billboard"), Vector<int>(), true);
 	}
 
 	if (Object::cast_to<SpotLight3D>(light)) {
-		const Ref<Material> material_primary = get_material("lines_primary", p_gizmo);
-		const Ref<Material> material_secondary = get_material("lines_secondary", p_gizmo);
-		const Ref<Material> icon = get_material("light_spot_icon", p_gizmo);
+		if (p_gizmo->is_selected()) {
+			const Ref<Material> material_primary = get_material("lines_primary", p_gizmo);
+			const Ref<Material> material_secondary = get_material("lines_secondary", p_gizmo);
 
-		Vector<Vector3> points_primary;
-		Vector<Vector3> points_secondary;
-		SpotLight3D *sl = Object::cast_to<SpotLight3D>(light);
+			Vector<Vector3> points_primary;
+			Vector<Vector3> points_secondary;
+			SpotLight3D *sl = Object::cast_to<SpotLight3D>(light);
 
-		float r = sl->get_param(Light3D::PARAM_RANGE);
-		float w = r * Math::sin(Math::deg_to_rad(sl->get_param(Light3D::PARAM_SPOT_ANGLE)));
-		float d = r * Math::cos(Math::deg_to_rad(sl->get_param(Light3D::PARAM_SPOT_ANGLE)));
+			float r = sl->get_param(Light3D::PARAM_RANGE);
+			float w = r * Math::sin(Math::deg_to_rad(sl->get_param(Light3D::PARAM_SPOT_ANGLE)));
+			float d = r * Math::cos(Math::deg_to_rad(sl->get_param(Light3D::PARAM_SPOT_ANGLE)));
 
-		for (int i = 0; i < 120; i++) {
-			// Draw a circle
-			const float ra = Math::deg_to_rad((float)(i * 3));
-			const float rb = Math::deg_to_rad((float)((i + 1) * 3));
-			const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
-			const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w;
+			for (int i = 0; i < 120; i++) {
+				// Draw a circle
+				const float ra = Math::deg_to_rad((float)(i * 3));
+				const float rb = Math::deg_to_rad((float)((i + 1) * 3));
+				const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
+				const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w;
 
-			points_primary.push_back(Vector3(a.x, a.y, -d));
-			points_primary.push_back(Vector3(b.x, b.y, -d));
+				points_primary.push_back(Vector3(a.x, a.y, -d));
+				points_primary.push_back(Vector3(b.x, b.y, -d));
 
-			if (i % 15 == 0) {
-				// Draw 8 lines from the cone origin to the sides of the circle
-				points_secondary.push_back(Vector3(a.x, a.y, -d));
-				points_secondary.push_back(Vector3());
+				if (i % 15 == 0) {
+					// Draw 8 lines from the cone origin to the sides of the circle
+					points_secondary.push_back(Vector3(a.x, a.y, -d));
+					points_secondary.push_back(Vector3());
+				}
 			}
+
+			points_primary.push_back(Vector3(0, 0, -r));
+			points_primary.push_back(Vector3());
+
+			p_gizmo->add_lines(points_primary, material_primary, false, color);
+			p_gizmo->add_lines(points_secondary, material_secondary, false, color);
+
+			Vector<Vector3> handles = {
+				Vector3(0, 0, -r),
+				Vector3(w, 0, -d)
+			};
+
+			p_gizmo->add_handles(handles, get_material("handles"));
 		}
 
-		points_primary.push_back(Vector3(0, 0, -r));
-		points_primary.push_back(Vector3());
-
-		p_gizmo->add_lines(points_primary, material_primary, false, color);
-		p_gizmo->add_lines(points_secondary, material_secondary, false, color);
-
-		Vector<Vector3> handles = {
-			Vector3(0, 0, -r),
-			Vector3(w, 0, -d)
-		};
-
-		p_gizmo->add_handles(handles, get_material("handles"));
+		const Ref<Material> icon = get_material("light_spot_icon", p_gizmo);
 		p_gizmo->add_unscaled_billboard(icon, 0.05, color);
 	}
 }

@@ -1,12 +1,9 @@
-"""Functions used to generate source files during build time
+"""Functions used to generate source files during build time"""
 
-All such functions are invoked in a subprocess on Windows to prevent build flakiness.
-
-"""
 import os.path
-from typing import Optional, Iterable
+from typing import Iterable, Optional
 
-from platform_methods import subprocess_main
+from methods import print_error
 
 
 def generate_inline_code(input_lines: Iterable[str], insert_newline: bool = True):
@@ -43,78 +40,76 @@ class RDHeaderStruct:
 
 
 def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth: int) -> RDHeaderStruct:
-    fs = open(filename, "r")
-    line = fs.readline()
-
-    while line:
-        index = line.find("//")
-        if index != -1:
-            line = line[:index]
-
-        if line.find("#[vertex]") != -1:
-            header_data.reading = "vertex"
-            line = fs.readline()
-            header_data.line_offset += 1
-            header_data.vertex_offset = header_data.line_offset
-            continue
-
-        if line.find("#[fragment]") != -1:
-            header_data.reading = "fragment"
-            line = fs.readline()
-            header_data.line_offset += 1
-            header_data.fragment_offset = header_data.line_offset
-            continue
-
-        if line.find("#[compute]") != -1:
-            header_data.reading = "compute"
-            line = fs.readline()
-            header_data.line_offset += 1
-            header_data.compute_offset = header_data.line_offset
-            continue
-
-        while line.find("#include ") != -1:
-            includeline = line.replace("#include ", "").strip()[1:-1]
-
-            if includeline.startswith("thirdparty/"):
-                included_file = os.path.relpath(includeline)
-
-            else:
-                included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
-
-            if not included_file in header_data.vertex_included_files and header_data.reading == "vertex":
-                header_data.vertex_included_files += [included_file]
-                if include_file_in_rd_header(included_file, header_data, depth + 1) is None:
-                    print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
-            elif not included_file in header_data.fragment_included_files and header_data.reading == "fragment":
-                header_data.fragment_included_files += [included_file]
-                if include_file_in_rd_header(included_file, header_data, depth + 1) is None:
-                    print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
-            elif not included_file in header_data.compute_included_files and header_data.reading == "compute":
-                header_data.compute_included_files += [included_file]
-                if include_file_in_rd_header(included_file, header_data, depth + 1) is None:
-                    print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
-
-            line = fs.readline()
-
-        line = line.replace("\r", "").replace("\n", "")
-
-        if header_data.reading == "vertex":
-            header_data.vertex_lines += [line]
-        if header_data.reading == "fragment":
-            header_data.fragment_lines += [line]
-        if header_data.reading == "compute":
-            header_data.compute_lines += [line]
-
+    with open(filename, "r", encoding="utf-8") as fs:
         line = fs.readline()
-        header_data.line_offset += 1
 
-    fs.close()
+        while line:
+            index = line.find("//")
+            if index != -1:
+                line = line[:index]
+
+            if line.find("#[vertex]") != -1:
+                header_data.reading = "vertex"
+                line = fs.readline()
+                header_data.line_offset += 1
+                header_data.vertex_offset = header_data.line_offset
+                continue
+
+            if line.find("#[fragment]") != -1:
+                header_data.reading = "fragment"
+                line = fs.readline()
+                header_data.line_offset += 1
+                header_data.fragment_offset = header_data.line_offset
+                continue
+
+            if line.find("#[compute]") != -1:
+                header_data.reading = "compute"
+                line = fs.readline()
+                header_data.line_offset += 1
+                header_data.compute_offset = header_data.line_offset
+                continue
+
+            while line.find("#include ") != -1:
+                includeline = line.replace("#include ", "").strip()[1:-1]
+
+                if includeline.startswith("thirdparty/"):
+                    included_file = os.path.relpath(includeline)
+
+                else:
+                    included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
+
+                if included_file not in header_data.vertex_included_files and header_data.reading == "vertex":
+                    header_data.vertex_included_files += [included_file]
+                    if include_file_in_rd_header(included_file, header_data, depth + 1) is None:
+                        print_error(f'In file "{filename}": #include "{includeline}" could not be found!"')
+                elif included_file not in header_data.fragment_included_files and header_data.reading == "fragment":
+                    header_data.fragment_included_files += [included_file]
+                    if include_file_in_rd_header(included_file, header_data, depth + 1) is None:
+                        print_error(f'In file "{filename}": #include "{includeline}" could not be found!"')
+                elif included_file not in header_data.compute_included_files and header_data.reading == "compute":
+                    header_data.compute_included_files += [included_file]
+                    if include_file_in_rd_header(included_file, header_data, depth + 1) is None:
+                        print_error(f'In file "{filename}": #include "{includeline}" could not be found!"')
+
+                line = fs.readline()
+
+            line = line.replace("\r", "").replace("\n", "")
+
+            if header_data.reading == "vertex":
+                header_data.vertex_lines += [line]
+            if header_data.reading == "fragment":
+                header_data.fragment_lines += [line]
+            if header_data.reading == "compute":
+                header_data.compute_lines += [line]
+
+            line = fs.readline()
+            header_data.line_offset += 1
 
     return header_data
 
 
 def build_rd_header(
-    filename: str, optional_output_filename: str = None, header_data: Optional[RDHeaderStruct] = None
+    filename: str, optional_output_filename: Optional[str] = None, header_data: Optional[RDHeaderStruct] = None
 ) -> None:
     header_data = header_data or RDHeaderStruct()
     include_file_in_rd_header(filename, header_data, 0)
@@ -164,7 +159,7 @@ public:
 #endif
 """
 
-    with open(out_file, "w") as fd:
+    with open(out_file, "w", encoding="utf-8", newline="\n") as fd:
         fd.write(shader_template)
 
 
@@ -179,26 +174,24 @@ class RAWHeaderStruct:
 
 
 def include_file_in_raw_header(filename: str, header_data: RAWHeaderStruct, depth: int) -> None:
-    fs = open(filename, "r")
-    line = fs.readline()
-
-    while line:
-        while line.find("#include ") != -1:
-            includeline = line.replace("#include ", "").strip()[1:-1]
-
-            included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
-            include_file_in_raw_header(included_file, header_data, depth + 1)
-
-            line = fs.readline()
-
-        header_data.code += line
+    with open(filename, "r", encoding="utf-8") as fs:
         line = fs.readline()
 
-    fs.close()
+        while line:
+            while line.find("#include ") != -1:
+                includeline = line.replace("#include ", "").strip()[1:-1]
+
+                included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
+                include_file_in_raw_header(included_file, header_data, depth + 1)
+
+                line = fs.readline()
+
+            header_data.code += line
+            line = fs.readline()
 
 
 def build_raw_header(
-    filename: str, optional_output_filename: str = None, header_data: Optional[RAWHeaderStruct] = None
+    filename: str, optional_output_filename: Optional[str] = None, header_data: Optional[RAWHeaderStruct] = None
 ):
     header_data = header_data or RAWHeaderStruct()
     include_file_in_raw_header(filename, header_data, 0)
@@ -223,14 +216,10 @@ static const char {out_file_base}[] = {{
 #endif
 """
 
-    with open(out_file, "w") as f:
+    with open(out_file, "w", encoding="utf-8", newline="\n") as f:
         f.write(shader_template)
 
 
 def build_raw_headers(target, source, env):
     for x in source:
         build_raw_header(filename=str(x))
-
-
-if __name__ == "__main__":
-    subprocess_main(globals())

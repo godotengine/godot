@@ -36,8 +36,8 @@ struct EditorProgress;
 
 #include "core/io/dir_access.h"
 #include "core/io/zip_io.h"
+#include "core/os/shared_object.h"
 #include "editor_export_preset.h"
-#include "editor_export_shared_object.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/main/node.h"
 #include "scene/resources/image_texture.h"
@@ -48,6 +48,9 @@ const String ENV_SCRIPT_ENCRYPTION_KEY = "GODOT_SCRIPT_ENCRYPTION_KEY";
 
 class EditorExportPlatform : public RefCounted {
 	GDCLASS(EditorExportPlatform, RefCounted);
+
+protected:
+	static void _bind_methods();
 
 public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
@@ -129,8 +132,8 @@ protected:
 
 	HashSet<String> get_features(const Ref<EditorExportPreset> &p_preset, bool p_debug) const;
 
-	bool exists_export_template(String template_file_name, String *err) const;
-	String find_export_template(String template_file_name, String *err = nullptr) const;
+	bool exists_export_template(const String &template_file_name, String *err) const;
+	String find_export_template(const String &template_file_name, String *err = nullptr) const;
 	void gen_export_flags(Vector<String> &r_flags, int p_flags);
 	void gen_debug_flags(Vector<String> &r_flags, int p_flags);
 
@@ -224,6 +227,7 @@ public:
 	virtual Ref<ImageTexture> get_option_icon(int p_index) const;
 	virtual String get_option_label(int p_device) const { return ""; }
 	virtual String get_option_tooltip(int p_device) const { return ""; }
+	virtual String get_device_architecture(int p_device) const { return ""; }
 
 	enum DebugFlags {
 		DEBUG_FLAG_DUMB_CLIENT = 1,
@@ -237,8 +241,6 @@ public:
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) { return OK; }
 	virtual Ref<Texture2D> get_run_icon() const { return get_logo(); }
 
-	String test_etc2() const;
-	String test_bc() const;
 	bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const;
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const = 0;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const = 0;

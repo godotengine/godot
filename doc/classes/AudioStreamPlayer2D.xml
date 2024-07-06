@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamPlayer2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AudioStreamPlayer2D" inherits="Node2D" keywords="sound, sfx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Plays positional sound in 2D space.
 	</brief_description>
@@ -78,6 +78,9 @@
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
 			The pitch and the tempo of the audio, as a multiplier of the audio sample's sample rate.
 		</member>
+		<member name="playback_type" type="int" setter="set_playback_type" getter="get_playback_type" enum="AudioServer.PlaybackType" default="0" experimental="">
+			The playback type of the stream player. If set other than to the default value, it will force that playback type.
+		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="is_playing" default="false">
 			If [code]true[/code], audio is playing or is queued to be played (see [method play]).
 		</member>
@@ -85,7 +88,7 @@
 			The [AudioStream] object to be played.
 		</member>
 		<member name="stream_paused" type="bool" setter="set_stream_paused" getter="get_stream_paused" default="false">
-			If [code]true[/code], the playback is paused. You can resume it by setting [code]stream_paused[/code] to [code]false[/code].
+			If [code]true[/code], the playback is paused. You can resume it by setting [member stream_paused] to [code]false[/code].
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
 			Base volume before attenuation.

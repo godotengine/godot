@@ -93,15 +93,16 @@ hb_icu_script_to_script (UScriptCode script)
 UScriptCode
 hb_icu_script_from_script (hb_script_t script)
 {
+  UScriptCode out = USCRIPT_INVALID_CODE;
+
   if (unlikely (script == HB_SCRIPT_INVALID))
-    return USCRIPT_INVALID_CODE;
+    return out;
 
-  unsigned int numScriptCode = 1 + u_getIntPropertyMaxValue (UCHAR_SCRIPT);
-  for (unsigned int i = 0; i < numScriptCode; i++)
-    if (unlikely (hb_icu_script_to_script ((UScriptCode) i) == script))
-      return (UScriptCode) i;
+  UErrorCode icu_err = U_ZERO_ERROR;
+  const unsigned char buf[5] = {HB_UNTAG (script), 0};
+  uscript_getCode ((const char *) buf, &out, 1, &icu_err);
 
-  return USCRIPT_UNKNOWN;
+  return out;
 }
 
 

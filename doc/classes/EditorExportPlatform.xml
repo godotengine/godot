@@ -8,5 +8,14 @@
 		Used in scripting by [EditorExportPlugin] to configure platform-specific customization of scenes and resources. See [method EditorExportPlugin._begin_customize_scenes] and [method EditorExportPlugin._begin_customize_resources] for more details.
 	</description>
 	<tutorials>
+		<link title="Console support in Godot">$DOCS_URL/tutorials/platform/consoles.html</link>
 	</tutorials>
+	<methods>
+		<method name="get_os_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the export operating system handled by this [EditorExportPlatform] class, as a friendly string. Possible return values are [code]Windows[/code], [code]Linux[/code], [code]macOS[/code], [code]Android[/code], [code]iOS[/code], and [code]Web[/code].
+			</description>
+		</method>
+	</methods>
 </class>

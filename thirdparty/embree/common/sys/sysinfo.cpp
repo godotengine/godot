@@ -1,9 +1,15 @@
 // Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+#if defined(__INTEL_LLVM_COMPILER)
+// prevents "'__thiscall' calling convention is not supported for this target" warning from TBB
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wignored-attributes"
+#endif
+
 #include "sysinfo.h"
 #include "intrinsics.h"
-#include "string.h"
+#include "estring.h"
 #include "ref.h"
 #if defined(__FREEBSD__)
 #include <sys/cpuset.h>
@@ -289,7 +295,7 @@ namespace embree
     if (nIds >= 1) __cpuid (cpuid_leaf_1,0x00000001);
 #if _WIN32
 #if _MSC_VER && (_MSC_FULL_VER < 160040219)
-#else
+#elif defined(_MSC_VER)
     if (nIds >= 7) __cpuidex(cpuid_leaf_7,0x00000007,0);
 #endif
 #else
@@ -690,3 +696,6 @@ namespace embree
 }
 #endif
 
+#if defined(__INTEL_LLVM_COMPILER)
+#pragma clang diagnostic pop
+#endif

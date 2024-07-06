@@ -47,9 +47,11 @@ uint32_t MethodBind::get_hash() const {
 	}
 
 	hash = hash_murmur3_one_32(get_default_argument_count(), hash);
-	for (int i = 0; i < get_default_argument_count(); i++) {
-		Variant v = get_default_argument(i);
-		hash = hash_murmur3_one_32(v.hash(), hash);
+	for (int i = 0; i < get_argument_count(); i++) {
+		if (has_default_argument(i)) {
+			Variant v = get_default_argument(i);
+			hash = hash_murmur3_one_32(v.hash(), hash);
+		}
 	}
 
 	hash = hash_murmur3_one_32(is_const(), hash);

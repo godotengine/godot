@@ -32,9 +32,18 @@
 
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/resources/importer_mesh.h"
+#include "scene/resources/3d/importer_mesh.h"
 
 void GLTFDocumentExtensionConvertImporterMesh::_bind_methods() {
+}
+
+void GLTFDocumentExtensionConvertImporterMesh::_copy_meta(Object *p_src_object, Object *p_dst_object) {
+	List<StringName> meta_list;
+	p_src_object->get_meta_list(&meta_list);
+	for (const StringName &meta_key : meta_list) {
+		Variant meta_value = p_src_object->get_meta(meta_key);
+		p_dst_object->set_meta(meta_key, meta_value);
+	}
 }
 
 Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFState> p_state, Node *p_root) {
@@ -58,6 +67,8 @@ Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFState> p_sta
 				mesh_instance_node_3d->set_skin(mesh_3d->get_skin());
 				mesh_instance_node_3d->set_skeleton_path(mesh_3d->get_skeleton_path());
 				node->replace_by(mesh_instance_node_3d);
+				_copy_meta(mesh_3d, mesh_instance_node_3d);
+				_copy_meta(mesh.ptr(), array_mesh.ptr());
 				delete_queue.push_back(node);
 				node = mesh_instance_node_3d;
 			} else {

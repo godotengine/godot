@@ -149,7 +149,15 @@ Error HTTPClientWeb::get_response_headers(List<String> *r_response) {
 }
 
 int64_t HTTPClientWeb::get_response_body_length() const {
-	return godot_js_fetch_body_length_get(js_id);
+	// Body length cannot be consistently retrieved from the web.
+	// Reading the "content-length" value will return a meaningless value when the response is compressed,
+	// as reading will return uncompressed chunks in any case, resulting in a mismatch between the detected
+	// body size and the actual size returned by repeatedly calling read_response_body_chunk.
+	// Additionally, while "content-length" is considered a safe CORS header, "content-encoding" is not,
+	// so using the "content-encoding" to decide if "content-length" is meaningful is not an option either.
+	// We simply must accept the fact that browsers are awful when it comes to networking APIs.
+	// See GH-47597, and GH-79327.
+	return -1;
 }
 
 PackedByteArray HTTPClientWeb::read_response_body_chunk() {

@@ -67,7 +67,7 @@ public:
 	virtual ~RID_AllocBase() {}
 };
 
-template <class T, bool THREAD_SAFE = false>
+template <typename T, bool THREAD_SAFE = false>
 class RID_Alloc : public RID_AllocBase {
 	T **chunks = nullptr;
 	uint32_t **free_list_chunks = nullptr;
@@ -211,12 +211,12 @@ public:
 	}
 	void initialize_rid(RID p_rid) {
 		T *mem = get_or_null(p_rid, true);
-		ERR_FAIL_COND(!mem);
+		ERR_FAIL_NULL(mem);
 		memnew_placement(mem, T);
 	}
 	void initialize_rid(RID p_rid, const T &p_value) {
 		T *mem = get_or_null(p_rid, true);
-		ERR_FAIL_COND(!mem);
+		ERR_FAIL_NULL(mem);
 		memnew_placement(mem, T(p_value));
 	}
 
@@ -270,7 +270,7 @@ public:
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
 			}
-			ERR_FAIL_MSG("Attempted to free an uninitialized or invalid RID");
+			ERR_FAIL_MSG("Attempted to free an uninitialized or invalid RID.");
 		} else if (unlikely(validator_chunks[idx_chunk][idx_element] != validator)) {
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
@@ -364,7 +364,7 @@ public:
 	}
 };
 
-template <class T, bool THREAD_SAFE = false>
+template <typename T, bool THREAD_SAFE = false>
 class RID_PtrOwner {
 	RID_Alloc<T *, THREAD_SAFE> alloc;
 
@@ -391,7 +391,7 @@ public:
 
 	_FORCE_INLINE_ void replace(const RID &p_rid, T *p_new_ptr) {
 		T **ptr = alloc.get_or_null(p_rid);
-		ERR_FAIL_COND(!ptr);
+		ERR_FAIL_NULL(ptr);
 		*ptr = p_new_ptr;
 	}
 
@@ -423,7 +423,7 @@ public:
 			alloc(p_target_chunk_byte_size) {}
 };
 
-template <class T, bool THREAD_SAFE = false>
+template <typename T, bool THREAD_SAFE = false>
 class RID_Owner {
 	RID_Alloc<T, THREAD_SAFE> alloc;
 

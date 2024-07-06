@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Gradient" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A color interpolator resource which can be used to generate colors between user-defined color points.
+		A color transition.
 	</brief_description>
 	<description>
-		Given a set of colors, this resource will interpolate them in order. This means that if you have color 1, color 2 and color 3, the gradient will interpolate from color 1 to color 2 and from color 2 to color 3. The gradient will initially have 2 colors (black and white), one (black) at gradient lower offset 0 and the other (white) at the gradient higher offset 1.
+		This resource describes a color transition by defining a set of colored points and how to interpolate between them.
 		See also [Curve] which supports more complex easing methods, but does not support colors.
 	</description>
 	<tutorials>
@@ -15,7 +15,7 @@
 			<param index="0" name="offset" type="float" />
 			<param index="1" name="color" type="Color" />
 			<description>
-				Adds the specified color to the end of the gradient, with the specified offset.
+				Adds the specified color to the gradient, with the specified offset.
 			</description>
 		</method>
 		<method name="get_color">
@@ -42,7 +42,7 @@
 			<return type="void" />
 			<param index="0" name="point" type="int" />
 			<description>
-				Removes the color at the index [param point].
+				Removes the color at index [param point].
 			</description>
 		</method>
 		<method name="reverse">
@@ -78,8 +78,8 @@
 	</methods>
 	<members>
 		<member name="colors" type="PackedColorArray" setter="set_colors" getter="get_colors" default="PackedColorArray(0, 0, 0, 1, 1, 1, 1, 1)">
-			Gradient's colors returned as a [PackedColorArray].
-			[b]Note:[/b] This property returns a copy, modifying the return value does not update the gradient. To update the gradient use [method set_color] method (for updating colors individually) or assign to this property directly (for bulk-updating all colors at once).
+			Gradient's colors as a [PackedColorArray].
+			[b]Note:[/b] Setting this property updates all colors at once. To update any color individually use [method set_color].
 		</member>
 		<member name="interpolation_color_space" type="int" setter="set_interpolation_color_space" getter="get_interpolation_color_space" enum="Gradient.ColorSpace" default="0">
 			The color space used to interpolate between points of the gradient. It does not affect the returned colors, which will always be in sRGB space. See [enum ColorSpace] for available modes.
@@ -89,8 +89,8 @@
 			The algorithm used to interpolate between points of the gradient. See [enum InterpolationMode] for available modes.
 		</member>
 		<member name="offsets" type="PackedFloat32Array" setter="set_offsets" getter="get_offsets" default="PackedFloat32Array(0, 1)">
-			Gradient's offsets returned as a [PackedFloat32Array].
-			[b]Note:[/b] This property returns a copy, modifying the return value does not update the gradient. To update the gradient use [method set_offset] method (for updating offsets individually) or assign to this property directly (for bulk-updating all offsets at once).
+			Gradient's offsets as a [PackedFloat32Array].
+			[b]Note:[/b] Setting this property updates all offsets at once. To update any offset individually use [method set_offset].
 		</member>
 	</members>
 	<constants>

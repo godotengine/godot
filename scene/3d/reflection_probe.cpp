@@ -68,8 +68,9 @@ Color ReflectionProbe::get_ambient_color() const {
 }
 
 void ReflectionProbe::set_max_distance(float p_distance) {
-	max_distance = p_distance;
-	RS::get_singleton()->reflection_probe_set_max_distance(probe, p_distance);
+	max_distance = CLAMP(p_distance, 0.0, 262'144.0);
+	// Reflection rendering breaks if distance exceeds 262,144 units (due to floating-point precision with the near plane being 0.01).
+	RS::get_singleton()->reflection_probe_set_max_distance(probe, max_distance);
 }
 
 float ReflectionProbe::get_max_distance() const {
@@ -164,6 +165,15 @@ uint32_t ReflectionProbe::get_cull_mask() const {
 	return cull_mask;
 }
 
+void ReflectionProbe::set_reflection_mask(uint32_t p_layers) {
+	reflection_mask = p_layers;
+	RS::get_singleton()->reflection_probe_set_reflection_mask(probe, p_layers);
+}
+
+uint32_t ReflectionProbe::get_reflection_mask() const {
+	return reflection_mask;
+}
+
 void ReflectionProbe::set_update_mode(UpdateMode p_mode) {
 	update_mode = p_mode;
 	RS::get_singleton()->reflection_probe_set_update_mode(probe, RS::ReflectionProbeUpdateMode(p_mode));
@@ -178,17 +188,6 @@ AABB ReflectionProbe::get_aabb() const {
 	aabb.position = -origin_offset;
 	aabb.size = origin_offset + size / 2;
 	return aabb;
-}
-
-PackedStringArray ReflectionProbe::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
-
-	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		warnings.push_back(RTR("ReflectionProbes are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
-		return warnings;
-	}
-
-	return warnings;
 }
 
 void ReflectionProbe::_validate_property(PropertyInfo &p_property) const {
@@ -236,6 +235,9 @@ void ReflectionProbe::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "layers"), &ReflectionProbe::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &ReflectionProbe::get_cull_mask);
 
+	ClassDB::bind_method(D_METHOD("set_reflection_mask", "layers"), &ReflectionProbe::set_reflection_mask);
+	ClassDB::bind_method(D_METHOD("get_reflection_mask"), &ReflectionProbe::get_reflection_mask);
+
 	ClassDB::bind_method(D_METHOD("set_update_mode", "mode"), &ReflectionProbe::set_update_mode);
 	ClassDB::bind_method(D_METHOD("get_update_mode"), &ReflectionProbe::get_update_mode);
 
@@ -248,6 +250,7 @@ void ReflectionProbe::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_as_interior", "is_set_as_interior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable_shadows"), "set_enable_shadows", "are_shadows_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "reflection_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_reflection_mask", "get_reflection_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mesh_lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_mesh_lod_threshold", "get_mesh_lod_threshold");
 
 	ADD_GROUP("Ambient", "ambient_");

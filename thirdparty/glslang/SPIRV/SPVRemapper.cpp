@@ -680,6 +680,7 @@ namespace spv {
             case spv::OperandKernelEnqueueFlags:
             case spv::OperandKernelProfilingInfo:
             case spv::OperandCapability:
+            case spv::OperandCooperativeMatrixOperands:
                 ++word;
                 break;
 

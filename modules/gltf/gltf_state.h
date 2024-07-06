@@ -43,21 +43,29 @@
 #include "structures/gltf_texture.h"
 #include "structures/gltf_texture_sampler.h"
 
+#include "scene/3d/importer_mesh_instance_3d.h"
+
 class GLTFState : public Resource {
 	GDCLASS(GLTFState, Resource);
 	friend class GLTFDocument;
 
-	String filename;
+protected:
 	String base_path;
+	String filename;
 	Dictionary json;
 	int major_version = 0;
 	int minor_version = 0;
+	String copyright;
 	Vector<uint8_t> glb_data;
+	double bake_fps = 30.0;
 
 	bool use_named_skin_binds = false;
 	bool use_khr_texture_transform = false;
 	bool discard_meshes_and_materials = false;
+	bool force_generate_tangents = false;
 	bool create_animations = true;
+	bool force_disable_compression = false;
+	bool import_as_skeleton_bones = false;
 
 	int handle_binary_image = HANDLE_BINARY_EXTRACT_TEXTURES;
 
@@ -66,7 +74,7 @@ class GLTFState : public Resource {
 	Vector<Ref<GLTFBufferView>> buffer_views;
 	Vector<Ref<GLTFAccessor>> accessors;
 
-	Vector<Ref<GLTFMesh>> meshes; // meshes are loaded directly, no reason not to.
+	Vector<Ref<GLTFMesh>> meshes; // Meshes are loaded directly, no reason not to.
 
 	Vector<AnimationPlayer *> animation_players;
 	HashMap<Ref<Material>, GLTFMaterialIndex> material_cache;
@@ -101,13 +109,22 @@ protected:
 	static void _bind_methods();
 
 public:
+	double get_bake_fps() const {
+		return bake_fps;
+	}
+
+	void set_bake_fps(double value) {
+		bake_fps = value;
+	}
+
 	void add_used_extension(const String &p_extension, bool p_required = false);
+	GLTFBufferViewIndex append_data_to_buffers(const Vector<uint8_t> &p_data, const bool p_deduplication);
 
 	enum GLTFHandleBinary {
 		HANDLE_BINARY_DISCARD_TEXTURES = 0,
 		HANDLE_BINARY_EXTRACT_TEXTURES,
 		HANDLE_BINARY_EMBED_AS_BASISU,
-		HANDLE_BINARY_EMBED_AS_UNCOMPRESSED, // if this value changes from 3, ResourceImporterScene::pre_import must be changed as well.
+		HANDLE_BINARY_EMBED_AS_UNCOMPRESSED, // If this value changes from 3, ResourceImporterScene::pre_import must be changed as well.
 	};
 	int32_t get_handle_binary_image() {
 		return handle_binary_image;
@@ -124,6 +141,9 @@ public:
 
 	int get_minor_version();
 	void set_minor_version(int p_minor_version);
+
+	String get_copyright() const;
+	void set_copyright(const String &p_copyright);
 
 	Vector<uint8_t> get_glb_data();
 	void set_glb_data(Vector<uint8_t> p_glb_data);
@@ -167,6 +187,9 @@ public:
 	String get_base_path();
 	void set_base_path(String p_base_path);
 
+	String get_filename() const;
+	void set_filename(const String &p_filename);
+
 	PackedInt32Array get_root_nodes();
 	void set_root_nodes(PackedInt32Array p_root_nodes);
 
@@ -199,6 +222,9 @@ public:
 
 	bool get_create_animations();
 	void set_create_animations(bool p_create_animations);
+
+	bool get_import_as_skeleton_bones();
+	void set_import_as_skeleton_bones(bool p_import_as_skeleton_bones);
 
 	TypedArray<GLTFAnimation> get_animations();
 	void set_animations(TypedArray<GLTFAnimation> p_animations);

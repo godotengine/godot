@@ -1,19 +1,22 @@
 #!/usr/bin/env python
 
+from methods import print_error
+
 Import("env")
 
 # The HTTP server "targets". Run with "scons p=web serve", or "scons p=web run"
 if "serve" in COMMAND_LINE_TARGETS or "run" in COMMAND_LINE_TARGETS:
-    from serve import serve
     import os
+
+    from serve import serve
 
     port = os.environ.get("GODOT_WEB_TEST_PORT", 8060)
     try:
         port = int(port)
     except Exception:
-        print("GODOT_WEB_TEST_PORT must be a valid integer")
+        print_error("GODOT_WEB_TEST_PORT must be a valid integer")
         sys.exit(255)
-    serve(env.Dir("#bin/.web_zip").abspath, port, "run" in COMMAND_LINE_TARGETS)
+    serve(env.Dir(env.GetTemplateZipPath()).abspath, port, "run" in COMMAND_LINE_TARGETS)
     sys.exit(0)
 
 web_files = [
@@ -62,14 +65,15 @@ if env["dlink_enabled"]:
     # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
     sys_env.Append(LIBS=["idbfs.js"])
     # Configure it as a main module (dynamic linking support).
-    sys_env["CCFLAGS"].remove("SIDE_MODULE=2")
-    sys_env["LINKFLAGS"].remove("SIDE_MODULE=2")
+    sys_env["CCFLAGS"].remove("-sSIDE_MODULE=2")
+    sys_env["LINKFLAGS"].remove("-sSIDE_MODULE=2")
     sys_env.Append(CCFLAGS=["-s", "MAIN_MODULE=1"])
     sys_env.Append(LINKFLAGS=["-s", "MAIN_MODULE=1"])
     sys_env.Append(LINKFLAGS=["-s", "EXPORT_ALL=1"])
     sys_env.Append(LINKFLAGS=["-s", "WARN_ON_UNDEFINED_SYMBOLS=0"])
-    # Force exporting the standard library (printf, malloc, etc.)
-    sys_env["ENV"]["EMCC_FORCE_STDLIBS"] = "libc,libc++,libc++abi"
+    sys_env["CCFLAGS"].remove("-fvisibility=hidden")
+    sys_env["LINKFLAGS"].remove("-fvisibility=hidden")
+
     # The main emscripten runtime, with exported standard libraries.
     sys = sys_env.Program(build_targets, ["web_runtime.cpp"])
 
@@ -92,7 +96,7 @@ engine = [
     "js/engine/engine.js",
 ]
 externs = [env.File("#platform/web/js/engine/engine.externs.js")]
-js_engine = env.CreateEngineFile("#bin/godot${PROGSUFFIX}.engine.js", engine, externs)
+js_engine = env.CreateEngineFile("#bin/godot${PROGSUFFIX}.engine.js", engine, externs, env["threads"])
 env.Depends(js_engine, externs)
 
 wrap_list = [

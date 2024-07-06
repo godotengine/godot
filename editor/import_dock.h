@@ -76,6 +76,7 @@ class ImportDock : public VBoxContainer {
 	void _property_edited(const StringName &p_prop);
 	void _property_toggled(const StringName &p_prop, bool p_checked);
 	void _set_dirty(bool p_dirty);
+	void _reimport_pressed();
 	void _reimport_attempt();
 	void _reimport_and_cleanup();
 	void _reimport();
@@ -102,6 +103,7 @@ protected:
 public:
 	void set_edit_path(const String &p_path);
 	void set_edit_multiple_paths(const Vector<String> &p_paths);
+	void reimport_resources(const Vector<String> &p_paths);
 	void initialize_import_options() const;
 	void clear();
 

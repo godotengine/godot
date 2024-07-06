@@ -32,7 +32,7 @@
 #define MESH_EDITOR_PLUGIN_H
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -41,7 +41,7 @@
 #include "scene/resources/material.h"
 
 class SubViewport;
-class TextureButton;
+class Button;
 
 class MeshEditor : public SubViewportContainer {
 	GDCLASS(MeshEditor, SubViewportContainer);
@@ -59,17 +59,16 @@ class MeshEditor : public SubViewportContainer {
 
 	Ref<Mesh> mesh;
 
-	TextureButton *light_1_switch = nullptr;
-	TextureButton *light_2_switch = nullptr;
+	Button *light_1_switch = nullptr;
+	Button *light_2_switch = nullptr;
 
 	struct ThemeCache {
-		Ref<Texture2D> light_1_on;
-		Ref<Texture2D> light_1_off;
-		Ref<Texture2D> light_2_on;
-		Ref<Texture2D> light_2_off;
+		Ref<Texture2D> light_1_icon;
+		Ref<Texture2D> light_2_icon;
 	} theme_cache;
 
-	void _button_pressed(Node *p_button);
+	void _on_light_1_switch_pressed();
+	void _on_light_2_switch_pressed();
 	void _update_rotation();
 
 protected:

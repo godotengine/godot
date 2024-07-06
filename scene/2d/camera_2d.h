@@ -85,8 +85,12 @@ protected:
 	bool drag_vertical_offset_changed = false;
 
 	Point2 camera_screen_center;
+	bool _is_editing_in_editor() const;
 	void _update_process_callback();
 	void _update_scroll();
+#ifdef TOOLS_ENABLED
+	void _project_settings_changed();
+#endif
 
 	void _make_current(Object *p_which);
 	void _reset_just_exited() { just_exited_tree = false; }
@@ -100,6 +104,14 @@ protected:
 	bool margin_drawing_enabled = false;
 
 	Camera2DProcessCallback process_callback = CAMERA2D_PROCESS_IDLE;
+
+	struct InterpolationData {
+		Transform2D xform_curr;
+		Transform2D xform_prev;
+		uint32_t last_update_physics_tick = 0;
+	} _interpolation_data;
+
+	void _ensure_update_interpolation_data();
 
 	Size2 _get_camera_screen_size() const;
 

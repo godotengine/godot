@@ -4,7 +4,7 @@
 		A 3D ray shape used for physics collision that tries to separate itself from any collider.
 	</brief_description>
 	<description>
-		A 3D ray shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape2D]. When a [SeparationRayShape3D] collides with an object, it tries to separate itself from it by moving its endpoint to the collision point. It can for example be used for spears falling from the sky.
+		A 3D ray shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape3D]. When a [SeparationRayShape3D] collides with an object, it tries to separate itself from it by moving its endpoint to the collision point. For example, a [SeparationRayShape3D] next to a character can allow it to instantly move up when touching stairs.
 	</description>
 	<tutorials>
 	</tutorials>

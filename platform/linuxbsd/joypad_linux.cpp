@@ -56,6 +56,14 @@
 static const char *ignore_str = "/dev/input/js";
 #endif
 
+// On Linux with Steam Input Xbox 360 devices have an index appended to their device name, this index is
+// the Steam Input gamepad index
+#define VALVE_GAMEPAD_NAME_PREFIX "Microsoft X-Box 360 pad "
+// IDs used by Steam Input virtual controllers.
+// See https://partner.steamgames.com/doc/features/steam_controller/steam_input_gamepad_emulation_bestpractices
+#define VALVE_GAMEPAD_VID 0x28DE
+#define VALVE_GAMEPAD_PID 0x11FF
+
 JoypadLinux::Joypad::~Joypad() {
 	for (int i = 0; i < MAX_ABS; i++) {
 		if (abs_info[i]) {
@@ -74,31 +82,9 @@ void JoypadLinux::Joypad::reset() {
 	events.clear();
 }
 
-#ifdef UDEV_ENABLED
-// This function is derived from SDL:
-// https://github.com/libsdl-org/SDL/blob/main/src/core/linux/SDL_sandbox.c#L28-L45
-static bool detect_sandbox() {
-	if (access("/.flatpak-info", F_OK) == 0) {
-		return true;
-	}
-
-	// For Snap, we check multiple variables because they might be set for
-	// unrelated reasons. This is the same thing WebKitGTK does.
-	if (OS::get_singleton()->has_environment("SNAP") && OS::get_singleton()->has_environment("SNAP_NAME") && OS::get_singleton()->has_environment("SNAP_REVISION")) {
-		return true;
-	}
-
-	if (access("/run/host/container-manager", F_OK) == 0) {
-		return true;
-	}
-
-	return false;
-}
-#endif // UDEV_ENABLED
-
 JoypadLinux::JoypadLinux(Input *in) {
 #ifdef UDEV_ENABLED
-	if (detect_sandbox()) {
+	if (OS::get_singleton()->is_sandboxed()) {
 		// Linux binaries in sandboxes / containers need special handling because
 		// libudev doesn't work there. So we need to fallback to manual parsing
 		// of /dev/input in such case.
@@ -189,7 +175,7 @@ void JoypadLinux::enumerate_joypads(udev *p_udev) {
 
 		if (devnode) {
 			String devnode_str = devnode;
-			if (devnode_str.find(ignore_str) == -1) {
+			if (!devnode_str.contains(ignore_str)) {
 				open_joypad(devnode);
 			}
 		}
@@ -228,7 +214,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 				const char *devnode = udev_device_get_devnode(dev);
 				if (devnode) {
 					String devnode_str = devnode;
-					if (devnode_str.find(ignore_str) == -1) {
+					if (!devnode_str.contains(ignore_str)) {
 						if (action == "add") {
 							open_joypad(devnode);
 						} else if (String(action) == "remove") {
@@ -239,7 +225,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 				udev_device_unref(dev);
 			}
 		}
-		usleep(50000);
+		OS::get_singleton()->delay_usec(50'000);
 	}
 	udev_monitor_unref(mon);
 }
@@ -258,13 +244,13 @@ void JoypadLinux::monitor_joypads() {
 					continue;
 				}
 				sprintf(fname, "/dev/input/%.*s", 16, current->d_name);
-				if (attached_devices.find(fname) == -1) {
+				if (!attached_devices.has(fname)) {
 					open_joypad(fname);
 				}
 			}
 		}
 		closedir(input_directory);
-		usleep(1000000); // 1s
+		OS::get_singleton()->delay_usec(1'000'000);
 	}
 }
 
@@ -411,8 +397,23 @@ void JoypadLinux::open_joypad(const char *p_path) {
 		setup_joypad_properties(joypad);
 		sprintf(uid, "%04x%04x", BSWAP16(inpid.bustype), 0);
 		if (inpid.vendor && inpid.product && inpid.version) {
+			Dictionary joypad_info;
+			joypad_info["vendor_id"] = inpid.vendor;
+			joypad_info["product_id"] = inpid.product;
+			joypad_info["raw_name"] = name;
+
 			sprintf(uid + String(uid).length(), "%04x%04x%04x%04x%04x%04x", vendor, 0, product, 0, version, 0);
-			input->joy_connection_changed(joy_num, true, name, uid);
+
+			if (inpid.vendor == VALVE_GAMEPAD_VID && inpid.product == VALVE_GAMEPAD_PID) {
+				if (name.begins_with(VALVE_GAMEPAD_NAME_PREFIX)) {
+					String idx_str = name.substr(strlen(VALVE_GAMEPAD_NAME_PREFIX));
+					if (idx_str.is_valid_int()) {
+						joypad_info["steam_input_index"] = idx_str.to_int();
+					}
+				}
+			}
+
+			input->joy_connection_changed(joy_num, true, name, uid, joypad_info);
 		} else {
 			String uidname = uid;
 			int uidlen = MIN(name.length(), 11);
@@ -507,7 +508,7 @@ void JoypadLinux::joypad_events_thread_run() {
 			}
 		}
 		if (no_events) {
-			usleep(10000); // 10ms
+			OS::get_singleton()->delay_usec(10'000);
 		}
 	}
 }

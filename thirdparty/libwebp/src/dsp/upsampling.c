@@ -215,6 +215,7 @@ static void EmptyYuv444Func(const uint8_t* y,
 
 WebPYUV444Converter WebPYUV444Converters[MODE_LAST];
 
+extern VP8CPUInfo VP8GetCPUInfo;
 extern void WebPInitYUV444ConvertersMIPSdspR2(void);
 extern void WebPInitYUV444ConvertersSSE2(void);
 extern void WebPInitYUV444ConvertersSSE41(void);

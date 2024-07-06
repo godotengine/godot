@@ -204,6 +204,9 @@ NetSocketPosix::NetError NetSocketPosix::_get_socket_error() const {
 	if (err == WSAEACCES) {
 		return ERR_NET_UNAUTHORIZED;
 	}
+	if (err == WSAEMSGSIZE || err == WSAENOBUFS) {
+		return ERR_NET_BUFFER_TOO_SMALL;
+	}
 	print_verbose("Socket error: " + itos(err));
 	return ERR_NET_OTHER;
 #else
@@ -221,6 +224,9 @@ NetSocketPosix::NetError NetSocketPosix::_get_socket_error() const {
 	}
 	if (errno == EACCES) {
 		return ERR_NET_UNAUTHORIZED;
+	}
+	if (errno == ENOBUFS) {
+		return ERR_NET_BUFFER_TOO_SMALL;
 	}
 	print_verbose("Socket error: " + itos(errno));
 	return ERR_NET_OTHER;
@@ -550,6 +556,10 @@ Error NetSocketPosix::recv(uint8_t *p_buffer, int p_len, int &r_read) {
 			return ERR_BUSY;
 		}
 
+		if (err == ERR_NET_BUFFER_TOO_SMALL) {
+			return ERR_OUT_OF_MEMORY;
+		}
+
 		return FAILED;
 	}
 
@@ -569,6 +579,10 @@ Error NetSocketPosix::recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IPAddr
 		NetError err = _get_socket_error();
 		if (err == ERR_NET_WOULD_BLOCK) {
 			return ERR_BUSY;
+		}
+
+		if (err == ERR_NET_BUFFER_TOO_SMALL) {
+			return ERR_OUT_OF_MEMORY;
 		}
 
 		return FAILED;
@@ -606,6 +620,9 @@ Error NetSocketPosix::send(const uint8_t *p_buffer, int p_len, int &r_sent) {
 		if (err == ERR_NET_WOULD_BLOCK) {
 			return ERR_BUSY;
 		}
+		if (err == ERR_NET_BUFFER_TOO_SMALL) {
+			return ERR_OUT_OF_MEMORY;
+		}
 
 		return FAILED;
 	}
@@ -624,6 +641,9 @@ Error NetSocketPosix::sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP
 		NetError err = _get_socket_error();
 		if (err == ERR_NET_WOULD_BLOCK) {
 			return ERR_BUSY;
+		}
+		if (err == ERR_NET_BUFFER_TOO_SMALL) {
+			return ERR_OUT_OF_MEMORY;
 		}
 
 		return FAILED;
@@ -767,11 +787,11 @@ Ref<NetSocket> NetSocketPosix::accept(IPAddress &r_ip, uint16_t &r_port) {
 	return Ref<NetSocket>(ns);
 }
 
-Error NetSocketPosix::join_multicast_group(const IPAddress &p_multi_address, String p_if_name) {
+Error NetSocketPosix::join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) {
 	return _change_multicast_group(p_multi_address, p_if_name, true);
 }
 
-Error NetSocketPosix::leave_multicast_group(const IPAddress &p_multi_address, String p_if_name) {
+Error NetSocketPosix::leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) {
 	return _change_multicast_group(p_multi_address, p_if_name, false);
 }
 

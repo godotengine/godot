@@ -47,38 +47,26 @@ bool SceneReplicationConfig::_set(const StringName &p_name, const Variant &p_val
 			add_property(path);
 			return true;
 		}
-		ERR_FAIL_COND_V(p_value.get_type() != Variant::BOOL, false);
 		ERR_FAIL_INDEX_V(idx, properties.size(), false);
-		ReplicationProperty &prop = properties[idx];
-		if (what == "sync") {
-			if ((bool)p_value == prop.sync) {
-				return true;
-			}
-			prop.sync = p_value;
-			if (prop.sync) {
-				sync_props.push_back(prop.name);
-			} else {
-				sync_props.erase(prop.name);
-			}
+		const ReplicationProperty &prop = properties.get(idx);
+		if (what == "replication_mode") {
+			ERR_FAIL_COND_V(p_value.get_type() != Variant::INT, false);
+			ReplicationMode mode = (ReplicationMode)p_value.operator int();
+			ERR_FAIL_COND_V(mode < REPLICATION_MODE_NEVER || mode > REPLICATION_MODE_ON_CHANGE, false);
+			property_set_replication_mode(prop.name, mode);
 			return true;
-		} else if (what == "spawn") {
-			if ((bool)p_value == prop.spawn) {
-				return true;
-			}
-			prop.spawn = p_value;
-			if (prop.spawn) {
-				spawn_props.push_back(prop.name);
-			} else {
-				spawn_props.erase(prop.name);
-			}
+		}
+		ERR_FAIL_COND_V(p_value.get_type() != Variant::BOOL, false);
+		if (what == "spawn") {
+			property_set_spawn(prop.name, p_value);
+			return true;
+		} else if (what == "sync") {
+			// Deprecated.
+			property_set_sync(prop.name, p_value);
 			return true;
 		} else if (what == "watch") {
-			prop.watch = p_value;
-			if (prop.watch) {
-				watch_props.push_back(prop.name);
-			} else {
-				watch_props.erase(prop.name);
-			}
+			// Deprecated.
+			property_set_watch(prop.name, p_value);
 			return true;
 		}
 	}
@@ -92,18 +80,15 @@ bool SceneReplicationConfig::_get(const StringName &p_name, Variant &r_ret) cons
 		int idx = prop_name.get_slicec('/', 1).to_int();
 		String what = prop_name.get_slicec('/', 2);
 		ERR_FAIL_INDEX_V(idx, properties.size(), false);
-		const ReplicationProperty &prop = properties[idx];
+		const ReplicationProperty &prop = properties.get(idx);
 		if (what == "path") {
 			r_ret = prop.name;
-			return true;
-		} else if (what == "sync") {
-			r_ret = prop.sync;
 			return true;
 		} else if (what == "spawn") {
 			r_ret = prop.spawn;
 			return true;
-		} else if (what == "watch") {
-			r_ret = prop.watch;
+		} else if (what == "replication_mode") {
+			r_ret = prop.mode;
 			return true;
 		}
 	}
@@ -114,9 +99,16 @@ void SceneReplicationConfig::_get_property_list(List<PropertyInfo> *p_list) cons
 	for (int i = 0; i < properties.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/spawn", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/sync", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/watch", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::INT, "properties/" + itos(i) + "/replication_mode", PROPERTY_HINT_ENUM, "Never,Always,On Change", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 	}
+}
+
+void SceneReplicationConfig::reset_state() {
+	dirty = false;
+	properties.clear();
+	sync_props.clear();
+	spawn_props.clear();
+	watch_props.clear();
 }
 
 TypedArray<NodePath> SceneReplicationConfig::get_properties() const {
@@ -129,11 +121,11 @@ TypedArray<NodePath> SceneReplicationConfig::get_properties() const {
 
 void SceneReplicationConfig::add_property(const NodePath &p_path, int p_index) {
 	ERR_FAIL_COND(properties.find(p_path));
+	ERR_FAIL_COND(p_path == NodePath());
 
 	if (p_index < 0 || p_index == properties.size()) {
 		properties.push_back(ReplicationProperty(p_path));
-		sync_props.push_back(p_path);
-		spawn_props.push_back(p_path);
+		dirty = true;
 		return;
 	}
 
@@ -146,27 +138,17 @@ void SceneReplicationConfig::add_property(const NodePath &p_path, int p_index) {
 		c++;
 	}
 	properties.insert_before(I, ReplicationProperty(p_path));
-	sync_props.clear();
-	spawn_props.clear();
-	for (const ReplicationProperty &prop : properties) {
-		if (prop.sync) {
-			sync_props.push_back(prop.name);
-		}
-		if (prop.spawn) {
-			spawn_props.push_back(prop.name);
-		}
-	}
+	dirty = true;
 }
 
 void SceneReplicationConfig::remove_property(const NodePath &p_path) {
 	properties.erase(p_path);
-	sync_props.erase(p_path);
-	spawn_props.erase(p_path);
+	dirty = true;
 }
 
 bool SceneReplicationConfig::has_property(const NodePath &p_path) const {
-	for (int i = 0; i < properties.size(); i++) {
-		if (properties[i].name == p_path) {
+	for (const ReplicationProperty &property : properties) {
+		if (property.name == p_path) {
 			return true;
 		}
 	}
@@ -174,8 +156,9 @@ bool SceneReplicationConfig::has_property(const NodePath &p_path) const {
 }
 
 int SceneReplicationConfig::property_get_index(const NodePath &p_path) const {
-	for (int i = 0; i < properties.size(); i++) {
-		if (properties[i].name == p_path) {
+	int i = 0;
+	for (List<ReplicationProperty>::ConstIterator itr = properties.begin(); itr != properties.end(); ++itr, ++i) {
+		if (itr->name == p_path) {
 			return i;
 		}
 	}
@@ -195,54 +178,97 @@ void SceneReplicationConfig::property_set_spawn(const NodePath &p_path, bool p_e
 		return;
 	}
 	E->get().spawn = p_enabled;
-	spawn_props.clear();
-	for (const ReplicationProperty &prop : properties) {
-		if (prop.spawn) {
-			spawn_props.push_back(prop.name);
-		}
-	}
+	dirty = true;
 }
 
 bool SceneReplicationConfig::property_get_sync(const NodePath &p_path) {
 	List<ReplicationProperty>::Element *E = properties.find(p_path);
 	ERR_FAIL_COND_V(!E, false);
-	return E->get().sync;
+	return E->get().mode == REPLICATION_MODE_ALWAYS;
 }
 
 void SceneReplicationConfig::property_set_sync(const NodePath &p_path, bool p_enabled) {
-	List<ReplicationProperty>::Element *E = properties.find(p_path);
-	ERR_FAIL_COND(!E);
-	if (E->get().sync == p_enabled) {
-		return;
-	}
-	E->get().sync = p_enabled;
-	sync_props.clear();
-	for (const ReplicationProperty &prop : properties) {
-		if (prop.sync) {
-			sync_props.push_back(prop.name);
-		}
+	if (p_enabled) {
+		property_set_replication_mode(p_path, REPLICATION_MODE_ALWAYS);
+	} else if (property_get_replication_mode(p_path) == REPLICATION_MODE_ALWAYS) {
+		property_set_replication_mode(p_path, REPLICATION_MODE_NEVER);
 	}
 }
 
 bool SceneReplicationConfig::property_get_watch(const NodePath &p_path) {
 	List<ReplicationProperty>::Element *E = properties.find(p_path);
 	ERR_FAIL_COND_V(!E, false);
-	return E->get().watch;
+	return E->get().mode == REPLICATION_MODE_ON_CHANGE;
 }
 
 void SceneReplicationConfig::property_set_watch(const NodePath &p_path, bool p_enabled) {
+	if (p_enabled) {
+		property_set_replication_mode(p_path, REPLICATION_MODE_ON_CHANGE);
+	} else if (property_get_replication_mode(p_path) == REPLICATION_MODE_ON_CHANGE) {
+		property_set_replication_mode(p_path, REPLICATION_MODE_NEVER);
+	}
+}
+
+SceneReplicationConfig::ReplicationMode SceneReplicationConfig::property_get_replication_mode(const NodePath &p_path) {
+	List<ReplicationProperty>::Element *E = properties.find(p_path);
+	ERR_FAIL_COND_V(!E, REPLICATION_MODE_NEVER);
+	return E->get().mode;
+}
+
+void SceneReplicationConfig::property_set_replication_mode(const NodePath &p_path, ReplicationMode p_mode) {
 	List<ReplicationProperty>::Element *E = properties.find(p_path);
 	ERR_FAIL_COND(!E);
-	if (E->get().watch == p_enabled) {
+	if (E->get().mode == p_mode) {
 		return;
 	}
-	E->get().watch = p_enabled;
+	E->get().mode = p_mode;
+	dirty = true;
+}
+
+void SceneReplicationConfig::_update() {
+	if (!dirty) {
+		return;
+	}
+	dirty = false;
+	sync_props.clear();
+	spawn_props.clear();
 	watch_props.clear();
 	for (const ReplicationProperty &prop : properties) {
-		if (prop.watch) {
-			watch_props.push_back(p_path);
+		if (prop.spawn) {
+			spawn_props.push_back(prop.name);
+		}
+		switch (prop.mode) {
+			case REPLICATION_MODE_ALWAYS:
+				sync_props.push_back(prop.name);
+				break;
+			case REPLICATION_MODE_ON_CHANGE:
+				watch_props.push_back(prop.name);
+				break;
+			default:
+				break;
 		}
 	}
+}
+
+const List<NodePath> &SceneReplicationConfig::get_spawn_properties() {
+	if (dirty) {
+		_update();
+	}
+	return spawn_props;
+}
+
+const List<NodePath> &SceneReplicationConfig::get_sync_properties() {
+	if (dirty) {
+		_update();
+	}
+	return sync_props;
+}
+
+const List<NodePath> &SceneReplicationConfig::get_watch_properties() {
+	if (dirty) {
+		_update();
+	}
+	return watch_props;
 }
 
 void SceneReplicationConfig::_bind_methods() {
@@ -253,6 +279,14 @@ void SceneReplicationConfig::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("property_get_index", "path"), &SceneReplicationConfig::property_get_index);
 	ClassDB::bind_method(D_METHOD("property_get_spawn", "path"), &SceneReplicationConfig::property_get_spawn);
 	ClassDB::bind_method(D_METHOD("property_set_spawn", "path", "enabled"), &SceneReplicationConfig::property_set_spawn);
+	ClassDB::bind_method(D_METHOD("property_get_replication_mode", "path"), &SceneReplicationConfig::property_get_replication_mode);
+	ClassDB::bind_method(D_METHOD("property_set_replication_mode", "path", "mode"), &SceneReplicationConfig::property_set_replication_mode);
+
+	BIND_ENUM_CONSTANT(REPLICATION_MODE_NEVER);
+	BIND_ENUM_CONSTANT(REPLICATION_MODE_ALWAYS);
+	BIND_ENUM_CONSTANT(REPLICATION_MODE_ON_CHANGE);
+
+	// Deprecated.
 	ClassDB::bind_method(D_METHOD("property_get_sync", "path"), &SceneReplicationConfig::property_get_sync);
 	ClassDB::bind_method(D_METHOD("property_set_sync", "path", "enabled"), &SceneReplicationConfig::property_set_sync);
 	ClassDB::bind_method(D_METHOD("property_get_watch", "path"), &SceneReplicationConfig::property_get_watch);

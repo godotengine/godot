@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ShaderMaterial" inherits="Material" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A material that uses a custom [Shader] program.
+		A material defined by a custom [Shader] program and the values of its shader parameters.
 	</brief_description>
 	<description>
-		A material that uses a custom [Shader] program to render either items to screen or process particles. You can create multiple materials for the same shader but configure different values for the uniforms defined in the shader.
+		A material that uses a custom [Shader] program to render visual items (canvas items, meshes, skies, fog), or to process particles. Compared to other materials, [ShaderMaterial] gives deeper control over the generated shader code. For more information, see the shaders documentation index below.
+		Multiple [ShaderMaterial]s can use the same shader and configure different values for the shader uniforms.
+		[b]Note:[/b] For performance reasons, the [signal Resource.changed] signal is only emitted when the [member Resource.resource_name] changes. Only in editor, it is also emitted for [member shader] changes.
 	</description>
 	<tutorials>
 		<link title="Shaders documentation index">$DOCS_URL/tutorials/shaders/index.html</link>

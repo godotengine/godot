@@ -37,10 +37,10 @@
 
 bool UPNP::is_common_device(const String &dev) const {
 	return dev.is_empty() ||
-			dev.find("InternetGatewayDevice") >= 0 ||
-			dev.find("WANIPConnection") >= 0 ||
-			dev.find("WANPPPConnection") >= 0 ||
-			dev.find("rootdevice") >= 0;
+			dev.contains("InternetGatewayDevice") ||
+			dev.contains("WANIPConnection") ||
+			dev.contains("WANPPPConnection") ||
+			dev.contains("rootdevice");
 }
 
 int UPNP::discover(int timeout, int ttl, const String &device_filter) {
@@ -121,33 +121,20 @@ void UPNP::parse_igd(Ref<UPNPDevice> dev, UPNPDev *devlist) {
 		return;
 	}
 
-	struct UPNPUrls *urls = (UPNPUrls *)malloc(sizeof(struct UPNPUrls));
-
-	if (!urls) {
-		dev->set_igd_status(UPNPDevice::IGD_STATUS_MALLOC_ERROR);
-		return;
-	}
-
+	struct UPNPUrls urls = {};
 	struct IGDdatas data;
-
-	memset(urls, 0, sizeof(struct UPNPUrls));
 
 	parserootdesc(xml, size, &data);
 	free(xml);
 	xml = nullptr;
 
-	GetUPNPUrls(urls, &data, dev->get_description_url().utf8().get_data(), 0);
-
-	if (!urls) {
-		dev->set_igd_status(UPNPDevice::IGD_STATUS_NO_URLS);
-		return;
-	}
+	GetUPNPUrls(&urls, &data, dev->get_description_url().utf8().get_data(), 0);
 
 	char addr[16];
-	int i = UPNP_GetValidIGD(devlist, urls, &data, (char *)&addr, 16);
+	int i = UPNP_GetValidIGD(devlist, &urls, &data, (char *)&addr, 16);
 
 	if (i != 1) {
-		FreeUPNPUrls(urls);
+		FreeUPNPUrls(&urls);
 
 		switch (i) {
 			case 0:
@@ -165,18 +152,18 @@ void UPNP::parse_igd(Ref<UPNPDevice> dev, UPNPDev *devlist) {
 		}
 	}
 
-	if (urls->controlURL[0] == '\0') {
-		FreeUPNPUrls(urls);
+	if (urls.controlURL[0] == '\0') {
+		FreeUPNPUrls(&urls);
 		dev->set_igd_status(UPNPDevice::IGD_STATUS_INVALID_CONTROL);
 		return;
 	}
 
-	dev->set_igd_control_url(urls->controlURL);
+	dev->set_igd_control_url(urls.controlURL);
 	dev->set_igd_service_type(data.first.servicetype);
 	dev->set_igd_our_addr(addr);
 	dev->set_igd_status(UPNPDevice::IGD_STATUS_OK);
 
-	FreeUPNPUrls(urls);
+	FreeUPNPUrls(&urls);
 }
 
 int UPNP::upnp_result(int in) {
@@ -242,14 +229,14 @@ Ref<UPNPDevice> UPNP::get_device(int index) const {
 }
 
 void UPNP::add_device(Ref<UPNPDevice> device) {
-	ERR_FAIL_COND(device == nullptr);
+	ERR_FAIL_NULL(device);
 
 	devices.push_back(device);
 }
 
 void UPNP::set_device(int index, Ref<UPNPDevice> device) {
 	ERR_FAIL_INDEX(index, devices.size());
-	ERR_FAIL_COND(device == nullptr);
+	ERR_FAIL_NULL(device);
 
 	devices.set(index, device);
 }
@@ -265,7 +252,7 @@ void UPNP::clear_devices() {
 }
 
 Ref<UPNPDevice> UPNP::get_gateway() const {
-	ERR_FAIL_COND_V_MSG(devices.size() < 1, nullptr, "Couldn't find any UPNPDevices.");
+	ERR_FAIL_COND_V_MSG(devices.is_empty(), nullptr, "Couldn't find any UPNPDevices.");
 
 	for (int i = 0; i < devices.size(); i++) {
 		Ref<UPNPDevice> dev = get_device(i);

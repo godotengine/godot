@@ -31,8 +31,9 @@
 #include "editor_network_profiler.h"
 
 #include "core/os/os.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 
 void EditorNetworkProfiler::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));
@@ -62,19 +63,19 @@ void EditorNetworkProfiler::_notification(int p_what) {
 void EditorNetworkProfiler::_update_theme_item_cache() {
 	VBoxContainer::_update_theme_item_cache();
 
-	theme_cache.node_icon = get_theme_icon(SNAME("Node"), SNAME("EditorIcons"));
-	theme_cache.stop_icon = get_theme_icon(SNAME("Stop"), SNAME("EditorIcons"));
-	theme_cache.play_icon = get_theme_icon(SNAME("Play"), SNAME("EditorIcons"));
-	theme_cache.clear_icon = get_theme_icon(SNAME("Clear"), SNAME("EditorIcons"));
+	theme_cache.node_icon = get_theme_icon(SNAME("Node"), EditorStringName(EditorIcons));
+	theme_cache.stop_icon = get_theme_icon(SNAME("Stop"), EditorStringName(EditorIcons));
+	theme_cache.play_icon = get_theme_icon(SNAME("Play"), EditorStringName(EditorIcons));
+	theme_cache.clear_icon = get_theme_icon(SNAME("Clear"), EditorStringName(EditorIcons));
 
-	theme_cache.multiplayer_synchronizer_icon = get_theme_icon("MultiplayerSynchronizer", SNAME("EditorIcons"));
-	theme_cache.instance_options_icon = get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons"));
+	theme_cache.multiplayer_synchronizer_icon = get_theme_icon("MultiplayerSynchronizer", EditorStringName(EditorIcons));
+	theme_cache.instance_options_icon = get_theme_icon(SNAME("InstanceOptions"), EditorStringName(EditorIcons));
 
-	theme_cache.incoming_bandwidth_icon = get_theme_icon(SNAME("ArrowDown"), SNAME("EditorIcons"));
-	theme_cache.outgoing_bandwidth_icon = get_theme_icon(SNAME("ArrowUp"), SNAME("EditorIcons"));
+	theme_cache.incoming_bandwidth_icon = get_theme_icon(SNAME("ArrowDown"), EditorStringName(EditorIcons));
+	theme_cache.outgoing_bandwidth_icon = get_theme_icon(SNAME("ArrowUp"), EditorStringName(EditorIcons));
 
-	theme_cache.incoming_bandwidth_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
-	theme_cache.outgoing_bandwidth_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
+	theme_cache.incoming_bandwidth_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
+	theme_cache.outgoing_bandwidth_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 }
 
 void EditorNetworkProfiler::_refresh() {
@@ -128,7 +129,7 @@ void EditorNetworkProfiler::refresh_replication_data() {
 		const NodeInfo &cfg_info = node_data[E.value.config];
 
 		node->set_text(0, root_info.path.get_file());
-		node->set_icon(0, has_theme_icon(root_info.type, SNAME("EditorIcons")) ? get_theme_icon(root_info.type, SNAME("EditorIcons")) : theme_cache.node_icon);
+		node->set_icon(0, has_theme_icon(root_info.type, EditorStringName(EditorIcons)) ? get_theme_icon(root_info.type, EditorStringName(EditorIcons)) : theme_cache.node_icon);
 		node->set_tooltip_text(0, root_info.path);
 
 		node->set_text(1, sync_info.path.get_file());
@@ -259,12 +260,12 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	activate = memnew(Button);
 	activate->set_toggle_mode(true);
 	activate->set_text(TTR("Start"));
-	activate->connect("pressed", callable_mp(this, &EditorNetworkProfiler::_activate_pressed));
+	activate->connect(SceneStringName(pressed), callable_mp(this, &EditorNetworkProfiler::_activate_pressed));
 	hb->add_child(activate);
 
 	clear_button = memnew(Button);
 	clear_button->set_text(TTR("Clear"));
-	clear_button->connect("pressed", callable_mp(this, &EditorNetworkProfiler::_clear_pressed));
+	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorNetworkProfiler::_clear_pressed));
 	hb->add_child(clear_button);
 
 	hb->add_spacer();

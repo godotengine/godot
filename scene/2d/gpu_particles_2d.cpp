@@ -30,9 +30,11 @@
 
 #include "gpu_particles_2d.h"
 
+#include "scene/2d/cpu_particles_2d.h"
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/curve_texture.h"
+#include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
-#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/config/engine.h"
@@ -46,11 +48,11 @@ void GPUParticles2D::set_emitting(bool p_emitting) {
 			// Last cycle ended.
 			active = true;
 			time = 0;
-			signal_cancled = false;
+			signal_canceled = false;
 			emission_time = lifetime;
 			active_time = lifetime * (2 - explosiveness_ratio);
 		} else {
-			signal_cancled = true;
+			signal_canceled = true;
 		}
 		set_process_internal(true);
 	} else if (!p_emitting) {
@@ -189,6 +191,11 @@ void GPUParticles2D::set_trail_section_subdivisions(int p_subdivisions) {
 	queue_redraw();
 }
 
+void GPUParticles2D::set_interp_to_end(float p_interp) {
+	interp_to_end_factor = CLAMP(p_interp, 0.0, 1.0);
+	RS::get_singleton()->particles_set_interp_to_end(particles, interp_to_end_factor);
+}
+
 #ifdef TOOLS_ENABLED
 void GPUParticles2D::set_show_visibility_rect(bool p_show_visibility_rect) {
 	show_visibility_rect = p_show_visibility_rect;
@@ -315,6 +322,10 @@ bool GPUParticles2D::get_interpolate() const {
 	return interpolate;
 }
 
+float GPUParticles2D::get_interp_to_end() const {
+	return interp_to_end_factor;
+}
+
 PackedStringArray GPUParticles2D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
@@ -420,19 +431,119 @@ NodePath GPUParticles2D::get_sub_emitter() const {
 	return sub_emitter;
 }
 
+void GPUParticles2D::set_amount_ratio(float p_ratio) {
+	amount_ratio = p_ratio;
+	RenderingServer::get_singleton()->particles_set_amount_ratio(particles, p_ratio);
+}
+
+float GPUParticles2D::get_amount_ratio() const {
+	return amount_ratio;
+}
+
 void GPUParticles2D::restart() {
 	RS::get_singleton()->particles_restart(particles);
 	RS::get_singleton()->particles_set_emitting(particles, true);
 
 	emitting = true;
 	active = true;
-	signal_cancled = false;
+	signal_canceled = false;
 	time = 0;
 	emission_time = lifetime;
 	active_time = lifetime * (2 - explosiveness_ratio);
 	if (one_shot) {
 		set_process_internal(true);
 	}
+}
+
+void GPUParticles2D::convert_from_particles(Node *p_particles) {
+	CPUParticles2D *cpu_particles = Object::cast_to<CPUParticles2D>(p_particles);
+	ERR_FAIL_NULL_MSG(cpu_particles, "Only CPUParticles2D nodes can be converted to GPUParticles2D.");
+
+	set_emitting(cpu_particles->is_emitting());
+	set_amount(cpu_particles->get_amount());
+	set_lifetime(cpu_particles->get_lifetime());
+	set_one_shot(cpu_particles->get_one_shot());
+	set_pre_process_time(cpu_particles->get_pre_process_time());
+	set_explosiveness_ratio(cpu_particles->get_explosiveness_ratio());
+	set_randomness_ratio(cpu_particles->get_randomness_ratio());
+	set_use_local_coordinates(cpu_particles->get_use_local_coordinates());
+	set_fixed_fps(cpu_particles->get_fixed_fps());
+	set_fractional_delta(cpu_particles->get_fractional_delta());
+	set_speed_scale(cpu_particles->get_speed_scale());
+	set_draw_order(DrawOrder(cpu_particles->get_draw_order()));
+	set_texture(cpu_particles->get_texture());
+
+	Ref<Material> mat = cpu_particles->get_material();
+	if (mat.is_valid()) {
+		set_material(mat);
+	}
+
+	Ref<ParticleProcessMaterial> proc_mat = memnew(ParticleProcessMaterial);
+	set_process_material(proc_mat);
+	Vector2 dir = cpu_particles->get_direction();
+	proc_mat->set_direction(Vector3(dir.x, dir.y, 0));
+	proc_mat->set_spread(cpu_particles->get_spread());
+	proc_mat->set_color(cpu_particles->get_color());
+
+	Ref<Gradient> color_grad = cpu_particles->get_color_ramp();
+	if (color_grad.is_valid()) {
+		Ref<GradientTexture1D> tex = memnew(GradientTexture1D);
+		tex->set_gradient(color_grad);
+		proc_mat->set_color_ramp(tex);
+	}
+
+	Ref<Gradient> color_init_grad = cpu_particles->get_color_initial_ramp();
+	if (color_init_grad.is_valid()) {
+		Ref<GradientTexture1D> tex = memnew(GradientTexture1D);
+		tex->set_gradient(color_init_grad);
+		proc_mat->set_color_initial_ramp(tex);
+	}
+
+	proc_mat->set_particle_flag(ParticleProcessMaterial::PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY, cpu_particles->get_particle_flag(CPUParticles2D::PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY));
+
+	proc_mat->set_emission_shape(ParticleProcessMaterial::EmissionShape(cpu_particles->get_emission_shape()));
+	proc_mat->set_emission_sphere_radius(cpu_particles->get_emission_sphere_radius());
+
+	Vector2 rect_extents = cpu_particles->get_emission_rect_extents();
+	proc_mat->set_emission_box_extents(Vector3(rect_extents.x, rect_extents.y, 0));
+
+	if (cpu_particles->get_split_scale()) {
+		Ref<CurveXYZTexture> scale3D = memnew(CurveXYZTexture);
+		scale3D->set_curve_x(cpu_particles->get_scale_curve_x());
+		scale3D->set_curve_y(cpu_particles->get_scale_curve_y());
+		proc_mat->set_param_texture(ParticleProcessMaterial::PARAM_SCALE, scale3D);
+	}
+
+	Vector2 gravity = cpu_particles->get_gravity();
+	proc_mat->set_gravity(Vector3(gravity.x, gravity.y, 0));
+	proc_mat->set_lifetime_randomness(cpu_particles->get_lifetime_randomness());
+
+#define CONVERT_PARAM(m_param)                                                                                        \
+	proc_mat->set_param_min(ParticleProcessMaterial::m_param, cpu_particles->get_param_min(CPUParticles2D::m_param)); \
+	{                                                                                                                 \
+		Ref<Curve> curve = cpu_particles->get_param_curve(CPUParticles2D::m_param);                                   \
+		if (curve.is_valid()) {                                                                                       \
+			Ref<CurveTexture> tex = memnew(CurveTexture);                                                             \
+			tex->set_curve(curve);                                                                                    \
+			proc_mat->set_param_texture(ParticleProcessMaterial::m_param, tex);                                       \
+		}                                                                                                             \
+	}                                                                                                                 \
+	proc_mat->set_param_max(ParticleProcessMaterial::m_param, cpu_particles->get_param_max(CPUParticles2D::m_param));
+
+	CONVERT_PARAM(PARAM_INITIAL_LINEAR_VELOCITY);
+	CONVERT_PARAM(PARAM_ANGULAR_VELOCITY);
+	CONVERT_PARAM(PARAM_ORBIT_VELOCITY);
+	CONVERT_PARAM(PARAM_LINEAR_ACCEL);
+	CONVERT_PARAM(PARAM_RADIAL_ACCEL);
+	CONVERT_PARAM(PARAM_TANGENTIAL_ACCEL);
+	CONVERT_PARAM(PARAM_DAMPING);
+	CONVERT_PARAM(PARAM_ANGLE);
+	CONVERT_PARAM(PARAM_SCALE);
+	CONVERT_PARAM(PARAM_HUE_VARIATION);
+	CONVERT_PARAM(PARAM_ANIM_SPEED);
+	CONVERT_PARAM(PARAM_ANIM_OFFSET);
+
+#undef CONVERT_PARAM
 }
 
 void GPUParticles2D::_notification(int p_what) {
@@ -576,6 +687,8 @@ void GPUParticles2D::_notification(int p_what) {
 			} else {
 				RS::get_singleton()->particles_set_speed_scale(particles, 0);
 			}
+			set_process_internal(true);
+			previous_position = get_global_position();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -598,6 +711,15 @@ void GPUParticles2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
+			const Vector3 velocity = Vector3((get_global_position() - previous_position).x, (get_global_position() - previous_position).y, 0.0) /
+					get_process_delta_time();
+
+			if (velocity != previous_velocity) {
+				RS::get_singleton()->particles_set_emitter_velocity(particles, velocity);
+				previous_velocity = velocity;
+			}
+			previous_position = get_global_position();
+
 			if (one_shot) {
 				time += get_process_delta_time();
 				if (time > emission_time) {
@@ -607,8 +729,8 @@ void GPUParticles2D::_notification(int p_what) {
 					}
 				}
 				if (time > active_time) {
-					if (active && !signal_cancled) {
-						emit_signal(SceneStringNames::get_singleton()->finished);
+					if (active && !signal_canceled) {
+						emit_signal(SceneStringName(finished));
 					}
 					active = false;
 					if (!emitting) {
@@ -636,6 +758,7 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_process_material", "material"), &GPUParticles2D::set_process_material);
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &GPUParticles2D::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("set_collision_base_size", "size"), &GPUParticles2D::set_collision_base_size);
+	ClassDB::bind_method(D_METHOD("set_interp_to_end", "interp"), &GPUParticles2D::set_interp_to_end);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &GPUParticles2D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &GPUParticles2D::get_amount);
@@ -652,6 +775,7 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_process_material"), &GPUParticles2D::get_process_material);
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &GPUParticles2D::get_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_collision_base_size"), &GPUParticles2D::get_collision_base_size);
+	ClassDB::bind_method(D_METHOD("get_interp_to_end"), &GPUParticles2D::get_interp_to_end);
 
 	ClassDB::bind_method(D_METHOD("set_draw_order", "order"), &GPUParticles2D::set_draw_order);
 	ClassDB::bind_method(D_METHOD("get_draw_order"), &GPUParticles2D::get_draw_order);
@@ -680,13 +804,19 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_trail_section_subdivisions", "subdivisions"), &GPUParticles2D::set_trail_section_subdivisions);
 	ClassDB::bind_method(D_METHOD("get_trail_section_subdivisions"), &GPUParticles2D::get_trail_section_subdivisions);
 
+	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &GPUParticles2D::convert_from_particles);
+
+	ClassDB::bind_method(D_METHOD("set_amount_ratio", "ratio"), &GPUParticles2D::set_amount_ratio);
+	ClassDB::bind_method(D_METHOD("get_amount_ratio"), &GPUParticles2D::get_amount_ratio);
+
 	ADD_SIGNAL(MethodInfo("finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY_DEFAULT("emitting", true); // Workaround for doctool in headless mode, as dummy rasterizer always returns false.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "amount_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001"), "set_amount_ratio", "get_amount_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sub_emitter", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GPUParticles2D"), "set_sub_emitter", "get_sub_emitter");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,ParticleProcessMaterial"), "set_process_material", "get_process_material");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ParticleProcessMaterial,ShaderMaterial"), "set_process_material", "get_process_material");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,suffix:s"), "set_lifetime", "get_lifetime");
@@ -698,6 +828,7 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1,suffix:FPS"), "set_fixed_fps", "get_fixed_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interpolate"), "set_interpolate", "get_interpolate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "interp_to_end", PROPERTY_HINT_RANGE, "0.00,1.0,0.001"), "set_interp_to_end", "get_interp_to_end");
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_base_size", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater"), "set_collision_base_size", "get_collision_base_size");
 	ADD_GROUP("Drawing", "");
@@ -733,6 +864,7 @@ GPUParticles2D::GPUParticles2D() {
 	set_emitting(true);
 	set_one_shot(false);
 	set_amount(8);
+	set_amount_ratio(1.0);
 	set_lifetime(1);
 	set_fixed_fps(0);
 	set_fractional_delta(true);

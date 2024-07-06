@@ -41,7 +41,7 @@ struct VariantConstructData {
 
 static LocalVector<VariantConstructData> construct_data[Variant::VARIANT_MAX];
 
-template <class T>
+template <typename T>
 static void add_constructor(const Vector<String> &arg_names) {
 	ERR_FAIL_COND_MSG(arg_names.size() != T::get_argument_count(), "Argument names size mismatch for " + Variant::get_type_name(T::get_base_type()) + ".");
 
@@ -211,6 +211,7 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructorToArray<PackedVector2Array>>(sarray("from"));
 	add_constructor<VariantConstructorToArray<PackedVector3Array>>(sarray("from"));
 	add_constructor<VariantConstructorToArray<PackedColorArray>>(sarray("from"));
+	add_constructor<VariantConstructorToArray<PackedVector4Array>>(sarray("from"));
 
 	add_constructor<VariantConstructNoArgs<PackedByteArray>>(sarray());
 	add_constructor<VariantConstructor<PackedByteArray, PackedByteArray>>(sarray("from"));
@@ -247,6 +248,10 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructNoArgs<PackedColorArray>>(sarray());
 	add_constructor<VariantConstructor<PackedColorArray, PackedColorArray>>(sarray("from"));
 	add_constructor<VariantConstructorFromArray<PackedColorArray>>(sarray("from"));
+
+	add_constructor<VariantConstructNoArgs<PackedVector4Array>>(sarray());
+	add_constructor<VariantConstructor<PackedVector4Array, PackedVector4Array>>(sarray("from"));
+	add_constructor<VariantConstructorFromArray<PackedVector4Array>>(sarray("from"));
 }
 
 void Variant::_unregister_variant_constructors() {

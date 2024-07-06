@@ -75,8 +75,9 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		FLAGS_CLIP_RECT_UV = (1 << 9),
 		FLAGS_TRANSPOSE_RECT = (1 << 10),
 
+		FLAGS_CONVERT_ATTRIBUTES_TO_LINEAR = (1 << 11),
+
 		FLAGS_NINEPACH_DRAW_CENTER = (1 << 12),
-		FLAGS_USING_PARTICLES = (1 << 13),
 
 		FLAGS_USE_SKELETON = (1 << 15),
 		FLAGS_NINEPATCH_H_MODE_SHIFT = 16,
@@ -195,6 +196,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	struct CanvasMaterialData : public RendererRD::MaterialStorage::MaterialData {
 		CanvasShaderData *shader_data = nullptr;
 		RID uniform_set;
+		RID uniform_set_srgb;
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
@@ -226,6 +228,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		RID vertex_array;
 		RID index_buffer;
 		RID indices;
+		uint32_t primitive_count = 0;
 	};
 
 	struct {
@@ -415,9 +418,13 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	RID _create_base_uniform_set(RID p_to_render_target, bool p_backbuffer);
 
-	inline void _bind_canvas_texture(RD::DrawListID p_draw_list, RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, PushConstant &push_constant, Size2 &r_texpixel_size); //recursive, so regular inline used instead.
-	void _render_item(RenderingDevice::DrawListID p_draw_list, RID p_render_target, const Item *p_item, RenderingDevice::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants, bool &r_sdf_used);
-	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer = false);
+	bool debug_redraw = false;
+	Color debug_redraw_color;
+	double debug_redraw_time = 1.0;
+
+	inline void _bind_canvas_texture(RD::DrawListID p_draw_list, RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, PushConstant &push_constant, Size2 &r_texpixel_size, bool p_texture_is_data = false); //recursive, so regular inline used instead.
+	void _render_item(RenderingDevice::DrawListID p_draw_list, RID p_render_target, const Item *p_item, RenderingDevice::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants, bool &r_sdf_used, const Point2 &p_offset, RenderingMethod::RenderInfo *r_render_info = nullptr);
+	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer = false, RenderingMethod::RenderInfo *r_render_info = nullptr);
 
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4);
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3);
@@ -428,28 +435,30 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	void _update_shadow_atlas();
 
 public:
-	PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>());
-	void free_polygon(PolygonID p_polygon);
+	PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) override;
+	void free_polygon(PolygonID p_polygon) override;
 
-	RID light_create();
-	void light_set_texture(RID p_rid, RID p_texture);
-	void light_set_use_shadow(RID p_rid, bool p_enable);
-	void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders);
-	void light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders);
+	RID light_create() override;
+	void light_set_texture(RID p_rid, RID p_texture) override;
+	void light_set_use_shadow(RID p_rid, bool p_enable) override;
+	void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) override;
+	void light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) override;
 
-	virtual void render_sdf(RID p_render_target, LightOccluderInstance *p_occluders);
+	virtual void render_sdf(RID p_render_target, LightOccluderInstance *p_occluders) override;
 
-	RID occluder_polygon_create();
-	void occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed);
-	void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode);
+	RID occluder_polygon_create() override;
+	void occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) override;
+	void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) override;
 
-	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used);
+	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
 
-	virtual void set_shadow_texture_size(int p_size);
+	virtual void set_shadow_texture_size(int p_size) override;
+
+	void set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) override;
 
 	void set_time(double p_time);
-	void update();
-	bool free(RID p_rid);
+	void update() override;
+	bool free(RID p_rid) override;
 	RendererCanvasRenderRD();
 	~RendererCanvasRenderRD();
 };

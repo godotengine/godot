@@ -88,13 +88,18 @@ Ref<Resource> ResourceFormatLoaderShaderInclude::load(const String &p_path, cons
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
 
-	Ref<ShaderInclude> shader_inc;
-	shader_inc.instantiate();
-
-	Vector<uint8_t> buffer = FileAccess::get_file_as_bytes(p_path);
+	Error error = OK;
+	Vector<uint8_t> buffer = FileAccess::get_file_as_bytes(p_path, &error);
+	ERR_FAIL_COND_V_MSG(error, nullptr, "Cannot load shader include: " + p_path);
 
 	String str;
-	str.parse_utf8((const char *)buffer.ptr(), buffer.size());
+	if (buffer.size() > 0) {
+		error = str.parse_utf8((const char *)buffer.ptr(), buffer.size());
+		ERR_FAIL_COND_V_MSG(error, nullptr, "Cannot parse shader include: " + p_path);
+	}
+
+	Ref<ShaderInclude> shader_inc;
+	shader_inc.instantiate();
 
 	shader_inc->set_include_path(p_path);
 	shader_inc->set_code(str);

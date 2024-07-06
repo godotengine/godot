@@ -40,7 +40,7 @@ int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len
 
 	PacketPeerMbedDTLS *sp = static_cast<PacketPeerMbedDTLS *>(ctx);
 
-	ERR_FAIL_COND_V(sp == nullptr, 0);
+	ERR_FAIL_NULL_V(sp, 0);
 
 	Error err = sp->base->put_packet((const uint8_t *)buf, len);
 	if (err == ERR_BUSY) {
@@ -58,7 +58,7 @@ int PacketPeerMbedDTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
 
 	PacketPeerMbedDTLS *sp = static_cast<PacketPeerMbedDTLS *>(ctx);
 
-	ERR_FAIL_COND_V(sp == nullptr, 0);
+	ERR_FAIL_NULL_V(sp, 0);
 
 	int pc = sp->base->get_available_packet_count();
 	if (pc == 0) {

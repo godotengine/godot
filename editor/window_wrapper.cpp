@@ -31,8 +31,10 @@
 #include "window_wrapper.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
+#include "editor/progress_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
@@ -58,7 +60,7 @@ class ShortcutBin : public Node {
 			return;
 		}
 		Window *grandparent_window = get_window()->get_parent_visible_window();
-		ERR_FAIL_COND(!grandparent_window);
+		ERR_FAIL_NULL(grandparent_window);
 
 		if (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventShortcut>(p_event.ptr())) {
 			// HACK: Propagate the window input to the editor main window to handle global shortcuts.
@@ -72,7 +74,7 @@ class ShortcutBin : public Node {
 };
 
 Rect2 WindowWrapper::_get_default_window_rect() const {
-	// Assume that the control rect is the desidered one for the window.
+	// Assume that the control rect is the desired one for the window.
 	return wrapped_control->get_screen_rect();
 }
 
@@ -150,7 +152,7 @@ void WindowWrapper::_notification(int p_what) {
 			set_process_shortcut_input(true);
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			window_background->add_theme_style_override("panel", get_theme_stylebox("PanelForeground", "EditorStyles"));
+			window_background->add_theme_style_override(SceneStringName(panel), get_theme_stylebox("PanelForeground", EditorStringName(EditorStyles)));
 		} break;
 	}
 }
@@ -284,7 +286,7 @@ void WindowWrapper::enable_window_on_screen(int p_screen, bool p_auto_scale) {
 	}
 }
 
-void WindowWrapper::set_window_title(const String p_title) {
+void WindowWrapper::set_window_title(const String &p_title) {
 	if (!is_window_available()) {
 		return;
 	}
@@ -313,7 +315,7 @@ void WindowWrapper::set_margins_enabled(bool p_enabled) {
 }
 
 WindowWrapper::WindowWrapper() {
-	if (SceneTree::get_singleton()->get_root()->is_embedding_subwindows() || !EDITOR_GET("interface/multi_window/enable")) {
+	if (!EditorNode::get_singleton()->is_multi_window_enabled()) {
 		return;
 	}
 
@@ -331,6 +333,8 @@ WindowWrapper::WindowWrapper() {
 	window_background = memnew(Panel);
 	window_background->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	window->add_child(window_background);
+
+	ProgressDialog::get_singleton()->add_host_window(window);
 }
 
 // ScreenSelect
@@ -344,7 +348,7 @@ void ScreenSelect::_build_advanced_menu() {
 	}
 
 	// Populate screen list.
-	const real_t height = real_t(get_theme_font_size("font_size")) * 1.5;
+	const real_t height = real_t(get_theme_font_size(SceneStringName(font_size))) * 1.5;
 
 	int current_screen = get_window()->get_current_screen();
 	for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
@@ -360,18 +364,20 @@ void ScreenSelect::_build_advanced_menu() {
 		button->set_tooltip_text(vformat(TTR("Make this panel floating in the screen %d."), i));
 
 		if (i == current_screen) {
-			Color accent_color = get_theme_color("accent_color", "Editor");
-			button->add_theme_color_override("font_color", accent_color);
+			Color accent_color = get_theme_color("accent_color", EditorStringName(Editor));
+			button->add_theme_color_override(SceneStringName(font_color), accent_color);
 		}
 
-		button->connect("pressed", callable_mp(this, &ScreenSelect::_emit_screen_signal).bind(i));
-		button->connect("pressed", callable_mp(static_cast<BaseButton *>(this), &ScreenSelect::set_pressed).bind(false));
-		button->connect("pressed", callable_mp(static_cast<Window *>(popup), &Popup::hide));
+		button->connect(SceneStringName(pressed), callable_mp(this, &ScreenSelect::_emit_screen_signal).bind(i));
+		button->connect(SceneStringName(pressed), callable_mp(static_cast<BaseButton *>(this), &ScreenSelect::set_pressed).bind(false));
+		button->connect(SceneStringName(pressed), callable_mp(static_cast<Window *>(popup), &Popup::hide));
 	}
 }
 
 void ScreenSelect::_emit_screen_signal(int p_screen_idx) {
-	emit_signal("request_open_in_screen", p_screen_idx);
+	if (!is_disabled()) {
+		emit_signal("request_open_in_screen", p_screen_idx);
+	}
 }
 
 void ScreenSelect::_bind_methods() {
@@ -381,13 +387,13 @@ void ScreenSelect::_bind_methods() {
 void ScreenSelect::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			connect("gui_input", callable_mp(this, &ScreenSelect::_handle_mouse_shortcut));
+			connect(SceneStringName(gui_input), callable_mp(this, &ScreenSelect::_handle_mouse_shortcut));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("MakeFloating", "EditorIcons"));
-			popup_background->add_theme_style_override("panel", get_theme_stylebox("PanelForeground", "EditorStyles"));
+			set_icon(get_editor_theme_icon("MakeFloating"));
+			popup_background->add_theme_style_override(SceneStringName(panel), get_theme_stylebox("PanelForeground", EditorStringName(EditorStyles)));
 
-			const real_t popup_height = real_t(get_theme_font_size("font_size")) * 2.0;
+			const real_t popup_height = real_t(get_theme_font_size(SceneStringName(font_size))) * 2.0;
 			popup->set_min_size(Size2(0, popup_height * 3));
 		} break;
 	}
@@ -432,12 +438,18 @@ void ScreenSelect::pressed() {
 }
 
 ScreenSelect::ScreenSelect() {
-	set_tooltip_text(TTR("Make this panel floating.\nRight click to open the screen selector."));
 	set_button_mask(MouseButtonMask::RIGHT);
 	set_flat(true);
 	set_toggle_mode(true);
 	set_focus_mode(FOCUS_NONE);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
+
+	if (!EditorNode::get_singleton()->is_multi_window_enabled()) {
+		set_disabled(true);
+		set_tooltip_text(EditorNode::get_singleton()->get_multiwindow_support_tooltip_text());
+	} else {
+		set_tooltip_text(TTR("Make this panel floating.\nRight-click to open the screen selector."));
+	}
 
 	// Create the popup.
 	const Size2 borders = Size2(4, 4) * EDSCALE;

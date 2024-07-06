@@ -29,14 +29,9 @@
 /**************************************************************************/
 
 #include "grid_container.h"
+
 #include "core/templates/rb_set.h"
-
-void GridContainer::_update_theme_item_cache() {
-	Container::_update_theme_item_cache();
-
-	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
-	theme_cache.v_separation = get_theme_constant(SNAME("v_separation"));
-}
+#include "scene/theme/theme_db.h"
 
 void GridContainer::_notification(int p_what) {
 	switch (p_what) {
@@ -49,11 +44,8 @@ void GridContainer::_notification(int p_what) {
 			// Compute the per-column/per-row data.
 			int valid_controls_index = 0;
 			for (int i = 0; i < get_child_count(); i++) {
-				Control *c = Object::cast_to<Control>(get_child(i));
-				if (!c || !c->is_visible_in_tree()) {
-					continue;
-				}
-				if (c->is_set_as_top_level()) {
+				Control *c = as_sortable_control(get_child(i));
+				if (!c) {
 					continue;
 				}
 
@@ -191,8 +183,8 @@ void GridContainer::_notification(int p_what) {
 
 			valid_controls_index = 0;
 			for (int i = 0; i < get_child_count(); i++) {
-				Control *c = Object::cast_to<Control>(get_child(i));
-				if (!c || !c->is_visible_in_tree()) {
+				Control *c = as_sortable_control(get_child(i));
+				if (!c) {
 					continue;
 				}
 				int row = valid_controls_index / columns;
@@ -264,11 +256,18 @@ int GridContainer::get_columns() const {
 	return columns;
 }
 
+int GridContainer::get_h_separation() const {
+	return theme_cache.h_separation;
+}
+
 void GridContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_columns", "columns"), &GridContainer::set_columns);
 	ClassDB::bind_method(D_METHOD("get_columns"), &GridContainer::get_columns);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "columns", PROPERTY_HINT_RANGE, "1,1024,1"), "set_columns", "get_columns");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GridContainer, h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GridContainer, v_separation);
 }
 
 Size2 GridContainer::get_minimum_size() const {
@@ -280,8 +279,8 @@ Size2 GridContainer::get_minimum_size() const {
 
 	int valid_controls_index = 0;
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible()) {
+		Control *c = as_sortable_control(get_child(i), SortableVisbilityMode::VISIBLE);
+		if (!c) {
 			continue;
 		}
 		int row = valid_controls_index / columns;

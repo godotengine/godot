@@ -746,12 +746,14 @@ MaterialStorage::MaterialData::~MaterialData() {
 		material_storage->global_shader_uniforms.materials_using_texture.erase(global_texture_E);
 	}
 
-	if (uniform_buffer.is_valid()) {
-		RD::get_singleton()->free(uniform_buffer);
+	for (int i = 0; i < 2; i++) {
+		if (uniform_buffer[i].is_valid()) {
+			RD::get_singleton()->free(uniform_buffer[i]);
+		}
 	}
 }
 
-void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Variant> &p_parameters, const HashMap<StringName, HashMap<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color) {
+void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Variant> &p_parameters, const HashMap<StringName, HashMap<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color, bool p_3d_material) {
 	TextureStorage *texture_storage = TextureStorage::get_singleton();
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 
@@ -917,7 +919,7 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 				if (tex) {
 					rd_texture = (srgb && tex->rd_texture_srgb.is_valid()) ? tex->rd_texture_srgb : tex->rd_texture;
 #ifdef TOOLS_ENABLED
-					if (tex->detect_3d_callback && p_use_linear_color) {
+					if (tex->detect_3d_callback && p_3d_material) {
 						tex->detect_3d_callback(tex->detect_3d_callback_ud);
 					}
 					if (tex->detect_normal_callback && (p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL || p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_NORMAL)) {
@@ -931,11 +933,11 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 						roughness_detect_texture = tex;
 						roughness_channel = RS::TextureDetectRoughnessChannel(p_texture_uniforms[i].hint - ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_R);
 					}
+#endif // TOOLS_ENABLED
 					if (tex->render_target) {
 						tex->render_target->was_used = true;
 						render_target_cache.push_back(tex->render_target);
 					}
-#endif
 				}
 				if (rd_texture.is_null()) {
 					rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
@@ -986,18 +988,18 @@ void MaterialStorage::MaterialData::free_parameters_uniform_set(RID p_uniform_se
 	}
 }
 
-bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, bool p_use_linear_color, uint32_t p_barrier) {
-	if ((uint32_t)ubo_data.size() != p_ubo_size) {
+bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, bool p_use_linear_color, bool p_3d_material) {
+	if ((uint32_t)ubo_data[p_use_linear_color].size() != p_ubo_size) {
 		p_uniform_dirty = true;
-		if (uniform_buffer.is_valid()) {
-			RD::get_singleton()->free(uniform_buffer);
-			uniform_buffer = RID();
+		if (uniform_buffer[p_use_linear_color].is_valid()) {
+			RD::get_singleton()->free(uniform_buffer[p_use_linear_color]);
+			uniform_buffer[p_use_linear_color] = RID();
 		}
 
-		ubo_data.resize(p_ubo_size);
-		if (ubo_data.size()) {
-			uniform_buffer = RD::get_singleton()->uniform_buffer_create(ubo_data.size());
-			memset(ubo_data.ptrw(), 0, ubo_data.size()); //clear
+		ubo_data[p_use_linear_color].resize(p_ubo_size);
+		if (ubo_data[p_use_linear_color].size()) {
+			uniform_buffer[p_use_linear_color] = RD::get_singleton()->uniform_buffer_create(ubo_data[p_use_linear_color].size());
+			memset(ubo_data[p_use_linear_color].ptrw(), 0, ubo_data[p_use_linear_color].size()); //clear
 		}
 
 		//clear previous uniform set
@@ -1009,9 +1011,9 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 	}
 
 	//check whether buffer changed
-	if (p_uniform_dirty && ubo_data.size()) {
-		update_uniform_buffer(p_uniforms, p_uniform_offsets, p_parameters, ubo_data.ptrw(), ubo_data.size(), p_use_linear_color);
-		RD::get_singleton()->buffer_update(uniform_buffer, 0, ubo_data.size(), ubo_data.ptrw(), p_barrier);
+	if (p_uniform_dirty && ubo_data[p_use_linear_color].size()) {
+		update_uniform_buffer(p_uniforms, p_uniform_offsets, p_parameters, ubo_data[p_use_linear_color].ptrw(), ubo_data[p_use_linear_color].size(), p_use_linear_color);
+		RD::get_singleton()->buffer_update(uniform_buffer[p_use_linear_color], 0, ubo_data[p_use_linear_color].size(), ubo_data[p_use_linear_color].ptrw());
 	}
 
 	uint32_t tex_uniform_count = 0U;
@@ -1033,7 +1035,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 	}
 
 	if (p_textures_dirty && tex_uniform_count) {
-		update_textures(p_parameters, p_default_texture_params, p_texture_uniforms, texture_cache.ptrw(), p_use_linear_color);
+		update_textures(p_parameters, p_default_texture_params, p_texture_uniforms, texture_cache.ptrw(), p_use_linear_color, p_3d_material);
 	}
 
 	if (p_ubo_size == 0 && (p_texture_uniforms.size() == 0)) {
@@ -1053,7 +1055,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 0;
-			u.append_id(uniform_buffer);
+			u.append_id(uniform_buffer[p_use_linear_color]);
 			uniforms.push_back(u);
 		}
 
@@ -1089,6 +1091,37 @@ void MaterialStorage::MaterialData::set_as_used() {
 }
 
 ///////////////////////////////////////////////////////////////////////////
+// MaterialStorage::Samplers
+
+Vector<RD::Uniform> MaterialStorage::Samplers::get_uniforms(int p_first_index) const {
+	Vector<RD::Uniform> uniforms;
+
+	// Binding ids are aligned with samplers_inc.glsl.
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 0, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 1, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 2, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 3, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 4, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 5, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 6, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 7, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 8, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 9, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 10, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 11, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+
+	return uniforms;
+}
+
+bool MaterialStorage::Samplers::is_valid() const {
+	return rids[1][1].is_valid();
+}
+
+bool MaterialStorage::Samplers::is_null() const {
+	return rids[1][1].is_null();
+}
+
+///////////////////////////////////////////////////////////////////////////
 // MaterialStorage
 
 MaterialStorage *MaterialStorage::singleton = nullptr;
@@ -1101,108 +1134,23 @@ MaterialStorage::MaterialStorage() {
 	singleton = this;
 
 	//default samplers
-	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
-		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
-			RD::SamplerState sampler_state;
-			switch (i) {
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
-					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
-					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
-					sampler_state.max_lod = 0;
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR: {
-					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
-					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
-					sampler_state.max_lod = 0;
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
-					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
-					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
-					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
-					} else {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
-					}
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
-					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
-					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
-					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
-					} else {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
-					}
-
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
-					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
-					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
-					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
-					} else {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
-					}
-					sampler_state.use_anisotropy = true;
-					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
-					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
-					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
-					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
-					} else {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
-					}
-					sampler_state.use_anisotropy = true;
-					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
-
-				} break;
-				default: {
-				}
-			}
-			switch (j) {
-				case RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
-					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
-					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT;
-					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_REPEAT;
-					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_REPEAT;
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
-					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
-					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
-					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
-				} break;
-				default: {
-				}
-			}
-
-			default_rd_samplers[i][j] = RD::get_singleton()->sampler_create(sampler_state);
-		}
-	}
-
-	//custom sampler
-	sampler_rd_configure_custom(0.0f);
+	default_samplers = samplers_rd_allocate();
 
 	// buffers
 	{ //create index array for copy shaders
 		Vector<uint8_t> pv;
-		pv.resize(6 * 4);
+		pv.resize(6 * 2);
 		{
 			uint8_t *w = pv.ptrw();
-			int *p32 = (int *)w;
-			p32[0] = 0;
-			p32[1] = 1;
-			p32[2] = 2;
-			p32[3] = 0;
-			p32[4] = 2;
-			p32[5] = 3;
+			uint16_t *p16 = (uint16_t *)w;
+			p16[0] = 0;
+			p16[1] = 1;
+			p16[2] = 2;
+			p16[3] = 0;
+			p16[4] = 2;
+			p16[5] = 3;
 		}
-		quad_index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT32, pv);
+		quad_index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT16, pv);
 		quad_index_array = RD::get_singleton()->index_array_create(quad_index_buffer, 0, 6);
 	}
 
@@ -1217,8 +1165,8 @@ MaterialStorage::MaterialStorage() {
 	global_shader_uniforms.buffer_values = memnew_arr(GlobalShaderUniforms::Value, global_shader_uniforms.buffer_size);
 	memset(global_shader_uniforms.buffer_values, 0, sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size);
 	global_shader_uniforms.buffer_usage = memnew_arr(GlobalShaderUniforms::ValueUsage, global_shader_uniforms.buffer_size);
-	global_shader_uniforms.buffer_dirty_regions = memnew_arr(bool, global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE);
-	memset(global_shader_uniforms.buffer_dirty_regions, 0, sizeof(bool) * global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE);
+	global_shader_uniforms.buffer_dirty_regions = memnew_arr(bool, 1 + (global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE));
+	memset(global_shader_uniforms.buffer_dirty_regions, 0, sizeof(bool) * (1 + (global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE)));
 	global_shader_uniforms.buffer = RD::get_singleton()->storage_buffer_create(sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size);
 }
 
@@ -1233,20 +1181,7 @@ MaterialStorage::~MaterialStorage() {
 	RD::get_singleton()->free(quad_index_buffer); //array gets freed as dependency
 
 	//def samplers
-	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
-		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
-			RD::get_singleton()->free(default_rd_samplers[i][j]);
-		}
-	}
-
-	//custom samplers
-	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
-		for (int j = 0; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
-			if (custom_rd_samplers[i][j].is_valid()) {
-				RD::get_singleton()->free(custom_rd_samplers[i][j]);
-			}
-		}
-	}
+	samplers_rd_free(default_samplers);
 
 	singleton = nullptr;
 }
@@ -1261,102 +1196,6 @@ bool MaterialStorage::free(RID p_rid) {
 	}
 
 	return false;
-}
-
-/* Samplers */
-
-void MaterialStorage::sampler_rd_configure_custom(float p_mipmap_bias) {
-	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
-		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
-			RD::SamplerState sampler_state;
-			switch (i) {
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
-					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
-					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
-					sampler_state.max_lod = 0;
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR: {
-					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
-					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
-					sampler_state.max_lod = 0;
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
-					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
-					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
-					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
-					} else {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
-					}
-					sampler_state.lod_bias = p_mipmap_bias;
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
-					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
-					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
-					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
-					} else {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
-					}
-					sampler_state.lod_bias = p_mipmap_bias;
-
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
-					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
-					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
-					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
-					} else {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
-					}
-					sampler_state.lod_bias = p_mipmap_bias;
-					sampler_state.use_anisotropy = true;
-					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
-					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
-					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
-					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
-					} else {
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
-					}
-					sampler_state.lod_bias = p_mipmap_bias;
-					sampler_state.use_anisotropy = true;
-					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
-
-				} break;
-				default: {
-				}
-			}
-			switch (j) {
-				case RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
-					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
-					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT;
-					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_REPEAT;
-					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_REPEAT;
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
-					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
-					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
-					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
-				} break;
-				default: {
-				}
-			}
-
-			if (custom_rd_samplers[i][j].is_valid()) {
-				RD::get_singleton()->free(custom_rd_samplers[i][j]);
-			}
-
-			custom_rd_samplers[i][j] = RD::get_singleton()->sampler_create(sampler_state);
-		}
-	}
 }
 
 /* GLOBAL SHADER UNIFORM API */
@@ -1819,16 +1658,14 @@ void MaterialStorage::global_shader_parameters_load_settings(bool p_load_texture
 			Variant value = d["value"];
 
 			if (gvtype >= RS::GLOBAL_VAR_TYPE_SAMPLER2D) {
-				//textire
-				if (!p_load_textures) {
-					value = RID();
-					continue;
-				}
-
 				String path = value;
-				Ref<Resource> resource = ResourceLoader::load(path);
-				ERR_CONTINUE(resource.is_null());
-				value = resource;
+				// Don't load the textures, but still add the parameter so shaders compile correctly while loading.
+				if (!p_load_textures || path.is_empty()) {
+					value = RID();
+				} else {
+					Ref<Resource> resource = ResourceLoader::load(path);
+					value = resource;
+				}
 			}
 
 			if (global_shader_uniforms.variables.has(name)) {
@@ -1932,7 +1769,7 @@ void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, i
 void MaterialStorage::_update_global_shader_uniforms() {
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	if (global_shader_uniforms.buffer_dirty_region_count > 0) {
-		uint32_t total_regions = global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE;
+		uint32_t total_regions = 1 + (global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE);
 		if (total_regions / global_shader_uniforms.buffer_dirty_region_count <= 4) {
 			// 25% of regions dirty, just update all buffer
 			RD::get_singleton()->buffer_update(global_shader_uniforms.buffer, 0, sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size, global_shader_uniforms.buffer_values);
@@ -1995,7 +1832,7 @@ void MaterialStorage::shader_initialize(RID p_rid) {
 
 void MaterialStorage::shader_free(RID p_rid) {
 	Shader *shader = shader_owner.get_or_null(p_rid);
-	ERR_FAIL_COND(!shader);
+	ERR_FAIL_NULL(shader);
 
 	//make material unreference this
 	while (shader->owners.size()) {
@@ -2011,7 +1848,7 @@ void MaterialStorage::shader_free(RID p_rid) {
 
 void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND(!shader);
+	ERR_FAIL_NULL(shader);
 
 	shader->code = p_code;
 	String mode_string = ShaderLanguage::get_shader_type(p_code);
@@ -2088,7 +1925,7 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 
 void MaterialStorage::shader_set_path_hint(RID p_shader, const String &p_path) {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND(!shader);
+	ERR_FAIL_NULL(shader);
 
 	shader->path_hint = p_path;
 	if (shader->data) {
@@ -2098,13 +1935,13 @@ void MaterialStorage::shader_set_path_hint(RID p_shader, const String &p_path) {
 
 String MaterialStorage::shader_get_code(RID p_shader) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND_V(!shader, String());
+	ERR_FAIL_NULL_V(shader, String());
 	return shader->code;
 }
 
 void MaterialStorage::get_shader_parameter_list(RID p_shader, List<PropertyInfo> *p_param_list) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND(!shader);
+	ERR_FAIL_NULL(shader);
 	if (shader->data) {
 		return shader->data->get_shader_uniform_list(p_param_list);
 	}
@@ -2112,7 +1949,7 @@ void MaterialStorage::get_shader_parameter_list(RID p_shader, List<PropertyInfo>
 
 void MaterialStorage::shader_set_default_texture_parameter(RID p_shader, const StringName &p_name, RID p_texture, int p_index) {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND(!shader);
+	ERR_FAIL_NULL(shader);
 
 	if (p_texture.is_valid() && TextureStorage::get_singleton()->owns_texture(p_texture)) {
 		if (!shader->default_texture_parameter.has(p_name)) {
@@ -2139,7 +1976,7 @@ void MaterialStorage::shader_set_default_texture_parameter(RID p_shader, const S
 
 RID MaterialStorage::shader_get_default_texture_parameter(RID p_shader, const StringName &p_name, int p_index) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND_V(!shader, RID());
+	ERR_FAIL_NULL_V(shader, RID());
 	if (shader->default_texture_parameter.has(p_name) && shader->default_texture_parameter[p_name].has(p_index)) {
 		return shader->default_texture_parameter[p_name][p_index];
 	}
@@ -2149,7 +1986,7 @@ RID MaterialStorage::shader_get_default_texture_parameter(RID p_shader, const St
 
 Variant MaterialStorage::shader_get_parameter_default(RID p_shader, const StringName &p_param) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND_V(!shader, Variant());
+	ERR_FAIL_NULL_V(shader, Variant());
 	if (shader->data) {
 		return shader->data->get_default_parameter(p_param);
 	}
@@ -2163,7 +2000,7 @@ void MaterialStorage::shader_set_data_request_function(ShaderType p_shader_type,
 
 RS::ShaderNativeSourceCode MaterialStorage::shader_get_native_source_code(RID p_shader) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND_V(!shader, RS::ShaderNativeSourceCode());
+	ERR_FAIL_NULL_V(shader, RS::ShaderNativeSourceCode());
 	if (shader->data) {
 		return shader->data->get_native_source_code();
 	}
@@ -2228,7 +2065,7 @@ void MaterialStorage::material_initialize(RID p_rid) {
 
 void MaterialStorage::material_free(RID p_rid) {
 	Material *material = material_owner.get_or_null(p_rid);
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 
 	// Need to clear texture arrays to prevent spin locking of their RID's.
 	// This happens when the app is being closed.
@@ -2246,7 +2083,7 @@ void MaterialStorage::material_free(RID p_rid) {
 
 void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 
 	if (material->data) {
 		memdelete(material->data);
@@ -2266,7 +2103,7 @@ void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 	}
 
 	Shader *shader = get_shader(p_shader);
-	ERR_FAIL_COND(!shader);
+	ERR_FAIL_NULL(shader);
 	material->shader = shader;
 	material->shader_type = shader->type;
 	material->shader_id = p_shader.get_local_index();
@@ -2276,7 +2113,7 @@ void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 		return;
 	}
 
-	ERR_FAIL_COND(shader->data == nullptr);
+	ERR_FAIL_NULL(shader->data);
 
 	material->data = material_data_request_func[shader->type](shader->data);
 	material->data->self = p_material;
@@ -2298,7 +2135,7 @@ MaterialStorage::ShaderData *MaterialStorage::material_get_shader_data(RID p_mat
 
 void MaterialStorage::material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 
 	if (p_value.get_type() == Variant::NIL) {
 		material->params.erase(p_param);
@@ -2317,7 +2154,7 @@ void MaterialStorage::material_set_param(RID p_material, const StringName &p_par
 
 Variant MaterialStorage::material_get_param(RID p_material, const StringName &p_param) const {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND_V(!material, Variant());
+	ERR_FAIL_NULL_V(material, Variant());
 	if (material->params.has(p_param)) {
 		return material->params[p_param];
 	} else {
@@ -2327,7 +2164,7 @@ Variant MaterialStorage::material_get_param(RID p_material, const StringName &p_
 
 void MaterialStorage::material_set_next_pass(RID p_material, RID p_next_material) {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 
 	if (material->next_pass == p_next_material) {
 		return;
@@ -2343,7 +2180,7 @@ void MaterialStorage::material_set_next_pass(RID p_material, RID p_next_material
 
 void MaterialStorage::material_set_render_priority(RID p_material, int priority) {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 	material->priority = priority;
 	if (material->data) {
 		material->data->set_render_priority(priority);
@@ -2353,7 +2190,7 @@ void MaterialStorage::material_set_render_priority(RID p_material, int priority)
 
 bool MaterialStorage::material_is_animated(RID p_material) {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND_V(!material, false);
+	ERR_FAIL_NULL_V(material, false);
 	if (material->shader && material->shader->data) {
 		if (material->shader->data->is_animated()) {
 			return true;
@@ -2366,7 +2203,7 @@ bool MaterialStorage::material_is_animated(RID p_material) {
 
 bool MaterialStorage::material_casts_shadows(RID p_material) {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND_V(!material, true);
+	ERR_FAIL_NULL_V(material, true);
 	if (material->shader && material->shader->data) {
 		if (material->shader->data->casts_shadows()) {
 			return true;
@@ -2379,7 +2216,7 @@ bool MaterialStorage::material_casts_shadows(RID p_material) {
 
 void MaterialStorage::material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 	if (material->shader && material->shader->data) {
 		material->shader->data->get_instance_param_list(r_parameters);
 
@@ -2391,31 +2228,106 @@ void MaterialStorage::material_get_instance_shader_parameters(RID p_material, Li
 
 void MaterialStorage::material_update_dependency(RID p_material, DependencyTracker *p_instance) {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 	p_instance->update_dependency(&material->dependency);
 	if (material->next_pass.is_valid()) {
 		material_update_dependency(material->next_pass, p_instance);
 	}
 }
 
-Vector<RD::Uniform> MaterialStorage::get_default_sampler_uniforms(int first_index) {
-	Vector<RD::Uniform> uniforms;
+MaterialStorage::Samplers MaterialStorage::samplers_rd_allocate(float p_mipmap_bias) const {
+	Samplers samplers;
+	samplers.mipmap_bias = p_mipmap_bias;
+	samplers.use_nearest_mipmap_filter = GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter");
+	samplers.anisotropic_filtering_level = int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
 
-	// Binding ids are aligned with samplers_inc.glsl.
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 0, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 1, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 2, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 3, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 4, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 5, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 6, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED)));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 7, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED)));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 8, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED)));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 9, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED)));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 10, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED)));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 11, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED)));
+	RD::SamplerFilter mip_filter = samplers.use_nearest_mipmap_filter ? RD::SAMPLER_FILTER_NEAREST : RD::SAMPLER_FILTER_LINEAR;
+	float anisotropy_max = float(1 << samplers.anisotropic_filtering_level);
 
-	return uniforms;
+	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+			RD::SamplerState sampler_state;
+			switch (i) {
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.max_lod = 0;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.max_lod = 0;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.mip_filter = mip_filter;
+					sampler_state.lod_bias = samplers.mipmap_bias;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.mip_filter = mip_filter;
+					sampler_state.lod_bias = samplers.mipmap_bias;
+
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.mip_filter = mip_filter;
+					sampler_state.lod_bias = samplers.mipmap_bias;
+					sampler_state.use_anisotropy = true;
+					sampler_state.anisotropy_max = anisotropy_max;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.mip_filter = mip_filter;
+					sampler_state.lod_bias = samplers.mipmap_bias;
+					sampler_state.use_anisotropy = true;
+					sampler_state.anisotropy_max = anisotropy_max;
+
+				} break;
+				default: {
+				}
+			}
+			switch (j) {
+				case RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_REPEAT;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_REPEAT;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+				} break;
+				default: {
+				}
+			}
+
+			samplers.rids[i][j] = RD::get_singleton()->sampler_create(sampler_state);
+		}
+	}
+
+	return samplers;
+}
+
+void MaterialStorage::samplers_rd_free(Samplers &p_samplers) const {
+	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+			if (p_samplers.rids[i][j].is_valid()) {
+				RD::get_singleton()->free(p_samplers.rids[i][j]);
+				p_samplers.rids[i][j] = RID();
+			}
+		}
+	}
 }
 
 void MaterialStorage::material_set_data_request_function(ShaderType p_shader_type, MaterialStorage::MaterialDataRequestFunction p_function) {

@@ -25,7 +25,7 @@
 			The number of MSAA samples (or SSAA samples if [member enable_sample_shading] is [code]true[/code]) to perform. Higher values result in better antialiasing, at the cost of performance.
 		</member>
 		<member name="sample_masks" type="int[]" setter="set_sample_masks" getter="get_sample_masks" default="[]">
-			The sampleSee the [url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#fragops-samplemask]sample mask Vulkan documentation[/url] for more details.
+			The sample mask array. See the [url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#fragops-samplemask]sample mask Vulkan documentation[/url] for more details.
 		</member>
 	</members>
 </class>

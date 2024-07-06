@@ -156,8 +156,13 @@ public:
 
 static Error _jpgd_save_to_output_stream(jpge::output_stream *p_output_stream, const Ref<Image> &p_img, float p_quality) {
 	ERR_FAIL_COND_V(p_img.is_null() || p_img->is_empty(), ERR_INVALID_PARAMETER);
-	Ref<Image> image = p_img;
+	Ref<Image> image = p_img->duplicate();
+	if (image->is_compressed()) {
+		Error error = image->decompress();
+		ERR_FAIL_COND_V_MSG(error != OK, error, "Couldn't decompress image.");
+	}
 	if (image->get_format() != Image::FORMAT_RGB8) {
+		image = image->duplicate();
 		image->convert(Image::FORMAT_RGB8);
 	}
 
@@ -169,12 +174,16 @@ static Error _jpgd_save_to_output_stream(jpge::output_stream *p_output_stream, c
 
 	const uint8_t *src_data = image->get_data().ptr();
 	for (int i = 0; i < image->get_height(); i++) {
-		enc.process_scanline(&src_data[i * image->get_width() * 3]);
+		if (!enc.process_scanline(&src_data[i * image->get_width() * 3])) {
+			return FAILED;
+		}
 	}
 
-	enc.process_scanline(nullptr);
-
-	return OK;
+	if (enc.process_scanline(nullptr)) {
+		return OK;
+	} else {
+		return FAILED;
+	}
 }
 
 static Vector<uint8_t> _jpgd_buffer_save_func(const Ref<Image> &p_img, float p_quality) {

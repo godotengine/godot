@@ -1,7 +1,7 @@
 //
 // Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 // Copyright (C) 2012-2016 LunarG, Inc.
-// Copyright (C) 2017 ARM Limited.
+// Copyright (C) 2017, 2022-2024 Arm Limited.
 // Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
 //
 // All rights reserved.
@@ -35,8 +35,6 @@
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
-
-#if !defined(GLSLANG_WEB)
 
 #include "localintermediate.h"
 #include "../Include/InfoSink.h"
@@ -567,6 +565,8 @@ bool TOutputTraverser::visitUnary(TVisit /* visit */, TIntermUnary* node)
     case EOpSubgroupShuffleXor:              out.debug << "subgroupShuffleXor";              break;
     case EOpSubgroupShuffleUp:               out.debug << "subgroupShuffleUp";               break;
     case EOpSubgroupShuffleDown:             out.debug << "subgroupShuffleDown";             break;
+    case EOpSubgroupRotate:                  out.debug << "subgroupRotate";                  break;
+    case EOpSubgroupClusteredRotate:         out.debug << "subgroupClusteredRotate";         break;
     case EOpSubgroupAdd:                     out.debug << "subgroupAdd";                     break;
     case EOpSubgroupMul:                     out.debug << "subgroupMul";                     break;
     case EOpSubgroupMin:                     out.debug << "subgroupMin";                     break;
@@ -599,6 +599,8 @@ bool TOutputTraverser::visitUnary(TVisit /* visit */, TIntermUnary* node)
     case EOpSubgroupQuadSwapHorizontal:      out.debug << "subgroupQuadSwapHorizontal";      break;
     case EOpSubgroupQuadSwapVertical:        out.debug << "subgroupQuadSwapVertical";        break;
     case EOpSubgroupQuadSwapDiagonal:        out.debug << "subgroupQuadSwapDiagonal";        break;
+    case EOpSubgroupQuadAll:                 out.debug << "subgroupQuadAll";                 break;
+    case EOpSubgroupQuadAny:                 out.debug << "subgroupQuadAny";                 break;
 
     case EOpSubgroupPartition:                          out.debug << "subgroupPartitionNV";                          break;
     case EOpSubgroupPartitionedAdd:                     out.debug << "subgroupPartitionedAddNV";                     break;
@@ -669,9 +671,7 @@ bool TOutputTraverser::visitUnary(TVisit /* visit */, TIntermUnary* node)
 
     case EOpDeclare: out.debug << "Declare"; break;
 
-#ifndef GLSLANG_WEB
     case EOpSpirvInst: out.debug << "spirv_instruction"; break;
-#endif
 
     default: out.debug.message(EPrefixError, "Bad unary op");
     }
@@ -809,7 +809,8 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpConstructStruct:  out.debug << "Construct structure";  break;
     case EOpConstructTextureSampler: out.debug << "Construct combined texture-sampler"; break;
     case EOpConstructReference:  out.debug << "Construct reference";  break;
-    case EOpConstructCooperativeMatrix:  out.debug << "Construct cooperative matrix";  break;
+    case EOpConstructCooperativeMatrixNV:  out.debug << "Construct cooperative matrix NV";  break;
+    case EOpConstructCooperativeMatrixKHR:  out.debug << "Construct cooperative matrix KHR";  break;
     case EOpConstructAccStruct: out.debug << "Construct acceleration structure"; break;
 
     case EOpLessThan:         out.debug << "Compare Less Than";             break;
@@ -1003,6 +1004,8 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpSubgroupShuffleXor:              out.debug << "subgroupShuffleXor"; break;
     case EOpSubgroupShuffleUp:               out.debug << "subgroupShuffleUp"; break;
     case EOpSubgroupShuffleDown:             out.debug << "subgroupShuffleDown"; break;
+    case EOpSubgroupRotate:                  out.debug << "subgroupRotate"; break;
+    case EOpSubgroupClusteredRotate:         out.debug << "subgroupClusteredRotate"; break;
     case EOpSubgroupAdd:                     out.debug << "subgroupAdd"; break;
     case EOpSubgroupMul:                     out.debug << "subgroupMul"; break;
     case EOpSubgroupMin:                     out.debug << "subgroupMin"; break;
@@ -1035,6 +1038,8 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpSubgroupQuadSwapHorizontal:      out.debug << "subgroupQuadSwapHorizontal"; break;
     case EOpSubgroupQuadSwapVertical:        out.debug << "subgroupQuadSwapVertical"; break;
     case EOpSubgroupQuadSwapDiagonal:        out.debug << "subgroupQuadSwapDiagonal"; break;
+    case EOpSubgroupQuadAll:                 out.debug << "subgroupQuadAll"; break;
+    case EOpSubgroupQuadAny:                 out.debug << "subgroupQuadAny"; break;
 
     case EOpSubgroupPartition:                          out.debug << "subgroupPartitionNV";                          break;
     case EOpSubgroupPartitionedAdd:                     out.debug << "subgroupPartitionedAddNV";                     break;
@@ -1103,9 +1108,12 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpRayQueryGetIntersectionWorldToObject:                          out.debug << "rayQueryGetIntersectionWorldToObjectEXT"; break;
     case EOpRayQueryGetIntersectionTriangleVertexPositionsEXT:             out.debug << "rayQueryGetIntersectionTriangleVertexPositionsEXT"; break;
 
-    case EOpCooperativeMatrixLoad:  out.debug << "Load cooperative matrix";  break;
-    case EOpCooperativeMatrixStore:  out.debug << "Store cooperative matrix";  break;
-    case EOpCooperativeMatrixMulAdd: out.debug << "MulAdd cooperative matrices"; break;
+    case EOpCooperativeMatrixLoad:  out.debug << "Load cooperative matrix KHR"; break;
+    case EOpCooperativeMatrixStore:  out.debug << "Store cooperative matrix KHR"; break;
+    case EOpCooperativeMatrixMulAdd: out.debug << "MulAdd cooperative matrices KHR"; break;
+    case EOpCooperativeMatrixLoadNV:  out.debug << "Load cooperative matrix NV"; break;
+    case EOpCooperativeMatrixStoreNV:  out.debug << "Store cooperative matrix NV"; break;
+    case EOpCooperativeMatrixMulAddNV: out.debug << "MulAdd cooperative matrices NV"; break;
 
     case EOpIsHelperInvocation: out.debug << "IsHelperInvocation"; break;
     case EOpDebugPrintf:  out.debug << "Debug printf";  break;
@@ -1141,10 +1149,10 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpHitObjectGetShaderBindingTableRecordIndexNV: out.debug << "HitObjectGetShaderBindingTableRecordIndexNV"; break;
     case EOpHitObjectGetShaderRecordBufferHandleNV: out.debug << "HitObjectReadShaderRecordBufferHandleNV"; break;
     case EOpReorderThreadNV: out.debug << "ReorderThreadNV"; break;
+    case EOpFetchMicroTriangleVertexPositionNV: out.debug << "MicroTriangleVertexPositionNV"; break;
+    case EOpFetchMicroTriangleVertexBarycentricNV: out.debug << "MicroTriangleVertexBarycentricNV"; break;
 
-#ifndef GLSLANG_WEB
     case EOpSpirvInst: out.debug << "spirv_instruction"; break;
-#endif
     case EOpStencilAttachmentReadEXT: out.debug << "stencilAttachmentReadEXT"; break;
     case EOpDepthAttachmentReadEXT: out.debug << "depthAttachmentReadEXT"; break;
 
@@ -1208,12 +1216,12 @@ bool TOutputTraverser::visitSelection(TVisit /* visit */, TIntermSelection* node
 //   - shows all digits, no premature rounding
 static void OutputDouble(TInfoSink& out, double value, TOutputTraverser::EExtraOutput extra)
 {
-    if (IsInfinity(value)) {
+    if (std::isinf(value)) {
         if (value < 0)
             out.debug << "-1.#INF";
         else
             out.debug << "+1.#INF";
-    } else if (IsNan(value))
+    } else if (std::isnan(value))
         out.debug << "1.#IND";
     else {
         const int maxSize = 340;
@@ -1512,6 +1520,9 @@ void TIntermediate::output(TInfoSink& infoSink, bool tree)
     if (getSubgroupUniformControlFlow())
         infoSink.debug << "subgroup_uniform_control_flow\n";
 
+    if (getMaximallyReconverges())
+        infoSink.debug << "maximally_reconverges\n";
+
     switch (language) {
     case EShLangVertex:
         break;
@@ -1576,7 +1587,7 @@ void TIntermediate::output(TInfoSink& infoSink, bool tree)
         infoSink.debug << "max_vertices = " << vertices << "\n";
         infoSink.debug << "max_primitives = " << primitives << "\n";
         infoSink.debug << "output primitive = " << TQualifier::getGeometryString(outputPrimitive) << "\n";
-        // Fall through
+        [[fallthrough]];
     case EShLangTask:
         // Fall through
     case EShLangCompute:
@@ -1607,5 +1618,3 @@ void TIntermediate::output(TInfoSink& infoSink, bool tree)
 }
 
 } // end namespace glslang
-
-#endif // !GLSLANG_WEB

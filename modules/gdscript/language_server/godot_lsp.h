@@ -83,6 +83,14 @@ struct Position {
 	 */
 	int character = 0;
 
+	_FORCE_INLINE_ bool operator==(const Position &p_other) const {
+		return line == p_other.line && character == p_other.character;
+	}
+
+	String to_string() const {
+		return vformat("(%d,%d)", line, character);
+	}
+
 	_FORCE_INLINE_ void load(const Dictionary &p_params) {
 		line = p_params["line"];
 		character = p_params["character"];
@@ -111,6 +119,27 @@ struct Range {
 	 * The range's end position.
 	 */
 	Position end;
+
+	_FORCE_INLINE_ bool operator==(const Range &p_other) const {
+		return start == p_other.start && end == p_other.end;
+	}
+
+	bool contains(const Position &p_pos) const {
+		// Inside line range.
+		if (start.line <= p_pos.line && p_pos.line <= end.line) {
+			// If on start line: must come after start char.
+			bool start_ok = p_pos.line == start.line ? start.character <= p_pos.character : true;
+			// If on end line: must come before end char.
+			bool end_ok = p_pos.line == end.line ? p_pos.character <= end.character : true;
+			return start_ok && end_ok;
+		} else {
+			return false;
+		}
+	}
+
+	String to_string() const {
+		return vformat("[%s:%s]", start.to_string(), end.to_string());
+	}
 
 	_FORCE_INLINE_ void load(const Dictionary &p_params) {
 		start.load(p_params["start"]);
@@ -171,7 +200,7 @@ struct LocationLink {
 
 	/**
 	 * The range that should be selected and revealed when this link is being followed, e.g the name of a function.
-	 * Must be contained by the the `targetRange`. See also `DocumentSymbol#range`
+	 * Must be contained by the `targetRange`. See also `DocumentSymbol#range`
 	 */
 	Range targetSelectionRange;
 };
@@ -201,6 +230,17 @@ struct TextDocumentPositionParams {
 		dict["position"] = position.to_json();
 		return dict;
 	}
+};
+
+struct ReferenceContext {
+	/**
+	 * Include the declaration of the current symbol.
+	 */
+	bool includeDeclaration = false;
+};
+
+struct ReferenceParams : TextDocumentPositionParams {
+	ReferenceContext context;
 };
 
 struct DocumentLinkParams {
@@ -343,8 +383,8 @@ struct Command {
 	}
 };
 
-// Use namespace instead of enumeration to follow the LSP specifications
-// lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
+// Use namespace instead of enumeration to follow the LSP specifications.
+// `lsp::EnumName::EnumValue` is OK but `lsp::EnumValue` is not.
 
 namespace TextDocumentSyncKind {
 /**
@@ -436,7 +476,7 @@ struct RenameOptions {
 	/**
 	 * Renames should be checked and tested before being executed.
 	 */
-	bool prepareProvider = false;
+	bool prepareProvider = true;
 
 	Dictionary to_json() {
 		Dictionary dict;
@@ -794,12 +834,12 @@ static const String Markdown = "markdown";
  */
 struct MarkupContent {
 	/**
-	 * The type of the Markup
+	 * The type of the Markup.
 	 */
 	String kind;
 
 	/**
-	 * The content itself
+	 * The content itself.
 	 */
 	String value;
 
@@ -821,8 +861,8 @@ struct MarkupContent {
 };
 
 // Use namespace instead of enumeration to follow the LSP specifications
-// lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
-// And here C++ compilers are unhappy with our enumeration name like Color, File, RefCounted etc.
+// `lsp::EnumName::EnumValue` is OK but `lsp::EnumValue` is not.
+// And here C++ compilers are unhappy with our enumeration name like `Color`, `File`, `RefCounted` etc.
 /**
  * The kind of a completion entry.
  */
@@ -854,7 +894,7 @@ static const int Operator = 24;
 static const int TypeParameter = 25;
 }; // namespace CompletionItemKind
 
-// Use namespace instead of enumeration to follow the LSP specifications
+// Use namespace instead of enumeration to follow the LSP specifications.
 /**
  * Defines whether the insert text in a completion item should be interpreted as
  * plain text or a snippet.
@@ -1070,8 +1110,8 @@ struct CompletionList {
 };
 
 // Use namespace instead of enumeration to follow the LSP specifications
-// lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
-// And here C++ compilers are unhappy with our enumeration name like String, Array, Object etc
+// `lsp::EnumName::EnumValue` is OK but `lsp::EnumValue` is not
+// And here C++ compilers are unhappy with our enumeration name like `String`, `Array`, `Object` etc
 /**
  * A symbol kind.
  */
@@ -1105,70 +1145,6 @@ static const int TypeParameter = 26;
 }; // namespace SymbolKind
 
 /**
- * Represents information about programming constructs like variables, classes,
- * interfaces etc.
- */
-struct SymbolInformation {
-	/**
-	 * The name of this symbol.
-	 */
-	String name;
-
-	/**
-	 * The kind of this symbol.
-	 */
-	int kind = SymbolKind::File;
-
-	/**
-	 * Indicates if this symbol is deprecated.
-	 */
-	bool deprecated = false;
-
-	/**
-	 * The location of this symbol. The location's range is used by a tool
-	 * to reveal the location in the editor. If the symbol is selected in the
-	 * tool the range's start information is used to position the cursor. So
-	 * the range usually spans more then the actual symbol's name and does
-	 * normally include things like visibility modifiers.
-	 *
-	 * The range doesn't have to denote a node range in the sense of a abstract
-	 * syntax tree. It can therefore not be used to re-construct a hierarchy of
-	 * the symbols.
-	 */
-	Location location;
-
-	/**
-	 * The name of the symbol containing this symbol. This information is for
-	 * user interface purposes (e.g. to render a qualifier in the user interface
-	 * if necessary). It can't be used to re-infer a hierarchy for the document
-	 * symbols.
-	 */
-	String containerName;
-
-	_FORCE_INLINE_ Dictionary to_json() const {
-		Dictionary dict;
-		dict["name"] = name;
-		dict["kind"] = kind;
-		dict["deprecated"] = deprecated;
-		dict["location"] = location.to_json();
-		dict["containerName"] = containerName;
-		return dict;
-	}
-};
-
-struct DocumentedSymbolInformation : public SymbolInformation {
-	/**
-	 * A human-readable string with additional information
-	 */
-	String detail;
-
-	/**
-	 * A human-readable string that represents a doc-comment.
-	 */
-	String documentation;
-};
-
-/**
  * Represents programming constructs like variables, classes, interfaces etc. that appear in a document. Document symbols can be
  * hierarchical and they have two ranges: one that encloses its definition and one that points to its most interesting range,
  * e.g. the range of an identifier.
@@ -1186,12 +1162,12 @@ struct DocumentSymbol {
 	String detail;
 
 	/**
-	 * Documentation for this symbol
+	 * Documentation for this symbol.
 	 */
 	String documentation;
 
 	/**
-	 * Class name for the native symbols
+	 * Class name for the native symbols.
 	 */
 	String native_class;
 
@@ -1204,6 +1180,13 @@ struct DocumentSymbol {
 	 * Indicates if this symbol is deprecated.
 	 */
 	bool deprecated = false;
+
+	/**
+	 * If `true`: Symbol is local to script and cannot be accessed somewhere else.
+	 *
+	 * For example: local variable inside a `func`.
+	 */
+	bool local = false;
 
 	/**
 	 * The range enclosing this symbol not including leading/trailing whitespace but everything else
@@ -1238,33 +1221,19 @@ struct DocumentSymbol {
 			dict["documentation"] = documentation;
 			dict["native_class"] = native_class;
 		}
-		Array arr;
-		arr.resize(children.size());
-		for (int i = 0; i < children.size(); i++) {
-			arr[i] = children[i].to_json(with_doc);
+		if (!children.is_empty()) {
+			Array arr;
+			for (int i = 0; i < children.size(); i++) {
+				if (children[i].local) {
+					continue;
+				}
+				arr.push_back(children[i].to_json(with_doc));
+			}
+			if (!children.is_empty()) {
+				dict["children"] = arr;
+			}
 		}
-		dict["children"] = arr;
 		return dict;
-	}
-
-	void symbol_tree_as_list(const String &p_uri, Vector<DocumentedSymbolInformation> &r_list, const String &p_container = "", bool p_join_name = false) const {
-		DocumentedSymbolInformation si;
-		if (p_join_name && !p_container.is_empty()) {
-			si.name = p_container + ">" + name;
-		} else {
-			si.name = name;
-		}
-		si.kind = kind;
-		si.containerName = p_container;
-		si.deprecated = deprecated;
-		si.location.uri = p_uri;
-		si.location.range = range;
-		si.detail = detail;
-		si.documentation = documentation;
-		r_list.push_back(si);
-		for (int i = 0; i < children.size(); i++) {
-			children[i].symbol_tree_as_list(p_uri, r_list, si.name, p_join_name);
-		}
 	}
 
 	_FORCE_INLINE_ MarkupContent render() const {
@@ -1460,6 +1429,17 @@ struct CompletionParams : public TextDocumentPositionParams {
 		TextDocumentPositionParams::load(p_params);
 		context.load(p_params["context"]);
 	}
+
+	Dictionary to_json() {
+		Dictionary ctx;
+		ctx["triggerCharacter"] = context.triggerCharacter;
+		ctx["triggerKind"] = context.triggerKind;
+
+		Dictionary dict;
+		dict = TextDocumentPositionParams::to_json();
+		dict["context"] = ctx;
+		return dict;
+	}
 };
 
 /**
@@ -1566,7 +1546,7 @@ struct SignatureHelp {
 	/**
 	 * The active signature. If omitted or the value lies outside the
 	 * range of `signatures` the value defaults to zero or is ignored if
-	 * `signatures.length === 0`. Whenever possible implementors should
+	 * `signatures.length === 0`. Whenever possible implementers should
 	 * make an active decision about the active signature and shouldn't
 	 * rely on a default value.
 	 * In future version of the protocol this property might become
@@ -1750,7 +1730,7 @@ struct ServerCapabilities {
 	/**
 	 * The server provides find references support.
 	 */
-	bool referencesProvider = false;
+	bool referencesProvider = true;
 
 	/**
 	 * The server provides document highlight support.

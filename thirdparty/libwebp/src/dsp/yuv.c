@@ -70,6 +70,7 @@ void WebPSamplerProcessPlane(const uint8_t* y, int y_stride,
 
 WebPSamplerRowFunc WebPSamplers[MODE_LAST];
 
+extern VP8CPUInfo VP8GetCPUInfo;
 extern void WebPInitSamplersSSE2(void);
 extern void WebPInitSamplersSSE41(void);
 extern void WebPInitSamplersMIPS32(void);

@@ -6,7 +6,7 @@
 	<description>
 		Signed 64-bit integer type. This means that it can take values from [code]-2^63[/code] to [code]2^63 - 1[/code], i.e. from [code]-9223372036854775808[/code] to [code]9223372036854775807[/code]. When it exceeds these bounds, it will wrap around.
 		[int]s can be automatically converted to [float]s when necessary, for example when passing them as arguments in functions. The [float] will be as close to the original integer as possible.
-		Likewise, [float]s can be automatically converted into [int]s. This will truncate the [float], discarding anything after the floating point.
+		Likewise, [float]s can be automatically converted into [int]s. This will truncate the [float], discarding anything after the floating-point.
 		[b]Note:[/b] In a boolean context, an [int] will evaluate to [code]false[/code] if it equals [code]0[/code], and to [code]true[/code] otherwise.
 		[codeblocks]
 		[gdscript]
@@ -17,7 +17,7 @@
 		[/gdscript]
 		[csharp]
 		int x = 1; // x is 1
-		x = 4.2; // x is 4, because 4.2 gets truncated
+		x = (int)4.2; // x is 4, because 4.2 gets truncated
 		// We use long below, because GDScript's int is 64-bit while C#'s int is 32-bit.
 		long maxLong = 9223372036854775807; // Biggest value a long can store
 		maxLong++; // maxLong is now -9223372036854775808, because it wrapped around.
@@ -27,12 +27,19 @@
 		maxInt++; // maxInt is now -2147483648, because it wrapped around
 		[/csharp]
 		[/codeblocks]
-		In GDScript, you can use the [code]0b[/code] literal for binary representation, the [code]0x[/code] literal for hexadecimal representation, and the [code]_[/code] symbol to separate long numbers and improve readability.
-		[codeblock]
+		You can use the [code]0b[/code] literal for binary representation, the [code]0x[/code] literal for hexadecimal representation, and the [code]_[/code] symbol to separate long numbers and improve readability.
+		[codeblocks]
+		[gdscript]
 		var x = 0b1001 # x is 9
 		var y = 0xF5 # y is 245
 		var z = 10_000_000 # z is 10000000
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		int x = 0b1001; // x is 9
+		int y = 0xF5; // y is 245
+		int z = 10_000_000; // z is 10000000
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -390,7 +397,7 @@
 		<operator name="operator ~">
 			<return type="int" />
 			<description>
-				Performs the bitwise [code]NOT[/code] operation on the [int]. Due to [url=https://en.wikipedia.org/wiki/Two%27s_complement/]2's complement[/url], it's effectively equal to [code]-(int + 1)[/code].
+				Performs the bitwise [code]NOT[/code] operation on the [int]. Due to [url=https://en.wikipedia.org/wiki/Two%27s_complement]2's complement[/url], it's effectively equal to [code]-(int + 1)[/code].
 				[codeblock]
 				print(~4) # Prints -5
 				print(~(-7)) # Prints 6

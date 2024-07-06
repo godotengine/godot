@@ -58,10 +58,8 @@ public:
                    const SpvVersion& spvVersion, EShLanguage language, TInfoSink& infoSink,
                    bool forwardCompatible, EShMessages messages)
         :
-#if !defined(GLSLANG_WEB)
         forwardCompatible(forwardCompatible),
         profile(profile),
-#endif
         infoSink(infoSink), version(version), 
         language(language),
         spvVersion(spvVersion), 
@@ -69,54 +67,7 @@ public:
     virtual ~TParseVersions() { }
     void requireStage(const TSourceLoc&, EShLanguageMask, const char* featureDesc);
     void requireStage(const TSourceLoc&, EShLanguage, const char* featureDesc);
-#ifdef GLSLANG_WEB
-    const EProfile profile = EEsProfile;
-    bool isEsProfile() const { return true; }
-    void requireProfile(const TSourceLoc& loc, int profileMask, const char* featureDesc)
-    {
-        if (! (EEsProfile & profileMask))
-            error(loc, "not supported with this profile:", featureDesc, ProfileName(profile));
-    }
-    void profileRequires(const TSourceLoc& loc, int profileMask, int minVersion, int numExtensions,
-        const char* const extensions[], const char* featureDesc)
-    {
-        if ((EEsProfile & profileMask) && (minVersion == 0 || version < minVersion))
-            error(loc, "not supported for this version or the enabled extensions", featureDesc, "");
-    }
-    void profileRequires(const TSourceLoc& loc, int profileMask, int minVersion, const char* extension,
-        const char* featureDesc)
-    {
-        profileRequires(loc, profileMask, minVersion, extension ? 1 : 0, &extension, featureDesc);
-    }
-    void initializeExtensionBehavior() { }
-    void checkDeprecated(const TSourceLoc&, int queryProfiles, int depVersion, const char* featureDesc) { }
-    void requireNotRemoved(const TSourceLoc&, int queryProfiles, int removedVersion, const char* featureDesc) { }
-    void requireExtensions(const TSourceLoc&, int numExtensions, const char* const extensions[],
-        const char* featureDesc) { }
-    void ppRequireExtensions(const TSourceLoc&, int numExtensions, const char* const extensions[],
-        const char* featureDesc) { }
-    TExtensionBehavior getExtensionBehavior(const char*) { return EBhMissing; }
-    bool extensionTurnedOn(const char* const extension) { return false; }
-    bool extensionsTurnedOn(int numExtensions, const char* const extensions[]) { return false; }
-    void updateExtensionBehavior(int line, const char* const extension, const char* behavior) { }
-    void updateExtensionBehavior(const char* const extension, TExtensionBehavior) { }
-    void checkExtensionStage(const TSourceLoc&, const char* const extension) { }
-    void extensionRequires(const TSourceLoc&, const char* const extension, const char* behavior) { }
-    void fullIntegerCheck(const TSourceLoc&, const char* op) { }
-    void doubleCheck(const TSourceLoc&, const char* op) { }
-    bool float16Arithmetic() { return false; }
-    void requireFloat16Arithmetic(const TSourceLoc& loc, const char* op, const char* featureDesc) { }
-    bool int16Arithmetic() { return false; }
-    void requireInt16Arithmetic(const TSourceLoc& loc, const char* op, const char* featureDesc) { }
-    bool int8Arithmetic() { return false; }
-    void requireInt8Arithmetic(const TSourceLoc& loc, const char* op, const char* featureDesc) { }
-    void int64Check(const TSourceLoc&, const char* op, bool builtIn = false) { }
-    void explicitFloat32Check(const TSourceLoc&, const char* op, bool builtIn = false) { }
-    void explicitFloat64Check(const TSourceLoc&, const char* op, bool builtIn = false) { }
-    bool relaxedErrors()    const { return false; }
-    bool suppressWarnings() const { return true; }
-    bool isForwardCompatible() const { return false; }
-#else
+
     bool forwardCompatible;      // true if errors are to be given for use of deprecated features
     EProfile profile;            // the declared profile in the shader (core by default)
     bool isEsProfile() const { return profile == EEsProfile; }
@@ -132,6 +83,11 @@ public:
         const char* featureDesc);
     virtual void ppRequireExtensions(const TSourceLoc&, int numExtensions, const char* const extensions[],
         const char* featureDesc);
+    template<typename Container>
+    constexpr void ppRequireExtensions(const TSourceLoc& loc, Container extensions, const char* featureDesc) {
+        ppRequireExtensions(loc, static_cast<int>(extensions.size()), extensions.data(), featureDesc);
+    }
+
     virtual TExtensionBehavior getExtensionBehavior(const char*);
     virtual bool extensionTurnedOn(const char* const extension);
     virtual bool extensionsTurnedOn(int numExtensions, const char* const extensions[]);
@@ -162,29 +118,19 @@ public:
     virtual void explicitInt32Check(const TSourceLoc&, const char* op, bool builtIn = false);
     virtual void explicitFloat32Check(const TSourceLoc&, const char* op, bool builtIn = false);
     virtual void explicitFloat64Check(const TSourceLoc&, const char* op, bool builtIn = false);
-    virtual void fcoopmatCheck(const TSourceLoc&, const char* op, bool builtIn = false);
-    virtual void intcoopmatCheck(const TSourceLoc&, const char *op, bool builtIn = false);
+    virtual void fcoopmatCheckNV(const TSourceLoc&, const char* op, bool builtIn = false);
+    virtual void intcoopmatCheckNV(const TSourceLoc&, const char *op, bool builtIn = false);
+    virtual void coopmatCheck(const TSourceLoc&, const char* op, bool builtIn = false);
     bool relaxedErrors()    const { return (messages & EShMsgRelaxedErrors) != 0; }
     bool suppressWarnings() const { return (messages & EShMsgSuppressWarnings) != 0; }
     bool isForwardCompatible() const { return forwardCompatible; }
-#endif // GLSLANG_WEB
+
     virtual void spvRemoved(const TSourceLoc&, const char* op);
     virtual void vulkanRemoved(const TSourceLoc&, const char* op);
     virtual void requireVulkan(const TSourceLoc&, const char* op);
     virtual void requireSpv(const TSourceLoc&, const char* op);
     virtual void requireSpv(const TSourceLoc&, const char *op, unsigned int version);
 
-
-#if defined(GLSLANG_WEB) && !defined(GLSLANG_WEB_DEVEL)
-    void C_DECL   error(const TSourceLoc&, const char* szReason, const char* szToken,
-                        const char* szExtraInfoFormat, ...) { addError(); }
-    void C_DECL    warn(const TSourceLoc&, const char* szReason, const char* szToken,
-                        const char* szExtraInfoFormat, ...) { }
-    void C_DECL ppError(const TSourceLoc&, const char* szReason, const char* szToken,
-                        const char* szExtraInfoFormat, ...) { addError(); }
-    void C_DECL  ppWarn(const TSourceLoc&, const char* szReason, const char* szToken,
-                        const char* szExtraInfoFormat, ...) { }
-#else
     virtual void C_DECL error(const TSourceLoc&, const char* szReason, const char* szToken,
         const char* szExtraInfoFormat, ...) = 0;
     virtual void C_DECL  warn(const TSourceLoc&, const char* szReason, const char* szToken,
@@ -193,7 +139,6 @@ public:
         const char* szExtraInfoFormat, ...) = 0;
     virtual void C_DECL ppWarn(const TSourceLoc&, const char* szReason, const char* szToken,
         const char* szExtraInfoFormat, ...) = 0;
-#endif
 
     void addError() { ++numErrors; }
     int getNumErrors() const { return numErrors; }

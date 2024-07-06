@@ -53,7 +53,7 @@ int godot_unzip_get_current_file_info(unzFile p_zip_file, unz_file_info64 &r_fil
 	return err;
 }
 
-int godot_unzip_locate_file(unzFile p_zip_file, String p_filepath, bool p_case_sensitive) {
+int godot_unzip_locate_file(unzFile p_zip_file, const String &p_filepath, bool p_case_sensitive) {
 	int err = unzGoToFirstFile(p_zip_file);
 	while (err == UNZ_OK) {
 		unz_file_info64 current_file_info;
@@ -74,7 +74,7 @@ int godot_unzip_locate_file(unzFile p_zip_file, String p_filepath, bool p_case_s
 
 void *zipio_open(voidpf opaque, const char *p_fname, int mode) {
 	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
-	ERR_FAIL_COND_V(fa == nullptr, nullptr);
+	ERR_FAIL_NULL_V(fa, nullptr);
 
 	String fname;
 	fname.parse_utf8(p_fname);
@@ -100,7 +100,7 @@ void *zipio_open(voidpf opaque, const char *p_fname, int mode) {
 
 uLong zipio_read(voidpf opaque, voidpf stream, void *buf, uLong size) {
 	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
-	ERR_FAIL_COND_V(fa == nullptr, 0);
+	ERR_FAIL_NULL_V(fa, 0);
 	ERR_FAIL_COND_V(fa->is_null(), 0);
 
 	return (*fa)->get_buffer((uint8_t *)buf, size);
@@ -108,7 +108,7 @@ uLong zipio_read(voidpf opaque, voidpf stream, void *buf, uLong size) {
 
 uLong zipio_write(voidpf opaque, voidpf stream, const void *buf, uLong size) {
 	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
-	ERR_FAIL_COND_V(fa == nullptr, 0);
+	ERR_FAIL_NULL_V(fa, 0);
 	ERR_FAIL_COND_V(fa->is_null(), 0);
 
 	(*fa)->store_buffer((uint8_t *)buf, size);
@@ -117,7 +117,7 @@ uLong zipio_write(voidpf opaque, voidpf stream, const void *buf, uLong size) {
 
 long zipio_tell(voidpf opaque, voidpf stream) {
 	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
-	ERR_FAIL_COND_V(fa == nullptr, 0);
+	ERR_FAIL_NULL_V(fa, 0);
 	ERR_FAIL_COND_V(fa->is_null(), 0);
 
 	return (*fa)->get_position();
@@ -125,7 +125,7 @@ long zipio_tell(voidpf opaque, voidpf stream) {
 
 long zipio_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
-	ERR_FAIL_COND_V(fa == nullptr, 0);
+	ERR_FAIL_NULL_V(fa, 0);
 	ERR_FAIL_COND_V(fa->is_null(), 0);
 
 	uint64_t pos = offset;
@@ -146,7 +146,7 @@ long zipio_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 
 int zipio_close(voidpf opaque, voidpf stream) {
 	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
-	ERR_FAIL_COND_V(fa == nullptr, 0);
+	ERR_FAIL_NULL_V(fa, 0);
 	ERR_FAIL_COND_V(fa->is_null(), 0);
 
 	fa->unref();
@@ -155,7 +155,7 @@ int zipio_close(voidpf opaque, voidpf stream) {
 
 int zipio_testerror(voidpf opaque, voidpf stream) {
 	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
-	ERR_FAIL_COND_V(fa == nullptr, 1);
+	ERR_FAIL_NULL_V(fa, 1);
 	ERR_FAIL_COND_V(fa->is_null(), 0);
 
 	return (fa->is_valid() && (*fa)->get_error() != OK) ? 1 : 0;

@@ -49,11 +49,11 @@ void MultiplayerSynchronizer::_stop() {
 	}
 #endif
 	root_node_cache = ObjectID();
-	reset();
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node) {
 		get_multiplayer()->object_configuration_remove(node, this);
 	}
+	reset();
 }
 
 void MultiplayerSynchronizer::_start() {
@@ -107,6 +107,9 @@ void MultiplayerSynchronizer::reset() {
 	net_id = 0;
 	last_sync_usec = 0;
 	last_inbound_sync = 0;
+	last_watch_usec = 0;
+	sync_started = false;
+	watchers.clear();
 }
 
 uint32_t MultiplayerSynchronizer::get_net_id() const {
@@ -131,7 +134,9 @@ bool MultiplayerSynchronizer::update_outbound_sync_time(uint64_t p_usec) {
 }
 
 bool MultiplayerSynchronizer::update_inbound_sync_time(uint16_t p_network_time) {
-	if (p_network_time <= last_inbound_sync && last_inbound_sync - p_network_time < 32767) {
+	if (!sync_started) {
+		sync_started = true;
+	} else if (p_network_time <= last_inbound_sync && last_inbound_sync - p_network_time < 32767) {
 		return false;
 	}
 	last_inbound_sync = p_network_time;
@@ -149,15 +154,15 @@ PackedStringArray MultiplayerSynchronizer::get_configuration_warnings() const {
 }
 
 Error MultiplayerSynchronizer::get_state(const List<NodePath> &p_properties, Object *p_obj, Vector<Variant> &r_variant, Vector<const Variant *> &r_variant_ptrs) {
-	ERR_FAIL_COND_V(!p_obj, ERR_INVALID_PARAMETER);
+	ERR_FAIL_NULL_V(p_obj, ERR_INVALID_PARAMETER);
 	r_variant.resize(p_properties.size());
 	r_variant_ptrs.resize(r_variant.size());
 	int i = 0;
 	for (const NodePath &prop : p_properties) {
 		bool valid = false;
 		const Object *obj = _get_prop_target(p_obj, prop);
-		ERR_FAIL_COND_V(!obj, FAILED);
-		r_variant.write[i] = obj->get(prop.get_concatenated_subnames(), &valid);
+		ERR_FAIL_NULL_V(obj, FAILED);
+		r_variant.write[i] = obj->get_indexed(prop.get_subnames(), &valid);
 		r_variant_ptrs.write[i] = &r_variant[i];
 		ERR_FAIL_COND_V_MSG(!valid, ERR_INVALID_DATA, vformat("Property '%s' not found.", prop));
 		i++;
@@ -166,12 +171,12 @@ Error MultiplayerSynchronizer::get_state(const List<NodePath> &p_properties, Obj
 }
 
 Error MultiplayerSynchronizer::set_state(const List<NodePath> &p_properties, Object *p_obj, const Vector<Variant> &p_state) {
-	ERR_FAIL_COND_V(!p_obj, ERR_INVALID_PARAMETER);
+	ERR_FAIL_NULL_V(p_obj, ERR_INVALID_PARAMETER);
 	int i = 0;
 	for (const NodePath &prop : p_properties) {
 		Object *obj = _get_prop_target(p_obj, prop);
-		ERR_FAIL_COND_V(!obj, FAILED);
-		obj->set(prop.get_concatenated_subnames(), p_state[i]);
+		ERR_FAIL_NULL_V(obj, FAILED);
+		obj->set_indexed(prop.get_subnames(), p_state[i]);
 		i += 1;
 	}
 	return OK;
@@ -265,7 +270,7 @@ void MultiplayerSynchronizer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "replication_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_replication_interval", "get_replication_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "delta_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_delta_interval", "get_delta_interval");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "replication_config", PROPERTY_HINT_RESOURCE_TYPE, "SceneReplicationConfig", PROPERTY_USAGE_NO_EDITOR), "set_replication_config", "get_replication_config");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "replication_config", PROPERTY_HINT_RESOURCE_TYPE, "SceneReplicationConfig", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_replication_config", "get_replication_config");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_update_mode", PROPERTY_HINT_ENUM, "Idle,Physics,None"), "set_visibility_update_mode", "get_visibility_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "public_visibility"), "set_visibility_public", "is_visibility_public");
 
@@ -338,14 +343,18 @@ void MultiplayerSynchronizer::update_visibility(int p_for_peer) {
 #endif
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node && get_multiplayer()->has_multiplayer_peer() && is_multiplayer_authority()) {
-		emit_signal(SNAME("visibility_changed"), p_for_peer);
+		emit_signal(SceneStringName(visibility_changed), p_for_peer);
 	}
 }
 
 void MultiplayerSynchronizer::set_root_path(const NodePath &p_path) {
+	if (p_path == root_path) {
+		return;
+	}
 	_stop();
 	root_path = p_path;
 	_start();
+	update_configuration_warnings();
 }
 
 NodePath MultiplayerSynchronizer::get_root_path() const {
@@ -353,15 +362,12 @@ NodePath MultiplayerSynchronizer::get_root_path() const {
 }
 
 void MultiplayerSynchronizer::set_multiplayer_authority(int p_peer_id, bool p_recursive) {
-	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
-	if (!node || get_multiplayer_authority() == p_peer_id) {
-		Node::set_multiplayer_authority(p_peer_id, p_recursive);
+	if (get_multiplayer_authority() == p_peer_id) {
 		return;
 	}
-
-	get_multiplayer()->object_configuration_remove(node, this);
+	_stop();
 	Node::set_multiplayer_authority(p_peer_id, p_recursive);
-	get_multiplayer()->object_configuration_add(node, this);
+	_start();
 }
 
 Error MultiplayerSynchronizer::_watch_changes(uint64_t p_usec) {
@@ -374,7 +380,7 @@ Error MultiplayerSynchronizer::_watch_changes(uint64_t p_usec) {
 		return OK;
 	}
 	Node *node = get_root_node();
-	ERR_FAIL_COND_V(!node, FAILED);
+	ERR_FAIL_NULL_V(node, FAILED);
 	int idx = -1;
 	Watcher *ptr = watchers.ptrw();
 	for (const NodePath &prop : props) {
@@ -382,7 +388,7 @@ Error MultiplayerSynchronizer::_watch_changes(uint64_t p_usec) {
 		bool valid = false;
 		const Object *obj = _get_prop_target(node, prop);
 		ERR_CONTINUE_MSG(!obj, vformat("Node not found for property '%s'.", prop));
-		Variant v = obj->get(prop.get_concatenated_subnames(), &valid);
+		Variant v = obj->get_indexed(prop.get_subnames(), &valid);
 		ERR_CONTINUE_MSG(!valid, vformat("Property '%s' not found.", prop));
 		Watcher &w = ptr[idx];
 		if (w.prop != prop) {
@@ -439,6 +445,10 @@ List<NodePath> MultiplayerSynchronizer::get_delta_properties(uint64_t p_indexes)
 		out.push_back(prop);
 	}
 	return out;
+}
+
+SceneReplicationConfig *MultiplayerSynchronizer::get_replication_config_ptr() const {
+	return replication_config.ptr();
 }
 
 MultiplayerSynchronizer::MultiplayerSynchronizer() {

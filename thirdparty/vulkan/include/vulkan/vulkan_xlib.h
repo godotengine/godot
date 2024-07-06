@@ -2,7 +2,7 @@
 #define VULKAN_XLIB_H_ 1
 
 /*
-** Copyright 2015-2023 The Khronos Group Inc.
+** Copyright 2015-2024 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -19,6 +19,7 @@ extern "C" {
 
 
 
+// VK_KHR_xlib_surface is a preprocessor guard. Do not pass it to API calls.
 #define VK_KHR_xlib_surface 1
 #define VK_KHR_XLIB_SURFACE_SPEC_VERSION  6
 #define VK_KHR_XLIB_SURFACE_EXTENSION_NAME "VK_KHR_xlib_surface"

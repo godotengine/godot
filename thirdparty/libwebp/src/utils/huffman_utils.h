@@ -43,6 +43,30 @@ typedef struct {
                     // or non-literal symbol otherwise
 } HuffmanCode32;
 
+// Contiguous memory segment of HuffmanCodes.
+typedef struct HuffmanTablesSegment {
+  HuffmanCode* start;
+  // Pointer to where we are writing into the segment. Starts at 'start' and
+  // cannot go beyond 'start' + 'size'.
+  HuffmanCode* curr_table;
+  // Pointer to the next segment in the chain.
+  struct HuffmanTablesSegment* next;
+  int size;
+} HuffmanTablesSegment;
+
+// Chained memory segments of HuffmanCodes.
+typedef struct HuffmanTables {
+  HuffmanTablesSegment root;
+  // Currently processed segment. At first, this is 'root'.
+  HuffmanTablesSegment* curr_segment;
+} HuffmanTables;
+
+// Allocates a HuffmanTables with 'size' contiguous HuffmanCodes. Returns 0 on
+// memory allocation error, 1 otherwise.
+WEBP_NODISCARD int VP8LHuffmanTablesAllocate(int size,
+                                             HuffmanTables* huffman_tables);
+void VP8LHuffmanTablesDeallocate(HuffmanTables* const huffman_tables);
+
 #define HUFFMAN_PACKED_BITS 6
 #define HUFFMAN_PACKED_TABLE_SIZE (1u << HUFFMAN_PACKED_BITS)
 
@@ -68,7 +92,7 @@ struct HTreeGroup {
 };
 
 // Creates the instance of HTreeGroup with specified number of tree-groups.
-HTreeGroup* VP8LHtreeGroupsNew(int num_htree_groups);
+WEBP_NODISCARD HTreeGroup* VP8LHtreeGroupsNew(int num_htree_groups);
 
 // Releases the memory allocated for HTreeGroup.
 void VP8LHtreeGroupsFree(HTreeGroup* const htree_groups);
@@ -78,10 +102,10 @@ void VP8LHtreeGroupsFree(HTreeGroup* const htree_groups);
 // the huffman table.
 // Returns built table size or 0 in case of error (invalid tree or
 // memory error).
-// If root_table is NULL, it returns 0 if a lookup cannot be built, something
-// > 0 otherwise (but not the table size).
-int VP8LBuildHuffmanTable(HuffmanCode* const root_table, int root_bits,
-                          const int code_lengths[], int code_lengths_size);
+WEBP_NODISCARD int VP8LBuildHuffmanTable(HuffmanTables* const root_table,
+                                         int root_bits,
+                                         const int code_lengths[],
+                                         int code_lengths_size);
 
 #ifdef __cplusplus
 }    // extern "C"

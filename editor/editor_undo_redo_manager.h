@@ -67,6 +67,7 @@ private:
 	HashMap<int, History> history_map;
 	Action pending_action;
 
+	bool forced_history = false;
 	bool is_committing = false;
 
 	History *_get_newest_undo();
@@ -79,6 +80,7 @@ public:
 	UndoRedo *get_history_undo_redo(int p_idx) const;
 	int get_history_id_for_object(Object *p_object) const;
 	History &get_history_for_object(Object *p_object);
+	void force_fixed_history();
 
 	void create_action_for_history(const String &p_name, int p_history_id, UndoRedo::MergeMode p_mode = UndoRedo::MERGE_DISABLE, bool p_backward_undo_ops = false);
 	void create_action(const String &p_name = "", UndoRedo::MergeMode p_mode = UndoRedo::MERGE_DISABLE, Object *p_custom_context = nullptr, bool p_backward_undo_ops = false);
@@ -130,6 +132,7 @@ public:
 	bool is_history_unsaved(int p_idx);
 	bool has_undo();
 	bool has_redo();
+	bool has_history(int p_idx) const;
 
 	String get_current_action_name();
 	int get_current_action_history_id();

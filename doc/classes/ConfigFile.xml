@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This helper class can be used to store [Variant] values on the filesystem using INI-style formatting. The stored values are identified by a section and a key:
-		[codeblock]
+		[codeblock lang=text]
 		[section]
 		some_key=42
 		string_example="Hello World3D!"
@@ -163,7 +163,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
-				Returns one of the [enum Error] code constants ([constant OK] on success).
+				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
 			</description>
 		</method>
 		<method name="load_encrypted">
@@ -172,7 +172,7 @@
 			<param index="1" name="key" type="PackedByteArray" />
 			<description>
 				Loads the encrypted config file specified as a parameter, using the provided [param key] to decrypt it. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
-				Returns one of the [enum Error] code constants ([constant OK] on success).
+				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
 			</description>
 		</method>
 		<method name="load_encrypted_pass">
@@ -181,7 +181,7 @@
 			<param index="1" name="password" type="String" />
 			<description>
 				Loads the encrypted config file specified as a parameter, using the provided [param password] to decrypt it. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
-				Returns one of the [enum Error] code constants ([constant OK] on success).
+				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
 			</description>
 		</method>
 		<method name="parse">
@@ -189,7 +189,7 @@
 			<param index="0" name="data" type="String" />
 			<description>
 				Parses the passed string as the contents of a config file. The string is parsed and loaded in the ConfigFile object which the method was called on.
-				Returns one of the [enum Error] code constants ([constant OK] on success).
+				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
 			</description>
 		</method>
 		<method name="save">
@@ -197,7 +197,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Saves the contents of the [ConfigFile] object to the file specified as a parameter. The output file uses an INI-style structure.
-				Returns one of the [enum Error] code constants ([constant OK] on success).
+				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
 			</description>
 		</method>
 		<method name="save_encrypted">
@@ -206,7 +206,7 @@
 			<param index="1" name="key" type="PackedByteArray" />
 			<description>
 				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [param key] to encrypt it. The output file uses an INI-style structure.
-				Returns one of the [enum Error] code constants ([constant OK] on success).
+				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
 			</description>
 		</method>
 		<method name="save_encrypted_pass">
@@ -215,7 +215,7 @@
 			<param index="1" name="password" type="String" />
 			<description>
 				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [param password] to encrypt it. The output file uses an INI-style structure.
-				Returns one of the [enum Error] code constants ([constant OK] on success).
+				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
 			</description>
 		</method>
 		<method name="set_value">

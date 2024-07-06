@@ -40,6 +40,7 @@
 		[/codeblocks]
 		[b]Note:[/b] Arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate].
 		[b]Note:[/b] Erasing elements while iterating over arrays is [b]not[/b] supported and will result in unpredictable behavior.
+		[b]Differences between packed arrays, typed arrays, and untyped arrays:[/b] Packed arrays are generally faster to iterate on and modify compared to a typed array of the same type (e.g. [PackedInt64Array] versus [code]Array[int][/code]). Also, packed arrays consume less memory. As a downside, packed arrays are less flexible as they don't offer as many convenience methods such as [method Array.map]. Typed arrays are in turn faster to iterate on and modify than untyped arrays.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -57,7 +58,30 @@
 			<param index="2" name="class_name" type="StringName" />
 			<param index="3" name="script" type="Variant" />
 			<description>
-				Creates a typed array from the [param base] array.
+				Creates a typed array from the [param base] array. All arguments are required.
+				- [param type] is the built-in type as a [enum Variant.Type] constant, for example [constant TYPE_INT].
+				- [param class_name] is the [b]native[/b] class name, for example [Node]. If [param type] is not [constant TYPE_OBJECT], must be an empty string.
+				- [param script] is the associated script. Must be a [Script] instance or [code]null[/code].
+				Examples:
+				[codeblock]
+				class_name MyNode
+				extends Node
+
+				class MyClass:
+				    pass
+
+				func _ready():
+				    var a = Array([], TYPE_INT, &amp;"", null) # Array[int]
+				    var b = Array([], TYPE_OBJECT, &amp;"Node", null) # Array[Node]
+				    var c = Array([], TYPE_OBJECT, &amp;"Node", MyNode) # Array[MyNode]
+				    var d = Array([], TYPE_OBJECT, &amp;"RefCounted", MyClass) # Array[MyClass]
+				[/codeblock]
+				[b]Note:[/b] This constructor can be useful if you want to create a typed array on the fly, but you are not required to use it. In GDScript you can use a temporary variable with the static type you need and then pass it:
+				[codeblock]
+				func _ready():
+				    var a: Array[int] = []
+				    some_func(a)
+				[/codeblock]
 			</description>
 		</constructor>
 		<constructor name="Array">
@@ -128,6 +152,13 @@
 			<param index="0" name="from" type="PackedVector3Array" />
 			<description>
 				Constructs an array from a [PackedVector3Array].
+			</description>
+		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
+			<param index="0" name="from" type="PackedVector4Array" />
+			<description>
+				Constructs an array from a [PackedVector4Array].
 			</description>
 		</constructor>
 	</constructors>
@@ -218,6 +249,11 @@
 			<param index="1" name="before" type="bool" default="true" />
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [param before] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
+				[codeblock]
+				var array = ["a", "b", "c", "c", "d", "e"]
+				print(array.bsearch("c", true))  # Prints 2, at the first matching element.
+				print(array.bsearch("c", false)) # Prints 4, after the last matching element, pointing to "d".
+				[/codeblock]
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
@@ -228,6 +264,7 @@
 			<param index="2" name="before" type="bool" default="true" />
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a [param before] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
+				[b]Note:[/b] The custom method must accept the two arguments in any order, you cannot rely on that the first argument will always be from the array.
 				[b]Note:[/b] Calling [method bsearch_custom] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
@@ -257,7 +294,7 @@
 			<param index="0" name="value" type="Variant" />
 			<description>
 				Removes the first occurrence of a value from the array. If the value does not exist in the array, nothing happens. To remove an element by index, use [method remove_at] instead.
-				[b]Note:[/b] This method acts in-place and doesn't return a value.
+				[b]Note:[/b] This method acts in-place and doesn't return a modified array.
 				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
 				[b]Note:[/b] Do not erase entries while iterating over the array.
 			</description>
@@ -317,22 +354,22 @@
 		<method name="get_typed_builtin" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the [enum Variant.Type] constant for a typed array. If the [Array] is not typed, returns [constant TYPE_NIL].
+				Returns the built-in type of the typed array as a [enum Variant.Type] constant. If the array is not typed, returns [constant TYPE_NIL].
 			</description>
 		</method>
 		<method name="get_typed_class_name" qualifiers="const">
 			<return type="StringName" />
 			<description>
-				Returns a class name of a typed [Array] of type [constant TYPE_OBJECT].
+				Returns the [b]native[/b] class name of the typed array if the built-in type is [constant TYPE_OBJECT]. Otherwise, this method returns an empty string.
 			</description>
 		</method>
 		<method name="get_typed_script" qualifiers="const">
 			<return type="Variant" />
 			<description>
-				Returns the script associated with a typed array tied to a class name.
+				Returns the script associated with the typed array. This method returns a [Script] instance or [code]null[/code].
 			</description>
 		</method>
-		<method name="has" qualifiers="const">
+		<method name="has" qualifiers="const" keywords="includes, contains">
 			<return type="bool" />
 			<param index="0" name="value" type="Variant" />
 			<description>
@@ -383,8 +420,8 @@
 			<param index="0" name="position" type="int" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]pos == size()[/code]).
-				[b]Note:[/b] This method acts in-place and doesn't return a value.
+				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]pos == size()[/code]). Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
+				[b]Note:[/b] This method acts in-place and doesn't return a modified array.
 				[b]Note:[/b] On large arrays, this method will be slower if the inserted element is close to the beginning of the array (index 0). This is because all elements placed after the newly inserted element have to be reindexed.
 			</description>
 		</method>
@@ -462,7 +499,7 @@
 		<method name="pick_random" qualifiers="const">
 			<return type="Variant" />
 			<description>
-				Returns a random value from the target array.
+				Returns a random value from the target array. Prints an error and returns [code]null[/code] if the array is empty.
 				[codeblocks]
 				[gdscript]
 				var array: Array[int] = [1, 2, 3, 4]
@@ -479,7 +516,7 @@
 			<return type="Variant" />
 			<param index="0" name="position" type="int" />
 			<description>
-				Removes and returns the element of the array at index [param position]. If negative, [param position] is considered relative to the end of the array. Leaves the array untouched and returns [code]null[/code] if the array is empty or if it's accessed out of bounds. An error message is printed when the array is accessed out of bounds, but not when the array is empty.
+				Removes and returns the element of the array at index [param position]. If negative, [param position] is considered relative to the end of the array. Leaves the array unchanged and returns [code]null[/code] if the array is empty or if it's accessed out of bounds. An error message is printed when the array is accessed out of bounds, but not when the array is empty.
 				[b]Note:[/b] On large arrays, this method can be slower than [method pop_back] as it will reindex the array's elements that are located after the removed element. The larger the array and the lower the index of the removed element, the slower [method pop_at] will be.
 			</description>
 		</method>
@@ -534,7 +571,7 @@
 			<param index="0" name="position" type="int" />
 			<description>
 				Removes an element from the array by index. If the index does not exist in the array, nothing happens. To remove an element by searching for its value, use [method erase] instead.
-				[b]Note:[/b] This method acts in-place and doesn't return a value.
+				[b]Note:[/b] This method acts in-place and doesn't return a modified array.
 				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
 				[b]Note:[/b] [param position] cannot be negative. To remove an element relative to the end of the array, use [code]arr.remove_at(arr.size() - (i + 1))[/code]. To remove the last element from the array without returning the value, use [code]arr.resize(arr.size() - 1)[/code].
 			</description>
@@ -543,7 +580,9 @@
 			<return type="int" />
 			<param index="0" name="size" type="int" />
 			<description>
-				Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are [code]null[/code].
+				Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are [code]null[/code]. Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
+				Calling [method resize] once and assigning the new values is faster than adding new elements one by one.
+				[b]Note:[/b] This method acts in-place and doesn't return a modified array.
 			</description>
 		</method>
 		<method name="reverse">

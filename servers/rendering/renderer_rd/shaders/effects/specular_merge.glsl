@@ -27,16 +27,11 @@ layout(location = 0) out vec2 uv_interp;
 #endif //USE_MULTIVIEW
 
 void main() {
-	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
-
+	vec2 base_arr[3] = vec2[](vec2(-1.0, -1.0), vec2(-1.0, 3.0), vec2(3.0, -1.0));
+	gl_Position = vec4(base_arr[gl_VertexIndex], 0.0, 1.0);
+	uv_interp.xy = clamp(gl_Position.xy, vec2(0.0, 0.0), vec2(1.0, 1.0)) * 2.0; // saturate(x) * 2.0
 #ifdef USE_MULTIVIEW
-	uv_interp = vec3(base_arr[gl_VertexIndex], ViewIndex);
-
-	gl_Position = vec4(uv_interp.xy * 2.0 - 1.0, 0.0, 1.0);
-#else
-	uv_interp = base_arr[gl_VertexIndex];
-
-	gl_Position = vec4(uv_interp * 2.0 - 1.0, 0.0, 1.0);
+	uv_interp.z = ViewIndex;
 #endif
 }
 

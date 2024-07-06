@@ -69,6 +69,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 
 #define OPEN_BLOCK_L1 INDENT1 OPEN_BLOCK
 #define OPEN_BLOCK_L2 INDENT2 OPEN_BLOCK
+#define OPEN_BLOCK_L3 INDENT3 OPEN_BLOCK
 #define CLOSE_BLOCK_L1 INDENT1 CLOSE_BLOCK
 #define CLOSE_BLOCK_L2 INDENT2 CLOSE_BLOCK
 #define CLOSE_BLOCK_L3 INDENT3 CLOSE_BLOCK
@@ -82,6 +83,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define CS_STATIC_METHOD_GETINSTANCE "GetPtr"
 #define CS_METHOD_CALL "Call"
 #define CS_PROPERTY_SINGLETON "Singleton"
+#define CS_SINGLETON_INSTANCE_SUFFIX "Instance"
 #define CS_METHOD_INVOKE_GODOT_CLASS_METHOD "InvokeGodotClassMethod"
 #define CS_METHOD_HAS_GODOT_CLASS_METHOD "HasGodotClassMethod"
 #define CS_METHOD_HAS_GODOT_CLASS_SIGNAL "HasGodotClassSignal"
@@ -93,6 +95,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 
 #define ICALL_PREFIX "godot_icall_"
 #define ICALL_CLASSDB_GET_METHOD "ClassDB_get_method"
+#define ICALL_CLASSDB_GET_METHOD_WITH_COMPATIBILITY "ClassDB_get_method_with_compatibility"
 #define ICALL_CLASSDB_GET_CONSTRUCTOR "ClassDB_get_constructor"
 
 #define C_LOCAL_RET "ret"
@@ -116,7 +119,25 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 
 // Types that will be ignored by the generator and won't be available in C#.
 // This must be kept in sync with `ignored_types` in csharp_script.cpp
-const Vector<String> ignored_types = { "PhysicsServer2DExtension", "PhysicsServer3DExtension" };
+const Vector<String> ignored_types = {};
+
+// Special [code] keywords to wrap with <see langword="code"/> instead of <c>code</c>.
+// Don't check against all C# reserved words, as many cases are GDScript-specific.
+const Vector<String> langword_check = { "true", "false", "null" };
+
+// The following properties currently need to be defined with `new` to avoid warnings. We treat
+// them as a special case instead of silencing the warnings altogether, to be warned if more
+// shadowing appears.
+const Vector<String> prop_allowed_inherited_member_hiding = {
+	"ArrayMesh.BlendShapeMode",
+	"Button.TextDirection",
+	"Label.TextDirection",
+	"LineEdit.TextDirection",
+	"LinkButton.TextDirection",
+	"MenuBar.TextDirection",
+	"RichTextLabel.TextDirection",
+	"TextEdit.TextDirection",
+};
 
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
 	// C interface for enums is the same as that of 'uint32_t'. Remember to apply
@@ -147,8 +168,270 @@ static String fix_doc_description(const String &p_bbcode) {
 			.strip_edges();
 }
 
-String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype) {
-	// Based on the version in EditorHelp
+String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInterface *p_itype) {
+	// Based on the version in EditorHelp.
+
+	if (p_bbcode.is_empty()) {
+		return String();
+	}
+
+	DocTools *doc = EditorHelp::get_doc_data();
+
+	String bbcode = p_bbcode;
+
+	StringBuilder output;
+
+	List<String> tag_stack;
+	bool code_tag = false;
+
+	int pos = 0;
+	while (pos < bbcode.length()) {
+		int brk_pos = bbcode.find("[", pos);
+
+		if (brk_pos < 0) {
+			brk_pos = bbcode.length();
+		}
+
+		if (brk_pos > pos) {
+			String text = bbcode.substr(pos, brk_pos - pos);
+			if (code_tag || tag_stack.size() > 0) {
+				output.append("'" + text + "'");
+			} else {
+				output.append(text);
+			}
+		}
+
+		if (brk_pos == bbcode.length()) {
+			// Nothing else to add.
+			break;
+		}
+
+		int brk_end = bbcode.find("]", brk_pos + 1);
+
+		if (brk_end == -1) {
+			String text = bbcode.substr(brk_pos, bbcode.length() - brk_pos);
+			if (code_tag || tag_stack.size() > 0) {
+				output.append("'" + text + "'");
+			}
+
+			break;
+		}
+
+		String tag = bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
+
+		if (tag.begins_with("/")) {
+			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1, tag.length());
+
+			if (!tag_ok) {
+				output.append("]");
+				pos = brk_pos + 1;
+				continue;
+			}
+
+			tag_stack.pop_front();
+			pos = brk_end + 1;
+			code_tag = false;
+		} else if (code_tag) {
+			output.append("[");
+			pos = brk_pos + 1;
+		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
+			const int tag_end = tag.find(" ");
+			const String link_tag = tag.substr(0, tag_end);
+			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
+
+			const Vector<String> link_target_parts = link_target.split(".");
+
+			if (link_target_parts.size() <= 0 || link_target_parts.size() > 2) {
+				ERR_PRINT("Invalid reference format: '" + tag + "'.");
+
+				output.append(tag);
+
+				pos = brk_end + 1;
+				continue;
+			}
+
+			const TypeInterface *target_itype;
+			StringName target_cname;
+
+			if (link_target_parts.size() == 2) {
+				target_itype = _get_type_or_null(TypeReference(link_target_parts[0]));
+				if (!target_itype) {
+					target_itype = _get_type_or_null(TypeReference("_" + link_target_parts[0]));
+				}
+				target_cname = link_target_parts[1];
+			} else {
+				target_itype = p_itype;
+				target_cname = link_target_parts[0];
+			}
+
+			if (link_tag == "method") {
+				_append_text_method(output, target_itype, target_cname, link_target, link_target_parts);
+			} else if (link_tag == "constructor") {
+				// TODO: Support constructors?
+				_append_text_undeclared(output, link_target);
+			} else if (link_tag == "operator") {
+				// TODO: Support operators?
+				_append_text_undeclared(output, link_target);
+			} else if (link_tag == "member") {
+				_append_text_member(output, target_itype, target_cname, link_target, link_target_parts);
+			} else if (link_tag == "signal") {
+				_append_text_signal(output, target_itype, target_cname, link_target, link_target_parts);
+			} else if (link_tag == "enum") {
+				_append_text_enum(output, target_itype, target_cname, link_target, link_target_parts);
+			} else if (link_tag == "constant") {
+				_append_text_constant(output, target_itype, target_cname, link_target, link_target_parts);
+			} else if (link_tag == "param") {
+				_append_text_param(output, link_target);
+			} else if (link_tag == "theme_item") {
+				// We do not declare theme_items in any way in C#, so there is nothing to reference.
+				_append_text_undeclared(output, link_target);
+			}
+
+			pos = brk_end + 1;
+		} else if (doc->class_list.has(tag)) {
+			if (tag == "Array" || tag == "Dictionary") {
+				output.append("'" BINDINGS_NAMESPACE_COLLECTIONS ".");
+				output.append(tag);
+				output.append("'");
+			} else if (tag == "bool" || tag == "int") {
+				output.append(tag);
+			} else if (tag == "float") {
+				output.append(
+#ifdef REAL_T_IS_DOUBLE
+						"double"
+#else
+						"float"
+#endif
+				);
+			} else if (tag == "Variant") {
+				output.append("'Godot.Variant'");
+			} else if (tag == "String") {
+				output.append("string");
+			} else if (tag == "Nil") {
+				output.append("null");
+			} else if (tag.begins_with("@")) {
+				// @GlobalScope, @GDScript, etc.
+				output.append("'" + tag + "'");
+			} else if (tag == "PackedByteArray") {
+				output.append("byte[]");
+			} else if (tag == "PackedInt32Array") {
+				output.append("int[]");
+			} else if (tag == "PackedInt64Array") {
+				output.append("long[]");
+			} else if (tag == "PackedFloat32Array") {
+				output.append("float[]");
+			} else if (tag == "PackedFloat64Array") {
+				output.append("double[]");
+			} else if (tag == "PackedStringArray") {
+				output.append("string[]");
+			} else if (tag == "PackedVector2Array") {
+				output.append("'" BINDINGS_NAMESPACE ".Vector2[]'");
+			} else if (tag == "PackedVector3Array") {
+				output.append("'" BINDINGS_NAMESPACE ".Vector3[]'");
+			} else if (tag == "PackedColorArray") {
+				output.append("'" BINDINGS_NAMESPACE ".Color[]'");
+			} else if (tag == "PackedVector4Array") {
+				output.append("'" BINDINGS_NAMESPACE ".Vector4[]'");
+			} else {
+				const TypeInterface *target_itype = _get_type_or_null(TypeReference(tag));
+
+				if (!target_itype) {
+					target_itype = _get_type_or_null(TypeReference("_" + tag));
+				}
+
+				if (target_itype) {
+					output.append("'" + target_itype->proxy_name + "'");
+				} else {
+					ERR_PRINT("Cannot resolve type reference in documentation: '" + tag + "'.");
+					output.append("'" + tag + "'");
+				}
+			}
+
+			pos = brk_end + 1;
+		} else if (tag == "b") {
+			// Bold is not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "i") {
+			// Italic is not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "code" || tag.begins_with("code ")) {
+			code_tag = true;
+			pos = brk_end + 1;
+			tag_stack.push_front("code");
+		} else if (tag == "kbd") {
+			// Keyboard combinations are not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "center") {
+			// Center alignment is not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "br") {
+			// Break is not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "u") {
+			// Underline is not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "s") {
+			// Strikethrough is not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "url") {
+			int end = bbcode.find("[", brk_end);
+			if (end == -1) {
+				end = bbcode.length();
+			}
+			String url = bbcode.substr(brk_end + 1, end - brk_end - 1);
+			// Not supported. Just append the url.
+			output.append(url);
+
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag.begins_with("url=")) {
+			String url = tag.substr(4, tag.length());
+			// Not supported. Just append the url.
+			output.append(url);
+
+			pos = brk_end + 1;
+			tag_stack.push_front("url");
+		} else if (tag == "img") {
+			int end = bbcode.find("[", brk_end);
+			if (end == -1) {
+				end = bbcode.length();
+			}
+			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
+
+			// Not supported. Just append the bbcode.
+			output.append("[img]");
+			output.append(image);
+			output.append("[/img]");
+
+			pos = end;
+			tag_stack.push_front(tag);
+		} else if (tag.begins_with("color=")) {
+			// Not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front("color");
+		} else if (tag.begins_with("font=")) {
+			// Not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front("font");
+		} else {
+			// Ignore unrecognized tag.
+			output.append("[");
+			pos = brk_pos + 1;
+		}
+	}
+
+	return output.as_string();
+}
+
+String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype, bool p_is_signal) {
+	// Based on the version in EditorHelp.
 
 	if (p_bbcode.is_empty()) {
 		return String();
@@ -197,7 +480,8 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 		}
 
 		if (brk_pos == bbcode.length()) {
-			break; // nothing else to add
+			// Nothing else to add.
+			break;
 		}
 
 		int brk_end = bbcode.find("]", brk_pos + 1);
@@ -262,7 +546,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 		} else if (code_tag) {
 			xml_output.append("[");
 			pos = brk_pos + 1;
-		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
+		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
 			const int tag_end = tag.find(" ");
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
@@ -296,6 +580,12 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 
 			if (link_tag == "method") {
 				_append_xml_method(xml_output, target_itype, target_cname, link_target, link_target_parts);
+			} else if (link_tag == "constructor") {
+				// TODO: Support constructors?
+				_append_xml_undeclared(xml_output, link_target);
+			} else if (link_tag == "operator") {
+				// TODO: Support operators?
+				_append_xml_undeclared(xml_output, link_target);
 			} else if (link_tag == "member") {
 				_append_xml_member(xml_output, target_itype, target_cname, link_target, link_target_parts);
 			} else if (link_tag == "signal") {
@@ -304,11 +594,11 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				_append_xml_enum(xml_output, target_itype, target_cname, link_target, link_target_parts);
 			} else if (link_tag == "constant") {
 				_append_xml_constant(xml_output, target_itype, target_cname, link_target, link_target_parts);
-			} else if (link_tag == "theme_item") {
-				// We do not declare theme_items in any way in C#, so there is nothing to reference
-				_append_xml_undeclared(xml_output, link_target);
 			} else if (link_tag == "param") {
-				_append_xml_undeclared(xml_output, snake_to_camel_case(link_target, false));
+				_append_xml_param(xml_output, link_target, p_is_signal);
+			} else if (link_tag == "theme_item") {
+				// We do not declare theme_items in any way in C#, so there is nothing to reference.
+				_append_xml_undeclared(xml_output, link_target);
 			}
 
 			pos = brk_end + 1;
@@ -336,7 +626,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			} else if (tag == "Nil") {
 				xml_output.append("<see langword=\"null\"/>");
 			} else if (tag.begins_with("@")) {
-				// @GlobalScope, @GDScript, etc
+				// @GlobalScope, @GDScript, etc.
 				xml_output.append("<c>");
 				xml_output.append(tag);
 				xml_output.append("</c>");
@@ -358,6 +648,8 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Vector3\"/>[]");
 			} else if (tag == "PackedColorArray") {
 				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Color\"/>[]");
+			} else if (tag == "PackedVector4Array") {
+				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Vector4\"/>[]");
 			} else {
 				const TypeInterface *target_itype = _get_type_or_null(TypeReference(tag));
 
@@ -366,9 +658,19 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				}
 
 				if (target_itype) {
-					xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-					xml_output.append(target_itype->proxy_name);
-					xml_output.append("\"/>");
+					if ((!p_itype || p_itype->api_type == ClassDB::API_CORE) && target_itype->api_type == ClassDB::API_EDITOR) {
+						// Editor references in core documentation cannot be resolved,
+						// handle as standard codeblock.
+						_log("Cannot reference editor type '%s' in documentation for core type '%s'\n",
+								target_itype->proxy_name.utf8().get_data(), p_itype ? p_itype->proxy_name.utf8().get_data() : "@GlobalScope");
+						xml_output.append("<c>");
+						xml_output.append(target_itype->proxy_name);
+						xml_output.append("</c>");
+					} else {
+						xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+						xml_output.append(target_itype->proxy_name);
+						xml_output.append("\"/>");
+					}
 				} else {
 					ERR_PRINT("Cannot resolve type reference in documentation: '" + tag + "'.");
 
@@ -389,46 +691,59 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
-		} else if (tag == "code") {
-			xml_output.append("<c>");
+		} else if (tag == "code" || tag.begins_with("code ")) {
+			int end = bbcode.find("[", brk_end);
+			if (end == -1) {
+				end = bbcode.length();
+			}
+			String code = bbcode.substr(brk_end + 1, end - brk_end - 1);
+			if (langword_check.has(code)) {
+				xml_output.append("<see langword=\"");
+				xml_output.append(code);
+				xml_output.append("\"/>");
 
-			code_tag = true;
-			pos = brk_end + 1;
-			tag_stack.push_front(tag);
-		} else if (tag == "codeblock") {
+				pos = brk_end + code.length() + 8;
+			} else {
+				xml_output.append("<c>");
+
+				code_tag = true;
+				pos = brk_end + 1;
+				tag_stack.push_front("code");
+			}
+		} else if (tag == "codeblock" || tag.begins_with("codeblock ")) {
 			xml_output.append("<code>");
 
 			code_tag = true;
 			pos = brk_end + 1;
-			tag_stack.push_front(tag);
+			tag_stack.push_front("codeblock");
 		} else if (tag == "codeblocks") {
 			line_del = true;
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
-		} else if (tag == "csharp") {
+		} else if (tag == "csharp" || tag.begins_with("csharp ")) {
 			xml_output.append("<code>");
 
 			line_del = false;
 			code_tag = true;
 			pos = brk_end + 1;
-			tag_stack.push_front(tag);
+			tag_stack.push_front("csharp");
 		} else if (tag == "kbd") {
-			// keyboard combinations are not supported in xml comments
+			// Keyboard combinations are not supported in xml comments.
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "center") {
-			// center alignment is not supported in xml comments
+			// Center alignment is not supported in xml comments.
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "br") {
 			xml_output.append("\n"); // FIXME: Should use <para> instead. Luckily this tag isn't used for now.
 			pos = brk_end + 1;
 		} else if (tag == "u") {
-			// underline is not supported in Rider xml comments
+			// Underline is not supported in Rider xml comments.
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "s") {
-			// strikethrough is not supported in xml comments
+			// Strikethrough is not supported in xml comments.
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "url") {
@@ -476,7 +791,8 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			tag_stack.push_front("font");
 		} else {
 			if (!line_del) {
-				xml_output.append("["); // ignore
+				// Ignore unrecognized tag.
+				xml_output.append("[");
 			}
 			pos = brk_pos + 1;
 		}
@@ -485,6 +801,285 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 	xml_output.append("</para>");
 
 	return xml_output.as_string();
+}
+
+void BindingsGenerator::_append_text_method(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+	if (p_link_target_parts[0] == name_cache.type_at_GlobalScope) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			OS::get_singleton()->print("Cannot resolve @GlobalScope method reference in documentation: %s\n", p_link_target.utf8().get_data());
+		}
+
+		// TODO Map what we can
+		_append_text_undeclared(p_output, p_link_target);
+	} else if (!p_target_itype || !p_target_itype->is_object_type) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			if (p_target_itype) {
+				OS::get_singleton()->print("Cannot resolve method reference for non-GodotObject type in documentation: %s\n", p_link_target.utf8().get_data());
+			} else {
+				OS::get_singleton()->print("Cannot resolve type from method reference in documentation: %s\n", p_link_target.utf8().get_data());
+			}
+		}
+
+		// TODO Map what we can
+		_append_text_undeclared(p_output, p_link_target);
+	} else {
+		if (p_target_cname == "_init") {
+			// The _init method is not declared in C#, reference the constructor instead
+			p_output.append("'new " BINDINGS_NAMESPACE ".");
+			p_output.append(p_target_itype->proxy_name);
+			p_output.append("()'");
+		} else {
+			const MethodInterface *target_imethod = p_target_itype->find_method_by_name(p_target_cname);
+
+			if (target_imethod) {
+				p_output.append("'" BINDINGS_NAMESPACE ".");
+				p_output.append(p_target_itype->proxy_name);
+				p_output.append(".");
+				p_output.append(target_imethod->proxy_name);
+				p_output.append("(");
+				bool first_key = true;
+				for (const ArgumentInterface &iarg : target_imethod->arguments) {
+					const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+
+					if (first_key) {
+						first_key = false;
+					} else {
+						p_output.append(", ");
+					}
+					if (!arg_type) {
+						ERR_PRINT("Cannot resolve argument type in documentation: '" + p_link_target + "'.");
+						p_output.append(iarg.type.cname);
+						continue;
+					}
+					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+						p_output.append("Nullable<");
+					}
+					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+					p_output.append(arg_cs_type.replacen("params ", ""));
+					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+						p_output.append(">");
+					}
+				}
+				p_output.append(")'");
+			} else {
+				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+					ERR_PRINT("Cannot resolve method reference in documentation: '" + p_link_target + "'.");
+				}
+
+				_append_text_undeclared(p_output, p_link_target);
+			}
+		}
+	}
+}
+
+void BindingsGenerator::_append_text_member(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+	if (p_link_target.contains("/")) {
+		// Properties with '/' (slash) in the name are not declared in C#, so there is nothing to reference.
+		_append_text_undeclared(p_output, p_link_target);
+	} else if (!p_target_itype || !p_target_itype->is_object_type) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			if (p_target_itype) {
+				OS::get_singleton()->print("Cannot resolve member reference for non-GodotObject type in documentation: %s\n", p_link_target.utf8().get_data());
+			} else {
+				OS::get_singleton()->print("Cannot resolve type from member reference in documentation: %s\n", p_link_target.utf8().get_data());
+			}
+		}
+
+		// TODO Map what we can
+		_append_text_undeclared(p_output, p_link_target);
+	} else {
+		const TypeInterface *current_itype = p_target_itype;
+		const PropertyInterface *target_iprop = nullptr;
+
+		while (target_iprop == nullptr && current_itype != nullptr) {
+			target_iprop = current_itype->find_property_by_name(p_target_cname);
+			if (target_iprop == nullptr) {
+				current_itype = _get_type_or_null(TypeReference(current_itype->base_name));
+			}
+		}
+
+		if (target_iprop) {
+			p_output.append("'" BINDINGS_NAMESPACE ".");
+			p_output.append(current_itype->proxy_name);
+			p_output.append(".");
+			p_output.append(target_iprop->proxy_name);
+			p_output.append("'");
+		} else {
+			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+				ERR_PRINT("Cannot resolve member reference in documentation: '" + p_link_target + "'.");
+			}
+
+			_append_text_undeclared(p_output, p_link_target);
+		}
+	}
+}
+
+void BindingsGenerator::_append_text_signal(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+	if (!p_target_itype || !p_target_itype->is_object_type) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			if (p_target_itype) {
+				OS::get_singleton()->print("Cannot resolve signal reference for non-GodotObject type in documentation: %s\n", p_link_target.utf8().get_data());
+			} else {
+				OS::get_singleton()->print("Cannot resolve type from signal reference in documentation: %s\n", p_link_target.utf8().get_data());
+			}
+		}
+
+		// TODO Map what we can
+		_append_text_undeclared(p_output, p_link_target);
+	} else {
+		const SignalInterface *target_isignal = p_target_itype->find_signal_by_name(p_target_cname);
+
+		if (target_isignal) {
+			p_output.append("'" BINDINGS_NAMESPACE ".");
+			p_output.append(p_target_itype->proxy_name);
+			p_output.append(".");
+			p_output.append(target_isignal->proxy_name);
+			p_output.append("'");
+		} else {
+			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+				ERR_PRINT("Cannot resolve signal reference in documentation: '" + p_link_target + "'.");
+			}
+
+			_append_text_undeclared(p_output, p_link_target);
+		}
+	}
+}
+
+void BindingsGenerator::_append_text_enum(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+	const StringName search_cname = !p_target_itype ? p_target_cname : StringName(p_target_itype->name + "." + (String)p_target_cname);
+
+	HashMap<StringName, TypeInterface>::ConstIterator enum_match = enum_types.find(search_cname);
+
+	if (!enum_match && search_cname != p_target_cname) {
+		enum_match = enum_types.find(p_target_cname);
+	}
+
+	if (enum_match) {
+		const TypeInterface &target_enum_itype = enum_match->value;
+
+		p_output.append("'" BINDINGS_NAMESPACE ".");
+		p_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
+		p_output.append("'");
+	} else {
+		if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+			ERR_PRINT("Cannot resolve enum reference in documentation: '" + p_link_target + "'.");
+		}
+
+		_append_text_undeclared(p_output, p_link_target);
+	}
+}
+
+void BindingsGenerator::_append_text_constant(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+	if (p_link_target_parts[0] == name_cache.type_at_GlobalScope) {
+		_append_text_constant_in_global_scope(p_output, p_target_cname, p_link_target);
+	} else if (!p_target_itype || !p_target_itype->is_object_type) {
+		// Search in @GlobalScope as a last resort if no class was specified
+		if (p_link_target_parts.size() == 1) {
+			_append_text_constant_in_global_scope(p_output, p_target_cname, p_link_target);
+			return;
+		}
+
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			if (p_target_itype) {
+				OS::get_singleton()->print("Cannot resolve constant reference for non-GodotObject type in documentation: %s\n", p_link_target.utf8().get_data());
+			} else {
+				OS::get_singleton()->print("Cannot resolve type from constant reference in documentation: %s\n", p_link_target.utf8().get_data());
+			}
+		}
+
+		// TODO Map what we can
+		_append_text_undeclared(p_output, p_link_target);
+	} else {
+		// Try to find the constant in the current class
+		if (p_target_itype->is_singleton_instance) {
+			// Constants and enums are declared in the static singleton class.
+			p_target_itype = &obj_types[p_target_itype->cname];
+		}
+
+		const ConstantInterface *target_iconst = find_constant_by_name(p_target_cname, p_target_itype->constants);
+
+		if (target_iconst) {
+			// Found constant in current class
+			p_output.append("'" BINDINGS_NAMESPACE ".");
+			p_output.append(p_target_itype->proxy_name);
+			p_output.append(".");
+			p_output.append(target_iconst->proxy_name);
+			p_output.append("'");
+		} else {
+			// Try to find as enum constant in the current class
+			const EnumInterface *target_ienum = nullptr;
+
+			for (const EnumInterface &ienum : p_target_itype->enums) {
+				target_ienum = &ienum;
+				target_iconst = find_constant_by_name(p_target_cname, target_ienum->constants);
+				if (target_iconst) {
+					break;
+				}
+			}
+
+			if (target_iconst) {
+				p_output.append("'" BINDINGS_NAMESPACE ".");
+				p_output.append(p_target_itype->proxy_name);
+				p_output.append(".");
+				p_output.append(target_ienum->proxy_name);
+				p_output.append(".");
+				p_output.append(target_iconst->proxy_name);
+				p_output.append("'");
+			} else if (p_link_target_parts.size() == 1) {
+				// Also search in @GlobalScope as a last resort if no class was specified
+				_append_text_constant_in_global_scope(p_output, p_target_cname, p_link_target);
+			} else {
+				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+					ERR_PRINT("Cannot resolve constant reference in documentation: '" + p_link_target + "'.");
+				}
+
+				_append_xml_undeclared(p_output, p_link_target);
+			}
+		}
+	}
+}
+
+void BindingsGenerator::_append_text_constant_in_global_scope(StringBuilder &p_output, const String &p_target_cname, const String &p_link_target) {
+	// Try to find as a global constant
+	const ConstantInterface *target_iconst = find_constant_by_name(p_target_cname, global_constants);
+
+	if (target_iconst) {
+		// Found global constant
+		p_output.append("'" BINDINGS_NAMESPACE "." BINDINGS_GLOBAL_SCOPE_CLASS ".");
+		p_output.append(target_iconst->proxy_name);
+		p_output.append("'");
+	} else {
+		// Try to find as global enum constant
+		const EnumInterface *target_ienum = nullptr;
+
+		for (const EnumInterface &ienum : global_enums) {
+			target_ienum = &ienum;
+			target_iconst = find_constant_by_name(p_target_cname, target_ienum->constants);
+			if (target_iconst) {
+				break;
+			}
+		}
+
+		if (target_iconst) {
+			p_output.append("'" BINDINGS_NAMESPACE ".");
+			p_output.append(target_ienum->proxy_name);
+			p_output.append(".");
+			p_output.append(target_iconst->proxy_name);
+			p_output.append("'");
+		} else {
+			ERR_PRINT("Cannot resolve global constant reference in documentation: '" + p_link_target + "'.");
+			_append_text_undeclared(p_output, p_link_target);
+		}
+	}
+}
+
+void BindingsGenerator::_append_text_param(StringBuilder &p_output, const String &p_link_target) {
+	const String link_target = snake_to_camel_case(p_link_target);
+	p_output.append("'" + link_target + "'");
+}
+
+void BindingsGenerator::_append_text_undeclared(StringBuilder &p_output, const String &p_link_target) {
+	p_output.append("'" + p_link_target + "'");
 }
 
 void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
@@ -522,7 +1117,31 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 				p_xml_output.append(p_target_itype->proxy_name);
 				p_xml_output.append(".");
 				p_xml_output.append(target_imethod->proxy_name);
-				p_xml_output.append("\"/>");
+				p_xml_output.append("(");
+				bool first_key = true;
+				for (const ArgumentInterface &iarg : target_imethod->arguments) {
+					const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+
+					if (first_key) {
+						first_key = false;
+					} else {
+						p_xml_output.append(", ");
+					}
+					if (!arg_type) {
+						ERR_PRINT("Cannot resolve argument type in documentation: '" + p_link_target + "'.");
+						p_xml_output.append(iarg.type.cname);
+						continue;
+					}
+					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+						p_xml_output.append("Nullable{");
+					}
+					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+					p_xml_output.append(arg_cs_type.replacen("<", "{").replacen(">", "}").replacen("params ", ""));
+					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+						p_xml_output.append("}");
+					}
+				}
+				p_xml_output.append(")\"/>");
 			} else {
 				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
 					ERR_PRINT("Cannot resolve method reference in documentation: '" + p_link_target + "'.");
@@ -535,7 +1154,7 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 }
 
 void BindingsGenerator::_append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
-	if (p_link_target.find("/") >= 0) {
+	if (p_link_target.contains("/")) {
 		// Properties with '/' (slash) in the name are not declared in C#, so there is nothing to reference.
 		_append_xml_undeclared(p_xml_output, p_link_target);
 	} else if (!p_target_itype || !p_target_itype->is_object_type) {
@@ -653,6 +1272,11 @@ void BindingsGenerator::_append_xml_constant(StringBuilder &p_xml_output, const 
 		_append_xml_undeclared(p_xml_output, p_link_target);
 	} else {
 		// Try to find the constant in the current class
+		if (p_target_itype->is_singleton_instance) {
+			// Constants and enums are declared in the static singleton class.
+			p_target_itype = &obj_types[p_target_itype->cname];
+		}
+
 		const ConstantInterface *target_iconst = find_constant_by_name(p_target_cname, p_target_itype->constants);
 
 		if (target_iconst) {
@@ -678,7 +1302,7 @@ void BindingsGenerator::_append_xml_constant(StringBuilder &p_xml_output, const 
 				p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
 				p_xml_output.append(p_target_itype->proxy_name);
 				p_xml_output.append(".");
-				p_xml_output.append(target_ienum->cname);
+				p_xml_output.append(target_ienum->proxy_name);
 				p_xml_output.append(".");
 				p_xml_output.append(target_iconst->proxy_name);
 				p_xml_output.append("\"/>");
@@ -719,7 +1343,7 @@ void BindingsGenerator::_append_xml_constant_in_global_scope(StringBuilder &p_xm
 
 		if (target_iconst) {
 			p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-			p_xml_output.append(target_ienum->cname);
+			p_xml_output.append(target_ienum->proxy_name);
 			p_xml_output.append(".");
 			p_xml_output.append(target_iconst->proxy_name);
 			p_xml_output.append("\"/>");
@@ -727,6 +1351,21 @@ void BindingsGenerator::_append_xml_constant_in_global_scope(StringBuilder &p_xm
 			ERR_PRINT("Cannot resolve global constant reference in documentation: '" + p_link_target + "'.");
 			_append_xml_undeclared(p_xml_output, p_link_target);
 		}
+	}
+}
+
+void BindingsGenerator::_append_xml_param(StringBuilder &p_xml_output, const String &p_link_target, bool p_is_signal) {
+	const String link_target = snake_to_camel_case(p_link_target);
+
+	if (!p_is_signal) {
+		p_xml_output.append("<paramref name=\"");
+		p_xml_output.append(link_target);
+		p_xml_output.append("\"/>");
+	} else {
+		// Documentation in C# is added to an event, not the delegate itself;
+		// as such, we treat these parameters as codeblocks instead.
+		// See: https://github.com/godotengine/godot/pull/65529
+		_append_xml_undeclared(p_xml_output, link_target);
 	}
 }
 
@@ -934,10 +1573,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 	p_output.append("namespace " BINDINGS_NAMESPACE ";\n\n");
 
-	p_output.append("\n#pragma warning disable CS1591 // Disable warning: "
-					"'Missing XML comment for publicly visible type or member'\n");
-
-	p_output.append("public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n{");
+	p_output.append("public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n" OPEN_BLOCK);
 
 	for (const ConstantInterface &iconstant : global_constants) {
 		if (iconstant.const_doc && iconstant.const_doc->description.size()) {
@@ -975,7 +1611,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 	for (const EnumInterface &ienum : global_enums) {
 		CRASH_COND(ienum.constants.is_empty());
 
-		String enum_proxy_name = ienum.cname.operator String();
+		String enum_proxy_name = ienum.proxy_name;
 
 		bool enum_in_static_class = false;
 
@@ -988,54 +1624,50 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 			_log("Declaring global enum '%s' inside struct '%s'\n", enum_proxy_name.utf8().get_data(), enum_class_name.utf8().get_data());
 
-			p_output.append("\npublic partial struct ");
-			p_output.append(pascal_to_pascal_case(enum_class_name));
-			p_output.append("\n" OPEN_BLOCK);
+			p_output << "\npublic partial struct " << enum_class_name << "\n" OPEN_BLOCK;
 		}
+
+		const String maybe_indent = !enum_in_static_class ? "" : INDENT1;
 
 		if (ienum.is_flags) {
-			p_output.append("\n[System.Flags]");
+			p_output << "\n"
+					 << maybe_indent << "[System.Flags]";
 		}
 
-		p_output.append("\npublic enum ");
-		p_output.append(pascal_to_pascal_case(enum_proxy_name));
-		p_output.append(" : long");
-		p_output.append("\n" OPEN_BLOCK);
+		p_output << "\n"
+				 << maybe_indent << "public enum " << enum_proxy_name << " : long"
+				 << "\n"
+				 << maybe_indent << OPEN_BLOCK;
 
-		const ConstantInterface &last = ienum.constants.back()->get();
 		for (const ConstantInterface &iconstant : ienum.constants) {
 			if (iconstant.const_doc && iconstant.const_doc->description.size()) {
 				String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), nullptr);
 				Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 				if (summary_lines.size()) {
-					p_output.append(INDENT1 "/// <summary>\n");
+					p_output << maybe_indent << INDENT1 "/// <summary>\n";
 
 					for (int i = 0; i < summary_lines.size(); i++) {
-						p_output.append(INDENT1 "/// ");
-						p_output.append(summary_lines[i]);
-						p_output.append("\n");
+						p_output << maybe_indent << INDENT1 "/// " << summary_lines[i] << "\n";
 					}
 
-					p_output.append(INDENT1 "/// </summary>\n");
+					p_output << maybe_indent << INDENT1 "/// </summary>\n";
 				}
 			}
 
-			p_output.append(INDENT1);
-			p_output.append(iconstant.proxy_name);
-			p_output.append(" = ");
-			p_output.append(itos(iconstant.value));
-			p_output.append(&iconstant != &last ? ",\n" : "\n");
+			p_output << maybe_indent << INDENT1
+					 << iconstant.proxy_name
+					 << " = "
+					 << itos(iconstant.value)
+					 << ",\n";
 		}
 
-		p_output.append(CLOSE_BLOCK);
+		p_output << maybe_indent << CLOSE_BLOCK;
 
 		if (enum_in_static_class) {
-			p_output.append(CLOSE_BLOCK);
+			p_output << CLOSE_BLOCK;
 		}
 	}
-
-	p_output.append("\n#pragma warning restore CS1591\n");
 }
 
 Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
@@ -1348,14 +1980,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output.append("namespace " BINDINGS_NAMESPACE ";\n\n");
 
 	output.append("using System;\n"); // IntPtr
+	output.append("using System.ComponentModel;\n"); // EditorBrowsable
 	output.append("using System.Diagnostics;\n"); // DebuggerBrowsable
 	output.append("using Godot.NativeInterop;\n");
-
-	output.append("\n"
-				  "#pragma warning disable CS1591 // Disable warning: "
-				  "'Missing XML comment for publicly visible type or member'\n"
-				  "#pragma warning disable CS1573 // Disable warning: "
-				  "'Parameter has no matching param tag in the XML comment'\n");
 
 	output.append("\n#nullable disable\n");
 
@@ -1376,10 +2003,12 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			output.append("/// </summary>\n");
 		}
+	}
 
-		if (class_doc->is_deprecated) {
-			output.append("[Obsolete(\"This class is deprecated.\")]\n");
-		}
+	if (itype.is_deprecated) {
+		output.append("[Obsolete(\"");
+		output.append(bbcode_to_text(itype.deprecation_message, &itype));
+		output.append("\")]\n");
 	}
 
 	// We generate a `GodotClassName` attribute if the engine class name is not the same as the
@@ -1403,8 +2032,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	if (is_derived_type && !itype.is_singleton) {
 		if (obj_types.has(itype.base_name)) {
+			TypeInterface base_type = obj_types[itype.base_name];
 			output.append(" : ");
-			output.append(obj_types[itype.base_name].proxy_name);
+			output.append(base_type.proxy_name);
+			if (base_type.is_singleton) {
+				// If the type is a singleton, use the instance type.
+				output.append(CS_SINGLETON_INSTANCE_SUFFIX);
+			}
 		} else {
 			ERR_PRINT("Base type '" + itype.base_name.operator String() + "' does not exist, for class '" + itype.name + "'.");
 			return ERR_INVALID_DATA;
@@ -1431,10 +2065,12 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 				output.append(INDENT1 "/// </summary>");
 			}
+		}
 
-			if (iconstant.const_doc->is_deprecated) {
-				output.append(MEMBER_BEGIN "[Obsolete(\"This constant is deprecated.\")]");
-			}
+		if (iconstant.is_deprecated) {
+			output.append(MEMBER_BEGIN "[Obsolete(\"");
+			output.append(bbcode_to_text(iconstant.deprecation_message, &itype));
+			output.append("\")]");
 		}
 
 		output.append(MEMBER_BEGIN "public const long ");
@@ -1458,7 +2094,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 
 		output.append(MEMBER_BEGIN "public enum ");
-		output.append(pascal_to_pascal_case(ienum.cname.operator String()));
+		output.append(ienum.proxy_name);
 		output.append(" : long");
 		output.append(MEMBER_BEGIN OPEN_BLOCK);
 
@@ -1479,10 +2115,12 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 					output.append(INDENT2 "/// </summary>\n");
 				}
+			}
 
-				if (iconstant.const_doc->is_deprecated) {
-					output.append(INDENT2 "[Obsolete(\"This enum member is deprecated.\")]\n");
-				}
+			if (iconstant.is_deprecated) {
+				output.append(INDENT2 "[Obsolete(\"");
+				output.append(bbcode_to_text(iconstant.deprecation_message, &itype));
+				output.append("\")]\n");
 			}
 
 			output.append(INDENT2);
@@ -1504,36 +2142,43 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 						"' for class '" + itype.name + "'.");
 	}
 
-	if (itype.is_singleton) {
-		// Add the type name and the singleton pointer as static fields
+	// Add native name static field and cached type.
 
-		output.append(MEMBER_BEGIN "private static GodotObject singleton;\n");
+	if (is_derived_type && !itype.is_singleton) {
+		output << MEMBER_BEGIN "private static readonly System.Type CachedType = typeof(" << itype.proxy_name << ");\n";
+	}
 
-		output << MEMBER_BEGIN "public static GodotObject " CS_PROPERTY_SINGLETON "\n" INDENT1 "{\n"
-			   << INDENT2 "get\n" INDENT2 "{\n" INDENT3 "if (singleton == null)\n"
-			   << INDENT4 "singleton = " C_METHOD_ENGINE_GET_SINGLETON "(\""
-			   << itype.name
-			   << "\");\n" INDENT3 "return singleton;\n" INDENT2 "}\n" INDENT1 "}\n";
+	output.append(MEMBER_BEGIN "private static readonly StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
+	output.append(itype.name);
+	output.append("\";\n");
 
-		output.append(MEMBER_BEGIN "private static readonly StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
-		output.append(itype.name);
-		output.append("\";\n");
-	} else {
+	if (itype.is_singleton || itype.is_compat_singleton) {
+		// Add the Singleton static property.
+
+		String instance_type_name;
+
+		if (itype.is_singleton) {
+			StringName instance_name = itype.name + CS_SINGLETON_INSTANCE_SUFFIX;
+			instance_type_name = obj_types.has(instance_name)
+					? obj_types[instance_name].proxy_name
+					: "GodotObject";
+		} else {
+			instance_type_name = itype.proxy_name;
+		}
+
+		output.append(MEMBER_BEGIN "private static " + instance_type_name + " singleton;\n");
+
+		output << MEMBER_BEGIN "public static " + instance_type_name + " " CS_PROPERTY_SINGLETON " =>\n"
+			   << INDENT2 "singleton \?\?= (" + instance_type_name + ")"
+			   << C_METHOD_ENGINE_GET_SINGLETON "(\"" << itype.name << "\");\n";
+	}
+
+	if (!itype.is_singleton) {
 		// IMPORTANT: We also generate the static fields for GodotObject instead of declaring
 		// them manually in the `GodotObject.base.cs` partial class declaration, because they're
 		// required by other static fields in this generated partial class declaration.
 		// Static fields are initialized in order of declaration, but when they're in different
 		// partial class declarations then it becomes harder to tell (Rider warns about this).
-
-		// Add native name static field
-
-		if (is_derived_type) {
-			output << MEMBER_BEGIN "private static readonly System.Type CachedType = typeof(" << itype.proxy_name << ");\n";
-		}
-
-		output.append(MEMBER_BEGIN "private static readonly StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
-		output.append(itype.name);
-		output.append("\";\n");
 
 		if (itype.is_instantiable) {
 			// Add native constructor static field
@@ -1550,21 +2195,25 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				output << MEMBER_BEGIN "public " << itype.proxy_name << "() : this("
 					   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L1
 					   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK
-					   << INDENT3 "_ConstructAndInitialize(" CS_STATIC_FIELD_NATIVE_CTOR ", "
+					   << INDENT3 "ConstructAndInitialize(" CS_STATIC_FIELD_NATIVE_CTOR ", "
 					   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
 					   << (itype.is_ref_counted ? "true" : "false") << ");\n"
 					   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
 			} else {
 				// Hide the constructor
-				output.append(MEMBER_BEGIN "internal ");
-				output.append(itype.proxy_name);
-				output.append("() {}\n");
+				output << MEMBER_BEGIN "internal " << itype.proxy_name << "() : this("
+					   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L1
+					   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK
+					   << INDENT3 "ConstructAndInitialize(null, "
+					   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
+					   << (itype.is_ref_counted ? "true" : "false") << ");\n"
+					   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
 			}
 
 			// Add.. em.. trick constructor. Sort of.
 			output.append(MEMBER_BEGIN "internal ");
 			output.append(itype.proxy_name);
-			output.append("(bool " CS_PARAM_MEMORYOWN ") : base(" CS_PARAM_MEMORYOWN ") {}\n");
+			output.append("(bool " CS_PARAM_MEMORYOWN ") : base(" CS_PARAM_MEMORYOWN ") { }\n");
 		}
 	}
 
@@ -1616,7 +2265,19 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		// Generate InvokeGodotClassMethod
 
-		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
+		output << MEMBER_BEGIN "/// <summary>\n"
+			   << INDENT1 "/// Invokes the method with the given name, using the given arguments.\n"
+			   << INDENT1 "/// This method is used by Godot to invoke methods from the engine side.\n"
+			   << INDENT1 "/// Do not call or override this method.\n"
+			   << INDENT1 "/// </summary>\n"
+			   << INDENT1 "/// <param name=\"method\">Name of the method to invoke.</param>\n"
+			   << INDENT1 "/// <param name=\"args\">Arguments to use with the invoked method.</param>\n"
+			   << INDENT1 "/// <param name=\"ret\">Value returned by the invoked method.</param>\n";
+
+		// Avoid raising diagnostics because of calls to obsolete methods.
+		output << "#pragma warning disable CS0618 // Member is obsolete\n";
+
+		output << INDENT1 "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(in godot_string_name method, "
 			   << "NativeVariantPtrArgs args, out godot_variant ret)\n"
 			   << INDENT1 "{\n";
@@ -1647,8 +2308,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			output << imethod.proxy_name << "(";
 
-			for (int i = 0; i < imethod.arguments.size(); i++) {
-				const ArgumentInterface &iarg = imethod.arguments[i];
+			int i = 0;
+			for (List<BindingsGenerator::ArgumentInterface>::ConstIterator itr = imethod.arguments.begin(); itr != imethod.arguments.end(); ++itr, ++i) {
+				const ArgumentInterface &iarg = *itr;
 
 				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
 				ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
@@ -1694,7 +2356,16 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		output << INDENT1 "}\n";
 
+		output << "#pragma warning restore CS0618\n";
+
 		// Generate HasGodotClassMethod
+
+		output << MEMBER_BEGIN "/// <summary>\n"
+			   << INDENT1 "/// Check if the type contains a method with the given name.\n"
+			   << INDENT1 "/// This method is used by Godot to check if a method exists before invoking it.\n"
+			   << INDENT1 "/// Do not call or override this method.\n"
+			   << INDENT1 "/// </summary>\n"
+			   << INDENT1 "/// <param name=\"method\">Name of the method to check for.</param>\n";
 
 		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_HAS_GODOT_CLASS_METHOD "(in godot_string_name method)\n"
@@ -1728,6 +2399,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		// Generate HasGodotClassSignal
 
+		output << MEMBER_BEGIN "/// <summary>\n"
+			   << INDENT1 "/// Check if the type contains a signal with the given name.\n"
+			   << INDENT1 "/// This method is used by Godot to check if a signal exists before raising it.\n"
+			   << INDENT1 "/// Do not call or override this method.\n"
+			   << INDENT1 "/// </summary>\n"
+			   << INDENT1 "/// <param name=\"signal\">Name of the signal to check for.</param>\n";
+
 		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(in godot_string_name signal)\n"
 			   << INDENT1 "{\n";
@@ -1758,47 +2436,67 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	//Generate StringName for all class members
 	bool is_inherit = !itype.is_singleton && obj_types.has(itype.base_name);
 	//PropertyName
+	output << MEMBER_BEGIN "/// <summary>\n"
+		   << INDENT1 "/// Cached StringNames for the properties and fields contained in this class, for fast lookup.\n"
+		   << INDENT1 "/// </summary>\n";
 	if (is_inherit) {
-		output << MEMBER_BEGIN "public new class PropertyName : " << obj_types[itype.base_name].proxy_name << ".PropertyName";
+		output << INDENT1 "public new class PropertyName : " << obj_types[itype.base_name].proxy_name << ".PropertyName";
 	} else {
-		output << MEMBER_BEGIN "public class PropertyName";
+		output << INDENT1 "public class PropertyName";
 	}
 	output << "\n"
 		   << INDENT1 "{\n";
 	for (const PropertyInterface &iprop : itype.properties) {
-		output << INDENT2 "public static readonly StringName " << iprop.proxy_name << " = \"" << iprop.cname << "\";\n";
+		output << INDENT2 "/// <summary>\n"
+			   << INDENT2 "/// Cached name for the '" << iprop.cname << "' property.\n"
+			   << INDENT2 "/// </summary>\n"
+			   << INDENT2 "public static readonly StringName " << iprop.proxy_name << " = \"" << iprop.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
 	//MethodName
+	output << MEMBER_BEGIN "/// <summary>\n"
+		   << INDENT1 "/// Cached StringNames for the methods contained in this class, for fast lookup.\n"
+		   << INDENT1 "/// </summary>\n";
 	if (is_inherit) {
-		output << MEMBER_BEGIN "public new class MethodName : " << obj_types[itype.base_name].proxy_name << ".MethodName";
+		output << INDENT1 "public new class MethodName : " << obj_types[itype.base_name].proxy_name << ".MethodName";
 	} else {
-		output << MEMBER_BEGIN "public class MethodName";
+		output << INDENT1 "public class MethodName";
 	}
 	output << "\n"
 		   << INDENT1 "{\n";
+	HashMap<String, StringName> method_names;
 	for (const MethodInterface &imethod : itype.methods) {
-		output << INDENT2 "public static readonly StringName " << imethod.proxy_name << " = \"" << imethod.cname << "\";\n";
+		if (method_names.has(imethod.proxy_name)) {
+			ERR_FAIL_COND_V_MSG(method_names[imethod.proxy_name] != imethod.cname, ERR_BUG, "Method name '" + imethod.proxy_name + "' already exists with a different value.");
+			continue;
+		}
+		method_names[imethod.proxy_name] = imethod.cname;
+		output << INDENT2 "/// <summary>\n"
+			   << INDENT2 "/// Cached name for the '" << imethod.cname << "' method.\n"
+			   << INDENT2 "/// </summary>\n"
+			   << INDENT2 "public static readonly StringName " << imethod.proxy_name << " = \"" << imethod.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
 	//SignalName
+	output << MEMBER_BEGIN "/// <summary>\n"
+		   << INDENT1 "/// Cached StringNames for the signals contained in this class, for fast lookup.\n"
+		   << INDENT1 "/// </summary>\n";
 	if (is_inherit) {
-		output << MEMBER_BEGIN "public new class SignalName : " << obj_types[itype.base_name].proxy_name << ".SignalName";
+		output << INDENT1 "public new class SignalName : " << obj_types[itype.base_name].proxy_name << ".SignalName";
 	} else {
-		output << MEMBER_BEGIN "public class SignalName";
+		output << INDENT1 "public class SignalName";
 	}
 	output << "\n"
 		   << INDENT1 "{\n";
 	for (const SignalInterface &isignal : itype.signals_) {
-		output << INDENT2 "public static readonly StringName " << isignal.proxy_name << " = \"" << isignal.cname << "\";\n";
+		output << INDENT2 "/// <summary>\n"
+			   << INDENT2 "/// Cached name for the '" << isignal.cname << "' signal.\n"
+			   << INDENT2 "/// </summary>\n"
+			   << INDENT2 "public static readonly StringName " << isignal.proxy_name << " = \"" << isignal.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
 
 	output.append(CLOSE_BLOCK /* class */);
-
-	output.append("\n"
-				  "#pragma warning restore CS1591\n"
-				  "#pragma warning restore CS1573\n");
 
 	return _save_file(p_output_file, output);
 }
@@ -1853,7 +2551,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 
 	const TypeReference &proptype_name = getter ? getter->return_type : setter->arguments.back()->get().type;
 
-	const TypeInterface *prop_itype = _get_type_or_null(proptype_name);
+	const TypeInterface *prop_itype = _get_type_or_singleton_or_null(proptype_name);
 	ERR_FAIL_NULL_V(prop_itype, ERR_BUG); // Property type not found
 
 	ERR_FAIL_COND_V_MSG(prop_itype->is_singleton, ERR_BUG,
@@ -1880,13 +2578,23 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 
 			p_output.append(INDENT1 "/// </summary>");
 		}
+	}
 
-		if (p_iprop.prop_doc->is_deprecated) {
-			p_output.append(MEMBER_BEGIN "[Obsolete(\"This property is deprecated.\")]");
-		}
+	if (p_iprop.is_deprecated) {
+		p_output.append(MEMBER_BEGIN "[Obsolete(\"");
+		p_output.append(bbcode_to_text(p_iprop.deprecation_message, &p_itype));
+		p_output.append("\")]");
+	}
+
+	if (p_iprop.is_hidden) {
+		p_output.append(MEMBER_BEGIN "[EditorBrowsable(EditorBrowsableState.Never)]");
 	}
 
 	p_output.append(MEMBER_BEGIN "public ");
+
+	if (prop_allowed_inherited_member_hiding.has(p_itype.proxy_name + "." + p_iprop.proxy_name)) {
+		p_output.append("new ");
+	}
 
 	if (p_itype.is_singleton) {
 		p_output.append("static ");
@@ -1942,7 +2650,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 }
 
 Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output) {
-	const TypeInterface *return_type = _get_type_or_null(p_imethod.return_type);
+	const TypeInterface *return_type = _get_type_or_singleton_or_null(p_imethod.return_type);
 	ERR_FAIL_NULL_V(return_type, ERR_BUG); // Return type not found
 
 	ERR_FAIL_COND_V_MSG(return_type->is_singleton, ERR_BUG,
@@ -1963,12 +2671,17 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	String icall_params = method_bind_field;
 
 	if (!p_imethod.is_static) {
+		String self_reference = "this";
+		if (p_itype.is_singleton) {
+			self_reference = CS_PROPERTY_SINGLETON;
+		}
+
 		if (p_itype.cs_in.size()) {
-			cs_in_statements << sformat(p_itype.cs_in, p_itype.c_type, "this",
+			cs_in_statements << sformat(p_itype.cs_in, p_itype.c_type, self_reference,
 					String(), String(), String(), INDENT2);
 		}
 
-		icall_params += ", " + sformat(p_itype.cs_in_expr, "this");
+		icall_params += ", " + sformat(p_itype.cs_in_expr, self_reference);
 	}
 
 	StringBuilder default_args_doc;
@@ -1976,7 +2689,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	// Retrieve information from the arguments
 	const ArgumentInterface &first = p_imethod.arguments.front()->get();
 	for (const ArgumentInterface &iarg : p_imethod.arguments) {
-		const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+		const TypeInterface *arg_type = _get_type_or_singleton_or_null(iarg.type);
 		ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
 
 		ERR_FAIL_COND_V_MSG(arg_type->is_singleton, ERR_BUG,
@@ -2016,7 +2729,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 			arguments_sig += iarg.name;
 
-			if (iarg.default_argument.size()) {
+			if (!p_imethod.is_compat && iarg.default_argument.size()) {
 				if (iarg.def_param_mode != ArgumentInterface::CONSTANT) {
 					arguments_sig += " = null";
 				} else {
@@ -2087,6 +2800,11 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		cs_in_expr_is_unsafe |= arg_type->cs_in_expr_is_unsafe;
 	}
 
+	// Collect caller name for MethodBind
+	if (p_imethod.is_vararg) {
+		icall_params += ", (godot_string_name)MethodName." + p_imethod.proxy_name + ".NativeValue";
+	}
+
 	// Generate method
 	{
 		if (!p_imethod.is_virtual && !p_imethod.requires_object_call) {
@@ -2099,8 +2817,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 				p_output << "GodotObject.";
 			}
 
-			p_output << ICALL_CLASSDB_GET_METHOD "(" BINDINGS_NATIVE_NAME_FIELD ", MethodName."
-					 << p_imethod.proxy_name
+			p_output << ICALL_CLASSDB_GET_METHOD_WITH_COMPATIBILITY "(" BINDINGS_NATIVE_NAME_FIELD ", MethodName."
+					 << p_imethod.proxy_name << ", " << itos(p_imethod.hash) << "ul"
 					 << ");\n";
 		}
 
@@ -2119,10 +2837,6 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 				p_output.append(INDENT1 "/// </summary>");
 			}
-
-			if (p_imethod.method_doc->is_deprecated) {
-				p_output.append(MEMBER_BEGIN "[Obsolete(\"This method is deprecated.\")]");
-			}
 		}
 
 		if (default_args_doc.get_string_length()) {
@@ -2130,13 +2844,13 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		}
 
 		if (p_imethod.is_deprecated) {
-			if (p_imethod.deprecation_message.is_empty()) {
-				WARN_PRINT("An empty deprecation message is discouraged. Method: '" + p_imethod.proxy_name + "'.");
-			}
-
 			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
-			p_output.append(p_imethod.deprecation_message);
+			p_output.append(bbcode_to_text(p_imethod.deprecation_message, &p_itype));
 			p_output.append("\")]");
+		}
+
+		if (p_imethod.is_hidden) {
+			p_output.append(MEMBER_BEGIN "[EditorBrowsable(EditorBrowsableState.Never)]");
 		}
 
 		p_output.append(MEMBER_BEGIN);
@@ -2229,7 +2943,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 	// Retrieve information from the arguments
 	const ArgumentInterface &first = p_isignal.arguments.front()->get();
 	for (const ArgumentInterface &iarg : p_isignal.arguments) {
-		const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+		const TypeInterface *arg_type = _get_type_or_singleton_or_null(iarg.type);
 		ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
 
 		ERR_FAIL_COND_V_MSG(arg_type->is_singleton, ERR_BUG,
@@ -2261,31 +2975,27 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 	// Generate signal
 	{
-		p_output.append(MEMBER_BEGIN "/// <summary>\n");
-		p_output.append(INDENT1 "/// ");
-		p_output.append("Represents the method that handles the ");
-		p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "." + p_isignal.proxy_name + "\"/>");
-		p_output.append(" event of a ");
-		p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "\"/>");
-		p_output.append(" class.\n");
-		p_output.append(INDENT1 "/// </summary>");
-
-		if (p_isignal.is_deprecated) {
-			if (p_isignal.deprecation_message.is_empty()) {
-				WARN_PRINT("An empty deprecation message is discouraged. Signal: '" + p_isignal.proxy_name + "'.");
-			}
-
-			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
-			p_output.append(p_isignal.deprecation_message);
-			p_output.append("\")]");
-		}
-
 		bool is_parameterless = p_isignal.arguments.size() == 0;
 
 		// Delegate name is [SignalName]EventHandler
 		String delegate_name = is_parameterless ? "Action" : p_isignal.proxy_name + "EventHandler";
 
 		if (!is_parameterless) {
+			p_output.append(MEMBER_BEGIN "/// <summary>\n");
+			p_output.append(INDENT1 "/// ");
+			p_output.append("Represents the method that handles the ");
+			p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "." + p_isignal.proxy_name + "\"/>");
+			p_output.append(" event of a ");
+			p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "\"/>");
+			p_output.append(" class.\n");
+			p_output.append(INDENT1 "/// </summary>");
+
+			if (p_isignal.is_deprecated) {
+				p_output.append(MEMBER_BEGIN "[Obsolete(\"");
+				p_output.append(bbcode_to_text(p_isignal.deprecation_message, &p_itype));
+				p_output.append("\")]");
+			}
+
 			// Generate delegate
 			p_output.append(MEMBER_BEGIN "public delegate void ");
 			p_output.append(delegate_name);
@@ -2306,7 +3016,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 				ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
 
 				if (idx != 0) {
-					p_output << ",";
+					p_output << ", ";
 				}
 
 				p_output << sformat(arg_type->cs_variant_to_managed,
@@ -2321,7 +3031,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		}
 
 		if (p_isignal.method_doc && p_isignal.method_doc->description.size()) {
-			String xml_summary = bbcode_to_xml(fix_doc_description(p_isignal.method_doc->description), &p_itype);
+			String xml_summary = bbcode_to_xml(fix_doc_description(p_isignal.method_doc->description), &p_itype, true);
 			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 			if (summary_lines.size()) {
@@ -2335,15 +3045,11 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 				p_output.append(INDENT1 "/// </summary>");
 			}
-
-			if (p_isignal.method_doc->is_deprecated) {
-				p_output.append(MEMBER_BEGIN "[Obsolete(\"This signal is deprecated.\")]");
-			}
 		}
 
 		if (p_isignal.is_deprecated) {
 			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
-			p_output.append(p_isignal.deprecation_message);
+			p_output.append(bbcode_to_text(p_isignal.deprecation_message, &p_itype));
 			p_output.append("\")]");
 		}
 
@@ -2460,12 +3166,21 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 		i++;
 	}
 
+	// Collect caller name for MethodBind
+	if (p_icall.is_vararg) {
+		c_func_sig << ", godot_string_name caller";
+	}
+
 	String icall_method = p_icall.name;
 
 	// Generate icall function
 
 	r_output << MEMBER_BEGIN "internal static unsafe " << (ret_void ? "void" : return_type->c_type_out) << " "
-			 << icall_method << "(" << c_func_sig.as_string() << ") " OPEN_BLOCK;
+			 << icall_method << "(" << c_func_sig.as_string() << ")\n" OPEN_BLOCK_L1;
+
+	if (!p_icall.is_static) {
+		r_output << INDENT2 "ExceptionUtils.ThrowIfNullPtr(" CS_PARAM_INSTANCE ");\n";
+	}
 
 	if (!ret_void && (!p_icall.is_vararg || return_type->cname != name_cache.type_Variant)) {
 		String ptrcall_return_type;
@@ -2491,11 +3206,6 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 		}
 
 		r_output << ptrcall_return_type << " " C_LOCAL_RET << initialization << ";\n";
-	}
-
-	if (!p_icall.is_static) {
-		r_output << INDENT2 "if (" CS_PARAM_INSTANCE " == IntPtr.Zero)\n"
-				 << INDENT3 "throw new ArgumentNullException(nameof(" CS_PARAM_INSTANCE "));\n";
 	}
 
 	String argc_str = itos(p_icall.get_arguments_count());
@@ -2525,7 +3235,12 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 			r_output << C_CLASS_NATIVE_FUNCS ".godotsharp_method_bind_call("
 					 << CS_PARAM_METHODBIND ", " << (p_icall.is_static ? "IntPtr.Zero" : CS_PARAM_INSTANCE)
 					 << ", " << (p_icall.get_arguments_count() ? "(godot_variant**)" C_LOCAL_PTRCALL_ARGS : "null")
-					 << ", total_length, out _);\n";
+					 << ", total_length, out godot_variant_call_error vcall_error);\n";
+
+			r_output << base_indent << "ExceptionUtils.DebugCheckCallError(caller"
+					 << ", " << (p_icall.is_static ? "IntPtr.Zero" : CS_PARAM_INSTANCE)
+					 << ", " << (p_icall.get_arguments_count() ? "(godot_variant**)" C_LOCAL_PTRCALL_ARGS : "null")
+					 << ", total_length, vcall_error);\n";
 
 			if (!ret_void) {
 				if (return_type->cname != name_cache.type_Variant) {
@@ -2583,7 +3298,7 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 
 			r_output << c_in_statements.as_string();
 
-			r_output << INDENT3 "for (int i = 0; i < vararg_length; i++) " OPEN_BLOCK
+			r_output << INDENT3 "for (int i = 0; i < vararg_length; i++)\n" OPEN_BLOCK_L3
 					 << INDENT4 "varargs[i] = " << vararg_arg << "[i].NativeVar;\n"
 					 << INDENT4 C_LOCAL_PTRCALL_ARGS "[" << real_argc_str << " + i] = new IntPtr(&varargs[i]);\n"
 					 << CLOSE_BLOCK_L3;
@@ -2646,6 +3361,20 @@ const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_null(con
 	return nullptr;
 }
 
+const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_singleton_or_null(const TypeReference &p_typeref) {
+	const TypeInterface *itype = _get_type_or_null(p_typeref);
+	if (itype == nullptr) {
+		return nullptr;
+	}
+
+	if (itype->is_singleton) {
+		StringName instance_type_name = itype->name + CS_SINGLETON_INSTANCE_SUFFIX;
+		itype = &obj_types.find(instance_type_name)->value;
+	}
+
+	return itype;
+}
+
 const String BindingsGenerator::_get_generic_type_parameters(const TypeInterface &p_itype, const List<TypeReference> &p_generic_type_parameters) {
 	if (p_generic_type_parameters.is_empty()) {
 		return "";
@@ -2659,8 +3388,8 @@ const String BindingsGenerator::_get_generic_type_parameters(const TypeInterface
 	int i = 0;
 	String params = "<";
 	for (const TypeReference &param_type : p_generic_type_parameters) {
-		const TypeInterface *param_itype = _get_type_or_null(param_type);
-		ERR_FAIL_NULL_V(param_itype, "");
+		const TypeInterface *param_itype = _get_type_or_singleton_or_null(param_type);
+		ERR_FAIL_NULL_V(param_itype, ""); // Parameter type not found
 
 		ERR_FAIL_COND_V_MSG(param_itype->is_singleton, "",
 				"Generic type parameter is a singleton: '" + param_itype->name + "'.");
@@ -2792,6 +3521,7 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 		case Variant::PACKED_STRING_ARRAY:
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY:
 		case Variant::PACKED_COLOR_ARRAY:
 		case Variant::CALLABLE:
 		case Variant::SIGNAL:
@@ -2830,6 +3560,12 @@ bool method_has_ptr_parameter(MethodInfo p_method_info) {
 	}
 	return false;
 }
+
+struct SortMethodWithHashes {
+	_FORCE_INLINE_ bool operator()(const Pair<MethodInfo, uint32_t> &p_a, const Pair<MethodInfo, uint32_t> &p_b) const {
+		return p_a.first < p_b.first;
+	}
+};
 
 bool BindingsGenerator::_populate_object_type_interfaces() {
 	obj_types.clear();
@@ -2876,17 +3612,28 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		itype.is_ref_counted = ClassDB::is_parent_class(type_cname, name_cache.type_RefCounted);
 		itype.memory_own = itype.is_ref_counted;
 
+		if (itype.class_doc) {
+			itype.is_deprecated = itype.class_doc->is_deprecated;
+			itype.deprecation_message = itype.class_doc->deprecated_message;
+
+			if (itype.is_deprecated && itype.deprecation_message.is_empty()) {
+				WARN_PRINT("An empty deprecation message is discouraged. Type: '" + itype.proxy_name + "'.");
+				itype.deprecation_message = "This class is deprecated.";
+			}
+		}
+
+		if (itype.is_singleton && compat_singletons.has(itype.cname)) {
+			itype.is_singleton = false;
+			itype.is_compat_singleton = true;
+		}
+
 		itype.c_out = "%5return ";
 		itype.c_out += C_METHOD_UNMANAGED_GET_MANAGED;
 		itype.c_out += itype.is_ref_counted ? "(%1.Reference);\n" : "(%1);\n";
 
 		itype.cs_type = itype.proxy_name;
 
-		if (itype.is_singleton) {
-			itype.cs_in_expr = "GodotObject." CS_STATIC_METHOD_GETINSTANCE "(" CS_PROPERTY_SINGLETON ")";
-		} else {
-			itype.cs_in_expr = "GodotObject." CS_STATIC_METHOD_GETINSTANCE "(%0)";
-		}
+		itype.cs_in_expr = "GodotObject." CS_STATIC_METHOD_GETINSTANCE "(%0)";
 
 		itype.cs_out = "%5return (%2)%0(%1);";
 
@@ -2907,7 +3654,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				continue;
 			}
 
-			if (property.name.find("/") >= 0) {
+			if (property.name.contains("/")) {
 				// Ignore properties with '/' (slash) in the name. These are only meant for use in the inspector.
 				continue;
 			}
@@ -2917,11 +3664,16 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			iprop.setter = ClassDB::get_property_setter(type_cname, iprop.cname);
 			iprop.getter = ClassDB::get_property_getter(type_cname, iprop.cname);
 
-			if (iprop.setter != StringName()) {
-				accessor_methods[iprop.setter] = iprop.cname;
-			}
-			if (iprop.getter != StringName()) {
-				accessor_methods[iprop.getter] = iprop.cname;
+			// If the property is internal hide it; otherwise, hide the getter and setter.
+			if (property.usage & PROPERTY_USAGE_INTERNAL) {
+				iprop.is_hidden = true;
+			} else {
+				if (iprop.setter != StringName()) {
+					accessor_methods[iprop.setter] = iprop.cname;
+				}
+				if (iprop.getter != StringName()) {
+					accessor_methods[iprop.getter] = iprop.cname;
+				}
 			}
 
 			bool valid = false;
@@ -2949,6 +3701,16 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				}
 			}
 
+			if (iprop.prop_doc) {
+				iprop.is_deprecated = iprop.prop_doc->is_deprecated;
+				iprop.deprecation_message = iprop.prop_doc->deprecated_message;
+
+				if (iprop.is_deprecated && iprop.deprecation_message.is_empty()) {
+					WARN_PRINT("An empty deprecation message is discouraged. Property: '" + itype.proxy_name + "." + iprop.proxy_name + "'.");
+					iprop.deprecation_message = "This property is deprecated.";
+				}
+			}
+
 			itype.properties.push_back(iprop);
 		}
 
@@ -2957,12 +3719,14 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		List<MethodInfo> virtual_method_list;
 		ClassDB::get_virtual_methods(type_cname, &virtual_method_list, true);
 
-		List<MethodInfo> method_list;
-		ClassDB::get_method_list(type_cname, &method_list, true);
-		method_list.sort();
+		List<Pair<MethodInfo, uint32_t>> method_list_with_hashes;
+		ClassDB::get_method_list_with_compatibility(type_cname, &method_list_with_hashes, true);
+		method_list_with_hashes.sort_custom_inplace<SortMethodWithHashes>();
 
-		for (const MethodInfo &method_info : method_list) {
-			int argc = method_info.arguments.size();
+		List<MethodInterface> compat_methods;
+		for (const Pair<MethodInfo, uint32_t> &E : method_list_with_hashes) {
+			const MethodInfo &method_info = E.first;
+			const uint32_t hash = E.second;
 
 			if (method_info.name.is_empty()) {
 				continue;
@@ -2983,6 +3747,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			MethodInterface imethod;
 			imethod.name = method_info.name;
 			imethod.cname = cname;
+			imethod.hash = hash;
 
 			if (method_info.flags & METHOD_FLAG_STATIC) {
 				imethod.is_static = true;
@@ -2995,7 +3760,17 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			PropertyInfo return_info = method_info.return_val;
 
-			MethodBind *m = imethod.is_virtual ? nullptr : ClassDB::get_method(type_cname, method_info.name);
+			MethodBind *m = nullptr;
+
+			if (!imethod.is_virtual) {
+				bool method_exists = false;
+				m = ClassDB::get_method_with_compatibility(type_cname, method_info.name, hash, &method_exists, &imethod.is_compat);
+
+				if (unlikely(!method_exists)) {
+					ERR_FAIL_COND_V_MSG(!virtual_method_list.find(method_info), false,
+							"Missing MethodBind for non-virtual method: '" + itype.name + "." + imethod.name + "'.");
+				}
+			}
 
 			imethod.is_vararg = m && m->is_vararg();
 
@@ -3044,8 +3819,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.cname = _get_type_name_from_meta(return_info.type, m ? m->get_argument_meta(-1) : (GodotTypeInfo::Metadata)method_info.return_val_metadata);
 			}
 
-			for (int i = 0; i < argc; i++) {
-				PropertyInfo arginfo = method_info.arguments[i];
+			int idx = 0;
+			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++idx) {
+				const PropertyInfo &arginfo = *itr;
 
 				String orig_arg_name = arginfo.name;
 
@@ -3065,13 +3841,13 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				} else if (arginfo.type == Variant::NIL) {
 					iarg.type.cname = name_cache.type_Variant;
 				} else {
-					iarg.type.cname = _get_type_name_from_meta(arginfo.type, m ? m->get_argument_meta(i) : (GodotTypeInfo::Metadata)method_info.get_argument_meta(i));
+					iarg.type.cname = _get_type_name_from_meta(arginfo.type, m ? m->get_argument_meta(idx) : (GodotTypeInfo::Metadata)method_info.get_argument_meta(idx));
 				}
 
 				iarg.name = escape_csharp_keyword(snake_to_camel_case(iarg.name));
 
-				if (m && m->has_default_argument(i)) {
-					bool defval_ok = _arg_default_value_from_variant(m->get_default_argument(i), iarg);
+				if (m && m->has_default_argument(idx)) {
+					bool defval_ok = _arg_default_value_from_variant(m->get_default_argument(idx), iarg);
 					ERR_FAIL_COND_V_MSG(!defval_ok, false,
 							"Cannot determine default value for argument '" + orig_arg_name + "' of method '" + itype.name + "." + imethod.name + "'.");
 				}
@@ -3098,10 +3874,10 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			HashMap<StringName, StringName>::Iterator accessor = accessor_methods.find(imethod.cname);
 			if (accessor) {
-				// We only make internal an accessor method if it's in the same class as the property.
+				// We only hide an accessor method if it's in the same class as the property.
 				// It's easier this way, but also we don't know if an accessor method in a different class
 				// could have other purposes, so better leave those untouched.
-				imethod.is_internal = true;
+				imethod.is_hidden = true;
 			}
 
 			if (itype.class_doc) {
@@ -3113,8 +3889,27 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				}
 			}
 
+			if (imethod.method_doc) {
+				imethod.is_deprecated = imethod.method_doc->is_deprecated;
+				imethod.deprecation_message = imethod.method_doc->deprecated_message;
+
+				if (imethod.is_deprecated && imethod.deprecation_message.is_empty()) {
+					WARN_PRINT("An empty deprecation message is discouraged. Method: '" + itype.proxy_name + "." + imethod.proxy_name + "'.");
+					imethod.deprecation_message = "This method is deprecated.";
+				}
+			}
+
 			ERR_FAIL_COND_V_MSG(itype.find_property_by_name(imethod.cname), false,
 					"Method name conflicts with property: '" + itype.name + "." + imethod.name + "'.");
+
+			// Compat methods aren't added to the type yet, they need to be checked for conflicts
+			// after all the non-compat methods have been added. The compat methods are added in
+			// reverse so the most recently added ones take precedence over older compat methods.
+			if (imethod.is_compat) {
+				imethod.is_hidden = true;
+				compat_methods.push_front(imethod);
+				continue;
+			}
 
 			// Methods starting with an underscore are ignored unless they're used as a property setter or getter
 			if (!imethod.is_virtual && imethod.name[0] == '_') {
@@ -3130,6 +3925,15 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			}
 		}
 
+		// Add compat methods that don't conflict with other methods in the type.
+		for (const MethodInterface &imethod : compat_methods) {
+			if (_method_has_conflicting_signature(imethod, itype)) {
+				WARN_PRINT("Method '" + imethod.name + "' conflicts with an already existing method in type '" + itype.name + "' and has been ignored.");
+				continue;
+			}
+			itype.methods.push_back(imethod);
+		}
+
 		// Populate signals
 
 		const HashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
@@ -3142,10 +3946,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			isignal.name = method_info.name;
 			isignal.cname = method_info.name;
 
-			int argc = method_info.arguments.size();
-
-			for (int i = 0; i < argc; i++) {
-				PropertyInfo arginfo = method_info.arguments[i];
+			int idx = 0;
+			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++idx) {
+				const PropertyInfo &arginfo = *itr;
 
 				String orig_arg_name = arginfo.name;
 
@@ -3165,7 +3968,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				} else if (arginfo.type == Variant::NIL) {
 					iarg.type.cname = name_cache.type_Variant;
 				} else {
-					iarg.type.cname = _get_type_name_from_meta(arginfo.type, (GodotTypeInfo::Metadata)method_info.get_argument_meta(i));
+					iarg.type.cname = _get_type_name_from_meta(arginfo.type, (GodotTypeInfo::Metadata)method_info.get_argument_meta(idx));
 				}
 
 				iarg.name = escape_csharp_keyword(snake_to_camel_case(iarg.name));
@@ -3202,6 +4005,16 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				}
 			}
 
+			if (isignal.method_doc) {
+				isignal.is_deprecated = isignal.method_doc->is_deprecated;
+				isignal.deprecation_message = isignal.method_doc->deprecated_message;
+
+				if (isignal.is_deprecated && isignal.deprecation_message.is_empty()) {
+					WARN_PRINT("An empty deprecation message is discouraged. Signal: '" + itype.proxy_name + "." + isignal.proxy_name + "'.");
+					isignal.deprecation_message = "This signal is deprecated.";
+				}
+			}
+
 			itype.signals_.push_back(isignal);
 		}
 
@@ -3222,8 +4035,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				enum_proxy_name += "Enum";
 				enum_proxy_cname = StringName(enum_proxy_name);
 			}
-			EnumInterface ienum(enum_proxy_cname);
-			ienum.is_flags = E.value.is_bitfield;
+			EnumInterface ienum(enum_proxy_cname, enum_proxy_name, E.value.is_bitfield);
 			const List<StringName> &enum_constants = E.value.constants;
 			for (const StringName &constant_cname : enum_constants) {
 				String constant_name = constant_cname.operator String();
@@ -3240,6 +4052,16 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 					if (const_doc.name == iconstant.name) {
 						iconstant.const_doc = &const_doc;
 						break;
+					}
+				}
+
+				if (iconstant.const_doc) {
+					iconstant.is_deprecated = iconstant.const_doc->is_deprecated;
+					iconstant.deprecation_message = iconstant.const_doc->deprecated_message;
+
+					if (iconstant.is_deprecated && iconstant.deprecation_message.is_empty()) {
+						WARN_PRINT("An empty deprecation message is discouraged. Enum member: '" + itype.proxy_name + "." + ienum.proxy_name + "." + iconstant.proxy_name + "'.");
+						iconstant.deprecation_message = "This enum member is deprecated.";
 					}
 				}
 
@@ -3285,10 +4107,33 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				}
 			}
 
+			if (iconstant.const_doc) {
+				iconstant.is_deprecated = iconstant.const_doc->is_deprecated;
+				iconstant.deprecation_message = iconstant.const_doc->deprecated_message;
+
+				if (iconstant.is_deprecated && iconstant.deprecation_message.is_empty()) {
+					WARN_PRINT("An empty deprecation message is discouraged. Constant: '" + itype.proxy_name + "." + iconstant.proxy_name + "'.");
+					iconstant.deprecation_message = "This constant is deprecated.";
+				}
+			}
+
 			itype.constants.push_back(iconstant);
 		}
 
 		obj_types.insert(itype.cname, itype);
+
+		if (itype.is_singleton) {
+			// Add singleton instance type.
+			itype.proxy_name += CS_SINGLETON_INSTANCE_SUFFIX;
+			itype.is_singleton = false;
+			itype.is_singleton_instance = true;
+
+			// Remove constants and enums, those will remain in the static class.
+			itype.constants.clear();
+			itype.enums.clear();
+
+			obj_types.insert(itype.name + CS_SINGLETON_INSTANCE_SUFFIX, itype);
+		}
 
 		class_list.pop_front();
 	}
@@ -3405,6 +4250,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 		case Variant::PACKED_STRING_ARRAY:
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY:
 		case Variant::PACKED_COLOR_ARRAY:
 			r_iarg.default_argument = "Array.Empty<%s>()";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
@@ -3744,6 +4590,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	INSERT_ARRAY(PackedColorArray, godot_packed_color_array, Color);
 	INSERT_ARRAY(PackedVector2Array, godot_packed_vector2_array, Vector2);
 	INSERT_ARRAY(PackedVector3Array, godot_packed_vector3_array, Vector3);
+	INSERT_ARRAY(PackedVector4Array, godot_packed_vector4_array, Vector4);
 
 #undef INSERT_ARRAY
 
@@ -3765,7 +4612,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	builtin_types.insert(itype.cname, itype);
 
 	// Array_@generic
-	// Re-use Array's itype
+	// Reuse Array's itype
 	itype.name = "Array_@generic";
 	itype.cname = itype.name;
 	itype.cs_out = "%5return new %2(%0(%1));";
@@ -3792,7 +4639,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	builtin_types.insert(itype.cname, itype);
 
 	// Dictionary_@generic
-	// Re-use Dictionary's itype
+	// Reuse Dictionary's itype
 	itype.name = "Dictionary_@generic";
 	itype.cname = itype.name;
 	itype.cs_out = "%5return new %2(%0(%1));";
@@ -3843,8 +4690,7 @@ void BindingsGenerator::_populate_global_constants() {
 			iconstant.const_doc = const_doc;
 
 			if (enum_name != StringName()) {
-				EnumInterface ienum(enum_name);
-				ienum.is_flags = CoreConstants::is_global_constant_bitfield(i);
+				EnumInterface ienum(enum_name, pascal_to_pascal_case(enum_name.operator String()), CoreConstants::is_global_constant_bitfield(i));
 				List<EnumInterface>::Element *enum_match = global_enums.find(ienum);
 				if (enum_match) {
 					enum_match->get().constants.push_back(iconstant);
@@ -3862,7 +4708,7 @@ void BindingsGenerator::_populate_global_constants() {
 			enum_itype.is_enum = true;
 			enum_itype.name = ienum.cname.operator String();
 			enum_itype.cname = ienum.cname;
-			enum_itype.proxy_name = pascal_to_pascal_case(enum_itype.name);
+			enum_itype.proxy_name = ienum.proxy_name;
 			TypeInterface::postsetup_enum_type(enum_itype);
 			enum_types.insert(enum_itype.cname, enum_itype);
 
@@ -3900,10 +4746,60 @@ void BindingsGenerator::_populate_global_constants() {
 	}
 }
 
+bool BindingsGenerator::_method_has_conflicting_signature(const MethodInterface &p_imethod, const TypeInterface &p_itype) {
+	// Compare p_imethod with all the methods already registered in p_itype.
+	for (const MethodInterface &method : p_itype.methods) {
+		if (method.proxy_name == p_imethod.proxy_name) {
+			if (_method_has_conflicting_signature(p_imethod, method)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool BindingsGenerator::_method_has_conflicting_signature(const MethodInterface &p_imethod_left, const MethodInterface &p_imethod_right) {
+	// Check if a method already exists in p_itype with a method signature that would conflict with p_imethod.
+	// The return type is ignored because only changing the return type is not enough to avoid conflicts.
+	// The const keyword is also ignored since it doesn't generate different C# code.
+
+	if (p_imethod_left.arguments.size() != p_imethod_right.arguments.size()) {
+		// Different argument count, so no conflict.
+		return false;
+	}
+
+	List<BindingsGenerator::ArgumentInterface>::ConstIterator left_itr = p_imethod_left.arguments.begin();
+	List<BindingsGenerator::ArgumentInterface>::ConstIterator right_itr = p_imethod_right.arguments.begin();
+	for (; left_itr != p_imethod_left.arguments.end(); ++left_itr, ++right_itr) {
+		const ArgumentInterface &iarg_left = *left_itr;
+		const ArgumentInterface &iarg_right = *right_itr;
+
+		if (iarg_left.type.cname != iarg_right.type.cname) {
+			// Different types for arguments in the same position, so no conflict.
+			return false;
+		}
+
+		if (iarg_left.def_param_mode != iarg_right.def_param_mode) {
+			// If the argument is a value type and nullable, it will be 'Nullable<T>' instead of 'T'
+			// and will not create a conflict.
+			if (iarg_left.def_param_mode == ArgumentInterface::NULLABLE_VAL || iarg_right.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
 void BindingsGenerator::_initialize_blacklisted_methods() {
 	blacklisted_methods["Object"].push_back("to_string"); // there is already ToString
 	blacklisted_methods["Object"].push_back("_to_string"); // override ToString instead
 	blacklisted_methods["Object"].push_back("_init"); // never called in C# (TODO: implement it)
+}
+
+void BindingsGenerator::_initialize_compat_singletons() {
+	compat_singletons.insert("EditorInterface");
 }
 
 void BindingsGenerator::_log(const char *p_format, ...) {
@@ -3924,6 +4820,8 @@ void BindingsGenerator::_initialize() {
 	enum_types.clear();
 
 	_initialize_blacklisted_methods();
+
+	_initialize_compat_singletons();
 
 	bool obj_type_ok = _populate_object_type_interfaces();
 	ERR_FAIL_COND_MSG(!obj_type_ok, "Failed to generate object type interfaces");
@@ -3962,7 +4860,7 @@ static void handle_cmdline_options(String glue_dir_path) {
 }
 
 static void cleanup_and_exit_godot() {
-	// Exit once done
+	// Exit once done.
 	Main::cleanup(true);
 	::exit(0);
 }
@@ -3981,7 +4879,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				elem = elem->next();
 			} else {
 				ERR_PRINT(generate_all_glue_option + ": No output directory specified (expected path to '{GODOT_ROOT}/modules/mono/glue').");
-				// Exit once done with invalid command line arguments
+				// Exit once done with invalid command line arguments.
 				cleanup_and_exit_godot();
 			}
 
@@ -3992,8 +4890,14 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 	}
 
 	if (glue_dir_path.length()) {
-		handle_cmdline_options(glue_dir_path);
-		// Exit once done
+		if (Engine::get_singleton()->is_editor_hint() ||
+				Engine::get_singleton()->is_project_manager_hint()) {
+			handle_cmdline_options(glue_dir_path);
+		} else {
+			// Running from a project folder, which doesn't make sense and crashes.
+			ERR_PRINT(generate_all_glue_option + ": Cannot generate Mono glue while running a game project. Change current directory or enable --editor.");
+		}
+		// Exit once done.
 		cleanup_and_exit_godot();
 	}
 }

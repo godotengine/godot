@@ -31,8 +31,9 @@
 #include "audio_stream_editor_plugin.h"
 
 #include "editor/audio_stream_preview.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/resources/audio_stream_wav.h"
 
 // AudioStreamEditor
@@ -44,16 +45,16 @@ void AudioStreamEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
-			Ref<Font> font = get_theme_font(SNAME("status_source"), SNAME("EditorFonts"));
+			Ref<Font> font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
 
-			_current_label->add_theme_font_override(SNAME("font"), font);
-			_duration_label->add_theme_font_override(SNAME("font"), font);
+			_current_label->add_theme_font_override(SceneStringName(font), font);
+			_duration_label->add_theme_font_override(SceneStringName(font), font);
 
-			_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-			_stop_button->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
-			_preview->set_color(get_theme_color(SNAME("dark_color_2"), SNAME("Editor")));
+			_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+			_stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
+			_preview->set_color(get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor)));
 
-			set_color(get_theme_color(SNAME("dark_color_1"), SNAME("Editor")));
+			set_color(get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor)));
 
 			_indicator->queue_redraw();
 			_preview->queue_redraw();
@@ -98,7 +99,7 @@ void AudioStreamEditor::_draw_preview() {
 		points.write[idx * 2 + 1] = Vector2(i + 1, rect.position.y + max * rect.size.y);
 	}
 
-	Vector<Color> colors = { get_theme_color(SNAME("contrast_color_2"), SNAME("Editor")) };
+	Vector<Color> colors = { get_theme_color(SNAME("contrast_color_2"), EditorStringName(Editor)) };
 
 	RS::get_singleton()->canvas_item_add_multiline(_preview->get_canvas_item(), points, colors);
 }
@@ -120,26 +121,26 @@ void AudioStreamEditor::_play() {
 	if (_player->is_playing()) {
 		_pausing = true;
 		_player->stop();
-		_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+		_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 		set_process(false);
 	} else {
 		_pausing = false;
 		_player->play(_current);
-		_play_button->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
+		_play_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
 		set_process(true);
 	}
 }
 
 void AudioStreamEditor::_stop() {
 	_player->stop();
-	_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	_current = 0;
 	_indicator->queue_redraw();
 	set_process(false);
 }
 
 void AudioStreamEditor::_on_finished() {
-	_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	if (!_pausing) {
 		_current = 0;
 		_indicator->queue_redraw();
@@ -157,8 +158,8 @@ void AudioStreamEditor::_draw_indicator() {
 	Rect2 rect = _preview->get_rect();
 	float len = stream->get_length();
 	float ofs_x = _current / len * rect.size.width;
-	const Color col = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-	Ref<Texture2D> icon = get_theme_icon(SNAME("TimelineIndicator"), SNAME("EditorIcons"));
+	const Color col = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("TimelineIndicator"));
 	_indicator->draw_line(Point2(ofs_x, 0), Point2(ofs_x, rect.size.height), col, Math::round(2 * EDSCALE));
 	_indicator->draw_texture(
 			icon,
@@ -217,7 +218,7 @@ AudioStreamEditor::AudioStreamEditor() {
 	set_custom_minimum_size(Size2(1, 100) * EDSCALE);
 
 	_player = memnew(AudioStreamPlayer);
-	_player->connect(SNAME("finished"), callable_mp(this, &AudioStreamEditor::_on_finished));
+	_player->connect(SceneStringName(finished), callable_mp(this, &AudioStreamEditor::_on_finished));
 	add_child(_player);
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
@@ -226,13 +227,13 @@ AudioStreamEditor::AudioStreamEditor() {
 
 	_preview = memnew(ColorRect);
 	_preview->set_v_size_flags(SIZE_EXPAND_FILL);
-	_preview->connect(SNAME("draw"), callable_mp(this, &AudioStreamEditor::_draw_preview));
+	_preview->connect(SceneStringName(draw), callable_mp(this, &AudioStreamEditor::_draw_preview));
 	vbox->add_child(_preview);
 
 	_indicator = memnew(Control);
 	_indicator->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	_indicator->connect(SNAME("draw"), callable_mp(this, &AudioStreamEditor::_draw_indicator));
-	_indicator->connect(SNAME("gui_input"), callable_mp(this, &AudioStreamEditor::_on_input_indicator));
+	_indicator->connect(SceneStringName(draw), callable_mp(this, &AudioStreamEditor::_draw_indicator));
+	_indicator->connect(SceneStringName(gui_input), callable_mp(this, &AudioStreamEditor::_on_input_indicator));
 	_preview->add_child(_indicator);
 
 	HBoxContainer *hbox = memnew(HBoxContainer);
@@ -243,14 +244,14 @@ AudioStreamEditor::AudioStreamEditor() {
 	hbox->add_child(_play_button);
 	_play_button->set_flat(true);
 	_play_button->set_focus_mode(Control::FOCUS_NONE);
-	_play_button->connect(SNAME("pressed"), callable_mp(this, &AudioStreamEditor::_play));
+	_play_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamEditor::_play));
 	_play_button->set_shortcut(ED_SHORTCUT("audio_stream_editor/audio_preview_play_pause", TTR("Audio Preview Play/Pause"), Key::SPACE));
 
 	_stop_button = memnew(Button);
 	hbox->add_child(_stop_button);
 	_stop_button->set_flat(true);
 	_stop_button->set_focus_mode(Control::FOCUS_NONE);
-	_stop_button->connect(SNAME("pressed"), callable_mp(this, &AudioStreamEditor::_stop));
+	_stop_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamEditor::_stop));
 
 	_current_label = memnew(Label);
 	_current_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);

@@ -58,18 +58,21 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 			afs.push_back(RD::AttachmentFormat());
 			afs.write[0].usage_flags = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 			fb_format = RD::get_singleton()->framebuffer_format_create(afs);
+			blend_state = RD::PipelineColorBlendState::create_blend();
 			defines = "\n#define USE_ATTACHMENT\n";
 		}
 
+		RD::PipelineRasterizationState rasterization_state;
+		rasterization_state.enable_depth_clamp = true;
 		Vector<String> versions;
 		versions.push_back("");
 		cluster_render.cluster_render_shader.initialize(versions, defines);
 		cluster_render.shader_version = cluster_render.cluster_render_shader.version_create();
 		cluster_render.shader = cluster_render.cluster_render_shader.version_get_shader(cluster_render.shader_version, 0);
-		cluster_render.shader_pipelines[ClusterRender::PIPELINE_NORMAL] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
+		cluster_render.shader_pipelines[ClusterRender::PIPELINE_NORMAL] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
 		RD::PipelineMultisampleState ms;
 		ms.sample_count = RD::TEXTURE_SAMPLES_4;
-		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), ms, RD::PipelineDepthStencilState(), blend_state, 0);
+		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, ms, RD::PipelineDepthStencilState(), blend_state, 0);
 	}
 	{
 		Vector<String> versions;
@@ -94,7 +97,7 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 			0, 0, -1, 0.7236073, -0.5257253, -0.4472195, -0.276388, -0.8506492, -0.4472199, -0.8944262, 0, -0.4472156, -0.276388, 0.8506492, -0.4472199, 0.7236073, 0.5257253, -0.4472195, 0.276388, -0.8506492, 0.4472199, -0.7236073, -0.5257253, 0.4472195, -0.7236073, 0.5257253, 0.4472195, 0.276388, 0.8506492, 0.4472199, 0.8944262, 0, 0.4472156, 0, 0, 1, -0.1624555, -0.4999952, -0.8506544, 0.4253227, -0.3090114, -0.8506542, 0.2628688, -0.8090116, -0.5257377, 0.8506479, 0, -0.5257359, 0.4253227, 0.3090114, -0.8506542, -0.5257298, 0, -0.8506517, -0.6881894, -0.4999969, -0.5257362, -0.1624555, 0.4999952, -0.8506544, -0.6881894, 0.4999969, -0.5257362, 0.2628688, 0.8090116, -0.5257377, 0.9510579, -0.3090126, 0, 0.9510579, 0.3090126, 0, 0, -1, 0, 0.5877856, -0.8090167, 0, -0.9510579, -0.3090126, 0, -0.5877856, -0.8090167, 0, -0.5877856, 0.8090167, 0, -0.9510579, 0.3090126, 0, 0.5877856, 0.8090167, 0, 0, 1, 0, 0.6881894, -0.4999969, 0.5257362, -0.2628688, -0.8090116, 0.5257377, -0.8506479, 0, 0.5257359, -0.2628688, 0.8090116, 0.5257377, 0.6881894, 0.4999969, 0.5257362, 0.1624555, -0.4999952, 0.8506544, 0.5257298, 0, 0.8506517, -0.4253227, -0.3090114, 0.8506542, -0.4253227, 0.3090114, 0.8506542, 0.1624555, 0.4999952, 0.8506544
 		};
 		static const uint32_t icosphere_triangle_count = 80;
-		static const uint32_t icosphere_triangle_indices[icosphere_triangle_count * 3] = {
+		static const uint16_t icosphere_triangle_indices[icosphere_triangle_count * 3] = {
 			0, 13, 12, 1, 13, 15, 0, 12, 17, 0, 17, 19, 0, 19, 16, 1, 15, 22, 2, 14, 24, 3, 18, 26, 4, 20, 28, 5, 21, 30, 1, 22, 25, 2, 24, 27, 3, 26, 29, 4, 28, 31, 5, 30, 23, 6, 32, 37, 7, 33, 39, 8, 34, 40, 9, 35, 41, 10, 36, 38, 38, 41, 11, 38, 36, 41, 36, 9, 41, 41, 40, 11, 41, 35, 40, 35, 8, 40, 40, 39, 11, 40, 34, 39, 34, 7, 39, 39, 37, 11, 39, 33, 37, 33, 6, 37, 37, 38, 11, 37, 32, 38, 32, 10, 38, 23, 36, 10, 23, 30, 36, 30, 9, 36, 31, 35, 9, 31, 28, 35, 28, 8, 35, 29, 34, 8, 29, 26, 34, 26, 7, 34, 27, 33, 7, 27, 24, 33, 24, 6, 33, 25, 32, 6, 25, 22, 32, 22, 10, 32, 30, 31, 9, 30, 21, 31, 21, 4, 31, 28, 29, 8, 28, 20, 29, 20, 3, 29, 26, 27, 7, 26, 18, 27, 18, 2, 27, 24, 25, 6, 24, 14, 25, 14, 1, 25, 22, 23, 10, 22, 15, 23, 15, 5, 23, 16, 21, 5, 16, 19, 21, 19, 4, 21, 19, 20, 4, 19, 17, 20, 17, 3, 20, 17, 18, 3, 17, 12, 18, 12, 2, 18, 15, 16, 5, 15, 13, 16, 13, 0, 16, 12, 14, 2, 12, 13, 14, 13, 1, 14
 		};
 
@@ -105,10 +108,10 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 		sphere_vertex_buffer = RD::get_singleton()->vertex_buffer_create(vertex_data.size(), vertex_data);
 
 		Vector<uint8_t> index_data;
-		index_data.resize(sizeof(uint32_t) * icosphere_triangle_count * 3);
+		index_data.resize(sizeof(uint16_t) * icosphere_triangle_count * 3);
 		memcpy(index_data.ptrw(), icosphere_triangle_indices, index_data.size());
 
-		sphere_index_buffer = RD::get_singleton()->index_buffer_create(icosphere_triangle_count * 3, RD::INDEX_BUFFER_FORMAT_UINT32, index_data);
+		sphere_index_buffer = RD::get_singleton()->index_buffer_create(icosphere_triangle_count * 3, RD::INDEX_BUFFER_FORMAT_UINT16, index_data);
 
 		Vector<RID> buffers;
 		buffers.push_back(sphere_vertex_buffer);
@@ -138,7 +141,7 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 			0, 1, -1, 0.1950903, 0.9807853, -1, 0.3826835, 0.9238795, -1, 0.5555703, 0.8314696, -1, 0.7071068, 0.7071068, -1, 0.8314697, 0.5555702, -1, 0.9238795, 0.3826834, -1, 0.9807853, 0.1950903, -1, 1, 0, -1, 0.9807853, -0.1950902, -1, 0.9238796, -0.3826833, -1, 0.8314697, -0.5555702, -1, 0.7071068, -0.7071068, -1, 0.5555702, -0.8314697, -1, 0.3826833, -0.9238796, -1, 0.1950901, -0.9807853, -1, -3.25841e-7, -1, -1, -0.1950907, -0.9807852, -1, -0.3826839, -0.9238793, -1, -0.5555707, -0.8314693, -1, -0.7071073, -0.7071063, -1, -0.83147, -0.5555697, -1, -0.9238799, -0.3826827, -1, 0, 0, 0, -0.9807854, -0.1950894, -1, -1, 9.65599e-7, -1, -0.9807851, 0.1950913, -1, -0.9238791, 0.3826845, -1, -0.8314689, 0.5555713, -1, -0.7071059, 0.7071077, -1, -0.5555691, 0.8314704, -1, -0.3826821, 0.9238801, -1, -0.1950888, 0.9807856, -1
 		};
 		static const uint32_t cone_triangle_count = 62;
-		static const uint32_t cone_triangle_indices[cone_triangle_count * 3] = {
+		static const uint16_t cone_triangle_indices[cone_triangle_count * 3] = {
 			0, 23, 1, 1, 23, 2, 2, 23, 3, 3, 23, 4, 4, 23, 5, 5, 23, 6, 6, 23, 7, 7, 23, 8, 8, 23, 9, 9, 23, 10, 10, 23, 11, 11, 23, 12, 12, 23, 13, 13, 23, 14, 14, 23, 15, 15, 23, 16, 16, 23, 17, 17, 23, 18, 18, 23, 19, 19, 23, 20, 20, 23, 21, 21, 23, 22, 22, 23, 24, 24, 23, 25, 25, 23, 26, 26, 23, 27, 27, 23, 28, 28, 23, 29, 29, 23, 30, 30, 23, 31, 31, 23, 32, 32, 23, 0, 7, 15, 24, 32, 0, 1, 1, 2, 3, 3, 4, 5, 5, 6, 3, 6, 7, 3, 7, 8, 9, 9, 10, 7, 10, 11, 7, 11, 12, 15, 12, 13, 15, 13, 14, 15, 15, 16, 17, 17, 18, 19, 19, 20, 24, 20, 21, 24, 21, 22, 24, 24, 25, 26, 26, 27, 28, 28, 29, 30, 30, 31, 32, 32, 1, 3, 15, 17, 24, 17, 19, 24, 24, 26, 32, 26, 28, 32, 28, 30, 32, 32, 3, 7, 7, 11, 15, 32, 7, 24
 		};
 
@@ -149,10 +152,10 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 		cone_vertex_buffer = RD::get_singleton()->vertex_buffer_create(vertex_data.size(), vertex_data);
 
 		Vector<uint8_t> index_data;
-		index_data.resize(sizeof(uint32_t) * cone_triangle_count * 3);
+		index_data.resize(sizeof(uint16_t) * cone_triangle_count * 3);
 		memcpy(index_data.ptrw(), cone_triangle_indices, index_data.size());
 
-		cone_index_buffer = RD::get_singleton()->index_buffer_create(cone_triangle_count * 3, RD::INDEX_BUFFER_FORMAT_UINT32, index_data);
+		cone_index_buffer = RD::get_singleton()->index_buffer_create(cone_triangle_count * 3, RD::INDEX_BUFFER_FORMAT_UINT16, index_data);
 
 		Vector<RID> buffers;
 		buffers.push_back(cone_vertex_buffer);
@@ -192,7 +195,7 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 			-1, -1, -1, -1, -1, 1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1, 1, 1, 1, -1, 1, 1, 1
 		};
 		static const uint32_t box_triangle_count = 12;
-		static const uint32_t box_triangle_indices[box_triangle_count * 3] = {
+		static const uint16_t box_triangle_indices[box_triangle_count * 3] = {
 			1, 2, 0, 3, 6, 2, 7, 4, 6, 5, 0, 4, 6, 0, 2, 3, 5, 7, 1, 3, 2, 3, 7, 6, 7, 5, 4, 5, 1, 0, 6, 4, 0, 3, 1, 5
 		};
 
@@ -203,10 +206,10 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 		box_vertex_buffer = RD::get_singleton()->vertex_buffer_create(vertex_data.size(), vertex_data);
 
 		Vector<uint8_t> index_data;
-		index_data.resize(sizeof(uint32_t) * box_triangle_count * 3);
+		index_data.resize(sizeof(uint16_t) * box_triangle_count * 3);
 		memcpy(index_data.ptrw(), box_triangle_indices, index_data.size());
 
-		box_index_buffer = RD::get_singleton()->index_buffer_create(box_triangle_count * 3, RD::INDEX_BUFFER_FORMAT_UINT32, index_data);
+		box_index_buffer = RD::get_singleton()->index_buffer_create(box_triangle_count * 3, RD::INDEX_BUFFER_FORMAT_UINT16, index_data);
 
 		Vector<RID> buffers;
 		buffers.push_back(box_vertex_buffer);
@@ -265,8 +268,8 @@ void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID 
 
 	screen_size = p_screen_size;
 
-	cluster_screen_size.width = (p_screen_size.width - 1) / cluster_size + 1;
-	cluster_screen_size.height = (p_screen_size.height - 1) / cluster_size + 1;
+	cluster_screen_size.width = Math::division_round_up((uint32_t)p_screen_size.width, cluster_size);
+	cluster_screen_size.height = Math::division_round_up((uint32_t)p_screen_size.height, cluster_size);
 
 	max_elements_by_type = p_max_elements;
 	if (max_elements_by_type % 32) { // Needs to be aligned to 32.
@@ -285,7 +288,7 @@ void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID 
 	cluster_render_buffer = RD::get_singleton()->storage_buffer_create(cluster_render_buffer_size);
 	cluster_buffer = RD::get_singleton()->storage_buffer_create(cluster_buffer_size);
 
-	render_elements = static_cast<RenderElementData *>(memalloc(sizeof(RenderElementData *) * render_element_max));
+	render_elements = static_cast<RenderElementData *>(memalloc(sizeof(RenderElementData) * render_element_max));
 	render_element_count = 0;
 
 	element_buffer = RD::get_singleton()->storage_buffer_create(sizeof(RenderElementData) * render_element_max);
@@ -419,11 +422,11 @@ void ClusterBuilderRD::bake_cluster() {
 	RD::get_singleton()->draw_command_begin_label("Bake Light Cluster");
 
 	// Clear cluster buffer.
-	RD::get_singleton()->buffer_clear(cluster_buffer, 0, cluster_buffer_size, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
+	RD::get_singleton()->buffer_clear(cluster_buffer, 0, cluster_buffer_size);
 
 	if (render_element_count > 0) {
 		// Clear render buffer.
-		RD::get_singleton()->buffer_clear(cluster_render_buffer, 0, cluster_render_buffer_size, RD::BARRIER_MASK_RASTER);
+		RD::get_singleton()->buffer_clear(cluster_render_buffer, 0, cluster_render_buffer_size);
 
 		{ // Fill state uniform.
 
@@ -438,18 +441,18 @@ void ClusterBuilderRD::bake_cluster() {
 			state.cluster_depth_offset = (render_element_max / 32);
 			state.cluster_data_size = state.cluster_depth_offset + render_element_max;
 
-			RD::get_singleton()->buffer_update(state_uniform, 0, sizeof(StateUniform), &state, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
+			RD::get_singleton()->buffer_update(state_uniform, 0, sizeof(StateUniform), &state);
 		}
 
 		// Update instances.
 
-		RD::get_singleton()->buffer_update(element_buffer, 0, sizeof(RenderElementData) * render_element_count, render_elements, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
+		RD::get_singleton()->buffer_update(element_buffer, 0, sizeof(RenderElementData) * render_element_count, render_elements);
 
 		RENDER_TIMESTAMP("Render 3D Cluster Elements");
 
 		// Render elements.
 		{
-			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD);
+			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD);
 			ClusterBuilderSharedDataRD::ClusterRender::PushConstant push_constant = {};
 
 			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, shared->cluster_render.shader_pipelines[use_msaa ? ClusterBuilderSharedDataRD::ClusterRender::PIPELINE_MSAA : ClusterBuilderSharedDataRD::ClusterRender::PIPELINE_NORMAL]);
@@ -487,7 +490,7 @@ void ClusterBuilderRD::bake_cluster() {
 				RD::get_singleton()->draw_list_draw(draw_list, true, instances);
 				i += instances;
 			}
-			RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_COMPUTE);
+			RD::get_singleton()->draw_list_end();
 		}
 		// Store elements.
 		RENDER_TIMESTAMP("Pack 3D Cluster Elements");
@@ -502,7 +505,8 @@ void ClusterBuilderRD::bake_cluster() {
 			push_constant.max_render_element_count_div_32 = render_element_max / 32;
 			push_constant.cluster_screen_size[0] = cluster_screen_size.x;
 			push_constant.cluster_screen_size[1] = cluster_screen_size.y;
-			push_constant.render_element_count_div_32 = render_element_count > 0 ? (render_element_count - 1) / 32 + 1 : 0;
+
+			push_constant.render_element_count_div_32 = Math::division_round_up(render_element_count, 32U);
 			push_constant.max_cluster_element_count_div_32 = max_elements_by_type / 32;
 			push_constant.pad1 = 0;
 			push_constant.pad2 = 0;
@@ -511,10 +515,8 @@ void ClusterBuilderRD::bake_cluster() {
 
 			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cluster_screen_size.x, cluster_screen_size.y, 1);
 
-			RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
+			RD::get_singleton()->compute_list_end();
 		}
-	} else {
-		RD::get_singleton()->barrier(RD::BARRIER_MASK_TRANSFER, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 	}
 	RENDER_TIMESTAMP("< Bake 3D Cluster");
 	RD::get_singleton()->draw_command_end_label();

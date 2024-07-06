@@ -107,7 +107,7 @@ public:
 	virtual bool are_import_settings_valid(const String &p_path) const override;
 	virtual String get_import_settings_string() const override;
 
-	ResourceImporterTexture();
+	ResourceImporterTexture(bool p_singleton = false);
 	~ResourceImporterTexture();
 };
 

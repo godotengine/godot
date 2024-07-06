@@ -49,8 +49,6 @@ class NavigationRegion3D : public Node3D {
 
 	Transform3D current_global_transform;
 
-	Thread bake_thread;
-
 	void _navigation_mesh_changed();
 
 #ifdef DEBUG_ENABLED
@@ -63,6 +61,7 @@ private:
 	void _update_debug_mesh();
 	void _update_debug_edge_connections_mesh();
 	void _navigation_map_changed(RID p_map);
+	void _navigation_debug_changed();
 #endif // DEBUG_ENABLED
 
 protected:
@@ -75,6 +74,8 @@ protected:
 #endif // DISABLE_DEPRECATED
 
 public:
+	RID get_rid() const;
+
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
@@ -105,6 +106,7 @@ public:
 	/// sets the new navigation mesh and emits a signal
 	void bake_navigation_mesh(bool p_on_thread);
 	void _bake_finished(Ref<NavigationMesh> p_navigation_mesh);
+	bool is_baking() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 

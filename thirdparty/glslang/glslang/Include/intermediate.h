@@ -1,7 +1,7 @@
 //
 // Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 // Copyright (C) 2012-2016 LunarG, Inc.
-// Copyright (C) 2017 ARM Limited.
+// Copyright (C) 2017, 2022-2024 Arm Limited.
 // Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
 //
 // All rights reserved.
@@ -48,14 +48,9 @@
 #ifndef __INTERMEDIATE_H
 #define __INTERMEDIATE_H
 
-#if defined(_MSC_VER) && _MSC_VER >= 1900
-    #pragma warning(disable : 4464) // relative include path contains '..'
-    #pragma warning(disable : 5026) // 'glslang::TIntermUnary': move constructor was implicitly defined as deleted
-#endif
-
-#include "../Include/Common.h"
-#include "../Include/Types.h"
-#include "../Include/ConstantUnion.h"
+#include "Common.h"
+#include "Types.h"
+#include "ConstantUnion.h"
 
 namespace glslang {
 
@@ -72,9 +67,7 @@ enum TOperator {
     EOpFunctionCall,
     EOpFunction,        // For function definition
     EOpParameters,      // an aggregate listing the parameters to a function
-#ifndef GLSLANG_WEB
     EOpSpirvInst,
-#endif
 
     //
     // Unary operators
@@ -513,6 +506,8 @@ enum TOperator {
     EOpSubgroupShuffleXor,
     EOpSubgroupShuffleUp,
     EOpSubgroupShuffleDown,
+    EOpSubgroupRotate,
+    EOpSubgroupClusteredRotate,
     EOpSubgroupAdd,
     EOpSubgroupMul,
     EOpSubgroupMin,
@@ -545,6 +540,8 @@ enum TOperator {
     EOpSubgroupQuadSwapHorizontal,
     EOpSubgroupQuadSwapVertical,
     EOpSubgroupQuadSwapDiagonal,
+    EOpSubgroupQuadAll,
+    EOpSubgroupQuadAny,
 
     EOpSubgroupPartition,
     EOpSubgroupPartitionedAdd,
@@ -629,6 +626,9 @@ enum TOperator {
     EOpCooperativeMatrixLoad,
     EOpCooperativeMatrixStore,
     EOpCooperativeMatrixMulAdd,
+    EOpCooperativeMatrixLoadNV,
+    EOpCooperativeMatrixStoreNV,
+    EOpCooperativeMatrixMulAddNV,
 
     EOpBeginInvocationInterlock, // Fragment only
     EOpEndInvocationInterlock, // Fragment only
@@ -766,7 +766,8 @@ enum TOperator {
     EOpConstructTextureSampler,
     EOpConstructNonuniform,     // expected to be transformed away, not present in final AST
     EOpConstructReference,
-    EOpConstructCooperativeMatrix,
+    EOpConstructCooperativeMatrixNV,
+    EOpConstructCooperativeMatrixKHR,
     EOpConstructAccStruct,
     EOpConstructGuardEnd,
 
@@ -1004,6 +1005,8 @@ enum TOperator {
     EOpHitObjectGetAttributesNV,
     EOpHitObjectGetCurrentTimeNV,
     EOpReorderThreadNV,
+    EOpFetchMicroTriangleVertexPositionNV,
+    EOpFetchMicroTriangleVertexBarycentricNV,
 
     // HLSL operations
     //
@@ -1088,6 +1091,10 @@ enum TOperator {
     EOpWaveActiveCountBits,              // Will decompose to subgroupBallotBitCount(subgroupBallot()).
     EOpWavePrefixCountBits,              // Will decompose to subgroupBallotInclusiveBitCount(subgroupBallot()).
 
+    // GL_EXT_expect_assume
+    EOpAssumeEXT,
+    EOpExpectEXT,
+
     // Shader Clock Ops
     EOpReadClockSubgroupKHR,
     EOpReadClockDeviceKHR,
@@ -1098,6 +1105,23 @@ enum TOperator {
     // Shader tile image ops
     EOpStencilAttachmentReadEXT, // Fragment only
     EOpDepthAttachmentReadEXT, // Fragment only
+
+    // Image processing
+    EOpImageSampleWeightedQCOM,
+    EOpImageBoxFilterQCOM,
+    EOpImageBlockMatchSADQCOM,
+    EOpImageBlockMatchSSDQCOM,
+
+    // Image processing2
+    EOpImageBlockMatchWindowSSDQCOM,
+    EOpImageBlockMatchWindowSADQCOM,
+    EOpImageBlockMatchGatherSSDQCOM,
+    EOpImageBlockMatchGatherSADQCOM,
+};
+
+enum TLinkType {
+    ELinkNone,
+    ELinkExport,
 };
 
 class TIntermTraverser;
@@ -1317,9 +1341,11 @@ public:
     virtual const TString& getMethodName() const { return method; }
     virtual TIntermTyped* getObject() const { return object; }
     virtual void traverse(TIntermTraverser*);
+    void setExport() { linkType = ELinkExport; }
 protected:
     TIntermTyped* object;
     TString method;
+    TLinkType linkType;
 };
 
 //
@@ -1331,12 +1357,7 @@ public:
     // per process threadPoolAllocator, then it causes increased memory usage per compile
     // it is essential to use "symbol = sym" to assign to symbol
     TIntermSymbol(long long i, const TString& n, const TType& t)
-        : TIntermTyped(t), id(i),
-#ifndef GLSLANG_WEB
-        flattenSubset(-1),
-#endif
-        constSubtree(nullptr)
-          { name = n; }
+        : TIntermTyped(t), id(i), flattenSubset(-1), constSubtree(nullptr) { name = n; }
     virtual long long getId() const { return id; }
     virtual void changeId(long long i) { id = i; }
     virtual const TString& getName() const { return name; }
@@ -1347,12 +1368,10 @@ public:
     const TConstUnionArray& getConstArray() const { return constArray; }
     void setConstSubtree(TIntermTyped* subtree) { constSubtree = subtree; }
     TIntermTyped* getConstSubtree() const { return constSubtree; }
-#ifndef GLSLANG_WEB
     void setFlattenSubset(int subset) { flattenSubset = subset; }
     virtual const TString& getAccessName() const;
 
     int getFlattenSubset() const { return flattenSubset; } // -1 means full object
-#endif
 
     // This is meant for cases where a node has already been constructed, and
     // later on, it becomes necessary to switch to a different symbol.
@@ -1360,9 +1379,7 @@ public:
 
 protected:
     long long id;                // the unique id of the symbol this node represents
-#ifndef GLSLANG_WEB
     int flattenSubset;           // how deeply the flattened object rooted at id has been dereferenced
-#endif
     TString name;                // the name of the symbol this node represents
     TConstUnionArray constArray; // if the symbol is a front-end compile-time constant, this is its value
     TIntermTyped* constSubtree;
@@ -1417,19 +1434,11 @@ public:
     bool isConstructor() const;
     bool isTexture()  const { return op > EOpTextureGuardBegin  && op < EOpTextureGuardEnd; }
     bool isSampling() const { return op > EOpSamplingGuardBegin && op < EOpSamplingGuardEnd; }
-#ifdef GLSLANG_WEB
-    bool isImage()          const { return false; }
-    bool isSparseTexture()  const { return false; }
-    bool isImageFootprint() const { return false; }
-    bool isSparseImage()    const { return false; }
-    bool isSubgroup()       const { return false; }
-#else
     bool isImage()    const { return op > EOpImageGuardBegin    && op < EOpImageGuardEnd; }
     bool isSparseTexture() const { return op > EOpSparseTextureGuardBegin && op < EOpSparseTextureGuardEnd; }
     bool isImageFootprint() const { return op > EOpImageFootprintGuardBegin && op < EOpImageFootprintGuardEnd; }
     bool isSparseImage()   const { return op == EOpSparseImageLoad; }
     bool isSubgroup() const { return op > EOpSubgroupGuardStart && op < EOpSubgroupGuardStop; }
-#endif
 
     void setOperationPrecision(TPrecisionQualifier p) { operationPrecision = p; }
     TPrecisionQualifier getOperationPrecision() const { return operationPrecision != EpqNone ?
@@ -1535,7 +1544,6 @@ public:
             cracked.offset = true;
             cracked.proj = true;
             break;
-#ifndef GLSLANG_WEB
         case EOpTextureClamp:
         case EOpSparseTextureClamp:
             cracked.lodClamp = true;
@@ -1622,7 +1630,6 @@ public:
         case EOpColorAttachmentReadEXT:
             cracked.attachmentEXT = true;
             break;
-#endif
         default:
             break;
         }
@@ -1673,15 +1680,11 @@ public:
     virtual       TIntermUnary* getAsUnaryNode()       { return this; }
     virtual const TIntermUnary* getAsUnaryNode() const { return this; }
     virtual void updatePrecision();
-#ifndef GLSLANG_WEB
     void setSpirvInstruction(const TSpirvInstruction& inst) { spirvInst = inst; }
     const TSpirvInstruction& getSpirvInstruction() const { return spirvInst; }
-#endif
 protected:
     TIntermTyped* operand;
-#ifndef GLSLANG_WEB
     TSpirvInstruction spirvInst;
-#endif
 };
 
 typedef TVector<TIntermNode*> TIntermSequence;
@@ -1713,10 +1716,11 @@ public:
     bool getDebug() const { return debug; }
     void setPragmaTable(const TPragmaTable& pTable);
     const TPragmaTable& getPragmaTable() const { return *pragmaTable; }
-#ifndef GLSLANG_WEB
     void setSpirvInstruction(const TSpirvInstruction& inst) { spirvInst = inst; }
     const TSpirvInstruction& getSpirvInstruction() const { return spirvInst; }
-#endif
+
+    void setLinkType(TLinkType l) { linkType = l; }
+    TLinkType getLinkType() const { return linkType; }
 protected:
     TIntermAggregate(const TIntermAggregate&); // disallow copy constructor
     TIntermAggregate& operator=(const TIntermAggregate&); // disallow assignment operator
@@ -1727,9 +1731,8 @@ protected:
     bool optimize;
     bool debug;
     TPragmaTable* pragmaTable;
-#ifndef GLSLANG_WEB
     TSpirvInstruction spirvInst;
-#endif
+    TLinkType linkType = ELinkNone;
 };
 
 //

@@ -113,7 +113,7 @@ struct ContainerTypeValidate {
 			return true; // This is fine, it's null.
 		}
 		Object *object = ObjectDB::get_instance(object_id);
-		ERR_FAIL_COND_V_MSG(object == nullptr, false, "Attempted to " + String(p_operation) + " an invalid (previously freed?) object instance into a '" + String(where) + ".");
+		ERR_FAIL_NULL_V_MSG(object, false, "Attempted to " + String(p_operation) + " an invalid (previously freed?) object instance into a '" + String(where) + ".");
 #else
 		Object *object = p_variant;
 		if (object == nullptr) {

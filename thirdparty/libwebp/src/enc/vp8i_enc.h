@@ -31,7 +31,7 @@ extern "C" {
 
 // version numbers
 #define ENC_MAJ_VERSION 1
-#define ENC_MIN_VERSION 3
+#define ENC_MIN_VERSION 4
 #define ENC_REV_VERSION 0
 
 enum { MAX_LF_LEVELS = 64,       // Maximum loop filter level

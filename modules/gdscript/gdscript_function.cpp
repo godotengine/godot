@@ -32,14 +32,6 @@
 
 #include "gdscript.h"
 
-const int *GDScriptFunction::get_code() const {
-	return _code_ptr;
-}
-
-int GDScriptFunction::get_code_size() const {
-	return _code_size;
-}
-
 Variant GDScriptFunction::get_constant(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, constants.size(), "<errconst>");
 	return constants[p_idx];
@@ -48,32 +40,6 @@ Variant GDScriptFunction::get_constant(int p_idx) const {
 StringName GDScriptFunction::get_global_name(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, global_names.size(), "<errgname>");
 	return global_names[p_idx];
-}
-
-int GDScriptFunction::get_default_argument_count() const {
-	return _default_arg_count;
-}
-
-int GDScriptFunction::get_default_argument_addr(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, default_arguments.size(), -1);
-	return default_arguments[p_idx];
-}
-
-GDScriptDataType GDScriptFunction::get_return_type() const {
-	return return_type;
-}
-
-GDScriptDataType GDScriptFunction::get_argument_type(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, argument_types.size(), GDScriptDataType());
-	return argument_types[p_idx];
-}
-
-StringName GDScriptFunction::get_name() const {
-	return name;
-}
-
-int GDScriptFunction::get_max_stack_size() const {
-	return _stack_size;
 }
 
 struct _GDFKC {
@@ -161,9 +127,7 @@ GDScriptFunction::~GDScriptFunction() {
 	return_type.script_type_ref = Ref<Script>();
 
 #ifdef DEBUG_ENABLED
-
 	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
-
 	GDScriptLanguage::get_singleton()->function_list.remove(&function_list);
 #endif
 }
@@ -176,7 +140,7 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 
 	if (p_argcount == 0) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 1;
+		r_error.expected = 1;
 		return Variant();
 	} else if (p_argcount == 1) {
 		//noooneee
@@ -224,7 +188,7 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 }
 
 Variant GDScriptFunctionState::resume(const Variant &p_arg) {
-	ERR_FAIL_COND_V(!function, Variant());
+	ERR_FAIL_NULL_V(function, Variant());
 	{
 		MutexLock lock(GDScriptLanguage::singleton->mutex);
 

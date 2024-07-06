@@ -36,6 +36,8 @@
 #include "servers/navigation_server_3d.h"
 
 void NavigationLink2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationLink2D::get_rid);
+
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationLink2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationLink2D::is_enabled);
 
@@ -175,6 +177,10 @@ bool NavigationLink2D::_edit_is_selected_on_click(const Point2 &p_point, double 
 }
 #endif // TOOLS_ENABLED
 
+RID NavigationLink2D::get_rid() const {
+	return link;
+}
+
 void NavigationLink2D::set_enabled(bool p_enabled) {
 	if (enabled == p_enabled) {
 		return;
@@ -182,15 +188,7 @@ void NavigationLink2D::set_enabled(bool p_enabled) {
 
 	enabled = p_enabled;
 
-	if (!is_inside_tree()) {
-		return;
-	}
-
-	if (!enabled) {
-		NavigationServer2D::get_singleton()->link_set_map(link, RID());
-	} else {
-		NavigationServer2D::get_singleton()->link_set_map(link, get_world_2d()->get_navigation_map());
-	}
+	NavigationServer3D::get_singleton()->link_set_enabled(link, enabled);
 
 #ifdef DEBUG_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_enabled()) {
@@ -351,7 +349,13 @@ PackedStringArray NavigationLink2D::get_configuration_warnings() const {
 
 NavigationLink2D::NavigationLink2D() {
 	link = NavigationServer2D::get_singleton()->link_create();
+
 	NavigationServer2D::get_singleton()->link_set_owner_id(link, get_instance_id());
+	NavigationServer2D::get_singleton()->link_set_enter_cost(link, enter_cost);
+	NavigationServer2D::get_singleton()->link_set_travel_cost(link, travel_cost);
+	NavigationServer2D::get_singleton()->link_set_navigation_layers(link, navigation_layers);
+	NavigationServer2D::get_singleton()->link_set_bidirectional(link, bidirectional);
+	NavigationServer2D::get_singleton()->link_set_enabled(link, enabled);
 
 	set_notify_transform(true);
 	set_hide_clip_children(true);

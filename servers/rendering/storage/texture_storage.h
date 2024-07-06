@@ -90,6 +90,8 @@ public:
 	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
 	virtual String texture_get_path(RID p_texture) const = 0;
 
+	virtual Image::Format texture_get_format(RID p_texture) const = 0;
+
 	virtual void texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) = 0;
 	virtual void texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) = 0;
 	virtual void texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) = 0;
@@ -100,6 +102,7 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) = 0;
 
+	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RS::TextureLayeredType p_layer_type = RS::TEXTURE_LAYERED_2D_ARRAY) = 0;
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const = 0;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const = 0;
 
@@ -148,6 +151,11 @@ public:
 	virtual void render_target_set_as_unused(RID p_render_target) = 0;
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) = 0;
 	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const = 0;
+	virtual void render_target_set_msaa_needs_resolve(RID p_render_target, bool p_needs_resolve) = 0;
+	virtual bool render_target_get_msaa_needs_resolve(RID p_render_target) const = 0;
+	virtual void render_target_do_msaa_resolve(RID p_render_target) = 0;
+	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr) = 0;
+	virtual bool render_target_is_using_hdr(RID p_render_target) const = 0;
 
 	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color) = 0;
 	virtual bool render_target_is_clear_requested(RID p_render_target) = 0;
@@ -161,6 +169,8 @@ public:
 
 	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) = 0;
 	virtual RS::ViewportVRSMode render_target_get_vrs_mode(RID p_render_target) const = 0;
+	virtual void render_target_set_vrs_update_mode(RID p_render_target, RS::ViewportVRSUpdateMode p_mode) = 0;
+	virtual RS::ViewportVRSUpdateMode render_target_get_vrs_update_mode(RID p_render_target) const = 0;
 	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) = 0;
 	virtual RID render_target_get_vrs_texture(RID p_render_target) const = 0;
 

@@ -111,7 +111,7 @@ static const int16_t kCoeffs1[4] = { 19077, 26149, 6419, 13320 };
   vst4_u8(out, v255_r_g_b);                                             \
 } while (0)
 
-#if !defined(WEBP_SWAP_16BIT_CSP)
+#if (WEBP_SWAP_16BIT_CSP == 0)
 #define ZIP_U8(lo, hi) vzip_u8((lo), (hi))
 #else
 #define ZIP_U8(lo, hi) vzip_u8((hi), (lo))

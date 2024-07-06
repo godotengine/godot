@@ -31,10 +31,11 @@
 #ifndef EDITOR_NODE_H
 #define EDITOR_NODE_H
 
+#include "core/object/script_language.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
 #include "editor/editor_folding.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
@@ -68,16 +69,20 @@ class VBoxContainer;
 class VSplitContainer;
 class Window;
 
-class AudioStreamImportSettings;
+class AudioStreamImportSettingsDialog;
 class AudioStreamPreviewGenerator;
 class BackgroundProgress;
 class DependencyEditor;
 class DependencyErrorDialog;
-class DynamicFontImportSettings;
+class DockSplitContainer;
+class DynamicFontImportSettingsDialog;
 class EditorAbout;
 class EditorBuildProfileManager;
+class EditorBottomPanel;
 class EditorCommandPalette;
+class EditorDockManager;
 class EditorExport;
+class EditorExportPreset;
 class EditorExtensionManager;
 class EditorFeatureProfileManager;
 class EditorFileDialog;
@@ -93,6 +98,7 @@ class EditorResourcePreview;
 class EditorResourceConversionPlugin;
 class EditorRunBar;
 class EditorRunNative;
+class EditorSceneTabs;
 class EditorSelectionHistory;
 class EditorSettingsDialog;
 class EditorTitleBar;
@@ -110,26 +116,16 @@ class ProgressDialog;
 class ProjectExportDialog;
 class ProjectSettingsEditor;
 class RunSettingsDialog;
-class SceneImportSettings;
+class SceneImportSettingsDialog;
 class ScriptCreateDialog;
+class SurfaceUpgradeTool;
+class SurfaceUpgradeDialog;
 class WindowWrapper;
 
 class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
 
 public:
-	enum DockSlot {
-		DOCK_SLOT_LEFT_UL,
-		DOCK_SLOT_LEFT_BL,
-		DOCK_SLOT_LEFT_UR,
-		DOCK_SLOT_LEFT_BR,
-		DOCK_SLOT_RIGHT_UL,
-		DOCK_SLOT_RIGHT_BL,
-		DOCK_SLOT_RIGHT_UR,
-		DOCK_SLOT_RIGHT_BR,
-		DOCK_SLOT_MAX
-	};
-
 	enum EditorTable {
 		EDITOR_2D = 0,
 		EDITOR_3D,
@@ -140,7 +136,19 @@ public:
 	enum SceneNameCasing {
 		SCENE_NAME_CASING_AUTO,
 		SCENE_NAME_CASING_PASCAL_CASE,
-		SCENE_NAME_CASING_SNAKE_CASE
+		SCENE_NAME_CASING_SNAKE_CASE,
+		SCENE_NAME_CASING_KEBAB_CASE,
+	};
+
+	enum ActionOnPlay {
+		ACTION_ON_PLAY_DO_NOTHING,
+		ACTION_ON_PLAY_OPEN_OUTPUT,
+		ACTION_ON_PLAY_OPEN_DEBUGGER,
+	};
+
+	enum ActionOnStop {
+		ACTION_ON_STOP_DO_NOTHING,
+		ACTION_ON_STOP_CLOSE_BUTTOM_PANEL,
 	};
 
 	struct ExecuteThreadArgs {
@@ -154,11 +162,15 @@ public:
 	};
 
 private:
+	friend class EditorSceneTabs;
+	friend class SurfaceUpgradeTool;
+
 	enum MenuOptions {
 		FILE_NEW_SCENE,
 		FILE_NEW_INHERITED_SCENE,
 		FILE_OPEN_SCENE,
 		FILE_SAVE_SCENE,
+		FILE_SAVE_SCENE_SILENTLY,
 		FILE_SAVE_AS_SCENE,
 		FILE_SAVE_ALL_SCENES,
 		FILE_SAVE_AND_RUN,
@@ -187,6 +199,7 @@ private:
 		EDIT_RELOAD_SAVED_SCENE,
 		TOOLS_ORPHAN_RESOURCES,
 		TOOLS_BUILD_PROFILE_MANAGER,
+		TOOLS_SURFACE_UPGRADE,
 		TOOLS_CUSTOM,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
@@ -216,6 +229,7 @@ private:
 		SETTINGS_PICK_MAIN_SCENE,
 		SETTINGS_TOGGLE_FULLSCREEN,
 		SETTINGS_HELP,
+
 		SCENE_TAB_CLOSE,
 
 		EDITOR_SCREENSHOT,
@@ -224,7 +238,7 @@ private:
 		HELP_SEARCH,
 		HELP_COMMAND_PALETTE,
 		HELP_DOCS,
-		HELP_QA,
+		HELP_FORUM,
 		HELP_REPORT_A_BUG,
 		HELP_COPY_SYSTEM_INFO,
 		HELP_SUGGEST_A_FEATURE,
@@ -234,9 +248,6 @@ private:
 		HELP_SUPPORT_GODOT_DEVELOPMENT,
 
 		SET_RENDERER_NAME_SAVE_AND_RESTART,
-
-		GLOBAL_NEW_WINDOW,
-		GLOBAL_SCENE,
 
 		IMPORT_PLUGIN_BASE = 100,
 
@@ -248,17 +259,12 @@ private:
 		MAX_BUILD_CALLBACKS = 128
 	};
 
-	struct BottomPanelItem {
-		String name;
-		Control *control = nullptr;
-		Button *button = nullptr;
-	};
-
 	struct ExportDefer {
 		String preset;
 		String path;
 		bool debug = false;
 		bool pack_only = false;
+		bool android_build_template = false;
 	} export_defer;
 
 	static EditorNode *singleton;
@@ -294,7 +300,6 @@ private:
 	bool is_main_screen_editing = false;
 
 	PanelContainer *scene_root_parent = nullptr;
-	Control *theme_base = nullptr;
 	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;
 	OptionButton *renderer = nullptr;
@@ -305,24 +310,18 @@ private:
 	String renderer_request;
 
 	// Split containers.
-	HSplitContainer *left_l_hsplit = nullptr;
-	VSplitContainer *left_l_vsplit = nullptr;
-	HSplitContainer *left_r_hsplit = nullptr;
-	VSplitContainer *left_r_vsplit = nullptr;
-	HSplitContainer *main_hsplit = nullptr;
-	HSplitContainer *right_hsplit = nullptr;
-	VSplitContainer *right_l_vsplit = nullptr;
-	VSplitContainer *right_r_vsplit = nullptr;
-	VSplitContainer *center_split = nullptr;
-	// To access those easily by index.
-	Vector<VSplitContainer *> vsplits;
-	Vector<HSplitContainer *> hsplits;
+	DockSplitContainer *left_l_hsplit = nullptr;
+	DockSplitContainer *left_l_vsplit = nullptr;
+	DockSplitContainer *left_r_hsplit = nullptr;
+	DockSplitContainer *left_r_vsplit = nullptr;
+	DockSplitContainer *main_hsplit = nullptr;
+	DockSplitContainer *right_hsplit = nullptr;
+	DockSplitContainer *right_l_vsplit = nullptr;
+	DockSplitContainer *right_r_vsplit = nullptr;
+	DockSplitContainer *center_split = nullptr;
 
 	// Main tabs.
-	TabBar *scene_tabs = nullptr;
-	PopupMenu *scene_tabs_context_menu = nullptr;
-	Panel *tab_preview_panel = nullptr;
-	TextureRect *tab_preview = nullptr;
+	EditorSceneTabs *scene_tabs = nullptr;
 
 	int tab_closing_idx = 0;
 	List<String> tabs_to_close;
@@ -331,9 +330,9 @@ private:
 	bool exiting = false;
 	bool dimmed = false;
 
+	DisplayServer::WindowMode prev_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
 	int old_split_ofs = 0;
 	VSplitContainer *top_split = nullptr;
-	HBoxContainer *bottom_hb = nullptr;
 	Control *vp_base = nullptr;
 
 	Label *project_title = nullptr;
@@ -343,6 +342,7 @@ private:
 	EditorRunBar *project_run_bar = nullptr;
 	VBoxContainer *main_screen_vbox = nullptr;
 	MenuBar *main_menu = nullptr;
+	PopupMenu *apple_menu = nullptr;
 	PopupMenu *file_menu = nullptr;
 	PopupMenu *project_menu = nullptr;
 	PopupMenu *debug_menu = nullptr;
@@ -351,13 +351,12 @@ private:
 	PopupMenu *tool_menu = nullptr;
 	PopupMenu *export_as_menu = nullptr;
 	Button *export_button = nullptr;
-	Button *prev_scene = nullptr;
 	Button *search_button = nullptr;
 	TextureProgressBar *audio_vu = nullptr;
 
 	Timer *screenshot_timer = nullptr;
 
-	PluginConfigDialog *plugin_config_dialog = nullptr;
+	uint64_t started_timestamp = 0;
 
 	RichTextLabel *load_errors = nullptr;
 	AcceptDialog *load_error_dialog = nullptr;
@@ -366,6 +365,13 @@ private:
 	AcceptDialog *execute_output_dialog = nullptr;
 
 	Ref<Theme> theme;
+
+	Timer *system_theme_timer = nullptr;
+	bool follow_system_theme = false;
+	bool use_system_accent_color = false;
+	bool last_dark_mode_state = false;
+	Color last_system_base_color = Color(0, 0, 0, 0);
+	Color last_system_accent_color = Color(0, 0, 0, 0);
 
 	PopupMenu *recent_scenes = nullptr;
 	String _recent_scene;
@@ -382,6 +388,7 @@ private:
 	AcceptDialog *save_accept = nullptr;
 	EditorAbout *about = nullptr;
 	AcceptDialog *warning = nullptr;
+	EditorPlugin *plugin_to_save = nullptr;
 
 	int overridden_default_layout = -1;
 	Ref<ConfigFile> default_layout;
@@ -391,6 +398,9 @@ private:
 	ConfirmationDialog *gradle_build_manage_templates = nullptr;
 	ConfirmationDialog *install_android_build_template = nullptr;
 	ConfirmationDialog *remove_android_build_template = nullptr;
+	Label *install_android_build_template_message = nullptr;
+	OptionButton *choose_android_export_profile = nullptr;
+	Ref<EditorExportPreset> android_export_preset;
 
 	PopupMenu *vcs_actions_menu = nullptr;
 	EditorFileDialog *file = nullptr;
@@ -401,8 +411,6 @@ private:
 	EditorFileDialog *file_export_lib = nullptr;
 	EditorFileDialog *file_script = nullptr;
 	EditorFileDialog *file_android_build_source = nullptr;
-	CheckBox *file_export_lib_merge = nullptr;
-	CheckBox *file_export_lib_apply_xforms = nullptr;
 	String current_path;
 	MenuButton *update_spinner = nullptr;
 
@@ -422,35 +430,12 @@ private:
 	Button *new_inherited_button = nullptr;
 	String open_import_request;
 
-	Vector<WindowWrapper *> floating_docks;
-
-	Button *dock_float = nullptr;
-	Button *dock_tab_move_left = nullptr;
-	Button *dock_tab_move_right = nullptr;
-	Control *dock_select = nullptr;
-	PopupPanel *dock_select_popup = nullptr;
-	Rect2 dock_select_rect[DOCK_SLOT_MAX];
-	TabContainer *dock_slot[DOCK_SLOT_MAX];
+	EditorDockManager *editor_dock_manager = nullptr;
 	Timer *editor_layout_save_delay_timer = nullptr;
-	bool docks_visible = true;
-	int dock_popup_selected_idx = -1;
-	int dock_select_rect_over_idx = -1;
-
-	PanelContainer *tabbar_panel = nullptr;
-	HBoxContainer *tabbar_container = nullptr;
+	Timer *scan_changes_timer = nullptr;
 	Button *distraction_free = nullptr;
-	Button *scene_tab_add = nullptr;
-	Control *scene_tab_add_ph = nullptr;
 
-	Vector<BottomPanelItem> bottom_panel_items;
-	PanelContainer *bottom_panel = nullptr;
-	HBoxContainer *bottom_panel_hb = nullptr;
-	HBoxContainer *bottom_panel_hb_editors = nullptr;
-	VBoxContainer *bottom_panel_vb = nullptr;
-	EditorToaster *editor_toaster = nullptr;
-	LinkButton *version_btn = nullptr;
-	Button *bottom_panel_raise = nullptr;
-	bool bottom_panel_updating = false;
+	EditorBottomPanel *bottom_panel = nullptr;
 
 	Tree *disk_changed_list = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;
@@ -464,8 +449,9 @@ private:
 	bool immediate_dialog_confirmed = false;
 	bool opening_prev = false;
 	bool restoring_scenes = false;
-	bool settings_changed = true; // Make it update settings on first frame.
 	bool unsaved_cache = true;
+
+	bool requested_first_scan = false;
 	bool waiting_for_first_scan = true;
 
 	int current_menu_option = 0;
@@ -483,10 +469,11 @@ private:
 	String _tmp_import_path;
 	String external_file;
 	String open_navigate;
+	String saving_scene;
 
-	DynamicFontImportSettings *fontdata_import_settings = nullptr;
-	SceneImportSettings *scene_import_settings = nullptr;
-	AudioStreamImportSettings *audio_stream_import_settings = nullptr;
+	DynamicFontImportSettingsDialog *fontdata_import_settings = nullptr;
+	SceneImportSettingsDialog *scene_import_settings = nullptr;
+	AudioStreamImportSettingsDialog *audio_stream_import_settings = nullptr;
 
 	String import_reload_fn;
 
@@ -499,6 +486,10 @@ private:
 
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
 
+	SurfaceUpgradeTool *surface_upgrade_tool = nullptr;
+	SurfaceUpgradeDialog *surface_upgrade_dialog = nullptr;
+	bool run_surface_upgrade_tool = false;
+
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
 	static int build_callback_count;
@@ -506,6 +497,8 @@ private:
 	static Vector<EditorNodeInitCallback> _init_callbacks;
 
 	String _get_system_info() const;
+
+	bool _should_display_update_spinner() const;
 
 	static void _dependency_error_report(const String &p_path, const String &p_dep, const String &p_type) {
 		DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
@@ -529,12 +522,14 @@ private:
 	static void _resource_saved(Ref<Resource> p_resource, const String &p_path);
 	static void _resource_loaded(Ref<Resource> p_resource, const String &p_path);
 
+	void _update_theme(bool p_skip_creation = false);
 	void _build_icon_type_cache();
 	void _enable_pending_addons();
 
 	void _dialog_action(String p_file);
 
-	void _edit_current(bool p_skip_foreign = false);
+	void _add_to_history(const Object *p_object, const String &p_property, bool p_inspector_only);
+	void _edit_current(bool p_skip_foreign = false, bool p_skip_inspector_update = false);
 	void _dialog_display_save_error(String p_file, Error p_error);
 	void _dialog_display_load_error(String p_file, Error p_error);
 
@@ -543,10 +538,13 @@ private:
 	void _menu_option_confirm(int p_option, bool p_confirmed);
 
 	void _android_build_source_selected(const String &p_file);
+	void _android_export_preset_selected(int p_index);
 
 	void _request_screenshot();
 	void _screenshot(bool p_use_utc = false);
 	void _save_screenshot(NodePath p_path);
+
+	void _check_system_theme_changed();
 
 	void _tool_menu_option(int p_idx);
 	void _export_as_menu_option(int p_idx);
@@ -555,6 +553,7 @@ private:
 
 	void _remove_plugin_from_enabled(const String &p_name);
 	void _plugin_over_edit(EditorPlugin *p_plugin, Object *p_object);
+	void _plugin_over_self_own(EditorPlugin *p_plugin);
 
 	void _fs_changed();
 	void _resources_reimported(const Vector<String> &p_resources);
@@ -566,23 +565,25 @@ private:
 	void _save_editor_states(const String &p_file, int p_idx = -1);
 	void _load_editor_plugin_states_from_config(const Ref<ConfigFile> &p_config_file);
 	void _update_title();
-	void _update_scene_tabs();
 	void _version_control_menu_option(int p_idx);
 	void _close_messages();
 	void _show_messages();
 	void _vp_resized();
 	void _titlebar_resized();
-	void _version_button_pressed();
 
 	void _update_undo_redo_allowed();
 
-	int _save_external_resources();
+	int _save_external_resources(bool p_also_save_external_data = false);
 
+	void _set_current_scene(int p_idx);
+	void _set_current_scene_nocheck(int p_idx);
 	bool _validate_scene_recursive(const String &p_filename, Node *p_node);
 	void _save_scene(String p_file, int idx = -1);
 	void _save_all_scenes();
 	int _next_unsaved_scene(bool p_valid_filename, int p_start = 0);
 	void _discard_changes(const String &p_str = String());
+	void _scene_tab_closed(int p_tab);
+	void _cancel_close_scene_tab();
 
 	void _inherit_request(String p_file);
 	void _instantiate_request(const Vector<String> &p_files);
@@ -596,15 +597,16 @@ private:
 	void _add_to_recent_scenes(const String &p_scene);
 	void _update_recent_scenes();
 	void _open_recent_scene(int p_idx);
-	void _global_menu_scene(const Variant &p_tag);
-	void _global_menu_new_window(const Variant &p_tag);
 	void _dropped_files(const Vector<String> &p_files);
 	void _add_dropped_files_recursive(const Vector<String> &p_files, String to_path);
 
+	void _update_vsync_mode();
 	void _update_from_settings();
+	void _gdextensions_reloaded();
 
 	void _renderer_selected(int);
 	void _update_renderer_color();
+	void _add_renderer_entry(const String &p_renderer_name, bool p_mark_overridden);
 
 	void _exit_editor(int p_exit_code);
 
@@ -624,28 +626,8 @@ private:
 
 	bool _find_scene_in_use(Node *p_node, const String &p_path) const;
 
-	void _update_dock_containers();
-
-	void _dock_select_input(const Ref<InputEvent> &p_input);
-	void _dock_move_left();
-	void _dock_move_right();
-	void _dock_select_draw();
-	void _dock_pre_popup(int p_which);
-	void _dock_split_dragged(int ofs);
-	void _dock_popup_exit();
-	void _dock_floating_close_request(WindowWrapper *p_wrapper);
-	void _dock_make_selected_float();
-	void _dock_make_float(Control *p_control, int p_slot_index, bool p_show_window = true);
-	void _scene_tab_changed(int p_tab);
 	void _proceed_closing_scene_tabs();
 	bool _is_closing_editor() const;
-	void _scene_tab_closed(int p_tab, int p_option = SCENE_TAB_CLOSE);
-	void _scene_tab_hovered(int p_tab);
-	void _scene_tab_exit();
-	void _scene_tab_input(const Ref<InputEvent> &p_input);
-	void _reposition_active_tab(int idx_to);
-	void _thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
-	void _scene_tab_script_edited(int p_tab);
 
 	Dictionary _get_main_scene_state();
 	void _set_main_scene_state(Dictionary p_state, Node *p_for_scene);
@@ -654,11 +636,6 @@ private:
 
 	void _save_editor_layout();
 	void _load_editor_layout();
-	void _save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section);
-	void _restore_floating_dock(const Dictionary &p_dock_dump, Control *p_wrapper, int p_slot_index);
-	void _load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section);
-	void _update_dock_slots_visibility(bool p_keep_selected_tabs = false);
-	void _dock_tab_changed(int p_tab);
 
 	void _save_central_editor_layout_to_config(Ref<ConfigFile> p_config_file);
 	void _load_central_editor_layout_from_config(Ref<ConfigFile> p_config_file);
@@ -687,17 +664,16 @@ private:
 	void _feature_profile_changed();
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
 
-	Ref<Texture2D> _get_class_or_script_icon(const String &p_class, const Ref<Script> &p_script, const String &p_fallback = "Object");
+	Ref<Texture2D> _get_class_or_script_icon(const String &p_class, const Ref<Script> &p_script, const String &p_fallback = "Object", bool p_fallback_script_to_theme = false);
 
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
 
 	void _immediate_dialog_confirmed();
 	void _select_default_main_screen_plugin();
 
-	void _bottom_panel_switch(bool p_enable, int p_idx);
-	void _bottom_panel_raise_toggled(bool);
-
 	void _begin_first_scan();
+
+	void _notify_nodes_scene_reimported(Node *p_node, Array p_reimported_nodes);
 
 protected:
 	friend class FileSystemDock;
@@ -705,17 +681,18 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	int get_current_tab();
-	void set_current_tab(int p_tab);
-
 public:
 	// Public for use with callable_mp.
+	void init_plugins();
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
 
 	void editor_select(int p_which);
 	void set_visible_editor(EditorTable p_table) { editor_select(p_table); }
 
 	bool call_build();
+
+	// This is a very naive estimation, but we need something now. Will be reworked later.
+	bool is_editor_ready() const { return is_inside_tree() && !waiting_for_first_scan; }
 
 	static EditorNode *get_singleton() { return singleton; }
 
@@ -725,8 +702,10 @@ public:
 
 	static EditorTitleBar *get_title_bar() { return singleton->title_bar; }
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
+	static EditorBottomPanel *get_bottom_panel() { return singleton->bottom_panel; }
 
-	static String adjust_scene_name_casing(const String &root_name);
+	static String adjust_scene_name_casing(const String &p_root_name);
+	static String adjust_script_name_casing(const String &p_file_name, ScriptLanguage::ScriptNameCasing p_auto_casing);
 
 	static bool has_unsaved_changes() { return singleton->unsaved_cache; }
 	static void disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames);
@@ -751,7 +730,7 @@ public:
 	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
 	static void add_build_callback(EditorBuildCallback p_callback);
 
-	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"));
+	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"), uint32_t p_wrap_width = 0);
 
 	static void cleanup();
 
@@ -764,16 +743,13 @@ public:
 
 	ProjectSettingsEditor *get_project_settings() { return project_settings_editor; }
 
-	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE, false); }
+	void trigger_menu_option(int p_option, bool p_confirmed);
+	bool has_previous_scenes() const;
 
-	void set_docks_visible(bool p_show);
-	bool get_docks_visible() const;
+	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE, false); }
 
 	void set_distraction_free_mode(bool p_enter);
 	bool is_distraction_free_mode_enabled() const;
-
-	void add_control_to_dock(DockSlot p_slot, Control *p_control);
-	void remove_control_from_dock(Control *p_control);
 
 	void set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed = false);
 	bool is_addon_plugin_enabled(const String &p_addon) const;
@@ -788,6 +764,8 @@ public:
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
+	void push_item_no_inspector(Object *p_object);
+	void edit_previous_item();
 	void edit_item(Object *p_object, Object *p_editing_owner);
 	void push_node_item(Node *p_node);
 	void hide_unused_editors(const Object *p_editing_owner = nullptr);
@@ -799,12 +777,15 @@ public:
 
 	bool is_resource_read_only(Ref<Resource> p_resource, bool p_foreign_resources_are_writable = false);
 
+	String get_multiwindow_support_tooltip_text() const;
+
 	bool is_changing_scene() const;
 
 	VBoxContainer *get_main_screen_control();
 	SubViewport *get_scene_root() { return scene_root; } // Root of the scene being edited.
 
 	void set_edited_scene(Node *p_scene);
+	void set_edited_scene_root(Node *p_scene, bool p_auto_add);
 	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
 
 	void fix_dependencies(const String &p_for_file);
@@ -812,7 +793,7 @@ public:
 	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_clear_errors = true, bool p_force_open_imported = false, bool p_silent_change_tab = false);
 	Error load_resource(const String &p_resource, bool p_ignore_broken_deps = false);
 
-	HashMap<StringName, Variant> get_modified_properties_for_node(Node *p_node);
+	HashMap<StringName, Variant> get_modified_properties_for_node(Node *p_node, bool p_node_references_only);
 
 	struct AdditiveNodeEntry {
 		Node *node = nullptr;
@@ -839,17 +820,23 @@ public:
 	};
 
 	void update_ownership_table_for_addition_node_ancestors(Node *p_current_node, HashMap<Node *, Node *> &p_ownership_table);
+	void update_node_from_node_modification_entry(Node *p_node, ModificationNodeEntry &p_node_modification);
 
-	void update_diff_data_for_node(
-			Node *p_edited_scene,
+	void update_node_reference_modification_table_for_node(
 			Node *p_root,
+			Node *p_node,
+			List<Node *> p_excluded_nodes,
+			HashMap<NodePath, ModificationNodeEntry> &p_modification_table);
+
+	void update_reimported_diff_data_for_node(
+			Node *p_edited_scene,
+			Node *p_reimported_root,
 			Node *p_node,
 			HashMap<NodePath, ModificationNodeEntry> &p_modification_table,
 			List<AdditiveNodeEntry> &p_addition_list);
 
 	bool is_scene_open(const String &p_path);
-
-	void set_current_scene(int p_idx);
+	bool is_multi_window_enabled() const;
 
 	void setup_color_picker(ColorPicker *p_picker);
 
@@ -864,10 +851,12 @@ public:
 	void stop_child_process(OS::ProcessID p_pid);
 
 	Ref<Theme> get_editor_theme() const { return theme; }
+	void update_preview_themes(int p_mode);
+
 	Ref<Script> get_object_custom_type_base(const Object *p_object) const;
 	StringName get_object_custom_type_name(const Object *p_object) const;
 	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = "Object");
-	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "Object");
+	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "");
 
 	bool is_object_of_custom_type(const Object *p_object, const StringName &p_class);
 
@@ -877,10 +866,10 @@ public:
 
 	void _copy_warning(const String &p_str);
 
-	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
+	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template);
+	bool is_project_exporting() const;
 
 	Control *get_gui_base() { return gui_base; }
-	Control *get_theme_base() { return gui_base->get_parent_control(); }
 
 	void save_scene_to_path(String p_file, bool p_with_preview = true) {
 		if (p_with_preview) {
@@ -904,14 +893,8 @@ public:
 
 	bool is_exiting() const { return exiting; }
 
-	Button *add_bottom_panel_item(String p_text, Control *p_item);
-	void make_bottom_panel_item_visible(Control *p_item);
-	void raise_bottom_panel_item(Control *p_item);
-	void hide_bottom_panel();
-	void remove_bottom_panel_item(Control *p_item);
-
-	Variant drag_resource(const Ref<Resource> &p_res, Control *p_from);
-	Variant drag_files_and_dirs(const Vector<String> &p_paths, Control *p_from);
+	Dictionary drag_resource(const Ref<Resource> &p_res, Control *p_from);
+	Dictionary drag_files_and_dirs(const Vector<String> &p_paths, Control *p_from);
 
 	void add_tool_menu_item(const String &p_name, const Callable &p_callback);
 	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);
@@ -920,12 +903,11 @@ public:
 	PopupMenu *get_export_as_menu();
 
 	void save_all_scenes();
-	void save_scene_list(Vector<String> p_scene_filenames);
+	void save_scene_if_open(const String &p_scene_path);
+	void save_scene_list(const HashSet<String> &p_scene_paths);
 	void save_before_run();
 	void try_autosave();
 	void restart_editor();
-
-	void notify_settings_changed();
 
 	void dim_editor(bool p_dimming);
 	bool is_editor_dimmed() const;
@@ -934,7 +916,10 @@ public:
 
 	bool has_scenes_in_session();
 
-	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false);
+	void undo();
+	void redo();
+
+	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false, String *r_output = nullptr);
 
 	EditorNode();
 	~EditorNode();
@@ -948,12 +933,29 @@ public:
 
 struct EditorProgress {
 	String task;
-	bool step(const String &p_state, int p_step = -1, bool p_force_refresh = true) { return EditorNode::progress_task_step(task, p_state, p_step, p_force_refresh); }
+	bool step(const String &p_state, int p_step = -1, bool p_force_refresh = true) {
+		if (Thread::is_main_thread()) {
+			return EditorNode::progress_task_step(task, p_state, p_step, p_force_refresh);
+		} else {
+			EditorNode::progress_task_step_bg(task, p_step);
+			return false;
+		}
+	}
 	EditorProgress(const String &p_task, const String &p_label, int p_amount, bool p_can_cancel = false) {
-		EditorNode::progress_add_task(p_task, p_label, p_amount, p_can_cancel);
+		if (Thread::is_main_thread()) {
+			EditorNode::progress_add_task(p_task, p_label, p_amount, p_can_cancel);
+		} else {
+			EditorNode::progress_add_task_bg(p_task, p_label, p_amount);
+		}
 		task = p_task;
 	}
-	~EditorProgress() { EditorNode::progress_end_task(task); }
+	~EditorProgress() {
+		if (Thread::is_main_thread()) {
+			EditorNode::progress_end_task(task);
+		} else {
+			EditorNode::progress_end_task_bg(task);
+		}
+	}
 };
 
 class EditorPluginList : public Object {

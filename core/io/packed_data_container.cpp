@@ -30,7 +30,6 @@
 
 #include "packed_data_container.h"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 
 Variant PackedDataContainer::getvar(const Variant &p_key, bool *r_valid) const {
@@ -125,7 +124,7 @@ Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, b
 uint32_t PackedDataContainer::_type_at_ofs(uint32_t p_ofs) const {
 	ERR_FAIL_COND_V(p_ofs + 4 > (uint32_t)data.size(), 0);
 	const uint8_t *rd = data.ptr();
-	ERR_FAIL_COND_V(!rd, 0);
+	ERR_FAIL_NULL_V(rd, 0);
 	const uint8_t *r = &rd[p_ofs];
 	uint32_t type = decode_uint32(r);
 
@@ -135,7 +134,7 @@ uint32_t PackedDataContainer::_type_at_ofs(uint32_t p_ofs) const {
 int PackedDataContainer::_size(uint32_t p_ofs) const {
 	ERR_FAIL_COND_V(p_ofs + 4 > (uint32_t)data.size(), 0);
 	const uint8_t *rd = data.ptr();
-	ERR_FAIL_COND_V(!rd, 0);
+	ERR_FAIL_NULL_V(rd, 0);
 	const uint8_t *r = &rd[p_ofs];
 	uint32_t type = decode_uint32(r);
 
@@ -156,7 +155,7 @@ Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, b
 	const uint8_t *rd = data.ptr();
 	if (!rd) {
 		err = true;
-		ERR_FAIL_COND_V(!rd, Variant());
+		ERR_FAIL_NULL_V(rd, Variant());
 	}
 	const uint8_t *r = &rd[p_ofs];
 	uint32_t type = decode_uint32(r);
@@ -244,6 +243,7 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
 		case Variant::PACKED_COLOR_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY:
 		case Variant::STRING_NAME:
 		case Variant::NODE_PATH: {
 			uint32_t pos = tmpdata.size();

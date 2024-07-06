@@ -33,7 +33,7 @@
 
 #include "editor/action_map_editor.h"
 #include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class InputEventConfigContainer : public VBoxContainer {
 	GDCLASS(InputEventConfigContainer, VBoxContainer);

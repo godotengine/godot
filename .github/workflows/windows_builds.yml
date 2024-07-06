@@ -7,7 +7,7 @@ on:
 env:
   # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
+  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes d3d12=yes "angle_libs=${{github.workspace}}/"
   SCONS_CACHE_MSVC_CONFIG: true
 
 concurrency:
@@ -28,7 +28,7 @@ jobs:
             target: editor
             tests: true
             # Skip debug symbols, they're way too big with MSVC.
-            sconsflags: debug_symbols=no vsproj=yes windows_subsystem=console
+            sconsflags: debug_symbols=no vsproj=yes vsproj_gen_only=no windows_subsystem=console
             bin: "./bin/godot.windows.editor.x86_64.exe"
 
           - name: Template (target=template_release)
@@ -38,7 +38,9 @@ jobs:
             sconsflags: debug_symbols=no
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
@@ -46,8 +48,22 @@ jobs:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
-      - name: Setup python and scons
+      - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
+
+      - name: Download Direct3D 12 SDK components
+        run: python ./misc/scripts/install_d3d12_sdk_windows.py
+
+      - name: Download pre-built ANGLE static libraries
+        uses: dsaltares/fetch-gh-release-asset@1.1.2
+        with:
+          repo: godotengine/godot-angle-static
+          version: tags/chromium/6029
+          file: Windows.6029-1.MSVC_17.x86_64.x86_32.zip
+          target: angle/angle.zip
+
+      - name: Extract pre-built ANGLE static libraries
+        run: Expand-Archive -Force angle/angle.zip ${{github.workspace}}/
 
       - name: Setup MSVC problem matcher
         uses: ammaraskar/msvc-problem-matcher@master
@@ -60,14 +76,6 @@ jobs:
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
 
-      # Execute unit tests for the editor
-      - name: Unit tests
-        if: ${{ matrix.tests }}
-        run: |
-          ${{ matrix.bin }} --version
-          ${{ matrix.bin }} --help
-          ${{ matrix.bin }} --test
-
       - name: Prepare artifact
         run: |
           Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
@@ -76,3 +84,11 @@ jobs:
         uses: ./.github/actions/upload-artifact
         with:
           name: ${{ matrix.cache-name }}
+
+      # Execute unit tests for the editor
+      - name: Unit tests
+        if: ${{ matrix.tests }}
+        run: |
+          ${{ matrix.bin }} --version
+          ${{ matrix.bin }} --help
+          ${{ matrix.bin }} --test --force-colors

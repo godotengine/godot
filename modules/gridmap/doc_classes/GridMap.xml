@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GridMap" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="GridMap" inherits="Node3D" keywords="tilemap" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Node for 3D tile-based maps.
 	</brief_description>
@@ -12,8 +12,8 @@
 	</description>
 	<tutorials>
 		<link title="Using gridmaps">$DOCS_URL/tutorials/3d/using_gridmaps.html</link>
-		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
-		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/126</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2739</link>
 	</tutorials>
 	<methods>
 		<method name="clear">
@@ -135,14 +135,14 @@
 			<return type="Vector3" />
 			<param index="0" name="map_position" type="Vector3i" />
 			<description>
-				Returns the position of a grid cell in the GridMap's local coordinate space. To convert the returned value into global coordinates, use [method Node3D.to_global]. See also [method map_to_local].
+				Returns the position of a grid cell in the GridMap's local coordinate space. To convert the returned value into global coordinates, use [method Node3D.to_global]. See also [method local_to_map].
 			</description>
 		</method>
-		<method name="resource_changed" is_deprecated="true">
+		<method name="resource_changed" deprecated="Use [signal Resource.changed] instead.">
 			<return type="void" />
 			<param index="0" name="resource" type="Resource" />
 			<description>
-				[i]Obsoleted.[/i] Use [signal Resource.changed] instead.
+				This method does nothing.
 			</description>
 		</method>
 		<method name="set_cell_item">
@@ -226,6 +226,11 @@
 			<param index="0" name="cell_size" type="Vector3" />
 			<description>
 				Emitted when [member cell_size] changes.
+			</description>
+		</signal>
+		<signal name="changed">
+			<description>
+				Emitted when the [MeshLibrary] of this GridMap changes.
 			</description>
 		</signal>
 	</signals>

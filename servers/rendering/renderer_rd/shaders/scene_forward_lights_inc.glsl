@@ -71,7 +71,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 	mat4 inv_view_matrix = scene_data_block.data.inv_view_matrix;
 
 #ifdef USING_MOBILE_RENDERER
-	mat4 read_model_matrix = draw_call.transform;
+	mat4 read_model_matrix = instances.data[draw_call.instance_index].transform;
 #else
 	mat4 read_model_matrix = instances.data[instance_index_interp].transform;
 #endif
@@ -375,7 +375,7 @@ float sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex
 	for (uint i = 0; i < sc_directional_penumbra_shadow_samples; i++) {
 		vec2 suv = pssm_coord.xy + (disk_rotation * scene_data_block.data.directional_penumbra_shadow_kernel[i].xy) * tex_scale;
 		float d = textureLod(sampler2D(shadow, SAMPLER_LINEAR_CLAMP), suv, 0.0).r;
-		if (d < pssm_coord.z) {
+		if (d > pssm_coord.z) {
 			blocker_average += d;
 			blocker_count += 1.0;
 		}
@@ -384,7 +384,7 @@ float sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex
 	if (blocker_count > 0.0) {
 		//blockers found, do soft shadow
 		blocker_average /= blocker_count;
-		float penumbra = (pssm_coord.z - blocker_average) / blocker_average;
+		float penumbra = (-pssm_coord.z + blocker_average) / (1.0 - blocker_average);
 		tex_scale *= penumbra;
 
 		float s = 0.0;
@@ -454,7 +454,7 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 			vec3 v0 = abs(basis_normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
 			vec3 tangent = normalize(cross(v0, basis_normal));
 			vec3 bitangent = normalize(cross(tangent, basis_normal));
-			float z_norm = shadow_len * omni_lights.data[idx].inv_radius;
+			float z_norm = 1.0 - shadow_len * omni_lights.data[idx].inv_radius;
 
 			tangent *= omni_lights.data[idx].soft_shadow_size * omni_lights.data[idx].soft_shadow_scale;
 			bitangent *= omni_lights.data[idx].soft_shadow_size * omni_lights.data[idx].soft_shadow_scale;
@@ -479,7 +479,7 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 				pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
 
 				float d = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), pos.xy, 0.0).r;
-				if (d < z_norm) {
+				if (d > z_norm) {
 					blocker_average += d;
 					blocker_count += 1.0;
 				}
@@ -488,11 +488,11 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 			if (blocker_count > 0.0) {
 				//blockers found, do soft shadow
 				blocker_average /= blocker_count;
-				float penumbra = (z_norm - blocker_average) / blocker_average;
+				float penumbra = (-z_norm + blocker_average) / (1.0 - blocker_average);
 				tangent *= penumbra;
 				bitangent *= penumbra;
 
-				z_norm -= omni_lights.data[idx].inv_radius * omni_lights.data[idx].shadow_bias;
+				z_norm += omni_lights.data[idx].inv_radius * omni_lights.data[idx].shadow_bias;
 
 				shadow = 0.0;
 				for (uint i = 0; i < sc_penumbra_shadow_samples; i++) {
@@ -536,6 +536,7 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 			vec2 pos = shadow_sample.xy / shadow_sample.z;
 			float depth = shadow_len - omni_lights.data[idx].shadow_bias;
 			depth *= omni_lights.data[idx].inv_radius;
+			depth = 1.0 - depth;
 			shadow = mix(1.0, sample_omni_pcf_shadow(shadow_atlas, omni_lights.data[idx].soft_shadow_scale / shadow_sample.z, pos, uv_rect, flip_offset, depth), omni_lights.data[idx].shadow_opacity);
 		}
 
@@ -584,7 +585,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 	{
 		vec4 clamp_rect = omni_lights.data[idx].atlas_rect;
 
-		//redo shadowmapping, but shrink the model a bit to avoid arctifacts
+		//redo shadowmapping, but shrink the model a bit to avoid artifacts
 		vec4 splane = (omni_lights.data[idx].shadow_matrix * vec4(vertex - normalize(normal_interp) * omni_lights.data[idx].transmittance_bias, 1.0));
 
 		float shadow_len = length(splane.xyz);
@@ -706,7 +707,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 		vec4 v = vec4(vertex + normal_bias, 1.0);
 
 		vec4 splane = (spot_lights.data[idx].shadow_matrix * v);
-		splane.z -= spot_lights.data[idx].shadow_bias / (light_length * spot_lights.data[idx].inv_radius);
+		splane.z += spot_lights.data[idx].shadow_bias / (light_length * spot_lights.data[idx].inv_radius);
 		splane /= splane.w;
 
 		float shadow;
@@ -735,7 +736,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 				vec2 suv = shadow_uv + (disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy) * uv_size;
 				suv = clamp(suv, spot_lights.data[idx].atlas_rect.xy, clamp_max);
 				float d = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), suv, 0.0).r;
-				if (d < splane.z) {
+				if (d > splane.z) {
 					blocker_average += d;
 					blocker_count += 1.0;
 				}
@@ -744,7 +745,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 			if (blocker_count > 0.0) {
 				//blockers found, do soft shadow
 				blocker_average /= blocker_count;
-				float penumbra = (z_norm - blocker_average) / blocker_average;
+				float penumbra = (-z_norm + blocker_average) / (1.0 - blocker_average);
 				uv_size *= penumbra;
 
 				shadow = 0.0;
@@ -932,7 +933,7 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, 
 
 		vec4 reflection;
 
-		reflection.rgb = textureLod(samplerCubeArray(reflection_atlas, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_ref_vec, reflections.data[ref_index].index), roughness * MAX_ROUGHNESS_LOD).rgb * sc_luminance_multiplier;
+		reflection.rgb = textureLod(samplerCubeArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_ref_vec, reflections.data[ref_index].index), roughness * MAX_ROUGHNESS_LOD).rgb * sc_luminance_multiplier;
 		reflection.rgb *= reflections.data[ref_index].exposure_normalization;
 		if (reflections.data[ref_index].exterior) {
 			reflection.rgb = mix(specular_light, reflection.rgb, blend);
@@ -955,7 +956,7 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, 
 
 			vec4 ambient_out;
 
-			ambient_out.rgb = textureLod(samplerCubeArray(reflection_atlas, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_amb_vec, reflections.data[ref_index].index), MAX_ROUGHNESS_LOD).rgb;
+			ambient_out.rgb = textureLod(samplerCubeArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_amb_vec, reflections.data[ref_index].index), MAX_ROUGHNESS_LOD).rgb;
 			ambient_out.rgb *= reflections.data[ref_index].exposure_normalization;
 			ambient_out.a = blend;
 			if (reflections.data[ref_index].exterior) {

@@ -36,11 +36,11 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/multi_node_edit.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/resources/packed_scene.h"
 
 void EditorSelectionHistory::cleanup_history() {
@@ -106,7 +106,7 @@ void EditorSelectionHistory::cleanup_history() {
 
 void EditorSelectionHistory::add_object(ObjectID p_object, const String &p_property, bool p_inspector_only) {
 	Object *obj = ObjectDB::get_instance(p_object);
-	ERR_FAIL_COND(!obj);
+	ERR_FAIL_NULL(obj);
 	RefCounted *r = Object::cast_to<RefCounted>(obj);
 	_Object o;
 	if (r) {
@@ -244,7 +244,7 @@ EditorSelectionHistory::EditorSelectionHistory() {
 
 ////////////////////////////////////////////////////////////
 
-EditorPlugin *EditorData::get_editor(Object *p_object) {
+EditorPlugin *EditorData::get_handling_main_editor(Object *p_object) {
 	// We need to iterate backwards so that we can check user-created plugins first.
 	// Otherwise, it would not be possible for plugins to handle CanvasItem and Spatial nodes.
 	for (int i = editor_plugins.size() - 1; i > -1; i--) {
@@ -256,7 +256,7 @@ EditorPlugin *EditorData::get_editor(Object *p_object) {
 	return nullptr;
 }
 
-Vector<EditorPlugin *> EditorData::get_subeditors(Object *p_object) {
+Vector<EditorPlugin *> EditorData::get_handling_sub_editors(Object *p_object) {
 	Vector<EditorPlugin *> sub_plugins;
 	for (int i = editor_plugins.size() - 1; i > -1; i--) {
 		if (!editor_plugins[i]->has_main_screen() && editor_plugins[i]->handles(p_object)) {
@@ -266,7 +266,7 @@ Vector<EditorPlugin *> EditorData::get_subeditors(Object *p_object) {
 	return sub_plugins;
 }
 
-EditorPlugin *EditorData::get_editor(String p_name) {
+EditorPlugin *EditorData::get_editor_by_name(const String &p_name) {
 	for (int i = editor_plugins.size() - 1; i > -1; i--) {
 		if (editor_plugins[i]->get_name() == p_name) {
 			return editor_plugins[i];
@@ -283,7 +283,7 @@ void EditorData::copy_object_params(Object *p_object) {
 	p_object->get_property_list(&pinfo);
 
 	for (const PropertyInfo &E : pinfo) {
-		if (!(E.usage & PROPERTY_USAGE_EDITOR) || E.name == "script" || E.name == "scripts") {
+		if (!(E.usage & PROPERTY_USAGE_EDITOR) || E.name == "script" || E.name == "scripts" || E.name == "resource_path") {
 			continue;
 		}
 
@@ -358,6 +358,12 @@ void EditorData::notify_edited_scene_changed() {
 void EditorData::notify_resource_saved(const Ref<Resource> &p_resource) {
 	for (int i = 0; i < editor_plugins.size(); i++) {
 		editor_plugins[i]->notify_resource_saved(p_resource);
+	}
+}
+
+void EditorData::notify_scene_saved(const String &p_path) {
+	for (int i = 0; i < editor_plugins.size(); i++) {
+		editor_plugins[i]->notify_scene_saved(p_path);
 	}
 }
 
@@ -643,7 +649,9 @@ void EditorData::remove_scene(int p_idx) {
 		EditorNode::get_singleton()->emit_signal("scene_closed", edited_scene[p_idx].path);
 	}
 
-	undo_redo_manager->discard_history(edited_scene[p_idx].history_id);
+	if (undo_redo_manager->has_history(edited_scene[p_idx].history_id)) { // Might not exist if scene failed to load.
+		undo_redo_manager->discard_history(edited_scene[p_idx].history_id);
+	}
 	edited_scene.remove_at(p_idx);
 }
 
@@ -700,7 +708,7 @@ bool EditorData::check_and_update_scene(int p_idx) {
 		ERR_FAIL_COND_V(err != OK, false);
 		ep.step(TTR("Updating scene..."), 1);
 		Node *new_scene = pscene->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
-		ERR_FAIL_COND_V(!new_scene, false);
+		ERR_FAIL_NULL_V(new_scene, false);
 
 		// Transfer selection.
 		List<Node *> new_selection;
@@ -713,12 +721,9 @@ bool EditorData::check_and_update_scene(int p_idx) {
 		}
 
 		new_scene->set_scene_file_path(edited_scene[p_idx].root->get_scene_file_path());
-
-		memdelete(edited_scene[p_idx].root);
-		edited_scene.write[p_idx].root = new_scene;
-		if (!new_scene->get_scene_file_path().is_empty()) {
-			edited_scene.write[p_idx].path = new_scene->get_scene_file_path();
-		}
+		Node *old_root = edited_scene[p_idx].root;
+		EditorNode::get_singleton()->set_edited_scene(new_scene);
+		memdelete(old_root);
 		edited_scene.write[p_idx].selection = new_selection;
 
 		return true;
@@ -1122,8 +1127,14 @@ Ref<Texture2D> EditorData::get_script_icon(const Ref<Script> &p_script) {
 	Ref<Script> base_scr = p_script;
 	while (base_scr.is_valid()) {
 		// Check for scripted classes.
+		String icon_path;
 		StringName class_name = script_class_get_name(base_scr->get_path());
-		String icon_path = script_class_get_icon_path(class_name);
+		if (base_scr->is_built_in() || class_name == StringName()) {
+			icon_path = base_scr->get_class_icon_path();
+		} else {
+			icon_path = script_class_get_icon_path(class_name);
+		}
+
 		Ref<Texture2D> icon = _load_script_icon(icon_path);
 		if (icon.is_valid()) {
 			_script_icon_cache[p_script] = icon;
@@ -1152,15 +1163,6 @@ Ref<Texture2D> EditorData::get_script_icon(const Ref<Script> &p_script) {
 	if (ext_icon.is_valid()) {
 		_script_icon_cache[p_script] = ext_icon;
 		return ext_icon;
-	}
-
-	// Look for the base type in the editor theme.
-	// This is only relevant for built-in classes.
-	const Control *gui_base = EditorNode::get_singleton()->get_gui_base();
-	if (gui_base && gui_base->has_theme_icon(base_type, SNAME("EditorIcons"))) {
-		Ref<Texture2D> theme_icon = gui_base->get_theme_icon(base_type, SNAME("EditorIcons"));
-		_script_icon_cache[p_script] = theme_icon;
-		return theme_icon;
 	}
 
 	// If no icon found, cache it as null.
@@ -1215,7 +1217,7 @@ void EditorSelection::add_node(Node *p_node) {
 	}
 	selection[p_node] = meta;
 
-	p_node->connect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed).bind(p_node), CONNECT_ONE_SHOT);
+	p_node->connect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed).bind(p_node), CONNECT_ONE_SHOT);
 }
 
 void EditorSelection::remove_node(Node *p_node) {
@@ -1232,7 +1234,7 @@ void EditorSelection::remove_node(Node *p_node) {
 	}
 	selection.erase(p_node);
 
-	p_node->disconnect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed));
+	p_node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed));
 }
 
 bool EditorSelection::is_selected(Node *p_node) const {
@@ -1245,7 +1247,6 @@ void EditorSelection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_node", "node"), &EditorSelection::remove_node);
 	ClassDB::bind_method(D_METHOD("get_selected_nodes"), &EditorSelection::get_selected_nodes);
 	ClassDB::bind_method(D_METHOD("get_transformable_selected_nodes"), &EditorSelection::_get_transformable_selected_nodes);
-	ClassDB::bind_method(D_METHOD("_emit_change"), &EditorSelection::_emit_change);
 	ADD_SIGNAL(MethodInfo("selection_changed"));
 }
 
@@ -1293,7 +1294,7 @@ void EditorSelection::update() {
 	changed = false;
 	if (!emitted) {
 		emitted = true;
-		call_deferred(SNAME("_emit_change"));
+		callable_mp(this, &EditorSelection::_emit_change).call_deferred();
 	}
 }
 

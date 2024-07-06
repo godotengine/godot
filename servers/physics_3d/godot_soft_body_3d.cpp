@@ -140,7 +140,12 @@ void GodotSoftBody3D::set_mesh(RID p_mesh) {
 	Array arrays = RenderingServer::get_singleton()->mesh_surface_get_arrays(soft_mesh, 0);
 	ERR_FAIL_COND(arrays.is_empty());
 
-	bool success = create_from_trimesh(arrays[RenderingServer::ARRAY_INDEX], arrays[RenderingServer::ARRAY_VERTEX]);
+	const Vector<int> &indices = arrays[RenderingServer::ARRAY_INDEX];
+	const Vector<Vector3> &vertices = arrays[RenderingServer::ARRAY_VERTEX];
+	ERR_FAIL_COND_MSG(indices.is_empty(), "Soft body's mesh needs to have indices");
+	ERR_FAIL_COND_MSG(vertices.is_empty(), "Soft body's mesh needs to have vertices");
+
+	bool success = create_from_trimesh(indices, vertices);
 	if (!success) {
 		destroy();
 	}
@@ -155,11 +160,9 @@ void GodotSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHand
 	for (uint32_t i = 0; i < vertex_count; ++i) {
 		const uint32_t node_index = map_visual_to_physics[i];
 		const Node &node = nodes[node_index];
-		const Vector3 &vertex_position = node.x;
-		const Vector3 &vertex_normal = node.n;
 
-		p_rendering_server_handler->set_vertex(i, &vertex_position);
-		p_rendering_server_handler->set_normal(i, &vertex_normal);
+		p_rendering_server_handler->set_vertex(i, node.x);
+		p_rendering_server_handler->set_normal(i, node.n);
 	}
 
 	p_rendering_server_handler->set_aabb(bounds);
@@ -597,7 +600,7 @@ void GodotSoftBody3D::generate_bending_constraints(int p_distance) {
 		const uint32_t adj_size = n * n;
 		unsigned *adj = memnew_arr(unsigned, adj_size);
 
-#define IDX(_x_, _y_) ((_y_)*n + (_x_))
+#define IDX(_x_, _y_) ((_y_) * n + (_x_))
 		for (j = 0; j < n; ++j) {
 			for (i = 0; i < n; ++i) {
 				int idx_ij = j * n + i;
@@ -628,11 +631,11 @@ void GodotSoftBody3D::generate_bending_constraints(int p_distance) {
 			for (Link &link : links) {
 				const int ia = (int)(link.n[0] - &nodes[0]);
 				const int ib = (int)(link.n[1] - &nodes[0]);
-				if (node_links[ia].find(ib) == -1) {
+				if (!node_links[ia].has(ib)) {
 					node_links[ia].push_back(ib);
 				}
 
-				if (node_links[ib].find(ia) == -1) {
+				if (!node_links[ib].has(ia)) {
 					node_links[ib].push_back(ia);
 				}
 			}
@@ -969,7 +972,7 @@ Vector3 GodotSoftBody3D::_compute_area_windforce(const GodotArea3D *p_area, cons
 void GodotSoftBody3D::predict_motion(real_t p_delta) {
 	const real_t inv_delta = 1.0 / p_delta;
 
-	ERR_FAIL_COND(!get_space());
+	ERR_FAIL_NULL(get_space());
 
 	bool gravity_done = false;
 	Vector3 gravity;
@@ -1012,7 +1015,7 @@ void GodotSoftBody3D::predict_motion(real_t p_delta) {
 	// Add default gravity and damping from space area.
 	if (!gravity_done) {
 		GodotArea3D *default_area = get_space()->get_default_area();
-		ERR_FAIL_COND(!default_area);
+		ERR_FAIL_NULL(default_area);
 
 		Vector3 default_gravity;
 		default_area->compute_gravity(get_transform().get_origin(), default_gravity);
@@ -1225,7 +1228,7 @@ void GodotSoftBody3D::destroy() {
 }
 
 void GodotSoftBodyShape3D::update_bounds() {
-	ERR_FAIL_COND(!soft_body);
+	ERR_FAIL_NULL(soft_body);
 
 	AABB collision_aabb = soft_body->get_bounds();
 	collision_aabb.grow_by(soft_body->get_collision_margin());
@@ -1266,7 +1269,7 @@ struct _SoftBodyIntersectSegmentInfo {
 	}
 };
 
-bool GodotSoftBodyShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
+bool GodotSoftBodyShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, int &r_face_index, bool p_hit_back_faces) const {
 	_SoftBodyIntersectSegmentInfo query_info;
 	query_info.soft_body = soft_body;
 	query_info.from = p_begin;

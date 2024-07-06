@@ -32,20 +32,17 @@
 
 #include "core/debugger/engine_debugger.h"
 
+thread_local int ScriptDebugger::lines_left = -1;
+thread_local int ScriptDebugger::depth = -1;
+thread_local ScriptLanguage *ScriptDebugger::break_lang = nullptr;
+thread_local Vector<ScriptDebugger::StackInfo> ScriptDebugger::error_stack_info;
+
 void ScriptDebugger::set_lines_left(int p_left) {
 	lines_left = p_left;
 }
 
-int ScriptDebugger::get_lines_left() const {
-	return lines_left;
-}
-
 void ScriptDebugger::set_depth(int p_depth) {
 	depth = p_depth;
-}
-
-int ScriptDebugger::get_depth() const {
-	return depth;
 }
 
 void ScriptDebugger::insert_breakpoint(int p_line, const StringName &p_source) {
@@ -64,13 +61,6 @@ void ScriptDebugger::remove_breakpoint(int p_line, const StringName &p_source) {
 	if (breakpoints[p_line].size() == 0) {
 		breakpoints.erase(p_line);
 	}
-}
-
-bool ScriptDebugger::is_breakpoint(int p_line, const StringName &p_source) const {
-	if (!breakpoints.has(p_line)) {
-		return false;
-	}
-	return breakpoints[p_line].has(p_source);
 }
 
 String ScriptDebugger::breakpoint_find_source(const String &p_source) const {
@@ -100,7 +90,7 @@ void ScriptDebugger::send_error(const String &p_func, const String &p_file, int 
 	// Store stack info, this is ugly, but allows us to separate EngineDebugger and ScriptDebugger. There might be a better way.
 	error_stack_info.append_array(p_stack_info);
 	EngineDebugger::get_singleton()->send_error(p_func, p_file, p_line, p_err, p_descr, p_editor_notify, p_type);
-	error_stack_info.clear();
+	error_stack_info.clear(); // Clear because this is thread local
 }
 
 Vector<ScriptLanguage::StackInfo> ScriptDebugger::get_error_stack_info() const {

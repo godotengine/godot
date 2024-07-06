@@ -155,7 +155,7 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 #endif
   bool has_gpos = !disable_gpos && hb_ot_layout_has_positioning (face);
   if (false)
-    ;
+    {}
 #ifndef HB_NO_AAT_SHAPE
   /* Prefer GPOS over kerx if GSUB is present;
    * https://github.com/harfbuzz/harfbuzz/issues/3008 */
@@ -167,15 +167,16 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 
   if (!plan.apply_kerx && (!has_gpos_kern || !plan.apply_gpos))
   {
+    if (false) {}
 #ifndef HB_NO_AAT_SHAPE
-    if (has_kerx)
+    else if (has_kerx)
       plan.apply_kerx = true;
-    else
 #endif
 #ifndef HB_NO_OT_KERN
-    if (hb_ot_layout_has_kerning (face))
+    else if (hb_ot_layout_has_kerning (face))
       plan.apply_kern = true;
 #endif
+    else {}
   }
 
   plan.apply_fallback_kern = !(plan.apply_gpos || plan.apply_kerx || plan.apply_kern);
@@ -476,9 +477,18 @@ hb_set_unicode_props (hb_buffer_t *buffer)
   {
     _hb_glyph_info_set_unicode_props (&info[i], buffer);
 
+    unsigned gen_cat = _hb_glyph_info_get_general_category (&info[i]);
+    if (FLAG_UNSAFE (gen_cat) &
+	(FLAG (HB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER) |
+	 FLAG (HB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER) |
+	 FLAG (HB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER) |
+	 FLAG (HB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER) |
+	 FLAG (HB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR)))
+      continue;
+
     /* Marks are already set as continuation by the above line.
      * Handle Emoji_Modifier and ZWJ-continuation. */
-    if (unlikely (_hb_glyph_info_get_general_category (&info[i]) == HB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL &&
+    if (unlikely (gen_cat == HB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL &&
 		  hb_in_range<hb_codepoint_t> (info[i].codepoint, 0x1F3FBu, 0x1F3FFu)))
     {
       _hb_glyph_info_set_continuation (&info[i]);
@@ -756,6 +766,14 @@ hb_ot_shape_setup_masks_fraction (const hb_ot_shape_context_t *c)
 	     _hb_glyph_info_get_general_category (&info[end]) ==
 	     HB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER)
 	end++;
+      if (start == i || end == i + 1)
+      {
+        if (start == i)
+	  buffer->unsafe_to_concat (start, start + 1);
+	if (end == i + 1)
+	  buffer->unsafe_to_concat (end - 1, end);
+	continue;
+      }
 
       buffer->unsafe_to_break (start, end);
 
@@ -1037,7 +1055,7 @@ hb_ot_position_plan (const hb_ot_shape_context_t *c)
    * direction is backward we don't shift and it will end up
    * hanging over the next glyph after the final reordering.
    *
-   * Note: If fallback positinoing happens, we don't care about
+   * Note: If fallback positioning happens, we don't care about
    * this as it will be overridden.
    */
   bool adjust_offsets_when_zeroing = c->plan->adjust_mark_positioning_when_zeroing &&

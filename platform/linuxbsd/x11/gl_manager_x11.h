@@ -74,17 +74,17 @@ private:
 	};
 
 	struct GLDisplay {
-		GLDisplay() { context = nullptr; }
+		GLDisplay() {}
 		~GLDisplay();
 		GLManager_X11_Private *context = nullptr;
-		::Display *x11_display;
-		XVisualInfo x_vi;
+		::Display *x11_display = nullptr;
+		XVisualInfo x_vi = {};
 	};
 
 	// just for convenience, window and display struct
 	struct XWinDisp {
 		::Window x11_window;
-		::Display *x11_display;
+		::Display *x11_display = nullptr;
 	} _x_windisp;
 
 	LocalVector<GLWindow> _windows;
@@ -117,7 +117,6 @@ public:
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 
 	void release_current();
-	void make_current();
 	void swap_buffers();
 
 	void window_make_current(DisplayServer::WindowID p_window_id);
@@ -129,6 +128,7 @@ public:
 
 	void *get_glx_context(DisplayServer::WindowID p_window_id);
 
+	Error open_display(Display *p_display);
 	GLManager_X11(const Vector2i &p_size, ContextType p_context_type);
 	~GLManager_X11();
 };

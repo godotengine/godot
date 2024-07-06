@@ -33,7 +33,7 @@
 #include "core/error/error_macros.h"
 #include "core/io/zip_io.h"
 
-Error ZIPReader::open(String p_path) {
+Error ZIPReader::open(const String &p_path) {
 	if (fa.is_valid()) {
 		close();
 	}
@@ -58,7 +58,14 @@ Error ZIPReader::close() {
 PackedStringArray ZIPReader::get_files() {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedStringArray(), "ZIPReader must be opened before use.");
 
-	int err = unzGoToFirstFile(uzf);
+	unz_global_info gi;
+	int err = unzGetGlobalInfo(uzf, &gi);
+	ERR_FAIL_COND_V(err != UNZ_OK, PackedStringArray());
+	if (gi.number_entry == 0) {
+		return PackedStringArray();
+	}
+
+	err = unzGoToFirstFile(uzf);
 	ERR_FAIL_COND_V(err != UNZ_OK, PackedStringArray());
 
 	List<String> s;
@@ -81,7 +88,7 @@ PackedStringArray ZIPReader::get_files() {
 	return arr;
 }
 
-PackedByteArray ZIPReader::read_file(String p_path, bool p_case_sensitive) {
+PackedByteArray ZIPReader::read_file(const String &p_path, bool p_case_sensitive) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedByteArray(), "ZIPReader must be opened before use.");
 
 	int err = UNZ_OK;
@@ -118,6 +125,21 @@ PackedByteArray ZIPReader::read_file(String p_path, bool p_case_sensitive) {
 	return data;
 }
 
+bool ZIPReader::file_exists(const String &p_path, bool p_case_sensitive) {
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, "ZIPReader must be opened before use.");
+
+	int cs = p_case_sensitive ? 1 : 2;
+	if (unzLocateFile(uzf, p_path.utf8().get_data(), cs) != UNZ_OK) {
+		return false;
+	}
+	if (unzOpenCurrentFile(uzf) != UNZ_OK) {
+		return false;
+	}
+
+	unzCloseCurrentFile(uzf);
+	return true;
+}
+
 ZIPReader::ZIPReader() {}
 
 ZIPReader::~ZIPReader() {
@@ -131,4 +153,5 @@ void ZIPReader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("close"), &ZIPReader::close);
 	ClassDB::bind_method(D_METHOD("get_files"), &ZIPReader::get_files);
 	ClassDB::bind_method(D_METHOD("read_file", "path", "case_sensitive"), &ZIPReader::read_file, DEFVAL(Variant(true)));
+	ClassDB::bind_method(D_METHOD("file_exists", "path", "case_sensitive"), &ZIPReader::file_exists, DEFVAL(Variant(true)));
 }

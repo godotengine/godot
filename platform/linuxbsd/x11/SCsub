@@ -21,11 +21,13 @@ if env["use_sowrap"]:
     )
 
 if env["vulkan"]:
-    source_files.append("vulkan_context_x11.cpp")
+    source_files.append("rendering_context_driver_vulkan_x11.cpp")
 
 if env["opengl3"]:
     env.Append(CPPDEFINES=["GLAD_GLX_NO_X11"])
-    source_files.append(["gl_manager_x11.cpp", "detect_prime_x11.cpp", "#thirdparty/glad/glx.c"])
+    source_files.append(
+        ["gl_manager_x11_egl.cpp", "gl_manager_x11.cpp", "detect_prime_x11.cpp", "#thirdparty/glad/glx.c"]
+    )
 
 objects = []
 

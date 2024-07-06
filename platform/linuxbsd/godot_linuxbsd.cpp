@@ -41,6 +41,18 @@
 #include <sys/resource.h>
 #endif
 
+// For export templates, add a section; the exporter will patch it to enclose
+// the data appended to the executable (bundled PCK).
+#if !defined(TOOLS_ENABLED) && defined(__GNUC__)
+static const char dummy[8] __attribute__((section("pck"), used)) = { 0 };
+
+// Dummy function to prevent LTO from discarding "pck" section.
+extern "C" const char *pck_section_dummy_call() __attribute__((used));
+extern "C" const char *pck_section_dummy_call() {
+	return &dummy[0];
+}
+#endif
+
 int main(int argc, char *argv[]) {
 #if defined(SANITIZERS_ENABLED)
 	// Note: Set stack size to be at least 30 MB (vs 8 MB default) to avoid overflow, address sanitizer can increase stack usage up to 3 times.
@@ -56,22 +68,23 @@ int main(int argc, char *argv[]) {
 	TEST_MAIN_OVERRIDE
 
 	char *cwd = (char *)malloc(PATH_MAX);
-	ERR_FAIL_COND_V(!cwd, ERR_OUT_OF_MEMORY);
+	ERR_FAIL_NULL_V(cwd, ERR_OUT_OF_MEMORY);
 	char *ret = getcwd(cwd, PATH_MAX);
 
 	Error err = Main::setup(argv[0], argc - 1, &argv[1]);
+
 	if (err != OK) {
 		free(cwd);
-
 		if (err == ERR_HELP) { // Returned by --help and --version, so success.
-			return 0;
+			return EXIT_SUCCESS;
 		}
-		return 255;
+		return EXIT_FAILURE;
 	}
 
-	if (Main::start()) {
-		os.set_exit_code(EXIT_SUCCESS);
-		os.run(); // it is actually the OS that decides how to run
+	if (Main::start() == EXIT_SUCCESS) {
+		os.run();
+	} else {
+		os.set_exit_code(EXIT_FAILURE);
 	}
 	Main::cleanup();
 

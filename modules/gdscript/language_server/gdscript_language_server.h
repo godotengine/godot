@@ -34,7 +34,7 @@
 #include "../gdscript_parser.h"
 #include "gdscript_language_protocol.h"
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class GDScriptLanguageServer : public EditorPlugin {
 	GDCLASS(GDScriptLanguageServer, EditorPlugin);
@@ -47,12 +47,14 @@ class GDScriptLanguageServer : public EditorPlugin {
 	bool use_thread = false;
 	String host = "127.0.0.1";
 	int port = 6005;
+	int poll_limit_usec = 100000;
 	static void thread_main(void *p_userdata);
 
 private:
 	void _notification(int p_what);
 
 public:
+	static int port_override;
 	GDScriptLanguageServer();
 	void start();
 	void stop();

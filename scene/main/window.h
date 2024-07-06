@@ -34,14 +34,15 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
 
-class Control;
 class Font;
 class Shortcut;
 class StyleBox;
 class ThemeOwner;
+class ThemeContext;
 
 class Window : public Viewport {
-	GDCLASS(Window, Viewport)
+	GDCLASS(Window, Viewport);
+
 public:
 	// Keep synced with enum hint for `mode` property.
 	enum Mode {
@@ -78,6 +79,11 @@ public:
 		CONTENT_SCALE_ASPECT_EXPAND,
 	};
 
+	enum ContentScaleStretch {
+		CONTENT_SCALE_STRETCH_FRACTIONAL,
+		CONTENT_SCALE_STRETCH_INTEGER,
+	};
+
 	enum LayoutDirection {
 		LAYOUT_DIRECTION_INHERITED,
 		LAYOUT_DIRECTION_LOCALE,
@@ -104,6 +110,7 @@ private:
 	bool initialized = false;
 
 	String title;
+	String tr_title;
 	mutable int current_screen = 0;
 	mutable Vector2i position;
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
@@ -115,19 +122,20 @@ private:
 	bool visible = true;
 	bool focused = false;
 	WindowInitialPosition initial_position = WINDOW_INITIAL_POSITION_ABSOLUTE;
+	bool force_native = false;
 
 	bool use_font_oversampling = false;
 	bool transient = false;
+	bool transient_to_focused = false;
 	bool exclusive = false;
 	bool wrap_controls = false;
 	bool updating_child_controls = false;
 	bool updating_embedded_window = false;
 	bool clamp_to_embedder = false;
 	bool unparent_when_invisible = false;
+	bool keep_title_visible = false;
 
 	LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
-
-	bool auto_translate = true;
 
 	void _update_child_controls();
 	void _update_embedded_window();
@@ -135,6 +143,7 @@ private:
 	Size2i content_scale_size;
 	ContentScaleMode content_scale_mode = CONTENT_SCALE_MODE_DISABLED;
 	ContentScaleAspect content_scale_aspect = CONTENT_SCALE_ASPECT_IGNORE;
+	ContentScaleStretch content_scale_stretch = CONTENT_SCALE_STRETCH_FRACTIONAL;
 	real_t content_scale_factor = 1.0;
 
 	void _make_window();
@@ -155,11 +164,13 @@ private:
 
 	void _update_window_callbacks();
 
-	void _clear_transient();
-	void _make_transient();
 	Window *transient_parent = nullptr;
 	Window *exclusive_child = nullptr;
 	HashSet<Window *> transient_children;
+
+	void _clear_transient();
+	void _make_transient();
+	void _set_transient_exclusive_child(bool p_clear_invalid = false);
 
 	ThemeOwner *theme_owner = nullptr;
 	Ref<Theme> theme;
@@ -184,6 +195,27 @@ private:
 	void _notify_theme_override_changed();
 	void _invalidate_theme_cache();
 
+	struct ThemeCache {
+		Ref<StyleBox> embedded_border;
+		Ref<StyleBox> embedded_unfocused_border;
+
+		Ref<Font> title_font;
+		int title_font_size = 0;
+		Color title_color;
+		int title_height = 0;
+		Color title_outline_modulate;
+		int title_outline_size = 0;
+
+		Ref<Texture2D> close;
+		Ref<Texture2D> close_pressed;
+		int close_h_offset = 0;
+		int close_v_offset = 0;
+
+		int resize_margin = 0;
+	} theme_cache;
+
+	void _settings_changed();
+
 	Viewport *embedder = nullptr;
 
 	Transform2D window_transform;
@@ -197,17 +229,27 @@ private:
 	void _event_callback(DisplayServer::WindowEvent p_event);
 	virtual bool _can_consume_input_events() const override;
 
+	bool mouse_in_window = false;
+	void _update_mouse_over(Vector2 p_pos) override;
+	void _mouse_leave_viewport() override;
+
 	Ref<Shortcut> debugger_stop_shortcut;
+
+	static int root_layout_direction;
 
 protected:
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
+	virtual void _post_popup() {}
 
 	virtual void _update_theme_item_cache();
+	virtual void _input_from_window(const Ref<InputEvent> &p_event) {}
 
-	virtual void _post_popup() {}
-	virtual Size2 _get_contents_minimum_size() const;
-	static void _bind_methods();
 	void _notification(int p_what);
+	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+#endif
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -217,6 +259,8 @@ protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
+	GDVIRTUAL0RC(Vector2, _get_contents_minimum_size)
+
 public:
 	enum {
 		NOTIFICATION_VISIBILITY_CHANGED = 30,
@@ -224,17 +268,23 @@ public:
 		NOTIFICATION_THEME_CHANGED = 32
 	};
 
+	static void set_root_layout_direction(int p_root_dir);
+
 	void set_title(const String &p_title);
 	String get_title() const;
 
 	void set_initial_position(WindowInitialPosition p_initial_position);
 	WindowInitialPosition get_initial_position() const;
 
+	void set_force_native(bool p_force_native);
+	bool get_force_native() const;
+
 	void set_current_screen(int p_screen);
 	int get_current_screen() const;
 
 	void set_position(const Point2i &p_position);
 	Point2i get_position() const;
+	void move_to_center();
 
 	void set_size(const Size2i &p_size);
 	Size2i get_size() const;
@@ -258,9 +308,11 @@ public:
 	bool is_maximize_allowed() const;
 
 	void request_attention();
+#ifndef DISABLE_DEPRECATED
 	void move_to_foreground();
+#endif // DISABLE_DEPRECATED
 
-	void set_visible(bool p_visible);
+	virtual void set_visible(bool p_visible);
 	bool is_visible() const;
 
 	void update_mouse_cursor_state() override;
@@ -270,6 +322,9 @@ public:
 
 	void set_transient(bool p_transient);
 	bool is_transient() const;
+
+	void set_transient_to_focused(bool p_transient_to_focused);
+	bool is_transient_to_focused() const;
 
 	void set_exclusive(bool p_exclusive);
 	bool is_exclusive() const;
@@ -297,6 +352,12 @@ public:
 
 	void set_content_scale_aspect(ContentScaleAspect p_aspect);
 	ContentScaleAspect get_content_scale_aspect() const;
+
+	void set_content_scale_stretch(ContentScaleStretch p_stretch);
+	ContentScaleStretch get_content_scale_stretch() const;
+
+	void set_keep_title_visible(bool p_title_visible);
+	bool get_keep_title_visible() const;
 
 	void set_content_scale_factor(real_t p_factor);
 	real_t get_content_scale_factor() const;
@@ -334,21 +395,26 @@ public:
 	void grab_focus();
 	bool has_focus() const;
 
+	Rect2i get_usable_parent_rect() const;
+
+	// Internationalization.
+
 	void set_layout_direction(LayoutDirection p_direction);
 	LayoutDirection get_layout_direction() const;
 	bool is_layout_rtl() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;
-	_FORCE_INLINE_ String atr(const String p_string) const { return is_auto_translating() ? tr(p_string) : p_string; };
-
-	Rect2i get_usable_parent_rect() const;
+#endif
 
 	// Theming.
 
 	void set_theme_owner_node(Node *p_node);
 	Node *get_theme_owner_node() const;
 	bool has_theme_owner_node() const;
+
+	void set_theme_context(ThemeContext *p_context, bool p_propagate = true);
 
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
@@ -379,6 +445,10 @@ public:
 	int get_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Color get_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	int get_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	Variant get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+#ifdef TOOLS_ENABLED
+	Ref<Texture2D> get_editor_theme_icon(const StringName &p_name) const;
+#endif
 
 	bool has_theme_icon_override(const StringName &p_name) const;
 	bool has_theme_stylebox_override(const StringName &p_name) const;
@@ -404,9 +474,12 @@ public:
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const override;
 	virtual Transform2D get_popup_base_transform() const override;
 	virtual bool is_directly_attached_to_screen() const override;
+	virtual bool is_attached_in_viewport() const override;
 
 	Rect2i get_parent_rect() const;
 	virtual DisplayServer::WindowID get_window_id() const override;
+
+	virtual Size2 _get_contents_minimum_size() const;
 
 	Window();
 	~Window();
@@ -416,6 +489,7 @@ VARIANT_ENUM_CAST(Window::Mode);
 VARIANT_ENUM_CAST(Window::Flags);
 VARIANT_ENUM_CAST(Window::ContentScaleMode);
 VARIANT_ENUM_CAST(Window::ContentScaleAspect);
+VARIANT_ENUM_CAST(Window::ContentScaleStretch);
 VARIANT_ENUM_CAST(Window::LayoutDirection);
 VARIANT_ENUM_CAST(Window::WindowInitialPosition);
 

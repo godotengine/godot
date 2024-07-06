@@ -6,7 +6,7 @@
 	<description>
 		A 4-element structure that can be used to represent 4D grid coordinates or any other quadruplet of integers.
 		It uses integer coordinates and is therefore preferable to [Vector4] when exact precision is required. Note that the values are limited to 32 bits, and unlike [Vector4] this cannot be configured with an engine build option. Use [int] or [PackedInt64Array] if 64-bit values are needed.
-		[b]Note:[/b] In a boolean context, a Vector4i will evaluate to [code]false[/code] if it's equal to [code]Vector4i(0, 0, 0, 0)[/code]. Otherwise, a Vector3i will always evaluate to [code]true[/code].
+		[b]Note:[/b] In a boolean context, a Vector4i will evaluate to [code]false[/code] if it's equal to [code]Vector4i(0, 0, 0, 0)[/code]. Otherwise, a Vector4i will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -57,7 +57,30 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="clampi" qualifiers="const">
+			<return type="Vector4i" />
+			<param index="0" name="min" type="int" />
+			<param index="1" name="max" type="int" />
+			<description>
+				Returns a new vector with all components clamped between [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
+		<method name="distance_squared_to" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="to" type="Vector4i" />
+			<description>
+				Returns the squared distance between this vector and [param to].
+				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
+			</description>
+		</method>
+		<method name="distance_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="to" type="Vector4i" />
+			<description>
+				Returns the distance between this vector and [param to].
+			</description>
+		</method>
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="float" />
 			<description>
 				Returns the length (magnitude) of this vector.
@@ -70,16 +93,44 @@
 				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
+		<method name="max" qualifiers="const">
+			<return type="Vector4i" />
+			<param index="0" name="with" type="Vector4i" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector4i(maxi(x, with.x), maxi(y, with.y), maxi(z, with.z), maxi(w, with.w))[/code].
+			</description>
+		</method>
 		<method name="max_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
+		<method name="maxi" qualifiers="const">
+			<return type="Vector4i" />
+			<param index="0" name="with" type="int" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector4i(maxi(x, with), maxi(y, with), maxi(z, with), maxi(w, with))[/code].
+			</description>
+		</method>
+		<method name="min" qualifiers="const">
+			<return type="Vector4i" />
+			<param index="0" name="with" type="Vector4i" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector4i(mini(x, with.x), mini(y, with.y), mini(z, with.z), mini(w, with.w))[/code].
+			</description>
+		</method>
 		<method name="min_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_W].
+			</description>
+		</method>
+		<method name="mini" qualifiers="const">
+			<return type="Vector4i" />
+			<param index="0" name="with" type="int" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector4i(mini(x, with), mini(y, with), mini(z, with), mini(w, with))[/code].
 			</description>
 		</method>
 		<method name="sign" qualifiers="const">
@@ -93,6 +144,13 @@
 			<param index="0" name="step" type="Vector4i" />
 			<description>
 				Returns a new vector with each component snapped to the closest multiple of the corresponding component in [param step].
+			</description>
+		</method>
+		<method name="snappedi" qualifiers="const">
+			<return type="Vector4i" />
+			<param index="0" name="step" type="int" />
+			<description>
+				Returns a new vector with each component snapped to the closest multiple of [param step].
 			</description>
 		</method>
 	</methods>
@@ -128,6 +186,12 @@
 		</constant>
 		<constant name="ONE" value="Vector4i(1, 1, 1, 1)">
 			One vector, a vector with all components set to [code]1[/code].
+		</constant>
+		<constant name="MIN" value="Vector4i(-2147483648, -2147483648, -2147483648, -2147483648)">
+			Min vector, a vector with all components equal to [code]INT32_MIN[/code]. Can be used as a negative integer equivalent of [constant Vector4.INF].
+		</constant>
+		<constant name="MAX" value="Vector4i(2147483647, 2147483647, 2147483647, 2147483647)">
+			Max vector, a vector with all components equal to [code]INT32_MAX[/code]. Can be used as an integer equivalent of [constant Vector4.INF].
 		</constant>
 	</constants>
 	<operators>

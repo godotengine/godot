@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationMesh" inherits="Resource" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationMesh" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A navigation mesh that defines traversable areas and obstacles.
 	</brief_description>
@@ -7,8 +7,8 @@
 		A navigation mesh is a collection of polygons that define which areas of an environment are traversable to aid agents in pathfinding through complicated spaces.
 	</description>
 	<tutorials>
-		<link title="3D Navmesh Demo">https://godotengine.org/asset-library/asset/124</link>
 		<link title="Using NavigationMeshes">$DOCS_URL/tutorials/navigation/navigation_using_navigationmeshes.html</link>
+		<link title="3D Navigation Demo">https://godotengine.org/asset-library/asset/2743</link>
 	</tutorials>
 	<methods>
 		<method name="add_polygon">
@@ -16,6 +16,12 @@
 			<param index="0" name="polygon" type="PackedInt32Array" />
 			<description>
 				Adds a polygon using the indices of the vertices you get when calling [method get_vertices].
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the internal arrays for vertices and polygon indices.
 			</description>
 		</method>
 		<method name="clear_polygons">
@@ -90,6 +96,11 @@
 			The distance to erode/shrink the walkable area of the heightfield away from obstructions.
 			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell_size].
 		</member>
+		<member name="border_size" type="float" setter="set_border_size" getter="get_border_size" default="0.0">
+			The size of the non-navigable border around the bake bounding area.
+			In conjunction with the [member filter_baking_aabb] and a [member edge_max_error] value at [code]1.0[/code] or below the border size can be used to bake tile aligned navigation meshes without the tile edges being shrunk by [member agent_radius].
+			[b]Note:[/b] While baking and not zero, this value will be rounded up to the nearest multiple of [member cell_size].
+		</member>
 		<member name="cell_height" type="float" setter="set_cell_height" getter="get_cell_height" default="0.25">
 			The cell height used to rasterize the navigation mesh vertices on the Y axis. Must match with the cell height on the navigation map.
 		</member>
@@ -105,8 +116,8 @@
 		<member name="edge_max_error" type="float" setter="set_edge_max_error" getter="get_edge_max_error" default="1.3">
 			The maximum distance a simplified contour's border edges should deviate the original raw contour.
 		</member>
-		<member name="edge_max_length" type="float" setter="set_edge_max_length" getter="get_edge_max_length" default="12.0">
-			The maximum allowed length for contour edges along the border of the mesh.
+		<member name="edge_max_length" type="float" setter="set_edge_max_length" getter="get_edge_max_length" default="0.0">
+			The maximum allowed length for contour edges along the border of the mesh. A value of [code]0.0[/code] disables this feature.
 			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell_size].
 		</member>
 		<member name="filter_baking_aabb" type="AABB" setter="set_filter_baking_aabb" getter="get_filter_baking_aabb" default="AABB(0, 0, 0, 0, 0, 0)">

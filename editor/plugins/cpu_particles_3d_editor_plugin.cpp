@@ -31,8 +31,11 @@
 #include "cpu_particles_3d_editor_plugin.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/scene_tree_dock.h"
 #include "scene/gui/menu_button.h"
 
 void CPUParticles3DEditor::_node_removed(Node *p_node) {
@@ -45,7 +48,7 @@ void CPUParticles3DEditor::_node_removed(Node *p_node) {
 void CPUParticles3DEditor::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_ENTER_TREE: {
-			options->set_icon(get_theme_icon(SNAME("CPUParticles3D"), SNAME("EditorIcons")));
+			options->set_icon(get_editor_theme_icon(SNAME("CPUParticles3D")));
 		} break;
 	}
 }
@@ -54,14 +57,80 @@ void CPUParticles3DEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
 			emission_tree_dialog->popup_scenetree_dialog();
-
 		} break;
 
 		case MENU_OPTION_RESTART: {
 			node->restart();
+		} break;
+
+		case MENU_OPTION_CONVERT_TO_GPU_PARTICLES: {
+			GPUParticles3D *gpu_particles = memnew(GPUParticles3D);
+			gpu_particles->convert_from_particles(node);
+			gpu_particles->set_name(node->get_name());
+			gpu_particles->set_transform(node->get_transform());
+			gpu_particles->set_visible(node->is_visible());
+			gpu_particles->set_process_mode(node->get_process_mode());
+
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+			ur->create_action(TTR("Convert to GPUParticles3D"), UndoRedo::MERGE_DISABLE, node);
+			SceneTreeDock::get_singleton()->replace_node(node, gpu_particles);
+			ur->commit_action(false);
 
 		} break;
+		case MENU_OPTION_GENERATE_AABB: {
+			// Add one second to the default generation lifetime, since the progress is updated every second.
+			generate_seconds->set_value(MAX(1.0, trunc(node->get_lifetime()) + 1.0));
+
+			if (generate_seconds->get_value() >= 11.0 + CMP_EPSILON) {
+				// Only pop up the time dialog if the particle's lifetime is long enough to warrant shortening it.
+				generate_aabb->popup_centered();
+			} else {
+				// Generate the visibility AABB immediately.
+				_generate_aabb();
+			}
+		} break;
 	}
+}
+
+void CPUParticles3DEditor::_generate_aabb() {
+	double time = generate_seconds->get_value();
+
+	double running = 0.0;
+
+	EditorProgress ep("gen_aabb", TTR("Generating Visibility AABB (Waiting for Particle Simulation)"), int(time));
+
+	bool was_emitting = node->is_emitting();
+	if (!was_emitting) {
+		node->set_emitting(true);
+		OS::get_singleton()->delay_usec(1000);
+	}
+
+	AABB rect;
+
+	while (running < time) {
+		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+		ep.step(TTR("Generating..."), int(running), true);
+		OS::get_singleton()->delay_usec(1000);
+
+		AABB capture = node->capture_aabb();
+		if (rect == AABB()) {
+			rect = capture;
+		} else {
+			rect.merge_with(capture);
+		}
+
+		running += (OS::get_singleton()->get_ticks_usec() - ticks) / 1000000.0;
+	}
+
+	if (!was_emitting) {
+		node->set_emitting(false);
+	}
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Generate Visibility AABB"));
+	ur->add_do_method(node, "set_visibility_aabb", rect);
+	ur->add_undo_method(node, "set_visibility_aabb", node->get_visibility_aabb());
+	ur->commit_action();
 }
 
 void CPUParticles3DEditor::edit(CPUParticles3D *p_particles) {
@@ -100,9 +169,25 @@ CPUParticles3DEditor::CPUParticles3DEditor() {
 	particles_editor_hb->hide();
 
 	options->set_text(TTR("CPUParticles3D"));
-	options->get_popup()->add_item(TTR("Restart"), MENU_OPTION_RESTART);
+	options->get_popup()->add_shortcut(ED_GET_SHORTCUT("particles/restart_emission"), MENU_OPTION_RESTART);
+	options->get_popup()->add_item(TTR("Generate AABB"), MENU_OPTION_GENERATE_AABB);
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
-	options->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticles3DEditor::_menu_option));
+	options->get_popup()->add_item(TTR("Convert to GPUParticles3D"), MENU_OPTION_CONVERT_TO_GPU_PARTICLES);
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &CPUParticles3DEditor::_menu_option));
+
+	generate_aabb = memnew(ConfirmationDialog);
+	generate_aabb->set_title(TTR("Generate Visibility AABB"));
+	VBoxContainer *genvb = memnew(VBoxContainer);
+	generate_aabb->add_child(genvb);
+	generate_seconds = memnew(SpinBox);
+	genvb->add_margin_child(TTR("Generation Time (sec):"), generate_seconds);
+	generate_seconds->set_min(0.1);
+	generate_seconds->set_max(25);
+	generate_seconds->set_value(2);
+
+	add_child(generate_aabb);
+
+	generate_aabb->connect(SceneStringName(confirmed), callable_mp(this, &CPUParticles3DEditor::_generate_aabb));
 }
 
 void CPUParticles3DEditorPlugin::edit(Object *p_object) {

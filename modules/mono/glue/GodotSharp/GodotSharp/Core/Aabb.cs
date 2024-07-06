@@ -1,5 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -66,7 +69,7 @@ namespace Godot
         public readonly Aabb Abs()
         {
             Vector3 end = End;
-            Vector3 topLeft = new Vector3(Mathf.Min(_position.X, end.X), Mathf.Min(_position.Y, end.Y), Mathf.Min(_position.Z, end.Z));
+            Vector3 topLeft = end.Min(_position);
             return new Aabb(topLeft, _size.Abs());
         }
 
@@ -95,11 +98,11 @@ namespace Godot
             Vector3 dstMax = with._position + with._size;
 
             return srcMin.X <= dstMin.X &&
-                   srcMax.X > dstMax.X &&
+                   srcMax.X >= dstMax.X &&
                    srcMin.Y <= dstMin.Y &&
-                   srcMax.Y > dstMax.Y &&
+                   srcMax.Y >= dstMax.Y &&
                    srcMin.Z <= dstMin.Z &&
-                   srcMax.Z > dstMax.Z;
+                   srcMax.Z >= dstMax.Z;
         }
 
         /// <summary>
@@ -315,9 +318,9 @@ namespace Godot
             Vector3 ofs = _position + halfExtents;
 
             return ofs + new Vector3(
-                dir.X > 0f ? -halfExtents.X : halfExtents.X,
-                dir.Y > 0f ? -halfExtents.Y : halfExtents.Y,
-                dir.Z > 0f ? -halfExtents.Z : halfExtents.Z);
+                dir.X > 0f ? halfExtents.X : -halfExtents.X,
+                dir.Y > 0f ? halfExtents.Y : -halfExtents.Y,
+                dir.Z > 0f ? halfExtents.Z : -halfExtents.Z);
         }
 
         /// <summary>
@@ -564,7 +567,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if this <see cref="Aabb"/> is finite, by calling
-        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// <see cref="Mathf.IsFinite(real_t)"/> on each component.
         /// </summary>
         /// <returns>Whether this vector is finite or not.</returns>
         public readonly bool IsFinite()
@@ -683,13 +686,13 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if the AABB is exactly equal
-        /// to the given object (<see paramref="obj"/>).
+        /// to the given object (<paramref name="obj"/>).
         /// Note: Due to floating-point precision errors, consider using
         /// <see cref="IsEqualApprox"/> instead, which is more reliable.
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the AABB and the object are equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Aabb other && Equals(other);
         }
@@ -723,23 +726,20 @@ namespace Godot
         /// <returns>A hash code for this AABB.</returns>
         public override readonly int GetHashCode()
         {
-            return _position.GetHashCode() ^ _size.GetHashCode();
+            return HashCode.Combine(_position, _size);
         }
 
         /// <summary>
         /// Converts this <see cref="Aabb"/> to a string.
         /// </summary>
         /// <returns>A string representation of this AABB.</returns>
-        public override readonly string ToString()
-        {
-            return $"{_position}, {_size}";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Aabb"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this AABB.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
             return $"{_position.ToString(format)}, {_size.ToString(format)}";
         }

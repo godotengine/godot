@@ -38,7 +38,8 @@ class Slider : public Range {
 
 	struct Grab {
 		int pos = 0;
-		double uvalue = 0.0;
+		double uvalue = 0.0; // Value at `pos`.
+		double value_before_dragging = 0.0;
 		bool active = false;
 	} grab;
 
@@ -71,7 +72,6 @@ protected:
 	bool ticks_on_borders = false;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	static void _bind_methods();
 

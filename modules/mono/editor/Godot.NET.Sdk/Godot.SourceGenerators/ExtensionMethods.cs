@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Godot.SourceGenerators
 {
-    static class ExtensionMethods
+    internal static class ExtensionMethods
     {
         public static bool TryGetGlobalAnalyzerProperty(
             this GeneratorExecutionContext context, string property, out string? value
@@ -32,7 +32,7 @@ namespace Godot.SourceGenerators
             disabledGenerators != null &&
             disabledGenerators.Split(';').Contains(generatorName));
 
-        public static bool InheritsFrom(this INamedTypeSymbol? symbol, string assemblyName, string typeFullName)
+        public static bool InheritsFrom(this ITypeSymbol? symbol, string assemblyName, string typeFullName)
         {
             while (symbol != null)
             {
@@ -208,7 +208,17 @@ namespace Godot.SourceGenerators
 
                 if (child.IsNode)
                 {
-                    FullQualifiedSyntax(child.AsNode()!, sm, sb, isFirstNode: innerIsFirstNode);
+                    var childNode = child.AsNode()!;
+
+                    if (node is InterpolationSyntax && childNode is ExpressionSyntax)
+                    {
+                        ParenEnclosedFullQualifiedSyntax(childNode, sm, sb, isFirstNode: innerIsFirstNode);
+                    }
+                    else
+                    {
+                        FullQualifiedSyntax(childNode, sm, sb, isFirstNode: innerIsFirstNode);
+                    }
+
                     innerIsFirstNode = false;
                 }
                 else
@@ -220,6 +230,13 @@ namespace Godot.SourceGenerators
                 {
                     sb.Append(child.GetTrailingTrivia());
                 }
+            }
+
+            static void ParenEnclosedFullQualifiedSyntax(SyntaxNode node, SemanticModel sm, StringBuilder sb, bool isFirstNode)
+            {
+                sb.Append(SyntaxFactory.Token(SyntaxKind.OpenParenToken));
+                FullQualifiedSyntax(node, sm, sb, isFirstNode);
+                sb.Append(SyntaxFactory.Token(SyntaxKind.CloseParenToken));
             }
         }
 
@@ -303,11 +320,6 @@ namespace Godot.SourceGenerators
         {
             foreach (var property in properties)
             {
-                // TODO: We should still restore read-only properties after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
-                // Ignore properties without a getter, without a setter or with an init-only setter. Godot properties must be both readable and writable.
-                if (property.IsWriteOnly || property.IsReadOnly || property.SetMethod!.IsInitOnly)
-                    continue;
-
                 var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(property.Type, typeCache);
 
                 if (marshalType == null)
@@ -325,10 +337,6 @@ namespace Godot.SourceGenerators
             foreach (var field in fields)
             {
                 // TODO: We should still restore read-only fields after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
-                // Ignore properties without a getter or without a setter. Godot properties must be both readable and writable.
-                if (field.IsReadOnly)
-                    continue;
-
                 var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(field.Type, typeCache);
 
                 if (marshalType == null)
@@ -336,6 +344,11 @@ namespace Godot.SourceGenerators
 
                 yield return new GodotFieldData(field, marshalType.Value);
             }
+        }
+
+        public static Location? FirstLocationWithSourceTreeOrDefault(this IEnumerable<Location> locations)
+        {
+            return locations.FirstOrDefault(location => location.SourceTree != null) ?? locations.FirstOrDefault();
         }
 
         public static string Path(this Location location)

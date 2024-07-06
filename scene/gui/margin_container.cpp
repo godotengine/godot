@@ -30,27 +30,14 @@
 
 #include "margin_container.h"
 
-void MarginContainer::_update_theme_item_cache() {
-	Container::_update_theme_item_cache();
-
-	theme_cache.margin_left = get_theme_constant(SNAME("margin_left"));
-	theme_cache.margin_top = get_theme_constant(SNAME("margin_top"));
-	theme_cache.margin_right = get_theme_constant(SNAME("margin_right"));
-	theme_cache.margin_bottom = get_theme_constant(SNAME("margin_bottom"));
-}
+#include "scene/theme/theme_db.h"
 
 Size2 MarginContainer::get_minimum_size() const {
 	Size2 max;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
+		Control *c = as_sortable_control(get_child(i), SortableVisbilityMode::VISIBLE);
 		if (!c) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
-			continue;
-		}
-		if (!c->is_visible()) {
 			continue;
 		}
 
@@ -87,17 +74,31 @@ Vector<int> MarginContainer::get_allowed_size_flags_vertical() const {
 	return flags;
 }
 
+int MarginContainer::get_margin_size(Side p_side) const {
+	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+
+	switch (p_side) {
+		case SIDE_LEFT:
+			return theme_cache.margin_left;
+		case SIDE_RIGHT:
+			return theme_cache.margin_right;
+		case SIDE_TOP:
+			return theme_cache.margin_top;
+		case SIDE_BOTTOM:
+			return theme_cache.margin_bottom;
+	}
+
+	return 0;
+}
+
 void MarginContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
 			Size2 s = get_size();
 
 			for (int i = 0; i < get_child_count(); i++) {
-				Control *c = Object::cast_to<Control>(get_child(i));
+				Control *c = as_sortable_control(get_child(i));
 				if (!c) {
-					continue;
-				}
-				if (c->is_set_as_top_level()) {
 					continue;
 				}
 
@@ -111,6 +112,13 @@ void MarginContainer::_notification(int p_what) {
 			update_minimum_size();
 		} break;
 	}
+}
+
+void MarginContainer::_bind_methods() {
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MarginContainer, margin_left);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MarginContainer, margin_top);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MarginContainer, margin_right);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MarginContainer, margin_bottom);
 }
 
 MarginContainer::MarginContainer() {

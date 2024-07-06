@@ -520,7 +520,7 @@
 #ifdef FT_DEBUG_LEVEL_TRACE
       if ( bol )
       {
-        FT_TRACE5(( " (%ld)", decoder->top - decoder->stack ));
+        FT_TRACE5(( " (%td)", decoder->top - decoder->stack ));
         bol = FALSE;
       }
 #endif
@@ -1165,7 +1165,7 @@
           if ( top - decoder->stack != num_args )
             FT_TRACE0(( "t1_decoder_parse_charstrings:"
                         " too much operands on the stack"
-                        " (seen %ld, expected %d)\n",
+                        " (seen %td, expected %d)\n",
                         top - decoder->stack, num_args ));
           break;
         }

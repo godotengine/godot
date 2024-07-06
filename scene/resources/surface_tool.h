@@ -86,7 +86,7 @@ public:
 	static OptimizeVertexCacheFunc optimize_vertex_cache_func;
 	typedef size_t (*SimplifyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, unsigned int options, float *r_error);
 	static SimplifyFunc simplify_func;
-	typedef size_t (*SimplifyWithAttribFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_data, size_t vertex_count, size_t vertex_stride, size_t target_index_count, float target_error, unsigned int options, float *result_error, const float *attributes, const float *attribute_weights, size_t attribute_count);
+	typedef size_t (*SimplifyWithAttribFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_data, size_t vertex_count, size_t vertex_stride, const float *attributes, size_t attribute_stride, const float *attribute_weights, size_t attribute_count, size_t target_index_count, float target_error, unsigned int options, float *result_error);
 	static SimplifyWithAttribFunc simplify_with_attrib_func;
 	typedef float (*SimplifyScaleFunc)(const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride);
 	static SimplifyScaleFunc simplify_scale_func;
@@ -136,7 +136,7 @@ private:
 	bool begun = false;
 	bool first = false;
 	Mesh::PrimitiveType primitive = Mesh::PRIMITIVE_LINES;
-	uint32_t format = 0;
+	uint64_t format = 0;
 	Ref<Material> material;
 	//arrays
 	LocalVector<Vertex> vertex_array;
@@ -158,8 +158,8 @@ private:
 
 	CustomFormat last_custom_format[RS::ARRAY_CUSTOM_COUNT];
 
-	void _create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint32_t &lformat);
-	void _create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint32_t &lformat);
+	void _create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat);
+	void _create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat);
 
 	//mikktspace callbacks
 	static int mikktGetNumFaces(const SMikkTSpaceContext *pContext);
@@ -219,12 +219,13 @@ public:
 	LocalVector<Vertex> &get_vertex_array() { return vertex_array; }
 
 	void create_from_triangle_arrays(const Array &p_arrays);
-	static void create_vertex_array_from_triangle_arrays(const Array &p_arrays, LocalVector<Vertex> &ret, uint32_t *r_format = nullptr);
+	void create_from_arrays(const Array &p_arrays, Mesh::PrimitiveType p_primitive_type = Mesh::PRIMITIVE_TRIANGLES);
+	static void create_vertex_array_from_arrays(const Array &p_arrays, LocalVector<Vertex> &ret, uint64_t *r_format = nullptr);
 	Array commit_to_arrays();
 	void create_from(const Ref<Mesh> &p_existing, int p_surface);
 	void create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name);
 	void append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform3D &p_xform);
-	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint32_t p_compress_flags = 0);
+	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint64_t p_compress_flags = 0);
 
 	SurfaceTool();
 };

@@ -39,12 +39,18 @@ class SceneReplicationConfig : public Resource {
 	OBJ_SAVE_TYPE(SceneReplicationConfig);
 	RES_BASE_EXTENSION("repl");
 
+public:
+	enum ReplicationMode {
+		REPLICATION_MODE_NEVER,
+		REPLICATION_MODE_ALWAYS,
+		REPLICATION_MODE_ON_CHANGE,
+	};
+
 private:
 	struct ReplicationProperty {
 		NodePath name;
 		bool spawn = true;
-		bool sync = true;
-		bool watch = false;
+		ReplicationMode mode = REPLICATION_MODE_ALWAYS;
 
 		bool operator==(const ReplicationProperty &p_to) {
 			return name == p_to.name;
@@ -61,6 +67,9 @@ private:
 	List<NodePath> spawn_props;
 	List<NodePath> sync_props;
 	List<NodePath> watch_props;
+	bool dirty = false;
+
+	void _update();
 
 protected:
 	static void _bind_methods();
@@ -70,6 +79,8 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
+	virtual void reset_state() override; // Required since we use variable amount of properties.
+
 	TypedArray<NodePath> get_properties() const;
 
 	void add_property(const NodePath &p_path, int p_index = -1);
@@ -86,11 +97,16 @@ public:
 	bool property_get_watch(const NodePath &p_path);
 	void property_set_watch(const NodePath &p_path, bool p_enabled);
 
-	const List<NodePath> &get_spawn_properties() { return spawn_props; }
-	const List<NodePath> &get_sync_properties() { return sync_props; }
-	const List<NodePath> &get_watch_properties() { return watch_props; }
+	ReplicationMode property_get_replication_mode(const NodePath &p_path);
+	void property_set_replication_mode(const NodePath &p_path, ReplicationMode p_mode);
+
+	const List<NodePath> &get_spawn_properties();
+	const List<NodePath> &get_sync_properties();
+	const List<NodePath> &get_watch_properties();
 
 	SceneReplicationConfig() {}
 };
+
+VARIANT_ENUM_CAST(SceneReplicationConfig::ReplicationMode);
 
 #endif // SCENE_REPLICATION_CONFIG_H

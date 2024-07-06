@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Sky" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Background that uses a [Material] to draw a sky.
+		Defines a 3D environment's background by using a [Material].
 	</brief_description>
 	<description>
-		The [Sky] class uses a [Material] to draw the background and update the reflection/radiance cubemaps.
+		The [Sky] class uses a [Material] to render a 3D environment's background and the light it emits by updating the reflection/radiance cubemaps.
 	</description>
 	<tutorials>
 	</tutorials>

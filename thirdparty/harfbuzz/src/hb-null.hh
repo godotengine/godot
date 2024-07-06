@@ -37,7 +37,7 @@
 
 /* Global nul-content Null pool.  Enlarge as necessary. */
 
-#define HB_NULL_POOL_SIZE 520
+#define HB_NULL_POOL_SIZE 640
 
 template <typename T, typename>
 struct _hb_has_min_size : hb_false_type {};
@@ -47,15 +47,6 @@ struct _hb_has_min_size<T, hb_void_t<decltype (T::min_size)>>
 template <typename T>
 using hb_has_min_size = _hb_has_min_size<T, void>;
 #define hb_has_min_size(T) hb_has_min_size<T>::value
-
-template <typename T, typename>
-struct _hb_has_max_size : hb_false_type {};
-template <typename T>
-struct _hb_has_max_size<T, hb_void_t<decltype (T::max_size)>>
-	: hb_true_type {};
-template <typename T>
-using hb_has_max_size = _hb_has_max_size<T, void>;
-#define hb_has_max_size(T) hb_has_max_size<T>::value
 
 template <typename T, typename>
 struct _hb_has_null_size : hb_false_type {};
@@ -94,7 +85,7 @@ using hb_null_size = _hb_null_size<T, void>;
 template <typename T, typename>
 struct _hb_static_size : hb_integral_constant<unsigned, sizeof (T)> {};
 template <typename T>
-struct _hb_static_size<T, hb_void_t<decltype (T::min_size)>> : hb_integral_constant<unsigned, T::static_size> {};
+struct _hb_static_size<T, hb_void_t<decltype (T::static_size)>> : hb_integral_constant<unsigned, T::static_size> {};
 template <typename T>
 using hb_static_size = _hb_static_size<T, void>;
 #define hb_static_size(T) hb_static_size<T>::value

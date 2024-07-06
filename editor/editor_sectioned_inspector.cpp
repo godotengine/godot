@@ -31,17 +31,18 @@
 #include "editor_sectioned_inspector.h"
 
 #include "editor/editor_property_name_processor.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 
 static bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
-	if (p_property_path.findn(p_filter) != -1) {
+	if (p_property_path.containsn(p_filter)) {
 		return true;
 	}
 
 	const Vector<String> sections = p_property_path.split("/");
 	for (int i = 0; i < sections.size(); i++) {
-		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i], p_style))) {
+		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i], p_style, p_property_path))) {
 			return true;
 		}
 	}
@@ -264,8 +265,8 @@ void SectionedInspector::update_category_list() {
 
 		for (int i = 0; i < sc; i++) {
 			TreeItem *parent = section_map[metasection];
-			//parent->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
-			parent->set_custom_font(0, get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+			//parent->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+			parent->set_custom_font(0, get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
 
 			if (i > 0) {
 				metasection += "/" + sectionarr[i];
@@ -277,8 +278,8 @@ void SectionedInspector::update_category_list() {
 				TreeItem *ms = sections->create_item(parent);
 				section_map[metasection] = ms;
 
-				const String text = EditorPropertyNameProcessor::get_singleton()->process_name(sectionarr[i], name_style);
-				const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(sectionarr[i], tooltip_style);
+				const String text = EditorPropertyNameProcessor::get_singleton()->process_name(sectionarr[i], name_style, pi.name);
+				const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(sectionarr[i], tooltip_style, pi.name);
 
 				ms->set_text(0, text);
 				ms->set_tooltip_text(0, tooltip);
@@ -303,7 +304,7 @@ void SectionedInspector::update_category_list() {
 void SectionedInspector::register_search_box(LineEdit *p_box) {
 	search_box = p_box;
 	inspector->register_text_enter(p_box);
-	search_box->connect("text_changed", callable_mp(this, &SectionedInspector::_search_changed));
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &SectionedInspector::_search_changed));
 }
 
 void SectionedInspector::_search_changed(const String &p_what) {
@@ -330,6 +331,7 @@ SectionedInspector::SectionedInspector() :
 	left_vb->set_custom_minimum_size(Size2(190, 0) * EDSCALE);
 	add_child(left_vb);
 
+	sections->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);
 	sections->set_hide_root(true);
 

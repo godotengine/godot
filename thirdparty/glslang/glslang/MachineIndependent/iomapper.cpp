@@ -33,8 +33,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
-#if !defined(GLSLANG_WEB)
-
 #include "../Include/Common.h"
 #include "../Include/InfoSink.h"
 #include "../Include/Types.h"
@@ -87,7 +85,7 @@ public:
             addGlobalReference(base->getAccessName());
 
         if (target) {
-            TVarEntryInfo ent = {base->getId(), base, ! traverseAll};
+            TVarEntryInfo ent = {base->getId(), base, ! traverseAll, {}, {}, {}, {}, {}, {}, {}};
             ent.stage = intermediate.getStage();
             TVarLiveMap::iterator at = target->find(
                 ent.symbol->getAccessName()); // std::lower_bound(target->begin(), target->end(), ent, TVarEntryInfo::TOrderById());
@@ -126,7 +124,7 @@ public:
         else
             return;
 
-        TVarEntryInfo ent = { base->getId() };
+        TVarEntryInfo ent = { base->getId(), {}, {}, {}, {}, {}, {}, {}, {}, {} };
         // Fix a defect, when block has no instance name, we need to find its block name
         TVarLiveMap::const_iterator at = source->find(base->getAccessName());
         if (at == source->end())
@@ -145,6 +143,8 @@ public:
             base->getWritableType().getQualifier().layoutComponent = at->second.newComponent;
         if (at->second.newIndex != -1)
             base->getWritableType().getQualifier().layoutIndex = at->second.newIndex;
+        if (at->second.upgradedToPushConstant)
+            base->getWritableType().getQualifier().layoutPushConstant = true;
     }
 
   private:
@@ -866,7 +866,7 @@ int TDefaultIoResolverBase::resolveInOutLocation(EShLanguage stage, TVarEntryInf
     }
 
     // no locations added if already present, a built-in variable, or a variable with SPIR-V decorate
-    if (type.getQualifier().hasLocation() || type.isBuiltIn() || type.getQualifier().hasSprivDecorate()) {
+    if (type.getQualifier().hasLocation() || type.isBuiltIn() || type.getQualifier().hasSpirvDecorate()) {
         return ent.newLocation = -1;
     }
 
@@ -953,7 +953,7 @@ int TDefaultGlslIoResolver::resolveInOutLocation(EShLanguage stage, TVarEntryInf
         return ent.newLocation = type.getQualifier().layoutLocation;
     }
     // no locations added if already present, a built-in variable, or a variable with SPIR-V decorate
-    if (type.isBuiltIn() || type.getQualifier().hasSprivDecorate()) {
+    if (type.isBuiltIn() || type.getQualifier().hasSpirvDecorate()) {
         return ent.newLocation = -1;
     }
     // no locations on blocks of built-in variables
@@ -1670,31 +1670,34 @@ bool TGlslIoMapper::doMap(TIoMapResolver* resolver, TInfoSink& infoSink) {
                     }
                 }
             }
-            // If it's been upgraded to push_constant, then remove it from the uniformVector
+            // If it's been upgraded to push_constant, then set the flag so when its traversed
+            // in the next for loop, all references to this symbol will get their flag changed.
             // so it doesn't get a set/binding assigned to it.
             if (upgraded) {
-                while (1) {
-                    auto at = std::find_if(uniformVector.begin(), uniformVector.end(),
-                                           [this](const TVarLivePair& p) { return p.first == autoPushConstantBlockName; });
-                    if (at != uniformVector.end())
-                        uniformVector.erase(at);
-                    else
-                        break;
-                }
+                std::for_each(uniformVector.begin(), uniformVector.end(),
+                                       [this](TVarLivePair& p) {
+                if (p.first == autoPushConstantBlockName) {
+                        p.second.upgradedToPushConstant = true;
+                    }
+                });
             }
         }
         for (size_t stage = 0; stage < EShLangCount; stage++) {
             if (intermediates[stage] != nullptr) {
                 // traverse each stage, set new location to each input/output and unifom symbol, set new binding to
-                // ubo, ssbo and opaque symbols
+                // ubo, ssbo and opaque symbols. Assign push_constant upgrades as well.
                 TVarLiveMap** pUniformVarMap = uniformResolve.uniformVarMap;
                 std::for_each(uniformVector.begin(), uniformVector.end(), [pUniformVarMap, stage](TVarLivePair p) {
                     auto at = pUniformVarMap[stage]->find(p.second.symbol->getAccessName());
                     if (at != pUniformVarMap[stage]->end() && at->second.id == p.second.id){
-                        int resolvedBinding = at->second.newBinding;
-                        at->second = p.second;
-                        if (resolvedBinding > 0)
-                            at->second.newBinding = resolvedBinding;
+                        if (p.second.upgradedToPushConstant) {
+                            at->second.upgradedToPushConstant = true;
+                        } else {
+                            int resolvedBinding = at->second.newBinding;
+                            at->second = p.second;
+                            if (resolvedBinding > 0)
+                                at->second.newBinding = resolvedBinding;
+                        }
                     }
                 });
                 TVarSetTraverser iter_iomap(*intermediates[stage], *inVarMaps[stage], *outVarMaps[stage],
@@ -1709,5 +1712,3 @@ bool TGlslIoMapper::doMap(TIoMapResolver* resolver, TInfoSink& infoSink) {
 }
 
 } // end namespace glslang
-
-#endif // !GLSLANG_WEB

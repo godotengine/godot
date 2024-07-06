@@ -34,7 +34,8 @@
 #include "core/input/input.h"
 #include "core/math/math_funcs.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
@@ -200,17 +201,23 @@ void ThemeEditorPreview::_notification(int p_what) {
 				set_process(true);
 			}
 
-			connect("visibility_changed", callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
-			[[fallthrough]];
-		}
+			connect(SceneStringName(visibility_changed), callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
+		} break;
+
+		case NOTIFICATION_READY: {
+			List<Ref<Theme>> preview_themes;
+			preview_themes.push_back(ThemeDB::get_singleton()->get_default_theme());
+			ThemeDB::get_singleton()->create_theme_context(preview_root, preview_themes);
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
-			picker_button->set_icon(get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
+			picker_button->set_icon(get_editor_theme_icon(SNAME("ColorPick")));
 
 			theme_cache.preview_picker_overlay = get_theme_stylebox(SNAME("preview_picker_overlay"), SNAME("ThemeEditor"));
 			theme_cache.preview_picker_overlay_color = get_theme_color(SNAME("preview_picker_overlay_color"), SNAME("ThemeEditor"));
 			theme_cache.preview_picker_label = get_theme_stylebox(SNAME("preview_picker_label"), SNAME("ThemeEditor"));
-			theme_cache.preview_picker_font = get_theme_font(SNAME("status_source"), SNAME("EditorFonts"));
-			theme_cache.font_size = get_theme_font_size(SNAME("font_size"), SNAME("EditorFonts"));
+			theme_cache.preview_picker_font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
+			theme_cache.font_size = get_theme_default_font_size();
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -233,10 +240,10 @@ ThemeEditorPreview::ThemeEditorPreview() {
 
 	picker_button = memnew(Button);
 	preview_toolbar->add_child(picker_button);
-	picker_button->set_flat(true);
+	picker_button->set_theme_type_variation("FlatButton");
 	picker_button->set_toggle_mode(true);
 	picker_button->set_tooltip_text(TTR("Toggle the control picker, allowing to visually select control types for edit."));
-	picker_button->connect("pressed", callable_mp(this, &ThemeEditorPreview::_picker_button_cbk));
+	picker_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditorPreview::_picker_button_cbk));
 
 	MarginContainer *preview_body = memnew(MarginContainer);
 	preview_body->set_custom_minimum_size(Size2(480, 0) * EDSCALE);
@@ -246,9 +253,8 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_container = memnew(ScrollContainer);
 	preview_body->add_child(preview_container);
 
-	MarginContainer *preview_root = memnew(MarginContainer);
+	preview_root = memnew(MarginContainer);
 	preview_container->add_child(preview_root);
-	preview_root->set_theme(ThemeDB::get_singleton()->get_default_theme());
 	preview_root->set_clip_contents(true);
 	preview_root->set_custom_minimum_size(Size2(450, 0) * EDSCALE);
 	preview_root->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -260,11 +266,11 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_root->add_child(preview_bg);
 
 	preview_content = memnew(MarginContainer);
-	preview_root->add_child(preview_content);
 	preview_content->add_theme_constant_override("margin_right", 4 * EDSCALE);
 	preview_content->add_theme_constant_override("margin_top", 4 * EDSCALE);
 	preview_content->add_theme_constant_override("margin_left", 4 * EDSCALE);
 	preview_content->add_theme_constant_override("margin_bottom", 4 * EDSCALE);
+	preview_root->add_child(preview_content);
 
 	preview_overlay = memnew(MarginContainer);
 	preview_overlay->set_mouse_filter(MOUSE_FILTER_IGNORE);
@@ -273,16 +279,16 @@ ThemeEditorPreview::ThemeEditorPreview() {
 
 	picker_overlay = memnew(Control);
 	add_preview_overlay(picker_overlay);
-	picker_overlay->connect("draw", callable_mp(this, &ThemeEditorPreview::_draw_picker_overlay));
-	picker_overlay->connect("gui_input", callable_mp(this, &ThemeEditorPreview::_gui_input_picker_overlay));
-	picker_overlay->connect("mouse_exited", callable_mp(this, &ThemeEditorPreview::_reset_picker_overlay));
+	picker_overlay->connect(SceneStringName(draw), callable_mp(this, &ThemeEditorPreview::_draw_picker_overlay));
+	picker_overlay->connect(SceneStringName(gui_input), callable_mp(this, &ThemeEditorPreview::_gui_input_picker_overlay));
+	picker_overlay->connect(SceneStringName(mouse_exited), callable_mp(this, &ThemeEditorPreview::_reset_picker_overlay));
 }
 
 void DefaultThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			test_color_picker_button->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), SNAME("Editor"))));
+			test_color_picker_button->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
 		} break;
 	}
 }
@@ -321,7 +327,7 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	first_vb->add_child(bt);
 	Button *tb = memnew(Button);
 	tb->set_flat(true);
-	tb->set_text("Button");
+	tb->set_text("Flat Button");
 	first_vb->add_child(tb);
 
 	CheckButton *cb = memnew(CheckButton);
@@ -347,9 +353,7 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	test_menu_button->get_popup()->add_separator(TTR("Named Separator"));
 
 	PopupMenu *test_submenu = memnew(PopupMenu);
-	test_menu_button->get_popup()->add_child(test_submenu);
-	test_submenu->set_name("submenu");
-	test_menu_button->get_popup()->add_submenu_item(TTR("Submenu"), "submenu");
+	test_menu_button->get_popup()->add_submenu_node_item(TTR("Submenu"), test_submenu);
 	test_submenu->add_item(TTR("Subitem 1"));
 	test_submenu->add_item(TTR("Subitem 2"));
 	first_vb->add_child(test_menu_button);
@@ -485,7 +489,7 @@ void SceneThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			reload_scene_button->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+			reload_scene_button->set_icon(get_editor_theme_icon(SNAME("Reload")));
 		} break;
 	}
 }
@@ -527,5 +531,5 @@ SceneThemeEditorPreview::SceneThemeEditorPreview() {
 	reload_scene_button->set_flat(true);
 	reload_scene_button->set_tooltip_text(TTR("Reload the scene to reflect its most actual state."));
 	preview_toolbar->add_child(reload_scene_button);
-	reload_scene_button->connect("pressed", callable_mp(this, &SceneThemeEditorPreview::_reload_scene));
+	reload_scene_button->connect(SceneStringName(pressed), callable_mp(this, &SceneThemeEditorPreview::_reload_scene));
 }

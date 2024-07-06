@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ProceduralSkyMaterial" inherits="Material" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A [Material] used with [Sky] to generate a background based on user input parameters.
+		A material that defines a simple sky for a [Sky] resource.
 	</brief_description>
 	<description>
-		ProceduralSkyMaterial provides a way to create an effective background quickly by defining procedural parameters for the sun, the sky and the ground. The sky and ground are very similar, they are defined by a color at the horizon, another color, and finally an easing curve to interpolate between these two colors. Similarly, the sun is described by a position in the sky, a color, and an easing curve. However, the sun also defines a minimum and maximum angle, these two values define at what distance the easing curve begins and ends from the sun, and thus end up defining the size of the sun in the sky.
-		The [ProceduralSkyMaterial] uses a lightweight shader to draw the sky and is thus suited for real time updates. When you do not need a quick sky that is not realistic, this is a good option. If you need a more realistic option, try using [PhysicalSkyMaterial] instead.
-		The [ProceduralSkyMaterial] supports up to 4 suns. Each sun takes its color, energy, and direction from the corresponding [DirectionalLight3D] in the scene.
+		[ProceduralSkyMaterial] provides a way to create an effective background quickly by defining procedural parameters for the sun, the sky and the ground. The sky and ground are defined by a main color, a color at the horizon, and an easing curve to interpolate between them. Suns are described by a position in the sky, a color, and a max angle from the sun at which the easing curve ends. The max angle therefore defines the size of the sun in the sky.
+		[ProceduralSkyMaterial] supports up to 4 suns, using the color, and energy, direction, and angular distance of the first four [DirectionalLight3D] nodes in the scene. This means that the suns are defined individually by the properties of their corresponding [DirectionalLight3D]s and globally by [member sun_angle_max] and [member sun_curve].
+		[ProceduralSkyMaterial] uses a lightweight shader to draw the sky and is therefore suited for real-time updates. This makes it a great option for a sky that is simple and computationally cheap, but unrealistic. If you need a more realistic procedural option, use [PhysicalSkyMaterial].
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="energy_multiplier" type="float" setter="set_energy_multiplier" getter="get_energy_multiplier" default="1.0">
+			The sky's overall brightness multiplier. Higher values result in a brighter sky.
+		</member>
 		<member name="ground_bottom_color" type="Color" setter="set_ground_bottom_color" getter="get_ground_bottom_color" default="Color(0.2, 0.169, 0.133, 1)">
 			Color of the ground at the bottom. Blends with [member ground_horizon_color].
 		</member>

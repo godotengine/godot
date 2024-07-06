@@ -88,14 +88,20 @@ public:
 
 	virtual Error get_error() const override; ///< get last error
 
+	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override;
 	virtual void store_8(uint8_t p_dest) override; ///< store a byte
 
 	virtual bool file_exists(const String &p_name) override; ///< return true if a file exists
 
 	virtual uint64_t _get_modified_time(const String &p_file) override;
-	virtual uint32_t _get_unix_permissions(const String &p_file) override;
-	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) override;
+	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override;
+	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override;
+
+	virtual bool _get_hidden_attribute(const String &p_file) override;
+	virtual Error _set_hidden_attribute(const String &p_file, bool p_hidden) override;
+	virtual bool _get_read_only_attribute(const String &p_file) override;
+	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) override;
 
 	virtual void close() override;
 

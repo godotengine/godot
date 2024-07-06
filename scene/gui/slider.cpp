@@ -31,6 +31,7 @@
 #include "slider.h"
 
 #include "core/os/keyboard.h"
+#include "scene/theme/theme_db.h"
 
 Size2 Slider::get_minimum_size() const {
 	Size2i ss = theme_cache.slider_style->get_minimum_size();
@@ -63,31 +64,39 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				grab.pos = orientation == VERTICAL ? mb->get_position().y : mb->get_position().x;
+				grab.value_before_dragging = get_as_ratio();
+				emit_signal(SNAME("drag_started"));
 
-				double grab_width = (double)grabber->get_width();
-				double grab_height = (double)grabber->get_height();
+				double grab_width = theme_cache.center_grabber ? 0.0 : (double)grabber->get_width();
+				double grab_height = theme_cache.center_grabber ? 0.0 : (double)grabber->get_height();
 				double max = orientation == VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
+				set_block_signals(true);
 				if (orientation == VERTICAL) {
 					set_as_ratio(1 - (((double)grab.pos - (grab_height / 2.0)) / max));
 				} else {
 					set_as_ratio(((double)grab.pos - (grab_width / 2.0)) / max);
 				}
+				set_block_signals(false);
 				grab.active = true;
 				grab.uvalue = get_as_ratio();
 
-				emit_signal(SNAME("drag_started"));
+				_notify_shared_value_changed();
 			} else {
 				grab.active = false;
 
-				const bool value_changed = !Math::is_equal_approx((double)grab.uvalue, get_as_ratio());
+				const bool value_changed = !Math::is_equal_approx((double)grab.value_before_dragging, get_as_ratio());
 				emit_signal(SNAME("drag_ended"), value_changed);
 			}
 		} else if (scrollable) {
 			if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
-				grab_focus();
+				if (get_focus_mode() != FOCUS_NONE) {
+					grab_focus();
+				}
 				set_value(get_value() + get_step());
 			} else if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-				grab_focus();
+				if (get_focus_mode() != FOCUS_NONE) {
+					grab_focus();
+				}
 				set_value(get_value() - get_step());
 			}
 		}
@@ -98,12 +107,14 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid()) {
 		if (grab.active) {
 			Size2i size = get_size();
-			Ref<Texture2D> grabber = theme_cache.grabber_icon;
+			Ref<Texture2D> grabber = theme_cache.grabber_hl_icon;
+			double grab_width = theme_cache.center_grabber ? 0.0 : (double)grabber->get_width();
+			double grab_height = theme_cache.center_grabber ? 0.0 : (double)grabber->get_height();
 			double motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
 			if (orientation == VERTICAL) {
 				motion = -motion;
 			}
-			double areasize = orientation == VERTICAL ? size.height - grabber->get_height() : size.width - grabber->get_width();
+			double areasize = orientation == VERTICAL ? size.height - grab_height : size.width - grab_width;
 			if (areasize <= 0) {
 				return;
 			}
@@ -174,22 +185,6 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 	}
-}
-
-void Slider::_update_theme_item_cache() {
-	Range::_update_theme_item_cache();
-
-	theme_cache.slider_style = get_theme_stylebox(SNAME("slider"));
-	theme_cache.grabber_area_style = get_theme_stylebox(SNAME("grabber_area"));
-	theme_cache.grabber_area_hl_style = get_theme_stylebox(SNAME("grabber_area_highlight"));
-
-	theme_cache.grabber_icon = get_theme_icon(SNAME("grabber"));
-	theme_cache.grabber_hl_icon = get_theme_icon(SNAME("grabber_highlight"));
-	theme_cache.grabber_disabled_icon = get_theme_icon(SNAME("grabber_disabled"));
-	theme_cache.tick_icon = get_theme_icon(SNAME("tick"));
-
-	theme_cache.center_grabber = get_theme_constant(SNAME("center_grabber"));
-	theme_cache.grabber_offset = get_theme_constant(SNAME("grabber_offset"));
 }
 
 void Slider::_notification(int p_what) {
@@ -392,6 +387,18 @@ void Slider::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrollable"), "set_scrollable", "is_scrollable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tick_count", PROPERTY_HINT_RANGE, "0,4096,1"), "set_ticks", "get_ticks");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ticks_on_borders"), "set_ticks_on_borders", "get_ticks_on_borders");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, slider_style, "slider");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, grabber_area_style, "grabber_area");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, grabber_area_hl_style, "grabber_area_highlight");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, grabber_icon, "grabber");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, grabber_hl_icon, "grabber_highlight");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, grabber_disabled_icon, "grabber_disabled");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, tick_icon, "tick");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, center_grabber);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, grabber_offset);
 }
 
 Slider::Slider(Orientation p_orientation) {

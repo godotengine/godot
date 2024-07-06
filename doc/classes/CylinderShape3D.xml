@@ -4,14 +4,14 @@
 		A 3D cylinder shape used for physics collision.
 	</brief_description>
 	<description>
-		A 2D capsule shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape3D].
+		A 3D cylinder shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape3D].
 		[b]Note:[/b] There are several known bugs with cylinder collision shapes. Using [CapsuleShape3D] or [BoxShape3D] instead is recommended.
-		[b]Performance:[/b] [CylinderShape3D] is fast to check collisions against, but it is slower than [CapsuleShape3D], [BoxShape3D], and [CylinderShape3D].
+		[b]Performance:[/b] [CylinderShape3D] is fast to check collisions against, but it is slower than [CapsuleShape3D], [BoxShape3D], and [SphereShape3D].
 	</description>
 	<tutorials>
-		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
-		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/2747</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
 	<members>
 		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">

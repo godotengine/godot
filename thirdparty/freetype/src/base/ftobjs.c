@@ -1747,7 +1747,8 @@
     FT_Memory     memory = library->memory;
 
 
-    args.flags = 0;
+    args.driver = NULL;
+    args.flags  = 0;
 
     if ( driver_name )
     {

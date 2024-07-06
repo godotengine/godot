@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CPUParticles2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		CPU-based 2D particle emitter.
+		A CPU-based 2D particle emitter.
 	</brief_description>
 	<description>
 		CPU-based 2D particle node used to create a variety of particle systems and effects.
@@ -126,7 +126,7 @@
 		<member name="anim_speed_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
 			Minimum equivalent of [member anim_speed_max].
 		</member>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
 			Each particle's initial color. If [member texture] is defined, it will be multiplied by this color.
 		</member>
 		<member name="color_initial_ramp" type="Gradient" setter="set_color_initial_ramp" getter="get_color_initial_ramp">
@@ -169,7 +169,7 @@
 			The sphere's radius if [member emission_shape] is set to [constant EMISSION_SHAPE_SPHERE].
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="true">
-			If [code]true[/code], particles are being emitted.
+			If [code]true[/code], particles are being emitted. [member emitting] can be used to start and stop particles from emitting. However, if [member one_shot] is [code]true[/code] setting [member emitting] to [code]true[/code] will not restart the emission cycle until after all active particles finish processing. You can use the [signal finished] signal to be notified once all active particles finish processing.
 		</member>
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio" default="0.0">
 			How rapidly particles in an emission cycle are emitted. If greater than [code]0[/code], there will be a gap in emissions before the next cycle begins.
@@ -297,7 +297,7 @@
 			Particles are drawn in the order emitted.
 		</constant>
 		<constant name="DRAW_ORDER_LIFETIME" value="1" enum="DrawOrder">
-			Particles are drawn in order of remaining lifetime.
+			Particles are drawn in order of remaining lifetime. In other words, the particle with the highest lifetime is drawn at the front.
 		</constant>
 		<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0" enum="Parameter">
 			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set initial velocity properties.

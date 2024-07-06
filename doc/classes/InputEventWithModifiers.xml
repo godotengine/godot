@@ -19,7 +19,7 @@
 		<method name="is_command_or_control_pressed" qualifiers="const">
 			<return type="bool" />
 			<description>
-				On macOS, returns [code]true[/code] if [kbd]Meta[/kbd] ([kbd]Command[/kbd]) is pressed.
+				On macOS, returns [code]true[/code] if [kbd]Meta[/kbd] ([kbd]Cmd[/kbd]) is pressed.
 				On other platforms, returns [code]true[/code] if [kbd]Ctrl[/kbd] is pressed.
 			</description>
 		</method>
@@ -29,7 +29,7 @@
 			State of the [kbd]Alt[/kbd] modifier.
 		</member>
 		<member name="command_or_control_autoremap" type="bool" setter="set_command_or_control_autoremap" getter="is_command_or_control_autoremap" default="false">
-			Automatically use [kbd]Meta[/kbd] ([kbd]Command[/kbd]) on macOS and [kbd]Ctrl[/kbd] on other platforms. If [code]true[/code], [member ctrl_pressed] and [member meta_pressed] cannot be set.
+			Automatically use [kbd]Meta[/kbd] ([kbd]Cmd[/kbd]) on macOS and [kbd]Ctrl[/kbd] on other platforms. If [code]true[/code], [member ctrl_pressed] and [member meta_pressed] cannot be set.
 		</member>
 		<member name="ctrl_pressed" type="bool" setter="set_ctrl_pressed" getter="is_ctrl_pressed" default="false">
 			State of the [kbd]Ctrl[/kbd] modifier.

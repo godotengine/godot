@@ -42,13 +42,21 @@ public:
 		ALIGNMENT_CENTER,
 		ALIGNMENT_END
 	};
+	enum LastWrapAlignmentMode {
+		LAST_WRAP_ALIGNMENT_INHERIT,
+		LAST_WRAP_ALIGNMENT_BEGIN,
+		LAST_WRAP_ALIGNMENT_CENTER,
+		LAST_WRAP_ALIGNMENT_END
+	};
 
 private:
 	int cached_size = 0;
 	int cached_line_count = 0;
 
 	bool vertical = false;
+	bool reverse_fill = false;
 	AlignmentMode alignment = ALIGNMENT_BEGIN;
+	LastWrapAlignmentMode last_wrap_alignment = LAST_WRAP_ALIGNMENT_INHERIT;
 
 	struct ThemeCache {
 		int h_separation = 0;
@@ -60,8 +68,6 @@ private:
 protected:
 	bool is_fixed = false;
 
-	virtual void _update_theme_item_cache() override;
-
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
@@ -72,8 +78,14 @@ public:
 	void set_alignment(AlignmentMode p_alignment);
 	AlignmentMode get_alignment() const;
 
+	void set_last_wrap_alignment(LastWrapAlignmentMode p_last_wrap_alignment);
+	LastWrapAlignmentMode get_last_wrap_alignment() const;
+
 	void set_vertical(bool p_vertical);
 	bool is_vertical() const;
+
+	void set_reverse_fill(bool p_reverse_fill);
+	bool is_reverse_fill() const;
 
 	virtual Size2 get_minimum_size() const override;
 
@@ -100,5 +112,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(FlowContainer::AlignmentMode);
+VARIANT_ENUM_CAST(FlowContainer::LastWrapAlignmentMode);
 
 #endif // FLOW_CONTAINER_H

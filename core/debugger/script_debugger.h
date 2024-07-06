@@ -40,21 +40,25 @@
 class ScriptDebugger {
 	typedef ScriptLanguage::StackInfo StackInfo;
 
-	int lines_left = -1;
-	int depth = -1;
 	bool skip_breakpoints = false;
 
 	HashMap<int, HashSet<StringName>> breakpoints;
 
-	ScriptLanguage *break_lang = nullptr;
-	Vector<StackInfo> error_stack_info;
+	static thread_local int lines_left;
+	static thread_local int depth;
+	static thread_local ScriptLanguage *break_lang;
+	static thread_local Vector<StackInfo> error_stack_info;
 
 public:
 	void set_lines_left(int p_left);
-	int get_lines_left() const;
+	_ALWAYS_INLINE_ int get_lines_left() const {
+		return lines_left;
+	}
 
 	void set_depth(int p_depth);
-	int get_depth() const;
+	_ALWAYS_INLINE_ int get_depth() const {
+		return depth;
+	}
 
 	String breakpoint_find_source(const String &p_source) const;
 	void set_break_language(ScriptLanguage *p_lang) { break_lang = p_lang; }
@@ -63,7 +67,12 @@ public:
 	bool is_skipping_breakpoints();
 	void insert_breakpoint(int p_line, const StringName &p_source);
 	void remove_breakpoint(int p_line, const StringName &p_source);
-	bool is_breakpoint(int p_line, const StringName &p_source) const;
+	_ALWAYS_INLINE_ bool is_breakpoint(int p_line, const StringName &p_source) const {
+		if (likely(!breakpoints.has(p_line))) {
+			return false;
+		}
+		return breakpoints[p_line].has(p_source);
+	}
 	void clear_breakpoints();
 	const HashMap<int, HashSet<StringName>> &get_breakpoints() const { return breakpoints; }
 

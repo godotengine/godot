@@ -28,17 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef _3D_DISABLED
+
 #include "root_motion_view.h"
 
 #include "scene/animation/animation_tree.h"
 #include "scene/resources/material.h"
 
-void RootMotionView::set_animation_path(const NodePath &p_path) {
+void RootMotionView::set_animation_mixer(const NodePath &p_path) {
 	path = p_path;
 	first = true;
 }
 
-NodePath RootMotionView::get_animation_path() const {
+NodePath RootMotionView::get_animation_mixer() const {
 	return path;
 }
 
@@ -93,20 +95,20 @@ void RootMotionView::_notification(int p_what) {
 			if (has_node(path)) {
 				Node *node = get_node(path);
 
-				AnimationTree *tree = Object::cast_to<AnimationTree>(node);
-				if (tree && tree->is_active() && tree->get_root_motion_track() != NodePath()) {
-					if (is_processing_internal() && tree->get_process_callback() == AnimationTree::ANIMATION_PROCESS_PHYSICS) {
+				AnimationMixer *mixer = Object::cast_to<AnimationMixer>(node);
+				if (mixer && mixer->is_active() && mixer->get_root_motion_track() != NodePath()) {
+					if (is_processing_internal() && mixer->get_callback_mode_process() == AnimationMixer::ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS) {
 						set_process_internal(false);
 						set_physics_process_internal(true);
 					}
 
-					if (is_physics_processing_internal() && tree->get_process_callback() == AnimationTree::ANIMATION_PROCESS_IDLE) {
+					if (is_physics_processing_internal() && mixer->get_callback_mode_process() == AnimationMixer::ANIMATION_CALLBACK_MODE_PROCESS_IDLE) {
 						set_process_internal(true);
 						set_physics_process_internal(false);
 					}
-					transform.origin = tree->get_root_motion_position();
-					transform.basis = tree->get_root_motion_rotation(); // Scale is meaningless.
-					diff = tree->get_root_motion_rotation_accumulator();
+					transform.origin = mixer->get_root_motion_position();
+					transform.basis = mixer->get_root_motion_rotation(); // Scale is meaningless.
+					diff = mixer->get_root_motion_rotation_accumulator();
 				}
 			}
 
@@ -170,8 +172,8 @@ AABB RootMotionView::get_aabb() const {
 }
 
 void RootMotionView::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_animation_path", "path"), &RootMotionView::set_animation_path);
-	ClassDB::bind_method(D_METHOD("get_animation_path"), &RootMotionView::get_animation_path);
+	ClassDB::bind_method(D_METHOD("set_animation_path", "path"), &RootMotionView::set_animation_mixer);
+	ClassDB::bind_method(D_METHOD("get_animation_path"), &RootMotionView::get_animation_mixer);
 
 	ClassDB::bind_method(D_METHOD("set_color", "color"), &RootMotionView::set_color);
 	ClassDB::bind_method(D_METHOD("get_color"), &RootMotionView::get_color);
@@ -185,7 +187,7 @@ void RootMotionView::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_zero_y", "enable"), &RootMotionView::set_zero_y);
 	ClassDB::bind_method(D_METHOD("get_zero_y"), &RootMotionView::get_zero_y);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "animation_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationTree"), "set_animation_path", "get_animation_path");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "animation_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationMixer"), "set_animation_path", "get_animation_path");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_size", PROPERTY_HINT_RANGE, "0.1,16,0.01,or_greater,suffix:m"), "set_cell_size", "get_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.1,16,0.01,or_greater,suffix:m"), "set_radius", "get_radius");
@@ -203,3 +205,5 @@ RootMotionView::RootMotionView() {
 RootMotionView::~RootMotionView() {
 	set_base(RID());
 }
+
+#endif // _3D_DISABLED

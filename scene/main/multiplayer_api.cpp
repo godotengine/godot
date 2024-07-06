@@ -266,10 +266,6 @@ Error MultiplayerAPI::decode_and_decompress_variants(Vector<Variant> &r_variants
 		return OK;
 	}
 
-	Vector<Variant> args;
-	Vector<const Variant *> argp;
-	args.resize(argc);
-
 	for (int i = 0; i < argc; i++) {
 		ERR_FAIL_COND_V_MSG(r_len >= p_len, ERR_INVALID_DATA, "Invalid packet received. Size too small.");
 

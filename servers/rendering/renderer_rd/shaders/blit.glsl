@@ -45,7 +45,7 @@ layout(push_constant, std140) uniform Pos {
 	float upscale;
 	float aspect_ratio;
 	uint layer;
-	uint pad1;
+	bool convert_to_srgb;
 }
 data;
 
@@ -58,6 +58,13 @@ layout(binding = 0) uniform sampler2DArray src_rt;
 #else
 layout(binding = 0) uniform sampler2D src_rt;
 #endif
+
+vec3 linear_to_srgb(vec3 color) {
+	// If going to srgb, clamp from 0 to 1.
+	color = clamp(color, vec3(0.0), vec3(1.0));
+	const vec3 a = vec3(0.055f);
+	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
+}
 
 void main() {
 #ifdef APPLY_LENS_DISTORTION
@@ -94,4 +101,8 @@ void main() {
 #else
 	color = texture(src_rt, uv);
 #endif
+
+	if (data.convert_to_srgb) {
+		color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
+	}
 }

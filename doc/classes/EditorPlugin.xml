@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Plugins are used by the editor to extend functionality. The most common types of plugins are those which edit a given node or resource type, import plugins and export plugins. See also [EditorScript] to add functions to the editor.
+		[b]Note:[/b] Some names in this class contain "left" or "right" (e.g. [constant DOCK_SLOT_LEFT_UL]). These APIs assume left-to-right layout, and would be backwards when using right-to-left layout. These names are kept for compatibility reasons.
 	</description>
 	<tutorials>
 		<link title="Editor plugins documentation index">$DOCS_URL/tutorials/plugins/editor/index.html</link>
@@ -238,14 +239,14 @@
 			<description>
 				Override this method in your plugin to return a [Texture2D] in order to give it an icon.
 				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", and "AssetLib" buttons.
-				Ideally, the plugin icon should be white with a transparent background and 16x16 pixels in size.
+				Ideally, the plugin icon should be white with a transparent background and 16×16 pixels in size.
 				[codeblocks]
 				[gdscript]
 				func _get_plugin_icon():
 				    # You can use a custom icon:
 				    return preload("res://addons/my_plugin/my_plugin_icon.svg")
 				    # Or use a built-in icon:
-				    return get_editor_interface().get_base_control().get_theme_icon("Node", "EditorIcons")
+				    return EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
 				[/gdscript]
 				[csharp]
 				public override Texture2D _GetPluginIcon()
@@ -253,7 +254,7 @@
 				    // You can use a custom icon:
 				    return ResourceLoader.Load&lt;Texture2D&gt;("res://addons/my_plugin/my_plugin_icon.svg");
 				    // Or use a built-in icon:
-				    return GetEditorInterface().GetBaseControl().GetThemeIcon("Node", "EditorIcons");
+				    return EditorInterface.Singleton.GetEditorTheme().GetIcon("Node", "EditorIcons");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -280,6 +281,34 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="_get_unsaved_status" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="for_scene" type="String" />
+			<description>
+				Override this method to provide a custom message that lists unsaved changes. The editor will call this method when exiting or when closing a scene, and display the returned string in a confirmation dialog. Return empty string if the plugin has no unsaved changes.
+				When closing a scene, [param for_scene] is the path to the scene being closed. You can use it to handle built-in resources in that scene.
+				If the user confirms saving, [method _save_external_data] will be called, before closing the editor.
+				[codeblock]
+				func _get_unsaved_status(for_scene):
+				    if not unsaved:
+				        return ""
+
+				    if for_scene.is_empty():
+				        return "Save changes in MyCustomPlugin before closing?"
+				    else:
+				        return "Scene %s has changes from MyCustomPlugin. Save before closing?" % for_scene.get_file()
+
+				func _save_external_data():
+				    unsaved = false
+				[/codeblock]
+				If the plugin has no scene-specific changes, you can ignore the calls when closing scenes:
+				[codeblock]
+				func _get_unsaved_status(for_scene):
+				    if not for_scene.is_empty():
+				        return ""
+				[/codeblock]
+			</description>
+		</method>
 		<method name="_get_window_layout" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="configuration" type="ConfigFile" />
@@ -298,20 +327,21 @@
 			<param index="0" name="object" type="Object" />
 			<description>
 				Implement this function if your plugin edits a specific type of object (Resource or Node). If you return [code]true[/code], then you will get the functions [method _edit] and [method _make_visible] called when the editor requests them. If you have declared the methods [method _forward_canvas_gui_input] and [method _forward_3d_gui_input] these will be called too.
+				[b]Note:[/b] Each plugin should handle only one type of objects at a time. If a plugin handles more types of objects and they are edited at the same time, it will result in errors.
 			</description>
 		</method>
 		<method name="_has_main_screen" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this is a main screen editor plugin (it goes in the workspace selector together with [b]2D[/b], [b]3D[/b], [b]Script[/b] and [b]AssetLib[/b]).
-				When the plugin's workspace is selected, other main screen plugins will be hidden, but your plugin will not appear automatically. It needs to be added as a child of [method EditorInterface.get_base_control] and made visible inside [method _make_visible].
+				When the plugin's workspace is selected, other main screen plugins will be hidden, but your plugin will not appear automatically. It needs to be added as a child of [method EditorInterface.get_editor_main_screen] and made visible inside [method _make_visible].
 				Use [method _get_plugin_name] and [method _get_plugin_icon] to customize the plugin button's appearance.
 				[codeblock]
 				var plugin_control
 
 				func _enter_tree():
 				    plugin_control = preload("my_plugin_control.tscn").instantiate()
-				    get_editor_interface().get_editor_main_screen().add_child(plugin_control)
+				    EditorInterface.get_editor_main_screen().add_child(plugin_control)
 				    plugin_control.hide()
 
 				func _has_main_screen():
@@ -324,7 +354,7 @@
 				    return "My Super Cool Plugin 3000"
 
 				func _get_plugin_icon():
-				    return get_editor_interface().get_base_control().get_theme_icon("Node", "EditorIcons")
+				    return EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
 				[/codeblock]
 			</description>
 		</method>
@@ -379,8 +409,10 @@
 			<return type="Button" />
 			<param index="0" name="control" type="Control" />
 			<param index="1" name="title" type="String" />
+			<param index="2" name="shortcut" type="Shortcut" default="null" />
 			<description>
 				Adds a control to the bottom panel (together with Output, Debug, Animation, etc). Returns a reference to the button added. It's up to you to hide/show the button when needed. When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [method Node.queue_free].
+				Optionally, you can specify a shortcut parameter. When pressed, this shortcut will toggle the bottom panel's visibility. See the default editor bottom panel shortcuts in the Editor Settings for inspiration. Per convention, they all use [kbd]Alt[/kbd] modifier.
 			</description>
 		</method>
 		<method name="add_control_to_container">
@@ -397,10 +429,12 @@
 			<return type="void" />
 			<param index="0" name="slot" type="int" enum="EditorPlugin.DockSlot" />
 			<param index="1" name="control" type="Control" />
+			<param index="2" name="shortcut" type="Shortcut" default="null" />
 			<description>
 				Adds the control to a specific dock slot (see [enum DockSlot] for options).
 				If the dock is repositioned and as long as the plugin is active, the editor will save the dock position on further sessions.
 				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_docks] and free it with [method Node.queue_free].
+				Optionally, you can specify a shortcut parameter. When pressed, this shortcut will toggle the dock's visibility once it's moved to the bottom panel (this shortcut does not affect the dock otherwise). See the default editor bottom panel shortcuts in the Editor Settings for inspiration. Per convention, they all use [kbd]Alt[/kbd] modifier.
 			</description>
 		</method>
 		<method name="add_custom_type">
@@ -410,7 +444,7 @@
 			<param index="2" name="script" type="Script" />
 			<param index="3" name="icon" type="Texture2D" />
 			<description>
-				Adds a custom type, which will appear in the list of nodes or resources. An icon can be optionally passed.
+				Adds a custom type, which will appear in the list of nodes or resources.
 				When a given node or resource is selected, the base type will be instantiated (e.g. "Node3D", "Control", "Resource"), then the script will be loaded and set to this object.
 				[b]Note:[/b] The base type is the base engine class which this type's class hierarchy inherits, not any custom type parent classes.
 				You can use the virtual method [method _handles] to check if your custom object is being edited by checking the script or using the [code]is[/code] keyword.
@@ -511,7 +545,7 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="submenu" type="PopupMenu" />
 			<description>
-				Adds a custom [PopupMenu] submenu under [b]Project &gt; Tools &gt;[/b] [param name]. Use [code]remove_tool_menu_item(name)[/code] on plugin clean up to remove the menu.
+				Adds a custom [PopupMenu] submenu under [b]Project &gt; Tools &gt;[/b] [param name]. Use [method remove_tool_menu_item] on plugin clean up to remove the menu.
 			</description>
 		</method>
 		<method name="add_translation_parser_plugin">
@@ -529,16 +563,22 @@
 				The callback should have 4 arguments: [Object] [code]undo_redo[/code], [Object] [code]modified_object[/code], [String] [code]property[/code] and [Variant] [code]new_value[/code]. They are, respectively, the [UndoRedo] object used by the inspector, the currently modified object, the name of the modified property and the new value the property is about to take.
 			</description>
 		</method>
-		<method name="get_editor_interface">
+		<method name="get_editor_interface" deprecated="[EditorInterface] is a global singleton and can be accessed directly by its name.">
 			<return type="EditorInterface" />
 			<description>
-				Returns the [EditorInterface] singleton. It provides access to some parts of the editor GUI as well as various inner states and tools.
+				Returns the [EditorInterface] singleton instance.
 			</description>
 		</method>
 		<method name="get_export_as_menu">
 			<return type="PopupMenu" />
 			<description>
 				Returns the [PopupMenu] under [b]Scene &gt; Export As...[/b].
+			</description>
+		</method>
+		<method name="get_plugin_version" qualifiers="const">
+			<return type="String" />
+			<description>
+				Provide the version of the plugin declared in the [code]plugin.cfg[/code] config file.
 			</description>
 		</method>
 		<method name="get_script_create_dialog">
@@ -687,6 +727,14 @@
 				Removes a callback previously added by [method add_undo_redo_inspector_hook_callback].
 			</description>
 		</method>
+		<method name="set_dock_tab_icon">
+			<return type="void" />
+			<param index="0" name="control" type="Control" />
+			<param index="1" name="icon" type="Texture2D" />
+			<description>
+				Sets the tab icon for the given control in a dock slot. Setting to [code]null[/code] removes the icon.
+			</description>
+		</method>
 		<method name="set_force_draw_over_forwarding_enabled">
 			<return type="void" />
 			<description>
@@ -713,7 +761,7 @@
 				Emitted when user changes the workspace ([b]2D[/b], [b]3D[/b], [b]Script[/b], [b]AssetLib[/b]). Also works with custom screens defined by plugins.
 			</description>
 		</signal>
-		<signal name="project_settings_changed">
+		<signal name="project_settings_changed" deprecated="Use [signal ProjectSettings.settings_changed] instead.">
 			<description>
 				Emitted when any project setting has changed.
 			</description>
@@ -721,7 +769,7 @@
 		<signal name="resource_saved">
 			<param index="0" name="resource" type="Resource" />
 			<description>
-				Emitted when the given [param resource] was saved on disc.
+				Emitted when the given [param resource] was saved on disc. See also [signal scene_saved].
 			</description>
 		</signal>
 		<signal name="scene_changed">
@@ -733,7 +781,13 @@
 		<signal name="scene_closed">
 			<param index="0" name="filepath" type="String" />
 			<description>
-				Emitted when user closes a scene. The argument is file path to a closed scene.
+				Emitted when user closes a scene. The argument is a file path to the closed scene.
+			</description>
+		</signal>
+		<signal name="scene_saved">
+			<param index="0" name="filepath" type="String" />
+			<description>
+				Emitted when a scene was saved on disc. The argument is a file path to the saved scene. See also [signal resource_saved].
 			</description>
 		</signal>
 	</signals>
@@ -787,13 +841,13 @@
 			Dock slot, left side, bottom-right (in default layout includes FileSystem dock).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_UL" value="4" enum="DockSlot">
-			Dock slot, right side, upper-left (empty in default layout).
+			Dock slot, right side, upper-left (in default layout includes Inspector, Node, and History docks).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_BL" value="5" enum="DockSlot">
 			Dock slot, right side, bottom-left (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_UR" value="6" enum="DockSlot">
-			Dock slot, right side, upper-right (in default layout includes Inspector, Node and History docks).
+			Dock slot, right side, upper-right (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_BR" value="7" enum="DockSlot">
 			Dock slot, right side, bottom-right (empty in default layout).

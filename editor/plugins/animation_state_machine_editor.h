@@ -78,6 +78,53 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	PanelContainer *error_panel = nullptr;
 	Label *error_label = nullptr;
 
+	struct ThemeCache {
+		Ref<StyleBox> panel_style;
+		Ref<StyleBox> error_panel_style;
+		Color error_color;
+
+		Ref<Texture2D> tool_icon_select;
+		Ref<Texture2D> tool_icon_create;
+		Ref<Texture2D> tool_icon_connect;
+		Ref<Texture2D> tool_icon_erase;
+
+		Ref<Texture2D> transition_icon_immediate;
+		Ref<Texture2D> transition_icon_sync;
+		Ref<Texture2D> transition_icon_end;
+
+		Ref<Texture2D> play_icon_start;
+		Ref<Texture2D> play_icon_travel;
+		Ref<Texture2D> play_icon_auto;
+
+		Ref<Texture2D> animation_icon;
+
+		Ref<StyleBox> node_frame;
+		Ref<StyleBox> node_frame_selected;
+		Ref<StyleBox> node_frame_playing;
+		Ref<StyleBox> node_frame_start;
+		Ref<StyleBox> node_frame_end;
+
+		Ref<Font> node_title_font;
+		int node_title_font_size = 0;
+		Color node_title_font_color;
+
+		Ref<Texture2D> play_node;
+		Ref<Texture2D> edit_node;
+
+		Color transition_color;
+		Color transition_disabled_color;
+		Color transition_icon_color;
+		Color transition_icon_disabled_color;
+		Color highlight_color;
+		Color highlight_disabled_color;
+		Color guideline_color;
+
+		Ref<Texture2D> transition_icons[6]{};
+
+		Color playback_color;
+		Color playback_background_color;
+	} theme_cache;
+
 	bool updating = false;
 
 	static AnimationNodeStateMachineEditor *singleton;
@@ -87,7 +134,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 	void _state_machine_draw();
 
-	void _state_machine_pos_draw_individual(String p_name, float p_ratio);
+	void _state_machine_pos_draw_individual(const String &p_name, float p_ratio);
 	void _state_machine_pos_draw_all();
 
 	void _update_graph();
@@ -176,11 +223,17 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 	StringName selected_transition_from;
 	StringName selected_transition_to;
-	int selected_transition_index;
+	int selected_transition_index = -1;
 	void _add_transition(const bool p_nested_action = false);
 
-	StringName over_node;
-	int over_node_what = -1;
+	enum HoveredNodeArea {
+		HOVER_NODE_NONE = -1,
+		HOVER_NODE_PLAY = 0,
+		HOVER_NODE_EDIT = 1,
+	};
+
+	StringName hovered_node_name;
+	HoveredNodeArea hovered_node_area = HOVER_NODE_NONE;
 
 	String prev_name;
 	void _name_edited(const String &p_text);
@@ -240,9 +293,13 @@ protected:
 
 public:
 	static AnimationNodeStateMachineEditor *get_singleton() { return singleton; }
+
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
+
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
+
 	AnimationNodeStateMachineEditor();
 };
 

@@ -5,20 +5,20 @@
 	</brief_description>
 	<description>
 		A TileSet is a library of tiles for a [TileMap]. A TileSet handles a list of [TileSetSource], each of them storing a set of tiles.
-		Tiles can either be from a [TileSetAtlasSource], that render tiles out of a texture with support for physics, navigation, etc... or from a [TileSetScenesCollectionSource] which exposes scene-based tiles.
-		Tiles are referenced by using three IDs: their source ID, their atlas coordinates ID and their alternative tile ID.
-		A TileSet can be configured so that its tiles expose more or less properties. To do so, the TileSet resources uses property layers, that you can add or remove depending on your needs.
-		For example, adding a physics layer allows giving collision shapes to your tiles. Each layer having dedicated properties (physics layer and mask), you may add several TileSet physics layers for each type of collision you need.
+		Tiles can either be from a [TileSetAtlasSource], which renders tiles out of a texture with support for physics, navigation, etc., or from a [TileSetScenesCollectionSource], which exposes scene-based tiles.
+		Tiles are referenced by using three IDs: their source ID, their atlas coordinates ID, and their alternative tile ID.
+		A TileSet can be configured so that its tiles expose more or fewer properties. To do so, the TileSet resources use property layers, which you can add or remove depending on your needs.
+		For example, adding a physics layer allows giving collision shapes to your tiles. Each layer has dedicated properties (physics layer and mask), so you may add several TileSet physics layers for each type of collision you need.
 		See the functions to add new layers for more information.
 	</description>
 	<tutorials>
 		<link title="Using Tilemaps">$DOCS_URL/tutorials/2d/using_tilemaps.html</link>
-		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
-		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/112</link>
-		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/111</link>
-		<link title="2D Navigation Astar Demo">https://godotengine.org/asset-library/asset/519</link>
-		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
-		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/2727</link>
+		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/2718</link>
+		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/2717</link>
+		<link title="2D Grid-based Navigation with AStarGrid2D Demo">https://godotengine.org/asset-library/asset/2723</link>
+		<link title="2D Role Playing Game (RPG) Demo">https://godotengine.org/asset-library/asset/2729</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2719</link>
 	</tutorials>
 	<methods>
 		<method name="add_custom_data_layer">
@@ -168,7 +168,7 @@
 		<method name="get_next_source_id" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns a new unused source ID. This generated ID is the same that a call to [code]add_source[/code] would return.
+				Returns a new unused source ID. This generated ID is the same that a call to [method add_source] would return.
 			</description>
 		</method>
 		<method name="get_occlusion_layer_light_mask" qualifiers="const">
@@ -332,7 +332,7 @@
 			<param index="1" name="coords_from" type="Vector2i" />
 			<param index="2" name="alternative_from" type="int" />
 			<description>
-				According to the configured proxies, maps the provided indentifiers to a new set of identifiers. The source ID, atlas coordinates ID and alternative tile ID are returned as a 3 elements Array.
+				According to the configured proxies, maps the provided identifiers to a new set of identifiers. The source ID, atlas coordinates ID and alternative tile ID are returned as a 3 elements Array.
 				This function first look for matching alternative-level proxies, then coordinates-level proxies, then source-level proxies.
 				If no proxy corresponding to provided identifiers are found, returns the same values the ones used as arguments.
 			</description>

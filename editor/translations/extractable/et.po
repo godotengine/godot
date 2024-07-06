@@ -1,0 +1,129 @@
+# Estonian translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"PO-Revision-Date: 2023-09-29 19:03+0000\n"
+"Last-Translator: Andreas Kuuskaru <andrku@tlu.ee>\n"
+"Language-Team: Estonian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/et/>\n"
+"Language: et\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.1-dev\n"
+
+msgid "Network"
+msgstr "Võrk"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Fail \"%s\" on juba olemas.\n"
+"Kas soovite selle üle kirjutada?"
+
+msgid "Open"
+msgstr "Ava"
+
+msgid "Select Current Folder"
+msgstr "Valige praegune kaust"
+
+msgid "Select This Folder"
+msgstr "Vali see kaust"
+
+msgid "All Recognized"
+msgstr "Kõik tuvastatud"
+
+msgid "Open a File"
+msgstr "Ava fail"
+
+msgid "Open File(s)"
+msgstr "Ava fail(id)"
+
+msgid "Open a Directory"
+msgstr "Ava kataloog"
+
+msgid "Open a File or Directory"
+msgstr "Ava kaust või kataloog"
+
+msgid "Save"
+msgstr "Salvesta"
+
+msgid "Save a File"
+msgstr "Salvesta fail"
+
+msgid "Go to previous folder."
+msgstr "Mine eelmisesse kausta."
+
+msgid "Go to next folder."
+msgstr "Mine järmisesse kausta."
+
+msgid "Go to parent folder."
+msgstr "Mine vanema kausta."
+
+msgid "Path:"
+msgstr "Failitee:"
+
+msgid "Refresh files."
+msgstr "Värskenda faile."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Näita peidetud faile."
+
+msgid "Directories & Files:"
+msgstr "Kataloogid ja failid:"
+
+msgid "File:"
+msgstr "Fail:"
+
+msgid "Create Folder"
+msgstr "Loo kaust"
+
+msgid "Name:"
+msgstr "Nimi:"
+
+msgid "Could not create folder."
+msgstr "Ei saanud luua kausta."
+
+msgid "Zoom Out"
+msgstr "Vähenda"
+
+msgid "Zoom Reset"
+msgstr "Lähtesta Suum"
+
+msgid "Zoom In"
+msgstr "Suurenda"
+
+msgid "Cut"
+msgstr "Lõika"
+
+msgid "Copy"
+msgstr "Kopeeri"
+
+msgid "Paste"
+msgstr "Kleebi"
+
+msgid "Select All"
+msgstr "Vali Kõik"
+
+msgid "Clear"
+msgstr "Puhasta"
+
+msgid "Undo"
+msgstr "Võta tagasi"
+
+msgid "Redo"
+msgstr "Tee uuesti"
+
+msgid "Display Control Characters"
+msgstr "Kuva Juhtmärgid"
+
+msgid "Insert Control Character"
+msgstr "Sisesta Juhtmärk"
+
+msgid "(Other)"
+msgstr "(Muu)"

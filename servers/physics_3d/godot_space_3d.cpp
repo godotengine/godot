@@ -120,6 +120,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 
 	bool collided = false;
 	Vector3 res_point, res_normal;
+	int res_face_index = -1;
 	int res_shape = -1;
 	const GodotCollisionObject3D *res_obj = nullptr;
 	real_t min_d = 1e10;
@@ -148,6 +149,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 		const GodotShape3D *shape = col_obj->get_shape(shape_idx);
 
 		Vector3 shape_point, shape_normal;
+		int shape_face_index = -1;
 
 		if (shape->intersect_point(local_from)) {
 			if (p_parameters.hit_from_inside) {
@@ -165,7 +167,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 			}
 		}
 
-		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal, p_parameters.hit_back_faces)) {
+		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal, shape_face_index, p_parameters.hit_back_faces)) {
 			Transform3D xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 			shape_point = xform.xform(shape_point);
 
@@ -175,6 +177,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 				min_d = ld;
 				res_point = shape_point;
 				res_normal = inv_xform.basis.xform_inv(shape_normal).normalized();
+				res_face_index = shape_face_index;
 				res_shape = shape_idx;
 				res_obj = col_obj;
 				collided = true;
@@ -194,6 +197,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 		r_result.collider = nullptr;
 	}
 	r_result.normal = res_normal;
+	r_result.face_index = res_face_index;
 	r_result.position = res_point;
 	r_result.rid = res_obj->get_self();
 	r_result.shape = res_shape;
@@ -207,7 +211,7 @@ int GodotPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_par
 	}
 
 	GodotShape3D *shape = GodotPhysicsServer3D::godot_singleton->shape_owner.get_or_null(p_parameters.shape_rid);
-	ERR_FAIL_COND_V(!shape, 0);
+	ERR_FAIL_NULL_V(shape, 0);
 
 	AABB aabb = p_parameters.transform.xform(shape->get_aabb());
 
@@ -258,7 +262,7 @@ int GodotPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_par
 
 bool GodotPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe, ShapeRestInfo *r_info) {
 	GodotShape3D *shape = GodotPhysicsServer3D::godot_singleton->shape_owner.get_or_null(p_parameters.shape_rid);
-	ERR_FAIL_COND_V(!shape, false);
+	ERR_FAIL_NULL_V(shape, false);
 
 	AABB aabb = p_parameters.transform.xform(shape->get_aabb());
 	aabb = aabb.merge(AABB(aabb.position + p_parameters.motion, aabb.size)); //motion
@@ -381,7 +385,7 @@ bool GodotPhysicsDirectSpaceState3D::collide_shape(const ShapeParameters &p_para
 	}
 
 	GodotShape3D *shape = GodotPhysicsServer3D::godot_singleton->shape_owner.get_or_null(p_parameters.shape_rid);
-	ERR_FAIL_COND_V(!shape, 0);
+	ERR_FAIL_NULL_V(shape, 0);
 
 	AABB aabb = p_parameters.transform.xform(shape->get_aabb());
 	aabb = aabb.grow(p_parameters.margin);
@@ -507,7 +511,7 @@ static void _rest_cbk_result(const Vector3 &p_point_A, int p_index_A, const Vect
 
 bool GodotPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_info) {
 	GodotShape3D *shape = GodotPhysicsServer3D::godot_singleton->shape_owner.get_or_null(p_parameters.shape_rid);
-	ERR_FAIL_COND_V(!shape, 0);
+	ERR_FAIL_NULL_V(shape, 0);
 
 	real_t margin = MAX(p_parameters.margin, TEST_MOTION_MARGIN_MIN_VALUE);
 
@@ -570,7 +574,7 @@ Vector3 GodotPhysicsDirectSpaceState3D::get_closest_point_to_object_volume(RID p
 	if (!obj) {
 		obj = GodotPhysicsServer3D::godot_singleton->body_owner.get_or_null(p_object);
 	}
-	ERR_FAIL_COND_V(!obj, Vector3());
+	ERR_FAIL_NULL_V(obj, Vector3());
 
 	ERR_FAIL_COND_V(obj->get_space() != space, Vector3());
 
@@ -651,7 +655,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 	//this took about a week to get right..
 	//but is it right? who knows at this point..
 
-	ERR_FAIL_INDEX_V(p_parameters.max_collisions, PhysicsServer3D::MotionResult::MAX_COLLISIONS, false);
+	ERR_FAIL_COND_V(p_parameters.max_collisions < 0 || p_parameters.max_collisions > PhysicsServer3D::MotionResult::MAX_COLLISIONS, false);
 
 	if (r_result) {
 		*r_result = PhysicsServer3D::MotionResult();

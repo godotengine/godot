@@ -27,8 +27,9 @@
 // This code is pretty much the same as TransformOne in the dec_neon.c, except
 // for subtraction to *ref. See the comments there for algorithmic explanations.
 
-static const int16_t kC1 = 20091;
-static const int16_t kC2 = 17734;  // half of kC2, actually. See comment above.
+static const int16_t kC1 = WEBP_TRANSFORM_AC3_C1;
+static const int16_t kC2 =
+    WEBP_TRANSFORM_AC3_C2 / 2;  // half of kC2, actually. See comment above.
 
 // This code works but is *slower* than the inlined-asm version below
 // (with gcc-4.6). So we disable it for now. Later, it'll be conditional to
@@ -764,7 +765,7 @@ static WEBP_INLINE void AccumulateSSE16_NEON(const uint8_t* const a,
 
 // Horizontal sum of all four uint32_t values in 'sum'.
 static int SumToInt_NEON(uint32x4_t sum) {
-#if defined(__aarch64__)
+#if WEBP_AARCH64
   return (int)vaddvq_u32(sum);
 #else
   const uint64x2_t sum2 = vpaddlq_u32(sum);
@@ -865,7 +866,7 @@ static int QuantizeBlock_NEON(int16_t in[16], int16_t out[16],
   uint8x8x4_t shuffles;
   // vtbl?_u8 are marked unavailable for iOS arm64 with Xcode < 6.3, use
   // non-standard versions there.
-#if defined(__APPLE__) && defined(__aarch64__) && \
+#if defined(__APPLE__) && WEBP_AARCH64 && \
     defined(__apple_build_version__) && (__apple_build_version__< 6020037)
   uint8x16x2_t all_out;
   INIT_VECTOR2(all_out, vreinterpretq_u8_s16(out0), vreinterpretq_u8_s16(out1));

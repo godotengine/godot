@@ -80,7 +80,7 @@ Error AudioDriverCoreAudio::init() {
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 
 	AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
-	ERR_FAIL_COND_V(comp == nullptr, FAILED);
+	ERR_FAIL_NULL_V(comp, FAILED);
 
 	OSStatus result = AudioComponentInstanceNew(comp, &audio_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
@@ -131,7 +131,7 @@ Error AudioDriverCoreAudio::init() {
 	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kOutputBus, &strdesc, sizeof(strdesc));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	int latency = GLOBAL_GET("audio/driver/output_latency");
+	int latency = Engine::get_singleton()->get_audio_output_latency();
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 
@@ -349,7 +349,7 @@ Error AudioDriverCoreAudio::init_input_device() {
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 
 	AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
-	ERR_FAIL_COND_V(comp == nullptr, FAILED);
+	ERR_FAIL_NULL_V(comp, FAILED);
 
 	OSStatus result = AudioComponentInstanceNew(comp, &input_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);

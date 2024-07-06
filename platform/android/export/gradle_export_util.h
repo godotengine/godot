@@ -61,22 +61,9 @@ static const int APP_CATEGORY_VIDEO = 8;
 static const int XR_MODE_REGULAR = 0;
 static const int XR_MODE_OPENXR = 1;
 
-// Supported XR hand tracking modes.
-static const int XR_HAND_TRACKING_NONE = 0;
-static const int XR_HAND_TRACKING_OPTIONAL = 1;
-static const int XR_HAND_TRACKING_REQUIRED = 2;
-
-// Supported XR hand tracking frequencies.
-static const int XR_HAND_TRACKING_FREQUENCY_LOW = 0;
-static const int XR_HAND_TRACKING_FREQUENCY_HIGH = 1;
-
-// Supported XR passthrough modes.
-static const int XR_PASSTHROUGH_NONE = 0;
-static const int XR_PASSTHROUGH_OPTIONAL = 1;
-static const int XR_PASSTHROUGH_REQUIRED = 2;
-
 struct CustomExportData {
 	String assets_directory;
+	String libs_directory;
 	bool debug;
 	Vector<String> libs;
 };
@@ -108,7 +95,7 @@ Error store_string_at_path(const String &p_path, const String &p_data);
 Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 
 // Creates strings.xml files inside the gradle project for different locales.
-Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &project_name);
+Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &project_name, const String &p_gradle_build_dir);
 
 String bool_to_string(bool v);
 
@@ -116,10 +103,8 @@ String _get_gles_tag();
 
 String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset);
 
-String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses_vulkan);
+String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug);
 
-String _get_activity_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses_xr);
-
-String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_read_write_storage_permission);
+String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_has_read_write_storage_permission, bool p_debug);
 
 #endif // ANDROID_GRADLE_EXPORT_UTIL_H

@@ -4,42 +4,46 @@
 		A built-in boolean type.
 	</brief_description>
 	<description>
-		A [bool] is always one of two values: [code]true[/code] or [code]false[/code], similar to a switch that is either on or off. Booleans are used in programming for logic in condition statements.
-		Booleans can be directly used in [code]if[/code] and [code]elif[/code] statements. You don't need to add [code]== true[/code] or [code]== false[/code]:
+		The [bool] is a built-in [Variant] type that may only store one of two values: [code]true[/code] or [code]false[/code]. You can imagine it as a switch that can be either turned on or off, or as a binary digit that can either be 1 or 0.
+		Booleans can be directly used in [code]if[/code], and other conditional statements:
 		[codeblocks]
 		[gdscript]
+		var can_shoot = true
 		if can_shoot:
 		    launch_bullet()
 		[/gdscript]
 		[csharp]
+		bool canShoot = true;
 		if (canShoot)
 		{
-		    launchBullet();
+		    LaunchBullet();
 		}
 		[/csharp]
 		[/codeblocks]
-		Many common methods and operations return [bool]s, for example, [code]shooting_cooldown &lt;= 0.0[/code] may evaluate to [code]true[/code] or [code]false[/code] depending on the number's value.
-		[bool]s are usually used with the logical operators [code]and[/code], [code]or[/code], and [code]not[/code] to create complex conditions:
+		All comparison operators return booleans ([code]==[/code], [code]&gt;[/code], [code]&lt;=[/code], etc.). As such, it is not necessary to compare booleans themselves. You do not need to add [code]== true[/code] or [code]== false[/code].
+		Booleans can be combined with the logical operators [code]and[/code], [code]or[/code], [code]not[/code] to create complex conditions:
 		[codeblocks]
 		[gdscript]
-		if bullets &gt; 0 and not is_reloading:
+		if bullets &gt; 0 and not is_reloading():
 		    launch_bullet()
 
-		if bullets == 0 or is_reloading:
+		if bullets == 0 or is_reloading():
 		    play_clack_sound()
 		[/gdscript]
 		[csharp]
-		if (bullets &gt; 0 &amp;&amp; !isReloading)
+		if (bullets &gt; 0 &amp;&amp; !IsReloading())
 		{
-		    launchBullet();
+		    LaunchBullet();
 		}
 
-		if (bullets == 0 || isReloading)
+		if (bullets == 0 || IsReloading())
 		{
-		    playClackSound();
+		    PlayClackSound();
 		}
 		[/csharp]
 		[/codeblocks]
+		[b]Note:[/b] In modern programming languages, logical operators are evaluated in order. All remaining conditions are skipped if their result would have no effect on the final value. This concept is known as [url=https://en.wikipedia.org/wiki/Short-circuit_evaluation]short-circuit evaluation[/url] and can be useful to avoid evaluating expensive conditions in some performance-critical cases.
+		[b]Note:[/b] By convention, built-in methods and properties that return booleans are usually defined as yes-no questions, single adjectives, or similar ([method String.is_empty], [method Node.can_process], [member Camera2D.enabled], etc.).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -47,7 +51,7 @@
 		<constructor name="bool">
 			<return type="bool" />
 			<description>
-				Constructs a default-initialized [bool] set to [code]false[/code].
+				Constructs a [bool] set to [code]false[/code].
 			</description>
 		</constructor>
 		<constructor name="bool">
@@ -61,14 +65,14 @@
 			<return type="bool" />
 			<param index="0" name="from" type="float" />
 			<description>
-				Cast a [float] value to a boolean value. This method will return [code]false[/code] if [code]0.0[/code] is passed in, and [code]true[/code] for all other values.
+				Cast a [float] value to a boolean value. Returns [code]false[/code] if [param from] is equal to [code]0.0[/code] (including [code]-0.0[/code]), and [code]true[/code] for all other values (including [constant @GDScript.INF] and [constant @GDScript.NAN]).
 			</description>
 		</constructor>
 		<constructor name="bool">
 			<return type="bool" />
 			<param index="0" name="from" type="int" />
 			<description>
-				Cast an [int] value to a boolean value. This method will return [code]false[/code] if [code]0[/code] is passed in, and [code]true[/code] for all other values.
+				Cast an [int] value to a boolean value. Returns [code]false[/code] if [param from] is equal to [code]0[/code], and [code]true[/code] for all other values.
 			</description>
 		</constructor>
 	</constructors>
@@ -77,7 +81,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="bool" />
 			<description>
-				Returns [code]true[/code] if two bools are different, i.e. one is [code]true[/code] and the other is [code]false[/code].
+				Returns [code]true[/code] if the two booleans are not equal. That is, one is [code]true[/code] and the other is [code]false[/code]. This operation can be seen as a logical XOR.
 			</description>
 		</operator>
 		<operator name="operator &lt;">
@@ -91,7 +95,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="bool" />
 			<description>
-				Returns [code]true[/code] if two bools are equal, i.e. both are [code]true[/code] or both are [code]false[/code].
+				Returns [code]true[/code] if the two booleans are equal. That is, both are [code]true[/code] or both are [code]false[/code]. This operation can be seen as a logical EQ or XNOR.
 			</description>
 		</operator>
 		<operator name="operator &gt;">

@@ -33,10 +33,6 @@
 #include "mono_gd/gd_mono.h"
 #include "utils/path_utils.h"
 
-#ifdef ANDROID_ENABLED
-#include "mono_gd/support/android_support.h"
-#endif
-
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
@@ -95,6 +91,36 @@ String _get_mono_user_dir() {
 #endif
 }
 
+#if !TOOLS_ENABLED
+// This should be the equivalent of GodotTools.Utils.OS.PlatformNameMap.
+static const char *platform_name_map[][2] = {
+	{ "Windows", "windows" },
+	{ "macOS", "macos" },
+	{ "Linux", "linuxbsd" },
+	{ "FreeBSD", "linuxbsd" },
+	{ "NetBSD", "linuxbsd" },
+	{ "BSD", "linuxbsd" },
+	{ "Android", "android" },
+	{ "iOS", "ios" },
+	{ "Web", "web" },
+	{ nullptr, nullptr }
+};
+
+String _get_platform_name() {
+	String platform_name = OS::get_singleton()->get_name();
+
+	int idx = 0;
+	while (platform_name_map[idx][0] != nullptr) {
+		if (platform_name_map[idx][0] == platform_name) {
+			return platform_name_map[idx][1];
+		}
+		idx++;
+	}
+
+	return "";
+}
+#endif
+
 class _GodotSharpDirs {
 public:
 	String res_metadata_dir;
@@ -139,21 +165,49 @@ private:
 #endif
 		api_assemblies_dir = api_assemblies_base_dir.path_join(GDMono::get_expected_api_build_config());
 #else // TOOLS_ENABLED
+		String platform = _get_platform_name();
 		String arch = Engine::get_singleton()->get_architecture_name();
 		String appname_safe = path::get_csharp_project_name();
-		String data_dir_root = exe_dir.path_join("data_" + appname_safe + "_" + arch);
-		if (!DirAccess::exists(data_dir_root)) {
-			data_dir_root = exe_dir.path_join("data_Godot_" + arch);
-		}
+		String packed_path = "res://.godot/mono/publish/" + arch;
+		if (DirAccess::exists(packed_path)) {
+			// The dotnet publish data is packed in the pck/zip.
+			String data_dir_root = OS::get_singleton()->get_cache_path().path_join("data_" + appname_safe + "_" + platform + "_" + arch);
+			bool has_data = false;
+			if (!has_data) {
+				// 1. Try to access the data directly.
+				String global_packed = ProjectSettings::get_singleton()->globalize_path(packed_path);
+				if (global_packed.is_absolute_path() && FileAccess::exists(global_packed.path_join(".dotnet-publish-manifest"))) {
+					data_dir_root = global_packed;
+					has_data = true;
+				}
+			}
+			if (!has_data) {
+				// 2. Check if the data was extracted before and is up-to-date.
+				String packed_manifest = packed_path.path_join(".dotnet-publish-manifest");
+				String extracted_manifest = data_dir_root.path_join(".dotnet-publish-manifest");
+				if (FileAccess::exists(packed_manifest) && FileAccess::exists(extracted_manifest)) {
+					if (FileAccess::get_file_as_bytes(packed_manifest) == FileAccess::get_file_as_bytes(extracted_manifest)) {
+						has_data = true;
+					}
+				}
+			}
+			if (!has_data) {
+				// 3. Extract the data to a temporary location to load from there.
+				Ref<DirAccess> da = DirAccess::create_for_path(packed_path);
+				ERR_FAIL_NULL(da);
+				ERR_FAIL_COND(da->copy_dir(packed_path, data_dir_root) != OK);
+			}
+			api_assemblies_dir = data_dir_root;
+		} else {
+			// The dotnet publish data is in a directory next to the executable.
+			String data_dir_root = exe_dir.path_join("data_" + appname_safe + "_" + platform + "_" + arch);
 #ifdef MACOS_ENABLED
-		if (!DirAccess::exists(data_dir_root)) {
-			data_dir_root = res_dir.path_join("data_" + appname_safe + "_" + arch);
-		}
-		if (!DirAccess::exists(data_dir_root)) {
-			data_dir_root = res_dir.path_join("data_Godot_" + arch);
-		}
+			if (!DirAccess::exists(data_dir_root)) {
+				data_dir_root = res_dir.path_join("data_" + appname_safe + "_" + platform + "_" + arch);
+			}
 #endif
-		api_assemblies_dir = data_dir_root;
+			api_assemblies_dir = data_dir_root;
+		}
 #endif
 	}
 

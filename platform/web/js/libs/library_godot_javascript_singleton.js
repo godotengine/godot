@@ -81,11 +81,16 @@ const GodotJSWrapper = {
 			case 0:
 				return null;
 			case 1:
-				return !!GodotRuntime.getHeapValue(val, 'i64');
-			case 2:
-				return GodotRuntime.getHeapValue(val, 'i64');
+				return Boolean(GodotRuntime.getHeapValue(val, 'i64'));
+			case 2: {
+				// `heap_value` may be a bigint.
+				const heap_value = GodotRuntime.getHeapValue(val, 'i64');
+				return heap_value >= Number.MIN_SAFE_INTEGER && heap_value <= Number.MAX_SAFE_INTEGER
+					? Number(heap_value)
+					: heap_value;
+			}
 			case 3:
-				return GodotRuntime.getHeapValue(val, 'double');
+				return Number(GodotRuntime.getHeapValue(val, 'double'));
 			case 4:
 				return GodotRuntime.parseString(GodotRuntime.getHeapValue(val, '*'));
 			case 24: // OBJECT
@@ -109,7 +114,10 @@ const GodotJSWrapper = {
 					return 2; // INT
 				}
 				GodotRuntime.setHeapValue(p_exchange, p_val, 'double');
-				return 3; // REAL
+				return 3; // FLOAT
+			} else if (type === 'bigint') {
+				GodotRuntime.setHeapValue(p_exchange, p_val, 'i64');
+				return 2; // INT
 			} else if (type === 'string') {
 				const c_str = GodotRuntime.allocString(p_val);
 				GodotRuntime.setHeapValue(p_exchange, c_str, '*');
@@ -121,6 +129,7 @@ const GodotJSWrapper = {
 		},
 	},
 
+	godot_js_wrapper_interface_get__proxy: 'sync',
 	godot_js_wrapper_interface_get__sig: 'ii',
 	godot_js_wrapper_interface_get: function (p_name) {
 		const name = GodotRuntime.parseString(p_name);
@@ -130,6 +139,7 @@ const GodotJSWrapper = {
 		return 0;
 	},
 
+	godot_js_wrapper_object_get__proxy: 'sync',
 	godot_js_wrapper_object_get__sig: 'iiii',
 	godot_js_wrapper_object_get: function (p_id, p_exchange, p_prop) {
 		const obj = GodotJSWrapper.get_proxied_value(p_id);
@@ -148,6 +158,7 @@ const GodotJSWrapper = {
 		return GodotJSWrapper.js2variant(obj, p_exchange);
 	},
 
+	godot_js_wrapper_object_set__proxy: 'sync',
 	godot_js_wrapper_object_set__sig: 'viiii',
 	godot_js_wrapper_object_set: function (p_id, p_name, p_type, p_exchange) {
 		const obj = GodotJSWrapper.get_proxied_value(p_id);
@@ -162,6 +173,7 @@ const GodotJSWrapper = {
 		}
 	},
 
+	godot_js_wrapper_object_call__proxy: 'sync',
 	godot_js_wrapper_object_call__sig: 'iiiiiiiii',
 	godot_js_wrapper_object_call: function (p_id, p_method, p_args, p_argc, p_convert_callback, p_exchange, p_lock, p_free_lock_callback) {
 		const obj = GodotJSWrapper.get_proxied_value(p_id);
@@ -189,6 +201,7 @@ const GodotJSWrapper = {
 		}
 	},
 
+	godot_js_wrapper_object_unref__proxy: 'sync',
 	godot_js_wrapper_object_unref__sig: 'vi',
 	godot_js_wrapper_object_unref: function (p_id) {
 		const proxy = IDHandler.get(p_id);
@@ -197,6 +210,7 @@ const GodotJSWrapper = {
 		}
 	},
 
+	godot_js_wrapper_create_cb__proxy: 'sync',
 	godot_js_wrapper_create_cb__sig: 'iii',
 	godot_js_wrapper_create_cb: function (p_ref, p_func) {
 		const func = GodotRuntime.get_func(p_func);
@@ -210,7 +224,9 @@ const GodotJSWrapper = {
 			// This is safe! JavaScript is single threaded (and using it in threads is not a good idea anyway).
 			GodotJSWrapper.cb_ret = null;
 			const args = Array.from(arguments);
-			func(p_ref, GodotJSWrapper.get_proxied(args), args.length);
+			const argsProxy = new GodotJSWrapper.MyProxy(args);
+			func(p_ref, argsProxy.get_id(), args.length);
+			argsProxy.unref();
 			const ret = GodotJSWrapper.cb_ret;
 			GodotJSWrapper.cb_ret = null;
 			return ret;
@@ -219,11 +235,13 @@ const GodotJSWrapper = {
 		return id;
 	},
 
+	godot_js_wrapper_object_set_cb_ret__proxy: 'sync',
 	godot_js_wrapper_object_set_cb_ret__sig: 'vii',
 	godot_js_wrapper_object_set_cb_ret: function (p_val_type, p_val_ex) {
 		GodotJSWrapper.cb_ret = GodotJSWrapper.variant2js(p_val_type, p_val_ex);
 	},
 
+	godot_js_wrapper_object_getvar__proxy: 'sync',
 	godot_js_wrapper_object_getvar__sig: 'iiii',
 	godot_js_wrapper_object_getvar: function (p_id, p_type, p_exchange) {
 		const obj = GodotJSWrapper.get_proxied_value(p_id);
@@ -242,6 +260,7 @@ const GodotJSWrapper = {
 		}
 	},
 
+	godot_js_wrapper_object_setvar__proxy: 'sync',
 	godot_js_wrapper_object_setvar__sig: 'iiiiii',
 	godot_js_wrapper_object_setvar: function (p_id, p_key_type, p_key_ex, p_val_type, p_val_ex) {
 		const obj = GodotJSWrapper.get_proxied_value(p_id);
@@ -258,6 +277,7 @@ const GodotJSWrapper = {
 		}
 	},
 
+	godot_js_wrapper_create_object__proxy: 'sync',
 	godot_js_wrapper_create_object__sig: 'iiiiiiii',
 	godot_js_wrapper_create_object: function (p_object, p_args, p_argc, p_convert_callback, p_exchange, p_lock, p_free_lock_callback) {
 		const name = GodotRuntime.parseString(p_object);
@@ -313,7 +333,7 @@ const GodotEval = {
 
 		case 'number':
 			GodotRuntime.setHeapValue(p_union_ptr, eval_ret, 'double');
-			return 3; // REAL
+			return 3; // FLOAT
 
 		case 'string':
 			GodotRuntime.setHeapValue(p_union_ptr, GodotRuntime.allocString(eval_ret), '*');
@@ -333,7 +353,7 @@ const GodotEval = {
 				const func = GodotRuntime.get_func(p_callback);
 				const bytes_ptr = func(p_byte_arr, p_byte_arr_write, eval_ret.length);
 				HEAPU8.set(eval_ret, bytes_ptr);
-				return 20; // POOL_BYTE_ARRAY
+				return 29; // PACKED_BYTE_ARRAY
 			}
 			break;
 

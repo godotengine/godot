@@ -141,7 +141,7 @@ struct NamesCache {
 	StringName vector3_type = StaticCString::create("Vector3");
 
 	// Object not included as it must be checked for all derived classes
-	static constexpr int nullable_types_count = 17;
+	static constexpr int nullable_types_count = 18;
 	StringName nullable_types[nullable_types_count] = {
 		string_type,
 		string_name_type,
@@ -161,6 +161,7 @@ struct NamesCache {
 		StaticCString::create(_STR(PackedVector2Array)),
 		StaticCString::create(_STR(PackedVector3Array)),
 		StaticCString::create(_STR(PackedColorArray)),
+		StaticCString::create(_STR(PackedVector4Array)),
 	};
 
 	bool is_nullable_type(const StringName &p_type) const {
@@ -194,12 +195,12 @@ struct Context {
 	}
 
 	bool has_type(const TypeReference &p_type_ref) const {
-		if (builtin_types.find(p_type_ref.name) >= 0) {
+		if (builtin_types.has(p_type_ref.name)) {
 			return true;
 		}
 
 		if (p_type_ref.is_enum) {
-			if (enum_types.find(p_type_ref.name) >= 0) {
+			if (enum_types.has(p_type_ref.name)) {
 				return true;
 			}
 
@@ -258,6 +259,7 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
 		case Variant::PACKED_COLOR_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY:
 		case Variant::CALLABLE:
 		case Variant::SIGNAL:
 			return p_arg_type.name == Variant::get_type_name(p_val.get_type());
@@ -353,7 +355,7 @@ void validate_property(const Context &p_context, const ExposedClass &p_class, co
 			const ArgumentData &idx_arg = getter->arguments.front()->get();
 			if (idx_arg.type.name != p_context.names_cache.int_type) {
 				// If not an int, it can be an enum
-				TEST_COND(p_context.enum_types.find(idx_arg.type.name) < 0,
+				TEST_COND(!p_context.enum_types.has(idx_arg.type.name),
 						"Invalid type '", idx_arg.type.name, "' for index argument of property getter: '", p_class.name, ".", String(p_prop.name), "'.");
 			}
 		}
@@ -365,7 +367,7 @@ void validate_property(const Context &p_context, const ExposedClass &p_class, co
 			if (idx_arg.type.name != p_context.names_cache.int_type) {
 				// Assume the index parameter is an enum
 				// If not an int, it can be an enum
-				TEST_COND(p_context.enum_types.find(idx_arg.type.name) < 0,
+				TEST_COND(!p_context.enum_types.has(idx_arg.type.name),
 						"Invalid type '", idx_arg.type.name, "' for index argument of property setter: '", p_class.name, ".", String(p_prop.name), "'.");
 			}
 		}
@@ -373,8 +375,10 @@ void validate_property(const Context &p_context, const ExposedClass &p_class, co
 }
 
 void validate_argument(const Context &p_context, const ExposedClass &p_class, const String &p_owner_name, const String &p_owner_type, const ArgumentData &p_arg) {
+#ifdef DEBUG_METHODS_ENABLED
 	TEST_COND((p_arg.name.is_empty() || p_arg.name.begins_with("_unnamed_arg")),
 			vformat("Unnamed argument in position %d of %s '%s.%s'.", p_arg.position, p_owner_type, p_class.name, p_owner_name));
+#endif // DEBUG_METHODS_ENABLED
 
 	const ExposedClass *arg_class = p_context.find_exposed_class(p_arg.type);
 	if (arg_class) {
@@ -409,9 +413,6 @@ void validate_method(const Context &p_context, const ExposedClass &p_class, cons
 	if (p_method.return_type.name != StringName()) {
 		const ExposedClass *return_class = p_context.find_exposed_class(p_method.return_type);
 		if (return_class) {
-			TEST_COND(return_class->is_singleton,
-					"Method return type is a singleton: '", p_class.name, ".", p_method.name, "'.");
-
 			if (p_class.api_type == ClassDB::API_CORE) {
 				TEST_COND(return_class->api_type == ClassDB::API_EDITOR,
 						"Method '", p_class.name, ".", p_method.name, "' has return type '", return_class->name,
@@ -551,8 +552,6 @@ void add_exposed_classes(Context &r_context) {
 		for (const MethodInfo &E : method_list) {
 			const MethodInfo &method_info = E;
 
-			int argc = method_info.arguments.size();
-
 			if (method_info.name.is_empty()) {
 				continue;
 			}
@@ -614,8 +613,9 @@ void add_exposed_classes(Context &r_context) {
 				method.return_type.name = Variant::get_type_name(return_info.type);
 			}
 
-			for (int i = 0; i < argc; i++) {
-				PropertyInfo arg_info = method_info.arguments[i];
+			int i = 0;
+			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++i) {
+				const PropertyInfo &arg_info = *itr;
 
 				String orig_arg_name = arg_info.name;
 
@@ -687,10 +687,9 @@ void add_exposed_classes(Context &r_context) {
 			TEST_FAIL_COND(!String(signal.name).is_valid_identifier(),
 					"Signal name is not a valid identifier: '", exposed_class.name, ".", signal.name, "'.");
 
-			int argc = method_info.arguments.size();
-
-			for (int i = 0; i < argc; i++) {
-				PropertyInfo arg_info = method_info.arguments[i];
+			int i = 0;
+			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++i) {
+				const PropertyInfo &arg_info = *itr;
 
 				String orig_arg_name = arg_info.name;
 
@@ -739,7 +738,7 @@ void add_exposed_classes(Context &r_context) {
 
 			for (const StringName &E : K.value.constants) {
 				const StringName &constant_name = E;
-				TEST_FAIL_COND(String(constant_name).find("::") != -1,
+				TEST_FAIL_COND(String(constant_name).contains("::"),
 						"Enum constant contains '::', check bindings to remove the scope: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
 				int64_t *value = class_info->constant_map.getptr(constant_name);
@@ -761,7 +760,7 @@ void add_exposed_classes(Context &r_context) {
 
 		for (const String &E : constants) {
 			const String &constant_name = E;
-			TEST_FAIL_COND(constant_name.find("::") != -1,
+			TEST_FAIL_COND(constant_name.contains("::"),
 					"Constant contains '::', check bindings to remove the scope: '",
 					String(class_name), ".", constant_name, "'.");
 			int64_t *value = class_info->constant_map.getptr(StringName(E));

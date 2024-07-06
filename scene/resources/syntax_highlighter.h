@@ -33,7 +33,6 @@
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
-#include "core/object/script_language.h"
 
 class TextEdit;
 
@@ -94,6 +93,8 @@ private:
 	Color symbol_color;
 	Color number_color;
 
+	bool uint_suffix_enabled = false;
+
 protected:
 	static void _bind_methods();
 
@@ -140,6 +141,8 @@ public:
 
 	void set_member_variable_color(Color p_color);
 	Color get_member_variable_color() const;
+
+	void set_uint_suffix_enabled(bool p_enabled);
 };
 
 #endif // SYNTAX_HIGHLIGHTER_H

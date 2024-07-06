@@ -2,4 +2,4 @@ GDTEST_OK
 >> WARNING
 >> Line: 8
 >> INCOMPATIBLE_TERNARY
->> Values of the ternary conditional are not mutually compatible.
+>> Values of the ternary operator are not mutually compatible.

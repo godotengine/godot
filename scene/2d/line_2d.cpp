@@ -42,12 +42,12 @@ Rect2 Line2D::_edit_get_rect() const {
 		return Rect2(0, 0, 0, 0);
 	}
 	Vector2 d = Vector2(_width, _width);
-	Rect2 aabb = Rect2(_points[0] - d, 2 * d);
+	Rect2 bounding_rect = Rect2(_points[0] - d, 2 * d);
 	for (int i = 1; i < _points.size(); i++) {
-		aabb.expand_to(_points[i] - d);
-		aabb.expand_to(_points[i] + d);
+		bounding_rect.expand_to(_points[i] - d);
+		bounding_rect.expand_to(_points[i] + d);
 	}
-	return aabb;
+	return bounding_rect;
 }
 
 bool Line2D::_edit_use_rect() const {
@@ -59,7 +59,14 @@ bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 	const Vector2 *points = _points.ptr();
 	for (int i = 0; i < _points.size() - 1; i++) {
 		Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, &points[i]);
-		if (p.distance_to(p_point) <= d) {
+		if (p_point.distance_to(p) <= d) {
+			return true;
+		}
+	}
+	if (_closed && _points.size() > 2) {
+		const Vector2 closing_segment[2] = { points[0], points[_points.size() - 1] };
+		Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, closing_segment);
+		if (p_point.distance_to(p) <= d) {
 			return true;
 		}
 	}
@@ -71,6 +78,15 @@ bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 void Line2D::set_points(const Vector<Vector2> &p_points) {
 	_points = p_points;
 	queue_redraw();
+}
+
+void Line2D::set_closed(bool p_closed) {
+	_closed = p_closed;
+	queue_redraw();
+}
+
+bool Line2D::is_closed() const {
+	return _closed;
 }
 
 void Line2D::set_width(float p_width) {
@@ -86,14 +102,12 @@ float Line2D::get_width() const {
 }
 
 void Line2D::set_curve(const Ref<Curve> &p_curve) {
-	// Cleanup previous connection if any
 	if (_curve.is_valid()) {
 		_curve->disconnect_changed(callable_mp(this, &Line2D::_curve_changed));
 	}
 
 	_curve = p_curve;
 
-	// Connect to the curve so the line will update when it is changed
 	if (_curve.is_valid()) {
 		_curve->connect_changed(callable_mp(this, &Line2D::_curve_changed));
 	}
@@ -156,14 +170,12 @@ Color Line2D::get_default_color() const {
 }
 
 void Line2D::set_gradient(const Ref<Gradient> &p_gradient) {
-	// Cleanup previous connection if any
 	if (_gradient.is_valid()) {
 		_gradient->disconnect_changed(callable_mp(this, &Line2D::_gradient_changed));
 	}
 
 	_gradient = p_gradient;
 
-	// Connect to the gradient so the line will update when the Gradient is changed
 	if (_gradient.is_valid()) {
 		_gradient->connect_changed(callable_mp(this, &Line2D::_gradient_changed));
 	}
@@ -264,20 +276,10 @@ void Line2D::_draw() {
 		return;
 	}
 
-	// TODO Is this really needed?
-	// Copy points for faster access
-	Vector<Vector2> points;
-	points.resize(len);
-	{
-		const Vector2 *points_read = _points.ptr();
-		for (int i = 0; i < len; ++i) {
-			points.write[i] = points_read[i];
-		}
-	}
-
 	// TODO Maybe have it as member rather than copying parameters and allocating memory?
 	LineBuilder lb;
-	lb.points = points;
+	lb.points = _points;
+	lb.closed = _closed;
 	lb.default_color = _default_color;
 	lb.gradient = *_gradient;
 	lb.texture_mode = _texture_mode;
@@ -306,13 +308,10 @@ void Line2D::_draw() {
 			lb.uvs, Vector<int>(), Vector<float>(),
 			texture_rid);
 
-	// DEBUG
-	// Draw wireframe
-	//	if(lb.indices.size() % 3 == 0) {
-	//		Color col(0,0,0);
-	//		for(int i = 0; i < lb.indices.size(); i += 3) {
-	//			int vi = lb.indices[i];
-	//			int lbvsize = lb.vertices.size();
+	// DEBUG: Draw wireframe
+	//	if (lb.indices.size() % 3 == 0) {
+	//		Color col(0, 0, 0);
+	//		for (int i = 0; i < lb.indices.size(); i += 3) {
 	//			Vector2 a = lb.vertices[lb.indices[i]];
 	//			Vector2 b = lb.vertices[lb.indices[i+1]];
 	//			Vector2 c = lb.vertices[lb.indices[i+2]];
@@ -320,9 +319,9 @@ void Line2D::_draw() {
 	//			draw_line(b, c, col);
 	//			draw_line(c, a, col);
 	//		}
-	//		for(int i = 0; i < lb.vertices.size(); ++i) {
+	//		for (int i = 0; i < lb.vertices.size(); ++i) {
 	//			Vector2 p = lb.vertices[i];
-	//			draw_rect(Rect2(p.x-1, p.y-1, 2, 2), Color(0,0,0,0.5));
+	//			draw_rect(Rect2(p.x - 1, p.y - 1, 2, 2), Color(0, 0, 0, 0.5));
 	//		}
 	//	}
 }
@@ -349,6 +348,9 @@ void Line2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_point", "index"), &Line2D::remove_point);
 
 	ClassDB::bind_method(D_METHOD("clear_points"), &Line2D::clear_points);
+
+	ClassDB::bind_method(D_METHOD("set_closed", "closed"), &Line2D::set_closed);
+	ClassDB::bind_method(D_METHOD("is_closed"), &Line2D::is_closed);
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &Line2D::set_width);
 	ClassDB::bind_method(D_METHOD("get_width"), &Line2D::get_width);
@@ -387,6 +389,7 @@ void Line2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_antialiased"), &Line2D::get_antialiased);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "points"), "set_points", "get_points");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "closed"), "set_closed", "is_closed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:px"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "width_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "default_color"), "set_default_color", "get_default_color");

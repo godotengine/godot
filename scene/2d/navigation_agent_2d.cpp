@@ -89,6 +89,12 @@ void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_target_position", "position"), &NavigationAgent2D::set_target_position);
 	ClassDB::bind_method(D_METHOD("get_target_position"), &NavigationAgent2D::get_target_position);
 
+	ClassDB::bind_method(D_METHOD("set_simplify_path", "enabled"), &NavigationAgent2D::set_simplify_path);
+	ClassDB::bind_method(D_METHOD("get_simplify_path"), &NavigationAgent2D::get_simplify_path);
+
+	ClassDB::bind_method(D_METHOD("set_simplify_epsilon", "epsilon"), &NavigationAgent2D::set_simplify_epsilon);
+	ClassDB::bind_method(D_METHOD("get_simplify_epsilon"), &NavigationAgent2D::get_simplify_epsilon);
+
 	ClassDB::bind_method(D_METHOD("get_next_path_position"), &NavigationAgent2D::get_next_path_position);
 
 	ClassDB::bind_method(D_METHOD("set_velocity_forced", "velocity"), &NavigationAgent2D::set_velocity_forced);
@@ -129,6 +135,8 @@ void NavigationAgent2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pathfinding_algorithm", PROPERTY_HINT_ENUM, "AStar"), "set_pathfinding_algorithm", "get_pathfinding_algorithm");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_postprocessing", PROPERTY_HINT_ENUM, "Corridorfunnel,Edgecentered"), "set_path_postprocessing", "get_path_postprocessing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_metadata_flags", PROPERTY_HINT_FLAGS, "Include Types,Include RIDs,Include Owners"), "set_path_metadata_flags", "get_path_metadata_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "simplify_path"), "set_simplify_path", "get_simplify_path");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "simplify_epsilon", PROPERTY_HINT_RANGE, "0.0,10.0,0.001,or_greater,suffix:px"), "set_simplify_epsilon", "get_simplify_epsilon");
 
 	ADD_GROUP("Avoidance", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
@@ -274,7 +282,6 @@ void NavigationAgent2D::_notification(int p_what) {
 						NavigationServer2D::get_singleton()->agent_set_velocity_forced(agent, velocity_forced);
 					}
 				}
-				_check_distance_to_target();
 			}
 #ifdef DEBUG_ENABLED
 			if (debug_path_dirty) {
@@ -294,6 +301,13 @@ NavigationAgent2D::NavigationAgent2D() {
 	NavigationServer2D::get_singleton()->agent_set_time_horizon_obstacles(agent, time_horizon_obstacles);
 	NavigationServer2D::get_singleton()->agent_set_radius(agent, radius);
 	NavigationServer2D::get_singleton()->agent_set_max_speed(agent, max_speed);
+	NavigationServer2D::get_singleton()->agent_set_avoidance_layers(agent, avoidance_layers);
+	NavigationServer2D::get_singleton()->agent_set_avoidance_mask(agent, avoidance_mask);
+	NavigationServer2D::get_singleton()->agent_set_avoidance_priority(agent, avoidance_priority);
+	NavigationServer2D::get_singleton()->agent_set_avoidance_enabled(agent, avoidance_enabled);
+	if (avoidance_enabled) {
+		NavigationServer2D::get_singleton()->agent_set_avoidance_callback(agent, callable_mp(this, &NavigationAgent2D::_avoidance_done));
+	}
 
 	// Preallocate query and result objects to improve performance.
 	navigation_query = Ref<NavigationPathQueryParameters2D>();
@@ -301,11 +315,6 @@ NavigationAgent2D::NavigationAgent2D() {
 
 	navigation_result = Ref<NavigationPathQueryResult2D>();
 	navigation_result.instantiate();
-
-	set_avoidance_layers(avoidance_layers);
-	set_avoidance_mask(avoidance_mask);
-	set_avoidance_priority(avoidance_priority);
-	set_avoidance_enabled(avoidance_enabled);
 
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationAgent2D::_navigation_debug_changed));
@@ -426,6 +435,24 @@ void NavigationAgent2D::set_path_postprocessing(const NavigationPathQueryParamet
 	navigation_query->set_path_postprocessing(path_postprocessing);
 }
 
+void NavigationAgent2D::set_simplify_path(bool p_enabled) {
+	simplify_path = p_enabled;
+	navigation_query->set_simplify_path(simplify_path);
+}
+
+bool NavigationAgent2D::get_simplify_path() const {
+	return simplify_path;
+}
+
+void NavigationAgent2D::set_simplify_epsilon(real_t p_epsilon) {
+	simplify_epsilon = MAX(0.0, p_epsilon);
+	navigation_query->set_simplify_epsilon(simplify_epsilon);
+}
+
+real_t NavigationAgent2D::get_simplify_epsilon() const {
+	return simplify_epsilon;
+}
+
 void NavigationAgent2D::set_path_metadata_flags(BitField<NavigationPathQueryParameters2D::PathMetadataFlags> p_path_metadata_flags) {
 	if (path_metadata_flags == p_path_metadata_flags) {
 		return;
@@ -502,7 +529,7 @@ void NavigationAgent2D::set_max_neighbors(int p_count) {
 }
 
 void NavigationAgent2D::set_time_horizon_agents(real_t p_time_horizon) {
-	ERR_FAIL_COND_MSG(p_time_horizon < 0.0, "Time horizion must be positive.");
+	ERR_FAIL_COND_MSG(p_time_horizon < 0.0, "Time horizon must be positive.");
 	if (Math::is_equal_approx(time_horizon_agents, p_time_horizon)) {
 		return;
 	}
@@ -511,7 +538,7 @@ void NavigationAgent2D::set_time_horizon_agents(real_t p_time_horizon) {
 }
 
 void NavigationAgent2D::set_time_horizon_obstacles(real_t p_time_horizon) {
-	ERR_FAIL_COND_MSG(p_time_horizon < 0.0, "Time horizion must be positive.");
+	ERR_FAIL_COND_MSG(p_time_horizon < 0.0, "Time horizon must be positive.");
 	if (Math::is_equal_approx(time_horizon_obstacles, p_time_horizon)) {
 		return;
 	}
@@ -556,11 +583,11 @@ Vector2 NavigationAgent2D::get_target_position() const {
 }
 
 Vector2 NavigationAgent2D::get_next_path_position() {
-	update_navigation();
+	_update_navigation();
 
 	const Vector<Vector2> &navigation_path = navigation_result->get_path();
 	if (navigation_path.size() == 0) {
-		ERR_FAIL_COND_V_MSG(agent_parent == nullptr, Vector2(), "The agent has no parent.");
+		ERR_FAIL_NULL_V_MSG(agent_parent, Vector2(), "The agent has no parent.");
 		return agent_parent->get_global_position();
 	} else {
 		return navigation_path[navigation_path_index];
@@ -568,7 +595,7 @@ Vector2 NavigationAgent2D::get_next_path_position() {
 }
 
 real_t NavigationAgent2D::distance_to_target() const {
-	ERR_FAIL_COND_V_MSG(agent_parent == nullptr, 0.0, "The agent has no parent.");
+	ERR_FAIL_NULL_V_MSG(agent_parent, 0.0, "The agent has no parent.");
 	return agent_parent->get_global_position().distance_to(target_position);
 }
 
@@ -577,17 +604,25 @@ bool NavigationAgent2D::is_target_reached() const {
 }
 
 bool NavigationAgent2D::is_target_reachable() {
-	return target_desired_distance >= get_final_position().distance_to(target_position);
+	_update_navigation();
+	return _is_target_reachable();
+}
+
+bool NavigationAgent2D::_is_target_reachable() const {
+	return target_desired_distance >= _get_final_position().distance_to(target_position);
 }
 
 bool NavigationAgent2D::is_navigation_finished() {
-	update_navigation();
+	_update_navigation();
 	return navigation_finished;
 }
 
 Vector2 NavigationAgent2D::get_final_position() {
-	update_navigation();
+	_update_navigation();
+	return _get_final_position();
+}
 
+Vector2 NavigationAgent2D::_get_final_position() const {
 	const Vector<Vector2> &navigation_path = navigation_result->get_path();
 	if (navigation_path.size() == 0) {
 		return Vector2();
@@ -625,7 +660,7 @@ PackedStringArray NavigationAgent2D::get_configuration_warnings() const {
 	return warnings;
 }
 
-void NavigationAgent2D::update_navigation() {
+void NavigationAgent2D::_update_navigation() {
 	if (agent_parent == nullptr) {
 		return;
 	}
@@ -679,6 +714,7 @@ void NavigationAgent2D::update_navigation() {
 		debug_path_dirty = true;
 #endif // DEBUG_ENABLED
 		navigation_finished = false;
+		last_waypoint_reached = false;
 		navigation_path_index = 0;
 		emit_signal(SNAME("path_changed"));
 	}
@@ -687,85 +723,42 @@ void NavigationAgent2D::update_navigation() {
 		return;
 	}
 
-	// Check if we can advance the navigation path
-	if (navigation_finished == false) {
-		// Advances to the next far away position.
-		const Vector<Vector2> &navigation_path = navigation_result->get_path();
-		const Vector<int32_t> &navigation_path_types = navigation_result->get_path_types();
-		const TypedArray<RID> &navigation_path_rids = navigation_result->get_path_rids();
-		const Vector<int64_t> &navigation_path_owners = navigation_result->get_path_owner_ids();
+	// Check if the navigation has already finished.
+	if (navigation_finished) {
+		return;
+	}
 
-		while (origin.distance_to(navigation_path[navigation_path_index]) < path_desired_distance) {
-			Dictionary details;
-
-			const Vector2 waypoint = navigation_path[navigation_path_index];
-			details[SNAME("position")] = waypoint;
-
-			int waypoint_type = -1;
-			if (path_metadata_flags.has_flag(NavigationPathQueryParameters2D::PathMetadataFlags::PATH_METADATA_INCLUDE_TYPES)) {
-				const NavigationPathQueryResult2D::PathSegmentType type = NavigationPathQueryResult2D::PathSegmentType(navigation_path_types[navigation_path_index]);
-
-				details[SNAME("type")] = type;
-				waypoint_type = type;
-			}
-
-			if (path_metadata_flags.has_flag(NavigationPathQueryParameters2D::PathMetadataFlags::PATH_METADATA_INCLUDE_RIDS)) {
-				details[SNAME("rid")] = navigation_path_rids[navigation_path_index];
-			}
-
-			if (path_metadata_flags.has_flag(NavigationPathQueryParameters2D::PathMetadataFlags::PATH_METADATA_INCLUDE_OWNERS)) {
-				const ObjectID waypoint_owner_id = ObjectID(navigation_path_owners[navigation_path_index]);
-
-				// Get a reference to the owning object.
-				Object *owner = nullptr;
-				if (waypoint_owner_id.is_valid()) {
-					owner = ObjectDB::get_instance(waypoint_owner_id);
-				}
-
-				details[SNAME("owner")] = owner;
-
-				if (waypoint_type == NavigationPathQueryResult2D::PATH_SEGMENT_TYPE_LINK) {
-					const NavigationLink2D *navlink = Object::cast_to<NavigationLink2D>(owner);
-					if (navlink) {
-						Vector2 link_global_start_position = navlink->get_global_start_position();
-						Vector2 link_global_end_position = navlink->get_global_end_position();
-						if (waypoint.distance_to(link_global_start_position) < waypoint.distance_to(link_global_end_position)) {
-							details[SNAME("link_entry_position")] = link_global_start_position;
-							details[SNAME("link_exit_position")] = link_global_end_position;
-						} else {
-							details[SNAME("link_entry_position")] = link_global_end_position;
-							details[SNAME("link_exit_position")] = link_global_start_position;
-						}
-					}
-				}
-			}
-
-			// Emit a signal for the waypoint
-			emit_signal(SNAME("waypoint_reached"), details);
-
-			// Emit a signal if we've reached a navigation link
-			if (waypoint_type == NavigationPathQueryResult2D::PATH_SEGMENT_TYPE_LINK) {
-				emit_signal(SNAME("link_reached"), details);
-			}
-
-			// Move to the next waypoint on the list
-			navigation_path_index += 1;
-
-			// Check to see if we've finished our route
-			if (navigation_path_index == navigation_path.size()) {
-				_check_distance_to_target();
-				navigation_path_index -= 1;
-				navigation_finished = true;
-				target_position_submitted = false;
-				if (avoidance_enabled) {
-					NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
-					NavigationServer2D::get_singleton()->agent_set_velocity(agent, Vector2(0.0, 0.0));
-					NavigationServer2D::get_singleton()->agent_set_velocity_forced(agent, Vector2(0.0, 0.0));
-				}
-				emit_signal(SNAME("navigation_finished"));
-				break;
-			}
+	// Check if we reached the target.
+	if (_is_within_target_distance(origin)) {
+		// Emit waypoint_reached in case we also moved within distance of a waypoint.
+		_advance_waypoints(origin);
+		_transition_to_target_reached();
+		_transition_to_navigation_finished();
+	} else {
+		// Advance waypoints if possible.
+		_advance_waypoints(origin);
+		// Keep navigation running even after reaching the last waypoint if the target is reachable.
+		if (last_waypoint_reached && !_is_target_reachable()) {
+			_transition_to_navigation_finished();
 		}
+	}
+}
+
+void NavigationAgent2D::_advance_waypoints(const Vector2 &p_origin) {
+	if (last_waypoint_reached) {
+		return;
+	}
+
+	// Advance to the farthest possible waypoint.
+	while (_is_within_waypoint_distance(p_origin)) {
+		_trigger_waypoint_reached();
+
+		if (_is_last_waypoint()) {
+			last_waypoint_reached = true;
+			break;
+		}
+
+		_move_to_next_waypoint();
 	}
 }
 
@@ -773,16 +766,102 @@ void NavigationAgent2D::_request_repath() {
 	navigation_result->reset();
 	target_reached = false;
 	navigation_finished = false;
+	last_waypoint_reached = false;
 	update_frame_id = 0;
 }
 
-void NavigationAgent2D::_check_distance_to_target() {
-	if (!target_reached) {
-		if (distance_to_target() < target_desired_distance) {
-			target_reached = true;
-			emit_signal(SNAME("target_reached"));
+bool NavigationAgent2D::_is_last_waypoint() const {
+	return navigation_path_index == navigation_result->get_path().size() - 1;
+}
+
+void NavigationAgent2D::_move_to_next_waypoint() {
+	navigation_path_index += 1;
+}
+
+bool NavigationAgent2D::_is_within_waypoint_distance(const Vector2 &p_origin) const {
+	const Vector<Vector2> &navigation_path = navigation_result->get_path();
+	return p_origin.distance_to(navigation_path[navigation_path_index]) < path_desired_distance;
+}
+
+bool NavigationAgent2D::_is_within_target_distance(const Vector2 &p_origin) const {
+	return p_origin.distance_to(target_position) < target_desired_distance;
+}
+
+void NavigationAgent2D::_trigger_waypoint_reached() {
+	const Vector<Vector2> &navigation_path = navigation_result->get_path();
+	const Vector<int32_t> &navigation_path_types = navigation_result->get_path_types();
+	const TypedArray<RID> &navigation_path_rids = navigation_result->get_path_rids();
+	const Vector<int64_t> &navigation_path_owners = navigation_result->get_path_owner_ids();
+
+	Dictionary details;
+
+	const Vector2 waypoint = navigation_path[navigation_path_index];
+	details[CoreStringName(position)] = waypoint;
+
+	int waypoint_type = -1;
+	if (path_metadata_flags.has_flag(NavigationPathQueryParameters2D::PathMetadataFlags::PATH_METADATA_INCLUDE_TYPES)) {
+		const NavigationPathQueryResult2D::PathSegmentType type = NavigationPathQueryResult2D::PathSegmentType(navigation_path_types[navigation_path_index]);
+
+		details[SNAME("type")] = type;
+		waypoint_type = type;
+	}
+
+	if (path_metadata_flags.has_flag(NavigationPathQueryParameters2D::PathMetadataFlags::PATH_METADATA_INCLUDE_RIDS)) {
+		details[SNAME("rid")] = navigation_path_rids[navigation_path_index];
+	}
+
+	if (path_metadata_flags.has_flag(NavigationPathQueryParameters2D::PathMetadataFlags::PATH_METADATA_INCLUDE_OWNERS)) {
+		const ObjectID waypoint_owner_id = ObjectID(navigation_path_owners[navigation_path_index]);
+
+		// Get a reference to the owning object.
+		Object *owner = nullptr;
+		if (waypoint_owner_id.is_valid()) {
+			owner = ObjectDB::get_instance(waypoint_owner_id);
+		}
+
+		details[SNAME("owner")] = owner;
+
+		if (waypoint_type == NavigationPathQueryResult2D::PATH_SEGMENT_TYPE_LINK) {
+			const NavigationLink2D *navlink = Object::cast_to<NavigationLink2D>(owner);
+			if (navlink) {
+				Vector2 link_global_start_position = navlink->get_global_start_position();
+				Vector2 link_global_end_position = navlink->get_global_end_position();
+				if (waypoint.distance_to(link_global_start_position) < waypoint.distance_to(link_global_end_position)) {
+					details[SNAME("link_entry_position")] = link_global_start_position;
+					details[SNAME("link_exit_position")] = link_global_end_position;
+				} else {
+					details[SNAME("link_entry_position")] = link_global_end_position;
+					details[SNAME("link_exit_position")] = link_global_start_position;
+				}
+			}
 		}
 	}
+
+	// Emit a signal for the waypoint.
+	emit_signal(SNAME("waypoint_reached"), details);
+
+	// Emit a signal if we've reached a navigation link.
+	if (waypoint_type == NavigationPathQueryResult2D::PATH_SEGMENT_TYPE_LINK) {
+		emit_signal(SNAME("link_reached"), details);
+	}
+}
+
+void NavigationAgent2D::_transition_to_navigation_finished() {
+	navigation_finished = true;
+	target_position_submitted = false;
+
+	if (avoidance_enabled) {
+		NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
+		NavigationServer2D::get_singleton()->agent_set_velocity(agent, Vector2(0.0, 0.0));
+		NavigationServer2D::get_singleton()->agent_set_velocity_forced(agent, Vector2(0.0, 0.0));
+	}
+
+	emit_signal(SNAME("navigation_finished"));
+}
+
+void NavigationAgent2D::_transition_to_target_reached() {
+	target_reached = true;
+	emit_signal(SNAME("target_reached"));
 }
 
 void NavigationAgent2D::set_avoidance_layers(uint32_t p_layers) {

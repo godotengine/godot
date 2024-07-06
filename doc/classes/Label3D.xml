@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Label3D" inherits="GeometryInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Label3D" inherits="GeometryInstance3D" keywords="text" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node for displaying plain text in 3D space.
 	</brief_description>
@@ -7,6 +7,7 @@
 		A node for displaying plain text in 3D space. By adjusting various properties of this node, you can configure things such as the text's appearance and whether it always faces the camera.
 	</description>
 	<tutorials>
+		<link title="3D text">$DOCS_URL/tutorials/3d/3d_text.html</link>
 	</tutorials>
 	<methods>
 		<method name="generate_triangle_mesh" qualifiers="const">
@@ -80,7 +81,7 @@
 		<member name="line_spacing" type="float" setter="set_line_spacing" getter="get_line_spacing" default="0.0">
 			Vertical space between lines in multiline [Label3D].
 		</member>
-		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			Text [Color] of the [Label3D].
 		</member>
 		<member name="no_depth_test" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">

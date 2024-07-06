@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="FogMaterial" inherits="Material" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		[Material] used with a [FogVolume] to draw things with the volumetric fog effect.
+		A material that controls how volumetric fog is rendered, to be assigned to a [FogVolume].
 	</brief_description>
 	<description>
 		A [Material] resource that can be used by [FogVolume]s to draw volumetric effects.
@@ -10,7 +10,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="albedo" type="Color" setter="set_albedo" getter="get_albedo" default="Color(1, 1, 1, 1)">
+		<member name="albedo" type="Color" setter="set_albedo" getter="get_albedo" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			The single-scattering [Color] of the [FogVolume]. Internally, [member albedo] is converted into single-scattering, which is additively blended with other [FogVolume]s and the [member Environment.volumetric_fog_albedo].
 		</member>
 		<member name="density" type="float" setter="set_density" getter="get_density" default="1.0">

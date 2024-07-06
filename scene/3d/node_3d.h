@@ -32,7 +32,7 @@
 #define NODE_3D_H
 
 #include "scene/main/node.h"
-#include "scene/resources/world_3d.h"
+#include "scene/resources/3d/world_3d.h"
 
 class Node3DGizmo : public RefCounted {
 	GDCLASS(Node3DGizmo, RefCounted);
@@ -182,6 +182,7 @@ public:
 	void set_scale(const Vector3 &p_scale);
 
 	void set_global_position(const Vector3 &p_position);
+	void set_global_basis(const Basis &p_basis);
 	void set_global_rotation(const Vector3 &p_euler_rad);
 	void set_global_rotation_degrees(const Vector3 &p_euler_degrees);
 
@@ -193,6 +194,7 @@ public:
 	Vector3 get_scale() const;
 
 	Vector3 get_global_position() const;
+	Basis get_global_basis() const;
 	Vector3 get_global_rotation() const;
 	Vector3 get_global_rotation_degrees() const;
 
@@ -225,6 +227,7 @@ public:
 	void clear_gizmos();
 
 	void set_as_top_level(bool p_enabled);
+	void set_as_top_level_keep_local(bool p_enabled);
 	bool is_set_as_top_level() const;
 
 	void set_disable_scale(bool p_enabled);

@@ -75,7 +75,7 @@ bool VideoStreamPlayback::is_playing() const {
 }
 
 void VideoStreamPlayback::set_paused(bool p_paused) {
-	GDVIRTUAL_CALL(_is_playing, p_paused);
+	GDVIRTUAL_CALL(_set_paused, p_paused);
 }
 
 bool VideoStreamPlayback::is_paused() const {
@@ -119,9 +119,7 @@ Ref<Texture2D> VideoStreamPlayback::get_texture() const {
 }
 
 void VideoStreamPlayback::update(double p_delta) {
-	if (!GDVIRTUAL_CALL(_update, p_delta)) {
-		ERR_FAIL_MSG("VideoStreamPlayback::update unimplemented");
-	}
+	GDVIRTUAL_REQUIRED_CALL(_update, p_delta);
 }
 
 void VideoStreamPlayback::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
@@ -172,6 +170,7 @@ Ref<VideoStreamPlayback> VideoStream::instantiate_playback() {
 
 void VideoStream::set_file(const String &p_file) {
 	file = p_file;
+	emit_changed();
 }
 
 String VideoStream::get_file() {

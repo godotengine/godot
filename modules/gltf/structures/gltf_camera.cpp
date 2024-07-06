@@ -60,7 +60,7 @@ void GLTFCamera::_bind_methods() {
 Ref<GLTFCamera> GLTFCamera::from_node(const Camera3D *p_camera) {
 	Ref<GLTFCamera> c;
 	c.instantiate();
-	ERR_FAIL_COND_V_MSG(!p_camera, c, "Tried to create a GLTFCamera from a Camera3D node, but the given node was null.");
+	ERR_FAIL_NULL_V_MSG(p_camera, c, "Tried to create a GLTFCamera from a Camera3D node, but the given node was null.");
 	c->set_perspective(p_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_PERSPECTIVE);
 	// GLTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
 	c->set_fov(Math::deg_to_rad(p_camera->get_fov()));

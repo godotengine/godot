@@ -18,13 +18,15 @@ jobs:
     name: Template (target=template_release)
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
         continue-on-error: true
 
-      - name: Setup python and scons
+      - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
       - name: Compilation (arm64)

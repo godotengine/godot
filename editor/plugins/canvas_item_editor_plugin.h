@@ -31,11 +31,12 @@
 #ifndef CANVAS_ITEM_EDITOR_PLUGIN_H
 #define CANVAS_ITEM_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
-#include "scene/gui/base_button.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 
 class AcceptDialog;
+class Button;
+class ButtonGroup;
 class CanvasItemEditorViewport;
 class ConfirmationDialog;
 class EditorData;
@@ -48,6 +49,7 @@ class PanelContainer;
 class StyleBoxTexture;
 class ViewPanner;
 class VScrollBar;
+class VSeparator;
 class VSplitContainer;
 
 class CanvasItemEditorSelectedItem : public Object {
@@ -55,7 +57,6 @@ class CanvasItemEditorSelectedItem : public Object {
 
 public:
 	Transform2D prev_xform;
-	real_t prev_rot = 0;
 	Rect2 prev_rect;
 	Vector2 prev_pivot;
 	real_t prev_anchors[4] = { (real_t)0.0 };
@@ -125,7 +126,9 @@ private:
 		SHOW_GUIDES,
 		SHOW_ORIGIN,
 		SHOW_VIEWPORT,
-		SHOW_EDIT_LOCKS,
+		SHOW_POSITION_GIZMOS,
+		SHOW_LOCK_GIZMOS,
+		SHOW_GROUP_GIZMOS,
 		SHOW_TRANSFORMATION_GIZMOS,
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
@@ -172,6 +175,7 @@ private:
 		DRAG_SCALE_BOTH,
 		DRAG_ROTATE,
 		DRAG_PIVOT,
+		DRAG_TEMP_PIVOT,
 		DRAG_V_GUIDE,
 		DRAG_H_GUIDE,
 		DRAG_DOUBLE_GUIDE,
@@ -184,6 +188,8 @@ private:
 		GRID_VISIBILITY_HIDE,
 	};
 
+	const String locked_transform_warning = TTRC("All selected CanvasItems are either invisible or locked in some way and can't be transformed.");
+
 	bool selection_menu_additive_selection = false;
 
 	Tool tool = TOOL_SELECT;
@@ -192,10 +198,14 @@ private:
 
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
+
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
-	PanelContainer *context_menu_panel = nullptr;
-	HBoxContainer *context_menu_hbox = nullptr;
+	PanelContainer *context_toolbar_panel = nullptr;
+	HBoxContainer *context_toolbar_hbox = nullptr;
+	HashMap<Control *, VSeparator *> context_toolbar_separators;
+
+	void _update_context_toolbar();
 
 	Transform2D transform;
 	GridVisibility grid_visibility = GRID_VISIBILITY_SHOW_WHEN_SNAPPING;
@@ -204,7 +214,9 @@ private:
 	bool show_origin = true;
 	bool show_viewport = true;
 	bool show_helpers = false;
-	bool show_edit_locks = true;
+	bool show_position_gizmos = true;
+	bool show_lock_gizmos = true;
+	bool show_group_gizmos = true;
 	bool show_transformation_gizmos = true;
 
 	real_t zoom = 1.0;
@@ -216,7 +228,7 @@ private:
 	// Defaults are defined in clear().
 	Point2 grid_offset;
 	Point2 grid_step;
-	int primary_grid_steps = 0;
+	Vector2i primary_grid_step;
 	int grid_step_multiplier = 0;
 
 	real_t snap_rotation_step = 0.0;
@@ -243,6 +255,7 @@ private:
 	bool key_scale = false;
 
 	bool pan_pressed = false;
+	Vector2 temp_pivot = Vector2(INFINITY, INFINITY);
 
 	bool ruler_tool_active = false;
 	Point2 ruler_tool_origin;
@@ -289,6 +302,7 @@ private:
 	};
 
 	HashMap<BoneKey, BoneList> bone_list;
+	MenuButton *skeleton_menu = nullptr;
 
 	struct PoseClipboard {
 		Vector2 pos;
@@ -321,10 +335,11 @@ private:
 	Button *group_button = nullptr;
 	Button *ungroup_button = nullptr;
 
-	MenuButton *skeleton_menu = nullptr;
 	Button *override_camera_button = nullptr;
 	MenuButton *view_menu = nullptr;
 	PopupMenu *grid_menu = nullptr;
+	PopupMenu *theme_menu = nullptr;
+	PopupMenu *gizmos_menu = nullptr;
 	HBoxContainer *animation_hb = nullptr;
 	MenuButton *animation_menu = nullptr;
 
@@ -382,9 +397,9 @@ private:
 
 	CanvasItem *ref_item = nullptr;
 
-	void _save_canvas_item_state(List<CanvasItem *> p_canvas_items, bool save_bones = false);
-	void _restore_canvas_item_state(List<CanvasItem *> p_canvas_items, bool restore_bones = false);
-	void _commit_canvas_item_state(List<CanvasItem *> p_canvas_items, String action_name, bool commit_bones = false);
+	void _save_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool save_bones = false);
+	void _restore_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool restore_bones = false);
+	void _commit_canvas_item_state(const List<CanvasItem *> &p_canvas_items, const String &action_name, bool commit_bones = false);
 
 	Vector2 _anchor_to_position(const Control *p_control, Vector2 anchor);
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
@@ -397,15 +412,28 @@ private:
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
 	void _add_node_pressed(int p_result);
-	void _node_created(Node *p_node);
+	void _adjust_new_node_position(Node *p_node);
 	void _reset_create_position();
 	void _update_editor_settings();
 	bool _is_grid_visible() const;
 	void _prepare_grid_menu();
 	void _on_grid_menu_id_pressed(int p_id);
 
-	List<CanvasItem *> _get_edited_canvas_items(bool retrieve_locked = false, bool remove_canvas_item_if_parent_in_selection = true) const;
-	Rect2 _get_encompassing_rect_from_list(List<CanvasItem *> p_list);
+public:
+	enum ThemePreviewMode {
+		THEME_PREVIEW_PROJECT,
+		THEME_PREVIEW_EDITOR,
+		THEME_PREVIEW_DEFAULT,
+
+		THEME_PREVIEW_MAX // The number of options for enumerating.
+	};
+
+private:
+	ThemePreviewMode theme_preview = THEME_PREVIEW_PROJECT;
+	void _switch_theme_preview(int p_mode);
+
+	List<CanvasItem *> _get_edited_canvas_items(bool p_retrieve_locked = false, bool p_remove_canvas_item_if_parent_in_selection = true, bool *r_has_locked_items = nullptr) const;
+	Rect2 _get_encompassing_rect_from_list(const List<CanvasItem *> &p_list);
 	void _expand_encompassing_rect_using_children(Rect2 &r_rect, const Node *p_node, bool &r_first, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D(), bool include_locked_nodes = true);
 	Rect2 _get_encompassing_rect(const Node *p_node);
 
@@ -417,7 +445,7 @@ private:
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_ev) override;
 
-	void _draw_text_at_position(Point2 p_position, String p_string, Side p_side);
+	void _draw_text_at_position(Point2 p_position, const String &p_string, Side p_side);
 	void _draw_margin_at_position(int p_value, Point2 p_position, Side p_side);
 	void _draw_percentage_at_position(real_t p_value, Point2 p_position, Side p_side);
 	void _draw_straight_line(Point2 p_from, Point2 p_to, Color p_color);
@@ -435,7 +463,7 @@ private:
 	void _draw_invisible_nodes_positions(Node *p_node, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	void _draw_locks_and_groups(Node *p_node, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	void _draw_hover();
-	void _draw_transform_message();
+	void _draw_message();
 
 	void _draw_viewport();
 
@@ -454,10 +482,13 @@ private:
 
 	void _gui_input_viewport(const Ref<InputEvent> &p_event);
 	void _update_cursor();
+	void _update_lock_and_group_button();
 
 	void _selection_changed();
 	void _focus_selection(int p_op);
 	void _reset_drag();
+
+	void _project_settings_changed();
 
 	SnapTarget snap_target[2];
 	Transform2D snap_transform;
@@ -521,7 +552,9 @@ public:
 		SNAP_DEFAULT = SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL,
 	};
 
-	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = nullptr, List<CanvasItem *> p_other_nodes_exceptions = List<CanvasItem *>());
+	String message;
+
+	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = nullptr, const List<CanvasItem *> &p_other_nodes_exceptions = List<CanvasItem *>());
 	real_t snap_angle(real_t p_target, real_t p_start = 0) const;
 
 	Transform2D get_canvas_transform() const { return transform; }
@@ -557,6 +590,8 @@ public:
 	void center_at(const Point2 &p_pos);
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
+
+	ThemePreviewMode get_theme_preview() const { return theme_preview; }
 
 	EditorSelection *editor_selection = nullptr;
 
@@ -602,28 +637,26 @@ class CanvasItemEditorViewport : public Control {
 	CanvasItemEditor *canvas_item_editor = nullptr;
 	Control *preview_node = nullptr;
 	AcceptDialog *accept = nullptr;
-	AcceptDialog *selector = nullptr;
-	Label *selector_label = nullptr;
+	AcceptDialog *texture_node_type_selector = nullptr;
 	Label *label = nullptr;
 	Label *label_desc = nullptr;
-	VBoxContainer *btn_group = nullptr;
 	Ref<ButtonGroup> button_group;
 
 	void _on_mouse_exit();
-	void _on_select_type(Object *selected);
+	void _on_select_texture_node_type(Object *selected);
 	void _on_change_type_confirmed();
 	void _on_change_type_closed();
-	Node *_make_texture_node_type(String texture_node_type);
 
 	void _create_preview(const Vector<String> &files) const;
 	void _remove_preview();
 
-	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
-	bool _only_packed_scenes_selected() const;
-	void _create_nodes(Node *parent, Node *child, String &path, const Point2 &p_point);
-	bool _create_instance(Node *parent, String &path, const Point2 &p_point);
+	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) const;
+	bool _is_any_texture_selected() const;
+	void _create_texture_node(Node *p_parent, Node *p_child, const String &p_path, const Point2 &p_point);
+	void _create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point);
+	bool _create_instance(Node *p_parent, const String &p_path, const Point2 &p_point);
 	void _perform_drop_data();
-	void _show_resource_type_selector();
+	void _show_texture_node_type_selector();
 	void _update_theme();
 
 protected:

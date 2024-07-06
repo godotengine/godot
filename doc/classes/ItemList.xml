@@ -57,6 +57,12 @@
 				Ensure current selection is visible, adjusting the scroll position as necessary.
 			</description>
 		</method>
+		<method name="force_update_list_size">
+			<return type="void" />
+			<description>
+				Forces an update to the list size based on its items. This happens automatically whenever size of the items, or other relevant settings like [member auto_height], change. The method can be used to trigger the update ahead of next drawing pass.
+			</description>
+		</method>
 		<method name="get_item_at_position" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="position" type="Vector2" />
@@ -455,7 +461,7 @@
 		<theme_item name="font_hovered_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			Text [Color] used when the item is hovered and not selected yet.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the item.
 		</theme_item>
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
@@ -477,7 +483,7 @@
 			The size of the item text outline.
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 		</theme_item>
-		<theme_item name="v_separation" data_type="constant" type="int" default="2">
+		<theme_item name="v_separation" data_type="constant" type="int" default="4">
 			The vertical spacing between items.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">

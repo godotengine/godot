@@ -474,12 +474,19 @@ bool ResourceImporterLayeredTexture::are_import_settings_valid(const String &p_p
 
 ResourceImporterLayeredTexture *ResourceImporterLayeredTexture::singleton = nullptr;
 
-ResourceImporterLayeredTexture::ResourceImporterLayeredTexture() {
-	singleton = this;
+ResourceImporterLayeredTexture::ResourceImporterLayeredTexture(bool p_singleton) {
+	// This should only be set through the EditorNode.
+	if (p_singleton) {
+		singleton = this;
+	}
+
 	mode = MODE_CUBEMAP;
 }
 
 ResourceImporterLayeredTexture::~ResourceImporterLayeredTexture() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }
 
 void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source_file, Ref<LayeredTextureImport> r_texture_import) {

@@ -28,26 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef _3D_DISABLED
+
 #include "physics_server_3d.h"
 
 #include "core/config/project_settings.h"
 #include "core/string/print_string.h"
 #include "core/variant/typed_array.h"
 
-void PhysicsServer3DRenderingServerHandler::set_vertex(int p_vertex_id, const void *p_vector3) {
-	GDVIRTUAL_REQUIRED_CALL(_set_vertex, p_vertex_id, p_vector3);
+void PhysicsServer3DRenderingServerHandler::set_vertex(int p_vertex_id, const Vector3 &p_vertex) {
+	GDVIRTUAL_REQUIRED_CALL(_set_vertex, p_vertex_id, p_vertex);
 }
-void PhysicsServer3DRenderingServerHandler::set_normal(int p_vertex_id, const void *p_vector3) {
-	GDVIRTUAL_REQUIRED_CALL(_set_normal, p_vertex_id, p_vector3);
+void PhysicsServer3DRenderingServerHandler::set_normal(int p_vertex_id, const Vector3 &p_normal) {
+	GDVIRTUAL_REQUIRED_CALL(_set_normal, p_vertex_id, p_normal);
 }
 void PhysicsServer3DRenderingServerHandler::set_aabb(const AABB &p_aabb) {
 	GDVIRTUAL_REQUIRED_CALL(_set_aabb, p_aabb);
 }
 
 void PhysicsServer3DRenderingServerHandler::_bind_methods() {
-	GDVIRTUAL_BIND(_set_vertex, "vertex_id", "vertices");
-	GDVIRTUAL_BIND(_set_normal, "vertex_id", "normals");
+	GDVIRTUAL_BIND(_set_vertex, "vertex_id", "vertex");
+	GDVIRTUAL_BIND(_set_normal, "vertex_id", "normal");
 	GDVIRTUAL_BIND(_set_aabb, "aabb");
+
+	ClassDB::bind_method(D_METHOD("set_vertex", "vertex_id", "vertex"), &PhysicsServer3DRenderingServerHandler::set_vertex);
+	ClassDB::bind_method(D_METHOD("set_normal", "vertex_id", "normal"), &PhysicsServer3DRenderingServerHandler::set_normal);
+	ClassDB::bind_method(D_METHOD("set_aabb", "aabb"), &PhysicsServer3DRenderingServerHandler::set_aabb);
 }
 
 PhysicsServer3D *PhysicsServer3D::singleton = nullptr;
@@ -339,7 +345,7 @@ void PhysicsShapeQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_exclude", "get_exclude");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,100,0.01"), "set_margin", "get_margin");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion"), "set_motion", "get_motion");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "motion"), "set_motion", "get_motion");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "shape_rid"), "set_shape_rid", "get_shape_rid");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform"), "set_transform", "get_transform");
@@ -362,6 +368,7 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Ref<PhysicsRayQueryPa
 	Dictionary d;
 	d["position"] = result.position;
 	d["normal"] = result.normal;
+	d["face_index"] = result.face_index;
 	d["collider_id"] = result.collider_id;
 	d["collider"] = result.collider;
 	d["shape"] = result.shape;
@@ -496,6 +503,7 @@ TypedArray<RID> PhysicsTestMotionParameters3D::get_exclude_bodies() const {
 }
 
 void PhysicsTestMotionParameters3D::set_exclude_bodies(const TypedArray<RID> &p_exclude) {
+	parameters.exclude_bodies.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
 		parameters.exclude_bodies.insert(p_exclude[i]);
 	}
@@ -514,6 +522,7 @@ TypedArray<uint64_t> PhysicsTestMotionParameters3D::get_exclude_objects() const 
 }
 
 void PhysicsTestMotionParameters3D::set_exclude_objects(const TypedArray<uint64_t> &p_exclude) {
+	parameters.exclude_objects.clear();
 	for (int i = 0; i < p_exclude.size(); ++i) {
 		ObjectID object_id = p_exclude[i];
 		ERR_CONTINUE(object_id.is_null());
@@ -695,9 +704,11 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("custom_shape_create"), &PhysicsServer3D::custom_shape_create);
 
 	ClassDB::bind_method(D_METHOD("shape_set_data", "shape", "data"), &PhysicsServer3D::shape_set_data);
+	ClassDB::bind_method(D_METHOD("shape_set_margin", "shape", "margin"), &PhysicsServer3D::shape_set_margin);
 
 	ClassDB::bind_method(D_METHOD("shape_get_type", "shape"), &PhysicsServer3D::shape_get_type);
 	ClassDB::bind_method(D_METHOD("shape_get_data", "shape"), &PhysicsServer3D::shape_get_data);
+	ClassDB::bind_method(D_METHOD("shape_get_margin", "shape"), &PhysicsServer3D::shape_get_margin);
 
 	ClassDB::bind_method(D_METHOD("space_create"), &PhysicsServer3D::space_create);
 	ClassDB::bind_method(D_METHOD("space_set_active", "space", "active"), &PhysicsServer3D::space_set_active);
@@ -828,7 +839,59 @@ void PhysicsServer3D::_bind_methods() {
 
 	/* SOFT BODY API */
 
+	ClassDB::bind_method(D_METHOD("soft_body_create"), &PhysicsServer3D::soft_body_create);
+
+	ClassDB::bind_method(D_METHOD("soft_body_update_rendering_server", "body", "rendering_server_handler"), &PhysicsServer3D::soft_body_update_rendering_server);
+
+	ClassDB::bind_method(D_METHOD("soft_body_set_space", "body", "space"), &PhysicsServer3D::soft_body_set_space);
+	ClassDB::bind_method(D_METHOD("soft_body_get_space", "body"), &PhysicsServer3D::soft_body_get_space);
+
+	ClassDB::bind_method(D_METHOD("soft_body_set_mesh", "body", "mesh"), &PhysicsServer3D::soft_body_set_mesh);
+
 	ClassDB::bind_method(D_METHOD("soft_body_get_bounds", "body"), &PhysicsServer3D::soft_body_get_bounds);
+
+	ClassDB::bind_method(D_METHOD("soft_body_set_collision_layer", "body", "layer"), &PhysicsServer3D::soft_body_set_collision_layer);
+	ClassDB::bind_method(D_METHOD("soft_body_get_collision_layer", "body"), &PhysicsServer3D::soft_body_get_collision_layer);
+
+	ClassDB::bind_method(D_METHOD("soft_body_set_collision_mask", "body", "mask"), &PhysicsServer3D::soft_body_set_collision_mask);
+	ClassDB::bind_method(D_METHOD("soft_body_get_collision_mask", "body"), &PhysicsServer3D::soft_body_get_collision_mask);
+
+	ClassDB::bind_method(D_METHOD("soft_body_add_collision_exception", "body", "body_b"), &PhysicsServer3D::soft_body_add_collision_exception);
+	ClassDB::bind_method(D_METHOD("soft_body_remove_collision_exception", "body", "body_b"), &PhysicsServer3D::soft_body_remove_collision_exception);
+
+	ClassDB::bind_method(D_METHOD("soft_body_set_state", "body", "state", "variant"), &PhysicsServer3D::soft_body_set_state);
+	ClassDB::bind_method(D_METHOD("soft_body_get_state", "body", "state"), &PhysicsServer3D::soft_body_get_state);
+
+	ClassDB::bind_method(D_METHOD("soft_body_set_transform", "body", "transform"), &PhysicsServer3D::soft_body_set_transform);
+
+	ClassDB::bind_method(D_METHOD("soft_body_set_ray_pickable", "body", "enable"), &PhysicsServer3D::soft_body_set_ray_pickable);
+
+	ClassDB::bind_method(D_METHOD("soft_body_set_simulation_precision", "body", "simulation_precision"), &PhysicsServer3D::soft_body_set_simulation_precision);
+	ClassDB::bind_method(D_METHOD("soft_body_get_simulation_precision", "body"), &PhysicsServer3D::soft_body_get_simulation_precision);
+
+	ClassDB::bind_method(D_METHOD("soft_body_set_total_mass", "body", "total_mass"), &PhysicsServer3D::soft_body_set_total_mass);
+	ClassDB::bind_method(D_METHOD("soft_body_get_total_mass", "body"), &PhysicsServer3D::soft_body_get_total_mass);
+
+	ClassDB::bind_method(D_METHOD("soft_body_set_linear_stiffness", "body", "stiffness"), &PhysicsServer3D::soft_body_set_linear_stiffness);
+	ClassDB::bind_method(D_METHOD("soft_body_get_linear_stiffness", "body"), &PhysicsServer3D::soft_body_get_linear_stiffness);
+
+	ClassDB::bind_method(D_METHOD("soft_body_set_pressure_coefficient", "body", "pressure_coefficient"), &PhysicsServer3D::soft_body_set_pressure_coefficient);
+	ClassDB::bind_method(D_METHOD("soft_body_get_pressure_coefficient", "body"), &PhysicsServer3D::soft_body_get_pressure_coefficient);
+
+	ClassDB::bind_method(D_METHOD("soft_body_set_damping_coefficient", "body", "damping_coefficient"), &PhysicsServer3D::soft_body_set_damping_coefficient);
+	ClassDB::bind_method(D_METHOD("soft_body_get_damping_coefficient", "body"), &PhysicsServer3D::soft_body_get_damping_coefficient);
+
+	ClassDB::bind_method(D_METHOD("soft_body_set_drag_coefficient", "body", "drag_coefficient"), &PhysicsServer3D::soft_body_set_drag_coefficient);
+	ClassDB::bind_method(D_METHOD("soft_body_get_drag_coefficient", "body"), &PhysicsServer3D::soft_body_get_drag_coefficient);
+
+	ClassDB::bind_method(D_METHOD("soft_body_move_point", "body", "point_index", "global_position"), &PhysicsServer3D::soft_body_move_point);
+	ClassDB::bind_method(D_METHOD("soft_body_get_point_global_position", "body", "point_index"), &PhysicsServer3D::soft_body_get_point_global_position);
+
+	ClassDB::bind_method(D_METHOD("soft_body_remove_all_pinned_points", "body"), &PhysicsServer3D::soft_body_remove_all_pinned_points);
+
+	ClassDB::bind_method(D_METHOD("soft_body_pin_point", "body", "point_index", "pin"), &PhysicsServer3D::soft_body_pin_point);
+
+	ClassDB::bind_method(D_METHOD("soft_body_is_point_pinned", "body", "point_index"), &PhysicsServer3D::soft_body_is_point_pinned);
 
 	/* JOINT API */
 
@@ -924,6 +987,9 @@ void PhysicsServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_LINEAR_DAMPING);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_LINEAR_MOTOR_TARGET_VELOCITY);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT);
+	BIND_ENUM_CONSTANT(G6DOF_JOINT_LINEAR_SPRING_STIFFNESS);
+	BIND_ENUM_CONSTANT(G6DOF_JOINT_LINEAR_SPRING_DAMPING);
+	BIND_ENUM_CONSTANT(G6DOF_JOINT_LINEAR_SPRING_EQUILIBRIUM_POINT);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_LOWER_LIMIT);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_UPPER_LIMIT);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS);
@@ -933,11 +999,18 @@ void PhysicsServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_ERP);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT);
+	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS);
+	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_SPRING_DAMPING);
+	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT);
+	BIND_ENUM_CONSTANT(G6DOF_JOINT_MAX);
 
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT);
+	BIND_ENUM_CONSTANT(G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING);
+	BIND_ENUM_CONSTANT(G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_FLAG_ENABLE_MOTOR);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR);
+	BIND_ENUM_CONSTANT(G6DOF_JOINT_FLAG_MAX);
 
 	ClassDB::bind_method(D_METHOD("joint_get_type", "joint"), &PhysicsServer3D::joint_get_type);
 
@@ -1154,3 +1227,5 @@ PhysicsServer3DManager::PhysicsServer3DManager() {
 PhysicsServer3DManager::~PhysicsServer3DManager() {
 	singleton = nullptr;
 }
+
+#endif // _3D_DISABLED

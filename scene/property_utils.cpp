@@ -31,6 +31,7 @@
 #include "property_utils.h"
 
 #include "core/config/engine.h"
+#include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
 #include "scene/resources/packed_scene.h"
 
@@ -38,16 +39,40 @@
 #include "editor/editor_node.h"
 #endif // TOOLS_ENABLED
 
-bool PropertyUtils::is_property_value_different(const Variant &p_a, const Variant &p_b) {
+bool PropertyUtils::is_property_value_different(const Object *p_object, const Variant &p_a, const Variant &p_b) {
 	if (p_a.get_type() == Variant::FLOAT && p_b.get_type() == Variant::FLOAT) {
-		//this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
+		// This must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error.
 		return !Math::is_equal_approx((float)p_a, (float)p_b);
-	} else {
-		// For our purposes, treating null object as NIL is the right thing to do
-		const Variant &a = p_a.get_type() == Variant::OBJECT && (Object *)p_a == nullptr ? Variant() : p_a;
-		const Variant &b = p_b.get_type() == Variant::OBJECT && (Object *)p_b == nullptr ? Variant() : p_b;
-		return a != b;
+	} else if (p_a.get_type() == Variant::NODE_PATH && p_b.get_type() == Variant::OBJECT) {
+		// With properties of type Node, left side is NodePath, while right side is Node.
+		const Node *base_node = Object::cast_to<Node>(p_object);
+		const Node *target_node = Object::cast_to<Node>(p_b);
+		if (base_node && target_node) {
+			return p_a != base_node->get_path_to(target_node);
+		}
 	}
+
+	if (p_a.get_type() == Variant::ARRAY && p_b.get_type() == Variant::ARRAY) {
+		const Node *base_node = Object::cast_to<Node>(p_object);
+		Array array1 = p_a;
+		Array array2 = p_b;
+
+		if (base_node && !array1.is_empty() && array2.size() == array1.size() && array1[0].get_type() == Variant::NODE_PATH && array2[0].get_type() == Variant::OBJECT) {
+			// Like above, but NodePaths/Nodes are inside arrays.
+			for (int i = 0; i < array1.size(); i++) {
+				const Node *target_node = Object::cast_to<Node>(array2[i]);
+				if (!target_node || array1[i] != base_node->get_path_to(target_node)) {
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+
+	// For our purposes, treating null object as NIL is the right thing to do
+	const Variant &a = p_a.get_type() == Variant::OBJECT && (Object *)p_a == nullptr ? Variant() : p_a;
+	const Variant &b = p_b.get_type() == Variant::OBJECT && (Object *)p_b == nullptr ? Variant() : p_b;
+	return a != b;
 }
 
 Variant PropertyUtils::get_property_default_value(const Object *p_object, const StringName &p_property, bool *r_is_valid, const Vector<SceneState::PackState> *p_states_stack_cache, bool p_update_exports, const Node *p_owner, bool *r_is_class_default) {
@@ -72,16 +97,37 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 		for (int i = 0; i < states_stack.size(); ++i) {
 			const SceneState::PackState &ia = states_stack[i];
 			bool found = false;
-			Variant value_in_ancestor = ia.state->get_property_value(ia.node, p_property, found);
+			bool node_deferred = false;
+			Variant value_in_ancestor = ia.state->get_property_value(ia.node, p_property, found, node_deferred);
 			if (found) {
 				if (r_is_valid) {
 					*r_is_valid = true;
+				}
+				// Replace properties stored as NodePaths with actual Nodes.
+				// Otherwise, the property value would be considered as overridden.
+				if (node_deferred) {
+					if (value_in_ancestor.get_type() == Variant::ARRAY) {
+						Array paths = value_in_ancestor;
+
+						bool valid = false;
+						Array array = node->get(p_property, &valid);
+						ERR_CONTINUE(!valid);
+						array = array.duplicate();
+
+						array.resize(paths.size());
+						for (int j = 0; j < array.size(); j++) {
+							array.set(j, node->get_node_or_null(paths[j]));
+						}
+						value_in_ancestor = array;
+					} else {
+						value_in_ancestor = node->get_node_or_null(value_in_ancestor);
+					}
 				}
 				return value_in_ancestor;
 			}
 			// Save script for later
 			bool has_script = false;
-			Variant script = ia.state->get_property_value(ia.node, SNAME("script"), has_script);
+			Variant script = ia.state->get_property_value(ia.node, SNAME("script"), has_script, node_deferred);
 			if (has_script) {
 				Ref<Script> scr = script;
 				if (scr.is_valid()) {

@@ -63,7 +63,7 @@
 #define _EXT_DEBUG_OUTPUT 0x92E0
 
 #ifndef GLAPIENTRY
-#if defined(WINDOWS_ENABLED) && !defined(UWP_ENABLED)
+#if defined(WINDOWS_ENABLED)
 #define GLAPIENTRY APIENTRY
 #else
 #define GLAPIENTRY
@@ -72,22 +72,17 @@
 
 #if !defined(IOS_ENABLED) && !defined(WEB_ENABLED)
 // We include EGL below to get debug callback on GLES2 platforms,
-// but EGL is not available on iOS.
+// but EGL is not available on iOS or the web.
 #define CAN_DEBUG
 #endif
 
-#if !defined(GLES_OVER_GL) && defined(CAN_DEBUG)
-#include <GLES3/gl3.h>
-#include <GLES3/gl3ext.h>
-#include <GLES3/gl3platform.h>
-
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#endif
+#include "platform_gl.h"
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define strcpy strcpy_s
 #endif
+
+bool RasterizerGLES3::gles_over_gl = true;
 
 void RasterizerGLES3::begin_frame(double frame_step) {
 	frame++;
@@ -108,6 +103,11 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 }
 
 void RasterizerGLES3::end_frame(bool p_swap_buffers) {
+	GLES3::Utilities *utils = GLES3::Utilities::get_singleton();
+	utils->capture_timestamps_end();
+}
+
+void RasterizerGLES3::end_viewport(bool p_swap_buffers) {
 	if (p_swap_buffers) {
 		DisplayServer::get_singleton()->swap_buffers();
 	} else {
@@ -115,14 +115,24 @@ void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 	}
 }
 
+void RasterizerGLES3::clear_depth(float p_depth) {
+#ifdef GL_API_ENABLED
+	if (is_gles_over_gl()) {
+		glClearDepth(p_depth);
+	}
+#endif // GL_API_ENABLED
+#ifdef GLES_API_ENABLED
+	if (!is_gles_over_gl()) {
+		glClearDepthf(p_depth);
+	}
+#endif // GLES_API_ENABLED
+}
+
 #ifdef CAN_DEBUG
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
-	if (type == _EXT_DEBUG_TYPE_OTHER_ARB) {
+	// These are ultimately annoying, so removing for now.
+	if (type == _EXT_DEBUG_TYPE_OTHER_ARB || type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB) {
 		return;
-	}
-
-	if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB) {
-		return; //these are ultimately annoying, so removing for now
 	}
 
 	char debSource[256], debType[256], debSev[256];
@@ -139,6 +149,8 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 		strcpy(debSource, "Application");
 	} else if (source == _EXT_DEBUG_SOURCE_OTHER_ARB) {
 		strcpy(debSource, "Other");
+	} else {
+		ERR_FAIL_MSG(vformat("GL ERROR: Invalid or unhandled source '%d' in debug callback.", source));
 	}
 
 	if (type == _EXT_DEBUG_TYPE_ERROR_ARB) {
@@ -149,10 +161,8 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 		strcpy(debType, "Undefined behavior");
 	} else if (type == _EXT_DEBUG_TYPE_PORTABILITY_ARB) {
 		strcpy(debType, "Portability");
-	} else if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB) {
-		strcpy(debType, "Performance");
-	} else if (type == _EXT_DEBUG_TYPE_OTHER_ARB) {
-		strcpy(debType, "Other");
+	} else {
+		ERR_FAIL_MSG(vformat("GL ERROR: Invalid or unhandled type '%d' in debug callback.", type));
 	}
 
 	if (severity == _EXT_DEBUG_SEVERITY_HIGH_ARB) {
@@ -161,6 +171,8 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 		strcpy(debSev, "Medium");
 	} else if (severity == _EXT_DEBUG_SEVERITY_LOW_ARB) {
 		strcpy(debSev, "Low");
+	} else {
+		ERR_FAIL_MSG(vformat("GL ERROR: Invalid or unhandled severity '%d' in debug callback.", severity));
 	}
 
 	String output = String() + "GL ERROR: Source: " + debSource + "\tType: " + debType + "\tID: " + itos(id) + "\tSeverity: " + debSev + "\tMessage: " + message;
@@ -169,7 +181,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 }
 #endif
 
-typedef void (*DEBUGPROCARB)(GLenum source,
+typedef void(GLAPIENTRY *DEBUGPROCARB)(GLenum source,
 		GLenum type,
 		GLuint id,
 		GLenum severity,
@@ -177,10 +189,15 @@ typedef void (*DEBUGPROCARB)(GLenum source,
 		const char *message,
 		const void *userParam);
 
-typedef void (*DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userParam);
+typedef void(GLAPIENTRY *DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userParam);
 
 void RasterizerGLES3::initialize() {
-	print_line(vformat("OpenGL API %s - Compatibility - Using Device: %s - %s", RS::get_singleton()->get_video_adapter_api_version(), RS::get_singleton()->get_video_adapter_vendor(), RS::get_singleton()->get_video_adapter_name()));
+	Engine::get_singleton()->print_header(vformat("OpenGL API %s - Compatibility - Using Device: %s - %s", RS::get_singleton()->get_video_adapter_api_version(), RS::get_singleton()->get_video_adapter_vendor(), RS::get_singleton()->get_video_adapter_name()));
+
+	// FLIP XY Bug: Are more devices affected?
+	// Confirmed so far: all Adreno 3xx with old driver (until 2018)
+	// ok on some tested Adreno devices: 4xx, 5xx and 6xx
+	flip_xy_workaround = GLES3::Config::get_singleton()->flip_xy_workaround;
 }
 
 void RasterizerGLES3::finalize() {
@@ -188,6 +205,9 @@ void RasterizerGLES3::finalize() {
 	memdelete(canvas);
 	memdelete(gi);
 	memdelete(fog);
+	memdelete(post_effects);
+	memdelete(glow);
+	memdelete(cubemap_filter);
 	memdelete(copy_effects);
 	memdelete(light_storage);
 	memdelete(particles_storage);
@@ -200,61 +220,99 @@ void RasterizerGLES3::finalize() {
 
 RasterizerGLES3 *RasterizerGLES3::singleton = nullptr;
 
+#ifdef EGL_ENABLED
+void *_egl_load_function_wrapper(const char *p_name) {
+	return (void *)eglGetProcAddress(p_name);
+}
+#endif
+
 RasterizerGLES3::RasterizerGLES3() {
 	singleton = this;
 
 #ifdef GLAD_ENABLED
-	if (!gladLoaderLoadGL()) {
-		ERR_PRINT("Error initializing GLAD");
-		// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
-		// the members of this instance are initialized, so this just makes debugging harder.  It should either crash here intentionally,
-		// or we need to actually test for this situation before constructing this.
-		return;
-	}
+	bool glad_loaded = false;
+
+#ifdef EGL_ENABLED
+	// There should be a more flexible system for getting the GL pointer, as
+	// different DisplayServers can have different ways. We can just use the GLAD
+	// version global to see if it loaded for now though, otherwise we fall back to
+	// the generic loader below.
+#if defined(EGL_STATIC)
+	bool has_egl = true;
+#else
+	bool has_egl = (eglGetProcAddress != nullptr);
 #endif
 
-#ifdef GLAD_ENABLED
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		if (GLAD_GL_ARB_debug_output) {
-			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-			glDebugMessageCallbackARB(_gl_debug_print, nullptr);
-			glEnable(_EXT_DEBUG_OUTPUT);
-		} else {
-			print_line("OpenGL debugging not supported!");
+	if (gles_over_gl) {
+		if (has_egl && !glad_loaded && gladLoadGL((GLADloadfunc)&_egl_load_function_wrapper)) {
+			glad_loaded = true;
+		}
+	} else {
+		if (has_egl && !glad_loaded && gladLoadGLES2((GLADloadfunc)&_egl_load_function_wrapper)) {
+			glad_loaded = true;
+		}
+	}
+#endif // EGL_ENABLED
+
+	if (gles_over_gl) {
+		if (!glad_loaded && gladLoaderLoadGL()) {
+			glad_loaded = true;
+		}
+	} else {
+		if (!glad_loaded && gladLoaderLoadGLES2()) {
+			glad_loaded = true;
+		}
+	}
+
+	// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
+	// the members of this instance are initialized, so this just makes debugging harder.  It should either crash here intentionally,
+	// or we need to actually test for this situation before constructing this.
+	ERR_FAIL_COND_MSG(!glad_loaded, "Error initializing GLAD.");
+
+	if (gles_over_gl) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			if (GLAD_GL_ARB_debug_output) {
+				glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+				glDebugMessageCallbackARB((GLDEBUGPROCARB)_gl_debug_print, nullptr);
+				glEnable(_EXT_DEBUG_OUTPUT);
+			} else {
+				print_line("OpenGL debugging not supported!");
+			}
 		}
 	}
 #endif // GLAD_ENABLED
 
 	// For debugging
 #ifdef CAN_DEBUG
-#ifdef GLES_OVER_GL
-	if (OS::get_singleton()->is_stdout_verbose() && GLAD_GL_ARB_debug_output) {
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PORTABILITY_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PERFORMANCE_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_OTHER_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
-		//		 glDebugMessageInsertARB(
-		//			GL_DEBUG_SOURCE_API_ARB,
-		//			GL_DEBUG_TYPE_OTHER_ARB, 1,
-		//			GL_DEBUG_SEVERITY_HIGH_ARB, 5, "hello");
-	}
-#else
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		DebugMessageCallbackARB callback = (DebugMessageCallbackARB)eglGetProcAddress("glDebugMessageCallback");
-		if (!callback) {
-			callback = (DebugMessageCallbackARB)eglGetProcAddress("glDebugMessageCallbackKHR");
+#ifdef GL_API_ENABLED
+	if (gles_over_gl) {
+		if (OS::get_singleton()->is_stdout_verbose() && GLAD_GL_ARB_debug_output) {
+			glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+			glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+			glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+			glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PORTABILITY_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+			glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PERFORMANCE_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+			glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_OTHER_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
 		}
+	}
+#endif // GL_API_ENABLED
+#ifdef GLES_API_ENABLED
+	if (!gles_over_gl) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			DebugMessageCallbackARB callback = (DebugMessageCallbackARB)eglGetProcAddress("glDebugMessageCallback");
+			if (!callback) {
+				callback = (DebugMessageCallbackARB)eglGetProcAddress("glDebugMessageCallbackKHR");
+			}
 
-		if (callback) {
-			print_line("godot: ENABLING GL DEBUG");
-			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-			callback(_gl_debug_print, NULL);
-			glEnable(_EXT_DEBUG_OUTPUT);
+			if (callback) {
+				print_line("godot: ENABLING GL DEBUG");
+				glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+				callback((DEBUGPROCARB)_gl_debug_print, nullptr);
+				glEnable(_EXT_DEBUG_OUTPUT);
+			}
 		}
 	}
-#endif // GLES_OVER_GL
+#endif // GLES_API_ENABLED
 #endif // CAN_DEBUG
 
 	{
@@ -296,6 +354,9 @@ RasterizerGLES3::RasterizerGLES3() {
 	particles_storage = memnew(GLES3::ParticlesStorage);
 	light_storage = memnew(GLES3::LightStorage);
 	copy_effects = memnew(GLES3::CopyEffects);
+	cubemap_filter = memnew(GLES3::CubemapFilter);
+	glow = memnew(GLES3::Glow);
+	post_effects = memnew(GLES3::PostEffects);
 	gi = memnew(GLES3::GI);
 	fog = memnew(GLES3::Fog);
 	canvas = memnew(RasterizerCanvasGLES3());
@@ -305,20 +366,10 @@ RasterizerGLES3::RasterizerGLES3() {
 RasterizerGLES3::~RasterizerGLES3() {
 }
 
-void RasterizerGLES3::prepare_for_blitting_render_targets() {
-	// This is a hack, but this function is called one time after all viewports have been updated.
-	// So it marks the end of the frame for all viewports
-	// In the OpenGL renderer we have to call end_frame for each viewport so we can swap the
-	// buffers for each window before proceeding to the next.
-	// This allows us to only increment the frame after all viewports are done.
-	GLES3::Utilities *utils = GLES3::Utilities::get_singleton();
-	utils->capture_timestamps_end();
-}
-
 void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect, uint32_t p_layer, bool p_first) {
 	GLES3::RenderTarget *rt = GLES3::TextureStorage::get_singleton()->get_render_target(p_render_target);
 
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 
 	// We normally render to the render target upside down, so flip Y when blitting to the screen.
 	bool flip_y = true;
@@ -343,22 +394,34 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
 	if (p_first) {
-		Size2i win_size = DisplayServer::get_singleton()->window_get_size();
 		if (p_screen_rect.position != Vector2() || p_screen_rect.size != rt->size) {
 			// Viewport doesn't cover entire window so clear window to black before blitting.
-			glViewport(0, 0, win_size.width, win_size.height);
+			// Querying the actual window size from the DisplayServer would deadlock in separate render thread mode,
+			// so let's set the biggest viewport the implementation supports, to be sure the window is fully covered.
+			Size2i max_vp = GLES3::Utilities::get_singleton()->get_maximum_viewport_size();
+			glViewport(0, 0, max_vp[0], max_vp[1]);
 			glClearColor(0.0, 0.0, 0.0, 1.0);
 			glClear(GL_COLOR_BUFFER_BIT);
 		}
 	}
 
 	Vector2i screen_rect_end = p_screen_rect.get_end();
+
+	// Adreno (TM) 3xx devices have a bug that create wrong Landscape rotation of 180 degree
+	// Reversing both the X and Y axis is equivalent to rotating 180 degrees
+	bool flip_x = false;
+	if (flip_xy_workaround && screen_rect_end.x > screen_rect_end.y) {
+		flip_y = !flip_y;
+		flip_x = !flip_x;
+	}
+
 	glBlitFramebuffer(0, 0, rt->size.x, rt->size.y,
-			p_screen_rect.position.x, flip_y ? screen_rect_end.y : p_screen_rect.position.y, screen_rect_end.x, flip_y ? p_screen_rect.position.y : screen_rect_end.y,
+			flip_x ? screen_rect_end.x : p_screen_rect.position.x, flip_y ? screen_rect_end.y : p_screen_rect.position.y,
+			flip_x ? p_screen_rect.position.x : screen_rect_end.x, flip_y ? p_screen_rect.position.y : screen_rect_end.y,
 			GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 	if (read_fbo != 0) {
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 		glDeleteFramebuffers(1, &read_fbo);
 	}
 }
@@ -382,7 +445,7 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 
 	Size2i win_size = DisplayServer::get_singleton()->window_get_size();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	glViewport(0, 0, win_size.width, win_size.height);
 	glEnable(GL_BLEND);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
@@ -428,7 +491,7 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	copy_effects->copy_to_rect(screenrect);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	end_frame(true);
+	end_viewport(true);
 
 	texture_storage->texture_free(texture);
 }

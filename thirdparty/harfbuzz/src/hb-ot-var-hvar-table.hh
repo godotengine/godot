@@ -45,7 +45,8 @@ struct index_map_subset_plan_t
   void init (const DeltaSetIndexMap  &index_map,
 	     hb_inc_bimap_t	     &outer_map,
 	     hb_vector_t<hb_set_t *> &inner_sets,
-	     const hb_subset_plan_t  *plan)
+	     const hb_subset_plan_t  *plan,
+	     bool bypass_empty = true)
   {
     map_count = 0;
     outer_bit_count = 0;
@@ -53,11 +54,10 @@ struct index_map_subset_plan_t
     max_inners.init ();
     output_map.init ();
 
-    if (&index_map == &Null (DeltaSetIndexMap)) return;
+    if (bypass_empty && !index_map.get_map_count ()) return;
 
     unsigned int	last_val = (unsigned int)-1;
     hb_codepoint_t	last_gid = HB_CODEPOINT_INVALID;
-    hb_codepoint_t	num_gid = (hb_codepoint_t) hb_min (index_map.get_map_count (), plan->num_output_glyphs ());
 
     outer_bit_count = (index_map.get_width () * 8) - index_map.get_inner_bit_count ();
     max_inners.resize (inner_sets.length);
@@ -68,24 +68,17 @@ struct index_map_subset_plan_t
     unsigned count = new_to_old_gid_list.length;
     for (unsigned j = count; j; j--)
     {
-      hb_codepoint_t gid = new_to_old_gid_list[j - 1].first;
-      if (gid >= num_gid) continue;
-
-      hb_codepoint_t old_gid = new_to_old_gid_list[j - 1].second;
+      hb_codepoint_t gid = new_to_old_gid_list.arrayZ[j - 1].first;
+      hb_codepoint_t old_gid = new_to_old_gid_list.arrayZ[j - 1].second;
 
       unsigned int v = index_map.map (old_gid);
       if (last_gid == HB_CODEPOINT_INVALID)
       {
-	if (gid + 1 != num_gid)
-	{
-	  last_gid = gid + 1;
-	  break;
-	}
 	last_val = v;
 	last_gid = gid;
 	continue;
       }
-      if (v != last_val || gid + 1 != last_gid)
+      if (v != last_val)
 	break;
 
       last_gid = gid;
@@ -120,8 +113,6 @@ struct index_map_subset_plan_t
 	      const hb_vector_t<hb_inc_bimap_t> &inner_maps,
 	      const hb_subset_plan_t *plan)
   {
-    if (input_map == &Null (DeltaSetIndexMap)) return;
-
     for (unsigned int i = 0; i < max_inners.length; i++)
     {
       if (inner_maps[i].get_population () == 0) continue;
@@ -129,19 +120,48 @@ struct index_map_subset_plan_t
       if (bit_count > inner_bit_count) inner_bit_count = bit_count;
     }
 
-    output_map.resize (map_count);
-    for (hb_codepoint_t gid = 0; gid < output_map.length; gid++)
+    if (unlikely (!output_map.resize (map_count))) return;
+    for (const auto &_ : plan->new_to_old_gid_list)
     {
-      hb_codepoint_t	old_gid;
-      if (plan->old_gid_for_new_gid (gid, &old_gid))
-      {
-	uint32_t v = input_map->map (old_gid);
-	unsigned int outer = v >> 16;
-	output_map[gid] = (outer_map[outer] << 16) | (inner_maps[outer][v & 0xFFFF]);
-      }
-      else
-	output_map[gid] = 0;	/* Map unused glyph to outer/inner=0/0 */
+      hb_codepoint_t new_gid = _.first;
+      hb_codepoint_t old_gid = _.second;
+
+      if (unlikely (new_gid >= map_count)) break;
+
+      uint32_t v = input_map->map (old_gid);
+      unsigned int outer = v >> 16;
+      output_map.arrayZ[new_gid] = (outer_map[outer] << 16) | (inner_maps[outer][v & 0xFFFF]);
     }
+  }
+
+  bool remap_after_instantiation (const hb_subset_plan_t *plan,
+                                  const hb_map_t& varidx_map)
+  {
+    /* recalculate bit_count after remapping */
+    outer_bit_count = 1;
+    inner_bit_count = 1;
+
+    for (const auto &_ : plan->new_to_old_gid_list)
+    {
+      hb_codepoint_t new_gid = _.first;
+      if (unlikely (new_gid >= map_count)) break;
+
+      uint32_t v = output_map.arrayZ[new_gid];
+      uint32_t *new_varidx;
+      if (!varidx_map.has (v, &new_varidx))
+        return false;
+
+      output_map.arrayZ[new_gid] = *new_varidx;
+
+      unsigned outer = (*new_varidx) >> 16;
+      unsigned bit_count = (outer == 0) ? 1 : hb_bit_storage (outer);
+      outer_bit_count = hb_max (bit_count, outer_bit_count);
+      
+      unsigned inner = (*new_varidx) & 0xFFFF;
+      bit_count = (inner == 0) ? 1 : hb_bit_storage (inner);
+      inner_bit_count = hb_max (bit_count, inner_bit_count);
+    }
+    return true;
   }
 
   unsigned int get_inner_bit_count () const { return inner_bit_count; }
@@ -168,7 +188,7 @@ struct hvarvvar_subset_plan_t
   ~hvarvvar_subset_plan_t() { fini (); }
 
   void init (const hb_array_t<const DeltaSetIndexMap *> &index_maps,
-	     const VariationStore &_var_store,
+	     const ItemVariationStore &_var_store,
 	     const hb_subset_plan_t *plan)
   {
     index_map_plans.resize (index_maps.length);
@@ -184,7 +204,7 @@ struct hvarvvar_subset_plan_t
     if (unlikely (!index_map_plans.length || !inner_sets.length || !inner_maps.length)) return;
 
     bool retain_adv_map = false;
-    index_map_plans[0].init (*index_maps[0], outer_map, inner_sets, plan);
+    index_map_plans[0].init (*index_maps[0], outer_map, inner_sets, plan, false);
     if (index_maps[0] == &Null (DeltaSetIndexMap))
     {
       retain_adv_map = plan->flags & HB_SUBSET_FLAGS_RETAIN_GIDS;
@@ -201,13 +221,10 @@ struct hvarvvar_subset_plan_t
 
     if (retain_adv_map)
     {
-      unsigned num_glyphs = plan->num_output_glyphs ();
-      for (hb_codepoint_t gid = 0; gid < num_glyphs; gid++)
+      for (const auto &_ : plan->new_to_old_gid_list)
       {
-	if (inner_sets[0]->has (gid))
-	  inner_maps[0].add (gid);
-	else
-	  inner_maps[0].skip ();
+        hb_codepoint_t old_gid = _.second;
+	inner_maps[0].add (old_gid);
       }
     }
     else
@@ -224,6 +241,16 @@ struct hvarvvar_subset_plan_t
       index_map_plans[i].remap (index_maps[i], outer_map, inner_maps, plan);
   }
 
+  /* remap */
+  bool remap_index_map_plans (const hb_subset_plan_t *plan,
+                              const hb_map_t& varidx_map)
+  {
+    for (unsigned i = 0; i < index_map_plans.length; i++)
+      if (!index_map_plans[i].remap_after_instantiation (plan, varidx_map))
+        return false;
+    return true;
+  }
+
   void fini ()
   {
     for (unsigned int i = 0; i < inner_sets.length; i++)
@@ -236,7 +263,7 @@ struct hvarvvar_subset_plan_t
   hb_inc_bimap_t outer_map;
   hb_vector_t<hb_inc_bimap_t> inner_maps;
   hb_vector_t<index_map_subset_plan_t> index_map_plans;
-  const VariationStore *var_store;
+  const ItemVariationStore *var_store;
 
   protected:
   hb_vector_t<hb_set_t *> inner_sets;
@@ -261,6 +288,7 @@ struct HVARVVAR
   {
     TRACE_SANITIZE (this);
     return_trace (version.sanitize (c) &&
+		  hb_barrier () &&
 		  likely (version.major == 1) &&
 		  varStore.sanitize (c, this) &&
 		  advMap.sanitize (c, this) &&
@@ -268,7 +296,7 @@ struct HVARVVAR
 		  rsbMap.sanitize (c, this));
   }
 
-  const VariationStore& get_var_store () const
+  const ItemVariationStore& get_var_store () const
   { return this+varStore; }
 
   void listup_index_maps (hb_vector_t<const DeltaSetIndexMap *> &index_maps) const
@@ -302,6 +330,9 @@ struct HVARVVAR
   bool _subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
+    if (c->plan->all_axes_pinned)
+      return_trace (false);
+
     hvarvvar_subset_plan_t	hvar_plan;
     hb_vector_t<const DeltaSetIndexMap *>
 				index_maps;
@@ -315,11 +346,37 @@ struct HVARVVAR
     out->version.major = 1;
     out->version.minor = 0;
 
-    if (unlikely (!out->varStore
-		      .serialize_serialize (c->serializer,
-					    hvar_plan.var_store,
-					    hvar_plan.inner_maps.as_array ())))
+    if (c->plan->normalized_coords)
+    {
+      item_variations_t item_vars;
+      if (!item_vars.instantiate (this+varStore, c->plan,
+                                  advMap == 0 ? false : true,
+                                  false, /* use_no_variation_idx = false */
+                                  hvar_plan.inner_maps.as_array ()))
+        return_trace (false);
+
+      if (!out->varStore.serialize_serialize (c->serializer,
+                                              item_vars.has_long_word (),
+                                              c->plan->axis_tags,
+                                              item_vars.get_region_list (),
+                                              item_vars.get_vardata_encodings ()))
+        return_trace (false);
+
+      /* if varstore is optimized, remap output_map */
+      if (advMap)
+      {
+        if (!hvar_plan.remap_index_map_plans (c->plan, item_vars.get_varidx_map ()))
+          return_trace (false);
+      }
+    }
+    else
+    {
+      if (unlikely (!out->varStore
+		    .serialize_serialize (c->serializer,
+					  hvar_plan.var_store,
+					  hvar_plan.inner_maps.as_array ())))
       return_trace (false);
+    }
 
     return_trace (out->T::serialize_index_maps (c->serializer,
 						hvar_plan.index_map_plans.as_array ()));
@@ -327,7 +384,7 @@ struct HVARVVAR
 
   float get_advance_delta_unscaled (hb_codepoint_t  glyph,
 				    const int *coords, unsigned int coord_count,
-				    VariationStore::cache_t *store_cache = nullptr) const
+				    ItemVariationStore::cache_t *store_cache = nullptr) const
   {
     uint32_t varidx = (this+advMap).map (glyph);
     return (this+varStore).get_delta (varidx,
@@ -348,7 +405,7 @@ struct HVARVVAR
   public:
   FixedVersion<>version;	/* Version of the metrics variation table
 				 * initially set to 0x00010000u */
-  Offset32To<VariationStore>
+  Offset32To<ItemVariationStore>
 		varStore;	/* Offset to item variation store table. */
   Offset32To<DeltaSetIndexMap>
 		advMap;		/* Offset to advance var-idx mapping. */

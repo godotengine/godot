@@ -53,7 +53,9 @@
 
 class RDTextureFormat : public RefCounted {
 	GDCLASS(RDTextureFormat, RefCounted)
+
 	friend class RenderingDevice;
+	friend class RenderSceneBuffersRD;
 
 	RD::TextureFormat base;
 
@@ -91,6 +93,7 @@ class RDTextureView : public RefCounted {
 	GDCLASS(RDTextureView, RefCounted)
 
 	friend class RenderingDevice;
+	friend class RenderSceneBuffersRD;
 
 	RD::TextureView base;
 
@@ -131,6 +134,7 @@ protected:
 class RDFramebufferPass : public RefCounted {
 	GDCLASS(RDFramebufferPass, RefCounted)
 	friend class RenderingDevice;
+	friend class FramebufferCacheRD;
 
 	RD::FramebufferPass base;
 
@@ -286,7 +290,7 @@ public:
 			if (bytecode[i].size()) {
 				RD::ShaderStageSPIRVData stage;
 				stage.shader_stage = RD::ShaderStage(i);
-				stage.spir_v = bytecode[i];
+				stage.spirv = bytecode[i];
 				stages.push_back(stage);
 			}
 		}
@@ -440,6 +444,7 @@ protected:
 class RDUniform : public RefCounted {
 	GDCLASS(RDUniform, RefCounted)
 	friend class RenderingDevice;
+	friend class UniformSetCacheRD;
 	RD::Uniform base;
 
 public:
@@ -693,7 +698,7 @@ public:
 	RD_SETGET(Color, blend_constant)
 
 	void set_attachments(const TypedArray<RDPipelineColorBlendStateAttachment> &p_attachments) {
-		attachments.push_back(p_attachments);
+		attachments = p_attachments;
 	}
 
 	TypedArray<RDPipelineColorBlendStateAttachment> get_attachments() const {

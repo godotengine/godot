@@ -35,6 +35,7 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_settings.h"
+#include "editor/themes/editor_theme_manager.h"
 
 Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 	Dictionary color_map;
@@ -61,11 +62,17 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	bool in_member_variable = false;
 	bool in_lambda = false;
 
-	bool in_function_name = false;
-	bool in_function_args = false;
-	bool in_variable_declaration = false;
+	bool in_function_name = false; // Any call.
+	bool in_function_declaration = false; // Only declaration.
 	bool in_signal_declaration = false;
+	bool is_after_func_signal_declaration = false;
+	bool in_var_const_declaration = false;
+	bool is_after_var_const_declaration = false;
 	bool expect_type = false;
+
+	int in_declaration_params = 0; // The number of opened `(` after func/signal name.
+	int in_declaration_param_dicts = 0; // The number of opened `{` inside func params.
+	int in_type_params = 0; // The number of opened `[` after type name.
 
 	Color keyword_color;
 	Color color;
@@ -119,12 +126,17 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			if (from != line_length) {
 				// Check if we are in entering a region.
 				if (in_region == -1) {
+					const bool r_prefix = from > 0 && str[from - 1] == 'r';
 					for (int c = 0; c < color_regions.size(); c++) {
 						// Check there is enough room.
 						int chars_left = line_length - from;
 						int start_key_length = color_regions[c].start_key.length();
 						int end_key_length = color_regions[c].end_key.length();
 						if (chars_left < start_key_length) {
+							continue;
+						}
+
+						if (color_regions[c].is_string && color_regions[c].r_prefix != r_prefix) {
 							continue;
 						}
 
@@ -145,6 +157,10 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 						// Check if it's the whole line.
 						if (end_key_length == 0 || color_regions[c].line_only || from + end_key_length > line_length) {
+							// Don't skip comments, for highlighting markers.
+							if (color_regions[in_region].is_comment) {
+								break;
+							}
 							if (from + end_key_length > line_length) {
 								// If it's key length and there is a '\', dont skip to highlight esc chars.
 								if (str.find("\\", from) >= 0) {
@@ -163,7 +179,8 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 						break;
 					}
 
-					if (j == line_length) {
+					// Don't skip comments, for highlighting markers.
+					if (j == line_length && !color_regions[in_region].is_comment) {
 						continue;
 					}
 				}
@@ -171,13 +188,13 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				// If we are in one, find the end key.
 				if (in_region != -1) {
 					Color region_color = color_regions[in_region].color;
-					if (in_node_path && (color_regions[in_region].start_key == "\"" || color_regions[in_region].start_key == "\'")) {
+					if (in_node_path && color_regions[in_region].type == ColorRegion::TYPE_STRING) {
 						region_color = node_path_color;
 					}
-					if (in_node_ref && (color_regions[in_region].start_key == "\"" || color_regions[in_region].start_key == "\'")) {
+					if (in_node_ref && color_regions[in_region].type == ColorRegion::TYPE_STRING) {
 						region_color = node_ref_color;
 					}
-					if (in_string_name && (color_regions[in_region].start_key == "\"" || color_regions[in_region].start_key == "\'")) {
+					if (in_string_name && color_regions[in_region].type == ColorRegion::TYPE_STRING) {
 						region_color = string_name_color;
 					}
 
@@ -185,56 +202,101 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					highlighter_info["color"] = region_color;
 					color_map[j] = highlighter_info;
 
-					// Search the line.
-					int region_end_index = -1;
-					int end_key_length = color_regions[in_region].end_key.length();
-					const char32_t *end_key = color_regions[in_region].end_key.get_data();
-					for (; from < line_length; from++) {
-						if (line_length - from < end_key_length) {
-							// Don't break if '\' to highlight esc chars.
-							if (str.find("\\", from) < 0) {
-								break;
+					if (color_regions[in_region].is_comment) {
+						int marker_start_pos = from;
+						int marker_len = 0;
+						while (from <= line_length) {
+							if (from < line_length && is_unicode_identifier_continue(str[from])) {
+								marker_len++;
+							} else {
+								if (marker_len > 0) {
+									HashMap<String, CommentMarkerLevel>::ConstIterator E = comment_markers.find(str.substr(marker_start_pos, marker_len));
+									if (E) {
+										Dictionary marker_highlighter_info;
+										marker_highlighter_info["color"] = comment_marker_colors[E->value];
+										color_map[marker_start_pos] = marker_highlighter_info;
+
+										Dictionary marker_continue_highlighter_info;
+										marker_continue_highlighter_info["color"] = region_color;
+										color_map[from] = marker_continue_highlighter_info;
+									}
+								}
+								marker_start_pos = from + 1;
+								marker_len = 0;
 							}
-						}
-
-						if (!is_symbol(str[from])) {
-							continue;
-						}
-
-						if (str[from] == '\\') {
-							Dictionary escape_char_highlighter_info;
-							escape_char_highlighter_info["color"] = symbol_color;
-							color_map[from] = escape_char_highlighter_info;
-
 							from++;
-
-							Dictionary region_continue_highlighter_info;
-							prev_color = region_color;
-							region_continue_highlighter_info["color"] = region_color;
-							color_map[from + 1] = region_continue_highlighter_info;
-							continue;
 						}
+						from = line_length - 1;
+						j = from;
+					} else {
+						// Search the line.
+						int region_end_index = -1;
+						int end_key_length = color_regions[in_region].end_key.length();
+						const char32_t *end_key = color_regions[in_region].end_key.get_data();
+						for (; from < line_length; from++) {
+							if (line_length - from < end_key_length) {
+								// Don't break if '\' to highlight esc chars.
+								if (str.find("\\", from) < 0) {
+									break;
+								}
+							}
 
-						region_end_index = from;
-						for (int k = 0; k < end_key_length; k++) {
-							if (end_key[k] != str[from + k]) {
-								region_end_index = -1;
+							if (!is_symbol(str[from])) {
+								continue;
+							}
+
+							if (str[from] == '\\') {
+								if (!color_regions[in_region].r_prefix) {
+									Dictionary escape_char_highlighter_info;
+									escape_char_highlighter_info["color"] = symbol_color;
+									color_map[from] = escape_char_highlighter_info;
+								}
+
+								from++;
+
+								if (!color_regions[in_region].r_prefix) {
+									int esc_len = 0;
+									if (str[from] == 'u') {
+										esc_len = 4;
+									} else if (str[from] == 'U') {
+										esc_len = 6;
+									}
+									for (int k = 0; k < esc_len && from < line_length - 1; k++) {
+										if (!is_hex_digit(str[from + 1])) {
+											break;
+										}
+										from++;
+									}
+
+									Dictionary region_continue_highlighter_info;
+									region_continue_highlighter_info["color"] = region_color;
+									color_map[from + 1] = region_continue_highlighter_info;
+								}
+
+								continue;
+							}
+
+							region_end_index = from;
+							for (int k = 0; k < end_key_length; k++) {
+								if (end_key[k] != str[from + k]) {
+									region_end_index = -1;
+									break;
+								}
+							}
+
+							if (region_end_index != -1) {
 								break;
 							}
 						}
-
-						if (region_end_index != -1) {
-							break;
+						j = from + (end_key_length - 1);
+						if (region_end_index == -1) {
+							color_region_cache[p_line] = in_region;
 						}
 					}
 
 					prev_type = REGION;
 					prev_text = "";
 					prev_column = j;
-					j = from + (end_key_length - 1);
-					if (region_end_index == -1) {
-						color_region_cache[p_line] = in_region;
-					}
 
 					in_region = -1;
 					prev_is_char = false;
@@ -272,7 +334,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		// Allow ABCDEF in hex notation.
 		if (is_hex_notation && (is_hex_digit(str[j]) || is_a_digit)) {
 			is_a_digit = true;
-		} else {
+		} else if (str[j] != '_') {
 			is_hex_notation = false;
 		}
 
@@ -295,14 +357,14 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			} else if (!((str[j] == '-' || str[j] == '+') && str[j - 1] == 'e' && !prev_is_digit) &&
 					!(str[j] == '_' && (prev_is_digit || str[j - 1] == 'b' || str[j - 1] == 'x' || str[j - 1] == '.')) &&
 					!(str[j] == 'e' && (prev_is_digit || str[j - 1] == '_')) &&
-					!(str[j] == '.' && (prev_is_digit || (!prev_is_binary_op && (j > 0 && (str[j - 1] == '-' || str[j - 1] == '+' || str[j - 1] == '~'))))) &&
+					!(str[j] == '.' && (prev_is_digit || (!prev_is_binary_op && (j > 0 && (str[j - 1] == '_' || str[j - 1] == '-' || str[j - 1] == '+' || str[j - 1] == '~'))))) &&
 					!((str[j] == '-' || str[j] == '+' || str[j] == '~') && !is_binary_op && !prev_is_binary_op && str[j - 1] != 'e')) {
 				/* This condition continues number highlighting in special cases.
 				1st row: '+' or '-' after scientific notation (like 3e-4);
 				2nd row: '_' as a numeric separator;
 				3rd row: Scientific notation 'e' and floating points;
 				4th row: Floating points inside the number, or leading if after a unary mathematical operator;
-				5th row: Multiple unary mathematical operators (like ~-7)*/
+				5th row: Multiple unary mathematical operators (like ~-7) */
 				in_number = false;
 			}
 		} else if (str[j] == '.' && !is_binary_op && is_digit(str[j + 1]) && (j == 0 || (j > 0 && str[j - 1] != '.'))) {
@@ -354,6 +416,8 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				col = class_names[word];
 			} else if (reserved_keywords.has(word)) {
 				col = reserved_keywords[word];
+				// Don't highlight `list` as a type in `for elem: Type in list`.
+				expect_type = false;
 			} else if (member_keywords.has(word)) {
 				col = member_keywords[word];
 			}
@@ -391,12 +455,15 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 				if (str[k] == '(') {
 					in_function_name = true;
-				} else if (prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::VAR)) {
-					in_variable_declaration = true;
+					if (prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) {
+						in_function_declaration = true;
+					}
+				} else if (prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::VAR) || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FOR) || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::CONST)) {
+					in_var_const_declaration = true;
 				}
 
 				// Check for lambda.
-				if (in_function_name && prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) {
+				if (in_function_declaration) {
 					k = j - 1;
 					while (k > 0 && is_whitespace(str[k])) {
 						k--;
@@ -421,40 +488,76 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		}
 
 		if (is_a_symbol) {
-			if (in_function_name) {
-				in_function_args = true;
+			if (in_function_declaration || in_signal_declaration) {
+				is_after_func_signal_declaration = true;
+			}
+			if (in_var_const_declaration) {
+				is_after_var_const_declaration = true;
 			}
 
-			if (in_function_args && str[j] == ')') {
-				in_function_args = false;
-			}
-
-			if (expect_type && (prev_is_char || str[j] == '=') && str[j] != '[') {
-				expect_type = false;
-			}
-
-			if (j > 0 && str[j - 1] == '-' && str[j] == '>') {
-				expect_type = true;
-			}
-
-			if (in_variable_declaration || in_function_args) {
-				int k = j;
-				// Skip space
-				while (k < line_length && is_whitespace(str[k])) {
-					k++;
+			if (in_declaration_params > 0) {
+				switch (str[j]) {
+					case '(':
+						in_declaration_params += 1;
+						break;
+					case ')':
+						in_declaration_params -= 1;
+						break;
+					case '{':
+						in_declaration_param_dicts += 1;
+						break;
+					case '}':
+						in_declaration_param_dicts -= 1;
+						break;
 				}
+			} else if ((is_after_func_signal_declaration || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) && str[j] == '(') {
+				in_declaration_params = 1;
+				in_declaration_param_dicts = 0;
+			}
 
-				if (str[k] == ':') {
-					// has type hint
+			if (expect_type) {
+				switch (str[j]) {
+					case '[':
+						in_type_params += 1;
+						break;
+					case ']':
+						in_type_params -= 1;
+						break;
+					case ',':
+						if (in_type_params <= 0) {
+							expect_type = false;
+						}
+						break;
+					case ' ':
+					case '\t':
+					case '.':
+						break;
+					default:
+						expect_type = false;
+						break;
+				}
+			} else {
+				if (j > 0 && str[j - 1] == '-' && str[j] == '>') {
 					expect_type = true;
+					in_type_params = 0;
+				}
+				if ((is_after_var_const_declaration || (in_declaration_params == 1 && in_declaration_param_dicts == 0)) && str[j] == ':') {
+					expect_type = true;
+					in_type_params = 0;
 				}
 			}
 
-			in_variable_declaration = false;
-			in_signal_declaration = false;
 			in_function_name = false;
+			in_function_declaration = false;
+			in_signal_declaration = false;
+			in_var_const_declaration = false;
 			in_lambda = false;
 			in_member_variable = false;
+
+			if (!is_whitespace(str[j])) {
+				is_after_func_signal_declaration = false;
+				is_after_var_const_declaration = false;
+			}
 		}
 
 		// Keep symbol color for binary '&&'. In the case of '&&&' use StringName color for the last ampersand.
@@ -488,7 +591,11 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_annotation = false;
 		}
 
-		if (in_node_ref) {
+		const bool in_raw_string_prefix = in_region == -1 && str[j] == 'r' && j + 1 < line_length && (str[j + 1] == '"' || str[j + 1] == '\'');
+
+		if (in_raw_string_prefix) {
+			color = string_color;
+		} else if (in_node_ref) {
 			next_type = NODE_REF;
 			color = node_ref_color;
 		} else if (in_annotation) {
@@ -503,17 +610,12 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		} else if (in_keyword) {
 			next_type = KEYWORD;
 			color = keyword_color;
-		} else if (in_member_variable) {
-			next_type = MEMBER;
-			color = member_color;
 		} else if (in_signal_declaration) {
 			next_type = SIGNAL;
-
 			color = member_color;
 		} else if (in_function_name) {
 			next_type = FUNCTION;
-
-			if (!in_lambda && prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) {
+			if (!in_lambda && in_function_declaration) {
 				color = function_definition_color;
 			} else {
 				color = function_color;
@@ -527,6 +629,9 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		} else if (expect_type) {
 			next_type = TYPE;
 			color = type_color;
+		} else if (in_member_variable) {
+			next_type = MEMBER;
+			color = member_color;
 		} else {
 			next_type = IDENTIFIER;
 		}
@@ -585,7 +690,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	color_regions.clear();
 	color_region_cache.clear();
 
-	font_color = text_edit->get_theme_color(SNAME("font_color"));
+	font_color = text_edit->get_theme_color(SceneStringName(font_color));
 	symbol_color = EDITOR_GET("text_editor/theme/highlighting/symbol_color");
 	function_color = EDITOR_GET("text_editor/theme/highlighting/function_color");
 	number_color = EDITOR_GET("text_editor/theme/highlighting/number_color");
@@ -624,6 +729,12 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	for (const String &E : core_types) {
 		class_names[StringName(E)] = basetype_color;
 	}
+	class_names[SNAME("Variant")] = basetype_color;
+	class_names[SNAME("void")] = basetype_color;
+	// `get_core_type_words()` doesn't return primitive types.
+	class_names[SNAME("bool")] = basetype_color;
+	class_names[SNAME("int")] = basetype_color;
+	class_names[SNAME("float")] = basetype_color;
 
 	/* Reserved words. */
 	const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
@@ -637,6 +748,10 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 			reserved_keywords[StringName(E)] = keyword_color;
 		}
 	}
+
+	// Highlight `set` and `get` as "keywords" with the function color to avoid conflicts with method calls.
+	reserved_keywords[SNAME("set")] = function_color;
+	reserved_keywords[SNAME("get")] = function_color;
 
 	/* Global functions. */
 	List<StringName> global_function_list;
@@ -656,18 +771,34 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	for (const String &comment : comments) {
 		String beg = comment.get_slice(" ", 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
-		add_color_region(beg, end, comment_color, end.is_empty());
+		add_color_region(ColorRegion::TYPE_COMMENT, beg, end, comment_color, end.is_empty());
 	}
 
-	/* Strings */
-	const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
-	List<String> strings;
-	gdscript->get_string_delimiters(&strings);
-	for (const String &string : strings) {
-		String beg = string.get_slice(" ", 0);
-		String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
-		add_color_region(beg, end, string_color, end.is_empty());
+	/* Doc comments */
+	const Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
+	List<String> doc_comments;
+	gdscript->get_doc_comment_delimiters(&doc_comments);
+	for (const String &doc_comment : doc_comments) {
+		String beg = doc_comment.get_slice(" ", 0);
+		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slice(" ", 1) : String();
+		add_color_region(ColorRegion::TYPE_COMMENT, beg, end, doc_comment_color, end.is_empty());
 	}
+
+	/* Code regions */
+	const Color code_region_color = Color(EDITOR_GET("text_editor/theme/highlighting/folded_code_region_color").operator Color(), 1.0);
+	add_color_region(ColorRegion::TYPE_CODE_REGION, "#region", "", code_region_color, true);
+	add_color_region(ColorRegion::TYPE_CODE_REGION, "#endregion", "", code_region_color, true);
+
+	/* Strings */
+	string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
+	add_color_region(ColorRegion::TYPE_STRING, "\"", "\"", string_color);
+	add_color_region(ColorRegion::TYPE_STRING, "'", "'", string_color);
+	add_color_region(ColorRegion::TYPE_MULTILINE_STRING, "\"\"\"", "\"\"\"", string_color);
+	add_color_region(ColorRegion::TYPE_MULTILINE_STRING, "'''", "'''", string_color);
+	add_color_region(ColorRegion::TYPE_STRING, "\"", "\"", string_color, false, true);
+	add_color_region(ColorRegion::TYPE_STRING, "'", "'", string_color, false, true);
+	add_color_region(ColorRegion::TYPE_MULTILINE_STRING, "\"\"\"", "\"\"\"", string_color, false, true);
+	add_color_region(ColorRegion::TYPE_MULTILINE_STRING, "'''", "'''", string_color, false, true);
 
 	const Ref<Script> scr = _get_edited_resource();
 	if (scr.is_valid()) {
@@ -699,13 +830,16 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	const String text_edit_color_theme = EDITOR_GET("text_editor/theme/color_theme");
 	const bool godot_2_theme = text_edit_color_theme == "Godot 2";
 
-	if (godot_2_theme || EditorSettings::get_singleton()->is_dark_theme()) {
+	if (godot_2_theme || EditorThemeManager::is_dark_theme()) {
 		function_definition_color = Color(0.4, 0.9, 1.0);
 		global_function_color = Color(0.64, 0.64, 0.96);
 		node_path_color = Color(0.72, 0.77, 0.49);
 		node_ref_color = Color(0.39, 0.76, 0.35);
 		annotation_color = Color(1.0, 0.7, 0.45);
 		string_name_color = Color(1.0, 0.76, 0.65);
+		comment_marker_colors[COMMENT_MARKER_CRITICAL] = Color(0.77, 0.35, 0.35);
+		comment_marker_colors[COMMENT_MARKER_WARNING] = Color(0.72, 0.61, 0.48);
+		comment_marker_colors[COMMENT_MARKER_NOTICE] = Color(0.56, 0.67, 0.51);
 	} else {
 		function_definition_color = Color(0, 0.6, 0.6);
 		global_function_color = Color(0.36, 0.18, 0.72);
@@ -713,6 +847,9 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		node_ref_color = Color(0.0, 0.5, 0);
 		annotation_color = Color(0.8, 0.37, 0);
 		string_name_color = Color(0.8, 0.56, 0.45);
+		comment_marker_colors[COMMENT_MARKER_CRITICAL] = Color(0.8, 0.14, 0.14);
+		comment_marker_colors[COMMENT_MARKER_WARNING] = Color(0.75, 0.39, 0.03);
+		comment_marker_colors[COMMENT_MARKER_NOTICE] = Color(0.24, 0.54, 0.09);
 	}
 
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/function_definition_color", function_definition_color);
@@ -721,6 +858,14 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/node_reference_color", node_ref_color);
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/annotation_color", annotation_color);
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/string_name_color", string_name_color);
+	EDITOR_DEF("text_editor/theme/highlighting/comment_markers/critical_color", comment_marker_colors[COMMENT_MARKER_CRITICAL]);
+	EDITOR_DEF("text_editor/theme/highlighting/comment_markers/warning_color", comment_marker_colors[COMMENT_MARKER_WARNING]);
+	EDITOR_DEF("text_editor/theme/highlighting/comment_markers/notice_color", comment_marker_colors[COMMENT_MARKER_NOTICE]);
+	// The list is based on <https://github.com/KDE/syntax-highlighting/blob/master/data/syntax/alert.xml>.
+	EDITOR_DEF("text_editor/theme/highlighting/comment_markers/critical_list", "ALERT,ATTENTION,CAUTION,CRITICAL,DANGER,SECURITY");
+	EDITOR_DEF("text_editor/theme/highlighting/comment_markers/warning_list", "BUG,DEPRECATED,FIXME,HACK,TASK,TBD,TODO,WARNING");
+	EDITOR_DEF("text_editor/theme/highlighting/comment_markers/notice_list", "INFO,NOTE,NOTICE,TEST,TESTING");
+
 	if (text_edit_color_theme == "Default" || godot_2_theme) {
 		EditorSettings::get_singleton()->set_initial_value(
 				"text_editor/theme/highlighting/gdscript/function_definition_color",
@@ -746,6 +891,18 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 				"text_editor/theme/highlighting/gdscript/string_name_color",
 				string_name_color,
 				true);
+		EditorSettings::get_singleton()->set_initial_value(
+				"text_editor/theme/highlighting/comment_markers/critical_color",
+				comment_marker_colors[COMMENT_MARKER_CRITICAL],
+				true);
+		EditorSettings::get_singleton()->set_initial_value(
+				"text_editor/theme/highlighting/comment_markers/warning_color",
+				comment_marker_colors[COMMENT_MARKER_WARNING],
+				true);
+		EditorSettings::get_singleton()->set_initial_value(
+				"text_editor/theme/highlighting/comment_markers/notice_color",
+				comment_marker_colors[COMMENT_MARKER_NOTICE],
+				true);
 	}
 
 	function_definition_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/function_definition_color");
@@ -755,32 +912,52 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	annotation_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/annotation_color");
 	string_name_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/string_name_color");
 	type_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
+	comment_marker_colors[COMMENT_MARKER_CRITICAL] = EDITOR_GET("text_editor/theme/highlighting/comment_markers/critical_color");
+	comment_marker_colors[COMMENT_MARKER_WARNING] = EDITOR_GET("text_editor/theme/highlighting/comment_markers/warning_color");
+	comment_marker_colors[COMMENT_MARKER_NOTICE] = EDITOR_GET("text_editor/theme/highlighting/comment_markers/notice_color");
+
+	comment_markers.clear();
+	Vector<String> critical_list = EDITOR_GET("text_editor/theme/highlighting/comment_markers/critical_list").operator String().split(",", false);
+	for (int i = 0; i < critical_list.size(); i++) {
+		comment_markers[critical_list[i]] = COMMENT_MARKER_CRITICAL;
+	}
+	Vector<String> warning_list = EDITOR_GET("text_editor/theme/highlighting/comment_markers/warning_list").operator String().split(",", false);
+	for (int i = 0; i < warning_list.size(); i++) {
+		comment_markers[warning_list[i]] = COMMENT_MARKER_WARNING;
+	}
+	Vector<String> notice_list = EDITOR_GET("text_editor/theme/highlighting/comment_markers/notice_list").operator String().split(",", false);
+	for (int i = 0; i < notice_list.size(); i++) {
+		comment_markers[notice_list[i]] = COMMENT_MARKER_NOTICE;
+	}
 }
 
-void GDScriptSyntaxHighlighter::add_color_region(const String &p_start_key, const String &p_end_key, const Color &p_color, bool p_line_only) {
-	for (int i = 0; i < p_start_key.length(); i++) {
-		ERR_FAIL_COND_MSG(!is_symbol(p_start_key[i]), "color regions must start with a symbol");
-	}
+void GDScriptSyntaxHighlighter::add_color_region(ColorRegion::Type p_type, const String &p_start_key, const String &p_end_key, const Color &p_color, bool p_line_only, bool p_r_prefix) {
+	ERR_FAIL_COND_MSG(p_start_key.is_empty(), "Color region start key cannot be empty.");
+	ERR_FAIL_COND_MSG(!is_symbol(p_start_key[0]), "Color region start key must start with a symbol.");
 
-	if (p_end_key.length() > 0) {
-		for (int i = 0; i < p_end_key.length(); i++) {
-			ERR_FAIL_COND_MSG(!is_symbol(p_end_key[i]), "color regions must end with a symbol");
-		}
+	if (!p_end_key.is_empty()) {
+		ERR_FAIL_COND_MSG(!is_symbol(p_end_key[0]), "Color region end key must start with a symbol.");
 	}
 
 	int at = 0;
-	for (int i = 0; i < color_regions.size(); i++) {
-		ERR_FAIL_COND_MSG(color_regions[i].start_key == p_start_key, "color region with start key '" + p_start_key + "' already exists.");
-		if (p_start_key.length() < color_regions[i].start_key.length()) {
+	for (const ColorRegion &region : color_regions) {
+		ERR_FAIL_COND_MSG(region.start_key == p_start_key && region.r_prefix == p_r_prefix, "Color region with start key '" + p_start_key + "' already exists.");
+		if (p_start_key.length() < region.start_key.length()) {
 			at++;
+		} else {
+			break;
 		}
 	}
 
 	ColorRegion color_region;
+	color_region.type = p_type;
 	color_region.color = p_color;
 	color_region.start_key = p_start_key;
 	color_region.end_key = p_end_key;
 	color_region.line_only = p_line_only;
+	color_region.r_prefix = p_r_prefix;
+	color_region.is_string = p_type == ColorRegion::TYPE_STRING || p_type == ColorRegion::TYPE_MULTILINE_STRING;
+	color_region.is_comment = p_type == ColorRegion::TYPE_COMMENT || p_type == ColorRegion::TYPE_CODE_REGION;
 	color_regions.insert(at, color_region);
 	clear_highlighting_cache();
 }

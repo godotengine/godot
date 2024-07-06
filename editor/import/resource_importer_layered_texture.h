@@ -119,7 +119,7 @@ public:
 
 	void set_mode(Mode p_mode) { mode = p_mode; }
 
-	ResourceImporterLayeredTexture();
+	ResourceImporterLayeredTexture(bool p_singleton = false);
 	~ResourceImporterLayeredTexture();
 };
 

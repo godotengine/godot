@@ -31,13 +31,13 @@
 #include "navigation_obstacle_3d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
@@ -46,8 +46,8 @@
 void NavigationObstacle3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			button_create->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
-			button_edit->set_icon(get_theme_icon(SNAME("MovePoint"), SNAME("EditorIcons")));
+			button_create->set_icon(get_editor_theme_icon(SNAME("Edit")));
+			button_edit->set_icon(get_editor_theme_icon(SNAME("MovePoint")));
 			button_edit->set_pressed(true);
 			get_tree()->connect("node_removed", callable_mp(this, &NavigationObstacle3DEditor::_node_removed));
 
@@ -81,7 +81,7 @@ void NavigationObstacle3DEditor::_menu_option(int p_option) {
 }
 
 void NavigationObstacle3DEditor::_wip_close() {
-	ERR_FAIL_COND_MSG(!obstacle_node, "Edited NavigationObstacle3D is not valid.");
+	ERR_FAIL_NULL_MSG(obstacle_node, "Edited NavigationObstacle3D is not valid.");
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Set NavigationObstacle3D Vertices"));
 	undo_redo->add_undo_method(obstacle_node, "set_vertices", obstacle_node->get_vertices());
@@ -329,9 +329,7 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditor::forward_3d_gui_input(Cam
 			}
 
 			if (!snap_ignore && Node3DEditor::get_singleton()->is_snap_enabled()) {
-				cpoint = cpoint.snapped(Vector2(
-						Node3DEditor::get_singleton()->get_translate_snap(),
-						Node3DEditor::get_singleton()->get_translate_snap()));
+				cpoint = cpoint.snappedf(Node3DEditor::get_singleton()->get_translate_snap());
 			}
 			edited_point_pos = cpoint;
 
@@ -343,12 +341,12 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditor::forward_3d_gui_input(Cam
 }
 
 PackedVector2Array NavigationObstacle3DEditor::_get_polygon() {
-	ERR_FAIL_COND_V_MSG(!obstacle_node, PackedVector2Array(), "Edited object is not valid.");
+	ERR_FAIL_NULL_V_MSG(obstacle_node, PackedVector2Array(), "Edited object is not valid.");
 	return PackedVector2Array(obstacle_node->call("get_polygon"));
 }
 
-void NavigationObstacle3DEditor::_set_polygon(PackedVector2Array p_poly) {
-	ERR_FAIL_COND_MSG(!obstacle_node, "Edited object is not valid.");
+void NavigationObstacle3DEditor::_set_polygon(const PackedVector2Array &p_poly) {
+	ERR_FAIL_NULL_MSG(obstacle_node, "Edited object is not valid.");
 	obstacle_node->call("set_polygon", p_poly);
 }
 
@@ -502,7 +500,11 @@ void NavigationObstacle3DEditor::edit(Node *p_node) {
 		wip.clear();
 		wip_active = false;
 		edited_point = -1;
-		p_node->add_child(point_lines_meshinstance);
+		if (point_lines_meshinstance->get_parent()) {
+			point_lines_meshinstance->reparent(p_node, false);
+		} else {
+			p_node->add_child(point_lines_meshinstance);
+		}
 		_polygon_draw();
 
 	} else {
@@ -521,17 +523,16 @@ void NavigationObstacle3DEditor::_bind_methods() {
 NavigationObstacle3DEditor::NavigationObstacle3DEditor() {
 	obstacle_node = nullptr;
 
-	add_child(memnew(VSeparator));
 	button_create = memnew(Button);
-	button_create->set_flat(true);
+	button_create->set_theme_type_variation("FlatButton");
 	add_child(button_create);
-	button_create->connect("pressed", callable_mp(this, &NavigationObstacle3DEditor::_menu_option).bind(MODE_CREATE));
+	button_create->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditor::_menu_option).bind(MODE_CREATE));
 	button_create->set_toggle_mode(true);
 
 	button_edit = memnew(Button);
-	button_edit->set_flat(true);
+	button_edit->set_theme_type_variation("FlatButton");
 	add_child(button_edit);
-	button_edit->connect("pressed", callable_mp(this, &NavigationObstacle3DEditor::_menu_option).bind(MODE_EDIT));
+	button_edit->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditor::_menu_option).bind(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
 
 	mode = MODE_EDIT;
@@ -546,6 +547,7 @@ NavigationObstacle3DEditor::NavigationObstacle3DEditor() {
 	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	line_material->set_albedo(Color(1, 1, 1));
 
 	handle_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
@@ -554,7 +556,8 @@ NavigationObstacle3DEditor::NavigationObstacle3DEditor() {
 	handle_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	Ref<Texture2D> handle = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Editor3DHandle"), SNAME("EditorIcons"));
+	handle_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	Ref<Texture2D> handle = EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Editor3DHandle"), EditorStringName(EditorIcons));
 	handle_material->set_point_size(handle->get_width());
 	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle);
 

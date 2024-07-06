@@ -1,5 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -103,7 +107,7 @@ namespace Godot
         ///
         /// Note: This method has an abnormally high amount
         /// of floating-point error, so methods such as
-        /// <see cref="Mathf.IsZeroApprox"/> will not work reliably.
+        /// <see cref="Mathf.IsZeroApprox(real_t)"/> will not work reliably.
         /// </summary>
         /// <param name="to">The other quaternion.</param>
         /// <returns>The angle between the quaternions.</returns>
@@ -320,7 +324,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if this quaternion is finite, by calling
-        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// <see cref="Mathf.IsFinite(real_t)"/> on each component.
         /// </summary>
         /// <returns>Whether this vector is finite or not.</returns>
         public readonly bool IsFinite()
@@ -644,6 +648,7 @@ namespace Godot
 
         /// <summary>
         /// Returns a Vector3 rotated (multiplied) by the inverse quaternion.
+        /// <c>vector * quaternion</c> is equivalent to <c>quaternion.Inverse() * vector</c>. See <see cref="Inverse"/>.
         /// </summary>
         /// <param name="vector">A Vector3 to inversely rotate.</param>
         /// <param name="quaternion">The quaternion to rotate by.</param>
@@ -768,7 +773,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The other object to compare.</param>
         /// <returns>Whether or not the quaternion and the other object are exactly equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Quaternion other && Equals(other);
         }
@@ -800,25 +805,22 @@ namespace Godot
         /// <returns>A hash code for this quaternion.</returns>
         public override readonly int GetHashCode()
         {
-            return Y.GetHashCode() ^ X.GetHashCode() ^ Z.GetHashCode() ^ W.GetHashCode();
+            return HashCode.Combine(X, Y, Z, W);
         }
 
         /// <summary>
         /// Converts this <see cref="Quaternion"/> to a string.
         /// </summary>
         /// <returns>A string representation of this quaternion.</returns>
-        public override readonly string ToString()
-        {
-            return $"({X}, {Y}, {Z}, {W})";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Quaternion"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this quaternion.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
-            return $"({X.ToString(format)}, {Y.ToString(format)}, {Z.ToString(format)}, {W.ToString(format)})";
+            return $"({X.ToString(format, CultureInfo.InvariantCulture)}, {Y.ToString(format, CultureInfo.InvariantCulture)}, {Z.ToString(format, CultureInfo.InvariantCulture)}, {W.ToString(format, CultureInfo.InvariantCulture)})";
         }
     }
 }

@@ -34,7 +34,6 @@
 #include "core/input/input_event.h"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
-#include "core/object/script_language.h"
 
 class MainLoop : public Object {
 	GDCLASS(MainLoop, Object);
@@ -63,6 +62,7 @@ public:
 	};
 
 	virtual void initialize();
+	virtual void iteration_prepare() {}
 	virtual bool physics_process(double p_time);
 	virtual bool process(double p_time);
 	virtual void finalize();

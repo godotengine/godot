@@ -32,6 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
@@ -220,9 +221,12 @@ GPUParticles3DEditorBase::GPUParticles3DEditorBase() {
 	emd_vb->add_margin_child(TTR("Emission Source:"), emission_fill);
 
 	emission_dialog->set_ok_button_text(TTR("Create"));
-	emission_dialog->connect("confirmed", callable_mp(this, &GPUParticles3DEditorBase::_generate_emission_points));
+	emission_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GPUParticles3DEditorBase::_generate_emission_points));
 
 	emission_tree_dialog = memnew(SceneTreeDialog);
+	Vector<StringName> valid_types;
+	valid_types.push_back("MeshInstance3D");
+	emission_tree_dialog->set_valid_types(valid_types);
 	add_child(emission_tree_dialog);
 	emission_tree_dialog->connect("selected", callable_mp(this, &GPUParticles3DEditorBase::_node_selected));
 }
@@ -237,7 +241,7 @@ void GPUParticles3DEditor::_node_removed(Node *p_node) {
 void GPUParticles3DEditor::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_ENTER_TREE: {
-			options->set_icon(options->get_popup()->get_theme_icon(SNAME("GPUParticles3D"), SNAME("EditorIcons")));
+			options->set_icon(options->get_popup()->get_editor_theme_icon(SNAME("GPUParticles3D")));
 			get_tree()->connect("node_removed", callable_mp(this, &GPUParticles3DEditor::_node_removed));
 		} break;
 	}
@@ -276,12 +280,9 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 			cpu_particles->set_process_mode(node->get_process_mode());
 
 			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-			ur->create_action(TTR("Convert to CPUParticles3D"));
-			ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", node, cpu_particles, true, false);
-			ur->add_do_reference(cpu_particles);
-			ur->add_undo_method(SceneTreeDock::get_singleton(), "replace_node", cpu_particles, node, false, false);
-			ur->add_undo_reference(node);
-			ur->commit_action();
+			ur->create_action(TTR("Convert to CPUParticles3D"), UndoRedo::MERGE_DISABLE, node);
+			SceneTreeDock::get_singleton()->replace_node(node, cpu_particles);
+			ur->commit_action(false);
 
 		} break;
 		case MENU_OPTION_RESTART: {
@@ -308,7 +309,7 @@ void GPUParticles3DEditor::_generate_aabb() {
 
 	while (running < time) {
 		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-		ep.step("Generating...", int(running), true);
+		ep.step(TTR("Generating..."), int(running), true);
 		OS::get_singleton()->delay_usec(1000);
 
 		AABB capture = node->capture_aabb();
@@ -414,12 +415,12 @@ GPUParticles3DEditor::GPUParticles3DEditor() {
 	particles_editor_hb->hide();
 
 	options->set_text(TTR("GPUParticles3D"));
-	options->get_popup()->add_item(TTR("Restart"), MENU_OPTION_RESTART);
+	options->get_popup()->add_shortcut(ED_GET_SHORTCUT("particles/restart_emission"), MENU_OPTION_RESTART);
 	options->get_popup()->add_item(TTR("Generate AABB"), MENU_OPTION_GENERATE_AABB);
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 	options->get_popup()->add_item(TTR("Convert to CPUParticles3D"), MENU_OPTION_CONVERT_TO_CPU_PARTICLES);
 
-	options->get_popup()->connect("id_pressed", callable_mp(this, &GPUParticles3DEditor::_menu_option));
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GPUParticles3DEditor::_menu_option));
 
 	generate_aabb = memnew(ConfirmationDialog);
 	generate_aabb->set_title(TTR("Generate Visibility AABB"));
@@ -433,7 +434,7 @@ GPUParticles3DEditor::GPUParticles3DEditor() {
 
 	add_child(generate_aabb);
 
-	generate_aabb->connect("confirmed", callable_mp(this, &GPUParticles3DEditor::_generate_aabb));
+	generate_aabb->connect(SceneStringName(confirmed), callable_mp(this, &GPUParticles3DEditor::_generate_aabb));
 }
 
 void GPUParticles3DEditorPlugin::edit(Object *p_object) {

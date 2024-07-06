@@ -24,7 +24,7 @@ func test():
 	print(StringName("hello"))
 	print(NodePath("hello/world"))
 	var node := Node.new()
-	print(RID(node))
+	print(RID(node)) # TODO: Why is the constructor (or implicit cast) not documented?
 	print(node.get_name)
 	print(node.property_list_changed)
 	node.free()
@@ -40,3 +40,4 @@ func test():
 	print(PackedVector2Array([Vector2.ONE, Vector2.ZERO]))
 	print(PackedVector3Array([Vector3.ONE, Vector3.ZERO]))
 	print(PackedColorArray([Color.RED, Color.BLUE, Color.GREEN]))
+	print(PackedVector4Array([Vector4.ONE, Vector4.ZERO]))

@@ -1,9 +1,11 @@
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+#pragma warning disable IDE1006 // Naming rule violation
+// ReSharper disable InconsistentNaming
+
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Godot.SourceGenerators.Internal;
 
-// ReSharper disable InconsistentNaming
 
 namespace Godot.NativeInterop
 {
@@ -16,7 +18,7 @@ namespace Godot.NativeInterop
     [GenerateUnmanagedCallbacks(typeof(UnmanagedCallbacks))]
     public static unsafe partial class NativeFuncs
     {
-        private static bool initialized = false;
+        private static bool initialized;
 
         // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Global
         public static void Initialize(IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
@@ -42,6 +44,9 @@ namespace Godot.NativeInterop
         public static partial IntPtr godotsharp_method_bind_get_method(in godot_string_name p_classname,
             in godot_string_name p_methodname);
 
+        public static partial IntPtr godotsharp_method_bind_get_method_with_compatibility(
+            in godot_string_name p_classname, in godot_string_name p_methodname, ulong p_hash);
+
         public static partial delegate* unmanaged<IntPtr> godotsharp_get_class_constructor(
             in godot_string_name p_classname);
 
@@ -54,11 +59,11 @@ namespace Godot.NativeInterop
         internal static partial void godotsharp_stack_info_vector_destroy(
             ref DebuggingUtils.godot_stack_info_vector p_stack_info_vector);
 
-        internal static partial void godotsharp_internal_editor_file_system_update_file(in godot_string p_script_path);
+        internal static partial void godotsharp_internal_editor_file_system_update_files(in godot_packed_string_array p_script_paths);
 
         internal static partial void godotsharp_internal_script_debugger_send_error(in godot_string p_func,
             in godot_string p_file, int p_line, in godot_string p_err, in godot_string p_descr,
-            godot_bool p_warning, in DebuggingUtils.godot_stack_info_vector p_stack_info_vector);
+            godot_error_handler_type p_type, in DebuggingUtils.godot_stack_info_vector p_stack_info_vector);
 
         internal static partial godot_bool godotsharp_internal_script_debugger_is_active();
 
@@ -137,6 +142,9 @@ namespace Godot.NativeInterop
             int p_length);
 
         public static partial godot_packed_vector3_array godotsharp_packed_vector3_array_new_mem_copy(Vector3* p_src,
+            int p_length);
+
+        public static partial godot_packed_vector4_array godotsharp_packed_vector4_array_new_mem_copy(Vector4* p_src,
             int p_length);
 
         public static partial godot_packed_color_array godotsharp_packed_color_array_new_mem_copy(Color* p_src,
@@ -219,6 +227,9 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_variant_new_packed_vector3_array(out godot_variant r_dest,
             in godot_packed_vector3_array p_pv3a);
 
+        public static partial void godotsharp_variant_new_packed_vector4_array(out godot_variant r_dest,
+            in godot_packed_vector4_array p_pv4a);
+
         public static partial void godotsharp_variant_new_packed_color_array(out godot_variant r_dest,
             in godot_packed_color_array p_pca);
 
@@ -297,6 +308,9 @@ namespace Godot.NativeInterop
         public static partial godot_packed_vector3_array godotsharp_variant_as_packed_vector3_array(
             in godot_variant p_self);
 
+        public static partial godot_packed_vector4_array godotsharp_variant_as_packed_vector4_array(
+            in godot_variant p_self);
+
         public static partial godot_packed_color_array godotsharp_variant_as_packed_color_array(in godot_variant p_self);
 
         public static partial godot_bool godotsharp_variant_equals(in godot_variant p_a, in godot_variant p_b);
@@ -346,6 +360,8 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_packed_vector2_array_destroy(ref godot_packed_vector2_array p_self);
 
         public static partial void godotsharp_packed_vector3_array_destroy(ref godot_packed_vector3_array p_self);
+
+        public static partial void godotsharp_packed_vector4_array_destroy(ref godot_packed_vector4_array p_self);
 
         public static partial void godotsharp_packed_color_array_destroy(ref godot_packed_color_array p_self);
 
@@ -540,9 +556,7 @@ namespace Godot.NativeInterop
 
         internal static partial void godotsharp_var_to_str(in godot_variant p_var, out godot_string r_ret);
 
-        internal static partial void godotsharp_pusherror(in godot_string p_str);
-
-        internal static partial void godotsharp_pushwarning(in godot_string p_str);
+        internal static partial void godotsharp_err_print_error(in godot_string p_function, in godot_string p_file, int p_line, in godot_string p_error, in godot_string p_message = default, godot_bool p_editor_notify = godot_bool.False, godot_error_handler_type p_type = godot_error_handler_type.ERR_HANDLER_ERROR);
 
         // Object
 

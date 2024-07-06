@@ -87,7 +87,7 @@ using OT::Layout::GPOS;
 bool
 hb_ot_layout_has_kerning (hb_face_t *face)
 {
-  return face->table.kern->has_data ();
+  return face->table.kern->table->has_data ();
 }
 
 /**
@@ -103,7 +103,7 @@ hb_ot_layout_has_kerning (hb_face_t *face)
 bool
 hb_ot_layout_has_machine_kerning (hb_face_t *face)
 {
-  return face->table.kern->has_state_machine ();
+  return face->table.kern->table->has_state_machine ();
 }
 
 /**
@@ -123,7 +123,7 @@ hb_ot_layout_has_machine_kerning (hb_face_t *face)
 bool
 hb_ot_layout_has_cross_kerning (hb_face_t *face)
 {
-  return face->table.kern->has_cross_stream ();
+  return face->table.kern->table->has_cross_stream ();
 }
 
 void
@@ -132,7 +132,7 @@ hb_ot_layout_kern (const hb_ot_shape_plan_t *plan,
 		   hb_buffer_t  *buffer)
 {
   hb_blob_t *blob = font->face->table.kern.get_blob ();
-  const AAT::kern& kern = *blob->as<AAT::kern> ();
+  const auto& kern = *font->face->table.kern;
 
   AAT::hb_aat_apply_context_t c (plan, font, buffer, blob);
 
@@ -1241,7 +1241,7 @@ script_collect_features (hb_collect_features_context_t *c,
  *   terminated by %HB_TAG_NONE
  * @features: (nullable) (array zero-terminated=1): The array of features to collect,
  *   terminated by %HB_TAG_NONE
- * @feature_indexes: (out): The array of feature indexes found for the query
+ * @feature_indexes: (out): The set of feature indexes found for the query
  *
  * Fetches a list of all feature indexes in the specified face's GSUB table
  * or GPOS table, underneath the specified scripts, languages, and features.
@@ -1279,6 +1279,49 @@ hb_ot_layout_collect_features (hb_face_t      *face,
 				 c.g.get_script (script_index),
 				 languages);
     }
+  }
+}
+
+/**
+ * hb_ot_layout_collect_features_map:
+ * @face: #hb_face_t to work upon
+ * @table_tag: #HB_OT_TAG_GSUB or #HB_OT_TAG_GPOS
+ * @script_index: The index of the requested script tag
+ * @language_index: The index of the requested language tag
+ * @feature_map: (out): The map of feature tag to feature index.
+ *
+ * Fetches the mapping from feature tags to feature indexes for
+ * the specified script and language.
+ *
+ * Since: 8.1.0
+ **/
+void
+hb_ot_layout_collect_features_map (hb_face_t      *face,
+				   hb_tag_t        table_tag,
+				   unsigned        script_index,
+				   unsigned        language_index,
+				   hb_map_t       *feature_map /* OUT */)
+{
+  const OT::GSUBGPOS &g = get_gsubgpos_table (face, table_tag);
+  const OT::LangSys &l = g.get_script (script_index).get_lang_sys (language_index);
+
+  unsigned int count = l.get_feature_indexes (0, nullptr, nullptr);
+  feature_map->alloc (count);
+
+  /* Loop in reverse, such that earlier entries win. That emulates
+   * a linear search, which seems to be what other implementations do.
+   * We found that with arialuni_t.ttf, the "ur" language system has
+   * duplicate features, and the earlier ones work but not later ones.
+   */
+  for (unsigned int i = count; i; i--)
+  {
+    unsigned feature_index = 0;
+    unsigned feature_count = 1;
+    l.get_feature_indexes (i - 1, &feature_count, &feature_index);
+    if (!feature_count)
+      break;
+    hb_tag_t feature_tag = g.get_feature_tag (feature_index);
+    feature_map->set (feature_tag, feature_index);
   }
 }
 
@@ -2084,7 +2127,7 @@ hb_ot_layout_get_font_extents (hb_font_t         *font,
 			       hb_tag_t           language_tag,
 			       hb_font_extents_t *extents)
 {
-  hb_position_t min, max;
+  hb_position_t min = 0, max = 0;
   if (font->face->table.BASE->get_min_max (font, direction, script_tag, language_tag, HB_TAG_NONE,
 					   &min, &max))
   {

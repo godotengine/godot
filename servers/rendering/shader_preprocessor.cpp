@@ -420,11 +420,11 @@ void ShaderPreprocessor::process_define(Tokenizer *p_tokenizer) {
 		return;
 	}
 
+	Vector<String> args;
 	if (p_tokenizer->peek() == '(') {
 		// Macro has arguments.
 		p_tokenizer->get_token();
 
-		Vector<String> args;
 		while (true) {
 			String name = p_tokenizer->get_identifier();
 			if (name.is_empty()) {
@@ -442,17 +442,24 @@ void ShaderPreprocessor::process_define(Tokenizer *p_tokenizer) {
 				return;
 			}
 		}
-
-		Define *define = memnew(Define);
-		define->arguments = args;
-		define->body = tokens_to_string(p_tokenizer->advance('\n')).strip_edges();
-		state->defines[label] = define;
-	} else {
-		// Simple substitution macro.
-		Define *define = memnew(Define);
-		define->body = tokens_to_string(p_tokenizer->advance('\n')).strip_edges();
-		state->defines[label] = define;
 	}
+
+	String body = tokens_to_string(p_tokenizer->advance('\n')).strip_edges();
+	if (body.begins_with("##")) {
+		set_error(RTR("'##' must not appear at beginning of macro expansion."), line);
+		return;
+	}
+	if (body.ends_with("##")) {
+		set_error(RTR("'##' must not appear at end of macro expansion."), line);
+		return;
+	}
+
+	Define *define = memnew(Define);
+	if (!args.is_empty()) {
+		define->arguments = args;
+	}
+	define->body = body;
+	state->defines[label] = define;
 }
 
 void ShaderPreprocessor::process_elif(Tokenizer *p_tokenizer) {
@@ -740,7 +747,7 @@ void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
 	processor.preprocess(state, included, result);
 	add_to_output("@@>" + real_path + "\n"); // Add token for enter include path
 	add_to_output(result);
-	add_to_output("\n@@<\n"); // Add token for exit include path
+	add_to_output("\n@@<" + real_path + "\n"); // Add token for exit include path.
 
 	// Reset to last include if there are no errors. We want to use this as context.
 	if (state->error.is_empty()) {
@@ -1074,9 +1081,13 @@ bool ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_num
 				}
 			}
 
+			concatenate_macro_body(body);
+
 			result = result.substr(0, index) + " " + body + " " + result.substr(args_end + 1, result.length());
 		} else {
-			result = result.substr(0, index) + body + result.substr(index + key.length(), result.length() - (index + key.length()));
+			concatenate_macro_body(body);
+
+			result = result.substr(0, index) + " " + body + " " + result.substr(index + key.length(), result.length() - (index + key.length()));
 		}
 
 		r_expanded = result;
@@ -1113,6 +1124,40 @@ bool ShaderPreprocessor::find_match(const String &p_string, const String &p_valu
 	}
 
 	return false;
+}
+
+void ShaderPreprocessor::concatenate_macro_body(String &r_body) {
+	int index_start = r_body.find("##");
+	while (index_start > -1) {
+		int index_end = index_start + 2; // First character after ##.
+		// The macro was checked during creation so this should never happen.
+		ERR_FAIL_INDEX(index_end, r_body.size());
+
+		// If there more than two # in a row, then it's not a concatenation.
+		bool is_concat = true;
+		while (index_end <= r_body.length() && r_body[index_end] == '#') {
+			index_end++;
+			is_concat = false;
+		}
+		if (!is_concat) {
+			index_start = r_body.find("##", index_end);
+			continue;
+		}
+
+		// Skip whitespace after ##.
+		while (index_end < r_body.length() && is_char_space(r_body[index_end])) {
+			index_end++;
+		}
+
+		// Skip whitespace before ##.
+		while (index_start >= 1 && is_char_space(r_body[index_start - 1])) {
+			index_start--;
+		}
+
+		r_body = r_body.substr(0, index_start) + r_body.substr(index_end, r_body.length() - index_end);
+
+		index_start = r_body.find("##", index_start);
+	}
 }
 
 String ShaderPreprocessor::next_directive(Tokenizer *p_tokenizer, const Vector<String> &p_directives) {

@@ -24,6 +24,7 @@
  * Google Author(s): Garret Rieger, Rod Sheeter, Behdad Esfahbod
  */
 
+#include "hb-subset-instancer-solver.hh"
 #include "hb-subset.hh"
 #include "hb-set.hh"
 #include "hb-utf.hh"
@@ -50,7 +51,6 @@ hb_subset_input_t::hb_subset_input_t ()
     HB_TAG ('k', 'e', 'r', 'n'),
 
     // Copied from fontTools:
-    HB_TAG ('B', 'A', 'S', 'E'),
     HB_TAG ('J', 'S', 'T', 'F'),
     HB_TAG ('D', 'S', 'I', 'G'),
     HB_TAG ('E', 'B', 'D', 'T'),
@@ -69,14 +69,11 @@ hb_subset_input_t::hb_subset_input_t ()
   sets.drop_tables->add_array (default_drop_tables, ARRAY_LENGTH (default_drop_tables));
 
   hb_tag_t default_no_subset_tables[] = {
-    HB_TAG ('a', 'v', 'a', 'r'),
     HB_TAG ('g', 'a', 's', 'p'),
     HB_TAG ('f', 'p', 'g', 'm'),
     HB_TAG ('p', 'r', 'e', 'p'),
     HB_TAG ('V', 'D', 'M', 'X'),
     HB_TAG ('D', 'S', 'I', 'G'),
-    HB_TAG ('M', 'V', 'A', 'R'),
-    HB_TAG ('c', 'v', 'a', 'r'),
   };
   sets.no_subset_tables->add_array (default_no_subset_tables,
 					 ARRAY_LENGTH (default_no_subset_tables));
@@ -125,6 +122,12 @@ hb_subset_input_t::hb_subset_input_t ()
 
     //justify
     HB_TAG ('j', 'a', 'l', 't'), // HarfBuzz doesn't use; others might
+
+    //East Asian spacing
+    HB_TAG ('c', 'h', 'w', 's'),
+    HB_TAG ('v', 'c', 'h', 'w'),
+    HB_TAG ('h', 'a', 'l', 't'),
+    HB_TAG ('v', 'h', 'a', 'l'),
 
     //private
     HB_TAG ('H', 'a', 'r', 'f'),
@@ -415,6 +418,46 @@ hb_subset_input_keep_everything (hb_subset_input_t *input)
 
 #ifndef HB_NO_VAR
 /**
+ * hb_subset_input_pin_all_axes_to_default: (skip)
+ * @input: a #hb_subset_input_t object.
+ * @face: a #hb_face_t object.
+ *
+ * Pin all axes to default locations in the given subset input object.
+ *
+ * All axes in a font must be pinned. Additionally, `CFF2` table, if present,
+ * will be de-subroutinized.
+ *
+ * Return value: `true` if success, `false` otherwise
+ *
+ * Since: 8.3.1
+ **/
+HB_EXTERN hb_bool_t
+hb_subset_input_pin_all_axes_to_default (hb_subset_input_t  *input,
+                                         hb_face_t          *face)
+{
+  unsigned axis_count = hb_ot_var_get_axis_count (face);
+  if (!axis_count) return false;
+
+  hb_ot_var_axis_info_t *axis_infos = (hb_ot_var_axis_info_t *) hb_calloc (axis_count, sizeof (hb_ot_var_axis_info_t));
+  if (unlikely (!axis_infos)) return false;
+
+  (void) hb_ot_var_get_axis_infos (face, 0, &axis_count, axis_infos);
+
+  for (unsigned i = 0; i < axis_count; i++)
+  {
+    hb_tag_t axis_tag = axis_infos[i].tag;
+    double default_val = (double) axis_infos[i].default_value;
+    if (!input->axes_location.set (axis_tag, Triple (default_val, default_val, default_val)))
+    {
+      hb_free (axis_infos);
+      return false;
+    }
+  }
+  hb_free (axis_infos);
+  return true;
+}
+
+/**
  * hb_subset_input_pin_axis_to_default: (skip)
  * @input: a #hb_subset_input_t object.
  * @face: a #hb_face_t object.
@@ -438,7 +481,7 @@ hb_subset_input_pin_axis_to_default (hb_subset_input_t  *input,
   if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
     return false;
 
-  float default_val = axis_info.default_value;
+  double default_val = (double) axis_info.default_value;
   return input->axes_location.set (axis_tag, Triple (default_val, default_val, default_val));
 }
 
@@ -468,53 +511,91 @@ hb_subset_input_pin_axis_location (hb_subset_input_t  *input,
   if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
     return false;
 
-  float val = hb_clamp(axis_value, axis_info.min_value, axis_info.max_value);
+  double val = hb_clamp((double) axis_value, (double) axis_info.min_value, (double) axis_info.max_value);
   return input->axes_location.set (axis_tag, Triple (val, val, val));
 }
 
-#ifdef HB_EXPERIMENTAL_API
 /**
  * hb_subset_input_set_axis_range: (skip)
  * @input: a #hb_subset_input_t object.
  * @face: a #hb_face_t object.
  * @axis_tag: Tag of the axis
- * @axis_min_value: Minimum value of the axis variation range to set
- * @axis_max_value: Maximum value of the axis variation range to set
+ * @axis_min_value: Minimum value of the axis variation range to set, if NaN the existing min will be used.
+ * @axis_max_value: Maximum value of the axis variation range to set  if NaN the existing max will be used.
+ * @axis_def_value: Default value of the axis variation range to set, if NaN the existing default will be used.
  *
  * Restricting the range of variation on an axis in the given subset input object.
- * New min/max values will be clamped if they're not within the fvar axis range.
+ * New min/default/max values will be clamped if they're not within the fvar axis range.
+ *
  * If the fvar axis default value is not within the new range, the new default
  * value will be changed to the new min or max value, whichever is closer to the fvar
  * axis default.
  *
- * Note: input min value can not be bigger than input max value
- * Note: currently this API does not support changing axis limits yet.It'd be only
- * used internally for setting axis limits in the internal data structures
+ * Note: input min value can not be bigger than input max value. If the input
+ * default value is not within the new min/max range, it'll be clamped.
+ * Note: currently it supports gvar and cvar tables only.
  *
  * Return value: `true` if success, `false` otherwise
  *
- * XSince: EXPERIMENTAL
+ * Since: 8.5.0
  **/
 HB_EXTERN hb_bool_t
 hb_subset_input_set_axis_range (hb_subset_input_t  *input,
                                 hb_face_t          *face,
                                 hb_tag_t            axis_tag,
                                 float               axis_min_value,
-                                float               axis_max_value)
+                                float               axis_max_value,
+                                float               axis_def_value)
 {
-  if (axis_min_value > axis_max_value)
-    return false;
-
   hb_ot_var_axis_info_t axis_info;
   if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
     return false;
 
-  float new_min_val = hb_clamp(axis_min_value, axis_info.min_value, axis_info.max_value);
-  float new_max_val = hb_clamp(axis_max_value, axis_info.min_value, axis_info.max_value);
-  float new_default_val = hb_clamp(axis_info.default_value, new_min_val, new_max_val);
-  return input->axes_location.set (axis_tag, Triple (new_min_val, new_default_val, new_max_val));
+  float min = !std::isnan(axis_min_value) ? axis_min_value : axis_info.min_value;
+  float max = !std::isnan(axis_max_value) ? axis_max_value : axis_info.max_value;
+  float def = !std::isnan(axis_def_value) ? axis_def_value : axis_info.default_value;
+
+  if (min > max)
+    return false;
+
+  float new_min_val = hb_clamp(min, axis_info.min_value, axis_info.max_value);
+  float new_max_val = hb_clamp(max, axis_info.min_value, axis_info.max_value);
+  float new_default_val = hb_clamp(def, new_min_val, new_max_val);
+  return input->axes_location.set (axis_tag, Triple ((double) new_min_val, (double) new_default_val, (double) new_max_val));
 }
-#endif
+
+/**
+ * hb_subset_input_get_axis_range: (skip)
+ * @input: a #hb_subset_input_t object.
+ * @axis_tag: Tag of the axis
+ * @axis_min_value: Set to the previously configured minimum value of the axis variation range.
+ * @axis_max_value: Set to the previously configured maximum value of the axis variation range.
+ * @axis_def_value: Set to the previously configured default value of the axis variation range.
+ *
+ * Gets the axis range assigned by previous calls to hb_subset_input_set_axis_range.
+ *
+ * Return value: `true` if a range has been set for this axis tag, `false` otherwise.
+ *
+ * Since: 8.5.0
+ **/
+HB_EXTERN hb_bool_t
+hb_subset_input_get_axis_range (hb_subset_input_t  *input,
+				hb_tag_t            axis_tag,
+				float              *axis_min_value,
+				float              *axis_max_value,
+				float              *axis_def_value)
+
+{
+  Triple* triple;
+  if (!input->axes_location.has(axis_tag, &triple)) {
+    return false;
+  }
+
+  *axis_min_value = triple->minimum;
+  *axis_def_value = triple->middle;
+  *axis_max_value = triple->maximum;
+  return true;
+}
 #endif
 
 /**
@@ -663,5 +744,4 @@ hb_subset_input_override_name_table (hb_subset_input_t  *input,
   input->name_table_overrides.set (hb_ot_name_record_ids_t (platform_id, encoding_id, language_id, name_id), name_bytes);
   return true;
 }
-
 #endif

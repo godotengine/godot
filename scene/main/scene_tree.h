@@ -122,7 +122,6 @@ private:
 
 	Window *root = nullptr;
 
-	uint64_t tree_version = 1;
 	double physics_process_time = 0.0;
 	double process_time = 0.0;
 	bool accept_quit = true;
@@ -134,10 +133,11 @@ private:
 	bool debug_navigation_hint = false;
 #endif
 	bool paused = false;
-	int root_lock = 0;
 
 	HashMap<StringName, Group> group_map;
 	bool _quit = false;
+
+	bool _physics_interpolation_enabled = false;
 
 	StringName tree_changed_name = "tree_changed";
 	StringName node_added_name = "node_added";
@@ -163,7 +163,6 @@ private:
 
 	// Safety for when a node is deleted while a group is being called.
 
-	bool processing = false;
 	int nodes_removed_on_group_call_lock = 0;
 	HashSet<Node *> nodes_removed_on_group_call; // Skip erased nodes.
 
@@ -178,6 +177,8 @@ private:
 	TypedArray<Node> _get_nodes_in_group(const StringName &p_group);
 
 	Node *current_scene = nullptr;
+	Node *prev_scene = nullptr;
+	Node *pending_new_scene = nullptr;
 
 	Color debug_collisions_color;
 	Color debug_collision_contact_color;
@@ -188,7 +189,7 @@ private:
 	Ref<Material> collision_material;
 	int collision_debug_contacts;
 
-	void _change_scene(Node *p_to);
+	void _flush_scene_change();
 
 	List<Ref<SceneTreeTimer>> timers;
 	List<Ref<Tween>> tweens;
@@ -311,6 +312,8 @@ public:
 
 	virtual void initialize() override;
 
+	virtual void iteration_prepare() override;
+
 	virtual bool physics_process(double p_time) override;
 	virtual bool process(double p_time) override;
 
@@ -326,12 +329,6 @@ public:
 
 	_FORCE_INLINE_ double get_physics_process_time() const { return physics_process_time; }
 	_FORCE_INLINE_ double get_process_time() const { return process_time; }
-
-#ifdef TOOLS_ENABLED
-	bool is_node_being_edited(const Node *p_node) const;
-#else
-	bool is_node_being_edited(const Node *p_node) const { return false; }
-#endif
 
 	void set_pause(bool p_enabled);
 	bool is_paused() const;
@@ -383,6 +380,7 @@ public:
 	void get_nodes_in_group(const StringName &p_group, List<Node *> *p_list);
 	Node *get_first_node_in_group(const StringName &p_group);
 	bool has_group(const StringName &p_identifier) const;
+	int get_node_count_in_group(const StringName &p_group) const;
 
 	//void change_scene(const String& p_path);
 	//Node *get_loaded_scene();
@@ -406,7 +404,9 @@ public:
 
 	static SceneTree *get_singleton() { return singleton; }
 
+#ifdef TOOLS_ENABLED
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	//network API
 
@@ -419,6 +419,9 @@ public:
 
 	void set_disable_node_threading(bool p_disable);
 	//default texture settings
+
+	void set_physics_interpolation_enabled(bool p_enabled);
+	bool is_physics_interpolation_enabled() const;
 
 	SceneTree();
 	~SceneTree();

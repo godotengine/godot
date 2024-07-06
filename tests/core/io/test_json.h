@@ -186,20 +186,21 @@ TEST_CASE("[JSON] Parsing escape sequences") {
 	}
 
 	SUBCASE("Valid unicode escape sequences") {
-		String json_string = "\"\\u0000\"";
+		String json_string = "\"\\u0020\"";
 		json.parse(json_string);
 
 		CHECK_MESSAGE(
 				json.get_error_line() == 0,
-				vformat("Parsing valid unicode escape sequence with value `0000` as JSON should parse successfully."));
+				vformat("Parsing valid unicode escape sequence with value `0020` as JSON should parse successfully."));
 
 		String json_value = json.get_data();
 		CHECK_MESSAGE(
-				json_value == "\0",
-				vformat("Parsing valid unicode escape sequence with value `0000` as JSON should return the expected value."));
+				json_value == " ",
+				vformat("Parsing valid unicode escape sequence with value `0020` as JSON should return the expected value."));
 	}
 
 	SUBCASE("Invalid escape sequences") {
+		ERR_PRINT_OFF
 		for (char32_t i = 0; i < 128; i++) {
 			bool skip = false;
 			for (int j = 0; j < valid_escapes.size(); j++) {
@@ -228,6 +229,7 @@ TEST_CASE("[JSON] Parsing escape sequences") {
 					err == ERR_PARSE_ERROR,
 					vformat("Parsing invalid escape sequence with ASCII value `%d` as JSON should fail to parse with ERR_PARSE_ERROR.", i));
 		}
+		ERR_PRINT_ON
 	}
 }
 } // namespace TestJSON

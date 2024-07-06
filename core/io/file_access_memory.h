@@ -41,7 +41,7 @@ class FileAccessMemory : public FileAccess {
 	static Ref<FileAccess> create();
 
 public:
-	static void register_file(String p_name, Vector<uint8_t> p_data);
+	static void register_file(const String &p_name, const Vector<uint8_t> &p_data);
 	static void cleanup();
 
 	virtual Error open_custom(const uint8_t *p_data, uint64_t p_len); ///< open a file
@@ -61,6 +61,7 @@ public:
 
 	virtual Error get_error() const override; ///< get last error
 
+	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override;
 	virtual void store_8(uint8_t p_byte) override; ///< store a byte
 	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
@@ -68,8 +69,13 @@ public:
 	virtual bool file_exists(const String &p_name) override; ///< return true if a file exists
 
 	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; }
-	virtual uint32_t _get_unix_permissions(const String &p_file) override { return 0; }
-	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) override { return FAILED; }
+	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override { return 0; }
+	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return FAILED; }
+
+	virtual bool _get_hidden_attribute(const String &p_file) override { return false; }
+	virtual Error _set_hidden_attribute(const String &p_file, bool p_hidden) override { return ERR_UNAVAILABLE; }
+	virtual bool _get_read_only_attribute(const String &p_file) override { return false; }
+	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) override { return ERR_UNAVAILABLE; }
 
 	virtual void close() override {}
 

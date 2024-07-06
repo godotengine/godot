@@ -43,7 +43,7 @@ void Texture3DEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			Ref<Texture2D> checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
+			Ref<Texture2D> checkerboard = get_editor_theme_icon(SNAME("Checkerboard"));
 			Size2 size = get_size();
 
 			draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
@@ -143,35 +143,35 @@ void Texture3DEditor::edit(Ref<Texture3D> p_texture) {
 Texture3DEditor::Texture3DEditor() {
 	set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
 	set_custom_minimum_size(Size2(1, 150));
+
 	texture_rect = memnew(Control);
-	texture_rect->connect("draw", callable_mp(this, &Texture3DEditor::_texture_rect_draw));
 	texture_rect->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	add_child(texture_rect);
+	texture_rect->connect(SceneStringName(draw), callable_mp(this, &Texture3DEditor::_texture_rect_draw));
 
 	layer = memnew(SpinBox);
 	layer->set_step(1);
 	layer->set_max(100);
+	layer->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+	layer->set_modulate(Color(1, 1, 1, 0.8));
 	add_child(layer);
 	layer->set_anchor(SIDE_RIGHT, 1);
 	layer->set_anchor(SIDE_LEFT, 1);
-	layer->set_h_grow_direction(GROW_DIRECTION_BEGIN);
-	layer->set_modulate(Color(1, 1, 1, 0.8));
+	layer->connect(SceneStringName(value_changed), callable_mp(this, &Texture3DEditor::_layer_changed));
+
 	info = memnew(Label);
+	info->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+	info->set_v_grow_direction(GROW_DIRECTION_BEGIN);
+	info->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1, 1));
+	info->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5));
+	info->add_theme_constant_override("shadow_outline_size", 1);
+	info->add_theme_constant_override("shadow_offset_x", 2);
+	info->add_theme_constant_override("shadow_offset_y", 2);
 	add_child(info);
 	info->set_anchor(SIDE_RIGHT, 1);
 	info->set_anchor(SIDE_LEFT, 1);
 	info->set_anchor(SIDE_BOTTOM, 1);
 	info->set_anchor(SIDE_TOP, 1);
-	info->set_h_grow_direction(GROW_DIRECTION_BEGIN);
-	info->set_v_grow_direction(GROW_DIRECTION_BEGIN);
-	info->add_theme_color_override("font_color", Color(1, 1, 1, 1));
-	info->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5));
-	info->add_theme_constant_override("shadow_outline_size", 1);
-	info->add_theme_constant_override("shadow_offset_x", 2);
-	info->add_theme_constant_override("shadow_offset_y", 2);
-
-	setting = false;
-	layer->connect("value_changed", callable_mp(this, &Texture3DEditor::_layer_changed));
 }
 
 Texture3DEditor::~Texture3DEditor() {

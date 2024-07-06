@@ -73,24 +73,19 @@ private:
 	struct ThemeCache {
 		int separation = 0;
 		int minimum_grab_thickness = 0;
-		int autohide = 0;
+		bool autohide = false;
 		Ref<Texture2D> grabber_icon;
 		Ref<Texture2D> grabber_icon_h;
 		Ref<Texture2D> grabber_icon_v;
 	} theme_cache;
 
-	Control *_getch(int p_idx) const;
-
 	Ref<Texture2D> _get_grabber_icon() const;
 	void _compute_middle_sep(bool p_clamp);
 	void _resort();
-
-	void _dragging_area_gui_input(const Ref<InputEvent> &p_event);
+	Control *_get_sortable_child(int p_idx) const;
 
 protected:
 	bool is_fixed = false;
-
-	virtual void _update_theme_item_cache() override;
 
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;

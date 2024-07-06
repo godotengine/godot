@@ -5,13 +5,13 @@
 	</brief_description>
 	<description>
 		A 2×3 matrix (2 rows, 3 columns) used for 2D linear transformations. It can represent transformations such as translation, rotation, and scaling. It consists of three [Vector2] values: [member x], [member y], and the [member origin].
-		For more information, read the "Matrices and transforms" documentation article.
+		For a general introduction, see the [url=$DOCS_URL/tutorials/math/matrices_and_transforms.html]Matrices and transforms[/url] tutorial.
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
 		<link title="Matrices and transforms">$DOCS_URL/tutorials/math/matrices_and_transforms.html</link>
-		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
-		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/2787</link>
+		<link title="2.5D Game Demo">https://godotengine.org/asset-library/asset/2783</link>
 	</tutorials>
 	<constructors>
 		<constructor name="Transform2D">
@@ -59,7 +59,7 @@
 		<method name="affine_inverse" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation, scaling and translation.
+				Returns the inverse of the transform, under the assumption that the basis is invertible (must have non-zero determinant).
 			</description>
 		</method>
 		<method name="basis_xform" qualifiers="const">
@@ -67,15 +67,17 @@
 			<param index="0" name="v" type="Vector2" />
 			<description>
 				Returns a vector transformed (multiplied) by the basis matrix.
-				This method does not account for translation (the origin vector).
+				This method does not account for translation (the [member origin] vector).
 			</description>
 		</method>
 		<method name="basis_xform_inv" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="v" type="Vector2" />
 			<description>
-				Returns a vector transformed (multiplied) by the inverse basis matrix.
-				This method does not account for translation (the origin vector).
+				Returns a vector transformed (multiplied) by the inverse basis matrix, under the assumption that the basis is orthonormal (i.e. rotation/reflection is fine, scaling/skew is not).
+				This method does not account for translation (the [member origin] vector).
+				[code]transform.basis_xform_inv(vector)[/code] is equivalent to [code]transform.inverse().basis_xform(vector)[/code]. See [method inverse].
+				For non-orthonormal transforms (e.g. with scaling) [code]transform.affine_inverse().basis_xform(vector)[/code] can be used instead. See [method affine_inverse].
 			</description>
 		</method>
 		<method name="determinant" qualifiers="const">
@@ -120,14 +122,20 @@
 		<method name="inverse" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use [method affine_inverse] for transforms with scaling).
+				Returns the inverse of the transform, under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection is fine, scaling/skew is not). Use [method affine_inverse] for non-orthonormal transforms (e.g. with scaling).
+			</description>
+		</method>
+		<method name="is_conformal" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the transform's basis is conformal, meaning it preserves angles and distance ratios, and may only be composed of rotation and uniform scale. Returns [code]false[/code] if the transform's basis has non-uniform scale or shear/skew. This can be used to validate if the transform is non-distorted, which is important for physics and other use cases.
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="xform" type="Transform2D" />
 			<description>
-				Returns [code]true[/code] if this transform and [param xform] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+				Returns [code]true[/code] if this transform and [param xform] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="is_finite" qualifiers="const">
@@ -268,14 +276,28 @@
 			<return type="Transform2D" />
 			<param index="0" name="right" type="float" />
 			<description>
-				This operator multiplies all components of the [Transform2D], including the origin vector, which scales it uniformly.
+				This operator multiplies all components of the [Transform2D], including the [member origin] vector, which scales it uniformly.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Transform2D" />
 			<param index="0" name="right" type="int" />
 			<description>
-				This operator multiplies all components of the [Transform2D], including the origin vector, which scales it uniformly.
+				This operator multiplies all components of the [Transform2D], including the [member origin] vector, which scales it uniformly.
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Transform2D" />
+			<param index="0" name="right" type="float" />
+			<description>
+				This operator divides all components of the [Transform2D], including the [member origin] vector, which inversely scales it uniformly.
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Transform2D" />
+			<param index="0" name="right" type="int" />
+			<description>
+				This operator divides all components of the [Transform2D], including the [member origin] vector, which inversely scales it uniformly.
 			</description>
 		</operator>
 		<operator name="operator ==">

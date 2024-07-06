@@ -2,10 +2,10 @@
   <Import Project="$(MSBuildThisFileDirectory)\SdkPackageVersions.props" />
 
   <PropertyGroup>
+    <UsingGodotNETSdk>true</UsingGodotNETSdk>
+
     <!-- Determines if we should import Microsoft.NET.Sdk, if it wasn't already imported. -->
     <GodotSdkImportsMicrosoftNetSdk Condition=" '$(UsingMicrosoftNETSdk)' != 'true' ">true</GodotSdkImportsMicrosoftNetSdk>
-
-    <GodotProjectTypeGuid>{8F3E2DF0-C35C-4265-82FC-BEA011F4A7ED}</GodotProjectTypeGuid>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -62,6 +62,18 @@
 
   <!-- Auto-detect the target Godot platform if it was not specified. -->
   <PropertyGroup Condition=" '$(GodotTargetPlatform)' == '' ">
+    <GodotTargetPlatform Condition=" $(RuntimeIdentifier.StartsWith('ios')) ">ios</GodotTargetPlatform>
+    <GodotTargetPlatform Condition=" '$(GodotTargetPlatform)' == '' and $(RuntimeIdentifier.StartsWith('android')) ">android</GodotTargetPlatform>
+    <GodotTargetPlatform Condition=" '$(GodotTargetPlatform)' == '' and $(RuntimeIdentifier.StartsWith('browser')) ">web</GodotTargetPlatform>
+
+    <GodotTargetPlatform Condition=" '$(GodotTargetPlatform)' == '' and $(RuntimeIdentifier.StartsWith('linux')) ">linuxbsd</GodotTargetPlatform>
+    <GodotTargetPlatform Condition=" '$(GodotTargetPlatform)' == '' and $(RuntimeIdentifier.StartsWith('freebsd')) ">linuxbsd</GodotTargetPlatform>
+    <GodotTargetPlatform Condition=" '$(GodotTargetPlatform)' == '' and $(RuntimeIdentifier.StartsWith('osx')) ">macos</GodotTargetPlatform>
+    <GodotTargetPlatform Condition=" '$(GodotTargetPlatform)' == '' and $(RuntimeIdentifier.StartsWith('win')) ">windows</GodotTargetPlatform>
+  </PropertyGroup>
+
+  <!-- Auto-detect the target Godot platform if it was not specified and there's no runtime identifier information. -->
+  <PropertyGroup Condition=" '$(GodotTargetPlatform)' == '' ">
     <GodotTargetPlatform Condition=" '$([MSBuild]::IsOsPlatform(Linux))' ">linuxbsd</GodotTargetPlatform>
     <GodotTargetPlatform Condition=" '$([MSBuild]::IsOsPlatform(FreeBSD))' ">linuxbsd</GodotTargetPlatform>
     <GodotTargetPlatform Condition=" '$([MSBuild]::IsOsPlatform(OSX))' ">macos</GodotTargetPlatform>
@@ -84,8 +96,6 @@
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'windows' ">GODOT_WINDOWS;GODOT_PC</GodotPlatformConstants>
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'linuxbsd' ">GODOT_LINUXBSD;GODOT_PC</GodotPlatformConstants>
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'macos' ">GODOT_OSX;GODOT_MACOS;GODOT_PC</GodotPlatformConstants>
-    <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'uwp' ">GODOT_UWP;GODOT_PC</GodotPlatformConstants>
-    <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'haiku' ">GODOT_HAIKU;GODOT_PC</GodotPlatformConstants>
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'android' ">GODOT_ANDROID;GODOT_MOBILE</GodotPlatformConstants>
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'ios' ">GODOT_IPHONE;GODOT_IOS;GODOT_MOBILE</GodotPlatformConstants>
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'web' ">GODOT_JAVASCRIPT;GODOT_HTML5;GODOT_WASM;GODOT_WEB</GodotPlatformConstants>
@@ -101,4 +111,6 @@
 
     <DefineConstants>$(GodotDefineConstants);$(DefineConstants)</DefineConstants>
   </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)\iOSNativeAOT.props" Condition=" '$(GodotTargetPlatform)' == 'ios' " />
 </Project>

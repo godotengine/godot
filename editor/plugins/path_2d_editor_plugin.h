@@ -31,69 +31,78 @@
 #ifndef PATH_2D_EDITOR_PLUGIN_H
 #define PATH_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/2d/path_2d.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/separator.h"
 
 class CanvasItemEditor;
+class ConfirmationDialog;
 class MenuButton;
 
 class Path2DEditor : public HBoxContainer {
 	GDCLASS(Path2DEditor, HBoxContainer);
 
+	friend class Path2DEditorPlugin;
+
 	CanvasItemEditor *canvas_item_editor = nullptr;
 	Panel *panel = nullptr;
 	Path2D *node = nullptr;
-
-	HBoxContainer *base_hb = nullptr;
-	Separator *sep = nullptr;
 
 	enum Mode {
 		MODE_CREATE,
 		MODE_EDIT,
 		MODE_EDIT_CURVE,
 		MODE_DELETE,
-		ACTION_CLOSE
+		MODE_CLOSE,
+		MODE_CLEAR_POINTS,
 	};
 
-	Mode mode;
+	Mode mode = MODE_EDIT;
+	Button *curve_clear_points = nullptr;
+	Button *curve_close = nullptr;
 	Button *curve_create = nullptr;
+	Button *curve_del = nullptr;
 	Button *curve_edit = nullptr;
 	Button *curve_edit_curve = nullptr;
-	Button *curve_del = nullptr;
-	Button *curve_close = nullptr;
 	MenuButton *handle_menu = nullptr;
 
-	bool mirror_handle_angle;
-	bool mirror_handle_length;
-	bool on_edge;
+	ConfirmationDialog *clear_points_dialog = nullptr;
+
+	bool mirror_handle_angle = true;
+	bool mirror_handle_length = true;
+	bool on_edge = false;
 
 	enum HandleOption {
 		HANDLE_OPTION_ANGLE,
-		HANDLE_OPTION_LENGTH
+		HANDLE_OPTION_LENGTH,
 	};
 
 	enum Action {
 		ACTION_NONE,
 		ACTION_MOVING_POINT,
+		ACTION_MOVING_NEW_POINT,
 		ACTION_MOVING_IN,
 		ACTION_MOVING_OUT,
 	};
 
-	Action action;
+	Action action = ACTION_NONE;
 	int action_point = 0;
 	Point2 moving_from;
 	Point2 moving_screen_from;
 	float orig_in_length = 0.0f;
 	float orig_out_length = 0.0f;
 	Vector2 edge_point;
+	Vector2 original_mouse_pos;
 
 	void _mode_selected(int p_mode);
 	void _handle_option_pressed(int p_option);
+	void _cancel_current_action();
 
 	void _node_visibility_changed();
-	friend class Path2DEditorPlugin;
+
+	void _confirm_clear_points();
+	void _clear_curve_points(Path2D *p_path2d);
+	void _restore_curve_points(Path2D *p_path2d, const PackedVector2Array &p_points);
 
 protected:
 	void _notification(int p_what);

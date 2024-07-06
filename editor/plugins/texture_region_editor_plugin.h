@@ -31,17 +31,17 @@
 #ifndef TEXTURE_REGION_EDITOR_PLUGIN_H
 #define TEXTURE_REGION_EDITOR_PLUGIN_H
 
-#include "canvas_item_editor_plugin.h"
 #include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
-#include "scene/2d/sprite_2d.h"
-#include "scene/3d/sprite_3d.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/nine_patch_rect.h"
-#include "scene/resources/style_box_texture.h"
 
 class AtlasTexture;
+class NinePatchRect;
 class OptionButton;
+class PanelContainer;
+class Sprite2D;
+class Sprite3D;
+class StyleBoxTexture;
 class ViewPanner;
 
 class TextureRegionEditor : public AcceptDialog {
@@ -66,16 +66,20 @@ class TextureRegionEditor : public AcceptDialog {
 	SpinBox *sb_off_x = nullptr;
 	SpinBox *sb_sep_y = nullptr;
 	SpinBox *sb_sep_x = nullptr;
-	Panel *edit_draw = nullptr;
+
+	PanelContainer *texture_preview = nullptr;
+	Panel *texture_overlay = nullptr;
 
 	VScrollBar *vscroll = nullptr;
 	HScrollBar *hscroll = nullptr;
 
 	Vector2 draw_ofs;
-	float draw_zoom = 0.0;
+	float draw_zoom = 1.0;
+	float min_draw_zoom = 1.0;
+	float max_draw_zoom = 1.0;
 	bool updating_scroll = false;
 
-	int snap_mode = 0;
+	SnapMode snap_mode = SNAP_NONE;
 	Vector2 snap_offset;
 	Vector2 snap_step;
 	Vector2 snap_separation;
@@ -83,28 +87,28 @@ class TextureRegionEditor : public AcceptDialog {
 	Sprite2D *node_sprite_2d = nullptr;
 	Sprite3D *node_sprite_3d = nullptr;
 	NinePatchRect *node_ninepatch = nullptr;
-	Ref<StyleBoxTexture> obj_styleBox;
-	Ref<AtlasTexture> atlas_tex;
-
-	Ref<CanvasTexture> preview_tex;
+	Ref<StyleBoxTexture> res_stylebox;
+	Ref<AtlasTexture> res_atlas_texture;
 
 	Rect2 rect;
 	Rect2 rect_prev;
 	float prev_margin = 0.0f;
-	int edited_margin = 0;
+	int edited_margin = -1;
 	HashMap<RID, List<Rect2>> cache_map;
 	List<Rect2> autoslice_cache;
-	bool autoslice_is_dirty = false;
+	bool autoslice_is_dirty = true;
 
 	bool drag = false;
 	bool creating = false;
 	Vector2 drag_from;
-	int drag_index = 0;
+	int drag_index = -1;
 	bool request_center = false;
 
 	Ref<ViewPanner> panner;
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
+	void _scroll_changed(float);
+	Transform2D _get_offset_transform() const;
 
 	void _set_snap_mode(int p_mode);
 	void _set_snap_off_x(float p_val);
@@ -113,35 +117,41 @@ class TextureRegionEditor : public AcceptDialog {
 	void _set_snap_step_y(float p_val);
 	void _set_snap_sep_x(float p_val);
 	void _set_snap_sep_y(float p_val);
+
 	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
 	void _zoom_in();
 	void _zoom_reset();
 	void _zoom_out();
-	void apply_rect(const Rect2 &p_rect);
+
+	void _apply_rect(const Rect2 &p_rect);
 	void _update_rect();
 	void _update_autoslice();
 
+	Ref<Texture2D> _get_edited_object_texture() const;
+	Rect2 _get_edited_object_region() const;
 	void _texture_changed();
+	void _node_removed(Node *p_node);
+
+	void _edit_region();
+	void _clear_edited_object();
+
+	void _draw_margin_line(Vector2 p_from, Vector2 p_to);
+
+	void _set_grid_parameters_clamping(bool p_enabled);
 
 protected:
 	void _notification(int p_what);
-	void _node_removed(Object *p_obj);
 	static void _bind_methods();
+
+	void _texture_preview_draw();
+	void _texture_overlay_draw();
+	void _texture_overlay_input(const Ref<InputEvent> &p_input);
 
 	Vector2 snap_point(Vector2 p_target) const;
 
 public:
-	void _edit_region();
-	void _region_draw();
-	void _region_input(const Ref<InputEvent> &p_input);
-	void _scroll_changed(float);
-	bool is_stylebox();
-	bool is_atlas_texture();
-	bool is_ninepatch();
-	Sprite2D *get_sprite_2d();
-	Sprite3D *get_sprite_3d();
-
 	void edit(Object *p_obj);
+
 	TextureRegionEditor();
 };
 

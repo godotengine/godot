@@ -1,5 +1,5 @@
 /* zutil.h -- internal interface and configuration of the compression library
- * Copyright (C) 1995-2022 Jean-loup Gailly, Mark Adler
+ * Copyright (C) 1995-2024 Jean-loup Gailly, Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -56,7 +56,7 @@ typedef unsigned long  ulg;
 extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 /* (size given to avoid silly warnings with Visual C++) */
 
-#define ERR_MSG(err) z_errmsg[Z_NEED_DICT-(err)]
+#define ERR_MSG(err) z_errmsg[(err) < -6 || (err) > 2 ? 9 : 2 - (err)]
 
 #define ERR_RETURN(strm,err) \
   return (strm->msg = ERR_MSG(err), (err))
@@ -137,17 +137,8 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  endif
 #endif
 
-#if defined(MACOS) || defined(TARGET_OS_MAC)
+#if defined(MACOS)
 #  define OS_CODE  7
-#  ifndef Z_SOLO
-#    if defined(__MWERKS__) && __dest_os != __be_os && __dest_os != __win32_os
-#      include <unix.h> /* for fdopen */
-#    else
-#      ifndef fdopen
-#        define fdopen(fd,mode) NULL /* No fdopen() */
-#      endif
-#    endif
-#  endif
 #endif
 
 #ifdef __acorn
@@ -170,18 +161,6 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  define OS_CODE 19
 #endif
 
-#if defined(_BEOS_) || defined(RISCOS)
-#  define fdopen(fd,mode) NULL /* No fdopen() */
-#endif
-
-#if (defined(_MSC_VER) && (_MSC_VER > 600)) && !defined __INTERIX
-#  if defined(_WIN32_WCE)
-#    define fdopen(fd,mode) NULL /* No fdopen() */
-#  else
-#    define fdopen(fd,type)  _fdopen(fd,type)
-#  endif
-#endif
-
 #if defined(__BORLANDC__) && !defined(MSDOS)
   #pragma warn -8004
   #pragma warn -8008
@@ -191,9 +170,9 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 /* provide prototypes for these when building zlib without LFS */
 #if !defined(_WIN32) && \
     (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
-    ZEXTERN uLong ZEXPORT adler32_combine64 OF((uLong, uLong, z_off_t));
-    ZEXTERN uLong ZEXPORT crc32_combine64 OF((uLong, uLong, z_off_t));
-    ZEXTERN uLong ZEXPORT crc32_combine_gen64 OF((z_off_t));
+    ZEXTERN uLong ZEXPORT adler32_combine64(uLong, uLong, z_off_t);
+    ZEXTERN uLong ZEXPORT crc32_combine64(uLong, uLong, z_off_t);
+    ZEXTERN uLong ZEXPORT crc32_combine_gen64(z_off_t);
 #endif
 
         /* common defaults */
@@ -232,16 +211,16 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #    define zmemzero(dest, len) memset(dest, 0, len)
 #  endif
 #else
-   void ZLIB_INTERNAL zmemcpy OF((Bytef* dest, const Bytef* source, uInt len));
-   int ZLIB_INTERNAL zmemcmp OF((const Bytef* s1, const Bytef* s2, uInt len));
-   void ZLIB_INTERNAL zmemzero OF((Bytef* dest, uInt len));
+   void ZLIB_INTERNAL zmemcpy(Bytef* dest, const Bytef* source, uInt len);
+   int ZLIB_INTERNAL zmemcmp(const Bytef* s1, const Bytef* s2, uInt len);
+   void ZLIB_INTERNAL zmemzero(Bytef* dest, uInt len);
 #endif
 
 /* Diagnostic functions */
 #ifdef ZLIB_DEBUG
 #  include <stdio.h>
    extern int ZLIB_INTERNAL z_verbose;
-   extern void ZLIB_INTERNAL z_error OF((char *m));
+   extern void ZLIB_INTERNAL z_error(char *m);
 #  define Assert(cond,msg) {if(!(cond)) z_error(msg);}
 #  define Trace(x) {if (z_verbose>=0) fprintf x ;}
 #  define Tracev(x) {if (z_verbose>0) fprintf x ;}
@@ -258,9 +237,9 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #endif
 
 #ifndef Z_SOLO
-   voidpf ZLIB_INTERNAL zcalloc OF((voidpf opaque, unsigned items,
-                                    unsigned size));
-   void ZLIB_INTERNAL zcfree  OF((voidpf opaque, voidpf ptr));
+   voidpf ZLIB_INTERNAL zcalloc(voidpf opaque, unsigned items,
+                                unsigned size);
+   void ZLIB_INTERNAL zcfree(voidpf opaque, voidpf ptr);
 #endif
 
 #define ZALLOC(strm, items, size) \

@@ -45,7 +45,7 @@ void Range::_value_changed(double p_value) {
 }
 void Range::_value_changed_notify() {
 	_value_changed(shared->val);
-	emit_signal(SNAME("value_changed"), shared->val);
+	emit_signal(SceneStringName(value_changed), shared->val);
 	queue_redraw();
 }
 
@@ -60,7 +60,7 @@ void Range::Shared::emit_value_changed() {
 }
 
 void Range::_changed_notify(const char *p_what) {
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 	queue_redraw();
 }
 
@@ -94,6 +94,10 @@ void Range::set_value(double p_val) {
 }
 
 void Range::_set_value_no_signal(double p_val) {
+	if (!Math::is_finite(p_val)) {
+		return;
+	}
+
 	if (shared->step > 0) {
 		p_val = Math::round((p_val - shared->min) / shared->step) * shared->step + shared->min;
 	}

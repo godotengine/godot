@@ -35,8 +35,9 @@
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
@@ -58,34 +59,34 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 	MessageType message_type = p_type == ERR_HANDLER_WARNING ? MSG_TYPE_WARNING : MSG_TYPE_ERROR;
 
 	if (self->current != Thread::get_caller_id()) {
-		callable_mp(self, &EditorLog::add_message).bind(err_str, message_type).call_deferred();
+		callable_mp(self, &EditorLog::add_message).call_deferred(err_str, message_type);
 	} else {
 		self->add_message(err_str, message_type);
 	}
 }
 
 void EditorLog::_update_theme() {
-	const Ref<Font> normal_font = get_theme_font(SNAME("output_source"), SNAME("EditorFonts"));
+	const Ref<Font> normal_font = get_theme_font(SNAME("output_source"), EditorStringName(EditorFonts));
 	if (normal_font.is_valid()) {
 		log->add_theme_font_override("normal_font", normal_font);
 	}
 
-	const Ref<Font> bold_font = get_theme_font(SNAME("output_source_bold"), SNAME("EditorFonts"));
+	const Ref<Font> bold_font = get_theme_font(SNAME("output_source_bold"), EditorStringName(EditorFonts));
 	if (bold_font.is_valid()) {
 		log->add_theme_font_override("bold_font", bold_font);
 	}
 
-	const Ref<Font> italics_font = get_theme_font(SNAME("output_source_italic"), SNAME("EditorFonts"));
+	const Ref<Font> italics_font = get_theme_font(SNAME("output_source_italic"), EditorStringName(EditorFonts));
 	if (italics_font.is_valid()) {
 		log->add_theme_font_override("italics_font", italics_font);
 	}
 
-	const Ref<Font> bold_italics_font = get_theme_font(SNAME("output_source_bold_italic"), SNAME("EditorFonts"));
+	const Ref<Font> bold_italics_font = get_theme_font(SNAME("output_source_bold_italic"), EditorStringName(EditorFonts));
 	if (bold_italics_font.is_valid()) {
 		log->add_theme_font_override("bold_italics_font", bold_italics_font);
 	}
 
-	const Ref<Font> mono_font = get_theme_font(SNAME("output_source_mono"), SNAME("EditorFonts"));
+	const Ref<Font> mono_font = get_theme_font(SNAME("output_source_mono"), EditorStringName(EditorFonts));
 	if (mono_font.is_valid()) {
 		log->add_theme_font_override("mono_font", mono_font);
 	}
@@ -95,33 +96,43 @@ void EditorLog::_update_theme() {
 	log->add_theme_constant_override("text_highlight_h_padding", 0);
 	log->add_theme_constant_override("text_highlight_v_padding", 0);
 
-	const int font_size = get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts"));
+	const int font_size = get_theme_font_size(SNAME("output_source_size"), EditorStringName(EditorFonts));
+	log->begin_bulk_theme_override();
 	log->add_theme_font_size_override("normal_font_size", font_size);
 	log->add_theme_font_size_override("bold_font_size", font_size);
 	log->add_theme_font_size_override("italics_font_size", font_size);
 	log->add_theme_font_size_override("mono_font_size", font_size);
+	log->end_bulk_theme_override();
 
-	type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_theme_icon(SNAME("Popup"), SNAME("EditorIcons")));
-	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
-	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_icon(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
-	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+	type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_editor_theme_icon(SNAME("Popup")));
+	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_editor_theme_icon(SNAME("StatusError")));
+	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_icon(get_editor_theme_icon(SNAME("StatusWarning")));
+	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
 
 	type_filter_map[MSG_TYPE_STD]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 
-	clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
-	copy_button->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
-	collapse_button->set_icon(get_theme_icon(SNAME("CombineLines"), SNAME("EditorIcons")));
-	show_search_button->set_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
+	copy_button->set_icon(get_editor_theme_icon(SNAME("ActionCopy")));
+	collapse_button->set_icon(get_editor_theme_icon(SNAME("CombineLines")));
+	show_search_button->set_icon(get_editor_theme_icon(SNAME("Search")));
+	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-	theme_cache.error_color = get_theme_color(SNAME("error_color"), SNAME("Editor"));
-	theme_cache.error_icon = get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
-	theme_cache.warning_color = get_theme_color(SNAME("warning_color"), SNAME("Editor"));
-	theme_cache.warning_icon = get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"));
-	theme_cache.message_color = get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.6);
+	theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+	theme_cache.error_icon = get_editor_theme_icon(SNAME("Error"));
+	theme_cache.warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+	theme_cache.warning_icon = get_editor_theme_icon(SNAME("Warning"));
+	theme_cache.message_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
+}
+
+void EditorLog::_editor_settings_changed() {
+	int new_line_limit = int(EDITOR_GET("run/output/max_lines"));
+	if (new_line_limit != line_limit) {
+		line_limit = new_line_limit;
+		_rebuild_log();
+	}
 }
 
 void EditorLog::_notification(int p_what) {
@@ -189,6 +200,10 @@ void EditorLog::_load_state() {
 	is_loading_state = false;
 }
 
+void EditorLog::_meta_clicked(const String &p_meta) {
+	OS::get_singleton()->shell_open(p_meta);
+}
+
 void EditorLog::_clear_request() {
 	log->clear();
 	messages.clear();
@@ -212,7 +227,7 @@ void EditorLog::clear() {
 	_clear_request();
 }
 
-void EditorLog::_process_message(const String &p_msg, MessageType p_type) {
+void EditorLog::_process_message(const String &p_msg, MessageType p_type, bool p_clear) {
 	if (messages.size() > 0 && messages[messages.size() - 1].text == p_msg && messages[messages.size() - 1].type == p_type) {
 		// If previous message is the same as the new one, increase previous count rather than adding another
 		// instance to the messages list.
@@ -222,7 +237,7 @@ void EditorLog::_process_message(const String &p_msg, MessageType p_type) {
 		_add_log_line(previous, collapse);
 	} else {
 		// Different message to the previous one received.
-		LogMessage message(p_msg, p_type);
+		LogMessage message(p_msg, p_type, p_clear);
 		_add_log_line(message);
 		messages.push_back(message);
 	}
@@ -237,9 +252,10 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	// search functionality (see the comments on the PR above for more details). This behavior
 	// also matches that of other IDE's.
 	Vector<String> lines = p_msg.split("\n", true);
+	int line_count = lines.size();
 
-	for (int i = 0; i < lines.size(); i++) {
-		_process_message(lines[i], p_type);
+	for (int i = 0; i < line_count; i++) {
+		_process_message(lines[i], p_type, i == line_count - 1);
 	}
 }
 
@@ -257,9 +273,41 @@ void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 }
 
 void EditorLog::_rebuild_log() {
+	if (messages.is_empty()) {
+		return;
+	}
+
 	log->clear();
 
-	for (int msg_idx = 0; msg_idx < messages.size(); msg_idx++) {
+	int line_count = 0;
+	int start_message_index = 0;
+	int initial_skip = 0;
+
+	// Search backward for starting place.
+	for (start_message_index = messages.size() - 1; start_message_index >= 0; start_message_index--) {
+		LogMessage msg = messages[start_message_index];
+		if (collapse) {
+			if (_check_display_message(msg)) {
+				line_count++;
+			}
+		} else {
+			// If not collapsing, log each instance on a line.
+			for (int i = 0; i < msg.count; i++) {
+				if (_check_display_message(msg)) {
+					line_count++;
+				}
+			}
+		}
+		if (line_count >= line_limit) {
+			initial_skip = line_count - line_limit;
+			break;
+		}
+		if (start_message_index == 0) {
+			break;
+		}
+	}
+
+	for (int msg_idx = start_message_index; msg_idx < messages.size(); msg_idx++) {
 		LogMessage msg = messages[msg_idx];
 
 		if (collapse) {
@@ -267,11 +315,19 @@ void EditorLog::_rebuild_log() {
 			_add_log_line(msg);
 		} else {
 			// If not collapsing, log each instance on a line.
-			for (int i = 0; i < msg.count; i++) {
+			for (int i = initial_skip; i < msg.count; i++) {
+				initial_skip = 0;
 				_add_log_line(msg);
 			}
 		}
 	}
+}
+
+bool EditorLog::_check_display_message(LogMessage &p_message) {
+	bool filter_active = type_filter_map[p_message.type]->is_active();
+	String search_text = search_box->get_text();
+	bool search_match = search_text.is_empty() || p_message.text.containsn(search_text);
+	return filter_active && search_match;
 }
 
 void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
@@ -286,11 +342,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	}
 
 	// Only add the message to the log if it passes the filters.
-	bool filter_active = type_filter_map[p_message.type]->is_active();
-	String search_text = search_box->get_text();
-	bool search_match = search_text.is_empty() || p_message.text.findn(search_text) > -1;
-
-	if (!filter_active || !search_match) {
+	if (!_check_display_message(p_message)) {
 		return;
 	}
 
@@ -338,7 +390,9 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	} else {
 		log->add_text(p_message.text);
 	}
-	log->pop_all(); // Pop all unclosed tags.
+	if (p_message.clear || p_message.type != MSG_TYPE_STD_RICH) {
+		log->pop_all(); // Pop all unclosed tags.
+	}
 	log->add_newline();
 
 	if (p_replace_previous) {
@@ -348,6 +402,10 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 				::OS::get_singleton()->delay_usec(1);
 			}
 		}
+	}
+
+	while (log->get_paragraph_count() > line_limit + 1) {
+		log->remove_paragraph(0, true);
 	}
 }
 
@@ -382,6 +440,9 @@ EditorLog::EditorLog() {
 	save_state_timer->connect("timeout", callable_mp(this, &EditorLog::_save_state));
 	add_child(save_state_timer);
 
+	line_limit = int(EDITOR_GET("run/output/max_lines"));
+	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorLog::_editor_settings_changed));
+
 	HBoxContainer *hb = this;
 
 	VBoxContainer *vb_left = memnew(VBoxContainer);
@@ -401,6 +462,7 @@ EditorLog::EditorLog() {
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
 	log->set_deselect_on_focus_loss_enabled(false);
+	log->connect("meta_clicked", callable_mp(this, &EditorLog::_meta_clicked));
 	vb_left->add_child(log);
 
 	// Search box
@@ -409,7 +471,7 @@ EditorLog::EditorLog() {
 	search_box->set_placeholder(TTR("Filter Messages"));
 	search_box->set_clear_button_enabled(true);
 	search_box->set_visible(true);
-	search_box->connect("text_changed", callable_mp(this, &EditorLog::_search_changed));
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorLog::_search_changed));
 	vb_left->add_child(search_box);
 
 	VBoxContainer *vb_right = memnew(VBoxContainer);
@@ -422,21 +484,23 @@ EditorLog::EditorLog() {
 
 	// Clear.
 	clear_button = memnew(Button);
-	clear_button->set_flat(true);
+	clear_button->set_theme_type_variation("FlatButton");
 	clear_button->set_focus_mode(FOCUS_NONE);
-	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::K));
-	clear_button->set_shortcut_context(this);
-	clear_button->connect("pressed", callable_mp(this, &EditorLog::_clear_request));
+	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::K));
+	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_clear_request));
 	hb_tools->add_child(clear_button);
 
 	// Copy.
 	copy_button = memnew(Button);
-	copy_button->set_flat(true);
+	copy_button->set_theme_type_variation("FlatButton");
 	copy_button->set_focus_mode(FOCUS_NONE);
 	copy_button->set_shortcut(ED_SHORTCUT("editor/copy_output", TTR("Copy Selection"), KeyModifierMask::CMD_OR_CTRL | Key::C));
 	copy_button->set_shortcut_context(this);
-	copy_button->connect("pressed", callable_mp(this, &EditorLog::_copy_request));
+	copy_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_copy_request));
 	hb_tools->add_child(copy_button);
+
+	// Separate toggle buttons from normal buttons.
+	vb_right->add_child(memnew(HSeparator));
 
 	// A second hbox to make a 2x2 grid of buttons.
 	HBoxContainer *hb_tools2 = memnew(HBoxContainer);
@@ -445,7 +509,7 @@ EditorLog::EditorLog() {
 
 	// Collapse.
 	collapse_button = memnew(Button);
-	collapse_button->set_flat(true);
+	collapse_button->set_theme_type_variation("FlatButton");
 	collapse_button->set_focus_mode(FOCUS_NONE);
 	collapse_button->set_tooltip_text(TTR("Collapse duplicate messages into one log entry. Shows number of occurrences."));
 	collapse_button->set_toggle_mode(true);
@@ -455,7 +519,7 @@ EditorLog::EditorLog() {
 
 	// Show Search.
 	show_search_button = memnew(Button);
-	show_search_button->set_flat(true);
+	show_search_button->set_theme_type_variation("FlatButton");
 	show_search_button->set_focus_mode(FOCUS_NONE);
 	show_search_button->set_toggle_mode(true);
 	show_search_button->set_pressed(true);

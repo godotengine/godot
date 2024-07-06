@@ -114,6 +114,11 @@
 			<param index="1" name="face_index" type="int" default="0" />
 			<param index="2" name="strength" type="float" default="0.0" />
 			<param index="3" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
+			<param index="4" name="spacing_top" type="int" default="0" />
+			<param index="5" name="spacing_bottom" type="int" default="0" />
+			<param index="6" name="spacing_space" type="int" default="0" />
+			<param index="7" name="spacing_glyph" type="int" default="0" />
+			<param index="8" name="baseline_offset" type="float" default="0.0" />
 			<description>
 				Returns [TextServer] RID of the font cache for specific variation.
 			</description>
@@ -131,7 +136,7 @@
 			<param index="0" name="char" type="int" />
 			<param index="1" name="font_size" type="int" />
 			<description>
-				Returns the size of a character, optionally taking kerning into account if the next character is provided.
+				Returns the size of a character. Does not take kerning into account.
 				[b]Note:[/b] Do not use this function to calculate width of the string character by character, use [method get_string_size] or [TextLine] instead. The height returned is the font height (see also [method get_height]) and has no relation to the glyph height.
 			</description>
 		</method>
@@ -147,12 +152,6 @@
 			<return type="int" />
 			<description>
 				Returns number of faces in the TrueType / OpenType collection.
-			</description>
-		</method>
-		<method name="get_fallbacks" qualifiers="const">
-			<return type="Font[]" />
-			<description>
-				Returns array of fallback [Font]s.
 			</description>
 		</method>
 		<method name="get_font_name" qualifiers="const">
@@ -335,12 +334,11 @@
 				Sets LRU cache capacity for [code]draw_*[/code] methods.
 			</description>
 		</method>
-		<method name="set_fallbacks">
-			<return type="void" />
-			<param index="0" name="fallbacks" type="Font[]" />
-			<description>
-				Sets array of fallback [Font]s.
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="fallbacks" type="Font[]" setter="set_fallbacks" getter="get_fallbacks" default="[]">
+			Array of fallback [Font]s to use as a substitute if a glyph is not found in this current [Font].
+			If this array is empty in a [FontVariation], the [member FontVariation.base_font]'s fallbacks are used instead.
+		</member>
+	</members>
 </class>

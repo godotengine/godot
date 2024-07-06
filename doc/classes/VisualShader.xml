@@ -4,10 +4,10 @@
 		A custom shader program with a visual editor.
 	</brief_description>
 	<description>
-		This class allows you to define a custom shader program that can be used for various materials to render objects.
-		The visual shader editor creates the shader.
+		This class provides a graph-like visual editor for creating a [Shader]. Although [VisualShader]s do not require coding, they share the same logic with script shaders. They use [VisualShaderNode]s that can be connected to each other to control the flow of the shader. The visual shader graph is converted to a script shader behind the scenes.
 	</description>
 	<tutorials>
+		<link title="Using VisualShaders">$DOCS_URL/tutorials/shaders/visual_shaders.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_node">
@@ -27,6 +27,15 @@
 			<param index="2" name="type" type="int" enum="VisualShader.VaryingType" />
 			<description>
 				Adds a new varying value node to the shader.
+			</description>
+		</method>
+		<method name="attach_node_to_frame">
+			<return type="void" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="1" name="id" type="int" />
+			<param index="2" name="frame" type="int" />
+			<description>
+				Attaches the given node to the given frame.
 			</description>
 		</method>
 		<method name="can_connect_nodes" qualifiers="const">
@@ -60,6 +69,14 @@
 			<param index="4" name="to_port" type="int" />
 			<description>
 				Connects the specified nodes and ports, even if they can't be connected. Such connection is invalid and will not function properly.
+			</description>
+		</method>
+		<method name="detach_node_from_frame">
+			<return type="void" />
+			<param index="0" name="type" type="int" enum="VisualShader.Type" />
+			<param index="1" name="id" type="int" />
+			<description>
+				Detaches the given node from the frame it is attached to.
 			</description>
 		</method>
 		<method name="disconnect_nodes">
@@ -245,10 +262,10 @@
 			Represents the size of the [enum VaryingType] enum.
 		</constant>
 		<constant name="NODE_ID_INVALID" value="-1">
-			Denotes invalid [VisualShader] node.
+			Indicates an invalid [VisualShader] node.
 		</constant>
 		<constant name="NODE_ID_OUTPUT" value="0">
-			Denotes output node of [VisualShader].
+			Indicates an output node of [VisualShader].
 		</constant>
 	</constants>
 </class>

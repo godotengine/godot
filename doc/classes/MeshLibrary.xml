@@ -7,8 +7,8 @@
 		A library of meshes. Contains a list of [Mesh] resources, each with a name and ID. Each item can also include collision and navigation shapes. This resource is used in [GridMap].
 	</description>
 	<tutorials>
-		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/126</link>
-		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2739</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
 	</tutorials>
 	<methods>
 		<method name="clear">
@@ -29,7 +29,7 @@
 			<return type="int" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Returns the first item with the given name.
+				Returns the first item with the given name, or [code]-1[/code] if no item is found.
 			</description>
 		</method>
 		<method name="get_item_list" qualifiers="const">

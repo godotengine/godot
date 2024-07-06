@@ -40,7 +40,7 @@
 #include "scene/resources/mesh.h"
 #include "servers/rendering/renderer_scene_occlusion_cull.h"
 
-#include <embree3/rtcore.h>
+#include <embree4/rtcore.h>
 
 class RaycastOcclusionCull : public RendererSceneOcclusionCull {
 	typedef RTCRayHit16 CameraRayTile;
@@ -121,10 +121,17 @@ private:
 			const uint32_t *masks;
 		};
 
+		struct TransformThreadData {
+			uint32_t thread_count;
+			uint32_t vertex_count;
+			Transform3D xform;
+			const Vector3 *read;
+			Vector3 *write = nullptr;
+		};
+
 		Thread *commit_thread = nullptr;
 		bool commit_done = true;
 		bool dirty = false;
-		bool removed = false;
 
 		RTCScene ebr_scene[2] = { nullptr, nullptr };
 		int current_scene_idx = 0;
@@ -136,8 +143,11 @@ private:
 
 		void _update_dirty_instance_thread(int p_idx, RID *p_instances);
 		void _update_dirty_instance(int p_idx, RID *p_instances);
+		void _transform_vertices_thread(uint32_t p_thread, TransformThreadData *p_data);
+		void _transform_vertices_range(const Vector3 *p_read, Vector3 *p_write, const Transform3D &p_xform, int p_from, int p_to);
 		static void _commit_scene(void *p_ud);
-		bool update();
+		void free();
+		void update();
 
 		void _raycast(uint32_t p_thread, const RaycastThreadData *p_raycast_data) const;
 		void raycast(CameraRayTile *r_rays, const uint32_t *p_valid_masks, uint32_t p_tile_count) const;
@@ -153,8 +163,10 @@ private:
 	HashMap<RID, Scenario> scenarios;
 	HashMap<RID, RaycastHZBuffer> buffers;
 	RS::ViewportOcclusionCullingBuildQuality build_quality;
+	bool _jitter_enabled = false;
 
 	void _init_embree();
+	Projection _jitter_projection(const Projection &p_cam_projection, const Size2i &p_viewport_size);
 
 public:
 	virtual bool is_occluder(RID p_rid) override;

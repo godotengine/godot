@@ -33,7 +33,6 @@
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 
 void BaseButton::_unpress_group() {
 	if (!button_group.is_valid()) {
@@ -135,7 +134,7 @@ void BaseButton::_notification(int p_what) {
 void BaseButton::_pressed() {
 	GDVIRTUAL_CALL(_pressed);
 	pressed();
-	emit_signal(SNAME("pressed"));
+	emit_signal(SceneStringName(pressed));
 }
 
 void BaseButton::_toggled(bool p_pressed) {
@@ -162,7 +161,7 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				status.pressed = !status.pressed;
 				_unpress_group();
 				if (button_group.is_valid()) {
-					button_group->emit_signal(SNAME("pressed"), this);
+					button_group->emit_signal(SceneStringName(pressed), this);
 				}
 				_toggled(status.pressed);
 				_pressed();
@@ -226,7 +225,7 @@ void BaseButton::set_pressed(bool p_pressed) {
 	if (p_pressed) {
 		_unpress_group();
 		if (button_group.is_valid()) {
-			button_group->emit_signal(SNAME("pressed"), this);
+			button_group->emit_signal(SceneStringName(pressed), this);
 		}
 	}
 	_toggled(status.pressed);
@@ -368,7 +367,7 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 
 			_unpress_group();
 			if (button_group.is_valid()) {
-				button_group->emit_signal(SNAME("pressed"), this);
+				button_group->emit_signal(SceneStringName(pressed), this);
 			}
 
 			_toggled(status.pressed);
@@ -380,7 +379,7 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 		queue_redraw();
 		accept_event();
 
-		if (shortcut_feedback) {
+		if (shortcut_feedback && is_inside_tree()) {
 			if (shortcut_feedback_timer == nullptr) {
 				shortcut_feedback_timer = memnew(Timer);
 				shortcut_feedback_timer->set_one_shot(true);
@@ -468,12 +467,12 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_button_group"), &BaseButton::get_button_group);
 
 	GDVIRTUAL_BIND(_pressed);
-	GDVIRTUAL_BIND(_toggled, "button_pressed");
+	GDVIRTUAL_BIND(_toggled, "toggled_on");
 
 	ADD_SIGNAL(MethodInfo("pressed"));
 	ADD_SIGNAL(MethodInfo("button_up"));
 	ADD_SIGNAL(MethodInfo("button_down"));
-	ADD_SIGNAL(MethodInfo("toggled", PropertyInfo(Variant::BOOL, "button_pressed")));
+	ADD_SIGNAL(MethodInfo("toggled", PropertyInfo(Variant::BOOL, "toggled_on")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");

@@ -63,7 +63,7 @@ bool EditorPropertyNameProcessor::is_localization_available() {
 		return false;
 	}
 	const Vector<String> forbidden = String("en").split(",");
-	return forbidden.find(EDITOR_GET("interface/editor/editor_language")) == -1;
+	return !forbidden.has(EDITOR_GET("interface/editor/editor_language"));
 }
 
 String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const {
@@ -75,7 +75,7 @@ String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const
 	Vector<String> parts = p_name.split("_", false);
 	for (int i = 0; i < parts.size(); i++) {
 		// Articles/conjunctions/prepositions which should only be capitalized when not at beginning and end.
-		if (i > 0 && i + 1 < parts.size() && stop_words.find(parts[i]) != -1) {
+		if (i > 0 && i + 1 < parts.size() && stop_words.has(parts[i])) {
 			continue;
 		}
 		HashMap<String, String>::ConstIterator remap = capitalize_string_remaps.find(parts[i]);
@@ -91,7 +91,27 @@ String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const
 	return capitalized;
 }
 
-String EditorPropertyNameProcessor::process_name(const String &p_name, Style p_style) const {
+StringName EditorPropertyNameProcessor::_get_context(const String &p_name, const String &p_property, const StringName &p_class) const {
+	if (p_property.is_empty() && p_class == StringName()) {
+		return StringName();
+	}
+	const HashMap<String, StringName> *context_map = translation_contexts.getptr(p_name);
+	if (context_map == nullptr) {
+		return StringName();
+	}
+	// It's expected that full property path is enough to distinguish between usages.
+	// In case a class name is needed, all usages should be prefixed with the class name.
+	const StringName *context = context_map->getptr(p_property);
+	if (context == nullptr && p_class != StringName()) {
+		context = context_map->getptr(String(p_class) + "::" + p_property);
+	}
+	if (context == nullptr) {
+		return StringName();
+	}
+	return *context;
+}
+
+String EditorPropertyNameProcessor::process_name(const String &p_name, Style p_style, const String &p_property, const StringName &p_class) const {
 	switch (p_style) {
 		case STYLE_RAW: {
 			return p_name;
@@ -104,7 +124,7 @@ String EditorPropertyNameProcessor::process_name(const String &p_name, Style p_s
 		case STYLE_LOCALIZED: {
 			const String capitalized = _capitalize_name(p_name);
 			if (TranslationServer::get_singleton()) {
-				return TranslationServer::get_singleton()->property_translate(capitalized);
+				return TranslationServer::get_singleton()->property_translate(capitalized, _get_context(p_name, p_property, p_class));
 			}
 			return capitalized;
 		} break;
@@ -153,13 +173,13 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["cd"] = "CD";
 	capitalize_string_remaps["cpu"] = "CPU";
 	capitalize_string_remaps["csg"] = "CSG";
+	capitalize_string_remaps["d3d12"] = "D3D12";
 	capitalize_string_remaps["db"] = "dB";
 	capitalize_string_remaps["dof"] = "DoF";
 	capitalize_string_remaps["dpi"] = "DPI";
 	capitalize_string_remaps["dtls"] = "DTLS";
 	capitalize_string_remaps["eol"] = "EOL";
 	capitalize_string_remaps["erp"] = "ERP";
-	capitalize_string_remaps["etc"] = "ETC";
 	capitalize_string_remaps["etc2"] = "ETC2";
 	capitalize_string_remaps["fabrik"] = "FABRIK";
 	capitalize_string_remaps["fbx"] = "FBX";
@@ -224,6 +244,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	//capitalize_string_remaps["msec"] = "(msec)"; // Unit.
 	capitalize_string_remaps["navmesh"] = "NavMesh";
 	capitalize_string_remaps["nfc"] = "NFC";
+	capitalize_string_remaps["oidn"] = "OIDN";
 	capitalize_string_remaps["ok"] = "OK";
 	capitalize_string_remaps["opengl"] = "OpenGL";
 	capitalize_string_remaps["opentype"] = "OpenType";
@@ -265,18 +286,18 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["tcp"] = "TCP";
 	capitalize_string_remaps["textfile"] = "TextFile";
 	capitalize_string_remaps["tls"] = "TLS";
+	capitalize_string_remaps["tv"] = "TV";
 	capitalize_string_remaps["ui"] = "UI";
 	capitalize_string_remaps["uri"] = "URI";
 	capitalize_string_remaps["url"] = "URL";
 	capitalize_string_remaps["urls"] = "URLs";
-	capitalize_string_remaps["us"] = String::utf8("(µs)"); // Unit.
+	capitalize_string_remaps["us"] = U"(µs)"; // Unit.
 	capitalize_string_remaps["usb"] = "USB";
-	capitalize_string_remaps["usec"] = String::utf8("(µsec)"); // Unit.
+	capitalize_string_remaps["usec"] = U"(µsec)"; // Unit.
 	capitalize_string_remaps["uuid"] = "UUID";
 	capitalize_string_remaps["uv"] = "UV";
 	capitalize_string_remaps["uv1"] = "UV1";
 	capitalize_string_remaps["uv2"] = "UV2";
-	capitalize_string_remaps["uwp"] = "UWP";
 	capitalize_string_remaps["vector2"] = "Vector2";
 	capitalize_string_remaps["vpn"] = "VPN";
 	capitalize_string_remaps["vram"] = "VRAM";
@@ -319,6 +340,25 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 			"then",
 			"to",
 	});
+
+	// Translation context associated with a name.
+	// The second key is either:
+	// - `full/property/path`
+	// - `Class::full/property/path`
+	// In case a class name is needed to distinguish between usages, all usages should use the second format.
+	//
+	// The following initialization is parsed in `editor/translations/scripts/common.py` with a regex.
+	// The map name and value definition format should be kept synced with the regex.
+	translation_contexts["force"]["constant_force"] = "Physics";
+	translation_contexts["force"]["force/8_bit"] = "Enforce";
+	translation_contexts["force"]["force/mono"] = "Enforce";
+	translation_contexts["force"]["force/max_rate"] = "Enforce";
+	translation_contexts["force"]["force/max_rate_hz"] = "Enforce";
+	translation_contexts["normal"]["theme_override_styles/normal"] = "Ordinary";
+	translation_contexts["normal"]["TextureButton::texture_normal"] = "Ordinary";
+	translation_contexts["normal"]["Decal::texture_normal"] = "Geometry";
+	translation_contexts["normal"]["detail_normal"] = "Geometry";
+	translation_contexts["normal"]["normal"] = "Geometry";
 }
 
 EditorPropertyNameProcessor::~EditorPropertyNameProcessor() {

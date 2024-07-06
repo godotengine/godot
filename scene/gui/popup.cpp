@@ -33,12 +33,14 @@
 #include "core/config/engine.h"
 #include "core/os/keyboard.h"
 #include "scene/gui/panel.h"
+#include "scene/theme/theme_db.h"
 
 void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
-	Ref<InputEventKey> key = p_event;
-	if (get_flag(FLAG_POPUP) && key.is_valid() && key->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+	if (get_flag(FLAG_POPUP) && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+		hide_reason = HIDE_REASON_CANCELED; // ESC pressed, mark as canceled unconditionally.
 		_close_pressed();
 	}
+	Window::_input_from_window(p_event);
 }
 
 void Popup::_initialize_visible_parents() {
@@ -50,8 +52,8 @@ void Popup::_initialize_visible_parents() {
 			parent_window = parent_window->get_parent_visible_window();
 			if (parent_window) {
 				visible_parents.push_back(parent_window);
-				parent_window->connect("focus_entered", callable_mp(this, &Popup::_parent_focused));
-				parent_window->connect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
+				parent_window->connect(SceneStringName(focus_entered), callable_mp(this, &Popup::_parent_focused));
+				parent_window->connect(SceneStringName(tree_exited), callable_mp(this, &Popup::_deinitialize_visible_parents));
 			}
 		}
 	}
@@ -60,18 +62,12 @@ void Popup::_initialize_visible_parents() {
 void Popup::_deinitialize_visible_parents() {
 	if (is_embedded()) {
 		for (Window *parent_window : visible_parents) {
-			parent_window->disconnect("focus_entered", callable_mp(this, &Popup::_parent_focused));
-			parent_window->disconnect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
+			parent_window->disconnect(SceneStringName(focus_entered), callable_mp(this, &Popup::_parent_focused));
+			parent_window->disconnect(SceneStringName(tree_exited), callable_mp(this, &Popup::_deinitialize_visible_parents));
 		}
 
 		visible_parents.clear();
 	}
-}
-
-void Popup::_update_theme_item_cache() {
-	Window::_update_theme_item_cache();
-
-	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
 }
 
 void Popup::_notification(int p_what) {
@@ -82,6 +78,9 @@ void Popup::_notification(int p_what) {
 					_initialize_visible_parents();
 				} else {
 					_deinitialize_visible_parents();
+					if (hide_reason == HIDE_REASON_NONE) {
+						hide_reason = HIDE_REASON_CANCELED;
+					}
 					emit_signal(SNAME("popup_hide"));
 					popped_up = false;
 				}
@@ -92,6 +91,7 @@ void Popup::_notification(int p_what) {
 			if (!is_in_edited_scene_root()) {
 				if (has_focus()) {
 					popped_up = true;
+					hide_reason = HIDE_REASON_NONE;
 				}
 			}
 		} break;
@@ -105,12 +105,18 @@ void Popup::_notification(int p_what) {
 
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			if (!is_in_edited_scene_root()) {
+				if (hide_reason == HIDE_REASON_NONE) {
+					hide_reason = HIDE_REASON_UNFOCUSED;
+				}
 				_close_pressed();
 			}
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
 			if (!is_in_edited_scene_root() && get_flag(FLAG_POPUP)) {
+				if (hide_reason == HIDE_REASON_NONE) {
+					hide_reason = HIDE_REASON_UNFOCUSED;
+				}
 				_close_pressed();
 			}
 		} break;
@@ -119,6 +125,9 @@ void Popup::_notification(int p_what) {
 
 void Popup::_parent_focused() {
 	if (popped_up && get_flag(FLAG_POPUP)) {
+		if (hide_reason == HIDE_REASON_NONE) {
+			hide_reason = HIDE_REASON_UNFOCUSED;
+		}
 		_close_pressed();
 	}
 }
@@ -128,16 +137,12 @@ void Popup::_close_pressed() {
 
 	_deinitialize_visible_parents();
 
-	call_deferred(SNAME("hide"));
+	callable_mp((Window *)this, &Window::hide).call_deferred();
 }
 
 void Popup::_post_popup() {
 	Window::_post_popup();
 	popped_up = true;
-}
-
-void Popup::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("popup_hide"));
 }
 
 void Popup::_validate_property(PropertyInfo &p_property) const {
@@ -201,6 +206,10 @@ Rect2i Popup::_popup_adjust_rect() const {
 	return current;
 }
 
+void Popup::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("popup_hide"));
+}
+
 Popup::Popup() {
 	set_wrap_controls(true);
 	set_visible(false);
@@ -208,8 +217,6 @@ Popup::Popup() {
 	set_flag(FLAG_BORDERLESS, true);
 	set_flag(FLAG_RESIZE_DISABLED, true);
 	set_flag(FLAG_POPUP, true);
-
-	connect("window_input", callable_mp(this, &Popup::_input_from_window));
 }
 
 Popup::~Popup() {
@@ -229,8 +236,7 @@ Size2 PopupPanel::_get_contents_minimum_size() const {
 		}
 
 		Size2 cms = c->get_combined_minimum_size();
-		ms.x = MAX(cms.x, ms.x);
-		ms.y = MAX(cms.y, ms.y);
+		ms = cms.max(ms);
 	}
 
 	return ms + theme_cache.panel_style->get_minimum_size();
@@ -238,7 +244,8 @@ Size2 PopupPanel::_get_contents_minimum_size() const {
 
 void PopupPanel::_update_child_rects() {
 	Vector2 cpos(theme_cache.panel_style->get_offset());
-	Vector2 csize(get_size() - theme_cache.panel_style->get_minimum_size());
+	Vector2 panel_size = Vector2(get_size()) / get_content_scale_factor();
+	Vector2 csize = panel_size - theme_cache.panel_style->get_minimum_size();
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -252,7 +259,7 @@ void PopupPanel::_update_child_rects() {
 
 		if (c == panel) {
 			c->set_position(Vector2());
-			c->set_size(get_size());
+			c->set_size(panel_size);
 		} else {
 			c->set_position(cpos);
 			c->set_size(csize);
@@ -260,17 +267,11 @@ void PopupPanel::_update_child_rects() {
 	}
 }
 
-void PopupPanel::_update_theme_item_cache() {
-	Popup::_update_theme_item_cache();
-
-	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
-}
-
 void PopupPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY:
 		case NOTIFICATION_THEME_CHANGED: {
-			panel->add_theme_style_override("panel", theme_cache.panel_style);
+			panel->add_theme_style_override(SceneStringName(panel), theme_cache.panel_style);
 			_update_child_rects();
 		} break;
 
@@ -278,6 +279,10 @@ void PopupPanel::_notification(int p_what) {
 			_update_child_rects();
 		} break;
 	}
+}
+
+void PopupPanel::_bind_methods() {
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, PopupPanel, panel_style, "panel");
 }
 
 PopupPanel::PopupPanel() {

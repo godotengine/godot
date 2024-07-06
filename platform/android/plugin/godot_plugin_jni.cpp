@@ -40,16 +40,32 @@
 
 static HashMap<String, JNISingleton *> jni_singletons;
 
+void unregister_plugins_singletons() {
+	for (const KeyValue<String, JNISingleton *> &E : jni_singletons) {
+		Engine::get_singleton()->remove_singleton(E.key);
+		ProjectSettings::get_singleton()->set(E.key, Variant());
+
+		if (E.value) {
+			memdelete(E.value);
+		}
+	}
+	jni_singletons.clear();
+}
+
 extern "C" {
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSingleton(JNIEnv *env, jclass clazz, jstring name, jobject obj) {
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSingleton(JNIEnv *env, jclass clazz, jstring name, jobject obj) {
 	String singname = jstring_to_string(name, env);
+
+	ERR_FAIL_COND_V(jni_singletons.has(singname), false);
+
 	JNISingleton *s = (JNISingleton *)ClassDB::instantiate("JNISingleton");
 	s->set_instance(env->NewGlobalRef(obj));
 	jni_singletons[singname] = s;
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton(singname, s));
 	ProjectSettings::get_singleton()->set(singname, s);
+	return true;
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterMethod(JNIEnv *env, jclass clazz, jstring sname, jstring name, jstring ret, jobjectArray args) {
@@ -128,32 +144,5 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitS
 	}
 
 	singleton->emit_signalp(StringName(signal_name), args, count);
-}
-
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterGDExtensionLibraries(JNIEnv *env, jclass clazz, jobjectArray gdextension_paths) {
-	int gdextension_count = env->GetArrayLength(gdextension_paths);
-	if (gdextension_count == 0) {
-		return;
-	}
-
-	// Retrieve the current list of gdextension libraries.
-	Array singletons;
-	if (ProjectSettings::get_singleton()->has_setting("gdextension/singletons")) {
-		singletons = GLOBAL_GET("gdextension/singletons");
-	}
-
-	// Insert the libraries provided by the plugin
-	for (int i = 0; i < gdextension_count; i++) {
-		jstring relative_path = (jstring)env->GetObjectArrayElement(gdextension_paths, i);
-
-		String path = "res://" + jstring_to_string(relative_path, env);
-		if (!singletons.has(path)) {
-			singletons.push_back(path);
-		}
-		env->DeleteLocalRef(relative_path);
-	}
-
-	// Insert the updated list back into project settings.
-	ProjectSettings::get_singleton()->set("gdextension/singletons", singletons);
 }
 }

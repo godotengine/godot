@@ -109,6 +109,7 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 	static GUID IID_XOneSWirelessGamepad = { MAKELONG(0x045E, 0x02EA), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 	static GUID IID_XOneSBluetoothGamepad = { MAKELONG(0x045E, 0x02E0), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 	static GUID IID_XOneEliteWirelessGamepad = { MAKELONG(0x045E, 0x02E3), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
+	static GUID IID_XOneElite2WirelessGamepad = { MAKELONG(0x045E, 0x0B22), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 
 	if (memcmp(p_guid, &IID_ValveStreamingGamepad, sizeof(*p_guid)) == 0 ||
 			memcmp(p_guid, &IID_X360WiredGamepad, sizeof(*p_guid)) == 0 ||
@@ -120,7 +121,8 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 			memcmp(p_guid, &IID_XOneNewWirelessGamepad, sizeof(*p_guid)) == 0 ||
 			memcmp(p_guid, &IID_XOneSWirelessGamepad, sizeof(*p_guid)) == 0 ||
 			memcmp(p_guid, &IID_XOneSBluetoothGamepad, sizeof(*p_guid)) == 0 ||
-			memcmp(p_guid, &IID_XOneEliteWirelessGamepad, sizeof(*p_guid)) == 0)
+			memcmp(p_guid, &IID_XOneEliteWirelessGamepad, sizeof(*p_guid)) == 0 ||
+			memcmp(p_guid, &IID_XOneElite2WirelessGamepad, sizeof(*p_guid)) == 0)
 		return true;
 
 	PRAWINPUTDEVICELIST dev_list = nullptr;
@@ -318,7 +320,9 @@ void JoypadWindows::probe_joypads() {
 				x_joypads[i].ff_end_timestamp = 0;
 				x_joypads[i].vibrating = false;
 				attached_joypads[id] = true;
-				input->joy_connection_changed(id, true, "XInput Gamepad", "__XINPUT_DEVICE__");
+				Dictionary joypad_info;
+				joypad_info["xinput_index"] = (int)i;
+				input->joy_connection_changed(id, true, "XInput Gamepad", "__XINPUT_DEVICE__", joypad_info);
 			}
 		} else if (x_joypads[i].attached) {
 			x_joypads[i].attached = false;
@@ -423,7 +427,7 @@ void JoypadWindows::process_joypads() {
 		const LONG axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_Z, DIJOFS_RX, DIJOFS_RY, DIJOFS_RZ, (LONG)DIJOFS_SLIDER(0), (LONG)DIJOFS_SLIDER(1) };
 		int values[] = { js.lX, js.lY, js.lZ, js.lRx, js.lRy, js.lRz, js.rglSlider[0], js.rglSlider[1] };
 
-		for (int j = 0; j < joy->joy_axis.size(); j++) {
+		for (uint32_t j = 0; j < joy->joy_axis.size(); j++) {
 			for (int k = 0; k < count; k++) {
 				if (joy->joy_axis[j] == axes[k]) {
 					input->joy_axis(joy->id, (JoyAxis)j, axis_correct(values[k]));

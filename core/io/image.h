@@ -145,11 +145,13 @@ public:
 	};
 
 	static ImageMemLoadFunc _png_mem_loader_func;
+	static ImageMemLoadFunc _png_mem_unpacker_func;
 	static ImageMemLoadFunc _jpg_mem_loader_func;
 	static ImageMemLoadFunc _webp_mem_loader_func;
 	static ImageMemLoadFunc _tga_mem_loader_func;
 	static ImageMemLoadFunc _bmp_mem_loader_func;
 	static ScalableImageMemLoadFunc _svg_scalable_mem_loader_func;
+	static ImageMemLoadFunc _ktx_mem_loader_func;
 
 	static void (*_image_compress_bc_func)(Image *, UsedChannels p_channels);
 	static void (*_image_compress_bptc_func)(Image *, UsedChannels p_channels);
@@ -311,8 +313,8 @@ public:
 	Error save_jpg(const String &p_path, float p_quality = 0.75) const;
 	Vector<uint8_t> save_png_to_buffer() const;
 	Vector<uint8_t> save_jpg_to_buffer(float p_quality = 0.75) const;
-	Vector<uint8_t> save_exr_to_buffer(bool p_grayscale) const;
-	Error save_exr(const String &p_path, bool p_grayscale) const;
+	Vector<uint8_t> save_exr_to_buffer(bool p_grayscale = false) const;
+	Error save_exr(const String &p_path, bool p_grayscale = false) const;
 	Error save_webp(const String &p_path, const bool p_lossy = false, const float p_quality = 0.75f) const;
 	Vector<uint8_t> save_webp_to_buffer(const bool p_lossy = false, const float p_quality = 0.75f) const;
 
@@ -374,6 +376,7 @@ public:
 	Error compress_from_channels(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_astc_format = ASTC_FORMAT_4x4);
 	Error decompress();
 	bool is_compressed() const;
+	static bool is_format_compressed(Format p_format);
 
 	void fix_alpha_edges();
 	void premultiply_alpha();
@@ -402,6 +405,7 @@ public:
 	Error load_webp_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_tga_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_bmp_from_buffer(const Vector<uint8_t> &p_array);
+	Error load_ktx_from_buffer(const Vector<uint8_t> &p_array);
 
 	Error load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale = 1.0);
 	Error load_svg_from_string(const String &p_svg_str, float scale = 1.0);
@@ -423,12 +427,16 @@ public:
 	void set_pixelv(const Point2i &p_point, const Color &p_color);
 	void set_pixel(int p_x, int p_y, const Color &p_color);
 
+	const uint8_t *ptr() const;
+	uint8_t *ptrw();
+	int64_t get_data_size() const;
+
 	void adjust_bcs(float p_brightness, float p_contrast, float p_saturation);
 
 	void set_as_black();
 
 	void copy_internals_from(const Ref<Image> &p_image) {
-		ERR_FAIL_COND_MSG(p_image.is_null(), "It's not a reference to a valid Image object.");
+		ERR_FAIL_COND_MSG(p_image.is_null(), "Cannot copy image internals: invalid Image object.");
 		format = p_image->format;
 		width = p_image->width;
 		height = p_image->height;

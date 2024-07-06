@@ -14,7 +14,7 @@
 			<return type="void" />
 			<param index="0" name="replace" type="bool" />
 			<description>
-				Override this method to define how the selected entry should be inserted. If [param replace] is true, any existing text should be replaced.
+				Override this method to define how the selected entry should be inserted. If [param replace] is [code]true[/code], any existing text should be replaced.
 			</description>
 		</method>
 		<method name="_filter_code_completion_candidates" qualifiers="virtual const">
@@ -29,7 +29,7 @@
 			<return type="void" />
 			<param index="0" name="force" type="bool" />
 			<description>
-				Override this method to define what happens when the user requests code completion. If [param force] is true, any checks should be bypassed.
+				Override this method to define what happens when the user requests code completion. If [param force] is [code]true[/code], any checks should be bypassed.
 			</description>
 		</method>
 		<method name="add_auto_brace_completion_pair">
@@ -48,7 +48,7 @@
 			<param index="2" name="insert_text" type="String" />
 			<param index="3" name="text_color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="icon" type="Resource" default="null" />
-			<param index="5" name="value" type="Variant" default="0" />
+			<param index="5" name="value" type="Variant" default="null" />
 			<param index="6" name="location" type="int" default="1024" />
 			<description>
 				Submits an item to the queue of potential candidates for the autocomplete menu. Call [method update_code_completion_options] to update the list.
@@ -62,9 +62,8 @@
 			<param index="1" name="end_key" type="String" />
 			<param index="2" name="line_only" type="bool" default="false" />
 			<description>
-				Adds a comment delimiter.
-				Both the start and end keys must be symbols. Only the start key has to be unique.
-				[param line_only] denotes if the region should continue until the end of the line or carry over on to the next line. If the end key is blank this is automatically set to [code]true[/code].
+				Adds a comment delimiter from [param start_key] to [param end_key]. Both keys should be symbols, and [param start_key] must not be shared with other delimiters.
+				If [param line_only] is [code]true[/code] or [param end_key] is an empty [String], the region does not carry over to the next line.
 			</description>
 		</method>
 		<method name="add_string_delimiter">
@@ -73,9 +72,8 @@
 			<param index="1" name="end_key" type="String" />
 			<param index="2" name="line_only" type="bool" default="false" />
 			<description>
-				Adds a string delimiter.
-				Both the start and end keys must be symbols. Only the start key has to be unique.
-				[param line_only] denotes if the region should continue until the end of the line or carry over on to the next line. If the end key is blank this is automatically set to [code]true[/code].
+				Defines a string delimiter from [param start_key] to [param end_key]. Both keys should be symbols, and [param start_key] must not be shared with other delimiters.
+				If [param line_only] is [code]true[/code] or [param end_key] is an empty [String], the region does not carry over to the next line.
 			</description>
 		</method>
 		<method name="can_fold_line" qualifiers="const">
@@ -125,7 +123,7 @@
 			<return type="void" />
 			<param index="0" name="replace" type="bool" default="false" />
 			<description>
-				Inserts the selected entry into the text. If [param replace] is true, any existing text is replaced rather then merged.
+				Inserts the selected entry into the text. If [param replace] is [code]true[/code], any existing text is replaced rather than merged.
 			</description>
 		</method>
 		<method name="convert_indent">
@@ -137,10 +135,37 @@
 				Values of [code]-1[/code] convert the entire text.
 			</description>
 		</method>
+		<method name="create_code_region">
+			<return type="void" />
+			<description>
+				Creates a new code region with the selection. At least one single line comment delimiter have to be defined (see [method add_comment_delimiter]).
+				A code region is a part of code that is highlighted when folded and can help organize your script.
+				Code region start and end tags can be customized (see [method set_code_region_tags]).
+				Code regions are delimited using start and end tags (respectively [code]region[/code] and [code]endregion[/code] by default) preceded by one line comment delimiter. (eg. [code]#region[/code] and [code]#endregion[/code])
+			</description>
+		</method>
+		<method name="delete_lines">
+			<return type="void" />
+			<description>
+				Deletes all lines that are selected or have a caret on them.
+			</description>
+		</method>
 		<method name="do_indent">
 			<return type="void" />
 			<description>
 				Perform an indent as if the user activated the "ui_text_indent" action.
+			</description>
+		</method>
+		<method name="duplicate_lines">
+			<return type="void" />
+			<description>
+				Duplicates all lines currently selected with any caret. Duplicates the entire line beneath the current one no matter where the caret is within the line.
+			</description>
+		</method>
+		<method name="duplicate_selection">
+			<return type="void" />
+			<description>
+				Duplicates all selected text and duplicates all lines with a caret on them.
 			</description>
 		</method>
 		<method name="fold_all_lines">
@@ -200,6 +225,18 @@
 				Gets the index of the current selected completion option.
 			</description>
 		</method>
+		<method name="get_code_region_end_tag" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the code region end tag (without comment delimiter).
+			</description>
+		</method>
+		<method name="get_code_region_start_tag" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the code region start tag (without comment delimiter).
+			</description>
+		</method>
 		<method name="get_delimiter_end_key" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="delimiter_index" type="int" />
@@ -248,10 +285,18 @@
 				Returns the full text with char [code]0xFFFF[/code] at the caret location.
 			</description>
 		</method>
-		<method name="get_text_for_symbol_lookup">
+		<method name="get_text_for_symbol_lookup" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the full text with char [code]0xFFFF[/code] at the cursor location.
+			</description>
+		</method>
+		<method name="get_text_with_cursor_char" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" />
+			<description>
+				Returns the full text with char [code]0xFFFF[/code] at the specified location.
 			</description>
 		</method>
 		<method name="has_auto_brace_completion_close_key" qualifiers="const">
@@ -318,6 +363,20 @@
 				Returns whether the line at the specified index is breakpointed or not.
 			</description>
 		</method>
+		<method name="is_line_code_region_end" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns whether the line at the specified index is a code region end.
+			</description>
+		</method>
+		<method name="is_line_code_region_start" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns whether the line at the specified index is a code region start.
+			</description>
+		</method>
 		<method name="is_line_executing" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="line" type="int" />
@@ -330,6 +389,18 @@
 			<param index="0" name="line" type="int" />
 			<description>
 				Returns whether the line at the specified index is folded or not.
+			</description>
+		</method>
+		<method name="move_lines_down">
+			<return type="void" />
+			<description>
+				Moves all lines down that are selected or have a caret on them.
+			</description>
+		</method>
+		<method name="move_lines_up">
+			<return type="void" />
+			<description>
+				Moves all lines up that are selected or have a caret on them.
 			</description>
 		</method>
 		<method name="remove_comment_delimiter">
@@ -350,7 +421,7 @@
 			<return type="void" />
 			<param index="0" name="force" type="bool" default="false" />
 			<description>
-				Emits [signal code_completion_requested], if [param force] is true will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path or signal.
+				Emits [signal code_completion_requested], if [param force] is [code]true[/code] will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path, or signal.
 			</description>
 		</method>
 		<method name="set_code_completion_selected_index">
@@ -372,6 +443,14 @@
 			<param index="0" name="draw_below" type="bool" />
 			<description>
 				Sets if the code hint should draw below the text.
+			</description>
+		</method>
+		<method name="set_code_region_tags">
+			<return type="void" />
+			<param index="0" name="start" type="String" default="&quot;region&quot;" />
+			<param index="1" name="end" type="String" default="&quot;endregion&quot;" />
+			<description>
+				Sets the code region start and end tags (without comment delimiter).
 			</description>
 		</method>
 		<method name="set_line_as_bookmarked">
@@ -412,6 +491,12 @@
 				Toggle the folding of the code block at the given line.
 			</description>
 		</method>
+		<method name="toggle_foldable_lines_at_carets">
+			<return type="void" />
+			<description>
+				Toggle the folding of the code block on all lines with a caret on them.
+			</description>
+		</method>
 		<method name="unfold_all_lines">
 			<return type="void" />
 			<description>
@@ -435,7 +520,7 @@
 			<return type="void" />
 			<param index="0" name="force" type="bool" />
 			<description>
-				Submits all completion options added with [method add_code_completion_option]. Will try to force the autoccomplete menu to popup, if [param force] is [code]true[/code].
+				Submits all completion options added with [method add_code_completion_option]. Will try to force the autocomplete menu to popup, if [param force] is [code]true[/code].
 				[b]Note:[/b] This will replace all current candidates.
 			</description>
 		</method>
@@ -487,7 +572,7 @@
 			Prefixes to trigger an automatic indent.
 		</member>
 		<member name="indent_size" type="int" setter="set_indent_size" getter="get_indent_size" default="4">
-			Size of tabs, if [code]indent_use_spaces[/code] is enabled the number of spaces to use.
+			Size of the tabulation indent (one [kbd]Tab[/kbd] press) in characters. If [member indent_use_spaces] is enabled the number of spaces to use.
 		</member>
 		<member name="indent_use_spaces" type="bool" setter="set_indent_using_spaces" getter="is_indent_using_spaces" default="false">
 			Use spaces instead of tabs for indentation.
@@ -566,7 +651,7 @@
 			The option is local to the location of the code completion query - e.g. a local variable. Subsequent value of location represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
 		</constant>
 		<constant name="LOCATION_PARENT_MASK" value="256" enum="CodeCompletionLocation">
-			The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. 0 for the local class, 1 for the parent, 2 for the grandparent, etc) to store the depth of an option in the class or a parent class.
+			The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. [code]0[/code] for the local class, [code]1[/code] for the parent, [code]2[/code] for the grandparent, etc.) to store the depth of an option in the class or a parent class.
 		</constant>
 		<constant name="LOCATION_OTHER_USER_CODE" value="512" enum="CodeCompletionLocation">
 			The option is from user code which is not local and not in a derived class (e.g. Autoload Singletons).
@@ -576,9 +661,6 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="background_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
-			Sets the background [Color].
-		</theme_item>
 		<theme_item name="bookmark_color" data_type="color" type="Color" default="Color(0.5, 0.64, 1, 0.8)">
 			[Color] of the bookmark icon for bookmarked lines.
 		</theme_item>
@@ -587,12 +669,6 @@
 		</theme_item>
 		<theme_item name="breakpoint_color" data_type="color" type="Color" default="Color(0.9, 0.29, 0.3, 1)">
 			[Color] of the breakpoint icon for bookmarked lines.
-		</theme_item>
-		<theme_item name="caret_background_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
-			[Color] of the text behind the caret when block caret is enabled.
-		</theme_item>
-		<theme_item name="caret_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
-			[Color] of the caret.
 		</theme_item>
 		<theme_item name="code_folding_color" data_type="color" type="Color" default="Color(0.8, 0.8, 0.8, 0.8)">
 			[Color] for all icons related to line folding.
@@ -603,9 +679,6 @@
 		<theme_item name="completion_existing_color" data_type="color" type="Color" default="Color(0.87, 0.87, 0.87, 0.13)">
 			Background highlight [Color] for matching text in code completion options.
 		</theme_item>
-		<theme_item name="completion_font_color" data_type="color" type="Color" default="Color(0.67, 0.67, 0.67, 1)">
-			Font [Color] for the code completion popup.
-		</theme_item>
 		<theme_item name="completion_scroll_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.29)">
 			[Color] of the scrollbar in the code completion popup.
 		</theme_item>
@@ -615,26 +688,11 @@
 		<theme_item name="completion_selected_color" data_type="color" type="Color" default="Color(0.26, 0.26, 0.27, 1)">
 			Background highlight [Color] for the current selected option item in the code completion popup.
 		</theme_item>
-		<theme_item name="current_line_color" data_type="color" type="Color" default="Color(0.25, 0.25, 0.26, 0.8)">
-			Background [Color] of the line containing the caret.
-		</theme_item>
 		<theme_item name="executing_line_color" data_type="color" type="Color" default="Color(0.98, 0.89, 0.27, 1)">
 			[Color] of the executing icon for executing lines.
 		</theme_item>
-		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
-			Sets the font [Color].
-		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
-			The tint of text outline of the [CodeEdit].
-		</theme_item>
-		<theme_item name="font_placeholder_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.6)">
-			Font color for [member TextEdit.placeholder_text].
-		</theme_item>
-		<theme_item name="font_readonly_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
-			Sets the font [Color] when [member TextEdit.editable] is disabled.
-		</theme_item>
-		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
-			Sets the [Color] of the selected text. If equal to [code]Color(0, 0, 0, 0)[/code], it will be ignored.
+		<theme_item name="folded_code_region_color" data_type="color" type="Color" default="Color(0.68, 0.46, 0.77, 0.2)">
+			[Color] of background line highlight for folded code region.
 		</theme_item>
 		<theme_item name="line_length_guideline_color" data_type="color" type="Color" default="Color(0.3, 0.5, 0.8, 0.1)">
 			[Color] of the main line length guideline, secondary guidelines will have 50% alpha applied.
@@ -642,39 +700,14 @@
 		<theme_item name="line_number_color" data_type="color" type="Color" default="Color(0.67, 0.67, 0.67, 0.4)">
 			Sets the [Color] of line numbers.
 		</theme_item>
-		<theme_item name="search_result_border_color" data_type="color" type="Color" default="Color(0.3, 0.3, 0.3, 0.4)">
-			[Color] of the border around text that matches the search query.
-		</theme_item>
-		<theme_item name="search_result_color" data_type="color" type="Color" default="Color(0.3, 0.3, 0.3, 1)">
-			[Color] behind the text that matches the search query.
-		</theme_item>
-		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.5, 0.5, 0.5, 1)">
-			Sets the highlight [Color] of text selections.
-		</theme_item>
-		<theme_item name="word_highlighted_color" data_type="color" type="Color" default="Color(0.8, 0.9, 0.9, 0.15)">
-			Sets the highlight [Color] of multiple occurrences. [member TextEdit.highlight_all_occurrences] has to be enabled.
-		</theme_item>
 		<theme_item name="completion_lines" data_type="constant" type="int" default="7">
 			Max number of options to display in the code completion popup at any one time.
 		</theme_item>
 		<theme_item name="completion_max_width" data_type="constant" type="int" default="50">
-			Max width of options in the code completion popup. Options longer then this will be cut off.
+			Max width of options in the code completion popup. Options longer than this will be cut off.
 		</theme_item>
 		<theme_item name="completion_scroll_width" data_type="constant" type="int" default="6">
 			Width of the scrollbar in the code completion popup.
-		</theme_item>
-		<theme_item name="line_spacing" data_type="constant" type="int" default="4">
-			Sets the spacing between the lines.
-		</theme_item>
-		<theme_item name="outline_size" data_type="constant" type="int" default="0">
-			The size of the text outline.
-			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			Sets the default [Font].
-		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Sets default font size.
 		</theme_item>
 		<theme_item name="bookmark" data_type="icon" type="Texture2D">
 			Sets a custom [Texture2D] to draw in the bookmark gutter for bookmarked lines.
@@ -685,32 +718,23 @@
 		<theme_item name="can_fold" data_type="icon" type="Texture2D">
 			Sets a custom [Texture2D] to draw in the line folding gutter when a line can be folded.
 		</theme_item>
+		<theme_item name="can_fold_code_region" data_type="icon" type="Texture2D">
+			Sets a custom [Texture2D] to draw in the line folding gutter when a code region can be folded.
+		</theme_item>
 		<theme_item name="executing_line" data_type="icon" type="Texture2D">
 			Icon to draw in the executing gutter for executing lines.
 		</theme_item>
 		<theme_item name="folded" data_type="icon" type="Texture2D">
 			Sets a custom [Texture2D] to draw in the line folding gutter when a line is folded and can be unfolded.
 		</theme_item>
+		<theme_item name="folded_code_region" data_type="icon" type="Texture2D">
+			Sets a custom [Texture2D] to draw in the line folding gutter when a code region is folded and can be unfolded.
+		</theme_item>
 		<theme_item name="folded_eol_icon" data_type="icon" type="Texture2D">
 			Sets a custom [Texture2D] to draw at the end of a folded line.
 		</theme_item>
-		<theme_item name="space" data_type="icon" type="Texture2D">
-			Sets a custom [Texture2D] for space text characters.
-		</theme_item>
-		<theme_item name="tab" data_type="icon" type="Texture2D">
-			Sets a custom [Texture2D] for tab text characters.
-		</theme_item>
 		<theme_item name="completion" data_type="style" type="StyleBox">
 			[StyleBox] for the code completion popup.
-		</theme_item>
-		<theme_item name="focus" data_type="style" type="StyleBox">
-			Sets the [StyleBox] when in focus. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
-		</theme_item>
-		<theme_item name="normal" data_type="style" type="StyleBox">
-			Sets the [StyleBox].
-		</theme_item>
-		<theme_item name="read_only" data_type="style" type="StyleBox">
-			Sets the [StyleBox] when [member TextEdit.editable] is disabled.
 		</theme_item>
 	</theme_items>
 </class>

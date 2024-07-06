@@ -279,7 +279,7 @@ const GodotDisplayScreen = {
 			return 0;
 		},
 		_updateGL: function () {
-			const gl_context_handle = _emscripten_webgl_get_current_context(); // eslint-disable-line no-undef
+			const gl_context_handle = _emscripten_webgl_get_current_context();
 			const gl = GL.getContext(gl_context_handle);
 			if (gl) {
 				GL.resizeOffscreenFramebuffer(gl);
@@ -289,11 +289,11 @@ const GodotDisplayScreen = {
 			const isFullscreen = GodotDisplayScreen.isFullscreen();
 			const wantsFullWindow = GodotConfig.canvas_resize_policy === 2;
 			const noResize = GodotConfig.canvas_resize_policy === 0;
-			const wwidth = GodotDisplayScreen.desired_size[0];
-			const wheight = GodotDisplayScreen.desired_size[1];
+			const dWidth = GodotDisplayScreen.desired_size[0];
+			const dHeight = GodotDisplayScreen.desired_size[1];
 			const canvas = GodotConfig.canvas;
-			let width = wwidth;
-			let height = wheight;
+			let width = dWidth;
+			let height = dHeight;
 			if (noResize) {
 				// Don't resize canvas, just update GL if needed.
 				if (canvas.width !== width || canvas.height !== height) {
@@ -345,6 +345,7 @@ const GodotDisplay = {
 		},
 	},
 
+	godot_js_display_is_swap_ok_cancel__proxy: 'sync',
 	godot_js_display_is_swap_ok_cancel__sig: 'i',
 	godot_js_display_is_swap_ok_cancel: function () {
 		const win = (['Windows', 'Win64', 'Win32', 'WinCE']);
@@ -355,16 +356,19 @@ const GodotDisplay = {
 		return 0;
 	},
 
+	godot_js_tts_is_speaking__proxy: 'sync',
 	godot_js_tts_is_speaking__sig: 'i',
 	godot_js_tts_is_speaking: function () {
 		return window.speechSynthesis.speaking;
 	},
 
+	godot_js_tts_is_paused__proxy: 'sync',
 	godot_js_tts_is_paused__sig: 'i',
 	godot_js_tts_is_paused: function () {
 		return window.speechSynthesis.paused;
 	},
 
+	godot_js_tts_get_voices__proxy: 'sync',
 	godot_js_tts_get_voices__sig: 'vi',
 	godot_js_tts_get_voices: function (p_callback) {
 		const func = GodotRuntime.get_func(p_callback);
@@ -382,24 +386,25 @@ const GodotDisplay = {
 		}
 	},
 
+	godot_js_tts_speak__proxy: 'sync',
 	godot_js_tts_speak__sig: 'viiiffii',
 	godot_js_tts_speak: function (p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_callback) {
 		const func = GodotRuntime.get_func(p_callback);
 
 		function listener_end(evt) {
-			evt.currentTarget.cb(1 /*TTS_UTTERANCE_ENDED*/, evt.currentTarget.id, 0);
+			evt.currentTarget.cb(1 /* TTS_UTTERANCE_ENDED */, evt.currentTarget.id, 0);
 		}
 
 		function listener_start(evt) {
-			evt.currentTarget.cb(0 /*TTS_UTTERANCE_STARTED*/, evt.currentTarget.id, 0);
+			evt.currentTarget.cb(0 /* TTS_UTTERANCE_STARTED */, evt.currentTarget.id, 0);
 		}
 
 		function listener_error(evt) {
-			evt.currentTarget.cb(2 /*TTS_UTTERANCE_CANCELED*/, evt.currentTarget.id, 0);
+			evt.currentTarget.cb(2 /* TTS_UTTERANCE_CANCELED */, evt.currentTarget.id, 0);
 		}
 
 		function listener_bound(evt) {
-			evt.currentTarget.cb(3 /*TTS_UTTERANCE_BOUNDARY*/, evt.currentTarget.id, evt.charIndex);
+			evt.currentTarget.cb(3 /* TTS_UTTERANCE_BOUNDARY */, evt.currentTarget.id, evt.charIndex);
 		}
 
 		const utterance = new SpeechSynthesisUtterance(GodotRuntime.parseString(p_text));
@@ -424,53 +429,63 @@ const GodotDisplay = {
 		window.speechSynthesis.speak(utterance);
 	},
 
+	godot_js_tts_pause__proxy: 'sync',
 	godot_js_tts_pause__sig: 'v',
 	godot_js_tts_pause: function () {
 		window.speechSynthesis.pause();
 	},
 
+	godot_js_tts_resume__proxy: 'sync',
 	godot_js_tts_resume__sig: 'v',
 	godot_js_tts_resume: function () {
 		window.speechSynthesis.resume();
 	},
 
+	godot_js_tts_stop__proxy: 'sync',
 	godot_js_tts_stop__sig: 'v',
 	godot_js_tts_stop: function () {
 		window.speechSynthesis.cancel();
 		window.speechSynthesis.resume();
 	},
 
+	godot_js_display_alert__proxy: 'sync',
 	godot_js_display_alert__sig: 'vi',
 	godot_js_display_alert: function (p_text) {
 		window.alert(GodotRuntime.parseString(p_text)); // eslint-disable-line no-alert
 	},
 
+	godot_js_display_screen_dpi_get__proxy: 'sync',
 	godot_js_display_screen_dpi_get__sig: 'i',
 	godot_js_display_screen_dpi_get: function () {
 		return GodotDisplay.getDPI();
 	},
 
+	godot_js_display_pixel_ratio_get__proxy: 'sync',
 	godot_js_display_pixel_ratio_get__sig: 'f',
 	godot_js_display_pixel_ratio_get: function () {
 		return GodotDisplayScreen.getPixelRatio();
 	},
 
+	godot_js_display_fullscreen_request__proxy: 'sync',
 	godot_js_display_fullscreen_request__sig: 'i',
 	godot_js_display_fullscreen_request: function () {
 		return GodotDisplayScreen.requestFullscreen();
 	},
 
+	godot_js_display_fullscreen_exit__proxy: 'sync',
 	godot_js_display_fullscreen_exit__sig: 'i',
 	godot_js_display_fullscreen_exit: function () {
 		return GodotDisplayScreen.exitFullscreen();
 	},
 
+	godot_js_display_desired_size_set__proxy: 'sync',
 	godot_js_display_desired_size_set__sig: 'vii',
 	godot_js_display_desired_size_set: function (width, height) {
 		GodotDisplayScreen.desired_size = [width, height];
 		GodotDisplayScreen.updateSize();
 	},
 
+	godot_js_display_size_update__proxy: 'sync',
 	godot_js_display_size_update__sig: 'i',
 	godot_js_display_size_update: function () {
 		const updated = GodotDisplayScreen.updateSize();
@@ -480,6 +495,7 @@ const GodotDisplay = {
 		return updated;
 	},
 
+	godot_js_display_screen_size_get__proxy: 'sync',
 	godot_js_display_screen_size_get__sig: 'vii',
 	godot_js_display_screen_size_get: function (width, height) {
 		const scale = GodotDisplayScreen.getPixelRatio();
@@ -487,12 +503,14 @@ const GodotDisplay = {
 		GodotRuntime.setHeapValue(height, window.screen.height * scale, 'i32');
 	},
 
+	godot_js_display_window_size_get__proxy: 'sync',
 	godot_js_display_window_size_get__sig: 'vii',
 	godot_js_display_window_size_get: function (p_width, p_height) {
 		GodotRuntime.setHeapValue(p_width, GodotConfig.canvas.width, 'i32');
 		GodotRuntime.setHeapValue(p_height, GodotConfig.canvas.height, 'i32');
 	},
 
+	godot_js_display_has_webgl__proxy: 'sync',
 	godot_js_display_has_webgl__sig: 'ii',
 	godot_js_display_has_webgl: function (p_version) {
 		if (p_version !== 1 && p_version !== 2) {
@@ -507,11 +525,13 @@ const GodotDisplay = {
 	/*
 	 * Canvas
 	 */
+	godot_js_display_canvas_focus__proxy: 'sync',
 	godot_js_display_canvas_focus__sig: 'v',
 	godot_js_display_canvas_focus: function () {
 		GodotConfig.canvas.focus();
 	},
 
+	godot_js_display_canvas_is_focused__proxy: 'sync',
 	godot_js_display_canvas_is_focused__sig: 'i',
 	godot_js_display_canvas_is_focused: function () {
 		return document.activeElement === GodotConfig.canvas;
@@ -520,6 +540,7 @@ const GodotDisplay = {
 	/*
 	 * Touchscreen
 	 */
+	godot_js_display_touchscreen_is_available__proxy: 'sync',
 	godot_js_display_touchscreen_is_available__sig: 'i',
 	godot_js_display_touchscreen_is_available: function () {
 		return 'ontouchstart' in window;
@@ -528,6 +549,7 @@ const GodotDisplay = {
 	/*
 	 * Clipboard
 	 */
+	godot_js_display_clipboard_set__proxy: 'sync',
 	godot_js_display_clipboard_set__sig: 'ii',
 	godot_js_display_clipboard_set: function (p_text) {
 		const text = GodotRuntime.parseString(p_text);
@@ -541,6 +563,7 @@ const GodotDisplay = {
 		return 0;
 	},
 
+	godot_js_display_clipboard_get__proxy: 'sync',
 	godot_js_display_clipboard_get__sig: 'ii',
 	godot_js_display_clipboard_get: function (callback) {
 		const func = GodotRuntime.get_func(callback);
@@ -560,11 +583,13 @@ const GodotDisplay = {
 	/*
 	 * Window
 	 */
+	godot_js_display_window_title_set__proxy: 'sync',
 	godot_js_display_window_title_set__sig: 'vi',
 	godot_js_display_window_title_set: function (p_data) {
 		document.title = GodotRuntime.parseString(p_data);
 	},
 
+	godot_js_display_window_icon_set__proxy: 'sync',
 	godot_js_display_window_icon_set__sig: 'vii',
 	godot_js_display_window_icon_set: function (p_ptr, p_len) {
 		let link = document.getElementById('-gd-engine-icon');
@@ -593,6 +618,7 @@ const GodotDisplay = {
 	/*
 	 * Cursor
 	 */
+	godot_js_display_cursor_set_visible__proxy: 'sync',
 	godot_js_display_cursor_set_visible__sig: 'vi',
 	godot_js_display_cursor_set_visible: function (p_visible) {
 		const visible = p_visible !== 0;
@@ -607,16 +633,19 @@ const GodotDisplay = {
 		}
 	},
 
+	godot_js_display_cursor_is_hidden__proxy: 'sync',
 	godot_js_display_cursor_is_hidden__sig: 'i',
 	godot_js_display_cursor_is_hidden: function () {
 		return !GodotDisplayCursor.visible;
 	},
 
+	godot_js_display_cursor_set_shape__proxy: 'sync',
 	godot_js_display_cursor_set_shape__sig: 'vi',
 	godot_js_display_cursor_set_shape: function (p_string) {
 		GodotDisplayCursor.set_shape(GodotRuntime.parseString(p_string));
 	},
 
+	godot_js_display_cursor_set_custom_shape__proxy: 'sync',
 	godot_js_display_cursor_set_custom_shape__sig: 'viiiii',
 	godot_js_display_cursor_set_custom_shape: function (p_shape, p_ptr, p_len, p_hotspot_x, p_hotspot_y) {
 		const shape = GodotRuntime.parseString(p_shape);
@@ -640,6 +669,7 @@ const GodotDisplay = {
 		}
 	},
 
+	godot_js_display_cursor_lock_set__proxy: 'sync',
 	godot_js_display_cursor_lock_set__sig: 'vi',
 	godot_js_display_cursor_lock_set: function (p_lock) {
 		if (p_lock) {
@@ -649,6 +679,7 @@ const GodotDisplay = {
 		}
 	},
 
+	godot_js_display_cursor_is_locked__proxy: 'sync',
 	godot_js_display_cursor_is_locked__sig: 'i',
 	godot_js_display_cursor_is_locked: function () {
 		return GodotDisplayCursor.isPointerLocked() ? 1 : 0;
@@ -657,6 +688,7 @@ const GodotDisplay = {
 	/*
 	 * Listeners
 	 */
+	godot_js_display_fullscreen_cb__proxy: 'sync',
 	godot_js_display_fullscreen_cb__sig: 'vi',
 	godot_js_display_fullscreen_cb: function (callback) {
 		const canvas = GodotConfig.canvas;
@@ -671,6 +703,7 @@ const GodotDisplay = {
 		GodotEventListeners.add(document, 'webkitfullscreenchange', change_cb, false);
 	},
 
+	godot_js_display_window_blur_cb__proxy: 'sync',
 	godot_js_display_window_blur_cb__sig: 'vi',
 	godot_js_display_window_blur_cb: function (callback) {
 		const func = GodotRuntime.get_func(callback);
@@ -679,6 +712,7 @@ const GodotDisplay = {
 		}, false);
 	},
 
+	godot_js_display_notification_cb__proxy: 'sync',
 	godot_js_display_notification_cb__sig: 'viiiii',
 	godot_js_display_notification_cb: function (callback, p_enter, p_exit, p_in, p_out) {
 		const canvas = GodotConfig.canvas;
@@ -691,6 +725,7 @@ const GodotDisplay = {
 		});
 	},
 
+	godot_js_display_setup_canvas__proxy: 'sync',
 	godot_js_display_setup_canvas__sig: 'viiii',
 	godot_js_display_setup_canvas: function (p_width, p_height, p_fullscreen, p_hidpi) {
 		const canvas = GodotConfig.canvas;
@@ -725,6 +760,7 @@ const GodotDisplay = {
 	/*
 	 * Virtual Keyboard
 	 */
+	godot_js_display_vk_show__proxy: 'sync',
 	godot_js_display_vk_show__sig: 'viiii',
 	godot_js_display_vk_show: function (p_text, p_type, p_start, p_end) {
 		const text = GodotRuntime.parseString(p_text);
@@ -733,21 +769,25 @@ const GodotDisplay = {
 		GodotDisplayVK.show(text, p_type, start, end);
 	},
 
+	godot_js_display_vk_hide__proxy: 'sync',
 	godot_js_display_vk_hide__sig: 'v',
 	godot_js_display_vk_hide: function () {
 		GodotDisplayVK.hide();
 	},
 
+	godot_js_display_vk_available__proxy: 'sync',
 	godot_js_display_vk_available__sig: 'i',
 	godot_js_display_vk_available: function () {
 		return GodotDisplayVK.available();
 	},
 
+	godot_js_display_tts_available__proxy: 'sync',
 	godot_js_display_tts_available__sig: 'i',
 	godot_js_display_tts_available: function () {
 		return 'speechSynthesis' in window;
 	},
 
+	godot_js_display_vk_cb__proxy: 'sync',
 	godot_js_display_vk_cb__sig: 'vi',
 	godot_js_display_vk_cb: function (p_input_cb) {
 		const input_cb = GodotRuntime.get_func(p_input_cb);

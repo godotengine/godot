@@ -34,8 +34,10 @@
 #include "core/templates/pair.h"
 #include "scene/resources/surface_tool.h"
 
-#include "scene/resources/concave_polygon_shape_3d.h"
-#include "scene/resources/convex_polygon_shape_3d.h"
+#ifndef _3D_DISABLED
+#include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/3d/convex_polygon_shape_3d.h"
+#endif // _3D_DISABLED
 
 void MeshConvexDecompositionSettings::set_max_concavity(real_t p_max_concavity) {
 	max_concavity = CLAMP(p_max_concavity, 0.001, 1.0);
@@ -519,6 +521,7 @@ Vector<Face3> Mesh::get_surface_faces(int p_surface) const {
 	return Vector<Face3>();
 }
 
+#ifndef _3D_DISABLED
 Ref<ConvexPolygonShape3D> Mesh::create_convex_shape(bool p_clean, bool p_simplify) const {
 	if (p_simplify) {
 		Ref<MeshConvexDecompositionSettings> settings = Ref<MeshConvexDecompositionSettings>();
@@ -578,6 +581,7 @@ Ref<ConcavePolygonShape3D> Mesh::create_trimesh_shape() const {
 	shape->set_faces(face_points);
 	return shape;
 }
+#endif // _3D_DISABLED
 
 Ref<Mesh> Mesh::create_outline(float p_margin) const {
 	Array arrays;
@@ -870,6 +874,8 @@ void Mesh::_bind_methods() {
 	BIND_BITFIELD_FLAG(ARRAY_FLAG_USE_8_BONE_WEIGHTS);
 	BIND_BITFIELD_FLAG(ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY);
 
+	BIND_BITFIELD_FLAG(ARRAY_FLAG_COMPRESS_ATTRIBUTES);
+
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_NORMALIZED);
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_RELATIVE);
 
@@ -894,6 +900,7 @@ void Mesh::clear_cache() const {
 	debug_lines.clear();
 }
 
+#ifndef _3D_DISABLED
 Vector<Ref<Shape3D>> Mesh::convex_decompose(const Ref<MeshConvexDecompositionSettings> &p_settings) const {
 	ERR_FAIL_NULL_V(convex_decomposition_function, Vector<Ref<Shape3D>>());
 
@@ -930,6 +937,7 @@ Vector<Ref<Shape3D>> Mesh::convex_decompose(const Ref<MeshConvexDecompositionSet
 
 	return ret;
 }
+#endif // _3D_DISABLED
 
 int Mesh::get_builtin_bind_pose_count() const {
 	return 0;
@@ -1011,14 +1019,15 @@ static Mesh::PrimitiveType _old_primitives[7] = {
 };
 #endif // DISABLE_DEPRECATED
 
-void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_format, uint32_t p_new_format, uint32_t p_elements, Vector<uint8_t> &vertex_data, Vector<uint8_t> &attribute_data, Vector<uint8_t> &skin_data) {
+void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_format, uint64_t p_new_format, uint32_t p_elements, Vector<uint8_t> &vertex_data, Vector<uint8_t> &attribute_data, Vector<uint8_t> &skin_data) {
 	uint32_t dst_vertex_stride;
+	uint32_t dst_normal_tangent_stride;
 	uint32_t dst_attribute_stride;
 	uint32_t dst_skin_stride;
 	uint32_t dst_offsets[Mesh::ARRAY_MAX];
-	RenderingServer::get_singleton()->mesh_surface_make_offsets_from_format(p_new_format & (~RS::ARRAY_FORMAT_INDEX), p_elements, 0, dst_offsets, dst_vertex_stride, dst_attribute_stride, dst_skin_stride);
+	RenderingServer::get_singleton()->mesh_surface_make_offsets_from_format(p_new_format & (~RS::ARRAY_FORMAT_INDEX), p_elements, 0, dst_offsets, dst_vertex_stride, dst_normal_tangent_stride, dst_attribute_stride, dst_skin_stride);
 
-	vertex_data.resize(dst_vertex_stride * p_elements);
+	vertex_data.resize((dst_vertex_stride + dst_normal_tangent_stride) * p_elements);
 	attribute_data.resize(dst_attribute_stride * p_elements);
 	skin_data.resize(dst_skin_stride * p_elements);
 
@@ -1031,7 +1040,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 
 	uint32_t src_offset = 0;
 	for (uint32_t j = 0; j < OLD_ARRAY_INDEX; j++) {
-		if (!(p_old_format & (1 << j))) {
+		if (!(p_old_format & (1ULL << j))) {
 			continue;
 		}
 		switch (j) {
@@ -1081,7 +1090,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 					if ((p_old_format & OLD_ARRAY_COMPRESS_NORMAL) && (p_old_format & OLD_ARRAY_FORMAT_TANGENT) && (p_old_format & OLD_ARRAY_COMPRESS_TANGENT)) {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							int16_t *dst = (int16_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							int16_t *dst = (int16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
 
 							dst[0] = (int16_t)CLAMP(src[0] / 127.0f * 32767, -32768, 32767);
 							dst[1] = (int16_t)CLAMP(src[1] / 127.0f * 32767, -32768, 32767);
@@ -1090,7 +1099,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 					} else {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int16_t *src = (const int16_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							int16_t *dst = (int16_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							int16_t *dst = (int16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
 
 							dst[0] = src[0];
 							dst[1] = src[1];
@@ -1104,7 +1113,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 							const Vector3 original_normal(src[0], src[1], src[2]);
 							Vector2 res = original_normal.octahedron_encode();
 
-							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
 							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
 						}
@@ -1115,7 +1124,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 							const Vector3 original_normal(src[0], src[1], src[2]);
 							Vector2 res = original_normal.octahedron_encode();
 
-							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
 							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
 						}
@@ -1129,7 +1138,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 					if (p_old_format & OLD_ARRAY_COMPRESS_TANGENT) { // int8 SNORM -> uint16 UNORM
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
 
 							dst[0] = (uint16_t)CLAMP((src[0] / 127.0f * .5f + .5f) * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP((src[1] / 127.0f * .5f + .5f) * 65535, 0, 65535);
@@ -1138,7 +1147,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 					} else { // int16 SNORM -> uint16 UNORM
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int16_t *src = (const int16_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
 
 							dst[0] = (uint16_t)CLAMP((src[0] / 32767.0f * .5f + .5f) * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP((src[1] / 32767.0f * .5f + .5f) * 65535, 0, 65535);
@@ -1152,9 +1161,14 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 							const Vector3 original_tangent(src[0], src[1], src[2]);
 							Vector2 res = original_tangent.octahedron_tangent_encode(src[3]);
 
-							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
 							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
+							if (dst[0] == 0 && dst[1] == 65535) {
+								// (1, 1) and (0, 1) decode to the same value, but (0, 1) messes with our compression detection.
+								// So we sanitize here.
+								dst[0] = 65535;
+							}
 						}
 						src_offset += sizeof(uint8_t) * 4;
 					} else {
@@ -1163,9 +1177,14 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 							const Vector3 original_tangent(src[0], src[1], src[2]);
 							Vector2 res = original_tangent.octahedron_tangent_encode(src[3]);
 
-							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
 							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
+							if (dst[0] == 0 && dst[1] == 65535) {
+								// (1, 1) and (0, 1) decode to the same value, but (0, 1) messes with our compression detection.
+								// So we sanitize here.
+								dst[0] = 65535;
+							}
 						}
 						src_offset += sizeof(float) * 4;
 					}
@@ -1348,7 +1367,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			}
 
 			ERR_FAIL_COND_V(!d.has("format"), false);
-			uint32_t old_format = d["format"];
+			uint64_t old_format = d["format"];
 
 			uint32_t primitive = d["primitive"];
 
@@ -1357,7 +1376,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			ERR_FAIL_COND_V(!d.has("vertex_count"), false);
 			int vertex_count = d["vertex_count"];
 
-			uint32_t new_format = ARRAY_FORMAT_VERTEX;
+			uint64_t new_format = ARRAY_FORMAT_VERTEX | ARRAY_FLAG_FORMAT_CURRENT_VERSION;
 
 			if (old_format & OLD_ARRAY_FORMAT_NORMAL) {
 				new_format |= ARRAY_FORMAT_NORMAL;
@@ -1494,6 +1513,7 @@ Array ArrayMesh::_get_surfaces() const {
 			data["attribute_data"] = surface.attribute_data;
 		}
 		data["aabb"] = surface.aabb;
+		data["uv_scale"] = surface.uv_scale;
 		if (surface.index_count) {
 			data["index_data"] = surface.index_data;
 			data["index_count"] = surface.index_count;
@@ -1544,6 +1564,7 @@ void ArrayMesh::_create_if_empty() const {
 		mesh = RS::get_singleton()->mesh_create();
 		RS::get_singleton()->mesh_set_blend_shape_mode(mesh, (RS::BlendShapeMode)blend_shape_mode);
 		RS::get_singleton()->mesh_set_blend_shape_count(mesh, blend_shapes.size());
+		RS::get_singleton()->mesh_set_path(mesh, get_path());
 	}
 }
 
@@ -1572,6 +1593,10 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 			surface.skin_data = d["skin_data"];
 		}
 		surface.aabb = d["aabb"];
+
+		if (d.has("uv_scale")) {
+			surface.uv_scale = d["uv_scale"];
+		}
 
 		if (d.has("index_data")) {
 			ERR_FAIL_COND(!d.has("index_count"));
@@ -1619,6 +1644,18 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 			_2d = d["2d"];
 		}
 
+#ifndef DISABLE_DEPRECATED
+		uint64_t surface_version = surface.format & (ARRAY_FLAG_FORMAT_VERSION_MASK << ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+		if (surface_version != ARRAY_FLAG_FORMAT_CURRENT_VERSION) {
+			RS::get_singleton()->fix_surface_compatibility(surface, get_path());
+			surface_version = surface.format & (RS::ARRAY_FLAG_FORMAT_VERSION_MASK << RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+			ERR_FAIL_COND_MSG(surface_version != RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION,
+					vformat("Surface version provided (%d) does not match current version (%d).",
+							(surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK,
+							(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK));
+		}
+#endif
+
 		surface_data.push_back(surface);
 		surface_materials.push_back(material);
 		surface_names.push_back(surf_name);
@@ -1636,6 +1673,7 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 		// we can create it with a single call, which is a lot more efficient and thread friendly
 		mesh = RS::get_singleton()->mesh_create_from_surfaces(surface_data, blend_shapes.size());
 		RS::get_singleton()->mesh_set_blend_shape_mode(mesh, (RS::BlendShapeMode)blend_shape_mode);
+		RS::get_singleton()->mesh_set_path(mesh, get_path());
 	}
 
 	surfaces.clear();
@@ -1684,7 +1722,7 @@ bool ArrayMesh::_get(const StringName &p_name, Variant &r_ret) const {
 		return true;
 	}
 
-	return true;
+	return false;
 }
 
 void ArrayMesh::reset_state() {
@@ -1725,7 +1763,7 @@ void ArrayMesh::_recompute_aabb() {
 }
 
 // TODO: Need to add binding to add_surface using future MeshSurfaceData object.
-void ArrayMesh::add_surface(BitField<ArrayFormat> p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data, const Vector<AABB> &p_bone_aabbs, const Vector<RS::SurfaceData::LOD> &p_lods) {
+void ArrayMesh::add_surface(BitField<ArrayFormat> p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data, const Vector<AABB> &p_bone_aabbs, const Vector<RS::SurfaceData::LOD> &p_lods, const Vector4 p_uv_scale) {
 	ERR_FAIL_COND(surfaces.size() == RS::MAX_MESH_SURFACES);
 	_create_if_empty();
 
@@ -1753,6 +1791,7 @@ void ArrayMesh::add_surface(BitField<ArrayFormat> p_format, PrimitiveType p_prim
 	sd.blend_shape_data = p_blend_shape_data;
 	sd.bone_aabbs = p_bone_aabbs;
 	sd.lods = p_lods;
+	sd.uv_scale = p_uv_scale;
 
 	RenderingServer::get_singleton()->mesh_add_surface(mesh, sd);
 
@@ -1780,7 +1819,7 @@ void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &
 	print_line("primitive: " + itos(surface.primitive));
 	*/
 
-	add_surface(surface.format, PrimitiveType(surface.primitive), surface.vertex_data, surface.attribute_data, surface.skin_data, surface.vertex_count, surface.index_data, surface.index_count, surface.aabb, surface.blend_shape_data, surface.bone_aabbs, surface.lods);
+	add_surface(surface.format, PrimitiveType(surface.primitive), surface.vertex_data, surface.attribute_data, surface.skin_data, surface.vertex_count, surface.index_data, surface.index_count, surface.aabb, surface.blend_shape_data, surface.bone_aabbs, surface.lods, surface.uv_scale);
 }
 
 Array ArrayMesh::surface_get_arrays(int p_surface) const {
@@ -1841,7 +1880,7 @@ void ArrayMesh::set_blend_shape_name(int p_index, const StringName &p_name) {
 		do {
 			shape_name = String(p_name) + " " + itos(count);
 			count++;
-		} while (blend_shapes.find(shape_name) != -1);
+		} while (blend_shapes.has(shape_name));
 	}
 
 	blend_shapes.write[p_index] = shape_name;
@@ -1984,17 +2023,19 @@ void ArrayMesh::regen_normal_maps() {
 		return;
 	}
 	Vector<Ref<SurfaceTool>> surfs;
+	Vector<uint64_t> formats;
 	for (int i = 0; i < get_surface_count(); i++) {
 		Ref<SurfaceTool> st = memnew(SurfaceTool);
 		st->create_from(Ref<ArrayMesh>(this), i);
 		surfs.push_back(st);
+		formats.push_back(surface_get_format(i));
 	}
 
 	clear_surfaces();
 
 	for (int i = 0; i < surfs.size(); i++) {
 		surfs.write[i]->generate_tangents();
-		surfs.write[i]->commit(Ref<ArrayMesh>(this));
+		surfs.write[i]->commit(Ref<ArrayMesh>(this), formats[i]);
 	}
 }
 
@@ -2005,7 +2046,7 @@ struct ArrayMeshLightmapSurface {
 	Ref<Material> material;
 	LocalVector<SurfaceTool::Vertex> vertices;
 	Mesh::PrimitiveType primitive = Mesh::PrimitiveType::PRIMITIVE_MAX;
-	uint32_t format = 0;
+	uint64_t format = 0;
 };
 
 Error ArrayMesh::lightmap_unwrap(const Transform3D &p_base_transform, float p_texel_size) {
@@ -2045,7 +2086,7 @@ Error ArrayMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, flo
 
 		Array arrays = surface_get_arrays(i);
 		s.material = surface_get_material(i);
-		SurfaceTool::create_vertex_array_from_triangle_arrays(arrays, s.vertices, &s.format);
+		SurfaceTool::create_vertex_array_from_arrays(arrays, s.vertices, &s.format);
 
 		PackedVector3Array rvertices = arrays[Mesh::ARRAY_VERTEX];
 		int vc = rvertices.size();
@@ -2243,8 +2284,10 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_find_by_name", "name"), &ArrayMesh::surface_find_by_name);
 	ClassDB::bind_method(D_METHOD("surface_set_name", "surf_idx", "name"), &ArrayMesh::surface_set_name);
 	ClassDB::bind_method(D_METHOD("surface_get_name", "surf_idx"), &ArrayMesh::surface_get_name);
+#ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("create_trimesh_shape"), &ArrayMesh::create_trimesh_shape);
 	ClassDB::bind_method(D_METHOD("create_convex_shape", "clean", "simplify"), &ArrayMesh::create_convex_shape, DEFVAL(true), DEFVAL(false));
+#endif // _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("create_outline", "margin"), &ArrayMesh::create_outline);
 	ClassDB::bind_method(D_METHOD("regen_normal_maps"), &ArrayMesh::regen_normal_maps);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("regen_normal_maps"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);

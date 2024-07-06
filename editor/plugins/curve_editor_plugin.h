@@ -32,8 +32,8 @@
 #define CURVE_EDITOR_PLUGIN_H
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
 #include "editor/editor_resource_preview.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/resources/curve.h"
 
 class EditorSpinSlider;
@@ -104,6 +104,8 @@ private:
 	void _redraw();
 
 private:
+	const float ASPECT_RATIO = 6.f / 13.f;
+
 	Transform2D _world_to_view;
 
 	Ref<Curve> curve;

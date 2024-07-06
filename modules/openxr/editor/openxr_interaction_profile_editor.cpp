@@ -30,6 +30,7 @@
 
 #include "openxr_interaction_profile_editor.h"
 
+#include "editor/editor_string_names.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -44,7 +45,6 @@
 void OpenXRInteractionProfileEditorBase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_add_binding", "action", "path"), &OpenXRInteractionProfileEditorBase::_add_binding);
 	ClassDB::bind_method(D_METHOD("_remove_binding", "action", "path"), &OpenXRInteractionProfileEditorBase::_remove_binding);
-	ClassDB::bind_method(D_METHOD("_update_interaction_profile"), &OpenXRInteractionProfileEditorBase::_update_interaction_profile);
 }
 
 void OpenXRInteractionProfileEditorBase::_notification(int p_what) {
@@ -62,7 +62,7 @@ void OpenXRInteractionProfileEditorBase::_notification(int p_what) {
 void OpenXRInteractionProfileEditorBase::_do_update_interaction_profile() {
 	if (!is_dirty) {
 		is_dirty = true;
-		call_deferred("_update_interaction_profile");
+		callable_mp(this, &OpenXRInteractionProfileEditorBase::_update_interaction_profile).call_deferred();
 	}
 }
 
@@ -148,7 +148,7 @@ OpenXRInteractionProfileEditorBase::OpenXRInteractionProfileEditorBase(Ref<OpenX
 	String profile_path = interaction_profile->get_interaction_profile_path();
 	String profile_name = profile_path;
 
-	profile_def = OpenXRInteractionProfileMetaData::get_singleton()->get_profile(profile_path);
+	profile_def = OpenXRInteractionProfileMetadata::get_singleton()->get_profile(profile_path);
 	if (profile_def != nullptr) {
 		profile_name = profile_def->display_name;
 	}
@@ -185,7 +185,7 @@ void OpenXRInteractionProfileEditor::_on_remove_pressed(const String p_action, c
 	undo_redo->commit_action(true);
 }
 
-void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, const OpenXRInteractionProfileMetaData::IOPath *p_io_path) {
+void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, const OpenXRInteractionProfileMetadata::IOPath *p_io_path) {
 	HBoxContainer *path_hb = memnew(HBoxContainer);
 	path_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	p_container->add_child(path_hb);
@@ -220,9 +220,9 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 	path_hb->add_child(type_label);
 
 	Button *path_add = memnew(Button);
-	path_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+	path_add->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
 	path_add->set_flat(true);
-	path_add->connect("pressed", callable_mp(this, &OpenXRInteractionProfileEditor::select_action_for).bind(String(p_io_path->openxr_path)));
+	path_add->connect(SceneStringName(pressed), callable_mp(this, &OpenXRInteractionProfileEditor::select_action_for).bind(String(p_io_path->openxr_path)));
 	path_hb->add_child(path_add);
 
 	if (interaction_profile.is_valid()) {
@@ -248,8 +248,8 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 
 				Button *action_rem = memnew(Button);
 				action_rem->set_flat(true);
-				action_rem->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-				action_rem->connect("pressed", callable_mp((OpenXRInteractionProfileEditor *)this, &OpenXRInteractionProfileEditor::_on_remove_pressed).bind(action->get_name_with_set(), String(p_io_path->openxr_path)));
+				action_rem->set_icon(get_theme_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
+				action_rem->connect(SceneStringName(pressed), callable_mp((OpenXRInteractionProfileEditor *)this, &OpenXRInteractionProfileEditor::_on_remove_pressed).bind(action->get_name_with_set(), String(p_io_path->openxr_path)));
 				action_hb->add_child(action_rem);
 			}
 		}
@@ -274,7 +274,7 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 	// Determine toplevel paths
 	Vector<String> top_level_paths;
 	for (int i = 0; i < profile_def->io_paths.size(); i++) {
-		const OpenXRInteractionProfileMetaData::IOPath *io_path = &profile_def->io_paths[i];
+		const OpenXRInteractionProfileMetadata::IOPath *io_path = &profile_def->io_paths[i];
 
 		if (!top_level_paths.has(io_path->top_level_path)) {
 			top_level_paths.push_back(io_path->top_level_path);
@@ -285,17 +285,17 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 		PanelContainer *panel = memnew(PanelContainer);
 		panel->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		main_hb->add_child(panel);
-		panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
+		panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("TabContainer")));
 
 		VBoxContainer *container = memnew(VBoxContainer);
 		panel->add_child(container);
 
 		Label *label = memnew(Label);
-		label->set_text(OpenXRInteractionProfileMetaData::get_singleton()->get_top_level_name(top_level_paths[i]));
+		label->set_text(OpenXRInteractionProfileMetadata::get_singleton()->get_top_level_name(top_level_paths[i]));
 		container->add_child(label);
 
 		for (int j = 0; j < profile_def->io_paths.size(); j++) {
-			const OpenXRInteractionProfileMetaData::IOPath *io_path = &profile_def->io_paths[j];
+			const OpenXRInteractionProfileMetadata::IOPath *io_path = &profile_def->io_paths[j];
 			if (io_path->top_level_path == top_level_paths[i]) {
 				_add_io_path(container, io_path);
 			}
@@ -310,7 +310,7 @@ void OpenXRInteractionProfileEditor::_theme_changed() {
 	for (int i = 0; i < main_hb->get_child_count(); i++) {
 		Control *panel = Object::cast_to<Control>(main_hb->get_child(i));
 		if (panel) {
-			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
+			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("TabContainer")));
 		}
 	}
 }

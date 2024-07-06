@@ -177,10 +177,28 @@ TEST_CASE("[Curve3D] Sampling") {
 		CHECK(curve->sample_baked(curve->get_closest_offset(Vector3(0, 50, 0)), true) == Vector3(0, 50, 0));
 	}
 
-	SUBCASE("sample_baked_with_rotation") {
+	SUBCASE("sample_baked_with_rotation, cubic = false, p_apply_tilt = false") {
 		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 0, 0))) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 0, 0)));
 		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 25, 0))) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 25, 0)));
 		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 50, 0))) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 50, 0)));
+	}
+
+	SUBCASE("sample_baked_with_rotation, cubic = false, p_apply_tilt = true") {
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 0, 0)), false, true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 0, 0)));
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 25, 0)), false, true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 25, 0)));
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 50, 0)), false, true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 50, 0)));
+	}
+
+	SUBCASE("sample_baked_with_rotation, cubic = true, p_apply_tilt = false") {
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 0, 0)), true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 0, 0)));
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 25, 0)), true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 25, 0)));
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 50, 0)), true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 50, 0)));
+	}
+
+	SUBCASE("sample_baked_with_rotation, cubic = true, p_apply_tilt = true") {
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 0, 0)), true, true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 0, 0)));
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 25, 0)), true, true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 25, 0)));
+		CHECK(curve->sample_baked_with_rotation(curve->get_closest_offset(Vector3(0, 50, 0)), true, true) == Transform3D(Basis(Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, -1, 0)), Vector3(0, 50, 0)));
 	}
 
 	SUBCASE("sample_baked_tilt") {
@@ -208,6 +226,14 @@ TEST_CASE("[Curve3D] Sampling") {
 		CHECK(curve->get_closest_point(Vector3(0, 50, 0)) == Vector3(0, 50, 0));
 		CHECK(curve->get_closest_point(Vector3(50, 50, 0)) == Vector3(0, 50, 0));
 		CHECK(curve->get_closest_point(Vector3(0, 100, 0)) == Vector3(0, 50, 0));
+	}
+
+	SUBCASE("sample_baked_up_vector, off-axis") {
+		// Regression test for issue #81879
+		Ref<Curve3D> c = memnew(Curve3D);
+		c->add_point(Vector3());
+		c->add_point(Vector3(0, .1, 1));
+		CHECK_LT((c->sample_baked_up_vector(c->get_closest_offset(Vector3(0, 0, .9))) - Vector3(0, 0.995037, -0.099504)).length(), 0.01);
 	}
 }
 

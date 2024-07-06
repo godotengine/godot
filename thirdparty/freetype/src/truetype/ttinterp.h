@@ -98,48 +98,6 @@ FT_BEGIN_HEADER
   } TT_CallRec, *TT_CallStack;
 
 
-#ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
-
-  /**************************************************************************
-   *
-   * These structures define rules used to tweak subpixel hinting for
-   * various fonts.  "", 0, "", NULL value indicates to match any value.
-   */
-
-#define SPH_MAX_NAME_SIZE      32
-#define SPH_MAX_CLASS_MEMBERS  100
-
-  typedef struct  SPH_TweakRule_
-  {
-    const char      family[SPH_MAX_NAME_SIZE];
-    const FT_UInt   ppem;
-    const char      style[SPH_MAX_NAME_SIZE];
-    const FT_ULong  glyph;
-
-  } SPH_TweakRule;
-
-
-  typedef struct  SPH_ScaleRule_
-  {
-    const char      family[SPH_MAX_NAME_SIZE];
-    const FT_UInt   ppem;
-    const char      style[SPH_MAX_NAME_SIZE];
-    const FT_ULong  glyph;
-    const FT_ULong  scale;
-
-  } SPH_ScaleRule;
-
-
-  typedef struct  SPH_Font_Class_
-  {
-    const char  name[SPH_MAX_NAME_SIZE];
-    const char  member[SPH_MAX_CLASS_MEMBERS][SPH_MAX_NAME_SIZE];
-
-  } SPH_Font_Class;
-
-#endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
-
-
   /**************************************************************************
    *
    * The main structure for the interpreter which collects all necessary
@@ -398,38 +356,6 @@ FT_BEGIN_HEADER
     /* adheres to the physical pixel grid on both axes.                */
     FT_Bool            grayscale_cleartype;
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL */
-
-#ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
-    TT_Round_Func      func_round_sphn;   /* subpixel rounding function */
-
-    FT_Bool            subpixel_hinting;  /* Using subpixel hinting?       */
-    FT_Bool            ignore_x_mode;     /* Standard rendering mode for   */
-                                          /* subpixel hinting.  On if gray */
-                                          /* or subpixel hinting is on.    */
-
-    /* The following 6 aren't fully implemented but here for MS rasterizer */
-    /* compatibility.                                                      */
-    FT_Bool            compatible_widths;     /* compatible widths?        */
-    FT_Bool            symmetrical_smoothing; /* symmetrical_smoothing?    */
-    FT_Bool            bgr;                   /* bgr instead of rgb?       */
-    FT_Bool            vertical_lcd;          /* long side of LCD subpixel */
-                                              /* rectangles is horizontal  */
-    FT_Bool            subpixel_positioned;   /* subpixel positioned       */
-                                              /* (DirectWrite ClearType)?  */
-    FT_Bool            gray_cleartype;        /* ClearType hinting but     */
-                                              /* grayscale rendering       */
-
-    FT_Int             rasterizer_version;    /* MS rasterizer version     */
-
-    FT_Bool            iup_called;            /* IUP called for glyph?     */
-
-    FT_ULong           sph_tweak_flags;       /* flags to control          */
-                                              /* hint tweaks               */
-
-    FT_ULong           sph_in_func_flags;     /* flags to indicate if in   */
-                                              /* special functions         */
-
-#endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
 
     /* We maintain two counters (in addition to the instruction counter) */
     /* that act as loop detectors for LOOPCALL and jump opcodes with     */

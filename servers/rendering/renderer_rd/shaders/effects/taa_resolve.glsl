@@ -320,7 +320,7 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 	vec2 velocity = imageLoad(velocity_buffer, ivec2(pos_screen)).xy;
 
 	// Get reprojected uv
-	vec2 uv_reprojected = uv - velocity;
+	vec2 uv_reprojected = uv + velocity;
 
 	// Get input color
 	vec3 color_input = load_color(pos_group);

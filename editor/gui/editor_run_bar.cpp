@@ -37,6 +37,7 @@
 #include "editor/editor_quick_open.h"
 #include "editor/editor_run_native.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/panel_container.h"
@@ -51,37 +52,40 @@ void EditorRunBar::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_play_buttons();
-			pause_button->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
-			stop_button->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
+			pause_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
+			stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
 
 			if (is_movie_maker_enabled()) {
-				main_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("LaunchPadMovieMode"), SNAME("EditorStyles")));
-				write_movie_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("MovieWriterButtonPressed"), SNAME("EditorStyles")));
+				main_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadMovieMode"), EditorStringName(EditorStyles)));
+				write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonPressed"), EditorStringName(EditorStyles)));
 			} else {
-				main_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("LaunchPadNormal"), SNAME("EditorStyles")));
-				write_movie_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("MovieWriterButtonNormal"), SNAME("EditorStyles")));
+				main_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadNormal"), EditorStringName(EditorStyles)));
+				write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
 			}
 
-			write_movie_button->set_icon(get_theme_icon(SNAME("MainMovieWrite"), SNAME("EditorIcons")));
+			write_movie_button->set_icon(get_editor_theme_icon(SNAME("MainMovieWrite")));
 			// This button behaves differently, so color it as such.
-			write_movie_button->add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.7));
-			write_movie_button->add_theme_color_override("icon_pressed_color", Color(0, 0, 0, 0.84));
-			write_movie_button->add_theme_color_override("icon_hover_color", Color(1, 1, 1, 0.9));
+			write_movie_button->begin_bulk_theme_override();
+			write_movie_button->add_theme_color_override("icon_normal_color", get_theme_color(SNAME("movie_writer_icon_normal"), EditorStringName(EditorStyles)));
+			write_movie_button->add_theme_color_override("icon_pressed_color", get_theme_color(SNAME("movie_writer_icon_pressed"), EditorStringName(EditorStyles)));
+			write_movie_button->add_theme_color_override("icon_hover_color", get_theme_color(SNAME("movie_writer_icon_hover"), EditorStringName(EditorStyles)));
+			write_movie_button->add_theme_color_override("icon_hover_pressed_color", get_theme_color(SNAME("movie_writer_icon_hover_pressed"), EditorStringName(EditorStyles)));
+			write_movie_button->end_bulk_theme_override();
 		} break;
 	}
 }
 
 void EditorRunBar::_reset_play_buttons() {
 	play_button->set_pressed(false);
-	play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	play_button->set_tooltip_text(TTR("Play the project."));
 
 	play_scene_button->set_pressed(false);
-	play_scene_button->set_icon(get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
+	play_scene_button->set_icon(get_editor_theme_icon(SNAME("PlayScene")));
 	play_scene_button->set_tooltip_text(TTR("Play the edited scene."));
 
 	play_custom_scene_button->set_pressed(false);
-	play_custom_scene_button->set_icon(get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
+	play_custom_scene_button->set_icon(get_editor_theme_icon(SNAME("PlayCustom")));
 	play_custom_scene_button->set_tooltip_text(TTR("Play a custom scene."));
 }
 
@@ -102,18 +106,18 @@ void EditorRunBar::_update_play_buttons() {
 
 	if (active_button) {
 		active_button->set_pressed(true);
-		active_button->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+		active_button->set_icon(get_editor_theme_icon(SNAME("Reload")));
 		active_button->set_tooltip_text(TTR("Reload the played scene."));
 	}
 }
 
 void EditorRunBar::_write_movie_toggled(bool p_enabled) {
 	if (p_enabled) {
-		add_theme_style_override("panel", get_theme_stylebox(SNAME("LaunchPadMovieMode"), SNAME("EditorStyles")));
-		write_movie_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("MovieWriterButtonPressed"), SNAME("EditorStyles")));
+		add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadMovieMode"), EditorStringName(EditorStyles)));
+		write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonPressed"), EditorStringName(EditorStyles)));
 	} else {
-		add_theme_style_override("panel", get_theme_stylebox(SNAME("LaunchPadNormal"), SNAME("EditorStyles")));
-		write_movie_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("MovieWriterButtonNormal"), SNAME("EditorStyles")));
+		add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadNormal"), EditorStringName(EditorStyles)));
+		write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
 	}
 }
 
@@ -219,7 +223,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path) {
 				return;
 			}
 
-			run_filename = GLOBAL_DEF_BASIC("application/run/main_scene", "");
+			run_filename = GLOBAL_GET("application/run/main_scene");
 		} break;
 	}
 
@@ -270,12 +274,13 @@ void EditorRunBar::play_main_scene(bool p_from_native) {
 }
 
 void EditorRunBar::play_current_scene(bool p_reload) {
+	String last_current_scene = run_current_filename; // This is necessary to have a copy of the string.
+
 	EditorNode::get_singleton()->save_default_environment();
 	stop_playing();
 
 	current_mode = RunMode::RUN_CURRENT;
 	if (p_reload) {
-		String last_current_scene = run_current_filename; // This is necessary to have a copy of the string.
 		_run_scene(last_current_scene);
 	} else {
 		_run_scene();
@@ -348,6 +353,10 @@ bool EditorRunBar::is_movie_maker_enabled() const {
 	return write_movie_button->is_pressed();
 }
 
+HBoxContainer *EditorRunBar::get_buttons_container() {
+	return main_hbox;
+}
+
 void EditorRunBar::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("play_pressed"));
 	ADD_SIGNAL(MethodInfo("stop_pressed"));
@@ -359,16 +368,16 @@ EditorRunBar::EditorRunBar() {
 	main_panel = memnew(PanelContainer);
 	add_child(main_panel);
 
-	HBoxContainer *main_hbox = memnew(HBoxContainer);
+	main_hbox = memnew(HBoxContainer);
 	main_panel->add_child(main_hbox);
 
 	play_button = memnew(Button);
 	main_hbox->add_child(play_button);
-	play_button->set_flat(true);
+	play_button->set_theme_type_variation("RunBarButton");
 	play_button->set_toggle_mode(true);
 	play_button->set_focus_mode(Control::FOCUS_NONE);
 	play_button->set_tooltip_text(TTR("Run the project's default scene."));
-	play_button->connect("pressed", callable_mp(this, &EditorRunBar::play_main_scene).bind(false));
+	play_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::play_main_scene).bind(false));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_project", TTR("Run Project"), Key::F5);
 	ED_SHORTCUT_OVERRIDE("editor/run_project", "macos", KeyModifierMask::META | Key::B);
@@ -376,7 +385,7 @@ EditorRunBar::EditorRunBar() {
 
 	pause_button = memnew(Button);
 	main_hbox->add_child(pause_button);
-	pause_button->set_flat(true);
+	pause_button->set_theme_type_variation("RunBarButton");
 	pause_button->set_toggle_mode(true);
 	pause_button->set_focus_mode(Control::FOCUS_NONE);
 	pause_button->set_tooltip_text(TTR("Pause the running project's execution for debugging."));
@@ -388,11 +397,11 @@ EditorRunBar::EditorRunBar() {
 
 	stop_button = memnew(Button);
 	main_hbox->add_child(stop_button);
-	stop_button->set_flat(true);
+	stop_button->set_theme_type_variation("RunBarButton");
 	stop_button->set_focus_mode(Control::FOCUS_NONE);
 	stop_button->set_tooltip_text(TTR("Stop the currently running project."));
 	stop_button->set_disabled(true);
-	stop_button->connect("pressed", callable_mp(this, &EditorRunBar::stop_playing));
+	stop_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::stop_playing));
 
 	ED_SHORTCUT("editor/stop_running_project", TTR("Stop Running Project"), Key::F8);
 	ED_SHORTCUT_OVERRIDE("editor/stop_running_project", "macos", KeyModifierMask::META | Key::PERIOD);
@@ -404,11 +413,11 @@ EditorRunBar::EditorRunBar() {
 
 	play_scene_button = memnew(Button);
 	main_hbox->add_child(play_scene_button);
-	play_scene_button->set_flat(true);
+	play_scene_button->set_theme_type_variation("RunBarButton");
 	play_scene_button->set_toggle_mode(true);
 	play_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_scene_button->set_tooltip_text(TTR("Run the currently edited scene."));
-	play_scene_button->connect("pressed", callable_mp(this, &EditorRunBar::_play_current_pressed));
+	play_scene_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::_play_current_pressed));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_current_scene", TTR("Run Current Scene"), Key::F6);
 	ED_SHORTCUT_OVERRIDE("editor/run_current_scene", "macos", KeyModifierMask::META | Key::R);
@@ -416,11 +425,11 @@ EditorRunBar::EditorRunBar() {
 
 	play_custom_scene_button = memnew(Button);
 	main_hbox->add_child(play_custom_scene_button);
-	play_custom_scene_button->set_flat(true);
+	play_custom_scene_button->set_theme_type_variation("RunBarButton");
 	play_custom_scene_button->set_toggle_mode(true);
 	play_custom_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_custom_scene_button->set_tooltip_text(TTR("Run a specific scene."));
-	play_custom_scene_button->connect("pressed", callable_mp(this, &EditorRunBar::_play_custom_pressed));
+	play_custom_scene_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::_play_custom_pressed));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_specific_scene", TTR("Run Specific Scene"), KeyModifierMask::CTRL | KeyModifierMask::SHIFT | Key::F5);
 	ED_SHORTCUT_OVERRIDE("editor/run_specific_scene", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::R);
@@ -431,7 +440,7 @@ EditorRunBar::EditorRunBar() {
 
 	write_movie_button = memnew(Button);
 	write_movie_panel->add_child(write_movie_button);
-	write_movie_button->set_flat(true);
+	write_movie_button->set_theme_type_variation("RunBarButton");
 	write_movie_button->set_toggle_mode(true);
 	write_movie_button->set_pressed(false);
 	write_movie_button->set_focus_mode(Control::FOCUS_NONE);

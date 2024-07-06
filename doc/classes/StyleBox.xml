@@ -105,12 +105,12 @@
 	<members>
 		<member name="content_margin_bottom" type="float" setter="set_content_margin" getter="get_content_margin" default="-1.0">
 			The bottom margin for the contents of this style box. Increasing this value reduces the space available to the contents from the bottom.
-			If this value is negative, it is ignored and a child-specific margin is used instead. For example for [StyleBoxFlat] the border thickness (if any) is used instead.
+			If this value is negative, it is ignored and a child-specific margin is used instead. For example, for [StyleBoxFlat], the border thickness (if any) is used instead.
 			It is up to the code using this style box to decide what these contents are: for example, a [Button] respects this content margin for the textual contents of the button.
 			[method get_margin] should be used to fetch this value as consumer instead of reading these properties directly. This is because it correctly respects negative values and the fallback mentioned above.
 		</member>
 		<member name="content_margin_left" type="float" setter="set_content_margin" getter="get_content_margin" default="-1.0">
-			The left margin for the contents of this style box.	Increasing this value reduces the space available to the contents from the left.
+			The left margin for the contents of this style box. Increasing this value reduces the space available to the contents from the left.
 			Refer to [member content_margin_bottom] for extra considerations.
 		</member>
 		<member name="content_margin_right" type="float" setter="set_content_margin" getter="get_content_margin" default="-1.0">

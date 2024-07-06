@@ -38,7 +38,7 @@
 
 using namespace godot;
 
-#else
+#elif defined(GODOT_MODULE)
 // Headers for building as built-in module.
 
 #include "core/error/error_macros.h"
@@ -187,8 +187,8 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 			ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to get SVG bounds.");
 		}
 
-		gl_state.bmp_y = -min_y * gl_state.h / new_h;
-		gl_state.bmp_x = min_x * gl_state.w / new_w;
+		gl_state.bmp_y = gl_state.h + metrics.descender / 64.f;
+		gl_state.bmp_x = 0;
 
 		gl_state.ready = true;
 	}
@@ -256,7 +256,7 @@ FT_Error tvg_svg_in_ot_render(FT_GlyphSlot p_slot, FT_Pointer *p_state) {
 	}
 
 	std::unique_ptr<tvg::SwCanvas> sw_canvas = tvg::SwCanvas::gen();
-	res = sw_canvas->target((uint32_t *)p_slot->bitmap.buffer, (int)p_slot->bitmap.width, (int)p_slot->bitmap.width, (int)p_slot->bitmap.rows, tvg::SwCanvas::ARGB8888_STRAIGHT);
+	res = sw_canvas->target((uint32_t *)p_slot->bitmap.buffer, (int)p_slot->bitmap.width, (int)p_slot->bitmap.width, (int)p_slot->bitmap.rows, tvg::SwCanvas::ARGB8888S);
 	if (res != tvg::Result::Success) {
 		ERR_FAIL_V_MSG(FT_Err_Invalid_Outline, "Failed to create SVG canvas.");
 	}

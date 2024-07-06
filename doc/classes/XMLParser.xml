@@ -2,10 +2,41 @@
 <class name="XMLParser" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides a low-level interface for creating parsers for XML files.
-		Low-level class for creating parsers for [url=https://en.wikipedia.org/wiki/XML]XML[/url] files.
 	</brief_description>
 	<description>
 		Provides a low-level interface for creating parsers for [url=https://en.wikipedia.org/wiki/XML]XML[/url] files. This class can serve as base to make custom XML parsers.
+		To parse XML, you must open a file with the [method open] method or a buffer with the [method open_buffer] method. Then, the [method read] method must be called to parse the next nodes. Most of the methods take into consideration the currently parsed node.
+		Here is an example of using [XMLParser] to parse an SVG file (which is based on XML), printing each element and its attributes as a dictionary:
+		[codeblocks]
+		[gdscript]
+		var parser = XMLParser.new()
+		parser.open("path/to/file.svg")
+		while parser.read() != ERR_FILE_EOF:
+		    if parser.get_node_type() == XMLParser.NODE_ELEMENT:
+		        var node_name = parser.get_node_name()
+		        var attributes_dict = {}
+		        for idx in range(parser.get_attribute_count()):
+		            attributes_dict[parser.get_attribute_name(idx)] = parser.get_attribute_value(idx)
+		        print("The ", node_name, " element has the following attributes: ", attributes_dict)
+		[/gdscript]
+		[csharp]
+		var parser = new XmlParser();
+		parser.Open("path/to/file.svg");
+		while (parser.Read() != Error.FileEof)
+		{
+		    if (parser.GetNodeType() == XmlParser.NodeType.Element)
+		    {
+		        var nodeName = parser.GetNodeName();
+		        var attributesDict = new Godot.Collections.Dictionary();
+		        for (int idx = 0; idx &lt; parser.GetAttributeCount(); idx++)
+		        {
+		            attributesDict[parser.GetAttributeName(idx)] = parser.GetAttributeValue(idx);
+		        }
+		        GD.Print($"The {nodeName} element has the following attributes: {attributesDict}");
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,111 +44,113 @@
 		<method name="get_attribute_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Gets the number of attributes in the current element.
+				Returns the number of attributes in the currently parsed element.
+				[b]Note:[/b] If this method is used while the currently parsed node is not [constant NODE_ELEMENT] or [constant NODE_ELEMENT_END], this count will not be updated and will still reflect the last element.
 			</description>
 		</method>
 		<method name="get_attribute_name" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Gets the name of the attribute specified by the [param idx] index.
+				Returns the name of an attribute of the currently parsed element, specified by the [param idx] index.
 			</description>
 		</method>
 		<method name="get_attribute_value" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Gets the value of the attribute specified by the [param idx] index.
+				Returns the value of an attribute of the currently parsed element, specified by the [param idx] index.
 			</description>
 		</method>
 		<method name="get_current_line" qualifiers="const">
 			<return type="int" />
 			<description>
-				Gets the current line in the parsed file, counting from 0.
+				Returns the current line in the parsed file, counting from 0.
 			</description>
 		</method>
 		<method name="get_named_attribute_value" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Gets the value of a certain attribute of the current element by [param name]. This will raise an error if the element has no such attribute.
+				Returns the value of an attribute of the currently parsed element, specified by its [param name]. This method will raise an error if the element has no such attribute.
 			</description>
 		</method>
 		<method name="get_named_attribute_value_safe" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Gets the value of a certain attribute of the current element by [param name]. This will return an empty [String] if the attribute is not found.
+				Returns the value of an attribute of the currently parsed element, specified by its [param name]. This method will return an empty string if the element has no such attribute.
 			</description>
 		</method>
 		<method name="get_node_data" qualifiers="const">
 			<return type="String" />
 			<description>
-				Gets the contents of a text node. This will raise an error in any other type of node.
+				Returns the contents of a text node. This method will raise an error if the current parsed node is of any other type.
 			</description>
 		</method>
 		<method name="get_node_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Gets the name of the current element node. This will raise an error if the current node type is neither [constant NODE_ELEMENT] nor [constant NODE_ELEMENT_END].
+				Returns the name of a node. This method will raise an error if the currently parsed node is a text node.
+				[b]Note:[/b] The content of a [constant NODE_CDATA] node and the comment string of a [constant NODE_COMMENT] node are also considered names.
 			</description>
 		</method>
 		<method name="get_node_offset" qualifiers="const">
 			<return type="int" />
 			<description>
-				Gets the byte offset of the current node since the beginning of the file or buffer.
+				Returns the byte offset of the currently parsed node since the beginning of the file or buffer. This is usually equivalent to the number of characters before the read position.
 			</description>
 		</method>
 		<method name="get_node_type">
 			<return type="int" enum="XMLParser.NodeType" />
 			<description>
-				Gets the type of the current node. Compare with [enum NodeType] constants.
+				Returns the type of the current node. Compare with [enum NodeType] constants.
 			</description>
 		</method>
 		<method name="has_attribute" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Check whether the current element has a certain attribute.
+				Returns [code]true[/code] if the currently parsed element has an attribute with the [param name].
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Check whether the current element is empty (this only works for completely empty tags, e.g. [code]&lt;element \&gt;[/code]).
+				Returns [code]true[/code] if the currently parsed element is empty, e.g. [code]&lt;element /&gt;[/code].
 			</description>
 		</method>
 		<method name="open">
 			<return type="int" enum="Error" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Opens an XML [param file] for parsing. This returns an error code.
+				Opens an XML [param file] for parsing. This method returns an error code.
 			</description>
 		</method>
 		<method name="open_buffer">
 			<return type="int" enum="Error" />
 			<param index="0" name="buffer" type="PackedByteArray" />
 			<description>
-				Opens an XML raw [param buffer] for parsing. This returns an error code.
+				Opens an XML raw [param buffer] for parsing. This method returns an error code.
 			</description>
 		</method>
 		<method name="read">
 			<return type="int" enum="Error" />
 			<description>
-				Reads the next node of the file. This returns an error code.
+				Parses the next node in the file. This method returns an error code.
 			</description>
 		</method>
 		<method name="seek">
 			<return type="int" enum="Error" />
 			<param index="0" name="position" type="int" />
 			<description>
-				Moves the buffer cursor to a certain offset (since the beginning) and read the next node there. This returns an error code.
+				Moves the buffer cursor to a certain offset (since the beginning) and reads the next node there. This method returns an error code.
 			</description>
 		</method>
 		<method name="skip_section">
 			<return type="void" />
 			<description>
-				Skips the current section. If the node contains other elements, they will be ignored and the cursor will go to the closing of the current element.
+				Skips the current section. If the currently parsed node contains more inner nodes, they will be ignored and the cursor will go to the closing of the current element.
 			</description>
 		</method>
 	</methods>
@@ -126,22 +159,22 @@
 			There's no node (no file or buffer opened).
 		</constant>
 		<constant name="NODE_ELEMENT" value="1" enum="NodeType">
-			Element (tag).
+			An element node type, also known as a tag, e.g. [code]&lt;title&gt;[/code].
 		</constant>
 		<constant name="NODE_ELEMENT_END" value="2" enum="NodeType">
-			End of element.
+			An end of element node type, e.g. [code]&lt;/title&gt;[/code].
 		</constant>
 		<constant name="NODE_TEXT" value="3" enum="NodeType">
-			Text node.
+			A text node type, i.e. text that is not inside an element. This includes whitespace.
 		</constant>
 		<constant name="NODE_COMMENT" value="4" enum="NodeType">
-			Comment node.
+			A comment node type, e.g. [code]&lt;!--A comment--&gt;[/code].
 		</constant>
 		<constant name="NODE_CDATA" value="5" enum="NodeType">
-			CDATA content.
+			A node type for CDATA (Character Data) sections, e.g. [code]&lt;![CDATA[CDATA section]]&gt;[/code].
 		</constant>
 		<constant name="NODE_UNKNOWN" value="6" enum="NodeType">
-			Unknown node.
+			An unknown node type.
 		</constant>
 	</constants>
 </class>

@@ -31,6 +31,7 @@
 #include "packed_scene_translation_parser_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "core/object/script_language.h"
 #include "scene/gui/option_button.h"
 #include "scene/resources/packed_scene.h"
 
@@ -51,27 +52,83 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 	Ref<SceneState> state = Ref<PackedScene>(loaded_res)->get_state();
 
 	Vector<String> parsed_strings;
+	Vector<Pair<NodePath, bool>> atr_owners;
+	Vector<String> tabcontainer_paths;
 	for (int i = 0; i < state->get_node_count(); i++) {
 		String node_type = state->get_node_type(i);
-		if (!ClassDB::is_parent_class(node_type, "Control") && !ClassDB::is_parent_class(node_type, "Window")) {
-			continue;
-		}
+		String parent_path = state->get_node_path(i, true);
 
-		// Find the `auto_translate` property, and abort the string parsing of the node if disabled.
-		bool auto_translating = true;
-		for (int j = 0; j < state->get_node_property_count(i); j++) {
-			if (state->get_node_property_name(i, j) == "auto_translate" && (bool)state->get_node_property_value(i, j) == false) {
-				auto_translating = false;
-				break;
+		// Handle instanced scenes.
+		if (node_type.is_empty()) {
+			Ref<PackedScene> instance = state->get_node_instance(i);
+			if (instance.is_valid()) {
+				Ref<SceneState> _state = instance->get_state();
+				node_type = _state->get_node_type(0);
 			}
 		}
+
+		// Find the `auto_translate_mode` property.
+		bool auto_translating = true;
+		bool auto_translate_mode_found = false;
+		for (int j = 0; j < state->get_node_property_count(i); j++) {
+			if (state->get_node_property_name(i, j) != "auto_translate_mode") {
+				continue;
+			}
+
+			auto_translate_mode_found = true;
+
+			int idx_last = atr_owners.size() - 1;
+			if (idx_last > 0 && !parent_path.begins_with(atr_owners[idx_last].first)) {
+				// Switch to the previous auto translation owner this was nested in, if that was the case.
+				atr_owners.remove_at(idx_last);
+				idx_last -= 1;
+			}
+
+			int auto_translate_mode = (int)state->get_node_property_value(i, j);
+			if (auto_translate_mode == Node::AUTO_TRANSLATE_MODE_DISABLED) {
+				auto_translating = false;
+			}
+
+			atr_owners.push_back(Pair(state->get_node_path(i), auto_translating));
+
+			break;
+		}
+
+		// If `auto_translate_mode` wasn't found, that means it is set to its default value (`AUTO_TRANSLATE_MODE_INHERIT`).
+		if (!auto_translate_mode_found) {
+			int idx_last = atr_owners.size() - 1;
+			if (idx_last > 0 && atr_owners[idx_last].first == parent_path) {
+				auto_translating = atr_owners[idx_last].second;
+			} else {
+				atr_owners.push_back(Pair(state->get_node_path(i), true));
+			}
+		}
+
+		// Parse the names of children of `TabContainer`s, as they are used for tab titles.
+		if (!tabcontainer_paths.is_empty()) {
+			if (!parent_path.begins_with(tabcontainer_paths[tabcontainer_paths.size() - 1])) {
+				// Switch to the previous `TabContainer` this was nested in, if that was the case.
+				tabcontainer_paths.remove_at(tabcontainer_paths.size() - 1);
+			}
+
+			if (auto_translating && !tabcontainer_paths.is_empty() && ClassDB::is_parent_class(node_type, "Control") &&
+					parent_path == tabcontainer_paths[tabcontainer_paths.size() - 1]) {
+				parsed_strings.push_back(state->get_node_name(i));
+			}
+		}
+
 		if (!auto_translating) {
 			continue;
 		}
 
+		if (node_type == "TabContainer") {
+			tabcontainer_paths.push_back(state->get_node_path(i));
+		}
+
 		for (int j = 0; j < state->get_node_property_count(i); j++) {
 			String property_name = state->get_node_property_name(i, j);
-			if (!lookup_properties.has(property_name) || (exception_list.has(node_type) && exception_list[node_type].has(property_name))) {
+
+			if (!match_property(property_name, node_type)) {
 				continue;
 			}
 
@@ -79,6 +136,10 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 			if (property_name == "script" && property_value.get_type() == Variant::OBJECT && !property_value.is_null()) {
 				// Parse built-in script.
 				Ref<Script> s = Object::cast_to<Script>(property_value);
+				if (!s->is_built_in()) {
+					continue;
+				}
+
 				String extension = s->get_language()->get_extension();
 				if (EditorTranslationParser::get_singleton()->can_parse(extension)) {
 					Vector<String> temp;
@@ -86,15 +147,6 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 					EditorTranslationParser::get_singleton()->get_parser(extension)->parse_file(s->get_path(), &temp, &ids_context_plural);
 					parsed_strings.append_array(temp);
 					r_ids_ctx_plural->append_array(ids_context_plural);
-				}
-			} else if ((node_type == "MenuButton" || node_type == "OptionButton") && property_name == "items") {
-				Vector<String> str_values = property_value;
-				int incr_value = node_type == "MenuButton" ? PopupMenu::ITEM_PROPERTY_SIZE : OptionButton::ITEM_PROPERTY_SIZE;
-				for (int k = 0; k < str_values.size(); k += incr_value) {
-					String desc = str_values[k].get_slice(";", 1).strip_edges();
-					if (!desc.is_empty()) {
-						parsed_strings.push_back(desc);
-					}
 				}
 			} else if (node_type == "FileDialog" && property_name == "filters") {
 				// Extract FileDialog's filters property with values in format "*.png ; PNG Images","*.gd ; GDScript Files".
@@ -120,16 +172,35 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 	return OK;
 }
 
+bool PackedSceneEditorTranslationParserPlugin::match_property(const String &p_property_name, const String &p_node_type) {
+	for (const KeyValue<String, Vector<String>> &exception : exception_list) {
+		const String &exception_node_type = exception.key;
+		if (ClassDB::is_parent_class(p_node_type, exception_node_type)) {
+			const Vector<String> &exception_properties = exception.value;
+			for (const String &exception_property : exception_properties) {
+				if (p_property_name.match(exception_property)) {
+					return false;
+				}
+			}
+		}
+	}
+	for (const String &lookup_property : lookup_properties) {
+		if (p_property_name.match(lookup_property)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 PackedSceneEditorTranslationParserPlugin::PackedSceneEditorTranslationParserPlugin() {
 	// Scene Node's properties containing strings that will be fetched for translation.
 	lookup_properties.insert("text");
-	lookup_properties.insert("tooltip_text");
-	lookup_properties.insert("placeholder_text");
-	lookup_properties.insert("items");
+	lookup_properties.insert("*_text");
+	lookup_properties.insert("popup/*/text");
 	lookup_properties.insert("title");
-	lookup_properties.insert("dialog_text");
 	lookup_properties.insert("filters");
 	lookup_properties.insert("script");
+	lookup_properties.insert("item_*/text");
 
 	// Exception list (to prevent false positives).
 	exception_list.insert("LineEdit", { "text" });

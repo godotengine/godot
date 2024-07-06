@@ -31,6 +31,7 @@
 #include "skeleton_2d_editor_plugin.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "scene/2d/mesh_instance_2d.h"
@@ -98,7 +99,7 @@ Skeleton2DEditor::Skeleton2DEditor() {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Skeleton2D"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Skeleton2D"), SNAME("EditorIcons")));
+	options->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Skeleton2D"), EditorStringName(EditorIcons)));
 
 	options->get_popup()->add_item(TTR("Reset to Rest Pose"), MENU_OPTION_SET_REST);
 	options->get_popup()->add_separator();
@@ -106,7 +107,7 @@ Skeleton2DEditor::Skeleton2DEditor() {
 	options->get_popup()->add_item(TTR("Overwrite Rest Pose"), MENU_OPTION_MAKE_REST);
 	options->set_switch_on_hover(true);
 
-	options->get_popup()->connect("id_pressed", callable_mp(this, &Skeleton2DEditor::_menu_option));
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Skeleton2DEditor::_menu_option));
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);

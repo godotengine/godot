@@ -1394,14 +1394,6 @@ FT_BEGIN_HEADER
    *   vert_metrics_offset ::
    *     The file offset of the 'vmtx' table.
    *
-   *   sph_found_func_flags ::
-   *     Flags identifying special bytecode functions (used by the v38
-   *     implementation of the bytecode interpreter).
-   *
-   *   sph_compatibility_mode ::
-   *     This flag is set if we are in ClearType backward compatibility mode
-   *     (used by the v38 implementation of the bytecode interpreter).
-   *
    *   ebdt_start ::
    *     The file offset of the sbit data table (CBDT, bdat, etc.).
    *
@@ -1596,13 +1588,6 @@ FT_BEGIN_HEADER
     /* since 2.3.0 */
     FT_ULong              horz_metrics_offset;
     FT_ULong              vert_metrics_offset;
-
-#ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
-    /* since 2.4.12 */
-    FT_ULong              sph_found_func_flags; /* special functions found */
-                                                /* for this face           */
-    FT_Bool               sph_compatibility_mode;
-#endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
 
 #ifdef TT_CONFIG_OPTION_EMBEDDED_BITMAPS
     /* since 2.7 */

@@ -19,7 +19,6 @@ struct Ligature
                                          * in writing direction */
   public:
   DEFINE_SIZE_ARRAY (Types::size + 2, component);
-  DEFINE_SIZE_MAX (65536 * Types::HBGlyphID::static_size);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -91,8 +90,17 @@ struct Ligature
 
     unsigned int total_component_count = 0;
 
+    if (unlikely (count > HB_MAX_CONTEXT_LENGTH)) return false;
+    unsigned match_positions_stack[4];
+    unsigned *match_positions = match_positions_stack;
+    if (unlikely (count > ARRAY_LENGTH (match_positions_stack)))
+    {
+      match_positions = (unsigned *) hb_malloc (hb_max (count, 1u) * sizeof (unsigned));
+      if (unlikely (!match_positions))
+	return_trace (false);
+    }
+
     unsigned int match_end = 0;
-    unsigned int match_positions[HB_MAX_CONTEXT_LENGTH];
 
     if (likely (!match_input (c, count,
                               &component[1],
@@ -103,6 +111,8 @@ struct Ligature
                               &total_component_count)))
     {
       c->buffer->unsafe_to_concat (c->buffer->idx, match_end);
+      if (match_positions != match_positions_stack)
+        hb_free (match_positions);
       return_trace (false);
     }
 
@@ -146,6 +156,8 @@ struct Ligature
 			  pos);
     }
 
+    if (match_positions != match_positions_stack)
+      hb_free (match_positions);
     return_trace (true);
   }
 

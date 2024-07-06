@@ -32,21 +32,27 @@
 
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/plugins/gizmos/gizmo_3d_helper.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
 
 GPUParticlesCollision3DGizmoPlugin::GPUParticlesCollision3DGizmoPlugin() {
-	Color gizmo_color_attractor = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particle_attractor", Color(1, 0.7, 0.5));
+	helper.instantiate();
+
+	Color gizmo_color_attractor = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/particle_attractor", Color(1, 0.7, 0.5));
 	create_material("shape_material_attractor", gizmo_color_attractor);
 	gizmo_color_attractor.a = 0.15;
 	create_material("shape_material_attractor_internal", gizmo_color_attractor);
 
-	Color gizmo_color_collision = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particle_collision", Color(0.5, 0.7, 1));
+	Color gizmo_color_collision = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/particle_collision", Color(0.5, 0.7, 1));
 	create_material("shape_material_collision", gizmo_color_collision);
 	gizmo_color_collision.a = 0.15;
 	create_material("shape_material_collision_internal", gizmo_color_collision);
 
 	create_handle_material("handles");
+}
+
+GPUParticlesCollision3DGizmoPlugin::~GPUParticlesCollision3DGizmoPlugin() {
 }
 
 bool GPUParticlesCollision3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -69,7 +75,7 @@ String GPUParticlesCollision3DGizmoPlugin::get_handle_name(const EditorNode3DGiz
 	}
 
 	if (Object::cast_to<GPUParticlesCollisionBox3D>(cs) || Object::cast_to<GPUParticlesAttractorBox3D>(cs) || Object::cast_to<GPUParticlesAttractorVectorField3D>(cs) || Object::cast_to<GPUParticlesCollisionSDF3D>(cs) || Object::cast_to<GPUParticlesCollisionHeightField3D>(cs)) {
-		return "Size";
+		return helper->box_get_handle_name(p_id);
 	}
 
 	return "";
@@ -89,16 +95,15 @@ Variant GPUParticlesCollision3DGizmoPlugin::get_handle_value(const EditorNode3DG
 	return Variant();
 }
 
+void GPUParticlesCollision3DGizmoPlugin::begin_handle_action(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) {
+	helper->initialize_handle_action(get_handle_value(p_gizmo, p_id, p_secondary), p_gizmo->get_node_3d()->get_global_transform());
+}
+
 void GPUParticlesCollision3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
 	Node3D *sn = p_gizmo->get_node_3d();
 
-	Transform3D gt = sn->get_global_transform();
-	Transform3D gi = gt.affine_inverse();
-
-	Vector3 ray_from = p_camera->project_ray_origin(p_point);
-	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
-
-	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 4096) };
+	Vector3 sg[2];
+	helper->get_segment(p_camera, p_point, sg);
 
 	if (Object::cast_to<GPUParticlesCollisionSphere3D>(sn) || Object::cast_to<GPUParticlesAttractorSphere3D>(sn)) {
 		Vector3 ra, rb;
@@ -116,22 +121,11 @@ void GPUParticlesCollision3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_g
 	}
 
 	if (Object::cast_to<GPUParticlesCollisionBox3D>(sn) || Object::cast_to<GPUParticlesAttractorBox3D>(sn) || Object::cast_to<GPUParticlesAttractorVectorField3D>(sn) || Object::cast_to<GPUParticlesCollisionSDF3D>(sn) || Object::cast_to<GPUParticlesCollisionHeightField3D>(sn)) {
-		Vector3 axis;
-		axis[p_id] = 1.0;
-		Vector3 ra, rb;
-		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
-		float d = ra[p_id] * 2;
-		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
-			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
-		}
-
-		if (d < 0.001) {
-			d = 0.001;
-		}
-
-		Vector3 he = sn->call("get_size");
-		he[p_id] = d;
-		sn->call("set_size", he);
+		Vector3 size = sn->call("get_size");
+		Vector3 position;
+		helper->box_set_handle(sg, p_id, size, position);
+		sn->call("set_size", size);
+		sn->set_global_position(position);
 	}
 }
 
@@ -152,16 +146,7 @@ void GPUParticlesCollision3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *
 	}
 
 	if (Object::cast_to<GPUParticlesCollisionBox3D>(sn) || Object::cast_to<GPUParticlesAttractorBox3D>(sn) || Object::cast_to<GPUParticlesAttractorVectorField3D>(sn) || Object::cast_to<GPUParticlesCollisionSDF3D>(sn) || Object::cast_to<GPUParticlesCollisionHeightField3D>(sn)) {
-		if (p_cancel) {
-			sn->call("set_size", p_restore);
-			return;
-		}
-
-		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-		ur->create_action(TTR("Change Box Shape Size"));
-		ur->add_do_method(sn, "set_size", sn->call("get_size"));
-		ur->add_undo_method(sn, "set_size", p_restore);
-		ur->commit_action();
+		helper->box_commit_handle("Change Box Shape Size", p_cancel, sn);
 	}
 }
 
@@ -237,13 +222,7 @@ void GPUParticlesCollision3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			lines.push_back(b);
 		}
 
-		Vector<Vector3> handles;
-
-		for (int i = 0; i < 3; i++) {
-			Vector3 ax;
-			ax[i] = cs->call("get_size").operator Vector3()[i] / 2;
-			handles.push_back(ax);
-		}
+		Vector<Vector3> handles = helper->box_get_handles(aabb.size);
 
 		p_gizmo->add_lines(lines, material);
 		p_gizmo->add_collision_segments(lines);

@@ -31,6 +31,7 @@
 #ifndef MESH_STORAGE_RD_H
 #define MESH_STORAGE_RD_H
 
+#include "../../rendering_server_globals.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
@@ -72,7 +73,7 @@ private:
 	struct Mesh {
 		struct Surface {
 			RS::PrimitiveType primitive = RS::PRIMITIVE_POINTS;
-			uint32_t format = 0;
+			uint64_t format = 0;
 
 			RID vertex_buffer;
 			RID attribute_buffer;
@@ -89,7 +90,10 @@ private:
 			// cache-efficient structure.
 
 			struct Version {
-				uint32_t input_mask = 0;
+				uint64_t input_mask = 0;
+				uint32_t current_buffer = 0;
+				uint32_t previous_buffer = 0;
+				bool input_motion_vectors = false;
 				RD::VertexFormatID vertex_format = 0;
 				RID vertex_array;
 			};
@@ -115,6 +119,12 @@ private:
 			AABB aabb;
 
 			Vector<AABB> bone_aabbs;
+
+			// Transform used in runtime bone AABBs compute.
+			// As bone AABBs are saved in Mesh space, but bones animation is in Skeleton space.
+			Transform3D mesh_to_skeleton_xform;
+
+			Vector4 uv_scale;
 
 			RID blend_shape_buffer;
 
@@ -143,6 +153,7 @@ private:
 		AABB aabb;
 		AABB custom_aabb;
 		uint64_t skeleton_aabb_version = 0;
+		RID skeleton_aabb_rid;
 
 		Vector<RID> material_cache;
 
@@ -150,6 +161,8 @@ private:
 
 		RID shadow_mesh;
 		HashSet<Mesh *> shadow_owners;
+
+		String path;
 
 		Dependency dependency;
 	};
@@ -162,8 +175,11 @@ private:
 		Mesh *mesh = nullptr;
 		RID skeleton;
 		struct Surface {
-			RID vertex_buffer;
-			RID uniform_set;
+			RID vertex_buffer[2];
+			RID uniform_set[2];
+			uint32_t current_buffer = 0;
+			uint32_t previous_buffer = 0;
+			uint64_t last_change = 0;
 
 			Mesh::Surface::Version *versions = nullptr; //allocated on demand
 			uint32_t version_count = 0;
@@ -183,10 +199,11 @@ private:
 				weight_update_list(this), array_update_list(this) {}
 	};
 
-	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint32_t p_input_mask, MeshInstance::Surface *mis = nullptr);
+	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, bool p_input_motion_vectors, MeshInstance::Surface *mis = nullptr, uint32_t p_current_buffer = 0, uint32_t p_previous_buffer = 0);
 
 	void _mesh_instance_clear(MeshInstance *mi);
 	void _mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint32_t p_surface);
+	void _mesh_instance_add_surface_buffer(MeshInstance *mi, Mesh *mesh, MeshInstance::Surface *s, uint32_t p_surface, uint32_t p_buffer_index);
 
 	mutable RID_Owner<MeshInstance> mesh_instance_owner;
 
@@ -203,6 +220,7 @@ private:
 		bool uses_custom_data = false;
 		int visible_instances = -1;
 		AABB aabb;
+		AABB custom_aabb;
 		bool aabb_dirty = false;
 		bool buffer_set = false;
 		bool motion_vectors_enabled = false;
@@ -234,7 +252,9 @@ private:
 	MultiMesh *multimesh_dirty_list = nullptr;
 
 	_FORCE_INLINE_ void _multimesh_make_local(MultiMesh *multimesh) const;
+	_FORCE_INLINE_ void _multimesh_enable_motion_vectors(MultiMesh *multimesh);
 	_FORCE_INLINE_ void _multimesh_update_motion_vectors_data_cache(MultiMesh *multimesh);
+	_FORCE_INLINE_ bool _multimesh_uses_motion_vectors(MultiMesh *multimesh);
 	_FORCE_INLINE_ void _multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb);
 	_FORCE_INLINE_ void _multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb);
 	_FORCE_INLINE_ void _multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances);
@@ -255,7 +275,7 @@ private:
 
 			uint32_t blend_shape_count;
 			uint32_t normalized_blend_shapes;
-			uint32_t pad0;
+			uint32_t normal_tangent_stride;
 			uint32_t pad1;
 			float skeleton_transform_x[2];
 			float skeleton_transform_y[2];
@@ -310,6 +330,12 @@ private:
 
 	Skeleton *skeleton_dirty_list = nullptr;
 
+	enum AttributeLocation {
+		ATTRIBUTE_LOCATION_PREV_VERTEX = 12,
+		ATTRIBUTE_LOCATION_PREV_NORMAL = 13,
+		ATTRIBUTE_LOCATION_PREV_TANGENT = 14
+	};
+
 public:
 	static MeshStorage *get_singleton();
 
@@ -355,13 +381,16 @@ public:
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) override;
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) override;
 
+	virtual void mesh_set_path(RID p_mesh, const String &p_path) override;
+	virtual String mesh_get_path(RID p_mesh) const override;
+
 	virtual void mesh_clear(RID p_mesh) override;
 
 	virtual bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) override;
 
 	_FORCE_INLINE_ const RID *mesh_get_surface_count_and_materials(RID p_mesh, uint32_t &r_surface_count) {
 		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
-		ERR_FAIL_COND_V(!mesh, nullptr);
+		ERR_FAIL_NULL_V(mesh, nullptr);
 		r_surface_count = mesh->surface_count;
 		if (r_surface_count == 0) {
 			return nullptr;
@@ -378,7 +407,7 @@ public:
 
 	_FORCE_INLINE_ void *mesh_get_surface(RID p_mesh, uint32_t p_surface_index) {
 		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
-		ERR_FAIL_COND_V(!mesh, nullptr);
+		ERR_FAIL_NULL_V(mesh, nullptr);
 		ERR_FAIL_UNSIGNED_INDEX_V(p_surface_index, mesh->surface_count, nullptr);
 
 		return mesh->surfaces[p_surface_index];
@@ -386,7 +415,7 @@ public:
 
 	_FORCE_INLINE_ RID mesh_get_shadow_mesh(RID p_mesh) {
 		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
-		ERR_FAIL_COND_V(!mesh, RID());
+		ERR_FAIL_NULL_V(mesh, RID());
 
 		return mesh->shadow_mesh;
 	}
@@ -404,6 +433,21 @@ public:
 	_FORCE_INLINE_ uint32_t mesh_surface_get_vertices_drawn_count(void *p_surface) const {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 		return s->index_count ? s->index_count : s->vertex_count;
+	}
+
+	_FORCE_INLINE_ AABB mesh_surface_get_aabb(void *p_surface) {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+		return s->aabb;
+	}
+
+	_FORCE_INLINE_ uint64_t mesh_surface_get_format(void *p_surface) {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+		return s->format;
+	}
+
+	_FORCE_INLINE_ Vector4 mesh_surface_get_uv_scale(void *p_surface) {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+		return s->uv_scale;
 	}
 
 	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_mesh_lod_threshold, uint32_t &r_index_count) const {
@@ -436,7 +480,7 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint32_t p_input_mask, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
+	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint64_t p_input_mask, bool p_input_motion_vectors, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		s->version_lock.lock();
@@ -444,9 +488,11 @@ public:
 		//there will never be more than, at much, 3 or 4 versions, so iterating is the fastest way
 
 		for (uint32_t i = 0; i < s->version_count; i++) {
-			if (s->versions[i].input_mask != p_input_mask) {
+			if (s->versions[i].input_mask != p_input_mask || s->versions[i].input_motion_vectors != p_input_motion_vectors) {
+				// Find the version that matches the inputs required.
 				continue;
 			}
+
 			//we have this version, hooray
 			r_vertex_format = s->versions[i].vertex_format;
 			r_vertex_array_rd = s->versions[i].vertex_array;
@@ -458,7 +504,7 @@ public:
 		s->version_count++;
 		s->versions = (Mesh::Surface::Version *)memrealloc(s->versions, sizeof(Mesh::Surface::Version) * s->version_count);
 
-		_mesh_surface_generate_version_for_input_mask(s->versions[version], s, p_input_mask);
+		_mesh_surface_generate_version_for_input_mask(s->versions[version], s, p_input_mask, p_input_motion_vectors);
 
 		r_vertex_format = s->versions[version].vertex_format;
 		r_vertex_array_rd = s->versions[version].vertex_array;
@@ -466,23 +512,34 @@ public:
 		s->version_lock.unlock();
 	}
 
-	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint32_t p_surface_index, uint32_t p_input_mask, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
+	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint64_t p_surface_index, uint64_t p_input_mask, bool p_input_motion_vectors, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
 		MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
-		ERR_FAIL_COND(!mi);
+		ERR_FAIL_NULL(mi);
 		Mesh *mesh = mi->mesh;
 		ERR_FAIL_UNSIGNED_INDEX(p_surface_index, mesh->surface_count);
 
 		MeshInstance::Surface *mis = &mi->surfaces[p_surface_index];
 		Mesh::Surface *s = mesh->surfaces[p_surface_index];
+		uint32_t current_buffer = mis->current_buffer;
+
+		// Using the previous buffer is only allowed if the surface was updated this frame and motion vectors are required.
+		uint32_t previous_buffer = p_input_motion_vectors && (RSG::rasterizer->get_frame_number() == mis->last_change) ? mis->previous_buffer : current_buffer;
 
 		s->version_lock.lock();
 
 		//there will never be more than, at much, 3 or 4 versions, so iterating is the fastest way
 
 		for (uint32_t i = 0; i < mis->version_count; i++) {
-			if (mis->versions[i].input_mask != p_input_mask) {
+			if (mis->versions[i].input_mask != p_input_mask || mis->versions[i].input_motion_vectors != p_input_motion_vectors) {
+				// Find the version that matches the inputs required.
 				continue;
 			}
+
+			if (mis->versions[i].current_buffer != current_buffer || mis->versions[i].previous_buffer != previous_buffer) {
+				// Find the version that corresponds to the correct buffers that should be used.
+				continue;
+			}
+
 			//we have this version, hooray
 			r_vertex_format = mis->versions[i].vertex_format;
 			r_vertex_array_rd = mis->versions[i].vertex_array;
@@ -494,7 +551,7 @@ public:
 		mis->version_count++;
 		mis->versions = (Mesh::Surface::Version *)memrealloc(mis->versions, sizeof(Mesh::Surface::Version) * mis->version_count);
 
-		_mesh_surface_generate_version_for_input_mask(mis->versions[version], s, p_input_mask, mis);
+		_mesh_surface_generate_version_for_input_mask(mis->versions[version], s, p_input_mask, p_input_motion_vectors, mis, current_buffer, previous_buffer);
 
 		r_vertex_format = mis->versions[version].vertex_format;
 		r_vertex_array_rd = mis->versions[version].vertex_array;
@@ -590,11 +647,15 @@ public:
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) override;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const override;
 
+	virtual void multimesh_set_custom_aabb(RID p_multimesh, const AABB &p_aabb) override;
+	virtual AABB multimesh_get_custom_aabb(RID p_multimesh) const override;
+
 	virtual AABB multimesh_get_aabb(RID p_multimesh) const override;
 
 	void _update_dirty_multimeshes();
-	bool _multimesh_enable_motion_vectors(RID p_multimesh);
 	void _multimesh_get_motion_vectors_offsets(RID p_multimesh, uint32_t &r_current_offset, uint32_t &r_prev_offset);
+	bool _multimesh_uses_motion_vectors_offsets(RID p_multimesh);
+	bool _multimesh_uses_motion_vectors(RID p_multimesh);
 
 	_FORCE_INLINE_ RS::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
@@ -689,7 +750,7 @@ public:
 
 	_FORCE_INLINE_ RID skeleton_get_3d_uniform_set(RID p_skeleton, RID p_shader, uint32_t p_set) const {
 		Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
-		ERR_FAIL_COND_V(!skeleton, RID());
+		ERR_FAIL_NULL_V(skeleton, RID());
 		if (skeleton->size == 0) {
 			return RID();
 		}

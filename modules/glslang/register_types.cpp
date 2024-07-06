@@ -30,16 +30,15 @@
 
 #include "register_types.h"
 
-#include "glslang_resource_limits.h"
-
+#include "core/config/engine.h"
 #include "servers/rendering/rendering_device.h"
 
-#include <glslang/Include/Types.h>
+#include <glslang/Public/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
 #include <glslang/SPIRV/GlslangToSpv.h>
 
 static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage, const String &p_source_code, RenderingDevice::ShaderLanguage p_language, String *r_error, const RenderingDevice *p_render_device) {
-	const RD::Capabilities *capabilities = p_render_device->get_device_capabilities();
+	const RDD::Capabilities &capabilities = p_render_device->get_device_capabilities();
 	Vector<uint8_t> ret;
 
 	ERR_FAIL_COND_V(p_language == RenderingDevice::SHADER_LANGUAGE_HLSL, ret);
@@ -56,18 +55,24 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 
 	glslang::EShTargetClientVersion ClientVersion = glslang::EShTargetVulkan_1_2;
 	glslang::EShTargetLanguageVersion TargetVersion = glslang::EShTargetSpv_1_5;
-	glslang::TShader::ForbidIncluder includer;
 
-	if (capabilities->device_family == RenderingDevice::DeviceFamily::DEVICE_VULKAN) {
-		if (capabilities->version_major == 1 && capabilities->version_minor == 0) {
+	if (capabilities.device_family == RDD::DEVICE_VULKAN) {
+		if (capabilities.version_major == 1 && capabilities.version_minor == 0) {
 			ClientVersion = glslang::EShTargetVulkan_1_0;
 			TargetVersion = glslang::EShTargetSpv_1_0;
-		} else if (capabilities->version_major == 1 && capabilities->version_minor == 1) {
+		} else if (capabilities.version_major == 1 && capabilities.version_minor == 1) {
 			ClientVersion = glslang::EShTargetVulkan_1_1;
 			TargetVersion = glslang::EShTargetSpv_1_3;
 		} else {
 			// use defaults
 		}
+	} else if (capabilities.device_family == RDD::DEVICE_DIRECTX) {
+		// NIR-DXIL is Vulkan 1.1-conformant.
+		ClientVersion = glslang::EShTargetVulkan_1_1;
+		// The SPIR-V part of Mesa supports 1.6, but:
+		// - SPIRV-Reflect won't be able to parse the compute workgroup size.
+		// - We want to play it safe with NIR-DXIL.
+		TargetVersion = glslang::EShTargetSpv_1_3;
 	} else {
 		// once we support other backends we'll need to do something here
 		if (r_error) {
@@ -127,26 +132,13 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	}
 
 	EShMessages messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
-	const int DefaultVersion = 100;
-	std::string pre_processed_code;
-
-	//preprocess
-	if (!shader.preprocess(&DefaultTBuiltInResource, DefaultVersion, ENoProfile, false, false, messages, &pre_processed_code, includer)) {
-		if (r_error) {
-			(*r_error) = "Failed pre-process:\n";
-			(*r_error) += shader.getInfoLog();
-			(*r_error) += "\n";
-			(*r_error) += shader.getInfoDebugLog();
-		}
-
-		return ret;
+	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
+		messages = (EShMessages)(messages | EShMsgDebugInfo);
 	}
-	//set back..
-	cs_strings = pre_processed_code.c_str();
-	shader.setStrings(&cs_strings, 1);
+	const int DefaultVersion = 100;
 
 	//parse
-	if (!shader.parse(&DefaultTBuiltInResource, DefaultVersion, false, messages)) {
+	if (!shader.parse(GetDefaultResources(), DefaultVersion, false, messages)) {
 		if (r_error) {
 			(*r_error) = "Failed parse:\n";
 			(*r_error) += shader.getInfoLog();
@@ -174,6 +166,13 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	std::vector<uint32_t> SpirV;
 	spv::SpvBuildLogger logger;
 	glslang::SpvOptions spvOptions;
+
+	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
+		spvOptions.generateDebugInfo = true;
+		spvOptions.emitNonSemanticShaderDebugInfo = true;
+		spvOptions.emitNonSemanticShaderDebugSource = true;
+	}
+
 	glslang::GlslangToSpv(*program.getIntermediate(stages[p_stage]), SpirV, &logger, &spvOptions);
 
 	ret.resize(SpirV.size() * sizeof(uint32_t));
@@ -186,9 +185,9 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 }
 
 static String _get_cache_key_function_glsl(const RenderingDevice *p_render_device) {
-	const RD::Capabilities *capabilities = p_render_device->get_device_capabilities();
+	const RenderingDeviceDriver::Capabilities &capabilities = p_render_device->get_device_capabilities();
 	String version;
-	version = "SpirVGen=" + itos(glslang::GetSpirvGeneratorVersion()) + ", major=" + itos(capabilities->version_major) + ", minor=" + itos(capabilities->version_minor) + " , subgroup_size=" + itos(p_render_device->limit_get(RD::LIMIT_SUBGROUP_SIZE)) + " , subgroup_ops=" + itos(p_render_device->limit_get(RD::LIMIT_SUBGROUP_OPERATIONS)) + " , subgroup_in_shaders=" + itos(p_render_device->limit_get(RD::LIMIT_SUBGROUP_IN_SHADERS));
+	version = "SpirVGen=" + itos(glslang::GetSpirvGeneratorVersion()) + ", major=" + itos(capabilities.version_major) + ", minor=" + itos(capabilities.version_minor) + " , subgroup_size=" + itos(p_render_device->limit_get(RD::LIMIT_SUBGROUP_SIZE)) + " , subgroup_ops=" + itos(p_render_device->limit_get(RD::LIMIT_SUBGROUP_OPERATIONS)) + " , subgroup_in_shaders=" + itos(p_render_device->limit_get(RD::LIMIT_SUBGROUP_IN_SHADERS)) + " , debug=" + itos(Engine::get_singleton()->is_generate_spirv_debug_info_enabled());
 	return version;
 }
 
