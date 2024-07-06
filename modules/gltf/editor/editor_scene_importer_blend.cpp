@@ -132,12 +132,10 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	}
 #endif
 
-	source_global = source_global.c_escape();
-
 	const String blend_basename = p_path.get_file().get_basename();
 	const String sink = ProjectSettings::get_singleton()->get_imported_files_path().path_join(
 			vformat("%s-%s.gltf", blend_basename, p_path.md5_text()));
-	const String sink_global = ProjectSettings::get_singleton()->globalize_path(sink).c_escape();
+	const String sink_global = ProjectSettings::get_singleton()->globalize_path(sink);
 
 	// Handle configuration options.
 
