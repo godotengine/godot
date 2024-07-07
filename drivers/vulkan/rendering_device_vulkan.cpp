@@ -2783,7 +2783,7 @@ Vector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t 
 		VkCommandBuffer command_buffer = frames[frame].draw_command_buffer; // Makes more sense to retrieve.
 		Buffer tmp_buffer;
 		_buffer_allocate(&tmp_buffer, buffer_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT);
-
+		ERR_FAIL_COND_V_MSG(tmp_buffer.buffer == VK_NULL_HANDLE, Vector<uint8_t>(), "Device was unable to allocate temporal buffer.");
 		{ // Source image barrier.
 			VkImageMemoryBarrier image_memory_barrier;
 			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -4399,6 +4399,7 @@ RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Vec
 	}
 	Buffer buffer;
 	_buffer_allocate(&buffer, p_size_bytes, usage, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0);
+	ERR_FAIL_COND_V_MSG(buffer.buffer == VK_NULL_HANDLE, RID(), "Device was unable to allocate vertex buffer.");
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
@@ -4568,6 +4569,7 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 	index_buffer.max_index = 0xFFFFFFFF;
 #endif
 	_buffer_allocate(&index_buffer, size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0);
+	ERR_FAIL_COND_V_MSG(index_buffer.buffer == VK_NULL_HANDLE, RID(), "Device was unable to allocate index buffer.");
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
@@ -6086,6 +6088,7 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer, uint32_t p_
 
 	Buffer tmp_buffer;
 	_buffer_allocate(&tmp_buffer, p_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT);
+	ERR_FAIL_COND_V_MSG(tmp_buffer.buffer == VK_NULL_HANDLE, Vector<uint8_t>(), "Device was unable to allocate temporal buffer.");
 	VkBufferCopy region;
 	region.srcOffset = p_offset;
 	region.dstOffset = 0;
