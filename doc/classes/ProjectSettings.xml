@@ -1394,12 +1394,6 @@
 			Enabling this can greatly improve the responsiveness to input, specially in devices that need to run multiple physics frames per visible (process) frame, because they can't run at the target frame rate.
 			[b]Note:[/b] Currently implemented only on Android.
 		</member>
-		<member name="input_devices/buffering/android/use_accumulated_input" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], multiple input events will be accumulated into a single input event when possible.
-		</member>
-		<member name="input_devices/buffering/android/use_input_buffering" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], input events will be buffered prior to being dispatched.
-		</member>
 		<member name="input_devices/compatibility/legacy_just_pressed_behavior" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], [method Input.is_action_just_pressed] and [method Input.is_action_just_released] will only return [code]true[/code] if the action is still in the respective state, i.e. an action that is pressed [i]and[/i] released on the same frame will be missed.
 			If [code]false[/code], no input will be lost.

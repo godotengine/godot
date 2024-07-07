@@ -596,6 +596,16 @@
 			The path to the directory containing the Open Image Denoise (OIDN) executable, used optionally for denoising lightmaps. It can be downloaded from [url=https://www.openimagedenoise.org/downloads.html]openimagedenoise.org[/url].
 			To enable this feature for your specific project, use [member ProjectSettings.rendering/lightmapping/denoising/denoiser].
 		</member>
+		<member name="input/buffering/agile_event_flushing" type="bool" setter="" getter="">
+			If [code]true[/code], input events will be flushed just before every idle and physics frame.
+			If [code]false[/code], these events will be flushed only once per process frame, between iterations of the engine.
+			Enabling this setting can greatly improve input responsiveness, especially in devices that struggle to run at the project's intended frame rate.
+		</member>
+		<member name="input/buffering/use_accumulated_input" type="bool" setter="" getter="">
+			If [code]true[/code], similar input events sent by the operating system are accumulated. When input accumulation is enabled, all input events generated during a frame will be merged and emitted when the frame is done rendering. Therefore, this limits the number of input method calls per second to the rendering FPS.
+			Input accumulation can be disabled to get slightly more precise/reactive input at the cost of increased CPU usage.
+			[b]Note:[/b] Input accumulation is [i]enabled[/i] by default.
+		</member>
 		<member name="interface/editor/accept_dialog_cancel_ok_buttons" type="int" setter="" getter="">
 			How to position the Cancel and OK buttons in the editor's [AcceptDialog]s. Different platforms have different standard behaviors for this, which can be overridden using this setting. This is useful if you use Godot both on Windows and macOS/Linux and your Godot muscle memory is stronger than your OS specific one.
 			- [b]Auto[/b] follows the platform convention: Cancel first on macOS and Linux, OK first on Windows.
