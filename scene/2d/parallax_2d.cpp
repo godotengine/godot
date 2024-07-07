@@ -86,11 +86,10 @@ void Parallax2D::_update_scroll() {
 	}
 
 	Point2 scroll_ofs = screen_offset;
-	Size2 vps = get_viewport_rect().size;
 
-	if (Engine::get_singleton()->is_editor_hint()) {
-		vps = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
-	} else {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		Size2 vps = get_viewport_rect().size;
+
 		if (limit_begin.x <= limit_end.x - vps.x) {
 			scroll_ofs.x = CLAMP(scroll_ofs.x, limit_begin.x, limit_end.x - vps.x);
 		}
