@@ -146,7 +146,7 @@ public:
 	BitField<KeyModifierMask> get_modifiers_mask() const;
 
 	virtual String as_text() const override;
-	virtual String to_string() override;
+	virtual String _to_string() override;
 
 	InputEventWithModifiers() {}
 };
@@ -200,7 +200,7 @@ public:
 	virtual String as_text_key_label() const;
 	virtual String as_text_location() const;
 	virtual String as_text() const override;
-	virtual String to_string() override;
+	virtual String _to_string() override;
 
 	static Ref<InputEventKey> create_reference(Key p_keycode_with_modifier_masks, bool p_physical = false);
 
@@ -263,7 +263,7 @@ public:
 
 	virtual bool is_action_type() const override { return true; }
 	virtual String as_text() const override;
-	virtual String to_string() override;
+	virtual String _to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::MOUSE_BUTTON; }
 
@@ -308,7 +308,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
-	virtual String to_string() override;
+	virtual String _to_string() override;
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
 
@@ -337,7 +337,7 @@ public:
 
 	virtual bool is_action_type() const override { return true; }
 	virtual String as_text() const override;
-	virtual String to_string() override;
+	virtual String _to_string() override;
 
 	// The default device ID is `InputMap::ALL_DEVICES`.
 	static Ref<InputEventJoypadMotion> create_reference(JoyAxis p_axis, float p_value, int p_device = -1);
@@ -370,7 +370,7 @@ public:
 	virtual bool is_action_type() const override { return true; }
 
 	virtual String as_text() const override;
-	virtual String to_string() override;
+	virtual String _to_string() override;
 
 	// The default device ID is `InputMap::ALL_DEVICES`.
 	static Ref<InputEventJoypadButton> create_reference(JoyButton p_btn_index, int p_device = -1);
@@ -404,7 +404,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
-	virtual String to_string() override;
+	virtual String _to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::SCREEN_TOUCH; }
 
@@ -456,7 +456,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
-	virtual String to_string() override;
+	virtual String _to_string() override;
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
 
@@ -495,7 +495,7 @@ public:
 	virtual bool is_action_type() const override { return true; }
 
 	virtual String as_text() const override;
-	virtual String to_string() override;
+	virtual String _to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::ACTION; }
 
@@ -528,7 +528,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
-	virtual String to_string() override;
+	virtual String _to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::MAGNIFY_GESTURE; }
 
@@ -548,7 +548,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
-	virtual String to_string() override;
+	virtual String _to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::PAN_GESTURE; }
 
@@ -596,7 +596,7 @@ public:
 	int get_controller_value() const;
 
 	virtual String as_text() const override;
-	virtual String to_string() override;
+	virtual String _to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::MIDI; }
 
@@ -616,7 +616,7 @@ public:
 	Ref<Shortcut> get_shortcut();
 
 	virtual String as_text() const override;
-	virtual String to_string() override;
+	virtual String _to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::SHORTCUT; }
 

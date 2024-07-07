@@ -826,7 +826,7 @@ Ref<JavaClass> JavaClass::get_java_parent_class() const {
 	return ret;
 }
 
-String JavaClass::to_string() {
+String JavaClass::_to_string() {
 	return "<JavaClass:" + java_class_name + ">";
 }
 
@@ -874,11 +874,11 @@ Ref<JavaClass> JavaObject::get_java_class() const {
 	return base_class;
 }
 
-String JavaObject::to_string() {
+String JavaObject::_to_string() {
 	if (base_class.is_valid() && instance) {
 		return "<JavaObject:" + base_class->java_class_name + " \"" + (String)call("toString") + "\">";
 	}
-	return RefCounted::to_string();
+	return RefCounted::_to_string();
 }
 
 bool JavaObject::has_java_method(const StringName &p_method) const {

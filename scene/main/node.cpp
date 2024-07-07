@@ -2765,27 +2765,6 @@ void Node::get_storable_properties(HashSet<StringName> &r_storable_properties) c
 	}
 }
 
-String Node::to_string() {
-	// Keep this method in sync with `Object::to_string`.
-	ERR_THREAD_GUARD_V(String());
-	if (get_script_instance()) {
-		bool valid;
-		String ret = get_script_instance()->to_string(&valid);
-		if (valid) {
-			return ret;
-		}
-	}
-	if (_get_extension() && _get_extension()->to_string) {
-		String ret;
-		GDExtensionBool is_valid;
-		_get_extension()->to_string(_get_extension_instance(), &is_valid, &ret);
-		if (is_valid) {
-			return ret;
-		}
-	}
-	return (get_name() ? String(get_name()) + ":" : "") + Object::to_string();
-}
-
 void Node::set_scene_instance_state(const Ref<SceneState> &p_state) {
 	ERR_THREAD_GUARD
 	data.instance_state = p_state;
@@ -3599,6 +3578,11 @@ void Node::_validate_property(PropertyInfo &p_property) const {
 	if ((p_property.name == "process_thread_group_order" || p_property.name == "process_thread_messages") && data.process_thread_group == PROCESS_THREAD_GROUP_INHERIT) {
 		p_property.usage = 0;
 	}
+}
+
+String Node::_to_string() {
+	ERR_THREAD_GUARD_V(String());
+	return (get_name() ? String(get_name()) + ":" : "") + Object::_to_string();
 }
 
 void Node::input(const Ref<InputEvent> &p_event) {

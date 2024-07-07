@@ -140,10 +140,9 @@ private:
 
 protected:
 	static void _bind_methods();
+	virtual String _to_string() override;
 
 public:
-	virtual String to_string() override;
-
 	Ref<PropertyTweener> tween_property(const Object *p_target, const NodePath &p_property, Variant p_to, double p_duration);
 	Ref<IntervalTweener> tween_interval(double p_time);
 	Ref<CallbackTweener> tween_callback(const Callable &p_callback);

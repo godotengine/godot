@@ -122,6 +122,7 @@ protected:
 	GDVIRTUAL0(_reset_state);
 
 	virtual Ref<Resource> _duplicate(const DuplicateParams &p_params) const;
+	virtual String _to_string() override;
 
 public:
 	static Node *(*_get_local_scene_func)(); // Used by the editor.
