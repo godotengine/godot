@@ -459,8 +459,8 @@ Variant Tween::interpolate_variant(const Variant &p_initial_val, const Variant &
 	return ret;
 }
 
-String Tween::to_string() {
-	String ret = Object::to_string();
+String Tween::_to_string() {
+	String ret = Object::_to_string();
 	Node *node = get_bound_node();
 	if (node) {
 		ret += vformat(" (bound to %s)", node->get_name());

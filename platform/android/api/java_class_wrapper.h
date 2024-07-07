@@ -205,7 +205,7 @@ public:
 	bool has_java_method(const StringName &p_method) const;
 
 #ifdef ANDROID_ENABLED
-	virtual String to_string() override;
+	virtual String _to_string() override;
 #endif
 
 	JavaClass();
@@ -232,7 +232,7 @@ public:
 	bool has_java_method(const StringName &p_method) const;
 
 #ifdef ANDROID_ENABLED
-	virtual String to_string() override;
+	virtual String _to_string() override;
 
 	jobject get_instance() { return instance; }
 
