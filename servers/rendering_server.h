@@ -972,7 +972,9 @@ public:
 	};
 
 	virtual void viewport_set_msaa_3d(RID p_viewport, ViewportMSAA p_msaa) = 0;
+	virtual void viewport_set_msaa_3d_per_sample_shading_ratio(RID p_viewport, float p_ratio) = 0;
 	virtual void viewport_set_msaa_2d(RID p_viewport, ViewportMSAA p_msaa) = 0;
+	virtual void viewport_set_msaa_2d_per_sample_shading_ratio(RID p_viewport, float p_ratio) = 0;
 
 	enum ViewportScreenSpaceAA {
 		VIEWPORT_SCREEN_SPACE_AA_DISABLED,

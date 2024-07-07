@@ -2569,6 +2569,14 @@ RS::ViewportMSAA TextureStorage::render_target_get_msaa(RID p_render_target) con
 	return rt->msaa;
 }
 
+void TextureStorage::render_target_set_msaa_per_sample_shading_ratio(RID p_render_target, float p_ratio) {
+	WARN_PRINT("2D MSAA per-sample shading is not supported in GLES3.");
+}
+
+float TextureStorage::render_target_get_msaa_per_sample_shading_ratio(RID p_render_target) const {
+	ERR_FAIL_V_MSG(0.0f, "2D MSAA per-sample shading is not supported in GLES3.");
+}
+
 void TextureStorage::render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);

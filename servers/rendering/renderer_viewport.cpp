@@ -1248,6 +1248,17 @@ void RendererViewport::viewport_set_msaa_2d(RID p_viewport, RS::ViewportMSAA p_m
 	RSG::texture_storage->render_target_set_msaa(viewport->render_target, p_msaa);
 }
 
+void RendererViewport::viewport_set_msaa_2d_per_sample_shading_ratio(RID p_viewport, float p_ratio) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL(viewport);
+
+	if (viewport->msaa_2d_per_sample_shading_ratio == p_ratio) {
+		return;
+	}
+	viewport->msaa_2d_per_sample_shading_ratio = p_ratio;
+	RSG::texture_storage->render_target_set_msaa_per_sample_shading_ratio(viewport->render_target, p_ratio);
+}
+
 void RendererViewport::viewport_set_msaa_3d(RID p_viewport, RS::ViewportMSAA p_msaa) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
@@ -1256,6 +1267,17 @@ void RendererViewport::viewport_set_msaa_3d(RID p_viewport, RS::ViewportMSAA p_m
 		return;
 	}
 	viewport->msaa_3d = p_msaa;
+	_configure_3d_render_buffers(viewport);
+}
+
+void RendererViewport::viewport_set_msaa_3d_per_sample_shading_ratio(RID p_viewport, float p_ratio) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL(viewport);
+
+	if (viewport->msaa_3d_per_sample_shading_ratio == p_ratio) {
+		return;
+	}
+	viewport->msaa_3d_per_sample_shading_ratio = p_ratio;
 	_configure_3d_render_buffers(viewport);
 }
 
