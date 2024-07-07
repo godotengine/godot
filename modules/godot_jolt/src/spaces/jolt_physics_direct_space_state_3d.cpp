@@ -192,6 +192,7 @@ int32_t JoltPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_
 	settings.mMaxSeparationDistance = (float)p_parameters.margin;
 
 	if (JoltProjectSettings::use_enhanced_edge_removal()) {
+		settings.mActiveEdgeMode = JPH::EActiveEdgeMode::CollideWithAll;
 		settings.mCollectFacesMode = JPH::ECollectFacesMode::CollectFaces;
 	}
 
@@ -300,6 +301,7 @@ bool JoltPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_paramet
 	settings.mMaxSeparationDistance = (float)p_parameters.margin;
 
 	if (JoltProjectSettings::use_enhanced_edge_removal()) {
+		settings.mActiveEdgeMode = JPH::EActiveEdgeMode::CollideWithAll;
 		settings.mCollectFacesMode = JPH::ECollectFacesMode::CollectFaces;
 	}
 
@@ -503,6 +505,7 @@ bool JoltPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_parameter
 	settings.mMaxSeparationDistance = (float)p_parameters.margin;
 
 	if (JoltProjectSettings::use_enhanced_edge_removal()) {
+		settings.mActiveEdgeMode = JPH::EActiveEdgeMode::CollideWithAll;
 		settings.mCollectFacesMode = JPH::ECollectFacesMode::CollectFaces;
 	}
 
@@ -1012,6 +1015,7 @@ bool JoltPhysicsDirectSpaceState3D::body_motion_cast(
 	JPH::CollideShapeSettings settings;
 
 	if (JoltProjectSettings::use_enhanced_edge_removal()) {
+		settings.mActiveEdgeMode = JPH::EActiveEdgeMode::CollideWithAll;
 		settings.mCollectFacesMode = JPH::ECollectFacesMode::CollectFaces;
 	}
 

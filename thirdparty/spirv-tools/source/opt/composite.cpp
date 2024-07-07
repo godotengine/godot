@@ -20,7 +20,7 @@
 
 #include "source/opt/ir_context.h"
 #include "source/opt/iterator.h"
-#include "spirv-headers/include/spirv/1.2/GLSL.std.450.h"
+#include "spirv-headers/include/spirv/1_2/GLSL.std.450.h"
 
 namespace spvtools {
 namespace opt {

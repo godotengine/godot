@@ -354,11 +354,19 @@ static void create_fbx_prefab(const String &p_path,const String& name, const Loc
 	save_fbx_res("prefab",p_path,prefab,temp,true);
 }
 
-
+enum class  UnityDataType : int32_t {
+	AnimationNode = 1,
+	BoneMap,
+	AnimationFIle,
+	FbxMesh,
+	MeshPrefab,
+	SkeletonFile,
+	ImageFile,
+};
 static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 	int tag = msg_buffer.get_u32();
 	int size = msg_buffer.get_u32();
-	int type = msg_buffer.get_u32();
+	UnityDataType type = (UnityDataType)msg_buffer.get_u32();
 	String path;
 	if (!read_string(msg_buffer, path))
 	{
@@ -375,7 +383,7 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 	}
 
 
-	if(type == 1) {
+	if(type == UnityDataType::AnimationNode) {
 		// 1 代表是动画节点
 		Ref<CharacterAnimatorNodeBase> anima_node;
 		Error err;
@@ -386,7 +394,7 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 		String save_path = "res://" + path + "/" + anima_node->get_name() + "_" + anima_node->get_class() + "anim_node.tres";
 		ResourceSaver::save(anima_node,save_path);
 	}
-	else if(type == 2) {
+	else if(type == UnityDataType::BoneMap) {
 		// 解析骨骼映射文件
 		int file_size = msg_buffer.get_32();
 		if(file_size < 0 || file_size > 10240){
@@ -406,7 +414,7 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 		ResourceSaver::save(bone_map,save_path);		
 		print_line("UnityLinkServer: save bone map :" + save_path);
 	}
-	else if(type == 3) {
+	else if(type == UnityDataType::AnimationFIle) {
 		Callable on_load_animation =  DataTableManager::get_singleton()->get_animation_load_cb();
 		if(on_load_animation.is_null()){
 			return true;
@@ -450,7 +458,7 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 			ERR_FAIL_V_MSG(false,"UnityLinkServer: create animation error " + path);
 		}
 	}
-	else if(type == 4) {
+	else if(type == UnityDataType::FbxMesh) {
 		// fbx 模型
 
 		String name,group;
@@ -473,7 +481,7 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 			process_fbx_mesh("res://" + path + "/" + name,group,p_node);			
 		}
 	}
-	else if(type == 5) {
+	else if(type == UnityDataType::MeshPrefab) {
 		// 预制体信息
 
 		String name,group,skeleton_path;
@@ -516,7 +524,7 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 		save_fbx_res("prefab",group,prefab,bone_map_save_path,true);
 
 	}
-	else if(type == 6) {
+	else if(type == UnityDataType::SkeletonFile) {
 
 		// 骨架文件
 		String name,group;
@@ -561,7 +569,7 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 			
 		}
 	}
-	else if(type == 7) {
+	else if(type == UnityDataType::ImageFile) {
 		// 直接存儲的文件，png。。。。
 
 		String name;
