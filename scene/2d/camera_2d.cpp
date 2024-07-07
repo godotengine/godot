@@ -302,6 +302,12 @@ void Camera2D::_notification(int p_what) {
 			_interpolation_data.xform_prev = _interpolation_data.xform_curr;
 		} break;
 
+		case NOTIFICATION_PAUSED: {
+			if (is_physics_interpolated_and_enabled()) {
+				_update_scroll();
+			}
+		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if ((!position_smoothing_enabled && !is_physics_interpolated_and_enabled()) || _is_editing_in_editor()) {
 				_update_scroll();
