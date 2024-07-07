@@ -188,10 +188,11 @@ Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Sh
 }
 
 void EditorBottomPanel::remove_item(Control *p_item) {
+	bool was_visible = false;
 	for (int i = 0; i < items.size(); i++) {
 		if (items[i].control == p_item) {
 			if (p_item->is_visible_in_tree()) {
-				_switch_to_item(false, i);
+				was_visible = true;
 			}
 			item_vbox->remove_child(items[i].control);
 			button_hbox->remove_child(items[i].button);
@@ -199,6 +200,16 @@ void EditorBottomPanel::remove_item(Control *p_item) {
 			items.remove_at(i);
 			break;
 		}
+	}
+
+	if (was_visible) {
+		// Open the first panel to ensure that if the removed dock was visible, the bottom
+		// panel will not collapse.
+		_switch_to_item(true, 0);
+	} else if (last_opened_control == p_item) {
+		// When a dock is removed by plugins, it might not have been visible, and it
+		// might have been the last_opened_control. We need to make sure to reset the last opened control.
+		last_opened_control = items[0].control;
 	}
 }
 
