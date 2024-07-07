@@ -1907,8 +1907,10 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	scene->propagate_notification(NOTIFICATION_EDITOR_POST_SAVE);
 }
 
-void EditorNode::save_all_scenes() {
-	project_run_bar->stop_playing();
+void EditorNode::save_all_scenes(bool p_stop_playing) {
+	if (p_stop_playing) {
+		project_run_bar->stop_playing();
+	}
 	_save_all_scenes();
 }
 

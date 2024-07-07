@@ -902,7 +902,7 @@ public:
 
 	PopupMenu *get_export_as_menu();
 
-	void save_all_scenes();
+	void save_all_scenes(bool p_stop_playing = true);
 	void save_scene_if_open(const String &p_scene_path);
 	void save_scene_list(const HashSet<String> &p_scene_paths);
 	void save_before_run();
