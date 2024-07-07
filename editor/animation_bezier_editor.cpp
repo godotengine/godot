@@ -965,7 +965,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			real_t minimum_value = INFINITY;
 			real_t maximum_value = -INFINITY;
 
-			for (const IntPair &E : selection) {
+			for (const IntPair &E : focused_keys) {
 				IntPair key_pair = E;
 
 				real_t time = animation->track_get_key_time(key_pair.first, key_pair.second);
