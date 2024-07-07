@@ -633,6 +633,9 @@
 		<member name="debug/settings/profiler/max_functions" type="int" setter="" getter="" default="16384">
 			Maximum number of functions per frame allowed when profiling.
 		</member>
+		<member name="debug/settings/profiler/max_timestamp_query_elements" type="int" setter="" getter="" default="256">
+			Maximum number of timestamp query elements allowed per frame for visual profiling.
+		</member>
 		<member name="debug/settings/stdout/print_fps" type="bool" setter="" getter="" default="false">
 			Print frames per second to standard output every second.
 		</member>
@@ -897,8 +900,8 @@
 		<member name="display/window/stretch/mode" type="String" setter="" getter="" default="&quot;disabled&quot;">
 			Defines how the base size is stretched to fit the resolution of the window or screen.
 			[b]"disabled"[/b]: No stretching happens. One unit in the scene corresponds to one pixel on the screen. In this mode, [member display/window/stretch/aspect] has no effect. Recommended for non-game applications.
-			[b]"canvas_items"[/b]: The base size specified in width and height in the project settings is stretched to cover the whole screen (taking [member display/window/stretch/aspect] into account). This means that everything is rendered directly at the target resolution. 3D is unaffected, while in 2D, there is no longer a 1:1 correspondence between sprite pixels and screen pixels, which may result in scaling artifacts. Recommended for most games that don't use a pixel art esthetic, although it is possible to use this stretch mode for pixel art games too (especially in 3D).
-			[b]"viewport"[/b]: The size of the root [Viewport] is set precisely to the base size specified in the Project Settings' Display section. The scene is rendered to this viewport first. Finally, this viewport is scaled to fit the screen (taking [member display/window/stretch/aspect] into account). Recommended for games that use a pixel art esthetic.
+			[b]"canvas_items"[/b]: The base size specified in width and height in the project settings is stretched to cover the whole screen (taking [member display/window/stretch/aspect] into account). This means that everything is rendered directly at the target resolution. 3D is unaffected, while in 2D, there is no longer a 1:1 correspondence between sprite pixels and screen pixels, which may result in scaling artifacts. Recommended for most games that don't use a pixel art aesthetic, although it is possible to use this stretch mode for pixel art games too (especially in 3D).
+			[b]"viewport"[/b]: The size of the root [Viewport] is set precisely to the base size specified in the Project Settings' Display section. The scene is rendered to this viewport first. Finally, this viewport is scaled to fit the screen (taking [member display/window/stretch/aspect] into account). Recommended for games that use a pixel art aesthetic.
 		</member>
 		<member name="display/window/stretch/scale" type="float" setter="" getter="" default="1.0">
 			The scale factor multiplier to use for 2D elements. This multiplies the final scale factor determined by [member display/window/stretch/mode]. If using the [b]Disabled[/b] stretch mode, this scale factor is applied as-is. This can be adjusted to make the UI easier to read on certain displays.

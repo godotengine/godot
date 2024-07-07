@@ -2049,8 +2049,13 @@ void WaylandThread::_wp_relative_pointer_on_relative_motion(void *data, struct z
 
 	PointerData &pd = ss->pointer_data_buffer;
 
+	WindowState *ws = wl_surface_get_window_state(ss->pointed_surface);
+	ERR_FAIL_NULL(ws);
+
 	pd.relative_motion.x = wl_fixed_to_double(dx);
 	pd.relative_motion.y = wl_fixed_to_double(dy);
+
+	pd.relative_motion *= window_state_get_scale_factor(ws);
 
 	pd.relative_motion_time = uptime_lo;
 }
