@@ -58,6 +58,8 @@ private:
 
 	bool add_uv2 = false;
 	float uv2_padding = 2.0;
+	bool generate_lods = false;
+	bool generate_shadow_mesh = false;
 
 	// make sure we do an update after we've finished constructing our object
 	mutable bool pending_request = true;
@@ -109,6 +111,12 @@ public:
 
 	void set_uv2_padding(float p_padding);
 	float get_uv2_padding() const { return uv2_padding; }
+
+	void set_generate_lods(bool p_enable);
+	bool is_generating_lods() const { return generate_lods; }
+
+	void set_generate_shadow_mesh(bool p_enable);
+	bool is_generating_shadow_mesh() const { return generate_shadow_mesh; }
 
 	void request_update();
 
