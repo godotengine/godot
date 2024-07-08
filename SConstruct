@@ -200,7 +200,10 @@ opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectur
 opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
 opts.Add(
     EnumVariable(
-        "optimize", "Optimization level", "speed_trace", ("none", "custom", "debug", "speed", "speed_trace", "size")
+        "optimize",
+        "Optimization level (by default inferred from 'target' and 'dev_build')",
+        "auto",
+        ("auto", "none", "custom", "debug", "speed", "speed_trace", "size"),
     )
 )
 opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
@@ -466,14 +469,15 @@ env.editor_build = env["target"] == "editor"
 env.dev_build = env["dev_build"]
 env.debug_features = env["target"] in ["editor", "template_debug"]
 
-if env.dev_build:
-    opt_level = "none"
-elif env.debug_features:
-    opt_level = "speed_trace"
-else:  # Release
-    opt_level = "speed"
+if env["optimize"] == "auto":
+    if env.dev_build:
+        opt_level = "none"
+    elif env.debug_features:
+        opt_level = "speed_trace"
+    else:  # Release
+        opt_level = "speed"
+    env["optimize"] = ARGUMENTS.get("optimize", opt_level)
 
-env["optimize"] = ARGUMENTS.get("optimize", opt_level)
 env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", env.dev_build)
 
 if env.editor_build:
