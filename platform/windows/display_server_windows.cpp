@@ -4161,6 +4161,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					mm->set_relative_screen_position(mm->get_relative());
 					old_x = mm->get_position().x;
 					old_y = mm->get_position().y;
+
 					if (windows[window_id].window_focused || window_get_active_popup() == window_id) {
 						Input::get_singleton()->parse_input_event(mm);
 					}
@@ -4187,11 +4188,116 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
+			pointer_button[GET_POINTERID_WPARAM(wParam)] = MouseButton::NONE;
 			windows[window_id].block_mm = true;
 			return 0;
 		} break;
 		case WM_POINTERLEAVE: {
+			pointer_button[GET_POINTERID_WPARAM(wParam)] = MouseButton::NONE;
 			windows[window_id].block_mm = false;
+			return 0;
+		} break;
+		case WM_POINTERDOWN:
+		case WM_POINTERUP: {
+			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
+				break;
+			}
+
+			if ((tablet_get_current_driver() != "winink") || !winink_available) {
+				break;
+			}
+
+			Ref<InputEventMouseButton> mb;
+			mb.instantiate();
+			mb->set_window_id(window_id);
+
+			BitField<MouseButtonMask> last_button_state = 0;
+			if (IS_POINTER_FIRSTBUTTON_WPARAM(wParam)) {
+				last_button_state.set_flag(MouseButtonMask::LEFT);
+				mb->set_button_index(MouseButton::LEFT);
+			}
+			if (IS_POINTER_SECONDBUTTON_WPARAM(wParam)) {
+				last_button_state.set_flag(MouseButtonMask::RIGHT);
+				mb->set_button_index(MouseButton::RIGHT);
+			}
+			if (IS_POINTER_THIRDBUTTON_WPARAM(wParam)) {
+				last_button_state.set_flag(MouseButtonMask::MIDDLE);
+				mb->set_button_index(MouseButton::MIDDLE);
+			}
+			if (IS_POINTER_FOURTHBUTTON_WPARAM(wParam)) {
+				last_button_state.set_flag(MouseButtonMask::MB_XBUTTON1);
+				mb->set_button_index(MouseButton::MB_XBUTTON1);
+			}
+			if (IS_POINTER_FIFTHBUTTON_WPARAM(wParam)) {
+				last_button_state.set_flag(MouseButtonMask::MB_XBUTTON2);
+				mb->set_button_index(MouseButton::MB_XBUTTON2);
+			}
+			mb->set_button_mask(last_button_state);
+
+			const BitField<WinKeyModifierMask> &mods = _get_mods();
+			mb->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
+			mb->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
+			mb->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
+			mb->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
+
+			POINT coords; // Client coords.
+			coords.x = GET_X_LPARAM(lParam);
+			coords.y = GET_Y_LPARAM(lParam);
+
+			// Note: Handle popup closing here, since mouse event is not emulated and hook will not be called.
+			uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_since_popup;
+			if (delta > 250) {
+				Point2i pos = Point2i(coords.x, coords.y) - _get_screens_origin();
+				List<WindowID>::Element *C = nullptr;
+				List<WindowID>::Element *E = popup_list.back();
+				// Find top popup to close.
+				while (E) {
+					// Popup window area.
+					Rect2i win_rect = Rect2i(window_get_position_with_decorations(E->get()), window_get_size_with_decorations(E->get()));
+					// Area of the parent window, which responsible for opening sub-menu.
+					Rect2i safe_rect = window_get_popup_safe_rect(E->get());
+					if (win_rect.has_point(pos)) {
+						break;
+					} else if (safe_rect != Rect2i() && safe_rect.has_point(pos)) {
+						break;
+					} else {
+						C = E;
+						E = E->prev();
+					}
+				}
+				if (C) {
+					_send_window_event(windows[C->get()], DisplayServerWindows::WINDOW_EVENT_CLOSE_REQUEST);
+				}
+			}
+
+			int64_t pen_id = GET_POINTERID_WPARAM(wParam);
+			if (uMsg == WM_POINTERDOWN) {
+				mb->set_pressed(true);
+				if (pointer_down_time.has(pen_id) && (pointer_prev_button[pen_id] == mb->get_button_index()) && (ABS(coords.y - pointer_last_pos[pen_id].y) < GetSystemMetrics(SM_CYDOUBLECLK)) && GetMessageTime() - pointer_down_time[pen_id] < (LONG)GetDoubleClickTime()) {
+					mb->set_double_click(true);
+					pointer_down_time[pen_id] = 0;
+				} else {
+					pointer_down_time[pen_id] = GetMessageTime();
+					pointer_prev_button[pen_id] = mb->get_button_index();
+					pointer_last_pos[pen_id] = Vector2(coords.x, coords.y);
+				}
+				pointer_button[pen_id] = mb->get_button_index();
+			} else {
+				if (!pointer_button.has(pen_id)) {
+					return 0;
+				}
+				mb->set_pressed(false);
+				mb->set_button_index(pointer_button[pen_id]);
+				pointer_button[pen_id] = MouseButton::NONE;
+			}
+
+			ScreenToClient(windows[window_id].hWnd, &coords);
+
+			mb->set_position(Vector2(coords.x, coords.y));
+			mb->set_global_position(Vector2(coords.x, coords.y));
+
+			Input::get_singleton()->parse_input_event(mb);
+
 			return 0;
 		} break;
 		case WM_POINTERUPDATE: {
@@ -4271,7 +4377,23 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
 			mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
 
-			mm->set_button_mask(mouse_get_button_state());
+			BitField<MouseButtonMask> last_button_state = 0;
+			if (IS_POINTER_FIRSTBUTTON_WPARAM(wParam)) {
+				last_button_state.set_flag(MouseButtonMask::LEFT);
+			}
+			if (IS_POINTER_SECONDBUTTON_WPARAM(wParam)) {
+				last_button_state.set_flag(MouseButtonMask::RIGHT);
+			}
+			if (IS_POINTER_THIRDBUTTON_WPARAM(wParam)) {
+				last_button_state.set_flag(MouseButtonMask::MIDDLE);
+			}
+			if (IS_POINTER_FOURTHBUTTON_WPARAM(wParam)) {
+				last_button_state.set_flag(MouseButtonMask::MB_XBUTTON1);
+			}
+			if (IS_POINTER_FIFTHBUTTON_WPARAM(wParam)) {
+				last_button_state.set_flag(MouseButtonMask::MB_XBUTTON2);
+			}
+			mm->set_button_mask(last_button_state);
 
 			POINT coords; // Client coords.
 			coords.x = GET_X_LPARAM(lParam);
@@ -4442,6 +4564,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				mm->set_position(mm->get_position() - window_get_position(receiving_window_id) + window_get_position(window_id));
 				mm->set_global_position(mm->get_position());
 			}
+
 			Input::get_singleton()->parse_input_event(mm);
 
 		} break;
