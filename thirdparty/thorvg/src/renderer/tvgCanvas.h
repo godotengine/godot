@@ -129,7 +129,7 @@ struct Canvas::Impl
             return Result::Success;
         }
 
-        return Result::InsufficientCondition;
+        return Result::Unknown;
     }
 
     Result viewport(int32_t x, int32_t y, int32_t w, int32_t h)
