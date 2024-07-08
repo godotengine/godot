@@ -51,6 +51,7 @@ class NativeMenuWindows : public NativeMenu {
 		Callable callback;
 		Variant meta;
 		GlobalMenuCheckType checkable_type;
+		bool checked = false;
 		int max_states = 0;
 		int state = 0;
 		Ref<Image> img;
