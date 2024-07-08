@@ -268,7 +268,7 @@ def get_version_info(module_version_string="", silent=False):
     if os.path.exists(".git"):
         try:
             version_info["git_timestamp"] = subprocess.check_output(
-                ["git", "log", "-1", "--pretty=format:%ct", githash]
+                ["git", "log", "-1", "--pretty=format:%ct", "--no-show-signature", githash]
             ).decode("utf-8")
         except (subprocess.CalledProcessError, OSError):
             # `git` not found in PATH.
