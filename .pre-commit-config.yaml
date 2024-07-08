@@ -96,16 +96,21 @@ repos:
         language: node
         entry: eslint
         files: ^(platform/web/js/|modules/|misc/dist/html/).*\.(js|html)$
-        args: [--fix, --no-warn-ignored, --no-config-lookup, --config, platform/web/eslint.config.cjs]
+        args:
+          - --fix,
+          - --no-warn-ignored,
+          - --no-config-lookup,
+          - --config,
+          - platform/web/eslint.config.cjs,
         additional_dependencies:
           - '@eslint/js@^9.3.0'
           - '@html-eslint/eslint-plugin@^0.24.1'
           - '@html-eslint/parser@^0.24.1'
           - '@stylistic/eslint-plugin@^2.1.0'
-          - 'eslint@^9.3.0'
-          - 'eslint-plugin-html@^8.1.1'
-          - 'globals@^15.3.0'
-          - 'espree@^10.0.1'
+          - eslint@^9.3.0
+          - eslint-plugin-html@^8.1.1
+          - globals@^15.3.0
+          - espree@^10.0.1
 
       - id: jsdoc
         name: jsdoc
@@ -123,7 +128,7 @@ repos:
           - -d
           - dry-run
         pass_filenames: false
-        additional_dependencies: ['jsdoc@^4.0.3']
+        additional_dependencies: [jsdoc@^4.0.3]
 
       - id: svgo
         name: svgo
@@ -131,7 +136,7 @@ repos:
         entry: svgo
         files: \.svg$
         args: [--quiet, --config, misc/utility/svgo.config.mjs]
-        additional_dependencies: ["svgo@3.3.2"]
+        additional_dependencies: [svgo@3.3.2]
 
       - id: copyright-headers
         name: copyright-headers
@@ -179,7 +184,7 @@ repos:
         language: python
         entry: python misc/scripts/dotnet_format.py
         types_or: [c#]
-
+#
 # End of upstream Godot pre-commit hooks.
 #
 # Keep this separation to let downstream forks add their own hooks to this file,

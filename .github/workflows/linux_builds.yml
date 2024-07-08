@@ -12,12 +12,12 @@ env:
   TSAN_OPTIONS: suppressions=misc/error_suppressions/tsan.txt
 
 concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-linux
+  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-linux
   cancel-in-progress: true
 
 jobs:
   build-linux:
-    runs-on: "ubuntu-20.04"
+    runs-on: ubuntu-20.04
     name: ${{ matrix.name }}
     strategy:
       fail-fast: false
@@ -27,7 +27,7 @@ jobs:
             cache-name: linux-editor-mono
             target: editor
             sconsflags: module_mono_enabled=yes
-            bin: "./bin/godot.linuxbsd.editor.x86_64.mono"
+            bin: ./bin/godot.linuxbsd.editor.x86_64.mono
             build-mono: true
             tests: false # Disabled due freeze caused by mix Mono build and CI
             doc-test: true
@@ -40,7 +40,7 @@ jobs:
             target: editor
             # Debug symbols disabled as they're huge on this build and we hit the 14 GB limit for runners.
             sconsflags: dev_build=yes scu_build=yes debug_symbols=no precision=double use_asan=yes use_ubsan=yes linker=gold
-            bin: "./bin/godot.linuxbsd.editor.dev.double.x86_64.san"
+            bin: ./bin/godot.linuxbsd.editor.dev.double.x86_64.san
             build-mono: false
             tests: true
             proj-test: true
@@ -53,7 +53,7 @@ jobs:
             cache-name: linux-editor-llvm-sanitizers
             target: editor
             sconsflags: dev_build=yes use_asan=yes use_ubsan=yes use_llvm=yes linker=lld
-            bin: "./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san"
+            bin: ./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san
             build-mono: false
             tests: true
             # Skip 2GiB artifact speeding up action.
@@ -66,36 +66,37 @@ jobs:
             target: editor
             tests: true
             sconsflags: dev_build=yes use_tsan=yes use_llvm=yes linker=lld
-            bin: "./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san"
+            bin: ./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san
             build-mono: false
             # Skip 2GiB artifact speeding up action.
             artifact: false
 
-          - name: Template w/ Mono (target=template_release)
+          - name: Template w/ Mono (target=template_release, tests=yes)
             cache-name: linux-template-mono
             target: template_release
-            sconsflags: module_mono_enabled=yes tests=yes
-            bin: "./bin/godot.linuxbsd.template_release.x86_64.mono"
+            sconsflags: module_mono_enabled=yes
+            bin: ./bin/godot.linuxbsd.template_release.x86_64.mono
             build-mono: false
             tests: true
             artifact: true
 
-          - name: Minimal template (target=template_release, everything disabled)
+          - name: Minimal template (target=template_release, tests=yes, everything disabled)
             cache-name: linux-template-minimal
             target: template_release
-            sconsflags: modules_enabled_by_default=no disable_3d=yes disable_advanced_gui=yes deprecated=no minizip=no tests=yes
-            bin: "./bin/godot.linuxbsd.template_release.x86_64"
+            sconsflags: modules_enabled_by_default=no disable_3d=yes disable_advanced_gui=yes deprecated=no minizip=no
+            bin: ./bin/godot.linuxbsd.template_release.x86_64
             tests: true
             artifact: true
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
       # Need newer mesa for lavapipe to work properly.
       - name: Linux dependencies for tests
-        if: ${{ matrix.proj-test }}
+        if: matrix.proj-test
         run: |
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EB8B81E14DA65431D7504EA8F63F0F2B90935439
@@ -120,11 +121,11 @@ jobs:
         continue-on-error: true
 
       - name: Setup Python and SCons
-        if: ${{ ! matrix.legacy-scons }}
+        if: '!matrix.legacy-scons'
         uses: ./.github/actions/godot-deps
 
       - name: Setup Python and SCons (legacy versions)
-        if: ${{ matrix.legacy-scons }}
+        if: matrix.legacy-scons
         uses: ./.github/actions/godot-deps
         with:
           # Sync with Ensure*Version in SConstruct.
@@ -149,48 +150,48 @@ jobs:
         continue-on-error: true
 
       - name: Generate C# glue
-        if: ${{ matrix.build-mono }}
+        if: matrix.build-mono
         run: |
           ${{ matrix.bin }} --headless --generate-mono-glue ./modules/mono/glue
 
       - name: Build .NET solutions
-        if: ${{ matrix.build-mono }}
+        if: matrix.build-mono
         run: |
           ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=linuxbsd
 
       - name: Prepare artifact
-        if: ${{ matrix.artifact }}
+        if: matrix.artifact
         run: |
           strip bin/godot.*
           chmod +x bin/godot.*
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
-        if: ${{ matrix.artifact }}
+        if: matrix.artifact
         with:
           name: ${{ matrix.cache-name }}
 
       - name: Dump Godot API
         uses: ./.github/actions/godot-api-dump
-        if: ${{ matrix.api-dump }}
+        if: matrix.api-dump
         with:
           bin: ${{ matrix.bin }}
 
       - name: Unit tests
-        if: ${{ matrix.tests }}
+        if: matrix.tests
         run: |
           ${{ matrix.bin }} --version
           ${{ matrix.bin }} --help
           ${{ matrix.bin }} --headless --test --force-colors
 
       - name: .NET source generators tests
-        if: ${{ matrix.build-mono }}
+        if: matrix.build-mono
         run: |
           dotnet test modules/mono/editor/Godot.NET.Sdk/Godot.SourceGenerators.Tests
 
       # Check class reference
       - name: Check for class reference updates
-        if: ${{ matrix.doc-test }}
+        if: matrix.doc-test
         run: |
           echo "Running --doctool to see if this changes the public API without updating the documentation."
           echo -e "If a diff is shown, it means that your code/doc changes are incomplete and you should update the class reference with --doctool.\n\n"
@@ -199,20 +200,20 @@ jobs:
 
       # Check API backwards compatibility
       - name: Check for GDExtension compatibility
-        if: ${{ matrix.api-compat }}
+        if: matrix.api-compat
         run: |
           ./misc/scripts/validate_extension_api.sh "${{ matrix.bin }}"
 
       # Download and run the test project
       - name: Test Godot project
         uses: ./.github/actions/godot-project-test
-        if: ${{ matrix.proj-test }}
+        if: matrix.proj-test
         with:
           bin: ${{ matrix.bin }}
 
       # Test the project converter
       - name: Test project converter
         uses: ./.github/actions/godot-converter-test
-        if: ${{ matrix.proj-conv }}
+        if: matrix.proj-conv
         with:
           bin: ${{ matrix.bin }}
