@@ -306,7 +306,6 @@ def setup_msvc_manual(env: "SConsEnvironment"):
     print("Using VCVARS-determined MSVC, arch %s" % (env_arch))
 
 
-# FIXME: Likely overwrites command-line options for the msvc compiler. See #91883.
 def setup_msvc_auto(env: "SConsEnvironment"):
     """Set up MSVC using SCons's auto-detection logic"""
 
@@ -338,6 +337,12 @@ def setup_msvc_auto(env: "SConsEnvironment"):
         env["MSVC_VERSION"] = env["msvc_version"]
     env.Tool("msvc")
     env.Tool("mssdk")  # we want the MS SDK
+
+    # Re-add potentially overwritten flags.
+    env.AppendUnique(CCFLAGS=env.get("ccflags", "").split())
+    env.AppendUnique(CXXFLAGS=env.get("cxxflags", "").split())
+    env.AppendUnique(CFLAGS=env.get("cflags", "").split())
+    env.AppendUnique(RCFLAGS=env.get("rcflags", "").split())
 
     # Note: actual compiler version can be found in env['MSVC_VERSION'], e.g. "14.1" for VS2015
     print("Using SCons-detected MSVC version %s, arch %s" % (env["MSVC_VERSION"], env["arch"]))
