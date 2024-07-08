@@ -4728,11 +4728,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		case WM_ENTERSIZEMOVE: {
 			Input::get_singleton()->release_pressed_events();
-			windows[window_id].move_timer_id = SetTimer(windows[window_id].hWnd, 1, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
+			if (windows[window_id].activate_state == WA_CLICKACTIVE) {
+				windows[window_id].move_timer_id = SetTimer(windows[window_id].hWnd, 1, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
+			}
 		} break;
 		case WM_EXITSIZEMOVE: {
-			KillTimer(windows[window_id].hWnd, windows[window_id].move_timer_id);
-			windows[window_id].move_timer_id = 0;
+			if (windows[window_id].move_timer_id) {
+				KillTimer(windows[window_id].hWnd, windows[window_id].move_timer_id);
+				windows[window_id].move_timer_id = 0;
+			}
 		} break;
 		case WM_TIMER: {
 			if (wParam == windows[window_id].move_timer_id) {
