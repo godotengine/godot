@@ -1636,6 +1636,9 @@ void Node::remove_child(Node *p_child) {
 }
 
 void Node::_update_children_cache_impl() const {
+	if (!Thread::is_main_thread()) {
+		return;
+	}
 	// Assign children
 	data.children_cache.resize(data.children.size());
 	int idx = 0;
