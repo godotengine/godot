@@ -1036,24 +1036,37 @@ void EditorNode::_fs_changed() {
 	}
 }
 
+void EditorNode::_resources_reimporting(const Vector<String> &p_resources) {
+	// This will copy all the modified properties of the nodes into 'scenes_modification_table'
+	// before they are actually reimported. It's important to do this before the reimportation
+	// because if a mesh is present in an inherited scene, the resource will be modified in
+	// the inherited scene. Then, get_modified_properties_for_node will return the mesh property,
+	// which will trigger a recopy of the previous mesh, preventing the reload.
+	for (const String &res_path : p_resources) {
+		if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
+			preload_reimporting_with_path_in_edited_scenes(res_path);
+		}
+	}
+}
+
 void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 	List<String> scenes;
 	int current_tab = scene_tabs->get_current_tab();
 
-	for (int i = 0; i < p_resources.size(); i++) {
-		String file_type = ResourceLoader::get_resource_type(p_resources[i]);
+	for (const String &res_path : p_resources) {
+		String file_type = ResourceLoader::get_resource_type(res_path);
 		if (file_type == "PackedScene") {
-			scenes.push_back(p_resources[i]);
+			scenes.push_back(res_path);
 			// Reload later if needed, first go with normal resources.
 			continue;
 		}
 
-		if (!ResourceCache::has(p_resources[i])) {
+		if (!ResourceCache::has(res_path)) {
 			// Not loaded, no need to reload.
 			continue;
 		}
 		// Reload normally.
-		Ref<Resource> resource = ResourceCache::get_ref(p_resources[i]);
+		Ref<Resource> resource = ResourceCache::get_ref(res_path);
 		if (resource.is_valid()) {
 			resource->reload_from_file();
 		}
@@ -4162,15 +4175,6 @@ HashMap<StringName, Variant> EditorNode::get_modified_properties_for_node(Node *
 	return modified_property_map;
 }
 
-void EditorNode::update_ownership_table_for_addition_node_ancestors(Node *p_current_node, HashMap<Node *, Node *> &p_ownership_table) {
-	p_ownership_table.insert(p_current_node, p_current_node->get_owner());
-
-	for (int i = 0; i < p_current_node->get_child_count(); i++) {
-		Node *child = p_current_node->get_child(i);
-		update_ownership_table_for_addition_node_ancestors(child, p_ownership_table);
-	}
-}
-
 void EditorNode::update_node_from_node_modification_entry(Node *p_node, ModificationNodeEntry &p_node_modification) {
 	if (p_node) {
 		// First, attempt to restore the script property since it may affect the get_property_list method.
@@ -4279,15 +4283,24 @@ void EditorNode::update_node_reference_modification_table_for_node(
 	}
 }
 
-void EditorNode::update_reimported_diff_data_for_node(
-		Node *p_edited_scene,
-		Node *p_reimported_root,
-		Node *p_node,
-		HashMap<NodePath, ModificationNodeEntry> &p_modification_table,
-		List<AdditiveNodeEntry> &p_addition_list) {
+bool EditorNode::is_additional_node_in_scene(Node *p_edited_scene, Node *p_reimported_root, Node *p_node) {
+	if (p_node == p_reimported_root) {
+		return false;
+	}
+
 	bool node_part_of_subscene = p_node != p_edited_scene &&
 			p_edited_scene->get_scene_inherited_state().is_valid() &&
-			p_edited_scene->get_scene_inherited_state()->find_node_by_path(p_edited_scene->get_path_to(p_node)) >= 0;
+			p_edited_scene->get_scene_inherited_state()->find_node_by_path(p_edited_scene->get_path_to(p_node)) >= 0 &&
+			// It's important to process added nodes from the base scene in the inherited scene as
+			// additional nodes to ensure they do not disappear on reload.
+			// When p_reimported_root == p_edited_scene that means the edited scene
+			// is the reimported scene, in that case the node is in the root base scene,
+			// so it's not an addition, otherwise, the node would be added twice on reload.
+			(p_node->get_owner() != p_edited_scene || p_reimported_root == p_edited_scene);
+
+	if (node_part_of_subscene) {
+		return false;
+	}
 
 	// Loop through the owners until either we reach the root node or nullptr
 	Node *valid_node_owner = p_node->get_owner();
@@ -4298,7 +4311,25 @@ void EditorNode::update_reimported_diff_data_for_node(
 		valid_node_owner = valid_node_owner->get_owner();
 	}
 
-	if ((valid_node_owner == p_reimported_root && (p_reimported_root != p_edited_scene || !p_edited_scene->get_scene_file_path().is_empty())) || node_part_of_subscene || p_node == p_reimported_root) {
+	// When the owner is the imported scene and the owner is also the edited scene,
+	// that means the node was added in the current edited scene.
+	// We can be sure here because if the node that the node does not come from
+	// the base scene because we checked just over with 'get_scene_inherited_state()->find_node_by_path'.
+	if (valid_node_owner == p_reimported_root && p_reimported_root != p_edited_scene) {
+		return false;
+	}
+
+	return true;
+}
+
+void EditorNode::get_preload_scene_modification_table(
+		Node *p_edited_scene,
+		Node *p_reimported_root,
+		Node *p_node, HashMap<NodePath, ModificationNodeEntry> &p_modification_table) {
+	// Only take the nodes that are in the base imported scene. The additional nodes will be managed
+	// after the resources are reimported. It's not important to check which property has
+	// changed on nodes that will not be reimported because they are not part of the reimported scene.
+	if (!is_additional_node_in_scene(p_edited_scene, p_reimported_root, p_node)) {
 		HashMap<StringName, Variant> modified_properties = get_modified_properties_for_node(p_node, false);
 
 		// Find all valid connections to other nodes.
@@ -4359,14 +4390,27 @@ void EditorNode::update_reimported_diff_data_for_node(
 
 			p_modification_table[p_reimported_root->get_path_to(p_node)] = modification_node_entry;
 		}
-	} else {
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		Node *child = p_node->get_child(i);
+		get_preload_scene_modification_table(p_edited_scene, p_reimported_root, child, p_modification_table);
+	}
+}
+
+void EditorNode::update_reimported_diff_data_for_additional_nodes(
+		Node *p_edited_scene,
+		Node *p_reimported_root,
+		Node *p_node,
+		HashMap<NodePath, ModificationNodeEntry> &p_modification_table,
+		List<AdditiveNodeEntry> &p_addition_list) {
+	if (is_additional_node_in_scene(p_edited_scene, p_reimported_root, p_node)) {
 		// Only save additional nodes which have an owner since this was causing issues transient ownerless nodes
 		// which get recreated upon scene tree entry.
 		// For now instead, assume all ownerless nodes are transient and will have to be recreated.
 		if (p_node->get_owner()) {
 			HashMap<StringName, Variant> modified_properties = get_modified_properties_for_node(p_node, true);
-
-			if (p_node->get_parent()->get_owner() != nullptr && p_node->get_parent()->get_owner() != p_edited_scene) {
+			if (p_node->get_owner() == p_edited_scene) {
 				AdditiveNodeEntry new_additive_node_entry;
 				new_additive_node_entry.node = p_node;
 				new_additive_node_entry.parent = p_reimported_root->get_path_to(p_node->get_parent());
@@ -4382,18 +4426,8 @@ void EditorNode::update_reimported_diff_data_for_node(
 					new_additive_node_entry.transform_3d = node_3d->get_relative_transform(node_3d->get_parent());
 				}
 
-				// Gathers the ownership of all ancestor nodes for later use.
-				HashMap<Node *, Node *> ownership_table;
-				for (int i = 0; i < p_node->get_child_count(); i++) {
-					Node *child = p_node->get_child(i);
-					update_ownership_table_for_addition_node_ancestors(child, ownership_table);
-				}
-
-				new_additive_node_entry.ownership_table = ownership_table;
-
 				p_addition_list.push_back(new_additive_node_entry);
 			}
-
 			if (!modified_properties.is_empty()) {
 				ModificationNodeEntry modification_node_entry;
 				modification_node_entry.property_table = modified_properties;
@@ -4405,10 +4439,9 @@ void EditorNode::update_reimported_diff_data_for_node(
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *child = p_node->get_child(i);
-		update_reimported_diff_data_for_node(p_edited_scene, p_reimported_root, child, p_modification_table, p_addition_list);
+		update_reimported_diff_data_for_additional_nodes(p_edited_scene, p_reimported_root, child, p_modification_table, p_addition_list);
 	}
 }
-//
 
 void EditorNode::open_request(const String &p_path) {
 	if (!opening_prev) {
@@ -5780,6 +5813,25 @@ void EditorNode::reload_scene(const String &p_path) {
 	scene_tabs->set_current_tab(current_tab);
 }
 
+void EditorNode::get_edited_scene_map(const String &p_instance_path, HashMap<int, List<Node *>> &p_edited_scene_map) {
+	// Walk through each opened scene to get a global list of all instances which match
+	// the current reimported scenes.
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+		if (editor_data.get_scene_path(i) == p_instance_path) {
+			continue;
+		}
+		Node *edited_scene_root = editor_data.get_edited_scene_root(i);
+
+		if (edited_scene_root) {
+			List<Node *> valid_nodes;
+			find_all_instances_inheriting_path_in_node(edited_scene_root, edited_scene_root, p_instance_path, valid_nodes);
+			if (valid_nodes.size() > 0) {
+				p_edited_scene_map[i] = valid_nodes;
+			}
+		}
+	}
+}
+
 void EditorNode::find_all_instances_inheriting_path_in_node(Node *p_root, Node *p_node, const String &p_instance_path, List<Node *> &p_instance_list) {
 	String scene_file_path = p_node->get_scene_file_path();
 
@@ -5807,25 +5859,54 @@ void EditorNode::find_all_instances_inheriting_path_in_node(Node *p_root, Node *
 	}
 }
 
+void EditorNode::preload_reimporting_with_path_in_edited_scenes(const String &p_instance_path) {
+	HashMap<int, List<Node *>> edited_scene_map;
+	scenes_modification_table.clear();
+
+	get_edited_scene_map(p_instance_path, edited_scene_map);
+
+	if (edited_scene_map.size() > 0) {
+		scenes_modification_table.clear();
+
+		int original_edited_scene_idx = editor_data.get_edited_scene();
+		Node *original_edited_scene_root = editor_data.get_edited_scene_root();
+
+		// Prevent scene roots with the same name from being in the tree at the same time.
+		scene_root->remove_child(original_edited_scene_root);
+
+		for (const KeyValue<int, List<Node *>> &edited_scene_map_elem : edited_scene_map) {
+			// Set the current scene.
+			int current_scene_idx = edited_scene_map_elem.key;
+			editor_data.set_edited_scene(current_scene_idx);
+			Node *current_edited_scene = editor_data.get_edited_scene_root(current_scene_idx);
+
+			// Make sure the node is in the tree so that editor_selection can add node smoothly.
+			scene_root->add_child(current_edited_scene);
+
+			for (Node *original_node : edited_scene_map_elem.value) {
+				// Fetching all the modified properties of the nodes reimported scene.
+				HashMap<NodePath, ModificationNodeEntry> modification_table;
+				get_preload_scene_modification_table(current_edited_scene, original_node, original_node, modification_table);
+
+				if (modification_table.size() > 0) {
+					NodePath scene_path_to_node = current_edited_scene->get_path_to(original_node);
+					scenes_modification_table[current_scene_idx][scene_path_to_node] = modification_table;
+				}
+			}
+
+			scene_root->remove_child(current_edited_scene);
+		}
+
+		editor_data.set_edited_scene(original_edited_scene_idx);
+		scene_root->add_child(original_edited_scene_root);
+	}
+}
+
 void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_instance_path) {
 	HashMap<int, List<Node *>> edited_scene_map;
 	Array replaced_nodes;
 
-	// Walk through each opened scene to get a global list of all instances which match
-	// the current reimported scenes.
-	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-		if (editor_data.get_scene_path(i) != p_instance_path) {
-			Node *edited_scene_root = editor_data.get_edited_scene_root(i);
-
-			if (edited_scene_root) {
-				List<Node *> valid_nodes;
-				find_all_instances_inheriting_path_in_node(edited_scene_root, edited_scene_root, p_instance_path, valid_nodes);
-				if (valid_nodes.size() > 0) {
-					edited_scene_map[i] = valid_nodes;
-				}
-			}
-		}
-	}
+	get_edited_scene_map(p_instance_path, edited_scene_map);
 
 	if (edited_scene_map.size() > 0) {
 		// Reload the new instance.
@@ -5879,6 +5960,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 
 				// Load a replacement scene for the node.
 				Ref<PackedScene> current_packed_scene;
+				Ref<PackedScene> base_packed_scene;
 				if (original_node_file_path == p_instance_path) {
 					// If the node file name directly matches the scene we're replacing,
 					// just load it since we already cached it.
@@ -5905,6 +5987,9 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 					// Ensure the inheritance chain is loaded in the correct order so that cache can
 					// be properly updated.
 					for (String path : required_load_paths) {
+						if (current_packed_scene.is_valid()) {
+							base_packed_scene = current_packed_scene;
+						}
 						if (!local_scene_cache.find(path)) {
 							current_packed_scene = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE_DEEP, &err);
 							local_scene_cache[path] = current_packed_scene;
@@ -5917,15 +6002,58 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 				ERR_FAIL_COND(current_packed_scene.is_null());
 
 				// Instantiate early so that caches cleared on load in SceneState can be rebuilt early.
-				Node *instantiated_node = current_packed_scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+				Node *instantiated_node = nullptr;
 
+				// If we are in a inherit scene, it's easier to create a new base scene and
+				// grab the node from there.
+				// When scene_path_to_node is '.' and we have scene_inherited_state, it's because
+				// it's a muli-level inheritance scene. We should use
+				NodePath scene_path_to_node = current_edited_scene->get_path_to(original_node);
+				Ref<SceneState> scene_state = current_edited_scene->get_scene_inherited_state();
+				if (scene_path_to_node != "." && scene_state.is_valid() && scene_state->get_path() != p_instance_path && scene_state->find_node_by_path(scene_path_to_node) >= 0) {
+					Node *root_node = scene_state->instantiate(SceneState::GenEditState::GEN_EDIT_STATE_INSTANCE);
+					instantiated_node = root_node->get_node(scene_path_to_node);
+
+					if (instantiated_node) {
+						if (instantiated_node->get_parent()) {
+							// Remove from the root so we can delete it from memory.
+							instantiated_node->get_parent()->remove_child(instantiated_node);
+							// No need of the additional children that could have been added to the node
+							// in the base scene. That will be managed by the 'addition_list' later.
+							_remove_all_not_owned_children(instantiated_node, instantiated_node);
+							memdelete(root_node);
+						}
+					} else {
+						// Should not happen because we checked with find_node_by_path before, just in case.
+						memdelete(root_node);
+					}
+				}
+
+				if (!instantiated_node) {
+					// If no base scene was found to create the node, we will use the reimported packed scene directly.
+					// But, when the current edited scene is the reimported scene, it's because it's a inherited scene
+					// of the reimported scene. In that case, we will not instantiate current_packed_scene, because
+					// we would reinstanciate ourself. Using the base scene is better.
+					if (current_edited_scene == original_node) {
+						if (base_packed_scene.is_valid()) {
+							instantiated_node = base_packed_scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+						} else {
+							instantiated_node = instance_scene_packed_scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+						}
+					} else {
+						instantiated_node = current_packed_scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+					}
+				}
 				ERR_FAIL_NULL(instantiated_node);
 
 				// Walk the tree for the current node and extract relevant diff data, storing it in the modification table.
 				// For additional nodes which are part of the current scene, they get added to the addition table.
 				HashMap<NodePath, ModificationNodeEntry> modification_table;
 				List<AdditiveNodeEntry> addition_list;
-				update_reimported_diff_data_for_node(current_edited_scene, original_node, original_node, modification_table, addition_list);
+				if (scenes_modification_table.has(current_scene_idx) && scenes_modification_table[current_scene_idx].has(scene_path_to_node)) {
+					modification_table = scenes_modification_table[current_scene_idx][scene_path_to_node];
+				}
+				update_reimported_diff_data_for_additional_nodes(current_edited_scene, original_node, original_node, modification_table, addition_list);
 
 				// Disconnect all relevant connections, all connections from and persistent connections to.
 				for (const KeyValue<NodePath, ModificationNodeEntry> &modification_table_entry : modification_table) {
@@ -5987,16 +6115,11 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 				// Is this replacing the edited root node?
 
 				if (current_edited_scene == original_node) {
-					instantiated_node->set_scene_instance_state(original_node->get_scene_instance_state());
-					// Fix unsaved inherited scene
-					if (original_node_file_path.is_empty()) {
-						Ref<SceneState> state = current_packed_scene->get_state();
-						state->set_path(current_packed_scene->get_path());
-						instantiated_node->set_scene_inherited_state(state);
-						instantiated_node->set_scene_file_path(String());
-					}
+					// Set the instance as un inherited scene of itself.
+					instantiated_node->set_scene_inherited_state(instantiated_node->get_scene_instance_state());
+					instantiated_node->set_scene_instance_state(nullptr);
+					instantiated_node->set_scene_file_path(original_node_file_path);
 					current_edited_scene = instantiated_node;
-
 					editor_data.set_edited_scene_root(current_edited_scene);
 				}
 
@@ -6047,18 +6170,6 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 						if (node_3d) {
 							node_3d->set_transform(additive_node_entry.transform_3d);
 						}
-					}
-
-					// Restore the ownership of its ancestors
-					for (KeyValue<Node *, Node *> &E : additive_node_entry.ownership_table) {
-						Node *current_ancestor = E.key;
-						Node *ancestor_owner = E.value;
-
-						if (ancestor_owner == original_node) {
-							ancestor_owner = instantiated_node;
-						}
-
-						current_ancestor->set_owner(ancestor_owner);
 					}
 				}
 
@@ -6120,6 +6231,24 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 		scene_root->add_child(original_edited_scene_root);
 
 		editor_data.restore_edited_scene_state(editor_selection, &editor_history);
+	}
+
+	scenes_modification_table.clear();
+}
+
+void EditorNode::_remove_all_not_owned_children(Node *p_node, Node *p_owner) {
+	Vector<Node *> nodes_to_remove;
+	if (p_node != p_owner && p_node->get_owner() != p_owner) {
+		nodes_to_remove.push_back(p_node);
+	}
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		Node *child_node = p_node->get_child(i);
+		_remove_all_not_owned_children(child_node, p_owner);
+	}
+
+	for (Node *node : nodes_to_remove) {
+		node->get_parent()->remove_child(node);
+		node->queue_free();
 	}
 }
 
@@ -7561,6 +7690,7 @@ EditorNode::EditorNode() {
 
 	EditorFileSystem::get_singleton()->connect("sources_changed", callable_mp(this, &EditorNode::_sources_changed));
 	EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorNode::_fs_changed));
+	EditorFileSystem::get_singleton()->connect("resources_reimporting", callable_mp(this, &EditorNode::_resources_reimporting));
 	EditorFileSystem::get_singleton()->connect("resources_reimported", callable_mp(this, &EditorNode::_resources_reimported));
 	EditorFileSystem::get_singleton()->connect("resources_reload", callable_mp(this, &EditorNode::_resources_changed));
 

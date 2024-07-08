@@ -2605,11 +2605,15 @@ void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, HashMap
 }
 
 void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const HashMap<StringName, Variant> &p_custom_params) {
+	Vector<String> reloads;
+	reloads.append(p_file);
+
+	// Emit the resource_reimporting signal for the single file before the actual importation.
+	emit_signal(SNAME("resources_reimporting"), reloads);
+
 	_reimport_file(p_file, p_custom_params, p_importer);
 
 	// Emit the resource_reimported signal for the single file we just reimported.
-	Vector<String> reloads;
-	reloads.append(p_file);
 	emit_signal(SNAME("resources_reimported"), reloads);
 }
 
@@ -2670,6 +2674,9 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	}
 
 	reimport_files.sort();
+
+	// Emit the resource_reimporting signal for the single file before the actual importation.
+	emit_signal(SNAME("resources_reimporting"), reloads);
 
 #ifdef THREADS_ENABLED
 	bool use_multiple_threads = GLOBAL_GET("editor/import/use_multiple_threads");
@@ -2765,11 +2772,15 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 Error EditorFileSystem::reimport_append(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant p_generator_parameters) {
 	ERR_FAIL_COND_V_MSG(!importing, ERR_INVALID_PARAMETER, "Can only append files to import during a current reimport process.");
+	Vector<String> reloads;
+	reloads.append(p_file);
+
+	// Emit the resource_reimporting signal for the single file before the actual importation.
+	emit_signal(SNAME("resources_reimporting"), reloads);
+
 	Error ret = _reimport_file(p_file, p_custom_options, p_custom_importer, &p_generator_parameters);
 
 	// Emit the resource_reimported signal for the single file we just reimported.
-	Vector<String> reloads;
-	reloads.append(p_file);
 	emit_signal(SNAME("resources_reimported"), reloads);
 	return ret;
 }
@@ -2969,6 +2980,7 @@ void EditorFileSystem::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("filesystem_changed"));
 	ADD_SIGNAL(MethodInfo("script_classes_updated"));
 	ADD_SIGNAL(MethodInfo("sources_changed", PropertyInfo(Variant::BOOL, "exist")));
+	ADD_SIGNAL(MethodInfo("resources_reimporting", PropertyInfo(Variant::PACKED_STRING_ARRAY, "resources")));
 	ADD_SIGNAL(MethodInfo("resources_reimported", PropertyInfo(Variant::PACKED_STRING_ARRAY, "resources")));
 	ADD_SIGNAL(MethodInfo("resources_reload", PropertyInfo(Variant::PACKED_STRING_ARRAY, "resources")));
 }
