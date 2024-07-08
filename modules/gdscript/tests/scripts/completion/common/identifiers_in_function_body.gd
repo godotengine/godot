@@ -12,6 +12,7 @@ func test_func_1(t):
 func test_func_2(t: int) -> void:
     pass
 
-func _init():
-    self.➡
-    pass
+func _init(test_parameter_1, test_parameter_2: String):
+    var local_test_var_1
+    var local_test_var_2: int
+    t➡
