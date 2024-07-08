@@ -325,13 +325,10 @@ void Camera2D::_notification(int p_what) {
 			} else {
 				viewport = get_viewport();
 			}
-
 			canvas = get_canvas();
 
-			RID vp = viewport->get_viewport_rid();
-
-			group_name = "__cameras_" + itos(vp.get_id());
-			canvas_group_name = "__cameras_c" + itos(canvas.get_id());
+			group_name = get_camera_group_for_viewport(viewport->get_viewport_rid());
+			canvas_group_name = get_camera_group_for_canvas(canvas);
 			add_to_group(group_name);
 			add_to_group(canvas_group_name);
 
@@ -767,9 +764,8 @@ void Camera2D::set_custom_viewport(Node *p_viewport) {
 			viewport = get_viewport();
 		}
 
-		RID vp = viewport->get_viewport_rid();
-		group_name = "__cameras_" + itos(vp.get_id());
-		canvas_group_name = "__cameras_c" + itos(canvas.get_id());
+		group_name = get_camera_group_for_viewport(viewport->get_viewport_rid());
+		canvas_group_name = get_camera_group_for_canvas(canvas);
 		add_to_group(group_name);
 		add_to_group(canvas_group_name);
 	}
@@ -810,6 +806,14 @@ void Camera2D::set_margin_drawing_enabled(bool enable) {
 
 bool Camera2D::is_margin_drawing_enabled() const {
 	return margin_drawing_enabled;
+}
+
+StringName Camera2D::get_camera_group_for_viewport(const RID &p_viewport) {
+	return "__cameras_" + itos(p_viewport.get_id());
+}
+
+StringName Camera2D::get_camera_group_for_canvas(const RID &p_canvas) {
+	return "__cameras_c" + itos(p_canvas.get_id());
 }
 
 void Camera2D::_validate_property(PropertyInfo &p_property) const {
