@@ -460,6 +460,7 @@ public:
 
 	static bool is_class_exposed(const StringName &p_class);
 	static bool is_class_reloadable(const StringName &p_class);
+	static bool is_class_runtime(const StringName &p_class);
 
 	static void add_resource_base_extension(const StringName &p_extension, const StringName &p_class);
 	static void get_resource_base_extensions(List<String> *p_extensions);
