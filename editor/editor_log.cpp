@@ -58,8 +58,8 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 
 	MessageType message_type = p_type == ERR_HANDLER_WARNING ? MSG_TYPE_WARNING : MSG_TYPE_ERROR;
 
-	if (self->current != Thread::get_caller_id()) {
-		callable_mp(self, &EditorLog::add_message).call_deferred(err_str, message_type);
+	if (!Thread::is_main_thread()) {
+		MessageQueue::get_main_singleton()->push_callable(callable_mp(self, &EditorLog::add_message), err_str, message_type);
 	} else {
 		self->add_message(err_str, message_type);
 	}
@@ -557,8 +557,6 @@ EditorLog::EditorLog() {
 	eh.errfunc = _error_handler;
 	eh.userdata = this;
 	add_error_handler(&eh);
-
-	current = Thread::get_caller_id();
 }
 
 void EditorLog::deinit() {
