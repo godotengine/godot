@@ -373,6 +373,10 @@ real_t CameraAttributesPhysical::get_fov() const {
 	return frustum_fov;
 }
 
+real_t CameraAttributesPhysical::get_panini_fov() const {
+	return panini_fov;
+}
+
 void CameraAttributesPhysical::_update_frustum() {
 	//https://en.wikipedia.org/wiki/Circle_of_confusion#Circle_of_confusion_diameter_limit_based_on_d/1500
 	Vector2i sensor_size = Vector2i(36, 24); // Matches high-end DSLR, could be made variable if there is demand.
@@ -468,6 +472,7 @@ void CameraAttributesPhysical::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_far", "far"), &CameraAttributesPhysical::set_far);
 	ClassDB::bind_method(D_METHOD("get_far"), &CameraAttributesPhysical::get_far);
 	ClassDB::bind_method(D_METHOD("get_fov"), &CameraAttributesPhysical::get_fov);
+	ClassDB::bind_method(D_METHOD("get_panini_fov"), &CameraAttributesPhysical::get_panini_fov);
 
 	ClassDB::bind_method(D_METHOD("set_auto_exposure_max_exposure_value", "exposure_value_max"), &CameraAttributesPhysical::set_auto_exposure_max_exposure_value);
 	ClassDB::bind_method(D_METHOD("get_auto_exposure_max_exposure_value"), &CameraAttributesPhysical::get_auto_exposure_max_exposure_value);

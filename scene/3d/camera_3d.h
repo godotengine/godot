@@ -44,7 +44,8 @@ public:
 	enum ProjectionType {
 		PROJECTION_PERSPECTIVE,
 		PROJECTION_ORTHOGONAL,
-		PROJECTION_FRUSTUM
+		PROJECTION_FRUSTUM,
+		PROJECTION_PANINI
 	};
 
 	enum KeepAspect {
@@ -66,6 +67,7 @@ private:
 	ProjectionType mode = PROJECTION_PERSPECTIVE;
 
 	real_t fov = 75.0;
+	real_t panini_fov = 150.0;
 	real_t size = 1.0;
 	Vector2 frustum_offset;
 	// _ prefix to avoid conflict with Windows defines.
@@ -98,6 +100,10 @@ private:
 	RID pyramid_shape;
 	Vector<Vector3> pyramid_shape_points;
 
+	Vector2 _panini_forward(Vector2 latlon) const;
+	Vector3 _panini_ray(Vector2 p) const;
+	Vector2 _panini_inverse_ray(Vector3 p_pos) const;
+
 protected:
 	void _update_camera();
 	virtual void _request_camera_update();
@@ -119,6 +125,7 @@ public:
 	void set_perspective(real_t p_fovy_degrees, real_t p_z_near, real_t p_z_far);
 	void set_orthogonal(real_t p_size, real_t p_z_near, real_t p_z_far);
 	void set_frustum(real_t p_size, Vector2 p_offset, real_t p_z_near, real_t p_z_far);
+	void set_panini(real_t p_panini_fovy_degrees, real_t p_z_near, real_t p_z_far);
 	void set_projection(Camera3D::ProjectionType p_mode);
 
 	void make_current();
@@ -129,6 +136,7 @@ public:
 	RID get_camera() const;
 
 	real_t get_fov() const;
+	real_t get_panini_fov() const;
 	real_t get_size() const;
 	real_t get_far() const;
 	real_t get_near() const;
@@ -137,6 +145,7 @@ public:
 	ProjectionType get_projection() const;
 
 	void set_fov(real_t p_fov);
+	void set_panini_fov(real_t p_panini_fov);
 	void set_size(real_t p_size);
 	void set_far(real_t p_far);
 	void set_near(real_t p_near);

@@ -131,6 +131,15 @@
 				Sets the camera projection to orthogonal mode (see [constant PROJECTION_ORTHOGONAL]), by specifying a [param size], and the [param z_near] and [param z_far] clip planes in world space units. (As a hint, 2D games often use this projection, with values specified in pixels.)
 			</description>
 		</method>
+		<method name="set_panini">
+			<return type="void" />
+			<param index="0" name="panini_fov" type="float" />
+			<param index="1" name="z_near" type="float" />
+			<param index="2" name="z_far" type="float" />
+			<description>
+				Sets the camera projection to panini mode (see [constant PROJECTION_PANINI]), by specifying a [param panini_fov] (field of view) angle in degrees, and the [param z_near] and [param z_far] clip planes in world space units.
+			</description>
+		</method>
 		<method name="set_perspective">
 			<return type="void" />
 			<param index="0" name="fov" type="float" />
@@ -202,6 +211,9 @@
 		<member name="near" type="float" setter="set_near" getter="get_near" default="0.05">
 			The distance to the near culling boundary for this camera relative to its local Z axis. Lower values allow the camera to see objects more up close to its origin, at the cost of lower precision across the [i]entire[/i] range. Values lower than the default can lead to increased Z-fighting.
 		</member>
+		<member name="panini_fov" type="float" setter="set_panini_fov" getter="get_panini_fov" default="150.0">
+			The camera's field of view angle (in degrees) when in panini mode.
+		</member>
 		<member name="projection" type="int" setter="set_projection" getter="get_projection" enum="Camera3D.ProjectionType" default="0">
 			The camera's projection mode. In [constant PROJECTION_PERSPECTIVE] mode, objects' Z distance from the camera's local space scales their perceived size.
 		</member>
@@ -221,6 +233,9 @@
 		</constant>
 		<constant name="PROJECTION_FRUSTUM" value="2" enum="ProjectionType">
 			Frustum projection. This mode allows adjusting [member frustum_offset] to create "tilted frustum" effects.
+		</constant>
+		<constant name="PROJECTION_PANINI" value="3" enum="ProjectionType">
+			Panini projection. Supports higher FOV values than perspective, but has a large performance cost due to having to render multiple views.
 		</constant>
 		<constant name="KEEP_WIDTH" value="0" enum="KeepAspect">
 			Preserves the horizontal aspect ratio; also known as Vert- scaling. This is usually the best option for projects running in portrait mode, as taller aspect ratios will benefit from a wider vertical FOV.
