@@ -78,6 +78,7 @@ def get_flags():
         # -Os reduces file size by around 5 MiB over -O3. -Oz only saves about
         # 100 KiB over -Os, which does not justify the negative impact on
         # run-time performance.
+        # Note that this overrides the "auto" behavior for target/dev_build.
         "optimize": "size",
     }
 
