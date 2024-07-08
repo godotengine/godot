@@ -21,9 +21,6 @@
 		<member name="offset_mesh" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
 			Offsets the mesh's data by the specified value. This can be used to work around misaligned meshes without having to modify the source file.
 		</member>
-		<member name="optimize_mesh" type="bool" setter="" getter="" default="true">
-			Unused parameter. This currently has no effect.
-		</member>
 		<member name="scale_mesh" type="Vector3" setter="" getter="" default="Vector3(1, 1, 1)">
 			Scales the mesh's data by the specified value. This can be used to work around misscaled meshes without having to modify the source file.
 		</member>
