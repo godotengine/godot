@@ -1617,9 +1617,6 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 		thread_local LocalVector<RDD::BufferTextureCopyRegion> command_buffer_texture_copy_regions_vector;
 		command_buffer_texture_copy_regions_vector.clear();
 
-		uint32_t block_w = 0, block_h = 0;
-		get_compressed_image_format_block_dimensions(tex->format, block_w, block_h);
-
 		uint32_t w = tex->width;
 		uint32_t h = tex->height;
 		uint32_t d = tex->depth;
@@ -1635,8 +1632,8 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 			copy_region.texture_region_size.z = d;
 			command_buffer_texture_copy_regions_vector.push_back(copy_region);
 
-			w = MAX(block_w, w >> 1);
-			h = MAX(block_h, h >> 1);
+			w = (w >> 1);
+			h = (h >> 1);
 			d = MAX(1u, d >> 1);
 		}
 
@@ -1652,6 +1649,10 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 
 		const uint8_t *read_ptr = driver->buffer_map(tmp_buffer);
 		ERR_FAIL_NULL_V(read_ptr, Vector<uint8_t>());
+
+		uint32_t block_w = 0;
+		uint32_t block_h = 0;
+		get_compressed_image_format_block_dimensions(tex->format, block_w, block_h);
 
 		Vector<uint8_t> buffer_data;
 		uint32_t tight_buffer_size = get_image_format_required_size(tex->format, tex->width, tex->height, tex->depth, tex->mipmaps);
