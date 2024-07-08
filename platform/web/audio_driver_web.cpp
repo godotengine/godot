@@ -33,6 +33,8 @@
 #include "godot_audio.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/object.h"
+#include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 
 #include <emscripten.h>
@@ -49,6 +51,33 @@ void AudioDriverWeb::_state_change_callback(int p_state) {
 
 void AudioDriverWeb::_latency_update_callback(float p_latency) {
 	AudioDriverWeb::audio_context.output_latency = p_latency;
+}
+
+void AudioDriverWeb::_sample_playback_finished_callback(const char *p_playback_object_id) {
+	const ObjectID playback_id = ObjectID(String::to_int(p_playback_object_id));
+
+	Object *playback_object = ObjectDB::get_instance(playback_id);
+	if (playback_object == nullptr) {
+		return;
+	}
+	Ref<AudioSamplePlayback> playback = Object::cast_to<AudioSamplePlayback>(playback_object);
+	if (playback.is_null()) {
+		return;
+	}
+
+	Object *player_object = ObjectDB::get_instance(playback->player_id);
+	if (player_object == nullptr) {
+		return;
+	}
+	Node *player = Object::cast_to<Node>(player_object);
+	if (player == nullptr) {
+		return;
+	}
+
+	const StringName finished = SNAME("finished");
+	if (player->has_signal(finished)) {
+		player->emit_signal(finished);
+	}
 }
 
 void AudioDriverWeb::_audio_driver_process(int p_from, int p_samples) {
@@ -132,6 +161,9 @@ Error AudioDriverWeb::init() {
 	if (!input_rb) {
 		return ERR_OUT_OF_MEMORY;
 	}
+
+	godot_audio_sample_set_finished_callback(&_sample_playback_finished_callback);
+
 	return OK;
 }
 

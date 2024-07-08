@@ -568,23 +568,7 @@ void DisplayServerMacOS::menu_callback(id p_sender) {
 	}
 
 	GodotMenuItem *value = [p_sender representedObject];
-
 	if (value) {
-		if (value->max_states > 0) {
-			value->state++;
-			if (value->state >= value->max_states) {
-				value->state = 0;
-			}
-		}
-
-		if (value->checkable_type == CHECKABLE_TYPE_CHECK_BOX) {
-			if ([p_sender state] == NSControlStateValueOff) {
-				[p_sender setState:NSControlStateValueOn];
-			} else {
-				[p_sender setState:NSControlStateValueOff];
-			}
-		}
-
 		if (value->callback.is_valid()) {
 			MenuCall mc;
 			mc.tag = value->meta;

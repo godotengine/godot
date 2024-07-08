@@ -965,7 +965,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			real_t minimum_value = INFINITY;
 			real_t maximum_value = -INFINITY;
 
-			for (const IntPair &E : selection) {
+			for (const IntPair &E : focused_keys) {
 				IntPair key_pair = E;
 
 				real_t time = animation->track_get_key_time(key_pair.first, key_pair.second);
@@ -1096,7 +1096,8 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 							for (int i = 0; i < animation->track_get_key_count(track); ++i) {
 								undo_redo->add_undo_method(
 										this,
-										"_bezier_track_insert_key",
+										"_bezier_track_insert_key_at_anim",
+										animation,
 										track,
 										animation->track_get_key_time(track, i),
 										animation->bezier_track_get_key_value(track, i),
@@ -1370,7 +1371,8 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					key[0] = h;
 					undo_redo->add_do_method(
 							this,
-							"_bezier_track_insert_key",
+							"_bezier_track_insert_key_at_anim",
+							animation,
 							E->get().first,
 							newpos,
 							key[0],
@@ -1391,7 +1393,8 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					Array key = animation->track_get_key_value(E->get().first, E->get().second);
 					undo_redo->add_undo_method(
 							this,
-							"_bezier_track_insert_key",
+							"_bezier_track_insert_key_at_anim",
+							animation,
 							E->get().first,
 							oldpos,
 							key[0],
@@ -1409,7 +1412,8 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					undo_redo->add_undo_method(animation.ptr(), "track_insert_key", amr.track, amr.time, amr.key, 1);
 					undo_redo->add_undo_method(
 							this,
-							"_bezier_track_insert_key",
+							"_bezier_track_insert_key_at_anim",
+							animation,
 							amr.track,
 							amr.time,
 							key[0],
@@ -1918,10 +1922,9 @@ void AnimationBezierTrackEdit::delete_selection() {
 	}
 }
 
-void AnimationBezierTrackEdit::_bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode) {
-	ERR_FAIL_COND(animation.is_null());
-	int idx = animation->bezier_track_insert_key(p_track, p_time, p_value, p_in_handle, p_out_handle);
-	animation->bezier_track_set_key_handle_mode(p_track, idx, p_handle_mode);
+void AnimationBezierTrackEdit::_bezier_track_insert_key_at_anim(const Ref<Animation> &p_anim, int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode) {
+	int idx = p_anim->bezier_track_insert_key(p_track, p_time, p_value, p_in_handle, p_out_handle);
+	p_anim->bezier_track_set_key_handle_mode(p_track, idx, p_handle_mode);
 }
 
 void AnimationBezierTrackEdit::_bind_methods() {
@@ -1930,7 +1933,7 @@ void AnimationBezierTrackEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_select_at_anim"), &AnimationBezierTrackEdit::_select_at_anim);
 	ClassDB::bind_method(D_METHOD("_update_hidden_tracks_after"), &AnimationBezierTrackEdit::_update_hidden_tracks_after);
 	ClassDB::bind_method(D_METHOD("_update_locked_tracks_after"), &AnimationBezierTrackEdit::_update_locked_tracks_after);
-	ClassDB::bind_method(D_METHOD("_bezier_track_insert_key"), &AnimationBezierTrackEdit::_bezier_track_insert_key);
+	ClassDB::bind_method(D_METHOD("_bezier_track_insert_key_at_anim"), &AnimationBezierTrackEdit::_bezier_track_insert_key_at_anim);
 
 	ADD_SIGNAL(MethodInfo("select_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "single"), PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("deselect_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::INT, "track")));
