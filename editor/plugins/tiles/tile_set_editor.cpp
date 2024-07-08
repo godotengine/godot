@@ -997,6 +997,7 @@ void TileSourceInspectorPlugin::_confirm_change_id() {
 }
 
 bool TileSourceInspectorPlugin::can_handle(Object *p_object) {
+	ERR_FAIL_NULL_V(p_object, false);
 	return p_object->is_class("TileSetAtlasSourceProxyObject") || p_object->is_class("TileSetScenesCollectionProxyObject");
 }
 
