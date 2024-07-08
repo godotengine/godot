@@ -56,28 +56,33 @@ JoltJointImpl3D::~JoltJointImpl3D() {
 }
 
 JoltSpace3D* JoltJointImpl3D::get_space() const {
-	JoltSpace3D* space_a = body_a != nullptr ? body_a->get_space() : nullptr;
-	JoltSpace3D* space_b = body_b != nullptr ? body_b->get_space() : nullptr;
+	if (body_a != nullptr && body_b != nullptr) {
+		JoltSpace3D* space_a = body_a->get_space();
+		JoltSpace3D* space_b = body_b->get_space();
 
-	if (space_b == nullptr) {
+		if (space_a == nullptr || space_b == nullptr) {
+			return nullptr;
+		}
+
+		ERR_FAIL_COND_D_MSG(
+			space_a != space_b,
+			vformat(
+				"Joint was found to connect bodies in different physics spaces. "
+				"This joint will effectively be disabled. "
+				"This joint connects %s.",
+				_bodies_to_string()
+			)
+		);
+
 		return space_a;
+	
+	} else if (body_a != nullptr) {
+		return body_a->get_space();
+	} else if (body_b != nullptr) {
+		return body_b->get_space();
 	}
 
-	if (space_a == nullptr) {
-		return space_b;
-	}
-
-	ERR_FAIL_COND_D_MSG(
-		space_a != space_b,
-		vformat(
-			"Joint was found to connect bodies in different physics spaces. "
-			"This joint will effectively be disabled. "
-			"This joint connects %s.",
-			_bodies_to_string()
-		)
-	);
-
-	return space_a;
+	return nullptr;
 }
 
 void JoltJointImpl3D::set_enabled(bool p_enabled) {

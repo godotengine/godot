@@ -21,8 +21,6 @@ void CharacterBodyMain::_bind_methods()
 	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &CharacterBodyMain::set_blackboard_plan);
 	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &CharacterBodyMain::get_blackboard_plan);
 
-    ClassDB::bind_method(D_METHOD("set_controller", "controller"), &CharacterBodyMain::set_controller);
-    ClassDB::bind_method(D_METHOD("get_controller"), &CharacterBodyMain::get_controller);
 
     ClassDB::bind_method(D_METHOD("set_navigation_agent", "navigation_agent"), &CharacterBodyMain::set_navigation_agent);
     ClassDB::bind_method(D_METHOD("get_navigation_agent"), &CharacterBodyMain::get_navigation_agent);
@@ -271,15 +269,6 @@ void CharacterBodyMain::set_blackboard(const Ref<Blackboard> &p_blackboard)
     {                
         btPlayer->get_blackboard()->set_parent(player_blackboard);
     }
-}
-
-void CharacterBodyMain::set_controller(const Ref<CharacterController> &p_controller) 
-{
-    controller = p_controller; 
-}
-Ref<CharacterController> CharacterBodyMain::get_controller()
-{
-    return controller; 
 }
 void CharacterBodyMain::set_navigation_agent(const Ref<CharacterNavigationAgent3D> &p_navigation_agent)
 {
@@ -547,6 +536,7 @@ void CharacterBodyMain::set_body_part(const Dictionary& part)
             if(p->get_part() != mesh->get_part())
             {
                 mesh->set_part(p->get_part());
+                mesh->set_skeleton(skeleton);
             }
             bodyPart[part_name] = mesh;        
             old_bodyPart.erase(part_name);       
@@ -604,35 +594,5 @@ CharacterBodyMain::~CharacterBodyMain()
 
 
 
-void CharacterController::load_test()
-{
-    Ref<DataTableItem> data = DataTableManager::get_singleton()->get_data_table(DataTableManager::get_singleton()->get_body_table_name());
-    if(data.is_null())
-    {
-        ERR_FAIL_MSG("data not found:" + DataTableManager::get_singleton()->get_body_table_name().str());
-    }
-
-    if(!data->data.has(load_test_id))
-    {
-        ERR_FAIL_MSG("data not found:" + itos(load_test_id));
-    }
-
-    CharacterBodyMain*body = get_load_test_player();
-    if(body)
-    {
-        startup(body,data->data[load_test_id]);
-    }
-
-
-}
-
-void CharacterController::log_player()
-{
-    CharacterBodyMain*body = get_load_test_player();
-    if(body)
-    {
-        print_line(body->log_node());
-    }
-}
 
 

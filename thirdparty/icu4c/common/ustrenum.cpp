@@ -22,7 +22,7 @@
 #include "uassert.h"
 
 U_NAMESPACE_BEGIN
-// StringEnumeration implementation ---------------------------------------- ***
+// StringEnumeration implementation ---------------------------------------- *** 
 
 StringEnumeration::StringEnumeration()
     : chars(charsBuffer), charsCapacity(sizeof(charsBuffer)) {

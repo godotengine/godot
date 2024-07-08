@@ -6,9 +6,6 @@
 
 JPH_NAMESPACE_BEGIN
 
-// GCC doesn't properly detect that mState is used to ensure that mResult is initialized
-JPH_GCC_SUPPRESS_WARNING("-Wmaybe-uninitialized")
-
 /// Helper class that either contains a valid result or an error
 template <class Type>
 class Result

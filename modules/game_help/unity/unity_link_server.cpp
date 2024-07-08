@@ -35,6 +35,7 @@
 #include "core/io/dir_access.h"
 #include "../logic/animator/body_animator.h"
 #include "../logic/data_table_manager.h"
+#include "../logic/character_shape/character_body_prefab.h"
 
 #if TOOLS_ENABLED
 #include "editor/import/3d/resource_importer_scene.h"

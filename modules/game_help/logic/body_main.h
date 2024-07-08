@@ -8,16 +8,18 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/physics/character_body_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
-#include "body_part.h"
 #include "animator/animation_help.h"
 #include "animator/body_animator.h"
 #include "character_movement.h"
 #include "character_check_area_3d.h"
+#include "./character_shape/character_body_part.h"
+#include "./character_shape/character_body_prefab.h"
 #include "navigation/character_navigation_agent.h"
 
 
 #include "modules/limboai/bt/bt_player.h"
 #include "modules/limboai/bt/tasks/decorators/bt_new_scope.h"
+
 class CharacterAI;
 // 身体的插槽信息
 class BodySocket
@@ -107,9 +109,6 @@ public:
 	int get_last_status() { return get_bt_player()->get_last_status(); }
 
 	Ref<BTTask> get_tree_instance() { return get_bt_player()->get_tree_instance(); }
-
-    void set_controller(const Ref<class CharacterController> &p_controller);
-    Ref<class CharacterController> get_controller();
 
     void set_navigation_agent(const Ref<CharacterNavigationAgent3D> &p_navigation_agent);
     Ref<CharacterNavigationAgent3D> get_navigation_agent();
@@ -370,192 +369,9 @@ protected:
     LocalVector<Ref<CharacterCheckArea3D>> check_area;
     
     Ref<CharacterAnimationLibrary> animation_library;
-    Ref<class CharacterController>  controller;
     Ref<CharacterBodyPrefab> body_prefab;
     // 初始化数据
     Dictionary init_data;
 };
-
-class CharacterBodyMain;
-// 角色控制器
-class CharacterController : public Resource
-{
-    GDCLASS(CharacterController, Resource);
-    static void _bind_methods()
-    {
-        ClassDB::bind_method(D_METHOD("set_blackboardPlan", "blackboardplan"), &CharacterController::set_blackboardPlan);
-        ClassDB::bind_method(D_METHOD("get_blackboardPlan"), &CharacterController::get_blackboardPlan);
-
-        ClassDB::bind_method(D_METHOD("set_load_test_id", "id"), &CharacterController::set_load_test_id);
-        ClassDB::bind_method(D_METHOD("get_load_test_id"), &CharacterController::get_load_test_id);
-
-        ClassDB::bind_method(D_METHOD("set_load_test_player"), &CharacterController::set_load_test_player);
-        ClassDB::bind_method(D_METHOD("get_load_test_player"), &CharacterController::get_load_test_player);
-
-        ClassDB::bind_method(D_METHOD("set_bt_load_test_id", "id"), &CharacterController::set_bt_load_test_id);
-        ClassDB::bind_method(D_METHOD("get_bt_load_test_id"), &CharacterController::get_bt_load_test_id);
-
-
-        ClassDB::bind_method(D_METHOD("load_test"), &CharacterController::load_test);
-        ClassDB::bind_method(D_METHOD("log_player"), &CharacterController::log_player);
-
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan"), "set_blackboardPlan", "get_blackboardPlan");
-
-        ADD_GROUP("Load Test", "load_test_");
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "load_test_player", PROPERTY_HINT_NODE_TYPE, "CharacterBodyMain",PROPERTY_USAGE_EDITOR), "set_load_test_player", "get_load_test_player");
-
-        ADD_PROPERTY(PropertyInfo(Variant::INT, "load_test_id"), "set_load_test_id", "get_load_test_id");
-        // 增加一个按钮属性
-        ADD_PROPERTY(PropertyInfo(Variant::INT, "load_test_bt",PROPERTY_HINT_BUTTON,"#FF22AA;Load Test;load_test()"), "set_bt_load_test_id", "get_bt_load_test_id");
-        
-        GDVIRTUAL_BIND(_player_startup, "player","init_data");
-        GDVIRTUAL_BIND(_player_pre_update_player,"player");
-        GDVIRTUAL_BIND(_player_update_player, "player");
-        GDVIRTUAL_BIND(_player_post_update_player, "player");
-        GDVIRTUAL_BIND(_player_on_restart, "player");
-        GDVIRTUAL_BIND(_player_on_dead, "player");
-        GDVIRTUAL_BIND(_player_stop_player, "player");
-
-        
-        GDVIRTUAL_BIND(_player_input, "player", "event");
-        GDVIRTUAL_BIND(_player_shortcut_input, "player", "event");
-        GDVIRTUAL_BIND(_player_unhandled_input, "player", "event");
-        GDVIRTUAL_BIND(_player_unhandled_key_input, "player", "event");
-    }
-public:
-    bool is_input()
-    {
-        return GDVIRTUAL_IS_OVERRIDDEN(_player_input);
-    }
-    bool is_shortcut_input()
-    {
-        return GDVIRTUAL_IS_OVERRIDDEN(_player_shortcut_input);
-    }
-    bool is_unhandled_input()
-    {
-        return GDVIRTUAL_IS_OVERRIDDEN(_player_unhandled_input);
-    }
-    bool is_unhandled_key_input()
-    {
-        return GDVIRTUAL_IS_OVERRIDDEN(_player_unhandled_key_input);
-    }
-    void set_blackboardPlan(Ref<BlackboardPlan> p_blackboardplan)
-    {
-        blackboard_plan = p_blackboardplan;
-    }
-    Ref<BlackboardPlan> get_blackboardPlan()
-    {
-        return blackboard_plan;
-    }
-    int load_test_id = 0;
-    void set_load_test_id(int p_id)
-    {
-        load_test_id = p_id;
-    }
-    int get_load_test_id()
-    {
-        return load_test_id;
-    }
-    WeakRef load_test_player;
-
-    void set_load_test_player(CharacterBodyMain* p_player)
-    {
-        load_test_player.set_obj(p_player);
-    }
-    CharacterBodyMain* get_load_test_player()
-    {
-        Object* obj = load_test_player.get_ref();
-        if (obj)
-        {
-            return Object::cast_to<CharacterBodyMain>(obj);
-        }
-        return nullptr;
-    }
-
-    void set_bt_load_test_id(int p_id)
-    {}
-    int get_bt_load_test_id()
-    {
-        return 0;
-    }
-    void load_test();
-    void log_player();
-public:
-    void startup(CharacterBodyMain* p_player,const Dictionary& p_init_data)
-    {
-
-		GDVIRTUAL_CALL(_player_startup, p_player,p_init_data);
-    }
-    void pre_update_player(CharacterBodyMain* p_player)
-    {
-		GDVIRTUAL_CALL(_player_pre_update_player, p_player);
-
-    }
-
-    void update_player(CharacterBodyMain* p_player)
-    {
-		GDVIRTUAL_CALL(_player_update_player, p_player);
-
-    }
-
-    void post_update_player(CharacterBodyMain* p_player)
-    {
-		GDVIRTUAL_CALL(_player_post_update_player, p_player);
-
-    }
-    void on_restart(CharacterBodyMain* p_player)
-    {
-		GDVIRTUAL_CALL(_player_on_restart, p_player);
-        
-    }
-    void on_dead(CharacterBodyMain* p_player)
-    {
-		GDVIRTUAL_CALL(_player_on_dead, p_player);
-
-    }
-    void stop_player(CharacterBodyMain* p_player)
-    {
-
-		GDVIRTUAL_CALL(_player_stop_player, p_player);
-    }
-	void input(CharacterBodyMain* p_player,const Ref<InputEvent> &p_event) 
-    {
-		GDVIRTUAL_CALL(_player_input, p_player,p_event);
-    }
-	virtual void shortcut_input(CharacterBodyMain* p_player,const Ref<InputEvent> &p_key_event) 
-    {
-		GDVIRTUAL_CALL(_player_shortcut_input, p_player,p_key_event);
-
-    }
-	virtual void unhandled_input(CharacterBodyMain* p_player,const Ref<InputEvent> &p_event)
-    {
-		GDVIRTUAL_CALL(_player_unhandled_input, p_player,p_event);
-
-    }
-	virtual void unhandled_key_input(CharacterBodyMain* p_player,const Ref<InputEvent> &p_key_event)
-    {
-		GDVIRTUAL_CALL(_player_unhandled_key_input, p_player,p_key_event);
-    }
-
-
-	GDVIRTUAL2(_player_startup, CharacterBodyMain*,Dictionary);
-	GDVIRTUAL1(_player_pre_update_player, CharacterBodyMain*);
-	GDVIRTUAL1(_player_update_player, CharacterBodyMain*);
-	GDVIRTUAL1(_player_post_update_player, CharacterBodyMain*);
-	GDVIRTUAL1(_player_on_restart, CharacterBodyMain*);
-	GDVIRTUAL1(_player_on_dead, CharacterBodyMain*);
-	GDVIRTUAL1(_player_stop_player,CharacterBodyMain*);
-
-
-    
-	GDVIRTUAL2(_player_input, CharacterBodyMain*,Ref<InputEvent>);
-	GDVIRTUAL2(_player_shortcut_input, CharacterBodyMain*,Ref<InputEvent>);
-	GDVIRTUAL2(_player_unhandled_input, CharacterBodyMain*,Ref<InputEvent>);
-	GDVIRTUAL2(_player_unhandled_key_input, CharacterBodyMain*,Ref<InputEvent>);
-
-    Ref<BlackboardPlan> blackboard_plan;
-
-};
-
 
 #endif

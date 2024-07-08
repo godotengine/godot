@@ -17,16 +17,30 @@ JPH_SUPPRESS_WARNINGS_STD_END
 
 JPH_NAMESPACE_BEGIN
 
+#ifdef JPH_SHARED_LIBRARY
+/// Functions called when a profiler measurement starts or stops, need to be overridden by the user.
+using ProfileStartMeasurementFunction = void (*)(const char *inName, uint32 inColor, uint8 *ioUserData);
+using ProfileEndMeasurementFunction = void (*)(uint8 *ioUserData);
+
+JPH_EXPORT extern ProfileStartMeasurementFunction ProfileStartMeasurement;
+JPH_EXPORT extern ProfileEndMeasurementFunction ProfileEndMeasurement;
+#endif // JPH_SHARED_LIBRARY
 /// Create this class on the stack to start sampling timing information of a particular scope.
 ///
-/// Left unimplemented intentionally. Needs to be implemented by the user of the library.
+/// For statically linked builds, this is left unimplemented intentionally. Needs to be implemented by the user of the library.
 /// On construction a measurement should start, on destruction it should be stopped.
+/// For dynamically linked builds, the user should override the ProfileStartMeasurement and ProfileEndMeasurement functions.
 class alignas(16) ExternalProfileMeasurement : public NonCopyable
 {
 public:
 	/// Constructor
+#ifdef JPH_SHARED_LIBRARY
+	JPH_INLINE						ExternalProfileMeasurement(const char *inName, uint32 inColor = 0) { ProfileStartMeasurement(inName, inColor, mUserData); }
+	JPH_INLINE						~ExternalProfileMeasurement() { ProfileEndMeasurement(mUserData); }
+#else
 									ExternalProfileMeasurement(const char *inName, uint32 inColor = 0);
 									~ExternalProfileMeasurement();
+#endif
 
 private:
 	uint8							mUserData[64];
@@ -42,6 +56,8 @@ JPH_SUPPRESS_WARNING_PUSH
 JPH_CLANG_SUPPRESS_WARNING("-Wc++98-compat-pedantic")
 
 // Dummy implementations
+#define JPH_PROFILE_START(name)
+#define JPH_PROFILE_END()
 #define JPH_PROFILE_THREAD_START(name)
 #define JPH_PROFILE_THREAD_END()
 #define JPH_PROFILE_NEXTFRAME()

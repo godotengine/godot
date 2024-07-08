@@ -329,6 +329,7 @@
 	JPH_GCC_SUPPRESS_WARNING("-Wclass-memaccess")												\
 	JPH_GCC_SUPPRESS_WARNING("-Wpedantic")														\
 	JPH_GCC_SUPPRESS_WARNING("-Wunused-parameter")												\
+	JPH_GCC_SUPPRESS_WARNING("-Wmaybe-uninitialized")											\
 																								\
 	JPH_MSVC_SUPPRESS_WARNING(4619) /* #pragma warning: there is no warning number 'XXXX' */	\
 	JPH_MSVC_SUPPRESS_WARNING(4514) /* 'X' : unreferenced inline function has been removed */	\

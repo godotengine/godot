@@ -1,4 +1,4 @@
-#include "body_part.h"
+#include "character_body_part.h"
 
 void CharacterBodyPart::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_skin","p_skin"), &CharacterBodyPart::set_skin);

@@ -115,10 +115,6 @@ private:
 		mNumPoints = num_points;
 	}
 
-	// GCC 11.3 thinks the assignments to mP, mQ and mY below may use uninitialized variables
-	JPH_SUPPRESS_WARNING_PUSH
-	JPH_GCC_SUPPRESS_WARNING("-Wmaybe-uninitialized")
-
 	// Remove points that are not in the set, only updates mP
 	void		UpdatePointSetP(uint32 inSet)
 	{
@@ -160,8 +156,6 @@ private:
 			}
 		mNumPoints = num_points;
 	}
-
-	JPH_SUPPRESS_WARNING_POP
 
 	// Calculate closest points on A and B
 	void		CalculatePointAAndB(Vec3 &outPointA, Vec3 &outPointB) const

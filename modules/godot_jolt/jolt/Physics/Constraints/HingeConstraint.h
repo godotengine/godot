@@ -28,7 +28,11 @@ public:
 	EConstraintSpace			mSpace = EConstraintSpace::WorldSpace;
 
 	/// Body 1 constraint reference frame (space determined by mSpace).
-	/// Hinge axis is the axis where rotation is allowed, normal axis defines the 0 angle of the hinge.
+	/// Hinge axis is the axis where rotation is allowed.
+	/// When the normal axis of both bodies align in world space, the hinge angle is defined to be 0.
+	/// mHingeAxis1 and mNormalAxis1 should be perpendicular. mHingeAxis2 and mNormalAxis2 should also be perpendicular.
+	/// If you configure the joint in world space and create both bodies with a relative rotation you want to be defined as zero, 
+	/// you can simply set mHingeAxis1 = mHingeAxis2 and mNormalAxis1 = mNormalAxis2.
 	RVec3						mPoint1 = RVec3::sZero();
 	Vec3						mHingeAxis1 = Vec3::sAxisY();
 	Vec3						mNormalAxis1 = Vec3::sAxisX();
@@ -38,7 +42,7 @@ public:
 	Vec3						mHingeAxis2 = Vec3::sAxisY();
 	Vec3						mNormalAxis2 = Vec3::sAxisX();
 
-	/// Bodies are assumed to be placed so that the hinge angle = 0, movement will be limited between [mLimitsMin, mLimitsMax] where mLimitsMin e [-pi, 0] and mLimitsMax e [0, pi].
+	/// Rotation around the hinge axis will be limited between [mLimitsMin, mLimitsMax] where mLimitsMin e [-pi, 0] and mLimitsMax e [0, pi].
 	/// Both angles are in radians.
 	float						mLimitsMin = -JPH_PI;
 	float						mLimitsMax = JPH_PI;

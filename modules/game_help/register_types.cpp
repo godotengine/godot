@@ -44,7 +44,7 @@
 
 #include "modules/game_help/logic/animator/animation_help.h"
 #include "modules/game_help/logic/body_main.h"
-#include "modules/game_help/logic/body_part.h"
+#include "modules/game_help/logic/character_shape/character_body_part.h"
 #include "modules/game_help/logic/data_table_manager.h"
 #include "modules/game_help/logic/path_manager.h"
 #include "modules/game_help/csv/CSV_EditorImportPlugin.h"
@@ -112,7 +112,6 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<CharacterBodyPart>();
 	ClassDB::register_class<CharacterBodyPartInstane>();
 	ClassDB::register_class<CharacterBodyPrefab>();
-	ClassDB::register_class<CharacterController>();
 	ClassDB::register_class<CharacterNavigationAgent3D>();
 	//ClassDB::register_class<BTPlaySkill>();
 

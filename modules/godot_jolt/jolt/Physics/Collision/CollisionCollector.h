@@ -70,6 +70,9 @@ public:
 	void					SetContext(const TransformedShape *inContext)	{ mContext = inContext; }
 	const TransformedShape *GetContext() const								{ return mContext; }
 
+	/// This function can be used to set some user data on the collision collector
+	virtual void			SetUserData(uint64 inUserData)					{ /* Does nothing by default */ }
+
 	/// This function will be called for every hit found, it's up to the application to decide how to store the hit
 	virtual void			AddHit(const ResultType &inResult) = 0;
 
