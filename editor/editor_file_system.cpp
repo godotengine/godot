@@ -2457,6 +2457,69 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 	return err;
 }
 
+Error EditorFileSystem::_parse_resource_deps(void *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) {
+	VariantParser::Token token;
+	VariantParser::get_token(p_stream, token, line, r_err_str);
+	if (token.type != VariantParser::TK_STRING) {
+		r_err_str = "Expected string as argument for Resource().";
+		return ERR_PARSE_ERROR;
+	}
+
+	String id = token.value;
+	Error err = OK;
+
+	r_res.unref();
+	reinterpret_cast<ResDependencies *>(p_data)->res_paths.push_back(id);
+
+	VariantParser::get_token(p_stream, token, line, r_err_str);
+	if (token.type != VariantParser::TK_PARENTHESIS_CLOSE) {
+		r_err_str = "Expected ')'";
+		return ERR_PARSE_ERROR;
+	}
+
+	return err;
+}
+
+Vector<String> EditorFileSystem::_reimport_file_get_dependencies(const String &p_file, const HashSet<String> &p_owners) {
+	Vector<String> ret;
+	if (!ResourceFormatImporter::get_singleton()->get_import_can_have_dependencies(p_file)) {
+		return ret;
+	}
+
+	ERR_FAIL_COND_V_MSG(p_owners.has(p_file), ret, "Can't import file '" + p_file + "', dependency loop detected.");
+
+	EditorFileSystemDirectory *fs = nullptr;
+	int cpos = -1;
+	bool found = _find_file(p_file, &fs, cpos);
+	ERR_FAIL_COND_V_MSG(!found, ret, "Can't find file '" + p_file + "'.");
+
+	if (FileAccess::exists(p_file + ".import")) {
+		ResDependencies res_dependencies;
+
+		VariantParser::ResourceParser rp_new;
+		rp_new.func = _parse_resource_deps;
+		rp_new.ext_func = _parse_resource_deps;
+		rp_new.sub_func = _parse_resource_deps;
+		rp_new.userdata = &res_dependencies;
+
+		Ref<ConfigFile> temp_cf;
+		temp_cf.instantiate();
+		Error err = temp_cf->load_with_parser(p_file + ".import", &rp_new);
+		if (err == OK) {
+			HashSet<String> owners = p_owners;
+			owners.insert(p_file);
+			for (const String &file : res_dependencies.res_paths) {
+				Vector<String> sub = _reimport_file_get_dependencies(file, owners);
+				sub.append(file);
+				sub.append_array(ret);
+				ret = sub;
+			}
+		}
+	}
+
+	return ret;
+}
+
 Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant *p_generator_parameters, bool p_update_file_system) {
 	print_verbose(vformat("EditorFileSystem: Importing file: %s", p_file));
 	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
@@ -2782,6 +2845,9 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 	HashSet<String> groups_to_reimport;
 
+	// Check for dependencies and ensure they are imported before dependent file.
+	HashSet<String> keep_ordered;
+	Vector<String> files;
 	for (int i = 0; i < p_files.size(); i++) {
 		ep->step(TTR("Preparing files to reimport..."), i, false);
 
@@ -2792,6 +2858,23 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			file = ResourceUID::get_singleton()->get_id_path(uid);
 		}
 
+		Vector<String> dependencies = _reimport_file_get_dependencies(file);
+		if (!dependencies.is_empty()) {
+			keep_ordered.insert(file);
+		}
+		for (const String &dep_file : dependencies) {
+			if (!files.has(dep_file)) {
+				files.append(dep_file);
+			}
+			keep_ordered.insert(dep_file);
+		}
+		if (!files.has(file)) {
+			files.append(file);
+		}
+	}
+
+	for (int i = 0; i < files.size(); i++) {
+		String file = files[i];
 		String group_file = ResourceFormatImporter::get_singleton()->get_import_group_file(file);
 
 		if (group_file_cache.has(file)) {
@@ -2809,7 +2892,12 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			// It's a regular file.
 			ImportFile ifile;
 			ifile.path = file;
+			ifile.index = i;
 			ResourceFormatImporter::get_singleton()->get_import_order_threads_and_importer(file, ifile.order, ifile.threaded, ifile.importer);
+			if (keep_ordered.has(file)) {
+				ifile.no_sort = true; // File with dependencies, do not sort and disable multi-threading.
+				ifile.threaded = false;
+			}
 			reloads.push_back(file);
 			reimport_files.push_back(ifile);
 		}

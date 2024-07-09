@@ -112,6 +112,14 @@ int EditorImportPlugin::get_import_order() const {
 	ERR_FAIL_V_MSG(-1, "Unimplemented _get_import_order in add-on.");
 }
 
+bool EditorImportPlugin::can_have_dependencies() const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_can_have_dependencies, ret)) {
+		return ret;
+	}
+	return false;
+}
+
 void EditorImportPlugin::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options, int p_preset) const {
 	Array needed;
 	needed.push_back("name");
@@ -221,6 +229,7 @@ void EditorImportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_priority)
 	GDVIRTUAL_BIND(_get_import_order)
 	GDVIRTUAL_BIND(_get_option_visibility, "path", "option_name", "options")
+	GDVIRTUAL_BIND(_can_have_dependencies)
 	GDVIRTUAL_BIND(_import, "source_file", "save_path", "options", "platform_variants", "gen_files");
 	GDVIRTUAL_BIND(_can_import_threaded);
 	ClassDB::bind_method(D_METHOD("append_import_external_resource", "path", "custom_options", "custom_importer", "generator_parameters"), &EditorImportPlugin::_append_import_external_resource, DEFVAL(Dictionary()), DEFVAL(String()), DEFVAL(Variant()));

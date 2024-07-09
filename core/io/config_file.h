@@ -43,10 +43,10 @@ class ConfigFile : public RefCounted {
 
 	PackedStringArray _get_sections() const;
 	PackedStringArray _get_section_keys(const String &p_section) const;
-	Error _internal_load(const String &p_path, Ref<FileAccess> f);
+	Error _internal_load(const String &p_path, Ref<FileAccess> f, VariantParser::ResourceParser *p_res_parser = nullptr);
 	Error _internal_save(Ref<FileAccess> file);
 
-	Error _parse(const String &p_path, VariantParser::Stream *p_stream);
+	Error _parse(const String &p_path, VariantParser::Stream *p_stream, VariantParser::ResourceParser *p_res_parser = nullptr);
 
 protected:
 	static void _bind_methods();
@@ -66,6 +66,7 @@ public:
 
 	Error save(const String &p_path);
 	Error load(const String &p_path);
+	Error load_with_parser(const String &p_path, VariantParser::ResourceParser *p_res_parser);
 	Error parse(const String &p_data);
 
 	String encode_to_text() const; // used by exporter
