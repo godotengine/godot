@@ -908,6 +908,7 @@ public:
 	void save_before_run();
 	void try_autosave();
 	void restart_editor();
+	void unload_editor_addons();
 
 	void dim_editor(bool p_dimming);
 	bool is_editor_dimmed() const;
