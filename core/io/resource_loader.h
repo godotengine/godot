@@ -170,7 +170,6 @@ private:
 		LoadToken *load_token = nullptr;
 		String local_path;
 		String remapped_path;
-		String dependent_path;
 		String type_hint;
 		float progress = 0.0f;
 		float max_reported_progress = 0.0f;
