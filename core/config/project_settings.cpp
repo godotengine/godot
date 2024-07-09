@@ -329,9 +329,9 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			String path = p_value;
 			if (path.begins_with("*")) {
 				autoload.is_singleton = true;
-				autoload.path = path.substr(1);
+				autoload.path = path.substr(1).simplify_path();
 			} else {
-				autoload.path = path;
+				autoload.path = path.simplify_path();
 			}
 			add_autoload(autoload);
 		} else if (p_name.operator String().begins_with("global_group/")) {
