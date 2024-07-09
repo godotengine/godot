@@ -1893,22 +1893,50 @@ void RichTextLabel::_notification(int p_what) {
 				ofs.y += main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * theme_cache.line_separation;
 				from_line++;
 			}
+
+			// Draw drag icon.
+			if (in_mb_scroll) {
+				theme_cache.scroll->draw_rect(ci, Rect2(mb_scroll_pos - theme_cache.scroll->get_size() / 2, theme_cache.scroll->get_size()));
+			}
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (is_visible_in_tree()) {
+				double dt = get_process_delta_time();
+				if (in_mb_scroll) {
+					float delta = get_local_mouse_position().y - mb_scroll_pos.y;
+					vscroll->scroll(mb_scroll_rate * delta * dt * theme_cache.normal_font->get_height(theme_cache.normal_font_size));
+				}
 				if (!is_ready()) {
 					return;
 				}
-				double dt = get_process_delta_time();
-				_update_fx(main, dt);
-				queue_redraw();
+				if (has_active_eq) {
+					_update_fx(main, dt);
+					queue_redraw();
+				}
 			}
 		} break;
 
 		case NOTIFICATION_FOCUS_EXIT: {
 			if (deselect_on_focus_loss_enabled) {
 				deselect();
+			}
+			if (in_mb_scroll) {
+				in_mb_scroll = false;
+				if (!has_active_eq) {
+					set_process_internal(false);
+				}
+				queue_redraw();
+			}
+		} break;
+
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			if (in_mb_scroll) {
+				in_mb_scroll = false;
+				if (!has_active_eq) {
+					set_process_internal(false);
+				}
+				queue_redraw();
 			}
 		} break;
 
@@ -2051,6 +2079,27 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
+		if (b->get_button_index() == MouseButton::MIDDLE && b->is_pressed() && !in_mb_scroll) { // Start drag scroll.
+			mb_scroll_pos = b->get_position();
+			in_mb_scroll = true;
+			set_process_internal(true);
+			queue_redraw();
+		} else if (b->get_button_index() == MouseButton::MIDDLE && !b->is_pressed() && in_mb_scroll) {
+			if (b->get_position() != mb_scroll_pos) {
+				in_mb_scroll = false;
+				if (!has_active_eq) {
+					set_process_internal(false);
+				}
+				queue_redraw();
+			}
+		} else {
+			in_mb_scroll = false;
+			if (!has_active_eq) {
+				set_process_internal(false);
+			}
+			queue_redraw();
+		}
+
 		if (b->get_button_index() == MouseButton::WHEEL_UP) {
 			if (scroll_active) {
 				vscroll->scroll(-vscroll->get_page() * b->get_factor() * 0.5 / 8);
@@ -2085,6 +2134,13 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 		if (k->is_pressed()) {
 			bool handled = false;
 
+			if (k->is_action("ui_cancel", true) && in_mb_scroll) {
+				in_mb_scroll = false;
+				if (!has_active_eq) {
+					set_process_internal(false);
+				}
+				queue_redraw();
+			}
 			if (k->is_action("ui_page_up", true) && vscroll->is_visible_in_tree()) {
 				vscroll->scroll(-vscroll->get_page());
 				handled = true;
@@ -3835,6 +3891,7 @@ void RichTextLabel::push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionar
 	item->char_fx_transform->environment = p_environment;
 	_add_item(item, true);
 
+	has_active_eq = true;
 	set_process_internal(true);
 }
 
@@ -4011,6 +4068,14 @@ int RichTextLabel::get_tab_size() const {
 	return tab_size;
 }
 
+void RichTextLabel::set_mb_click_scrolling_rate(float p_rate) {
+	mb_scroll_rate = CLAMP(p_rate, 0.01, 5.0);
+}
+
+float RichTextLabel::get_mb_click_scrolling_rate() const {
+	return mb_scroll_rate;
+}
+
 void RichTextLabel::set_fit_content(bool p_enabled) {
 	if (p_enabled == fit_content) {
 		return;
@@ -4095,7 +4160,10 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 	bool after_list_open_tag = false;
 	bool after_list_close_tag = false;
 
-	set_process_internal(false);
+	has_active_eq = false;
+	if (!in_mb_scroll) {
+		set_process_internal(false);
+	}
 
 	while (pos <= p_bbcode.length()) {
 		int brk_pos = p_bbcode.find("[", pos);
@@ -4984,6 +5052,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_shake(strength, rate, connected);
 			pos = brk_end + 1;
 			tag_stack.push_front("shake");
+			has_active_eq = true;
 			set_process_internal(true);
 		} else if (bbcode_name == "wave") {
 			float amplitude = 20.0f;
@@ -5007,6 +5076,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_wave(period, amplitude, connected);
 			pos = brk_end + 1;
 			tag_stack.push_front("wave");
+			has_active_eq = true;
 			set_process_internal(true);
 		} else if (bbcode_name == "tornado") {
 			float radius = 10.0f;
@@ -5030,6 +5100,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_tornado(frequency, radius, connected);
 			pos = brk_end + 1;
 			tag_stack.push_front("tornado");
+			has_active_eq = true;
 			set_process_internal(true);
 		} else if (bbcode_name == "rainbow") {
 			float saturation = 0.8f;
@@ -5053,6 +5124,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_rainbow(saturation, value, frequency);
 			pos = brk_end + 1;
 			tag_stack.push_front("rainbow");
+			has_active_eq = true;
 			set_process_internal(true);
 		} else if (bbcode_name == "pulse") {
 			Color color = Color(1, 1, 1, 0.25);
@@ -5076,6 +5148,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_pulse(color, frequency, ease);
 			pos = brk_end + 1;
 			tag_stack.push_front("pulse");
+			has_active_eq = true;
 			set_process_internal(true);
 		} else if (tag.begins_with("bgcolor=")) {
 			String color_str = tag.substr(8, tag.length()).unquote();
@@ -5122,6 +5195,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 		_fetch_item_fx_stack(subitem, fx_items);
 
 		if (fx_items.size()) {
+			has_active_eq = true;
 			set_process_internal(true);
 			break;
 		}
@@ -5964,6 +6038,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tab_size", "spaces"), &RichTextLabel::set_tab_size);
 	ClassDB::bind_method(D_METHOD("get_tab_size"), &RichTextLabel::get_tab_size);
 
+	ClassDB::bind_method(D_METHOD("set_mb_click_scrolling_rate", "rate"), &RichTextLabel::set_mb_click_scrolling_rate);
+	ClassDB::bind_method(D_METHOD("get_mb_click_scrolling_rate"), &RichTextLabel::get_mb_click_scrolling_rate);
+
 	ClassDB::bind_method(D_METHOD("set_fit_content", "enabled"), &RichTextLabel::set_fit_content);
 	ClassDB::bind_method(D_METHOD("is_fit_content_enabled"), &RichTextLabel::is_fit_content_enabled);
 
@@ -6056,6 +6133,7 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_size", PROPERTY_HINT_RANGE, "0,24,1"), "set_tab_size", "get_tab_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mb_click_scrolling_rate", PROPERTY_HINT_RANGE, "0.01,5,0.01"), "set_mb_click_scrolling_rate", "get_mb_click_scrolling_rate");
 
 	ADD_GROUP("Markup", "");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "custom_effects", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("RichTextEffect"), (PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE)), "set_effects", "get_effects");
@@ -6148,6 +6226,8 @@ void RichTextLabel::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, RichTextLabel, table_odd_row_bg);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, RichTextLabel, table_even_row_bg);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, RichTextLabel, table_border);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, RichTextLabel, scroll);
 }
 
 TextServer::VisibleCharactersBehavior RichTextLabel::get_visible_characters_behavior() const {

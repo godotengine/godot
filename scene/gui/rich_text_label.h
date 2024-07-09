@@ -463,6 +463,11 @@ private:
 
 	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_WORD_SMART;
 
+	bool has_active_eq = false;
+	bool in_mb_scroll = false;
+	float mb_scroll_rate = 0.5;
+	Vector2 mb_scroll_pos;
+
 	bool scroll_visible = false;
 	bool scroll_follow = false;
 	bool scroll_following = false;
@@ -664,6 +669,8 @@ private:
 		Color table_border;
 
 		float base_scale = 1.0;
+
+		Ref<Texture2D> scroll;
 	} theme_cache;
 
 public:
@@ -735,6 +742,9 @@ public:
 
 	void set_tab_size(int p_spaces);
 	int get_tab_size() const;
+
+	void set_mb_click_scrolling_rate(float p_rate);
+	float get_mb_click_scrolling_rate() const;
 
 	void set_context_menu_enabled(bool p_enabled);
 	bool is_context_menu_enabled() const;

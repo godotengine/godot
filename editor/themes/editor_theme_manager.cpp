@@ -1445,6 +1445,8 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_stylebox(CoreStringName(normal), "RichTextLabel", p_config.tree_panel_style);
 		p_theme->set_stylebox("focus", "RichTextLabel", make_empty_stylebox());
 
+		p_theme->set_icon("scroll", "RichTextLabel", p_theme->get_icon(SNAME("ScrollDrag"), EditorStringName(EditorIcons)));
+
 		p_theme->set_color("default_color", "RichTextLabel", p_config.font_color);
 		p_theme->set_color("font_shadow_color", "RichTextLabel", Color(0, 0, 0, 0));
 		p_theme->set_color("font_outline_color", "RichTextLabel", p_config.font_outline_color);
