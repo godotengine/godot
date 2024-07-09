@@ -2911,24 +2911,67 @@ Key DisplayServerWindows::keyboard_get_label_from_physical(Key p_keycode) const 
 	return p_keycode;
 }
 
-String _get_full_layout_name_from_registry(HKL p_layout) {
-	String id = "SYSTEM\\CurrentControlSet\\Control\\Keyboard Layouts\\" + String::num_int64((int64_t)p_layout, 16, false).lpad(8, "0");
+String DisplayServerWindows::_get_keyboard_layout_display_name(const String &p_klid) const {
+	String ret;
+	HKEY key;
+	if (RegOpenKeyW(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control\\Keyboard Layouts", &key) != ERROR_SUCCESS) {
+		return String();
+	}
+
+	WCHAR buffer[MAX_PATH] = {};
+	DWORD buffer_size = MAX_PATH;
+	if (RegGetValueW(key, (LPCWSTR)p_klid.utf16().get_data(), L"Layout Display Name", RRF_RT_REG_SZ, nullptr, buffer, &buffer_size) == ERROR_SUCCESS) {
+		if (load_indirect_string) {
+			if (load_indirect_string(buffer, buffer, buffer_size, nullptr) == S_OK) {
+				ret = String::utf16((const char16_t *)buffer, buffer_size);
+			}
+		}
+	} else {
+		if (RegGetValueW(key, (LPCWSTR)p_klid.utf16().get_data(), L"Layout Text", RRF_RT_REG_SZ, nullptr, buffer, &buffer_size) == ERROR_SUCCESS) {
+			ret = String::utf16((const char16_t *)buffer, buffer_size);
+		}
+	}
+
+	RegCloseKey(key);
+	return ret;
+}
+
+String DisplayServerWindows::_get_klid(HKL p_hkl) const {
 	String ret;
 
-	HKEY hkey;
-	WCHAR layout_text[1024];
-	memset(layout_text, 0, 1024 * sizeof(WCHAR));
+	WORD device = HIWORD(p_hkl);
+	if ((device & 0xf000) == 0xf000) {
+		WORD layout_id = device & 0x0fff;
 
-	if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)(id.utf16().get_data()), 0, KEY_QUERY_VALUE, &hkey) != ERROR_SUCCESS) {
-		return ret;
+		HKEY key;
+		if (RegOpenKeyW(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control\\Keyboard Layouts", &key) != ERROR_SUCCESS) {
+			return String();
+		}
+
+		DWORD index = 0;
+		wchar_t klid_buffer[KL_NAMELENGTH];
+		DWORD klid_buffer_size = KL_NAMELENGTH;
+		while (RegEnumKeyExW(key, index, klid_buffer, &klid_buffer_size, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS) {
+			wchar_t layout_id_buf[MAX_PATH] = {};
+			DWORD layout_id_size = MAX_PATH;
+			if (RegGetValueW(key, klid_buffer, L"Layout Id", RRF_RT_REG_SZ, nullptr, layout_id_buf, &layout_id_size) == ERROR_SUCCESS) {
+				if (layout_id == String::utf16((char16_t *)layout_id_buf, layout_id_size).hex_to_int()) {
+					ret = String::utf16((const char16_t *)klid_buffer, klid_buffer_size).lpad(8, "0");
+					break;
+				}
+			}
+			klid_buffer_size = KL_NAMELENGTH;
+			++index;
+		}
+
+		RegCloseKey(key);
+	} else {
+		if (device == 0) {
+			device = LOWORD(p_hkl);
+		}
+		ret = (String::num_uint64((uint64_t)device, 16, false)).lpad(8, "0");
 	}
 
-	DWORD buffer = 1024;
-	DWORD vtype = REG_SZ;
-	if (RegQueryValueExW(hkey, L"Layout Text", nullptr, &vtype, (LPBYTE)layout_text, &buffer) == ERROR_SUCCESS) {
-		ret = String::utf16((const char16_t *)layout_text);
-	}
-	RegCloseKey(hkey);
 	return ret;
 }
 
@@ -2940,7 +2983,7 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 	HKL *layouts = (HKL *)memalloc(layout_count * sizeof(HKL));
 	GetKeyboardLayoutList(layout_count, layouts);
 
-	String ret = _get_full_layout_name_from_registry(layouts[p_index]); // Try reading full name from Windows registry, fallback to locale name if failed (e.g. on Wine).
+	String ret = _get_keyboard_layout_display_name(_get_klid(layouts[p_index])); // Try reading full name from Windows registry, fallback to locale name if failed (e.g. on Wine).
 	if (ret.is_empty()) {
 		WCHAR buf[LOCALE_NAME_MAX_LENGTH];
 		memset(buf, 0, LOCALE_NAME_MAX_LENGTH * sizeof(WCHAR));
@@ -5433,6 +5476,9 @@ GetPointerPenInfoPtr DisplayServerWindows::win8p_GetPointerPenInfo = nullptr;
 LogicalToPhysicalPointForPerMonitorDPIPtr DisplayServerWindows::win81p_LogicalToPhysicalPointForPerMonitorDPI = nullptr;
 PhysicalToLogicalPointForPerMonitorDPIPtr DisplayServerWindows::win81p_PhysicalToLogicalPointForPerMonitorDPI = nullptr;
 
+// Shell API,
+SHLoadIndirectStringPtr DisplayServerWindows::load_indirect_string = nullptr;
+
 Vector2i _get_device_ids(const String &p_device_name) {
 	if (p_device_name.is_empty()) {
 		return Vector2i();
@@ -5604,6 +5650,12 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			}
 		}
 		FreeLibrary(nt_lib);
+	}
+
+	// Load Shell API.
+	HMODULE shellapi_lib = LoadLibraryW(L"shlwapi.dll");
+	if (shellapi_lib) {
+		load_indirect_string = (SHLoadIndirectStringPtr)GetProcAddress(shellapi_lib, "SHLoadIndirectString");
 	}
 
 	// Load UXTheme, available on Windows 10+ only.

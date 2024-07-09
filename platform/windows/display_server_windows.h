@@ -278,6 +278,7 @@ typedef BOOL(WINAPI *GetPointerTypePtr)(uint32_t p_id, POINTER_INPUT_TYPE *p_typ
 typedef BOOL(WINAPI *GetPointerPenInfoPtr)(uint32_t p_id, POINTER_PEN_INFO *p_pen_info);
 typedef BOOL(WINAPI *LogicalToPhysicalPointForPerMonitorDPIPtr)(HWND hwnd, LPPOINT lpPoint);
 typedef BOOL(WINAPI *PhysicalToLogicalPointForPerMonitorDPIPtr)(HWND hwnd, LPPOINT lpPoint);
+typedef HRESULT(WINAPI *SHLoadIndirectStringPtr)(PCWSTR pszSource, PWSTR pszOutBuf, UINT cchOutBuf, void **ppvReserved);
 
 typedef struct {
 	BYTE bWidth; // Width, in pixels, of the image
@@ -327,6 +328,9 @@ class DisplayServerWindows : public DisplayServer {
 	// DPI conversion API
 	static LogicalToPhysicalPointForPerMonitorDPIPtr win81p_LogicalToPhysicalPointForPerMonitorDPI;
 	static PhysicalToLogicalPointForPerMonitorDPIPtr win81p_PhysicalToLogicalPointForPerMonitorDPI;
+
+	// Shell API
+	static SHLoadIndirectStringPtr load_indirect_string;
 
 	void _update_tablet_ctx(const String &p_old_driver, const String &p_new_driver);
 	String tablet_driver;
@@ -530,6 +534,9 @@ class DisplayServerWindows : public DisplayServer {
 	BitField<WinKeyModifierMask> _get_mods() const;
 
 	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb);
+
+	String _get_keyboard_layout_display_name(const String &p_klid) const;
+	String _get_klid(HKL p_hkl) const;
 
 public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
