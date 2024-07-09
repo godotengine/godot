@@ -31,6 +31,7 @@
 #include "parallax_2d.h"
 
 #include "core/config/project_settings.h"
+#include "scene/main/viewport.h"
 
 void Parallax2D::_notification(int p_what) {
 	switch (p_what) {
@@ -72,7 +73,11 @@ void Parallax2D::_validate_property(PropertyInfo &p_property) const {
 
 void Parallax2D::_camera_moved(const Transform2D &p_transform, const Point2 &p_screen_offset, const Point2 &p_adj_screen_pos) {
 	if (!ignore_camera_scroll) {
-		set_screen_offset(p_adj_screen_pos);
+		if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
+			set_screen_offset((p_adj_screen_pos + Vector2(0.5, 0.5)).floor());
+		} else {
+			set_screen_offset(p_adj_screen_pos);
+		}
 	}
 }
 
