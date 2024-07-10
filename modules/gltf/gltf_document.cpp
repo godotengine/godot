@@ -2894,41 +2894,42 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 	Array meshes = p_state->json["meshes"];
 	for (GLTFMeshIndex i = 0; i < meshes.size(); i++) {
 		print_verbose("glTF: Parsing mesh: " + itos(i));
-		Dictionary d = meshes[i];
+		Dictionary mesh_dict = meshes[i];
 
 		Ref<GLTFMesh> mesh;
 		mesh.instantiate();
 		bool has_vertex_color = false;
 
-		ERR_FAIL_COND_V(!d.has("primitives"), ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(!mesh_dict.has("primitives"), ERR_PARSE_ERROR);
 
-		Array primitives = d["primitives"];
-		const Dictionary &extras = d.has("extras") ? (Dictionary)d["extras"] : Dictionary();
+		Array primitives = mesh_dict["primitives"];
+		const Dictionary &extras = mesh_dict.has("extras") ? (Dictionary)mesh_dict["extras"] : Dictionary();
 		_attach_extras_to_meta(extras, mesh);
 		Ref<ImporterMesh> import_mesh;
 		import_mesh.instantiate();
 		String mesh_name = "mesh";
-		if (d.has("name") && !String(d["name"]).is_empty()) {
-			mesh_name = d["name"];
+		if (mesh_dict.has("name") && !String(mesh_dict["name"]).is_empty()) {
+			mesh_name = mesh_dict["name"];
 			mesh->set_original_name(mesh_name);
 		}
 		import_mesh->set_name(_gen_unique_name(p_state, vformat("%s_%s", p_state->scene_name, mesh_name)));
 		mesh->set_name(import_mesh->get_name());
+		TypedArray<Material> instance_materials;
 
 		for (int j = 0; j < primitives.size(); j++) {
 			uint64_t flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
-			Dictionary p = primitives[j];
+			Dictionary mesh_prim = primitives[j];
 
 			Array array;
 			array.resize(Mesh::ARRAY_MAX);
 
-			ERR_FAIL_COND_V(!p.has("attributes"), ERR_PARSE_ERROR);
+			ERR_FAIL_COND_V(!mesh_prim.has("attributes"), ERR_PARSE_ERROR);
 
-			Dictionary a = p["attributes"];
+			Dictionary a = mesh_prim["attributes"];
 
 			Mesh::PrimitiveType primitive = Mesh::PRIMITIVE_TRIANGLES;
-			if (p.has("mode")) {
-				const int mode = p["mode"];
+			if (mesh_prim.has("mode")) {
+				const int mode = mesh_prim["mode"];
 				ERR_FAIL_INDEX_V(mode, 7, ERR_FILE_CORRUPT);
 				// Convert mesh.primitive.mode to Godot Mesh enum. See:
 				// https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode
@@ -2959,8 +2960,8 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			Vector<int> indices_mapping;
 			Vector<int> indices_rev_mapping;
 			Vector<int> indices_vec4_mapping;
-			if (p.has("indices")) {
-				indices = _decode_accessor_as_ints(p_state, p["indices"], false);
+			if (mesh_prim.has("indices")) {
+				indices = _decode_accessor_as_ints(p_state, mesh_prim["indices"], false);
 				const int is = indices.size();
 
 				if (primitive == Mesh::PRIMITIVE_TRIANGLES) {
@@ -3218,7 +3219,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				}
 			}
 
-			if (p_state->force_disable_compression || is_mesh_2d || !a.has("POSITION") || !a.has("NORMAL") || p.has("targets") || (a.has("JOINTS_0") || a.has("JOINTS_1"))) {
+			if (p_state->force_disable_compression || is_mesh_2d || !a.has("POSITION") || !a.has("NORMAL") || mesh_prim.has("targets") || (a.has("JOINTS_0") || a.has("JOINTS_1"))) {
 				flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}
 
@@ -3250,9 +3251,9 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 
 			Array morphs;
 			// Blend shapes
-			if (p.has("targets")) {
+			if (mesh_prim.has("targets")) {
 				print_verbose("glTF: Mesh has targets");
-				const Array &targets = p["targets"];
+				const Array &targets = mesh_prim["targets"];
 
 				import_mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
 
@@ -3383,8 +3384,8 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			Ref<Material> mat;
 			String mat_name;
 			if (!p_state->discard_meshes_and_materials) {
-				if (p.has("material")) {
-					const int material = p["material"];
+				if (mesh_prim.has("material")) {
+					const int material = mesh_prim["material"];
 					ERR_FAIL_INDEX_V(material, p_state->materials.size(), ERR_FILE_CORRUPT);
 					Ref<Material> mat3d = p_state->materials[material];
 					ERR_FAIL_COND_V(mat3d.is_null(), ERR_FILE_CORRUPT);
@@ -3404,6 +3405,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					mat = mat3d;
 				}
 				ERR_FAIL_COND_V(mat.is_null(), ERR_FILE_CORRUPT);
+				instance_materials.append(mat);
 				mat_name = mat->get_name();
 			}
 			import_mesh->add_surface(primitive, array, morphs,
@@ -3416,8 +3418,8 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			blend_weights.write[weight_i] = 0.0f;
 		}
 
-		if (d.has("weights")) {
-			const Array &weights = d["weights"];
+		if (mesh_dict.has("weights")) {
+			const Array &weights = mesh_dict["weights"];
 			for (int j = 0; j < weights.size(); j++) {
 				if (j >= blend_weights.size()) {
 					break;
@@ -3426,6 +3428,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			}
 		}
 		mesh->set_blend_weights(blend_weights);
+		mesh->set_instance_materials(instance_materials);
 		mesh->set_mesh(import_mesh);
 
 		p_state->meshes.push_back(mesh);
@@ -5366,44 +5369,44 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 	gltf_node->set_original_name(p_current->get_name());
 	gltf_node->set_name(_gen_unique_name(p_state, p_current->get_name()));
 	gltf_node->merge_meta_from(p_current);
-	if (cast_to<Node3D>(p_current)) {
-		Node3D *spatial = cast_to<Node3D>(p_current);
+	if (Object::cast_to<Node3D>(p_current)) {
+		Node3D *spatial = Object::cast_to<Node3D>(p_current);
 		_convert_spatial(p_state, spatial, gltf_node);
 	}
-	if (cast_to<MeshInstance3D>(p_current)) {
-		MeshInstance3D *mi = cast_to<MeshInstance3D>(p_current);
+	if (Object::cast_to<MeshInstance3D>(p_current)) {
+		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_current);
 		_convert_mesh_instance_to_gltf(mi, p_state, gltf_node);
-	} else if (cast_to<BoneAttachment3D>(p_current)) {
-		BoneAttachment3D *bone = cast_to<BoneAttachment3D>(p_current);
+	} else if (Object::cast_to<BoneAttachment3D>(p_current)) {
+		BoneAttachment3D *bone = Object::cast_to<BoneAttachment3D>(p_current);
 		_convert_bone_attachment_to_gltf(bone, p_state, p_gltf_parent, p_gltf_root, gltf_node);
 		return;
-	} else if (cast_to<Skeleton3D>(p_current)) {
-		Skeleton3D *skel = cast_to<Skeleton3D>(p_current);
+	} else if (Object::cast_to<Skeleton3D>(p_current)) {
+		Skeleton3D *skel = Object::cast_to<Skeleton3D>(p_current);
 		_convert_skeleton_to_gltf(skel, p_state, p_gltf_parent, p_gltf_root, gltf_node);
 		// We ignore the Godot Engine node that is the skeleton.
 		return;
-	} else if (cast_to<MultiMeshInstance3D>(p_current)) {
-		MultiMeshInstance3D *multi = cast_to<MultiMeshInstance3D>(p_current);
+	} else if (Object::cast_to<MultiMeshInstance3D>(p_current)) {
+		MultiMeshInstance3D *multi = Object::cast_to<MultiMeshInstance3D>(p_current);
 		_convert_multi_mesh_instance_to_gltf(multi, p_gltf_parent, p_gltf_root, gltf_node, p_state);
 #ifdef MODULE_CSG_ENABLED
-	} else if (cast_to<CSGShape3D>(p_current)) {
-		CSGShape3D *shape = cast_to<CSGShape3D>(p_current);
+	} else if (Object::cast_to<CSGShape3D>(p_current)) {
+		CSGShape3D *shape = Object::cast_to<CSGShape3D>(p_current);
 		if (shape->get_parent() && shape->is_root_shape()) {
 			_convert_csg_shape_to_gltf(shape, p_gltf_parent, gltf_node, p_state);
 		}
 #endif // MODULE_CSG_ENABLED
 #ifdef MODULE_GRIDMAP_ENABLED
-	} else if (cast_to<GridMap>(p_current)) {
+	} else if (Object::cast_to<GridMap>(p_current)) {
 		GridMap *gridmap = Object::cast_to<GridMap>(p_current);
 		_convert_grid_map_to_gltf(gridmap, p_gltf_parent, p_gltf_root, gltf_node, p_state);
 #endif // MODULE_GRIDMAP_ENABLED
-	} else if (cast_to<Camera3D>(p_current)) {
+	} else if (Object::cast_to<Camera3D>(p_current)) {
 		Camera3D *camera = Object::cast_to<Camera3D>(p_current);
 		_convert_camera_to_gltf(camera, p_state, gltf_node);
-	} else if (cast_to<Light3D>(p_current)) {
+	} else if (Object::cast_to<Light3D>(p_current)) {
 		Light3D *light = Object::cast_to<Light3D>(p_current);
 		_convert_light_to_gltf(light, p_state, gltf_node);
-	} else if (cast_to<AnimationPlayer>(p_current)) {
+	} else if (Object::cast_to<AnimationPlayer>(p_current)) {
 		AnimationPlayer *animation_player = Object::cast_to<AnimationPlayer>(p_current);
 		p_state->animation_players.push_back(animation_player);
 	}
@@ -5675,9 +5678,9 @@ void GLTFDocument::_convert_bone_attachment_to_gltf(BoneAttachment3D *p_bone_att
 	Skeleton3D *skeleton;
 	// Note that relative transforms to external skeletons and pose overrides are not supported.
 	if (p_bone_attachment->get_use_external_skeleton()) {
-		skeleton = cast_to<Skeleton3D>(p_bone_attachment->get_node_or_null(p_bone_attachment->get_external_skeleton()));
+		skeleton = Object::cast_to<Skeleton3D>(p_bone_attachment->get_node_or_null(p_bone_attachment->get_external_skeleton()));
 	} else {
-		skeleton = cast_to<Skeleton3D>(p_bone_attachment->get_parent());
+		skeleton = Object::cast_to<Skeleton3D>(p_bone_attachment->get_parent());
 	}
 	GLTFSkeletonIndex skel_gltf_i = -1;
 	if (skeleton != nullptr && p_state->skeleton3d_to_gltf_skeleton.has(skeleton->get_instance_id())) {
@@ -6478,7 +6481,7 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene
 }
 
 GLTFNodeIndex GLTFDocument::_node_and_or_bone_to_gltf_node_index(Ref<GLTFState> p_state, const Vector<StringName> &p_node_subpath, const Node *p_godot_node) {
-	const Skeleton3D *skeleton = cast_to<Skeleton3D>(p_godot_node);
+	const Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_godot_node);
 	if (skeleton && p_node_subpath.size() == 1) {
 		// Special case: Handle skeleton bone TRS tracks. They use the format `A/B/C/Skeleton3D:bone_name`.
 		// We have a Skeleton3D, check if it has a bone with the same name as this subpath.
@@ -6909,7 +6912,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 		const GLTFAnimation::Interpolation gltf_interpolation = GLTFAnimation::godot_to_gltf_interpolation(animation, track_index);
 		// First, check if it's a Blend Shape track.
 		if (animation->track_get_type(track_index) == Animation::TYPE_BLEND_SHAPE) {
-			const MeshInstance3D *mesh_instance = cast_to<MeshInstance3D>(animated_node);
+			const MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(animated_node);
 			ERR_CONTINUE_MSG(!mesh_instance, "glTF: Animation had a Blend Shape track, but the node wasn't a MeshInstance3D. Ignoring this track.");
 			Ref<Mesh> mesh = mesh_instance->get_mesh();
 			ERR_CONTINUE(mesh.is_null());

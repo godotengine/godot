@@ -30,6 +30,8 @@
 
 #include "gltf_node.h"
 
+#include "../gltf_state.h"
+
 void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_original_name"), &GLTFNode::get_original_name);
 	ClassDB::bind_method(D_METHOD("set_original_name", "original_name"), &GLTFNode::set_original_name);
@@ -60,6 +62,7 @@ void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_light", "light"), &GLTFNode::set_light);
 	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFNode::get_additional_data);
 	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFNode::set_additional_data);
+	ClassDB::bind_method(D_METHOD("get_scene_node_path", "gltf_state", "handle_skeletons"), &GLTFNode::get_scene_node_path, DEFVAL(true));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "original_name"), "set_original_name", "get_original_name"); // String
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "parent"), "set_parent", "get_parent"); // GLTFNodeIndex
@@ -187,6 +190,48 @@ Variant GLTFNode::get_additional_data(const StringName &p_extension_name) {
 	return additional_data[p_extension_name];
 }
 
+bool GLTFNode::has_additional_data(const StringName &p_extension_name) {
+	return additional_data.has(p_extension_name);
+}
+
 void GLTFNode::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
 	additional_data[p_extension_name] = p_additional_data;
+}
+
+NodePath GLTFNode::get_scene_node_path(Ref<GLTFState> p_state, bool p_handle_skeletons) {
+	Vector<StringName> path;
+	Vector<StringName> subpath;
+	Ref<GLTFNode> current_gltf_node = this;
+	const int gltf_node_count = p_state->nodes.size();
+	if (p_handle_skeletons && skeleton != -1) {
+		// Special case for skeleton nodes, skip all bones so that the path is to the Skeleton3D node.
+		// A path that would otherwise be `A/B/C/Bone1/Bone2/Bone3` becomes `A/B/C/Skeleton3D:Bone3`.
+		subpath.append(get_name());
+		// The generated Skeleton3D node will be named Skeleton3D, so add it to the path.
+		path.append("Skeleton3D");
+		do {
+			const int parent_index = current_gltf_node->get_parent();
+			ERR_FAIL_INDEX_V(parent_index, gltf_node_count, NodePath());
+			current_gltf_node = p_state->nodes[parent_index];
+		} while (current_gltf_node->skeleton != -1);
+	}
+	const bool is_godot_single_root = p_state->extensions_used.has("GODOT_single_root");
+	while (true) {
+		const int parent_index = current_gltf_node->get_parent();
+		if (is_godot_single_root && parent_index == -1) {
+			// For GODOT_single_root scenes, the root glTF node becomes the Godot scene root, so it
+			// should not be included in the path. Ex: A/B/C, A is single root, we want B/C only.
+			break;
+		}
+		path.insert(0, current_gltf_node->get_name());
+		if (!is_godot_single_root && parent_index == -1) {
+			break;
+		}
+		ERR_FAIL_INDEX_V(parent_index, gltf_node_count, NodePath());
+		current_gltf_node = p_state->nodes[parent_index];
+	}
+	if (unlikely(path.is_empty())) {
+		path.append(".");
+	}
+	return NodePath(path, subpath, false);
 }

@@ -48,6 +48,7 @@
 class GLTFState : public Resource {
 	GDCLASS(GLTFState, Resource);
 	friend class GLTFDocument;
+	friend class GLTFNode;
 
 protected:
 	String base_path;

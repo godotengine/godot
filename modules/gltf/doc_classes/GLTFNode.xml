@@ -27,6 +27,15 @@
 				The argument should be the [GLTFDocumentExtension] name (does not have to match the extension name in the glTF file), and the return value can be anything you set. If nothing was set, the return value is null.
 			</description>
 		</method>
+		<method name="get_scene_node_path">
+			<return type="NodePath" />
+			<param index="0" name="gltf_state" type="GLTFState" />
+			<param index="1" name="handle_skeletons" type="bool" default="true" />
+			<description>
+				Returns the [NodePath] that this GLTF node will have in the Godot scene tree after being imported.
+				If [param handle_skeletons] is true, paths to skeleton bone glTF nodes will be resolved properly. For example, a path that would be [code]^"A/B/C/Bone1/Bone2/Bone3"[/code] if false will become [code]^"A/B/C/Skeleton3D:Bone3"[/code].
+			</description>
+		</method>
 		<method name="set_additional_data">
 			<return type="void" />
 			<param index="0" name="extension_name" type="StringName" />
