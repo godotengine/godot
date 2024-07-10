@@ -2572,6 +2572,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["PI"] = _MKSTR(Math_PI);
 		actions.renames["TAU"] = _MKSTR(Math_TAU);
 		actions.renames["E"] = _MKSTR(Math_E);
+		actions.renames["EPSILON"] = _MKSTR(CMP_EPSILON);
 		actions.renames["AT_LIGHT_PASS"] = "false";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
 
