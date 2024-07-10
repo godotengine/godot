@@ -342,8 +342,10 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 	}
 	// --
 
+	bool xl_remapped = false;
+	const String &remapped_path = _path_remap(load_task.local_path, &xl_remapped);
 	Error load_err = OK;
-	Ref<Resource> res = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_err, load_task.use_sub_threads, &load_task.progress);
+	Ref<Resource> res = _load(remapped_path, remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_err, load_task.use_sub_threads, &load_task.progress);
 	if (MessageQueue::get_singleton() != MessageQueue::get_main_singleton()) {
 		MessageQueue::get_singleton()->flush();
 	}
@@ -402,14 +404,14 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 			load_task.resource->set_path_cache(load_task.local_path);
 		}
 
-		if (load_task.xl_remapped) {
+		if (xl_remapped) {
 			load_task.resource->set_as_translation_remapped(true);
 		}
 
 #ifdef TOOLS_ENABLED
 		load_task.resource->set_edited(false);
 		if (timestamp_on_load) {
-			uint64_t mt = FileAccess::get_modified_time(load_task.remapped_path);
+			uint64_t mt = FileAccess::get_modified_time(remapped_path);
 			//printf("mt %s: %lli\n",remapped_path.utf8().get_data(),mt);
 			load_task.resource->set_last_modified_time(mt);
 		}
@@ -531,7 +533,6 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 		{
 			ThreadLoadTask load_task;
 
-			load_task.remapped_path = _path_remap(local_path, &load_task.xl_remapped);
 			load_task.load_token = load_token.ptr();
 			load_task.local_path = local_path;
 			load_task.type_hint = p_type_hint;
