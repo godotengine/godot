@@ -207,6 +207,24 @@ void ResourceFormatLoader::_bind_methods() {
 
 ///////////////////////////////////
 
+// These are used before and after a wait for a WorkerThreadPool task
+// because that can lead to another load started in the same thread,
+// something we must treat as a different stack for the purposes
+// of tracking nesting.
+
+#define PREPARE_FOR_WTP_WAIT                                                   \
+	int load_nesting_backup = ResourceLoader::load_nesting;                    \
+	Vector<String> load_paths_stack_backup = ResourceLoader::load_paths_stack; \
+	ResourceLoader::load_nesting = 0;                                          \
+	ResourceLoader::load_paths_stack.clear();
+
+#define RESTORE_AFTER_WTP_WAIT                                  \
+	DEV_ASSERT(ResourceLoader::load_nesting == 0);              \
+	DEV_ASSERT(ResourceLoader::load_paths_stack.is_empty());    \
+	ResourceLoader::load_nesting = load_nesting_backup;         \
+	ResourceLoader::load_paths_stack = load_paths_stack_backup; \
+	load_paths_stack_backup.clear();
+
 // This should be robust enough to be called redundantly without issues.
 void ResourceLoader::LoadToken::clear() {
 	thread_load_mutex.lock();
@@ -234,7 +252,9 @@ void ResourceLoader::LoadToken::clear() {
 
 	// If task is unused, await it here, locally, now the token data is consistent.
 	if (task_to_await) {
+		PREPARE_FOR_WTP_WAIT
 		WorkerThreadPool::get_singleton()->wait_for_task_completion(task_to_await);
+		RESTORE_AFTER_WTP_WAIT
 	}
 }
 
@@ -698,7 +718,9 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 				// Loading thread is in the worker pool.
 				load_task.awaited = true;
 				thread_load_mutex.unlock();
+				PREPARE_FOR_WTP_WAIT
 				wtp_task_err = WorkerThreadPool::get_singleton()->wait_for_task_completion(load_task.task_id);
+				RESTORE_AFTER_WTP_WAIT
 			}
 
 			if (load_task.status == THREAD_LOAD_IN_PROGRESS) { // If early errored, awaiting would deadlock.
