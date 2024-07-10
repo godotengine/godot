@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "window.h"
+#include "core/object/class_db.h"
 #include "window.compat.inc"
 
 #include "core/config/project_settings.h"
@@ -1254,29 +1255,42 @@ void Window::_update_window_callbacks() {
 }
 
 void Window::set_force_native(bool p_force_native) {
-	if (force_native == p_force_native) {
+	if (p_force_native && embed_mode == EmbedMode::EMBED_FORCE_NATIVE) {
+		return;
+	} else if (!p_force_native && embed_mode != EmbedMode::EMBED_FORCE_NATIVE) {
 		return;
 	}
 	if (is_visible() && !is_in_edited_scene_root()) {
 		ERR_FAIL_MSG("Can't change \"force_native\" while a window is displayed. Consider hiding window before changing this value.");
 	}
-	force_native = p_force_native;
+	embed_mode = (p_force_native) ? EmbedMode::EMBED_FORCE_NATIVE : EmbedMode::EMBED_DEFAULT;
 }
 
 bool Window::get_force_native() const {
-	return force_native;
+	return embed_mode == EmbedMode::EMBED_FORCE_NATIVE;
+}
+
+void Window::set_embed_mode(EmbedMode p_embed_mode) {
+	if (is_visible() && !is_in_edited_scene_root()) {
+		ERR_FAIL_MSG("Can't change \"embed_mode\" while a window is displayed. Consider hiding window before changing this value.");
+	}
+	embed_mode = p_embed_mode;
+}
+
+Window::EmbedMode Window::get_embed_mode() const {
+	return embed_mode;
 }
 
 Viewport *Window::get_embedder() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
-	if (force_native && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SUBWINDOWS) && !is_in_edited_scene_root()) {
+	if (embed_mode == EmbedMode::EMBED_FORCE_NATIVE && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SUBWINDOWS) && !is_in_edited_scene_root()) {
 		return nullptr;
 	}
 
 	Viewport *vp = get_parent_viewport();
 
 	while (vp) {
-		if (vp->is_embedding_subwindows()) {
+		if (vp->has_subwindows()) {
 			return vp;
 		}
 
@@ -1286,7 +1300,11 @@ Viewport *Window::get_embedder() const {
 			vp = nullptr;
 		}
 	}
-	return nullptr;
+	if (embed_mode == EmbedMode::EMBED_FORCE_EMBED) {
+		return get_parent_viewport();
+	} else {
+		return nullptr;
+	}
 }
 
 void Window::_notification(int p_what) {
@@ -1672,7 +1690,7 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	}
 
 	if (exclusive_child != nullptr) {
-		if (!is_embedding_subwindows()) { // Not embedding, no need for event.
+		if (!has_subwindows()) { // Not embedding, no need for event.
 			return;
 		}
 	}
@@ -2753,7 +2771,7 @@ Transform2D Window::get_screen_transform_internal(bool p_absolute_position) cons
 
 Transform2D Window::get_popup_base_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
-	if (is_embedding_subwindows()) {
+	if (has_subwindows()) {
 		return Transform2D();
 	}
 	Transform2D popup_base_transform;
@@ -2880,8 +2898,13 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_contents_minimum_size"), &Window::get_contents_minimum_size);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_force_native", "force_native"), &Window::set_force_native);
 	ClassDB::bind_method(D_METHOD("get_force_native"), &Window::get_force_native);
+#endif // DISABLE_DEPRECATED
+
+	ClassDB::bind_method(D_METHOD("set_embed_mode", "embed_mode"), &Window::set_embed_mode);
+	ClassDB::bind_method(D_METHOD("get_embed_mode"), &Window::get_embed_mode);
 
 	ClassDB::bind_method(D_METHOD("set_content_scale_size", "size"), &Window::set_content_scale_size);
 	ClassDB::bind_method(D_METHOD("get_content_scale_size"), &Window::get_content_scale_size);
@@ -3007,7 +3030,10 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_window"), "set_flag", "get_flag", FLAG_POPUP);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "extend_to_title"), "set_flag", "get_flag", FLAG_EXTEND_TO_TITLE);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "mouse_passthrough"), "set_flag", "get_flag", FLAG_MOUSE_PASSTHROUGH);
+#ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_native"), "set_force_native", "get_force_native");
+#endif // DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "embed_mode", PROPERTY_HINT_ENUM, "Default,Force Embed,Force Native"), "set_embed_mode", "get_embed_mode");
 
 	ADD_GROUP("Limits", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size", PROPERTY_HINT_NONE, "suffix:px"), "set_min_size", "get_min_size");
@@ -3061,6 +3087,10 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_EXTEND_TO_TITLE);
 	BIND_ENUM_CONSTANT(FLAG_MOUSE_PASSTHROUGH);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
+
+	BIND_ENUM_CONSTANT(EMBED_DEFAULT);
+	BIND_ENUM_CONSTANT(EMBED_FORCE_EMBED);
+	BIND_ENUM_CONSTANT(EMBED_FORCE_NATIVE);
 
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_CANVAS_ITEMS);

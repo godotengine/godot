@@ -583,6 +583,9 @@
 		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen">
 			The screen the window is currently on.
 		</member>
+		<member name="embed_mode" type="int" setter="set_embed_mode" getter="get_embed_mode" enum="Window.EmbedMode" default="0">
+			Changes the behavior of how the window will embed in its parent window.
+		</member>
 		<member name="exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" default="false">
 			If [code]true[/code], the [Window] will be in exclusive mode. Exclusive windows are always on top of their parent and will block all input going to the parent [Window].
 			Needs [member transient] enabled to work.
@@ -592,7 +595,8 @@
 			[b]Note:[/b] This property is implemented only on macOS.
 			[b]Note:[/b] This property only works with native windows.
 		</member>
-		<member name="force_native" type="bool" setter="set_force_native" getter="get_force_native" default="false">
+		<member name="force_native" type="bool" setter="set_force_native" getter="get_force_native" default="false" deprecated="">
+			[b]Note[/b] This method has been deprecated. Please use [member embed_mode] instead.
 			If [code]true[/code], native window will be used regardless of parent viewport and project settings.
 		</member>
 		<member name="initial_position" type="int" setter="set_initial_position" getter="get_initial_position" enum="Window.WindowInitialPosition" default="0">
@@ -841,6 +845,15 @@
 		</constant>
 		<constant name="FLAG_MAX" value="8" enum="Flags">
 			Max value of the [enum Flags].
+		</constant>
+		<constant name="EMBED_DEFAULT" value="0" enum="EmbedMode">
+			Embeds based on the parent window's [member Viewport.gui_embed_subwindows] property.
+		</constant>
+		<constant name="EMBED_FORCE_EMBED" value="1" enum="EmbedMode">
+			Forcefully embeds the window in the parent window if no parent window is willing to embed it.
+		</constant>
+		<constant name="EMBED_FORCE_NATIVE" value="2" enum="EmbedMode">
+			Forcefully makes a native window if native windows are supported. See also [constant DisplayServer.FEATURE_SUBWINDOWS]
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">
 			The content will not be scaled to match the [Window]'s size.

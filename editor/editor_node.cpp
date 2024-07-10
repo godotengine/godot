@@ -3921,7 +3921,7 @@ bool EditorNode::is_scene_open(const String &p_path) {
 }
 
 bool EditorNode::is_multi_window_enabled() const {
-	return !SceneTree::get_singleton()->get_root()->is_embedding_subwindows() && !EDITOR_GET("interface/editor/single_window_mode") && EDITOR_GET("interface/multi_window/enable");
+	return !SceneTree::get_singleton()->get_root()->has_subwindows() && !EDITOR_GET("interface/editor/single_window_mode") && EDITOR_GET("interface/multi_window/enable");
 }
 
 void EditorNode::fix_dependencies(const String &p_for_file) {
@@ -4472,7 +4472,7 @@ void EditorNode::request_instantiate_scenes(const Vector<String> &p_files) {
 }
 
 String EditorNode::get_multiwindow_support_tooltip_text() const {
-	if (SceneTree::get_singleton()->get_root()->is_embedding_subwindows()) {
+	if (SceneTree::get_singleton()->get_root()->has_subwindows()) {
 		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SUBWINDOWS)) {
 			return TTR("Multi-window support is not available because the `--single-window` command line argument was used to start the editor.");
 		} else {
