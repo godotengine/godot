@@ -12,8 +12,8 @@ func reset_settings(p_value) -> void:
 		height_file_name = ""
 		control_file_name = ""
 		color_file_name = ""
-		import_position = Vector3.ZERO
-		import_offset = 0.0
+		import_position = Vector2i.ZERO
+		height_offset = 0.0
 		import_scale = 1.0
 		r16_range = Vector2(0, 1)
 		r16_size = Vector2i(1024, 1024)
@@ -36,12 +36,23 @@ func update_heights(p_value) -> void:
 @export_global_file var height_file_name: String = ""
 @export_global_file var control_file_name: String = ""
 @export_global_file var color_file_name: String = ""
-@export var import_position: Vector3 = Vector3.ZERO
+@export var import_position: Vector2i = Vector2i(0, 0) : set = set_import_position
 @export var import_scale: float = 1.0
-@export var import_offset: float = 0.0
+@export var height_offset: float = 0.0
 @export var r16_range: Vector2 = Vector2(0, 1)
-@export var r16_size: Vector2i = Vector2i(1024, 1024)
+@export var r16_size: Vector2i = Vector2i(1024, 1024) : set = set_r16_size
 @export var run_import: bool = false : set = start_import
+
+
+func set_import_position(p_value: Vector2i) -> void:
+	import_position.x = clamp(p_value.x, -8192, 8192)
+	import_position.y = clamp(p_value.y, -8192, 8192)
+
+
+func set_r16_size(p_value: Vector2i) -> void:
+	r16_size.x = clamp(p_value.x, 0, 16384)
+	r16_size.y = clamp(p_value.y, 0, 16384)
+
 
 func start_import(p_value: bool) -> void:
 	if p_value:
@@ -66,7 +77,8 @@ func start_import(p_value: bool) -> void:
 			if assets.get_texture_count() == 0:
 				material.show_checkered = false
 				material.show_colormap = true
-		storage.import_images(imported_images, import_position, import_offset, import_scale)
+		var pos := Vector3(import_position.x, 0, import_position.y)
+		storage.import_images(imported_images, pos, height_offset, import_scale)
 		print("Terrain3DImporter: Import finished")
 
 

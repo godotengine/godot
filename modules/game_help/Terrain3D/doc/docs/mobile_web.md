@@ -30,7 +30,7 @@ As of Terrain3D 0.9.1 and Godot 4.2, iOS is reported to work with the following 
 
 * Use textures that Godot imports (converts) such as PNG or TGA, not DDS.
 * Enable `Project Settings/Rendering/Textures/VRAM Compression/Import ETC2 ASTC`.
-* Set `Project Settings/Application/Config/Icon` to `res://icon.svg`.
+* Set `Project Settings/Application/Config/Icon` to a valid file (eg `res://icon.png` or svg).
 * The Terrain3D release includes iOS builds, however they aren't signed and may not work.
 * If needed, build the iOS library and make sure the binaries are placed where identified in `terrain.gdextension`:
 ```

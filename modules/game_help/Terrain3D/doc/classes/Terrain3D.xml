@@ -73,7 +73,7 @@
 	</methods>
 	<members>
 		<member name="assets" type="Terrain3DAssets" setter="set_assets" getter="get_assets">
-			The list of texture files used by Terrain3D. You can optionally save this as an external [code skip-lint].tres[/code] text file if you wish to share it with instances of Terrain3D in other scenes.
+			The list of texture and mesh assets used by Terrain3D. You can optionally save this as an external [code skip-lint].tres[/code] text file if you wish to share it with Terrain3D nodes in other scenes.
 		</member>
 		<member name="collision_enabled" type="bool" setter="set_collision_enabled" getter="get_collision_enabled" default="true">
 			If enabled, collision is generated according to the mode selected. By default collision is generated for all regions at run time only using the physics server. Also see [member debug_show_collision].
@@ -132,7 +132,7 @@
 		<member name="texture_list" type="Terrain3DTextureList" setter="set_texture_list" getter="get_texture_list">
 			Deprecated. See [member assets].
 		</member>
-		<member name="version" type="String" setter="" getter="get_version" default="&quot;0.9.2-dev&quot;">
+		<member name="version" type="String" setter="" getter="get_version" default="&quot;0.9.3-dev&quot;">
 			The current version of Terrain3D.
 		</member>
 	</members>

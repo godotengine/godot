@@ -172,7 +172,7 @@ The parameter contains the axis-aligned bounding box of the area edited.
 
 **multimeshes_changed**\ (\ ) :ref:`🔗<class_Terrain3DStorage_signal_multimeshes_changed>`
 
-Emitted when :ref:`multimeshes<class_Terrain3DStorage_property_multimeshes>` is changed.
+Emitted when the :ref:`multimeshes<class_Terrain3DStorage_property_multimeshes>` object is changed (ie loaded), not when the content is changed.
 
 .. rst-class:: classref-item-separator
 

@@ -7,9 +7,9 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Terrain3D'
-copyright = '2023 Cory Petkovsek, Roope Palmroos, and Contributors'
+copyright = '2024 Cory Petkovsek, Roope Palmroos, and Contributors'
 author = 'Cory Petkovsek, Roope Palmroos, and Contributors'
-release = '0.9.2'
+release = '0.9.3'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

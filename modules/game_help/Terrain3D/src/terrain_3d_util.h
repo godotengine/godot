@@ -1,4 +1,4 @@
-// Copyright © 2023 Cory Petkovsek, Roope Palmroos, and Contributors.
+// Copyright © 2024 Cory Petkovsek, Roope Palmroos, and Contributors.
 
 #ifndef TERRAIN3D_UTIL_CLASS_H
 #define TERRAIN3D_UTIL_CLASS_H
@@ -6,7 +6,7 @@
 #include "core/io/image.h"
 
 #include "constants.h"
-
+#include "generated_texture.h"
 
 using namespace godot;
 
@@ -16,21 +16,21 @@ class Terrain3DUtil : public Object {
 
 public:
 	// Print info to the console
-	static void print_dict(String name, const Dictionary &p_dict, int p_level = 2); // Level 2: DEBUG
-	static void dump_gen(GeneratedTexture p_gen, String name = "", int p_level = 2);
-	static void dump_maps(const TypedArray<Image> p_maps, String p_name = "");
+	static void print_dict(const String &name, const Dictionary &p_dict, const int p_level = 2); // Level 2: DEBUG
+	static void dump_gen(const GeneratedTexture p_gen, const String &name = "", const int p_level = 2);
+	static void dump_maps(const TypedArray<Image> &p_maps, const String &p_name = "");
 
 	// Image operations
-	static Ref<Image> black_to_alpha(const Ref<Image> p_image);
-	static Vector2 get_min_max(const Ref<Image> p_image);
-	static Ref<Image> get_thumbnail(const Ref<Image> p_image, Vector2i p_size = Vector2i(256, 256));
-	static Ref<Image> get_filled_image(Vector2i p_size,
-			Color p_color = COLOR_BLACK,
-			bool p_create_mipmaps = true,
-			Image::Format p_format = Image::FORMAT_MAX);
-	static Ref<Image> load_image(String p_file_name, int p_cache_mode = ResourceFormatLoader::CACHE_MODE_IGNORE,
-			Vector2 p_r16_height_range = Vector2(0.f, 255.f), Vector2i p_r16_size = Vector2i(0, 0));
-	static Ref<Image> pack_image(const Ref<Image> p_src_rgb, const Ref<Image> p_src_r, bool p_invert_green_channel = false);
+	static Ref<Image> black_to_alpha(const Ref<Image> &p_image);
+	static Vector2 get_min_max(const Ref<Image> &p_image);
+	static Ref<Image> get_thumbnail(const Ref<Image> &p_image, const Vector2i &p_size = Vector2i(256, 256));
+	static Ref<Image> get_filled_image(const Vector2i &p_size,
+			const Color &p_color = COLOR_BLACK,
+			const bool p_create_mipmaps = true,
+			const Image::Format p_format = Image::FORMAT_MAX);
+	static Ref<Image> load_image(const String &p_file_name, const int p_cache_mode = ResourceFormatLoader::CACHE_MODE_IGNORE,
+			const Vector2 &p_r16_height_range = Vector2(0.f, 255.f), const Vector2i &p_r16_size = Vector2i(0, 0));
+	static Ref<Image> pack_image(const Ref<Image> &p_src_rgb, const Ref<Image> &p_src_r, const bool p_invert_green_channel = false);
 
 protected:
 	static void _bind_methods();
@@ -45,7 +45,7 @@ typedef Terrain3DUtil Util;
 ///////////////////////////
 
 template <typename T>
-T round_multiple(T p_value, T p_multiple) {
+T round_multiple(const T p_value, const T p_multiple) {
 	if (p_multiple == 0) {
 		return p_value;
 	}
@@ -56,8 +56,8 @@ T round_multiple(T p_value, T p_multiple) {
 // * 4 values to be interpolated
 // * Positioned at the 4 corners of the p_pos00 - p_pos11 rectangle
 // * Interpolated to the position p_pos, which is global, not a 0-1 percentage
-inline real_t bilerp(real_t p_v00, real_t p_v01, real_t p_v10, real_t p_v11,
-		Vector2 p_pos00, Vector2 p_pos11, Vector2 p_pos) {
+inline real_t bilerp(const real_t p_v00, const real_t p_v01, const real_t p_v10, const real_t p_v11,
+		const Vector2 &p_pos00, const Vector2 &p_pos11, const Vector2 &p_pos) {
 	real_t x2x1 = p_pos11.x - p_pos00.x;
 	real_t y2y1 = p_pos11.y - p_pos00.y;
 	real_t x2x = p_pos11.x - p_pos.x;
@@ -71,8 +71,8 @@ inline real_t bilerp(real_t p_v00, real_t p_v01, real_t p_v10, real_t p_v11,
 			(x2x1 * y2y1);
 }
 
-inline real_t bilerp(real_t p_v00, real_t p_v01, real_t p_v10, real_t p_v11,
-		Vector3 p_pos00, Vector3 p_pos11, Vector3 p_pos) {
+inline real_t bilerp(const real_t p_v00, const real_t p_v01, const real_t p_v10, const real_t p_v11,
+		const Vector3 &p_pos00, const Vector3 &p_pos11, const Vector3 &p_pos) {
 	Vector2 pos00 = Vector2(p_pos00.x, p_pos00.z);
 	Vector2 pos11 = Vector2(p_pos11.x, p_pos11.z);
 	Vector2 pos = Vector2(p_pos.x, p_pos.z);
@@ -85,56 +85,55 @@ inline real_t bilerp(real_t p_v00, real_t p_v01, real_t p_v10, real_t p_v11,
 
 // Getters read the 32-bit float as a 32-bit uint, then mask bits to retreive value
 // Encoders return a full 32-bit uint with bits in the proper place for ORing
-inline float as_float(uint32_t value) { return *(float *)&value; }
-inline uint32_t as_uint(float value) { return *(uint32_t *)&value; }
+inline float as_float(const uint32_t p_value) { return *(float *)&p_value; }
+inline uint32_t as_uint(const float p_value) { return *(uint32_t *)&p_value; }
 
-inline uint8_t get_base(uint32_t pixel) { return pixel >> 27 & 0x1F; }
-inline uint8_t get_base(float pixel) { return get_base(as_uint(pixel)); }
-inline uint32_t enc_base(uint8_t base) { return (base & 0x1F) << 27; }
+inline uint8_t get_base(const uint32_t p_pixel) { return p_pixel >> 27 & 0x1F; }
+inline uint8_t get_base(const float p_pixel) { return get_base(as_uint(p_pixel)); }
+inline uint32_t enc_base(const uint8_t p_base) { return (p_base & 0x1F) << 27; }
 
-inline uint8_t get_overlay(uint32_t pixel) { return pixel >> 22 & 0x1F; }
-inline uint8_t get_overlay(float pixel) { return get_overlay(as_uint(pixel)); }
-inline uint32_t enc_overlay(uint8_t over) { return (over & 0x1F) << 22; }
+inline uint8_t get_overlay(const uint32_t p_pixel) { return p_pixel >> 22 & 0x1F; }
+inline uint8_t get_overlay(const float p_pixel) { return get_overlay(as_uint(p_pixel)); }
+inline uint32_t enc_overlay(const uint8_t p_over) { return (p_over & 0x1F) << 22; }
 
-inline uint8_t get_blend(uint32_t pixel) { return pixel >> 14 & 0xFF; }
-inline uint8_t get_blend(float pixel) { return get_blend(as_uint(pixel)); }
-inline uint32_t enc_blend(uint8_t blend) { return (blend & 0xFF) << 14; }
+inline uint8_t get_blend(const uint32_t p_pixel) { return p_pixel >> 14 & 0xFF; }
+inline uint8_t get_blend(const float p_pixel) { return get_blend(as_uint(p_pixel)); }
+inline uint32_t enc_blend(const uint8_t p_blend) { return (p_blend & 0xFF) << 14; }
 
-inline uint8_t get_uv_rotation(uint32_t pixel) { return pixel >> 10 & 0xF; }
-inline uint8_t get_uv_rotation(float pixel) { return get_uv_rotation(as_uint(pixel)); }
-inline uint32_t enc_uv_rotation(uint8_t rotation) { return (rotation & 0xF) << 10; }
+inline uint8_t get_uv_rotation(const uint32_t p_pixel) { return p_pixel >> 10 & 0xF; }
+inline uint8_t get_uv_rotation(const float p_pixel) { return get_uv_rotation(as_uint(p_pixel)); }
+inline uint32_t enc_uv_rotation(const uint8_t p_rotation) { return (p_rotation & 0xF) << 10; }
 
-inline uint8_t get_uv_scale(uint32_t pixel) { return pixel >> 7 & 0x7; }
-inline uint8_t get_uv_scale(float pixel) { return get_uv_scale(as_uint(pixel)); }
-inline uint32_t enc_uv_scale(uint8_t scale) { return (scale & 0x7) << 7; }
+inline uint8_t get_uv_scale(const uint32_t p_pixel) { return p_pixel >> 7 & 0x7; }
+inline uint8_t get_uv_scale(const float p_pixel) { return get_uv_scale(as_uint(p_pixel)); }
+inline uint32_t enc_uv_scale(const uint8_t p_scale) { return (p_scale & 0x7) << 7; }
 
-inline bool is_hole(uint32_t pixel) { return (pixel >> 2 & 0x1) == 1; }
-inline bool is_hole(float pixel) { return is_hole(as_uint(pixel)); }
-inline uint32_t enc_hole(bool hole) { return (hole & 0x1) << 2; }
+inline bool is_hole(const uint32_t p_pixel) { return (p_pixel >> 2 & 0x1) == 1; }
+inline bool is_hole(const float p_pixel) { return is_hole(as_uint(p_pixel)); }
+inline uint32_t enc_hole(const bool p_hole) { return (p_hole & 0x1) << 2; }
 
-inline bool is_nav(uint32_t pixel) { return (pixel >> 1 & 0x1) == 1; }
-inline bool is_nav(float pixel) { return is_nav(as_uint(pixel)); }
-inline uint32_t enc_nav(bool nav) { return (nav & 0x1) << 1; }
+inline bool is_nav(const uint32_t p_pixel) { return (p_pixel >> 1 & 0x1) == 1; }
+inline bool is_nav(const float p_pixel) { return is_nav(as_uint(p_pixel)); }
+inline uint32_t enc_nav(const bool p_nav) { return (p_nav & 0x1) << 1; }
 
-inline bool is_auto(uint32_t pixel) { return (pixel & 0x1) == 1; }
-inline bool is_auto(float pixel) { return is_auto(as_uint(pixel)); }
-inline uint32_t enc_auto(bool autosh) { return autosh & 0x1; }
+inline bool is_auto(const uint32_t p_pixel) { return (p_pixel & 0x1) == 1; }
+inline bool is_auto(const float p_pixel) { return is_auto(as_uint(p_pixel)); }
+inline uint32_t enc_auto(const bool p_autosh) { return p_autosh & 0x1; }
 
 // Aliases for GDScript since it can't handle overridden functions
-inline uint32_t gd_get_base(uint32_t pixel) { return get_base(pixel); }
-inline uint32_t gd_enc_base(uint32_t base) { return enc_base(base); }
-inline uint32_t gd_get_overlay(uint32_t pixel) { return get_overlay(pixel); }
-inline uint32_t gd_enc_overlay(uint32_t over) { return enc_overlay(over); }
-inline uint32_t gd_get_blend(uint32_t pixel) { return get_overlay(pixel); }
-inline uint32_t gd_enc_blend(uint32_t blend) { return enc_blend(blend); }
-inline bool gd_is_hole(uint32_t pixel) { return is_hole(pixel); }
-inline bool gd_is_auto(uint32_t pixel) { return is_auto(pixel); }
-inline bool gd_is_nav(uint32_t pixel) { return is_nav(pixel); }
-inline uint32_t gd_get_uv_rotation(uint32_t pixel) { return get_uv_rotation(pixel); }
-inline uint32_t gd_enc_uv_rotation(uint32_t rotation) { return enc_uv_rotation(rotation); }
-inline uint32_t gd_get_uv_scale(uint32_t pixel) { return get_uv_rotation(pixel); }
-inline uint32_t gd_enc_uv_scale(uint32_t scale) { return enc_uv_rotation(scale); }
-
+inline uint32_t gd_get_base(const uint32_t p_pixel) { return get_base(p_pixel); }
+inline uint32_t gd_enc_base(const uint32_t p_base) { return enc_base(p_base); }
+inline uint32_t gd_get_overlay(const uint32_t p_pixel) { return get_overlay(p_pixel); }
+inline uint32_t gd_enc_overlay(const uint32_t p_over) { return enc_overlay(p_over); }
+inline uint32_t gd_get_blend(const uint32_t p_pixel) { return get_overlay(p_pixel); }
+inline uint32_t gd_enc_blend(const uint32_t p_blend) { return enc_blend(p_blend); }
+inline bool gd_is_hole(const uint32_t p_pixel) { return is_hole(p_pixel); }
+inline bool gd_is_auto(const uint32_t p_pixel) { return is_auto(p_pixel); }
+inline bool gd_is_nav(const uint32_t p_pixel) { return is_nav(p_pixel); }
+inline uint32_t gd_get_uv_rotation(const uint32_t p_pixel) { return get_uv_rotation(p_pixel); }
+inline uint32_t gd_enc_uv_rotation(const uint32_t p_rotation) { return enc_uv_rotation(p_rotation); }
+inline uint32_t gd_get_uv_scale(const uint32_t p_pixel) { return get_uv_rotation(p_pixel); }
+inline uint32_t gd_enc_uv_scale(const uint32_t p_scale) { return enc_uv_rotation(p_scale); }
 
 ///////////////////////////
 // Memory
@@ -160,6 +159,19 @@ _FORCE_INLINE_ bool remove_from_tree(Node *p_node) {
 		}
 	}
 	return false;
+}
+
+// UtilityFunctions::is_instance_valid() is faulty and shouldn't be used.
+// Use this version instead on objects that might be freed by the user.
+// See https://github.com/godotengine/godot-cpp/issues/1390#issuecomment-1937570699
+_FORCE_INLINE_ bool is_instance_valid(const uint64_t p_instance_id, Object *p_object = nullptr) {
+	ObjectID id = ObjectID(p_instance_id);
+	Object *obj = ObjectDB::get_instance(id);
+	if (p_object != nullptr) {
+		return p_instance_id > 0 && p_object == obj;
+	} else {
+		return p_instance_id > 0 && obj != nullptr;
+	}
 }
 
 #endif // TERRAIN3D_UTIL_CLASS_H

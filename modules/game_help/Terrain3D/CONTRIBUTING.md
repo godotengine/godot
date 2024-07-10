@@ -63,7 +63,14 @@ In addition:
 In general, follow the [Godot C++ style guidelines](https://docs.godotengine.org/en/stable/contributing/development/code_style_guidelines.html).
 In addition:
 
-Floats:
+Use const correctness:
+* Function parameters that won't be changed (almost all) should be marked const. Exceptions are pointers, or where passing a variable the function is supposed to modify, eg. Terrain3D::_generate_triangles
+* Functions that won't change the object should be marked const (e.g. most get_ functions)
+
+Pass by reference:
+* Pass everything larger than 4 bytes by reference, including Ref<> and arrays, dictionaries, RIDs. e.g. `const Transform3D &xform`
+
+* Floats:
 * Use `real_t` instead of `float`
 * Format float literals like `0.0f`
 * Float literals and `real_t` variables can share operations (e.g. `mydouble += 1.0f`) unless the compiler complains. e.g. `Math::lerp(mydouble, real_t(0.0f), real_t(1.0f))`

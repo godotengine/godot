@@ -52,6 +52,14 @@ You can also play with the NavigationDemo.tscn and CodeGenerated.tscn scenes whi
 
 ## Tips
 
+### Enable visible navigation for debugging
+
+This option enables a blue overlay mesh that displays where the navigation mesh exists.
+
+```{image} images/nav_debugging.png
+:target: ../_images/nav_debugging.png
+```
+
 ### Save NavigationMesh resources to disk
 
 NavigationMesh resources can bloat the size of your scene. It's recommended to save these resources to disk in binary format with the `.res` extension.
@@ -92,7 +100,7 @@ Making reasonable fallback behaviors, when you're able to detect in a script tha
 
 If your project has dynamic, or generated terrain, or if the traversable area of your terrain is so gigantic that it can't be baked in the editor, then you might need to use runtime navmesh baking.
 
-Terrain3D contains an example script that shows how to bake terrain nav meshes at runtime, which you can find in the `CodeGenerated.tscn` demo scene. The script periodically re-bakes a nav mesh in the area around the player as they move through the scene.
+Terrain3D contains an example script that shows how to bake terrain nav meshes at runtime, which you can find in the `CodeGenerated.tscn` demo scene. 
 
 <figure class="video_container">
  <video width="600px" controls="true" allowfullscreen="true">
@@ -100,3 +108,15 @@ Terrain3D contains an example script that shows how to bake terrain nav meshes a
  </video>
 </figure>
 
+The script periodically re-bakes a nav mesh in the area around the player as it moves through the scene. Adjust `bake_cooldown` if you wish the baker to update more frequently, at the cost of CPU cycles. 
+
+You can also adjust how frequently the navigation agent updates its path by adjusting `Enemy.gd:RETARGET_COOLDOWN`. If you have a lot of agents, that's going to come with a performance hit.
+
+### Performance Tips
+
+Navigation baking is slow. Editor or compile-time baking navigation is usually a better option for games. Runtime baking can still be usable however. There are a few things you can do to speed it up, or work around the slowness:
+
+* Create a set of fallback behaviors that get used when proper navigation isn't possible. In this way, you can make the AI degrade without completely failing while waiting for the nav server, or when out of range of the nav mesh. For instance the enemy could simply move straight towards the player if navigation is not ready yet. It could have rudimentary ability to detect cliffs and obstacles with raycasts.
+* Reduce the speed of the player character. Delays happen frequently in the demo because the player can move across the mesh so rapidly.
+* Reduce the size of the baked mesh with `mesh_size` to make it cheaper to bake.
+* Increase the size of the cells (i.e. reduce the resolution of the navmesh) to reduce the amount of work to do. Change `cell_size` in the `template` NavigationMesh. If you increase it too far, obstacles may hide within a cell and break your navigation. You can write fallback behaviors for that as well, or ensure that your obstacles are all larger than the cell size.

@@ -54,17 +54,17 @@ func _exit_tree() -> void:
 func _handles(p_object: Object) -> bool:
 	if p_object is Terrain3D:
 		return true
-
+	
 	# Terrain3DObjects requires access to EditorUndoRedoManager. The only way to make sure it
 	# always has it, is to pass it in here. _edit is NOT called if the node is cut and pasted.
 	if p_object is Terrain3DObjects:
 		p_object.editor_setup(self)
 	elif p_object is Node3D and p_object.get_parent() is Terrain3DObjects:
 		p_object.get_parent().editor_setup(self)
-
+	
 	if is_instance_valid(_last_terrain) and _last_terrain.is_inside_tree() and p_object is NavigationRegion3D:
 		return true
-
+	
 	return false
 
 
@@ -98,8 +98,8 @@ func _edit(p_object: Object) -> void:
 			nav_region = p_object
 		else:
 			nav_region = null
-	
-		
+
+
 func _make_visible(p_visible: bool, p_redraw: bool = false) -> void:
 	visible = p_visible
 	ui.set_visible(visible)
@@ -169,7 +169,7 @@ func _forward_3d_gui_input(p_viewport_camera: Camera3D, p_event: InputEvent) -> 
 		else:			
 			# Else look for intersection with terrain
 			var intersection_point: Vector3 = terrain.get_intersection(camera_pos, camera_dir)
-			if intersection_point.z > 3.4e38: # double max
+			if intersection_point.z > 3.4e38 or is_nan(intersection_point.y): # max double or nan
 				return AFTER_GUI_INPUT_STOP
 			mouse_global_position = intersection_point
 		

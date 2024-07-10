@@ -1,4 +1,4 @@
-// Copyright © 2023 Cory Petkovsek, Roope Palmroos, and Contributors.
+// Copyright © 2024 Cory Petkovsek, Roope Palmroos, and Contributors.
 
 //#include <godot_cpp/classes/rendering_server.hpp>
 #include "servers/rendering_server.h"
@@ -10,7 +10,7 @@
 // Private Functions
 ///////////////////////////
 
-RID GeoClipMap::_create_mesh(PackedVector3Array p_vertices, PackedInt32Array p_indices, AABB p_aabb) {
+RID GeoClipMap::_create_mesh(const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices, const AABB &p_aabb) {
 	Array arrays;
 	arrays.resize(RenderingServer::ARRAY_MAX);
 	arrays[RenderingServer::ARRAY_VERTEX] = p_vertices;
@@ -46,7 +46,7 @@ RID GeoClipMap::_create_mesh(PackedVector3Array p_vertices, PackedInt32Array p_i
  * In email communication with Cory, Mike clarified that the code in his
  * repo can be considered either MIT or public domain.
  */
-Vector<RID> GeoClipMap::generate(int p_size, int p_levels) {
+Vector<RID> GeoClipMap::generate(const int p_size, const int p_levels) {
 	LOG(DEBUG, "Generating meshes of size: ", p_size, " levels: ", p_levels);
 
 	// TODO bit of a mess here. someone care to clean up?

@@ -38,10 +38,12 @@ Don't just copy the new folder over the old, as this won't remove any files that
 
 ## Upgrade Path
 
-While later versions of Terrain3D can generally open previous versions, not all data will be loaded unless the supported upgrade path is followed. We occasionally deprecate or rename classes and provide upgrade paths to convert data for a limited time. Open up your files and resave them in a supported upgrade version before moving on to later versions.
+While later versions of Terrain3D can generally open previous versions, not all data will be loaded unless the supported upgrade path is followed. We occasionally deprecate or rename classes and provide upgrade paths to convert data for a limited time. 
+
+Given the table below, to upgrade 0.8 to the latest version you would need to open your files in 0.8.4 or 0.9 and save them, then open in the latest version and save again.
 
 | Starting Version | Supported Upgrade |
 |------------------|-------------------|
-| 0.8.4 - 0.9.0 | Current |
+| 0.8.4 - 0.9.0 | Latest |
 | 0.8.0 - 0.8.3 | 0.8.4 - 0.9.0 |
 

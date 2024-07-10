@@ -18,7 +18,7 @@ See :doc:`Project Status <docs/project_status>` for development progress.
 Usage
 --------
 
-Read the documentation in the Getting Started section, beginning with :doc:`Installation <docs/installation>`.
+Read the documentation in the Getting Started section, beginning with :doc:`Installation & Upgrades <docs/installation>`.
 
 Credit
 -------------

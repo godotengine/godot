@@ -1,4 +1,4 @@
-// Copyright © 2023 Cory Petkovsek, Roope Palmroos, and Contributors.
+// Copyright © 2024 Cory Petkovsek, Roope Palmroos, and Contributors.
 
 #ifndef TERRAIN3D_EDITOR_CLASS_H
 #define TERRAIN3D_EDITOR_CLASS_H
@@ -85,19 +85,19 @@ private:
 	bool _pending_undo = false;
 	bool _modified = false;
 	AABB _modified_area;
-	Dictionary _undo_set; // See _collect_undo_data for definition
+	Dictionary _undo_data; // See _get_undo_data for definition
 
-	real_t _get_brush_alpha(Vector2i p_position);
-	void _region_modified(Vector3 p_global_position, Vector2 p_height_range = Vector2());
-	void _operate_region(Vector3 p_global_position);
-	void _operate_map(Vector3 p_global_position, real_t p_camera_direction);
-	bool _is_in_bounds(Vector2i p_position, Vector2i p_max_position);
-	Vector2 _get_uv_position(Vector3 p_global_position, int p_region_size);
-	Vector2 _rotate_uv(Vector2 p_uv, real_t p_angle);
+	void _region_modified(const Vector3 &p_global_position, const Vector2 &p_height_range = Vector2());
+	void _operate_region(const Vector3 &p_global_position);
+	void _operate_map(const Vector3 &p_global_position, const real_t p_camera_direction);
+	bool _is_in_bounds(const Vector2i &p_position, const Vector2i &p_max_position) const;
+	real_t _get_brush_alpha(const Vector2i &p_position) const;
+	Vector2 _get_uv_position(const Vector3 &p_global_position, const int p_region_size) const;
+	Vector2 _get_rotated_uv(const Vector2 &p_uv, const real_t p_angle) const;
 
-	Dictionary _collect_undo_data();
+	Dictionary _get_undo_data() const;
 	void _store_undo();
-	void _apply_undo(Dictionary p_set);
+	void _apply_undo(const Dictionary &p_set);
 
 public:
 	Terrain3DEditor() {}
@@ -106,14 +106,14 @@ public:
 	void set_terrain(Terrain3D *p_terrain) { _terrain = p_terrain; }
 	Terrain3D *get_terrain() const { return _terrain; }
 
-	void set_brush_data(Dictionary p_data);
-	void set_tool(Tool p_tool);
+	void set_brush_data(const Dictionary &p_data);
+	void set_tool(const Tool p_tool);
 	Tool get_tool() const { return _tool; }
-	void set_operation(Operation p_operation) { _operation = p_operation; }
+	void set_operation(const Operation p_operation) { _operation = p_operation; }
 	Operation get_operation() const { return _operation; }
 
-	void start_operation(Vector3 p_global_position);
-	void operate(Vector3 p_global_position, real_t p_camera_direction);
+	void start_operation(const Vector3 &p_global_position);
+	void operate(const Vector3 &p_global_position, const real_t p_camera_direction);
 	void stop_operation();
 	bool is_operating() const { return _pending_undo; }
 

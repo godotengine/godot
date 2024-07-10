@@ -87,15 +87,10 @@ Most certainly you've installed the plugin improperly. These are the common caus
 
 1) You downloaded the repository code, not a [binary release](https://github.com/TokisanGames/Terrain3D/releases).
 
-2) You moved the files into the wrong directory. The Terrain3d files should be in `project/addons/terrain_3d`. `Editor.gd` should be found at `res://addons/terrain_3d/editor/editor.gd`. [See an example issue here](https://github.com/TokisanGames/Terrain3D/issues/200).  
+2) You moved the files into the wrong directory. The Terrain3D files should be in `project/addons/terrain_3d`. `Editor.gd` should be found at `res://addons/terrain_3d/editor/editor.gd`. [See an example issue here](https://github.com/TokisanGames/Terrain3D/issues/200).  
 
-Basically, the required library isn't where it's supposed to be. The error messages will tell you exactly the file name and path it's looking for. View that location on your hard drive. On windows you might be looking for `libterrain.windows.debug.x86_64.dll`. Does that file exist where it's looking? If you did #1 or #2 above, no. Download the correct package, and review the instructions to install the files in the right location.
+Basically, the required library isn't where it's supposed to be. The error messages will tell you exactly the file name and path it's looking for. View that location on your hard drive. On windows you might be looking for `libterrain.windows.debug.x86_64.dll`. Does that file exist where it's looking in the logs? Probably not. Download the correct package, and review the instructions to install the files in the right location.
 
-#### Can't open dynamic library... Missing dependencies: MSVCP140.dll, VCRUNTIME140.dll...
-
-Previous versions of the Windows binary were built with Microsoft Visual Studio. You need to install the latest [Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170). This is no longer the case for current releases.
-* x64: [https://aka.ms/vs/17/release/vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe)
-* x86: [https://aka.ms/vs/17/release/vc_redist.x86.exe](https://aka.ms/vs/17/release/vc_redist.x86.exe)
 
 ### Crashing
 
@@ -124,11 +119,6 @@ Read [Preparing Textures](texture_prep.md) to learn how to properly channel pack
 #### Albedo/Normal textures do not have same size! and the terrain turns white
 
 Read [Preparing Textures](texture_prep.md) and review your textures for odd sizes. All textures must be the same size. eg. If the first set is 2k, all other textures need to be 2k as well.
-
-#### EXR textures don't work.
-
-EXRs store texture data as 16-bit or 32-bit float. Use PNGs with 8-bit integer data. If all you can get are EXRs, then you'll need to convert the data to 8-bit RGB in a photo editing app, then save in an appropriate file as described in [Preparing Textures](texture_prep.md).
-
 
 ## Debug Collision
 

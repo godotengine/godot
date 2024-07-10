@@ -1,4 +1,4 @@
-// Copyright © 2023 Cory Petkovsek, Roope Palmroos, and Contributors.
+// Copyright © 2024 Cory Petkovsek, Roope Palmroos, and Contributors.
 
 #include "servers/rendering_server.h"
 

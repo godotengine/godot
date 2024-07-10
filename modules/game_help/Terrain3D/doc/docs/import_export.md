@@ -13,17 +13,16 @@ Currently importing and exporting is possible via code or our import tool. We wi
 :target: ../_images/io_importer.png
 ```
 
-3) In the inspector, select a file for height, control, and color maps. See [formats](#supported-import-formats) below. File type is determined by extension.
+3) In the inspector, select a file for height, control, and/or color maps. See [formats](#supported-import-formats) below. File type is determined by extension.
 
-4) Specify the location of where in the world you want to import. Y is ignored. X/Z are rounded to the nearest `region_size` (defaults to 1024). The placed map is centered on that point. So a location of (-2000, 100, 1000) will be imported centered around (-2048, 0, 1024).
+4) Specify the `import_position` of where in the world you want to import. Values are rounded to the nearest `region_size` (defaults to 1024). So a location of (-2000, 1000) will be imported at (-2048, 1024).
 
      Notes:
-
-     * You can import multiple times into the greater 16k^2 world map by specifying different locations. So you could import multiple maps as separate islands or combined regions.
+     * You can import multiple times into the greater 16k^2 world map by specifying different positions. So you could import multiple maps as separate islands or combined regions.
      * It will slice and pad odd sized images into region sized chunks ([default is 1024x1024](https://github.com/TokisanGames/Terrain3D/issues/77)). e.g. You could import a 4k x 2k, several 1k x 1ks, and a 5123 x 3769 and position them so they are adjacent.
      * You can also reimport to the same location to overwrite anything there using individual maps or a complete set of height, control, and/or color.
 
-5) Specify any desired height offset or scale. The scale gets applied first. (eg. 100, -100 would scale the terrain by 100, then lower the whole terrain by 100).
+5) Specify any desired `height_offset` or `import_scale`. The scale gets applied first. (eg. 100, -100 would scale the terrain by 100, then lower the whole terrain by 100).
 
      * Note that we store full range values. If you sculpt a hill to a height of 50, that's what goes into the data file. Your heightmap values (esp w/ EXR) may be normalized to the range of 0-1. If you import and the terrain is still flat, try scaling the height up by 300-500.
 
@@ -58,7 +57,7 @@ We can import any supported image format Godot can read. These include:
 * Control maps use a proprietary format. We only import our own format. Use `exr` to export or reimport only from this tool.
 
 ### Color map
-* Any regular color format is fine, `png` is recommended. The alpha channel is interpretted as a [roughness modifier](https://terrain3d.readthedocs.io/en/stable/api/class_terrain3dstorage.html#class-terrain3dstorage-property-color-maps) for wetness.
+* Any regular color format is fine, `png` is recommended. The alpha channel is interpretted as a [roughness modifier](../api/class_terrain3dstorage.rst#class-terrain3dstorage-property-color-maps) for wetness.
 
 
 ## Exporting Data
@@ -101,16 +100,16 @@ We can export any supported image format Godot can write. These include:
 ### Height map
 * Use `exr` or `r16/raw` for external tools, or `res` for Godot only use. Godot PNG only supports 8-bit per channel, so it will give you blocky heightmaps.
 * R16: For 16-bit heightmaps read/writable by World Machine, Unity, Krita, etc. Save with the extension `r16` or `raw`. Min/Max heights and image size are not stored in the file, so you must keep track of them elsewhere. See below to acquire the dimensions. 
-* `Photoshop Raw` is a different format. Use [exr](https://www.exr-io.com/) for photoshop.
+* `Photoshop Raw` is not raw, don't use it. Use [exr](https://www.exr-io.com/) for photoshop.
 
 ### Control map
 * Control maps use a proprietary format. We only import our own. Use `exr`. It won't give you a valid image editable in other tools. This is only for transferring the image to another Terrain3D Storage file. See [Controlmap Format](controlmap_format.md).
 
 ### Color map
-* Use `png` or `webp`, as they are lossless rgba formats that external tools can edit. Use `res` for Godot only use. The alpha channel is interpretted as a [roughness modifier](https://terrain3d.readthedocs.io/en/stable/api/class_terrain3dstorage.html#class-terrain3dstorage-property-color-maps) for wetness. 
+* Use `png` or `webp`, as they are lossless rgba formats that external tools can edit. Use `res` for Godot only use. The alpha channel is interpretted as a [roughness modifier](../api/class_terrain3dstorage.rst#class-terrain3dstorage-property-color-maps) for wetness. 
 
 
-**Exported Image Dimensions**
+## Exported Image Dimensions
 
 Upon export, the console reports the image size.
 

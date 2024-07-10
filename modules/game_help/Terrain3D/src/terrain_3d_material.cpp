@@ -1,4 +1,4 @@
-// Copyright © 2023 Cory Petkovsek, Roope Palmroos, and Contributors.
+// Copyright © 2024 Cory Petkovsek, Roope Palmroos, and Contributors.
 
 
 #include "logger.h"
@@ -49,7 +49,7 @@ void Terrain3DMaterial::_preload_shaders() {
 /**
  *	All `//INSERT: ID` blocks in p_shader are loaded into the DB _shader_code
  */
-void Terrain3DMaterial::_parse_shader(String p_shader, String p_name) {
+void Terrain3DMaterial::_parse_shader(const String &p_shader, const String &p_name) {
 	if (p_name.is_empty()) {
 		LOG(ERROR, "No dictionary key for saving shader snippets specified");
 		return;
@@ -82,7 +82,7 @@ void Terrain3DMaterial::_parse_shader(String p_shader, String p_name) {
  *	returns a shader string with inserts applied
  *  Skips `EDITOR_*` and `DEBUG_*` inserts
  */
-String Terrain3DMaterial::_apply_inserts(String p_shader, Array p_excludes) {
+String Terrain3DMaterial::_apply_inserts(const String &p_shader, const Array &p_excludes) const {
 	PackedStringArray parsed = p_shader.split("//INSERT:");
 	String shader;
 	for (int i = 0; i < parsed.size(); i++) {
@@ -112,7 +112,7 @@ String Terrain3DMaterial::_apply_inserts(String p_shader, Array p_excludes) {
 	return shader;
 }
 
-String Terrain3DMaterial::_generate_shader_code() {
+String Terrain3DMaterial::_generate_shader_code() const {
 	LOG(INFO, "Generating default shader code");
 	Array excludes;
 	if (_world_background != NOISE) {
@@ -142,7 +142,7 @@ String Terrain3DMaterial::_generate_shader_code() {
 	return shader;
 }
 
-String Terrain3DMaterial::_inject_editor_code(String p_shader) {
+String Terrain3DMaterial::_inject_editor_code(const String &p_shader) const {
 	String shader = p_shader;
 	int idx = p_shader.rfind("}");
 	if (idx < 0) {
@@ -433,31 +433,31 @@ RID Terrain3DMaterial::get_shader_rid() const {
 	}
 }
 
-void Terrain3DMaterial::set_world_background(WorldBackground p_background) {
+void Terrain3DMaterial::set_world_background(const WorldBackground p_background) {
 	LOG(INFO, "Enable world background: ", p_background);
 	_world_background = p_background;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_texture_filtering(TextureFiltering p_filtering) {
+void Terrain3DMaterial::set_texture_filtering(const TextureFiltering p_filtering) {
 	LOG(INFO, "Setting texture filtering: ", p_filtering);
 	_texture_filtering = p_filtering;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_auto_shader(bool p_enabled) {
+void Terrain3DMaterial::set_auto_shader(const bool p_enabled) {
 	LOG(INFO, "Enable auto shader: ", p_enabled);
 	_auto_shader = p_enabled;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_dual_scaling(bool p_enabled) {
+void Terrain3DMaterial::set_dual_scaling(const bool p_enabled) {
 	LOG(INFO, "Enable dual scaling: ", p_enabled);
 	_dual_scaling = p_enabled;
 	_update_shader();
 }
 
-void Terrain3DMaterial::enable_shader_override(bool p_enabled) {
+void Terrain3DMaterial::enable_shader_override(const bool p_enabled) {
 	LOG(INFO, "Enable shader override: ", p_enabled);
 	_shader_override_enabled = p_enabled;
 	if (_shader_override_enabled && _shader_override.is_null()) {
@@ -485,91 +485,91 @@ Variant Terrain3DMaterial::get_shader_param(const StringName &p_name) const {
 	return value;
 }
 
-void Terrain3DMaterial::set_show_checkered(bool p_enabled) {
+void Terrain3DMaterial::set_show_checkered(const bool p_enabled) {
 	LOG(INFO, "Enable set_show_checkered: ", p_enabled);
 	_debug_view_checkered = p_enabled;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_show_grey(bool p_enabled) {
+void Terrain3DMaterial::set_show_grey(const bool p_enabled) {
 	LOG(INFO, "Enable show_grey: ", p_enabled);
 	_debug_view_grey = p_enabled;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_show_heightmap(bool p_enabled) {
+void Terrain3DMaterial::set_show_heightmap(const bool p_enabled) {
 	LOG(INFO, "Enable show_heightmap: ", p_enabled);
 	_debug_view_heightmap = p_enabled;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_show_colormap(bool p_enabled) {
+void Terrain3DMaterial::set_show_colormap(const bool p_enabled) {
 	LOG(INFO, "Enable show_colormap: ", p_enabled);
 	_debug_view_colormap = p_enabled;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_show_roughmap(bool p_enabled) {
+void Terrain3DMaterial::set_show_roughmap(const bool p_enabled) {
 	LOG(INFO, "Enable show_roughmap: ", p_enabled);
 	_debug_view_roughmap = p_enabled;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_show_control_texture(bool p_enabled) {
+void Terrain3DMaterial::set_show_control_texture(const bool p_enabled) {
 	LOG(INFO, "Enable show_control_texture: ", p_enabled);
 	_debug_view_control_texture = p_enabled;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_show_control_angle(bool p_enabled) {
+void Terrain3DMaterial::set_show_control_angle(const bool p_enabled) {
 	LOG(INFO, "Enable show_control_angle: ", p_enabled);
 	_debug_view_control_angle = p_enabled;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_show_control_scale(bool p_enabled) {
+void Terrain3DMaterial::set_show_control_scale(const bool p_enabled) {
 	LOG(INFO, "Enable show_control_scale: ", p_enabled);
 	_debug_view_control_scale = p_enabled;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_show_control_blend(bool p_enabled) {
+void Terrain3DMaterial::set_show_control_blend(const bool p_enabled) {
 	LOG(INFO, "Enable show_control_blend: ", p_enabled);
 	_debug_view_control_blend = p_enabled;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_show_autoshader(bool p_enabled) {
+void Terrain3DMaterial::set_show_autoshader(const bool p_enabled) {
 	LOG(INFO, "Enable show_autoshader: ", p_enabled);
 	_debug_view_autoshader = p_enabled;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_show_navigation(bool p_enabled) {
+void Terrain3DMaterial::set_show_navigation(const bool p_enabled) {
 	LOG(INFO, "Enable show_navigation: ", p_enabled);
 	_show_navigation = p_enabled;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_show_texture_height(bool p_enabled) {
+void Terrain3DMaterial::set_show_texture_height(const bool p_enabled) {
 	LOG(INFO, "Enable show_texture_height: ", p_enabled);
 	_debug_view_tex_height = p_enabled;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_show_texture_normal(bool p_enabled) {
+void Terrain3DMaterial::set_show_texture_normal(const bool p_enabled) {
 	LOG(INFO, "Enable show_texture_normal: ", p_enabled);
 	_debug_view_tex_normal = p_enabled;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_show_texture_rough(bool p_enabled) {
+void Terrain3DMaterial::set_show_texture_rough(const bool p_enabled) {
 	LOG(INFO, "Enable show_texture_rough: ", p_enabled);
 	_debug_view_tex_rough = p_enabled;
 	_update_shader();
 }
 
-void Terrain3DMaterial::set_show_vertex_grid(bool p_enabled) {
+void Terrain3DMaterial::set_show_vertex_grid(const bool p_enabled) {
 	LOG(INFO, "Enable show_vertex_grid: ", p_enabled);
 	_debug_view_vertex_grid = p_enabled;
 	_update_shader();
@@ -691,7 +691,7 @@ bool Terrain3DMaterial::_property_can_revert(const StringName &p_name) const {
 	return false;
 }
 
-// Provide uniform default values
+// Provide uniform default values in r_property
 bool Terrain3DMaterial::_property_get_revert(const StringName &p_name, Variant &r_property) const {
 	IS_INIT_COND(!_active_params.has(p_name), Resource::_property_get_revert(p_name, r_property));
 	RID shader;

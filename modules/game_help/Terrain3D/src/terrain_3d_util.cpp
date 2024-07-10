@@ -1,4 +1,4 @@
-// Copyright © 2023 Cory Petkovsek, Roope Palmroos, and Contributors.
+// Copyright © 2024 Cory Petkovsek, Roope Palmroos, and Contributors.
 
 #include "core/io/file_access.h"
 
@@ -9,7 +9,7 @@
 // Public Functions
 ///////////////////////////
 
-void Terrain3DUtil::print_dict(String p_name, const Dictionary &p_dict, int p_level) {
+void Terrain3DUtil::print_dict(const String &p_name, const Dictionary &p_dict, const int p_level) {
 	LOG(p_level, "Printing Dictionary: ", p_name);
 	Array keys = p_dict.keys();
 	for (int i = 0; i < keys.size(); i++) {
@@ -17,11 +17,11 @@ void Terrain3DUtil::print_dict(String p_name, const Dictionary &p_dict, int p_le
 	}
 }
 
-void Terrain3DUtil::dump_gen(GeneratedTexture p_gen, String p_name, int p_level) {
+void Terrain3DUtil::dump_gen(const GeneratedTexture p_gen, const String &p_name, const int p_level) {
 	LOG(p_level, "Generated ", p_name, " RID: ", p_gen.get_rid(), ", dirty: ", p_gen.is_dirty(), ", image: ", p_gen.get_image());
 }
 
-void Terrain3DUtil::dump_maps(const TypedArray<Image> p_maps, String p_name) {
+void Terrain3DUtil::dump_maps(const TypedArray<Image> &p_maps, const String &p_name) {
 	LOG(DEBUG, "Dumping ", p_name, " map array. Size: ", p_maps.size());
 	for (int i = 0; i < p_maps.size(); i++) {
 		Ref<Image> img = p_maps[i];
@@ -29,7 +29,7 @@ void Terrain3DUtil::dump_maps(const TypedArray<Image> p_maps, String p_name) {
 	}
 }
 
-Ref<Image> Terrain3DUtil::black_to_alpha(const Ref<Image> p_image) {
+Ref<Image> Terrain3DUtil::black_to_alpha(const Ref<Image> &p_image) {
 	if (p_image.is_null()) {
 		return Ref<Image>();
 	}
@@ -47,7 +47,7 @@ Ref<Image> Terrain3DUtil::black_to_alpha(const Ref<Image> p_image) {
 /**
  * Returns the minimum and maximum values for a heightmap (red channel only)
  */
-Vector2 Terrain3DUtil::get_min_max(const Ref<Image> p_image) {
+Vector2 Terrain3DUtil::get_min_max(const Ref<Image> &p_image) {
 	if (p_image.is_null()) {
 		LOG(ERROR, "Provided image is not valid. Nothing to analyze");
 		return Vector2(INFINITY, INFINITY);
@@ -78,7 +78,7 @@ Vector2 Terrain3DUtil::get_min_max(const Ref<Image> p_image) {
  * Returns a Image of a float heightmap normalized to RGB8 greyscale and scaled
  * Minimum of 8x8
  */
-Ref<Image> Terrain3DUtil::get_thumbnail(const Ref<Image> p_image, Vector2i p_size) {
+Ref<Image> Terrain3DUtil::get_thumbnail(const Ref<Image> &p_image, const Vector2i &p_size) {
 	if (p_image.is_null()) {
 		LOG(ERROR, "Provided image is not valid. Nothing to process.");
 		return Ref<Image>();
@@ -86,15 +86,14 @@ Ref<Image> Terrain3DUtil::get_thumbnail(const Ref<Image> p_image, Vector2i p_siz
 		LOG(ERROR, "Provided image is empty. Nothing to process.");
 		return Ref<Image>();
 	}
-	p_size.x = CLAMP(p_size.x, 8, 16384);
-	p_size.y = CLAMP(p_size.y, 8, 16384);
+	Vector2i size = Vector2i(CLAMP(p_size.x, 8, 16384), CLAMP(p_size.y, 8, 16384));
 
-	LOG(INFO, "Drawing a thumbnail sized: ", p_size);
+	LOG(INFO, "Drawing a thumbnail sized: ", size);
 	// Create a temporary work image scaled to desired width
 	Ref<Image> img;
 	img.instantiate();
 	img->copy_from(p_image);
-	img->resize(p_size.x, p_size.y, Image::INTERPOLATE_LANCZOS);
+	img->resize(size.x, size.y, Image::INTERPOLATE_LANCZOS);
 
 	// Get minimum and maximum height values on the scaled image
 	Vector2 minmax = get_min_max(img);
@@ -131,9 +130,11 @@ Ref<Image> Terrain3DUtil::get_thumbnail(const Ref<Image> p_image, Vector2i p_siz
  * unreliable, offering little control over the output format, choosing automatically and
  * often wrong. We have selected a few compressed formats it gets right.
  */
-Ref<Image> Terrain3DUtil::get_filled_image(Vector2i p_size, Color p_color, bool p_create_mipmaps, Image::Format p_format) {
-	if (p_format < 0 || p_format >= Image::FORMAT_MAX) {
-		p_format = Image::FORMAT_DXT5;
+Ref<Image> Terrain3DUtil::get_filled_image(const Vector2i &p_size, const Color &p_color,
+		const bool p_create_mipmaps, const Image::Format p_format) {
+	Image::Format format = p_format;
+	if (format < 0 || format >= Image::FORMAT_MAX) {
+		format = Image::FORMAT_DXT5;
 	}
 
 	Image::CompressMode compression_format = Image::COMPRESS_MAX;
@@ -141,22 +142,22 @@ Ref<Image> Terrain3DUtil::get_filled_image(Vector2i p_size, Color p_color, bool 
 	bool compress = false;
 	bool fill_image = true;
 
-	if (p_format >= Image::Format::FORMAT_DXT1) {
-		switch (p_format) {
+	if (format >= Image::Format::FORMAT_DXT1) {
+		switch (format) {
 			case Image::FORMAT_DXT1:
-				p_format = Image::FORMAT_RGB8;
+				format = Image::FORMAT_RGB8;
 				channels = Image::USED_CHANNELS_RGB;
 				compression_format = Image::COMPRESS_S3TC;
 				compress = true;
 				break;
 			case Image::FORMAT_DXT5:
-				p_format = Image::FORMAT_RGBA8;
+				format = Image::FORMAT_RGBA8;
 				channels = Image::USED_CHANNELS_RGBA;
 				compression_format = Image::COMPRESS_S3TC;
 				compress = true;
 				break;
 			case Image::FORMAT_BPTC_RGBA:
-				p_format = Image::FORMAT_RGBA8;
+				format = Image::FORMAT_RGBA8;
 				channels = Image::USED_CHANNELS_RGBA;
 				compression_format = Image::COMPRESS_BPTC;
 				compress = true;
@@ -170,17 +171,18 @@ Ref<Image> Terrain3DUtil::get_filled_image(Vector2i p_size, Color p_color, bool 
 
 	Ref<Image> img = Image::create_empty(p_size.x, p_size.y, p_create_mipmaps, p_format);
 
+	Color color = p_color;
 	if (fill_image) {
-		if (p_color.a < 0.0f) {
-			p_color.a = 1.0f;
-			Color col_a = Color(0.8f, 0.8f, 0.8f, 1.0) * p_color;
-			Color col_b = Color(0.5f, 0.5f, 0.5f, 1.0) * p_color;
+		if (color.a < 0.0f) {
+			color.a = 1.0f;
+			Color col_a = Color(0.8f, 0.8f, 0.8f, 1.0) * color;
+			Color col_b = Color(0.5f, 0.5f, 0.5f, 1.0) * color;
 			img->fill_rect(Rect2i(Vector2i(0, 0), p_size / 2), col_a);
 			img->fill_rect(Rect2i(p_size / 2, p_size / 2), col_a);
 			img->fill_rect(Rect2i(Vector2(p_size.x, 0) / 2, p_size / 2), col_b);
 			img->fill_rect(Rect2i(Vector2(0, p_size.y) / 2, p_size / 2), col_b);
 		} else {
-			img->fill(p_color);
+			img->fill(color);
 		}
 		if (p_create_mipmaps) {
 			img->generate_mipmaps();
@@ -200,7 +202,7 @@ Ref<Image> Terrain3DUtil::get_filled_image(Vector2i p_size, Color p_color, bool 
  *	p_height_range - R16 format: x=Min & y=Max value ranges. Required for R16 import
  *	p_size - R16 format: Image dimensions. Default (0,0) auto detects f/ square images. Required f/ non-square R16
  */
-Ref<Image> Terrain3DUtil::load_image(String p_file_name, int p_cache_mode, Vector2 p_r16_height_range, Vector2i p_r16_size) {
+Ref<Image> Terrain3DUtil::load_image(const String &p_file_name, const int p_cache_mode, const Vector2 &p_r16_height_range, const Vector2i &p_r16_size) {
 	if (p_file_name.is_empty()) {
 		LOG(ERROR, "No file specified. Nothing imported.");
 		return Ref<Image>();
@@ -221,17 +223,18 @@ Ref<Image> Terrain3DUtil::load_image(String p_file_name, int p_cache_mode, Vecto
 		LOG(DEBUG, "Loading file as an r16");
 		Ref<FileAccess> file = FileAccess::open(p_file_name, FileAccess::READ);
 		// If p_size is zero, assume square and try to auto detect size
-		if (p_r16_size <= Vector2i(0, 0)) {
+		Vector2i r16_size = p_r16_size;
+		if (r16_size <= Vector2i(0, 0)) {
 			file->seek_end();
 			int fsize = file->get_position();
 			int fwidth = sqrt(fsize / 2);
-			p_r16_size = Vector2i(fwidth, fwidth);
-			LOG(DEBUG, "Total file size is: ", fsize, " calculated width: ", fwidth, " dimensions: ", p_r16_size);
+			r16_size = Vector2i(fwidth, fwidth);
+			LOG(DEBUG, "Total file size is: ", fsize, " calculated width: ", fwidth, " dimensions: ", r16_size);
 			file->seek(0);
 		}
-		img = Image::create_empty(p_r16_size.x, p_r16_size.y, false, Terrain3DStorage::FORMAT[Terrain3DStorage::TYPE_HEIGHT]);
-		for (int y = 0; y < p_r16_size.y; y++) {
-			for (int x = 0; x < p_r16_size.x; x++) {
+		img = Image::create_empty(r16_size.x, r16_size.y, false, Terrain3DStorage::FORMAT[Terrain3DStorage::TYPE_HEIGHT]);
+		for (int y = 0; y < r16_size.y; y++) {
+			for (int x = 0; x < r16_size.x; x++) {
 				real_t h = real_t(file->get_16()) / 65535.0f;
 				h = h * (p_r16_height_range.y - p_r16_height_range.x) + p_r16_height_range.x;
 				img->set_pixel(x, y, Color(h, 0.f, 0.f));
@@ -264,7 +267,7 @@ Ref<Image> Terrain3DUtil::load_image(String p_file_name, int p_cache_mode, Vecto
 /* From source RGB and R channels, create a new RGBA image. If p_invert_green_channel is true,
  * the destination green channel will be 1.0 - input green channel.
  */
-Ref<Image> Terrain3DUtil::pack_image(const Ref<Image> p_src_rgb, const Ref<Image> p_src_r, bool p_invert_green_channel) {
+Ref<Image> Terrain3DUtil::pack_image(const Ref<Image> &p_src_rgb, const Ref<Image> &p_src_r, const bool p_invert_green_channel) {
 	if (!p_src_rgb.is_valid() || !p_src_r.is_valid()) {
 		LOG(ERROR, "Provided images are not valid. Cannot pack.");
 		return Ref<Image>();

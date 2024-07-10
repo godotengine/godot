@@ -13,21 +13,22 @@ sky_material = SubResource("ProceduralSkyMaterial_vibap")
 [sub_resource type="Environment" id="Environment_8jcgm"]
 background_mode = 2
 sky = SubResource("Sky_srg7c")
-ambient_light_source = 2
-ambient_light_color = Color(1, 1, 1, 1)
-ambient_light_sky_contribution = 0.5
-ambient_light_energy = 0.2
+ambient_light_source = 3
+ambient_light_color = Color(0.55, 0.55, 0.55, 1)
+ambient_light_sky_contribution = 0.3
 tonemap_mode = 3
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_0gcl0"]
 
 [node name="World" type="Node3D"]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="Environment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_8jcgm")
 camera_attributes = SubResource("CameraAttributesPractical_0gcl0")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.866024, -0.433016, 0.250001, 0, 0.499998, 0.866026, -0.500003, 0.749999, -0.43301, 0, 0, 0)
 shadow_enabled = true
+shadow_blur = 2.0
+directional_shadow_blend_splits = true
 directional_shadow_max_distance = 256.0

@@ -7,21 +7,22 @@ const TransformChangedNotifier: Script = preload("res://addons/terrain_3d/utils/
 const CHILD_HELPER_NAME: StringName = &"TransformChangedSignaller"
 const CHILD_HELPER_PATH: NodePath = ^"TransformChangedSignaller"
 
-var _editor_interface = null
 var _undo_redo = null
 var _terrain_id: int
 var _offsets: Dictionary # Object ID -> Vector3(X, Y offset relative to terrain height, Z)
 var _ignore_transform_change: bool = false
 
+
 func _enter_tree() -> void:
 	if not Engine.is_editor_hint():
 		return
-
+	
 	for child in get_children():
 		_on_child_entered_tree(child)
-
+	
 	child_entered_tree.connect(_on_child_entered_tree)
 	child_exiting_tree.connect(_on_child_exiting_tree)
+
 
 func _exit_tree() -> void:
 	if not Engine.is_editor_hint():
@@ -32,7 +33,6 @@ func _exit_tree() -> void:
 	
 	for child in get_children():
 		_on_child_exiting_tree(child)
-
 
 
 func editor_setup(p_plugin) -> void:
@@ -75,7 +75,7 @@ func _on_child_entered_tree(p_node: Node) -> void:
 		helper.name = CHILD_HELPER_NAME
 		p_node.add_child(helper, true, INTERNAL_MODE_BACK)
 	assert(p_node.has_node(CHILD_HELPER_PATH))
-
+	
 	# When reparenting a Node3D, Godot changes its transform _after_ reparenting it. So here,
 	# we must use call_deferred, to avoid receiving transform_changed as a result of reparenting.
 	_setup_child_signal.call_deferred(p_node, helper)
@@ -86,7 +86,7 @@ func _setup_child_signal(p_node: Node, helper: TransformChangedNotifier) -> void
 		return
 	if helper.transform_changed.is_connected(_on_child_transform_changed):
 		return
-
+	
 	helper.transform_changed.connect(_on_child_transform_changed.bind(p_node))
 	_update_child_offset(p_node)
 
@@ -100,11 +100,11 @@ func _on_child_exiting_tree(p_node: Node) -> void:
 		helper.transform_changed.disconnect(_on_child_transform_changed)
 		p_node.remove_child(helper)
 		helper.queue_free()
-
+	
 	_offsets.erase(p_node.get_instance_id())
 
 
-func _is_node_selected(p_node: Node) -> bool:ion()
+func _is_node_selected(p_node: Node) -> bool:
 	var editor_sel = EditorInterface.get_selection()
 	return editor_sel.get_transformable_selected_nodes().has(p_node)
 
@@ -148,14 +148,11 @@ func _set_offset_and_position(p_id: int, p_offset: Vector3, p_position: Vector3)
 	var node := instance_from_id(p_id) as Node
 	if not is_instance_valid(node):
 		return
-
+	
 	_ignore_transform_change = true
 	node.global_position = p_position
 	_offsets[p_id] = p_offset
 	_ignore_transform_change = false
-
-func _set_offset(p_id: int, p_offset: Vector3) -> void:
-	_offsets[p_id] = p_offset
 
 
 # Overwrite current offset stored for node with its current Y position relative to the terrain

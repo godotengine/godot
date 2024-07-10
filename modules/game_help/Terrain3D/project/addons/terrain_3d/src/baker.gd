@@ -193,7 +193,7 @@ func _bake_nav_region_nav_mesh(p_nav_region: NavigationRegion3D) -> void:
 		aabb = p_nav_region.global_transform * aabb
 		var faces: PackedVector3Array = terrain.generate_nav_mesh_source_geometry(aabb)
 		if not faces.is_empty():
-			source_geometry_data.add_faces(faces, p_nav_region.global_transform.inverse())
+			source_geometry_data.add_faces(faces, Transform3D.IDENTITY)
 	
 	NavigationMeshGenerator.bake_from_source_geometry_data(nav_mesh, source_geometry_data)
 	

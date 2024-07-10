@@ -1,4 +1,4 @@
-// Copyright © 2023 Cory Petkovsek, Roope Palmroos, and Contributors.
+// Copyright © 2024 Cory Petkovsek, Roope Palmroos, and Contributors.
 
 // This shader reads the screen and returns absolute depth encoded in Albedo.rg
 // It is not used as an INSERT

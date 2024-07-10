@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://djhl3foqkj4e2"]
+[gd_scene load_steps=12 format=3 uid="uid://djhl3foqkj4e2"]
 
 [ext_resource type="PackedScene" uid="uid://be6nrf0b8j4l0" path="res://demo/assets/models/RockA.tscn" id="1_m1xck"]
 [ext_resource type="PackedScene" uid="uid://bwvtgwartxt0g" path="res://demo/assets/models/RockB.tscn" id="2_hybky"]
@@ -8,6 +8,7 @@
 [ext_resource type="Material" uid="uid://cso4f2iyuxpmc" path="res://demo/assets/materials/M_crystal_purple.tres" id="6_s6twx"]
 [ext_resource type="Texture2D" uid="uid://br7bfxcxh60df" path="res://demo/assets/textures/rock030_alb_ht.png" id="7_pqaf8"]
 [ext_resource type="Texture2D" uid="uid://cr72kjil43vgj" path="res://demo/assets/textures/rock030_nrm_rgh.png" id="8_hh7se"]
+[ext_resource type="Script" path="res://demo/src/CaveEntrance.gd" id="9_fn2ke"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0v0nf"]
 transparency = 1
@@ -30,12 +31,15 @@ ao_texture_channel = 3
 refraction_enabled = true
 refraction_scale = -0.1
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_goiy4"]
+size = Vector3(530.482, 38.6343, 235.603)
+
 [node name="Tunnel" type="Node3D"]
 
 [node name="EntranceL" type="Node3D" parent="."]
 
 [node name="RockA1" parent="EntranceL" instance=ExtResource("1_m1xck")]
-transform = Transform3D(5.82988, -5.4374, -4.00004, 6.04396, 6.55839, -0.106264, 3.00604, -2.64109, 7.9713, 807.937, 137.298, 464.338)
+transform = Transform3D(5.82988, -5.4374, -4.00004, 6.04396, 6.55839, -0.106264, 3.00604, -2.64109, 7.9713, 807.937, 137.298, 467.411)
 
 [node name="RockA2" parent="EntranceL" instance=ExtResource("1_m1xck")]
 transform = Transform3D(4.67905, 4.22076, -5.5926, 6.98724, -3.31022, 3.34764, -0.52024, -6.49718, -5.3387, 766.019, 104.95, 452.605)
@@ -50,7 +54,7 @@ transform = Transform3D(-2.10522, -4.25988, 3.15298, 3.05166, -3.74811, -3.02637
 transform = Transform3D(4.29222, 4.57142, 1.24961, -2.49948, 3.61605, -4.6432, -4.02641, 2.62846, 4.21447, 773.937, 140.911, 469.972)
 
 [node name="RockC1" parent="EntranceL" instance=ExtResource("3_nbn1a")]
-transform = Transform3D(-1.86839, -3.85072, -1.99813, -0.0474326, -2.1573, 4.20181, -4.33801, 1.6821, 0.814656, 786.081, 135.376, 450.458)
+transform = Transform3D(-1.86839, -3.85072, -1.99813, -0.0474326, -2.1573, 4.20181, -4.33801, 1.6821, 0.814656, 786.081, 135.376, 453.531)
 
 [node name="RockC2" parent="EntranceL" instance=ExtResource("3_nbn1a")]
 transform = Transform3D(-3.90856, -4.56077, 3.35866, 3.81036, 0.902037, 5.65911, -4.19074, 5.07383, 2.01294, 791.859, 164.408, 508.107)
@@ -109,6 +113,7 @@ transform = Transform3D(-0.513116, -0.374576, 0.95887, -0.130632, 1.08641, 0.354
 transform = Transform3D(1, 3.21278e-08, -1.96807e-08, -3.21278e-08, 1, 1.02499e-07, 1.96807e-08, -1.02499e-07, 1, 1.11737, 4.79865, 1.8949)
 light_color = Color(0.4, 0.760784, 1, 1)
 light_energy = 16.0
+shadow_enabled = true
 omni_range = 83.054
 
 [node name="CrystalGroup2" type="Node3D" parent="."]
@@ -136,6 +141,7 @@ surface_material_override/0 = ExtResource("6_s6twx")
 transform = Transform3D(1.74454, 2.98023e-08, -2.98023e-08, -5.60482e-08, 1.74454, 1.49012e-07, 3.43338e-08, -1.78814e-07, 1.74454, 1.11737, 4.79865, 1.8949)
 light_color = Color(0.396078, 0.333333, 0.878431, 1)
 light_energy = 16.0
+shadow_enabled = true
 omni_range = 83.054
 
 [node name="CrystalGroup3" type="Node3D" parent="."]
@@ -163,7 +169,17 @@ surface_material_override/0 = SubResource("StandardMaterial3D_0v0nf")
 transform = Transform3D(1.74454, 2.98023e-08, -2.98023e-08, -5.60482e-08, 1.74454, 1.49012e-07, 3.43338e-08, -1.78814e-07, 1.74454, 1.11737, 4.79865, 1.8949)
 light_color = Color(0.388235, 0.101961, 0.2, 1)
 light_energy = 16.0
+shadow_enabled = true
 omni_range = 83.054
+
+[node name="CaveArea3D" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 549.961, 110.763, 526.656)
+collision_mask = 2
+script = ExtResource("9_fn2ke")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CaveArea3D"]
+transform = Transform3D(0.998441, 0, -0.0558215, 0, 1, 0, 0.0558215, 0, 0.998441, -8.36676, 3.78637, 30.7709)
+shape = SubResource("BoxShape3D_goiy4")
 
 [editable path="CrystalGroup2/CrystalC"]
 [editable path="CrystalGroup2/CrystalC3"]

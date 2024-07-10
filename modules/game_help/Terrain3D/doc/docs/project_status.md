@@ -17,7 +17,7 @@ See the [Roadmap](https://github.com/users/TokisanGames/projects/3/views/1) for 
 | Advanced texturing| [Pending](https://github.com/TokisanGames/Terrain3D/discussions/64) and [this](https://github.com/TokisanGames/Terrain3D/discussions/4). eg. Paintable uv scale / slope / rotation, 2-layer texture blending, 3D projection. We intend to implement all of these and adopt techniques provided by The Witcher 3 team. (See [System Architecture](system_architecture.md))
 | **Environment** |
 | Foliage | Meshes without collision can be painted on the terrain and instanced via our Terrain3DInstancer. In the future, collision may be generated. Alternatively, you could create a particle shader for automatic placement.
-| Object placement | [Out of scope](https://github.com/TokisanGames/Terrain3D/issues/47). See 3rd party tools below.
+| Object placement | Placed scenes outside of a MultiMeshInstance node is [out of scope](https://github.com/TokisanGames/Terrain3D/issues/47). See 3rd party tools below.
 | Holes | Supported since 0.9. See [#60](https://github.com/TokisanGames/Terrain3D/issues/60#issuecomment-1817623935)
 | Water | Use [WaterWays](https://github.com/Arnklit/Waterways) for rivers, or [Realistic Water Shader](https://github.com/godot-extended-libraries/godot-realistic-water/) or [Infinite Ocean](https://stayathomedev.com/tutorials/making-an-infinite-ocean-in-godot-4/) for lakes or oceans.
 | Destructibility | Real-time modification is technically possible by fetching the height and control maps and directly modifying them. That's how the editor works. But most gamedevs who want destructible terrains are better served by [Zylann's Voxel Tools](https://github.com/Zylann/godot_voxel).
@@ -37,5 +37,5 @@ See the [Roadmap](https://github.com/users/TokisanGames/projects/3/views/1) for 
 | Lightmap baking | Not possible. There is no static mesh, nor UV2 channel to bake lightmaps on to.
 | **3rd Party Tools** |
 | [Scatter](https://github.com/HungryProton/scatter) | For placing objects algorithmically, with or without collision. We provide [a script](https://github.com/TokisanGames/Terrain3D/blob/main/project/addons/terrain_3d/extras/project_on_terrain3d.gd) that allows Scatter to detect our terrain. Or you can enable debug collision and use the default `Project on Colliders`.
-| [AssetPlacer](https://cookiebadger.itch.io/assetplacer) | A level design tool for placing assets manually. Works on Terrain3D with `debug_show_collision` turned on. Native support is pending.
+| [AssetPlacer](https://cookiebadger.itch.io/assetplacer) | A level design tool for placing assets manually. Works on Terrain3D with placement mode set to Terrain3D or the default mode and `debug_show_collision` turned on.
 

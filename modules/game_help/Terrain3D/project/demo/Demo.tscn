@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://djhl3foqkj4e2" path="res://demo/components/Tunnel.tscn" id="3_kdh0b"]
 [ext_resource type="PackedScene" uid="uid://bb2lp50sjndus" path="res://demo/components/World.tscn" id="3_yqldq"]
 [ext_resource type="Terrain3DStorage" uid="uid://lalq1xnmbjdl" path="res://demo/data/terrain_storage.res" id="5_sl43a"]
-[ext_resource type="Terrain3DTextureList" uid="uid://dal3jhw6241qg" path="res://demo/data/assets.tres" id="8_g2of2"]
+[ext_resource type="Terrain3DAssets" uid="uid://dal3jhw6241qg" path="res://demo/data/assets.tres" id="8_g2of2"]
 
 [sub_resource type="Gradient" id="Gradient_vr1m7"]
 offsets = PackedFloat32Array(0.2, 1)
@@ -85,7 +85,8 @@ transform = Transform3D(0.176947, 0, -0.98422, 0, 1, 0, 0.98422, 0, 0.176947, 22
 [node name="Terrain3D" type="Terrain3D" parent="."]
 storage = ExtResource("5_sl43a")
 material = SubResource("Terrain3DMaterial_jrc01")
-texture_list = ExtResource("8_g2of2")
+assets = ExtResource("8_g2of2")
 render_cull_margin = 1000.0
 collision_mask = 3
 mesh_size = 64
+top_level = true

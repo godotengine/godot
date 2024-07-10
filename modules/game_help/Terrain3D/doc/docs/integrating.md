@@ -128,7 +128,9 @@ You can ask Terrain3DStorage for the height at any given location:
      var height: float = terrain.storage.get_height(global_position)
 ```
 
-This is ideal for one lookup. However, if you wish to look up thousands of heights, it might be faster to retrieve the heightmap Image for the region and query it directly. However, note that `get_height()` will interpolate between vertices, while this code will not. 
+Nan is returned if the position is a hole, or not within a region.
+
+This is ideal for one lookup. However, if you wish to look up thousands of heights, it might be faster to retrieve the heightmap Image for the region and query it directly. However, note that `get_height()` will interpolate between vertices, while this code will not.
 
 ```gdscript
      var region_index: int = terrain.storage.get_region_index(global_position)
@@ -154,13 +156,13 @@ See the Godot docs to learn how to use physics based [Ray-casting](https://docs.
 
 It is possible to cast a ray from any given position and detect the collision point on the terrain using the GPU instead of the physics engine.
 
-Sending the source point and ray direction to [Terrain3D.get_intersection()](https://terrain3d.readthedocs.io/en/latest/api/class_terrain3d.html#class-terrain3d-method-get-intersection) will return the intersection point on success.
+Sending the source point and ray direction to [Terrain3D.get_intersection()](../api/class_terrain3d.rst#class-terrain3d-method-get-intersection) will return the intersection point on success.
 
 You can review [editor.gd](https://github.com/TokisanGames/Terrain3D/blob/v0.9.1-beta/project/addons/terrain_3d/editor/editor.gd#L129-L143) to see an example of projecting the mouse position onto the terrain using this function.
 
 
 ## Getting Updates on Terrain Changes
 
-`Terrain3DStorage` has [signals](https://terrain3d.readthedocs.io/en/latest/api/class_terrain3dstorage.html#signals) that fire when updates occur. You can connect to them to receive updates.
+`Terrain3DStorage` has [signals](../api/class_terrain3dstorage.rst#signals) that fire when updates occur. You can connect to them to receive updates.
 
 

@@ -26,7 +26,7 @@ extends CharacterBody3D
 func _physics_process(p_delta) -> void:
 	var direction: Vector3 = get_camera_relative_input()
 	var h_veloc: Vector2 = Vector2(direction.x, direction.z) * MOVE_SPEED
-	if Input.is_action_pressed("sprint"):
+	if Input.is_key_pressed(KEY_SHIFT):
 		h_veloc *= 2
 	velocity.x = h_veloc.x
 	velocity.z = h_veloc.y
@@ -38,17 +38,17 @@ func _physics_process(p_delta) -> void:
 # Returns the input vector relative to the camera. Forward is always the direction the camera is facing
 func get_camera_relative_input() -> Vector3:
 	var input_dir: Vector3 = Vector3.ZERO
-	if Input.is_action_pressed("left"):
+	if Input.is_key_pressed(KEY_A): # Left
 		input_dir -= %Camera3D.global_transform.basis.x
-	if Input.is_action_pressed("right"):
+	if Input.is_key_pressed(KEY_D): # Right
 		input_dir += %Camera3D.global_transform.basis.x
-	if Input.is_action_pressed("forward"):
+	if Input.is_key_pressed(KEY_W): # Forward
 		input_dir -= %Camera3D.global_transform.basis.z
-	if Input.is_action_pressed("backward"):
+	if Input.is_key_pressed(KEY_S): # Backward
 		input_dir += %Camera3D.global_transform.basis.z
-	if Input.is_action_pressed("up"):
+	if Input.is_key_pressed(KEY_E) or Input.is_key_pressed(KEY_SPACE): # Up
 		velocity.y += JUMP_SPEED + MOVE_SPEED*.016
-	if Input.is_action_pressed("down"):
+	if Input.is_key_pressed(KEY_Q): # Down
 		velocity.y -= JUMP_SPEED + MOVE_SPEED*.016
 	if Input.is_key_pressed(KEY_KP_ADD) or Input.is_key_pressed(KEY_EQUAL):
 		MOVE_SPEED = clamp(MOVE_SPEED + .5, 5, 9999)
@@ -65,12 +65,14 @@ func _input(p_event: InputEvent) -> void:
 			MOVE_SPEED = clamp(MOVE_SPEED - 5, 5, 9999)
 	
 	elif p_event is InputEventKey:
-		if p_event.pressed and p_event.keycode == KEY_V:
-			first_person = ! first_person
-		if p_event.pressed and p_event.keycode == KEY_G:
-			gravity_enabled = ! gravity_enabled
-		if p_event.pressed and p_event.keycode == KEY_C:
-			collision_enabled = ! collision_enabled
+		if p_event.pressed:
+			if p_event.keycode == KEY_V:
+				first_person = ! first_person
+			elif p_event.keycode == KEY_G:
+				gravity_enabled = ! gravity_enabled
+			elif p_event.keycode == KEY_C:
+				collision_enabled = ! collision_enabled
 
-		elif p_event.is_action_released("down") or p_event.is_action_released("up"):
+		# Else if up/down released
+		elif p_event.keycode == KEY_Q or p_event.keycode == KEY_E:
 			velocity.y = 0

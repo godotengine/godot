@@ -33,21 +33,27 @@ Properties
 .. table::
    :widths: auto
 
-   +-------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
-   | :ref:`Vector2<class_Vector2>`                   | :ref:`generated_size<class_Terrain3DMeshAsset_property_generated_size>`       | ``Vector2(1, 1)`` |
-   +-------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
-   | :ref:`GenType<enum_Terrain3DMeshAsset_GenType>` | :ref:`generated_type<class_Terrain3DMeshAsset_property_generated_type>`       | ``0``             |
-   +-------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
-   | :ref:`float<class_float>`                       | :ref:`height_offset<class_Terrain3DMeshAsset_property_height_offset>`         | ``0.0``           |
-   +-------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
-   | :ref:`int<class_int>`                           | :ref:`id<class_Terrain3DMeshAsset_property_id>`                               | ``0``             |
-   +-------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
-   | :ref:`Material<class_Material>`                 | :ref:`material_override<class_Terrain3DMeshAsset_property_material_override>` |                   |
-   +-------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
-   | :ref:`String<class_String>`                     | :ref:`name<class_Terrain3DMeshAsset_property_name>`                           | ``"New Mesh"``    |
-   +-------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
-   | :ref:`PackedScene<class_PackedScene>`           | :ref:`scene_file<class_Terrain3DMeshAsset_property_scene_file>`               |                   |
-   +-------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
+   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
+   | :ref:`ShadowCastingSetting<enum_GeometryInstance3D_ShadowCastingSetting>` | :ref:`cast_shadows<class_Terrain3DMeshAsset_property_cast_shadows>`           | ``1``             |
+   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
+   | :ref:`float<class_float>`                                                 | :ref:`density<class_Terrain3DMeshAsset_property_density>`                     | ``-1.0``          |
+   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
+   | :ref:`int<class_int>`                                                     | :ref:`generated_faces<class_Terrain3DMeshAsset_property_generated_faces>`     | ``2``             |
+   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
+   | :ref:`Vector2<class_Vector2>`                                             | :ref:`generated_size<class_Terrain3DMeshAsset_property_generated_size>`       | ``Vector2(1, 1)`` |
+   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
+   | :ref:`GenType<enum_Terrain3DMeshAsset_GenType>`                           | :ref:`generated_type<class_Terrain3DMeshAsset_property_generated_type>`       | ``0``             |
+   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
+   | :ref:`float<class_float>`                                                 | :ref:`height_offset<class_Terrain3DMeshAsset_property_height_offset>`         | ``0.0``           |
+   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
+   | :ref:`int<class_int>`                                                     | :ref:`id<class_Terrain3DMeshAsset_property_id>`                               | ``0``             |
+   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
+   | :ref:`Material<class_Material>`                                           | :ref:`material_override<class_Terrain3DMeshAsset_property_material_override>` |                   |
+   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
+   | :ref:`String<class_String>`                                               | :ref:`name<class_Terrain3DMeshAsset_property_name>`                           | ``"New Mesh"``    |
+   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
+   | :ref:`PackedScene<class_PackedScene>`                                     | :ref:`scene_file<class_Terrain3DMeshAsset_property_scene_file>`               |                   |
+   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------+-------------------+
 
 .. rst-class:: classref-reftable-group
 
@@ -64,8 +70,6 @@ Methods
    +-----------------------------------+----------------------------------------------------------------------------------------------------+
    | :ref:`int<class_int>`             | :ref:`get_mesh_count<class_Terrain3DMeshAsset_method_get_mesh_count>`\ (\ )                        |
    +-----------------------------------+----------------------------------------------------------------------------------------------------+
-   | :ref:`float<class_float>`         | :ref:`get_relative_density<class_Terrain3DMeshAsset_method_get_relative_density>`\ (\ )            |
-   +-----------------------------------+----------------------------------------------------------------------------------------------------+
    | :ref:`Texture2D<class_Texture2D>` | :ref:`get_thumbnail<class_Terrain3DMeshAsset_method_get_thumbnail>`\ (\ )                          |
    +-----------------------------------+----------------------------------------------------------------------------------------------------+
 
@@ -77,6 +81,18 @@ Methods
 
 Signals
 -------
+
+.. _class_Terrain3DMeshAsset_signal_cast_shadows_changed:
+
+.. rst-class:: classref-signal
+
+**cast_shadows_changed**\ (\ ) :ref:`🔗<class_Terrain3DMeshAsset_signal_cast_shadows_changed>`
+
+Emitted when :ref:`cast_shadows<class_Terrain3DMeshAsset_property_cast_shadows>` is changed on this mesh asset.
+
+.. rst-class:: classref-item-separator
+
+----
 
 .. _class_Terrain3DMeshAsset_signal_file_changed:
 
@@ -108,7 +124,7 @@ Emitted when :ref:`id<class_Terrain3DMeshAsset_property_id>` is changed.
 
 **setting_changed**\ (\ ) :ref:`🔗<class_Terrain3DMeshAsset_signal_setting_changed>`
 
-Emitted when settings other than id or scene file are changed.
+Emitted when settings are changed, other than those tracked by other signals.
 
 .. rst-class:: classref-section-separator
 
@@ -166,6 +182,59 @@ Generate a QuadMesh to be used as a texture card.
 Property Descriptions
 ---------------------
 
+.. _class_Terrain3DMeshAsset_property_cast_shadows:
+
+.. rst-class:: classref-property
+
+:ref:`ShadowCastingSetting<enum_GeometryInstance3D_ShadowCastingSetting>` **cast_shadows** = ``1`` :ref:`🔗<class_Terrain3DMeshAsset_property_cast_shadows>`
+
+.. rst-class:: classref-property-setget
+
+- |void| **set_cast_shadows**\ (\ value\: :ref:`ShadowCastingSetting<enum_GeometryInstance3D_ShadowCastingSetting>`\ )
+- :ref:`ShadowCastingSetting<enum_GeometryInstance3D_ShadowCastingSetting>` **get_cast_shadows**\ (\ )
+
+Tells the renderer how to cast shadows from this mesh asset onto the terrain and other objects. This sets ``GeometryInstance3D.ShadowCastingSetting`` on all MultiMeshInstances used by this mesh.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_Terrain3DMeshAsset_property_density:
+
+.. rst-class:: classref-property
+
+:ref:`float<class_float>` **density** = ``-1.0`` :ref:`🔗<class_Terrain3DMeshAsset_property_density>`
+
+.. rst-class:: classref-property-setget
+
+- |void| **set_density**\ (\ value\: :ref:`float<class_float>`\ )
+- :ref:`float<class_float>` **get_density**\ (\ )
+
+Density is used to set the approximate default spacing between instances based on the size of the mesh. When painting meshes on the terrain, mesh density is multiplied by brush strength.
+
+This value is not tied to any real world unit. It is calculated as ``10.f / mesh->get_aabb().get_volume()``, then clamped to a sane range. If the calculated amount is inappropriate, increase or decrease it here.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_Terrain3DMeshAsset_property_generated_faces:
+
+.. rst-class:: classref-property
+
+:ref:`int<class_int>` **generated_faces** = ``2`` :ref:`🔗<class_Terrain3DMeshAsset_property_generated_faces>`
+
+.. rst-class:: classref-property-setget
+
+- |void| **set_generated_faces**\ (\ value\: :ref:`int<class_int>`\ )
+- :ref:`int<class_int>` **get_generated_faces**\ (\ )
+
+Select if you want the generated texture card to have a single QuadMesh, 2 meshes rotated at 90° in a cross, or 3 roated at 60°.
+
+.. rst-class:: classref-item-separator
+
+----
+
 .. _class_Terrain3DMeshAsset_property_generated_size:
 
 .. rst-class:: classref-property
@@ -177,7 +246,7 @@ Property Descriptions
 - |void| **set_generated_size**\ (\ value\: :ref:`Vector2<class_Vector2>`\ )
 - :ref:`Vector2<class_Vector2>` **get_generated_size**\ (\ )
 
-Sets the base size of the QuadMesh texture card.
+Sets the base size of the QuadMesh texture card. Increasing this size will expand from bottom, not the middle.
 
 .. rst-class:: classref-item-separator
 
@@ -194,7 +263,7 @@ Sets the base size of the QuadMesh texture card.
 - |void| **set_generated_type**\ (\ value\: :ref:`GenType<enum_Terrain3DMeshAsset_GenType>`\ )
 - :ref:`GenType<enum_Terrain3DMeshAsset_GenType>` **get_generated_type**\ (\ )
 
-Set this mesh asset to a generated QuadMesh to be used as a texture card.
+If enabled, this mesh asset will be set to a generated QuadMesh to be used as a texture card.
 
 .. rst-class:: classref-item-separator
 
@@ -211,7 +280,7 @@ Set this mesh asset to a generated QuadMesh to be used as a texture card.
 - |void| **set_height_offset**\ (\ value\: :ref:`float<class_float>`\ )
 - :ref:`float<class_float>` **get_height_offset**\ (\ )
 
-Vertically offset the origin point of a mesh asset. You can also set this when painting.
+Vertically offset the origin point of a mesh asset. You can also set this when painting. For example, if you have a 2 meter diameter rock with the mesh origin point in the center, but you want all rocks to be sitting on the ground, you could enter 1 or 0.9 here and it will be placed near its edge.
 
 .. rst-class:: classref-item-separator
 
@@ -228,7 +297,7 @@ Vertically offset the origin point of a mesh asset. You can also set this when p
 - |void| **set_id**\ (\ value\: :ref:`int<class_int>`\ )
 - :ref:`int<class_int>` **get_id**\ (\ )
 
-The user settable ID of the mesh. You can change this to reorder meshes in the list. However, beware if you have instanced 10s or 100s of thousands of texture cards, then swap this mesh id with a large mesh, you'll blow out your VRAM. Godot has no protection against running out of VRAM currently.
+The user settable ID of the mesh. You can change this to reorder meshes in the list.
 
 .. rst-class:: classref-item-separator
 
@@ -321,18 +390,6 @@ Returns the specified Mesh resource indicated. Only id 0 is used currently.
 :ref:`int<class_int>` **get_mesh_count**\ (\ ) :ref:`🔗<class_Terrain3DMeshAsset_method_get_mesh_count>`
 
 Returns the number of Mesh resources found in the scene file and stored.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_Terrain3DMeshAsset_method_get_relative_density:
-
-.. rst-class:: classref-method
-
-:ref:`float<class_float>` **get_relative_density**\ (\ ) :ref:`🔗<class_Terrain3DMeshAsset_method_get_relative_density>`
-
-Used for regulating placement, calculated as `100.f / mesh.get_aabb().get_volume()`.
 
 .. rst-class:: classref-item-separator
 

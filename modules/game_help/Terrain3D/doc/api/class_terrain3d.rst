@@ -66,7 +66,7 @@ Properties
    +---------------------------------------------------------------------------+----------------------------------------------------------------------------+-----------------+
    | :ref:`Terrain3DTextureList<class_Terrain3DTextureList>`                   | :ref:`texture_list<class_Terrain3D_property_texture_list>`                 |                 |
    +---------------------------------------------------------------------------+----------------------------------------------------------------------------+-----------------+
-   | :ref:`String<class_String>`                                               | :ref:`version<class_Terrain3D_property_version>`                           | ``"0.9.2-dev"`` |
+   | :ref:`String<class_String>`                                               | :ref:`version<class_Terrain3D_property_version>`                           | ``"0.9.3-dev"`` |
    +---------------------------------------------------------------------------+----------------------------------------------------------------------------+-----------------+
 
 .. rst-class:: classref-reftable-group
@@ -154,7 +154,7 @@ Property Descriptions
 - |void| **set_assets**\ (\ value\: :ref:`Terrain3DAssets<class_Terrain3DAssets>`\ )
 - :ref:`Terrain3DAssets<class_Terrain3DAssets>` **get_assets**\ (\ )
 
-The list of texture files used by Terrain3D. You can optionally save this as an external ``.tres`` text file if you wish to share it with instances of Terrain3D in other scenes.
+The list of texture and mesh assets used by Terrain3D. You can optionally save this as an external ``.tres`` text file if you wish to share it with Terrain3D nodes in other scenes.
 
 .. rst-class:: classref-item-separator
 
@@ -464,7 +464,7 @@ Deprecated. See :ref:`assets<class_Terrain3D_property_assets>`.
 
 .. rst-class:: classref-property
 
-:ref:`String<class_String>` **version** = ``"0.9.2-dev"`` :ref:`🔗<class_Terrain3D_property_version>`
+:ref:`String<class_String>` **version** = ``"0.9.3-dev"`` :ref:`🔗<class_Terrain3D_property_version>`
 
 .. rst-class:: classref-property-setget
 

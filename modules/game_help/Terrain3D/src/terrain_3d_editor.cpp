@@ -1,4 +1,4 @@
-// Copyright © 2023 Cory Petkovsek, Roope Palmroos, and Contributors.
+// Copyright © 2024 Cory Petkovsek, Roope Palmroos, and Contributors.
 
 // #include <godot_cpp/classes/editor_undo_redo_manager.hpp>
 // #include <godot_cpp/core/class_db.hpp>
@@ -13,7 +13,7 @@
 // Private Functions
 ///////////////////////////
 
-void Terrain3DEditor::_region_modified(Vector3 p_global_position, Vector2 p_height_range) {
+void Terrain3DEditor::_region_modified(const Vector3 &p_global_position, const Vector2 &p_height_range) {
 	Vector2i region_offset = _terrain->get_storage()->get_region_offset(p_global_position);
 	Terrain3DStorage::RegionSize region_size = _terrain->get_storage()->get_region_size();
 
@@ -27,14 +27,7 @@ void Terrain3DEditor::_region_modified(Vector3 p_global_position, Vector2 p_heig
 	_terrain->get_storage()->add_edited_area(edited_area);
 }
 
-real_t Terrain3DEditor::_get_brush_alpha(Vector2i p_position) {
-	if (_brush_image.is_valid()) {
-		return _brush_image->get_pixelv(p_position).r;
-	}
-	return NAN;
-}
-
-void Terrain3DEditor::_operate_region(Vector3 p_global_position) {
+void Terrain3DEditor::_operate_region(const Vector3 &p_global_position) {
 	bool has_region = _terrain->get_storage()->has_region(p_global_position);
 	bool modified = false;
 	Vector2 height_range;
@@ -61,7 +54,7 @@ void Terrain3DEditor::_operate_region(Vector3 p_global_position) {
 	}
 }
 
-void Terrain3DEditor::_operate_map(Vector3 p_global_position, real_t p_camera_direction) {
+void Terrain3DEditor::_operate_map(const Vector3 &p_global_position, const real_t p_camera_direction) {
 	if (_brush_image.is_null()) {
 		LOG(ERROR, "Invalid brush image. Returning");
 	}
@@ -200,7 +193,7 @@ void Terrain3DEditor::_operate_map(Vector3 p_global_position, real_t p_camera_di
 
 			if (_is_in_bounds(map_pixel_position, region_vsize)) {
 				Vector2 brush_uv = Vector2(x, y) / brush_size;
-				Vector2i brush_pixel_position = Vector2i(_rotate_uv(brush_uv, rot) * img_size);
+				Vector2i brush_pixel_position = Vector2i(_get_rotated_uv(brush_uv, rot) * img_size);
 
 				if (!_is_in_bounds(brush_pixel_position, img_size)) {
 					continue;
@@ -449,13 +442,20 @@ void Terrain3DEditor::_operate_map(Vector3 p_global_position, real_t p_camera_di
 	storage->add_edited_area(edited_area);
 }
 
-bool Terrain3DEditor::_is_in_bounds(Vector2i p_position, Vector2i p_max_position) {
+bool Terrain3DEditor::_is_in_bounds(const Vector2i &p_position, const Vector2i &p_max_position) const {
 	bool more_than_min = p_position.x >= 0 && p_position.y >= 0;
 	bool less_than_max = p_position.x < p_max_position.x && p_position.y < p_max_position.y;
 	return more_than_min && less_than_max;
 }
 
-Vector2 Terrain3DEditor::_get_uv_position(Vector3 p_global_position, int p_region_size) {
+real_t Terrain3DEditor::_get_brush_alpha(const Vector2i &p_position) const {
+	if (_brush_image.is_valid()) {
+		return _brush_image->get_pixelv(p_position).r;
+	}
+	return NAN;
+}
+
+Vector2 Terrain3DEditor::_get_uv_position(const Vector3 &p_global_position, const int p_region_size) const {
 	Vector2 descaled_position_2d = Vector2(p_global_position.x, p_global_position.z) / _terrain->get_mesh_vertex_spacing();
 	Vector2 region_position = descaled_position_2d / real_t(p_region_size);
 	region_position = region_position.floor();
@@ -463,13 +463,13 @@ Vector2 Terrain3DEditor::_get_uv_position(Vector3 p_global_position, int p_regio
 	return uv_position;
 }
 
-Vector2 Terrain3DEditor::_rotate_uv(Vector2 p_uv, real_t p_angle) {
+Vector2 Terrain3DEditor::_get_rotated_uv(const Vector2 &p_uv, const real_t p_angle) const {
 	Vector2 rotation_offset = Vector2(0.5f, 0.5f);
-	p_uv = (p_uv - rotation_offset).rotated(p_angle) + rotation_offset;
-	return p_uv.clamp(Vector2(0.f, 0.f), Vector2(1.f, 1.f));
+	Vector2 uv = (p_uv - rotation_offset).rotated(p_angle) + rotation_offset;
+	return uv.clamp(Vector2(0.f, 0.f), Vector2(1.f, 1.f));
 }
 
-Dictionary Terrain3DEditor::_collect_undo_data() {
+Dictionary Terrain3DEditor::_get_undo_data() const {
 	Dictionary data;
 	if (_tool < 0 || _tool >= TOOL_MAX) {
 		return data;
@@ -529,16 +529,16 @@ void Terrain3DEditor::_store_undo() {
 	LOG(DEBUG, "Creating undo action: '", action_name, "'");
 	undo_redo->create_action(action_name);
 
-	if (_undo_set.has("edited_area")) {
-		_undo_set["edited_area"] = _terrain->get_storage()->get_edited_area();
-		LOG(DEBUG, "Updating undo snapshot edited area: ", _undo_set["edited_area"]);
+	if (_undo_data.has("edited_area")) {
+		_undo_data["edited_area"] = _terrain->get_storage()->get_edited_area();
+		LOG(DEBUG, "Updating undo snapshot edited area: ", _undo_data["edited_area"]);
 	}
 
-	LOG(DEBUG, "Storing undo snapshot: ", _undo_set);
-	undo_redo->add_undo_method(this, "apply_undo", _undo_set.duplicate());
+	LOG(DEBUG, "Storing undo snapshot: ", _undo_data);
+	undo_redo->add_undo_method(this, "apply_undo", _undo_data.duplicate());
 
 	LOG(DEBUG, "Setting up redo snapshot...");
-	Dictionary redo_set = _collect_undo_data();
+	Dictionary redo_set = _get_undo_data();
 
 	LOG(DEBUG, "Storing redo snapshot: ", redo_set);
 	undo_redo->add_do_method(this, "apply_undo", redo_set);
@@ -547,7 +547,7 @@ void Terrain3DEditor::_store_undo() {
 	undo_redo->commit_action(false);
 }
 
-void Terrain3DEditor::_apply_undo(Dictionary p_set) {
+void Terrain3DEditor::_apply_undo(const Dictionary &p_set) {
 	IS_INIT_COND_MESG(_terrain->get_plugin() == nullptr, "_terrain isn't initialized, returning", VOID);
 	LOG(INFO, "Applying Undo/Redo set. Array size: ", p_set.size());
 	LOG(DEBUG, "Apply undo received: ", p_set);
@@ -588,7 +588,7 @@ void Terrain3DEditor::_apply_undo(Dictionary p_set) {
 
 // Santize and set incoming brush data w/ defaults and clamps
 // Only santizes data needed for the editor, other parameters (eg instancer) untouched here
-void Terrain3DEditor::set_brush_data(Dictionary p_data) {
+void Terrain3DEditor::set_brush_data(const Dictionary &p_data) {
 	_brush_data = p_data;
 
 	// Setup image and textures
@@ -631,7 +631,7 @@ void Terrain3DEditor::set_brush_data(Dictionary p_data) {
 	}
 }
 
-void Terrain3DEditor::set_tool(Tool p_tool) {
+void Terrain3DEditor::set_tool(const Tool p_tool) {
 	_tool = p_tool;
 	if (_terrain) {
 		_terrain->get_material()->set_show_navigation(_tool == NAVIGATION);
@@ -639,11 +639,11 @@ void Terrain3DEditor::set_tool(Tool p_tool) {
 }
 
 // Called on mouse click
-void Terrain3DEditor::start_operation(Vector3 p_global_position) {
+void Terrain3DEditor::start_operation(const Vector3 &p_global_position) {
 	IS_STORAGE_INIT_MESG("Terrain isn't initialized", VOID);
 	LOG(INFO, "Setting up undo snapshot...");
-	_undo_set.clear();
-	_undo_set = _collect_undo_data();
+	_undo_data.clear();
+	_undo_data = _get_undo_data();
 	_pending_undo = true;
 	_modified = false;
 	// Reset counter at start to ensure first click places an instance
@@ -657,7 +657,7 @@ void Terrain3DEditor::start_operation(Vector3 p_global_position) {
 }
 
 // Called on mouse movement with left mouse button down
-void Terrain3DEditor::operate(Vector3 p_global_position, real_t p_camera_direction) {
+void Terrain3DEditor::operate(const Vector3 &p_global_position, const real_t p_camera_direction) {
 	IS_STORAGE_INIT_MESG("Terrain isn't initialized", VOID);
 	if (!_pending_undo) {
 		return;

@@ -87,8 +87,24 @@ void MutableCompoundShape::AdjustCenterOfMass()
 	for (CompoundShape::SubShape &sub_shape : mSubShapes)
 		sub_shape.SetPositionCOM(sub_shape.GetPositionCOM() - center_of_mass);
 
-	// And adjust the center of mass for this shape in the opposite direction
-	mCenterOfMass += center_of_mass;
+
+	// Update bounding boxes
+	for (Bounds &bounds : mSubShapeBounds)
+	{
+		Vec4 xxxx = center_of_mass.SplatX();
+		Vec4 yyyy = center_of_mass.SplatY();
+		Vec4 zzzz = center_of_mass.SplatZ();
+		bounds.mMinX -= xxxx;
+		bounds.mMinY -= yyyy;
+		bounds.mMinZ -= zzzz;
+		bounds.mMaxX -= xxxx;
+		bounds.mMaxY -= yyyy;
+		bounds.mMaxZ -= zzzz;
+	}
+	mLocalBounds.Translate(-center_of_mass);
+
+	// And adjust the center of mass for this shape in the opposite direction		// And adjust the center of mass for this shape in the opposite direction
+	mCenterOfMass += center_of_mass;		mCenterOfMass += center_of_mass;
 }
 
 void MutableCompoundShape::CalculateLocalBounds()

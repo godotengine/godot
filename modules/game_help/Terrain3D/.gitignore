@@ -15,8 +15,7 @@ doc/_build
 
 # Godot-specific ignores (Include script cache. See godot issue #75388)
 /project/.import/
-/project/.godot/*
-!/project/.godot/global_script_class_cache.cfg
+/project/.godot/
 export.cfg
 export_presets.cfg
 

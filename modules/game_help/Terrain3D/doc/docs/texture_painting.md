@@ -80,7 +80,7 @@ You can paint Angle and Scale on top of the autoshader.
 In addition to painting textures, you can also paint colors on the terrain. There are two primary uses for the colormap.
 
 
-### GIS Applications
+### 1. GIS Applications
 
 You can import a full image such as a satellite photo, and enable the color map debug view for GIS visualization.
 
@@ -89,7 +89,7 @@ You can import a full image such as a satellite photo, and enable the color map 
 ```
 
 
-### Color Variation
+### 2. Color Variation
 
 You can use the `Paint Color` tool to paint colors on the terrain. This is useful to add variation. Colors are multiplied on to painted textures, which is a blend mode that only darkens.
 

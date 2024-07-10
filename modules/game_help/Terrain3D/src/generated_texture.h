@@ -1,4 +1,4 @@
-// Copyright © 2023 Cory Petkovsek, Roope Palmroos, and Contributors.
+// Copyright © 2024 Cory Petkovsek, Roope Palmroos, and Contributors.
 
 #ifndef GENERATEDTEXTURE_CLASS_H
 #define GENERATEDTEXTURE_CLASS_H
@@ -18,11 +18,11 @@ private:
 
 public:
 	void clear();
-	bool is_dirty() { return _dirty; }
+	bool is_dirty() const { return _dirty; }
 	RID create(const TypedArray<Image> &p_layers);
 	RID create(const Ref<Image> &p_image);
 	Ref<Image> get_image() const { return _image; }
-	RID get_rid() { return _rid; }
+	RID get_rid() const { return _rid; }
 };
 
 #endif // GENERATEDTEXTURE_CLASS_H

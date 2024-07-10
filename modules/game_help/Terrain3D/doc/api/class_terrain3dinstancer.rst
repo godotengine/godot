@@ -21,15 +21,17 @@ This class places mesh instances into MultiMeshInstance3Ds. When providing a sce
 
 Data is currently stored in MultiMeshes within a Dictionary :ref:`Terrain3DStorage.multimeshes<class_Terrain3DStorage_property_multimeshes>`, per region offset, per mesh type. These MultiMeshes are loaded into MultiMeshInstances, which are attached to the scene tree and managed by this class.
 
-The methods available for adding instances are:
+\ **The methods available for adding instances are:**\ 
 
-\* :ref:`add_instances<class_Terrain3DInstancer_method_add_instances>` - A feature rich function built for hand editing via Terrain3DEditor.
+\* :ref:`add_instances<class_Terrain3DInstancer_method_add_instances>` - A feature rich function designed for hand editing via Terrain3DEditor.
+
+\* :ref:`add_multimesh<class_Terrain3DInstancer_method_add_multimesh>` - Pulls the transforms out of your MultiMesh and calls add_transforms.
 
 \* :ref:`add_transforms<class_Terrain3DInstancer_method_add_transforms>` - Accepts your list of transforms and parses them into our storage system.
 
 \* Creating your own MultiMesh resources and inserting them directly into the :ref:`Terrain3DStorage.multimeshes<class_Terrain3DStorage_property_multimeshes>` dictionary. It's not difficult to do this in GDScript, but a thorough understanding of the C++ code in this class is recommended. Specifically look at `update_multimesh()`.
 
-The methods available for removing instances are:
+\ **The methods available for removing instances are:**\ 
 
 \* :ref:`remove_instances<class_Terrain3DInstancer_method_remove_instances>` - Like add_instances, this is can be used procedurally but is designed for hand editing.
 
@@ -37,7 +39,7 @@ The methods available for removing instances are:
 
 \* ``storage.set_multimeshes(Dictionary())`` - This will erase all instancer data and destroy all MultiMeshInstances. Run it in a @tool script to clear the data within the editor.
 
-Note: one caveat about editing MultiMeshes is the instance count cannot be changed after creation. Should you wish to remove 50% of the transforms, you would need to make a new MultiMesh, copy over the mesh and settings, copy the 50% of the transforms you wish to keep, and assign it to the MultiMeshInstance3D. That is how the instancer updates the MMIs in C++.
+\ **Note:** one caveat about creating your own MultiMeshes is the instance count cannot be changed after creation. Should you wish to remove 50% of the transforms, you would need to make a new MultiMesh, copy over the mesh and settings, copy the 50% of the transforms you wish to keep, and assign it to the MultiMeshInstance3D. That is how the instancer updates the MMIs in C++.
 
 .. rst-class:: classref-reftable-group
 
@@ -61,6 +63,8 @@ Methods
    | |void| | :ref:`clear_by_region_id<class_Terrain3DInstancer_method_clear_by_region_id>`\ (\ region_id\: :ref:`int<class_int>`, mesh_id\: :ref:`int<class_int>`\ )                                                                                                             |
    +--------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | |void| | :ref:`remove_instances<class_Terrain3DInstancer_method_remove_instances>`\ (\ global_position\: :ref:`Vector3<class_Vector3>`, params\: :ref:`Dictionary<class_Dictionary>`\ )                                                                                      |
+   +--------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | |void| | :ref:`set_cast_shadows<class_Terrain3DInstancer_method_set_cast_shadows>`\ (\ mesh_id\: :ref:`int<class_int>`, mode\: :ref:`ShadowCastingSetting<enum_GeometryInstance3D_ShadowCastingSetting>`\ )                                                                  |
    +--------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
@@ -153,6 +157,18 @@ Removes both MultiMeshInstance nodes attached to the tree, and MultiMeshes in St
 |void| **remove_instances**\ (\ global_position\: :ref:`Vector3<class_Vector3>`, params\: :ref:`Dictionary<class_Dictionary>`\ ) :ref:`🔗<class_Terrain3DInstancer_method_remove_instances>`
 
 Uses parameters asset_id, size, strength, fixed_scale, random_scale, to randomly remove instances within the indicated brush position and size.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_Terrain3DInstancer_method_set_cast_shadows:
+
+.. rst-class:: classref-method
+
+|void| **set_cast_shadows**\ (\ mesh_id\: :ref:`int<class_int>`, mode\: :ref:`ShadowCastingSetting<enum_GeometryInstance3D_ShadowCastingSetting>`\ ) :ref:`🔗<class_Terrain3DInstancer_method_set_cast_shadows>`
+
+Tells the renderer how to cast shadows from this mesh asset onto the terrain and other objects. This sets ``GeometryInstance3D.ShadowCastingSetting`` on all MultiMeshInstances for the specified mesh. This function is called by :ref:`Terrain3DMeshAsset.cast_shadows<class_Terrain3DMeshAsset_property_cast_shadows>`, but you can also call it manually.
 
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |const| replace:: :abbr:`const (This method has no side effects. It doesn't modify any of the instance's member variables.)`

@@ -1,4 +1,4 @@
-// Copyright © 2023 Cory Petkovsek, Roope Palmroos, and Contributors.
+// Copyright © 2024 Cory Petkovsek, Roope Palmroos, and Contributors.
 
 #ifndef CONSTANTS_CLASS_H
 #define CONSTANTS_CLASS_H
@@ -23,14 +23,6 @@
 
 #ifndef __FLT_MAX__
 #define __FLT_MAX__ FLT_MAX
-#endif
-
-// Double precision builds
-
-#ifdef REAL_T_IS_DOUBLE
-typedef PackedFloat64Array PackedRealArray;
-#else
-typedef PackedFloat32Array PackedRealArray;
 #endif
 
 // Set class name for logger.h

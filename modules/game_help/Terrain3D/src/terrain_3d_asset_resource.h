@@ -1,4 +1,4 @@
-// Copyright © 2023 Cory Petkovsek, Roope Palmroos, and Contributors.
+// Copyright © 2024 Cory Petkovsek, Roope Palmroos, and Contributors.
 
 #ifndef TERRAIN3D_ASSET_RESOURCE_CLASS_H
 #define TERRAIN3D_ASSET_RESOURCE_CLASS_H
@@ -9,6 +9,7 @@
 using namespace godot;
 class Terrain3DAssets;
 
+// Parent class of Terrain3DMeshAsset and Terrain3DTextureAsset
 class Terrain3DAssetResource : public Resource {
 	friend class Terrain3DAssets;
 

@@ -15,7 +15,7 @@ For a more detailed explanation, see [Large World Coordinates](https://docs.godo
 * This feature is experimental and has had only one user give a positive report so far.
 * There are many caveats listed in the link above. You should read them all before beginning this process.
 * You must build Godot and Terrain3D from source.
-* Terrain3D currently only supports a maximum world of 16k by 16k, or (+/-8192, +/-8192). You can have Terrain3D located around the origin, then have your own meshes or a shader generated terrain outside of that world. See [Support more region sizes #70](https://github.com/TokisanGames/Terrain3D/issues/77) for supporting worlds up to 90k per side and more.
+* Terrain3D currently only supports a maximum world of 16k by 16k, or (+/-8192, +/-8192). Although with `mesh_vertex_spacing`, you can expand this up to 10x. You can also have Terrain3D located around the origin, then have your own meshes or a shader generated terrain outside of that world. See [Support more region sizes #70](https://github.com/TokisanGames/Terrain3D/issues/77) for supporting worlds up to 90k per side and more.
 * Shaders do not support double precision. Clayjohn wrote an article demonstrating how to [Emulate Double Precision](https://godotengine.org/article/emulating-double-precision-gpu-render-large-worlds/) in shaders. He wrote that the camera and model transform matrices needed to be emulated to support double precision. This is now done automatically in the engine when building it with double precision. There may be other cases where shaders will need this emulation.
 
 

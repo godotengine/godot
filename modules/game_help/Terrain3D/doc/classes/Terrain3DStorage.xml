@@ -352,7 +352,7 @@
 		</signal>
 		<signal name="multimeshes_changed">
 			<description>
-				Emitted when [member multimeshes] is changed.
+				Emitted when the [member multimeshes] object is changed (ie loaded), not when the content is changed.
 			</description>
 		</signal>
 		<signal name="region_size_changed">

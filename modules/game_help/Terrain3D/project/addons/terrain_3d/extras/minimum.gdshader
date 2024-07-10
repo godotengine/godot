@@ -1,7 +1,7 @@
 // This shader is the minimum needed to allow the terrain to function, without any texturing.
 
 shader_type spatial;
-render_mode blend_mix,depth_draw_opaque,cull_back,diffuse_burley,specular_schlick_ggx;
+render_mode blend_mix,depth_draw_opaque,cull_back,diffuse_burley,specular_schlick_ggx,skip_vertex_transform;
 
 // Private uniforms
 uniform float _region_size = 1024.0;
@@ -93,6 +93,13 @@ void vertex() {
 	UV -= v_uv_offset;
 	v_uv2_offset = v_uv_offset * _region_texel_size;
 	UV2 -= v_uv2_offset;
+	
+	// Convert model space to view space w/ skip_vertex_transform render mode
+	VERTEX = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	VERTEX = (VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	NORMAL = normalize((MODELVIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
+	BINORMAL = normalize((MODELVIEW_MATRIX * vec4(BINORMAL, 0.0)).xyz);
+	TANGENT = normalize((MODELVIEW_MATRIX * vec4(TANGENT, 0.0)).xyz);	
 }
 
 ////////////////////////

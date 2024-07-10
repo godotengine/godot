@@ -1,4 +1,4 @@
-// Copyright © 2023 Cory Petkovsek, Roope Palmroos, and Contributors.
+// Copyright © 2024 Cory Petkovsek, Roope Palmroos, and Contributors.
 
 #ifndef TERRAIN3D_TEXTURE_CLASS_H
 #define TERRAIN3D_TEXTURE_CLASS_H
@@ -29,13 +29,13 @@ public:
 
 	void clear();
 
-	void set_name(String p_name);
+	void set_name(const String &p_name);
 	String get_name() const { return _name; }
 
-	void set_id(int p_new_id);
+	void set_id(const int p_new_id);
 	int get_id() const { return _id; }
 
-	void set_albedo_color(Color p_color);
+	void set_albedo_color(const Color &p_color);
 	Color get_albedo_color() const { return _albedo_color; }
 
 	void set_albedo_texture(const Ref<Texture2D> &p_texture);
@@ -44,10 +44,10 @@ public:
 	void set_normal_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_normal_texture() const { return _normal_texture; }
 
-	void set_uv_scale(real_t p_scale);
+	void set_uv_scale(const real_t p_scale);
 	real_t get_uv_scale() const { return _uv_scale; }
 
-	void set_detiling(real_t p_detiling);
+	void set_detiling(const real_t p_detiling);
 	real_t get_detiling() const { return _detiling; }
 
 protected:

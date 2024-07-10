@@ -14,6 +14,7 @@ Tips
     * Set `WorldNoise` to `Flat` or `None`
 	* Disable `Auto Shader`
 	* Disable `Dual Scaling`
+* `WorldNoise` exposes additional shader settings, such as octaves and LOD. You can adjust these settings for performance. However this world generating noise is expensive. Consider not using it at all in a commercial game, and instead obscure your background with meshes, or use an HDR skybox.
 * Reduce the size of the mesh and levels of detail by reducing `Mesh/Size` (`mesh_size`) or `Mesh/Lods` (`mesh_lods`) in the `Terrain3D` node.
 
 ## Shaders
@@ -26,11 +27,11 @@ The terrain shader is set to `cull_back`, meaning back faces are not rendered. N
 
 ### Add a custom texture map
 
-Here's an example of using a custom texture map for one texture, such as adding an emissive texture for lava. Note, avoid sub branches: an if statement within an if statement. As shown below, I wanted a sub branch to avoid processing the emissive when not used, but this slowed down my GPU. So, I refactored it in a way that didn't cause a performance hit.
+Here's an example of using a custom texture map for one texture, such as adding an emissive texture for lava. Add in this code and add an emissive texture, then adjust the emissive ID to match the lava texture, and adjust the strength.
 
-Add the uniforms for the emissive texture id and a texture:
+Add the uniforms at the top of the file:
 ```glsl
-uniform int emissive_id : hint_range(0,31) = 0;
+uniform int emissive_id : hint_range(0, 31) = 0;
 uniform float emissive_strength = 1.0;
 uniform sampler2D emissive_tex : source_color, filter_linear_mipmap_anisotropic;
 ```
@@ -49,22 +50,30 @@ Modify `get_material()` to read the emissive texture.
 // Add the initial value for emissive, adding the last vec3
 out_mat = Material(vec4(0.), vec4(0.), 0, 0, 0.0, vec3(0.));
 
-// After reading albedo and normal, before the blending block: `if (out_mat.blend > 0.f)`
+// Immediately after albedo_ht and normal_rg get assigned:
+// albedo_ht = ...
+// normal_rg = ...
 vec4 emissive = vec4(0.);
 if(out_mat.base == emissive_id) {
 	emissive = texture(emissive_tex, matUV);
 }
 
-// Within the overlay block: `if (blend > 0.f)`, right before the albedo/normal height_blend() calls
+// Immediately after albedo_ht2 and normal_rg2 get assigned:
+// albedo_ht2 = ...
+// normal_rg2 = ...
 vec4 emissive2 = vec4(0.);
 emissive2 = texture(emissive_tex, matUV2) * float(out_mat.over == emissive_id);
+
+// Immediately after the calls to height_blend:
+// albedo_ht = height_blend(...
+// normal_rg = height_blend(...
 emissive = height_blend(emissive, albedo_ht.a, emissive2, albedo_ht2.a, out_mat.blend);
 
-// At the bottom of the function, before `return`.
+// At the bottom of the function, just before `return`.
 out_mat.emissive = emissive.rgb;
 ```
 
-Then at the bottom of `fragment()` apply the weighting and send it to the GPU.
+// Then at the very bottom of `fragment()`, before the final }, apply the weighting and send it to the GPU.
 ```glsl
 vec3 emissive = weight_inv * (
 	mat[0].emissive * weights.x +
@@ -74,3 +83,4 @@ vec3 emissive = weight_inv * (
 EMISSION = emissive * emissive_strength;
 ```
 
+Note: Avoid sub branches: an if statement within an if statement, and enable your FPS counter so you can test as you build your code. Some branch configurations may be free, some may be very expensive, or even more performant than you expect.

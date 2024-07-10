@@ -3,9 +3,9 @@ Shader Design
 
 Our shader combines a lot of ideas and code from [cdxntchou's IndexMapTerrain](https://github.com/cdxntchou/IndexMapTerrain) for Unity, [Zylann's HTerrain](https://github.com/Zylann/godot_heightmap_plugin/) for Godot, the Witcher 3 talk linked in the System Design page, and our own thoughts and optimizations.
 
-Note that you can find the minimum shader needed to enable the terrain to function in `addons/terrain_3D/extras/minimum.gdshader`.
+In the material, you can enable `shader_override_enabled` with an empty `shader overide` slot and it will generate the default shader code so you can follow along with this document. You can also find the minimum shader needed to enable the terrain height functionality without texturing in `addons/terrain_3D/extras/minimum.gdshader`.
 
-At its core, the current texture painting and rendering system is a vertex painter, not a pixel painter. We paint codes at each vertex, 1m apart by default, represented as a pixel on the control map. Then the shader uses its many parameters to control how each pixel between the vertices blend together. For an artist, it's not as nice to use as a multi-layer, pixel based painter you might find in photoshop, but the dynamic nature of the system does afford other benefits.
+At its core, the current texture painting and rendering system is a vertex painter, not a pixel painter. We paint codes at each vertex, 1m apart by default, represented as a pixel on the [Control map](controlmap_format.md). Then the shader uses its many parameters to control how each pixel between the vertices blend together. For an artist, it's not as nice to use as a multi-layer, pixel based painter you might find in photoshop, but the dynamic nature of the system does afford other benefits.
 
 The following describes the various elements of the shader in a linear fashion to help you understand how the various elements are used.
 

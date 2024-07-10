@@ -1,0 +1,18 @@
+Setting up a new release in Terrain3D
+------------------------------------------
+
+If Storage has changed format:
+* Set src/terrain_3d_storage.h : CURRENT_VERSION
+* Update docs/storage_format.md
+
+Upgrade to new release version:
+* Set src/terrain_3d.h : _version
+* Set project/addons/terrain_3d/plugin.cfg : version
+* Set doc/conf.py : version
+* Rebuild the docs with doc/build_docs.sh
+* Review minimum version in terrain.gdextension
+* Create a new tag for github
+* Create a new branch for new milestones so readthedocs will create a new version
+
+New Year:
+* Update Copyright header in all .h/.cpp files, conf.py

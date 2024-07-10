@@ -1,4 +1,4 @@
-// Copyright © 2023 Cory Petkovsek, Roope Palmroos, and Contributors.
+// Copyright © 2024 Cory Petkovsek, Roope Palmroos, and Contributors.
 
 // #include <godot_cpp/classes/collision_shape3d.hpp>
 // #include <godot_cpp/classes/editor_interface.hpp>
@@ -112,6 +112,7 @@ void Terrain3D::_initialize() {
 
 void Terrain3D::__ready() {
 	_initialize();
+	set_as_top_level(true);
 	set_process(true);
 }
 
@@ -119,18 +120,18 @@ void Terrain3D::__ready() {
  * This is a proxy for _process(delta) called by _notification() due to
  * https://github.com/godotengine/godot-cpp/issues/1022
  */
-void Terrain3D::__process(double delta) {
+void Terrain3D::__process(const double p_delta) {
 	if (!_initialized)
 		return;
 
 	// If the game/editor camera is not set, find it
-	if (!VariantUtilityFunctions::is_instance_valid(_camera)) {
-		LOG(DEBUG, "camera is null, getting the current one");
+	if (!is_instance_valid(_camera_instance_id, _camera)) {
+		LOG(DEBUG, "Camera is null, getting the current one");
 		_grab_camera();
 	}
 
 	// If camera has moved enough, re-center the terrain on it.
-	if (VariantUtilityFunctions::is_instance_valid(_camera) && _camera->is_inside_tree()) {
+	if (is_instance_valid(_camera_instance_id) && _camera->is_inside_tree()) {
 		Vector3 cam_pos = _camera->get_global_position();
 		Vector2 cam_pos_2d = Vector2(cam_pos.x, cam_pos.z);
 		if (_camera_last_position.distance_to(cam_pos_2d) > 0.2f) {
@@ -206,19 +207,22 @@ void Terrain3D::_destroy_mouse_picking() {
  */
 void Terrain3D::_grab_camera() {
 	if (Engine::get_singleton()->is_editor_hint()) {
-		LOG(DEBUG, "Grabbing the first editor viewport camera");
 		_camera = EditorInterface::get_singleton()->get_editor_viewport_3d(0)->get_camera_3d();
+		LOG(DEBUG, "Grabbing the first editor viewport camera: ", _camera);
 	} else {
-		LOG(DEBUG, "Grabbing the in-game viewport camera");
 		_camera = get_viewport()->get_camera_3d();
+		LOG(DEBUG, "Grabbing the in-game viewport camera: ", _camera);
 	}
-	if (!_camera) {
+	if (_camera) {
+		_camera_instance_id = _camera->get_instance_id();
+	} else {
+		_camera_instance_id = 0;
 		set_process(false); // disable snapping
 		LOG(ERROR, "Cannot find the active camera. Set it manually with Terrain3D.set_camera(). Stopping _process()");
 	}
 }
 
-void Terrain3D::_build_meshes(int p_mesh_lods, int p_mesh_size) {
+void Terrain3D::_build_meshes(const int p_mesh_lods, const int p_mesh_size) {
 	if (!is_inside_tree() || !_storage.is_valid()) {
 		LOG(DEBUG, "Not inside the tree or no valid storage, skipping build");
 		return;
@@ -381,6 +385,7 @@ void Terrain3D::_build_collision() {
 		LOG(WARN, "Building debug collision. Disable this mode for releases");
 		_debug_static_body = memnew(StaticBody3D);
 		_debug_static_body->set_name("StaticBody3D");
+		_debug_static_body->set_as_top_level(true);
 		add_child(_debug_static_body, true);
 	}
 	_update_collision();
@@ -545,10 +550,12 @@ void Terrain3D::_destroy_collision() {
 void Terrain3D::_destroy_instancer() {
 	if (_instancer != nullptr) {
 		_instancer->destroy();
+		memdelete_safely(_instancer);
 	}
 }
 
-void Terrain3D::_generate_triangles(PackedVector3Array &p_vertices, PackedVector2Array *p_uvs, int32_t p_lod, Terrain3DStorage::HeightFilter p_filter, bool p_require_nav, AABB const &p_global_aabb) const {
+void Terrain3D::_generate_triangles(PackedVector3Array &p_vertices, PackedVector2Array *p_uvs, const int32_t p_lod,
+		const Terrain3DStorage::HeightFilter p_filter, const bool p_require_nav, const AABB &p_global_aabb) const {
 	ERR_FAIL_COND(!_storage.is_valid());
 	int32_t step = 1 << CLAMP(p_lod, 0, 8);
 
@@ -582,7 +589,11 @@ void Terrain3D::_generate_triangles(PackedVector3Array &p_vertices, PackedVector
 	}
 }
 
-void Terrain3D::_generate_triangle_pair(PackedVector3Array &p_vertices, PackedVector2Array *p_uvs, int32_t p_lod, Terrain3DStorage::HeightFilter p_filter, bool p_require_nav, int32_t x, int32_t z) const {
+// p_vertices is assumed to exist and the destination for data
+// p_uvs might not exist, so a pointer is fine
+void Terrain3D::_generate_triangle_pair(PackedVector3Array &p_vertices, PackedVector2Array *p_uvs,
+		const int32_t p_lod, const Terrain3DStorage::HeightFilter p_filter, const bool p_require_nav,
+		const int32_t x, const int32_t z) const {
 	int32_t step = 1 << CLAMP(p_lod, 0, 8);
 
 	Vector3 xz = Vector3(x, 0.0f, z) * _mesh_vertex_spacing;
@@ -655,16 +666,16 @@ Terrain3D::Terrain3D() {
 }
 
 Terrain3D::~Terrain3D() {
-	memdelete_safely(_instancer);
+	_destroy_instancer();
 	_destroy_collision();
 }
 
-void Terrain3D::set_debug_level(int p_level) {
+void Terrain3D::set_debug_level(const int p_level) {
 	LOG(INFO, "Setting debug level: ", p_level);
 	debug_level = CLAMP(p_level, 0, DEBUG_MAX);
 }
 
-void Terrain3D::set_mesh_lods(int p_count) {
+void Terrain3D::set_mesh_lods(const int p_count) {
 	if (_mesh_lods != p_count) {
 		_clear_meshes();
 		_destroy_collision();
@@ -674,7 +685,7 @@ void Terrain3D::set_mesh_lods(int p_count) {
 	}
 }
 
-void Terrain3D::set_mesh_size(int p_size) {
+void Terrain3D::set_mesh_size(const int p_size) {
 	if (_mesh_size != p_size) {
 		_clear_meshes();
 		_destroy_collision();
@@ -684,11 +695,11 @@ void Terrain3D::set_mesh_size(int p_size) {
 	}
 }
 
-void Terrain3D::set_mesh_vertex_spacing(real_t p_spacing) {
-	p_spacing = CLAMP(p_spacing, 0.25f, 100.0f);
-	if (_mesh_vertex_spacing != p_spacing) {
-		LOG(INFO, "Setting mesh vertex spacing: ", p_spacing);
-		_mesh_vertex_spacing = p_spacing;
+void Terrain3D::set_mesh_vertex_spacing(const real_t p_spacing) {
+	real_t spacing = CLAMP(p_spacing, 0.25f, 100.0f);
+	if (_mesh_vertex_spacing != spacing) {
+		LOG(INFO, "Setting mesh vertex spacing: ", spacing);
+		_mesh_vertex_spacing = spacing;
 		_clear_meshes();
 		_destroy_collision();
 		_destroy_instancer();
@@ -741,28 +752,29 @@ void Terrain3D::set_camera(Camera3D *p_camera) {
 	if (_camera != p_camera) {
 		_camera = p_camera;
 		if (p_camera == nullptr) {
-			LOG(DEBUG, "Received null camera. Calling _grab_camera");
+			LOG(DEBUG, "Received null camera. Calling _grab_camera()");
 			_grab_camera();
 		} else {
-			LOG(DEBUG, "Setting camera: ", p_camera);
 			_camera = p_camera;
+			_camera_instance_id = _camera->get_instance_id();
+			LOG(DEBUG, "Setting camera: ", _camera);
 			_initialize();
 			set_process(true); // enable __process snapping
 		}
 	}
 }
 
-void Terrain3D::set_render_layers(uint32_t p_layers) {
+void Terrain3D::set_render_layers(const uint32_t p_layers) {
 	LOG(INFO, "Setting terrain render layers to: ", p_layers);
 	_render_layers = p_layers;
 	_update_mesh_instances();
 }
 
-void Terrain3D::set_mouse_layer(uint32_t p_layer) {
-	p_layer = CLAMP(p_layer, 21, 32);
-	_mouse_layer = p_layer;
+void Terrain3D::set_mouse_layer(const uint32_t p_layer) {
+	uint32_t layer = CLAMP(p_layer, (uint32_t)21, (uint32_t)32);
+	_mouse_layer = layer;
 	uint32_t mouse_mask = 1 << (_mouse_layer - 1);
-	LOG(INFO, "Setting mouse layer: ", p_layer, " (", mouse_mask, ") on terrain mesh, material, mouse camera, mouse quad");
+	LOG(INFO, "Setting mouse layer: ", layer, " (", mouse_mask, ") on terrain mesh, material, mouse camera, mouse quad");
 
 	// Set terrain meshes to mouse layer
 	// Mask off editor render layers by ORing user layers 1-20 and current mouse layer
@@ -781,18 +793,18 @@ void Terrain3D::set_mouse_layer(uint32_t p_layer) {
 	}
 }
 
-void Terrain3D::set_cast_shadows(GeometryInstance3D::ShadowCastingSetting p_cast_shadows) {
+void Terrain3D::set_cast_shadows(const GeometryInstance3D::ShadowCastingSetting p_cast_shadows) {
 	_cast_shadows = p_cast_shadows;
 	_update_mesh_instances();
 }
 
-void Terrain3D::set_cull_margin(real_t p_margin) {
+void Terrain3D::set_cull_margin(const real_t p_margin) {
 	LOG(INFO, "Setting extra cull margin: ", p_margin);
 	_cull_margin = p_margin;
 	update_aabbs();
 }
 
-void Terrain3D::set_collision_enabled(bool p_enabled) {
+void Terrain3D::set_collision_enabled(const bool p_enabled) {
 	LOG(INFO, "Setting collision enabled: ", p_enabled);
 	_collision_enabled = p_enabled;
 	if (_collision_enabled) {
@@ -802,7 +814,7 @@ void Terrain3D::set_collision_enabled(bool p_enabled) {
 	}
 }
 
-void Terrain3D::set_show_debug_collision(bool p_enabled) {
+void Terrain3D::set_show_debug_collision(const bool p_enabled) {
 	LOG(INFO, "Setting show collision: ", p_enabled);
 	_show_debug_collision = p_enabled;
 	_destroy_collision();
@@ -811,7 +823,7 @@ void Terrain3D::set_show_debug_collision(bool p_enabled) {
 	}
 }
 
-void Terrain3D::set_collision_layer(uint32_t p_layers) {
+void Terrain3D::set_collision_layer(const uint32_t p_layers) {
 	LOG(INFO, "Setting collision layers: ", p_layers);
 	_collision_layer = p_layers;
 	if (_show_debug_collision) {
@@ -825,7 +837,7 @@ void Terrain3D::set_collision_layer(uint32_t p_layers) {
 	}
 }
 
-void Terrain3D::set_collision_mask(uint32_t p_mask) {
+void Terrain3D::set_collision_mask(const uint32_t p_mask) {
 	LOG(INFO, "Setting collision mask: ", p_mask);
 	_collision_mask = p_mask;
 	if (_show_debug_collision) {
@@ -839,7 +851,7 @@ void Terrain3D::set_collision_mask(uint32_t p_mask) {
 	}
 }
 
-void Terrain3D::set_collision_priority(real_t p_priority) {
+void Terrain3D::set_collision_priority(const real_t p_priority) {
 	LOG(INFO, "Setting collision priority: ", p_priority);
 	_collision_priority = p_priority;
 	if (_show_debug_collision) {
@@ -856,11 +868,11 @@ void Terrain3D::set_collision_priority(real_t p_priority) {
 /**
  * Centers the terrain and LODs on a provided position. Y height is ignored.
  */
-void Terrain3D::snap(Vector3 p_cam_pos) {
-	p_cam_pos.y = 0;
-	LOG(DEBUG_CONT, "Snapping terrain to: ", String(p_cam_pos));
-
-	Vector3 snapped_pos = (p_cam_pos / _mesh_vertex_spacing).floor() * _mesh_vertex_spacing;
+void Terrain3D::snap(const Vector3 &p_cam_pos) {
+	Vector3 cam_pos = p_cam_pos;
+	cam_pos.y = 0;
+	LOG(DEBUG_CONT, "Snapping terrain to: ", String(cam_pos));
+	Vector3 snapped_pos = (cam_pos / _mesh_vertex_spacing).floor() * _mesh_vertex_spacing;
 	Transform3D t = Transform3D().scaled(Vector3(_mesh_vertex_spacing, 1, _mesh_vertex_spacing));
 	t.origin = snapped_pos;
 	RS::get_singleton()->instance_set_transform(_data.cross, t);
@@ -870,7 +882,7 @@ void Terrain3D::snap(Vector3 p_cam_pos) {
 
 	for (int l = 0; l < _mesh_lods; l++) {
 		real_t scale = real_t(1 << l) * _mesh_vertex_spacing;
-		Vector3 snapped_pos = (p_cam_pos / scale).floor() * scale;
+		snapped_pos = (cam_pos / scale).floor() * scale;
 		Vector3 tile_size = Vector3(real_t(_mesh_size << l), 0, real_t(_mesh_size << l)) * _mesh_vertex_spacing;
 		Vector3 base = snapped_pos - Vector3(real_t(_mesh_size << (l + 1)), 0.f, real_t(_mesh_size << (l + 1))) * _mesh_vertex_spacing;
 
@@ -901,12 +913,12 @@ void Terrain3D::snap(Vector3 p_cam_pos) {
 
 		if (l != _mesh_lods - 1) {
 			real_t next_scale = scale * 2.0f;
-			Vector3 next_snapped_pos = (p_cam_pos / next_scale).floor() * next_scale;
+			Vector3 next_snapped_pos = (cam_pos / next_scale).floor() * next_scale;
 
 			// Position trims
 			{
 				Vector3 tile_center = snapped_pos + (Vector3(scale, 0.f, scale) * 0.5f);
-				Vector3 d = p_cam_pos - next_snapped_pos;
+				Vector3 d = cam_pos - next_snapped_pos;
 
 				int r = 0;
 				r |= d.x >= scale ? 0 : 2;
@@ -988,8 +1000,8 @@ void Terrain3D::update_aabbs() {
  *	test_dir (camera direction 0 Y, traversing terrain along height
  * Returns vec3(Double max 3.402823466e+38F) on no intersection. Test w/ if (var.x < 3.4e38)
  */
-Vector3 Terrain3D::get_intersection(Vector3 p_src_pos, Vector3 p_direction) {
-	if (_camera == nullptr) {
+Vector3 Terrain3D::get_intersection(const Vector3 &p_src_pos, const Vector3 &p_direction) {
+	if (!is_instance_valid(_camera_instance_id)) {
 		LOG(ERROR, "Invalid camera");
 		return Vector3(NAN, NAN, NAN);
 	}
@@ -997,21 +1009,23 @@ Vector3 Terrain3D::get_intersection(Vector3 p_src_pos, Vector3 p_direction) {
 		LOG(ERROR, "Invalid mouse camera");
 		return Vector3(NAN, NAN, NAN);
 	}
-	p_direction.normalize();
-
+	Vector3 direction = p_direction.normalized();
 	Vector3 point;
 
 	// Position mouse cam one unit behind the requested position
-	_mouse_cam->set_global_position(p_src_pos - p_direction);
+	_mouse_cam->set_global_position(p_src_pos - direction);
 
 	// If looking straight down (eg orthogonal camera), look_at won't work
-	if ((p_direction - Vector3(0.f, -1.f, 0.f)).length_squared() < 0.00001f) {
+	if ((direction - Vector3(0.f, -1.f, 0.f)).length_squared() < 0.00001f) {
 		_mouse_cam->set_rotation_degrees(Vector3(-90.f, 0.f, 0.f));
 		point = p_src_pos;
 		point.y = _storage->get_height(p_src_pos);
+		if (std::isnan(point.y)) {
+			point.y = 0;
+		}
 	} else {
 		// Get depth from perspective camera snapshot
-		_mouse_cam->look_at(_mouse_cam->get_global_position() + p_direction, Vector3(0.f, 1.f, 0.f));
+		_mouse_cam->look_at(_mouse_cam->get_global_position() + direction, Vector3(0.f, 1.f, 0.f));
 		_mouse_vp->set_update_mode(SubViewport::UPDATE_ONCE);
 		Ref<ViewportTexture> vp_tex = _mouse_vp->get_texture();
 		Ref<Image> vp_img = vp_tex->get_image();
@@ -1034,7 +1048,7 @@ Vector3 Terrain3D::get_intersection(Vector3 p_src_pos, Vector3 p_direction) {
 
 		// Denormalize distance to get real depth and terrain position
 		real_t depth = normalized_distance * _mouse_cam->get_far();
-		point = _mouse_cam->get_global_position() + p_direction * depth;
+		point = _mouse_cam->get_global_position() + direction * depth;
 	}
 
 	return point;
@@ -1049,7 +1063,7 @@ Vector3 Terrain3D::get_intersection(Vector3 p_src_pos, Vector3 p_direction) {
  *   This takes longer than ..._NEAREST, but can be used to create occluders, since it can guarantee the
  *   generated mesh will not extend above or outside the clipmap at any LOD.
  */
-Ref<Mesh> Terrain3D::bake_mesh(int p_lod, Terrain3DStorage::HeightFilter p_filter) const {
+Ref<Mesh> Terrain3D::bake_mesh(const int p_lod, const Terrain3DStorage::HeightFilter p_filter) const {
 	LOG(INFO, "Baking mesh at lod: ", p_lod, " with filter: ", p_filter);
 	Ref<Mesh> result;
 	ERR_FAIL_COND_V(!_storage.is_valid(), result);
@@ -1085,7 +1099,7 @@ Ref<Mesh> Terrain3D::bake_mesh(int p_lod, Terrain3DStorage::HeightFilter p_filte
  *  Otherwise, geometry is generated for the entire terrain within the AABB (which can be useful for
  *  dynamic and/or runtime nav mesh baking).
  */
-PackedVector3Array Terrain3D::generate_nav_mesh_source_geometry(AABB const &p_global_aabb, bool p_require_nav) const {
+PackedVector3Array Terrain3D::generate_nav_mesh_source_geometry(const AABB &p_global_aabb, const bool p_require_nav) const {
 	LOG(INFO, "Generating NavMesh source geometry from terrain");
 	PackedVector3Array faces;
 	_generate_triangles(faces, nullptr, 0, Terrain3DStorage::HEIGHT_FILTER_NEAREST, p_require_nav, p_global_aabb);
@@ -1124,7 +1138,7 @@ void Terrain3D::set_texture_list(const Ref<Terrain3DTextureList> &p_texture_list
 // Protected Functions
 ///////////////////////////
 
-void Terrain3D::_notification(int p_what) {
+void Terrain3D::_notification(const int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			LOG(INFO, "NOTIFICATION_READY");
@@ -1167,8 +1181,8 @@ void Terrain3D::_notification(int p_what) {
 		}
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-				if (get_transform() != Transform3D()) {
-					set_transform(Transform3D());
+			if (get_transform() != Transform3D()) {
+				set_transform(Transform3D());
 			}
 			break;
 		}

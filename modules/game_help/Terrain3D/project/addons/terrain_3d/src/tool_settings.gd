@@ -170,10 +170,10 @@ func create_submenu(p_parent: Control, p_button_name: String, p_layout: Layout) 
 	var panel_style: StyleBox = get_theme_stylebox("panel", "PopupMenu").duplicate()
 	panel_style.set_content_margin_all(10)
 	submenu.set("theme_override_styles/panel", panel_style)
+	submenu.add_to_group("terrain3d_submenus")
 
 	# Pop up menu on hover, hide on exit
 	menu_button.mouse_entered.connect(_on_show_submenu.bind(true, menu_button))
-	menu_button.mouse_exited.connect(_on_show_submenu.bind(false, menu_button))
 	submenu.mouse_exited.connect(_on_show_submenu.bind(false, menu_button))
 	
 	var sublist: Container
@@ -206,6 +206,8 @@ func _on_show_submenu(p_toggled: bool, p_button: Button) -> void:
 	if not p_toggled and ( in_button or in_panel ):
 		return
 	
+	# Hide all submenus before possibly enabling the current one
+	get_tree().call_group("terrain3d_submenus", "set_visible", false)
 	var popup: PopupPanel = p_button.get_child(0)
 	var popup_pos: Vector2 = p_button.get_screen_transform().origin
 	popup.set_visible(p_toggled)
@@ -361,6 +363,7 @@ func add_setting(p_args: Dictionary) -> void:
 
 		SettingType.PICKER:
 			var button := Button.new()
+			button.set_v_size_flags(SIZE_SHRINK_CENTER)
 			button.icon = load(PICKER_ICON)
 			button.tooltip_text = "Pick value from the Terrain"
 			button.pressed.connect(_on_pick.bind(p_default))
@@ -396,7 +399,6 @@ func add_setting(p_args: Dictionary) -> void:
 				spin_slider.set_step(p_step)
 				spin_slider.set_value(p_default)
 				spin_slider.set_suffix(p_suffix)
-				spin_slider.set_h_size_flags(SIZE_SHRINK_CENTER)
 				spin_slider.set_v_size_flags(SIZE_SHRINK_CENTER)
 				spin_slider.set_custom_minimum_size(Vector2(75, 0))
 
@@ -413,8 +415,6 @@ func add_setting(p_args: Dictionary) -> void:
 					
 			else: # DOUBLE_SLIDER
 				var label := Label.new()
-				label.set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER)
-				label.set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER)
 				label.set_custom_minimum_size(Vector2(75, 0))
 				slider = DoubleSlider.new()
 				slider.label = label
@@ -429,7 +429,6 @@ func add_setting(p_args: Dictionary) -> void:
 			slider.set_step(p_step)
 			slider.set_value(p_default)
 			slider.set_v_size_flags(SIZE_SHRINK_CENTER)
-			slider.set_h_size_flags(SIZE_SHRINK_END | SIZE_EXPAND)
 			slider.set_custom_minimum_size(Vector2(60, 10))
 
 	control.name = p_name.to_pascal_case()

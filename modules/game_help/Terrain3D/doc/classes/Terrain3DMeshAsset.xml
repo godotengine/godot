@@ -30,12 +30,6 @@
 				Returns the number of Mesh resources found in the scene file and stored.
 			</description>
 		</method>
-		<method name="get_relative_density">
-			<return type="float" />
-			<description>
-				Used for regulating placement, calculated as `100.f / mesh.get_aabb().get_volume()`.
-			</description>
-		</method>
 		<method name="get_thumbnail">
 			<return type="Texture2D" />
 			<description>
@@ -44,17 +38,27 @@
 		</method>
 	</methods>
 	<members>
+		<member name="cast_shadows" type="int" setter="set_cast_shadows" getter="get_cast_shadows" enum="GeometryInstance3D.ShadowCastingSetting" default="1">
+			Tells the renderer how to cast shadows from this mesh asset onto the terrain and other objects. This sets [code skip-lint]GeometryInstance3D.ShadowCastingSetting[/code] on all MultiMeshInstances used by this mesh.
+		</member>
+		<member name="density" type="float" setter="set_density" getter="get_density" default="-1.0">
+			Density is used to set the approximate default spacing between instances based on the size of the mesh. When painting meshes on the terrain, mesh density is multiplied by brush strength.
+			This value is not tied to any real world unit. It is calculated as [code skip-lint]10.f / mesh-&gt;get_aabb().get_volume()[/code], then clamped to a sane range. If the calculated amount is inappropriate, increase or decrease it here.
+		</member>
+		<member name="generated_faces" type="int" setter="set_generated_faces" getter="get_generated_faces" default="2">
+			Select if you want the generated texture card to have a single QuadMesh, 2 meshes rotated at 90° in a cross, or 3 roated at 60°.
+		</member>
 		<member name="generated_size" type="Vector2" setter="set_generated_size" getter="get_generated_size" default="Vector2(1, 1)">
-			Sets the base size of the QuadMesh texture card.
+			Sets the base size of the QuadMesh texture card. Increasing this size will expand from bottom, not the middle.
 		</member>
 		<member name="generated_type" type="int" setter="set_generated_type" getter="get_generated_type" enum="Terrain3DMeshAsset.GenType" default="0">
-			Set this mesh asset to a generated QuadMesh to be used as a texture card.
+			If enabled, this mesh asset will be set to a generated QuadMesh to be used as a texture card.
 		</member>
 		<member name="height_offset" type="float" setter="set_height_offset" getter="get_height_offset" default="0.0">
-			Vertically offset the origin point of a mesh asset. You can also set this when painting.
+			Vertically offset the origin point of a mesh asset. You can also set this when painting. For example, if you have a 2 meter diameter rock with the mesh origin point in the center, but you want all rocks to be sitting on the ground, you could enter 1 or 0.9 here and it will be placed near its edge.
 		</member>
 		<member name="id" type="int" setter="set_id" getter="get_id" default="0">
-			The user settable ID of the mesh. You can change this to reorder meshes in the list. However, beware if you have instanced 10s or 100s of thousands of texture cards, then swap this mesh id with a large mesh, you'll blow out your VRAM. Godot has no protection against running out of VRAM currently.
+			The user settable ID of the mesh. You can change this to reorder meshes in the list.
 		</member>
 		<member name="material_override" type="Material" setter="set_material_override" getter="get_material_override">
 			This material will override the material on either packed scenes or generated mesh cards.
@@ -67,6 +71,11 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="cast_shadows_changed">
+			<description>
+				Emitted when [member cast_shadows] is changed on this mesh asset.
+			</description>
+		</signal>
 		<signal name="file_changed">
 			<description>
 				Emitted when [member scene_file] is changed, or if the generated mesh is toggled.
@@ -79,7 +88,7 @@
 		</signal>
 		<signal name="setting_changed">
 			<description>
-				Emitted when settings other than id or scene file are changed.
+				Emitted when settings are changed, other than those tracked by other signals.
 			</description>
 		</signal>
 	</signals>

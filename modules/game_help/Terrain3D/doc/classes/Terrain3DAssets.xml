@@ -3,7 +3,7 @@
 	<brief_description>
 	</brief_description>
 	<description>
-		This class contains an array of [Terrain3DTextureAsset] objects in 32 slots. It is a savable resource, so you can save it to disk and use the same texture list in multiple scenes that use Terrain3D. The amount of data is small, so it can be saved as a git-friendly, text based .tres file or left within the scene file.
+		This class contains arrays of [Terrain3DTextureAsset] and [Terrain3DMeshAsset] resources. It is a savable resource, so you can save it to disk and use the same asset list in multiple scenes that use Terrain3D. The amount of data is small, so it can be saved as a git-friendly, text based .tres file or left within the scene file.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -26,7 +26,7 @@
 		<method name="get_mesh_count">
 			<return type="int" />
 			<description>
-				Returns the count of mesh assets in the list.
+				Returns the number of mesh assets in the list.
 			</description>
 		</method>
 		<method name="get_texture">
@@ -53,7 +53,7 @@
 			<param index="0" name="id" type="int" />
 			<param index="1" name="mesh" type="Terrain3DMeshAsset" />
 			<description>
-				Assigns the mesh asset to the specified ID slot. It can be null to clear the slot. See [method set_texture].
+				Assigns the Terrain3DMeshAsset to the specified ID slot. It can be null to clear the slot. See [method set_texture].
 			</description>
 		</method>
 		<method name="set_texture">
@@ -95,7 +95,7 @@
 		<constant name="MAX_TEXTURES" value="32">
 			Hard coded maximum number of textures, with IDs in the range of 0-31. Cannot easily be expanded.
 		</constant>
-		<constant name="MAX_MESHES" value="128">
+		<constant name="MAX_MESHES" value="256">
 			Limit of the maximum number of meshes. Arbitrary, easily expanded.
 		</constant>
 	</constants>

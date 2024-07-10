@@ -24,10 +24,10 @@ You need two files per texture set. Terrain3D is designed for textures that are 
 
 The terrain can work without the alpha channels, however it won't have height blending or roughness. That may be fine for a low-poly or stylized terrain, but not for a realistic one.
 
-Textures can be channel packed using the Pack Textures option in the Terrain3D Tools menu at the top of the viewport, or in tools like [Gimp](https://www.gimp.org/). Photoshop or [Krita](https://krita.org/) are possible, but working with alpha channels can be a bit challenging. See [Channel Pack Textures with Gimp](#channel-pack-textures-with-gimp) below.
+Textures can be channel packed using the Pack Textures option in the Terrain3D Tools menu at the top of the viewport, or in tools like [Gimp](https://www.gimp.org/). Photoshop or [Krita](https://krita.org/) are possible, but working with alpha channels can be a bit challenging.
 
 ### Texture Sizes
-All albedo textures must be the same size, and all normal textures must be the same size. Each type gets combined into separate Texture2DArrays, so their sizes can differ.
+All albedo textures must be the same size, and all normal textures must be the same size. Each type gets combined into separate Texture2DArrays, so their sizes of the two arrays can differ.
 
 For GPU efficiency, it is recommended that all textures have dimensions that are a power of 2 (128, 256, 512, 1024, 2048, 4096, 8192), but this isn't required.
 
@@ -195,9 +195,9 @@ We could have the system channel pack for you at startup, however that would mea
 
 Most terrain textures like grass, rock, and dirt do not need these. 
 
-The only one that might be useful generally is AO, however that is debatable. We do include height, which can double for AO. Or, if you have no height texture, you can substitute an AO texture. These two are nearly interchangeable depending on the specific texture, and it's not worth allocating another texture array just for AO.
+The only one that might be useful generally is AO, however that is debatable. We do have height, which can double for AO in a custom shader. Or, if you have no height texture, you can substitute an AO texture. These two are similar depending on the specific texture, and it's not worth allocating another texture array just for AO.
 
-Occasional textures do need additional texture maps. Lava rock might need emissive, or rock with gold veins might need metallic, or some unique texture might need both height and AO. These are most likely only 1-2 textures out of the possible 32, so setting up these additional options for all textures is a waste of memory. For this you can use a [custom shader](tips.md#add-a-custom-texture-map) to add the individual texture map.
+Occasional textures do need additional texture maps. Lava rock might need emissive, or rock with gold veins might need metallic, or some unique texture might need both height and AO. These are most likely only 1-2 textures out of the possible 32, so setting up these additional options for all textures is a waste of memory. You can add a [custom shader](tips.md#add-a-custom-texture-map) to add the individual texture map.
 
 ### Why not use Standard Godot materials?
 

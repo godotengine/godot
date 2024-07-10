@@ -2,22 +2,21 @@
 # 
 # This script demonstrates how to import transforms from SimpleGrassTextured. To use it:
 #
-# 1. Assign this script to your Terrain3D node and reselect the node to update the inspector.
-# 2. In the inspector select your SGT node.
-# 3. Setup the desired mesh asset in the asset dock.
-# 4. Assign that mesh id in the inspector.
-# 5. Click Import.
+# 1. Setup the mesh asset you wish to use in the asset dock.
+# 1. Select your Terrain3D node.
+# 1. In the inspector, click Script (very bottom) and Quick Load import_sgt.gd.
+# 1. At the very top, assign your SimpleGrassTextured node.
+# 1. Input the desired mesh asset ID.
+# 1. Click import. The output window and console will report when finished.
+# 1. Clear the script from your Terrain3D node, and save your scene. 
 #
-# When finished, clear the script from your Terrain3DNode.
+# The instance transforms are now stored in your Storage resource.
 #
 # Use clear_instances to erase all instances that match the assign_mesh_id.
 #
 # The add_transforms function (called by add_multimesh) applies the height_offset specified in the 
 # Terrain3DMeshAsset. 
-#
-# The SimpleGrassTextured default mesh is a cross of two texture cards. The default Terrain3D 
-# texture card is a single quadmesh, so assign your own mesh if you wish an exact match. Once the 
-# transforms are imported, you can reassign any mesh you like into this mesh slot.
+# Once the transforms are imported, you can reassign any mesh you like into this mesh slot.
 
 @tool
 extends Terrain3D

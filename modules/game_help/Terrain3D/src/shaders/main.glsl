@@ -1,7 +1,10 @@
-// Copyright © 2023 Cory Petkovsek, Roope Palmroos, and Contributors.
+// Copyright © 2024 Cory Petkovsek, Roope Palmroos, and Contributors.
+
+// Raw strings have a limit of 64k, but MSVC has a limit of 2k in a string literal. This file is split into
+// multiple raw strings that are concatenated by the compiler.
 
 R"(shader_type spatial;
-render_mode blend_mix,depth_draw_opaque,cull_back,diffuse_burley,specular_schlick_ggx;
+render_mode blend_mix,depth_draw_opaque,cull_back,diffuse_burley,specular_schlick_ggx,skip_vertex_transform;
 
 /* This shader is generated based upon the debug views you have selected.
  * The terrain function depends on this shader. So don't change:
@@ -47,6 +50,7 @@ uniform float blend_sharpness : hint_range(0, 1) = 0.87;
 //INSERT: DUAL_SCALING_UNIFORMS
 uniform vec3 macro_variation1 : source_color = vec3(1.);
 uniform vec3 macro_variation2 : source_color = vec3(1.);
+
 // Generic noise at 3 scales, which can be used for anything 
 uniform float noise1_scale : hint_range(0.001, 1.) = 0.04;	// Used for macro variation 1. Scaled up 10x
 uniform float noise1_angle : hint_range(0, 6.283) = 0.;
@@ -72,7 +76,9 @@ varying flat vec2 v_uv_offset;
 varying flat vec2 v_uv2_offset;
 varying vec3 v_normal;
 varying float v_region_border_mask;
+)"
 
+		R"(
 ////////////////////////
 // Vertex
 ////////////////////////
@@ -158,8 +164,17 @@ void vertex() {
 	UV -= v_uv_offset;
 	v_uv2_offset = v_uv_offset * _region_texel_size;
 	UV2 -= v_uv2_offset;
-}
 
+	// Convert model space to view space w/ skip_vertex_transform render mode
+	VERTEX = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	VERTEX = (VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	NORMAL = normalize((MODELVIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
+	BINORMAL = normalize((MODELVIEW_MATRIX * vec4(BINORMAL, 0.0)).xyz);
+	TANGENT = normalize((MODELVIEW_MATRIX * vec4(TANGENT, 0.0)).xyz);
+}
+)"
+
+		R"(
 ////////////////////////
 // Fragment
 ////////////////////////

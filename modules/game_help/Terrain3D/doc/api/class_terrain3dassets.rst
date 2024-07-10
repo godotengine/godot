@@ -17,7 +17,7 @@ Terrain3DAssets
 Description
 -----------
 
-This class contains an array of :ref:`Terrain3DTextureAsset<class_Terrain3DTextureAsset>` objects in 32 slots. It is a savable resource, so you can save it to disk and use the same texture list in multiple scenes that use Terrain3D. The amount of data is small, so it can be saved as a git-friendly, text based .tres file or left within the scene file.
+This class contains arrays of :ref:`Terrain3DTextureAsset<class_Terrain3DTextureAsset>` and :ref:`Terrain3DMeshAsset<class_Terrain3DMeshAsset>` resources. It is a savable resource, so you can save it to disk and use the same asset list in multiple scenes that use Terrain3D. The amount of data is small, so it can be saved as a git-friendly, text based .tres file or left within the scene file.
 
 .. rst-class:: classref-reftable-group
 
@@ -140,7 +140,7 @@ Hard coded maximum number of textures, with IDs in the range of 0-31. Cannot eas
 
 .. rst-class:: classref-constant
 
-**MAX_MESHES** = ``128`` :ref:`🔗<class_Terrain3DAssets_constant_MAX_MESHES>`
+**MAX_MESHES** = ``256`` :ref:`🔗<class_Terrain3DAssets_constant_MAX_MESHES>`
 
 Limit of the maximum number of meshes. Arbitrary, easily expanded.
 
@@ -222,7 +222,7 @@ Returns the specified Terrain3DMeshAsset resource.
 
 :ref:`int<class_int>` **get_mesh_count**\ (\ ) :ref:`🔗<class_Terrain3DAssets_method_get_mesh_count>`
 
-Returns the count of mesh assets in the list.
+Returns the number of mesh assets in the list.
 
 .. rst-class:: classref-item-separator
 
@@ -270,7 +270,7 @@ Saves this texture list resource to disk, if saved as an external ``.tres`` or `
 
 |void| **set_mesh_asset**\ (\ id\: :ref:`int<class_int>`, mesh\: :ref:`Terrain3DMeshAsset<class_Terrain3DMeshAsset>`\ ) :ref:`🔗<class_Terrain3DAssets_method_set_mesh_asset>`
 
-Assigns the mesh asset to the specified ID slot. It can be null to clear the slot. See :ref:`set_texture<class_Terrain3DAssets_method_set_texture>`.
+Assigns the Terrain3DMeshAsset to the specified ID slot. It can be null to clear the slot. See :ref:`set_texture<class_Terrain3DAssets_method_set_texture>`.
 
 .. rst-class:: classref-item-separator
 

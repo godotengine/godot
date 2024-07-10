@@ -1,32 +1,33 @@
-// Copyright © 2023 Cory Petkovsek, Roope Palmroos, and Contributors.
+// Copyright © 2024 Cory Petkovsek, Roope Palmroos, and Contributors.
 
 
 
 #include "logger.h"
 #include "terrain_3d_mesh_asset.h"
-#include "scene/resources/packed_scene.h"
 
 ///////////////////////////
 // Private Functions
 ///////////////////////////
 
 // This version doesn't emit a signal
-void Terrain3DMeshAsset::_set_generated_type(GenType p_type) {
+void Terrain3DMeshAsset::_set_generated_type(const GenType p_type) {
 	_generated_type = p_type;
 	LOG(INFO, "Setting is_generated: ", p_type);
 	if (p_type > TYPE_NONE && p_type < TYPE_MAX) {
 		_packed_scene.unref();
 		_meshes.clear();
 		LOG(DEBUG, "Generating card mesh");
-		_meshes.push_back(_build_generated_mesh());
+		_meshes.push_back(_get_generated_mesh());
 		_set_material_override(_get_material());
 		_height_offset = 0.5f;
-		_relative_density = 1.f;
+		_generated_faces = 2;
+		_relative_density = 10.f;
+		_calculated_density = 10.f;
 	}
 }
 
 // This version doesn't emit a signal
-void Terrain3DMeshAsset::_set_material_override(const Ref<Material> p_material) {
+void Terrain3DMeshAsset::_set_material_override(const Ref<Material> &p_material) {
 	LOG(INFO, _name, ": Setting material override: ", p_material);
 	_material_override = p_material;
 	if (_material_override.is_null() && _packed_scene.is_valid()) {
@@ -46,7 +47,7 @@ void Terrain3DMeshAsset::_set_material_override(const Ref<Material> p_material) 
 	}
 }
 
-Ref<ArrayMesh> Terrain3DMeshAsset::_build_generated_mesh() {
+Ref<ArrayMesh> Terrain3DMeshAsset::_get_generated_mesh() const {
 	LOG(DEBUG_CONT, "Regeneratingn new mesh");
 	Ref<ArrayMesh> array_mesh;
 	array_mesh.instantiate();
@@ -56,7 +57,7 @@ Ref<ArrayMesh> Terrain3DMeshAsset::_build_generated_mesh() {
 	PackedVector2Array uvs;
 	PackedInt32Array indices;
 
-	int prevrow, thisrow, point = 0;
+	int i, j, prevrow, thisrow, point = 0;
 	float x, z;
 	Size2 start_pos = Vector2(_generated_size.x * -0.5, -0.5f);
 	Vector3 normal = normal = Vector3(0.0, 0.0, 1.0);
@@ -145,41 +146,59 @@ void Terrain3DMeshAsset::clear() {
 	_id = 0;
 	_height_offset = 0.f;
 	_cast_shadows = GeometryInstance3D::SHADOW_CASTING_SETTING_ON;
-	_generated_faces = 1.f;
+	_generated_faces = 2.f;
 	_generated_size = Vector2(1.f, 1.f);
-	_relative_density = 1.f;
+	_relative_density = -1.f;
+	_calculated_density = -1.f;
 	_packed_scene.unref();
 	_material_override.unref();
 	_set_generated_type(TYPE_TEXTURE_CARD);
 	notify_property_list_changed();
 }
 
-// void Terrain3DMeshAsset::set_name(String p_name) {
-// 	LOG(INFO, "Setting name: ", p_name);
-// 	_name = p_name;
-// 	emit_signal("setting_changed");
-// }
+void Terrain3DMeshAsset::set_name(const String &p_name) {
+	LOG(INFO, "Setting name: ", p_name);
+	_name = p_name;
+	emit_signal("setting_changed");
+}
 
-void Terrain3DMeshAsset::set_id(int p_new_id) {
+void Terrain3DMeshAsset::set_id(const int p_new_id) {
 	int old_id = _id;
 	_id = CLAMP(p_new_id, 0, Terrain3DAssets::MAX_MESHES);
 	LOG(INFO, "Setting mesh id: ", _id);
 	emit_signal("id_changed", Terrain3DAssets::TYPE_MESH, old_id, p_new_id);
 }
 
-void Terrain3DMeshAsset::set_height_offset(real_t p_offset) {
+void Terrain3DMeshAsset::set_height_offset(const real_t p_offset) {
 	_height_offset = CLAMP(p_offset, -50.f, 50.f);
 	LOG(INFO, "Setting height offset: ", _height_offset);
 	emit_signal("setting_changed");
 }
 
-void Terrain3DMeshAsset::set_cast_shadows(GeometryInstance3D::ShadowCastingSetting p_cast_shadows) {
+void Terrain3DMeshAsset::set_density(const real_t p_density) {
+	LOG(INFO, "Setting mesh density: ", p_density);
+	if (p_density < 0) {
+		_relative_density = _calculated_density;
+	} else {
+		_relative_density = CLAMP(p_density, 0.01f, 10.f);
+	}
+}
+
+real_t Terrain3DMeshAsset::get_density() const {
+	if (_relative_density > 0) {
+		return _relative_density;
+	} else {
+		return _calculated_density;
+	}
+}
+
+void Terrain3DMeshAsset::set_cast_shadows(const GeometryInstance3D::ShadowCastingSetting p_cast_shadows) {
 	_cast_shadows = p_cast_shadows;
 	LOG(INFO, "Setting shadow casting mode: ", _cast_shadows);
 	emit_signal("cast_shadows_changed", _id, _cast_shadows);
 }
 
-void Terrain3DMeshAsset::set_scene_file(const Ref<PackedScene> p_scene_file) {
+void Terrain3DMeshAsset::set_scene_file(const Ref<PackedScene> &p_scene_file) {
 	LOG(INFO, "Setting scene file and instantiating node: ", p_scene_file);
 	_packed_scene = p_scene_file;
 	if (_packed_scene.is_valid()) {
@@ -219,7 +238,8 @@ void Terrain3DMeshAsset::set_scene_file(const Ref<PackedScene> p_scene_file) {
 		}
 		if (_meshes.size() > 0) {
 			Ref<Mesh> mesh = _meshes[0];
-			_relative_density = 100.f / mesh->get_aabb().get_volume();
+			_calculated_density = CLAMP(10.f / mesh->get_aabb().get_volume(), 0.01f, 10.0f);
+			_relative_density = _calculated_density;
 			LOG(DEBUG, "Emitting file_changed");
 			emit_signal("file_changed");
 		} else {
@@ -231,25 +251,25 @@ void Terrain3DMeshAsset::set_scene_file(const Ref<PackedScene> p_scene_file) {
 	}
 }
 
-void Terrain3DMeshAsset::set_material_override(const Ref<Material> p_material) {
+void Terrain3DMeshAsset::set_material_override(const Ref<Material> &p_material) {
 	_set_material_override(p_material);
 	LOG(DEBUG, "Emitting setting_changed");
 	emit_signal("setting_changed");
 }
 
-void Terrain3DMeshAsset::set_generated_type(GenType p_type) {
+void Terrain3DMeshAsset::set_generated_type(const GenType p_type) {
 	_set_generated_type(p_type);
 	LOG(DEBUG, "Emitting file_changed");
 	notify_property_list_changed();
 	emit_signal("file_changed");
 }
 
-void Terrain3DMeshAsset::set_generated_faces(int p_count) {
+void Terrain3DMeshAsset::set_generated_faces(const int p_count) {
 	if (_generated_faces != p_count) {
 		_generated_faces = CLAMP(p_count, 1, 3);
 		LOG(INFO, "Setting generated face count: ", _generated_faces);
 		if (_generated_type > TYPE_NONE && _generated_type < TYPE_MAX && _meshes.size() == 1) {
-			_meshes[0] = _build_generated_mesh();
+			_meshes[0] = _get_generated_mesh();
 			_set_material_override(_get_material());
 			LOG(DEBUG, "Emitting setting_changed");
 			emit_signal("setting_changed");
@@ -257,12 +277,12 @@ void Terrain3DMeshAsset::set_generated_faces(int p_count) {
 	}
 }
 
-void Terrain3DMeshAsset::set_generated_size(Vector2 p_size) {
+void Terrain3DMeshAsset::set_generated_size(const Vector2 &p_size) {
 	if (_generated_size != p_size) {
 		_generated_size = p_size;
 		LOG(INFO, "Setting generated size: ", _generated_faces);
 		if (_generated_type > TYPE_NONE && _generated_type < TYPE_MAX && _meshes.size() == 1) {
-			_meshes[0] = _build_generated_mesh();
+			_meshes[0] = _get_generated_mesh();
 			_set_material_override(_get_material());
 			LOG(DEBUG, "Emitting setting_changed");
 			emit_signal("setting_changed");
@@ -270,7 +290,7 @@ void Terrain3DMeshAsset::set_generated_size(Vector2 p_size) {
 	}
 }
 
-Ref<Mesh> Terrain3DMeshAsset::get_mesh(int p_index) {
+Ref<Mesh> Terrain3DMeshAsset::get_mesh(const int p_index) {
 	if (p_index >= 0 && p_index < _meshes.size()) {
 		return _meshes[p_index];
 	}
@@ -309,6 +329,8 @@ void Terrain3DMeshAsset::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_id"), &Terrain3DMeshAsset::get_id);
 	ClassDB::bind_method(D_METHOD("set_height_offset", "offset"), &Terrain3DMeshAsset::set_height_offset);
 	ClassDB::bind_method(D_METHOD("get_height_offset"), &Terrain3DMeshAsset::get_height_offset);
+	ClassDB::bind_method(D_METHOD("set_density", "density"), &Terrain3DMeshAsset::set_density);
+	ClassDB::bind_method(D_METHOD("get_density"), &Terrain3DMeshAsset::get_density);
 	ClassDB::bind_method(D_METHOD("set_cast_shadows", "mode"), &Terrain3DMeshAsset::set_cast_shadows);
 	ClassDB::bind_method(D_METHOD("get_cast_shadows"), &Terrain3DMeshAsset::get_cast_shadows);
 	ClassDB::bind_method(D_METHOD("set_scene_file", "scene_file"), &Terrain3DMeshAsset::set_scene_file);
@@ -323,12 +345,12 @@ void Terrain3DMeshAsset::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_generated_size"), &Terrain3DMeshAsset::get_generated_size);
 	ClassDB::bind_method(D_METHOD("get_mesh", "index"), &Terrain3DMeshAsset::get_mesh, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_mesh_count"), &Terrain3DMeshAsset::get_mesh_count);
-	ClassDB::bind_method(D_METHOD("get_relative_density"), &Terrain3DMeshAsset::get_relative_density);
 	ClassDB::bind_method(D_METHOD("get_thumbnail"), &Terrain3DMeshAsset::get_thumbnail);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_NONE), "set_id", "get_id");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height_offset", PROPERTY_HINT_RANGE, "-20.0,20.0,.005"), "set_height_offset", "get_height_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "density", PROPERTY_HINT_RANGE, ".01,10.0,.005"), "set_density", "get_density");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "scene_file", PROPERTY_HINT_RESOURCE_TYPE, "PackedScene"), "set_scene_file", "get_scene_file");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material_override", "get_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "generated_type", PROPERTY_HINT_ENUM, "None,Texture Card"), "set_generated_type", "get_generated_type");
