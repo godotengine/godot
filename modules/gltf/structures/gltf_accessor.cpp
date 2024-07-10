@@ -39,6 +39,14 @@ void GLTFAccessor::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_MAT3);
 	BIND_ENUM_CONSTANT(TYPE_MAT4);
 
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_NONE);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_SIGNED_BYTE);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_UNSIGNED_BYTE);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_SIGNED_SHORT);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_UNSIGNED_SHORT);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_UNSIGNED_INT);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_SINGLE_FLOAT);
+
 	ClassDB::bind_method(D_METHOD("get_buffer_view"), &GLTFAccessor::get_buffer_view);
 	ClassDB::bind_method(D_METHOD("set_buffer_view", "buffer_view"), &GLTFAccessor::set_buffer_view);
 	ClassDB::bind_method(D_METHOD("get_byte_offset"), &GLTFAccessor::get_byte_offset);
@@ -108,7 +116,7 @@ int GLTFAccessor::get_component_type() {
 }
 
 void GLTFAccessor::set_component_type(int p_component_type) {
-	component_type = p_component_type;
+	component_type = (GLTFComponentType)p_component_type;
 }
 
 bool GLTFAccessor::get_normalized() {
@@ -188,7 +196,7 @@ int GLTFAccessor::get_sparse_indices_component_type() {
 }
 
 void GLTFAccessor::set_sparse_indices_component_type(int p_sparse_indices_component_type) {
-	sparse_indices_component_type = p_sparse_indices_component_type;
+	sparse_indices_component_type = (GLTFComponentType)p_sparse_indices_component_type;
 }
 
 int GLTFAccessor::get_sparse_values_buffer_view() {

@@ -56,13 +56,6 @@ public:
 	enum {
 		ARRAY_BUFFER = 34962,
 		ELEMENT_ARRAY_BUFFER = 34963,
-
-		COMPONENT_TYPE_BYTE = 5120,
-		COMPONENT_TYPE_UNSIGNED_BYTE = 5121,
-		COMPONENT_TYPE_SHORT = 5122,
-		COMPONENT_TYPE_UNSIGNED_SHORT = 5123,
-		COMPONENT_TYPE_INT = 5125,
-		COMPONENT_TYPE_FLOAT = 5126,
 	};
 	enum {
 		TEXTURE_TYPE_GENERIC = 0,
@@ -109,8 +102,8 @@ private:
 	void _build_parent_hierachy(Ref<GLTFState> p_state);
 	double _filter_number(double p_float);
 	void _round_min_max_components(Vector<double> &r_type_min, Vector<double> &r_type_max);
-	String _get_component_type_name(const uint32_t p_component);
-	int _get_component_type_size(const int p_component_type);
+	String _get_component_type_name(const GLTFAccessor::GLTFComponentType p_component_type);
+	int _get_component_type_size(const GLTFAccessor::GLTFComponentType p_component_type);
 	Error _parse_scenes(Ref<GLTFState> p_state);
 	Error _parse_nodes(Ref<GLTFState> p_state);
 	String _get_accessor_type_name(const GLTFAccessor::GLTFAccessorType p_accessor_type);
@@ -140,7 +133,7 @@ private:
 			const int p_skip_every, const int p_skip_bytes,
 			const int p_element_size, const int p_count,
 			const GLTFAccessor::GLTFAccessorType p_accessor_type, const int p_component_count,
-			const int p_component_type, const int p_component_size,
+			const GLTFAccessor::GLTFComponentType p_component_type, const int p_component_size,
 			const bool p_normalized, const int p_byte_offset,
 			const bool p_for_vertex);
 	Vector<double> _decode_accessor(Ref<GLTFState> p_state,
@@ -269,7 +262,7 @@ private:
 			const bool p_for_vertex);
 	Error _encode_buffer_view(Ref<GLTFState> p_state, const double *p_src,
 			const int p_count, const GLTFAccessor::GLTFAccessorType p_accessor_type,
-			const int p_component_type, const bool p_normalized,
+			const GLTFAccessor::GLTFComponentType p_component_type, const bool p_normalized,
 			const int p_byte_offset, const bool p_for_vertex,
 			GLTFBufferViewIndex &r_accessor, const bool p_for_indices = false);
 
