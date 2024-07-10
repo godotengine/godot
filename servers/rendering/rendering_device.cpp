@@ -3500,7 +3500,12 @@ Error RenderingDevice::screen_prepare_for_drawing(DisplayServer::WindowID p_scre
 		framebuffer = driver->swap_chain_acquire_framebuffer(main_queue, it->value, resize_required);
 	}
 
-	ERR_FAIL_COND_V_MSG(framebuffer.id == 0, FAILED, "Unable to acquire framebuffer.");
+	if (framebuffer.id == 0) {
+		// Some drivers like NVIDIA are fast enough to invalidate the swap chain between resizing and acquisition (GH-94104).
+		// This typically occurs during continuous window resizing operations, especially if done quickly.
+		// Allow this to fail silently since it has no visual consequences.
+		return ERR_CANT_CREATE;
+	}
 
 	// Store the framebuffer that will be used next to draw to this screen.
 	screen_framebuffers[p_screen] = framebuffer;
