@@ -1350,6 +1350,7 @@ void FileDialog::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "name"), defaults.name, &FileDialog::set_option_name, &FileDialog::get_option_name);
 	base_property_helper.register_property(PropertyInfo(Variant::PACKED_STRING_ARRAY, "values"), defaults.values, &FileDialog::set_option_values, &FileDialog::get_option_values);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "default"), defaults.default_idx, &FileDialog::set_option_default, &FileDialog::get_option_default);
+	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
 void FileDialog::set_show_hidden_files(bool p_show) {

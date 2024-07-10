@@ -30,6 +30,19 @@
 
 #include "property_list_helper.h"
 
+Vector<PropertyListHelper *> PropertyListHelper::base_helpers; // static
+
+void PropertyListHelper::clear_base_helpers() { // static
+	for (PropertyListHelper *helper : base_helpers) {
+		helper->clear();
+	}
+	base_helpers.clear();
+}
+
+void PropertyListHelper::register_base_helper(PropertyListHelper *p_helper) { // static
+	base_helpers.push_back(p_helper);
+}
+
 const PropertyListHelper::Property *PropertyListHelper::_get_property(const String &p_property, int *r_index) const {
 	const Vector<String> components = p_property.rsplit("/", true, 1);
 	if (components.size() < 2 || !components[0].begins_with(prefix)) {
@@ -176,9 +189,8 @@ bool PropertyListHelper::property_get_revert(const String &p_property, Variant &
 	return false;
 }
 
-PropertyListHelper::~PropertyListHelper() {
-	// No object = it's the main helper. Do a cleanup.
-	if (!object && is_initialized()) {
+void PropertyListHelper::clear() {
+	if (is_initialized()) {
 		memdelete(array_length_getter);
 
 		for (const KeyValue<String, Property> &E : property_list) {
@@ -187,5 +199,6 @@ PropertyListHelper::~PropertyListHelper() {
 				memdelete(E.value.getter);
 			}
 		}
+		property_list.clear();
 	}
 }
