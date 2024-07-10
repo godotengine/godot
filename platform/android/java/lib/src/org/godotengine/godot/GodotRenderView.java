@@ -37,8 +37,6 @@ import android.view.SurfaceView;
 public interface GodotRenderView {
 	SurfaceView getView();
 
-	void initInputDevices();
-
 	/**
 	 * Starts the thread that will drive Godot's rendering.
 	 */
@@ -58,8 +56,6 @@ public interface GodotRenderView {
 	void onActivityStarted();
 
 	void onActivityDestroyed();
-
-	void onBackPressed();
 
 	GodotInputHandler getInputHandler();
 

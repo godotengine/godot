@@ -513,21 +513,49 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 
 Vector3 Input::get_gravity() const {
 	_THREAD_SAFE_METHOD_
+
+#ifdef DEBUG_ENABLED
+	if (!gravity_enabled) {
+		WARN_PRINT_ONCE("`input_devices/sensors/enable_gravity` is not enabled in project settings.");
+	}
+#endif
+
 	return gravity;
 }
 
 Vector3 Input::get_accelerometer() const {
 	_THREAD_SAFE_METHOD_
+
+#ifdef DEBUG_ENABLED
+	if (!accelerometer_enabled) {
+		WARN_PRINT_ONCE("`input_devices/sensors/enable_accelerometer` is not enabled in project settings.");
+	}
+#endif
+
 	return accelerometer;
 }
 
 Vector3 Input::get_magnetometer() const {
 	_THREAD_SAFE_METHOD_
+
+#ifdef DEBUG_ENABLED
+	if (!magnetometer_enabled) {
+		WARN_PRINT_ONCE("`input_devices/sensors/enable_magnetometer` is not enabled in project settings.");
+	}
+#endif
+
 	return magnetometer;
 }
 
 Vector3 Input::get_gyroscope() const {
 	_THREAD_SAFE_METHOD_
+
+#ifdef DEBUG_ENABLED
+	if (!gyroscope_enabled) {
+		WARN_PRINT_ONCE("`input_devices/sensors/enable_gyroscope` is not enabled in project settings.");
+	}
+#endif
+
 	return gyroscope;
 }
 
@@ -1683,6 +1711,11 @@ Input::Input() {
 		// Always use standard behavior in the editor.
 		legacy_just_pressed_behavior = false;
 	}
+
+	accelerometer_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_accelerometer", false);
+	gravity_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gravity", false);
+	gyroscope_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gyroscope", false);
+	magnetometer_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_magnetometer", false);
 }
 
 Input::~Input() {
