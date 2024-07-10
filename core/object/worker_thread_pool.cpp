@@ -665,6 +665,15 @@ int WorkerThreadPool::get_thread_index() {
 	return singleton->thread_ids.has(tid) ? singleton->thread_ids[tid] : -1;
 }
 
+WorkerThreadPool::TaskID WorkerThreadPool::get_caller_task_id() {
+	int th_index = get_thread_index();
+	if (th_index != -1 && singleton->threads[th_index].current_task) {
+		return singleton->threads[th_index].current_task->self;
+	} else {
+		return INVALID_TASK_ID;
+	}
+}
+
 #ifdef THREADS_ENABLED
 uint32_t WorkerThreadPool::thread_enter_unlock_allowance_zone(Mutex *p_mutex) {
 	return _thread_enter_unlock_allowance_zone(p_mutex, false);
