@@ -2276,6 +2276,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	Vector<StringName> former_names;
 
 	int inc = 0;
+	bool need_edit = false;
 
 	for (int ni = 0; ni < p_nodes.size(); ni++) {
 		// No undo implemented for this yet.
@@ -2296,7 +2297,11 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			inc--; // If the child will generate a gap when moved, adjust.
 		}
 
-		if (!same_parent) {
+		if (same_parent) {
+			// When node is reparented to the same parent, EditorSelection does not change.
+			// After hovering another node, the inspector has to be manually updated in this case.
+			need_edit = select_node_hovered_at_end_of_drag;
+		} else {
 			undo_redo->add_do_method(node->get_parent(), "remove_child", node);
 			undo_redo->add_do_method(new_parent, "add_child", node, true);
 		}
@@ -2401,6 +2406,10 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	perform_node_renames(nullptr, &path_renames);
 
 	undo_redo->commit_action();
+
+	if (need_edit) {
+		EditorNode::get_singleton()->edit_current();
+	}
 }
 
 void SceneTreeDock::_script_created(Ref<Script> p_script) {

@@ -1087,6 +1087,7 @@ static bool _rasterDirectScaledMaskedImage(SwSurface* surface, const SwImage* im
 
 static bool _rasterScaledMaskedImage(SwSurface* surface, const SwImage* image, const Matrix* itransform, const SwBBox& region, uint8_t opacity)
 {
+    TVGERR("SW_ENGINE", "Not supported ScaledMaskedImage!");
 #if 0 //Enable it when GRAYSCALE image is supported
     TVGLOG("SW_ENGINE", "Scaled Masked(%d) Image [Region: %lu %lu %lu %lu]", (int)surface->compositor->method, region.min.x, region.min.y, region.max.x - region.min.x, region.max.y - region.min.y);
 
@@ -1100,6 +1101,11 @@ static bool _rasterScaledMaskedImage(SwSurface* surface, const SwImage* image, c
 
 static bool _rasterScaledMattedImage(SwSurface* surface, const SwImage* image, const Matrix* itransform, const SwBBox& region, uint8_t opacity)
 {
+    if (surface->channelSize == sizeof(uint8_t)) {
+        TVGERR("SW_ENGINE", "Not supported grayscale scaled matted image!");
+        return false;
+    }
+
     auto dbuffer = surface->buf32 + (region.min.y * surface->stride + region.min.x);
     auto csize = surface->compositor->image.channelSize;
     auto cbuffer = surface->compositor->image.buf8 + (region.min.y * surface->compositor->image.stride + region.min.x) * csize;
@@ -1130,6 +1136,11 @@ static bool _rasterScaledMattedImage(SwSurface* surface, const SwImage* image, c
 
 static bool _rasterScaledBlendingImage(SwSurface* surface, const SwImage* image, const Matrix* itransform, const SwBBox& region, uint8_t opacity)
 {
+    if (surface->channelSize == sizeof(uint8_t)) {
+        TVGERR("SW_ENGINE", "Not supported grayscale scaled blending image!");
+        return false;
+    }
+
     auto dbuffer = surface->buf32 + (region.min.y * surface->stride + region.min.x);
     auto scaleMethod = image->scale < DOWN_SCALE_TOLERANCE ? _interpDownScaler : _interpUpScaler;
     auto sampleSize = _sampleSize(image->scale);
@@ -1152,19 +1163,33 @@ static bool _rasterScaledBlendingImage(SwSurface* surface, const SwImage* image,
 
 static bool _rasterScaledImage(SwSurface* surface, const SwImage* image, const Matrix* itransform, const SwBBox& region, uint8_t opacity)
 {
-    auto dbuffer = surface->buf32 + (region.min.y * surface->stride + region.min.x);
     auto scaleMethod = image->scale < DOWN_SCALE_TOLERANCE ? _interpDownScaler : _interpUpScaler;
     auto sampleSize = _sampleSize(image->scale);
     int32_t miny = 0, maxy = 0;
 
-    for (auto y = region.min.y; y < region.max.y; ++y, dbuffer += surface->stride) {
-        SCALED_IMAGE_RANGE_Y(y)
-        auto dst = dbuffer;
-        for (auto x = region.min.x; x < region.max.x; ++x, ++dst) {
-            SCALED_IMAGE_RANGE_X
-            auto src = scaleMethod(image->buf32, image->stride, image->w, image->h, sx, sy, miny, maxy, sampleSize);
-            if (opacity < 255) src = ALPHA_BLEND(src, opacity);
-            *dst = src + ALPHA_BLEND(*dst, IA(src));
+    //32bits channels
+    if (surface->channelSize == sizeof(uint32_t)) {
+        auto buffer = surface->buf32 + (region.min.y * surface->stride + region.min.x);
+        for (auto y = region.min.y; y < region.max.y; ++y, buffer += surface->stride) {
+            SCALED_IMAGE_RANGE_Y(y)
+            auto dst = buffer;
+            for (auto x = region.min.x; x < region.max.x; ++x, ++dst) {
+                SCALED_IMAGE_RANGE_X
+                auto src = scaleMethod(image->buf32, image->stride, image->w, image->h, sx, sy, miny, maxy, sampleSize);
+                if (opacity < 255) src = ALPHA_BLEND(src, opacity);
+                *dst = src + ALPHA_BLEND(*dst, IA(src));
+            }
+        }
+    } else if (surface->channelSize == sizeof(uint8_t)) {
+        auto buffer = surface->buf8 + (region.min.y * surface->stride + region.min.x);
+        for (auto y = region.min.y; y < region.max.y; ++y, buffer += surface->stride) {
+            SCALED_IMAGE_RANGE_Y(y)
+            auto dst = buffer;
+            for (auto x = region.min.x; x < region.max.x; ++x, ++dst) {
+                SCALED_IMAGE_RANGE_X
+                auto src = scaleMethod(image->buf32, image->stride, image->w, image->h, sx, sy, miny, maxy, sampleSize);
+                *dst = MULTIPLY(A(src), opacity);
+            }
         }
     }
     return true;
@@ -1173,11 +1198,6 @@ static bool _rasterScaledImage(SwSurface* surface, const SwImage* image, const M
 
 static bool _scaledImage(SwSurface* surface, const SwImage* image, const Matrix* transform, const SwBBox& region, uint8_t opacity)
 {
-    if (surface->channelSize == sizeof(uint8_t)) {
-        TVGERR("SW_ENGINE", "Not supported grayscale Textmap polygon mesh!");
-        return false;
-    }
-
     Matrix itransform;
 
     if (transform) {

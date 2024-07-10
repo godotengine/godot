@@ -688,6 +688,7 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 			Error wtp_task_err = FAILED;
 			if (loader_is_wtp) {
 				// Loading thread is in the worker pool.
+				load_task.awaited = true;
 				thread_load_mutex.unlock();
 				wtp_task_err = WorkerThreadPool::get_singleton()->wait_for_task_completion(load_task.task_id);
 			}
@@ -712,7 +713,6 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 					} else {
 						DEV_ASSERT(wtp_task_err == OK);
 						thread_load_mutex.lock();
-						load_task.awaited = true;
 					}
 				} else {
 					// Loading thread is main or user thread.

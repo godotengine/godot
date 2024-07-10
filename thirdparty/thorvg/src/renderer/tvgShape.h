@@ -296,6 +296,7 @@ struct Shape::Impl
         if (!rs.stroke) rs.stroke = new RenderStroke();
         if (rs.stroke->fill && rs.stroke->fill != p) delete(rs.stroke->fill);
         rs.stroke->fill = p;
+        rs.stroke->color[3] = 0;
 
         flag |= RenderUpdateFlag::Stroke;
         flag |= RenderUpdateFlag::GradientStroke;

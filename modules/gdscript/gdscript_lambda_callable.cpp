@@ -198,6 +198,10 @@ ObjectID GDScriptLambdaSelfCallable::get_object() const {
 	return object->get_instance_id();
 }
 
+StringName GDScriptLambdaSelfCallable::get_method() const {
+	return function->get_name();
+}
+
 int GDScriptLambdaSelfCallable::get_argument_count(bool &r_is_valid) const {
 	if (function == nullptr) {
 		r_is_valid = false;

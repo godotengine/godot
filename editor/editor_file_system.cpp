@@ -150,6 +150,11 @@ uint64_t EditorFileSystemDirectory::get_file_modified_time(int p_idx) const {
 	return files[p_idx]->modified_time;
 }
 
+uint64_t EditorFileSystemDirectory::get_file_import_modified_time(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, files.size(), 0);
+	return files[p_idx]->import_modified_time;
+}
+
 String EditorFileSystemDirectory::get_file_script_class_name(int p_idx) const {
 	return files[p_idx]->script_class_name;
 }
@@ -720,12 +725,22 @@ bool EditorFileSystem::_update_scan_actions() {
 				int idx = ia.dir->find_file_index(ia.file);
 				ERR_CONTINUE(idx == -1);
 				String full_path = ia.dir->get_file_path(idx);
-				if (_test_for_reimport(full_path, false)) {
+
+				bool need_reimport = _test_for_reimport(full_path, false);
+				if (!need_reimport && FileAccess::exists(full_path + ".import")) {
+					uint64_t import_mt = ia.dir->get_file_import_modified_time(idx);
+					if (import_mt != FileAccess::get_modified_time(full_path + ".import")) {
+						need_reimport = true;
+					}
+				}
+
+				if (need_reimport) {
 					//must reimport
 					reimports.push_back(full_path);
 					Vector<String> dependencies = _get_dependencies(full_path);
-					for (const String &dependency_path : dependencies) {
-						if (import_extensions.has(dependency_path.get_extension())) {
+					for (const String &dep : dependencies) {
+						const String &dependency_path = dep.contains("::") ? dep.get_slice("::", 0) : dep;
+						if (import_extensions.has(dep.get_extension())) {
 							reimports.push_back(dependency_path);
 						}
 					}
@@ -1748,7 +1763,8 @@ String EditorFileSystem::_get_global_script_class(const String &p_type, const St
 void EditorFileSystem::_update_file_icon_path(EditorFileSystemDirectory::FileInfo *file_info) {
 	String icon_path;
 	if (file_info->script_class_icon_path.is_empty() && !file_info->deps.is_empty()) {
-		const String &script_path = file_info->deps[0]; // Assuming the first dependency is a script.
+		const String &script_dep = file_info->deps[0]; // Assuming the first dependency is a script.
+		const String &script_path = script_dep.contains("::") ? script_dep.get_slice("::", 2) : script_dep;
 		if (!script_path.is_empty()) {
 			String *cached = file_icon_cache.getptr(script_path);
 			if (cached) {
