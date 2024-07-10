@@ -2048,7 +2048,7 @@ Vector<Vector2> GLTFDocument::_decode_accessor_as_vec2(Ref<GLTFState> p_state, c
 	return ret;
 }
 
-GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> p_state, const Vector<real_t> p_attribs, const bool p_for_vertex) {
+GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> p_state, const Vector<double> p_attribs, const bool p_for_vertex) {
 	if (p_attribs.size() == 0) {
 		return -1;
 	}
@@ -4897,7 +4897,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> p_state) {
 	for (GLTFAnimationIndex animation_i = 0; animation_i < p_state->animations.size(); animation_i++) {
 		Dictionary d;
 		Ref<GLTFAnimation> gltf_animation = p_state->animations[animation_i];
-		if (!gltf_animation->get_tracks().size()) {
+		if (gltf_animation->is_empty_of_tracks()) {
 			continue;
 		}
 
@@ -4906,18 +4906,18 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> p_state) {
 		}
 		Array channels;
 		Array samplers;
-
-		for (KeyValue<int, GLTFAnimation::Track> &track_i : gltf_animation->get_tracks()) {
-			GLTFAnimation::Track track = track_i.value;
+		// Serialize glTF node tracks with the vanilla glTF animation system.
+		for (KeyValue<int, GLTFAnimation::NodeTrack> &track_i : gltf_animation->get_node_tracks()) {
+			GLTFAnimation::NodeTrack track = track_i.value;
 			if (track.position_track.times.size()) {
 				Dictionary t;
 				t["sampler"] = samplers.size();
 				Dictionary s;
 
 				s["interpolation"] = interpolation_to_string(track.position_track.interpolation);
-				Vector<real_t> times = Variant(track.position_track.times);
+				Vector<double> times = track.position_track.times;
 				s["input"] = _encode_accessor_as_floats(p_state, times, false);
-				Vector<Vector3> values = Variant(track.position_track.values);
+				Vector<Vector3> values = track.position_track.values;
 				s["output"] = _encode_accessor_as_vec3(p_state, values, false);
 
 				samplers.push_back(s);
@@ -4935,7 +4935,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> p_state) {
 				Dictionary s;
 
 				s["interpolation"] = interpolation_to_string(track.rotation_track.interpolation);
-				Vector<real_t> times = Variant(track.rotation_track.times);
+				Vector<double> times = track.rotation_track.times;
 				s["input"] = _encode_accessor_as_floats(p_state, times, false);
 				Vector<Quaternion> values = track.rotation_track.values;
 				s["output"] = _encode_accessor_as_quaternions(p_state, values, false);
@@ -4955,9 +4955,9 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> p_state) {
 				Dictionary s;
 
 				s["interpolation"] = interpolation_to_string(track.scale_track.interpolation);
-				Vector<real_t> times = Variant(track.scale_track.times);
+				Vector<double> times = track.scale_track.times;
 				s["input"] = _encode_accessor_as_floats(p_state, times, false);
-				Vector<Vector3> values = Variant(track.scale_track.values);
+				Vector<Vector3> values = track.scale_track.values;
 				s["output"] = _encode_accessor_as_vec3(p_state, values, false);
 
 				samplers.push_back(s);
@@ -4980,7 +4980,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> p_state) {
 				Dictionary t;
 				t["sampler"] = samplers.size();
 				Dictionary s;
-				Vector<real_t> times;
+				Vector<double> times;
 				const double increment = 1.0 / p_state->get_bake_fps();
 				{
 					double time = 0.0;
@@ -5021,8 +5021,8 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> p_state) {
 					track.weight_tracks.write[track_idx].values = weight_track;
 				}
 
-				Vector<real_t> all_track_times = times;
-				Vector<real_t> all_track_values;
+				Vector<double> all_track_times = times;
+				Vector<double> all_track_values;
 				int32_t values_size = track.weight_tracks[0].values.size();
 				int32_t weight_tracks_size = track.weight_tracks.size();
 				all_track_values.resize(weight_tracks_size * values_size);
@@ -5073,21 +5073,21 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> p_state) {
 
 	const Array &animations = p_state->json["animations"];
 
-	for (GLTFAnimationIndex i = 0; i < animations.size(); i++) {
-		const Dictionary &d = animations[i];
+	for (GLTFAnimationIndex anim_index = 0; anim_index < animations.size(); anim_index++) {
+		const Dictionary &anim_dict = animations[anim_index];
 
 		Ref<GLTFAnimation> animation;
 		animation.instantiate();
 
-		if (!d.has("channels") || !d.has("samplers")) {
+		if (!anim_dict.has("channels") || !anim_dict.has("samplers")) {
 			continue;
 		}
 
-		Array channels = d["channels"];
-		Array samplers = d["samplers"];
+		Array channels = anim_dict["channels"];
+		Array samplers = anim_dict["samplers"];
 
-		if (d.has("name")) {
-			const String anim_name = d["name"];
+		if (anim_dict.has("name")) {
+			const String anim_name = anim_dict["name"];
 			const String anim_name_lower = anim_name.to_lower();
 			if (anim_name_lower.begins_with("loop") || anim_name_lower.ends_with("loop") || anim_name_lower.begins_with("cycle") || anim_name_lower.ends_with("cycle")) {
 				animation->set_loop(true);
@@ -5096,46 +5096,22 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> p_state) {
 			animation->set_name(_gen_unique_animation_name(p_state, anim_name));
 		}
 
-		for (int j = 0; j < channels.size(); j++) {
-			const Dictionary &c = channels[j];
-			if (!c.has("target")) {
-				continue;
-			}
-
-			const Dictionary &t = c["target"];
-			if (!t.has("node") || !t.has("path")) {
-				continue;
-			}
-
-			ERR_FAIL_COND_V(!c.has("sampler"), ERR_PARSE_ERROR);
-			const int sampler = c["sampler"];
-			ERR_FAIL_INDEX_V(sampler, samplers.size(), ERR_PARSE_ERROR);
-
-			GLTFNodeIndex node = t["node"];
-			String path = t["path"];
-
-			ERR_FAIL_INDEX_V(node, p_state->nodes.size(), ERR_PARSE_ERROR);
-
-			GLTFAnimation::Track *track = nullptr;
-
-			if (!animation->get_tracks().has(node)) {
-				animation->get_tracks()[node] = GLTFAnimation::Track();
-			}
-
-			track = &animation->get_tracks()[node];
-
-			const Dictionary &s = samplers[sampler];
-
-			ERR_FAIL_COND_V(!s.has("input"), ERR_PARSE_ERROR);
-			ERR_FAIL_COND_V(!s.has("output"), ERR_PARSE_ERROR);
-
-			const int input = s["input"];
-			const int output = s["output"];
-
+		for (int channel_index = 0; channel_index < channels.size(); channel_index++) {
+			const Dictionary &anim_channel = channels[channel_index];
+			ERR_FAIL_COND_V_MSG(!anim_channel.has("sampler"), ERR_PARSE_ERROR, "glTF: Animation channel missing required 'sampler' property.");
+			ERR_FAIL_COND_V_MSG(!anim_channel.has("target"), ERR_PARSE_ERROR, "glTF: Animation channel missing required 'target' property.");
+			// Parse sampler.
+			const int sampler_index = anim_channel["sampler"];
+			ERR_FAIL_INDEX_V(sampler_index, samplers.size(), ERR_PARSE_ERROR);
+			const Dictionary &sampler_dict = samplers[sampler_index];
+			ERR_FAIL_COND_V(!sampler_dict.has("input"), ERR_PARSE_ERROR);
+			ERR_FAIL_COND_V(!sampler_dict.has("output"), ERR_PARSE_ERROR);
+			const int input_time_accessor_index = sampler_dict["input"];
+			const int output_value_accessor_index = sampler_dict["output"];
 			GLTFAnimation::Interpolation interp = GLTFAnimation::INTERP_LINEAR;
 			int output_count = 1;
-			if (s.has("interpolation")) {
-				const String &in = s["interpolation"];
+			if (sampler_dict.has("interpolation")) {
+				const String &in = sampler_dict["interpolation"];
 				if (in == "STEP") {
 					interp = GLTFAnimation::INTERP_STEP;
 				} else if (in == "LINEAR") {
@@ -5148,30 +5124,50 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> p_state) {
 					output_count = 3;
 				}
 			}
+			const Vector<double> times = _decode_accessor(p_state, input_time_accessor_index, false);
+			// Parse target.
+			const Dictionary &anim_target = anim_channel["target"];
+			ERR_FAIL_COND_V_MSG(!anim_target.has("path"), ERR_PARSE_ERROR, "glTF: Animation channel target missing required 'path' property.");
+			String path = anim_target["path"];
+			if (!anim_target.has("node")) {
+				WARN_PRINT("glTF: Animation channel target missing 'node' property. Ignoring this channel.");
+				continue;
+			}
 
-			const Vector<float> times = _decode_accessor_as_floats(p_state, input, false);
+			GLTFNodeIndex node = anim_target["node"];
+
+			ERR_FAIL_INDEX_V(node, p_state->nodes.size(), ERR_PARSE_ERROR);
+
+			GLTFAnimation::NodeTrack *track = nullptr;
+
+			if (!animation->get_node_tracks().has(node)) {
+				animation->get_node_tracks()[node] = GLTFAnimation::NodeTrack();
+			}
+
+			track = &animation->get_node_tracks()[node];
+
 			if (path == "translation") {
-				const Vector<Vector3> positions = _decode_accessor_as_vec3(p_state, output, false);
+				const Vector<Vector3> positions = _decode_accessor_as_vec3(p_state, output_value_accessor_index, false);
 				track->position_track.interpolation = interp;
-				track->position_track.times = Variant(times); //convert via variant
-				track->position_track.values = Variant(positions); //convert via variant
+				track->position_track.times = times;
+				track->position_track.values = positions;
 			} else if (path == "rotation") {
-				const Vector<Quaternion> rotations = _decode_accessor_as_quaternion(p_state, output, false);
+				const Vector<Quaternion> rotations = _decode_accessor_as_quaternion(p_state, output_value_accessor_index, false);
 				track->rotation_track.interpolation = interp;
-				track->rotation_track.times = Variant(times); //convert via variant
+				track->rotation_track.times = times;
 				track->rotation_track.values = rotations;
 			} else if (path == "scale") {
-				const Vector<Vector3> scales = _decode_accessor_as_vec3(p_state, output, false);
+				const Vector<Vector3> scales = _decode_accessor_as_vec3(p_state, output_value_accessor_index, false);
 				track->scale_track.interpolation = interp;
-				track->scale_track.times = Variant(times); //convert via variant
-				track->scale_track.values = Variant(scales); //convert via variant
+				track->scale_track.times = times;
+				track->scale_track.values = scales;
 			} else if (path == "weights") {
-				const Vector<float> weights = _decode_accessor_as_floats(p_state, output, false);
+				const Vector<float> weights = _decode_accessor_as_floats(p_state, output_value_accessor_index, false);
 
 				ERR_FAIL_INDEX_V(p_state->nodes[node]->mesh, p_state->meshes.size(), ERR_PARSE_ERROR);
 				Ref<GLTFMesh> mesh = p_state->meshes[p_state->nodes[node]->mesh];
-				ERR_CONTINUE(!mesh->get_blend_weights().size());
 				const int wc = mesh->get_blend_weights().size();
+				ERR_CONTINUE_MSG(wc == 0, "glTF: Animation tried to animate weights, but mesh has no weights.");
 
 				track->weight_tracks.resize(wc);
 
@@ -5409,7 +5405,7 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 		_convert_light_to_gltf(light, p_state, gltf_node);
 	} else if (cast_to<AnimationPlayer>(p_current)) {
 		AnimationPlayer *animation_player = Object::cast_to<AnimationPlayer>(p_current);
-		_convert_animation_player_to_gltf(animation_player, p_state, p_gltf_parent, p_gltf_root, gltf_node, p_current);
+		p_state->animation_players.push_back(animation_player);
 	}
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
@@ -5486,12 +5482,6 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	p_gltf_node->set_name(_gen_unique_name(p_state, csg->get_name()));
 }
 #endif // MODULE_CSG_ENABLED
-
-void GLTFDocument::_convert_animation_player_to_gltf(AnimationPlayer *p_animation_player, Ref<GLTFState> p_state, GLTFNodeIndex p_gltf_current, GLTFNodeIndex p_gltf_root_index, Ref<GLTFNode> p_gltf_node, Node *p_scene_parent) {
-	ERR_FAIL_NULL(p_animation_player);
-	p_state->animation_players.push_back(p_animation_player);
-	print_verbose(String("glTF: Converting animation player: ") + p_animation_player->get_name());
-}
 
 void GLTFDocument::_check_visibility(Node *p_node, bool &r_retflag) {
 	r_retflag = true;
@@ -5970,7 +5960,7 @@ struct SceneFormatImporterGLTFInterpolate<Quaternion> {
 };
 
 template <typename T>
-T GLTFDocument::_interpolate_track(const Vector<real_t> &p_times, const Vector<T> &p_values, const float p_time, const GLTFAnimation::Interpolation p_interp) {
+T GLTFDocument::_interpolate_track(const Vector<double> &p_times, const Vector<T> &p_values, const float p_time, const GLTFAnimation::Interpolation p_interp) {
 	ERR_FAIL_COND_V(p_values.is_empty(), T());
 	if (p_times.size() != (p_values.size() / (p_interp == GLTFAnimation::INTERP_CUBIC_SPLINE ? 3 : 1))) {
 		ERR_PRINT_ONCE("The interpolated values are not corresponding to its times.");
@@ -6043,6 +6033,8 @@ T GLTFDocument::_interpolate_track(const Vector<real_t> &p_times, const Vector<T
 
 void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, const GLTFAnimationIndex p_index, const bool p_trimming, const bool p_remove_immutable_tracks) {
 	ERR_FAIL_COND(p_state.is_null());
+	Node *scene_root = p_animation_player->get_parent();
+	ERR_FAIL_NULL(scene_root);
 	Ref<GLTFAnimation> anim = p_state->animations[p_index];
 
 	String anim_name = anim->get_name();
@@ -6063,8 +6055,8 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 	double anim_start = p_trimming ? INFINITY : 0.0;
 	double anim_end = 0.0;
 
-	for (const KeyValue<int, GLTFAnimation::Track> &track_i : anim->get_tracks()) {
-		const GLTFAnimation::Track &track = track_i.value;
+	for (const KeyValue<int, GLTFAnimation::NodeTrack> &track_i : anim->get_node_tracks()) {
+		const GLTFAnimation::NodeTrack &track = track_i.value;
 		//need to find the path: for skeletons, weight tracks will affect the mesh
 		NodePath node_path;
 		//for skeletons, transform tracks always affect bones
@@ -6076,14 +6068,12 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 
 		const Ref<GLTFNode> gltf_node = p_state->nodes[track_i.key];
 
-		Node *root = p_animation_player->get_parent();
-		ERR_FAIL_NULL(root);
 		HashMap<GLTFNodeIndex, Node *>::Iterator node_element = p_state->scene_nodes.find(node_index);
 		ERR_CONTINUE_MSG(!node_element, vformat("Unable to find node %d for animation.", node_index));
-		node_path = root->get_path_to(node_element->value);
+		node_path = scene_root->get_path_to(node_element->value);
 		HashMap<GLTFNodeIndex, ImporterMeshInstance3D *>::Iterator mesh_instance_element = p_state->scene_mesh_instances.find(node_index);
 		if (mesh_instance_element) {
-			mesh_instance_node_path = root->get_path_to(mesh_instance_element->value);
+			mesh_instance_node_path = scene_root->get_path_to(mesh_instance_element->value);
 		} else {
 			mesh_instance_node_path = node_path;
 		}
@@ -6487,41 +6477,56 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene
 	}
 }
 
-GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> p_state, GLTFAnimation::Track p_track, Ref<Animation> p_animation, int32_t p_track_i, GLTFNodeIndex p_node_i) {
-	Animation::InterpolationType interpolation = p_animation->track_get_interpolation_type(p_track_i);
+GLTFNodeIndex GLTFDocument::_node_and_or_bone_to_gltf_node_index(Ref<GLTFState> p_state, const Vector<StringName> &p_node_subpath, const Node *p_godot_node) {
+	const Skeleton3D *skeleton = cast_to<Skeleton3D>(p_godot_node);
+	if (skeleton && p_node_subpath.size() == 1) {
+		// Special case: Handle skeleton bone TRS tracks. They use the format `A/B/C/Skeleton3D:bone_name`.
+		// We have a Skeleton3D, check if it has a bone with the same name as this subpath.
+		const String &bone_name = p_node_subpath[0];
+		const int32_t bone_index = skeleton->find_bone(bone_name);
+		if (bone_index != -1) {
+			// A bone was found! But we still need to figure out which glTF node it corresponds to.
+			for (GLTFSkeletonIndex skeleton_i = 0; skeleton_i < p_state->skeletons.size(); skeleton_i++) {
+				const Ref<GLTFSkeleton> &skeleton_gltf = p_state->skeletons[skeleton_i];
+				if (skeleton == skeleton_gltf->godot_skeleton) {
+					GLTFNodeIndex node_i = skeleton_gltf->godot_bone_node[bone_index];
+					return node_i;
+				}
+			}
+			ERR_FAIL_V_MSG(-1, vformat("glTF: Found a bone %s in a Skeleton3D that wasn't in the GLTFState. Ensure that all nodes referenced by the AnimationPlayer are in the scene you are exporting.", bone_name));
+		}
+	}
+	// General case: Not a skeleton bone, usually this means a normal node, or it could be the Skeleton3D itself.
+	for (const KeyValue<GLTFNodeIndex, Node *> &scene_node_i : p_state->scene_nodes) {
+		if (scene_node_i.value == p_godot_node) {
+			return scene_node_i.key;
+		}
+	}
+	ERR_FAIL_V_MSG(-1, vformat("glTF: A node was animated, but it wasn't found in the GLTFState. Ensure that all nodes referenced by the AnimationPlayer are in the scene you are exporting."));
+}
 
-	GLTFAnimation::Interpolation gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
-	if (interpolation == Animation::InterpolationType::INTERPOLATION_LINEAR) {
-		gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
-	} else if (interpolation == Animation::InterpolationType::INTERPOLATION_NEAREST) {
-		gltf_interpolation = GLTFAnimation::INTERP_STEP;
-	} else if (interpolation == Animation::InterpolationType::INTERPOLATION_CUBIC) {
-		gltf_interpolation = GLTFAnimation::INTERP_CUBIC_SPLINE;
-	}
-	Animation::TrackType track_type = p_animation->track_get_type(p_track_i);
-	int32_t key_count = p_animation->track_get_key_count(p_track_i);
-	Vector<real_t> times;
-	times.resize(key_count);
-	String path = p_animation->track_get_path(p_track_i);
-	for (int32_t key_i = 0; key_i < key_count; key_i++) {
-		times.write[key_i] = p_animation->track_get_key_time(p_track_i, key_i);
-	}
-	double anim_end = p_animation->get_length();
+bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAnimation::NodeTrack &p_gltf_node_track, const Ref<Animation> &p_godot_animation, int32_t p_godot_anim_track_index, Vector<double> &p_times) {
+	GLTFAnimation::Interpolation gltf_interpolation = GLTFAnimation::godot_to_gltf_interpolation(p_godot_animation, p_godot_anim_track_index);
+	const Animation::TrackType track_type = p_godot_animation->track_get_type(p_godot_anim_track_index);
+	const int32_t key_count = p_godot_animation->track_get_key_count(p_godot_anim_track_index);
+	const NodePath node_path = p_godot_animation->track_get_path(p_godot_anim_track_index);
+	const Vector<StringName> subpath = node_path.get_subnames();
+	double anim_end = p_godot_animation->get_length();
 	if (track_type == Animation::TYPE_SCALE_3D) {
 		if (gltf_interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE) {
 			gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
-			p_track.scale_track.times.clear();
-			p_track.scale_track.values.clear();
+			p_gltf_node_track.scale_track.times.clear();
+			p_gltf_node_track.scale_track.values.clear();
 			// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
 			const double increment = 1.0 / p_state->get_bake_fps();
 			double time = 0.0;
 			bool last = false;
 			while (true) {
 				Vector3 scale;
-				Error err = p_animation->try_scale_track_interpolate(p_track_i, time, &scale);
+				Error err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
 				ERR_CONTINUE(err != OK);
-				p_track.scale_track.values.push_back(scale);
-				p_track.scale_track.times.push_back(time);
+				p_gltf_node_track.scale_track.values.push_back(scale);
+				p_gltf_node_track.scale_track.times.push_back(time);
 				if (last) {
 					break;
 				}
@@ -6532,31 +6537,31 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> p_sta
 				}
 			}
 		} else {
-			p_track.scale_track.times = times;
-			p_track.scale_track.interpolation = gltf_interpolation;
-			p_track.scale_track.values.resize(key_count);
+			p_gltf_node_track.scale_track.times = p_times;
+			p_gltf_node_track.scale_track.interpolation = gltf_interpolation;
+			p_gltf_node_track.scale_track.values.resize(key_count);
 			for (int32_t key_i = 0; key_i < key_count; key_i++) {
 				Vector3 scale;
-				Error err = p_animation->scale_track_get_key(p_track_i, key_i, &scale);
+				Error err = p_godot_animation->scale_track_get_key(p_godot_anim_track_index, key_i, &scale);
 				ERR_CONTINUE(err != OK);
-				p_track.scale_track.values.write[key_i] = scale;
+				p_gltf_node_track.scale_track.values.write[key_i] = scale;
 			}
 		}
 	} else if (track_type == Animation::TYPE_POSITION_3D) {
 		if (gltf_interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE) {
 			gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
-			p_track.position_track.times.clear();
-			p_track.position_track.values.clear();
+			p_gltf_node_track.position_track.times.clear();
+			p_gltf_node_track.position_track.values.clear();
 			// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
 			const double increment = 1.0 / p_state->get_bake_fps();
 			double time = 0.0;
 			bool last = false;
 			while (true) {
 				Vector3 scale;
-				Error err = p_animation->try_position_track_interpolate(p_track_i, time, &scale);
+				Error err = p_godot_animation->try_position_track_interpolate(p_godot_anim_track_index, time, &scale);
 				ERR_CONTINUE(err != OK);
-				p_track.position_track.values.push_back(scale);
-				p_track.position_track.times.push_back(time);
+				p_gltf_node_track.position_track.values.push_back(scale);
+				p_gltf_node_track.position_track.times.push_back(time);
 				if (last) {
 					break;
 				}
@@ -6567,31 +6572,31 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> p_sta
 				}
 			}
 		} else {
-			p_track.position_track.times = times;
-			p_track.position_track.values.resize(key_count);
-			p_track.position_track.interpolation = gltf_interpolation;
+			p_gltf_node_track.position_track.times = p_times;
+			p_gltf_node_track.position_track.values.resize(key_count);
+			p_gltf_node_track.position_track.interpolation = gltf_interpolation;
 			for (int32_t key_i = 0; key_i < key_count; key_i++) {
 				Vector3 position;
-				Error err = p_animation->position_track_get_key(p_track_i, key_i, &position);
+				Error err = p_godot_animation->position_track_get_key(p_godot_anim_track_index, key_i, &position);
 				ERR_CONTINUE(err != OK);
-				p_track.position_track.values.write[key_i] = position;
+				p_gltf_node_track.position_track.values.write[key_i] = position;
 			}
 		}
 	} else if (track_type == Animation::TYPE_ROTATION_3D) {
 		if (gltf_interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE) {
 			gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
-			p_track.rotation_track.times.clear();
-			p_track.rotation_track.values.clear();
+			p_gltf_node_track.rotation_track.times.clear();
+			p_gltf_node_track.rotation_track.values.clear();
 			// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
 			const double increment = 1.0 / p_state->get_bake_fps();
 			double time = 0.0;
 			bool last = false;
 			while (true) {
 				Quaternion rotation;
-				Error err = p_animation->try_rotation_track_interpolate(p_track_i, time, &rotation);
+				Error err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
 				ERR_CONTINUE(err != OK);
-				p_track.rotation_track.values.push_back(rotation);
-				p_track.rotation_track.times.push_back(time);
+				p_gltf_node_track.rotation_track.values.push_back(rotation);
+				p_gltf_node_track.rotation_track.times.push_back(time);
 				if (last) {
 					break;
 				}
@@ -6602,306 +6607,324 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> p_sta
 				}
 			}
 		} else {
-			p_track.rotation_track.times = times;
-			p_track.rotation_track.values.resize(key_count);
-			p_track.rotation_track.interpolation = gltf_interpolation;
+			p_gltf_node_track.rotation_track.times = p_times;
+			p_gltf_node_track.rotation_track.values.resize(key_count);
+			p_gltf_node_track.rotation_track.interpolation = gltf_interpolation;
 			for (int32_t key_i = 0; key_i < key_count; key_i++) {
 				Quaternion rotation;
-				Error err = p_animation->rotation_track_get_key(p_track_i, key_i, &rotation);
+				Error err = p_godot_animation->rotation_track_get_key(p_godot_anim_track_index, key_i, &rotation);
 				ERR_CONTINUE(err != OK);
-				p_track.rotation_track.values.write[key_i] = rotation;
+				p_gltf_node_track.rotation_track.values.write[key_i] = rotation;
 			}
 		}
-	} else if (track_type == Animation::TYPE_VALUE) {
-		if (path.contains(":position")) {
-			p_track.position_track.interpolation = gltf_interpolation;
-			p_track.position_track.times = times;
-			p_track.position_track.values.resize(key_count);
+	} else if (subpath.size() > 0) {
+		const StringName &node_prop = subpath[0];
+		if (track_type == Animation::TYPE_VALUE) {
+			if (node_prop == "position") {
+				p_gltf_node_track.position_track.interpolation = gltf_interpolation;
+				p_gltf_node_track.position_track.times = p_times;
+				p_gltf_node_track.position_track.values.resize(key_count);
 
-			if (gltf_interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE) {
-				gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
-				p_track.position_track.times.clear();
-				p_track.position_track.values.clear();
-				// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
-				const double increment = 1.0 / p_state->get_bake_fps();
-				double time = 0.0;
-				bool last = false;
-				while (true) {
-					Vector3 position;
-					Error err = p_animation->try_position_track_interpolate(p_track_i, time, &position);
-					ERR_CONTINUE(err != OK);
-					p_track.position_track.values.push_back(position);
-					p_track.position_track.times.push_back(time);
-					if (last) {
-						break;
+				if (gltf_interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE) {
+					gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
+					p_gltf_node_track.position_track.times.clear();
+					p_gltf_node_track.position_track.values.clear();
+					// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
+					const double increment = 1.0 / p_state->get_bake_fps();
+					double time = 0.0;
+					bool last = false;
+					while (true) {
+						Vector3 position;
+						Error err = p_godot_animation->try_position_track_interpolate(p_godot_anim_track_index, time, &position);
+						ERR_CONTINUE(err != OK);
+						p_gltf_node_track.position_track.values.push_back(position);
+						p_gltf_node_track.position_track.times.push_back(time);
+						if (last) {
+							break;
+						}
+						time += increment;
+						if (time >= anim_end) {
+							last = true;
+							time = anim_end;
+						}
 					}
-					time += increment;
-					if (time >= anim_end) {
-						last = true;
-						time = anim_end;
+				} else {
+					for (int32_t key_i = 0; key_i < key_count; key_i++) {
+						Vector3 position = p_godot_animation->track_get_key_value(p_godot_anim_track_index, key_i);
+						p_gltf_node_track.position_track.values.write[key_i] = position;
+					}
+				}
+			} else if (node_prop == "rotation" || node_prop == "rotation_degrees" || node_prop == "quaternion") {
+				p_gltf_node_track.rotation_track.interpolation = gltf_interpolation;
+				p_gltf_node_track.rotation_track.times = p_times;
+				p_gltf_node_track.rotation_track.values.resize(key_count);
+				if (gltf_interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE) {
+					gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
+					p_gltf_node_track.rotation_track.times.clear();
+					p_gltf_node_track.rotation_track.values.clear();
+					// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
+					const double increment = 1.0 / p_state->get_bake_fps();
+					double time = 0.0;
+					bool last = false;
+					while (true) {
+						Quaternion rotation;
+						Error err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
+						ERR_CONTINUE(err != OK);
+						p_gltf_node_track.rotation_track.values.push_back(rotation);
+						p_gltf_node_track.rotation_track.times.push_back(time);
+						if (last) {
+							break;
+						}
+						time += increment;
+						if (time >= anim_end) {
+							last = true;
+							time = anim_end;
+						}
+					}
+				} else {
+					for (int32_t key_i = 0; key_i < key_count; key_i++) {
+						Quaternion rotation_quaternion;
+						if (node_prop == "quaternion") {
+							rotation_quaternion = p_godot_animation->track_get_key_value(p_godot_anim_track_index, key_i);
+						} else {
+							Vector3 rotation_euler = p_godot_animation->track_get_key_value(p_godot_anim_track_index, key_i);
+							if (node_prop == "rotation_degrees") {
+								rotation_euler *= Math_TAU / 360.0;
+							}
+							rotation_quaternion = Quaternion::from_euler(rotation_euler);
+						}
+						p_gltf_node_track.rotation_track.values.write[key_i] = rotation_quaternion;
+					}
+				}
+			} else if (node_prop == "scale") {
+				p_gltf_node_track.scale_track.interpolation = gltf_interpolation;
+				p_gltf_node_track.scale_track.times = p_times;
+				p_gltf_node_track.scale_track.values.resize(key_count);
+
+				if (gltf_interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE) {
+					gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
+					p_gltf_node_track.scale_track.times.clear();
+					p_gltf_node_track.scale_track.values.clear();
+					// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
+					const double increment = 1.0 / p_state->get_bake_fps();
+					double time = 0.0;
+					bool last = false;
+					while (true) {
+						Vector3 scale;
+						Error err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
+						ERR_CONTINUE(err != OK);
+						p_gltf_node_track.scale_track.values.push_back(scale);
+						p_gltf_node_track.scale_track.times.push_back(time);
+						if (last) {
+							break;
+						}
+						time += increment;
+						if (time >= anim_end) {
+							last = true;
+							time = anim_end;
+						}
+					}
+				} else {
+					for (int32_t key_i = 0; key_i < key_count; key_i++) {
+						Vector3 scale_track = p_godot_animation->track_get_key_value(p_godot_anim_track_index, key_i);
+						p_gltf_node_track.scale_track.values.write[key_i] = scale_track;
+					}
+				}
+			} else if (node_prop == "transform") {
+				p_gltf_node_track.position_track.interpolation = gltf_interpolation;
+				p_gltf_node_track.position_track.times = p_times;
+				p_gltf_node_track.position_track.values.resize(key_count);
+				p_gltf_node_track.rotation_track.interpolation = gltf_interpolation;
+				p_gltf_node_track.rotation_track.times = p_times;
+				p_gltf_node_track.rotation_track.values.resize(key_count);
+				p_gltf_node_track.scale_track.interpolation = gltf_interpolation;
+				p_gltf_node_track.scale_track.times = p_times;
+				p_gltf_node_track.scale_track.values.resize(key_count);
+				if (gltf_interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE) {
+					gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
+					p_gltf_node_track.position_track.times.clear();
+					p_gltf_node_track.position_track.values.clear();
+					p_gltf_node_track.rotation_track.times.clear();
+					p_gltf_node_track.rotation_track.values.clear();
+					p_gltf_node_track.scale_track.times.clear();
+					p_gltf_node_track.scale_track.values.clear();
+					// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
+					const double increment = 1.0 / p_state->get_bake_fps();
+					double time = 0.0;
+					bool last = false;
+					while (true) {
+						Vector3 position;
+						Quaternion rotation;
+						Vector3 scale;
+						Error err = p_godot_animation->try_position_track_interpolate(p_godot_anim_track_index, time, &position);
+						ERR_CONTINUE(err != OK);
+						err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
+						ERR_CONTINUE(err != OK);
+						err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
+						ERR_CONTINUE(err != OK);
+						p_gltf_node_track.position_track.values.push_back(position);
+						p_gltf_node_track.position_track.times.push_back(time);
+						p_gltf_node_track.rotation_track.values.push_back(rotation);
+						p_gltf_node_track.rotation_track.times.push_back(time);
+						p_gltf_node_track.scale_track.values.push_back(scale);
+						p_gltf_node_track.scale_track.times.push_back(time);
+						if (last) {
+							break;
+						}
+						time += increment;
+						if (time >= anim_end) {
+							last = true;
+							time = anim_end;
+						}
+					}
+				} else {
+					for (int32_t key_i = 0; key_i < key_count; key_i++) {
+						Transform3D transform = p_godot_animation->track_get_key_value(p_godot_anim_track_index, key_i);
+						p_gltf_node_track.position_track.values.write[key_i] = transform.get_origin();
+						p_gltf_node_track.rotation_track.values.write[key_i] = transform.basis.get_rotation_quaternion();
+						p_gltf_node_track.scale_track.values.write[key_i] = transform.basis.get_scale();
 					}
 				}
 			} else {
-				for (int32_t key_i = 0; key_i < key_count; key_i++) {
-					Vector3 position = p_animation->track_get_key_value(p_track_i, key_i);
-					p_track.position_track.values.write[key_i] = position;
-				}
+				// This is a Value track animating a property, but not a TRS property, so it can't be converted into a node track.
+				return false;
 			}
-		} else if (path.contains(":rotation")) {
-			p_track.rotation_track.interpolation = gltf_interpolation;
-			p_track.rotation_track.times = times;
-			p_track.rotation_track.values.resize(key_count);
-			if (gltf_interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE) {
-				gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
-				p_track.rotation_track.times.clear();
-				p_track.rotation_track.values.clear();
-				// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
-				const double increment = 1.0 / p_state->get_bake_fps();
-				double time = 0.0;
-				bool last = false;
-				while (true) {
-					Quaternion rotation;
-					Error err = p_animation->try_rotation_track_interpolate(p_track_i, time, &rotation);
-					ERR_CONTINUE(err != OK);
-					p_track.rotation_track.values.push_back(rotation);
-					p_track.rotation_track.times.push_back(time);
-					if (last) {
-						break;
+		} else if (track_type == Animation::TYPE_BEZIER) {
+			const int32_t keys = anim_end * p_state->get_bake_fps();
+			if (node_prop == "scale") {
+				if (p_gltf_node_track.scale_track.times.is_empty()) {
+					p_gltf_node_track.scale_track.interpolation = gltf_interpolation;
+					Vector<double> new_times;
+					new_times.resize(keys);
+					for (int32_t key_i = 0; key_i < keys; key_i++) {
+						new_times.write[key_i] = key_i / p_state->get_bake_fps();
 					}
-					time += increment;
-					if (time >= anim_end) {
-						last = true;
-						time = anim_end;
+					p_gltf_node_track.scale_track.times = new_times;
+
+					p_gltf_node_track.scale_track.values.resize(keys);
+
+					for (int32_t key_i = 0; key_i < keys; key_i++) {
+						p_gltf_node_track.scale_track.values.write[key_i] = Vector3(1.0f, 1.0f, 1.0f);
 					}
+
+					for (int32_t key_i = 0; key_i < keys; key_i++) {
+						Vector3 bezier_track = p_gltf_node_track.scale_track.values[key_i];
+						if (subpath.size() == 2) {
+							if (subpath[1] == StringName("x")) {
+								bezier_track.x = p_godot_animation->bezier_track_interpolate(p_godot_anim_track_index, key_i / p_state->get_bake_fps());
+							} else if (subpath[1] == StringName("y")) {
+								bezier_track.y = p_godot_animation->bezier_track_interpolate(p_godot_anim_track_index, key_i / p_state->get_bake_fps());
+							} else if (subpath[1] == StringName("z")) {
+								bezier_track.z = p_godot_animation->bezier_track_interpolate(p_godot_anim_track_index, key_i / p_state->get_bake_fps());
+							}
+						}
+						p_gltf_node_track.scale_track.values.write[key_i] = bezier_track;
+					}
+				}
+			} else if (node_prop == "position") {
+				if (p_gltf_node_track.position_track.times.is_empty()) {
+					p_gltf_node_track.position_track.interpolation = gltf_interpolation;
+					Vector<double> new_times;
+					new_times.resize(keys);
+					for (int32_t key_i = 0; key_i < keys; key_i++) {
+						new_times.write[key_i] = key_i / p_state->get_bake_fps();
+					}
+					p_gltf_node_track.position_track.times = new_times;
+
+					p_gltf_node_track.position_track.values.resize(keys);
+				}
+
+				for (int32_t key_i = 0; key_i < keys; key_i++) {
+					Vector3 bezier_track = p_gltf_node_track.position_track.values[key_i];
+					if (subpath.size() == 2) {
+						if (subpath[1] == StringName("x")) {
+							bezier_track.x = p_godot_animation->bezier_track_interpolate(p_godot_anim_track_index, key_i / p_state->get_bake_fps());
+						} else if (subpath[1] == StringName("y")) {
+							bezier_track.y = p_godot_animation->bezier_track_interpolate(p_godot_anim_track_index, key_i / p_state->get_bake_fps());
+						} else if (subpath[1] == StringName("z")) {
+							bezier_track.z = p_godot_animation->bezier_track_interpolate(p_godot_anim_track_index, key_i / p_state->get_bake_fps());
+						}
+					}
+					p_gltf_node_track.position_track.values.write[key_i] = bezier_track;
+				}
+			} else if (node_prop == "quaternion") {
+				if (p_gltf_node_track.rotation_track.times.is_empty()) {
+					p_gltf_node_track.rotation_track.interpolation = gltf_interpolation;
+					Vector<double> new_times;
+					new_times.resize(keys);
+					for (int32_t key_i = 0; key_i < keys; key_i++) {
+						new_times.write[key_i] = key_i / p_state->get_bake_fps();
+					}
+					p_gltf_node_track.rotation_track.times = new_times;
+
+					p_gltf_node_track.rotation_track.values.resize(keys);
+				}
+				for (int32_t key_i = 0; key_i < keys; key_i++) {
+					Quaternion bezier_track = p_gltf_node_track.rotation_track.values[key_i];
+					if (subpath.size() == 2) {
+						if (subpath[1] == StringName("x")) {
+							bezier_track.x = p_godot_animation->bezier_track_interpolate(p_godot_anim_track_index, key_i / p_state->get_bake_fps());
+						} else if (subpath[1] == StringName("y")) {
+							bezier_track.y = p_godot_animation->bezier_track_interpolate(p_godot_anim_track_index, key_i / p_state->get_bake_fps());
+						} else if (subpath[1] == StringName("z")) {
+							bezier_track.z = p_godot_animation->bezier_track_interpolate(p_godot_anim_track_index, key_i / p_state->get_bake_fps());
+						} else if (subpath[1] == StringName("w")) {
+							bezier_track.w = p_godot_animation->bezier_track_interpolate(p_godot_anim_track_index, key_i / p_state->get_bake_fps());
+						}
+					}
+					p_gltf_node_track.rotation_track.values.write[key_i] = bezier_track;
 				}
 			} else {
-				for (int32_t key_i = 0; key_i < key_count; key_i++) {
-					Vector3 rotation_radian = p_animation->track_get_key_value(p_track_i, key_i);
-					p_track.rotation_track.values.write[key_i] = Quaternion::from_euler(rotation_radian);
-				}
+				// This is a Bezier track animating a property, but not a TRS property, so it can't be converted into a node track.
+				return false;
 			}
-		} else if (path.contains(":scale")) {
-			p_track.scale_track.times = times;
-			p_track.scale_track.interpolation = gltf_interpolation;
-
-			p_track.scale_track.values.resize(key_count);
-			p_track.scale_track.interpolation = gltf_interpolation;
-
-			if (gltf_interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE) {
-				gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
-				p_track.scale_track.times.clear();
-				p_track.scale_track.values.clear();
-				// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
-				const double increment = 1.0 / p_state->get_bake_fps();
-				double time = 0.0;
-				bool last = false;
-				while (true) {
-					Vector3 scale;
-					Error err = p_animation->try_scale_track_interpolate(p_track_i, time, &scale);
-					ERR_CONTINUE(err != OK);
-					p_track.scale_track.values.push_back(scale);
-					p_track.scale_track.times.push_back(time);
-					if (last) {
-						break;
-					}
-					time += increment;
-					if (time >= anim_end) {
-						last = true;
-						time = anim_end;
-					}
-				}
-			} else {
-				for (int32_t key_i = 0; key_i < key_count; key_i++) {
-					Vector3 scale_track = p_animation->track_get_key_value(p_track_i, key_i);
-					p_track.scale_track.values.write[key_i] = scale_track;
-				}
-			}
+		} else {
+			// This property track isn't a Value track or Bezier track, so it can't be converted into a node track.
+			return false;
 		}
-	} else if (track_type == Animation::TYPE_BEZIER) {
-		const int32_t keys = anim_end * p_state->get_bake_fps();
-		if (path.contains(":scale")) {
-			if (!p_track.scale_track.times.size()) {
-				p_track.scale_track.interpolation = gltf_interpolation;
-				Vector<real_t> new_times;
-				new_times.resize(keys);
-				for (int32_t key_i = 0; key_i < keys; key_i++) {
-					new_times.write[key_i] = key_i / p_state->get_bake_fps();
-				}
-				p_track.scale_track.times = new_times;
-
-				p_track.scale_track.values.resize(keys);
-
-				for (int32_t key_i = 0; key_i < keys; key_i++) {
-					p_track.scale_track.values.write[key_i] = Vector3(1.0f, 1.0f, 1.0f);
-				}
-
-				for (int32_t key_i = 0; key_i < keys; key_i++) {
-					Vector3 bezier_track = p_track.scale_track.values[key_i];
-					if (path.contains(":scale:x")) {
-						bezier_track.x = p_animation->bezier_track_interpolate(p_track_i, key_i / p_state->get_bake_fps());
-					} else if (path.contains(":scale:y")) {
-						bezier_track.y = p_animation->bezier_track_interpolate(p_track_i, key_i / p_state->get_bake_fps());
-					} else if (path.contains(":scale:z")) {
-						bezier_track.z = p_animation->bezier_track_interpolate(p_track_i, key_i / p_state->get_bake_fps());
-					}
-					p_track.scale_track.values.write[key_i] = bezier_track;
-				}
-			}
-		} else if (path.contains(":position")) {
-			if (!p_track.position_track.times.size()) {
-				p_track.position_track.interpolation = gltf_interpolation;
-				Vector<real_t> new_times;
-				new_times.resize(keys);
-				for (int32_t key_i = 0; key_i < keys; key_i++) {
-					new_times.write[key_i] = key_i / p_state->get_bake_fps();
-				}
-				p_track.position_track.times = new_times;
-
-				p_track.position_track.values.resize(keys);
-			}
-
-			for (int32_t key_i = 0; key_i < keys; key_i++) {
-				Vector3 bezier_track = p_track.position_track.values[key_i];
-				if (path.contains(":position:x")) {
-					bezier_track.x = p_animation->bezier_track_interpolate(p_track_i, key_i / p_state->get_bake_fps());
-				} else if (path.contains(":position:y")) {
-					bezier_track.y = p_animation->bezier_track_interpolate(p_track_i, key_i / p_state->get_bake_fps());
-				} else if (path.contains(":position:z")) {
-					bezier_track.z = p_animation->bezier_track_interpolate(p_track_i, key_i / p_state->get_bake_fps());
-				}
-				p_track.position_track.values.write[key_i] = bezier_track;
-			}
-		} else if (path.contains(":rotation")) {
-			if (!p_track.rotation_track.times.size()) {
-				p_track.rotation_track.interpolation = gltf_interpolation;
-				Vector<real_t> new_times;
-				new_times.resize(keys);
-				for (int32_t key_i = 0; key_i < keys; key_i++) {
-					new_times.write[key_i] = key_i / p_state->get_bake_fps();
-				}
-				p_track.rotation_track.times = new_times;
-
-				p_track.rotation_track.values.resize(keys);
-			}
-			for (int32_t key_i = 0; key_i < keys; key_i++) {
-				Quaternion bezier_track = p_track.rotation_track.values[key_i];
-				if (path.contains(":rotation:x")) {
-					bezier_track.x = p_animation->bezier_track_interpolate(p_track_i, key_i / p_state->get_bake_fps());
-				} else if (path.contains(":rotation:y")) {
-					bezier_track.y = p_animation->bezier_track_interpolate(p_track_i, key_i / p_state->get_bake_fps());
-				} else if (path.contains(":rotation:z")) {
-					bezier_track.z = p_animation->bezier_track_interpolate(p_track_i, key_i / p_state->get_bake_fps());
-				} else if (path.contains(":rotation:w")) {
-					bezier_track.w = p_animation->bezier_track_interpolate(p_track_i, key_i / p_state->get_bake_fps());
-				}
-				p_track.rotation_track.values.write[key_i] = bezier_track;
-			}
-		}
+	} else {
+		// This isn't a TRS track or a property track, so it can't be converted into a node track.
+		return false;
 	}
-	return p_track;
+	// If we reached this point, the track was some kind of TRS track and was successfully converted.
+	return true;
 }
 
-void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, String p_animation_track_name) {
+void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, const String &p_animation_track_name) {
 	Ref<Animation> animation = p_animation_player->get_animation(p_animation_track_name);
 	Ref<GLTFAnimation> gltf_animation;
 	gltf_animation.instantiate();
 	gltf_animation->set_original_name(p_animation_track_name);
 	gltf_animation->set_name(_gen_unique_name(p_state, p_animation_track_name));
-	for (int32_t track_i = 0; track_i < animation->get_track_count(); track_i++) {
-		if (!animation->track_is_enabled(track_i)) {
+	HashMap<int, GLTFAnimation::NodeTrack> &node_tracks = gltf_animation->get_node_tracks();
+	for (int32_t track_index = 0; track_index < animation->get_track_count(); track_index++) {
+		if (!animation->track_is_enabled(track_index)) {
 			continue;
 		}
-		String final_track_path = animation->track_get_path(track_i);
-		Node *animation_base_node = p_animation_player->get_parent();
-		ERR_CONTINUE_MSG(!animation_base_node, "Cannot get the parent of the animation player.");
-		if (String(final_track_path).contains(":position")) {
-			const Vector<String> node_suffix = String(final_track_path).split(":position");
-			const NodePath path = node_suffix[0];
-			const Node *node = animation_base_node->get_node_or_null(path);
-			ERR_CONTINUE_MSG(!node, "Cannot get the node from a position path.");
-			for (const KeyValue<GLTFNodeIndex, Node *> &position_scene_node_i : p_state->scene_nodes) {
-				if (position_scene_node_i.value == node) {
-					GLTFNodeIndex node_index = position_scene_node_i.key;
-					HashMap<int, GLTFAnimation::Track>::Iterator position_track_i = gltf_animation->get_tracks().find(node_index);
-					GLTFAnimation::Track track;
-					if (position_track_i) {
-						track = position_track_i->value;
-					}
-					track = _convert_animation_track(p_state, track, animation, track_i, node_index);
-					gltf_animation->get_tracks().insert(node_index, track);
-				}
-			}
-		} else if (String(final_track_path).contains(":rotation_degrees")) {
-			const Vector<String> node_suffix = String(final_track_path).split(":rotation_degrees");
-			const NodePath path = node_suffix[0];
-			const Node *node = animation_base_node->get_node_or_null(path);
-			ERR_CONTINUE_MSG(!node, "Cannot get the node from a rotation degrees path.");
-			for (const KeyValue<GLTFNodeIndex, Node *> &rotation_degree_scene_node_i : p_state->scene_nodes) {
-				if (rotation_degree_scene_node_i.value == node) {
-					GLTFNodeIndex node_index = rotation_degree_scene_node_i.key;
-					HashMap<int, GLTFAnimation::Track>::Iterator rotation_degree_track_i = gltf_animation->get_tracks().find(node_index);
-					GLTFAnimation::Track track;
-					if (rotation_degree_track_i) {
-						track = rotation_degree_track_i->value;
-					}
-					track = _convert_animation_track(p_state, track, animation, track_i, node_index);
-					gltf_animation->get_tracks().insert(node_index, track);
-				}
-			}
-		} else if (String(final_track_path).contains(":scale")) {
-			const Vector<String> node_suffix = String(final_track_path).split(":scale");
-			const NodePath path = node_suffix[0];
-			const Node *node = animation_base_node->get_node_or_null(path);
-			ERR_CONTINUE_MSG(!node, "Cannot get the node from a scale path.");
-			for (const KeyValue<GLTFNodeIndex, Node *> &scale_scene_node_i : p_state->scene_nodes) {
-				if (scale_scene_node_i.value == node) {
-					GLTFNodeIndex node_index = scale_scene_node_i.key;
-					HashMap<int, GLTFAnimation::Track>::Iterator scale_track_i = gltf_animation->get_tracks().find(node_index);
-					GLTFAnimation::Track track;
-					if (scale_track_i) {
-						track = scale_track_i->value;
-					}
-					track = _convert_animation_track(p_state, track, animation, track_i, node_index);
-					gltf_animation->get_tracks().insert(node_index, track);
-				}
-			}
-		} else if (String(final_track_path).contains(":transform")) {
-			const Vector<String> node_suffix = String(final_track_path).split(":transform");
-			const NodePath path = node_suffix[0];
-			const Node *node = animation_base_node->get_node_or_null(path);
-			ERR_CONTINUE_MSG(!node, "Cannot get the node from a transform path.");
-			for (const KeyValue<GLTFNodeIndex, Node *> &transform_track_i : p_state->scene_nodes) {
-				if (transform_track_i.value == node) {
-					GLTFAnimation::Track track;
-					track = _convert_animation_track(p_state, track, animation, track_i, transform_track_i.key);
-					gltf_animation->get_tracks().insert(transform_track_i.key, track);
-				}
-			}
-		} else if (String(final_track_path).contains(":") && animation->track_get_type(track_i) == Animation::TYPE_BLEND_SHAPE) {
-			const Vector<String> node_suffix = String(final_track_path).split(":");
-			const NodePath path = node_suffix[0];
-			const String suffix = node_suffix[1];
-			Node *node = animation_base_node->get_node_or_null(path);
-			ERR_CONTINUE_MSG(!node, "Cannot get the node from a blend shape path.");
-			MeshInstance3D *mi = cast_to<MeshInstance3D>(node);
-			if (!mi) {
-				continue;
-			}
-			Ref<Mesh> mesh = mi->get_mesh();
+		// Get the Godot node and the glTF node index for the animation track.
+		const NodePath track_path = animation->track_get_path(track_index);
+		const Node *anim_player_parent = p_animation_player->get_parent();
+		const Node *animated_node = anim_player_parent->get_node_or_null(track_path);
+		ERR_CONTINUE_MSG(!animated_node, "glTF: Cannot get node for animated track using path: " + String(track_path));
+		const GLTFAnimation::Interpolation gltf_interpolation = GLTFAnimation::godot_to_gltf_interpolation(animation, track_index);
+		// First, check if it's a Blend Shape track.
+		if (animation->track_get_type(track_index) == Animation::TYPE_BLEND_SHAPE) {
+			const MeshInstance3D *mesh_instance = cast_to<MeshInstance3D>(animated_node);
+			ERR_CONTINUE_MSG(!mesh_instance, "glTF: Animation had a Blend Shape track, but the node wasn't a MeshInstance3D. Ignoring this track.");
+			Ref<Mesh> mesh = mesh_instance->get_mesh();
 			ERR_CONTINUE(mesh.is_null());
 			int32_t mesh_index = -1;
 			for (const KeyValue<GLTFNodeIndex, Node *> &mesh_track_i : p_state->scene_nodes) {
-				if (mesh_track_i.value == node) {
+				if (mesh_track_i.value == animated_node) {
 					mesh_index = mesh_track_i.key;
 				}
 			}
 			ERR_CONTINUE(mesh_index == -1);
-			HashMap<int, GLTFAnimation::Track> &tracks = gltf_animation->get_tracks();
-			GLTFAnimation::Track track = gltf_animation->get_tracks().has(mesh_index) ? gltf_animation->get_tracks()[mesh_index] : GLTFAnimation::Track();
-			if (!tracks.has(mesh_index)) {
+			GLTFAnimation::NodeTrack track = node_tracks.has(mesh_index) ? node_tracks[mesh_index] : GLTFAnimation::NodeTrack();
+			if (!node_tracks.has(mesh_index)) {
 				for (int32_t shape_i = 0; shape_i < mesh->get_blend_shape_count(); shape_i++) {
 					String shape_name = mesh->get_blend_shape_name(shape_i);
-					NodePath shape_path = String(path) + ":" + shape_name;
+					NodePath shape_path = NodePath(track_path.get_names(), { shape_name }, false);
 					int32_t shape_track_i = animation->find_track(shape_path, Animation::TYPE_BLEND_SHAPE);
 					if (shape_track_i == -1) {
 						GLTFAnimation::Channel<real_t> weight;
@@ -6912,15 +6935,6 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 						weight.values.push_back(0.0f);
 						track.weight_tracks.push_back(weight);
 						continue;
-					}
-					Animation::InterpolationType interpolation = animation->track_get_interpolation_type(track_i);
-					GLTFAnimation::Interpolation gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
-					if (interpolation == Animation::InterpolationType::INTERPOLATION_LINEAR) {
-						gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
-					} else if (interpolation == Animation::InterpolationType::INTERPOLATION_NEAREST) {
-						gltf_interpolation = GLTFAnimation::INTERP_STEP;
-					} else if (interpolation == Animation::InterpolationType::INTERPOLATION_CUBIC) {
-						gltf_interpolation = GLTFAnimation::INTERP_CUBIC_SPLINE;
 					}
 					int32_t key_count = animation->track_get_key_count(shape_track_i);
 					GLTFAnimation::Channel<real_t> weight;
@@ -6935,64 +6949,34 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 					}
 					track.weight_tracks.push_back(weight);
 				}
-				tracks[mesh_index] = track;
+				node_tracks[mesh_index] = track;
 			}
-		} else if (String(final_track_path).contains(":")) {
-			//Process skeleton
-			const Vector<String> node_suffix = String(final_track_path).split(":");
-			const String &node = node_suffix[0];
-			const NodePath node_path = node;
-			const String &suffix = node_suffix[1];
-			Node *godot_node = animation_base_node->get_node_or_null(node_path);
-			if (!godot_node) {
-				continue;
-			}
-			Skeleton3D *skeleton = cast_to<Skeleton3D>(animation_base_node->get_node_or_null(node));
-			if (!skeleton) {
-				continue;
-			}
-			GLTFSkeletonIndex skeleton_gltf_i = -1;
-			for (GLTFSkeletonIndex skeleton_i = 0; skeleton_i < p_state->skeletons.size(); skeleton_i++) {
-				if (p_state->skeletons[skeleton_i]->godot_skeleton == cast_to<Skeleton3D>(godot_node)) {
-					skeleton = p_state->skeletons[skeleton_i]->godot_skeleton;
-					skeleton_gltf_i = skeleton_i;
-					ERR_CONTINUE(!skeleton);
-					Ref<GLTFSkeleton> skeleton_gltf = p_state->skeletons[skeleton_gltf_i];
-					int32_t bone = skeleton->find_bone(suffix);
-					ERR_CONTINUE_MSG(bone == -1, vformat("Cannot find the bone %s.", suffix));
-					if (!skeleton_gltf->godot_bone_node.has(bone)) {
-						continue;
-					}
-					GLTFNodeIndex node_i = skeleton_gltf->godot_bone_node[bone];
-					HashMap<int, GLTFAnimation::Track>::Iterator property_track_i = gltf_animation->get_tracks().find(node_i);
-					GLTFAnimation::Track track;
-					if (property_track_i) {
-						track = property_track_i->value;
-					}
-					track = _convert_animation_track(p_state, track, animation, track_i, node_i);
-					gltf_animation->get_tracks()[node_i] = track;
-				}
-			}
-		} else if (!String(final_track_path).contains(":")) {
-			ERR_CONTINUE(!animation_base_node);
-			Node *godot_node = animation_base_node->get_node_or_null(final_track_path);
-			ERR_CONTINUE_MSG(!godot_node, vformat("Cannot get the node from a skeleton path %s.", final_track_path));
-			for (const KeyValue<GLTFNodeIndex, Node *> &scene_node_i : p_state->scene_nodes) {
-				if (scene_node_i.value == godot_node) {
-					GLTFNodeIndex node_i = scene_node_i.key;
-					HashMap<int, GLTFAnimation::Track>::Iterator node_track_i = gltf_animation->get_tracks().find(node_i);
-					GLTFAnimation::Track track;
-					if (node_track_i) {
-						track = node_track_i->value;
-					}
-					track = _convert_animation_track(p_state, track, animation, track_i, node_i);
-					gltf_animation->get_tracks()[node_i] = track;
-					break;
-				}
-			}
+			continue;
+		}
+		// If it's not a Blend Shape track, it must either be a TRS track, a property Value track, or something we can't handle.
+		// For the cases we can handle, we will need to know the glTF node index, glTF interpolation, and the times of the track.
+		const Vector<StringName> subnames = track_path.get_subnames();
+		const GLTFNodeIndex node_i = _node_and_or_bone_to_gltf_node_index(p_state, subnames, animated_node);
+		ERR_CONTINUE_MSG(node_i == -1, "glTF: Cannot get glTF node index for animated track using path: " + String(track_path));
+		const int anim_key_count = animation->track_get_key_count(track_index);
+		Vector<double> times;
+		times.resize(anim_key_count);
+		for (int32_t key_i = 0; key_i < anim_key_count; key_i++) {
+			times.write[key_i] = animation->track_get_key_time(track_index, key_i);
+		}
+		// Try converting the track to a TRS glTF node track. This will only succeed if the Godot animation is a TRS track.
+		const HashMap<int, GLTFAnimation::NodeTrack>::Iterator node_track_iter = node_tracks.find(node_i);
+		GLTFAnimation::NodeTrack track;
+		if (node_track_iter) {
+			track = node_track_iter->value;
+		}
+		if (_convert_animation_node_track(p_state, track, animation, track_index, times)) {
+			// If the track was successfully converted, save it and continue to the next track.
+			node_tracks[node_i] = track;
+			continue;
 		}
 	}
-	if (gltf_animation->get_tracks().size()) {
+	if (!gltf_animation->is_empty_of_tracks()) {
 		p_state->animations.push_back(gltf_animation);
 	}
 }
@@ -7429,6 +7413,10 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 	err = SkinTool::_determine_skeletons(p_state->skins, p_state->nodes, p_state->skeletons, p_state->get_import_as_skeleton_bones() ? p_state->root_nodes : Vector<GLTFNodeIndex>());
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
+	/* ASSIGN SCENE NODE NAMES */
+	// This must be run AFTER determining skeletons, and BEFORE parsing animations.
+	_assign_node_names(p_state);
+
 	/* PARSE MESHES (we have enough info now) */
 	err = _parse_meshes(p_state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
@@ -7444,9 +7432,6 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 	/* PARSE ANIMATIONS */
 	err = _parse_animations(p_state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
-
-	/* ASSIGN SCENE NAMES */
-	_assign_node_names(p_state);
 
 	return OK;
 }

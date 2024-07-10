@@ -209,7 +209,7 @@ private:
 	Node3D *_generate_spatial(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
 	void _assign_node_names(Ref<GLTFState> p_state);
 	template <typename T>
-	T _interpolate_track(const Vector<real_t> &p_times, const Vector<T> &p_values,
+	T _interpolate_track(const Vector<double> &p_times, const Vector<T> &p_values,
 			const float p_time,
 			const GLTFAnimation::Interpolation p_interp);
 	GLTFAccessorIndex _encode_accessor_as_quaternions(Ref<GLTFState> p_state,
@@ -222,7 +222,7 @@ private:
 			const Vector<Color> p_attribs,
 			const bool p_for_vertex);
 	GLTFAccessorIndex _encode_accessor_as_floats(Ref<GLTFState> p_state,
-			const Vector<real_t> p_attribs,
+			const Vector<double> p_attribs,
 			const bool p_for_vertex);
 	GLTFAccessorIndex _encode_accessor_as_vec2(Ref<GLTFState> p_state,
 			const Vector<Vector2> p_attribs,
@@ -273,11 +273,6 @@ private:
 	Error _serialize_nodes(Ref<GLTFState> p_state);
 	Error _serialize_scenes(Ref<GLTFState> p_state);
 	String interpolation_to_string(const GLTFAnimation::Interpolation p_interp);
-	GLTFAnimation::Track _convert_animation_track(Ref<GLTFState> p_state,
-			GLTFAnimation::Track p_track,
-			Ref<Animation> p_animation,
-			int32_t p_track_i,
-			GLTFNodeIndex p_node_i);
 	Error _encode_buffer_bins(Ref<GLTFState> p_state, const String &p_path);
 	Error _encode_buffer_glb(Ref<GLTFState> p_state, const String &p_path);
 	PackedByteArray _serialize_glb_buffer(Ref<GLTFState> p_state, Error *r_err);
@@ -335,11 +330,6 @@ public:
 	void _convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeIndex p_gltf_parent, Ref<GLTFNode> p_gltf_node, Ref<GLTFState> p_state);
 #endif // MODULE_CSG_ENABLED
 
-	void _convert_animation_player_to_gltf(
-			AnimationPlayer *p_animation_player, Ref<GLTFState> p_state,
-			GLTFNodeIndex p_gltf_current,
-			GLTFNodeIndex p_gltf_root_index,
-			Ref<GLTFNode> p_gltf_node, Node *p_scene_parent);
 	void _check_visibility(Node *p_node, bool &r_retflag);
 	void _convert_camera_to_gltf(Camera3D *p_camera, Ref<GLTFState> p_state,
 			Ref<GLTFNode> p_gltf_node);
@@ -370,7 +360,15 @@ public:
 			Ref<GLTFNode> p_gltf_node);
 	GLTFMeshIndex _convert_mesh_to_gltf(Ref<GLTFState> p_state,
 			MeshInstance3D *p_mesh_instance);
-	void _convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, String p_animation_track_name);
+
+	GLTFNodeIndex _node_and_or_bone_to_gltf_node_index(Ref<GLTFState> p_state, const Vector<StringName> &p_node_subpath, const Node *p_godot_node);
+	bool _convert_animation_node_track(Ref<GLTFState> p_state,
+			GLTFAnimation::NodeTrack &p_gltf_node_track,
+			const Ref<Animation> &p_godot_animation,
+			int32_t p_godot_anim_track_index,
+			Vector<double> &p_times);
+	void _convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, const String &p_animation_track_name);
+
 	Error _serialize(Ref<GLTFState> p_state);
 	Error _parse(Ref<GLTFState> p_state, String p_path, Ref<FileAccess> p_file);
 };
