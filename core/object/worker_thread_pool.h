@@ -239,6 +239,7 @@ public:
 
 	static WorkerThreadPool *get_singleton() { return singleton; }
 	static int get_thread_index();
+	static TaskID get_caller_task_id();
 
 #ifdef THREADS_ENABLED
 	static uint32_t thread_enter_unlock_allowance_zone(Mutex *p_mutex);

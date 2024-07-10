@@ -187,10 +187,9 @@ private:
 		HashSet<String> sub_tasks;
 	};
 
-	static void _thread_load_function(void *p_userdata);
+	static void _run_load_task(void *p_userdata);
 
 	static thread_local int load_nesting;
-	static thread_local WorkerThreadPool::TaskID caller_task_id;
 	static thread_local HashMap<int, HashMap<String, Ref<Resource>>> res_ref_overrides; // Outermost key is nesting level.
 	static thread_local Vector<String> load_paths_stack;
 	static SafeBinaryMutex<BINARY_MUTEX_TAG> thread_load_mutex;
