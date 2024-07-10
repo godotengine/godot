@@ -41,6 +41,30 @@
 /**
   PrimitiveMesh
 */
+const double EPSILON = 1e-7;
+
+double remove_negative_zero(double value) {
+    return std::abs(value) < EPSILON ? 0.0 : value;
+}
+
+double custom_sin(double x) {
+    x = std::fmod(x, Math_TAU);
+    if (x < 0) x += Math_TAU;
+    return remove_negative_zero(std::sin(x));
+}
+
+double custom_cos(double x) {
+    x = std::fmod(x, Math_TAU);
+    if (x < 0) x += Math_TAU;
+    return remove_negative_zero(std::cos(x));
+}
+
+Vector3 remove_negative_zero_vector3(const Vector3& v) {
+    return Vector3(remove_negative_zero(v.x),
+                   remove_negative_zero(v.y),
+                   remove_negative_zero(v.z));
+}
+
 void PrimitiveMesh::_update() const {
 	Array arr;
 	if (GDVIRTUAL_CALL(_create_mesh_array, arr)) {
@@ -415,8 +439,8 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 			u = i;
 			u /= radial_segments;
 
-			x = -sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+			x = -custom_sin(u * Math_TAU);
+			z = custom_cos(u * Math_TAU);
 
 			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
 			points.push_back(p + Vector3(0.0, 0.5 * height - radius, 0.0));
@@ -966,6 +990,8 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments, int rings, bool cap_top, bool cap_bottom, bool p_add_uv2, const float p_uv2_padding) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z, u, v, radius, radius_h;
+	const double EPSILON = 1e-10;
+
 
 	// Only used if we calculate UV2
 	float top_circumference = top_radius * Math_PI * 2.0;
@@ -1011,8 +1037,8 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 			u = i;
 			u /= radial_segments;
 
-			x = sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+			x = custom_sin(u * Math_TAU);
+			z = custom_cos(u * Math_TAU);
 
 			Vector3 p = Vector3(x * radius, y, z * radius);
 			points.push_back(p);
@@ -1813,32 +1839,34 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 
 	thisrow = 0;
 	prevrow = 0;
-	for (j = 0; j <= (rings + 1); j++) {
-		float v = j;
-		float w;
+	 for (j = 0; j <= (rings + 1); j++) {
+        float v = static_cast<float>(j) / (rings + 1);
+        float phi = M_PI * v;
+        float w = custom_sin(phi);
+        y = scale * custom_cos(phi);
 
-		v /= (rings + 1);
-		w = sin(Math_PI * v);
-		y = scale * cos(Math_PI * v);
+        for (i = 0; i <= radial_segments; i++) {
+            float u = static_cast<float>(i) / radial_segments;
+            float theta = u * Math_TAU;
+            x = custom_sin(theta);
+            z = custom_cos(theta);
 
-		for (i = 0; i <= radial_segments; i++) {
-			float u = i;
-			u /= radial_segments;
+            Vector3 p;
+            Vector3 normal;
 
-			x = sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+            if (is_hemisphere && y < 0.0) {
+                p = remove_negative_zero_vector3(Vector3(x * radius * w, 0.0, z * radius * w));
+                normal = Vector3(0.0, -1.0, 0.0);
+            } else {
+                p = remove_negative_zero_vector3(Vector3(x * radius * w, y, z * radius * w));
+                normal = remove_negative_zero_vector3(Vector3(x * w * scale, radius * (y / scale), z * w * scale));
+                normal.normalize();
+            }
 
-			if (is_hemisphere && y < 0.0) {
-				points.push_back(Vector3(x * radius * w, 0.0, z * radius * w));
-				normals.push_back(Vector3(0.0, -1.0, 0.0));
-			} else {
-				Vector3 p = Vector3(x * radius * w, y, z * radius * w);
-				points.push_back(p);
-				Vector3 normal = Vector3(x * w * scale, radius * (y / scale), z * w * scale);
-				normals.push_back(normal.normalized());
-			}
-			ADD_TANGENT(z, 0.0, -x, 1.0)
-			uvs.push_back(Vector2(u, v));
+            points.push_back(p);
+            normals.push_back(normal);
+            ADD_TANGENT(remove_negative_zero(z), 0.0, remove_negative_zero(-x), 1.0)
+            uvs.push_back(Vector2(u, v));
 			if (p_add_uv2) {
 				float w_h = w * 2.0 * center_h;
 				uv2s.push_back(Vector2(center_h + ((u - 0.5) * w_h), v * height_v));
