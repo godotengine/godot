@@ -1018,11 +1018,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			RD::get_singleton()->draw_command_end_label(); // Draw Sky
 		}
 
-		// rendering effects
-		if (ce_has_pre_transparent) {
-			_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT, p_render_data);
-		}
-
 		if (merge_transparent_pass) {
 			if (render_list[RENDER_LIST_ALPHA].element_info.size() > 0) {
 				// transparent pass
@@ -1057,6 +1052,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			RD::get_singleton()->draw_list_end();
 
 			RD::get_singleton()->draw_command_end_label(); // Render 3D Pass / Render Reflection Probe Pass
+
+			// rendering effects
+			if (ce_has_pre_transparent) {
+				_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT, p_render_data);
+			}
 
 			if (scene_state.used_screen_texture) {
 				// Copy screen texture to backbuffer so we can read from it
