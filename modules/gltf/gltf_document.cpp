@@ -1098,10 +1098,20 @@ String GLTFDocument::_get_component_type_name(const GLTFAccessor::GLTFComponentT
 			return "Short";
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT:
 			return "UShort";
+		case GLTFAccessor::COMPONENT_TYPE_SIGNED_INT:
+			return "Int";
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT:
 			return "UInt";
 		case GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT:
 			return "Float";
+		case GLTFAccessor::COMPONENT_TYPE_DOUBLE_FLOAT:
+			return "Double";
+		case GLTFAccessor::COMPONENT_TYPE_HALF_FLOAT:
+			return "Half";
+		case GLTFAccessor::COMPONENT_TYPE_SIGNED_LONG:
+			return "Long";
+		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_LONG:
+			return "ULong";
 	}
 
 	return "<Error>";
@@ -1260,6 +1270,26 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(uint16_t));
 			bv->byte_length = buffer.size() * sizeof(uint16_t);
 		} break;
+		case GLTFAccessor::COMPONENT_TYPE_SIGNED_INT: {
+			Vector<int32_t> buffer;
+			buffer.resize(p_count * component_count);
+			int32_t dst_i = 0;
+			for (int i = 0; i < p_count; i++) {
+				for (int j = 0; j < component_count; j++) {
+					if (skip_every && j > 0 && (j % skip_every) == 0) {
+						dst_i += skip_bytes;
+					}
+					double d = *p_src;
+					buffer.write[dst_i] = d;
+					p_src++;
+					dst_i++;
+				}
+			}
+			int64_t old_size = gltf_buffer.size();
+			gltf_buffer.resize(old_size + (buffer.size() * sizeof(uint32_t)));
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(uint32_t));
+			bv->byte_length = buffer.size() * sizeof(uint32_t);
+		} break;
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT: {
 			Vector<uint32_t> buffer;
 			buffer.resize(p_count * component_count);
@@ -1299,6 +1329,71 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 			gltf_buffer.resize(old_size + (buffer.size() * sizeof(float)));
 			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(float));
 			bv->byte_length = buffer.size() * sizeof(float);
+		} break;
+		case GLTFAccessor::COMPONENT_TYPE_DOUBLE_FLOAT: {
+			Vector<double> buffer;
+			buffer.resize(p_count * component_count);
+			int32_t dst_i = 0;
+			for (int i = 0; i < p_count; i++) {
+				for (int j = 0; j < component_count; j++) {
+					if (skip_every && j > 0 && (j % skip_every) == 0) {
+						dst_i += skip_bytes;
+					}
+					double d = *p_src;
+					buffer.write[dst_i] = d;
+					p_src++;
+					dst_i++;
+				}
+			}
+			int64_t old_size = gltf_buffer.size();
+			gltf_buffer.resize(old_size + (buffer.size() * sizeof(double)));
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(double));
+			bv->byte_length = buffer.size() * sizeof(double);
+		} break;
+		case GLTFAccessor::COMPONENT_TYPE_HALF_FLOAT: {
+			ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "glTF: Half float not supported yet.");
+		} break;
+		case GLTFAccessor::COMPONENT_TYPE_SIGNED_LONG: {
+			Vector<int64_t> buffer;
+			buffer.resize(p_count * component_count);
+			int32_t dst_i = 0;
+			for (int i = 0; i < p_count; i++) {
+				for (int j = 0; j < component_count; j++) {
+					if (skip_every && j > 0 && (j % skip_every) == 0) {
+						dst_i += skip_bytes;
+					}
+					// FIXME: This can result in precision loss because int64_t can store some values that double can't.
+					double d = *p_src;
+					buffer.write[dst_i] = d;
+					p_src++;
+					dst_i++;
+				}
+			}
+			int64_t old_size = gltf_buffer.size();
+			gltf_buffer.resize(old_size + (buffer.size() * sizeof(int64_t)));
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(int64_t));
+			bv->byte_length = buffer.size() * sizeof(int64_t);
+		} break;
+		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_LONG: {
+			Vector<uint64_t> buffer;
+			buffer.resize(p_count * component_count);
+			int32_t dst_i = 0;
+			for (int i = 0; i < p_count; i++) {
+				for (int j = 0; j < component_count; j++) {
+					if (skip_every && j > 0 && (j % skip_every) == 0) {
+						dst_i += skip_bytes;
+					}
+					// FIXME: This can result in precision loss because int64_t can store some values that double can't.
+					double d = *p_src;
+					buffer.write[dst_i] = d;
+					p_src++;
+					dst_i++;
+				}
+			}
+			int64_t old_size = gltf_buffer.size();
+			gltf_buffer.resize(old_size + (buffer.size() * sizeof(uint64_t)));
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(uint64_t));
+			bv->byte_length = buffer.size() * sizeof(uint64_t);
 		} break;
 	}
 	ERR_FAIL_COND_V(buffer_end > bv->byte_length, ERR_INVALID_DATA);
@@ -1388,11 +1483,26 @@ Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> p_state, double *p_dst, c
 						d = double(s);
 					}
 				} break;
+				case GLTFAccessor::COMPONENT_TYPE_SIGNED_INT: {
+					d = *(int32_t *)src;
+				} break;
 				case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT: {
 					d = *(uint32_t *)src;
 				} break;
 				case GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT: {
 					d = *(float *)src;
+				} break;
+				case GLTFAccessor::COMPONENT_TYPE_DOUBLE_FLOAT: {
+					d = *(double *)src;
+				} break;
+				case GLTFAccessor::COMPONENT_TYPE_HALF_FLOAT: {
+					ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "glTF: Half float not supported yet.");
+				} break;
+				case GLTFAccessor::COMPONENT_TYPE_SIGNED_LONG: {
+					d = *(int64_t *)src;
+				} break;
+				case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_LONG: {
+					d = *(uint64_t *)src;
 				} break;
 			}
 
@@ -1413,10 +1523,16 @@ int GLTFDocument::_get_component_type_size(const GLTFAccessor::GLTFComponentType
 			return 1;
 		case GLTFAccessor::COMPONENT_TYPE_SIGNED_SHORT:
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT:
+		case GLTFAccessor::COMPONENT_TYPE_HALF_FLOAT:
 			return 2;
+		case GLTFAccessor::COMPONENT_TYPE_SIGNED_INT:
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT:
 		case GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT:
 			return 4;
+		case GLTFAccessor::COMPONENT_TYPE_DOUBLE_FLOAT:
+		case GLTFAccessor::COMPONENT_TYPE_SIGNED_LONG:
+		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_LONG:
+			return 8;
 	}
 	ERR_FAIL_V(0);
 }

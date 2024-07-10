@@ -95,11 +95,26 @@
 		<constant name="COMPONENT_TYPE_UNSIGNED_SHORT" value="5123" enum="GLTFComponentType">
 			Component type "UNSIGNED_SHORT". The value is [code]0x1403[/code] which comes from OpenGL. This indicates data is stored in 2-byte or 16-bit unsigned integers. This is a core part of the glTF specification.
 		</constant>
+		<constant name="COMPONENT_TYPE_SIGNED_INT" value="5124" enum="GLTFComponentType">
+			Component type "INT". The value is [code]0x1404[/code] which comes from OpenGL. This indicates data is stored in 4-byte or 32-bit signed integers. This is NOT a core part of the glTF specification, and may not be supported by all glTF importers. May be used by some extensions including [code]KHR_interactivity[/code].
+		</constant>
 		<constant name="COMPONENT_TYPE_UNSIGNED_INT" value="5125" enum="GLTFComponentType">
 			Component type "UNSIGNED_INT". The value is [code]0x1405[/code] which comes from OpenGL. This indicates data is stored in 4-byte or 32-bit unsigned integers. This is a core part of the glTF specification.
 		</constant>
 		<constant name="COMPONENT_TYPE_SINGLE_FLOAT" value="5126" enum="GLTFComponentType">
 			Component type "FLOAT". The value is [code]0x1406[/code] which comes from OpenGL. This indicates data is stored in 4-byte or 32-bit floating point numbers. This is a core part of the glTF specification.
+		</constant>
+		<constant name="COMPONENT_TYPE_DOUBLE_FLOAT" value="5130" enum="GLTFComponentType">
+			Component type "DOUBLE". The value is [code]0x140A[/code] which comes from OpenGL. This indicates data is stored in 8-byte or 64-bit floating point numbers. This is NOT a core part of the glTF specification, and may not be supported by all glTF importers. May be used by some extensions including [code]KHR_interactivity[/code].
+		</constant>
+		<constant name="COMPONENT_TYPE_HALF_FLOAT" value="5131" enum="GLTFComponentType">
+			Component type "HALF_FLOAT". The value is [code]0x140B[/code] which comes from OpenGL. This indicates data is stored in 2-byte or 16-bit floating point numbers. This is NOT a core part of the glTF specification, and may not be supported by all glTF importers. May be used by some extensions including [code]KHR_interactivity[/code].
+		</constant>
+		<constant name="COMPONENT_TYPE_SIGNED_LONG" value="5134" enum="GLTFComponentType">
+			Component type "LONG". The value is [code]0x140E[/code] which comes from OpenGL. This indicates data is stored in 8-byte or 64-bit signed integers. This is NOT a core part of the glTF specification, and may not be supported by all glTF importers. May be used by some extensions including [code]KHR_interactivity[/code].
+		</constant>
+		<constant name="COMPONENT_TYPE_UNSIGNED_LONG" value="5135" enum="GLTFComponentType">
+			Component type "UNSIGNED_LONG". The value is [code]0x140F[/code] which comes from OpenGL. This indicates data is stored in 8-byte or 64-bit unsigned integers. This is NOT a core part of the glTF specification, and may not be supported by all glTF importers. May be used by some extensions including [code]KHR_interactivity[/code].
 		</constant>
 	</constants>
 </class>
