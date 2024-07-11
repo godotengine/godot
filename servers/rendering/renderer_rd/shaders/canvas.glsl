@@ -51,6 +51,7 @@ vec3 srgb_to_linear(vec3 color) {
 #endif
 
 void main() {
+	const DrawData draw_data = draw_data_buffer.data[draw_data_index.index];
 	vec4 instance_custom = vec4(0.0);
 #if defined(CUSTOM0_USED)
 	vec4 custom0 = vec4(0.0);
@@ -320,6 +321,7 @@ vec4 light_compute(
 #ifdef USE_NINEPATCH
 
 float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, float margin_begin, float margin_end, int np_repeat, inout int draw_center) {
+	const DrawData draw_data = draw_data_buffer.data[draw_data_index.index];
 	float tex_size = 1.0 / tex_pixel_size;
 
 	if (pixel < margin_begin) {
@@ -458,6 +460,7 @@ float msdf_median(float r, float g, float b, float a) {
 }
 
 void main() {
+	const DrawData draw_data = draw_data_buffer.data[draw_data_index.index];
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
 	vec2 vertex = vertex_interp;
