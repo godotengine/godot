@@ -67,7 +67,11 @@ void main() {
 	vec4 world_pos = inverse_projection * vec4(uv_interp * 2.0 - 1.0, depth_tex * 2.0 - 1.0, 1.0);
 	vec3 vertex = world_pos.xyz / world_pos.w;
 
+#ifdef USE_ORTHOGONAL_PROJECTION
+	vec3 view_dir = vec3(0.0, 0.0, -1.0);
+#else
 	vec3 view_dir = normalize(vertex);
+#endif
 	vec3 ray_dir = normalize(reflect(view_dir, normal));
 
 	if (dot(ray_dir, normal) < 0.001) {
