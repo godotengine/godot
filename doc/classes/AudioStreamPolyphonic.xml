@@ -20,7 +20,7 @@
 		
 		func _input(event):
 		    if event.is_action_pressed("ui_accept"):
-		         playback.play_stream(my_sound, 0, 0, 1)   # stream, volume, audio frame, pitch
+		         playback.play_stream(my_sound, 0, 0, 1)  # stream, volume, audio frame, pitch
 		[/codeblock]
 	</description>
 	<tutorials>
