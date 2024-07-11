@@ -854,9 +854,31 @@ void AwaitTweener::start() {
 	signal_received = false;
 	signal_just_received = false;
 
-	// TODO: The connection needs to be set up so that signals that emit
-	// arguments are still allowed.
-	signal_received_callable = Callable(this, "_on_signal_received").unbind(0);
+	// No matter how many arguments the signal may pass to its listeners, we want to take in zero
+	// arguments, and only listen for the signal itself being emitted.
+	// To do this, we need to unbind arguments from the Callable - specifically, the number of
+	// arguments that the signal passes.
+	// To get that number, we have to retrieve the parent object's signal list, iterate through
+	// it until we find the signal we're using, and then count the number of arguments from there.
+	// This feels rather bloated for what should be a simple operation, so if there is a better
+	// way, we should do that instead.
+	List<MethodInfo> all_signals;
+	signal.get_object()->get_signal_list(&all_signals);
+
+	int num_arguments = 0;
+	for (const MethodInfo &signal_info : all_signals) {
+		if (signal_info.name == signal.get_name()) {
+			num_arguments = signal_info.arguments.size();
+			break;
+		}
+	}
+
+	signal_received_callable = Callable(this, "_on_signal_received");
+
+	if (num_arguments > 0) {
+		signal_received_callable = signal_received_callable.unbind(num_arguments);
+	}
+
 	signal.connect(signal_received_callable);
 }
 
