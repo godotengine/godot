@@ -120,11 +120,23 @@
 				Returns the position of the specified node within the shader graph.
 			</description>
 		</method>
+		<method name="get_preview_shader_parameter" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="name" type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="get_valid_node_id" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="type" type="int" enum="VisualShader.Type" />
 			<description>
 				Returns next valid node ID that can be added to the shader graph.
+			</description>
+		</method>
+		<method name="has_preview_shader_parameter" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="String" />
+			<description>
 			</description>
 		</method>
 		<method name="has_varying" qualifiers="const">
@@ -151,6 +163,12 @@
 			<param index="1" name="id" type="int" />
 			<description>
 				Removes the specified node from the shader.
+			</description>
+		</method>
+		<method name="remove_preview_shader_parameter">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<description>
 			</description>
 		</method>
 		<method name="remove_varying">
@@ -183,6 +201,13 @@
 			<param index="2" name="position" type="Vector2" />
 			<description>
 				Sets the position of the specified node.
+			</description>
+		</method>
+		<method name="set_preview_shader_parameter">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="Variant" />
+			<description>
 			</description>
 		</method>
 	</methods>

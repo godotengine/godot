@@ -32,6 +32,7 @@
 
 #include "core/templates/rb_map.h"
 #include "core/templates/vmap.h"
+#include "core/variant/variant_utility.h"
 #include "servers/rendering/shader_types.h"
 #include "visual_shader_nodes.h"
 #include "visual_shader_particle_nodes.h"
@@ -898,6 +899,26 @@ VisualShader::VaryingType VisualShader::get_varying_type(const String &p_name) {
 	return varyings[p_name].type;
 }
 
+void VisualShader::set_preview_shader_parameter(const String &p_name, const Variant &p_value) {
+	preview_params.insert(p_name, p_value);
+	emit_changed();
+}
+
+Variant VisualShader::get_preview_shader_parameter(const String &p_name) const {
+	ERR_FAIL_COND_V(!preview_params.has(p_name), Variant());
+	return preview_params.get(p_name);
+}
+
+void VisualShader::remove_preview_shader_parameter(const String &p_name) {
+	ERR_FAIL_COND(!preview_params.has(p_name));
+	preview_params.erase(p_name);
+	emit_changed();
+}
+
+bool VisualShader::has_preview_shader_parameter(const String &p_name) const {
+	return preview_params.has(p_name);
+}
+
 void VisualShader::add_node(Type p_type, const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id) {
 	ERR_FAIL_COND(p_node.is_null());
 	ERR_FAIL_COND(p_id < 2);
@@ -1695,6 +1716,11 @@ bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 		}
 		_queue_update();
 		return true;
+	} else if (prop_name.begins_with("preview_params/")) {
+		String param_name = prop_name.get_slicec('/', 1);
+		Variant value = VariantUtilityFunctions::str_to_var(p_value);
+		preview_params[param_name] = value;
+		return true;
 	} else if (prop_name.begins_with("nodes/")) {
 		String typestr = prop_name.get_slicec('/', 1);
 		Type type = TYPE_VERTEX;
@@ -1763,6 +1789,14 @@ bool VisualShader::_get(const StringName &p_name, Variant &r_ret) const {
 		String var_name = prop_name.get_slicec('/', 1);
 		if (varyings.has(var_name)) {
 			r_ret = varyings[var_name].to_string();
+		} else {
+			r_ret = String();
+		}
+		return true;
+	} else if (prop_name.begins_with("preview_params/")) {
+		String param_name = prop_name.get_slicec('/', 1);
+		if (preview_params.has(param_name)) {
+			r_ret = VariantUtilityFunctions::var_to_str(preview_params[param_name]);
 		} else {
 			r_ret = String();
 		}
@@ -1862,6 +1896,10 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	for (const KeyValue<String, Varying> &E : varyings) {
 		p_list->push_back(PropertyInfo(Variant::STRING, vformat("%s/%s", PNAME("varyings"), E.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	}
+
+	for (const KeyValue<String, Variant> &E : preview_params) {
+		p_list->push_back(PropertyInfo(Variant::STRING, vformat("%s/%s", PNAME("preview_params"), E.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 
 	for (int i = 0; i < TYPE_MAX; i++) {
@@ -2942,6 +2980,11 @@ void VisualShader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_varying", "name", "mode", "type"), &VisualShader::add_varying);
 	ClassDB::bind_method(D_METHOD("remove_varying", "name"), &VisualShader::remove_varying);
 	ClassDB::bind_method(D_METHOD("has_varying", "name"), &VisualShader::has_varying);
+
+	ClassDB::bind_method(D_METHOD("set_preview_shader_parameter", "name", "value"), &VisualShader::set_preview_shader_parameter);
+	ClassDB::bind_method(D_METHOD("get_preview_shader_parameter", "name"), &VisualShader::get_preview_shader_parameter);
+	ClassDB::bind_method(D_METHOD("remove_preview_shader_parameter", "name"), &VisualShader::remove_preview_shader_parameter);
+	ClassDB::bind_method(D_METHOD("has_preview_shader_parameter", "name"), &VisualShader::has_preview_shader_parameter);
 
 	ClassDB::bind_method(D_METHOD("_update_shader"), &VisualShader::_update_shader);
 
