@@ -1067,7 +1067,7 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCo
 			tex = get_editor_theme_icon(SNAME("NodePath"));
 			break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE:
-			tex = get_editor_theme_icon(SNAME("Variant"));
+			tex = get_editor_theme_icon(SNAME("LocalVariable"));
 			break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT:
 			tex = get_editor_theme_icon(SNAME("MemberConstant"));
