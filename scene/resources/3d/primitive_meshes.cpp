@@ -1039,8 +1039,8 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 			u = i;
 			u /= radial_segments;
 
-			x = custom_sin(u * Math_TAU);
-			z = custom_cos(u * Math_TAU);
+			x = _custom_sin(u * Math_TAU);
+			z = _custom_cos(u * Math_TAU);
 
 			Vector3 p = Vector3(x * radius, y, z * radius);
 			points.push_back(p);
