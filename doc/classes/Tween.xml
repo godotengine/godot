@@ -440,6 +440,60 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="tween_await">
+			<return type="AwaitTweener" />
+			<param index="0" name="signal" type="Signal" />
+			<description>
+				Creates and appends an [AwaitTweener]. This method can be used to make the tweener
+				wait for a signal to emit before continuing execution. Note that the tweener will
+				only start listening for the signal to emit once it is reached in the sequence.
+				[b]Example:[/b] Waiting for an animation to finish before continuing sequence:
+				[codeblocks]
+				[gdscript]
+				# Class extends AnimatedSprite2D.
+
+				# Character should walk to the position,
+				# play an attack animation, then when done,
+				# walk back to their original position.
+				var tween = create_tween()
+
+				# Walk to target position.
+				tween.tween_callback(func(): play("walk"))
+				tween.tween_property(self, "position:x", 900.0, 1.0)
+
+				# Play attack animation, and wait for it to finish.
+				tween.tween_callback(func(): play("attack"))
+				tween.tween_await(animation_finished)
+
+				# Walk to original position.
+				tween.tween_callback(func(): play("walk"))
+				tween.tween_property(self, "position:x", 200.0, 1.0)
+				tween.tween_callback(func(): play("default"))
+				[/gdscript]
+				[csharp]
+				// Class extends AnimatedSprite2D.
+
+				// Character should walk to the position,
+				// play an attack animation, then when done,
+				// walk back to their original position.
+				Tween tw = CreateTween();
+
+				// Walk to target position.
+				tw.TweenCallback(Callable.From(() =&gt; Play("walk")));
+				tw.TweenProperty(this, "position:x", 900.0, 1.0);
+
+				// Play attack animation, and wait for it to finish.
+				tw.TweenCallback(Callable.From(() =&gt; Play("attack")));
+				tw.TweenAwait(ToSignal(this, SignalName.AnimationFinished));
+
+				// Walk to original position.
+				tw.TweenCallback(Callable.From(() =&gt; Play("walk")));
+				tw.TweenProperty(this, "position:x", 200.0, 1.0);
+				tw.TweenCallback(Callable.From(() =&gt; Play("default")));
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="finished">

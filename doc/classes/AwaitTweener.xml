@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class name="AwaitTweener" inherits="Tweener"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../class.xsd">
+    <brief_description>
+		Suspends a [Tween] animation until a signal has been emitted.
+	</brief_description>
+    <description>
+        [AwaitTweener] is used to make a tweening sequence wait for a signal to be emitted. See
+        [method Tween.tween_await] for more usage information.
+        [b]Note:[/b] [method Tween.tween_await] is the only correct way to create [AwaitTweener].
+        Any [AwaitTweener] created manually will not function correctly.
+	</description>
+    <tutorials>
+    </tutorials>
+</class>
