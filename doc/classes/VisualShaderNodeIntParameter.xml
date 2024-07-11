@@ -27,6 +27,9 @@
 		<member name="step" type="int" setter="set_step" getter="get_step" default="1">
 			The step between parameter's values. Forces the parameter to be a multiple of the given value. [member hint] must be [constant HINT_RANGE_STEP] for this to take effect.
 		</member>
+		<member name="enum_names" type="PackedStringArray" setter="set_enum_names" getter="get_enum_names" default="PackedStringArray()">
+			The names used for the enum select in the editor. [member hint] must be [constant HINT_ENUM] for this to take effect.
+		</member>
 	</members>
 	<constants>
 		<constant name="HINT_NONE" value="0" enum="Hint">
@@ -38,7 +41,10 @@
 		<constant name="HINT_RANGE_STEP" value="2" enum="Hint">
 			The parameter's value must be within the specified range, with the given [member step] between values.
 		</constant>
-		<constant name="HINT_MAX" value="3" enum="Hint">
+		<constant name="HINT_ENUM" value="3" enum="Hint">
+			The parameter uses an enum to associate preset values to names in the editor.
+		</constant>
+		<constant name="HINT_MAX" value="4" enum="Hint">
 			Represents the size of the [enum Hint] enum.
 		</constant>
 	</constants>
