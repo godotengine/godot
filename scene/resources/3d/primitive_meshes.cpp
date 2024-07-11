@@ -43,26 +43,28 @@
 */
 const double EPSILON = 1e-7;
 
-double remove_negative_zero(double value) {
-    return std::abs(value) < EPSILON ? 0.0 : value;
+static double _remove_negative_zero(double p_value) {
+	return Math::abs(p_value) < EPSILON ? 0.0 : p_value;
 }
 
-double custom_sin(double x) {
-    x = std::fmod(x, Math_TAU);
-    if (x < 0) x += Math_TAU;
-    return remove_negative_zero(std::sin(x));
+static double _custom_sin(double p_x) {
+	p_x = Math::fmod(p_x, Math_TAU);
+	if (p_x < 0) {
+		p_x += Math_TAU;
+	}
+	return _remove_negative_zero(Math::sin(p_x));
 }
 
-double custom_cos(double x) {
-    x = std::fmod(x, Math_TAU);
-    if (x < 0) x += Math_TAU;
-    return remove_negative_zero(std::cos(x));
+static double _custom_cos(double p_x) {
+	p_x = Math::fmod(p_x, Math_TAU);
+	if (p_x < 0) {
+		p_x += Math_TAU;
+	}
+	return _remove_negative_zero(Math::cos(p_x));
 }
 
-Vector3 remove_negative_zero_vector3(const Vector3& v) {
-    return Vector3(remove_negative_zero(v.x),
-                   remove_negative_zero(v.y),
-                   remove_negative_zero(v.z));
+static Vector3 _remove_negative_zero_vector3(const Vector3 &p_v) {
+	return Vector3(_remove_negative_zero(p_v.x), _remove_negative_zero(p_v.y), _remove_negative_zero(p_v.z));
 }
 
 void PrimitiveMesh::_update() const {
