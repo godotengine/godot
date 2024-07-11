@@ -439,8 +439,8 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 			u = i;
 			u /= radial_segments;
 
-			x = -custom_sin(u * Math_TAU);
-			z = custom_cos(u * Math_TAU);
+			x = -sin(u * Math_TAU);
+			z = cos(u * Math_TAU);
 
 			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
 			points.push_back(p + Vector3(0.0, 0.5 * height - radius, 0.0));
