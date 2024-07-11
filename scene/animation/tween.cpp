@@ -873,7 +873,7 @@ void AwaitTweener::start() {
 		}
 	}
 
-	signal_received_callable = Callable(this, "_on_signal_received");
+	signal_received_callable = callable_mp(this, &AwaitTweener::_on_signal_received);
 
 	if (num_arguments > 0) {
 		signal_received_callable = signal_received_callable.unbind(num_arguments);
