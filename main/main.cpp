@@ -2516,7 +2516,6 @@ error:
 		memdelete(message_queue);
 	}
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Core");
 	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
 
 #if defined(STEAMAPI_ENABLED)
