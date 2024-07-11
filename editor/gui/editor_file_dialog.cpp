@@ -634,8 +634,10 @@ void EditorFileDialog::_item_selected(int p_item) {
 		file->set_text(d["name"]);
 		_request_single_thumbnail(get_current_dir().path_join(get_current_file()));
 
-		// FILE_MODE_OPEN_ANY can alternate this text depending on what's selected.
-		set_ok_button_text(TTR("Open"));
+		if (mode != FILE_MODE_SAVE_FILE) {
+			// FILE_MODE_OPEN_ANY can alternate this text depending on what's selected.
+			set_ok_button_text(TTR("Open"));
+		}
 	} else if (mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY) {
 		file->set_text("");
 		set_ok_button_text(TTR("Select This Folder"));
