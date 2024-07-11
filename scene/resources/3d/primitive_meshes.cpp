@@ -1841,34 +1841,34 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 
 	thisrow = 0;
 	prevrow = 0;
-	 for (j = 0; j <= (rings + 1); j++) {
-        float v = static_cast<float>(j) / (rings + 1);
-        float phi = M_PI * v;
-        float w = custom_sin(phi);
-        y = scale * custom_cos(phi);
+	for (j = 0; j <= (rings + 1); j++) {
+		float v = static_cast<float>(j) / (rings + 1);
+		float phi = M_PI * v;
+		float w = _custom_sin(phi);
+		y = scale * _custom_cos(phi);
 
-        for (i = 0; i <= radial_segments; i++) {
-            float u = static_cast<float>(i) / radial_segments;
-            float theta = u * Math_TAU;
-            x = custom_sin(theta);
-            z = custom_cos(theta);
+		for (i = 0; i <= radial_segments; i++) {
+			float u = static_cast<float>(i) / radial_segments;
+			float theta = u * Math_TAU;
+			x = _custom_sin(theta);
+			z = _custom_cos(theta);
 
-            Vector3 p;
-            Vector3 normal;
+			Vector3 p;
+			Vector3 normal;
 
-            if (is_hemisphere && y < 0.0) {
-                p = remove_negative_zero_vector3(Vector3(x * radius * w, 0.0, z * radius * w));
-                normal = Vector3(0.0, -1.0, 0.0);
-            } else {
-                p = remove_negative_zero_vector3(Vector3(x * radius * w, y, z * radius * w));
-                normal = remove_negative_zero_vector3(Vector3(x * w * scale, radius * (y / scale), z * w * scale));
-                normal.normalize();
-            }
+			if (is_hemisphere && y < 0.0) {
+				p = _remove_negative_zero_vector3(Vector3(x * radius * w, 0.0, z * radius * w));
+				normal = Vector3(0.0, -1.0, 0.0);
+			} else {
+				p = _remove_negative_zero_vector3(Vector3(x * radius * w, y, z * radius * w));
+				normal = _remove_negative_zero_vector3(Vector3(x * w * scale, radius * (y / scale), z * w * scale));
+				normal.normalize();
+			}
 
-            points.push_back(p);
-            normals.push_back(normal);
-            ADD_TANGENT(remove_negative_zero(z), 0.0, remove_negative_zero(-x), 1.0)
-            uvs.push_back(Vector2(u, v));
+			points.push_back(p);
+			normals.push_back(normal);
+			ADD_TANGENT(_remove_negative_zero(z), 0.0, _remove_negative_zero(-x), 1.0)
+			uvs.push_back(Vector2(u, v));
 			if (p_add_uv2) {
 				float w_h = w * 2.0 * center_h;
 				uv2s.push_back(Vector2(center_h + ((u - 0.5) * w_h), v * height_v));
