@@ -634,8 +634,10 @@ void EditorFileDialog::_item_selected(int p_item) {
 		file->set_text(d["name"]);
 		_request_single_thumbnail(get_current_dir().path_join(get_current_file()));
 
-		// FILE_MODE_OPEN_ANY can alternate this text depending on what's selected.
-		set_ok_button_text(TTR("Open"));
+		if (mode != FILE_MODE_SAVE_FILE) {
+			// FILE_MODE_OPEN_ANY can alternate this text depending on what's selected.
+			set_ok_button_text(TTR("Open"));
+		}
 	} else if (mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY) {
 		file->set_text("");
 		set_ok_button_text(TTR("Select This Folder"));
@@ -1968,6 +1970,7 @@ void EditorFileDialog::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "name"), defaults.name, &EditorFileDialog::set_option_name, &EditorFileDialog::get_option_name);
 	base_property_helper.register_property(PropertyInfo(Variant::PACKED_STRING_ARRAY, "values"), defaults.values, &EditorFileDialog::set_option_values, &EditorFileDialog::get_option_values);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "default"), defaults.default_idx, &EditorFileDialog::set_option_default, &EditorFileDialog::get_option_default);
+	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
 void EditorFileDialog::set_show_hidden_files(bool p_show) {

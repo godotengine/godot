@@ -44,14 +44,6 @@
 // Helper macros for code outside of the rendering server, but that is
 // called by the rendering server.
 #ifdef DEBUG_ENABLED
-#define ERR_ON_RENDER_THREAD                                              \
-	RenderingServer *rendering_server = RenderingServer::get_singleton(); \
-	ERR_FAIL_NULL(rendering_server);                                      \
-	ERR_FAIL_COND(rendering_server->is_on_render_thread());
-#define ERR_ON_RENDER_THREAD_V(m_ret)                                     \
-	RenderingServer *rendering_server = RenderingServer::get_singleton(); \
-	ERR_FAIL_NULL_V(rendering_server, m_ret);                             \
-	ERR_FAIL_COND_V(rendering_server->is_on_render_thread(), m_ret);
 #define ERR_NOT_ON_RENDER_THREAD                                          \
 	RenderingServer *rendering_server = RenderingServer::get_singleton(); \
 	ERR_FAIL_NULL(rendering_server);                                      \
@@ -61,8 +53,6 @@
 	ERR_FAIL_NULL_V(rendering_server, m_ret);                             \
 	ERR_FAIL_COND_V(!rendering_server->is_on_render_thread(), m_ret);
 #else
-#define ERR_ON_RENDER_THREAD
-#define ERR_ON_RENDER_THREAD_V(m_ret)
 #define ERR_NOT_ON_RENDER_THREAD
 #define ERR_NOT_ON_RENDER_THREAD_V(m_ret)
 #endif

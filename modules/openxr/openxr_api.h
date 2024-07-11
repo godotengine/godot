@@ -454,7 +454,6 @@ public:
 	_FORCE_INLINE_ XrTime get_predicted_display_time() { return frame_state.predictedDisplayTime; }
 	_FORCE_INLINE_ XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; }
 	_FORCE_INLINE_ bool can_render() {
-		ERR_ON_RENDER_THREAD_V(false);
 		return instance != XR_NULL_HANDLE && session != XR_NULL_HANDLE && running && frame_state.shouldRender;
 	}
 
