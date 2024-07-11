@@ -315,6 +315,8 @@ void ProjectDialog::_create_dir_toggled(bool p_pressed) {
 			target_path = target_path.path_join(last_custom_target_dir);
 		}
 	} else {
+		// Strip any trailing slash.
+		target_path = target_path.rstrip("/\\");
 		// Save and remove target dir name.
 		if (target_path.get_file() == auto_dir) {
 			last_custom_target_dir = "";
