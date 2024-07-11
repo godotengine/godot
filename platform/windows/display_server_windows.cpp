@@ -2009,7 +2009,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 	}
 
 	if (p_mode == WINDOW_MODE_WINDOWED) {
-		ShowWindow(wd.hWnd, SW_RESTORE);
+		ShowWindow(wd.hWnd, SW_NORMAL);
 		wd.maximized = false;
 		wd.minimized = false;
 	}
