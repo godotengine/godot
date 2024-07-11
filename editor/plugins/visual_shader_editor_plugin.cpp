@@ -1526,6 +1526,24 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		visual_shader->set_graph_offset(graph->get_scroll_offset() / EDSCALE);
 		_set_mode(visual_shader->get_mode());
 
+#ifndef DISABLE_DEPRECATED
+		Dictionary engine_version = Engine::get_singleton()->get_version_info();
+		const Dictionary vs_version = visual_shader->get_engine_version();
+
+		if (vs_version.is_empty()) {
+			visual_shader->update_engine_version(engine_version);
+		} else {
+			LocalVector<String> components = { "major", "minor" };
+			for (const String &component : components) {
+				if ((int)vs_version.get(component, 0) != (int)engine_version.get(component, 0)) {
+					visual_shader->update_engine_version(engine_version);
+					print_line(vformat(TTR("The shader (\"%s\") has been updated to correspond Godot %s.%s version."), visual_shader->get_path(), engine_version["major"], engine_version["minor"]));
+					break;
+				}
+			}
+		}
+#endif
+
 		_update_nodes();
 	} else {
 		if (visual_shader.is_valid()) {

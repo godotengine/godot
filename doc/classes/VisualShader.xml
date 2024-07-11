@@ -187,6 +187,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="engine_version" type="Dictionary" setter="set_engine_version" getter="get_engine_version" default="{}">
+			The Godot version this [VisualShader] was designed for, in the form of a [Dictionary] with [code]major[/code] and [code]minor[/code] keys with integer values. Example: [code]{"major": 4, "minor": 3}[/code]
+			This is used by the editor to convert visual shaders from older Godot versions.
+		</member>
 		<member name="graph_offset" type="Vector2" setter="set_graph_offset" getter="get_graph_offset" default="Vector2(0, 0)">
 			The offset vector of the whole graph.
 		</member>
