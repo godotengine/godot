@@ -10,14 +10,14 @@
 		extends AudioStreamPlayer
 		var polyphonic = AudioStreamPolyphonic.new()
 		var playback
-		
+
 		var my_sound = preload("res://my_sound.wav")
-		
+
 		func _ready():
 		    stream = polyphonic
 		    play()  # You have to play the stream first.
 		    playback = get_stream_playback()  # Then get the playback instance.
-		
+
 		func _input(event):
 		    if event.is_action_pressed("ui_accept"):
 		         playback.play_stream(my_sound, 0, 0, 1)  # stream, volume, audio frame, pitch
