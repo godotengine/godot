@@ -992,8 +992,6 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments, int rings, bool cap_top, bool cap_bottom, bool p_add_uv2, const float p_uv2_padding) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z, u, v, radius, radius_h;
-	const double EPSILON = 1e-10;
-
 
 	// Only used if we calculate UV2
 	float top_circumference = top_radius * Math_PI * 2.0;
