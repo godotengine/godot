@@ -248,7 +248,7 @@ void OpenXRActionMapEditor::_on_interaction_profile_selected(const String p_path
 
 void OpenXRActionMapEditor::_load_action_map(const String p_path, bool p_create_new_if_missing) {
 	Error err = OK;
-	action_map = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE, &err);
+	action_map = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 	if (err != OK) {
 		if ((err == ERR_FILE_NOT_FOUND || err == ERR_CANT_OPEN) && p_create_new_if_missing) {
 			action_map.instantiate();
@@ -257,10 +257,16 @@ void OpenXRActionMapEditor::_load_action_map(const String p_path, bool p_create_
 			// Save it immediately
 			err = ResourceSaver::save(action_map, p_path);
 			if (err != OK) {
-				// show warning but continue
+				// Show warning but continue.
 				EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file %s: %s"), edited_path, error_names[err]));
+			} else {
+				// Reload so it's cached.
+				action_map = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+				if (err != OK) {
+					// Show warning but continue.
+					EditorNode::get_singleton()->show_warning(vformat(TTR("Error reloading file %s: %s"), edited_path, error_names[err]));
+				}
 			}
-
 		} else {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("Error loading %s: %s."), edited_path, error_names[err]));
 
