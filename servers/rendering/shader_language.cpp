@@ -5549,46 +5549,71 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 									}
 									if (is_sampler_type(call_function->arguments[i].type)) {
 										//let's see where our argument comes from
-										ERR_CONTINUE(n->type != Node::NODE_TYPE_VARIABLE); //bug? this should always be a variable
-										VariableNode *vn = static_cast<VariableNode *>(n);
-										StringName varname = vn->name;
-										if (shader->uniforms.has(varname)) {
-											//being sampler, this either comes from a uniform
-											ShaderNode::Uniform *u = &shader->uniforms[varname];
-											ERR_CONTINUE(u->type != call_function->arguments[i].type); //this should have been validated previously
+										ERR_CONTINUE(n->type != Node::NODE_TYPE_VARIABLE && n->type != Node::NODE_TYPE_ARRAY);
 
-											if (RendererCompositor::get_singleton()->is_xr_enabled() && is_custom_func) {
-												ShaderNode::Uniform::Hint hint = u->hint;
+										if (n->type == Node::NODE_TYPE_VARIABLE) {
+											VariableNode *vn = static_cast<VariableNode *>(n);
+											StringName varname = vn->name;
+											if (shader->uniforms.has(varname)) {
+												//being sampler, this either comes from a uniform
+												ShaderNode::Uniform *u = &shader->uniforms[varname];
+												ERR_CONTINUE(u->type != call_function->arguments[i].type); //this should have been validated previously
 
-												if (hint == ShaderNode::Uniform::HINT_DEPTH_TEXTURE || hint == ShaderNode::Uniform::HINT_SCREEN_TEXTURE || hint == ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
-													_set_error(vformat(RTR("Unable to pass a multiview texture sampler as a parameter to custom function. Consider to sample it in the main function and then pass the vector result to it."), get_uniform_hint_name(hint)));
+												if (RendererCompositor::get_singleton()->is_xr_enabled() && is_custom_func) {
+													ShaderNode::Uniform::Hint hint = u->hint;
+
+													if (hint == ShaderNode::Uniform::HINT_DEPTH_TEXTURE || hint == ShaderNode::Uniform::HINT_SCREEN_TEXTURE || hint == ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
+														_set_error(vformat(RTR("Unable to pass a multiview texture sampler as a parameter to custom function. Consider to sample it in the main function and then pass the vector result to it."), get_uniform_hint_name(hint)));
+														return nullptr;
+													}
+												}
+
+												//propagate
+												if (!_propagate_function_call_sampler_uniform_settings(name, i, u->filter, u->repeat)) {
+													return nullptr;
+												}
+											} else if (p_function_info.built_ins.has(varname)) {
+												//a built-in
+												if (!_propagate_function_call_sampler_builtin_reference(name, i, varname)) {
+													return nullptr;
+												}
+											} else {
+												//or this comes from an argument, but nothing else can be a sampler
+												bool found = false;
+												for (int j = 0; j < base_function->arguments.size(); j++) {
+													if (base_function->arguments[j].name == varname) {
+														if (!base_function->arguments[j].tex_argument_connect.has(call_function->name)) {
+															base_function->arguments.write[j].tex_argument_connect[call_function->name] = HashSet<int>();
+														}
+														base_function->arguments.write[j].tex_argument_connect[call_function->name].insert(i);
+														found = true;
+														break;
+													}
+												}
+												ERR_CONTINUE(!found);
+											}
+										} else {
+											// Samplr from an array.
+											ArrayNode *vn = static_cast<ArrayNode *>(n);
+											StringName varname = vn->name;
+											if (shader->uniforms.has(varname)) {
+												ShaderNode::Uniform *u = &shader->uniforms[varname];
+												ERR_CONTINUE(u->type != call_function->arguments[i].type); //this should have been validated previously
+
+												if (RendererCompositor::get_singleton()->is_xr_enabled() && is_custom_func) {
+													ShaderNode::Uniform::Hint hint = u->hint;
+
+													if (hint == ShaderNode::Uniform::HINT_DEPTH_TEXTURE || hint == ShaderNode::Uniform::HINT_SCREEN_TEXTURE || hint == ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
+														_set_error(vformat(RTR("Unable to pass a multiview texture sampler as a parameter to custom function. Consider to sample it in the main function and then pass the vector result to it."), get_uniform_hint_name(hint)));
+														return nullptr;
+													}
+												}
+
+												//propagate
+												if (!_propagate_function_call_sampler_uniform_settings(name, i, u->filter, u->repeat)) {
 													return nullptr;
 												}
 											}
-
-											//propagate
-											if (!_propagate_function_call_sampler_uniform_settings(name, i, u->filter, u->repeat)) {
-												return nullptr;
-											}
-										} else if (p_function_info.built_ins.has(varname)) {
-											//a built-in
-											if (!_propagate_function_call_sampler_builtin_reference(name, i, varname)) {
-												return nullptr;
-											}
-										} else {
-											//or this comes from an argument, but nothing else can be a sampler
-											bool found = false;
-											for (int j = 0; j < base_function->arguments.size(); j++) {
-												if (base_function->arguments[j].name == varname) {
-													if (!base_function->arguments[j].tex_argument_connect.has(call_function->name)) {
-														base_function->arguments.write[j].tex_argument_connect[call_function->name] = HashSet<int>();
-													}
-													base_function->arguments.write[j].tex_argument_connect[call_function->name].insert(i);
-													found = true;
-													break;
-												}
-											}
-											ERR_CONTINUE(!found);
 										}
 									}
 								} else {
