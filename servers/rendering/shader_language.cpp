@@ -9133,13 +9133,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 								default:
 									break;
 							}
-							if ((
-								(new_filter != FILTER_DEFAULT || new_repeat != REPEAT_DEFAULT) ||
-								(
-									new_hint != ShaderNode::Uniform::HINT_NONE && new_hint != ShaderNode::Uniform::HINT_SOURCE_COLOR &&
-									new_hint != ShaderNode::Uniform::HINT_RANGE && new_hint != ShaderNode::Uniform::HINT_ENUM
-								)
-							) && !is_sampler_type(type)) {
+
+							bool is_sampler_hint = new_hint != ShaderNode::Uniform::HINT_NONE && new_hint != ShaderNode::Uniform::HINT_SOURCE_COLOR && new_hint != ShaderNode::Uniform::HINT_RANGE && new_hint != ShaderNode::Uniform::HINT_ENUM;
+							if (((new_filter != FILTER_DEFAULT || new_repeat != REPEAT_DEFAULT) || is_sampler_hint) && !is_sampler_type(type)) {
 								_set_error(RTR("This hint is only for sampler types."));
 								return ERR_PARSE_ERROR;
 							}

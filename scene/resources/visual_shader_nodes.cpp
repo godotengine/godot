@@ -5372,7 +5372,7 @@ String VisualShaderNodeIntParameter::generate_global(Shader::Mode p_mode, Visual
 		code += _get_qual_str() + "uniform int " + get_parameter_name() + " : hint_enum(";
 
 		bool first = true;
-		for (const String& _name : hint_enum_names) {
+		for (const String &_name : hint_enum_names) {
 			if (first) {
 				first = false;
 			} else {
