@@ -79,7 +79,6 @@ using Microsoft::WRL::ComPtr;
 #define CUSTOM_INFO_QUEUE_ENABLED 0
 #endif
 
-struct dxil_validator;
 class RenderingContextDriverD3D12;
 
 // Design principles:
@@ -692,10 +691,6 @@ private:
 		uint32_t root_signature_crc = 0;
 	};
 
-	Mutex dxil_mutex;
-	HashMap<int, dxil_validator *> dxil_validators; // One per WorkerThreadPool thread used for shader compilation, plus one (-1) for all the other.
-
-	dxil_validator *_get_dxil_validator_for_current_thread();
 	uint32_t _shader_patch_dxil_specialization_constant(
 			PipelineSpecializationConstantType p_type,
 			const void *p_value,
@@ -706,7 +701,7 @@ private:
 			const ShaderInfo *p_shader_info,
 			VectorView<PipelineSpecializationConstant> p_specialization_constants,
 			HashMap<ShaderStage, Vector<uint8_t>> &r_final_stages_bytecode);
-	bool _shader_sign_dxil_bytecode(ShaderStage p_stage, Vector<uint8_t> &r_dxil_blob);
+	void _shader_sign_dxil_bytecode(ShaderStage p_stage, Vector<uint8_t> &r_dxil_blob);
 
 public:
 	virtual String shader_get_binary_cache_key() override final;

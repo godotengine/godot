@@ -108,18 +108,6 @@ if env["d3d12"]:
     # Used in cases where we can have multiple archs side-by-side.
     arch_bin_dir = "#bin/" + env["arch"]
 
-    # DXC
-    if env["dxc_path"] != "" and os.path.exists(env["dxc_path"]):
-        dxc_dll = "dxil.dll"
-        # Whether this one is loaded from arch-specific directory or not can be determined at runtime.
-        # Let's copy to both and let the user decide the distribution model.
-        for v in ["#bin", arch_bin_dir]:
-            env.Command(
-                v + "/" + dxc_dll,
-                env["dxc_path"] + "/bin/" + dxc_arch_subdir + "/" + dxc_dll,
-                Copy("$TARGET", "$SOURCE"),
-            )
-
     # Agility SDK
     if env["agility_sdk_path"] != "" and os.path.exists(env["agility_sdk_path"]):
         agility_dlls = ["D3D12Core.dll", "d3d12SDKLayers.dll"]
