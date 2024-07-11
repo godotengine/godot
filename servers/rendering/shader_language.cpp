@@ -518,7 +518,6 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 			case '"': {
 				String _content = "";
 				bool _previous_backslash = false;
-				int _index = 0;
 
 				while (true) {
 					bool _ended = false;
@@ -10834,19 +10833,19 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				}
 			} else if ((completion_base == DataType::TYPE_INT || completion_base == DataType::TYPE_FLOAT) && !completion_base_array) {
 				if (current_uniform_hint == ShaderNode::Uniform::HINT_NONE) {
-					ScriptLanguage::CodeCompletionOption option("hint_range", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+					Vector<String> options;
 
 					if (completion_base == DataType::TYPE_INT) {
-						option.insert_text = "hint_range(0, 100, 1)";
+						options.push_back("hint_range(0, 100, 1)");
+						options.push_back("hint_enum(\"Zero\", \"One\", \"Two\")");
 					} else {
-						option.insert_text = "hint_range(0.0, 1.0, 0.1)";
+						options.push_back("hint_range(0.0, 1.0, 0.1)");
 					}
 
-					r_options->push_back(option);
-
-					if (completion_base == DataType::TYPE_INT) {
-						ScriptLanguage::CodeCompletionOption option("hint_enum", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-						option.insert_text = "hint_enum(\"Zero\", \"One\", \"Two\")";
+					for (const String &option_text : options) {
+						String hint_name = option_text.substr(0, option_text.find_char(char32_t('(')));
+						ScriptLanguage::CodeCompletionOption option(hint_name, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+						option.insert_text = option_text;
 						r_options->push_back(option);
 					}
 				}
