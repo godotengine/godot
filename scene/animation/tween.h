@@ -59,6 +59,7 @@ class PropertyTweener;
 class IntervalTweener;
 class CallbackTweener;
 class MethodTweener;
+class AwaitTweener;
 
 class Tween : public RefCounted {
 	GDCLASS(Tween, RefCounted);
@@ -143,6 +144,7 @@ public:
 	Ref<IntervalTweener> tween_interval(double p_time);
 	Ref<CallbackTweener> tween_callback(const Callable &p_callback);
 	Ref<MethodTweener> tween_method(const Callable &p_callback, const Variant p_from, Variant p_to, double p_duration);
+	Ref<AwaitTweener> tween_await(const Signal &p_signal);
 	void append(Ref<Tweener> p_tweener);
 
 	bool custom_step(double p_delta);
@@ -298,6 +300,28 @@ private:
 	Variant final_val;
 	Callable callback;
 
+	Ref<RefCounted> ref_copy;
+};
+
+class AwaitTweener : public Tweener {
+	GDCLASS(AwaitTweener, Tweener);
+
+public:
+	void start() override;
+	bool step(double &r_delta) override;
+
+	AwaitTweener(const Signal &p_signal);
+	AwaitTweener();
+
+protected:
+	static void _bind_methods();
+
+private:
+	void _on_signal_received();
+	bool signal_received = false;
+	bool signal_just_received = false;
+	Signal signal;
+	Callable signal_received_callable;
 	Ref<RefCounted> ref_copy;
 };
 

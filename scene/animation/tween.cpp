@@ -149,6 +149,14 @@ Ref<MethodTweener> Tween::tween_method(const Callable &p_callback, const Variant
 	return tweener;
 }
 
+Ref<AwaitTweener> Tween::tween_await(const Signal &p_signal) {
+	CHECK_VALID();
+
+	Ref<AwaitTweener> tweener = memnew(AwaitTweener(p_signal));
+	append(tweener);
+	return tweener;
+}
+
 void Tween::append(Ref<Tweener> p_tweener) {
 	p_tweener->set_tween(this);
 
@@ -433,6 +441,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tween_interval", "time"), &Tween::tween_interval);
 	ClassDB::bind_method(D_METHOD("tween_callback", "callback"), &Tween::tween_callback);
 	ClassDB::bind_method(D_METHOD("tween_method", "method", "from", "to", "duration"), &Tween::tween_method);
+	ClassDB::bind_method(D_METHOD("tween_await", "signal"), &Tween::tween_await);
 
 	ClassDB::bind_method(D_METHOD("custom_step", "delta"), &Tween::custom_step);
 	ClassDB::bind_method(D_METHOD("stop"), &Tween::stop);
@@ -839,4 +848,54 @@ MethodTweener::MethodTweener(const Callable &p_callback, const Variant &p_from, 
 
 MethodTweener::MethodTweener() {
 	ERR_FAIL_MSG("MethodTweener can't be created directly. Use the tween_method() method in Tween.");
+}
+
+void AwaitTweener::start() {
+	signal_received = false;
+	signal_just_received = false;
+
+	// TODO: The connection needs to be set up so that signals that emit
+	// arguments are still allowed.
+	signal_received_callable = Callable(this, "_on_signal_received").unbind(0);
+	signal.connect(signal_received_callable);
+}
+
+bool AwaitTweener::step(double &r_delta) {
+	if (signal_received) {
+		return false;
+	}
+
+	elapsed_time += r_delta;
+	if (signal_just_received) {
+		signal_received = true;
+		signal_just_received = false;
+		r_delta = elapsed_time;
+		emit_signal(SceneStringName(finished));
+		return false;
+	}
+
+	r_delta = 0;
+	return true;
+}
+
+void AwaitTweener::_on_signal_received() {
+	signal_just_received = true;
+	signal.disconnect(signal_received_callable);
+}
+
+void AwaitTweener::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_on_signal_received"), &AwaitTweener::_on_signal_received);
+}
+
+AwaitTweener::AwaitTweener(const Signal &p_signal) {
+	signal = p_signal;
+
+	Object *signal_instance = p_signal.get_object();
+	if (signal_instance && signal_instance->is_ref_counted()) {
+		ref_copy = signal_instance;
+	}
+}
+
+AwaitTweener::AwaitTweener() {
+	ERR_FAIL_MSG("AwaitTweener can't be created directly. Use the tween_await() method in Tween.");
 }
