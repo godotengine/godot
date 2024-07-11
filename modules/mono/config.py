@@ -8,6 +8,14 @@ def can_build(env, platform):
     return True
 
 
+def get_opts(platform):
+    from SCons.Variables import BoolVariable
+
+    return [
+        BoolVariable("build_dotnet", "Generate dotnet glue and assemblies", True),
+    ]
+
+
 def configure(env):
     # Check if the platform has marked mono as supported.
     supported = env.get("supported", [])

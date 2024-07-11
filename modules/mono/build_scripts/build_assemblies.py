@@ -4,8 +4,21 @@ import os
 import os.path
 import shlex
 import subprocess
+import sys
 from dataclasses import dataclass
 from typing import List, Optional
+
+target_filenames = [
+    "GodotSharp.dll",
+    "GodotSharp.pdb",
+    "GodotSharp.xml",
+    "GodotSharpEditor.dll",
+    "GodotSharpEditor.pdb",
+    "GodotSharpEditor.xml",
+    "GodotPlugins.dll",
+    "GodotPlugins.pdb",
+    "GodotPlugins.runtimeconfig.json",
+]
 
 
 def find_dotnet_cli():
@@ -195,18 +208,6 @@ def run_msbuild(tools: ToolsLocation, sln: str, chdir_to: str, msbuild_args: Opt
 
 
 def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision):
-    target_filenames = [
-        "GodotSharp.dll",
-        "GodotSharp.pdb",
-        "GodotSharp.xml",
-        "GodotSharpEditor.dll",
-        "GodotSharpEditor.pdb",
-        "GodotSharpEditor.xml",
-        "GodotPlugins.dll",
-        "GodotPlugins.pdb",
-        "GodotPlugins.runtimeconfig.json",
-    ]
-
     for build_config in ["Debug", "Release"]:
         editor_api_dir = os.path.join(output_dir, "GodotSharp", "Api", build_config)
 
@@ -418,5 +419,27 @@ def main():
     sys.exit(exit_code)
 
 
+def dotnet_glue(target, source, env):
+    subprocess.call([f"./bin/godot{env['PROGSUFFIX']}", "--headless", "--generate-mono-glue", "modules/mono/glue"])
+
+
+def dotnet_assemblies(target, source, env):
+    subprocess.call(
+        [
+            sys.executable,
+            "./modules/mono/build_scripts/build_assemblies.py",
+            "--godot-output-dir=./bin",
+            f"--godot-platform={env['platform']}",
+            f"--precision={env['precision']}",
+        ]
+    )
+
+
 if __name__ == "__main__":
-    main()
+    try:
+        from platform_methods import subprocess_main
+
+        subprocess_main(globals())
+    except:
+        # Invoked directly
+        main()
