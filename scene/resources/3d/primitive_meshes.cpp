@@ -1841,7 +1841,7 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 	prevrow = 0;
 	for (j = 0; j <= (rings + 1); j++) {
 		float v = static_cast<float>(j) / (rings + 1);
-		float phi = M_PI * v;
+		float phi = Math_PI * v;
 		float w = _custom_sin(phi);
 		y = scale * _custom_cos(phi);
 
