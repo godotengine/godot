@@ -140,6 +140,10 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 		bool enhanced_barriers_supported = false;
 	};
 
+	struct MiscFeaturesSupport {
+		bool depth_bounds_supported = false;
+	};
+
 	RenderingContextDriverD3D12 *context_driver = nullptr;
 	RenderingContextDriver::Device context_device;
 	ComPtr<IDXGIAdapter> adapter;
@@ -155,6 +159,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	StorageBufferCapabilities storage_buffer_capabilities;
 	FormatCapabilities format_capabilities;
 	BarrierCapabilities barrier_capabilities;
+	MiscFeaturesSupport misc_features_support;
 	String pipeline_cache_id;
 
 	class DescriptorsHeap {
