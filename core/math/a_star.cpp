@@ -319,11 +319,11 @@ Vector3 AStar3D::get_closest_position_in_segment(const Vector3 &p_point) const {
 	return closest_point;
 }
 
-bool AStar3D::_solve(Point *begin_point, Point *end_point) {
+bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_path) {
 	last_closest_point = nullptr;
 	pass++;
 
-	if (!end_point->enabled) {
+	if (!end_point->enabled && !p_allow_partial_path) {
 		return false;
 	}
 
@@ -443,7 +443,7 @@ Vector<Vector3> AStar3D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool
 	Point *begin_point = a;
 	Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
 		if (!p_allow_partial_path || last_closest_point == nullptr) {
 			return Vector<Vector3>();
@@ -497,7 +497,7 @@ Vector<int64_t> AStar3D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_
 	Point *begin_point = a;
 	Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
 		if (!p_allow_partial_path || last_closest_point == nullptr) {
 			return Vector<int64_t>();
@@ -726,7 +726,7 @@ Vector<Vector2> AStar2D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool
 	AStar3D::Point *begin_point = a;
 	AStar3D::Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
 		if (!p_allow_partial_path || astar.last_closest_point == nullptr) {
 			return Vector<Vector2>();
@@ -780,7 +780,7 @@ Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_
 	AStar3D::Point *begin_point = a;
 	AStar3D::Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
 		if (!p_allow_partial_path || astar.last_closest_point == nullptr) {
 			return Vector<int64_t>();
@@ -816,11 +816,11 @@ Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_
 	return path;
 }
 
-bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point) {
+bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, bool p_allow_partial_path) {
 	astar.last_closest_point = nullptr;
 	astar.pass++;
 
-	if (!end_point->enabled) {
+	if (!end_point->enabled && !p_allow_partial_path) {
 		return false;
 	}
 
