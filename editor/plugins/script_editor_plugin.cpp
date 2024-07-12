@@ -54,6 +54,7 @@
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_run_bar.h"
+#include "editor/gui/editor_scene_tabs.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector_dock.h"
 #include "editor/node_dock.h"
@@ -734,6 +735,13 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	_update_online_doc();
 	_update_members_overview_visibility();
 	_update_help_overview_visibility();
+
+	if (EditorSceneTabs::get_tab_content_setting() == MainEditorTabContent::ALL) {
+		EditorTab *tab = EditorSceneTabs::get_singleton()->get_tab_by_state(c);
+		if (tab) {
+			EditorSceneTabs::get_singleton()->select_tab(tab);
+		}
+	}
 }
 
 void ScriptEditor::_add_recent_script(const String &p_path) {
@@ -891,26 +899,35 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		current->clear_edit_menu();
 		_save_editor_state(current);
 	}
+
+	EditorTab *tab = EditorSceneTabs::get_singleton()->get_tab_by_state(tselected);
+	if (tab) {
+		EditorSceneTabs::get_singleton()->remove_tab(tab, false);
+	}
+
 	memdelete(tselected);
 
 	if (script_close_queue.is_empty()) {
-		if (idx >= tab_container->get_tab_count()) {
-			idx = tab_container->get_tab_count() - 1;
-		}
-		if (idx >= 0) {
-			if (history_pos >= 0) {
-				idx = tab_container->get_tab_idx_from_control(history[history_pos].control);
+		// On tab mode, let's the EditorSceneTabs decides which tab to go next after the close.
+		if (EditorSceneTabs::get_singleton()->get_tab_content_setting() != MainEditorTabContent::ALL) {
+			if (idx >= tab_container->get_tab_count()) {
+				idx = tab_container->get_tab_count() - 1;
 			}
-			_go_to_tab(idx);
-		} else {
-			_update_selected_editor_menu();
-			_update_online_doc();
-		}
+			if (idx >= 0) {
+				if (history_pos >= 0) {
+					idx = tab_container->get_tab_idx_from_control(history[history_pos].control);
+				}
+				_go_to_tab(idx);
+			} else {
+				_update_selected_editor_menu();
+				_update_online_doc();
+			}
 
-		_update_history_arrows();
-		_update_script_names();
-		_save_layout();
-		_update_find_replace_bar();
+			_update_history_arrows();
+			_update_script_names();
+			_save_layout();
+			_update_find_replace_bar();
+		}
 	}
 }
 
@@ -925,6 +942,10 @@ void ScriptEditor::_close_discard_current_tab(const String &p_str) {
 	}
 	_close_tab(tab_container->get_current_tab(), false);
 	erase_tab_confirm->hide();
+}
+
+void ScriptEditor::_close_canceled() {
+	EditorSceneTabs::get_singleton()->cancel_close_process();
 }
 
 void ScriptEditor::_close_docs_tab() {
@@ -2306,6 +2327,7 @@ void ScriptEditor::_update_script_names() {
 	_update_members_overview_visibility();
 	_update_help_overview_visibility();
 	_update_script_colors();
+	EditorSceneTabs::get_singleton()->update_scene_tabs();
 }
 
 Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error) const {
@@ -2523,6 +2545,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	}
 
 	tab_container->add_child(se);
+	_add_new_scene_tab(se);
 
 	if (p_grab_focus) {
 		se->enable_editor(this);
@@ -2582,6 +2605,101 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	notify_script_changed(p_resource);
 	return true;
+}
+
+EditorTab *ScriptEditor::_add_new_scene_tab(Node *p_node) {
+	if (EditorSceneTabs::get_tab_content_setting() == MainEditorTabContent::ALL) {
+		EditorTab *editor_tab = EditorSceneTabs::get_singleton()->add_tab();
+		editor_tab->connect("update_needed", callable_mp(this, &ScriptEditor::_editor_tab_update_needed));
+		editor_tab->connect("selected", callable_mp(this, &ScriptEditor::_editor_tab_selected));
+		editor_tab->connect("closing", callable_mp(this, &ScriptEditor::_editor_tab_closing));
+		editor_tab->connect("context_menu_needed", callable_mp(this, &ScriptEditor::_editor_tab_context_menu_needed));
+		editor_tab->connect("context_menu_pressed", callable_mp(this, &ScriptEditor::_editor_tab_context_menu_pressed));
+		editor_tab->set_state(p_node);
+		return editor_tab;
+	} else {
+		return nullptr;
+	}
+}
+
+void ScriptEditor::_editor_tab_update_needed(EditorTab *p_tab) {
+	Node *node = Object::cast_to<Node>(p_tab->get_state());
+	ERR_FAIL_NULL_MSG(node, "State of the editor tab not a node.");
+
+	int idx = _get_tab_index_by_node(node);
+	ERR_FAIL_COND_MSG(idx < 0, "Script tab index for found from editor script node.");
+
+	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(idx));
+	if (se) {
+		p_tab->set_name(se->get_name());
+		p_tab->set_icon(se->get_theme_icon());
+		p_tab->set_resource_path(se->get_edited_resource()->get_path());
+	}
+}
+
+void ScriptEditor::_editor_tab_selected(EditorTab *p_tab) {
+	Node *node = Object::cast_to<Node>(p_tab->get_state());
+	ERR_FAIL_NULL_MSG(node, "State of the editor tab not a node.");
+
+	int idx = _get_tab_index_by_node(node);
+	ERR_FAIL_COND_MSG(idx < 0, "Script tab index for found from editor script node.");
+
+	_go_to_tab(idx);
+
+	// Always display the Script Editor.
+	EditorNode::get_singleton()->editor_select(EditorNode::EDITOR_SCRIPT);
+}
+
+void ScriptEditor::_editor_tab_closing(EditorTab *p_tab) {
+	Node *node = Object::cast_to<Node>(p_tab->get_state());
+	ERR_FAIL_NULL_MSG(node, "State of the editor tab not a node.");
+
+	int idx = _get_tab_index_by_node(node);
+	ERR_FAIL_COND_MSG(idx < 0, "Script tab index for found from editor script node.");
+
+	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(p_tab->get_state());
+	if (!se || !se->is_unsaved()) {
+		// Help doc or unmodified script.
+		_close_tab(idx, false, false);
+	} else {
+		// Confirmation for saving the script. Cancel the tab closing, if the user confirms
+		// it will retrigger the tab close.
+		p_tab->set_cancel(true);
+		_go_to_tab(idx);
+		_ask_close_current_unsaved_tab(se);
+	}
+}
+
+void ScriptEditor::_editor_tab_context_menu_needed(EditorTab *p_tab, PopupMenu *p_context_menu) {
+	ScriptEditorBase *se = _get_current_editor();
+	if (!se) {
+		return;
+	}
+
+	p_context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/new"), FILE_NEW);
+	p_context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/new_textfile"), FILE_NEW_TEXTFILE);
+	p_context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save"), FILE_SAVE);
+	p_context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save_as"), FILE_SAVE_AS);
+	p_context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save_all"), FILE_SAVE_ALL);
+	p_context_menu->add_separator();
+	p_context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_path"), FILE_COPY_PATH);
+	p_context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/show_in_file_system"), SHOW_IN_FILE_SYSTEM);
+	p_context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/run_file"), FILE_RUN);
+	p_context_menu->add_separator();
+	p_context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), FILE_CLOSE);
+}
+
+void ScriptEditor::_editor_tab_context_menu_pressed(EditorTab *p_tab, int p_option) {
+	_menu_option(p_option);
+}
+
+int ScriptEditor::_get_tab_index_by_node(Node *p_node) {
+	for (int idx = 0; idx < tab_container->get_tab_count(); idx++) {
+		if (tab_container->get_tab_control(idx) == p_node) {
+			return idx;
+		}
+	}
+	return -1;
 }
 
 PackedStringArray ScriptEditor::get_unsaved_scripts() const {
@@ -2913,6 +3031,8 @@ void ScriptEditor::_apply_editor_settings() {
 		current_theme = EDITOR_GET("text_editor/theme/color_theme");
 		EditorSettings::get_singleton()->load_text_editor_theme();
 	}
+
+	scripts_vbox->set_visible(EditorSceneTabs::get_tab_content_setting() != MainEditorTabContent::ALL);
 
 	_update_script_names();
 
@@ -3504,6 +3624,11 @@ void ScriptEditor::_help_class_open(const String &p_class) {
 
 	eh->set_name(p_class);
 	tab_container->add_child(eh);
+	EditorTab *tab = _add_new_scene_tab(eh);
+	if (tab) {
+		tab->set_name(p_class);
+		tab->set_icon(get_editor_theme_icon(SNAME("Help")));
+	}
 	_go_to_tab(tab_container->get_tab_count() - 1);
 	eh->go_to_class(p_class);
 	eh->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
@@ -3525,6 +3650,11 @@ void ScriptEditor::_help_class_goto(const String &p_desc) {
 
 	eh->set_name(cname);
 	tab_container->add_child(eh);
+	EditorTab *tab = _add_new_scene_tab(eh);
+	if (tab) {
+		tab->set_name(cname);
+		tab->set_icon(get_editor_theme_icon(SNAME("Help")));
+	}
 	eh->go_to_help(p_desc);
 	eh->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 	_add_recent_script(eh->get_class());
@@ -3686,6 +3816,36 @@ Vector<Ref<Script>> ScriptEditor::get_open_scripts() const {
 	}
 
 	return out_scripts;
+}
+
+void ScriptEditor::plugin_button_pressed() {
+	// When the plugin button is pressed, we want to display the last edited
+	// script but if no script are loaded, we want to open the script on the
+	// current scene if present. Otherwise, create a new script.
+	if (EditorSceneTabs::get_tab_content_setting() == MainEditorTabContent::ALL) {
+		int selected = tab_container->get_current_tab();
+		if (selected >= 0 && selected < tab_container->get_tab_count()) {
+			// Open the script tab.
+			EditorTab *tab = EditorSceneTabs::get_singleton()->get_tab_by_state(tab_container->get_tab_control(selected));
+			if (tab) {
+				EditorSceneTabs::get_singleton()->select_tab(tab);
+			}
+		} else {
+			bool create_new_script = true;
+			if (EditorNode::get_singleton()->get_editor_data().get_edited_scene() >= 0) {
+				Ref<Script> scr = EditorNode::get_editor_data().get_scene_root_script(EditorNode::get_singleton()->get_editor_data().get_edited_scene());
+				if (scr.is_valid()) {
+					edit(scr);
+					create_new_script = false;
+				}
+			}
+			if (create_new_script) {
+				open_script_create_dialog("Node", "new_script");
+			}
+		}
+	} else {
+		EditorNode::get_singleton()->editor_select(EditorNode::EditorTable::EDITOR_SCRIPT);
+	}
 }
 
 TypedArray<ScriptEditorBase> ScriptEditor::_get_open_script_editors() const {
@@ -4247,6 +4407,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	erase_tab_confirm->add_button(TTR("Discard"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
 	erase_tab_confirm->connect(SceneStringName(confirmed), callable_mp(this, &ScriptEditor::_close_current_tab).bind(true, true));
 	erase_tab_confirm->connect("custom_action", callable_mp(this, &ScriptEditor::_close_discard_current_tab));
+	erase_tab_confirm->connect("canceled", callable_mp(this, &ScriptEditor::_close_canceled));
 	add_child(erase_tab_confirm);
 
 	script_create_dialog = memnew(ScriptCreateDialog);

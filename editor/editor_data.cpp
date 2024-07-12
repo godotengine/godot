@@ -638,7 +638,6 @@ void EditorData::remove_scene(int p_idx) {
 		memdelete(edited_scene[p_idx].root);
 		edited_scene.write[p_idx].root = nullptr;
 	}
-
 	if (current_edited_scene > p_idx) {
 		current_edited_scene--;
 	} else if (current_edited_scene == p_idx && current_edited_scene > 0) {
@@ -813,6 +812,27 @@ String EditorData::get_scene_type(int p_idx) const {
 	return edited_scene[p_idx].root->get_class();
 }
 
+int EditorData::get_scene_by_editor_tab(const EditorTab *p_tab) const {
+	int idx = 0;
+	for (const EditedScene &scene : edited_scene) {
+		if (scene.editor_tab == p_tab) {
+			return idx;
+		}
+		idx++;
+	}
+	return -1;
+}
+
+EditorTab *EditorData::get_scene_editor_tab(int p_idx) {
+	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), nullptr);
+	return edited_scene[p_idx].editor_tab;
+}
+
+void EditorData::set_scene_editor_tab(int p_idx, EditorTab *p_tab) {
+	ERR_FAIL_INDEX(p_idx, edited_scene.size());
+	edited_scene.write[p_idx].editor_tab = p_tab;
+}
+
 void EditorData::move_edited_scene_to_index(int p_idx) {
 	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
@@ -933,6 +953,18 @@ Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, 
 	set_editor_plugin_states(es.editor_states);
 
 	return es.custom_state;
+}
+
+int EditorData::get_edited_scene_last_editor() {
+	ERR_FAIL_INDEX_V(current_edited_scene, edited_scene.size(), -1);
+
+	return edited_scene[current_edited_scene].last_editor;
+}
+
+void EditorData::set_edited_scene_last_editor(int p_editor) {
+	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
+
+	edited_scene.write[current_edited_scene].last_editor = p_editor;
 }
 
 void EditorData::clear_edited_scenes() {

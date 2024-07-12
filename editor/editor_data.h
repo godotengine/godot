@@ -32,6 +32,7 @@
 #define EDITOR_DATA_H
 
 #include "core/templates/list.h"
+#include "editor/gui/editor_scene_tabs.h"
 #include "scene/resources/texture.h"
 
 class ConfigFile;
@@ -120,6 +121,8 @@ public:
 		NodePath live_edit_root;
 		int history_id = 0;
 		uint64_t last_checked_version = 0;
+		EditorTab *editor_tab;
+		int last_editor = -1;
 	};
 
 private:
@@ -210,6 +213,9 @@ public:
 	String get_scene_title(int p_idx, bool p_always_strip_extension = false) const;
 	String get_scene_path(int p_idx) const;
 	String get_scene_type(int p_idx) const;
+	int get_scene_by_editor_tab(const EditorTab *p_tab) const;
+	EditorTab *get_scene_editor_tab(int p_idx);
+	void set_scene_editor_tab(int p_idx, EditorTab *p_tab);
 	void set_scene_path(int p_idx, const String &p_path);
 	Ref<Script> get_scene_root_script(int p_idx) const;
 	void set_scene_modified_time(int p_idx, uint64_t p_time);
@@ -234,6 +240,8 @@ public:
 
 	void save_edited_scene_state(EditorSelection *p_selection, EditorSelectionHistory *p_history, const Dictionary &p_custom);
 	Dictionary restore_edited_scene_state(EditorSelection *p_selection, EditorSelectionHistory *p_history);
+	int get_edited_scene_last_editor();
+	void set_edited_scene_last_editor(int p_editor);
 	void notify_edited_scene_changed();
 	void notify_resource_saved(const Ref<Resource> &p_resource);
 	void notify_scene_saved(const String &p_path);

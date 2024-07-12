@@ -31,6 +31,9 @@
 #ifndef EDITOR_SCENE_TABS_H
 #define EDITOR_SCENE_TABS_H
 
+#include "core/io/config_file.h"
+#include "editor/editor_nav_tabs.h"
+#include "editor/editor_tab.h"
 #include "scene/gui/margin_container.h"
 
 class Button;
@@ -41,10 +44,22 @@ class PopupMenu;
 class TabBar;
 class TextureRect;
 
+enum class MainEditorTabContent {
+	SCENES_ONLY,
+	ALL
+};
+
 class EditorSceneTabs : public MarginContainer {
 	GDCLASS(EditorSceneTabs, MarginContainer);
 
 	static EditorSceneTabs *singleton;
+	static MainEditorTabContent tab_content_setting;
+
+	enum MenuOptions {
+		CLOSE_OTHERS = 99990,
+		CLOSE_RIGHT = 99991,
+		CLOSE_ALL = 99992
+	};
 
 	PanelContainer *tabbar_panel = nullptr;
 	HBoxContainer *tabbar_container = nullptr;
@@ -57,9 +72,11 @@ class EditorSceneTabs : public MarginContainer {
 	Panel *tab_preview_panel = nullptr;
 	TextureRect *tab_preview = nullptr;
 
+	EditorNavTabs *nav_tabs = nullptr;
+
 	void _scene_tab_changed(int p_tab);
-	void _scene_tab_script_edited(int p_tab);
-	void _scene_tab_closed(int p_tab);
+	void _scene_tab_button_pressed(int p_tab);
+	void _scene_tab_closed_pressed(int p_tab);
 	void _scene_tab_hovered(int p_tab);
 	void _scene_tab_exit();
 	void _scene_tab_input(const Ref<InputEvent> &p_input);
@@ -77,6 +94,21 @@ class EditorSceneTabs : public MarginContainer {
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
+	int _current_tab_index = -1;
+	int _selected_index = -1;
+	Vector<EditorTab *> _tabs;
+	Vector<EditorTab *> _tabs_to_close;
+
+	int _get_tab_index(const EditorTab *p_tab) const;
+	int _get_tab_index_by_resource_path(const String &p_resource_path) const;
+	int _get_tab_index_by_name(const String &p_name) const;
+	int _get_most_recent_tab_index() const;
+	void _set_current_tab_index(int p_tab);
+
+	void _context_menu_id_pressed(int p_option);
+
+	void _memdel_edit_tab_deferred(EditorTab *p_tab);
+
 protected:
 	void _notification(int p_what);
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
@@ -84,15 +116,24 @@ protected:
 
 public:
 	static EditorSceneTabs *get_singleton() { return singleton; }
+	static MainEditorTabContent get_tab_content_setting() { return tab_content_setting; }
 
-	void add_extra_button(Button *p_button);
-
-	void set_current_tab(int p_tab);
-	int get_current_tab() const;
+	EditorTab *add_tab();
+	EditorTab *get_current_tab() const;
+	int get_current_tab_index() const;
+	void remove_tab(EditorTab *p_tab, bool p_user_removal);
+	void select_tab(const EditorTab *p_tab);
+	void select_tab_index(int p_index);
+	EditorTab *get_tab_by_state(Variant p_state);
 
 	void update_scene_tabs();
+	void add_extra_button(Button *p_button);
+	void cancel_close_process();
+	void save_tabs_layout(Ref<ConfigFile> p_layout);
+	void restore_tabs_layout(Ref<ConfigFile> p_layout);
 
 	EditorSceneTabs();
+	~EditorSceneTabs();
 };
 
 #endif // EDITOR_SCENE_TABS_H

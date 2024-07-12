@@ -176,6 +176,7 @@ private:
 		FILE_SAVE_AND_RUN,
 		FILE_SAVE_AND_RUN_MAIN_SCENE,
 		FILE_RUN_SCENE,
+		FILE_COPY_PATH,
 		FILE_SHOW_IN_FILESYSTEM,
 		FILE_EXPORT_PROJECT,
 		FILE_EXPORT_MESH_LIBRARY,
@@ -453,6 +454,7 @@ private:
 
 	bool requested_first_scan = false;
 	bool waiting_for_first_scan = true;
+	bool first_load_config_done = false;
 
 	int current_menu_option = 0;
 
@@ -615,8 +617,10 @@ private:
 
 	bool has_main_screen() const { return true; }
 
+	int _add_edited_scene(int p_at_pos);
 	void _remove_edited_scene(bool p_change_tab = true);
-	void _remove_scene(int index, bool p_change_tab = true);
+	void _remove_scene(int p_index, bool p_change_tab = true);
+	void _remove_scene_internal(int p_index);
 	bool _find_and_save_resource(Ref<Resource> p_res, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	bool _find_and_save_edited_subresources(Object *obj, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	void _save_edited_subresources(Node *scene, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
@@ -677,6 +681,14 @@ private:
 	void _notify_nodes_scene_reimported(Node *p_node, Array p_reimported_nodes);
 
 	void _remove_all_not_owned_children(Node *p_node, Node *p_owner);
+	void _editor_tab_update_needed(EditorTab *p_tab);
+	void _editor_tab_selected(EditorTab *p_tab);
+	void _editor_tab_closing(EditorTab *p_tab);
+	void _editor_tab_button_pressed(EditorTab *p_tab);
+	void _editor_tab_context_menu_needed(EditorTab *p_tab, PopupMenu *p_context_menu);
+	void _editor_tab_context_menu_pressed(EditorTab *p_tab, int p_option);
+
+	void _editor_button_pressed(int p_which);
 
 protected:
 	friend class FileSystemDock;
@@ -691,6 +703,7 @@ public:
 
 	void editor_select(int p_which);
 	void set_visible_editor(EditorTable p_table) { editor_select(p_table); }
+	int get_editor_index_plugin(const EditorPlugin *p_plugin);
 
 	bool call_build();
 
