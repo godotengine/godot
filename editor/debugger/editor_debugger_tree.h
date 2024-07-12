@@ -43,6 +43,7 @@ private:
 	enum ItemMenu {
 		ITEM_MENU_SAVE_REMOTE_NODE,
 		ITEM_MENU_COPY_NODE_PATH,
+		ITEM_MENU_EXPAND_COLLAPSE,
 	};
 
 	ObjectID inspected_object_id;
