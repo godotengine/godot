@@ -98,14 +98,14 @@ class Delaunay3D {
 	};
 
 	struct TriangleHasher {
-		_FORCE_INLINE_ static uint32_t hash(const Triangle &p_triangle) {
+		static _FORCE_INLINE_ uint32_t hash(const Triangle &p_triangle) {
 			uint32_t h = hash_djb2_one_32(p_triangle.triangle[0]);
 			h = hash_djb2_one_32(p_triangle.triangle[1], h);
 			return hash_fmix32(hash_djb2_one_32(p_triangle.triangle[2], h));
 		}
 	};
 
-	_FORCE_INLINE_ static void circum_sphere_compute(const Vector3 *p_points, Simplex *p_simplex) {
+	static _FORCE_INLINE_ void circum_sphere_compute(const Vector3 *p_points, Simplex *p_simplex) {
 		// The only part in the algorithm where there may be precision errors is this one,
 		// so ensure that we do it with the maximum precision possible.
 
@@ -163,7 +163,7 @@ class Delaunay3D {
 		p_simplex->circum_r2 = radius1;
 	}
 
-	_FORCE_INLINE_ static bool simplex_contains(const Vector3 *p_points, const Simplex &p_simplex, uint32_t p_vertex) {
+	static _FORCE_INLINE_ bool simplex_contains(const Vector3 *p_points, const Simplex &p_simplex, uint32_t p_vertex) {
 		R128 v_x = p_points[p_vertex].x;
 		R128 v_y = p_points[p_vertex].y;
 		R128 v_z = p_points[p_vertex].z;

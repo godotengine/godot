@@ -45,7 +45,7 @@ public:
 		singleton = nullptr;
 	}
 
-	_FORCE_INLINE_ static EditorStringNames *get_singleton() { return singleton; }
+	static _FORCE_INLINE_ EditorStringNames *get_singleton() { return singleton; }
 
 	StringName Editor;
 	StringName EditorFonts;

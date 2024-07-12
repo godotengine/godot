@@ -99,13 +99,13 @@ public:
 	//#define DEBUG_CHANGES
 
 #ifdef DEBUG_CHANGES
-	_FORCE_INLINE_ static void redraw_request() {
+	static _FORCE_INLINE_ void redraw_request() {
 		changes++;
 		_changes_changed();
 	}
 
 #else
-	_FORCE_INLINE_ static void redraw_request() {
+	static _FORCE_INLINE_ void redraw_request() {
 		changes++;
 	}
 #endif

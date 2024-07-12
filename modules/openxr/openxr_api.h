@@ -416,7 +416,7 @@ public:
 	bool interaction_profile_supports_io_path(const String &p_ip_path, const String &p_io_path);
 
 	static bool openxr_is_enabled(bool p_check_run_in_editor = true);
-	_FORCE_INLINE_ static OpenXRAPI *get_singleton() { return singleton; }
+	static _FORCE_INLINE_ OpenXRAPI *get_singleton() { return singleton; }
 
 	XrResult try_get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr);
 	XrResult get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr);

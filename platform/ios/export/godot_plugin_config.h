@@ -53,24 +53,24 @@ The `plist` section are optional.
  */
 
 struct PluginConfigIOS {
-	inline static const char *PLUGIN_CONFIG_EXT = ".gdip";
+	static inline const char *PLUGIN_CONFIG_EXT = ".gdip";
 
-	inline static const char *CONFIG_SECTION = "config";
-	inline static const char *CONFIG_NAME_KEY = "name";
-	inline static const char *CONFIG_BINARY_KEY = "binary";
-	inline static const char *CONFIG_USE_SWIFT_KEY = "use_swift_runtime";
-	inline static const char *CONFIG_INITIALIZE_KEY = "initialization";
-	inline static const char *CONFIG_DEINITIALIZE_KEY = "deinitialization";
+	static inline const char *CONFIG_SECTION = "config";
+	static inline const char *CONFIG_NAME_KEY = "name";
+	static inline const char *CONFIG_BINARY_KEY = "binary";
+	static inline const char *CONFIG_USE_SWIFT_KEY = "use_swift_runtime";
+	static inline const char *CONFIG_INITIALIZE_KEY = "initialization";
+	static inline const char *CONFIG_DEINITIALIZE_KEY = "deinitialization";
 
-	inline static const char *DEPENDENCIES_SECTION = "dependencies";
-	inline static const char *DEPENDENCIES_LINKED_KEY = "linked";
-	inline static const char *DEPENDENCIES_EMBEDDED_KEY = "embedded";
-	inline static const char *DEPENDENCIES_SYSTEM_KEY = "system";
-	inline static const char *DEPENDENCIES_CAPABILITIES_KEY = "capabilities";
-	inline static const char *DEPENDENCIES_FILES_KEY = "files";
-	inline static const char *DEPENDENCIES_LINKER_FLAGS = "linker_flags";
+	static inline const char *DEPENDENCIES_SECTION = "dependencies";
+	static inline const char *DEPENDENCIES_LINKED_KEY = "linked";
+	static inline const char *DEPENDENCIES_EMBEDDED_KEY = "embedded";
+	static inline const char *DEPENDENCIES_SYSTEM_KEY = "system";
+	static inline const char *DEPENDENCIES_CAPABILITIES_KEY = "capabilities";
+	static inline const char *DEPENDENCIES_FILES_KEY = "files";
+	static inline const char *DEPENDENCIES_LINKER_FLAGS = "linker_flags";
 
-	inline static const char *PLIST_SECTION = "plist";
+	static inline const char *PLIST_SECTION = "plist";
 
 	enum PlistItemType {
 		UNKNOWN,

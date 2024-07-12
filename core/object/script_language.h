@@ -73,7 +73,7 @@ public:
 
 	static void set_scripting_enabled(bool p_enabled);
 	static bool is_scripting_enabled();
-	_FORCE_INLINE_ static int get_language_count() { return _language_count; }
+	static _FORCE_INLINE_ int get_language_count() { return _language_count; }
 	static ScriptLanguage *get_language(int p_idx);
 	static ScriptLanguage *get_language_for_extension(const String &p_extension);
 	static Error register_language(ScriptLanguage *p_language);

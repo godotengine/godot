@@ -54,7 +54,7 @@ class DisplayServer : public Object {
 #endif
 
 public:
-	_FORCE_INLINE_ static DisplayServer *get_singleton() {
+	static _FORCE_INLINE_ DisplayServer *get_singleton() {
 		return singleton;
 	}
 

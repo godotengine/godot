@@ -59,7 +59,7 @@ class RunInstancesDialog : public AcceptDialog {
 		String get_feature_tags() const;
 	};
 
-	inline static RunInstancesDialog *singleton = nullptr;
+	static inline RunInstancesDialog *singleton = nullptr;
 
 	TypedArray<Dictionary> stored_data;
 	Vector<InstanceData> instances_data;

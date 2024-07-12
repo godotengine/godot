@@ -457,7 +457,7 @@ public:
 	}
 	void set_language_index(int p_idx);
 
-	_FORCE_INLINE_ static CSharpLanguage *get_singleton() {
+	static _FORCE_INLINE_ CSharpLanguage *get_singleton() {
 		return singleton;
 	}
 
