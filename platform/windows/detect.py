@@ -214,11 +214,6 @@ def get_opts():
             os.path.join(d3d12_deps_folder, "mesa"),
         ),
         (
-            "dxc_path",
-            "Path to the DirectX Shader Compiler distribution (required for D3D12)",
-            os.path.join(d3d12_deps_folder, "dxc"),
-        ),
-        (
             "agility_sdk_path",
             "Path to the Agility SDK distribution (optional for D3D12)",
             os.path.join(d3d12_deps_folder, "agility_sdk"),
