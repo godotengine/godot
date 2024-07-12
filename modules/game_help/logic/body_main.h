@@ -53,6 +53,27 @@ struct CharacterAIContext
 class CharacterBodyMain : public CharacterBody3D {
     GDCLASS(CharacterBodyMain, CharacterBody3D);
     static void _bind_methods();
+public:
+    void _update_ai()
+    {
+
+    }
+    void _process_move()
+    {
+
+    }
+    void _process_animator()
+    {
+
+    }
+    void _process_animation()
+    {
+
+    }
+    void _process_ik()
+    {
+        
+    }
 
 public:
     // 初始化身體
@@ -307,6 +328,8 @@ protected:
     void skill_tree_finished(int last_status);
     void skill_tree_update(int last_status);
 
+    void _update(double p_delta);
+
 protected:
 	virtual void update_world_transform(const Transform3D & trans) override
 	{
@@ -340,8 +363,6 @@ protected:
             }
         }
     }
-    void _process_move();
-
 protected:
     ObjectID skeletonID;
     Ref<CollisionObject3DConnectionShape> mainShape;

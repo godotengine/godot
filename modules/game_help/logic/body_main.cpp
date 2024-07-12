@@ -109,27 +109,32 @@ void CharacterBodyMain::_notification( int p_notification )
     }
 	switch (p_notification) {
 		case NOTIFICATION_PROCESS: {
-            // 更新玩家位置
-            GDVIRTUAL_CALL(_update_player_position);
-            if(character_ai.is_valid())
-            {
-                character_ai->execute(this,get_blackboard().ptr(),&ai_context);
-            }
-            // 更新動畫
-            if(animator.is_valid())
-            {
-                animator->update_animation(get_process_delta_time());
-            }
-            for(uint32_t i = 0; i < check_area.size();++i)
-            {
-                if(check_area[i].is_valid())
-                {
-                    check_area[i]->update_world_move(get_global_position());
-                }
-            }
-            _process_move();
+            _update( get_process_delta_time() );
         } break;
     }
+
+}
+void CharacterBodyMain::_update(double p_delta)
+{
+        // 更新玩家位置
+        GDVIRTUAL_CALL(_update_player_position);
+        if(character_ai.is_valid())
+        {
+            character_ai->execute(this,get_blackboard().ptr(),&ai_context);
+        }
+        // 更新動畫
+        if(animator.is_valid())
+        {
+            animator->update_animation(get_process_delta_time());
+        }
+        for(uint32_t i = 0; i < check_area.size();++i)
+        {
+            if(check_area[i].is_valid())
+            {
+                check_area[i]->update_world_move(get_global_position());
+            }
+        }
+        _process_move();
 
 }
 void CharacterBodyMain::_process_move()
