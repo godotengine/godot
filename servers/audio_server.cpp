@@ -1363,6 +1363,9 @@ bool AudioServer::is_playback_active(Ref<AudioStreamPlayback> p_playback) {
 		return false;
 	}
 
+	if (playback_node->stream_playback != nullptr) {
+		return playback_node->stream_playback->is_playing();
+	}
 	return playback_node->state.load() == AudioStreamPlaybackListNode::PLAYING;
 }
 
