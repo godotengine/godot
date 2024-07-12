@@ -53,6 +53,85 @@
 #include <imagehlp.h>
 #pragma pack(pop, before_imagehlp)
 
+#ifdef MINGW_ENABLED
+#include <cxxabi.h>
+
+#include "thirdparty/libbacktrace/backtrace.h"
+
+static LPTOP_LEVEL_EXCEPTION_FILTER prev_exception_filter = nullptr;
+
+struct CrashHandlerData {
+	int64_t index = -1;
+	backtrace_state *state = nullptr;
+	int64_t offset = 0;
+};
+
+int symbol_callback(void *data, uintptr_t pc, const char *filename, int lineno, const char *function) {
+	CrashHandlerData *ch_data = reinterpret_cast<CrashHandlerData *>(data);
+	if (!function) {
+		return 0;
+	}
+
+	char fname[1024];
+	snprintf(fname, 1024, "%s", function);
+
+	if (function[0] == '_') {
+		int status;
+		char *demangled = abi::__cxa_demangle(function, nullptr, nullptr, &status);
+
+		if (status == 0 && demangled) {
+			snprintf(fname, 1024, "%s", demangled);
+		}
+
+		if (demangled) {
+			free(demangled);
+		}
+	}
+
+	print_error(vformat("[%d] %s (%s:%d)", ch_data->index++, String::utf8(fname), String::utf8(filename), lineno));
+	return 0;
+}
+
+void error_callback(void *data, const char *msg, int errnum) {
+	CrashHandlerData *ch_data = reinterpret_cast<CrashHandlerData *>(data);
+	if (ch_data->index == -1) {
+		print_error(vformat("Error(%d): %s", errnum, String::utf8(msg)));
+	} else {
+		print_error(vformat("[%d] error(%d): %s", ch_data->index++, errnum, String::utf8(msg)));
+	}
+}
+
+int64_t get_image_base(const String &p_path) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
+		return 0;
+	}
+	{
+		f->seek(0x3c);
+		uint32_t pe_pos = f->get_32();
+
+		f->seek(pe_pos);
+		uint32_t magic = f->get_32();
+		if (magic != 0x00004550) {
+			return 0;
+		}
+	}
+	int64_t opt_header_pos = f->get_position() + 0x14;
+	f->seek(opt_header_pos);
+
+	uint16_t opt_header_magic = f->get_16();
+	if (opt_header_magic == 0x10B) {
+		f->seek(opt_header_pos + 0x1C);
+		return f->get_32();
+	} else if (opt_header_magic == 0x20B) {
+		f->seek(opt_header_pos + 0x18);
+		return f->get_64();
+	} else {
+		return 0;
+	}
+}
+#endif
+
 struct module_data {
 	std::string image_name;
 	std::string module_name;
@@ -114,7 +193,7 @@ public:
 	}
 };
 
-DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
+LONG CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	HANDLE process = GetCurrentProcess();
 	HANDLE hThread = GetCurrentThread();
 	DWORD offset_from_symbol = 0;
@@ -139,7 +218,7 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	}
 
 	print_error("\n================================================================");
-	print_error(vformat("%s: Program crashed", __FUNCTION__));
+	print_error(vformat("%s: Program crashed with exception 0x%08X", __FUNCTION__, (unsigned int)ep->ExceptionRecord->ExceptionCode));
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
 	if (String(VERSION_HASH).is_empty()) {
@@ -154,6 +233,23 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
+#ifdef MINGW_ENABLED
+	String _execpath = OS::get_singleton()->get_executable_path();
+
+	// Load process and image info to determine ASLR addresses offset.
+	MODULEINFO mi;
+	GetModuleInformation(GetCurrentProcess(), GetModuleHandle(NULL), &mi, sizeof(mi));
+	int64_t image_mem_base = reinterpret_cast<int64_t>(mi.lpBaseOfDll);
+	int64_t image_file_base = get_image_base(_execpath);
+	int64_t image_mem_end = image_mem_base + mi.SizeOfImage;
+
+	CrashHandlerData data;
+	data.offset = image_mem_base - image_file_base;
+
+	CharString execpath_utf8 = _execpath.utf8();
+	data.state = backtrace_create_state(execpath_utf8.get_data(), 0, &error_callback, reinterpret_cast<void *>(&data));
+#endif
+
 	SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES | SYMOPT_UNDNAME | SYMOPT_EXACT_SYMBOLS);
 	EnumProcessModules(process, &module_handles[0], module_handles.size() * sizeof(HMODULE), &cbNeeded);
 	module_handles.resize(cbNeeded / sizeof(HMODULE));
@@ -164,7 +260,6 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	// Setup stuff:
 	CONTEXT *context = ep->ContextRecord;
 	STACKFRAME64 frame;
-	bool skip_first = false;
 
 	frame.AddrPC.Mode = AddrModeFlat;
 	frame.AddrStack.Mode = AddrModeFlat;
@@ -186,9 +281,6 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	frame.AddrPC.Offset = context->Eip;
 	frame.AddrStack.Offset = context->Esp;
 	frame.AddrFrame.Offset = context->Ebp;
-
-	// Skip the first one to avoid a duplicate on 32-bit mode
-	skip_first = true;
 #endif
 
 	line.SizeOfStruct = sizeof(line);
@@ -197,27 +289,41 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 
 	int n = 0;
 	do {
-		if (skip_first) {
-			skip_first = false;
-		} else {
-			if (frame.AddrPC.Offset != 0) {
-				std::string fnName = symbol(process, frame.AddrPC.Offset).undecorated_name();
-
-				if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &offset_from_symbol, &line)) {
-					print_error(vformat("[%d] %s (%s:%d)", n, fnName.c_str(), (char *)line.FileName, (int)line.LineNumber));
-				} else {
-					print_error(vformat("[%d] %s", n, fnName.c_str()));
-				}
-			} else {
-				print_error(vformat("[%d] ???", n));
-			}
-
-			n++;
-		}
-
+		// The first call walks the first frame.
 		if (!StackWalk64(image_type, process, hThread, &frame, context, nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr)) {
 			break;
 		}
+
+		if (frame.AddrPC.Offset != 0) {
+			// The return address of stack frames point to the next instruction
+			// of the call instruction, so subtracting 1 usually gives a more
+			// accurate line number for the call site.
+			int adjustment = (n == 0) ? 0 : -1;
+			uint64_t address = frame.AddrPC.Offset + adjustment;
+
+#ifdef MINGW_ENABLED
+			// For MinGW, try printing this frame with libbacktrace using
+			// DWARF symbols only if the address corresponds to the main EXE.
+			if (address >= image_mem_base && address <= image_mem_end) {
+				data.index = n;
+				backtrace_pcinfo(data.state, address - data.offset, &symbol_callback, &error_callback, &data);
+				n = data.index;
+				continue;
+			}
+#endif
+
+			std::string fnName = symbol(process, address).undecorated_name();
+
+			if (SymGetLineFromAddr64(process, address, &offset_from_symbol, &line)) {
+				print_error(vformat("[%d] %s (%s:%d)", n, fnName.c_str(), (char *)line.FileName, (int)line.LineNumber));
+			} else {
+				print_error(vformat("[%d] %s", n, fnName.c_str()));
+			}
+		} else {
+			print_error(vformat("[%d] ???", n));
+		}
+
+		n++;
 	} while (frame.AddrReturn.Offset != 0 && n < 256);
 
 	print_error("-- END OF BACKTRACE --");
@@ -225,6 +331,11 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 
 	SymCleanup(process);
 
+#ifdef MINGW_ENABLED
+	if (prev_exception_filter) {
+		return prev_exception_filter(ep);
+	}
+#endif
 	// Pass the exception to the OS
 	return EXCEPTION_CONTINUE_SEARCH;
 }
@@ -246,4 +357,7 @@ void CrashHandler::disable() {
 }
 
 void CrashHandler::initialize() {
+#if defined(CRASH_HANDLER_EXCEPTION) && defined(MINGW_ENABLED)
+	prev_exception_filter = SetUnhandledExceptionFilter(CrashHandlerException);
+#endif
 }
