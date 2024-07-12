@@ -224,14 +224,7 @@ class Godot(private val context: Context) : SensorEventListener {
 				} else if (commandLine[i] == "--debug_opengl") {
 					useDebugOpengl = true
 				} else if (commandLine[i] == "--use_immersive") {
-					useImmersive = true
-					window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-							View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-							View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-							View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or  // hide nav bar
-							View.SYSTEM_UI_FLAG_FULLSCREEN or  // hide status bar
-							View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-					registerUiChangeListener()
+					goImmersive();
 				} else if (commandLine[i] == "--use_apk_expansion") {
 					useApkExpansion = true
 				} else if (hasExtra && commandLine[i] == "--apk_expansion_md5") {
@@ -302,6 +295,26 @@ class Godot(private val context: Context) : SensorEventListener {
 		} finally {
 			endBenchmarkMeasure("Startup", "Godot::onCreate")
 		}
+	}
+
+	/**
+	 * Goes into immersive mode.
+	 * For now, once you go immersive, you can't go back.
+	 * Call only from UI thread.
+	 */
+	fun goImmersive() {
+		if (useImmersive)
+			return
+		val activity = requireActivity()
+		val window = activity.window
+		useImmersive = true
+		window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+			View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+			View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+			View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or  // hide nav bar
+			View.SYSTEM_UI_FLAG_FULLSCREEN or  // hide status bar
+			View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+		registerUiChangeListener()
 	}
 
 	/**
@@ -649,6 +662,13 @@ class Godot(private val context: Context) : SensorEventListener {
 						Log.w(TAG, e)
 					}
 				}
+			}
+		} else {
+			val shouldGoImmersive = java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/editor/android/immersive_mode"))
+
+			runOnUiThread {
+				if (shouldGoImmersive)
+					goImmersive()
 			}
 		}
 
