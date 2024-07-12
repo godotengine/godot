@@ -1140,6 +1140,7 @@ void RenderForwardClustered::_update_hddagi(RenderDataRD *p_render_data) {
 	}
 
 	if (rb.is_valid() && rb->has_custom_data(RB_SCOPE_HDDAGI)) {
+		RENDER_TIMESTAMP("Render HDDAGI");
 		Ref<RendererRD::GI::HDDAGI> hddagi = rb->get_custom_data(RB_SCOPE_HDDAGI);
 		float exposure_normalization = 1.0;
 
@@ -1712,7 +1713,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		}
 
 		if (p_render_data->environment.is_valid()) {
-			if (environment_get_hddagi_enabled(p_render_data->environment)) {
+			if (environment_get_hddagi_enabled(p_render_data->environment) && get_debug_draw_mode() != RS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
 				using_hddagi = true;
 			}
 			if (environment_get_ssr_enabled(p_render_data->environment)) {

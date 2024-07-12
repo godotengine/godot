@@ -565,8 +565,12 @@
 			Draws the decal atlas used by [Decal]s and light projector textures in the upper left quadrant of the [Viewport].
 		</constant>
 		<constant name="DEBUG_DRAW_HDDAGI" value="16" enum="DebugDraw">
+			Draws the cascades used to render voxel volumes for global illumination (DynamicGI).
+			Does nothing if the current environment's [member Environment.dynamic_gi_enabled] is [code]false[/code] or Dynamic GI is not supported on the platform.
 		</constant>
 		<constant name="DEBUG_DRAW_HDDAGI_PROBES" value="17" enum="DebugDraw">
+			Draws the probes used for DynamicGI.
+			Does nothing if the current environment's [member Environment.dynamic_gi_enabled] is [code]false[/code] or DynamicGI is not supported on the platform.
 		</constant>
 		<constant name="DEBUG_DRAW_GI_BUFFER" value="18" enum="DebugDraw">
 			Draws the buffer used for global illumination (GI).

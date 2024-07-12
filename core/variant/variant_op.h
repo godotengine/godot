@@ -456,7 +456,7 @@ public:
 	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
 };
 
-template <class R, class A, class B>
+template <typename R, typename A, typename B>
 class OperatorEvaluatorShiftRightVector {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
@@ -475,7 +475,7 @@ public:
 	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
 };
 
-template <class R, class A, class B>
+template <typename R, typename A, typename B>
 class OperatorEvaluatorShiftLeftVector {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
@@ -494,7 +494,7 @@ public:
 	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
 };
 
-template <class R, class A, class B>
+template <typename R, typename A, typename B>
 class OperatorEvaluatorBitOr {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
