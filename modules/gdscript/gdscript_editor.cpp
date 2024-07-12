@@ -2951,6 +2951,11 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 				base_type.kind = GDScriptParser::DataType::UNRESOLVED;
 			} break;
+			case GDScriptParser::DataType::SCRIPT: {
+				// TODO: Fully support script types.
+				base_type.kind = GDScriptParser::DataType::NATIVE;
+				base_type.native_type = base_type.script_type->get_instance_base_type();
+			} break;
 			default: {
 				base_type.kind = GDScriptParser::DataType::UNRESOLVED;
 			} break;
