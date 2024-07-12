@@ -398,6 +398,12 @@ void EditorNode::_update_from_settings() {
 		scene_root->set_default_canvas_item_texture_repeat(tr);
 	}
 
+	// Enable HDR if requested and available.
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HDR)) {
+		DisplayServer::get_singleton()->window_set_hdr_output_enabled(GLOBAL_GET("display/window/hdr/enabled"));
+		DisplayServer::get_singleton()->window_set_hdr_output_max_luminance(GLOBAL_GET("display/window/hdr/max_luminance"));
+	}
+
 	RS::DOFBokehShape dof_shape = RS::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape")));
 	RS::get_singleton()->camera_attributes_set_dof_blur_bokeh_shape(dof_shape);
 	RS::DOFBlurQuality dof_quality = RS::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality")));
