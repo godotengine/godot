@@ -136,6 +136,47 @@ int64_t get_image_base(const String &p_path) {
 }
 #endif
 
+bool find_export_symbol_offset(void *p_module_base, uint32_t p_rva, const char **p_out_sym_name, uint32_t *p_out_sym_offset) {
+	const char *module_base = reinterpret_cast<const char *>(p_module_base);
+
+	const IMAGE_NT_HEADERS *nt_headers = ImageNtHeader(p_module_base);
+	if (!nt_headers) {
+		return false;
+	}
+	const IMAGE_EXPORT_DIRECTORY *export_dir = reinterpret_cast<const IMAGE_EXPORT_DIRECTORY *>(module_base + nt_headers->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+	const uint32_t *export_addresses = reinterpret_cast<const uint32_t *>(module_base + export_dir->AddressOfFunctions);
+	DWORD closest_addr = 0;
+	int closest_index = -1;
+	for (unsigned int i = 0; i < export_dir->NumberOfFunctions; i++) {
+		if (export_addresses[i] < p_rva && export_addresses[i] > closest_addr) {
+			closest_addr = export_addresses[i];
+			closest_index = i;
+		}
+	}
+	if (closest_index == -1 || closest_addr == 0) {
+		return false;
+	}
+
+	DWORD export_section_start = nt_headers->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+	DWORD export_section_end = export_section_start + nt_headers->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].Size;
+	if (closest_addr >= export_section_start && closest_addr < export_section_end) {
+		// This is a forwarder RVA.
+		return false;
+	}
+
+	const uint32_t *export_names = reinterpret_cast<const uint32_t *>(module_base + export_dir->AddressOfNames);
+	const uint16_t *export_ordinals = reinterpret_cast<const uint16_t *>(module_base + export_dir->AddressOfNameOrdinals);
+	for (unsigned int i = 0; i < export_dir->NumberOfNames; i++) {
+		if (export_ordinals[i] == closest_index) {
+			*p_out_sym_name = module_base + export_names[i];
+			*p_out_sym_offset = p_rva - closest_addr;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 struct module_data {
 	std::string image_name;
 	std::string module_name;
@@ -333,7 +374,13 @@ LONG CrashHandlerException(EXCEPTION_POINTERS *ep) {
 					uint64_t module_base = reinterpret_cast<uint64_t>(module.base_address);
 					uint64_t module_end = module_base + module.load_size;
 					if (address >= module_base && address < module_end) {
-						print_error(vformat("[%d] %s+0x%x", n, module.module_name.c_str(), address - module_base));
+						const char *sym_name;
+						uint32_t sym_offset;
+						if (find_export_symbol_offset(module.base_address, address - module_base, &sym_name, &sym_offset)) {
+							print_error(vformat("[%d] %s!%s+0x%x", n, module.module_name.c_str(), sym_name, sym_offset));
+						} else {
+							print_error(vformat("[%d] %s+0x%x", n, module.module_name.c_str(), address - module_base));
+						}
 						found = true;
 						break;
 					}
