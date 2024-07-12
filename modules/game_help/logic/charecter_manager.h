@@ -1,7 +1,6 @@
 #pragma once
 
 #include "body_main.h"
-#include "CSV_EditorImportPlugin.h"
 #include "core/object/worker_thread_pool.h"
 
 class CharacterManager : public Object
@@ -20,6 +19,7 @@ class CharacterManager : public Object
     }
     void unregister_character(class CharacterBodyMain* character)
     {
+        update_finish();
         characters.erase(character);
     }
     void update(class CharacterBodyMain* character)
@@ -33,7 +33,7 @@ class CharacterManager : public Object
     {
         for(CharacterBodyMain* character : characters)
         {
-            character->update_ai();
+            character->_update_ai();
             character->_process_move();
         }
     }
@@ -47,25 +47,28 @@ class CharacterManager : public Object
         for(CharacterBodyMain* character : characters)
         {
             Ref<TaskJobHandle> h = handles[index];
-            h = worker_task_pool->add_native_group_task(&_process_animator,character,1,1,h);
-            h = worker_task_pool->add_native_group_task(&_process_animation,character,1,1,h);
-            h = worker_task_pool->add_native_group_task(&_process_ik,character,1,1,h);
+            h = worker_task_pool->add_native_group_task(&_process_animator,character,1,1,h.ptr());
+            h = worker_task_pool->add_native_group_task(&_process_animation,character,1,1,h.ptr());
+            h = worker_task_pool->add_native_group_task(&_process_ik,character,1,1,h.ptr());
             handles[index] = h;
             index++;
         }
         task_handle = worker_task_pool->combined_job_handle(handles);
     }
-    static void _process_animator(CharacterBodyMain* p_user,int p_index)
+    static void _process_animator(void* p_user,uint32_t p_index)
     {
-        p_user->_process_animator();
+        CharacterBodyMain* body_main = (CharacterBodyMain*)p_user;
+        body_main->_process_animator();
     }
-    static void _process_animation(CharacterBodyMain* p_user,int p_index)
+    static void _process_animation(void* p_user,uint32_t p_index)
     {
-        p_user->_process_animation();
+        CharacterBodyMain* body_main = (CharacterBodyMain*)p_user;
+        body_main->_process_animation();
     }
-    static void _process_ik(CharacterBodyMain* p_user,int p_index)
+    static void _process_ik(void* p_user,uint32_t p_index)
     {
-        p_user->_process_ik();        
+        CharacterBodyMain* body_main = (CharacterBodyMain*)p_user;
+        body_main->_process_ik();        
     }
     void update_finish()
     {

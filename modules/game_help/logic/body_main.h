@@ -58,10 +58,7 @@ public:
     {
 
     }
-    void _process_move()
-    {
-
-    }
+    void _process_move();
     void _process_animator()
     {
 
