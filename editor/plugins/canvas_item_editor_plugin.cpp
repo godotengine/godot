@@ -64,6 +64,7 @@
 #include "scene/resources/style_box_texture.h"
 
 #define RULER_WIDTH (15 * EDSCALE)
+#define DRAG_THRESHOLD (8 * EDSCALE)
 constexpr real_t SCALE_HANDLE_DISTANCE = 25;
 constexpr real_t MOVE_HANDLE_DISTANCE = 25;
 
@@ -2319,7 +2320,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 	Ref<InputEventKey> k = p_event;
 
-	if (drag_type == DRAG_NONE) {
+	if (drag_type == DRAG_NONE || (drag_type == DRAG_BOX_SELECTION && b.is_valid() && !b->is_pressed())) {
 		if (b.is_valid() && b->is_pressed() &&
 				((b->get_button_index() == MouseButton::RIGHT && b->is_alt_pressed() && tool == TOOL_SELECT) ||
 						(b->get_button_index() == MouseButton::LEFT && tool == TOOL_LIST_SELECT))) {
@@ -2411,47 +2412,58 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && !panner->is_panning() && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE)) {
-			// Single item selection
-			Point2 click = transform.affine_inverse().xform(b->get_position());
+		Point2 click;
+		bool can_select = b.is_valid() && b->get_button_index() == MouseButton::LEFT && !panner->is_panning() && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE);
+		if (can_select) {
+			click = transform.affine_inverse().xform(b->get_position());
+			// Allow selecting on release when performed very small box selection (necessary when Shift is pressed, see below).
+			can_select = b->is_pressed() || (drag_type == DRAG_BOX_SELECTION && click.distance_to(drag_from) <= DRAG_THRESHOLD);
+		}
 
+		if (can_select) {
+			// Single item selection.
 			Node *scene = EditorNode::get_singleton()->get_edited_scene();
 			if (!scene) {
 				return true;
 			}
 
-			// Find the item to select
+			// Find the item to select.
 			CanvasItem *ci = nullptr;
 
 			Vector<_SelectResult> selection = Vector<_SelectResult>();
-			// Retrieve the canvas items
+			// Retrieve the canvas items.
 			_get_canvas_items_at_pos(click, selection);
 			if (!selection.is_empty()) {
 				ci = selection[0].item;
 			}
 
-			if (!ci) {
-				// Start a box selection
+			// Shift also allows forcing box selection when item was clicked.
+			if (!ci || (b->is_shift_pressed() && b->is_pressed())) {
+				// Start a box selection.
 				if (!b->is_shift_pressed()) {
-					// Clear the selection if not additive
+					// Clear the selection if not additive.
 					editor_selection->clear();
 					viewport->queue_redraw();
 					selected_from_canvas = true;
 				};
 
-				drag_from = click;
-				drag_type = DRAG_BOX_SELECTION;
-				box_selecting_to = drag_from;
-				return true;
+				if (b->is_pressed()) {
+					drag_from = click;
+					drag_type = DRAG_BOX_SELECTION;
+					box_selecting_to = drag_from;
+					return true;
+				}
 			} else {
 				bool still_selected = _select_click_on_item(ci, click, b->is_shift_pressed());
-				// Start dragging
-				if (still_selected && (tool == TOOL_SELECT || tool == TOOL_MOVE)) {
-					// Drag the node(s) if requested
+				// Start dragging.
+				if (still_selected && (tool == TOOL_SELECT || tool == TOOL_MOVE) && b->is_pressed()) {
+					// Drag the node(s) if requested.
 					drag_start_origin = click;
 					drag_type = DRAG_QUEUED;
+				} else if (!b->is_pressed()) {
+					_reset_drag();
 				}
-				// Select the item
+				// Select the item.
 				return true;
 			}
 		}
