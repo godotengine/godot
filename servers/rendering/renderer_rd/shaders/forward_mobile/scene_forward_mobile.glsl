@@ -76,6 +76,10 @@ void axis_angle_to_tbn(vec3 axis, float angle, out vec3 tangent, out vec3 binorm
 	normal = omc_axis.zzz * axis + vec3(-s_axis.y, s_axis.x, c);
 }
 
+/* Spec Constants */
+
+layout(constant_id = 17) const bool sc_is_multimesh = false;
+
 /* Varyings */
 
 layout(location = 0) highp out vec3 vertex_interp;
@@ -178,8 +182,6 @@ void main() {
 	color_interp = color_attrib;
 #endif
 
-	bool is_multimesh = bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_MULTIMESH);
-
 	mat4 model_matrix = instances.data[draw_call.instance_index].transform;
 	mat4 inv_view_matrix = scene_data.inv_view_matrix;
 #ifdef USE_DOUBLE_PRECISION
@@ -203,7 +205,7 @@ void main() {
 	mat4 matrix;
 	mat4 read_model_matrix = model_matrix;
 
-	if (is_multimesh) {
+	if (sc_is_multimesh) {
 		//multimesh, instances are for it
 
 #ifdef USE_PARTICLE_TRAILS
@@ -399,7 +401,7 @@ void main() {
 	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
 	// We add the result to the vertex and ignore the final lost precision.
 	vec3 model_origin = model_matrix[3].xyz;
-	if (is_multimesh) {
+	if (sc_is_multimesh) {
 		vertex = mat3(matrix) * vertex;
 		model_origin = double_add_vec3(model_origin, model_precision, matrix[3].xyz, vec3(0.0), model_precision);
 	}
