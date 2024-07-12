@@ -1920,7 +1920,7 @@ void fragment_shader(in SceneData scene_data) {
 
 					pssm_coord /= pssm_coord.w;
 
-					shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * (blur_factor + (1.0 - blur_factor) * float(directional_lights.data[i].blend_splits)), pssm_coord);
+					shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * clamp(directional_lights.data[i].soft_shadow_scale * blur_factor, min(float(directional_lights.data[i].blend_splits), directional_lights.data[i].soft_shadow_scale), 100.0), pssm_coord);
 
 					if (directional_lights.data[i].blend_splits) {
 						float pssm_blend;
@@ -1954,7 +1954,7 @@ void fragment_shader(in SceneData scene_data) {
 
 						pssm_coord /= pssm_coord.w;
 
-						float shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * (blur_factor2 + (1.0 - blur_factor2) * float(directional_lights.data[i].blend_splits)), pssm_coord);
+						float shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * clamp(directional_lights.data[i].soft_shadow_scale * blur_factor2, min(float(directional_lights.data[i].blend_splits), directional_lights.data[i].soft_shadow_scale), 100.0), pssm_coord);
 						shadow = mix(shadow, shadow2, pssm_blend);
 					}
 				}
