@@ -64,6 +64,7 @@ struct CrashHandlerData {
 	int64_t index = -1;
 	backtrace_state *state = nullptr;
 	int64_t offset = 0;
+	bool success = false;
 };
 
 int symbol_callback(void *data, uintptr_t pc, const char *filename, int lineno, const char *function) {
@@ -89,6 +90,7 @@ int symbol_callback(void *data, uintptr_t pc, const char *filename, int lineno, 
 	}
 
 	print_error(vformat("[%d] %s (%s:%d)", ch_data->index++, String::utf8(fname), String::utf8(filename), lineno));
+	ch_data->success = true;
 	return 0;
 }
 
@@ -96,8 +98,10 @@ void error_callback(void *data, const char *msg, int errnum) {
 	CrashHandlerData *ch_data = reinterpret_cast<CrashHandlerData *>(data);
 	if (ch_data->index == -1) {
 		print_error(vformat("Error(%d): %s", errnum, String::utf8(msg)));
+	} else if (errnum == -1) {
+		// No symbols, just ignore.
 	} else {
-		print_error(vformat("[%d] error(%d): %s", ch_data->index++, errnum, String::utf8(msg)));
+		print_error(vformat("[%d] error(%d): %s", ch_data->index, errnum, String::utf8(msg)));
 	}
 }
 
@@ -158,7 +162,7 @@ public:
 	std::string name() { return std::string(sym->Name); }
 	std::string undecorated_name() {
 		if (*sym->Name == '\0') {
-			return "<couldn't map PC to fn name>";
+			return {};
 		}
 		std::vector<char> und_name(max_name_len);
 		UnDecorateSymbolName(sym->Name, &und_name[0], max_name_len, UNDNAME_COMPLETE);
@@ -304,20 +308,45 @@ LONG CrashHandlerException(EXCEPTION_POINTERS *ep) {
 #ifdef MINGW_ENABLED
 			// For MinGW, try printing this frame with libbacktrace using
 			// DWARF symbols only if the address corresponds to the main EXE.
-			if (address >= image_mem_base && address <= image_mem_end) {
+			if (address >= image_mem_base && address < image_mem_end) {
 				data.index = n;
+				data.success = false;
 				backtrace_pcinfo(data.state, address - data.offset, &symbol_callback, &error_callback, &data);
-				n = data.index;
-				continue;
+				if (data.success) {
+					n = data.index;
+					continue;
+				}
 			}
 #endif
 
 			std::string fnName = symbol(process, address).undecorated_name();
-
-			if (SymGetLineFromAddr64(process, address, &offset_from_symbol, &line)) {
-				print_error(vformat("[%d] %s (%s:%d)", n, fnName.c_str(), (char *)line.FileName, (int)line.LineNumber));
+			if (!fnName.empty()) {
+				if (SymGetLineFromAddr64(process, address, &offset_from_symbol, &line)) {
+					print_error(vformat("[%d] %s (%s:%d)", n, fnName.c_str(), (char *)line.FileName, (int)line.LineNumber));
+				} else {
+					print_error(vformat("[%d] %s", n, fnName.c_str()));
+				}
 			} else {
-				print_error(vformat("[%d] %s", n, fnName.c_str()));
+				// Find which module owns the address and print an offset.
+				bool found = false;
+				for (const module_data &module : modules) {
+					uint64_t module_base = reinterpret_cast<uint64_t>(module.base_address);
+					uint64_t module_end = module_base + module.load_size;
+					if (address >= module_base && address < module_end) {
+						print_error(vformat("[%d] %s+0x%x", n, module.module_name.c_str(), address - module_base));
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					print_error(vformat(
+#ifdef _WIN64
+							"[%d] ? 0x%016x",
+#else
+							"[%d] ? 0x%08x",
+#endif
+							n, address));
+				}
 			}
 		} else {
 			print_error(vformat("[%d] ???", n));
