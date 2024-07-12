@@ -3170,7 +3170,7 @@ void GI::init(SkyRD *p_sky) {
 			RD::PipelineDepthStencilState ds;
 			ds.enable_depth_test = true;
 			ds.enable_depth_write = true;
-			ds.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
+			ds.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
 			RD::PipelineColorBlendState cb = RD::PipelineColorBlendState::create_disabled();
 			RD::RenderPrimitive rp = RD::RENDER_PRIMITIVE_TRIANGLE_STRIPS;
 

@@ -330,6 +330,8 @@ public:
 	void set_prefer_native_menu(bool p_enabled);
 	bool is_prefer_native_menu() const;
 
+	bool is_native_menu() const;
+
 	void scroll_to_item(int p_idx);
 
 	bool activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only = false);

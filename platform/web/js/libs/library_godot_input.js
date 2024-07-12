@@ -112,6 +112,7 @@ const GodotIME = {
 			ime.style.top = '0px';
 			ime.style.width = '100%';
 			ime.style.height = '40px';
+			ime.style.pointerEvents = 'none';
 			ime.style.display = 'none';
 			ime.contentEditable = 'true';
 

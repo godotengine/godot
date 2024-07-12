@@ -4061,7 +4061,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 	if ((trim_pos >= 0 && sd->width > p_width) || enforce_ellipsis) {
 		if (add_ellipsis && (ellipsis_pos > 0 || enforce_ellipsis)) {
-			// Insert an additional space when cutting word bound for esthetics.
+			// Insert an additional space when cutting word bound for aesthetics.
 			if (cut_per_word && (ellipsis_pos > 0)) {
 				Glyph gl;
 				gl.count = 1;

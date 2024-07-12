@@ -417,7 +417,7 @@ Error GDScriptParser::parse_binary(const Vector<uint8_t> &p_binary, const String
 	}
 
 	tokenizer = buffer_tokenizer;
-	script_path = p_script_path;
+	script_path = p_script_path.simplify_path();
 	current = tokenizer->scan();
 	// Avoid error or newline as the first token.
 	// The latter can mess with the parser when opening files filled exclusively with comments and newlines.

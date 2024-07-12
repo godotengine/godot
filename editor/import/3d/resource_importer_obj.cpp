@@ -425,9 +425,13 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 				}
 
 				if (!current_material.is_empty()) {
-					mesh->set_surface_name(mesh->get_surface_count() - 1, current_material.get_basename());
+					if (mesh->get_surface_count() >= 1) {
+						mesh->set_surface_name(mesh->get_surface_count() - 1, current_material.get_basename());
+					}
 				} else if (!current_group.is_empty()) {
-					mesh->set_surface_name(mesh->get_surface_count() - 1, current_group);
+					if (mesh->get_surface_count() >= 1) {
+						mesh->set_surface_name(mesh->get_surface_count() - 1, current_group);
+					}
 				}
 				Array array = surf_tool->commit_to_arrays();
 

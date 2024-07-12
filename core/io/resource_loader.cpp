@@ -304,9 +304,10 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	thread_load_mutex.unlock();
 
 	// Thread-safe either if it's the current thread or a brand new one.
-	bool mq_override_present = false;
+	thread_local bool mq_override_present = false;
 	CallQueue *own_mq_override = nullptr;
 	if (load_nesting == 0) {
+		mq_override_present = false;
 		load_paths_stack = memnew(Vector<String>);
 
 		if (!load_task.dependent_path.is_empty()) {
@@ -325,10 +326,6 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 		DEV_ASSERT(load_task.dependent_path.is_empty());
 	}
 	// --
-
-	if (!Thread::is_main_thread()) {
-		set_current_thread_safe_for_nodes(true);
-	}
 
 	Ref<Resource> res = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_task.error, load_task.use_sub_threads, &load_task.progress);
 	if (mq_override_present) {
@@ -691,6 +688,7 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 			Error wtp_task_err = FAILED;
 			if (loader_is_wtp) {
 				// Loading thread is in the worker pool.
+				load_task.awaited = true;
 				thread_load_mutex.unlock();
 				wtp_task_err = WorkerThreadPool::get_singleton()->wait_for_task_completion(load_task.task_id);
 			}
@@ -715,7 +713,6 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 					} else {
 						DEV_ASSERT(wtp_task_err == OK);
 						thread_load_mutex.lock();
-						load_task.awaited = true;
 					}
 				} else {
 					// Loading thread is main or user thread.

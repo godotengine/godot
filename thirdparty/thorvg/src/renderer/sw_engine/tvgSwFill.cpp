@@ -63,6 +63,66 @@ static void _calculateCoefficients(const SwFill* fill, uint32_t x, uint32_t y, f
 }
 
 
+static uint32_t _estimateAAMargin(const Fill* fdata)
+{
+    constexpr float marginScalingFactor = 800.0f;
+    if (fdata->identifier() == TVG_CLASS_ID_RADIAL) {
+        auto radius = P(static_cast<const RadialGradient*>(fdata))->r;
+        return mathZero(radius) ? 0 : static_cast<uint32_t>(marginScalingFactor / radius);
+    }
+    auto grad = P(static_cast<const LinearGradient*>(fdata));
+    Point p1 {grad->x1, grad->y1};
+    Point p2 {grad->x2, grad->y2};
+    auto length = mathLength(&p1, &p2);
+    return mathZero(length) ? 0 : static_cast<uint32_t>(marginScalingFactor / length);
+}
+
+
+static void _adjustAAMargin(uint32_t& iMargin, uint32_t index)
+{
+    constexpr float threshold = 0.1f;
+    constexpr uint32_t iMarginMax = 40;
+
+    auto iThreshold = static_cast<uint32_t>(index * threshold);
+    if (iMargin > iThreshold) iMargin = iThreshold;
+    if (iMargin > iMarginMax) iMargin = iMarginMax;
+}
+
+
+static inline uint32_t _alphaUnblend(uint32_t c)
+{
+    auto a = (c >> 24);
+    if (a == 255 || a == 0) return c;
+    auto invA = 255.0f / static_cast<float>(a);
+    auto c0 = static_cast<uint8_t>(static_cast<float>((c >> 16) & 0xFF) * invA);
+    auto c1 = static_cast<uint8_t>(static_cast<float>((c >> 8) & 0xFF) * invA);
+    auto c2 = static_cast<uint8_t>(static_cast<float>(c & 0xFF) * invA);
+
+    return (a << 24) | (c0 << 16) | (c1 << 8) | c2;
+}
+
+
+static void _applyAA(const SwFill* fill, uint32_t begin, uint32_t end)
+{
+    if (begin == 0 || end == 0) return;
+
+    auto i = GRADIENT_STOP_SIZE - end;
+    auto rgbaEnd = _alphaUnblend(fill->ctable[i]);
+    auto rgbaBegin = _alphaUnblend(fill->ctable[begin]);
+
+    auto dt = 1.0f / (begin + end + 1.0f);
+    float t = dt;
+    while (i != begin) {
+        auto dist = 255 - static_cast<int32_t>(255 * t);
+        auto color = INTERPOLATE(rgbaEnd, rgbaBegin, dist);
+        fill->ctable[i++] = ALPHA_BLEND((color | 0xff000000), (color >> 24));
+
+        if (i == GRADIENT_STOP_SIZE) i = 0;
+        t += dt;
+    }
+}
+
+
 static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* surface, uint8_t opacity)
 {
     if (!fill->ctable) {
@@ -88,6 +148,11 @@ static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* 
     auto pos = 1.5f * inc;
     uint32_t i = 0;
 
+    //If repeat is true, anti-aliasing must be applied between the last and the first colors.
+    auto repeat = fill->spread == FillSpread::Repeat;
+    uint32_t iAABegin = repeat ? _estimateAAMargin(fdata) : 0;
+    uint32_t iAAEnd = 0;
+
     fill->ctable[i++] = ALPHA_BLEND(rgba | 0xff000000, a);
 
     while (pos <= pColors->offset) {
@@ -97,6 +162,11 @@ static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* 
     }
 
     for (uint32_t j = 0; j < cnt - 1; ++j) {
+        if (repeat && j == cnt - 2 && iAAEnd == 0) {
+            iAAEnd = iAABegin;
+            _adjustAAMargin(iAAEnd, GRADIENT_STOP_SIZE - i);
+        }
+
         auto curr = colors + j;
         auto next = curr + 1;
         auto delta = 1.0f / (next->offset - curr->offset);
@@ -118,14 +188,18 @@ static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* 
         }
         rgba = rgba2;
         a = a2;
+
+        if (repeat && j == 0) _adjustAAMargin(iAABegin, i - 1);
     }
     rgba = ALPHA_BLEND((rgba | 0xff000000), a);
 
     for (; i < GRADIENT_STOP_SIZE; ++i)
         fill->ctable[i] = rgba;
 
-    //Make sure the last color stop is represented at the end of the table
-    fill->ctable[GRADIENT_STOP_SIZE - 1] = rgba;
+    //For repeat fill spread apply anti-aliasing between the last and first colors,
+    //othewise make sure the last color stop is represented at the end of the table.
+    if (repeat) _applyAA(fill, iAABegin, iAAEnd);
+    else fill->ctable[GRADIENT_STOP_SIZE - 1] = rgba;
 
     return true;
 }

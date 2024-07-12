@@ -178,7 +178,11 @@ Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Sh
 	bpi.button = tb;
 	bpi.control = p_item;
 	bpi.name = p_text;
-	items.push_back(bpi);
+	if (p_at_front) {
+		items.insert(0, bpi);
+	} else {
+		items.push_back(bpi);
+	}
 
 	return tb;
 }

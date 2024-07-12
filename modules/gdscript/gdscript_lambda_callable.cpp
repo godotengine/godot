@@ -84,7 +84,7 @@ int GDScriptLambdaCallable::get_argument_count(bool &r_is_valid) const {
 		return 0;
 	}
 	r_is_valid = true;
-	return function->get_argument_count();
+	return function->get_argument_count() - captures.size();
 }
 
 void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
@@ -198,13 +198,17 @@ ObjectID GDScriptLambdaSelfCallable::get_object() const {
 	return object->get_instance_id();
 }
 
+StringName GDScriptLambdaSelfCallable::get_method() const {
+	return function->get_name();
+}
+
 int GDScriptLambdaSelfCallable::get_argument_count(bool &r_is_valid) const {
 	if (function == nullptr) {
 		r_is_valid = false;
 		return 0;
 	}
 	r_is_valid = true;
-	return function->get_argument_count();
+	return function->get_argument_count() - captures.size();
 }
 
 void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {

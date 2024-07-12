@@ -52,6 +52,7 @@ enum GlobalMenuCheckType {
 	Callable hover_callback;
 	Variant meta;
 	GlobalMenuCheckType checkable_type;
+	bool checked;
 	int max_states;
 	int state;
 	Ref<Image> img;

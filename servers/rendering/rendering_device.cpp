@@ -3500,7 +3500,12 @@ Error RenderingDevice::screen_prepare_for_drawing(DisplayServer::WindowID p_scre
 		framebuffer = driver->swap_chain_acquire_framebuffer(main_queue, it->value, resize_required);
 	}
 
-	ERR_FAIL_COND_V_MSG(framebuffer.id == 0, FAILED, "Unable to acquire framebuffer.");
+	if (framebuffer.id == 0) {
+		// Some drivers like NVIDIA are fast enough to invalidate the swap chain between resizing and acquisition (GH-94104).
+		// This typically occurs during continuous window resizing operations, especially if done quickly.
+		// Allow this to fail silently since it has no visual consequences.
+		return ERR_CANT_CREATE;
+	}
 
 	// Store the framebuffer that will be used next to draw to this screen.
 	screen_framebuffers[p_screen] = framebuffer;
@@ -5459,7 +5464,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 
 	frame = 0;
 	frames.resize(frame_count);
-	max_timestamp_query_elements = 256;
+	max_timestamp_query_elements = GLOBAL_GET("debug/settings/profiler/max_timestamp_query_elements");
 
 	device = context->device_get(device_index);
 	err = driver->initialize(device_index, frame_count);
@@ -5710,7 +5715,7 @@ void RenderingDevice::_free_rids(T &p_owner, const char *p_type) {
 void RenderingDevice::capture_timestamp(const String &p_name) {
 	ERR_FAIL_COND_MSG(draw_list != nullptr && draw_list->state.draw_count > 0, "Capturing timestamps during draw list creation is not allowed. Offending timestamp was: " + p_name);
 	ERR_FAIL_COND_MSG(compute_list != nullptr && compute_list->state.dispatch_count > 0, "Capturing timestamps during compute list creation is not allowed. Offending timestamp was: " + p_name);
-	ERR_FAIL_COND(frames[frame].timestamp_count >= max_timestamp_query_elements);
+	ERR_FAIL_COND_MSG(frames[frame].timestamp_count >= max_timestamp_query_elements, vformat("Tried capturing more timestamps than the configured maximum (%d). You can increase this limit in the project settings under 'Debug/Settings' called 'Max Timestamp Query Elements'.", max_timestamp_query_elements));
 
 	draw_graph.add_capture_timestamp(frames[frame].timestamp_pool, frames[frame].timestamp_count);
 

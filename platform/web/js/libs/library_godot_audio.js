@@ -687,9 +687,15 @@ class SampleNode {
 			}
 
 			switch (self.getSample().loopMode) {
-			case 'disabled':
+			case 'disabled': {
+				const id = this.id;
 				self.stop();
-				break;
+				if (GodotAudio.sampleFinishedCallback != null) {
+					const idCharPtr = GodotRuntime.allocString(id);
+					GodotAudio.sampleFinishedCallback(idCharPtr);
+					GodotRuntime.free(idCharPtr);
+				}
+			} break;
 			case 'forward':
 			case 'backward':
 				self.restart();
@@ -1089,6 +1095,12 @@ const _GodotAudio = {
 		 */
 		busSolo: null,
 		Bus,
+
+		/**
+		 * Callback to signal that a sample has finished.
+		 * @type {(playbackObjectIdPtr: number) => void | null}
+		 */
+		sampleFinishedCallback: null,
 
 		/** @type {AudioContext} */
 		ctx: null,
@@ -1763,6 +1775,17 @@ const _GodotAudio = {
 	 */
 	godot_audio_sample_bus_set_mute: function (bus, enable) {
 		GodotAudio.set_sample_bus_mute(bus, Boolean(enable));
+	},
+
+	godot_audio_sample_set_finished_callback__proxy: 'sync',
+	godot_audio_sample_set_finished_callback__sig: 'vi',
+	/**
+	 * Sets the finished callback
+	 * @param {Number} callbackPtr Finished callback pointer
+	 * @returns {void}
+	 */
+	godot_audio_sample_set_finished_callback: function (callbackPtr) {
+		GodotAudio.sampleFinishedCallback = GodotRuntime.get_func(callbackPtr);
 	},
 };
 

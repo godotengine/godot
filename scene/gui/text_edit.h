@@ -881,6 +881,7 @@ public:
 
 	int add_caret(int p_line, int p_column);
 	void remove_caret(int p_caret);
+	void remove_drag_caret();
 	void remove_secondary_carets();
 	int get_caret_count() const;
 	void add_caret_at_carets(bool p_below);

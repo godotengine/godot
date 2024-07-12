@@ -3690,7 +3690,7 @@ void AnimationTrackEditor::_name_limit_changed() {
 }
 
 void AnimationTrackEditor::_timeline_changed(float p_new_pos, bool p_timeline_only) {
-	emit_signal(SNAME("timeline_changed"), p_new_pos, p_timeline_only);
+	emit_signal(SNAME("timeline_changed"), p_new_pos, p_timeline_only, false);
 }
 
 void AnimationTrackEditor::_track_remove_request(int p_track) {
@@ -3787,6 +3787,7 @@ void AnimationTrackEditor::set_anim_pos(float p_pos) {
 	}
 	_redraw_groups();
 	bezier_edit->set_play_position(p_pos);
+	emit_signal(SNAME("timeline_changed"), p_pos, true, true);
 }
 
 static bool track_type_is_resettable(Animation::TrackType p_type) {
@@ -3867,15 +3868,23 @@ void AnimationTrackEditor::commit_insert_queue() {
 	}
 
 	// Skip the confirmation dialog if the user holds Shift while clicking the key icon.
-	if (!Input::get_singleton()->is_key_pressed(Key::SHIFT) && num_tracks > 0) {
-		String shortcut_hint = TTR("Hold Shift when clicking the key icon to skip this dialog.");
+	// If `confirm_insert_track` editor setting is disabled, the behavior is reversed.
+	bool confirm_insert = EDITOR_GET("editors/animation/confirm_insert_track");
+	if ((Input::get_singleton()->is_key_pressed(Key::SHIFT) != confirm_insert) && num_tracks > 0) {
+		String dialog_text;
+
 		// Potentially a new key, does not exist.
 		if (num_tracks == 1) {
 			// TRANSLATORS: %s will be replaced by a phrase describing the target of track.
-			insert_confirm_text->set_text(vformat(TTR("Create new track for %s and insert key?") + "\n\n" + shortcut_hint, last_track_query));
+			dialog_text = vformat(TTR("Create new track for %s and insert key?"), last_track_query);
 		} else {
-			insert_confirm_text->set_text(vformat(TTR("Create %d new tracks and insert keys?") + "\n\n" + shortcut_hint, num_tracks));
+			dialog_text = vformat(TTR("Create %d new tracks and insert keys?"), num_tracks);
 		}
+
+		if (confirm_insert) {
+			dialog_text += +"\n\n" + TTR("Hold Shift when clicking the key icon to skip this dialog.");
+		}
+		insert_confirm_text->set_text(dialog_text);
 
 		insert_confirm_bezier->set_visible(all_bezier);
 		insert_confirm_reset->set_visible(reset_allowed);
@@ -4420,7 +4429,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 				for (int i = 0; i < subindices.size(); i++) {
 					InsertData id = p_id;
 					id.type = Animation::TYPE_BEZIER;
-					id.value = p_id.value.get(subindices[i].substr(1, subindices[i].length()));
+					id.value = subindices[i].is_empty() ? p_id.value : p_id.value.get(subindices[i].substr(1, subindices[i].length()));
 					id.path = String(p_id.path) + subindices[i];
 					p_next_tracks = _confirm_insert(id, p_next_tracks, p_reset_wanted, p_reset_anim, false);
 				}

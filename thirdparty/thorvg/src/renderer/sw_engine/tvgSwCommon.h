@@ -23,6 +23,7 @@
 #ifndef _TVG_SW_COMMON_H_
 #define _TVG_SW_COMMON_H_
 
+#include <algorithm>
 #include "tvgCommon.h"
 #include "tvgRender.h"
 

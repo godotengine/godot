@@ -547,6 +547,11 @@ void GraphEdit::_graph_node_slot_updated(int p_index, Node *p_node) {
 	GraphNode *graph_node = Object::cast_to<GraphNode>(p_node);
 	ERR_FAIL_NULL(graph_node);
 
+	// Update all adjacent connections during the next redraw.
+	for (const Ref<Connection> &conn : connection_map[graph_node->get_name()]) {
+		conn->_cache.dirty = true;
+	}
+
 	minimap->queue_redraw();
 	queue_redraw();
 	connections_layer->queue_redraw();

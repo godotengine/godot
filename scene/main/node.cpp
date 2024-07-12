@@ -181,6 +181,12 @@ void Node::_notification(int p_notification) {
 			}
 		} break;
 
+		case NOTIFICATION_PAUSED: {
+			if (is_physics_interpolated_and_enabled() && is_inside_tree()) {
+				reset_physics_interpolation();
+			}
+		} break;
+
 		case NOTIFICATION_PATH_RENAMED: {
 			if (data.path_cache) {
 				memdelete(data.path_cache);

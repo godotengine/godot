@@ -38,6 +38,7 @@
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
+#include "scene/resources/texture.h"
 
 #if defined(VULKAN_ENABLED)
 #include "rendering_context_driver_vulkan_windows.h"
@@ -2008,7 +2009,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 	}
 
 	if (p_mode == WINDOW_MODE_WINDOWED) {
-		ShowWindow(wd.hWnd, SW_RESTORE);
+		ShowWindow(wd.hWnd, SW_NORMAL);
 		wd.maximized = false;
 		wd.minimized = false;
 	}
@@ -3816,9 +3817,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_ACTIVATE: {
 			// Activation can happen just after the window has been created, even before the callbacks are set.
 			// Therefore, it's safer to defer the delivery of the event.
-			if (!windows[window_id].activate_timer_id) {
-				windows[window_id].activate_timer_id = SetTimer(windows[window_id].hWnd, 1, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
-			}
+			// It's important to set an nIDEvent different from the SetTimer for move_timer_id because
+			// if the same nIDEvent is passed, the timer is replaced and the same timer_id is returned.
+			windows[window_id].activate_timer_id = SetTimer(windows[window_id].hWnd, DisplayServerWindows::TIMER_ID_WINDOW_ACTIVATION, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
 			windows[window_id].activate_state = GET_WM_ACTIVATE_STATE(wParam, lParam);
 			return 0;
 		} break;
@@ -4736,7 +4737,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		case WM_ENTERSIZEMOVE: {
 			Input::get_singleton()->release_pressed_events();
-			windows[window_id].move_timer_id = SetTimer(windows[window_id].hWnd, 1, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
+			windows[window_id].move_timer_id = SetTimer(windows[window_id].hWnd, DisplayServerWindows::TIMER_ID_MOVE_REDRAW, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
 		} break;
 		case WM_EXITSIZEMOVE: {
 			KillTimer(windows[window_id].hWnd, windows[window_id].move_timer_id);
