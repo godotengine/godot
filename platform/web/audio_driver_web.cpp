@@ -65,19 +65,7 @@ void AudioDriverWeb::_sample_playback_finished_callback(const char *p_playback_o
 		return;
 	}
 
-	Object *player_object = ObjectDB::get_instance(playback->player_id);
-	if (player_object == nullptr) {
-		return;
-	}
-	Node *player = Object::cast_to<Node>(player_object);
-	if (player == nullptr) {
-		return;
-	}
-
-	const StringName finished = SNAME("finished");
-	if (player->has_signal(finished)) {
-		player->emit_signal(finished);
-	}
+	AudioServer::get_singleton()->stop_sample_playback(playback);
 }
 
 void AudioDriverWeb::_audio_driver_process(int p_from, int p_samples) {

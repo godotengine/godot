@@ -152,7 +152,6 @@ Ref<AudioStreamPlayback> AudioStreamPlayerInternal::play_basic() {
 				Ref<AudioSamplePlayback> sample_playback;
 				sample_playback.instantiate();
 				sample_playback->stream = stream;
-				sample_playback->player_id = node->get_instance_id();
 				stream_playback->set_sample_playback(sample_playback);
 			}
 		} else if (!stream->is_meta_stream()) {
@@ -262,9 +261,6 @@ void AudioStreamPlayerInternal::seek(float p_seconds) {
 void AudioStreamPlayerInternal::stop() {
 	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 		AudioServer::get_singleton()->stop_playback_stream(playback);
-		if (_is_sample() && playback->get_sample_playback().is_valid()) {
-			AudioServer::get_singleton()->stop_sample_playback(playback->get_sample_playback());
-		}
 	}
 	stream_playbacks.clear();
 
