@@ -1190,7 +1190,7 @@ PackedVector2Array Curve2D::tessellate(int p_max_stages, real_t p_tolerance) con
 	int last_unrepeated = 0;
 	for (int i = 0; i < points.size() - 1; i++) {
 		// look for adjacent points on the curve that are the same, otherwise
-		// we duplicate the point in the returned tesselation
+		// we duplicate the point in the returned tessellation
 		if ((points[i].position - points[i + 1].position).is_zero_approx() && (points[i].in - points[i + 1].in).is_zero_approx() && (points[i].out - points[i + 1].out).is_zero_approx()) {
 			continue;
 		}
