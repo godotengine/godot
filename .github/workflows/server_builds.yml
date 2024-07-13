@@ -45,8 +45,8 @@ jobs:
               libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev \
               libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip
 
-      - name: Setup Godot build cache
-        uses: ./.github/actions/godot-cache
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
         with:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
@@ -61,3 +61,9 @@ jobs:
           platform: server
           target: ${{ matrix.target }}
           tools: ${{ matrix.tools }}
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
