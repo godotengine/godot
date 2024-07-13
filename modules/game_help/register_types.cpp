@@ -47,6 +47,7 @@
 #include "modules/game_help/logic/character_shape/character_body_part.h"
 #include "modules/game_help/logic/data_table_manager.h"
 #include "modules/game_help/logic/path_manager.h"
+#include "modules/game_help/logic/character_manager.h"
 #include "modules/game_help/csv/CSV_EditorImportPlugin.h"
 
 #include "modules/game_help/unity/unity_link_server.h"
@@ -82,6 +83,7 @@ static AnimationManager* animation_help = nullptr;
 static CSV_EditorImportPlugin * csv_editor_import = nullptr;
 static DataTableManager * data_table_manager = nullptr;
 static PathManager* path_manager = nullptr;
+static CharacterManager* character_manager = nullptr;
 
 void initialize_game_help_module(ModuleInitializationLevel p_level) {
 #ifdef TOOLS_ENABLED
@@ -95,102 +97,108 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	}
 #endif
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-	data_table_manager = memnew(DataTableManager);
-	path_manager = memnew(PathManager);
+		data_table_manager = memnew(DataTableManager);
+		path_manager = memnew(PathManager);
 
-	ClassDB::register_class<CSVData>();
+		ClassDB::register_class<CSVData>();
 
-	initialize_terrain_3d(p_level);
-	initialize_filiage_manager(p_level);
-	ClassDB::register_class<AnimationManager>();
+		initialize_terrain_3d(p_level);
+		initialize_filiage_manager(p_level);
+		ClassDB::register_class<AnimationManager>();
 
-	ClassDB::register_class<DataTableManager>();
-	ClassDB::register_class<PathManager>();
-	
-	ClassDB::register_class<CharacterAnimationLibrary>();
-	ClassDB::register_class<CharacterBodyMain>();
-	ClassDB::register_class<CharacterBodyPart>();
-	ClassDB::register_class<CharacterBodyPartInstane>();
-	ClassDB::register_class<CharacterBodyPrefab>();
-	ClassDB::register_class<CharacterNavigationAgent3D>();
-	//ClassDB::register_class<BTPlaySkill>();
+		ClassDB::register_class<DataTableManager>();
+		ClassDB::register_class<PathManager>();
 
-
-	ClassDB::register_abstract_class<CharacterMovement>();
-
-	
-	ClassDB::register_abstract_class<AnimatorAIStateConditionBase>();
-	ClassDB::register_class<AnimatorAIStateFloatCondition>();
-	ClassDB::register_class<AnimatorAIStateIntCondition>();
-	ClassDB::register_class<AnimatorAIStateStringNameCondition>();
-	ClassDB::register_class<AnimatorAIStateBoolCondition>();
-
-	
-	ClassDB::register_class<CharacterAnimatorCondition>();
-	ClassDB::register_class<CharacterAnimationLogicNode>();
-
-	
-	ClassDB::register_class<CharacterAnimatorNodeBase>();
-	ClassDB::register_class<CharacterAnimatorMask>();
-	ClassDB::register_class<CharacterBoneMap>();
-	ClassDB::register_class<CharacterAnimationItem>();
-	ClassDB::register_class<CharacterAnimatorNode1D>();
-	ClassDB::register_class<CharacterAnimatorNode2D>();
-	ClassDB::register_class<CharacterAnimatorLayerConfig>();
-	ClassDB::register_class<CharacterAnimatorLayer>();
-	ClassDB::register_class<CharacterAnimator>();
-	ClassDB::register_class<CharacterCheckArea3DResult>();
-	ClassDB::register_class<CharacterCheckArea3D>();
+		ClassDB::register_class<CharacterManager>();
+		
+		ClassDB::register_class<CharacterAnimationLibrary>();
+		ClassDB::register_class<CharacterBodyMain>();
+		ClassDB::register_class<CharacterBodyPart>();
+		ClassDB::register_class<CharacterBodyPartInstane>();
+		ClassDB::register_class<CharacterBodyPrefab>();
+		ClassDB::register_class<CharacterNavigationAgent3D>();
+		//ClassDB::register_class<BTPlaySkill>();
 
 
-	ClassDB::register_class<CharacterAI_CheckBase>();
-	ClassDB::register_class<CharacterAI_CheckGround>();
-	ClassDB::register_class<CharacterAI_CheckEnemy>();
-	ClassDB::register_class<CharacterAI_CheckJump>();
-	ClassDB::register_class<CharacterAI_CheckJump2>();
-	ClassDB::register_class<CharacterAI_CheckPatrol>();
+		ClassDB::register_abstract_class<CharacterMovement>();
 
-	ClassDB::register_class<CharacterAILogicNode>();
-	ClassDB::register_class<CharacterAILogicNode_Patrol>();
-	ClassDB::register_class<CharacterAILogicNode_Jump>();
-	ClassDB::register_class<CharacterAILogicNode_Jump2>();
-	ClassDB::register_class<CharacterAILogicNode_Follow>();
-	ClassDB::register_class<CharacterAILogicNode_Escape>();
-	ClassDB::register_class<CharacterAILogicNode_Battle>();
-	ClassDB::register_class<CharacterAILogicNode_Respawn>();
-	ClassDB::register_class<CharacterAILogicNode_Provoke>();
-	ClassDB::register_class<CharacterAILogicNode_Idle>();
-	ClassDB::register_class<CharacterAILogicNode_Dead>();
+		
+		ClassDB::register_abstract_class<AnimatorAIStateConditionBase>();
+		ClassDB::register_class<AnimatorAIStateFloatCondition>();
+		ClassDB::register_class<AnimatorAIStateIntCondition>();
+		ClassDB::register_class<AnimatorAIStateStringNameCondition>();
+		ClassDB::register_class<AnimatorAIStateBoolCondition>();
 
-	ClassDB::register_class<CharacterAI_Inductor>();
-	ClassDB::register_class<CharacterAI_Brain>();
-	ClassDB::register_class<CharacterAI>();
+		
+		ClassDB::register_class<CharacterAnimatorCondition>();
+		ClassDB::register_class<CharacterAnimationLogicNode>();
 
-	animation_help = memnew(AnimationManager);
-
-	Engine::get_singleton()->add_singleton(Engine::Singleton("AnimationManager", animation_help));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("DataTableManager", data_table_manager));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("PathManager", path_manager));
+		
+		ClassDB::register_class<CharacterAnimatorNodeBase>();
+		ClassDB::register_class<CharacterAnimatorMask>();
+		ClassDB::register_class<CharacterBoneMap>();
+		ClassDB::register_class<CharacterAnimationItem>();
+		ClassDB::register_class<CharacterAnimatorNode1D>();
+		ClassDB::register_class<CharacterAnimatorNode2D>();
+		ClassDB::register_class<CharacterAnimatorLayerConfig>();
+		ClassDB::register_class<CharacterAnimatorLayer>();
+		ClassDB::register_class<CharacterAnimator>();
+		ClassDB::register_class<CharacterCheckArea3DResult>();
+		ClassDB::register_class<CharacterCheckArea3D>();
 
 
+		ClassDB::register_class<CharacterAI_CheckBase>();
+		ClassDB::register_class<CharacterAI_CheckGround>();
+		ClassDB::register_class<CharacterAI_CheckEnemy>();
+		ClassDB::register_class<CharacterAI_CheckJump>();
+		ClassDB::register_class<CharacterAI_CheckJump2>();
+		ClassDB::register_class<CharacterAI_CheckPatrol>();
 
-	ClassDB::register_class<MTerrain>();
-	ClassDB::register_class<MGrid>();
-	ClassDB::register_class<MResource>();
-	ClassDB::register_class<MChunkGenerator>();
-	ClassDB::register_class<MChunks>();
-	ClassDB::register_class<MRegion>();
-	ClassDB::register_class<MTool>();
-	ClassDB::register_class<MBrushManager>();
-	ClassDB::register_class<MCollision>();
-	ClassDB::register_class<MGrass>();
-	ClassDB::register_class<MGrassData>();
-	ClassDB::register_class<MGrassLodSetting>();
-	ClassDB::register_class<MNavigationRegion3D>();
-	ClassDB::register_class<MNavigationMeshData>();
-	ClassDB::register_class<MObstacle>();
-	ClassDB::register_class<MBrushLayers>();
-	ClassDB::register_class<MTerrainMaterial>();
+		ClassDB::register_class<CharacterAILogicNode>();
+		ClassDB::register_class<CharacterAILogicNode_Patrol>();
+		ClassDB::register_class<CharacterAILogicNode_Jump>();
+		ClassDB::register_class<CharacterAILogicNode_Jump2>();
+		ClassDB::register_class<CharacterAILogicNode_Follow>();
+		ClassDB::register_class<CharacterAILogicNode_Escape>();
+		ClassDB::register_class<CharacterAILogicNode_Battle>();
+		ClassDB::register_class<CharacterAILogicNode_Respawn>();
+		ClassDB::register_class<CharacterAILogicNode_Provoke>();
+		ClassDB::register_class<CharacterAILogicNode_Idle>();
+		ClassDB::register_class<CharacterAILogicNode_Dead>();
+
+		ClassDB::register_class<CharacterAI_Inductor>();
+		ClassDB::register_class<CharacterAI_Brain>();
+		ClassDB::register_class<CharacterAI>();
+
+		animation_help = memnew(AnimationManager);
+
+		character_manager = memnew(CharacterManager);
+
+		Engine::get_singleton()->add_singleton(Engine::Singleton("AnimationManager", animation_help));
+		Engine::get_singleton()->add_singleton(Engine::Singleton("DataTableManager", data_table_manager));
+		Engine::get_singleton()->add_singleton(Engine::Singleton("PathManager", path_manager));
+		Engine::get_singleton()->add_singleton(Engine::Singleton("CharacterManager", character_manager));
+
+
+
+		ClassDB::register_class<MTerrain>();
+		ClassDB::register_class<MGrid>();
+		ClassDB::register_class<MResource>();
+		ClassDB::register_class<MChunkGenerator>();
+		ClassDB::register_class<MChunks>();
+		ClassDB::register_class<MRegion>();
+		ClassDB::register_class<MTool>();
+		ClassDB::register_class<MBrushManager>();
+		ClassDB::register_class<MCollision>();
+		ClassDB::register_class<MGrass>();
+		ClassDB::register_class<MGrassData>();
+		ClassDB::register_class<MGrassLodSetting>();
+		ClassDB::register_class<MNavigationRegion3D>();
+		ClassDB::register_class<MNavigationMeshData>();
+		ClassDB::register_class<MObstacle>();
+		ClassDB::register_class<MBrushLayers>();
+		ClassDB::register_class<MTerrainMaterial>();
+		SceneTree::get_singleton()->remove_globale_ticker(character_manager);
 	}
 
 
@@ -207,6 +215,10 @@ void uninitialize_game_help_module(ModuleInitializationLevel p_level) {
 	}
 	Engine::get_singleton()->remove_singleton("DataTableManager");
 	Engine::get_singleton()->remove_singleton("PathManager");
+	if(SceneTree::get_singleton() != nullptr)
+	{
+		SceneTree::get_singleton()->remove_globale_ticker(character_manager);
+	}
 
 
 	memdelete(animation_help);
@@ -216,5 +228,8 @@ void uninitialize_game_help_module(ModuleInitializationLevel p_level) {
 	data_table_manager = nullptr;
 	memdelete(path_manager);
 	path_manager = nullptr;
+
+	memdelete(character_manager);
+	character_manager = nullptr;
 
 }

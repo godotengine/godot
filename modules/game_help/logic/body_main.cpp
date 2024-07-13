@@ -2,6 +2,7 @@
 #include "data_table_manager.h"
 #include "scene/3d/path_3d.h"
 #include "character_ai/character_ai.h"
+#include "character_manager.h"
 
 
 void CharacterBodyMain::_bind_methods()
@@ -108,9 +109,12 @@ void CharacterBodyMain::_notification( int p_notification )
 
     }
 	switch (p_notification) {
-		case NOTIFICATION_PROCESS: {
-            _update( get_process_delta_time() );
+        case NOTIFICATION_ENTER_TREE: {
+            CharacterManager::get_singleton()->register_character(this);
         } break;
+        case NOTIFICATION_EXIT_TREE: {
+            CharacterManager::get_singleton()->unregister_character(this);
+        }
     }
 
 }

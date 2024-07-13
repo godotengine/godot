@@ -166,13 +166,19 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	std::vector<uint32_t> SpirV;
 	spv::SpvBuildLogger logger;
 	glslang::SpvOptions spvOptions;
-	spvOptions.disableOptimizer = false;
 
 	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {		
 		spvOptions.disableOptimizer = true;
 		spvOptions.generateDebugInfo = true;
 		spvOptions.emitNonSemanticShaderDebugInfo = true;
 		spvOptions.emitNonSemanticShaderDebugSource = true;
+	}
+	else
+	{
+		spvOptions.disableOptimizer = false;
+		//spvOptions.stripDebugInfo = true;
+		//spvOptions.optimizeSize = true;
+
 	}
 
 	glslang::GlslangToSpv(*program.getIntermediate(stages[p_stage]), SpirV, &logger, &spvOptions);

@@ -1001,6 +1001,11 @@ void SceneTree::_process(bool p_physics) {
 
 		process_groups_dirty = false;
 	}
+	for(uint32_t i = 0; i < global_tickers.size(); i++) {	
+		if(global_tickers[i] != nullptr) {
+			global_tickers[i]->tick();
+		}
+	}
 
 	// Cache the group count, because during processing new groups may be added.
 	// They will be added at the end, hence for consistency they will be ignored by this process loop.
@@ -1101,6 +1106,33 @@ bool SceneTree::ProcessGroupSort::operator()(const ProcessGroup *p_left, const P
 		return left_threaded < right_threaded;
 	} else {
 		return left_order < right_order;
+	}
+}
+void SceneTree::add_globale_ticker(GlolaleTicker *p_ticker)
+{
+	_THREAD_SAFE_METHOD_
+	for(int i=0;i<global_tickers.size();i++) {
+		if(global_tickers[i]==p_ticker) {
+			return;
+		}
+	}
+	for(int i=0;i<global_tickers.size();i++) {
+		if(global_tickers[i]== nullptr) {
+			global_tickers[i]=p_ticker;
+			return;
+		}
+	}
+
+	global_tickers.push_back(p_ticker);
+}
+void SceneTree::remove_globale_ticker(GlolaleTicker *p_ticker)
+{
+	_THREAD_SAFE_METHOD_
+	for(int i=0;i<global_tickers.size();i++) {
+		if(global_tickers[i]==p_ticker) {
+			global_tickers[i]=nullptr;
+			return;
+		}
 	}
 }
 
