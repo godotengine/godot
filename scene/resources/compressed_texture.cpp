@@ -32,7 +32,7 @@
 
 #include "scene/resources/bit_map.h"
 
-Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit) {
+Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &r_mipmap_limit, int &r_override_width, int &r_override_height, int p_size_limit) {
 	alpha_cache.unref();
 
 	ERR_FAIL_COND_V(image.is_null(), ERR_INVALID_PARAMETER);
@@ -55,11 +55,12 @@ Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r
 	r_height = f->get_32();
 	uint32_t df = f->get_32(); //data format
 
-	//skip reserved
-	mipmap_limit = int(f->get_32());
-	//reserved
-	f->get_32();
-	f->get_32();
+	r_mipmap_limit = int(f->get_32());
+
+	r_override_width = f->get_32();
+	r_override_height = f->get_32();
+
+	// Skip reserved fields.
 	f->get_32();
 
 #ifdef TOOLS_ENABLED
@@ -134,8 +135,10 @@ Error CompressedTexture2D::load(const String &p_path) {
 	bool request_normal;
 	bool request_roughness;
 	int mipmap_limit;
+	int override_width;
+	int override_height;
 
-	Error err = _load_data(p_path, lw, lh, image, request_3d, request_normal, request_roughness, mipmap_limit);
+	Error err = _load_data(p_path, lw, lh, image, request_3d, request_normal, request_roughness, mipmap_limit, override_width, override_height);
 	if (err) {
 		return err;
 	}
@@ -146,9 +149,8 @@ Error CompressedTexture2D::load(const String &p_path) {
 	} else {
 		texture = RS::get_singleton()->texture_2d_create(image);
 	}
-	if (lw || lh) {
-		RS::get_singleton()->texture_set_size_override(texture, lw, lh);
-	}
+
+	set_size_override(Size2i(override_width, override_height));
 
 	w = lw;
 	h = lh;
@@ -197,11 +199,19 @@ String CompressedTexture2D::get_load_path() const {
 }
 
 int CompressedTexture2D::get_width() const {
-	return w;
+	int ret = w;
+	if (get_size_override().width != 0) {
+		ret = get_size_override().width;
+	}
+	return ret;
 }
 
 int CompressedTexture2D::get_height() const {
-	return h;
+	int ret = h;
+	if (get_size_override().height != 0) {
+		ret = get_size_override().height;
+	}
+	return ret;
 }
 
 RID CompressedTexture2D::get_rid() const {
@@ -269,8 +279,8 @@ bool CompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 		int x = p_x * aw / w;
 		int y = p_y * ah / h;
 
-		x = CLAMP(x, 0, aw);
-		y = CLAMP(y, 0, ah);
+		x = CLAMP(x, 0, aw - 1);
+		y = CLAMP(y, 0, ah - 1);
 
 		return alpha_cache->get_bit(x, y);
 	}

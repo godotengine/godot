@@ -556,7 +556,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "set_scancode", "set_keycode" }, // InputEventKey
 	{ "set_shader_param", "set_shader_parameter" }, // ShaderMaterial
 	{ "set_shift", "set_shift_pressed" }, // InputEventWithModifiers
-	{ "set_size_override", "set_size_2d_override" }, // SubViewport -- Breaks ImageTexture.
+	{ "set_size_override", "set_size_2d_override" }, // SubViewport -- Breaks Texture2D.
 	{ "set_size_override_stretch", "set_size_2d_override_stretch" }, // SubViewport
 	{ "set_slips_on_slope", "set_slide_on_slope" }, // SeparationRayShape2D, SeparationRayShape3D
 	{ "set_sort_enabled", "set_y_sort_enabled" }, // Node2D

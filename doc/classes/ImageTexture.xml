@@ -50,13 +50,6 @@
 				If you want to update the image, but don't need to change its parameters (format, size), use [method update] instead for better performance.
 			</description>
 		</method>
-		<method name="set_size_override">
-			<return type="void" />
-			<param index="0" name="size" type="Vector2i" />
-			<description>
-				Resizes the texture to the specified dimensions.
-			</description>
-		</method>
 		<method name="update">
 			<return type="void" />
 			<param index="0" name="image" type="Image" />

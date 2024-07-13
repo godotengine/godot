@@ -10,6 +10,12 @@
 		<link title="Importing images">$DOCS_URL/tutorials/assets_pipeline/importing_images.html</link>
 	</tutorials>
 	<members>
+		<member name="2d/display_scale" type="float" setter="" getter="" default="1.0">
+			Resizes the image to the scale factor without affecting the texture size. This can be used to reduce app size and memory usage.
+		</member>
+		<member name="2d/size_override" type="Vector2i" setter="" getter="" default="Vector2i(0, 0)">
+			Allow overriding the texture size.
+		</member>
 		<member name="compress/channel_pack" type="int" setter="" getter="" default="0">
 			Controls how color channels should be used in the imported texture.
 			[b]sRGB Friendly:[/b] Prevents the RG color format from being used, as it does not support sRGB color.
@@ -88,7 +94,7 @@
 			- In 3D, there is no support for premultiplied alpha blend mode yet, so this option is only suited for 2D.
 		</member>
 		<member name="process/size_limit" type="int" setter="" getter="" default="0">
-			If set to a value greater than [code]0[/code], the size of the texture is limited on import to a value smaller than or equal to the value specified here. For non-square textures, the size limit affects the longer dimension, with the shorter dimension scaled to preserve aspect ratio. Resizing is performed using cubic interpolation.
+			If set to a value greater than [code]0[/code], the size of the texture is limited on import to a value smaller than or equal to the value specified here. For non-square textures, the size limit affects the longer dimension, with the shorter dimension scaled to preserve aspect ratio. Resizing is performed using Lanczos interpolation.
 			This can be used to reduce memory usage without affecting the source images, or avoid issues with textures not displaying on mobile/web platforms (as these usually can't display textures larger than 4096×4096).
 		</member>
 		<member name="roughness/mode" type="int" setter="" getter="" default="0">

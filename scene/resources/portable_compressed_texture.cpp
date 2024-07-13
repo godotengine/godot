@@ -113,8 +113,7 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 	}
 
 	image_stored = true;
-	size_override = size;
-	RenderingServer::get_singleton()->texture_set_size_override(texture, size_override.width, size_override.height);
+	set_size_override(size);
 	alpha_cache.unref();
 
 	if (keep_all_compressed_buffers || keep_compressed_buffer) {
@@ -290,15 +289,6 @@ bool PortableCompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 	return true;
 }
 
-void PortableCompressedTexture2D::set_size_override(const Size2 &p_size) {
-	size_override = p_size;
-	RenderingServer::get_singleton()->texture_set_size_override(texture, size_override.width, size_override.height);
-}
-
-Size2 PortableCompressedTexture2D::get_size_override() const {
-	return size_override;
-}
-
 void PortableCompressedTexture2D::set_path(const String &p_path, bool p_take_over) {
 	if (texture.is_valid()) {
 		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
@@ -333,9 +323,6 @@ void PortableCompressedTexture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_format"), &PortableCompressedTexture2D::get_format);
 	ClassDB::bind_method(D_METHOD("get_compression_mode"), &PortableCompressedTexture2D::get_compression_mode);
 
-	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &PortableCompressedTexture2D::set_size_override);
-	ClassDB::bind_method(D_METHOD("get_size_override"), &PortableCompressedTexture2D::get_size_override);
-
 	ClassDB::bind_method(D_METHOD("set_keep_compressed_buffer", "keep"), &PortableCompressedTexture2D::set_keep_compressed_buffer);
 	ClassDB::bind_method(D_METHOD("is_keeping_compressed_buffer"), &PortableCompressedTexture2D::is_keeping_compressed_buffer);
 
@@ -346,7 +333,6 @@ void PortableCompressedTexture2D::_bind_methods() {
 	ClassDB::bind_static_method("PortableCompressedTexture2D", D_METHOD("is_keeping_all_compressed_buffers"), &PortableCompressedTexture2D::is_keeping_all_compressed_buffers);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "_set_data", "_get_data");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size_override", PROPERTY_HINT_NONE, "suffix:px"), "set_size_override", "get_size_override");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_compressed_buffer"), "set_keep_compressed_buffer", "is_keeping_compressed_buffer");
 
 	BIND_ENUM_CONSTANT(COMPRESSION_MODE_LOSSLESS);

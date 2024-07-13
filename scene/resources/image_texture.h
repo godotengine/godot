@@ -69,6 +69,8 @@ public:
 	int get_width() const override;
 	int get_height() const override;
 
+	virtual void set_size_override(const Size2i &p_size) override;
+
 	virtual RID get_rid() const override;
 
 	bool has_alpha() const override;
@@ -77,8 +79,6 @@ public:
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const override;
 
 	bool is_pixel_opaque(int p_x, int p_y) const override;
-
-	void set_size_override(const Size2i &p_size);
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 
