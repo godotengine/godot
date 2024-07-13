@@ -15,6 +15,7 @@
 #include "./character_shape/character_body_part.h"
 #include "./character_shape/character_body_prefab.h"
 #include "navigation/character_navigation_agent.h"
+#include "modules/renik/renik.h"
 
 
 #include "modules/limboai/bt/bt_player.h"
@@ -373,6 +374,8 @@ protected:
     Ref<CharacterNavigationAgent3D> character_agent;
     CharacterAIContext ai_context;
     Ref<CharacterAI> character_ai;
+    // 角色的IK信息
+    Ref<RenIK> renik;
     // 骨架配置文件
     String skeleton_res;
     // 动画组配置

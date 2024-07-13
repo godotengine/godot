@@ -1,0 +1,9 @@
+*.obj
+*.pyc
+*.o
+*.bc
+*.d
+
+*.tmp
+
+.DS_Store

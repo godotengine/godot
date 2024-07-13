@@ -9,7 +9,92 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/bone_attachment_3d.h"
 
+class CharacterSocket : public RefCounted
+{
+    GDCLASS(CharacterSocket, RefCounted);
+    static void _bind_methods()
+    {
+
+    }
+public:
+
+    void set_bone_name(const StringName& p_bone_name)
+    {
+        bone_name = p_bone_name;
+    }
+
+    StringName get_bone_name() const
+    {
+        return bone_name;
+    }
+
+    void set_offset(const Vector3& p_offset)
+    {
+        offset = p_offset;
+    }
+
+    const Vector3& get_offset() const
+    {
+        return offset;
+    }
+
+    void set_rotation(const Vector3& p_rotation)
+    {
+        rotation = p_rotation;
+    }
+
+    const Vector3& get_rotation() const
+    {
+        return rotation;
+    }
+public:
+    void init(Skeleton3D *p_ske)
+    {
+        clear();
+        bone = memnew(BoneAttachment3D);
+        bone->set_bone_name(bone_name);
+        p_ske->add_child(bone, true);
+        bone->set_owner(p_ske->get_owner());
+        socket_node = memnew(Node3D);
+        socket_node->add_child(bone, true);
+        socket_node->set_owner(p_ske->get_owner());
+        bone->add_child(socket_node, true);
+
+        socket_node->set_position(offset);
+        socket_node->set_rotation(rotation);
+    }
+    void clear()
+    {
+        if(socket_node != nullptr)
+        {
+            socket_node->queue_free();
+            socket_node = nullptr;
+        }
+        if(bone != nullptr)
+        {
+            bone->queue_free();
+            bone = nullptr;
+        }
+    }
+    CharacterSocket()
+    {
+
+    }
+
+    ~CharacterSocket()
+    {
+        clear();
+    }
+protected:
+    BoneAttachment3D *bone = nullptr;
+    Node3D *socket_node = nullptr;
+	StringName bone_name;
+    Vector3 offset;
+    Vector3 rotation;
+
+};
 
 // 身体的其他组件,不能播放动画，只能对骨骼进行设置
 // 但是可以挂一些IK组件之类的,比如裙子,头发
@@ -78,21 +163,26 @@ public:
     }
     bool isUsingRootBone = false;
 };
-// 身体骨骼的绑定
-struct CharacterBodyBoneAttachment
-{
-    int attachBoneIdx = -1;
 
-    void attachToBone(Skeleton3D *main_skeleton,int rootAttachBoneIdx, Skeleton3D *curr_skeleton)
+// 插槽资源
+class CharacterSocketInstance : public RefCounted
+{
+    GDCLASS(CharacterSocketInstance, RefCounted);
+    static void _bind_methods()
     {
-        auto rootBone = main_skeleton->get_bone_global_pose(rootAttachBoneIdx);
-        curr_skeleton->set_bone_global_pose_override(attachBoneIdx, rootBone, 1, true);
     }
+    public:
+
+
+
+
+    bool is_using_animation = false;
 
 };
-class CharacterBodyPartInstane : public Resource
+
+class CharacterBodyPartInstane : public RefCounted
 {
-    GDCLASS(CharacterBodyPartInstane, Resource);
+    GDCLASS(CharacterBodyPartInstane, RefCounted);
     static void _bind_methods()
     {
         ClassDB::bind_method(D_METHOD("_on_part_changed"), &CharacterBodyPartInstane::_on_part_changed);

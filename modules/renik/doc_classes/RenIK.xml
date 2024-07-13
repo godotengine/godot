@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RenIK" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="enable_foot_placement">
+			<return type="void" />
+			<param index="0" name="p_enable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="enable_hip_placement">
+			<return type="void" />
+			<param index="0" name="p_enable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="enable_solve_ik_every_frame">
+			<return type="void" />
+			<param index="0" name="p_enable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_mask_bit" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="bit" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_foot_left_bone">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_foot_right_bone">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_hand_left_bone">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_hand_right_bone">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_head_bone">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_hip_bone">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_lower_arm_left_bone">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_lower_arm_right_bone">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_lower_leg_left_bone">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_lower_leg_right_bone">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_upper_arm_left_bone">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_upper_arm_right_bone">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_upper_leg_left_bone">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_upper_leg_right_bone">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_collision_mask_bit">
+			<return type="void" />
+			<param index="0" name="bit" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_foot_left_bone">
+			<return type="void" />
+			<param index="0" name="p_bone" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_foot_right_bone">
+			<return type="void" />
+			<param index="0" name="p_bone" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_hand_left_bone">
+			<return type="void" />
+			<param index="0" name="p_bone" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_hand_right_bone">
+			<return type="void" />
+			<param index="0" name="p_bone" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_head_bone">
+			<return type="void" />
+			<param index="0" name="p_bone" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_hip_bone">
+			<return type="void" />
+			<param index="0" name="p_bone" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_lower_arm_left_bone">
+			<return type="void" />
+			<param index="0" name="p_bone" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_lower_arm_right_bone">
+			<return type="void" />
+			<param index="0" name="p_bone" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_lower_leg_left_bone">
+			<return type="void" />
+			<param index="0" name="p_bone" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_lower_leg_right_bone">
+			<return type="void" />
+			<param index="0" name="p_bone" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_skeleton_">
+			<return type="void" />
+			<param index="0" name="p_node" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="set_upper_arm_left_bone">
+			<return type="void" />
+			<param index="0" name="p_bone" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_upper_arm_right_bone">
+			<return type="void" />
+			<param index="0" name="p_bone" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_upper_leg_left_bone">
+			<return type="void" />
+			<param index="0" name="p_bone" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_upper_leg_right_bone">
+			<return type="void" />
+			<param index="0" name="p_bone" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="setup_humanoid_bones">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="update_ik">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="update_placement">
+			<return type="void" />
+			<param index="0" name="delta" type="float" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="arm_elbow_direction_offset" type="float" setter="set_arm_roll_offset" getter="get_arm_roll_offset" default="80.0">
+		</member>
+		<member name="arm_forearm_twist_offset" type="float" setter="set_arm_lower_twist_offset" getter="get_arm_lower_twist_offset" default="0.0">
+		</member>
+		<member name="arm_forearm_twisting" type="float" setter="set_arm_lower_limb_twist" getter="get_arm_lower_limb_twist" default="0.0">
+		</member>
+		<member name="arm_pole_offset" type="Vector3" setter="set_arm_pole_offset" getter="get_arm_pole_offset" default="Vector3(15, 0, 60)">
+		</member>
+		<member name="arm_shoulder_influence" type="float" setter="set_shoulder_influence" getter="get_shoulder_influence" default="25.0">
+		</member>
+		<member name="arm_shoulder_offset" type="Vector3" setter="set_shoulder_offset" getter="get_shoulder_offset" default="Vector3(0, 0, 0)">
+		</member>
+		<member name="arm_shoulder_pole_offset" type="Vector3" setter="set_shoulder_pole_offset" getter="get_shoulder_pole_offset" default="Vector3(0, 0, 78)">
+		</member>
+		<member name="arm_target_position_influence" type="Vector3" setter="set_arm_target_position_influence" getter="get_arm_target_position_influence" default="Vector3(20, -15, -10)">
+		</member>
+		<member name="arm_target_rotation_influence" type="float" setter="set_arm_target_rotation_influence" getter="get_arm_target_rotation_influence" default="33.0">
+		</member>
+		<member name="arm_twist_inflection_point" type="float" setter="set_arm_twist_inflection_point_offset" getter="get_arm_twist_inflection_point_offset" default="-180.0">
+		</member>
+		<member name="arm_twist_overflow" type="float" setter="set_arm_twist_overflow" getter="get_arm_twist_overflow" default="45.0">
+		</member>
+		<member name="arm_upper_arm_twist_offset" type="float" setter="set_arm_upper_twist_offset" getter="get_arm_upper_twist_offset" default="0.0">
+		</member>
+		<member name="arm_upper_arm_twisting" type="float" setter="set_arm_upper_limb_twist" getter="get_arm_upper_limb_twist" default="50.0">
+		</member>
+		<member name="armature_head" type="String" setter="set_head_bone_by_name" getter="get_head_bone_name" default="&quot;&quot;">
+		</member>
+		<member name="armature_head_target" type="NodePath" setter="set_head_target_path" getter="get_head_target_path" default="NodePath(&quot;&quot;)">
+		</member>
+		<member name="armature_hip" type="String" setter="set_hip_bone_by_name" getter="get_hip_bone_name" default="&quot;&quot;">
+		</member>
+		<member name="armature_hip_target" type="NodePath" setter="set_hip_target_path" getter="get_hip_target_path" default="NodePath(&quot;&quot;)">
+		</member>
+		<member name="armature_left_foot" type="String" setter="set_foot_left_bone_by_name" getter="get_foot_left_bone_name" default="&quot;&quot;">
+		</member>
+		<member name="armature_left_foot_target" type="NodePath" setter="set_foot_left_target_path" getter="get_foot_left_target_path" default="NodePath(&quot;&quot;)">
+		</member>
+		<member name="armature_left_hand" type="String" setter="set_hand_left_bone_by_name" getter="get_hand_left_bone_name" default="&quot;&quot;">
+		</member>
+		<member name="armature_left_hand_target" type="NodePath" setter="set_hand_left_target_path" getter="get_hand_left_target_path" default="NodePath(&quot;&quot;)">
+		</member>
+		<member name="armature_left_lower_arm" type="String" setter="set_lower_arm_left_bone_by_name" getter="get_lower_arm_left_bone_name" default="&quot;&quot;">
+		</member>
+		<member name="armature_left_lower_leg" type="String" setter="set_lower_leg_left_bone_by_name" getter="get_lower_leg_left_bone_name" default="&quot;&quot;">
+		</member>
+		<member name="armature_left_upper_arm" type="String" setter="set_upper_arm_left_bone_by_name" getter="get_upper_arm_left_bone_name" default="&quot;&quot;">
+		</member>
+		<member name="armature_left_upper_leg" type="String" setter="set_upper_leg_left_bone_by_name" getter="get_upper_leg_left_bone_name" default="&quot;&quot;">
+		</member>
+		<member name="armature_right_foot" type="String" setter="set_foot_right_bone_by_name" getter="get_foot_right_bone_name" default="&quot;&quot;">
+		</member>
+		<member name="armature_right_foot_target" type="NodePath" setter="set_foot_right_target_path" getter="get_foot_right_target_path" default="NodePath(&quot;&quot;)">
+		</member>
+		<member name="armature_right_hand" type="String" setter="set_hand_right_bone_by_name" getter="get_hand_right_bone_name" default="&quot;&quot;">
+		</member>
+		<member name="armature_right_hand_target" type="NodePath" setter="set_hand_right_target_path" getter="get_hand_right_target_path" default="NodePath(&quot;&quot;)">
+		</member>
+		<member name="armature_right_lower_arm" type="String" setter="set_lower_arm_right_bone_by_name" getter="get_lower_arm_right_bone_name" default="&quot;&quot;">
+		</member>
+		<member name="armature_right_lower_leg" type="String" setter="set_lower_leg_right_bone_by_name" getter="get_lower_leg_right_bone_name" default="&quot;&quot;">
+		</member>
+		<member name="armature_right_upper_arm" type="String" setter="set_upper_arm_right_bone_by_name" getter="get_upper_arm_right_bone_name" default="&quot;&quot;">
+		</member>
+		<member name="armature_right_upper_leg" type="String" setter="set_upper_leg_right_bone_by_name" getter="get_upper_leg_right_bone_name" default="&quot;&quot;">
+		</member>
+		<member name="armature_skeleton_path" type="NodePath" setter="set_skeleton_path" getter="get_skeleton_path" default="NodePath(&quot;..&quot;)">
+		</member>
+		<member name="backward_apex_angle" type="float" setter="set_backward_apex_angle" getter="get_backward_apex_angle" default="22.5">
+		</member>
+		<member name="backward_apex_in_time_base" type="float" setter="set_backward_apex_in_time_base" getter="get_backward_apex_in_time_base" default="10.0">
+		</member>
+		<member name="backward_apex_in_time_scalar" type="float" setter="set_backward_apex_in_time_scalar" getter="get_backward_apex_in_time_scalar" default="5.0">
+		</member>
+		<member name="backward_apex_out_time_base" type="float" setter="set_backward_apex_out_time_base" getter="get_backward_apex_out_time_base" default="10.0">
+		</member>
+		<member name="backward_apex_out_time_scalar" type="float" setter="set_backward_apex_out_time_scalar" getter="get_backward_apex_out_time_scalar" default="5.0">
+		</member>
+		<member name="backward_apex_vertical" type="float" setter="set_backward_apex_vertical" getter="get_backward_apex_vertical" default="10.0">
+		</member>
+		<member name="backward_apex_vertical_scalar" type="float" setter="set_backward_apex_vertical_scalar" getter="get_backward_apex_vertical_scalar" default="10.0">
+		</member>
+		<member name="backward_contact_point_ease" type="float" setter="set_backward_contact_point_ease" getter="get_backward_contact_point_ease" default="10.0">
+		</member>
+		<member name="backward_contact_point_ease_scalar" type="float" setter="set_backward_contact_point_ease_scalar" getter="get_backward_contact_point_ease_scalar" default="40.0">
+		</member>
+		<member name="backward_drop_angle" type="float" setter="set_backward_drop_angle" getter="get_backward_drop_angle" default="22.5">
+		</member>
+		<member name="backward_drop_horizontal_scalar" type="float" setter="set_backward_drop_horizontal_scalar" getter="get_backward_drop_horizontal_scalar" default="25.0">
+		</member>
+		<member name="backward_drop_time_base" type="float" setter="set_backward_drop_time_base" getter="get_backward_drop_time_base" default="5.0">
+		</member>
+		<member name="backward_drop_time_scalar" type="float" setter="set_backward_drop_time_scalar" getter="get_backward_drop_time_scalar" default="5.0">
+		</member>
+		<member name="backward_drop_vertical" type="float" setter="set_backward_drop_vertical" getter="get_backward_drop_vertical" default="0.0">
+		</member>
+		<member name="backward_drop_vertical_scalar" type="float" setter="set_backward_drop_vertical_scalar" getter="get_backward_drop_vertical_scalar" default="10.0">
+		</member>
+		<member name="backward_ground_time" type="float" setter="set_backward_ground_time" getter="get_backward_ground_time" default="5.0">
+		</member>
+		<member name="backward_lift_angle" type="float" setter="set_backward_lift_angle" getter="get_backward_lift_angle" default="-22.5">
+		</member>
+		<member name="backward_lift_horizontal_scalar" type="float" setter="set_backward_lift_horizontal_scalar" getter="get_backward_lift_horizontal_scalar" default="33.0">
+		</member>
+		<member name="backward_lift_time_base" type="float" setter="set_backward_lift_time_base" getter="get_backward_lift_time_base" default="5.0">
+		</member>
+		<member name="backward_lift_time_scalar" type="float" setter="set_backward_lift_time_scalar" getter="get_backward_lift_time_scalar" default="5.0">
+		</member>
+		<member name="backward_lift_vertical" type="float" setter="set_backward_lift_vertical" getter="get_backward_lift_vertical" default="2.5">
+		</member>
+		<member name="backward_lift_vertical_scalar" type="float" setter="set_backward_lift_vertical_scalar" getter="get_backward_lift_vertical_scalar" default="10.0">
+		</member>
+		<member name="backward_scaling_ease" type="float" setter="set_backward_scaling_ease" getter="get_backward_scaling_ease" default="85.0">
+		</member>
+		<member name="backward_speed_scalar_max" type="float" setter="set_backward_speed_scalar_max" getter="get_backward_speed_scalar_max" default="75.0">
+		</member>
+		<member name="backward_speed_scalar_min" type="float" setter="set_backward_speed_scalar_min" getter="get_backward_speed_scalar_min" default="50.0">
+		</member>
+		<member name="backward_tip_toe_angle_max" type="float" setter="set_backward_tip_toe_angle_max" getter="get_backward_tip_toe_angle_max" default="0.0">
+		</member>
+		<member name="backward_tip_toe_distance_scalar" type="float" setter="set_backward_tip_toe_distance_scalar" getter="get_backward_tip_toe_distance_scalar" default="0.0">
+		</member>
+		<member name="backward_tip_toe_speed_scalar" type="float" setter="set_backward_tip_toe_speed_scalar" getter="get_backward_tip_toe_speed_scalar" default="0.0">
+		</member>
+		<member name="forward_apex_angle" type="float" setter="set_forward_apex_angle" getter="get_forward_apex_angle" default="22.5">
+		</member>
+		<member name="forward_apex_in_time_base" type="float" setter="set_forward_apex_in_time_base" getter="get_forward_apex_in_time_base" default="10.0">
+		</member>
+		<member name="forward_apex_in_time_scalar" type="float" setter="set_forward_apex_in_time_scalar" getter="get_forward_apex_in_time_scalar" default="5.0">
+		</member>
+		<member name="forward_apex_out_time_base" type="float" setter="set_forward_apex_out_time_base" getter="get_forward_apex_out_time_base" default="5.0">
+		</member>
+		<member name="forward_apex_out_time_scalar" type="float" setter="set_forward_apex_out_time_scalar" getter="get_forward_apex_out_time_scalar" default="5.0">
+		</member>
+		<member name="forward_apex_vertical" type="float" setter="set_forward_apex_vertical" getter="get_forward_apex_vertical" default="0.0">
+		</member>
+		<member name="forward_apex_vertical_scalar" type="float" setter="set_forward_apex_vertical_scalar" getter="get_forward_apex_vertical_scalar" default="10.0">
+		</member>
+		<member name="forward_contact_point_ease" type="float" setter="set_forward_contact_point_ease" getter="get_forward_contact_point_ease" default="5.0">
+		</member>
+		<member name="forward_contact_point_ease_scalar" type="float" setter="set_forward_contact_point_ease_scalar" getter="get_forward_contact_point_ease_scalar" default="40.0">
+		</member>
+		<member name="forward_drop_angle" type="float" setter="set_forward_drop_angle" getter="get_forward_drop_angle" default="-22.5">
+		</member>
+		<member name="forward_drop_horizontal_scalar" type="float" setter="set_forward_drop_horizontal_scalar" getter="get_forward_drop_horizontal_scalar" default="25.0">
+		</member>
+		<member name="forward_drop_time_base" type="float" setter="set_forward_drop_time_base" getter="get_forward_drop_time_base" default="5.0">
+		</member>
+		<member name="forward_drop_time_scalar" type="float" setter="set_forward_drop_time_scalar" getter="get_forward_drop_time_scalar" default="0.0">
+		</member>
+		<member name="forward_drop_vertical" type="float" setter="set_forward_drop_vertical" getter="get_forward_drop_vertical" default="0.0">
+		</member>
+		<member name="forward_drop_vertical_scalar" type="float" setter="set_forward_drop_vertical_scalar" getter="get_forward_drop_vertical_scalar" default="5.0">
+		</member>
+		<member name="forward_ground_time" type="float" setter="set_forward_ground_time" getter="get_forward_ground_time" default="5.0">
+		</member>
+		<member name="forward_lift_angle" type="float" setter="set_forward_lift_angle" getter="get_forward_lift_angle" default="90.0">
+		</member>
+		<member name="forward_lift_horizontal_scalar" type="float" setter="set_forward_lift_horizontal_scalar" getter="get_forward_lift_horizontal_scalar" default="70.0">
+		</member>
+		<member name="forward_lift_time_base" type="float" setter="set_forward_lift_time_base" getter="get_forward_lift_time_base" default="10.0">
+		</member>
+		<member name="forward_lift_time_scalar" type="float" setter="set_forward_lift_time_scalar" getter="get_forward_lift_time_scalar" default="5.0">
+		</member>
+		<member name="forward_lift_vertical" type="float" setter="set_forward_lift_vertical" getter="get_forward_lift_vertical" default="0.0">
+		</member>
+		<member name="forward_lift_vertical_scalar" type="float" setter="set_forward_lift_vertical_scalar" getter="get_forward_lift_vertical_scalar" default="40.0">
+		</member>
+		<member name="forward_scaling_ease" type="float" setter="set_forward_scaling_ease" getter="get_forward_scaling_ease" default="85.0">
+		</member>
+		<member name="forward_speed_scalar_max" type="float" setter="set_forward_speed_scalar_max" getter="get_forward_speed_scalar_max" default="50.0">
+		</member>
+		<member name="forward_speed_scalar_min" type="float" setter="set_forward_speed_scalar_min" getter="get_forward_speed_scalar_min" default="100.0">
+		</member>
+		<member name="forward_tip_toe_angle_max" type="float" setter="set_forward_tip_toe_angle_max" getter="get_forward_tip_toe_angle_max" default="60.0">
+		</member>
+		<member name="forward_tip_toe_distance_scalar" type="float" setter="set_forward_tip_toe_distance_scalar" getter="get_forward_tip_toe_distance_scalar" default="90.0">
+		</member>
+		<member name="forward_tip_toe_speed_scalar" type="float" setter="set_forward_tip_toe_speed_scalar" getter="get_forward_tip_toe_speed_scalar" default="45.0">
+		</member>
+		<member name="human_bones_setup" type="bool" setter="set_setup_humanoid_bones" getter="get_setup_humanoid_bones" default="false">
+		</member>
+		<member name="leg_knee_direction_offset" type="float" setter="set_leg_roll_offset" getter="get_leg_roll_offset" default="0.0">
+		</member>
+		<member name="leg_lower_leg_twist_offset" type="float" setter="set_leg_lower_twist_offset" getter="get_leg_lower_twist_offset" default="-180.0">
+		</member>
+		<member name="leg_lower_leg_twisting" type="float" setter="set_leg_lower_limb_twist" getter="get_leg_lower_limb_twist" default="25.0">
+		</member>
+		<member name="leg_pole_offset" type="Vector3" setter="set_leg_pole_offset" getter="get_leg_pole_offset" default="Vector3(0, 0, 180)">
+		</member>
+		<member name="leg_target_position_influence" type="Vector3" setter="set_leg_target_position_influence" getter="get_leg_target_position_influence" default="Vector3(0, 0, 0)">
+		</member>
+		<member name="leg_target_rotation_influence" type="float" setter="set_leg_target_rotation_influence" getter="get_leg_target_rotation_influence" default="50.0">
+		</member>
+		<member name="leg_thigh_twist_offset" type="float" setter="set_leg_upper_twist_offset" getter="get_leg_upper_twist_offset" default="0.0">
+		</member>
+		<member name="leg_thigh_twisting" type="float" setter="set_leg_upper_limb_twist" getter="get_leg_upper_limb_twist" default="25.0">
+		</member>
+		<member name="leg_twist_inflection_point" type="float" setter="set_leg_twist_inflection_point_offset" getter="get_leg_twist_inflection_point_offset" default="0.0">
+		</member>
+		<member name="leg_twist_overflow" type="float" setter="set_leg_twist_overflow" getter="get_leg_twist_overflow" default="45.0">
+		</member>
+		<member name="live_preview" type="bool" setter="set_live_preview" getter="get_live_preview" default="false">
+		</member>
+		<member name="sideways_apex_angle" type="float" setter="set_sideways_apex_angle" getter="get_sideways_apex_angle" default="22.5">
+		</member>
+		<member name="sideways_apex_in_time_base" type="float" setter="set_sideways_apex_in_time_base" getter="get_sideways_apex_in_time_base" default="10.0">
+		</member>
+		<member name="sideways_apex_in_time_scalar" type="float" setter="set_sideways_apex_in_time_scalar" getter="get_sideways_apex_in_time_scalar" default="5.0">
+		</member>
+		<member name="sideways_apex_out_time_base" type="float" setter="set_sideways_apex_out_time_base" getter="get_sideways_apex_out_time_base" default="10.0">
+		</member>
+		<member name="sideways_apex_out_time_scalar" type="float" setter="set_sideways_apex_out_time_scalar" getter="get_sideways_apex_out_time_scalar" default="5.0">
+		</member>
+		<member name="sideways_apex_vertical" type="float" setter="set_sideways_apex_vertical" getter="get_sideways_apex_vertical" default="1.0">
+		</member>
+		<member name="sideways_apex_vertical_scalar" type="float" setter="set_sideways_apex_vertical_scalar" getter="get_sideways_apex_vertical_scalar" default="10.0">
+		</member>
+		<member name="sideways_contact_point_ease" type="float" setter="set_sideways_contact_point_ease" getter="get_sideways_contact_point_ease" default="10.0">
+		</member>
+		<member name="sideways_contact_point_ease_scalar" type="float" setter="set_sideways_contact_point_ease_scalar" getter="get_sideways_contact_point_ease_scalar" default="40.0">
+		</member>
+		<member name="sideways_drop_angle" type="float" setter="set_sideways_drop_angle" getter="get_sideways_drop_angle" default="0.0">
+		</member>
+		<member name="sideways_drop_horizontal_scalar" type="float" setter="set_sideways_drop_horizontal_scalar" getter="get_sideways_drop_horizontal_scalar" default="25.0">
+		</member>
+		<member name="sideways_drop_time_base" type="float" setter="set_sideways_drop_time_base" getter="get_sideways_drop_time_base" default="5.0">
+		</member>
+		<member name="sideways_drop_time_scalar" type="float" setter="set_sideways_drop_time_scalar" getter="get_sideways_drop_time_scalar" default="5.0">
+		</member>
+		<member name="sideways_drop_vertical" type="float" setter="set_sideways_drop_vertical" getter="get_sideways_drop_vertical" default="1.0">
+		</member>
+		<member name="sideways_drop_vertical_scalar" type="float" setter="set_sideways_drop_vertical_scalar" getter="get_sideways_drop_vertical_scalar" default="5.0">
+		</member>
+		<member name="sideways_ground_time" type="float" setter="set_sideways_ground_time" getter="get_sideways_ground_time" default="10.0">
+		</member>
+		<member name="sideways_lift_angle" type="float" setter="set_sideways_lift_angle" getter="get_sideways_lift_angle" default="0.0">
+		</member>
+		<member name="sideways_lift_horizontal_scalar" type="float" setter="set_sideways_lift_horizontal_scalar" getter="get_sideways_lift_horizontal_scalar" default="20.0">
+		</member>
+		<member name="sideways_lift_time_base" type="float" setter="set_sideways_lift_time_base" getter="get_sideways_lift_time_base" default="5.0">
+		</member>
+		<member name="sideways_lift_time_scalar" type="float" setter="set_sideways_lift_time_scalar" getter="get_sideways_lift_time_scalar" default="5.0">
+		</member>
+		<member name="sideways_lift_vertical" type="float" setter="set_sideways_lift_vertical" getter="get_sideways_lift_vertical" default="5.0">
+		</member>
+		<member name="sideways_lift_vertical_scalar" type="float" setter="set_sideways_lift_vertical_scalar" getter="get_sideways_lift_vertical_scalar" default="5.0">
+		</member>
+		<member name="sideways_scaling_ease" type="float" setter="set_sideways_scaling_ease" getter="get_sideways_scaling_ease" default="85.0">
+		</member>
+		<member name="sideways_speed_scalar_max" type="float" setter="set_sideways_speed_scalar_max" getter="get_sideways_speed_scalar_max" default="75.0">
+		</member>
+		<member name="sideways_speed_scalar_min" type="float" setter="set_sideways_speed_scalar_min" getter="get_sideways_speed_scalar_min" default="75.0">
+		</member>
+		<member name="sideways_tip_toe_angle_max" type="float" setter="set_sideways_tip_toe_angle_max" getter="get_sideways_tip_toe_angle_max" default="0.0">
+		</member>
+		<member name="sideways_tip_toe_distance_scalar" type="float" setter="set_sideways_tip_toe_distance_scalar" getter="get_sideways_tip_toe_distance_scalar" default="0.0">
+		</member>
+		<member name="sideways_tip_toe_speed_scalar" type="float" setter="set_sideways_tip_toe_speed_scalar" getter="get_sideways_tip_toe_speed_scalar" default="0.0">
+		</member>
+		<member name="torso_lower_spine_stiffness" type="float" setter="set_lower_spine_stiffness" getter="get_lower_spine_stiffness" default="50.0">
+		</member>
+		<member name="torso_spine_curve" type="Vector3" setter="set_spine_curve" getter="get_spine_curve" default="Vector3(0, 15, -15)">
+		</member>
+		<member name="torso_spine_twist" type="float" setter="set_spine_twist" getter="get_spine_twist" default="100.0">
+		</member>
+		<member name="torso_spine_twist_start" type="float" setter="set_spine_twist_start" getter="get_spine_twist_start" default="0.0">
+		</member>
+		<member name="torso_upper_spine_stiffness" type="float" setter="set_upper_spine_stiffness" getter="get_upper_spine_stiffness" default="50.0">
+		</member>
+		<member name="walk_collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled" default="false">
+		</member>
+		<member name="walk_collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled" default="true">
+		</member>
+		<member name="walk_collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+		</member>
+	</members>
+</class>
