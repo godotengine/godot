@@ -1191,7 +1191,7 @@ PackedVector2Array Curve2D::tessellate(int p_max_stages, real_t p_tolerance) con
 	for (int i = 0; i < points.size() - 1; i++) {
 		// look for adjacent points on the curve that are the same, otherwise
 		// we duplicate the point in the returned tesselation
-		if ((points[i].position - points[i + 1].position).is_zero_approx() && (points[i].in - points[i + 1].in).is_zero_approx() && (points[i].out - points[i + 1].out).is_zero_approx()){
+		if ((points[i].position - points[i + 1].position).is_zero_approx() && (points[i].in - points[i + 1].in).is_zero_approx() && (points[i].out - points[i + 1].out).is_zero_approx()) {
 			continue;
 		}
 		_bake_segment2d(midpoints.write[i], 0, 1, points[last_unrepeated].position, points[last_unrepeated].out, points[i + 1].position, points[i + 1].in, 0, p_max_stages, p_tolerance);
@@ -1208,7 +1208,7 @@ PackedVector2Array Curve2D::tessellate(int p_max_stages, real_t p_tolerance) con
 	for (int i = 0; i < points.size() - 1; i++) {
 		// empty value here gives realloc() : invalid next size error
 		// in the nested loop
-		if (midpoints[i].size() == 0){
+		if (midpoints[i].size() == 0) {
 			continue;
 		}
 		for (const KeyValue<real_t, Vector2> &E : midpoints[i]) {
