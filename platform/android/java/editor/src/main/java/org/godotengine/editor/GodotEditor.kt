@@ -121,6 +121,8 @@ open class GodotEditor : GodotActivity() {
 		val useAccumulatedInput = useAccumulatedInput()
 		GodotLib.updateInputDispatchSettings(useAccumulatedInput, useInputBuffering)
 
+		val enableImmersive = enableImmersive()
+
 		checkForProjectPermissionsToEnable()
 
 		runOnUiThread {
@@ -131,7 +133,7 @@ open class GodotEditor : GodotActivity() {
 				enableInputDispatchToRenderThread(!useInputBuffering && !useAccumulatedInput)
 			}
 
-			if (enableImmersive()) {
+			if (enableImmersive) {
 				godotFragment?.godot?.enableImmersive()
 			}
 		}
