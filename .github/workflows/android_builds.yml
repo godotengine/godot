@@ -49,8 +49,8 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Godot build cache
-        uses: ./.github/actions/godot-cache
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
         with:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
@@ -65,6 +65,12 @@ jobs:
           platform: android
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
 
       - name: Generate Godot templates
         if: matrix.target == 'template_release'
