@@ -425,10 +425,12 @@ void PropertySelector::_hide_requested() {
 
 void PropertySelector::_notification(int p_what) {
 	switch (p_what) {
+		case 30: {
+			selected_properties.clear();
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			connect(SceneStringName(confirmed), callable_mp(this, &PropertySelector::_confirmed));
 		} break;
-
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect(SceneStringName(confirmed), callable_mp(this, &PropertySelector::_confirmed));
 		} break;
@@ -590,9 +592,9 @@ PropertySelector::PropertySelector() {
 	search_box->connect(SceneStringName(gui_input), callable_mp(this, &PropertySelector::_sbox_input));
 	search_options = memnew(Tree);
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	search_options->set_select_mode(search_options->SELECT_MULTI);
+	search_options->set_select_mode(search_options->SELECT_SINGLE);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
-	set_ok_button_text(TTR("Open"));
+	set_ok_button_text(TTR("Select"));
 	get_ok_button()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
