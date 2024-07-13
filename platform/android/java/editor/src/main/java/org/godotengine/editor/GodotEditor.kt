@@ -130,6 +130,10 @@ open class GodotEditor : GodotActivity() {
 				enablePanningAndScalingGestures(panScaleEnabled)
 				enableInputDispatchToRenderThread(!useInputBuffering && !useAccumulatedInput)
 			}
+
+			if (enableImmersive()) {
+				godotFragment?.godot?.enableImmersive()
+			}
 		}
 	}
 
@@ -285,6 +289,11 @@ open class GodotEditor : GodotActivity() {
 	protected open fun useInputBuffering() = java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/editor/android/use_input_buffering"))
 
 	protected open fun useAccumulatedInput() = java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/editor/android/use_accumulated_input"))
+
+	/**
+	 * Enable immersive mode for the {@link Godot} engine activity.
+	 */
+	protected open fun enableImmersive() = java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/editor/android/editor_immersive_mode"))
 
 	/**
 	 * Whether we should launch the new godot instance in an adjacent window

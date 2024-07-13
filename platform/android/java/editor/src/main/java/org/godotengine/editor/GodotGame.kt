@@ -49,6 +49,11 @@ class GodotGame : GodotEditor() {
 
 	override fun useAccumulatedInput() = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/buffering/android/use_accumulated_input"))
 
+	/**
+	 * Game doesn't read editor settings anyway. Immersive mode flag will be passed by editor.
+	 */
+	override fun enableImmersive() = false
+
 	override fun checkForProjectPermissionsToEnable() {
 		// Nothing to do.. by the time we get here, the project permissions will have already
 		// been requested by the Editor window.

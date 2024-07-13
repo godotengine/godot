@@ -224,7 +224,7 @@ class Godot(private val context: Context) : SensorEventListener {
 				} else if (commandLine[i] == "--debug_opengl") {
 					useDebugOpengl = true
 				} else if (commandLine[i] == "--use_immersive") {
-					goImmersive();
+					enableImmersive()
 				} else if (commandLine[i] == "--use_apk_expansion") {
 					useApkExpansion = true
 				} else if (hasExtra && commandLine[i] == "--apk_expansion_md5") {
@@ -302,9 +302,10 @@ class Godot(private val context: Context) : SensorEventListener {
 	 * For now, once you go immersive, you can't go back.
 	 * Call only from UI thread.
 	 */
-	fun goImmersive() {
-		if (useImmersive)
+	fun enableImmersive() {
+		if (useImmersive) {
 			return
+		}
 		val activity = requireActivity()
 		val window = activity.window
 		useImmersive = true
@@ -662,13 +663,6 @@ class Godot(private val context: Context) : SensorEventListener {
 						Log.w(TAG, e)
 					}
 				}
-			}
-		} else {
-			val shouldGoImmersive = java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/editor/android/immersive_mode"))
-
-			runOnUiThread {
-				if (shouldGoImmersive)
-					goImmersive()
 			}
 		}
 

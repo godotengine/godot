@@ -94,6 +94,13 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		args.push_back("--debug-canvas-item-redraw");
 	}
 
+#ifdef ANDROID_ENABLED
+	bool game_immersive_mode = EditorSettings::get_singleton()->get_setting("interface/editor/android/game_immersive_mode");
+	if (game_immersive_mode) {
+		args.push_back("--use_immersive");
+	}
+#endif
+
 	if (p_write_movie != "") {
 		args.push_back("--write-movie");
 		args.push_back(p_write_movie);
