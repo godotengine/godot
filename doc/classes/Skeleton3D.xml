@@ -57,11 +57,6 @@
 				Force updates the bone transform for the bone at [param bone_idx] and all of its children.
 			</description>
 		</method>
-		<method name="get_animate_physical_bones" qualifiers="const" deprecated="">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
 		<method name="get_bone_children" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<param index="0" name="bone_idx" type="int" />
@@ -239,14 +234,6 @@
 				Sets all bone poses to rests.
 			</description>
 		</method>
-		<method name="set_animate_physical_bones" deprecated="">
-			<return type="void" />
-			<param index="0" name="enabled" type="bool" />
-			<description>
-				This method exists for compatibility with old structures in which the [Skeleton3D] does not have a [PhysicalBoneSimulator3D] as a child, but directly has [PhysicalBone3D]s as children.
-				In case you need to raycast to it without running [method physical_bones_start_simulation], call this method with [code]enabled == true[/code].
-			</description>
-		</method>
 		<method name="set_bone_enabled">
 			<return type="void" />
 			<param index="0" name="bone_idx" type="int" />
@@ -342,6 +329,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="animate_physical_bones" type="bool" setter="set_animate_physical_bones" getter="get_animate_physical_bones" default="true" deprecated="">
+			If you follow the recommended workflow and explicitly have [PhysicalBoneSimulator3D] as a child of [Skeleton3D], you can control whether it is affected by raycasting without running [method physical_bones_start_simulation], by its [member SkeletonModifier3D.active].
+			However, for old (deprecated) configurations, [Skeleton3D] has an internal virtual [PhysicalBoneSimulator3D] for compatibility. This property controls the internal virtual [PhysicalBoneSimulator3D]'s [member SkeletonModifier3D.active].
+		</member>
 		<member name="modifier_callback_mode_process" type="int" setter="set_modifier_callback_mode_process" getter="get_modifier_callback_mode_process" enum="Skeleton3D.ModifierCallbackModeProcess" default="1">
 			Sets the processing timing for the Modifier.
 		</member>
