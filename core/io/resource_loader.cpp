@@ -357,7 +357,9 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 				Ref<Resource> old_res = ResourceCache::get_ref(load_task.local_path);
 				if (old_res.is_valid() && old_res != load_task.resource) {
 					// If resource is already loaded, only replace its data, to avoid existing invalidating instances.
+					thread_load_mutex.unlock();
 					old_res->copy_from(load_task.resource);
+					thread_load_mutex.lock();
 					load_task.resource = old_res;
 				}
 			}
