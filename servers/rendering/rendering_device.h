@@ -963,7 +963,8 @@ private:
 	void _uniform_set_update_shared(UniformSet *p_uniform_set);
 
 public:
-	RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
+	template <typename Collection>
+	RID uniform_set_create(const Collection &p_uniforms, RID p_shader, uint32_t p_shader_set);
 	bool uniform_set_is_valid(RID p_uniform_set);
 	void uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata);
 
