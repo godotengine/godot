@@ -802,23 +802,23 @@
 		delta_y *= 0.03;
 	}
 
-	if ([event momentumPhase] != NSEventPhaseNone) {
-		if (ignore_momentum_scroll) {
-			return;
-		}
-	} else {
+	if ([event momentumPhase] == NSEventPhaseNone || [event momentumPhase] == NSEventPhaseEnded) {
 		ignore_momentum_scroll = false;
+	} else if (ignore_momentum_scroll) {
+		return;
 	}
 
-	if ([event phase] != NSEventPhaseNone || [event momentumPhase] != NSEventPhaseNone) {
-		[self processPanEvent:event dx:delta_x dy:delta_y];
-	} else {
+	if (
+			([event phase] == NSEventPhaseNone || [event phase] == NSEventPhaseEnded) ||
+			([event momentumPhase] == NSEventPhaseNone || [event momentumPhase] == NSEventPhaseEnded)) {
 		if (fabs(delta_x)) {
 			[self processScrollEvent:event button:(0 > delta_x ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT) factor:fabs(delta_x * 0.3)];
 		}
 		if (fabs(delta_y)) {
 			[self processScrollEvent:event button:(0 < delta_y ? MouseButton::WHEEL_UP : MouseButton::WHEEL_DOWN) factor:fabs(delta_y * 0.3)];
 		}
+	} else {
+		[self processPanEvent:event dx:delta_x dy:delta_y];
 	}
 }
 
