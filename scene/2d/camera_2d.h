@@ -186,6 +186,7 @@ public:
 	Vector2 get_camera_position() const;
 	void force_update_scroll();
 	void reset_smoothing();
+	void reset_rotation_smoothing();
 	void align();
 
 	void set_screen_drawing_enabled(bool enable);

@@ -73,6 +73,13 @@
 				This method has no effect if [member position_smoothing_enabled] is [code]false[/code].
 			</description>
 		</method>
+		<method name="reset_rotation_smoothing">
+			<return type="void" />
+			<description>
+				Sets the camera's rotation immediately to its current smoothing destination.
+				This method has no effect if [member rotation_smoothing_enabled] is [code]false[/code].
+			</description>
+		</method>
 		<method name="set_drag_margin">
 			<return type="void" />
 			<param index="0" name="margin" type="int" enum="Side" />

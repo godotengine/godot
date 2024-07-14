@@ -620,6 +620,11 @@ void Camera2D::reset_smoothing() {
 	smoothed_camera_pos = camera_pos;
 }
 
+void Camera2D::reset_rotation_smoothing() {
+	_update_scroll();
+	camera_angle = get_global_rotation();
+}
+
 void Camera2D::align() {
 	ERR_FAIL_COND(custom_viewport && !ObjectDB::get_instance(custom_viewport_id));
 
@@ -881,6 +886,7 @@ void Camera2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_update_scroll"), &Camera2D::force_update_scroll);
 	ClassDB::bind_method(D_METHOD("reset_smoothing"), &Camera2D::reset_smoothing);
+	ClassDB::bind_method(D_METHOD("reset_rotation_smoothing"), &Camera2D::reset_rotation_smoothing);
 	ClassDB::bind_method(D_METHOD("align"), &Camera2D::align);
 
 	ClassDB::bind_method(D_METHOD("_set_old_smoothing", "follow_smoothing"), &Camera2D::_set_old_smoothing);
