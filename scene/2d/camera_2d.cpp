@@ -615,7 +615,7 @@ void Camera2D::force_update_scroll() {
 	_update_scroll();
 }
 
-void Camera2D::reset_smoothing() {
+void Camera2D::reset_position_smoothing() {
 	_update_scroll();
 	smoothed_camera_pos = camera_pos;
 }
@@ -885,7 +885,10 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rotation_smoothing_speed"), &Camera2D::get_rotation_smoothing_speed);
 
 	ClassDB::bind_method(D_METHOD("force_update_scroll"), &Camera2D::force_update_scroll);
-	ClassDB::bind_method(D_METHOD("reset_smoothing"), &Camera2D::reset_smoothing);
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("reset_smoothing"), &Camera2D::reset_position_smoothing);
+#endif // DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("reset_position_smoothing"), &Camera2D::reset_position_smoothing);
 	ClassDB::bind_method(D_METHOD("reset_rotation_smoothing"), &Camera2D::reset_rotation_smoothing);
 	ClassDB::bind_method(D_METHOD("align"), &Camera2D::align);
 
