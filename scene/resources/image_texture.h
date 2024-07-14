@@ -69,7 +69,7 @@ public:
 	int get_width() const override;
 	int get_height() const override;
 
-	virtual void set_size_override(const Size2i &p_size) override;
+	void set_size_override(const Size2i &p_size) override;
 
 	virtual RID get_rid() const override;
 

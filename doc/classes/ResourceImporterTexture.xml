@@ -14,7 +14,7 @@
 			Resizes the image to the scale factor without affecting the texture size. This can be used to reduce app size and memory usage.
 		</member>
 		<member name="2d/size_override" type="Vector2i" setter="" getter="" default="Vector2i(0, 0)">
-			Allow overriding the texture size.
+			Overrides the texture size if both dimensions are greater than 0.
 		</member>
 		<member name="compress/channel_pack" type="int" setter="" getter="" default="0">
 			Controls how color channels should be used in the imported texture.

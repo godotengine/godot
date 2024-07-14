@@ -94,6 +94,9 @@ public:
 
 	int get_width() const override;
 	int get_height() const override;
+
+	void set_size_override(const Vector2i &p_size) override;
+
 	virtual RID get_rid() const override;
 
 	virtual void set_path(const String &p_path, bool p_take_over) override;

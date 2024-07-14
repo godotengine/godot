@@ -150,10 +150,11 @@ Error CompressedTexture2D::load(const String &p_path) {
 		texture = RS::get_singleton()->texture_2d_create(image);
 	}
 
-	set_size_override(Size2i(override_width, override_height));
-
 	w = lw;
 	h = lh;
+
+	set_size_override(Size2i(override_width, override_height));
+
 	path_to_file = p_path;
 	format = image->get_format();
 
@@ -199,19 +200,19 @@ String CompressedTexture2D::get_load_path() const {
 }
 
 int CompressedTexture2D::get_width() const {
-	int ret = w;
-	if (get_size_override().width != 0) {
-		ret = get_size_override().width;
-	}
-	return ret;
+	return w;
 }
 
 int CompressedTexture2D::get_height() const {
-	int ret = h;
-	if (get_size_override().height != 0) {
-		ret = get_size_override().height;
+	return h;
+}
+
+void CompressedTexture2D::set_size_override(const Vector2i &p_size) {
+	if (p_size.width > 0 && p_size.height > 0) {
+		w = p_size.width;
+		h = p_size.height;
+		Texture2D::set_size_override(p_size);
 	}
-	return ret;
 }
 
 RID CompressedTexture2D::get_rid() const {

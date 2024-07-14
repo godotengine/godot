@@ -223,6 +223,13 @@ int PortableCompressedTexture2D::get_height() const {
 	return size.height;
 }
 
+void PortableCompressedTexture2D::set_size_override(const Vector2i &p_size) {
+	if (p_size.width > 0 && p_size.height > 0) {
+		size = p_size;
+		Texture2D::set_size_override(p_size);
+	}
+}
+
 RID PortableCompressedTexture2D::get_rid() const {
 	if (texture.is_null()) {
 		// We are in trouble, create something temporary.
