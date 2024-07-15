@@ -3245,6 +3245,8 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 		zxdg_exported_v1_add_listener(ws.xdg_exported, &xdg_exported_listener, &ws);
 	}
 
+	wl_surface_commit(ws.wl_surface);
+
 	// Wait for the surface to be configured before continuing.
 	wl_display_roundtrip(wl_display);
 }
