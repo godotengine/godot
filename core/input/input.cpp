@@ -890,8 +890,9 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 	// Create or retrieve existing action.
 	ActionState &action_state = action_states[p_action];
 
+	// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
 	if (!action_state.cache.pressed) {
-		action_state.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
+		action_state.pressed_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 		action_state.pressed_process_frame = Engine::get_singleton()->get_process_frames();
 	}
 	action_state.exact = true;
@@ -908,7 +909,8 @@ void Input::action_release(const StringName &p_action) {
 	action_state.cache.pressed = 0;
 	action_state.cache.strength = 0.0;
 	action_state.cache.raw_strength = 0.0;
-	action_state.released_physics_frame = Engine::get_singleton()->get_physics_frames();
+	// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
+	action_state.released_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 	action_state.released_process_frame = Engine::get_singleton()->get_process_frames();
 	action_state.device_states.clear();
 	action_state.exact = true;
