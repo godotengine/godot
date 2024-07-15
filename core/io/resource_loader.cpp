@@ -319,7 +319,8 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	}
 	// --
 
-	Ref<Resource> res = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_task.error, load_task.use_sub_threads, &load_task.progress);
+	Error load_err = OK;
+	Ref<Resource> res = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_err, load_task.use_sub_threads, &load_task.progress);
 	if (MessageQueue::get_singleton() != MessageQueue::get_main_singleton()) {
 		MessageQueue::get_singleton()->flush();
 	}
@@ -328,7 +329,8 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 	load_task.resource = res;
 
-	load_task.progress = 1.0; //it was fully loaded at this point, so force progress to 1.0
+	load_task.progress = 1.0; // It was fully loaded at this point, so force progress to 1.0.
+	load_task.error = load_err;
 	if (load_task.error != OK) {
 		load_task.status = THREAD_LOAD_FAILED;
 	} else {
