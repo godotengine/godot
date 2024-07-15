@@ -397,16 +397,17 @@ Error WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 		task->waiting_user++;
 	}
 
-	task_mutex.unlock();
-
 	if (caller_pool_thread) {
+		task_mutex.unlock();
 		_wait_collaboratively(caller_pool_thread, task);
+		task_mutex.lock();
 		task->waiting_pool--;
 		if (task->waiting_pool == 0 && task->waiting_user == 0) {
 			tasks.erase(p_task_id);
 			task_allocator.free(task);
 		}
 	} else {
+		task_mutex.unlock();
 		task->done_semaphore.wait();
 		task_mutex.lock();
 		task->waiting_user--;
@@ -414,9 +415,9 @@ Error WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 			tasks.erase(p_task_id);
 			task_allocator.free(task);
 		}
-		task_mutex.unlock();
 	}
 
+	task_mutex.unlock();
 	return OK;
 }
 
