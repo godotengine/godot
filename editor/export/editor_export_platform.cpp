@@ -1229,8 +1229,12 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				config->set_value("remap", "path", export_path);
 
 				// Erase useless sections.
-				config->erase_section("deps");
-				config->erase_section("params");
+				if (config->has_section("deps")) {
+					config->erase_section("deps");
+				}
+				if (config->has_section("params")) {
+					config->erase_section("params");
+				}
 
 				String import_text = config->encode_to_text();
 				CharString cs = import_text.utf8();
@@ -1294,8 +1298,12 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 
 				// Erase useless sections.
-				config->erase_section("deps");
-				config->erase_section("params");
+				if (config->has_section("deps")) {
+					config->erase_section("deps");
+				}
+				if (config->has_section("params")) {
+					config->erase_section("params");
+				}
 
 				String import_text = config->encode_to_text();
 				CharString cs = import_text.utf8();
