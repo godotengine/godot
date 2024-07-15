@@ -1287,6 +1287,8 @@ Error VisualShader::connect_nodes(Type p_type, int p_from_node, int p_from_port,
 	VisualShaderNode::PortType to_port_type = g->nodes[p_to_node].node->get_input_port_type(p_to_port);
 	bool port_types_are_compatible = is_port_types_compatible(from_port_type, to_port_type);
 
+	ERR_FAIL_COND_V_MSG(!port_types_are_compatible, ERR_INVALID_PARAMETER, "Incompatible port types.");
+
 	if (to_node_reroute.is_valid()) {
 		List<int> visited_reroute_nodes;
 		port_types_are_compatible = _check_reroute_subgraph(p_type, from_port_type, p_to_node, &visited_reroute_nodes);
