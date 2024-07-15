@@ -41,6 +41,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define OPENGL_ON_DXGI_ENABLED
+// #define OPENGL_DXGI_USE_DEPTH_BUFFER
+// #define OPENGL_DXGI_USE_FLIP_MODEL
+
+#ifdef OPENGL_ON_DXGI_ENABLED
+
+#include "drivers/gles3/storage/texture_storage.h"
+#include "platform_gl.h"
+
+#include <d3d11.h>
+#ifdef OPENGL_DXGI_USE_FLIP_MODEL
+#include <d3d11_3.h>
+#endif
+
+#include <wrl/client.h>
+
+using Microsoft::WRL::ComPtr;
+
+#endif // OPENGL_ON_DXGI_ENABLED
+
 #define WGL_CONTEXT_MAJOR_VERSION_ARB 0x2091
 #define WGL_CONTEXT_MINOR_VERSION_ARB 0x2092
 #define WGL_CONTEXT_FLAGS_ARB 0x2094
@@ -60,6 +80,59 @@ typedef BOOL(APIENTRY *PFNWGLDELETECONTEXT)(HGLRC);
 typedef BOOL(APIENTRY *PFNWGLMAKECURRENT)(HDC, HGLRC);
 typedef HGLRC(APIENTRY *PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC, HGLRC, const int *);
 typedef void *(APIENTRY *PFNWGLGETPROCADDRESS)(LPCSTR);
+
+#ifdef OPENGL_ON_DXGI_ENABLED
+
+typedef const char *(APIENTRY *PFNWGLGETEXTENSIONSSTRINGARB)(HDC);
+
+#define WGL_ACCESS_READ_ONLY_NV 0x0000
+#define WGL_ACCESS_READ_WRITE_NV 0x0001
+#define WGL_ACCESS_WRITE_DISCARD_NV 0x0002
+
+typedef BOOL(APIENTRY *PFNWGLDXSETRESOURCESHAREHANDLENVPROC)(void *dxObject, HANDLE shareHandle);
+typedef HANDLE(APIENTRY *PFNWGLDXOPENDEVICENVPROC)(void *dxDevice);
+typedef BOOL(APIENTRY *PFNWGLDXCLOSEDEVICENVPROC)(HANDLE hDevice);
+typedef HANDLE(APIENTRY *PFNWGLDXREGISTEROBJECTNVPROC)(HANDLE hDevice, void *dxObject, GLuint name, GLenum type, GLenum access);
+typedef BOOL(APIENTRY *PFNWGLDXUNREGISTEROBJECTNVPROC)(HANDLE hDevice, HANDLE hObject);
+typedef BOOL(APIENTRY *PFNWGLDXOBJECTACCESSNVPROC)(HANDLE hObject, GLenum access);
+typedef BOOL(APIENTRY *PFNWGLDXLOCKOBJECTSNVPROC)(HANDLE hDevice, GLint count, HANDLE *hObjects);
+typedef BOOL(APIENTRY *PFNWGLDXUNLOCKOBJECTSNVPROC)(HANDLE hDevice, GLint count, HANDLE *hObjects);
+
+PFNWGLDXSETRESOURCESHAREHANDLENVPROC gd_wglDXSetResourceShareHandleNV;
+PFNWGLDXOPENDEVICENVPROC gd_wglDXOpenDeviceNV;
+PFNWGLDXCLOSEDEVICENVPROC gd_wglDXCloseDeviceNV;
+PFNWGLDXREGISTEROBJECTNVPROC gd_wglDXRegisterObjectNV;
+PFNWGLDXUNREGISTEROBJECTNVPROC gd_wglDXUnregisterObjectNV;
+PFNWGLDXOBJECTACCESSNVPROC gd_wglDXObjectAccessNV;
+PFNWGLDXLOCKOBJECTSNVPROC gd_wglDXLockObjectsNV;
+PFNWGLDXUNLOCKOBJECTSNVPROC gd_wglDXUnlockObjectsNV;
+
+static bool load_nv_dx_interop(PFNWGLGETPROCADDRESS gd_wglGetProcAddress) {
+	gd_wglDXSetResourceShareHandleNV = (PFNWGLDXSETRESOURCESHAREHANDLENVPROC)gd_wglGetProcAddress("wglDXSetResourceShareHandleNV");
+	gd_wglDXOpenDeviceNV = (PFNWGLDXOPENDEVICENVPROC)gd_wglGetProcAddress("wglDXOpenDeviceNV");
+	gd_wglDXCloseDeviceNV = (PFNWGLDXCLOSEDEVICENVPROC)gd_wglGetProcAddress("wglDXCloseDeviceNV");
+	gd_wglDXRegisterObjectNV = (PFNWGLDXREGISTEROBJECTNVPROC)gd_wglGetProcAddress("wglDXRegisterObjectNV");
+	gd_wglDXUnregisterObjectNV = (PFNWGLDXUNREGISTEROBJECTNVPROC)gd_wglGetProcAddress("wglDXUnregisterObjectNV");
+	gd_wglDXObjectAccessNV = (PFNWGLDXOBJECTACCESSNVPROC)gd_wglGetProcAddress("wglDXObjectAccessNV");
+	gd_wglDXLockObjectsNV = (PFNWGLDXLOCKOBJECTSNVPROC)gd_wglGetProcAddress("wglDXLockObjectsNV");
+	gd_wglDXUnlockObjectsNV = (PFNWGLDXUNLOCKOBJECTSNVPROC)gd_wglGetProcAddress("wglDXUnlockObjectsNV");
+
+	return gd_wglDXSetResourceShareHandleNV &&
+			gd_wglDXOpenDeviceNV &&
+			gd_wglDXCloseDeviceNV &&
+			gd_wglDXRegisterObjectNV &&
+			gd_wglDXUnregisterObjectNV &&
+			gd_wglDXObjectAccessNV &&
+			gd_wglDXLockObjectsNV &&
+			gd_wglDXUnlockObjectsNV;
+}
+
+typedef decltype(&D3D11CreateDeviceAndSwapChain) PFND3D11CREATEDEVICEANDSWAPCHAINPROC;
+
+static HMODULE module_d3d11 = nullptr;
+PFND3D11CREATEDEVICEANDSWAPCHAINPROC fptr_D3D11CreateDeviceAndSwapChain = nullptr;
+
+#endif // OPENGL_ON_DXGI_ENABLED
 
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
@@ -287,6 +360,128 @@ void GLManagerNative_Windows::_nvapi_setup_profile() {
 	NvAPI_DRS_DestroySession(session_handle);
 }
 
+#ifdef OPENGL_ON_DXGI_ENABLED
+class GLManagerNative_Windows::DxgiSwapChain {
+	ComPtr<ID3D11Device> device;
+	ComPtr<ID3D11DeviceContext> device_context;
+	ComPtr<IDXGISwapChain> swap_chain;
+
+#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+	ComPtr<ID3D11Texture2D> depth_texture;
+	ComPtr<ID3D11DepthStencilView> depth_stencil_view;
+#endif
+
+	ComPtr<ID3D11Texture2D> color_buffer;
+	ComPtr<ID3D11RenderTargetView> render_target_view;
+
+#ifdef OPENGL_DXGI_USE_FLIP_MODEL
+	HANDLE frame_latency_waitable_obj{};
+#endif
+
+	HANDLE gldx_device{};
+#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+	HANDLE gldx_depth_texture{};
+#endif
+	HANDLE gldx_render_target_view{};
+
+	GLuint gl_fbo{};
+	GLuint gl_depth_stencil_tex{};
+	GLuint gl_render_target_view_tex{};
+
+	DxgiSwapChain() = default;
+	~DxgiSwapChain() = default;
+
+	template <typename T>
+	friend void memdelete(T *);
+
+public:
+	static DxgiSwapChain *create(HWND p_hwnd, int p_width, int p_height);
+	void destroy();
+
+	void make_current();
+	void release_current();
+
+	void present(bool p_use_vsync);
+	void resize_swap_chain(int p_width, int p_height);
+	void set_use_vsync(bool p_use);
+
+private:
+#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+	bool setup_depth_buffer(int p_width, int p_height);
+	void release_depth_buffer();
+#endif
+
+	bool setup_render_target();
+	void release_render_target(bool p_need_unlock);
+
+	void lock_for_opengl();
+	void unlock_from_opengl();
+};
+
+enum class DxgiStatus {
+	UNINITIALIZED,
+	DISABLED,
+	LOADED_UNTESTED,
+	LOADED_USABLE,
+};
+
+static DxgiStatus dxgi_status = DxgiStatus::UNINITIALIZED;
+
+static bool load_dxgi_swap_chain_functions(PFNWGLGETPROCADDRESS gd_wglGetProcAddress, HDC hDC) {
+	PFNWGLGETEXTENSIONSSTRINGARB gd_wglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARB)gd_wglGetProcAddress("wglGetExtensionsStringARB");
+	if (!gd_wglGetExtensionsStringARB) {
+		return false;
+	}
+
+	const char *extensions = gd_wglGetExtensionsStringARB(hDC);
+	if (!extensions || !strstr(extensions, "WGL_NV_DX_interop2")) {
+		print_verbose("GLManagerNative_Windows: Extension WGL_NV_DX_interop2 not available.");
+		return false;
+	}
+
+	if (!load_nv_dx_interop(gd_wglGetProcAddress)) {
+		print_verbose("GLManagerNative_Windows: Failed to load WGL_NV_DX_interop functions.");
+		return false;
+	}
+
+	print_verbose("GLManagerNative_Windows: Loaded WGL_NV_DX_interop functions.");
+
+	module_d3d11 = LoadLibraryW(L"d3d11.dll");
+	if (!module_d3d11) {
+		print_verbose("GLManagerNative_Windows: Failed to load D3D11.");
+		return false;
+	}
+
+	fptr_D3D11CreateDeviceAndSwapChain = (PFND3D11CREATEDEVICEANDSWAPCHAINPROC)(void *)GetProcAddress(module_d3d11, "D3D11CreateDeviceAndSwapChain");
+	if (!fptr_D3D11CreateDeviceAndSwapChain) {
+		print_verbose("GLManagerNative_Windows: Failed to load D3D11 functions.")
+				FreeLibrary(module_d3d11);
+		return false;
+	}
+
+	print_verbose("GLManagerNative_Windows: Loaded D3D11 functions.");
+	return true;
+}
+#endif // OPENGL_ON_DXGI_ENABLED
+
+void GLManagerNative_Windows::set_prefer_dxgi_swap_chain(bool p_prefer) {
+	prefer_dxgi = p_prefer;
+}
+
+bool GLManagerNative_Windows::is_using_dxgi_swap_chain() {
+#ifdef OPENGL_ON_DXGI_ENABLED
+#ifdef DEBUG_ENABLED
+	if (dxgi_status == DxgiStatus::UNINITIALIZED) {
+		WARN_PRINT("Do not attempt to check is_using_dxgi_swap_chain before first window!");
+	}
+#endif
+
+	return dxgi_status == DxgiStatus::LOADED_USABLE;
+#else
+	return false;
+#endif
+}
+
 int GLManagerNative_Windows::_find_or_create_display(GLWindow &win) {
 	// find display NYI, only 1 supported so far
 	if (_displays.size()) {
@@ -427,6 +622,20 @@ Error GLManagerNative_Windows::_create_context(GLWindow &win, GLDisplay &gl_disp
 		wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)gd_wglGetProcAddress("wglSwapIntervalEXT");
 	}
 
+#ifdef OPENGL_ON_DXGI_ENABLED
+	if (dxgi_status == DxgiStatus::UNINITIALIZED) {
+		if (prefer_dxgi) {
+			if (load_dxgi_swap_chain_functions(gd_wglGetProcAddress, win.hDC)) {
+				dxgi_status = DxgiStatus::LOADED_UNTESTED;
+			} else {
+				dxgi_status = DxgiStatus::DISABLED;
+			}
+		} else {
+			dxgi_status = DxgiStatus::DISABLED;
+		}
+	}
+#endif // OPENGL_ON_DXGI_ENABLED
+
 	return OK;
 }
 
@@ -452,6 +661,27 @@ Error GLManagerNative_Windows::window_create(DisplayServer::WindowID p_window_id
 		return FAILED;
 	}
 
+#ifdef OPENGL_ON_DXGI_ENABLED
+	if (dxgi_status == DxgiStatus::LOADED_UNTESTED || dxgi_status == DxgiStatus::LOADED_USABLE) {
+		win.dxgi = DxgiSwapChain::create(win.hwnd, p_width, p_height);
+		if (win.dxgi) {
+			if (dxgi_status == DxgiStatus::LOADED_UNTESTED) {
+				dxgi_status = DxgiStatus::LOADED_USABLE;
+				print_verbose("GLManagerNative_Windows: Presenting with D3D11 DXGI swap chain.")
+			}
+		} else {
+			if (dxgi_status == DxgiStatus::LOADED_UNTESTED) {
+				// If it failed during the first time creating a window,
+				// just fall back to regular OpenGL SwapBuffers.
+				dxgi_status = DxgiStatus::DISABLED;
+				WARN_PRINT("GLManagerNative_Windows: Failed to initialize D3D11 DXGI swap chain, reverting to regular OpenGL.");
+			} else {
+				return ERR_CANT_CREATE;
+			}
+		}
+	}
+#endif // OPENGL_ON_DXGI_ENABLED
+
 	// WARNING: p_window_id is an eternally growing integer since popup windows keep coming and going
 	// and each of them has a higher id than the previous, so it must be used in a map not a vector
 	_windows[p_window_id] = win;
@@ -464,16 +694,39 @@ Error GLManagerNative_Windows::window_create(DisplayServer::WindowID p_window_id
 
 void GLManagerNative_Windows::window_destroy(DisplayServer::WindowID p_window_id) {
 	GLWindow &win = get_window(p_window_id);
+
+#ifdef OPENGL_ON_DXGI_ENABLED
+	if (win.dxgi) {
+		win.dxgi->destroy();
+		win.dxgi = nullptr;
+	}
+#endif // OPENGL_ON_DXGI_ENABLED
+
 	if (_current_window == &win) {
 		_current_window = nullptr;
 	}
 	_windows.erase(p_window_id);
 }
 
+void GLManagerNative_Windows::window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {
+#ifdef OPENGL_ON_DXGI_ENABLED
+	GLWindow &win = get_window(p_window_id);
+	if (win.dxgi) {
+		win.dxgi->resize_swap_chain(p_width, p_height);
+	}
+#endif // OPENGL_ON_DXGI_ENABLED
+}
+
 void GLManagerNative_Windows::release_current() {
 	if (!_current_window) {
 		return;
 	}
+
+#ifdef OPENGL_ON_DXGI_ENABLED
+	if (_current_window->dxgi) {
+		_current_window->dxgi->release_current();
+	}
+#endif // OPENGL_ON_DXGI_ENABLED
 
 	if (!gd_wglMakeCurrent(_current_window->hDC, nullptr)) {
 		ERR_PRINT("Could not detach OpenGL context from window marked current: " + format_error_message(GetLastError()));
@@ -500,11 +753,26 @@ void GLManagerNative_Windows::window_make_current(DisplayServer::WindowID p_wind
 		ERR_PRINT("Could not switch OpenGL context to other window: " + format_error_message(GetLastError()));
 	}
 
+#ifdef OPENGL_ON_DXGI_ENABLED
+	if (win.dxgi) {
+		win.dxgi->make_current();
+	}
+#endif // OPENGL_ON_DXGI_ENABLED
+
 	_current_window = &win;
 }
 
 void GLManagerNative_Windows::swap_buffers() {
-	SwapBuffers(_current_window->hDC);
+#ifdef OPENGL_ON_DXGI_ENABLED
+	GLWindow &win = *_current_window;
+	if (win.dxgi) {
+		win.dxgi->present(win.use_vsync);
+	} else {
+#else
+	{
+#endif // OPENGL_ON_DXGI_ENABLED
+		SwapBuffers(_current_window->hDC);
+	}
 }
 
 Error GLManagerNative_Windows::initialize() {
@@ -519,14 +787,23 @@ void GLManagerNative_Windows::set_use_vsync(DisplayServer::WindowID p_window_id,
 		window_make_current(p_window_id);
 	}
 
-	if (wglSwapIntervalEXT) {
+#ifdef OPENGL_ON_DXGI_ENABLED
+	if (win.dxgi) {
 		win.use_vsync = p_use;
+		win.dxgi->set_use_vsync(p_use);
+	} else {
+#else
+	{
+#endif // OPENGL_ON_DXGI_ENABLED
+		if (wglSwapIntervalEXT) {
+			win.use_vsync = p_use;
 
-		if (!wglSwapIntervalEXT(p_use ? 1 : 0)) {
+			if (!wglSwapIntervalEXT(p_use ? 1 : 0)) {
+				WARN_PRINT_ONCE("Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.");
+			}
+		} else {
 			WARN_PRINT_ONCE("Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.");
 		}
-	} else {
-		WARN_PRINT_ONCE("Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.");
 	}
 }
 
@@ -553,5 +830,421 @@ GLManagerNative_Windows::GLManagerNative_Windows() {
 GLManagerNative_Windows::~GLManagerNative_Windows() {
 	release_current();
 }
+
+#ifdef OPENGL_ON_DXGI_ENABLED
+
+GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::create(HWND p_hwnd, int p_width, int p_height) {
+	ComPtr<ID3D11Device> device;
+	ComPtr<ID3D11DeviceContext> device_context;
+	ComPtr<IDXGISwapChain> swap_chain;
+
+	DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
+	swap_chain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swap_chain_desc.SampleDesc.Count = 1;
+#ifdef OPENGL_DXGI_USE_FLIP_MODEL
+	swap_chain_desc.BufferCount = 3;
+#else
+	swap_chain_desc.BufferCount = 2;
+#endif
+	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swap_chain_desc.OutputWindow = p_hwnd;
+	swap_chain_desc.Windowed = TRUE;
+#ifdef OPENGL_DXGI_USE_FLIP_MODEL
+	swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+	swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+#else
+	swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+#endif
+
+	UINT flags = 0;
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		flags |= D3D11_CREATE_DEVICE_DEBUG;
+	}
+
+	// TODO: Change to use IDXGIFactory2::CreateSwapChainForHwnd so that we
+	//       can specify DXGI_SCALING_NONE
+	HRESULT hr = fptr_D3D11CreateDeviceAndSwapChain(nullptr, // Adapter
+			D3D_DRIVER_TYPE_HARDWARE, // DriverType
+			nullptr, // Software
+			flags, // Flags
+			nullptr, // pFeatureLevels
+			0, // FeatureLevels
+			D3D11_SDK_VERSION, // SDKVersion
+			&swap_chain_desc, // pSwapChainDesc
+			&swap_chain, // ppSwapChain
+			&device, // ppDevice
+			nullptr, // pFeatureLevel
+			&device_context); // ppImmediateContext
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("D3D11CreateDeviceAndSwapChain failed, HRESULT: 0x%08X", (unsigned)hr));
+		return nullptr;
+	}
+
+	{
+		ComPtr<IDXGIDevice> dxgi_device;
+		hr = device.As(&dxgi_device);
+		if (!SUCCEEDED(hr)) {
+			ERR_PRINT(vformat("Failed to get IDXGIDevice, HRESULT: 0x%08X", (unsigned)hr));
+		} else {
+			ComPtr<IDXGIAdapter> dxgi_adapter;
+			hr = dxgi_device->GetAdapter(&dxgi_adapter);
+			if (!SUCCEEDED(hr)) {
+				ERR_PRINT(vformat("Failed to get IDXGIAdapter, HRESULT: 0x%08X", (unsigned)hr));
+			} else {
+				ComPtr<IDXGIFactory> dxgi_factory;
+				hr = dxgi_adapter->GetParent(__uuidof(IDXGIFactory), &dxgi_factory);
+				if (!SUCCEEDED(hr)) {
+					ERR_PRINT(vformat("Failed to get IDXGIFactory, HRESULT: 0x%08X", (unsigned)hr));
+				} else {
+					hr = dxgi_factory->MakeWindowAssociation(p_hwnd, DXGI_MWA_NO_ALT_ENTER);
+					if (!SUCCEEDED(hr)) {
+						ERR_PRINT(vformat("Failed to get IDXGIFactory, HRESULT: 0x%08X", (unsigned)hr));
+					}
+				}
+			}
+		}
+	}
+
+	HANDLE gldx_device = gd_wglDXOpenDeviceNV(device.Get());
+	if (!gldx_device) {
+		ERR_PRINT(vformat("Failed to connect D3D11 swap chain to WGL for interop. Error: %s", format_error_message(GetLastError())));
+		gd_wglDXCloseDeviceNV(gldx_device);
+		return nullptr;
+	}
+
+#ifdef OPENGL_DXGI_USE_FLIP_MODEL
+	HANDLE frame_latency_waitable_obj{};
+	{
+		ComPtr<IDXGISwapChain2> swap_chain_2;
+		hr = swap_chain.As(&swap_chain_2);
+		if (SUCCEEDED(hr)) {
+			frame_latency_waitable_obj = swap_chain_2->GetFrameLatencyWaitableObject();
+		} else {
+			ERR_PRINT(vformat("Failed to get IDXGISwapChain2, HRESULT: 0x%08X", (unsigned)hr));
+		}
+	}
+#endif
+
+	// HACK: We need OpenGL functions _now_ but RasterizerGLES3 might not
+	//       have been initialized yet.
+	gladLoaderLoadGL();
+
+	// Generate the FBO we use for the window.
+	GLuint gl_fbo;
+	glGenFramebuffers(1, &gl_fbo);
+
+	// Generate texture names for render target and depth buffers.
+	GLuint textures[2] = {};
+	glGenTextures(2, textures);
+	GLuint gl_depth_stencil_tex = textures[0];
+	GLuint gl_render_target_view_tex = textures[1];
+
+	GLManagerNative_Windows::DxgiSwapChain *dxgi = memnew(GLManagerNative_Windows::DxgiSwapChain);
+	dxgi->device = std::move(device);
+	dxgi->device_context = std::move(device_context);
+	dxgi->swap_chain = std::move(swap_chain);
+#ifdef OPENGL_DXGI_USE_FLIP_MODEL
+	dxgi->frame_latency_waitable_obj = frame_latency_waitable_obj;
+#endif
+	dxgi->gldx_device = gldx_device;
+	dxgi->gl_fbo = gl_fbo;
+	dxgi->gl_depth_stencil_tex = gl_depth_stencil_tex;
+	dxgi->gl_render_target_view_tex = gl_render_target_view_tex;
+
+	GLES3::TextureStorage::system_fbo = gl_fbo;
+
+#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+	if (!dxgi->setup_depth_buffer(p_width, p_height)) {
+		GLES3::TextureStorage::system_fbo = 0;
+		memdelete(dxgi);
+		return nullptr;
+	}
+#endif
+
+	if (!dxgi->setup_render_target()) {
+		GLES3::TextureStorage::system_fbo = 0;
+#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+		dxgi->release_depth_buffer();
+#endif
+		memdelete(dxgi);
+		return nullptr;
+	}
+
+#ifdef OPENGL_DXGI_USE_FLIP_MODEL
+	ComPtr<IDXGISwapChain2> swap_chain_2;
+	hr = dxgi->swap_chain.As(&swap_chain_2);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("Failed to get IDXGISwapChain2, HRESULT: 0x%08X", (unsigned)hr));
+	} else {
+		// TODO: ???
+		swap_chain_2->SetMaximumFrameLatency(1);
+	}
+#else
+	ComPtr<IDXGIDevice1> device1;
+	hr = dxgi->device.As(&device1);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("Failed to get IDXGIDevice1, HRESULT: 0x%08X", (unsigned)hr));
+	} else {
+		// TODO: ???
+		device1->SetMaximumFrameLatency(1);
+	}
+#endif
+
+	dxgi->lock_for_opengl();
+
+	return dxgi;
+}
+
+void GLManagerNative_Windows::DxgiSwapChain::destroy() {
+	if (GLES3::TextureStorage::system_fbo == gl_fbo) {
+		GLES3::TextureStorage::system_fbo = 0;
+	}
+
+	release_render_target(true);
+#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+	release_depth_buffer();
+#endif
+
+	// FIXME: Is this safe to do? Could our OpenGL context not be current?
+	glDeleteFramebuffers(1, &gl_fbo);
+	GLuint textures[2] = { gl_depth_stencil_tex, gl_render_target_view_tex };
+	glDeleteTextures(2, textures);
+
+	gd_wglDXCloseDeviceNV(gldx_device);
+
+	swap_chain.Reset();
+	device_context.Reset();
+	device.Reset();
+
+	memdelete(this);
+}
+
+void GLManagerNative_Windows::DxgiSwapChain::make_current() {
+	GLES3::TextureStorage::system_fbo = gl_fbo;
+}
+
+void GLManagerNative_Windows::DxgiSwapChain::release_current() {
+	if (GLES3::TextureStorage::system_fbo != gl_fbo) {
+#ifdef DEBUG_ENABLED
+		WARN_PRINT("Trying to release D3D11 target but system_fbo has changed!");
+#endif
+		return;
+	}
+	GLES3::TextureStorage::system_fbo = 0;
+}
+
+#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+bool GLManagerNative_Windows::DxgiSwapChain::setup_depth_buffer(int p_width, int p_height) {
+	// Godot uses 24-bit depth buffer?
+	ComPtr<ID3D11Texture2D> depth_texture_new;
+	CD3D11_TEXTURE2D_DESC depth_buffer_desc(DXGI_FORMAT_R24G8_TYPELESS, p_width, p_height, 1, 1, D3D11_BIND_DEPTH_STENCIL);
+	HRESULT hr = device->CreateTexture2D(
+			&depth_buffer_desc,
+			nullptr,
+			&depth_texture_new);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("CreateTexture2D failed, HRESULT: 0x%08X", (unsigned)hr));
+		return false;
+	}
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC depth_stencil_view_desc{};
+	depth_stencil_view_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	depth_stencil_view_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	ComPtr<ID3D11DepthStencilView> depth_stencil_view_new;
+	hr = device->CreateDepthStencilView(
+			depth_texture_new.Get(),
+			&depth_stencil_view_desc,
+			&depth_stencil_view_new);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("CreateDepthStencilView failed, HRESULT: 0x%08X", (unsigned)hr));
+		return false;
+	}
+
+	HANDLE gldx_depth_texture_new = gd_wglDXRegisterObjectNV(
+			gldx_device,
+			depth_texture_new.Get(),
+			gl_depth_stencil_tex,
+			GL_TEXTURE_2D,
+			WGL_ACCESS_READ_WRITE_NV);
+	if (!gldx_depth_texture_new) {
+		ERR_PRINT(vformat("Failed to connect D3D11 depth texture to WGL for interop. Error: %s", format_error_message(GetLastError())));
+		return false;
+	}
+
+	depth_texture = std::move(depth_texture_new);
+	depth_stencil_view = std::move(depth_stencil_view_new);
+	gldx_depth_texture = gldx_depth_texture_new;
+
+	return true;
+}
+
+void GLManagerNative_Windows::DxgiSwapChain::release_depth_buffer() {
+	gd_wglDXUnregisterObjectNV(gldx_device, gldx_depth_texture);
+
+	gldx_depth_texture = nullptr;
+	depth_stencil_view.Reset();
+	depth_texture.Reset();
+}
+#endif // OPENGL_DXGI_USE_DEPTH_BUFFER
+
+bool GLManagerNative_Windows::DxgiSwapChain::setup_render_target() {
+	// Get the current back buffer from the swap chain.
+	ComPtr<ID3D11Texture2D> color_buffer_new;
+	HRESULT hr = swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), &color_buffer_new);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("GetBuffer failed, HRESULT: 0x%08X", (unsigned)hr));
+		return false;
+	}
+
+	// TODO: Do we need to chedk OS::get_singleton()->is_layered_allowed() here?
+	CD3D11_RENDER_TARGET_VIEW_DESC render_target_view_desc(D3D11_RTV_DIMENSION_TEXTURE2D, DXGI_FORMAT_R8G8B8A8_UNORM);
+	ComPtr<ID3D11RenderTargetView> render_target_view_new;
+	hr = device->CreateRenderTargetView(
+			color_buffer_new.Get(),
+			&render_target_view_desc,
+			&render_target_view_new);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("CreateRenderTargetView failed, HRESULT: 0x%08X", (unsigned)hr));
+		return false;
+	}
+
+	// Register for interop.
+	HANDLE gldx_render_target_view_new = gd_wglDXRegisterObjectNV(gldx_device,
+			color_buffer_new.Get(),
+			gl_render_target_view_tex,
+			GL_TEXTURE_2D,
+			WGL_ACCESS_READ_WRITE_NV);
+	if (!gldx_render_target_view_new) {
+		ERR_PRINT(vformat("Failed to connect D3D11 render target to WGL for interop. Error: %s", format_error_message(GetLastError())));
+		return false;
+	}
+
+	// Attach back buffer and depth buffer to the render target.
+	device_context->OMSetRenderTargets(1,
+			render_target_view_new.GetAddressOf(),
+#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+			depth_stencil_view.Get()
+#else
+			nullptr
+#endif
+	);
+
+	// TODO: Is it okay if we don't clear at all?
+	// float clear_color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	// device_context->ClearRenderTargetView(render_target_view_new.Get(), clear_color);
+
+	color_buffer = std::move(color_buffer_new);
+	render_target_view = std::move(render_target_view_new);
+	gldx_render_target_view = gldx_render_target_view_new;
+
+	return true;
+}
+
+void GLManagerNative_Windows::DxgiSwapChain::release_render_target(bool p_need_unlock) {
+	if (p_need_unlock) {
+		unlock_from_opengl();
+	}
+
+	// Release the back buffer.
+	gd_wglDXUnregisterObjectNV(gldx_device, gldx_render_target_view);
+
+	gldx_render_target_view = nullptr;
+	render_target_view.Reset();
+	color_buffer.Reset();
+}
+
+void GLManagerNative_Windows::DxgiSwapChain::lock_for_opengl() {
+	// Lock the buffers for OpenGL access.
+#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+	void *handles[] = { gldx_depth_texture, gldx_render_target_view };
+	gd_wglDXLockObjectsNV(gldx_device, 2, handles);
+#else
+	gd_wglDXLockObjectsNV(gldx_device, 1, &gldx_render_target_view);
+#endif
+
+	// Attach color and depth buffers to FBO
+	glBindFramebuffer(GL_FRAMEBUFFER, gl_fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gl_render_target_view_tex, 0);
+#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gl_depth_stencil_tex, 0);
+#endif
+	if (GLES3::TextureStorage::system_fbo != gl_fbo) {
+		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	}
+}
+
+void GLManagerNative_Windows::DxgiSwapChain::unlock_from_opengl() {
+	// Detach color and depth buffers from FBO
+	glBindFramebuffer(GL_FRAMEBUFFER, gl_fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+#endif
+	if (GLES3::TextureStorage::system_fbo != gl_fbo) {
+		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	}
+
+	// Unlock from OpenGL access.
+#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+	void *handles[] = { gldx_depth_texture, gldx_render_target_view };
+	gd_wglDXUnlockObjectsNV(gldx_device, 2, handles);
+#else
+	gd_wglDXUnlockObjectsNV(gldx_device, 1, &gldx_render_target_view);
+#endif
+}
+
+void GLManagerNative_Windows::DxgiSwapChain::present(bool p_use_vsync) {
+	unlock_from_opengl();
+
+#ifdef OPENGL_DXGI_USE_FLIP_MODEL
+	HRESULT hr;
+	if (p_use_vsync) {
+		hr = swap_chain->Present(1, 0);
+	} else {
+		hr = swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
+	}
+#else
+	// TODO: vsync???
+	HRESULT hr = swap_chain->Present(p_use_vsync ? 1 : 0, 0);
+#endif
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("Present failed, HRESULT: 0x%08X", (unsigned)hr));
+	}
+
+	release_render_target(false);
+	setup_render_target();
+	lock_for_opengl();
+}
+
+void GLManagerNative_Windows::DxgiSwapChain::resize_swap_chain(int p_width, int p_height) {
+	release_render_target(true);
+#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+	release_depth_buffer();
+#endif
+
+	UINT flags = 0;
+#ifdef OPENGL_DXGI_USE_FLIP_MODEL
+	flags |= DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+#endif
+	HRESULT hr = swap_chain->ResizeBuffers(0, p_width, p_height, DXGI_FORMAT_UNKNOWN, flags);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("ResizeBuffers failed, HRESULT: 0x%08X", (unsigned)hr));
+	}
+
+#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+	if (setup_depth_buffer(p_width, p_height)) {
+#else
+	{
+#endif
+		setup_render_target();
+	}
+	lock_for_opengl();
+}
+
+void GLManagerNative_Windows::DxgiSwapChain::set_use_vsync(bool p_use) {
+	// TODO: ???
+}
+
+#endif // OPENGL_ON_DXGI_ENABLED
 
 #endif // WINDOWS_ENABLED && GLES3_ENABLED
