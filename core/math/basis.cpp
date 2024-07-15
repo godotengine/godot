@@ -44,7 +44,9 @@ void Basis::invert() {
 			rows[0][1] * co[1] +
 			rows[0][2] * co[2];
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND(det == 0);
+	if (det == 0) {
+		return;
+	}
 #endif
 	real_t s = 1.0f / det;
 
