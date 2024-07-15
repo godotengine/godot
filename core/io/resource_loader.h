@@ -123,6 +123,7 @@ public:
 	struct LoadToken : public RefCounted {
 		String local_path;
 		String user_path;
+		uint32_t user_rc = 0; // Having user RC implies regular RC incremented in one, until the user RC reaches zero.
 		Ref<Resource> res_if_unregistered;
 
 		void clear();
@@ -132,10 +133,13 @@ public:
 
 	static const int BINARY_MUTEX_TAG = 1;
 
-	static Ref<LoadToken> _load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode);
+	static Ref<LoadToken> _load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode, bool p_for_user = false);
 	static Ref<Resource> _load_complete(LoadToken &p_load_token, Error *r_error);
 
 private:
+	static LoadToken *_load_threaded_request_reuse_user_token(const String &p_path);
+	static void _load_threaded_request_setup_user_token(LoadToken *p_token, const String &p_path);
+
 	static Ref<Resource> _load_complete_inner(LoadToken &p_load_token, Error *r_error, MutexLock<SafeBinaryMutex<BINARY_MUTEX_TAG>> &p_thread_load_lock);
 
 	static Ref<ResourceFormatLoader> loader[MAX_LOADERS];
