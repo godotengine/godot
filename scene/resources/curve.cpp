@@ -1206,16 +1206,17 @@ PackedVector2Array Curve2D::tessellate(int p_max_stages, real_t p_tolerance) con
 	int pidx = 0;
 
 	for (int i = 0; i < points.size() - 1; i++) {
-		// empty value here gives realloc() : invalid next size error
-		// in the nested loop
-		if (midpoints[i].size() == 0) {
+		if ((points[i].position - points[i + 1].position).is_zero_approx() && (points[i].in - points[i + 1].in).is_zero_approx() && (points[i].out - points[i + 1].out).is_zero_approx()) {
 			continue;
 		}
-		for (const KeyValue<real_t, Vector2> &E : midpoints[i]) {
-			pidx++;
-			bpw[pidx] = E.value;
+		// empty value here gives realloc() : invalid next size error
+		// in the nested loop
+		if (midpoints[i].size() != 0) {
+			for (const KeyValue<real_t, Vector2> &E : midpoints[i]) {
+				pidx++;
+				bpw[pidx] = E.value;
+			}
 		}
-
 		pidx++;
 		bpw[pidx] = points[i + 1].position;
 	}
