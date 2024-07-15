@@ -2098,7 +2098,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 				handled = true;
 			}
 			if (k->is_action("ui_down", true) && vscroll->is_visible_in_tree()) {
-				vscroll->scroll(vscroll->get_value() + theme_cache.normal_font->get_height(theme_cache.normal_font_size));
+				vscroll->scroll(theme_cache.normal_font->get_height(theme_cache.normal_font_size));
 				handled = true;
 			}
 			if (k->is_action("ui_home", true) && vscroll->is_visible_in_tree()) {
@@ -4947,10 +4947,10 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front("outline_size");
 
 		} else if (bbcode_name == "fade") {
-			int start_index = 0;
+			int start_index = brk_pos;
 			OptionMap::Iterator start_option = bbcode_options.find("start");
 			if (start_option) {
-				start_index = start_option->value.to_int();
+				start_index += start_option->value.to_int();
 			}
 
 			int length = 10;

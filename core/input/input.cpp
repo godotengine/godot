@@ -758,12 +758,13 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 		bool was_pressed = action_state.cache.pressed;
 		_update_action_cache(E.key, action_state);
+		// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
 		if (action_state.cache.pressed && !was_pressed) {
-			action_state.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
+			action_state.pressed_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 			action_state.pressed_process_frame = Engine::get_singleton()->get_process_frames();
 		}
 		if (!action_state.cache.pressed && was_pressed) {
-			action_state.released_physics_frame = Engine::get_singleton()->get_physics_frames();
+			action_state.released_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 			action_state.released_process_frame = Engine::get_singleton()->get_process_frames();
 		}
 	}

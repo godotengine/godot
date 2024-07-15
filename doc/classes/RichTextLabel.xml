@@ -432,7 +432,7 @@
 				Adds [code skip-lint][ol][/code] or [code skip-lint][ul][/code] tag to the tag stack. Multiplies [param level] by current [member tab_size] to determine new margin length.
 			</description>
 		</method>
-		<method name="push_meta">
+		<method name="push_meta" keywords="push_url">
 			<return type="void" />
 			<param index="0" name="data" type="Variant" />
 			<param index="1" name="underline_mode" type="int" enum="RichTextLabel.MetaUnderline" default="1" />
@@ -628,7 +628,7 @@
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
-		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined" default="true">
+		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined" default="true" keywords="url_underlined">
 			If [code]true[/code], the label underlines meta tags such as [code skip-lint][url]{text}[/url][/code]. These tags can call a function when clicked if [signal meta_clicked] is connected to a function.
 		</member>
 		<member name="progress_bar_delay" type="int" setter="set_progress_bar_delay" getter="get_progress_bar_delay" default="1000">

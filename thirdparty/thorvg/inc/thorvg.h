@@ -631,6 +631,8 @@ public:
      * The Canvas rendering can be performed asynchronously. To make sure that rendering is finished,
      * the sync() must be called after the draw() regardless of threading.
      *
+     * @retval Result::InsufficientCondition: The canvas is either already in sync condition or in a damaged condition (a draw is required before syncing).
+     *
      * @see Canvas::draw()
      */
     virtual Result sync() noexcept;

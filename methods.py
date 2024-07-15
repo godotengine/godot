@@ -268,7 +268,7 @@ def get_version_info(module_version_string="", silent=False):
     if os.path.exists(".git"):
         try:
             version_info["git_timestamp"] = subprocess.check_output(
-                ["git", "log", "-1", "--pretty=format:%ct", githash]
+                ["git", "log", "-1", "--pretty=format:%ct", "--no-show-signature", githash]
             ).decode("utf-8")
         except (subprocess.CalledProcessError, OSError):
             # `git` not found in PATH.
@@ -648,6 +648,7 @@ def detect_visual_c_compiler_version(tools_env):
 
 
 def find_visual_c_batch_file(env):
+    # TODO: We should investigate if we can avoid relying on SCons internals here.
     from SCons.Tool.MSCommon.vc import find_batch_file, find_vc_pdir, get_default_version, get_host_target
 
     msvc_version = get_default_version(env)
@@ -661,10 +662,11 @@ def find_visual_c_batch_file(env):
     if env.scons_version < (4, 6, 0):
         return find_batch_file(env, msvc_version, host_platform, target_platform)[0]
 
-    # Scons 4.6.0+ removed passing env, so we need to get the product_dir ourselves first,
+    # SCons 4.6.0+ removed passing env, so we need to get the product_dir ourselves first,
     # then pass that as the last param instead of env as the first param as before.
-    # We should investigate if we can avoid relying on SCons internals here.
-    product_dir = find_vc_pdir(env, msvc_version)
+    # Param names need to be explicit, as they were shuffled around in SCons 4.8.0.
+    product_dir = find_vc_pdir(msvc_version=msvc_version, env=env)
+
     return find_batch_file(msvc_version, host_platform, target_platform, product_dir)[0]
 
 

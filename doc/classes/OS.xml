@@ -283,7 +283,7 @@
 			<return type="String" />
 			<description>
 				Returns the file path to the current engine executable.
-				[b]Note:[/b] On macOS, always use [method create_instance] instead of relying on executable path.
+				[b]Note:[/b] On macOS, if you want to launch another instance of Godot, always use [method create_instance] instead of relying on the executable path.
 			</description>
 		</method>
 		<method name="get_granted_permissions" qualifiers="const">

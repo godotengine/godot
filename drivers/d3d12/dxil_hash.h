@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_menu_item.mm                                                    */
+/*  dxil_hash.h                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,21 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_menu_item.h"
+#ifndef DXIL_HASH_H
+#define DXIL_HASH_H
 
-@implementation GodotMenuItem
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
-- (id)init {
-	self = [super init];
+void compute_dxil_hash(const BYTE *pData, UINT byteCount, BYTE *pOutHash);
 
-	self->callback = Callable();
-	self->key_callback = Callable();
-	self->checkable_type = GlobalMenuCheckType::CHECKABLE_TYPE_NONE;
-	self->checked = false;
-	self->max_states = 0;
-	self->state = 0;
-
-	return self;
-}
-
-@end
+#endif // DXIL_HASH_H

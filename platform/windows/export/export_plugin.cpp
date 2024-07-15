@@ -208,18 +208,14 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 
 	int export_d3d12 = p_preset->get("application/export_d3d12");
 	bool agility_sdk_multiarch = p_preset->get("application/d3d12_agility_sdk_multiarch");
-	bool include_dxil_libs = false;
+	bool include_d3d12_extra_libs = false;
 	if (export_d3d12 == 0) {
-		include_dxil_libs = (String(GLOBAL_GET("rendering/rendering_device/driver.windows")) == "d3d12") && (String(GLOBAL_GET("rendering/renderer/rendering_method")) != "gl_compatibility");
+		include_d3d12_extra_libs = (String(GLOBAL_GET("rendering/rendering_device/driver.windows")) == "d3d12") && (String(GLOBAL_GET("rendering/renderer/rendering_method")) != "gl_compatibility");
 	} else if (export_d3d12 == 1) {
-		include_dxil_libs = true;
+		include_d3d12_extra_libs = true;
 	}
-	if (include_dxil_libs) {
+	if (include_d3d12_extra_libs) {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (da->file_exists(template_path.get_base_dir().path_join("dxil." + arch + ".dll"))) {
-			da->make_dir_recursive(p_path.get_base_dir().path_join(arch));
-			da->copy(template_path.get_base_dir().path_join("dxil." + arch + ".dll"), p_path.get_base_dir().path_join(arch).path_join("dxil.dll"), get_chmod_flags());
-		}
 		if (da->file_exists(template_path.get_base_dir().path_join("D3D12Core." + arch + ".dll"))) {
 			if (agility_sdk_multiarch) {
 				da->make_dir_recursive(p_path.get_base_dir().path_join(arch));

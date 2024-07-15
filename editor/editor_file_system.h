@@ -89,6 +89,7 @@ public:
 	Vector<String> get_file_deps(int p_idx) const;
 	bool get_file_import_is_valid(int p_idx) const;
 	uint64_t get_file_modified_time(int p_idx) const;
+	uint64_t get_file_import_modified_time(int p_idx) const;
 	String get_file_script_class_name(int p_idx) const; //used for scripts
 	String get_file_script_class_extends(int p_idx) const; //used for scripts
 	String get_file_script_class_icon_path(int p_idx) const; //used for scripts

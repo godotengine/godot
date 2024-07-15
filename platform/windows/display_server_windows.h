@@ -332,6 +332,11 @@ class DisplayServerWindows : public DisplayServer {
 	String tablet_driver;
 	Vector<String> tablet_drivers;
 
+	enum TimerID {
+		TIMER_ID_MOVE_REDRAW = 1,
+		TIMER_ID_WINDOW_ACTIVATION = 2,
+	};
+
 	enum {
 		KEY_EVENT_BUFFER_SIZE = 512
 	};

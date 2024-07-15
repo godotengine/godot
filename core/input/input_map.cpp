@@ -636,6 +636,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::A | KeyModifierMask::CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::LEFT | KeyModifierMask::CMD_OR_CTRL));
+	inputs.push_back(InputEventKey::create_reference(Key::HOME));
 	default_builtin_cache.insert("ui_text_caret_line_start.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
@@ -645,6 +646,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::E | KeyModifierMask::CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::RIGHT | KeyModifierMask::CMD_OR_CTRL));
+	inputs.push_back(InputEventKey::create_reference(Key::END));
 	default_builtin_cache.insert("ui_text_caret_line_end.macos", inputs);
 
 	// Text Caret Movement Page Up/Down
@@ -665,6 +667,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::UP | KeyModifierMask::CMD_OR_CTRL));
+	inputs.push_back(InputEventKey::create_reference(Key::HOME | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_caret_document_start.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
@@ -673,6 +676,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::DOWN | KeyModifierMask::CMD_OR_CTRL));
+	inputs.push_back(InputEventKey::create_reference(Key::END | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_caret_document_end.macos", inputs);
 
 	// Text Caret Addition Below/Above

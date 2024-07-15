@@ -3690,7 +3690,7 @@ void AnimationTrackEditor::_name_limit_changed() {
 }
 
 void AnimationTrackEditor::_timeline_changed(float p_new_pos, bool p_timeline_only) {
-	emit_signal(SNAME("timeline_changed"), p_new_pos, p_timeline_only);
+	emit_signal(SNAME("timeline_changed"), p_new_pos, p_timeline_only, false);
 }
 
 void AnimationTrackEditor::_track_remove_request(int p_track) {
@@ -3787,6 +3787,7 @@ void AnimationTrackEditor::set_anim_pos(float p_pos) {
 	}
 	_redraw_groups();
 	bezier_edit->set_play_position(p_pos);
+	emit_signal(SNAME("timeline_changed"), p_pos, true, true);
 }
 
 static bool track_type_is_resettable(Animation::TrackType p_type) {
@@ -4428,7 +4429,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 				for (int i = 0; i < subindices.size(); i++) {
 					InsertData id = p_id;
 					id.type = Animation::TYPE_BEZIER;
-					id.value = p_id.value.get(subindices[i].substr(1, subindices[i].length()));
+					id.value = subindices[i].is_empty() ? p_id.value : p_id.value.get(subindices[i].substr(1, subindices[i].length()));
 					id.path = String(p_id.path) + subindices[i];
 					p_next_tracks = _confirm_insert(id, p_next_tracks, p_reset_wanted, p_reset_anim, false);
 				}

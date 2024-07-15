@@ -156,8 +156,6 @@ private:
 
 	ErrorHandlerList eh;
 
-	Thread::ID current;
-
 	//void _dragged(const Point2& p_ofs);
 	void _meta_clicked(const String &p_meta);
 	void _clear_request();

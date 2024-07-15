@@ -49,6 +49,7 @@ class AudioSamplePlayback : public RefCounted {
 public:
 	Ref<AudioStream> stream;
 
+	ObjectID player_id;
 	float offset = 0.0f;
 	Vector<AudioFrame> volume_vector;
 	StringName bus;

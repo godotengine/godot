@@ -317,14 +317,10 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 	if ((k.is_valid() && k->is_pressed() && !k->is_echo()) || Object::cast_to<InputEventShortcut>(*p_event)) {
-		EditorPlugin *old_editor = editor_plugin_screen;
-
+		bool is_handled = true;
 		if (ED_IS_SHORTCUT("editor/filter_files", p_event)) {
 			FileSystemDock::get_singleton()->focus_on_filter();
-			get_tree()->get_root()->set_input_as_handled();
-		}
-
-		if (ED_IS_SHORTCUT("editor/editor_2d", p_event)) {
+		} else if (ED_IS_SHORTCUT("editor/editor_2d", p_event)) {
 			editor_select(EDITOR_2D);
 		} else if (ED_IS_SHORTCUT("editor/editor_3d", p_event)) {
 			editor_select(EDITOR_3D);
@@ -343,9 +339,10 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 		} else if (ED_IS_SHORTCUT("editor/toggle_last_opened_bottom_panel", p_event)) {
 			bottom_panel->toggle_last_opened_bottom_panel();
 		} else {
+			is_handled = false;
 		}
 
-		if (old_editor != editor_plugin_screen) {
+		if (is_handled) {
 			get_tree()->get_root()->set_input_as_handled();
 		}
 	}
@@ -5980,9 +5977,6 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 				if (owner) {
 					is_editable = owner->is_editable_instance(original_node);
 				}
-
-				// For clear instance state for path recaching.
-				instantiated_node->set_scene_instance_state(Ref<SceneState>());
 
 				bool original_node_is_displayed_folded = original_node->is_displayed_folded();
 				bool original_node_scene_instance_load_placeholder = original_node->get_scene_instance_load_placeholder();

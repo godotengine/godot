@@ -329,8 +329,9 @@
 		Callable::CallError ce;
 		wd.drop_files_callback.callp((const Variant **)&v_args, 1, ret, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_PRINT(vformat("Failed to execute drop files callback: %s.", Variant::get_callable_error_text(wd.drop_files_callback, v_args, 1, ce)));
+			ERR_FAIL_V_MSG(NO, vformat("Failed to execute drop files callback: %s.", Variant::get_callable_error_text(wd.drop_files_callback, v_args, 1, ce)));
 		}
+		return YES;
 	}
 
 	return NO;

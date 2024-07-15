@@ -804,7 +804,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	RD::get_singleton()->draw_command_begin_label("Render Setup");
 
 	_setup_lightmaps(p_render_data, *p_render_data->lightmaps, p_render_data->scene_data->cam_transform);
-	_setup_environment(p_render_data, is_reflection_probe, screen_size, !is_reflection_probe, p_default_bg_color, false);
+	_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, false);
 
 	// May have changed due to the above (light buffer enlarged, as an example).
 	_update_render_base_uniform_set();
@@ -953,7 +953,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		// Shadow pass can change the base uniform set samplers.
 		_update_render_base_uniform_set();
 
-		_setup_environment(p_render_data, is_reflection_probe, screen_size, !is_reflection_probe, p_default_bg_color, p_render_data->render_buffers.is_valid());
+		_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, p_render_data->render_buffers.is_valid());
 
 		if (merge_transparent_pass && using_subpass_post_process) {
 			RENDER_TIMESTAMP("Render Opaque + Transparent + Tonemap");
@@ -1018,11 +1018,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			RD::get_singleton()->draw_command_end_label(); // Draw Sky
 		}
 
-		// rendering effects
-		if (ce_has_pre_transparent) {
-			_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT, p_render_data);
-		}
-
 		if (merge_transparent_pass) {
 			if (render_list[RENDER_LIST_ALPHA].element_info.size() > 0) {
 				// transparent pass
@@ -1058,6 +1053,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			RD::get_singleton()->draw_command_end_label(); // Render 3D Pass / Render Reflection Probe Pass
 
+			// rendering effects
+			if (ce_has_pre_transparent) {
+				_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT, p_render_data);
+			}
+
 			if (scene_state.used_screen_texture) {
 				// Copy screen texture to backbuffer so we can read from it
 				_render_buffers_copy_screen_texture(p_render_data);
@@ -1075,7 +1075,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, samplers, true);
 
 				// this may be needed if we re-introduced steps that change info, not sure which do so in the previous implementation
-				//_setup_environment(p_render_data, is_reflection_probe, screen_size, !is_reflection_probe, p_default_bg_color, false);
+				//_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, false);
 
 				RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, spec_constant_base_flags, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
 				render_list_params.framebuffer_format = fb_format;
@@ -1310,6 +1310,7 @@ void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedAr
 	}
 
 	RenderSceneDataRD scene_data;
+	scene_data.flip_y = !p_flip_y; // Q: Why is this inverted? Do we assume flip in shadow logic?
 	scene_data.cam_projection = p_projection;
 	scene_data.cam_transform = p_transform;
 	scene_data.view_projection[0] = p_projection;
@@ -1327,7 +1328,7 @@ void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedAr
 	render_data.instances = &p_instances;
 	render_data.render_info = p_render_info;
 
-	_setup_environment(&render_data, true, Vector2(1, 1), !p_flip_y, Color(), false, p_use_pancake, shadow_pass_index);
+	_setup_environment(&render_data, true, Vector2(1, 1), Color(), false, p_use_pancake, shadow_pass_index);
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
 		scene_data.screen_mesh_lod_threshold = 0.0;
@@ -1415,7 +1416,7 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 	render_data.scene_data = &scene_data;
 	render_data.instances = &p_instances;
 
-	_setup_environment(&render_data, true, Vector2(1, 1), false, Color());
+	_setup_environment(&render_data, true, Vector2(1, 1), Color());
 
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
 	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode);
@@ -1460,7 +1461,7 @@ void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *>
 	render_data.scene_data = &scene_data;
 	render_data.instances = &p_instances;
 
-	_setup_environment(&render_data, true, Vector2(1, 1), false, Color());
+	_setup_environment(&render_data, true, Vector2(1, 1), Color());
 
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
 	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode);
@@ -1526,6 +1527,7 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 	_update_render_base_uniform_set();
 
 	RenderSceneDataRD scene_data;
+	scene_data.flip_y = true;
 	scene_data.cam_projection = p_cam_projection;
 	scene_data.cam_transform = p_cam_transform;
 	scene_data.view_projection[0] = p_cam_projection;
@@ -1541,7 +1543,7 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 	render_data.scene_data = &scene_data;
 	render_data.instances = &p_instances;
 
-	_setup_environment(&render_data, true, Vector2(1, 1), true, Color(), false, false);
+	_setup_environment(&render_data, true, Vector2(1, 1), Color(), false, false);
 
 	PassMode pass_mode = PASS_MODE_SHADOW;
 
@@ -1974,7 +1976,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 	}
 }
 
-void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_opaque_render_buffers, bool p_pancake_shadows, int p_index) {
+void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, const Color &p_default_bg_color, bool p_opaque_render_buffers, bool p_pancake_shadows, int p_index) {
 	RID env = is_environment(p_render_data->environment) ? p_render_data->environment : RID();
 	RID reflection_probe_instance = p_render_data->reflection_probe.is_valid() ? RendererRD::LightStorage::get_singleton()->reflection_probe_instance_get_probe(p_render_data->reflection_probe) : RID();
 
@@ -1987,7 +1989,7 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 		}
 	}
 
-	p_render_data->scene_data->update_ubo(scene_state.uniform_buffers[p_index], get_debug_draw_mode(), env, reflection_probe_instance, p_render_data->camera_attributes, p_flip_y, p_pancake_shadows, p_screen_size, p_default_bg_color, _render_buffers_get_luminance_multiplier(), p_opaque_render_buffers, false);
+	p_render_data->scene_data->update_ubo(scene_state.uniform_buffers[p_index], get_debug_draw_mode(), env, reflection_probe_instance, p_render_data->camera_attributes, p_pancake_shadows, p_screen_size, p_default_bg_color, _render_buffers_get_luminance_multiplier(), p_opaque_render_buffers, false);
 }
 
 /// RENDERING ///
