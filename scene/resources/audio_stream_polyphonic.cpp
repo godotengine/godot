@@ -34,6 +34,9 @@
 #include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
 
+constexpr uint64_t ID_MASK = 0xFFFFFFFF;
+constexpr uint64_t INDEX_SHIFT = 32;
+
 Ref<AudioStreamPlayback> AudioStreamPolyphonic::instantiate_playback() {
 	Ref<AudioStreamPlaybackPolyphonic> playback;
 	playback.instantiate();
@@ -252,14 +255,14 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 }
 
 AudioStreamPlaybackPolyphonic::Stream *AudioStreamPlaybackPolyphonic::_find_stream(int64_t p_id) {
-	uint32_t index = p_id >> INDEX_SHIFT;
+	uint32_t index = static_cast<uint64_t>(p_id) >> INDEX_SHIFT;
 	if (index >= streams.size()) {
 		return nullptr;
 	}
 	if (!streams[index].active.is_set()) {
 		return nullptr; // Not active, no longer exists.
 	}
-	int64_t id = p_id & ID_MASK;
+	int64_t id = static_cast<uint64_t>(p_id) & ID_MASK;
 	if (streams[index].id != id) {
 		return nullptr;
 	}
