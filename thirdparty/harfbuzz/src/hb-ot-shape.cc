@@ -155,7 +155,7 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 #endif
   bool has_gpos = !disable_gpos && hb_ot_layout_has_positioning (face);
   if (false)
-    ;
+    {}
 #ifndef HB_NO_AAT_SHAPE
   /* Prefer GPOS over kerx if GSUB is present;
    * https://github.com/harfbuzz/harfbuzz/issues/3008 */
@@ -167,15 +167,16 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 
   if (!plan.apply_kerx && (!has_gpos_kern || !plan.apply_gpos))
   {
+    if (false) {}
 #ifndef HB_NO_AAT_SHAPE
-    if (has_kerx)
+    else if (has_kerx)
       plan.apply_kerx = true;
-    else
 #endif
 #ifndef HB_NO_OT_KERN
-    if (hb_ot_layout_has_kerning (face))
+    else if (hb_ot_layout_has_kerning (face))
       plan.apply_kern = true;
 #endif
+    else {}
   }
 
   plan.apply_fallback_kern = !(plan.apply_gpos || plan.apply_kerx || plan.apply_kern);
@@ -1054,7 +1055,7 @@ hb_ot_position_plan (const hb_ot_shape_context_t *c)
    * direction is backward we don't shift and it will end up
    * hanging over the next glyph after the final reordering.
    *
-   * Note: If fallback positinoing happens, we don't care about
+   * Note: If fallback positioning happens, we don't care about
    * this as it will be overridden.
    */
   bool adjust_offsets_when_zeroing = c->plan->adjust_mark_positioning_when_zeroing &&

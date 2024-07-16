@@ -32,7 +32,6 @@
 
 #include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
-#include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 
 void Label3D::_bind_methods() {
@@ -208,7 +207,7 @@ void Label3D::_notification(int p_what) {
 			viewport->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			String new_text = tr(text);
+			String new_text = atr(text);
 			if (new_text == xl_text) {
 				return; // Nothing new.
 			}
@@ -326,28 +325,38 @@ Ref<TriangleMesh> Label3D::generate_triangle_mesh() const {
 }
 
 void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, const Color &p_modulate, int p_priority, int p_outline_size) {
-	for (int j = 0; j < p_glyph.repeat; j++) {
-		Vector2 gl_of;
-		Vector2 gl_sz;
-		Rect2 gl_uv;
-		Size2 texs;
-		RID tex;
+	if (p_glyph.index == 0) {
+		r_offset.x += p_glyph.advance * pixel_size * p_glyph.repeat; // Non visual character, skip.
+		return;
+	}
 
-		if (p_glyph.font_rid != RID()) {
-			tex = TS->font_get_glyph_texture_rid(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
-			if (tex != RID()) {
-				gl_of = (TS->font_get_glyph_offset(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index) + Vector2(p_glyph.x_off, p_glyph.y_off)) * pixel_size;
-				gl_sz = TS->font_get_glyph_size(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index) * pixel_size;
-				gl_uv = TS->font_get_glyph_uv_rect(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
-				texs = TS->font_get_glyph_texture_size(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
-			}
-		} else {
-			gl_sz = TS->get_hex_code_box_size(p_glyph.font_size, p_glyph.index) * pixel_size;
-			gl_of = Vector2(0, -gl_sz.y);
+	Vector2 gl_of;
+	Vector2 gl_sz;
+	Rect2 gl_uv;
+	Size2 texs;
+	RID tex;
+
+	if (p_glyph.font_rid.is_valid()) {
+		tex = TS->font_get_glyph_texture_rid(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
+		if (tex.is_valid()) {
+			gl_of = (TS->font_get_glyph_offset(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index) + Vector2(p_glyph.x_off, p_glyph.y_off)) * pixel_size;
+			gl_sz = TS->font_get_glyph_size(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index) * pixel_size;
+			gl_uv = TS->font_get_glyph_uv_rect(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
+			texs = TS->font_get_glyph_texture_size(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
 		}
+	} else {
+		gl_sz = TS->get_hex_code_box_size(p_glyph.font_size, p_glyph.index) * pixel_size;
+		gl_of = Vector2(0, -gl_sz.y);
+	}
 
-		bool msdf = TS->font_is_multichannel_signed_distance_field(p_glyph.font_rid);
+	if (gl_uv.size.x <= 2 || gl_uv.size.y <= 2) {
+		r_offset.x += p_glyph.advance * pixel_size * p_glyph.repeat; // Nothing to draw.
+		return;
+	}
 
+	bool msdf = TS->font_is_multichannel_signed_distance_field(p_glyph.font_rid);
+
+	for (int j = 0; j < p_glyph.repeat; j++) {
 		SurfaceKey key = SurfaceKey(tex.get_id(), p_priority, p_outline_size);
 		if (!surfaces.has(key)) {
 			SurfaceData surf;
@@ -412,15 +421,9 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 			s.mesh_tangents.write[(s.offset * 16) + (i * 4) + 3] = 1.0;
 			s.mesh_colors.write[(s.offset * 4) + i] = p_modulate;
 			s.mesh_uvs.write[(s.offset * 4) + i] = Vector2();
-
-			if (aabb == AABB()) {
-				aabb.position = s.mesh_vertices[(s.offset * 4) + i];
-			} else {
-				aabb.expand_to(s.mesh_vertices[(s.offset * 4) + i]);
-			}
 		}
 
-		if (tex != RID()) {
+		if (tex.is_valid()) {
 			s.mesh_uvs.write[(s.offset * 4) + 3] = Vector2(gl_uv.position.x / texs.x, (gl_uv.position.y + gl_uv.size.y) / texs.y);
 			s.mesh_uvs.write[(s.offset * 4) + 2] = Vector2((gl_uv.position.x + gl_uv.size.x) / texs.x, (gl_uv.position.y + gl_uv.size.y) / texs.y);
 			s.mesh_uvs.write[(s.offset * 4) + 1] = Vector2((gl_uv.position.x + gl_uv.size.x) / texs.x, gl_uv.position.y / texs.y);
@@ -588,6 +591,13 @@ void Label3D::_shape() {
 			} break;
 		}
 		offset.x += lbl_offset.x * pixel_size;
+		if (aabb == AABB()) {
+			aabb.position = Vector3(offset.x, offset.y, 0);
+			aabb.expand_to(Vector3(offset.x + line_width, offset.y - (TS->shaped_text_get_size(lines_rid[i]).y + line_spacing) * pixel_size, 0));
+		} else {
+			aabb.expand_to(Vector3(offset.x, offset.y, 0));
+			aabb.expand_to(Vector3(offset.x + line_width, offset.y - (TS->shaped_text_get_size(lines_rid[i]).y + line_spacing) * pixel_size, 0));
+		}
 		offset.y -= TS->shaped_text_get_ascent(lines_rid[i]) * pixel_size;
 
 		if (outline_modulate.a != 0.0 && outline_size > 0) {
@@ -625,8 +635,12 @@ void Label3D::_shape() {
 }
 
 void Label3D::set_text(const String &p_string) {
+	if (text == p_string) {
+		return;
+	}
+
 	text = p_string;
-	xl_text = tr(p_string);
+	xl_text = atr(p_string);
 	dirty_text = true;
 	_queue_update();
 }
@@ -771,6 +785,8 @@ Ref<Font> Label3D::get_font() const {
 }
 
 Ref<Font> Label3D::_get_font_or_default() const {
+	// Similar code taken from `FontVariation::_get_base_font_or_default`.
+
 	if (theme_font.is_valid()) {
 		theme_font->disconnect_changed(callable_mp(const_cast<Label3D *>(this), &Label3D::_font_changed));
 		theme_font.unref();
@@ -780,12 +796,17 @@ Ref<Font> Label3D::_get_font_or_default() const {
 		return font_override;
 	}
 
-	StringName theme_name = "font";
+	const StringName theme_name = SceneStringName(font);
 	List<StringName> theme_types;
 	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
-	for (const Ref<Theme> &theme : global_context->get_themes()) {
+	List<Ref<Theme>> themes = global_context->get_themes();
+	if (Engine::get_singleton()->is_editor_hint()) {
+		themes.push_front(ThemeDB::get_singleton()->get_project_theme());
+	}
+
+	for (const Ref<Theme> &theme : themes) {
 		if (theme.is_null()) {
 			continue;
 		}

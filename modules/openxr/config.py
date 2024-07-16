@@ -22,6 +22,10 @@ def get_doc_classes():
         "OpenXRInteractionProfileMetadata",
         "OpenXRIPBinding",
         "OpenXRHand",
+        "OpenXRCompositionLayer",
+        "OpenXRCompositionLayerQuad",
+        "OpenXRCompositionLayerCylinder",
+        "OpenXRCompositionLayerEquirect",
     ]
 
 

@@ -31,8 +31,8 @@
 #ifndef COLLISION_SHAPE_2D_EDITOR_PLUGIN_H
 #define COLLISION_SHAPE_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
-#include "scene/2d/collision_shape_2d.h"
+#include "editor/plugins/editor_plugin.h"
+#include "scene/2d/physics/collision_shape_2d.h"
 
 class CanvasItemEditor;
 
@@ -74,6 +74,7 @@ class CollisionShape2DEditor : public Control {
 	Transform2D original_transform;
 	Vector2 original_point;
 	Point2 last_point;
+	Vector2 original_mouse_pos;
 
 	Ref<Shape2D> current_shape;
 

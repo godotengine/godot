@@ -31,8 +31,8 @@
 #ifndef TEST_ARRAYMESH_H
 #define TEST_ARRAYMESH_H
 
+#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/primitive_meshes.h"
 
 #include "tests/test_macros.h"
 

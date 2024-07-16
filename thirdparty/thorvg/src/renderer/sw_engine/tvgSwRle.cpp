@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -713,7 +713,7 @@ static void _decomposeOutline(RleWorker& rw)
     auto outline = rw.outline;
     auto first = 0;  //index of first point in contour
 
-    for (auto cntr = outline->cntrs.data; cntr < outline->cntrs.end(); ++cntr) {
+    for (auto cntr = outline->cntrs.begin(); cntr < outline->cntrs.end(); ++cntr) {
         auto last = *cntr;
         auto limit = outline->pts.data + last;
         auto start = UPSCALE(outline->pts[first]);
@@ -928,7 +928,7 @@ SwRleData* rleRender(SwRleData* rle, const SwOutline* outline, const SwBBox& ren
     rw.cellYCnt = rw.cellMax.y - rw.cellMin.y;
     rw.ySpan = 0;
     rw.outline = const_cast<SwOutline*>(outline);
-    rw.bandSize = rw.bufferSize / (sizeof(Cell) * 8);  //bandSize: 64
+    rw.bandSize = rw.bufferSize / (sizeof(Cell) * 2);  //bandSize: 256
     rw.bandShoot = 0;
     rw.antiAlias = antiAlias;
 
@@ -966,10 +966,7 @@ SwRleData* rleRender(SwRleData* rle, const SwOutline* outline, const SwBBox& ren
 
             if (cellMod > 0) cellStart += sizeof(Cell) - cellMod;
 
-            auto cellEnd = rw.bufferSize;
-            cellEnd -= cellEnd % sizeof(Cell);
-
-            auto cellsMax = reinterpret_cast<Cell*>((char*)rw.buffer + cellEnd);
+            auto cellsMax = reinterpret_cast<Cell*>((char*)rw.buffer + rw.bufferSize);
             rw.cells = reinterpret_cast<Cell*>((char*)rw.buffer + cellStart);
 
             if (rw.cells >= cellsMax) goto reduce_bands;

@@ -239,7 +239,7 @@ GCHandleIntPtr godotsharp_internal_unmanaged_get_instance_binding_managed(Object
 	CRASH_COND(!p_unmanaged);
 #endif
 
-	void *data = CSharpLanguage::get_instance_binding(p_unmanaged);
+	void *data = CSharpLanguage::get_instance_binding_with_setup(p_unmanaged);
 	ERR_FAIL_NULL_V(data, { nullptr });
 	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->value();
 	ERR_FAIL_COND_V(!script_binding.inited, { nullptr });
@@ -252,7 +252,7 @@ GCHandleIntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(Obj
 	CRASH_COND(!p_unmanaged);
 #endif
 
-	void *data = CSharpLanguage::get_instance_binding(p_unmanaged);
+	void *data = CSharpLanguage::get_instance_binding_with_setup(p_unmanaged);
 	ERR_FAIL_NULL_V(data, { nullptr });
 	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->value();
 	ERR_FAIL_COND_V(!script_binding.inited, { nullptr });
@@ -315,13 +315,13 @@ void godotsharp_internal_new_csharp_script(Ref<CSharpScript> *r_dest) {
 	memnew_placement(r_dest, Ref<CSharpScript>(memnew(CSharpScript)));
 }
 
-void godotsharp_internal_editor_file_system_update_file(const String *p_script_path) {
-#if TOOLS_ENABLED
+void godotsharp_internal_editor_file_system_update_files(const PackedStringArray &p_script_paths) {
+#ifdef TOOLS_ENABLED
 	// If the EditorFileSystem singleton is available, update the file;
 	// otherwise, the file will be updated when the singleton becomes available.
 	EditorFileSystem *efs = EditorFileSystem::get_singleton();
 	if (efs) {
-		efs->update_file(*p_script_path);
+		efs->update_files(p_script_paths);
 	}
 #else
 	// EditorFileSystem is only available when running in the Godot editor.
@@ -458,6 +458,16 @@ godot_packed_array godotsharp_packed_vector3_array_new_mem_copy(const Vector3 *p
 	array->resize(p_length);
 	Vector3 *dst = array->ptrw();
 	memcpy(dst, p_src, p_length * sizeof(Vector3));
+	return ret;
+}
+
+godot_packed_array godotsharp_packed_vector4_array_new_mem_copy(const Vector4 *p_src, int32_t p_length) {
+	godot_packed_array ret;
+	memnew_placement(&ret, PackedVector4Array);
+	PackedVector4Array *array = reinterpret_cast<PackedVector4Array *>(&ret);
+	array->resize(p_length);
+	Vector4 *dst = array->ptrw();
+	memcpy(dst, p_src, p_length * sizeof(Vector4));
 	return ret;
 }
 
@@ -644,6 +654,10 @@ void godotsharp_variant_new_packed_vector2_array(godot_variant *r_dest, const Pa
 
 void godotsharp_variant_new_packed_vector3_array(godot_variant *r_dest, const PackedVector3Array *p_pv3a) {
 	memnew_placement(r_dest, Variant(*p_pv3a));
+}
+
+void godotsharp_variant_new_packed_vector4_array(godot_variant *r_dest, const PackedVector4Array *p_pv4a) {
+	memnew_placement(r_dest, Variant(*p_pv4a));
 }
 
 void godotsharp_variant_new_packed_color_array(godot_variant *r_dest, const PackedColorArray *p_pca) {
@@ -886,6 +900,13 @@ godot_packed_array godotsharp_variant_as_packed_vector3_array(const Variant *p_s
 	return raw_dest;
 }
 
+godot_packed_array godotsharp_variant_as_packed_vector4_array(const Variant *p_self) {
+	godot_packed_array raw_dest;
+	PackedVector4Array *dest = (PackedVector4Array *)&raw_dest;
+	memnew_placement(dest, PackedVector4Array(p_self->operator PackedVector4Array()));
+	return raw_dest;
+}
+
 godot_packed_array godotsharp_variant_as_packed_color_array(const Variant *p_self) {
 	godot_packed_array raw_dest;
 	PackedColorArray *dest = (PackedColorArray *)&raw_dest;
@@ -972,6 +993,10 @@ void godotsharp_packed_vector2_array_destroy(PackedVector2Array *p_self) {
 
 void godotsharp_packed_vector3_array_destroy(PackedVector3Array *p_self) {
 	p_self->~PackedVector3Array();
+}
+
+void godotsharp_packed_vector4_array_destroy(PackedVector4Array *p_self) {
+	p_self->~PackedVector4Array();
 }
 
 void godotsharp_packed_color_array_destroy(PackedColorArray *p_self) {
@@ -1425,7 +1450,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_engine_get_singleton,
 	(void *)godotsharp_stack_info_vector_resize,
 	(void *)godotsharp_stack_info_vector_destroy,
-	(void *)godotsharp_internal_editor_file_system_update_file,
+	(void *)godotsharp_internal_editor_file_system_update_files,
 	(void *)godotsharp_internal_script_debugger_send_error,
 	(void *)godotsharp_internal_script_debugger_is_active,
 	(void *)godotsharp_internal_object_get_associated_gchandle,
@@ -1456,6 +1481,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_packed_float64_array_new_mem_copy,
 	(void *)godotsharp_packed_vector2_array_new_mem_copy,
 	(void *)godotsharp_packed_vector3_array_new_mem_copy,
+	(void *)godotsharp_packed_vector4_array_new_mem_copy,
 	(void *)godotsharp_packed_color_array_new_mem_copy,
 	(void *)godotsharp_packed_string_array_add,
 	(void *)godotsharp_callable_new_with_delegate,
@@ -1484,6 +1510,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_variant_new_packed_string_array,
 	(void *)godotsharp_variant_new_packed_vector2_array,
 	(void *)godotsharp_variant_new_packed_vector3_array,
+	(void *)godotsharp_variant_new_packed_vector4_array,
 	(void *)godotsharp_variant_new_packed_color_array,
 	(void *)godotsharp_variant_as_bool,
 	(void *)godotsharp_variant_as_int,
@@ -1520,6 +1547,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_variant_as_packed_string_array,
 	(void *)godotsharp_variant_as_packed_vector2_array,
 	(void *)godotsharp_variant_as_packed_vector3_array,
+	(void *)godotsharp_variant_as_packed_vector4_array,
 	(void *)godotsharp_variant_as_packed_color_array,
 	(void *)godotsharp_variant_equals,
 	(void *)godotsharp_string_new_with_utf16_chars,
@@ -1538,6 +1566,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_packed_string_array_destroy,
 	(void *)godotsharp_packed_vector2_array_destroy,
 	(void *)godotsharp_packed_vector3_array_destroy,
+	(void *)godotsharp_packed_vector4_array_destroy,
 	(void *)godotsharp_packed_color_array_destroy,
 	(void *)godotsharp_variant_destroy,
 	(void *)godotsharp_string_destroy,

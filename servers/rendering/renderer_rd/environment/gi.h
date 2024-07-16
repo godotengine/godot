@@ -56,7 +56,7 @@
 #define RB_TEX_REFLECTION SNAME("reflection")
 
 // Forward declare RenderDataRD and RendererSceneRenderRD so we can pass it into some of our methods, these classes are pretty tightly bound
-struct RenderDataRD;
+class RenderDataRD;
 class RendererSceneRenderRD;
 
 namespace RendererRD {
@@ -584,7 +584,9 @@ public:
 				uint32_t static_light_aniso;
 			};
 
-			RID solid_cell_dispatch_buffer; //buffer for indirect compute dispatch
+			// Buffers for indirect compute dispatch.
+			RID solid_cell_dispatch_buffer_storage;
+			RID solid_cell_dispatch_buffer_call;
 			RID solid_cell_buffer;
 
 			RID lightprobe_history_tex;
@@ -667,6 +669,7 @@ public:
 
 		float y_mult = 1.0;
 
+		uint32_t version = 0;
 		uint32_t render_pass = 0;
 
 		int32_t cascade_dynamic_light_count[SDFGI::MAX_CASCADES]; //used dynamically
@@ -685,7 +688,7 @@ public:
 		void update_cascades();
 
 		void debug_draw(uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views);
-		void debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth);
+		void debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms);
 
 		void pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_render_data);
 		void render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_region, const PagedArray<RenderGeometryInstance *> &p_instances, float p_exposure_normalization);
@@ -701,10 +704,13 @@ public:
 	Vector3 sdfgi_debug_probe_dir;
 	bool sdfgi_debug_probe_enabled = false;
 	Vector3i sdfgi_debug_probe_index;
+	uint32_t sdfgi_current_version = 0;
 
 	/* SDFGI UPDATE */
 
 	int sdfgi_get_lightprobe_octahedron_size() const { return SDFGI::LIGHTPROBE_OCT_SIZE; }
+
+	virtual void sdfgi_reset() override;
 
 	struct SDFGIData {
 		float grid_size[3];

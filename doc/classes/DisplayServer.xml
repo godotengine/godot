@@ -26,7 +26,7 @@
 			<return type="String" />
 			<description>
 				Returns the user's [url=https://unix.stackexchange.com/questions/139191/whats-the-difference-between-primary-selection-and-clipboard-buffer]primary[/url] clipboard as a string if possible. This is the clipboard that is set when the user selects text in any application, rather than when pressing [kbd]Ctrl + C[/kbd]. The clipboard data can then be pasted by clicking the middle mouse button in any application that supports the primary clipboard mechanism.
-				[b]Note:[/b] This method is only implemented on Linux (X11).
+				[b]Note:[/b] This method is only implemented on Linux (X11/Wayland).
 			</description>
 		</method>
 		<method name="clipboard_has" qualifiers="const">
@@ -53,7 +53,17 @@
 			<param index="0" name="clipboard_primary" type="String" />
 			<description>
 				Sets the user's [url=https://unix.stackexchange.com/questions/139191/whats-the-difference-between-primary-selection-and-clipboard-buffer]primary[/url] clipboard content to the given string. This is the clipboard that is set when the user selects text in any application, rather than when pressing [kbd]Ctrl + C[/kbd]. The clipboard data can then be pasted by clicking the middle mouse button in any application that supports the primary clipboard mechanism.
-				[b]Note:[/b] This method is only implemented on Linux (X11).
+				[b]Note:[/b] This method is only implemented on Linux (X11/Wayland).
+			</description>
+		</method>
+		<method name="create_status_indicator">
+			<return type="int" />
+			<param index="0" name="icon" type="Texture2D" />
+			<param index="1" name="tooltip" type="String" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Creates a new application status indicator with the specified icon, tooltip, and activation callback.
+				[param callback] should take two arguments: the pressed mouse button (one of the [enum MouseButton] constants) and the click position in screen coordinates (a [Vector2i]).
 			</description>
 		</method>
 		<method name="cursor_get_shape" qualifiers="const">
@@ -68,7 +78,8 @@
 			<param index="1" name="shape" type="int" enum="DisplayServer.CursorShape" default="0" />
 			<param index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Sets a custom mouse cursor image for the defined [param shape]. This means the user's operating system and mouse cursor theme will no longer influence the mouse cursor's appearance. The image must be [code]256x256[/code] or smaller for correct appearance. [param hotspot] can optionally be set to define the area where the cursor will click. By default, [param hotspot] is set to [code]Vector2(0, 0)[/code], which is the top-left corner of the image. See also [method cursor_set_shape].
+				Sets a custom mouse cursor image for the given [param shape]. This means the user's operating system and mouse cursor theme will no longer influence the mouse cursor's appearance.
+				[param cursor] can be either a [Texture2D] or an [Image], and it should not be larger than 256×256 to display correctly. Optionally, [param hotspot] can be set to offset the image's position relative to the click point. By default, [param hotspot] is set to the top-left corner of the image. See also [method cursor_set_shape].
 			</description>
 		</method>
 		<method name="cursor_set_shape">
@@ -78,6 +89,13 @@
 				Sets the default mouse cursor shape. The cursor's appearance will vary depending on the user's operating system and mouse cursor theme. See also [method cursor_get_shape] and [method cursor_set_custom_image].
 			</description>
 		</method>
+		<method name="delete_status_indicator">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Removes the application status indicator.
+			</description>
+		</method>
 		<method name="dialog_input_text">
 			<return type="int" enum="Error" />
 			<param index="0" name="title" type="String" />
@@ -85,8 +103,8 @@
 			<param index="2" name="existing_text" type="String" />
 			<param index="3" name="callback" type="Callable" />
 			<description>
-				Shows a text input dialog which uses the operating system's native look-and-feel. [param callback] will be called with a [String] argument equal to the text field's contents when the dialog is closed for any reason.
-				[b]Note:[/b] This method is implemented only on macOS.
+				Shows a text input dialog which uses the operating system's native look-and-feel. [param callback] should accept a single [String] parameter which contains the text field's contents.
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_INPUT] feature. Supported platforms include macOS and Windows.
 			</description>
 		</method>
 		<method name="dialog_show">
@@ -96,8 +114,8 @@
 			<param index="2" name="buttons" type="PackedStringArray" />
 			<param index="3" name="callback" type="Callable" />
 			<description>
-				Shows a text dialog which uses the operating system's native look-and-feel. [param callback] will be called when the dialog is closed for any reason.
-				[b]Note:[/b] This method is implemented only on macOS.
+				Shows a text dialog which uses the operating system's native look-and-feel. [param callback] should accept a single [int] parameter which corresponds to the index of the pressed button.
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG] feature. Supported platforms include macOS and Windows.
 			</description>
 		</method>
 		<method name="enable_for_stealing_focus">
@@ -119,11 +137,37 @@
 			<param index="6" name="callback" type="Callable" />
 			<description>
 				Displays OS native dialog for selecting files or directories in the file system.
-				Callbacks have the following arguments: [code]bool status, PackedStringArray selected_paths[/code].
-				[b]Note:[/b] This method is implemented if the display server has the [code]FEATURE_NATIVE_DIALOG[/code] feature.
-				[b]Note:[/b] This method is implemented on Linux, Windows and macOS.
+				Each filter string in the [param filters] array should be formatted like this: [code]*.txt,*.doc;Text Files[/code]. The description text of the filter is optional and can be omitted. See also [member FileDialog.filters].
+				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int[/code].
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE] feature. Supported platforms include Linux (X11/Wayland), Windows, and macOS.
 				[b]Note:[/b] [param current_directory] might be ignored.
 				[b]Note:[/b] On Linux, [param show_hidden] is ignored.
+				[b]Note:[/b] On macOS, native file dialogs have no title.
+				[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
+			</description>
+		</method>
+		<method name="file_dialog_with_options_show">
+			<return type="int" enum="Error" />
+			<param index="0" name="title" type="String" />
+			<param index="1" name="current_directory" type="String" />
+			<param index="2" name="root" type="String" />
+			<param index="3" name="filename" type="String" />
+			<param index="4" name="show_hidden" type="bool" />
+			<param index="5" name="mode" type="int" enum="DisplayServer.FileDialogMode" />
+			<param index="6" name="filters" type="PackedStringArray" />
+			<param index="7" name="options" type="Dictionary[]" />
+			<param index="8" name="callback" type="Callable" />
+			<description>
+				Displays OS native dialog for selecting files or directories in the file system with additional user selectable options.
+				Each filter string in the [param filters] array should be formatted like this: [code]*.txt,*.doc;Text Files[/code]. The description text of the filter is optional and can be omitted. See also [member FileDialog.filters].
+				[param options] is array of [Dictionary]s with the following keys:
+				- [code]"name"[/code] - option's name [String].
+				- [code]"values"[/code] - [PackedStringArray] of values. If empty, boolean option (check box) is used.
+				- [code]"default"[/code] - default selected option index ([int]) or default boolean value ([bool]).
+				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int, selected_option: Dictionary[/code].
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE] feature. Supported platforms include Linux (X11/Wayland), Windows, and macOS.
+				[b]Note:[/b] [param current_directory] might be ignored.
+				[b]Note:[/b] On Linux (X11), [param show_hidden] is ignored.
 				[b]Note:[/b] On macOS, native file dialogs have no title.
 				[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
 			</description>
@@ -139,6 +183,13 @@
 			<return type="Color" />
 			<description>
 				Returns OS theme accent color. Returns [code]Color(0, 0, 0, 0)[/code], if accent color is unknown.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="get_base_color" qualifiers="const">
+			<return type="Color" />
+			<description>
+				Returns the OS theme base color (default control background). Returns [code]Color(0, 0, 0, 0)[/code] if the base color is unknown.
 				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
@@ -164,8 +215,8 @@
 		<method name="get_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the name of the [DisplayServer] currently in use. Most operating systems only have a single [DisplayServer], but Linux has access to more than one [DisplayServer] (although only X11 is currently implemented in Godot).
-				The names of built-in display servers are [code]Windows[/code], [code]macOS[/code], [code]X11[/code] (Linux), [code]Android[/code], [code]iOS[/code], [code]web[/code] (HTML5) and [code]headless[/code] (when started with the [code]--headless[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url]).
+				Returns the name of the [DisplayServer] currently in use. Most operating systems only have a single [DisplayServer], but Linux has access to more than one [DisplayServer] (currently X11 and Wayland).
+				The names of built-in display servers are [code]Windows[/code], [code]macOS[/code], [code]X11[/code] (Linux), [code]Wayland[/code] (Linux), [code]Android[/code], [code]iOS[/code], [code]web[/code] (HTML5), and [code]headless[/code] (when started with the [code]--headless[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url]).
 			</description>
 		</method>
 		<method name="get_primary_screen" qualifiers="const">
@@ -199,7 +250,7 @@
 			<param index="0" name="position" type="Vector2i" />
 			<description>
 				Returns the ID of the window at the specified screen [param position] (in pixels). On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
-				[codeblock]
+				[codeblock lang=text]
 				* (0, 0)        +-------+
 				                |       |
 				+-------------+ |       |
@@ -216,7 +267,7 @@
 				[b]Note:[/b] Native dialogs are not included in this list.
 			</description>
 		</method>
-		<method name="global_menu_add_check_item">
+		<method name="global_menu_add_check_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
@@ -232,13 +283,16 @@
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_add_icon_check_item">
+		<method name="global_menu_add_icon_check_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="icon" type="Texture2D" />
@@ -255,13 +309,16 @@
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_add_icon_item">
+		<method name="global_menu_add_icon_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="icon" type="Texture2D" />
@@ -278,13 +335,16 @@
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_add_icon_radio_check_item">
+		<method name="global_menu_add_icon_radio_check_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="icon" type="Texture2D" />
@@ -302,13 +362,16 @@
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_add_item">
+		<method name="global_menu_add_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
@@ -324,13 +387,16 @@
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_add_multistate_item">
+		<method name="global_menu_add_multistate_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
@@ -350,13 +416,16 @@
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_add_radio_check_item">
+		<method name="global_menu_add_radio_check_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
@@ -373,13 +442,16 @@
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_add_separator">
+		<method name="global_menu_add_separator" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="index" type="int" default="-1" />
@@ -388,13 +460,16 @@
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_add_submenu_item">
+		<method name="global_menu_add_submenu_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
@@ -405,26 +480,32 @@
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_clear">
+		<method name="global_menu_clear" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<description>
 				Removes all items from the global menu with ID [param menu_root].
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_get_item_accelerator" qualifiers="const">
+		<method name="global_menu_get_item_accelerator" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" enum="Key" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -433,7 +514,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_callback" qualifiers="const">
+		<method name="global_menu_get_item_callback" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="Callable" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -442,7 +523,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_count" qualifiers="const">
+		<method name="global_menu_get_item_count" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<description>
@@ -450,7 +531,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_icon" qualifiers="const">
+		<method name="global_menu_get_item_icon" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="Texture2D" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -459,7 +540,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_indentation_level" qualifiers="const">
+		<method name="global_menu_get_item_indentation_level" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -468,25 +549,25 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_index_from_tag" qualifiers="const">
+		<method name="global_menu_get_item_index_from_tag" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="tag" type="Variant" />
 			<description>
-				Returns the index of the item with the specified [param tag]. Index is automatically assigned to each item by the engine. Index can not be set manually.
+				Returns the index of the item with the specified [param tag]. Indices are automatically assigned to each item by the engine, and cannot be set manually.
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_index_from_text" qualifiers="const">
+		<method name="global_menu_get_item_index_from_text" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="text" type="String" />
 			<description>
-				Returns the index of the item with the specified [param text]. Index is automatically assigned to each item by the engine. Index can not be set manually.
+				Returns the index of the item with the specified [param text]. Indices are automatically assigned to each item by the engine, and cannot be set manually.
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_key_callback" qualifiers="const">
+		<method name="global_menu_get_item_key_callback" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="Callable" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -495,7 +576,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_max_states" qualifiers="const">
+		<method name="global_menu_get_item_max_states" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -504,7 +585,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_state" qualifiers="const">
+		<method name="global_menu_get_item_state" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -513,7 +594,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_submenu" qualifiers="const">
+		<method name="global_menu_get_item_submenu" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="String" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -522,7 +603,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_tag" qualifiers="const">
+		<method name="global_menu_get_item_tag" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="Variant" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -531,7 +612,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_text" qualifiers="const">
+		<method name="global_menu_get_item_text" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="String" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -540,7 +621,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_tooltip" qualifiers="const">
+		<method name="global_menu_get_item_tooltip" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="String" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -549,7 +630,14 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_is_item_checkable" qualifiers="const">
+		<method name="global_menu_get_system_menu_roots" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
+			<return type="Dictionary" />
+			<description>
+				Returns Dictionary of supported system menu IDs and names.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="global_menu_is_item_checkable" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="bool" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -558,7 +646,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_is_item_checked" qualifiers="const">
+		<method name="global_menu_is_item_checked" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="bool" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -567,7 +655,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_is_item_disabled" qualifiers="const">
+		<method name="global_menu_is_item_disabled" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="bool" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -577,7 +665,17 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_is_item_radio_checkable" qualifiers="const">
+		<method name="global_menu_is_item_hidden" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
+			<return type="bool" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at index [param idx] is hidden.
+				See [method global_menu_set_item_hidden] for more info on how to hide an item.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="global_menu_is_item_radio_checkable" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="bool" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -587,7 +685,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_remove_item">
+		<method name="global_menu_remove_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -597,7 +695,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_accelerator">
+		<method name="global_menu_set_item_accelerator" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -607,7 +705,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_callback">
+		<method name="global_menu_set_item_callback" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -618,7 +716,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_checkable">
+		<method name="global_menu_set_item_checkable" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -628,7 +726,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_checked">
+		<method name="global_menu_set_item_checked" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -638,7 +736,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_disabled">
+		<method name="global_menu_set_item_disabled" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -648,7 +746,28 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_icon">
+		<method name="global_menu_set_item_hidden" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
+			<return type="void" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="hidden" type="bool" />
+			<description>
+				Hides/shows the item at index [param idx]. When it is hidden, an item does not appear in a menu and its action cannot be invoked.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_hover_callbacks" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
+			<return type="void" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Sets the callback of the item at index [param idx]. The callback is emitted when an item is hovered.
+				[b]Note:[/b] The [param callback] Callable needs to accept exactly one Variant parameter, the parameter passed to the Callable will be the value passed to the [code]tag[/code] parameter when the menu item was created.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_icon" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -659,7 +778,7 @@
 				[b]Note:[/b] This method is not supported by macOS "_dock" menu items.
 			</description>
 		</method>
-		<method name="global_menu_set_item_indentation_level">
+		<method name="global_menu_set_item_indentation_level" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -669,7 +788,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_key_callback">
+		<method name="global_menu_set_item_key_callback" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -680,7 +799,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_max_states">
+		<method name="global_menu_set_item_max_states" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -690,7 +809,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_radio_checkable">
+		<method name="global_menu_set_item_radio_checkable" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -701,7 +820,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_state">
+		<method name="global_menu_set_item_state" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -711,7 +830,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_submenu">
+		<method name="global_menu_set_item_submenu" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -721,7 +840,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_tag">
+		<method name="global_menu_set_item_tag" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -731,7 +850,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_text">
+		<method name="global_menu_set_item_text" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -741,7 +860,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_tooltip">
+		<method name="global_menu_set_item_tooltip" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -751,11 +870,31 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="global_menu_set_popup_callbacks" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
+			<return type="void" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="open_callback" type="Callable" />
+			<param index="2" name="close_callback" type="Callable" />
+			<description>
+				Registers callables to emit when the menu is respectively about to show or closed. Callback methods should have zero arguments.
+			</description>
+		</method>
 		<method name="has_feature" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="DisplayServer.Feature" />
 			<description>
 				Returns [code]true[/code] if the specified [param feature] is supported by the current [DisplayServer], [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="help_set_search_callbacks">
+			<return type="void" />
+			<param index="0" name="search_callback" type="Callable" />
+			<param index="1" name="action_callback" type="Callable" />
+			<description>
+				Sets native help system search callbacks.
+				[param search_callback] has the following arguments: [code]String search_string, int result_limit[/code] and return a [Dictionary] with "key, display name" pairs for the search results. Called when the user enters search terms in the [code]Help[/code] menu.
+				[param action_callback] has the following arguments: [code]String key[/code]. Called when the user selects a search result in the [code]Help[/code] menu.
+				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
 		<method name="ime_get_selection" qualifiers="const">
@@ -776,14 +915,14 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if OS is using dark mode.
-				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11).
+				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11/Wayland).
 			</description>
 		</method>
 		<method name="is_dark_mode_supported" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if OS supports dark mode.
-				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11).
+				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11/Wayland).
 			</description>
 		</method>
 		<method name="is_touchscreen_available" qualifiers="const">
@@ -792,11 +931,17 @@
 				Returns [code]true[/code] if touch events are available (Android or iOS), the capability is detected on the Web platform or if [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is [code]true[/code].
 			</description>
 		</method>
+		<method name="is_window_transparency_available" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the window background can be made transparent. This method returns [code]false[/code] if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code], or if transparency is not supported by the renderer or OS compositor.
+			</description>
+		</method>
 		<method name="keyboard_get_current_layout" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns active keyboard layout index.
-				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_keycode_from_physical" qualifiers="const">
@@ -804,7 +949,7 @@
 			<param index="0" name="keycode" type="int" enum="Key" />
 			<description>
 				Converts a physical (US QWERTY) [param keycode] to one in the active keyboard layout.
-				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_label_from_physical" qualifiers="const">
@@ -812,14 +957,14 @@
 			<param index="0" name="keycode" type="int" enum="Key" />
 			<description>
 				Converts a physical (US QWERTY) [param keycode] to localized label printed on the key in the active keyboard layout.
-				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number of keyboard layouts.
-				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_language" qualifiers="const">
@@ -827,7 +972,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the ISO-639/BCP-47 language code of the keyboard layout at position [param index].
-				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_name" qualifiers="const">
@@ -835,7 +980,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the localized name of the keyboard layout at position [param index].
-				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_set_current_layout">
@@ -843,7 +988,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Sets the active keyboard layout.
-				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
 			</description>
 		</method>
 		<method name="mouse_get_button_state" qualifiers="const">
@@ -884,7 +1029,7 @@
 				Returns the dots per inch density of the specified screen. If [param screen] is [constant SCREEN_OF_MAIN_WINDOW] (the default value), a screen with the main window will be used.
 				[b]Note:[/b] On macOS, returned value is inaccurate if fractional display scaling mode is used.
 				[b]Note:[/b] On Android devices, the actual screen densities are grouped into six generalized densities:
-				[codeblock]
+				[codeblock lang=text]
 				   ldpi - 120 dpi
 				   mdpi - 160 dpi
 				   hdpi - 240 dpi
@@ -892,7 +1037,7 @@
 				 xxhdpi - 480 dpi
 				xxxhdpi - 640 dpi
 				[/codeblock]
-				[b]Note:[/b] This method is implemented on Android, Linux (X11), macOS and Windows. Returns [code]72[/code] on unsupported platforms.
+				[b]Note:[/b] This method is implemented on Android, Linux (X11/Wayland), macOS and Windows. Returns [code]72[/code] on unsupported platforms.
 			</description>
 		</method>
 		<method name="screen_get_image" qualifiers="const">
@@ -934,7 +1079,7 @@
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns the screen's top-left corner position in pixels. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
-				[codeblock]
+				[codeblock lang=text]
 				* (0, 0)        +-------+
 				                |       |
 				+-------------+ |       |
@@ -943,6 +1088,7 @@
 				+-------------+ +-------+
 				[/codeblock]
 				See also [method screen_get_size].
+				[b]Note:[/b] On Linux (Wayland) this method always returns [code](0, 0)[/code].
 			</description>
 		</method>
 		<method name="screen_get_refresh_rate" qualifiers="const">
@@ -964,8 +1110,9 @@
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns the scale factor of the specified screen by index.
-				[b]Note:[/b] On macOS returned value is [code]2.0[/code] for hiDPI (Retina) screen, and [code]1.0[/code] for all other cases.
-				[b]Note:[/b] This method is implemented only on macOS.
+				[b]Note:[/b] On macOS, the returned value is [code]2.0[/code] for hiDPI (Retina) screens, and [code]1.0[/code] for all other cases.
+				[b]Note:[/b] On Linux (Wayland), the returned value is accurate only when [param screen] is [constant SCREEN_OF_MAIN_WINDOW]. Due to API limitations, passing a direct index will return a rounded-up integer, if the screen has a fractional scale (e.g. [code]1.25[/code] would get rounded up to [code]2.0[/code]).
+				[b]Note:[/b] This method is implemented only on macOS and Linux (Wayland).
 			</description>
 		</method>
 		<method name="screen_get_size" qualifiers="const">
@@ -1009,6 +1156,7 @@
 			<param index="0" name="image" type="Image" />
 			<description>
 				Sets the window icon (usually displayed in the top-left corner) with an [Image]. To use icons in the operating system's native format, use [method set_native_icon] instead.
+				[b]Note:[/b] Requires support for [constant FEATURE_ICON].
 			</description>
 		</method>
 		<method name="set_native_icon">
@@ -1016,6 +1164,61 @@
 			<param index="0" name="filename" type="String" />
 			<description>
 				Sets the window icon (usually displayed in the top-left corner) in the operating system's [i]native[/i] format. The file at [param filename] must be in [code].ico[/code] format on Windows or [code].icns[/code] on macOS. By using specially crafted [code].ico[/code] or [code].icns[/code] icons, [method set_native_icon] allows specifying different icons depending on the size the icon is displayed at. This size is determined by the operating system and user preferences (including the display scale factor). To use icons in other formats, use [method set_icon] instead.
+				[b]Note:[/b] Requires support for [constant FEATURE_NATIVE_ICON].
+			</description>
+		</method>
+		<method name="set_system_theme_change_callback">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Sets the [param callable] that should be called when system theme settings are changed. Callback method should have zero arguments.
+				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11/Wayland).
+			</description>
+		</method>
+		<method name="status_indicator_get_rect" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the rectangle for the given status indicator [param id] in screen coordinates. If the status indicator is not visible, returns an empty [Rect2].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="status_indicator_set_callback">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+				Sets the application status indicator activation callback. [param callback] should take two arguments: [int] mouse button index (one of [enum MouseButton] values) and [Vector2i] click position in screen coordinates.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="status_indicator_set_icon">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="icon" type="Texture2D" />
+			<description>
+				Sets the application status indicator icon.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="status_indicator_set_menu">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="menu_rid" type="RID" />
+			<description>
+				Sets the application status indicator native popup menu.
+				[b]Note:[/b] On macOS, the menu is activated by any mouse button. Its activation callback is [i]not[/i] triggered.
+				[b]Note:[/b] On Windows, the menu is activated by the right mouse button, selecting the status icon and pressing [kbd]Shift + F10[/kbd], or the applications key. The menu's activation callback for the other mouse buttons is still triggered.
+				[b]Note:[/b] Native popup is only supported if [NativeMenu] supports the [constant NativeMenu.FEATURE_POPUP_MENU] feature.
+			</description>
+		</method>
+		<method name="status_indicator_set_tooltip">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="tooltip" type="String" />
+			<description>
+				Sets the application status indicator tooltip.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="tablet_get_current_driver" qualifiers="const">
@@ -1045,6 +1248,10 @@
 			<param index="0" name="name" type="String" />
 			<description>
 				Set active tablet driver name.
+				Supported drivers:
+				- [code]winink[/code]: Windows Ink API, default (Windows 8.1+ required).
+				- [code]wintab[/code]: Wacom Wintab API (compatible device driver required).
+				- [code]dummy[/code]: Dummy driver, tablet input is disabled.
 				[b]Note:[/b] This method is implemented only on Windows.
 			</description>
 		</method>
@@ -1055,9 +1262,9 @@
 				Each [Dictionary] contains two [String] entries:
 				- [code]name[/code] is voice name.
 				- [code]id[/code] is voice identifier.
-				- [code]language[/code] is language code in [code]lang_Variant[/code] format. [code]lang[/code] part is a 2 or 3-letter code based on the ISO-639 standard, in lowercase. And [code]Variant[/code] part is an engine dependent string describing country, region or/and dialect.
+				- [code]language[/code] is language code in [code]lang_Variant[/code] format. The [code]lang[/code] part is a 2 or 3-letter code based on the ISO-639 standard, in lowercase. The [code skip-lint]Variant[/code] part is an engine-dependent string describing country, region or/and dialect.
 				Note that Godot depends on system libraries for text-to-speech functionality. These libraries are installed by default on Windows and macOS, but not on all Linux distributions. If they are not present, this method will return an empty list. This applies to both Godot users on Linux, as well as end-users on Linux running Godot games that use text-to-speech.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Wayland), macOS, and Windows.
 				[b]Note:[/b] [member ProjectSettings.audio/general/text_to_speech] should be [code]true[/code] to use text-to-speech.
 			</description>
 		</method>
@@ -1066,7 +1273,7 @@
 			<param index="0" name="language" type="String" />
 			<description>
 				Returns an [PackedStringArray] of voice identifiers for the [param language].
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Wayland), macOS, and Windows.
 				[b]Note:[/b] [member ProjectSettings.audio/general/text_to_speech] should be [code]true[/code] to use text-to-speech.
 			</description>
 		</method>
@@ -1074,7 +1281,7 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the synthesizer is in a paused state.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Wayland), macOS, and Windows.
 				[b]Note:[/b] [member ProjectSettings.audio/general/text_to_speech] should be [code]true[/code] to use text-to-speech.
 			</description>
 		</method>
@@ -1082,7 +1289,7 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the synthesizer is generating speech, or have utterance waiting in the queue.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Wayland), macOS, and Windows.
 				[b]Note:[/b] [member ProjectSettings.audio/general/text_to_speech] should be [code]true[/code] to use text-to-speech.
 			</description>
 		</method>
@@ -1090,7 +1297,7 @@
 			<return type="void" />
 			<description>
 				Puts the synthesizer into a paused state.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Wayland), macOS, and Windows.
 				[b]Note:[/b] [member ProjectSettings.audio/general/text_to_speech] should be [code]true[/code] to use text-to-speech.
 			</description>
 		</method>
@@ -1098,7 +1305,7 @@
 			<return type="void" />
 			<description>
 				Resumes the synthesizer if it was paused.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Wayland), macOS, and Windows.
 				[b]Note:[/b] [member ProjectSettings.audio/general/text_to_speech] should be [code]true[/code] to use text-to-speech.
 			</description>
 		</method>
@@ -1111,7 +1318,7 @@
 				- [constant TTS_UTTERANCE_STARTED], [constant TTS_UTTERANCE_ENDED], and [constant TTS_UTTERANCE_CANCELED] callable's method should take one [int] parameter, the utterance ID.
 				- [constant TTS_UTTERANCE_BOUNDARY] callable's method should take two [int] parameters, the index of the character and the utterance ID.
 				[b]Note:[/b] The granularity of the boundary callbacks is engine dependent.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Wayland), macOS, and Windows.
 				[b]Note:[/b] [member ProjectSettings.audio/general/text_to_speech] should be [code]true[/code] to use text-to-speech.
 			</description>
 		</method>
@@ -1131,9 +1338,9 @@
 				- [param pitch] ranges from [code]0.0[/code] (lowest) to [code]2.0[/code] (highest), [code]1.0[/code] is default pitch for the current voice.
 				- [param rate] ranges from [code]0.1[/code] (lowest) to [code]10.0[/code] (highest), [code]1.0[/code] is a normal speaking rate. Other values act as a percentage relative.
 				- [param utterance_id] is passed as a parameter to the callback functions.
-				[b]Note:[/b] On Windows and Linux (X11), utterance [param text] can use SSML markup. SSML support is engine and voice dependent. If the engine does not support SSML, you should strip out all XML markup before calling [method tts_speak].
+				[b]Note:[/b] On Windows and Linux (X11/Wayland), utterance [param text] can use SSML markup. SSML support is engine and voice dependent. If the engine does not support SSML, you should strip out all XML markup before calling [method tts_speak].
 				[b]Note:[/b] The granularity of pitch, rate, and volume is engine and voice dependent. Values may be truncated.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Wayland), macOS, and Windows.
 				[b]Note:[/b] [member ProjectSettings.audio/general/text_to_speech] should be [code]true[/code] to use text-to-speech.
 			</description>
 		</method>
@@ -1141,7 +1348,7 @@
 			<return type="void" />
 			<description>
 				Stops synthesis in progress and removes all utterances from the queue.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Linux), macOS, and Windows.
 				[b]Note:[/b] [member ProjectSettings.audio/general/text_to_speech] should be [code]true[/code] to use text-to-speech.
 			</description>
 		</method>
@@ -1181,7 +1388,7 @@
 			<param index="0" name="position" type="Vector2i" />
 			<description>
 				Sets the mouse cursor position to the given [param position] relative to an origin at the upper left corner of the currently focused game Window Manager window.
-				[b]Note:[/b] [method warp_mouse] is only supported on Windows, macOS and Linux. It has no effect on Android, iOS and Web.
+				[b]Note:[/b] [method warp_mouse] is only supported on Windows, macOS, and Linux (X11/Wayland). It has no effect on Android, iOS, and Web.
 			</description>
 		</method>
 		<method name="window_can_draw" qualifiers="const">
@@ -1246,7 +1453,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Returns internal structure pointers for use in plugins.
-				[b]Note:[/b] This method is implemented on Android, Linux (X11), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="window_get_popup_safe_rect" qualifiers="const">
@@ -1289,6 +1496,15 @@
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
 				Returns the size of the window specified by [param window_id] (in pixels), including the borders drawn by the operating system. See also [method window_get_size].
+			</description>
+		</method>
+		<method name="window_get_title_size" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="title" type="String" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Returns the estimated window title bar size (including text and window buttons) for the window specified by [param window_id] (in pixels). This method does not change the window title.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="window_get_vsync_mode" qualifiers="const">
@@ -1353,8 +1569,9 @@
 			<param index="0" name="callback" type="Callable" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the [param callback] that should be called when files are dropped from the operating system's file manager to the window specified by [param window_id].
-				[b]Note:[/b] This method is implemented on Windows, macOS, Linux (X11) and Web.
+				Sets the [param callback] that should be called when files are dropped from the operating system's file manager to the window specified by [param window_id]. [param callback] should take one [PackedStringArray] argument, which is the list of dropped files.
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
+				[b]Note:[/b] This method is implemented on Windows, macOS, Linux (X11/Wayland), and Web.
 			</description>
 		</method>
 		<method name="window_set_exclusive">
@@ -1398,6 +1615,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the [param callback] that should be called when any [InputEvent] is sent to the window specified by [param window_id].
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 			</description>
 		</method>
 		<method name="window_set_input_text_callback">
@@ -1406,6 +1624,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the [param callback] that should be called when text is entered using the virtual keyboard to the window specified by [param window_id].
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 			</description>
 		</method>
 		<method name="window_set_max_size">
@@ -1413,7 +1632,7 @@
 			<param index="0" name="max_size" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the maximum size of the window specified by [param window_id] in pixels. Normally, the user will not be able to drag the window to make it smaller than the specified size. See also [method window_get_max_size].
+				Sets the maximum size of the window specified by [param window_id] in pixels. Normally, the user will not be able to drag the window to make it larger than the specified size. See also [method window_get_max_size].
 				[b]Note:[/b] It's recommended to change this value using [member Window.max_size] instead.
 				[b]Note:[/b] Using third-party tools, it is possible for users to disable window geometry restrictions and therefore bypass this limit.
 			</description>
@@ -1423,7 +1642,7 @@
 			<param index="0" name="min_size" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the minimum size for the given window to [param min_size] (in pixels). Normally, the user will not be able to drag the window to make it larger than the specified size. See also [method window_get_min_size].
+				Sets the minimum size for the given window to [param min_size] in pixels. Normally, the user will not be able to drag the window to make it smaller than the specified size. See also [method window_get_min_size].
 				[b]Note:[/b] It's recommended to change this value using [member Window.min_size] instead.
 				[b]Note:[/b] By default, the main window has a minimum size of [code]Vector2i(64, 64)[/code]. This prevents issues that can arise when the window is resized to a near-zero size.
 				[b]Note:[/b] Using third-party tools, it is possible for users to disable window geometry restrictions and therefore bypass this limit.
@@ -1485,7 +1704,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the position of the given window to [param position]. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
-				[codeblock]
+				[codeblock lang=text]
 				* (0, 0)        +-------+
 				                |       |
 				+-------------+ |       |
@@ -1495,6 +1714,7 @@
 				[/codeblock]
 				See also [method window_get_position] and [method window_set_size].
 				[b]Note:[/b] It's recommended to change this value using [member Window.position] instead.
+				[b]Note:[/b] On Linux (Wayland): this method is a no-op.
 			</description>
 		</method>
 		<method name="window_set_rect_changed_callback">
@@ -1503,6 +1723,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the [param callback] that will be called when the window specified by [param window_id] is moved or resized.
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 			</description>
 		</method>
 		<method name="window_set_size">
@@ -1560,11 +1781,12 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the [param callback] that will be called when an event occurs in the window specified by [param window_id].
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 			</description>
 		</method>
 	</methods>
 	<constants>
-		<constant name="FEATURE_GLOBAL_MENU" value="0" enum="Feature">
+		<constant name="FEATURE_GLOBAL_MENU" value="0" enum="Feature" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			Display server supports global menu. This allows the application to display its menu items in the operating system's top bar. [b]macOS[/b]
 		</constant>
 		<constant name="FEATURE_SUBWINDOWS" value="1" enum="Feature">
@@ -1574,34 +1796,34 @@
 			Display server supports touchscreen input. [b]Windows, Linux (X11), Android, iOS, Web[/b]
 		</constant>
 		<constant name="FEATURE_MOUSE" value="3" enum="Feature">
-			Display server supports mouse input. [b]Windows, macOS, Linux (X11), Android, Web[/b]
+			Display server supports mouse input. [b]Windows, macOS, Linux (X11/Wayland), Android, Web[/b]
 		</constant>
 		<constant name="FEATURE_MOUSE_WARP" value="4" enum="Feature">
-			Display server supports warping mouse coordinates to keep the mouse cursor constrained within an area, but looping when one of the edges is reached. [b]Windows, macOS, Linux (X11)[/b]
+			Display server supports warping mouse coordinates to keep the mouse cursor constrained within an area, but looping when one of the edges is reached. [b]Windows, macOS, Linux (X11/Wayland)[/b]
 		</constant>
 		<constant name="FEATURE_CLIPBOARD" value="5" enum="Feature">
-			Display server supports setting and getting clipboard data. See also [constant FEATURE_CLIPBOARD_PRIMARY]. [b]Windows, macOS, Linux (X11), Android, iOS, Web[/b]
+			Display server supports setting and getting clipboard data. See also [constant FEATURE_CLIPBOARD_PRIMARY]. [b]Windows, macOS, Linux (X11/Wayland), Android, iOS, Web[/b]
 		</constant>
 		<constant name="FEATURE_VIRTUAL_KEYBOARD" value="6" enum="Feature">
 			Display server supports popping up a virtual keyboard when requested to input text without a physical keyboard. [b]Android, iOS, Web[/b]
 		</constant>
 		<constant name="FEATURE_CURSOR_SHAPE" value="7" enum="Feature">
-			Display server supports setting the mouse cursor shape to be different from the default. [b]Windows, macOS, Linux (X11), Android, Web[/b]
+			Display server supports setting the mouse cursor shape to be different from the default. [b]Windows, macOS, Linux (X11/Wayland), Android, Web[/b]
 		</constant>
 		<constant name="FEATURE_CUSTOM_CURSOR_SHAPE" value="8" enum="Feature">
-			Display server supports setting the mouse cursor shape to a custom image. [b]Windows, macOS, Linux (X11), Web[/b]
+			Display server supports setting the mouse cursor shape to a custom image. [b]Windows, macOS, Linux (X11/Wayland), Web[/b]
 		</constant>
 		<constant name="FEATURE_NATIVE_DIALOG" value="9" enum="Feature">
-			Display server supports spawning dialogs using the operating system's native look-and-feel. [b]macOS[/b]
+			Display server supports spawning text dialogs using the operating system's native look-and-feel. See [method dialog_show]. [b]Windows, macOS[/b]
 		</constant>
 		<constant name="FEATURE_IME" value="10" enum="Feature">
 			Display server supports [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url], which is commonly used for inputting Chinese/Japanese/Korean text. This is handled by the operating system, rather than by Godot. [b]Windows, macOS, Linux (X11)[/b]
 		</constant>
 		<constant name="FEATURE_WINDOW_TRANSPARENCY" value="11" enum="Feature">
-			Display server supports windows can use per-pixel transparency to make windows behind them partially or fully visible. [b]Windows, macOS, Linux (X11)[/b]
+			Display server supports windows can use per-pixel transparency to make windows behind them partially or fully visible. [b]Windows, macOS, Linux (X11/Wayland)[/b]
 		</constant>
 		<constant name="FEATURE_HIDPI" value="12" enum="Feature">
-			Display server supports querying the operating system's display scale factor. This allows for [i]reliable[/i] automatic hiDPI display detection, as opposed to guessing based on the screen resolution and reported display DPI (which can be unreliable due to broken monitor EDID). [b]Windows, macOS[/b]
+			Display server supports querying the operating system's display scale factor. This allows for [i]reliable[/i] automatic hiDPI display detection, as opposed to guessing based on the screen resolution and reported display DPI (which can be unreliable due to broken monitor EDID). [b]Windows, Linux (Wayland), macOS[/b]
 		</constant>
 		<constant name="FEATURE_ICON" value="13" enum="Feature">
 			Display server supports changing the window icon (usually displayed in the top-left corner). [b]Windows, macOS, Linux (X11)[/b]
@@ -1613,19 +1835,31 @@
 			Display server supports changing the screen orientation. [b]Android, iOS[/b]
 		</constant>
 		<constant name="FEATURE_SWAP_BUFFERS" value="16" enum="Feature">
-			Display server supports V-Sync status can be changed from the default (which is forced to be enabled platforms not supporting this feature). [b]Windows, macOS, Linux (X11)[/b]
+			Display server supports V-Sync status can be changed from the default (which is forced to be enabled platforms not supporting this feature). [b]Windows, macOS, Linux (X11/Wayland)[/b]
 		</constant>
 		<constant name="FEATURE_CLIPBOARD_PRIMARY" value="18" enum="Feature">
-			Display server supports Primary clipboard can be used. This is a different clipboard from [constant FEATURE_CLIPBOARD]. [b]Linux (X11)[/b]
+			Display server supports Primary clipboard can be used. This is a different clipboard from [constant FEATURE_CLIPBOARD]. [b]Linux (X11/Wayland)[/b]
 		</constant>
 		<constant name="FEATURE_TEXT_TO_SPEECH" value="19" enum="Feature">
-			Display server supports text-to-speech. See [code]tts_*[/code] methods. [b]Windows, macOS, Linux (X11), Android, iOS, Web[/b]
+			Display server supports text-to-speech. See [code]tts_*[/code] methods. [b]Windows, macOS, Linux (X11/Wayland), Android, iOS, Web[/b]
 		</constant>
 		<constant name="FEATURE_EXTEND_TO_TITLE" value="20" enum="Feature">
 			Display server supports expanding window content to the title. See [constant WINDOW_FLAG_EXTEND_TO_TITLE]. [b]macOS[/b]
 		</constant>
 		<constant name="FEATURE_SCREEN_CAPTURE" value="21" enum="Feature">
 			Display server supports reading screen pixels. See [method screen_get_pixel].
+		</constant>
+		<constant name="FEATURE_STATUS_INDICATOR" value="22" enum="Feature">
+			Display server supports application status indicators.
+		</constant>
+		<constant name="FEATURE_NATIVE_HELP" value="23" enum="Feature">
+			Display server supports native help system search callbacks. See [method help_set_search_callbacks].
+		</constant>
+		<constant name="FEATURE_NATIVE_DIALOG_INPUT" value="24" enum="Feature">
+			Display server supports spawning text input dialogs using the operating system's native look-and-feel. See [method dialog_input_text]. [b]Windows, macOS[/b]
+		</constant>
+		<constant name="FEATURE_NATIVE_DIALOG_FILE" value="25" enum="Feature">
+			Display server supports spawning dialogs for selecting files or directories using the operating system's native look-and-feel. See [method file_dialog_show] and [method file_dialog_with_options_show]. [b]Windows, macOS, Linux (X11/Wayland)[/b]
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
@@ -1645,21 +1879,28 @@
 		</constant>
 		<constant name="SCREEN_WITH_MOUSE_FOCUS" value="-4">
 			Represents the screen containing the mouse pointer.
+			[b]Note:[/b] On Linux (Wayland), this constant always represents the screen at index [code]0[/code].
 		</constant>
 		<constant name="SCREEN_WITH_KEYBOARD_FOCUS" value="-3">
 			Represents the screen containing the window with the keyboard focus.
+			[b]Note:[/b] On Linux (Wayland), this constant always represents the screen at index [code]0[/code].
 		</constant>
 		<constant name="SCREEN_PRIMARY" value="-2">
 			Represents the primary screen.
+			[b]Note:[/b] On Linux (Wayland), this constant always represents the screen at index [code]0[/code].
 		</constant>
 		<constant name="SCREEN_OF_MAIN_WINDOW" value="-1">
 			Represents the screen where the main window is located. This is usually the default value in functions that allow specifying one of several screens.
+			[b]Note:[/b] On Linux (Wayland), this constant always represents the screen at index [code]0[/code].
 		</constant>
 		<constant name="MAIN_WINDOW_ID" value="0">
 			The ID of the main window spawned by the engine, which can be passed to methods expecting a [code]window_id[/code].
 		</constant>
 		<constant name="INVALID_WINDOW_ID" value="-1">
-			The ID that refers to a nonexisting window. This is be returned by some [DisplayServer] methods if no window matches the requested result.
+			The ID that refers to a nonexistent window. This is returned by some [DisplayServer] methods if no window matches the requested result.
+		</constant>
+		<constant name="INVALID_INDICATOR_ID" value="-1">
+			The ID that refers to a nonexistent application status indicator.
 		</constant>
 		<constant name="SCREEN_LANDSCAPE" value="0" enum="ScreenOrientation">
 			Default landscape orientation.
@@ -1787,14 +2028,16 @@
 		</constant>
 		<constant name="WINDOW_MODE_FULLSCREEN" value="3" enum="WindowMode">
 			Full screen mode with full multi-window support.
-			Full screen window cover the entire display area of a screen, have no border or decorations. Display video mode is not changed.
+			Full screen window covers the entire display area of a screen and has no decorations. The display's video mode is not changed.
+			[b]On Windows:[/b] Multi-window full-screen mode has a 1px border of the [member ProjectSettings.rendering/environment/defaults/default_clear_color] color.
+			[b]On macOS:[/b] A new desktop is used to display the running project.
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="WINDOW_MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="WindowMode">
 			A single window full screen mode. This mode has less overhead, but only one window can be open on a given screen at a time (opening a child window or application switching will trigger a full screen transition).
-			Full screen window cover the entire display area of a screen, have no border or decorations. Display video mode is not changed.
+			Full screen window covers the entire display area of a screen and has no border or decorations. The display's video mode is not changed.
 			[b]On Windows:[/b] Depending on video driver, full screen transition might cause screens to go black for a moment.
-			[b]On macOS:[/b] Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
+			[b]On macOS:[/b] A new desktop is used to display the running project. Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
 			[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
@@ -1809,8 +2052,8 @@
 		</constant>
 		<constant name="WINDOW_FLAG_TRANSPARENT" value="3" enum="WindowFlags">
 			The window background can be transparent.
-			[b]Note:[/b] This flag has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
-			[b]Note:[/b] Transparency support is implemented on Linux (X11), macOS and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
+			[b]Note:[/b] This flag has no effect if [method is_window_transparency_available] returns [code]false[/code].
+			[b]Note:[/b] Transparency support is implemented on Linux (X11/Wayland), macOS, and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
 		</constant>
 		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">
 			The window can't be focused. No-focus window will ignore all input, except mouse clicks.
@@ -1831,43 +2074,43 @@
 			Max value of the [enum WindowFlags].
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">
-			Sent when the mouse pointer enters the window, see [method window_set_window_event_callback].
+			Sent when the mouse pointer enters the window.
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_EXIT" value="1" enum="WindowEvent">
-			Sent when the mouse pointer exits the window, see [method window_set_window_event_callback].
+			Sent when the mouse pointer exits the window.
 		</constant>
 		<constant name="WINDOW_EVENT_FOCUS_IN" value="2" enum="WindowEvent">
-			Sent when the window grabs focus, see [method window_set_window_event_callback].
+			Sent when the window grabs focus.
 		</constant>
 		<constant name="WINDOW_EVENT_FOCUS_OUT" value="3" enum="WindowEvent">
-			Sent when the window loses focus, see [method window_set_window_event_callback].
+			Sent when the window loses focus.
 		</constant>
 		<constant name="WINDOW_EVENT_CLOSE_REQUEST" value="4" enum="WindowEvent">
-			Sent when the user has attempted to close the window (e.g. close button is pressed), see [method window_set_window_event_callback].
+			Sent when the user has attempted to close the window (e.g. close button is pressed).
 		</constant>
 		<constant name="WINDOW_EVENT_GO_BACK_REQUEST" value="5" enum="WindowEvent">
-			Sent when the device "Back" button is pressed, see [method window_set_window_event_callback].
+			Sent when the device "Back" button is pressed.
 			[b]Note:[/b] This event is implemented only on Android.
 		</constant>
 		<constant name="WINDOW_EVENT_DPI_CHANGE" value="6" enum="WindowEvent">
-			Sent when the window is moved to the display with different DPI, or display DPI is changed, see [method window_set_window_event_callback].
+			Sent when the window is moved to the display with different DPI, or display DPI is changed.
 			[b]Note:[/b] This flag is implemented only on macOS.
 		</constant>
 		<constant name="WINDOW_EVENT_TITLEBAR_CHANGE" value="7" enum="WindowEvent">
-			Sent when the window title bar decoration is changed (e.g. [constant WINDOW_FLAG_EXTEND_TO_TITLE] is set or window entered/exited full screen mode), see [method window_set_window_event_callback].
+			Sent when the window title bar decoration is changed (e.g. [constant WINDOW_FLAG_EXTEND_TO_TITLE] is set or window entered/exited full screen mode).
 			[b]Note:[/b] This flag is implemented only on macOS.
 		</constant>
 		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
-			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible). Framerate is unlimited (notwithstanding [member Engine.max_fps]).
+			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible). Framerate is unlimited (regardless of [member Engine.max_fps]).
 		</constant>
 		<constant name="VSYNC_ENABLED" value="1" enum="VSyncMode">
-			Default vertical synchronization mode, the image is displayed only on vertical blanking intervals (no tearing is visible). Framerate is limited by the monitor refresh rate (notwithstanding [member Engine.max_fps]).
+			Default vertical synchronization mode, the image is displayed only on vertical blanking intervals (no tearing is visible). Framerate is limited by the monitor refresh rate (regardless of [member Engine.max_fps]).
 		</constant>
 		<constant name="VSYNC_ADAPTIVE" value="2" enum="VSyncMode">
-			Behaves like [constant VSYNC_DISABLED] when the framerate drops below the screen's refresh rate to reduce stuttering (tearing may be visible). Otherwise, vertical synchronization is enabled to avoid tearing. Framerate is limited by the monitor refresh rate (notwithstanding [member Engine.max_fps]). Behaves like [constant VSYNC_ENABLED] when using the Compatibility rendering method.
+			Behaves like [constant VSYNC_DISABLED] when the framerate drops below the screen's refresh rate to reduce stuttering (tearing may be visible). Otherwise, vertical synchronization is enabled to avoid tearing. Framerate is limited by the monitor refresh rate (regardless of [member Engine.max_fps]). Behaves like [constant VSYNC_ENABLED] when using the Compatibility rendering method.
 		</constant>
 		<constant name="VSYNC_MAILBOX" value="3" enum="VSyncMode">
-			Displays the most recent image in the queue on vertical blanking intervals, while rendering to the other images (no tearing is visible). Framerate is unlimited (notwithstanding [member Engine.max_fps]).
+			Displays the most recent image in the queue on vertical blanking intervals, while rendering to the other images (no tearing is visible). Framerate is unlimited (regardless of [member Engine.max_fps]).
 			Although not guaranteed, the images can be rendered as fast as possible, which may reduce input lag (also called "Fast" V-Sync mode). [constant VSYNC_MAILBOX] works best when at least twice as many frames as the display refresh rate are rendered. Behaves like [constant VSYNC_ENABLED] when using the Compatibility rendering method.
 		</constant>
 		<constant name="DISPLAY_HANDLE" value="0" enum="HandleType">
@@ -1892,7 +2135,7 @@
 		<constant name="OPENGL_CONTEXT" value="3" enum="HandleType">
 			OpenGL context (only with the GL Compatibility renderer):
 			- Windows: [code]HGLRC[/code] for the window (native GL), or [code]EGLContext[/code] for the window (ANGLE).
-			- Linux: [code]GLXContext*[/code] for the window.
+			- Linux (X11): [code]GLXContext*[/code] for the window.
 			- macOS: [code]NSOpenGLContext*[/code] for the window (native GL), or [code]EGLContext[/code] for the window (ANGLE).
 			- Android: [code]EGLContext[/code] for the window.
 		</constant>

@@ -45,6 +45,8 @@ class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlug
 	// List of patterns used for extracting translation strings.
 	StringName tr_func = "tr";
 	StringName trn_func = "tr_n";
+	StringName atr_func = "atr";
+	StringName atrn_func = "atr_n";
 	HashSet<StringName> assignment_patterns;
 	HashSet<StringName> first_arg_patterns;
 	HashSet<StringName> second_arg_patterns;
@@ -59,11 +61,12 @@ class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlug
 	void _traverse_function(const GDScriptParser::FunctionNode *p_func);
 	void _traverse_block(const GDScriptParser::SuiteNode *p_suite);
 
-	void _read_variable(const GDScriptParser::VariableNode *p_var);
 	void _assess_expression(const GDScriptParser::ExpressionNode *p_expression);
 	void _assess_assignment(const GDScriptParser::AssignmentNode *p_assignment);
-	void _extract_from_call(const GDScriptParser::CallNode *p_call);
-	void _extract_fd_constant_strings(const GDScriptParser::ExpressionNode *p_expression);
+	void _assess_call(const GDScriptParser::CallNode *p_call);
+
+	void _extract_fd_filter_string(const GDScriptParser::ExpressionNode *p_expression);
+	void _extract_fd_filter_array(const GDScriptParser::ExpressionNode *p_expression);
 
 public:
 	virtual Error parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) override;

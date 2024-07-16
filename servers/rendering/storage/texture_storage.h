@@ -151,6 +151,9 @@ public:
 	virtual void render_target_set_as_unused(RID p_render_target) = 0;
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) = 0;
 	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const = 0;
+	virtual void render_target_set_msaa_needs_resolve(RID p_render_target, bool p_needs_resolve) = 0;
+	virtual bool render_target_get_msaa_needs_resolve(RID p_render_target) const = 0;
+	virtual void render_target_do_msaa_resolve(RID p_render_target) = 0;
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr) = 0;
 	virtual bool render_target_is_using_hdr(RID p_render_target) const = 0;
 
@@ -166,6 +169,8 @@ public:
 
 	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) = 0;
 	virtual RS::ViewportVRSMode render_target_get_vrs_mode(RID p_render_target) const = 0;
+	virtual void render_target_set_vrs_update_mode(RID p_render_target, RS::ViewportVRSUpdateMode p_mode) = 0;
+	virtual RS::ViewportVRSUpdateMode render_target_get_vrs_update_mode(RID p_render_target) const = 0;
 	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) = 0;
 	virtual RID render_target_get_vrs_texture(RID p_render_target) const = 0;
 

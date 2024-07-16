@@ -31,9 +31,9 @@
 #include "atlas_merging_dialog.h"
 
 #include "editor/editor_properties_vector.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/control.h"
 #include "scene/gui/split_container.h"
 #include "scene/resources/image_texture.h"
@@ -42,7 +42,7 @@ void AtlasMergingDialog::_property_changed(const StringName &p_property, const V
 	_set(p_property, p_value);
 }
 
-void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atlas_sources, int p_max_columns) {
+void AtlasMergingDialog::_generate_merged(const Vector<Ref<TileSetAtlasSource>> &p_atlas_sources, int p_max_columns) {
 	merged.instantiate();
 	merged_mapping.clear();
 
@@ -52,7 +52,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 		// Compute the new texture region size.
 		Vector2i new_texture_region_size;
 		for (int source_index = 0; source_index < p_atlas_sources.size(); source_index++) {
-			Ref<TileSetAtlasSource> atlas_source = p_atlas_sources[source_index];
+			const Ref<TileSetAtlasSource> &atlas_source = p_atlas_sources[source_index];
 			new_texture_region_size = new_texture_region_size.max(atlas_source->get_texture_region_size());
 		}
 
@@ -60,7 +60,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 		Vector2i atlas_offset;
 		int line_height = 0;
 		for (int source_index = 0; source_index < p_atlas_sources.size(); source_index++) {
-			Ref<TileSetAtlasSource> atlas_source = p_atlas_sources[source_index];
+			const Ref<TileSetAtlasSource> &atlas_source = p_atlas_sources[source_index];
 			Ref<Image> input_image = atlas_source->get_texture()->get_image();
 			if (input_image->get_format() != Image::FORMAT_RGBA8) {
 				input_image->convert(Image::FORMAT_RGBA8);
@@ -111,7 +111,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 
 		// Copy the tiles to the merged TileSetAtlasSource.
 		for (int source_index = 0; source_index < p_atlas_sources.size(); source_index++) {
-			Ref<TileSetAtlasSource> atlas_source = p_atlas_sources[source_index];
+			const Ref<TileSetAtlasSource> &atlas_source = p_atlas_sources[source_index];
 			for (KeyValue<Vector2i, Vector2i> tile_mapping : merged_mapping[source_index]) {
 				// Create tiles and alternatives, then copy their properties.
 				for (int alternative_index = 0; alternative_index < atlas_source->get_alternative_tiles_count(tile_mapping.key); alternative_index++) {
@@ -177,7 +177,7 @@ void AtlasMergingDialog::_update_texture() {
 	}
 }
 
-void AtlasMergingDialog::_merge_confirmed(String p_path) {
+void AtlasMergingDialog::_merge_confirmed(const String &p_path) {
 	ERR_FAIL_COND(!merged.is_valid());
 
 	Ref<ImageTexture> output_image_texture = merged->get_texture();
@@ -311,6 +311,7 @@ AtlasMergingDialog::AtlasMergingDialog() {
 
 	// Atlas sources item list.
 	atlas_merging_atlases_list = memnew(ItemList);
+	atlas_merging_atlases_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	atlas_merging_atlases_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
 	atlas_merging_atlases_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	atlas_merging_atlases_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);

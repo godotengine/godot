@@ -244,7 +244,7 @@ int MultiNodeEdit::get_node_count() const {
 }
 
 NodePath MultiNodeEdit::get_node(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, nodes.size(), NodePath());
+	ERR_FAIL_INDEX_V(p_index, get_node_count(), NodePath());
 	return nodes[p_index];
 }
 

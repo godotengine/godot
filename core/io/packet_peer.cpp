@@ -318,9 +318,9 @@ int PacketPeerStream::get_output_buffer_max_size() const {
 }
 
 PacketPeerStream::PacketPeerStream() {
-	int rbsize = GLOBAL_GET("network/limits/packet_peer_stream/max_buffer_po2");
+	int64_t rbsize = GLOBAL_GET("network/limits/packet_peer_stream/max_buffer_po2");
 
 	ring_buffer.resize(rbsize);
-	input_buffer.resize(1 << rbsize);
-	output_buffer.resize(1 << rbsize);
+	input_buffer.resize(int64_t(1) << rbsize);
+	output_buffer.resize(int64_t(1) << rbsize);
 }

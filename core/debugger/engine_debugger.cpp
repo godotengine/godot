@@ -127,7 +127,7 @@ void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks,
 	singleton->poll_events(true);
 }
 
-void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Vector<String> p_breakpoints, void (*p_allow_focus_steal_fn)()) {
+void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, const Vector<String> &p_breakpoints, void (*p_allow_focus_steal_fn)()) {
 	register_uri_handler("tcp://", RemoteDebuggerPeerTCP::create); // TCP is the default protocol. Platforms/modules can add more.
 	if (p_uri.is_empty()) {
 		return;
@@ -137,7 +137,7 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 		script_debugger = memnew(ScriptDebugger);
 		// Tell the OS that we want to handle termination signals.
 		OS::get_singleton()->initialize_debugging();
-	} else if (p_uri.find("://") >= 0) {
+	} else if (p_uri.contains("://")) {
 		const String proto = p_uri.substr(0, p_uri.find("://") + 3);
 		if (!protocols.has(proto)) {
 			return;
@@ -162,7 +162,7 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 	singleton_script_debugger->set_skip_breakpoints(p_skip_breakpoints);
 
 	for (int i = 0; i < p_breakpoints.size(); i++) {
-		String bp = p_breakpoints[i];
+		const String &bp = p_breakpoints[i];
 		int sp = bp.rfind(":");
 		ERR_CONTINUE_MSG(sp == -1, "Invalid breakpoint: '" + bp + "', expected file:line format.");
 

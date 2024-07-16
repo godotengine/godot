@@ -27,8 +27,9 @@
 // This code is pretty much the same as TransformOne in the dec_neon.c, except
 // for subtraction to *ref. See the comments there for algorithmic explanations.
 
-static const int16_t kC1 = 20091;
-static const int16_t kC2 = 17734;  // half of kC2, actually. See comment above.
+static const int16_t kC1 = WEBP_TRANSFORM_AC3_C1;
+static const int16_t kC2 =
+    WEBP_TRANSFORM_AC3_C2 / 2;  // half of kC2, actually. See comment above.
 
 // This code works but is *slower* than the inlined-asm version below
 // (with gcc-4.6). So we disable it for now. Later, it'll be conditional to

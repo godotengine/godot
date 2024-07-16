@@ -141,7 +141,7 @@
 			<return type="Array" />
 			<param index="0" name="timeout" type="int" default="0" />
 			<description>
-				Waits for events on the host specified and shuttles packets between the host and its peers. The returned [Array] will have 4 elements. An [enum EventType], the [ENetPacketPeer] which generated the event, the event associated data (if any), the event associated channel (if any). If the generated event is [constant EVENT_RECEIVE], the received packet will be queued to the associated [ENetPacketPeer].
+				Waits for events on the specified host and shuttles packets between the host and its peers, with the given [param timeout] (in milliseconds). The returned [Array] will have 4 elements. An [enum EventType], the [ENetPacketPeer] which generated the event, the event associated data (if any), the event associated channel (if any). If the generated event is [constant EVENT_RECEIVE], the received packet will be queued to the associated [ENetPacketPeer].
 				Call this function regularly to handle connections, disconnections, and to receive new packets.
 			</description>
 		</method>
@@ -151,7 +151,7 @@
 			<param index="1" name="destination_port" type="int" />
 			<param index="2" name="packet" type="PackedByteArray" />
 			<description>
-				Sends a [param packet] toward a destination from the address and port currently bound by this ENetConnection instance. 
+				Sends a [param packet] toward a destination from the address and port currently bound by this ENetConnection instance.
 				This is useful as it serves to establish entries in NAT routing tables on all devices between this bound instance and the public facing internet, allowing a prospective client's connection packets to be routed backward through the NAT device(s) between the public internet and this host.
 				This requires forward knowledge of a prospective client's address and communication port as seen by the public internet - after any NAT devices have handled their connection request. This information can be obtained by a [url=https://en.wikipedia.org/wiki/STUN]STUN[/url] service, and must be handed off to your host by an entity that is not the prospective client. This will never work for a client behind a Symmetric NAT due to the nature of the Symmetric NAT routing algorithm, as their IP and Port cannot be known beforehand.
 			</description>
@@ -186,7 +186,7 @@
 			A peer has disconnected. This event is generated on a successful completion of a disconnect initiated by [method ENetPacketPeer.peer_disconnect], if a peer has timed out, or if a connection request initialized by [method connect_to_host] has timed out. The array will contain the peer which disconnected. The data field contains user supplied data describing the disconnection, or 0, if none is available.
 		</constant>
 		<constant name="EVENT_RECEIVE" value="3" enum="EventType">
-			A packet has been received from a peer. The array will contain the peer which sent the packet, the channel number upon which the packet was received, and the received packet.
+			A packet has been received from a peer. The array will contain the peer which sent the packet and the channel number upon which the packet was received. The received packet will be queued to the associated [ENetPacketPeer].
 		</constant>
 		<constant name="HOST_TOTAL_SENT_DATA" value="0" enum="HostStatistic">
 			Total data sent.

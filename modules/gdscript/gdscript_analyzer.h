@@ -40,7 +40,6 @@
 
 class GDScriptAnalyzer {
 	GDScriptParser *parser = nullptr;
-	HashMap<String, Ref<GDScriptParserRef>> depended_parsers;
 
 	const GDScriptParser::EnumNode *current_enum = nullptr;
 	GDScriptParser::LambdaNode *current_lambda = nullptr;
@@ -62,7 +61,7 @@ class GDScriptAnalyzer {
 	void decide_suite_type(GDScriptParser::Node *p_suite, GDScriptParser::Node *p_statement);
 
 	void resolve_annotation(GDScriptParser::AnnotationNode *p_annotation);
-	void resolve_class_member(GDScriptParser::ClassNode *p_class, StringName p_name, const GDScriptParser::Node *p_source = nullptr);
+	void resolve_class_member(GDScriptParser::ClassNode *p_class, const StringName &p_name, const GDScriptParser::Node *p_source = nullptr);
 	void resolve_class_member(GDScriptParser::ClassNode *p_class, int p_index, const GDScriptParser::Node *p_source = nullptr);
 	void resolve_class_interface(GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_source = nullptr);
 	void resolve_class_interface(GDScriptParser::ClassNode *p_class, bool p_recursive);
@@ -132,7 +131,6 @@ class GDScriptAnalyzer {
 	void mark_lambda_use_self();
 	void resolve_pending_lambda_bodies();
 	bool class_exists(const StringName &p_class) const;
-	Ref<GDScriptParserRef> get_parser_for(const String &p_path);
 	void reduce_identifier_from_base_set_class(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType p_identifier_datatype);
 #ifdef DEBUG_ENABLED
 	void is_shadowing(GDScriptParser::IdentifierNode *p_identifier, const String &p_context, const bool p_in_local_scope);
@@ -146,7 +144,7 @@ public:
 	Error analyze();
 
 	Variant make_variable_default_value(GDScriptParser::VariableNode *p_variable);
-	const HashMap<String, Ref<GDScriptParserRef>> &get_depended_parsers();
+	static bool check_type_compatibility(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion = false, const GDScriptParser::Node *p_source_node = nullptr);
 
 	GDScriptAnalyzer(GDScriptParser *p_parser);
 };

@@ -353,7 +353,20 @@ void LineBuilder::build() {
 			} else if (current_joint_mode == Line2D::LINE_JOINT_ROUND && !(wrap_around && i == segments_count)) {
 				Vector2 vbegin = cbegin - pos1;
 				Vector2 vend = cend - pos1;
-				strip_add_arc(pos1, vbegin.angle_to(vend), orientation);
+				// We want to use vbegin.angle_to(vend) below, which evaluates to
+				// Math::atan2(vbegin.cross(vend), vbegin.dot(vend)) but we need to
+				// calculate this ourselves as we need to check if the cross product
+				// in that calculation ends up being -0.f and flip it if so, effectively
+				// flipping the resulting angle_delta to not return -PI but +PI instead
+				float cross_product = vbegin.cross(vend);
+				float dot_product = vbegin.dot(vend);
+				// Note that we're comparing against -0.f for clarity but 0.f would
+				// match as well, therefore we need the explicit signbit check too.
+				if (cross_product == -0.f && signbit(cross_product)) {
+					cross_product = 0.f;
+				}
+				float angle_delta = Math::atan2(cross_product, dot_product);
+				strip_add_arc(pos1, angle_delta, orientation);
 			}
 
 			if (!is_intersecting) {

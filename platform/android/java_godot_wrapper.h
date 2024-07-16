@@ -39,7 +39,7 @@
 #include <android/log.h>
 #include <jni.h>
 
-// Class that makes functions in java/src/org/godotengine/godot/Godot.java callable from C++
+// Class that makes functions in java/src/org/godotengine/godot/Godot.kt callable from C++
 class GodotJavaWrapper {
 private:
 	jobject godot_instance;
@@ -73,6 +73,7 @@ private:
 	jmethodID _begin_benchmark_measure = nullptr;
 	jmethodID _end_benchmark_measure = nullptr;
 	jmethodID _dump_benchmark = nullptr;
+	jmethodID _has_feature = nullptr;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_godot_instance);
@@ -101,15 +102,18 @@ public:
 	Vector<String> get_granted_permissions() const;
 	String get_ca_certificates() const;
 	void init_input_devices();
-	void vibrate(int p_duration_ms);
+	void vibrate(int p_duration_ms, float p_amplitude = -1.0);
 	String get_input_fallback_mapping();
-	int create_new_godot_instance(List<String> args);
-	void begin_benchmark_measure(const String &p_label);
-	void end_benchmark_measure(const String &p_label);
+	int create_new_godot_instance(const List<String> &args);
+	void begin_benchmark_measure(const String &p_context, const String &p_label);
+	void end_benchmark_measure(const String &p_context, const String &p_label);
 	void dump_benchmark(const String &benchmark_file);
 
 	// Return the list of gdextensions config file.
 	Vector<String> get_gdextension_list_config_file() const;
+
+	// Return true if the given feature is supported.
+	bool has_feature(const String &p_feature) const;
 };
 
 #endif // JAVA_GODOT_WRAPPER_H

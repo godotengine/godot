@@ -66,6 +66,8 @@ class NavigationAgent3D : public Node {
 	real_t time_horizon_obstacles = 0.0;
 	real_t max_speed = 10.0;
 	real_t path_max_distance = 5.0;
+	bool simplify_path = false;
+	real_t simplify_epsilon = 0.0;
 
 	Vector3 target_position;
 
@@ -89,13 +91,13 @@ class NavigationAgent3D : public Node {
 
 	// 2D avoidance has no y-axis. This stores and reapplies the y-axis velocity to the agent before and after the avoidance step.
 	// While not perfect it at least looks way better than agent's that clip through everything that is not a flat surface
+	bool keep_y_velocity = true;
 	float stored_y_velocity = 0.0;
 
 	bool target_position_submitted = false;
 	bool target_reached = false;
 	bool navigation_finished = true;
-	// No initialized on purpose
-	uint32_t update_frame_id = 0;
+	bool last_waypoint_reached = false;
 
 	// Debug properties for exposed bindings
 	bool debug_enabled = false;
@@ -114,6 +116,7 @@ class NavigationAgent3D : public Node {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
 
 #ifndef DISABLE_DEPRECATED
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -173,6 +176,9 @@ public:
 	void set_use_3d_avoidance(bool p_use_3d_avoidance);
 	bool get_use_3d_avoidance() const { return use_3d_avoidance; }
 
+	void set_keep_y_velocity(bool p_enabled);
+	bool get_keep_y_velocity() const;
+
 	void set_neighbor_distance(real_t p_distance);
 	real_t get_neighbor_distance() const { return neighbor_distance; }
 
@@ -193,6 +199,12 @@ public:
 
 	void set_target_position(Vector3 p_position);
 	Vector3 get_target_position() const;
+
+	void set_simplify_path(bool p_enabled);
+	bool get_simplify_path() const;
+
+	void set_simplify_epsilon(real_t p_epsilon);
+	real_t get_simplify_epsilon() const;
 
 	Vector3 get_next_path_position();
 
@@ -245,9 +257,21 @@ public:
 	float get_debug_path_custom_point_size() const;
 
 private:
-	void update_navigation();
+	bool _is_target_reachable() const;
+	Vector3 _get_final_position() const;
+
+	void _update_navigation();
+	void _advance_waypoints(const Vector3 &p_origin);
 	void _request_repath();
-	void _check_distance_to_target();
+
+	bool _is_last_waypoint() const;
+	void _move_to_next_waypoint();
+	bool _is_within_waypoint_distance(const Vector3 &p_origin) const;
+	bool _is_within_target_distance(const Vector3 &p_origin) const;
+
+	void _trigger_waypoint_reached();
+	void _transition_to_navigation_finished();
+	void _transition_to_target_reached();
 
 #ifdef DEBUG_ENABLED
 	void _navigation_debug_changed();

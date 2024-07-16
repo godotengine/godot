@@ -37,6 +37,7 @@
 #include "core/io/file_access.h"
 
 #include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/gles3/storage/config.h"
 
 static String _mkid(const String &p_id) {
 	String id = "m_" + p_id.replace("__", "_dus_");
@@ -49,7 +50,7 @@ void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
 	String text;
 
 	for (int i = 0; i < lines.size(); i++) {
-		String l = lines[i];
+		const String &l = lines[i];
 		bool push_chunk = false;
 
 		StageTemplate::Chunk chunk;
@@ -141,12 +142,12 @@ void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code,
 	tohash.append(p_fragment_code ? p_fragment_code : "");
 
 	tohash.append("[gl_implementation]");
-	const char *vendor = (const char *)glGetString(GL_VENDOR);
-	tohash.append(vendor ? vendor : "unknown");
-	const char *renderer = (const char *)glGetString(GL_RENDERER);
-	tohash.append(renderer ? renderer : "unknown");
-	const char *version = (const char *)glGetString(GL_VERSION);
-	tohash.append(version ? version : "unknown");
+	const String &vendor = String::utf8((const char *)glGetString(GL_VENDOR));
+	tohash.append(vendor.is_empty() ? "unknown" : vendor);
+	const String &renderer = String::utf8((const char *)glGetString(GL_RENDERER));
+	tohash.append(renderer.is_empty() ? "unknown" : renderer);
+	const String &version = String::utf8((const char *)glGetString(GL_VERSION));
+	tohash.append(version.is_empty() ? "unknown" : version);
 
 	base_sha256 = tohash.as_string().sha256_text();
 }
@@ -213,6 +214,7 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 		builder.append("precision highp sampler2D;\n");
 		builder.append("precision highp samplerCube;\n");
 		builder.append("precision highp sampler2DArray;\n");
+		builder.append("precision highp sampler3D;\n");
 	}
 
 	const StageTemplate &stage_template = stage_templates[p_stage_type];
@@ -328,7 +330,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 				}
 
 				char *ilogmem = (char *)Memory::alloc_static(iloglen + 1);
-				ilogmem[iloglen] = '\0';
+				memset(ilogmem, 0, iloglen + 1);
 				glGetShaderInfoLog(spec.vert_id, iloglen, &iloglen, ilogmem);
 
 				String err_string = name + ": Vertex shader compilation failed:\n";
@@ -376,7 +378,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 				}
 
 				char *ilogmem = (char *)Memory::alloc_static(iloglen + 1);
-				ilogmem[iloglen] = '\0';
+				memset(ilogmem, 0, iloglen + 1);
 				glGetShaderInfoLog(spec.frag_id, iloglen, &iloglen, ilogmem);
 
 				String err_string = name + ": Fragment shader compilation failed:\n";
@@ -539,7 +541,7 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 	return false;
 #else
 #if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
-	if (RasterizerGLES3::is_gles_over_gl() && (glProgramBinary == NULL)) { // ARB_get_program_binary extension not available.
+	if (RasterizerGLES3::is_gles_over_gl() && (glProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
 		return false;
 	}
 #endif
@@ -561,7 +563,7 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 	}
 
 	int cache_variant_count = static_cast<int>(f->get_32());
-	ERR_FAIL_COND_V_MSG(cache_variant_count != this->variant_count, false, "shader cache variant count mismatch, expected " + itos(this->variant_count) + " got " + itos(cache_variant_count)); //should not happen but check
+	ERR_FAIL_COND_V_MSG(cache_variant_count != variant_count, false, "shader cache variant count mismatch, expected " + itos(variant_count) + " got " + itos(cache_variant_count)); //should not happen but check
 
 	LocalVector<OAHashMap<uint64_t, Version::Specialization>> variants;
 	for (int i = 0; i < cache_variant_count; i++) {
@@ -584,6 +586,19 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 			Version::Specialization specialization;
 
 			specialization.id = glCreateProgram();
+			if (feedback_count) {
+				Vector<const char *> feedback;
+				for (int feedback_index = 0; feedback_index < feedback_count; feedback_index++) {
+					if (feedbacks[feedback_index].specialization == 0 || (feedbacks[feedback_index].specialization & specialization_key)) {
+						// Specialization for this feedback is enabled.
+						feedback.push_back(feedbacks[feedback_index].name);
+					}
+				}
+
+				if (!feedback.is_empty()) {
+					glTransformFeedbackVaryings(specialization.id, feedback.size(), feedback.ptr(), GL_INTERLEAVED_ATTRIBS);
+				}
+			}
 			glProgramBinary(specialization.id, variant_format, variant_bytes.ptr(), variant_bytes.size());
 
 			GLint link_status = 0;
@@ -611,8 +626,9 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 #ifdef WEB_ENABLED // not supported in webgl
 	return;
 #else
+	ERR_FAIL_COND(!shader_cache_dir_valid);
 #if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
-	if (RasterizerGLES3::is_gles_over_gl() && (glGetProgramBinary == NULL)) { // ARB_get_program_binary extension not available.
+	if (RasterizerGLES3::is_gles_over_gl() && (glGetProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
 		return;
 	}
 #endif
@@ -786,7 +802,9 @@ void ShaderGLES3::initialize(const String &p_general_defines, int p_base_texture
 		print_verbose("Shader '" + name + "' SHA256: " + base_sha256);
 	}
 
-	glGetInteger64v(GL_MAX_TEXTURE_IMAGE_UNITS, &max_image_units);
+	GLES3::Config *config = GLES3::Config::get_singleton();
+	ERR_FAIL_NULL(config);
+	max_image_units = config->max_texture_image_units;
 }
 
 void ShaderGLES3::set_shader_cache_dir(const String &p_dir) {

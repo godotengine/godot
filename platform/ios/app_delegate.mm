@@ -51,6 +51,15 @@ extern void ios_finish();
 
 @implementation AppDelegate
 
+enum {
+	SESSION_CATEGORY_AMBIENT,
+	SESSION_CATEGORY_MULTI_ROUTE,
+	SESSION_CATEGORY_PLAY_AND_RECORD,
+	SESSION_CATEGORY_PLAYBACK,
+	SESSION_CATEGORY_RECORD,
+	SESSION_CATEGORY_SOLO_AMBIENT
+};
+
 static ViewController *mainViewController = nil;
 
 + (ViewController *)viewController {
@@ -92,8 +101,32 @@ static ViewController *mainViewController = nil;
 
 	mainViewController = viewController;
 
-	// prevent to stop music in another background app
-	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:nil];
+	int sessionCategorySetting = GLOBAL_GET("audio/general/ios/session_category");
+
+	// Initialize with default Ambient category.
+	AVAudioSessionCategory category = AVAudioSessionCategoryAmbient;
+	AVAudioSessionCategoryOptions options = 0;
+
+	if (GLOBAL_GET("audio/general/ios/mix_with_others")) {
+		options |= AVAudioSessionCategoryOptionMixWithOthers;
+	}
+
+	if (sessionCategorySetting == SESSION_CATEGORY_MULTI_ROUTE) {
+		category = AVAudioSessionCategoryMultiRoute;
+	} else if (sessionCategorySetting == SESSION_CATEGORY_PLAY_AND_RECORD) {
+		category = AVAudioSessionCategoryPlayAndRecord;
+		options |= AVAudioSessionCategoryOptionDefaultToSpeaker;
+		options |= AVAudioSessionCategoryOptionAllowBluetoothA2DP;
+		options |= AVAudioSessionCategoryOptionAllowAirPlay;
+	} else if (sessionCategorySetting == SESSION_CATEGORY_PLAYBACK) {
+		category = AVAudioSessionCategoryPlayback;
+	} else if (sessionCategorySetting == SESSION_CATEGORY_RECORD) {
+		category = AVAudioSessionCategoryRecord;
+	} else if (sessionCategorySetting == SESSION_CATEGORY_SOLO_AMBIENT) {
+		category = AVAudioSessionCategorySoloAmbient;
+	}
+
+	[[AVAudioSession sharedInstance] setCategory:category withOptions:options error:nil];
 
 	return YES;
 }
@@ -136,6 +169,14 @@ static ViewController *mainViewController = nil;
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
 	OS_IOS::get_singleton()->on_focus_in();
+}
+
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+	OS_IOS::get_singleton()->on_enter_background();
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+	OS_IOS::get_singleton()->on_exit_background();
 }
 
 - (void)dealloc {

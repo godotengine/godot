@@ -8,23 +8,23 @@
 		Here's a sample on how to write and read from a file:
 		[codeblocks]
 		[gdscript]
-		func save(content):
+		func save_to_file(content):
 		    var file = FileAccess.open("user://save_game.dat", FileAccess.WRITE)
 		    file.store_string(content)
 
-		func load():
+		func load_from_file():
 		    var file = FileAccess.open("user://save_game.dat", FileAccess.READ)
 		    var content = file.get_as_text()
 		    return content
 		[/gdscript]
 		[csharp]
-		public void Save(string content)
+		public void SaveToFile(string content)
 		{
 		    using var file = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Write);
 		    file.StoreString(content);
 		}
 
-		public string Load()
+		public string LoadFromFile()
 		{
 		    using var file = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Read);
 		    string content = file.GetAsText();
@@ -39,7 +39,8 @@
 	</description>
 	<tutorials>
 		<link title="File system">$DOCS_URL/tutorials/scripting/filesystem.html</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
 	<methods>
 		<method name="close">
@@ -130,7 +131,7 @@
 				Returns the next value of the file in CSV (Comma-Separated Values) format. You can pass a different delimiter [param delim] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long, and cannot be a double quotation mark.
 				Text is interpreted as being UTF-8 encoded. Text values must be enclosed in double quotes if they include the delimiter character. Double quotes within a text value can be escaped by doubling their occurrence.
 				For example, the following CSV lines are valid and will be properly parsed as two strings each:
-				[codeblock]
+				[codeblock lang=text]
 				Alice,"Hello, Bob!"
 				Bob,Alice! What a surprise!
 				Alice,"I thought you'd reply with ""Hello, world""."
@@ -155,6 +156,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns the whole [param path] file contents as a [PackedByteArray] without any decoding.
+				Returns an empty [PackedByteArray] if an error occurred while opening the file. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
 		<method name="get_file_as_string" qualifiers="static">
@@ -162,6 +164,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns the whole [param path] file contents as a [String]. Text is interpreted as being UTF-8 encoded.
+				Returns an empty [String] if an error occurred while opening the file. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
 		<method name="get_float" qualifiers="const">
@@ -187,7 +190,7 @@
 		<method name="get_line" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the next line of the file as a [String].
+				Returns the next line of the file as a [String]. The returned string doesn't include newline ([code]\n[/code]) or carriage return ([code]\r[/code]) characters, but does include any other leading or trailing whitespace.
 				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
@@ -254,7 +257,7 @@
 			<return type="String" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Returns a SHA-256 [String] representing the file at the given path or an empty [String] on failure.
+				Returns an SHA-256 [String] representing the file at the given path or an empty [String] on failure.
 			</description>
 		</method>
 		<method name="get_unix_permissions" qualifiers="static">
@@ -321,6 +324,13 @@
 				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
+		<method name="resize">
+			<return type="int" enum="Error" />
+			<param index="0" name="length" type="int" />
+			<description>
+				Resizes the file to a specified length. The file must be open in a mode that permits writing. If the file is extended, NUL characters are appended. If the file is truncated, all data from the end file to the original length of the file is lost.
+			</description>
+		</method>
 		<method name="seek">
 			<return type="void" />
 			<param index="0" name="position" type="int" />
@@ -341,7 +351,7 @@
 			<param index="0" name="file" type="String" />
 			<param index="1" name="hidden" type="bool" />
 			<description>
-				Sets file [code]hidden[/code] attribute.
+				Sets file [b]hidden[/b] attribute.
 				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>
@@ -350,7 +360,7 @@
 			<param index="0" name="file" type="String" />
 			<param index="1" name="ro" type="bool" />
 			<description>
-				Sets file [code]read only[/code] attribute.
+				Sets file [b]read only[/b] attribute.
 				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>
@@ -514,12 +524,14 @@
 		</constant>
 		<constant name="WRITE" value="2" enum="ModeFlags">
 			Opens the file for write operations. The file is created if it does not exist, and truncated if it does.
+			[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive].
 		</constant>
 		<constant name="READ_WRITE" value="3" enum="ModeFlags">
 			Opens the file for read and write operations. Does not truncate the file. The cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="WRITE_READ" value="7" enum="ModeFlags">
 			Opens the file for read and write operations. The file is created if it does not exist, and truncated if it does. The cursor is positioned at the beginning of the file.
+			[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive].
 		</constant>
 		<constant name="COMPRESSION_FASTLZ" value="0" enum="CompressionMode">
 			Uses the [url=https://fastlz.org/]FastLZ[/url] compression method.

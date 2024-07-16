@@ -41,7 +41,7 @@
 		</constructor>
 	</constructors>
 	<methods>
-		<method name="begins_with" qualifiers="const">
+		<method name="begins_with" qualifiers="const" keywords="starts_with">
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<description>
@@ -96,13 +96,14 @@
 				[gdscript]
 				"move_local_x".capitalize()   # Returns "Move Local X"
 				"sceneFile_path".capitalize() # Returns "Scene File Path"
+				"2D, FPS, PNG".capitalize()   # Returns "2d, Fps, Png"
 				[/gdscript]
 				[csharp]
 				"move_local_x".Capitalize();   // Returns "Move Local X"
 				"sceneFile_path".Capitalize(); // Returns "Scene File Path"
+				"2D, FPS, PNG".Capitalize();   // Returns "2d, Fps, Png"
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This method not the same as the default appearance of properties in the Inspector dock, as it does not capitalize acronyms ([code]"2D"[/code], [code]"FPS"[/code], [code]"PNG"[/code], etc.) as you may expect.
 			</description>
 		</method>
 		<method name="casecmp_to" qualifiers="const">
@@ -111,7 +112,7 @@
 			<description>
 				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "Less than" and "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order.
 				With different string lengths, returns [code]1[/code] if this string is longer than the [param to] string, or [code]-1[/code] if shorter. Note that the length of empty strings is [i]always[/i] [code]0[/code].
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to], [method naturalcasecmp_to], and [method naturalnocasecmp_to].
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to], [method filecasecmp_to], and [method naturalcasecmp_to].
 			</description>
 		</method>
 		<method name="chr" qualifiers="static">
@@ -141,7 +142,15 @@
 				GD.Print("team".Contains("I"));  // Prints false
 				[/csharp]
 				[/codeblocks]
-				If you need to know where [param what] is within the string, use [method find].
+				If you need to know where [param what] is within the string, use [method find]. See also [method containsn].
+			</description>
+		</method>
+		<method name="containsn" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="what" type="String" />
+			<description>
+				Returns [code]true[/code] if the string contains [param what], [b]ignoring case[/b].
+				If you need to know where [param what] is within the string, use [method findn]. See also [method contains].
 			</description>
 		</method>
 		<method name="count" qualifiers="const">
@@ -181,6 +190,22 @@
 			<param index="1" name="chars" type="int" default="1" />
 			<description>
 				Returns a string with [param chars] characters erased starting from [param position]. If [param chars] goes beyond the string's length given the specified [param position], fewer characters will be erased from the returned string. Returns an empty string if either [param position] or [param chars] is negative. Returns the original string unmodified if [param chars] is [code]0[/code].
+			</description>
+		</method>
+		<method name="filecasecmp_to" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="to" type="String" />
+			<description>
+				Like [method naturalcasecmp_to] but prioritizes strings that begin with periods ([code].[/code]) and underscores ([code]_[/code]) before any other character. Useful when sorting folders or file names.
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method filenocasecmp_to], [method naturalcasecmp_to], and [method casecmp_to].
+			</description>
+		</method>
+		<method name="filenocasecmp_to" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="to" type="String" />
+			<description>
+				Like [method naturalnocasecmp_to] but prioritizes strings that begin with periods ([code].[/code]) and underscores ([code]_[/code]) before any other character. Useful when sorting folders or file names.
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method filecasecmp_to], [method naturalnocasecmp_to], and [method nocasecmp_to].
 			</description>
 		</method>
 		<method name="find" qualifiers="const">
@@ -238,6 +263,13 @@
 				print("User {id} is {name}.".format([["id", 42], ["name", "Godot"]]))
 				[/codeblock]
 				See also the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format string[/url] tutorial.
+				[b]Note:[/b] The replacement of placeholders is not done all at once, instead each placeholder is replaced in the order they are passed, this means that if one of the replacement strings contains a key it will also be replaced. This can be very powerful, but can also cause unexpected results if you are not careful. If you do not need to perform replacement in the replacement strings, make sure your replacements do not contain placeholders to ensure reliable results.
+				[codeblock]
+				print("{0} {1}".format(["{1}", "x"]))                       # Prints "x x".
+				print("{0} {1}".format(["x", "{0}"]))                       # Prints "x {0}".
+				print("{foo} {bar}".format({"foo": "{bar}", "bar": "baz"})) # Prints "baz baz".
+				print("{foo} {bar}".format({"bar": "baz", "foo": "{bar}"})) # Prints "{bar} baz".
+				[/codeblock]
 				[b]Note:[/b] In C#, it's recommended to [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]interpolate strings with "$"[/url], instead.
 			</description>
 		</method>
@@ -318,7 +350,7 @@
 			<return type="int" />
 			<description>
 				Returns the 32-bit hash value representing the string's contents.
-				[b]Note:[/b] Strings with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the countrary, strings with different hash values are guaranteed to be different.
+				[b]Note:[/b] Strings with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the contrary, strings with different hash values are guaranteed to be different.
 			</description>
 		</method>
 		<method name="hex_decode" qualifiers="const">
@@ -530,7 +562,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="int" />
 			<description>
 				Returns the number of characters in the string. Empty strings ([code]""[/code]) always return [code]0[/code]. See also [method is_empty].
@@ -585,7 +617,7 @@
 				Performs a [b]case-sensitive[/b], [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "Less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order.
 				When used for sorting, natural order comparison orders sequences of numbers by the combined value of each digit as is often expected, instead of the single digit's value. A sorted sequence of numbered strings will be [code]["1", "2", "3", ...][/code], not [code]["1", "10", "2", "3", ...][/code].
 				With different string lengths, returns [code]1[/code] if this string is longer than the [param to] string, or [code]-1[/code] if shorter. Note that the length of empty strings is [i]always[/i] [code]0[/code].
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method naturalnocasecmp_to], [method nocasecmp_to], and [method casecmp_to].
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method naturalnocasecmp_to], [method filecasecmp_to], and [method nocasecmp_to].
 			</description>
 		</method>
 		<method name="naturalnocasecmp_to" qualifiers="const">
@@ -595,7 +627,7 @@
 				Performs a [b]case-insensitive[/b], [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "Less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order. Internally, lowercase characters are converted to uppercase for the comparison.
 				When used for sorting, natural order comparison orders sequences of numbers by the combined value of each digit as is often expected, instead of the single digit's value. A sorted sequence of numbered strings will be [code]["1", "2", "3", ...][/code], not [code]["1", "10", "2", "3", ...][/code].
 				With different string lengths, returns [code]1[/code] if this string is longer than the [param to] string, or [code]-1[/code] if shorter. Note that the length of empty strings is [i]always[/i] [code]0[/code].
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method naturalcasecmp_to], [method nocasecmp_to], and [method casecmp_to].
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method naturalcasecmp_to], [method filenocasecmp_to], and [method casecmp_to].
 			</description>
 		</method>
 		<method name="nocasecmp_to" qualifiers="const">
@@ -604,7 +636,7 @@
 			<description>
 				Performs a [b]case-insensitive[/b] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "Less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order. Internally, lowercase characters are converted to uppercase for the comparison.
 				With different string lengths, returns [code]1[/code] if this string is longer than the [param to] string, or [code]-1[/code] if shorter. Note that the length of empty strings is [i]always[/i] [code]0[/code].
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method casecmp_to], [method naturalcasecmp_to], and [method naturalnocasecmp_to].
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method casecmp_to], [method filenocasecmp_to], and [method naturalnocasecmp_to].
 			</description>
 		</method>
 		<method name="num" qualifiers="static">
@@ -650,8 +682,8 @@
 				[codeblocks]
 				[gdscript]
 				var n = -5.2e8
-				print(n)                       # Prints -520000000
-				print(String.NumScientific(n)) # Prints -5.2e+08
+				print(n)                        # Prints -520000000
+				print(String.num_scientific(n)) # Prints -5.2e+08
 				[/gdscript]
 				[csharp]
 				// This method is not implemented in C#.
@@ -723,7 +755,7 @@
 		<method name="reverse" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the copy of this string in reverse order.
+				Returns the copy of this string in reverse order. This operation works on unicode codepoints, rather than sequences of codepoints, and may break things like compound letters or emojis.
 			</description>
 		</method>
 		<method name="rfind" qualifiers="const">
@@ -949,7 +981,7 @@
 		<method name="to_lower" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the string converted to lowercase.
+				Returns the string converted to [code]lowercase[/code].
 			</description>
 		</method>
 		<method name="to_pascal_case" qualifiers="const">
@@ -962,12 +994,25 @@
 			<return type="String" />
 			<description>
 				Returns the string converted to [code]snake_case[/code].
+				[b]Note:[/b] Numbers followed by a [i]single[/i] letter are not separated in the conversion to keep some words (such as "2D") together.
+				[codeblocks]
+				[gdscript]
+				"Node2D".to_snake_case()               # Returns "node_2d"
+				"2nd place".to_snake_case()            # Returns "2_nd_place"
+				"Texture3DAssetFolder".to_snake_case() # Returns "texture_3d_asset_folder"
+				[/gdscript]
+				[csharp]
+				"Node2D".ToSnakeCase();               // Returns "node_2d"
+				"2nd place".ToSnakeCase();            // Returns "2_nd_place"
+				"Texture3DAssetFolder".ToSnakeCase(); // Returns "texture_3d_asset_folder"
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="to_upper" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the string converted to uppercase.
+				Returns the string converted to [code]UPPERCASE[/code].
 			</description>
 		</method>
 		<method name="to_utf8_buffer" qualifiers="const">

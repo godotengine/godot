@@ -35,7 +35,6 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
 #include "scene/main/node.h"
-#include "scene/scene_string_names.h"
 
 #define MAKE_ROOM(m_amount)             \
 	if (packet_cache.size() < m_amount) \
@@ -57,7 +56,7 @@ SceneReplicationInterface::TrackedNode &SceneReplicationInterface::_track(const 
 	if (!tracked_nodes.has(p_id)) {
 		tracked_nodes[p_id] = TrackedNode(p_id);
 		Node *node = get_id_as<Node>(p_id);
-		node->connect(SceneStringNames::get_singleton()->tree_exited, callable_mp(this, &SceneReplicationInterface::_untrack).bind(p_id), Node::CONNECT_ONE_SHOT);
+		node->connect(SceneStringName(tree_exited), callable_mp(this, &SceneReplicationInterface::_untrack).bind(p_id), Node::CONNECT_ONE_SHOT);
 	}
 	return tracked_nodes[p_id];
 }
@@ -87,6 +86,10 @@ void SceneReplicationInterface::_free_remotes(const PeerInfo &p_info) {
 		ERR_CONTINUE(!node);
 		node->queue_free();
 	}
+}
+
+bool SceneReplicationInterface::_has_authority(const Node *p_node) {
+	return multiplayer->has_multiplayer_peer() && p_node->get_multiplayer_authority() == multiplayer->get_unique_id();
 }
 
 void SceneReplicationInterface::on_peer_change(int p_id, bool p_connected) {
@@ -131,8 +134,8 @@ void SceneReplicationInterface::on_network_process() {
 		for (const ObjectID &oid : spawn_queue) {
 			Node *node = get_id_as<Node>(oid);
 			ERR_CONTINUE(!node);
-			if (node->is_connected(SceneStringNames::get_singleton()->ready, callable_mp(this, &SceneReplicationInterface::_node_ready))) {
-				node->disconnect(SceneStringNames::get_singleton()->ready, callable_mp(this, &SceneReplicationInterface::_node_ready));
+			if (node->is_connected(SceneStringName(ready), callable_mp(this, &SceneReplicationInterface::_node_ready))) {
+				node->disconnect(SceneStringName(ready), callable_mp(this, &SceneReplicationInterface::_node_ready));
 			}
 		}
 		spawn_queue.clear();
@@ -164,7 +167,7 @@ Error SceneReplicationInterface::on_spawn(Object *p_obj, Variant p_config) {
 	ERR_FAIL_COND_V(tobj.spawner != ObjectID(), ERR_ALREADY_IN_USE);
 	tobj.spawner = spawner->get_instance_id();
 	spawn_queue.insert(oid);
-	node->connect(SceneStringNames::get_singleton()->ready, callable_mp(this, &SceneReplicationInterface::_node_ready).bind(oid), Node::CONNECT_ONE_SHOT);
+	node->connect(SceneStringName(ready), callable_mp(this, &SceneReplicationInterface::_node_ready).bind(oid), Node::CONNECT_ONE_SHOT);
 	return OK;
 }
 
@@ -184,10 +187,7 @@ void SceneReplicationInterface::_node_ready(const ObjectID &p_oid) {
 		ERR_CONTINUE(!spawner);
 
 		spawned_nodes.insert(oid);
-		if (multiplayer->has_multiplayer_peer() && spawner->is_multiplayer_authority()) {
-			if (tobj.net_id == 0) {
-				tobj.net_id = ++last_net_id;
-			}
+		if (_has_authority(spawner)) {
 			_update_spawn_visibility(0, oid);
 		}
 	}
@@ -235,22 +235,23 @@ Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_c
 	sync_nodes.insert(sid);
 
 	// Update visibility.
-	sync->connect("visibility_changed", callable_mp(this, &SceneReplicationInterface::_visibility_changed).bind(sync->get_instance_id()));
+	sync->connect(SceneStringName(visibility_changed), callable_mp(this, &SceneReplicationInterface::_visibility_changed).bind(sync->get_instance_id()));
 	_update_sync_visibility(0, sync);
 
 	if (pending_spawn == p_obj->get_instance_id() && sync->get_multiplayer_authority() == pending_spawn_remote) {
 		// Try to apply synchronizer Net ID
 		ERR_FAIL_COND_V_MSG(pending_sync_net_ids.is_empty(), ERR_INVALID_DATA, vformat("The MultiplayerSynchronizer at path \"%s\" is unable to process the pending spawn since it has no network ID. This might happen when changing the multiplayer authority during the \"_ready\" callback. Make sure to only change the authority of multiplayer synchronizers during \"_enter_tree\" or the \"_spawn_custom\" callback of their multiplayer spawner.", sync->get_path()));
 		ERR_FAIL_COND_V(!peers_info.has(pending_spawn_remote), ERR_INVALID_DATA);
-		uint32_t net_id = pending_sync_net_ids[0];
+		uint32_t net_id = pending_sync_net_ids.front()->get();
 		pending_sync_net_ids.pop_front();
 		peers_info[pending_spawn_remote].recv_sync_ids[net_id] = sync->get_instance_id();
+		sync->set_net_id(net_id);
 
 		// Try to apply spawn state (before ready).
 		if (pending_buffer_size > 0) {
-			ERR_FAIL_COND_V(!node || sync->get_replication_config().is_null(), ERR_UNCONFIGURED);
+			ERR_FAIL_COND_V(!node || !sync->get_replication_config_ptr(), ERR_UNCONFIGURED);
 			int consumed = 0;
-			const List<NodePath> props = sync->get_replication_config()->get_spawn_properties();
+			const List<NodePath> props = sync->get_replication_config_ptr()->get_spawn_properties();
 			Vector<Variant> vars;
 			vars.resize(props.size());
 			Error err = MultiplayerAPI::decode_and_decompress_variants(vars, pending_buffer, pending_buffer_size, consumed);
@@ -271,7 +272,7 @@ Error SceneReplicationInterface::on_replication_stop(Object *p_obj, Variant p_co
 	ERR_FAIL_COND_V(!node || p_config.get_type() != Variant::OBJECT, ERR_INVALID_PARAMETER);
 	MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(p_config.get_validated_object());
 	ERR_FAIL_NULL_V(sync, ERR_INVALID_PARAMETER);
-	sync->disconnect("visibility_changed", callable_mp(this, &SceneReplicationInterface::_visibility_changed));
+	sync->disconnect(SceneStringName(visibility_changed), callable_mp(this, &SceneReplicationInterface::_visibility_changed));
 	// Untrack synchronizer.
 	const ObjectID oid = node->get_instance_id();
 	const ObjectID sid = sync->get_instance_id();
@@ -342,7 +343,7 @@ bool SceneReplicationInterface::is_rpc_visible(const ObjectID &p_oid, int p_peer
 
 Error SceneReplicationInterface::_update_sync_visibility(int p_peer, MultiplayerSynchronizer *p_sync) {
 	ERR_FAIL_NULL_V(p_sync, ERR_BUG);
-	if (!multiplayer->has_multiplayer_peer() || !p_sync->is_multiplayer_authority() || p_peer == multiplayer->get_unique_id()) {
+	if (!_has_authority(p_sync) || p_peer == multiplayer->get_unique_id()) {
 		return OK;
 	}
 
@@ -383,14 +384,16 @@ Error SceneReplicationInterface::_update_spawn_visibility(int p_peer, const Obje
 	ERR_FAIL_NULL_V(tnode, ERR_BUG);
 	MultiplayerSpawner *spawner = get_id_as<MultiplayerSpawner>(tnode->spawner);
 	Node *node = get_id_as<Node>(p_oid);
-	ERR_FAIL_COND_V(!node || !spawner || !spawner->is_multiplayer_authority(), ERR_BUG);
+	ERR_FAIL_NULL_V(node, ERR_BUG);
+	ERR_FAIL_NULL_V(spawner, ERR_BUG);
+	ERR_FAIL_COND_V(!_has_authority(spawner), ERR_BUG);
 	ERR_FAIL_COND_V(!tracked_nodes.has(p_oid), ERR_BUG);
 	const HashSet<ObjectID> synchronizers = tracked_nodes[p_oid].synchronizers;
 	bool is_visible = true;
 	for (const ObjectID &sid : synchronizers) {
 		MultiplayerSynchronizer *sync = get_id_as<MultiplayerSynchronizer>(sid);
 		ERR_CONTINUE(!sync);
-		if (!sync->is_multiplayer_authority()) {
+		if (!_has_authority(sync)) {
 			continue;
 		}
 		// Spawn visibility is composed using OR when multiple synchronizers are present.
@@ -417,7 +420,7 @@ Error SceneReplicationInterface::_update_spawn_visibility(int p_peer, const Obje
 		// Check visibility for each peers.
 		for (const KeyValue<int, PeerInfo> &E : peers_info) {
 			if (is_visible) {
-				// This is fast, since the the object is visible to everyone, we don't need to check each peer.
+				// This is fast, since the object is visible to everyone, we don't need to check each peer.
 				if (E.value.spawn_nodes.has(p_oid)) {
 					// Already spawned.
 					continue;
@@ -435,7 +438,7 @@ Error SceneReplicationInterface::_update_spawn_visibility(int p_peer, const Obje
 		for (int pid : to_spawn) {
 			ERR_CONTINUE(!peers_info.has(pid));
 			int path_id;
-			multiplayer->get_path_cache()->send_object_cache(spawner, pid, path_id);
+			multiplayer_cache->send_object_cache(spawner, pid, path_id);
 			_send_raw(packet_cache.ptr(), len, pid, true);
 			peers_info[pid].spawn_nodes.insert(p_oid);
 		}
@@ -454,9 +457,9 @@ Error SceneReplicationInterface::_update_spawn_visibility(int p_peer, const Obje
 
 Error SceneReplicationInterface::_send_raw(const uint8_t *p_buffer, int p_size, int p_peer, bool p_reliable) {
 	ERR_FAIL_COND_V(!p_buffer || p_size < 1, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(!multiplayer->has_multiplayer_peer(), ERR_UNCONFIGURED);
 
 	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
+	ERR_FAIL_COND_V(peer.is_null(), ERR_UNCONFIGURED);
 	peer->set_transfer_channel(0);
 	peer->set_transfer_mode(p_reliable ? MultiplayerPeer::TRANSFER_MODE_RELIABLE : MultiplayerPeer::TRANSFER_MODE_UNRELIABLE);
 	return multiplayer->send_command(p_peer, p_buffer, p_size);
@@ -466,9 +469,13 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, MultiplayerSpa
 	ERR_FAIL_COND_V(!multiplayer || !p_node || !p_spawner, ERR_BUG);
 
 	const ObjectID oid = p_node->get_instance_id();
-	const TrackedNode *tnode = tracked_nodes.getptr(oid);
+	TrackedNode *tnode = tracked_nodes.getptr(oid);
 	ERR_FAIL_NULL_V(tnode, ERR_INVALID_PARAMETER);
 
+	if (tnode->net_id == 0) {
+		// Ensure the node has an ID.
+		tnode->net_id = ++last_net_id;
+	}
 	uint32_t nid = tnode->net_id;
 	ERR_FAIL_COND_V(!nid, ERR_UNCONFIGURED);
 
@@ -488,12 +495,12 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, MultiplayerSpa
 	const HashSet<ObjectID> synchronizers = tnode->synchronizers;
 	for (const ObjectID &sid : synchronizers) {
 		MultiplayerSynchronizer *sync = get_id_as<MultiplayerSynchronizer>(sid);
-		if (!sync->is_multiplayer_authority()) {
+		if (!_has_authority(sync)) {
 			continue;
 		}
 		ERR_CONTINUE(!sync);
-		ERR_FAIL_COND_V(sync->get_replication_config().is_null(), ERR_BUG);
-		for (const NodePath &prop : sync->get_replication_config()->get_spawn_properties()) {
+		ERR_FAIL_NULL_V(sync->get_replication_config_ptr(), ERR_BUG);
+		for (const NodePath &prop : sync->get_replication_config_ptr()->get_spawn_properties()) {
 			state_props.push_back(prop);
 		}
 		// Ensure the synchronizer has an ID.
@@ -513,7 +520,7 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, MultiplayerSpa
 	}
 
 	// Encode scene ID, path ID, net ID, node name.
-	int path_id = multiplayer->get_path_cache()->make_object_cache(p_spawner);
+	int path_id = multiplayer_cache->make_object_cache(p_spawner);
 	CharString cname = p_node->get_name().operator String().utf8();
 	int nlen = encode_cstring(cname.get_data(), nullptr);
 	MAKE_ROOM(1 + 1 + 4 + 4 + 4 + 4 * sync_ids.size() + 4 + nlen + (is_custom ? 4 + spawn_arg_size : 0) + state_size);
@@ -567,7 +574,7 @@ Error SceneReplicationInterface::on_spawn_receive(int p_from, const uint8_t *p_b
 	ofs += 1;
 	uint32_t node_target = decode_uint32(&p_buffer[ofs]);
 	ofs += 4;
-	MultiplayerSpawner *spawner = Object::cast_to<MultiplayerSpawner>(multiplayer->get_path_cache()->get_cached_object(p_from, node_target));
+	MultiplayerSpawner *spawner = Object::cast_to<MultiplayerSpawner>(multiplayer_cache->get_cached_object(p_from, node_target));
 	ERR_FAIL_NULL_V(spawner, ERR_DOES_NOT_EXIST);
 	ERR_FAIL_COND_V(p_from != spawner->get_multiplayer_authority(), ERR_UNAUTHORIZED);
 
@@ -678,7 +685,7 @@ bool SceneReplicationInterface::_verify_synchronizer(int p_peer, MultiplayerSync
 	r_net_id = p_sync->get_net_id();
 	if (r_net_id == 0 || (r_net_id & 0x80000000)) {
 		int path_id = 0;
-		bool verified = multiplayer->get_path_cache()->send_object_cache(p_sync, p_peer, path_id);
+		bool verified = multiplayer_cache->send_object_cache(p_sync, p_peer, path_id);
 		ERR_FAIL_COND_V_MSG(path_id < 0, false, "This should never happen!");
 		if (r_net_id == 0) {
 			// First time path based ID.
@@ -693,7 +700,7 @@ bool SceneReplicationInterface::_verify_synchronizer(int p_peer, MultiplayerSync
 MultiplayerSynchronizer *SceneReplicationInterface::_find_synchronizer(int p_peer, uint32_t p_net_id) {
 	MultiplayerSynchronizer *sync = nullptr;
 	if (p_net_id & 0x80000000) {
-		sync = Object::cast_to<MultiplayerSynchronizer>(multiplayer->get_path_cache()->get_cached_object(p_peer, p_net_id & 0x7FFFFFFF));
+		sync = Object::cast_to<MultiplayerSynchronizer>(multiplayer_cache->get_cached_object(p_peer, p_net_id & 0x7FFFFFFF));
 	} else if (peers_info[p_peer].recv_sync_ids.has(p_net_id)) {
 		const ObjectID &sid = peers_info[p_peer].recv_sync_ids[p_net_id];
 		sync = get_id_as<MultiplayerSynchronizer>(sid);
@@ -701,14 +708,14 @@ MultiplayerSynchronizer *SceneReplicationInterface::_find_synchronizer(int p_pee
 	return sync;
 }
 
-void SceneReplicationInterface::_send_delta(int p_peer, const HashSet<ObjectID> p_synchronizers, uint64_t p_usec, const HashMap<ObjectID, uint64_t> p_last_watch_usecs) {
+void SceneReplicationInterface::_send_delta(int p_peer, const HashSet<ObjectID> &p_synchronizers, uint64_t p_usec, const HashMap<ObjectID, uint64_t> &p_last_watch_usecs) {
 	MAKE_ROOM(/* header */ 1 + /* element */ 4 + 8 + 4 + delta_mtu);
 	uint8_t *ptr = packet_cache.ptrw();
 	ptr[0] = SceneMultiplayer::NETWORK_COMMAND_SYNC | (1 << SceneMultiplayer::CMD_FLAG_0_SHIFT);
 	int ofs = 1;
 	for (const ObjectID &oid : p_synchronizers) {
 		MultiplayerSynchronizer *sync = get_id_as<MultiplayerSynchronizer>(oid);
-		ERR_CONTINUE(!sync || !sync->get_replication_config().is_valid() || !sync->is_multiplayer_authority());
+		ERR_CONTINUE(!sync || !sync->get_replication_config_ptr() || !_has_authority(sync));
 		uint32_t net_id;
 		if (!_verify_synchronizer(p_peer, sync, net_id)) {
 			continue;
@@ -775,7 +782,7 @@ Error SceneReplicationInterface::on_delta_receive(int p_from, const uint8_t *p_b
 			ERR_CONTINUE_MSG(true, "Ignoring delta for non-authority or invalid synchronizer.");
 		}
 		List<NodePath> props = sync->get_delta_properties(indexes);
-		ERR_FAIL_COND_V(props.size() == 0, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(props.is_empty(), ERR_INVALID_DATA);
 		Vector<Variant> vars;
 		vars.resize(props.size());
 		int consumed = 0;
@@ -793,7 +800,7 @@ Error SceneReplicationInterface::on_delta_receive(int p_from, const uint8_t *p_b
 	return OK;
 }
 
-void SceneReplicationInterface::_send_sync(int p_peer, const HashSet<ObjectID> p_synchronizers, uint16_t p_sync_net_time, uint64_t p_usec) {
+void SceneReplicationInterface::_send_sync(int p_peer, const HashSet<ObjectID> &p_synchronizers, uint16_t p_sync_net_time, uint64_t p_usec) {
 	MAKE_ROOM(/* header */ 3 + /* element */ 4 + 4 + sync_mtu);
 	uint8_t *ptr = packet_cache.ptrw();
 	ptr[0] = SceneMultiplayer::NETWORK_COMMAND_SYNC;
@@ -803,7 +810,7 @@ void SceneReplicationInterface::_send_sync(int p_peer, const HashSet<ObjectID> p
 	// This is a lazy implementation, we could optimize much more here with by grouping by replication config.
 	for (const ObjectID &oid : p_synchronizers) {
 		MultiplayerSynchronizer *sync = get_id_as<MultiplayerSynchronizer>(oid);
-		ERR_CONTINUE(!sync || !sync->get_replication_config().is_valid() || !sync->is_multiplayer_authority());
+		ERR_CONTINUE(!sync || !sync->get_replication_config_ptr() || !_has_authority(sync));
 		if (!sync->update_outbound_sync_time(p_usec)) {
 			continue; // nothing to sync.
 		}
@@ -818,7 +825,7 @@ void SceneReplicationInterface::_send_sync(int p_peer, const HashSet<ObjectID> p
 		int size;
 		Vector<Variant> vars;
 		Vector<const Variant *> varp;
-		const List<NodePath> props = sync->get_replication_config()->get_sync_properties();
+		const List<NodePath> props = sync->get_replication_config_ptr()->get_sync_properties();
 		Error err = MultiplayerSynchronizer::get_state(props, node, vars, varp);
 		ERR_CONTINUE_MSG(err != OK, "Unable to retrieve sync state.");
 		err = MultiplayerAPI::encode_and_compress_variants(varp.ptrw(), varp.size(), nullptr, size);
@@ -877,7 +884,7 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 			ofs += size;
 			continue;
 		}
-		const List<NodePath> props = sync->get_replication_config()->get_sync_properties();
+		const List<NodePath> props = sync->get_replication_config_ptr()->get_sync_properties();
 		Vector<Variant> vars;
 		vars.resize(props.size());
 		int consumed;

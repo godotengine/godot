@@ -303,7 +303,7 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 		}
 
 		// Check for dot or underscore or 'x' for hex notation in floating point number or 'e' for scientific notation.
-		if ((str[j] == '.' || str[j] == 'x' || str[j] == '_' || str[j] == 'f' || str[j] == 'e') && !in_word && prev_is_number && !is_number) {
+		if ((str[j] == '.' || str[j] == 'x' || str[j] == '_' || str[j] == 'f' || str[j] == 'e' || (uint_suffix_enabled && str[j] == 'u')) && !in_word && prev_is_number && !is_number) {
 			is_number = true;
 			is_a_symbol = false;
 			is_char = false;
@@ -313,7 +313,7 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 			}
 		}
 
-		if (!in_word && (is_ascii_char(str[j]) || is_underscore(str[j])) && !is_number) {
+		if (!in_word && (is_ascii_alphabet_char(str[j]) || is_underscore(str[j])) && !is_number) {
 			in_word = true;
 		}
 
@@ -615,6 +615,10 @@ void CodeHighlighter::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "keyword_colors"), "set_keyword_colors", "get_keyword_colors");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "member_keyword_colors"), "set_member_keyword_colors", "get_member_keyword_colors");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "color_regions"), "set_color_regions", "get_color_regions");
+}
+
+void CodeHighlighter::set_uint_suffix_enabled(bool p_enabled) {
+	uint_suffix_enabled = p_enabled;
 }
 
 void CodeHighlighter::set_number_color(Color p_color) {

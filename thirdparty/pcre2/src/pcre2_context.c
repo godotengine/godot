@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2022 University of Cambridge
+          New API code Copyright (c) 2016-2023 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -139,7 +139,9 @@ const pcre2_compile_context PRIV(default_compile_context) = {
   BSR_DEFAULT,                               /* Backslash R default */
   NEWLINE_DEFAULT,                           /* Newline convention */
   PARENS_NEST_LIMIT,                         /* As it says */
-  0 };                                       /* Extra options */
+  0,                                         /* Extra options */
+  MAX_VARLOOKBEHIND                          /* As it says */
+  };
 
 /* The create function copies the default into the new memory, but must
 override the default memory handling functions if a gcontext was provided. */
@@ -228,49 +230,48 @@ return ccontext;
 PCRE2_EXP_DEFN pcre2_general_context * PCRE2_CALL_CONVENTION
 pcre2_general_context_copy(pcre2_general_context *gcontext)
 {
-pcre2_general_context *new =
+pcre2_general_context *newcontext =
   gcontext->memctl.malloc(sizeof(pcre2_real_general_context),
   gcontext->memctl.memory_data);
-if (new == NULL) return NULL;
-memcpy(new, gcontext, sizeof(pcre2_real_general_context));
-return new;
+if (newcontext == NULL) return NULL;
+memcpy(newcontext, gcontext, sizeof(pcre2_real_general_context));
+return newcontext;
 }
 
 
 PCRE2_EXP_DEFN pcre2_compile_context * PCRE2_CALL_CONVENTION
 pcre2_compile_context_copy(pcre2_compile_context *ccontext)
 {
-pcre2_compile_context *new =
+pcre2_compile_context *newcontext =
   ccontext->memctl.malloc(sizeof(pcre2_real_compile_context),
   ccontext->memctl.memory_data);
-if (new == NULL) return NULL;
-memcpy(new, ccontext, sizeof(pcre2_real_compile_context));
-return new;
+if (newcontext == NULL) return NULL;
+memcpy(newcontext, ccontext, sizeof(pcre2_real_compile_context));
+return newcontext;
 }
 
 
 PCRE2_EXP_DEFN pcre2_match_context * PCRE2_CALL_CONVENTION
 pcre2_match_context_copy(pcre2_match_context *mcontext)
 {
-pcre2_match_context *new =
+pcre2_match_context *newcontext =
   mcontext->memctl.malloc(sizeof(pcre2_real_match_context),
   mcontext->memctl.memory_data);
-if (new == NULL) return NULL;
-memcpy(new, mcontext, sizeof(pcre2_real_match_context));
-return new;
+if (newcontext == NULL) return NULL;
+memcpy(newcontext, mcontext, sizeof(pcre2_real_match_context));
+return newcontext;
 }
-
 
 
 PCRE2_EXP_DEFN pcre2_convert_context * PCRE2_CALL_CONVENTION
 pcre2_convert_context_copy(pcre2_convert_context *ccontext)
 {
-pcre2_convert_context *new =
+pcre2_convert_context *newcontext =
   ccontext->memctl.malloc(sizeof(pcre2_real_convert_context),
   ccontext->memctl.memory_data);
-if (new == NULL) return NULL;
-memcpy(new, ccontext, sizeof(pcre2_real_convert_context));
-return new;
+if (newcontext == NULL) return NULL;
+memcpy(newcontext, ccontext, sizeof(pcre2_real_convert_context));
+return newcontext;
 }
 
 
@@ -368,6 +369,13 @@ switch(newline)
   default:
   return PCRE2_ERROR_BADDATA;
   }
+}
+
+PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
+pcre2_set_max_varlookbehind(pcre2_compile_context *ccontext, uint32_t limit)
+{
+ccontext->max_varlookbehind = limit;
+return 0;
 }
 
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION

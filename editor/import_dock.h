@@ -76,6 +76,7 @@ class ImportDock : public VBoxContainer {
 	void _property_edited(const StringName &p_prop);
 	void _property_toggled(const StringName &p_prop, bool p_checked);
 	void _set_dirty(bool p_dirty);
+	void _reimport_pressed();
 	void _reimport_attempt();
 	void _reimport_and_cleanup();
 	void _reimport();

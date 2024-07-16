@@ -55,7 +55,7 @@
 
 #include "core/templates/local_vector.h"
 
-template <class T, class U = uint32_t, bool force_trivial = false, bool zero_on_first_request = false>
+template <typename T, typename U = uint32_t, bool force_trivial = false, bool zero_on_first_request = false>
 class PooledList {
 	LocalVector<T, U, force_trivial> list;
 	LocalVector<U, U, true> freelist;
@@ -128,7 +128,7 @@ public:
 };
 
 // a pooled list which automatically keeps a list of the active members
-template <class T, class U = uint32_t, bool force_trivial = false, bool zero_on_first_request = false>
+template <typename T, typename U = uint32_t, bool force_trivial = false, bool zero_on_first_request = false>
 class TrackedPooledList {
 public:
 	U pool_used_size() const { return _pool.used_size(); }

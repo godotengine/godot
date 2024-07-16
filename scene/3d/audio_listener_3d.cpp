@@ -55,7 +55,7 @@ bool AudioListener3D::_set(const StringName &p_name, const Variant &p_value) {
 
 bool AudioListener3D::_get(const StringName &p_name, Variant &r_ret) const {
 	if (p_name == "current") {
-		if (is_inside_tree() && get_tree()->is_node_being_edited(this)) {
+		if (is_part_of_edited_scene()) {
 			r_ret = current;
 		} else {
 			r_ret = is_current();
@@ -81,7 +81,7 @@ void AudioListener3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
 			bool first_listener = get_viewport()->_audio_listener_3d_add(this);
-			if (!get_tree()->is_node_being_edited(this) && (current || first_listener)) {
+			if (!is_part_of_edited_scene() && (current || first_listener)) {
 				make_current();
 			}
 		} break;
@@ -91,7 +91,7 @@ void AudioListener3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_WORLD: {
-			if (!get_tree()->is_node_being_edited(this)) {
+			if (!is_part_of_edited_scene()) {
 				if (is_current()) {
 					clear_current();
 					current = true; //keep it true
@@ -133,7 +133,7 @@ void AudioListener3D::clear_current() {
 }
 
 bool AudioListener3D::is_current() const {
-	if (is_inside_tree() && !get_tree()->is_node_being_edited(this)) {
+	if (is_inside_tree() && !is_part_of_edited_scene()) {
 		return get_viewport()->get_audio_listener_3d() == this;
 	} else {
 		return current;

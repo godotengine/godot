@@ -30,8 +30,6 @@
 
 #include "atlas_texture.h"
 
-#include "core/core_string_names.h"
-
 int AtlasTexture::get_width() const {
 	if (region.size.width == 0) {
 		if (atlas.is_valid()) {
@@ -166,20 +164,13 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 		return;
 	}
 
-	Rect2 rc = region;
+	Rect2 src_rect = Rect2(0, 0, get_width(), get_height());
 
-	if (rc.size.width == 0) {
-		rc.size.width = atlas->get_width();
+	Rect2 dr;
+	Rect2 src_c;
+	if (get_rect_region(p_rect, src_rect, dr, src_c)) {
+		atlas->draw_rect_region(p_canvas_item, dr, src_c, p_modulate, p_transpose, filter_clip);
 	}
-
-	if (rc.size.height == 0) {
-		rc.size.height = atlas->get_height();
-	}
-
-	Vector2 scale = p_rect.size / (region.size + margin.size);
-	Rect2 dr(p_rect.position + margin.position * scale, rc.size * scale);
-
-	atlas->draw_rect_region(p_canvas_item, dr, rc, p_modulate, p_transpose, filter_clip);
 }
 
 void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) const {
@@ -190,9 +181,9 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 
 	Rect2 dr;
 	Rect2 src_c;
-	get_rect_region(p_rect, p_src_rect, dr, src_c);
-
-	atlas->draw_rect_region(p_canvas_item, dr, src_c, p_modulate, p_transpose, filter_clip);
+	if (get_rect_region(p_rect, p_src_rect, dr, src_c)) {
+		atlas->draw_rect_region(p_canvas_item, dr, src_c, p_modulate, p_transpose, filter_clip);
+	}
 }
 
 bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {

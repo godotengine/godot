@@ -49,11 +49,11 @@ void MultiplayerSynchronizer::_stop() {
 	}
 #endif
 	root_node_cache = ObjectID();
-	reset();
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node) {
 		get_multiplayer()->object_configuration_remove(node, this);
 	}
+	reset();
 }
 
 void MultiplayerSynchronizer::_start() {
@@ -107,6 +107,9 @@ void MultiplayerSynchronizer::reset() {
 	net_id = 0;
 	last_sync_usec = 0;
 	last_inbound_sync = 0;
+	last_watch_usec = 0;
+	sync_started = false;
+	watchers.clear();
 }
 
 uint32_t MultiplayerSynchronizer::get_net_id() const {
@@ -131,7 +134,9 @@ bool MultiplayerSynchronizer::update_outbound_sync_time(uint64_t p_usec) {
 }
 
 bool MultiplayerSynchronizer::update_inbound_sync_time(uint16_t p_network_time) {
-	if (p_network_time <= last_inbound_sync && last_inbound_sync - p_network_time < 32767) {
+	if (!sync_started) {
+		sync_started = true;
+	} else if (p_network_time <= last_inbound_sync && last_inbound_sync - p_network_time < 32767) {
 		return false;
 	}
 	last_inbound_sync = p_network_time;
@@ -265,7 +270,7 @@ void MultiplayerSynchronizer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "replication_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_replication_interval", "get_replication_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "delta_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_delta_interval", "get_delta_interval");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "replication_config", PROPERTY_HINT_RESOURCE_TYPE, "SceneReplicationConfig", PROPERTY_USAGE_NO_EDITOR), "set_replication_config", "get_replication_config");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "replication_config", PROPERTY_HINT_RESOURCE_TYPE, "SceneReplicationConfig", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_replication_config", "get_replication_config");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_update_mode", PROPERTY_HINT_ENUM, "Idle,Physics,None"), "set_visibility_update_mode", "get_visibility_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "public_visibility"), "set_visibility_public", "is_visibility_public");
 
@@ -338,14 +343,18 @@ void MultiplayerSynchronizer::update_visibility(int p_for_peer) {
 #endif
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node && get_multiplayer()->has_multiplayer_peer() && is_multiplayer_authority()) {
-		emit_signal(SNAME("visibility_changed"), p_for_peer);
+		emit_signal(SceneStringName(visibility_changed), p_for_peer);
 	}
 }
 
 void MultiplayerSynchronizer::set_root_path(const NodePath &p_path) {
+	if (p_path == root_path) {
+		return;
+	}
 	_stop();
 	root_path = p_path;
 	_start();
+	update_configuration_warnings();
 }
 
 NodePath MultiplayerSynchronizer::get_root_path() const {
@@ -353,15 +362,12 @@ NodePath MultiplayerSynchronizer::get_root_path() const {
 }
 
 void MultiplayerSynchronizer::set_multiplayer_authority(int p_peer_id, bool p_recursive) {
-	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
-	if (!node || get_multiplayer_authority() == p_peer_id) {
-		Node::set_multiplayer_authority(p_peer_id, p_recursive);
+	if (get_multiplayer_authority() == p_peer_id) {
 		return;
 	}
-
-	get_multiplayer()->object_configuration_remove(node, this);
+	_stop();
 	Node::set_multiplayer_authority(p_peer_id, p_recursive);
-	get_multiplayer()->object_configuration_add(node, this);
+	_start();
 }
 
 Error MultiplayerSynchronizer::_watch_changes(uint64_t p_usec) {
@@ -382,7 +388,7 @@ Error MultiplayerSynchronizer::_watch_changes(uint64_t p_usec) {
 		bool valid = false;
 		const Object *obj = _get_prop_target(node, prop);
 		ERR_CONTINUE_MSG(!obj, vformat("Node not found for property '%s'.", prop));
-		Variant v = obj->get(prop.get_concatenated_subnames(), &valid);
+		Variant v = obj->get_indexed(prop.get_subnames(), &valid);
 		ERR_CONTINUE_MSG(!valid, vformat("Property '%s' not found.", prop));
 		Watcher &w = ptr[idx];
 		if (w.prop != prop) {
@@ -439,6 +445,10 @@ List<NodePath> MultiplayerSynchronizer::get_delta_properties(uint64_t p_indexes)
 		out.push_back(prop);
 	}
 	return out;
+}
+
+SceneReplicationConfig *MultiplayerSynchronizer::get_replication_config_ptr() const {
+	return replication_config.ptr();
 }
 
 MultiplayerSynchronizer::MultiplayerSynchronizer() {

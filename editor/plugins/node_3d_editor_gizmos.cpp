@@ -36,7 +36,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/resources/primitive_meshes.h"
+#include "scene/resources/3d/primitive_meshes.h"
 
 #define HANDLE_HALF_SIZE 9.5
 
@@ -825,6 +825,7 @@ void EditorNode3DGizmo::_bind_methods() {
 	GDVIRTUAL_BIND(_is_handle_highlighted, "id", "secondary");
 
 	GDVIRTUAL_BIND(_get_handle_value, "id", "secondary");
+	GDVIRTUAL_BIND(_begin_handle_action, "id", "secondary");
 	GDVIRTUAL_BIND(_set_handle, "id", "secondary", "camera", "point");
 	GDVIRTUAL_BIND(_commit_handle, "id", "secondary", "restore", "cancel");
 
@@ -911,7 +912,9 @@ void EditorNode3DGizmoPlugin::create_icon_material(const String &p_name, const R
 		Color color = instantiated ? instantiated_color : p_albedo;
 
 		if (!selected) {
-			color.a *= 0.85;
+			color.r *= 0.6;
+			color.g *= 0.6;
+			color.b *= 0.6;
 		}
 
 		icon->set_albedo(color);
@@ -920,9 +923,8 @@ void EditorNode3DGizmoPlugin::create_icon_material(const String &p_name, const R
 		icon->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 		icon->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		icon->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-		icon->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
-		icon->set_depth_draw_mode(StandardMaterial3D::DEPTH_DRAW_DISABLED);
-		icon->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+		icon->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA_SCISSOR);
+		icon->set_alpha_scissor_threshold(0.1);
 		icon->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, p_texture);
 		icon->set_flag(StandardMaterial3D::FLAG_FIXED_SIZE, true);
 		icon->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
@@ -968,7 +970,7 @@ void EditorNode3DGizmoPlugin::add_material(const String &p_name, Ref<StandardMat
 
 Ref<StandardMaterial3D> EditorNode3DGizmoPlugin::get_material(const String &p_name, const Ref<EditorNode3DGizmo> &p_gizmo) {
 	ERR_FAIL_COND_V(!materials.has(p_name), Ref<StandardMaterial3D>());
-	ERR_FAIL_COND_V(materials[p_name].size() == 0, Ref<StandardMaterial3D>());
+	ERR_FAIL_COND_V(materials[p_name].is_empty(), Ref<StandardMaterial3D>());
 
 	if (p_gizmo.is_null() || materials[p_name].size() == 1) {
 		return materials[p_name][0];
@@ -978,10 +980,11 @@ Ref<StandardMaterial3D> EditorNode3DGizmoPlugin::get_material(const String &p_na
 
 	Ref<StandardMaterial3D> mat = materials[p_name][index];
 
-	if (current_state == ON_TOP && p_gizmo->is_selected()) {
+	bool on_top_mat = mat->get_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST);
+
+	if (!on_top_mat && current_state == ON_TOP && p_gizmo->is_selected()) {
+		mat = mat->duplicate();
 		mat->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
-	} else {
-		mat->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, false);
 	}
 
 	return mat;
@@ -1045,6 +1048,7 @@ void EditorNode3DGizmoPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_is_handle_highlighted, "gizmo", "handle_id", "secondary");
 	GDVIRTUAL_BIND(_get_handle_value, "gizmo", "handle_id", "secondary");
 
+	GDVIRTUAL_BIND(_begin_handle_action, "gizmo", "handle_id", "secondary");
 	GDVIRTUAL_BIND(_set_handle, "gizmo", "handle_id", "secondary", "camera", "screen_pos");
 	GDVIRTUAL_BIND(_commit_handle, "gizmo", "handle_id", "secondary", "restore", "cancel");
 
@@ -1159,8 +1163,8 @@ void EditorNode3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo,
 
 void EditorNode3DGizmoPlugin::set_state(int p_state) {
 	current_state = p_state;
-	for (int i = 0; i < current_gizmos.size(); ++i) {
-		current_gizmos[i]->set_hidden(current_state == HIDDEN);
+	for (EditorNode3DGizmo *current : current_gizmos) {
+		current->set_hidden(current_state == HIDDEN);
 	}
 }
 
@@ -1177,9 +1181,9 @@ EditorNode3DGizmoPlugin::EditorNode3DGizmoPlugin() {
 }
 
 EditorNode3DGizmoPlugin::~EditorNode3DGizmoPlugin() {
-	for (int i = 0; i < current_gizmos.size(); ++i) {
-		current_gizmos[i]->set_plugin(nullptr);
-		current_gizmos[i]->get_node_3d()->remove_gizmo(current_gizmos[i]);
+	for (EditorNode3DGizmo *current : current_gizmos) {
+		current->set_plugin(nullptr);
+		current->get_node_3d()->remove_gizmo(current);
 	}
 	if (Node3DEditor::get_singleton()) {
 		Node3DEditor::get_singleton()->update_all_gizmos();

@@ -5,6 +5,16 @@
 	</brief_description>
 	<description>
 		[TextServer] is the API backend for managing fonts and rendering text.
+		[b]Note:[/b] This is a low-level API, consider using [TextLine], [TextParagraph], and [Font] classes instead.
+		This is an abstract class, so to get the currently active [TextServer] instance, use the following code:
+		[codeblocks]
+		[gdscript]
+		var ts = TextServerManager.get_primary_interface()
+		[/gdscript]
+		[csharp]
+		var ts = TextServerManager.GetPrimaryInterface();
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,12 +25,19 @@
 				Creates a new, empty font cache entry resource. To free the resulting resource, use the [method free_rid] method.
 			</description>
 		</method>
+		<method name="create_font_linked_variation">
+			<return type="RID" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Creates a new variation existing font which is reusing the same glyph cache and font data. To free the resulting resource, use the [method free_rid] method.
+			</description>
+		</method>
 		<method name="create_shaped_text">
 			<return type="RID" />
 			<param index="0" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
-				Creates new buffer for complex text layout, with the given [param direction] and [param orientation]. To free the resulting buffer, use [method free_rid] method.
+				Creates a new buffer for complex text layout, with the given [param direction] and [param orientation]. To free the resulting buffer, use [method free_rid] method.
 				[b]Note:[/b] Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature (supported by [TextServerAdvanced]).
 				[b]Note:[/b] Orientation is ignored if server does not support [constant FEATURE_VERTICAL_LAYOUT] feature (supported by [TextServerAdvanced]).
 			</description>
@@ -41,7 +58,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="size" type="Vector2i" />
 			<description>
-				Removes all rendered glyphs information from the cache entry.
+				Removes all rendered glyph information from the cache entry.
 				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.
 			</description>
 		</method>
@@ -113,6 +130,13 @@
 				Returns the font ascent (number of pixels above the baseline).
 			</description>
 		</method>
+		<method name="font_get_baseline_offset" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns extra baseline offset (as a fraction of font height).
+			</description>
+		</method>
 		<method name="font_get_char_from_glyph_index" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="font_rid" type="RID" />
@@ -128,6 +152,13 @@
 			<param index="1" name="size" type="int" />
 			<description>
 				Returns the font descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="font_get_disable_embedded_bitmaps" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns whether the font's embedded bitmap loading is disabled.
 			</description>
 		</method>
 		<method name="font_get_embolden" qualifiers="const">
@@ -148,7 +179,7 @@
 			<return type="int" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Recturns an active face index in the TrueType / OpenType collection.
+				Returns an active face index in the TrueType / OpenType collection.
 			</description>
 		</method>
 		<method name="font_get_fixed_size" qualifiers="const">
@@ -156,6 +187,13 @@
 			<param index="0" name="font_rid" type="RID" />
 			<description>
 				Returns bitmap font fixed size.
+			</description>
+		</method>
+		<method name="font_get_fixed_size_scale_mode" qualifiers="const">
+			<return type="int" enum="TextServer.FixedSizeScaleMode" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns bitmap font scaling mode.
 			</description>
 		</method>
 		<method name="font_get_generate_mipmaps" qualifiers="const">
@@ -187,7 +225,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="index" type="int" />
 			<description>
-				Returns outline contours of the glyph as a [code]Dictionary[/code] with the following contents:
+				Returns outline contours of the glyph as a [Dictionary] with the following contents:
 				[code]points[/code]         - [PackedVector3Array], containing outline points. [code]x[/code] and [code]y[/code] are point coordinates. [code]z[/code] is the type of the point, using the [enum ContourPointTag] values.
 				[code]contours[/code]       - [PackedInt32Array], containing indices the end points of each contour.
 				[code]orientation[/code]    - [bool], contour orientation. If [code]true[/code], clockwise contours must be filled.
@@ -375,7 +413,7 @@
 			<return type="Vector2i[]" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
+				Returns list of the font sizes in the cache. Each size is [Vector2i] with font size and outline size.
 			</description>
 		</method>
 		<method name="font_get_spacing" qualifiers="const">
@@ -626,6 +664,14 @@
 				Sets the font ascent (number of pixels above the baseline).
 			</description>
 		</method>
+		<method name="font_set_baseline_offset">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="baseline_offset" type="float" />
+			<description>
+				Sets extra baseline offset (as a fraction of font height).
+			</description>
+		</method>
 		<method name="font_set_data">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
@@ -641,6 +687,14 @@
 			<param index="2" name="descent" type="float" />
 			<description>
 				Sets the font descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="font_set_disable_embedded_bitmaps">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="disable_embedded_bitmaps" type="bool" />
+			<description>
+				If set to [code]true[/code], embedded font bitmap loading is disabled (bitmap-only and color fonts ignore this property).
 			</description>
 		</method>
 		<method name="font_set_embolden">
@@ -665,6 +719,14 @@
 			<param index="1" name="fixed_size" type="int" />
 			<description>
 				Sets bitmap font fixed size. If set to value greater than zero, same cache entry will be used for all font sizes.
+			</description>
+		</method>
+		<method name="font_set_fixed_size_scale_mode">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="fixed_size_scale_mode" type="int" enum="TextServer.FixedSizeScaleMode" />
+			<description>
+				Sets bitmap font scaling mode. This property is used only if [code]fixed_size[/code] is greater than zero.
 			</description>
 		</method>
 		<method name="font_set_force_autohinter">
@@ -904,7 +966,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
-				Sets 2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.
+				Sets 2D transform, applied to the font outlines, can be used for slanting, flipping, and rotating glyphs.
 				For example, to simulate italic typeface by slanting, apply the following transform [code]Transform2D(1.0, slant, 0.0, 1.0, 0.0, 0.0)[/code].
 			</description>
 		</method>
@@ -1051,6 +1113,13 @@
 				- May contain Unicode characters of class XID_Continue in the other positions.
 			</description>
 		</method>
+		<method name="is_valid_letter" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="unicode" type="int" />
+			<description>
+				Returns [code]true[/code] if the given code point is a valid letter, i.e. it belongs to the Unicode category "L".
+			</description>
+		</method>
 		<method name="load_support_data">
 			<return type="bool" />
 			<param index="0" name="filename" type="String" />
@@ -1063,7 +1132,7 @@
 			<return type="int" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Converts readable feature, variation, script or language name to OpenType tag.
+				Converts readable feature, variation, script, or language name to OpenType tag.
 			</description>
 		</method>
 		<method name="parse_number" qualifiers="const">
@@ -1121,7 +1190,7 @@
 			<param index="3" name="size" type="int" />
 			<param index="4" name="opentype_features" type="Dictionary" default="{}" />
 			<description>
-				Changes text span font, font size and OpenType features, without changing the text.
+				Changes text span font, font size, and OpenType features, without changing the text.
 			</description>
 		</method>
 		<method name="shaped_text_add_object">
@@ -1219,6 +1288,13 @@
 			<param index="0" name="shaped" type="RID" />
 			<description>
 				Returns array of the composite character boundaries.
+			</description>
+		</method>
+		<method name="shaped_text_get_custom_ellipsis" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns ellipsis character used for text clipping.
 			</description>
 		</method>
 		<method name="shaped_text_get_custom_punctuation" qualifiers="const">
@@ -1321,6 +1397,22 @@
 			<param index="4" name="break_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3" />
 			<description>
 				Breaks text to the lines and columns. Returns character ranges for each segment.
+			</description>
+		</method>
+		<method name="shaped_text_get_object_glyph" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<description>
+				Returns the glyph index of the inline object.
+			</description>
+		</method>
+		<method name="shaped_text_get_object_range" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<description>
+				Returns the character range of the inline object.
 			</description>
 		</method>
 		<method name="shaped_text_get_object_rect" qualifiers="const">
@@ -1430,6 +1522,7 @@
 			<return type="PackedInt32Array" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" default="264" />
+			<param index="2" name="skip_grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" default="4" />
 			<description>
 				Breaks text into words and returns array of character ranges. Use [param grapheme_flags] to set what characters are used for breaking (see [enum GraphemeFlag]).
 			</description>
@@ -1523,6 +1616,14 @@
 			<description>
 				Overrides BiDi for the structured text.
 				Override ranges should cover full source text without overlaps. BiDi algorithm will be used on each range separately.
+			</description>
+		</method>
+		<method name="shaped_text_set_custom_ellipsis">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="char" type="int" />
+			<description>
+				Sets ellipsis character used for text clipping.
 			</description>
 		</method>
 		<method name="shaped_text_set_custom_punctuation">
@@ -1638,8 +1739,9 @@
 				When [param chars_per_line] is greater than zero, line break boundaries are returned instead.
 				[codeblock]
 				var ts = TextServerManager.get_primary_interface()
-				print(ts.string_get_word_breaks("Godot Engine")) # Prints [0, 5, 6, 12]
-				print(ts.string_get_word_breaks("Godot Engine", "en", 5)) # Prints [0, 5, 6, 11, 11, 12]
+				print(ts.string_get_word_breaks("The Godot Engine, 4")) # Prints [0, 3, 4, 9, 10, 16, 18, 19], which corresponds to the following substrings: "The", "Godot", "Engine", "4"
+				print(ts.string_get_word_breaks("The Godot Engine, 4", "en", 5)) # Prints [0, 3, 4, 9, 10, 15, 15, 19], which corresponds to the following substrings: "The", "Godot", "Engin", "e, 4"
+				print(ts.string_get_word_breaks("The Godot Engine, 4", "en", 10)) # Prints [0, 9, 10, 19], which corresponds to the following substrings: "The Godot", "Engine, 4"
 				[/codeblock]
 			</description>
 		</method>
@@ -1649,6 +1751,16 @@
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
 				Returns the string converted to lowercase.
+				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
+				[b]Note:[/b] The result may be longer or shorter than the original.
+			</description>
+		</method>
+		<method name="string_to_title" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="language" type="String" default="&quot;&quot;" />
+			<description>
+				Returns the string converted to title case.
 				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
 				[b]Note:[/b] The result may be longer or shorter than the original.
 			</description>
@@ -1675,7 +1787,7 @@
 			<return type="String" />
 			<param index="0" name="tag" type="int" />
 			<description>
-				Converts OpenType tag to readable feature, variation, script or language name.
+				Converts OpenType tag to readable feature, variation, script, or language name.
 			</description>
 		</method>
 	</methods>
@@ -1707,6 +1819,7 @@
 			Vertical BGR subpixel layout.
 		</constant>
 		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_MAX" value="5" enum="FontLCDSubpixelLayout">
+			Represents the size of the [enum FontLCDSubpixelLayout] enum.
 		</constant>
 		<constant name="DIRECTION_AUTO" value="0" enum="Direction">
 			Text direction is determined based on contents and current locale.
@@ -1784,6 +1897,9 @@
 		<constant name="BREAK_TRIM_EDGE_SPACES" value="16" enum="LineBreakFlag" is_bitfield="true">
 			Remove edge spaces from the broken line segments.
 		</constant>
+		<constant name="BREAK_TRIM_INDENT" value="32" enum="LineBreakFlag" is_bitfield="true">
+			Subtract first line indentation width from all lines after the first one.
+		</constant>
 		<constant name="VC_CHARS_BEFORE_SHAPING" value="0" enum="VisibleCharactersBehavior">
 			Trims text before the shaping. e.g, increasing [member Label.visible_characters] or [member RichTextLabel.visible_characters] value is visually identical to typing the text.
 		</constant>
@@ -1830,6 +1946,7 @@
 			Determines whether the ellipsis at the end of the text is enforced and may not be hidden.
 		</constant>
 		<constant name="OVERRUN_JUSTIFICATION_AWARE" value="16" enum="TextOverrunFlag" is_bitfield="true">
+			Accounts for the text being justified before attempting to trim it (see [enum JustificationFlag]).
 		</constant>
 		<constant name="GRAPHEME_IS_VALID" value="1" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is supported by the font, and can be drawn.
@@ -1869,6 +1986,9 @@
 		</constant>
 		<constant name="GRAPHEME_IS_EMBEDDED_OBJECT" value="4096" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is an object replacement character for the embedded object.
+		</constant>
+		<constant name="GRAPHEME_IS_SOFT_HYPHEN" value="8192" enum="GraphemeFlag" is_bitfield="true">
+			Grapheme is a soft hyphen.
 		</constant>
 		<constant name="HINTING_NONE" value="0" enum="Hinting">
 			Disables font hinting (smoother but less crisp).
@@ -1968,6 +2088,7 @@
 			Spacing at the bottom of the line.
 		</constant>
 		<constant name="SPACING_MAX" value="4" enum="SpacingType">
+			Represents the size of the [enum SpacingType] enum.
 		</constant>
 		<constant name="FONT_BOLD" value="1" enum="FontStyle" is_bitfield="true">
 			Font is bold.
@@ -1991,14 +2112,22 @@
 			BiDi override for email.
 		</constant>
 		<constant name="STRUCTURED_TEXT_LIST" value="4" enum="StructuredTextParser">
-			BiDi override for lists.
-			Structured text options: list separator [code]String[/code].
+			BiDi override for lists. Structured text options: list separator [String].
 		</constant>
 		<constant name="STRUCTURED_TEXT_GDSCRIPT" value="5" enum="StructuredTextParser">
 			BiDi override for GDScript.
 		</constant>
 		<constant name="STRUCTURED_TEXT_CUSTOM" value="6" enum="StructuredTextParser">
 			User defined structured text BiDi override function.
+		</constant>
+		<constant name="FIXED_SIZE_SCALE_DISABLE" value="0" enum="FixedSizeScaleMode">
+			Bitmap font is not scaled.
+		</constant>
+		<constant name="FIXED_SIZE_SCALE_INTEGER_ONLY" value="1" enum="FixedSizeScaleMode">
+			Bitmap font is scaled to the closest integer multiple of the font's fixed size. This is the recommended option for pixel art fonts.
+		</constant>
+		<constant name="FIXED_SIZE_SCALE_ENABLED" value="2" enum="FixedSizeScaleMode">
+			Bitmap font is scaled to an arbitrary (fractional) size. This is the recommended option for non-pixel art fonts.
 		</constant>
 	</constants>
 </class>

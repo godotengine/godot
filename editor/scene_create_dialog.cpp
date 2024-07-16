@@ -33,9 +33,9 @@
 #include "core/io/dir_access.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_validation_panel.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/gui/box_container.h"
@@ -47,13 +47,16 @@
 
 void SceneCreateDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			select_node_button->set_icon(get_editor_theme_icon(SNAME("ClassList")));
 			node_type_2d->set_icon(get_editor_theme_icon(SNAME("Node2D")));
 			node_type_3d->set_icon(get_editor_theme_icon(SNAME("Node3D")));
 			node_type_gui->set_icon(get_editor_theme_icon(SNAME("Control")));
 			node_type_other->add_theme_icon_override(SNAME("icon"), get_editor_theme_icon(SNAME("Node")));
+		} break;
+
+		case NOTIFICATION_READY: {
+			select_node_dialog->select_base();
 		} break;
 	}
 }
@@ -62,14 +65,14 @@ void SceneCreateDialog::config(const String &p_dir) {
 	directory = p_dir;
 	root_name_edit->set_text("");
 	scene_name_edit->set_text("");
-	scene_name_edit->call_deferred(SNAME("grab_focus"));
+	callable_mp((Control *)scene_name_edit, &Control::grab_focus).call_deferred();
 	validation_panel->update();
 }
 
 void SceneCreateDialog::accept_create() {
 	if (!get_ok_button()->is_disabled()) {
 		hide();
-		emit_signal(SNAME("confirmed"));
+		emit_signal(SceneStringName(confirmed));
 	}
 }
 
@@ -180,7 +183,6 @@ SceneCreateDialog::SceneCreateDialog() {
 	select_node_dialog = memnew(CreateDialog);
 	add_child(select_node_dialog);
 	select_node_dialog->set_base_type("Node");
-	select_node_dialog->select_base();
 	select_node_dialog->connect("create", callable_mp(this, &SceneCreateDialog::on_type_picked));
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
@@ -239,7 +241,7 @@ SceneCreateDialog::SceneCreateDialog() {
 
 		select_node_button = memnew(Button);
 		hb->add_child(select_node_button);
-		select_node_button->connect("pressed", callable_mp(this, &SceneCreateDialog::browse_types));
+		select_node_button->connect(SceneStringName(pressed), callable_mp(this, &SceneCreateDialog::browse_types));
 	}
 
 	{
@@ -273,7 +275,7 @@ SceneCreateDialog::SceneCreateDialog() {
 		root_name_edit = memnew(LineEdit);
 		gc->add_child(root_name_edit);
 		root_name_edit->set_tooltip_text(TTR("When empty, the root node name is derived from the scene name based on the \"editor/naming/node_name_casing\" project setting."));
-		root_name_edit->set_auto_translate(false);
+		root_name_edit->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		root_name_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		root_name_edit->connect("text_submitted", callable_mp(this, &SceneCreateDialog::accept_create).unbind(1));
 	}
@@ -289,9 +291,9 @@ SceneCreateDialog::SceneCreateDialog() {
 	validation_panel->set_update_callback(callable_mp(this, &SceneCreateDialog::update_dialog));
 	validation_panel->set_accept_button(get_ok_button());
 
-	node_type_group->connect("pressed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
-	scene_name_edit->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
-	root_name_edit->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	node_type_group->connect(SceneStringName(pressed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	scene_name_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	root_name_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 
 	set_title(TTR("Create New Scene"));
 	set_min_size(Size2i(400 * EDSCALE, 0));

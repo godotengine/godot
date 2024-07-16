@@ -8,8 +8,10 @@ import android.util.Log
 
 /**
  * Godot service responsible for hosting the Godot engine instance.
+ *
+ * Note: Still in development, so it's made private and inaccessible until completed.
  */
-class GodotService : Service() {
+private class GodotService : Service() {
 
 	companion object {
 		private val TAG = GodotService::class.java.simpleName

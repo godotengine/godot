@@ -33,7 +33,7 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "editor/builtin_fonts.gen.h"
+#include "editor/themes/builtin_fonts.gen.h"
 #include "servers/text_server.h"
 #include "tests/test_macros.h"
 
@@ -633,6 +633,97 @@ TEST_SUITE("[TextServer]") {
 					CHECK(ts->is_valid_identifier(U"\u0646\u0627\u0645\u0647\u200C\u0627\u06CC"));
 					CHECK(ts->is_valid_identifier(U"\u0D26\u0D43\u0D15\u0D4D\u200C\u0D38\u0D3E\u0D15\u0D4D\u0D37\u0D3F"));
 					CHECK(ts->is_valid_identifier(U"\u0DC1\u0DCA\u200D\u0DBB\u0DD3"));
+				}
+			}
+		}
+
+		SUBCASE("[TextServer] Unicode letters") {
+			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);
+				CHECK_FALSE_MESSAGE(ts.is_null(), "Invalid TS interface.");
+
+				struct ul_testcase {
+					int fail_index = -1; // Expecting failure at given index.
+					char32_t text[10]; // Using 0 as the terminator.
+				};
+				ul_testcase cases[14] = {
+					{
+							0,
+							{ 0x2D, 0x33, 0x30, 0, 0, 0, 0, 0, 0, 0 }, // "-30"
+					},
+					{
+							1,
+							{ 0x61, 0x2E, 0x31, 0, 0, 0, 0, 0, 0, 0 }, // "a.1"
+					},
+					{
+							1,
+							{ 0x61, 0x2C, 0x31, 0, 0, 0, 0, 0, 0, 0 }, // "a,1"
+					},
+					{
+							0,
+							{ 0x31, 0x65, 0x2D, 0x32, 0, 0, 0, 0, 0, 0 }, // "1e-2"
+					},
+					{
+							0,
+							{ 0xAB, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // "Left-Pointing Double Angle Quotation Mark"
+					},
+					{
+							-1,
+							{ 0x41, 0x42, 0, 0, 0, 0, 0, 0, 0, 0 }, // "AB"
+					},
+					{
+							4,
+							{ 0x54, 0x65, 0x73, 0x74, 0x31, 0, 0, 0, 0, 0 }, // "Test1"
+					},
+					{
+							2,
+							{ 0x54, 0x65, 0x2A, 0x73, 0x74, 0, 0, 0, 0, 0 }, // "Te*st"
+					},
+					{
+							4,
+							{ 0x74, 0x65, 0x73, 0x74, 0x5F, 0x74, 0x65, 0x73, 0x74, 0x65 }, // "test_teste"
+					},
+					{
+							4,
+							{ 0x74, 0x65, 0x73, 0x74, 0x20, 0x74, 0x65, 0x73, 0x74, 0 }, // "test test"
+					},
+					{
+							-1,
+							{ 0x643, 0x402, 0x716, 0xB05, 0, 0, 0, 0, 0, 0 }, // "كЂܖଅ" (arabic letters),
+					},
+					{
+							-1,
+							{ 0x643, 0x402, 0x716, 0xB05, 0x54, 0x65, 0x73, 0x74, 0x30AA, 0x4E21 }, // 0-3 arabic letters, 4-7 latin letters, 8-9 CJK letters
+					},
+					{
+							-1,
+							{ 0x4D2, 0x4D6, 0x4DA, 0x4DC, 0, 0, 0, 0, 0, 0 }, // "ӒӖӚӜ" cyrillic letters
+					},
+					{
+							-1,
+							{ 0xC2, 0xC3, 0xC4, 0xC5, 0x100, 0x102, 0x104, 0xC7, 0x106, 0x108 }, // "ÂÃÄÅĀĂĄÇĆĈ" rarer latin letters
+					},
+				};
+
+				for (int j = 0; j < 14; j++) {
+					ul_testcase test = cases[j];
+					int failed_on_index = -1;
+					for (int k = 0; k < 10; k++) {
+						char32_t character = test.text[k];
+						if (character == 0) {
+							break;
+						}
+						if (!ts->is_valid_letter(character)) {
+							failed_on_index = k;
+							break;
+						}
+					}
+
+					if (test.fail_index == -1) {
+						CHECK_MESSAGE(test.fail_index == failed_on_index, "In interface ", ts->get_name() + ": In test case ", j, ", the character at index ", failed_on_index, " should have been a letter.");
+					} else {
+						CHECK_MESSAGE(test.fail_index == failed_on_index, "In interface ", ts->get_name() + ": In test case ", j, ", expected first non-letter at index ", test.fail_index, ", but found at index ", failed_on_index);
+					}
 				}
 			}
 		}

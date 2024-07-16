@@ -40,7 +40,7 @@ Size2 SpinBox::get_minimum_size() const {
 	return ms;
 }
 
-void SpinBox::_update_text() {
+void SpinBox::_update_text(bool p_keep_line_edit) {
 	String value = String::num(get_value(), Math::range_step_decimals(get_step()));
 	if (is_localizing_numeral_system()) {
 		value = TS->format_number(value);
@@ -55,7 +55,12 @@ void SpinBox::_update_text() {
 		}
 	}
 
+	if (p_keep_line_edit && value == last_updated_text && value != line_edit->get_text()) {
+		return;
+	}
+
 	line_edit->set_text_with_selection(value);
+	last_updated_text = value;
 }
 
 void SpinBox::_text_submitted(const String &p_string) {
@@ -78,6 +83,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 
 		err = expr->parse(text);
 		if (err != OK) {
+			_update_text();
 			return;
 		}
 	}
@@ -245,7 +251,7 @@ inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
 void SpinBox::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			_update_text();
+			_update_text(true);
 			_adjust_width_for_icon(theme_cache.updown_icon);
 
 			RID ci = get_canvas_item();
@@ -275,8 +281,8 @@ void SpinBox::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			call_deferred(SNAME("update_minimum_size"));
-			get_line_edit()->call_deferred(SNAME("update_minimum_size"));
+			callable_mp((Control *)this, &Control::update_minimum_size).call_deferred();
+			callable_mp((Control *)get_line_edit(), &Control::update_minimum_size).call_deferred();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
@@ -327,9 +333,9 @@ void SpinBox::set_update_on_text_changed(bool p_enabled) {
 	update_on_text_changed = p_enabled;
 
 	if (p_enabled) {
-		line_edit->connect("text_changed", callable_mp(this, &SpinBox::_text_changed), CONNECT_DEFERRED);
+		line_edit->connect(SceneStringName(text_changed), callable_mp(this, &SpinBox::_text_changed), CONNECT_DEFERRED);
 	} else {
-		line_edit->disconnect("text_changed", callable_mp(this, &SpinBox::_text_changed));
+		line_edit->disconnect(SceneStringName(text_changed), callable_mp(this, &SpinBox::_text_changed));
 	}
 }
 
@@ -403,9 +409,9 @@ SpinBox::SpinBox() {
 	line_edit->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 
 	line_edit->connect("text_submitted", callable_mp(this, &SpinBox::_text_submitted), CONNECT_DEFERRED);
-	line_edit->connect("focus_entered", callable_mp(this, &SpinBox::_line_edit_focus_enter), CONNECT_DEFERRED);
-	line_edit->connect("focus_exited", callable_mp(this, &SpinBox::_line_edit_focus_exit), CONNECT_DEFERRED);
-	line_edit->connect("gui_input", callable_mp(this, &SpinBox::_line_edit_input));
+	line_edit->connect(SceneStringName(focus_entered), callable_mp(this, &SpinBox::_line_edit_focus_enter), CONNECT_DEFERRED);
+	line_edit->connect(SceneStringName(focus_exited), callable_mp(this, &SpinBox::_line_edit_focus_exit), CONNECT_DEFERRED);
+	line_edit->connect(SceneStringName(gui_input), callable_mp(this, &SpinBox::_line_edit_input));
 
 	range_click_timer = memnew(Timer);
 	range_click_timer->connect("timeout", callable_mp(this, &SpinBox::_range_click_timeout));
