@@ -3447,6 +3447,10 @@ String Main::get_rendering_driver_name() {
 	return rendering_driver;
 }
 
+String Main::get_rendering_method() {
+	return rendering_method;
+}
+
 // everything the main loop needs to know about frame timings
 static MainTimerSync main_timer_sync;
 

@@ -225,8 +225,13 @@ public:
 #define ServerName RendererMaterialStorage
 #define server_name RSG::material_storage
 
+	FUNCRIDSPLIT(shader_template)
+
+	FUNC4(shader_template_set_raster_code, RID, const String &, const String &, const String &)
+
 	FUNCRIDSPLIT(shader)
 
+	FUNC3(shader_set_shader_template, RID, RID, bool)
 	FUNC2(shader_set_code, RID, const String &)
 	FUNC2(shader_set_path_hint, RID, const String &)
 	FUNC1RC(String, shader_get_code, RID)
