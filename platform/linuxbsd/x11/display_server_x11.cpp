@@ -5698,22 +5698,6 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			}
 		}
 
-		if (wd.is_popup || wd.no_focus) {
-			// Set Utility type to disable fade animations.
-			Atom type_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE_UTILITY", False);
-			Atom wt_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE", False);
-			if (wt_atom != None && type_atom != None) {
-				XChangeProperty(x11_display, wd.x11_window, wt_atom, XA_ATOM, 32, PropModeReplace, (unsigned char *)&type_atom, 1);
-			}
-		} else {
-			Atom type_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE_NORMAL", False);
-			Atom wt_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE", False);
-
-			if (wt_atom != None && type_atom != None) {
-				XChangeProperty(x11_display, wd.x11_window, wt_atom, XA_ATOM, 32, PropModeReplace, (unsigned char *)&type_atom, 1);
-			}
-		}
-
 		_update_size_hints(id);
 
 #if defined(RD_ENABLED)
