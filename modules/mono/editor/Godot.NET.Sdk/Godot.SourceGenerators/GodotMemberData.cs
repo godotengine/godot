@@ -20,16 +20,18 @@ namespace Godot.SourceGenerators
         public (MarshalType MarshalType, ITypeSymbol TypeSymbol)? RetType { get; }
     }
 
-    public readonly struct GodotSignalDelegateData
+    public readonly struct GodotSignalData
     {
-        public GodotSignalDelegateData(string name, INamedTypeSymbol delegateSymbol, GodotMethodData invokeMethodData)
+        public GodotSignalData(string name, bool isDelegate, INamedTypeSymbol delegateSymbol, GodotMethodData invokeMethodData)
         {
             Name = name;
+            IsDelegate = isDelegate;
             DelegateSymbol = delegateSymbol;
             InvokeMethodData = invokeMethodData;
         }
 
         public string Name { get; }
+        public bool IsDelegate { get; }
         public INamedTypeSymbol DelegateSymbol { get; }
         public GodotMethodData InvokeMethodData { get; }
     }
