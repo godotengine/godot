@@ -88,7 +88,7 @@ void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStr
 		function_body += " -> void";
 	}
 
-	String function_indentation = "";
+	String function_indentation;
 	if (Engine::get_singleton()->is_editor_hint()) {
 		bool use_space_indentation = EDITOR_GET("text_editor/behavior/indent/type");
 
