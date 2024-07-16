@@ -1594,7 +1594,10 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 		}
 
 		if (idx == -1) {
-			//does not exist, create i guess?
+			// Only create a missing directory in memory when it exists on disk.
+			if (!dir->dir_exists(fs->get_path().path_join(path[i]))) {
+				return false;
+			}
 			EditorFileSystemDirectory *efsd = memnew(EditorFileSystemDirectory);
 
 			efsd->name = path[i];
