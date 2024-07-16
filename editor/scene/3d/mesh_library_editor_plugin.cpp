@@ -90,6 +90,8 @@ bool MeshLibraryEditor::MeshLibraryItem::_set(const StringName &p_name, const Va
 	} else if (p_name == "shapes") {
 		mesh_library->call("set_item_shapes", mesh_id, p_value);
 #endif // PHYSICS_3D_DISABLED
+	} else if (p_name == "render_layers") {
+		mesh_library->set_item_render_layers(mesh_id, p_value);
 	} else if (p_name == "preview") {
 		mesh_library->set_item_preview(mesh_id, p_value);
 	} else if (p_name == "navigation_mesh") {
@@ -128,6 +130,8 @@ bool MeshLibraryEditor::MeshLibraryItem::_get(const StringName &p_name, Variant 
 		r_ret = mesh_library->get_item_navigation_mesh_transform(mesh_id);
 	} else if (p_name == "navigation_layers") {
 		r_ret = mesh_library->get_item_navigation_layers(mesh_id);
+	} else if (p_name == "render_layers") {
+		r_ret = mesh_library->get_item_render_layers(mesh_id);
 	} else if (p_name == "preview") {
 		r_ret = mesh_library->get_item_preview(mesh_id);
 	} else {
@@ -150,6 +154,7 @@ void MeshLibraryEditor::MeshLibraryItem::_get_property_list(List<PropertyInfo> *
 	p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("navigation_mesh"), PROPERTY_HINT_RESOURCE_TYPE, NavigationMesh::get_class_static()));
 	p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, PNAME("navigation_mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
 	p_list->push_back(PropertyInfo(Variant::INT, PNAME("navigation_layers"), PROPERTY_HINT_LAYERS_3D_NAVIGATION));
+	p_list->push_back(PropertyInfo(Variant::INT, PNAME("render_layers"), PROPERTY_HINT_LAYERS_3D_RENDER));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), PROPERTY_USAGE_DEFAULT));
 }
 
@@ -394,6 +399,7 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 			int nav_layers = mesh_library->get_item_navigation_layers(selected_item);
 			Ref<NavigationMesh> nav_mesh = mesh_library->get_item_navigation_mesh(selected_item);
 			Transform3D nav_mesh_transform = mesh_library->get_item_navigation_mesh_transform(selected_item);
+			uint32_t render_layers = mesh_library->get_item_render_layers(selected_item);
 			Ref<Texture2D> preview = mesh_library->get_item_preview(selected_item);
 			Array shapes = mesh_library->call("get_item_shapes", selected_item);
 
@@ -405,6 +411,7 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 			undo_redo->add_undo_method(*mesh_library, "set_item_navigation_layers", selected_item, nav_layers);
 			undo_redo->add_undo_method(*mesh_library, "set_item_navigation_mesh", selected_item, nav_mesh);
 			undo_redo->add_undo_method(*mesh_library, "set_item_navigation_mesh_transform", selected_item, nav_mesh_transform);
+			undo_redo->add_undo_method(*mesh_library, "set_item_render_layers", selected_item, render_layers);
 			undo_redo->add_undo_method(*mesh_library, "set_item_preview", selected_item, preview);
 			undo_redo->add_undo_method(*mesh_library, "set_item_shapes", selected_item, shapes);
 
@@ -535,6 +542,7 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 		}
 	}
 	p_library->set_item_mesh(item_id, item_mesh);
+	p_library->set_item_render_layers(item_id, mesh_instance_node->get_layer_mask());
 
 	GeometryInstance3D::ShadowCastingSetting gi3d_cast_shadows_setting = mesh_instance_node->get_cast_shadows_setting();
 	switch (gi3d_cast_shadows_setting) {
@@ -560,6 +568,8 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 		item_mesh_transform = mesh_instance_node->get_transform();
 	}
 	p_library->set_item_mesh_transform(item_id, item_mesh_transform);
+	uint32_t item_mesh_layer_mask = mesh_instance_node->get_layer_mask();
+	p_library->set_item_render_layers(item_id, item_mesh_layer_mask);
 
 	Vector<MeshLibrary::ShapeData> collisions;
 	for (int i = 0; i < mesh_instance_node->get_child_count(); i++) {

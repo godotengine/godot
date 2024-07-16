@@ -63,6 +63,7 @@ public:
 		Ref<NavigationMesh> navigation_mesh;
 		Transform3D navigation_mesh_transform;
 		uint32_t navigation_layers = 1;
+		uint32_t render_layers = 1;
 	};
 
 	RBMap<int, Item> item_map;
@@ -89,6 +90,7 @@ public:
 	void set_item_navigation_mesh(int p_item, const Ref<NavigationMesh> &p_navigation_mesh);
 	void set_item_navigation_mesh_transform(int p_item, const Transform3D &p_transform);
 	void set_item_navigation_layers(int p_item, uint32_t p_navigation_layers);
+	void set_item_render_layers(int p_item, uint32_t p_render_layers);
 #ifndef PHYSICS_3D_DISABLED
 	void set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes);
 #endif // PHYSICS_3D_DISABLED
@@ -100,6 +102,7 @@ public:
 	Ref<NavigationMesh> get_item_navigation_mesh(int p_item) const;
 	Transform3D get_item_navigation_mesh_transform(int p_item) const;
 	uint32_t get_item_navigation_layers(int p_item) const;
+	uint32_t get_item_render_layers(int p_item) const;
 #ifndef PHYSICS_3D_DISABLED
 	Vector<ShapeData> get_item_shapes(int p_item) const;
 #endif // PHYSICS_3D_DISABLED
