@@ -143,7 +143,7 @@ struct [[nodiscard]] Quaternion {
 		Vector3 n0 = p_v0.normalized();
 		Vector3 n1 = p_v1.normalized();
 		real_t d = n0.dot(n1);
-		if (abs(d) > ALMOST_ONE) {
+		if (Math::abs(d) > ALMOST_ONE) {
 			if (d >= 0) {
 				return; // Vectors are same.
 			}

@@ -32,6 +32,7 @@
 
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
+#include "core/math/random_pcg.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/control.h"
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"

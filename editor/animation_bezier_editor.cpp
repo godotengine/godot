@@ -1423,7 +1423,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				float track_h = animation->bezier_track_interpolate(i, time);
 				float track_height = _bezier_h_to_pixel(track_h);
 
-				if (abs(mb->get_position().y - track_height) < 10) {
+				if (Math::abs(mb->get_position().y - track_height) < 10) {
 					set_animation_and_track(animation, i, read_only);
 					break;
 				}
@@ -1439,7 +1439,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (moving_selection_attempt && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		if (!read_only) {
-			if (moving_selection && (abs(moving_selection_offset.x) > CMP_EPSILON || abs(moving_selection_offset.y) > CMP_EPSILON)) {
+			if (moving_selection && (Math::abs(moving_selection_offset.x) > CMP_EPSILON || Math::abs(moving_selection_offset.y) > CMP_EPSILON)) {
 				// Commit it.
 				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 				undo_redo->create_action(TTR("Move Bezier Points"));
@@ -1569,7 +1569,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (scaling_selection && mb.is_valid() && !read_only && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		if (abs(scaling_selection_scale.x - 1) > CMP_EPSILON || abs(scaling_selection_scale.y - 1) > CMP_EPSILON) {
+		if (Math::abs(scaling_selection_scale.x - 1) > CMP_EPSILON || Math::abs(scaling_selection_scale.y - 1) > CMP_EPSILON) {
 			// Scale it.
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Scale Bezier Points"));
@@ -1714,7 +1714,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 			float snapped_time = editor->snap_time(moving_selection_pivot + time_delta);
 			float time_offset = 0.0;
-			if (abs(moving_selection_offset.x) > CMP_EPSILON || (snapped_time > moving_selection_pivot && time_delta > CMP_EPSILON) || (snapped_time < moving_selection_pivot && time_delta < -CMP_EPSILON)) {
+			if (Math::abs(moving_selection_offset.x) > CMP_EPSILON || (snapped_time > moving_selection_pivot && time_delta > CMP_EPSILON) || (snapped_time < moving_selection_pivot && time_delta < -CMP_EPSILON)) {
 				time_offset = snapped_time - moving_selection_pivot;
 			}
 
