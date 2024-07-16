@@ -1537,17 +1537,12 @@ void ScriptEditorDebugger::_error_activated() {
 		return;
 	}
 
-	// TreeItem *ci = selected->get_first_child();
-	// if (ci) {
-	// 	selected->set_collapsed(!selected->is_collapsed());
-	// }
-
 	Array meta = selected->get_metadata(0);
-	if (meta.size() == 0) {
+	if (meta.is_empty()) {
 		return;
 	}
 
-	emit_signal(SNAME("error_activated"), String(meta[0]), int(meta[1]));
+	emit_signal(SNAME("error_activated"), int(meta[1]));
 }
 
 void ScriptEditorDebugger::_error_selected() {
