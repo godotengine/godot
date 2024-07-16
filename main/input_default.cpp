@@ -646,7 +646,8 @@ void InputDefault::action_press(const StringName &p_action, float p_strength) {
 	// Create or retrieve existing action.
 	Action &action = action_state[p_action];
 
-	action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
+	// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
+	action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 	action.pressed_idle_frame = Engine::get_singleton()->get_idle_frames();
 	action.pressed = true;
 	action.exact = true;
@@ -658,7 +659,8 @@ void InputDefault::action_release(const StringName &p_action) {
 	// Create or retrieve existing action.
 	Action &action = action_state[p_action];
 
-	action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
+	// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
+	action.released_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 	action.released_idle_frame = Engine::get_singleton()->get_idle_frames();
 	action.pressed = false;
 	action.exact = true;
