@@ -4719,6 +4719,16 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					ClientToScreen(window.hWnd, (POINT *)&crect.right);
 					ClipCursor(&crect);
 				}
+
+				if (window.create_completed && OS::get_singleton()->get_main_loop()) {
+					_THREAD_SAFE_UNLOCK_
+					_process_key_events();
+					Main::force_redraw();
+					if (!Main::is_iterating()) { // Avoid cyclic loop.
+						Main::iteration();
+					}
+					_THREAD_SAFE_LOCK_
+				}
 			}
 
 			// Return here to prevent WM_MOVE and WM_SIZE from being sent
