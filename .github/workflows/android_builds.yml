@@ -13,48 +13,76 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  android-template:
+  build-android:
     runs-on: "ubuntu-20.04"
-    name: Template (target=template_release)
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Editor (target=editor)
+            cache-name: android-editor
+            target: editor
+            tests: false
+            sconsflags: arch=arm64 production=yes
+
+          - name: Template arm32 (target=template_release, arch=arm32)
+            cache-name: android-template-arm32
+            target: template_release
+            tests: false
+            sconsflags: arch=arm32
+
+          - name: Template arm64 (target=template_release, arch=arm64)
+            cache-name: android-template-arm64
+            target: template_release
+            tests: false
+            sconsflags: arch=arm64
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      - name: Set up Java 11
-        uses: actions/setup-java@v3
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 11
+          java-version: 17
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
+        with:
+          cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
-      - name: Setup python and scons
+      - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
-      - name: Compilation (arm32)
+      - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }} arch=arm32
+          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
           platform: android
-          target: template_release
-          tests: false
-
-      - name: Compilation (arm64)
-        uses: ./.github/actions/godot-build
-        with:
-          sconsflags: ${{ env.SCONSFLAGS }} arch=arm64
-          platform: android
-          target: template_release
-          tests: false
+          target: ${{ matrix.target }}
+          tests: ${{ matrix.tests }}
 
       - name: Generate Godot templates
+        if: matrix.target == 'template_release'
         run: |
           cd platform/android/java
           ./gradlew generateGodotTemplates
           cd ../../..
           ls -l bin/
 
+      - name: Generate Godot editor
+        if: matrix.target == 'editor'
+        run: |
+          cd platform/android/java
+          ./gradlew generateGodotEditor
+          cd ../../..
+          ls -l bin/android_editor_builds/
+
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
+        with:
+          name: ${{ matrix.cache-name }}

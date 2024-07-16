@@ -220,6 +220,11 @@ public class GodotLib {
 	public static native void requestPermissionResult(String p_permission, boolean p_result);
 
 	/**
+	 * Invoked on the theme light/dark mode change.
+	 */
+	public static native void onNightModeChanged();
+
+	/**
 	 * Invoked on the GL thread to configure the height of the virtual keyboard.
 	 */
 	public static native void setVirtualKeyboardHeight(int p_height);
@@ -235,4 +240,11 @@ public class GodotLib {
 	 * @see GodotRenderer#onActivityPaused()
 	 */
 	public static native void onRendererPaused();
+
+	/**
+	 * Invoked on the GL thread to update the input dispatch settings
+	 * @param useAccumulatedInput True to use accumulated input, false otherwise
+	 * @param useInputBuffering True to use input buffering, false otherwise
+	 */
+	public static native void updateInputDispatchSettings(boolean useAccumulatedInput, boolean useInputBuffering);
 }

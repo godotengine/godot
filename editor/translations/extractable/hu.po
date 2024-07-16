@@ -1,0 +1,115 @@
+# Hungarian translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-01-03 21:46+0000\n"
+"Last-Translator: bedo david <bedo.david7676@gmail.com>\n"
+"Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/hu/>\n"
+"Language: hu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.4-dev\n"
+
+msgid "Open"
+msgstr "Megnyitás"
+
+msgid "Select Current Folder"
+msgstr "Aktuális Mappa Kiválasztása"
+
+msgid "Select This Folder"
+msgstr "Válassza ezt a mappát"
+
+msgid "All Recognized"
+msgstr "Minden Felismert"
+
+msgid "Open a File"
+msgstr "Fálj Megnyitása"
+
+msgid "Open File(s)"
+msgstr "Fájl(ok) Megnyitása"
+
+msgid "Open a Directory"
+msgstr "Könyvtár Megnyitása"
+
+msgid "Open a File or Directory"
+msgstr "Fájl vagy Könyvtár Megnyitása"
+
+msgid "Save"
+msgstr "Mentés"
+
+msgid "Save a File"
+msgstr "Fájl Mentése"
+
+msgid "Go to previous folder."
+msgstr "Ugrás az előző mappára."
+
+msgid "Go to next folder."
+msgstr "Ugrás a következő mappára."
+
+msgid "Go to parent folder."
+msgstr "Lépjen a szülőmappába."
+
+msgid "Path:"
+msgstr "Útvonal:"
+
+msgid "Refresh files."
+msgstr "Fájlok frissítése."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "A rejtett fájlok láthatóságának ki- és bekapcsolása."
+
+msgid "Directories & Files:"
+msgstr "Könyvtárak és Fájlok:"
+
+msgid "File:"
+msgstr "Fájl:"
+
+msgid "Create Folder"
+msgstr "Mappa Létrehozása"
+
+msgid "Name:"
+msgstr "Név:"
+
+msgid "Could not create folder."
+msgstr "Nem sikerült létrehozni a mappát."
+
+msgid "Zoom Out"
+msgstr "Kicsinyítés"
+
+msgid "Zoom Reset"
+msgstr "Nagyítás visszaállítása"
+
+msgid "Zoom In"
+msgstr "Nagyítás"
+
+msgid "Cut"
+msgstr "Kivágás"
+
+msgid "Copy"
+msgstr "Másolás"
+
+msgid "Paste"
+msgstr "Beillesztés"
+
+msgid "Select All"
+msgstr "Összes Kijelölése"
+
+msgid "Clear"
+msgstr "Töröl"
+
+msgid "Undo"
+msgstr "Visszavonás"
+
+msgid "Redo"
+msgstr "Újra"
+
+msgid "(Other)"
+msgstr "(Más)"

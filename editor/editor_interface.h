@@ -48,7 +48,10 @@ class EditorSettings;
 class FileSystemDock;
 class Mesh;
 class Node;
+class PropertySelector;
+class SceneTreeDialog;
 class ScriptEditor;
+class SubViewport;
 class Texture2D;
 class Theme;
 class VBoxContainer;
@@ -58,6 +61,17 @@ class EditorInterface : public Object {
 	GDCLASS(EditorInterface, Object);
 
 	static EditorInterface *singleton;
+
+	// Editor dialogs.
+
+	PropertySelector *property_selector = nullptr;
+	SceneTreeDialog *node_selector = nullptr;
+
+	void _node_selected(const NodePath &p_node_paths, const Callable &p_callback);
+	void _node_selection_canceled(const Callable &p_callback);
+	void _property_selected(const String &p_property_name, const Callable &p_callback);
+	void _property_selection_canceled(const Callable &p_callback);
+	void _call_dialog_callback(const Callable &p_callback, const Variant &p_selected, const String &p_context);
 
 	// Editor tools.
 
@@ -92,10 +106,13 @@ public:
 	Control *get_base_control() const;
 	VBoxContainer *get_editor_main_screen() const;
 	ScriptEditor *get_script_editor() const;
+	SubViewport *get_editor_viewport_2d() const;
+	SubViewport *get_editor_viewport_3d(int p_idx = 0) const;
 
 	void set_main_screen_editor(const String &p_name);
 	void set_distraction_free_mode(bool p_enter);
 	bool is_distraction_free_mode_enabled() const;
+	bool is_multi_window_enabled() const;
 
 	float get_editor_scale() const;
 
@@ -106,6 +123,12 @@ public:
 
 	String get_current_feature_profile() const;
 	void set_current_feature_profile(const String &p_profile_name);
+
+	// Editor dialogs.
+
+	void popup_node_selector(const Callable &p_callback, const TypedArray<StringName> &p_valid_types = TypedArray<StringName>());
+	// Must use Vector<int> because exposing Vector<Variant::Type> is not supported.
+	void popup_property_selector(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter = PackedInt32Array());
 
 	// Editor docks.
 
@@ -147,8 +170,11 @@ public:
 	void set_movie_maker_enabled(bool p_enabled);
 	bool is_movie_maker_enabled() const;
 
-	// Base.
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
+	// Base.
 	static void create();
 	static void free();
 

@@ -46,6 +46,9 @@
 		<member name="base_font" type="Font" setter="set_base_font" getter="get_base_font">
 			Base font used to create a variation. If not set, default [Theme] font is used.
 		</member>
+		<member name="baseline_offset" type="float" setter="set_baseline_offset" getter="get_baseline_offset" default="0.0">
+			Extra baseline offset (as a fraction of font height).
+		</member>
 		<member name="opentype_features" type="Dictionary" setter="set_opentype_features" getter="get_opentype_features" default="{}">
 			A set of OpenType feature tags. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 		</member>
@@ -70,7 +73,7 @@
 		</member>
 		<member name="variation_opentype" type="Dictionary" setter="set_variation_opentype" getter="get_variation_opentype" default="{}">
 			Font OpenType variation coordinates. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg]OpenType variation tags[/url].
-			[b]Note:[/b] This [Dictionary] uses OpenType tags as keys. Variation axes can be identified both by tags([code]int[/code]) and names ([code]string[/code]). Some axes might be accessible by multiple names. For example, [code]wght[/code] refers to the same axis as [code]weight[/code]. Tags on the other hand are unique. To convert between names and tags, use [method TextServer.name_to_tag] and [method TextServer.tag_to_name].
+			[b]Note:[/b] This [Dictionary] uses OpenType tags as keys. Variation axes can be identified both by tags ([int], e.g. [code]0x77678674[/code]) and names ([String], e.g. [code]wght[/code]). Some axes might be accessible by multiple names. For example, [code]wght[/code] refers to the same axis as [code]weight[/code]. Tags on the other hand are unique. To convert between names and tags, use [method TextServer.name_to_tag] and [method TextServer.tag_to_name].
 			[b]Note:[/b] To get available variation axes of a font, use [method Font.get_supported_variation_list].
 		</member>
 		<member name="variation_transform" type="Transform2D" setter="set_variation_transform" getter="get_variation_transform" default="Transform2D(1, 0, 0, 1, 0, 0)">

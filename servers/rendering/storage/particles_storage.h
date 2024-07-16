@@ -49,6 +49,7 @@ public:
 	virtual bool particles_get_emitting(RID p_particles) = 0;
 
 	virtual void particles_set_amount(RID p_particles, int p_amount) = 0;
+	virtual void particles_set_amount_ratio(RID p_particles, float p_amount_ratio) = 0;
 	virtual void particles_set_lifetime(RID p_particles, double p_lifetime) = 0;
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) = 0;
 	virtual void particles_set_pre_process_time(RID p_particles, double p_time) = 0;
@@ -85,6 +86,8 @@ public:
 	virtual AABB particles_get_aabb(RID p_particles) const = 0;
 
 	virtual void particles_set_emission_transform(RID p_particles, const Transform3D &p_transform) = 0;
+	virtual void particles_set_emitter_velocity(RID p_particles, const Vector3 &p_velocity) = 0;
+	virtual void particles_set_interp_to_end(RID p_particles, float p_interp_to_end) = 0;
 
 	virtual int particles_get_draw_passes(RID p_particles) const = 0;
 	virtual RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const = 0;

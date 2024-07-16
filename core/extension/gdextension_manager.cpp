@@ -293,3 +293,12 @@ GDExtensionManager::GDExtensionManager() {
 	GDExtensionCompatHashes::initialize();
 #endif
 }
+
+GDExtensionManager::~GDExtensionManager() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+#ifndef DISABLE_DEPRECATED
+	GDExtensionCompatHashes::finalize();
+#endif
+}

@@ -30,6 +30,7 @@
 
 #include "portable_compressed_texture.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "scene/resources/bit_map.h"
 
@@ -41,7 +42,8 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 	const uint8_t *data = p_data.ptr();
 	uint32_t data_size = p_data.size();
 	ERR_FAIL_COND(data_size < 20);
-	compression_mode = CompressionMode(decode_uint32(data + 0));
+	compression_mode = CompressionMode(decode_uint16(data));
+	DataFormat data_format = DataFormat(decode_uint16(data + 2));
 	format = Image::Format(decode_uint32(data + 4));
 	uint32_t mipmap_count = decode_uint32(data + 8);
 	size.width = decode_uint32(data + 12);
@@ -56,6 +58,16 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 	switch (compression_mode) {
 		case COMPRESSION_MODE_LOSSLESS:
 		case COMPRESSION_MODE_LOSSY: {
+			ImageMemLoadFunc loader_func;
+			if (data_format == DATA_FORMAT_UNDEFINED) {
+				loader_func = nullptr;
+			} else if (data_format == DATA_FORMAT_PNG) {
+				loader_func = Image::_png_mem_unpacker_func;
+			} else if (data_format == DATA_FORMAT_WEBP) {
+				loader_func = Image::_webp_mem_loader_func;
+			} else {
+				ERR_FAIL();
+			}
 			Vector<uint8_t> image_data;
 
 			ERR_FAIL_COND(data_size < 4);
@@ -63,8 +75,10 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 				uint32_t mipsize = decode_uint32(data);
 				data += 4;
 				data_size -= 4;
-				ERR_FAIL_COND(mipsize < data_size);
-				Ref<Image> img = memnew(Image(data, data_size));
+				ERR_FAIL_COND(mipsize > data_size);
+				Ref<Image> img = loader_func == nullptr
+						? memnew(Image(data, data_size))
+						: Ref<Image>(loader_func(data, data_size));
 				ERR_FAIL_COND(img->is_empty());
 				if (img->get_format() != format) { // May happen due to webp/png in the tiny mipmaps.
 					img->convert(format);
@@ -75,7 +89,7 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 				data_size -= mipsize;
 			}
 
-			image = Ref<Image>(memnew(Image(size.width, size.height, mipmap_count > 1, format, image_data)));
+			image = Ref<Image>(memnew(Image(size.width, size.height, mipmaps, format, image_data)));
 
 		} break;
 		case COMPRESSION_MODE_BASIS_UNIVERSAL: {
@@ -86,7 +100,7 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 		case COMPRESSION_MODE_S3TC:
 		case COMPRESSION_MODE_ETC2:
 		case COMPRESSION_MODE_BPTC: {
-			image = Ref<Image>(memnew(Image(size.width, size.height, mipmap_count > 1, format, p_data.slice(20))));
+			image = Ref<Image>(memnew(Image(size.width, size.height, mipmaps, format, p_data.slice(20))));
 		} break;
 	}
 	ERR_FAIL_COND(image.is_null());
@@ -99,6 +113,7 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 	}
 
 	image_stored = true;
+	size_override = size;
 	RenderingServer::get_singleton()->texture_set_size_override(texture, size_override.width, size_override.height);
 	alpha_cache.unref();
 
@@ -122,7 +137,8 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 	Vector<uint8_t> buffer;
 
 	buffer.resize(20);
-	encode_uint32(p_compression_mode, buffer.ptrw());
+	encode_uint16(p_compression_mode, buffer.ptrw());
+	encode_uint16(DATA_FORMAT_UNDEFINED, buffer.ptrw() + 2);
 	encode_uint32(p_image->get_format(), buffer.ptrw() + 4);
 	encode_uint32(p_image->get_mipmap_count() + 1, buffer.ptrw() + 8);
 	encode_uint32(p_image->get_width(), buffer.ptrw() + 12);
@@ -131,12 +147,22 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 	switch (p_compression_mode) {
 		case COMPRESSION_MODE_LOSSLESS:
 		case COMPRESSION_MODE_LOSSY: {
+			bool lossless_force_png = GLOBAL_GET("rendering/textures/lossless_compression/force_png") ||
+					!Image::_webp_mem_loader_func; // WebP module disabled.
+			bool use_webp = !lossless_force_png && p_image->get_width() <= 16383 && p_image->get_height() <= 16383; // WebP has a size limit.
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 				Vector<uint8_t> data;
 				if (p_compression_mode == COMPRESSION_MODE_LOSSY) {
-					data = Image::webp_lossy_packer(p_image->get_image_from_mipmap(i), p_lossy_quality);
+					data = Image::webp_lossy_packer(i ? p_image->get_image_from_mipmap(i) : p_image, p_lossy_quality);
+					encode_uint16(DATA_FORMAT_WEBP, buffer.ptrw() + 2);
 				} else {
-					data = Image::webp_lossless_packer(p_image->get_image_from_mipmap(i));
+					if (use_webp) {
+						data = Image::webp_lossless_packer(i ? p_image->get_image_from_mipmap(i) : p_image);
+						encode_uint16(DATA_FORMAT_WEBP, buffer.ptrw() + 2);
+					} else {
+						data = Image::png_packer(i ? p_image->get_image_from_mipmap(i) : p_image);
+						encode_uint16(DATA_FORMAT_PNG, buffer.ptrw() + 2);
+					}
 				}
 				int data_len = data.size();
 				buffer.resize(buffer.size() + 4);
@@ -145,6 +171,7 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 			}
 		} break;
 		case COMPRESSION_MODE_BASIS_UNIVERSAL: {
+			encode_uint16(DATA_FORMAT_BASIS_UNIVERSAL, buffer.ptrw() + 2);
 			Image::UsedChannels uc = p_image->detect_used_channels(p_normal_map ? Image::COMPRESS_SOURCE_NORMAL : Image::COMPRESS_SOURCE_GENERIC);
 			Vector<uint8_t> budata = Image::basis_universal_packer(p_image, uc);
 			buffer.append_array(budata);
@@ -153,6 +180,7 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 		case COMPRESSION_MODE_S3TC:
 		case COMPRESSION_MODE_ETC2:
 		case COMPRESSION_MODE_BPTC: {
+			encode_uint16(DATA_FORMAT_IMAGE, buffer.ptrw() + 2);
 			Ref<Image> copy = p_image->duplicate();
 			switch (p_compression_mode) {
 				case COMPRESSION_MODE_S3TC:

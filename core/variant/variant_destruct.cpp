@@ -34,7 +34,7 @@
 
 static Variant::PTRDestructor destruct_pointers[Variant::VARIANT_MAX] = { nullptr };
 
-template <class T>
+template <typename T>
 static void add_destructor() {
 	destruct_pointers[T::get_base_type()] = T::ptr_destruct;
 }
@@ -56,6 +56,7 @@ void Variant::_register_variant_destructors() {
 	add_destructor<VariantDestruct<PackedVector2Array>>();
 	add_destructor<VariantDestruct<PackedVector3Array>>();
 	add_destructor<VariantDestruct<PackedColorArray>>();
+	add_destructor<VariantDestruct<PackedVector4Array>>();
 }
 
 void Variant::_unregister_variant_destructors() {

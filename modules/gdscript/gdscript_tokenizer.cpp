@@ -256,7 +256,7 @@ String GDScriptTokenizer::get_token_name(Token::Type p_token_type) {
 	return token_names[p_token_type];
 }
 
-void GDScriptTokenizer::set_source_code(const String &p_source_code) {
+void GDScriptTokenizerText::set_source_code(const String &p_source_code) {
 	source = p_source_code;
 	if (source.is_empty()) {
 		_source = U"";
@@ -270,34 +270,34 @@ void GDScriptTokenizer::set_source_code(const String &p_source_code) {
 	position = 0;
 }
 
-void GDScriptTokenizer::set_cursor_position(int p_line, int p_column) {
+void GDScriptTokenizerText::set_cursor_position(int p_line, int p_column) {
 	cursor_line = p_line;
 	cursor_column = p_column;
 }
 
-void GDScriptTokenizer::set_multiline_mode(bool p_state) {
+void GDScriptTokenizerText::set_multiline_mode(bool p_state) {
 	multiline_mode = p_state;
 }
 
-void GDScriptTokenizer::push_expression_indented_block() {
+void GDScriptTokenizerText::push_expression_indented_block() {
 	indent_stack_stack.push_back(indent_stack);
 }
 
-void GDScriptTokenizer::pop_expression_indented_block() {
-	ERR_FAIL_COND(indent_stack_stack.size() == 0);
+void GDScriptTokenizerText::pop_expression_indented_block() {
+	ERR_FAIL_COND(indent_stack_stack.is_empty());
 	indent_stack = indent_stack_stack.back()->get();
 	indent_stack_stack.pop_back();
 }
 
-int GDScriptTokenizer::get_cursor_line() const {
+int GDScriptTokenizerText::get_cursor_line() const {
 	return cursor_line;
 }
 
-int GDScriptTokenizer::get_cursor_column() const {
+int GDScriptTokenizerText::get_cursor_column() const {
 	return cursor_column;
 }
 
-bool GDScriptTokenizer::is_past_cursor() const {
+bool GDScriptTokenizerText::is_past_cursor() const {
 	if (line < cursor_line) {
 		return false;
 	}
@@ -310,7 +310,7 @@ bool GDScriptTokenizer::is_past_cursor() const {
 	return true;
 }
 
-char32_t GDScriptTokenizer::_advance() {
+char32_t GDScriptTokenizerText::_advance() {
 	if (unlikely(_is_at_end())) {
 		return '\0';
 	}
@@ -329,11 +329,11 @@ char32_t GDScriptTokenizer::_advance() {
 	return _peek(-1);
 }
 
-void GDScriptTokenizer::push_paren(char32_t p_char) {
+void GDScriptTokenizerText::push_paren(char32_t p_char) {
 	paren_stack.push_back(p_char);
 }
 
-bool GDScriptTokenizer::pop_paren(char32_t p_expected) {
+bool GDScriptTokenizerText::pop_paren(char32_t p_expected) {
 	if (paren_stack.is_empty()) {
 		return false;
 	}
@@ -343,13 +343,13 @@ bool GDScriptTokenizer::pop_paren(char32_t p_expected) {
 	return actual == p_expected;
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::pop_error() {
+GDScriptTokenizer::Token GDScriptTokenizerText::pop_error() {
 	Token error = error_stack.back()->get();
 	error_stack.pop_back();
 	return error;
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::make_token(Token::Type p_type) {
+GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 	Token token(p_type);
 	token.start_line = start_line;
 	token.end_line = line;
@@ -408,35 +408,35 @@ GDScriptTokenizer::Token GDScriptTokenizer::make_token(Token::Type p_type) {
 	return token;
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::make_literal(const Variant &p_literal) {
+GDScriptTokenizer::Token GDScriptTokenizerText::make_literal(const Variant &p_literal) {
 	Token token = make_token(Token::LITERAL);
 	token.literal = p_literal;
 	return token;
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::make_identifier(const StringName &p_identifier) {
+GDScriptTokenizer::Token GDScriptTokenizerText::make_identifier(const StringName &p_identifier) {
 	Token identifier = make_token(Token::IDENTIFIER);
 	identifier.literal = p_identifier;
 	return identifier;
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::make_error(const String &p_message) {
+GDScriptTokenizer::Token GDScriptTokenizerText::make_error(const String &p_message) {
 	Token error = make_token(Token::ERROR);
 	error.literal = p_message;
 
 	return error;
 }
 
-void GDScriptTokenizer::push_error(const String &p_message) {
+void GDScriptTokenizerText::push_error(const String &p_message) {
 	Token error = make_error(p_message);
 	error_stack.push_back(error);
 }
 
-void GDScriptTokenizer::push_error(const Token &p_error) {
+void GDScriptTokenizerText::push_error(const Token &p_error) {
 	error_stack.push_back(p_error);
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::make_paren_error(char32_t p_paren) {
+GDScriptTokenizer::Token GDScriptTokenizerText::make_paren_error(char32_t p_paren) {
 	if (paren_stack.is_empty()) {
 		return make_error(vformat("Closing \"%c\" doesn't have an opening counterpart.", p_paren));
 	}
@@ -445,7 +445,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::make_paren_error(char32_t p_paren) {
 	return error;
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::check_vcs_marker(char32_t p_test, Token::Type p_double_type) {
+GDScriptTokenizer::Token GDScriptTokenizerText::check_vcs_marker(char32_t p_test, Token::Type p_double_type) {
 	const char32_t *next = _current + 1;
 	int chars = 2; // Two already matched.
 
@@ -469,7 +469,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::check_vcs_marker(char32_t p_test, To
 	}
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::annotation() {
+GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 	if (is_unicode_identifier_start(_peek())) {
 		_advance(); // Consume start character.
 	} else {
@@ -550,7 +550,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::annotation() {
 #define MAX_KEYWORD_LENGTH 10
 
 #ifdef DEBUG_ENABLED
-void GDScriptTokenizer::make_keyword_list() {
+void GDScriptTokenizerText::make_keyword_list() {
 #define KEYWORD_LINE(keyword, token_type) keyword,
 #define KEYWORD_GROUP_IGNORE(group)
 	keyword_list = {
@@ -561,7 +561,7 @@ void GDScriptTokenizer::make_keyword_list() {
 }
 #endif // DEBUG_ENABLED
 
-GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
+GDScriptTokenizer::Token GDScriptTokenizerText::potential_identifier() {
 	bool only_ascii = _peek(-1) < 128;
 
 	// Consume all identifier characters.
@@ -611,7 +611,9 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 		static_assert(keyword_length <= MAX_KEYWORD_LENGTH, "There's a keyword longer than the defined maximum length");  \
 		static_assert(keyword_length >= MIN_KEYWORD_LENGTH, "There's a keyword shorter than the defined minimum length"); \
 		if (keyword_length == len && name == keyword) {                                                                   \
-			return make_token(token_type);                                                                                \
+			Token kw = make_token(token_type);                                                                            \
+			kw.literal = name;                                                                                            \
+			return kw;                                                                                                    \
 		}                                                                                                                 \
 	}
 
@@ -646,7 +648,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 #undef MIN_KEYWORD_LENGTH
 #undef KEYWORDS
 
-void GDScriptTokenizer::newline(bool p_make_token) {
+void GDScriptTokenizerText::newline(bool p_make_token) {
 	// Don't overwrite previous newline, nor create if we want a line continuation.
 	if (p_make_token && !pending_newline && !line_continuation) {
 		Token newline(Token::NEWLINE);
@@ -667,11 +669,12 @@ void GDScriptTokenizer::newline(bool p_make_token) {
 	leftmost_column = 1;
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::number() {
+GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 	int base = 10;
 	bool has_decimal = false;
 	bool has_exponent = false;
 	bool has_error = false;
+	bool need_digits = false;
 	bool (*digit_check_func)(char32_t) = is_digit;
 
 	// Sign before hexadecimal or binary.
@@ -686,11 +689,13 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 			// Hexadecimal.
 			base = 16;
 			digit_check_func = is_hex_digit;
+			need_digits = true;
 			_advance();
 		} else if (_peek() == 'b') {
 			// Binary.
 			base = 2;
 			digit_check_func = is_binary_digit;
+			need_digits = true;
 			_advance();
 		}
 	}
@@ -717,6 +722,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 			}
 			previous_was_underscore = true;
 		} else {
+			need_digits = false;
 			previous_was_underscore = false;
 		}
 		_advance();
@@ -820,6 +826,16 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 		}
 	}
 
+	if (need_digits) {
+		// No digits in hex or bin literal.
+		Token error = make_error(vformat(R"(Expected %s digit after "0%c".)", (base == 16 ? "hexadecimal" : "binary"), (base == 16 ? 'x' : 'b')));
+		error.start_column = column;
+		error.leftmost_column = column;
+		error.end_column = column + 1;
+		error.rightmost_column = column + 1;
+		return error;
+	}
+
 	// Detect extra decimal point.
 	if (!has_error && has_decimal && _peek() == '.' && _peek(1) != '.') {
 		Token error = make_error("Cannot use a decimal point twice in a number.");
@@ -854,7 +870,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 	}
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::string() {
+GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 	enum StringType {
 		STRING_REGULAR,
 		STRING_NAME,
@@ -1140,7 +1156,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 	return make_literal(string);
 }
 
-void GDScriptTokenizer::check_indent() {
+void GDScriptTokenizerText::check_indent() {
 	ERR_FAIL_COND_MSG(column != 1, "Checking tokenizer indentation in the middle of a line.");
 
 	if (_is_at_end()) {
@@ -1309,13 +1325,13 @@ void GDScriptTokenizer::check_indent() {
 	}
 }
 
-String GDScriptTokenizer::_get_indent_char_name(char32_t ch) {
+String GDScriptTokenizerText::_get_indent_char_name(char32_t ch) {
 	ERR_FAIL_COND_V(ch != ' ' && ch != '\t', String(&ch, 1).c_escape());
 
 	return ch == ' ' ? "space" : "tab";
 }
 
-void GDScriptTokenizer::_skip_whitespace() {
+void GDScriptTokenizerText::_skip_whitespace() {
 	if (pending_indents != 0) {
 		// Still have some indent/dedent tokens to give.
 		return;
@@ -1377,7 +1393,7 @@ void GDScriptTokenizer::_skip_whitespace() {
 	}
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::scan() {
+GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 	if (has_error()) {
 		return pop_error();
 	}
@@ -1442,6 +1458,8 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 		_advance();
 		newline(false);
 		line_continuation = true;
+		_skip_whitespace(); // Skip whitespace/comment lines after `\`. See GH-89403.
+		continuation_lines.push_back(line);
 		return scan(); // Recurse to get next token.
 	}
 
@@ -1659,7 +1677,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 	}
 }
 
-GDScriptTokenizer::GDScriptTokenizer() {
+GDScriptTokenizerText::GDScriptTokenizerText() {
 #ifdef TOOLS_ENABLED
 	if (EditorSettings::get_singleton()) {
 		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/behavior/indent/size");

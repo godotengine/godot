@@ -28,7 +28,7 @@
 			<param index="1" name="common_name_override" type="String" default="&quot;&quot;" />
 			<description>
 				Creates a TLS client configuration which validates certificates and their common names (fully qualified domain names).
-				You can specify a custom [param trusted_chain] of certification authorities (the default CA list will be used if [code]null[/code]), and optionally provide a [param common_name_override] if you expect the certificate to have a common name other then the server FQDN.
+				You can specify a custom [param trusted_chain] of certification authorities (the default CA list will be used if [code]null[/code]), and optionally provide a [param common_name_override] if you expect the certificate to have a common name other than the server FQDN.
 				[b]Note:[/b] On the Web platform, TLS verification is always enforced against the CA list of the web browser. This is considered a security feature.
 			</description>
 		</method>
@@ -38,6 +38,42 @@
 			<description>
 				Creates an [b]unsafe[/b] TLS client configuration where certificate validation is optional. You can optionally provide a valid [param trusted_chain], but the common name of the certificates will never be checked. Using this configuration for purposes other than testing [b]is not recommended[/b].
 				[b]Note:[/b] On the Web platform, TLS verification is always enforced against the CA list of the web browser. This is considered a security feature.
+			</description>
+		</method>
+		<method name="get_common_name_override" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the common name (domain name) override specified when creating with [method TLSOptions.client].
+			</description>
+		</method>
+		<method name="get_own_certificate" qualifiers="const">
+			<return type="X509Certificate" />
+			<description>
+				Returns the [X509Certificate] specified when creating with [method TLSOptions.server].
+			</description>
+		</method>
+		<method name="get_private_key" qualifiers="const">
+			<return type="CryptoKey" />
+			<description>
+				Returns the [CryptoKey] specified when creating with [method TLSOptions.server].
+			</description>
+		</method>
+		<method name="get_trusted_ca_chain" qualifiers="const">
+			<return type="X509Certificate" />
+			<description>
+				Returns the CA [X509Certificate] chain specified when creating with [method TLSOptions.client] or [method TLSOptions.client_unsafe].
+			</description>
+		</method>
+		<method name="is_server" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if created with [method TLSOptions.server], [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="is_unsafe_client" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if created with [method TLSOptions.client_unsafe], [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="server" qualifiers="static">

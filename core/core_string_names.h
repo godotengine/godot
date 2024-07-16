@@ -50,20 +50,15 @@ public:
 
 	static CoreStringNames *singleton;
 
-	StringName _free;
+	StringName free_; // "free", conflict with C++ keyword.
 	StringName changed;
-	StringName _script;
+	StringName script;
 	StringName script_changed;
-	StringName ___pdcdata;
-	StringName __getvar;
 	StringName _iter_init;
 	StringName _iter_next;
 	StringName _iter_get;
 	StringName get_rid;
 	StringName _to_string;
-#ifdef TOOLS_ENABLED
-	StringName _sections_unfolded;
-#endif
 	StringName _custom_features;
 
 	StringName x;
@@ -92,10 +87,10 @@ public:
 	StringName call;
 	StringName call_deferred;
 	StringName bind;
-	StringName unbind;
-	StringName emit;
 	StringName notification;
 	StringName property_list_changed;
 };
+
+#define CoreStringName(m_name) CoreStringNames::get_singleton()->m_name
 
 #endif // CORE_STRING_NAMES_H

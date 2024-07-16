@@ -63,8 +63,9 @@ static bool axis_value_is_outside_axis_range (hb_tag_t axis_tag, float axis_valu
   if (!user_axes_location->has (axis_tag))
     return false;
 
+  double axis_value_double = static_cast<double>(axis_value);
   Triple axis_range = user_axes_location->get (axis_tag);
-  return (axis_value < axis_range.minimum || axis_value > axis_range.maximum);
+  return (axis_value_double < axis_range.minimum || axis_value_double > axis_range.maximum);
 }
 
 struct StatAxisRecord
@@ -327,6 +328,7 @@ struct AxisValueFormat4
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
                           axisValues.sanitize (c, axisCount)));
   }
 
@@ -348,7 +350,7 @@ struct AxisValueFormat4
 
 struct AxisValue
 {
-  bool get_value (unsigned int axis_index) const
+  float get_value (unsigned int axis_index) const
   {
     switch (u.format)
     {
@@ -356,7 +358,7 @@ struct AxisValue
     case 2: return u.format2.get_value ();
     case 3: return u.format3.get_value ();
     case 4: return u.format4.get_axis_record (axis_index).get_value ();
-    default:return 0;
+    default:return 0.f;
     }
   }
 
@@ -416,6 +418,7 @@ struct AxisValue
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
       return_trace (false);
+    hb_barrier ();
 
     switch (u.format)
     {
@@ -483,7 +486,7 @@ struct STAT
     hb_array_t<const Offset16To<AxisValue>> axis_values = get_axis_value_offsets ();
     for (unsigned int i = 0; i < axis_values.length; i++)
     {
-      const AxisValue& axis_value = this+axis_values[i];
+      const AxisValue& axis_value = this+offsetToAxisValueOffsets+axis_values[i];
       if (axis_value.get_axis_index () == axis_index)
       {
 	if (value)
@@ -560,6 +563,7 @@ struct STAT
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  version.major == 1 &&
 			  version.minor > 0 &&
 			  designAxesOffset.sanitize (c, this, designAxisCount) &&

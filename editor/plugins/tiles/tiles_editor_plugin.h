@@ -31,11 +31,11 @@
 #ifndef TILES_EDITOR_PLUGIN_H
 #define TILES_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 
 #include "tile_atlas_view.h"
-#include "tile_map_editor.h"
+#include "tile_map_layer_editor.h"
 #include "tile_set_editor.h"
 
 class TilesEditorUtils : public Object {
@@ -113,15 +113,21 @@ public:
 class TileMapEditorPlugin : public EditorPlugin {
 	GDCLASS(TileMapEditorPlugin, EditorPlugin);
 
-	TileMapEditor *editor = nullptr;
+	TileMapLayerEditor *editor = nullptr;
 	Button *button = nullptr;
-	ObjectID tile_map_id;
+	ObjectID tile_map_layer_id;
+	ObjectID tile_map_group_id; // Allow keeping the layer selector up to date.
 
 	bool tile_map_changed_needs_update = false;
-	ObjectID edited_tileset; // The TileSet associated with the TileMap.
+	ObjectID tile_set_id; // The TileSet associated with the TileMap.
 
-	void _tile_map_changed();
+	void _tile_map_layer_changed();
+	void _tile_map_layer_removed();
 	void _update_tile_map();
+	void _select_layer(const StringName &p_name);
+
+	void _edit_tile_map_layer(TileMapLayer *p_tile_map_layer, bool p_show_layer_selector);
+	void _edit_tile_map(TileMap *p_tile_map);
 
 protected:
 	void _notification(int p_notification);

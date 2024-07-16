@@ -62,9 +62,9 @@ class GraphNode : public GraphElement {
 	};
 
 	struct _MinSizeCache {
-		int min_size;
-		bool will_stretch;
-		int final_size;
+		int min_size = 0;
+		bool will_stretch = false;
+		int final_size = 0;
 	};
 
 	HBoxContainer *titlebar_hbox = nullptr;
@@ -94,6 +94,8 @@ class GraphNode : public GraphElement {
 	} theme_cache;
 
 	bool port_pos_dirty = true;
+
+	bool ignore_invalid_connection_type = false;
 
 	void _port_pos_update();
 
@@ -129,6 +131,9 @@ public:
 	void set_slot_color_left(int p_slot_index, const Color &p_color);
 	Color get_slot_color_left(int p_slot_index) const;
 
+	void set_slot_custom_icon_left(int p_slot_index, const Ref<Texture2D> &p_custom_icon);
+	Ref<Texture2D> get_slot_custom_icon_left(int p_slot_index) const;
+
 	bool is_slot_enabled_right(int p_slot_index) const;
 	void set_slot_enabled_right(int p_slot_index, bool p_enable);
 
@@ -138,8 +143,14 @@ public:
 	void set_slot_color_right(int p_slot_index, const Color &p_color);
 	Color get_slot_color_right(int p_slot_index) const;
 
+	void set_slot_custom_icon_right(int p_slot_index, const Ref<Texture2D> &p_custom_icon);
+	Ref<Texture2D> get_slot_custom_icon_right(int p_slot_index) const;
+
 	bool is_slot_draw_stylebox(int p_slot_index) const;
 	void set_slot_draw_stylebox(int p_slot_index, bool p_enable);
+
+	void set_ignore_invalid_connection_type(bool p_ignore);
+	bool is_ignoring_valid_connection_type() const;
 
 	int get_input_port_count();
 	Vector2 get_input_port_position(int p_port_idx);

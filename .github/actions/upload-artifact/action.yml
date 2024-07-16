@@ -12,8 +12,9 @@ runs:
   using: "composite"
   steps:
     - name: Upload Godot Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.name }}
         path: ${{ inputs.path }}
-        retention-days: 14
+        # Default is 90 days.
+        retention-days: 60

@@ -30,15 +30,24 @@
 
 package org.godotengine.editor
 
+import org.godotengine.godot.GodotLib
+
 /**
  * Drives the 'run project' window of the Godot Editor.
  */
 class GodotGame : GodotEditor() {
+
+	override fun getGodotAppLayout() = org.godotengine.godot.R.layout.godot_app_layout
+
 	override fun overrideOrientationRequest() = false
 
-	override fun enableLongPressGestures() = false
+	override fun enableLongPressGestures() = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_long_press_as_right_click"))
 
-	override fun enablePanAndScaleGestures() = false
+	override fun enablePanAndScaleGestures() = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
+
+	override fun useInputBuffering() = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/buffering/android/use_input_buffering"))
+
+	override fun useAccumulatedInput() = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/buffering/android/use_accumulated_input"))
 
 	override fun checkForProjectPermissionsToEnable() {
 		// Nothing to do.. by the time we get here, the project permissions will have already

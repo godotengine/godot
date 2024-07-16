@@ -64,7 +64,7 @@ private:
 
 		LogMessage() {}
 
-		LogMessage(const String p_text, MessageType p_type, bool p_clear) :
+		LogMessage(const String &p_text, MessageType p_type, bool p_clear) :
 				text(p_text),
 				type(p_type),
 				clear(p_clear) {
@@ -128,6 +128,8 @@ private:
 		}
 	};
 
+	int line_limit = 10000;
+
 	Vector<LogMessage> messages;
 	// Maps MessageTypes to LogFilters for convenient access and storage (don't need 1 member per filter).
 	HashMap<MessageType, LogFilter *> type_filter_map;
@@ -154,15 +156,15 @@ private:
 
 	ErrorHandlerList eh;
 
-	Thread::ID current;
-
 	//void _dragged(const Point2& p_ofs);
+	void _meta_clicked(const String &p_meta);
 	void _clear_request();
 	void _copy_request();
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
 
 	void _rebuild_log();
 	void _add_log_line(LogMessage &p_message, bool p_replace_previous = false);
+	bool _check_display_message(LogMessage &p_message);
 
 	void _set_filter_active(bool p_active, MessageType p_message_type);
 	void _set_search_visible(bool p_visible);
@@ -178,6 +180,7 @@ private:
 	void _load_state();
 
 	void _update_theme();
+	void _editor_settings_changed();
 
 protected:
 	void _notification(int p_what);

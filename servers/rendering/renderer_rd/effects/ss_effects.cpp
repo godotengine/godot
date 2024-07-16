@@ -483,8 +483,12 @@ void SSEffects::downsample_depth(Ref<RenderSceneBuffersRD> p_render_buffers, uin
 		downsample_uniform_set = uniform_set_cache->get_cache_vec(shader, 2, u_depths);
 	}
 
-	float depth_linearize_mul = -p_projection.columns[3][2] * 0.5;
-	float depth_linearize_add = p_projection.columns[2][2];
+	Projection correction;
+	correction.set_depth_correction(false);
+	Projection temp = correction * p_projection;
+
+	float depth_linearize_mul = -temp.columns[3][2];
+	float depth_linearize_add = temp.columns[2][2];
 	if (depth_linearize_mul * depth_linearize_add < 0) {
 		depth_linearize_add = -depth_linearize_add;
 	}
@@ -517,15 +521,14 @@ void SSEffects::downsample_depth(Ref<RenderSceneBuffersRD> p_render_buffers, uin
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &ss_effects.downsample_push_constant, sizeof(SSEffectsDownsamplePushConstant));
 
 	if (use_half_size) {
-		size.x = MAX(1, size.x >> 1);
-		size.y = MAX(1, size.y >> 1);
+		size = Size2i(size.x >> 1, size.y >> 1).maxi(1);
 	}
 
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, size.x, size.y, 1);
 	RD::get_singleton()->compute_list_add_barrier(compute_list);
 	RD::get_singleton()->draw_command_end_label();
 
-	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_COMPUTE);
+	RD::get_singleton()->compute_list_end();
 
 	ss_effects.used_full_mips_last_frame = use_full_mips;
 	ss_effects.used_half_size_last_frame = use_half_size;
@@ -899,10 +902,9 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 				int y_groups = p_ssil_buffers.buffer_height;
 
 				RD::get_singleton()->compute_list_dispatch_threads(compute_list, x_groups, y_groups, 1);
-				if (ssil_quality > RS::ENV_SSIL_QUALITY_VERY_LOW) {
-					RD::get_singleton()->compute_list_add_barrier(compute_list);
-				}
 			}
+
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
 		}
 
 		RD::get_singleton()->draw_command_end_label(); // Blur
@@ -950,10 +952,10 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 
 	RD::get_singleton()->draw_command_end_label(); // SSIL
 
-	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_NO_BARRIER);
+	RD::get_singleton()->compute_list_end();
 
 	int zero[1] = { 0 };
-	RD::get_singleton()->buffer_update(ssil.importance_map_load_counter, 0, sizeof(uint32_t), &zero, 0); //no barrier
+	RD::get_singleton()->buffer_update(ssil.importance_map_load_counter, 0, sizeof(uint32_t), &zero);
 }
 
 /* SSAO */
@@ -1285,9 +1287,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 				RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_ssao_buffers.buffer_width, p_ssao_buffers.buffer_height, 1);
 			}
 
-			if (ssao_quality > RS::ENV_SSAO_QUALITY_VERY_LOW) {
-				RD::get_singleton()->compute_list_add_barrier(compute_list);
-			}
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
 		}
 		RD::get_singleton()->draw_command_end_label(); // Blur
 	}
@@ -1332,10 +1332,10 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 		RD::get_singleton()->draw_command_end_label(); // Interleave
 	}
 	RD::get_singleton()->draw_command_end_label(); //SSAO
-	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_NO_BARRIER); //wait for upcoming transfer
+	RD::get_singleton()->compute_list_end();
 
 	int zero[1] = { 0 };
-	RD::get_singleton()->buffer_update(ssao.importance_map_load_counter, 0, sizeof(uint32_t), &zero, 0); //no barrier
+	RD::get_singleton()->buffer_update(ssao.importance_map_load_counter, 0, sizeof(uint32_t), &zero);
 }
 
 /* Screen Space Reflection */
@@ -1394,7 +1394,7 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 			scene_data.eye_offset[v][3] = 0.0;
 		}
 
-		RD::get_singleton()->buffer_update(ssr.ubo, 0, sizeof(ScreenSpaceReflectionSceneData), &scene_data, RD::BARRIER_MASK_COMPUTE);
+		RD::get_singleton()->buffer_update(ssr.ubo, 0, sizeof(ScreenSpaceReflectionSceneData), &scene_data);
 	}
 
 	uint32_t pipeline_specialization = 0;

@@ -31,7 +31,7 @@
 #ifndef NAVIGATION_REGION_2D_H
 #define NAVIGATION_REGION_2D_H
 
-#include "scene/resources/navigation_polygon.h"
+#include "scene/resources/2d/navigation_polygon.h"
 
 class NavigationRegion2D : public Node2D {
 	GDCLASS(NavigationRegion2D, Node2D);
@@ -46,24 +46,27 @@ class NavigationRegion2D : public Node2D {
 	real_t travel_cost = 1.0;
 	Ref<NavigationPolygon> navigation_polygon;
 
-	bool constrain_avoidance = false;
-	LocalVector<RID> constrain_avoidance_obstacles;
-	uint32_t avoidance_layers = 1;
-
 	Transform2D current_global_transform;
 
 	void _navigation_polygon_changed();
 
 #ifdef DEBUG_ENABLED
 private:
+	RID debug_mesh_rid;
+	RID debug_instance_rid;
+
+	bool debug_mesh_dirty = true;
+
+	void _free_debug();
 	void _update_debug_mesh();
 	void _update_debug_edge_connections_mesh();
+	void _update_debug_baking_rect();
 	void _navigation_map_changed(RID p_map);
+	void _navigation_debug_changed();
 #endif // DEBUG_ENABLED
 
 protected:
 	void _notification(int p_what);
-	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
@@ -76,6 +79,7 @@ public:
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 #endif
+	RID get_rid() const;
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
@@ -103,25 +107,16 @@ public:
 	void set_navigation_polygon(const Ref<NavigationPolygon> &p_navigation_polygon);
 	Ref<NavigationPolygon> get_navigation_polygon() const;
 
-	void set_constrain_avoidance(bool p_enabled);
-	bool get_constrain_avoidance() const;
-
-	void set_avoidance_layers(uint32_t p_layers);
-	uint32_t get_avoidance_layers() const;
-
-	void set_avoidance_layer_value(int p_layer_number, bool p_value);
-	bool get_avoidance_layer_value(int p_layer_number) const;
-
 	PackedStringArray get_configuration_warnings() const override;
 
 	void bake_navigation_polygon(bool p_on_thread);
 	void _bake_finished(Ref<NavigationPolygon> p_navigation_polygon);
+	bool is_baking() const;
 
 	NavigationRegion2D();
 	~NavigationRegion2D();
 
 private:
-	void _update_avoidance_constrain();
 	void _region_enter_navigation_map();
 	void _region_exit_navigation_map();
 	void _region_update_transform();

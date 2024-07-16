@@ -94,8 +94,7 @@ class VideoStream : public Resource {
 	OBJ_SAVE_TYPE(VideoStream);
 
 protected:
-	static void
-	_bind_methods();
+	static void _bind_methods();
 
 	GDVIRTUAL0R(Ref<VideoStreamPlayback>, _instantiate_playback);
 

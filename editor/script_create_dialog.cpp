@@ -38,15 +38,15 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 
-static String _get_parent_class_of_script(String p_path) {
+static String _get_parent_class_of_script(const String &p_path) {
 	if (!ResourceLoader::exists(p_path, "Script")) {
 		return "Object"; // A script eventually inherits from Object.
 	}
@@ -73,7 +73,7 @@ static String _get_parent_class_of_script(String p_path) {
 	return _get_parent_class_of_script(base->get_path());
 }
 
-static Vector<String> _get_hierarchy(String p_class_name) {
+static Vector<String> _get_hierarchy(const String &p_class_name) {
 	Vector<String> hierarchy;
 
 	String class_name = p_class_name;
@@ -125,7 +125,6 @@ void ScriptCreateDialog::_notification(int p_what) {
 				for (int i = 0; i < language_menu->get_item_count(); i++) {
 					if (language_menu->get_item_text(i) == last_language) {
 						language_menu->select(i);
-						current_language = i;
 						break;
 					}
 				}
@@ -146,8 +145,8 @@ void ScriptCreateDialog::_notification(int p_what) {
 
 void ScriptCreateDialog::_path_hbox_sorted() {
 	if (is_visible()) {
-		int filename_start_pos = initial_bp.rfind("/") + 1;
-		int filename_end_pos = initial_bp.length();
+		int filename_start_pos = file_path->get_text().rfind("/") + 1;
+		int filename_end_pos = file_path->get_text().get_basename().length();
 
 		if (!is_built_in) {
 			file_path->select(filename_start_pos, filename_end_pos);
@@ -166,26 +165,30 @@ bool ScriptCreateDialog::_can_be_built_in() {
 	return (supports_built_in && built_in_enabled);
 }
 
+String ScriptCreateDialog::_adjust_file_path(const String &p_base_path) const {
+	if (p_base_path.is_empty()) {
+		return p_base_path;
+	}
+
+	String base_dir = p_base_path.get_base_dir();
+	String file_name = p_base_path.get_file().get_basename();
+	file_name = EditorNode::adjust_script_name_casing(file_name, language->preferred_file_name_casing());
+	String extension = language->get_extension();
+	return base_dir.path_join(file_name + "." + extension);
+}
+
 void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled) {
 	parent_name->set_text(p_base_name);
 	parent_name->deselect();
 	built_in_name->set_text("");
 
-	if (!p_base_path.is_empty()) {
-		initial_bp = p_base_path.get_basename();
-		file_path->set_text(initial_bp + "." + ScriptServer::get_language(language_menu->get_selected())->get_extension());
-		current_language = language_menu->get_selected();
-	} else {
-		initial_bp = "";
-		file_path->set_text("");
-	}
+	file_path->set_text(p_base_path);
 	file_path->deselect();
 
 	built_in_enabled = p_built_in_enabled;
 	load_enabled = p_load_enabled;
 
-	_language_changed(current_language);
-	_path_changed(file_path->get_text());
+	_language_changed(language_menu->get_selected());
 }
 
 void ScriptCreateDialog::set_inheritance_base_type(const String &p_base) {
@@ -388,38 +391,9 @@ void ScriptCreateDialog::_language_changed(int l) {
 		is_built_in = false;
 	}
 
-	String selected_ext = "." + language->get_extension();
 	String path = file_path->get_text();
-	String extension = "";
-	if (!path.is_empty()) {
-		if (path.contains(".")) {
-			extension = path.get_extension();
-		}
-
-		if (extension.length() == 0) {
-			// Add extension if none.
-			path += selected_ext;
-			_path_changed(path);
-		} else {
-			// Change extension by selected language.
-			List<String> extensions;
-			// Get all possible extensions for script.
-			for (int m = 0; m < language_menu->get_item_count(); m++) {
-				ScriptServer::get_language(m)->get_recognized_extensions(&extensions);
-			}
-
-			for (const String &E : extensions) {
-				if (E.nocasecmp_to(extension) == 0) {
-					path = path.get_basename() + selected_ext;
-					_path_changed(path);
-					break;
-				}
-			}
-		}
-	} else {
-		path = "class" + selected_ext;
-		_path_changed(path);
-	}
+	path = _adjust_file_path(path);
+	_path_changed(path);
 	file_path->set_text(path);
 
 	EditorSettings::get_singleton()->set_project_metadata("script_setup", "last_selected_language", language_menu->get_item_text(language_menu->get_selected()));
@@ -633,7 +607,7 @@ void ScriptCreateDialog::_update_dialog() {
 		validation_panel->set_message(MSG_ID_SCRIPT, TTR("File exists, it will be reused."), EditorValidationPanel::MSG_OK);
 	}
 
-	if (!path_error.is_empty()) {
+	if (!is_built_in && !path_error.is_empty()) {
 		validation_panel->set_message(MSG_ID_PATH, path_error, EditorValidationPanel::MSG_ERROR);
 	}
 
@@ -896,9 +870,8 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	if (default_language >= 0) {
 		language_menu->select(default_language);
 	}
-	current_language = default_language;
 
-	language_menu->connect("item_selected", callable_mp(this, &ScriptCreateDialog::_language_changed));
+	language_menu->connect(SceneStringName(item_selected), callable_mp(this, &ScriptCreateDialog::_language_changed));
 
 	/* Inherits */
 
@@ -907,14 +880,15 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	parent_name = memnew(LineEdit);
-	parent_name->connect("text_changed", callable_mp(this, &ScriptCreateDialog::_parent_name_changed));
+	parent_name->connect(SceneStringName(text_changed), callable_mp(this, &ScriptCreateDialog::_parent_name_changed));
 	parent_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(parent_name);
+	register_text_enter(parent_name);
 	parent_search_button = memnew(Button);
-	parent_search_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_class_in_tree));
+	parent_search_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptCreateDialog::_browse_class_in_tree));
 	hb->add_child(parent_search_button);
 	parent_browse_button = memnew(Button);
-	parent_browse_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_path).bind(true, false));
+	parent_browse_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptCreateDialog::_browse_path).bind(true, false));
 	hb->add_child(parent_browse_button);
 	gc->add_child(memnew(Label(TTR("Inherits:"))));
 	gc->add_child(hb);
@@ -926,14 +900,14 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	use_templates = memnew(CheckBox);
 	use_templates->set_pressed(is_using_templates);
-	use_templates->connect("pressed", callable_mp(this, &ScriptCreateDialog::_use_template_pressed));
+	use_templates->connect(SceneStringName(pressed), callable_mp(this, &ScriptCreateDialog::_use_template_pressed));
 	template_hb->add_child(use_templates);
 
 	template_inactive_message = "";
 
 	template_menu = memnew(OptionButton);
 	template_menu->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	template_menu->connect("item_selected", callable_mp(this, &ScriptCreateDialog::_template_changed));
+	template_menu->connect(SceneStringName(item_selected), callable_mp(this, &ScriptCreateDialog::_template_changed));
 	template_hb->add_child(template_menu);
 
 	gc->add_child(template_hb);
@@ -942,21 +916,21 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	built_in = memnew(CheckBox);
 	built_in->set_text(TTR("On"));
-	built_in->connect("pressed", callable_mp(this, &ScriptCreateDialog::_built_in_pressed));
+	built_in->connect(SceneStringName(pressed), callable_mp(this, &ScriptCreateDialog::_built_in_pressed));
 	gc->add_child(memnew(Label(TTR("Built-in Script:"))));
 	gc->add_child(built_in);
 
 	/* Path */
 
 	hb = memnew(HBoxContainer);
-	hb->connect("sort_children", callable_mp(this, &ScriptCreateDialog::_path_hbox_sorted));
+	hb->connect(SceneStringName(sort_children), callable_mp(this, &ScriptCreateDialog::_path_hbox_sorted));
 	file_path = memnew(LineEdit);
-	file_path->connect("text_changed", callable_mp(this, &ScriptCreateDialog::_path_changed));
+	file_path->connect(SceneStringName(text_changed), callable_mp(this, &ScriptCreateDialog::_path_changed));
 	file_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(file_path);
 	register_text_enter(file_path);
 	path_button = memnew(Button);
-	path_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_path).bind(false, true));
+	path_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptCreateDialog::_browse_path).bind(false, true));
 	hb->add_child(path_button);
 	Label *label = memnew(Label(TTR("Path:")));
 	gc->add_child(label);

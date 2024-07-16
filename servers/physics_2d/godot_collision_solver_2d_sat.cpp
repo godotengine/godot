@@ -171,7 +171,7 @@ static void _generate_contacts_from_supports(const Vector2 *p_points_A, int p_po
 	contacts_func(points_A, pointcount_A, points_B, pointcount_B, p_collector);
 }
 
-template <class ShapeA, class ShapeB, bool castA = false, bool castB = false, bool withMargin = false>
+template <typename ShapeA, typename ShapeB, bool castA = false, bool castB = false, bool withMargin = false>
 class SeparatorAxisTest2D {
 	const ShapeA *shape_A = nullptr;
 	const ShapeB *shape_B = nullptr;

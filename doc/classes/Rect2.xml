@@ -89,13 +89,13 @@
 				var rect = Rect2(0, 0, 5, 2)
 
 				rect = rect.expand(Vector2(10, 0)) # rect is Rect2(0, 0, 10, 2)
-				rect = rect.expand(Vector2(-5, 5)) # rect is Rect2(-5, 0, 10, 5)
+				rect = rect.expand(Vector2(-5, 5)) # rect is Rect2(-5, 0, 15, 5)
 				[/gdscript]
 				[csharp]
 				var rect = new Rect2(0, 0, 5, 2);
 
 				rect = rect.Expand(new Vector2(10, 0)); // rect is Rect2(0, 0, 10, 2)
-				rect = rect.Expand(new Vector2(-5, 5)); // rect is Rect2(-5, 0, 10, 5)
+				rect = rect.Expand(new Vector2(-5, 5)); // rect is Rect2(-5, 0, 15, 5)
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -237,7 +237,9 @@
 			<return type="Rect2" />
 			<param index="0" name="right" type="Transform2D" />
 			<description>
-				Inversely transforms (multiplies) the [Rect2] by the given [Transform2D] transformation matrix.
+				Inversely transforms (multiplies) the [Rect2] by the given [Transform2D] transformation matrix, under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection is fine, scaling/skew is not).
+				[code]rect * transform[/code] is equivalent to [code]transform.inverse() * rect[/code]. See [method Transform2D.inverse].
+				For transforming by inverse of an affine transformation (e.g. with scaling) [code]transform.affine_inverse() * rect[/code] can be used instead. See [method Transform2D.affine_inverse].
 			</description>
 		</operator>
 		<operator name="operator ==">

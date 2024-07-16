@@ -54,9 +54,10 @@
 		    # supported.
 		    webxr_interface.requested_reference_space_types = 'bounded-floor, local-floor, local'
 		    # In order to use 'local-floor' or 'bounded-floor' we must also
-		    # mark the features as required or optional.
+		    # mark the features as required or optional. By including 'hand-tracking'
+		    # as an optional feature, it will be enabled if supported.
 		    webxr_interface.required_features = 'local-floor'
-		    webxr_interface.optional_features = 'bounded-floor'
+		    webxr_interface.optional_features = 'bounded-floor, hand-tracking'
 
 		    # This will return false if we're unable to even request the session,
 		    # however, it can still fail asynchronously later in the process, so we
@@ -73,7 +74,10 @@
 		    # This will be the reference space type you ultimately got, out of the
 		    # types that you requested above. This is useful if you want the game to
 		    # work a little differently in 'bounded-floor' versus 'local-floor'.
-		    print ("Reference space type: " + webxr_interface.reference_space_type)
+		    print("Reference space type: ", webxr_interface.reference_space_type)
+		    # This will be the list of features that were successfully enabled
+		    # (except on browsers that don't support this property).
+		    print("Enabled features: ", webxr_interface.enabled_features)
 
 		func _webxr_session_ended():
 		    $Button.visible = true
@@ -114,10 +118,10 @@
 			</description>
 		</method>
 		<method name="get_input_source_tracker" qualifiers="const">
-			<return type="XRPositionalTracker" />
+			<return type="XRControllerTracker" />
 			<param index="0" name="input_source_id" type="int" />
 			<description>
-				Gets an [XRPositionalTracker] for the given [param input_source_id].
+				Gets an [XRControllerTracker] for the given [param input_source_id].
 				In the context of WebXR, an input source can be an advanced VR controller like the Oculus Touch or Index controllers, or even a tap on the screen, a spoken voice command or a button press on the device itself. When a non-traditional input source is used, interpret the position and orientation of the [XRPositionalTracker] as a ray pointing at the object the user wishes to interact with.
 				Use this method to get information about the input source that triggered one of these signals:
 				- [signal selectstart]
@@ -153,11 +157,16 @@
 		</method>
 	</methods>
 	<members>
+		<member name="enabled_features" type="String" setter="" getter="get_enabled_features">
+			A comma-separated list of features that were successfully enabled by [method XRInterface.initialize] when setting up the WebXR session.
+			This may include features requested by setting [member required_features] and [member optional_features], and will only be available after [signal session_started] has been emitted.
+			[b]Note:[/b] This may not be support by all web browsers, in which case it will be an empty string.
+		</member>
 		<member name="optional_features" type="String" setter="set_optional_features" getter="get_optional_features">
 			A comma-seperated list of optional features used by [method XRInterface.initialize] when setting up the WebXR session.
 			If a user's browser or device doesn't support one of the given features, initialization will continue, but you won't be able to use the requested feature.
 			This doesn't have any effect on the interface when already initialized.
-			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url]. If you want to use a particular reference space type, it must be listed in either [member required_features] or [member optional_features].
+			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url], or include other features like [code]"hand-tracking"[/code] to enable hand tracking.
 		</member>
 		<member name="reference_space_type" type="String" setter="" getter="get_reference_space_type">
 			The reference space type (from the list of requested types set in the [member requested_reference_space_types] property), that was ultimately used by [method XRInterface.initialize] when setting up the WebXR session.
@@ -173,7 +182,7 @@
 			A comma-seperated list of required features used by [method XRInterface.initialize] when setting up the WebXR session.
 			If a user's browser or device doesn't support one of the given features, initialization will fail and [signal session_failed] will be emitted.
 			This doesn't have any effect on the interface when already initialized.
-			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url]. If you want to use a particular reference space type, it must be listed in either [member required_features] or [member optional_features].
+			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url], or include other features like [code]"hand-tracking"[/code] to enable hand tracking.
 		</member>
 		<member name="session_mode" type="String" setter="set_session_mode" getter="get_session_mode">
 			The session mode used by [method XRInterface.initialize] when setting up the WebXR session.

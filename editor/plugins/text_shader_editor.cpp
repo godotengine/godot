@@ -30,13 +30,14 @@
 
 #include "text_shader_editor.h"
 
+#include "core/config/project_settings.h"
 #include "core/version_generated.gen.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/filesystem_dock.h"
-#include "editor/project_settings_editor.h"
+#include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/split_container.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
@@ -48,6 +49,11 @@ Dictionary GDShaderSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 	for (const Point2i &region : disabled_branch_regions) {
 		if (p_line >= region.x && p_line <= region.y) {
+			// When "color_regions[0].p_start_key.length() > 2",
+			// disabled_branch_region causes color_region to break.
+			// This should be seen as a temporary solution.
+			CodeHighlighter::_get_line_syntax_highlighting_impl(p_line);
+
 			Dictionary highlighter_info;
 			highlighter_info["color"] = disabled_branch_color;
 
@@ -170,8 +176,8 @@ void ShaderTextEditor::set_edited_code(const String &p_code) {
 
 	get_text_editor()->set_text(p_code);
 	get_text_editor()->clear_undo_history();
-	get_text_editor()->call_deferred(SNAME("set_h_scroll"), 0);
-	get_text_editor()->call_deferred(SNAME("set_v_scroll"), 0);
+	callable_mp((TextEdit *)get_text_editor(), &TextEdit::set_h_scroll).call_deferred(0);
+	callable_mp((TextEdit *)get_text_editor(), &TextEdit::set_v_scroll).call_deferred(0);
 	get_text_editor()->tag_saved_version();
 
 	_validate_script();
@@ -310,6 +316,11 @@ void ShaderTextEditor::_load_theme_settings() {
 	syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
 	syntax_highlighter->add_color_region("//", "", comment_color, true);
 
+	const Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
+	syntax_highlighter->add_color_region("/**", "*/", doc_comment_color, false);
+	// "/**/" will be treated as the start of the "/**" region, this line is guaranteed to end the color_region.
+	syntax_highlighter->add_color_region("/**/", "", comment_color, true);
+
 	// Disabled preprocessor branches use translucent text color to be easier to distinguish from comments.
 	syntax_highlighter->set_disabled_branch_color(Color(EDITOR_GET("text_editor/theme/highlighting/text_color")) * Color(1, 1, 1, 0.5));
 
@@ -330,6 +341,8 @@ void ShaderTextEditor::_load_theme_settings() {
 		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_editor_theme()->get_font(SNAME("main"), EditorStringName(EditorFonts)));
 		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_editor_theme()->get_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
 	}
+
+	syntax_highlighter->set_uint_suffix_enabled(true);
 }
 
 void ShaderTextEditor::_check_shader_mode() {
@@ -430,7 +443,7 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 }
 
 void ShaderTextEditor::_validate_script() {
-	emit_signal(SNAME("script_changed")); // Ensure to notify that it changed, so it is applied
+	emit_signal(CoreStringName(script_changed)); // Ensure to notify that it changed, so it is applied
 
 	String code;
 
@@ -473,7 +486,7 @@ void ShaderTextEditor::_validate_script() {
 
 	if (last_compile_result != OK) {
 		//preprocessor error
-		ERR_FAIL_COND(err_positions.size() == 0);
+		ERR_FAIL_COND(err_positions.is_empty());
 
 		String err_text = error_pp;
 		int err_line = err_positions.front()->get().line;
@@ -577,9 +590,7 @@ void ShaderTextEditor::_update_warning_panel() {
 	int warning_count = 0;
 
 	warnings_panel->push_table(2);
-	for (int i = 0; i < warnings.size(); i++) {
-		ShaderWarning &w = warnings[i];
-
+	for (const ShaderWarning &w : warnings) {
 		if (warning_count == 0) {
 			if (saved_treat_warning_as_errors) {
 				String error_text = "error(" + itos(w.get_line()) + "): " + w.get_message() + " " + TTR("Warnings should be fixed to prevent errors.");
@@ -597,8 +608,7 @@ void ShaderTextEditor::_update_warning_panel() {
 		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		if (line != -1) {
 			warnings_panel->push_meta(line - 1);
-			warnings_panel->add_text(TTR("Line") + " " + itos(line));
-			warnings_panel->add_text(" (" + w.get_name() + "):");
+			warnings_panel->add_text(vformat(TTR("Line %d (%s):"), line, w.get_name()));
 			warnings_panel->pop(); // Meta goto.
 		} else {
 			warnings_panel->add_text(w.get_name() + ":");
@@ -628,99 +638,108 @@ ShaderTextEditor::ShaderTextEditor() {
 /*** SCRIPT EDITOR ******/
 
 void TextShaderEditor::_menu_option(int p_option) {
+	code_editor->get_text_editor()->apply_ime();
+
 	switch (p_option) {
 		case EDIT_UNDO: {
-			shader_editor->get_text_editor()->undo();
+			code_editor->get_text_editor()->undo();
 		} break;
 		case EDIT_REDO: {
-			shader_editor->get_text_editor()->redo();
+			code_editor->get_text_editor()->redo();
 		} break;
 		case EDIT_CUT: {
-			shader_editor->get_text_editor()->cut();
+			code_editor->get_text_editor()->cut();
 		} break;
 		case EDIT_COPY: {
-			shader_editor->get_text_editor()->copy();
+			code_editor->get_text_editor()->copy();
 		} break;
 		case EDIT_PASTE: {
-			shader_editor->get_text_editor()->paste();
+			code_editor->get_text_editor()->paste();
 		} break;
 		case EDIT_SELECT_ALL: {
-			shader_editor->get_text_editor()->select_all();
+			code_editor->get_text_editor()->select_all();
 		} break;
 		case EDIT_MOVE_LINE_UP: {
-			shader_editor->move_lines_up();
+			code_editor->get_text_editor()->move_lines_up();
 		} break;
 		case EDIT_MOVE_LINE_DOWN: {
-			shader_editor->move_lines_down();
+			code_editor->get_text_editor()->move_lines_down();
 		} break;
 		case EDIT_INDENT: {
 			if (shader.is_null() && shader_inc.is_null()) {
 				return;
 			}
-			shader_editor->get_text_editor()->indent_lines();
+			code_editor->get_text_editor()->indent_lines();
 		} break;
 		case EDIT_UNINDENT: {
 			if (shader.is_null() && shader_inc.is_null()) {
 				return;
 			}
-			shader_editor->get_text_editor()->unindent_lines();
+			code_editor->get_text_editor()->unindent_lines();
 		} break;
 		case EDIT_DELETE_LINE: {
-			shader_editor->delete_lines();
+			code_editor->get_text_editor()->delete_lines();
 		} break;
 		case EDIT_DUPLICATE_SELECTION: {
-			shader_editor->duplicate_selection();
+			code_editor->get_text_editor()->duplicate_selection();
 		} break;
 		case EDIT_DUPLICATE_LINES: {
-			shader_editor->get_text_editor()->duplicate_lines();
+			code_editor->get_text_editor()->duplicate_lines();
 		} break;
 		case EDIT_TOGGLE_WORD_WRAP: {
-			TextEdit::LineWrappingMode wrap = shader_editor->get_text_editor()->get_line_wrapping_mode();
-			shader_editor->get_text_editor()->set_line_wrapping_mode(wrap == TextEdit::LINE_WRAPPING_BOUNDARY ? TextEdit::LINE_WRAPPING_NONE : TextEdit::LINE_WRAPPING_BOUNDARY);
+			TextEdit::LineWrappingMode wrap = code_editor->get_text_editor()->get_line_wrapping_mode();
+			code_editor->get_text_editor()->set_line_wrapping_mode(wrap == TextEdit::LINE_WRAPPING_BOUNDARY ? TextEdit::LINE_WRAPPING_NONE : TextEdit::LINE_WRAPPING_BOUNDARY);
 		} break;
 		case EDIT_TOGGLE_COMMENT: {
 			if (shader.is_null() && shader_inc.is_null()) {
 				return;
 			}
-			shader_editor->toggle_inline_comment("//");
+			code_editor->toggle_inline_comment("//");
 		} break;
 		case EDIT_COMPLETE: {
-			shader_editor->get_text_editor()->request_code_completion();
+			code_editor->get_text_editor()->request_code_completion();
 		} break;
 		case SEARCH_FIND: {
-			shader_editor->get_find_replace_bar()->popup_search();
+			code_editor->get_find_replace_bar()->popup_search();
 		} break;
 		case SEARCH_FIND_NEXT: {
-			shader_editor->get_find_replace_bar()->search_next();
+			code_editor->get_find_replace_bar()->search_next();
 		} break;
 		case SEARCH_FIND_PREV: {
-			shader_editor->get_find_replace_bar()->search_prev();
+			code_editor->get_find_replace_bar()->search_prev();
 		} break;
 		case SEARCH_REPLACE: {
-			shader_editor->get_find_replace_bar()->popup_replace();
+			code_editor->get_find_replace_bar()->popup_replace();
 		} break;
 		case SEARCH_GOTO_LINE: {
-			goto_line_dialog->popup_find_line(shader_editor->get_text_editor());
+			goto_line_dialog->popup_find_line(code_editor->get_text_editor());
 		} break;
 		case BOOKMARK_TOGGLE: {
-			shader_editor->toggle_bookmark();
+			code_editor->toggle_bookmark();
 		} break;
 		case BOOKMARK_GOTO_NEXT: {
-			shader_editor->goto_next_bookmark();
+			code_editor->goto_next_bookmark();
 		} break;
 		case BOOKMARK_GOTO_PREV: {
-			shader_editor->goto_prev_bookmark();
+			code_editor->goto_prev_bookmark();
 		} break;
 		case BOOKMARK_REMOVE_ALL: {
-			shader_editor->remove_all_bookmarks();
+			code_editor->remove_all_bookmarks();
 		} break;
 		case HELP_DOCS: {
 			OS::get_singleton()->shell_open(vformat("%s/tutorials/shaders/shader_reference/index.html", VERSION_DOCS_URL));
 		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
-		shader_editor->get_text_editor()->call_deferred(SNAME("grab_focus"));
+		callable_mp((Control *)code_editor->get_text_editor(), &Control::grab_focus).call_deferred();
 	}
+}
+
+void TextShaderEditor::_prepare_edit_menu() {
+	const CodeEdit *tx = code_editor->get_text_editor();
+	PopupMenu *popup = edit_menu->get_popup();
+	popup->set_item_disabled(popup->get_item_index(EDIT_UNDO), !tx->has_undo());
+	popup->set_item_disabled(popup->get_item_index(EDIT_REDO), !tx->has_redo());
 }
 
 void TextShaderEditor::_notification(int p_what) {
@@ -738,22 +757,29 @@ void TextShaderEditor::_notification(int p_what) {
 }
 
 void TextShaderEditor::_editor_settings_changed() {
-	shader_editor->update_editor_settings();
+	if (!EditorThemeManager::is_generated_theme_outdated() &&
+			!EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor") &&
+			!EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor")) {
+		return;
+	}
 
-	shader_editor->get_text_editor()->add_theme_constant_override("line_spacing", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
-	shader_editor->get_text_editor()->set_draw_breakpoints_gutter(false);
-	shader_editor->get_text_editor()->set_draw_executing_lines_gutter(false);
+	_apply_editor_settings();
+}
+
+void TextShaderEditor::_apply_editor_settings() {
+	code_editor->update_editor_settings();
 
 	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
+	trim_final_newlines_on_save = EDITOR_GET("text_editor/behavior/files/trim_final_newlines_on_save");
 }
 
 void TextShaderEditor::_show_warnings_panel(bool p_show) {
 	warnings_panel->set_visible(p_show);
 }
 
-void TextShaderEditor::_warning_clicked(Variant p_line) {
+void TextShaderEditor::_warning_clicked(const Variant &p_line) {
 	if (p_line.get_type() == Variant::INT) {
-		shader_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
+		code_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
 	}
 }
 
@@ -768,7 +794,7 @@ void TextShaderEditor::ensure_select_current() {
 }
 
 void TextShaderEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
-	shader_editor->goto_line_selection(p_line, p_begin, p_end);
+	code_editor->goto_line_selection(p_line, p_begin, p_end);
 }
 
 void TextShaderEditor::_project_settings_changed() {
@@ -807,8 +833,8 @@ void TextShaderEditor::_update_warnings(bool p_validate) {
 		saved_warning_flags = (uint32_t)ShaderWarning::get_flags_from_codemap(saved_warnings);
 	}
 
-	if (p_validate && changed && shader_editor && shader_editor->get_edited_shader().is_valid()) {
-		shader_editor->validate_script();
+	if (p_validate && changed && code_editor && code_editor->get_edited_shader().is_valid()) {
+		code_editor->validate_script();
 	}
 }
 
@@ -820,7 +846,7 @@ void TextShaderEditor::_check_for_external_edit() {
 			if (use_autoreload) {
 				_reload_shader_include_from_disk();
 			} else {
-				disk_changed->call_deferred(SNAME("popup_centered"));
+				callable_mp((Window *)disk_changed, &Window::popup_centered).call_deferred(Size2i());
 			}
 		}
 		return;
@@ -834,7 +860,7 @@ void TextShaderEditor::_check_for_external_edit() {
 		if (use_autoreload) {
 			_reload_shader_from_disk();
 		} else {
-			disk_changed->call_deferred(SNAME("popup_centered"));
+			callable_mp((Window *)disk_changed, &Window::popup_centered).call_deferred(Size2i());
 		}
 	}
 }
@@ -843,22 +869,22 @@ void TextShaderEditor::_reload_shader_from_disk() {
 	Ref<Shader> rel_shader = ResourceLoader::load(shader->get_path(), shader->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 	ERR_FAIL_COND(!rel_shader.is_valid());
 
-	shader_editor->set_block_shader_changed(true);
+	code_editor->set_block_shader_changed(true);
 	shader->set_code(rel_shader->get_code());
-	shader_editor->set_block_shader_changed(false);
+	code_editor->set_block_shader_changed(false);
 	shader->set_last_modified_time(rel_shader->get_last_modified_time());
-	shader_editor->reload_text();
+	code_editor->reload_text();
 }
 
 void TextShaderEditor::_reload_shader_include_from_disk() {
 	Ref<ShaderInclude> rel_shader_include = ResourceLoader::load(shader_inc->get_path(), shader_inc->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 	ERR_FAIL_COND(!rel_shader_include.is_valid());
 
-	shader_editor->set_block_shader_changed(true);
+	code_editor->set_block_shader_changed(true);
 	shader_inc->set_code(rel_shader_include->get_code());
-	shader_editor->set_block_shader_changed(false);
+	code_editor->set_block_shader_changed(false);
 	shader_inc->set_last_modified_time(rel_shader_include->get_last_modified_time());
-	shader_editor->reload_text();
+	code_editor->reload_text();
 }
 
 void TextShaderEditor::_reload() {
@@ -881,7 +907,7 @@ void TextShaderEditor::edit(const Ref<Shader> &p_shader) {
 	shader = p_shader;
 	shader_inc = Ref<ShaderInclude>();
 
-	shader_editor->set_edited_shader(shader);
+	code_editor->set_edited_shader(shader);
 }
 
 void TextShaderEditor::edit(const Ref<ShaderInclude> &p_shader_inc) {
@@ -896,7 +922,7 @@ void TextShaderEditor::edit(const Ref<ShaderInclude> &p_shader_inc) {
 	shader_inc = p_shader_inc;
 	shader = Ref<Shader>();
 
-	shader_editor->set_edited_shader_include(p_shader_inc);
+	code_editor->set_edited_shader_include(p_shader_inc);
 }
 
 void TextShaderEditor::save_external_data(const String &p_str) {
@@ -909,9 +935,13 @@ void TextShaderEditor::save_external_data(const String &p_str) {
 		trim_trailing_whitespace();
 	}
 
+	if (trim_final_newlines_on_save) {
+		trim_final_newlines();
+	}
+
 	apply_shaders();
 
-	Ref<Shader> edited_shader = shader_editor->get_edited_shader();
+	Ref<Shader> edited_shader = code_editor->get_edited_shader();
 	if (edited_shader.is_valid()) {
 		ResourceSaver::save(edited_shader);
 	}
@@ -919,56 +949,60 @@ void TextShaderEditor::save_external_data(const String &p_str) {
 		ResourceSaver::save(shader);
 	}
 
-	Ref<ShaderInclude> edited_shader_inc = shader_editor->get_edited_shader_include();
+	Ref<ShaderInclude> edited_shader_inc = code_editor->get_edited_shader_include();
 	if (edited_shader_inc.is_valid()) {
 		ResourceSaver::save(edited_shader_inc);
 	}
 	if (shader_inc.is_valid() && shader_inc != edited_shader_inc) {
 		ResourceSaver::save(shader_inc);
 	}
-	shader_editor->get_text_editor()->tag_saved_version();
+	code_editor->get_text_editor()->tag_saved_version();
 
 	disk_changed->hide();
 }
 
 void TextShaderEditor::trim_trailing_whitespace() {
-	shader_editor->trim_trailing_whitespace();
+	code_editor->trim_trailing_whitespace();
+}
+
+void TextShaderEditor::trim_final_newlines() {
+	code_editor->trim_final_newlines();
 }
 
 void TextShaderEditor::validate_script() {
-	shader_editor->_validate_script();
+	code_editor->_validate_script();
 }
 
 bool TextShaderEditor::is_unsaved() const {
-	return shader_editor->get_text_editor()->get_saved_version() != shader_editor->get_text_editor()->get_version();
+	return code_editor->get_text_editor()->get_saved_version() != code_editor->get_text_editor()->get_version();
 }
 
 void TextShaderEditor::tag_saved_version() {
-	shader_editor->get_text_editor()->tag_saved_version();
+	code_editor->get_text_editor()->tag_saved_version();
 }
 
 void TextShaderEditor::apply_shaders() {
-	String editor_code = shader_editor->get_text_editor()->get_text();
+	String editor_code = code_editor->get_text_editor()->get_text();
 	if (shader.is_valid()) {
 		String shader_code = shader->get_code();
-		if (shader_code != editor_code || dependencies_version != shader_editor->get_dependencies_version()) {
-			shader_editor->set_block_shader_changed(true);
+		if (shader_code != editor_code || dependencies_version != code_editor->get_dependencies_version()) {
+			code_editor->set_block_shader_changed(true);
 			shader->set_code(editor_code);
-			shader_editor->set_block_shader_changed(false);
+			code_editor->set_block_shader_changed(false);
 			shader->set_edited(true);
 		}
 	}
 	if (shader_inc.is_valid()) {
 		String shader_inc_code = shader_inc->get_code();
-		if (shader_inc_code != editor_code || dependencies_version != shader_editor->get_dependencies_version()) {
-			shader_editor->set_block_shader_changed(true);
+		if (shader_inc_code != editor_code || dependencies_version != code_editor->get_dependencies_version()) {
+			code_editor->set_block_shader_changed(true);
 			shader_inc->set_code(editor_code);
-			shader_editor->set_block_shader_changed(false);
+			code_editor->set_block_shader_changed(false);
 			shader_inc->set_edited(true);
 		}
 	}
 
-	dependencies_version = shader_editor->get_dependencies_version();
+	dependencies_version = code_editor->get_dependencies_version();
 }
 
 void TextShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
@@ -976,7 +1010,9 @@ void TextShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
-			CodeEdit *tx = shader_editor->get_text_editor();
+			CodeEdit *tx = code_editor->get_text_editor();
+
+			tx->apply_ime();
 
 			Point2i pos = tx->get_line_column_at_pos(mb->get_global_position() - tx->get_global_position());
 			int row = pos.y;
@@ -997,7 +1033,7 @@ void TextShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					}
 				}
 				if (!tx->has_selection()) {
-					tx->set_caret_line(row, true, false);
+					tx->set_caret_line(row, true, false, -1);
 					tx->set_caret_column(col);
 				}
 			}
@@ -1007,7 +1043,7 @@ void TextShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 	Ref<InputEventKey> k = ev;
 	if (k.is_valid() && k->is_pressed() && k->is_action("ui_menu", true)) {
-		CodeEdit *tx = shader_editor->get_text_editor();
+		CodeEdit *tx = code_editor->get_text_editor();
 		tx->adjust_viewport_to_caret();
 		_make_context_menu(tx->has_selection(), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->get_caret_draw_pos()));
 		context_menu->grab_focus();
@@ -1022,7 +1058,7 @@ void TextShaderEditor::_update_bookmark_list() {
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
 
-	PackedInt32Array bookmark_list = shader_editor->get_text_editor()->get_bookmarked_lines();
+	PackedInt32Array bookmark_list = code_editor->get_text_editor()->get_bookmarked_lines();
 	if (bookmark_list.size() == 0) {
 		return;
 	}
@@ -1030,7 +1066,7 @@ void TextShaderEditor::_update_bookmark_list() {
 	bookmarks_menu->add_separator();
 
 	for (int i = 0; i < bookmark_list.size(); i++) {
-		String line = shader_editor->get_text_editor()->get_line(bookmark_list[i]).strip_edges();
+		String line = code_editor->get_text_editor()->get_line(bookmark_list[i]).strip_edges();
 		// Limit the size of the line if too big.
 		if (line.length() > 50) {
 			line = line.substr(0, 50);
@@ -1045,7 +1081,7 @@ void TextShaderEditor::_bookmark_item_pressed(int p_idx) {
 	if (p_idx < 4) { // Any item before the separator.
 		_menu_option(bookmarks_menu->get_item_id(p_idx));
 	} else {
-		shader_editor->goto_line(bookmarks_menu->get_item_metadata(p_idx));
+		code_editor->goto_line(bookmarks_menu->get_item_metadata(p_idx));
 	}
 }
 
@@ -1068,6 +1104,9 @@ void TextShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) 
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
 
+	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_UNDO), !code_editor->get_text_editor()->has_undo());
+	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_REDO), !code_editor->get_text_editor()->has_redo());
+
 	context_menu->set_position(get_screen_position() + p_position);
 	context_menu->reset_size();
 	context_menu->popup();
@@ -1076,30 +1115,30 @@ void TextShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) 
 TextShaderEditor::TextShaderEditor() {
 	_update_warnings(false);
 
-	shader_editor = memnew(ShaderTextEditor);
+	code_editor = memnew(ShaderTextEditor);
 
-	shader_editor->connect("script_validated", callable_mp(this, &TextShaderEditor::_script_validated));
+	code_editor->connect("script_validated", callable_mp(this, &TextShaderEditor::_script_validated));
 
-	shader_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	shader_editor->add_theme_constant_override("separation", 0);
-	shader_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	code_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	code_editor->add_theme_constant_override("separation", 0);
+	code_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
-	shader_editor->connect("show_warnings_panel", callable_mp(this, &TextShaderEditor::_show_warnings_panel));
-	shader_editor->connect("script_changed", callable_mp(this, &TextShaderEditor::apply_shaders));
+	code_editor->connect("show_warnings_panel", callable_mp(this, &TextShaderEditor::_show_warnings_panel));
+	code_editor->connect(CoreStringName(script_changed), callable_mp(this, &TextShaderEditor::apply_shaders));
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextShaderEditor::_editor_settings_changed));
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextShaderEditor::_project_settings_changed));
 
-	shader_editor->get_text_editor()->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
+	code_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
+	code_editor->get_text_editor()->set_context_menu_enabled(false);
+	code_editor->get_text_editor()->set_draw_breakpoints_gutter(false);
+	code_editor->get_text_editor()->set_draw_executing_lines_gutter(false);
+	code_editor->get_text_editor()->connect(SceneStringName(gui_input), callable_mp(this, &TextShaderEditor::_text_edit_gui_input));
 
-	shader_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
-	shader_editor->get_text_editor()->set_context_menu_enabled(false);
-	shader_editor->get_text_editor()->connect("gui_input", callable_mp(this, &TextShaderEditor::_text_edit_gui_input));
-
-	shader_editor->update_editor_settings();
+	code_editor->update_editor_settings();
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
-	context_menu->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
+	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	VBoxContainer *main_container = memnew(VBoxContainer);
 	HBoxContainer *hbc = memnew(HBoxContainer);
@@ -1108,6 +1147,7 @@ TextShaderEditor::TextShaderEditor() {
 	edit_menu->set_shortcut_context(this);
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->set_switch_on_hover(true);
+	edit_menu->connect("about_to_popup", callable_mp(this, &TextShaderEditor::_prepare_edit_menu));
 
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_redo"), EDIT_REDO);
@@ -1129,7 +1169,7 @@ TextShaderEditor::TextShaderEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_word_wrap"), EDIT_TOGGLE_WORD_WRAP);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
-	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
+	edit_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	search_menu = memnew(MenuButton);
 	search_menu->set_shortcut_context(this);
@@ -1140,21 +1180,19 @@ TextShaderEditor::TextShaderEditor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
-	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
+	search_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	MenuButton *goto_menu = memnew(MenuButton);
 	goto_menu->set_shortcut_context(this);
 	goto_menu->set_text(TTR("Go To"));
 	goto_menu->set_switch_on_hover(true);
-	goto_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
+	goto_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
 	goto_menu->get_popup()->add_separator();
 
 	bookmarks_menu = memnew(PopupMenu);
-	bookmarks_menu->set_name("Bookmarks");
-	goto_menu->get_popup()->add_child(bookmarks_menu);
-	goto_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "Bookmarks");
+	goto_menu->get_popup()->add_submenu_node_item(TTR("Bookmarks"), bookmarks_menu);
 	_update_bookmark_list();
 	bookmarks_menu->connect("about_to_popup", callable_mp(this, &TextShaderEditor::_update_bookmark_list));
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &TextShaderEditor::_bookmark_item_pressed));
@@ -1163,7 +1201,7 @@ TextShaderEditor::TextShaderEditor() {
 	help_menu->set_text(TTR("Help"));
 	help_menu->set_switch_on_hover(true);
 	help_menu->get_popup()->add_item(TTR("Online Docs"), HELP_DOCS);
-	help_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
+	help_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	add_child(main_container);
 	main_container->add_child(hbc);
@@ -1171,18 +1209,18 @@ TextShaderEditor::TextShaderEditor() {
 	hbc->add_child(edit_menu);
 	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
-	hbc->add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
+	hbc->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	main_container->add_child(editor_box);
 	editor_box->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
-	editor_box->add_child(shader_editor);
+	editor_box->add_child(code_editor);
 
 	FindReplaceBar *bar = memnew(FindReplaceBar);
 	main_container->add_child(bar);
 	bar->hide();
-	shader_editor->set_find_replace_bar(bar);
+	code_editor->set_find_replace_bar(bar);
 
 	warnings_panel = memnew(RichTextLabel);
 	warnings_panel->set_custom_minimum_size(Size2(0, 100 * EDSCALE));
@@ -1194,7 +1232,7 @@ TextShaderEditor::TextShaderEditor() {
 	warnings_panel->hide();
 	warnings_panel->connect("meta_clicked", callable_mp(this, &TextShaderEditor::_warning_clicked));
 	editor_box->add_child(warnings_panel);
-	shader_editor->set_warnings_panel(warnings_panel);
+	code_editor->set_warnings_panel(warnings_panel);
 
 	goto_line_dialog = memnew(GotoLineDialog);
 	add_child(goto_line_dialog);
@@ -1208,13 +1246,11 @@ TextShaderEditor::TextShaderEditor() {
 	dl->set_text(TTR("This shader has been modified on disk.\nWhat action should be taken?"));
 	vbc->add_child(dl);
 
-	disk_changed->connect("confirmed", callable_mp(this, &TextShaderEditor::_reload));
+	disk_changed->connect(SceneStringName(confirmed), callable_mp(this, &TextShaderEditor::_reload));
 	disk_changed->set_ok_button_text(TTR("Reload"));
 
 	disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 	disk_changed->connect("custom_action", callable_mp(this, &TextShaderEditor::save_external_data));
-
-	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
 
 	add_child(disk_changed);
 

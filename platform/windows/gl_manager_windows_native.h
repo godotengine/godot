@@ -68,9 +68,6 @@ private:
 
 	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = nullptr;
 
-	// funcs
-	void _internal_set_current_window(GLWindow *p_win);
-
 	GLWindow &get_window(unsigned int id) { return _windows[id]; }
 	const GLWindow &get_window(unsigned int id) const { return _windows[id]; }
 
@@ -91,7 +88,6 @@ public:
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {}
 
 	void release_current();
-	void make_current();
 	void swap_buffers();
 
 	void window_make_current(DisplayServer::WindowID p_window_id);

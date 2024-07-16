@@ -31,6 +31,8 @@
 #ifdef GLES3_ENABLED
 
 #include "particles_storage.h"
+
+#include "config.h"
 #include "material_storage.h"
 #include "mesh_storage.h"
 #include "texture_storage.h"
@@ -94,13 +96,15 @@ RID ParticlesStorage::particles_allocate() {
 }
 
 void ParticlesStorage::particles_initialize(RID p_rid) {
-	particles_owner.initialize_rid(p_rid, Particles());
+	particles_owner.initialize_rid(p_rid);
 }
 
 void ParticlesStorage::particles_free(RID p_rid) {
-	update_particles();
 	Particles *particles = particles_owner.get_or_null(p_rid);
+
 	particles->dependency.deleted_notify(p_rid);
+	particles->update_list.remove_from_list();
+
 	_particles_free_data(particles);
 	particles_owner.free(p_rid);
 }
@@ -118,6 +122,8 @@ void ParticlesStorage::particles_set_mode(RID p_particles, RS::ParticlesMode p_m
 }
 
 void ParticlesStorage::particles_set_emitting(RID p_particles, bool p_emitting) {
+	ERR_FAIL_COND_MSG(GLES3::Config::get_singleton()->disable_particles_workaround, "Due to driver bugs, GPUParticles are not supported on Adreno 3XX devices. Please use CPUParticles instead.");
+
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 
@@ -125,7 +131,10 @@ void ParticlesStorage::particles_set_emitting(RID p_particles, bool p_emitting) 
 }
 
 bool ParticlesStorage::particles_get_emitting(RID p_particles) {
-	ERR_FAIL_COND_V_MSG(RSG::threaded, false, "This function should never be used with threaded rendering, as it stalls the renderer.");
+	if (GLES3::Config::get_singleton()->disable_particles_workaround) {
+		return false;
+	}
+
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, false);
 
@@ -188,6 +197,13 @@ void ParticlesStorage::particles_set_amount(RID p_particles, int p_amount) {
 	particles->clear = true;
 
 	particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_PARTICLES);
+}
+
+void ParticlesStorage::particles_set_amount_ratio(RID p_particles, float p_amount_ratio) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->amount_ratio = p_amount_ratio;
 }
 
 void ParticlesStorage::particles_set_lifetime(RID p_particles, double p_lifetime) {
@@ -355,16 +371,14 @@ void ParticlesStorage::particles_request_process(RID p_particles) {
 
 	if (!particles->dirty) {
 		particles->dirty = true;
-		particles->update_list = particle_update_list;
-		particle_update_list = particles;
+
+		if (!particles->update_list.in_list()) {
+			particle_update_list.add(&particles->update_list);
+		}
 	}
 }
 
 AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
-	if (RSG::threaded) {
-		WARN_PRINT_ONCE("Calling this function with threaded rendering enabled stalls the renderer, use with care.");
-	}
-
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, AABB());
 
@@ -384,7 +398,7 @@ AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
 		bool first = true;
 
 		const uint8_t *data_ptr = (const uint8_t *)buffer.ptr();
-		uint32_t particle_data_size = sizeof(ParticleInstanceData3D) + sizeof(float) * particles->userdata_count;
+		uint32_t particle_data_size = sizeof(ParticleInstanceData3D);
 
 		for (int i = 0; i < total_amount; i++) {
 			const ParticleInstanceData3D &particle_data = *(const ParticleInstanceData3D *)&data_ptr[particle_data_size * i];
@@ -429,6 +443,20 @@ void ParticlesStorage::particles_set_emission_transform(RID p_particles, const T
 	ERR_FAIL_NULL(particles);
 
 	particles->emission_transform = p_transform;
+}
+
+void ParticlesStorage::particles_set_emitter_velocity(RID p_particles, const Vector3 &p_velocity) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->emitter_velocity = p_velocity;
+}
+
+void ParticlesStorage::particles_set_interp_to_end(RID p_particles, float p_interp) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->interp_to_end = p_interp;
 }
 
 int ParticlesStorage::particles_get_draw_passes(RID p_particles) const {
@@ -507,9 +535,13 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 
 	frame_params.cycle = p_particles->cycle_number;
 	frame_params.frame = p_particles->frame_counter++;
-	frame_params.pad0 = 0;
+	frame_params.amount_ratio = p_particles->amount_ratio;
 	frame_params.pad1 = 0;
 	frame_params.pad2 = 0;
+	frame_params.interp_to_end = p_particles->interp_to_end;
+	frame_params.emitter_velocity[0] = p_particles->emitter_velocity.x;
+	frame_params.emitter_velocity[1] = p_particles->emitter_velocity.y;
+	frame_params.emitter_velocity[2] = p_particles->emitter_velocity.z;
 
 	{ //collision and attractors
 
@@ -699,8 +731,10 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	ParticlesShaderGLES3::ShaderVariant variant = ParticlesShaderGLES3::MODE_DEFAULT;
 
 	uint32_t specialization = 0;
-	for (uint32_t i = 0; i < p_particles->userdata_count; i++) {
-		specialization |= (1 << i);
+	for (uint32_t i = 0; i < PARTICLES_MAX_USERDATAS; i++) {
+		if (m->shader_data->userdatas_used[i]) {
+			specialization |= ParticlesShaderGLES3::USERDATA1_USED << i;
+		}
 	}
 
 	if (p_particles->mode == RS::ParticlesMode::PARTICLES_MODE_3D) {
@@ -775,7 +809,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 		LocalVector<ParticleInstanceData3D> particle_vector;
 		particle_vector.resize(particles->amount);
 		particle_array = particle_vector.ptr();
-		glGetBufferSubData(GL_ARRAY_BUFFER, 0, particles->amount * sizeof(ParticleInstanceData3D), particle_array);
+		godot_webgl2_glGetBufferSubData(GL_ARRAY_BUFFER, 0, particles->amount * sizeof(ParticleInstanceData3D), particle_array);
 #endif
 		SortArray<ParticleInstanceData3D, ParticlesViewSort> sorter;
 		sorter.compare.z_dir = axis;
@@ -789,6 +823,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	}
 
 	glEnable(GL_RASTERIZER_DISCARD);
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	_particles_update_instance_buffer(particles, axis, p_up_axis);
 	glDisable(GL_RASTERIZER_DISCARD);
 }
@@ -971,20 +1006,26 @@ void ParticlesStorage::_particles_update_instance_buffer(Particles *particles, c
 }
 
 void ParticlesStorage::update_particles() {
+	if (!particle_update_list.first()) {
+		// Return early to avoid unnecessary state changes.
+		return;
+	}
+
+	RENDER_TIMESTAMP("Update GPUParticles");
 	glEnable(GL_RASTERIZER_DISCARD);
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
 	GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
 
 	glBindBufferBase(GL_UNIFORM_BUFFER, PARTICLES_GLOBALS_UNIFORM_LOCATION, global_buffer);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	while (particle_update_list) {
+	while (particle_update_list.first()) {
 		// Use transform feedback to process particles.
 
-		Particles *particles = particle_update_list;
+		Particles *particles = particle_update_list.first()->self();
 
-		particle_update_list = particles->update_list;
-		particles->update_list = nullptr;
+		particles->update_list.remove_from_list();
 		particles->dirty = false;
 
 		_particles_update_buffers(particles);
@@ -1133,7 +1174,7 @@ void ParticlesStorage::_particles_reverse_lifetime_sort(Particles *particles) {
 	LocalVector<ParticleInstanceData> particle_vector;
 	particle_vector.resize(particles->amount);
 	particle_array = particle_vector.ptr();
-	glGetBufferSubData(GL_ARRAY_BUFFER, 0, buffer_size, particle_array);
+	godot_webgl2_glGetBufferSubData(GL_ARRAY_BUFFER, 0, buffer_size, particle_array);
 #endif
 
 	uint32_t lifetime_split = (MIN(int(particles->amount * particles->sort_buffer_phase), particles->amount - 1) + 1) % particles->amount;
@@ -1161,7 +1202,6 @@ Dependency *ParticlesStorage::particles_get_dependency(RID p_particles) const {
 }
 
 bool ParticlesStorage::particles_is_inactive(RID p_particles) const {
-	ERR_FAIL_COND_V_MSG(RSG::threaded, false, "This function should never be used with threaded rendering, as it stalls the renderer.");
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, false);
 	return !particles->emitting && particles->inactive;
@@ -1232,7 +1272,7 @@ GLuint ParticlesStorage::particles_collision_get_heightfield_framebuffer(RID p_p
 		particles_collision->heightfield_fb_size = size;
 
 		glBindTexture(GL_TEXTURE_2D, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	}
 
 	return particles_collision->heightfield_fb;

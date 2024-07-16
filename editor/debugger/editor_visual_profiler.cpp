@@ -31,9 +31,9 @@
 #include "editor_visual_profiler.h"
 
 #include "core/os/os.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
 
 void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
@@ -70,7 +70,7 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 	updating_frame = true;
 	clear_button->set_disabled(false);
 	cursor_metric_edit->set_max(frame_metrics[last_metric].frame_number);
-	cursor_metric_edit->set_min(MAX(frame_metrics[last_metric].frame_number - frame_metrics.size(), 0u));
+	cursor_metric_edit->set_min(MAX(int64_t(frame_metrics[last_metric].frame_number) - frame_metrics.size(), 0));
 
 	if (!seeking) {
 		cursor_metric_edit->set_value(frame_metrics[last_metric].frame_number);
@@ -116,7 +116,7 @@ String EditorVisualProfiler::_get_time_as_text(float p_time) {
 	int dmode = display_mode->get_selected();
 
 	if (dmode == DISPLAY_FRAME_TIME) {
-		return TS->format_number(String::num(p_time, 2)) + " " + RTR("ms");
+		return TS->format_number(String::num(p_time, 2)) + " " + TTR("ms");
 	} else if (dmode == DISPLAY_FRAME_PERCENT) {
 		return TS->format_number(String::num(p_time * 100 / graph_limit, 2)) + " " + TS->percent_sign();
 	}
@@ -446,9 +446,9 @@ void EditorVisualProfiler::_graph_tex_draw() {
 		return;
 	}
 
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-	const Color color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+	const Color color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 
 	if (seeking) {
 		int max_frames = frame_metrics.size();
@@ -736,13 +736,13 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	activate->set_toggle_mode(true);
 	activate->set_disabled(true);
 	activate->set_text(TTR("Start"));
-	activate->connect("pressed", callable_mp(this, &EditorVisualProfiler::_activate_pressed));
+	activate->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_activate_pressed));
 	hb->add_child(activate);
 
 	clear_button = memnew(Button);
 	clear_button->set_text(TTR("Clear"));
 	clear_button->set_disabled(true);
-	clear_button->connect("pressed", callable_mp(this, &EditorVisualProfiler::_clear_pressed));
+	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_clear_pressed));
 	hb->add_child(clear_button);
 
 	hb->add_child(memnew(Label(TTR("Measure:"))));
@@ -750,18 +750,18 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	display_mode = memnew(OptionButton);
 	display_mode->add_item(TTR("Frame Time (ms)"));
 	display_mode->add_item(TTR("Frame %"));
-	display_mode->connect("item_selected", callable_mp(this, &EditorVisualProfiler::_combo_changed));
+	display_mode->connect(SceneStringName(item_selected), callable_mp(this, &EditorVisualProfiler::_combo_changed));
 
 	hb->add_child(display_mode);
 
 	frame_relative = memnew(CheckBox(TTR("Fit to Frame")));
 	frame_relative->set_pressed(true);
 	hb->add_child(frame_relative);
-	frame_relative->connect("pressed", callable_mp(this, &EditorVisualProfiler::_update_plot));
+	frame_relative->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_update_plot));
 	linked = memnew(CheckBox(TTR("Linked")));
 	linked->set_pressed(true);
 	hb->add_child(linked);
-	linked->connect("pressed", callable_mp(this, &EditorVisualProfiler::_update_plot));
+	linked->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_update_plot));
 
 	hb->add_spacer();
 
@@ -770,7 +770,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	cursor_metric_edit = memnew(SpinBox);
 	cursor_metric_edit->set_h_size_flags(SIZE_FILL);
 	hb->add_child(cursor_metric_edit);
-	cursor_metric_edit->connect("value_changed", callable_mp(this, &EditorVisualProfiler::_cursor_metric_changed));
+	cursor_metric_edit->connect(SceneStringName(value_changed), callable_mp(this, &EditorVisualProfiler::_cursor_metric_changed));
 
 	hb->add_theme_constant_override("separation", 8 * EDSCALE);
 
@@ -802,9 +802,9 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	graph = memnew(TextureRect);
 	graph->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
-	graph->connect("draw", callable_mp(this, &EditorVisualProfiler::_graph_tex_draw));
-	graph->connect("gui_input", callable_mp(this, &EditorVisualProfiler::_graph_tex_input));
-	graph->connect("mouse_exited", callable_mp(this, &EditorVisualProfiler::_graph_tex_mouse_exit));
+	graph->connect(SceneStringName(draw), callable_mp(this, &EditorVisualProfiler::_graph_tex_draw));
+	graph->connect(SceneStringName(gui_input), callable_mp(this, &EditorVisualProfiler::_graph_tex_input));
+	graph->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorVisualProfiler::_graph_tex_mouse_exit));
 
 	h_split->add_child(graph);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);

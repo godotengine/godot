@@ -1,9 +1,27 @@
 #!/usr/bin/env python
 import atexit
-import os
 import sys
-import methods
 import time
+
+import methods
+
+# Enable ANSI escape code support on Windows 10 and later (for colored console output).
+# <https://github.com/python/cpython/issues/73245>
+if sys.stdout.isatty() and sys.platform == "win32":
+    try:
+        from ctypes import WinError, byref, windll  # type: ignore
+        from ctypes.wintypes import DWORD  # type: ignore
+
+        stdout_handle = windll.kernel32.GetStdHandle(DWORD(-11))
+        mode = DWORD(0)
+        if not windll.kernel32.GetConsoleMode(stdout_handle, byref(mode)):
+            raise WinError()
+        mode = DWORD(mode.value | 4)
+        if not windll.kernel32.SetConsoleMode(stdout_handle, mode):
+            raise WinError()
+    except Exception as e:
+        methods._colorize = False
+        methods.print_error(f"Failed to enable ANSI escape code support, disabling color output.\n{e}")
 
 # For the reference:
 # - CCFLAGS are compilation flags shared between C and C++
@@ -30,7 +48,7 @@ opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", Fa
 opts.Update(env)
 
 if not env["verbose"]:
-    methods.no_verbose(sys, env)
+    methods.no_verbose(env)
 
 if env["platform"] == "windows" and not env["use_mingw"]:
     env.AppendUnique(CCFLAGS=["/utf-8"])  # Force to use Unicode encoding.
@@ -43,8 +61,8 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
     thirdparty_tvg_dir = "../../../thirdparty/thorvg/"
     thirdparty_tvg_sources = [
         # common
-        "src/common/tvgBezier.cpp",
         "src/common/tvgCompressor.cpp",
+        "src/common/tvgLines.cpp",
         "src/common/tvgMath.cpp",
         "src/common/tvgStr.cpp",
         # SVG parser
@@ -55,6 +73,10 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         "src/loaders/svg/tvgSvgUtil.cpp",
         "src/loaders/svg/tvgXmlParser.cpp",
         "src/loaders/raw/tvgRawLoader.cpp",
+        # image loaders
+        "src/loaders/external_png/tvgPngLoader.cpp",
+        "src/loaders/jpg/tvgJpgd.cpp",
+        "src/loaders/jpg/tvgJpgLoader.cpp",
         # renderer common
         "src/renderer/tvgAccessor.cpp",
         # "src/renderer/tvgAnimation.cpp",
@@ -71,6 +93,8 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         "src/renderer/tvgShape.cpp",
         "src/renderer/tvgSwCanvas.cpp",
         "src/renderer/tvgTaskScheduler.cpp",
+        "src/renderer/tvgText.cpp",
+        # "src/renderer/tvgWgCanvas.cpp",
         # renderer sw_engine
         "src/renderer/sw_engine/tvgSwFill.cpp",
         "src/renderer/sw_engine/tvgSwImage.cpp",
@@ -88,10 +112,13 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         CPPPATH=[
             "../../../thirdparty/thorvg/inc",
             "../../../thirdparty/thorvg/src/common",
-            "../../../thirdparty/thorvg/src/loaders/svg",
-            "../../../thirdparty/thorvg/src/loaders/raw",
             "../../../thirdparty/thorvg/src/renderer",
             "../../../thirdparty/thorvg/src/renderer/sw_engine",
+            "../../../thirdparty/thorvg/src/loaders/svg",
+            "../../../thirdparty/thorvg/src/loaders/raw",
+            "../../../thirdparty/thorvg/src/loaders/external_png",
+            "../../../thirdparty/thorvg/src/loaders/jpg",
+            "../../../thirdparty/libpng",
         ]
     )
 
@@ -126,8 +153,6 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
         "core/Projection.cpp",
         "core/Scanline.cpp",
         "core/Shape.cpp",
-        "core/SignedDistance.cpp",
-        "core/Vector2.cpp",
         "core/contour-combiners.cpp",
         "core/edge-coloring.cpp",
         "core/edge-segments.cpp",
@@ -142,8 +167,10 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
     ]
     thirdparty_msdfgen_sources = [thirdparty_msdfgen_dir + file for file in thirdparty_msdfgen_sources]
 
+    env_msdfgen.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env_msdfgen.Append(CPPPATH=["../../../thirdparty/freetype/include", "../../../thirdparty/msdfgen"])
     env.Append(CPPPATH=["../../../thirdparty/msdfgen"])
+    env.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env.Append(CPPDEFINES=["MODULE_MSDFGEN_ENABLED"])
 
     lib = env_msdfgen.Library(
@@ -350,6 +377,7 @@ thirdparty_harfbuzz_sources = [
     "src/hb-subset-cff1.cc",
     "src/hb-subset-cff2.cc",
     "src/hb-subset-input.cc",
+    "src/hb-subset-instancer-iup.cc",
     "src/hb-subset-instancer-solver.cc",
     "src/hb-subset-plan.cc",
     "src/hb-subset-repacker.cc",
@@ -618,6 +646,8 @@ thirdparty_icu_sources = [
     "common/uloc.cpp",
     "common/uloc_keytype.cpp",
     "common/uloc_tag.cpp",
+    "common/ulocale.cpp",
+    "common/ulocbuilder.cpp",
     "common/umapfile.cpp",
     "common/umath.cpp",
     "common/umutablecptrie.cpp",
@@ -683,7 +713,7 @@ thirdparty_icu_sources = [
 ]
 thirdparty_icu_sources = [thirdparty_icu_dir + file for file in thirdparty_icu_sources]
 
-icu_data_name = "icudt73l.dat"
+icu_data_name = "icudt75l.dat"
 
 if env["static_icu_data"]:
     env_icu.Depends("../../../thirdparty/icu4c/icudata.gen.h", "../../../thirdparty/icu4c/" + icu_data_name)
@@ -693,7 +723,7 @@ if env["static_icu_data"]:
     env.Append(CXXFLAGS=["-DICU_STATIC_DATA"])
     env.Append(CPPPATH=["../../../thirdparty/icu4c/"])
 else:
-    thirdparty_sources += ["../icu_data/icudata_stub.cpp"]
+    thirdparty_icu_sources += ["../icu_data/icudata_stub.cpp"]
 
 env_icu.Append(CPPPATH=["../../../thirdparty/icu4c/common/", "../../../thirdparty/icu4c/i18n/"])
 env_icu.Append(
@@ -754,9 +784,16 @@ Default(library)
 
 
 def print_elapsed_time():
-    elapsed_time_sec = round(time.time() - time_at_start, 3)
-    time_ms = round((elapsed_time_sec % 1) * 1000)
-    print("[Time elapsed: {}.{:03}]".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)), time_ms))
+    elapsed_time_sec = round(time.time() - time_at_start, 2)
+    time_centiseconds = round((elapsed_time_sec % 1) * 100)
+    print(
+        "{}[Time elapsed: {}.{:02}]{}".format(
+            methods.ANSI.GRAY,
+            time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)),
+            time_centiseconds,
+            methods.ANSI.RESET,
+        )
+    )
 
 
 atexit.register(print_elapsed_time)

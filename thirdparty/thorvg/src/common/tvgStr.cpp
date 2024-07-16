@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  */
 
 #include "config.h"
+#include <cmath>
 #include <cstring>
 #include <memory.h>
 #include "tvgMath.h"
@@ -197,6 +198,8 @@ float strToFloat(const char *nPtr, char **endPtr)
 
 success:
     if (endPtr) *endPtr = (char *)(a);
+    if (!std::isfinite(val)) return 0.0f;
+
     return minus * val;
 
 error:
