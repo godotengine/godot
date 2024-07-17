@@ -61,7 +61,7 @@ public:
 		bool call_error = !E || E->get().argtypes.size() != p_argcount;
 		if (!call_error) {
 			for (int i = 0; i < p_argcount; i++) {
-				if (!Variant::can_convert(p_args[i]->get_type(), E->get().argtypes[i])) {
+				if (!p_args[i]->can_convert(E->get().argtypes[i])) {
 					call_error = true;
 					break;
 				}

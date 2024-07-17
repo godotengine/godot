@@ -37,6 +37,7 @@
 #include "core/print_string.h"
 #include "core/resource.h"
 #include "core/variant_parser.h"
+#include "modules/regex/regex.h"
 #include "scene/gui/control.h"
 #include "scene/main/node.h"
 
@@ -599,6 +600,59 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 	}
 
 	return false;
+}
+
+bool Variant::can_convert(Type p_type_to) const {
+	// If this is a string variant and we are converting to a numeric type, check if the contents of the
+	// string make sense as a number
+	if (type == Type::STRING && (p_type_to == Type::INT || p_type_to == Type::REAL)) {
+		// Get string
+		String s = operator String();
+
+		// Skip first character if it is '-'
+		int i = 0;
+
+		if (s[i] == '-') {
+			i++;
+
+			// If the first character is '-', there must be at least one character afterwards
+			if (s.length() < 2) {
+				return false;
+			}
+		}
+
+		// Scan for invalid characters in whole portion of numeric literal
+		while (i < s.length()) {
+			// Period?
+			if (s[i] == '.') {
+				// Proceed to processing of decimal portion of numeric literal
+				i++;
+				break;
+			} else if (s[i] < '0' || s[i] > '9') { // Invalid character?
+				return false;
+			}
+
+			// Next character
+			i++;
+		}
+
+		// Scan for invalid characters in decimal portion of numeric literal
+		while (i < s.length()) {
+			// Invalid character?
+			if (s[i] < '0' || s[i] > '9') {
+				return false;
+			}
+
+			// Next character
+			i++;
+		}
+
+		// The string is a valid numeric literal
+		return true;
+	}
+
+	// Do other type checks
+	return Variant::can_convert(type, p_type_to);
 }
 
 bool Variant::deep_equal(const Variant &p_variant, int p_recursion_count) const {
