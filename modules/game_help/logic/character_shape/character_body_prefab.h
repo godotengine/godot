@@ -22,6 +22,7 @@ public:
     void set_parts(TypedArray<String> p_parts)
     {
         parts = p_parts;
+        emit_changed();
     }
     TypedArray<String> get_parts()
     {
@@ -31,6 +32,7 @@ public:
     void set_skeleton_path(String p_skeleton_path)
     {
         skeleton_path = p_skeleton_path;
+        emit_changed();
     }
     String get_skeleton_path()
     {

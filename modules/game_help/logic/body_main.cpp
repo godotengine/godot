@@ -32,6 +32,9 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_animator", "animator"), &CharacterBodyMain::set_animator);
     ClassDB::bind_method(D_METHOD("get_animator"), &CharacterBodyMain::get_animator);
 
+    ClassDB::bind_method(D_METHOD("set_ik", "ik"), &CharacterBodyMain::set_ik);
+    ClassDB::bind_method(D_METHOD("get_ik"), &CharacterBodyMain::get_ik);
+
     ClassDB::bind_method(D_METHOD("set_main_shape", "shape"), &CharacterBodyMain::set_main_shape);
     ClassDB::bind_method(D_METHOD("get_main_shape"), &CharacterBodyMain::get_main_shape);
 
@@ -74,6 +77,7 @@ void CharacterBodyMain::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animator", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimator",PROPERTY_USAGE_DEFAULT ), "set_animator", "get_animator"); 
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_library", PROPERTY_HINT_RESOURCE_TYPE, "AnimationLibrary",PROPERTY_USAGE_DEFAULT ), "set_animation_library", "get_animation_library");
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "skeleton", PROPERTY_HINT_FILE, "*.tscn,*.scn",PROPERTY_USAGE_DEFAULT ), "set_skeleton_resource", "get_skeleton_resource");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "ik", PROPERTY_HINT_RESOURCE_TYPE, "RenIK",PROPERTY_USAGE_DEFAULT ), "set_ik", "get_ik");
 
 
 	ADD_SIGNAL(MethodInfo("behavior_tree_finished", PropertyInfo(Variant::INT, "status")));
@@ -140,6 +144,36 @@ void CharacterBodyMain::_update(double p_delta)
         }
         _process_move();
 
+}
+void CharacterBodyMain::_update_ai()
+{
+    if(character_ai.is_valid())
+    {
+        character_ai->execute(this,get_blackboard().ptr(),&ai_context);
+    }
+}
+void CharacterBodyMain::_process_animator()
+{
+    if(animator.is_valid())
+    {
+        animator->update_animator(get_process_delta_time());
+    }
+}
+void CharacterBodyMain::_process_animation()
+{
+    if(animator.is_valid())
+    {
+        animator->update_animation(get_process_delta_time());
+    }
+}
+void CharacterBodyMain::_process_ik()
+{
+    float delta = get_process_delta_time();
+    if(ik.is_valid())
+    {
+        ik->update_ik();
+        ik->update_placement(delta);
+    }
 }
 void CharacterBodyMain::_process_move()
 {
@@ -216,6 +250,12 @@ void CharacterBodyMain::set_skeleton_resource(const String& p_skeleton_path)
     add_child(skeleton);
     skeleton->set_owner(this);
     skeleton->set_dont_save(true);
+
+    
+    if(skeleton && ik.is_valid())
+    {
+        ik->_initialize(skeleton);
+    }
 }
 void CharacterBodyMain::load_mesh(const StringName& part_name,String p_mesh_file_path)
 {
@@ -364,12 +404,21 @@ void CharacterBodyMain::set_body_prefab(const Ref<CharacterBodyPrefab> &p_body_p
     {
         return;
     }
-    
-    bodyPart.clear();
-    body_prefab = p_body_prefab;
-
     if(body_prefab.is_valid())
     {
+        body_prefab->disconnect_changed(callable_mp(this, &CharacterBodyMain::load_prefab));
+    }
+    body_prefab = p_body_prefab;
+    load_prefab();
+
+
+}
+void CharacterBodyMain::load_prefab()
+{
+    bodyPart.clear();
+    if(body_prefab.is_valid())
+    {
+        body_prefab->connect_changed(callable_mp(this, &CharacterBodyMain::load_prefab));
         set_skeleton_resource(body_prefab->get_skeleton_path());
         Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeletonID));
         // 

@@ -1003,7 +1003,7 @@ void SceneTree::_process(bool p_physics) {
 	}
 	for(uint32_t i = 0; i < global_tickers.size(); i++) {	
 		if(global_tickers[i] != nullptr) {
-			global_tickers[i]->tick();
+			global_tickers[i]->tick(get_process_time());
 		}
 	}
 

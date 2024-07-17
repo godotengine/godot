@@ -694,7 +694,7 @@ void CharacterAnimatorLayer::_process_logic(const Ref<Blackboard>& p_playback_in
     curr_logic->process(this,*p_playback_info,p_delta);
 }
 // 处理动画
-void CharacterAnimatorLayer::_process_animation(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first)
+void CharacterAnimatorLayer::_process_animator(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first)
 {
     // 处理逻辑节点请求播放的动作
     if(logic_context.curr_animation.is_valid())
@@ -741,6 +741,11 @@ void CharacterAnimatorLayer::_process_animation(const Ref<Blackboard> &p_playbac
     {
         anim.node->process_animation(this, &anim, it->get_weight() / total_weight, p_playback_info);
     }
+
+}
+// 处理动画
+void CharacterAnimatorLayer::_process_animation(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first)
+{
 
 
 	_blend_init();
@@ -1062,6 +1067,22 @@ void CharacterAnimator::clear_layer()
 
     }
     m_LayerList.clear();
+}
+void CharacterAnimator::update_animator(float delta)
+{
+    auto it = m_LayerList.begin();
+    bool is_first = true;
+    while(it!=m_LayerList.end())
+    {
+        CharacterAnimatorLayer* layer = *it;
+        if(layer->is_active())
+        {
+            layer->_process_animator(m_Body->get_blackboard(),delta,is_first);
+            is_first = false;
+        }
+        ++it;
+    }
+
 }
 void CharacterAnimator::update_animation(float delta)
 {

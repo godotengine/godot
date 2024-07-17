@@ -21,7 +21,7 @@ public:
 
     void register_character(class CharacterBodyMain* character);
     void unregister_character(class CharacterBodyMain* character);
-    void tick();
+    void tick(float delta);
 
     // 更新所有的角色ai
     void update_ai();

@@ -501,6 +501,8 @@ public:
 
     void _process_logic(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first = true);
     // 处理动画
+    void _process_animator(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first = true);
+    // 处理动画
     void _process_animation(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first = true);
     void layer_blend_apply() ;
     Vector<Vector2> m_ChildInputVectorArray;
@@ -667,6 +669,8 @@ public:
     void set_body(class CharacterBodyMain* p_body);
 
     void add_layer(const Ref<CharacterAnimatorLayerConfig>& _mask);
+
+    void update_animator(float delta);
 
     void update_animation(float delta);
 

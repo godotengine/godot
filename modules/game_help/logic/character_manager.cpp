@@ -10,7 +10,7 @@ void CharacterManager::unregister_character(class CharacterBodyMain* character)
     update_finish();
     characters.erase(character);
 }
-void CharacterManager::tick()
+void CharacterManager::tick(float delta)
 {
     update_ai();
     update_animator();

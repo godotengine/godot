@@ -1398,7 +1398,7 @@ void RenIK::_initialize(Skeleton3D* p_skeleton) {
 	set_hand_right_target_path(get_hand_right_target_path());
 	set_foot_left_target_path(get_foot_left_target_path());
 	set_foot_right_target_path(get_foot_right_target_path());
-
+	on_post_initialize();
 	// if (Engine::get_singleton()->is_editor_hint()) {
 	// 	set_process_internal(true);
 	// 	set_physics_process_internal(true);

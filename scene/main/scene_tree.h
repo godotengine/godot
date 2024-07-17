@@ -84,7 +84,7 @@ class GlolaleTicker : public Object {
 
 	}
 public:
-	virtual void tick()
+	virtual void tick(float delta)
 	{
 
 	}

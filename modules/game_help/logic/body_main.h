@@ -55,23 +55,11 @@ class CharacterBodyMain : public CharacterBody3D {
     GDCLASS(CharacterBodyMain, CharacterBody3D);
     static void _bind_methods();
 public:
-    void _update_ai()
-    {
-
-    }
+    void _update_ai();
     void _process_move();
-    void _process_animator()
-    {
-
-    }
-    void _process_animation()
-    {
-
-    }
-    void _process_ik()
-    {
-        
-    }
+    void _process_animator();
+    void _process_animation();
+    void _process_ik();
 
 public:
     // 初始化身體
@@ -190,6 +178,7 @@ public:
     
     void set_body_prefab(const Ref<CharacterBodyPrefab> &p_body_prefab);
     Ref<CharacterBodyPrefab> get_body_prefab();
+    void load_prefab();
 
     // 技能相关
 public:
@@ -288,6 +277,28 @@ public:
             animator->change_state(p_state_name);
         }
     }
+    void set_ik(const Ref<RenIK>& p_ik)
+    {
+        if(p_ik == ik)
+        {
+            return;
+        }
+        ik = p_ik;
+        Skeleton3D * skeleton = get_skeleton();
+        if(skeleton && ik.is_valid())
+        {
+            ik->_initialize(skeleton);
+        }
+    }
+    Ref<RenIK> get_ik()
+    {
+        return ik;
+    }
+    Skeleton3D* get_skeleton()
+    {
+        Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeletonID));
+        return skeleton;
+    }
 	GDVIRTUAL0(_update_player_position)
 public:
     
@@ -362,37 +373,46 @@ protected:
         }
     }
 protected:
-    ObjectID skeletonID;
+    LocalVector<Ref<CharacterCheckArea3D>> check_area;
     Ref<CollisionObject3DConnectionShape> mainShape;
+    // 初始化数据
+    Dictionary init_data;
+
+
     mutable BTPlayer *btPlayer = nullptr;
     bool is_skill_stop = false;
     // 技能播放器
     mutable BTPlayer *btSkillPlayer = nullptr;
+
+
     // 角色自己的黑板
     Ref<Blackboard> player_blackboard;
     Ref<CharacterMovement> character_movement;
     Ref<CharacterNavigationAgent3D> character_agent;
+
     CharacterAIContext ai_context;
     Ref<CharacterAI> character_ai;
-    // 角色的IK信息
-    Ref<RenIK> renik;
+
+
+    
     // 骨架配置文件
     String skeleton_res;
+    ObjectID skeletonID;
+    Ref<CharacterAnimationLibrary> animation_library;
+    Ref<CharacterAnimator>    animator;
     // 动画组配置
     String animation_group;
+    // 角色的IK信息
+    Ref<RenIK> ik;
+
+
+    Ref<CharacterBodyPrefab> body_prefab;
+    // 身体部件信息
+    HashMap<StringName,Ref<CharacterBodyPartInstane>> bodyPart;
     // 身體部件列表
     PackedStringArray   partList;
     // 插槽信息
     HashMap<StringName,BodySocket> socket;
-    // 身体部件信息
-    HashMap<StringName,Ref<CharacterBodyPartInstane>> bodyPart;
-    Ref<CharacterAnimator>    animator;
-    LocalVector<Ref<CharacterCheckArea3D>> check_area;
-    
-    Ref<CharacterAnimationLibrary> animation_library;
-    Ref<CharacterBodyPrefab> body_prefab;
-    // 初始化数据
-    Dictionary init_data;
 };
 
 #endif
