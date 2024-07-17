@@ -128,7 +128,7 @@ private:
 
 	bool emulate_touch_from_mouse = false;
 	bool emulate_mouse_from_touch = false;
-	bool use_input_buffering = false;
+	bool agile_input_event_flushing = false;
 	bool use_accumulated_input = true;
 
 	int mouse_from_touch_index = -1;
@@ -367,8 +367,8 @@ public:
 	void flush_frame_parsed_events();
 #endif
 	void flush_buffered_events();
-	bool is_using_input_buffering();
-	void set_use_input_buffering(bool p_enable);
+	bool is_agile_input_event_flushing();
+	void set_agile_input_event_flushing(bool p_enable);
 	void set_use_accumulated_input(bool p_enable);
 	bool is_using_accumulated_input();
 
