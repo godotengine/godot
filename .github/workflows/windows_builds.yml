@@ -34,8 +34,9 @@ jobs:
           - name: Template (target=template_release)
             cache-name: windows-template
             target: template_release
-            tests: false
-            sconsflags: debug_symbols=no
+            tests: true
+            sconsflags: debug_symbols=no tests=yes
+            bin: "./bin/godot.windows.template_release.x86_64.console.exe"
 
     steps:
       - uses: actions/checkout@v4
@@ -91,7 +92,6 @@ jobs:
         with:
           name: ${{ matrix.cache-name }}
 
-      # Execute unit tests for the editor
       - name: Unit tests
         if: ${{ matrix.tests }}
         run: |
