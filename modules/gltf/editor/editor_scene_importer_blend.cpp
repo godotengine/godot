@@ -332,7 +332,8 @@ Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_pa
 }
 
 void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
-	if (p_path.get_extension().to_lower() != "blend") {
+	// Returns all the options when path is empty because that means it's for the Project Settings.
+	if (!p_path.is_empty() && p_path.get_extension().to_lower() != "blend") {
 		return;
 	}
 #define ADD_OPTION_BOOL(PATH, VALUE) \
