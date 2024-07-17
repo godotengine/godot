@@ -5548,10 +5548,16 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 										}
 									}
 									if (is_sampler_type(call_function->arguments[i].type)) {
-										//let's see where our argument comes from
-										ERR_CONTINUE(n->type != Node::NODE_TYPE_VARIABLE); //bug? this should always be a variable
-										VariableNode *vn = static_cast<VariableNode *>(n);
-										StringName varname = vn->name;
+										// Let's see where our argument comes from.
+										StringName varname;
+										if (n->type == Node::NODE_TYPE_VARIABLE) {
+											VariableNode *vn = static_cast<VariableNode *>(n);
+											varname = vn->name;
+										} else if (n->type == Node::NODE_TYPE_ARRAY) {
+											ArrayNode *an = static_cast<ArrayNode *>(n);
+											varname = an->name;
+										}
+
 										if (shader->uniforms.has(varname)) {
 											//being sampler, this either comes from a uniform
 											ShaderNode::Uniform *u = &shader->uniforms[varname];
