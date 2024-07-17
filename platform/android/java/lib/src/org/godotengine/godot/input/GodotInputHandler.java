@@ -472,7 +472,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 		return button;
 	}
 
-	private static int getEventToolType(MotionEvent event) {
+	static int getEventToolType(MotionEvent event) {
 		return event.getPointerCount() > 0 ? event.getToolType(0) : MotionEvent.TOOL_TYPE_UNKNOWN;
 	}
 
