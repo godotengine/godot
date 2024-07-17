@@ -207,6 +207,50 @@ typedef UINT32 PEN_MASK;
 #define POINTER_MESSAGE_FLAG_FIRSTBUTTON 0x00000010
 #endif
 
+#ifndef POINTER_MESSAGE_FLAG_SECONDBUTTON
+#define POINTER_MESSAGE_FLAG_SECONDBUTTON 0x00000020
+#endif
+
+#ifndef POINTER_MESSAGE_FLAG_THIRDBUTTON
+#define POINTER_MESSAGE_FLAG_THIRDBUTTON 0x00000040
+#endif
+
+#ifndef POINTER_MESSAGE_FLAG_FOURTHBUTTON
+#define POINTER_MESSAGE_FLAG_FOURTHBUTTON 0x00000080
+#endif
+
+#ifndef POINTER_MESSAGE_FLAG_FIFTHBUTTON
+#define POINTER_MESSAGE_FLAG_FIFTHBUTTON 0x00000100
+#endif
+
+#ifndef IS_POINTER_FLAG_SET_WPARAM
+#define IS_POINTER_FLAG_SET_WPARAM(wParam, flag) (((DWORD)HIWORD(wParam) & (flag)) == (flag))
+#endif
+
+#ifndef IS_POINTER_FIRSTBUTTON_WPARAM
+#define IS_POINTER_FIRSTBUTTON_WPARAM(wParam) IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_FIRSTBUTTON)
+#endif
+
+#ifndef IS_POINTER_SECONDBUTTON_WPARAM
+#define IS_POINTER_SECONDBUTTON_WPARAM(wParam) IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_SECONDBUTTON)
+#endif
+
+#ifndef IS_POINTER_THIRDBUTTON_WPARAM
+#define IS_POINTER_THIRDBUTTON_WPARAM(wParam) IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_THIRDBUTTON)
+#endif
+
+#ifndef IS_POINTER_FOURTHBUTTON_WPARAM
+#define IS_POINTER_FOURTHBUTTON_WPARAM(wParam) IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_FOURTHBUTTON)
+#endif
+
+#ifndef IS_POINTER_FIFTHBUTTON_WPARAM
+#define IS_POINTER_FIFTHBUTTON_WPARAM(wParam) IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_FIFTHBUTTON)
+#endif
+
+#ifndef GET_POINTERID_WPARAM
+#define GET_POINTERID_WPARAM(wParam) (LOWORD(wParam))
+#endif
+
 #if WINVER < 0x0602
 enum tagPOINTER_INPUT_TYPE {
 	PT_POINTER = 0x00000001,
@@ -272,6 +316,14 @@ typedef struct tagPOINTER_PEN_INFO {
 
 #ifndef WM_POINTERLEAVE
 #define WM_POINTERLEAVE 0x024A
+#endif
+
+#ifndef WM_POINTERDOWN
+#define WM_POINTERDOWN 0x0246
+#endif
+
+#ifndef WM_POINTERUP
+#define WM_POINTERUP 0x0247
 #endif
 
 typedef BOOL(WINAPI *GetPointerTypePtr)(uint32_t p_id, POINTER_INPUT_TYPE *p_type);
@@ -478,6 +530,11 @@ class DisplayServerWindows : public DisplayServer {
 
 	IndicatorID indicator_id_counter = 0;
 	HashMap<IndicatorID, IndicatorData> indicators;
+
+	HashMap<int64_t, MouseButton> pointer_prev_button;
+	HashMap<int64_t, MouseButton> pointer_button;
+	HashMap<int64_t, LONG> pointer_down_time;
+	HashMap<int64_t, Vector2> pointer_last_pos;
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
 	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
