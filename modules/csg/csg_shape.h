@@ -401,6 +401,7 @@ private:
 	float path_interval;
 	float path_simplify_angle;
 	PathRotation path_rotation;
+	bool path_rotation_accurate;
 	bool path_local;
 
 	Path3D *path = nullptr;
@@ -451,6 +452,9 @@ public:
 
 	void set_path_rotation(PathRotation p_rotation);
 	PathRotation get_path_rotation() const;
+
+	void set_path_rotation_accurate(bool p_enable);
+	bool get_path_rotation_accurate() const;
 
 	void set_path_local(bool p_enable);
 	bool is_path_local() const;
