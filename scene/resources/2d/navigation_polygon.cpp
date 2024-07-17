@@ -193,6 +193,10 @@ void NavigationPolygon::set_data(const Vector<Vector2> &p_vertices, const Vector
 	for (int i = 0; i < p_polygons.size(); i++) {
 		polygons.write[i].indices = p_polygons[i];
 	}
+	{
+		MutexLock lock(navigation_mesh_generation);
+		navigation_mesh.unref();
+	}
 }
 
 void NavigationPolygon::get_data(Vector<Vector2> &r_vertices, Vector<Vector<int>> &r_polygons) {
