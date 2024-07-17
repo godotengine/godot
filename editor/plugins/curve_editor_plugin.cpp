@@ -118,12 +118,6 @@ void CurveEdit::_notification(int p_what) {
 				queue_redraw();
 			}
 		} break;
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
-				break;
-			}
-			[[fallthrough]];
-		}
 		case NOTIFICATION_THEME_CHANGED: {
 			float gizmo_scale = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
 			point_radius = Math::round(BASE_POINT_RADIUS * get_theme_default_base_scale() * gizmo_scale);
