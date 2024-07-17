@@ -41,9 +41,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Enable the DXGI present feature.
 #define OPENGL_ON_DXGI_ENABLED
-// #define OPENGL_DXGI_USE_DEPTH_BUFFER
-// #define OPENGL_DXGI_USE_FLIP_MODEL
+
+// Create and set the D3D11 render target.
+// We don't actually need to set the render target 'cause we're rendering
+// everything in OpenGL, right? As long as the buffer is written to it should
+// just work?
+//#define OPENGL_DXGI_SET_RENDER_TARGET
+
+// Create a depth buffer in D3D11 and attach it to the render target.
+// Requires OPENGL_DXGI_SET_RENDER_TARGET.
+// For some reason Intel driver doesn't like it and gives GL_INVALID_OPERATION
+// when trying to attach it with glFramebufferTexture2D.
+// RasterizerGLES3 doesn't seem to actually need a depth buffer though. All
+// it does is blit other FBOs onto the screen with GL_COLOR_BUFFER_BIT?
+// Even if we do need a depth buffer, we could just create one in OpenGL.
+//#define OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
+
+// Bind the color buffer as renderbuffer instead of texture 2D.
+#define OPENGL_DXGI_USE_RENDERBUFFER
+
+// TODO
+//#define OPENGL_DXGI_ADD_DEPTH_RENDERBUFFER
+
+// Use DXGI flip-discard. (WIP)
+//#define OPENGL_DXGI_USE_FLIP_MODEL
 
 #ifdef OPENGL_ON_DXGI_ENABLED
 
@@ -366,27 +389,39 @@ class GLManagerNative_Windows::DxgiSwapChain {
 	ComPtr<ID3D11DeviceContext> device_context;
 	ComPtr<IDXGISwapChain> swap_chain;
 
-#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 	ComPtr<ID3D11Texture2D> depth_texture;
 	ComPtr<ID3D11DepthStencilView> depth_stencil_view;
 #endif
 
 	ComPtr<ID3D11Texture2D> color_buffer;
+#ifdef OPENGL_DXGI_SET_RENDER_TARGET
 	ComPtr<ID3D11RenderTargetView> render_target_view;
+#endif
 
 #ifdef OPENGL_DXGI_USE_FLIP_MODEL
 	HANDLE frame_latency_waitable_obj{};
 #endif
 
 	HANDLE gldx_device{};
-#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+#ifdef OPENGL_DXGI_USE_RENDERBUFFER
+	HANDLE gldx_color_buffer_rb{};
+#else
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 	HANDLE gldx_depth_texture{};
 #endif
-	HANDLE gldx_render_target_view{};
+	HANDLE gldx_color_buffer_tex{};
+#endif
 
 	GLuint gl_fbo{};
+#ifdef OPENGL_DXGI_USE_RENDERBUFFER
+	GLuint gl_color_buffer_rb{};
+#else
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 	GLuint gl_depth_stencil_tex{};
-	GLuint gl_render_target_view_tex{};
+#endif
+	GLuint gl_color_buffer_tex{};
+#endif
 
 	DxgiSwapChain() = default;
 	~DxgiSwapChain() = default;
@@ -406,7 +441,7 @@ public:
 	void set_use_vsync(bool p_use);
 
 private:
-#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 	bool setup_depth_buffer(int p_width, int p_height);
 	void release_depth_buffer();
 #endif
@@ -697,6 +732,8 @@ void GLManagerNative_Windows::window_destroy(DisplayServer::WindowID p_window_id
 
 #ifdef OPENGL_ON_DXGI_ENABLED
 	if (win.dxgi) {
+		// We need to destroy some OpenGL resources.
+		window_make_current(p_window_id);
 		win.dxgi->destroy();
 		win.dxgi = nullptr;
 	}
@@ -896,7 +933,7 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 				if (!SUCCEEDED(hr)) {
 					ERR_PRINT(vformat("Failed to get IDXGIFactory, HRESULT: 0x%08X", (unsigned)hr));
 				} else {
-					hr = dxgi_factory->MakeWindowAssociation(p_hwnd, DXGI_MWA_NO_ALT_ENTER);
+					hr = dxgi_factory->MakeWindowAssociation(p_hwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
 					if (!SUCCEEDED(hr)) {
 						ERR_PRINT(vformat("Failed to get IDXGIFactory, HRESULT: 0x%08X", (unsigned)hr));
 					}
@@ -934,10 +971,20 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 	glGenFramebuffers(1, &gl_fbo);
 
 	// Generate texture names for render target and depth buffers.
+#ifdef OPENGL_DXGI_USE_RENDERBUFFER
+	GLuint gl_color_buffer_rb;
+	glGenRenderbuffers(1, &gl_color_buffer_rb);
+#else
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 	GLuint textures[2] = {};
 	glGenTextures(2, textures);
 	GLuint gl_depth_stencil_tex = textures[0];
-	GLuint gl_render_target_view_tex = textures[1];
+	GLuint gl_color_buffer_tex = textures[1];
+#else
+	GLuint gl_color_buffer_tex;
+	glGenTextures(1, &gl_color_buffer_tex);
+#endif
+#endif
 
 	GLManagerNative_Windows::DxgiSwapChain *dxgi = memnew(GLManagerNative_Windows::DxgiSwapChain);
 	dxgi->device = std::move(device);
@@ -948,12 +995,18 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 #endif
 	dxgi->gldx_device = gldx_device;
 	dxgi->gl_fbo = gl_fbo;
+#ifdef OPENGL_DXGI_USE_RENDERBUFFER
+	dxgi->gl_color_buffer_rb = gl_color_buffer_rb;
+#else
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 	dxgi->gl_depth_stencil_tex = gl_depth_stencil_tex;
-	dxgi->gl_render_target_view_tex = gl_render_target_view_tex;
+#endif
+	dxgi->gl_color_buffer_tex = gl_color_buffer_tex;
+#endif
 
 	GLES3::TextureStorage::system_fbo = gl_fbo;
 
-#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 	if (!dxgi->setup_depth_buffer(p_width, p_height)) {
 		GLES3::TextureStorage::system_fbo = 0;
 		memdelete(dxgi);
@@ -963,7 +1016,7 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 
 	if (!dxgi->setup_render_target()) {
 		GLES3::TextureStorage::system_fbo = 0;
-#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 		dxgi->release_depth_buffer();
 #endif
 		memdelete(dxgi);
@@ -1001,14 +1054,22 @@ void GLManagerNative_Windows::DxgiSwapChain::destroy() {
 	}
 
 	release_render_target(true);
-#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 	release_depth_buffer();
 #endif
 
 	// FIXME: Is this safe to do? Could our OpenGL context not be current?
 	glDeleteFramebuffers(1, &gl_fbo);
-	GLuint textures[2] = { gl_depth_stencil_tex, gl_render_target_view_tex };
+#ifdef OPENGL_DXGI_USE_RENDERBUFFER
+	glDeleteRenderbuffers(1, &gl_color_buffer_rb);
+#else
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
+	GLuint textures[2] = { gl_depth_stencil_tex, gl_color_buffer_tex };
 	glDeleteTextures(2, textures);
+#else
+	glDeleteTextures(1, &gl_color_buffer_tex);
+#endif
+#endif
 
 	gd_wglDXCloseDeviceNV(gldx_device);
 
@@ -1033,7 +1094,7 @@ void GLManagerNative_Windows::DxgiSwapChain::release_current() {
 	GLES3::TextureStorage::system_fbo = 0;
 }
 
-#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 bool GLManagerNative_Windows::DxgiSwapChain::setup_depth_buffer(int p_width, int p_height) {
 	// Godot uses 24-bit depth buffer?
 	ComPtr<ID3D11Texture2D> depth_texture_new;
@@ -1085,7 +1146,7 @@ void GLManagerNative_Windows::DxgiSwapChain::release_depth_buffer() {
 	depth_stencil_view.Reset();
 	depth_texture.Reset();
 }
-#endif // OPENGL_DXGI_USE_DEPTH_BUFFER
+#endif // OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 
 bool GLManagerNative_Windows::DxgiSwapChain::setup_render_target() {
 	// Get the current back buffer from the swap chain.
@@ -1096,6 +1157,7 @@ bool GLManagerNative_Windows::DxgiSwapChain::setup_render_target() {
 		return false;
 	}
 
+#ifdef OPENGL_DXGI_SET_RENDER_TARGET
 	// TODO: Do we need to chedk OS::get_singleton()->is_layered_allowed() here?
 	CD3D11_RENDER_TARGET_VIEW_DESC render_target_view_desc(D3D11_RTV_DIMENSION_TEXTURE2D, DXGI_FORMAT_R8G8B8A8_UNORM);
 	ComPtr<ID3D11RenderTargetView> render_target_view_new;
@@ -1107,22 +1169,36 @@ bool GLManagerNative_Windows::DxgiSwapChain::setup_render_target() {
 		ERR_PRINT(vformat("CreateRenderTargetView failed, HRESULT: 0x%08X", (unsigned)hr));
 		return false;
 	}
+#endif
 
 	// Register for interop.
-	HANDLE gldx_render_target_view_new = gd_wglDXRegisterObjectNV(gldx_device,
+#ifdef OPENGL_DXGI_USE_RENDERBUFFER
+	HANDLE gldx_color_buffer_rb_new = gd_wglDXRegisterObjectNV(gldx_device,
 			color_buffer_new.Get(),
-			gl_render_target_view_tex,
+			gl_color_buffer_rb,
+			GL_RENDERBUFFER,
+			WGL_ACCESS_READ_WRITE_NV);
+#else
+	HANDLE gldx_color_buffer_tex_new = gd_wglDXRegisterObjectNV(gldx_device,
+			color_buffer_new.Get(),
+			gl_color_buffer_tex,
 			GL_TEXTURE_2D,
 			WGL_ACCESS_READ_WRITE_NV);
-	if (!gldx_render_target_view_new) {
-		ERR_PRINT(vformat("Failed to connect D3D11 render target to WGL for interop. Error: %s", format_error_message(GetLastError())));
+#endif
+#ifdef OPENGL_DXGI_USE_RENDERBUFFER
+	if (!gldx_color_buffer_rb_new) {
+#else
+	if (!gldx_color_buffer_tex_new) {
+#endif
+		ERR_PRINT(vformat("Failed to connect D3D11 color buffer to WGL for interop. Error: %s", format_error_message(GetLastError())));
 		return false;
 	}
 
+#ifdef OPENGL_DXGI_SET_RENDER_TARGET
 	// Attach back buffer and depth buffer to the render target.
 	device_context->OMSetRenderTargets(1,
 			render_target_view_new.GetAddressOf(),
-#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 			depth_stencil_view.Get()
 #else
 			nullptr
@@ -1132,10 +1208,17 @@ bool GLManagerNative_Windows::DxgiSwapChain::setup_render_target() {
 	// TODO: Is it okay if we don't clear at all?
 	// float clear_color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	// device_context->ClearRenderTargetView(render_target_view_new.Get(), clear_color);
+#endif
 
 	color_buffer = std::move(color_buffer_new);
+#ifdef OPENGL_DXGI_SET_RENDER_TARGET
 	render_target_view = std::move(render_target_view_new);
-	gldx_render_target_view = gldx_render_target_view_new;
+#endif
+#ifdef OPENGL_DXGI_USE_RENDERBUFFER
+	gldx_color_buffer_rb = gldx_color_buffer_rb_new;
+#else
+	gldx_color_buffer_tex = gldx_color_buffer_tex_new;
+#endif
 
 	return true;
 }
@@ -1146,27 +1229,45 @@ void GLManagerNative_Windows::DxgiSwapChain::release_render_target(bool p_need_u
 	}
 
 	// Release the back buffer.
-	gd_wglDXUnregisterObjectNV(gldx_device, gldx_render_target_view);
+#ifdef OPENGL_DXGI_USE_RENDERBUFFER
+	gd_wglDXUnregisterObjectNV(gldx_device, gldx_color_buffer_rb);
+#else
+	gd_wglDXUnregisterObjectNV(gldx_device, gldx_color_buffer_tex);
+#endif
 
-	gldx_render_target_view = nullptr;
+#ifdef OPENGL_DXGI_USE_RENDERBUFFER
+	gldx_color_buffer_rb = nullptr;
+#else
+	gldx_color_buffer_tex = nullptr;
+#endif
+#ifdef OPENGL_DXGI_SET_RENDER_TARGET
 	render_target_view.Reset();
+#endif
 	color_buffer.Reset();
 }
 
 void GLManagerNative_Windows::DxgiSwapChain::lock_for_opengl() {
 	// Lock the buffers for OpenGL access.
-#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
-	void *handles[] = { gldx_depth_texture, gldx_render_target_view };
+#ifdef OPENGL_DXGI_USE_RENDERBUFFER
+	gd_wglDXLockObjectsNV(gldx_device, 1, &gldx_color_buffer_rb);
+#else
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
+	void *handles[] = { gldx_depth_texture, gldx_color_buffer_tex };
 	gd_wglDXLockObjectsNV(gldx_device, 2, handles);
 #else
-	gd_wglDXLockObjectsNV(gldx_device, 1, &gldx_render_target_view);
+	gd_wglDXLockObjectsNV(gldx_device, 1, &gldx_color_buffer_tex);
+#endif
 #endif
 
 	// Attach color and depth buffers to FBO
 	glBindFramebuffer(GL_FRAMEBUFFER, gl_fbo);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gl_render_target_view_tex, 0);
-#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+#ifdef OPENGL_DXGI_USE_RENDERBUFFER
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, gl_color_buffer_rb);
+#else
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gl_color_buffer_tex, 0);
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gl_depth_stencil_tex, 0);
+#endif
 #endif
 	if (GLES3::TextureStorage::system_fbo != gl_fbo) {
 		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
@@ -1176,20 +1277,28 @@ void GLManagerNative_Windows::DxgiSwapChain::lock_for_opengl() {
 void GLManagerNative_Windows::DxgiSwapChain::unlock_from_opengl() {
 	// Detach color and depth buffers from FBO
 	glBindFramebuffer(GL_FRAMEBUFFER, gl_fbo);
+#ifdef OPENGL_DXGI_USE_RENDERBUFFER
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, 0);
+#else
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
-#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+#endif
 #endif
 	if (GLES3::TextureStorage::system_fbo != gl_fbo) {
 		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	}
 
 	// Unlock from OpenGL access.
-#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
-	void *handles[] = { gldx_depth_texture, gldx_render_target_view };
+#ifdef OPENGL_DXGI_USE_RENDERBUFFER
+	gd_wglDXUnlockObjectsNV(gldx_device, 1, &gldx_color_buffer_rb);
+#else
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
+	void *handles[] = { gldx_depth_texture, gldx_color_buffer_tex };
 	gd_wglDXUnlockObjectsNV(gldx_device, 2, handles);
 #else
-	gd_wglDXUnlockObjectsNV(gldx_device, 1, &gldx_render_target_view);
+	gd_wglDXUnlockObjectsNV(gldx_device, 1, &gldx_color_buffer_tex);
+#endif
 #endif
 }
 
@@ -1218,7 +1327,7 @@ void GLManagerNative_Windows::DxgiSwapChain::present(bool p_use_vsync) {
 
 void GLManagerNative_Windows::DxgiSwapChain::resize_swap_chain(int p_width, int p_height) {
 	release_render_target(true);
-#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 	release_depth_buffer();
 #endif
 
@@ -1231,7 +1340,7 @@ void GLManagerNative_Windows::DxgiSwapChain::resize_swap_chain(int p_width, int 
 		ERR_PRINT(vformat("ResizeBuffers failed, HRESULT: 0x%08X", (unsigned)hr));
 	}
 
-#ifdef OPENGL_DXGI_USE_DEPTH_BUFFER
+#ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 	if (setup_depth_buffer(p_width, p_height)) {
 #else
 	{
