@@ -2971,6 +2971,7 @@ void EditorExportPlatformIOS::_update_preset_status() {
 	} else {
 		has_runnable_preset.clear();
 	}
+	devices_changed.set();
 }
 #endif
 

@@ -58,12 +58,12 @@ void EditorRunNative::_notification(int p_what) {
 					for (int j = 0; j < EditorExport::get_singleton()->get_export_platform_count(); j++) {
 						if (eep->get_name() == EditorExport::get_singleton()->get_export_platform(j)->get_name()) {
 							platform_idx = j;
+							break;
 						}
 					}
 					int dc = MIN(eep->get_options_count(), 9000);
-					bool needs_templates;
 					String error;
-					if (dc > 0 && preset->is_runnable() && eep->can_export(preset, error, needs_templates)) {
+					if (dc > 0 && preset->is_runnable()) {
 						popup->add_icon_item(eep->get_run_icon(), eep->get_name(), -1);
 						popup->set_item_disabled(-1, true);
 						for (int j = 0; j < dc; j++) {
