@@ -2060,7 +2060,7 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 	IfNode *n_if = alloc_node<IfNode>();
 
 	n_if->condition = parse_expression(false);
-	if (n_if->condition == nullptr) {
+	if (n_if->condition == nullptr || check(GDScriptTokenizer::Token::IDENTIFIER)) {
 		push_error(vformat(R"(Expected conditional expression after "%s".)", p_token));
 	}
 
