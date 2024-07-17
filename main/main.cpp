@@ -2916,8 +2916,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 		MAIN_PRINT("Main: Clear Color");
 
 		DisplayServer::set_early_window_clear_color_override(false);
-		RenderingServer::get_singleton()->set_default_clear_color(
-				GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 
 		GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), String());
 		GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/macos_native_icon", PROPERTY_HINT_FILE, "*.icns"), String());
@@ -3217,6 +3215,8 @@ void Main::setup_boot_logo() {
 		}
 #endif
 	}
+	RenderingServer::get_singleton()->set_default_clear_color(
+			GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 }
 
 String Main::get_rendering_driver_name() {
