@@ -5,7 +5,7 @@ import os.path
 import shlex
 import subprocess
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import List, Optional
 
 
 def find_dotnet_cli():
@@ -151,7 +151,7 @@ def find_any_msbuild_tool(mono_prefix):
     return None
 
 
-def run_msbuild(tools: ToolsLocation, sln: str, msbuild_args: Optional[List[str]] = None):
+def run_msbuild(tools: ToolsLocation, sln: str, chdir_to: str, msbuild_args: Optional[List[str]] = None):
     using_msbuild_mono = False
 
     # Preference order: dotnet CLI > Standalone MSBuild > Mono's MSBuild
@@ -190,7 +190,8 @@ def run_msbuild(tools: ToolsLocation, sln: str, msbuild_args: Optional[List[str]
             }
         )
 
-    return subprocess.call(args, env=msbuild_env)
+    # We want to control cwd when running msbuild, because that's where the search for global.json begins.
+    return subprocess.call(args, env=msbuild_env, cwd=chdir_to)
 
 
 def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision):
@@ -218,11 +219,7 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
             args += ["/p:GodotFloat64=true"]
 
         sln = os.path.join(module_dir, "glue/GodotSharp/GodotSharp.sln")
-        exit_code = run_msbuild(
-            msbuild_tool,
-            sln=sln,
-            msbuild_args=args,
-        )
+        exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
         if exit_code != 0:
             return exit_code
 
@@ -307,18 +304,40 @@ def generate_sdk_package_versions():
     <GodotVersionConstants>{1}</GodotVersionConstants>
   </PropertyGroup>
 </Project>
-""".format(
-        version_str, ";".join(version_defines)
-    )
+""".format(version_str, ";".join(version_defines))
 
     # We write in ../SdkPackageVersions.props.
-    with open(os.path.join(dirname(script_path), "SdkPackageVersions.props"), "w") as f:
+    with open(os.path.join(dirname(script_path), "SdkPackageVersions.props"), "w", encoding="utf-8", newline="\n") as f:
         f.write(props)
-        f.close()
+
+    # Also write the versioned docs URL to a constant for the Source Generators.
+
+    constants = """namespace Godot.SourceGenerators
+{{
+// TODO: This is currently disabled because of https://github.com/dotnet/roslyn/issues/52904
+#pragma warning disable IDE0040 // Add accessibility modifiers.
+    partial class Common
+    {{
+        public const string VersionDocsUrl = "https://docs.godotengine.org/en/{docs_branch}";
+    }}
+}}
+""".format(**version_info)
+
+    generators_dir = os.path.join(
+        dirname(script_path),
+        "editor",
+        "Godot.NET.Sdk",
+        "Godot.SourceGenerators",
+        "Generated",
+    )
+    os.makedirs(generators_dir, exist_ok=True)
+
+    with open(os.path.join(generators_dir, "Common.Constants.cs"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(constants)
 
 
 def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, push_nupkgs_local, precision):
-    # Generate SdkPackageVersions.props
+    # Generate SdkPackageVersions.props and VersionDocsUrl constant
     generate_sdk_package_versions()
 
     # Godot API
@@ -335,7 +354,7 @@ def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, p
         args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
     if precision == "double":
         args += ["/p:GodotFloat64=true"]
-    exit_code = run_msbuild(msbuild_tool, sln=sln, msbuild_args=args)
+    exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
     if exit_code != 0:
         return exit_code
 
@@ -346,7 +365,7 @@ def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, p
     if precision == "double":
         args += ["/p:GodotFloat64=true"]
     sln = os.path.join(module_dir, "editor/Godot.NET.Sdk/Godot.NET.Sdk.sln")
-    exit_code = run_msbuild(msbuild_tool, sln=sln, msbuild_args=args)
+    exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
     if exit_code != 0:
         return exit_code
 

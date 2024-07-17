@@ -118,8 +118,20 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 	}
 #endif
 
-	if (r_path_and_type.path.is_empty() || r_path_and_type.type.is_empty()) {
+	if (r_path_and_type.type.is_empty()) {
 		return ERR_FILE_CORRUPT;
+	}
+	if (r_path_and_type.path.is_empty()) {
+		// Some importers may not write files to the .godot folder, so the path can be empty.
+		if (r_path_and_type.importer.is_empty()) {
+			return ERR_FILE_CORRUPT;
+		}
+
+		// It's only invalid if the extension for the importer is not empty.
+		Ref<ResourceImporter> importer = get_importer_by_name(r_path_and_type.importer);
+		if (importer.is_null() || !importer->get_save_extension().is_empty()) {
+			return ERR_FILE_CORRUPT;
+		}
 	}
 	return OK;
 }
@@ -410,6 +422,7 @@ void ResourceFormatImporter::get_importers_for_extension(const String &p_extensi
 		for (const String &F : local_exts) {
 			if (p_extension.to_lower() == F) {
 				r_importers->push_back(importers[i]);
+				break;
 			}
 		}
 	}

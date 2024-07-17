@@ -111,8 +111,8 @@ void NavAgent::set_map(NavMap *p_map) {
 
 bool NavAgent::is_map_changed() {
 	if (map) {
-		bool is_changed = map->get_map_update_id() != map_update_id;
-		map_update_id = map->get_map_update_id();
+		bool is_changed = map->get_iteration_id() != last_map_iteration_id;
+		last_map_iteration_id = map->get_iteration_id();
 		return is_changed;
 	} else {
 		return false;
@@ -145,12 +145,7 @@ void NavAgent::dispatch_avoidance_callback() {
 	}
 
 	// Invoke the callback with the new velocity.
-	Variant args[] = { new_velocity };
-	const Variant *args_p[] = { &args[0] };
-	Variant return_value;
-	Callable::CallError call_error;
-
-	avoidance_callback.callp(args_p, 1, return_value, call_error);
+	avoidance_callback.call(new_velocity);
 }
 
 void NavAgent::set_neighbor_distance(real_t p_neighbor_distance) {
@@ -331,7 +326,7 @@ const Dictionary NavAgent::get_avoidance_data() const {
 		_avoidance_data["new_velocity"] = Vector3(rvo_agent_3d.newVelocity_.x(), rvo_agent_3d.newVelocity_.y(), rvo_agent_3d.newVelocity_.z());
 		_avoidance_data["velocity"] = Vector3(rvo_agent_3d.velocity_.x(), rvo_agent_3d.velocity_.y(), rvo_agent_3d.velocity_.z());
 		_avoidance_data["position"] = Vector3(rvo_agent_3d.position_.x(), rvo_agent_3d.position_.y(), rvo_agent_3d.position_.z());
-		_avoidance_data["prefered_velocity"] = Vector3(rvo_agent_3d.prefVelocity_.x(), rvo_agent_3d.prefVelocity_.y(), rvo_agent_3d.prefVelocity_.z());
+		_avoidance_data["preferred_velocity"] = Vector3(rvo_agent_3d.prefVelocity_.x(), rvo_agent_3d.prefVelocity_.y(), rvo_agent_3d.prefVelocity_.z());
 		_avoidance_data["radius"] = float(rvo_agent_3d.radius_);
 		_avoidance_data["time_horizon_agents"] = float(rvo_agent_3d.timeHorizon_);
 		_avoidance_data["time_horizon_obstacles"] = 0.0;
@@ -346,7 +341,7 @@ const Dictionary NavAgent::get_avoidance_data() const {
 		_avoidance_data["new_velocity"] = Vector3(rvo_agent_2d.newVelocity_.x(), 0.0, rvo_agent_2d.newVelocity_.y());
 		_avoidance_data["velocity"] = Vector3(rvo_agent_2d.velocity_.x(), 0.0, rvo_agent_2d.velocity_.y());
 		_avoidance_data["position"] = Vector3(rvo_agent_2d.position_.x(), 0.0, rvo_agent_2d.position_.y());
-		_avoidance_data["prefered_velocity"] = Vector3(rvo_agent_2d.prefVelocity_.x(), 0.0, rvo_agent_2d.prefVelocity_.y());
+		_avoidance_data["preferred_velocity"] = Vector3(rvo_agent_2d.prefVelocity_.x(), 0.0, rvo_agent_2d.prefVelocity_.y());
 		_avoidance_data["radius"] = float(rvo_agent_2d.radius_);
 		_avoidance_data["time_horizon_agents"] = float(rvo_agent_2d.timeHorizon_);
 		_avoidance_data["time_horizon_obstacles"] = float(rvo_agent_2d.timeHorizonObst_);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,20 @@
 /* External Class Implementation                                        */
 /************************************************************************/
 
+uint32_t RenderMethod::ref()
+{
+    ScopedLock lock(key);
+    return (++refCnt);
+}
+
+
+uint32_t RenderMethod::unref()
+{
+    ScopedLock lock(key);
+    return (--refCnt);
+}
+
+
 void RenderTransform::override(const Matrix& m)
 {
     this->m = m;
@@ -39,31 +53,61 @@ void RenderTransform::override(const Matrix& m)
 }
 
 
-bool RenderTransform::update()
+void RenderTransform::update()
 {
-    if (overriding) return true;
+    if (overriding) return;
 
-    //Init Status
-    if (mathZero(x) && mathZero(y) && mathZero(degree) && mathEqual(scale, 1)) return false;
+    m.e11 = 1.0f;
+    m.e12 = 0.0f;
 
-    mathIdentity(&m);
+    m.e21 = 0.0f;
+    m.e22 = 1.0f;
+
+    m.e31 = 0.0f;
+    m.e32 = 0.0f;
+    m.e33 = 1.0f;
 
     mathScale(&m, scale, scale);
-
-    if (!mathZero(degree)) mathRotate(&m, degree);
-
-    mathTranslate(&m, x, y);
-
-    return true;
-}
-
-
-RenderTransform::RenderTransform()
-{
+    mathRotate(&m, degree);
 }
 
 
 RenderTransform::RenderTransform(const RenderTransform* lhs, const RenderTransform* rhs)
 {
-    m = mathMultiply(&lhs->m, &rhs->m);
+    if (lhs && rhs) m = lhs->m * rhs->m;
+    else if (lhs) m = lhs->m;
+    else if (rhs) m = rhs->m;
+    else mathIdentity(&m);
+}
+
+
+void RenderRegion::intersect(const RenderRegion& rhs)
+{
+    auto x1 = x + w;
+    auto y1 = y + h;
+    auto x2 = rhs.x + rhs.w;
+    auto y2 = rhs.y + rhs.h;
+
+    x = (x > rhs.x) ? x : rhs.x;
+    y = (y > rhs.y) ? y : rhs.y;
+    w = ((x1 < x2) ? x1 : x2) - x;
+    h = ((y1 < y2) ? y1 : y2) - y;
+
+    if (w < 0) w = 0;
+    if (h < 0) h = 0;
+}
+
+
+void RenderRegion::add(const RenderRegion& rhs)
+{
+    if (rhs.x < x) {
+        w += (x - rhs.x);
+        x = rhs.x;
+    }
+    if (rhs.y < y) {
+        h += (y - rhs.y);
+        y = rhs.y;
+    }
+    if (rhs.x + rhs.w > x + w) w = (rhs.x + rhs.w) - x;
+    if (rhs.y + rhs.h > y + h) h = (rhs.y + rhs.h) - y;
 }

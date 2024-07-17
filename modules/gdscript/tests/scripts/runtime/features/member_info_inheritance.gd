@@ -11,7 +11,9 @@ class A:
 	static func test_static_func_a2(): pass
 	func test_func_a1(): pass
 	func test_func_a2(): pass
+	@warning_ignore("unused_signal")
 	signal test_signal_a1()
+	@warning_ignore("unused_signal")
 	signal test_signal_a2()
 
 class B extends A:
@@ -23,14 +25,16 @@ class B extends A:
 	static func test_static_func_b2(): pass
 	func test_func_b1(): pass
 	func test_func_b2(): pass
+	@warning_ignore("unused_signal")
 	signal test_signal_b1()
+	@warning_ignore("unused_signal")
 	signal test_signal_b2()
 
 func test():
 	var b := B.new()
 	for property in (B as GDScript).get_property_list():
 		if str(property.name).begins_with("test_"):
-			print(Utils.get_property_signature(property, true))
+			print(Utils.get_property_signature(property, null, true))
 	print("---")
 	for property in b.get_property_list():
 		if str(property.name).begins_with("test_"):

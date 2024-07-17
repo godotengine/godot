@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,26 +22,80 @@
 
 #include "tvgMath.h"
 #include "tvgPaint.h"
+#include "tvgShape.h"
+#include "tvgPicture.h"
+#include "tvgScene.h"
+#include "tvgText.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
+#define PAINT_METHOD(ret, METHOD) \
+    switch (id) { \
+        case TVG_CLASS_ID_SHAPE: ret = P((Shape*)paint)->METHOD; break; \
+        case TVG_CLASS_ID_SCENE: ret = P((Scene*)paint)->METHOD; break; \
+        case TVG_CLASS_ID_PICTURE: ret = P((Picture*)paint)->METHOD; break; \
+        case TVG_CLASS_ID_TEXT: ret = P((Text*)paint)->METHOD; break; \
+        default: ret = {}; \
+    }
 
-static bool _compFastTrack(Paint* cmpTarget, const RenderTransform* pTransform, RenderTransform* rTransform, RenderRegion& viewport)
+
+static Result _clipRect(RenderMethod* renderer, const Point* pts, const RenderTransform* pTransform, RenderTransform* rTransform, RenderRegion& before)
+{
+    //sorting
+    Point tmp[4];
+    Point min = {FLT_MAX, FLT_MAX};
+    Point max = {0.0f, 0.0f};
+
+    for (int i = 0; i < 4; ++i) {
+        tmp[i] = pts[i];
+        if (rTransform) tmp[i] *= rTransform->m;
+        if (pTransform) tmp[i] *= pTransform->m;
+        if (tmp[i].x < min.x) min.x = tmp[i].x;
+        if (tmp[i].x > max.x) max.x = tmp[i].x;
+        if (tmp[i].y < min.y) min.y = tmp[i].y;
+        if (tmp[i].y > max.y) max.y = tmp[i].y;
+    }
+
+    float region[4] = {float(before.x), float(before.x + before.w), float(before.y), float(before.y + before.h)};
+
+    //figure out if the clipper is a superset of the current viewport(before) region
+    if (min.x <= region[0] && max.x >= region[1] && min.y <= region[2] && max.y >= region[3]) {
+        //viewport region is same, nothing to do.
+        return Result::Success;
+    //figure out if the clipper is totally outside of the viewport
+    } else if (max.x <= region[0] || min.x >= region[1] || max.y <= region[2] || min.y >= region[3]) {
+        renderer->viewport({0, 0, 0, 0});
+        return Result::Success;
+    }
+    return Result::InsufficientCondition;
+}
+
+
+static Result _compFastTrack(RenderMethod* renderer, Paint* cmpTarget, const RenderTransform* pTransform, RenderTransform* rTransform, RenderRegion& before)
 {
     /* Access Shape class by Paint is bad... but it's ok still it's an internal usage. */
     auto shape = static_cast<Shape*>(cmpTarget);
 
     //Rectangle Candidates?
     const Point* pts;
-     if (shape->pathCoords(&pts) != 4) return false;
+    auto ptsCnt = shape->pathCoords(&pts);
 
-    if (rTransform) rTransform->update();
+    //nothing to clip
+    if (ptsCnt == 0) return Result::InvalidArguments;
 
-    //No rotation and no skewing
-    if (pTransform && (!mathRightAngle(&pTransform->m) || mathSkewed(&pTransform->m))) return false;
-    if (rTransform && (!mathRightAngle(&rTransform->m) || mathSkewed(&rTransform->m))) return false;
+    if (ptsCnt != 4) return Result::InsufficientCondition;
+
+    if (rTransform && (cmpTarget->pImpl->renderFlag & RenderUpdateFlag::Transform)) rTransform->update();
+
+    //No rotation and no skewing, still can try out clipping the rect region.
+    auto tryClip = false;
+
+    if (pTransform && (!mathRightAngle(&pTransform->m) || mathSkewed(&pTransform->m))) tryClip = true;
+    if (rTransform && (!mathRightAngle(&rTransform->m) || mathSkewed(&rTransform->m))) tryClip = true;
+
+    if (tryClip) return _clipRect(renderer, pts, pTransform, rTransform, before);
 
     //Perpendicular Rectangle?
     auto pt1 = pts + 0;
@@ -52,50 +106,62 @@ static bool _compFastTrack(Paint* cmpTarget, const RenderTransform* pTransform, 
     if ((mathEqual(pt1->x, pt2->x) && mathEqual(pt2->y, pt3->y) && mathEqual(pt3->x, pt4->x) && mathEqual(pt1->y, pt4->y)) ||
         (mathEqual(pt2->x, pt3->x) && mathEqual(pt1->y, pt2->y) && mathEqual(pt1->x, pt4->x) && mathEqual(pt3->y, pt4->y))) {
 
+        RenderRegion after;
+
         auto v1 = *pt1;
         auto v2 = *pt3;
 
         if (rTransform) {
-            mathMultiply(&v1, &rTransform->m);
-            mathMultiply(&v2, &rTransform->m);
+            v1 *= rTransform->m;
+            v2 *= rTransform->m;
         }
 
         if (pTransform) {
-            mathMultiply(&v1, &pTransform->m);
-            mathMultiply(&v2, &pTransform->m);
+            v1 *= pTransform->m;
+            v2 *= pTransform->m;
         }
 
         //sorting
-        if (v1.x > v2.x) {
-            auto tmp = v2.x;
-            v2.x = v1.x;
-            v1.x = tmp;
-        }
+        if (v1.x > v2.x) std::swap(v1.x, v2.x);
+        if (v1.y > v2.y) std::swap(v1.y, v2.y);
 
-        if (v1.y > v2.y) {
-            auto tmp = v2.y;
-            v2.y = v1.y;
-            v1.y = tmp;
-        }
+        after.x = static_cast<int32_t>(v1.x);
+        after.y = static_cast<int32_t>(v1.y);
+        after.w = static_cast<int32_t>(ceil(v2.x - after.x));
+        after.h = static_cast<int32_t>(ceil(v2.y - after.y));
 
-        viewport.x = static_cast<int32_t>(v1.x);
-        viewport.y = static_cast<int32_t>(v1.y);
-        viewport.w = static_cast<int32_t>(ceil(v2.x - viewport.x));
-        viewport.h = static_cast<int32_t>(ceil(v2.y - viewport.y));
+        if (after.w < 0) after.w = 0;
+        if (after.h < 0) after.h = 0;
 
-        if (viewport.w < 0) viewport.w = 0;
-        if (viewport.h < 0) viewport.h = 0;
+        after.intersect(before);
+        renderer->viewport(after);
 
-        return true;
+        return Result::Success;
     }
+    return Result::InsufficientCondition;
+}
 
-    return false;
+
+RenderRegion Paint::Impl::bounds(RenderMethod* renderer) const
+{
+    RenderRegion ret;
+    PAINT_METHOD(ret, bounds(renderer));
+    return ret;
+}
+
+
+Iterator* Paint::Impl::iterator()
+{
+    Iterator* ret;
+    PAINT_METHOD(ret, iterator());
+    return ret;
 }
 
 
 Paint* Paint::Impl::duplicate()
 {
-    auto ret = smethod->duplicate();
+    Paint* ret;
+    PAINT_METHOD(ret, duplicate());
 
     //duplicate Transform
     if (rTransform) {
@@ -115,13 +181,14 @@ Paint* Paint::Impl::duplicate()
 bool Paint::Impl::rotate(float degree)
 {
     if (rTransform) {
+        if (rTransform->overriding) return false;
         if (mathEqual(degree, rTransform->degree)) return true;
     } else {
         if (mathZero(degree)) return true;
         rTransform = new RenderTransform();
     }
     rTransform->degree = degree;
-    if (!rTransform->overriding) renderFlag |= RenderUpdateFlag::Transform;
+    renderFlag |= RenderUpdateFlag::Transform;
 
     return true;
 }
@@ -130,13 +197,14 @@ bool Paint::Impl::rotate(float degree)
 bool Paint::Impl::scale(float factor)
 {
     if (rTransform) {
+        if (rTransform->overriding) return false;
         if (mathEqual(factor, rTransform->scale)) return true;
     } else {
         if (mathEqual(factor, 1.0f)) return true;
         rTransform = new RenderTransform();
     }
     rTransform->scale = factor;
-    if (!rTransform->overriding) renderFlag |= RenderUpdateFlag::Transform;
+    renderFlag |= RenderUpdateFlag::Transform;
 
     return true;
 }
@@ -145,60 +213,65 @@ bool Paint::Impl::scale(float factor)
 bool Paint::Impl::translate(float x, float y)
 {
     if (rTransform) {
-        if (mathEqual(x, rTransform->x) && mathEqual(y, rTransform->y)) return true;
+        if (rTransform->overriding) return false;
+        if (mathEqual(x, rTransform->m.e13) && mathEqual(y, rTransform->m.e23)) return true;
     } else {
         if (mathZero(x) && mathZero(y)) return true;
         rTransform = new RenderTransform();
     }
-    rTransform->x = x;
-    rTransform->y = y;
-    if (!rTransform->overriding) renderFlag |= RenderUpdateFlag::Transform;
+    rTransform->m.e13 = x;
+    rTransform->m.e23 = y;
+    renderFlag |= RenderUpdateFlag::Transform;
 
     return true;
 }
 
 
-bool Paint::Impl::render(RenderMethod& renderer)
+bool Paint::Impl::render(RenderMethod* renderer)
 {
     Compositor* cmp = nullptr;
 
     /* Note: only ClipPath is processed in update() step.
         Create a composition image. */
     if (compData && compData->method != CompositeMethod::ClipPath && !(compData->target->pImpl->ctxFlag & ContextFlag::FastTrack)) {
-        auto region = smethod->bounds(renderer);
-        if (MASK_REGION_MERGING(compData->method)) region.add(compData->target->pImpl->smethod->bounds(renderer));
+        RenderRegion region;
+        PAINT_METHOD(region, bounds(renderer));
+
+        if (MASK_REGION_MERGING(compData->method)) region.add(P(compData->target)->bounds(renderer));
         if (region.w == 0 || region.h == 0) return true;
-        cmp = renderer.target(region, COMPOSITE_TO_COLORSPACE(renderer, compData->method));
-        if (renderer.beginComposite(cmp, CompositeMethod::None, 255)) {
+        cmp = renderer->target(region, COMPOSITE_TO_COLORSPACE(renderer, compData->method));
+        if (renderer->beginComposite(cmp, CompositeMethod::None, 255)) {
             compData->target->pImpl->render(renderer);
         }
     }
 
-    if (cmp) renderer.beginComposite(cmp, compData->method, compData->target->pImpl->opacity);
+    if (cmp) renderer->beginComposite(cmp, compData->method, compData->target->pImpl->opacity);
 
-    renderer.blend(blendMethod);
-    auto ret = smethod->render(renderer);
+    renderer->blend(blendMethod);
 
-    if (cmp) renderer.endComposite(cmp);
+    bool ret;
+    PAINT_METHOD(ret, render(renderer));
+
+    if (cmp) renderer->endComposite(cmp);
 
     return ret;
 }
 
 
-RenderData Paint::Impl::update(RenderMethod& renderer, const RenderTransform* pTransform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper)
+RenderData Paint::Impl::update(RenderMethod* renderer, const RenderTransform* pTransform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper)
 {
-    if (renderFlag & RenderUpdateFlag::Transform) {
-        if (!rTransform) return nullptr;
-        if (!rTransform->update()) {
-            delete(rTransform);
-            rTransform = nullptr;
-        }
+    if (this->renderer != renderer) {
+        if (this->renderer) TVGERR("RENDERER", "paint's renderer has been changed!");
+        renderer->ref();
+        this->renderer = renderer;
     }
+
+    if (renderFlag & RenderUpdateFlag::Transform) rTransform->update();
 
     /* 1. Composition Pre Processing */
     RenderData trd = nullptr;                 //composite target render data
     RenderRegion viewport;
-    bool compFastTrack = false;
+    Result compFastTrack = Result::InsufficientCondition;
     bool childClipper = false;
 
     if (compData) {
@@ -222,16 +295,13 @@ RenderData Paint::Impl::update(RenderMethod& renderer, const RenderTransform* pT
                 }
             }
             if (tryFastTrack) {
-                RenderRegion viewport2;
-                if ((compFastTrack = _compFastTrack(target, pTransform, target->pImpl->rTransform, viewport2))) {
-                    viewport = renderer.viewport();
-                    viewport2.intersect(viewport);
-                    renderer.viewport(viewport2);
+                viewport = renderer->viewport();
+                if ((compFastTrack = _compFastTrack(renderer, target, pTransform, target->pImpl->rTransform, viewport)) == Result::Success) {
                     target->pImpl->ctxFlag |= ContextFlag::FastTrack;
                 }
             }
         }
-        if (!compFastTrack) {
+        if (compFastTrack == Result::InsufficientCondition) {
             childClipper = compData->method == CompositeMethod::ClipPath ? true : false;
             trd = target->pImpl->update(renderer, pTransform, clips, 255, pFlag, childClipper);
             if (childClipper) clips.push(trd);
@@ -239,21 +309,16 @@ RenderData Paint::Impl::update(RenderMethod& renderer, const RenderTransform* pT
     }
 
     /* 2. Main Update */
-    RenderData rd = nullptr;
     auto newFlag = static_cast<RenderUpdateFlag>(pFlag | renderFlag);
     renderFlag = RenderUpdateFlag::None;
     opacity = MULTIPLY(opacity, this->opacity);
 
-    if (rTransform && pTransform) {
-        RenderTransform outTransform(pTransform, rTransform);
-        rd = smethod->update(renderer, &outTransform, clips, opacity, newFlag, clipper);
-    } else {
-        auto outTransform = pTransform ? pTransform : rTransform;
-        rd = smethod->update(renderer, outTransform, clips, opacity, newFlag, clipper);
-    }
+    RenderData rd = nullptr;
+    RenderTransform outTransform(pTransform, rTransform);
+    PAINT_METHOD(rd, update(renderer, &outTransform, clips, opacity, newFlag, clipper));
 
     /* 3. Composition Post Processing */
-    if (compFastTrack) renderer.viewport(viewport);
+    if (compFastTrack == Result::Success) renderer->viewport(viewport);
     else if (childClipper) clips.pop();
 
     return rd;
@@ -263,9 +328,13 @@ RenderData Paint::Impl::update(RenderMethod& renderer, const RenderTransform* pT
 bool Paint::Impl::bounds(float* x, float* y, float* w, float* h, bool transformed, bool stroking)
 {
     Matrix* m = nullptr;
+    bool ret;
 
     //Case: No transformed, quick return!
-    if (!transformed || !(m = this->transform())) return smethod->bounds(x, y, w, h, stroking);
+    if (!transformed || !(m = this->transform())) {
+        PAINT_METHOD(ret, bounds(x, y, w, h, stroking));
+        return ret;
+    }
 
     //Case: Transformed
     auto tx = 0.0f;
@@ -273,7 +342,7 @@ bool Paint::Impl::bounds(float* x, float* y, float* w, float* h, bool transforme
     auto tw = 0.0f;
     auto th = 0.0f;
 
-    auto ret = smethod->bounds(&tx, &ty, &tw, &th, stroking);
+    PAINT_METHOD(ret, bounds(&tx, &ty, &tw, &th, stroking));
 
     //Get vertices
     Point pt[4] = {{tx, ty}, {tx + tw, ty}, {tx + tw, ty + th}, {tx, ty + th}};
@@ -286,7 +355,7 @@ bool Paint::Impl::bounds(float* x, float* y, float* w, float* h, bool transforme
 
     //Compute the AABB after transformation
     for (int i = 0; i < 4; i++) {
-        mathMultiply(&pt[i], m);
+        pt[i] *= *m;
 
         if (pt[i].x < x1) x1 = pt[i].x;
         if (pt[i].x > x2) x2 = pt[i].x;
@@ -307,7 +376,7 @@ bool Paint::Impl::bounds(float* x, float* y, float* w, float* h, bool transforme
 /* External Class Implementation                                        */
 /************************************************************************/
 
-Paint :: Paint() : pImpl(new Impl())
+Paint :: Paint() : pImpl(new Impl(this))
 {
 }
 
@@ -321,28 +390,28 @@ Paint :: ~Paint()
 Result Paint::rotate(float degree) noexcept
 {
     if (pImpl->rotate(degree)) return Result::Success;
-    return Result::FailedAllocation;
+    return Result::InsufficientCondition;
 }
 
 
 Result Paint::scale(float factor) noexcept
 {
     if (pImpl->scale(factor)) return Result::Success;
-    return Result::FailedAllocation;
+    return Result::InsufficientCondition;
 }
 
 
 Result Paint::translate(float x, float y) noexcept
 {
     if (pImpl->translate(x, y)) return Result::Success;
-    return Result::FailedAllocation;
+    return Result::InsufficientCondition;
 }
 
 
 Result Paint::transform(const Matrix& m) noexcept
 {
     if (pImpl->transform(m)) return Result::Success;
-    return Result::FailedAllocation;
+    return Result::InsufficientCondition;
 }
 
 
@@ -419,7 +488,10 @@ uint32_t Paint::identifier() const noexcept
 
 Result Paint::blend(BlendMethod method) const noexcept
 {
-    pImpl->blendMethod = method;
+    if (pImpl->blendMethod != method) {
+        pImpl->blendMethod = method;
+        pImpl->renderFlag |= RenderUpdateFlag::Blend;
+    }
 
     return Result::Success;
 }

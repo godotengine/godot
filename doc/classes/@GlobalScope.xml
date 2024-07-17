@@ -85,6 +85,14 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="angle_difference">
+			<return type="float" />
+			<param index="0" name="from" type="float" />
+			<param index="1" name="to" type="float" />
+			<description>
+				Returns the difference between the two angles, in the range of [code][-PI, +PI][/code]. When [param from] and [param to] are opposite, returns [code]-PI[/code] if [param from] is smaller than [param to], or [code]PI[/code] otherwise.
+			</description>
+		</method>
 		<method name="asin">
 			<return type="float" />
 			<param index="0" name="x" type="float" />
@@ -112,7 +120,7 @@
 			<param index="0" name="x" type="float" />
 			<description>
 				Returns the arc tangent of [param x] in radians. Use it to get the angle from an angle's tangent in trigonometry.
-				The method cannot know in which quadrant the angle should fall. See [method atan2] if you have both [code]y[/code] and [code]x[/code].
+				The method cannot know in which quadrant the angle should fall. See [method atan2] if you have both [code]y[/code] and [code skip-lint]x[/code].
 				[codeblock]
 				var a = atan(0.5) # a is 0.463648
 				[/codeblock]
@@ -188,7 +196,7 @@
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Rounds [param x] upward (towards positive infinity), returning the smallest whole number that is not less than [param x]. Supported types: [int], [float], [Vector2], [Vector3], [Vector4].
+				Rounds [param x] upward (towards positive infinity), returning the smallest whole number that is not less than [param x]. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				var i = ceil(1.45) # i is 2.0
 				i = ceil(1.001)    # i is 2.0
@@ -226,20 +234,9 @@
 
 				var b = clamp(8.1, 0.9, 5.5)
 				# b is 5.5
-
-				var c = clamp(Vector2(-3.5, -4), Vector2(-3.2, -2), Vector2(2, 6.5))
-				# c is (-3.2, -2)
-
-				var d = clamp(Vector2i(7, 8), Vector2i(-3, -2), Vector2i(2, 6))
-				# d is (2, 6)
-
-				var e = clamp(Vector3(-7, 8.5, -3.8), Vector3(-3, -2, 5.4), Vector3(-2, 6, -4.1))
-				# e is (-3, -2, 5.4)
-
-				var f = clamp(Vector3i(-7, -8, -9), Vector3i(-1, 2, 3), Vector3i(-4, -5, -6))
-				# f is (-4, -5, -6)
 				[/codeblock]
-				[b]Note:[/b] For better type safety, use [method clampf], [method clampi], [method Vector2.clamp], [method Vector2i.clamp], [method Vector3.clamp], [method Vector3i.clamp], [method Vector4.clamp], [method Vector4i.clamp], or [method Color.clamp].
+				[b]Note:[/b] For better type safety, use [method clampf], [method clampi], [method Vector2.clamp], [method Vector2i.clamp], [method Vector3.clamp], [method Vector3i.clamp], [method Vector4.clamp], [method Vector4i.clamp], or [method Color.clamp] (not currently supported by this method).
+				[b]Note:[/b] When using this on vectors it will [i]not[/i] perform component-wise clamping, and will pick [param min] if [code]value &lt; min[/code] or [param max] if [code]value &gt; max[/code]. To perform component-wise clamping use the methods listed above.
 			</description>
 		</method>
 		<method name="clampf">
@@ -330,7 +327,7 @@
 			<param index="7" name="post_t" type="float" />
 			<description>
 				Cubic interpolates between two rotation values with shortest path by the factor defined in [param weight] with [param pre] and [param post] values. See also [method lerp_angle].
-				It can perform smoother interpolation than [code]cubic_interpolate()[/code] by the time values.
+				It can perform smoother interpolation than [method cubic_interpolate] by the time values.
 			</description>
 		</method>
 		<method name="cubic_interpolate_in_time">
@@ -365,13 +362,13 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="ease">
+		<method name="ease" keywords="smooth">
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<param index="1" name="curve" type="float" />
 			<description>
 				Returns an "eased" value of [param x] based on an easing function defined with [param curve]. This easing function is based on an exponent. The [param curve] can be any floating-point number, with specific values leading to the following behaviors:
-				[codeblock]
+				[codeblock lang=text]
 				- Lower than -1.0 (exclusive): Ease in-out
 				- 1.0: Linear
 				- Between -1.0 and 0.0 (exclusive): Ease out-in
@@ -413,7 +410,7 @@
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Rounds [param x] downward (towards negative infinity), returning the largest whole number that is not more than [param x]. Supported types: [int], [float], [Vector2], [Vector3], [Vector4].
+				Rounds [param x] downward (towards negative infinity), returning the largest whole number that is not more than [param x]. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				var a = floor(2.99) # a is 2.0
 				a = floor(-2.99)    # a is -3.0
@@ -463,8 +460,8 @@
 				    var x = i * 0.5 - 1.5
 				    print("%4.1f           %4.1f  | %4.1f" % [x, fmod(x, 1.5), fposmod(x, 1.5)])
 				[/codeblock]
-				Produces:
-				[codeblock]
+				Prints:
+				[codeblock lang=text]
 				 (x)  (fmod(x, 1.5))   (fposmod(x, 1.5))
 				-1.5           -0.0  |  0.0
 				-1.0           -1.0  |  0.5
@@ -521,7 +518,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="inverse_lerp">
+		<method name="inverse_lerp" keywords="interpolate">
 			<return type="float" />
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
@@ -540,7 +537,7 @@
 				See also [method lerp], which performs the reverse of this operation, and [method remap] to map a continuous series of values to another.
 			</description>
 		</method>
-		<method name="is_equal_approx">
+		<method name="is_equal_approx" keywords="roughly">
 			<return type="bool" />
 			<param index="0" name="a" type="float" />
 			<param index="1" name="b" type="float" />
@@ -607,7 +604,7 @@
 				is_same(arr_a, arr_b)  # false
 				[/codeblock]
 				These are [Variant] value types: [code]null[/code], [bool], [int], [float], [String], [StringName], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i], [Rect2], [Rect2i], [Transform2D], [Transform3D], [Plane], [Quaternion], [AABB], [Basis], [Projection], [Color], [NodePath], [RID], [Callable] and [Signal].
-				These are [Variant] reference types: [Object], [Dictionary], [Array], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], [PackedFloat64Array], [PackedStringArray], [PackedVector2Array], [PackedVector3Array] and [PackedColorArray].
+				These are [Variant] reference types: [Object], [Dictionary], [Array], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], [PackedFloat64Array], [PackedStringArray], [PackedVector2Array], [PackedVector3Array], [PackedVector4Array], and [PackedColorArray].
 			</description>
 		</method>
 		<method name="is_zero_approx">
@@ -618,7 +615,7 @@
 				This function is faster than using [method is_equal_approx] with one value as zero.
 			</description>
 		</method>
-		<method name="lerp">
+		<method name="lerp" keywords="interpolate">
 			<return type="Variant" />
 			<param index="0" name="from" type="Variant" />
 			<param index="1" name="to" type="Variant" />
@@ -633,7 +630,7 @@
 				[b]Note:[/b] For better type safety, use [method lerpf], [method Vector2.lerp], [method Vector3.lerp], [method Vector4.lerp], [method Color.lerp], [method Quaternion.slerp] or [method Basis.slerp].
 			</description>
 		</method>
-		<method name="lerp_angle">
+		<method name="lerp_angle" keywords="interpolate">
 			<return type="float" />
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
@@ -699,6 +696,7 @@
 				[codeblock]
 				max(1, 7, 3, -6, 5) # Returns 7
 				[/codeblock]
+				[b]Note:[/b] When using this on vectors it will [i]not[/i] perform component-wise maximum, and will pick the largest value when compared using [code]x &lt; y[/code]. To perform component-wise maximum, use [method Vector2.max], [method Vector2i.max], [method Vector3.max], [method Vector3i.max], [method Vector4.max], and [method Vector4i.max].
 			</description>
 		</method>
 		<method name="maxf">
@@ -732,6 +730,7 @@
 				[codeblock]
 				min(1, 7, 3, -6, 5) # Returns -6
 				[/codeblock]
+				[b]Note:[/b] When using this on vectors it will [i]not[/i] perform component-wise minimum, and will pick the smallest value when compared using [code]x &lt; y[/code]. To perform component-wise minimum, use [method Vector2.min], [method Vector2i.min], [method Vector3.min], [method Vector3i.min], [method Vector4.min], and [method Vector4i.min].
 			</description>
 		</method>
 		<method name="minf">
@@ -821,8 +820,8 @@
 				for i in range(-3, 4):
 				    print("%2d       %2d  | %2d" % [i, i % 3, posmod(i, 3)])
 				[/codeblock]
-				Produces:
-				[codeblock]
+				Prints:
+				[codeblock lang=text]
 				(i)  (i % 3)   (posmod(i, 3))
 				-3        0  |  0
 				-2       -2  |  1
@@ -871,15 +870,16 @@
 				URL tags only support URLs wrapped by a URL tag, not URLs with a different title.
 				When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Support for ANSI escape codes varies across terminal emulators, especially for italic and strikethrough. In standard output, [code]code[/code] is represented with faint text but without any font change. Unsupported tags are left as-is in standard output.
 				[codeblocks]
-				[gdscript]
+				[gdscript skip-lint]
 				print_rich("[color=green][b]Hello world![/b][/color]") # Prints out "Hello world!" in green with a bold font
 				[/gdscript]
-				[csharp]
+				[csharp skip-lint]
 				GD.PrintRich("[color=green][b]Hello world![/b][/color]"); // Prints out "Hello world!" in green with a bold font
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
 				[b]Note:[/b] On Windows, only Windows 10 and later correctly displays ANSI escape codes in standard output.
+				[b]Note:[/b] Output displayed in the editor supports clickable [code skip-lint][url=address]text[/url][/code] tags. The [code skip-lint][url][/code] tag's [code]address[/code] value is handled by [method OS.shell_open] when clicked.
 			</description>
 		</method>
 		<method name="print_verbose" qualifiers="vararg">
@@ -903,6 +903,7 @@
 		<method name="printraw" qualifiers="vararg">
 			<description>
 				Prints one or more arguments to strings in the best way possible to the OS terminal. Unlike [method print], no newline is automatically added at the end.
+				[b]Note:[/b] The OS terminal is [i]not[/i] the same as the editor's Output dock. The output sent to the OS terminal can be seen when running Godot from a terminal. On Windows, this requires using the [code]console.exe[/code] executable.
 				[codeblocks]
 				[gdscript]
 				printraw("A")
@@ -1001,7 +1002,7 @@
 		<method name="randf">
 			<return type="float" />
 			<description>
-				Returns a random floating point value between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+				Returns a random floating-point value between [code]0.0[/code] and [code]1.0[/code] (inclusive).
 				[codeblocks]
 				[gdscript]
 				randf() # Returns e.g. 0.375671
@@ -1017,7 +1018,7 @@
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
 			<description>
-				Returns a random floating point value between [param from] and [param to] (inclusive).
+				Returns a random floating-point value between [param from] and [param to] (inclusive).
 				[codeblocks]
 				[gdscript]
 				randf_range(0, 20.5) # Returns e.g. 7.45315
@@ -1035,7 +1036,8 @@
 			<param index="0" name="mean" type="float" />
 			<param index="1" name="deviation" type="float" />
 			<description>
-				Returns a normally-distributed pseudo-random floating point value using Box-Muller transform with the specified [param mean] and a standard [param deviation]. This is also called Gaussian distribution.
+				Returns a [url=https://en.wikipedia.org/wiki/Normal_distribution]normally-distributed[/url], pseudo-random floating-point value from the specified [param mean] and a standard [param deviation]. This is also known as a Gaussian distribution.
+				[b]Note:[/b] This method uses the [url=https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform]Box-Muller transform[/url] algorithm.
 			</description>
 		</method>
 		<method name="randi">
@@ -1082,7 +1084,7 @@
 				[b]Note:[/b] This function is called automatically when the project is run. If you need to fix the seed to have consistent, reproducible results, use [method seed] to initialize the random number generator.
 			</description>
 		</method>
-		<method name="remap">
+		<method name="remap" keywords="range, lerp, interpolate">
 			<return type="float" />
 			<param index="0" name="value" type="float" />
 			<param index="1" name="istart" type="float" />
@@ -1095,26 +1097,38 @@
 				remap(75, 0, 100, -1, 1) # Returns 0.5
 				[/codeblock]
 				For complex use cases where multiple ranges are needed, consider using [Curve] or [Gradient] instead.
+				[b]Note:[/b] If [code]istart == istop[/code], the return value is undefined (most likely NaN, INF, or -INF).
 			</description>
 		</method>
 		<method name="rid_allocate_id">
 			<return type="int" />
 			<description>
-				Allocates a unique ID which can be used by the implementation to construct a RID. This is used mainly from native extensions to implement servers.
+				Allocates a unique ID which can be used by the implementation to construct an RID. This is used mainly from native extensions to implement servers.
 			</description>
 		</method>
 		<method name="rid_from_int64">
 			<return type="RID" />
 			<param index="0" name="base" type="int" />
 			<description>
-				Creates a RID from a [param base]. This is used mainly from native extensions to build servers.
+				Creates an RID from a [param base]. This is used mainly from native extensions to build servers.
+			</description>
+		</method>
+		<method name="rotate_toward">
+			<return type="float" />
+			<param index="0" name="from" type="float" />
+			<param index="1" name="to" type="float" />
+			<param index="2" name="delta" type="float" />
+			<description>
+				Rotates [param from] toward [param to] by the [param delta] amount. Will not go past [param to].
+				Similar to [method move_toward], but interpolates correctly when the angles wrap around [constant @GDScript.TAU].
+				If [param delta] is negative, this function will rotate away from [param to], toward the opposite angle, and will not go past the opposite angle.
 			</description>
 		</method>
 		<method name="round">
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Rounds [param x] to the nearest whole number, with halfway cases rounded away from 0. Supported types: [int], [float], [Vector2], [Vector3], [Vector4].
+				Rounds [param x] to the nearest whole number, with halfway cases rounded away from 0. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				round(2.4) # Returns 2
 				round(2.5) # Returns 3
@@ -1252,7 +1266,7 @@
 			<param index="0" name="x" type="Variant" />
 			<param index="1" name="step" type="Variant" />
 			<description>
-				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating-point number to an arbitrary number of decimals.
 				The returned value is the same type of [Variant] as [param step]. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				snapped(100, 32)  # Returns 96
@@ -1269,7 +1283,7 @@
 			<param index="0" name="x" type="float" />
 			<param index="1" name="step" type="float" />
 			<description>
-				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating-point number to an arbitrary number of decimals.
 				A type-safe version of [method snapped], returning a [float].
 				[codeblock]
 				snappedf(32.0, 2.5)  # Returns 32.5
@@ -1373,8 +1387,8 @@
 			<param index="1" name="type" type="int" />
 			<description>
 				Converts the given [param variant] to the given [param type], using the [enum Variant.Type] values. This method is generous with how it handles types, it can automatically convert between array types, convert numeric [String]s to [int], and converting most things to [String].
-				If the type conversion cannot be done, this method will return the default value for that type, for example converting [Rect2] to [Vector2] will always return [code]Vector2.ZERO[/code]. This method will never show error messages as long as [param type] is a valid Variant type.
-				The returned value is a [Variant], but the data inside and the [enum Variant.Type] will be the same as the requested type.
+				If the type conversion cannot be done, this method will return the default value for that type, for example converting [Rect2] to [Vector2] will always return [constant Vector2.ZERO]. This method will never show error messages as long as [param type] is a valid Variant type.
+				The returned value is a [Variant], but the data inside and its type will be the same as the requested type.
 				[codeblock]
 				type_convert("Hi!", TYPE_INT) # Returns 0
 				type_convert("123", TYPE_INT) # Returns 123
@@ -1382,6 +1396,19 @@
 				type_convert(5, TYPE_VECTOR2) # Returns (0, 0)
 				type_convert("Hi!", TYPE_NIL) # Returns null
 				[/codeblock]
+			</description>
+		</method>
+		<method name="type_string">
+			<return type="String" />
+			<param index="0" name="type" type="int" />
+			<description>
+				Returns a human-readable name of the given [param type], using the [enum Variant.Type] values.
+				[codeblock]
+				print(TYPE_INT) # Prints 2.
+				print(type_string(TYPE_INT)) # Prints "int".
+				print(type_string(TYPE_STRING)) # Prints "String".
+				[/codeblock]
+				See also [method typeof].
 			</description>
 		</method>
 		<method name="typeof">
@@ -1398,6 +1425,7 @@
 				else:
 				    print("Unexpected result")
 				[/codeblock]
+				See also [method type_string].
 			</description>
 		</method>
 		<method name="var_to_bytes">
@@ -1406,6 +1434,7 @@
 			<description>
 				Encodes a [Variant] value to a byte array, without encoding objects. Deserialization can be done with [method bytes_to_var].
 				[b]Note:[/b] If you need object serialization, see [method var_to_bytes_with_objects].
+				[b]Note:[/b] Encoding [Callable] is not supported and will result in an empty value, regardless of the data.
 			</description>
 		</method>
 		<method name="var_to_bytes_with_objects">
@@ -1413,6 +1442,7 @@
 			<param index="0" name="variable" type="Variant" />
 			<description>
 				Encodes a [Variant] value to a byte array. Encoding objects is allowed (and can potentially include executable code). Deserialization can be done with [method bytes_to_var_with_objects].
+				[b]Note:[/b] Encoding [Callable] is not supported and will result in an empty value, regardless of the data.
 			</description>
 		</method>
 		<method name="var_to_str">
@@ -1431,7 +1461,7 @@
 				[/csharp]
 				[/codeblocks]
 				Prints:
-				[codeblock]
+				[codeblock lang=text]
 				{
 				    "a": 1,
 				    "b": 2
@@ -1444,7 +1474,7 @@
 			<return type="Variant" />
 			<param index="0" name="obj" type="Variant" />
 			<description>
-				Returns a weak reference to an object, or [code]null[/code] if [param obj] is invalid.
+				Returns a [WeakRef] instance holding a weak reference to [param obj]. Returns an empty [WeakRef] instance if [param obj] is [code]null[/code]. Prints an error and returns [code]null[/code] if [param obj] is neither [Object]-derived nor [code]null[/code].
 				A weak reference to an object is not enough to keep the object alive: when the only remaining references to a referent are weak references, garbage collection is free to destroy the referent and reuse its memory for something else. However, until the object is actually destroyed the weak reference may return the object even if there are no strong references to it.
 			</description>
 		</method>
@@ -1488,7 +1518,7 @@
 				angle = wrapf(angle + 0.1, -PI, PI)
 				[/codeblock]
 				[b]Note:[/b] If [param min] is [code]0[/code], this is equivalent to [method fposmod], so prefer using that instead.
-				[code]wrapf[/code] is more flexible than using the [method fposmod] approach by giving the user control over the minimum value.
+				[method wrapf] is more flexible than using the [method fposmod] approach by giving the user control over the minimum value.
 			</description>
 		</method>
 		<method name="wrapi">
@@ -1541,9 +1571,6 @@
 		<member name="Geometry3D" type="Geometry3D" setter="" getter="">
 			The [Geometry3D] singleton.
 		</member>
-		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
-			The [GodotSharp] singleton.
-		</member>
 		<member name="IP" type="IP" setter="" getter="">
 			The [IP] singleton.
 		</member>
@@ -1563,6 +1590,10 @@
 		</member>
 		<member name="Marshalls" type="Marshalls" setter="" getter="">
 			The [Marshalls] singleton.
+		</member>
+		<member name="NativeMenu" type="NativeMenu" setter="" getter="">
+			The [NativeMenu] singleton.
+			[b]Note:[/b] Only implemented on macOS.
 		</member>
 		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
 			The [NavigationMeshGenerator] singleton.
@@ -2349,6 +2380,16 @@
 		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824" enum="KeyModifierMask" is_bitfield="true">
 			Group Switch key mask.
 		</constant>
+		<constant name="KEY_LOCATION_UNSPECIFIED" value="0" enum="KeyLocation">
+			Used for keys which only appear once, or when a comparison doesn't need to differentiate the [code]LEFT[/code] and [code]RIGHT[/code] versions.
+			For example, when using [method InputEvent.is_match], an event which has [constant KEY_LOCATION_UNSPECIFIED] will match any [enum KeyLocation] on the passed event.
+		</constant>
+		<constant name="KEY_LOCATION_LEFT" value="1" enum="KeyLocation">
+			A key which is to the left of its twin.
+		</constant>
+		<constant name="KEY_LOCATION_RIGHT" value="2" enum="KeyLocation">
+			A key which is to the right of its twin.
+		</constant>
 		<constant name="MOUSE_BUTTON_NONE" value="0" enum="MouseButton">
 			Enum value which doesn't correspond to any mouse button. This is used to initialize [enum MouseButton] properties with a generic state.
 		</constant>
@@ -2416,7 +2457,7 @@
 			Game controller SDL guide button. Corresponds to the Sony PS, Xbox Home button.
 		</constant>
 		<constant name="JOY_BUTTON_START" value="6" enum="JoyButton">
-			Game controller SDL start button. Corresponds to the Nintendo + button.
+			Game controller SDL start button. Corresponds to the Sony Options, Xbox Menu, Nintendo + button.
 		</constant>
 		<constant name="JOY_BUTTON_LEFT_STICK" value="7" enum="JoyButton">
 			Game controller SDL left stick button. Corresponds to the Sony L3, Xbox L/LS button.
@@ -2497,61 +2538,66 @@
 			The maximum number of game controller axes: OpenVR supports up to 5 Joysticks making a total of 10 axes.
 		</constant>
 		<constant name="MIDI_MESSAGE_NONE" value="0" enum="MIDIMessage">
-			Enum value which doesn't correspond to any MIDI message. This is used to initialize [enum MIDIMessage] properties with a generic state.
+			Does not correspond to any MIDI message. This is the default value of [member InputEventMIDI.message].
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MIDIMessage">
-			MIDI note OFF message. Not all MIDI devices send this event; some send [constant MIDI_MESSAGE_NOTE_ON] with zero velocity instead. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
+			MIDI message sent when a note is released.
+			[b]Note:[/b] Not all MIDI devices send this message; some may send [constant MIDI_MESSAGE_NOTE_ON] with [member InputEventMIDI.velocity] set to [code]0[/code].
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_ON" value="9" enum="MIDIMessage">
-			MIDI note ON message. Some MIDI devices send this event with velocity zero instead of [constant MIDI_MESSAGE_NOTE_OFF], but implementations vary. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
+			MIDI message sent when a note is pressed.
 		</constant>
 		<constant name="MIDI_MESSAGE_AFTERTOUCH" value="10" enum="MIDIMessage">
-			MIDI aftertouch message. This message is most often sent by pressing down on the key after it "bottoms out".
+			MIDI message sent to indicate a change in pressure while a note is being pressed down, also called aftertouch.
 		</constant>
 		<constant name="MIDI_MESSAGE_CONTROL_CHANGE" value="11" enum="MIDIMessage">
-			MIDI control change message. This message is sent when a controller value changes. Controllers include devices such as pedals and levers.
+			MIDI message sent when a controller value changes. In a MIDI device, a controller is any input that doesn't play notes. These may include sliders for volume, balance, and panning, as well as switches and pedals. See the [url=https://en.wikipedia.org/wiki/General_MIDI#Controller_events]General MIDI specification[/url] for a small list.
 		</constant>
 		<constant name="MIDI_MESSAGE_PROGRAM_CHANGE" value="12" enum="MIDIMessage">
-			MIDI program change message. This message sent when the program patch number changes.
+			MIDI message sent when the MIDI device changes its current instrument (also called [i]program[/i] or [i]preset[/i]).
 		</constant>
 		<constant name="MIDI_MESSAGE_CHANNEL_PRESSURE" value="13" enum="MIDIMessage">
-			MIDI channel pressure message. This message is most often sent by pressing down on the key after it "bottoms out". This message is different from polyphonic after-touch as it indicates the highest pressure across all keys.
+			MIDI message sent to indicate a change in pressure for the whole channel. Some MIDI devices may send this instead of [constant MIDI_MESSAGE_AFTERTOUCH].
 		</constant>
 		<constant name="MIDI_MESSAGE_PITCH_BEND" value="14" enum="MIDIMessage">
-			MIDI pitch bend message. This message is sent to indicate a change in the pitch bender (wheel or lever, typically).
+			MIDI message sent when the value of the pitch bender changes, usually a wheel on the MIDI device.
 		</constant>
 		<constant name="MIDI_MESSAGE_SYSTEM_EXCLUSIVE" value="240" enum="MIDIMessage">
-			MIDI system exclusive message. This has behavior exclusive to the device you're receiving input from. Getting this data is not implemented in Godot.
+			MIDI system exclusive (SysEx) message. This type of message is not standardized and it's highly dependent on the MIDI device sending it.
+			[b]Note:[/b] Getting this message's data from [InputEventMIDI] is not implemented.
 		</constant>
 		<constant name="MIDI_MESSAGE_QUARTER_FRAME" value="241" enum="MIDIMessage">
-			MIDI quarter frame message. Contains timing information that is used to synchronize MIDI devices. Getting this data is not implemented in Godot.
+			MIDI message sent every quarter frame to keep connected MIDI devices synchronized. Related to [constant MIDI_MESSAGE_TIMING_CLOCK].
+			[b]Note:[/b] Getting this message's data from [InputEventMIDI] is not implemented.
 		</constant>
 		<constant name="MIDI_MESSAGE_SONG_POSITION_POINTER" value="242" enum="MIDIMessage">
-			MIDI song position pointer message. Gives the number of 16th notes since the start of the song. Getting this data is not implemented in Godot.
+			MIDI message sent to jump onto a new position in the current sequence or song.
+			[b]Note:[/b] Getting this message's data from [InputEventMIDI] is not implemented.
 		</constant>
 		<constant name="MIDI_MESSAGE_SONG_SELECT" value="243" enum="MIDIMessage">
-			MIDI song select message. Specifies which sequence or song is to be played. Getting this data is not implemented in Godot.
+			MIDI message sent to select a sequence or song to play.
+			[b]Note:[/b] Getting this message's data from [InputEventMIDI] is not implemented.
 		</constant>
 		<constant name="MIDI_MESSAGE_TUNE_REQUEST" value="246" enum="MIDIMessage">
-			MIDI tune request message. Upon receiving a tune request, all analog synthesizers should tune their oscillators.
+			MIDI message sent to request a tuning calibration. Used on analog synthesizers. Most modern MIDI devices do not need this message.
 		</constant>
 		<constant name="MIDI_MESSAGE_TIMING_CLOCK" value="248" enum="MIDIMessage">
-			MIDI timing clock message. Sent 24 times per quarter note when synchronization is required.
+			MIDI message sent 24 times after [constant MIDI_MESSAGE_QUARTER_FRAME], to keep connected MIDI devices synchronized.
 		</constant>
 		<constant name="MIDI_MESSAGE_START" value="250" enum="MIDIMessage">
-			MIDI start message. Start the current sequence playing. This message will be followed with Timing Clocks.
+			MIDI message sent to start the current sequence or song from the beginning.
 		</constant>
 		<constant name="MIDI_MESSAGE_CONTINUE" value="251" enum="MIDIMessage">
-			MIDI continue message. Continue at the point the sequence was stopped.
+			MIDI message sent to resume from the point the current sequence or song was paused.
 		</constant>
 		<constant name="MIDI_MESSAGE_STOP" value="252" enum="MIDIMessage">
-			MIDI stop message. Stop the current sequence.
+			MIDI message sent to pause the current sequence or song.
 		</constant>
 		<constant name="MIDI_MESSAGE_ACTIVE_SENSING" value="254" enum="MIDIMessage">
-			MIDI active sensing message. This message is intended to be sent repeatedly to tell the receiver that a connection is alive.
+			MIDI message sent repeatedly while the MIDI device is idle, to tell the receiver that the connection is alive. Most MIDI devices do not send this message.
 		</constant>
 		<constant name="MIDI_MESSAGE_SYSTEM_RESET" value="255" enum="MIDIMessage">
-			MIDI system reset message. Reset all receivers in the system to power-up status. It should not be sent on power-up itself.
+			MIDI message sent to reset a MIDI device to its default state, as if it was just turned on. It should not be sent when the MIDI device is being turned on.
 		</constant>
 		<constant name="OK" value="0" enum="Error">
 			Methods that return [enum Error] return [constant OK] when no error occurred.
@@ -2790,6 +2836,7 @@
 			Hints that a [Color] property should be edited without affecting its transparency ([member Color.a] is not editable).
 		</constant>
 		<constant name="PROPERTY_HINT_OBJECT_ID" value="22" enum="PropertyHint">
+			Hints that the property's value is an object encoded as object ID, with its type specified in the hint string. Used by the debugger.
 		</constant>
 		<constant name="PROPERTY_HINT_TYPE_STRING" value="23" enum="PropertyHint">
 			If a property is [String], hints that the property represents a particular type (class). This allows to select a type from the create dialog. The property will store the selected type as a string.
@@ -2848,21 +2895,27 @@
 			[/codeblocks]
 			[b]Note:[/b] The trailing colon is required for properly detecting built-in types.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint" deprecated="This hint is not used by the engine.">
 		</constant>
 		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="25" enum="PropertyHint">
+			Hints that an object is too big to be sent via the debugger.
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="26" enum="PropertyHint">
+			Hints that the hint string specifies valid node types for property of type [NodePath].
 		</constant>
 		<constant name="PROPERTY_HINT_SAVE_FILE" value="27" enum="PropertyHint">
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path for the file to be saved at. The dialog has access to the project's directory. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. See also [member FileDialog.filters].
 		</constant>
 		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="28" enum="PropertyHint">
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path for the file to be saved at. The dialog has access to the entire filesystem. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. See also [member FileDialog.filters].
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="29" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="29" enum="PropertyHint" deprecated="This hint is not used by the engine.">
 		</constant>
 		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="30" enum="PropertyHint">
+			Hints that an [int] property is a pointer. Used by GDExtension.
 		</constant>
 		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="31" enum="PropertyHint">
+			Hints that a property is an [Array] with the stored type specified in the hint string.
 		</constant>
 		<constant name="PROPERTY_HINT_LOCALE_ID" value="32" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
@@ -2871,6 +2924,7 @@
 			Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_TYPE" value="34" enum="PropertyHint">
+			Hints that a property is an instance of a [Node]-derived type, optionally specified via the hint string (e.g. [code]"Node2D"[/code]). Editing it will show a dialog for picking a node from the scene.
 		</constant>
 		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="35" enum="PropertyHint">
 			Hints that a quaternion property should disable the temporary euler editor.
@@ -2885,10 +2939,10 @@
 			The property is not stored, and does not display in the editor. This is the default for non-exported properties.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="2" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is serialized and saved in the scene file (default).
+			The property is serialized and saved in the scene file (default for exported properties).
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR" value="4" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is shown in the [EditorInspector] (default).
+			The property is shown in the [EditorInspector] (default for exported properties).
 		</constant>
 		<constant name="PROPERTY_USAGE_INTERNAL" value="8" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is excluded from the class reference.
@@ -2909,6 +2963,7 @@
 			Used to group properties together in the editor in a subgroup (under a group). See [EditorInspector].
 		</constant>
 		<constant name="PROPERTY_USAGE_CLASS_IS_BITFIELD" value="512" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is a bitfield, i.e. it contains multiple flags represented as bits.
 		</constant>
 		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="1024" enum="PropertyUsageFlags" is_bitfield="true">
 			The property does not save its state in [PackedScene].
@@ -2920,14 +2975,18 @@
 			The property is a script variable which should be serialized and saved in the scene file.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags" is_bitfield="true">
+			The property value of type [Object] will be stored even if its value is [code]null[/code].
 		</constant>
 		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="16384" enum="PropertyUsageFlags" is_bitfield="true">
+			If this property is modified, all inspector fields will be refreshed.
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags" is_bitfield="true">
+		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags" is_bitfield="true" deprecated="This flag is not used by the engine.">
 		</constant>
 		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="65536" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is an enum, i.e. it only takes named integer constants from its associated enumeration.
 		</constant>
 		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="131072" enum="PropertyUsageFlags" is_bitfield="true">
+			If property has [code]nil[/code] as default value, its type will be [Variant].
 		</constant>
 		<constant name="PROPERTY_USAGE_ARRAY" value="262144" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is an array.
@@ -2942,16 +3001,21 @@
 			The property is only shown in the editor if modern renderers are supported (the Compatibility rendering method is excluded).
 		</constant>
 		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="4194304" enum="PropertyUsageFlags" is_bitfield="true">
+			The [NodePath] property will always be relative to the scene's root. Mostly useful for local resources.
 		</constant>
 		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="8388608" enum="PropertyUsageFlags" is_bitfield="true">
+			Use when a resource is created on the fly, i.e. the getter will always return a different instance. [ResourceSaver] needs this information to properly save such resources.
 		</constant>
 		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="16777216" enum="PropertyUsageFlags" is_bitfield="true">
+			Inserting an animation key frame of this property will automatically increment the value, allowing to easily keyframe multiple values in a row.
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags" is_bitfield="true">
+		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags" is_bitfield="true" deprecated="This flag is not used by the engine.">
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="67108864" enum="PropertyUsageFlags" is_bitfield="true">
+			When this property is a [Resource] and base object is a [Node], a resource instance will be automatically created whenever the node is created in the editor.
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="134217728" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is considered a basic setting and will appear even when advanced mode is disabled. Used for project settings.
 		</constant>
 		<constant name="PROPERTY_USAGE_READ_ONLY" value="268435456" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is read-only in the [EditorInspector].
@@ -3103,7 +3167,10 @@
 		<constant name="TYPE_PACKED_COLOR_ARRAY" value="37" enum="Variant.Type">
 			Variable is of type [PackedColorArray].
 		</constant>
-		<constant name="TYPE_MAX" value="38" enum="Variant.Type">
+		<constant name="TYPE_PACKED_VECTOR4_ARRAY" value="38" enum="Variant.Type">
+			Variable is of type [PackedVector4Array].
+		</constant>
+		<constant name="TYPE_MAX" value="39" enum="Variant.Type">
 			Represents the size of the [enum Variant.Type] enum.
 		</constant>
 		<constant name="OP_EQUAL" value="0" enum="Variant.Operator">

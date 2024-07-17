@@ -1,8 +1,8 @@
 /* pnglibconf.h - library build configuration */
 
-/* libpng version 1.6.40 */
+/* libpng version 1.6.43 */
 
-/* Copyright (c) 2018-2023 Cosmin Truta */
+/* Copyright (c) 2018-2024 Cosmin Truta */
 /* Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson */
 
 /* This code is released under the libpng license. */
@@ -27,6 +27,7 @@
 #define PNG_COLORSPACE_SUPPORTED
 #define PNG_CONSOLE_IO_SUPPORTED
 #define PNG_CONVERT_tIME_SUPPORTED
+/*#undef PNG_DISABLE_ADLER32_CHECK_SUPPORTED*/
 #define PNG_EASY_ACCESS_SUPPORTED
 /*#undef PNG_ERROR_NUMBERS_SUPPORTED*/
 #define PNG_ERROR_TEXT_SUPPORTED
@@ -41,6 +42,10 @@
 #define PNG_INCH_CONVERSIONS_SUPPORTED
 #define PNG_INFO_IMAGE_SUPPORTED
 #define PNG_IO_STATE_SUPPORTED
+/*#undef PNG_MIPS_MMI_API_SUPPORTED*/
+/*#undef PNG_MIPS_MMI_CHECK_SUPPORTED*/
+/*#undef PNG_MIPS_MSA_API_SUPPORTED*/
+/*#undef PNG_MIPS_MSA_CHECK_SUPPORTED*/
 #define PNG_MNG_FEATURES_SUPPORTED
 #define PNG_POINTER_INDEXING_SUPPORTED
 /*#undef PNG_POWERPC_VSX_API_SUPPORTED*/

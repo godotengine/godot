@@ -58,13 +58,13 @@ void XRCamera3D::_unbind_tracker() {
 	tracker.unref();
 }
 
-void XRCamera3D::_changed_tracker(const StringName p_tracker_name, int p_tracker_type) {
+void XRCamera3D::_changed_tracker(const StringName &p_tracker_name, int p_tracker_type) {
 	if (p_tracker_name == tracker_name) {
 		_bind_tracker();
 	}
 }
 
-void XRCamera3D::_removed_tracker(const StringName p_tracker_name, int p_tracker_type) {
+void XRCamera3D::_removed_tracker(const StringName &p_tracker_name, int p_tracker_type) {
 	if (p_tracker_name == tracker_name) {
 		_unbind_tracker();
 	}
@@ -80,10 +80,11 @@ PackedStringArray XRCamera3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (is_visible() && is_inside_tree()) {
-		// must be child node of XROrigin3D!
-		XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
-		if (origin == nullptr) {
-			warnings.push_back(RTR("XRCamera3D must have an XROrigin3D node as its parent."));
+		// Warn if the node has a parent which isn't an XROrigin3D!
+		Node *parent = get_parent();
+		XROrigin3D *origin = Object::cast_to<XROrigin3D>(parent);
+		if (parent && origin == nullptr) {
+			warnings.push_back(RTR("XRCamera3D may not function as expected without an XROrigin3D node as its parent."));
 		};
 	}
 
@@ -229,6 +230,10 @@ void XRNode3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pose_name"), &XRNode3D::get_pose_name);
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "pose", PROPERTY_HINT_ENUM_SUGGESTION), "set_pose_name", "get_pose_name");
 
+	ClassDB::bind_method(D_METHOD("set_show_when_tracked", "show"), &XRNode3D::set_show_when_tracked);
+	ClassDB::bind_method(D_METHOD("get_show_when_tracked"), &XRNode3D::get_show_when_tracked);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_when_tracked"), "set_show_when_tracked", "get_show_when_tracked");
+
 	ClassDB::bind_method(D_METHOD("get_is_active"), &XRNode3D::get_is_active);
 	ClassDB::bind_method(D_METHOD("get_has_tracking_data"), &XRNode3D::get_has_tracking_data);
 	ClassDB::bind_method(D_METHOD("get_pose"), &XRNode3D::get_pose);
@@ -258,7 +263,7 @@ void XRNode3D::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void XRNode3D::set_tracker(const StringName p_tracker_name) {
+void XRNode3D::set_tracker(const StringName &p_tracker_name) {
 	if (tracker.is_valid() && tracker->get_tracker_name() == p_tracker_name) {
 		// didn't change
 		return;
@@ -282,7 +287,7 @@ StringName XRNode3D::get_tracker() const {
 	return tracker_name;
 }
 
-void XRNode3D::set_pose_name(const StringName p_pose_name) {
+void XRNode3D::set_pose_name(const StringName &p_pose_name) {
 	pose_name = p_pose_name;
 
 	// Update pose if we are bound to a tracker with a valid pose
@@ -294,6 +299,14 @@ void XRNode3D::set_pose_name(const StringName p_pose_name) {
 
 StringName XRNode3D::get_pose_name() const {
 	return pose_name;
+}
+
+void XRNode3D::set_show_when_tracked(bool p_show) {
+	show_when_tracked = p_show;
+}
+
+bool XRNode3D::get_show_when_tracked() const {
+	return show_when_tracked;
 }
 
 bool XRNode3D::get_is_active() const {
@@ -363,7 +376,7 @@ void XRNode3D::_unbind_tracker() {
 	}
 }
 
-void XRNode3D::_changed_tracker(const StringName p_tracker_name, int p_tracker_type) {
+void XRNode3D::_changed_tracker(const StringName &p_tracker_name, int p_tracker_type) {
 	if (tracker_name == p_tracker_name) {
 		// just in case unref our current tracker
 		_unbind_tracker();
@@ -373,7 +386,7 @@ void XRNode3D::_changed_tracker(const StringName p_tracker_name, int p_tracker_t
 	}
 }
 
-void XRNode3D::_removed_tracker(const StringName p_tracker_name, int p_tracker_type) {
+void XRNode3D::_removed_tracker(const StringName &p_tracker_name, int p_tracker_type) {
 	if (tracker_name == p_tracker_name) {
 		// unref our tracker, it's no longer available
 		_unbind_tracker();
@@ -402,6 +415,11 @@ void XRNode3D::_set_has_tracking_data(bool p_has_tracking_data) {
 	// Handle change of has_tracking_data.
 	has_tracking_data = p_has_tracking_data;
 	emit_signal(SNAME("tracking_changed"), has_tracking_data);
+
+	// If configured, show or hide the node based on tracking data.
+	if (show_when_tracked) {
+		set_visible(has_tracking_data);
+	}
 }
 
 XRNode3D::XRNode3D() {
@@ -428,11 +446,12 @@ PackedStringArray XRNode3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (is_visible() && is_inside_tree()) {
-		// must be child node of XROrigin!
-		XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
-		if (origin == nullptr) {
-			warnings.push_back(RTR("XRController3D must have an XROrigin3D node as its parent."));
-		}
+		// Warn if the node has a parent which isn't an XROrigin3D!
+		Node *parent = get_parent();
+		XROrigin3D *origin = Object::cast_to<XROrigin3D>(parent);
+		if (parent && origin == nullptr) {
+			warnings.push_back(RTR("XRNode3D may not function as expected without an XROrigin3D node as its parent."));
+		};
 
 		if (tracker_name == "") {
 			warnings.push_back(RTR("No tracker name is set."));
@@ -461,6 +480,7 @@ void XRController3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value")));
 	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "value")));
+	ADD_SIGNAL(MethodInfo("profile_changed", PropertyInfo(Variant::STRING, "role")));
 };
 
 void XRController3D::_bind_tracker() {
@@ -471,6 +491,7 @@ void XRController3D::_bind_tracker() {
 		tracker->connect("button_released", callable_mp(this, &XRController3D::_button_released));
 		tracker->connect("input_float_changed", callable_mp(this, &XRController3D::_input_float_changed));
 		tracker->connect("input_vector2_changed", callable_mp(this, &XRController3D::_input_vector2_changed));
+		tracker->connect("profile_changed", callable_mp(this, &XRController3D::_profile_changed));
 	}
 }
 
@@ -481,29 +502,30 @@ void XRController3D::_unbind_tracker() {
 		tracker->disconnect("button_released", callable_mp(this, &XRController3D::_button_released));
 		tracker->disconnect("input_float_changed", callable_mp(this, &XRController3D::_input_float_changed));
 		tracker->disconnect("input_vector2_changed", callable_mp(this, &XRController3D::_input_vector2_changed));
+		tracker->disconnect("profile_changed", callable_mp(this, &XRController3D::_profile_changed));
 	}
 
 	XRNode3D::_unbind_tracker();
 }
 
 void XRController3D::_button_pressed(const String &p_name) {
-	// just pass it on...
 	emit_signal(SNAME("button_pressed"), p_name);
 }
 
 void XRController3D::_button_released(const String &p_name) {
-	// just pass it on...
 	emit_signal(SNAME("button_released"), p_name);
 }
 
 void XRController3D::_input_float_changed(const String &p_name, float p_value) {
-	// just pass it on...
 	emit_signal(SNAME("input_float_changed"), p_name, p_value);
 }
 
 void XRController3D::_input_vector2_changed(const String &p_name, Vector2 p_value) {
-	// just pass it on...
 	emit_signal(SNAME("input_vector2_changed"), p_name, p_value);
+}
+
+void XRController3D::_profile_changed(const String &p_role) {
+	emit_signal(SNAME("profile_changed"), p_role);
 }
 
 bool XRController3D::is_button_pressed(const StringName &p_name) const {
@@ -623,7 +645,7 @@ PackedStringArray XROrigin3D::get_configuration_warnings() const {
 
 	bool xr_enabled = GLOBAL_GET("xr/shaders/enabled");
 	if (!xr_enabled) {
-		warnings.push_back(RTR("XR is not enabled in rendering project settings. Stereoscopic output is not supported unless this is enabled."));
+		warnings.push_back(RTR("XR shaders are not enabled in project settings. Stereoscopic output is not supported unless they are enabled. Please enable `xr/shaders/enabled` to use stereoscopic output."));
 	}
 
 	return warnings;

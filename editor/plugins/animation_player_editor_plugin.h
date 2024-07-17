@@ -32,8 +32,8 @@
 #define ANIMATION_PLAYER_EDITOR_PLUGIN_H
 
 #include "editor/animation_track_editor.h"
-#include "editor/editor_plugin.h"
 #include "editor/plugins/animation_library_editor.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/slider.h"
@@ -111,8 +111,9 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Ref<Texture2D> autoplay_icon;
 	Ref<Texture2D> reset_icon;
 	Ref<ImageTexture> autoplay_reset_icon;
-	bool last_active;
-	float timeline_position;
+
+	bool last_active = false;
+	float timeline_position = 0;
 
 	EditorFileDialog *file = nullptr;
 	ConfirmationDialog *delete_dialog = nullptr;
@@ -127,29 +128,27 @@ class AnimationPlayerEditor : public VBoxContainer {
 	} blend_editor;
 
 	ConfirmationDialog *name_dialog = nullptr;
-	ConfirmationDialog *error_dialog = nullptr;
+	AcceptDialog *error_dialog = nullptr;
 	int name_dialog_op = TOOL_NEW_ANIM;
 
-	bool updating;
-	bool updating_blends;
+	bool updating = false;
+	bool updating_blends = false;
 
 	AnimationTrackEditor *track_editor = nullptr;
 	static AnimationPlayerEditor *singleton;
-
-	bool hack_disable_onion_skinning = true; // Temporary hack for GH-53870.
 
 	// Onion skinning.
 	struct {
 		// Settings.
 		bool enabled = false;
-		bool past = false;
+		bool past = true;
 		bool future = false;
-		int steps = 0;
+		uint32_t steps = 1;
 		bool differences_only = false;
 		bool force_white_modulate = false;
 		bool include_gizmos = false;
 
-		int get_needed_capture_count() const {
+		uint32_t get_capture_count() const {
 			// 'Differences only' needs a capture of the present.
 			return (past && future ? 2 * steps : steps) + (differences_only ? 1 : 0);
 		}
@@ -158,14 +157,23 @@ class AnimationPlayerEditor : public VBoxContainer {
 		int64_t last_frame = 0;
 		int can_overlay = 0;
 		Size2 capture_size;
-		Vector<RID> captures;
-		Vector<bool> captures_valid;
+		LocalVector<RID> captures;
+		LocalVector<bool> captures_valid;
 		struct {
 			RID canvas;
 			RID canvas_item;
 			Ref<ShaderMaterial> material;
 			Ref<Shader> shader;
 		} capture;
+
+		// Cross-call state.
+		struct {
+			double anim_player_position = 0.0;
+			Ref<AnimatedValuesBackup> anim_values_backup;
+			Rect2 screen_rect;
+			Dictionary canvas_edit_state;
+			Dictionary spatial_edit_state;
+		} temp;
 	} onion;
 
 	void _select_anim_by_name(const String &p_anim);
@@ -183,19 +191,22 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _animation_remove();
 	void _animation_remove_confirmed();
-	void _animation_blend();
 	void _animation_edit();
 	void _animation_duplicate();
 	Ref<Animation> _animation_clone(const Ref<Animation> p_anim);
 	void _animation_resource_edit();
 	void _scale_changed(const String &p_scale);
-	void _seek_value_changed(float p_value, bool p_set = false, bool p_timeline_only = false);
+	void _seek_value_changed(float p_value, bool p_timeline_only = false);
 	void _blend_editor_next_changed(const int p_idx);
+
+	void _edit_animation_blend();
+	void _update_animation_blend();
 
 	void _list_changed();
 	void _current_animation_changed(const String &p_name);
 	void _update_animation();
 	void _update_player();
+	void _set_controls_disabled(bool p_disabled);
 	void _update_animation_list_icons();
 	void _update_name_dialog_library_dropdown();
 	void _blend_edited();
@@ -203,7 +214,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_player_changed(Object *p_pl);
 	void _animation_libraries_updated();
 
-	void _animation_key_editor_seek(float p_pos, bool p_drag, bool p_timeline_only = false);
+	void _animation_key_editor_seek(float p_pos, bool p_timeline_only = false, bool p_update_position_only = false);
 	void _animation_key_editor_anim_len_changed(float p_len);
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_ev) override;
@@ -215,8 +226,10 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _allocate_onion_layers();
 	void _free_onion_layers();
 	void _prepare_onion_layers_1();
-	void _prepare_onion_layers_1_deferred();
-	void _prepare_onion_layers_2();
+	void _prepare_onion_layers_2_prolog();
+	void _prepare_onion_layers_2_step_prepare(int p_step_offset, uint32_t p_capture_idx);
+	void _prepare_onion_layers_2_step_capture(int p_step_offset, uint32_t p_capture_idx);
+	void _prepare_onion_layers_2_epilog();
 	void _start_onion_skinning();
 	void _stop_onion_skinning();
 

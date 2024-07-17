@@ -35,6 +35,7 @@
 #include "core/math/projection.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid.h"
+#include "core/variant/variant.h"
 
 #include <openxr/openxr.h>
 
@@ -60,6 +61,9 @@ public:
 	virtual void *set_instance_create_info_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when we create our OpenXR instance.
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when we create our OpenXR session.
 	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when creating OpenXR swap chains.
+	virtual void *set_hand_joint_locations_and_get_next_pointer(int p_hand_index, void *p_next_pointer) { return p_next_pointer; }
+
+	virtual PackedStringArray get_suggested_tracker_names() { return PackedStringArray(); }
 
 	// `on_register_metadata` allows extensions to register additional controller metadata.
 	// This function is called even when OpenXRApi is not constructured as the metadata
@@ -80,6 +84,7 @@ public:
 	// This is when controller data is queried and made available to game logic.
 	virtual void on_process() {}
 	virtual void on_pre_render() {} // `on_pre_render` is called right before we start rendering our XR viewports.
+	virtual void on_main_swapchains_created() {} // `on_main_swapchains_created` is called right after our main swapchains are (re)created.
 	virtual void on_pre_draw_viewport(RID p_render_target) {} // `on_pre_draw_viewport` is called right before we start rendering this viewport
 	virtual void on_post_draw_viewport(RID p_render_target) {} // `on_port_draw_viewport` is called right after we start rendering this viewport (note that on Vulkan draw commands may only be queued)
 
@@ -91,6 +96,11 @@ public:
 	virtual void on_state_stopping() {} // `on_state_stopping` is called when the OpenXR session state is changed to stopping.
 	virtual void on_state_loss_pending() {} // `on_state_loss_pending` is called when the OpenXR session state is changed to loss pending.
 	virtual void on_state_exiting() {} // `on_state_exiting` is called when the OpenXR session state is changed to exiting.
+
+	virtual void *set_viewport_composition_layer_and_get_next_pointer(const XrCompositionLayerBaseHeader *p_layer, Dictionary p_property_values, void *p_next_pointer) { return p_next_pointer; } // Add additional data structures to composition layers created via OpenXRCompositionLayer.
+	virtual void on_viewport_composition_layer_destroyed(const XrCompositionLayerBaseHeader *p_layer) {} // `on_viewport_composition_layer_destroyed` is called when a composition layer created via OpenXRCompositionLayer is destroyed.
+	virtual void get_viewport_composition_layer_extension_properties(List<PropertyInfo> *p_property_list) {} // Get additional property definitions for OpenXRCompositionLayer.
+	virtual Dictionary get_viewport_composition_layer_extension_property_defaults() { return Dictionary(); } // Get the default values for the additional property definitions for OpenXRCompositionLayer.
 
 	// `on_event_polled` is called when there is an OpenXR event to process.
 	// Should return true if the event was handled, false otherwise.

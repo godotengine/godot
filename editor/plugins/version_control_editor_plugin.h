@@ -31,8 +31,8 @@
 #ifndef VERSION_CONTROL_EDITOR_PLUGIN_H
 #define VERSION_CONTROL_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_vcs_interface.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/container.h"
 #include "scene/gui/file_dialog.h"
@@ -142,15 +142,15 @@ private:
 	void _initialize_vcs();
 	void _set_vcs_ui_state(bool p_enabled);
 	void _set_credentials();
-	void _ssh_public_key_selected(String p_path);
-	void _ssh_private_key_selected(String p_path);
+	void _ssh_public_key_selected(const String &p_path);
+	void _ssh_private_key_selected(const String &p_path);
 	void _populate_available_vcs_names();
 	void _update_remotes_list();
-	void _update_set_up_warning(String p_new_text);
+	void _update_set_up_warning(const String &p_new_text);
 	void _update_opened_tabs();
 	void _update_extra_options();
 
-	bool _load_plugin(String p_name);
+	bool _load_plugin(const String &p_name);
 
 	void _pull();
 	void _push();
@@ -172,8 +172,8 @@ private:
 	void _item_activated(Object *p_tree);
 	void _create_branch();
 	void _create_remote();
-	void _update_branch_create_button(String p_new_text);
-	void _update_remote_create_button(String p_new_text);
+	void _update_branch_create_button(const String &p_new_text);
+	void _update_remote_create_button(const String &p_new_text);
 	void _branch_item_selected(int p_index);
 	void _remote_selected(int p_index);
 	void _remove_branch();
@@ -183,16 +183,16 @@ private:
 	void _move_item(Tree *p_tree, TreeItem *p_itme);
 	void _display_diff_split_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
 	void _display_diff_unified_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
-	void _discard_file(String p_file_path, EditorVCSInterface::ChangeType p_change);
+	void _discard_file(const String &p_file_path, EditorVCSInterface::ChangeType p_change);
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id, int p_mouse_button_index);
-	void _add_new_item(Tree *p_tree, String p_file_path, EditorVCSInterface::ChangeType p_change);
+	void _add_new_item(Tree *p_tree, const String &p_file_path, EditorVCSInterface::ChangeType p_change);
 	void _update_commit_button();
 	void _commit_message_gui_input(const Ref<InputEvent> &p_event);
 	void _extra_option_selected(int p_index);
 	bool _is_staging_area_empty();
 	String _get_date_string_from(int64_t p_unix_timestamp, int64_t p_offset_minutes) const;
 	void _create_vcs_metadata_files();
-	void _popup_file_dialog(Variant p_file_dialog_variant);
+	void _popup_file_dialog(const Variant &p_file_dialog_variant);
 	void _toggle_vcs_integration(bool p_toggled);
 
 	friend class EditorVCSInterface;

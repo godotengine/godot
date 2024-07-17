@@ -101,7 +101,6 @@ class ShaderCreateDialog : public ConfirmationDialog {
 	void _update_dialog();
 
 protected:
-	void _update_theme();
 	void _notification(int p_what);
 	static void _bind_methods();
 

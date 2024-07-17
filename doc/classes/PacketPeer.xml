@@ -57,7 +57,7 @@
 	<members>
 		<member name="encode_buffer_max_size" type="int" setter="set_encode_buffer_max_size" getter="get_encode_buffer_max_size" default="8388608">
 			Maximum buffer size allowed when encoding [Variant]s. Raise this value to support heavier memory allocations.
-			The [method put_var] method allocates memory on the stack, and the buffer used will grow automatically to the closest power of two to match the size of the [Variant]. If the [Variant] is bigger than [code]encode_buffer_max_size[/code], the method will error out with [constant ERR_OUT_OF_MEMORY].
+			The [method put_var] method allocates memory on the stack, and the buffer used will grow automatically to the closest power of two to match the size of the [Variant]. If the [Variant] is bigger than [member encode_buffer_max_size], the method will error out with [constant ERR_OUT_OF_MEMORY].
 		</member>
 	</members>
 </class>

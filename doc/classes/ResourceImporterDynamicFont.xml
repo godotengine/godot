@@ -25,6 +25,9 @@
 		<member name="compress" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], uses lossless compression for the resulting font.
 		</member>
+		<member name="disable_embedded_bitmaps" type="bool" setter="" getter="" default="true">
+			If set to [code]true[/code], embedded font bitmap loading is disabled (bitmap-only and color fonts ignore this property).
+		</member>
 		<member name="fallbacks" type="Array" setter="" getter="" default="[]">
 			List of font fallbacks to use if a glyph isn't found in this dynamic font. Fonts at the beginning of the array are attempted first, but fallback fonts that don't support the glyph's language and script are attempted last (see [member language_support] and [member script_support]). See also [member allow_system_fallback].
 		</member>

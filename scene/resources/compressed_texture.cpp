@@ -808,6 +808,7 @@ RID CompressedTextureLayered::get_rid() const {
 
 Ref<Image> CompressedTextureLayered::get_layer_data(int p_layer) const {
 	if (texture.is_valid()) {
+		ERR_FAIL_INDEX_V(p_layer, get_layers(), Ref<Image>());
 		return RS::get_singleton()->texture_2d_layer_get(texture, p_layer);
 	} else {
 		return Ref<Image>();

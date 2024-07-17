@@ -31,7 +31,7 @@
 #ifndef RESOURCE_PRELOADER_EDITOR_PLUGIN_H
 #define RESOURCE_PRELOADER_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/tree.h"

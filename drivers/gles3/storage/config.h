@@ -42,6 +42,9 @@
 
 #ifdef ANDROID_ENABLED
 typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, GLint, GLint, GLsizei);
+typedef void (*PFNGLTEXSTORAGE3DMULTISAMPLEPROC)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei, GLboolean);
+typedef void (*PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC)(GLenum, GLenum, GLenum, GLuint, GLint, GLsizei);
+typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, GLint, GLsizei, GLint, GLsizei);
 #endif
 
 namespace GLES3 {
@@ -54,17 +57,17 @@ public:
 	bool use_nearest_mip_filter = false;
 	bool use_depth_prepass = true;
 
-	int64_t max_vertex_texture_image_units = 0;
-	int64_t max_texture_image_units = 0;
-	int64_t max_texture_size = 0;
-	int64_t max_viewport_size[2] = { 0, 0 };
-	int64_t max_uniform_buffer_size = 0;
+	GLint max_vertex_texture_image_units = 0;
+	GLint max_texture_image_units = 0;
+	GLint max_texture_size = 0;
+	GLint max_viewport_size[2] = { 0, 0 };
+	GLint64 max_uniform_buffer_size = 0;
+
 	int64_t max_renderable_elements = 0;
 	int64_t max_renderable_lights = 0;
 	int64_t max_lights_per_object = 0;
 
-	// TODO implement wireframe in OpenGL
-	// bool generate_wireframes;
+	bool generate_wireframes = false;
 
 	HashSet<String> extensions;
 
@@ -82,9 +85,22 @@ public:
 	bool support_anisotropic_filter = false;
 	float anisotropic_level = 0.0f;
 
+	GLint msaa_max_samples = 0;
+	bool msaa_supported = false;
+	bool msaa_multiview_supported = false;
+	bool rt_msaa_supported = false;
+	bool rt_msaa_multiview_supported = false;
 	bool multiview_supported = false;
+
+	// Adreno 3XX compatibility
+	bool disable_particles_workaround = false; // set to 'true' to disable 'GPUParticles'
+	bool flip_xy_workaround = false;
+
 #ifdef ANDROID_ENABLED
 	PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC eglFramebufferTextureMultiviewOVR = nullptr;
+	PFNGLTEXSTORAGE3DMULTISAMPLEPROC eglTexStorage3DMultisample = nullptr;
+	PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC eglFramebufferTexture2DMultisampleEXT = nullptr;
+	PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC eglFramebufferTextureMultisampleMultiviewOVR = nullptr;
 #endif
 
 	static Config *get_singleton() { return singleton; };

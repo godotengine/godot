@@ -9,8 +9,8 @@ if len(sys.argv) < 2:
 
 fname = sys.argv[1]
 
-fileread = open(fname.strip(), "r")
-file_contents = fileread.read()
+with open(fname.strip(), "r", encoding="utf-8") as fileread:
+    file_contents = fileread.read()
 
 # If find "ERROR: AddressSanitizer:", then happens invalid read or write
 # This is critical bug, so we need to fix this as fast as possible

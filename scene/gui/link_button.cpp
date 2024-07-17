@@ -130,6 +130,10 @@ LinkButton::UnderlineMode LinkButton::get_underline_mode() const {
 	return underline_mode;
 }
 
+Ref<Font> LinkButton::get_button_font() const {
+	return theme_cache.font;
+}
+
 void LinkButton::pressed() {
 	if (uri.is_empty()) {
 		return;

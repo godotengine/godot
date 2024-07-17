@@ -45,8 +45,7 @@ Size2 SubViewportContainer::get_minimum_size() const {
 		}
 
 		Size2 minsize = c->get_size();
-		ms.width = MAX(ms.width, minsize.width);
-		ms.height = MAX(ms.height, minsize.height);
+		ms = ms.max(minsize);
 	}
 
 	return ms;
@@ -190,6 +189,13 @@ void SubViewportContainer::_propagate_nonpositional_event(const Ref<InputEvent> 
 		return;
 	}
 
+	bool send;
+	if (GDVIRTUAL_CALL(_propagate_input_event, p_event, send)) {
+		if (!send) {
+			return;
+		}
+	}
+
 	_send_event_to_viewports(p_event);
 }
 
@@ -202,6 +208,13 @@ void SubViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (!_is_propagated_in_gui_input(p_event)) {
 		return;
+	}
+
+	bool send;
+	if (GDVIRTUAL_CALL(_propagate_input_event, p_event, send)) {
+		if (!send) {
+			return;
+		}
 	}
 
 	if (stretch && shrink > 1) {
@@ -274,7 +287,9 @@ void SubViewportContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stretch_shrink"), &SubViewportContainer::get_stretch_shrink);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stretch"), "set_stretch", "is_stretch_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_shrink"), "set_stretch_shrink", "get_stretch_shrink");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_shrink", PROPERTY_HINT_RANGE, "1,32,1,or_greater"), "set_stretch_shrink", "get_stretch_shrink");
+
+	GDVIRTUAL_BIND(_propagate_input_event, "event");
 }
 
 SubViewportContainer::SubViewportContainer() {

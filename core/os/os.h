@@ -56,12 +56,14 @@ class OS {
 	bool _verbose_stdout = false;
 	bool _debug_stdout = false;
 	String _local_clipboard;
-	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
+	// Assume success by default, all failure cases need to set EXIT_FAILURE explicitly.
+	int _exit_code = EXIT_SUCCESS;
 	bool _allow_hidpi = false;
 	bool _allow_layered = false;
 	bool _stdout_enabled = true;
 	bool _stderr_enabled = true;
 	bool _writing_movie = false;
+	bool _in_editor = false;
 
 	CompositeLogger *_logger = nullptr;
 
@@ -79,14 +81,14 @@ class OS {
 	// For tracking benchmark data
 	bool use_benchmark = false;
 	String benchmark_file;
-	HashMap<String, uint64_t> start_benchmark_from;
-	Dictionary startup_benchmark_json;
+	HashMap<Pair<String, String>, uint64_t, PairHash<String, String>> benchmark_marks_from;
+	HashMap<Pair<String, String>, double, PairHash<String, String>> benchmark_marks_final;
 
 protected:
 	void _set_logger(CompositeLogger *p_logger);
 
 public:
-	typedef void (*ImeCallback)(void *p_inp, String p_text, Point2 p_selection);
+	typedef void (*ImeCallback)(void *p_inp, const String &p_text, Point2 p_selection);
 	typedef bool (*HasServerFeatureCallback)(const String &p_feature);
 
 	enum RenderThreadMode {
@@ -109,8 +111,8 @@ protected:
 	virtual void initialize() = 0;
 	virtual void initialize_joypads() = 0;
 
-	void set_current_rendering_driver_name(String p_driver_name) { _current_rendering_driver_name = p_driver_name; }
-	void set_current_rendering_method(String p_name) { _current_rendering_method = p_name; }
+	void set_current_rendering_driver_name(const String &p_driver_name) { _current_rendering_driver_name = p_driver_name; }
+	void set_current_rendering_method(const String &p_name) { _current_rendering_method = p_name; }
 
 	void set_display_driver_id(int p_display_driver_id) { _display_driver_id = p_display_driver_id; }
 
@@ -152,9 +154,16 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) { return ERR_UNAVAILABLE; }
+	struct GDExtensionData {
+		bool also_set_library_path = false;
+		String *r_resolved_path = nullptr;
+		bool generate_temp_files = false;
+		PackedStringArray *library_dependencies = nullptr;
+	};
+
+	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data = nullptr) { return ERR_UNAVAILABLE; }
 	virtual Error close_dynamic_library(void *p_library_handle) { return ERR_UNAVAILABLE; }
-	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) { return ERR_UNAVAILABLE; }
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional = false) { return ERR_UNAVAILABLE; }
 
 	virtual void set_low_processor_usage_mode(bool p_enabled);
 	virtual bool is_in_low_processor_usage_mode() const;
@@ -169,14 +178,16 @@ public:
 	virtual Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return Vector<String>(); };
 	virtual String get_executable_path() const;
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) = 0;
+	virtual Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments) { return Dictionary(); }
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) = 0;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) { return create_process(get_executable_path(), p_arguments, r_child_id); };
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
 	virtual bool is_process_running(const ProcessID &p_pid) const = 0;
-	virtual void vibrate_handheld(int p_duration_ms = 500) {}
+	virtual int get_process_exit_code(const ProcessID &p_pid) const = 0;
+	virtual void vibrate_handheld(int p_duration_ms = 500, float p_amplitude = -1.0) {}
 
-	virtual Error shell_open(String p_uri);
+	virtual Error shell_open(const String &p_uri);
 	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder = true);
 	virtual Error set_cwd(const String &p_cwd);
 
@@ -313,11 +324,9 @@ public:
 	bool is_use_benchmark_set();
 	void set_benchmark_file(const String &p_benchmark_file);
 	String get_benchmark_file();
-	virtual void benchmark_begin_measure(const String &p_what);
-	virtual void benchmark_end_measure(const String &p_what);
+	virtual void benchmark_begin_measure(const String &p_context, const String &p_what);
+	virtual void benchmark_end_measure(const String &p_context, const String &p_what);
 	virtual void benchmark_dump();
-
-	virtual void process_and_drop_events() {}
 
 	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path);
 

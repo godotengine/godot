@@ -214,6 +214,7 @@ private:
 	int code_completion_longest_line = 0;
 	Rect2i code_completion_rect;
 	Rect2i code_completion_scroll_rect;
+	float code_completion_pan_offset = 0.0f;
 
 	HashSet<char32_t> code_completion_prefixes;
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_submitted;
@@ -222,6 +223,7 @@ private:
 
 	void _update_scroll_selected_line(float p_mouse_y);
 	void _filter_code_completion_candidates_impl();
+	bool _should_reset_selected_option_for_new_options(const Vector<ScriptLanguage::CodeCompletionOption> &p_new_options);
 
 	/* Line length guidelines */
 	TypedArray<int> line_length_guideline_columns;
@@ -304,14 +306,18 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	String _get_text_for_symbol_lookup_bind_compat_73196();
+	void _add_code_completion_option_compat_84906(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL, int p_location = LOCATION_OTHER);
 	static void _bind_compatibility_methods();
 #endif
+
+	virtual void _unhide_carets() override;
 
 	/* Text manipulation */
 
 	// Overridable actions
 	virtual void _handle_unicode_input_internal(const uint32_t p_unicode, int p_caret) override;
 	virtual void _backspace_internal(int p_caret) override;
+	virtual void _cut_internal(int p_caret) override;
 
 	GDVIRTUAL1(_confirm_code_completion, bool)
 	GDVIRTUAL1(_request_code_completion, bool)
@@ -407,6 +413,7 @@ public:
 	void fold_all_lines();
 	void unfold_all_lines();
 	void toggle_foldable_line(int p_line);
+	void toggle_foldable_lines_at_carets();
 
 	bool is_line_folded(int p_line) const;
 	TypedArray<int> get_folded_lines() const;
@@ -461,7 +468,7 @@ public:
 
 	void request_code_completion(bool p_force = false);
 
-	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL, int p_location = LOCATION_OTHER);
+	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant(), int p_location = LOCATION_OTHER);
 	void update_code_completion_options(bool p_forced = false);
 
 	TypedArray<Dictionary> get_code_completion_options() const;
@@ -487,6 +494,10 @@ public:
 	void set_symbol_lookup_word_as_valid(bool p_valid);
 
 	/* Text manipulation */
+	void move_lines_up();
+	void move_lines_down();
+	void delete_lines();
+	void duplicate_selection();
 	void duplicate_lines();
 
 	CodeEdit();

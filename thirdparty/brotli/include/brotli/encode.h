@@ -490,7 +490,7 @@ BROTLI_ENC_EXTRA_API size_t BrotliEncoderGetPreparedDictionarySize(
 /**
  * Gets an encoder library version.
  *
- * Look at BROTLI_VERSION for more information.
+ * Look at BROTLI_MAKE_HEX_VERSION for more information.
  */
 BROTLI_ENC_API uint32_t BrotliEncoderVersion(void);
 

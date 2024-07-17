@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicalBone3D" inherits="PhysicsBody3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PhysicalBone3D" inherits="PhysicsBody3D" keywords="ragdoll" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A physics body used to make bones in a [Skeleton3D] react to physics.
 	</brief_description>
 	<description>
 		The [PhysicalBone3D] node is a physics body that can be used to make bones in a [Skeleton3D] react to physics.
+		[b]Note:[/b] In order to detect physical bones with raycasts, the [member SkeletonModifier3D.active] property of the parent [PhysicalBoneSimulator3D] must be [code]true[/code] and the [Skeleton3D]'s bone must be assigned to [PhysicalBone3D] correctly; it means that [method get_bone_id] should return a valid id ([code]&gt;= 0[/code]).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,7 +14,7 @@
 			<return type="void" />
 			<param index="0" name="state" type="PhysicsDirectBodyState3D" />
 			<description>
-				Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default, it works in addition to the usual physics behavior, but the [member custom_integrator] property allows you to disable the default behavior and do fully custom force integration for a body.
+				Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default, it is called before the standard force integration, but the [member custom_integrator] property allows you to disable the standard force integration and do fully custom force integration for a body.
 			</description>
 		</method>
 		<method name="apply_central_impulse">
@@ -61,12 +62,14 @@
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce" default="0.0">
 			The body's bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness).
+			[b]Note:[/b] Even with [member bounce] set to [code]1.0[/code], some energy will be lost over time due to linear and angular damping. To have a [PhysicalBone3D] that preserves all its energy over time, set [member bounce] to [code]1.0[/code], [member linear_damp_mode] to [constant DAMP_MODE_REPLACE], [member linear_damp] to [code]0.0[/code], [member angular_damp_mode] to [constant DAMP_MODE_REPLACE], and [member angular_damp] to [code]0.0[/code].
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
 			If [code]true[/code], the body is deactivated when there is no movement, so it will not take part in the simulation until it is awakened by an external force.
 		</member>
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator" default="false">
-			If [code]true[/code], internal force integration will be disabled (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
+			If [code]true[/code], the standard force integration (like gravity or damping) will be disabled for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] method, if that virtual method is overridden.
+			Setting this property will call the method [method PhysicsServer3D.body_set_omit_force_integration] internally.
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction" default="1.0">
 			The body's friction, from [code]0[/code] (frictionless) to [code]1[/code] (max friction).

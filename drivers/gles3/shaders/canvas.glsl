@@ -9,7 +9,7 @@ mode_instanced = #define USE_ATTRIBUTES \n#define USE_INSTANCING
 
 #[specializations]
 
-DISABLE_LIGHTING = false
+DISABLE_LIGHTING = true
 USE_RGBA_SHADOWS = false
 SINGLE_INSTANCE = false
 
@@ -32,18 +32,26 @@ layout(location = 5) in highp uvec4 instance_color_custom_data; // Color packed 
 
 #include "stdlib_inc.glsl"
 
-layout(location = 6) in highp vec4 attrib_A;
-layout(location = 7) in highp vec4 attrib_B;
-layout(location = 8) in highp vec4 attrib_C;
-layout(location = 9) in highp vec4 attrib_D;
-layout(location = 10) in highp vec4 attrib_E;
-#ifdef USE_PRIMITIVE
-layout(location = 11) in highp uvec4 attrib_F;
-#else
-layout(location = 11) in highp vec4 attrib_F;
+#if defined(CUSTOM0_USED)
+layout(location = 6) in highp vec4 custom0_attrib;
 #endif
-layout(location = 12) in highp uvec4 attrib_G;
-layout(location = 13) in highp uvec4 attrib_H;
+
+#if defined(CUSTOM1_USED)
+layout(location = 7) in highp vec4 custom1_attrib;
+#endif
+
+layout(location = 8) in highp vec4 attrib_A;
+layout(location = 9) in highp vec4 attrib_B;
+layout(location = 10) in highp vec4 attrib_C;
+layout(location = 11) in highp vec4 attrib_D;
+layout(location = 12) in highp vec4 attrib_E;
+#ifdef USE_PRIMITIVE
+layout(location = 13) in highp uvec4 attrib_F;
+#else
+layout(location = 13) in highp vec4 attrib_F;
+#endif
+layout(location = 14) in highp uvec4 attrib_G;
+layout(location = 15) in highp uvec4 attrib_H;
 
 #define read_draw_data_world_x attrib_A.xy
 #define read_draw_data_world_y attrib_A.zw
@@ -137,6 +145,13 @@ void main() {
 
 	vec4 instance_custom = vec4(0.0);
 
+#if defined(CUSTOM0_USED)
+	vec4 custom0 = vec4(0.0);
+#endif
+#if defined(CUSTOM1_USED)
+	vec4 custom1 = vec4(0.0);
+#endif
+
 #ifdef USE_PRIMITIVE
 	vec2 vertex;
 	vec2 uv;
@@ -145,15 +160,18 @@ void main() {
 	if (gl_VertexID % 3 == 0) {
 		vertex = read_draw_data_point_a;
 		uv = read_draw_data_uv_a;
-		color = vec4(unpackHalf2x16(read_draw_data_color_a_rg), unpackHalf2x16(read_draw_data_color_a_ba));
+		color.xy = unpackHalf2x16(read_draw_data_color_a_rg);
+		color.zw = unpackHalf2x16(read_draw_data_color_a_ba);
 	} else if (gl_VertexID % 3 == 1) {
 		vertex = read_draw_data_point_b;
 		uv = read_draw_data_uv_b;
-		color = vec4(unpackHalf2x16(read_draw_data_color_b_rg), unpackHalf2x16(read_draw_data_color_b_ba));
+		color.xy = unpackHalf2x16(read_draw_data_color_b_rg);
+		color.zw = unpackHalf2x16(read_draw_data_color_b_ba);
 	} else {
 		vertex = read_draw_data_point_c;
 		uv = read_draw_data_uv_c;
-		color = vec4(unpackHalf2x16(read_draw_data_color_c_rg), unpackHalf2x16(read_draw_data_color_c_ba));
+		color.xy = unpackHalf2x16(read_draw_data_color_c_rg);
+		color.zw = unpackHalf2x16(read_draw_data_color_c_ba);
 	}
 
 #elif defined(USE_ATTRIBUTES)
@@ -163,22 +181,56 @@ void main() {
 
 #ifdef USE_INSTANCING
 	if (bool(read_draw_data_flags & FLAGS_INSTANCING_HAS_COLORS)) {
-		vec4 instance_color = vec4(unpackHalf2x16(instance_color_custom_data.x), unpackHalf2x16(instance_color_custom_data.y));
+		vec4 instance_color;
+		instance_color.xy = unpackHalf2x16(uint(instance_color_custom_data.x));
+		instance_color.zw = unpackHalf2x16(uint(instance_color_custom_data.y));
 		color *= instance_color;
 	}
 	if (bool(read_draw_data_flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
-		instance_custom = vec4(unpackHalf2x16(instance_color_custom_data.z), unpackHalf2x16(instance_color_custom_data.w));
+		instance_custom.xy = unpackHalf2x16(instance_color_custom_data.z);
+		instance_custom.zw = unpackHalf2x16(instance_color_custom_data.w);
 	}
-#endif
+#endif // !USE_INSTANCING
 
-#else
-	vec2 vertex_base_arr[6] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0), vec2(0.0, 0.0), vec2(1.0, 1.0));
-	vec2 vertex_base = vertex_base_arr[gl_VertexID % 6];
+#else // !USE_ATTRIBUTES
+
+	// crash on Adreno 320/330
+	//vec2 vertex_base_arr[6] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0), vec2(0.0, 0.0), vec2(1.0, 1.0));
+	//vec2 vertex_base = vertex_base_arr[gl_VertexID % 6];
+	//-----------------------------------------
+	// ID |  0  |  1  |  2  |  3  |  4  |  5  |
+	//-----------------------------------------
+	// X  | 0.0 | 0.0 | 1.0 | 1.0 | 0.0 | 1.0 |
+	// Y  | 0.0 | 1.0 | 1.0 | 0.0 | 0.0 | 1.0 |
+	//-----------------------------------------
+	// no crash or freeze on all Adreno 3xx	with 'if / else if' and slightly faster!
+	int vertex_id = gl_VertexID % 6;
+	vec2 vertex_base;
+	if (vertex_id == 0)
+		vertex_base = vec2(0.0, 0.0);
+	else if (vertex_id == 1)
+		vertex_base = vec2(0.0, 1.0);
+	else if (vertex_id == 2)
+		vertex_base = vec2(1.0, 1.0);
+	else if (vertex_id == 3)
+		vertex_base = vec2(1.0, 0.0);
+	else if (vertex_id == 4)
+		vertex_base = vec2(0.0, 0.0);
+	else if (vertex_id == 5)
+		vertex_base = vec2(1.0, 1.0);
 
 	vec2 uv = read_draw_data_src_rect.xy + abs(read_draw_data_src_rect.zw) * ((read_draw_data_flags & FLAGS_TRANSPOSE_RECT) != uint(0) ? vertex_base.yx : vertex_base.xy);
 	vec4 color = read_draw_data_modulation;
 	vec2 vertex = read_draw_data_dst_rect.xy + abs(read_draw_data_dst_rect.zw) * mix(vertex_base, vec2(1.0, 1.0) - vertex_base, lessThan(read_draw_data_src_rect.zw, vec2(0.0, 0.0)));
 
+#endif // USE_ATTRIBUTES
+
+#if defined(CUSTOM0_USED)
+	custom0 = custom0_attrib;
+#endif
+
+#if defined(CUSTOM1_USED)
+	custom1 = custom1_attrib;
 #endif
 
 	mat4 model_matrix = mat4(vec4(read_draw_data_world_x, 0.0, 0.0), vec4(read_draw_data_world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(read_draw_data_world_ofs, 0.0, 1.0));
@@ -186,13 +238,6 @@ void main() {
 #ifdef USE_INSTANCING
 	model_matrix = model_matrix * transpose(mat4(instance_xform0, instance_xform1, vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)));
 #endif // USE_INSTANCING
-
-#if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
-	if (bool(read_draw_data_flags & FLAGS_USING_PARTICLES)) {
-		//scale by texture size
-		vertex /= read_draw_data_color_texture_pixel_size;
-	}
-#endif
 
 	vec2 color_texture_pixel_size = read_draw_data_color_texture_pixel_size;
 
@@ -294,14 +339,16 @@ uniform sampler2D color_texture; //texunit:0
 
 layout(location = 0) out vec4 frag_color;
 
+/* clang-format off */
+// This needs to be outside clang-format so the ubo comment is in the right place
 #ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{
-//ubo:4
+layout(std140) uniform MaterialUniforms{ //ubo:4
 
 #MATERIAL_UNIFORMS
 
 };
 #endif
+/* clang-format on */
 
 #GLOBALS
 
@@ -452,16 +499,12 @@ vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
 void light_blend_compute(uint light_base, vec4 light_color, inout vec3 color) {
 	uint blend_mode = light_array[light_base].flags & LIGHT_FLAGS_BLEND_MASK;
 
-	switch (blend_mode) {
-		case LIGHT_FLAGS_BLEND_MODE_ADD: {
-			color.rgb += light_color.rgb * light_color.a;
-		} break;
-		case LIGHT_FLAGS_BLEND_MODE_SUB: {
-			color.rgb -= light_color.rgb * light_color.a;
-		} break;
-		case LIGHT_FLAGS_BLEND_MODE_MIX: {
-			color.rgb = mix(color.rgb, light_color.rgb, light_color.a);
-		} break;
+	if (blend_mode == LIGHT_FLAGS_BLEND_MODE_ADD) {
+		color.rgb += light_color.rgb * light_color.a;
+	} else if (blend_mode == LIGHT_FLAGS_BLEND_MODE_SUB) {
+		color.rgb -= light_color.rgb * light_color.a;
+	} else if (blend_mode == LIGHT_FLAGS_BLEND_MODE_MIX) {
+		color.rgb = mix(color.rgb, light_color.rgb, light_color.a);
 	}
 }
 
@@ -587,6 +630,9 @@ void main() {
 
 	if (normal_used || (using_light && bool(read_draw_data_flags & FLAGS_DEFAULT_NORMAL_MAP_USED))) {
 		normal.xy = texture(normal_texture, uv).xy * vec2(2.0, -2.0) - vec2(1.0, -1.0);
+		if (bool(read_draw_data_flags & FLAGS_TRANSPOSE_RECT)) {
+			normal.xy = normal.yx;
+		}
 		if (bool(read_draw_data_flags & FLAGS_FLIP_H)) {
 			normal.x = -normal.x;
 		}
@@ -725,6 +771,12 @@ void main() {
 
 		vec2 tex_uv = (vec4(vertex, 0.0, 1.0) * mat4(light_array[light_base].texture_matrix[0], light_array[light_base].texture_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
 		vec2 tex_uv_atlas = tex_uv * light_array[light_base].atlas_rect.zw + light_array[light_base].atlas_rect.xy;
+
+		if (any(lessThan(tex_uv, vec2(0.0, 0.0))) || any(greaterThanEqual(tex_uv, vec2(1.0, 1.0)))) {
+			//if outside the light texture, light color is zero
+			continue;
+		}
+
 		vec4 light_color = textureLod(atlas_texture, tex_uv_atlas, 0.0);
 		vec4 light_base_color = light_array[light_base].color;
 
@@ -749,10 +801,6 @@ void main() {
 			light_color.rgb *= base_color.rgb;
 		}
 #endif
-		if (any(lessThan(tex_uv, vec2(0.0, 0.0))) || any(greaterThanEqual(tex_uv, vec2(1.0, 1.0)))) {
-			//if outside the light texture, light color is zero
-			light_color.a = 0.0;
-		}
 
 		if (bool(light_array[light_base].flags & LIGHT_FLAGS_HAS_SHADOW)) {
 			vec2 shadow_pos = (vec4(shadow_vertex, 0.0, 1.0) * mat4(light_array[light_base].shadow_matrix[0], light_array[light_base].shadow_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.

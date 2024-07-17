@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,20 @@
  */
 
 #include "tvgMath.h"
+
+//see: https://en.wikipedia.org/wiki/Remez_algorithm
+float mathAtan2(float y, float x)
+{
+    if (y == 0.0f && x == 0.0f) return 0.0f;
+
+    auto a = std::min(fabsf(x), fabsf(y)) / std::max(fabsf(x), fabsf(y));
+    auto s = a * a;
+    auto r = ((-0.0464964749f * s + 0.15931422f) * s - 0.327622764f) * s * a + a;
+    if (fabsf(y) > fabsf(x)) r = 1.57079637f - r;
+    if (x < 0) r = 3.14159274f - r;
+    if (y < 0) return -r;
+    return r;
+}
 
 
 bool mathInverse(const Matrix* m, Matrix* out)
@@ -47,41 +61,6 @@ bool mathInverse(const Matrix* m, Matrix* out)
 }
 
 
-Matrix mathMultiply(const Matrix* lhs, const Matrix* rhs)
-{
-    Matrix m;
-
-    m.e11 = lhs->e11 * rhs->e11 + lhs->e12 * rhs->e21 + lhs->e13 * rhs->e31;
-    m.e12 = lhs->e11 * rhs->e12 + lhs->e12 * rhs->e22 + lhs->e13 * rhs->e32;
-    m.e13 = lhs->e11 * rhs->e13 + lhs->e12 * rhs->e23 + lhs->e13 * rhs->e33;
-
-    m.e21 = lhs->e21 * rhs->e11 + lhs->e22 * rhs->e21 + lhs->e23 * rhs->e31;
-    m.e22 = lhs->e21 * rhs->e12 + lhs->e22 * rhs->e22 + lhs->e23 * rhs->e32;
-    m.e23 = lhs->e21 * rhs->e13 + lhs->e22 * rhs->e23 + lhs->e23 * rhs->e33;
-
-    m.e31 = lhs->e31 * rhs->e11 + lhs->e32 * rhs->e21 + lhs->e33 * rhs->e31;
-    m.e32 = lhs->e31 * rhs->e12 + lhs->e32 * rhs->e22 + lhs->e33 * rhs->e32;
-    m.e33 = lhs->e31 * rhs->e13 + lhs->e32 * rhs->e23 + lhs->e33 * rhs->e33;
-
-    return m;
-}
-
-
-void mathRotate(Matrix* m, float degree)
-{
-    if (degree == 0.0f) return;
-
-    auto radian = degree / 180.0f * M_PI;
-    auto cosVal = cosf(radian);
-    auto sinVal = sinf(radian);
-
-    m->e12 = m->e11 * -sinVal;
-    m->e11 *= cosVal;
-    m->e21 = m->e22 * sinVal;
-    m->e22 *= cosVal;
-}
-
-
 bool mathIdentity(const Matrix* m)
 {
     if (m->e11 != 1.0f || m->e12 != 0.0f || m->e13 != 0.0f ||
@@ -93,10 +72,64 @@ bool mathIdentity(const Matrix* m)
 }
 
 
-void mathMultiply(Point* pt, const Matrix* transform)
+void mathRotate(Matrix* m, float degree)
 {
-    auto tx = pt->x * transform->e11 + pt->y * transform->e12 + transform->e13;
-    auto ty = pt->x * transform->e21 + pt->y * transform->e22 + transform->e23;
-    pt->x = tx;
-    pt->y = ty;
+    if (degree == 0.0f) return;
+
+    auto radian = degree / 180.0f * MATH_PI;
+    auto cosVal = cosf(radian);
+    auto sinVal = sinf(radian);
+
+    m->e12 = m->e11 * -sinVal;
+    m->e11 *= cosVal;
+    m->e21 = m->e22 * sinVal;
+    m->e22 *= cosVal;
+}
+
+
+Matrix operator*(const Matrix& lhs, const Matrix& rhs)
+{
+    Matrix m;
+
+    m.e11 = lhs.e11 * rhs.e11 + lhs.e12 * rhs.e21 + lhs.e13 * rhs.e31;
+    m.e12 = lhs.e11 * rhs.e12 + lhs.e12 * rhs.e22 + lhs.e13 * rhs.e32;
+    m.e13 = lhs.e11 * rhs.e13 + lhs.e12 * rhs.e23 + lhs.e13 * rhs.e33;
+
+    m.e21 = lhs.e21 * rhs.e11 + lhs.e22 * rhs.e21 + lhs.e23 * rhs.e31;
+    m.e22 = lhs.e21 * rhs.e12 + lhs.e22 * rhs.e22 + lhs.e23 * rhs.e32;
+    m.e23 = lhs.e21 * rhs.e13 + lhs.e22 * rhs.e23 + lhs.e23 * rhs.e33;
+
+    m.e31 = lhs.e31 * rhs.e11 + lhs.e32 * rhs.e21 + lhs.e33 * rhs.e31;
+    m.e32 = lhs.e31 * rhs.e12 + lhs.e32 * rhs.e22 + lhs.e33 * rhs.e32;
+    m.e33 = lhs.e31 * rhs.e13 + lhs.e32 * rhs.e23 + lhs.e33 * rhs.e33;
+
+    return m;
+}
+
+
+bool operator==(const Matrix& lhs, const Matrix& rhs)
+{
+    if (!mathEqual(lhs.e11, rhs.e11) || !mathEqual(lhs.e12, rhs.e12) || !mathEqual(lhs.e13, rhs.e13) ||
+        !mathEqual(lhs.e21, rhs.e21) || !mathEqual(lhs.e22, rhs.e22) || !mathEqual(lhs.e23, rhs.e23) ||
+        !mathEqual(lhs.e31, rhs.e31) || !mathEqual(lhs.e32, rhs.e32) || !mathEqual(lhs.e33, rhs.e33)) {
+       return false;
+    }
+    return true;
+}
+
+
+void operator*=(Point& pt, const Matrix& m)
+{
+    auto tx = pt.x * m.e11 + pt.y * m.e12 + m.e13;
+    auto ty = pt.x * m.e21 + pt.y * m.e22 + m.e23;
+    pt.x = tx;
+    pt.y = ty;
+}
+
+
+Point operator*(const Point& pt, const Matrix& m)
+{
+    auto tx = pt.x * m.e11 + pt.y * m.e12 + m.e13;
+    auto ty = pt.x * m.e21 + pt.y * m.e22 + m.e23;
+    return {tx, ty};
 }

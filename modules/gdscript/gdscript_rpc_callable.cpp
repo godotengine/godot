@@ -68,11 +68,16 @@ StringName GDScriptRPCCallable::get_method() const {
 	return method;
 }
 
+int GDScriptRPCCallable::get_argument_count(bool &r_is_valid) const {
+	return object->get_method_argument_count(method, &r_is_valid);
+}
+
 void GDScriptRPCCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
 	r_return_value = object->callp(method, p_arguments, p_argcount, r_call_error);
 }
 
 GDScriptRPCCallable::GDScriptRPCCallable(Object *p_object, const StringName &p_method) {
+	ERR_FAIL_NULL(p_object);
 	object = p_object;
 	method = p_method;
 	h = method.hash();

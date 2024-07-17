@@ -70,7 +70,11 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 }
 
 GodotIOJavaWrapper::~GodotIOJavaWrapper() {
-	// nothing to do here for now
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+
+	env->DeleteGlobalRef(cls);
+	env->DeleteGlobalRef(godot_io_instance);
 }
 
 jobject GodotIOJavaWrapper::get_instance() {
@@ -82,7 +86,9 @@ Error GodotIOJavaWrapper::open_uri(const String &p_uri) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, ERR_UNAVAILABLE);
 		jstring jStr = env->NewStringUTF(p_uri.utf8().get_data());
-		return env->CallIntMethod(godot_io_instance, _open_URI, jStr) ? ERR_CANT_OPEN : OK;
+		Error result = env->CallIntMethod(godot_io_instance, _open_URI, jStr) ? ERR_CANT_OPEN : OK;
+		env->DeleteLocalRef(jStr);
+		return result;
 	} else {
 		return ERR_UNAVAILABLE;
 	}
@@ -220,6 +226,7 @@ void GodotIOJavaWrapper::show_vk(const String &p_existing, int p_type, int p_max
 		ERR_FAIL_NULL(env);
 		jstring jStr = env->NewStringUTF(p_existing.utf8().get_data());
 		env->CallVoidMethod(godot_io_instance, _show_keyboard, jStr, p_type, p_max_input_length, p_cursor_start, p_cursor_end);
+		env->DeleteLocalRef(jStr);
 	}
 }
 

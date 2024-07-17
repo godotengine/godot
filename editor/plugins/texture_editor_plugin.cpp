@@ -30,14 +30,15 @@
 
 #include "texture_editor_plugin.h"
 
-#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/animated_texture.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/compressed_texture.h"
 #include "scene/resources/image_texture.h"
+#include "scene/resources/portable_compressed_texture.h"
 
 TextureRect *TexturePreview::get_texture_display() {
 	return texture_display;
@@ -57,7 +58,7 @@ void TexturePreview::_notification(int p_what) {
 
 			if (metadata_label) {
 				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
-				metadata_label->add_theme_font_override("font", metadata_label_font);
+				metadata_label->add_theme_font_override(SceneStringName(font), metadata_label_font);
 			}
 
 			checkerboard->set_texture(get_editor_theme_icon(SNAME("Checkerboard")));
@@ -144,10 +145,10 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		p_texture->connect_changed(callable_mp(this, &TexturePreview::_update_metadata_label_text));
 
 		// It's okay that these colors are static since the grid color is static too.
-		metadata_label->add_theme_color_override("font_color", Color::named("white"));
+		metadata_label->add_theme_color_override(SceneStringName(font_color), Color::named("white"));
 		metadata_label->add_theme_color_override("font_shadow_color", Color::named("black"));
 
-		metadata_label->add_theme_font_size_override("font_size", 14 * EDSCALE);
+		metadata_label->add_theme_font_size_override(SceneStringName(font_size), 14 * EDSCALE);
 		metadata_label->add_theme_color_override("font_outline_color", Color::named("black"));
 		metadata_label->add_theme_constant_override("outline_size", 8 * EDSCALE);
 		metadata_label->set_h_size_flags(Control::SIZE_SHRINK_END);
@@ -158,7 +159,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 }
 
 bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
-	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr;
+	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {

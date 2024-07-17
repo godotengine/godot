@@ -38,6 +38,10 @@
 			<description>
 				Triggers a haptic pulse on a device associated with this interface.
 				[param action_name] is the name of the action for this pulse.
+				[param frequency] is the frequency of the pulse, set to [code]0.0[/code] to have the system use a default frequency.
+				[param amplitude] is the amplitude of the pulse between [code]0.0[/code] and [code]1.0[/code].
+				[param duration_sec] is the duration of the pulse in seconds.
+				[param delay_sec] is a delay in seconds before the pulse is given.
 			</description>
 		</method>
 	</methods>
@@ -45,6 +49,9 @@
 		<member name="pose" type="StringName" setter="set_pose_name" getter="get_pose_name" default="&amp;&quot;default&quot;">
 			The name of the pose we're bound to. Which poses a tracker supports is not known during design time.
 			Godot defines number of standard pose names such as [code]aim[/code] and [code]grip[/code] but other may be configured within a given [XRInterface].
+		</member>
+		<member name="show_when_tracked" type="bool" setter="set_show_when_tracked" getter="get_show_when_tracked" default="false">
+			Enables showing the node when tracking starts, and hiding the node when tracking is lost.
 		</member>
 		<member name="tracker" type="StringName" setter="set_tracker" getter="get_tracker" default="&amp;&quot;&quot;">
 			The name of the tracker we're bound to. Which trackers are available is not known during design time.

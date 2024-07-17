@@ -33,7 +33,6 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
-#include "core/core_string_names.h"
 #include "core/crypto/aes_context.h"
 #include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
@@ -102,6 +101,7 @@ static core_bind::Marshalls *_marshalls = nullptr;
 static core_bind::EngineDebugger *_engine_debugger = nullptr;
 
 static IP *ip = nullptr;
+static Time *_time = nullptr;
 
 static core_bind::Geometry2D *_geometry_2d = nullptr;
 static core_bind::Geometry3D *_geometry_3d = nullptr;
@@ -120,13 +120,15 @@ static ResourceUID *resource_uid = nullptr;
 static bool _is_core_extensions_registered = false;
 
 void register_core_types() {
-	OS::get_singleton()->benchmark_begin_measure("register_core_types");
+	OS::get_singleton()->benchmark_begin_measure("Core", "Register Types");
+
 	//consistency check
 	static_assert(sizeof(Callable) <= 16);
 
 	ObjectDB::setup();
 
 	StringName::setup();
+	_time = memnew(Time);
 	ResourceLoader::initialize();
 
 	register_global_constants();
@@ -296,7 +298,7 @@ void register_core_types() {
 
 	worker_thread_pool = memnew(WorkerThreadPool);
 
-	OS::get_singleton()->benchmark_end_measure("register_core_types");
+	OS::get_singleton()->benchmark_end_measure("Core", "Register Types");
 }
 
 void register_core_settings() {
@@ -306,11 +308,12 @@ void register_core_settings() {
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, "network/tls/certificate_bundle_override", PROPERTY_HINT_FILE, "*.crt"), "");
 
 	GLOBAL_DEF("threading/worker_pool/max_threads", -1);
-	GLOBAL_DEF("threading/worker_pool/use_system_threads_for_low_priority_tasks", true);
 	GLOBAL_DEF("threading/worker_pool/low_priority_thread_ratio", 0.3);
 }
 
 void register_core_singletons() {
+	OS::get_singleton()->benchmark_begin_measure("Core", "Register Singletons");
+
 	GDREGISTER_CLASS(ProjectSettings);
 	GDREGISTER_ABSTRACT_CLASS(IP);
 	GDREGISTER_CLASS(core_bind::Geometry2D);
@@ -346,24 +349,35 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GDExtensionManager", GDExtensionManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceUID", ResourceUID::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("WorkerThreadPool", worker_thread_pool));
+
+	OS::get_singleton()->benchmark_end_measure("Core", "Register Singletons");
 }
 
 void register_core_extensions() {
+	OS::get_singleton()->benchmark_begin_measure("Core", "Register Extensions");
+
 	// Hardcoded for now.
 	GDExtension::initialize_gdextensions();
 	gdextension_manager->load_extensions();
 	gdextension_manager->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_CORE);
 	_is_core_extensions_registered = true;
+
+	OS::get_singleton()->benchmark_end_measure("Core", "Register Extensions");
 }
 
 void unregister_core_extensions() {
+	OS::get_singleton()->benchmark_begin_measure("Core", "Unregister Extensions");
+
 	if (_is_core_extensions_registered) {
 		gdextension_manager->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_CORE);
 	}
+	GDExtension::finalize_gdextensions();
+
+	OS::get_singleton()->benchmark_end_measure("Core", "Unregister Extensions");
 }
 
 void unregister_core_types() {
-	OS::get_singleton()->benchmark_begin_measure("unregister_core_types");
+	OS::get_singleton()->benchmark_begin_measure("Core", "Unregister Types");
 
 	// Destroy singletons in reverse order to ensure dependencies are not broken.
 
@@ -423,16 +437,17 @@ void unregister_core_types() {
 	ResourceLoader::finalize();
 
 	ClassDB::cleanup_defaults();
+	memdelete(_time);
 	ObjectDB::cleanup();
 
 	Variant::unregister_types();
 
 	unregister_global_constants();
 
-	ClassDB::cleanup();
 	ResourceCache::clear();
+	ClassDB::cleanup();
 	CoreStringNames::free();
 	StringName::cleanup();
 
-	OS::get_singleton()->benchmark_end_measure("unregister_core_types");
+	OS::get_singleton()->benchmark_end_measure("Core", "Unregister Types");
 }

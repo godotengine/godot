@@ -54,6 +54,12 @@ static void
 hb_paint_pop_transform_nil (hb_paint_funcs_t *funcs, void *paint_data,
                             void *user_data) {}
 
+static hb_bool_t
+hb_paint_color_glyph_nil (hb_paint_funcs_t *funcs, void *paint_data,
+                          hb_codepoint_t glyph,
+                          hb_font_t *font,
+                          void *user_data) { return false; }
+
 static void
 hb_paint_push_clip_glyph_nil (hb_paint_funcs_t *funcs, void *paint_data,
                               hb_codepoint_t glyph,
@@ -471,6 +477,25 @@ void
 hb_paint_pop_transform (hb_paint_funcs_t *funcs, void *paint_data)
 {
   funcs->pop_transform (paint_data);
+}
+
+/**
+ * hb_paint_color_glyph:
+ * @funcs: paint functions
+ * @paint_data: associated data passed by the caller
+ * @glyph: the glyph ID
+ * @font: the font
+ *
+ * Perform a "color-glyph" paint operation.
+ *
+ * Since: 8.2.0
+ */
+hb_bool_t
+hb_paint_color_glyph (hb_paint_funcs_t *funcs, void *paint_data,
+                      hb_codepoint_t glyph,
+                      hb_font_t *font)
+{
+  return funcs->color_glyph (paint_data, glyph, font);
 }
 
 /**
