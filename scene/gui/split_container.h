@@ -82,7 +82,7 @@ private:
 	Ref<Texture2D> _get_grabber_icon() const;
 	void _compute_middle_sep(bool p_clamp);
 	void _resort();
-	Control *_get_sortable_child(int p_idx) const;
+	Control *_get_sortable_child(int p_idx, SortableVisbilityMode p_visibility_mode = SortableVisbilityMode::VISIBLE_IN_TREE) const;
 
 protected:
 	bool is_fixed = false;

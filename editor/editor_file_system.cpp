@@ -435,11 +435,6 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 		return true;
 	}
 
-	if (!ResourceFormatImporter::get_singleton()->are_import_settings_valid(p_path)) {
-		//reimport settings are not valid, reimport
-		return true;
-	}
-
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
 
@@ -1594,7 +1589,10 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 		}
 
 		if (idx == -1) {
-			//does not exist, create i guess?
+			// Only create a missing directory in memory when it exists on disk.
+			if (!dir->dir_exists(fs->get_path().path_join(path[i]))) {
+				return false;
+			}
 			EditorFileSystemDirectory *efsd = memnew(EditorFileSystemDirectory);
 
 			efsd->name = path[i];
@@ -2445,16 +2443,14 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	Variant meta;
 	Error err = importer->import(p_file, base_path, params, &import_variants, &gen_files, &meta);
 
-	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_UNRECOGNIZED, "Error importing '" + p_file + "'.");
-
-	//as import is complete, save the .import file
+	// As import is complete, save the .import file.
 
 	Vector<String> dest_paths;
 	{
 		Ref<FileAccess> f = FileAccess::open(p_file + ".import", FileAccess::WRITE);
 		ERR_FAIL_COND_V_MSG(f.is_null(), ERR_FILE_CANT_OPEN, "Cannot open file from path '" + p_file + ".import'.");
 
-		//write manually, as order matters ([remap] has to go first for performance).
+		// Write manually, as order matters ([remap] has to go first for performance).
 		f->store_line("[remap]");
 		f->store_line("");
 		f->store_line("importer=\"" + importer->get_importer_name() + "\"");
@@ -2470,7 +2466,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 			uid = ResourceUID::get_singleton()->create_id();
 		}
 
-		f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); //store in readable format
+		f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); // Store in readable format.
 
 		if (err == OK) {
 			if (importer->get_save_extension().is_empty()) {
@@ -2525,13 +2521,14 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 			for (int i = 0; i < dest_paths.size(); i++) {
 				dp.push_back(dest_paths[i]);
 			}
-			f->store_line("dest_files=" + Variant(dp).get_construct_string() + "\n");
+			f->store_line("dest_files=" + Variant(dp).get_construct_string());
 		}
+		f->store_line("");
 
 		f->store_line("[params]");
 		f->store_line("");
 
-		//store options in provided order, to avoid file changing. Order is also important because first match is accepted first.
+		// Store options in provided order, to avoid file changing. Order is also important because first match is accepted first.
 
 		for (const ResourceImporter::ImportOption &E : opts) {
 			String base = E.option.name;
@@ -2555,7 +2552,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	// Update cpos, newly created files could've changed the index of the reimported p_file.
 	_find_file(p_file, &fs, cpos);
 
-	//update modified times, to avoid reimport
+	// Update modified times, to avoid reimport.
 	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
 	fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
 	fs->files[cpos]->deps = _get_dependencies(p_file);
@@ -2569,8 +2566,8 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		ResourceUID::get_singleton()->add_id(uid, p_file);
 	}
 
-	//if file is currently up, maybe the source it was loaded from changed, so import math must be updated for it
-	//to reload properly
+	// If file is currently up, maybe the source it was loaded from changed, so import math must be updated for it
+	// to reload properly.
 	Ref<Resource> r = ResourceCache::get_ref(p_file);
 	if (r.is_valid()) {
 		if (!r->get_import_path().is_empty()) {
@@ -2584,6 +2581,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 
 	print_verbose(vformat("EditorFileSystem: \"%s\" import took %d ms.", p_file, OS::get_singleton()->get_ticks_msec() - start_time));
 
+	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_UNRECOGNIZED, "Error importing '" + p_file + "'.");
 	return OK;
 }
 

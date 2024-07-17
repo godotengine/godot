@@ -628,26 +628,19 @@ class Godot(private val context: Context) : SensorEventListener {
 	private fun onGodotSetupCompleted() {
 		Log.v(TAG, "OnGodotSetupCompleted")
 
-		if (!isEditorBuild()) {
-			// These properties are defined after Godot setup completion, so we retrieve them here.
-			val longPressEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_long_press_as_right_click"))
-			val panScaleEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
-			val rotaryInputAxisValue = GodotLib.getGlobal("input_devices/pointing/android/rotary_input_scroll_axis")
+		// These properties are defined after Godot setup completion, so we retrieve them here.
+		val longPressEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_long_press_as_right_click"))
+		val panScaleEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
+		val rotaryInputAxisValue = GodotLib.getGlobal("input_devices/pointing/android/rotary_input_scroll_axis")
 
-			val useInputBuffering = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/buffering/android/use_input_buffering"))
-			val useAccumulatedInput = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/buffering/android/use_accumulated_input"))
-			GodotLib.updateInputDispatchSettings(useAccumulatedInput, useInputBuffering)
-
-			runOnUiThread {
-				renderView?.inputHandler?.apply {
-					enableLongPress(longPressEnabled)
-					enablePanningAndScalingGestures(panScaleEnabled)
-					enableInputDispatchToRenderThread(!useInputBuffering && !useAccumulatedInput)
-					try {
-						setRotaryInputAxis(Integer.parseInt(rotaryInputAxisValue))
-					} catch (e: NumberFormatException) {
-						Log.w(TAG, e)
-					}
+		runOnUiThread {
+			renderView?.inputHandler?.apply {
+				enableLongPress(longPressEnabled)
+				enablePanningAndScalingGestures(panScaleEnabled)
+				try {
+					setRotaryInputAxis(Integer.parseInt(rotaryInputAxisValue))
+				} catch (e: NumberFormatException) {
+					Log.w(TAG, e)
 				}
 			}
 		}
