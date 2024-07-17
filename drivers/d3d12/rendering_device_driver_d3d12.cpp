@@ -5335,10 +5335,12 @@ void RenderingDeviceDriverD3D12::command_bind_render_pipeline(CommandBufferID p_
 	cmd_buf_info->cmd_list->OMSetBlendFactor(pso_extra_info.dyn_params.blend_constant.components);
 	cmd_buf_info->cmd_list->OMSetStencilRef(pso_extra_info.dyn_params.stencil_reference);
 
-	ComPtr<ID3D12GraphicsCommandList1> command_list_1;
-	cmd_buf_info->cmd_list->QueryInterface(command_list_1.GetAddressOf());
-	if (command_list_1) {
-		command_list_1->OMSetDepthBounds(pso_extra_info.dyn_params.depth_bounds_min, pso_extra_info.dyn_params.depth_bounds_max);
+	if (misc_features_support.depth_bounds_supported) {
+		ComPtr<ID3D12GraphicsCommandList1> command_list_1;
+		cmd_buf_info->cmd_list->QueryInterface(command_list_1.GetAddressOf());
+		if (command_list_1) {
+			command_list_1->OMSetDepthBounds(pso_extra_info.dyn_params.depth_bounds_min, pso_extra_info.dyn_params.depth_bounds_max);
+		}
 	}
 
 	cmd_buf_info->render_pass_state.vf_info = pso_extra_info.vf_info;
@@ -5728,8 +5730,15 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 		(&pipeline_desc.DepthStencilState)->BackFace.StencilDepthFailOp = RD_TO_D3D12_STENCIL_OP[p_depth_stencil_state.back_op.depth_fail];
 		(&pipeline_desc.DepthStencilState)->BackFace.StencilFunc = RD_TO_D3D12_COMPARE_OP[p_depth_stencil_state.back_op.compare];
 
-		pso_extra_info.dyn_params.depth_bounds_min = p_depth_stencil_state.enable_depth_range ? p_depth_stencil_state.depth_range_min : 0.0f;
-		pso_extra_info.dyn_params.depth_bounds_max = p_depth_stencil_state.enable_depth_range ? p_depth_stencil_state.depth_range_max : 1.0f;
+		if (misc_features_support.depth_bounds_supported) {
+			pso_extra_info.dyn_params.depth_bounds_min = p_depth_stencil_state.enable_depth_range ? p_depth_stencil_state.depth_range_min : 0.0f;
+			pso_extra_info.dyn_params.depth_bounds_max = p_depth_stencil_state.enable_depth_range ? p_depth_stencil_state.depth_range_max : 1.0f;
+		} else {
+			if (p_depth_stencil_state.enable_depth_range) {
+				WARN_PRINT_ONCE("Depth bounds test is not supported by the GPU driver.");
+			}
+		}
+
 		pso_extra_info.dyn_params.stencil_reference = p_depth_stencil_state.front_op.reference;
 	}
 
@@ -6441,6 +6450,12 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 		subgroup_capabilities.wave_ops_supported = options1.WaveOps;
 	}
 
+	D3D12_FEATURE_DATA_D3D12_OPTIONS2 options2 = {};
+	res = device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS2, &options2, sizeof(options2));
+	if (SUCCEEDED(res)) {
+		misc_features_support.depth_bounds_supported = options2.DepthBoundsTestSupported;
+	}
+
 	D3D12_FEATURE_DATA_D3D12_OPTIONS3 options3 = {};
 	res = device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &options3, sizeof(options3));
 	if (SUCCEEDED(res)) {
@@ -6525,6 +6540,12 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 	}
 
 	print_verbose(String("- D3D12 16-bit ops supported: ") + (shader_capabilities.native_16bit_ops ? "yes" : "no"));
+
+	if (misc_features_support.depth_bounds_supported) {
+		print_verbose("- Depth bounds test supported");
+	} else {
+		print_verbose("- Depth bounds test not supported");
+	}
 
 	return OK;
 }
