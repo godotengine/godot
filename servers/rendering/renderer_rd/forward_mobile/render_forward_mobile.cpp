@@ -2058,6 +2058,10 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 
 		uint32_t base_spec_constants = p_params->spec_constant_base_flags;
 
+		if (bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH)) {
+			base_spec_constants |= 1 << SPEC_CONSTANT_IS_MULTIMESH;
+		}
+
 		SceneState::PushConstant push_constant;
 		push_constant.base_index = i + p_params->element_offset;
 
