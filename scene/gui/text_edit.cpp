@@ -8143,7 +8143,7 @@ void TextEdit::_update_gutter_width() {
 
 /* Syntax highlighting. */
 Dictionary TextEdit::_get_line_syntax_highlighting(int p_line) {
-	return syntax_highlighter.is_null() && !setting_text ? Dictionary() : syntax_highlighter->get_line_syntax_highlighting(p_line);
+	return (syntax_highlighter.is_null() || setting_text) ? Dictionary() : syntax_highlighter->get_line_syntax_highlighting(p_line);
 }
 
 /* Deprecated. */
