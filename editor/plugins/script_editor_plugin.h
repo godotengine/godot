@@ -55,7 +55,7 @@ class EditorSyntaxHighlighter : public SyntaxHighlighter {
 	GDCLASS(EditorSyntaxHighlighter, SyntaxHighlighter)
 
 private:
-	Ref<RefCounted> edited_resourse;
+	Ref<RefCounted> edited_resource;
 
 protected:
 	static void _bind_methods();
@@ -67,8 +67,8 @@ public:
 	virtual String _get_name() const;
 	virtual PackedStringArray _get_supported_languages() const;
 
-	void _set_edited_resource(const Ref<Resource> &p_res) { edited_resourse = p_res; }
-	Ref<RefCounted> _get_edited_resource() { return edited_resourse; }
+	void _set_edited_resource(const Ref<Resource> &p_res) { edited_resource = p_res; }
+	Ref<RefCounted> _get_edited_resource() { return edited_resource; }
 
 	virtual Ref<EditorSyntaxHighlighter> _create() const;
 };
