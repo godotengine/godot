@@ -20,8 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Godot build cache
-        uses: ./.github/actions/godot-cache
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
         continue-on-error: true
 
       - name: Setup python and scons
@@ -34,6 +34,10 @@ jobs:
           platform: ios
           target: template_release
           tests: false
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        continue-on-error: true
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
