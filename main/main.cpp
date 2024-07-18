@@ -4107,7 +4107,7 @@ bool Main::iteration() {
 
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
-	if (DisplayServer::get_singleton()->can_any_window_draw() &&
+	if ((DisplayServer::get_singleton()->can_any_window_draw() || DisplayServer::get_singleton()->has_additional_outputs()) &&
 			RenderingServer::get_singleton()->is_render_loop_enabled()) {
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (RenderingServer::get_singleton()->has_changed()) {
