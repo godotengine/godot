@@ -1003,6 +1003,7 @@ void VisualShader::remove_node(Type p_type, int p_id) {
 				g->nodes[connection.to_node].node->set_input_port_connected(connection.to_port, false);
 			} else if (connection.to_node == p_id) {
 				g->nodes[connection.from_node].next_connected_nodes.erase(p_id);
+				g->nodes[connection.from_node].node->set_output_port_connected(connection.from_port, false);
 			}
 			g->connections.erase(E);
 		}
