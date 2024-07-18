@@ -162,8 +162,12 @@ private:
 	static WorkerThreadPool *singleton;
 
 #ifdef THREADS_ENABLED
-	static const uint32_t MAX_UNLOCKABLE_MUTEXES = 2;
-	static thread_local uintptr_t unlockable_mutexes[MAX_UNLOCKABLE_MUTEXES];
+	static const uint32_t MAX_UNLOCKABLE_LOCKS = 2;
+	struct UnlockableLocks {
+		THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> *ulock = nullptr;
+		uint32_t rc = 0;
+	};
+	static thread_local UnlockableLocks unlockable_locks[MAX_UNLOCKABLE_LOCKS];
 #endif
 
 	TaskID _add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description);
@@ -192,7 +196,7 @@ private:
 	void _wait_collaboratively(ThreadData *p_caller_pool_thread, Task *p_task);
 
 #ifdef THREADS_ENABLED
-	static uint32_t _thread_enter_unlock_allowance_zone(void *p_mutex, bool p_is_binary);
+	static uint32_t _thread_enter_unlock_allowance_zone(THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> &p_ulock);
 #endif
 
 	void _lock_unlockable_mutexes();
@@ -242,11 +246,14 @@ public:
 	static TaskID get_caller_task_id();
 
 #ifdef THREADS_ENABLED
-	static uint32_t thread_enter_unlock_allowance_zone(Mutex *p_mutex);
-	static uint32_t thread_enter_unlock_allowance_zone(BinaryMutex *p_mutex);
+	_ALWAYS_INLINE_ static uint32_t thread_enter_unlock_allowance_zone(const MutexLock<BinaryMutex> &p_lock) { return _thread_enter_unlock_allowance_zone(p_lock._get_lock()); }
+	template <int Tag>
+	_ALWAYS_INLINE_ static uint32_t thread_enter_unlock_allowance_zone(const SafeBinaryMutex<Tag> &p_mutex) { return _thread_enter_unlock_allowance_zone(p_mutex._get_lock()); }
 	static void thread_exit_unlock_allowance_zone(uint32_t p_zone_id);
 #else
-	static uint32_t thread_enter_unlock_allowance_zone(void *p_mutex) { return UINT32_MAX; }
+	static uint32_t thread_enter_unlock_allowance_zone(const MutexLock<BinaryMutex> &p_lock) { return UINT32_MAX; }
+	template <int Tag>
+	static uint32_t thread_enter_unlock_allowance_zone(const SafeBinaryMutex<Tag> &p_mutex) { return UINT32_MAX; }
 	static void thread_exit_unlock_allowance_zone(uint32_t p_zone_id) {}
 #endif
 

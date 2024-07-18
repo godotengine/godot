@@ -194,7 +194,10 @@ private:
 	static thread_local int load_nesting;
 	static thread_local HashMap<int, HashMap<String, Ref<Resource>>> res_ref_overrides; // Outermost key is nesting level.
 	static thread_local Vector<String> load_paths_stack;
+
 	static SafeBinaryMutex<BINARY_MUTEX_TAG> thread_load_mutex;
+	friend SafeBinaryMutex<BINARY_MUTEX_TAG> &_get_res_loader_mutex();
+
 	static HashMap<String, ThreadLoadTask> thread_load_tasks;
 	static bool cleaning_tasks;
 
