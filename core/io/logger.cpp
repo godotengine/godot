@@ -212,7 +212,7 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		// Strip ANSI escape codes (such as those inserted by `print_rich()`)
 		// before writing to file, as text editors cannot display those
 		// correctly.
-		file->store_string(strip_ansi_regex->sub(String(buf), "", true));
+		file->store_string(strip_ansi_regex->sub(String::utf8(buf), "", true));
 #else
 		file->store_buffer((uint8_t *)buf, len);
 #endif // MODULE_REGEX_ENABLED

@@ -1064,11 +1064,21 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 				// Get at (potential) root stack pos, so it can be returned.
 				GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, chain.back()->get()->base);
+
 				if (r_error) {
 					return GDScriptCodeGenerator::Address();
 				}
 
 				GDScriptCodeGenerator::Address prev_base = base;
+
+				// In case the base has a setter, don't use the address directly, as we want to call that setter.
+				// So use a temp value instead and call the setter at the end.
+				GDScriptCodeGenerator::Address base_temp;
+				if (base.mode == GDScriptCodeGenerator::Address::MEMBER && member_property_has_setter && !member_property_is_in_setter) {
+					base_temp = codegen.add_temporary(base.type);
+					gen->write_assign(base_temp, base);
+					prev_base = base_temp;
+				}
 
 				struct ChainInfo {
 					bool is_named = false;
@@ -1218,6 +1228,9 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							gen->write_end_jump_if_shared();
 						}
 					}
+				} else if (base_temp.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+					// Save the temp value back to the base by calling its setter.
+					gen->write_call(GDScriptCodeGenerator::Address(), base, member_property_setter_function, { assigned });
 				}
 
 				if (assigned.mode == GDScriptCodeGenerator::Address::TEMPORARY) {

@@ -1053,6 +1053,14 @@ ProjectManager::ProjectManager() {
 		}
 		EditorSettings::get_singleton()->set_optimize_save(false); // Just write settings as they come.
 
+		{
+			bool agile_input_event_flushing = EDITOR_GET("input/buffering/agile_event_flushing");
+			bool use_accumulated_input = EDITOR_GET("input/buffering/use_accumulated_input");
+
+			Input::get_singleton()->set_agile_input_event_flushing(agile_input_event_flushing);
+			Input::get_singleton()->set_use_accumulated_input(use_accumulated_input);
+		}
+
 		int display_scale = EDITOR_GET("interface/editor/display_scale");
 
 		switch (display_scale) {

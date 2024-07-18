@@ -28,6 +28,7 @@
 #define _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
 
 #include <mutex>
+#include "tvgTaskScheduler.h"
 
 namespace tvg {
 
@@ -42,13 +43,17 @@ namespace tvg {
 
         ScopedLock(Key& k)
         {
-            k.mtx.lock();
-            key = &k;
+            if (TaskScheduler::threads() > 0) {
+                k.mtx.lock();
+                key = &k;
+            }
         }
 
         ~ScopedLock()
         {
-            key->mtx.unlock();
+            if (TaskScheduler::threads() > 0) {
+                key->mtx.unlock();
+            }
         }
     };
 

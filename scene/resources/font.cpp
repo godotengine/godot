@@ -3213,7 +3213,6 @@ void SystemFont::_update_base_font() {
 	}
 
 	_invalidate_rids();
-	notify_property_list_changed();
 }
 
 void SystemFont::reset_state() {

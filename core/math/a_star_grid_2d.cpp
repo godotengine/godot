@@ -122,6 +122,10 @@ AStarGrid2D::CellShape AStarGrid2D::get_cell_shape() const {
 }
 
 void AStarGrid2D::update() {
+	if (!dirty) {
+		return;
+	}
+
 	points.clear();
 
 	const int32_t end_x = region.get_end().x;

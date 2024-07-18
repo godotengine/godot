@@ -550,9 +550,22 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				return _get_default_variant_for_data_type(return_type);
 			}
 			if (argument_types[i].kind == GDScriptDataType::BUILTIN) {
-				Variant arg;
-				Variant::construct(argument_types[i].builtin_type, arg, &p_args[i], 1, r_err);
-				memnew_placement(&stack[i + 3], Variant(arg));
+				if (argument_types[i].builtin_type == Variant::ARRAY && argument_types[i].has_container_element_type(0)) {
+					const GDScriptDataType &arg_type = argument_types[i].container_element_types[0];
+					Array array(p_args[i]->operator Array(), arg_type.builtin_type, arg_type.native_type, arg_type.script_type);
+					memnew_placement(&stack[i + 3], Variant(array));
+				} else {
+					Variant variant;
+					Variant::construct(argument_types[i].builtin_type, variant, &p_args[i], 1, r_err);
+					if (unlikely(r_err.error)) {
+						r_err.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+						r_err.argument = i;
+						r_err.expected = argument_types[i].builtin_type;
+						call_depth--;
+						return _get_default_variant_for_data_type(return_type);
+					}
+					memnew_placement(&stack[i + 3], Variant(variant));
+				}
 			} else {
 				memnew_placement(&stack[i + 3], Variant(*p_args[i]));
 			}
@@ -1794,7 +1807,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					} else if (methodstr == "free") {
 						if (err.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 							if (base->is_ref_counted()) {
-								err_text = "Attempted to free a reference.";
+								err_text = "Attempted to free a RefCounted object.";
 								OPCODE_BREAK;
 							} else if (base->get_type() == Variant::OBJECT) {
 								err_text = "Attempted to free a locked object (calling or emitting).";
@@ -1885,7 +1898,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					} else if (methodstr == "free") {
 						if (err.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 							if (base->is_ref_counted()) {
-								err_text = "Attempted to free a reference.";
+								err_text = "Attempted to free a RefCounted object.";
 								OPCODE_BREAK;
 							} else if (base->get_type() == Variant::OBJECT) {
 								err_text = "Attempted to free a locked object (calling or emitting).";

@@ -35,19 +35,20 @@
 
 #include "core/io/resource.h"
 
-enum GLTFAccessorType {
-	TYPE_SCALAR,
-	TYPE_VEC2,
-	TYPE_VEC3,
-	TYPE_VEC4,
-	TYPE_MAT2,
-	TYPE_MAT3,
-	TYPE_MAT4,
-};
-
 struct GLTFAccessor : public Resource {
 	GDCLASS(GLTFAccessor, Resource);
 	friend class GLTFDocument;
+
+public:
+	enum GLTFAccessorType {
+		TYPE_SCALAR,
+		TYPE_VEC2,
+		TYPE_VEC3,
+		TYPE_VEC4,
+		TYPE_MAT2,
+		TYPE_MAT3,
+		TYPE_MAT4,
+	};
 
 private:
 	GLTFBufferViewIndex buffer_view = -1;
@@ -84,8 +85,11 @@ public:
 	int get_count();
 	void set_count(int p_count);
 
-	int get_accessor_type();
-	void set_accessor_type(int p_accessor_type);
+	GLTFAccessorType get_accessor_type();
+	void set_accessor_type(GLTFAccessorType p_accessor_type);
+
+	int get_type();
+	void set_type(int p_accessor_type);
 
 	Vector<double> get_min();
 	void set_min(Vector<double> p_min);
@@ -111,5 +115,7 @@ public:
 	int get_sparse_values_byte_offset();
 	void set_sparse_values_byte_offset(int p_sparse_values_byte_offset);
 };
+
+VARIANT_ENUM_CAST(GLTFAccessor::GLTFAccessorType);
 
 #endif // GLTF_ACCESSOR_H

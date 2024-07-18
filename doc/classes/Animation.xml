@@ -560,7 +560,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="path" type="NodePath" />
 			<description>
-				Sets the path of a track. Paths must be valid scene-tree paths to a node and must be specified starting from the parent node of the node that will reproduce the animation. Tracks that control properties or bones must append their name after the path, separated by [code]":"[/code].
+				Sets the path of a track. Paths must be valid scene-tree paths to a node and must be specified starting from the [member AnimationMixer.root_node] that will reproduce the animation. Tracks that control properties or bones must append their name after the path, separated by [code]":"[/code].
 				For example, [code]"character/skeleton:ankle"[/code] or [code]"character/mesh:transform/local"[/code].
 			</description>
 		</method>

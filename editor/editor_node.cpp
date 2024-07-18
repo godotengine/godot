@@ -317,14 +317,10 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 	if ((k.is_valid() && k->is_pressed() && !k->is_echo()) || Object::cast_to<InputEventShortcut>(*p_event)) {
-		EditorPlugin *old_editor = editor_plugin_screen;
-
+		bool is_handled = true;
 		if (ED_IS_SHORTCUT("editor/filter_files", p_event)) {
 			FileSystemDock::get_singleton()->focus_on_filter();
-			get_tree()->get_root()->set_input_as_handled();
-		}
-
-		if (ED_IS_SHORTCUT("editor/editor_2d", p_event)) {
+		} else if (ED_IS_SHORTCUT("editor/editor_2d", p_event)) {
 			editor_select(EDITOR_2D);
 		} else if (ED_IS_SHORTCUT("editor/editor_3d", p_event)) {
 			editor_select(EDITOR_3D);
@@ -343,9 +339,10 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 		} else if (ED_IS_SHORTCUT("editor/toggle_last_opened_bottom_panel", p_event)) {
 			bottom_panel->toggle_last_opened_bottom_panel();
 		} else {
+			is_handled = false;
 		}
 
-		if (old_editor != editor_plugin_screen) {
+		if (is_handled) {
 			get_tree()->get_root()->set_input_as_handled();
 		}
 	}
@@ -5261,6 +5258,14 @@ bool EditorNode::has_scenes_in_session() {
 	return !scenes.is_empty();
 }
 
+void EditorNode::undo() {
+	trigger_menu_option(EDIT_UNDO, true);
+}
+
+void EditorNode::redo() {
+	trigger_menu_option(EDIT_REDO, true);
+}
+
 bool EditorNode::ensure_main_scene(bool p_from_native) {
 	pick_main_scene->set_meta("from_native", p_from_native); // Whether from play button or native run.
 	String main_scene = GLOBAL_GET("application/run/main_scene");
@@ -5973,9 +5978,6 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 					is_editable = owner->is_editable_instance(original_node);
 				}
 
-				// For clear instance state for path recaching.
-				instantiated_node->set_scene_instance_state(Ref<SceneState>());
-
 				bool original_node_is_displayed_folded = original_node->is_displayed_folded();
 				bool original_node_scene_instance_load_placeholder = original_node->get_scene_instance_load_placeholder();
 
@@ -6423,7 +6425,6 @@ EditorNode::EditorNode() {
 		// No scripting by default if in editor (except for tool).
 		ScriptServer::set_scripting_enabled(false);
 
-		Input::get_singleton()->set_use_accumulated_input(true);
 		if (!DisplayServer::get_singleton()->is_touchscreen_available()) {
 			// Only if no touchscreen ui hint, disable emulation just in case.
 			Input::get_singleton()->set_emulate_touch_from_mouse(false);
@@ -6470,6 +6471,14 @@ EditorNode::EditorNode() {
 	run_surface_upgrade_tool = EditorSettings::get_singleton()->get_project_metadata("surface_upgrade_tool", "run_on_restart", false);
 	if (run_surface_upgrade_tool) {
 		SurfaceUpgradeTool::get_singleton()->begin_upgrade();
+	}
+
+	{
+		bool agile_input_event_flushing = EDITOR_GET("input/buffering/agile_event_flushing");
+		bool use_accumulated_input = EDITOR_GET("input/buffering/use_accumulated_input");
+
+		Input::get_singleton()->set_agile_input_event_flushing(agile_input_event_flushing);
+		Input::get_singleton()->set_use_accumulated_input(use_accumulated_input);
 	}
 
 	{
@@ -6809,7 +6818,7 @@ EditorNode::EditorNode() {
 	distraction_free = memnew(Button);
 	distraction_free->set_theme_type_variation("FlatMenuButton");
 	ED_SHORTCUT_AND_COMMAND("editor/distraction_free_mode", TTR("Distraction Free Mode"), KeyModifierMask::CTRL | KeyModifierMask::SHIFT | Key::F11);
-	ED_SHORTCUT_OVERRIDE("editor/distraction_free_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::D);
+	ED_SHORTCUT_OVERRIDE("editor/distraction_free_mode", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::D);
 	ED_SHORTCUT_AND_COMMAND("editor/toggle_last_opened_bottom_panel", TTR("Toggle Last Opened Bottom Panel"), KeyModifierMask::CMD_OR_CTRL | Key::J);
 	distraction_free->set_shortcut(ED_GET_SHORTCUT("editor/distraction_free_mode"));
 	distraction_free->set_tooltip_text(TTR("Toggle distraction-free mode."));

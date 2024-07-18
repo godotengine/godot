@@ -40,8 +40,11 @@
 			<param index="0" name="subresources" type="bool" default="false" />
 			<description>
 				Duplicates this resource, returning a new resource with its [code]export[/code]ed or [constant PROPERTY_USAGE_STORAGE] properties copied from the original.
-				If [param subresources] is [code]false[/code], a shallow copy is returned; nested resources within subresources are not duplicated and are shared from the original resource. If [param subresources] is [code]true[/code], a deep copy is returned; nested subresources will be duplicated and are not shared.
-				Subresource properties with the [constant PROPERTY_USAGE_ALWAYS_DUPLICATE] flag are always duplicated even with [param subresources] set to [code]false[/code], and properties with the [constant PROPERTY_USAGE_NEVER_DUPLICATE] flag are never duplicated even with [param subresources] set to [code]true[/code].
+				If [param subresources] is [code]false[/code], a shallow copy is returned; nested resources within subresources are not duplicated and are shared with the original resource (with one exception; see below). If [param subresources] is [code]true[/code], a deep copy is returned; nested subresources will be duplicated and are not shared (with two exceptions; see below).
+				[param subresources] is usually respected, with the following exceptions:
+				- Subresource properties with the [constant PROPERTY_USAGE_ALWAYS_DUPLICATE] flag are always duplicated.
+				- Subresource properties with the [constant PROPERTY_USAGE_NEVER_DUPLICATE] flag are never duplicated.
+				- Subresources inside [Array] and [Dictionary] properties are never duplicated.
 				[b]Note:[/b] For custom resources, this method will fail if [method Object._init] has been defined with required parameters.
 			</description>
 		</method>

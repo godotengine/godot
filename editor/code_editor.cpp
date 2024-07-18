@@ -1431,12 +1431,21 @@ Point2i CodeTextEditor::get_error_pos() const {
 
 void CodeTextEditor::goto_error() {
 	if (!error->get_text().is_empty()) {
+		int corrected_column = error_column;
+
+		const String line_text = text_editor->get_line(error_line);
+		const int indent_size = text_editor->get_indent_size();
+		if (indent_size > 1) {
+			const int tab_count = line_text.length() - line_text.lstrip("\t").length();
+			corrected_column -= tab_count * (indent_size - 1);
+		}
+
 		if (text_editor->get_line_count() != error_line) {
 			text_editor->unfold_line(error_line);
 		}
 		text_editor->remove_secondary_carets();
 		text_editor->set_caret_line(error_line);
-		text_editor->set_caret_column(error_column);
+		text_editor->set_caret_column(corrected_column);
 		text_editor->center_viewport_to_caret();
 	}
 }

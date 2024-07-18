@@ -261,9 +261,6 @@ void AudioStreamPlayerInternal::seek(float p_seconds) {
 void AudioStreamPlayerInternal::stop() {
 	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 		AudioServer::get_singleton()->stop_playback_stream(playback);
-		if (_is_sample() && playback->get_sample_playback().is_valid()) {
-			AudioServer::get_singleton()->stop_sample_playback(playback->get_sample_playback());
-		}
 	}
 	stream_playbacks.clear();
 

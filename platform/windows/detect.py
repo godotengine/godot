@@ -214,11 +214,6 @@ def get_opts():
             os.path.join(d3d12_deps_folder, "mesa"),
         ),
         (
-            "dxc_path",
-            "Path to the DirectX Shader Compiler distribution (required for D3D12)",
-            os.path.join(d3d12_deps_folder, "dxc"),
-        ),
-        (
             "agility_sdk_path",
             "Path to the Agility SDK distribution (optional for D3D12)",
             os.path.join(d3d12_deps_folder, "agility_sdk"),
@@ -500,6 +495,14 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     if env["arch"] == "x86_64":
         env.AppendUnique(CPPDEFINES=["_WIN64"])
 
+    # Sanitizers
+    prebuilt_lib_extra_suffix = ""
+    if env["use_asan"]:
+        env.extra_suffix += ".san"
+        prebuilt_lib_extra_suffix = ".san"
+        env.Append(CCFLAGS=["/fsanitize=address"])
+        env.Append(LINKFLAGS=["/INFERASANLIBS"])
+
     ## Libs
 
     LIBS = [
@@ -567,7 +570,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
             LIBS += ["WinPixEventRuntime"]
 
         env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
-        LIBS += ["libNIR.windows." + env["arch"]]
+        LIBS += ["libNIR.windows." + env["arch"] + prebuilt_lib_extra_suffix]
 
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
@@ -575,11 +578,11 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
             env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
             env.Append(LIBPATH=[env["angle_libs"]])
             LIBS += [
-                "libANGLE.windows." + env["arch"],
-                "libEGL.windows." + env["arch"],
-                "libGLES.windows." + env["arch"],
+                "libANGLE.windows." + env["arch"] + prebuilt_lib_extra_suffix,
+                "libEGL.windows." + env["arch"] + prebuilt_lib_extra_suffix,
+                "libGLES.windows." + env["arch"] + prebuilt_lib_extra_suffix,
             ]
-            LIBS += ["dxgi", "d3d9", "d3d11"]
+            LIBS += ["dxgi", "d3d9", "d3d11", "synchronization"]
         env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     if env["target"] in ["editor", "template_debug"]:
@@ -612,12 +615,6 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     if vcvars_msvc_config:
         env.Prepend(CPPPATH=[p for p in str(os.getenv("INCLUDE")).split(";")])
         env.Append(LIBPATH=[p for p in str(os.getenv("LIB")).split(";")])
-
-    # Sanitizers
-    if env["use_asan"]:
-        env.extra_suffix += ".san"
-        env.Append(LINKFLAGS=["/INFERASANLIBS"])
-        env.Append(CCFLAGS=["/fsanitize=address"])
 
     # Incremental linking fix
     env["BUILDERS"]["ProgramOriginal"] = env["BUILDERS"]["Program"]
@@ -810,7 +807,7 @@ def configure_mingw(env: "SConsEnvironment"):
                     "ANGLE.windows." + env["arch"],
                 ]
             )
-            env.Append(LIBS=["dxgi", "d3d9", "d3d11"])
+            env.Append(LIBS=["dxgi", "d3d9", "d3d11", "synchronization"])
         env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])

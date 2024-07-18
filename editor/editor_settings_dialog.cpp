@@ -168,28 +168,17 @@ void EditorSettingsDialog::_notification(int p_what) {
 }
 
 void EditorSettingsDialog::shortcut_input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(p_event.is_null());
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-
 	const Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed()) {
 		bool handled = false;
 
 		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
-			String action = undo_redo->get_current_action_name();
-			if (!action.is_empty()) {
-				EditorNode::get_log()->add_message(vformat(TTR("Undo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
-			}
-			undo_redo->undo();
+			EditorNode::get_singleton()->undo();
 			handled = true;
 		}
 
 		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
-			undo_redo->redo();
-			String action = undo_redo->get_current_action_name();
-			if (!action.is_empty()) {
-				EditorNode::get_log()->add_message(vformat(TTR("Redo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
-			}
+			EditorNode::get_singleton()->redo();
 			handled = true;
 		}
 

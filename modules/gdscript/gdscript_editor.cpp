@@ -1521,22 +1521,19 @@ static GDScriptCompletionIdentifier _type_from_variant(const Variant &p_value, G
 		}
 		if (scr.is_valid()) {
 			ci.type.script_path = scr->get_path();
+			ci.type.script_type = scr;
+			ci.type.native_type = scr->get_instance_base_type();
+			ci.type.kind = GDScriptParser::DataType::SCRIPT;
 
 			if (scr->get_path().ends_with(".gd")) {
-				Error err;
-				Ref<GDScriptParserRef> parser = GDScriptCache::get_parser(scr->get_path(), GDScriptParserRef::INTERFACE_SOLVED, err);
-				if (err == OK) {
+				Ref<GDScriptParserRef> parser = p_context.parser->get_depended_parser_for(scr->get_path());
+				if (parser.is_valid() && parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED) == OK) {
 					ci.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 					ci.type.class_type = parser->get_parser()->get_tree();
 					ci.type.kind = GDScriptParser::DataType::CLASS;
-					p_context.dependent_parsers.push_back(parser);
 					return ci;
 				}
 			}
-
-			ci.type.kind = GDScriptParser::DataType::SCRIPT;
-			ci.type.script_type = scr;
-			ci.type.native_type = scr->get_instance_base_type();
 		} else {
 			ci.type.kind = GDScriptParser::DataType::NATIVE;
 		}
@@ -1811,8 +1808,6 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 							if (mb && mb->is_const()) {
 								bool all_is_const = true;
 								Vector<Variant> args;
-								GDScriptParser::CompletionContext c2 = p_context;
-								c2.current_line = call->start_line;
 								for (int i = 0; all_is_const && i < call->arguments.size(); i++) {
 									GDScriptCompletionIdentifier arg;
 
@@ -1849,16 +1844,14 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 														}
 
 														if (FileAccess::exists(script)) {
-															Error err = OK;
-															Ref<GDScriptParserRef> parser = GDScriptCache::get_parser(script, GDScriptParserRef::INTERFACE_SOLVED, err);
-															if (err == OK) {
+															Ref<GDScriptParserRef> parser = p_context.parser->get_depended_parser_for(script);
+															if (parser.is_valid() && parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED) == OK) {
 																r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 																r_type.type.script_path = script;
 																r_type.type.class_type = parser->get_parser()->get_tree();
 																r_type.type.is_constant = false;
 																r_type.type.kind = GDScriptParser::DataType::CLASS;
 																r_type.value = Variant();
-																p_context.dependent_parsers.push_back(parser);
 																found = true;
 															}
 														}
@@ -1959,11 +1952,14 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 						break;
 					}
 
-					if (base.value.in(index.value)) {
-						Variant value = base.value.get(index.value);
-						r_type = _type_from_variant(value, p_context);
-						found = true;
-						break;
+					{
+						bool valid;
+						Variant value = base.value.get(index.value, &valid);
+						if (valid) {
+							r_type = _type_from_variant(value, p_context);
+							found = true;
+							break;
+						}
 					}
 
 					// Look if it is a dictionary node.
@@ -2307,9 +2303,8 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 	if (ScriptServer::is_global_class(p_identifier->name)) {
 		String script = ScriptServer::get_global_class_path(p_identifier->name);
 		if (script.to_lower().ends_with(".gd")) {
-			Error err = OK;
-			Ref<GDScriptParserRef> parser = GDScriptCache::get_parser(script, GDScriptParserRef::INTERFACE_SOLVED, err);
-			if (err == OK) {
+			Ref<GDScriptParserRef> parser = p_context.parser->get_depended_parser_for(script);
+			if (parser.is_valid() && parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED) == OK) {
 				r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 				r_type.type.script_path = script;
 				r_type.type.class_type = parser->get_parser()->get_tree();
@@ -2317,7 +2312,6 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 				r_type.type.is_constant = false;
 				r_type.type.kind = GDScriptParser::DataType::CLASS;
 				r_type.value = Variant();
-				p_context.dependent_parsers.push_back(parser);
 				return true;
 			}
 		} else {

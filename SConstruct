@@ -200,7 +200,10 @@ opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectur
 opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
 opts.Add(
     EnumVariable(
-        "optimize", "Optimization level", "speed_trace", ("none", "custom", "debug", "speed", "speed_trace", "size")
+        "optimize",
+        "Optimization level (by default inferred from 'target' and 'dev_build')",
+        "auto",
+        ("auto", "none", "custom", "debug", "speed", "speed_trace", "size"),
     )
 )
 opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
@@ -466,14 +469,15 @@ env.editor_build = env["target"] == "editor"
 env.dev_build = env["dev_build"]
 env.debug_features = env["target"] in ["editor", "template_debug"]
 
-if env.dev_build:
-    opt_level = "none"
-elif env.debug_features:
-    opt_level = "speed_trace"
-else:  # Release
-    opt_level = "speed"
+if env["optimize"] == "auto":
+    if env.dev_build:
+        opt_level = "none"
+    elif env.debug_features:
+        opt_level = "speed_trace"
+    else:  # Release
+        opt_level = "speed"
+    env["optimize"] = ARGUMENTS.get("optimize", opt_level)
 
-env["optimize"] = ARGUMENTS.get("optimize", opt_level)
 env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", env.dev_build)
 
 if env.editor_build:
@@ -696,12 +700,11 @@ if env.msvc:
     else:
         env.Append(LINKFLAGS=["/DEBUG:NONE"])
 
-    if env["optimize"] == "speed":
+    if env["optimize"].startswith("speed"):
         env.Append(CCFLAGS=["/O2"])
         env.Append(LINKFLAGS=["/OPT:REF"])
-    elif env["optimize"] == "speed_trace":
-        env.Append(CCFLAGS=["/O2"])
-        env.Append(LINKFLAGS=["/OPT:REF", "/OPT:NOICF"])
+        if env["optimize"] == "speed_trace":
+            env.Append(LINKFLAGS=["/OPT:NOICF"])
     elif env["optimize"] == "size":
         env.Append(CCFLAGS=["/O1"])
         env.Append(LINKFLAGS=["/OPT:REF"])
@@ -712,7 +715,13 @@ else:
         # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
         # otherwise addr2line doesn't understand them
         env.Append(CCFLAGS=["-gdwarf-4"])
-        if env.dev_build:
+        if methods.using_emcc(env):
+            # Emscripten only produces dwarf symbols when using "-g3".
+            env.Append(CCFLAGS=["-g3"])
+            # Emscripten linker needs debug symbols options too.
+            env.Append(LINKFLAGS=["-gdwarf-4"])
+            env.Append(LINKFLAGS=["-g3"])
+        elif env.dev_build:
             env.Append(CCFLAGS=["-g3"])
         else:
             env.Append(CCFLAGS=["-g2"])
@@ -727,17 +736,25 @@ else:
         else:
             env.Append(LINKFLAGS=["-s"])
 
+    # Linker needs optimization flags too, at least for Emscripten.
+    # For other toolchains, this _may_ be useful for LTO too to disambiguate.
+
     if env["optimize"] == "speed":
         env.Append(CCFLAGS=["-O3"])
+        env.Append(LINKFLAGS=["-O3"])
     # `-O2` is friendlier to debuggers than `-O3`, leading to better crash backtraces.
     elif env["optimize"] == "speed_trace":
         env.Append(CCFLAGS=["-O2"])
+        env.Append(LINKFLAGS=["-O2"])
     elif env["optimize"] == "size":
         env.Append(CCFLAGS=["-Os"])
+        env.Append(LINKFLAGS=["-Os"])
     elif env["optimize"] == "debug":
         env.Append(CCFLAGS=["-Og"])
+        env.Append(LINKFLAGS=["-Og"])
     elif env["optimize"] == "none":
         env.Append(CCFLAGS=["-O0"])
+        env.Append(LINKFLAGS=["-O0"])
 
 # Needs to happen after configure to handle "auto".
 if env["lto"] != "none":

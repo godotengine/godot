@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+#include <algorithm>
 #include "tvgMath.h"
 #include "tvgSwCommon.h"
 #include "tvgTaskScheduler.h"
@@ -86,7 +87,7 @@ struct SwShapeTask : SwTask
        Additionally, the stroke style should not be dashed. */
     bool antialiasing(float strokeWidth)
     {
-        return strokeWidth < 2.0f || rshape->stroke->dashCnt > 0 || rshape->stroke->strokeFirst || rshape->strokeTrim();
+        return strokeWidth < 2.0f || rshape->stroke->dashCnt > 0 || rshape->stroke->strokeFirst || rshape->strokeTrim() || rshape->stroke->color[3] < 255;;
     }
 
     float validStrokeWidth()

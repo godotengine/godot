@@ -1395,23 +1395,14 @@ void AnimationPlayerEditor::_current_animation_changed(const String &p_name) {
 void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) {
 	frame->set_max(p_len);
 }
-
-void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_timeline_only) {
+void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_timeline_only, bool p_update_position_only) {
 	timeline_position = p_pos;
 
-	if (!is_visible_in_tree()) {
-		return;
-	}
-
-	if (!player) {
-		return;
-	}
-
-	if (player->is_playing()) {
-		return;
-	}
-
-	if (!player->has_animation(player->get_assigned_animation())) {
+	if (!is_visible_in_tree() ||
+			p_update_position_only ||
+			!player ||
+			player->is_playing() ||
+			!player->has_animation(player->get_assigned_animation())) {
 		return;
 	}
 

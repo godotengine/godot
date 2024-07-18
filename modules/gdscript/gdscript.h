@@ -411,6 +411,8 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	static GDScriptLanguage *singleton;
 
+	bool finishing = false;
+
 	Variant *_global_array = nullptr;
 	Vector<Variant> global_array;
 	HashMap<StringName, int> globals;

@@ -521,11 +521,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Touchscreen
 	bool has_touchscreen_ui = DisplayServer::get_singleton()->is_touchscreen_available();
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/increase_scrollbar_touch_area", has_touchscreen_ui, "")
+	set_restart_if_changed("interface/touchscreen/increase_scrollbar_touch_area", true);
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_long_press_as_right_click", has_touchscreen_ui, "")
 	set_restart_if_changed("interface/touchscreen/enable_long_press_as_right_click", true);
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_pan_and_scale_gestures", has_touchscreen_ui, "")
 	set_restart_if_changed("interface/touchscreen/enable_pan_and_scale_gestures", true);
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/touchscreen/scale_gizmo_handles", has_touchscreen_ui ? 3 : 1, "1,5,1")
+	set_restart_if_changed("interface/touchscreen/scale_gizmo_handles", true);
 
 	// Scene tabs
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/scene_tabs/display_close_button", 1, "Never,If Tab Active,Always"); // TabBar::CloseButtonDisplayPolicy
@@ -781,6 +783,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Animation
 	_initial_set("editors/animation/autorename_animation_tracks", true);
+	_initial_set("editors/animation/confirm_insert_track", true);
 	_initial_set("editors/animation/default_create_bezier_tracks", false);
 	_initial_set("editors/animation/default_create_reset_tracks", true);
 	_initial_set("editors/animation/onion_layers_past_color", Color(1, 0, 0));
@@ -859,6 +862,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "debugger/profile_native_calls", false, "")
 
 	/* Extra config */
+
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "input/buffering/agile_event_flushing", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "input/buffering/use_accumulated_input", true, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	// TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "project_manager/sorting_order", 0, "Last Edited,Name,Path")

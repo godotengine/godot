@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-VERSION=0.14.0
+VERSION=0.14.2
 
 cd thirdparty/thorvg/ || true
 rm -rf AUTHORS LICENSE inc/ src/ *.zip *.tar.gz tmp/

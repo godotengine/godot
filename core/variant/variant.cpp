@@ -951,7 +951,7 @@ bool Variant::is_zero() const {
 			return *reinterpret_cast<const ::RID *>(_data._mem) == ::RID();
 		}
 		case OBJECT: {
-			return get_validated_object() == nullptr;
+			return _get_obj().obj == nullptr;
 		}
 		case CALLABLE: {
 			return reinterpret_cast<const Callable *>(_data._mem)->is_null();

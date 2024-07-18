@@ -198,7 +198,6 @@ protected:
 	void _notification(int p_what);
 
 public:
-	static Array make_default_bezier_key(float p_value);
 	static float get_bezier_key_value(Array p_bezier_key_array);
 
 	virtual String get_tooltip(const Point2 &p_pos) const override;
@@ -222,7 +221,7 @@ public:
 	void paste_keys(real_t p_ofs, bool p_ofs_valid);
 	void delete_selection();
 
-	void _bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode);
+	void _bezier_track_insert_key_at_anim(const Ref<Animation> &p_anim, int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode);
 
 	AnimationBezierTrackEdit();
 };

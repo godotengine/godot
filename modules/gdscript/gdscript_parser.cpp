@@ -260,6 +260,7 @@ void GDScriptParser::make_completion_context(CompletionType p_type, Node *p_node
 	context.current_line = tokenizer->get_cursor_line();
 	context.current_argument = p_argument;
 	context.node = p_node;
+	context.parser = this;
 	completion_context = context;
 }
 
@@ -277,6 +278,7 @@ void GDScriptParser::make_completion_context(CompletionType p_type, Variant::Typ
 	context.current_suite = current_suite;
 	context.current_line = tokenizer->get_cursor_line();
 	context.builtin_type = p_builtin_type;
+	context.parser = this;
 	completion_context = context;
 }
 
@@ -413,7 +415,7 @@ Error GDScriptParser::parse_binary(const Vector<uint8_t> &p_binary, const String
 	}
 
 	tokenizer = buffer_tokenizer;
-	script_path = p_script_path;
+	script_path = p_script_path.simplify_path();
 	current = tokenizer->scan();
 	// Avoid error or newline as the first token.
 	// The latter can mess with the parser when opening files filled exclusively with comments and newlines.

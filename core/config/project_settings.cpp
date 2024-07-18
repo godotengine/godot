@@ -329,9 +329,9 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			String path = p_value;
 			if (path.begins_with("*")) {
 				autoload.is_singleton = true;
-				autoload.path = path.substr(1);
+				autoload.path = path.substr(1).simplify_path();
 			} else {
-				autoload.path = path;
+				autoload.path = path.simplify_path();
 			}
 			add_autoload(autoload);
 		} else if (p_name.operator String().begins_with("global_group/")) {
@@ -1515,6 +1515,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/scale_mode", PROPERTY_HINT_ENUM, "fractional,integer"), "fractional");
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1"), 16384);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "debug/settings/profiler/max_timestamp_query_elements", PROPERTY_HINT_RANGE, "256,65535,1"), 256);
 
 	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "compression/formats/zstd/long_distance_matching"), Compression::zstd_long_distance_matching);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "compression/formats/zstd/compression_level", PROPERTY_HINT_RANGE, "1,22,1"), Compression::zstd_level);

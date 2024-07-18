@@ -8177,6 +8177,9 @@ String VisualShaderNodeRotationByAxis::get_output_port_name(int p_port) const {
 }
 
 bool VisualShaderNodeRotationByAxis::has_output_port_preview(int p_port) const {
+	if (p_port == 0) {
+		return true;
+	}
 	return false;
 }
 
@@ -8190,15 +8193,20 @@ String VisualShaderNodeRotationByAxis::generate_code(Shader::Mode p_mode, Visual
 	code += vformat("			vec3( __axis.y*__axis.x*(1.0-cos(__angle))+__axis.z*sin(__angle), cos(__angle)+__axis.y*__axis.y*(1.0-cos(__angle)), __axis.y*__axis.z*(1.0-cos(__angle))-__axis.x*sin(__angle) ),\n");
 	code += vformat("			vec3( __axis.z*__axis.x*(1.0-cos(__angle))-__axis.y*sin(__angle), __axis.z*__axis.y*(1.0-cos(__angle))+__axis.x*sin(__angle), cos(__angle)+__axis.z*__axis.z*(1.0-cos(__angle)) )\n");
 	code += vformat("		);\n");
-	code += vformat("		%s = %s * __rot_matrix;\n", p_output_vars[0], p_input_vars[0]);
-	code += vformat("		%s = mat4(__rot_matrix);\n", p_output_vars[1]);
+	if (is_output_port_connected(0)) {
+		code += vformat("		%s = %s * __rot_matrix;\n", p_output_vars[0], p_input_vars[0]);
+	}
+	if (is_output_port_connected(1)) {
+		code += vformat("		%s = mat4(__rot_matrix);\n", p_output_vars[1]);
+	}
 	code += "	}\n";
 	return code;
 }
 
 VisualShaderNodeRotationByAxis::VisualShaderNodeRotationByAxis() {
+	set_input_port_default_value(0, Vector3());
 	set_input_port_default_value(1, 0.0);
-	set_input_port_default_value(2, Vector3(0.0, 0.0, 0.0));
+	set_input_port_default_value(2, Vector3());
 
 	simple_decl = false;
 }

@@ -225,6 +225,8 @@ protected:
 
 	Ref<Font> prev_font;
 
+	void _preview_changed();
+
 public:
 	virtual Size2 get_minimum_size() const override;
 

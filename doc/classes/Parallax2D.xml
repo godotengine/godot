@@ -8,6 +8,7 @@
 		[b]Note:[/b] Any changes to this node's position made after it enters the scene tree will be overridden if [member ignore_camera_scroll] is [code]false[/code] or [member screen_offset] is modified.
 	</description>
 	<tutorials>
+		<link title="2D Parallax">$DOCS_URL/tutorials/2d/2d_parallax.html</link>
 	</tutorials>
 	<members>
 		<member name="autoscroll" type="Vector2" setter="set_autoscroll" getter="get_autoscroll" default="Vector2(0, 0)">

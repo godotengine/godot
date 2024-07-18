@@ -2049,8 +2049,13 @@ void WaylandThread::_wp_relative_pointer_on_relative_motion(void *data, struct z
 
 	PointerData &pd = ss->pointer_data_buffer;
 
+	WindowState *ws = wl_surface_get_window_state(ss->pointed_surface);
+	ERR_FAIL_NULL(ws);
+
 	pd.relative_motion.x = wl_fixed_to_double(dx);
 	pd.relative_motion.y = wl_fixed_to_double(dy);
+
+	pd.relative_motion *= window_state_get_scale_factor(ws);
 
 	pd.relative_motion_time = uptime_lo;
 }
@@ -3239,6 +3244,8 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 		ws.xdg_exported = zxdg_exporter_v1_export(registry.xdg_exporter, ws.wl_surface);
 		zxdg_exported_v1_add_listener(ws.xdg_exported, &xdg_exported_listener, &ws);
 	}
+
+	wl_surface_commit(ws.wl_surface);
 
 	// Wait for the surface to be configured before continuing.
 	wl_display_roundtrip(wl_display);

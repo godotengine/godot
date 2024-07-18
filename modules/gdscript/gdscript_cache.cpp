@@ -42,6 +42,10 @@ GDScriptParserRef::Status GDScriptParserRef::get_status() const {
 	return status;
 }
 
+String GDScriptParserRef::get_path() const {
+	return path;
+}
+
 uint32_t GDScriptParserRef::get_source_hash() const {
 	return source_hash;
 }
@@ -131,9 +135,7 @@ void GDScriptParserRef::clear() {
 
 GDScriptParserRef::~GDScriptParserRef() {
 	clear();
-
-	MutexLock lock(GDScriptCache::singleton->mutex);
-	GDScriptCache::singleton->parser_map.erase(path);
+	GDScriptCache::remove_parser(path);
 }
 
 GDScriptCache *GDScriptCache::singleton = nullptr;
@@ -153,6 +155,11 @@ void GDScriptCache::move_script(const String &p_from, const String &p_to) {
 		singleton->parser_map[p_to] = singleton->parser_map[p_from];
 	}
 	singleton->parser_map.erase(p_from);
+
+	if (singleton->parser_inverse_dependencies.has(p_from) && !p_from.is_empty()) {
+		singleton->parser_inverse_dependencies[p_to] = singleton->parser_inverse_dependencies[p_from];
+	}
+	singleton->parser_inverse_dependencies.erase(p_from);
 
 	if (singleton->shallow_gdscript_cache.has(p_from) && !p_from.is_empty()) {
 		singleton->shallow_gdscript_cache[p_to] = singleton->shallow_gdscript_cache[p_from];
@@ -177,12 +184,10 @@ void GDScriptCache::remove_script(const String &p_path) {
 	}
 
 	if (singleton->parser_map.has(p_path)) {
-		// Keep a local reference until it goes out of scope.
-		// Clearing it can trigger a reference to itself to go out of scope, destructing it before clear finishes.
-		Ref<GDScriptParserRef> parser_ref = singleton->parser_map[p_path];
-		singleton->parser_map.erase(p_path);
-		parser_ref->clear();
+		singleton->parser_map[p_path]->clear();
 	}
+
+	remove_parser(p_path);
 
 	singleton->dependencies.erase(p_path);
 	singleton->shallow_gdscript_cache.erase(p_path);
@@ -194,6 +199,7 @@ Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptP
 	Ref<GDScriptParserRef> ref;
 	if (!p_owner.is_empty()) {
 		singleton->dependencies[p_owner].insert(p_path);
+		singleton->parser_inverse_dependencies[p_path].insert(p_owner);
 	}
 	if (singleton->parser_map.has(p_path)) {
 		ref = Ref<GDScriptParserRef>(singleton->parser_map[p_path]);
@@ -225,6 +231,13 @@ void GDScriptCache::remove_parser(const String &p_path) {
 	MutexLock lock(singleton->mutex);
 	// Can't clear the parser because some other parser might be currently using it in the chain of calls.
 	singleton->parser_map.erase(p_path);
+
+	// Have to copy while iterating, because parser_inverse_dependencies is modified.
+	HashSet<String> ideps = singleton->parser_inverse_dependencies[p_path];
+	singleton->parser_inverse_dependencies.erase(p_path);
+	for (String idep_path : ideps) {
+		remove_parser(idep_path);
+	}
 }
 
 String GDScriptCache::get_source_code(const String &p_path) {
@@ -416,6 +429,8 @@ void GDScriptCache::clear() {
 		return;
 	}
 	singleton->cleared = true;
+
+	singleton->parser_inverse_dependencies.clear();
 
 	RBSet<Ref<GDScriptParserRef>> parser_map_refs;
 	for (KeyValue<String, GDScriptParserRef *> &E : singleton->parser_map) {
