@@ -63,10 +63,11 @@
 #define OPENGL_DXGI_USE_RENDERBUFFER
 
 // Create and bind a depth buffer renderbuffer in OpenGL.
-#define OPENGL_DXGI_ADD_DEPTH_RENDERBUFFER
+// Again, we probably don't need this at all.
+//#define OPENGL_DXGI_ADD_DEPTH_RENDERBUFFER
 
 // Use DXGI flip-discard. (WIP)
-//#define OPENGL_DXGI_USE_FLIP_MODEL
+#define OPENGL_DXGI_USE_FLIP_MODEL
 
 #ifdef OPENGL_ON_DXGI_ENABLED
 
@@ -76,6 +77,7 @@
 #include <d3d11.h>
 #ifdef OPENGL_DXGI_USE_FLIP_MODEL
 #include <d3d11_3.h>
+#include <dxgi1_2.h>
 #endif
 
 #include <wrl/client.h>
@@ -150,10 +152,17 @@ static bool load_nv_dx_interop(PFNWGLGETPROCADDRESS gd_wglGetProcAddress) {
 			gd_wglDXUnlockObjectsNV;
 }
 
+typedef decltype(&CreateDXGIFactory1) PFNCREATEDXGIFACTORY1;
+
+static HMODULE module_dxgi = nullptr;
+PFNCREATEDXGIFACTORY1 fptr_CreateDXGIFactory1 = nullptr;
+
 typedef decltype(&D3D11CreateDeviceAndSwapChain) PFND3D11CREATEDEVICEANDSWAPCHAINPROC;
+typedef decltype(&D3D11CreateDevice) PFND3D11CREATEDEVICEPROC;
 
 static HMODULE module_d3d11 = nullptr;
 PFND3D11CREATEDEVICEANDSWAPCHAINPROC fptr_D3D11CreateDeviceAndSwapChain = nullptr;
+PFND3D11CREATEDEVICEPROC fptr_D3D11CreateDevice = nullptr;
 
 #endif // OPENGL_ON_DXGI_ENABLED
 
@@ -484,14 +493,28 @@ static bool load_dxgi_swap_chain_functions(PFNWGLGETPROCADDRESS gd_wglGetProcAdd
 
 	print_verbose("GLManagerNative_Windows: Loaded WGL_NV_DX_interop functions.");
 
+	module_dxgi = LoadLibraryW(L"dxgi.dll");
+	if (!module_dxgi) {
+		print_verbose("GLManagerNative_Windows: Failed to load DXGI.");
+		return false;
+	}
+
+	fptr_CreateDXGIFactory1 = (PFNCREATEDXGIFACTORY1)GetProcAddress(module_dxgi, "CreateDXGIFactory1");
+	if (!fptr_CreateDXGIFactory1) {
+		print_verbose("GLManagerNative_Windows: Failed to load DXGI functions.")
+				FreeLibrary(module_d3d11);
+		return false;
+	}
+
 	module_d3d11 = LoadLibraryW(L"d3d11.dll");
 	if (!module_d3d11) {
 		print_verbose("GLManagerNative_Windows: Failed to load D3D11.");
 		return false;
 	}
 
-	fptr_D3D11CreateDeviceAndSwapChain = (PFND3D11CREATEDEVICEANDSWAPCHAINPROC)(void *)GetProcAddress(module_d3d11, "D3D11CreateDeviceAndSwapChain");
-	if (!fptr_D3D11CreateDeviceAndSwapChain) {
+	fptr_D3D11CreateDeviceAndSwapChain = (PFND3D11CREATEDEVICEANDSWAPCHAINPROC)GetProcAddress(module_d3d11, "D3D11CreateDeviceAndSwapChain");
+	fptr_D3D11CreateDevice = (PFND3D11CREATEDEVICEPROC)GetProcAddress(module_d3d11, "D3D11CreateDevice");
+	if (!fptr_D3D11CreateDeviceAndSwapChain || !fptr_D3D11CreateDevice) {
 		print_verbose("GLManagerNative_Windows: Failed to load D3D11 functions.")
 				FreeLibrary(module_d3d11);
 		return false;
@@ -873,11 +896,101 @@ GLManagerNative_Windows::~GLManagerNative_Windows() {
 
 #ifdef OPENGL_ON_DXGI_ENABLED
 
+static ComPtr<IDXGIFactory> get_dxgi_factory(const ComPtr<ID3D11Device> &device) {
+	ComPtr<IDXGIDevice> dxgi_device;
+	HRESULT hr = device.As(&dxgi_device);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("Failed to get IDXGIDevice, HRESULT: 0x%08X", (unsigned)hr));
+		return {};
+	}
+	ComPtr<IDXGIAdapter> dxgi_adapter;
+	hr = dxgi_device->GetAdapter(&dxgi_adapter);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("Failed to get IDXGIAdapter, HRESULT: 0x%08X", (unsigned)hr));
+		return {};
+	}
+	ComPtr<IDXGIFactory> dxgi_factory;
+	hr = dxgi_adapter->GetParent(__uuidof(IDXGIFactory), &dxgi_factory);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("Failed to get IDXGIFactory, HRESULT: 0x%08X", (unsigned)hr));
+		return {};
+	}
+	return dxgi_factory;
+}
+
 GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::create(HWND p_hwnd, int p_width, int p_height) {
 	ComPtr<ID3D11Device> device;
 	ComPtr<ID3D11DeviceContext> device_context;
 	ComPtr<IDXGISwapChain> swap_chain;
 
+	UINT flags = 0;
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		flags |= D3D11_CREATE_DEVICE_DEBUG;
+	}
+
+#ifdef OPENGL_DXGI_USE_FLIP_MODEL
+	HRESULT hr;
+
+#if 0
+	ComPtr<IDXGIFactory2> dxgi_factory_2;
+	hr = fptr_CreateDXGIFactory1(__uuidof(IDXGIFactory2), &dxgi_factory_2);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("CreateDXGIFactory1 failed, HRESULT: 0x%08X", (unsigned)hr));
+		return nullptr;
+	}
+
+	ComPtr<IDXGIAdapter1> dxgi_adapter_1;
+	hr = dxgi_factory_2->EnumAdapters1(0, &dxgi_adapter_1);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("EnumAdapters1 failed, HRESULT: 0x%08X", (unsigned)hr));
+		return nullptr;
+	}
+#endif
+
+	hr = fptr_D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, &device, nullptr, &device_context);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("D3D11CreateDevice failed, HRESULT: 0x%08X", (unsigned)hr));
+		return nullptr;
+	}
+
+	ComPtr<IDXGIFactory> dxgi_factory = get_dxgi_factory(device);
+	if (!dxgi_factory) {
+		return nullptr;
+	}
+
+	ComPtr<IDXGIFactory2> dxgi_factory_2;
+	hr = dxgi_factory.As(&dxgi_factory_2);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("Failed to get IDXGIFactory2, HRESULT: 0x%08X", (unsigned)hr));
+		return nullptr;
+	}
+
+	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc_1 = {};
+	swap_chain_desc_1.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swap_chain_desc_1.SampleDesc.Count = 1;
+	swap_chain_desc_1.BufferCount = 3;
+	swap_chain_desc_1.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swap_chain_desc_1.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+	swap_chain_desc_1.Flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+	swap_chain_desc_1.Scaling = DXGI_SCALING_NONE;
+	// TODO: ???
+	swap_chain_desc_1.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+
+	ComPtr<IDXGISwapChain1> swap_chain_1;
+	hr = dxgi_factory_2->CreateSwapChainForHwnd(device.Get(), p_hwnd, &swap_chain_desc_1, nullptr, nullptr, &swap_chain_1);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("CreateSwapChainForHwnd failed, HRESULT: 0x%08X", (unsigned)hr));
+		return nullptr;
+	}
+
+	swap_chain = swap_chain_1;
+
+	hr = dxgi_factory_2->MakeWindowAssociation(p_hwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("MakeWindowAssociation failed, HRESULT: 0x%08X", (unsigned)hr));
+	}
+
+#else
 	DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
 	swap_chain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swap_chain_desc.SampleDesc.Count = 1;
@@ -895,11 +1008,6 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 #else
 	swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 #endif
-
-	UINT flags = 0;
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		flags |= D3D11_CREATE_DEVICE_DEBUG;
-	}
 
 	// TODO: Change to use IDXGIFactory2::CreateSwapChainForHwnd so that we
 	//       can specify DXGI_SCALING_NONE
@@ -921,29 +1029,15 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 	}
 
 	{
-		ComPtr<IDXGIDevice> dxgi_device;
-		hr = device.As(&dxgi_device);
-		if (!SUCCEEDED(hr)) {
-			ERR_PRINT(vformat("Failed to get IDXGIDevice, HRESULT: 0x%08X", (unsigned)hr));
-		} else {
-			ComPtr<IDXGIAdapter> dxgi_adapter;
-			hr = dxgi_device->GetAdapter(&dxgi_adapter);
+		ComPtr<IDXGIFactory> dxgi_factory = get_dxgi_factory(device);
+		if (dxgi_factory) {
+			hr = dxgi_factory->MakeWindowAssociation(p_hwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
 			if (!SUCCEEDED(hr)) {
-				ERR_PRINT(vformat("Failed to get IDXGIAdapter, HRESULT: 0x%08X", (unsigned)hr));
-			} else {
-				ComPtr<IDXGIFactory> dxgi_factory;
-				hr = dxgi_adapter->GetParent(__uuidof(IDXGIFactory), &dxgi_factory);
-				if (!SUCCEEDED(hr)) {
-					ERR_PRINT(vformat("Failed to get IDXGIFactory, HRESULT: 0x%08X", (unsigned)hr));
-				} else {
-					hr = dxgi_factory->MakeWindowAssociation(p_hwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
-					if (!SUCCEEDED(hr)) {
-						ERR_PRINT(vformat("Failed to get IDXGIFactory, HRESULT: 0x%08X", (unsigned)hr));
-					}
-				}
+				ERR_PRINT(vformat("MakeWindowAssociation failed, HRESULT: 0x%08X", (unsigned)hr));
 			}
 		}
 	}
+#endif
 
 	HANDLE gldx_device = gd_wglDXOpenDeviceNV(device.Get());
 	if (!gldx_device) {
@@ -1344,6 +1438,15 @@ void GLManagerNative_Windows::DxgiSwapChain::present(bool p_use_vsync) {
 	HRESULT hr;
 	if (p_use_vsync) {
 		hr = swap_chain->Present(1, 0);
+		DWORD wait = WaitForSingleObject(frame_latency_waitable_obj, 1000);
+		if (wait != WAIT_OBJECT_0) {
+			if (wait == WAIT_FAILED) {
+				DWORD error = GetLastError();
+				ERR_PRINT(vformat("Wait for frame latency waitable failed with error: 0x%08X", (unsigned)error));
+			} else {
+				ERR_PRINT(vformat("Wait for frame latency waitable failed, WaitForSingleObject returned 0x%08X", (unsigned)wait));
+			}
+		}
 	} else {
 		hr = swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
 	}
