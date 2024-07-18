@@ -861,7 +861,7 @@ else:  # GCC, Clang
             if cc_version_major >= 11:  # Broke on MethodBind templates before GCC 11.
                 env.Append(CCFLAGS=["-Wlogical-op"])
         elif methods.using_clang(env) or methods.using_emcc(env):
-            env.Append(CCFLAGS=["-Wimplicit-fallthrough"])
+            env.Append(CCFLAGS=["-Wimplicit-fallthrough", "-Wno-undefined-var-template"])
     elif env["warnings"] == "all":
         env.Append(CCFLAGS=["-Wall"] + common_warnings)
     elif env["warnings"] == "moderate":

@@ -32,6 +32,7 @@
 
 #include "core/object/script_language.h"
 #include "core/os/os.h"
+#include "core/os/safe_binary_mutex.h"
 #include "core/os/thread_safe.h"
 
 WorkerThreadPool::Task *const WorkerThreadPool::ThreadData::YIELDING = (Task *)1;
@@ -46,7 +47,7 @@ void WorkerThreadPool::Task::free_template_userdata() {
 WorkerThreadPool *WorkerThreadPool::singleton = nullptr;
 
 #ifdef THREADS_ENABLED
-thread_local uintptr_t WorkerThreadPool::unlockable_mutexes[MAX_UNLOCKABLE_MUTEXES] = {};
+thread_local WorkerThreadPool::UnlockableLocks WorkerThreadPool::unlockable_locks[MAX_UNLOCKABLE_LOCKS];
 #endif
 
 void WorkerThreadPool::_process_task(Task *p_task) {
@@ -428,13 +429,9 @@ Error WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 
 void WorkerThreadPool::_lock_unlockable_mutexes() {
 #ifdef THREADS_ENABLED
-	for (uint32_t i = 0; i < MAX_UNLOCKABLE_MUTEXES; i++) {
-		if (unlockable_mutexes[i]) {
-			if ((((uintptr_t)unlockable_mutexes[i]) & 1) == 0) {
-				((Mutex *)unlockable_mutexes[i])->lock();
-			} else {
-				((BinaryMutex *)(unlockable_mutexes[i] & ~1))->lock();
-			}
+	for (uint32_t i = 0; i < MAX_UNLOCKABLE_LOCKS; i++) {
+		if (unlockable_locks[i].ulock) {
+			unlockable_locks[i].ulock->lock();
 		}
 	}
 #endif
@@ -442,13 +439,9 @@ void WorkerThreadPool::_lock_unlockable_mutexes() {
 
 void WorkerThreadPool::_unlock_unlockable_mutexes() {
 #ifdef THREADS_ENABLED
-	for (uint32_t i = 0; i < MAX_UNLOCKABLE_MUTEXES; i++) {
-		if (unlockable_mutexes[i]) {
-			if ((((uintptr_t)unlockable_mutexes[i]) & 1) == 0) {
-				((Mutex *)unlockable_mutexes[i])->unlock();
-			} else {
-				((BinaryMutex *)(unlockable_mutexes[i] & ~1))->unlock();
-			}
+	for (uint32_t i = 0; i < MAX_UNLOCKABLE_LOCKS; i++) {
+		if (unlockable_locks[i].ulock) {
+			unlockable_locks[i].ulock->unlock();
 		}
 	}
 #endif
@@ -675,37 +668,28 @@ WorkerThreadPool::TaskID WorkerThreadPool::get_caller_task_id() {
 }
 
 #ifdef THREADS_ENABLED
-uint32_t WorkerThreadPool::thread_enter_unlock_allowance_zone(Mutex *p_mutex) {
-	return _thread_enter_unlock_allowance_zone(p_mutex, false);
-}
-
-uint32_t WorkerThreadPool::thread_enter_unlock_allowance_zone(BinaryMutex *p_mutex) {
-	return _thread_enter_unlock_allowance_zone(p_mutex, true);
-}
-
-uint32_t WorkerThreadPool::_thread_enter_unlock_allowance_zone(void *p_mutex, bool p_is_binary) {
-	for (uint32_t i = 0; i < MAX_UNLOCKABLE_MUTEXES; i++) {
-		if (unlikely((unlockable_mutexes[i] & ~1) == (uintptr_t)p_mutex)) {
+uint32_t WorkerThreadPool::_thread_enter_unlock_allowance_zone(THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> &p_ulock) {
+	for (uint32_t i = 0; i < MAX_UNLOCKABLE_LOCKS; i++) {
+		DEV_ASSERT((bool)unlockable_locks[i].ulock == (bool)unlockable_locks[i].rc);
+		if (unlockable_locks[i].ulock == &p_ulock) {
 			// Already registered in the current thread.
-			return UINT32_MAX;
-		}
-		if (!unlockable_mutexes[i]) {
-			unlockable_mutexes[i] = (uintptr_t)p_mutex;
-			if (p_is_binary) {
-				unlockable_mutexes[i] |= 1;
-			}
+			unlockable_locks[i].rc++;
+			return i;
+		} else if (!unlockable_locks[i].ulock) {
+			unlockable_locks[i].ulock = &p_ulock;
+			unlockable_locks[i].rc = 1;
 			return i;
 		}
 	}
-	ERR_FAIL_V_MSG(UINT32_MAX, "No more unlockable mutex slots available. Engine bug.");
+	ERR_FAIL_V_MSG(UINT32_MAX, "No more unlockable lock slots available. Engine bug.");
 }
 
 void WorkerThreadPool::thread_exit_unlock_allowance_zone(uint32_t p_zone_id) {
-	if (p_zone_id == UINT32_MAX) {
-		return;
+	DEV_ASSERT(unlockable_locks[p_zone_id].ulock && unlockable_locks[p_zone_id].rc);
+	unlockable_locks[p_zone_id].rc--;
+	if (unlockable_locks[p_zone_id].rc == 0) {
+		unlockable_locks[p_zone_id].ulock = nullptr;
 	}
-	DEV_ASSERT(unlockable_mutexes[p_zone_id]);
-	unlockable_mutexes[p_zone_id] = 0;
 }
 #endif
 
