@@ -2589,7 +2589,10 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_secret_character", "character"), &LineEdit::set_secret_character);
 	ClassDB::bind_method(D_METHOD("get_secret_character"), &LineEdit::get_secret_character);
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &LineEdit::menu_option);
+	// TODO: Properly handle popups when advanced GUI is disabled.
+#ifndef ADVANCED_GUI_DISABLED
 	ClassDB::bind_method(D_METHOD("get_menu"), &LineEdit::get_menu);
+#endif // ADVANCED_GUI_DISABLED
 	ClassDB::bind_method(D_METHOD("is_menu_visible"), &LineEdit::is_menu_visible);
 	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enable"), &LineEdit::set_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &LineEdit::is_context_menu_enabled);

@@ -42,7 +42,7 @@ TEST_CASE("[GraphNode][SceneTree]") {
 	SUBCASE("[GraphNode] Graph Node only child on delete should not cause error.") {
 		// Setup.
 		GraphNode *test_node = memnew(GraphNode);
-		test_child->set_name("Graph Node");
+		test_node->set_name("Graph Node");
 		Control *test_child = memnew(Control);
 		test_child->set_name("child");
 		test_node->add_child(test_child);
