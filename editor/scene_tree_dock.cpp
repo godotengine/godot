@@ -990,6 +990,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			undo_redo->add_do_method(root, "set_scene_file_path", String());
 			undo_redo->add_do_method(node, "set_owner", (Object *)nullptr);
 			undo_redo->add_do_method(root, "set_owner", node);
+			undo_redo->add_do_method(node, "set_unique_name_in_owner", false);
 			_node_replace_owner(root, root, node, MODE_DO);
 
 			undo_redo->add_undo_method(root, "set_scene_file_path", root->get_scene_file_path());
@@ -1000,6 +1001,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			undo_redo->add_undo_method(node->get_parent(), "move_child", node, node->get_index(false));
 			undo_redo->add_undo_method(root, "set_owner", (Object *)nullptr);
 			undo_redo->add_undo_method(node, "set_owner", root);
+			undo_redo->add_undo_method(node, "set_unique_name_in_owner", node->is_unique_name_in_owner());
 			_node_replace_owner(root, root, root, MODE_UNDO);
 
 			undo_redo->add_do_method(scene_tree, "update_tree");
