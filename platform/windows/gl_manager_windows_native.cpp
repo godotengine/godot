@@ -1455,7 +1455,7 @@ void GLManagerNative_Windows::DxgiSwapChain::unlock_from_opengl() {
 }
 
 void GLManagerNative_Windows::DxgiSwapChain::present(bool p_use_vsync) {
-	unlock_from_opengl();
+	release_render_target(true);
 
 #ifdef OPENGL_DXGI_USE_FLIP_MODEL
 	HRESULT hr;
@@ -1481,7 +1481,6 @@ void GLManagerNative_Windows::DxgiSwapChain::present(bool p_use_vsync) {
 		ERR_PRINT(vformat("Present failed, HRESULT: 0x%08X", (unsigned)hr));
 	}
 
-	release_render_target(false);
 	setup_render_target();
 	lock_for_opengl();
 }
