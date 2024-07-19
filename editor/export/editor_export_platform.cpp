@@ -873,7 +873,10 @@ String EditorExportPlatform::_get_script_encryption_key(const Ref<EditorExportPr
 Vector<String> EditorExportPlatform::get_forced_export_files() {
 	Vector<String> files;
 
-	files.push_back(ProjectSettings::get_singleton()->get_global_class_list_path());
+	const String global_class_list = ProjectSettings::get_singleton()->get_global_class_list_path();
+	if (FileAccess::exists(global_class_list)) {
+		files.push_back(global_class_list);
+	}
 
 	String icon = GLOBAL_GET("application/config/icon");
 	String splash = GLOBAL_GET("application/boot_splash/image");
