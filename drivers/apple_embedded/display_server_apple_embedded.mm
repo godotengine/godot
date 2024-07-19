@@ -817,3 +817,11 @@ DisplayServer::VSyncMode DisplayServerAppleEmbedded::window_get_vsync_mode(Windo
 #endif
 	return DisplayServer::VSYNC_ENABLED;
 }
+
+void DisplayServerAppleEmbedded::set_native_icon(const String &p_filename) {
+	// Not supported on Apple embedded platforms.
+}
+
+void DisplayServerAppleEmbedded::set_icon(const Ref<Image> &p_icon) {
+	// Not supported on Apple embedded platforms.
+}
