@@ -355,8 +355,8 @@ TEST_CASE("[Image] Custom mipmaps") {
 		uint8_t *data_ptr = data.ptrw();
 
 		for (int mip = 0; mip < mipmaps; mip++) {
-			int mip_offset = 0;
-			int mip_size = 0;
+			int64_t mip_offset = 0;
+			int64_t mip_size = 0;
 			image->get_mipmap_offset_and_size(mip, mip_offset, mip_size);
 
 			for (int i = 0; i < mip_size; i++) {
@@ -378,8 +378,8 @@ TEST_CASE("[Image] Custom mipmaps") {
 		const uint8_t *data_ptr = data.ptr();
 
 		for (int mip = 0; mip < mipmaps; mip++) {
-			int mip_offset = 0;
-			int mip_size = 0;
+			int64_t mip_offset = 0;
+			int64_t mip_size = 0;
 			image_bytes->get_mipmap_offset_and_size(mip, mip_offset, mip_size);
 
 			for (int i = 0; i < mip_size; i++) {
@@ -402,8 +402,8 @@ TEST_CASE("[Image] Custom mipmaps") {
 		const uint8_t *data_ptr = data.ptr();
 
 		for (int mip = 0; mip < mipmaps; mip++) {
-			int mip_offset = 0;
-			int mip_size = 0;
+			int64_t mip_offset = 0;
+			int64_t mip_size = 0;
 			image_rgbaf->get_mipmap_offset_and_size(mip, mip_offset, mip_size);
 
 			for (int i = 0; i < mip_size; i += 4) {
