@@ -51,7 +51,6 @@ class DisplayServerOffscreen : public DisplayServer {
 	RenderingDevice *rendering_device = nullptr;
 #endif
 
-	int pressrc;
 	String rendering_driver;
 
 	struct WindowData {

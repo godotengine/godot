@@ -46,7 +46,7 @@ public:
 	struct WindowPlatformData {};
 
 	RenderingContextDriverVulkanHeadless();
-	~RenderingContextDriverVulkanHeadless() override final;
+	~RenderingContextDriverVulkanHeadless() override;
 };
 
 #endif // VULKAN_ENABLED

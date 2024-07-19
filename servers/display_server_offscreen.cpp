@@ -130,12 +130,6 @@ DisplayServer::WindowID DisplayServerOffscreen::create_sub_window(WindowMode p_m
 		wd.layered_window = true;
 	}
 
-#ifdef RD_ENABLED
-	if (rendering_device) {
-		//rendering_device->screen_create(window_id);
-	}
-#endif
-
 	return window_id;
 }
 
@@ -162,16 +156,6 @@ void DisplayServerOffscreen::delete_sub_window(WindowID p_window) {
 	if (wd.transient_parent != INVALID_WINDOW_ID) {
 		window_set_transient(p_window, INVALID_WINDOW_ID);
 	}
-
-#ifdef RD_ENABLED
-	if (rendering_device) {
-		//rendering_device->screen_free(p_window);
-	}
-
-	if (rendering_context) {
-		//rendering_context->window_destroy(p_window);
-	}
-#endif
 
 	windows.erase(p_window);
 
@@ -376,12 +360,6 @@ void DisplayServerOffscreen::window_set_size(const Size2i p_size, WindowID p_win
 	}
 
 	wd.size = p_size;
-
-#if defined(RD_ENABLED)
-	if (rendering_context) {
-		//rendering_context->window_set_size(p_window, p_size.width, p_size.height);
-	}
-#endif
 }
 
 Size2i DisplayServerOffscreen::window_get_size(WindowID p_window) const {
@@ -476,8 +454,6 @@ bool DisplayServerOffscreen::window_is_maximize_allowed(WindowID p_window) const
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
-
-	// FIXME: Implement this, or confirm that it should always be true.
 
 	return true;
 }
@@ -602,32 +578,23 @@ void DisplayServerOffscreen::force_process_and_drop_events() {
 }
 
 void DisplayServerOffscreen::release_rendering_thread() {
+	// Do nothing.
 }
 
 void DisplayServerOffscreen::swap_buffers() {
+	// Do nothing.
 }
 
 void DisplayServerOffscreen::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
-	_THREAD_SAFE_METHOD_
-#if defined(RD_ENABLED)
-	if (rendering_context) {
-		//rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
-	}
-#endif
+	// Do nothing.
 }
 
 DisplayServer::VSyncMode DisplayServerOffscreen::window_get_vsync_mode(WindowID p_window) const {
-	_THREAD_SAFE_METHOD_
-#if defined(RD_ENABLED)
-	if (rendering_context) {
-		// return rendering_context->window_get_vsync_mode(p_window);
-	}
-#endif
-
 	return DisplayServer::VSYNC_ENABLED;
 }
 
 void DisplayServerOffscreen::set_context(Context p_context) {
+	// Do nothing.
 }
 
 DisplayServer::WindowID DisplayServerOffscreen::window_get_active_popup() const {
@@ -802,7 +769,6 @@ DisplayServerOffscreen::DisplayServerOffscreen(const String &p_rendering_driver,
 	if (rendering_context) {
 		rendering_device = memnew(RenderingDevice);
 		rendering_device->initialize(rendering_context, INVALID_WINDOW_ID);
-		//rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
 	}
@@ -858,18 +824,6 @@ DisplayServer *DisplayServerOffscreen::create_func(const String &p_rendering_dri
 }
 
 DisplayServerOffscreen::~DisplayServerOffscreen() {
-	if (windows.has(MAIN_WINDOW_ID)) {
-#ifdef RD_ENABLED
-		if (rendering_device) {
-			//rendering_device->screen_free(MAIN_WINDOW_ID);
-		}
-
-		if (rendering_context) {
-			//rendering_context->window_destroy(MAIN_WINDOW_ID);
-		}
-#endif
-	}
-
 #ifdef RD_ENABLED
 	if (rendering_device) {
 		memdelete(rendering_device);
