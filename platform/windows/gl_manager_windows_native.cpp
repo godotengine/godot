@@ -78,6 +78,7 @@
 #ifdef OPENGL_DXGI_USE_FLIP_MODEL
 #include <d3d11_3.h>
 #include <dxgi1_2.h>
+#include <dxgi1_5.h>
 #endif
 
 #include <wrl/client.h>
@@ -433,6 +434,10 @@ class GLManagerNative_Windows::DxgiSwapChain {
 	GLuint gl_depth_stencil_tex{};
 #endif
 	GLuint gl_color_buffer_tex{};
+#endif
+
+#ifdef OPENGL_DXGI_USE_FLIP_MODEL
+	bool supports_tearing = false;
 #endif
 
 	DxgiSwapChain() = default;
@@ -958,6 +963,23 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 		return nullptr;
 	}
 
+	bool supports_tearing = false;
+	{
+		ComPtr<IDXGIFactory5> dxgi_factory_5;
+		hr = dxgi_factory.As(&dxgi_factory_5);
+		if (!SUCCEEDED(hr)) {
+			ERR_PRINT(vformat("Failed to get IDXGIFactory5, HRESULT: 0x%08X", (unsigned)hr));
+		} else {
+			BOOL feature_allow_tearing = FALSE;
+			hr = dxgi_factory_5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &feature_allow_tearing, sizeof(feature_allow_tearing));
+			if (!SUCCEEDED(hr)) {
+				ERR_PRINT(vformat("Failed to check DXGI_FEATURE_PRESENT_ALLOW_TEARING, HRESULT: 0x%08X", (unsigned)hr));
+			} else {
+				supports_tearing = feature_allow_tearing;
+			}
+		}
+	}
+
 	ComPtr<IDXGIFactory2> dxgi_factory_2;
 	hr = dxgi_factory.As(&dxgi_factory_2);
 	if (!SUCCEEDED(hr)) {
@@ -973,7 +995,10 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 	swap_chain_desc_1.BufferCount = 3;
 	swap_chain_desc_1.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swap_chain_desc_1.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-	swap_chain_desc_1.Flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+	swap_chain_desc_1.Flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
+	if (supports_tearing) {
+		swap_chain_desc_1.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+	}
 	swap_chain_desc_1.Scaling = DXGI_SCALING_NONE;
 	// TODO: ???
 	swap_chain_desc_1.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
@@ -1120,6 +1145,9 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 	dxgi->gl_depth_stencil_tex = gl_depth_stencil_tex;
 #endif
 	dxgi->gl_color_buffer_tex = gl_color_buffer_tex;
+#endif
+#ifdef OPENGL_DXGI_USE_FLIP_MODEL
+	dxgi->supports_tearing = supports_tearing;
 #endif
 
 	GLES3::TextureStorage::system_fbo = gl_fbo;
@@ -1471,7 +1499,7 @@ void GLManagerNative_Windows::DxgiSwapChain::present(bool p_use_vsync) {
 			}
 		}
 	} else {
-		hr = swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
+		hr = swap_chain->Present(0, supports_tearing ? DXGI_PRESENT_ALLOW_TEARING : 0);
 	}
 #else
 	// TODO: vsync???
@@ -1493,7 +1521,10 @@ void GLManagerNative_Windows::DxgiSwapChain::resize_swap_chain(int p_width, int 
 
 	UINT flags = 0;
 #ifdef OPENGL_DXGI_USE_FLIP_MODEL
-	flags |= DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+	flags |= DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
+	if (supports_tearing) {
+		flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+	}
 #endif
 	HRESULT hr = swap_chain->ResizeBuffers(0, p_width, p_height, DXGI_FORMAT_UNKNOWN, flags);
 	if (!SUCCEEDED(hr)) {
