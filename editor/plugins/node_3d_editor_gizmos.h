@@ -31,6 +31,7 @@
 #ifndef NODE_3D_EDITOR_GIZMOS_H
 #define NODE_3D_EDITOR_GIZMOS_H
 
+#include "core/math/dynamic_bvh.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 #include "scene/3d/camera_3d.h"
@@ -72,7 +73,11 @@ class EditorNode3DGizmo : public Node3DGizmo {
 	Vector<Instance> instances;
 	Node3D *spatial_node = nullptr;
 
+	DynamicBVH::ID bvh_node_id;
+
 	void _set_node_3d(Node *p_node) { set_node_3d(Object::cast_to<Node3D>(p_node)); }
+
+	void _update_bvh();
 
 protected:
 	static void _bind_methods();
