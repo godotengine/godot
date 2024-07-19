@@ -3340,13 +3340,17 @@ void EditorNode::_exit_editor(int p_exit_code) {
 	dim_editor(true);
 
 	// Unload addons before quitting to allow cleanup.
+	unload_editor_addons();
+
+	get_tree()->quit(p_exit_code);
+}
+
+void EditorNode::unload_editor_addons() {
 	for (const KeyValue<String, EditorPlugin *> &E : addon_name_to_plugin) {
 		print_verbose(vformat("Unloading addon: %s", E.key));
 		remove_editor_plugin(E.value, false);
 		memdelete(E.value);
 	}
-
-	get_tree()->quit(p_exit_code);
 }
 
 void EditorNode::_discard_changes(const String &p_str) {
