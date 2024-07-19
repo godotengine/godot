@@ -110,6 +110,9 @@ void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 			case LightmapGI::BAKE_ERROR_LIGHTMAP_TOO_SMALL: {
 				EditorNode::get_singleton()->show_warning(TTR("Failed creating lightmap images. Make sure all meshes selected to bake have `lightmap_size_hint` value set high enough, and `texel_scale` value of LightmapGI is not too low."));
 			} break;
+			case LightmapGI::BAKE_ERROR_ATLAS_TOO_SMALL: {
+				EditorNode::get_singleton()->show_warning(TTR("Failed fitting a lightmap image into an atlas. This should never happen and should be reported."));
+			} break;
 			default: {
 			} break;
 		}

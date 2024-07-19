@@ -759,6 +759,17 @@ DisplayServer::WindowID DisplayServer::get_focused_window() const {
 void DisplayServer::set_context(Context p_context) {
 }
 
+void DisplayServer::register_additional_output(Object *p_object) {
+	ObjectID id = p_object->get_instance_id();
+	if (!additional_outputs.has(id)) {
+		additional_outputs.push_back(id);
+	}
+}
+
+void DisplayServer::unregister_additional_output(Object *p_object) {
+	additional_outputs.erase(p_object->get_instance_id());
+}
+
 void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &DisplayServer::has_feature);
 	ClassDB::bind_method(D_METHOD("get_name"), &DisplayServer::get_name);
@@ -996,6 +1007,10 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tablet_set_current_driver", "name"), &DisplayServer::tablet_set_current_driver);
 
 	ClassDB::bind_method(D_METHOD("is_window_transparency_available"), &DisplayServer::is_window_transparency_available);
+
+	ClassDB::bind_method(D_METHOD("register_additional_output", "object"), &DisplayServer::register_additional_output);
+	ClassDB::bind_method(D_METHOD("unregister_additional_output", "object"), &DisplayServer::unregister_additional_output);
+	ClassDB::bind_method(D_METHOD("has_additional_outputs"), &DisplayServer::has_additional_outputs);
 
 #ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(FEATURE_GLOBAL_MENU);

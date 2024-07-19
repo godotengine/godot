@@ -1077,10 +1077,8 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 	Image &im = **img_ref;
 	im.initialize_data(thumbnail_size.x, thumbnail_size.y, false, Image::FORMAT_RGBA8);
 
-	Color bg_color(0.1, 0.1, 0.1, 1.0);
-	Color line_color(0.8, 0.8, 0.8, 1.0);
+	Color line_color = EditorInterface::get_singleton()->get_editor_theme()->get_color(SceneStringName(font_color), EditorStringName(Editor));
 
-	im.fill(bg_color);
 	// Set the first pixel of the thumbnail.
 	float v = (curve->sample_baked(0) - curve->get_min_value()) / curve->get_range();
 	int y = CLAMP(im.get_height() - v * im.get_height(), 0, im.get_height() - 1);

@@ -304,31 +304,24 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	thread_load_mutex.unlock();
 
 	// Thread-safe either if it's the current thread or a brand new one.
-	thread_local bool mq_override_present = false;
 	CallQueue *own_mq_override = nullptr;
 	if (load_nesting == 0) {
-		mq_override_present = false;
 		load_paths_stack = memnew(Vector<String>);
 
-		if (!load_task.dependent_path.is_empty()) {
-			load_paths_stack->push_back(load_task.dependent_path);
-		}
 		if (!Thread::is_main_thread()) {
 			// Let the caller thread use its own, for added flexibility. Provide one otherwise.
 			if (MessageQueue::get_singleton() == MessageQueue::get_main_singleton()) {
 				own_mq_override = memnew(CallQueue);
 				MessageQueue::set_thread_singleton_override(own_mq_override);
 			}
-			mq_override_present = true;
 			set_current_thread_safe_for_nodes(true);
 		}
-	} else {
-		DEV_ASSERT(load_task.dependent_path.is_empty());
 	}
 	// --
 
-	Ref<Resource> res = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_task.error, load_task.use_sub_threads, &load_task.progress);
-	if (mq_override_present) {
+	Error load_err = OK;
+	Ref<Resource> res = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_err, load_task.use_sub_threads, &load_task.progress);
+	if (MessageQueue::get_singleton() != MessageQueue::get_main_singleton()) {
 		MessageQueue::get_singleton()->flush();
 	}
 
@@ -336,7 +329,8 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 	load_task.resource = res;
 
-	load_task.progress = 1.0; //it was fully loaded at this point, so force progress to 1.0
+	load_task.progress = 1.0; // It was fully loaded at this point, so force progress to 1.0.
+	load_task.error = load_err;
 	if (load_task.error != OK) {
 		load_task.status = THREAD_LOAD_FAILED;
 	} else {
@@ -473,12 +467,13 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 
 		if (!ignoring_cache && thread_load_tasks.has(local_path)) {
 			load_token = Ref<LoadToken>(thread_load_tasks[local_path].load_token);
-			if (!load_token.is_valid()) {
+			if (load_token.is_valid()) {
+				return load_token;
+			} else {
 				// The token is dying (reached 0 on another thread).
 				// Ensure it's killed now so the path can be safely reused right away.
 				thread_load_tasks[local_path].load_token->clear();
 			}
-			return load_token;
 		}
 
 		load_token.instantiate();
@@ -560,37 +555,44 @@ float ResourceLoader::_dependency_get_progress(const String &p_path) {
 }
 
 ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const String &p_path, float *r_progress) {
-	MutexLock thread_load_lock(thread_load_mutex);
+	bool ensure_progress = false;
+	ThreadLoadStatus status = THREAD_LOAD_IN_PROGRESS;
+	{
+		MutexLock thread_load_lock(thread_load_mutex);
 
-	if (!user_load_tokens.has(p_path)) {
-		print_verbose("load_threaded_get_status(): No threaded load for resource path '" + p_path + "' has been initiated or its result has already been collected.");
-		return THREAD_LOAD_INVALID_RESOURCE;
-	}
-
-	String local_path = _validate_local_path(p_path);
-	if (!thread_load_tasks.has(local_path)) {
-#ifdef DEV_ENABLED
-		CRASH_NOW();
-#endif
-		// On non-dev, be defensive and at least avoid crashing (at this point at least).
-		return THREAD_LOAD_INVALID_RESOURCE;
-	}
-
-	ThreadLoadTask &load_task = thread_load_tasks[local_path];
-	ThreadLoadStatus status;
-	status = load_task.status;
-	if (r_progress) {
-		*r_progress = _dependency_get_progress(local_path);
-	}
-
-	// Support userland polling in a loop on the main thread.
-	if (Thread::is_main_thread() && status == THREAD_LOAD_IN_PROGRESS) {
-		uint64_t frame = Engine::get_singleton()->get_process_frames();
-		if (frame == load_task.last_progress_check_main_thread_frame) {
-			_ensure_load_progress();
-		} else {
-			load_task.last_progress_check_main_thread_frame = frame;
+		if (!user_load_tokens.has(p_path)) {
+			print_verbose("load_threaded_get_status(): No threaded load for resource path '" + p_path + "' has been initiated or its result has already been collected.");
+			return THREAD_LOAD_INVALID_RESOURCE;
 		}
+
+		String local_path = _validate_local_path(p_path);
+		if (!thread_load_tasks.has(local_path)) {
+#ifdef DEV_ENABLED
+			CRASH_NOW();
+#endif
+			// On non-dev, be defensive and at least avoid crashing (at this point at least).
+			return THREAD_LOAD_INVALID_RESOURCE;
+		}
+
+		ThreadLoadTask &load_task = thread_load_tasks[local_path];
+		status = load_task.status;
+		if (r_progress) {
+			*r_progress = _dependency_get_progress(local_path);
+		}
+
+		// Support userland polling in a loop on the main thread.
+		if (Thread::is_main_thread() && status == THREAD_LOAD_IN_PROGRESS) {
+			uint64_t frame = Engine::get_singleton()->get_process_frames();
+			if (frame == load_task.last_progress_check_main_thread_frame) {
+				ensure_progress = true;
+			} else {
+				load_task.last_progress_check_main_thread_frame = frame;
+			}
+		}
+	}
+
+	if (ensure_progress) {
+		_ensure_load_progress();
 	}
 
 	return status;
@@ -626,13 +628,13 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 		if (Thread::is_main_thread() && !load_token->local_path.is_empty()) {
 			const ThreadLoadTask &load_task = thread_load_tasks[load_token->local_path];
 			while (load_task.status == THREAD_LOAD_IN_PROGRESS) {
-				if (!_ensure_load_progress()) {
-					// This local poll loop is not needed.
-					break;
-				}
 				thread_load_lock.~MutexLock();
+				bool exit = !_ensure_load_progress();
 				OS::get_singleton()->delay_usec(1000);
 				new (&thread_load_lock) MutexLock(thread_load_mutex);
+				if (exit) {
+					break;
+				}
 			}
 		}
 

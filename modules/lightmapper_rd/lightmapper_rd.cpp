@@ -240,7 +240,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 	max = MAX(max, nearest_power_of_2_templated(atlas_size.height));
 
 	if (max > p_max_texture_size) {
-		return BAKE_ERROR_LIGHTMAP_TOO_SMALL;
+		return BAKE_ERROR_TEXTURE_EXCEEDS_MAX_SIZE;
 	}
 
 	if (p_step_function) {
@@ -254,18 +254,26 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 	int best_atlas_memory = 0x7FFFFFFF;
 	Vector<Vector3i> best_atlas_offsets;
 
-	//determine best texture array atlas size by bruteforce fitting
+	// Determine best texture array atlas size by bruteforce fitting.
 	while (atlas_size.x <= p_max_texture_size && atlas_size.y <= p_max_texture_size) {
 		Vector<Vector2i> source_sizes;
 		Vector<int> source_indices;
 		source_sizes.resize(sizes.size());
 		source_indices.resize(sizes.size());
 		for (int i = 0; i < source_indices.size(); i++) {
-			source_sizes.write[i] = sizes[i] + Vector2i(2, 2).maxi(p_denoiser_range); // Add padding between lightmaps
+			source_sizes.write[i] = sizes[i] + Vector2i(2, 2).maxi(p_denoiser_range); // Add padding between lightmaps.
 			source_indices.write[i] = i;
 		}
 		Vector<Vector3i> atlas_offsets;
 		atlas_offsets.resize(source_sizes.size());
+
+		// Ensure the sizes can all fit into a single atlas layer.
+		// This should always happen, and this check is only in place to prevent an infinite loop.
+		for (int i = 0; i < source_sizes.size(); i++) {
+			if (source_sizes[i] > atlas_size) {
+				return BAKE_ERROR_ATLAS_TOO_SMALL;
+			}
+		}
 
 		int slices = 0;
 

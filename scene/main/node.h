@@ -641,7 +641,7 @@ public:
 			// No thread processing.
 			// Only accessible if node is outside the scene tree
 			// or access will happen from a node-safe thread.
-			return !data.inside_tree || is_current_thread_safe_for_nodes();
+			return is_current_thread_safe_for_nodes() || unlikely(!data.inside_tree);
 		} else {
 			// Thread processing.
 			return true;

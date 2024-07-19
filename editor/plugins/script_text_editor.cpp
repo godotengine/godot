@@ -317,7 +317,16 @@ void ScriptTextEditor::_error_clicked(const Variant &p_line) {
 			if (!scr.is_valid()) {
 				EditorNode::get_singleton()->show_warning(TTR("Could not load file at:") + "\n\n" + path, TTR("Error!"));
 			} else {
-				ScriptEditor::get_singleton()->edit(scr, line, column);
+				int corrected_column = column;
+
+				const String line_text = code_editor->get_text_editor()->get_line(line);
+				const int indent_size = code_editor->get_text_editor()->get_indent_size();
+				if (indent_size > 1) {
+					const int tab_count = line_text.length() - line_text.lstrip("\t").length();
+					corrected_column -= tab_count * (indent_size - 1);
+				}
+
+				ScriptEditor::get_singleton()->edit(scr, line, corrected_column);
 			}
 		}
 	}
