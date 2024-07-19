@@ -56,9 +56,6 @@ RenderingContextDriverVulkanHeadless::~RenderingContextDriverVulkanHeadless() {
 }
 
 RenderingContextDriver::SurfaceID RenderingContextDriverVulkanHeadless::surface_create(const void *p_platform_data) {
-	// Unused.
-	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
-
 	// NOTE: The VK_EXT_headless_surface extension could be used to create a valid offscreen surface.
 	//       However, it is not supported by all drivers, and is not necessary for headless rendering.
 	//       The main benefit of creating a headless surface would be that the rest of the rendering code

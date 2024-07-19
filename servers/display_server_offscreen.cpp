@@ -742,31 +742,7 @@ DisplayServer::WindowID DisplayServerOffscreen::_create_window(WindowMode p_mode
 			wd.pre_fs_valid = true;
 		}
 
-#ifdef RD_ENABLED
-		if (rendering_context) {
-			union {
-#ifdef VULKAN_ENABLED
-				RenderingContextDriverVulkanHeadless::WindowPlatformData vulkan;
-#endif
-			} wpd;
-#ifdef VULKAN_ENABLED
-			if (rendering_driver == "vulkan") {
-				// Do nothing (wpd is empty).
-			}
-#endif
-			// if (rendering_context->window_create(id, &wpd) != OK) {
-			// 	ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
-			// 	memdelete(rendering_context);
-			// 	rendering_context = nullptr;
-			// 	windows.erase(id);
-			// 	return INVALID_WINDOW_ID;
-			// }
-
-			// rendering_context->window_set_size(id, window_rect.size.width, window_rect.size.height);
-			// rendering_context->window_set_vsync_mode(id, p_vsync_mode);
-			wd.context_created = true;
-		}
-#endif
+		wd.context_created = true;
 
 		if (p_mode == WINDOW_MODE_MAXIMIZED) {
 			wd.maximized = true;
