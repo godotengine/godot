@@ -639,7 +639,8 @@ def configure_mingw(env: "SConsEnvironment"):
 
     # TODO: Re-evaluate the need for this / streamline with common config.
     if env["target"] == "template_release":
-        env.Append(CCFLAGS=["-msse2"])
+        if env["arch"] != "arm64":
+            env.Append(CCFLAGS=["-msse2"])
     elif env.dev_build:
         # Allow big objects. It's supposed not to have drawbacks but seems to break
         # GCC LTO, so enabling for debug builds only (which are not built with LTO
