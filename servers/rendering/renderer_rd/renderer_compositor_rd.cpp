@@ -36,7 +36,7 @@
 void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
 	Error err = RD::get_singleton()->screen_prepare_for_drawing(p_screen);
 	if (err != OK) {
-		// Window is minimized and does not have valid swapchain, skip drawing without printing errors.
+		// Window is minimized or offscreen and does not have valid swapchain, skip drawing without printing errors.
 		return;
 	}
 
@@ -171,7 +171,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	Error err = RD::get_singleton()->screen_prepare_for_drawing(DisplayServer::MAIN_WINDOW_ID);
 	if (err != OK) {
-		// Window is minimized and does not have valid swapchain, skip drawing without printing errors.
+		// Window is minimized or offscreen and does not have valid swapchain, skip drawing without printing errors.
 		return;
 	}
 

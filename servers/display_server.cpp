@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "scene/resources/texture.h"
 #include "servers/display_server_headless.h"
+#include "servers/display_server_offscreen.h"
 
 DisplayServer *DisplayServer::singleton = nullptr;
 
@@ -42,10 +43,11 @@ bool DisplayServer::window_early_clear_override_enabled = false;
 Color DisplayServer::window_early_clear_override_color = Color(0, 0, 0, 0);
 
 DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[DisplayServer::MAX_SERVERS] = {
-	{ "headless", &DisplayServerHeadless::create_func, &DisplayServerHeadless::get_rendering_drivers_func }
+	{ "offscreen", &DisplayServerOffscreen::create_func, &DisplayServerOffscreen::get_rendering_drivers_func },
+	{ "headless", &DisplayServerHeadless::create_func, &DisplayServerHeadless::get_rendering_drivers_func },
 };
 
-int DisplayServer::server_create_count = 1;
+int DisplayServer::server_create_count = 2;
 
 void DisplayServer::help_set_search_callbacks(const Callable &p_search_callback, const Callable &p_action_callback) {
 	WARN_PRINT("Native help is not supported by this display server.");
@@ -1165,10 +1167,13 @@ Ref<Image> DisplayServer::_get_cursor_image_from_resource(const Ref<Resource> &p
 void DisplayServer::register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers) {
 	ERR_FAIL_COND(server_create_count == MAX_SERVERS);
 	// Headless display server is always last
-	server_create_functions[server_create_count] = server_create_functions[server_create_count - 1];
-	server_create_functions[server_create_count - 1].name = p_name;
-	server_create_functions[server_create_count - 1].create_function = p_function;
-	server_create_functions[server_create_count - 1].get_rendering_drivers_function = p_get_drivers;
+	for (int i = server_create_count; i > 0; --i) {
+		server_create_functions[i] = std::move(server_create_functions[i - 1]);
+	}
+	server_create_functions[0] = {};
+	server_create_functions[0].name = p_name;
+	server_create_functions[0].create_function = p_function;
+	server_create_functions[0].get_rendering_drivers_function = p_get_drivers;
 	server_create_count++;
 }
 
