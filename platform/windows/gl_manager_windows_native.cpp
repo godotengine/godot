@@ -966,6 +966,8 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 	}
 
 	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc_1 = {};
+	swap_chain_desc_1.Width = p_width;
+	swap_chain_desc_1.Height = p_height;
 	swap_chain_desc_1.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swap_chain_desc_1.SampleDesc.Count = 1;
 	swap_chain_desc_1.BufferCount = 3;
@@ -1053,6 +1055,15 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 		hr = swap_chain.As(&swap_chain_2);
 		if (SUCCEEDED(hr)) {
 			frame_latency_waitable_obj = swap_chain_2->GetFrameLatencyWaitableObject();
+			DWORD wait = WaitForSingleObject(frame_latency_waitable_obj, 1000);
+			if (wait != WAIT_OBJECT_0) {
+				if (wait == WAIT_FAILED) {
+					DWORD error = GetLastError();
+					ERR_PRINT(vformat("Wait for frame latency waitable failed with error: 0x%08X", (unsigned)error));
+				} else {
+					ERR_PRINT(vformat("Wait for frame latency waitable failed, WaitForSingleObject returned 0x%08X", (unsigned)wait));
+				}
+			}
 		} else {
 			ERR_PRINT(vformat("Failed to get IDXGISwapChain2, HRESULT: 0x%08X", (unsigned)hr));
 		}
@@ -1262,7 +1273,10 @@ void GLManagerNative_Windows::DxgiSwapChain::release_depth_buffer() {
 #ifdef OPENGL_DXGI_ADD_DEPTH_RENDERBUFFER
 	// no-op?
 #else
-	gd_wglDXUnregisterObjectNV(gldx_device, gldx_depth_texture);
+	BOOL res = gd_wglDXUnregisterObjectNV(gldx_device, gldx_depth_texture);
+	if (!res) {
+		ERR_PRINT(vformat("Failed to unregister depth buffer for interop. Error: %s", format_error_message(GetLastError())));
+	}
 
 	gldx_depth_texture = nullptr;
 	depth_stencil_view.Reset();
@@ -1353,10 +1367,13 @@ void GLManagerNative_Windows::DxgiSwapChain::release_render_target(bool p_need_u
 
 	// Release the back buffer.
 #ifdef OPENGL_DXGI_USE_RENDERBUFFER
-	gd_wglDXUnregisterObjectNV(gldx_device, gldx_color_buffer_rb);
+	BOOL res = gd_wglDXUnregisterObjectNV(gldx_device, gldx_color_buffer_rb);
 #else
-	gd_wglDXUnregisterObjectNV(gldx_device, gldx_color_buffer_tex);
+	BOOL res = gd_wglDXUnregisterObjectNV(gldx_device, gldx_color_buffer_tex);
 #endif
+	if (!res) {
+		ERR_PRINT(vformat("Failed to unregister color buffer for interop. Error: %s", format_error_message(GetLastError())));
+	}
 
 #ifdef OPENGL_DXGI_USE_RENDERBUFFER
 	gldx_color_buffer_rb = nullptr;
@@ -1372,15 +1389,18 @@ void GLManagerNative_Windows::DxgiSwapChain::release_render_target(bool p_need_u
 void GLManagerNative_Windows::DxgiSwapChain::lock_for_opengl() {
 	// Lock the buffers for OpenGL access.
 #ifdef OPENGL_DXGI_USE_RENDERBUFFER
-	gd_wglDXLockObjectsNV(gldx_device, 1, &gldx_color_buffer_rb);
+	BOOL res = gd_wglDXLockObjectsNV(gldx_device, 1, &gldx_color_buffer_rb);
 #else
 #ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 	void *handles[] = { gldx_depth_texture, gldx_color_buffer_tex };
-	gd_wglDXLockObjectsNV(gldx_device, 2, handles);
+	BOOL res = gd_wglDXLockObjectsNV(gldx_device, 2, handles);
 #else
-	gd_wglDXLockObjectsNV(gldx_device, 1, &gldx_color_buffer_tex);
+	BOOL res = gd_wglDXLockObjectsNV(gldx_device, 1, &gldx_color_buffer_tex);
 #endif
 #endif
+	if (!res) {
+		ERR_PRINT(vformat("Failed to lock DX objects for interop. Error: %s", format_error_message(GetLastError())));
+	}
 
 	// Attach color and depth buffers to FBO
 	glBindFramebuffer(GL_FRAMEBUFFER, gl_fbo);
@@ -1420,15 +1440,18 @@ void GLManagerNative_Windows::DxgiSwapChain::unlock_from_opengl() {
 
 	// Unlock from OpenGL access.
 #ifdef OPENGL_DXGI_USE_RENDERBUFFER
-	gd_wglDXUnlockObjectsNV(gldx_device, 1, &gldx_color_buffer_rb);
+	BOOL res = gd_wglDXUnlockObjectsNV(gldx_device, 1, &gldx_color_buffer_rb);
 #else
 #ifdef OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 	void *handles[] = { gldx_depth_texture, gldx_color_buffer_tex };
-	gd_wglDXUnlockObjectsNV(gldx_device, 2, handles);
+	BOOL res = gd_wglDXUnlockObjectsNV(gldx_device, 2, handles);
 #else
-	gd_wglDXUnlockObjectsNV(gldx_device, 1, &gldx_color_buffer_tex);
+	BOOL res = gd_wglDXUnlockObjectsNV(gldx_device, 1, &gldx_color_buffer_tex);
 #endif
 #endif
+	if (!res) {
+		ERR_PRINT(vformat("Failed to unlock DX objects for interop. Error: %s", format_error_message(GetLastError())));
+	}
 }
 
 void GLManagerNative_Windows::DxgiSwapChain::present(bool p_use_vsync) {
