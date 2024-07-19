@@ -68,7 +68,6 @@ if env["builtin_glslang"]:
     else:
         env_glslang.Prepend(CPPPATH=[thirdparty_dir, "#thirdparty"])
 
-    env_glslang.Append(CPPDEFINES=["ENABLE_OPT=1"])
 
     env_thirdparty = env_glslang.Clone()
     env_thirdparty.disable_warnings()
