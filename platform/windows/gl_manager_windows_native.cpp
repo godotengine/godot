@@ -1489,17 +1489,17 @@ void GLManagerNative_Windows::DxgiSwapChain::present(bool p_use_vsync) {
 	HRESULT hr;
 	if (p_use_vsync) {
 		hr = swap_chain->Present(1, 0);
-		DWORD wait = WaitForSingleObject(frame_latency_waitable_obj, 1000);
-		if (wait != WAIT_OBJECT_0) {
-			if (wait == WAIT_FAILED) {
-				DWORD error = GetLastError();
-				ERR_PRINT(vformat("Wait for frame latency waitable failed with error: 0x%08X", (unsigned)error));
-			} else {
-				ERR_PRINT(vformat("Wait for frame latency waitable failed, WaitForSingleObject returned 0x%08X", (unsigned)wait));
-			}
-		}
 	} else {
 		hr = swap_chain->Present(0, supports_tearing ? DXGI_PRESENT_ALLOW_TEARING : 0);
+	}
+	DWORD wait = WaitForSingleObject(frame_latency_waitable_obj, 1000);
+	if (wait != WAIT_OBJECT_0) {
+		if (wait == WAIT_FAILED) {
+			DWORD error = GetLastError();
+			ERR_PRINT(vformat("Wait for frame latency waitable failed with error: 0x%08X", (unsigned)error));
+		} else {
+			ERR_PRINT(vformat("Wait for frame latency waitable failed, WaitForSingleObject returned 0x%08X", (unsigned)wait));
+		}
 	}
 #else
 	// TODO: vsync???
