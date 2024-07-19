@@ -300,7 +300,7 @@ private:
 
 		int32_t instance_count = 0;
 
-		bool can_sdfgi = false;
+		bool can_hddagi = false;
 		bool using_projectors = false;
 		bool using_softshadows = false;
 
@@ -765,16 +765,16 @@ public:
 
 	uint32_t geometry_instance_get_pair_mask() override;
 
-	/* SDFGI UPDATE */
+	/* HDDAGI UPDATE */
 
-	void sdfgi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) override {}
-	int sdfgi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const override {
+	void hddagi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) override {}
+	int hddagi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const override {
 		return 0;
 	}
-	AABB sdfgi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override {
+	AABB hddagi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override {
 		return AABB();
 	}
-	uint32_t sdfgi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override {
+	uint32_t hddagi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override {
 		return 0;
 	}
 
@@ -798,9 +798,10 @@ public:
 
 	void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override;
 
-	void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) override;
-	void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) override;
-	void environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) override;
+	void environment_set_hddagi_frames_to_converge(RS::EnvironmentHDDAGIFramesToConverge p_frames) override;
+	void environment_set_hddagi_frames_to_update_light(RS::EnvironmentHDDAGIFramesToUpdateLight p_update) override;
+
+	void environment_set_hddagi_inactive_probe_frames(RS::EnvironmentHDDAGIInactiveProbeFrames p_frames) override;
 
 	void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) override;
 	void environment_set_volumetric_fog_filter_active(bool p_enable) override;
@@ -827,7 +828,7 @@ public:
 
 	void voxel_gi_set_quality(RS::VoxelGIQuality) override;
 
-	void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
+	void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderHDDAGIData *p_render_hddagi_regions, int p_render_hddagi_region_count, const RenderHDDAGIUpdateData *p_hddagi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
 	void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
 	void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) override;
 
@@ -859,7 +860,7 @@ public:
 
 	bool free(RID p_rid) override;
 	void update() override;
-	void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) override;
+	void hddagi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) override;
 
 	void decals_set_filter(RS::DecalFilter p_filter) override;
 	void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;

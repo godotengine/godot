@@ -73,7 +73,7 @@
 			The light's strength multiplier (this is not a physical unit). For [OmniLight3D] and [SpotLight3D], changing this value will only change the light color's intensity, not the light's radius.
 		</member>
 		<member name="light_indirect_energy" type="float" setter="set_param" getter="get_param" default="1.0">
-			Secondary multiplier used with indirect light (light bounces). Used with [VoxelGI] and SDFGI (see [member Environment.sdfgi_enabled]).
+			Secondary multiplier used with indirect light (light bounces). Used with [VoxelGI] and DynamicGI (see [member Environment.dynamic_gi_enabled]).
 			[b]Note:[/b] This property is ignored if [member light_energy] is equal to [code]0.0[/code], as the light won't be present at all in the GI shader.
 		</member>
 		<member name="light_intensity_lumens" type="float" setter="set_param" getter="get_param">
@@ -199,14 +199,14 @@
 		</constant>
 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">
 			Light is ignored when baking. This is the fastest mode, but the light will be taken into account when baking global illumination. This mode should generally be used for dynamic lights that change quickly, as the effect of global illumination is less noticeable on those lights.
-			[b]Note:[/b] Hiding a light does [i]not[/i] affect baking [LightmapGI]. Hiding a light will still affect baking [VoxelGI] and SDFGI (see [member Environment.sdfgi_enabled]).
+			[b]Note:[/b] Hiding a light does [i]not[/i] affect baking [LightmapGI]. Hiding a light will still affect baking [VoxelGI] and DynamicGI (see [member Environment.dynamic_gi_enabled).
 		</constant>
 		<constant name="BAKE_STATIC" value="1" enum="BakeMode">
-			Light is taken into account in static baking ([VoxelGI], [LightmapGI], SDFGI ([member Environment.sdfgi_enabled])). The light can be moved around or modified, but its global illumination will not update in real-time. This is suitable for subtle changes (such as flickering torches), but generally not large changes such as toggling a light on and off.
+			Light is taken into account in static baking ([VoxelGI], [LightmapGI], DynamicGI ([member Environment.dynamic_gi_enabled])). The light can be moved around or modified, but its global illumination will not update in real-time. This is suitable for subtle changes (such as flickering torches), but generally not large changes such as toggling a light on and off.
 			[b]Note:[/b] The light is not baked in [LightmapGI] if [member editor_only] is [code]true[/code].
 		</constant>
 		<constant name="BAKE_DYNAMIC" value="2" enum="BakeMode">
-			Light is taken into account in dynamic baking ([VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) only). The light can be moved around or modified with global illumination updating in real-time. The light's global illumination appearance will be slightly different compared to [constant BAKE_STATIC]. This has a greater performance cost compared to [constant BAKE_STATIC]. When using SDFGI, the update speed of dynamic lights is affected by [member ProjectSettings.rendering/global_illumination/sdfgi/frames_to_update_lights].
+			Light is taken into account in dynamic baking ([VoxelGI] and DynamicGI ([member Environment.dynamic_gi_enabled]) only). The light can be moved around or modified with global illumination updating in real-time. The light's global illumination appearance will be slightly different compared to [constant BAKE_STATIC]. This has a greater performance cost compared to [constant BAKE_STATIC]. When using DynamicGI, the update speed of dynamic lights is affected by [member ProjectSettings.rendering/global_illumination/hddagi/frames_to_update_lights].
 		</constant>
 	</constants>
 </class>

@@ -1515,8 +1515,8 @@ void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *>
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RenderForwardMobile::_render_sdfgi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) {
-	// we don't do SDFGI in low end..
+void RenderForwardMobile::_render_hddagi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_normal_bits_texture, float p_exposure_normalization) {
+	// we don't do HDDAGI in low end..
 }
 
 void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<RenderGeometryInstance *> &p_instances) {
@@ -2467,7 +2467,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	sdcache->sort.material_id_hi = p_material_id >> 16;
 	sdcache->sort.shader_id = p_shader_id;
 	sdcache->sort.geometry_id = p_mesh.get_local_index();
-	// sdcache->sort.uses_forward_gi = ginstance->can_sdfgi;
+	// sdcache->sort.uses_forward_gi = ginstance->can_hddagi;
 	sdcache->sort.priority = p_material->priority;
 
 	uint64_t format = RendererRD::MeshStorage::get_singleton()->mesh_surface_get_format(sdcache->surface);
@@ -2797,7 +2797,7 @@ RenderForwardMobile::RenderForwardMobile() {
 	if (is_using_radiance_cubemap_array()) {
 		defines += "\n#define USE_RADIANCE_CUBEMAP_ARRAY \n";
 	}
-	// defines += "\n#define SDFGI_OCT_SIZE " + itos(gi.sdfgi_get_lightprobe_octahedron_size()) + "\n";
+	// defines += "\n#define HDDAGI_OCT_SIZE " + itos(gi.hddagi_get_lightprobe_octahedron_size()) + "\n";
 	defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(MAX_DIRECTIONAL_LIGHTS) + "\n";
 
 	{

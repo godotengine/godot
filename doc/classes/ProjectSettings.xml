@@ -2522,22 +2522,15 @@
 			If [code]true[/code], disables the threaded optimization feature from the NVIDIA drivers, which are known to cause stuttering in most OpenGL applications.
 			[b]Note:[/b] This setting only works on Windows, as threaded optimization is disabled by default on other platforms.
 		</member>
-		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting.
+		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], renders [VoxelGI] and DynamicGI ([member Environment.dynamic_gi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or DynamicGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting.
 			[b]Note:[/b] This property is only read when the project starts. To set half-resolution GI at run-time, call [method RenderingServer.gi_set_use_half_resolution] instead.
 		</member>
-		<member name="rendering/global_illumination/sdfgi/frames_to_converge" type="int" setter="" getter="" default="5">
-			The number of frames to use for converging signed distance field global illumination. Higher values lead to a less noisy result, at the cost of taking a longer time to fully converge. This means the scene's global illumination will be too dark for a longer period of time, especially when the camera moves fast. The actual convergence speed depends on rendered framerate. For example, with the default setting of 30 frames, rendering at 60 FPS will make SDFGI fully converge after 0.5 seconds. See also [member rendering/global_illumination/sdfgi/frames_to_update_lights] and [member rendering/global_illumination/sdfgi/probe_ray_count].
-			[b]Note:[/b] This property is only read when the project starts. To control SDFGI convergence speed at runtime, call [method RenderingServer.environment_set_sdfgi_frames_to_converge] instead.
+		<member name="rendering/global_illumination/hddagi/frames_to_converge" type="int" setter="" getter="" default="1">
 		</member>
-		<member name="rendering/global_illumination/sdfgi/frames_to_update_lights" type="int" setter="" getter="" default="2">
-			The number of frames over which dynamic lights should be updated in signed distance field global illumination. Higher values take more time to update indirect lighting coming from dynamic lights, but result in better performance when many dynamic lights are present. See also [member rendering/global_illumination/sdfgi/frames_to_converge] and [member rendering/global_illumination/sdfgi/probe_ray_count].
-			[b]Note:[/b] This only affects [Light3D] nodes whose [member Light3D.light_bake_mode] is [constant Light3D.BAKE_DYNAMIC] (which is the default). Consider making non-moving lights use the [constant Light3D.BAKE_STATIC] bake mode to improve performance.
-			[b]Note:[/b] This property is only read when the project starts. To control SDFGI light update speed at runtime, call [method RenderingServer.environment_set_sdfgi_frames_to_update_light] instead.
+		<member name="rendering/global_illumination/hddagi/frames_to_update_inactive_probes" type="int" setter="" getter="" default="3">
 		</member>
-		<member name="rendering/global_illumination/sdfgi/probe_ray_count" type="int" setter="" getter="" default="1">
-			The number of rays to throw per frame when computing signed distance field global illumination. Higher values lead to a less noisy result, at the cost of performance. See also [member rendering/global_illumination/sdfgi/frames_to_converge] and [member rendering/global_illumination/sdfgi/frames_to_update_lights].
-			[b]Note:[/b] This property is only read when the project starts. To control SDFGI quality at runtime, call [method RenderingServer.environment_set_sdfgi_ray_count] instead.
+		<member name="rendering/global_illumination/hddagi/frames_to_update_lights" type="int" setter="" getter="" default="2">
 		</member>
 		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="0">
 			The VoxelGI quality to use. High quality leads to more precise lighting and better reflections, but is slower to render. This setting does not affect the baked data and doesn't require baking the [VoxelGI] again to apply.

@@ -1091,19 +1091,19 @@ void RasterizerSceneGLES3::environment_set_ssao_quality(RS::EnvironmentSSAOQuali
 void RasterizerSceneGLES3::environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
 }
 
-void RasterizerSceneGLES3::environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) {
+void RasterizerSceneGLES3::environment_set_hddagi_frames_to_converge(RS::EnvironmentHDDAGIFramesToConverge p_frames) {
 }
 
-void RasterizerSceneGLES3::environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) {
-}
-
-void RasterizerSceneGLES3::environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) {
+void RasterizerSceneGLES3::environment_set_hddagi_frames_to_update_light(RS::EnvironmentHDDAGIFramesToUpdateLight p_update) {
 }
 
 void RasterizerSceneGLES3::environment_set_volumetric_fog_volume_size(int p_size, int p_depth) {
 }
 
 void RasterizerSceneGLES3::environment_set_volumetric_fog_filter_active(bool p_enable) {
+}
+
+void RasterizerSceneGLES3::environment_set_hddagi_inactive_probe_frames(RS::EnvironmentHDDAGIInactiveProbeFrames p_frames) {
 }
 
 Ref<Image> RasterizerSceneGLES3::environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) {
@@ -2222,7 +2222,7 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, 
 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 }
 
-void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
+void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderHDDAGIData *p_render_hddagi_regions, int p_render_hddagi_region_count, const RenderHDDAGIUpdateData *p_hddagi_update_data, RenderingMethod::RenderInfo *r_render_info) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::Config *config = GLES3::Config::get_singleton();
 	RENDER_TIMESTAMP("Setup 3D Scene");
@@ -4030,7 +4030,7 @@ void RasterizerSceneGLES3::update() {
 	_update_dirty_skys();
 }
 
-void RasterizerSceneGLES3::sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
+void RasterizerSceneGLES3::hddagi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
 }
 
 void RasterizerSceneGLES3::decals_set_filter(RS::DecalFilter p_filter) {

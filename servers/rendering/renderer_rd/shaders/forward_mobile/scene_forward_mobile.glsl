@@ -1065,7 +1065,7 @@ void main() {
 	vec3 ambient_light = vec3(0.0, 0.0, 0.0);
 
 #ifndef MODE_UNSHADED
-	// Used in regular draw pass and when drawing SDFs for SDFGI and materials for VoxelGI.
+	// Used in regular draw pass and when drawing SDFs for HDDAGI and materials for VoxelGI.
 	emission *= scene_data.emissive_exposure_normalization;
 #endif
 

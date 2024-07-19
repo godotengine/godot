@@ -80,6 +80,54 @@
 		<member name="background_mode" type="int" setter="set_background" getter="get_background" enum="Environment.BGMode" default="0">
 			The background mode. See [enum BGMode] for possible values.
 		</member>
+		<member name="dynamic_gi_bounce_feedback" type="float" setter="set_dynamic_gi_bounce_feedback" getter="get_dynamic_gi_bounce_feedback" default="1.0">
+			How much light bounces back to the probes. This increases the amount of indirect light received on surfaces.
+		</member>
+		<member name="dynamic_gi_cascade0_distance" type="float" setter="set_dynamic_gi_cascade0_distance" getter="get_dynamic_gi_cascade0_distance" default="12.8">
+			Maximum distance for the first cascade. Use mostly as reference, as changing this also changes cell size.
+		</member>
+		<member name="dynamic_gi_cascade_format" type="int" setter="set_dynamic_gi_cascade_format" getter="get_dynamic_gi_cascade_format" enum="Environment.DynamicGICascadeFormat" default="0">
+			Chooses the format for the cascades (amount of probes in each axis). Currently only full size and half height sizes are supported.
+		</member>
+		<member name="dynamic_gi_cascades" type="int" setter="set_dynamic_gi_cascades" getter="get_dynamic_gi_cascades" default="4">
+			The amount of cascades used for global illumination. More cascades allows the global illumination to reach further away, but at the same time it costs more memory and GPU performance. Adjust this value to what you find necessary in your game.
+		</member>
+		<member name="dynamic_gi_enabled" type="bool" setter="set_dynamic_gi_enabled" getter="is_dynamic_gi_enabled" default="false">
+			Turns on Dynamic GI. This provides global illumination (indirect light and reflections) for the whole scene. Only static objects contribute to GI while dynamic objects can also recieve it (check whether your object is static, dynamic or disabled with [member GeometryInstance3D.gi_mode].
+		</member>
+		<member name="dynamic_gi_energy" type="float" setter="set_dynamic_gi_energy" getter="get_dynamic_gi_energy" default="1.0">
+			Adjust the amount of energy that geometry recieved from GI. Use this only as a last resort because it affects everything uniformly and decreases the quality. If needed, consider using [member Environment.dynamic_gi_bounce_feedback] or [member Light3D.light_indirect_energy] to inject more energy into the system.
+		</member>
+		<member name="dynamic_gi_filter_ambient" type="bool" setter="set_dynamic_gi_filter_ambient" getter="is_dynamic_gi_filtering_ambient" default="true">
+			Filter the ambient light, this results in higher quality transitions between the cascades.
+		</member>
+		<member name="dynamic_gi_filter_probes" type="bool" setter="set_dynamic_gi_filter_probes" getter="is_dynamic_gi_filtering_probes" default="true">
+			Filter the probes (averaging probes with neighbouring probes) to smooth out the light transitions. This option can be used safely, as occlusion between probes is considered when filtering, but it may also result on lower light frequency.
+		</member>
+		<member name="dynamic_gi_filter_reflection" type="bool" setter="set_dynamic_gi_filter_reflections" getter="is_dynamic_gi_filtering_reflections" default="false">
+			Applies a gaussian filter to reflections. If you find that the voxelish look of the reflections is not to your taste, this filter will smooth it out.
+		</member>
+		<member name="dynamic_gi_max_distance" type="float" setter="set_dynamic_gi_max_distance" getter="get_dynamic_gi_max_distance" default="204.8">
+			Total maximum distance for Dynamic GI, considering cell size and cascades. Changing this value also changes [member dynamic_gi_cascade0_distance] and [member  dynamic_gi_min_cell_size].
+		</member>
+		<member name="dynamic_gi_min_cell_size" type="float" setter="set_dynamic_gi_min_cell_size" getter="get_dynamic_gi_min_cell_size" default="0.2">
+			The minimum size of a voxel cell when processing Dynamic GI (a probe is placed every 8 voxel cells). It is recommended to have the cascade 0 probes visible when adjusting this value, which you can do via the viewport menu (Advanced -&gt; Dynamic GI Probes).
+		</member>
+		<member name="dynamic_gi_normal_bias" type="float" setter="set_dynamic_gi_normal_bias" getter="get_dynamic_gi_normal_bias" default="1.1">
+			Used for unocclusion. If unsure, leave this value unmodified.
+		</member>
+		<member name="dynamic_gi_occlusion_bias" type="float" setter="set_dynamic_gi_occlusion_bias" getter="get_dynamic_gi_occlusion_bias" default="0.1">
+			This value can strengthen probe occlusion when closer to zero, but may also cause unwanted dark patterns. It loosens occlusion when closer to 1, but leaks light. Adjust depending on your needs, leave unmodified if unsure.
+		</member>
+		<member name="dynamic_gi_probe_bias" type="float" setter="set_dynamic_gi_probe_bias" getter="get_dynamic_gi_probe_bias" default="1.1">
+			Bias used for probe raytracing.
+		</member>
+		<member name="dynamic_gi_read_sky_light" type="bool" setter="set_dynamic_gi_read_sky_light" getter="is_dynamic_gi_reading_sky_light" default="true">
+			If enabled, the probes will read from the sky light when rays hit nothing.
+		</member>
+		<member name="dynamic_gi_reflection_bias" type="float" setter="set_dynamic_gi_reflection_bias" getter="get_dynamic_gi_reflection_bias" default="2.0">
+			Bias used for reflections. The current value is safe to avoid occlusion with nearby voxels, but change if you find too much light is being leaked or reflections have too much offset.
+		</member>
 		<member name="fog_aerial_perspective" type="float" setter="set_fog_aerial_perspective" getter="get_fog_aerial_perspective" default="0.0">
 			If set above [code]0.0[/code] (exclusive), blends between the fog's color and the color of the background [Sky]. This has a small performance cost when set above [code]0.0[/code]. Must have [member background_mode] set to [constant BG_SKY].
 			This is useful to simulate [url=https://en.wikipedia.org/wiki/Aerial_perspective]aerial perspective[/url] in large scenes with low density fog. However, it is not very useful for high-density fog, as the sky will shine through. When set to [code]1.0[/code], the fog color comes completely from the [Sky]. If set to [code]0.0[/code], aerial perspective is disabled.
@@ -199,49 +247,6 @@
 		<member name="reflected_light_source" type="int" setter="set_reflection_source" getter="get_reflection_source" enum="Environment.ReflectionSource" default="0">
 			The reflected (specular) light source.
 		</member>
-		<member name="sdfgi_bounce_feedback" type="float" setter="set_sdfgi_bounce_feedback" getter="get_sdfgi_bounce_feedback" default="0.5">
-			The energy multiplier applied to light every time it bounces from a surface when using SDFGI. Values greater than [code]0.0[/code] will simulate multiple bounces, resulting in a more realistic appearance. Increasing [member sdfgi_bounce_feedback] generally has no performance impact. See also [member sdfgi_energy].
-			[b]Note:[/b] Values greater than [code]0.5[/code] can cause infinite feedback loops and should be avoided in scenes with bright materials.
-			[b]Note:[/b] If [member sdfgi_bounce_feedback] is [code]0.0[/code], indirect lighting will not be represented in reflections as light will only bounce one time.
-		</member>
-		<member name="sdfgi_cascade0_distance" type="float" setter="set_sdfgi_cascade0_distance" getter="get_sdfgi_cascade0_distance" default="12.8">
-			[b]Note:[/b] This property is linked to [member sdfgi_min_cell_size] and [member sdfgi_max_distance]. Changing its value will automatically change those properties as well.
-		</member>
-		<member name="sdfgi_cascades" type="int" setter="set_sdfgi_cascades" getter="get_sdfgi_cascades" default="4">
-			The number of cascades to use for SDFGI (between 1 and 8). A higher number of cascades allows displaying SDFGI further away while preserving detail up close, at the cost of performance. When using SDFGI on small-scale levels, [member sdfgi_cascades] can often be decreased between [code]1[/code] and [code]4[/code] to improve performance.
-		</member>
-		<member name="sdfgi_enabled" type="bool" setter="set_sdfgi_enabled" getter="is_sdfgi_enabled" default="false">
-			If [code]true[/code], enables signed distance field global illumination for meshes that have their [member GeometryInstance3D.gi_mode] set to [constant GeometryInstance3D.GI_MODE_STATIC]. SDFGI is a real-time global illumination technique that works well with procedurally generated and user-built levels, including in situations where geometry is created during gameplay. The signed distance field is automatically generated around the camera as it moves. Dynamic lights are supported, but dynamic occluders and emissive surfaces are not.
-			[b]Note:[/b] SDFGI is only supported in the Forward+ rendering method, not Mobile or Compatibility.
-			[b]Performance:[/b] SDFGI is relatively demanding on the GPU and is not suited to low-end hardware such as integrated graphics (consider [LightmapGI] instead). To improve SDFGI performance, enable [member ProjectSettings.rendering/global_illumination/gi/use_half_resolution] in the Project Settings.
-			[b]Note:[/b] Meshes should have sufficiently thick walls to avoid light leaks (avoid one-sided walls). For interior levels, enclose your level geometry in a sufficiently large box and bridge the loops to close the mesh.
-		</member>
-		<member name="sdfgi_energy" type="float" setter="set_sdfgi_energy" getter="get_sdfgi_energy" default="1.0">
-			The energy multiplier to use for SDFGI. Higher values will result in brighter indirect lighting and reflections. See also [member sdfgi_bounce_feedback].
-		</member>
-		<member name="sdfgi_max_distance" type="float" setter="set_sdfgi_max_distance" getter="get_sdfgi_max_distance" default="204.8">
-			The maximum distance at which SDFGI is visible. Beyond this distance, environment lighting or other sources of GI such as [ReflectionProbe] will be used as a fallback.
-			[b]Note:[/b] This property is linked to [member sdfgi_min_cell_size] and [member sdfgi_cascade0_distance]. Changing its value will automatically change those properties as well.
-		</member>
-		<member name="sdfgi_min_cell_size" type="float" setter="set_sdfgi_min_cell_size" getter="get_sdfgi_min_cell_size" default="0.2">
-			The cell size to use for the closest SDFGI cascade (in 3D units). Lower values allow SDFGI to be more precise up close, at the cost of making SDFGI updates more demanding. This can cause stuttering when the camera moves fast. Higher values allow SDFGI to cover more ground, while also reducing the performance impact of SDFGI updates.
-			[b]Note:[/b] This property is linked to [member sdfgi_max_distance] and [member sdfgi_cascade0_distance]. Changing its value will automatically change those properties as well.
-		</member>
-		<member name="sdfgi_normal_bias" type="float" setter="set_sdfgi_normal_bias" getter="get_sdfgi_normal_bias" default="1.1">
-			The normal bias to use for SDFGI probes. Increasing this value can reduce visible streaking artifacts on sloped surfaces, at the cost of increased light leaking.
-		</member>
-		<member name="sdfgi_probe_bias" type="float" setter="set_sdfgi_probe_bias" getter="get_sdfgi_probe_bias" default="1.1">
-			The constant bias to use for SDFGI probes. Increasing this value can reduce visible streaking artifacts on sloped surfaces, at the cost of increased light leaking.
-		</member>
-		<member name="sdfgi_read_sky_light" type="bool" setter="set_sdfgi_read_sky_light" getter="is_sdfgi_reading_sky_light" default="true">
-			If [code]true[/code], SDFGI takes the environment lighting into account. This should be set to [code]false[/code] for interior scenes.
-		</member>
-		<member name="sdfgi_use_occlusion" type="bool" setter="set_sdfgi_use_occlusion" getter="is_sdfgi_using_occlusion" default="false">
-			If [code]true[/code], SDFGI uses an occlusion detection approach to reduce light leaking. Occlusion may however introduce dark blotches in certain spots, which may be undesired in mostly outdoor scenes. [member sdfgi_use_occlusion] has a performance impact and should only be enabled when needed.
-		</member>
-		<member name="sdfgi_y_scale" type="int" setter="set_sdfgi_y_scale" getter="get_sdfgi_y_scale" enum="Environment.SDFGIYScale" default="1">
-			The Y scale to use for SDFGI cells. Lower values will result in SDFGI cells being packed together more closely on the Y axis. This is used to balance between quality and covering a lot of vertical ground. [member sdfgi_y_scale] should be set depending on how vertical your scene is (and how fast your camera may move on the Y axis).
-		</member>
 		<member name="sky" type="Sky" setter="set_sky" getter="get_sky">
 			The [Sky] resource used for this [Environment].
 		</member>
@@ -280,7 +285,7 @@
 			The amount that the screen-space ambient occlusion effect is allowed to blur over the edges of objects. Setting too high will result in aliasing around the edges of objects. Setting too low will make object edges appear blurry.
 		</member>
 		<member name="ssil_enabled" type="bool" setter="set_ssil_enabled" getter="is_ssil_enabled" default="false">
-			If [code]true[/code], the screen-space indirect lighting effect is enabled. Screen space indirect lighting is a form of indirect lighting that allows diffuse light to bounce between nearby objects. Screen-space indirect lighting works very similarly to screen-space ambient occlusion, in that it only affects a limited range. It is intended to be used along with a form of proper global illumination like SDFGI or [VoxelGI]. Screen-space indirect lighting is not affected by individual light's [member Light3D.light_indirect_energy].
+			If [code]true[/code], the screen-space indirect lighting effect is enabled. Screen space indirect lighting is a form of indirect lighting that allows diffuse light to bounce between nearby objects. Screen-space indirect lighting works very similarly to screen-space ambient occlusion, in that it only affects a limited range. It is intended to be used along with a form of proper global illumination like Dynamic GI or [VoxelGI]. Screen-space indirect lighting is not affected by individual light's [member Light3D.light_indirect_energy].
 			[b]Note:[/b] SSIL is only supported in the Forward+ rendering method, not Mobile or Compatibility.
 		</member>
 		<member name="ssil_intensity" type="float" setter="set_ssil_intensity" getter="get_ssil_intensity" default="1.0">
@@ -351,7 +356,7 @@
 		<member name="volumetric_fog_gi_inject" type="float" setter="set_volumetric_fog_gi_inject" getter="get_volumetric_fog_gi_inject" default="1.0">
 			Scales the strength of Global Illumination used in the volumetric fog's albedo color. A value of [code]0.0[/code] means that Global Illumination will not impact the volumetric fog. [member volumetric_fog_gi_inject] has a small performance cost when set above [code]0.0[/code].
 			[b]Note:[/b] This has no visible effect if [member volumetric_fog_density] is [code]0.0[/code] or if [member volumetric_fog_albedo] is a fully black color.
-			[b]Note:[/b] Only [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) are taken into account when using [member volumetric_fog_gi_inject]. Global illumination from [LightmapGI], [ReflectionProbe] and SSIL (see [member ssil_enabled]) will be ignored by volumetric fog.
+			[b]Note:[/b] Only [VoxelGI] and Dynamic GI ([member Environment.dynamic_gi_enabled]) are taken into account when using [member volumetric_fog_gi_inject]. Global illumination from [LightmapGI], [ReflectionProbe] and SSIL (see [member ssil_enabled]) will be ignored by volumetric fog.
 		</member>
 		<member name="volumetric_fog_length" type="float" setter="set_volumetric_fog_length" getter="get_volumetric_fog_length" default="64.0">
 			The distance over which the volumetric fog is computed. Increase to compute fog over a greater range, decrease to add more detail when a long range is not needed. For best quality fog, keep this as low as possible. See also [member ProjectSettings.rendering/environment/volumetric_fog/volume_depth].
@@ -444,14 +449,14 @@
 		<constant name="FOG_MODE_DEPTH" value="1" enum="FogMode">
 			Use a simple fog model defined by start and end positions and a custom curve. While not physically accurate, this model can be useful when you need more artistic control.
 		</constant>
-		<constant name="SDFGI_Y_SCALE_50_PERCENT" value="0" enum="SDFGIYScale">
-			Use 50% scale for SDFGI on the Y (vertical) axis. SDFGI cells will be twice as short as they are wide. This allows providing increased GI detail and reduced light leaking with thin floors and ceilings. This is usually the best choice for scenes that don't feature much verticality.
+		<constant name="DYNAMIC_GI_CASCADE_FORMAT_16x8x16" value="0" enum="DynamicGICascadeFormat">
+			Uses a cascade format with half the vertical resolution. This is the default, as most level geometry is generally fine with this.
 		</constant>
-		<constant name="SDFGI_Y_SCALE_75_PERCENT" value="1" enum="SDFGIYScale">
-			Use 75% scale for SDFGI on the Y (vertical) axis. This is a balance between the 50% and 100% SDFGI Y scales.
+		<constant name="DYNAMIC_GI_CASCADE_FORMAT_16x16x16" value="1" enum="DynamicGICascadeFormat">
+			Full vertical resolution cascade format. Ensures cascades are the same in all directions.
 		</constant>
-		<constant name="SDFGI_Y_SCALE_100_PERCENT" value="2" enum="SDFGIYScale">
-			Use 100% scale for SDFGI on the Y (vertical) axis. SDFGI cells will be as tall as they are wide. This is usually the best choice for highly vertical scenes. The downside is that light leaking may become more noticeable with thin floors and ceilings.
+		<constant name="DYNAMIC_GI_CASCADE_FORMAT_MAX" value="2" enum="DynamicGICascadeFormat">
+			Maximum amount of cascade formats.
 		</constant>
 	</constants>
 </class>

@@ -56,8 +56,8 @@ public:
 	RendererSceneRender *scene_render = nullptr;
 
 	enum {
-		SDFGI_MAX_CASCADES = 8,
-		SDFGI_MAX_REGIONS_PER_CASCADE = 3,
+		HDDAGI_MAX_CASCADES = 8,
+		HDDAGI_MAX_REGIONS_PER_CASCADE = 3,
 		MAX_INSTANCE_PAIRS = 32,
 		MAX_UPDATE_SHADOWS = 512
 	};
@@ -703,7 +703,7 @@ public:
 		Instance *baked_light = nullptr;
 
 		RS::LightBakeMode bake_mode;
-		uint32_t max_sdfgi_cascade = 2;
+		uint32_t max_hddagi_cascade = 2;
 
 	private:
 		// Instead of a single dirty flag, we maintain a count
@@ -896,8 +896,8 @@ public:
 			PagedArray<RenderGeometryInstance *> cascade_geometry_instances[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES];
 		} directional_shadows[RendererSceneRender::MAX_DIRECTIONAL_LIGHTS];
 
-		PagedArray<RenderGeometryInstance *> sdfgi_region_geometry_instances[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE];
-		PagedArray<RID> sdfgi_cascade_lights[SDFGI_MAX_CASCADES];
+		PagedArray<RenderGeometryInstance *> hddagi_region_geometry_instances[HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE];
+		PagedArray<RID> hddagi_cascade_lights[HDDAGI_MAX_CASCADES];
 
 		void clear() {
 			geometry_instances.clear();
@@ -915,12 +915,12 @@ public:
 				}
 			}
 
-			for (int i = 0; i < SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE; i++) {
-				sdfgi_region_geometry_instances[i].clear();
+			for (int i = 0; i < HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE; i++) {
+				hddagi_region_geometry_instances[i].clear();
 			}
 
-			for (int i = 0; i < SDFGI_MAX_CASCADES; i++) {
-				sdfgi_cascade_lights[i].clear();
+			for (int i = 0; i < HDDAGI_MAX_CASCADES; i++) {
+				hddagi_cascade_lights[i].clear();
 			}
 		}
 
@@ -940,12 +940,12 @@ public:
 				}
 			}
 
-			for (int i = 0; i < SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE; i++) {
-				sdfgi_region_geometry_instances[i].reset();
+			for (int i = 0; i < HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE; i++) {
+				hddagi_region_geometry_instances[i].reset();
 			}
 
-			for (int i = 0; i < SDFGI_MAX_CASCADES; i++) {
-				sdfgi_cascade_lights[i].reset();
+			for (int i = 0; i < HDDAGI_MAX_CASCADES; i++) {
+				hddagi_cascade_lights[i].reset();
 			}
 		}
 
@@ -966,12 +966,12 @@ public:
 				}
 			}
 
-			for (int i = 0; i < SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE; i++) {
-				sdfgi_region_geometry_instances[i].merge_unordered(p_cull_result.sdfgi_region_geometry_instances[i]);
+			for (int i = 0; i < HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE; i++) {
+				hddagi_region_geometry_instances[i].merge_unordered(p_cull_result.hddagi_region_geometry_instances[i]);
 			}
 
-			for (int i = 0; i < SDFGI_MAX_CASCADES; i++) {
-				sdfgi_cascade_lights[i].merge_unordered(p_cull_result.sdfgi_cascade_lights[i]);
+			for (int i = 0; i < HDDAGI_MAX_CASCADES; i++) {
+				hddagi_cascade_lights[i].merge_unordered(p_cull_result.hddagi_cascade_lights[i]);
 			}
 		}
 
@@ -991,12 +991,12 @@ public:
 				}
 			}
 
-			for (int i = 0; i < SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE; i++) {
-				sdfgi_region_geometry_instances[i].set_page_pool(p_geometry_instance_pool);
+			for (int i = 0; i < HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE; i++) {
+				hddagi_region_geometry_instances[i].set_page_pool(p_geometry_instance_pool);
 			}
 
-			for (int i = 0; i < SDFGI_MAX_CASCADES; i++) {
-				sdfgi_cascade_lights[i].set_page_pool(p_rid_pool);
+			for (int i = 0; i < HDDAGI_MAX_CASCADES; i++) {
+				hddagi_cascade_lights[i].set_page_pool(p_rid_pool);
 			}
 		}
 	};
@@ -1007,8 +1007,8 @@ public:
 	RendererSceneRender::RenderShadowData render_shadow_data[MAX_UPDATE_SHADOWS];
 	uint32_t max_shadows_used = 0;
 
-	RendererSceneRender::RenderSDFGIData render_sdfgi_data[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE];
-	RendererSceneRender::RenderSDFGIUpdateData sdfgi_update_data;
+	RendererSceneRender::RenderHDDAGIData render_hddagi_data[HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE];
+	RendererSceneRender::RenderHDDAGIUpdateData hddagi_update_data;
 
 	uint32_t thread_cull_threshold = 200;
 
@@ -1103,16 +1103,16 @@ public:
 
 		uint32_t shadow_count;
 
-		struct SDFGI {
-			//have arrays here because SDFGI functions expects this, plus regions can have areas
-			AABB region_aabb[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
-			uint32_t region_cascade[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
+		struct HDDAGI {
+			//have arrays here because HDDAGI functions expects this, plus regions can have areas
+			AABB region_aabb[HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
+			uint32_t region_cascade[HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
 			uint32_t region_count = 0;
 
-			uint32_t cascade_light_index[SDFGI_MAX_CASCADES];
+			uint32_t cascade_light_index[HDDAGI_MAX_CASCADES];
 			uint32_t cascade_light_count = 0;
 
-		} sdfgi;
+		} hddagi;
 
 		SpinLock lock;
 
@@ -1334,24 +1334,29 @@ public:
 
 	PASS6(environment_set_ssil_quality, RS::EnvironmentSSILQuality, bool, float, int, float, float)
 
-	// SDFGI
+	// HDDAGI
 
-	PASS11(environment_set_sdfgi, RID, bool, int, float, RS::EnvironmentSDFGIYScale, bool, float, bool, float, float, float)
+	PASS15(environment_set_hddagi, RID, bool, int, RS::EnvironmentHDDAGICascadeFormat, float, bool, float, bool, float, float, float, float, float, bool, bool)
 
-	PASS1RC(bool, environment_get_sdfgi_enabled, RID)
-	PASS1RC(int, environment_get_sdfgi_cascades, RID)
-	PASS1RC(float, environment_get_sdfgi_min_cell_size, RID)
-	PASS1RC(bool, environment_get_sdfgi_use_occlusion, RID)
-	PASS1RC(float, environment_get_sdfgi_bounce_feedback, RID)
-	PASS1RC(bool, environment_get_sdfgi_read_sky_light, RID)
-	PASS1RC(float, environment_get_sdfgi_energy, RID)
-	PASS1RC(float, environment_get_sdfgi_normal_bias, RID)
-	PASS1RC(float, environment_get_sdfgi_probe_bias, RID)
-	PASS1RC(RS::EnvironmentSDFGIYScale, environment_get_sdfgi_y_scale, RID)
+	PASS1RC(bool, environment_get_hddagi_enabled, RID)
+	PASS1RC(RS::EnvironmentHDDAGICascadeFormat, environment_get_hddagi_cascade_format, RID)
+	PASS1RC(int, environment_get_hddagi_cascades, RID)
+	PASS1RC(float, environment_get_hddagi_min_cell_size, RID)
+	PASS1RC(bool, environment_get_hddagi_filter_probes, RID)
+	PASS1RC(float, environment_get_hddagi_bounce_feedback, RID)
+	PASS1RC(bool, environment_get_hddagi_read_sky_light, RID)
+	PASS1RC(float, environment_get_hddagi_energy, RID)
+	PASS1RC(float, environment_get_hddagi_normal_bias, RID)
+	PASS1RC(float, environment_get_hddagi_reflection_bias, RID)
+	PASS1RC(float, environment_get_hddagi_probe_bias, RID)
+	PASS1RC(float, environment_get_hddagi_occlusion_bias, RID)
+	PASS1RC(float, environment_get_hddagi_filter_ambient, RID)
+	PASS1RC(float, environment_get_hddagi_filter_reflection, RID)
 
-	PASS1(environment_set_sdfgi_ray_count, RS::EnvironmentSDFGIRayCount)
-	PASS1(environment_set_sdfgi_frames_to_converge, RS::EnvironmentSDFGIFramesToConverge)
-	PASS1(environment_set_sdfgi_frames_to_update_light, RS::EnvironmentSDFGIFramesToUpdateLight)
+	PASS1(environment_set_hddagi_frames_to_converge, RS::EnvironmentHDDAGIFramesToConverge)
+	PASS1(environment_set_hddagi_frames_to_update_light, RS::EnvironmentHDDAGIFramesToUpdateLight)
+
+	PASS1(environment_set_hddagi_inactive_probe_frames, RS::EnvironmentHDDAGIInactiveProbeFrames)
 
 	// Adjustment
 	PASS7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
@@ -1372,7 +1377,7 @@ public:
 	PASS1(positional_soft_shadow_filter_set_quality, RS::ShadowQuality)
 	PASS1(directional_soft_shadow_filter_set_quality, RS::ShadowQuality)
 
-	PASS2(sdfgi_set_debug_probe_select, const Vector3 &, const Vector3 &)
+	PASS2(hddagi_set_debug_probe_select, const Vector3 &, const Vector3 &)
 
 	/* Render Buffers */
 

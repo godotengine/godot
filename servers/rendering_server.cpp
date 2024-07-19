@@ -2468,7 +2468,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("light_set_distance_fade", "decal", "enabled", "begin", "shadow", "length"), &RenderingServer::light_set_distance_fade);
 	ClassDB::bind_method(D_METHOD("light_set_reverse_cull_face_mode", "light", "enabled"), &RenderingServer::light_set_reverse_cull_face_mode);
 	ClassDB::bind_method(D_METHOD("light_set_bake_mode", "light", "bake_mode"), &RenderingServer::light_set_bake_mode);
-	ClassDB::bind_method(D_METHOD("light_set_max_sdfgi_cascade", "light", "cascade"), &RenderingServer::light_set_max_sdfgi_cascade);
+	ClassDB::bind_method(D_METHOD("light_set_max_hddagi_cascade", "light", "cascade"), &RenderingServer::light_set_max_hddagi_cascade);
 
 	ClassDB::bind_method(D_METHOD("light_omni_set_shadow_mode", "light", "mode"), &RenderingServer::light_omni_set_shadow_mode);
 
@@ -2593,7 +2593,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DECAL_FILTER_NEAREST_MIPMAPS_ANISOTROPIC);
 	BIND_ENUM_CONSTANT(DECAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC);
 
-	/* GI API (affects VoxelGI and SDFGI) */
+	/* GI API (affects VoxelGI and HDDAGI) */
 
 	ClassDB::bind_method(D_METHOD("gi_set_use_half_resolution", "half_resolution"), &RenderingServer::gi_set_use_half_resolution);
 
@@ -2901,8 +2901,8 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SSIL);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_PSSM_SPLITS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_DECAL_ATLAS);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SDFGI);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SDFGI_PROBES);
+	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_HDDAGI);
+	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_HDDAGI_PROBES);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_GI_BUFFER);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_DISABLE_LOD);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS);
@@ -2978,17 +2978,21 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_adjustment", "env", "enable", "brightness", "contrast", "saturation", "use_1d_color_correction", "color_correction"), &RenderingServer::environment_set_adjustment);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr", "env", "enable", "max_steps", "fade_in", "fade_out", "depth_tolerance"), &RenderingServer::environment_set_ssr);
 	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "power", "detail", "horizon", "sharpness", "light_affect", "ao_channel_affect"), &RenderingServer::environment_set_ssao);
+
 	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect", "fog_mode"), &RenderingServer::environment_set_fog, DEFVAL(RS::ENV_FOG_MODE_EXPONENTIAL));
-	ClassDB::bind_method(D_METHOD("environment_set_sdfgi", "env", "enable", "cascades", "min_cell_size", "y_scale", "use_occlusion", "bounce_feedback", "read_sky", "energy", "normal_bias", "probe_bias"), &RenderingServer::environment_set_sdfgi);
+	ClassDB::bind_method(D_METHOD("environment_set_hddagi", "env", "enable", "cascades", "cascade_format", "min_cell_size", "filter_probes", "bounce_feedback", "read_sky", "energy", "normal_bias", "reflection_bias", "probe_bias", "occlusion_bias", "filter_reflection", "filter_ambient"), &RenderingServer::environment_set_hddagi);
+
 	ClassDB::bind_method(D_METHOD("environment_set_volumetric_fog", "env", "enable", "density", "albedo", "emission", "emission_energy", "anisotropy", "length", "p_detail_spread", "gi_inject", "temporal_reprojection", "temporal_reprojection_amount", "ambient_inject", "sky_affect"), &RenderingServer::environment_set_volumetric_fog);
 
 	ClassDB::bind_method(D_METHOD("environment_glow_set_use_bicubic_upscale", "enable"), &RenderingServer::environment_glow_set_use_bicubic_upscale);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr_roughness_quality", "quality"), &RenderingServer::environment_set_ssr_roughness_quality);
 	ClassDB::bind_method(D_METHOD("environment_set_ssao_quality", "quality", "half_size", "adaptive_target", "blur_passes", "fadeout_from", "fadeout_to"), &RenderingServer::environment_set_ssao_quality);
 	ClassDB::bind_method(D_METHOD("environment_set_ssil_quality", "quality", "half_size", "adaptive_target", "blur_passes", "fadeout_from", "fadeout_to"), &RenderingServer::environment_set_ssil_quality);
-	ClassDB::bind_method(D_METHOD("environment_set_sdfgi_ray_count", "ray_count"), &RenderingServer::environment_set_sdfgi_ray_count);
-	ClassDB::bind_method(D_METHOD("environment_set_sdfgi_frames_to_converge", "frames"), &RenderingServer::environment_set_sdfgi_frames_to_converge);
-	ClassDB::bind_method(D_METHOD("environment_set_sdfgi_frames_to_update_light", "frames"), &RenderingServer::environment_set_sdfgi_frames_to_update_light);
+	ClassDB::bind_method(D_METHOD("environment_set_hddagi_frames_to_converge", "frames"), &RenderingServer::environment_set_hddagi_frames_to_converge);
+	ClassDB::bind_method(D_METHOD("environment_set_hddagi_frames_to_update_light", "frames"), &RenderingServer::environment_set_hddagi_frames_to_update_light);
+
+	ClassDB::bind_method(D_METHOD("environment_set_hddagi_inactive_probe_frames", "frames"), &RenderingServer::environment_set_hddagi_inactive_probe_frames);
+
 	ClassDB::bind_method(D_METHOD("environment_set_volumetric_fog_volume_size", "size", "depth"), &RenderingServer::environment_set_volumetric_fog_volume_size);
 	ClassDB::bind_method(D_METHOD("environment_set_volumetric_fog_filter_active", "active"), &RenderingServer::environment_set_volumetric_fog_filter_active);
 
@@ -3046,33 +3050,32 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_HIGH);
 	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_ULTRA);
 
-	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_50_PERCENT);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_75_PERCENT);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_100_PERCENT);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_CASCADE_FORMAT_16x8x16);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_CASCADE_FORMAT_16x16x16);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_CASCADE_FORMAT_16x16x16_75_PERCENT_HEIGHT);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT);
+	
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_CASCADE_FORMAT_MAX);
 
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_4);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_8);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_16);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_32);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_64);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_96);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_128);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_MAX);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_CONVERGE_IN_6_FRAMES);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_CONVERGE_IN_12_FRAMES);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_CONVERGE_IN_18_FRAMES);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_CONVERGE_IN_24_FRAMES);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_CONVERGE_IN_32_FRAMES);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_CONVERGE_MAX);
 
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_IN_5_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_IN_10_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_IN_15_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_IN_20_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_IN_25_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_IN_30_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_MAX);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_UPDATE_LIGHT_IN_1_FRAME);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_UPDATE_LIGHT_IN_2_FRAMES);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_UPDATE_LIGHT_IN_4_FRAMES);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_UPDATE_LIGHT_IN_8_FRAMES);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_UPDATE_LIGHT_IN_16_FRAMES);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_UPDATE_LIGHT_MAX);
 
-	BIND_ENUM_CONSTANT(ENV_SDFGI_UPDATE_LIGHT_IN_1_FRAME);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_UPDATE_LIGHT_IN_2_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_UPDATE_LIGHT_IN_8_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_UPDATE_LIGHT_IN_16_FRAMES);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_UPDATE_LIGHT_MAX);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_INACTIVE_PROBE_1_FRAMES);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_INACTIVE_PROBE_2_FRAMES);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_INACTIVE_PROBE_4_FRAMES);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_INACTIVE_PROBE_8_FRAMES);
+	BIND_ENUM_CONSTANT(ENV_HDDAGI_INACTIVE_PROBE_MAX);
 
 	BIND_ENUM_CONSTANT(SUB_SURFACE_SCATTERING_QUALITY_DISABLED);
 	BIND_ENUM_CONSTANT(SUB_SURFACE_SCATTERING_QUALITY_LOW);
@@ -3556,7 +3559,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/reflections/reflection_atlas/reflection_size.mobile", PROPERTY_HINT_RANGE, "0,2048,1"), 128);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/reflections/reflection_atlas/reflection_count", PROPERTY_HINT_RANGE, "0,256,1"), 64);
 
-	GLOBAL_DEF("rendering/global_illumination/gi/use_half_resolution", false);
+	GLOBAL_DEF("rendering/global_illumination/gi/use_half_resolution", true);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/voxel_gi/quality", PROPERTY_HINT_ENUM, "Low (4 Cones - Fast),High (6 Cones - Slow)"), 0);
 
@@ -3617,9 +3620,9 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/lightmapping/probe_capture/update_speed", PROPERTY_HINT_RANGE, "0.001,256,0.001"), 15);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/lightmapping/primitive_meshes/texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.2);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"), 1);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"), 5);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/frames_to_update_lights", PROPERTY_HINT_ENUM, "1 (Slower),2,4,8,16 (Faster)"), 2);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/frames_to_converge", PROPERTY_HINT_ENUM, "6 (Less Latency/Mem usage & Low Quality),12,18,24,32 (More Latency / Mem Usage & High Quality)"), 1);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/frames_to_update_lights", PROPERTY_HINT_ENUM, "1 (Faster),2,4,8,16 (Slower)"), 2);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/frames_to_update_inactive_probes", PROPERTY_HINT_ENUM, "1 (Faster),2,4,8,16 (Slower)"), 3);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/volumetric_fog/volume_size", PROPERTY_HINT_RANGE, "16,512,1"), 64);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/volumetric_fog/volume_depth", PROPERTY_HINT_RANGE, "16,512,1"), 64);
