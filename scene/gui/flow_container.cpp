@@ -57,7 +57,7 @@ void FlowContainer::_resort() {
 	int line_height = 0;
 	int line_length = 0;
 	float line_stretch_ratio_total = 0;
-	int current_container_size = vertical ? get_rect().size.y : get_rect().size.x;
+	int current_container_size = vertical ? get_size().y : get_size().x;
 	int children_in_current_line = 0;
 	Control *last_child = nullptr;
 
@@ -250,7 +250,7 @@ Size2 FlowContainer::get_minimum_size() const {
 	Size2i minimum;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = as_sortable_control(get_child(i));
+		Control *c = as_sortable_control(get_child(i), SortableVisbilityMode::VISIBLE);
 		if (!c) {
 			continue;
 		}

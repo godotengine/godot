@@ -165,8 +165,16 @@ private:
 	XrSpace view_space = XR_NULL_HANDLE;
 	XRPose::TrackingConfidence head_pose_confidence = XRPose::XR_TRACKING_CONFIDENCE_NONE;
 
-	bool emulating_local_floor = false;
-	bool should_reset_emulated_floor_height = false;
+	// When LOCAL_FLOOR isn't supported, we use an approach based on the example code in the
+	// OpenXR spec in order to emulate it.
+	// See: https://registry.khronos.org/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_local_floor
+	struct LocalFloorEmulation {
+		bool enabled = false;
+		XrSpace local_space = XR_NULL_HANDLE;
+		XrSpace stage_space = XR_NULL_HANDLE;
+		bool should_reset_floor_height = false;
+	} local_floor_emulation;
+
 	bool reset_emulated_floor_height();
 
 	bool load_layer_properties();
@@ -446,7 +454,6 @@ public:
 	_FORCE_INLINE_ XrTime get_predicted_display_time() { return frame_state.predictedDisplayTime; }
 	_FORCE_INLINE_ XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; }
 	_FORCE_INLINE_ bool can_render() {
-		ERR_ON_RENDER_THREAD_V(false);
 		return instance != XR_NULL_HANDLE && session != XR_NULL_HANDLE && running && frame_state.shouldRender;
 	}
 

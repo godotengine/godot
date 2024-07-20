@@ -37,7 +37,7 @@
 class String;
 struct Vector2i;
 
-struct _NO_DISCARD_ Vector2 {
+struct [[nodiscard]] Vector2 {
 	static const int AXIS_COUNT = 2;
 
 	enum Axis {

@@ -108,7 +108,7 @@ protected:
 	struct InterpolationData {
 		Transform2D xform_curr;
 		Transform2D xform_prev;
-		uint32_t last_update_physics_tick = 0;
+		uint32_t last_update_physics_tick = UINT32_MAX; // Ensure tick 0 is detected as a change.
 	} _interpolation_data;
 
 	void _ensure_update_interpolation_data();

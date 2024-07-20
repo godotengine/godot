@@ -75,14 +75,14 @@ public:
 	Transform3D root_node_transform;
 
 	void set_vertices(const Vector<float> &p_vertices);
-	const Vector<float> &get_vertices() const { return vertices; }
+	const Vector<float> &get_vertices() const;
 
 	void set_indices(const Vector<int> &p_indices);
-	const Vector<int> &get_indices() const { return indices; }
+	const Vector<int> &get_indices() const;
 
 	void append_arrays(const Vector<float> &p_vertices, const Vector<int> &p_indices);
 
-	bool has_data() { return vertices.size() && indices.size(); };
+	bool has_data();
 	void clear();
 	void clear_projected_obstructions();
 
@@ -97,6 +97,9 @@ public:
 
 	void set_projected_obstructions(const Array &p_array);
 	Array get_projected_obstructions() const;
+
+	void set_data(const Vector<float> &p_vertices, const Vector<int> &p_indices, Vector<ProjectedObstruction> &p_projected_obstructions);
+	void get_data(Vector<float> &r_vertices, Vector<int> &r_indices, Vector<ProjectedObstruction> &r_projected_obstructions);
 
 	NavigationMeshSourceGeometryData3D() {}
 	~NavigationMeshSourceGeometryData3D() { clear(); }

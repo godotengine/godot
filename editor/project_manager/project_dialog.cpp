@@ -315,6 +315,8 @@ void ProjectDialog::_create_dir_toggled(bool p_pressed) {
 			target_path = target_path.path_join(last_custom_target_dir);
 		}
 	} else {
+		// Strip any trailing slash.
+		target_path = target_path.rstrip("/\\");
 		// Save and remove target dir name.
 		if (target_path.get_file() == auto_dir) {
 			last_custom_target_dir = "";
@@ -387,6 +389,8 @@ void ProjectDialog::_browse_install_path() {
 }
 
 void ProjectDialog::_project_path_selected(const String &p_path) {
+	show_dialog();
+
 	if (create_dir->is_pressed() && (mode == MODE_NEW || mode == MODE_INSTALL)) {
 		// Replace parent directory, but keep target dir name.
 		project_path->set_text(p_path.path_join(project_path->get_text().get_file()));
@@ -684,8 +688,6 @@ void ProjectDialog::set_project_path(const String &p_path) {
 }
 
 void ProjectDialog::ask_for_path_and_show() {
-	// Workaround: for the file selection dialog content to be rendered we need to show its parent dialog.
-	show_dialog();
 	_browse_project_path();
 }
 
@@ -784,6 +786,14 @@ void ProjectDialog::_notification(int p_what) {
 			create_dir->set_icon(get_editor_theme_icon(SNAME("FolderCreate")));
 			project_browse->set_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
 			install_browse->set_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
+		} break;
+		case NOTIFICATION_READY: {
+			fdialog_project = memnew(EditorFileDialog);
+			fdialog_project->set_previews_enabled(false); // Crucial, otherwise the engine crashes.
+			fdialog_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+			fdialog_project->connect("dir_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
+			fdialog_project->connect("file_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
+			callable_mp((Node *)this, &Node::add_sibling).call_deferred(fdialog_project, false);
 		} break;
 	}
 }
@@ -965,21 +975,14 @@ ProjectDialog::ProjectDialog() {
 	Control *spacer = memnew(Control);
 	spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	default_files_container->add_child(spacer);
-
-	fdialog_project = memnew(EditorFileDialog);
-	fdialog_project->set_previews_enabled(false); //Crucial, otherwise the engine crashes.
-	fdialog_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	fdialog_install = memnew(EditorFileDialog);
 	fdialog_install->set_previews_enabled(false); //Crucial, otherwise the engine crashes.
 	fdialog_install->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	add_child(fdialog_project);
 	add_child(fdialog_install);
 
 	project_name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_project_name_changed).unbind(1));
 	project_path->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_project_path_changed).unbind(1));
 	install_path->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_install_path_changed).unbind(1));
-	fdialog_project->connect("dir_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
-	fdialog_project->connect("file_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
 	fdialog_install->connect("dir_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
 	fdialog_install->connect("file_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
 

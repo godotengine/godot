@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MACOS_LIPO_H
-#define MACOS_LIPO_H
+#ifndef LIPO_H
+#define LIPO_H
 
 // Universal / Universal 2 fat binary file creator and extractor.
 
@@ -57,10 +57,13 @@ class LipO : public RefCounted {
 public:
 	static bool is_lipo(const String &p_path);
 
-	bool create_file(const String &p_output_path, const PackedStringArray &p_files);
+	bool create_file(const String &p_output_path, const Vector<String> &p_files);
+	bool create_file(const String &p_output_path, const Vector<String> &p_files, const Vector<Vector2i> &p_cputypes);
 
 	bool open_file(const String &p_path);
 	int get_arch_count() const;
+	uint32_t get_arch_cputype(int p_index) const;
+	uint32_t get_arch_cpusubtype(int p_index) const;
 	bool extract_arch(int p_index, const String &p_path);
 
 	void close();
@@ -68,4 +71,4 @@ public:
 	~LipO();
 };
 
-#endif // MACOS_LIPO_H
+#endif // LIPO_H

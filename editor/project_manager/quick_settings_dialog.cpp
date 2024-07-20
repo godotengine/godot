@@ -47,6 +47,7 @@ void QuickSettingsDialog::_fetch_setting_values() {
 	editor_themes.clear();
 	editor_scales.clear();
 	editor_network_modes.clear();
+	editor_directory_naming_conventions.clear();
 
 	{
 		List<PropertyInfo> editor_settings_properties;
@@ -61,6 +62,8 @@ void QuickSettingsDialog::_fetch_setting_values() {
 				editor_scales = pi.hint_string.split(",");
 			} else if (pi.name == "network/connection/network_mode") {
 				editor_network_modes = pi.hint_string.split(",");
+			} else if (pi.name == "project_manager/directory_naming_convention") {
+				editor_directory_naming_conventions = pi.hint_string.split(",");
 			}
 		}
 	}
@@ -120,6 +123,19 @@ void QuickSettingsDialog::_update_current_values() {
 			}
 		}
 	}
+
+	// Project directory naming options.
+	{
+		const int current_directory_naming = EDITOR_GET("project_manager/directory_naming_convention");
+
+		for (int i = 0; i < editor_directory_naming_conventions.size(); i++) {
+			const String &directory_naming_value = editor_directory_naming_conventions[i];
+			if (current_directory_naming == i) {
+				directory_naming_convention_button->set_text(directory_naming_value);
+				directory_naming_convention_button->select(i);
+			}
+		}
+	}
 }
 
 void QuickSettingsDialog::_add_setting_control(const String &p_text, Control *p_control) {
@@ -153,6 +169,10 @@ void QuickSettingsDialog::_scale_selected(int p_id) {
 
 void QuickSettingsDialog::_network_mode_selected(int p_id) {
 	_set_setting_value("network/connection/network_mode", p_id);
+}
+
+void QuickSettingsDialog::_directory_naming_convention_selected(int p_id) {
+	_set_setting_value("project_manager/directory_naming_convention", p_id);
 }
 
 void QuickSettingsDialog::_set_setting_value(const String &p_setting, const Variant &p_value, bool p_restart_required) {
@@ -282,6 +302,20 @@ QuickSettingsDialog::QuickSettingsDialog() {
 			}
 
 			_add_setting_control(TTR("Network Mode"), network_mode_option_button);
+		}
+
+		// Project directory naming options.
+		{
+			directory_naming_convention_button = memnew(OptionButton);
+			directory_naming_convention_button->set_fit_to_longest_item(false);
+			directory_naming_convention_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_directory_naming_convention_selected));
+
+			for (int i = 0; i < editor_directory_naming_conventions.size(); i++) {
+				const String &directory_naming_convention = editor_directory_naming_conventions[i];
+				directory_naming_convention_button->add_item(directory_naming_convention, i);
+			}
+
+			_add_setting_control(TTR("Directory Naming Convention"), directory_naming_convention_button);
 		}
 
 		_update_current_values();

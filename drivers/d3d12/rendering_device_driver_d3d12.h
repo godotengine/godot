@@ -43,6 +43,13 @@
 #pragma GCC diagnostic ignored "-Wswitch"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#elif defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+#pragma clang diagnostic ignored "-Wstring-plus-int"
+#pragma clang diagnostic ignored "-Wswitch"
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
+#pragma clang diagnostic ignored "-Wimplicit-fallthrough"
 #endif
 
 #include "d3dx12.h"
@@ -59,13 +66,19 @@
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
+#elif defined(__clang__)
+#pragma clang diagnostic pop
 #endif
 
 using Microsoft::WRL::ComPtr;
 
 #define D3D12_BITCODE_OFFSETS_NUM_STAGES 3
 
-struct dxil_validator;
+#ifdef DEV_ENABLED
+//#define DEBUG_COUNT_BARRIERS
+#define CUSTOM_INFO_QUEUE_ENABLED 0
+#endif
+
 class RenderingContextDriverD3D12;
 
 // Design principles:
@@ -126,6 +139,10 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 		bool enhanced_barriers_supported = false;
 	};
 
+	struct MiscFeaturesSupport {
+		bool depth_bounds_supported = false;
+	};
+
 	RenderingContextDriverD3D12 *context_driver = nullptr;
 	RenderingContextDriver::Device context_device;
 	ComPtr<IDXGIAdapter> adapter;
@@ -141,6 +158,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	StorageBufferCapabilities storage_buffer_capabilities;
 	FormatCapabilities format_capabilities;
 	BarrierCapabilities barrier_capabilities;
+	MiscFeaturesSupport misc_features_support;
 	String pipeline_cache_id;
 
 	class DescriptorsHeap {
@@ -257,7 +275,7 @@ private:
 	LocalVector<D3D12_RESOURCE_BARRIER> res_barriers;
 	uint32_t res_barriers_count = 0;
 	uint32_t res_barriers_batch = 0;
-#ifdef DEV_ENABLED
+#ifdef DEBUG_COUNT_BARRIERS
 	int frame_barriers_count = 0;
 	int frame_barriers_batches_count = 0;
 	uint64_t frame_barriers_cpu_time = 0;
@@ -678,10 +696,6 @@ private:
 		uint32_t root_signature_crc = 0;
 	};
 
-	Mutex dxil_mutex;
-	HashMap<int, dxil_validator *> dxil_validators; // One per WorkerThreadPool thread used for shader compilation, plus one (-1) for all the other.
-
-	dxil_validator *_get_dxil_validator_for_current_thread();
 	uint32_t _shader_patch_dxil_specialization_constant(
 			PipelineSpecializationConstantType p_type,
 			const void *p_value,
@@ -692,7 +706,7 @@ private:
 			const ShaderInfo *p_shader_info,
 			VectorView<PipelineSpecializationConstant> p_specialization_constants,
 			HashMap<ShaderStage, Vector<uint8_t>> &r_final_stages_bytecode);
-	bool _shader_sign_dxil_bytecode(ShaderStage p_stage, Vector<uint8_t> &r_dxil_blob);
+	void _shader_sign_dxil_bytecode(ShaderStage p_stage, Vector<uint8_t> &r_dxil_blob);
 
 public:
 	virtual String shader_get_binary_cache_key() override final;

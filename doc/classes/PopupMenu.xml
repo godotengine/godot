@@ -395,6 +395,12 @@
 				Returns [code]true[/code] if the specified item's shortcut is disabled.
 			</description>
 		</method>
+		<method name="is_native_menu" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the system native menu is supported and currently used by this [PopupMenu].
+			</description>
+		</method>
 		<method name="is_system_menu" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -636,6 +642,7 @@
 		</member>
 		<member name="prefer_native_menu" type="bool" setter="set_prefer_native_menu" getter="is_prefer_native_menu" default="false">
 			If [code]true[/code], [MenuBar] will use native menu when supported.
+			[b]Note:[/b] If [PopupMenu] is linked to [StatusIndicator], [MenuBar], or another [PopupMenu] item it can use native menu regardless of this property, use [method is_native_menu] to check it.
 		</member>
 		<member name="submenu_popup_delay" type="float" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay" default="0.3">
 			Sets the delay time in seconds for the submenu item to popup on mouse hovering. If the popup menu is added as a child of another (acting as a submenu), it will inherit the delay time of the parent menu item.

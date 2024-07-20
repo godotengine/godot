@@ -94,7 +94,6 @@ class TranslationServer : public Object {
 	bool pseudolocalization_fake_bidi_enabled = false;
 	bool pseudolocalization_override_enabled = false;
 	bool pseudolocalization_skip_placeholders_enabled = false;
-	bool editor_pseudolocalization = false;
 	float expansion_ratio = 0.0;
 	String pseudolocalization_prefix;
 	String pseudolocalization_suffix;
@@ -170,7 +169,6 @@ public:
 
 	bool is_pseudolocalization_enabled() const;
 	void set_pseudolocalization_enabled(bool p_enabled);
-	void set_editor_pseudolocalization(bool p_enabled);
 	void reload_pseudolocalization();
 
 	String standardize_locale(const String &p_locale) const;

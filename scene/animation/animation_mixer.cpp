@@ -150,6 +150,7 @@ void AnimationMixer::_animation_set_cache_update() {
 				ad.name = key;
 				ad.last_update = animation_set_update_pass;
 				animation_set.insert(ad.name, ad);
+				cache_valid = false; // No need to delete the cache, but it must be updated to add track caches.
 			} else {
 				AnimationData &ad = animation_set[key];
 				if (ad.last_update != animation_set_update_pass) {
@@ -718,7 +719,9 @@ bool AnimationMixer::_update_caches() {
 
 						track = track_value;
 
-						track_value->init_value = anim->track_get_key_value(i, 0);
+						bool is_value = track_src_type == Animation::TYPE_VALUE;
+
+						track_value->init_value = is_value ? anim->track_get_key_value(i, 0) : (anim->track_get_key_value(i, 0).operator Array())[0];
 						track_value->init_value.zero();
 
 						track_value->is_init = false;
@@ -730,7 +733,7 @@ bool AnimationMixer::_update_caches() {
 						if (has_reset_anim) {
 							int rt = reset_anim->find_track(path, track_src_type);
 							if (rt >= 0) {
-								if (track_src_type == Animation::TYPE_VALUE) {
+								if (is_value) {
 									if (reset_anim->track_get_key_count(rt) > 0) {
 										track_value->init_value = reset_anim->track_get_key_value(rt, 0);
 									}

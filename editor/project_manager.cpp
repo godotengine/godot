@@ -385,7 +385,7 @@ void ProjectManager::_dim_window() {
 // Quick settings.
 
 void ProjectManager::_show_quick_settings() {
-	quick_settings_dialog->popup_centered(Size2(600, 200) * EDSCALE);
+	quick_settings_dialog->popup_centered(Size2(640, 200) * EDSCALE);
 }
 
 void ProjectManager::_restart_confirmed() {
@@ -1052,6 +1052,14 @@ ProjectManager::ProjectManager() {
 			EditorSettings::create();
 		}
 		EditorSettings::get_singleton()->set_optimize_save(false); // Just write settings as they come.
+
+		{
+			bool agile_input_event_flushing = EDITOR_GET("input/buffering/agile_event_flushing");
+			bool use_accumulated_input = EDITOR_GET("input/buffering/use_accumulated_input");
+
+			Input::get_singleton()->set_agile_input_event_flushing(agile_input_event_flushing);
+			Input::get_singleton()->set_use_accumulated_input(use_accumulated_input);
+		}
 
 		int display_scale = EDITOR_GET("interface/editor/display_scale");
 

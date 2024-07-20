@@ -25,12 +25,6 @@ if deps_folder:
 else:
     deps_folder = os.path.join("bin", "build_deps")
 
-# DirectX Shader Compiler
-# Check for latest version: https://github.com/microsoft/DirectXShaderCompiler/releases/latest
-dxc_version = "v1.8.2403.2"
-dxc_filename = "dxc_2024_03_29.zip"
-dxc_archive = os.path.join(deps_folder, dxc_filename)
-dxc_folder = os.path.join(deps_folder, "dxc")
 # Mesa NIR
 # Check for latest version: https://github.com/godotengine/godot-nir-static/releases/latest
 mesa_version = "23.1.9"
@@ -54,25 +48,8 @@ agility_sdk_folder = os.path.join(deps_folder, "agility_sdk")
 if not os.path.exists(deps_folder):
     os.makedirs(deps_folder)
 
-# DirectX Shader Compiler
-print("\x1b[1m[1/4] DirectX Shader Compiler\x1b[0m")
-if os.path.isfile(dxc_archive):
-    os.remove(dxc_archive)
-print(f"Downloading DirectX Shader Compiler {dxc_filename} ...")
-urllib.request.urlretrieve(
-    f"https://github.com/microsoft/DirectXShaderCompiler/releases/download/{dxc_version}/{dxc_filename}",
-    dxc_archive,
-)
-if os.path.exists(dxc_folder):
-    print(f"Removing existing local DirectX Shader Compiler installation in {dxc_folder} ...")
-    shutil.rmtree(dxc_folder)
-print(f"Extracting DirectX Shader Compiler {dxc_filename} to {dxc_folder} ...")
-shutil.unpack_archive(dxc_archive, dxc_folder)
-os.remove(dxc_archive)
-print(f"DirectX Shader Compiler {dxc_filename} installed successfully.\n")
-
 # Mesa NIR
-print("\x1b[1m[2/4] Mesa NIR\x1b[0m")
+print("\x1b[1m[1/3] Mesa NIR\x1b[0m")
 if os.path.isfile(mesa_archive):
     os.remove(mesa_archive)
 print(f"Downloading Mesa NIR {mesa_filename} ...")
@@ -99,7 +76,7 @@ if dlltool == "":
     dlltool = shutil.which("x86_64-w64-mingw32-dlltool") or ""
 has_mingw = gendef != "" and dlltool != ""
 
-print("\x1b[1m[3/4] WinPixEventRuntime\x1b[0m")
+print("\x1b[1m[2/3] WinPixEventRuntime\x1b[0m")
 if os.path.isfile(pix_archive):
     os.remove(pix_archive)
 print(f"Downloading WinPixEventRuntime {pix_version} ...")
@@ -130,7 +107,7 @@ else:
 print(f"WinPixEventRuntime {pix_version} installed successfully.\n")
 
 # DirectX 12 Agility SDK
-print("\x1b[1m[4/4] DirectX 12 Agility SDK\x1b[0m")
+print("\x1b[1m[3/3] DirectX 12 Agility SDK\x1b[0m")
 if os.path.isfile(agility_sdk_archive):
     os.remove(agility_sdk_archive)
 print(f"Downloading DirectX 12 Agility SDK {agility_sdk_version} ...")

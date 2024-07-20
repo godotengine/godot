@@ -58,6 +58,7 @@ private:
 
 	WASM_EXPORT static void _state_change_callback(int p_state);
 	WASM_EXPORT static void _latency_update_callback(float p_latency);
+	WASM_EXPORT static void _sample_playback_finished_callback(const char *p_playback_object_id);
 
 	static AudioDriverWeb *singleton;
 

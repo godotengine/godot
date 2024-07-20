@@ -20,8 +20,9 @@
 		    # Open the file to hash.
 		    var file = FileAccess.open(path, FileAccess.READ)
 		    # Update the context after reading each chunk.
-		    while not file.eof_reached():
-		        ctx.update(file.get_buffer(CHUNK_SIZE))
+		    while file.get_position() &lt; file.get_length():
+		        var remaining = file.get_length() - file.get_position()
+		        ctx.update(file.get_buffer(min(remaining, CHUNK_SIZE)))
 		    # Get the computed hash.
 		    var res = ctx.finish()
 		    # Print the result as hex string and array.
@@ -43,9 +44,10 @@
 		    // Open the file to hash.
 		    using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
 		    // Update the context after reading each chunk.
-		    while (!file.EofReached())
+		    while (file.GetPosition() &lt; file.GetLength())
 		    {
-		        ctx.Update(file.GetBuffer(ChunkSize));
+		        int remaining = (int)(file.GetLength() - file.GetPosition());
+		        ctx.Update(file.GetBuffer(Mathf.Min(remaining, ChunkSize)));
 		    }
 		    // Get the computed hash.
 		    byte[] res = ctx.Finish();

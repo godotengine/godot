@@ -275,6 +275,11 @@ void GroupsEditor::_queue_update_groups_and_tree() {
 
 void GroupsEditor::_update_groups_and_tree() {
 	update_groups_and_tree_queued = false;
+	// The scene_root_node could be unset before we actually run this code because this is queued with call_deferred().
+	// In that case NOTIFICATION_VISIBILITY_CHANGED will call this function again soon.
+	if (!scene_root_node) {
+		return;
+	}
 	_update_groups();
 	_update_tree();
 }
@@ -369,6 +374,7 @@ void GroupsEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			filter->set_right_icon(get_editor_theme_icon("Search"));
 			add->set_icon(get_editor_theme_icon("Add"));
+			_update_tree();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (groups_dirty && is_visible_in_tree()) {

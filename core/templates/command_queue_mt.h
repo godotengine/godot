@@ -364,26 +364,30 @@ class CommandQueueMT {
 
 		lock();
 
-		WorkerThreadPool::thread_enter_command_queue_mt_flush(this);
+		uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(&mutex);
 		while (flush_read_ptr < command_mem.size()) {
 			uint64_t size = *(uint64_t *)&command_mem[flush_read_ptr];
 			flush_read_ptr += 8;
 			CommandBase *cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
 			cmd->call();
+
+			// Handle potential realloc due to the command and unlock allowance.
+			cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
+
 			if (unlikely(cmd->sync)) {
 				sync_head++;
 				unlock(); // Give an opportunity to awaiters right away.
 				sync_cond_var.notify_all();
 				lock();
+				// Handle potential realloc happened during unlock.
+				cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
 			}
 
-			// If the command involved reallocating the buffer, the address may have changed.
-			cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
 			cmd->~CommandBase();
 
 			flush_read_ptr += size;
 		}
-		WorkerThreadPool::thread_exit_command_queue_mt_flush();
+		WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
 
 		command_mem.clear();
 		flush_read_ptr = 0;

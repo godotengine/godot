@@ -396,6 +396,10 @@
 		<member name="editors/animation/autorename_animation_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], automatically updates animation tracks' target paths when renaming or reparenting nodes in the Scene tree dock.
 		</member>
+		<member name="editors/animation/confirm_insert_track" type="bool" setter="" getter="">
+			If [code]true[/code], display a confirmation dialog when adding a new track to an animation by pressing the "key" icon next to a property. Holding Shift will bypass the dialog.
+			If [code]false[/code], the behavior is reversed, i.e. the dialog only appears when Shift is held.
+		</member>
 		<member name="editors/animation/default_create_bezier_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], create a Bezier track instead of a standard track when pressing the "key" icon next to a property. Bezier tracks provide more control over animation curves, but are more difficult to adjust quickly.
 		</member>
@@ -592,6 +596,16 @@
 			The path to the directory containing the Open Image Denoise (OIDN) executable, used optionally for denoising lightmaps. It can be downloaded from [url=https://www.openimagedenoise.org/downloads.html]openimagedenoise.org[/url].
 			To enable this feature for your specific project, use [member ProjectSettings.rendering/lightmapping/denoising/denoiser].
 		</member>
+		<member name="input/buffering/agile_event_flushing" type="bool" setter="" getter="">
+			If [code]true[/code], input events will be flushed just before every idle and physics frame.
+			If [code]false[/code], these events will be flushed only once per process frame, between iterations of the engine.
+			Enabling this setting can greatly improve input responsiveness, especially in devices that struggle to run at the project's intended frame rate.
+		</member>
+		<member name="input/buffering/use_accumulated_input" type="bool" setter="" getter="">
+			If [code]true[/code], similar input events sent by the operating system are accumulated. When input accumulation is enabled, all input events generated during a frame will be merged and emitted when the frame is done rendering. Therefore, this limits the number of input method calls per second to the rendering FPS.
+			Input accumulation can be disabled to get slightly more precise/reactive input at the cost of increased CPU usage.
+			[b]Note:[/b] Input accumulation is [i]enabled[/i] by default.
+		</member>
 		<member name="interface/editor/accept_dialog_cancel_ok_buttons" type="int" setter="" getter="">
 			How to position the Cancel and OK buttons in the editor's [AcceptDialog]s. Different platforms have different standard behaviors for this, which can be overridden using this setting. This is useful if you use Godot both on Windows and macOS/Linux and your Godot muscle memory is stronger than your OS specific one.
 			- [b]Auto[/b] follows the platform convention: Cancel first on macOS and Linux, OK first on Windows.
@@ -622,10 +636,6 @@
 		<member name="interface/editor/custom_display_scale" type="float" setter="" getter="">
 			The custom editor scale factor to use. This can be used for displays with very high DPI where a scale factor of 200% is not sufficient.
 			[b]Note:[/b] Only effective if [member interface/editor/display_scale] is set to [b]Custom[/b].
-		</member>
-		<member name="interface/editor/debug/enable_pseudolocalization" type="bool" setter="" getter="">
-			If [code]true[/code], lengthens the editor's localizable strings and replaces their characters with accented variants. This allows spotting non-localizable strings easily, while also ensuring the UI layout doesn't break when strings are made longer (as many languages require strings to be longer).
-			This is a debugging feature and should only be enabled when working on the editor itself.
 		</member>
 		<member name="interface/editor/display_scale" type="int" setter="" getter="">
 			The display scale factor to use for the editor interface. Higher values are more suited to hiDPI/Retina displays.
@@ -1047,6 +1057,9 @@
 			The indentation style to use (tabs or spaces).
 			[b]Note:[/b] The [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_styleguide.html]GDScript style guide[/url] recommends using tabs for indentation. It is advised to change this setting only if you need to work on a project that currently uses spaces for indentation.
 		</member>
+		<member name="text_editor/behavior/navigation/custom_word_separators" type="String" setter="" getter="">
+			The characters to consider as word delimiters if [member text_editor/behavior/navigation/use_custom_word_separators] is [code]true[/code]. This is in addition to default characters if [member text_editor/behavior/navigation/use_default_word_separators] is [code]true[/code]. The characters should be defined without separation, for example [code]_♥=[/code].
+		</member>
 		<member name="text_editor/behavior/navigation/drag_and_drop_selection" type="bool" setter="" getter="">
 			If [code]true[/code], allows drag-and-dropping text in the script editor to move text. Disable this if you find yourself accidentally drag-and-dropping text in the script editor.
 		</member>
@@ -1065,6 +1078,12 @@
 		</member>
 		<member name="text_editor/behavior/navigation/stay_in_script_editor_on_node_selected" type="bool" setter="" getter="">
 			If [code]true[/code], prevents automatically switching between the Script and 2D/3D screens when selecting a node in the Scene tree dock.
+		</member>
+		<member name="text_editor/behavior/navigation/use_custom_word_separators" type="bool" setter="" getter="">
+			If [code]true[/code], uses the characters in [member text_editor/behavior/navigation/custom_word_separators] as word separators for word navigation and operations. This is in addition to the default characters if [member text_editor/behavior/navigation/use_default_word_separators] is also enabled. Word navigation and operations include double-clicking on a word or holding [kbd]Ctrl[/kbd] ([kbd]Cmd[/kbd] on macOS) while pressing [kbd]left[/kbd], [kbd]right[/kbd], [kbd]backspace[/kbd], or [kbd]delete[/kbd].
+		</member>
+		<member name="text_editor/behavior/navigation/use_default_word_separators" type="bool" setter="" getter="">
+			If [code]true[/code], uses the characters in [code]`!"#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^`{|}~[/code], the Unicode General Punctuation table, and the Unicode CJK Punctuation table as word separators for word navigation and operations. If [code]false[/code], a subset of these characters are used and does not include the characters [code]&lt;&gt;$~^=+|[/code]. This is in addition to custom characters if [member text_editor/behavior/navigation/use_custom_word_separators] is also enabled. These characters are used to determine where a word stops. Word navigation and operations include double-clicking on a word or holding [kbd]Ctrl[/kbd] ([kbd]Cmd[/kbd] on macOS) while pressing [kbd]left[/kbd], [kbd]right[/kbd], [kbd]backspace[/kbd], or [kbd]delete[/kbd].
 		</member>
 		<member name="text_editor/behavior/navigation/v_scroll_speed" type="int" setter="" getter="">
 			The number of pixels to scroll with every mouse wheel increment. Higher values make the script scroll by faster when using the mouse wheel.
@@ -1086,7 +1105,7 @@
 			The delay in seconds after which autocompletion suggestions should be displayed when the user stops typing.
 		</member>
 		<member name="text_editor/completion/code_complete_enabled" type="bool" setter="" getter="">
-			If [code]true[/code], code completion will be triggered automatically after [member text_editor/completion/code_complete_delay]. If [code]false[/code], you can still trigger completion manually by pressing [kbd]Ctrl + Space[/kbd] ([kbd]Cmd + Space[/kbd] on macOS).
+			If [code]true[/code], code completion will be triggered automatically after [member text_editor/completion/code_complete_delay]. Even if [code]false[/code], code completion can be triggered manually with the [code]ui_text_completion_query[/code] action (by default [kbd]Ctrl + Space[/kbd] or [kbd]Cmd + Space[/kbd] on macOS).
 		</member>
 		<member name="text_editor/completion/colorize_suggestions" type="bool" setter="" getter="">
 			If [code]true[/code] enables the coloring for some items in the autocompletion suggestions, like vector components.

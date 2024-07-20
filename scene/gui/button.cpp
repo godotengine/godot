@@ -530,7 +530,7 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 		}
 	}
 
-	return _get_largest_stylebox_size() + minsize;
+	return (theme_cache.align_to_largest_stylebox ? _get_largest_stylebox_size() : _get_current_stylebox()->get_minimum_size()) + minsize;
 }
 
 void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) {

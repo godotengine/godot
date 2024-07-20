@@ -53,6 +53,8 @@ class DisplayServer : public Object {
 	RID _get_rid_from_name(NativeMenu *p_nmenu, const String &p_menu_root) const;
 #endif
 
+	LocalVector<ObjectID> additional_outputs;
+
 public:
 	_FORCE_INLINE_ static DisplayServer *get_singleton() {
 		return singleton;
@@ -581,6 +583,10 @@ public:
 	virtual void set_context(Context p_context);
 
 	virtual bool is_window_transparency_available() const { return false; }
+
+	void register_additional_output(Object *p_output);
+	void unregister_additional_output(Object *p_output);
+	bool has_additional_outputs() const { return additional_outputs.size() > 0; }
 
 	static void register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers);
 	static int get_create_function_count();

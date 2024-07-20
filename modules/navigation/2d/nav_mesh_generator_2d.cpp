@@ -852,8 +852,15 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 	}
 
 	int outline_count = p_navigation_mesh->get_outline_count();
-	const Vector<Vector<Vector2>> &traversable_outlines = p_source_geometry_data->_get_traversable_outlines();
-	const Vector<Vector<Vector2>> &obstruction_outlines = p_source_geometry_data->_get_obstruction_outlines();
+
+	Vector<Vector<Vector2>> traversable_outlines;
+	Vector<Vector<Vector2>> obstruction_outlines;
+	Vector<NavigationMeshSourceGeometryData2D::ProjectedObstruction> projected_obstructions;
+
+	p_source_geometry_data->get_data(
+			traversable_outlines,
+			obstruction_outlines,
+			projected_obstructions);
 
 	if (outline_count == 0 && traversable_outlines.size() == 0) {
 		return;
@@ -897,8 +904,6 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 		}
 		obstruction_polygon_paths.push_back(clip_path);
 	}
-
-	const Vector<NavigationMeshSourceGeometryData2D::ProjectedObstruction> &projected_obstructions = p_source_geometry_data->_get_projected_obstructions();
 
 	if (!projected_obstructions.is_empty()) {
 		for (const NavigationMeshSourceGeometryData2D::ProjectedObstruction &projected_obstruction : projected_obstructions) {
@@ -1005,8 +1010,7 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 	}
 
 	if (new_baked_outlines.size() == 0) {
-		p_navigation_mesh->set_vertices(Vector<Vector2>());
-		p_navigation_mesh->clear_polygons();
+		p_navigation_mesh->clear();
 		return;
 	}
 
@@ -1040,8 +1044,7 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 	TPPLPartition tpart;
 	if (tpart.ConvexPartition_HM(&tppl_in_polygon, &tppl_out_polygon) == 0) { //failed!
 		ERR_PRINT("NavigationPolygon Convex partition failed. Unable to create a valid NavigationMesh from defined polygon outline paths.");
-		p_navigation_mesh->set_vertices(Vector<Vector2>());
-		p_navigation_mesh->clear_polygons();
+		p_navigation_mesh->clear();
 		return;
 	}
 
@@ -1066,11 +1069,7 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 		new_polygons.push_back(new_polygon);
 	}
 
-	p_navigation_mesh->set_vertices(new_vertices);
-	p_navigation_mesh->clear_polygons();
-	for (int i = 0; i < new_polygons.size(); i++) {
-		p_navigation_mesh->add_polygon(new_polygons[i]);
-	}
+	p_navigation_mesh->set_data(new_vertices, new_polygons);
 }
 
 #endif // CLIPPER2_ENABLED

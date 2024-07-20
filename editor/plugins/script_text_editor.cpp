@@ -317,7 +317,16 @@ void ScriptTextEditor::_error_clicked(const Variant &p_line) {
 			if (!scr.is_valid()) {
 				EditorNode::get_singleton()->show_warning(TTR("Could not load file at:") + "\n\n" + path, TTR("Error!"));
 			} else {
-				ScriptEditor::get_singleton()->edit(scr, line, column);
+				int corrected_column = column;
+
+				const String line_text = code_editor->get_text_editor()->get_line(line);
+				const int indent_size = code_editor->get_text_editor()->get_indent_size();
+				if (indent_size > 1) {
+					const int tab_count = line_text.length() - line_text.lstrip("\t").length();
+					corrected_column -= tab_count * (indent_size - 1);
+				}
+
+				ScriptEditor::get_singleton()->edit(scr, line, corrected_column);
 			}
 		}
 	}
@@ -1819,15 +1828,25 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 	CodeEdit *te = code_editor->get_text_editor();
 	Point2i pos = te->get_line_column_at_pos(p_point);
-	int row = pos.y;
-	int col = pos.x;
+	int drop_at_line = pos.y;
+	int drop_at_column = pos.x;
+	int selection_index = te->get_selection_at_line_column(drop_at_line, drop_at_column);
+
+	bool line_will_be_empty = false;
+	if (selection_index >= 0) {
+		// Dropped on a selection, it will be replaced.
+		drop_at_line = te->get_selection_from_line(selection_index);
+		drop_at_column = te->get_selection_from_column(selection_index);
+		line_will_be_empty = drop_at_column <= te->get_first_non_whitespace_column(drop_at_line) && te->get_selection_to_column(selection_index) == te->get_line(te->get_selection_to_line(selection_index)).length();
+	}
+
+	String text_to_drop;
 
 	const bool drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
-	const String &line = te->get_line(row);
-	const bool is_empty_line = line.is_empty() || te->get_first_non_whitespace_column(row) == line.length();
+	const String &line = te->get_line(drop_at_line);
+	const bool is_empty_line = line_will_be_empty || line.is_empty() || te->get_first_non_whitespace_column(drop_at_line) == line.length();
 
 	if (d.has("type") && String(d["type"]) == "resource") {
-		te->remove_secondary_carets();
 		Ref<Resource> resource = d["resource"];
 		if (resource.is_null()) {
 			return;
@@ -1840,7 +1859,6 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			return;
 		}
 
-		String text_to_drop;
 		if (drop_modifier_pressed) {
 			if (resource->is_built_in()) {
 				String warning = TTR("Preloading internal resources is not supported.");
@@ -1851,19 +1869,10 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		} else {
 			text_to_drop = _quote_drop_data(path);
 		}
-
-		te->set_caret_line(row);
-		te->set_caret_column(col);
-		te->insert_text_at_caret(text_to_drop);
-		te->grab_focus();
 	}
 
 	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
-		te->remove_secondary_carets();
-
 		Array files = d["files"];
-		String text_to_drop;
-
 		for (int i = 0; i < files.size(); i++) {
 			const String &path = String(files[i]);
 
@@ -1883,15 +1892,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				text_to_drop += is_empty_line ? "\n" : ", ";
 			}
 		}
-
-		te->set_caret_line(row);
-		te->set_caret_column(col);
-		te->insert_text_at_caret(text_to_drop);
-		te->grab_focus();
 	}
 
 	if (d.has("type") && String(d["type"]) == "nodes") {
-		te->remove_secondary_carets();
 		Node *scene_root = get_tree()->get_edited_scene_root();
 		if (!scene_root) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't drop nodes without an open scene."));
@@ -1909,7 +1912,6 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		}
 
 		Array nodes = d["nodes"];
-		String text_to_drop;
 
 		if (drop_modifier_pressed) {
 			const bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
@@ -1981,27 +1983,33 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				text_to_drop += (is_unique ? "%" : "$") + path;
 			}
 		}
-
-		te->set_caret_line(row);
-		te->set_caret_column(col);
-		te->insert_text_at_caret(text_to_drop);
-		te->grab_focus();
 	}
 
 	if (d.has("type") && String(d["type"]) == "obj_property") {
-		te->remove_secondary_carets();
-
 		bool add_literal = EDITOR_GET("text_editor/completion/add_node_path_literals");
-		String text_to_drop = add_literal ? "^" : "";
+		text_to_drop = add_literal ? "^" : "";
 		// It is unclear whether properties may contain single or double quotes.
 		// Assume here that double-quotes may not exist. We are escaping single-quotes if necessary.
 		text_to_drop += _quote_drop_data(String(d["property"]));
-
-		te->set_caret_line(row);
-		te->set_caret_column(col);
-		te->insert_text_at_caret(text_to_drop);
-		te->grab_focus();
 	}
+
+	if (text_to_drop.is_empty()) {
+		return;
+	}
+
+	// Remove drag caret before any actions so it is not included in undo.
+	te->remove_drag_caret();
+	te->begin_complex_operation();
+	if (selection_index >= 0) {
+		te->delete_selection(selection_index);
+	}
+	te->remove_secondary_carets();
+	te->deselect();
+	te->set_caret_line(drop_at_line);
+	te->set_caret_column(drop_at_column);
+	te->insert_text_at_caret(text_to_drop);
+	te->end_complex_operation();
+	te->grab_focus();
 }
 
 void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {

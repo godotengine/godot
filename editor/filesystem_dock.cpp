@@ -200,33 +200,6 @@ Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, const String
 	}
 }
 
-String FileSystemDock::_get_entry_script_icon(const EditorFileSystemDirectory *p_dir, int p_file) {
-	const PackedStringArray &deps = p_dir->get_file_deps(p_file);
-	if (deps.is_empty()) {
-		return String();
-	}
-
-	const String &script_path = deps[0]; // Assuming the first dependency is a script.
-	if (script_path.is_empty() || !ClassDB::is_parent_class(ResourceLoader::get_resource_type(script_path), SNAME("Script"))) {
-		return String();
-	}
-
-	String *cached = icon_cache.getptr(script_path);
-	if (cached) {
-		return *cached;
-	}
-
-	HashMap<String, String>::Iterator I;
-	int script_file;
-	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->find_file(script_path, &script_file);
-	if (efsd) {
-		I = icon_cache.insert(script_path, efsd->get_file_script_class_icon_path(script_file));
-	} else {
-		I = icon_cache.insert(script_path, String());
-	}
-	return I->value;
-}
-
 bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path) {
 	bool parent_should_expand = false;
 
@@ -316,7 +289,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			FileInfo fi;
 			fi.name = p_dir->get_file(i);
 			fi.type = p_dir->get_file_type(i);
-			fi.icon_path = _get_entry_script_icon(p_dir, i);
+			fi.icon_path = p_dir->get_file_icon_path(i);
 			fi.import_broken = !p_dir->get_file_import_is_valid(i);
 			fi.modified_time = p_dir->get_file_modified_time(i);
 
@@ -414,8 +387,6 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	updating_tree = true;
 	TreeItem *root = tree->create_item();
 
-	icon_cache.clear();
-
 	// Handles the favorites.
 	TreeItem *favorites_item = tree->create_item(root);
 	favorites_item->set_icon(0, get_editor_theme_icon(SNAME("Favorites")));
@@ -463,7 +434,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			int index;
 			EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->find_file(favorite, &index);
 			if (dir) {
-				icon = _get_tree_item_icon(dir->get_file_import_is_valid(index), dir->get_file_type(index), _get_entry_script_icon(dir, index));
+				icon = _get_tree_item_icon(dir->get_file_import_is_valid(index), dir->get_file_type(index), dir->get_file_icon_path(index));
 			} else {
 				icon = get_editor_theme_icon(SNAME("File"));
 			}
@@ -575,7 +546,7 @@ void FileSystemDock::_notification(int p_what) {
 
 		case NOTIFICATION_PROCESS: {
 			if (EditorFileSystem::get_singleton()->is_scanning()) {
-				scanning_progress->set_value(EditorFileSystem::get_singleton()->get_scanning_progress() * 100);
+				scanning_progress->set_value(EditorFileSystem::get_singleton()->get_scanning_progress() * 100.0f);
 			}
 		} break;
 
@@ -787,6 +758,8 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 
 	// Ensure that the FileSystem dock is visible.
 	EditorDockManager::get_singleton()->focus_dock(this);
+	import_dock_needs_update = true;
+	_update_import_dock();
 }
 
 void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
@@ -1017,7 +990,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 				fi.path = favorite;
 				if (efd) {
 					fi.type = efd->get_file_type(index);
-					fi.icon_path = _get_entry_script_icon(efd, index);
+					fi.icon_path = efd->get_file_icon_path(index);
 					fi.import_broken = !efd->get_file_import_is_valid(index);
 					fi.modified_time = efd->get_file_modified_time(index);
 				} else {
@@ -1110,7 +1083,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 				fi.name = efd->get_file(i);
 				fi.path = directory.path_join(fi.name);
 				fi.type = efd->get_file_type(i);
-				fi.icon_path = _get_entry_script_icon(efd, i);
+				fi.icon_path = efd->get_file_icon_path(i);
 				fi.import_broken = !efd->get_file_import_is_valid(i);
 				fi.modified_time = efd->get_file_modified_time(i);
 

@@ -9,7 +9,7 @@ dependencies {
     implementation "androidx.fragment:fragment:$versions.fragmentVersion"
     implementation project(":lib")
 
-    implementation "androidx.window:window:1.2.0"
+    implementation "androidx.window:window:1.3.0"
     implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
 }

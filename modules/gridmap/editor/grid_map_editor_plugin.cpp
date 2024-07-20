@@ -59,10 +59,18 @@ void GridMapEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_OPTION_PREV_LEVEL: {
 			floor->set_value(floor->get_value() - 1);
+			if (selection.active && input_action == INPUT_SELECT) {
+				selection.current[edit_axis]--;
+				_validate_selection();
+			}
 		} break;
 
 		case MENU_OPTION_NEXT_LEVEL: {
 			floor->set_value(floor->get_value() + 1);
+			if (selection.active && input_action == INPUT_SELECT) {
+				selection.current[edit_axis]++;
+				_validate_selection();
+			}
 		} break;
 
 		case MENU_OPTION_X_AXIS:
@@ -752,19 +760,6 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 						_menu_option(options->get_popup()->get_item_id(i));
 						return EditorPlugin::AFTER_GUI_INPUT_STOP;
 					}
-				}
-			}
-
-			if (k->is_shift_pressed() && selection.active && input_action != INPUT_PASTE) {
-				if (k->get_keycode() == (Key)options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_PREV_LEVEL))) {
-					selection.click[edit_axis]--;
-					_validate_selection();
-					return EditorPlugin::AFTER_GUI_INPUT_STOP;
-				}
-				if (k->get_keycode() == (Key)options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_NEXT_LEVEL))) {
-					selection.click[edit_axis]++;
-					_validate_selection();
-					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				}
 			}
 		}

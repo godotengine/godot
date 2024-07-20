@@ -1111,6 +1111,28 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 	return key;
 }
 
+void DisplayServerWayland::try_suspend() {
+	// Due to various reasons, we manually handle display synchronization by
+	// waiting for a frame event (request to draw) or, if available, the actual
+	// window's suspend status. When a window is suspended, we can avoid drawing
+	// altogether, either because the compositor told us that we don't need to or
+	// because the pace of the frame events became unreliable.
+	if (emulate_vsync) {
+		bool frame = wayland_thread.wait_frame_suspend_ms(1000);
+		if (!frame) {
+			suspended = true;
+		}
+	} else {
+		if (wayland_thread.is_suspended()) {
+			suspended = true;
+		}
+	}
+
+	if (suspended) {
+		DEBUG_LOG_WAYLAND("Window suspended.");
+	}
+}
+
 void DisplayServerWayland::process_events() {
 	wayland_thread.mutex.lock();
 
@@ -1193,30 +1215,32 @@ void DisplayServerWayland::process_events() {
 	wayland_thread.keyboard_echo_keys();
 
 	if (!suspended) {
-		if (emulate_vsync) {
-			// Due to various reasons, we manually handle display synchronization by
-			// waiting for a frame event (request to draw) or, if available, the actual
-			// window's suspend status. When a window is suspended, we can avoid drawing
-			// altogether, either because the compositor told us that we don't need to or
-			// because the pace of the frame events became unreliable.
-			bool frame = wayland_thread.wait_frame_suspend_ms(1000);
-			if (!frame) {
-				suspended = true;
+		// Due to the way legacy suspension works, we have to treat low processor
+		// usage mode very differently than the regular one.
+		if (OS::get_singleton()->is_in_low_processor_usage_mode()) {
+			// NOTE: We must avoid committing a surface if we expect a new frame, as we
+			// might otherwise commit some inconsistent data (e.g. buffer scale). Note
+			// that if a new frame is expected it's going to be committed by the renderer
+			// soon anyways.
+			if (!RenderingServer::get_singleton()->has_changed()) {
+				// We _can't_ commit in a different thread (such as in the frame callback
+				// itself) because we would risk to step on the renderer's feet, which would
+				// cause subtle but severe issues, such as crashes on setups with explicit
+				// sync. This isn't normally a problem, as the renderer commits at every
+				// frame (which is what we need for atomic surface updates anyways), but in
+				// low processor usage mode that expectation is broken. When it's on, our
+				// frame rate stops being constant. This also reflects in the frame
+				// information we use for legacy suspension. In order to avoid issues, let's
+				// manually commit all surfaces, so that we can get fresh frame data.
+				wayland_thread.commit_surfaces();
+				try_suspend();
 			}
 		} else {
-			if (wayland_thread.is_suspended()) {
-				suspended = true;
-			}
+			try_suspend();
 		}
-
-		if (suspended) {
-			DEBUG_LOG_WAYLAND("Window suspended.");
-		}
-	} else {
-		if (wayland_thread.get_reset_frame()) {
-			// At last, a sign of life! We're no longer suspended.
-			suspended = false;
-		}
+	} else if (!wayland_thread.is_suspended() || wayland_thread.get_reset_frame()) {
+		// At last, a sign of life! We're no longer suspended.
+		suspended = false;
 	}
 
 #ifdef DBUS_ENABLED
@@ -1445,7 +1469,14 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 #ifdef RD_ENABLED
 	if (rendering_context) {
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) != OK) {
+			memdelete(rendering_device);
+			rendering_device = nullptr;
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
 		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();

@@ -169,7 +169,7 @@ struct Texture {
 		TYPE_3D
 	};
 
-	Type type;
+	Type type = TYPE_2D;
 	RS::TextureLayeredType layered_type = RS::TEXTURE_LAYERED_2D_ARRAY;
 
 	GLenum target = GL_TEXTURE_2D;

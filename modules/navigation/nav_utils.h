@@ -104,14 +104,8 @@ struct Polygon {
 	/// The points of this `Polygon`
 	LocalVector<Point> points;
 
-	/// Are the points clockwise?
-	bool clockwise;
-
 	/// The edges of this `Polygon`
 	LocalVector<Edge> edges;
-
-	/// The center of this `Polygon`
-	Vector3 center;
 
 	real_t surface_area = 0.0;
 };

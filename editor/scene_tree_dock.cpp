@@ -77,12 +77,12 @@ void SceneTreeDock::_quick_open() {
 
 void SceneTreeDock::_inspect_hovered_node() {
 	select_node_hovered_at_end_of_drag = true;
-	if (tree_item_inspected != nullptr) {
-		tree_item_inspected->clear_custom_color(0);
-	}
 	Tree *tree = scene_tree->get_scene_tree();
 	TreeItem *item = tree->get_item_with_metadata(node_hovered_now->get_path());
 	if (item) {
+		if (tree_item_inspected) {
+			tree_item_inspected->clear_custom_color(0);
+		}
 		tree_item_inspected = item;
 		tree_item_inspected->set_custom_color(0, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 	}
@@ -133,8 +133,9 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (mb->is_released()) {
-			if (tree_item_inspected != nullptr) {
+			if (tree_item_inspected) {
 				tree_item_inspected->clear_custom_color(0);
+				tree_item_inspected = nullptr;
 			}
 			_reset_hovering_timer();
 		}
@@ -148,7 +149,8 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (get_viewport()->gui_get_focus_owner() && get_viewport()->gui_get_focus_owner()->is_text_field()) {
+	Control *focus_owner = get_viewport()->gui_get_focus_owner();
+	if (focus_owner && focus_owner->is_text_field()) {
 		return;
 	}
 
@@ -157,7 +159,11 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (ED_IS_SHORTCUT("scene_tree/rename", p_event)) {
-		_tool_selected(TOOL_RENAME);
+		// Prevent renaming if a button is focused
+		// to avoid conflict with Enter shortcut on macOS
+		if (!focus_owner || !Object::cast_to<BaseButton>(focus_owner)) {
+			_tool_selected(TOOL_RENAME);
+		}
 #ifdef MODULE_REGEX_ENABLED
 	} else if (ED_IS_SHORTCUT("scene_tree/batch_rename", p_event)) {
 		_tool_selected(TOOL_BATCH_RENAME);
@@ -984,6 +990,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			undo_redo->add_do_method(root, "set_scene_file_path", String());
 			undo_redo->add_do_method(node, "set_owner", (Object *)nullptr);
 			undo_redo->add_do_method(root, "set_owner", node);
+			undo_redo->add_do_method(node, "set_unique_name_in_owner", false);
 			_node_replace_owner(root, root, node, MODE_DO);
 
 			undo_redo->add_undo_method(root, "set_scene_file_path", root->get_scene_file_path());
@@ -994,6 +1001,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			undo_redo->add_undo_method(node->get_parent(), "move_child", node, node->get_index(false));
 			undo_redo->add_undo_method(root, "set_owner", (Object *)nullptr);
 			undo_redo->add_undo_method(node, "set_owner", root);
+			undo_redo->add_undo_method(node, "set_unique_name_in_owner", node->is_unique_name_in_owner());
 			_node_replace_owner(root, root, root, MODE_UNDO);
 
 			undo_redo->add_do_method(scene_tree, "update_tree");
@@ -2275,6 +2283,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	Vector<StringName> former_names;
 
 	int inc = 0;
+	bool need_edit = false;
 
 	for (int ni = 0; ni < p_nodes.size(); ni++) {
 		// No undo implemented for this yet.
@@ -2295,7 +2304,11 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			inc--; // If the child will generate a gap when moved, adjust.
 		}
 
-		if (!same_parent) {
+		if (same_parent) {
+			// When node is reparented to the same parent, EditorSelection does not change.
+			// After hovering another node, the inspector has to be manually updated in this case.
+			need_edit = select_node_hovered_at_end_of_drag;
+		} else {
 			undo_redo->add_do_method(node->get_parent(), "remove_child", node);
 			undo_redo->add_do_method(new_parent, "add_child", node, true);
 		}
@@ -2400,6 +2413,10 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	perform_node_renames(nullptr, &path_renames);
 
 	undo_redo->commit_action();
+
+	if (need_edit) {
+		EditorNode::get_singleton()->edit_current();
+	}
 }
 
 void SceneTreeDock::_script_created(Ref<Script> p_script) {
@@ -4495,6 +4512,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	scene_tree->set_v_size_flags(SIZE_EXPAND | SIZE_FILL);
 	scene_tree->connect("rmb_pressed", callable_mp(this, &SceneTreeDock::_tree_rmb));
 
+	scene_tree->connect("node_selected", callable_mp(this, &SceneTreeDock::_node_selected), CONNECT_DEFERRED);
 	scene_tree->connect("node_renamed", callable_mp(this, &SceneTreeDock::_node_renamed), CONNECT_DEFERRED);
 	scene_tree->connect("node_prerename", callable_mp(this, &SceneTreeDock::_node_prerenamed));
 	scene_tree->connect("open", callable_mp(this, &SceneTreeDock::_load_request));

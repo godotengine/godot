@@ -43,12 +43,20 @@
 #pragma GCC diagnostic ignored "-Wshadow"
 #pragma GCC diagnostic ignored "-Wswitch"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#elif defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+#pragma clang diagnostic ignored "-Wstring-plus-int"
+#pragma clang diagnostic ignored "-Wswitch"
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
 #endif
 
 #include "dxcapi.h"
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
+#elif defined(__clang__)
+#pragma clang diagnostic pop
 #endif
 
 #if !defined(_MSC_VER)
@@ -63,10 +71,6 @@ const GUID CLSID_D3D12DeviceFactoryGodot = { 0x114863bf, 0xc386, 0x4aee, { 0xb3,
 const GUID CLSID_D3D12DebugGodot = { 0xf2352aeb, 0xdd84, 0x49fe, { 0xb9, 0x7b, 0xa9, 0xdc, 0xfd, 0xcc, 0x1b, 0x4f } };
 const GUID CLSID_D3D12SDKConfigurationGodot = { 0x7cda6aca, 0xa03e, 0x49c8, { 0x94, 0x58, 0x03, 0x34, 0xd2, 0x0e, 0x07, 0xce } };
 
-extern "C" {
-char godot_nir_arch_name[32];
-}
-
 #ifdef PIX_ENABLED
 #if defined(__GNUC__)
 #define _MSC_VER 1800
@@ -78,10 +82,7 @@ char godot_nir_arch_name[32];
 #endif
 #endif
 
-RenderingContextDriverD3D12::RenderingContextDriverD3D12() {
-	CharString cs = Engine::get_singleton()->get_architecture_name().ascii();
-	memcpy(godot_nir_arch_name, (const char *)cs.get_data(), cs.size());
-}
+RenderingContextDriverD3D12::RenderingContextDriverD3D12() {}
 
 RenderingContextDriverD3D12::~RenderingContextDriverD3D12() {
 	if (lib_d3d12) {

@@ -100,7 +100,7 @@ struct Text::Impl
     bool render(RenderMethod* renderer)
     {
         if (paint) return PP(paint)->render(renderer);
-        return false;
+        return true;
     }
 
     bool load()

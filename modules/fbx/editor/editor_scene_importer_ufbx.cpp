@@ -76,9 +76,6 @@ Node *EditorSceneFormatImporterUFBX::import_scene(const String &p_path, uint32_t
 	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
 		state->set_import_as_skeleton_bones(true);
 	}
-	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
-		state->set_import_as_skeleton_bones(true);
-	}
 	p_flags |= EditorSceneFormatImporter::IMPORT_USE_NAMED_SKIN_BINDS;
 	state->set_bake_fps(p_options["animation/fps"]);
 	Error err = fbx->append_from_file(path, state, p_flags, p_path.get_base_dir());
@@ -93,21 +90,17 @@ Node *EditorSceneFormatImporterUFBX::import_scene(const String &p_path, uint32_t
 
 Variant EditorSceneFormatImporterUFBX::get_option_visibility(const String &p_path, bool p_for_animation,
 		const String &p_option, const HashMap<StringName, Variant> &p_options) {
-	String file_extension = p_path.get_extension().to_lower();
-	if (file_extension != "fbx" && p_option.begins_with("fbx/")) {
-		return false;
-	}
-	if ((file_extension != "gltf" && file_extension != "glb") && p_option.begins_with("gltf/")) {
-		return false;
-	}
 	return true;
 }
 
 void EditorSceneFormatImporterUFBX::get_import_options(const String &p_path,
 		List<ResourceImporter::ImportOption> *r_options) {
-	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "fbx/importer", PROPERTY_HINT_ENUM, "ufbx,FBX2glTF"), FBX_IMPORTER_UFBX));
-	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::BOOL, "fbx/allow_geometry_helper_nodes"), false));
-	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "fbx/embedded_image_handling", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), FBXState::HANDLE_BINARY_EXTRACT_TEXTURES));
+	// Returns all the options when path is empty because that means it's for the Project Settings.
+	if (p_path.is_empty() || p_path.get_extension().to_lower() == "fbx") {
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "fbx/importer", PROPERTY_HINT_ENUM, "ufbx,FBX2glTF"), FBX_IMPORTER_UFBX));
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::BOOL, "fbx/allow_geometry_helper_nodes"), false));
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "fbx/embedded_image_handling", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), FBXState::HANDLE_BINARY_EXTRACT_TEXTURES));
+	}
 }
 
 void EditorSceneFormatImporterUFBX::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {

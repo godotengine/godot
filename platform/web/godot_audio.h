@@ -57,6 +57,7 @@ extern void godot_audio_sample_set_pause(const char *p_playback_object_id, bool 
 extern int godot_audio_sample_is_active(const char *p_playback_object_id);
 extern void godot_audio_sample_update_pitch_scale(const char *p_playback_object_id, float p_pitch_scale);
 extern void godot_audio_sample_set_volumes_linear(const char *p_playback_object_id, int *p_buses_buf, int p_buses_size, float *p_volumes_buf, int p_volumes_size);
+extern void godot_audio_sample_set_finished_callback(void (*p_callback)(const char *));
 
 extern void godot_audio_sample_bus_set_count(int p_count);
 extern void godot_audio_sample_bus_remove(int p_index);

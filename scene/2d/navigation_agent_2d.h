@@ -91,8 +91,6 @@ class NavigationAgent2D : public Node {
 	bool target_reached = false;
 	bool navigation_finished = true;
 	bool last_waypoint_reached = false;
-	// No initialized on purpose
-	uint32_t update_frame_id = 0;
 
 	// Debug properties for exposed bindings
 	bool debug_enabled = false;

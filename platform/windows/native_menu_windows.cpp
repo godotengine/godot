@@ -81,22 +81,6 @@ void NativeMenuWindows::_menu_activate(HMENU p_menu, int p_index) const {
 				if (GetMenuItemInfoW(md->menu, p_index, true, &item)) {
 					MenuItemData *item_data = (MenuItemData *)item.dwItemData;
 					if (item_data) {
-						if (item_data->max_states > 0) {
-							item_data->state++;
-							if (item_data->state >= item_data->max_states) {
-								item_data->state = 0;
-							}
-						}
-
-						if (item_data->checkable_type == CHECKABLE_TYPE_CHECK_BOX) {
-							if ((item.fState & MFS_CHECKED) == MFS_CHECKED) {
-								item.fState &= ~MFS_CHECKED;
-							} else {
-								item.fState |= MFS_CHECKED;
-							}
-							SetMenuItemInfoW(md->menu, p_index, true, &item);
-						}
-
 						if (item_data->callback.is_valid()) {
 							Variant ret;
 							Callable::CallError ce;
@@ -619,9 +603,12 @@ bool NativeMenuWindows::is_item_checked(const RID &p_rid, int p_idx) const {
 	MENUITEMINFOW item;
 	ZeroMemory(&item, sizeof(item));
 	item.cbSize = sizeof(item);
-	item.fMask = MIIM_STATE;
+	item.fMask = MIIM_STATE | MIIM_DATA;
 	if (GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
-		return (item.fState & MFS_CHECKED) == MFS_CHECKED;
+		MenuItemData *item_data = (MenuItemData *)item.dwItemData;
+		if (item_data) {
+			return item_data->checked;
+		}
 	}
 	return false;
 }
@@ -861,12 +848,16 @@ void NativeMenuWindows::set_item_checked(const RID &p_rid, int p_idx, bool p_che
 	MENUITEMINFOW item;
 	ZeroMemory(&item, sizeof(item));
 	item.cbSize = sizeof(item);
-	item.fMask = MIIM_STATE;
+	item.fMask = MIIM_STATE | MIIM_DATA;
 	if (GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
-		if (p_checked) {
-			item.fState |= MFS_CHECKED;
-		} else {
-			item.fState &= ~MFS_CHECKED;
+		MenuItemData *item_data = (MenuItemData *)item.dwItemData;
+		if (item_data) {
+			item_data->checked = p_checked;
+			if (p_checked) {
+				item.fState |= MFS_CHECKED;
+			} else {
+				item.fState &= ~MFS_CHECKED;
+			}
 		}
 		SetMenuItemInfoW(md->menu, p_idx, true, &item);
 	}

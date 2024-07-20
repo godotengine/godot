@@ -50,7 +50,7 @@ public:
 	//bool use_taa = false;
 	//bool use_debanding = false;
 	uint32_t view_count = 1;
-	bool needs_internal_buffers = false;
+	bool apply_color_adjustments_in_post = false;
 
 	RID render_target;
 
@@ -106,12 +106,12 @@ public:
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override{};
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override{};
 	virtual void set_use_debanding(bool p_use_debanding) override{};
+	void set_apply_color_adjustments_in_post(bool p_apply_in_post);
 
 	void free_render_buffer_data();
 
 	void check_backbuffer(bool p_need_color, bool p_need_depth); // Check if we need to initialize our backbuffer.
 	void check_glow_buffers(); // Check if we need to initialize our glow buffers.
-	void ensure_internal_buffers();
 
 	GLuint get_render_fbo();
 	GLuint get_msaa3d_fbo() {

@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+#include <algorithm>
 #include "tvgMath.h"
 #include "tvgSwCommon.h"
 #include "tvgTaskScheduler.h"
@@ -86,7 +87,7 @@ struct SwShapeTask : SwTask
        Additionally, the stroke style should not be dashed. */
     bool antialiasing(float strokeWidth)
     {
-        return strokeWidth < 2.0f || rshape->stroke->dashCnt > 0 || rshape->stroke->strokeFirst;
+        return strokeWidth < 2.0f || rshape->stroke->dashCnt > 0 || rshape->stroke->strokeFirst || rshape->strokeTrim() || rshape->stroke->color[3] < 255;;
     }
 
     float validStrokeWidth()
@@ -147,7 +148,7 @@ struct SwShapeTask : SwTask
             }
         }
         //Fill
-        if (flags & (RenderUpdateFlag::Gradient | RenderUpdateFlag::Transform | RenderUpdateFlag::Color)) {
+        if (flags & (RenderUpdateFlag::Path |RenderUpdateFlag::Gradient | RenderUpdateFlag::Transform | RenderUpdateFlag::Color)) {
             if (visibleFill || clipper) {
                 if (!shapeGenRle(&shape, rshape, antialiasing(strokeWidth))) goto err;
             }
@@ -160,7 +161,7 @@ struct SwShapeTask : SwTask
             }
         }
         //Stroke
-        if (flags & (RenderUpdateFlag::Stroke | RenderUpdateFlag::Transform)) {
+        if (flags & (RenderUpdateFlag::Path | RenderUpdateFlag::Stroke | RenderUpdateFlag::Transform)) {
             if (strokeWidth > 0.0f) {
                 shapeResetStroke(&shape, rshape, transform);
                 if (!shapeGenStrokeRle(&shape, rshape, transform, clipRegion, bbox, mpool, tid)) goto err;
@@ -718,9 +719,6 @@ void* SwRenderer::prepareCommon(SwTask* task, const RenderTransform* transform, 
     if (!surface) return task;
     if (flags == RenderUpdateFlag::None) return task;
 
-    //Finish previous task if it has duplicated request.
-    task->done();
-
     //TODO: Failed threading them. It would be better if it's possible.
     //See: https://github.com/thorvg/thorvg/issues/1409
     //Guarantee composition targets get ready.
@@ -769,8 +767,11 @@ RenderData SwRenderer::prepare(Surface* surface, const RenderMesh* mesh, RenderD
     //prepare task
     auto task = static_cast<SwImageTask*>(data);
     if (!task) task = new SwImageTask;
+    else task->done();
+
     task->source = surface;
     task->mesh = mesh;
+
     return prepareCommon(task, transform, clips, opacity, flags);
 }
 
@@ -780,6 +781,8 @@ RenderData SwRenderer::prepare(const Array<RenderData>& scene, RenderData data, 
     //prepare task
     auto task = static_cast<SwSceneTask*>(data);
     if (!task) task = new SwSceneTask;
+    else task->done();
+
     task->scene = scene;
 
     //TODO: Failed threading them. It would be better if it's possible.
@@ -788,6 +791,7 @@ RenderData SwRenderer::prepare(const Array<RenderData>& scene, RenderData data, 
     for (auto task = scene.begin(); task < scene.end(); ++task) {
         static_cast<SwTask*>(*task)->done();
     }
+
     return prepareCommon(task, transform, clips, opacity, flags);
 }
 
@@ -796,10 +800,10 @@ RenderData SwRenderer::prepare(const RenderShape& rshape, RenderData data, const
 {
     //prepare task
     auto task = static_cast<SwShapeTask*>(data);
-    if (!task) {
-        task = new SwShapeTask;
-        task->rshape = &rshape;
-    }
+    if (!task) task = new SwShapeTask;
+    else task->done();
+
+    task->rshape = &rshape;
     task->clipper = clipper;
 
     return prepareCommon(task, transform, clips, opacity, flags);

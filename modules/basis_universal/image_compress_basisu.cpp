@@ -65,6 +65,12 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 	params.m_multithreading = true;
 	params.m_check_for_alpha = false;
 
+	if (!OS::get_singleton()->is_stdout_verbose()) {
+		params.m_print_stats = false;
+		params.m_compute_stats = false;
+		params.m_status_output = false;
+	}
+
 	basisu::job_pool job_pool(OS::get_singleton()->get_processor_count());
 	params.m_pJob_pool = &job_pool;
 
@@ -114,7 +120,8 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 		Vector<uint32_t> mip_data_padded;
 
 		for (int32_t i = 0; i <= image->get_mipmap_count(); i++) {
-			int ofs, size, width, height;
+			int64_t ofs, size;
+			int width, height;
 			image->get_mipmap_offset_size_and_dimensions(i, ofs, size, width, height);
 
 			const uint8_t *image_mip_data = image_data.ptr() + ofs;

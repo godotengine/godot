@@ -30,10 +30,7 @@
 
 #include "export_plugin.h"
 
-#include "codesign.h"
-#include "lipo.h"
 #include "logo_svg.gen.h"
-#include "macho.h"
 #include "run_icon_svg.gen.h"
 
 #include "core/io/image_loader.h"
@@ -43,6 +40,9 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_string_names.h"
+#include "editor/export/codesign.h"
+#include "editor/export/lipo.h"
+#include "editor/export/macho.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
@@ -1213,6 +1213,7 @@ Error EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPres
 		const String &p_ent_path, const String &p_helper_ent_path, bool p_should_error_on_non_code) {
 	static Vector<String> extensions_to_sign;
 
+	bool sandbox = p_preset->get("codesign/entitlements/app_sandbox/enabled");
 	if (extensions_to_sign.is_empty()) {
 		extensions_to_sign.push_back("dylib");
 		extensions_to_sign.push_back("framework");
@@ -1239,7 +1240,7 @@ Error EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPres
 		if (extensions_to_sign.has(current_file.get_extension())) {
 			String ent_path = p_ent_path;
 			bool set_bundle_id = false;
-			if (FileAccess::exists(current_file_path)) {
+			if (sandbox && FileAccess::exists(current_file_path)) {
 				int ftype = MachO::get_filetype(current_file_path);
 				if (ftype == 2 || ftype == 5) {
 					ent_path = p_helper_ent_path;
@@ -1274,7 +1275,7 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 		const String &p_in_app_path, bool p_sign_enabled,
 		const Ref<EditorExportPreset> &p_preset, const String &p_ent_path,
 		const String &p_helper_ent_path,
-		bool p_should_error_on_non_code_sign) {
+		bool p_should_error_on_non_code_sign, bool p_sandbox) {
 	static Vector<String> extensions_to_sign;
 
 	if (extensions_to_sign.is_empty()) {
@@ -1368,7 +1369,7 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 			if (extensions_to_sign.has(p_in_app_path.get_extension())) {
 				String ent_path = p_ent_path;
 				bool set_bundle_id = false;
-				if (FileAccess::exists(p_in_app_path)) {
+				if (p_sandbox && FileAccess::exists(p_in_app_path)) {
 					int ftype = MachO::get_filetype(p_in_app_path);
 					if (ftype == 2 || ftype == 5) {
 						ent_path = p_helper_ent_path;
@@ -1389,13 +1390,13 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 Error EditorExportPlatformMacOS::_export_macos_plugins_for(Ref<EditorExportPlugin> p_editor_export_plugin,
 		const String &p_app_path_name, Ref<DirAccess> &dir_access,
 		bool p_sign_enabled, const Ref<EditorExportPreset> &p_preset,
-		const String &p_ent_path, const String &p_helper_ent_path) {
+		const String &p_ent_path, const String &p_helper_ent_path, bool p_sandbox) {
 	Error error{ OK };
 	const Vector<String> &macos_plugins{ p_editor_export_plugin->get_macos_plugin_files() };
 	for (int i = 0; i < macos_plugins.size(); ++i) {
 		String src_path{ ProjectSettings::get_singleton()->globalize_path(macos_plugins[i]) };
 		String path_in_app{ p_app_path_name + "/Contents/PlugIns/" + src_path.get_file() };
-		error = _copy_and_sign_files(dir_access, src_path, path_in_app, p_sign_enabled, p_preset, p_ent_path, p_helper_ent_path, false);
+		error = _copy_and_sign_files(dir_access, src_path, path_in_app, p_sign_enabled, p_preset, p_ent_path, p_helper_ent_path, false, p_sandbox);
 		if (error != OK) {
 			break;
 		}
@@ -2168,11 +2169,11 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				String src_path = ProjectSettings::get_singleton()->globalize_path(shared_objects[i].path);
 				if (shared_objects[i].target.is_empty()) {
 					String path_in_app = tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file();
-					err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, hlp_ent_path, true);
+					err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, hlp_ent_path, true, sandbox);
 				} else {
 					String path_in_app = tmp_app_path_name.path_join(shared_objects[i].target);
 					tmp_app_dir->make_dir_recursive(path_in_app);
-					err = _copy_and_sign_files(da, src_path, path_in_app.path_join(src_path.get_file()), sign_enabled, p_preset, ent_path, hlp_ent_path, false);
+					err = _copy_and_sign_files(da, src_path, path_in_app.path_join(src_path.get_file()), sign_enabled, p_preset, ent_path, hlp_ent_path, false, sandbox);
 				}
 				if (err != OK) {
 					break;
@@ -2181,7 +2182,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 			Vector<Ref<EditorExportPlugin>> export_plugins{ EditorExport::get_singleton()->get_export_plugins() };
 			for (int i = 0; i < export_plugins.size(); ++i) {
-				err = _export_macos_plugins_for(export_plugins[i], tmp_app_path_name, da, sign_enabled, p_preset, ent_path, hlp_ent_path);
+				err = _export_macos_plugins_for(export_plugins[i], tmp_app_path_name, da, sign_enabled, p_preset, ent_path, hlp_ent_path, sandbox);
 				if (err != OK) {
 					break;
 				}
