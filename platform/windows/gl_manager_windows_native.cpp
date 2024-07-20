@@ -66,6 +66,10 @@
 // Again, we probably don't need this at all.
 //#define OPENGL_DXGI_ADD_DEPTH_RENDERBUFFER
 
+// Instead of rendering directly to the DXGI back buffer, render onto an
+// intermediate buffer which is copied to the back buffer on present.
+//#define OPENGL_DXGI_USE_INTERMEDIATE_BUFFER
+
 // Use DXGI flip-discard. (WIP)
 #define OPENGL_DXGI_USE_FLIP_MODEL
 
@@ -404,7 +408,11 @@ class GLManagerNative_Windows::DxgiSwapChain {
 	ComPtr<ID3D11DepthStencilView> depth_stencil_view;
 #endif
 
+#ifdef OPENGL_DXGI_USE_INTERMEDIATE_BUFFER
+	ComPtr<ID3D11Texture2D> intermediate_buffer;
+#else
 	ComPtr<ID3D11Texture2D> color_buffer;
+#endif
 #ifdef OPENGL_DXGI_SET_RENDER_TARGET
 	ComPtr<ID3D11RenderTargetView> render_target_view;
 #endif
@@ -463,8 +471,13 @@ private:
 	void release_depth_buffer();
 #endif
 
+#ifdef OPENGL_DXGI_USE_INTERMEDIATE_BUFFER
+	bool setup_intermediate_buffer(int p_width, int p_height);
+	void release_intermediate_buffer();
+#else
 	bool setup_render_target();
 	void release_render_target();
+#endif
 
 	void lock_for_opengl();
 	void unlock_from_opengl();
@@ -1160,7 +1173,11 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 	}
 #endif
 
+#ifdef OPENGL_DXGI_USE_INTERMEDIATE_BUFFER
+	if (!dxgi->setup_intermediate_buffer(p_width, p_height)) {
+#else
 	if (!dxgi->setup_render_target()) {
+#endif
 		GLES3::TextureStorage::system_fbo = 0;
 #if defined(OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER) || defined(OPENGL_DXGI_ADD_DEPTH_RENDERBUFFER)
 		dxgi->release_depth_buffer();
@@ -1200,7 +1217,11 @@ void GLManagerNative_Windows::DxgiSwapChain::destroy() {
 	}
 
 	unlock_from_opengl();
+#ifdef OPENGL_DXGI_USE_INTERMEDIATE_BUFFER
+	release_intermediate_buffer();
+#else
 	release_render_target();
+#endif
 #if defined(OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER) || defined(OPENGL_DXGI_ADD_DEPTH_RENDERBUFFER)
 	release_depth_buffer();
 #endif
@@ -1314,6 +1335,48 @@ void GLManagerNative_Windows::DxgiSwapChain::release_depth_buffer() {
 }
 #endif // OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER
 
+#ifdef OPENGL_DXGI_USE_INTERMEDIATE_BUFFER
+bool GLManagerNative_Windows::DxgiSwapChain::setup_intermediate_buffer(int p_width, int p_height) {
+	ComPtr<ID3D11Texture2D> intermediate_buffer_new;
+	CD3D11_TEXTURE2D_DESC intermediate_buffer_desc(DXGI_FORMAT_R8G8B8A8_UNORM, p_width, p_height, 1, 1, D3D11_BIND_RENDER_TARGET);
+	HRESULT hr = device->CreateTexture2D(
+			&intermediate_buffer_desc,
+			nullptr,
+			&intermediate_buffer_new);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("CreateTexture2D failed, HRESULT: 0x%08X", (unsigned)hr));
+		return false;
+	}
+
+	HANDLE gldx_color_buffer_rb_new = gd_wglDXRegisterObjectNV(
+			gldx_device,
+			intermediate_buffer_new.Get(),
+			gl_color_buffer_rb,
+			GL_RENDERBUFFER,
+			WGL_ACCESS_READ_WRITE_NV);
+	if (!gldx_color_buffer_rb_new) {
+		ERR_PRINT(vformat("Failed to connect D3D11 intermediate texture to WGL for interop. Error: %s", format_error_message(GetLastError())));
+		return false;
+	}
+
+	intermediate_buffer = std::move(intermediate_buffer_new);
+	gldx_color_buffer_rb = gldx_color_buffer_rb_new;
+
+	return true;
+}
+
+void GLManagerNative_Windows::DxgiSwapChain::release_intermediate_buffer() {
+	BOOL res = gd_wglDXUnregisterObjectNV(gldx_device, gldx_color_buffer_rb);
+	if (!res) {
+		ERR_PRINT(vformat("Failed to unregister color buffer for interop. Error: %s", format_error_message(GetLastError())));
+	}
+
+	gldx_color_buffer_rb = nullptr;
+	intermediate_buffer.Reset();
+}
+
+#else // OPENGL_DXGI_USE_INTERMEDIATE_BUFFER
+
 bool GLManagerNative_Windows::DxgiSwapChain::setup_render_target() {
 	// Get the current back buffer from the swap chain.
 	ComPtr<ID3D11Texture2D> color_buffer_new;
@@ -1410,6 +1473,7 @@ void GLManagerNative_Windows::DxgiSwapChain::release_render_target() {
 #endif
 	color_buffer.Reset();
 }
+#endif // OPENGL_DXGI_USE_INTERMEDIATE_BUFFER
 
 void GLManagerNative_Windows::DxgiSwapChain::lock_for_opengl() {
 	// Lock the buffers for OpenGL access.
@@ -1481,10 +1545,25 @@ void GLManagerNative_Windows::DxgiSwapChain::unlock_from_opengl() {
 
 void GLManagerNative_Windows::DxgiSwapChain::present(bool p_use_vsync) {
 	unlock_from_opengl();
+#ifndef OPENGL_DXGI_USE_INTERMEDIATE_BUFFER
 	release_render_target();
+#endif
+
+	HRESULT hr;
+
+#ifdef OPENGL_DXGI_USE_INTERMEDIATE_BUFFER
+	// Now we copy our intermediate buffer to the back buffer.
+	ComPtr<ID3D11Texture2D> color_buffer_new;
+	hr = swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), &color_buffer_new);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("GetBuffer failed, HRESULT: 0x%08X", (unsigned)hr));
+		return false;
+	}
+
+	device_context->CopyResource(color_buffer_new.Get(), intermediate_buffer.Get());
+#endif
 
 #ifdef OPENGL_DXGI_USE_FLIP_MODEL
-	HRESULT hr;
 	if (p_use_vsync) {
 		hr = swap_chain->Present(1, 0);
 	} else {
@@ -1507,13 +1586,19 @@ void GLManagerNative_Windows::DxgiSwapChain::present(bool p_use_vsync) {
 		ERR_PRINT(vformat("Present failed, HRESULT: 0x%08X", (unsigned)hr));
 	}
 
+#ifndef OPENGL_DXGI_USE_INTERMEDIATE_BUFFER
 	setup_render_target();
+#endif
 	lock_for_opengl();
 }
 
 void GLManagerNative_Windows::DxgiSwapChain::resize_swap_chain(int p_width, int p_height) {
 	unlock_from_opengl();
+#ifdef OPENGL_DXGI_USE_INTERMEDIATE_BUFFER
+	release_intermediate_buffer();
+#else
 	release_render_target();
+#endif
 #if defined(OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER) || defined(OPENGL_DXGI_ADD_DEPTH_RENDERBUFFER)
 	release_depth_buffer();
 #endif
@@ -1535,7 +1620,11 @@ void GLManagerNative_Windows::DxgiSwapChain::resize_swap_chain(int p_width, int 
 #else
 	{
 #endif
+#ifdef OPENGL_DXGI_USE_INTERMEDIATE_BUFFER
+		setup_intermediate_buffer(p_width, p_height);
+#else
 		setup_render_target();
+#endif
 	}
 	lock_for_opengl();
 }
