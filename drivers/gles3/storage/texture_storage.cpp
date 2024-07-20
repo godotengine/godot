@@ -1491,7 +1491,7 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 	int tsize = 0;
 
 	for (int i = 0; i < mipmaps; i++) {
-		int size, ofs;
+		int64_t size, ofs;
 		img->get_mipmap_offset_and_size(i, ofs, size);
 		if (compressed) {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
