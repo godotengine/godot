@@ -40,10 +40,7 @@
 #endif
 
 bool DisplayServerOffscreen::has_feature(Feature p_feature) const {
-	switch (p_feature) {
-		default:
-			return false;
-	}
+	return false;
 }
 
 String DisplayServerOffscreen::get_name() const {
