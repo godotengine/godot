@@ -33,6 +33,8 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/main/viewport.h"
 #include "scene/property_utils.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/multimesh_instance_3d.h"
 
 /*
 
@@ -1122,6 +1124,25 @@ bool Node3D::_property_get_revert(const StringName &p_name, Variant &r_property)
 	}
 	return true;
 }
+static void _get_all_mesh_instances(Node3D *p_node, List<MeshInstance3D *> *r_instances) {
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		Node3D *c = Object::cast_to<Node3D>(p_node->get_child(i));
+		if (c) {
+			_get_all_mesh_instances(c, r_instances);
+		}
+	}
+	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_node);
+	if (mi) {
+		r_instances->push_back(mi);
+	}
+}
+
+void Node3D::bt_conver_child_to_multi_mesh()
+{
+	List<MeshInstance3D *> instances;
+	_get_all_mesh_instances(this, &instances);
+
+}
 
 void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform", "local"), &Node3D::set_transform);
@@ -1216,6 +1237,8 @@ void Node3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ROTATION_EDIT_MODE_QUATERNION);
 	BIND_ENUM_CONSTANT(ROTATION_EDIT_MODE_BASIS);
 
+	ADD_MEMBER_BUTTON(bt_conver_child_to_multi_mesh,"Convert child to MultiMesh",Node3D);
+
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform", PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NO_EDITOR), "set_transform", "get_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "global_transform", PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NONE), "set_global_transform", "get_global_transform");
@@ -1236,6 +1259,7 @@ void Node3D::_bind_methods() {
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "visibility_parent", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GeometryInstance3D"), "set_visibility_parent", "get_visibility_parent");
+
 
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
 	ADD_SIGNAL(MethodInfo("transform_changed"));

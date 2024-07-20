@@ -767,6 +767,11 @@ void CharacterAnimatorLayer::_process_animation(const Ref<Blackboard> &p_playbac
 	clear_animation_instances();
 }
 
+void CharacterAnimatorLayer::finish_update()
+{
+    
+}
+
 void CharacterAnimatorLayer::layer_blend_apply() {
 	// Finally, set the tracks.
 	for (const KeyValue<Animation::TypeHash, TrackCache *> &K : track_cache) {
@@ -1098,6 +1103,22 @@ void CharacterAnimator::update_animation(float delta)
         }
         ++it;
     }
+}
+void CharacterAnimator::finish_update()
+{
+    auto it = m_LayerList.begin();
+    bool is_first = true;
+    while(it!=m_LayerList.end())
+    {
+        CharacterAnimatorLayer* layer = *it;
+        if(layer->is_active())
+        {
+            layer->finish_update();
+            is_first = false;
+        }
+        ++it;
+    }
+
 }
 Ref<CharacterAnimationLibrary::AnimationItem> CharacterAnimator::get_animation_by_name(const StringName& p_name)
 {

@@ -198,7 +198,10 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<MObstacle>();
 		ClassDB::register_class<MBrushLayers>();
 		ClassDB::register_class<MTerrainMaterial>();
-		SceneTree::get_singleton()->remove_globale_ticker(character_manager);
+		if (Engine::get_singleton())
+		{
+			Engine::get_singleton()->add_globale_ticker(character_manager);
+		}
 	}
 
 
@@ -215,9 +218,9 @@ void uninitialize_game_help_module(ModuleInitializationLevel p_level) {
 	}
 	Engine::get_singleton()->remove_singleton("DataTableManager");
 	Engine::get_singleton()->remove_singleton("PathManager");
-	if(SceneTree::get_singleton() != nullptr)
+	if(Engine::get_singleton() != nullptr)
 	{
-		SceneTree::get_singleton()->remove_globale_ticker(character_manager);
+		Engine::get_singleton()->remove_globale_ticker(character_manager);
 	}
 
 

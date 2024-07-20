@@ -2374,32 +2374,62 @@ void RenIK::set_upper_leg_right_bone(BoneId p_bone) {
 
 int64_t RenIK::get_hip_bone() { return hip; }
 int64_t RenIK::get_head_bone() { return head; }
-int64_t RenIK::get_hand_left_bone() { return limb_arm_left->get_leaf_bone(); }
+int64_t RenIK::get_hand_left_bone() { 
+	if(limb_arm_left == nullptr) {
+		return -1L;
+	}
+	return limb_arm_left->get_leaf_bone(); 
+}
 int64_t RenIK::get_lower_arm_left_bone() {
 	return limb_arm_left->get_lower_bone();
 }
 int64_t RenIK::get_upper_arm_left_bone() {
+	if(limb_arm_left == nullptr) {
+		return -1L;
+	}
 	return limb_arm_left->get_upper_bone();
 }
 int64_t RenIK::get_hand_right_bone() { return limb_arm_right->get_leaf_bone(); }
 int64_t RenIK::get_lower_arm_right_bone() {
+	if(limb_leg_right == nullptr) {
+		return -1L;
+	}
 	return limb_arm_right->get_lower_bone();
 }
 int64_t RenIK::get_upper_arm_right_bone() {
+	if(limb_leg_right == nullptr) {
+		return 0L;
+	}
 	return limb_arm_right->get_upper_bone();
 }
 int64_t RenIK::get_foot_left_bone() { return limb_leg_left->get_leaf_bone(); }
 int64_t RenIK::get_lower_leg_left_bone() {
+
+	if(limb_leg_right == nullptr) {
+		return -1L;
+	}
 	return limb_leg_left->get_lower_bone();
 }
 int64_t RenIK::get_upper_leg_left_bone() {
+
+	if(limb_leg_right == nullptr) {
+		return -1L;
+	}
 	return limb_leg_left->get_upper_bone();
 }
 int64_t RenIK::get_foot_right_bone() { return limb_leg_right->get_leaf_bone(); }
 int64_t RenIK::get_lower_leg_right_bone() {
+
+	if(limb_leg_right == nullptr) {
+		return -1L;
+	}
 	return limb_leg_right->get_lower_bone();
 }
 int64_t RenIK::get_upper_leg_right_bone() {
+
+	if(limb_leg_right == nullptr) {
+		return -1L;
+	}
 	return limb_leg_right->get_upper_bone();
 }
 
@@ -2601,6 +2631,9 @@ void RenIK::set_foot_right_target_path(NodePath p_path) {
 	//}
 }
 float RenIK::get_arm_upper_twist_offset() {
+	if(limb_arm_left == nullptr) {
+		return 0.0f;
+	}
 	return Math::rad_to_deg(limb_arm_left->upper_twist_offset);
 }
 void RenIK::set_arm_upper_twist_offset(float degrees) {
@@ -2608,6 +2641,9 @@ void RenIK::set_arm_upper_twist_offset(float degrees) {
 	limb_arm_right->upper_twist_offset = Math::deg_to_rad(-degrees);
 }
 float RenIK::get_arm_lower_twist_offset() {
+	if(limb_arm_left == nullptr) {
+		return 0.0f;
+	}
 	return Math::rad_to_deg(limb_arm_left->lower_twist_offset);
 }
 void RenIK::set_arm_lower_twist_offset(float degrees) {
@@ -2615,6 +2651,9 @@ void RenIK::set_arm_lower_twist_offset(float degrees) {
 	limb_arm_right->lower_twist_offset = Math::deg_to_rad(-degrees);
 }
 float RenIK::get_arm_roll_offset() {
+	if(limb_arm_left == nullptr) {
+		return 0.0f;
+	}
 	return Math::rad_to_deg(limb_arm_left->roll_offset);
 }
 void RenIK::set_arm_roll_offset(float degrees) {
@@ -2622,6 +2661,9 @@ void RenIK::set_arm_roll_offset(float degrees) {
 	limb_arm_right->roll_offset = Math::deg_to_rad(-degrees);
 }
 float RenIK::get_arm_upper_limb_twist() {
+	if(limb_arm_left == nullptr) {
+		return 0.0f;
+	}
 	return limb_arm_left->upper_limb_twist * 100;
 }
 void RenIK::set_arm_upper_limb_twist(float ratio) {
@@ -2629,6 +2671,9 @@ void RenIK::set_arm_upper_limb_twist(float ratio) {
 	limb_arm_right->upper_limb_twist = ratio / 100.0;
 }
 float RenIK::get_arm_lower_limb_twist() {
+	if(limb_arm_left == nullptr) {
+		return 0.0f;
+	}
 	return limb_arm_left->lower_limb_twist * 100;
 }
 void RenIK::set_arm_lower_limb_twist(float ratio) {
@@ -2636,6 +2681,9 @@ void RenIK::set_arm_lower_limb_twist(float ratio) {
 	limb_arm_right->lower_limb_twist = ratio / 100.0;
 }
 float RenIK::get_arm_twist_inflection_point_offset() {
+	if(limb_arm_left == nullptr) {
+		return 0.0f;
+	}
 	return Math::rad_to_deg(limb_arm_left->twist_inflection_point_offset);
 }
 void RenIK::set_arm_twist_inflection_point_offset(float degrees) {
@@ -2643,6 +2691,9 @@ void RenIK::set_arm_twist_inflection_point_offset(float degrees) {
 	limb_arm_right->twist_inflection_point_offset = Math::deg_to_rad(-degrees);
 }
 float RenIK::get_arm_twist_overflow() {
+		if(limb_arm_left == nullptr) {
+		return 0.0f;
+	}
 	return Math::rad_to_deg(limb_arm_left->twist_overflow);
 }
 void RenIK::set_arm_twist_overflow(float degrees) {
@@ -2651,6 +2702,9 @@ void RenIK::set_arm_twist_overflow(float degrees) {
 }
 
 Vector3 RenIK::get_arm_pole_offset() {
+	if(limb_arm_left == nullptr) {
+		return Vector3(0.0f, 0.0f, 0.0f);
+	}
 	Vector3 v = limb_arm_left->pole_offset;
 	return Vector3(Math::rad_to_deg(v[0]), Math::rad_to_deg(v[1]), Math::rad_to_deg(v[2]));
 }
@@ -2661,6 +2715,9 @@ void RenIK::set_arm_pole_offset(Vector3 euler) {
 			Math::deg_to_rad(-euler[2]));
 }
 Vector3 RenIK::get_arm_target_position_influence() {
+	if(limb_arm_left == nullptr) {
+		return Vector3(0.0f, 0.0f, 0.0f);
+	}
 	return limb_arm_left->target_position_influence * 10.0;
 }
 void RenIK::set_arm_target_position_influence(Vector3 xyz) {
@@ -2669,6 +2726,10 @@ void RenIK::set_arm_target_position_influence(Vector3 xyz) {
 			Vector3(xyz[0], -xyz[1], -xyz[2]) / 10.0;
 }
 float RenIK::get_arm_target_rotation_influence() {
+
+	if(limb_arm_left == nullptr) {
+		return 0.0f;
+	}
 	return limb_arm_left->target_rotation_influence * 100.0;
 }
 void RenIK::set_arm_target_rotation_influence(float influence) {
@@ -2677,6 +2738,9 @@ void RenIK::set_arm_target_rotation_influence(float influence) {
 }
 
 float RenIK::get_leg_upper_twist_offset() {
+	if(limb_leg_left == nullptr) {
+		return 0.0f;
+	}
 	return Math::rad_to_deg(limb_leg_left->upper_twist_offset);
 }
 void RenIK::set_leg_upper_twist_offset(float degrees) {
@@ -2684,6 +2748,9 @@ void RenIK::set_leg_upper_twist_offset(float degrees) {
 	limb_leg_right->upper_twist_offset = Math::deg_to_rad(-degrees);
 }
 float RenIK::get_leg_lower_twist_offset() {
+	if(limb_leg_left == nullptr) {
+		return 0.0f;
+	}
 	return Math::rad_to_deg(limb_leg_left->lower_twist_offset);
 }
 void RenIK::set_leg_lower_twist_offset(float degrees) {
@@ -2691,6 +2758,9 @@ void RenIK::set_leg_lower_twist_offset(float degrees) {
 	limb_leg_right->lower_twist_offset = Math::deg_to_rad(-degrees);
 }
 float RenIK::get_leg_roll_offset() {
+	if(limb_leg_left == nullptr) {
+		return 0.0f;
+	}
 	return Math::rad_to_deg(limb_leg_left->roll_offset);
 }
 void RenIK::set_leg_roll_offset(float degrees) {
@@ -2698,6 +2768,9 @@ void RenIK::set_leg_roll_offset(float degrees) {
 	limb_leg_right->roll_offset = Math::deg_to_rad(-degrees);
 }
 float RenIK::get_leg_upper_limb_twist() {
+	if(limb_leg_left == nullptr) {
+		return 0.0f;
+	}
 	return limb_leg_left->upper_limb_twist * 100;
 }
 void RenIK::set_leg_upper_limb_twist(float ratio) {
@@ -2705,6 +2778,9 @@ void RenIK::set_leg_upper_limb_twist(float ratio) {
 	limb_leg_right->upper_limb_twist = ratio / 100.0;
 }
 float RenIK::get_leg_lower_limb_twist() {
+	if(limb_leg_left == nullptr) {
+		return 0.0f;
+	}
 	return limb_leg_left->lower_limb_twist * 100;
 }
 void RenIK::set_leg_lower_limb_twist(float ratio) {
@@ -2712,6 +2788,9 @@ void RenIK::set_leg_lower_limb_twist(float ratio) {
 	limb_leg_right->lower_limb_twist = ratio / 100.0;
 }
 float RenIK::get_leg_twist_inflection_point_offset() {
+	if(limb_leg_left == nullptr) {
+		return 0.0f;
+	}
 	return Math::rad_to_deg(limb_leg_left->twist_inflection_point_offset);
 }
 void RenIK::set_leg_twist_inflection_point_offset(float degrees) {
@@ -2719,6 +2798,9 @@ void RenIK::set_leg_twist_inflection_point_offset(float degrees) {
 	limb_leg_right->twist_inflection_point_offset = Math::deg_to_rad(-degrees);
 }
 float RenIK::get_leg_twist_overflow() {
+	if(limb_leg_left == nullptr) {
+		return 0.0f;
+	}
 	return Math::rad_to_deg(limb_leg_left->twist_overflow);
 }
 void RenIK::set_leg_twist_overflow(float degrees) {
@@ -2727,6 +2809,9 @@ void RenIK::set_leg_twist_overflow(float degrees) {
 }
 
 Vector3 RenIK::get_leg_pole_offset() {
+	if(limb_leg_left == nullptr) {
+		return Vector3(0.0f, 0.0f, 0.0f);
+	}
 	Vector3 v = limb_leg_left->pole_offset;
 	return Vector3(Math::rad_to_deg(v[0]), Math::rad_to_deg(v[1]), Math::rad_to_deg(v[2]));
 }
@@ -2739,6 +2824,9 @@ void RenIK::set_leg_pole_offset(Vector3 euler) {
 }
 
 Vector3 RenIK::get_leg_target_position_influence() {
+	if(limb_leg_left == nullptr) {
+		return Vector3(0.0f, 0.0f, 0.0f);
+	}
 	return limb_leg_left->target_position_influence * 10.0;
 }
 
@@ -2749,6 +2837,9 @@ void RenIK::set_leg_target_position_influence(Vector3 xyz) {
 }
 
 float RenIK::get_leg_target_rotation_influence() {
+	if(limb_leg_left == nullptr) {
+		return 0.0f;
+	}
 	return limb_leg_left->target_rotation_influence * 100.0;
 }
 void RenIK::set_leg_target_rotation_influence(float influence) {
@@ -2756,34 +2847,58 @@ void RenIK::set_leg_target_rotation_influence(float influence) {
 	limb_leg_right->target_rotation_influence = influence / 100.0;
 }
 
-Vector3 RenIK::get_spine_curve() { return spine_chain->chain_curve_direction; }
+Vector3 RenIK::get_spine_curve() {
+	if(spine_chain == nullptr) {
+		return Vector3(0.0f, 0.0f, 0.0f);
+	}
+	 return spine_chain->chain_curve_direction; 
+}
 void RenIK::set_spine_curve(Vector3 direction) {
 	spine_chain->chain_curve_direction = direction;
 }
 float RenIK::get_upper_spine_stiffness() {
+	if(spine_chain == nullptr) {
+		return 0.0f;
+	}
 	return spine_chain->get_leaf_stiffness() * 100.0;
 }
 void RenIK::set_upper_spine_stiffness(float influence) {
 	spine_chain->set_leaf_stiffness(skeleton, influence / 100.0);
 }
 float RenIK::get_lower_spine_stiffness() {
+	if(spine_chain == nullptr) {
+		return 0.0f;
+	}
 	return spine_chain->get_root_stiffness() * 100.0;
 }
 void RenIK::set_lower_spine_stiffness(float influence) {
 	spine_chain->set_root_stiffness(skeleton, influence / 100.0);
 }
-float RenIK::get_spine_twist() { return spine_chain->get_twist() * 100.0; }
+float RenIK::get_spine_twist() {
+	if(spine_chain == nullptr) {
+		return 0.0f;
+	}
+	 return spine_chain->get_twist() * 100.0; 
+}
 void RenIK::set_spine_twist(float influence) {
 	spine_chain->set_twist(skeleton, influence / 100.0);
 }
 float RenIK::get_spine_twist_start() {
+	if(spine_chain == nullptr) {
+		return 0.0f;
+	}
 	return spine_chain->get_twist_start() * 100.0;
 }
 void RenIK::set_spine_twist_start(float influence) {
 	spine_chain->set_twist_start(skeleton, influence / 100.0);
 }
 
-float RenIK::get_shoulder_influence() { return shoulder_influence * 100.0; }
+float RenIK::get_shoulder_influence() { 
+	if(limb_arm_left == nullptr) {
+		return 0.0f;
+	}
+	return shoulder_influence * 100.0;
+}
 void RenIK::set_shoulder_influence(float influence) {
 	shoulder_influence = influence / 100;
 }

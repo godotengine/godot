@@ -145,6 +145,17 @@ enum PropertyUsageFlags {
 // PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")
 #define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
 
+
+#define DECL_MEMBER_BUTTON(bt_name) \
+	void _set_## bt_name ## _property(int v){}\
+	int _get_ ## bt_name ##_property(){return 0;}\
+	void bt_name()
+#define ADD_MEMBER_BUTTON(bt_name,lable_name,class_name)\
+	ClassDB::bind_method(D_METHOD("_set_"  #bt_name  "_property", "v"), &class_name::_set_ ## bt_name ## _property);\
+	ClassDB::bind_method(D_METHOD("_get_"  #bt_name  "_property"), &class_name::_get_ ## bt_name ## _property);\
+	ClassDB::bind_method(D_METHOD(#bt_name), &class_name::bt_name);\
+	ADD_PROPERTY(PropertyInfo(Variant::INT, #bt_name, PROPERTY_HINT_BUTTON, "#FF22AA;" #lable_name ";" #bt_name,PROPERTY_USAGE_EDITOR), "_set_"  #bt_name  "_property", "_get_"  #bt_name  "_property");
+
 struct PropertyInfo {
 	Variant::Type type = Variant::NIL;
 	String name;

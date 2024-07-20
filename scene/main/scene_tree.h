@@ -77,19 +77,6 @@ public:
 
 	SceneTreeTimer();
 };
-class GlolaleTicker : public Object {
-	GDCLASS(GlolaleTicker, Object);
-	static void _bind_methods()
-	{
-
-	}
-public:
-	virtual void tick(float delta)
-	{
-
-	}
-};
-
 class SceneTree : public MainLoop {
 	_THREAD_SAFE_CLASS_
 
@@ -118,7 +105,6 @@ private:
 
 	PagedAllocator<ProcessGroup, true> group_allocator; // Allocate groups on pages, to enhance cache usage.
 
-	LocalVector<GlolaleTicker *> global_tickers;
 	LocalVector<ProcessGroup *> process_groups;
 	bool process_groups_dirty = true;
 	LocalVector<ProcessGroup *> local_process_group_cache; // Used when processing to group what needs to
@@ -436,8 +422,6 @@ public:
 	void set_physics_interpolation_enabled(bool p_enabled);
 	bool is_physics_interpolation_enabled() const;
 
-	void add_globale_ticker(GlolaleTicker *p_ticker);
-	void remove_globale_ticker(GlolaleTicker *p_ticker);
 
 	SceneTree();
 	~SceneTree();

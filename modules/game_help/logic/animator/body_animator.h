@@ -504,6 +504,8 @@ public:
     void _process_animator(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first = true);
     // 处理动画
     void _process_animation(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first = true);
+
+    void finish_update();
     void layer_blend_apply() ;
     Vector<Vector2> m_ChildInputVectorArray;
     Vector<int> m_TempCropArray;
@@ -673,6 +675,8 @@ public:
     void update_animator(float delta);
 
     void update_animation(float delta);
+
+    void finish_update();
 
     void create_layers();
 

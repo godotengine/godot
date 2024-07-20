@@ -52,11 +52,7 @@ void Terrain3DTextureAsset::clear() {
 	_detiling = 0.0f;
 }
 
-void Terrain3DTextureAsset::set_name(const String &p_name) {
-	LOG(INFO, "Setting name: ", p_name);
-	_name = p_name;
-	emit_signal("setting_changed");
-}
+
 
 void Terrain3DTextureAsset::set_id(const int p_new_id) {
 	int old_id = _id;
@@ -113,8 +109,8 @@ void Terrain3DTextureAsset::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("setting_changed"));
 
 	ClassDB::bind_method(D_METHOD("clear"), &Terrain3DTextureAsset::clear);
-	ClassDB::bind_method(D_METHOD("set_name", "name"), &Terrain3DTextureAsset::set_name);
-	ClassDB::bind_method(D_METHOD("get_name"), &Terrain3DTextureAsset::get_name);
+	// ClassDB::bind_method(D_METHOD("set_name", "name"), &Terrain3DTextureAsset::set_name);
+	// ClassDB::bind_method(D_METHOD("get_name"), &Terrain3DTextureAsset::get_name);
 	ClassDB::bind_method(D_METHOD("set_id", "id"), &Terrain3DTextureAsset::set_id);
 	ClassDB::bind_method(D_METHOD("get_id"), &Terrain3DTextureAsset::get_id);
 	ClassDB::bind_method(D_METHOD("set_albedo_color", "color"), &Terrain3DTextureAsset::set_albedo_color);
