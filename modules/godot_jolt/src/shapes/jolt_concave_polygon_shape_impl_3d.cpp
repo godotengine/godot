@@ -102,4 +102,3 @@ JPH::ShapeRefC JoltConcavePolygonShapeImpl3D::_build() const {
 
 	return shape;
 }
-

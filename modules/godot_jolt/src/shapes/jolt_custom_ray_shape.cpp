@@ -117,7 +117,7 @@ void collide_ray_vs_shape(
 	);
 
 	if (p_collide_shape_settings.mCollectFacesMode == JPH::ECollectFacesMode::CollectFaces) {
-			// Since `hit.mSubShapeID2` could represent a path not only from `p_shape2` but also any
+		// Since `hit.mSubShapeID2` could represent a path not only from `p_shape2` but also any
 		// compound shape that it's contained within, we need to split this path into something that
 		// `p_shape2` can actually understand.
 		JPH::SubShapeID sub_shape_id2;

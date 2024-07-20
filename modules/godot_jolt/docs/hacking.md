@@ -260,9 +260,44 @@ To make clang-tidy attempt to fix any linting errors, you can provide the `-Fix`
 
 ## Updating Godot
 
-If you wish to target a version of Godot other than the current stable version then you will need to
-make modifications to [the fork][gpp] of the GDExtension C++ bindings that Godot Jolt uses, in order
-to update the GDExtension API to your desired version.
+If you wish to target a version of Godot other than the version that the latest release of Godot
+Jolt supports then you have two options...
+
+### Changing `compatibility_maximum`
+
+The first (and simplest) option is to change the `compatibility_maximum` version number that's found
+in the `godot-jolt.gdextension` file in the actual published release.
+
+⚠️ This option makes you vulnerable you to potentially subtle binary incompatibilities between the
+extension API that's exposed by Godot and the one that Godot Jolt expects. While the Godot team
+aspires to have extensions be forward-compatible, it is not a strict guarantee. Change this at your
+own risk.
+
+⚠️ It is strongly recommended that you do not set these version numbers to a value lower than what's
+already specified in the file.
+
+So instead of it looking like this:
+
+```ini
+compatibility_minimum = "4.3"
+compatibility_maximum = "4.3"
+```
+
+You would potentially change it to look like this:
+
+```ini
+compatibility_minimum = "4.3"
+compatibility_maximum = "4.4"
+```
+
+This would allow you to run a version of Godot Jolt that's meant for Godot 4.3 in Godot 4.4 as well.
+
+### Updating the bindings
+
+The second option is to properly retarget Godot Jolt by updating the GDExtension API.
+
+For this you will need to make modifications to [the fork][gpp] of the GDExtension C++ bindings that
+Godot Jolt uses, in order to update the GDExtension API to your desired version.
 
 ⚠️ This process is somewhat complicated and could lead to having to resolve compilation errors that
 might appear from API differences.
@@ -283,7 +318,9 @@ changes that are crucial for building and running Godot Jolt.
 8. Change `GIT_REPOSITORY` to be the absolute path (on disk) of your `godot-cpp` clone
 9. Change `GIT_COMMIT` to be the commit hash that you got previously
 10. Replace any `\` in the repository path with `/`
-11. Build Godot Jolt
+11. Open `godot-jolt/cmake/GodotJoltVersionInfo.cmake`
+12. Change `GDJ_GODOT_VERSION_MAJOR` and `GDJ_GODOT_VERSION_MINOR` to your desired Godot version
+13. Build Godot Jolt
 
 To make these changes portable across workspaces you would need to push them to a remote repository
 and link to that instead of your local one.

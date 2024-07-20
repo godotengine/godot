@@ -1,5 +1,6 @@
 #include "jolt_shaped_object_impl_3d.hpp"
 
+#include "shapes/jolt_custom_double_sided_shape.hpp"
 #include "shapes/jolt_custom_empty_shape.hpp"
 #include "shapes/jolt_shape_impl_3d.hpp"
 #include "spaces/jolt_space_3d.hpp"
@@ -145,6 +146,10 @@ JPH::ShapeRefC JoltShapedObjectImpl3D::try_build_shape() {
 #endif // TOOLS_ENABLED
 
 		result = JoltShapeImpl3D::with_scale(result, scale);
+	}
+
+	if (is_area()) {
+		result = JoltShapeImpl3D::with_double_sided(result);
 	}
 
 	return result;

@@ -262,6 +262,8 @@ void JoltSoftBodyImpl3D::update_rendering_server(
 		)
 	);
 
+	ERR_FAIL_NULL(shared);
+
 	const JoltReadableBody3D body = space->read_body(jolt_id);
 	ERR_FAIL_COND(body.is_invalid());
 
@@ -323,6 +325,7 @@ Vector3 JoltSoftBodyImpl3D::get_vertex_position(int32_t p_index) {
 		)
 	);
 
+	ERR_FAIL_NULL_D(shared);
 	ERR_FAIL_INDEX_D(p_index, shared->mesh_to_physics.size());
 	const int32_t physics_index = shared->mesh_to_physics[p_index];
 
@@ -350,6 +353,7 @@ void JoltSoftBodyImpl3D::set_vertex_position(int32_t p_index, const Vector3& p_p
 		)
 	);
 
+	ERR_FAIL_NULL(shared);
 	ERR_FAIL_INDEX(p_index, shared->mesh_to_physics.size());
 	const int32_t physics_index = shared->mesh_to_physics[p_index];
 
@@ -403,6 +407,7 @@ bool JoltSoftBodyImpl3D::is_vertex_pinned(int32_t p_index) const {
 		)
 	);
 
+	ERR_FAIL_NULL_D(shared);
 	ERR_FAIL_INDEX_D(p_index, shared->mesh_to_physics.size());
 	const int32_t physics_index = shared->mesh_to_physics[p_index];
 
@@ -493,7 +498,7 @@ bool JoltSoftBodyImpl3D::_ref_shared_data() {
 		const PackedVector3Array mesh_vertices = mesh_data[RenderingServer::ARRAY_VERTEX];
 		ERR_FAIL_COND_D(mesh_vertices.is_empty());
 
-		iter_shared_data = mesh_to_shared.insert(mesh,Shared());
+		iter_shared_data = mesh_to_shared.emplace(mesh);
 
 		JLocalVector<int32_t>& mesh_to_physics = iter_shared_data->second.mesh_to_physics;
 
@@ -612,6 +617,7 @@ void JoltSoftBodyImpl3D::_deref_shared_data() {
 void JoltSoftBodyImpl3D::_update_mass() {
 	QUIET_FAIL_NULL(space);
 	QUIET_FAIL_COND(jolt_id.IsInvalid());
+	QUIET_FAIL_NULL(shared);
 
 	JoltWritableBody3D body = space->write_body(jolt_id);
 	ERR_FAIL_COND(body.is_invalid());

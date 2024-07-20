@@ -10,6 +10,7 @@ class JoltJoint3D : public Node3D {
 
 private:
 	static void _bind_methods();
+
 public:
 	JoltJoint3D();
 
@@ -43,8 +44,6 @@ public:
 
 	void set_solver_position_iterations(int32_t p_iterations);
 
-	void body_exiting_tree();
-
 	PackedStringArray get_configuration_warnings() const override;
 
 protected:
@@ -64,6 +63,8 @@ protected:
 	) { }
 
 	void _notification(int32_t p_what);
+
+	void _body_exiting_tree();
 
 	void _connect_bodies();
 

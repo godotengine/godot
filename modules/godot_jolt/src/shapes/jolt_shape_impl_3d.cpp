@@ -3,6 +3,7 @@
 #include "objects/jolt_shaped_object_impl_3d.hpp"
 #include "shapes/jolt_custom_user_data_shape.hpp"
 #include "shapes/jolt_custom_double_sided_shape.hpp"
+#include "shapes/jolt_custom_user_data_shape.hpp"
 
 namespace {
 

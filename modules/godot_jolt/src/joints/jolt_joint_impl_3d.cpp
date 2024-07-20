@@ -75,7 +75,6 @@ JoltSpace3D* JoltJointImpl3D::get_space() const {
 		);
 
 		return space_a;
-	
 	} else if (body_a != nullptr) {
 		return body_a->get_space();
 	} else if (body_b != nullptr) {

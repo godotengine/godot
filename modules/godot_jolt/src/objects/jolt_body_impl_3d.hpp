@@ -49,9 +49,9 @@ public:
 
 	void set_param(PhysicsServer3D::BodyParameter p_param, const Variant& p_value);
 
-	bool has_state_sync_callback() const { return body_state_callback.is_valid(); }
+	bool has_state_sync_callback() const { return state_sync_callback.is_valid(); }
 
-	void set_state_sync_callback(const Callable& p_callback) { body_state_callback = p_callback; }
+	void set_state_sync_callback(const Callable& p_callback) { state_sync_callback = p_callback; }
 
 	bool has_custom_integration_callback() const { return custom_integration_callback.is_valid(); }
 
@@ -173,8 +173,6 @@ public:
 
 	void pre_step(float p_step, JPH::Body& p_jolt_body) override;
 
-	void move_kinematic(float p_step, JPH::Body& p_jolt_body);
-
 	JoltPhysicsDirectBodyState3D* get_direct_state();
 
 	PhysicsServer3D::BodyMode get_mode() const { return mode; }
@@ -264,6 +262,8 @@ private:
 
 	void _integrate_forces(float p_step, JPH::Body& p_jolt_body);
 
+	void _move_kinematic(float p_step, JPH::Body& p_jolt_body);
+
 	void _pre_step_static(float p_step, JPH::Body& p_jolt_body);
 
 	void _pre_step_rigid(float p_step, JPH::Body& p_jolt_body);
@@ -291,6 +291,8 @@ private:
 	void _update_possible_kinematic_contacts();
 
 	void _destroy_joint_constraints();
+
+	void _exit_all_areas();
 
 	void _mode_changed();
 
@@ -340,7 +342,7 @@ private:
 
 	Vector3 gravity;
 
-	Callable body_state_callback;
+	Callable state_sync_callback;
 
 	Callable custom_integration_callback;
 

@@ -13,7 +13,7 @@ config_version=5
 config/name="Godot Jolt Examples"
 config/description="Project for showcasing and testing the features of Godot Jolt."
 run/main_scene="res://scenes/shapes/shapes.tscn"
-config/features=PackedStringArray("4.2")
+config/features=PackedStringArray("4.3")
 config/icon="res://project/icon.svg"
 
 [autoload]

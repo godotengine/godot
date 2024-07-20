@@ -33,6 +33,16 @@ class JoltAreaImpl3D final : public JoltShapedObjectImpl3D {
 	};
 
 	struct ShapeIndexPair {
+		ShapeIndexPair() = default;
+
+		ShapeIndexPair(int32_t p_other, int32_t p_self)
+			: other(p_other)
+			, self(p_self) { }
+
+		friend bool operator==(const ShapeIndexPair& p_lhs, const ShapeIndexPair& p_rhs) {
+			return std::tie(p_lhs.other, p_lhs.self) == std::tie(p_rhs.other, p_rhs.self);
+		}
+
 		int32_t other = -1;
 
 		int32_t self = -1;
@@ -166,6 +176,10 @@ public:
 		const JPH::SubShapeID& p_other_shape_id,
 		const JPH::SubShapeID& p_self_shape_id
 	);
+
+	void body_exited(const JPH::BodyID& p_body_id, bool p_notify = true);
+
+	void area_exited(const JPH::BodyID& p_body_id);
 
 	void call_queries(JPH::Body& p_jolt_body);
 

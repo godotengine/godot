@@ -168,7 +168,7 @@ target_compile_definitions(godot-jolt
 	PRIVATE $<${is_debug_config}:GDJ_CONFIG_DEBUG>
 	PRIVATE $<${is_development_config}:GDJ_CONFIG_DEVELOPMENT>
 	PRIVATE $<${is_distribution_config}:GDJ_CONFIG_DISTRIBUTION>
-	PRIVATE $<${is_editor_config}:TOOLS_ENABLED>
+	PRIVATE $<${is_editor_config}:GDJ_CONFIG_EDITOR>
 	PRIVATE $<${use_mimalloc}:GDJ_USE_MIMALLOC>
 	PRIVATE $<IF:${is_debug_config},_DEBUG,NDEBUG>
 	PRIVATE $<${is_windows}:WIN32_LEAN_AND_MEAN>
@@ -345,6 +345,8 @@ else() # ANDROID/UNIX
 	set(debug_symbols ${debug_file})
 endif()
 
+gdj_generate_gdextension_file(gdextension_file)
+
 set(addon_dir addons/godot-jolt)
 
 string(CONCAT addon_platform_dir
@@ -358,7 +360,7 @@ string(CONCAT addon_platform_dir
 
 install(
 	FILES
-		godot-jolt.gdextension
+		${gdextension_file}
 		LICENSE.txt
 		THIRDPARTY.txt
 	DESTINATION ${addon_dir}

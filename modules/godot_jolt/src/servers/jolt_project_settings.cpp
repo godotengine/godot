@@ -8,6 +8,8 @@ enum JointWorldNode : int32_t {
 	JOINT_WORLD_NODE_B
 };
 
+// clang-format off
+
 constexpr char SLEEP_ENABLED[] = "physics/jolt_3d/sleep/enabled";
 constexpr char SLEEP_VELOCITY_THRESHOLD[] = "physics/jolt_3d/sleep/velocity_threshold";
 constexpr char SLEEP_TIME_THRESHOLD[] = "physics/jolt_3d/sleep/time_threshold";
@@ -16,8 +18,10 @@ constexpr char SHAPE_MARGINS[] = "physics/jolt_3d/collisions/use_shape_margins";
 constexpr char EDGE_REMOVAL[] = "physics/jolt_3d/collisions/use_enhanced_internal_edge_removal";
 constexpr char AREAS_DETECT_STATIC[] = "physics/jolt_3d/collisions/areas_detect_static_bodies";
 constexpr char KINEMATIC_CONTACTS[] = "physics/jolt_3d/collisions/report_all_kinematic_contacts";
-
-constexpr char SOFT_BODY_POINT_MARGIN[] = "physics/jolt_3d/soft_bodies/point_margin";
+constexpr char SOFT_BODY_POINT_MARGIN[] = "physics/jolt_3d/collisions/soft_body_point_margin";
+constexpr char PAIR_CACHE_ENABLED[] = "physics/jolt_3d/collisions/body_pair_cache_enabled";
+constexpr char PAIR_CACHE_DISTANCE[] = "physics/jolt_3d/collisions/body_pair_cache_distance_threshold";
+constexpr char PAIR_CACHE_ANGLE[] = "physics/jolt_3d/collisions/body_pair_cache_angle_threshold";
 
 constexpr char JOINT_WORLD_NODE[] = "physics/jolt_3d/joints/world_node";
 
@@ -34,9 +38,6 @@ constexpr char ACTIVE_EDGE_THRESHOLD[] = "physics/jolt_3d/solver/active_edge_thr
 constexpr char BOUNCE_VELOCITY_THRESHOLD[] = "physics/jolt_3d/solver/bounce_velocity_threshold";
 constexpr char CONTACT_DISTANCE[] = "physics/jolt_3d/solver/contact_speculative_distance";
 constexpr char CONTACT_PENETRATION[] = "physics/jolt_3d/solver/contact_allowed_penetration";
-constexpr char PAIR_CACHE_ENABLED[] = "physics/jolt_3d/solver/body_pair_cache_enabled";
-constexpr char PAIR_CACHE_DISTANCE[] = "physics/jolt_3d/solver/body_pair_cache_distance_threshold";
-constexpr char PAIR_CACHE_ANGLE[] = "physics/jolt_3d/solver/body_pair_cache_angle_threshold";
 
 constexpr char MAX_LINEAR_VELOCITY[] = "physics/jolt_3d/limits/max_linear_velocity";
 constexpr char MAX_ANGULAR_VELOCITY[] = "physics/jolt_3d/limits/max_angular_velocity";
@@ -47,6 +48,8 @@ constexpr char MAX_TEMP_MEMORY[] = "physics/jolt_3d/limits/max_temporary_memory"
 
 constexpr char RUN_ON_SEPARATE_THREAD[] = "physics/3d/run_on_separate_thread";
 constexpr char MAX_THREADS[] = "threading/worker_pool/max_threads";
+
+// clang-format on
 
 void register_setting(
 	const String& p_name,

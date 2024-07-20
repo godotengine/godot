@@ -1,6 +1,7 @@
 [gd_resource type="StandardMaterial3D" format=3 uid="uid://bd8s48i3httg2"]
 
 [resource]
+cull_mode = 2
 shading_mode = 2
 specular_mode = 2
 albedo_color = Color(0.2, 0.2, 0.2, 1)

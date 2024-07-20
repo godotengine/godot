@@ -145,3 +145,10 @@ function(gdj_generate_exports_ld64 output_variable)
 
 	set(${output_variable} ${exports_file} PARENT_SCOPE)
 endfunction()
+
+function(gdj_generate_gdextension_file output_variable)
+	set(gdextension_file ${CMAKE_CURRENT_BINARY_DIR}/godot-jolt.gdextension)
+	configure_file(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/templates/gdextension.in ${gdextension_file})
+
+	set(${output_variable} ${gdextension_file} PARENT_SCOPE)
+endfunction()

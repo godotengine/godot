@@ -249,11 +249,38 @@ These settings are exposed by Godot Jolt and can be found under "Physics" - "Jol
       </td>
     </tr>
     <tr>
-      <td>Soft Bodies</td>
-      <td>Point Margin</td>
+      <td>Collisions</td>
+      <td>Soft Body Point Margin</td>
       <td>
         How much of a margin to add to the soft body points. This can keep soft bodies (like cloth)
         from laying perfectly flush against other surfaces, thereby preventing Z-fighting.
+      </td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td>Collisions</td>
+      <td>Body Pair Cache Enabled</td>
+      <td>
+        Whether the body pair cache is enabled, which removes the need for potentially expensive
+        collision detection when the relative orientation between two bodies didn't change.
+      </td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td>Collisions</td>
+      <td>Body Pair Cache Distance Threshold</td>
+      <td>
+        The maximum relative distance by which a body pair can move and still reuse the collision
+        results from the previous physics tick.
+      </td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td>Collisions</td>
+      <td>Body Pair Cache Angle Threshold</td>
+      <td>
+        The maximum relative angle by which a body pair can move and still reuse the collision
+        results from the previous physics tick.
       </td>
       <td>-</td>
     </tr>
@@ -369,33 +396,6 @@ These settings are exposed by Godot Jolt and can be found under "Physics" - "Jol
       <td>Solver</td>
       <td>Contact Allowed Penetration</td>
       <td>How much bodies are allowed to penetrate eachother.</td>
-      <td>-</td>
-    </tr>
-    <tr>
-      <td>Solver</td>
-      <td>Body Pair Cache Enabled</td>
-      <td>
-        Whether the body pair cache is enabled, which removes the need for potentially expensive
-        collision detection when the relative orientation between two bodies didn't change.
-      </td>
-      <td>-</td>
-    </tr>
-    <tr>
-      <td>Solver</td>
-      <td>Body Pair Cache Distance Threshold</td>
-      <td>
-        The maximum relative distance by which a body pair can move and still reuse the collision
-        results from the previous physics tick.
-      </td>
-      <td>-</td>
-    </tr>
-    <tr>
-      <td>Solver</td>
-      <td>Body Pair Cache Angle Threshold</td>
-      <td>
-        The maximum relative angle by which a body pair can move and still reuse the collision
-        results from the previous physics tick.
-      </td>
       <td>-</td>
     </tr>
     <tr>

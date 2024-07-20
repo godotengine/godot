@@ -219,4 +219,3 @@ JPH::ShapeRefC JoltHeightMapShapeImpl3D::_build_mesh() const {
 
 	return shape_result.Get();
 }
-

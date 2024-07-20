@@ -22,6 +22,10 @@
 	<string>${PROJECT_VERSION}</string>
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>MacOSX</string>
+	</array>
 	<key>CSResourcesFileMapped</key>
 	<true/>
 	<key>DTPlatformName</key>

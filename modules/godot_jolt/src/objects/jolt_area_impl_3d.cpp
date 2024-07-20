@@ -374,6 +374,36 @@ bool JoltAreaImpl3D::shape_exited(
 		area_shape_exited(p_body_id, p_other_shape_id, p_self_shape_id);
 }
 
+void JoltAreaImpl3D::body_exited(const JPH::BodyID& p_body_id, bool p_notify) {
+	Overlap* overlap = bodies_by_id.getptr(p_body_id);
+	QUIET_FAIL_NULL(overlap);
+	QUIET_FAIL_COND(overlap->shape_pairs.is_empty());
+
+	for (auto& [id_pair, index_pair] : overlap->shape_pairs) {
+		overlap->pending_added.erase(index_pair);
+		overlap->pending_removed.push_back(index_pair);
+	}
+
+	overlap->shape_pairs.clear();
+
+	if (p_notify) {
+		_notify_body_exited(p_body_id);
+	}
+}
+
+void JoltAreaImpl3D::area_exited(const JPH::BodyID& p_body_id) {
+	Overlap* overlap = areas_by_id.getptr(p_body_id);
+	QUIET_FAIL_NULL(overlap);
+	QUIET_FAIL_COND(overlap->shape_pairs.is_empty());
+
+	for (const auto& [id_pair, index_pair] : overlap->shape_pairs) {
+		overlap->pending_added.erase(index_pair);
+		overlap->pending_removed.push_back(index_pair);
+	}
+
+	overlap->shape_pairs.clear();
+}
+
 void JoltAreaImpl3D::call_queries([[maybe_unused]] JPH::Body& p_jolt_body) {
 	_flush_events(bodies_by_id, body_monitor_callback);
 	_flush_events(areas_by_id, area_monitor_callback);
@@ -540,6 +570,7 @@ void JoltAreaImpl3D::_notify_body_exited(const JPH::BodyID& p_body_id) {
 void JoltAreaImpl3D::_force_bodies_entered() {
 	for (auto& [id, body] : bodies_by_id) {
 		for (const auto& [id_pair, index_pair] : body.shape_pairs) {
+			body.pending_removed.erase(index_pair);
 			body.pending_added.push_back(index_pair);
 		}
 	}
@@ -548,6 +579,7 @@ void JoltAreaImpl3D::_force_bodies_entered() {
 void JoltAreaImpl3D::_force_bodies_exited(bool p_remove) {
 	for (auto& [id, body] : bodies_by_id) {
 		for (const auto& [id_pair, index_pair] : body.shape_pairs) {
+			body.pending_added.erase(index_pair);
 			body.pending_removed.push_back(index_pair);
 		}
 
@@ -561,6 +593,7 @@ void JoltAreaImpl3D::_force_bodies_exited(bool p_remove) {
 void JoltAreaImpl3D::_force_areas_entered() {
 	for (auto& [id, area] : areas_by_id) {
 		for (const auto& [id_pair, index_pair] : area.shape_pairs) {
+			area.pending_removed.erase(index_pair);
 			area.pending_added.push_back(index_pair);
 		}
 	}
@@ -569,6 +602,7 @@ void JoltAreaImpl3D::_force_areas_entered() {
 void JoltAreaImpl3D::_force_areas_exited(bool p_remove) {
 	for (auto& [id, area] : areas_by_id) {
 		for (const auto& [id_pair, index_pair] : area.shape_pairs) {
+			area.pending_added.erase(index_pair);
 			area.pending_removed.push_back(index_pair);
 		}
 

@@ -22,10 +22,17 @@
 #include "spaces/jolt_physics_direct_space_state_3d.hpp"
 #include "spaces/jolt_space_3d.hpp"
 
+namespace {
+
+constexpr char PHYSICS_SERVER_NAME[] = "JoltPhysicsServer3D";
+
+} // namespace
+
 void JoltPhysicsServer3D::_bind_methods() {
+	// clang-format off
+
 #ifdef TOOLS_ENABLED
 	BIND_METHOD(JoltPhysicsServer3D, dump_debug_snapshots, "dir");
-
 	BIND_METHOD(JoltPhysicsServer3D, space_dump_debug_snapshot, "space", "dir");
 #endif // TOOLS_ENABLED
 
@@ -67,14 +74,16 @@ void JoltPhysicsServer3D::_bind_methods() {
 	BIND_METHOD(JoltPhysicsServer3D, cone_twist_joint_get_applied_force, "joint");
 	BIND_METHOD(JoltPhysicsServer3D, cone_twist_joint_get_applied_torque, "joint");
 
-	BIND_METHOD(JoltPhysicsServer3D, generic_6dof_joint_get_jolt_param, "joint", "param");
-	BIND_METHOD(JoltPhysicsServer3D, generic_6dof_joint_set_jolt_param, "joint", "param", "value");
+	BIND_METHOD(JoltPhysicsServer3D, generic_6dof_joint_get_jolt_param, "joint", "axis", "param");
+	BIND_METHOD(JoltPhysicsServer3D, generic_6dof_joint_set_jolt_param, "joint", "axis", "param", "value");
 
-	BIND_METHOD(JoltPhysicsServer3D, generic_6dof_joint_get_jolt_flag, "joint", "flag");
-	BIND_METHOD(JoltPhysicsServer3D, generic_6dof_joint_set_jolt_flag, "joint", "flag", "value");
+	BIND_METHOD(JoltPhysicsServer3D, generic_6dof_joint_get_jolt_flag, "joint", "axis", "flag");
+	BIND_METHOD(JoltPhysicsServer3D, generic_6dof_joint_set_jolt_flag, "joint", "axis", "flag", "value");
 
 	BIND_METHOD(JoltPhysicsServer3D, generic_6dof_joint_get_applied_force, "joint");
 	BIND_METHOD(JoltPhysicsServer3D, generic_6dof_joint_get_applied_torque, "joint");
+
+	// clang-format on
 
 	BIND_ENUM_CONSTANT(HINGE_JOINT_LIMIT_SPRING_FREQUENCY);
 	BIND_ENUM_CONSTANT(HINGE_JOINT_LIMIT_SPRING_DAMPING);
@@ -102,20 +111,10 @@ void JoltPhysicsServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONE_TWIST_JOINT_FLAG_ENABLE_SWING_MOTOR);
 	BIND_ENUM_CONSTANT(CONE_TWIST_JOINT_FLAG_ENABLE_TWIST_MOTOR);
 
-	BIND_ENUM_CONSTANT(G6DOF_JOINT_LINEAR_SPRING_STIFFNESS);
-	BIND_ENUM_CONSTANT(G6DOF_JOINT_LINEAR_SPRING_DAMPING);
-	BIND_ENUM_CONSTANT(G6DOF_JOINT_LINEAR_SPRING_EQUILIBRIUM_POINT);
-	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS);
-	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_SPRING_DAMPING);
-	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT);
-
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_LINEAR_SPRING_FREQUENCY);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_LINEAR_LIMIT_SPRING_FREQUENCY);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_LINEAR_LIMIT_SPRING_DAMPING);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_SPRING_FREQUENCY);
-
-	BIND_ENUM_CONSTANT(G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING);
-	BIND_ENUM_CONSTANT(G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING);
 
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT_SPRING);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING_FREQUENCY);
@@ -132,19 +131,22 @@ bool JoltPhysicsServer3D::body_test_motion_is_excluding_object(ObjectID p_object
 	return exclude_objects && exclude_objects->has(p_object);
 }
 JoltPhysicsServer3D::JoltPhysicsServer3D() {
-	const StringName server_name = NAMEOF(JoltPhysicsServer3D);
-
 	core_bind::Engine* engine = core_bind::Engine::get_singleton();
 
-	if (engine->has_singleton(server_name)) {
-		engine->unregister_singleton(server_name);
+	if (engine->has_singleton(PHYSICS_SERVER_NAME)) {
+		engine->unregister_singleton(PHYSICS_SERVER_NAME);
 	}
 
-	engine->register_singleton(server_name, this);
+	engine->register_singleton(PHYSICS_SERVER_NAME, this);
 }
 
 JoltPhysicsServer3D::~JoltPhysicsServer3D() {
-	core_bind::Engine::get_singleton()->unregister_singleton(NAMEOF(JoltPhysicsServer3D));
+	core_bind::Engine::get_singleton()->unregister_singleton(PHYSICS_SERVER_NAME);
+}
+
+JoltPhysicsServer3D* JoltPhysicsServer3D::get_singleton() {
+	static auto* instance = dynamic_cast<JoltPhysicsServer3D*>(PhysicsServer3D::get_singleton());
+	return instance;
 }
 
 RID JoltPhysicsServer3D::world_boundary_shape_create() {
@@ -1141,9 +1143,6 @@ bool JoltPhysicsServer3D::body_test_motion(	RID p_body,const MotionParameters &p
 		p_parameters.recovery_as_collision,
 		p_result
 	);
-	exclude_bodies = nullptr;
-	exclude_objects = nullptr;
-	return ret;
 }
 
 PhysicsDirectBodyState3D* JoltPhysicsServer3D::body_get_direct_state(RID p_body) {

@@ -1,0 +1,37 @@
+[configuration]
+
+entry_symbol = "godot_jolt_main"
+compatibility_minimum = "${GDJ_GODOT_VERSION_MAJOR}.${GDJ_GODOT_VERSION_MINOR}"
+compatibility_maximum = "${GDJ_GODOT_VERSION_MAJOR}.${GDJ_GODOT_VERSION_MINOR}"
+
+[libraries]
+
+windows.release.${GDJ_PRECISION}.x86_64 = "windows/godot-jolt_windows-x64.dll"
+windows.debug.${GDJ_PRECISION}.x86_64 = "windows/godot-jolt_windows-x64_editor.dll"
+
+windows.release.${GDJ_PRECISION}.x86_32 = "windows/godot-jolt_windows-x86.dll"
+windows.debug.${GDJ_PRECISION}.x86_32 = "windows/godot-jolt_windows-x86_editor.dll"
+
+linux.release.${GDJ_PRECISION}.x86_64 = "linux/godot-jolt_linux-x64.so"
+linux.debug.${GDJ_PRECISION}.x86_64 = "linux/godot-jolt_linux-x64_editor.so"
+
+linux.release.${GDJ_PRECISION}.x86_32 = "linux/godot-jolt_linux-x86.so"
+linux.debug.${GDJ_PRECISION}.x86_32 = "linux/godot-jolt_linux-x86_editor.so"
+
+macos.release.${GDJ_PRECISION} = "macos/godot-jolt_macos.framework"
+macos.debug.${GDJ_PRECISION} = "macos/godot-jolt_macos_editor.framework"
+
+ios.release.${GDJ_PRECISION} = "ios/godot-jolt_ios.framework"
+ios.debug.${GDJ_PRECISION} = "ios/godot-jolt_ios_editor.framework"
+
+android.release.${GDJ_PRECISION}.arm64 = "android/libgodot-jolt_android-arm64.so"
+android.debug.${GDJ_PRECISION}.arm64 = "android/libgodot-jolt_android-arm64_editor.so"
+
+android.release.${GDJ_PRECISION}.arm32 = "android/libgodot-jolt_android-arm32.so"
+android.debug.${GDJ_PRECISION}.arm32 = "android/libgodot-jolt_android-arm32_editor.so"
+
+android.release.${GDJ_PRECISION}.x86_64 = "android/libgodot-jolt_android-x64.so"
+android.debug.${GDJ_PRECISION}.x86_64 = "android/libgodot-jolt_android-x64_editor.so"
+
+android.release.${GDJ_PRECISION}.x86_32 = "android/libgodot-jolt_android-x86.so"
+android.debug.${GDJ_PRECISION}.x86_32 = "android/libgodot-jolt_android-x86_editor.so"

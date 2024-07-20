@@ -65,7 +65,7 @@ class JoltContactListener3D final
 
 	using Overlaps = JHashSet<JPH::SubShapeIDPair, ShapePairHasher,ShapePairHasher>;
 
-	using ManifoldsByShapePair = JHashMap<JPH::SubShapeIDPair, Manifold, ShapePairHasher>;
+	using ManifoldsByShapePair = HashMap<JPH::SubShapeIDPair, Manifold, ShapePairHasher>;
 
 public:
 	explicit JoltContactListener3D(JoltSpace3D* p_space)

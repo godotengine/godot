@@ -9,7 +9,7 @@ class JoltJointGizmoPlugin3D final : public EditorNode3DGizmoPlugin {
 	GDCLASS(JoltJointGizmoPlugin3D, EditorNode3DGizmoPlugin)
 
 private:
-	static void _bind_methods();
+	static void _bind_methods() { }
 
 public:
 	JoltJointGizmoPlugin3D() = default;
@@ -30,6 +30,8 @@ private:
 	void _create_materials();
 
 	void _create_redraw_timer(const Ref<EditorNode3DGizmo>& p_gizmo);
+
+	void _redraw_gizmos();
 
 	mutable JHashSet<Ref<EditorNode3DGizmo>> gizmos;
 

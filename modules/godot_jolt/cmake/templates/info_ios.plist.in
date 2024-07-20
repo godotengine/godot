@@ -22,11 +22,30 @@
 	<string>${PROJECT_VERSION}</string>
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>iPhoneOS</string>
+	</array>
 	<key>CSResourcesFileMapped</key>
 	<true/>
 	<key>DTPlatformName</key>
 	<string>iphoneos</string>
 	<key>MinimumOSVersion</key>
 	<string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
+
+	<!--
+	    HACK(mihe): This is to work around a bug in Godot 4.3-beta1, where it treats Framework
+	    bundles the same as XCFramework bundles, and expects there to be an `AvailableLibraries`
+	    entry, which is really only a thing in XCFramework bundles. Note that we also lie about the
+	    binary path having a `.dylib` extension in order for Godot to correctly identify this as a
+	    dynamically linked bundle.
+	-->
+	<key>AvailableLibraries</key>
+	<array>
+		<dict>
+			<key>BinaryPath</key>
+			<string>${MACOSX_FRAMEWORK_NAME}.dylib</string>
+		</dict>
+	</array>
 </dict>
 </plist>
