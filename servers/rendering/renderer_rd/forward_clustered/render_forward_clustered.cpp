@@ -1134,6 +1134,10 @@ void RenderForwardClustered::_setup_lightmaps(const RenderDataRD *p_render_data,
 /* HDDAGI */
 
 void RenderForwardClustered::_update_hddagi(RenderDataRD *p_render_data) {
+	if (p_render_data->sdfgi_update_data == nullptr) {
+		return;
+	}
+
 	Ref<RenderSceneBuffersRD> rb;
 	if (p_render_data && p_render_data->render_buffers.is_valid()) {
 		rb = p_render_data->render_buffers;
