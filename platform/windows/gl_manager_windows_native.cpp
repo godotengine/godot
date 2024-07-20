@@ -464,7 +464,7 @@ private:
 #endif
 
 	bool setup_render_target();
-	void release_render_target(bool p_need_unlock);
+	void release_render_target();
 
 	void lock_for_opengl();
 	void unlock_from_opengl();
@@ -1199,7 +1199,8 @@ void GLManagerNative_Windows::DxgiSwapChain::destroy() {
 		GLES3::TextureStorage::system_fbo = 0;
 	}
 
-	release_render_target(true);
+	unlock_from_opengl();
+	release_render_target();
 #if defined(OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER) || defined(OPENGL_DXGI_ADD_DEPTH_RENDERBUFFER)
 	release_depth_buffer();
 #endif
@@ -1388,11 +1389,7 @@ bool GLManagerNative_Windows::DxgiSwapChain::setup_render_target() {
 	return true;
 }
 
-void GLManagerNative_Windows::DxgiSwapChain::release_render_target(bool p_need_unlock) {
-	if (p_need_unlock) {
-		unlock_from_opengl();
-	}
-
+void GLManagerNative_Windows::DxgiSwapChain::release_render_target() {
 	// Release the back buffer.
 #ifdef OPENGL_DXGI_USE_RENDERBUFFER
 	BOOL res = gd_wglDXUnregisterObjectNV(gldx_device, gldx_color_buffer_rb);
@@ -1483,7 +1480,8 @@ void GLManagerNative_Windows::DxgiSwapChain::unlock_from_opengl() {
 }
 
 void GLManagerNative_Windows::DxgiSwapChain::present(bool p_use_vsync) {
-	release_render_target(true);
+	unlock_from_opengl();
+	release_render_target();
 
 #ifdef OPENGL_DXGI_USE_FLIP_MODEL
 	HRESULT hr;
@@ -1514,7 +1512,8 @@ void GLManagerNative_Windows::DxgiSwapChain::present(bool p_use_vsync) {
 }
 
 void GLManagerNative_Windows::DxgiSwapChain::resize_swap_chain(int p_width, int p_height) {
-	release_render_target(true);
+	unlock_from_opengl();
+	release_render_target();
 #if defined(OPENGL_DXGI_USE_D3D11_DEPTH_BUFFER) || defined(OPENGL_DXGI_ADD_DEPTH_RENDERBUFFER)
 	release_depth_buffer();
 #endif
