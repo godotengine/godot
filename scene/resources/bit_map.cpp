@@ -442,6 +442,16 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 	}
 }
 
+// Check if ABC is counterclockwise
+static float ccw(Vector2 A, Vector2 B, Vector2 C) {
+	return (C[1] - A[1]) * (B[0] - A[0]) >= (B[1] - A[1]) * (C[0] - A[0]);
+}
+
+// Line segments AB and CD intersect check
+static bool intersect(Vector2 A, Vector2 B, Vector2 C, Vector2 D) {
+	return ccw(A, C, D) != ccw(B, C, D) && ccw(A, B, C) != ccw(A, B, D);
+}
+
 static Vector<Vector2> reduce(const Vector<Vector2> &points, const Rect2i &rect, float epsilon) {
 	int size = points.size();
 	// If there are less than 3 points, then we have nothing.
@@ -454,6 +464,13 @@ static Vector<Vector2> reduce(const Vector<Vector2> &points, const Rect2i &rect,
 	float maxEp = MIN(rect.size.width, rect.size.height);
 	float ep = CLAMP(epsilon, 0.0, maxEp / 2);
 	Vector<Vector2> result = rdp(points, ep);
+
+	// Any possible self intersection always involves the ending edges
+	if (intersect(result[result.size() - 2], result[result.size() - 1], result[0], result[1])) {
+		Vector2 tmp = result[0];
+		result.write[0] = result[result.size() - 1];
+		result.write[result.size() - 1] = tmp;
+	}
 
 	Vector2 last = result[result.size() - 1];
 
