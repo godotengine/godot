@@ -43,8 +43,8 @@
 typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
 typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
 
-class ID3D11Device;
-class ID3D11DeviceContext;
+struct ID3D11Device;
+struct ID3D11DeviceContext;
 
 class GLManagerNative_Windows {
 private:
