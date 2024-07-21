@@ -365,19 +365,37 @@ Vector<Vector<Vector2>> BitMap::_march_square(const Rect2i &p_rect, const Point2
 	return ret;
 }
 
+/**
+* Check if a point(b) is between two line segment's(a and c) perpendicular range. Does not include endpoints.
+* Uses dot product to get the directions for both endpoints and if their signs are different then the point is out of range
+*/
+static bool is_in_line_range(const Vector2 &b, const Vector2 &a, const Vector2 &c) {
+	Vector2 ba = a - b;
+	Vector2 bc = c - b;
+	Vector2 ac = c - a;
+
+	float dot1 = ba.dot(ac);
+	float dot2 = bc.dot(ac);
+	return (dot1 * dot2 < 0);
+}
+
 static float perpendicular_distance(const Vector2 &i, const Vector2 &start, const Vector2 &end) {
 	float res;
 	float slope;
 	float intercept;
 
-	if (start.x == end.x) {
-		res = Math::absf(i.x - end.x);
-	} else if (start.y == end.y) {
-		res = Math::absf(i.y - end.y);
+	if (is_in_line_range(i, start, end)) {
+		if (start.x == end.x) {
+			res = Math::absf(i.x - end.x);
+		} else if (start.y == end.y) {
+			res = Math::absf(i.y - end.y);
+		} else {
+			slope = (end.y - start.y) / (end.x - start.x);
+			intercept = start.y - (slope * start.x);
+			res = Math::absf(slope * i.x - i.y + intercept) / Math::sqrt(Math::pow(slope, 2.0f) + 1.0);
+		}
 	} else {
-		slope = (end.y - start.y) / (end.x - start.x);
-		intercept = start.y - (slope * start.x);
-		res = Math::absf(slope * i.x - i.y + intercept) / Math::sqrt(Math::pow(slope, 2.0f) + 1.0);
+		res = MIN(i.distance_to(start), i.distance_to(end));
 	}
 	return res;
 }
