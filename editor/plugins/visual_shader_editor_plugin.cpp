@@ -46,6 +46,7 @@
 #include "editor/plugins/material_editor_plugin.h"
 #include "editor/plugins/shader_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/animation/tween.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
@@ -573,6 +574,10 @@ void VisualShaderGraphPlugin::update_theme() {
 	Ref<Font> label_bold_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_bold_msdf", EditorStringName(EditorFonts));
 	vs_msdf_fonts_theme->set_font(SceneStringName(font), "Label", label_font);
 	vs_msdf_fonts_theme->set_font(SceneStringName(font), "GraphNodeTitleLabel", label_bold_font);
+	if (!EditorThemeManager::is_dark_theme()) {
+		// Override the color to white for light themes.
+		vs_msdf_fonts_theme->set_color(SceneStringName(font_color), "GraphNodeTitleLabel", Color(1, 1, 1));
+	}
 	vs_msdf_fonts_theme->set_font(SceneStringName(font), "LineEdit", label_font);
 	vs_msdf_fonts_theme->set_font(SceneStringName(font), "Button", label_font);
 }
