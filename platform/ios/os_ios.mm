@@ -130,12 +130,12 @@ void OS_IOS::initialize_modules() {
 	ios = memnew(iOS);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
 
-	joypad_ios = memnew(JoypadIOS);
+	joypad_apple = memnew(JoypadApple);
 }
 
 void OS_IOS::deinitialize_modules() {
-	if (joypad_ios) {
-		memdelete(joypad_ios);
+	if (joypad_apple) {
+		memdelete(joypad_apple);
 	}
 
 	if (ios) {
@@ -169,16 +169,14 @@ bool OS_IOS::iterate() {
 		DisplayServer::get_singleton()->process_events();
 	}
 
+	joypad_apple->process_joypads();
+
 	return Main::iteration();
 }
 
 void OS_IOS::start() {
 	if (Main::start() == EXIT_SUCCESS) {
 		main_loop->initialize();
-	}
-
-	if (joypad_ios) {
-		joypad_ios->start_processing();
 	}
 }
 
