@@ -1039,13 +1039,6 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 		}
 	}
 
-	ComPtr<IDXGIFactory2> dxgi_factory_2;
-	hr = dxgi_factory.As(&dxgi_factory_2);
-	if (!SUCCEEDED(hr)) {
-		ERR_PRINT(vformat("Failed to get IDXGIFactory2, HRESULT: 0x%08X", (unsigned)hr));
-		return nullptr;
-	}
-
 	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc_1 = {};
 	swap_chain_desc_1.Width = p_width;
 	swap_chain_desc_1.Height = p_height;
