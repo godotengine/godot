@@ -3350,6 +3350,11 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 
 	ERR_FAIL_COND_MSG(p_view_count > 2, "Maximum of 2 views supported for Processing GI.");
 
+	bool use_hddagi = p_render_buffers->has_custom_data(RB_SCOPE_HDDAGI);
+	if (!use_hddagi)
+	{
+		return;
+	}
 	RD::get_singleton()->draw_command_begin_label("GI Render");
 
 	ERR_FAIL_COND(p_render_buffers.is_null());
@@ -3460,7 +3465,6 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 	push_constant.proj_info[2] = (1.0f - p_projections[0].columns[0][2]) / p_projections[0].columns[0][0];
 	push_constant.proj_info[3] = (1.0f + p_projections[0].columns[1][2]) / p_projections[0].columns[1][1];
 
-	bool use_hddagi = p_render_buffers->has_custom_data(RB_SCOPE_HDDAGI);
 	bool use_voxel_gi_instances = push_constant.max_voxel_gi_instances > 0;
 
 	Ref<HDDAGI> hddagi;
