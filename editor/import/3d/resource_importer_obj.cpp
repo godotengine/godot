@@ -217,7 +217,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 		0x14c, // IMAGE_FILE_MACHINE_I386
 		0x200, // IMAGE_FILE_MACHINE_IA64
 	};
-	ERR_FAIL_COND_V_MSG(coff_header_machines.find(first_bytes) != -1, ERR_FILE_CORRUPT, vformat("Couldn't read OBJ file '%s', it seems to be binary, corrupted, or empty.", p_path));
+	ERR_FAIL_COND_V_MSG(coff_header_machines.has(first_bytes), ERR_FILE_CORRUPT, vformat("Couldn't read OBJ file '%s', it seems to be binary, corrupted, or empty.", p_path));
 	f->seek(0);
 
 	Ref<ImporterMesh> mesh;
@@ -384,7 +384,22 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 
 			if (p_disable_compression) {
 				mesh_flags = 0;
+			} else {
+				bool is_mesh_2d = true;
+
+				// Disable compression if all z equals 0 (the mesh is 2D).
+				for (int i = 0; i < vertices.size(); i++) {
+					if (!Math::is_zero_approx(vertices[i].z)) {
+						is_mesh_2d = false;
+						break;
+					}
+				}
+
+				if (is_mesh_2d) {
+					mesh_flags = 0;
+				}
 			}
+
 			//groups are too annoying
 			if (surf_tool->get_vertex_array().size()) {
 				//another group going on, commit it
@@ -410,9 +425,13 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 				}
 
 				if (!current_material.is_empty()) {
-					mesh->set_surface_name(mesh->get_surface_count() - 1, current_material.get_basename());
+					if (mesh->get_surface_count() >= 1) {
+						mesh->set_surface_name(mesh->get_surface_count() - 1, current_material.get_basename());
+					}
 				} else if (!current_group.is_empty()) {
-					mesh->set_surface_name(mesh->get_surface_count() - 1, current_group);
+					if (mesh->get_surface_count() >= 1) {
+						mesh->set_surface_name(mesh->get_surface_count() - 1, current_group);
+					}
 				}
 				Array array = surf_tool->commit_to_arrays();
 
@@ -482,7 +501,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 		}
 	}
 
-	if (p_single_mesh) {
+	if (p_single_mesh && mesh->get_surface_count() > 0) {
 		r_meshes.push_back(mesh);
 	}
 

@@ -32,9 +32,9 @@
 #define FONT_CONFIG_PLUGIN_H
 
 #include "core/io/marshalls.h"
-#include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_properties_array_dict.h"
+#include "editor/plugins/editor_plugin.h"
 
 /*************************************************************************/
 
@@ -139,7 +139,6 @@ class EditorPropertyOTVariation : public EditorProperty {
 	EditorPaginator *paginator = nullptr;
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods(){};
 
 	void _edit_pressed();
@@ -225,6 +224,8 @@ protected:
 	static void _bind_methods();
 
 	Ref<Font> prev_font;
+
+	void _preview_changed();
 
 public:
 	virtual Size2 get_minimum_size() const override;

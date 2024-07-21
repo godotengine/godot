@@ -41,8 +41,6 @@
 #include "core/templates/rid.h"
 #include "core/templates/safe_refcount.h"
 
-class CommandQueueMT;
-
 class WorkerThreadPool : public Object {
 	GDCLASS(WorkerThreadPool, Object)
 public:
@@ -81,7 +79,8 @@ private:
 		void *native_func_userdata = nullptr;
 		String description;
 		Semaphore done_semaphore; // For user threads awaiting.
-		bool completed = false;
+		bool completed : 1;
+		bool pending_notify_yield_over : 1;
 		Group *group = nullptr;
 		SelfList<Task> task_elem;
 		uint32_t waiting_pool = 0;
@@ -92,6 +91,8 @@ private:
 
 		void free_template_userdata();
 		Task() :
+				completed(false),
+				pending_notify_yield_over(false),
 				task_elem(this) {}
 	};
 
@@ -107,13 +108,21 @@ private:
 	BinaryMutex task_mutex;
 
 	struct ThreadData {
+		static Task *const YIELDING; // Too bad constexpr doesn't work here.
+
 		uint32_t index = 0;
 		Thread thread;
-		bool ready_for_scripting = false;
-		bool signaled = false;
+		bool ready_for_scripting : 1;
+		bool signaled : 1;
+		bool yield_is_over : 1;
 		Task *current_task = nullptr;
-		Task *awaited_task = nullptr; // Null if not awaiting the condition variable. Special value for idle-waiting.
+		Task *awaited_task = nullptr; // Null if not awaiting the condition variable, or special value (YIELDING).
 		ConditionVariable cond_var;
+
+		ThreadData() :
+				ready_for_scripting(false),
+				signaled(false),
+				yield_is_over(false) {}
 	};
 
 	TightLocalVector<ThreadData> threads;
@@ -152,12 +161,15 @@ private:
 
 	static WorkerThreadPool *singleton;
 
-	static thread_local CommandQueueMT *flushing_cmd_queue;
+#ifdef THREADS_ENABLED
+	static const uint32_t MAX_UNLOCKABLE_MUTEXES = 2;
+	static thread_local uintptr_t unlockable_mutexes[MAX_UNLOCKABLE_MUTEXES];
+#endif
 
 	TaskID _add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description);
 	GroupID _add_group_task(const Callable &p_callable, void (*p_func)(void *, uint32_t), void *p_userdata, BaseTemplateUserdata *p_template_userdata, int p_elements, int p_tasks, bool p_high_priority, const String &p_description);
 
-	template <class C, class M, class U>
+	template <typename C, typename M, typename U>
 	struct TaskUserData : public BaseTemplateUserdata {
 		C *instance;
 		M method;
@@ -167,7 +179,7 @@ private:
 		}
 	};
 
-	template <class C, class M, class U>
+	template <typename C, typename M, typename U>
 	struct GroupUserData : public BaseTemplateUserdata {
 		C *instance;
 		M method;
@@ -177,11 +189,20 @@ private:
 		}
 	};
 
+	void _wait_collaboratively(ThreadData *p_caller_pool_thread, Task *p_task);
+
+#ifdef THREADS_ENABLED
+	static uint32_t _thread_enter_unlock_allowance_zone(void *p_mutex, bool p_is_binary);
+#endif
+
+	void _lock_unlockable_mutexes();
+	void _unlock_unlockable_mutexes();
+
 protected:
 	static void _bind_methods();
 
 public:
-	template <class C, class M, class U>
+	template <typename C, typename M, typename U>
 	TaskID add_template_task(C *p_instance, M p_method, U p_userdata, bool p_high_priority = false, const String &p_description = String()) {
 		typedef TaskUserData<C, M, U> TUD;
 		TUD *ud = memnew(TUD);
@@ -196,7 +217,10 @@ public:
 	bool is_task_completed(TaskID p_task_id) const;
 	Error wait_for_task_completion(TaskID p_task_id);
 
-	template <class C, class M, class U>
+	void yield();
+	void notify_yield_over(TaskID p_task_id);
+
+	template <typename C, typename M, typename U>
 	GroupID add_template_group_task(C *p_instance, M p_method, U p_userdata, int p_elements, int p_tasks = -1, bool p_high_priority = false, const String &p_description = String()) {
 		typedef GroupUserData<C, M, U> GroupUD;
 		GroupUD *ud = memnew(GroupUD);
@@ -216,8 +240,14 @@ public:
 	static WorkerThreadPool *get_singleton() { return singleton; }
 	static int get_thread_index();
 
-	static void thread_enter_command_queue_mt_flush(CommandQueueMT *p_queue);
-	static void thread_exit_command_queue_mt_flush();
+#ifdef THREADS_ENABLED
+	static uint32_t thread_enter_unlock_allowance_zone(Mutex *p_mutex);
+	static uint32_t thread_enter_unlock_allowance_zone(BinaryMutex *p_mutex);
+	static void thread_exit_unlock_allowance_zone(uint32_t p_zone_id);
+#else
+	static uint32_t thread_enter_unlock_allowance_zone(void *p_mutex) { return UINT32_MAX; }
+	static void thread_exit_unlock_allowance_zone(uint32_t p_zone_id) {}
+#endif
 
 	void init(int p_thread_count = -1, float p_low_priority_task_ratio = 0.3);
 	void finish();

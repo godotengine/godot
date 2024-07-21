@@ -116,7 +116,7 @@ MultiplayerEditorPlugin::MultiplayerEditorPlugin() {
 	repl_editor = memnew(ReplicationEditor);
 	button = EditorNode::get_bottom_panel()->add_item(TTR("Replication"), repl_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_replication_bottom_panel", TTR("Toggle Replication Bottom Panel")));
 	button->hide();
-	repl_editor->get_pin()->connect("pressed", callable_mp(this, &MultiplayerEditorPlugin::_pinned));
+	repl_editor->get_pin()->connect(SceneStringName(pressed), callable_mp(this, &MultiplayerEditorPlugin::_pinned));
 	debugger.instantiate();
 	debugger->connect("open_request", callable_mp(this, &MultiplayerEditorPlugin::_open_request));
 }
@@ -149,7 +149,7 @@ void MultiplayerEditorPlugin::_node_removed(Node *p_node) {
 }
 
 void MultiplayerEditorPlugin::_pinned() {
-	if (!repl_editor->get_pin()->is_pressed()) {
+	if (!repl_editor->get_pin()->is_pressed() && repl_editor->get_current() == nullptr) {
 		if (repl_editor->is_visible_in_tree()) {
 			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}

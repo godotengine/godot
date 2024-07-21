@@ -51,7 +51,7 @@ DisplayServerIOS *DisplayServerIOS::get_singleton() {
 	return (DisplayServerIOS *)DisplayServer::get_singleton();
 }
 
-DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	KeyMappingIOS::initialize();
 
 	rendering_driver = p_rendering_driver;
@@ -91,6 +91,7 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 			ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
 			memdelete(rendering_context);
 			rendering_context = nullptr;
+			r_error = ERR_UNAVAILABLE;
 			return;
 		}
 
@@ -107,7 +108,13 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 		rendering_context->window_set_vsync_mode(MAIN_WINDOW_ID, p_vsync_mode);
 
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) != OK) {
+			rendering_device = nullptr;
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
 		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
@@ -155,8 +162,8 @@ DisplayServerIOS::~DisplayServerIOS() {
 #endif
 }
 
-DisplayServer *DisplayServerIOS::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
-	return memnew(DisplayServerIOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error));
+DisplayServer *DisplayServerIOS::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+	return memnew(DisplayServerIOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
 }
 
 Vector<String> DisplayServerIOS::get_rendering_drivers_func() {
@@ -218,7 +225,7 @@ void DisplayServerIOS::send_window_event(DisplayServer::WindowEvent p_event) con
 }
 
 void DisplayServerIOS::_window_callback(const Callable &p_callable, const Variant &p_arg) const {
-	if (!p_callable.is_null()) {
+	if (p_callable.is_valid()) {
 		p_callable.call(p_arg);
 	}
 }
@@ -289,26 +296,20 @@ void DisplayServerIOS::key(Key p_key, char32_t p_char, Key p_unshifted, Key p_ph
 
 // MARK: Motion
 
-void DisplayServerIOS::update_gravity(float p_x, float p_y, float p_z) {
-	Input::get_singleton()->set_gravity(Vector3(p_x, p_y, p_z));
+void DisplayServerIOS::update_gravity(const Vector3 &p_gravity) {
+	Input::get_singleton()->set_gravity(p_gravity);
 }
 
-void DisplayServerIOS::update_accelerometer(float p_x, float p_y, float p_z) {
-	// Found out the Z should not be negated! Pass as is!
-	Vector3 v_accelerometer = Vector3(
-			p_x / kDisplayServerIOSAcceleration,
-			p_y / kDisplayServerIOSAcceleration,
-			p_z / kDisplayServerIOSAcceleration);
-
-	Input::get_singleton()->set_accelerometer(v_accelerometer);
+void DisplayServerIOS::update_accelerometer(const Vector3 &p_accelerometer) {
+	Input::get_singleton()->set_accelerometer(p_accelerometer / kDisplayServerIOSAcceleration);
 }
 
-void DisplayServerIOS::update_magnetometer(float p_x, float p_y, float p_z) {
-	Input::get_singleton()->set_magnetometer(Vector3(p_x, p_y, p_z));
+void DisplayServerIOS::update_magnetometer(const Vector3 &p_magnetometer) {
+	Input::get_singleton()->set_magnetometer(p_magnetometer);
 }
 
-void DisplayServerIOS::update_gyroscope(float p_x, float p_y, float p_z) {
-	Input::get_singleton()->set_gyroscope(Vector3(p_x, p_y, p_z));
+void DisplayServerIOS::update_gyroscope(const Vector3 &p_gyroscope) {
+	Input::get_singleton()->set_gyroscope(p_gyroscope);
 }
 
 // MARK: -
@@ -328,6 +329,8 @@ bool DisplayServerIOS::has_feature(Feature p_feature) const {
 		// case FEATURE_MOUSE:
 		// case FEATURE_MOUSE_WARP:
 		// case FEATURE_NATIVE_DIALOG:
+		// case FEATURE_NATIVE_DIALOG_INPUT:
+		// case FEATURE_NATIVE_DIALOG_FILE:
 		// case FEATURE_NATIVE_ICON:
 		// case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_CLIPBOARD:
@@ -403,7 +406,12 @@ void DisplayServerIOS::set_system_theme_change_callback(const Callable &p_callab
 
 void DisplayServerIOS::emit_system_theme_changed() {
 	if (system_theme_changed.is_valid()) {
-		system_theme_changed.call();
+		Variant ret;
+		Callable::CallError ce;
+		system_theme_changed.callp(nullptr, 0, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute system theme changed callback: %s.", Variant::get_callable_error_text(system_theme_changed, nullptr, 0, ce)));
+		}
 	}
 }
 

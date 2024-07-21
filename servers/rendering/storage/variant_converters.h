@@ -239,13 +239,14 @@ inline bool is_convertible_array(Variant::Type type) {
 	return type == Variant::ARRAY ||
 			type == Variant::PACKED_VECTOR2_ARRAY ||
 			type == Variant::PACKED_VECTOR3_ARRAY ||
-			type == Variant::PACKED_COLOR_ARRAY;
+			type == Variant::PACKED_COLOR_ARRAY ||
+			type == Variant::PACKED_VECTOR4_ARRAY;
 }
 
-template <class, class = void>
+template <typename, typename = void>
 inline constexpr bool is_vector_type_v = false;
 
-template <class T>
+template <typename T>
 inline constexpr bool is_vector_type_v<T, std::void_t<decltype(T::AXIS_COUNT)>> = true;
 
 template <typename T, typename P>

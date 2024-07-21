@@ -423,6 +423,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	Size2i target_size = rb->get_target_size();
 	bool can_use_effects = target_size.x >= 8 && target_size.y >= 8; // FIXME I think this should check internal size, we do all our post processing at this size...
+	can_use_effects &= _debug_draw_can_use_effects(debug_draw);
 	bool can_use_storage = _render_buffers_can_be_storage();
 
 	bool use_fsr = fsr && can_use_effects && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR;
@@ -699,7 +700,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	// FIXME: Our input it our internal_texture, shouldn't this be using internal_size ??
 	// Seeing we don't support FSR in our mobile renderer right now target_size = internal_size...
 	Size2i target_size = rb->get_target_size();
-	bool can_use_effects = target_size.x >= 8 && target_size.y >= 8;
+	bool can_use_effects = target_size.x >= 8 && target_size.y >= 8 && debug_draw == RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
 
@@ -762,6 +763,56 @@ void RendererSceneRenderRD::_disable_clear_request(const RenderDataRD *p_render_
 
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	texture_storage->render_target_disable_clear_request(p_render_data->render_buffers->get_render_target());
+}
+
+bool RendererSceneRenderRD::_debug_draw_can_use_effects(RS::ViewportDebugDraw p_debug_draw) {
+	bool can_use_effects = true;
+	switch (p_debug_draw) {
+		// No debug draw, use camera effects
+		case RS::VIEWPORT_DEBUG_DRAW_DISABLED:
+			can_use_effects = true;
+			break;
+		// Modes that completely override rendering to draw debug information should disable camera effects.
+		case RS::VIEWPORT_DEBUG_DRAW_UNSHADED:
+		case RS::VIEWPORT_DEBUG_DRAW_OVERDRAW:
+		case RS::VIEWPORT_DEBUG_DRAW_WIREFRAME:
+		case RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_ALBEDO:
+		case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS:
+		case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS:
+		case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS:
+		case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES:
+		case RS::VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER:
+			can_use_effects = false;
+			break;
+		// Modes that draws information over part of the viewport needs camera effects because we see partially the normal draw mode.
+		case RS::VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS:
+		case RS::VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS:
+		case RS::VIEWPORT_DEBUG_DRAW_DECAL_ATLAS:
+		case RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS:
+		// Modes that draws a buffer over viewport needs camera effects because if the buffer is not available it will be equivalent to normal draw mode.
+		case RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER:
+		case RS::VIEWPORT_DEBUG_DRAW_SSAO:
+		case RS::VIEWPORT_DEBUG_DRAW_SSIL:
+		case RS::VIEWPORT_DEBUG_DRAW_SDFGI:
+		case RS::VIEWPORT_DEBUG_DRAW_GI_BUFFER:
+		case RS::VIEWPORT_DEBUG_DRAW_OCCLUDERS:
+			can_use_effects = true;
+			break;
+		// Other debug draw modes keep camera effects.
+		case RS::VIEWPORT_DEBUG_DRAW_LIGHTING:
+		case RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING:
+		case RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION:
+		case RS::VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE:
+		case RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS:
+		case RS::VIEWPORT_DEBUG_DRAW_SDFGI_PROBES:
+		case RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD:
+			can_use_effects = true;
+			break;
+		default:
+			break;
+	}
+
+	return can_use_effects;
 }
 
 void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_render_data) {
@@ -1073,6 +1124,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		scene_data.camera_visible_layers = p_camera_data->visible_layers;
 		scene_data.taa_jitter = p_camera_data->taa_jitter;
 		scene_data.main_cam_transform = p_camera_data->main_transform;
+		scene_data.flip_y = !p_reflection_probe.is_valid();
 
 		scene_data.view_count = p_camera_data->view_count;
 		for (uint32_t v = 0; v < p_camera_data->view_count; v++) {
@@ -1149,6 +1201,10 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		render_data.sdfgi_update_data = p_sdfgi_update_data;
 
 		render_data.render_info = r_render_info;
+
+		if (p_render_buffers.is_valid() && p_reflection_probe.is_null()) {
+			render_data.transparent_bg = texture_storage->render_target_get_transparent(rb->get_render_target());
+		}
 	}
 
 	PagedArray<RID> empty;
@@ -1157,6 +1213,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		render_data.lights = &empty;
 		render_data.reflection_probes = &empty;
 		render_data.voxel_gi_instances = &empty;
+		render_data.lightmaps = &empty;
 	}
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED ||

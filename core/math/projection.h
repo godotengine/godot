@@ -34,7 +34,7 @@
 #include "core/math/vector3.h"
 #include "core/math/vector4.h"
 
-template <class T>
+template <typename T>
 class Vector;
 
 struct AABB;
@@ -43,7 +43,7 @@ struct Rect2;
 struct Transform3D;
 struct Vector2;
 
-struct _NO_DISCARD_ Projection {
+struct [[nodiscard]] Projection {
 	enum Planes {
 		PLANE_NEAR,
 		PLANE_FAR,
@@ -65,11 +65,11 @@ struct _NO_DISCARD_ Projection {
 		return columns[p_axis];
 	}
 
-	float determinant() const;
+	real_t determinant() const;
 	void set_identity();
 	void set_zero();
 	void set_light_bias();
-	void set_depth_correction(bool p_flip_y = true);
+	void set_depth_correction(bool p_flip_y = true, bool p_reverse_z = true, bool p_remap_z = true);
 
 	void set_light_atlas_rect(const Rect2 &p_rect);
 	void set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov = false);
@@ -148,7 +148,7 @@ struct _NO_DISCARD_ Projection {
 		return !(*this == p_cam);
 	}
 
-	float get_lod_multiplier() const;
+	real_t get_lod_multiplier() const;
 
 	Projection();
 	Projection(const Vector4 &p_x, const Vector4 &p_y, const Vector4 &p_z, const Vector4 &p_w);

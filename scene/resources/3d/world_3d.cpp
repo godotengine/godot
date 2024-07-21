@@ -35,19 +35,14 @@
 #include "scene/3d/visible_on_screen_notifier_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
-#include "scene/scene_string_names.h"
 #include "servers/navigation_server_3d.h"
 
 void World3D::_register_camera(Camera3D *p_camera) {
-#ifndef _3D_DISABLED
 	cameras.insert(p_camera);
-#endif
 }
 
 void World3D::_remove_camera(Camera3D *p_camera) {
-#ifndef _3D_DISABLED
 	cameras.erase(p_camera);
-#endif
 }
 
 RID World3D::get_space() const {

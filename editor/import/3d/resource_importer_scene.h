@@ -212,6 +212,7 @@ class ResourceImporterScene : public ResourceImporter {
 		SHAPE_TYPE_SPHERE,
 		SHAPE_TYPE_CYLINDER,
 		SHAPE_TYPE_CAPSULE,
+		SHAPE_TYPE_AUTOMATIC,
 	};
 
 	static Error _check_resource_save_paths(const Dictionary &p_data);
@@ -219,6 +220,7 @@ class ResourceImporterScene : public ResourceImporter {
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
 	Node *_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches);
 	void _add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes);
+	void _copy_meta(Object *p_src_object, Object *p_dst_object);
 
 	enum AnimationImportTracks {
 		ANIMATION_IMPORT_TRACKS_IF_PRESENT,
@@ -282,10 +284,11 @@ public:
 	// Import scenes *after* everything else (such as textures).
 	virtual int get_import_order() const override { return ResourceImporter::IMPORT_ORDER_SCENE; }
 
+	void _pre_fix_global(Node *p_scene, const HashMap<StringName, Variant> &p_options) const;
 	Node *_pre_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames);
 	Node *_pre_fix_animations(Node *p_node, Node *p_root, const Dictionary &p_node_data, const Dictionary &p_animation_data, float p_animation_fps);
 	Node *_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps, float p_applied_root_scale);
-	Node *_post_fix_animations(Node *p_node, Node *p_root, const Dictionary &p_node_data, const Dictionary &p_animation_data, float p_animation_fps);
+	Node *_post_fix_animations(Node *p_node, Node *p_root, const Dictionary &p_node_data, const Dictionary &p_animation_data, float p_animation_fps, bool p_remove_immutable_tracks);
 
 	Ref<Animation> _save_animation_to_file(Ref<Animation> anim, bool p_save_to_file, const String &p_save_to_path, bool p_keep_custom_tracks);
 	void _create_slices(AnimationPlayer *ap, Ref<Animation> anim, const Array &p_clips, bool p_bake_all);
@@ -303,10 +306,10 @@ public:
 	ResourceImporterScene(bool p_animation_import = false, bool p_singleton = false);
 	~ResourceImporterScene();
 
-	template <class M>
+	template <typename M>
 	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale);
 
-	template <class M>
+	template <typename M>
 	static Transform3D get_collision_shapes_transform(const M &p_options);
 };
 
@@ -319,12 +322,22 @@ public:
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err = nullptr) override;
 };
 
-template <class M>
+template <typename M>
 Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale) {
 	ERR_FAIL_COND_V(p_mesh.is_null(), Vector<Ref<Shape3D>>());
-	ShapeType generate_shape_type = SHAPE_TYPE_DECOMPOSE_CONVEX;
+
+	ShapeType generate_shape_type = SHAPE_TYPE_AUTOMATIC;
 	if (p_options.has(SNAME("physics/shape_type"))) {
 		generate_shape_type = (ShapeType)p_options[SNAME("physics/shape_type")].operator int();
+	}
+
+	if (generate_shape_type == SHAPE_TYPE_AUTOMATIC) {
+		BodyType body_type = BODY_TYPE_STATIC;
+		if (p_options.has(SNAME("physics/body_type"))) {
+			body_type = (BodyType)p_options[SNAME("physics/body_type")].operator int();
+		}
+
+		generate_shape_type = body_type == BODY_TYPE_DYNAMIC ? SHAPE_TYPE_DECOMPOSE_CONVEX : SHAPE_TYPE_TRIMESH;
 	}
 
 	if (generate_shape_type == SHAPE_TYPE_DECOMPOSE_CONVEX) {
@@ -476,13 +489,22 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Impor
 	return Vector<Ref<Shape3D>>();
 }
 
-template <class M>
+template <typename M>
 Transform3D ResourceImporterScene::get_collision_shapes_transform(const M &p_options) {
 	Transform3D transform;
 
-	ShapeType generate_shape_type = SHAPE_TYPE_DECOMPOSE_CONVEX;
+	ShapeType generate_shape_type = SHAPE_TYPE_AUTOMATIC;
 	if (p_options.has(SNAME("physics/shape_type"))) {
 		generate_shape_type = (ShapeType)p_options[SNAME("physics/shape_type")].operator int();
+	}
+
+	if (generate_shape_type == SHAPE_TYPE_AUTOMATIC) {
+		BodyType body_type = BODY_TYPE_STATIC;
+		if (p_options.has(SNAME("physics/body_type"))) {
+			body_type = (BodyType)p_options[SNAME("physics/body_type")].operator int();
+		}
+
+		generate_shape_type = body_type == BODY_TYPE_DYNAMIC ? SHAPE_TYPE_DECOMPOSE_CONVEX : SHAPE_TYPE_TRIMESH;
 	}
 
 	if (generate_shape_type == SHAPE_TYPE_BOX ||

@@ -75,6 +75,7 @@ public:
 
 	virtual Error get_error() const override; ///< get last error
 
+	virtual Error resize(int64_t p_length) override;
 	virtual void flush() override;
 	virtual void store_8(uint8_t p_dest) override; ///< store a byte
 	virtual void store_16(uint16_t p_dest) override;

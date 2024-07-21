@@ -38,6 +38,13 @@ class Label : public Control {
 	GDCLASS(Label, Control);
 
 private:
+	enum LabelDrawStep {
+		DRAW_STEP_SHADOW,
+		DRAW_STEP_OUTLINE,
+		DRAW_STEP_TEXT,
+		DRAW_STEP_MAX,
+	};
+
 	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_TOP;
 	String text;

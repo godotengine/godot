@@ -52,7 +52,6 @@
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/image_texture.h"
-#include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
 
 ///////////////////////////////////
@@ -73,6 +72,8 @@ void AnimationPlayerEditor::_node_removed(Node *p_node) {
 		_update_player();
 
 		_ensure_dummy_player();
+
+		pin->set_pressed(false);
 	}
 }
 
@@ -120,20 +121,20 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			tool_anim->get_popup()->connect(SNAME("id_pressed"), callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
+			tool_anim->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
 
-			onion_skinning->get_popup()->connect(SNAME("id_pressed"), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
+			onion_skinning->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
 
-			blend_editor.next->connect(SNAME("item_selected"), callable_mp(this, &AnimationPlayerEditor::_blend_editor_next_changed));
+			blend_editor.next->connect(SceneStringName(item_selected), callable_mp(this, &AnimationPlayerEditor::_blend_editor_next_changed));
 
 			get_tree()->connect(SNAME("node_removed"), callable_mp(this, &AnimationPlayerEditor::_node_removed));
 
-			add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
+			add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorThemeManager::is_generated_theme_outdated()) {
-				add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
+				add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
 			}
 		} break;
 
@@ -171,8 +172,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			pin->set_icon(get_editor_theme_icon(SNAME("Pin")));
 
-			tool_anim->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("Button")));
-			track_editor->get_edit_menu()->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("Button")));
+			tool_anim->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
+			track_editor->get_edit_menu()->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
 
 #define ITEM_ICON(m_item, m_icon) tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(m_item), get_editor_theme_icon(SNAME(m_icon)))
 
@@ -242,12 +243,12 @@ void AnimationPlayerEditor::_play_from_pressed() {
 	String current = _get_current();
 
 	if (!current.is_empty()) {
-		float time = player->get_current_animation_position();
+		double time = player->get_current_animation_position();
 		if (current == player->get_assigned_animation() && player->is_playing()) {
-			player->stop(); //so it won't blend with itself
+			player->clear_caches(); //so it won't blend with itself
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
-		player->seek(time);
+		player->seek(time, true, true);
 		player->play(current);
 	}
 
@@ -280,12 +281,12 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 	String current = _get_current();
 
 	if (!current.is_empty()) {
-		float time = player->get_current_animation_position();
-		if (current == player->get_assigned_animation()) {
-			player->stop(); //so it won't blend with itself
+		double time = player->get_current_animation_position();
+		if (current == player->get_assigned_animation() && player->is_playing()) {
+			player->clear_caches(); //so it won't blend with itself
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
-		player->seek(time);
+		player->seek(time, true, true);
 		player->play_backwards(current);
 	}
 
@@ -344,6 +345,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 		}
 		frame->set_max((double)anim->get_length());
 		autoplay->set_pressed(current == player->get_autoplay());
+		player->stop();
 	} else {
 		track_editor->set_animation(Ref<Animation>(), true);
 		track_editor->set_root(nullptr);
@@ -548,6 +550,16 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		case TOOL_NEW_ANIM: {
 			Ref<Animation> new_anim = Ref<Animation>(memnew(Animation));
 			new_anim->set_name(new_name);
+
+			if (animation->get_item_count() > 0) {
+				String current = animation->get_item_text(animation->get_selected());
+				Ref<Animation> current_anim = player->get_animation(current);
+
+				if (current_anim.is_valid()) {
+					new_anim->set_step(current_anim->get_step());
+				}
+			}
+
 			String library_name;
 			Ref<AnimationLibrary> al;
 			library_name = library->get_item_metadata(library->get_selected());
@@ -875,6 +887,7 @@ void AnimationPlayerEditor::_update_player() {
 
 	tool_anim->set_disabled(player == nullptr);
 	pin->set_disabled(player == nullptr);
+	_set_controls_disabled(player == nullptr);
 
 	if (!player) {
 		AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
@@ -925,17 +938,6 @@ void AnimationPlayerEditor::_update_player() {
 	ITEM_CHECK_DISABLED(TOOL_NEW_ANIM);
 #undef ITEM_CHECK_DISABLED
 
-	stop->set_disabled(no_anims_found);
-	play->set_disabled(no_anims_found);
-	play_bw->set_disabled(no_anims_found);
-	play_bw_from->set_disabled(no_anims_found);
-	play_from->set_disabled(no_anims_found);
-	frame->set_editable(!no_anims_found);
-	animation->set_disabled(no_anims_found);
-	autoplay->set_disabled(no_anims_found);
-	onion_toggle->set_disabled(no_anims_found);
-	onion_skinning->set_disabled(no_anims_found);
-
 	_update_animation_list_icons();
 
 	updating = false;
@@ -952,7 +954,9 @@ void AnimationPlayerEditor::_update_player() {
 		_animation_selected(0);
 	}
 
-	if (!no_anims_found) {
+	if (no_anims_found) {
+		_set_controls_disabled(true);
+	} else {
 		String current = animation->get_item_text(animation->get_selected());
 		Ref<Animation> anim = player->get_animation(current);
 
@@ -968,6 +972,20 @@ void AnimationPlayerEditor::_update_player() {
 	_update_animation();
 }
 
+void AnimationPlayerEditor::_set_controls_disabled(bool p_disabled) {
+	frame->set_editable(!p_disabled);
+
+	stop->set_disabled(p_disabled);
+	play->set_disabled(p_disabled);
+	play_bw->set_disabled(p_disabled);
+	play_bw_from->set_disabled(p_disabled);
+	play_from->set_disabled(p_disabled);
+	animation->set_disabled(p_disabled);
+	autoplay->set_disabled(p_disabled);
+	onion_toggle->set_disabled(p_disabled);
+	onion_skinning->set_disabled(p_disabled);
+}
+
 void AnimationPlayerEditor::_update_animation_list_icons() {
 	for (int i = 0; i < animation->get_item_count(); i++) {
 		String anim_name = animation->get_item_text(i);
@@ -977,12 +995,12 @@ void AnimationPlayerEditor::_update_animation_list_icons() {
 
 		Ref<Texture2D> icon;
 		if (anim_name == player->get_autoplay()) {
-			if (anim_name == SceneStringNames::get_singleton()->RESET) {
+			if (anim_name == SceneStringName(RESET)) {
 				icon = autoplay_reset_icon;
 			} else {
 				icon = autoplay_icon;
 			}
-		} else if (anim_name == SceneStringNames::get_singleton()->RESET) {
+		} else if (anim_name == SceneStringName(RESET)) {
 			icon = reset_icon;
 		}
 
@@ -1018,8 +1036,7 @@ void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
 	}
 
 	int current_lib_id = index_offset; // Don't default to [Global] if it doesn't exist yet.
-	for (int i = 0; i < libraries.size(); i++) {
-		StringName library_name = libraries[i];
+	for (const StringName &library_name : libraries) {
 		if (!EditorNode::get_singleton()->is_resource_read_only(player->get_animation_library(library_name))) {
 			library->add_item((library_name == StringName()) ? String(TTR("[Global]")) : String(library_name));
 			library->set_item_metadata(valid_library_count, String(library_name));
@@ -1036,8 +1053,7 @@ void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
 	// one which isn't a read-only library.
 	bool auto_assigning_non_global_library = false;
 	if (current_library_name == StringName() && valid_library_count > 0) {
-		for (int i = 0; i < libraries.size(); i++) {
-			StringName library_name = libraries[i];
+		for (const StringName &library_name : libraries) {
 			if (!EditorNode::get_singleton()->is_resource_read_only(player->get_animation_library(library_name))) {
 				current_library_name = library_name;
 				current_lib_id = 0;
@@ -1072,9 +1088,6 @@ void AnimationPlayerEditor::_ensure_dummy_player() {
 		}
 	}
 
-	// Make some options disabled.
-	onion_toggle->set_disabled(dummy_exists);
-	onion_skinning->set_disabled(dummy_exists);
 	int selected = animation->get_selected();
 	autoplay->set_disabled(selected != -1 ? (animation->get_item_text(selected).is_empty() ? true : dummy_exists) : true);
 
@@ -1383,23 +1396,14 @@ void AnimationPlayerEditor::_current_animation_changed(const String &p_name) {
 void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) {
 	frame->set_max(p_len);
 }
-
-void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_timeline_only) {
+void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_timeline_only, bool p_update_position_only) {
 	timeline_position = p_pos;
 
-	if (!is_visible_in_tree()) {
-		return;
-	}
-
-	if (!player) {
-		return;
-	}
-
-	if (player->is_playing()) {
-		return;
-	}
-
-	if (!player->has_animation(player->get_assigned_animation())) {
+	if (!is_visible_in_tree() ||
+			p_update_position_only ||
+			!player ||
+			player->is_playing() ||
+			!player->has_animation(player->get_assigned_animation())) {
 		return;
 	}
 
@@ -1454,7 +1458,7 @@ void AnimationPlayerEditor::_onion_skinning_menu(int p_option) {
 			onion.enabled = !onion.enabled;
 
 			if (onion.enabled) {
-				if (get_player() && !get_player()->has_animation(SceneStringNames::get_singleton()->RESET)) {
+				if (get_player() && !get_player()->has_animation(SceneStringName(RESET))) {
 					EditorNode::get_singleton()->show_warning(TTR("Onion skinning requires a RESET animation."));
 				}
 				_start_onion_skinning(); // It will check for RESET animation anyway.
@@ -1587,7 +1591,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_1() {
 		return;
 	}
 
-	if (!onion.enabled || !is_visible() || !get_player() || !get_player()->has_animation(SceneStringNames::get_singleton()->RESET)) {
+	if (!onion.enabled || !is_visible() || !get_player() || !get_player()->has_animation(SceneStringName(RESET))) {
 		_stop_onion_skinning();
 		return;
 	}
@@ -1707,7 +1711,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_step_prepare(int p_step_offs
 			OS::get_singleton()->get_main_loop()->process(0);
 			// This is the key: process the frame and let all callbacks/updates/notifications happen
 			// so everything (transforms, skeletons, etc.) is up-to-date visually.
-			callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_2_step_capture).bind(p_step_offset, p_capture_idx).call_deferred();
+			callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_2_step_capture).call_deferred(p_step_offset, p_capture_idx);
 			return;
 		} else {
 			next_capture_idx++;
@@ -1778,7 +1782,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_epilog() {
 }
 
 void AnimationPlayerEditor::_start_onion_skinning() {
-	if (get_player() && !get_player()->has_animation(SceneStringNames::get_singleton()->RESET)) {
+	if (get_player() && !get_player()->has_animation(SceneStringName(RESET))) {
 		onion.enabled = false;
 		onion_toggle->set_pressed_no_signal(false);
 		return;
@@ -1939,7 +1943,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	delete_dialog = memnew(ConfirmationDialog);
 	add_child(delete_dialog);
-	delete_dialog->connect(SNAME("confirmed"), callable_mp(this, &AnimationPlayerEditor::_animation_remove_confirmed));
+	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationPlayerEditor::_animation_remove_confirmed));
 
 	tool_anim = memnew(MenuButton);
 	tool_anim->set_shortcut_context(this);
@@ -1983,7 +1987,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	onion_toggle->set_theme_type_variation("FlatButton");
 	onion_toggle->set_toggle_mode(true);
 	onion_toggle->set_tooltip_text(TTR("Enable Onion Skinning"));
-	onion_toggle->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu).bind(ONION_SKINNING_ENABLE));
+	onion_toggle->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu).bind(ONION_SKINNING_ENABLE));
 	hb->add_child(onion_toggle);
 
 	onion_skinning = memnew(MenuButton);
@@ -2014,7 +2018,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	pin->set_toggle_mode(true);
 	pin->set_tooltip_text(TTR("Pin AnimationPlayer"));
 	hb->add_child(pin);
-	pin->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_pin_pressed));
+	pin->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_pin_pressed));
 
 	file = memnew(EditorFileDialog);
 	add_child(file);
@@ -2039,12 +2043,12 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	vb->add_child(name_hb);
 	name_dialog->register_text_enter(name);
 
-	error_dialog = memnew(ConfirmationDialog);
+	error_dialog = memnew(AcceptDialog);
 	error_dialog->set_ok_button_text(TTR("Close"));
 	error_dialog->set_title(TTR("Error!"));
-	add_child(error_dialog);
+	name_dialog->add_child(error_dialog);
 
-	name_dialog->connect(SNAME("confirmed"), callable_mp(this, &AnimationPlayerEditor::_animation_name_edited));
+	name_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationPlayerEditor::_animation_name_edited));
 
 	blend_editor.dialog = memnew(AcceptDialog);
 	blend_editor.dialog->set_title(TTR("Cross-Animation Blend Times"));
@@ -2056,6 +2060,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	blend_editor.dialog->add_child(blend_vb);
 
 	blend_editor.tree = memnew(Tree);
+	blend_editor.tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	blend_editor.tree->set_hide_root(true);
 	blend_editor.tree->set_columns(2);
 	blend_editor.tree->set_column_expand_ratio(0, 10);
@@ -2069,17 +2074,17 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	blend_editor.next->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	blend_vb->add_margin_child(TTR("Next (Auto Queue):"), blend_editor.next);
 
-	autoplay->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_autoplay_pressed));
+	autoplay->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_autoplay_pressed));
 	autoplay->set_toggle_mode(true);
-	play->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_play_pressed));
-	play_from->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_play_from_pressed));
-	play_bw->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_play_bw_pressed));
-	play_bw_from->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_play_bw_from_pressed));
-	stop->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_stop_pressed));
+	play->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_play_pressed));
+	play_from->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_play_from_pressed));
+	play_bw->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_play_bw_pressed));
+	play_bw_from->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_play_bw_from_pressed));
+	stop->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_stop_pressed));
 
-	animation->connect(SNAME("item_selected"), callable_mp(this, &AnimationPlayerEditor::_animation_selected));
+	animation->connect(SceneStringName(item_selected), callable_mp(this, &AnimationPlayerEditor::_animation_selected));
 
-	frame->connect(SNAME("value_changed"), callable_mp(this, &AnimationPlayerEditor::_seek_value_changed).bind(false));
+	frame->connect(SceneStringName(value_changed), callable_mp(this, &AnimationPlayerEditor::_seek_value_changed).bind(false));
 	scale->connect(SNAME("text_submitted"), callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
 	add_child(track_editor);
@@ -2095,7 +2100,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	// Onion skinning.
 
-	track_editor->connect(SNAME("visibility_changed"), callable_mp(this, &AnimationPlayerEditor::_editor_visibility_changed));
+	track_editor->connect(SceneStringName(visibility_changed), callable_mp(this, &AnimationPlayerEditor::_editor_visibility_changed));
 
 	onion.capture.canvas = RS::get_singleton()->canvas_create();
 	onion.capture.canvas_item = RS::get_singleton()->canvas_item_create();

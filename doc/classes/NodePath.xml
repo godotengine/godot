@@ -23,18 +23,19 @@
 		[/codeblock]
 		Despite their name, node paths may also point to a property:
 		[codeblock]
-		^"position"            # Points to this object's position.
-		^"position:x"          # Points to this object's position in the x axis.
+		^":position"           # Points to this object's position.
+		^":position:x"         # Points to this object's position in the x axis.
 		^"Camera3D:rotation:y" # Points to the child Camera3D and its y rotation.
 		^"/root:size:x"        # Points to the root Window and its width.
 		[/codeblock]
+		In some situations, it's possible to omit the leading [code]:[/code] when pointing to an object's property. As an example, this is the case with [method Object.set_indexed] and [method Tween.tween_property], as those methods call [method NodePath.get_as_property_path] under the hood. However, it's generally recommended to keep the [code]:[/code] prefix.
 		Node paths cannot check whether they are valid and may point to nodes or properties that do not exist. Their meaning depends entirely on the context in which they're used.
 		You usually do not have to worry about the [NodePath] type, as strings are automatically converted to the type when necessary. There are still times when defining node paths is useful. For example, exported [NodePath] properties allow you to easily select any node within the currently edited scene. They are also automatically updated when moving, renaming or deleting nodes in the scene tree editor. See also [annotation @GDScript.@export_node_path].
-		See also [StringName], which is a similar type designed for optimised strings.
+		See also [StringName], which is a similar type designed for optimized strings.
 		[b]Note:[/b] In a boolean context, a [NodePath] will evaluate to [code]false[/code] if it is empty ([code]NodePath("")[/code]). Otherwise, a [NodePath] will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
-		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
+		<link title="2D Role Playing Game (RPG) Demo">https://godotengine.org/asset-library/asset/2729</link>
 	</tutorials>
 	<constructors>
 		<constructor name="NodePath">

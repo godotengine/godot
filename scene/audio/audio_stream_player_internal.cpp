@@ -31,7 +31,6 @@
 #include "audio_stream_player_internal.h"
 
 #include "scene/main/node.h"
-#include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
 void AudioStreamPlayerInternal::_set_process(bool p_enabled) {
@@ -78,7 +77,7 @@ void AudioStreamPlayerInternal::process() {
 		_set_process(false);
 	}
 	if (!playbacks_to_remove.is_empty()) {
-		node->emit_signal(SNAME("finished"));
+		node->emit_signal(SceneStringName(finished));
 	}
 }
 
@@ -142,6 +141,24 @@ Ref<AudioStreamPlayback> AudioStreamPlayerInternal::play_basic() {
 		stream_playback->set_parameter(K.value.path, K.value.value);
 	}
 
+	// Sample handling.
+	if (_is_sample()) {
+		if (stream->can_be_sampled()) {
+			stream_playback->set_is_sample(true);
+			if (stream_playback->get_is_sample() && stream_playback->get_sample_playback().is_null()) {
+				if (!AudioServer::get_singleton()->is_stream_registered_as_sample(stream)) {
+					AudioServer::get_singleton()->register_stream_as_sample(stream);
+				}
+				Ref<AudioSamplePlayback> sample_playback;
+				sample_playback.instantiate();
+				sample_playback->stream = stream;
+				stream_playback->set_sample_playback(sample_playback);
+			}
+		} else if (!stream->is_meta_stream()) {
+			WARN_PRINT(vformat(R"(%s is trying to play a sample from a stream that cannot be sampled.)", node->get_path()));
+		}
+	}
+
 	stream_playbacks.push_back(stream_playback);
 	active.set();
 	_set_process(true);
@@ -152,6 +169,9 @@ void AudioStreamPlayerInternal::set_stream_paused(bool p_pause) {
 	// TODO this does not have perfect recall, fix that maybe? If there are zero playbacks registered with the AudioServer, this bool isn't persisted.
 	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 		AudioServer::get_singleton()->set_playback_paused(playback, p_pause);
+		if (_is_sample() && playback->get_sample_playback().is_valid()) {
+			AudioServer::get_singleton()->set_sample_playback_pause(playback->get_sample_playback(), p_pause);
+		}
 	}
 }
 
@@ -243,6 +263,7 @@ void AudioStreamPlayerInternal::stop() {
 		AudioServer::get_singleton()->stop_playback_stream(playback);
 	}
 	stream_playbacks.clear();
+
 	active.clear();
 	_set_process(false);
 }
@@ -300,6 +321,14 @@ Ref<AudioStreamPlayback> AudioStreamPlayerInternal::get_stream_playback() {
 	return stream_playbacks[stream_playbacks.size() - 1];
 }
 
+void AudioStreamPlayerInternal::set_playback_type(AudioServer::PlaybackType p_playback_type) {
+	playback_type = p_playback_type;
+}
+
+AudioServer::PlaybackType AudioStreamPlayerInternal::get_playback_type() const {
+	return playback_type;
+}
+
 StringName AudioStreamPlayerInternal::get_bus() const {
 	const String bus_name = bus;
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
@@ -307,14 +336,14 @@ StringName AudioStreamPlayerInternal::get_bus() const {
 			return bus;
 		}
 	}
-	return SceneStringNames::get_singleton()->Master;
+	return SceneStringName(Master);
 }
 
 AudioStreamPlayerInternal::AudioStreamPlayerInternal(Node *p_node, const Callable &p_play_callable, bool p_physical) {
 	node = p_node;
 	play_callable = p_play_callable;
 	physical = p_physical;
-	bus = SceneStringNames::get_singleton()->Master;
+	bus = SceneStringName(Master);
 
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp((Object *)node, &Object::notify_property_list_changed));
 	AudioServer::get_singleton()->connect("bus_renamed", callable_mp((Object *)node, &Object::notify_property_list_changed).unbind(3));

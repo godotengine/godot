@@ -414,7 +414,7 @@
 			</description>
 		</signal>
 		<signal name="empty_clicked">
-			<param index="0" name="position" type="Vector2" />
+			<param index="0" name="click_position" type="Vector2" />
 			<param index="1" name="mouse_button_index" type="int" />
 			<description>
 				Emitted when a mouse button is clicked in the empty space of the tree.
@@ -442,7 +442,7 @@
 			</description>
 		</signal>
 		<signal name="item_mouse_selected">
-			<param index="0" name="position" type="Vector2" />
+			<param index="0" name="mouse_position" type="Vector2" />
 			<param index="1" name="mouse_button_index" type="int" />
 			<description>
 				Emitted when an item is selected with a mouse button.
@@ -546,16 +546,16 @@
 			The maximum allowed width of the icon in item's cells. This limit is applied on top of the default size of the icon, but before the value set with [method TreeItem.set_icon_max_width]. The height is adjusted according to the icon's ratio.
 		</theme_item>
 		<theme_item name="inner_item_margin_bottom" data_type="constant" type="int" default="0">
-			The inner bottom margin of an item.
+			The inner bottom margin of a cell.
 		</theme_item>
 		<theme_item name="inner_item_margin_left" data_type="constant" type="int" default="0">
-			The inner left margin of an item.
+			The inner left margin of a cell.
 		</theme_item>
 		<theme_item name="inner_item_margin_right" data_type="constant" type="int" default="0">
-			The inner right margin of an item.
+			The inner right margin of a cell.
 		</theme_item>
 		<theme_item name="inner_item_margin_top" data_type="constant" type="int" default="0">
-			The inner top margin of an item.
+			The inner top margin of a cell.
 		</theme_item>
 		<theme_item name="item_margin" data_type="constant" type="int" default="16">
 			The horizontal margin at the start of an item. This is used when folding is enabled for the item.
@@ -655,13 +655,13 @@
 			[StyleBox] used for the cursor, when the [Tree] is not being focused.
 		</theme_item>
 		<theme_item name="custom_button" data_type="style" type="StyleBox">
-			Default [StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell.
+			Default [StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when button is enabled with [method TreeItem.set_custom_as_button].
 		</theme_item>
 		<theme_item name="custom_button_hover" data_type="style" type="StyleBox">
-			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's hovered.
+			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode button cell when it's hovered.
 		</theme_item>
 		<theme_item name="custom_button_pressed" data_type="style" type="StyleBox">
-			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's pressed.
+			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode button cell when it's pressed.
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
 			The focused style for the [Tree], drawn on top of everything.

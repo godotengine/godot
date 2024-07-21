@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
+#include "editor/editor_settings.h"
 
 EditorExport *EditorExport::singleton = nullptr;
 
@@ -189,6 +190,12 @@ void EditorExport::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			for (int i = 0; i < export_platforms.size(); i++) {
 				export_platforms.write[i]->cleanup();
+			}
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			for (int i = 0; i < export_platforms.size(); i++) {
+				export_platforms.write[i]->notification(p_what);
 			}
 		} break;
 	}
@@ -364,6 +371,7 @@ void EditorExport::update_export_presets() {
 		if (platform_options.has(preset->get_platform()->get_name())) {
 			export_presets_updated = true;
 
+			bool update_value_overrides = false;
 			List<EditorExportPlatform::ExportOption> options = platform_options[preset->get_platform()->get_name()];
 
 			// Clear the preset properties prior to reloading, keep the values to preserve options from plugins that may be currently disabled.
@@ -377,6 +385,13 @@ void EditorExport::update_export_presets() {
 					preset->values[option_name] = E.default_value;
 				}
 				preset->update_visibility[option_name] = E.update_visibility;
+				if (E.update_visibility) {
+					update_value_overrides = true;
+				}
+			}
+
+			if (update_value_overrides) {
+				preset->update_value_overrides();
 			}
 		}
 	}
@@ -408,8 +423,8 @@ EditorExport::EditorExport() {
 	save_timer->set_one_shot(true);
 	save_timer->connect("timeout", callable_mp(this, &EditorExport::_save));
 
-	_export_presets_updated = "export_presets_updated";
-	_export_presets_runnable_updated = "export_presets_runnable_updated";
+	_export_presets_updated = StringName("export_presets_updated", true);
+	_export_presets_runnable_updated = StringName("export_presets_runnable_updated", true);
 
 	singleton = this;
 	set_process(true);

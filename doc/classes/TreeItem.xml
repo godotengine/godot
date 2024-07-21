@@ -318,12 +318,14 @@
 			<return type="int" enum="TextServer.StructuredTextParser" />
 			<param index="0" name="column" type="int" />
 			<description>
+				Returns the BiDi algorithm override set for this cell.
 			</description>
 		</method>
 		<method name="get_structured_text_bidi_override_options" qualifiers="const">
 			<return type="Array" />
 			<param index="0" name="column" type="int" />
 			<description>
+				Returns the additional BiDi options set for this cell.
 			</description>
 		</method>
 		<method name="get_suffix" qualifiers="const">
@@ -401,6 +403,7 @@
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
 			<description>
+				Returns [code]true[/code] if the cell was made into a button with [method set_custom_as_button].
 			</description>
 		</method>
 		<method name="is_edit_multiline" qualifiers="const">
@@ -532,7 +535,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="mode" type="int" enum="TreeItem.TreeCellMode" />
 			<description>
-				Sets the given column's cell mode to [param mode]. See [enum TreeCellMode] constants.
+				Sets the given column's cell mode to [param mode]. This determines how the cell is displayed and edited. See [enum TreeCellMode] constants for details.
 			</description>
 		</method>
 		<method name="set_checked">
@@ -555,6 +558,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="enable" type="bool" />
 			<description>
+				Makes a cell with [constant CELL_MODE_CUSTOM] display as a non-flat button with a [StyleBox].
 			</description>
 		</method>
 		<method name="set_custom_bg_color">
@@ -589,7 +593,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="callback" type="Callable" />
 			<description>
-				Sets the given column's custom draw callback. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the custom callback.
+				Sets the given column's custom draw callback. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the custom callback. The cell has to be in [constant CELL_MODE_CUSTOM] to use this feature.
 				The [param callback] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
 			</description>
 		</method>
@@ -639,7 +643,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="texture" type="Texture2D" />
 			<description>
-				Sets the given column's icon [Texture2D].
+				Sets the given cell's icon [Texture2D]. The cell has to be in [constant CELL_MODE_ICON] mode.
 			</description>
 		</method>
 		<method name="set_icon_max_width">
@@ -724,6 +728,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="parser" type="int" enum="TextServer.StructuredTextParser" />
 			<description>
+				Set BiDi algorithm override for the structured text. Has effect for cells that display text.
 			</description>
 		</method>
 		<method name="set_structured_text_bidi_override_options">
@@ -731,6 +736,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="args" type="Array" />
 			<description>
+				Set additional options for BiDi override. Has effect for cells that display text.
 			</description>
 		</method>
 		<method name="set_suffix">
@@ -805,18 +811,21 @@
 	</members>
 	<constants>
 		<constant name="CELL_MODE_STRING" value="0" enum="TreeCellMode">
-			Cell contains a string.
+			Cell shows a string label. When editable, the text can be edited using a [LineEdit], or a [TextEdit] popup if [method set_edit_multiline] is used.
 		</constant>
 		<constant name="CELL_MODE_CHECK" value="1" enum="TreeCellMode">
-			Cell contains a checkbox.
+			Cell shows a checkbox, optionally with text. The checkbox can be pressed, released, or indeterminate (via [method set_indeterminate]). The checkbox can't be clicked unless the cell is editable.
 		</constant>
 		<constant name="CELL_MODE_RANGE" value="2" enum="TreeCellMode">
-			Cell contains a range.
+			Cell shows a numeric range. When editable, it can be edited using a range slider. Use [method set_range] to set the value and [method set_range_config] to configure the range.
+			This cell can also be used in a text dropdown mode when you assign a text with [method set_text]. Separate options with a comma, e.g. [code]"Option1,Option2,Option3"[/code].
 		</constant>
 		<constant name="CELL_MODE_ICON" value="3" enum="TreeCellMode">
-			Cell contains an icon.
+			Cell shows an icon. It can't be edited nor display text.
 		</constant>
 		<constant name="CELL_MODE_CUSTOM" value="4" enum="TreeCellMode">
+			Cell shows as a clickable button. It will display an arrow similar to [OptionButton], but doesn't feature a dropdown (for that you can use [constant CELL_MODE_RANGE]). Clicking the button emits the [signal Tree.item_edited] signal. The button is flat by default, you can use [method set_custom_as_button] to display it with a [StyleBox].
+			This mode also supports custom drawing using [method set_custom_draw_callback].
 		</constant>
 	</constants>
 </class>

@@ -1,9 +1,9 @@
 import os
 import sys
-from methods import detect_darwin_sdk_path, get_compiler_version, is_vanilla_clang
-from platform_methods import detect_arch, detect_mvk
-
 from typing import TYPE_CHECKING
+
+from methods import detect_darwin_sdk_path, get_compiler_version, is_vanilla_clang, print_error
+from platform_methods import detect_arch, detect_mvk
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -53,22 +53,22 @@ def get_doc_path():
 
 
 def get_flags():
-    return [
-        ("arch", detect_arch()),
-        ("use_volk", False),
-        ("supported", ["mono"]),
-    ]
+    return {
+        "arch": detect_arch(),
+        "use_volk": False,
+        "supported": ["mono"],
+    }
 
 
 def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
     if env["arch"] not in supported_arches:
-        print(
+        print_error(
             'Unsupported CPU architecture "%s" for macOS. Supported architectures are: %s.'
             % (env["arch"], ", ".join(supported_arches))
         )
-        sys.exit()
+        sys.exit(255)
 
     ## Build type
 
@@ -107,7 +107,7 @@ def configure(env: "SConsEnvironment"):
 
     env.Append(CCFLAGS=["-fobjc-arc"])
 
-    if not "osxcross" in env:  # regular native build
+    if "osxcross" not in env:  # regular native build
         if env["macports_clang"] != "no":
             mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
             mpclangver = env["macports_clang"]
@@ -254,7 +254,7 @@ def configure(env: "SConsEnvironment"):
             if mvk_path != "":
                 env.Append(LINKFLAGS=["-L" + mvk_path])
             else:
-                print(
+                print_error(
                     "MoltenVK SDK installation directory not found, use 'vulkan_sdk_path' SCons parameter to specify SDK path."
                 )
                 sys.exit(255)

@@ -67,23 +67,11 @@ void NodeDock::update_lists() {
 	connections->update_tree();
 }
 
-void NodeDock::_on_node_tree_exited() {
-	set_node(nullptr);
-}
-
 void NodeDock::set_node(Node *p_node) {
-	if (last_valid_node) {
-		last_valid_node->disconnect("tree_exited", callable_mp(this, &NodeDock::_on_node_tree_exited));
-		last_valid_node = nullptr;
-	}
-
 	connections->set_node(p_node);
 	groups->set_current(p_node);
 
 	if (p_node) {
-		last_valid_node = p_node;
-		last_valid_node->connect("tree_exited", callable_mp(this, &NodeDock::_on_node_tree_exited));
-
 		if (connections_button->is_pressed()) {
 			connections->show();
 		} else {
@@ -98,10 +86,6 @@ void NodeDock::set_node(Node *p_node) {
 		mode_hb->hide();
 		select_a_node->show();
 	}
-}
-
-void NodeDock::restore_last_valid_node() {
-	set_node(last_valid_node);
 }
 
 NodeDock::NodeDock() {
@@ -120,7 +104,7 @@ NodeDock::NodeDock() {
 	connections_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	connections_button->set_clip_text(true);
 	mode_hb->add_child(connections_button);
-	connections_button->connect("pressed", callable_mp(this, &NodeDock::show_connections));
+	connections_button->connect(SceneStringName(pressed), callable_mp(this, &NodeDock::show_connections));
 
 	groups_button = memnew(Button);
 	groups_button->set_theme_type_variation("FlatButton");
@@ -130,7 +114,7 @@ NodeDock::NodeDock() {
 	groups_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	groups_button->set_clip_text(true);
 	mode_hb->add_child(groups_button);
-	groups_button->connect("pressed", callable_mp(this, &NodeDock::show_groups));
+	groups_button->connect(SceneStringName(pressed), callable_mp(this, &NodeDock::show_groups));
 
 	connections = memnew(ConnectionsDock);
 	add_child(connections);

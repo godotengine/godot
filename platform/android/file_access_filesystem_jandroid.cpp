@@ -53,6 +53,7 @@ jmethodID FileAccessFilesystemJAndroid::_file_write = nullptr;
 jmethodID FileAccessFilesystemJAndroid::_file_flush = nullptr;
 jmethodID FileAccessFilesystemJAndroid::_file_exists = nullptr;
 jmethodID FileAccessFilesystemJAndroid::_file_last_modified = nullptr;
+jmethodID FileAccessFilesystemJAndroid::_file_resize = nullptr;
 
 String FileAccessFilesystemJAndroid::get_path() const {
 	return path_src;
@@ -82,7 +83,7 @@ Error FileAccessFilesystemJAndroid::open_internal(const String &p_path, int p_mo
 				default:
 					return ERR_FILE_CANT_OPEN;
 
-				case -1:
+				case -2:
 					return ERR_FILE_NOT_FOUND;
 			}
 		}
@@ -324,6 +325,30 @@ Error FileAccessFilesystemJAndroid::get_error() const {
 	return OK;
 }
 
+Error FileAccessFilesystemJAndroid::resize(int64_t p_length) {
+	if (_file_resize) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, FAILED);
+		ERR_FAIL_COND_V_MSG(!is_open(), FAILED, "File must be opened before use.");
+		int res = env->CallIntMethod(file_access_handler, _file_resize, id, p_length);
+		switch (res) {
+			case 0:
+				return OK;
+			case -4:
+				return ERR_INVALID_PARAMETER;
+			case -3:
+				return ERR_FILE_CANT_OPEN;
+			case -2:
+				return ERR_FILE_NOT_FOUND;
+			case -1:
+			default:
+				return FAILED;
+		}
+	} else {
+		return ERR_UNAVAILABLE;
+	}
+}
+
 void FileAccessFilesystemJAndroid::flush() {
 	if (_file_flush) {
 		JNIEnv *env = get_jni_env();
@@ -383,6 +408,15 @@ void FileAccessFilesystemJAndroid::setup(jobject p_file_access_handler) {
 	_file_flush = env->GetMethodID(cls, "fileFlush", "(I)V");
 	_file_exists = env->GetMethodID(cls, "fileExists", "(Ljava/lang/String;)Z");
 	_file_last_modified = env->GetMethodID(cls, "fileLastModified", "(Ljava/lang/String;)J");
+	_file_resize = env->GetMethodID(cls, "fileResize", "(IJ)I");
+}
+
+void FileAccessFilesystemJAndroid::terminate() {
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+
+	env->DeleteGlobalRef(cls);
+	env->DeleteGlobalRef(file_access_handler);
 }
 
 void FileAccessFilesystemJAndroid::close() {

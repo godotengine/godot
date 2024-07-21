@@ -1,18 +1,19 @@
 import os
 import sys
+from typing import TYPE_CHECKING
 
 from emscripten_helpers import (
-    run_closure_compiler,
-    create_engine_file,
+    add_js_externs,
     add_js_libraries,
     add_js_pre,
-    add_js_externs,
+    create_engine_file,
     create_template_zip,
     get_template_zip_path,
+    run_closure_compiler,
 )
-from methods import get_compiler_version
 from SCons.Util import WhereIs
-from typing import TYPE_CHECKING
+
+from methods import get_compiler_version, print_error, print_warning
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -64,37 +65,38 @@ def get_doc_path():
 
 
 def get_flags():
-    return [
-        ("arch", "wasm32"),
-        ("target", "template_debug"),
-        ("builtin_pcre2_with_jit", False),
-        ("vulkan", False),
+    return {
+        "arch": "wasm32",
+        "target": "template_debug",
+        "builtin_pcre2_with_jit": False,
+        "vulkan": False,
         # Embree is heavy and requires too much memory (GH-70621).
-        ("module_raycast_enabled", False),
+        "module_raycast_enabled": False,
         # Use -Os to prioritize optimizing for reduced file size. This is
         # particularly valuable for the web platform because it directly
         # decreases download time.
         # -Os reduces file size by around 5 MiB over -O3. -Oz only saves about
         # 100 KiB over -Os, which does not justify the negative impact on
         # run-time performance.
-        ("optimize", "size"),
-    ]
+        # Note that this overrides the "auto" behavior for target/dev_build.
+        "optimize": "size",
+    }
 
 
 def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["wasm32"]
     if env["arch"] not in supported_arches:
-        print(
-            'Unsupported CPU architecture "%s" for iOS. Supported architectures are: %s.'
+        print_error(
+            'Unsupported CPU architecture "%s" for Web. Supported architectures are: %s.'
             % (env["arch"], ", ".join(supported_arches))
         )
-        sys.exit()
+        sys.exit(255)
 
     try:
         env["initial_memory"] = int(env["initial_memory"])
     except Exception:
-        print("Initial memory must be a valid integer")
+        print_error("Initial memory must be a valid integer")
         sys.exit(255)
 
     ## Build type
@@ -106,13 +108,13 @@ def configure(env: "SConsEnvironment"):
         env["use_assertions"] = True
 
     if env["use_assertions"]:
-        env.Append(LINKFLAGS=["-s", "ASSERTIONS=1"])
+        env.Append(LINKFLAGS=["-sASSERTIONS=1"])
 
     if env.editor_build and env["initial_memory"] < 64:
-        print('Note: Forcing "initial_memory=64" as it is required for the web editor.')
+        print("Note: Forcing `initial_memory=64` as it is required for the web editor.")
         env["initial_memory"] = 64
 
-    env.Append(LINKFLAGS=["-s", "INITIAL_MEMORY=%sMB" % env["initial_memory"]])
+    env.Append(LINKFLAGS=["-sINITIAL_MEMORY=%sMB" % env["initial_memory"]])
 
     ## Copy env variables.
     env["ENV"] = os.environ
@@ -141,7 +143,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(CCFLAGS=["-fsanitize=leak"])
         env.Append(LINKFLAGS=["-fsanitize=leak"])
     if env["use_safe_heap"]:
-        env.Append(LINKFLAGS=["-s", "SAFE_HEAP=1"])
+        env.Append(LINKFLAGS=["-sSAFE_HEAP=1"])
 
     # Closure compiler
     if env["use_closure_compiler"]:
@@ -180,7 +182,7 @@ def configure(env: "SConsEnvironment"):
     # Use TempFileMunge since some AR invocations are too long for cmd.exe.
     # Use POSIX-style paths, required with TempFileMunge.
     env["ARCOM_POSIX"] = env["ARCOM"].replace("$TARGET", "$TARGET.posix").replace("$SOURCES", "$SOURCES.posix")
-    env["ARCOM"] = "${TEMPFILE(ARCOM_POSIX)}"
+    env["ARCOM"] = "${TEMPFILE('$ARCOM_POSIX','$ARCOMSTR')}"
 
     # All intermediate files are just object files.
     env["OBJPREFIX"] = ""
@@ -203,31 +205,30 @@ def configure(env: "SConsEnvironment"):
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
         # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
-        env.Append(LINKFLAGS=["-s", "USE_WEBGL2=1"])
+        env.Append(LINKFLAGS=["-sMAX_WEBGL_VERSION=2"])
         # Allow use to take control of swapping WebGL buffers.
-        env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
-        # Breaking change since emscripten 3.1.51
-        # https://github.com/emscripten-core/emscripten/blob/main/ChangeLog.md#3151---121323
+        env.Append(LINKFLAGS=["-sOFFSCREEN_FRAMEBUFFER=1"])
+        # Disables the use of *glGetProcAddress() which is inefficient.
+        # See https://emscripten.org/docs/tools_reference/settings_reference.html#gl-enable-get-proc-address
         if cc_semver >= (3, 1, 51):
-            # Enables the use of *glGetProcAddress()
-            env.Append(LINKFLAGS=["-s", "GL_ENABLE_GET_PROC_ADDRESS=1"])
+            env.Append(LINKFLAGS=["-sGL_ENABLE_GET_PROC_ADDRESS=0"])
 
     if env["javascript_eval"]:
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
 
     stack_size_opt = "STACK_SIZE" if cc_semver >= (3, 1, 25) else "TOTAL_STACK"
-    env.Append(LINKFLAGS=["-s", "%s=%sKB" % (stack_size_opt, env["stack_size"])])
+    env.Append(LINKFLAGS=["-s%s=%sKB" % (stack_size_opt, env["stack_size"])])
 
     if env["threads"]:
         # Thread support (via SharedArrayBuffer).
         env.Append(CPPDEFINES=["PTHREAD_NO_RENAME"])
-        env.Append(CCFLAGS=["-s", "USE_PTHREADS=1"])
-        env.Append(LINKFLAGS=["-s", "USE_PTHREADS=1"])
-        env.Append(LINKFLAGS=["-s", "DEFAULT_PTHREAD_STACK_SIZE=%sKB" % env["default_pthread_stack_size"]])
-        env.Append(LINKFLAGS=["-s", "PTHREAD_POOL_SIZE=8"])
-        env.Append(LINKFLAGS=["-s", "WASM_MEM_MAX=2048MB"])
+        env.Append(CCFLAGS=["-sUSE_PTHREADS=1"])
+        env.Append(LINKFLAGS=["-sUSE_PTHREADS=1"])
+        env.Append(LINKFLAGS=["-sDEFAULT_PTHREAD_STACK_SIZE=%sKB" % env["default_pthread_stack_size"]])
+        env.Append(LINKFLAGS=["-sPTHREAD_POOL_SIZE=8"])
+        env.Append(LINKFLAGS=["-sWASM_MEM_MAX=2048MB"])
     elif env["proxy_to_pthread"]:
-        print('"threads=no" support requires "proxy_to_pthread=no", disabling proxy to pthread.')
+        print_warning('"threads=no" support requires "proxy_to_pthread=no", disabling proxy to pthread.')
         env["proxy_to_pthread"] = False
 
     if env["lto"] != "none":
@@ -240,15 +241,15 @@ def configure(env: "SConsEnvironment"):
 
     if env["dlink_enabled"]:
         if env["proxy_to_pthread"]:
-            print("GDExtension support requires proxy_to_pthread=no, disabling proxy to pthread.")
+            print_warning("GDExtension support requires proxy_to_pthread=no, disabling proxy to pthread.")
             env["proxy_to_pthread"] = False
 
         if cc_semver < (3, 1, 14):
-            print("GDExtension support requires emscripten >= 3.1.14, detected: %s.%s.%s" % cc_semver)
+            print_error("GDExtension support requires emscripten >= 3.1.14, detected: %s.%s.%s" % cc_semver)
             sys.exit(255)
 
-        env.Append(CCFLAGS=["-s", "SIDE_MODULE=2"])
-        env.Append(LINKFLAGS=["-s", "SIDE_MODULE=2"])
+        env.Append(CCFLAGS=["-sSIDE_MODULE=2"])
+        env.Append(LINKFLAGS=["-sSIDE_MODULE=2"])
         env.Append(CCFLAGS=["-fvisibility=hidden"])
         env.Append(LINKFLAGS=["-fvisibility=hidden"])
         env.extra_suffix = ".dlink" + env.extra_suffix
@@ -258,37 +259,41 @@ def configure(env: "SConsEnvironment"):
 
     # Run the main application in a web worker
     if env["proxy_to_pthread"]:
-        env.Append(LINKFLAGS=["-s", "PROXY_TO_PTHREAD=1"])
+        env.Append(LINKFLAGS=["-sPROXY_TO_PTHREAD=1"])
         env.Append(CPPDEFINES=["PROXY_TO_PTHREAD_ENABLED"])
-        env.Append(LINKFLAGS=["-s", "EXPORTED_RUNTIME_METHODS=['_emscripten_proxy_main']"])
+        env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=['_emscripten_proxy_main']"])
         # https://github.com/emscripten-core/emscripten/issues/18034#issuecomment-1277561925
-        env.Append(LINKFLAGS=["-s", "TEXTDECODER=0"])
+        env.Append(LINKFLAGS=["-sTEXTDECODER=0"])
         # BigInt support to pass object pointers between contexts
         needs_wasm_bigint = True
 
     if needs_wasm_bigint:
-        env.Append(LINKFLAGS=["-s", "WASM_BIGINT"])
+        env.Append(LINKFLAGS=["-sWASM_BIGINT"])
 
     # Reduce code size by generating less support code (e.g. skip NodeJS support).
-    env.Append(LINKFLAGS=["-s", "ENVIRONMENT=web,worker"])
+    env.Append(LINKFLAGS=["-sENVIRONMENT=web,worker"])
 
     # Wrap the JavaScript support code around a closure named Godot.
-    env.Append(LINKFLAGS=["-s", "MODULARIZE=1", "-s", "EXPORT_NAME='Godot'"])
+    env.Append(LINKFLAGS=["-sMODULARIZE=1", "-sEXPORT_NAME='Godot'"])
+
+    # Force long jump mode to 'wasm'
+    env.Append(CCFLAGS=["-sSUPPORT_LONGJMP='wasm'"])
+    env.Append(LINKFLAGS=["-sSUPPORT_LONGJMP='wasm'"])
 
     # Allow increasing memory buffer size during runtime. This is efficient
     # when using WebAssembly (in comparison to asm.js) and works well for
     # us since we don't know requirements at compile-time.
-    env.Append(LINKFLAGS=["-s", "ALLOW_MEMORY_GROWTH=1"])
+    env.Append(LINKFLAGS=["-sALLOW_MEMORY_GROWTH=1"])
 
     # Do not call main immediately when the support code is ready.
-    env.Append(LINKFLAGS=["-s", "INVOKE_RUN=0"])
+    env.Append(LINKFLAGS=["-sINVOKE_RUN=0"])
 
     # callMain for manual start, cwrap for the mono version.
-    env.Append(LINKFLAGS=["-s", "EXPORTED_RUNTIME_METHODS=['callMain','cwrap']"])
+    env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=['callMain','cwrap']"])
 
     # Add code that allow exiting runtime.
-    env.Append(LINKFLAGS=["-s", "EXIT_RUNTIME=1"])
+    env.Append(LINKFLAGS=["-sEXIT_RUNTIME=1"])
 
     # This workaround creates a closure that prevents the garbage collector from freeing the WebGL context.
     # We also only use WebGL2, and changing context version is not widely supported anyway.
-    env.Append(LINKFLAGS=["-s", "GL_WORKAROUND_SAFARI_GETCONTEXT_BUG=0"])
+    env.Append(LINKFLAGS=["-sGL_WORKAROUND_SAFARI_GETCONTEXT_BUG=0"])

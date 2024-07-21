@@ -33,7 +33,7 @@
 
 #include <core/templates/sort_array.h>
 
-template <class T, class Comparator = _DefaultComparator<T>>
+template <typename T, typename Comparator = _DefaultComparator<T>>
 class SearchArray {
 public:
 	Comparator compare;

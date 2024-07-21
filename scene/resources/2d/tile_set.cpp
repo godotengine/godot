@@ -74,7 +74,7 @@ void TileMapPattern::_set_tile_data(const Vector<int> &p_data) {
 		uint16_t alternative_tile = decode_uint16(&local[10]);
 		set_cell(Vector2i(x, y), source_id, Vector2i(atlas_coords_x, atlas_coords_y), alternative_tile);
 	}
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 Vector<int> TileMapPattern::_get_tile_data() const {
@@ -4650,7 +4650,7 @@ Ref<Texture2D> TileSetAtlasSource::get_texture() const {
 void TileSetAtlasSource::set_margins(Vector2i p_margins) {
 	if (p_margins.x < 0 || p_margins.y < 0) {
 		WARN_PRINT("Atlas source margins should be positive.");
-		margins = Vector2i(MAX(0, p_margins.x), MAX(0, p_margins.y));
+		margins = p_margins.maxi(0);
 	} else {
 		margins = p_margins;
 	}
@@ -4666,7 +4666,7 @@ Vector2i TileSetAtlasSource::get_margins() const {
 void TileSetAtlasSource::set_separation(Vector2i p_separation) {
 	if (p_separation.x < 0 || p_separation.y < 0) {
 		WARN_PRINT("Atlas source separation should be positive.");
-		separation = Vector2i(MAX(0, p_separation.x), MAX(0, p_separation.y));
+		separation = p_separation.maxi(0);
 	} else {
 		separation = p_separation;
 	}
@@ -4682,7 +4682,7 @@ Vector2i TileSetAtlasSource::get_separation() const {
 void TileSetAtlasSource::set_texture_region_size(Vector2i p_tile_size) {
 	if (p_tile_size.x <= 0 || p_tile_size.y <= 0) {
 		WARN_PRINT("Atlas source tile_size should be strictly positive.");
-		texture_region_size = Vector2i(MAX(1, p_tile_size.x), MAX(1, p_tile_size.y));
+		texture_region_size = p_tile_size.maxi(1);
 	} else {
 		texture_region_size = p_tile_size;
 	}
@@ -4969,7 +4969,7 @@ void TileSetAtlasSource::create_tile(const Vector2i p_atlas_coords, const Vector
 	tad.alternatives[0] = memnew(TileData);
 	tad.alternatives[0]->set_tile_set(tile_set);
 	tad.alternatives[0]->set_allow_transform(false);
-	tad.alternatives[0]->connect("changed", callable_mp((Resource *)this, &TileSetAtlasSource::emit_changed));
+	tad.alternatives[0]->connect(CoreStringName(changed), callable_mp((Resource *)this, &TileSetAtlasSource::emit_changed));
 	tad.alternatives[0]->notify_property_list_changed();
 	tad.alternatives_ids.push_back(0);
 
@@ -4981,7 +4981,7 @@ void TileSetAtlasSource::create_tile(const Vector2i p_atlas_coords, const Vector
 	_create_coords_mapping_cache(p_atlas_coords);
 	_queue_update_padded_texture();
 
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 }
 
 void TileSetAtlasSource::remove_tile(Vector2i p_atlas_coords) {
@@ -5002,7 +5002,7 @@ void TileSetAtlasSource::remove_tile(Vector2i p_atlas_coords) {
 
 	_queue_update_padded_texture();
 
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 }
 
 bool TileSetAtlasSource::has_tile(Vector2i p_atlas_coords) const {
@@ -5032,7 +5032,7 @@ void TileSetAtlasSource::set_tile_animation_columns(const Vector2i p_atlas_coord
 	_create_coords_mapping_cache(p_atlas_coords);
 	_queue_update_padded_texture();
 
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 }
 
 int TileSetAtlasSource::get_tile_animation_columns(const Vector2i p_atlas_coords) const {
@@ -5055,7 +5055,7 @@ void TileSetAtlasSource::set_tile_animation_separation(const Vector2i p_atlas_co
 	_create_coords_mapping_cache(p_atlas_coords);
 	_queue_update_padded_texture();
 
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 }
 
 Vector2i TileSetAtlasSource::get_tile_animation_separation(const Vector2i p_atlas_coords) const {
@@ -5069,7 +5069,7 @@ void TileSetAtlasSource::set_tile_animation_speed(const Vector2i p_atlas_coords,
 
 	tiles[p_atlas_coords].animation_speed = p_speed;
 
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 }
 
 real_t TileSetAtlasSource::get_tile_animation_speed(const Vector2i p_atlas_coords) const {
@@ -5082,7 +5082,7 @@ void TileSetAtlasSource::set_tile_animation_mode(const Vector2i p_atlas_coords, 
 
 	tiles[p_atlas_coords].animation_mode = p_mode;
 
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 }
 
 TileSetAtlasSource::TileAnimationMode TileSetAtlasSource::get_tile_animation_mode(const Vector2i p_atlas_coords) const {
@@ -5116,7 +5116,7 @@ void TileSetAtlasSource::set_tile_animation_frames_count(const Vector2i p_atlas_
 
 	notify_property_list_changed();
 
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 }
 
 int TileSetAtlasSource::get_tile_animation_frames_count(const Vector2i p_atlas_coords) const {
@@ -5131,7 +5131,7 @@ void TileSetAtlasSource::set_tile_animation_frame_duration(const Vector2i p_atla
 
 	tiles[p_atlas_coords].animation_frames_durations[p_frame_index] = p_duration;
 
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 }
 
 real_t TileSetAtlasSource::get_tile_animation_frame_duration(const Vector2i p_atlas_coords, int p_frame_index) const {
@@ -5341,7 +5341,7 @@ void TileSetAtlasSource::move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_
 	_create_coords_mapping_cache(new_atlas_coords);
 	_queue_update_padded_texture();
 
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 }
 
 int TileSetAtlasSource::create_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_id_override) {
@@ -5353,13 +5353,13 @@ int TileSetAtlasSource::create_alternative_tile(const Vector2i p_atlas_coords, i
 	tiles[p_atlas_coords].alternatives[new_alternative_id] = memnew(TileData);
 	tiles[p_atlas_coords].alternatives[new_alternative_id]->set_tile_set(tile_set);
 	tiles[p_atlas_coords].alternatives[new_alternative_id]->set_allow_transform(true);
-	tiles[p_atlas_coords].alternatives[new_alternative_id]->connect("changed", callable_mp((Resource *)this, &TileSetAtlasSource::emit_changed));
+	tiles[p_atlas_coords].alternatives[new_alternative_id]->connect(CoreStringName(changed), callable_mp((Resource *)this, &TileSetAtlasSource::emit_changed));
 	tiles[p_atlas_coords].alternatives[new_alternative_id]->notify_property_list_changed();
 	tiles[p_atlas_coords].alternatives_ids.push_back(new_alternative_id);
 	tiles[p_atlas_coords].alternatives_ids.sort();
 	_compute_next_alternative_id(p_atlas_coords);
 
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 
 	return new_alternative_id;
 }
@@ -5375,7 +5375,7 @@ void TileSetAtlasSource::remove_alternative_tile(const Vector2i p_atlas_coords, 
 	tiles[p_atlas_coords].alternatives_ids.erase(p_alternative_tile);
 	tiles[p_atlas_coords].alternatives_ids.sort();
 
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 }
 
 void TileSetAtlasSource::set_alternative_tile_id(const Vector2i p_atlas_coords, int p_alternative_tile, int p_new_id) {
@@ -5393,7 +5393,7 @@ void TileSetAtlasSource::set_alternative_tile_id(const Vector2i p_atlas_coords, 
 	tiles[p_atlas_coords].alternatives_ids.erase(p_alternative_tile);
 	tiles[p_atlas_coords].alternatives_ids.sort();
 
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 }
 
 bool TileSetAtlasSource::has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const {
@@ -5425,6 +5425,12 @@ TileData *TileSetAtlasSource::get_tile_data(const Vector2i p_atlas_coords, int p
 	ERR_FAIL_COND_V_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), nullptr, vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
 
 	return tiles[p_atlas_coords].alternatives[p_alternative_tile];
+}
+
+void TileSetAtlasSource::_notification(int p_notification) {
+	if (p_notification == NOTIFICATION_POSTINITIALIZE) {
+		initializing = false;
+	}
 }
 
 void TileSetAtlasSource::_bind_methods() {
@@ -5569,6 +5575,9 @@ void TileSetAtlasSource::_create_coords_mapping_cache(Vector2i p_atlas_coords) {
 }
 
 void TileSetAtlasSource::_queue_update_padded_texture() {
+	if (padded_texture_needs_update) {
+		return;
+	}
 	padded_texture_needs_update = true;
 	callable_mp(this, &TileSetAtlasSource::_update_padded_texture).call_deferred();
 }
@@ -5581,6 +5590,11 @@ Ref<ImageTexture> TileSetAtlasSource::_create_padded_image_texture(const Ref<Tex
 		Ref<ImageTexture> ret;
 		ret.instantiate();
 		return ret;
+	}
+	if (src_image->is_compressed()) {
+		src_image = src_image->duplicate();
+		Error err = src_image->decompress();
+		ERR_FAIL_COND_V_MSG(err != OK, Ref<ImageTexture>(), "Unable to decompress image.");
 	}
 
 	Size2 size = get_atlas_grid_size() * (texture_region_size + Vector2i(2, 2));
@@ -5677,12 +5691,24 @@ void TileSetAtlasSource::_update_padded_texture() {
 	emit_changed();
 }
 
+void TileSetAtlasSource::_try_emit_changed() {
+	if (!initializing) {
+		emit_changed();
+	}
+}
+
 /////////////////////////////// TileSetScenesCollectionSource //////////////////////////////////////
 
 void TileSetScenesCollectionSource::_compute_next_alternative_id() {
 	while (scenes.has(next_scene_id)) {
 		next_scene_id = (next_scene_id % 1073741823) + 1; // 2 ** 30
 	};
+}
+
+void TileSetScenesCollectionSource::_try_emit_changed() {
+	if (!initializing) {
+		emit_changed();
+	}
 }
 
 int TileSetScenesCollectionSource::get_tiles_count() const {
@@ -5725,7 +5751,7 @@ int TileSetScenesCollectionSource::create_scene_tile(Ref<PackedScene> p_packed_s
 	set_scene_tile_scene(new_scene_id, p_packed_scene);
 	_compute_next_alternative_id();
 
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 
 	return new_scene_id;
 }
@@ -5745,7 +5771,7 @@ void TileSetScenesCollectionSource::set_scene_tile_id(int p_id, int p_new_id) {
 	scenes.erase(p_id);
 	scenes_ids.erase(p_id);
 
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 }
 
 void TileSetScenesCollectionSource::set_scene_tile_scene(int p_id, Ref<PackedScene> p_packed_scene) {
@@ -5769,7 +5795,7 @@ void TileSetScenesCollectionSource::set_scene_tile_scene(int p_id, Ref<PackedSce
 	} else {
 		scenes[p_id].scene = Ref<PackedScene>();
 	}
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 }
 
 Ref<PackedScene> TileSetScenesCollectionSource::get_scene_tile_scene(int p_id) const {
@@ -5782,7 +5808,7 @@ void TileSetScenesCollectionSource::set_scene_tile_display_placeholder(int p_id,
 
 	scenes[p_id].display_placeholder = p_display_placeholder;
 
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 }
 
 bool TileSetScenesCollectionSource::get_scene_tile_display_placeholder(int p_id) const {
@@ -5795,7 +5821,7 @@ void TileSetScenesCollectionSource::remove_scene_tile(int p_id) {
 
 	scenes.erase(p_id);
 	scenes_ids.erase(p_id);
-	emit_signal(SNAME("changed"));
+	_try_emit_changed();
 }
 
 int TileSetScenesCollectionSource::get_next_scene_tile_id() const {
@@ -5854,6 +5880,12 @@ void TileSetScenesCollectionSource::_get_property_list(List<PropertyInfo> *p_lis
 	}
 }
 
+void TileSetScenesCollectionSource::_notification(int p_notification) {
+	if (p_notification == NOTIFICATION_POSTINITIALIZE) {
+		initializing = false;
+	}
+}
+
 void TileSetScenesCollectionSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_scene_tiles_count"), &TileSetScenesCollectionSource::get_scene_tiles_count);
 	ClassDB::bind_method(D_METHOD("get_scene_tile_id", "index"), &TileSetScenesCollectionSource::get_scene_tile_id);
@@ -5906,7 +5938,7 @@ void TileData::notify_tile_data_properties_should_change() {
 	}
 
 	notify_property_list_changed();
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 void TileData::add_occlusion_layer(int p_to_pos) {
@@ -6107,7 +6139,7 @@ TileData *TileData::duplicate() {
 void TileData::set_flip_h(bool p_flip_h) {
 	ERR_FAIL_COND_MSG(!allow_transform && p_flip_h, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
 	flip_h = p_flip_h;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 bool TileData::get_flip_h() const {
 	return flip_h;
@@ -6116,7 +6148,7 @@ bool TileData::get_flip_h() const {
 void TileData::set_flip_v(bool p_flip_v) {
 	ERR_FAIL_COND_MSG(!allow_transform && p_flip_v, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
 	flip_v = p_flip_v;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 bool TileData::get_flip_v() const {
@@ -6126,7 +6158,7 @@ bool TileData::get_flip_v() const {
 void TileData::set_transpose(bool p_transpose) {
 	ERR_FAIL_COND_MSG(!allow_transform && p_transpose, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
 	transpose = p_transpose;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 bool TileData::get_transpose() const {
 	return transpose;
@@ -6134,7 +6166,7 @@ bool TileData::get_transpose() const {
 
 void TileData::set_texture_origin(Vector2i p_texture_origin) {
 	texture_origin = p_texture_origin;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 Vector2i TileData::get_texture_origin() const {
@@ -6143,7 +6175,7 @@ Vector2i TileData::get_texture_origin() const {
 
 void TileData::set_material(Ref<Material> p_material) {
 	material = p_material;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 Ref<Material> TileData::get_material() const {
 	return material;
@@ -6151,7 +6183,7 @@ Ref<Material> TileData::get_material() const {
 
 void TileData::set_modulate(Color p_modulate) {
 	modulate = p_modulate;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 Color TileData::get_modulate() const {
 	return modulate;
@@ -6159,7 +6191,7 @@ Color TileData::get_modulate() const {
 
 void TileData::set_z_index(int p_z_index) {
 	z_index = p_z_index;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 int TileData::get_z_index() const {
 	return z_index;
@@ -6167,7 +6199,7 @@ int TileData::get_z_index() const {
 
 void TileData::set_y_sort_origin(int p_y_sort_origin) {
 	y_sort_origin = p_y_sort_origin;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 int TileData::get_y_sort_origin() const {
 	return y_sort_origin;
@@ -6177,7 +6209,7 @@ void TileData::set_occluder(int p_layer_id, Ref<OccluderPolygon2D> p_occluder_po
 	ERR_FAIL_INDEX(p_layer_id, occluders.size());
 	occluders.write[p_layer_id].occluder = p_occluder_polygon;
 	occluders.write[p_layer_id].transformed_occluders.clear();
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 Ref<OccluderPolygon2D> TileData::get_occluder(int p_layer_id, bool p_flip_h, bool p_flip_v, bool p_transpose) const {
@@ -6210,7 +6242,7 @@ Ref<OccluderPolygon2D> TileData::get_occluder(int p_layer_id, bool p_flip_h, boo
 void TileData::set_constant_linear_velocity(int p_layer_id, const Vector2 &p_velocity) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	physics.write[p_layer_id].linear_velocity = p_velocity;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 Vector2 TileData::get_constant_linear_velocity(int p_layer_id) const {
@@ -6221,7 +6253,7 @@ Vector2 TileData::get_constant_linear_velocity(int p_layer_id) const {
 void TileData::set_constant_angular_velocity(int p_layer_id, real_t p_velocity) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	physics.write[p_layer_id].angular_velocity = p_velocity;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 real_t TileData::get_constant_angular_velocity(int p_layer_id) const {
@@ -6237,7 +6269,7 @@ void TileData::set_collision_polygons_count(int p_layer_id, int p_polygons_count
 	}
 	physics.write[p_layer_id].polygons.resize(p_polygons_count);
 	notify_property_list_changed();
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 int TileData::get_collision_polygons_count(int p_layer_id) const {
@@ -6248,14 +6280,14 @@ int TileData::get_collision_polygons_count(int p_layer_id) const {
 void TileData::add_collision_polygon(int p_layer_id) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	physics.write[p_layer_id].polygons.push_back(PhysicsLayerTileData::PolygonShapeTileData());
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 void TileData::remove_collision_polygon(int p_layer_id, int p_polygon_index) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
 	physics.write[p_layer_id].polygons.remove_at(p_polygon_index);
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index, Vector<Vector2> p_polygon) {
@@ -6282,7 +6314,7 @@ void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index,
 	}
 	polygon_shape_tile_data.transformed_shapes.clear();
 	polygon_shape_tile_data.polygon = p_polygon;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 Vector<Vector2> TileData::get_collision_polygon_points(int p_layer_id, int p_polygon_index) const {
@@ -6295,7 +6327,7 @@ void TileData::set_collision_polygon_one_way(int p_layer_id, int p_polygon_index
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
 	physics.write[p_layer_id].polygons.write[p_polygon_index].one_way = p_one_way;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 bool TileData::is_collision_polygon_one_way(int p_layer_id, int p_polygon_index) const {
@@ -6308,7 +6340,7 @@ void TileData::set_collision_polygon_one_way_margin(int p_layer_id, int p_polygo
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
 	physics.write[p_layer_id].polygons.write[p_polygon_index].one_way_margin = p_one_way_margin;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 float TileData::get_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index) const {
@@ -6346,7 +6378,7 @@ Ref<ConvexPolygonShape2D> TileData::get_collision_polygon_shape(int p_layer_id, 
 		for (int i = 0; i < size; i++) {
 			Ref<ConvexPolygonShape2D> transformed_polygon;
 			transformed_polygon.instantiate();
-			transformed_polygon->set_points(get_transformed_vertices(shapes_data.shapes[shape_index]->get_points(), p_flip_h, p_flip_v, p_transpose));
+			transformed_polygon->set_points(get_transformed_vertices(shapes_data.shapes[i]->get_points(), p_flip_h, p_flip_v, p_transpose));
 			shapes_data.transformed_shapes[key][i] = transformed_polygon;
 		}
 		return shapes_data.transformed_shapes[key][shape_index];
@@ -6370,7 +6402,7 @@ void TileData::set_terrain_set(int p_terrain_set) {
 	}
 	terrain_set = p_terrain_set;
 	notify_property_list_changed();
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 int TileData::get_terrain_set() const {
@@ -6384,7 +6416,7 @@ void TileData::set_terrain(int p_terrain) {
 		ERR_FAIL_COND(p_terrain >= tile_set->get_terrains_count(terrain_set));
 	}
 	terrain = p_terrain;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 int TileData::get_terrain() const {
@@ -6400,7 +6432,7 @@ void TileData::set_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit, int 
 		ERR_FAIL_COND(!is_valid_terrain_peering_bit(p_peering_bit));
 	}
 	terrain_peering_bits[p_peering_bit] = p_terrain_index;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 int TileData::get_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit) const {
@@ -6432,7 +6464,7 @@ void TileData::set_navigation_polygon(int p_layer_id, Ref<NavigationPolygon> p_n
 	ERR_FAIL_INDEX(p_layer_id, navigation.size());
 	navigation.write[p_layer_id].navigation_polygon = p_navigation_polygon;
 	navigation.write[p_layer_id].transformed_navigation_polygon.clear();
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 Ref<NavigationPolygon> TileData::get_navigation_polygon(int p_layer_id, bool p_flip_h, bool p_flip_v, bool p_transpose) const {
@@ -6457,18 +6489,16 @@ Ref<NavigationPolygon> TileData::get_navigation_polygon(int p_layer_id, bool p_f
 		PackedVector2Array new_points = get_transformed_vertices(layer_tile_data.navigation_polygon->get_vertices(), p_flip_h, p_flip_v, p_transpose);
 		transformed_polygon->set_vertices(new_points);
 
+		int num_polygons = layer_tile_data.navigation_polygon->get_polygon_count();
+		for (int i = 0; i < num_polygons; ++i) {
+			transformed_polygon->add_polygon(layer_tile_data.navigation_polygon->get_polygon(i));
+		}
+
 		for (int i = 0; i < layer_tile_data.navigation_polygon->get_outline_count(); i++) {
 			PackedVector2Array new_outline = get_transformed_vertices(layer_tile_data.navigation_polygon->get_outline(i), p_flip_h, p_flip_v, p_transpose);
 			transformed_polygon->add_outline(new_outline);
 		}
 
-		PackedInt32Array indices;
-		indices.resize(new_points.size());
-		int *w = indices.ptrw();
-		for (int i = 0; i < new_points.size(); i++) {
-			w[i] = i;
-		}
-		transformed_polygon->add_polygon(indices);
 		layer_tile_data.transformed_navigation_polygon[key] = transformed_polygon;
 		return transformed_polygon;
 	} else {
@@ -6480,7 +6510,7 @@ Ref<NavigationPolygon> TileData::get_navigation_polygon(int p_layer_id, bool p_f
 void TileData::set_probability(float p_probability) {
 	ERR_FAIL_COND(p_probability < 0.0);
 	probability = p_probability;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 float TileData::get_probability() const {
 	return probability;
@@ -6504,7 +6534,7 @@ Variant TileData::get_custom_data(String p_layer_name) const {
 void TileData::set_custom_data_by_layer_id(int p_layer_id, Variant p_value) {
 	ERR_FAIL_INDEX(p_layer_id, custom_data.size());
 	custom_data.write[p_layer_id] = p_value;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 Variant TileData::get_custom_data_by_layer_id(int p_layer_id) const {
@@ -6778,8 +6808,20 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 		// Physics layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Physics", ""), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 		for (int i = 0; i < physics.size(); i++) {
-			p_list->push_back(PropertyInfo(Variant::VECTOR2, vformat("physics_layer_%d/%s", i, PNAME("linear_velocity")), PROPERTY_HINT_NONE));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("physics_layer_%d/%s", i, PNAME("angular_velocity")), PROPERTY_HINT_NONE));
+			// physics_layer_%d/linear_velocity
+			property_info = PropertyInfo(Variant::VECTOR2, vformat("physics_layer_%d/%s", i, PNAME("linear_velocity")), PROPERTY_HINT_NONE);
+			if (physics[i].linear_velocity == Vector2()) {
+				property_info.usage ^= PROPERTY_USAGE_STORAGE;
+			}
+			p_list->push_back(property_info);
+
+			// physics_layer_%d/angular_velocity
+			property_info = PropertyInfo(Variant::FLOAT, vformat("physics_layer_%d/%s", i, PNAME("angular_velocity")), PROPERTY_HINT_NONE);
+			if (physics[i].angular_velocity == 0.0) {
+				property_info.usage ^= PROPERTY_USAGE_STORAGE;
+			}
+			p_list->push_back(property_info);
+
 			p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/%s", i, PNAME("polygons_count")), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 
 			for (int j = 0; j < physics[i].polygons.size(); j++) {
@@ -6891,6 +6933,7 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_terrain"), &TileData::get_terrain);
 	ClassDB::bind_method(D_METHOD("set_terrain_peering_bit", "peering_bit", "terrain"), &TileData::set_terrain_peering_bit);
 	ClassDB::bind_method(D_METHOD("get_terrain_peering_bit", "peering_bit"), &TileData::get_terrain_peering_bit);
+	ClassDB::bind_method(D_METHOD("is_valid_terrain_peering_bit", "peering_bit"), &TileData::is_valid_terrain_peering_bit);
 
 	// Navigation
 	ClassDB::bind_method(D_METHOD("set_navigation_polygon", "layer_id", "navigation_polygon"), &TileData::set_navigation_polygon);

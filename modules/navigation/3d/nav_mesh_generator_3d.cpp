@@ -37,6 +37,7 @@
 #include "core/os/thread.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
+#include "scene/3d/navigation_obstacle_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
@@ -44,12 +45,12 @@
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/3d/cylinder_shape_3d.h"
 #include "scene/resources/3d/height_map_shape_3d.h"
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/3d/shape_3d.h"
 #include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
 #include "scene/resources/navigation_mesh.h"
-#include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 
 #include "modules/modules_enabled.gen.h" // For csg, gridmap.
 
@@ -65,11 +66,14 @@
 NavMeshGenerator3D *NavMeshGenerator3D::singleton = nullptr;
 Mutex NavMeshGenerator3D::baking_navmesh_mutex;
 Mutex NavMeshGenerator3D::generator_task_mutex;
+RWLock NavMeshGenerator3D::generator_rid_rwlock;
 bool NavMeshGenerator3D::use_threads = true;
 bool NavMeshGenerator3D::baking_use_multiple_threads = true;
 bool NavMeshGenerator3D::baking_use_high_priority_threads = true;
 HashSet<Ref<NavigationMesh>> NavMeshGenerator3D::baking_navmeshes;
 HashMap<WorkerThreadPool::TaskID, NavMeshGenerator3D::NavMeshGeneratorTask3D *> NavMeshGenerator3D::generator_tasks;
+RID_Owner<NavMeshGenerator3D::NavMeshGeometryParser3D> NavMeshGenerator3D::generator_parser_owner;
+LocalVector<NavMeshGenerator3D::NavMeshGeometryParser3D *> NavMeshGenerator3D::generator_parsers;
 
 NavMeshGenerator3D *NavMeshGenerator3D::get_singleton() {
 	return singleton;
@@ -84,7 +88,7 @@ NavMeshGenerator3D::NavMeshGenerator3D() {
 
 	// Using threads might cause problems on certain exports or with the Editor on certain devices.
 	// This is the main switch to turn threaded navmesh baking off should the need arise.
-	use_threads = baking_use_multiple_threads && !Engine::get_singleton()->is_editor_hint();
+	use_threads = baking_use_multiple_threads;
 }
 
 NavMeshGenerator3D::~NavMeshGenerator3D() {
@@ -137,6 +141,13 @@ void NavMeshGenerator3D::cleanup() {
 		memdelete(generator_task);
 	}
 	generator_tasks.clear();
+
+	generator_rid_rwlock.write_lock();
+	for (NavMeshGeometryParser3D *parser : generator_parsers) {
+		generator_parser_owner.free(parser->self);
+	}
+	generator_parsers.clear();
+	generator_rid_rwlock.write_unlock();
 
 	generator_task_mutex.unlock();
 	baking_navmesh_mutex.unlock();
@@ -251,6 +262,16 @@ void NavMeshGenerator3D::generator_parse_geometry_node(const Ref<NavigationMesh>
 #ifdef MODULE_GRIDMAP_ENABLED
 	generator_parse_gridmap_node(p_navigation_mesh, p_source_geometry_data, p_node);
 #endif
+	generator_parse_navigationobstacle_node(p_navigation_mesh, p_source_geometry_data, p_node);
+
+	generator_rid_rwlock.read_lock();
+	for (const NavMeshGeometryParser3D *parser : generator_parsers) {
+		if (!parser->callback.is_valid()) {
+			continue;
+		}
+		parser->callback.call(p_navigation_mesh, p_source_geometry_data, p_node);
+	}
+	generator_rid_rwlock.read_unlock();
 
 	if (p_recurse_children) {
 		for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -569,6 +590,59 @@ void NavMeshGenerator3D::generator_parse_gridmap_node(const Ref<NavigationMesh> 
 }
 #endif // MODULE_GRIDMAP_ENABLED
 
+void NavMeshGenerator3D::generator_parse_navigationobstacle_node(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node) {
+	NavigationObstacle3D *obstacle = Object::cast_to<NavigationObstacle3D>(p_node);
+	if (obstacle == nullptr) {
+		return;
+	}
+
+	if (!obstacle->get_affect_navigation_mesh()) {
+		return;
+	}
+
+	const Transform3D node_xform = p_source_geometry_data->root_node_transform * Transform3D(Basis(), obstacle->get_global_position());
+
+	const float obstacle_radius = obstacle->get_radius();
+
+	if (obstacle_radius > 0.0) {
+		Vector<Vector3> obstruction_circle_vertices;
+
+		// The point of this is that the moving obstacle can make a simple hole in the navigation mesh and affect the pathfinding.
+		// Without, navigation paths can go directly through the middle of the obstacle and conflict with the avoidance to get agents stuck.
+		// No place for excessive "round" detail here. Every additional edge adds a high cost for something that needs to be quick, not pretty.
+		static const int circle_points = 12;
+
+		obstruction_circle_vertices.resize(circle_points);
+		Vector3 *circle_vertices_ptrw = obstruction_circle_vertices.ptrw();
+		const real_t circle_point_step = Math_TAU / circle_points;
+
+		for (int i = 0; i < circle_points; i++) {
+			const float angle = i * circle_point_step;
+			circle_vertices_ptrw[i] = node_xform.xform(Vector3(Math::cos(angle) * obstacle_radius, 0.0, Math::sin(angle) * obstacle_radius));
+		}
+
+		p_source_geometry_data->add_projected_obstruction(obstruction_circle_vertices, obstacle->get_global_position().y + p_source_geometry_data->root_node_transform.origin.y - obstacle_radius, obstacle_radius, obstacle->get_carve_navigation_mesh());
+	}
+
+	const Vector<Vector3> &obstacle_vertices = obstacle->get_vertices();
+
+	if (obstacle_vertices.is_empty()) {
+		return;
+	}
+
+	Vector<Vector3> obstruction_shape_vertices;
+	obstruction_shape_vertices.resize(obstacle_vertices.size());
+
+	const Vector3 *obstacle_vertices_ptr = obstacle_vertices.ptr();
+	Vector3 *obstruction_shape_vertices_ptrw = obstruction_shape_vertices.ptrw();
+
+	for (int i = 0; i < obstacle_vertices.size(); i++) {
+		obstruction_shape_vertices_ptrw[i] = node_xform.xform(obstacle_vertices_ptr[i]);
+		obstruction_shape_vertices_ptrw[i].y = 0.0;
+	}
+	p_source_geometry_data->add_projected_obstruction(obstruction_shape_vertices, obstacle->get_global_position().y + p_source_geometry_data->root_node_transform.origin.y, obstacle->get_height(), obstacle->get_carve_navigation_mesh());
+}
+
 void NavMeshGenerator3D::generator_parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node) {
 	List<Node *> parse_nodes;
 
@@ -598,10 +672,16 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 		return;
 	}
 
-	const Vector<float> &vertices = p_source_geometry_data->get_vertices();
-	const Vector<int> &indices = p_source_geometry_data->get_indices();
+	Vector<float> source_geometry_vertices;
+	Vector<int> source_geometry_indices;
+	Vector<NavigationMeshSourceGeometryData3D::ProjectedObstruction> projected_obstructions;
 
-	if (vertices.size() < 3 || indices.size() < 3) {
+	p_source_geometry_data->get_data(
+			source_geometry_vertices,
+			source_geometry_indices,
+			projected_obstructions);
+
+	if (source_geometry_vertices.size() < 3 || source_geometry_indices.size() < 3) {
 		return;
 	}
 
@@ -617,10 +697,10 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	bake_state = "Setting up Configuration..."; // step #1
 
-	const float *verts = vertices.ptr();
-	const int nverts = vertices.size() / 3;
-	const int *tris = indices.ptr();
-	const int ntris = indices.size() / 3;
+	const float *verts = source_geometry_vertices.ptr();
+	const int nverts = source_geometry_vertices.size() / 3;
+	const int *tris = source_geometry_indices.ptr();
+	const int ntris = source_geometry_indices.size() / 3;
 
 	float bmin[3], bmax[3];
 	rcCalcBounds(verts, nverts, bmin, bmax);
@@ -645,7 +725,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	cfg.detailSampleDist = MAX(p_navigation_mesh->get_cell_size() * p_navigation_mesh->get_detail_sample_distance(), 0.1f);
 	cfg.detailSampleMaxError = p_navigation_mesh->get_cell_height() * p_navigation_mesh->get_detail_sample_max_error();
 
-	if (p_navigation_mesh->get_border_size() > 0.0 && !Math::is_equal_approx(p_navigation_mesh->get_cell_size(), p_navigation_mesh->get_border_size())) {
+	if (p_navigation_mesh->get_border_size() > 0.0 && Math::fmod(p_navigation_mesh->get_border_size(), p_navigation_mesh->get_cell_size()) != 0.0) {
 		WARN_PRINT("Property border_size is ceiled to cell_size voxel units and loses precision.");
 	}
 	if (!Math::is_equal_approx((float)cfg.walkableHeight * cfg.ch, p_navigation_mesh->get_agent_height())) {
@@ -695,11 +775,14 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
 
 	// ~30000000 seems to be around sweetspot where Editor baking breaks
-	if ((cfg.width * cfg.height) > 30000000) {
-		WARN_PRINT("NavigationMesh baking process will likely fail."
-				   "\nSource geometry is suspiciously big for the current Cell Size and Cell Height in the NavMesh Resource bake settings."
-				   "\nIf baking does not fail, the resulting NavigationMesh will create serious pathfinding performance issues."
-				   "\nIt is advised to increase Cell Size and/or Cell Height in the NavMesh Resource bake settings or reduce the size / scale of the source geometry.");
+	if ((cfg.width * cfg.height) > 30000000 && GLOBAL_GET("navigation/baking/use_crash_prevention_checks")) {
+		ERR_FAIL_MSG("Baking interrupted."
+					 "\nNavigationMesh baking process would likely crash the engine."
+					 "\nSource geometry is suspiciously big for the current Cell Size and Cell Height in the NavMesh Resource bake settings."
+					 "\nIf baking does not crash the engine or fail, the resulting NavigationMesh will create serious pathfinding performance issues."
+					 "\nIt is advised to increase Cell Size and/or Cell Height in the NavMesh Resource bake settings or reduce the size / scale of the source geometry."
+					 "\nIf you would like to try baking anyway, disable the 'navigation/baking/use_crash_prevention_checks' project setting.");
+		return;
 	}
 
 	bake_state = "Creating heightfield..."; // step #3
@@ -741,9 +824,43 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	rcFreeHeightField(hf);
 	hf = nullptr;
 
+	// Add obstacles to the source geometry. Those will be affected by e.g. agent_radius.
+	if (!projected_obstructions.is_empty()) {
+		for (const NavigationMeshSourceGeometryData3D::ProjectedObstruction &projected_obstruction : projected_obstructions) {
+			if (projected_obstruction.carve) {
+				continue;
+			}
+			if (projected_obstruction.vertices.is_empty() || projected_obstruction.vertices.size() % 3 != 0) {
+				continue;
+			}
+
+			const float *projected_obstruction_verts = projected_obstruction.vertices.ptr();
+			const int projected_obstruction_nverts = projected_obstruction.vertices.size() / 3;
+
+			rcMarkConvexPolyArea(&ctx, projected_obstruction_verts, projected_obstruction_nverts, projected_obstruction.elevation, projected_obstruction.elevation + projected_obstruction.height, RC_NULL_AREA, *chf);
+		}
+	}
+
 	bake_state = "Eroding walkable area..."; // step #6
 
 	ERR_FAIL_COND(!rcErodeWalkableArea(&ctx, cfg.walkableRadius, *chf));
+
+	// Carve obstacles to the eroded geometry. Those will NOT be affected by e.g. agent_radius because that step is already done.
+	if (!projected_obstructions.is_empty()) {
+		for (const NavigationMeshSourceGeometryData3D::ProjectedObstruction &projected_obstruction : projected_obstructions) {
+			if (!projected_obstruction.carve) {
+				continue;
+			}
+			if (projected_obstruction.vertices.is_empty() || projected_obstruction.vertices.size() % 3 != 0) {
+				continue;
+			}
+
+			const float *projected_obstruction_verts = projected_obstruction.vertices.ptr();
+			const int projected_obstruction_nverts = projected_obstruction.vertices.size() / 3;
+
+			rcMarkConvexPolyArea(&ctx, projected_obstruction_verts, projected_obstruction_nverts, projected_obstruction.elevation, projected_obstruction.elevation + projected_obstruction.height, RC_NULL_AREA, *chf);
+		}
+	}
 
 	bake_state = "Partitioning..."; // step #7
 
@@ -781,13 +898,25 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	bake_state = "Converting to native navigation mesh..."; // step #10
 
 	Vector<Vector3> nav_vertices;
+	Vector<Vector<int>> nav_polygons;
+
+	HashMap<Vector3, int> recast_vertex_to_native_index;
+	LocalVector<int> recast_index_to_native_index;
+	recast_index_to_native_index.resize(detail_mesh->nverts);
 
 	for (int i = 0; i < detail_mesh->nverts; i++) {
 		const float *v = &detail_mesh->verts[i * 3];
-		nav_vertices.push_back(Vector3(v[0], v[1], v[2]));
+		const Vector3 vertex = Vector3(v[0], v[1], v[2]);
+		int *existing_index_ptr = recast_vertex_to_native_index.getptr(vertex);
+		if (!existing_index_ptr) {
+			int new_index = recast_vertex_to_native_index.size();
+			recast_index_to_native_index[i] = new_index;
+			recast_vertex_to_native_index[vertex] = new_index;
+			nav_vertices.push_back(vertex);
+		} else {
+			recast_index_to_native_index[i] = *existing_index_ptr;
+		}
 	}
-	p_navigation_mesh->set_vertices(nav_vertices);
-	p_navigation_mesh->clear_polygons();
 
 	for (int i = 0; i < detail_mesh->nmeshes; i++) {
 		const unsigned int *detail_mesh_m = &detail_mesh->meshes[i * 4];
@@ -799,12 +928,19 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 			Vector<int> nav_indices;
 			nav_indices.resize(3);
 			// Polygon order in recast is opposite than godot's
-			nav_indices.write[0] = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 0]));
-			nav_indices.write[1] = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 2]));
-			nav_indices.write[2] = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 1]));
-			p_navigation_mesh->add_polygon(nav_indices);
+			int index1 = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 0]));
+			int index2 = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 2]));
+			int index3 = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 1]));
+
+			nav_indices.write[0] = recast_index_to_native_index[index1];
+			nav_indices.write[1] = recast_index_to_native_index[index2];
+			nav_indices.write[2] = recast_index_to_native_index[index3];
+
+			nav_polygons.push_back(nav_indices);
 		}
 	}
+
+	p_navigation_mesh->set_data(nav_vertices, nav_polygons);
 
 	bake_state = "Cleanup..."; // step #11
 
@@ -824,6 +960,47 @@ bool NavMeshGenerator3D::generator_emit_callback(const Callable &p_callback) {
 	p_callback.callp(nullptr, 0, result, ce);
 
 	return ce.error == Callable::CallError::CALL_OK;
+}
+
+RID NavMeshGenerator3D::source_geometry_parser_create() {
+	RWLockWrite write_lock(generator_rid_rwlock);
+
+	RID rid = generator_parser_owner.make_rid();
+
+	NavMeshGeometryParser3D *parser = generator_parser_owner.get_or_null(rid);
+	parser->self = rid;
+
+	generator_parsers.push_back(parser);
+
+	return rid;
+}
+
+void NavMeshGenerator3D::source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) {
+	RWLockWrite write_lock(generator_rid_rwlock);
+
+	NavMeshGeometryParser3D *parser = generator_parser_owner.get_or_null(p_parser);
+	ERR_FAIL_NULL(parser);
+
+	parser->callback = p_callback;
+}
+
+bool NavMeshGenerator3D::owns(RID p_object) {
+	RWLockRead read_lock(generator_rid_rwlock);
+	return generator_parser_owner.owns(p_object);
+}
+
+void NavMeshGenerator3D::free(RID p_object) {
+	RWLockWrite write_lock(generator_rid_rwlock);
+
+	if (generator_parser_owner.owns(p_object)) {
+		NavMeshGeometryParser3D *parser = generator_parser_owner.get_or_null(p_object);
+
+		generator_parsers.erase(parser);
+
+		generator_parser_owner.free(p_object);
+	} else {
+		ERR_PRINT("Attempted to free a NavMeshGenerator3D RID that did not exist (or was already freed).");
+	}
 }
 
 #endif // _3D_DISABLED

@@ -958,6 +958,8 @@ void RendererSceneCull::instance_set_blend_shape_weight(RID p_instance, int p_sh
 	if (instance->mesh_instance.is_valid()) {
 		RSG::mesh_storage->mesh_instance_set_blend_shape_weight(instance->mesh_instance, p_shape, p_weight);
 	}
+
+	_instance_queue_update(instance, false, false);
 }
 
 void RendererSceneCull::instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material) {
@@ -1029,7 +1031,6 @@ inline bool is_geometry_instance(RenderingServer::InstanceType p_type) {
 void RendererSceneCull::instance_set_custom_aabb(RID p_instance, AABB p_aabb) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL(instance);
-	ERR_FAIL_COND(!is_geometry_instance(instance->base_type));
 
 	if (p_aabb != AABB()) {
 		// Set custom AABB
@@ -1720,6 +1721,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		idata.base_rid = p_instance->base;
 		idata.parent_array_index = p_instance->visibility_parent ? p_instance->visibility_parent->array_index : -1;
 		idata.visibility_index = p_instance->visibility_index;
+		idata.occlusion_timeout = 0;
 
 		for (Instance *E : p_instance->visibility_dependencies) {
 			Instance *dep_instance = E;
@@ -2775,7 +2777,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 #define VIS_RANGE_CHECK ((idata.visibility_index == -1) || _visibility_range_check<false>(cull_data.scenario->instance_visibility[idata.visibility_index], cull_data.cam_transform.origin, cull_data.visibility_viewport_mask) == 0)
 #define VIS_PARENT_CHECK (_visibility_parent_check(cull_data, idata))
 #define VIS_CHECK (visibility_check < 0 ? (visibility_check = (visibility_flags != InstanceData::FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK || (VIS_RANGE_CHECK && VIS_PARENT_CHECK))) : visibility_check)
-#define OCCLUSION_CULLED (cull_data.occlusion_buffer != nullptr && (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_OCCLUSION_CULLING) == 0 && cull_data.occlusion_buffer->is_occluded(cull_data.scenario->instance_aabbs[i].bounds, cull_data.cam_transform.origin, inv_cam_transform, *cull_data.camera_matrix, z_near))
+#define OCCLUSION_CULLED (cull_data.occlusion_buffer != nullptr && (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_OCCLUSION_CULLING) == 0 && cull_data.occlusion_buffer->is_occluded(cull_data.scenario->instance_aabbs[i].bounds, cull_data.cam_transform.origin, inv_cam_transform, *cull_data.camera_matrix, z_near, cull_data.scenario->instance_data[i].occlusion_timeout))
 
 		if (!HIDDEN_BY_VISIBILITY_CHECKS) {
 			if ((LAYER_CHECK && IN_FRUSTUM(cull_data.cull->frustum) && VIS_CHECK && !OCCLUSION_CULLED) || (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_ALL_CULLING)) {
@@ -3028,6 +3030,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 	light_culler->prepare_camera(p_camera_data->main_transform, p_camera_data->main_projection);
 
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
+	Vector3 camera_position = p_camera_data->main_transform.origin;
 
 	ERR_FAIL_COND(p_render_buffers.is_null());
 
@@ -3037,7 +3040,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 	if (p_reflection_probe.is_null()) {
 		//no rendering code here, this is only to set up what needs to be done, request regions, etc.
-		scene_render->sdfgi_update(p_render_buffers, p_environment, p_camera_data->main_transform.origin); //update conditions for SDFGI (whether its used or not)
+		scene_render->sdfgi_update(p_render_buffers, p_environment, camera_position); //update conditions for SDFGI (whether its used or not)
 	}
 
 	RENDER_TIMESTAMP("Update Visibility Dependencies");
@@ -3050,7 +3053,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 		VisibilityCullData visibility_cull_data;
 		visibility_cull_data.scenario = scenario;
 		visibility_cull_data.viewport_mask = scenario->viewport_visibility_masks[p_viewport];
-		visibility_cull_data.camera_position = p_camera_data->main_transform.origin;
+		visibility_cull_data.camera_position = camera_position;
 
 		for (int i = scenario->instance_visibility.get_bin_count() - 1; i > 0; i--) { // We skip bin 0
 			visibility_cull_data.cull_offset = scenario->instance_visibility.get_bin_start(i);
@@ -3219,15 +3222,19 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			}
 		}
 
-		// Positional Shadowss
+		// Positional Shadows
 		for (uint32_t i = 0; i < (uint32_t)scene_cull_result.lights.size(); i++) {
 			Instance *ins = scene_cull_result.lights[i];
 
-			if (!p_shadow_atlas.is_valid() || !RSG::light_storage->light_has_shadow(ins->base)) {
+			if (!p_shadow_atlas.is_valid()) {
 				continue;
 			}
 
 			InstanceLightData *light = static_cast<InstanceLightData *>(ins->base_data);
+
+			if (!RSG::light_storage->light_instance_is_shadow_visible_at_position(light->instance, camera_position)) {
+				continue;
+			}
 
 			float coverage = 0.f;
 
@@ -3567,43 +3574,47 @@ void RendererSceneCull::render_probes() {
 
 	bool busy = false;
 
-	while (ref_probe) {
-		SelfList<InstanceReflectionProbeData> *next = ref_probe->next();
-		RID base = ref_probe->self()->owner->base;
+	if (ref_probe) {
+		RENDER_TIMESTAMP("Render ReflectionProbes");
 
-		switch (RSG::light_storage->reflection_probe_get_update_mode(base)) {
-			case RS::REFLECTION_PROBE_UPDATE_ONCE: {
-				if (busy) { //already rendering something
-					break;
-				}
+		while (ref_probe) {
+			SelfList<InstanceReflectionProbeData> *next = ref_probe->next();
+			RID base = ref_probe->self()->owner->base;
 
-				bool done = _render_reflection_probe_step(ref_probe->self()->owner, ref_probe->self()->render_step);
-				if (done) {
+			switch (RSG::light_storage->reflection_probe_get_update_mode(base)) {
+				case RS::REFLECTION_PROBE_UPDATE_ONCE: {
+					if (busy) { // Already rendering something.
+						break;
+					}
+
+					bool done = _render_reflection_probe_step(ref_probe->self()->owner, ref_probe->self()->render_step);
+					if (done) {
+						done_list.push_back(ref_probe);
+					} else {
+						ref_probe->self()->render_step++;
+					}
+
+					busy = true; // Do not render another one of this kind.
+				} break;
+				case RS::REFLECTION_PROBE_UPDATE_ALWAYS: {
+					int step = 0;
+					bool done = false;
+					while (!done) {
+						done = _render_reflection_probe_step(ref_probe->self()->owner, step);
+						step++;
+					}
+
 					done_list.push_back(ref_probe);
-				} else {
-					ref_probe->self()->render_step++;
-				}
+				} break;
+			}
 
-				busy = true; //do not render another one of this kind
-			} break;
-			case RS::REFLECTION_PROBE_UPDATE_ALWAYS: {
-				int step = 0;
-				bool done = false;
-				while (!done) {
-					done = _render_reflection_probe_step(ref_probe->self()->owner, step);
-					step++;
-				}
-
-				done_list.push_back(ref_probe);
-			} break;
+			ref_probe = next;
 		}
 
-		ref_probe = next;
-	}
-
-	// Now remove from our list
-	for (SelfList<InstanceReflectionProbeData> *rp : done_list) {
-		reflection_probe_render_list.remove(rp);
+		// Now remove from our list
+		for (SelfList<InstanceReflectionProbeData> *rp : done_list) {
+			reflection_probe_render_list.remove(rp);
+		}
 	}
 
 	/* VOXEL GIS */
@@ -4252,6 +4263,7 @@ RendererSceneCull::RendererSceneCull() {
 	indexer_update_iterations = GLOBAL_GET("rendering/limits/spatial_indexer/update_iterations_per_frame");
 	thread_cull_threshold = GLOBAL_GET("rendering/limits/spatial_indexer/threaded_cull_minimum_instances");
 	thread_cull_threshold = MAX(thread_cull_threshold, (uint32_t)WorkerThreadPool::get_singleton()->get_thread_count()); //make sure there is at least one thread per CPU
+	RendererSceneOcclusionCull::HZBuffer::occlusion_jitter_enabled = GLOBAL_GET("rendering/occlusion_culling/jitter_projection");
 
 	dummy_occlusion_culling = memnew(RendererSceneOcclusionCull);
 

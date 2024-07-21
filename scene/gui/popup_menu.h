@@ -97,9 +97,14 @@ class PopupMenu : public Popup {
 	static inline PropertyListHelper base_property_helper;
 	PropertyListHelper property_helper;
 
+	// To make Item available.
+	friend class OptionButton;
+	friend class MenuButton;
+
 	RID global_menu;
 	RID system_menu;
 	NativeMenu::SystemMenus system_menu_id = NativeMenu::INVALID_MENU_ID;
+	bool prefer_native = false;
 
 	bool close_allowed = false;
 	bool activated_by_keyboard = false;
@@ -213,7 +218,7 @@ protected:
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
-	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list, items.size()); }
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list); }
 	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	static void _bind_methods();
@@ -322,6 +327,11 @@ public:
 	void set_item_count(int p_count);
 	int get_item_count() const;
 
+	void set_prefer_native_menu(bool p_enabled);
+	bool is_prefer_native_menu() const;
+
+	bool is_native_menu() const;
+
 	void scroll_to_item(int p_idx);
 
 	bool activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only = false);
@@ -357,6 +367,7 @@ public:
 	bool get_allow_search() const;
 
 	virtual void popup(const Rect2i &p_bounds = Rect2i()) override;
+	virtual void set_visible(bool p_visible) override;
 
 	void take_mouse_focus();
 

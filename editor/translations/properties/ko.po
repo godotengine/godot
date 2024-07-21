@@ -353,6 +353,9 @@ msgstr "텍스처 업로드 영역 크기 px"
 msgid "Pipeline Cache"
 msgstr "파이프라인 캐시"
 
+msgid "Enable"
+msgstr "활성화"
+
 msgid "Save Chunk Size (MB)"
 msgstr "저장 청크 크기 (MB)"
 
@@ -710,9 +713,6 @@ msgstr "값"
 msgid "Arg Count"
 msgstr "인수 개수"
 
-msgid "Args"
-msgstr "인수"
-
 msgid "Type"
 msgstr "타입"
 
@@ -799,6 +799,12 @@ msgstr "집중 모드"
 
 msgid "Movie Maker Enabled"
 msgstr "무비 메이커 활성화됨"
+
+msgid "Theme"
+msgstr "테마"
+
+msgid "Line Spacing"
+msgstr "라인 간격"
 
 msgid "Base Type"
 msgstr "기본 타입"
@@ -947,9 +953,6 @@ msgstr "기본 색상 선택기 모드"
 msgid "Default Color Picker Shape"
 msgstr "기본 색상 선택기 모양"
 
-msgid "Theme"
-msgstr "테마"
-
 msgid "Preset"
 msgstr "프리셋"
 
@@ -1022,9 +1025,6 @@ msgstr "불러오기 시 씬 복원"
 msgid "Multi Window"
 msgstr "다중 창"
 
-msgid "Enable"
-msgstr "활성화"
-
 msgid "Restore Windows on Load"
 msgstr "불러오기 시 창 복원"
 
@@ -1087,6 +1087,9 @@ msgstr "RPC 포트"
 
 msgid "RPC Server Uptime"
 msgstr "RPC 서버 업타임"
+
+msgid "FBX"
+msgstr "FBX"
 
 msgid "FBX2glTF Path"
 msgstr "FBX2glTF 경로"
@@ -1195,9 +1198,6 @@ msgstr "탭 사용"
 
 msgid "Draw Spaces"
 msgstr "공백 사용"
-
-msgid "Line Spacing"
-msgstr "라인 간격"
 
 msgid "Behavior"
 msgstr "행동"
@@ -1325,8 +1325,8 @@ msgstr "인스턴스된"
 msgid "Joint"
 msgstr "조인트"
 
-msgid "Shape"
-msgstr "모양"
+msgid "AABB"
+msgstr "AABB"
 
 msgid "Primary Grid Steps"
 msgstr "주 격자 분할 수"
@@ -1558,12 +1558,6 @@ msgstr "폰트 크기"
 
 msgid "Always Clear Output on Play"
 msgstr "실행 시 항상 출력 지우기"
-
-msgid "Always Open Output on Play"
-msgstr "실행 시 항상 출력 열기"
-
-msgid "Always Close Output on Stop"
-msgstr "정지 시 항상 출력 닫기"
 
 msgid "HTTP Proxy"
 msgstr "HTTP 프록시"
@@ -1928,9 +1922,6 @@ msgstr "파일로 저장"
 msgid "Enabled"
 msgstr "활성화됨"
 
-msgid "Make Streamable"
-msgstr "스트림 가능하게 하기"
-
 msgid "Shadow Meshes"
 msgstr "그림자 메시"
 
@@ -2209,9 +2200,6 @@ msgstr "영역으로 자르기"
 
 msgid "Trim Alpha Border From Region"
 msgstr "영역에서 알파 테두리 자르기"
-
-msgid "Force"
-msgstr "힘"
 
 msgid "8 Bit"
 msgstr "8비트"
@@ -2594,9 +2582,6 @@ msgstr "깊이 버퍼 제출"
 msgid "Startup Alert"
 msgstr "시작 알림"
 
-msgid "In Editor"
-msgstr "에디터 내"
-
 msgid "Boot Splash"
 msgstr "부트 스플래쉬"
 
@@ -2680,6 +2665,15 @@ msgstr "솔루션 디렉토리"
 
 msgid "Assembly Reload Attempts"
 msgstr "어셈블리 리로드 시도 횟수"
+
+msgid "Time"
+msgstr "시간"
+
+msgid "Video"
+msgstr "비디오"
+
+msgid "Polygons"
+msgstr "폴리곤"
 
 msgid "Operation"
 msgstr "오퍼레이션"
@@ -2779,9 +2773,6 @@ msgstr "결합된 경로"
 
 msgid "CSG"
 msgstr "CSG"
-
-msgid "FBX"
-msgstr "FBX"
 
 msgid "Embedded Image Handling"
 msgstr "임베디드 이미지 핸들링"
@@ -4109,9 +4100,6 @@ msgstr "밉맵 사용"
 msgid "Emitting"
 msgstr "방출"
 
-msgid "Time"
-msgstr "시간"
-
 msgid "Lifetime"
 msgstr "수명"
 
@@ -4147,6 +4135,9 @@ msgstr "그리기 순서"
 
 msgid "Emission Shape"
 msgstr "방출 모양"
+
+msgid "Shape"
+msgstr "모양"
 
 msgid "Sphere Radius"
 msgstr "원 반지름"
@@ -4490,9 +4481,6 @@ msgstr "네비게이션 폴리곤"
 msgid "Use Edge Connections"
 msgstr "엣지 연결 사용"
 
-msgid "Constrain Avoidance"
-msgstr "어보이던스 제약"
-
 msgid "Skew"
 msgstr "기울임"
 
@@ -4757,11 +4745,11 @@ msgstr "커스텀 통합"
 msgid "Continuous CD"
 msgstr "연속적 충돌감지"
 
-msgid "Max Contacts Reported"
-msgstr "보고할 최대 접촉 수"
-
 msgid "Contact Monitor"
 msgstr "접촉 감시"
+
+msgid "Max Contacts Reported"
+msgstr "보고할 최대 접촉 수"
 
 msgid "Linear"
 msgstr "직선형"
@@ -4799,9 +4787,6 @@ msgstr "UV"
 msgid "Vertex Colors"
 msgstr "버텍스 컬러"
 
-msgid "Polygons"
-msgstr "폴리곤"
-
 msgid "Internal Vertex Count"
 msgstr "내부 꼭짓점 개수"
 
@@ -4838,6 +4823,9 @@ msgstr "프레임 좌표"
 msgid "Filter Clip Enabled"
 msgstr "필터 클립 활성화"
 
+msgid "Tile Set"
+msgstr "타일셋"
+
 msgid "Collision Animatable"
 msgstr "충돌 애니메이팅 가능"
 
@@ -4847,8 +4835,8 @@ msgstr "충돌 가시성 모드"
 msgid "Navigation Visibility Mode"
 msgstr "네비게이션 가시성 모드"
 
-msgid "Tile Set"
-msgstr "타일셋"
+msgid "Y Sort Origin"
+msgstr "Y 정렬 기준점"
 
 msgid "Texture Normal"
 msgstr "노멀 텍스처"
@@ -4972,9 +4960,6 @@ msgstr "스케일 곡선 Z"
 
 msgid "Albedo"
 msgstr "알베도"
-
-msgid "Normal"
-msgstr "노멀"
 
 msgid "Orm"
 msgstr "ORM"
@@ -5489,9 +5474,6 @@ msgstr "색상 에너지"
 msgid "Bones"
 msgstr "본"
 
-msgid "Interpolation"
-msgstr "보간"
-
 msgid "Target"
 msgstr "대상"
 
@@ -5500,6 +5482,9 @@ msgstr "자석 사용"
 
 msgid "Magnet"
 msgstr "자석"
+
+msgid "Active"
+msgstr "활성"
 
 msgid "Parent Collision Ignore"
 msgstr "부모 충돌 무시"
@@ -5524,9 +5509,6 @@ msgstr "항력 계수"
 
 msgid "Track Physics Step"
 msgstr "물리 스텝 추적"
-
-msgid "AABB"
-msgstr "AABB"
 
 msgid "Sorting"
 msgstr "정렬"
@@ -5629,9 +5611,6 @@ msgstr "입력 카운트"
 
 msgid "Request"
 msgstr "요청"
-
-msgid "Active"
-msgstr "활성"
 
 msgid "Internal Active"
 msgstr "내부적 활성"
@@ -6401,9 +6380,6 @@ msgstr "지형 세트"
 msgid "Custom Data Layers"
 msgstr "커스텀 데이터 레이어"
 
-msgid "Scenes"
-msgstr "씬"
-
 msgid "Scene"
 msgstr "씬"
 
@@ -6424,9 +6400,6 @@ msgstr "전치"
 
 msgid "Texture Origin"
 msgstr "텍스처 원점"
-
-msgid "Y Sort Origin"
-msgstr "Y 정렬 기준점"
 
 msgid "Terrain Set"
 msgstr "지형 세트"
@@ -6790,6 +6763,9 @@ msgstr "글꼴 두께"
 
 msgid "Font Stretch"
 msgstr "글꼴 늘림"
+
+msgid "Interpolation"
+msgstr "보간"
 
 msgid "Color Space"
 msgstr "색공간"
@@ -7273,9 +7249,6 @@ msgstr "채널 비활성화 역치값 dB"
 
 msgid "Channel Disable Time"
 msgstr "채널 비활성화 시간"
-
-msgid "Video"
-msgstr "비디오"
 
 msgid "Video Delay Compensation (ms)"
 msgstr "비디오 딜레이 보정 (ms)"

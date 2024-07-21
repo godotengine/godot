@@ -11,7 +11,7 @@
 	</description>
 	<tutorials>
 		<link title="Recording with microphone">$DOCS_URL/tutorials/audio/recording_with_microphone.html</link>
-		<link title="Audio Mic Record Demo">https://godotengine.org/asset-library/asset/527</link>
+		<link title="Audio Microphone Record Demo">https://godotengine.org/asset-library/asset/2760</link>
 	</tutorials>
 	<methods>
 		<method name="get_recording" qualifiers="const">

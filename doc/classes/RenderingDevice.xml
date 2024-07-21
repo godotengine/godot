@@ -138,6 +138,15 @@
 				Submits the compute list for processing on the GPU. This is the compute equivalent to [method draw_list_draw].
 			</description>
 		</method>
+		<method name="compute_list_dispatch_indirect">
+			<return type="void" />
+			<param index="0" name="compute_list" type="int" />
+			<param index="1" name="buffer" type="RID" />
+			<param index="2" name="offset" type="int" />
+			<description>
+				Submits the compute list for processing on the GPU with the given group counts stored in the [param buffer] at [param offset]. Buffer must have been created with [constant STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT] flag.
+			</description>
+		</method>
 		<method name="compute_list_end">
 			<return type="void" />
 			<description>
@@ -1435,10 +1444,10 @@
 			VRAM-compressed signed red/green channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range. The format's precision is 8 bits of red channel and 8 bits of green channel. Using BC5 texture compression (also known as S3TC RGTC).
 		</constant>
 		<constant name="DATA_FORMAT_BC6H_UFLOAT_BLOCK" value="142" enum="DataFormat">
-			VRAM-compressed unsigned red/green/blue channel data format with the floating-point value stored as-is. The format's precision is 8 bits of red channel and 8 bits of green channel. Using BC6H texture compression (also known as BPTC HDR).
+			VRAM-compressed unsigned red/green/blue channel data format with the floating-point value stored as-is. The format's precision is between 10 and 13 bits for the red/green/blue channels. Using BC6H texture compression (also known as BPTC HDR).
 		</constant>
 		<constant name="DATA_FORMAT_BC6H_SFLOAT_BLOCK" value="143" enum="DataFormat">
-			VRAM-compressed signed red/green/blue channel data format with the floating-point value stored as-is. The format's precision is between 4 and 7 bits for the red/green/blue channels and between 0 and 8 bits for the alpha channel. Using BC7 texture compression (also known as BPTC HDR).
+			VRAM-compressed signed red/green/blue channel data format with the floating-point value stored as-is. The format's precision is between 10 and 13 bits for the red/green/blue channels. Using BC6H texture compression (also known as BPTC HDR).
 		</constant>
 		<constant name="DATA_FORMAT_BC7_UNORM_BLOCK" value="144" enum="DataFormat">
 			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. The format's precision is between 4 and 7 bits for the red/green/blue channels and between 0 and 8 bits for the alpha channel. Also known as BPTC LDR.
@@ -1468,13 +1477,13 @@
 			11-bit VRAM-compressed unsigned red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_EAC_R11_SNORM_BLOCK" value="153" enum="DataFormat">
-			11-bit VRAM-compressed signed red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
+			11-bit VRAM-compressed signed red channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_EAC_R11G11_UNORM_BLOCK" value="154" enum="DataFormat">
 			11-bit VRAM-compressed unsigned red/green channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_EAC_R11G11_SNORM_BLOCK" value="155" enum="DataFormat">
-			11-bit VRAM-compressed signed red/green channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
+			11-bit VRAM-compressed signed red/green channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_4x4_UNORM_BLOCK" value="156" enum="DataFormat">
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 4×4 blocks (highest quality). Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
@@ -2129,8 +2138,10 @@
 			Represents the size of the [enum BlendOperation] enum.
 		</constant>
 		<constant name="DYNAMIC_STATE_LINE_WIDTH" value="1" enum="PipelineDynamicStateFlags" is_bitfield="true">
+			Allows dynamically changing the width of rendering lines.
 		</constant>
 		<constant name="DYNAMIC_STATE_DEPTH_BIAS" value="2" enum="PipelineDynamicStateFlags" is_bitfield="true">
+			Allows dynamically changing the depth bias.
 		</constant>
 		<constant name="DYNAMIC_STATE_BLEND_CONSTANTS" value="4" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>

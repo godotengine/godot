@@ -114,6 +114,9 @@ public:
 			case Variant::PACKED_COLOR_ARRAY:
 				init_color_array(v);
 				break;
+			case Variant::PACKED_VECTOR4_ARRAY:
+				init_vector4_array(v);
+				break;
 			case Variant::OBJECT:
 				init_object(v);
 				break;
@@ -205,13 +208,15 @@ public:
 	_FORCE_INLINE_ static const PackedVector3Array *get_vector3_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<Vector3> *>(v->_data.packed_array)->array; }
 	_FORCE_INLINE_ static PackedColorArray *get_color_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<Color> *>(v->_data.packed_array)->array; }
 	_FORCE_INLINE_ static const PackedColorArray *get_color_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<Color> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static PackedVector4Array *get_vector4_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<Vector4> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static const PackedVector4Array *get_vector4_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<Vector4> *>(v->_data.packed_array)->array; }
 
 	_FORCE_INLINE_ static Object **get_object(Variant *v) { return (Object **)&v->_get_obj().obj; }
 	_FORCE_INLINE_ static const Object **get_object(const Variant *v) { return (const Object **)&v->_get_obj().obj; }
 
 	_FORCE_INLINE_ static const ObjectID get_object_id(const Variant *v) { return v->_get_obj().id; }
 
-	template <class T>
+	template <typename T>
 	_FORCE_INLINE_ static void init_generic(Variant *v) {
 		v->type = GetTypeInfo<T>::VARIANT_TYPE;
 	}
@@ -312,6 +317,10 @@ public:
 	_FORCE_INLINE_ static void init_color_array(Variant *v) {
 		v->_data.packed_array = Variant::PackedArrayRef<Color>::create(Vector<Color>());
 		v->type = Variant::PACKED_COLOR_ARRAY;
+	}
+	_FORCE_INLINE_ static void init_vector4_array(Variant *v) {
+		v->_data.packed_array = Variant::PackedArrayRef<Vector4>::create(Vector<Vector4>());
+		v->type = Variant::PACKED_VECTOR4_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_object(Variant *v) {
 		object_assign_null(v);
@@ -417,6 +426,8 @@ public:
 				return get_vector3_array(v);
 			case Variant::PACKED_COLOR_ARRAY:
 				return get_color_array(v);
+			case Variant::PACKED_VECTOR4_ARRAY:
+				return get_vector4_array(v);
 			case Variant::OBJECT:
 				return get_object(v);
 			case Variant::VARIANT_MAX:
@@ -501,6 +512,8 @@ public:
 				return get_vector3_array(v);
 			case Variant::PACKED_COLOR_ARRAY:
 				return get_color_array(v);
+			case Variant::PACKED_VECTOR4_ARRAY:
+				return get_vector4_array(v);
 			case Variant::OBJECT:
 				return get_object(v);
 			case Variant::VARIANT_MAX:
@@ -510,7 +523,7 @@ public:
 	}
 };
 
-template <class T>
+template <typename T>
 struct VariantGetInternalPtr {
 };
 
@@ -797,7 +810,13 @@ struct VariantGetInternalPtr<PackedColorArray> {
 	static const PackedColorArray *get_ptr(const Variant *v) { return VariantInternal::get_color_array(v); }
 };
 
-template <class T>
+template <>
+struct VariantGetInternalPtr<PackedVector4Array> {
+	static PackedVector4Array *get_ptr(Variant *v) { return VariantInternal::get_vector4_array(v); }
+	static const PackedVector4Array *get_ptr(const Variant *v) { return VariantInternal::get_vector4_array(v); }
+};
+
+template <typename T>
 struct VariantInternalAccessor {
 };
 
@@ -830,13 +849,13 @@ struct VariantInternalAccessor<ObjectID> {
 	static _FORCE_INLINE_ void set(Variant *v, ObjectID p_value) { *VariantInternal::get_int(v) = p_value; }
 };
 
-template <class T>
+template <typename T>
 struct VariantInternalAccessor<T *> {
 	static _FORCE_INLINE_ T *get(const Variant *v) { return const_cast<T *>(static_cast<const T *>(*VariantInternal::get_object(v))); }
 	static _FORCE_INLINE_ void set(Variant *v, const T *p_value) { VariantInternal::object_assign(v, p_value); }
 };
 
-template <class T>
+template <typename T>
 struct VariantInternalAccessor<const T *> {
 	static _FORCE_INLINE_ const T *get(const Variant *v) { return static_cast<const T *>(*VariantInternal::get_object(v)); }
 	static _FORCE_INLINE_ void set(Variant *v, const T *p_value) { VariantInternal::object_assign(v, p_value); }
@@ -1058,6 +1077,12 @@ struct VariantInternalAccessor<PackedColorArray> {
 };
 
 template <>
+struct VariantInternalAccessor<PackedVector4Array> {
+	static _FORCE_INLINE_ const PackedVector4Array &get(const Variant *v) { return *VariantInternal::get_vector4_array(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const PackedVector4Array &p_value) { *VariantInternal::get_vector4_array(v) = p_value; }
+};
+
+template <>
 struct VariantInternalAccessor<Object *> {
 	static _FORCE_INLINE_ Object *get(const Variant *v) { return const_cast<Object *>(*VariantInternal::get_object(v)); }
 	static _FORCE_INLINE_ void set(Variant *v, const Object *p_value) { VariantInternal::object_assign(v, p_value); }
@@ -1091,7 +1116,7 @@ struct VariantInternalAccessor<Vector<Variant>> {
 	}
 };
 
-template <class T>
+template <typename T>
 struct VariantInitializer {
 };
 
@@ -1297,11 +1322,16 @@ struct VariantInitializer<PackedColorArray> {
 };
 
 template <>
+struct VariantInitializer<PackedVector4Array> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_vector4_array(v); }
+};
+
+template <>
 struct VariantInitializer<Object *> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_object(v); }
 };
 
-template <class T>
+template <typename T>
 struct VariantDefaultInitializer {
 };
 
@@ -1490,7 +1520,12 @@ struct VariantDefaultInitializer<PackedColorArray> {
 	static _FORCE_INLINE_ void init(Variant *v) { *VariantInternal::get_color_array(v) = PackedColorArray(); }
 };
 
-template <class T>
+template <>
+struct VariantDefaultInitializer<PackedVector4Array> {
+	static _FORCE_INLINE_ void init(Variant *v) { *VariantInternal::get_vector4_array(v) = PackedVector4Array(); }
+};
+
+template <typename T>
 struct VariantTypeChanger {
 	static _FORCE_INLINE_ void change(Variant *v) {
 		if (v->get_type() != GetTypeInfo<T>::VARIANT_TYPE || GetTypeInfo<T>::VARIANT_TYPE >= Variant::PACKED_BYTE_ARRAY) { //second condition removed by optimizer
@@ -1508,10 +1543,10 @@ struct VariantTypeChanger {
 	}
 };
 
-template <class T>
+template <typename T>
 struct VariantTypeAdjust {
 	_FORCE_INLINE_ static void adjust(Variant *r_ret) {
-		VariantTypeChanger<typename GetSimpleTypeT<T>::type_t>::change(r_ret);
+		VariantTypeChanger<GetSimpleTypeT<T>>::change(r_ret);
 	}
 };
 
@@ -1532,7 +1567,7 @@ struct VariantTypeAdjust<Object *> {
 
 // GDExtension helpers.
 
-template <class T>
+template <typename T>
 struct VariantTypeConstructor {
 	_FORCE_INLINE_ static void variant_from_type(void *r_variant, void *p_value) {
 		// r_variant is provided by caller as uninitialized memory

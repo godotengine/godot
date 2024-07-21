@@ -204,6 +204,67 @@ TEST_CASE("[AABB] Intersection") {
 	CHECK_MESSAGE(
 			!aabb_big.intersects_segment(Vector3(0, 300, 0), Vector3(0, 300, 0)),
 			"intersects_segment() should return the expected result with segment of length 0.");
+	CHECK_MESSAGE( // Simple ray intersection test.
+			aabb_big.intersects_ray(Vector3(-100, 3, 0), Vector3(1, 0, 0)),
+			"intersects_ray() should return true when ray points directly to AABB from outside.");
+	CHECK_MESSAGE( // Ray parallel to an edge.
+			!aabb_big.intersects_ray(Vector3(10, 10, 0), Vector3(0, 1, 0)),
+			"intersects_ray() should return false for ray parallel and outside of AABB.");
+	CHECK_MESSAGE( // Ray origin inside aabb.
+			aabb_big.intersects_ray(Vector3(1, 1, 1), Vector3(0, 1, 0)),
+			"intersects_ray() should return true for rays originating inside the AABB.");
+	CHECK_MESSAGE( // Ray pointing away from aabb.
+			!aabb_big.intersects_ray(Vector3(-10, 0, 0), Vector3(-1, 0, 0)),
+			"intersects_ray() should return false when ray points away from AABB.");
+	CHECK_MESSAGE( // Ray along a diagonal of aabb.
+			aabb_big.intersects_ray(Vector3(0, 0, 0), Vector3(1, 1, 1)),
+			"intersects_ray() should return true for rays along the AABB diagonal.");
+	CHECK_MESSAGE( // Ray originating at aabb edge.
+			aabb_big.intersects_ray(aabb_big.position, Vector3(-1, 0, 0)),
+			"intersects_ray() should return true for rays starting on AABB's edge.");
+	CHECK_MESSAGE( // Ray with zero direction inside.
+			aabb_big.intersects_ray(Vector3(-1, 3, -2), Vector3(0, 0, 0)),
+			"intersects_ray() should return true because its inside.");
+	CHECK_MESSAGE( // Ray with zero direction outside.
+			!aabb_big.intersects_ray(Vector3(-1000, 3, -2), Vector3(0, 0, 0)),
+			"intersects_ray() should return false for being outside.");
+
+	// Finding ray intersections.
+	const AABB aabb_simple = AABB(Vector3(), Vector3(1, 1, 1));
+	bool inside = false;
+	Vector3 intersection_point;
+	Vector3 intersection_normal;
+
+	// Borders.
+	aabb_simple.find_intersects_ray(Vector3(0.5, 0, 0.5), Vector3(0, 1, 0), inside, &intersection_point, &intersection_normal);
+	CHECK_MESSAGE(inside == false, "find_intersects_ray() should return outside on borders.");
+	CHECK_MESSAGE(intersection_point.is_equal_approx(Vector3(0.5, 0, 0.5)), "find_intersects_ray() border intersection point incorrect.");
+	CHECK_MESSAGE(intersection_normal.is_equal_approx(Vector3(0, -1, 0)), "find_intersects_ray() border intersection normal incorrect.");
+	aabb_simple.find_intersects_ray(Vector3(0.5, 1, 0.5), Vector3(0, -1, 0), inside, &intersection_point, &intersection_normal);
+	CHECK_MESSAGE(inside == false, "find_intersects_ray() should return outside on borders.");
+	CHECK_MESSAGE(intersection_point.is_equal_approx(Vector3(0.5, 1, 0.5)), "find_intersects_ray() border intersection point incorrect.");
+	CHECK_MESSAGE(intersection_normal.is_equal_approx(Vector3(0, 1, 0)), "find_intersects_ray() border intersection normal incorrect.");
+
+	// Inside.
+	aabb_simple.find_intersects_ray(Vector3(0.5, 0.1, 0.5), Vector3(0, 1, 0), inside, &intersection_point, &intersection_normal);
+	CHECK_MESSAGE(inside == true, "find_intersects_ray() should return inside when inside.");
+	CHECK_MESSAGE(intersection_point.is_equal_approx(Vector3(0.5, 0, 0.5)), "find_intersects_ray() inside backtracking intersection point incorrect.");
+	CHECK_MESSAGE(intersection_normal.is_equal_approx(Vector3(0, -1, 0)), "find_intersects_ray() inside intersection normal incorrect.");
+
+	// Zero sized AABB.
+	const AABB aabb_zero = AABB(Vector3(), Vector3(1, 0, 1));
+	aabb_zero.find_intersects_ray(Vector3(0.5, 0, 0.5), Vector3(0, 1, 0), inside, &intersection_point, &intersection_normal);
+	CHECK_MESSAGE(inside == false, "find_intersects_ray() should return outside on borders of zero sized AABB.");
+	CHECK_MESSAGE(intersection_point.is_equal_approx(Vector3(0.5, 0, 0.5)), "find_intersects_ray() border intersection point incorrect for zero sized AABB.");
+	CHECK_MESSAGE(intersection_normal.is_equal_approx(Vector3(0, -1, 0)), "find_intersects_ray() border intersection normal incorrect for zero sized AABB.");
+	aabb_zero.find_intersects_ray(Vector3(0.5, 0, 0.5), Vector3(0, -1, 0), inside, &intersection_point, &intersection_normal);
+	CHECK_MESSAGE(inside == false, "find_intersects_ray() should return outside on borders of zero sized AABB.");
+	CHECK_MESSAGE(intersection_point.is_equal_approx(Vector3(0.5, 0, 0.5)), "find_intersects_ray() border intersection point incorrect for zero sized AABB.");
+	CHECK_MESSAGE(intersection_normal.is_equal_approx(Vector3(0, 1, 0)), "find_intersects_ray() border intersection normal incorrect for zero sized AABB.");
+	aabb_zero.find_intersects_ray(Vector3(0.5, -1, 0.5), Vector3(0, 1, 0), inside, &intersection_point, &intersection_normal);
+	CHECK_MESSAGE(inside == false, "find_intersects_ray() should return outside on borders of zero sized AABB.");
+	CHECK_MESSAGE(intersection_point.is_equal_approx(Vector3(0.5, 0, 0.5)), "find_intersects_ray() border intersection point incorrect for zero sized AABB.");
+	CHECK_MESSAGE(intersection_normal.is_equal_approx(Vector3(0, -1, 0)), "find_intersects_ray() border intersection normal incorrect for zero sized AABB.");
 }
 
 TEST_CASE("[AABB] Merging") {

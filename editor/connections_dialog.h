@@ -140,7 +140,6 @@ private:
 	void ok_pressed() override;
 	void _cancel_pressed();
 	void _item_activated();
-	void _text_submitted(const String &p_text);
 	void _tree_node_selected();
 	void _focus_currently_connected();
 
@@ -159,6 +158,7 @@ private:
 	void _update_warning_label();
 
 protected:
+	virtual void _post_popup() override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -191,7 +191,7 @@ public:
 
 //////////////////////////////////////////
 
-// Custom `Tree` needed to use `EditorHelpTooltip` to display signal documentation.
+// Custom `Tree` needed to use `EditorHelpBit` to display signal documentation.
 class ConnectionsDockTree : public Tree {
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 };

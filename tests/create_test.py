@@ -101,7 +101,7 @@ TEST_CASE("[{name_pascal_case}] Example test case") {{
 
     if args.invasive:
         print("Trying to insert include directive in test_main.cpp...")
-        with open("test_main.cpp", "r") as file:
+        with open("test_main.cpp", "r", encoding="utf-8") as file:
             contents = file.read()
         match = re.search(r'#include "tests.*\n', contents)
 

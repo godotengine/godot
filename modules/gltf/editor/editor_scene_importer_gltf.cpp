@@ -59,6 +59,10 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 		int32_t enum_option = p_options["gltf/embedded_image_handling"];
 		state->set_handle_binary_image(enum_option);
 	}
+	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
+		state->set_import_as_skeleton_bones(true);
+	}
+	state->set_bake_fps(p_options["animation/fps"]);
 	Error err = gltf->append_from_file(p_path, state, p_flags);
 	if (err != OK) {
 		if (r_err) {
@@ -72,17 +76,20 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 
 #ifndef DISABLE_DEPRECATED
 	bool trimming = p_options.has("animation/trimming") ? (bool)p_options["animation/trimming"] : false;
-	bool remove_immutable = p_options.has("animation/remove_immutable_tracks") ? (bool)p_options["animation/remove_immutable_tracks"] : true;
-	return gltf->generate_scene(state, (float)p_options["animation/fps"], trimming, remove_immutable);
+	return gltf->generate_scene(state, state->get_bake_fps(), trimming, false);
 #else
-	return gltf->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], (bool)p_options["animation/remove_immutable_tracks"]);
+	return gltf->generate_scene(state, state->get_bake_fps(), (bool)p_options["animation/trimming"], false);
 #endif
 }
 
 void EditorSceneFormatImporterGLTF::get_import_options(const String &p_path,
 		List<ResourceImporter::ImportOption> *r_options) {
-	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.1 or 4.0,Godot 4.2 or later"), 1));
-	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/embedded_image_handling", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFState::HANDLE_BINARY_EXTRACT_TEXTURES));
+	String file_extension = p_path.get_extension().to_lower();
+	// Returns all the options when path is empty because that means it's for the Project Settings.
+	if (p_path.is_empty() || file_extension == "gltf" || file_extension == "glb") {
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.1 or 4.0,Godot 4.2 or later"), 1));
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/embedded_image_handling", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFState::HANDLE_BINARY_EXTRACT_TEXTURES));
+	}
 }
 
 void EditorSceneFormatImporterGLTF::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
@@ -95,10 +102,6 @@ void EditorSceneFormatImporterGLTF::handle_compatibility_options(HashMap<StringN
 
 Variant EditorSceneFormatImporterGLTF::get_option_visibility(const String &p_path, bool p_for_animation,
 		const String &p_option, const HashMap<StringName, Variant> &p_options) {
-	String file_extension = p_path.get_extension().to_lower();
-	if ((file_extension != "gltf" && file_extension != "glb") && p_option.begins_with("gltf/")) {
-		return false;
-	}
 	return true;
 }
 

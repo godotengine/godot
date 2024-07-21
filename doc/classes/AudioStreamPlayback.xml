@@ -7,7 +7,7 @@
 		Can play, loop, pause a scroll through audio. See [AudioStream] and [AudioStreamOggVorbis] for usage.
 	</description>
 	<tutorials>
-		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/526</link>
+		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/2759</link>
 	</tutorials>
 	<methods>
 		<method name="_get_loop_count" qualifiers="virtual const">
@@ -77,6 +77,19 @@
 			<return type="void" />
 			<description>
 				Overridable method. Called whenever the audio stream is mixed if the playback is active and [method AudioServer.set_enable_tagging_used_audio_streams] has been set to [code]true[/code]. Editor plugins may use this method to "tag" the current position along the audio stream and display it in a preview.
+			</description>
+		</method>
+		<method name="get_sample_playback" qualifiers="const" experimental="">
+			<return type="AudioSamplePlayback" />
+			<description>
+				Returns the [AudioSamplePlayback] associated with this [AudioStreamPlayback] for playing back the audio sample of this stream.
+			</description>
+		</method>
+		<method name="set_sample_playback" experimental="">
+			<return type="void" />
+			<param index="0" name="playback_sample" type="AudioSamplePlayback" />
+			<description>
+				Associates [AudioSamplePlayback] to this [AudioStreamPlayback] for playing back the audio sample of this stream.
 			</description>
 		</method>
 	</methods>

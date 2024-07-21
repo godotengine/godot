@@ -35,6 +35,8 @@
 #include "core/config/engine.h"
 #include "core/io/resource_loader.h"
 #include "main/main.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h" // SceneTree only forward declares it.
 
 #include <emscripten/emscripten.h>
 #include <stdlib.h>
@@ -109,30 +111,28 @@ extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
 
 	// Proper shutdown in case of setup failure.
 	if (err != OK) {
-		int exit_code = (int)err;
-		if (err == ERR_HELP) {
-			exit_code = 0; // Called with --help.
-		}
-		os->set_exit_code(exit_code);
 		// Will only exit after sync.
 		emscripten_set_main_loop(exit_callback, -1, false);
 		godot_js_os_finish_async(cleanup_after_sync);
-		return exit_code;
+		if (err == ERR_HELP) { // Returned by --help and --version, so success.
+			return EXIT_SUCCESS;
+		}
+		return EXIT_FAILURE;
 	}
 
-	os->set_exit_code(0);
 	main_started = true;
 
 	// Ease up compatibility.
 	ResourceLoader::set_abort_on_missing_resources(false);
 
-	Main::start();
+	int ret = Main::start();
+	os->set_exit_code(ret);
 	os->get_main_loop()->initialize();
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_project_manager_hint() && FileAccess::exists("/tmp/preload.zip")) {
 		PackedStringArray ps;
 		ps.push_back("/tmp/preload.zip");
-		os->get_main_loop()->emit_signal(SNAME("files_dropped"), ps, -1);
+		SceneTree::get_singleton()->get_root()->emit_signal(SNAME("files_dropped"), ps);
 	}
 #endif
 	emscripten_set_main_loop(main_loop_callback, -1, false);
@@ -140,5 +140,5 @@ extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
 	// We are inside an animation frame, we want to immediately draw on the newly setup canvas.
 	main_loop_callback();
 
-	return 0;
+	return os->get_exit_code();
 }

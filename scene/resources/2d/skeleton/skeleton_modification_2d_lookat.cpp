@@ -200,7 +200,9 @@ void SkeletonModification2DLookAt::_draw_editor_gizmo() {
 
 void SkeletonModification2DLookAt::update_bone2d_cache() {
 	if (!is_setup || !stack) {
-		ERR_PRINT_ONCE("Cannot update Bone2D cache: modification is not properly setup!");
+		if (is_setup) {
+			ERR_PRINT_ONCE("Cannot update Bone2D cache: modification is not properly setup!");
+		}
 		return;
 	}
 
@@ -256,7 +258,6 @@ void SkeletonModification2DLookAt::set_bone_index(int p_bone_idx) {
 			bone_idx = p_bone_idx;
 		}
 	} else {
-		WARN_PRINT("Cannot verify the bone index for this modification...");
 		bone_idx = p_bone_idx;
 	}
 
@@ -265,7 +266,9 @@ void SkeletonModification2DLookAt::set_bone_index(int p_bone_idx) {
 
 void SkeletonModification2DLookAt::update_target_cache() {
 	if (!is_setup || !stack) {
-		ERR_PRINT_ONCE("Cannot update target cache: modification is not properly setup!");
+		if (is_setup) {
+			ERR_PRINT_ONCE("Cannot update target cache: modification is not properly setup!");
+		}
 		return;
 	}
 

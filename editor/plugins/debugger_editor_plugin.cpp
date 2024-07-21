@@ -77,10 +77,10 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 			TTR("When this option is enabled, curve resources used by path nodes will be visible in the running project."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_navigation", TTR("Visible Navigation")), RUN_DEBUG_NAVIGATION);
 	debug_menu->set_item_tooltip(-1,
-			TTR("When this option is enabled, navigation meshes and polygons will be visible in the running project."));
+			TTR("When this option is enabled, navigation meshes, and polygons will be visible in the running project."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_avoidance", TTR("Visible Avoidance")), RUN_DEBUG_AVOIDANCE);
 	debug_menu->set_item_tooltip(-1,
-			TTR("When this option is enabled, avoidance objects shapes, radius and velocities will be visible in the running project."));
+			TTR("When this option is enabled, avoidance object shapes, radiuses, and velocities will be visible in the running project."));
 	debug_menu->add_separator();
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_canvas_redraw", TTR("Debug CanvasItem Redraws")), RUN_DEBUG_CANVAS_REDRAW);
 	debug_menu->set_item_tooltip(-1,
@@ -99,7 +99,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	// Multi-instance, start/stop.
 	debug_menu->add_separator();
 	debug_menu->add_item(TTR("Customize Run Instances..."), RUN_MULTIPLE_INSTANCES);
-	debug_menu->connect("id_pressed", callable_mp(this, &DebuggerEditorPlugin::_menu_option));
+	debug_menu->connect(SceneStringName(id_pressed), callable_mp(this, &DebuggerEditorPlugin::_menu_option));
 
 	run_instances_dialog = memnew(RunInstancesDialog);
 	EditorNode::get_singleton()->get_gui_base()->add_child(run_instances_dialog);
@@ -124,7 +124,9 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			}
 
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_FILE_SERVER), !ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_file_server", !ischecked);
+			if (!initializing) {
+				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_file_server", !ischecked);
+			}
 
 		} break;
 		case RUN_LIVE_DEBUG: {
@@ -132,43 +134,57 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_LIVE_DEBUG), !ischecked);
 			EditorDebuggerNode::get_singleton()->set_live_debugging(!ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_live_debug", !ischecked);
+			if (!initializing) {
+				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_live_debug", !ischecked);
+			}
 
 		} break;
 		case RUN_DEPLOY_REMOTE_DEBUG: {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEPLOY_REMOTE_DEBUG));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEPLOY_REMOTE_DEBUG), !ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_deploy_remote_debug", !ischecked);
+			if (!initializing) {
+				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_deploy_remote_debug", !ischecked);
+			}
 
 		} break;
 		case RUN_DEBUG_COLLISIONS: {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISIONS));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISIONS), !ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisions", !ischecked);
+			if (!initializing) {
+				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisions", !ischecked);
+			}
 
 		} break;
 		case RUN_DEBUG_PATHS: {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_PATHS));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_PATHS), !ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_paths", !ischecked);
+			if (!initializing) {
+				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_paths", !ischecked);
+			}
 
 		} break;
 		case RUN_DEBUG_NAVIGATION: {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_NAVIGATION));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_NAVIGATION), !ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_navigation", !ischecked);
+			if (!initializing) {
+				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_navigation", !ischecked);
+			}
 
 		} break;
 		case RUN_DEBUG_AVOIDANCE: {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_AVOIDANCE));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_AVOIDANCE), !ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_avoidance", !ischecked);
+			if (!initializing) {
+				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_avoidance", !ischecked);
+			}
 
 		} break;
 		case RUN_DEBUG_CANVAS_REDRAW: {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_CANVAS_REDRAW));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_CANVAS_REDRAW), !ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_canvas_redraw", !ischecked);
+			if (!initializing) {
+				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_canvas_redraw", !ischecked);
+			}
 
 		} break;
 		case RUN_RELOAD_SCRIPTS: {
@@ -176,7 +192,9 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_RELOAD_SCRIPTS), !ischecked);
 
 			ScriptEditor::get_singleton()->set_live_auto_reload_running_scripts(!ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_reload_scripts", !ischecked);
+			if (!initializing) {
+				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_reload_scripts", !ischecked);
+			}
 
 		} break;
 		case SERVER_KEEP_OPEN: {
@@ -184,7 +202,9 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			debug_menu->set_item_checked(debug_menu->get_item_index(SERVER_KEEP_OPEN), !ischecked);
 
 			EditorDebuggerNode::get_singleton()->set_keep_open(!ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "server_keep_open", !ischecked);
+			if (!initializing) {
+				EditorSettings::get_singleton()->set_project_metadata("debug_options", "server_keep_open", !ischecked);
+			}
 
 		} break;
 		case RUN_MULTIPLE_INSTANCES: {
@@ -198,6 +218,7 @@ void DebuggerEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			_update_debug_options();
+			initializing = false;
 		} break;
 
 		case NOTIFICATION_PROCESS: {

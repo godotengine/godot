@@ -9,8 +9,8 @@
 	</description>
 	<tutorials>
 		<link title="Inputs documentation index">$DOCS_URL/tutorials/inputs/index.html</link>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
 	<methods>
 		<method name="action_press">
@@ -118,7 +118,7 @@
 			<return type="String" />
 			<param index="0" name="device" type="int" />
 			<description>
-				Returns a SDL2-compatible device GUID on platforms that use gamepad remapping, e.g. [code]030000004c050000c405000000010000[/code]. Returns [code]"Default Gamepad"[/code] otherwise. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL2 game controller database[/url] to determine gamepad names and mappings based on this GUID.
+				Returns an SDL2-compatible device GUID on platforms that use gamepad remapping, e.g. [code]030000004c050000c405000000010000[/code]. Returns [code]"Default Gamepad"[/code] otherwise. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL2 game controller database[/url] to determine gamepad names and mappings based on this GUID.
 			</description>
 		</method>
 		<method name="get_joy_info" qualifiers="const">
@@ -397,11 +397,14 @@
 		<method name="vibrate_handheld">
 			<return type="void" />
 			<param index="0" name="duration_ms" type="int" default="500" />
+			<param index="1" name="amplitude" type="float" default="-1.0" />
 			<description>
 				Vibrate the handheld device for the specified duration in milliseconds.
+				[param amplitude] is the strength of the vibration, as a value between [code]0.0[/code] and [code]1.0[/code]. If set to [code]-1.0[/code], the default vibration strength of the device is used.
 				[b]Note:[/b] This method is implemented on Android, iOS, and Web. It has no effect on other platforms.
 				[b]Note:[/b] For Android, [method vibrate_handheld] requires enabling the [code]VIBRATE[/code] permission in the export preset. Otherwise, [method vibrate_handheld] will have no effect.
 				[b]Note:[/b] For iOS, specifying the duration is only supported in iOS 13 and later.
+				[b]Note:[/b] For Web, the amplitude cannot be changed.
 				[b]Note:[/b] Some web browsers such as Safari and Firefox for Android do not support [method vibrate_handheld].
 			</description>
 		</method>

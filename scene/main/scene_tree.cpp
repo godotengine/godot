@@ -55,7 +55,6 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/world_2d.h"
-#include "scene/scene_string_names.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
@@ -120,7 +119,6 @@ void SceneTreeTimer::release_connections() {
 SceneTreeTimer::SceneTreeTimer() {}
 
 void SceneTree::tree_changed() {
-	tree_version++;
 	emit_signal(tree_changed_name);
 }
 
@@ -153,7 +151,6 @@ SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_nod
 
 	ERR_FAIL_COND_V_MSG(E->value.nodes.has(p_node), &E->value, "Already in group: " + p_group + ".");
 	E->value.nodes.push_back(p_node);
-	//E->value.last_tree_version=0;
 	E->value.changed = true;
 	return &E->value;
 }
@@ -451,9 +448,31 @@ void SceneTree::initialize() {
 	root->_set_tree(this);
 }
 
-bool SceneTree::physics_process(double p_time) {
-	root_lock++;
+void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
+	// We never want interpolation in the editor.
+	if (Engine::get_singleton()->is_editor_hint()) {
+		p_enabled = false;
+	}
 
+	if (p_enabled == _physics_interpolation_enabled) {
+		return;
+	}
+
+	_physics_interpolation_enabled = p_enabled;
+	RenderingServer::get_singleton()->set_physics_interpolation_enabled(p_enabled);
+}
+
+bool SceneTree::is_physics_interpolation_enabled() const {
+	return _physics_interpolation_enabled;
+}
+
+void SceneTree::iteration_prepare() {
+	if (_physics_interpolation_enabled) {
+		RenderingServer::get_singleton()->tick();
+	}
+}
+
+bool SceneTree::physics_process(double p_time) {
 	current_frame++;
 
 	flush_transform_notifications();
@@ -477,7 +496,6 @@ bool SceneTree::physics_process(double p_time) {
 	process_tweens(p_time, true);
 
 	flush_transform_notifications();
-	root_lock--;
 
 	_flush_delete_queue();
 	_call_idle_callbacks();
@@ -486,8 +504,6 @@ bool SceneTree::physics_process(double p_time) {
 }
 
 bool SceneTree::process(double p_time) {
-	root_lock++;
-
 	if (MainLoop::process(p_time)) {
 		_quit = true;
 	}
@@ -512,8 +528,6 @@ bool SceneTree::process(double p_time) {
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
 	flush_transform_notifications(); //transforms after world update, to avoid unnecessary enter/exit notifications
-
-	root_lock--;
 
 	_flush_delete_queue();
 
@@ -713,13 +727,6 @@ bool SceneTree::is_quit_on_go_back() const {
 void SceneTree::set_quit_on_go_back(bool p_enable) {
 	quit_on_go_back = p_enable;
 }
-
-#ifdef TOOLS_ENABLED
-
-bool SceneTree::is_node_being_edited(const Node *p_node) const {
-	return Engine::get_singleton()->is_editor_hint() && edited_scene_root && (edited_scene_root->is_ancestor_of(p_node) || edited_scene_root == p_node);
-}
-#endif
 
 #ifdef DEBUG_ENABLED
 void SceneTree::set_debug_collisions_hint(bool p_enabled) {
@@ -1606,6 +1613,9 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_frame"), &SceneTree::get_frame);
 	ClassDB::bind_method(D_METHOD("quit", "exit_code"), &SceneTree::quit, DEFVAL(EXIT_SUCCESS));
 
+	ClassDB::bind_method(D_METHOD("set_physics_interpolation_enabled", "enabled"), &SceneTree::set_physics_interpolation_enabled);
+	ClassDB::bind_method(D_METHOD("is_physics_interpolation_enabled"), &SceneTree::is_physics_interpolation_enabled);
+
 	ClassDB::bind_method(D_METHOD("queue_delete", "obj"), &SceneTree::queue_delete);
 
 	MethodInfo mi;
@@ -1657,6 +1667,7 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "current_scene", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_current_scene", "get_current_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "", "get_root");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multiplayer_poll"), "set_multiplayer_poll_enabled", "is_multiplayer_poll_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_interpolation"), "set_physics_interpolation_enabled", "is_physics_interpolation_enabled");
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 	ADD_SIGNAL(MethodInfo("tree_process_mode_changed")); //editor only signal, but due to API hash it can't be removed in run-time
@@ -1733,7 +1744,7 @@ SceneTree::SceneTree() {
 	root = memnew(Window);
 	root->set_min_size(Size2i(64, 64)); // Define a very small minimum window size to prevent bugs such as GH-37242.
 	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
-	root->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_ALWAYS);
+	root->set_auto_translate_mode(GLOBAL_GET("internationalization/rendering/root_node_auto_translate") ? Node::AUTO_TRANSLATE_MODE_ALWAYS : Node::AUTO_TRANSLATE_MODE_DISABLED);
 	root->set_name("root");
 	root->set_title(GLOBAL_GET("application/config/name"));
 
@@ -1747,6 +1758,8 @@ SceneTree::SceneTree() {
 	}
 	root->set_as_audio_listener_3d(true);
 #endif // _3D_DISABLED
+
+	set_physics_interpolation_enabled(GLOBAL_DEF("physics/common/physics_interpolation", false));
 
 	// Initialize network state.
 	set_multiplayer(MultiplayerAPI::create_default_interface());
@@ -1862,7 +1875,7 @@ SceneTree::SceneTree() {
 
 	root->connect("close_requested", callable_mp(this, &SceneTree::_main_window_close));
 	root->connect("go_back_requested", callable_mp(this, &SceneTree::_main_window_go_back));
-	root->connect("focus_entered", callable_mp(this, &SceneTree::_main_window_focus_in));
+	root->connect(SceneStringName(focus_entered), callable_mp(this, &SceneTree::_main_window_focus_in));
 
 #ifdef TOOLS_ENABLED
 	edited_scene_root = nullptr;

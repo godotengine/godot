@@ -53,6 +53,8 @@ public:
 	virtual void get_method_list(List<MethodInfo> *p_list) const = 0;
 	virtual bool has_method(const StringName &p_method) const = 0;
 
+	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
+
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) = 0;
 
 	template <typename... VarArgs>

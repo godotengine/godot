@@ -192,7 +192,7 @@ bool MenuBar::is_native_menu() const {
 	}
 #endif
 
-	return (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU) && is_native);
+	return (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU) && prefer_native);
 }
 
 void MenuBar::bind_global_menu() {
@@ -236,12 +236,12 @@ void MenuBar::bind_global_menu() {
 		RID submenu_rid = popups[i]->bind_global_menu();
 		if (!popups[i]->is_system_menu()) {
 			int index = nmenu->add_submenu_item(main_menu, menu_cache[i].name, submenu_rid, global_menu_tag + "#" + itos(i), global_start_idx + i);
-			menu_cache.write[i].global_index = index;
+			menu_cache.write[i].submenu_rid = submenu_rid;
 			nmenu->set_item_hidden(main_menu, index, menu_cache[i].hidden);
 			nmenu->set_item_disabled(main_menu, index, menu_cache[i].disabled);
 			nmenu->set_item_tooltip(main_menu, index, menu_cache[i].tooltip);
 		} else {
-			menu_cache.write[i].global_index = -1;
+			menu_cache.write[i].submenu_rid = RID();
 		}
 	}
 }
@@ -257,11 +257,14 @@ void MenuBar::unbind_global_menu() {
 	Vector<PopupMenu *> popups = _get_popups();
 	for (int i = menu_cache.size() - 1; i >= 0; i--) {
 		if (!popups[i]->is_system_menu()) {
-			popups[i]->unbind_global_menu();
-			if (menu_cache[i].global_index >= 0) {
-				nmenu->remove_item(main_menu, menu_cache[i].global_index);
+			if (menu_cache[i].submenu_rid.is_valid()) {
+				int item_idx = nmenu->find_item_index_with_submenu(main_menu, menu_cache[i].submenu_rid);
+				if (item_idx >= 0) {
+					nmenu->remove_item(main_menu, item_idx);
+				}
 			}
-			menu_cache.write[i].global_index = -1;
+			popups[i]->unbind_global_menu();
+			menu_cache.write[i].submenu_rid = RID();
 		}
 	}
 
@@ -292,8 +295,11 @@ void MenuBar::_notification(int p_what) {
 			RID main_menu = is_global ? nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID) : RID();
 			for (int i = 0; i < menu_cache.size(); i++) {
 				shape(menu_cache.write[i]);
-				if (is_global && menu_cache[i].global_index >= 0) {
-					nmenu->set_item_text(main_menu, menu_cache[i].global_index, atr(menu_cache[i].name));
+				if (is_global && menu_cache[i].submenu_rid.is_valid()) {
+					int item_idx = nmenu->find_item_index_with_submenu(main_menu, menu_cache[i].submenu_rid);
+					if (item_idx >= 0) {
+						nmenu->set_item_text(main_menu, item_idx, atr(menu_cache[i].name));
+					}
 				}
 			}
 		} break;
@@ -500,8 +506,11 @@ void MenuBar::_refresh_menu_names() {
 		if (!popups[i]->has_meta("_menu_name") && String(popups[i]->get_name()) != get_menu_title(i)) {
 			menu_cache.write[i].name = popups[i]->get_name();
 			shape(menu_cache.write[i]);
-			if (is_global && menu_cache[i].global_index >= 0) {
-				nmenu->set_item_text(main_menu, menu_cache[i].global_index, atr(menu_cache[i].name));
+			if (is_global && menu_cache[i].submenu_rid.is_valid()) {
+				int item_idx = nmenu->find_item_index_with_submenu(main_menu, menu_cache[i].submenu_rid);
+				if (item_idx >= 0) {
+					nmenu->set_item_text(main_menu, item_idx, atr(menu_cache[i].name));
+				}
 			}
 		}
 	}
@@ -554,8 +563,8 @@ void MenuBar::add_child_notify(Node *p_child) {
 
 		RID submenu_rid = pm->bind_global_menu();
 		if (!pm->is_system_menu()) {
-			int index = nmenu->add_submenu_item(main_menu, atr(menu.name), submenu_rid, global_menu_tag + "#" + itos(menu_cache.size() - 1), _find_global_start_index() + menu_cache.size() - 1);
-			menu_cache.write[menu_cache.size() - 1].global_index = index;
+			nmenu->add_submenu_item(main_menu, atr(menu.name), submenu_rid, global_menu_tag + "#" + itos(menu_cache.size() - 1), _find_global_start_index() + menu_cache.size() - 1);
+			menu_cache.write[menu_cache.size() - 1].submenu_rid = submenu_rid;
 		}
 	}
 	update_minimum_size();
@@ -589,13 +598,14 @@ void MenuBar::move_child_notify(Node *p_child) {
 			RID main_menu = nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID);
 
 			int global_start = _find_global_start_index();
-			if (menu.global_index >= 0) {
-				nmenu->remove_item(main_menu, menu.global_index);
+			if (menu.submenu_rid.is_valid()) {
+				int item_idx = nmenu->find_item_index_with_submenu(main_menu, menu.submenu_rid);
+				if (item_idx >= 0) {
+					nmenu->remove_item(main_menu, item_idx);
+				}
 			}
 			if (new_idx != -1) {
-				RID submenu_rid = pm->bind_global_menu();
-				int index = nmenu->add_submenu_item(main_menu, atr(menu.name), submenu_rid, global_menu_tag + "#" + itos(new_idx), global_start + new_idx);
-				menu_cache.write[new_idx].global_index = index;
+				nmenu->add_submenu_item(main_menu, atr(menu.name), menu.submenu_rid, global_menu_tag + "#" + itos(new_idx), global_start + new_idx);
 			}
 		}
 	}
@@ -611,19 +621,21 @@ void MenuBar::remove_child_notify(Node *p_child) {
 
 	int idx = get_menu_idx_from_control(pm);
 
-	menu_cache.remove_at(idx);
-
 	if (!global_menu_tag.is_empty()) {
 		if (!pm->is_system_menu()) {
-			pm->unbind_global_menu();
-			if (menu_cache[idx].global_index >= 0) {
+			if (menu_cache[idx].submenu_rid.is_valid()) {
 				NativeMenu *nmenu = NativeMenu::get_singleton();
 				RID main_menu = nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID);
-				nmenu->remove_item(main_menu, menu_cache[idx].global_index);
-				menu_cache.write[idx].global_index = -1;
+				int item_idx = nmenu->find_item_index_with_submenu(main_menu, menu_cache[idx].submenu_rid);
+				if (item_idx >= 0) {
+					nmenu->remove_item(main_menu, item_idx);
+				}
 			}
+			pm->unbind_global_menu();
 		}
 	}
+
+	menu_cache.remove_at(idx);
 
 	p_child->remove_meta("_menu_name");
 	p_child->remove_meta("_menu_tooltip");
@@ -667,7 +679,10 @@ void MenuBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_menu_hidden", "menu", "hidden"), &MenuBar::set_menu_hidden);
 	ClassDB::bind_method(D_METHOD("is_menu_hidden", "menu"), &MenuBar::is_menu_hidden);
 
+	// TODO: Properly handle popups when advanced GUI is disabled.
+#ifndef ADVANCED_GUI_DISABLED
 	ClassDB::bind_method(D_METHOD("get_menu_popup", "menu"), &MenuBar::get_menu_popup);
+#endif // ADVANCED_GUI_DISABLED
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "start_index"), "set_start_index", "get_start_index");
@@ -767,9 +782,9 @@ int MenuBar::get_start_index() const {
 }
 
 void MenuBar::set_prefer_global_menu(bool p_enabled) {
-	if (is_native != p_enabled) {
-		is_native = p_enabled;
-		if (is_native) {
+	if (prefer_native != p_enabled) {
+		prefer_native = p_enabled;
+		if (prefer_native) {
 			bind_global_menu();
 		} else {
 			unbind_global_menu();
@@ -778,7 +793,7 @@ void MenuBar::set_prefer_global_menu(bool p_enabled) {
 }
 
 bool MenuBar::is_prefer_global_menu() const {
-	return is_native;
+	return prefer_native;
 }
 
 Size2 MenuBar::get_minimum_size() const {
@@ -817,10 +832,13 @@ void MenuBar::set_menu_title(int p_menu, const String &p_title) {
 	}
 	menu_cache.write[p_menu].name = p_title;
 	shape(menu_cache.write[p_menu]);
-	if (!global_menu_tag.is_empty() && menu_cache[p_menu].global_index >= 0) {
+	if (!global_menu_tag.is_empty() && menu_cache[p_menu].submenu_rid.is_valid()) {
 		NativeMenu *nmenu = NativeMenu::get_singleton();
 		RID main_menu = nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID);
-		nmenu->set_item_text(main_menu, menu_cache[p_menu].global_index, atr(menu_cache[p_menu].name));
+		int item_idx = nmenu->find_item_index_with_submenu(main_menu, menu_cache[p_menu].submenu_rid);
+		if (item_idx >= 0) {
+			nmenu->set_item_text(main_menu, item_idx, atr(menu_cache[p_menu].name));
+		}
 	}
 	update_minimum_size();
 }
@@ -835,10 +853,13 @@ void MenuBar::set_menu_tooltip(int p_menu, const String &p_tooltip) {
 	PopupMenu *pm = get_menu_popup(p_menu);
 	pm->set_meta("_menu_tooltip", p_tooltip);
 	menu_cache.write[p_menu].tooltip = p_tooltip;
-	if (!global_menu_tag.is_empty() && menu_cache[p_menu].global_index >= 0) {
+	if (!global_menu_tag.is_empty() && menu_cache[p_menu].submenu_rid.is_valid()) {
 		NativeMenu *nmenu = NativeMenu::get_singleton();
 		RID main_menu = nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID);
-		nmenu->set_item_tooltip(main_menu, menu_cache[p_menu].global_index, p_tooltip);
+		int item_idx = nmenu->find_item_index_with_submenu(main_menu, menu_cache[p_menu].submenu_rid);
+		if (item_idx >= 0) {
+			nmenu->set_item_tooltip(main_menu, item_idx, p_tooltip);
+		}
 	}
 }
 
@@ -850,10 +871,13 @@ String MenuBar::get_menu_tooltip(int p_menu) const {
 void MenuBar::set_menu_disabled(int p_menu, bool p_disabled) {
 	ERR_FAIL_INDEX(p_menu, menu_cache.size());
 	menu_cache.write[p_menu].disabled = p_disabled;
-	if (!global_menu_tag.is_empty() && menu_cache[p_menu].global_index >= 0) {
+	if (!global_menu_tag.is_empty() && menu_cache[p_menu].submenu_rid.is_valid()) {
 		NativeMenu *nmenu = NativeMenu::get_singleton();
 		RID main_menu = nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID);
-		nmenu->set_item_disabled(main_menu, menu_cache[p_menu].global_index, p_disabled);
+		int item_idx = nmenu->find_item_index_with_submenu(main_menu, menu_cache[p_menu].submenu_rid);
+		if (item_idx >= 0) {
+			nmenu->set_item_disabled(main_menu, item_idx, p_disabled);
+		}
 	}
 }
 
@@ -865,10 +889,13 @@ bool MenuBar::is_menu_disabled(int p_menu) const {
 void MenuBar::set_menu_hidden(int p_menu, bool p_hidden) {
 	ERR_FAIL_INDEX(p_menu, menu_cache.size());
 	menu_cache.write[p_menu].hidden = p_hidden;
-	if (!global_menu_tag.is_empty() && menu_cache[p_menu].global_index >= 0) {
+	if (!global_menu_tag.is_empty() && menu_cache[p_menu].submenu_rid.is_valid()) {
 		NativeMenu *nmenu = NativeMenu::get_singleton();
 		RID main_menu = nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID);
-		nmenu->set_item_hidden(main_menu, menu_cache[p_menu].global_index, p_hidden);
+		int item_idx = nmenu->find_item_index_with_submenu(main_menu, menu_cache[p_menu].submenu_rid);
+		if (item_idx >= 0) {
+			nmenu->set_item_hidden(main_menu, item_idx, p_hidden);
+		}
 	}
 	update_minimum_size();
 }

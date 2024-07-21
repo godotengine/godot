@@ -20,6 +20,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -34,11 +35,12 @@
 #include "memstream.h"
 #include "texture2.h"
 #include "unused.h"
-#include "vk_format.h"
 
 // FIXME: Test this #define and put it in a header somewhere.
 //#define IS_BIG_ENDIAN (1 == *(unsigned char *)&(const int){0x01000000ul})
 #define IS_BIG_ENDIAN 0
+
+extern uint32_t vkFormatTypeSize(VkFormat format);
 
 struct ktxTexture_vtbl ktxTexture2_vtbl;
 struct ktxTexture_vtblInt ktxTexture2_vtblInt;
@@ -217,18 +219,18 @@ ktx_uint32_t e5b9g9r9_ufloat_comparator[e5b9g9r9_bdbwordcount] = {
 #endif
 
 /**
-* @private
-* @~English
-* @brief Initialize a ktxFormatSize object from the info in a DFD.
-*
-* This is used instead of referring to the DFD directly so code dealing
-* with format info can be common to KTX 1 & 2.
-*
-* @param[in] This   pointer the ktxTexture2 whose DFD to use.
-* @param[in] fi       pointer to the ktxFormatSize object to initialize.
-*
-* @return    KTX_TRUE on success, otherwise KTX_FALSE.
-*/
+ * @private
+ * @~English
+ * @brief Initialize a ktxFormatSize object from the info in a DFD.
+ *
+ * This is used instead of referring to the DFD directly so code dealing
+ * with format info can be common to KTX 1 & 2.
+ *
+ * @param[in] This   pointer the ktxFormatSize to initialize.
+ * @param[in] pDFD   pointer to the DFD whose data to use.
+ *
+ * @return    KTX_TRUE on success, otherwise KTX_FALSE.
+ */
 bool
 ktxFormatSize_initFromDfd(ktxFormatSize* This, ktx_uint32_t* pDfd)
 {
@@ -308,9 +310,10 @@ ktxFormatSize_initFromDfd(ktxFormatSize* This, ktx_uint32_t* pDfd)
         // the following reasons. (1) in v2 files levelIndex is always used to
         // calculate data size and, of course, for the level offsets. (2) Finer
         // grain access to supercompressed data than levels is not possible.
-        uint32_t blockByteLength;
-        recreateBytesPlane0FromSampleInfo(pDfd, &blockByteLength);
-        This->blockSizeInBits = blockByteLength * 8;
+        //
+        // The value set here is applied to the DFD after the data has been
+        // inflated during loading.
+        This->blockSizeInBits = reconstructDFDBytesPlane0FromSamples(pDfd) * 8;
     }
     return true;
 }
@@ -427,34 +430,11 @@ ktxTexture2_construct(ktxTexture2* This, ktxTextureCreateInfo* createInfo,
 
     This->vkFormat = createInfo->vkFormat;
 
-    // Ideally we'd set all these things in ktxFormatSize_initFromDfd
-    // but This->_protected is not allocated until ktxTexture_construct;
-    if (This->isCompressed && (formatSize.flags & KTX_FORMAT_SIZE_YUVSDA_BIT) == 0) {
-        This->_protected->_typeSize = 1;
-    } else if (formatSize.flags & (KTX_FORMAT_SIZE_DEPTH_BIT | KTX_FORMAT_SIZE_STENCIL_BIT)) {
-        switch (createInfo->vkFormat) {
-        case VK_FORMAT_S8_UINT:
-            This->_protected->_typeSize = 1;
-            break;
-        case VK_FORMAT_D16_UNORM: // [[fallthrough]];
-        case VK_FORMAT_D16_UNORM_S8_UINT:
-            This->_protected->_typeSize = 2;
-            break;
-        case VK_FORMAT_X8_D24_UNORM_PACK32: // [[fallthrough]];
-        case VK_FORMAT_D24_UNORM_S8_UINT: // [[fallthrough]];
-        case VK_FORMAT_D32_SFLOAT: // [[fallthrough]];
-        case VK_FORMAT_D32_SFLOAT_S8_UINT:
-            This->_protected->_typeSize = 4;
-            break;
-        }
-    } else if (formatSize.flags & KTX_FORMAT_SIZE_PACKED_BIT) {
-        This->_protected->_typeSize = formatSize.blockSizeInBits / 8;
-    } else {
-        // Unpacked and uncompressed
-        uint32_t numComponents;
-        getDFDComponentInfoUnpacked(This->pDfd, &numComponents,
-                                    &This->_protected->_typeSize);
-    }
+    // The typeSize cannot be reconstructed just from the DFD as the BDFD
+    // does not capture the packing expressed by the [m]PACK[n] layout
+    // information in the VkFormat, so we calculate the typeSize directly
+    // from the vkFormat
+    This->_protected->_typeSize = vkFormatTypeSize(createInfo->vkFormat);
 
     This->supercompressionScheme = KTX_SS_NONE;
 

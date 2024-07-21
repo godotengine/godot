@@ -28,7 +28,7 @@ void main() {
 	// We're doing clockwise culling so flip the order
 	uv_interp = vec2(vertex_attrib.x, vertex_attrib.y * -1.0);
 #endif
-	gl_Position = vec4(uv_interp, 1.0, 1.0);
+	gl_Position = vec4(uv_interp, -1.0, 1.0);
 }
 
 /* clang-format off */
@@ -116,7 +116,7 @@ uniform float z_far;
 uniform uint directional_light_count;
 
 #ifdef USE_MULTIVIEW
-layout(std140) uniform MultiviewData { // ubo:5
+layout(std140) uniform MultiviewData { // ubo:11
 	highp mat4 projection_matrix_view[MAX_VIEWS];
 	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
 	highp vec4 eye_offset[MAX_VIEWS];
@@ -139,9 +139,11 @@ void main() {
 	vec3 cube_normal;
 #ifdef USE_MULTIVIEW
 	// In multiview our projection matrices will contain positional and rotational offsets that we need to properly unproject.
-	vec4 unproject = vec4(uv_interp.x, uv_interp.y, 1.0, 1.0);
+	vec4 unproject = vec4(uv_interp.xy, -1.0, 1.0); // unproject at the far plane
 	vec4 unprojected = multiview_data.inv_projection_matrix_view[ViewIndex] * unproject;
 	cube_normal = unprojected.xyz / unprojected.w;
+
+	// Unproject will give us the position between the eyes, need to re-offset.
 	cube_normal += multiview_data.eye_offset[ViewIndex].xyz;
 #else
 	cube_normal.z = -1.0;
@@ -206,14 +208,6 @@ void main() {
 	color = apply_tonemapping(color, white);
 #endif
 	color = linear_to_srgb(color);
-
-#ifdef USE_BCS
-	color = apply_bcs(color, bcs);
-#endif
-
-#ifdef USE_COLOR_CORRECTION
-	color = apply_color_correction(color, color_correction);
-#endif
 
 	frag_color.rgb = color * luminance_multiplier;
 	frag_color.a = alpha;

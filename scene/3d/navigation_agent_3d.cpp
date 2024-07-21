@@ -99,6 +99,12 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_target_position", "position"), &NavigationAgent3D::set_target_position);
 	ClassDB::bind_method(D_METHOD("get_target_position"), &NavigationAgent3D::get_target_position);
 
+	ClassDB::bind_method(D_METHOD("set_simplify_path", "enabled"), &NavigationAgent3D::set_simplify_path);
+	ClassDB::bind_method(D_METHOD("get_simplify_path"), &NavigationAgent3D::get_simplify_path);
+
+	ClassDB::bind_method(D_METHOD("set_simplify_epsilon", "epsilon"), &NavigationAgent3D::set_simplify_epsilon);
+	ClassDB::bind_method(D_METHOD("get_simplify_epsilon"), &NavigationAgent3D::get_simplify_epsilon);
+
 	ClassDB::bind_method(D_METHOD("get_next_path_position"), &NavigationAgent3D::get_next_path_position);
 
 	ClassDB::bind_method(D_METHOD("set_velocity_forced", "velocity"), &NavigationAgent3D::set_velocity_forced);
@@ -140,6 +146,8 @@ void NavigationAgent3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pathfinding_algorithm", PROPERTY_HINT_ENUM, "AStar"), "set_pathfinding_algorithm", "get_pathfinding_algorithm");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_postprocessing", PROPERTY_HINT_ENUM, "Corridorfunnel,Edgecentered"), "set_path_postprocessing", "get_path_postprocessing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_metadata_flags", PROPERTY_HINT_FLAGS, "Include Types,Include RIDs,Include Owners"), "set_path_metadata_flags", "get_path_metadata_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "simplify_path"), "set_simplify_path", "get_simplify_path");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "simplify_epsilon", PROPERTY_HINT_RANGE, "0.0,10.0,0.001,or_greater,suffix:m"), "set_simplify_epsilon", "get_simplify_epsilon");
 
 	ADD_GROUP("Avoidance", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
@@ -464,6 +472,24 @@ void NavigationAgent3D::set_path_postprocessing(const NavigationPathQueryParamet
 	navigation_query->set_path_postprocessing(path_postprocessing);
 }
 
+void NavigationAgent3D::set_simplify_path(bool p_enabled) {
+	simplify_path = p_enabled;
+	navigation_query->set_simplify_path(simplify_path);
+}
+
+bool NavigationAgent3D::get_simplify_path() const {
+	return simplify_path;
+}
+
+void NavigationAgent3D::set_simplify_epsilon(real_t p_epsilon) {
+	simplify_epsilon = MAX(0.0, p_epsilon);
+	navigation_query->set_simplify_epsilon(simplify_epsilon);
+}
+
+real_t NavigationAgent3D::get_simplify_epsilon() const {
+	return simplify_epsilon;
+}
+
 void NavigationAgent3D::set_path_metadata_flags(BitField<NavigationPathQueryParameters3D::PathMetadataFlags> p_path_metadata_flags) {
 	if (path_metadata_flags == p_path_metadata_flags) {
 		return;
@@ -711,8 +737,6 @@ void NavigationAgent3D::_update_navigation() {
 		return;
 	}
 
-	update_frame_id = Engine::get_singleton()->get_physics_frames();
-
 	Vector3 origin = agent_parent->get_global_position();
 
 	bool reload_path = false;
@@ -809,7 +833,6 @@ void NavigationAgent3D::_request_repath() {
 	target_reached = false;
 	navigation_finished = false;
 	last_waypoint_reached = false;
-	update_frame_id = 0;
 }
 
 bool NavigationAgent3D::_is_last_waypoint() const {
@@ -839,7 +862,7 @@ void NavigationAgent3D::_trigger_waypoint_reached() {
 	Dictionary details;
 
 	const Vector3 waypoint = navigation_path[navigation_path_index];
-	details[SNAME("position")] = waypoint;
+	details[CoreStringName(position)] = waypoint;
 
 	int waypoint_type = -1;
 	if (path_metadata_flags.has_flag(NavigationPathQueryParameters3D::PathMetadataFlags::PATH_METADATA_INCLUDE_TYPES)) {

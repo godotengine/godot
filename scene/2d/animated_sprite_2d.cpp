@@ -31,7 +31,6 @@
 #include "animated_sprite_2d.h"
 
 #include "scene/main/viewport.h"
-#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary AnimatedSprite2D::_edit_get_state() const {
@@ -202,7 +201,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 							} else {
 								frame = last_frame;
 								pause();
-								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								emit_signal(SceneStringName(animation_finished));
 								return;
 							}
 						} else {
@@ -211,7 +210,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 						_calc_frame_speed_scale();
 						frame_progress = 0.0;
 						queue_redraw();
-						emit_signal(SceneStringNames::get_singleton()->frame_changed);
+						emit_signal(SceneStringName(frame_changed));
 					}
 					double to_process = MIN((1.0 - frame_progress) / abs_speed, remaining);
 					frame_progress += to_process * abs_speed;
@@ -226,7 +225,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 							} else {
 								frame = 0;
 								pause();
-								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								emit_signal(SceneStringName(animation_finished));
 								return;
 							}
 						} else {
@@ -235,7 +234,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 						_calc_frame_speed_scale();
 						frame_progress = 1.0;
 						queue_redraw();
-						emit_signal(SceneStringNames::get_singleton()->frame_changed);
+						emit_signal(SceneStringName(frame_changed));
 					}
 					double to_process = MIN(frame_progress / abs_speed, remaining);
 					frame_progress -= to_process * abs_speed;
@@ -268,7 +267,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 			}
 
 			if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-				ofs = ofs.round();
+				ofs = (ofs + Point2(0.5, 0.5)).floor();
 			}
 
 			Rect2 dst_rect(ofs, s);
@@ -291,12 +290,12 @@ void AnimatedSprite2D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 	}
 
 	if (frames.is_valid()) {
-		frames->disconnect(SceneStringNames::get_singleton()->changed, callable_mp(this, &AnimatedSprite2D::_res_changed));
+		frames->disconnect(CoreStringName(changed), callable_mp(this, &AnimatedSprite2D::_res_changed));
 	}
 	stop();
 	frames = p_frames;
 	if (frames.is_valid()) {
-		frames->connect(SceneStringNames::get_singleton()->changed, callable_mp(this, &AnimatedSprite2D::_res_changed));
+		frames->connect(CoreStringName(changed), callable_mp(this, &AnimatedSprite2D::_res_changed));
 
 		List<StringName> al;
 		frames->get_animation_list(&al);
@@ -305,7 +304,7 @@ void AnimatedSprite2D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 			autoplay = String();
 		} else {
 			if (!frames->has_animation(animation)) {
-				set_animation(al[0]);
+				set_animation(al.front()->get());
 			}
 			if (!frames->has_animation(autoplay)) {
 				autoplay = String();
@@ -363,7 +362,7 @@ void AnimatedSprite2D::set_frame_and_progress(int p_frame, real_t p_progress) {
 		return; // No change, don't redraw.
 	}
 	queue_redraw();
-	emit_signal(SceneStringNames::get_singleton()->frame_changed);
+	emit_signal(SceneStringName(frame_changed));
 }
 
 void AnimatedSprite2D::set_speed_scale(float p_speed_scale) {
@@ -474,17 +473,20 @@ void AnimatedSprite2D::play(const StringName &p_name, float p_custom_scale, bool
 	playing = true;
 	custom_speed_scale = p_custom_scale;
 
-	int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
 	if (name != animation) {
 		animation = name;
+		int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
+
 		if (p_from_end) {
 			set_frame_and_progress(end_frame, 1.0);
 		} else {
 			set_frame_and_progress(0, 0.0);
 		}
-		emit_signal("animation_changed");
+		emit_signal(SceneStringName(animation_changed));
 	} else {
+		int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
 		bool is_backward = signbit(speed_scale * custom_speed_scale);
+
 		if (p_from_end && is_backward && frame == 0 && frame_progress <= 0.0) {
 			set_frame_and_progress(end_frame, 1.0);
 		} else if (!p_from_end && !is_backward && frame == end_frame && frame_progress >= 1.0) {
@@ -537,7 +539,7 @@ void AnimatedSprite2D::set_animation(const StringName &p_name) {
 
 	animation = p_name;
 
-	emit_signal("animation_changed");
+	emit_signal(SceneStringName(animation_changed));
 
 	if (frames == nullptr) {
 		animation = StringName();
@@ -572,7 +574,7 @@ StringName AnimatedSprite2D::get_animation() const {
 PackedStringArray AnimatedSprite2D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node2D::get_configuration_warnings();
 	if (frames.is_null()) {
-		warnings.push_back(RTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite2D to display frames."));
+		warnings.push_back(RTR("A SpriteFrames resource must be created or set in the \"Sprite Frames\" property in order for AnimatedSprite2D to display frames."));
 	}
 	return warnings;
 }

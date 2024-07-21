@@ -371,28 +371,22 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 	}
 
 	if (strcmp(interface, zxdg_exporter_v1_interface.name) == 0) {
-		registry->wl_exporter = (struct zxdg_exporter_v1 *)wl_registry_bind(wl_registry, name, &zxdg_exporter_v1_interface, 1);
-		registry->wl_exporter_name = name;
+		registry->xdg_exporter = (struct zxdg_exporter_v1 *)wl_registry_bind(wl_registry, name, &zxdg_exporter_v1_interface, 1);
+		registry->xdg_exporter_name = name;
 		return;
 	}
 
 	if (strcmp(interface, wl_compositor_interface.name) == 0) {
-		registry->wl_compositor = (struct wl_compositor *)wl_registry_bind(wl_registry, name, &wl_compositor_interface, 4);
+		registry->wl_compositor = (struct wl_compositor *)wl_registry_bind(wl_registry, name, &wl_compositor_interface, CLAMP((int)version, 1, 6));
 		registry->wl_compositor_name = name;
 		return;
 	}
 
-	if (strcmp(interface, wl_subcompositor_interface.name) == 0) {
-		registry->wl_subcompositor = (struct wl_subcompositor *)wl_registry_bind(wl_registry, name, &wl_subcompositor_interface, 1);
-		registry->wl_subcompositor_name = name;
-		return;
-	}
-
 	if (strcmp(interface, wl_data_device_manager_interface.name) == 0) {
-		registry->wl_data_device_manager = (struct wl_data_device_manager *)wl_registry_bind(wl_registry, name, &wl_data_device_manager_interface, 3);
+		registry->wl_data_device_manager = (struct wl_data_device_manager *)wl_registry_bind(wl_registry, name, &wl_data_device_manager_interface, CLAMP((int)version, 1, 3));
 		registry->wl_data_device_manager_name = name;
 
-		// This global creates some seats data. Let's do that for the ones already available.
+		// This global creates some seat data. Let's do that for the ones already available.
 		for (struct wl_seat *wl_seat : registry->wl_seats) {
 			SeatState *ss = wl_seat_get_seat_state(wl_seat);
 			ERR_FAIL_NULL(ss);
@@ -406,7 +400,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 	}
 
 	if (strcmp(interface, wl_output_interface.name) == 0) {
-		struct wl_output *wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, 2);
+		struct wl_output *wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, CLAMP((int)version, 1, 4));
 		wl_proxy_tag_godot((struct wl_proxy *)wl_output);
 
 		registry->wl_outputs.push_back(wl_output);
@@ -421,7 +415,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 	}
 
 	if (strcmp(interface, wl_seat_interface.name) == 0) {
-		struct wl_seat *wl_seat = (struct wl_seat *)wl_registry_bind(wl_registry, name, &wl_seat_interface, 5);
+		struct wl_seat *wl_seat = (struct wl_seat *)wl_registry_bind(wl_registry, name, &wl_seat_interface, CLAMP((int)version, 1, 9));
 		wl_proxy_tag_godot((struct wl_proxy *)wl_seat);
 
 		SeatState *ss = memnew(SeatState);
@@ -454,6 +448,12 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 			zwp_tablet_seat_v2_add_listener(ss->wp_tablet_seat, &wp_tablet_seat_listener, ss);
 		}
 
+		if (!ss->wp_text_input && registry->wp_text_input_manager) {
+			// IME.
+			ss->wp_text_input = zwp_text_input_manager_v3_get_text_input(registry->wp_text_input_manager, wl_seat);
+			zwp_text_input_v3_add_listener(ss->wp_text_input, &wp_text_input_listener, ss);
+		}
+
 		registry->wl_seats.push_back(wl_seat);
 
 		wl_seat_add_listener(wl_seat, &wl_seat_listener, ss);
@@ -466,7 +466,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 	}
 
 	if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
-		registry->xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, MAX(2, MIN(6, (int)version)));
+		registry->xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, CLAMP((int)version, 1, 6));
 		registry->xdg_wm_base_name = name;
 
 		xdg_wm_base_add_listener(registry->xdg_wm_base, &xdg_wm_base_listener, nullptr);
@@ -502,7 +502,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 	if (strcmp(interface, zwp_primary_selection_device_manager_v1_interface.name) == 0) {
 		registry->wp_primary_selection_device_manager = (struct zwp_primary_selection_device_manager_v1 *)wl_registry_bind(wl_registry, name, &zwp_primary_selection_device_manager_v1_interface, 1);
 
-		// This global creates some seats data. Let's do that for the ones already available.
+		// This global creates some seat data. Let's do that for the ones already available.
 		for (struct wl_seat *wl_seat : registry->wl_seats) {
 			SeatState *ss = wl_seat_get_seat_state(wl_seat);
 			ERR_FAIL_NULL(ss);
@@ -553,6 +553,22 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 
 		return;
 	}
+
+	if (strcmp(interface, zwp_text_input_manager_v3_interface.name) == 0) {
+		registry->wp_text_input_manager = (struct zwp_text_input_manager_v3 *)wl_registry_bind(wl_registry, name, &zwp_text_input_manager_v3_interface, 1);
+		registry->wp_text_input_manager_name = name;
+
+		// This global creates some seat data. Let's do that for the ones already available.
+		for (struct wl_seat *wl_seat : registry->wl_seats) {
+			SeatState *ss = wl_seat_get_seat_state(wl_seat);
+			ERR_FAIL_NULL(ss);
+
+			ss->wp_text_input = zwp_text_input_manager_v3_get_text_input(registry->wp_text_input_manager, wl_seat);
+			zwp_text_input_v3_add_listener(ss->wp_text_input, &wp_text_input_listener, ss);
+		}
+
+		return;
+	}
 }
 
 void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
@@ -570,13 +586,13 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		return;
 	}
 
-	if (name == registry->wl_exporter_name) {
-		if (registry->wl_exporter) {
-			zxdg_exporter_v1_destroy(registry->wl_exporter);
-			registry->wl_exporter = nullptr;
+	if (name == registry->xdg_exporter_name) {
+		if (registry->xdg_exporter) {
+			zxdg_exporter_v1_destroy(registry->xdg_exporter);
+			registry->xdg_exporter = nullptr;
 		}
 
-		registry->wl_exporter_name = 0;
+		registry->xdg_exporter_name = 0;
 
 		return;
 	}
@@ -588,17 +604,6 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		}
 
 		registry->wl_compositor_name = 0;
-
-		return;
-	}
-
-	if (name == registry->wl_subcompositor_name) {
-		if (registry->wl_subcompositor) {
-			wl_subcompositor_destroy(registry->wl_subcompositor);
-			registry->wl_subcompositor = nullptr;
-		}
-
-		registry->wl_subcompositor_name = 0;
 
 		return;
 	}
@@ -842,6 +847,25 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		return;
 	}
 
+	if (name == registry->wp_text_input_manager_name) {
+		if (registry->wp_text_input_manager) {
+			zwp_text_input_manager_v3_destroy(registry->wp_text_input_manager);
+			registry->wp_text_input_manager = nullptr;
+		}
+
+		registry->wp_text_input_manager_name = 0;
+
+		for (struct wl_seat *wl_seat : registry->wl_seats) {
+			SeatState *ss = wl_seat_get_seat_state(wl_seat);
+			ERR_FAIL_NULL(ss);
+
+			zwp_text_input_v3_destroy(ss->wp_text_input);
+			ss->wp_text_input = nullptr;
+		}
+
+		return;
+	}
+
 	{
 		// Iterate through all of the seats to find if any got removed.
 		List<struct wl_seat *>::Element *E = registry->wl_seats.front();
@@ -944,7 +968,6 @@ void WaylandThread::_frame_wl_callback_on_done(void *data, struct wl_callback *w
 
 	ws->frame_callback = wl_surface_frame(ws->wl_surface),
 	wl_callback_add_listener(ws->frame_callback, &frame_wl_callback_listener, ws);
-	wl_surface_commit(ws->wl_surface);
 
 	if (ws->wl_surface && ws->buffer_scale_changed) {
 		// NOTE: We're only now setting the buffer scale as the idea is to get this
@@ -956,11 +979,6 @@ void WaylandThread::_frame_wl_callback_on_done(void *data, struct wl_callback *w
 		// rendering if needed.
 		wl_surface_set_buffer_scale(ws->wl_surface, window_state_get_preferred_buffer_scale(ws));
 	}
-
-	// NOTE: Remember to set here also other buffer-dependent states (e.g. opaque
-	// region) if used, to be as close as possible to an atomic surface update.
-	// Ideally we'd only have one surface commit, but it's not really doable given
-	// the current state of things.
 }
 
 void WaylandThread::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
@@ -1000,6 +1018,12 @@ void WaylandThread::_wl_output_on_geometry(void *data, struct wl_output *wl_outp
 
 	ss->pending_data.make.parse_utf8(make);
 	ss->pending_data.model.parse_utf8(model);
+
+	// `wl_output::done` is a version 2 addition. We'll directly update the data
+	// for compatibility.
+	if (wl_output_get_version(wl_output) == 1) {
+		ss->data = ss->pending_data;
+	}
 }
 
 void WaylandThread::_wl_output_on_mode(void *data, struct wl_output *wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh) {
@@ -1010,7 +1034,16 @@ void WaylandThread::_wl_output_on_mode(void *data, struct wl_output *wl_output, 
 	ss->pending_data.size.height = height;
 
 	ss->pending_data.refresh_rate = refresh ? refresh / 1000.0f : -1;
+
+	// `wl_output::done` is a version 2 addition. We'll directly update the data
+	// for compatibility.
+	if (wl_output_get_version(wl_output) == 1) {
+		ss->data = ss->pending_data;
+	}
 }
+
+// NOTE: The following `wl_output` events are only for version 2 onwards, so we
+// can assume that they're "atomic" (i.e. rely on the `wl_output::done` event).
 
 void WaylandThread::_wl_output_on_done(void *data, struct wl_output *wl_output) {
 	ScreenState *ss = (ScreenState *)data;
@@ -1523,7 +1556,7 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 		wayland_thread->push_message(msg);
 	}
 
-	if (pd.discrete_scroll_vector - old_pd.discrete_scroll_vector != Vector2i()) {
+	if (pd.discrete_scroll_vector_120 - old_pd.discrete_scroll_vector_120 != Vector2i()) {
 		// This is a discrete scroll (eg. from a scroll wheel), so we'll just emit
 		// scroll wheel buttons.
 		if (pd.scroll_vector.y != 0) {
@@ -1563,7 +1596,7 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 	}
 
 	if (old_pd.pressed_button_mask != pd.pressed_button_mask) {
-		BitField<MouseButtonMask> pressed_mask_delta = BitField<MouseButtonMask>((uint32_t)old_pd.pressed_button_mask ^ (uint32_t)pd.pressed_button_mask);
+		BitField<MouseButtonMask> pressed_mask_delta = old_pd.pressed_button_mask ^ pd.pressed_button_mask;
 
 		const MouseButton buttons_to_test[] = {
 			MouseButton::LEFT,
@@ -1596,13 +1629,13 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 				if (test_button == MouseButton::WHEEL_UP || test_button == MouseButton::WHEEL_DOWN) {
 					// If this is a discrete scroll, specify how many "clicks" it did for this
 					// pointer frame.
-					mb->set_factor(abs(pd.discrete_scroll_vector.y));
+					mb->set_factor(Math::abs(pd.discrete_scroll_vector_120.y / (float)120));
 				}
 
 				if (test_button == MouseButton::WHEEL_RIGHT || test_button == MouseButton::WHEEL_LEFT) {
 					// If this is a discrete scroll, specify how many "clicks" it did for this
 					// pointer frame.
-					mb->set_factor(abs(pd.discrete_scroll_vector.x));
+					mb->set_factor(fabs(pd.discrete_scroll_vector_120.x / (float)120));
 				}
 
 				mb->set_button_mask(pd.pressed_button_mask);
@@ -1661,7 +1694,7 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 
 	// Reset the scroll vectors as we already handled them.
 	pd.scroll_vector = Vector2();
-	pd.discrete_scroll_vector = Vector2();
+	pd.discrete_scroll_vector_120 = Vector2i();
 
 	// Update the data all getters read. Wayland's specification requires us to do
 	// this, since all pointer actions are sent in individual events.
@@ -1683,6 +1716,9 @@ void WaylandThread::_wl_pointer_on_axis_source(void *data, struct wl_pointer *wl
 void WaylandThread::_wl_pointer_on_axis_stop(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis) {
 }
 
+// NOTE: This event is deprecated since version 8 and superseded by
+// `wl_pointer::axis_value120`. This thus converts the data to its
+// fraction-of-120 format.
 void WaylandThread::_wl_pointer_on_axis_discrete(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t discrete) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
@@ -1694,17 +1730,37 @@ void WaylandThread::_wl_pointer_on_axis_discrete(void *data, struct wl_pointer *
 
 	PointerData &pd = ss->pointer_data_buffer;
 
+	// NOTE: We can allow ourselves to not accumulate this data (and thus just
+	// assign it) as the spec guarantees only one event per axis type.
+
 	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL) {
-		pd.discrete_scroll_vector.y = discrete;
+		pd.discrete_scroll_vector_120.y = discrete * 120;
 	}
 
 	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL) {
-		pd.discrete_scroll_vector.x = discrete;
+		pd.discrete_scroll_vector_120.x = discrete * 120;
 	}
 }
 
-// TODO: Add support to this event.
+// Supersedes `wl_pointer::axis_discrete` Since version 8.
 void WaylandThread::_wl_pointer_on_axis_value120(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t value120) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	if (!ss->pointed_surface) {
+		// We're probably on a decoration or some other third-party thing.
+		return;
+	}
+
+	PointerData &pd = ss->pointer_data_buffer;
+
+	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL) {
+		pd.discrete_scroll_vector_120.y += value120;
+	}
+
+	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL) {
+		pd.discrete_scroll_vector_120.x += value120;
+	}
 }
 
 // TODO: Add support to this event.
@@ -1724,7 +1780,7 @@ void WaylandThread::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_ke
 		ss->keymap_buffer = nullptr;
 	}
 
-	ss->keymap_buffer = (const char *)mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+	ss->keymap_buffer = (const char *)mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0);
 	ss->keymap_buffer_size = size;
 
 	xkb_keymap_unref(ss->xkb_keymap);
@@ -1991,15 +2047,25 @@ void WaylandThread::_wp_relative_pointer_on_relative_motion(void *data, struct z
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
+	if (!ss->pointed_surface) {
+		// We're probably on a decoration or some other third-party thing.
+		return;
+	}
+
 	PointerData &pd = ss->pointer_data_buffer;
+
+	WindowState *ws = wl_surface_get_window_state(ss->pointed_surface);
+	ERR_FAIL_NULL(ws);
 
 	pd.relative_motion.x = wl_fixed_to_double(dx);
 	pd.relative_motion.y = wl_fixed_to_double(dy);
 
+	pd.relative_motion *= window_state_get_scale_factor(ws);
+
 	pd.relative_motion_time = uptime_lo;
 }
 
-void WaylandThread::_wp_pointer_gesture_pinch_on_begin(void *data, struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1, uint32_t serial, uint32_t time, struct wl_surface *surface, uint32_t fingers) {
+void WaylandThread::_wp_pointer_gesture_pinch_on_begin(void *data, struct zwp_pointer_gesture_pinch_v1 *wp_pointer_gesture_pinch_v1, uint32_t serial, uint32_t time, struct wl_surface *surface, uint32_t fingers) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
@@ -2009,7 +2075,7 @@ void WaylandThread::_wp_pointer_gesture_pinch_on_begin(void *data, struct zwp_po
 	}
 }
 
-void WaylandThread::_wp_pointer_gesture_pinch_on_update(void *data, struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1, uint32_t time, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t scale, wl_fixed_t rotation) {
+void WaylandThread::_wp_pointer_gesture_pinch_on_update(void *data, struct zwp_pointer_gesture_pinch_v1 *wp_pointer_gesture_pinch_v1, uint32_t time, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t scale, wl_fixed_t rotation) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
@@ -2068,7 +2134,7 @@ void WaylandThread::_wp_pointer_gesture_pinch_on_update(void *data, struct zwp_p
 	}
 }
 
-void WaylandThread::_wp_pointer_gesture_pinch_on_end(void *data, struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1, uint32_t serial, uint32_t time, int32_t cancelled) {
+void WaylandThread::_wp_pointer_gesture_pinch_on_end(void *data, struct zwp_pointer_gesture_pinch_v1 *wp_pointer_gesture_pinch_v1, uint32_t serial, uint32_t time, int32_t cancelled) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
@@ -2093,7 +2159,7 @@ void WaylandThread::_wp_primary_selection_device_on_selection(void *data, struct
 	ss->wp_primary_selection_offer = id;
 }
 
-void WaylandThread::_wp_primary_selection_offer_on_offer(void *data, struct zwp_primary_selection_offer_v1 *zwp_primary_selection_offer_v1, const char *mime_type) {
+void WaylandThread::_wp_primary_selection_offer_on_offer(void *data, struct zwp_primary_selection_offer_v1 *wp_primary_selection_offer_v1, const char *mime_type) {
 	OfferState *os = (OfferState *)data;
 	ERR_FAIL_NULL(os);
 
@@ -2147,10 +2213,10 @@ void WaylandThread::_wp_primary_selection_source_on_cancelled(void *data, struct
 	}
 }
 
-void WaylandThread::_wp_tablet_seat_on_tablet_added(void *data, struct zwp_tablet_seat_v2 *zwp_tablet_seat_v2, struct zwp_tablet_v2 *id) {
+void WaylandThread::_wp_tablet_seat_on_tablet_added(void *data, struct zwp_tablet_seat_v2 *wp_tablet_seat_v2, struct zwp_tablet_v2 *id) {
 }
 
-void WaylandThread::_wp_tablet_seat_on_tool_added(void *data, struct zwp_tablet_seat_v2 *zwp_tablet_seat_v2, struct zwp_tablet_tool_v2 *id) {
+void WaylandThread::_wp_tablet_seat_on_tool_added(void *data, struct zwp_tablet_seat_v2 *wp_tablet_seat_v2, struct zwp_tablet_tool_v2 *id) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
@@ -2163,43 +2229,41 @@ void WaylandThread::_wp_tablet_seat_on_tool_added(void *data, struct zwp_tablet_
 	ss->tablet_tools.push_back(id);
 }
 
-void WaylandThread::_wp_tablet_seat_on_pad_added(void *data, struct zwp_tablet_seat_v2 *zwp_tablet_seat_v2, struct zwp_tablet_pad_v2 *id) {
+void WaylandThread::_wp_tablet_seat_on_pad_added(void *data, struct zwp_tablet_seat_v2 *wp_tablet_seat_v2, struct zwp_tablet_pad_v2 *id) {
 }
 
-void WaylandThread::_wp_tablet_tool_on_type(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t tool_type) {
-	TabletToolState *state = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
+void WaylandThread::_wp_tablet_tool_on_type(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t tool_type) {
+	TabletToolState *state = wp_tablet_tool_get_state(wp_tablet_tool_v2);
 
 	if (state && tool_type == ZWP_TABLET_TOOL_V2_TYPE_ERASER) {
 		state->is_eraser = true;
 	}
 }
 
-void WaylandThread::_wp_tablet_tool_on_hardware_serial(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t hardware_serial_hi, uint32_t hardware_serial_lo) {
+void WaylandThread::_wp_tablet_tool_on_hardware_serial(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t hardware_serial_hi, uint32_t hardware_serial_lo) {
 }
 
-void WaylandThread::_wp_tablet_tool_on_hardware_id_wacom(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t hardware_id_hi, uint32_t hardware_id_lo) {
+void WaylandThread::_wp_tablet_tool_on_hardware_id_wacom(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t hardware_id_hi, uint32_t hardware_id_lo) {
 }
 
-void WaylandThread::_wp_tablet_tool_on_capability(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t capability) {
+void WaylandThread::_wp_tablet_tool_on_capability(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t capability) {
 }
 
-void WaylandThread::_wp_tablet_tool_on_done(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
+void WaylandThread::_wp_tablet_tool_on_done(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2) {
 }
 
-void WaylandThread::_wp_tablet_tool_on_removed(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
-	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
-
+void WaylandThread::_wp_tablet_tool_on_removed(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2) {
+	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
 	if (!ts) {
 		return;
 	}
 
 	SeatState *ss = wl_seat_get_seat_state(ts->wl_seat);
-
 	if (!ss) {
 		return;
 	}
 
-	List<struct zwp_tablet_tool_v2 *>::Element *E = ss->tablet_tools.find(zwp_tablet_tool_v2);
+	List<struct zwp_tablet_tool_v2 *>::Element *E = ss->tablet_tools.find(wp_tablet_tool_v2);
 
 	if (E && E->get()) {
 		struct zwp_tablet_tool_v2 *tool = E->get();
@@ -2213,15 +2277,18 @@ void WaylandThread::_wp_tablet_tool_on_removed(void *data, struct zwp_tablet_too
 	}
 }
 
-void WaylandThread::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial, struct zwp_tablet_v2 *tablet, struct wl_surface *surface) {
-	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
+void WaylandThread::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t serial, struct zwp_tablet_v2 *tablet, struct wl_surface *surface) {
+	if (!surface || !wl_proxy_is_godot((struct wl_proxy *)surface)) {
+		// We're probably on a decoration or something.
+		return;
+	}
 
+	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
 	if (!ts) {
 		return;
 	}
 
 	SeatState *ss = wl_seat_get_seat_state(ts->wl_seat);
-
 	if (!ss) {
 		return;
 	}
@@ -2241,15 +2308,14 @@ void WaylandThread::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_table
 	DEBUG_LOG_WAYLAND_THREAD("Tablet tool entered window.");
 }
 
-void WaylandThread::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
-	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
-
-	if (!ts) {
+void WaylandThread::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2) {
+	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
+	if (!ts || !ts->data_pending.proximal_surface) {
+		// Not our stuff, we don't care.
 		return;
 	}
 
 	SeatState *ss = wl_seat_get_seat_state(ts->wl_seat);
-
 	if (!ss) {
 		return;
 	}
@@ -2268,9 +2334,8 @@ void WaylandThread::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tabl
 	DEBUG_LOG_WAYLAND_THREAD("Tablet tool left window.");
 }
 
-void WaylandThread::_wp_tablet_tool_on_down(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial) {
-	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
-
+void WaylandThread::_wp_tablet_tool_on_down(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t serial) {
+	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
 	if (!ts) {
 		return;
 	}
@@ -2286,9 +2351,8 @@ void WaylandThread::_wp_tablet_tool_on_down(void *data, struct zwp_tablet_tool_v
 	td.button_time = OS::get_singleton()->get_ticks_msec();
 }
 
-void WaylandThread::_wp_tablet_tool_on_up(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
-	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
-
+void WaylandThread::_wp_tablet_tool_on_up(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2) {
+	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
 	if (!ts) {
 		return;
 	}
@@ -2302,10 +2366,14 @@ void WaylandThread::_wp_tablet_tool_on_up(void *data, struct zwp_tablet_tool_v2 
 	td.button_time = OS::get_singleton()->get_ticks_msec();
 }
 
-void WaylandThread::_wp_tablet_tool_on_motion(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t x, wl_fixed_t y) {
-	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
-
+void WaylandThread::_wp_tablet_tool_on_motion(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, wl_fixed_t x, wl_fixed_t y) {
+	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
 	if (!ts) {
+		return;
+	}
+
+	if (!ts->data_pending.proximal_surface) {
+		// We're probably on a decoration or some other third-party thing.
 		return;
 	}
 
@@ -2323,9 +2391,8 @@ void WaylandThread::_wp_tablet_tool_on_motion(void *data, struct zwp_tablet_tool
 	td.motion_time = OS::get_singleton()->get_ticks_msec();
 }
 
-void WaylandThread::_wp_tablet_tool_on_pressure(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t pressure) {
-	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
-
+void WaylandThread::_wp_tablet_tool_on_pressure(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t pressure) {
+	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
 	if (!ts) {
 		return;
 	}
@@ -2333,13 +2400,12 @@ void WaylandThread::_wp_tablet_tool_on_pressure(void *data, struct zwp_tablet_to
 	ts->data_pending.pressure = pressure;
 }
 
-void WaylandThread::_wp_tablet_tool_on_distance(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t distance) {
+void WaylandThread::_wp_tablet_tool_on_distance(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t distance) {
 	// Unsupported
 }
 
-void WaylandThread::_wp_tablet_tool_on_tilt(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t tilt_x, wl_fixed_t tilt_y) {
-	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
-
+void WaylandThread::_wp_tablet_tool_on_tilt(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, wl_fixed_t tilt_x, wl_fixed_t tilt_y) {
+	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
 	if (!ts) {
 		return;
 	}
@@ -2350,21 +2416,20 @@ void WaylandThread::_wp_tablet_tool_on_tilt(void *data, struct zwp_tablet_tool_v
 	td.tilt.y = wl_fixed_to_double(tilt_y);
 }
 
-void WaylandThread::_wp_tablet_tool_on_rotation(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t degrees) {
+void WaylandThread::_wp_tablet_tool_on_rotation(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, wl_fixed_t degrees) {
 	// Unsupported.
 }
 
-void WaylandThread::_wp_tablet_tool_on_slider(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, int32_t position) {
+void WaylandThread::_wp_tablet_tool_on_slider(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, int32_t position) {
 	// Unsupported.
 }
 
-void WaylandThread::_wp_tablet_tool_on_wheel(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t degrees, int32_t clicks) {
+void WaylandThread::_wp_tablet_tool_on_wheel(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, wl_fixed_t degrees, int32_t clicks) {
 	// TODO
 }
 
-void WaylandThread::_wp_tablet_tool_on_button(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial, uint32_t button, uint32_t state) {
-	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
-
+void WaylandThread::_wp_tablet_tool_on_button(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t serial, uint32_t button, uint32_t state) {
+	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
 	if (!ts) {
 		return;
 	}
@@ -2398,15 +2463,13 @@ void WaylandThread::_wp_tablet_tool_on_button(void *data, struct zwp_tablet_tool
 	}
 }
 
-void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t time) {
-	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
-
+void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t time) {
+	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
 	if (!ts) {
 		return;
 	}
 
 	SeatState *ss = wl_seat_get_seat_state(ts->wl_seat);
-
 	if (!ss) {
 		return;
 	}
@@ -2440,7 +2503,7 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 		// According to the tablet proto spec, tilt is expressed in degrees relative
 		// to the Z axis of the tablet, so it shouldn't go over 90 degrees either way,
 		// I think. We'll clamp it just in case.
-		td.tilt = td.tilt.clamp(Vector2(-90, -90), Vector2(90, 90));
+		td.tilt = td.tilt.clampf(-90, 90);
 
 		mm->set_tilt(td.tilt / 90);
 
@@ -2454,7 +2517,7 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 		mm->set_relative_screen_position(mm->get_relative());
 
 		Vector2i pos_delta = td.position - old_td.position;
-		uint32_t time_delta = td.motion_time - td.motion_time;
+		uint32_t time_delta = td.motion_time - old_td.motion_time;
 		mm->set_velocity((Vector2)pos_delta / time_delta);
 
 		Ref<InputEventMessage> inputev_msg;
@@ -2512,6 +2575,118 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 	}
 
 	old_td = td;
+}
+
+void WaylandThread::_wp_text_input_on_enter(void *data, struct zwp_text_input_v3 *wp_text_input_v3, struct wl_surface *surface) {
+	SeatState *ss = (SeatState *)data;
+	if (!ss) {
+		return;
+	}
+
+	ss->ime_enabled = true;
+}
+
+void WaylandThread::_wp_text_input_on_leave(void *data, struct zwp_text_input_v3 *wp_text_input_v3, struct wl_surface *surface) {
+	SeatState *ss = (SeatState *)data;
+	if (!ss) {
+		return;
+	}
+
+	ss->ime_enabled = false;
+	ss->ime_active = false;
+	ss->ime_text = String();
+	ss->ime_text_commit = String();
+	ss->ime_cursor = Vector2i();
+
+	Ref<IMEUpdateEventMessage> msg;
+	msg.instantiate();
+	msg->text = String();
+	msg->selection = Vector2i();
+	ss->wayland_thread->push_message(msg);
+}
+
+void WaylandThread::_wp_text_input_on_preedit_string(void *data, struct zwp_text_input_v3 *wp_text_input_v3, const char *text, int32_t cursor_begin, int32_t cursor_end) {
+	SeatState *ss = (SeatState *)data;
+	if (!ss) {
+		return;
+	}
+
+	ss->ime_text = String::utf8(text);
+
+	// Convert cursor positions from UTF-8 to UTF-32 offset.
+	int32_t cursor_begin_utf32 = 0;
+	int32_t cursor_end_utf32 = 0;
+	for (int i = 0; i < ss->ime_text.length(); i++) {
+		uint32_t c = ss->ime_text[i];
+		if (c <= 0x7f) { // 7 bits.
+			cursor_begin -= 1;
+			cursor_end -= 1;
+		} else if (c <= 0x7ff) { // 11 bits
+			cursor_begin -= 2;
+			cursor_end -= 2;
+		} else if (c <= 0xffff) { // 16 bits
+			cursor_begin -= 3;
+			cursor_end -= 3;
+		} else if (c <= 0x001fffff) { // 21 bits
+			cursor_begin -= 4;
+			cursor_end -= 4;
+		} else if (c <= 0x03ffffff) { // 26 bits
+			cursor_begin -= 5;
+			cursor_end -= 5;
+		} else if (c <= 0x7fffffff) { // 31 bits
+			cursor_begin -= 6;
+			cursor_end -= 6;
+		} else {
+			cursor_begin -= 1;
+			cursor_end -= 1;
+		}
+		if (cursor_begin == 0) {
+			cursor_begin_utf32 = i + 1;
+		}
+		if (cursor_end == 0) {
+			cursor_end_utf32 = i + 1;
+		}
+		if (cursor_begin <= 0 && cursor_end <= 0) {
+			break;
+		}
+	}
+	ss->ime_cursor = Vector2i(cursor_begin_utf32, cursor_end_utf32 - cursor_begin_utf32);
+}
+
+void WaylandThread::_wp_text_input_on_commit_string(void *data, struct zwp_text_input_v3 *wp_text_input_v3, const char *text) {
+	SeatState *ss = (SeatState *)data;
+	if (!ss) {
+		return;
+	}
+
+	ss->ime_text_commit = String::utf8(text);
+}
+
+void WaylandThread::_wp_text_input_on_delete_surrounding_text(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t before_length, uint32_t after_length) {
+	// Not implemented.
+}
+
+void WaylandThread::_wp_text_input_on_done(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t serial) {
+	SeatState *ss = (SeatState *)data;
+	if (!ss) {
+		return;
+	}
+
+	if (!ss->ime_text_commit.is_empty()) {
+		Ref<IMECommitEventMessage> msg;
+		msg.instantiate();
+		msg->text = ss->ime_text_commit;
+		ss->wayland_thread->push_message(msg);
+	} else if (!ss->ime_text.is_empty()) {
+		Ref<IMEUpdateEventMessage> msg;
+		msg.instantiate();
+		msg->text = ss->ime_text;
+		msg->selection = ss->ime_cursor;
+		ss->wayland_thread->push_message(msg);
+	}
+	ss->ime_text = String();
+	ss->ime_text_commit = String();
+	ss->ime_cursor = Vector2i();
 }
 
 void WaylandThread::_xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token) {
@@ -2854,7 +3029,7 @@ void WaylandThread::seat_state_lock_pointer(SeatState *p_ss) {
 
 		ERR_FAIL_NULL(locked_surface);
 
-		p_ss->wp_locked_pointer = zwp_pointer_constraints_v1_lock_pointer(registry.wp_pointer_constraints, locked_surface, p_ss->wl_pointer, NULL, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+		p_ss->wp_locked_pointer = zwp_pointer_constraints_v1_lock_pointer(registry.wp_pointer_constraints, locked_surface, p_ss->wl_pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
 	}
 }
 
@@ -2886,7 +3061,7 @@ void WaylandThread::seat_state_confine_pointer(SeatState *p_ss) {
 
 		ERR_FAIL_NULL(confined_surface);
 
-		p_ss->wp_confined_pointer = zwp_pointer_constraints_v1_confine_pointer(registry.wp_pointer_constraints, confined_surface, p_ss->wl_pointer, NULL, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+		p_ss->wp_confined_pointer = zwp_pointer_constraints_v1_confine_pointer(registry.wp_pointer_constraints, confined_surface, p_ss->wl_pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
 	}
 }
 
@@ -3067,14 +3242,12 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 	ws.frame_callback = wl_surface_frame(ws.wl_surface);
 	wl_callback_add_listener(ws.frame_callback, &frame_wl_callback_listener, &ws);
 
-	// NOTE: This commit is only called once to start the whole frame callback
-	// "loop".
-	wl_surface_commit(ws.wl_surface);
-
-	if (registry.wl_exporter) {
-		ws.xdg_exported = zxdg_exporter_v1_export(registry.wl_exporter, ws.wl_surface);
+	if (registry.xdg_exporter) {
+		ws.xdg_exported = zxdg_exporter_v1_export(registry.xdg_exporter, ws.wl_surface);
 		zxdg_exported_v1_add_listener(ws.xdg_exported, &xdg_exported_listener, &ws);
 	}
+
+	wl_surface_commit(ws.wl_surface);
 
 	// Wait for the surface to be configured before continuing.
 	wl_display_roundtrip(wl_display);
@@ -3406,7 +3579,7 @@ bool WaylandThread::window_get_idle_inhibition(DisplayServer::WindowID p_window_
 WaylandThread::ScreenData WaylandThread::screen_get_data(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, registry.wl_outputs.size(), ScreenData());
 
-	return wl_output_get_screen_state(registry.wl_outputs[p_screen])->data;
+	return wl_output_get_screen_state(registry.wl_outputs.get(p_screen))->data;
 }
 
 int WaylandThread::get_screen_count() const {
@@ -3529,9 +3702,6 @@ Error WaylandThread::init() {
 
 	ERR_FAIL_NULL_V_MSG(registry.wl_shm, ERR_UNAVAILABLE, "Can't obtain the Wayland shared memory global.");
 	ERR_FAIL_NULL_V_MSG(registry.wl_compositor, ERR_UNAVAILABLE, "Can't obtain the Wayland compositor global.");
-	ERR_FAIL_NULL_V_MSG(registry.wl_subcompositor, ERR_UNAVAILABLE, "Can't obtain the Wayland subcompositor global.");
-	ERR_FAIL_NULL_V_MSG(registry.wl_data_device_manager, ERR_UNAVAILABLE, "Can't obtain the Wayland data device manager global.");
-	ERR_FAIL_NULL_V_MSG(registry.wp_pointer_constraints, ERR_UNAVAILABLE, "Can't obtain the Wayland pointer constraints global.");
 	ERR_FAIL_NULL_V_MSG(registry.xdg_wm_base, ERR_UNAVAILABLE, "Can't obtain the Wayland XDG shell global.");
 
 	if (!registry.xdg_decoration_manager) {
@@ -3660,7 +3830,10 @@ void WaylandThread::cursor_shape_set_custom_image(DisplayServer::CursorShape p_c
 		munmap(cursor.buffer_data, cursor.buffer_data_size);
 	}
 
-	cursor.buffer_data = (uint32_t *)mmap(NULL, data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	// NOTE: From `wl_keyboard`s of version 7 or later, the spec requires the mmap
+	// operation to be done with MAP_PRIVATE, as "MAP_SHARED may fail". We'll do it
+	// regardless of global version.
+	cursor.buffer_data = (uint32_t *)mmap(nullptr, data_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
 
 	if (cursor.wl_buffer) {
 		// Clean up the old Wayland buffer.
@@ -3705,6 +3878,35 @@ void WaylandThread::cursor_shape_clear_custom_image(DisplayServer::CursorShape p
 		if (cursor.buffer_data) {
 			munmap(cursor.buffer_data, cursor.buffer_data_size);
 		}
+	}
+}
+
+void WaylandThread::window_set_ime_active(const bool p_active, DisplayServer::WindowID p_window_id) {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss && ss->wp_text_input && ss->ime_enabled) {
+		if (p_active) {
+			ss->ime_active = true;
+			zwp_text_input_v3_enable(ss->wp_text_input);
+			zwp_text_input_v3_set_cursor_rectangle(ss->wp_text_input, ss->ime_rect.position.x, ss->ime_rect.position.y, ss->ime_rect.size.x, ss->ime_rect.size.y);
+		} else {
+			ss->ime_active = false;
+			ss->ime_text = String();
+			ss->ime_text_commit = String();
+			ss->ime_cursor = Vector2i();
+			zwp_text_input_v3_disable(ss->wp_text_input);
+		}
+		zwp_text_input_v3_commit(ss->wp_text_input);
+	}
+}
+
+void WaylandThread::window_set_ime_position(const Point2i &p_pos, DisplayServer::WindowID p_window_id) {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss && ss->wp_text_input && ss->ime_enabled) {
+		ss->ime_rect = Rect2i(p_pos, Size2i(1, 10));
+		zwp_text_input_v3_set_cursor_rectangle(ss->wp_text_input, ss->ime_rect.position.x, ss->ime_rect.position.y, ss->ime_rect.size.x, ss->ime_rect.size.y);
+		zwp_text_input_v3_commit(ss->wp_text_input);
 	}
 }
 
@@ -3915,6 +4117,10 @@ void WaylandThread::primary_set_text(const String &p_text) {
 	// Wait for the message to get to the server before continuing, otherwise the
 	// clipboard update might come with a delay.
 	wl_display_roundtrip(wl_display);
+}
+
+void WaylandThread::commit_surfaces() {
+	wl_surface_commit(main_window.wl_surface);
 }
 
 void WaylandThread::set_frame() {
@@ -4179,16 +4385,12 @@ void WaylandThread::destroy() {
 		xdg_wm_base_destroy(registry.xdg_wm_base);
 	}
 
-	if (registry.wl_exporter) {
-		zxdg_exporter_v1_destroy(registry.wl_exporter);
+	if (registry.xdg_exporter) {
+		zxdg_exporter_v1_destroy(registry.xdg_exporter);
 	}
 
 	if (registry.wl_shm) {
 		wl_shm_destroy(registry.wl_shm);
-	}
-
-	if (registry.wl_subcompositor) {
-		wl_subcompositor_destroy(registry.wl_subcompositor);
 	}
 
 	if (registry.wl_compositor) {

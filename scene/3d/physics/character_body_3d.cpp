@@ -232,7 +232,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 							} else {
 								// Travel is too high to be safely canceled, we take it into account.
 								result.travel = result.travel.slide(up_direction);
-								motion = motion.normalized() * result.travel.length();
+								motion = result.remainder;
 							}
 							set_global_transform(gt);
 							// Determines if you are on the ground, and limits the possibility of climbing on the walls because of the approximations.
@@ -704,7 +704,7 @@ Ref<KinematicCollision3D> CharacterBody3D::_get_slide_collision(int p_bounce) {
 	// Create a new instance when the cached reference is invalid or still in use in script.
 	if (slide_colliders[p_bounce].is_null() || slide_colliders[p_bounce]->get_reference_count() > 1) {
 		slide_colliders.write[p_bounce].instantiate();
-		slide_colliders.write[p_bounce]->owner = this;
+		slide_colliders.write[p_bounce]->owner_id = get_instance_id();
 	}
 
 	slide_colliders.write[p_bounce]->result = motion_results[p_bounce];
@@ -935,12 +935,4 @@ void CharacterBody3D::_validate_property(PropertyInfo &p_property) const {
 
 CharacterBody3D::CharacterBody3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_KINEMATIC) {
-}
-
-CharacterBody3D::~CharacterBody3D() {
-	for (int i = 0; i < slide_colliders.size(); i++) {
-		if (slide_colliders[i].is_valid()) {
-			slide_colliders.write[i]->owner = nullptr;
-		}
-	}
 }

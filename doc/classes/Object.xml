@@ -357,7 +357,7 @@
 			<param index="0" name="signal" type="String" />
 			<param index="1" name="arguments" type="Array" default="[]" />
 			<description>
-				Adds a user-defined [param signal]. Optional arguments for the signal can be added as an [Array] of dictionaries, each defining a [code]name[/code] [String] and a [code]type[/code] [int] (see [enum Variant.Type]). See also [method has_user_signal].
+				Adds a user-defined [param signal]. Optional arguments for the signal can be added as an [Array] of dictionaries, each defining a [code]name[/code] [String] and a [code]type[/code] [int] (see [enum Variant.Type]). See also [method has_user_signal] and [method remove_user_signal].
 				[codeblocks]
 				[gdscript]
 				add_user_signal("hurt", [
@@ -556,7 +556,7 @@
 				While all options have the same outcome ([code]button[/code]'s [signal BaseButton.button_down] signal will be connected to [code]_on_button_down[/code]), [b]option 3[/b] offers the best validation: it will print a compile-time error if either the [code]button_down[/code] [Signal] or the [code]_on_button_down[/code] [Callable] are not defined. On the other hand, [b]option 2[/b] only relies on string names and will only be able to validate either names at runtime: it will print a runtime error if [code]"button_down"[/code] doesn't correspond to a signal, or if [code]"_on_button_down"[/code] is not a registered method in the object [code]self[/code]. The main reason for using options 1, 2, or 4 would be if you actually need to use strings (e.g. to connect signals programmatically based on strings read from a configuration file). Otherwise, option 3 is the recommended (and fastest) method.
 				[b]Binding and passing parameters:[/b]
 				The syntax to bind parameters is through [method Callable.bind], which returns a copy of the [Callable] with its parameters bound.
-				When calling [method emit_signal], the signal parameters can be also passed. The examples below show the relationship between these signal parameters and bound parameters.
+				When calling [method emit_signal] or [method Signal.emit], the signal parameters can be also passed. The examples below show the relationship between these signal parameters and bound parameters.
 				[codeblocks]
 				[gdscript]
 				func _ready():
@@ -566,7 +566,7 @@
 				    player.hit.connect(_on_player_hit.bind("sword", 100))
 
 				    # Parameters added when emitting the signal are passed first.
-				    player.emit_signal("hit", "Dark lord", 5)
+				    player.hit.emit("Dark lord", 5)
 
 				# We pass two arguments when emitting (`hit_by`, `level`),
 				# and bind two more arguments when connecting (`weapon_type`, `damage`).
@@ -693,6 +693,7 @@
 			<return type="int" />
 			<description>
 				Returns the object's unique instance ID. This ID can be saved in [EncodedObjectAsID], and can be used to retrieve this object instance with [method @GlobalScope.instance_from_id].
+				[b]Note:[/b] This ID is only useful during the current session. It won't correspond to a similar object if the ID is sent over a network, or loaded from a file at a later time.
 			</description>
 		</method>
 		<method name="get_meta" qualifiers="const">
@@ -709,6 +710,14 @@
 			<return type="StringName[]" />
 			<description>
 				Returns the object's metadata entry names as a [PackedStringArray].
+			</description>
+		</method>
+		<method name="get_method_argument_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+				Returns the number of arguments of the given [param method] by name.
+				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="get_method_list" qualifiers="const">
@@ -789,7 +798,7 @@
 			<return type="bool" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the given user-defined [param signal] name exists. Only signals added with [method add_user_signal] are included.
+				Returns [code]true[/code] if the given user-defined [param signal] name exists. Only signals added with [method add_user_signal] are included. See also [method remove_user_signal].
 			</description>
 		</method>
 		<method name="is_blocking_signals" qualifiers="const">
@@ -895,6 +904,13 @@
 				Removes the given entry [param name] from the object's metadata. See also [method has_meta], [method get_meta] and [method set_meta].
 				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_identifier] method.
 				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
+			</description>
+		</method>
+		<method name="remove_user_signal">
+			<return type="void" />
+			<param index="0" name="signal" type="StringName" />
+			<description>
+				Removes the given user signal [param signal] from the object. See also [method add_user_signal] and [method has_user_signal].
 			</description>
 		</method>
 		<method name="set">
@@ -1016,9 +1032,10 @@
 			<param index="0" name="message" type="StringName" />
 			<param index="1" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Translates a [param message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation.
+				Translates a [param message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation. Note that most [Control] nodes automatically translate their strings, so this method is mostly useful for formatted strings or custom drawn text.
 				If [method can_translate_messages] is [code]false[/code], or no translation is available, this method returns the [param message] without changes. See [method set_message_translation].
 				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/internationalizing_games.html]Internationalizing games[/url].
+				[b]Note:[/b] This method can't be used without an [Object] instance, as it requires the [method can_translate_messages] method. To translate strings in a static context, use [method TranslationServer.translate].
 			</description>
 		</method>
 		<method name="tr_n" qualifiers="const">
@@ -1033,6 +1050,7 @@
 				The [param n] is the number, or amount, of the message's subject. It is used by the translation system to fetch the correct plural form for the current language.
 				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]Localization using gettext[/url].
 				[b]Note:[/b] Negative and [float] numbers may not properly apply to some countable subjects. It's recommended to handle these cases with [method tr].
+				[b]Note:[/b] This method can't be used without an [Object] instance, as it requires the [method can_translate_messages] method. To translate strings in a static context, use [method TranslationServer.translate_plural].
 			</description>
 		</method>
 	</methods>

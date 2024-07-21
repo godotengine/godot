@@ -31,7 +31,7 @@
 #ifndef XR_BODY_MODIFIER_3D_H
 #define XR_BODY_MODIFIER_3D_H
 
-#include "scene/3d/node_3d.h"
+#include "scene/3d/skeleton_modifier_3d.h"
 #include "servers/xr/xr_body_tracker.h"
 
 class Skeleton3D;
@@ -41,8 +41,8 @@ class Skeleton3D;
 	data from an XRBodyTracker instance.
  */
 
-class XRBodyModifier3D : public Node3D {
-	GDCLASS(XRBodyModifier3D, Node3D);
+class XRBodyModifier3D : public SkeletonModifier3D {
+	GDCLASS(XRBodyModifier3D, SkeletonModifier3D);
 
 public:
 	enum BodyUpdate {
@@ -60,22 +60,19 @@ public:
 	void set_body_tracker(const StringName &p_tracker_name);
 	StringName get_body_tracker() const;
 
-	void set_target(const NodePath &p_target);
-	NodePath get_target() const;
-
 	void set_body_update(BitField<BodyUpdate> p_body_update);
 	BitField<BodyUpdate> get_body_update() const;
 
 	void set_bone_update(BoneUpdate p_bone_update);
 	BoneUpdate get_bone_update() const;
 
-	void set_show_when_tracked(bool p_show_when_tracked);
-	bool get_show_when_tracked() const;
-
 	void _notification(int p_what);
 
 protected:
 	static void _bind_methods();
+
+	virtual void _skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) override;
+	virtual void _process_modification() override;
 
 private:
 	struct JointData {
@@ -83,17 +80,13 @@ private:
 		int parent_joint = -1;
 	};
 
-	StringName tracker_name = "/user/body";
-	NodePath target;
+	StringName tracker_name = "/user/body_tracker";
 	BitField<BodyUpdate> body_update = BODY_UPDATE_UPPER_BODY | BODY_UPDATE_LOWER_BODY | BODY_UPDATE_HANDS;
 	BoneUpdate bone_update = BONE_UPDATE_FULL;
-	bool show_when_tracked = true;
 	JointData joints[XRBodyTracker::JOINT_MAX];
 
-	Skeleton3D *get_skeleton();
 	void _get_joint_data();
-	void _update_skeleton();
-	void _tracker_changed(const StringName &p_tracker_name, const Ref<XRBodyTracker> &p_tracker);
+	void _tracker_changed(const StringName &p_tracker_name, XRServer::TrackerType p_tracker_type);
 };
 
 VARIANT_BITFIELD_CAST(XRBodyModifier3D::BodyUpdate)

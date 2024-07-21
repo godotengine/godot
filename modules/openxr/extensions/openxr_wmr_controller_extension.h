@@ -38,6 +38,7 @@ public:
 	enum WMRControllers {
 		WMR_HPMR,
 		WMR_SAMSUNG_ODESSY,
+		WMR_HAND_INTERACTION,
 		WMR_MAX_CONTROLLERS
 	};
 

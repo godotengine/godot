@@ -1,7 +1,7 @@
 
 #include "Scanline.h"
 
-#include <algorithm>
+#include <cstdlib>
 #include "arithmetics.hpp"
 
 namespace msdfgen {

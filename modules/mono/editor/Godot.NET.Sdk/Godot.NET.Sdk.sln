@@ -1,5 +1,8 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Godot.NET.Sdk", "Godot.NET.Sdk\Godot.NET.Sdk.csproj", "{31B00BFA-DEA1-42FA-A472-9E54A92A8A5F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Godot.SourceGenerators", "Godot.SourceGenerators\Godot.SourceGenerators.csproj", "{32D31B23-2A45-4099-B4F5-95B4C8FF7D9F}"
@@ -36,5 +39,11 @@ Global
 		{AEBF0036-DA76-4341-B651-A3F2856AB2FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AEBF0036-DA76-4341-B651-A3F2856AB2FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AEBF0036-DA76-4341-B651-A3F2856AB2FA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {49831022-16BD-41E0-A5F3-EDE1279F4176}
 	EndGlobalSection
 EndGlobal

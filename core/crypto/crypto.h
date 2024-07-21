@@ -72,17 +72,15 @@ public:
 class TLSOptions : public RefCounted {
 	GDCLASS(TLSOptions, RefCounted);
 
-public:
-	enum TLSVerifyMode {
-		TLS_VERIFY_NONE = 0,
-		TLS_VERIFY_CERT = 1,
-		TLS_VERIFY_FULL = 2,
+private:
+	enum Mode {
+		MODE_CLIENT = 0,
+		MODE_CLIENT_UNSAFE = 1,
+		MODE_SERVER = 2,
 	};
 
-private:
-	bool server_mode = false;
+	Mode mode = MODE_CLIENT;
 	String common_name;
-	TLSVerifyMode verify_mode = TLS_VERIFY_FULL;
 	Ref<X509Certificate> trusted_ca_chain;
 	Ref<X509Certificate> own_certificate;
 	Ref<CryptoKey> private_key;
@@ -95,12 +93,12 @@ public:
 	static Ref<TLSOptions> client_unsafe(Ref<X509Certificate> p_trusted_chain);
 	static Ref<TLSOptions> server(Ref<CryptoKey> p_own_key, Ref<X509Certificate> p_own_certificate);
 
-	TLSVerifyMode get_verify_mode() const { return verify_mode; }
-	String get_common_name() const { return common_name; }
+	String get_common_name_override() const { return common_name; }
 	Ref<X509Certificate> get_trusted_ca_chain() const { return trusted_ca_chain; }
 	Ref<X509Certificate> get_own_certificate() const { return own_certificate; }
 	Ref<CryptoKey> get_private_key() const { return private_key; }
-	bool is_server() const { return server_mode; }
+	bool is_server() const { return mode == MODE_SERVER; }
+	bool is_unsafe_client() const { return mode == MODE_CLIENT_UNSAFE; }
 };
 
 class HMACContext : public RefCounted {
@@ -153,17 +151,17 @@ public:
 
 class ResourceFormatLoaderCrypto : public ResourceFormatLoader {
 public:
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
+	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual bool handles_type(const String &p_type) const override;
+	virtual String get_resource_type(const String &p_path) const override;
 };
 
 class ResourceFormatSaverCrypto : public ResourceFormatSaver {
 public:
-	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
-	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
-	virtual bool recognize(const Ref<Resource> &p_resource) const;
+	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
+	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
+	virtual bool recognize(const Ref<Resource> &p_resource) const override;
 };
 
 #endif // CRYPTO_H

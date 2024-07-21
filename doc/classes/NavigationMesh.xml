@@ -8,7 +8,7 @@
 	</description>
 	<tutorials>
 		<link title="Using NavigationMeshes">$DOCS_URL/tutorials/navigation/navigation_using_navigationmeshes.html</link>
-		<link title="3D Navmesh Demo">https://godotengine.org/asset-library/asset/124</link>
+		<link title="3D Navigation Demo">https://godotengine.org/asset-library/asset/2743</link>
 	</tutorials>
 	<methods>
 		<method name="add_polygon">

@@ -39,14 +39,18 @@
 
 void FBXImporterManager::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			fbx_path_browse->set_icon(get_editor_theme_icon(SNAME("FileBrowse")));
+		} break;
+
 		case NOTIFICATION_READY: {
-			connect("confirmed", callable_mp(this, &FBXImporterManager::_path_confirmed));
+			connect(SceneStringName(confirmed), callable_mp(this, &FBXImporterManager::_path_confirmed));
 		} break;
 	}
 }
 
 void FBXImporterManager::show_dialog(bool p_exclusive) {
-	String fbx2gltf_path = EDITOR_GET("filesystem/import/fbx2gltf/fbx2gltf_path");
+	String fbx2gltf_path = EDITOR_GET("filesystem/import/fbx/fbx2gltf_path");
 	fbx_path->set_text(fbx2gltf_path);
 	_validate_path(fbx2gltf_path);
 
@@ -89,11 +93,11 @@ void FBXImporterManager::_validate_path(const String &p_path) {
 
 	if (success) {
 		path_status->set_text(TTR("FBX2glTF executable is valid."));
-		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+		path_status->add_theme_color_override(SceneStringName(font_color), path_status->get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 		get_ok_button()->set_disabled(false);
 	} else {
 		path_status->set_text(error);
-		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		path_status->add_theme_color_override(SceneStringName(font_color), path_status->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		get_ok_button()->set_disabled(true);
 	}
 }
@@ -105,7 +109,7 @@ void FBXImporterManager::_select_file(const String &p_path) {
 
 void FBXImporterManager::_path_confirmed() {
 	String path = fbx_path->get_text();
-	EditorSettings::get_singleton()->set("filesystem/import/fbx2gltf/fbx2gltf_path", path);
+	EditorSettings::get_singleton()->set("filesystem/import/fbx/fbx2gltf_path", path);
 	EditorSettings::get_singleton()->save();
 }
 
@@ -148,9 +152,9 @@ FBXImporterManager::FBXImporterManager() {
 	fbx_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(fbx_path);
 	fbx_path_browse = memnew(Button);
-	hb->add_child(fbx_path_browse);
 	fbx_path_browse->set_text(TTR("Browse"));
-	fbx_path_browse->connect("pressed", callable_mp(this, &FBXImporterManager::_browse_install));
+	fbx_path_browse->connect(SceneStringName(pressed), callable_mp(this, &FBXImporterManager::_browse_install));
+	hb->add_child(fbx_path_browse);
 	hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->set_custom_minimum_size(Size2(400 * EDSCALE, 0));
 
@@ -161,10 +165,10 @@ FBXImporterManager::FBXImporterManager() {
 
 	add_child(vb);
 
-	fbx_path->connect("text_changed", callable_mp(this, &FBXImporterManager::_validate_path));
+	fbx_path->connect(SceneStringName(text_changed), callable_mp(this, &FBXImporterManager::_validate_path));
 
 	get_ok_button()->set_text(TTR("Confirm Path"));
-	get_cancel_button()->connect("pressed", callable_mp(this, &FBXImporterManager::_cancel_setup));
+	get_cancel_button()->connect(SceneStringName(pressed), callable_mp(this, &FBXImporterManager::_cancel_setup));
 
 	browse_dialog = memnew(EditorFileDialog);
 	browse_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);

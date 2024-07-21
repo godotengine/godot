@@ -44,7 +44,10 @@
 #include "servers/rendering/rendering_method.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/storage/utilities.h"
+
+#ifndef _3D_DISABLED
 #include "servers/xr/xr_interface.h"
+#endif // _3D_DISABLED
 
 class RenderingLightCuller;
 
@@ -283,6 +286,13 @@ public:
 		Instance *instance = nullptr;
 		int32_t parent_array_index = -1;
 		int32_t visibility_index = -1;
+
+		// Each time occlusion culling determines an instance is visible,
+		// set this to occlusion_frame plus some delay.
+		// Once the timeout is reached, allow the instance to be occlusion culled.
+		// This creates a delay for occlusion culling, which prevents flickering
+		// when jittering the raster occlusion projection.
+		uint64_t occlusion_timeout = 0;
 	};
 
 	struct InstanceVisibilityData {

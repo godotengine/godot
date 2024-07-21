@@ -33,6 +33,8 @@
 
 #ifdef WEB_ENABLED
 
+#include "servers/xr/xr_controller_tracker.h"
+#include "servers/xr/xr_hand_tracker.h"
 #include "webxr_interface.h"
 
 /**
@@ -58,6 +60,8 @@ private:
 	String reference_space_type;
 	String enabled_features;
 
+	XRInterface::EnvironmentBlendMode environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_OPAQUE;
+
 	Size2 render_targetsize;
 	RBMap<unsigned int, RID> texture_cache;
 	struct Touch {
@@ -68,7 +72,7 @@ private:
 	static constexpr uint8_t input_source_count = 16;
 
 	struct InputSource {
-		Ref<XRPositionalTracker> tracker;
+		Ref<XRControllerTracker> tracker;
 		bool active = false;
 		TargetRayMode target_ray_mode;
 		int touch_index = -1;
@@ -102,7 +106,7 @@ public:
 	virtual String get_reference_space_type() const override;
 	virtual String get_enabled_features() const override;
 	virtual bool is_input_source_active(int p_input_source_id) const override;
-	virtual Ref<XRPositionalTracker> get_input_source_tracker(int p_input_source_id) const override;
+	virtual Ref<XRControllerTracker> get_input_source_tracker(int p_input_source_id) const override;
 	virtual TargetRayMode get_input_source_target_ray_mode(int p_input_source_id) const override;
 	virtual String get_visibility_state() const override;
 	virtual PackedVector3Array get_play_area() const override;
@@ -110,6 +114,10 @@ public:
 	virtual float get_display_refresh_rate() const override;
 	virtual void set_display_refresh_rate(float p_refresh_rate) override;
 	virtual Array get_available_display_refresh_rates() const override;
+
+	virtual Array get_supported_environment_blend_modes() override;
+	virtual XRInterface::EnvironmentBlendMode get_environment_blend_mode() const override;
+	virtual bool set_environment_blend_mode(EnvironmentBlendMode p_new_environment_blend_mode) override;
 
 	virtual StringName get_name() const override;
 	virtual uint32_t get_capabilities() const override;
@@ -134,8 +142,10 @@ public:
 
 	void _on_input_event(int p_event_type, int p_input_source_id);
 
+	// Internal setters used by callbacks from Emscripten.
 	inline void _set_reference_space_type(String p_reference_space_type) { reference_space_type = p_reference_space_type; }
 	inline void _set_enabled_features(String p_enabled_features) { enabled_features = p_enabled_features; }
+	void _set_environment_blend_mode(String p_blend_mode_string);
 
 	WebXRInterfaceJS();
 	~WebXRInterfaceJS();

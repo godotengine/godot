@@ -6,7 +6,7 @@
  */
 
 /* Enable definition of getaddrinfo() even when compiling with -std=c99. Must
- * be set before config.h, which pulls in glibc's features.h indirectly.
+ * be set before mbedtls_config.h, which pulls in glibc's features.h indirectly.
  * Harmless on other platforms. */
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200112L
@@ -22,7 +22,7 @@
 #if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
     !defined(__APPLE__) && !defined(_WIN32) && !defined(__QNXNTO__) && \
     !defined(__HAIKU__) && !defined(__midipix__)
-#error "This module only works on Unix and Windows, see MBEDTLS_NET_C in config.h"
+#error "This module only works on Unix and Windows, see MBEDTLS_NET_C in mbedtls_config.h"
 #endif
 
 #include "mbedtls/platform.h"
@@ -36,11 +36,6 @@
     !defined(EFI32)
 
 #define IS_EINTR(ret) ((ret) == WSAEINTR)
-
-#if !defined(_WIN32_WINNT)
-/* Enables getaddrinfo() & Co */
-#define _WIN32_WINNT 0x0501
-#endif
 
 #include <ws2tcpip.h>
 
@@ -321,7 +316,7 @@ static int net_would_block(const mbedtls_net_context *ctx)
  */
 int mbedtls_net_accept(mbedtls_net_context *bind_ctx,
                        mbedtls_net_context *client_ctx,
-                       void *client_ip, size_t buf_size, size_t *ip_len)
+                       void *client_ip, size_t buf_size, size_t *cip_len)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     int type;
@@ -404,22 +399,22 @@ int mbedtls_net_accept(mbedtls_net_context *bind_ctx,
     if (client_ip != NULL) {
         if (client_addr.ss_family == AF_INET) {
             struct sockaddr_in *addr4 = (struct sockaddr_in *) &client_addr;
-            *ip_len = sizeof(addr4->sin_addr.s_addr);
+            *cip_len = sizeof(addr4->sin_addr.s_addr);
 
-            if (buf_size < *ip_len) {
+            if (buf_size < *cip_len) {
                 return MBEDTLS_ERR_NET_BUFFER_TOO_SMALL;
             }
 
-            memcpy(client_ip, &addr4->sin_addr.s_addr, *ip_len);
+            memcpy(client_ip, &addr4->sin_addr.s_addr, *cip_len);
         } else {
             struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) &client_addr;
-            *ip_len = sizeof(addr6->sin6_addr.s6_addr);
+            *cip_len = sizeof(addr6->sin6_addr.s6_addr);
 
-            if (buf_size < *ip_len) {
+            if (buf_size < *cip_len) {
                 return MBEDTLS_ERR_NET_BUFFER_TOO_SMALL;
             }
 
-            memcpy(client_ip, &addr6->sin6_addr.s6_addr, *ip_len);
+            memcpy(client_ip, &addr6->sin6_addr.s6_addr, *cip_len);
         }
     }
 

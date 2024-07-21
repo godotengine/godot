@@ -33,6 +33,7 @@
 #include "canvas_item_editor_plugin.h"
 #include "core/io/image_loader.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/scene_tree_dock.h"
@@ -250,8 +251,8 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 void CPUParticles2DEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			menu->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticles2DEditorPlugin::_menu_callback));
-			menu->set_icon(epoints->get_editor_theme_icon(SNAME("CPUParticles2D")));
+			menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &CPUParticles2DEditorPlugin::_menu_callback));
+			menu->set_icon(file->get_editor_theme_icon(SNAME("CPUParticles2D")));
 			file->connect("file_selected", callable_mp(this, &CPUParticles2DEditorPlugin::_file_selected));
 		} break;
 	}
@@ -268,7 +269,7 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 	toolbar->hide();
 
 	menu = memnew(MenuButton);
-	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
+	menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("particles/restart_emission"), MENU_RESTART);
 	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);
 	menu->get_popup()->add_item(TTR("Convert to GPUParticles2D"), MENU_CONVERT_TO_GPU_PARTICLES);
 	menu->set_text(TTR("CPUParticles2D"));
@@ -283,13 +284,6 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 	}
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	toolbar->add_child(file);
-
-	epoints = memnew(SpinBox);
-	epoints->set_min(1);
-	epoints->set_max(8192);
-	epoints->set_step(1);
-	epoints->set_value(512);
-	file->get_vbox()->add_margin_child(TTR("Generated Point Count:"), epoints);
 
 	emission_mask = memnew(ConfirmationDialog);
 	emission_mask->set_title(TTR("Load Emission Mask"));
@@ -311,7 +305,7 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 
 	toolbar->add_child(emission_mask);
 
-	emission_mask->connect("confirmed", callable_mp(this, &CPUParticles2DEditorPlugin::_generate_emission_mask));
+	emission_mask->connect(SceneStringName(confirmed), callable_mp(this, &CPUParticles2DEditorPlugin::_generate_emission_mask));
 }
 
 CPUParticles2DEditorPlugin::~CPUParticles2DEditorPlugin() {

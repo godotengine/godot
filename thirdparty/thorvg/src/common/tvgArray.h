@@ -61,6 +61,7 @@ struct Array
 
     void push(Array<T>& rhs)
     {
+        if (rhs.count == 0) return;
         grow(rhs.count);
         memcpy(data + count, rhs.data, rhs.count * sizeof(T));
         count += rhs.count;
@@ -88,6 +89,16 @@ struct Array
     T& operator[](size_t idx)
     {
         return data[idx];
+    }
+
+    const T* begin() const
+    {
+        return data;
+    }
+
+    T* begin()
+    {
+        return data;
     }
 
     T* end()

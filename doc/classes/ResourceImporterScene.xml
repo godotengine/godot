@@ -21,6 +21,9 @@
 		<member name="animation/import" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], import animations from the 3D scene.
 		</member>
+		<member name="animation/import_rest_as_RESET" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], adds an [Animation] named [code]RESET[/code], containing the [method Skeleton3D.get_bone_rest] from [Skeleton3D] nodes. This can be useful to extract an animation in the reference pose.
+		</member>
 		<member name="animation/remove_immutable_tracks" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], remove animation tracks that only contain default values. This can reduce output file size and memory usage with certain 3D scenes, depending on the contents of their animation tracks.
 		</member>

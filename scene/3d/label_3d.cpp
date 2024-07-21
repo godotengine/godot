@@ -32,7 +32,6 @@
 
 #include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
-#include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 
 void Label3D::_bind_methods() {
@@ -636,6 +635,10 @@ void Label3D::_shape() {
 }
 
 void Label3D::set_text(const String &p_string) {
+	if (text == p_string) {
+		return;
+	}
+
 	text = p_string;
 	xl_text = atr(p_string);
 	dirty_text = true;
@@ -782,6 +785,8 @@ Ref<Font> Label3D::get_font() const {
 }
 
 Ref<Font> Label3D::_get_font_or_default() const {
+	// Similar code taken from `FontVariation::_get_base_font_or_default`.
+
 	if (theme_font.is_valid()) {
 		theme_font->disconnect_changed(callable_mp(const_cast<Label3D *>(this), &Label3D::_font_changed));
 		theme_font.unref();
@@ -791,12 +796,17 @@ Ref<Font> Label3D::_get_font_or_default() const {
 		return font_override;
 	}
 
-	StringName theme_name = "font";
+	const StringName theme_name = SceneStringName(font);
 	List<StringName> theme_types;
 	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
-	for (const Ref<Theme> &theme : global_context->get_themes()) {
+	List<Ref<Theme>> themes = global_context->get_themes();
+	if (Engine::get_singleton()->is_editor_hint()) {
+		themes.push_front(ThemeDB::get_singleton()->get_project_theme());
+	}
+
+	for (const Ref<Theme> &theme : themes) {
 		if (theme.is_null()) {
 			continue;
 		}

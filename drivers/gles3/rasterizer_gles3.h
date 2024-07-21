@@ -34,6 +34,7 @@
 #ifdef GLES3_ENABLED
 
 #include "effects/copy_effects.h"
+#include "effects/cubemap_filter.h"
 #include "effects/glow.h"
 #include "effects/post_effects.h"
 #include "environment/fog.h"
@@ -55,7 +56,7 @@ private:
 	float delta = 0;
 
 	double time_total = 0.0;
-	bool flip_xy_bugfix = false;
+	bool flip_xy_workaround = false;
 
 	static bool gles_over_gl;
 
@@ -70,6 +71,7 @@ protected:
 	GLES3::GI *gi = nullptr;
 	GLES3::Fog *fog = nullptr;
 	GLES3::CopyEffects *copy_effects = nullptr;
+	GLES3::CubemapFilter *cubemap_filter = nullptr;
 	GLES3::Glow *glow = nullptr;
 	GLES3::PostEffects *post_effects = nullptr;
 	RasterizerCanvasGLES3 *canvas = nullptr;

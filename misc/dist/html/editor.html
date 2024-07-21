@@ -227,7 +227,6 @@ a:active {
 	line-height: 1.3;
 	visibility: visible;
 	padding: 4px 6px;
-	visibility: visible;
 }
 		</style>
 	</head>
@@ -701,9 +700,14 @@ function startEditor(zip) {
 	editor = new Engine(editorConfig);
 
 	function displayFailureNotice(err) {
-		const msg = err.message || err;
-		console.error(msg);
-		setStatusNotice(msg);
+		console.error(err);
+		if (err instanceof Error) {
+			setStatusNotice(err.message);
+		} else if (typeof err === 'string') {
+			setStatusNotice(err);
+		} else {
+			setStatusNotice('An unknown error occured');
+		}
 		setStatusMode('notice');
 		initializing = false;
 	}

@@ -317,6 +317,9 @@ msgstr "Максимальний розмір (Мб)"
 msgid "Texture Upload Region Size Px"
 msgstr "Розмір області завантаження текстури Px"
 
+msgid "Enable"
+msgstr "Увімкнути"
+
 msgid "Vulkan"
 msgstr "Vulkan"
 
@@ -638,9 +641,6 @@ msgstr "Значення"
 msgid "Arg Count"
 msgstr "Кількість аргументів"
 
-msgid "Args"
-msgstr "[АРГУМЕНТИ...]"
-
 msgid "Type"
 msgstr "Тип"
 
@@ -724,6 +724,12 @@ msgstr "Видалити"
 
 msgid "Distraction Free Mode"
 msgstr "Режим без відволікання"
+
+msgid "Theme"
+msgstr "Тема"
+
+msgid "Line Spacing"
+msgstr "Інтервал між рядками"
 
 msgid "Base Type"
 msgstr "Базовий тип"
@@ -863,9 +869,6 @@ msgstr "Типовий режим піпетки кольорів"
 msgid "Default Color Picker Shape"
 msgstr "Палітра кольорів за замовчуванням"
 
-msgid "Theme"
-msgstr "Тема"
-
 msgid "Preset"
 msgstr "Набір"
 
@@ -932,9 +935,6 @@ msgstr "Показувати кнопку скрипту"
 msgid "Restore Scenes on Load"
 msgstr "Відновлення сцен під час завантаження"
 
-msgid "Enable"
-msgstr "Увімкнути"
-
 msgid "External Programs"
 msgstr "Зовнішні програми"
 
@@ -982,6 +982,9 @@ msgstr "Розмір мініатюр"
 
 msgid "Import"
 msgstr "Імпорт"
+
+msgid "FBX"
+msgstr "FBX"
 
 msgid "Docks"
 msgstr "Панелі"
@@ -1081,9 +1084,6 @@ msgstr "Візуалізація табуляцій"
 
 msgid "Draw Spaces"
 msgstr "Візуалізація пробілів"
-
-msgid "Line Spacing"
-msgstr "Інтервал між рядками"
 
 msgid "Behavior"
 msgstr "Поведінка"
@@ -1210,9 +1210,6 @@ msgstr "Вставлений екземпляр"
 
 msgid "Joint"
 msgstr "З’єднання"
-
-msgid "Shape"
-msgstr "Форма"
 
 msgid "Primary Grid Steps"
 msgstr "Кількість кроків основної сітки"
@@ -1435,12 +1432,6 @@ msgstr "Розмір шрифту"
 
 msgid "Always Clear Output on Play"
 msgstr "Завжди очищувати вивід при відтворенні"
-
-msgid "Always Open Output on Play"
-msgstr "Завжди відкривати вивід при відтворенні"
-
-msgid "Always Close Output on Stop"
-msgstr "Завжди закривати вивід при зупинці"
 
 msgid "HTTP Proxy"
 msgstr "HTTP-проксі"
@@ -1751,9 +1742,6 @@ msgstr "Зберегти у файл"
 msgid "Enabled"
 msgstr "Увімкнено"
 
-msgid "Make Streamable"
-msgstr "Зробити потоковим"
-
 msgid "Shadow Meshes"
 msgstr "Тіньові сітки"
 
@@ -1975,9 +1963,6 @@ msgstr "Режим імпортування"
 
 msgid "Trim Alpha Border From Region"
 msgstr "Обрізати прозору рамку з області"
-
-msgid "Force"
-msgstr "Сила"
 
 msgid "8 Bit"
 msgstr "8-бітова"
@@ -2288,6 +2273,12 @@ msgstr "Назва збірки"
 msgid "Solution Directory"
 msgstr "Каталог проєкту"
 
+msgid "Time"
+msgstr "Час"
+
+msgid "Polygons"
+msgstr "Полігони"
+
 msgid "Operation"
 msgstr "Дія"
 
@@ -2383,9 +2374,6 @@ msgstr "Контур з'єднано"
 
 msgid "CSG"
 msgstr "CSG"
-
-msgid "FBX"
-msgstr "FBX"
 
 msgid "GDScript"
 msgstr "Скрипт"
@@ -3239,9 +3227,6 @@ msgstr "Використовувати MIP-текстурування"
 msgid "Emitting"
 msgstr "Надсилання"
 
-msgid "Time"
-msgstr "Час"
-
 msgid "Lifetime"
 msgstr "Строк служби"
 
@@ -3274,6 +3259,9 @@ msgstr "Порядок малювання"
 
 msgid "Emission Shape"
 msgstr "Маска випромінювання"
+
+msgid "Shape"
+msgstr "Форма"
 
 msgid "Sphere Radius"
 msgstr "Радіус сфери"
@@ -3650,9 +3638,6 @@ msgstr "UV"
 msgid "Vertex Colors"
 msgstr "Кольори вершин"
 
-msgid "Polygons"
-msgstr "Полігони"
-
 msgid "Internal Vertex Count"
 msgstr "Створити внутрішню вершину"
 
@@ -3772,9 +3757,6 @@ msgstr "Пласкість"
 
 msgid "Albedo"
 msgstr "Альбедо"
-
-msgid "Normal"
-msgstr "Звичайний"
 
 msgid "Emission"
 msgstr "Випромінювання"
@@ -4055,9 +4037,6 @@ msgstr "Коренева кістка"
 msgid "Tip Bone"
 msgstr "Кінчик кістки"
 
-msgid "Interpolation"
-msgstr "Інтерполяція"
-
 msgid "Target"
 msgstr "Призначення"
 
@@ -4075,6 +4054,9 @@ msgstr "Мін. відстань"
 
 msgid "Max Iterations"
 msgstr "Макс к-ть ітерацій"
+
+msgid "Active"
+msgstr "Активний"
 
 msgid "Pinned Points"
 msgstr "Закріплені Точки"
@@ -4150,9 +4132,6 @@ msgstr "Випадкова затримка"
 
 msgid "Xfade Time"
 msgstr "Час X-Fade"
-
-msgid "Active"
-msgstr "Активний"
 
 msgid "Root Node"
 msgstr "Кореневий вузол"
@@ -4634,6 +4613,9 @@ msgstr "Розмір атласу"
 msgid "Enable Object Picking"
 msgstr "Увімкнути калькування"
 
+msgid "Menu"
+msgstr "Меню"
+
 msgid "Wait Time"
 msgstr "Намалювати плитку"
 
@@ -4705,6 +4687,9 @@ msgstr "3D фізика"
 
 msgid "Segments"
 msgstr "Сегменти"
+
+msgid "Parsed Geometry Type"
+msgstr "Оброблений тип геометрії"
 
 msgid "A"
 msgstr "A"
@@ -4946,6 +4931,9 @@ msgstr "Додатковий інтервал"
 msgid "Space"
 msgstr "Простір"
 
+msgid "Interpolation"
+msgstr "Інтерполяція"
+
 msgid "Raw Data"
 msgstr "Необроблені дані"
 
@@ -5063,9 +5051,6 @@ msgstr "Формат перетворення"
 msgid "Instance Count"
 msgstr "Екземпляр"
 
-msgid "Parsed Geometry Type"
-msgstr "Оброблений тип геометрії"
-
 msgid "Source Group Name"
 msgstr "Назва групи джерел"
 
@@ -5152,9 +5137,6 @@ msgstr "Використовувати всі поверхні"
 
 msgid "Surface Index"
 msgstr "Індекс поверхні"
-
-msgid "Panel"
-msgstr "Панель"
 
 msgid "Font Color"
 msgstr "Колір шрифту"
@@ -5333,23 +5315,14 @@ msgstr "Швидкість прокрутки"
 msgid "Icon Margin"
 msgstr "Поле піктограми"
 
-msgid "Line Separation"
-msgstr "Відокремлення рядків"
-
 msgid "Tab Disabled"
 msgstr "Вкладку вимкнено"
-
-msgid "Menu"
-msgstr "Меню"
 
 msgid "Menu Highlight"
 msgstr "Підсвічування меню"
 
 msgid "Side Margin"
 msgstr "Бічне поле"
-
-msgid "Large"
-msgstr "Великий"
 
 msgid "Label Width"
 msgstr "Ширина мітки"

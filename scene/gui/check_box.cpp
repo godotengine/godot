@@ -36,37 +36,37 @@
 Size2 CheckBox::get_icon_size() const {
 	Size2 tex_size = Size2(0, 0);
 	if (!theme_cache.checked.is_null()) {
-		tex_size = Size2(theme_cache.checked->get_width(), theme_cache.checked->get_height());
+		tex_size = theme_cache.checked->get_size();
 	}
 	if (!theme_cache.unchecked.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, theme_cache.unchecked->get_width()), MAX(tex_size.height, theme_cache.unchecked->get_height()));
+		tex_size = tex_size.max(theme_cache.unchecked->get_size());
 	}
 	if (!theme_cache.radio_checked.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, theme_cache.radio_checked->get_width()), MAX(tex_size.height, theme_cache.radio_checked->get_height()));
+		tex_size = tex_size.max(theme_cache.radio_checked->get_size());
 	}
 	if (!theme_cache.radio_unchecked.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, theme_cache.radio_unchecked->get_width()), MAX(tex_size.height, theme_cache.radio_unchecked->get_height()));
+		tex_size = tex_size.max(theme_cache.radio_unchecked->get_size());
 	}
 	if (!theme_cache.checked_disabled.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, theme_cache.checked_disabled->get_width()), MAX(tex_size.height, theme_cache.checked_disabled->get_height()));
+		tex_size = tex_size.max(theme_cache.checked_disabled->get_size());
 	}
 	if (!theme_cache.unchecked_disabled.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, theme_cache.unchecked_disabled->get_width()), MAX(tex_size.height, theme_cache.unchecked_disabled->get_height()));
+		tex_size = tex_size.max(theme_cache.unchecked_disabled->get_size());
 	}
 	if (!theme_cache.radio_checked_disabled.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, theme_cache.radio_checked_disabled->get_width()), MAX(tex_size.height, theme_cache.radio_checked_disabled->get_height()));
+		tex_size = tex_size.max(theme_cache.radio_checked_disabled->get_size());
 	}
 	if (!theme_cache.radio_unchecked_disabled.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, theme_cache.radio_unchecked_disabled->get_width()), MAX(tex_size.height, theme_cache.radio_unchecked_disabled->get_height()));
+		tex_size = tex_size.max(theme_cache.radio_unchecked_disabled->get_size());
 	}
-	return tex_size;
+	return _fit_icon_size(tex_size);
 }
 
 Size2 CheckBox::get_minimum_size() const {
 	Size2 minsize = Button::get_minimum_size();
 	const Size2 tex_size = get_icon_size();
 	if (tex_size.width > 0 || tex_size.height > 0) {
-		const Size2 padding = _get_current_stylebox()->get_minimum_size();
+		const Size2 padding = _get_largest_stylebox_size();
 		Size2 content_size = minsize - padding;
 		if (content_size.width > 0 && tex_size.width > 0) {
 			content_size.width += MAX(0, theme_cache.h_separation);
@@ -127,9 +127,9 @@ void CheckBox::_notification(int p_what) {
 			ofs.y = int((get_size().height - get_icon_size().height) / 2) + theme_cache.check_v_offset;
 
 			if (is_pressed()) {
-				on_tex->draw(ci, ofs);
+				on_tex->draw_rect(ci, Rect2(ofs, _fit_icon_size(on_tex->get_size())));
 			} else {
-				off_tex->draw(ci, ofs);
+				off_tex->draw_rect(ci, Rect2(ofs, _fit_icon_size(off_tex->get_size())));
 			}
 		} break;
 	}

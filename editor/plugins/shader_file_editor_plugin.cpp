@@ -258,7 +258,7 @@ ShaderFileEditor::ShaderFileEditor() {
 
 	versions = memnew(ItemList);
 	versions->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	versions->connect("item_selected", callable_mp(this, &ShaderFileEditor::_version_selected));
+	versions->connect(SceneStringName(item_selected), callable_mp(this, &ShaderFileEditor::_version_selected));
 	versions->set_custom_minimum_size(Size2i(200 * EDSCALE, 0));
 	main_hs->add_child(versions);
 
@@ -286,7 +286,7 @@ ShaderFileEditor::ShaderFileEditor() {
 		stage_hb->add_child(button);
 		stages[i] = button;
 		button->set_button_group(bg);
-		button->connect("pressed", callable_mp(this, &ShaderFileEditor::_version_selected).bind(i));
+		button->connect(SceneStringName(pressed), callable_mp(this, &ShaderFileEditor::_version_selected).bind(i));
 	}
 
 	error_text = memnew(RichTextLabel);

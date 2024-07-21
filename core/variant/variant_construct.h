@@ -33,7 +33,6 @@
 
 #include "variant.h"
 
-#include "core/core_string_names.h"
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/compression.h"
@@ -42,7 +41,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
 
-template <class T>
+template <typename T>
 struct PtrConstruct {};
 
 #define MAKE_PTRCONSTRUCT(m_type)                                                  \
@@ -97,9 +96,10 @@ MAKE_PTRCONSTRUCT(PackedStringArray);
 MAKE_PTRCONSTRUCT(PackedVector2Array);
 MAKE_PTRCONSTRUCT(PackedVector3Array);
 MAKE_PTRCONSTRUCT(PackedColorArray);
+MAKE_PTRCONSTRUCT(PackedVector4Array);
 MAKE_PTRCONSTRUCT(Variant);
 
-template <class T, class... P>
+template <typename T, typename... P>
 class VariantConstructor {
 	template <size_t... Is>
 	static _FORCE_INLINE_ void construct_helper(T &base, const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
@@ -222,7 +222,7 @@ public:
 	}
 };
 
-template <class T>
+template <typename T>
 class VariantConstructorFromString {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
@@ -470,7 +470,7 @@ public:
 	}
 };
 
-template <class T>
+template <typename T>
 class VariantConstructorToArray {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
@@ -529,7 +529,7 @@ public:
 	}
 };
 
-template <class T>
+template <typename T>
 class VariantConstructorFromArray {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
@@ -622,7 +622,7 @@ public:
 	}
 };
 
-template <class T>
+template <typename T>
 class VariantConstructNoArgs {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {

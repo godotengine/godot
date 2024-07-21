@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectGuid>{EAFFF236-FA96-4A4D-BD23-0E51EF988277}</ProjectGuid>
     <OutputType>Exe</OutputType>
@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <RuntimeIdentifier>win-x86</RuntimeIdentifier>
     <SelfContained>False</SelfContained>
+    <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
   <PropertyGroup Condition="Exists('$(SolutionDir)/../../../../bin/GodotSharp/Api/Debug/GodotSharp.dll') And ('$(GodotPlatform)' == 'windows' Or ('$(GodotPlatform)' == '' And '$(OS)' == 'Windows_NT'))">
     <OutputPath>$(SolutionDir)/../../../../bin/GodotSharp/Tools</OutputPath>

@@ -410,115 +410,6 @@ ScriptLanguage::ScriptNameCasing CSharpLanguage::preferred_file_name_casing() co
 }
 
 #ifdef TOOLS_ENABLED
-struct VariantCsName {
-	Variant::Type variant_type;
-	const String cs_type;
-};
-
-static String variant_type_to_managed_name(const String &p_var_type_name) {
-	if (p_var_type_name.is_empty()) {
-		return "Variant";
-	}
-
-	if (ClassDB::class_exists(p_var_type_name)) {
-		return pascal_to_pascal_case(p_var_type_name);
-	}
-
-	if (p_var_type_name == Variant::get_type_name(Variant::OBJECT)) {
-		return "GodotObject";
-	}
-
-	if (p_var_type_name == Variant::get_type_name(Variant::INT)) {
-		return "long";
-	}
-
-	if (p_var_type_name == Variant::get_type_name(Variant::FLOAT)) {
-		return "double";
-	}
-
-	if (p_var_type_name == Variant::get_type_name(Variant::STRING)) {
-		return "string"; // I prefer this one >:[
-	}
-
-	if (p_var_type_name == Variant::get_type_name(Variant::DICTIONARY)) {
-		return "Collections.Dictionary";
-	}
-
-	if (p_var_type_name.begins_with(Variant::get_type_name(Variant::ARRAY) + "[")) {
-		String element_type = p_var_type_name.trim_prefix(Variant::get_type_name(Variant::ARRAY) + "[").trim_suffix("]");
-		return "Collections.Array<" + variant_type_to_managed_name(element_type) + ">";
-	}
-
-	if (p_var_type_name == Variant::get_type_name(Variant::ARRAY)) {
-		return "Collections.Array";
-	}
-
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_BYTE_ARRAY)) {
-		return "byte[]";
-	}
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_INT32_ARRAY)) {
-		return "int[]";
-	}
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_INT64_ARRAY)) {
-		return "long[]";
-	}
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_FLOAT32_ARRAY)) {
-		return "float[]";
-	}
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_FLOAT64_ARRAY)) {
-		return "double[]";
-	}
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_STRING_ARRAY)) {
-		return "string[]";
-	}
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_VECTOR2_ARRAY)) {
-		return "Vector2[]";
-	}
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_VECTOR3_ARRAY)) {
-		return "Vector3[]";
-	}
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_COLOR_ARRAY)) {
-		return "Color[]";
-	}
-
-	if (p_var_type_name == Variant::get_type_name(Variant::SIGNAL)) {
-		return "Signal";
-	}
-
-	const VariantCsName var_types[] = {
-		{ Variant::BOOL, "bool" },
-		{ Variant::INT, "long" },
-		{ Variant::VECTOR2, "Vector2" },
-		{ Variant::VECTOR2I, "Vector2I" },
-		{ Variant::RECT2, "Rect2" },
-		{ Variant::RECT2I, "Rect2I" },
-		{ Variant::VECTOR3, "Vector3" },
-		{ Variant::VECTOR3I, "Vector3I" },
-		{ Variant::TRANSFORM2D, "Transform2D" },
-		{ Variant::VECTOR4, "Vector4" },
-		{ Variant::VECTOR4I, "Vector4I" },
-		{ Variant::PLANE, "Plane" },
-		{ Variant::QUATERNION, "Quaternion" },
-		{ Variant::AABB, "Aabb" },
-		{ Variant::BASIS, "Basis" },
-		{ Variant::TRANSFORM3D, "Transform3D" },
-		{ Variant::PROJECTION, "Projection" },
-		{ Variant::COLOR, "Color" },
-		{ Variant::STRING_NAME, "StringName" },
-		{ Variant::NODE_PATH, "NodePath" },
-		{ Variant::RID, "Rid" },
-		{ Variant::CALLABLE, "Callable" },
-	};
-
-	for (unsigned int i = 0; i < sizeof(var_types) / sizeof(VariantCsName); i++) {
-		if (p_var_type_name == Variant::get_type_name(var_types[i].variant_type)) {
-			return var_types[i].cs_type;
-		}
-	}
-
-	return "Variant";
-}
-
 String CSharpLanguage::make_function(const String &, const String &p_name, const PackedStringArray &p_args) const {
 	// The make_function() API does not work for C# scripts.
 	// It will always append the generated function at the very end of the script. In C#, it will break compilation by
@@ -1050,6 +941,31 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		to_reload_state.push_back(scr);
 	}
 
+	// Deserialize managed callables.
+	// This is done before reloading script's internal state, so potential callables invoked in properties work.
+	{
+		MutexLock lock(ManagedCallable::instances_mutex);
+
+		for (const KeyValue<ManagedCallable *, Array> &elem : ManagedCallable::instances_pending_reload) {
+			ManagedCallable *managed_callable = elem.key;
+			const Array &serialized_data = elem.value;
+
+			GCHandleIntPtr delegate = { nullptr };
+
+			bool success = GDMonoCache::managed_callbacks.DelegateUtils_TryDeserializeDelegateWithGCHandle(
+					&serialized_data, &delegate);
+
+			if (success) {
+				ERR_CONTINUE(delegate.value == nullptr);
+				managed_callable->delegate_handle = delegate;
+			} else if (OS::get_singleton()->is_stdout_verbose()) {
+				OS::get_singleton()->print("Failed to deserialize delegate\n");
+			}
+		}
+
+		ManagedCallable::instances_pending_reload.clear();
+	}
+
 	for (Ref<CSharpScript> &scr : to_reload_state) {
 		for (const ObjectID &obj_id : scr->pending_reload_instances) {
 			Object *obj = ObjectDB::get_instance(obj_id);
@@ -1072,7 +988,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 					properties[G.first] = G.second;
 				}
 
-				// Restore serialized state and call OnAfterDeserialization
+				// Restore serialized state and call OnAfterDeserialize.
 				GDMonoCache::managed_callbacks.CSharpInstanceBridge_DeserializeState(
 						csi->get_gchandle_intptr(), &properties, &state_backup.event_signals);
 			}
@@ -1080,30 +996,6 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 		scr->pending_reload_instances.clear();
 		scr->pending_reload_state.clear();
-	}
-
-	// Deserialize managed callables
-	{
-		MutexLock lock(ManagedCallable::instances_mutex);
-
-		for (const KeyValue<ManagedCallable *, Array> &elem : ManagedCallable::instances_pending_reload) {
-			ManagedCallable *managed_callable = elem.key;
-			const Array &serialized_data = elem.value;
-
-			GCHandleIntPtr delegate = { nullptr };
-
-			bool success = GDMonoCache::managed_callbacks.DelegateUtils_TryDeserializeDelegateWithGCHandle(
-					&serialized_data, &delegate);
-
-			if (success) {
-				ERR_CONTINUE(delegate.value == nullptr);
-				managed_callable->delegate_handle = delegate;
-			} else if (OS::get_singleton()->is_stdout_verbose()) {
-				OS::get_singleton()->print("Failed to deserialize delegate\n");
-			}
-		}
-
-		ManagedCallable::instances_pending_reload.clear();
 	}
 
 #ifdef TOOLS_ENABLED
@@ -1408,7 +1300,11 @@ GDExtensionBool CSharpLanguage::_instance_binding_reference_callback(void *p_tok
 }
 
 void *CSharpLanguage::get_instance_binding(Object *p_object) {
-	void *binding = p_object->get_instance_binding(get_singleton(), &_instance_binding_callbacks);
+	return p_object->get_instance_binding(get_singleton(), &_instance_binding_callbacks);
+}
+
+void *CSharpLanguage::get_instance_binding_with_setup(Object *p_object) {
+	void *binding = get_instance_binding(p_object);
 
 	// Initially this was in `_instance_binding_create_callback`. However, after the new instance
 	// binding re-write it was resulting in a deadlock in `_instance_binding_reference`, as
@@ -1433,11 +1329,7 @@ void *CSharpLanguage::get_existing_instance_binding(Object *p_object) {
 #ifdef DEBUG_ENABLED
 	CRASH_COND(p_object->has_instance_binding(p_object));
 #endif
-	return p_object->get_instance_binding(get_singleton(), &_instance_binding_callbacks);
-}
-
-void CSharpLanguage::set_instance_binding(Object *p_object, void *p_binding) {
-	p_object->set_instance_binding(get_singleton(), p_binding, &_instance_binding_callbacks);
+	return get_instance_binding(p_object);
 }
 
 bool CSharpLanguage::has_instance_binding(Object *p_object) {
@@ -1464,13 +1356,6 @@ void CSharpLanguage::tie_native_managed_to_unmanaged(GCHandleIntPtr p_gchandle_i
 	// Another reason for doing this is that this instance could outlive CSharpLanguage, which would
 	// be problematic when using a script. See: https://github.com/godotengine/godot/issues/25621
 
-	CSharpScriptBinding script_binding;
-
-	script_binding.inited = true;
-	script_binding.type_name = *p_native_name;
-	script_binding.gchandle = gchandle;
-	script_binding.owner = p_unmanaged;
-
 	if (p_ref_counted) {
 		// Unsafe refcount increment. The managed instance also counts as a reference.
 		// This way if the unmanaged world has no references to our owner
@@ -1486,14 +1371,13 @@ void CSharpLanguage::tie_native_managed_to_unmanaged(GCHandleIntPtr p_gchandle_i
 	// The object was just created, no script instance binding should have been attached
 	CRASH_COND(CSharpLanguage::has_instance_binding(p_unmanaged));
 
-	void *data;
-	{
-		MutexLock lock(CSharpLanguage::get_singleton()->get_language_bind_mutex());
-		data = (void *)CSharpLanguage::get_singleton()->insert_script_binding(p_unmanaged, script_binding);
-	}
+	void *binding = CSharpLanguage::get_singleton()->get_instance_binding(p_unmanaged);
 
-	// Should be thread safe because the object was just created and nothing else should be referencing it
-	CSharpLanguage::set_instance_binding(p_unmanaged, data);
+	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)binding)->value();
+	script_binding.inited = true;
+	script_binding.type_name = *p_native_name;
+	script_binding.gchandle = gchandle;
+	script_binding.owner = p_unmanaged;
 }
 
 void CSharpLanguage::tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, Ref<CSharpScript> *p_script, bool p_ref_counted) {
@@ -1712,14 +1596,7 @@ void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
 		return;
 	}
 
-	const CSharpScript *top = script.ptr();
-	while (top != nullptr) {
-		for (const CSharpScript::CSharpMethodInfo &E : top->methods) {
-			p_list->push_back(E.method_info);
-		}
-
-		top = top->base_script.ptr();
-	}
+	script->get_script_method_list(p_list);
 }
 
 bool CSharpInstance::has_method(const StringName &p_method) const {
@@ -1733,6 +1610,34 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 
 	return GDMonoCache::managed_callbacks.CSharpInstanceBridge_HasMethodUnknownParams(
 			gchandle.get_intptr(), &p_method);
+}
+
+int CSharpInstance::get_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
+	if (!script->is_valid() || !script->valid) {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return 0;
+	}
+
+	const CSharpScript *top = script.ptr();
+	while (top != nullptr) {
+		for (const CSharpScript::CSharpMethodInfo &E : top->methods) {
+			if (E.name == p_method) {
+				if (r_is_valid) {
+					*r_is_valid = true;
+				}
+				return E.method_info.arguments.size();
+			}
+		}
+
+		top = top->base_script.ptr();
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return 0;
 }
 
 Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -1859,16 +1764,19 @@ void CSharpInstance::mono_object_disposed_baseref(GCHandleIntPtr p_gchandle_to_f
 }
 
 void CSharpInstance::connect_event_signals() {
-	// The script signals list includes the signals declared in base scripts.
-	for (CSharpScript::EventSignalInfo &signal : script->get_script_event_signals()) {
-		String signal_name = signal.name;
+	const CSharpScript *top = script.ptr();
+	while (top != nullptr && top->valid) {
+		for (const CSharpScript::EventSignalInfo &signal : top->event_signals) {
+			String signal_name = signal.name;
 
-		// TODO: Use pooling for ManagedCallable instances.
-		EventSignalCallable *event_signal_callable = memnew(EventSignalCallable(owner, signal_name));
+			// TODO: Use pooling for ManagedCallable instances.
+			EventSignalCallable *event_signal_callable = memnew(EventSignalCallable(owner, signal_name));
 
-		Callable callable(event_signal_callable);
-		connected_event_signals.push_back(callable);
-		owner->connect(signal_name, callable);
+			Callable callable(event_signal_callable);
+			connected_event_signals.push_back(callable);
+			owner->connect(signal_name, callable);
+		}
+		top = top->base_script.ptr();
 	}
 }
 
@@ -2064,7 +1972,7 @@ CSharpInstance::~CSharpInstance() {
 		bool die = _unreference_owner_unsafe();
 		CRASH_COND(die); // `owner_keep_alive` holds a reference, so it can't die
 
-		void *data = CSharpLanguage::get_instance_binding(owner);
+		void *data = CSharpLanguage::get_instance_binding_with_setup(owner);
 		CRASH_COND(data == nullptr);
 		CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
 		CRASH_COND(!script_binding.inited);
@@ -2579,18 +2487,48 @@ bool CSharpScript::has_method(const StringName &p_method) const {
 	return false;
 }
 
+int CSharpScript::get_script_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
+	if (!valid) {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return 0;
+	}
+
+	for (const CSharpMethodInfo &E : methods) {
+		if (E.name == p_method) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return E.method_info.arguments.size();
+		}
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return 0;
+}
+
 MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 	if (!valid) {
 		return MethodInfo();
 	}
 
+	MethodInfo mi;
 	for (const CSharpMethodInfo &E : methods) {
 		if (E.name == p_method) {
-			return E.method_info;
+			if (mi.name == p_method) {
+				// We already found a method with the same name before so
+				// that means this method has overloads, the best we can do
+				// is return an empty MethodInfo.
+				return MethodInfo();
+			}
+			mi = E.method_info;
 		}
 	}
 
-	return MethodInfo();
+	return mi;
 }
 
 Variant CSharpScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -2682,25 +2620,33 @@ bool CSharpScript::has_script_signal(const StringName &p_signal) const {
 		}
 	}
 
+	if (base_script.is_valid()) {
+		return base_script->has_script_signal(p_signal);
+	}
+
 	return false;
 }
 
-void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
+void CSharpScript::_get_script_signal_list(List<MethodInfo> *r_signals, bool p_include_base) const {
 	if (!valid) {
 		return;
 	}
 
-	for (const EventSignalInfo &signal : get_script_event_signals()) {
+	for (const EventSignalInfo &signal : event_signals) {
 		r_signals->push_back(signal.method_info);
+	}
+
+	if (!p_include_base) {
+		return;
+	}
+
+	if (base_script.is_valid()) {
+		base_script->get_script_signal_list(r_signals);
 	}
 }
 
-Vector<CSharpScript::EventSignalInfo> CSharpScript::get_script_event_signals() const {
-	if (!valid) {
-		return Vector<EventSignalInfo>();
-	}
-
-	return event_signals;
+void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
+	_get_script_signal_list(r_signals, true);
 }
 
 bool CSharpScript::inherits_script(const Ref<Script> &p_script) const {

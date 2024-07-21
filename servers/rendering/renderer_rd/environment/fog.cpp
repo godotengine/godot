@@ -509,9 +509,7 @@ Vector3i Fog::_point_get_position_in_froxel_volume(const Vector3 &p_point, float
 	fog_position.z = Math::pow(float(fog_position.z), float(1.0 / volumetric_fog_detail_spread));
 	fog_position = fog_position * fog_size - Vector3(0.5, 0.5, 0.5);
 
-	fog_position.x = CLAMP(fog_position.x, 0.0, fog_size.x);
-	fog_position.y = CLAMP(fog_position.y, 0.0, fog_size.y);
-	fog_position.z = CLAMP(fog_position.z, 0.0, fog_size.z);
+	fog_position = fog_position.clamp(Vector3(), fog_size);
 
 	return Vector3i(fog_position);
 }
@@ -543,7 +541,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		if (p_cam_projection.is_orthogonal()) {
 			fog_near_size = fog_far_size;
 		} else {
-			fog_near_size = frustum_near_size.max(Vector2(0.001, 0.001));
+			fog_near_size = frustum_near_size.maxf(0.001);
 		}
 
 		params.fog_frustum_size_begin[0] = fog_near_size.x;
@@ -680,8 +678,8 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 				max = Vector3i(1, 1, 1);
 
 				for (int j = 0; j < 8; j++) {
-					min = Vector3i(MIN(min.x, points[j].x), MIN(min.y, points[j].y), MIN(min.z, points[j].z));
-					max = Vector3i(MAX(max.x, points[j].x), MAX(max.y, points[j].y), MAX(max.z, points[j].z));
+					min = min.min(points[j]);
+					max = max.max(points[j]);
 				}
 
 				kernel_size = max - min;
@@ -1003,7 +1001,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	if (p_cam_projection.is_orthogonal()) {
 		fog_near_size = fog_far_size;
 	} else {
-		fog_near_size = frustum_near_size.max(Vector2(0.001, 0.001));
+		fog_near_size = frustum_near_size.maxf(0.001);
 	}
 
 	params.fog_frustum_size_begin[0] = fog_near_size.x;

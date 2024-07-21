@@ -103,6 +103,9 @@ struct Glyph
     }
   }
 
+  bool is_composite () const
+  { return type == COMPOSITE; }
+
   bool get_all_points_without_var (const hb_face_t *face,
                                    contour_point_vector_t &points /* OUT */) const
   {

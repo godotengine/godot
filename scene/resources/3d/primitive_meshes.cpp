@@ -2845,10 +2845,8 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 		for (int j = 0; j < gl_data.contours[i].size(); j++) {
 			int next = (j + 1 == gl_data.contours[i].size()) ? 0 : (j + 1);
 
-			gl_data.min_p.x = MIN(gl_data.min_p.x, gl_data.contours[i][j].point.x);
-			gl_data.min_p.y = MIN(gl_data.min_p.y, gl_data.contours[i][j].point.y);
-			gl_data.max_p.x = MAX(gl_data.max_p.x, gl_data.contours[i][j].point.x);
-			gl_data.max_p.y = MAX(gl_data.max_p.y, gl_data.contours[i][j].point.y);
+			gl_data.min_p = gl_data.min_p.min(gl_data.contours[i][j].point);
+			gl_data.max_p = gl_data.max_p.max(gl_data.contours[i][j].point);
 			length += (gl_data.contours[i][next].point - gl_data.contours[i][j].point).length();
 
 			inp.GetPoint(j) = gl_data.contours[i][j].point;
@@ -3463,6 +3461,8 @@ Ref<Font> TextMesh::get_font() const {
 }
 
 Ref<Font> TextMesh::_get_font_or_default() const {
+	// Similar code taken from `FontVariation::_get_base_font_or_default`.
+
 	if (font_override.is_valid()) {
 		return font_override;
 	}
@@ -3472,7 +3472,12 @@ Ref<Font> TextMesh::_get_font_or_default() const {
 	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
-	for (const Ref<Theme> &theme : global_context->get_themes()) {
+	List<Ref<Theme>> themes = global_context->get_themes();
+	if (Engine::get_singleton()->is_editor_hint()) {
+		themes.push_front(ThemeDB::get_singleton()->get_project_theme());
+	}
+
+	for (const Ref<Theme> &theme : themes) {
 		if (theme.is_null()) {
 			continue;
 		}

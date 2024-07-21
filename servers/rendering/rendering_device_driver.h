@@ -56,7 +56,7 @@
 
 // This may one day be used in Godot for interoperability between C arrays, Vector and LocalVector.
 // (See https://github.com/godotengine/godot-proposals/issues/5144.)
-template <class T>
+template <typename T>
 class VectorView {
 	const T *_ptr = nullptr;
 	const uint32_t _size = 0;
@@ -97,20 +97,20 @@ public:
 #define ENUM_MEMBERS_EQUAL(m_a, m_b) ((int64_t)m_a == (int64_t)m_b)
 
 // This helps using a single paged allocator for many resource types.
-template <class... RESOURCE_TYPES>
+template <typename... RESOURCE_TYPES>
 struct VersatileResourceTemplate {
 	static constexpr size_t RESOURCE_SIZES[] = { sizeof(RESOURCE_TYPES)... };
 	static constexpr size_t MAX_RESOURCE_SIZE = std::max_element(RESOURCE_SIZES, RESOURCE_SIZES + sizeof...(RESOURCE_TYPES))[0];
 	uint8_t data[MAX_RESOURCE_SIZE];
 
-	template <class T>
+	template <typename T>
 	static T *allocate(PagedAllocator<VersatileResourceTemplate> &p_allocator) {
 		T *obj = (T *)p_allocator.alloc();
 		memnew_placement(obj, T);
 		return obj;
 	}
 
-	template <class T>
+	template <typename T>
 	static void free(PagedAllocator<VersatileResourceTemplate> &p_allocator, T *p_object) {
 		p_object->~T();
 		p_allocator.free((VersatileResourceTemplate *)p_object);
@@ -128,7 +128,7 @@ public:
 
 #define DEFINE_ID(m_name)                                                                             \
 	struct m_name##ID : public ID {                                                                   \
-		_ALWAYS_INLINE_ operator bool() const { return id != 0; }                                     \
+		_ALWAYS_INLINE_ explicit operator bool() const { return id != 0; }                            \
 		_ALWAYS_INLINE_ m_name##ID &operator=(m_name##ID p_other) {                                   \
 			id = p_other.id;                                                                          \
 			return *this;                                                                             \
@@ -220,15 +220,17 @@ public:
 
 	enum TextureLayout {
 		TEXTURE_LAYOUT_UNDEFINED,
-		TEXTURE_LAYOUT_GENERAL,
+		TEXTURE_LAYOUT_STORAGE_OPTIMAL,
 		TEXTURE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 		TEXTURE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 		TEXTURE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
 		TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		TEXTURE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-		TEXTURE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		TEXTURE_LAYOUT_PREINITIALIZED,
-		TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL = 1000164003,
+		TEXTURE_LAYOUT_COPY_SRC_OPTIMAL,
+		TEXTURE_LAYOUT_COPY_DST_OPTIMAL,
+		TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL,
+		TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL,
+		TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL,
+		TEXTURE_LAYOUT_MAX
 	};
 
 	enum TextureAspect {
@@ -284,6 +286,7 @@ public:
 	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) = 0;
 	virtual void texture_unmap(TextureID p_texture) = 0;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) = 0;
+	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) = 0;
 
 	/*****************/
 	/**** SAMPLER ****/
@@ -317,10 +320,12 @@ public:
 		PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT = (1 << 9),
 		PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT = (1 << 10),
 		PIPELINE_STAGE_COMPUTE_SHADER_BIT = (1 << 11),
-		PIPELINE_STAGE_TRANSFER_BIT = (1 << 12),
+		PIPELINE_STAGE_COPY_BIT = (1 << 12),
 		PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT = (1 << 13),
+		PIPELINE_STAGE_RESOLVE_BIT = (1 << 14),
 		PIPELINE_STAGE_ALL_GRAPHICS_BIT = (1 << 15),
 		PIPELINE_STAGE_ALL_COMMANDS_BIT = (1 << 16),
+		PIPELINE_STAGE_CLEAR_STORAGE_BIT = (1 << 17),
 	};
 
 	enum BarrierAccessBits {
@@ -335,13 +340,16 @@ public:
 		BARRIER_ACCESS_COLOR_ATTACHMENT_WRITE_BIT = (1 << 8),
 		BARRIER_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT = (1 << 9),
 		BARRIER_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT = (1 << 10),
-		BARRIER_ACCESS_TRANSFER_READ_BIT = (1 << 11),
-		BARRIER_ACCESS_TRANSFER_WRITE_BIT = (1 << 12),
+		BARRIER_ACCESS_COPY_READ_BIT = (1 << 11),
+		BARRIER_ACCESS_COPY_WRITE_BIT = (1 << 12),
 		BARRIER_ACCESS_HOST_READ_BIT = (1 << 13),
 		BARRIER_ACCESS_HOST_WRITE_BIT = (1 << 14),
 		BARRIER_ACCESS_MEMORY_READ_BIT = (1 << 15),
 		BARRIER_ACCESS_MEMORY_WRITE_BIT = (1 << 16),
 		BARRIER_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT = (1 << 23),
+		BARRIER_ACCESS_RESOLVE_READ_BIT = (1 << 24),
+		BARRIER_ACCESS_RESOLVE_WRITE_BIT = (1 << 25),
+		BARRIER_ACCESS_STORAGE_CLEAR_BIT = (1 << 27),
 	};
 
 	struct MemoryBarrier {
@@ -735,7 +743,9 @@ public:
 		API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT,
 		API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP,
 		API_TRAIT_SECONDARY_VIEWPORT_SCISSOR,
+		API_TRAIT_CLEARS_WITH_COPY_ENGINE,
 	};
+
 	enum ShaderChangeInvalidation {
 		SHADER_CHANGE_INVALIDATION_ALL_BOUND_UNIFORM_SETS,
 		// What Vulkan does.
@@ -768,6 +778,8 @@ public:
 	virtual String get_api_version() const = 0;
 	virtual String get_pipeline_cache_uuid() const = 0;
 	virtual const Capabilities &get_capabilities() const = 0;
+
+	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const { return false; }
 
 	/******************/
 

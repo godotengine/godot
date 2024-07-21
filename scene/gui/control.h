@@ -47,6 +47,10 @@ class ThemeContext;
 class Control : public CanvasItem {
 	GDCLASS(Control, CanvasItem);
 
+#ifdef TOOLS_ENABLED
+	bool saving = false;
+#endif
+
 public:
 	enum Anchor {
 		ANCHOR_BEGIN = 0,

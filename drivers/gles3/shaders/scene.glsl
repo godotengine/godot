@@ -12,6 +12,7 @@ DISABLE_LIGHTMAP = false
 DISABLE_LIGHT_DIRECTIONAL = false
 DISABLE_LIGHT_OMNI = false
 DISABLE_LIGHT_SPOT = false
+DISABLE_REFLECTION_PROBE = true
 DISABLE_FOG = false
 USE_DEPTH_FOG = false
 USE_RADIANCE_MAP = true
@@ -34,6 +35,7 @@ APPLY_TONEMAPPING = true
 ADDITIVE_OMNI = false
 ADDITIVE_SPOT = false
 RENDER_MATERIAL = false
+SECOND_REFLECTION_PROBE = false
 
 
 #[vertex]
@@ -366,7 +368,9 @@ void main() {
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
 #ifdef USE_INSTANCING
-	vec4 instance_color = vec4(unpackHalf2x16(instance_color_custom_data.x), unpackHalf2x16(instance_color_custom_data.y));
+	vec4 instance_color;
+	instance_color.xy = unpackHalf2x16(instance_color_custom_data.x);
+	instance_color.zw = unpackHalf2x16(instance_color_custom_data.y);
 	color_interp *= instance_color;
 #endif
 #endif
@@ -403,7 +407,9 @@ void main() {
 #endif //USE_MULTIVIEW
 
 #ifdef USE_INSTANCING
-	vec4 instance_custom = vec4(unpackHalf2x16(instance_color_custom_data.z), unpackHalf2x16(instance_color_custom_data.w));
+	vec4 instance_custom;
+	instance_custom.xy = unpackHalf2x16(instance_color_custom_data.z);
+	instance_custom.zw = unpackHalf2x16(instance_color_custom_data.w);
 #else
 	vec4 instance_custom = vec4(0.0);
 #endif
@@ -564,8 +570,11 @@ void main() {
 1-color correction // In tonemap_inc.glsl
 2-radiance
 3-shadow
+4-lightmap textures
 5-screen
 6-depth
+7-reflection probe 1
+8-reflection probe 2
 
 */
 
@@ -622,7 +631,39 @@ in highp vec4 shadow_coord4;
 
 uniform samplerCube radiance_map; // texunit:-2
 
-#endif
+#endif // USE_RADIANCE_MAP
+
+#ifndef DISABLE_REFLECTION_PROBE
+
+#define REFLECTION_PROBE_MAX_LOD 8.0
+
+uniform bool refprobe1_use_box_project;
+uniform highp vec3 refprobe1_box_extents;
+uniform vec3 refprobe1_box_offset;
+uniform highp mat4 refprobe1_local_matrix;
+uniform bool refprobe1_exterior;
+uniform float refprobe1_intensity;
+uniform int refprobe1_ambient_mode;
+uniform vec4 refprobe1_ambient_color;
+
+uniform samplerCube refprobe1_texture; // texunit:-7
+
+#ifdef SECOND_REFLECTION_PROBE
+
+uniform bool refprobe2_use_box_project;
+uniform highp vec3 refprobe2_box_extents;
+uniform vec3 refprobe2_box_offset;
+uniform highp mat4 refprobe2_local_matrix;
+uniform bool refprobe2_exterior;
+uniform float refprobe2_intensity;
+uniform int refprobe2_ambient_mode;
+uniform vec4 refprobe2_ambient_color;
+
+uniform samplerCube refprobe2_texture; // texunit:-8
+
+#endif // SECOND_REFLECTION_PROBE
+
+#endif // DISABLE_REFLECTION_PROBE
 
 layout(std140) uniform GlobalShaderUniformData { //ubo:1
 	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
@@ -1285,6 +1326,90 @@ vec4 fog_process(vec3 vertex) {
 	return vec4(fog_color, fog_amount);
 }
 
+#ifndef DISABLE_REFLECTION_PROBE
+
+#define REFLECTION_AMBIENT_DISABLED 0
+#define REFLECTION_AMBIENT_ENVIRONMENT 1
+#define REFLECTION_AMBIENT_COLOR 2
+
+void reflection_process(samplerCube reflection_map,
+		vec3 normal, vec3 vertex,
+		mat4 local_matrix,
+		bool use_box_project, vec3 box_extents, vec3 box_offset,
+		bool exterior, float intensity, int ref_ambient_mode, vec4 ref_ambient_color,
+		float roughness, vec3 ambient, vec3 skybox,
+		inout highp vec4 reflection_accum, inout highp vec4 ambient_accum) {
+	vec4 reflection;
+
+	vec3 local_pos = (local_matrix * vec4(vertex, 1.0)).xyz;
+
+	if (any(greaterThan(abs(local_pos), box_extents))) { //out of the reflection box
+		return;
+	}
+
+	vec3 inner_pos = abs(local_pos / box_extents);
+	float blend = max(inner_pos.x, max(inner_pos.y, inner_pos.z));
+	blend = mix(length(inner_pos), blend, blend);
+	blend *= blend;
+	blend = max(0.0, 1.0 - blend);
+
+	//reflect and make local
+	vec3 ref_normal = normalize(reflect(vertex, normal));
+	ref_normal = (local_matrix * vec4(ref_normal, 0.0)).xyz;
+
+	if (use_box_project) { //box project
+
+		vec3 nrdir = normalize(ref_normal);
+		vec3 rbmax = (box_extents - local_pos) / nrdir;
+		vec3 rbmin = (-box_extents - local_pos) / nrdir;
+
+		vec3 rbminmax = mix(rbmin, rbmax, vec3(greaterThan(nrdir, vec3(0.0, 0.0, 0.0))));
+
+		float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
+		vec3 posonbox = local_pos + nrdir * fa;
+		ref_normal = posonbox - box_offset.xyz;
+	}
+
+	reflection.rgb = srgb_to_linear(textureLod(reflection_map, ref_normal, roughness * MAX_ROUGHNESS_LOD).rgb);
+
+	if (exterior) {
+		reflection.rgb = mix(skybox, reflection.rgb, blend);
+	}
+	reflection.rgb *= intensity;
+	reflection.a = blend;
+	reflection.rgb *= blend;
+
+	reflection_accum += reflection;
+
+#ifndef USE_LIGHTMAP
+	if (ref_ambient_mode == REFLECTION_AMBIENT_ENVIRONMENT) {
+		vec4 ambient_out;
+		vec3 amb_normal = (local_matrix * vec4(normal, 0.0)).xyz;
+
+		ambient_out.rgb = srgb_to_linear(textureLod(reflection_map, amb_normal, MAX_ROUGHNESS_LOD).rgb);
+		if (exterior) {
+			ambient_out.rgb = mix(ambient, ambient_out.rgb, blend);
+		}
+
+		ambient_out.a = blend;
+		ambient_out.rgb *= blend;
+		ambient_accum += ambient_out;
+	} else if (ref_ambient_mode == REFLECTION_AMBIENT_COLOR) {
+		vec4 ambient_out;
+		ambient_out.rgb = ref_ambient_color.rgb;
+		if (exterior) {
+			ambient_out.rgb = mix(ambient, ambient_out.rgb, blend);
+		}
+
+		ambient_out.a = blend;
+		ambient_out.rgb *= blend;
+		ambient_accum += ambient_out;
+	}
+#endif // USE_LIGHTMAP
+}
+
+#endif // DISABLE_REFLECTION_PROBE
+
 #endif // !MODE_RENDER_DEPTH
 
 void main() {
@@ -1317,6 +1442,9 @@ void main() {
 	float clearcoat_roughness = 0.0;
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
+#ifdef PREMUL_ALPHA_USED
+	float premul_alpha = 1.0;
+#endif // PREMUL_ALPHA_USED
 #ifndef FOG_DISABLED
 	vec4 fog = vec4(0.0);
 #endif // !FOG_DISABLED
@@ -1386,9 +1514,26 @@ void main() {
 	float alpha_antialiasing_edge = 0.0;
 	vec2 alpha_texture_coordinate = vec2(0.0, 0.0);
 #endif // ALPHA_ANTIALIASING_EDGE_USED
+
+#ifdef LIGHT_VERTEX_USED
+	vec3 light_vertex = vertex;
+#endif //LIGHT_VERTEX_USED
+
 	{
 #CODE : FRAGMENT
 	}
+
+	// Keep albedo values in positive number range as negative values "wraparound" into positive numbers resulting in wrong colors
+	albedo = max(albedo, vec3(0.0));
+
+#ifdef LIGHT_VERTEX_USED
+	vertex = light_vertex;
+#ifdef USE_MULTIVIEW
+	view = -normalize(vertex - eye_offset);
+#else
+	view = -normalize(vertex);
+#endif //USE_MULTIVIEW
+#endif //LIGHT_VERTEX_USED
 
 #ifndef USE_SHADOW_TO_OPACITY
 
@@ -1396,6 +1541,7 @@ void main() {
 	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
+	alpha = 1.0;
 #else
 #ifdef MODE_RENDER_DEPTH
 #ifdef USE_OPAQUE_PREPASS
@@ -1485,9 +1631,33 @@ void main() {
 		specular_light *= horizon * horizon;
 		specular_light *= scene_data.ambient_light_color_energy.a;
 	}
-#endif
+#endif // USE_RADIANCE_MAP
 
 	// Calculate Reflection probes
+#ifndef DISABLE_REFLECTION_PROBE
+	vec4 ambient_accum = vec4(0.0);
+	{
+		vec4 reflection_accum = vec4(0.0);
+
+		reflection_process(refprobe1_texture, normal, vertex_interp, refprobe1_local_matrix,
+				refprobe1_use_box_project, refprobe1_box_extents, refprobe1_box_offset,
+				refprobe1_exterior, refprobe1_intensity, refprobe1_ambient_mode, refprobe1_ambient_color,
+				roughness, ambient_light, specular_light, reflection_accum, ambient_accum);
+
+#ifdef SECOND_REFLECTION_PROBE
+
+		reflection_process(refprobe2_texture, normal, vertex_interp, refprobe2_local_matrix,
+				refprobe2_use_box_project, refprobe2_box_extents, refprobe2_box_offset,
+				refprobe2_exterior, refprobe2_intensity, refprobe2_ambient_mode, refprobe2_ambient_color,
+				roughness, ambient_light, specular_light, reflection_accum, ambient_accum);
+
+#endif // SECOND_REFLECTION_PROBE
+
+		if (reflection_accum.a > 0.0) {
+			specular_light = reflection_accum.rgb / reflection_accum.a;
+		}
+	}
+#endif // DISABLE_REFLECTION_PROBE
 
 #if defined(CUSTOM_RADIANCE_USED)
 	specular_light = mix(specular_light, custom_radiance.rgb, custom_radiance.a);
@@ -1497,6 +1667,7 @@ void main() {
 	//lightmap overrides everything
 	if (scene_data.use_ambient_light) {
 		ambient_light = scene_data.ambient_light_color_energy.rgb;
+
 #ifdef USE_RADIANCE_MAP
 		if (scene_data.use_ambient_cubemap) {
 			vec3 ambient_dir = scene_data.radiance_inverse_xform * normal;
@@ -1504,7 +1675,13 @@ void main() {
 			cubemap_ambient = srgb_to_linear(cubemap_ambient);
 			ambient_light = mix(ambient_light, cubemap_ambient * scene_data.ambient_light_color_energy.a, scene_data.ambient_color_sky_mix);
 		}
-#endif
+#endif // USE_RADIANCE_MAP
+
+#ifndef DISABLE_REFLECTION_PROBE
+		if (ambient_accum.a > 0.0) {
+			ambient_light = mix(ambient_light, (ambient_accum.rgb / ambient_accum.a) * scene_data.ambient_light_color_energy.a, scene_data.ambient_color_sky_mix);
+		}
+#endif // DISABLE_REFLECTION_PROBE
 	}
 #endif // USE_LIGHTMAP
 
@@ -1688,29 +1865,22 @@ void main() {
 #endif // !MODE_RENDER_DEPTH
 
 #if defined(USE_SHADOW_TO_OPACITY)
+#ifndef MODE_RENDER_DEPTH
 	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
 
 #if defined(ALPHA_SCISSOR_USED)
 	if (alpha < alpha_scissor) {
 		discard;
 	}
-#else
-#ifdef MODE_RENDER_DEPTH
-#ifdef USE_OPAQUE_PREPASS
-
-	if (alpha < opaque_prepass_threshold) {
-		discard;
-	}
-#endif // USE_OPAQUE_PREPASS
-#endif // MODE_RENDER_DEPTH
 #endif // !ALPHA_SCISSOR_USED
 
+#endif // !MODE_RENDER_DEPTH
 #endif // USE_SHADOW_TO_OPACITY
 
 #ifdef MODE_RENDER_DEPTH
 #ifdef RENDER_SHADOWS_LINEAR
 	// Linearize the depth buffer if rendering cubemap shadows.
-	gl_FragDepth = (length(vertex) + scene_data.shadow_bias) / scene_data.z_far;
+	gl_FragDepth = (scene_data.z_far - (length(vertex) + scene_data.shadow_bias)) / scene_data.z_far;
 #endif
 
 // Nothing happens, so a tree-ssa optimizer will result in no fragment shader :)
@@ -1747,7 +1917,8 @@ void main() {
 #endif //!MODE_UNSHADED
 
 #ifndef FOG_DISABLED
-	fog = vec4(unpackHalf2x16(fog_rg), unpackHalf2x16(fog_ba));
+	fog.xy = unpackHalf2x16(fog_rg);
+	fog.zw = unpackHalf2x16(fog_ba);
 
 #ifndef DISABLE_FOG
 	if (scene_data.fog_enabled) {
@@ -1763,13 +1934,6 @@ void main() {
 #endif
 	frag_color.rgb = linear_to_srgb(frag_color.rgb);
 
-#ifdef USE_BCS
-	frag_color.rgb = apply_bcs(frag_color.rgb, bcs);
-#endif
-
-#ifdef USE_COLOR_CORRECTION
-	frag_color.rgb = apply_color_correction(frag_color.rgb, color_correction);
-#endif
 #else // !BASE_PASS
 	frag_color = vec4(0.0, 0.0, 0.0, alpha);
 #endif // !BASE_PASS
@@ -1914,7 +2078,7 @@ void main() {
 	float omni_shadow = 1.0f;
 #ifndef SHADOWS_DISABLED
 	vec3 light_ray = ((positional_shadows[positional_shadow_index].shadow_matrix * vec4(shadow_coord.xyz, 1.0))).xyz;
-	omni_shadow = texture(omni_shadow_texture, vec4(light_ray, length(light_ray) * omni_lights[omni_light_index].inv_radius));
+	omni_shadow = texture(omni_shadow_texture, vec4(light_ray, 1.0 - length(light_ray) * omni_lights[omni_light_index].inv_radius));
 	omni_shadow = mix(1.0, omni_shadow, omni_lights[omni_light_index].shadow_opacity);
 #endif // SHADOWS_DISABLED
 	light_process_omni(omni_light_index, vertex, view, normal, f0, roughness, metallic, omni_shadow, albedo, alpha,
@@ -1964,7 +2128,8 @@ void main() {
 	vec3 additive_light_color = diffuse_light + specular_light;
 
 #ifndef FOG_DISABLED
-	fog = vec4(unpackHalf2x16(fog_rg), unpackHalf2x16(fog_ba));
+	fog.xy = unpackHalf2x16(fog_rg);
+	fog.zw = unpackHalf2x16(fog_ba);
 
 #ifndef DISABLE_FOG
 	if (scene_data.fog_enabled) {
@@ -1980,19 +2145,14 @@ void main() {
 #endif
 	additive_light_color = linear_to_srgb(additive_light_color);
 
-#ifdef USE_BCS
-	additive_light_color = apply_bcs(additive_light_color, bcs);
-#endif
-
-#ifdef USE_COLOR_CORRECTION
-	additive_light_color = apply_color_correction(additive_light_color, color_correction);
-#endif
-
 	frag_color.rgb += additive_light_color;
 #endif // USE_ADDITIVE_LIGHTING
-
 	frag_color.rgb *= scene_data.luminance_multiplier;
 
 #endif // !RENDER_MATERIAL
 #endif // !MODE_RENDER_DEPTH
+
+#ifdef PREMUL_ALPHA_USED
+	frag_color.rgb *= premul_alpha;
+#endif // PREMUL_ALPHA_USED
 }

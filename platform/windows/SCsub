@@ -4,25 +4,31 @@ Import("env")
 
 import os
 from pathlib import Path
-from platform_methods import run_in_subprocess
+
 import platform_windows_builders
 
 sources = []
 
 common_win = [
     "godot_windows.cpp",
-    "crash_handler_windows.cpp",
     "os_windows.cpp",
     "display_server_windows.cpp",
     "key_mapping_windows.cpp",
     "joypad_windows.cpp",
     "tts_windows.cpp",
     "windows_terminal_logger.cpp",
+    "windows_utils.cpp",
+    "native_menu_windows.cpp",
     "gl_manager_windows_native.cpp",
     "gl_manager_windows_angle.cpp",
     "wgl_detect_version.cpp",
     "rendering_context_driver_vulkan_windows.cpp",
 ]
+
+if env.msvc:
+    common_win += ["crash_handler_windows_seh.cpp"]
+else:
+    common_win += ["crash_handler_windows_signal.cpp"]
 
 common_win_wrap = [
     "console_wrapper_windows.cpp",
@@ -44,6 +50,7 @@ def arrange_program_clean(prog):
 res_file = "godot_res.rc"
 res_target = "godot_res" + env["OBJSUFFIX"]
 res_obj = env.RES(res_target, res_file)
+env.Depends(res_obj, "#core/version_generated.gen.h")
 
 env.add_source_files(sources, common_win)
 sources += res_obj
@@ -57,6 +64,7 @@ if env["windows_subsystem"] == "gui":
     res_wrap_file = "godot_res_wrap.rc"
     res_wrap_target = "godot_res_wrap" + env["OBJSUFFIX"]
     res_wrap_obj = env_wrap.RES(res_wrap_target, res_wrap_file)
+    env_wrap.Depends(res_wrap_obj, "#core/version_generated.gen.h")
 
     if env.msvc:
         env_wrap.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
@@ -100,18 +108,6 @@ if env["d3d12"]:
     # Used in cases where we can have multiple archs side-by-side.
     arch_bin_dir = "#bin/" + env["arch"]
 
-    # DXC
-    if env["dxc_path"] != "" and os.path.exists(env["dxc_path"]):
-        dxc_dll = "dxil.dll"
-        # Whether this one is loaded from arch-specific directory or not can be determined at runtime.
-        # Let's copy to both and let the user decide the distribution model.
-        for v in ["#bin", arch_bin_dir]:
-            env.Command(
-                v + "/" + dxc_dll,
-                env["dxc_path"] + "/bin/" + dxc_arch_subdir + "/" + dxc_dll,
-                Copy("$TARGET", "$SOURCE"),
-            )
-
     # Agility SDK
     if env["agility_sdk_path"] != "" and os.path.exists(env["agility_sdk_path"]):
         agility_dlls = ["D3D12Core.dll", "d3d12SDKLayers.dll"]
@@ -135,8 +131,8 @@ if env["d3d12"]:
 
 if not os.getenv("VCINSTALLDIR"):
     if env["debug_symbols"]:
-        env.AddPostAction(prog, run_in_subprocess(platform_windows_builders.make_debug_mingw))
+        env.AddPostAction(prog, env.Run(platform_windows_builders.make_debug_mingw))
         if env["windows_subsystem"] == "gui":
-            env.AddPostAction(prog_wrap, run_in_subprocess(platform_windows_builders.make_debug_mingw))
+            env.AddPostAction(prog_wrap, env.Run(platform_windows_builders.make_debug_mingw))
 
 env.platform_sources += sources

@@ -38,14 +38,13 @@
 class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	struct StackSlot {
 		Variant::Type type = Variant::NIL;
+		bool can_contain_object = true;
 		Vector<int> bytecode_indices;
 
 		StackSlot() = default;
-		StackSlot(Variant::Type p_type) :
-				type(p_type) {}
+		StackSlot(Variant::Type p_type, bool p_can_contain_object) :
+				type(p_type), can_contain_object(p_can_contain_object) {}
 	};
-
-	const static int RESERVED_STACK = 3; // For self, class, and nil.
 
 	struct CallTarget {
 		Address target;
@@ -85,9 +84,11 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	RBMap<StringName, int> local_constants;
 
 	Vector<StackSlot> locals;
+	HashSet<int> dirty_locals;
+
 	Vector<StackSlot> temporaries;
 	List<int> used_temporaries;
-	List<int> temporaries_pending_clear;
+	HashSet<int> temporaries_pending_clear;
 	RBMap<Variant::Type, List<int>> temporaries_pool;
 
 	List<GDScriptFunction::StackDebug> stack_debug;
@@ -193,6 +194,9 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 			ERR_PRINT("Leaving block with non-zero temporary variables: " + itos(used_temporaries.size()));
 		}
 #endif
+		for (int i = current_locals; i < locals.size(); i++) {
+			dirty_locals.insert(i + GDScriptFunction::FIXED_ADDRESSES_MAX);
+		}
 		locals.resize(current_locals);
 		if (debug_stack) {
 			for (const KeyValue<StringName, int> &E : block_identifiers) {
@@ -455,7 +459,9 @@ public:
 	virtual uint32_t add_or_get_name(const StringName &p_name) override;
 	virtual uint32_t add_temporary(const GDScriptDataType &p_type) override;
 	virtual void pop_temporary() override;
-	virtual void clean_temporaries() override;
+	virtual void clear_temporaries() override;
+	virtual void clear_address(const Address &p_address) override;
+	virtual bool is_local_dirty(const Address &p_address) const override;
 
 	virtual void start_parameters() override;
 	virtual void end_parameters() override;
@@ -496,6 +502,7 @@ public:
 	virtual void write_get_static_variable(const Address &p_target, const Address &p_class, int p_index) override;
 	virtual void write_assign(const Address &p_target, const Address &p_source) override;
 	virtual void write_assign_with_conversion(const Address &p_target, const Address &p_source) override;
+	virtual void write_assign_null(const Address &p_target) override;
 	virtual void write_assign_true(const Address &p_target) override;
 	virtual void write_assign_false(const Address &p_target) override;
 	virtual void write_assign_default_parameter(const Address &p_dst, const Address &p_src, bool p_use_conversion) override;
@@ -511,6 +518,7 @@ public:
 	virtual void write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_builtin_type_static(const Address &p_target, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_native_static(const Address &p_target, const StringName &p_class, const StringName &p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_native_static_validated(const Address &p_target, MethodBind *p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_method_bind_validated(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;

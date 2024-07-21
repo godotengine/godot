@@ -63,7 +63,7 @@ bool EditorPropertyNameProcessor::is_localization_available() {
 		return false;
 	}
 	const Vector<String> forbidden = String("en").split(",");
-	return forbidden.find(EDITOR_GET("interface/editor/editor_language")) == -1;
+	return !forbidden.has(EDITOR_GET("interface/editor/editor_language"));
 }
 
 String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const {
@@ -75,7 +75,7 @@ String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const
 	Vector<String> parts = p_name.split("_", false);
 	for (int i = 0; i < parts.size(); i++) {
 		// Articles/conjunctions/prepositions which should only be capitalized when not at beginning and end.
-		if (i > 0 && i + 1 < parts.size() && stop_words.find(parts[i]) != -1) {
+		if (i > 0 && i + 1 < parts.size() && stop_words.has(parts[i])) {
 			continue;
 		}
 		HashMap<String, String>::ConstIterator remap = capitalize_string_remaps.find(parts[i]);
@@ -91,7 +91,27 @@ String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const
 	return capitalized;
 }
 
-String EditorPropertyNameProcessor::process_name(const String &p_name, Style p_style) const {
+StringName EditorPropertyNameProcessor::_get_context(const String &p_name, const String &p_property, const StringName &p_class) const {
+	if (p_property.is_empty() && p_class == StringName()) {
+		return StringName();
+	}
+	const HashMap<String, StringName> *context_map = translation_contexts.getptr(p_name);
+	if (context_map == nullptr) {
+		return StringName();
+	}
+	// It's expected that full property path is enough to distinguish between usages.
+	// In case a class name is needed, all usages should be prefixed with the class name.
+	const StringName *context = context_map->getptr(p_property);
+	if (context == nullptr && p_class != StringName()) {
+		context = context_map->getptr(String(p_class) + "::" + p_property);
+	}
+	if (context == nullptr) {
+		return StringName();
+	}
+	return *context;
+}
+
+String EditorPropertyNameProcessor::process_name(const String &p_name, Style p_style, const String &p_property, const StringName &p_class) const {
 	switch (p_style) {
 		case STYLE_RAW: {
 			return p_name;
@@ -104,7 +124,7 @@ String EditorPropertyNameProcessor::process_name(const String &p_name, Style p_s
 		case STYLE_LOCALIZED: {
 			const String capitalized = _capitalize_name(p_name);
 			if (TranslationServer::get_singleton()) {
-				return TranslationServer::get_singleton()->property_translate(capitalized);
+				return TranslationServer::get_singleton()->property_translate(capitalized, _get_context(p_name, p_property, p_class));
 			}
 			return capitalized;
 		} break;
@@ -320,6 +340,25 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 			"then",
 			"to",
 	});
+
+	// Translation context associated with a name.
+	// The second key is either:
+	// - `full/property/path`
+	// - `Class::full/property/path`
+	// In case a class name is needed to distinguish between usages, all usages should use the second format.
+	//
+	// The following initialization is parsed in `editor/translations/scripts/common.py` with a regex.
+	// The map name and value definition format should be kept synced with the regex.
+	translation_contexts["force"]["constant_force"] = "Physics";
+	translation_contexts["force"]["force/8_bit"] = "Enforce";
+	translation_contexts["force"]["force/mono"] = "Enforce";
+	translation_contexts["force"]["force/max_rate"] = "Enforce";
+	translation_contexts["force"]["force/max_rate_hz"] = "Enforce";
+	translation_contexts["normal"]["theme_override_styles/normal"] = "Ordinary";
+	translation_contexts["normal"]["TextureButton::texture_normal"] = "Ordinary";
+	translation_contexts["normal"]["Decal::texture_normal"] = "Geometry";
+	translation_contexts["normal"]["detail_normal"] = "Geometry";
+	translation_contexts["normal"]["normal"] = "Geometry";
 }
 
 EditorPropertyNameProcessor::~EditorPropertyNameProcessor() {

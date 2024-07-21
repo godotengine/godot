@@ -384,17 +384,21 @@
 		<member name="editors/3d/selection_box_color" type="Color" setter="" getter="">
 			The color to use for the selection box that surrounds selected nodes in the 3D editor viewport. The color's alpha channel influences the selection box's opacity.
 		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/aabb" type="Color" setter="" getter="">
+			The color to use for the AABB gizmo that displays the [GeometryInstance3D]'s custom [AABB].
+		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/instantiated" type="Color" setter="" getter="">
 			The color override to use for 3D editor gizmos if the [Node3D] in question is part of an instantiated scene file (from the perspective of the current scene).
 		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/joint" type="Color" setter="" getter="">
 			The 3D editor gizmo color for [Joint3D]s and [PhysicalBone3D]s.
 		</member>
-		<member name="editors/3d_gizmos/gizmo_colors/shape" type="Color" setter="" getter="">
-			The 3D editor gizmo color for [CollisionShape3D]s, [VehicleWheel3D]s, [RayCast3D]s and [SpringArm3D]s.
-		</member>
 		<member name="editors/animation/autorename_animation_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], automatically updates animation tracks' target paths when renaming or reparenting nodes in the Scene tree dock.
+		</member>
+		<member name="editors/animation/confirm_insert_track" type="bool" setter="" getter="">
+			If [code]true[/code], display a confirmation dialog when adding a new track to an animation by pressing the "key" icon next to a property. Holding Shift will bypass the dialog.
+			If [code]false[/code], the behavior is reversed, i.e. the dialog only appears when Shift is held.
 		</member>
 		<member name="editors/animation/default_create_bezier_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], create a Bezier track instead of a standard track when pressing the "key" icon next to a property. Bezier tracks provide more control over animation curves, but are more difficult to adjust quickly.
@@ -447,6 +451,9 @@
 		<member name="editors/tiles_editor/grid_color" type="Color" setter="" getter="">
 			The color to use for the TileMap editor's grid.
 			[b]Note:[/b] Only effective if [member editors/tiles_editor/display_grid] is [code]true[/code].
+		</member>
+		<member name="editors/tiles_editor/highlight_selected_layer" type="bool" setter="" getter="">
+			Highlight the currently selected TileMapLayer by dimming the other ones in the scene.
 		</member>
 		<member name="editors/visual_editors/category_colors/color_color" type="Color" setter="" getter="">
 			The color of a graph node's header when it belongs to the "Color" category.
@@ -574,7 +581,7 @@
 			The maximum idle uptime (in seconds) of the Blender process.
 			This prevents Godot from having to create a new process for each import within the given seconds.
 		</member>
-		<member name="filesystem/import/fbx2gltf/fbx2gltf_path" type="String" setter="" getter="">
+		<member name="filesystem/import/fbx/fbx2gltf_path" type="String" setter="" getter="">
 			The path to the FBX2glTF executable used for converting Autodesk FBX 3D scene files [code].fbx[/code] to glTF 2.0 format during import.
 			To enable this feature for your specific project, use [member ProjectSettings.filesystem/import/fbx2gltf/enabled].
 		</member>
@@ -588,6 +595,16 @@
 		<member name="filesystem/tools/oidn/oidn_denoise_path" type="String" setter="" getter="">
 			The path to the directory containing the Open Image Denoise (OIDN) executable, used optionally for denoising lightmaps. It can be downloaded from [url=https://www.openimagedenoise.org/downloads.html]openimagedenoise.org[/url].
 			To enable this feature for your specific project, use [member ProjectSettings.rendering/lightmapping/denoising/denoiser].
+		</member>
+		<member name="input/buffering/agile_event_flushing" type="bool" setter="" getter="">
+			If [code]true[/code], input events will be flushed just before every idle and physics frame.
+			If [code]false[/code], these events will be flushed only once per process frame, between iterations of the engine.
+			Enabling this setting can greatly improve input responsiveness, especially in devices that struggle to run at the project's intended frame rate.
+		</member>
+		<member name="input/buffering/use_accumulated_input" type="bool" setter="" getter="">
+			If [code]true[/code], similar input events sent by the operating system are accumulated. When input accumulation is enabled, all input events generated during a frame will be merged and emitted when the frame is done rendering. Therefore, this limits the number of input method calls per second to the rendering FPS.
+			Input accumulation can be disabled to get slightly more precise/reactive input at the cost of increased CPU usage.
+			[b]Note:[/b] Input accumulation is [i]enabled[/i] by default.
 		</member>
 		<member name="interface/editor/accept_dialog_cancel_ok_buttons" type="int" setter="" getter="">
 			How to position the Cancel and OK buttons in the editor's [AcceptDialog]s. Different platforms have different standard behaviors for this, which can be overridden using this setting. This is useful if you use Godot both on Windows and macOS/Linux and your Godot muscle memory is stronger than your OS specific one.
@@ -620,14 +637,13 @@
 			The custom editor scale factor to use. This can be used for displays with very high DPI where a scale factor of 200% is not sufficient.
 			[b]Note:[/b] Only effective if [member interface/editor/display_scale] is set to [b]Custom[/b].
 		</member>
-		<member name="interface/editor/debug/enable_pseudolocalization" type="bool" setter="" getter="">
-			If [code]true[/code], lengthens the editor's localizable strings and replaces their characters with accented variants. This allows spotting non-localizable strings easily, while also ensuring the UI layout doesn't break when strings are made longer (as many languages require strings to be longer).
-			This is a debugging feature and should only be enabled when working on the editor itself.
-		</member>
 		<member name="interface/editor/display_scale" type="int" setter="" getter="">
 			The display scale factor to use for the editor interface. Higher values are more suited to hiDPI/Retina displays.
 			If set to [b]Auto[/b], the editor scale is automatically determined based on the screen resolution and reported display DPI. This heuristic is not always ideal, which means you can get better results by setting the editor scale manually.
 			If set to [b]Custom[/b], the scaling value in [member interface/editor/custom_display_scale] will be used.
+		</member>
+		<member name="interface/editor/dock_tab_style" type="int" setter="" getter="">
+			Tab style of editor docks.
 		</member>
 		<member name="interface/editor/editor_language" type="String" setter="" getter="">
 			The language to use for the editor interface.
@@ -643,6 +659,9 @@
 		<member name="interface/editor/font_antialiasing" type="int" setter="" getter="">
 			FreeType's font anti-aliasing mode used to render the editor fonts. Most fonts are not designed to look good with anti-aliasing disabled, so it's recommended to leave this enabled unless you're using a pixel art font.
 		</member>
+		<member name="interface/editor/font_disable_embedded_bitmaps" type="bool" setter="" getter="">
+			If set to [code]true[/code], embedded font bitmap loading is disabled (bitmap-only and color fonts ignore this property).
+		</member>
 		<member name="interface/editor/font_hinting" type="int" setter="" getter="">
 			The font hinting mode to use for the editor fonts. FreeType supports the following font hinting modes:
 			- [b]None:[/b] Don't use font hinting when rasterizing the font. This results in a smooth font, but it can look blurry.
@@ -652,6 +671,9 @@
 		</member>
 		<member name="interface/editor/font_subpixel_positioning" type="int" setter="" getter="">
 			The subpixel positioning mode to use when rendering editor font glyphs. This affects both the main and code fonts. [b]Disabled[/b] is the fastest to render and uses the least memory. [b]Auto[/b] only uses subpixel positioning for small font sizes (where the benefit is the most noticeable). [b]One Half of a Pixel[/b] and [b]One Quarter of a Pixel[/b] force the same subpixel positioning mode for all editor fonts, regardless of their size (with [b]One Quarter of a Pixel[/b] being the highest-quality option).
+		</member>
+		<member name="interface/editor/import_resources_when_unfocused" type="bool" setter="" getter="">
+			If [code]true[/code], (re)imports resources even if the editor window is unfocused or minimized. If [code]false[/code], resources are only (re)imported when the editor window is focused. This can be set to [code]true[/code] to speed up iteration by starting the import process earlier when saving files in the project folder. This also allows getting visual feedback on changes without having to click the editor window, which is useful with multi-monitor setups. The downside of setting this to [code]true[/code] is that it increases idle CPU usage and may steal CPU time from other applications when importing resources.
 		</member>
 		<member name="interface/editor/localize_settings" type="bool" setter="" getter="">
 			If [code]true[/code], setting names in the editor are localized when possible.
@@ -714,6 +736,9 @@
 			If [code]true[/code], editor main menu is using embedded [MenuBar] instead of system global menu.
 			Specific to the macOS platform.
 		</member>
+		<member name="interface/editor/use_native_file_dialogs" type="bool" setter="" getter="">
+			If [code]true[/code], editor UI uses OS native file/directory selection dialogs.
+		</member>
 		<member name="interface/editor/vsync_mode" type="int" setter="" getter="">
 			Sets the V-Sync mode for the editor. Does not affect the project when run from the editor (this is controlled by [member ProjectSettings.display/window/vsync/vsync_mode]).
 			Depending on the platform and used renderer, the engine will fall back to [b]Enabled[/b] if the desired mode is not supported.
@@ -738,6 +763,10 @@
 			- [b]Localized:[/b] Displays the localized string for the current editor language if a translation is available for the given property. If no translation is available, falls back to [b]Capitalized[/b].
 			[b]Note:[/b] To display translated setting names in Project Settings and Editor Settings, use [member interface/editor/localize_settings] instead.
 		</member>
+		<member name="interface/inspector/delimitate_all_container_and_resources" type="bool" setter="" getter="">
+			If [code]true[/code], add a margin around Array, Dictionary, and Resource Editors that are not already colored.
+			[b]Note:[/b] If [member interface/inspector/nested_color_mode] is set to [b]Containers &amp; Resources[/b] this parameter will have no effect since those editors will already be colored
+		</member>
 		<member name="interface/inspector/disable_folding" type="bool" setter="" getter="">
 			If [code]true[/code], forces all property groups to be expanded in the Inspector dock and prevents collapsing them.
 		</member>
@@ -752,6 +781,12 @@
 		</member>
 		<member name="interface/inspector/max_array_dictionary_items_per_page" type="int" setter="" getter="">
 			The number of [Array] or [Dictionary] items to display on each "page" in the inspector. Higher values allow viewing more values per page, but take more time to load. This increased load time is noticeable when selecting nodes that have array or dictionary properties in the editor.
+		</member>
+		<member name="interface/inspector/nested_color_mode" type="int" setter="" getter="">
+			Control which property editors are colored when they are opened.
+			- [b]Containers &amp; Resources:[/b] Color all Array, Dictionary, and Resource Editors.
+			- [b]Resources:[/b] Color all Resource Editors.
+			- [b]External Resources:[/b] Color Resource Editors that edits an external resource.
 		</member>
 		<member name="interface/inspector/open_resources_in_current_inspector" type="bool" setter="" getter="">
 			If [code]true[/code], subresources can be edited in the current inspector view. If the resource type is defined in [member interface/inspector/resources_to_open_in_new_inspector] or if this setting is [code]false[/code], attempting to edit a subresource always opens a new inspector view.
@@ -824,7 +859,7 @@
 		<member name="interface/theme/icon_and_font_color" type="int" setter="" getter="">
 			The icon and font color scheme to use in the editor.
 			- [b]Auto[/b] determines the color scheme to use automatically based on [member interface/theme/base_color].
-			- [b]Dark[/b] makes fonts and icons dark (suitable for light themes). Icon colors are automatically converted by the editor following the set of rules defined in [url=https://github.com/godotengine/godot/blob/master/editor/editor_themes.cpp]this file[/url].
+			- [b]Dark[/b] makes fonts and icons dark (suitable for light themes). Icon colors are automatically converted by the editor following the set of rules defined in [url=https://github.com/godotengine/godot/blob/master/editor/themes/editor_theme_manager.cpp]this file[/url].
 			- [b]Light[/b] makes fonts and icons light (suitable for dark themes).
 		</member>
 		<member name="interface/theme/icon_saturation" type="float" setter="" getter="">
@@ -860,8 +895,16 @@
 			Specify the multiplier to apply to the scale for the editor gizmo handles to improve usability on touchscreen devices.
 			[b]Note:[/b] Defaults to [code]1[/code] on non-touchscreen devices.
 		</member>
+		<member name="network/connection/engine_version_update_mode" type="int" setter="" getter="">
+			Specifies how the engine should check for updates.
+			- [b]Disable Update Checks[/b] will block the engine from checking updates (see also [member network/connection/network_mode]).
+			- [b]Check Newest Preview[/b] (default for preview versions) will check for the newest available development snapshot.
+			- [b]Check Newest Stable[/b] (default for stable versions) will check for the newest available stable version.
+			- [b]Check Newest Patch[/b] will check for the latest available stable version, but only within the same minor version. E.g. if your version is [code]4.3.stable[/code], you will be notified about [code]4.3.1.stable[/code], but not [code]4.4.stable[/code].
+			All update modes will ignore builds with different major versions (e.g. Godot 4 -&gt; Godot 5).
+		</member>
 		<member name="network/connection/network_mode" type="int" setter="" getter="">
-			Determines whether online features are enabled in the editor, such as the Asset Library. Setting this property to "Offline" is recommended to limit editor's internet activity, especially if privacy is a concern.
+			Determines whether online features are enabled in the editor, such as the Asset Library or update checks. Disabling these online features helps alleviate privacy concerns by preventing the editor from making HTTP requests to the Godot website or third-party platforms hosting assets from the Asset Library.
 		</member>
 		<member name="network/debug/remote_host" type="String" setter="" getter="">
 			The address to listen to when starting the remote debugger. This can be set to [code]0.0.0.0[/code] to allow external clients to connect to the remote debugger (instead of restricting the remote debugger to connections from [code]localhost[/code]).
@@ -892,17 +935,20 @@
 		<member name="run/auto_save/save_before_running" type="bool" setter="" getter="">
 			If [code]true[/code], saves all scenes and scripts automatically before running the project. Setting this to [code]false[/code] prevents the editor from saving if there are no changes which can speed up the project startup slightly, but it makes it possible to run a project that has unsaved changes. (Unsaved changes will not be visible in the running project.)
 		</member>
+		<member name="run/bottom_panel/action_on_play" type="int" setter="" getter="">
+			The action to execute on the bottom panel when running the project.
+		</member>
+		<member name="run/bottom_panel/action_on_stop" type="int" setter="" getter="">
+			The action to execute on the bottom panel when stopping the project.
+		</member>
 		<member name="run/output/always_clear_output_on_play" type="bool" setter="" getter="">
 			If [code]true[/code], the editor will clear the Output panel when running the project.
 		</member>
-		<member name="run/output/always_close_output_on_stop" type="bool" setter="" getter="">
-			If [code]true[/code], the editor will collapse the Output panel when stopping the project.
-		</member>
-		<member name="run/output/always_open_output_on_play" type="bool" setter="" getter="">
-			If [code]true[/code], the editor will expand the Output panel when running the project.
-		</member>
 		<member name="run/output/font_size" type="int" setter="" getter="">
 			The size of the font in the [b]Output[/b] panel at the bottom of the editor. This setting does not impact the font size of the script editor (see [member interface/editor/code_font_size]).
+		</member>
+		<member name="run/output/max_lines" type="int" setter="" getter="">
+			Maximum number of lines to show at any one time in the Output panel.
 		</member>
 		<member name="run/platforms/linuxbsd/prefer_wayland" type="bool" setter="" getter="">
 			If [code]true[/code], on Linux/BSD, the editor will check for Wayland first instead of X11 (if available).
@@ -992,6 +1038,9 @@
 		<member name="text_editor/behavior/files/restore_scripts_on_load" type="bool" setter="" getter="">
 			If [code]true[/code], reopens scripts that were opened in the last session when the editor is reopened on a given project.
 		</member>
+		<member name="text_editor/behavior/files/trim_final_newlines_on_save" type="bool" setter="" getter="">
+			If [code]true[/code], trims all empty newlines after the final newline when saving a script. Final newlines refer to the empty newlines found at the end of files. Since these serve no practical purpose, they can and should be removed to make version control diffs less noisy.
+		</member>
 		<member name="text_editor/behavior/files/trim_trailing_whitespace_on_save" type="bool" setter="" getter="">
 			If [code]true[/code], trims trailing whitespace when saving a script. Trailing whitespace refers to tab and space characters placed at the end of lines. Since these serve no practical purpose, they can and should be removed to make version control diffs less noisy.
 		</member>
@@ -1008,11 +1057,17 @@
 			The indentation style to use (tabs or spaces).
 			[b]Note:[/b] The [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_styleguide.html]GDScript style guide[/url] recommends using tabs for indentation. It is advised to change this setting only if you need to work on a project that currently uses spaces for indentation.
 		</member>
+		<member name="text_editor/behavior/navigation/custom_word_separators" type="String" setter="" getter="">
+			The characters to consider as word delimiters if [member text_editor/behavior/navigation/use_custom_word_separators] is [code]true[/code]. This is in addition to default characters if [member text_editor/behavior/navigation/use_default_word_separators] is [code]true[/code]. The characters should be defined without separation, for example [code]_♥=[/code].
+		</member>
 		<member name="text_editor/behavior/navigation/drag_and_drop_selection" type="bool" setter="" getter="">
 			If [code]true[/code], allows drag-and-dropping text in the script editor to move text. Disable this if you find yourself accidentally drag-and-dropping text in the script editor.
 		</member>
 		<member name="text_editor/behavior/navigation/move_caret_on_right_click" type="bool" setter="" getter="">
 			If [code]true[/code], the caret will be moved when right-clicking somewhere in the script editor (like when left-clicking or middle-clicking). If [code]false[/code], the caret will only be moved when left-clicking or middle-clicking somewhere.
+		</member>
+		<member name="text_editor/behavior/navigation/open_script_when_connecting_signal_to_existing_method" type="bool" setter="" getter="">
+			If [code]true[/code], opens the script editor when connecting a signal to an existing script method from the Node dock.
 		</member>
 		<member name="text_editor/behavior/navigation/scroll_past_end_of_file" type="bool" setter="" getter="">
 			If [code]true[/code], allows scrolling past the end of the file.
@@ -1024,9 +1079,21 @@
 		<member name="text_editor/behavior/navigation/stay_in_script_editor_on_node_selected" type="bool" setter="" getter="">
 			If [code]true[/code], prevents automatically switching between the Script and 2D/3D screens when selecting a node in the Scene tree dock.
 		</member>
+		<member name="text_editor/behavior/navigation/use_custom_word_separators" type="bool" setter="" getter="">
+			If [code]true[/code], uses the characters in [member text_editor/behavior/navigation/custom_word_separators] as word separators for word navigation and operations. This is in addition to the default characters if [member text_editor/behavior/navigation/use_default_word_separators] is also enabled. Word navigation and operations include double-clicking on a word or holding [kbd]Ctrl[/kbd] ([kbd]Cmd[/kbd] on macOS) while pressing [kbd]left[/kbd], [kbd]right[/kbd], [kbd]backspace[/kbd], or [kbd]delete[/kbd].
+		</member>
+		<member name="text_editor/behavior/navigation/use_default_word_separators" type="bool" setter="" getter="">
+			If [code]true[/code], uses the characters in [code]`!"#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^`{|}~[/code], the Unicode General Punctuation table, and the Unicode CJK Punctuation table as word separators for word navigation and operations. If [code]false[/code], a subset of these characters are used and does not include the characters [code]&lt;&gt;$~^=+|[/code]. This is in addition to custom characters if [member text_editor/behavior/navigation/use_custom_word_separators] is also enabled. These characters are used to determine where a word stops. Word navigation and operations include double-clicking on a word or holding [kbd]Ctrl[/kbd] ([kbd]Cmd[/kbd] on macOS) while pressing [kbd]left[/kbd], [kbd]right[/kbd], [kbd]backspace[/kbd], or [kbd]delete[/kbd].
+		</member>
 		<member name="text_editor/behavior/navigation/v_scroll_speed" type="int" setter="" getter="">
 			The number of pixels to scroll with every mouse wheel increment. Higher values make the script scroll by faster when using the mouse wheel.
 			[b]Note:[/b] You can hold down [kbd]Alt[/kbd] while using the mouse wheel to temporarily scroll 5 times faster.
+		</member>
+		<member name="text_editor/completion/add_node_path_literals" type="bool" setter="" getter="">
+			If [code]true[/code], uses [NodePath] instead of [String] when appropriate for code autocompletion or for drag and dropping object properties into the script editor.
+		</member>
+		<member name="text_editor/completion/add_string_name_literals" type="bool" setter="" getter="">
+			If [code]true[/code], uses [StringName] instead of [String] when appropriate for code autocompletion.
 		</member>
 		<member name="text_editor/completion/add_type_hints" type="bool" setter="" getter="">
 			If [code]true[/code], adds [url=$DOCS_URL/tutorials/scripting/gdscript/static_typing.html]GDScript static typing[/url] hints such as [code]-&gt; void[/code] and [code]: int[/code] when using code autocompletion or when creating onready variables by drag and dropping nodes into the script editor while pressing the [kbd]Ctrl[/kbd] key. If [code]true[/code], newly created scripts will also automatically have type hints added to their method parameters and return types.
@@ -1038,7 +1105,7 @@
 			The delay in seconds after which autocompletion suggestions should be displayed when the user stops typing.
 		</member>
 		<member name="text_editor/completion/code_complete_enabled" type="bool" setter="" getter="">
-			If [code]true[/code], code completion will be triggered automatically after [member text_editor/completion/code_complete_delay]. If [code]false[/code], you can still trigger completion manually by pressing [kbd]Ctrl + Space[/kbd] ([kbd]Cmd + Space[/kbd] on macOS).
+			If [code]true[/code], code completion will be triggered automatically after [member text_editor/completion/code_complete_delay]. Even if [code]false[/code], code completion can be triggered manually with the [code]ui_text_completion_query[/code] action (by default [kbd]Ctrl + Space[/kbd] or [kbd]Cmd + Space[/kbd] on macOS).
 		</member>
 		<member name="text_editor/completion/colorize_suggestions" type="bool" setter="" getter="">
 			If [code]true[/code] enables the coloring for some items in the autocompletion suggestions, like vector components.

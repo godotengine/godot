@@ -36,9 +36,9 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/multi_node_edit.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/packed_scene.h"
@@ -721,12 +721,9 @@ bool EditorData::check_and_update_scene(int p_idx) {
 		}
 
 		new_scene->set_scene_file_path(edited_scene[p_idx].root->get_scene_file_path());
-
-		memdelete(edited_scene[p_idx].root);
-		edited_scene.write[p_idx].root = new_scene;
-		if (!new_scene->get_scene_file_path().is_empty()) {
-			edited_scene.write[p_idx].path = new_scene->get_scene_file_path();
-		}
+		Node *old_root = edited_scene[p_idx].root;
+		EditorNode::get_singleton()->set_edited_scene(new_scene);
+		memdelete(old_root);
 		edited_scene.write[p_idx].selection = new_selection;
 
 		return true;
@@ -1220,7 +1217,7 @@ void EditorSelection::add_node(Node *p_node) {
 	}
 	selection[p_node] = meta;
 
-	p_node->connect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed).bind(p_node), CONNECT_ONE_SHOT);
+	p_node->connect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed).bind(p_node), CONNECT_ONE_SHOT);
 }
 
 void EditorSelection::remove_node(Node *p_node) {
@@ -1237,7 +1234,7 @@ void EditorSelection::remove_node(Node *p_node) {
 	}
 	selection.erase(p_node);
 
-	p_node->disconnect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed));
+	p_node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed));
 }
 
 bool EditorSelection::is_selected(Node *p_node) const {

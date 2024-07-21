@@ -35,9 +35,13 @@
 
 #include <android/asset_manager.h>
 #include <android/log.h>
+#include <jni.h>
 #include <stdio.h>
 
 class FileAccessAndroid : public FileAccess {
+	static AAssetManager *asset_manager;
+	static jobject j_asset_manager;
+
 	mutable AAsset *asset = nullptr;
 	mutable uint64_t len = 0;
 	mutable uint64_t pos = 0;
@@ -48,8 +52,6 @@ class FileAccessAndroid : public FileAccess {
 	void _close();
 
 public:
-	static AAssetManager *asset_manager;
-
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override; // open a file
 	virtual bool is_open() const override; // true when file is open
 
@@ -65,6 +67,7 @@ public:
 
 	virtual bool eof_reached() const override; // reading passed EOF
 
+	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual uint8_t get_8() const override; // get a byte
 	virtual uint16_t get_16() const override;
 	virtual uint32_t get_32() const override;
@@ -91,6 +94,10 @@ public:
 	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) override { return ERR_UNAVAILABLE; }
 
 	virtual void close() override;
+
+	static void setup(jobject p_asset_manager);
+
+	static void terminate();
 
 	~FileAccessAndroid();
 };

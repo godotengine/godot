@@ -43,6 +43,8 @@ class Animation : public Resource {
 public:
 	typedef uint32_t TypeHash;
 
+	static inline String PARAMETERS_BASE_PATH = "parameters/";
+
 	enum TrackType {
 		TYPE_VALUE, // Set a value in a property, can be interpolated.
 		TYPE_POSITION_3D, // Position 3D track, can be compressed.
@@ -75,6 +77,7 @@ public:
 		LOOP_PINGPONG,
 	};
 
+	// LoopedFlag is used in Animataion to "process the keys at both ends correct".
 	enum LoopedFlag {
 		LOOPED_FLAG_NONE,
 		LOOPED_FLAG_END,
@@ -120,7 +123,7 @@ private:
 	};
 
 	// Transform key holds either Vector3 or Quaternion.
-	template <class T>
+	template <typename T>
 	struct TKey : public Key {
 		T value;
 	};
@@ -187,6 +190,7 @@ private:
 	};
 
 	/* BEZIER TRACK */
+
 	struct BezierKey {
 		Vector2 in_handle; // Relative (x always <0)
 		Vector2 out_handle; // Relative (x always >0)
@@ -223,7 +227,7 @@ private:
 		}
 	};
 
-	/* AUDIO TRACK */
+	/* ANIMATION TRACK */
 
 	struct AnimationTrack : public Track {
 		Vector<TKey<StringName>> values;
@@ -235,13 +239,13 @@ private:
 
 	Vector<Track *> tracks;
 
-	template <class T>
+	template <typename T>
 	void _clear(T &p_keys);
 
-	template <class T, class V>
+	template <typename T, typename V>
 	int _insert(double p_time, T &p_keys, const V &p_value);
 
-	template <class K>
+	template <typename K>
 
 	inline int _find(const Vector<K> &p_keys, double p_time, bool p_backward = false, bool p_limit = false) const;
 
@@ -257,15 +261,17 @@ private:
 	_FORCE_INLINE_ real_t _cubic_interpolate_in_time(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
 	_FORCE_INLINE_ Variant _cubic_interpolate_angle_in_time(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
 
-	template <class T>
+	template <typename T>
 	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false) const;
 
-	template <class T>
+	template <typename T>
 	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices, bool p_is_backward) const;
 
 	double length = 1.0;
-	real_t step = 0.1;
+	real_t step = 1.0 / 30;
 	LoopMode loop_mode = LOOP_NONE;
+	bool capture_included = false;
+	void _check_capture_included();
 
 	void _track_update_hash(int p_track);
 
@@ -382,13 +388,16 @@ protected:
 	Vector3 _scale_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
 	float _blend_shape_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
 	Variant _value_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
-	int _track_find_key_bind_compat_86661(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST) const;
+	int _track_find_key_bind_compat_92861(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST) const;
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
 public:
 	int add_track(TrackType p_type, int p_at_pos = -1);
 	void remove_track(int p_track);
+
+	void set_capture_included(bool p_capture_included);
+	bool is_capture_included() const;
 
 	int get_track_count() const;
 	TrackType track_get_type(int p_track) const;
@@ -414,7 +423,7 @@ public:
 	void track_set_key_transition(int p_track, int p_key_idx, real_t p_transition);
 	void track_set_key_value(int p_track, int p_key_idx, const Variant &p_value);
 	void track_set_key_time(int p_track, int p_key_idx, double p_time);
-	int track_find_key(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST, bool p_limit = false) const;
+	int track_find_key(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST, bool p_limit = false, bool p_backward = false) const;
 	void track_remove_key(int p_track, int p_idx);
 	void track_remove_key_at_time(int p_track, double p_time);
 	int track_get_key_count(int p_track) const;
@@ -446,6 +455,7 @@ public:
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
 
+	Array make_default_bezier_key(float p_value);
 	int bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle);
 	void bezier_track_set_key_value(int p_track, int p_index, real_t p_value);
 	void bezier_track_set_key_in_handle(int p_track, int p_index, const Vector2 &p_handle, real_t p_balanced_value_time_ratio = 1.0);

@@ -281,7 +281,7 @@ RunInstancesDialog::RunInstancesDialog() {
 	enable_multiple_instances_checkbox->set_text(TTR("Enable Multiple Instances"));
 	enable_multiple_instances_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false));
 	args_gc->add_child(enable_multiple_instances_checkbox);
-	enable_multiple_instances_checkbox->connect("pressed", callable_mp(this, &RunInstancesDialog::_start_main_timer));
+	enable_multiple_instances_checkbox->connect(SceneStringName(pressed), callable_mp(this, &RunInstancesDialog::_start_main_timer));
 
 	{
 		Label *l = memnew(Label);
@@ -302,8 +302,8 @@ RunInstancesDialog::RunInstancesDialog() {
 	instance_count->set_max(20);
 	instance_count->set_value(stored_data.size());
 	args_gc->add_child(instance_count);
-	instance_count->connect("value_changed", callable_mp(this, &RunInstancesDialog::_start_instance_timer).unbind(1));
-	instance_count->connect("value_changed", callable_mp(this, &RunInstancesDialog::_refresh_argument_count).unbind(1));
+	instance_count->connect(SceneStringName(value_changed), callable_mp(this, &RunInstancesDialog::_start_instance_timer).unbind(1));
+	instance_count->connect(SceneStringName(value_changed), callable_mp(this, &RunInstancesDialog::_refresh_argument_count).unbind(1));
 	enable_multiple_instances_checkbox->connect("toggled", callable_mp(instance_count, &SpinBox::set_editable));
 	instance_count->set_editable(enable_multiple_instances_checkbox->is_pressed());
 
@@ -313,14 +313,14 @@ RunInstancesDialog::RunInstancesDialog() {
 	args_gc->add_child(main_args_edit);
 	_fetch_main_args();
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &RunInstancesDialog::_fetch_main_args));
-	main_args_edit->connect("text_changed", callable_mp(this, &RunInstancesDialog::_start_main_timer).unbind(1));
+	main_args_edit->connect(SceneStringName(text_changed), callable_mp(this, &RunInstancesDialog::_start_main_timer).unbind(1));
 
 	main_features_edit = memnew(LineEdit);
 	main_features_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	main_features_edit->set_placeholder(TTR("Comma-separated tags, example: demo, steam, event"));
 	main_features_edit->set_text(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_main_feature_tags", ""));
 	args_gc->add_child(main_features_edit);
-	main_features_edit->connect("text_changed", callable_mp(this, &RunInstancesDialog::_start_main_timer).unbind(1));
+	main_features_edit->connect(SceneStringName(text_changed), callable_mp(this, &RunInstancesDialog::_start_main_timer).unbind(1));
 
 	{
 		Label *l = memnew(Label);

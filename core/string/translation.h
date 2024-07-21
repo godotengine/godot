@@ -94,7 +94,6 @@ class TranslationServer : public Object {
 	bool pseudolocalization_fake_bidi_enabled = false;
 	bool pseudolocalization_override_enabled = false;
 	bool pseudolocalization_skip_placeholders_enabled = false;
-	bool editor_pseudolocalization = false;
 	float expansion_ratio = 0.0;
 	String pseudolocalization_prefix;
 	String pseudolocalization_suffix;
@@ -170,7 +169,6 @@ public:
 
 	bool is_pseudolocalization_enabled() const;
 	void set_pseudolocalization_enabled(bool p_enabled);
-	void set_editor_pseudolocalization(bool p_enabled);
 	void reload_pseudolocalization();
 
 	String standardize_locale(const String &p_locale) const;
@@ -183,7 +181,7 @@ public:
 	StringName tool_translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 	void set_property_translation(const Ref<Translation> &p_translation);
-	StringName property_translate(const StringName &p_message) const;
+	StringName property_translate(const StringName &p_message, const StringName &p_context = "") const;
 	void set_doc_translation(const Ref<Translation> &p_translation);
 	StringName doc_translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName doc_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;

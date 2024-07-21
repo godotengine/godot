@@ -31,8 +31,10 @@
 #ifndef PHYSICAL_BONE_3D_H
 #define PHYSICAL_BONE_3D_H
 
+#include "scene/3d/physical_bone_simulator_3d.h"
 #include "scene/3d/physics/physics_body_3d.h"
-#include "scene/3d/skeleton_3d.h"
+
+class PhysicalBoneSimulator3D;
 
 class PhysicalBone3D : public PhysicsBody3D {
 	GDCLASS(PhysicalBone3D, PhysicsBody3D);
@@ -169,7 +171,7 @@ private:
 	Transform3D joint_offset;
 	RID joint;
 
-	Skeleton3D *parent_skeleton = nullptr;
+	ObjectID simulator_id;
 	Transform3D body_offset;
 	Transform3D body_offset_inverse;
 	bool simulate_physics = false;
@@ -206,14 +208,18 @@ protected:
 
 private:
 	void _sync_body_state(PhysicsDirectBodyState3D *p_state);
-	static Skeleton3D *find_skeleton_parent(Node *p_parent);
 
 	void _update_joint_offset();
 	void _fix_joint_offset();
 	void _reload_joint();
 
+	void _update_simulator_path();
+
 public:
 	void _on_bone_parent_changed();
+
+	PhysicalBoneSimulator3D *get_simulator() const;
+	Skeleton3D *get_skeleton() const;
 
 	void set_linear_velocity(const Vector3 &p_velocity);
 	Vector3 get_linear_velocity() const override;
@@ -231,7 +237,6 @@ public:
 #endif
 
 	const JointData *get_joint_data() const;
-	Skeleton3D *find_skeleton_parent();
 
 	int get_bone_id() const {
 		return bone_id;

@@ -214,6 +214,7 @@ private:
 	int code_completion_longest_line = 0;
 	Rect2i code_completion_rect;
 	Rect2i code_completion_scroll_rect;
+	float code_completion_pan_offset = 0.0f;
 
 	HashSet<char32_t> code_completion_prefixes;
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_submitted;
@@ -309,11 +310,14 @@ protected:
 	static void _bind_compatibility_methods();
 #endif
 
+	virtual void _unhide_carets() override;
+
 	/* Text manipulation */
 
 	// Overridable actions
 	virtual void _handle_unicode_input_internal(const uint32_t p_unicode, int p_caret) override;
 	virtual void _backspace_internal(int p_caret) override;
+	virtual void _cut_internal(int p_caret) override;
 
 	GDVIRTUAL1(_confirm_code_completion, bool)
 	GDVIRTUAL1(_request_code_completion, bool)
@@ -409,6 +413,7 @@ public:
 	void fold_all_lines();
 	void unfold_all_lines();
 	void toggle_foldable_line(int p_line);
+	void toggle_foldable_lines_at_carets();
 
 	bool is_line_folded(int p_line) const;
 	TypedArray<int> get_folded_lines() const;
@@ -489,6 +494,10 @@ public:
 	void set_symbol_lookup_word_as_valid(bool p_valid);
 
 	/* Text manipulation */
+	void move_lines_up();
+	void move_lines_down();
+	void delete_lines();
+	void duplicate_selection();
 	void duplicate_lines();
 
 	CodeEdit();

@@ -87,6 +87,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 
 		Size2i min_texel_size;
 		Size2i max_texel_size;
+		Size2i max_fragment_size;
 
 		Size2i texel_size; // The texel size we'll use
 	};
@@ -209,6 +210,7 @@ public:
 	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) override final;
 	virtual void texture_unmap(TextureID p_texture) override final;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) override final;
+	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) override final;
 
 	/*****************/
 	/**** SAMPLER ****/
@@ -493,6 +495,7 @@ private:
 	static int caching_instance_count;
 	PipelineCache pipelines_cache;
 	String pipeline_cache_id;
+	HashMap<uint64_t, bool> has_comp_alpha;
 
 public:
 	virtual void pipeline_free(PipelineID p_pipeline) override final;
@@ -625,6 +628,8 @@ public:
 	virtual String get_api_version() const override final;
 	virtual String get_pipeline_cache_uuid() const override final;
 	virtual const Capabilities &get_capabilities() const override final;
+
+	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const override final;
 
 private:
 	/*********************/

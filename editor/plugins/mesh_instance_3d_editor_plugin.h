@@ -31,8 +31,9 @@
 #ifndef MESH_INSTANCE_3D_EDITOR_PLUGIN_H
 #define MESH_INSTANCE_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/option_button.h"
 
 class AcceptDialog;
 class ConfirmationDialog;
@@ -43,17 +44,25 @@ class MeshInstance3DEditor : public Control {
 	GDCLASS(MeshInstance3DEditor, Control);
 
 	enum Menu {
-		MENU_OPTION_CREATE_STATIC_TRIMESH_BODY,
-		MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE,
-		MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE,
-		MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE,
-		MENU_OPTION_CREATE_MULTIPLE_CONVEX_COLLISION_SHAPES,
+		MENU_OPTION_CREATE_COLLISION_SHAPE,
 		MENU_OPTION_CREATE_NAVMESH,
 		MENU_OPTION_CREATE_OUTLINE_MESH,
 		MENU_OPTION_CREATE_DEBUG_TANGENTS,
 		MENU_OPTION_CREATE_UV2,
 		MENU_OPTION_DEBUG_UV1,
 		MENU_OPTION_DEBUG_UV2,
+	};
+
+	enum ShapePlacement {
+		SHAPE_PLACEMENT_SIBLING,
+		SHAPE_PLACEMENT_STATIC_BODY_CHILD,
+	};
+
+	enum ShapeType {
+		SHAPE_TYPE_TRIMESH,
+		SHAPE_TYPE_SINGLE_CONVEX,
+		SHAPE_TYPE_SIMPLIFIED_CONVEX,
+		SHAPE_TYPE_MULTIPLE_CONVEX,
 	};
 
 	MeshInstance3D *node = nullptr;
@@ -63,12 +72,18 @@ class MeshInstance3DEditor : public Control {
 	ConfirmationDialog *outline_dialog = nullptr;
 	SpinBox *outline_size = nullptr;
 
+	ConfirmationDialog *shape_dialog = nullptr;
+	OptionButton *shape_type = nullptr;
+	OptionButton *shape_placement = nullptr;
+
 	AcceptDialog *err_dialog = nullptr;
 
 	AcceptDialog *debug_uv_dialog = nullptr;
 	Control *debug_uv = nullptr;
 	Vector<Vector2> uv_lines;
 
+	void _create_collision_shape();
+	Vector<Ref<Shape3D>> create_shape_from_mesh(Ref<Mesh> p_mesh, int p_option, bool p_verbose);
 	void _menu_option(int p_option);
 	void _create_outline_mesh();
 

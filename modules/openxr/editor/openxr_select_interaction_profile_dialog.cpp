@@ -38,7 +38,7 @@ void OpenXRSelectInteractionProfileDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			scroll->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 		} break;
 	}
 }
@@ -82,7 +82,7 @@ void OpenXRSelectInteractionProfileDialog::open(PackedStringArray p_do_not_inclu
 			Button *ip_button = memnew(Button);
 			ip_button->set_flat(true);
 			ip_button->set_text(OpenXRInteractionProfileMetadata::get_singleton()->get_profile(path)->display_name);
-			ip_button->connect("pressed", callable_mp(this, &OpenXRSelectInteractionProfileDialog::_on_select_interaction_profile).bind(path));
+			ip_button->connect(SceneStringName(pressed), callable_mp(this, &OpenXRSelectInteractionProfileDialog::_on_select_interaction_profile).bind(path));
 			main_vb->add_child(ip_button);
 
 			ip_buttons[path] = ip_button->get_path();
@@ -111,7 +111,7 @@ void OpenXRSelectInteractionProfileDialog::ok_pressed() {
 }
 
 OpenXRSelectInteractionProfileDialog::OpenXRSelectInteractionProfileDialog() {
-	set_title("Select an interaction profile");
+	set_title(TTR("Select an interaction profile"));
 
 	scroll = memnew(ScrollContainer);
 	scroll->set_custom_minimum_size(Size2(600.0, 400.0));

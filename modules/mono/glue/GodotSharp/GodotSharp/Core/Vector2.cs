@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
 
 #nullable enable
@@ -187,6 +188,23 @@ namespace Godot
             (
                 Mathf.Clamp(X, min.X, max.X),
                 Mathf.Clamp(Y, min.Y, max.Y)
+            );
+        }
+
+        /// <summary>
+        /// Returns a new vector with all components clamped between the
+        /// <paramref name="min"/> and <paramref name="max"/> using
+        /// <see cref="Mathf.Clamp(real_t, real_t, real_t)"/>.
+        /// </summary>
+        /// <param name="min">The minimum allowed value.</param>
+        /// <param name="max">The maximum allowed value.</param>
+        /// <returns>The vector with all components clamped.</returns>
+        public readonly Vector2 Clamp(real_t min, real_t max)
+        {
+            return new Vector2
+            (
+                Mathf.Clamp(X, min, max),
+                Mathf.Clamp(Y, min, max)
             );
         }
 
@@ -412,6 +430,70 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector2(Mathf.Max(X, with.X), Mathf.Max(Y, with.Y))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector2 Max(Vector2 with)
+        {
+            return new Vector2
+            (
+                Mathf.Max(X, with.X),
+                Mathf.Max(Y, with.Y)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector2(Mathf.Max(X, with), Mathf.Max(Y, with))</c>.
+        /// </summary>
+        /// <param name="with">The other value to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector2 Max(real_t with)
+        {
+            return new Vector2
+            (
+                Mathf.Max(X, with),
+                Mathf.Max(Y, with)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise minimum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector2(Mathf.Min(X, with.X), Mathf.Min(Y, with.Y))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting minimum vector.</returns>
+        public readonly Vector2 Min(Vector2 with)
+        {
+            return new Vector2
+            (
+                Mathf.Min(X, with.X),
+                Mathf.Min(Y, with.Y)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise minimum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector2(Mathf.Min(X, with), Mathf.Min(Y, with))</c>.
+        /// </summary>
+        /// <param name="with">The other value to use.</param>
+        /// <returns>The resulting minimum vector.</returns>
+        public readonly Vector2 Min(real_t with)
+        {
+            return new Vector2
+            (
+                Mathf.Min(X, with),
+                Mathf.Min(Y, with)
+            );
+        }
+
+        /// <summary>
         /// Returns the axis of the vector's highest value. See <see cref="Axis"/>.
         /// If both components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>
@@ -599,7 +681,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns this vector with each component snapped to the nearest multiple of <paramref name="step"/>.
+        /// Returns a new vector with each component snapped to the nearest multiple of the corresponding component in <paramref name="step"/>.
         /// This can also be used to round to an arbitrary number of decimals.
         /// </summary>
         /// <param name="step">A vector value representing the step size to snap to.</param>
@@ -607,6 +689,17 @@ namespace Godot
         public readonly Vector2 Snapped(Vector2 step)
         {
             return new Vector2(Mathf.Snapped(X, step.X), Mathf.Snapped(Y, step.Y));
+        }
+
+        /// <summary>
+        /// Returns a new vector with each component snapped to the nearest multiple of <paramref name="step"/>.
+        /// This can also be used to round to an arbitrary number of decimals.
+        /// </summary>
+        /// <param name="step">The step size to snap to.</param>
+        /// <returns>The snapped vector.</returns>
+        public readonly Vector2 Snapped(real_t step)
+        {
+            return new Vector2(Mathf.Snapped(X, step), Mathf.Snapped(Y, step));
         }
 
         /// <summary>
@@ -1016,10 +1109,7 @@ namespace Godot
         /// Converts this <see cref="Vector2"/> to a string.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public override readonly string ToString()
-        {
-            return $"({X}, {Y})";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Vector2"/> to a string with the given <paramref name="format"/>.
@@ -1027,9 +1117,7 @@ namespace Godot
         /// <returns>A string representation of this vector.</returns>
         public readonly string ToString(string? format)
         {
-#pragma warning disable CA1305 // Disable warning: "Specify IFormatProvider"
-            return $"({X.ToString(format)}, {Y.ToString(format)})";
-#pragma warning restore CA1305
+            return $"({X.ToString(format, CultureInfo.InvariantCulture)}, {Y.ToString(format, CultureInfo.InvariantCulture)})";
         }
     }
 }

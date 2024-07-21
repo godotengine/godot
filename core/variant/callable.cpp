@@ -92,10 +92,31 @@ Error Callable::rpcp(int p_id, const Variant **p_arguments, int p_argcount, Call
 		r_call_error.expected = 0;
 		return ERR_UNCONFIGURED;
 	} else if (!is_custom()) {
-		r_call_error.error = CallError::CALL_ERROR_INVALID_METHOD;
-		r_call_error.argument = 0;
-		r_call_error.expected = 0;
-		return ERR_UNCONFIGURED;
+		Object *obj = ObjectDB::get_instance(ObjectID(object));
+#ifdef DEBUG_ENABLED
+		if (!obj || !obj->is_class("Node")) {
+			r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
+			r_call_error.argument = 0;
+			r_call_error.expected = 0;
+			return ERR_UNCONFIGURED;
+		}
+#endif
+
+		int argcount = p_argcount + 2;
+		const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * argcount);
+		const Variant args[2] = { p_id, method };
+
+		argptrs[0] = &args[0];
+		argptrs[1] = &args[1];
+		for (int i = 0; i < p_argcount; ++i) {
+			argptrs[i + 2] = p_arguments[i];
+		}
+
+		CallError tmp;
+		Error err = (Error)obj->callp(SNAME("rpc_id"), argptrs, argcount, tmp).operator int64_t();
+
+		r_call_error.error = Callable::CallError::CALL_OK;
+		return err;
 	} else {
 		return custom->rpc(p_id, p_arguments, p_argcount, r_call_error);
 	}
@@ -161,6 +182,20 @@ StringName Callable::get_method() const {
 		return get_custom()->get_method();
 	}
 	return method;
+}
+
+int Callable::get_argument_count(bool *r_is_valid) const {
+	if (is_custom()) {
+		bool valid = false;
+		return custom->get_argument_count(r_is_valid ? *r_is_valid : valid);
+	} else if (!is_null()) {
+		return get_object()->get_method_argument_count(method, r_is_valid);
+	} else {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return 0;
+	}
 }
 
 int Callable::get_bound_arguments_count() const {
@@ -289,6 +324,7 @@ void Callable::operator=(const Callable &p_callable) {
 
 		if (custom->ref_count.unref()) {
 			memdelete(custom);
+			custom = nullptr;
 		}
 	}
 
@@ -393,6 +429,7 @@ Callable::~Callable() {
 	if (is_custom()) {
 		if (custom->ref_count.unref()) {
 			memdelete(custom);
+			custom = nullptr;
 		}
 	}
 }
@@ -415,6 +452,11 @@ Error CallableCustom::rpc(int p_peer_id, const Variant **p_arguments, int p_argc
 
 const Callable *CallableCustom::get_base_comparator() const {
 	return nullptr;
+}
+
+int CallableCustom::get_argument_count(bool &r_is_valid) const {
+	r_is_valid = false;
+	return 0;
 }
 
 int CallableCustom::get_bound_arguments_count() const {

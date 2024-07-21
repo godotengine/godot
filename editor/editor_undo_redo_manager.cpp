@@ -104,8 +104,13 @@ int EditorUndoRedoManager::get_history_id_for_object(Object *p_object) const {
 }
 
 EditorUndoRedoManager::History &EditorUndoRedoManager::get_history_for_object(Object *p_object) {
-	int history_id = get_history_id_for_object(p_object);
-	ERR_FAIL_COND_V_MSG(pending_action.history_id != INVALID_HISTORY && history_id != pending_action.history_id, get_or_create_history(pending_action.history_id), vformat("UndoRedo history mismatch: expected %d, got %d.", pending_action.history_id, history_id));
+	int history_id;
+	if (!forced_history) {
+		history_id = get_history_id_for_object(p_object);
+		ERR_FAIL_COND_V_MSG(pending_action.history_id != INVALID_HISTORY && history_id != pending_action.history_id, get_or_create_history(pending_action.history_id), vformat("UndoRedo history mismatch: expected %d, got %d.", pending_action.history_id, history_id));
+	} else {
+		history_id = pending_action.history_id;
+	}
 
 	History &history = get_or_create_history(history_id);
 	if (pending_action.history_id == INVALID_HISTORY) {
@@ -114,6 +119,11 @@ EditorUndoRedoManager::History &EditorUndoRedoManager::get_history_for_object(Ob
 	}
 
 	return history;
+}
+
+void EditorUndoRedoManager::force_fixed_history() {
+	ERR_FAIL_COND_MSG(pending_action.history_id == INVALID_HISTORY, "The current action has no valid history assigned.");
+	forced_history = true;
 }
 
 void EditorUndoRedoManager::create_action_for_history(const String &p_name, int p_history_id, UndoRedo::MergeMode p_mode, bool p_backward_undo_ops) {
@@ -236,6 +246,7 @@ void EditorUndoRedoManager::commit_action(bool p_execute) {
 		return; // Empty action, do nothing.
 	}
 
+	forced_history = false;
 	is_committing = true;
 
 	History &history = get_or_create_history(pending_action.history_id);
@@ -469,6 +480,7 @@ void EditorUndoRedoManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_action", "name", "merge_mode", "custom_context", "backward_undo_ops"), &EditorUndoRedoManager::create_action, DEFVAL(UndoRedo::MERGE_DISABLE), DEFVAL((Object *)nullptr), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("commit_action", "execute"), &EditorUndoRedoManager::commit_action, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_committing_action"), &EditorUndoRedoManager::is_committing_action);
+	ClassDB::bind_method(D_METHOD("force_fixed_history"), &EditorUndoRedoManager::force_fixed_history);
 
 	{
 		MethodInfo mi;

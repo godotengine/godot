@@ -11,21 +11,21 @@ struct EntryExitRecord
 {
   friend struct CursivePosFormat1;
 
-  bool sanitize (hb_sanitize_context_t *c, const void *base) const
+  bool sanitize (hb_sanitize_context_t *c, const struct CursivePosFormat1 *base) const
   {
     TRACE_SANITIZE (this);
     return_trace (entryAnchor.sanitize (c, base) && exitAnchor.sanitize (c, base));
   }
 
   void collect_variation_indices (hb_collect_variation_indices_context_t *c,
-                                  const void *src_base) const
+                                  const struct CursivePosFormat1 *src_base) const
   {
     (src_base+entryAnchor).collect_variation_indices (c);
     (src_base+exitAnchor).collect_variation_indices (c);
   }
 
   bool subset (hb_subset_context_t *c,
-	       const void *src_base) const
+	       const struct CursivePosFormat1 *src_base) const
   {
     TRACE_SERIALIZE (this);
     auto *out = c->serializer->embed (this);
@@ -38,11 +38,11 @@ struct EntryExitRecord
   }
 
   protected:
-  Offset16To<Anchor>
+  Offset16To<Anchor, struct CursivePosFormat1>
                 entryAnchor;            /* Offset to EntryAnchor table--from
                                          * beginning of CursivePos
                                          * subtable--may be NULL */
-  Offset16To<Anchor>
+  Offset16To<Anchor, struct CursivePosFormat1>
                 exitAnchor;             /* Offset to ExitAnchor table--from
                                          * beginning of CursivePos
                                          * subtable--may be NULL */
@@ -128,6 +128,7 @@ struct CursivePosFormat1
     const EntryExitRecord &this_record = entryExitRecord[(this+coverage).get_coverage  (buffer->cur().codepoint)];
     if (!this_record.entryAnchor ||
 	unlikely (!this_record.entryAnchor.sanitize (&c->sanitizer, this))) return_trace (false);
+    hb_barrier ();
 
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
     skippy_iter.reset_fast (buffer->idx);
@@ -145,6 +146,7 @@ struct CursivePosFormat1
       buffer->unsafe_to_concat_from_outbuffer (skippy_iter.idx, buffer->idx + 1);
       return_trace (false);
     }
+    hb_barrier ();
 
     unsigned int i = skippy_iter.idx;
     unsigned int j = buffer->idx;
@@ -262,7 +264,7 @@ struct CursivePosFormat1
             hb_requires (hb_is_iterator (Iterator))>
   void serialize (hb_subset_context_t *c,
                   Iterator it,
-                  const void *src_base)
+                  const struct CursivePosFormat1 *src_base)
   {
     if (unlikely (!c->serializer->extend_min ((*this)))) return;
     this->format = 1;

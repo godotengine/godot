@@ -17,7 +17,7 @@
 			Returns [code]true[/code] when using the eraser end of a stylus pen.
 		</member>
 		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2(0, 0)">
-			The drag position.
+			The drag position in the viewport the node is in, using the coordinate system of this viewport.
 		</member>
 		<member name="pressure" type="float" setter="set_pressure" getter="get_pressure" default="0.0">
 			Represents the pressure the user puts on the pen. Ranges from [code]0.0[/code] to [code]1.0[/code].

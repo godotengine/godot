@@ -182,6 +182,9 @@ class AnimationTimelineEdit : public Range {
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _track_added(int p_track);
 
+	float _get_zoom_scale(double p_zoom_value) const;
+	void _scroll_to_start();
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -197,6 +200,7 @@ public:
 	void set_track_edit(AnimationTrackEdit *p_track_edit);
 	void set_zoom(Range *p_zoom);
 	Range *get_zoom() const { return zoom; }
+	void auto_fit();
 
 	void set_play_position(float p_pos);
 	float get_play_position() const;
@@ -286,9 +290,11 @@ class AnimationTrackEdit : public Control {
 	mutable int dropping_at = 0;
 	float insert_at_pos = 0.0f;
 	bool moving_selection_attempt = false;
+	bool moving_selection_effective = false;
+	float moving_selection_pivot = 0.0f;
+	float moving_selection_mouse_begin_x = 0.0f;
 	int select_single_attempt = -1;
 	bool moving_selection = false;
-	float moving_selection_from_ofs = 0.0f;
 
 	bool in_group = false;
 	AnimationTrackEditor *editor = nullptr;
@@ -404,6 +410,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	Button *snap = nullptr;
 	Button *bezier_edit_icon = nullptr;
 	OptionButton *snap_mode = nullptr;
+	Button *auto_fit = nullptr;
+	Button *auto_fit_bezier = nullptr;
 
 	Button *imported_anim_warning = nullptr;
 	void _show_imported_anim_warning();
@@ -456,6 +464,7 @@ class AnimationTrackEditor : public VBoxContainer {
 		Animation::TrackType type;
 		NodePath path;
 		int track_idx = 0;
+		float time = FLT_MAX; // Defaults to current timeline position.
 		Variant value;
 		String query;
 		bool advance = false;
@@ -579,17 +588,20 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _cleanup_animation(Ref<Animation> p_animation);
 
-	void _anim_duplicate_keys(float p_ofs, int p_track);
+	void _anim_duplicate_keys(float p_ofs, bool p_ofs_valid, int p_track);
 
 	void _anim_copy_keys(bool p_cut);
 
 	bool _is_track_compatible(int p_target_track_idx, Variant::Type p_source_value_type, Animation::TrackType p_source_track_type);
 
-	void _anim_paste_keys(float p_ofs, int p_track);
+	void _anim_paste_keys(float p_ofs, bool p_ofs_valid, int p_track);
 
 	void _view_group_toggle();
 	Button *view_group = nullptr;
 	Button *selected_filter = nullptr;
+
+	void _auto_fit();
+	void _auto_fit_bezier();
 
 	void _selection_changed();
 
@@ -637,6 +649,9 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _pick_track_filter_text_changed(const String &p_newtext);
 	void _pick_track_select_recursive(TreeItem *p_item, const String &p_filter, Vector<Node *> &p_select_candidates);
 	void _pick_track_filter_input(const Ref<InputEvent> &p_ie);
+
+	double snap_unit;
+	void _update_snap_unit();
 
 protected:
 	static void _bind_methods();
@@ -713,6 +728,7 @@ public:
 	bool is_key_clipboard_active() const;
 	bool is_moving_selection() const;
 	bool is_snap_enabled() const;
+	bool can_add_reset_key() const;
 	float get_moving_selection_offset() const;
 	float snap_time(float p_value, bool p_relative = false);
 	bool is_grouping_tracks();

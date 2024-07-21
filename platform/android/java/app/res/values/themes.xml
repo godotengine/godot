@@ -3,8 +3,17 @@
 
 	<style name="GodotAppMainTheme" parent="@android:style/Theme.Black.NoTitleBar"/>
 
-	<style name="GodotAppSplashTheme" parent="@android:style/Theme.Black.NoTitleBar.Fullscreen">
-		<item name="android:windowBackground">@drawable/splash_drawable</item>
-		<item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+	<style name="GodotAppSplashTheme" parent="Theme.SplashScreen">
+		<!-- Set the splash screen background, animated icon, and animation
+   duration. -->
+		<item name="android:windowSplashScreenBackground">@mipmap/icon_background</item>
+
+		<!-- Use windowSplashScreenAnimatedIcon to add a drawable or an animated
+			 drawable. One of these is required. -->
+		<item name="windowSplashScreenAnimatedIcon">@mipmap/icon_foreground</item>
+
+		<!-- Set the theme of the Activity that directly follows your splash
+		screen. This is required. -->
+		<item name="postSplashScreenTheme">@style/GodotAppMainTheme</item>
 	</style>
 </resources>

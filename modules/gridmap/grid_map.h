@@ -187,6 +187,7 @@ class GridMap : public Node3D {
 	}
 
 	void _update_physics_bodies_collision_properties();
+	void _update_physics_bodies_characteristics();
 	void _octant_enter_world(const OctantKey &p_key);
 	void _octant_exit_world(const OctantKey &p_key);
 	bool _octant_update(const OctantKey &p_key);

@@ -277,68 +277,68 @@ case VK_FORMAT_ASTC_12x10_SRGB_BLOCK: return createDFDCompressed(c_ASTC, 12, 10,
 case VK_FORMAT_ASTC_12x12_UNORM_BLOCK: return createDFDCompressed(c_ASTC, 12, 12, 1, s_UNORM);
 case VK_FORMAT_ASTC_12x12_SRGB_BLOCK: return createDFDCompressed(c_ASTC, 12, 12, 1, s_SRGB);
 case VK_FORMAT_G8B8G8R8_422_UNORM: {
-    int channels[] = {0, 1, 0, 2}; int bits[] = {8, 8, 8, 8}; int paddings[] = {0, 0, 0, 0};
+    int channels[] = {0, 1, 0, 2}; int bits[] = {8, 8, 8, 8}; int shiftBits[] = {0, 0, 0, 0};
     int position_xs[] = {64, 64, 192, 64}; int position_ys[] = {128, 128, 128, 128};
-    return createDFD422(0, 4, bits, paddings, channels, position_xs, position_ys, s_UNORM);
+    return createDFD422(0, 4, bits, shiftBits, channels, position_xs, position_ys, s_UNORM);
 }
 case VK_FORMAT_B8G8R8G8_422_UNORM: {
-    int channels[] = {1, 0, 2, 0}; int bits[] = {8, 8, 8, 8}; int paddings[] = {0, 0, 0, 0};
+    int channels[] = {1, 0, 2, 0}; int bits[] = {8, 8, 8, 8}; int shiftBits[] = {0, 0, 0, 0};
     int position_xs[] = {64, 64, 64, 192}; int position_ys[] = {128, 128, 128, 128};
-    return createDFD422(0, 4, bits, paddings, channels, position_xs, position_ys, s_UNORM);
+    return createDFD422(0, 4, bits, shiftBits, channels, position_xs, position_ys, s_UNORM);
 }
 case VK_FORMAT_R10X6_UNORM_PACK16: {
-    int channels[] = {0}; int bits[] = {10}; int paddings[] = {6};
-    return createDFDPackedPadded(0, 1, bits, paddings, channels, s_UNORM);
+    int channels[] = {0}; int bits[] = {10}; int shiftBits[] = {6};
+    return createDFDPackedShifted(0, 1, bits, shiftBits, channels, s_UNORM);
 }
 case VK_FORMAT_R10X6G10X6_UNORM_2PACK16: {
-    int channels[] = {0, 1}; int bits[] = {10, 10}; int paddings[] = {6, 6};
-    return createDFDPackedPadded(0, 2, bits, paddings, channels, s_UNORM);
+    int channels[] = {0, 1}; int bits[] = {10, 10}; int shiftBits[] = {6, 6};
+    return createDFDPackedShifted(0, 2, bits, shiftBits, channels, s_UNORM);
 }
 case VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16: {
-    int channels[] = {0, 1, 2, 3}; int bits[] = {10, 10, 10, 10}; int paddings[] = {6, 6, 6, 6};
-    return createDFDPackedPadded(0, 4, bits, paddings, channels, s_UNORM);
+    int channels[] = {0, 1, 2, 3}; int bits[] = {10, 10, 10, 10}; int shiftBits[] = {6, 6, 6, 6};
+    return createDFDPackedShifted(0, 4, bits, shiftBits, channels, s_UNORM);
 }
 case VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16: {
-    int channels[] = {0, 1, 0, 2}; int bits[] = {10, 10, 10, 10}; int paddings[] = {6, 6, 6, 6};
+    int channels[] = {0, 1, 0, 2}; int bits[] = {10, 10, 10, 10}; int shiftBits[] = {6, 6, 6, 6};
     int position_xs[] = {64, 64, 192, 64}; int position_ys[] = {128, 128, 128, 128};
-    return createDFD422(0, 4, bits, paddings, channels, position_xs, position_ys, s_UNORM);
+    return createDFD422(0, 4, bits, shiftBits, channels, position_xs, position_ys, s_UNORM);
 }
 case VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16: {
-    int channels[] = {1, 0, 2, 0}; int bits[] = {10, 10, 10, 10}; int paddings[] = {6, 6, 6, 6};
+    int channels[] = {1, 0, 2, 0}; int bits[] = {10, 10, 10, 10}; int shiftBits[] = {6, 6, 6, 6};
     int position_xs[] = {64, 64, 64, 192}; int position_ys[] = {128, 128, 128, 128};
-    return createDFD422(0, 4, bits, paddings, channels, position_xs, position_ys, s_UNORM);
+    return createDFD422(0, 4, bits, shiftBits, channels, position_xs, position_ys, s_UNORM);
 }
 case VK_FORMAT_R12X4_UNORM_PACK16: {
-    int channels[] = {0}; int bits[] = {12}; int paddings[] = {4};
-    return createDFDPackedPadded(0, 1, bits, paddings, channels, s_UNORM);
+    int channels[] = {0}; int bits[] = {12}; int shiftBits[] = {4};
+    return createDFDPackedShifted(0, 1, bits, shiftBits, channels, s_UNORM);
 }
 case VK_FORMAT_R12X4G12X4_UNORM_2PACK16: {
-    int channels[] = {0, 1}; int bits[] = {12, 12}; int paddings[] = {4, 4};
-    return createDFDPackedPadded(0, 2, bits, paddings, channels, s_UNORM);
+    int channels[] = {0, 1}; int bits[] = {12, 12}; int shiftBits[] = {4, 4};
+    return createDFDPackedShifted(0, 2, bits, shiftBits, channels, s_UNORM);
 }
 case VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16: {
-    int channels[] = {0, 1, 2, 3}; int bits[] = {12, 12, 12, 12}; int paddings[] = {4, 4, 4, 4};
-    return createDFDPackedPadded(0, 4, bits, paddings, channels, s_UNORM);
+    int channels[] = {0, 1, 2, 3}; int bits[] = {12, 12, 12, 12}; int shiftBits[] = {4, 4, 4, 4};
+    return createDFDPackedShifted(0, 4, bits, shiftBits, channels, s_UNORM);
 }
 case VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16: {
-    int channels[] = {0, 1, 0, 2}; int bits[] = {12, 12, 12, 12}; int paddings[] = {4, 4, 4, 4};
+    int channels[] = {0, 1, 0, 2}; int bits[] = {12, 12, 12, 12}; int shiftBits[] = {4, 4, 4, 4};
     int position_xs[] = {64, 64, 192, 64}; int position_ys[] = {128, 128, 128, 128};
-    return createDFD422(0, 4, bits, paddings, channels, position_xs, position_ys, s_UNORM);
+    return createDFD422(0, 4, bits, shiftBits, channels, position_xs, position_ys, s_UNORM);
 }
 case VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16: {
-    int channels[] = {1, 0, 2, 0}; int bits[] = {12, 12, 12, 12}; int paddings[] = {4, 4, 4, 4};
+    int channels[] = {1, 0, 2, 0}; int bits[] = {12, 12, 12, 12}; int shiftBits[] = {4, 4, 4, 4};
     int position_xs[] = {64, 64, 64, 192}; int position_ys[] = {128, 128, 128, 128};
-    return createDFD422(0, 4, bits, paddings, channels, position_xs, position_ys, s_UNORM);
+    return createDFD422(0, 4, bits, shiftBits, channels, position_xs, position_ys, s_UNORM);
 }
 case VK_FORMAT_G16B16G16R16_422_UNORM: {
-    int channels[] = {0, 1, 0, 2}; int bits[] = {16, 16, 16, 16}; int paddings[] = {0, 0, 0, 0};
+    int channels[] = {0, 1, 0, 2}; int bits[] = {16, 16, 16, 16}; int shiftBits[] = {0, 0, 0, 0};
     int position_xs[] = {64, 64, 192, 64}; int position_ys[] = {128, 128, 128, 128};
-    return createDFD422(0, 4, bits, paddings, channels, position_xs, position_ys, s_UNORM);
+    return createDFD422(0, 4, bits, shiftBits, channels, position_xs, position_ys, s_UNORM);
 }
 case VK_FORMAT_B16G16R16G16_422_UNORM: {
-    int channels[] = {1, 0, 2, 0}; int bits[] = {16, 16, 16, 16}; int paddings[] = {0, 0, 0, 0};
+    int channels[] = {1, 0, 2, 0}; int bits[] = {16, 16, 16, 16}; int shiftBits[] = {0, 0, 0, 0};
     int position_xs[] = {64, 64, 64, 192}; int position_ys[] = {128, 128, 128, 128};
-    return createDFD422(0, 4, bits, paddings, channels, position_xs, position_ys, s_UNORM);
+    return createDFD422(0, 4, bits, shiftBits, channels, position_xs, position_ys, s_UNORM);
 }
 case VK_FORMAT_A4R4G4B4_UNORM_PACK16: {
     int channels[] = {2,1,0,3}; int bits[] = {4,4,4,4};
@@ -402,6 +402,7 @@ case VK_FORMAT_ASTC_6x6x6_UNORM_BLOCK_EXT: return createDFDCompressed(c_ASTC, 6,
 case VK_FORMAT_ASTC_6x6x6_SRGB_BLOCK_EXT: return createDFDCompressed(c_ASTC, 6, 6, 6, s_SRGB);
 case VK_FORMAT_ASTC_6x6x6_SFLOAT_BLOCK_EXT: return createDFDCompressed(c_ASTC, 6, 6, 6, s_SFLOAT);
 #endif
+case VK_FORMAT_R16G16_S10_5_NV: return createDFDUnpacked(0, 2, 2, 0, s_S10_5);
 case VK_FORMAT_A1B5G5R5_UNORM_PACK16_KHR: {
     int channels[] = {0,1,2,3}; int bits[] = {5,5,5,1};
     return createDFDPacked(0, 4, bits, channels, s_UNORM);

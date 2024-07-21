@@ -1790,6 +1790,10 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 }
 
 void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_render_data) {
+	if (p_render_data->sdfgi_update_data == nullptr) {
+		return;
+	}
+
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	/* Update general SDFGI Buffer */
 
@@ -3407,7 +3411,7 @@ void GI::init(SkyRD *p_sky) {
 			RD::PipelineDepthStencilState ds;
 			ds.enable_depth_test = true;
 			ds.enable_depth_write = true;
-			ds.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
+			ds.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
 
 			voxel_gi_debug_shader_version_pipelines[i].setup(voxel_gi_debug_shader_version_shaders[i], RD::RENDER_PRIMITIVE_TRIANGLES, rs, RD::PipelineMultisampleState(), ds, RD::PipelineColorBlendState::create_disabled(), 0);
 		}
@@ -3575,7 +3579,7 @@ void GI::init(SkyRD *p_sky) {
 			RD::PipelineDepthStencilState ds;
 			ds.enable_depth_test = true;
 			ds.enable_depth_write = true;
-			ds.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
+			ds.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
 			for (int i = 0; i < SDFGIShader::PROBE_DEBUG_MAX; i++) {
 				// TODO check if version is enabled
 
@@ -3810,8 +3814,13 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 			rbgi->scene_data_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(SceneData));
 		}
 
+		Projection correction;
+		correction.set_depth_correction(false);
+
 		for (uint32_t v = 0; v < p_view_count; v++) {
-			RendererRD::MaterialStorage::store_camera(p_projections[v].inverse(), scene_data.inv_projection[v]);
+			Projection temp = correction * p_projections[v];
+
+			RendererRD::MaterialStorage::store_camera(temp.inverse(), scene_data.inv_projection[v]);
 			scene_data.eye_offset[v][0] = p_eye_offsets[v].x;
 			scene_data.eye_offset[v][1] = p_eye_offsets[v].y;
 			scene_data.eye_offset[v][2] = p_eye_offsets[v].z;

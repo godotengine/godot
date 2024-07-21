@@ -330,6 +330,8 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 				output.append("'" BINDINGS_NAMESPACE ".Vector3[]'");
 			} else if (tag == "PackedColorArray") {
 				output.append("'" BINDINGS_NAMESPACE ".Color[]'");
+			} else if (tag == "PackedVector4Array") {
+				output.append("'" BINDINGS_NAMESPACE ".Vector4[]'");
 			} else {
 				const TypeInterface *target_itype = _get_type_or_null(TypeReference(tag));
 
@@ -646,6 +648,8 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Vector3\"/>[]");
 			} else if (tag == "PackedColorArray") {
 				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Color\"/>[]");
+			} else if (tag == "PackedVector4Array") {
+				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Vector4\"/>[]");
 			} else {
 				const TypeInterface *target_itype = _get_type_or_null(TypeReference(tag));
 
@@ -869,7 +873,7 @@ void BindingsGenerator::_append_text_method(StringBuilder &p_output, const TypeI
 }
 
 void BindingsGenerator::_append_text_member(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
-	if (p_link_target.find("/") >= 0) {
+	if (p_link_target.contains("/")) {
 		// Properties with '/' (slash) in the name are not declared in C#, so there is nothing to reference.
 		_append_text_undeclared(p_output, p_link_target);
 	} else if (!p_target_itype || !p_target_itype->is_object_type) {
@@ -1150,7 +1154,7 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 }
 
 void BindingsGenerator::_append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
-	if (p_link_target.find("/") >= 0) {
+	if (p_link_target.contains("/")) {
 		// Properties with '/' (slash) in the name are not declared in C#, so there is nothing to reference.
 		_append_xml_undeclared(p_xml_output, p_link_target);
 	} else if (!p_target_itype || !p_target_itype->is_object_type) {
@@ -2304,8 +2308,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			output << imethod.proxy_name << "(";
 
-			for (int i = 0; i < imethod.arguments.size(); i++) {
-				const ArgumentInterface &iarg = imethod.arguments[i];
+			int i = 0;
+			for (List<BindingsGenerator::ArgumentInterface>::ConstIterator itr = imethod.arguments.begin(); itr != imethod.arguments.end(); ++itr, ++i) {
+				const ArgumentInterface &iarg = *itr;
 
 				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
 				ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
@@ -2581,6 +2586,10 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 		p_output.append("\")]");
 	}
 
+	if (p_iprop.is_hidden) {
+		p_output.append(MEMBER_BEGIN "[EditorBrowsable(EditorBrowsableState.Never)]");
+	}
+
 	p_output.append(MEMBER_BEGIN "public ");
 
 	if (prop_allowed_inherited_member_hiding.has(p_itype.proxy_name + "." + p_iprop.proxy_name)) {
@@ -2840,7 +2849,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			p_output.append("\")]");
 		}
 
-		if (p_imethod.is_compat) {
+		if (p_imethod.is_hidden) {
 			p_output.append(MEMBER_BEGIN "[EditorBrowsable(EditorBrowsableState.Never)]");
 		}
 
@@ -3512,6 +3521,7 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 		case Variant::PACKED_STRING_ARRAY:
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY:
 		case Variant::PACKED_COLOR_ARRAY:
 		case Variant::CALLABLE:
 		case Variant::SIGNAL:
@@ -3644,7 +3654,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				continue;
 			}
 
-			if (property.name.find("/") >= 0) {
+			if (property.name.contains("/")) {
 				// Ignore properties with '/' (slash) in the name. These are only meant for use in the inspector.
 				continue;
 			}
@@ -3654,11 +3664,16 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			iprop.setter = ClassDB::get_property_setter(type_cname, iprop.cname);
 			iprop.getter = ClassDB::get_property_getter(type_cname, iprop.cname);
 
-			if (iprop.setter != StringName()) {
-				accessor_methods[iprop.setter] = iprop.cname;
-			}
-			if (iprop.getter != StringName()) {
-				accessor_methods[iprop.getter] = iprop.cname;
+			// If the property is internal hide it; otherwise, hide the getter and setter.
+			if (property.usage & PROPERTY_USAGE_INTERNAL) {
+				iprop.is_hidden = true;
+			} else {
+				if (iprop.setter != StringName()) {
+					accessor_methods[iprop.setter] = iprop.cname;
+				}
+				if (iprop.getter != StringName()) {
+					accessor_methods[iprop.getter] = iprop.cname;
+				}
 			}
 
 			bool valid = false;
@@ -3712,8 +3727,6 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		for (const Pair<MethodInfo, uint32_t> &E : method_list_with_hashes) {
 			const MethodInfo &method_info = E.first;
 			const uint32_t hash = E.second;
-
-			int argc = method_info.arguments.size();
 
 			if (method_info.name.is_empty()) {
 				continue;
@@ -3806,8 +3819,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.cname = _get_type_name_from_meta(return_info.type, m ? m->get_argument_meta(-1) : (GodotTypeInfo::Metadata)method_info.return_val_metadata);
 			}
 
-			for (int i = 0; i < argc; i++) {
-				PropertyInfo arginfo = method_info.arguments[i];
+			int idx = 0;
+			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++idx) {
+				const PropertyInfo &arginfo = *itr;
 
 				String orig_arg_name = arginfo.name;
 
@@ -3827,13 +3841,13 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				} else if (arginfo.type == Variant::NIL) {
 					iarg.type.cname = name_cache.type_Variant;
 				} else {
-					iarg.type.cname = _get_type_name_from_meta(arginfo.type, m ? m->get_argument_meta(i) : (GodotTypeInfo::Metadata)method_info.get_argument_meta(i));
+					iarg.type.cname = _get_type_name_from_meta(arginfo.type, m ? m->get_argument_meta(idx) : (GodotTypeInfo::Metadata)method_info.get_argument_meta(idx));
 				}
 
 				iarg.name = escape_csharp_keyword(snake_to_camel_case(iarg.name));
 
-				if (m && m->has_default_argument(i)) {
-					bool defval_ok = _arg_default_value_from_variant(m->get_default_argument(i), iarg);
+				if (m && m->has_default_argument(idx)) {
+					bool defval_ok = _arg_default_value_from_variant(m->get_default_argument(idx), iarg);
 					ERR_FAIL_COND_V_MSG(!defval_ok, false,
 							"Cannot determine default value for argument '" + orig_arg_name + "' of method '" + itype.name + "." + imethod.name + "'.");
 				}
@@ -3860,10 +3874,10 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			HashMap<StringName, StringName>::Iterator accessor = accessor_methods.find(imethod.cname);
 			if (accessor) {
-				// We only make internal an accessor method if it's in the same class as the property.
+				// We only hide an accessor method if it's in the same class as the property.
 				// It's easier this way, but also we don't know if an accessor method in a different class
 				// could have other purposes, so better leave those untouched.
-				imethod.is_internal = true;
+				imethod.is_hidden = true;
 			}
 
 			if (itype.class_doc) {
@@ -3892,6 +3906,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			// after all the non-compat methods have been added. The compat methods are added in
 			// reverse so the most recently added ones take precedence over older compat methods.
 			if (imethod.is_compat) {
+				imethod.is_hidden = true;
 				compat_methods.push_front(imethod);
 				continue;
 			}
@@ -3931,10 +3946,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			isignal.name = method_info.name;
 			isignal.cname = method_info.name;
 
-			int argc = method_info.arguments.size();
-
-			for (int i = 0; i < argc; i++) {
-				PropertyInfo arginfo = method_info.arguments[i];
+			int idx = 0;
+			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++idx) {
+				const PropertyInfo &arginfo = *itr;
 
 				String orig_arg_name = arginfo.name;
 
@@ -3954,7 +3968,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				} else if (arginfo.type == Variant::NIL) {
 					iarg.type.cname = name_cache.type_Variant;
 				} else {
-					iarg.type.cname = _get_type_name_from_meta(arginfo.type, (GodotTypeInfo::Metadata)method_info.get_argument_meta(i));
+					iarg.type.cname = _get_type_name_from_meta(arginfo.type, (GodotTypeInfo::Metadata)method_info.get_argument_meta(idx));
 				}
 
 				iarg.name = escape_csharp_keyword(snake_to_camel_case(iarg.name));
@@ -4236,6 +4250,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 		case Variant::PACKED_STRING_ARRAY:
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY:
 		case Variant::PACKED_COLOR_ARRAY:
 			r_iarg.default_argument = "Array.Empty<%s>()";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
@@ -4575,6 +4590,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	INSERT_ARRAY(PackedColorArray, godot_packed_color_array, Color);
 	INSERT_ARRAY(PackedVector2Array, godot_packed_vector2_array, Vector2);
 	INSERT_ARRAY(PackedVector3Array, godot_packed_vector3_array, Vector3);
+	INSERT_ARRAY(PackedVector4Array, godot_packed_vector4_array, Vector4);
 
 #undef INSERT_ARRAY
 
@@ -4753,9 +4769,11 @@ bool BindingsGenerator::_method_has_conflicting_signature(const MethodInterface 
 		return false;
 	}
 
-	for (int i = 0; i < p_imethod_left.arguments.size(); i++) {
-		const ArgumentInterface &iarg_left = p_imethod_left.arguments[i];
-		const ArgumentInterface &iarg_right = p_imethod_right.arguments[i];
+	List<BindingsGenerator::ArgumentInterface>::ConstIterator left_itr = p_imethod_left.arguments.begin();
+	List<BindingsGenerator::ArgumentInterface>::ConstIterator right_itr = p_imethod_right.arguments.begin();
+	for (; left_itr != p_imethod_left.arguments.end(); ++left_itr, ++right_itr) {
+		const ArgumentInterface &iarg_left = *left_itr;
+		const ArgumentInterface &iarg_right = *right_itr;
 
 		if (iarg_left.type.cname != iarg_right.type.cname) {
 			// Different types for arguments in the same position, so no conflict.
@@ -4842,7 +4860,7 @@ static void handle_cmdline_options(String glue_dir_path) {
 }
 
 static void cleanup_and_exit_godot() {
-	// Exit once done
+	// Exit once done.
 	Main::cleanup(true);
 	::exit(0);
 }
@@ -4861,7 +4879,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				elem = elem->next();
 			} else {
 				ERR_PRINT(generate_all_glue_option + ": No output directory specified (expected path to '{GODOT_ROOT}/modules/mono/glue').");
-				// Exit once done with invalid command line arguments
+				// Exit once done with invalid command line arguments.
 				cleanup_and_exit_godot();
 			}
 
@@ -4872,8 +4890,14 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 	}
 
 	if (glue_dir_path.length()) {
-		handle_cmdline_options(glue_dir_path);
-		// Exit once done
+		if (Engine::get_singleton()->is_editor_hint() ||
+				Engine::get_singleton()->is_project_manager_hint()) {
+			handle_cmdline_options(glue_dir_path);
+		} else {
+			// Running from a project folder, which doesn't make sense and crashes.
+			ERR_PRINT(generate_all_glue_option + ": Cannot generate Mono glue while running a game project. Change current directory or enable --editor.");
+		}
+		// Exit once done.
 		cleanup_and_exit_godot();
 	}
 }

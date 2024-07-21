@@ -47,6 +47,7 @@ thread_local Error FileAccess::last_file_open_error = OK;
 
 Ref<FileAccess> FileAccess::create(AccessType p_access) {
 	ERR_FAIL_INDEX_V(p_access, ACCESS_MAX, nullptr);
+	ERR_FAIL_NULL_V(create_func[p_access], nullptr);
 
 	Ref<FileAccess> ret = create_func[p_access]();
 	ret->_set_access_type(p_access);
@@ -75,7 +76,8 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 		ret = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
 		ret = create(ACCESS_USERDATA);
-
+	} else if (p_path.begins_with("pipe://")) {
+		ret = create(ACCESS_PIPE);
 	} else {
 		ret = create(ACCESS_FILESYSTEM);
 	}
@@ -208,6 +210,9 @@ String FileAccess::fix_path(const String &p_path) const {
 				return r_path.replace("user://", "");
 			}
 
+		} break;
+		case ACCESS_PIPE: {
+			return r_path;
 		} break;
 		case ACCESS_FILESYSTEM: {
 			return r_path;
@@ -862,6 +867,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_bytes", "path"), &FileAccess::_get_file_as_bytes);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_string", "path"), &FileAccess::_get_file_as_string);
 
+	ClassDB::bind_method(D_METHOD("resize", "length"), &FileAccess::resize);
 	ClassDB::bind_method(D_METHOD("flush"), &FileAccess::flush);
 	ClassDB::bind_method(D_METHOD("get_path"), &FileAccess::get_path);
 	ClassDB::bind_method(D_METHOD("get_path_absolute"), &FileAccess::get_path_absolute);

@@ -35,7 +35,8 @@ enum VkSuffix {
     s_SINT,    /*!< Signed integer format. */
     s_SFLOAT,  /*!< Signed float format. */
     s_UFLOAT,  /*!< Unsigned float format. */
-    s_SRGB     /*!< sRGB normalized format. */
+    s_SRGB,    /*!< sRGB normalized format. */
+    s_S10_5    /*!< 2's complement fixed-point; 5 fractional bits. */
 };
 
 /** Compression scheme, in Vulkan terms. */
@@ -68,15 +69,16 @@ typedef unsigned int uint32_t;
 #endif
 
 uint32_t* vk2dfd(enum VkFormat format);
+enum VkFormat dfd2vk(uint32_t* dfd);
 
 /* Create a Data Format Descriptor for an unpacked format. */
 uint32_t *createDFDUnpacked(int bigEndian, int numChannels, int bytes,
                             int redBlueSwap, enum VkSuffix suffix);
 
 /* Create a Data Format Descriptor for a packed padded format. */
-uint32_t *createDFDPackedPadded(int bigEndian, int numChannels,
-                                int bits[], int paddings[], int channels[],
-                                enum VkSuffix suffix);
+uint32_t *createDFDPackedShifted(int bigEndian, int numChannels,
+                                 int bits[], int shiftBits[],
+                                 int channels[], enum VkSuffix suffix);
 
 /* Create a Data Format Descriptor for a packed format. */
 uint32_t *createDFDPacked(int bigEndian, int numChannels,
@@ -85,7 +87,7 @@ uint32_t *createDFDPacked(int bigEndian, int numChannels,
 
 /* Create a Data Format Descriptor for a 4:2:2 format. */
 uint32_t *createDFD422(int bigEndian, int numChannels,
-                       int bits[], int paddings[], int channels[],
+                       int bits[], int shiftBits[], int channels[],
                        int position_xs[], int position_ys[],
                        enum VkSuffix suffix);
 
@@ -111,10 +113,11 @@ enum InterpretDFDResult {
     i_SRGB_FORMAT_BIT          = 1u << 2u, /*!< sRGB transfer function. */
     i_NORMALIZED_FORMAT_BIT    = 1u << 3u, /*!< Normalized (UNORM or SNORM). */
     i_SIGNED_FORMAT_BIT        = 1u << 4u, /*!< Format is signed. */
-    i_FLOAT_FORMAT_BIT         = 1u << 5u, /*!< Format is floating point. */
-    i_COMPRESSED_FORMAT_BIT    = 1u << 6u, /*!< Format is block compressed (422). */
-    i_YUVSDA_FORMAT_BIT        = 1u << 7u, /*!< Color model is YUVSDA. */
-    i_UNSUPPORTED_ERROR_BIT    = 1u << 8u, /*!< Format not successfully interpreted. */
+    i_FIXED_FORMAT_BIT         = 1u << 5u, /*!< Format is a fixed-point representation. */
+    i_FLOAT_FORMAT_BIT         = 1u << 6u, /*!< Format is floating point. */
+    i_COMPRESSED_FORMAT_BIT    = 1u << 7u, /*!< Format is block compressed (422). */
+    i_YUVSDA_FORMAT_BIT        = 1u << 8u, /*!< Color model is YUVSDA. */
+    i_UNSUPPORTED_ERROR_BIT    = 1u << 9u, /*!< Format not successfully interpreted. */
     /** "NONTRIVIAL_ENDIANNESS" means not big-endian, not little-endian
      * (a channel has bits that are not consecutive in either order). **/
     i_UNSUPPORTED_NONTRIVIAL_ENDIANNESS     = i_UNSUPPORTED_ERROR_BIT,
@@ -198,9 +201,12 @@ getDFDComponentInfoUnpacked(const uint32_t* DFD, uint32_t* numComponents,
 /* Return the number of components described by a DFD. */
 uint32_t getDFDNumComponents(const uint32_t* DFD);
 
-/* Recreate and return the value of bytesPlane0 as it should be for the data
+/* Reconstruct and return the value of bytesPlane0 as it should be for the data
  * post-inflation from variable-rate compression.
  */
+uint32_t
+reconstructDFDBytesPlane0FromSamples(const uint32_t* DFD);
+/* Deprecated. For backward compatibility. */
 void
 recreateBytesPlane0FromSampleInfo(const uint32_t* DFD, uint32_t* bytesPlane0);
 

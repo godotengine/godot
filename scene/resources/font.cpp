@@ -576,6 +576,7 @@ _FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index, int p_make_linked_f
 			TS->font_set_data_ptr(cache[p_cache_index], data_ptr, data_size);
 			TS->font_set_antialiasing(cache[p_cache_index], antialiasing);
 			TS->font_set_generate_mipmaps(cache[p_cache_index], mipmaps);
+			TS->font_set_disable_embedded_bitmaps(cache[p_cache_index], disable_embedded_bitmaps);
 			TS->font_set_multichannel_signed_distance_field(cache[p_cache_index], msdf);
 			TS->font_set_msdf_pixel_range(cache[p_cache_index], msdf_pixel_range);
 			TS->font_set_msdf_size(cache[p_cache_index], msdf_size);
@@ -881,6 +882,9 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_antialiasing", "antialiasing"), &FontFile::set_antialiasing);
 	ClassDB::bind_method(D_METHOD("get_antialiasing"), &FontFile::get_antialiasing);
 
+	ClassDB::bind_method(D_METHOD("set_disable_embedded_bitmaps", "disable_embedded_bitmaps"), &FontFile::set_disable_embedded_bitmaps);
+	ClassDB::bind_method(D_METHOD("get_disable_embedded_bitmaps"), &FontFile::get_disable_embedded_bitmaps);
+
 	ClassDB::bind_method(D_METHOD("set_generate_mipmaps", "generate_mipmaps"), &FontFile::set_generate_mipmaps);
 	ClassDB::bind_method(D_METHOD("get_generate_mipmaps"), &FontFile::get_generate_mipmaps);
 
@@ -1012,6 +1016,7 @@ void FontFile::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_generate_mipmaps", "get_generate_mipmaps");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_embedded_bitmaps", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_disable_embedded_bitmaps", "get_disable_embedded_bitmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel", PROPERTY_USAGE_STORAGE), "set_antialiasing", "get_antialiasing");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "font_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_name", "get_font_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "style_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_style_name", "get_font_style_name");
@@ -1381,6 +1386,7 @@ void FontFile::reset_state() {
 
 	antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	mipmaps = false;
+	disable_embedded_bitmaps = true;
 	msdf = false;
 	force_autohinter = false;
 	allow_system_fallback = true;
@@ -1411,10 +1417,15 @@ static const char32_t _oem_to_unicode[][129] = {
 };
 
 Error FontFile::load_bitmap_font(const String &p_path) {
+	return _load_bitmap_font(p_path, nullptr);
+}
+
+Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_files) {
 	reset_state();
 
 	antialiasing = TextServer::FONT_ANTIALIASING_NONE;
 	mipmaps = false;
+	disable_embedded_bitmaps = true;
 	msdf = false;
 	force_autohinter = false;
 	allow_system_fallback = true;
@@ -1551,6 +1562,9 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 								img.instantiate();
 								Error err = ImageLoader::load_image(file, img);
 								ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, vformat("Can't load font texture: %s.", file));
+								if (r_image_files) {
+									r_image_files->push_back(file);
+								}
 
 								if (packed) {
 									if (ch[3] == 0) { // 4 x 8 bit monochrome, no outline
@@ -1842,6 +1856,10 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 						img.instantiate();
 						Error err = ImageLoader::load_image(file, img);
 						ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, vformat("Can't load font texture: %s.", file));
+						if (r_image_files) {
+							r_image_files->push_back(file);
+						}
+
 						if (packed) {
 							if (ch[3] == 0) { // 4 x 8 bit monochrome, no outline
 								outline = 0;
@@ -2089,6 +2107,21 @@ void FontFile::set_antialiasing(TextServer::FontAntialiasing p_antialiasing) {
 
 TextServer::FontAntialiasing FontFile::get_antialiasing() const {
 	return antialiasing;
+}
+
+void FontFile::set_disable_embedded_bitmaps(bool p_disable_embedded_bitmaps) {
+	if (disable_embedded_bitmaps != p_disable_embedded_bitmaps) {
+		disable_embedded_bitmaps = p_disable_embedded_bitmaps;
+		for (int i = 0; i < cache.size(); i++) {
+			_ensure_rid(i);
+			TS->font_set_disable_embedded_bitmaps(cache[i], disable_embedded_bitmaps);
+		}
+		emit_changed();
+	}
+}
+
+bool FontFile::get_disable_embedded_bitmaps() const {
+	return disable_embedded_bitmaps;
 }
 
 void FontFile::set_generate_mipmaps(bool p_generate_mipmaps) {
@@ -2861,7 +2894,12 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
-	for (const Ref<Theme> &theme : global_context->get_themes()) {
+	List<Ref<Theme>> themes = global_context->get_themes();
+	if (Engine::get_singleton()->is_editor_hint()) {
+		themes.push_front(ThemeDB::get_singleton()->get_project_theme());
+	}
+
+	for (const Ref<Theme> &theme : themes) {
 		if (theme.is_null()) {
 			continue;
 		}
@@ -3007,6 +3045,9 @@ void SystemFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_antialiasing", "antialiasing"), &SystemFont::set_antialiasing);
 	ClassDB::bind_method(D_METHOD("get_antialiasing"), &SystemFont::get_antialiasing);
 
+	ClassDB::bind_method(D_METHOD("set_disable_embedded_bitmaps", "disable_embedded_bitmaps"), &SystemFont::set_disable_embedded_bitmaps);
+	ClassDB::bind_method(D_METHOD("get_disable_embedded_bitmaps"), &SystemFont::get_disable_embedded_bitmaps);
+
 	ClassDB::bind_method(D_METHOD("set_generate_mipmaps", "generate_mipmaps"), &SystemFont::set_generate_mipmaps);
 	ClassDB::bind_method(D_METHOD("get_generate_mipmaps"), &SystemFont::get_generate_mipmaps);
 
@@ -3048,6 +3089,7 @@ void SystemFont::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_stretch", PROPERTY_HINT_RANGE, "50,200,25"), "set_font_stretch", "get_font_stretch");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel", PROPERTY_USAGE_STORAGE), "set_antialiasing", "get_antialiasing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps"), "set_generate_mipmaps", "get_generate_mipmaps");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_embedded_bitmaps"), "set_disable_embedded_bitmaps", "get_disable_embedded_bitmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_system_fallback"), "set_allow_system_fallback", "is_allow_system_fallback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter"), "set_force_autohinter", "is_force_autohinter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
@@ -3151,6 +3193,7 @@ void SystemFont::_update_base_font() {
 		// Apply font rendering settings.
 		file->set_antialiasing(antialiasing);
 		file->set_generate_mipmaps(mipmaps);
+		file->set_disable_embedded_bitmaps(disable_embedded_bitmaps);
 		file->set_force_autohinter(force_autohinter);
 		file->set_allow_system_fallback(allow_system_fallback);
 		file->set_hinting(hinting);
@@ -3170,7 +3213,6 @@ void SystemFont::_update_base_font() {
 	}
 
 	_invalidate_rids();
-	notify_property_list_changed();
 }
 
 void SystemFont::reset_state() {
@@ -3194,6 +3236,7 @@ void SystemFont::reset_state() {
 	stretch = 100;
 	antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	mipmaps = false;
+	disable_embedded_bitmaps = true;
 	force_autohinter = false;
 	allow_system_fallback = true;
 	hinting = TextServer::HINTING_LIGHT;
@@ -3265,6 +3308,20 @@ void SystemFont::set_antialiasing(TextServer::FontAntialiasing p_antialiasing) {
 
 TextServer::FontAntialiasing SystemFont::get_antialiasing() const {
 	return antialiasing;
+}
+
+void SystemFont::set_disable_embedded_bitmaps(bool p_disable_embedded_bitmaps) {
+	if (disable_embedded_bitmaps != p_disable_embedded_bitmaps) {
+		disable_embedded_bitmaps = p_disable_embedded_bitmaps;
+		if (base_font.is_valid()) {
+			base_font->set_disable_embedded_bitmaps(disable_embedded_bitmaps);
+		}
+		emit_changed();
+	}
+}
+
+bool SystemFont::get_disable_embedded_bitmaps() const {
+	return disable_embedded_bitmaps;
 }
 
 void SystemFont::set_generate_mipmaps(bool p_generate_mipmaps) {

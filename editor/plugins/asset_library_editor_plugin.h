@@ -32,8 +32,8 @@
 #define ASSET_LIBRARY_EDITOR_PLUGIN_H
 
 #include "editor/editor_asset_installer.h"
-#include "editor/editor_plugin.h"
-#include "editor/editor_plugin_settings.h"
+#include "editor/plugins/editor_plugin.h"
+#include "editor/plugins/editor_plugin_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
@@ -62,6 +62,7 @@ class EditorAssetLibraryItem : public PanelContainer {
 	LinkButton *author = nullptr;
 	Label *price = nullptr;
 
+	String title_text;
 	int asset_id = 0;
 	int category_id = 0;
 	int author_id = 0;
@@ -224,7 +225,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _force_online_mode();
 
 	enum Support {
-		SUPPORT_OFFICIAL,
+		SUPPORT_FEATURED,
 		SUPPORT_COMMUNITY,
 		SUPPORT_TESTING,
 		SUPPORT_MAX

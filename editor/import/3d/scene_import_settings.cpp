@@ -50,6 +50,8 @@ class SceneImportSettingsData : public Object {
 	HashMap<StringName, Variant> current;
 	HashMap<StringName, Variant> defaults;
 	List<ResourceImporter::ImportOption> options;
+	Vector<String> animation_list;
+
 	bool hide_options = false;
 	String path;
 
@@ -96,6 +98,7 @@ class SceneImportSettingsData : public Object {
 		}
 		return false;
 	}
+
 	bool _get(const StringName &p_name, Variant &r_ret) const {
 		if (settings) {
 			if (settings->has(p_name)) {
@@ -109,29 +112,81 @@ class SceneImportSettingsData : public Object {
 		}
 		return false;
 	}
-	void _get_property_list(List<PropertyInfo> *p_list) const {
+
+	void handle_special_properties(PropertyInfo &r_option) const {
+		ERR_FAIL_NULL(settings);
+		if (r_option.name == "rest_pose/load_pose") {
+			if (!settings->has("rest_pose/load_pose") || int((*settings)["rest_pose/load_pose"]) != 2) {
+				(*settings)["rest_pose/external_animation_library"] = Variant();
+			}
+		}
+		if (r_option.name == "rest_pose/selected_animation") {
+			if (!settings->has("rest_pose/load_pose")) {
+				return;
+			}
+			String hint_string;
+
+			switch (int((*settings)["rest_pose/load_pose"])) {
+				case 1: {
+					hint_string = String(",").join(animation_list);
+					if (animation_list.size() == 1) {
+						(*settings)["rest_pose/selected_animation"] = animation_list[0];
+					}
+				} break;
+				case 2: {
+					Object *res = (*settings)["rest_pose/external_animation_library"];
+					Ref<Animation> anim(res);
+					Ref<AnimationLibrary> library(res);
+					if (anim.is_valid()) {
+						hint_string = anim->get_name();
+					}
+					if (library.is_valid()) {
+						List<StringName> anim_names;
+						library->get_animation_list(&anim_names);
+						if (anim_names.size() == 1) {
+							(*settings)["rest_pose/selected_animation"] = String(anim_names.front()->get());
+						}
+						for (StringName anim_name : anim_names) {
+							hint_string += "," + anim_name; // Include preceding, as a catch-all.
+						}
+					}
+				} break;
+				default:
+					break;
+			}
+			r_option.hint = PROPERTY_HINT_ENUM;
+			r_option.hint_string = hint_string;
+		}
+	}
+
+	void _get_property_list(List<PropertyInfo> *r_list) const {
 		if (hide_options) {
 			return;
 		}
 		for (const ResourceImporter::ImportOption &E : options) {
+			PropertyInfo option = E.option;
 			if (SceneImportSettingsDialog::get_singleton()->is_editing_animation()) {
 				if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
 					if (ResourceImporterScene::get_animation_singleton()->get_option_visibility(path, E.option.name, current)) {
-						p_list->push_back(E.option);
+						handle_special_properties(option);
+						r_list->push_back(option);
 					}
 				} else {
 					if (ResourceImporterScene::get_animation_singleton()->get_internal_option_visibility(category, E.option.name, current)) {
-						p_list->push_back(E.option);
+						handle_special_properties(option);
+						r_list->push_back(option);
 					}
 				}
 			} else {
 				if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
 					if (ResourceImporterScene::get_scene_singleton()->get_option_visibility(path, E.option.name, current)) {
-						p_list->push_back(E.option);
+						handle_special_properties(option);
+						r_list->push_back(option);
 					}
 				} else {
 					if (ResourceImporterScene::get_scene_singleton()->get_internal_option_visibility(category, E.option.name, current)) {
-						p_list->push_back(E.option);
+						handle_special_properties(option);
+						r_list->push_back(option);
 					}
 				}
 			}
@@ -356,7 +411,7 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
 
 				animation_player = Object::cast_to<AnimationPlayer>(p_node);
-				animation_player->connect(SNAME("animation_finished"), callable_mp(this, &SceneImportSettingsDialog::_animation_finished));
+				animation_player->connect(SceneStringName(animation_finished), callable_mp(this, &SceneImportSettingsDialog::_animation_finished));
 			} else if (Object::cast_to<Skeleton3D>(p_node)) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
 				skeletons.push_back(Object::cast_to<Skeleton3D>(p_node));
@@ -376,10 +431,15 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 
 	AnimationPlayer *anim_node = Object::cast_to<AnimationPlayer>(p_node);
 	if (anim_node) {
+		Vector<String> animation_list;
 		List<StringName> animations;
 		anim_node->get_animation_list(&animations);
 		for (const StringName &E : animations) {
 			_fill_animation(scene_tree, anim_node->get_animation(E), E, item);
+			animation_list.append(E);
+		}
+		if (scene_import_settings_data != nullptr) {
+			scene_import_settings_data->animation_list = animation_list;
 		}
 	}
 
@@ -433,13 +493,20 @@ void SceneImportSettingsDialog::_update_view_gizmos() {
 		return;
 	}
 	const HashMap<StringName, Variant> &main_settings = scene_import_settings_data->current;
+	bool reshow_settings = false;
 	if (main_settings.has("nodes/import_as_skeleton_bones")) {
 		bool new_import_as_skeleton = main_settings["nodes/import_as_skeleton_bones"];
-		if (new_import_as_skeleton != previous_import_as_skeleton) {
-			previous_import_as_skeleton = new_import_as_skeleton;
-			_re_import();
-			open_settings(base_path);
-		}
+		reshow_settings = reshow_settings || (new_import_as_skeleton != previous_import_as_skeleton);
+		previous_import_as_skeleton = new_import_as_skeleton;
+	}
+	if (main_settings.has("animation/import_rest_as_RESET")) {
+		bool new_rest_as_reset = main_settings["animation/import_rest_as_RESET"];
+		reshow_settings = reshow_settings || (new_rest_as_reset != previous_rest_as_reset);
+		previous_rest_as_reset = new_rest_as_reset;
+	}
+	if (reshow_settings) {
+		_re_import();
+		open_settings(base_path);
 		return;
 	}
 	for (const KeyValue<String, NodeData> &e : node_map) {
@@ -542,7 +609,7 @@ void SceneImportSettingsDialog::_update_camera() {
 	float rot_y = cam_rot_y;
 	float zoom = cam_zoom;
 
-	if (selected_type == "Node" || selected_type.is_empty()) {
+	if (selected_type == "Node" || selected_type == "Animation" || selected_type.is_empty()) {
 		camera_aabb = contents_aabb;
 	} else {
 		if (mesh_preview->get_mesh().is_valid()) {
@@ -687,6 +754,9 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, bool p_for_a
 	const HashMap<StringName, Variant> &main_settings = scene_import_settings_data->current;
 	if (main_settings.has("nodes/import_as_skeleton_bones")) {
 		previous_import_as_skeleton = main_settings["nodes/import_as_skeleton_bones"];
+	}
+	if (main_settings.has("animation/import_rest_as_RESET")) {
+		previous_rest_as_reset = main_settings["animation/import_rest_as_RESET"];
 	}
 	popup_centered_ratio();
 	_update_view_gizmos();
@@ -1041,10 +1111,24 @@ void SceneImportSettingsDialog::_scene_tree_selected() {
 void SceneImportSettingsDialog::_cleanup() {
 	skeletons.clear();
 	if (animation_player != nullptr) {
-		animation_player->disconnect(SNAME("animation_finished"), callable_mp(this, &SceneImportSettingsDialog::_animation_finished));
+		animation_player->disconnect(SceneStringName(animation_finished), callable_mp(this, &SceneImportSettingsDialog::_animation_finished));
 		animation_player = nullptr;
 	}
 	set_process(false);
+}
+
+void SceneImportSettingsDialog::_on_light_1_switch_pressed() {
+	light1->set_visible(light_1_switch->is_pressed());
+}
+
+void SceneImportSettingsDialog::_on_light_2_switch_pressed() {
+	light2->set_visible(light_2_switch->is_pressed());
+}
+
+void SceneImportSettingsDialog::_on_light_rotate_switch_pressed() {
+	bool light_top_level = !light_rotate_switch->is_pressed();
+	light1->set_as_top_level_keep_local(light_top_level);
+	light2->set_as_top_level_keep_local(light_top_level);
 }
 
 void SceneImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_input) {
@@ -1162,17 +1246,24 @@ void SceneImportSettingsDialog::_re_import() {
 	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(base_path, editing_animation ? "animation_library" : "scene", main_settings);
 }
 
+void SceneImportSettingsDialog::_update_theme_item_cache() {
+	ConfirmationDialog::_update_theme_item_cache();
+	theme_cache.light_1_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight1"));
+	theme_cache.light_2_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight2"));
+	theme_cache.rotate_icon = get_editor_theme_icon(SNAME("PreviewRotate"));
+}
+
 void SceneImportSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			connect("confirmed", callable_mp(this, &SceneImportSettingsDialog::_re_import));
+			connect(SceneStringName(confirmed), callable_mp(this, &SceneImportSettingsDialog::_re_import));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
 			action_menu->begin_bulk_theme_override();
-			action_menu->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
+			action_menu->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), "Button"));
 			action_menu->add_theme_style_override("hover", get_theme_stylebox("hover", "Button"));
-			action_menu->add_theme_style_override("pressed", get_theme_stylebox("pressed", "Button"));
+			action_menu->add_theme_style_override(SceneStringName(pressed), get_theme_stylebox(SceneStringName(pressed), "Button"));
 			action_menu->end_bulk_theme_override();
 
 			if (animation_player != nullptr && animation_player->is_playing()) {
@@ -1181,6 +1272,10 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 				animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			}
 			animation_stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
+
+			light_1_switch->set_icon(theme_cache.light_1_icon);
+			light_2_switch->set_icon(theme_cache.light_2_icon);
+			light_rotate_switch->set_icon(theme_cache.rotate_icon);
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -1273,6 +1368,7 @@ void SceneImportSettingsDialog::_save_dir_callback(const String &p_path) {
 						item->set_metadata(0, E.key);
 						item->set_editable(0, true);
 						item->set_checked(0, true);
+						name = name.validate_filename();
 						String path = p_path.path_join(name);
 						if (external_extension_type->get_selected() == 0) {
 							path += ".tres";
@@ -1326,6 +1422,7 @@ void SceneImportSettingsDialog::_save_dir_callback(const String &p_path) {
 						item->set_metadata(0, E.key);
 						item->set_editable(0, true);
 						item->set_checked(0, true);
+						name = name.validate_filename();
 						String path = p_path.path_join(name);
 						if (external_extension_type->get_selected() == 0) {
 							path += ".tres";
@@ -1378,6 +1475,7 @@ void SceneImportSettingsDialog::_save_dir_callback(const String &p_path) {
 					item->set_metadata(0, E.key);
 					item->set_editable(0, true);
 					item->set_checked(0, true);
+					name = name.validate_filename();
 					String path = p_path.path_join(name);
 					if (external_extension_type->get_selected() == 0) {
 						path += ".tres";
@@ -1486,7 +1584,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	action_menu->get_popup()->add_item(TTR("Set Animation Save Paths"), ACTION_CHOOSE_ANIMATION_SAVE_PATHS);
 	action_menu->get_popup()->add_item(TTR("Set Mesh Save Paths"), ACTION_CHOOSE_MESH_SAVE_PATHS);
 
-	action_menu->get_popup()->connect("id_pressed", callable_mp(this, &SceneImportSettingsDialog::_menu_callback));
+	action_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &SceneImportSettingsDialog::_menu_callback));
 
 	tree_split = memnew(HSplitContainer);
 	main_vb->add_child(tree_split);
@@ -1503,17 +1601,20 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 
 	scene_tree = memnew(Tree);
 	scene_tree->set_name(TTR("Scene"));
+	scene_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	data_mode->add_child(scene_tree);
 	scene_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_scene_tree_selected));
 
 	mesh_tree = memnew(Tree);
 	mesh_tree->set_name(TTR("Meshes"));
+	mesh_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	data_mode->add_child(mesh_tree);
 	mesh_tree->set_hide_root(true);
 	mesh_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_mesh_tree_selected));
 
 	material_tree = memnew(Tree);
 	material_tree->set_name(TTR("Materials"));
+	material_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	data_mode->add_child(material_tree);
 	material_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_material_tree_selected));
 
@@ -1529,7 +1630,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	vp_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vp_container->set_custom_minimum_size(Size2(10, 10));
 	vp_container->set_stretch(true);
-	vp_container->connect("gui_input", callable_mp(this, &SceneImportSettingsDialog::_viewport_input));
+	vp_container->connect(SceneStringName(gui_input), callable_mp(this, &SceneImportSettingsDialog::_viewport_input));
 	vp_vb->add_child(vp_container);
 
 	base_viewport = memnew(SubViewport);
@@ -1548,13 +1649,13 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_play_button->set_flat(true);
 	animation_play_button->set_focus_mode(Control::FOCUS_NONE);
 	animation_play_button->set_shortcut(ED_SHORTCUT("scene_import_settings/play_selected_animation", TTR("Selected Animation Play/Pause"), Key::SPACE));
-	animation_play_button->connect(SNAME("pressed"), callable_mp(this, &SceneImportSettingsDialog::_play_animation));
+	animation_play_button->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_play_animation));
 
 	animation_stop_button = memnew(Button);
 	animation_hbox->add_child(animation_stop_button);
 	animation_stop_button->set_flat(true);
 	animation_stop_button->set_focus_mode(Control::FOCUS_NONE);
-	animation_stop_button->connect(SNAME("pressed"), callable_mp(this, &SceneImportSettingsDialog::_stop_current_animation));
+	animation_stop_button->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_stop_current_animation));
 
 	animation_slider = memnew(HSlider);
 	animation_hbox->add_child(animation_slider);
@@ -1564,9 +1665,43 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_slider->set_step(1.0 / 100.0);
 	animation_slider->set_value_no_signal(0.0);
 	animation_slider->set_focus_mode(Control::FOCUS_NONE);
-	animation_slider->connect(SNAME("value_changed"), callable_mp(this, &SceneImportSettingsDialog::_animation_slider_value_changed));
+	animation_slider->connect(SceneStringName(value_changed), callable_mp(this, &SceneImportSettingsDialog::_animation_slider_value_changed));
 
 	base_viewport->set_use_own_world_3d(true);
+
+	HBoxContainer *viewport_hbox = memnew(HBoxContainer);
+	vp_container->add_child(viewport_hbox);
+	viewport_hbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
+
+	viewport_hbox->add_spacer();
+
+	VBoxContainer *vb_light = memnew(VBoxContainer);
+	vb_light->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	viewport_hbox->add_child(vb_light);
+
+	light_rotate_switch = memnew(Button);
+	light_rotate_switch->set_theme_type_variation("PreviewLightButton");
+	light_rotate_switch->set_toggle_mode(true);
+	light_rotate_switch->set_pressed(true);
+	light_rotate_switch->set_tooltip_text(TTR("Rotate Lights With Model"));
+	light_rotate_switch->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_on_light_rotate_switch_pressed));
+	vb_light->add_child(light_rotate_switch);
+
+	light_1_switch = memnew(Button);
+	light_1_switch->set_theme_type_variation("PreviewLightButton");
+	light_1_switch->set_toggle_mode(true);
+	light_1_switch->set_pressed(true);
+	light_1_switch->set_tooltip_text(TTR("Primary Light"));
+	light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_on_light_1_switch_pressed));
+	vb_light->add_child(light_1_switch);
+
+	light_2_switch = memnew(Button);
+	light_2_switch->set_theme_type_variation("PreviewLightButton");
+	light_2_switch->set_toggle_mode(true);
+	light_2_switch->set_pressed(true);
+	light_2_switch->set_tooltip_text(TTR("Secondary Light"));
+	light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_on_light_2_switch_pressed));
+	vb_light->add_child(light_2_switch);
 
 	camera = memnew(Camera3D);
 	base_viewport->add_child(camera);
@@ -1577,10 +1712,37 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 		camera->set_attributes(camera_attributes);
 	}
 
-	light = memnew(DirectionalLight3D);
-	light->set_transform(Transform3D().looking_at(Vector3(-1, -2, -0.6), Vector3(0, 1, 0)));
-	base_viewport->add_child(light);
-	light->set_shadow(true);
+	// Use a grayscale gradient sky to avoid skewing the preview towards a specific color,
+	// but still allow shaded areas to be easily distinguished (using the ambient and reflected light).
+	// This also helps the user orient themselves in the preview, since the bottom of the sky is black
+	// and the top of the sky is white.
+	procedural_sky_material.instantiate();
+	procedural_sky_material->set_sky_top_color(Color(1, 1, 1));
+	procedural_sky_material->set_sky_horizon_color(Color(0.5, 0.5, 0.5));
+	procedural_sky_material->set_ground_horizon_color(Color(0.5, 0.5, 0.5));
+	procedural_sky_material->set_ground_bottom_color(Color(0, 0, 0));
+	procedural_sky_material->set_sky_curve(2.0);
+	procedural_sky_material->set_ground_curve(0.5);
+	// Hide the sun from the sky.
+	procedural_sky_material->set_sun_angle_max(0.0);
+	sky.instantiate();
+	sky->set_material(procedural_sky_material);
+	environment.instantiate();
+	environment->set_background(Environment::BG_SKY);
+	environment->set_sky(sky);
+	// A custom FOV must be specified, as an orthogonal camera is used for the preview.
+	environment->set_sky_custom_fov(50.0);
+	camera->set_environment(environment);
+
+	light1 = memnew(DirectionalLight3D);
+	light1->set_transform(Transform3D(Basis::looking_at(Vector3(-1, -1, -1))));
+	light1->set_shadow(true);
+	camera->add_child(light1);
+
+	light2 = memnew(DirectionalLight3D);
+	light2->set_transform(Transform3D(Basis::looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1))));
+	light2->set_color(Color(0.5f, 0.5f, 0.5f));
+	camera->add_child(light2);
 
 	{
 		Ref<StandardMaterial3D> selection_mat;
@@ -1648,7 +1810,8 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	external_path_tree = memnew(Tree);
 	external_paths->add_child(external_path_tree);
 	external_path_tree->connect("button_clicked", callable_mp(this, &SceneImportSettingsDialog::_browse_save_callback));
-	external_paths->connect("confirmed", callable_mp(this, &SceneImportSettingsDialog::_save_dir_confirm));
+	external_paths->connect(SceneStringName(confirmed), callable_mp(this, &SceneImportSettingsDialog::_save_dir_confirm));
+	external_path_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	external_path_tree->set_columns(3);
 	external_path_tree->set_column_titles_visible(true);
 	external_path_tree->set_column_expand(0, true);

@@ -83,13 +83,15 @@
 # Frankie McEyes <mceyes@protonmail.com>, 2023.
 # Samuele Righi <blackdestinyx145@gmail.com>, 2023.
 # Ott8v <Ott8v@users.noreply.hosted.weblate.org>, 2024.
+# 0rang30rang3z <igbinewekajoel9@gmail.com>, 2024.
+# Simone Lungarella <simonelungarella@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-30 03:33+0000\n"
-"Last-Translator: Ott8v <Ott8v@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2024-06-01 18:03+0000\n"
+"Last-Translator: Simone Lungarella <simonelungarella@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
 "Language: it\n"
@@ -97,7 +99,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.6-dev\n"
 
 msgid "Application"
 msgstr "Applicazione"
@@ -128,6 +130,12 @@ msgstr "Disabilita stdout"
 
 msgid "Disable stderr"
 msgstr "Disabilita stderr"
+
+msgid "Print Header"
+msgstr "Intestazione di stampa"
+
+msgid "Enable Alt Space Menu"
+msgstr "Abilita il menu Alt Space"
 
 msgid "Use Hidden Project Data Directory"
 msgstr "Utilizza Percorso Nascosto dei Dati del Progetto"
@@ -212,6 +220,12 @@ msgstr "Animazione"
 
 msgid "Warnings"
 msgstr "Avvisi"
+
+msgid "Check Invalid Track Paths"
+msgstr "Verifica tracciati di percorso non validi"
+
+msgid "Check Angle Interpolation Type Conflicting"
+msgstr "Verifica il tipo di interpolazione dell'angolo in conflitto"
 
 msgid "Audio"
 msgstr "Audio"
@@ -311,6 +325,9 @@ msgstr "Dispositivo per il Rendering"
 
 msgid "V-Sync"
 msgstr "Sincronizzazione Verticale"
+
+msgid "Enable"
+msgstr "Abilita"
 
 msgid "Vulkan"
 msgstr "Vulkan"
@@ -522,9 +539,6 @@ msgstr "Valore"
 msgid "Arg Count"
 msgstr "Quantità Argomenti"
 
-msgid "Args"
-msgstr "Argomenti"
-
 msgid "Type"
 msgstr "Tipo"
 
@@ -590,6 +604,12 @@ msgstr "Tasti"
 
 msgid "Distraction Free Mode"
 msgstr "Modalità senza distrazioni"
+
+msgid "Theme"
+msgstr "Tema"
+
+msgid "Line Spacing"
+msgstr "Spaziatura Linee"
 
 msgid "Base Type"
 msgstr "Tipo di Base"
@@ -672,9 +692,6 @@ msgstr "Modifica Tipi di Vettori Orizzontali"
 msgid "Default Color Picker Mode"
 msgstr "Modalità di Scelta Colore Predefinita"
 
-msgid "Theme"
-msgstr "Tema"
-
 msgid "Preset"
 msgstr "Preimpostazione"
 
@@ -705,9 +722,6 @@ msgstr "Schede di Scena"
 msgid "Show Script Button"
 msgstr "Mostra Pulsante di Script"
 
-msgid "Enable"
-msgstr "Abilita"
-
 msgid "Directories"
 msgstr "Cartelle"
 
@@ -737,6 +751,9 @@ msgstr "Dimensione della Miniatura"
 
 msgid "Import"
 msgstr "Importa"
+
+msgid "FBX"
+msgstr "FBX"
 
 msgid "Tools"
 msgstr "Strumenti"
@@ -815,9 +832,6 @@ msgstr "Disegna Tabs"
 
 msgid "Draw Spaces"
 msgstr "Disegna Spazi"
-
-msgid "Line Spacing"
-msgstr "Spaziatura Linee"
 
 msgid "Navigation"
 msgstr "Navigazione"
@@ -911,9 +925,6 @@ msgstr "Colori Gizmo"
 
 msgid "Joint"
 msgstr "Unisci"
-
-msgid "Shape"
-msgstr "Forma"
 
 msgid "Primary Grid Steps"
 msgstr "Passo della Griglia Primaria"
@@ -1446,9 +1457,6 @@ msgstr "Modalità Importazione"
 msgid "Trim Alpha Border From Region"
 msgstr "Accorcia Bordo Alfa Da Regione"
 
-msgid "Force"
-msgstr "Forza"
-
 msgid "8 Bit"
 msgstr "8 Bit"
 
@@ -1689,6 +1697,12 @@ msgstr "Progetto"
 msgid "Solution Directory"
 msgstr "Cartella di Soluzione"
 
+msgid "Time"
+msgstr "Tempo"
+
+msgid "Polygons"
+msgstr "Poligoni"
+
 msgid "Operation"
 msgstr "Operazione"
 
@@ -1775,9 +1789,6 @@ msgstr "Percorsi Uniti"
 
 msgid "CSG"
 msgstr "CSG"
-
-msgid "FBX"
-msgstr "FBX"
 
 msgid "GDScript"
 msgstr "GDScript"
@@ -2550,9 +2561,6 @@ msgstr "Verticale Abilitato"
 msgid "Tweaks"
 msgstr "Ritocchi"
 
-msgid "Time"
-msgstr "Tempo"
-
 msgid "One Shot"
 msgstr "One Shot"
 
@@ -2564,6 +2572,9 @@ msgstr "FPS fisso"
 
 msgid "Drawing"
 msgstr "Disegnare"
+
+msgid "Shape"
+msgstr "Forma"
 
 msgid "Sphere Radius"
 msgstr "Raggio della Sfera"
@@ -2612,9 +2623,6 @@ msgstr "Lineare"
 
 msgid "UV"
 msgstr "UV"
-
-msgid "Polygons"
-msgstr "Poligoni"
 
 msgid "Update"
 msgstr "Aggiorna"
@@ -2859,6 +2867,9 @@ msgstr "Fisica 2D"
 msgid "3D Physics"
 msgstr "Fisica 3D"
 
+msgid "Parsed Geometry Type"
+msgstr "Tipo di Geometria Analizzata"
+
 msgid "B"
 msgstr "B"
 
@@ -2942,9 +2953,6 @@ msgstr "Dimensione Immagine"
 
 msgid "Transform Format"
 msgstr "Formato Trasformazione"
-
-msgid "Parsed Geometry Type"
-msgstr "Tipo di Geometria Analizzata"
 
 msgid "Blend"
 msgstr "Fondi"

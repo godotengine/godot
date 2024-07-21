@@ -57,9 +57,9 @@
 #include "tvgRawLoader.h"
 
 
-uint64_t HASH_KEY(const char* data, uint64_t size)
+uintptr_t HASH_KEY(const char* data)
 {
-    return (((uint64_t) data) << 32) | size;
+    return reinterpret_cast<uintptr_t>(data);
 }
 
 /************************************************************************/
@@ -178,7 +178,6 @@ static LoadModule* _findByPath(const string& path)
     if (!ext.compare("tvg")) return _find(FileType::Tvg);
     if (!ext.compare("svg")) return _find(FileType::Svg);
     if (!ext.compare("json")) return _find(FileType::Lottie);
-    if (!ext.compare("lottie")) return _find(FileType::Lottie);
     if (!ext.compare("png")) return _find(FileType::Png);
     if (!ext.compare("jpg")) return _find(FileType::Jpg);
     if (!ext.compare("webp")) return _find(FileType::Webp);
@@ -219,7 +218,7 @@ static LoadModule* _findFromCache(const string& path)
     auto loader = _activeLoaders.head;
 
     while (loader) {
-        if (loader->hashpath && !strcmp(loader->hashpath, path.c_str())) {
+        if (loader->pathcache && !strcmp(loader->hashpath, path.c_str())) {
             ++loader->sharing;
             return loader;
         }
@@ -237,7 +236,7 @@ static LoadModule* _findFromCache(const char* data, uint32_t size, const string&
     ScopedLock lock(key);
     auto loader = _activeLoaders.head;
 
-    auto key = HASH_KEY(data, size);
+    auto key = HASH_KEY(data);
 
     while (loader) {
         if (loader->type == type && loader->hashkey == key) {
@@ -271,7 +270,7 @@ bool LoaderMgr::term()
         auto tmp = loader;
         loader = loader->next;
         _activeLoaders.remove(tmp);
-        if (ret) delete(loader);
+        if (ret) delete(tmp);
     }
     return true;
 }
@@ -281,7 +280,7 @@ bool LoaderMgr::retrieve(LoadModule* loader)
 {
     if (!loader) return false;
     if (loader->close()) {
-        {
+        if (loader->cached()) {
             ScopedLock lock(key);
             _activeLoaders.remove(loader);
         }
@@ -295,14 +294,24 @@ LoadModule* LoaderMgr::loader(const string& path, bool* invalid)
 {
     *invalid = false;
 
-    if (auto loader = _findFromCache(path)) return loader;
+    //TODO: lottie is not sharable.
+    auto allowCache = true;
+    auto ext = path.substr(path.find_last_of(".") + 1);
+    if (!ext.compare("json")) allowCache = false;
+
+    if (allowCache) {
+        if (auto loader = _findFromCache(path)) return loader;
+    }
 
     if (auto loader = _findByPath(path)) {
         if (loader->open(path)) {
-            loader->hashpath = strdup(path.c_str());
-            {
-                ScopedLock lock(key);
-                _activeLoaders.back(loader);
+            if (allowCache) {
+                loader->hashpath = strdup(path.c_str());
+                loader->pathcache = true;
+                {
+                    ScopedLock lock(key);
+                    _activeLoaders.back(loader);
+                }
             }
             return loader;
         }
@@ -312,10 +321,13 @@ LoadModule* LoaderMgr::loader(const string& path, bool* invalid)
     for (int i = 0; i < static_cast<int>(FileType::Raw); i++) {
         if (auto loader = _find(static_cast<FileType>(i))) {
             if (loader->open(path)) {
-                loader->hashpath = strdup(path.c_str());
-                {
-                    ScopedLock lock(key);
-                    _activeLoaders.back(loader);
+                if (allowCache) {
+                    loader->hashpath = strdup(path.c_str());
+                    loader->pathcache = true;
+                    {
+                        ScopedLock lock(key);
+                        _activeLoaders.back(loader);
+                    }
                 }
                 return loader;
             }
@@ -338,7 +350,7 @@ LoadModule* LoaderMgr::loader(const char* key)
     auto loader = _activeLoaders.head;
 
     while (loader) {
-        if (loader->hashpath && strstr(loader->hashpath, key)) {
+        if (loader->pathcache && strstr(loader->hashpath, key)) {
             ++loader->sharing;
             return loader;
         }
@@ -350,15 +362,29 @@ LoadModule* LoaderMgr::loader(const char* key)
 
 LoadModule* LoaderMgr::loader(const char* data, uint32_t size, const string& mimeType, bool copy)
 {
-    if (auto loader = _findFromCache(data, size, mimeType)) return loader;
+    //Note that users could use the same data pointer with the different content.
+    //Thus caching is only valid for shareable.
+    auto allowCache = !copy;
+
+    //TODO: lottie is not sharable.
+    if (allowCache) {
+        auto type = _convert(mimeType);
+        if (type == FileType::Lottie) allowCache = false;
+    }
+
+    if (allowCache) {
+        if (auto loader = _findFromCache(data, size, mimeType)) return loader;
+    }
 
     //Try with the given MimeType
     if (!mimeType.empty()) {
         if (auto loader = _findByType(mimeType)) {
             if (loader->open(data, size, copy)) {
-                loader->hashkey = HASH_KEY(data, size);                
-                ScopedLock lock(key);
-                _activeLoaders.back(loader);
+                if (allowCache) {
+                    loader->hashkey = HASH_KEY(data);
+                    ScopedLock lock(key);
+                    _activeLoaders.back(loader);
+                }
                 return loader;
             } else {
                 TVGLOG("LOADER", "Given mimetype \"%s\" seems incorrect or not supported.", mimeType.c_str());
@@ -371,8 +397,8 @@ LoadModule* LoaderMgr::loader(const char* data, uint32_t size, const string& mim
         auto loader = _find(static_cast<FileType>(i));
         if (loader) {
             if (loader->open(data, size, copy)) {
-                loader->hashkey = HASH_KEY(data, size);
-                {
+                if (allowCache) {
+                    loader->hashkey = HASH_KEY(data);
                     ScopedLock lock(key);
                     _activeLoaders.back(loader);
                 }
@@ -387,19 +413,47 @@ LoadModule* LoaderMgr::loader(const char* data, uint32_t size, const string& mim
 
 LoadModule* LoaderMgr::loader(const uint32_t *data, uint32_t w, uint32_t h, bool copy)
 {
-    //TODO: should we check premultiplied??
-    if (auto loader = _findFromCache((const char*)(data), w * h, "raw")) return loader;
+    //Note that users could use the same data pointer with the different content.
+    //Thus caching is only valid for shareable.
+    if (!copy) {
+        //TODO: should we check premultiplied??
+        if (auto loader = _findFromCache((const char*)(data), w * h, "raw")) return loader;
+    }
 
     //function is dedicated for raw images only
     auto loader = new RawLoader;
     if (loader->open(data, w, h, copy)) {
-        loader->hashkey = HASH_KEY((const char*)data, w * h);
-        {
+        if (!copy) {
+            loader->hashkey = HASH_KEY((const char*)data);
             ScopedLock lock(key);
             _activeLoaders.back(loader);
         }
         return loader;
     }
     delete(loader);
+    return nullptr;
+}
+
+
+//loads fonts from memory - loader is cached (regardless of copy value) in order to access it while setting font
+LoadModule* LoaderMgr::loader(const char* name, const char* data, uint32_t size, TVG_UNUSED const string& mimeType, bool copy)
+{
+#ifdef THORVG_TTF_LOADER_SUPPORT
+    //TODO: add check for mimetype ?
+    if (auto loader = _findFromCache(name)) return loader;
+
+    //function is dedicated for ttf loader (the only supported font loader)
+    auto loader = new TtfLoader;
+    if (loader->open(data, size, copy)) {
+        loader->hashpath = strdup(name);
+        loader->pathcache = true;
+        ScopedLock lock(key);
+        _activeLoaders.back(loader);
+        return loader;
+    }
+
+    TVGLOG("LOADER", "The font data \"%s\" could not be loaded.", name);
+    delete(loader);
+#endif
     return nullptr;
 }

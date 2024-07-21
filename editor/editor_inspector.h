@@ -41,6 +41,7 @@ class ConfirmationDialog;
 class EditorInspector;
 class EditorValidationPanel;
 class LineEdit;
+class MarginContainer;
 class OptionButton;
 class PanelContainer;
 class PopupMenu;
@@ -64,6 +65,12 @@ public:
 		MENU_COPY_PROPERTY_PATH,
 		MENU_PIN_VALUE,
 		MENU_OPEN_DOCUMENTATION,
+	};
+
+	enum ColorationMode {
+		COLORATION_CONTAINER_RESOURCE,
+		COLORATION_RESOURCE,
+		COLORATION_EXTERNAL,
 	};
 
 private:
@@ -129,6 +136,8 @@ private:
 	void _update_pin_flags();
 
 protected:
+	bool has_borders = false;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 	virtual void _set_read_only(bool p_read_only);
@@ -139,6 +148,8 @@ protected:
 
 	virtual Variant _get_cache_value(const StringName &p_prop, bool &r_valid) const;
 	virtual StringName _get_revert_property() const;
+
+	void _update_property_bg();
 
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
@@ -176,9 +187,12 @@ public:
 	void set_keying(bool p_keying);
 	bool is_keying() const;
 
+	virtual bool is_colored(ColorationMode p_mode) { return false; }
+
 	void set_deletable(bool p_enable);
 	bool is_deletable() const;
 	void add_focusable(Control *p_control);
+	void grab_focus(int p_focusable = -1);
 	void select(int p_focusable = -1);
 	void deselect();
 	bool is_selected() const;
@@ -239,9 +253,13 @@ protected:
 	GDVIRTUAL7R(bool, _parse_property, Object *, Variant::Type, String, PropertyHint, String, BitField<PropertyUsageFlags>, bool)
 	GDVIRTUAL1(_parse_end, Object *)
 
+#ifndef DISABLE_DEPRECATED
+	void _add_property_editor_bind_compat_92322(const String &p_for_property, Control *p_prop, bool p_add_to_end);
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
 public:
 	void add_custom_control(Control *control);
-	void add_property_editor(const String &p_for_property, Control *p_prop, bool p_add_to_end = false);
+	void add_property_editor(const String &p_for_property, Control *p_prop, bool p_add_to_end = false, const String &p_label = String());
 	void add_property_editor_for_multiple_properties(const String &p_label, const Vector<String> &p_properties, Control *p_prop);
 
 	virtual bool can_handle(Object *p_object);
@@ -289,6 +307,7 @@ class EditorInspectorSection : public Container {
 	Color bg_color;
 	bool foldable = false;
 	int indent_depth = 0;
+	int level = 1;
 
 	Timer *dropping_unfold_timer = nullptr;
 	bool dropping = false;
@@ -311,7 +330,7 @@ protected:
 public:
 	virtual Size2 get_minimum_size() const override;
 
-	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0);
+	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, int p_level = 1);
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
@@ -331,7 +350,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 		MODE_NONE,
 		MODE_USE_COUNT_PROPERTY,
 		MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION,
-	} mode;
+	} mode = MODE_NONE;
 	StringName count_property;
 	StringName array_element_prefix;
 	String swap_method;
@@ -481,7 +500,8 @@ class EditorInspector : public ScrollContainer {
 	//
 
 	LineEdit *search_box = nullptr;
-	bool show_categories = false;
+	bool show_standard_categories = false;
+	bool show_custom_categories = false;
 	bool hide_script = true;
 	bool hide_metadata = true;
 	bool use_doc_hints = false;
@@ -505,7 +525,12 @@ class EditorInspector : public ScrollContainer {
 	int property_focusable;
 	int update_scroll_request;
 
-	HashMap<StringName, HashMap<StringName, String>> doc_path_cache;
+	struct DocCacheInfo {
+		String doc_path;
+		String theme_item_name;
+	};
+
+	HashMap<StringName, HashMap<StringName, DocCacheInfo>> doc_cache;
 	HashSet<StringName> restart_request_props;
 	HashMap<String, String> custom_property_descriptions;
 
@@ -551,8 +576,6 @@ class EditorInspector : public ScrollContainer {
 
 	bool _is_property_disabled_by_feature_profile(const StringName &p_property);
 
-	void _update_inspector_bg();
-
 	ConfirmationDialog *add_meta_dialog = nullptr;
 	LineEdit *add_meta_name = nullptr;
 	OptionButton *add_meta_type = nullptr;
@@ -594,7 +617,7 @@ public:
 
 	void set_autoclear(bool p_enable);
 
-	void set_show_categories(bool p_show);
+	void set_show_categories(bool p_show_standard, bool p_show_custom);
 	void set_use_doc_hints(bool p_enable);
 	void set_hide_script(bool p_hide);
 	void set_hide_metadata(bool p_hide);

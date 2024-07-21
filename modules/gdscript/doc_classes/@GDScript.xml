@@ -43,6 +43,7 @@
 				assert(speed &gt;= 0 and speed &lt; 20) # You can also combine the two conditional statements in one check.
 				assert(speed &lt; 20, "the speed limit is 20") # Show a message.
 				[/codeblock]
+				[b]Note:[/b] [method assert] is a keyword, not a function. So you cannot access it as a [Callable] or use it inside expressions.
 			</description>
 		</method>
 		<method name="char">
@@ -131,7 +132,7 @@
 				- A constant from the [enum Variant.Type] enumeration, for example [constant TYPE_INT].
 				- An [Object]-derived class which exists in [ClassDB], for example [Node].
 				- A [Script] (you can use any class, including inner one).
-				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays) and is more performant. Use the operator instead of this method if you do not need dynamic type checking.
+				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays). Use the operator instead of this method if you do not need dynamic type checking.
 				Examples:
 				[codeblock]
 				print(is_instance_of(a, TYPE_INT))
@@ -167,7 +168,7 @@
 				# Load a scene called "main" located in the root of the project directory and cache it in a variable.
 				var main = load("res://main.tscn") # main will contain a PackedScene resource.
 				[/codeblock]
-				[b]Important:[/b] The path must be absolute. A relative path will always return [code]null[/code].
+				[b]Important:[/b] Relative paths are [i]not[/i] relative to the script calling this method, instead it is prefixed with [code]"res://"[/code]. Loading from relative paths might not work as expected.
 				This function is a simplified version of [method ResourceLoader.load], which can be used for more advanced scenarios.
 				[b]Note:[/b] Files have to be imported into the engine first to load them using this function. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data].
 				[b]Note:[/b] If [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to read converted files in an exported project. If you rely on run-time loading of files present within the PCK, set [member ProjectSettings.editor/export/convert_text_resources_to_binary] to [code]false[/code].
@@ -183,6 +184,7 @@
 				# Create instance of a scene.
 				var diamond = preload("res://diamond.tscn").instantiate()
 				[/codeblock]
+				[b]Note:[/b] [method preload] is a keyword, not a function. So you cannot access it as a [Callable].
 			</description>
 		</method>
 		<method name="print_debug" qualifiers="vararg">
@@ -312,7 +314,7 @@
 				@export var image_array: Array[Image]
 				@export var node_array: Array[Node]
 				[/codeblock]
-				[b]Note:[/b] Custom resources and nodes must be registered as global classes using [code]class_name[/code].
+				[b]Note:[/b] Custom resources and nodes should be registered as global classes using [code]class_name[/code], since the Inspector currently only supports global classes. Otherwise, a less specific type will be exported instead.
 				[b]Note:[/b] Node export is only supported in [Node]-derived classes and has a number of other limitations.
 			</description>
 		</annotation>
@@ -347,10 +349,11 @@
 			<param index="1" name="hint_string" type="String" />
 			<param index="2" name="usage" type="int" enum="PropertyUsageFlags" is_bitfield="true" default="6" />
 			<description>
-				Allows you to set a custom hint, hint string, and usage flags for the exported property. Note that there's no validation done in GDScript, it will just pass the hint along to the editor.
+				Allows you to set a custom hint, hint string, and usage flags for the exported property. Note that there's no validation done in GDScript, it will just pass the parameters to the editor.
 				[codeblock]
 				@export_custom(PROPERTY_HINT_NONE, "suffix:m") var suffix: Vector3
 				[/codeblock]
+				[b]Note:[/b] Regardless of the [param usage] value, the [constant PROPERTY_USAGE_SCRIPT_VARIABLE] flag is always added, as with any explicitly declared script variable.
 			</description>
 		</annotation>
 		<annotation name="@export_dir">
@@ -717,6 +720,8 @@
 			<return type="void" />
 			<description>
 				Make a script with static variables to not persist after all references are lost. If the script is loaded again the static variables will revert to their default values.
+				[b]Note:[/b] As annotations describe their subject, the [annotation @static_unload] annotation must be placed before the class definition and inheritance.
+				[b]Warning:[/b] Currently, due to a bug, scripts are never freed, even if [annotation @static_unload] annotation is used.
 			</description>
 		</annotation>
 		<annotation name="@tool">

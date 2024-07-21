@@ -495,7 +495,7 @@ static void remove_driven_unified_blend_shapes(RBMap<int, int> &p_blend_mapping)
 void XRFaceModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_face_tracker", "tracker_name"), &XRFaceModifier3D::set_face_tracker);
 	ClassDB::bind_method(D_METHOD("get_face_tracker"), &XRFaceModifier3D::get_face_tracker);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "face_tracker", PROPERTY_HINT_ENUM_SUGGESTION, "/user/head"), "set_face_tracker", "get_face_tracker");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "face_tracker", PROPERTY_HINT_ENUM_SUGGESTION, "/user/face_tracker"), "set_face_tracker", "get_face_tracker");
 
 	ClassDB::bind_method(D_METHOD("set_target", "target"), &XRFaceModifier3D::set_target);
 	ClassDB::bind_method(D_METHOD("get_target"), &XRFaceModifier3D::get_target);
@@ -576,8 +576,8 @@ void XRFaceModifier3D::_update_face_blends() const {
 	}
 
 	// Get the face tracker.
-	const Ref<XRFaceTracker> p = xr_server->get_face_tracker(tracker_name);
-	if (!p.is_valid()) {
+	const Ref<XRFaceTracker> tracker = xr_server->get_tracker(tracker_name);
+	if (!tracker.is_valid()) {
 		return;
 	}
 
@@ -588,7 +588,7 @@ void XRFaceModifier3D::_update_face_blends() const {
 	}
 
 	// Get the blend weights.
-	const PackedFloat32Array weights = p->get_blend_shapes();
+	const PackedFloat32Array weights = tracker->get_blend_shapes();
 
 	// Apply all the face blend weights to the mesh.
 	for (const KeyValue<int, int> &it : blend_mapping) {

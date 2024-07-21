@@ -36,7 +36,6 @@
 #include "editor/editor_settings.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
 
 SurfaceUpgradeTool *SurfaceUpgradeTool::singleton = nullptr;
@@ -191,7 +190,7 @@ void SurfaceUpgradeDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY:
 			// Can't do it in the constructor because it doesn't know that the signal exists.
-			connect("confirmed", callable_mp(SurfaceUpgradeTool::get_singleton(), &SurfaceUpgradeTool::prepare_upgrade));
+			connect(SceneStringName(confirmed), callable_mp(SurfaceUpgradeTool::get_singleton(), &SurfaceUpgradeTool::prepare_upgrade));
 			break;
 	}
 }

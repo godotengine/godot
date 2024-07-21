@@ -6,7 +6,7 @@
 	<description>
 		Provides a low-level interface for creating parsers for [url=https://en.wikipedia.org/wiki/XML]XML[/url] files. This class can serve as base to make custom XML parsers.
 		To parse XML, you must open a file with the [method open] method or a buffer with the [method open_buffer] method. Then, the [method read] method must be called to parse the next nodes. Most of the methods take into consideration the currently parsed node.
-		Here is an example of using [XMLParser] to parse a SVG file (which is based on XML), printing each element and its attributes as a dictionary:
+		Here is an example of using [XMLParser] to parse an SVG file (which is based on XML), printing each element and its attributes as a dictionary:
 		[codeblocks]
 		[gdscript]
 		var parser = XMLParser.new()

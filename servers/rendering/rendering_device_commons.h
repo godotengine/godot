@@ -810,6 +810,8 @@ public:
 		LIMIT_SUBGROUP_OPERATIONS,
 		LIMIT_VRS_TEXEL_WIDTH,
 		LIMIT_VRS_TEXEL_HEIGHT,
+		LIMIT_VRS_MAX_FRAGMENT_WIDTH,
+		LIMIT_VRS_MAX_FRAGMENT_HEIGHT,
 	};
 
 	enum Features {
@@ -912,6 +914,8 @@ public:
 
 	struct ShaderSpecializationConstant : public PipelineSpecializationConstant {
 		BitField<ShaderStage> stages;
+
+		bool operator<(const ShaderSpecializationConstant &p_other) const { return constant_id < p_other.constant_id; }
 	};
 
 	struct ShaderDescription {

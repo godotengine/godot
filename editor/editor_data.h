@@ -300,7 +300,7 @@ public:
 	void remove_node(Node *p_node);
 	bool is_selected(Node *p_node) const;
 
-	template <class T>
+	template <typename T>
 	T *get_node_editor_data(Node *p_node) {
 		if (!selection.has(p_node)) {
 			return nullptr;

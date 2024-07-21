@@ -2029,6 +2029,10 @@ Vector3 Curve3D::get_closest_point(const Vector3 &p_to_point) const {
 	return nearest;
 }
 
+PackedVector3Array Curve3D::get_points() const {
+	return _get_data()["points"];
+}
+
 real_t Curve3D::get_closest_offset(const Vector3 &p_to_point) const {
 	// Brute force method.
 

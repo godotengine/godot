@@ -187,6 +187,10 @@ void XRFaceTracker::_bind_methods() {
 	ADD_PROPERTY_DEFAULT("blend_shapes", PackedFloat32Array()); // To prevent ludicrously large default values.
 }
 
+void XRFaceTracker::set_tracker_type(XRServer::TrackerType p_type) {
+	ERR_FAIL_COND_MSG(p_type != XRServer::TRACKER_FACE, "XRFaceTracker must be of type TRACKER_FACE.");
+}
+
 float XRFaceTracker::get_blend_shape(BlendShapeEntry p_blend_shape) const {
 	// Fail if the blend shape index is out of range.
 	ERR_FAIL_INDEX_V(p_blend_shape, FT_MAX, 0.0f);
@@ -219,4 +223,8 @@ void XRFaceTracker::set_blend_shapes(const PackedFloat32Array &p_blend_shapes) {
 
 	// Copy the blend shape values into the blend shape array.
 	memcpy(blend_shape_values, p_blend_shapes.ptr(), sizeof(blend_shape_values));
+}
+
+XRFaceTracker::XRFaceTracker() {
+	type = XRServer::TRACKER_FACE;
 }

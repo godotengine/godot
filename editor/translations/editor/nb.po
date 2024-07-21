@@ -192,12 +192,6 @@ msgstr "Joypad Knapp %d"
 msgid "Pressure:"
 msgstr "Trykk:"
 
-msgid "canceled"
-msgstr "Avbrutt"
-
-msgid "touched"
-msgstr "berørt"
-
 msgid "released"
 msgstr "sluppet"
 
@@ -443,14 +437,6 @@ msgstr "PiB"
 msgid "EiB"
 msgstr "EiB"
 
-msgid "Example: %s"
-msgstr "Eksempel: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d element"
-msgstr[1] "%d elementer"
-
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
@@ -461,17 +447,11 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "En handling med navnet '%s' finnes allerede."
 
-msgid "Cannot Revert - Action is same as initial"
-msgstr "Kan ikke angre - Handlingen er den samme som nå"
-
 msgid "Revert Action"
 msgstr "Tilbakestill handling"
 
 msgid "Add Event"
 msgstr "Legg til hendelse"
-
-msgid "Remove Action"
-msgstr "Fjern handling"
 
 msgid "Cannot Remove Action"
 msgstr "Kan ikke fjerne handling"
@@ -911,9 +891,6 @@ msgstr "Debug"
 msgid "Copy Node Path"
 msgstr "Kopier Node-bane"
 
-msgid "Instance:"
-msgstr "Instans:"
-
 msgid "Toggle Visibility"
 msgstr "Juster synlighet"
 
@@ -961,9 +938,6 @@ msgstr "Tid"
 
 msgid "Calls"
 msgstr "Samtaler"
-
-msgid "Warning:"
-msgstr "Advarsel:"
 
 msgid "Error:"
 msgstr "Feil:"
@@ -1229,12 +1203,6 @@ msgstr "Last standard Bus oppsettet."
 msgid "Create a new Bus Layout."
 msgstr "Opprett et nytt Bus oppsett."
 
-msgid "Invalid name."
-msgstr "Ugyldig navn."
-
-msgid "Valid characters:"
-msgstr "Gyldige karakterer:"
-
 msgid "Autoload '%s' already exists!"
 msgstr "Autoload '%s' eksisterer allerede!"
 
@@ -1337,9 +1305,6 @@ msgstr "Importer"
 msgid "Export"
 msgstr "Eksporter"
 
-msgid "Restart"
-msgstr "Omstart"
-
 msgid "ScanSources"
 msgstr "Gjennomsøk kilder"
 
@@ -1392,14 +1357,14 @@ msgstr ""
 "Det finnes i øyeblikket ingen beskrivelse av denne egenskapen. Hjelp til ved "
 "å [colour=$color][url=$url]bidra med en[/url][/color]!"
 
+msgid "Editor"
+msgstr "Editor"
+
 msgid "Property:"
 msgstr "Egenskap:"
 
 msgid "Signal:"
 msgstr "Signal:"
-
-msgid "%d match."
-msgstr "%d samsvarer."
 
 msgid "%d matches."
 msgstr "%d sammsvarer."
@@ -1461,14 +1426,8 @@ msgstr "Nullstill Resultat"
 msgid "Spins when the editor window redraws."
 msgstr "Snurrer når redigeringsvinduet tegner opp på nytt."
 
-msgid "Imported resources can't be saved."
-msgstr "Importerte ressurser kan ikke lagres."
-
 msgid "OK"
 msgstr "OK"
-
-msgid "Error saving resource!"
-msgstr "Feil ved lagring av ressurs!"
 
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
@@ -1480,15 +1439,6 @@ msgstr ""
 msgid "Save Resource As..."
 msgstr "Lagre Ressurs Som..."
 
-msgid "Can't open file for writing:"
-msgstr "Kan ikke åpne fil for skriving:"
-
-msgid "Requested file format unknown:"
-msgstr "Forespurte filformat ukjent:"
-
-msgid "Error while saving."
-msgstr "Feil under lagring."
-
 msgid "Saving Scene"
 msgstr "Lagrer Scene"
 
@@ -1498,27 +1448,14 @@ msgstr "Analyserer"
 msgid "Creating Thumbnail"
 msgstr "Lager Thumbnail"
 
-msgid "This operation can't be done without a tree root."
-msgstr "Denne operasjonen kan ikke gjennomføres uten en trerot."
-
-msgid ""
-"Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
-"be satisfied."
-msgstr ""
-"Kunne ikke lagre scene. Sannsynligvis kunne ikke avhengigheter (instanser "
-"eller arvinger) oppfylles."
-
 msgid "Save All Scenes"
 msgstr "Lagre Alle Scener"
 
 msgid "Can't overwrite scene that is still open!"
 msgstr "Kan ikke overskrive en scene som fortsatt er åpen!"
 
-msgid "Can't load MeshLibrary for merging!"
-msgstr "Kan ikke laste MeshLibrary for sammenslåing!"
-
-msgid "Error saving MeshLibrary!"
-msgstr "Feil ved lagring av MeshLibrary!"
+msgid "Merge With Existing"
+msgstr "Slå sammen Med Eksisterende"
 
 msgid "Layout name not found!"
 msgstr "Layoutnavn ikke funnet!"
@@ -1539,9 +1476,6 @@ msgid ""
 msgstr ""
 "Denne ressursen ble importert, så det ikke er redigerbar. Endre "
 "innstillingene i import-panelet og importer deretter på nytt."
-
-msgid "Changes may be lost!"
-msgstr "Endringer kan bli tapt!"
 
 msgid "Open Base Scene"
 msgstr "Åpne Base Scene"
@@ -1564,24 +1498,11 @@ msgstr "Kan ikke laste en scene som aldri ble lagret."
 msgid "Save & Quit"
 msgstr "Lagre & Avslutt"
 
-msgid "Save changes to the following scene(s) before quitting?"
-msgstr "Lagre endring til følgende scene(r) før avslutting?"
-
 msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "Lagre endringer til følgende scene(r) før åpning av Prosjekt-Manager?"
 
-msgid ""
-"This option is deprecated. Situations where refresh must be forced are now "
-"considered a bug. Please report."
-msgstr ""
-"Dette alternativet er foreldet. Situasjoner der oppdatering må bli tvunget "
-"regnes nå som en feil. Vennligst rapporter."
-
 msgid "Pick a Main Scene"
 msgstr "Velg en HovedScene"
-
-msgid "This operation can't be done without a scene."
-msgstr "Denne operasjonen kan ikke gjøres uten en scene."
 
 msgid "Export Mesh Library"
 msgstr "Eksporter MeshBibliotek"
@@ -1596,21 +1517,11 @@ msgstr ""
 "Scene '%s' var automatisk importert, så den kan ikke modifiseres.\n"
 "For å gjøre endringer i den, kan du opprette en ny arvet scene."
 
-msgid ""
-"Error loading scene, it must be inside the project path. Use 'Import' to open "
-"the scene, then save it inside the project path."
-msgstr ""
-"Feil ved lasting av scene, den må være i prosjektbanen. Bruk \"Importer\" for "
-"å åpne scenen, så lagre den i prosjektbanen."
-
 msgid "Scene '%s' has broken dependencies:"
 msgstr "Scene '%s' har ødelagte avhengigheter:"
 
 msgid "Clear Recent Scenes"
 msgstr "Fjern Nylige Scener"
-
-msgid "There is no defined scene to run."
-msgstr "Det er ingen definert scene å kjøre."
 
 msgid ""
 "No main scene has ever been defined, select one?\n"
@@ -1702,17 +1613,11 @@ msgstr "Prosjekt"
 msgid "Version Control"
 msgstr "Versjonskontroll"
 
-msgid "Export..."
-msgstr "Eksporter..."
-
 msgid "Tools"
 msgstr "Verktøy"
 
 msgid "Quit to Project List"
 msgstr "Avslutt til Prosjektliste"
-
-msgid "Editor"
-msgstr "Editor"
 
 msgid "Editor Layout"
 msgstr "Redigeringsverktøy Layout"
@@ -1741,17 +1646,11 @@ msgstr "Hjelp"
 msgid "Community"
 msgstr "Samfunn"
 
-msgid "FileSystem"
-msgstr "FilSystem"
-
 msgid "Inspector"
 msgstr "Inspektør"
 
 msgid "Node"
 msgstr "Node"
-
-msgid "Output"
-msgstr "Utgang"
 
 msgid "Don't Save"
 msgstr "Ikke Lagre"
@@ -1761,9 +1660,6 @@ msgstr "Importer Mal Fra ZIP-Fil"
 
 msgid "Export Library"
 msgstr "Eksporter bibliotek"
-
-msgid "Merge With Existing"
-msgstr "Slå sammen Med Eksisterende"
 
 msgid "Open & Run a Script"
 msgstr "Åpne & Kjør et Skript"
@@ -1807,15 +1703,6 @@ msgstr "Advarsel!"
 
 msgid "On"
 msgstr "På"
-
-msgid "Installed Plugins:"
-msgstr "Installerte Plugins:"
-
-msgid "Version"
-msgstr "Versjon"
-
-msgid "Author"
-msgstr "Forfatter"
 
 msgid "No name provided."
 msgstr "Ingen navn gitt."
@@ -1895,14 +1782,8 @@ msgstr "Feilet."
 msgid "Storing File:"
 msgstr "Lagrer Fil:"
 
-msgid "No export template found at the expected path:"
-msgstr "Ingen eksportmal funnet på forventet søkesti:"
-
 msgid "Packing"
 msgstr "Pakking"
-
-msgid "Save PCK"
-msgstr "Lagre PCK"
 
 msgid "Cannot create file \"%s\"."
 msgstr "Kunne ikke opprette filen \"%s\"."
@@ -1913,17 +1794,11 @@ msgstr "Kunne ikke eksportere prosjektfiler."
 msgid "Can't open file to read from path \"%s\"."
 msgstr "Kan ikke åpne filen for å lese fra banen \"%s\"."
 
-msgid "Save ZIP"
-msgstr "Lagre ZIP"
-
 msgid "Custom debug template not found."
 msgstr "Tilpasset feilsøkingsmal ble ikke funnet."
 
 msgid "Custom release template not found."
 msgstr "Fant ikke tilpasset utgivelsesmal."
-
-msgid "Prepare Template"
-msgstr "Forbered mal"
 
 msgid "The given export path doesn't exist."
 msgstr "Den angitte eksportbanen eksisterer ikke."
@@ -1943,27 +1818,6 @@ msgid ""
 msgstr ""
 "Ingen nedlastningslink funnet for denne versjonen. Direkte nedlastning er kun "
 "mulig for offisielle utvigelser."
-
-msgid "Disconnected"
-msgstr "Koblet fra"
-
-msgid "Resolving"
-msgstr "Løser"
-
-msgid "Can't Resolve"
-msgstr "Kan ikke Løses"
-
-msgid "Connecting..."
-msgstr "Kobler til…"
-
-msgid "Connected"
-msgstr "Tilkoblet"
-
-msgid "Downloading"
-msgstr "Laster ned"
-
-msgid "Connection Error"
-msgstr "Tilkoblingsfeil"
 
 msgid "Extracting Export Templates"
 msgstr "Ekstraherer Eksport Mal"
@@ -2219,6 +2073,9 @@ msgstr "Legg til ny scene."
 msgid "Open in Editor"
 msgstr "Åpne i Redigeringsverktøy"
 
+msgid "Instance:"
+msgstr "Instans:"
+
 msgid "Importing Scene..."
 msgstr "Importerer Scene..."
 
@@ -2305,24 +2162,6 @@ msgstr "Språk"
 
 msgid "Groups"
 msgstr "Grupper"
-
-msgid "Update"
-msgstr "Oppdater"
-
-msgid "Plugin Name:"
-msgstr "Navn på tillegg:"
-
-msgid "Subfolder:"
-msgstr "Undermappe:"
-
-msgid "Author:"
-msgstr "Forfatter:"
-
-msgid "Version:"
-msgstr "Versjon:"
-
-msgid "Activate now?"
-msgstr "Aktiver nå?"
 
 msgid ""
 "Edit points.\n"
@@ -2474,8 +2313,11 @@ msgstr "Reise"
 msgid "Delete Selected"
 msgstr "Slett valgt"
 
-msgid "AnimationTree"
-msgstr "Animasjontre"
+msgid "Author"
+msgstr "Forfatter"
+
+msgid "Version:"
+msgstr "Versjon:"
 
 msgid "Contents:"
 msgstr "Innhold:"
@@ -2513,9 +2355,6 @@ msgstr "Forespørsel feilet, for mange omdirigeringer"
 msgid "Failed:"
 msgstr "Feilet:"
 
-msgid "Expected:"
-msgstr "Forventet:"
-
 msgid "Got:"
 msgstr "Fikk:"
 
@@ -2524,6 +2363,9 @@ msgstr "Laster ned..."
 
 msgid "Resolving..."
 msgstr "Løser..."
+
+msgid "Connecting..."
+msgstr "Kobler til…"
 
 msgid "Idle"
 msgstr "Inaktiv"
@@ -2542,9 +2384,6 @@ msgstr "Navn (A-Z)"
 
 msgid "Name (Z-A)"
 msgstr "Navn (Z-A)"
-
-msgid "Official"
-msgstr "Offisiell"
 
 msgid "Testing"
 msgstr "Tester"
@@ -2608,9 +2447,6 @@ msgstr "Roter Modus"
 
 msgid "Scale Mode"
 msgstr "Skaler Modus"
-
-msgid "Click to change object's rotation pivot."
-msgstr "Klikk for å endre objektets rotasjonspivot."
 
 msgid "Pan Mode"
 msgstr "Panorerings-Modus"
@@ -2705,6 +2541,9 @@ msgstr "Nederst til venstre"
 msgid "Bottom Right"
 msgstr "Nederst til høyre"
 
+msgid "Restart"
+msgstr "Omstart"
+
 msgid "Remove Curve Point"
 msgstr "Fjern Kurvepunkt"
 
@@ -2737,6 +2576,12 @@ msgstr ""
 "Når det brukes eksternt på en enhet, er dette mer effektivt med et "
 "nettverksfilsystem aktivert."
 
+msgid "Installed Plugins:"
+msgstr "Installerte Plugins:"
+
+msgid "Version"
+msgstr "Versjon"
+
 msgid "Surface Points"
 msgstr "Overflatepunkter"
 
@@ -2745,9 +2590,6 @@ msgstr "Volum"
 
 msgid "Failed creating lightmap images, make sure path is writable."
 msgstr "Laging av lysmapbilder feilet, forsikre om at stien er skrivbar."
-
-msgid "This doesn't work on scene root!"
-msgstr "Dette virker ikke på sceneroten!"
 
 msgid "Create Outline"
 msgstr "Lag Omriss"
@@ -2876,23 +2718,11 @@ msgstr "Legg til Punkt på Kurve"
 msgid "Move Point in Curve"
 msgstr "Flytt Punkt på Kurve"
 
-msgid "Select Points"
-msgstr "Velg Punkter"
-
-msgid "Shift+Drag: Select Control Points"
-msgstr "Shift+Dra: Velg Kontrollpunkter"
-
-msgid "Click: Add Point"
-msgstr "Klikk: Legg til Punkt"
-
 msgid "Right Click: Delete Point"
 msgstr "Høyreklikk: Fjern Punkt"
 
 msgid "Select Control Points (Shift+Drag)"
 msgstr "Velg Kontrollpunkter (Shift+Dra)"
-
-msgid "Add Point (in empty space)"
-msgstr "Legg til Punkt (i tomt rom)"
 
 msgid "Delete Point"
 msgstr "Slett punkt"
@@ -2912,14 +2742,23 @@ msgstr "Fjern Stipunkt"
 msgid "Split Segment (in curve)"
 msgstr "Split Segment (i kurve)"
 
+msgid "Plugin Name:"
+msgstr "Navn på tillegg:"
+
+msgid "Subfolder:"
+msgstr "Undermappe:"
+
+msgid "Author:"
+msgstr "Forfatter:"
+
+msgid "Activate now?"
+msgstr "Aktiver nå?"
+
 msgid "Open Polygon 2D UV editor."
 msgstr "Åpne 2D-redigeringsverktøy for polygon-UV"
 
 msgid "Points"
 msgstr "Poeng"
-
-msgid "Shift: Move All"
-msgstr "Shift: Flytt Alle"
 
 msgid "Move Polygon"
 msgstr "Flytt Polygon"
@@ -2975,20 +2814,8 @@ msgstr "Kan ikke åpne '%s'. Filen kan ha blitt flyttet eller slettet."
 msgid "Close and save changes?"
 msgstr "Lukke og lagre endringer?"
 
-msgid "Error writing TextFile:"
-msgstr "Feil ved lagring av TextFile:"
-
-msgid "Error saving file!"
-msgstr "Feil ved lagring av filen!"
-
-msgid "Error while saving theme."
-msgstr "Feil ved lagring av tema"
-
 msgid "Error Saving"
 msgstr "Feil ved lagring"
-
-msgid "Error importing theme."
-msgstr "Feil ved importering av tema."
 
 msgid "Error Importing"
 msgstr "Feil ved importering"
@@ -2998,9 +2825,6 @@ msgstr "Åpne fil"
 
 msgid "Import Theme"
 msgstr "Importer Tema"
-
-msgid "Error while saving theme"
-msgstr "Feil ved lagring av tema"
 
 msgid "Error saving"
 msgstr "Feil ved lagring"
@@ -3068,9 +2892,6 @@ msgstr "Gå til neste redigerte dokument."
 msgid "Discard"
 msgstr "Forkast"
 
-msgid "Search Results"
-msgstr "Søkeresultater"
-
 msgid "Standard"
 msgstr "Standard"
 
@@ -3080,14 +2901,14 @@ msgstr "Kilde"
 msgid "Target"
 msgstr "Mål"
 
-msgid "Line"
-msgstr "Linje"
-
 msgid "Go to Function"
 msgstr "Gå til Funksjon"
 
 msgid "Pick Color"
 msgstr "Velg farge"
+
+msgid "Line"
+msgstr "Linje"
 
 msgid "Uppercase"
 msgstr "Store bokstaver"
@@ -3303,17 +3124,14 @@ msgstr "Velg en mappe å søke gjennom"
 msgid "Remove All"
 msgstr "Fjern alle"
 
-msgid "Also delete project contents (no undo!)"
-msgstr "Slett også prosjektets innhold (kan ikke reverseres!)"
-
-msgid "New Game Project"
-msgstr "Nytt Spill-Prosjekt"
-
 msgid "Couldn't create project.godot in project path."
 msgstr "Kunne ikke lage project.godot i prosjektstien."
 
 msgid "The following files failed extraction from package:"
 msgstr "De følgende filene feilet ekstrahering fra pakke:"
+
+msgid "New Game Project"
+msgstr "Nytt Spill-Prosjekt"
 
 msgid "Import & Edit"
 msgstr "Importer & Endre"
@@ -3375,9 +3193,6 @@ msgstr "Tilbakestill"
 msgid "User Interface"
 msgstr "Brukergrensesnitt"
 
-msgid "Delete %d nodes and any children?"
-msgstr "Slett %d noder og eventuelle barn?"
-
 msgid "Delete %d nodes?"
 msgstr "Slett %d noder?"
 
@@ -3422,18 +3237,6 @@ msgstr "Åpne skript / Velg plassering"
 
 msgid "N/A"
 msgstr "Ikke aktuelt"
-
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Ugyldig argumenttype til convert(), bruk TYPE_* konstantene."
-
-msgid "Not a script with an instance"
-msgstr "Ikke et skript med en instans"
-
-msgid "Not based on a script"
-msgstr "Ikke basert på et skript"
-
-msgid "Not based on a resource file"
-msgstr "Ikke basert på en ressursfil"
 
 msgid "Cut Selection"
 msgstr "Klipp ut Seleksjon"

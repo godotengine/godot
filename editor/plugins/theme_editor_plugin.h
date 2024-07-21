@@ -31,7 +31,7 @@
 #ifndef THEME_EDITOR_PLUGIN_H
 #define THEME_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/theme_editor_preview.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/margin_container.h"
@@ -321,7 +321,7 @@ public:
 	ThemeTypeDialog();
 };
 
-// Custom `Label` needed to use `EditorHelpTooltip` to display theme item documentation.
+// Custom `Label` needed to use `EditorHelpBit` to display theme item documentation.
 class ThemeItemLabel : public Label {
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 };

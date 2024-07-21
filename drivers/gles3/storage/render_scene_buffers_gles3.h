@@ -50,6 +50,7 @@ public:
 	//bool use_taa = false;
 	//bool use_debanding = false;
 	uint32_t view_count = 1;
+	bool apply_color_adjustments_in_post = false;
 
 	RID render_target;
 
@@ -83,7 +84,6 @@ public:
 
 	// Buffers for our glow implementation
 	struct GLOW {
-		bool glow_enabled = false;
 		GLES3::Glow::GLOWLEVEL levels[4];
 	} glow;
 
@@ -101,15 +101,17 @@ public:
 	RenderSceneBuffersGLES3();
 	virtual ~RenderSceneBuffersGLES3();
 	virtual void configure(const RenderSceneBuffersConfiguration *p_config) override;
+	void configure_for_probe(Size2i p_size);
 
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override{};
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override{};
 	virtual void set_use_debanding(bool p_use_debanding) override{};
+	void set_apply_color_adjustments_in_post(bool p_apply_in_post);
 
 	void free_render_buffer_data();
 
 	void check_backbuffer(bool p_need_color, bool p_need_depth); // Check if we need to initialize our backbuffer.
-	void check_glow_buffers(); // Check if we need to initialise our glow buffers.
+	void check_glow_buffers(); // Check if we need to initialize our glow buffers.
 
 	GLuint get_render_fbo();
 	GLuint get_msaa3d_fbo() {
@@ -144,8 +146,6 @@ public:
 	GLuint get_backbuffer() const { return backbuffer3d.color; }
 	GLuint get_backbuffer_depth() const { return backbuffer3d.depth; }
 
-	bool get_glow_enabled() const { return glow.glow_enabled; }
-	void set_glow_enabled(bool p_glow_enabled);
 	const GLES3::Glow::GLOWLEVEL *get_glow_buffers() const { return &glow.levels[0]; }
 
 	// Getters

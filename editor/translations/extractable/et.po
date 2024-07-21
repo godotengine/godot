@@ -16,14 +16,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.1-dev\n"
 
-msgid "Example: %s"
-msgstr "Näide: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d asi"
-msgstr[1] "%d asjad"
-
 msgid "Network"
 msgstr "Võrk"
 

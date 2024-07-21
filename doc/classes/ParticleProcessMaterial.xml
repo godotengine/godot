@@ -185,6 +185,7 @@
 		</member>
 		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents">
 			The box's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_BOX].
+			[b]Note:[/b] [member emission_box_extents] starts from the center point and applies the X, Y, and Z values in both directions. The size is twice the area of the extents.
 		</member>
 		<member name="emission_color_texture" type="Texture2D" setter="set_emission_color_texture" getter="get_emission_color_texture">
 			Particle color will be modulated by color determined by sampling this texture at the same point as the [member emission_point_texture].

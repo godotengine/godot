@@ -19,28 +19,15 @@
 
 #ifndef MBEDTLS_CHACHA20_H
 #define MBEDTLS_CHACHA20_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include <stdint.h>
 #include <stddef.h>
 
 /** Invalid input parameter(s). */
 #define MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA         -0x0051
-
-/* MBEDTLS_ERR_CHACHA20_FEATURE_UNAVAILABLE is deprecated and should not be
- * used. */
-/** Feature not available. For example, s part of the API is not implemented. */
-#define MBEDTLS_ERR_CHACHA20_FEATURE_UNAVAILABLE    -0x0053
-
-/* MBEDTLS_ERR_CHACHA20_HW_ACCEL_FAILED is deprecated and should not be used.
- */
-/** Chacha20 hardware accelerator failed. */
-#define MBEDTLS_ERR_CHACHA20_HW_ACCEL_FAILED        -0x0055
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,9 +36,9 @@ extern "C" {
 #if !defined(MBEDTLS_CHACHA20_ALT)
 
 typedef struct mbedtls_chacha20_context {
-    uint32_t state[16];          /*! The state (before round operations). */
-    uint8_t  keystream8[64];     /*! Leftover keystream bytes. */
-    size_t keystream_bytes_used; /*! Number of keystream bytes already used. */
+    uint32_t MBEDTLS_PRIVATE(state)[16];          /*! The state (before round operations). */
+    uint8_t  MBEDTLS_PRIVATE(keystream8)[64];     /*! Leftover keystream bytes. */
+    size_t MBEDTLS_PRIVATE(keystream_bytes_used); /*! Number of keystream bytes already used. */
 }
 mbedtls_chacha20_context;
 

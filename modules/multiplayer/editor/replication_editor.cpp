@@ -81,7 +81,7 @@ void ReplicationEditor::_pick_node_select_recursive(TreeItem *p_item, const Stri
 	NodePath np = p_item->get_metadata(0);
 	Node *node = get_node(np);
 
-	if (!p_filter.is_empty() && ((String)node->get_name()).findn(p_filter) != -1) {
+	if (!p_filter.is_empty() && ((String)node->get_name()).containsn(p_filter)) {
 		p_select_candidates.push_back(node);
 	}
 
@@ -131,7 +131,7 @@ void ReplicationEditor::_pick_new_property() {
 		EditorNode::get_singleton()->show_warning(TTR("Not possible to add a new property to synchronize without a root."));
 		return;
 	}
-	pick_node->popup_scenetree_dialog();
+	pick_node->popup_scenetree_dialog(nullptr, current);
 	pick_node->get_filter_line_edit()->clear();
 	pick_node->get_filter_line_edit()->grab_focus();
 }
@@ -175,7 +175,7 @@ ReplicationEditor::ReplicationEditor() {
 
 	delete_dialog = memnew(ConfirmationDialog);
 	delete_dialog->connect("canceled", callable_mp(this, &ReplicationEditor::_dialog_closed).bind(false));
-	delete_dialog->connect("confirmed", callable_mp(this, &ReplicationEditor::_dialog_closed).bind(true));
+	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ReplicationEditor::_dialog_closed).bind(true));
 	add_child(delete_dialog);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
@@ -187,7 +187,7 @@ ReplicationEditor::ReplicationEditor() {
 	pick_node->register_text_enter(pick_node->get_filter_line_edit());
 	pick_node->set_title(TTR("Pick a node to synchronize:"));
 	pick_node->connect("selected", callable_mp(this, &ReplicationEditor::_pick_node_selected));
-	pick_node->get_filter_line_edit()->connect("text_changed", callable_mp(this, &ReplicationEditor::_pick_node_filter_text_changed));
+	pick_node->get_filter_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &ReplicationEditor::_pick_node_filter_text_changed));
 	pick_node->get_filter_line_edit()->connect("gui_input", callable_mp(this, &ReplicationEditor::_pick_node_filter_input));
 
 	prop_selector = memnew(PropertySelector);
@@ -234,7 +234,8 @@ ReplicationEditor::ReplicationEditor() {
 		Variant::PACKED_STRING_ARRAY,
 		Variant::PACKED_VECTOR2_ARRAY,
 		Variant::PACKED_VECTOR3_ARRAY,
-		Variant::PACKED_COLOR_ARRAY
+		Variant::PACKED_COLOR_ARRAY,
+		Variant::PACKED_VECTOR4_ARRAY,
 	};
 	prop_selector->set_type_filter(types);
 	prop_selector->connect("selected", callable_mp(this, &ReplicationEditor::_pick_node_property_selected));
@@ -243,7 +244,7 @@ ReplicationEditor::ReplicationEditor() {
 	vb->add_child(hb);
 
 	add_pick_button = memnew(Button);
-	add_pick_button->connect("pressed", callable_mp(this, &ReplicationEditor::_pick_new_property));
+	add_pick_button->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_pick_new_property));
 	add_pick_button->set_text(TTR("Add property to sync..."));
 	hb->add_child(add_pick_button);
 
@@ -259,7 +260,7 @@ ReplicationEditor::ReplicationEditor() {
 	hb->add_child(np_line_edit);
 
 	add_from_path_button = memnew(Button);
-	add_from_path_button->connect("pressed", callable_mp(this, &ReplicationEditor::_add_pressed));
+	add_from_path_button->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_add_pressed));
 	add_from_path_button->set_text(TTR("Add from path"));
 	hb->add_child(add_from_path_button);
 
@@ -270,6 +271,7 @@ ReplicationEditor::ReplicationEditor() {
 	pin = memnew(Button);
 	pin->set_theme_type_variation("FlatButton");
 	pin->set_toggle_mode(true);
+	pin->set_tooltip_text(TTR("Pin replication editor"));
 	hb->add_child(pin);
 
 	tree = memnew(Tree);
@@ -370,7 +372,7 @@ void ReplicationEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_ENTER_TREE: {
-			add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
+			add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
 			add_pick_button->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
 			pin->set_icon(get_theme_icon(SNAME("Pin"), EditorStringName(EditorIcons)));
 		} break;
@@ -599,7 +601,7 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 	item->set_text_alignment(2, HORIZONTAL_ALIGNMENT_CENTER);
 	item->set_cell_mode(2, TreeItem::CELL_MODE_RANGE);
 	item->set_range_config(2, 0, 2, 1);
-	item->set_text(2, "Never,Always,On Change");
+	item->set_text(2, TTR("Never", "Replication Mode") + "," + TTR("Always", "Replication Mode") + "," + TTR("On Change", "Replication Mode"));
 	item->set_range(2, (int)p_mode);
 	item->set_editable(2, true);
 }

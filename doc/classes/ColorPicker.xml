@@ -8,7 +8,7 @@
 		[b]Note:[/b] This control is the color picker widget itself. You can use a [ColorPickerButton] instead if you need a button that brings up a [ColorPicker] in a popup.
 	</description>
 	<tutorials>
-		<link title="Tween Demo">https://godotengine.org/asset-library/asset/146</link>
+		<link title="Tween Interpolation Demo">https://godotengine.org/asset-library/asset/2733</link>
 	</tutorials>
 	<methods>
 		<method name="add_preset">

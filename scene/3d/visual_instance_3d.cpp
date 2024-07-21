@@ -30,9 +30,6 @@
 
 #include "visual_instance_3d.h"
 
-#include "core/core_string_names.h"
-#include "scene/scene_string_names.h"
-
 AABB VisualInstance3D::get_aabb() const {
 	AABB ret;
 	GDVIRTUAL_CALL(_get_aabb, ret);
@@ -169,11 +166,11 @@ VisualInstance3D::~VisualInstance3D() {
 
 void GeometryInstance3D::set_material_override(const Ref<Material> &p_material) {
 	if (material_override.is_valid()) {
-		material_override->disconnect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
+		material_override->disconnect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 	}
 	material_override = p_material;
 	if (material_override.is_valid()) {
-		material_override->connect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
+		material_override->connect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 	}
 	RS::get_singleton()->instance_geometry_set_material_override(get_instance(), p_material.is_valid() ? p_material->get_rid() : RID());
 }
@@ -194,6 +191,7 @@ Ref<Material> GeometryInstance3D::get_material_overlay() const {
 void GeometryInstance3D::set_transparency(float p_transparency) {
 	transparency = CLAMP(p_transparency, 0.0f, 1.0f);
 	RS::get_singleton()->instance_geometry_set_transparency(get_instance(), transparency);
+	update_configuration_warnings();
 }
 
 float GeometryInstance3D::get_transparency() const {
@@ -278,12 +276,12 @@ bool GeometryInstance3D::_set(const StringName &p_name, const Variant &p_value) 
 		return true;
 	}
 #ifndef DISABLE_DEPRECATED
-	if (p_name == SceneStringNames::get_singleton()->use_in_baked_light && bool(p_value)) {
+	if (p_name == SNAME("use_in_baked_light") && bool(p_value)) {
 		set_gi_mode(GI_MODE_STATIC);
 		return true;
 	}
 
-	if (p_name == SceneStringNames::get_singleton()->use_dynamic_gi && bool(p_value)) {
+	if (p_name == SNAME("use_dynamic_gi") && bool(p_value)) {
 		set_gi_mode(GI_MODE_DYNAMIC);
 		return true;
 	}
@@ -377,6 +375,7 @@ void GeometryInstance3D::set_custom_aabb(AABB p_aabb) {
 	}
 	custom_aabb = p_aabb;
 	RS::get_singleton()->instance_set_custom_aabb(get_instance(), custom_aabb);
+	update_gizmos();
 }
 
 AABB GeometryInstance3D::get_custom_aabb() const {
@@ -438,6 +437,14 @@ PackedStringArray GeometryInstance3D::get_configuration_warnings() const {
 
 	if ((visibility_range_fade_mode == VISIBILITY_RANGE_FADE_SELF || visibility_range_fade_mode == VISIBILITY_RANGE_FADE_DEPENDENCIES) && !Math::is_zero_approx(visibility_range_end) && Math::is_zero_approx(visibility_range_end_margin)) {
 		warnings.push_back(RTR("The GeometryInstance3D is configured to fade out smoothly over distance, but the fade transition distance is set to 0.\nTo resolve this, increase Visibility Range End Margin above 0."));
+	}
+
+	if (!Math::is_zero_approx(transparency) && OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
+		warnings.push_back(RTR("GeometryInstance3D transparency is only available when using the Forward+ rendering method."));
+	}
+
+	if ((visibility_range_fade_mode == VISIBILITY_RANGE_FADE_SELF || visibility_range_fade_mode == VISIBILITY_RANGE_FADE_DEPENDENCIES) && OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
+		warnings.push_back(RTR("GeometryInstance3D visibility range transparency fade is only available when using the Forward+ rendering method."));
 	}
 
 	return warnings;

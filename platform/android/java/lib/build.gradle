@@ -11,6 +11,8 @@ apply from: "../scripts/publish-module.gradle"
 
 dependencies {
     implementation "androidx.fragment:fragment:$versions.fragmentVersion"
+
+    testImplementation "junit:junit:4.13.2"
 }
 
 def pathToRootDir = "../../../../"
@@ -74,6 +76,7 @@ android {
         main {
             manifest.srcFile 'AndroidManifest.xml'
             java.srcDirs = ['src']
+            test.java.srcDirs = ['srcTest/java']
             res.srcDirs = ['res']
             aidl.srcDirs = ['aidl']
             assets.srcDirs = ['assets']
@@ -118,7 +121,7 @@ android {
                 case "dev":
                 default:
                     sconsTarget += "_debug"
-                    break;
+                    break
             }
         }
 

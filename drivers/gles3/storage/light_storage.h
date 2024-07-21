@@ -34,6 +34,7 @@
 #ifdef GLES3_ENABLED
 
 #include "platform_gl.h"
+#include "render_scene_buffers_gles3.h"
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
@@ -126,10 +127,49 @@ struct ReflectionProbe {
 	bool box_projection = false;
 	bool enable_shadows = false;
 	uint32_t cull_mask = (1 << 20) - 1;
+	uint32_t reflection_mask = (1 << 20) - 1;
 	float mesh_lod_threshold = 0.01;
 	float baked_exposure = 1.0;
 
 	Dependency dependency;
+};
+
+/* REFLECTION ATLAS */
+
+struct ReflectionAtlas {
+	int count = 0;
+	int size = 0;
+
+	int mipmap_count = 1; // number of mips, including original
+	int mipmap_size[8];
+	GLuint depth = 0;
+
+	struct Reflection {
+		RID owner;
+		GLuint color = 0;
+		GLuint radiance = 0;
+		GLuint fbos[7];
+	};
+	Vector<Reflection> reflections;
+
+	Ref<RenderSceneBuffersGLES3> render_buffers; // Further render buffers used.
+};
+
+/* REFLECTION PROBE INSTANCE */
+
+struct ReflectionProbeInstance {
+	RID probe;
+	int atlas_index = -1;
+	RID atlas;
+
+	bool dirty = true;
+	bool rendering = false;
+	int processing_layer = 0;
+
+	uint64_t last_pass = 0;
+	uint32_t cull_mask = 0;
+
+	Transform3D transform;
 };
 
 /* LIGHTMAP */
@@ -180,6 +220,13 @@ private:
 
 	/* REFLECTION PROBE */
 	mutable RID_Owner<ReflectionProbe, true> reflection_probe_owner;
+
+	/* REFLECTION ATLAS */
+	mutable RID_Owner<ReflectionAtlas> reflection_atlas_owner;
+
+	/* REFLECTION PROBE INSTANCE */
+
+	mutable RID_Owner<ReflectionProbeInstance> reflection_probe_instance_owner;
 
 	/* LIGHTMAP */
 
@@ -394,6 +441,29 @@ public:
 	virtual void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override;
 	virtual void light_instance_mark_visible(RID p_light_instance) override;
 
+	virtual bool light_instance_is_shadow_visible_at_position(RID p_light_instance, const Vector3 &p_position) const override {
+		const LightInstance *light_instance = light_instance_owner.get_or_null(p_light_instance);
+		ERR_FAIL_NULL_V(light_instance, false);
+		const Light *light = light_owner.get_or_null(light_instance->light);
+		ERR_FAIL_NULL_V(light, false);
+
+		if (!light->shadow) {
+			return false;
+		}
+
+		if (!light->distance_fade) {
+			return true;
+		}
+
+		real_t distance = p_position.distance_to(light_instance->transform.origin);
+
+		if (distance > light->distance_fade_shadow + light->distance_fade_length) {
+			return false;
+		}
+
+		return true;
+	}
+
 	_FORCE_INLINE_ RID light_instance_get_base_light(RID p_light_instance) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
 		return li->light;
@@ -559,6 +629,9 @@ public:
 
 	/* PROBE API */
 
+	ReflectionProbe *get_reflection_probe(RID p_rid) { return reflection_probe_owner.get_or_null(p_rid); };
+	bool owns_reflection_probe(RID p_rid) { return reflection_probe_owner.owns(p_rid); };
+
 	virtual RID reflection_probe_allocate() override;
 	virtual void reflection_probe_initialize(RID p_rid) override;
 	virtual void reflection_probe_free(RID p_rid) override;
@@ -589,7 +662,11 @@ public:
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const override;
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const override;
 
+	Dependency *reflection_probe_get_dependency(RID p_probe) const;
+
 	/* REFLECTION ATLAS */
+
+	bool owns_reflection_atlas(RID p_rid) { return reflection_atlas_owner.owns(p_rid); }
 
 	virtual RID reflection_atlas_create() override;
 	virtual void reflection_atlas_free(RID p_ref_atlas) override;
@@ -597,6 +674,8 @@ public:
 	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) override;
 
 	/* REFLECTION PROBE INSTANCE */
+
+	bool owns_reflection_probe_instance(RID p_rid) { return reflection_probe_instance_owner.owns(p_rid); }
 
 	virtual RID reflection_probe_instance_create(RID p_probe) override;
 	virtual void reflection_probe_instance_free(RID p_instance) override;
@@ -608,6 +687,27 @@ public:
 	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) override;
 	virtual Ref<RenderSceneBuffers> reflection_probe_atlas_get_render_buffers(RID p_reflection_atlas) override;
 	virtual bool reflection_probe_instance_postprocess_step(RID p_instance) override;
+
+	_FORCE_INLINE_ RID reflection_probe_instance_get_probe(RID p_instance) {
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+		ERR_FAIL_NULL_V(rpi, RID());
+
+		return rpi->probe;
+	}
+	_FORCE_INLINE_ RID reflection_probe_instance_get_atlas(RID p_instance) {
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+		ERR_FAIL_NULL_V(rpi, RID());
+
+		return rpi->atlas;
+	}
+	Transform3D reflection_probe_instance_get_transform(RID p_instance) {
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+		ERR_FAIL_NULL_V(rpi, Transform3D());
+
+		return rpi->transform;
+	}
+	GLuint reflection_probe_instance_get_texture(RID p_instance);
+	GLuint reflection_probe_instance_get_framebuffer(RID p_instance, int p_index);
 
 	/* LIGHTMAP CAPTURE */
 

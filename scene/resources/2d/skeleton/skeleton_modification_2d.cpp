@@ -233,6 +233,11 @@ void SkeletonModification2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "execution_mode", PROPERTY_HINT_ENUM, "process,physics_process"), "set_execution_mode", "get_execution_mode");
 }
 
+void SkeletonModification2D::reset_state() {
+	stack = nullptr;
+	is_setup = false;
+}
+
 SkeletonModification2D::SkeletonModification2D() {
 	stack = nullptr;
 	is_setup = false;

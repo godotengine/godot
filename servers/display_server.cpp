@@ -31,7 +31,6 @@
 #include "display_server.h"
 
 #include "core/input/input.h"
-#include "scene/resources/atlas_texture.h"
 #include "scene/resources/texture.h"
 #include "servers/display_server_headless.h"
 
@@ -212,7 +211,7 @@ String DisplayServer::global_menu_get_item_submenu(const String &p_menu_root, in
 	ERR_FAIL_NULL_V(nmenu, String());
 	RID rid = nmenu->get_item_submenu(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 	if (!nmenu->is_system_menu(rid)) {
-		for (HashMap<String, RID>::Iterator E = menu_names.begin(); E;) {
+		for (HashMap<String, RID>::Iterator E = menu_names.begin(); E; ++E) {
 			if (E->value == rid) {
 				return E->key;
 			}
@@ -645,22 +644,22 @@ void DisplayServer::enable_for_stealing_focus(OS::ProcessID pid) {
 
 Error DisplayServer::dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
-	return OK;
+	return ERR_UNAVAILABLE;
 }
 
 Error DisplayServer::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
-	return OK;
+	return ERR_UNAVAILABLE;
 }
 
 Error DisplayServer::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
-	return OK;
+	return ERR_UNAVAILABLE;
 }
 
 Error DisplayServer::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
-	return OK;
+	return ERR_UNAVAILABLE;
 }
 
 int DisplayServer::keyboard_get_layout_count() const {
@@ -697,10 +696,6 @@ void DisplayServer::release_rendering_thread() {
 	WARN_PRINT("Rendering thread not supported by this display server.");
 }
 
-void DisplayServer::make_rendering_thread() {
-	WARN_PRINT("Rendering thread not supported by this display server.");
-}
-
 void DisplayServer::swap_buffers() {
 	WARN_PRINT("Swap buffers not supported by this display server.");
 }
@@ -713,12 +708,12 @@ void DisplayServer::set_icon(const Ref<Image> &p_icon) {
 	WARN_PRINT("Icon not supported by this display server.");
 }
 
-DisplayServer::IndicatorID DisplayServer::create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) {
+DisplayServer::IndicatorID DisplayServer::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
 	WARN_PRINT("Status indicator not supported by this display server.");
 	return INVALID_INDICATOR_ID;
 }
 
-void DisplayServer::status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) {
+void DisplayServer::status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) {
 	WARN_PRINT("Status indicator not supported by this display server.");
 }
 
@@ -726,8 +721,17 @@ void DisplayServer::status_indicator_set_tooltip(IndicatorID p_id, const String 
 	WARN_PRINT("Status indicator not supported by this display server.");
 }
 
+void DisplayServer::status_indicator_set_menu(IndicatorID p_id, const RID &p_menu_rid) {
+	WARN_PRINT("Status indicator not supported by this display server.");
+}
+
 void DisplayServer::status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) {
 	WARN_PRINT("Status indicator not supported by this display server.");
+}
+
+Rect2 DisplayServer::status_indicator_get_rect(IndicatorID p_id) const {
+	WARN_PRINT("Status indicator not supported by this display server.");
+	return Rect2();
 }
 
 void DisplayServer::delete_status_indicator(IndicatorID p_id) {
@@ -753,6 +757,17 @@ DisplayServer::WindowID DisplayServer::get_focused_window() const {
 }
 
 void DisplayServer::set_context(Context p_context) {
+}
+
+void DisplayServer::register_additional_output(Object *p_object) {
+	ObjectID id = p_object->get_instance_id();
+	if (!additional_outputs.has(id)) {
+		additional_outputs.push_back(id);
+	}
+}
+
+void DisplayServer::unregister_additional_output(Object *p_object) {
+	additional_outputs.erase(p_object->get_instance_id());
 }
 
 void DisplayServer::_bind_methods() {
@@ -981,13 +996,21 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_status_indicator", "icon", "tooltip", "callback"), &DisplayServer::create_status_indicator);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_icon", "id", "icon"), &DisplayServer::status_indicator_set_icon);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_tooltip", "id", "tooltip"), &DisplayServer::status_indicator_set_tooltip);
+	ClassDB::bind_method(D_METHOD("status_indicator_set_menu", "id", "menu_rid"), &DisplayServer::status_indicator_set_menu);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_callback", "id", "callback"), &DisplayServer::status_indicator_set_callback);
+	ClassDB::bind_method(D_METHOD("status_indicator_get_rect", "id"), &DisplayServer::status_indicator_get_rect);
 	ClassDB::bind_method(D_METHOD("delete_status_indicator", "id"), &DisplayServer::delete_status_indicator);
 
 	ClassDB::bind_method(D_METHOD("tablet_get_driver_count"), &DisplayServer::tablet_get_driver_count);
 	ClassDB::bind_method(D_METHOD("tablet_get_driver_name", "idx"), &DisplayServer::tablet_get_driver_name);
 	ClassDB::bind_method(D_METHOD("tablet_get_current_driver"), &DisplayServer::tablet_get_current_driver);
 	ClassDB::bind_method(D_METHOD("tablet_set_current_driver", "name"), &DisplayServer::tablet_set_current_driver);
+
+	ClassDB::bind_method(D_METHOD("is_window_transparency_available"), &DisplayServer::is_window_transparency_available);
+
+	ClassDB::bind_method(D_METHOD("register_additional_output", "object"), &DisplayServer::register_additional_output);
+	ClassDB::bind_method(D_METHOD("unregister_additional_output", "object"), &DisplayServer::unregister_additional_output);
+	ClassDB::bind_method(D_METHOD("has_additional_outputs"), &DisplayServer::has_additional_outputs);
 
 #ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(FEATURE_GLOBAL_MENU);
@@ -1014,6 +1037,8 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_SCREEN_CAPTURE);
 	BIND_ENUM_CONSTANT(FEATURE_STATUS_INDICATOR);
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_HELP);
+	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_INPUT);
+	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_FILE);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
@@ -1113,35 +1138,22 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(TTS_UTTERANCE_BOUNDARY);
 }
 
-Ref<Image> DisplayServer::_get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot, Rect2 &r_atlas_rect) {
+Ref<Image> DisplayServer::_get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot) {
 	Ref<Image> image;
 	ERR_FAIL_COND_V_MSG(p_hotspot.x < 0 || p_hotspot.y < 0, image, "Hotspot outside cursor image.");
 
-	Size2 texture_size;
-
 	Ref<Texture2D> texture = p_cursor;
 	if (texture.is_valid()) {
-		Ref<AtlasTexture> atlas_texture = p_cursor;
-
-		if (atlas_texture.is_valid()) {
-			texture = atlas_texture->get_atlas();
-			r_atlas_rect.size = texture->get_size();
-			r_atlas_rect.position = atlas_texture->get_region().position;
-			texture_size = atlas_texture->get_region().size;
-		} else {
-			texture_size = texture->get_size();
-		}
 		image = texture->get_image();
 	} else {
 		image = p_cursor;
-		ERR_FAIL_COND_V(image.is_null(), image);
-		texture_size = image->get_size();
 	}
-
-	ERR_FAIL_COND_V_MSG(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height, image, "Hotspot outside cursor image.");
-	ERR_FAIL_COND_V_MSG(texture_size.width > 256 || texture_size.height > 256, image, "Cursor image too big. Max supported size is 256x256.");
-
 	ERR_FAIL_COND_V(image.is_null(), image);
+
+	Size2 image_size = image->get_size();
+	ERR_FAIL_COND_V_MSG(p_hotspot.x > image_size.width || p_hotspot.y > image_size.height, image, "Hotspot outside cursor image.");
+	ERR_FAIL_COND_V_MSG(image_size.width > 256 || image_size.height > 256, image, "Cursor image too big. Max supported size is 256x256.");
+
 	if (image->is_compressed()) {
 		image = image->duplicate(true);
 		Error err = image->decompress();
@@ -1174,9 +1186,9 @@ Vector<String> DisplayServer::get_create_function_rendering_drivers(int p_index)
 	return server_create_functions[p_index].get_rendering_drivers_function();
 }
 
-DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	ERR_FAIL_INDEX_V(p_index, server_create_count, nullptr);
-	return server_create_functions[p_index].create_function(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error);
+	return server_create_functions[p_index].create_function(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error);
 }
 
 void DisplayServer::_input_set_mouse_mode(Input::MouseMode p_mode) {

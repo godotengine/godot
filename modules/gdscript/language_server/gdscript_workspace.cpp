@@ -223,7 +223,7 @@ void GDScriptWorkspace::reload_all_workspace_scripts() {
 			HashMap<String, ExtendGDScriptParser *>::Iterator S = parse_results.find(path);
 			String err_msg = "Failed parse script " + path;
 			if (S) {
-				err_msg += "\n" + S->value->get_errors()[0].message;
+				err_msg += "\n" + S->value->get_errors().front()->get().message;
 			}
 			ERR_CONTINUE_MSG(err != OK, err_msg);
 		}
@@ -233,18 +233,25 @@ void GDScriptWorkspace::reload_all_workspace_scripts() {
 void GDScriptWorkspace::list_script_files(const String &p_root_dir, List<String> &r_files) {
 	Error err;
 	Ref<DirAccess> dir = DirAccess::open(p_root_dir, &err);
-	if (OK == err) {
-		dir->list_dir_begin();
-		String file_name = dir->get_next();
-		while (file_name.length()) {
-			if (dir->current_is_dir() && file_name != "." && file_name != ".." && file_name != "./") {
-				list_script_files(p_root_dir.path_join(file_name), r_files);
-			} else if (file_name.ends_with(".gd")) {
-				String script_file = p_root_dir.path_join(file_name);
-				r_files.push_back(script_file);
-			}
-			file_name = dir->get_next();
+	if (OK != err) {
+		return;
+	}
+
+	// Ignore scripts in directories with a .gdignore file.
+	if (dir->file_exists(".gdignore")) {
+		return;
+	}
+
+	dir->list_dir_begin();
+	String file_name = dir->get_next();
+	while (file_name.length()) {
+		if (dir->current_is_dir() && file_name != "." && file_name != ".." && file_name != "./") {
+			list_script_files(p_root_dir.path_join(file_name), r_files);
+		} else if (file_name.ends_with(".gd")) {
+			String script_file = p_root_dir.path_join(file_name);
+			r_files.push_back(script_file);
 		}
+		file_name = dir->get_next();
 	}
 }
 
@@ -612,8 +619,8 @@ Node *GDScriptWorkspace::_get_owner_scene_node(String p_path) {
 
 	_get_owners(EditorFileSystem::get_singleton()->get_filesystem(), p_path, owners);
 
-	for (int i = 0; i < owners.size(); i++) {
-		NodePath owner_path = owners[i];
+	for (const String &owner : owners) {
+		NodePath owner_path = owner;
 		Ref<Resource> owner_res = ResourceLoader::load(owner_path);
 		if (Object::cast_to<PackedScene>(owner_res.ptr())) {
 			Ref<PackedScene> owner_packed_scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*owner_res));
@@ -688,7 +695,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 
 			} else {
 				ScriptLanguage::LookupResult ret;
-				if (symbol_identifier == "new" && parser->get_lines()[p_doc_pos.position.line].replace(" ", "").replace("\t", "").find("new(") > -1) {
+				if (symbol_identifier == "new" && parser->get_lines()[p_doc_pos.position.line].replace(" ", "").replace("\t", "").contains("new(")) {
 					symbol_identifier = "_init";
 				}
 				if (OK == GDScriptLanguage::get_singleton()->lookup_code(parser->get_text_for_lookup_symbol(pos, symbol_identifier, p_func_required), symbol_identifier, path, nullptr, ret)) {

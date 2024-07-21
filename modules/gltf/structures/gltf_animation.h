@@ -47,7 +47,7 @@ public:
 		INTERP_CUBIC_SPLINE,
 	};
 
-	template <class T>
+	template <typename T>
 	struct Channel {
 		Interpolation interpolation = INTERP_LINEAR;
 		Vector<real_t> times;

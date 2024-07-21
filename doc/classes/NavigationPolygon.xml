@@ -43,8 +43,8 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="2D Navigation Demo">https://godotengine.org/asset-library/asset/117</link>
 		<link title="Using NavigationMeshes">$DOCS_URL/tutorials/navigation/navigation_using_navigationmeshes.html</link>
+		<link title="Navigation Polygon 2D Demo">https://godotengine.org/asset-library/asset/2722</link>
 	</tutorials>
 	<methods>
 		<method name="add_outline">

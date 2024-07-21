@@ -32,7 +32,7 @@
 #define SCRIPT_EDITOR_PLUGIN_H
 
 #include "core/object/script_language.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/panel_container.h"
 #include "scene/resources/syntax_highlighter.h"
@@ -78,6 +78,7 @@ class EditorStandardSyntaxHighlighter : public EditorSyntaxHighlighter {
 
 private:
 	Ref<CodeHighlighter> highlighter;
+	ScriptLanguage *script_language = nullptr; // See GH-89610.
 
 public:
 	virtual void _update_cache() override;
@@ -86,6 +87,8 @@ public:
 	virtual String _get_name() const override { return TTR("Standard"); }
 
 	virtual Ref<EditorSyntaxHighlighter> _create() const override;
+
+	void _set_script_language(ScriptLanguage *p_script_language) { script_language = p_script_language; }
 
 	EditorStandardSyntaxHighlighter() { highlighter.instantiate(); }
 };
@@ -171,6 +174,7 @@ public:
 	virtual void set_executing_line(int p_line) = 0;
 	virtual void clear_executing_line() = 0;
 	virtual void trim_trailing_whitespace() = 0;
+	virtual void trim_final_newlines() = 0;
 	virtual void insert_final_newline() = 0;
 	virtual void convert_indent() = 0;
 	virtual void ensure_focus() = 0;
@@ -371,7 +375,7 @@ class ScriptEditor : public PanelContainer {
 	void _close_tab(int p_idx, bool p_save = true, bool p_history_back = true);
 	void _update_find_replace_bar();
 
-	void _close_current_tab(bool p_save = true);
+	void _close_current_tab(bool p_save = true, bool p_history_back = true);
 	void _close_discard_current_tab(const String &p_str);
 	void _close_docs_tab();
 	void _close_other_tabs();
@@ -405,6 +409,7 @@ class ScriptEditor : public PanelContainer {
 
 	bool open_textfile_after_create = true;
 	bool trim_trailing_whitespace_on_save;
+	bool trim_final_newlines_on_save;
 	bool convert_indent_on_save;
 	bool external_editor_active;
 
@@ -447,6 +452,8 @@ class ScriptEditor : public PanelContainer {
 	void _update_help_overview();
 	void _help_overview_selected(int p_idx);
 
+	void _update_online_doc();
+
 	void _find_scripts(Node *p_base, Node *p_current, HashSet<Ref<Script>> &used);
 
 	void _tree_changed();
@@ -469,12 +476,14 @@ class ScriptEditor : public PanelContainer {
 	void _history_back();
 
 	bool waiting_update_names;
+	bool lock_history = false;
 
 	void _help_class_open(const String &p_class);
 	void _help_class_goto(const String &p_desc);
 	bool _help_tab_goto(const String &p_name, const String &p_desc);
 	void _update_history_arrows();
 	void _save_history();
+	void _save_previous_state(Dictionary p_state);
 	void _go_to_tab(int p_idx);
 	void _update_history_pos(int p_new_pos);
 	void _update_script_colors();
@@ -496,6 +505,7 @@ class ScriptEditor : public PanelContainer {
 	void _on_find_in_files_result_selected(const String &fpath, int line_number, int begin, int end);
 	void _start_find_in_files(bool with_replace);
 	void _on_find_in_files_modified_files(const PackedStringArray &paths);
+	void _on_find_in_files_close_button_clicked();
 
 	void _set_zoom_factor(float p_zoom_factor);
 

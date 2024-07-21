@@ -238,7 +238,7 @@ static void _outside(SwStroke& stroke, int32_t side, SwFixed lineLength)
     } else {
         //this is a mitered (pointed) or beveled (truncated) corner
         auto rotate = SIDE_TO_ROTATE(side);
-        auto bevel = (stroke.join == StrokeJoin::Bevel) ? true : false;
+        auto bevel = stroke.join == StrokeJoin::Bevel;
         SwFixed phi = 0;
         SwFixed thcos = 0;
 
@@ -377,9 +377,6 @@ static void _lineTo(SwStroke& stroke, const SwPoint& to)
     //a zero-length lineto is a no-op; avoid creating a spurious corner
     if (delta.zero()) return;
 
-    //compute length of line
-    auto angle = mathAtan(delta);
-
     /* The lineLength is used to determine the intersection of strokes outlines.
        The scale needs to be reverted since the stroke width has not been scaled.
        An alternative option is to scale the width of the stroke properly by
@@ -387,6 +384,7 @@ static void _lineTo(SwStroke& stroke, const SwPoint& to)
     delta.x = static_cast<SwCoord>(delta.x / stroke.sx);
     delta.y = static_cast<SwCoord>(delta.y / stroke.sy);
     auto lineLength = mathLength(delta);
+    auto angle = mathAtan(delta);
 
     delta = {static_cast<SwCoord>(stroke.width), 0};
     mathRotate(delta, angle + SW_ANGLE_PI2);
@@ -818,7 +816,7 @@ void strokeReset(SwStroke* stroke, const RenderShape* rshape, const Matrix* tran
 
     stroke->width = HALF_STROKE(rshape->strokeWidth());
     stroke->cap = rshape->strokeCap();
-    stroke->miterlimit = static_cast<SwFixed>(rshape->strokeMiterlimit()) << 16;
+    stroke->miterlimit = static_cast<SwFixed>(rshape->strokeMiterlimit() * 65536.0f);
 
     //Save line join: it can be temporarily changed when stroking curves...
     stroke->joinSaved = stroke->join = rshape->strokeJoin();
@@ -835,7 +833,7 @@ bool strokeParseOutline(SwStroke* stroke, const SwOutline& outline)
     uint32_t first = 0;
     uint32_t i = 0;
 
-    for (auto cntr = outline.cntrs.data; cntr < outline.cntrs.end(); ++cntr, ++i) {
+    for (auto cntr = outline.cntrs.begin(); cntr < outline.cntrs.end(); ++cntr, ++i) {
         auto last = *cntr;           //index of last point in contour
         auto limit = outline.pts.data + last;
 

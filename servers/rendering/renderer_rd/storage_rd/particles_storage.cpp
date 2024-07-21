@@ -257,7 +257,6 @@ void ParticlesStorage::particles_set_emitting(RID p_particles, bool p_emitting) 
 }
 
 bool ParticlesStorage::particles_get_emitting(RID p_particles) {
-	ERR_FAIL_COND_V_MSG(RSG::threaded, false, "This function should never be used with threaded rendering, as it stalls the renderer.");
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, false);
 
@@ -608,10 +607,6 @@ void ParticlesStorage::particles_request_process(RID p_particles) {
 }
 
 AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
-	if (RSG::threaded) {
-		WARN_PRINT_ONCE("Calling this function with threaded rendering enabled stalls the renderer, use with care.");
-	}
-
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, AABB());
 
@@ -1311,7 +1306,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 		userdata_count = particle_shader_data->userdata_count;
 	}
 
-	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0;
+	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0 || (RendererCompositorStorage::get_singleton()->get_num_compositor_effects_with_motion_vectors() > 0);
 	bool index_draw_order = particles->draw_order == RS::ParticlesDrawOrder::PARTICLES_DRAW_ORDER_INDEX;
 	bool enable_motion_vectors = uses_motion_vectors && index_draw_order && !particles->instance_motion_vectors_enabled;
 	bool only_instances_changed = false;
@@ -1388,8 +1383,13 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 	}
 }
 void ParticlesStorage::update_particles() {
+	if (!particle_update_list.first()) {
+		return;
+	}
+
+	RENDER_TIMESTAMP("Update GPUParticles");
 	uint32_t frame = RSG::rasterizer->get_frame_number();
-	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0;
+	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0 || (RendererCompositorStorage::get_singleton()->get_num_compositor_effects_with_motion_vectors() > 0);
 	while (particle_update_list.first()) {
 		//use transform feedback to process particles
 
@@ -1637,7 +1637,6 @@ Dependency *ParticlesStorage::particles_get_dependency(RID p_particles) const {
 }
 
 bool ParticlesStorage::particles_is_inactive(RID p_particles) const {
-	ERR_FAIL_COND_V_MSG(RSG::threaded, false, "This function should never be used with threaded rendering, as it stalls the renderer.");
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, false);
 	return !particles->emitting && particles->inactive;

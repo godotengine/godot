@@ -47,6 +47,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/3d/primitive_meshes.h"
+#include "scene/resources/3d/sky_material.h"
 
 class EditorFileDialog;
 class EditorInspector;
@@ -78,10 +79,24 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 
 	Camera3D *camera = nullptr;
 	Ref<CameraAttributesPractical> camera_attributes;
+	Ref<Environment> environment;
+	Ref<Sky> sky;
+	Ref<ProceduralSkyMaterial> procedural_sky_material;
 	bool first_aabb = false;
 	AABB contents_aabb;
 
-	DirectionalLight3D *light = nullptr;
+	Button *light_1_switch = nullptr;
+	Button *light_2_switch = nullptr;
+	Button *light_rotate_switch = nullptr;
+
+	struct ThemeCache {
+		Ref<Texture2D> light_1_icon;
+		Ref<Texture2D> light_2_icon;
+		Ref<Texture2D> rotate_icon;
+	} theme_cache;
+
+	DirectionalLight3D *light1 = nullptr;
+	DirectionalLight3D *light2 = nullptr;
 	Ref<ArrayMesh> selection_mesh;
 	MeshInstance3D *node_selected = nullptr;
 
@@ -97,6 +112,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	Animation::LoopMode animation_loop_mode = Animation::LOOP_NONE;
 	bool animation_pingpong = false;
 	bool previous_import_as_skeleton = false;
+	bool previous_rest_as_reset = false;
 
 	Ref<StandardMaterial3D> collider_mat;
 
@@ -175,6 +191,9 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	void _mesh_tree_selected();
 	void _scene_tree_selected();
 	void _cleanup();
+	void _on_light_1_switch_pressed();
+	void _on_light_2_switch_pressed();
+	void _on_light_rotate_switch_pressed();
 
 	void _viewport_input(const Ref<InputEvent> &p_input);
 
@@ -217,6 +236,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	Timer *update_view_timer = nullptr;
 
 protected:
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 
 public:

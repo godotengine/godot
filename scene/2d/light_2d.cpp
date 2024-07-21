@@ -197,9 +197,13 @@ Light2D::BlendMode Light2D::get_blend_mode() const {
 	return blend_mode;
 }
 
+void Light2D::_physics_interpolated_changed() {
+	RenderingServer::get_singleton()->canvas_light_set_interpolated(canvas_light, is_physics_interpolated());
+}
+
 void Light2D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_ENTER_CANVAS: {
 			RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, get_canvas());
 			_update_light_visibility();
 		} break;
@@ -212,7 +216,18 @@ void Light2D::_notification(int p_what) {
 			_update_light_visibility();
 		} break;
 
-		case NOTIFICATION_EXIT_TREE: {
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			if (is_visible_in_tree() && is_physics_interpolated()) {
+				// Explicitly make sure the transform is up to date in RenderingServer before
+				// resetting. This is necessary because NOTIFICATION_TRANSFORM_CHANGED
+				// is normally deferred, and a client change to transform will not always be sent
+				// before the reset, so we need to guarantee this.
+				RS::get_singleton()->canvas_light_set_transform(canvas_light, get_global_transform());
+				RS::get_singleton()->canvas_light_reset_physics_interpolation(canvas_light);
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_CANVAS: {
 			RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, RID());
 			_update_light_visibility();
 		} break;

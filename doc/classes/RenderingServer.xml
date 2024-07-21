@@ -92,13 +92,13 @@
 				Sets the exposure values that will be used by the renderers. The normalization amount is used to bake a given Exposure Value (EV) into rendering calculations to reduce the dynamic range of the scene.
 				The normalization factor can be calculated from exposure value (EV100) as follows:
 				[codeblock]
-				func get_exposure_normalization(float ev100):
-				    			    return 1.0 / (pow(2.0, ev100) * 1.2)
+				func get_exposure_normalization(ev100: float):
+				    return 1.0 / (pow(2.0, ev100) * 1.2)
 				[/codeblock]
 				The exposure value can be calculated from aperture (in f-stops), shutter speed (in seconds), and sensitivity (in ISO) as follows:
 				[codeblock]
-				func get_exposure(float aperture, float shutter_speed, float sensitivity):
-				    return log2((aperture * aperture) / shutterSpeed * (100.0 / sensitivity))
+				func get_exposure(aperture: float, shutter_speed: float, sensitivity: float):
+				    return log((aperture * aperture) / shutter_speed * (100.0 / sensitivity)) / log(2)
 				[/codeblock]
 			</description>
 		</method>
@@ -214,6 +214,7 @@
 			<param index="1" name="pos" type="Vector2" />
 			<param index="2" name="radius" type="float" />
 			<param index="3" name="color" type="Color" />
+			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a circle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_circle].
 			</description>
@@ -280,6 +281,7 @@
 			<param index="1" name="points" type="PackedVector2Array" />
 			<param index="2" name="colors" type="PackedColorArray" />
 			<param index="3" name="width" type="float" default="-1.0" />
+			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a 2D multiline on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_multiline] and [method CanvasItem.draw_multiline_colors].
 			</description>
@@ -356,6 +358,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="rect" type="Rect2" />
 			<param index="2" name="color" type="Color" />
+			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a rectangle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_rect].
 			</description>
@@ -422,6 +425,14 @@
 				Creates a new CanvasItem instance and returns its [RID]. It can be accessed with the RID that is returned. This RID will be used in all [code]canvas_item_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
 				[b]Note:[/b] The equivalent node is [CanvasItem].
+			</description>
+		</method>
+		<method name="canvas_item_reset_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<description>
+				Prevents physics interpolation for the current physics tick.
+				This is useful when moving a canvas item to a new location, to give an instantaneous change rather than interpolation from the previous location.
 			</description>
 		</method>
 		<method name="canvas_item_set_canvas_group_mode">
@@ -502,6 +513,14 @@
 			<param index="1" name="index" type="int" />
 			<description>
 				Sets the index for the [CanvasItem].
+			</description>
+		</method>
+		<method name="canvas_item_set_interpolated">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="interpolated" type="bool" />
+			<description>
+				If [param interpolated] is [code]true[/code], turns on physics interpolation for the canvas item.
 			</description>
 		</method>
 		<method name="canvas_item_set_light_mask">
@@ -612,6 +631,15 @@
 				Sets the [CanvasItem]'s Z index, i.e. its draw order (lower indexes are drawn first).
 			</description>
 		</method>
+		<method name="canvas_item_transform_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="transform" type="Transform2D" />
+			<description>
+				Transforms both the current and previous stored transform for a canvas item.
+				This allows transforming a canvas item without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilizing a shifting origin.
+			</description>
+		</method>
 		<method name="canvas_light_attach_to_canvas">
 			<return type="void" />
 			<param index="0" name="light" type="RID" />
@@ -644,6 +672,14 @@
 				[b]Note:[/b] The equivalent node is [LightOccluder2D].
 			</description>
 		</method>
+		<method name="canvas_light_occluder_reset_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="occluder" type="RID" />
+			<description>
+				Prevents physics interpolation for the current physics tick.
+				This is useful when moving an occluder to a new location, to give an instantaneous change rather than interpolation from the previous location.
+			</description>
+		</method>
 		<method name="canvas_light_occluder_set_as_sdf_collision">
 			<return type="void" />
 			<param index="0" name="occluder" type="RID" />
@@ -657,6 +693,14 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				Enables or disables light occluder.
+			</description>
+		</method>
+		<method name="canvas_light_occluder_set_interpolated">
+			<return type="void" />
+			<param index="0" name="occluder" type="RID" />
+			<param index="1" name="interpolated" type="bool" />
+			<description>
+				If [param interpolated] is [code]true[/code], turns on physics interpolation for the light occluder.
 			</description>
 		</method>
 		<method name="canvas_light_occluder_set_light_mask">
@@ -681,6 +725,23 @@
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Sets a light occluder's [Transform2D].
+			</description>
+		</method>
+		<method name="canvas_light_occluder_transform_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="occluder" type="RID" />
+			<param index="1" name="transform" type="Transform2D" />
+			<description>
+				Transforms both the current and previous stored transform for a light occluder.
+				This allows transforming an occluder without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilizing a shifting origin.
+			</description>
+		</method>
+		<method name="canvas_light_reset_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<description>
+				Prevents physics interpolation for the current physics tick.
+				This is useful when moving a canvas item to a new location, to give an instantaneous change rather than interpolation from the previous location.
 			</description>
 		</method>
 		<method name="canvas_light_set_blend_mode">
@@ -721,6 +782,14 @@
 			<param index="1" name="height" type="float" />
 			<description>
 				Sets a canvas light's height.
+			</description>
+		</method>
+		<method name="canvas_light_set_interpolated">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="interpolated" type="bool" />
+			<description>
+				If [param interpolated] is [code]true[/code], turns on physics interpolation for the canvas light.
 			</description>
 		</method>
 		<method name="canvas_light_set_item_cull_mask">
@@ -827,6 +896,15 @@
 			<param index="2" name="max_z" type="int" />
 			<description>
 				Sets the Z range of objects that will be affected by this light. Equivalent to [member Light2D.range_z_min] and [member Light2D.range_z_max].
+			</description>
+		</method>
+		<method name="canvas_light_transform_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="transform" type="Transform2D" />
+			<description>
+				Transforms both the current and previous stored transform for a canvas light.
+				This allows transforming a light without creating a "glitch" in the interpolation, which is is particularly useful for large worlds utilizing a shifting origin.
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_create">
@@ -1857,7 +1935,7 @@
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="transform" type="Transform3D" />
 			<description>
-				Sets the world space transform of the instance. Equivalent to [member Node3D.transform].
+				Sets the world space transform of the instance. Equivalent to [member Node3D.global_transform].
 			</description>
 		</method>
 		<method name="instance_set_visibility_parent">
@@ -1902,6 +1980,12 @@
 			<description>
 				Returns an array of object IDs intersecting with the provided 3D ray. Only 3D nodes that inherit from [VisualInstance3D] are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
+			</description>
+		</method>
+		<method name="is_on_render_thread">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if our code is currently executing on the rendering thread.
 			</description>
 		</method>
 		<method name="light_directional_set_blend_splits">
@@ -2501,7 +2585,7 @@
 			<description>
 				Set the entire data to use for drawing the [param multimesh] at once to [param buffer] (such as instance transforms and colors). [param buffer]'s size must match the number of instances multiplied by the per-instance data size (which depends on the enabled MultiMesh fields). Otherwise, an error message is printed and nothing is rendered. See also [method multimesh_get_buffer].
 				The per-instance data size and expected data order is:
-				[codeblock]
+				[codeblock lang=text]
 				2D:
 				  - Position: 8 floats (8 floats for Transform2D)
 				  - Position + Vertex color: 12 floats (8 floats for Transform2D, 4 floats for Color)
@@ -3609,6 +3693,14 @@
 				Returns the viewport's last rendered frame.
 			</description>
 		</method>
+		<method name="viewport_get_update_mode" qualifiers="const">
+			<return type="int" enum="RenderingServer.ViewportUpdateMode" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Returns the viewport's update mode. See [enum ViewportUpdateMode] constants for options.
+				[b]Warning:[/b] Calling this from any thread other than the rendering thread will be detrimental to performance.
+			</description>
+		</method>
 		<method name="viewport_remove_canvas">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
@@ -3903,7 +3995,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be a [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be a [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
+				If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
 				[b]Note:[/b] This setting will have no effect when using the GL Compatibility renderer as the GL Compatibility renderer always renders in low dynamic range for performance reasons.
 			</description>
 		</method>
@@ -3945,6 +4037,15 @@
 			<param index="1" name="texture" type="RID" />
 			<description>
 				The texture to use when the VRS mode is set to [constant RenderingServer.VIEWPORT_VRS_TEXTURE]. Equivalent to [member ProjectSettings.rendering/vrs/texture].
+			</description>
+		</method>
+		<method name="viewport_set_vrs_update_mode">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="mode" type="int" enum="RenderingServer.ViewportVRSUpdateMode" />
+			<description>
+				Sets the update mode for Variable Rate Shading (VRS) for the viewport. VRS requires the input texture to be converted to the format usable by the VRS method supported by the hardware. The update mode defines how often this happens. If the GPU does not support VRS, or VRS is not enabled, this property is ignored.
+				If set to [constant RenderingServer.VIEWPORT_VRS_UPDATE_ONCE], the input texture is copied once and the mode is changed to [constant RenderingServer.VIEWPORT_VRS_UPDATE_DISABLED].
 			</description>
 		</method>
 		<method name="visibility_notifier_create">
@@ -4137,6 +4238,9 @@
 		</constant>
 		<constant name="MAX_2D_DIRECTIONAL_LIGHTS" value="8">
 			The maximum number of directional lights that can be rendered at a given time in 2D.
+		</constant>
+		<constant name="MAX_MESH_SURFACES" value="256">
+			The maximum number of surfaces a mesh can have.
 		</constant>
 		<constant name="TEXTURE_LAYERED_2D_ARRAY" value="0" enum="TextureLayeredType">
 			Array of 2-dimensional textures (see [Texture2DArray]).
@@ -4887,10 +4991,22 @@
 			Variable rate shading uses a texture. Note, for stereoscopic use a texture atlas with a texture for each view.
 		</constant>
 		<constant name="VIEWPORT_VRS_XR" value="2" enum="ViewportVRSMode">
-			Variable rate shading texture is supplied by the primary [XRInterface].
+			Variable rate shading texture is supplied by the primary [XRInterface]. Note that this may override the update mode.
 		</constant>
 		<constant name="VIEWPORT_VRS_MAX" value="3" enum="ViewportVRSMode">
 			Represents the size of the [enum ViewportVRSMode] enum.
+		</constant>
+		<constant name="VIEWPORT_VRS_UPDATE_DISABLED" value="0" enum="ViewportVRSUpdateMode">
+			The input texture for variable rate shading will not be processed.
+		</constant>
+		<constant name="VIEWPORT_VRS_UPDATE_ONCE" value="1" enum="ViewportVRSUpdateMode">
+			The input texture for variable rate shading will be processed once.
+		</constant>
+		<constant name="VIEWPORT_VRS_UPDATE_ALWAYS" value="2" enum="ViewportVRSUpdateMode">
+			The input texture for variable rate shading will be processed each frame.
+		</constant>
+		<constant name="VIEWPORT_VRS_UPDATE_MAX" value="3" enum="ViewportVRSUpdateMode">
+			Represents the size of the [enum ViewportVRSUpdateMode] enum.
 		</constant>
 		<constant name="SKY_MODE_AUTOMATIC" value="0" enum="SkyMode">
 			Automatically selects the appropriate process mode based on your sky shader. If your shader uses [code]TIME[/code] or [code]POSITION[/code], this will use [constant SKY_MODE_REALTIME]. If your shader uses any of the [code]LIGHT_*[/code] variables or any custom uniforms, this uses [constant SKY_MODE_INCREMENTAL]. Otherwise, this defaults to [constant SKY_MODE_QUALITY].

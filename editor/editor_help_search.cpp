@@ -40,7 +40,7 @@
 
 bool EditorHelpSearch::_all_terms_in_name(const Vector<String> &p_terms, const String &p_name) const {
 	for (int i = 0; i < p_terms.size(); i++) {
-		if (p_name.findn(p_terms[i]) < 0) {
+		if (!p_name.containsn(p_terms[i])) {
 			return false;
 		}
 	}
@@ -109,7 +109,7 @@ Dictionary EditorHelpSearch::_native_search_cb(const String &p_search_string, in
 		if (class_doc.name.is_empty()) {
 			continue;
 		}
-		if (class_doc.name.findn(term) > -1) {
+		if (class_doc.name.containsn(term)) {
 			ret[vformat("class_name:%s", class_doc.name)] = class_doc.name;
 		}
 		if (term.length() > 1 || term == "@") {
@@ -212,7 +212,7 @@ void EditorHelpSearch::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			connect("confirmed", callable_mp(this, &EditorHelpSearch::_confirmed));
+			connect(SceneStringName(confirmed), callable_mp(this, &EditorHelpSearch::_confirmed));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -315,15 +315,15 @@ EditorHelpSearch::EditorHelpSearch() {
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->set_clear_button_enabled(true);
-	search_box->connect("gui_input", callable_mp(this, &EditorHelpSearch::_search_box_gui_input));
-	search_box->connect("text_changed", callable_mp(this, &EditorHelpSearch::_search_box_text_changed));
+	search_box->connect(SceneStringName(gui_input), callable_mp(this, &EditorHelpSearch::_search_box_gui_input));
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorHelpSearch::_search_box_text_changed));
 	register_text_enter(search_box);
 	hbox->add_child(search_box);
 
 	case_sensitive_button = memnew(Button);
 	case_sensitive_button->set_theme_type_variation("FlatButton");
 	case_sensitive_button->set_tooltip_text(TTR("Case Sensitive"));
-	case_sensitive_button->connect("pressed", callable_mp(this, &EditorHelpSearch::_update_results));
+	case_sensitive_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelpSearch::_update_results));
 	case_sensitive_button->set_toggle_mode(true);
 	case_sensitive_button->set_focus_mode(Control::FOCUS_NONE);
 	hbox->add_child(case_sensitive_button);
@@ -331,7 +331,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	hierarchy_button = memnew(Button);
 	hierarchy_button->set_theme_type_variation("FlatButton");
 	hierarchy_button->set_tooltip_text(TTR("Show Hierarchy"));
-	hierarchy_button->connect("pressed", callable_mp(this, &EditorHelpSearch::_update_results));
+	hierarchy_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelpSearch::_update_results));
 	hierarchy_button->set_toggle_mode(true);
 	hierarchy_button->set_pressed(true);
 	hierarchy_button->set_focus_mode(Control::FOCUS_NONE);
@@ -351,11 +351,12 @@ EditorHelpSearch::EditorHelpSearch() {
 	filter_combo->add_item(TTR("Constants Only"), SEARCH_CONSTANTS);
 	filter_combo->add_item(TTR("Properties Only"), SEARCH_PROPERTIES);
 	filter_combo->add_item(TTR("Theme Properties Only"), SEARCH_THEME_ITEMS);
-	filter_combo->connect("item_selected", callable_mp(this, &EditorHelpSearch::_filter_combo_item_selected));
+	filter_combo->connect(SceneStringName(item_selected), callable_mp(this, &EditorHelpSearch::_filter_combo_item_selected));
 	hbox->add_child(filter_combo);
 
 	// Create the results tree.
 	results_tree = memnew(Tree);
+	results_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	results_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	results_tree->set_columns(2);
 	results_tree->set_column_title(0, TTR("Name"));
@@ -368,7 +369,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	results_tree->set_hide_root(true);
 	results_tree->set_select_mode(Tree::SELECT_ROW);
 	results_tree->connect("item_activated", callable_mp(this, &EditorHelpSearch::_confirmed));
-	results_tree->connect("item_selected", callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled).bind(false));
+	results_tree->connect(SceneStringName(item_selected), callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled).bind(false));
 	vbox->add_child(results_tree, true);
 }
 
@@ -743,9 +744,9 @@ String EditorHelpSearch::Runner::_match_keywords_in_all_terms(const String &p_ke
 
 bool EditorHelpSearch::Runner::_match_string(const String &p_term, const String &p_string) const {
 	if (search_flags & SEARCH_CASE_SENSITIVE) {
-		return p_string.find(p_term) > -1;
+		return p_string.contains(p_term);
 	} else {
-		return p_string.findn(p_term) > -1;
+		return p_string.containsn(p_term);
 	}
 }
 

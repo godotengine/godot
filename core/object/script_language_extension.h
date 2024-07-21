@@ -101,6 +101,19 @@ public:
 	EXBIND1RC(bool, has_method, const StringName &)
 	EXBIND1RC(bool, has_static_method, const StringName &)
 
+	GDVIRTUAL1RC(Variant, _get_script_method_argument_count, const StringName &)
+	virtual int get_script_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override {
+		Variant ret;
+		if (GDVIRTUAL_CALL(_get_script_method_argument_count, p_method, ret) && ret.get_type() == Variant::INT) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return ret.operator int();
+		}
+		// Fallback to default.
+		return Script::get_script_method_argument_count(p_method, r_is_valid);
+	}
+
 	GDVIRTUAL1RC(Dictionary, _get_method_info, const StringName &)
 	virtual MethodInfo get_method_info(const StringName &p_method) const override {
 		Dictionary mi;
@@ -306,8 +319,8 @@ public:
 		}
 		if (r_errors != nullptr && ret.has("errors")) {
 			Array errors = ret["errors"];
-			for (int i = 0; i < errors.size(); i++) {
-				Dictionary err = errors[i];
+			for (const Variant &error : errors) {
+				Dictionary err = error;
 				ERR_CONTINUE(!err.has("line"));
 				ERR_CONTINUE(!err.has("column"));
 				ERR_CONTINUE(!err.has("message"));
@@ -326,8 +339,8 @@ public:
 		if (r_warnings != nullptr && ret.has("warnings")) {
 			ERR_FAIL_COND_V(!ret.has("warnings"), false);
 			Array warnings = ret["warnings"];
-			for (int i = 0; i < warnings.size(); i++) {
-				Dictionary warn = warnings[i];
+			for (const Variant &warning : warnings) {
+				Dictionary warn = warning;
 				ERR_CONTINUE(!warn.has("start_line"));
 				ERR_CONTINUE(!warn.has("end_line"));
 				ERR_CONTINUE(!warn.has("leftmost_column"));
@@ -376,7 +389,16 @@ public:
 	EXBIND0RC(bool, can_make_function)
 	EXBIND3R(Error, open_in_external_editor, const Ref<Script> &, int, int)
 	EXBIND0R(bool, overrides_external_editor)
-	EXBIND0RC(ScriptNameCasing, preferred_file_name_casing)
+
+	GDVIRTUAL0RC(ScriptNameCasing, _preferred_file_name_casing);
+
+	virtual ScriptNameCasing preferred_file_name_casing() const override {
+		ScriptNameCasing ret;
+		if (GDVIRTUAL_CALL(_preferred_file_name_casing, ret)) {
+			return ret;
+		}
+		return ScriptNameCasing::SCRIPT_NAME_CASING_SNAKE_CASE;
+	}
 
 	GDVIRTUAL3RC(Dictionary, _complete_code, const String &, const String &, Object *)
 
@@ -389,8 +411,8 @@ public:
 
 		if (r_options != nullptr && ret.has("options")) {
 			Array options = ret["options"];
-			for (int i = 0; i < options.size(); i++) {
-				Dictionary op = options[i];
+			for (const Variant &var : options) {
+				Dictionary op = var;
 				CodeCompletionOption option;
 				ERR_CONTINUE(!op.has("kind"));
 				option.kind = CodeCompletionKind(int(op["kind"]));
@@ -489,8 +511,8 @@ public:
 		}
 		if (p_values != nullptr && ret.has("values")) {
 			Array values = ret["values"];
-			for (int i = 0; i < values.size(); i++) {
-				p_values->push_back(values[i]);
+			for (const Variant &value : values) {
+				p_values->push_back(value);
 			}
 		}
 	}
@@ -509,8 +531,8 @@ public:
 		}
 		if (p_values != nullptr && ret.has("values")) {
 			Array values = ret["values"];
-			for (int i = 0; i < values.size(); i++) {
-				p_values->push_back(values[i]);
+			for (const Variant &value : values) {
+				p_values->push_back(value);
 			}
 		}
 	}
@@ -536,8 +558,8 @@ public:
 		}
 		if (p_values != nullptr && ret.has("values")) {
 			Array values = ret["values"];
-			for (int i = 0; i < values.size(); i++) {
-				p_values->push_back(values[i]);
+			for (const Variant &value : values) {
+				p_values->push_back(value);
 			}
 		}
 	}
@@ -549,9 +571,9 @@ public:
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_debug_get_current_stack_info, ret);
 		Vector<StackInfo> sret;
-		for (int i = 0; i < ret.size(); i++) {
+		for (const Variant &var : ret) {
 			StackInfo si;
-			Dictionary d = ret[i];
+			Dictionary d = var;
 			ERR_CONTINUE(!d.has("file"));
 			ERR_CONTINUE(!d.has("func"));
 			ERR_CONTINUE(!d.has("line"));
@@ -582,8 +604,8 @@ public:
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const override {
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_public_functions, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			MethodInfo mi = MethodInfo::from_dict(ret[i]);
+		for (const Variant &var : ret) {
+			MethodInfo mi = MethodInfo::from_dict(var);
 			p_functions->push_back(mi);
 		}
 	}
@@ -602,8 +624,8 @@ public:
 	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const override {
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_public_annotations, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			MethodInfo mi = MethodInfo::from_dict(ret[i]);
+		for (const Variant &var : ret) {
+			MethodInfo mi = MethodInfo::from_dict(var);
 			p_annotations->push_back(mi);
 		}
 	}
@@ -624,7 +646,7 @@ public:
 
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override {
 		int ret = 0;
-		GDVIRTUAL_REQUIRED_CALL(_profiling_get_accumulated_data, p_info_arr, p_info_max, ret);
+		GDVIRTUAL_REQUIRED_CALL(_profiling_get_frame_data, p_info_arr, p_info_max, ret);
 		return ret;
 	}
 
@@ -807,6 +829,19 @@ public:
 		return false;
 	}
 
+	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override {
+		if (native_info->get_method_argument_count_func) {
+			GDExtensionBool is_valid = 0;
+			GDExtensionInt ret = native_info->get_method_argument_count_func(instance, (GDExtensionStringNamePtr)&p_method, &is_valid);
+			if (r_is_valid) {
+				*r_is_valid = is_valid != 0;
+			}
+			return ret;
+		}
+		// Fallback to default.
+		return ScriptInstance::get_method_argument_count(p_method, r_is_valid);
+	}
+
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
 		Variant ret;
 		if (native_info->call_func) {
@@ -894,7 +929,6 @@ public:
 			return reinterpret_cast<ScriptLanguage *>(lang);
 		}
 		return nullptr;
-		;
 	}
 	virtual ~ScriptInstanceExtension() {
 		if (native_info->free_func) {

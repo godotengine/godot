@@ -194,7 +194,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 
 	ERR_FAIL_COND(view_count == 0);
 
-	bool use_internal_buffer = scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_OFF || glow.glow_enabled;
+	bool use_internal_buffer = scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_OFF || apply_color_adjustments_in_post;
 	uint32_t depth_format_size = 3;
 	bool use_multiview = view_count > 1;
 
@@ -203,7 +203,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 		return;
 	}
 
-	if (use_internal_buffer) {
+	if (use_internal_buffer && internal3d.color == 0) {
 		// Setup our internal buffer.
 		GLenum texture_target = use_multiview ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
 
@@ -261,14 +261,14 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
 			_clear_intermediate_buffers();
-			WARN_PRINT("Could not create 3D buffers, status: " + texture_storage->get_framebuffer_error(status));
+			WARN_PRINT("Could not create 3D internal buffers, status: " + texture_storage->get_framebuffer_error(status));
 		}
 
 		glBindTexture(texture_target, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	}
 
-	if (msaa3d.mode != RS::VIEWPORT_MSAA_DISABLED) {
+	if (msaa3d.mode != RS::VIEWPORT_MSAA_DISABLED && msaa3d.color == 0) {
 		// Setup MSAA.
 		const GLsizei samples[] = { 1, 2, 4, 8 };
 		msaa3d.samples = samples[msaa3d.mode];
@@ -403,6 +403,13 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 		msaa3d.samples = 1;
 		msaa3d.check_fbo_cache = false;
 	}
+}
+
+void RenderSceneBuffersGLES3::configure_for_probe(Size2i p_size) {
+	internal_size = p_size;
+	target_size = p_size;
+	scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
+	view_count = 1;
 }
 
 void RenderSceneBuffersGLES3::_clear_msaa3d_buffers() {
@@ -551,14 +558,8 @@ void RenderSceneBuffersGLES3::_clear_back_buffers() {
 	}
 }
 
-void RenderSceneBuffersGLES3::set_glow_enabled(bool p_glow_enabled) {
-	if (glow.glow_enabled != p_glow_enabled) {
-		glow.glow_enabled = p_glow_enabled;
-
-		// Clear our main buffers, this can impact them.
-		_clear_msaa3d_buffers();
-		_clear_intermediate_buffers();
-	}
+void RenderSceneBuffersGLES3::set_apply_color_adjustments_in_post(bool p_apply_in_post) {
+	apply_color_adjustments_in_post = p_apply_in_post;
 }
 
 void RenderSceneBuffersGLES3::check_glow_buffers() {
@@ -570,8 +571,7 @@ void RenderSceneBuffersGLES3::check_glow_buffers() {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	Size2i level_size = internal_size;
 	for (int i = 0; i < 4; i++) {
-		level_size.x = MAX(level_size.x >> 1, 4);
-		level_size.y = MAX(level_size.y >> 1, 4);
+		level_size = Size2i(level_size.x >> 1, level_size.y >> 1).maxi(4);
 
 		glow.levels[i].size = level_size;
 

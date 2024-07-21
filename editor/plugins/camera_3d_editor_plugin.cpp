@@ -76,7 +76,7 @@ Camera3DEditor::Camera3DEditor() {
 	preview->set_offset(SIDE_RIGHT, 0);
 	preview->set_offset(SIDE_TOP, 0);
 	preview->set_offset(SIDE_BOTTOM, 10);
-	preview->connect("pressed", callable_mp(this, &Camera3DEditor::_pressed));
+	preview->connect(SceneStringName(pressed), callable_mp(this, &Camera3DEditor::_pressed));
 }
 
 void Camera3DEditorPlugin::edit(Object *p_object) {

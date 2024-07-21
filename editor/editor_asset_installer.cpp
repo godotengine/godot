@@ -601,7 +601,7 @@ void EditorAssetInstaller::_notification(int p_what) {
 			} else {
 				show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
 			}
-			asset_conflicts_link->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			asset_conflicts_link->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			generic_extension_icon = get_editor_theme_icon(SNAME("Object"));
 
@@ -694,7 +694,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	target_dir_button->set_text(TTR("Change Install Folder"));
 	target_dir_button->set_tooltip_text(TTR("Change the folder where the contents of the asset are going to be installed."));
 	remapping_tools->add_child(target_dir_button);
-	target_dir_button->connect("pressed", callable_mp(this, &EditorAssetInstaller::_open_target_dir_dialog));
+	target_dir_button->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetInstaller::_open_target_dir_dialog));
 
 	remapping_tools->add_child(memnew(VSeparator));
 
@@ -716,7 +716,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	asset_conflicts_link->set_tooltip_text(TTR("Show contents of the asset and conflicting files."));
 	asset_conflicts_link->set_visible(false);
 	remapping_tools->add_child(asset_conflicts_link);
-	asset_conflicts_link->connect("pressed", callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(true, true));
+	asset_conflicts_link->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(true, true));
 
 	// File hierarchy trees.
 
@@ -735,6 +735,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	source_tree_vb->add_child(source_tree_label);
 
 	source_tree = memnew(Tree);
+	source_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	source_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	source_tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_checked_cbk));
 	source_tree_vb->add_child(source_tree);
@@ -749,6 +750,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	destination_tree_vb->add_child(destination_tree_label);
 
 	destination_tree = memnew(Tree);
+	destination_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	destination_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	destination_tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_checked_cbk));
 	destination_tree_vb->add_child(destination_tree);

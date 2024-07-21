@@ -100,7 +100,7 @@
 			<return type="void" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Called when an [InputEventKey] or [InputEventShortcut] hasn't been consumed by [method _input] or any GUI [Control] item. It is called before [method _unhandled_key_input] and [method _unhandled_input]. The input event propagates up through the node tree until a node consumes it.
+				Called when an [InputEventKey], [InputEventShortcut], or [InputEventJoypadButton] hasn't been consumed by [method _input] or any GUI [Control] item. It is called before [method _unhandled_key_input] and [method _unhandled_input]. The input event propagates up through the node tree until a node consumes it.
 				It is only called if shortcut processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_shortcut_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				This method can be used to handle shortcuts. For generic GUI events, use [method _input] instead. Gameplay events should usually be handled with either [method _unhandled_input] or [method _unhandled_key_input].
@@ -187,7 +187,7 @@
 			<param index="0" name="message" type="String" />
 			<param index="1" name="context" type="StringName" default="&quot;&quot;" />
 			<description>
-				Translates a [param message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation.
+				Translates a [param message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation. Note that most [Control] nodes automatically translate their strings, so this method is mostly useful for formatted strings or custom drawn text.
 				This method works the same as [method Object.tr], with the addition of respecting the [member auto_translate_mode] state.
 				If [method Object.can_translate_messages] is [code]false[/code], or no translation is available, this method returns the [param message] without changes. See [method Object.set_message_translation].
 				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/internationalizing_games.html]Internationalizing games[/url].
@@ -383,7 +383,7 @@
 				Fetches a node. The [NodePath] can either be a relative path (from this node), or an absolute path (from the [member SceneTree.root]) to a node. If [param path] does not point to a valid node, generates an error and returns [code]null[/code]. Attempts to access methods on the return value will result in an [i]"Attempt to call &lt;method&gt; on a null instance."[/i] error.
 				[b]Note:[/b] Fetching by absolute path only works when the node is inside the scene tree (see [method is_inside_tree]).
 				[b]Example:[/b] Assume this method is called from the Character node, inside the following tree:
-				[codeblock]
+				[codeblock lang=text]
 				 ┖╴root
 				    ┠╴Character (you are here!)
 				    ┃  ┠╴Sword
@@ -514,8 +514,8 @@
 			<return type="String" />
 			<description>
 				Returns the tree as a [String]. Used mainly for debugging purposes. This version displays the path relative to the current node, and is good for copy/pasting into the [method get_node] function. It also can be used in game UI/UX.
-				[b]Example output:[/b]
-				[codeblock]
+				May print, for example:
+				[codeblock lang=text]
 				TheGame
 				TheGame/Menu
 				TheGame/Menu/Label
@@ -529,8 +529,8 @@
 			<return type="String" />
 			<description>
 				Similar to [method get_tree_string], this returns the tree as a [String]. This version displays a more graphical representation similar to what is displayed in the Scene Dock. It is useful for inspecting larger trees.
-				[b]Example output:[/b]
-				[codeblock]
+				May print, for example:
+				[codeblock lang=text]
 				 ┖╴TheGame
 				    ┠╴Menu
 				    ┃  ┠╴Label
@@ -619,6 +619,27 @@
 				[method request_ready] resets it back to [code]false[/code].
 			</description>
 		</method>
+		<method name="is_part_of_edited_scene" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the node is part of the scene currently opened in the editor.
+			</description>
+		</method>
+		<method name="is_physics_interpolated" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if physics interpolation is enabled for this node (see [member physics_interpolation_mode]).
+				[b]Note:[/b] Interpolation will only be active if both the flag is set [b]and[/b] physics interpolation is enabled within the [SceneTree]. This can be tested using [method is_physics_interpolated_and_enabled].
+			</description>
+		</method>
+		<method name="is_physics_interpolated_and_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if physics interpolation is enabled (see [member physics_interpolation_mode]) [b]and[/b] enabled in the [SceneTree].
+				This is a convenience version of [method is_physics_interpolated] that also checks whether physics interpolation is enabled globally.
+				See [member SceneTree.physics_interpolation] and [member ProjectSettings.physics/common/physics_interpolation].
+			</description>
+		</method>
 		<method name="is_physics_processing" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -701,8 +722,8 @@
 			<return type="void" />
 			<description>
 				Prints the node and its children to the console, recursively. The node does not have to be inside the tree. This method outputs [NodePath]s relative to this node, and is good for copy/pasting into [method get_node]. See also [method print_tree_pretty].
-				[b]Example output:[/b]
-				[codeblock]
+				May print, for example:
+				[codeblock lang=text]
 				.
 				Menu
 				Menu/Label
@@ -716,8 +737,8 @@
 			<return type="void" />
 			<description>
 				Prints the node and its children to the console, recursively. The node does not have to be inside the tree. Similar to [method print_tree], but the graphical representation looks like what is displayed in the editor's Scene dock. It is useful for inspecting larger trees.
-				[b]Example output:[/b]
-				[codeblock]
+				May print, for example:
+				[codeblock lang=text]
 				 ┖╴TheGame
 				    ┠╴Menu
 				    ┃  ┠╴Label
@@ -791,6 +812,15 @@
 			<description>
 				Requests [method _ready] to be called again the next time the node enters the tree. Does [b]not[/b] immediately call [method _ready].
 				[b]Note:[/b] This method only affects the current node. If the node's children also need to request ready, this method needs to be called for each one of them. When the node and its children enter the tree again, the order of [method _ready] callbacks will be the same as normal.
+			</description>
+		</method>
+		<method name="reset_physics_interpolation">
+			<return type="void" />
+			<description>
+				When physics interpolation is active, moving a node to a radically different transform (such as placement within a level) can result in a visible glitch as the object is rendered moving from the old to new position over the physics tick.
+				That glitch can be prevented by calling this method, which temporarily disables interpolation until the physics tick is complete.
+				The notification [constant NOTIFICATION_RESET_PHYSICS_INTERPOLATION] will be received by the node and all children recursively.
+				[b]Note:[/b] This function should be called [b]after[/b] moving the node, rather than before.
 			</description>
 		</method>
 		<method name="rpc" qualifiers="vararg">
@@ -946,8 +976,8 @@
 	</methods>
 	<members>
 		<member name="auto_translate_mode" type="int" setter="set_auto_translate_mode" getter="get_auto_translate_mode" enum="Node.AutoTranslateMode" default="0">
-			Defines if any text should automatically change to its translated version depending on the current locale (for nodes such as [Label], [RichTextLabel], [Window], etc.). See [enum AutoTranslateMode].
-			Also decides if the node's strings should be parsed for POT generation.
+			Defines if any text should automatically change to its translated version depending on the current locale (for nodes such as [Label], [RichTextLabel], [Window], etc.). Also decides if the node's strings should be parsed for POT generation.
+			[b]Note:[/b] For the root node, auto translate mode can also be set via [member ProjectSettings.internationalization/rendering/root_node_auto_translate].
 		</member>
 		<member name="editor_description" type="String" setter="set_editor_description" getter="get_editor_description" default="&quot;&quot;">
 			An optional description to the node. It will be displayed as a tooltip when hovering over the node in the editor's Scene dock.
@@ -961,8 +991,12 @@
 			[b]Note:[/b] When changing the name, the following characters will be replaced with an underscore: ([code].[/code] [code]:[/code] [code]@[/code] [code]/[/code] [code]"[/code] [code]%[/code]). In particular, the [code]@[/code] character is reserved for auto-generated names. See also [method String.validate_node_name].
 		</member>
 		<member name="owner" type="Node" setter="set_owner" getter="get_owner">
-			The owner of this node. The owner must be an ancestor of this node. When packing the owner node in a [PackedScene], all the nodes it owns are also saved with it. 
+			The owner of this node. The owner must be an ancestor of this node. When packing the owner node in a [PackedScene], all the nodes it owns are also saved with it.
 			[b]Note:[/b] In the editor, nodes not owned by the scene root are usually not displayed in the Scene dock, and will [b]not[/b] be saved. To prevent this, remember to set the owner after calling [method add_child]. See also (see [member unique_name_in_owner])
+		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" enum="Node.PhysicsInterpolationMode" default="0">
+			Allows enabling or disabling physics interpolation per node, offering a finer grain of control than turning physics interpolation on and off globally. See [member ProjectSettings.physics/common/physics_interpolation] and [member SceneTree.physics_interpolation] for the global setting.
+			[b]Note:[/b] When teleporting a node to a distant position you should temporarily disable interpolation with [method Node.reset_physics_interpolation].
 		</member>
 		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="Node.ProcessMode" default="0">
 			The node's processing behavior (see [enum ProcessMode]). To check if the node can process in its current mode, use [method can_process].
@@ -983,7 +1017,7 @@
 			Change the process thread group order. Groups with a lesser order will process before groups with a greater order. This is useful when a large amount of nodes process in sub thread and, afterwards, another group wants to collect their result in the main thread, as an example.
 		</member>
 		<member name="process_thread_messages" type="int" setter="set_process_thread_messages" getter="get_process_thread_messages" enum="Node.ProcessThreadMessages" is_bitfield="true">
-			Set whether the current thread group will process messages (calls to [method call_deferred_thread_group] on threads, and whether it wants to receive them during regular process or physics process callbacks.
+			Set whether the current thread group will process messages (calls to [method call_deferred_thread_group] on threads), and whether it wants to receive them during regular process or physics process callbacks.
 		</member>
 		<member name="scene_file_path" type="String" setter="set_scene_file_path" getter="get_scene_file_path">
 			The original scene's file path, if the node has been instantiated from a [PackedScene] file. Only scene root nodes contains this.
@@ -1122,6 +1156,9 @@
 		<constant name="NOTIFICATION_ENABLED" value="29">
 			Notification received when the node is enabled again after being disabled. See [constant PROCESS_MODE_DISABLED].
 		</constant>
+		<constant name="NOTIFICATION_RESET_PHYSICS_INTERPOLATION" value="2001">
+			Notification received when [method reset_physics_interpolation] is called on the node or its ancestors.
+		</constant>
 		<constant name="NOTIFICATION_EDITOR_PRE_SAVE" value="9001">
 			Notification received right before the scene with the node is saved in the editor. This notification is only sent in the Godot editor and will not occur in exported projects.
 		</constant>
@@ -1150,7 +1187,7 @@
 		</constant>
 		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="1007">
 			Notification received from the OS when a go back request is sent (e.g. pressing the "Back" button on Android).
-			Implemented only on iOS.
+			Implemented only on Android.
 		</constant>
 		<constant name="NOTIFICATION_WM_SIZE_CHANGED" value="1008">
 			Notification received when the window is resized.
@@ -1170,7 +1207,15 @@
 			Implemented only on iOS.
 		</constant>
 		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="2010">
-			Notification received when translations may have changed. Can be triggered by the user changing the locale. Can be used to respond to language changes, for example to change the UI strings on the fly. Useful when working with the built-in translation support, like [method Object.tr].
+			Notification received when translations may have changed. Can be triggered by the user changing the locale, changing [member auto_translate_mode] or when the node enters the scene tree. Can be used to respond to language changes, for example to change the UI strings on the fly. Useful when working with the built-in translation support, like [method Object.tr].
+			[b]Note:[/b] This notification is received alongside [constant NOTIFICATION_ENTER_TREE], so if you are instantiating a scene, the child nodes will not be initialized yet. You can use it to setup translations for this node, child nodes created from script, or if you want to access child nodes added in the editor, make sure the node is ready using [method is_node_ready].
+			[codeblock]
+			func _notification(what):
+			    if what == NOTIFICATION_TRANSLATION_CHANGED:
+			        if not is_node_ready():
+			            await ready # Wait until ready signal.
+			        $Label.text = atr("%d Bananas") % banana_counter
+			[/codeblock]
 		</constant>
 		<constant name="NOTIFICATION_WM_ABOUT" value="2011">
 			Notification received from the OS when a request for "About" information is sent.
@@ -1236,6 +1281,15 @@
 		</constant>
 		<constant name="FLAG_PROCESS_THREAD_MESSAGES_ALL" value="3" enum="ProcessThreadMessages" is_bitfield="true">
 			Allows this node to process threaded messages created with [method call_deferred_thread_group] right before either [method _process] or [method _physics_process] are called.
+		</constant>
+		<constant name="PHYSICS_INTERPOLATION_MODE_INHERIT" value="0" enum="PhysicsInterpolationMode">
+			Inherits [member physics_interpolation_mode] from the node's parent. This is the default for any newly created node.
+		</constant>
+		<constant name="PHYSICS_INTERPOLATION_MODE_ON" value="1" enum="PhysicsInterpolationMode">
+			Enables physics interpolation for this node and for children set to [constant PHYSICS_INTERPOLATION_MODE_INHERIT]. This is the default for the root node.
+		</constant>
+		<constant name="PHYSICS_INTERPOLATION_MODE_OFF" value="2" enum="PhysicsInterpolationMode">
+			Disables physics interpolation for this node and for children set to [constant PHYSICS_INTERPOLATION_MODE_INHERIT].
 		</constant>
 		<constant name="DUPLICATE_SIGNALS" value="1" enum="DuplicateFlags">
 			Duplicate the node's signal connections.

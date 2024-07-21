@@ -169,7 +169,11 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 		return;
 	}
 
-	RD::get_singleton()->screen_prepare_for_drawing(DisplayServer::MAIN_WINDOW_ID);
+	Error err = RD::get_singleton()->screen_prepare_for_drawing(DisplayServer::MAIN_WINDOW_ID);
+	if (err != OK) {
+		// Window is minimized and does not have valid swapchain, skip drawing without printing errors.
+		return;
+	}
 
 	RID texture = texture_storage->texture_allocate();
 	texture_storage->texture_2d_initialize(texture, p_image);
@@ -295,6 +299,7 @@ RendererCompositorRD::RendererCompositorRD() {
 		}
 	}
 
+	ERR_FAIL_COND_MSG(singleton != nullptr, "A RendererCompositorRD singleton already exists.");
 	singleton = this;
 
 	utilities = memnew(RendererRD::Utilities);
@@ -326,6 +331,7 @@ RendererCompositorRD::RendererCompositorRD() {
 }
 
 RendererCompositorRD::~RendererCompositorRD() {
+	singleton = nullptr;
 	memdelete(uniform_set_cache);
 	memdelete(framebuffer_cache);
 	ShaderRD::set_shader_cache_dir(String());

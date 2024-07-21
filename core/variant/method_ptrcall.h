@@ -35,7 +35,7 @@
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 
-template <class T>
+template <typename T>
 struct PtrToArg {};
 
 #define MAKE_PTRARG(m_type)                                              \
@@ -152,17 +152,15 @@ MAKE_PTRARG(PackedStringArray);
 MAKE_PTRARG(PackedVector2Array);
 MAKE_PTRARG(PackedVector3Array);
 MAKE_PTRARG(PackedColorArray);
+MAKE_PTRARG(PackedVector4Array);
 MAKE_PTRARG_BY_REFERENCE(Variant);
 
 // This is for Object.
 
-template <class T>
+template <typename T>
 struct PtrToArg<T *> {
 	_FORCE_INLINE_ static T *convert(const void *p_ptr) {
-		if (p_ptr == nullptr) {
-			return nullptr;
-		}
-		return const_cast<T *>(*reinterpret_cast<T *const *>(p_ptr));
+		return likely(p_ptr) ? const_cast<T *>(*reinterpret_cast<T *const *>(p_ptr)) : nullptr;
 	}
 	typedef Object *EncodeT;
 	_FORCE_INLINE_ static void encode(T *p_var, void *p_ptr) {
@@ -170,13 +168,10 @@ struct PtrToArg<T *> {
 	}
 };
 
-template <class T>
+template <typename T>
 struct PtrToArg<const T *> {
 	_FORCE_INLINE_ static const T *convert(const void *p_ptr) {
-		if (p_ptr == nullptr) {
-			return nullptr;
-		}
-		return *reinterpret_cast<T *const *>(p_ptr);
+		return likely(p_ptr) ? *reinterpret_cast<T *const *>(p_ptr) : nullptr;
 	}
 	typedef const Object *EncodeT;
 	_FORCE_INLINE_ static void encode(T *p_var, void *p_ptr) {

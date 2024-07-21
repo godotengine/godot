@@ -102,6 +102,10 @@ Error RenderingContextDriverVulkan::_initialize_instance_extensions() {
 	// This extension allows us to use the properties2 features to query additional device capabilities.
 	_register_requested_instance_extension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, false);
 
+#if defined(USE_VOLK) && (defined(MACOS_ENABLED) || defined(IOS_ENABLED))
+	_register_requested_instance_extension(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, true);
+#endif
+
 	// Only enable debug utils in verbose mode or DEV_ENABLED.
 	// End users would get spammed with messages of varying verbosity due to the
 	// mess that thirdparty layers/extensions and drivers seem to leave in their
@@ -360,6 +364,11 @@ Error RenderingContextDriverVulkan::_initialize_instance() {
 
 	VkInstanceCreateInfo instance_info = {};
 	instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+
+#if defined(USE_VOLK) && (defined(MACOS_ENABLED) || defined(IOS_ENABLED))
+	instance_info.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+#endif
+
 	instance_info.pApplicationInfo = &app_info;
 	instance_info.enabledExtensionCount = enabled_extension_names.size();
 	instance_info.ppEnabledExtensionNames = enabled_extension_names.ptr();
@@ -502,6 +511,9 @@ Error RenderingContextDriverVulkan::_initialize_devices() {
 		driver_device.name = String::utf8(props.deviceName);
 		driver_device.vendor = Vendor(props.vendorID);
 		driver_device.type = DeviceType(props.deviceType);
+		driver_device.workarounds = Workarounds();
+
+		_check_driver_workarounds(props, driver_device);
 
 		uint32_t queue_family_properties_count = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &queue_family_properties_count, nullptr);
@@ -513,6 +525,31 @@ Error RenderingContextDriverVulkan::_initialize_devices() {
 	}
 
 	return OK;
+}
+
+void RenderingContextDriverVulkan::_check_driver_workarounds(const VkPhysicalDeviceProperties &p_device_properties, Device &r_device) {
+	// Workaround for the Adreno 6XX family of devices.
+	//
+	// There's a known issue with the Vulkan driver in this family of devices where it'll crash if a dynamic state for drawing is
+	// used in a command buffer before a dispatch call is issued. As both dynamic scissor and viewport are basic requirements for
+	// the engine to not bake this state into the PSO, the only known way to fix this issue is to reset the command buffer entirely.
+	//
+	// As the render graph has no built in limitations of whether it'll issue compute work before anything needs to draw on the
+	// frame, and there's no guarantee that compute work will never be dependent on rasterization in the future, this workaround
+	// will end recording on the current command buffer any time a compute list is encountered after a draw list was executed.
+	// A new command buffer will be created afterwards and the appropriate synchronization primitives will be inserted.
+	//
+	// Executing this workaround has the added cost of synchronization between all the command buffers that are created as well as
+	// all the individual submissions. This performance hit is accepted for the sake of being able to support these devices without
+	// limiting the design of the renderer.
+	//
+	// This bug was fixed in driver version 512.503.0, so we only enabled it on devices older than this.
+	//
+	r_device.workarounds.avoid_compute_after_draw =
+			r_device.vendor == VENDOR_QUALCOMM &&
+			p_device_properties.deviceID >= 0x6000000 && // Adreno 6xx
+			p_device_properties.driverVersion < VK_MAKE_VERSION(512, 503, 0) &&
+			r_device.name.find("Turnip") < 0;
 }
 
 bool RenderingContextDriverVulkan::_use_validation_layers() const {

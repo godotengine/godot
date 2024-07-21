@@ -38,7 +38,7 @@ String ResourceImporterImageFont::get_importer_name() const {
 }
 
 String ResourceImporterImageFont::get_visible_name() const {
-	return "Font Data (Monospace Image Font)";
+	return "Font Data (Image Font)";
 }
 
 void ResourceImporterImageFont::get_recognized_extensions(List<String> *p_extensions) const {
@@ -62,8 +62,8 @@ bool ResourceImporterImageFont::get_option_visibility(const String &p_path, cons
 void ResourceImporterImageFont::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "character_ranges"), Vector<String>()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "kerning_pairs"), Vector<String>()));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "columns"), 1));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "rows"), 1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "columns", PROPERTY_HINT_RANGE, "1,1024,1,or_greater"), 1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "rows", PROPERTY_HINT_RANGE, "1,1024,1,or_greater"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::RECT2I, "image_margin"), Rect2i()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::RECT2I, "character_margin"), Rect2i()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "ascent"), 0));
@@ -94,6 +94,8 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	Error err = ImageLoader::load_image(p_source_file, img);
 	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, vformat("Can't load font texture: \"%s\".", p_source_file));
 
+	ERR_FAIL_COND_V_MSG(columns <= 0, ERR_FILE_CANT_READ, vformat("Columns (%d) must be positive.", columns));
+	ERR_FAIL_COND_V_MSG(rows <= 0, ERR_FILE_CANT_READ, vformat("Rows (%d) must be positive.", rows));
 	int count = columns * rows;
 	int chr_cell_width = (img->get_width() - img_margin.position.x - img_margin.size.x) / columns;
 	int chr_cell_height = (img->get_height() - img_margin.position.y - img_margin.size.y) / rows;
@@ -156,17 +158,16 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 								c++; // Skip "+".
 								continue;
 							}
-						} else if (range[c] == '0') {
-							if ((c <= range.length() - 2) && range[c + 1] == 'x') {
-								token = String();
-								if (step == STEP_START_BEGIN) {
-									step = STEP_START_READ_HEX;
-								} else {
-									step = STEP_END_READ_HEX;
-								}
-								c++; // Skip "x".
-								continue;
+						} else if (range[c] == '0' && (c <= range.length() - 2) && range[c + 1] == 'x') {
+							// Read hexadecimal value, start.
+							token = String();
+							if (step == STEP_START_BEGIN) {
+								step = STEP_START_READ_HEX;
+							} else {
+								step = STEP_END_READ_HEX;
 							}
+							c++; // Skip "x".
+							continue;
 						} else if (range[c] == '\'' || range[c] == '\"') {
 							if ((c <= range.length() - 3) && (range[c + 2] == '\'' || range[c + 2] == '\"')) {
 								token = String();
@@ -182,14 +183,13 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 							}
 						} else if (is_digit(range[c])) {
 							// Read decimal value, start.
-							c++;
 							token = String();
+							token += range[c];
 							if (step == STEP_START_BEGIN) {
 								step = STEP_START_READ_DEC;
 							} else {
 								step = STEP_END_READ_DEC;
 							}
-							token += range[c];
 							continue;
 						}
 						[[fallthrough]];
@@ -229,6 +229,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 							} else {
 								end = token.hex_to_int();
 								step = STEP_ADVANCE_BEGIN;
+								c--;
 							}
 						}
 					} break;
@@ -244,6 +245,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 							} else {
 								end = token.to_int();
 								step = STEP_ADVANCE_BEGIN;
+								c--;
 							}
 						}
 					} break;
@@ -252,9 +254,19 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 					} break;
 				}
 			}
+			if (step == STEP_START_READ_HEX) {
+				start = token.hex_to_int();
+			} else if (step == STEP_START_READ_DEC) {
+				start = token.to_int();
+			} else if (step == STEP_END_READ_HEX) {
+				end = token.hex_to_int();
+			} else if (step == STEP_END_READ_DEC) {
+				end = token.to_int();
+			}
 			if (end == -1) {
 				end = start;
 			}
+
 			if (start == -1) {
 				WARN_PRINT(vformat("Invalid range: \"%s\"", range));
 				continue;
@@ -279,10 +291,29 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 			WARN_PRINT(vformat("Invalid kerning pairs string: \"%s\"", kp));
 			continue;
 		}
+		String from_tokens;
+		for (int i = 0; i < kp_tokens[0].length(); i++) {
+			if (i <= kp_tokens[0].length() - 6 && kp_tokens[0][i] == '\\' && kp_tokens[0][i + 1] == 'u') {
+				char32_t charcode = kp_tokens[0].substr(i + 2, 4).hex_to_int();
+				from_tokens += charcode;
+			} else {
+				from_tokens += kp_tokens[0][i];
+			}
+		}
+		String to_tokens;
+		for (int i = 0; i < kp_tokens[1].length(); i++) {
+			if (i <= kp_tokens[1].length() - 6 && kp_tokens[1][i] == '\\' && kp_tokens[1][i + 1] == 'u') {
+				char32_t charcode = kp_tokens[1].substr(i + 2, 4).hex_to_int();
+				to_tokens += charcode;
+			} else {
+				to_tokens += kp_tokens[1][i];
+			}
+		}
 		int offset = kp_tokens[2].to_int();
-		for (int a = 0; a < kp_tokens[0].length(); a++) {
-			for (int b = 0; b < kp_tokens[1].length(); b++) {
-				font->set_kerning(0, chr_height, Vector2i(kp_tokens[0].unicode_at(a), kp_tokens[1].unicode_at(b)), Vector2(offset, 0));
+
+		for (int a = 0; a < from_tokens.length(); a++) {
+			for (int b = 0; b < to_tokens.length(); b++) {
+				font->set_kerning(0, chr_height, Vector2i(from_tokens.unicode_at(a), to_tokens.unicode_at(b)), Vector2(offset, 0));
 			}
 		}
 	}

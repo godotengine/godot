@@ -116,6 +116,8 @@ static ViewController *mainViewController = nil;
 	} else if (sessionCategorySetting == SESSION_CATEGORY_PLAY_AND_RECORD) {
 		category = AVAudioSessionCategoryPlayAndRecord;
 		options |= AVAudioSessionCategoryOptionDefaultToSpeaker;
+		options |= AVAudioSessionCategoryOptionAllowBluetoothA2DP;
+		options |= AVAudioSessionCategoryOptionAllowAirPlay;
 	} else if (sessionCategorySetting == SESSION_CATEGORY_PLAYBACK) {
 		category = AVAudioSessionCategoryPlayback;
 	} else if (sessionCategorySetting == SESSION_CATEGORY_RECORD) {

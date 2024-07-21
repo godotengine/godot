@@ -264,6 +264,10 @@
 			- 2D and 3D physics will be stopped, as well as collision detection and related signals.
 			- Depending on each node's [member Node.process_mode], their [method Node._process], [method Node._physics_process] and [method Node._input] callback methods may not called anymore.
 		</member>
+		<member name="physics_interpolation" type="bool" setter="set_physics_interpolation_enabled" getter="is_physics_interpolation_enabled" default="false">
+			If [code]true[/code], the renderer will interpolate the transforms of physics objects between the last two transforms, so that smooth motion is seen even when physics ticks do not coincide with rendered frames.
+			The default value of this property is controlled by [member ProjectSettings.physics/common/physics_interpolation].
+		</member>
 		<member name="quit_on_go_back" type="bool" setter="set_quit_on_go_back" getter="is_quit_on_go_back" default="true">
 			If [code]true[/code], the application quits automatically when navigating back (e.g. using the system "Back" button on Android).
 			To handle 'Go Back' button when this option is disabled, use [constant DisplayServer.WINDOW_EVENT_GO_BACK_REQUEST].

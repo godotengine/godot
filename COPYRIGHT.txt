@@ -216,7 +216,7 @@ License: Apache-2.0
 
 Files: ./thirdparty/enet/
 Comment: ENet
-Copyright: 2002-2020, Lee Salzman
+Copyright: 2002-2024, Lee Salzman
 License: Expat
 
 Files: ./thirdparty/etcpak/
@@ -285,13 +285,18 @@ License: HarfBuzz
 
 Files: ./thirdparty/icu4c/
 Comment: International Components for Unicode
-Copyright: 1991-2021, Unicode
+Copyright: 2016-2024, Unicode, Inc.
 License: Unicode
 
 Files: ./thirdparty/jpeg-compressor/
 Comment: jpeg-compressor
 Copyright: 2012, Rich Geldreich
 License: public-domain or Apache-2.0
+
+Files: ./thirdparty/libbacktrace/
+Comment: libbacktrace
+Copyright: 2012-2021, Free Software Foundation, Inc.
+License: BSD-3-clause
 
 Files: ./thirdparty/libktx/
 Comment: KTX
@@ -360,12 +365,6 @@ Copyright: 1998-2010, Gilles Vollant
  2009-2010, Mathias Svensson
 License: Zlib
 
-Files: ./thirdparty/misc/clipper.cpp
- ./thirdparty/misc/clipper.hpp
-Comment: Clipper
-Copyright: 2010-2017, Angus Johnson
-License: BSL-1.0
-
 Files: ./thirdparty/misc/cubemap_coeffs.h
 Comment: Fast Filtering of Reflection Probes
 Copyright: 2016, Activision Publishing, Inc.
@@ -410,6 +409,11 @@ Files: ./thirdparty/misc/polypartition.cpp
  ./thirdparty/misc/polypartition.h
 Comment: PolyPartition / Triangulator
 Copyright: 2011-2021, Ivan Fratric and contributors
+License: Expat
+
+Files: ./thirdparty/misc/qoa.h
+Comment: Quite OK Audio Format
+Copyright: 2023, Dominic Szablewski
 License: Expat
 
 Files: ./thirdparty/misc/r128.c
@@ -457,8 +461,8 @@ License: Apache-2.0
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2
-Copyright: 1997-2022, University of Cambridge
- 2009-2022, Zoltan Herczeg
+Copyright: 1997-2024, University of Cambridge
+ 2009-2024, Zoltan Herczeg
 License: BSD-3-clause
 
 Files: ./thirdparty/recastnavigation/
@@ -511,8 +515,8 @@ License: Expat
 Files: ./thirdparty/vulkan/
 Comment: Vulkan Headers
 Copyright: 2014-2024, The Khronos Group Inc.
-  2014-2023, Valve Corporation
-  2014-2023, LunarG, Inc.
+  2014-2024, Valve Corporation
+  2014-2024, LunarG, Inc.
 License: Apache-2.0
 
 Files: ./thirdparty/vulkan/vk_mem_alloc.h

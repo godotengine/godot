@@ -52,18 +52,17 @@ void EditorAbout::_notification(int p_what) {
 			_tpl_text->begin_bulk_theme_override();
 			_tpl_text->add_theme_font_override("normal_font", font);
 			_tpl_text->add_theme_font_size_override("normal_font_size", font_size);
-			_tpl_text->add_theme_constant_override("line_separation", 4 * EDSCALE);
+			_tpl_text->add_theme_constant_override(SceneStringName(line_separation), 4 * EDSCALE);
 			_tpl_text->end_bulk_theme_override();
 
 			license_text_label->begin_bulk_theme_override();
 			license_text_label->add_theme_font_override("normal_font", font);
 			license_text_label->add_theme_font_size_override("normal_font_size", font_size);
-			license_text_label->add_theme_constant_override("line_separation", 4 * EDSCALE);
+			license_text_label->add_theme_constant_override(SceneStringName(line_separation), 4 * EDSCALE);
 			license_text_label->end_bulk_theme_override();
 
 			_logo->set_texture(get_editor_theme_icon(SNAME("Logo")));
 
-			Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
 			for (ItemList *il : name_lists) {
 				for (int i = 0; i < il->get_item_count(); i++) {
 					if (il->get_item_metadata(i)) {
@@ -108,13 +107,14 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 
 	Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
 
-	for (int i = 0; i < p_sections.size(); i++) {
+	int i = 0;
+	for (List<String>::ConstIterator itr = p_sections.begin(); itr != p_sections.end(); ++itr, ++i) {
 		bool single_column = p_single_column_flags & (1 << i);
 		const char *const *names_ptr = p_src[i];
 		if (*names_ptr) {
 			Label *lbl = memnew(Label);
 			lbl->set_theme_type_variation("HeaderSmall");
-			lbl->set_text(p_sections[i]);
+			lbl->set_text(*itr);
 			vbc->add_child(lbl);
 
 			ItemList *il = memnew(ItemList);
@@ -130,8 +130,8 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 				il->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 
 				il->connect("item_activated", callable_mp(this, &EditorAbout::_item_with_website_selected).bind(il));
-				il->connect("resized", callable_mp(this, &EditorAbout::_item_list_resized).bind(il));
-				il->connect("focus_exited", callable_mp(il, &ItemList::deselect_all));
+				il->connect(SceneStringName(resized), callable_mp(this, &EditorAbout::_item_list_resized).bind(il));
+				il->connect(SceneStringName(focus_exited), callable_mp(il, &ItemList::deselect_all));
 
 				il->add_theme_style_override("focus", empty_stylebox);
 				il->add_theme_style_override("selected", empty_stylebox);
@@ -215,7 +215,7 @@ EditorAbout::EditorAbout() {
 	}
 	version_btn->set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version number."), build_date));
 
-	version_btn->connect("pressed", callable_mp(this, &EditorAbout::_version_button_pressed));
+	version_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorAbout::_version_button_pressed));
 	version_info_vbc->add_child(version_btn);
 
 	Label *about_text = memnew(Label);
@@ -304,6 +304,7 @@ EditorAbout::EditorAbout() {
 	license_thirdparty->add_child(tpl_hbc);
 
 	_tpl_tree = memnew(Tree);
+	_tpl_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	_tpl_tree->set_hide_root(true);
 	TreeItem *root = _tpl_tree->create_item();
 	TreeItem *tpl_ti_all = _tpl_tree->create_item(root);
@@ -358,7 +359,7 @@ EditorAbout::EditorAbout() {
 	_tpl_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_hbc->add_child(_tpl_text);
 
-	_tpl_tree->connect("item_selected", callable_mp(this, &EditorAbout::_license_tree_selected));
+	_tpl_tree->connect(SceneStringName(item_selected), callable_mp(this, &EditorAbout::_license_tree_selected));
 	tpl_ti_all->select(0);
 	_tpl_text->set_text(tpl_ti_all->get_metadata(0));
 }

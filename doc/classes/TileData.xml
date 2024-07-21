@@ -93,7 +93,7 @@
 			<return type="int" />
 			<param index="0" name="peering_bit" type="int" enum="TileSet.CellNeighbor" />
 			<description>
-				Returns the tile's terrain bit for the given [param peering_bit] direction.
+				Returns the tile's terrain bit for the given [param peering_bit] direction. To check that a direction is valid, use [method is_valid_terrain_peering_bit].
 			</description>
 		</method>
 		<method name="is_collision_polygon_one_way" qualifiers="const">
@@ -102,6 +102,13 @@
 			<param index="1" name="polygon_index" type="int" />
 			<description>
 				Returns whether one-way collisions are enabled for the polygon at index [param polygon_index] for TileSet physics layer with index [param layer_id].
+			</description>
+		</method>
+		<method name="is_valid_terrain_peering_bit" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="peering_bit" type="int" enum="TileSet.CellNeighbor" />
+			<description>
+				Returns whether the given [param peering_bit] direction is valid for this tile.
 			</description>
 		</method>
 		<method name="remove_collision_polygon">
@@ -200,7 +207,7 @@
 			<param index="0" name="peering_bit" type="int" enum="TileSet.CellNeighbor" />
 			<param index="1" name="terrain" type="int" />
 			<description>
-				Sets the tile's terrain bit for the given [param peering_bit] direction.
+				Sets the tile's terrain bit for the given [param peering_bit] direction. To check that a direction is valid, use [method is_valid_terrain_peering_bit].
 			</description>
 		</method>
 	</methods>

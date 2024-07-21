@@ -145,6 +145,22 @@ void AudioStreamPlaybackMP3::tag_used_streams() {
 	mp3_stream->tag_used(get_playback_position());
 }
 
+void AudioStreamPlaybackMP3::set_is_sample(bool p_is_sample) {
+	_is_sample = p_is_sample;
+}
+
+bool AudioStreamPlaybackMP3::get_is_sample() const {
+	return _is_sample;
+}
+
+Ref<AudioSamplePlayback> AudioStreamPlaybackMP3::get_sample_playback() const {
+	return sample_playback;
+}
+
+void AudioStreamPlaybackMP3::set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
+	sample_playback = p_playback;
+}
+
 void AudioStreamPlaybackMP3::set_parameter(const StringName &p_name, const Variant &p_value) {
 	if (p_name == SNAME("looping")) {
 		if (p_value == Variant()) {
@@ -285,6 +301,18 @@ void AudioStreamMP3::set_bar_beats(int p_bar_beats) {
 
 int AudioStreamMP3::get_bar_beats() const {
 	return bar_beats;
+}
+
+Ref<AudioSample> AudioStreamMP3::generate_sample() const {
+	Ref<AudioSample> sample;
+	sample.instantiate();
+	sample->stream = this;
+	sample->loop_mode = loop
+			? AudioSample::LoopMode::LOOP_FORWARD
+			: AudioSample::LoopMode::LOOP_DISABLED;
+	sample->loop_begin = loop_offset;
+	sample->loop_end = 0;
+	return sample;
 }
 
 void AudioStreamMP3::_bind_methods() {

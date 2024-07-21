@@ -34,7 +34,7 @@
 #include "core/math/quaternion.h"
 #include "core/math/vector3.h"
 
-struct _NO_DISCARD_ Basis {
+struct [[nodiscard]] Basis {
 	Vector3 rows[3] = {
 		Vector3(1, 0, 0),
 		Vector3(0, 1, 0),
@@ -99,11 +99,11 @@ struct _NO_DISCARD_ Basis {
 
 	void scale_orthogonal(const Vector3 &p_scale);
 	Basis scaled_orthogonal(const Vector3 &p_scale) const;
-	float get_uniform_scale() const;
+	real_t get_uniform_scale() const;
 
 	Vector3 get_scale() const;
 	Vector3 get_scale_abs() const;
-	Vector3 get_scale_local() const;
+	Vector3 get_scale_global() const;
 
 	void set_axis_angle_scale(const Vector3 &p_axis, real_t p_angle, const Vector3 &p_scale);
 	void set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale, EulerOrder p_order = EulerOrder::YXZ);

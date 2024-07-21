@@ -134,6 +134,14 @@ void XRBodyTracker::_bind_methods() {
 	BIND_BITFIELD_FLAG(JOINT_FLAG_POSITION_TRACKED);
 }
 
+void XRBodyTracker::set_tracker_type(XRServer::TrackerType p_type) {
+	ERR_FAIL_COND_MSG(p_type != XRServer::TRACKER_BODY, "XRBodyTracker must be of type TRACKER_BODY.");
+}
+
+void XRBodyTracker::set_tracker_hand(const XRPositionalTracker::TrackerHand p_hand) {
+	ERR_FAIL_COND_MSG(p_hand != XRPositionalTracker::TRACKER_HAND_UNKNOWN, "XRBodyTracker cannot specify hand.");
+}
+
 void XRBodyTracker::set_has_tracking_data(bool p_has_tracking_data) {
 	has_tracking_data = p_has_tracking_data;
 }
@@ -168,4 +176,8 @@ void XRBodyTracker::set_joint_transform(Joint p_joint, const Transform3D &p_tran
 Transform3D XRBodyTracker::get_joint_transform(Joint p_joint) const {
 	ERR_FAIL_INDEX_V(p_joint, JOINT_MAX, Transform3D());
 	return joint_transforms[p_joint];
+}
+
+XRBodyTracker::XRBodyTracker() {
+	type = XRServer::TRACKER_BODY;
 }

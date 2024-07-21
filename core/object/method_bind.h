@@ -140,7 +140,7 @@ public:
 };
 
 // MethodBindVarArg base CRTP
-template <class Derived, class T, class R, bool should_returns>
+template <typename Derived, typename T, typename R, bool should_returns>
 class MethodBindVarArgBase : public MethodBind {
 protected:
 	R(T::*method)
@@ -152,7 +152,7 @@ public:
 		if (p_arg < 0) {
 			return _gen_return_type_info();
 		} else if (p_arg < method_info.arguments.size()) {
-			return method_info.arguments[p_arg];
+			return method_info.arguments.get(p_arg);
 		} else {
 			return PropertyInfo(Variant::NIL, "arg_" + itos(p_arg), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT);
 		}
@@ -193,10 +193,11 @@ public:
 			Vector<StringName> names;
 			names.resize(method_info.arguments.size());
 #endif
-			for (int i = 0; i < method_info.arguments.size(); i++) {
-				at[i + 1] = method_info.arguments[i].type;
+			int i = 0;
+			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++i) {
+				at[i + 1] = itr->type;
 #ifdef DEBUG_METHODS_ENABLED
-				names.write[i] = method_info.arguments[i].name;
+				names.write[i] = itr->name;
 #endif
 			}
 
@@ -219,7 +220,7 @@ private:
 };
 
 // variadic, no return
-template <class T>
+template <typename T>
 class MethodBindVarArgT : public MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false> {
 	friend class MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false>;
 
@@ -245,7 +246,7 @@ private:
 	}
 };
 
-template <class T>
+template <typename T>
 MethodBind *create_vararg_method_bind(void (T::*p_method)(const Variant **, int, Callable::CallError &), const MethodInfo &p_info, bool p_return_nil_is_variant) {
 	MethodBind *a = memnew((MethodBindVarArgT<T>)(p_method, p_info, p_return_nil_is_variant));
 	a->set_instance_class(T::get_class_static());
@@ -253,7 +254,7 @@ MethodBind *create_vararg_method_bind(void (T::*p_method)(const Variant **, int,
 }
 
 // variadic, return
-template <class T, class R>
+template <typename T, typename R>
 class MethodBindVarArgTR : public MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true> {
 	friend class MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>;
 
@@ -287,7 +288,7 @@ private:
 	}
 };
 
-template <class T, class R>
+template <typename T, typename R>
 MethodBind *create_vararg_method_bind(R (T::*p_method)(const Variant **, int, Callable::CallError &), const MethodInfo &p_info, bool p_return_nil_is_variant) {
 	MethodBind *a = memnew((MethodBindVarArgTR<T, R>)(p_method, p_info, p_return_nil_is_variant));
 	a->set_instance_class(T::get_class_static());
@@ -305,9 +306,9 @@ class __UnexistingClass;
 
 // no return, not const
 #ifdef TYPED_METHOD_BIND
-template <class T, class... P>
+template <typename T, typename... P>
 #else
-template <class... P>
+template <typename... P>
 #endif
 class MethodBindT : public MethodBind {
 	void (MB_T::*method)(P...);
@@ -375,7 +376,7 @@ public:
 	}
 };
 
-template <class T, class... P>
+template <typename T, typename... P>
 MethodBind *create_method_bind(void (T::*p_method)(P...)) {
 #ifdef TYPED_METHOD_BIND
 	MethodBind *a = memnew((MethodBindT<T, P...>)(p_method));
@@ -389,9 +390,9 @@ MethodBind *create_method_bind(void (T::*p_method)(P...)) {
 // no return, const
 
 #ifdef TYPED_METHOD_BIND
-template <class T, class... P>
+template <typename T, typename... P>
 #else
-template <class... P>
+template <typename... P>
 #endif
 class MethodBindTC : public MethodBind {
 	void (MB_T::*method)(P...) const;
@@ -460,7 +461,7 @@ public:
 	}
 };
 
-template <class T, class... P>
+template <typename T, typename... P>
 MethodBind *create_method_bind(void (T::*p_method)(P...) const) {
 #ifdef TYPED_METHOD_BIND
 	MethodBind *a = memnew((MethodBindTC<T, P...>)(p_method));
@@ -474,9 +475,9 @@ MethodBind *create_method_bind(void (T::*p_method)(P...) const) {
 // return, not const
 
 #ifdef TYPED_METHOD_BIND
-template <class T, class R, class... P>
+template <typename T, typename R, typename... P>
 #else
-template <class R, class... P>
+template <typename R, typename... P>
 #endif
 class MethodBindTR : public MethodBind {
 	R(MB_T::*method)
@@ -555,7 +556,7 @@ public:
 	}
 };
 
-template <class T, class R, class... P>
+template <typename T, typename R, typename... P>
 MethodBind *create_method_bind(R (T::*p_method)(P...)) {
 #ifdef TYPED_METHOD_BIND
 	MethodBind *a = memnew((MethodBindTR<T, R, P...>)(p_method));
@@ -570,9 +571,9 @@ MethodBind *create_method_bind(R (T::*p_method)(P...)) {
 // return, const
 
 #ifdef TYPED_METHOD_BIND
-template <class T, class R, class... P>
+template <typename T, typename R, typename... P>
 #else
-template <class R, class... P>
+template <typename R, typename... P>
 #endif
 class MethodBindTRC : public MethodBind {
 	R(MB_T::*method)
@@ -652,7 +653,7 @@ public:
 	}
 };
 
-template <class T, class R, class... P>
+template <typename T, typename R, typename... P>
 MethodBind *create_method_bind(R (T::*p_method)(P...) const) {
 #ifdef TYPED_METHOD_BIND
 	MethodBind *a = memnew((MethodBindTRC<T, R, P...>)(p_method));
@@ -667,7 +668,7 @@ MethodBind *create_method_bind(R (T::*p_method)(P...) const) {
 
 // no return
 
-template <class... P>
+template <typename... P>
 class MethodBindTS : public MethodBind {
 	void (*function)(P...);
 
@@ -717,7 +718,7 @@ public:
 	}
 };
 
-template <class... P>
+template <typename... P>
 MethodBind *create_static_method_bind(void (*p_method)(P...)) {
 	MethodBind *a = memnew((MethodBindTS<P...>)(p_method));
 	return a;
@@ -725,7 +726,7 @@ MethodBind *create_static_method_bind(void (*p_method)(P...)) {
 
 // return
 
-template <class R, class... P>
+template <typename R, typename... P>
 class MethodBindTRS : public MethodBind {
 	R(*function)
 	(P...);
@@ -784,7 +785,7 @@ public:
 	}
 };
 
-template <class R, class... P>
+template <typename R, typename... P>
 MethodBind *create_static_method_bind(R (*p_method)(P...)) {
 	MethodBind *a = memnew((MethodBindTRS<R, P...>)(p_method));
 	return a;

@@ -165,6 +165,12 @@ namespace Godot.NativeInterop
             return ret;
         }
 
+        public static godot_variant CreateFromPackedVector4Array(in godot_packed_vector4_array from)
+        {
+            NativeFuncs.godotsharp_variant_new_packed_vector4_array(out godot_variant ret, from);
+            return ret;
+        }
+
         public static godot_variant CreateFromPackedColorArray(in godot_packed_color_array from)
         {
             NativeFuncs.godotsharp_variant_new_packed_color_array(out godot_variant ret, from);
@@ -228,6 +234,13 @@ namespace Godot.NativeInterop
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromPackedVector4Array(Span<Vector4> from)
+        {
+            using var nativePackedArray = Marshaling.ConvertSystemArrayToNativePackedVector4Array(from);
+            return CreateFromPackedVector4Array(nativePackedArray);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromPackedColorArray(Span<Color> from)
         {
             using var nativePackedArray = Marshaling.ConvertSystemArrayToNativePackedColorArray(from);
@@ -235,13 +248,28 @@ namespace Godot.NativeInterop
         }
 
         public static godot_variant CreateFromSystemArrayOfStringName(Span<StringName> from)
-            => CreateFromArray(new Collections.Array(from));
+        {
+            if (from == null)
+                return default;
+            using var fromGodot = new Collections.Array(from);
+            return CreateFromArray((godot_array)fromGodot.NativeValue);
+        }
 
         public static godot_variant CreateFromSystemArrayOfNodePath(Span<NodePath> from)
-            => CreateFromArray(new Collections.Array(from));
+        {
+            if (from == null)
+                return default;
+            using var fromGodot = new Collections.Array(from);
+            return CreateFromArray((godot_array)fromGodot.NativeValue);
+        }
 
         public static godot_variant CreateFromSystemArrayOfRid(Span<Rid> from)
-            => CreateFromArray(new Collections.Array(from));
+        {
+            if (from == null)
+                return default;
+            using var fromGodot = new Collections.Array(from);
+            return CreateFromArray((godot_array)fromGodot.NativeValue);
+        }
 
         public static godot_variant CreateFromSystemArrayOfGodotObject(GodotObject[]? from)
         {
@@ -588,6 +616,12 @@ namespace Godot.NativeInterop
         {
             using var packedArray = NativeFuncs.godotsharp_variant_as_packed_vector3_array(p_var);
             return Marshaling.ConvertNativePackedVector3ArrayToSystemArray(packedArray);
+        }
+
+        public static Vector4[] ConvertAsPackedVector4ArrayToSystemArray(in godot_variant p_var)
+        {
+            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_vector4_array(p_var);
+            return Marshaling.ConvertNativePackedVector4ArrayToSystemArray(packedArray);
         }
 
         public static Color[] ConvertAsPackedColorArrayToSystemArray(in godot_variant p_var)

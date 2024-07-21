@@ -195,9 +195,9 @@ private:
 		data = p_image.data;
 	}
 
-	_FORCE_INLINE_ void _get_mipmap_offset_and_size(int p_mipmap, int &r_offset, int &r_width, int &r_height) const; //get where the mipmap begins in data
+	_FORCE_INLINE_ void _get_mipmap_offset_and_size(int p_mipmap, int64_t &r_offset, int &r_width, int &r_height) const; //get where the mipmap begins in data
 
-	static int _get_dst_image_size(int p_width, int p_height, Format p_format, int &r_mipmaps, int p_mipmaps = -1, int *r_mm_width = nullptr, int *r_mm_height = nullptr);
+	static int64_t _get_dst_image_size(int p_width, int p_height, Format p_format, int &r_mipmaps, int p_mipmaps = -1, int *r_mm_width = nullptr, int *r_mm_height = nullptr);
 	bool _can_modify(Format p_format) const;
 
 	_FORCE_INLINE_ void _get_clipped_src_and_dest_rects(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest, Rect2i &r_clipped_src_rect, Rect2i &r_clipped_dest_rect) const;
@@ -238,10 +238,12 @@ public:
 	 */
 	Format get_format() const;
 
-	int get_mipmap_byte_size(int p_mipmap) const; //get where the mipmap begins in data
-	int get_mipmap_offset(int p_mipmap) const; //get where the mipmap begins in data
-	void get_mipmap_offset_and_size(int p_mipmap, int &r_ofs, int &r_size) const; //get where the mipmap begins in data
-	void get_mipmap_offset_size_and_dimensions(int p_mipmap, int &r_ofs, int &r_size, int &w, int &h) const; //get where the mipmap begins in data
+	/**
+	 * Get where the mipmap begins in data.
+	 */
+	int64_t get_mipmap_offset(int p_mipmap) const;
+	void get_mipmap_offset_and_size(int p_mipmap, int64_t &r_ofs, int64_t &r_size) const;
+	void get_mipmap_offset_size_and_dimensions(int p_mipmap, int64_t &r_ofs, int64_t &r_size, int &w, int &h) const;
 
 	enum Image3DValidateError {
 		VALIDATE_3D_OK,
@@ -354,8 +356,8 @@ public:
 	static int get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps = false);
 	static int get_image_required_mipmaps(int p_width, int p_height, Format p_format);
 	static Size2i get_image_mipmap_size(int p_width, int p_height, Format p_format, int p_mipmap);
-	static int get_image_mipmap_offset(int p_width, int p_height, Format p_format, int p_mipmap);
-	static int get_image_mipmap_offset_and_dimensions(int p_width, int p_height, Format p_format, int p_mipmap, int &r_w, int &r_h);
+	static int64_t get_image_mipmap_offset(int p_width, int p_height, Format p_format, int p_mipmap);
+	static int64_t get_image_mipmap_offset_and_dimensions(int p_width, int p_height, Format p_format, int p_mipmap, int &r_w, int &r_h);
 
 	enum CompressMode {
 		COMPRESS_S3TC,
@@ -376,13 +378,14 @@ public:
 	Error compress_from_channels(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_astc_format = ASTC_FORMAT_4x4);
 	Error decompress();
 	bool is_compressed() const;
+	static bool is_format_compressed(Format p_format);
 
 	void fix_alpha_edges();
 	void premultiply_alpha();
 	void srgb_to_linear();
 	void normal_map_to_xy();
 	Ref<Image> rgbe_to_srgb();
-	Ref<Image> get_image_from_mipmap(int p_mipamp) const;
+	Ref<Image> get_image_from_mipmap(int p_mipmap) const;
 	void bump_map_to_normal_map(float bump_scale = 1.0);
 
 	void blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest);
@@ -428,7 +431,7 @@ public:
 
 	const uint8_t *ptr() const;
 	uint8_t *ptrw();
-	int64_t data_size() const;
+	int64_t get_data_size() const;
 
 	void adjust_bcs(float p_brightness, float p_contrast, float p_saturation);
 
