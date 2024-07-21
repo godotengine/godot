@@ -43,6 +43,9 @@
 typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
 typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
 
+class ID3D11Device;
+class ID3D11DeviceContext;
+
 class GLManagerNative_Windows {
 private:
 	class DxgiSwapChain;
@@ -71,6 +74,9 @@ private:
 	GLWindow *_current_window = nullptr;
 
 	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = nullptr;
+
+	ID3D11Device *d3d11_device = nullptr;
+	ID3D11DeviceContext *d3d11_device_context = nullptr;
 
 	GLWindow &get_window(unsigned int id) { return _windows[id]; }
 	const GLWindow &get_window(unsigned int id) const { return _windows[id]; }

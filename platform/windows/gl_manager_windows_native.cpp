@@ -455,7 +455,7 @@ class GLManagerNative_Windows::DxgiSwapChain {
 	friend void memdelete(T *);
 
 public:
-	static DxgiSwapChain *create(HWND p_hwnd, int p_width, int p_height);
+	static DxgiSwapChain *create(HWND p_hwnd, int p_width, int p_height, ID3D11Device *p_d3d11_device, ID3D11DeviceContext *p_d3d11_device_context);
 	void destroy();
 
 	void make_current();
@@ -541,6 +541,8 @@ static bool load_dxgi_swap_chain_functions(PFNWGLGETPROCADDRESS gd_wglGetProcAdd
 	print_verbose("GLManagerNative_Windows: Loaded D3D11 functions.");
 	return true;
 }
+
+static bool try_create_d3d11_device(ID3D11Device *&p_out_device, ID3D11DeviceContext *&p_out_device_context);
 #endif // OPENGL_ON_DXGI_ENABLED
 
 void GLManagerNative_Windows::set_prefer_dxgi_swap_chain(bool p_prefer) {
@@ -705,7 +707,11 @@ Error GLManagerNative_Windows::_create_context(GLWindow &win, GLDisplay &gl_disp
 	if (dxgi_status == DxgiStatus::UNINITIALIZED) {
 		if (prefer_dxgi) {
 			if (load_dxgi_swap_chain_functions(gd_wglGetProcAddress, win.hDC)) {
-				dxgi_status = DxgiStatus::LOADED_UNTESTED;
+				if (try_create_d3d11_device(d3d11_device, d3d11_device_context)) {
+					dxgi_status = DxgiStatus::LOADED_UNTESTED;
+				} else {
+					dxgi_status = DxgiStatus::DISABLED;
+				}
 			} else {
 				dxgi_status = DxgiStatus::DISABLED;
 			}
@@ -742,7 +748,7 @@ Error GLManagerNative_Windows::window_create(DisplayServer::WindowID p_window_id
 
 #ifdef OPENGL_ON_DXGI_ENABLED
 	if (dxgi_status == DxgiStatus::LOADED_UNTESTED || dxgi_status == DxgiStatus::LOADED_USABLE) {
-		win.dxgi = DxgiSwapChain::create(win.hwnd, p_width, p_height);
+		win.dxgi = DxgiSwapChain::create(win.hwnd, p_width, p_height, d3d11_device, d3d11_device_context);
 		if (win.dxgi) {
 			if (dxgi_status == DxgiStatus::LOADED_UNTESTED) {
 				dxgi_status = DxgiStatus::LOADED_USABLE;
@@ -910,13 +916,25 @@ GLManagerNative_Windows::GLManagerNative_Windows() {
 
 GLManagerNative_Windows::~GLManagerNative_Windows() {
 	release_current();
+
+#ifdef OPENGL_ON_DXGI_ENABLED
+	if (d3d11_device_context) {
+		d3d11_device_context->Release();
+	}
+	if (d3d11_device) {
+		d3d11_device->Release();
+	}
+#endif
 }
 
 #ifdef OPENGL_ON_DXGI_ENABLED
 
-static ComPtr<IDXGIFactory> get_dxgi_factory(const ComPtr<ID3D11Device> &device) {
+template <typename T = IDXGIFactory>
+static ComPtr<T> get_dxgi_factory(ID3D11Device *device) {
+	static_assert(std::is_convertible<T *, IDXGIFactory *>::value, "Template argument must be IDXGIFactory or a derived type.");
+
 	ComPtr<IDXGIDevice> dxgi_device;
-	HRESULT hr = device.As(&dxgi_device);
+	HRESULT hr = device->QueryInterface(__uuidof(IDXGIDevice), &dxgi_device);
 	if (!SUCCEEDED(hr)) {
 		ERR_PRINT(vformat("Failed to get IDXGIDevice, HRESULT: 0x%08X", (unsigned)hr));
 		return {};
@@ -927,8 +945,8 @@ static ComPtr<IDXGIFactory> get_dxgi_factory(const ComPtr<ID3D11Device> &device)
 		ERR_PRINT(vformat("Failed to get IDXGIAdapter, HRESULT: 0x%08X", (unsigned)hr));
 		return {};
 	}
-	ComPtr<IDXGIFactory> dxgi_factory;
-	hr = dxgi_adapter->GetParent(__uuidof(IDXGIFactory), &dxgi_factory);
+	ComPtr<T> dxgi_factory;
+	hr = dxgi_adapter->GetParent(__uuidof(T), &dxgi_factory);
 	if (!SUCCEEDED(hr)) {
 		ERR_PRINT(vformat("Failed to get IDXGIFactory, HRESULT: 0x%08X", (unsigned)hr));
 		return {};
@@ -936,7 +954,37 @@ static ComPtr<IDXGIFactory> get_dxgi_factory(const ComPtr<ID3D11Device> &device)
 	return dxgi_factory;
 }
 
-GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::create(HWND p_hwnd, int p_width, int p_height) {
+static bool try_create_d3d11_device(ID3D11Device *&p_out_device, ID3D11DeviceContext *&p_out_device_context) {
+	ComPtr<ID3D11Device> device;
+	ComPtr<ID3D11DeviceContext> device_context;
+
+	UINT flags = 0;
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		flags |= D3D11_CREATE_DEVICE_DEBUG;
+	}
+
+	HRESULT hr;
+
+	hr = fptr_D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, &device, nullptr, &device_context);
+	if (!SUCCEEDED(hr)) {
+		ERR_PRINT(vformat("D3D11CreateDevice failed, HRESULT: 0x%08X", (unsigned)hr));
+		return false;
+	}
+
+#ifdef OPENGL_DXGI_USE_FLIP_MODEL
+	ComPtr<IDXGIFactory2> dxgi_factory_2 = get_dxgi_factory<IDXGIFactory2>(device.Get());
+	if (!dxgi_factory_2) {
+		ERR_PRINT("Failed to get IDXGIFactory2.");
+		return false;
+	}
+#endif
+
+	p_out_device = device.Detach();
+	p_out_device_context = device_context.Detach();
+	return true;
+}
+
+GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::create(HWND p_hwnd, int p_width, int p_height, ID3D11Device *p_d3d11_device, ID3D11DeviceContext *p_d3d11_device_context) {
 	ComPtr<ID3D11Device> device;
 	ComPtr<ID3D11DeviceContext> device_context;
 	ComPtr<IDXGISwapChain> swap_chain;
@@ -965,21 +1013,19 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 	}
 #endif
 
-	hr = fptr_D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, &device, nullptr, &device_context);
-	if (!SUCCEEDED(hr)) {
-		ERR_PRINT(vformat("D3D11CreateDevice failed, HRESULT: 0x%08X", (unsigned)hr));
-		return nullptr;
-	}
+	device = p_d3d11_device;
+	device_context = p_d3d11_device_context;
 
-	ComPtr<IDXGIFactory> dxgi_factory = get_dxgi_factory(device);
-	if (!dxgi_factory) {
+	ComPtr<IDXGIFactory2> dxgi_factory_2 = get_dxgi_factory<IDXGIFactory2>(device.Get());
+	if (!dxgi_factory_2) {
+		ERR_PRINT("Failed to get IDXGIFactory2.");
 		return nullptr;
 	}
 
 	bool supports_tearing = false;
 	{
 		ComPtr<IDXGIFactory5> dxgi_factory_5;
-		hr = dxgi_factory.As(&dxgi_factory_5);
+		hr = dxgi_factory_2.As(&dxgi_factory_5);
 		if (!SUCCEEDED(hr)) {
 			ERR_PRINT(vformat("Failed to get IDXGIFactory5, HRESULT: 0x%08X", (unsigned)hr));
 		} else {
@@ -1069,7 +1115,7 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 	}
 
 	{
-		ComPtr<IDXGIFactory> dxgi_factory = get_dxgi_factory(device);
+		ComPtr<IDXGIFactory> dxgi_factory = get_dxgi_factory(device.Get());
 		if (dxgi_factory) {
 			hr = dxgi_factory->MakeWindowAssociation(p_hwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
 			if (!SUCCEEDED(hr)) {
@@ -1245,6 +1291,12 @@ void GLManagerNative_Windows::DxgiSwapChain::destroy() {
 #endif
 
 	gd_wglDXCloseDeviceNV(gldx_device);
+
+#ifdef OPENGL_DXGI_USE_FLIP_MODEL
+	if (!CloseHandle(frame_latency_waitable_obj)) {
+		ERR_PRINT(vformat("Failed to CloseHandle on frame latency waitable object. Error: %s", format_error_message(GetLastError())));
+	}
+#endif
 
 	swap_chain.Reset();
 	device_context.Reset();
