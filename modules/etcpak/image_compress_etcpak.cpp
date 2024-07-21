@@ -181,7 +181,7 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img) {
 
 	print_verbose(vformat("etcpak: Encoding image size %dx%d to format %s%s.", width, height, Image::get_format_name(target_format), mipmaps ? ", with mipmaps" : ""));
 
-	int dest_size = Image::get_image_data_size(width, height, target_format, mipmaps);
+	int64_t dest_size = Image::get_image_data_size(width, height, target_format, mipmaps);
 	Vector<uint8_t> dest_data;
 	dest_data.resize(dest_size);
 	uint8_t *dest_write = dest_data.ptrw();
@@ -192,7 +192,7 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img) {
 	for (int i = 0; i < mip_count + 1; i++) {
 		// Get write mip metrics for target image.
 		int orig_mip_w, orig_mip_h;
-		int mip_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, target_format, i, orig_mip_w, orig_mip_h);
+		int64_t mip_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, target_format, i, orig_mip_w, orig_mip_h);
 		// Ensure that mip offset is a multiple of 8 (etcpak expects uint64_t pointer).
 		ERR_FAIL_COND(mip_ofs % 8 != 0);
 		uint64_t *dest_mip_write = (uint64_t *)&dest_write[mip_ofs];
@@ -203,7 +203,7 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img) {
 		const uint32_t blocks = mip_w * mip_h / 16;
 
 		// Get mip data from source image for reading.
-		int src_mip_ofs = r_img->get_mipmap_offset(i);
+		int64_t src_mip_ofs = r_img->get_mipmap_offset(i);
 		const uint32_t *src_mip_read = (const uint32_t *)&src_read[src_mip_ofs];
 
 		// Pad textures to nearest block by smearing.
