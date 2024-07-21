@@ -1888,7 +1888,7 @@ void EditorFileSystem::_update_scene_groups() {
 	}
 
 	EditorProgress *ep = nullptr;
-	if (update_scene_paths.size() > 1) {
+	if (update_scene_paths.size() > 20) {
 		ep = memnew(EditorProgress("update_scene_groups", TTR("Update Scene Groups"), update_scene_paths.size()));
 	}
 	int step_count = 0;
