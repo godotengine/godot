@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorContextMenuPlugin" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Plugin for adding custom context menus in the editor.
+	</brief_description>
+	<description>
+		[EditorContextMenuPlugin] allows for the addition of custom options in the editor's context menu.
+		Currently, context menus are supported for three commonly used areas: the file system, scene tree, and editor script list panel.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_popup_menu" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="paths" type="PackedStringArray" />
+			<description>
+				Called when creating a context menu, custom options can be added by using the [method add_context_menu_item] function.
+			</description>
+		</method>
+		<method name="add_context_menu_item">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="callback" type="Callable" />
+			<param index="2" name="icon" type="Texture2D" default="null" />
+			<param index="3" name="shortcut" type="Shortcut" default="null" />
+			<description>
+				Add custom options to the context menu of the currently specified slot.
+				To trigger a [param shortcut] before the context menu is created, please additionally call the [method add_menu_shortcut] function.
+				[codeblock]
+				func _popup_menu(paths):
+				    add_context_menu_item("File Custom options", handle, ICON)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="add_menu_shortcut">
+			<return type="void" />
+			<param index="0" name="shortcut" type="Shortcut" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+				To register the shortcut for the context menu, call this function within the [method Object._init] function, even if the context menu has not been created yet.
+				Note that this method should only be invoked from [method Object._init]; otherwise, the shortcut will not be registered correctly.
+				[codeblock]
+				func _init():
+				    add_menu_shortcut(SHORTCUT, handle);
+				[/codeblock]
+			</description>
+		</method>
+	</methods>
+</class>
