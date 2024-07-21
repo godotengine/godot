@@ -187,6 +187,12 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	template_path = template_path.strip_edges();
 	if (template_path.is_empty()) {
 		template_path = find_export_template(get_template_file_name(p_debug ? "debug" : "release", arch));
+	} else {
+		String exe_arch = _get_exe_arch(template_path);
+		if (arch != exe_arch) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Mismatching custom export template executable architecture: found \"%s\", expected \"%s\"."), exe_arch, arch));
+			return ERR_CANT_CREATE;
+		}
 	}
 
 	int export_angle = p_preset->get("application/export_angle");
@@ -753,8 +759,25 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 }
 
 bool EditorExportPlatformWindows::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
-	String err = "";
+	String err;
 	bool valid = EditorExportPlatformPC::has_valid_export_configuration(p_preset, err, r_missing_templates, p_debug);
+
+	String custom_debug = p_preset->get("custom_template/debug").operator String().strip_edges();
+	String custom_release = p_preset->get("custom_template/release").operator String().strip_edges();
+	String arch = p_preset->get("binary_format/architecture");
+
+	if (!custom_debug.is_empty() && FileAccess::exists(custom_debug)) {
+		String exe_arch = _get_exe_arch(custom_debug);
+		if (arch != exe_arch) {
+			err += vformat(TTR("Mismatching custom debug export template executable architecture: found \"%s\", expected \"%s\"."), exe_arch, arch) + "\n";
+		}
+	}
+	if (!custom_release.is_empty() && FileAccess::exists(custom_release)) {
+		String exe_arch = _get_exe_arch(custom_release);
+		if (arch != exe_arch) {
+			err += vformat(TTR("Mismatching custom release export template executable architecture: found \"%s\", expected \"%s\"."), exe_arch, arch) + "\n";
+		}
+	}
 
 	String rcedit_path = EDITOR_GET("export/windows/rcedit");
 	if (p_preset->get("application/modify_resources") && rcedit_path.is_empty()) {
@@ -769,7 +792,7 @@ bool EditorExportPlatformWindows::has_valid_export_configuration(const Ref<Edito
 }
 
 bool EditorExportPlatformWindows::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
-	String err = "";
+	String err;
 	bool valid = true;
 
 	List<ExportOption> options;
@@ -791,6 +814,43 @@ bool EditorExportPlatformWindows::has_valid_project_configuration(const Ref<Edit
 	}
 
 	return valid;
+}
+
+String EditorExportPlatformWindows::_get_exe_arch(const String &p_path) const {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
+		return "invalid";
+	}
+
+	// Jump to the PE header and check the magic number.
+	{
+		f->seek(0x3c);
+		uint32_t pe_pos = f->get_32();
+
+		f->seek(pe_pos);
+		uint32_t magic = f->get_32();
+		if (magic != 0x00004550) {
+			return "invalid";
+		}
+	}
+
+	// Process header.
+	uint16_t machine = f->get_16();
+	f->close();
+
+	switch (machine) {
+		case 0x014c:
+			return "x86_32";
+		case 0x8664:
+			return "x86_64";
+		case 0x01c0:
+		case 0x01c4:
+			return "arm32";
+		case 0xaa64:
+			return "arm64";
+		default:
+			return "unknown";
+	}
 }
 
 Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
