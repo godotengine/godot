@@ -409,7 +409,7 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 	float dist = 0.0;
 	// Not looping first and last point.
 	for (size_t i = 1, size = v.size(); i < size - 1; ++i) {
-		float cdist = perpendicular_distance(v[i], v[0], v[v.size() - 1]);
+		float cdist = perpendicular_distance(v[i], v[0], v[size - 1]);
 		if (cdist > dist) {
 			dist = cdist;
 			index = static_cast<int>(i);
@@ -417,8 +417,8 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 	}
 	if (dist > optimization) {
 		Vector<Vector2> left, right;
-		left.resize(index);
-		for (int i = 0; i < index; i++) {
+		left.resize(index + 1);
+		for (int i = 0; i < index + 1; i++) {
 			left.write[i] = v[i];
 		}
 		right.resize(v.size() - index);
@@ -428,8 +428,8 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 		Vector<Vector2> r1 = rdp(left, optimization);
 		Vector<Vector2> r2 = rdp(right, optimization);
 
-		int middle = r1.size();
-		r1.resize(r1.size() + r2.size());
+		int middle = r1.size() - 1;
+		r1.resize(r1.size() + r2.size() - 1);
 		for (int i = 0; i < r2.size(); i++) {
 			r1.write[middle + i] = r2[i];
 		}
