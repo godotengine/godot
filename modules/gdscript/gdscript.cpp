@@ -1062,6 +1062,15 @@ void GDScript::set_path(const String &p_path, bool p_take_over) {
 	String old_path = path;
 	path = p_path;
 	path_valid = true;
+
+	if (is_root_script()) {
+		if (local_name == StringName()) {
+			fully_qualified_name = canonicalize_path(p_path);
+		}
+	} else {
+		fully_qualified_name = _owner->fully_qualified_name + "::" + local_name;
+	}
+
 	GDScriptCache::move_script(old_path, p_path);
 
 	for (KeyValue<StringName, Ref<GDScript>> &kv : subclasses) {
