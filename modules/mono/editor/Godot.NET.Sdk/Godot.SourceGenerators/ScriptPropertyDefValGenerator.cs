@@ -196,16 +196,13 @@ namespace Godot.SourceGenerators
                     continue;
                 }
 
-                if (marshalType == MarshalType.GodotObjectOrDerived)
+                if (!isNode && MemberHasNodeType(propertyType, marshalType.Value))
                 {
-                    if (!isNode && propertyType.InheritsFrom("GodotSharp", GodotClasses.Node))
-                    {
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            Common.OnlyNodesShouldExportNodesRule,
-                            property.Locations.FirstLocationWithSourceTreeOrDefault()
-                        ));
-                        continue;
-                    }
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.OnlyNodesShouldExportNodesRule,
+                        property.Locations.FirstLocationWithSourceTreeOrDefault()
+                    ));
+                    continue;
                 }
 
                 var propertyDeclarationSyntax = property.DeclaringSyntaxReferences
@@ -315,16 +312,13 @@ namespace Godot.SourceGenerators
                     continue;
                 }
 
-                if (marshalType == MarshalType.GodotObjectOrDerived)
+                if (!isNode && MemberHasNodeType(fieldType, marshalType.Value))
                 {
-                    if (!isNode && fieldType.InheritsFrom("GodotSharp", GodotClasses.Node))
-                    {
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            Common.OnlyNodesShouldExportNodesRule,
-                            field.Locations.FirstLocationWithSourceTreeOrDefault()
-                        ));
-                        continue;
-                    }
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.OnlyNodesShouldExportNodesRule,
+                        field.Locations.FirstLocationWithSourceTreeOrDefault()
+                    ));
+                    continue;
                 }
 
                 EqualsValueClauseSyntax? initializer = field.DeclaringSyntaxReferences
@@ -422,6 +416,27 @@ namespace Godot.SourceGenerators
             }
 
             context.AddSource(uniqueHint, SourceText.From(source.ToString(), Encoding.UTF8));
+        }
+
+        private static bool MemberHasNodeType(ITypeSymbol memberType, MarshalType marshalType)
+        {
+            if (marshalType == MarshalType.GodotObjectOrDerived)
+            {
+                return memberType.InheritsFrom("GodotSharp", GodotClasses.Node);
+            }
+            if (marshalType == MarshalType.GodotObjectOrDerivedArray)
+            {
+                var elementType = ((IArrayTypeSymbol)memberType).ElementType;
+                return elementType.InheritsFrom("GodotSharp", GodotClasses.Node);
+            }
+            if (memberType is INamedTypeSymbol { IsGenericType: true } genericType)
+            {
+                return genericType.TypeArguments
+                    .Any(static typeArgument
+                        => typeArgument.InheritsFrom("GodotSharp", GodotClasses.Node));
+            }
+
+            return false;
         }
 
         private struct ExportedPropertyMetadata
