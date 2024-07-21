@@ -41,7 +41,7 @@ void ActionBanner::close() {
 void ActionBanner::add_action(const String &p_name, const Callable &p_action, bool p_auto_close) {
 	Button *action_btn = memnew(Button);
 	action_btn->set_text(p_name);
-	action_btn->connect(LW_NAME(pressed), callable_mp(this, &ActionBanner::_execute_action).bind(p_action, p_auto_close));
+	action_btn->connect(LW_NAME(pressed), callable_mp(this, &ActionBanner::_execute_action).bind(p_action, p_auto_close), CONNECT_DEFERRED);
 	hbox->add_child(action_btn);
 }
 

@@ -10,9 +10,10 @@
 #*
 @tool
 extends BTAction
-## MoveForward: Applies velocity each tick until duration is exceeded.
-## Returns SUCCESS if elapsed time exceeded duration.
-## Returns RUNNING if elapsed time didn't exceed duration.
+## Applies velocity in the direction the agent is facing on each tick
+## until the [member duration] is exceeded. [br]
+## Returns [code]SUCCESS[/code] if the elapsed time exceeds [member duration]. [br]
+## Returns [code]RUNNING[/code] if the elapsed time does not exceed [member duration]. [br]
 
 ## Blackboard variable that stores desired speed.
 @export var speed_var: StringName = &"speed"

@@ -23,6 +23,8 @@ private:
 	Array indicies;
 
 protected:
+	static void _bind_methods() {}
+
 	virtual void _enter() override;
 	virtual Status _tick(double p_delta) override;
 };

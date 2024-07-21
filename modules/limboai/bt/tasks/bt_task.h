@@ -37,10 +37,13 @@
 #ifdef LIMBOAI_GDEXTENSION
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/resource.hpp>
+#include <godot_cpp/core/gdvirtual.gen.inc>
 #include <godot_cpp/core/object.hpp>
 #include <godot_cpp/templates/vector.hpp>
 using namespace godot;
 #endif // LIMBOAI_GDEXTENSION
+
+class BehaviorTree;
 
 /**
  * Base class for BTTask.
@@ -75,12 +78,16 @@ private:
 		int index = -1;
 		String custom_name;
 		Node *agent = nullptr;
+		Node *scene_root = nullptr;
 		Ref<Blackboard> blackboard;
 		BTTask *parent = nullptr;
 		Vector<Ref<BTTask>> children;
 		Status status = FRESH;
 		double elapsed = 0.0;
 		bool display_collapsed = false;
+#ifdef TOOLS_ENABLED
+		ObjectID behavior_tree_id;
+#endif
 	} data;
 
 	Array _get_children() const;
@@ -97,14 +104,12 @@ protected:
 	virtual void _exit() {}
 	virtual Status _tick(double p_delta) { return FAILURE; }
 
-#ifdef LIMBOAI_MODULE
 	GDVIRTUAL0RC(String, _generate_name);
 	GDVIRTUAL0(_setup);
 	GDVIRTUAL0(_enter);
 	GDVIRTUAL0(_exit);
 	GDVIRTUAL1R(Status, _tick, double);
 	GDVIRTUAL0RC(PackedStringArray, _get_configuration_warnings);
-#endif // LIMBOAI_MODULE
 
 public:
 	// TODO: GDExtension doesn't have this method hmm...
@@ -116,6 +121,8 @@ public:
 	_FORCE_INLINE_ Node *get_agent() const { return data.agent; }
 	void set_agent(Node *p_agent) { data.agent = p_agent; }
 
+	_FORCE_INLINE_ Node *get_scene_root() const { return data.scene_root; }
+
 	void set_display_collapsed(bool p_display_collapsed);
 	bool is_displayed_collapsed() const;
 
@@ -126,7 +133,7 @@ public:
 	Ref<BTTask> get_root() const;
 
 	virtual Ref<BTTask> clone() const;
-	virtual void initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard);
+	virtual void initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard, Node *p_scene_root);
 	virtual PackedStringArray get_configuration_warnings(); // ! Native version.
 
 	Status execute(double p_delta);
@@ -158,6 +165,11 @@ public:
 	Ref<BTTask> next_sibling() const;
 
 	void print_tree(int p_initial_tabs = 0);
+
+#ifdef TOOLS_ENABLED
+	Ref<BehaviorTree> editor_get_behavior_tree();
+	void editor_set_behavior_tree(const Ref<BehaviorTree> &p_bt);
+#endif
 
 	BTTask();
 	~BTTask();

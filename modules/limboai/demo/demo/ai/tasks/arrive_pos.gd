@@ -10,9 +10,9 @@
 #*
 @tool
 extends BTAction
-## ArrivePos: Arrive to a position, with a bias to horizontal movement.
-## Returns SUCCESS when close to the target position (see tolerance);
-## otherwise returns RUNNING.
+## Moves the agent to the specified position, favoring horizontal movement. [br]
+## Returns [code]SUCCESS[/code] when close to the target position (see [member tolerance]);
+## otherwise returns [code]RUNNING[/code].
 
 ## Blackboard variable that stores the target position (Vector2)
 @export var target_position_var := &"pos"

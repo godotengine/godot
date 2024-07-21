@@ -42,17 +42,26 @@ class TaskButton : public Button {
 	GDCLASS(TaskButton, Button);
 
 private:
-	Control *_do_make_tooltip(const String &p_text) const;
+	String task_meta;
+
+	Control *_do_make_tooltip() const;
+
+#ifdef LIMBOAI_MODULE
+	String _module_get_help_description(const String &p_class_or_script_path) const;
+#endif
 
 protected:
 	static void _bind_methods();
 
 public:
 #ifdef LIMBOAI_MODULE
-	virtual Control *make_custom_tooltip(const String &p_text) const override { return _do_make_tooltip(p_text); }
+	virtual Control *make_custom_tooltip(const String &p_text) const override { return _do_make_tooltip(); }
 #elif LIMBOAI_GDEXTENSION
-	virtual Object *_make_custom_tooltip(const String &p_text) const override { return _do_make_tooltip(p_text); }
+	virtual Object *_make_custom_tooltip(const String &p_text) const override { return _do_make_tooltip(); }
 #endif
+
+	String get_task_meta() const { return task_meta; }
+	void set_task_meta(const String &p_task_meta) { task_meta = p_task_meta; }
 
 	TaskButton();
 };
@@ -82,7 +91,7 @@ protected:
 
 public:
 	void set_filter(String p_filter);
-	void add_task_button(const String &p_name, const Ref<Texture> &icon, const String &p_tooltip, Variant p_meta);
+	void add_task_button(const String &p_name, const Ref<Texture> &icon, const String &p_meta);
 
 	void set_collapsed(bool p_collapsed);
 	bool is_collapsed() const;

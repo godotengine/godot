@@ -13,6 +13,7 @@
 #define LIMBO_STRING_NAMES_H
 
 #ifdef LIMBOAI_MODULE
+#include "core/string/node_path.h"
 #include "core/string/string_name.h"
 #include "core/typedefs.h"
 #include "modules/register_module_types.h"
@@ -20,6 +21,7 @@
 
 #ifdef LIMBOAI_GDEXTENSION
 #include "godot_cpp/variant/string.hpp"
+#include <godot_cpp/variant/node_path.hpp>
 #include <godot_cpp/variant/string_name.hpp>
 using namespace godot;
 #endif // LIMBOAI_GDEXTENSION
@@ -40,11 +42,6 @@ public:
 public:
 	_FORCE_INLINE_ static LimboStringNames *get_singleton() { return singleton; }
 
-	StringName _draw_failure_status;
-	StringName _draw_fresh;
-	StringName _draw_probability;
-	StringName _draw_running_status;
-	StringName _draw_success_status;
 	StringName _enter;
 	StringName _exit;
 	StringName _generate_name;
@@ -98,6 +95,7 @@ public:
 	StringName exited;
 	StringName favorite_tasks_changed;
 	StringName Favorites;
+	StringName focus_exited;
 	StringName font_color;
 	StringName font_size;
 	StringName font;
@@ -119,6 +117,8 @@ public:
 	StringName LimboPercent;
 	StringName LimboSelectAll;
 	StringName LimboVarAdd;
+	StringName LimboVarEmpty;
+	StringName LimboVarError;
 	StringName LimboVarExists;
 	StringName LimboVarNotFound;
 	StringName LimboVarPrivate;
@@ -180,6 +180,8 @@ public:
 
 	String repeat_forever;
 	String output_var_prefix;
+
+	NodePath node_pp;
 };
 
 #define LW_NAME(m_arg) LimboStringNames::get_singleton()->m_arg

@@ -54,7 +54,7 @@ public:
 	void set_hint_string(const String &p_hint_string);
 	String get_hint_string() const;
 
-	BBVariable duplicate() const;
+	BBVariable duplicate(bool p_deep = false) const;
 
 	_FORCE_INLINE_ bool is_value_changed() const { return data->value_changed; }
 	_FORCE_INLINE_ void reset_value_changed() { data->value_changed = false; }

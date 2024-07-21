@@ -34,6 +34,11 @@ private:
 
 	void _plan_changed();
 
+#ifdef TOOLS_ENABLED
+	void _set_editor_behavior_tree_hint();
+	void _unset_editor_behavior_tree_hint();
+#endif // TOOLS_ENABLED
+
 protected:
 	static void _bind_methods();
 
@@ -53,7 +58,7 @@ public:
 
 	Ref<BehaviorTree> clone() const;
 	void copy_other(const Ref<BehaviorTree> &p_other);
-	Ref<BTTask> instantiate(Node *p_agent, const Ref<Blackboard> &p_blackboard) const;
+	Ref<BTTask> instantiate(Node *p_agent, const Ref<Blackboard> &p_blackboard, Node *p_scene_root) const;
 
 	BehaviorTree();
 	~BehaviorTree();

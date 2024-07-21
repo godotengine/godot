@@ -36,8 +36,6 @@ using namespace godot;
 
 #define LOGICAL_XOR(a, b) (a) ? !(b) : (b)
 
-#define LIMBO_DOC_VERSION "v1.0"
-
 class LimboUtility : public Object {
 	GDCLASS(LimboUtility, Object);
 

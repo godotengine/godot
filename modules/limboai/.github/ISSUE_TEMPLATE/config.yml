@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Documentation
+    url: https://limboai.readthedocs.io/en/stable/
+    about: Please see our documentation for more information.
+
+  - name: Discussions
+    url: https://github.com/limbonaut/limboai/discussions
+    about: Need help? Ask questions in Discussions or on our Discord server.
+
+  - name: Discord Server
+    url: https://discord.gg/N5MGC95GpP
+    about: Share your experience or get help on our Discord server.

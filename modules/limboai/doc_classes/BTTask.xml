@@ -79,6 +79,12 @@
 				Duplicates the task and its children, copying the exported members. Sub-resources are shared for efficiency, except for [BBParam] subtypes, which are always copied. Used by the editor to instantiate [BehaviorTree] and copy-paste tasks.
 			</description>
 		</method>
+		<method name="editor_get_behavior_tree">
+			<return type="BehaviorTree" />
+			<description>
+				Returns the behavior tree that owns this task. This is only available in the editor.
+			</description>
+		</method>
 		<method name="execute">
 			<return type="int" enum="BT.Status" />
 			<param index="0" name="delta" type="float" />
@@ -144,9 +150,10 @@
 			<return type="void" />
 			<param index="0" name="agent" type="Node" />
 			<param index="1" name="blackboard" type="Blackboard" />
+			<param index="2" name="scene_root" type="Node" />
 			<description>
 				Initilizes the task. Assigns [member agent] and [member blackboard], and calls [method _setup] for the task and its children.
-				The method is called recursively for each child task.
+				The method is called recursively for each child task. [param scene_root] should be the root node of the scene the behavior tree is used in (e.g., the owner of the node that contains the behavior tree).
 			</description>
 		</method>
 		<method name="is_descendant_of" qualifiers="const">
@@ -193,7 +200,7 @@
 	</methods>
 	<members>
 		<member name="agent" type="Node" setter="set_agent" getter="get_agent">
-			The agent is a contextual object for the task's [BehaviorTree] instance. Usually, agent is the owner of the [BTPlayer] node containing the [BehaviorTree] resource.
+			The agent is the contextual object for the [BehaviorTree] instance. This is usually the parent of the [BTPlayer] node that utilizes the [BehaviorTree] resource.
 		</member>
 		<member name="blackboard" type="Blackboard" setter="" getter="get_blackboard">
 			Provides access to the [Blackboard]. Blackboard is used to share data among tasks of the associated [BehaviorTree].
@@ -205,6 +212,18 @@
 		<member name="elapsed_time" type="float" setter="" getter="get_elapsed_time">
 			Elapsed time since the task was "entered". See [method _enter].
 			Returns [code]0[/code] when task is not [code]RUNNING[/code].
+		</member>
+		<member name="scene_root" type="Node" setter="" getter="get_scene_root">
+			Root node of the scene the behavior tree is used in (e.g., the owner of the [BTPlayer] node). Can be uses to retrieve [NodePath] references.
+			[b]Example:[/b]
+			[codeblock]
+			extends BTAction
+
+			@export var node_path: NodePath
+
+			func _setup():
+			    var node: Node = scene_root.get_node(node_path)
+			[/codeblock]
 		</member>
 		<member name="status" type="int" setter="" getter="get_status" enum="BT.Status">
 			Last execution [enum BT.Status] returned by [method _tick].

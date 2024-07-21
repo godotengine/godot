@@ -50,7 +50,7 @@ void TaskTree::_update_item(TreeItem *p_item) {
 	if (p_item->get_parent()) {
 		Ref<BTProbabilitySelector> sel = p_item->get_parent()->get_metadata(0);
 		if (sel.is_valid() && sel->has_probability(p_item->get_index())) {
-			p_item->set_custom_draw(0, this, LW_NAME(_draw_probability));
+			p_item->set_custom_draw_callback(0, callable_mp(this, &TaskTree::_draw_probability));
 			p_item->set_cell_mode(0, TreeItem::CELL_MODE_CUSTOM);
 		}
 	}
@@ -213,7 +213,7 @@ void TaskTree::unload() {
 		last_selected->disconnect(LW_NAME(changed), on_task_changed);
 	}
 
-	bt->unreference();
+	bt.unref();
 	tree->clear();
 }
 
@@ -384,7 +384,8 @@ void TaskTree::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			tree->connect("item_mouse_selected", callable_mp(this, &TaskTree::_on_item_mouse_selected));
-			tree->connect("item_selected", callable_mp(this, &TaskTree::_on_item_selected));
+			// Note: CONNECT_DEFERRED is needed to avoid double updates with set_allow_reselect(true), which breaks folding/unfolding.
+			tree->connect("item_selected", callable_mp(this, &TaskTree::_on_item_selected), CONNECT_DEFERRED);
 			tree->connect("item_activated", callable_mp(this, &TaskTree::_on_item_activated));
 			tree->connect("item_collapsed", callable_mp(this, &TaskTree::_on_item_collapsed));
 		} break;
@@ -427,10 +428,10 @@ TaskTree::TaskTree() {
 	tree->set_columns(2);
 	tree->set_column_expand(0, true);
 	tree->set_column_expand(1, false);
-	tree->set_column_custom_minimum_width(1, 64);
 	tree->set_anchor(SIDE_RIGHT, ANCHOR_END);
 	tree->set_anchor(SIDE_BOTTOM, ANCHOR_END);
 	tree->set_allow_rmb_select(true);
+	tree->set_allow_reselect(true);
 
 	tree->set_drag_forwarding(callable_mp(this, &TaskTree::_get_drag_data_fw), callable_mp(this, &TaskTree::_can_drop_data_fw), callable_mp(this, &TaskTree::_drop_data_fw));
 }

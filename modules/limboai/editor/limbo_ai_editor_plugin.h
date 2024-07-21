@@ -17,6 +17,7 @@
 #include "../bt/behavior_tree.h"
 #include "../bt/tasks/bt_task.h"
 #include "editor_property_variable_name.h"
+#include "owner_picker.h"
 #include "task_palette.h"
 #include "task_tree.h"
 
@@ -25,14 +26,15 @@
 #include "core/object/object.h"
 #include "core/templates/hash_set.h"
 #include "editor/editor_node.h"
-#include "editor/plugins/editor_plugin.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/link_button.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup.h"
@@ -54,9 +56,11 @@
 #include <godot_cpp/classes/h_box_container.hpp>
 #include <godot_cpp/classes/h_split_container.hpp>
 #include <godot_cpp/classes/input_event.hpp>
+#include <godot_cpp/classes/link_button.hpp>
 #include <godot_cpp/classes/menu_button.hpp>
 #include <godot_cpp/classes/panel.hpp>
 #include <godot_cpp/classes/popup_menu.hpp>
+#include <godot_cpp/classes/tab_bar.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/variant.hpp>
@@ -94,8 +98,24 @@ private:
 		MISC_DOC_INTRODUCTION,
 		MISC_DOC_CUSTOM_TASKS,
 		MISC_OPEN_DEBUGGER,
+		MISC_LAYOUT_CLASSIC,
+		MISC_LAYOUT_WIDESCREEN_OPTIMIZED,
 		MISC_PROJECT_SETTINGS,
 		MISC_CREATE_SCRIPT_TEMPLATE,
+	};
+
+	enum TabMenu {
+		TAB_SHOW_IN_FILESYSTEM,
+		TAB_JUMP_TO_OWNER,
+		TAB_CLOSE,
+		TAB_CLOSE_OTHER,
+		TAB_CLOSE_RIGHT,
+		TAB_CLOSE_ALL,
+	};
+
+	enum EditorLayout {
+		LAYOUT_CLASSIC,
+		LAYOUT_WIDESCREEN_OPTIMIZED,
 	};
 
 	struct ThemeCache {
@@ -119,13 +139,20 @@ private:
 	} theme_cache;
 
 	EditorPlugin *plugin;
+	EditorLayout editor_layout;
 	Vector<Ref<BehaviorTree>> history;
 	int idx_history;
+	bool updating_tabs = false;
 	HashSet<Ref<BehaviorTree>> dirty;
 	Ref<BTTask> clipboard_task;
 
 	VBoxContainer *vbox;
-	Button *header;
+	PanelContainer *tab_bar_panel;
+	HBoxContainer *tab_bar_container;
+	LinkButton *version_btn;
+	TabBar *tab_bar;
+	PopupMenu *tab_menu;
+	OwnerPicker *owner_picker;
 	HSplitContainer *hsc;
 	TaskTree *task_tree;
 	VBoxContainer *banners;
@@ -145,8 +172,6 @@ private:
 	FileDialog *save_dialog;
 	FileDialog *load_dialog;
 	FileDialog *extract_dialog;
-	Button *history_back;
-	Button *history_forward;
 
 	Button *new_btn;
 	Button *load_btn;
@@ -168,19 +193,28 @@ private:
 	Ref<BTTask> _create_task_by_class_or_path(const String &p_class_or_path) const;
 	void _add_task_by_class_or_path(const String &p_class_or_path);
 	void _remove_task(const Ref<BTTask> &p_task);
-	void _update_header() const;
-	void _update_history_buttons();
 	void _update_favorite_tasks();
 	void _update_misc_menu();
 	void _update_banners();
 	void _new_bt();
 	void _save_bt(String p_path);
 	void _load_bt(String p_path);
+	void _disable_editing();
 	void _mark_as_dirty(bool p_dirty);
 	void _create_user_task_dir();
 	void _remove_task_from_favorite(const String &p_task);
+	void _save_and_restart();
 	void _extract_subtree(const String &p_path);
 	void _replace_task(const Ref<BTTask> &p_task, const Ref<BTTask> &p_by_task);
+
+	void _tab_clicked(int p_tab);
+	void _tab_closed(int p_tab);
+	void _update_tabs();
+	void _move_active_tab(int p_to_index);
+	void _tab_input(const Ref<InputEvent> &p_input);
+	void _show_tab_context_menu();
+	void _tab_menu_option_selected(int p_id);
+	void _tab_plan_edited(int p_tab);
 
 	void _reload_modified();
 	void _resave_modified(String _str = "");
@@ -202,7 +236,9 @@ private:
 	void _on_history_forward();
 	void _on_task_dragged(Ref<BTTask> p_task, Ref<BTTask> p_to_task, int p_type);
 	void _on_resources_reload(const PackedStringArray &p_resources);
+	void _on_new_script_pressed();
 	void _task_type_selected(const String &p_class_or_path);
+	void _copy_version_info();
 
 	void _edit_project_settings();
 	void _process_shortcut_input(const Ref<InputEvent> &p_event);

@@ -92,7 +92,7 @@ Example 1: A simple action
 
    # Called each time this task is ticked (aka executed).
    func _tick(p_delta: float) -> Status:
-       var n: CanvasItem = agent.get_node_or_null(node_path)
+       var n: CanvasItem = scene_root.get_node_or_null(node_path)
        if is_instance_valid(n):
            n.visible = visible
            return SUCCESS

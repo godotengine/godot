@@ -1,0 +1,47 @@
+name: Setup Linux toolchain
+
+inputs:
+  arch:
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up environment
+      shell: bash
+      run: |
+        # ! Settings:
+        TOOLCHAIN_64_URL=https://github.com/godotengine/buildroot/releases/download/godot-2020.11.x-2/x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
+        TOOLCHAIN_64_SHA=16c8302fcb676c1f0fb9df73d6cff250ba1f4286
+        TOOLCHAIN_32_URL=https://github.com/godotengine/buildroot/releases/download/godot-2020.11.x-2/i686-godot-linux-gnu_sdk-buildroot.tar.bz2
+        TOOLCHAIN_32_SHA=6171652abc54ef219e5187bc53660ee4e2f796f4
+        # ! Export variables:
+        if [[ "${{ inputs.arch }}" == "x86_64" ]]; then
+          echo "TOOLCHAIN_URL=${TOOLCHAIN_64_URL}" >> "$GITHUB_ENV"
+          echo "TOOLCHAIN_SHA=${TOOLCHAIN_64_SHA}" >> "$GITHUB_ENV"
+        elif [[ "${{ inputs.arch }}" == "x86_32" ]]; then
+          echo "TOOLCHAIN_URL=${TOOLCHAIN_32_URL}" >> "$GITHUB_ENV"
+          echo "TOOLCHAIN_SHA=${TOOLCHAIN_32_SHA}" >> "$GITHUB_ENV"
+        fi
+
+    - name: Cache buildroot
+      id: cache-buildroot
+      uses: actions/cache@v4
+      with:
+        path: buildroot
+        key: ${{env.TOOLCHAIN_SHA}}
+
+    - name: Set up buildroot
+      if: steps.cache-buildroot.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        mkdir buildroot
+        wget ${TOOLCHAIN_URL} -O buildroot/buildroot.tar.bz2
+        cd buildroot
+        echo "${TOOLCHAIN_SHA}  buildroot.tar.bz2"
+        echo "${TOOLCHAIN_SHA}  buildroot.tar.bz2" | shasum --check
+        tar -xjf buildroot.tar.bz2 --strip-components=1
+        ls -l
+        rm buildroot.tar.bz2
+        ./relocate-sdk.sh
+        cd ..

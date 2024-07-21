@@ -18,6 +18,8 @@ class BBInt64Array : public BBParam {
 	GDCLASS(BBInt64Array, BBParam);
 
 protected:
+	static void _bind_methods() {}
+
 	virtual Variant::Type get_type() const override { return Variant::PACKED_INT64_ARRAY; }
 };
 

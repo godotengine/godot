@@ -24,8 +24,8 @@
 #include "core/object/callable_method_pointer.h"
 #include "core/os/time.h"
 #include "core/typedefs.h"
-#include "editor/themes/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/resources/style_box.h"
 #endif // LIMBOAI_MODULE
 
@@ -111,7 +111,7 @@ void BehaviorTreeView::_update_tree(const Ref<BehaviorTreeData> &p_data) {
 		selected_id = item_get_task_id(tree->get_selected());
 	}
 
-	if (last_root_id != 0 && p_data->tasks.size() > 0 && last_root_id == (uint64_t)p_data->tasks.get(0).id) {
+	if (last_root_id != 0 && p_data->tasks.size() > 0 && last_root_id == (uint64_t)p_data->tasks.front()->get().id) {
 		// * Update tree.
 		// ! Update routine is built on assumption that the behavior tree does NOT mutate. With little work it could detect mutations.
 
@@ -127,16 +127,16 @@ void BehaviorTreeView::_update_tree(const Ref<BehaviorTreeData> &p_data) {
 			if (status_changed) {
 				item->set_metadata(1, current_status);
 				if (current_status == BTTask::SUCCESS) {
-					item->set_custom_draw(0, this, LW_NAME(_draw_success_status));
+					item->set_custom_draw_callback(0, callable_mp(this, &BehaviorTreeView::_draw_success_status));
 					item->set_icon(1, theme_cache.icon_success);
 				} else if (current_status == BTTask::FAILURE) {
-					item->set_custom_draw(0, this, LW_NAME(_draw_failure_status));
+					item->set_custom_draw_callback(0, callable_mp(this, &BehaviorTreeView::_draw_failure_status));
 					item->set_icon(1, theme_cache.icon_failure);
 				} else if (current_status == BTTask::RUNNING) {
-					item->set_custom_draw(0, this, LW_NAME(_draw_running_status));
+					item->set_custom_draw_callback(0, callable_mp(this, &BehaviorTreeView::_draw_running_status));
 					item->set_icon(1, theme_cache.icon_running);
 				} else {
-					item->set_custom_draw(0, this, LW_NAME(_draw_fresh));
+					item->set_custom_draw_callback(0, callable_mp(this, &BehaviorTreeView::_draw_fresh));
 					item->set_icon(1, nullptr);
 				}
 			}
@@ -165,7 +165,7 @@ void BehaviorTreeView::_update_tree(const Ref<BehaviorTreeData> &p_data) {
 	} else {
 		// * Create new tree.
 
-		last_root_id = p_data->tasks.size() > 0 ? p_data->tasks.get(0).id : 0;
+		last_root_id = p_data->tasks.size() > 0 ? p_data->tasks.front()->get().id : 0;
 
 		tree->clear();
 		TreeItem *parent = nullptr;
@@ -174,7 +174,7 @@ void BehaviorTreeView::_update_tree(const Ref<BehaviorTreeData> &p_data) {
 			// Figure out parent.
 			parent = nullptr;
 			if (parents.size()) {
-				Pair<TreeItem *, int> &p = parents.get(0);
+				Pair<TreeItem *, int> &p = parents.front()->get();
 				parent = p.first;
 				if (!(--p.second)) {
 					// No children left, remove it.
@@ -204,13 +204,13 @@ void BehaviorTreeView::_update_tree(const Ref<BehaviorTreeData> &p_data) {
 			item->set_icon_max_width(0, 16 * _get_editor_scale()); // Force user icon size.
 
 			if (task_data.status == BTTask::SUCCESS) {
-				item->set_custom_draw(0, this, LW_NAME(_draw_success_status));
+				item->set_custom_draw_callback(0, callable_mp(this, &BehaviorTreeView::_draw_success_status));
 				item->set_icon(1, theme_cache.icon_success);
 			} else if (task_data.status == BTTask::FAILURE) {
-				item->set_custom_draw(0, this, LW_NAME(_draw_failure_status));
+				item->set_custom_draw_callback(0, callable_mp(this, &BehaviorTreeView::_draw_failure_status));
 				item->set_icon(1, theme_cache.icon_failure);
 			} else if (task_data.status == BTTask::RUNNING) {
-				item->set_custom_draw(0, this, LW_NAME(_draw_running_status));
+				item->set_custom_draw_callback(0, callable_mp(this, &BehaviorTreeView::_draw_running_status));
 				item->set_icon(1, theme_cache.icon_running);
 			}
 

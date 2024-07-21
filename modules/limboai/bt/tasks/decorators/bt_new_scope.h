@@ -23,6 +23,10 @@ class BTNewScope : public BTDecorator {
 private:
 	Ref<BlackboardPlan> blackboard_plan;
 
+#ifdef TOOLS_ENABLED
+	void _set_parent_scope_plan_from_bt();
+#endif // TOOLS_ENABLED
+
 protected:
 	static void _bind_methods();
 
@@ -34,7 +38,7 @@ protected:
 	virtual Status _tick(double p_delta) override;
 
 public:
-	virtual void initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard) override;
+	virtual void initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard, Node *p_scene_root) override;
 };
 
 #endif // BT_NEW_SCOPE_H

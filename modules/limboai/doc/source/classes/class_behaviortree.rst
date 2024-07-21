@@ -55,17 +55,17 @@ Methods
 .. table::
    :widths: auto
 
-   +-----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`BehaviorTree<class_BehaviorTree>` | :ref:`clone<class_BehaviorTree_method_clone>` **(** **)** |const|                                                                        |
-   +-----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------+
-   | void                                    | :ref:`copy_other<class_BehaviorTree_method_copy_other>` **(** :ref:`BehaviorTree<class_BehaviorTree>` other **)**                        |
-   +-----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`BTTask<class_BTTask>`             | :ref:`get_root_task<class_BehaviorTree_method_get_root_task>` **(** **)** |const|                                                        |
-   +-----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`BTTask<class_BTTask>`             | :ref:`instantiate<class_BehaviorTree_method_instantiate>` **(** Node agent, :ref:`Blackboard<class_Blackboard>` blackboard **)** |const| |
-   +-----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------+
-   | void                                    | :ref:`set_root_task<class_BehaviorTree_method_set_root_task>` **(** :ref:`BTTask<class_BTTask>` task **)**                               |
-   +-----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------+
+   +-----------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`BehaviorTree<class_BehaviorTree>` | :ref:`clone<class_BehaviorTree_method_clone>` **(** **)** |const|                                                                                         |
+   +-----------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                    | :ref:`copy_other<class_BehaviorTree_method_copy_other>` **(** :ref:`BehaviorTree<class_BehaviorTree>` other **)**                                         |
+   +-----------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`BTTask<class_BTTask>`             | :ref:`get_root_task<class_BehaviorTree_method_get_root_task>` **(** **)** |const|                                                                         |
+   +-----------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`BTTask<class_BTTask>`             | :ref:`instantiate<class_BehaviorTree_method_instantiate>` **(** Node agent, :ref:`Blackboard<class_Blackboard>` blackboard, Node scene_root **)** |const| |
+   +-----------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                    | :ref:`set_root_task<class_BehaviorTree_method_set_root_task>` **(** :ref:`BTTask<class_BTTask>` task **)**                                                |
+   +-----------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -172,9 +172,9 @@ Returns the root task of the BehaviorTree resource.
 
 .. rst-class:: classref-method
 
-:ref:`BTTask<class_BTTask>` **instantiate** **(** Node agent, :ref:`Blackboard<class_Blackboard>` blackboard **)** |const|
+:ref:`BTTask<class_BTTask>` **instantiate** **(** Node agent, :ref:`Blackboard<class_Blackboard>` blackboard, Node scene_root **)** |const|
 
-Instantiates the Behavior Tree and returns the root :ref:`BTTask<class_BTTask>`.
+Instantiates the behavior tree and returns the root :ref:`BTTask<class_BTTask>`. ``scene_root`` should be the root node of the scene that the Behavior Tree will be used in (e.g., the owner of the node that contains the behavior tree).
 
 .. rst-class:: classref-item-separator
 

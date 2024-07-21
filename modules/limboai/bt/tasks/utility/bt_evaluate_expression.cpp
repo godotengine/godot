@@ -79,7 +79,7 @@ PackedStringArray BTEvaluateExpression::get_configuration_warnings() {
 
 void BTEvaluateExpression::_setup() {
 	parse();
-	ERR_FAIL_COND_MSG(is_parsed != Error::OK, "BTEvaluateExpression: Failed to parse expression: " + expression.get_error_text());
+	ERR_FAIL_COND_MSG(is_parsed != Error::OK, "BTEvaluateExpression: Failed to parse expression: " + expression->get_error_text());
 }
 
 Error BTEvaluateExpression::parse() {
@@ -93,7 +93,7 @@ Error BTEvaluateExpression::parse() {
 		processed_input_names_ptr[i + int(input_include_delta)] = input_names[i];
 	}
 
-	is_parsed = expression.parse(expression_string, processed_input_names);
+	is_parsed = expression->parse(expression_string, processed_input_names);
 	return is_parsed;
 }
 
@@ -107,20 +107,20 @@ String BTEvaluateExpression::_generate_name() {
 BT::Status BTEvaluateExpression::_tick(double p_delta) {
 	ERR_FAIL_COND_V_MSG(expression_string.is_empty(), FAILURE, "BTEvaluateExpression: Expression String is not set.");
 	ERR_FAIL_COND_V_MSG(node_param.is_null(), FAILURE, "BTEvaluateExpression: Node parameter is not set.");
-	Object *obj = node_param->get_value(get_agent(), get_blackboard());
+	Object *obj = node_param->get_value(get_scene_root(), get_blackboard());
 	ERR_FAIL_COND_V_MSG(obj == nullptr, FAILURE, "BTEvaluateExpression: Failed to get object: " + node_param->to_string());
-	ERR_FAIL_COND_V_MSG(is_parsed != Error::OK, FAILURE, "BTEvaluateExpression: Failed to parse expression: " + expression.get_error_text());
+	ERR_FAIL_COND_V_MSG(is_parsed != Error::OK, FAILURE, "BTEvaluateExpression: Failed to parse expression: " + expression->get_error_text());
 
 	if (input_include_delta) {
 		processed_input_values[0] = p_delta;
 	}
 	for (int i = 0; i < input_values.size(); ++i) {
 		const Ref<BBVariant> &bb_variant = input_values[i];
-		processed_input_values[i + int(input_include_delta)] = bb_variant->get_value(get_agent(), get_blackboard());
+		processed_input_values[i + int(input_include_delta)] = bb_variant->get_value(get_scene_root(), get_blackboard());
 	}
 
-	Variant result = expression.execute(processed_input_values, obj, false);
-	ERR_FAIL_COND_V_MSG(expression.has_execute_failed(), FAILURE, "BTEvaluateExpression: Failed to execute: " + expression.get_error_text());
+	Variant result = expression->execute(processed_input_values, obj, false);
+	ERR_FAIL_COND_V_MSG(expression->has_execute_failed(), FAILURE, "BTEvaluateExpression: Failed to execute: " + expression->get_error_text());
 
 	if (result_var != StringName()) {
 		get_blackboard()->set_var(result_var, result);
@@ -156,4 +156,5 @@ void BTEvaluateExpression::_bind_methods() {
 }
 
 BTEvaluateExpression::BTEvaluateExpression() {
+	expression.instantiate();
 }

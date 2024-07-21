@@ -51,13 +51,13 @@ TEST_CASE("[SceneTree][LimboAI] BTAwaitAnimation") {
 	SUBCASE("When AnimationPlayer doesn't exist") {
 		player_param->set_saved_value(NodePath("./NotFound"));
 		ERR_PRINT_OFF;
-		awa->initialize(dummy, bb);
+		awa->initialize(dummy, bb, dummy);
 		CHECK(awa->execute(0.01666) == BTTask::FAILURE);
 		ERR_PRINT_ON;
 	}
 	SUBCASE("When AnimationPlayer exists") {
 		player_param->set_saved_value(player->get_path());
-		awa->initialize(dummy, bb);
+		awa->initialize(dummy, bb, dummy);
 
 		SUBCASE("When AnimationPlayer is not playing") {
 			REQUIRE_FALSE(player->is_playing());

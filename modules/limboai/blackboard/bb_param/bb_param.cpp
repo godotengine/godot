@@ -75,7 +75,7 @@ String BBParam::_to_string() {
 	}
 }
 
-Variant BBParam::get_value(Object *p_agent, const Ref<Blackboard> &p_blackboard, const Variant &p_default) {
+Variant BBParam::get_value(Node *p_scene_root, const Ref<Blackboard> &p_blackboard, const Variant &p_default) {
 	ERR_FAIL_COND_V(!p_blackboard.is_valid(), p_default);
 
 	if (value_source == SAVED_VALUE) {
@@ -105,7 +105,7 @@ void BBParam::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_variable", "variable_name"), &BBParam::set_variable);
 	ClassDB::bind_method(D_METHOD("get_variable"), &BBParam::get_variable);
 	ClassDB::bind_method(D_METHOD("get_type"), &BBParam::get_type);
-	ClassDB::bind_method(D_METHOD("get_value", "agent", "blackboard", "default"), &BBParam::get_value, Variant());
+	ClassDB::bind_method(D_METHOD("get_value", "scene_root", "blackboard", "default"), &BBParam::get_value, Variant());
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "value_source", PROPERTY_HINT_ENUM, "Saved Value,Blackboard Var"), "set_value_source", "get_value_source");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "variable", PROPERTY_HINT_NONE, "", 0), "set_variable", "get_variable");

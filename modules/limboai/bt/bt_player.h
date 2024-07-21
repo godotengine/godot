@@ -37,6 +37,7 @@ public:
 
 private:
 	Ref<BehaviorTree> behavior_tree;
+	NodePath agent_node;
 	Ref<BlackboardPlan> blackboard_plan;
 	UpdateMode update_mode = UpdateMode::PHYSICS;
 	bool active = true;
@@ -56,6 +57,9 @@ protected:
 public:
 	void set_behavior_tree(const Ref<BehaviorTree> &p_tree);
 	Ref<BehaviorTree> get_behavior_tree() const { return behavior_tree; };
+
+	void set_agent_node(const NodePath &p_agent_node);
+	NodePath get_agent_node() const { return agent_node; }
 
 	void set_blackboard_plan(const Ref<BlackboardPlan> &p_plan);
 	Ref<BlackboardPlan> get_blackboard_plan() const { return blackboard_plan; }
@@ -88,6 +92,10 @@ private:
 
 	void _set_monitor_performance(bool p_monitor_performance);
 	bool _get_monitor_performance() const { return monitor_performance; }
+
+	void _add_custom_monitor();
+	void _remove_custom_monitor();
+
 	double _get_mean_update_time_msec();
 
 #endif // DEBUG_ENABLED

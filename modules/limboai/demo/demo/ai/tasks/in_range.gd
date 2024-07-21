@@ -10,11 +10,10 @@
 #*
 @tool
 extends BTCondition
-
 ## InRange condition checks if the agent is within a range of target,
-## defined by distance_min and distance_max.
-## Returns SUCCESS if the agent is within the defined range;
-## otherwise, returns FAILURE.
+## defined by [member distance_min] and [member distance_max]. [br]
+## Returns [code]SUCCESS[/code] if the agent is within the given range;
+## otherwise, returns [code]FAILURE[/code].
 
 ## Minimum distance to target.
 @export var distance_min: float

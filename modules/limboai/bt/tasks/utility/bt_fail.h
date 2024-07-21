@@ -19,6 +19,8 @@ class BTFail : public BTAction {
 	TASK_CATEGORY(Utility);
 
 protected:
+	static void _bind_methods() {}
+
 	virtual Status _tick(double p_delta) override;
 };
 

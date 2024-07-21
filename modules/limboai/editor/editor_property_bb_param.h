@@ -36,6 +36,7 @@ private:
 
 	bool initialized = false;
 
+	Ref<BlackboardPlan> plan;
 	StringName param_type;
 	PropertyHint property_hint = PROPERTY_HINT_NONE;
 

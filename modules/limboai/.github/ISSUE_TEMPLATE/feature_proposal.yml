@@ -1,0 +1,38 @@
+name: Feature or improvement proposal
+description: Propose a new feature to be added or improved in LimboAI
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        - Write a descriptive title above.
+        - Search [open](https://github.com/limbonaut/limboai/issues) and [closed](https://github.com/limbonaut/limboai/issues?q=is%3Aissue+is%3Aclosed) issues to ensure it has not already been reported.
+
+  - type: textarea
+    attributes:
+      label: Problem statement
+      description: |
+        - Describe the problem or limitation you're currently facing with the LimboAI plugin.
+        - If it helps, describe the project you're working on and how it relates to the problem or limitation.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Proposed solution
+      description: |
+        - Describe your proposed solution and how it helps to overcome the problem or limitation.
+        - If it helps, show how it will work with code, pseudo-code, mock-ups, and/or diagrams.
+        - You can include any images or videos with drag'n'drop, and sample code blocks with <code>```</code> tags.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Alternatives
+      description: |
+        - Describe alternative solutions and features you've considered.
+        - If this enhancement will not be used often, can it be worked around with a few clicks or lines of code?
+    validations:
+      required: true

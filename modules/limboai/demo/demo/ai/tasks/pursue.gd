@@ -10,11 +10,10 @@
 #*
 @tool
 extends BTAction
-## Pursue: Move towards target until agent is flanking it.
-##
-## Returns RUNNING, while moving towards target but not yet at the desired position.
-## Returns SUCCESS, when at the desired position from target (flanking it).
-## Returns FAILURE, if target is not a valid Node2D instance.
+## Move towards the target until the agent is flanking it. [br]
+## Returns [code]RUNNING[/code] while moving towards the target but not yet at the desired position. [br]
+## Returns [code]SUCCESS[/code] when at the desired position relative to the target (flanking it). [br]
+## Returns [code]FAILURE[/code] if the target is not a valid [Node2D] instance. [br]
 
 ## How close should the agent be to the desired position to return SUCCESS.
 const TOLERANCE := 30.0

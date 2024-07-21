@@ -35,15 +35,19 @@ Methods
    :widths: auto
 
    +---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`Blackboard<class_Blackboard>`         | :ref:`create_blackboard<class_BlackboardPlan_method_create_blackboard>` **(** Node node **)**                                                                     |
+   | :ref:`Blackboard<class_Blackboard>`         | :ref:`create_blackboard<class_BlackboardPlan_method_create_blackboard>` **(** Node node, :ref:`Blackboard<class_Blackboard>` parent_scope=null **)**              |
    +---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | :ref:`BlackboardPlan<class_BlackboardPlan>` | :ref:`get_base_plan<class_BlackboardPlan_method_get_base_plan>` **(** **)** |const|                                                                               |
+   +---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | Callable                                    | :ref:`get_parent_scope_plan_provider<class_BlackboardPlan_method_get_parent_scope_plan_provider>` **(** **)** |const|                                             |
    +---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | bool                                        | :ref:`is_derived<class_BlackboardPlan_method_is_derived>` **(** **)** |const|                                                                                     |
    +---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | void                                        | :ref:`populate_blackboard<class_BlackboardPlan_method_populate_blackboard>` **(** :ref:`Blackboard<class_Blackboard>` blackboard, bool overwrite, Node node **)** |
    +---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | void                                        | :ref:`set_base_plan<class_BlackboardPlan_method_set_base_plan>` **(** :ref:`BlackboardPlan<class_BlackboardPlan>` blackboard_plan **)**                           |
+   +---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                        | :ref:`set_parent_scope_plan_provider<class_BlackboardPlan_method_set_parent_scope_plan_provider>` **(** Callable callable **)**                                   |
    +---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | void                                        | :ref:`sync_with_base_plan<class_BlackboardPlan_method_sync_with_base_plan>` **(** **)**                                                                           |
    +---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -83,7 +87,7 @@ Method Descriptions
 
 .. rst-class:: classref-method
 
-:ref:`Blackboard<class_Blackboard>` **create_blackboard** **(** Node node **)**
+:ref:`Blackboard<class_Blackboard>` **create_blackboard** **(** Node node, :ref:`Blackboard<class_Blackboard>` parent_scope=null **)**
 
 Constructs a new instance of a :ref:`Blackboard<class_Blackboard>` using this plan. If ``NodePath`` prefetching is enabled, ``node`` will be used to retrieve node instances for ``NodePath`` variables and substitute their values.
 
@@ -98,6 +102,18 @@ Constructs a new instance of a :ref:`Blackboard<class_Blackboard>` using this pl
 :ref:`BlackboardPlan<class_BlackboardPlan>` **get_base_plan** **(** **)** |const|
 
 Returns the base plan. See :ref:`is_derived<class_BlackboardPlan_method_is_derived>`.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_BlackboardPlan_method_get_parent_scope_plan_provider:
+
+.. rst-class:: classref-method
+
+Callable **get_parent_scope_plan_provider** **(** **)** |const|
+
+Returns the parent scope plan provider - a callable that returns a **BlackboardPlan**.
 
 .. rst-class:: classref-item-separator
 
@@ -136,6 +152,18 @@ void **set_base_plan** **(** :ref:`BlackboardPlan<class_BlackboardPlan>` blackbo
 Sets the base plan. If assigned, this plan will be derived from the base plan.
 
 Use with caution, as it will remove variables not present in the base plan. Only use this for custom tooling.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_BlackboardPlan_method_set_parent_scope_plan_provider:
+
+.. rst-class:: classref-method
+
+void **set_parent_scope_plan_provider** **(** Callable callable **)**
+
+Sets the parent scope plan provider - a callable that returns a **BlackboardPlan**. Used to provide hints in the inspector. When set, mapping feature becomes available.
 
 .. rst-class:: classref-item-separator
 

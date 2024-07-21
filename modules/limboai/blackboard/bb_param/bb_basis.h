@@ -18,6 +18,8 @@ class BBBasis : public BBParam {
 	GDCLASS(BBBasis, BBParam);
 
 protected:
+	static void _bind_methods() {}
+
 	virtual Variant::Type get_type() const override { return Variant::BASIS; }
 };
 

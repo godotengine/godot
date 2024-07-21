@@ -16,9 +16,15 @@
 			<param index="0" name="var_name" type="StringName" />
 			<param index="1" name="object" type="Object" />
 			<param index="2" name="property" type="StringName" />
-			<param index="3" name="create" type="bool" />
+			<param index="3" name="create" type="bool" default="false" />
 			<description>
 				Establish a binding between a variable and the object's property specified by [param property] and [param object]. Changes to the variable update the property, and vice versa. If [param create] is [code]true[/code], the variable will be created if it doesn't exist.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Removes all variables from the Blackboard. Parent scopes are not affected.
 			</description>
 		</method>
 		<method name="erase_var">
@@ -43,6 +49,12 @@
 				Returns variable value or [param default] if variable doesn't exist. If [param complain] is [code]true[/code], an error will be printed if variable doesn't exist.
 			</description>
 		</method>
+		<method name="get_vars_as_dict" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns all variables in the Blackboard as a dictionary. Keys are the variable names, values are the variable values. Parent scopes are not included.
+			</description>
+		</method>
 		<method name="has_var" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="var_name" type="StringName" />
@@ -55,10 +67,23 @@
 			<param index="0" name="var_name" type="StringName" />
 			<param index="1" name="target_blackboard" type="Blackboard" />
 			<param index="2" name="target_var" type="StringName" />
-			<param index="3" name="create" type="bool" />
+			<param index="3" name="create" type="bool" default="false" />
 			<description>
 				Links a variable to another Blackboard variable. If a variable is linked to another variable, their state will always be identical, and any change to one will be reflected in the other. If [param create] is [code]true[/code], the variable will be created if it doesn't exist.
 				You can use this method to link a variable in the current scope to a variable in another scope, or in another Blackboard instance. A variable can only be linked to one other variable. Calling this method again will overwrite the previous link. However, it is possible to link to the same variable from multiple different variables.
+			</description>
+		</method>
+		<method name="list_vars" qualifiers="const">
+			<return type="StringName[]" />
+			<description>
+				Returns all variable names in the Blackboard. Parent scopes are not included.
+			</description>
+		</method>
+		<method name="populate_from_dict">
+			<return type="void" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Fills the Blackboard with multiple variables from a dictionary. The dictionary keys must be variable names and the dictionary values must be variable values. Keys must be StringName or String.
 			</description>
 		</method>
 		<method name="set_parent">

@@ -3056,7 +3056,7 @@ void EditorPropertyButton::_button_pressed() {
 
 Size2 EditorPropertyButton::get_minimum_size() const {
 	Size2 ms = VBoxContainer::get_minimum_size();
-	ms.y = MAX(ms.y, 32 * EDSCALE);
+	ms.y = MAX(ms.y, 16 * EDSCALE);
 	return ms;
 }
 EditorPropertyButton::EditorPropertyButton() {

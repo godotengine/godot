@@ -18,6 +18,9 @@ class BTComment : public BTTask {
 	GDCLASS(BTComment, BTTask);
 	TASK_CATEGORY(Utility);
 
+protected:
+	static void _bind_methods() {}
+
 public:
 	virtual Ref<BTTask> clone() const override;
 	virtual PackedStringArray get_configuration_warnings() override;

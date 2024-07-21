@@ -23,6 +23,7 @@
 #endif // LIMBOAI_MODULE
 
 #ifdef LIMBOAI_GDEXTENSION
+#include <godot_cpp/core/gdvirtual.gen.inc>
 #include <godot_cpp/templates/hash_map.hpp>
 #endif // LIMBOAI_GDEXTENSION
 
@@ -32,16 +33,17 @@ class LimboState : public Node {
 	GDCLASS(LimboState, Node);
 
 private:
+	bool active;
 	Ref<BlackboardPlan> blackboard_plan;
 	Node *agent;
 	Ref<Blackboard> blackboard;
 	HashMap<StringName, Callable> handlers;
 	Callable guard_callable;
 
+	Ref<BlackboardPlan> _get_parent_scope_plan() const;
+
 protected:
 	friend LimboHSM;
-
-	bool active;
 
 	static void _bind_methods();
 
@@ -58,12 +60,10 @@ protected:
 	virtual void _exit();
 	virtual void _update(double p_delta);
 
-#ifdef LIMBOAI_MODULE
 	GDVIRTUAL0(_setup);
 	GDVIRTUAL0(_enter);
 	GDVIRTUAL0(_exit);
 	GDVIRTUAL1(_update, double);
-#endif // LIMBOAI_MODULE
 
 public:
 	void set_blackboard_plan(const Ref<BlackboardPlan> &p_plan);
@@ -85,7 +85,7 @@ public:
 	_FORCE_INLINE_ StringName event_finished() const { return LW_NAME(EVENT_FINISHED); }
 	LimboState *get_root() const;
 	_FORCE_INLINE_ bool is_root() const { return !(get_parent() && IS_CLASS(get_parent(), LimboState)); }
-	bool is_active() const { return active; }
+	_FORCE_INLINE_ bool is_active() const { return active; }
 
 	void set_guard(const Callable &p_guard_callable);
 	void clear_guard();

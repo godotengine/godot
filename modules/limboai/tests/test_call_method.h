@@ -47,7 +47,7 @@ TEST_CASE("[Modules][LimboAI] BTCallMethod") {
 		node_param->set_variable("object");
 		cm->set_method("callback");
 
-		cm->initialize(dummy, bb);
+		cm->initialize(dummy, bb, dummy);
 
 		SUBCASE("When method is empty") {
 			cm->set_method("");

@@ -18,6 +18,8 @@ class BBQuaternion : public BBParam {
 	GDCLASS(BBQuaternion, BBParam);
 
 protected:
+	static void _bind_methods() {}
+
 	virtual Variant::Type get_type() const override { return Variant::QUATERNION; }
 };
 

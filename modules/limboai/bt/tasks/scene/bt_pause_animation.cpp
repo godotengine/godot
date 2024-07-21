@@ -44,7 +44,7 @@ String BTPauseAnimation::_generate_name() {
 void BTPauseAnimation::_setup() {
 	setup_failed = true;
 	ERR_FAIL_COND_MSG(animation_player_param.is_null(), "BTPauseAnimation: AnimationPlayer parameter is not set.");
-	animation_player = Object::cast_to<AnimationPlayer>(animation_player_param->get_value(get_agent(), get_blackboard()));
+	animation_player = Object::cast_to<AnimationPlayer>(animation_player_param->get_value(get_scene_root(), get_blackboard()));
 	ERR_FAIL_COND_MSG(animation_player == nullptr, "BTPauseAnimation: Failed to get AnimationPlayer.");
 	setup_failed = false;
 }

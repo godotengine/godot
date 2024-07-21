@@ -54,7 +54,7 @@ String BTCooldown::_generate_name() {
 
 void BTCooldown::_setup() {
 	if (cooldown_state_var == StringName()) {
-		cooldown_state_var = vformat("cooldown_%d", rand());
+		cooldown_state_var = vformat("cooldown_%d", get_instance_id());
 	}
 	get_blackboard()->set_var(cooldown_state_var, false);
 	if (start_cooled) {

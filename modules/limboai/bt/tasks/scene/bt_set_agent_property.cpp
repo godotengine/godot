@@ -55,7 +55,7 @@ BT::Status BTSetAgentProperty::_tick(double p_delta) {
 
 	Variant result;
 	StringName error_value = LW_NAME(error_value);
-	Variant right_value = value->get_value(get_agent(), get_blackboard(), error_value);
+	Variant right_value = value->get_value(get_scene_root(), get_blackboard(), error_value);
 	ERR_FAIL_COND_V_MSG(right_value == Variant(error_value), FAILURE, "BTSetAgentProperty: Couldn't get value of value-parameter.");
 	bool r_valid;
 	if (operation == LimboUtility::OPERATION_NONE) {

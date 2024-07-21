@@ -29,7 +29,7 @@ TEST_CASE("[Modules][LimboAI] BTSubtree") {
 
 	SUBCASE("When empty") {
 		ERR_PRINT_OFF;
-		st->initialize(dummy, bb);
+		st->initialize(dummy, bb, dummy);
 		CHECK(st->execute(0.01666) == BTTask::FAILURE);
 		ERR_PRINT_ON;
 	}
@@ -41,7 +41,7 @@ TEST_CASE("[Modules][LimboAI] BTSubtree") {
 		st->set_subtree(bt);
 
 		CHECK(st->get_child_count() == 0);
-		st->initialize(dummy, bb);
+		st->initialize(dummy, bb, dummy);
 		CHECK(st->get_child_count() == 1);
 		CHECK(st->get_child(0) != task);
 

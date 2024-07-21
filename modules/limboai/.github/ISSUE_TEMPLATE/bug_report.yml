@@ -1,0 +1,64 @@
+name: Bug report
+description: Report a bug in LimboAI
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        - Write a descriptive title above.
+        - Search [open](https://github.com/limbonaut/limboai/issues) and [closed](https://github.com/limbonaut/limboai/issues?q=is%3Aissue+is%3Aclosed) issues to ensure it has not already been reported.
+
+  - type: input
+    attributes:
+      label: Godot version
+      description: |
+        - Specify the Godot version and hardware information if relevant.
+        - You can copy the version info by clicking on it in the Godot status bar.
+        - Alternatively, you can copy the version and hardware info in Godot using the main menu command "Help -> Copy System Info".
+      placeholder: v4.2.2.limboai+v1.1.0.gha [15073afe3]
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: LimboAI version
+      description: |
+        - Specify the LimboAI version.
+        - You can copy the version info by clicking on it in the toolbar of the LimboAI editor (top-right corner).
+      placeholder: v1.1.0 [8fa609e]
+    validations:
+      required: true
+
+  - type: dropdown
+    id: variant
+    attributes:
+      label: LimboAI variant
+      description: Which variant of our plugin are you running?
+      options:
+        - GDExtension / AssetLib
+        - Module (custom editor or template build)
+      default: 0
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Issue description
+      description: |
+        - Describe your issue in detail. What doesn't work and how do you expect it to work instead?
+        - Provide screenshots and/or a console output if it helps to convey the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: How to reproduce
+      description: |
+        - Provide a list of steps or sample code that reproduces the issue.
+        - You can provide a small Godot project which reproduces the issue, with no unnecessary files included.
+          - Drag and drop a ZIP archive to upload it (10Mb limit).
+          - Don't include the `.godot` folder in the archive.
+          - Redroduction project helps to find the bug more quickly!
+    validations:
+      required: true

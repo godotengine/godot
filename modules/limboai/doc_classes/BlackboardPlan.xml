@@ -11,6 +11,7 @@
 		<method name="create_blackboard">
 			<return type="Blackboard" />
 			<param index="0" name="node" type="Node" />
+			<param index="1" name="parent_scope" type="Blackboard" default="null" />
 			<description>
 				Constructs a new instance of a [Blackboard] using this plan. If [NodePath] prefetching is enabled, [param node] will be used to retrieve node instances for [NodePath] variables and substitute their values.
 			</description>
@@ -19,6 +20,12 @@
 			<return type="BlackboardPlan" />
 			<description>
 				Returns the base plan. See [method is_derived].
+			</description>
+		</method>
+		<method name="get_parent_scope_plan_provider" qualifiers="const">
+			<return type="Callable" />
+			<description>
+				Returns the parent scope plan provider - a callable that returns a [BlackboardPlan].
 			</description>
 		</method>
 		<method name="is_derived" qualifiers="const">
@@ -42,6 +49,13 @@
 			<description>
 				Sets the base plan. If assigned, this plan will be derived from the base plan.
 				Use with caution, as it will remove variables not present in the base plan. Only use this for custom tooling.
+			</description>
+		</method>
+		<method name="set_parent_scope_plan_provider">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Sets the parent scope plan provider - a callable that returns a [BlackboardPlan]. Used to provide hints in the inspector. When set, mapping feature becomes available.
 			</description>
 		</method>
 		<method name="sync_with_base_plan">

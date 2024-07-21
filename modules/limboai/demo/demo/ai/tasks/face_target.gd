@@ -10,8 +10,8 @@
 #*
 @tool
 extends BTAction
-## FaceTarget and return SUCCESS.
-## Returns FAILURE if target is not a valid Node2D instance.
+## Flips the agent to face the target, returning [code]SUCCESS[/code]. [br]
+## Returns [code]FAILURE[/code] if [member target_var] is not a valid [Node2D] instance.
 
 ## Blackboard variable that stores our target (expecting Node2D).
 @export var target_var: StringName = &"target"

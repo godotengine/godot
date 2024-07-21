@@ -57,7 +57,7 @@ BT::Status BTCheckVar::_tick(double p_delta) {
 	ERR_FAIL_COND_V_MSG(!get_blackboard()->has_var(variable), FAILURE, vformat("BTCheckVar: Blackboard variable doesn't exist: \"%s\". Returning FAILURE.", variable));
 
 	Variant left_value = get_blackboard()->get_var(variable, Variant());
-	Variant right_value = value->get_value(get_agent(), get_blackboard());
+	Variant right_value = value->get_value(get_scene_root(), get_blackboard());
 
 	return LimboUtility::get_singleton()->perform_check(check_type, left_value, right_value) ? SUCCESS : FAILURE;
 }

@@ -18,6 +18,8 @@ class BBStringName : public BBParam {
 	GDCLASS(BBStringName, BBParam);
 
 protected:
+	static void _bind_methods() {}
+
 	virtual Variant::Type get_type() const override { return Variant::STRING_NAME; }
 };
 

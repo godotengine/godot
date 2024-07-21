@@ -26,7 +26,7 @@ TEST_CASE("[Modules][LimboAI] BTNewScope") {
 
 	SUBCASE("When empty") {
 		ERR_PRINT_OFF;
-		ns->initialize(dummy, parent_bb);
+		ns->initialize(dummy, parent_bb, dummy);
 		CHECK(ns->execute(0.01666) == BTTask::FAILURE);
 		ERR_PRINT_ON;
 	}
@@ -45,7 +45,7 @@ TEST_CASE("[Modules][LimboAI] BTNewScope") {
 		REQUIRE(parent_bb->has_var("vegetable"));
 		REQUIRE(parent_bb->get_var("vegetable", "wetgoop") == "carrot");
 
-		parent->initialize(dummy, parent_bb);
+		parent->initialize(dummy, parent_bb, dummy);
 
 		CHECK(ns->get_blackboard() != parent->get_blackboard());
 		CHECK(ns->get_blackboard() == child->get_blackboard());

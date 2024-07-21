@@ -38,8 +38,9 @@
 			<return type="BTTask" />
 			<param index="0" name="agent" type="Node" />
 			<param index="1" name="blackboard" type="Blackboard" />
+			<param index="2" name="scene_root" type="Node" />
 			<description>
-				Instantiates the Behavior Tree and returns the root [BTTask].
+				Instantiates the behavior tree and returns the root [BTTask]. [param scene_root] should be the root node of the scene that the Behavior Tree will be used in (e.g., the owner of the node that contains the behavior tree).
 			</description>
 		</method>
 		<method name="set_root_task">

@@ -19,6 +19,8 @@ class BTInvert : public BTDecorator {
 	TASK_CATEGORY(Decorators);
 
 protected:
+	static void _bind_methods() {}
+
 	virtual Status _tick(double p_delta) override;
 };
 

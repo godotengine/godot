@@ -13,6 +13,7 @@
 
 #include "../bt/tasks/bt_task.h"
 #include "../util/limbo_compat.h"
+#include "limboai_version.h"
 
 #ifdef LIMBOAI_MODULE
 #include "core/config/project_settings.h"
@@ -515,6 +516,7 @@ PackedInt32Array LimboUtility::get_property_hints_allowed_for_type(Variant::Type
 		case Variant::Type::PACKED_STRING_ARRAY:
 		case Variant::Type::PACKED_VECTOR2_ARRAY:
 		case Variant::Type::PACKED_VECTOR3_ARRAY:
+		case Variant::Type::PACKED_VECTOR4_ARRAY:
 		case Variant::Type::PACKED_COLOR_ARRAY:
 		case Variant::Type::VARIANT_MAX: {
 		} break;
@@ -568,23 +570,19 @@ Ref<Shortcut> LimboUtility::get_shortcut(const String &p_path) const {
 }
 
 void LimboUtility::open_doc_introduction() {
-	OS::get_singleton()->shell_open(vformat("https://limboai.readthedocs.io/en/%s/getting-started/introduction.html",
-			LIMBO_DOC_VERSION));
+	OS::get_singleton()->shell_open(vformat("%s/getting-started/introduction.html", LIMBOAI_VERSION_DOC_URL));
 }
 
 void LimboUtility::open_doc_online() {
-	OS::get_singleton()->shell_open(vformat("https://limboai.readthedocs.io/en/%s/index.html",
-			LIMBO_DOC_VERSION));
+	OS::get_singleton()->shell_open(vformat("%s/index.html", LIMBOAI_VERSION_DOC_URL));
 }
 
 void LimboUtility::open_doc_gdextension_limitations() {
-	OS::get_singleton()->shell_open(vformat("https://limboai.readthedocs.io/en/%s/getting-started/gdextension.html#limitations-of-the-gdextension-version",
-			LIMBO_DOC_VERSION));
+	OS::get_singleton()->shell_open(vformat("%s/getting-started/gdextension.html#limitations-of-the-gdextension-version", LIMBOAI_VERSION_DOC_URL));
 }
 
 void LimboUtility::open_doc_custom_tasks() {
-	OS::get_singleton()->shell_open(vformat("https://limboai.readthedocs.io/en/%s/getting-started/custom-tasks.html",
-			LIMBO_DOC_VERSION));
+	OS::get_singleton()->shell_open(vformat("%s/getting-started/custom-tasks.html", LIMBOAI_VERSION_DOC_URL));
 }
 
 void LimboUtility::open_doc_class(const String &p_class_name) {
@@ -596,8 +594,7 @@ void LimboUtility::open_doc_class(const String &p_class_name) {
 #ifdef LIMBOAI_MODULE
 	SHOW_DOC("class_name:" + p_class_name);
 #elif LIMBOAI_GDEXTENSION
-	OS::get_singleton()->shell_open(vformat("https://limboai.readthedocs.io/en/%s/classes/class_%s.html",
-			LIMBO_DOC_VERSION, p_class_name.to_lower()));
+	OS::get_singleton()->shell_open(vformat("%s/classes/class_%s.html", LIMBOAI_VERSION_DOC_URL, p_class_name.to_lower()));
 #endif
 }
 

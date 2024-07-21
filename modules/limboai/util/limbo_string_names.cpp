@@ -27,11 +27,6 @@
 LimboStringNames *LimboStringNames::singleton = nullptr;
 
 LimboStringNames::LimboStringNames() {
-	_draw_failure_status = SN("_draw_failure_status");
-	_draw_fresh = SN("_draw_fresh");
-	_draw_probability = SN("_draw_probability");
-	_draw_running_status = SN("_draw_running_status");
-	_draw_success_status = SN("_draw_success_status");
 	_enter = SN("_enter");
 	_exit = SN("_exit");
 	_generate_name = SN("_generate_name");
@@ -85,6 +80,7 @@ LimboStringNames::LimboStringNames() {
 	exited = SN("exited");
 	favorite_tasks_changed = SN("favorite_tasks_changed");
 	Favorites = SN("Favorites");
+	focus_exited = SN("focus_exited");
 	font = SN("font");
 	font_color = SN("font_color");
 	font_size = SN("font_size");
@@ -105,6 +101,8 @@ LimboStringNames::LimboStringNames() {
 	LimboPercent = SN("LimboPercent");
 	LimboSelectAll = SN("LimboSelectAll");
 	LimboVarAdd = SN("LimboVarAdd");
+	LimboVarEmpty = SN("LimboVarEmpty");
+	LimboVarError = SN("LimboVarError");
 	LimboVarExists = SN("LimboVarExists");
 	LimboVarNotFound = SN("LimboVarNotFound");
 	LimboVarPrivate = SN("LimboVarPrivate");
@@ -166,4 +164,6 @@ LimboStringNames::LimboStringNames() {
 
 	repeat_forever.parse_utf8("Repeat ∞");
 	output_var_prefix.parse_utf8("➜");
+
+	node_pp = NodePath("..");
 }

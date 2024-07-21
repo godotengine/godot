@@ -11,6 +11,8 @@
 
 #include "blackboard_plan.h"
 
+#include "../util/limbo_utility.h"
+
 bool BlackboardPlan::_set(const StringName &p_name, const Variant &p_value) {
 
 	// * Editor
@@ -107,29 +109,49 @@ void BlackboardPlan::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		// * Editor
 		if (var.get_type() != Variant::NIL && (!is_derived() || !var_name.begins_with("_"))) {
-			p_list->push_back(PropertyInfo(var.get_type(), var_name, var.get_hint(), var.get_hint_string(), PROPERTY_USAGE_EDITOR));
+			if (has_mapping(var_name)) {
+				p_list->push_back(PropertyInfo(Variant::STRING, var_name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY));
+			} else {
+				p_list->push_back(PropertyInfo(var.get_type(), var_name, var.get_hint(), var.get_hint_string(), PROPERTY_USAGE_EDITOR));
+			}
 		}
 
+		// * Storage
 		if (is_derived() && (!var.is_value_changed() || var.get_value() == base->var_map[var_name].get_value())) {
 			// Don't store variable if it's not modified in a derived plan.
 			// Variable is considered modified when it's marked as changed and its value is different from the base plan.
 			continue;
 		}
-
-		// * Storage
 		p_list->push_back(PropertyInfo(Variant::STRING, "var/" + var_name + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::INT, "var/" + var_name + "/type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(var.get_type(), "var/" + var_name + "/value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::INT, "var/" + var_name + "/hint", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::STRING, "var/" + var_name + "/hint_string", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 	}
+
+	// * Mapping
+	if (is_mapping_enabled()) {
+		p_list->push_back(PropertyInfo(Variant::NIL, "Mapping", PROPERTY_HINT_NONE, "mapping/", PROPERTY_USAGE_GROUP));
+		for (const Pair<StringName, BBVariable> &p : var_list) {
+			// Serialize only non-empty mappings.
+			PropertyUsageFlags usage = has_mapping(p.first) ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_EDITOR;
+			p_list->push_back(PropertyInfo(Variant::STRING_NAME, "mapping/" + p.first, PROPERTY_HINT_NONE, "", usage));
+		}
+	}
 }
 
 bool BlackboardPlan::_property_can_revert(const StringName &p_name) const {
+	if (String(p_name).begins_with("mapping/")) {
+		return true;
+	}
 	return base.is_valid() && base->var_map.has(p_name);
 }
 
 bool BlackboardPlan::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	if (String(p_name).begins_with("mapping/")) {
+		r_property = StringName();
+		return true;
+	}
 	if (base->var_map.has(p_name)) {
 		r_property = base->var_map[p_name].get_value();
 		return true;
@@ -146,6 +168,15 @@ void BlackboardPlan::set_base_plan(const Ref<BlackboardPlan> &p_base) {
 	}
 	sync_with_base_plan();
 	notify_property_list_changed();
+}
+
+void BlackboardPlan::set_parent_scope_plan_provider(const Callable &p_parent_scope_plan_provider) {
+	parent_scope_plan_provider = p_parent_scope_plan_provider;
+	notify_property_list_changed();
+}
+
+bool BlackboardPlan::has_mapping(const StringName &p_name) const {
+	return is_mapping_enabled() && parent_scope_mapping.has(p_name) && parent_scope_mapping[p_name] != StringName();
 }
 
 void BlackboardPlan::set_prefetch_nodepath_vars(bool p_enable) {
@@ -186,11 +217,11 @@ BBVariable BlackboardPlan::get_var(const StringName &p_name) {
 Pair<StringName, BBVariable> BlackboardPlan::get_var_by_index(int p_index) {
 	Pair<StringName, BBVariable> ret;
 	ERR_FAIL_INDEX_V(p_index, (int)var_map.size(), ret);
-	return var_list[p_index];
+	return var_list.get(p_index);
 }
 
-PackedStringArray BlackboardPlan::list_vars() const {
-	PackedStringArray ret;
+TypedArray<StringName> BlackboardPlan::list_vars() const {
+	TypedArray<StringName> ret;
 	for (const Pair<StringName, BBVariable> &p : var_list) {
 		ret.append(p.first);
 	}
@@ -226,11 +257,15 @@ void BlackboardPlan::rename_var(const StringName &p_name, const StringName &p_ne
 	BBVariable var = var_map[p_name];
 	Pair<StringName, BBVariable> new_entry(p_new_name, var);
 	Pair<StringName, BBVariable> old_entry(p_name, var);
-	int64_t index = var_list.find(old_entry);
-	var_list[index] = new_entry;
+	var_list.find(old_entry)->set(new_entry);
 
 	var_map.erase(p_name);
 	var_map.insert(p_new_name, var);
+
+	if (parent_scope_mapping.has(p_name)) {
+		parent_scope_mapping[p_new_name] = parent_scope_mapping[p_name];
+		parent_scope_mapping.erase(p_name);
+	}
 
 	notify_property_list_changed();
 	emit_changed();
@@ -244,7 +279,19 @@ void BlackboardPlan::move_var(int p_index, int p_new_index) {
 		return;
 	}
 
-	var_list.swap(p_index,p_new_index);
+	List<Pair<StringName, BBVariable>>::Element *E = var_list.front();
+	for (int i = 0; i < p_index; i++) {
+		E = E->next();
+	}
+	List<Pair<StringName, BBVariable>>::Element *E2 = var_list.front();
+	for (int i = 0; i < p_new_index; i++) {
+		E2 = E2->next();
+	}
+
+	var_list.move_before(E, E2);
+	if (p_new_index > p_index) {
+		var_list.move_before(E2, E);
+	}
 
 	notify_property_list_changed();
 	emit_changed();
@@ -298,11 +345,20 @@ void BlackboardPlan::sync_with_base_plan() {
 	// Sync order of variables.
 	// Glossary: E - element of current plan, B - element of base plan, F - element of current plan (used for forward search).
 	ERR_FAIL_COND(base->var_list.size() != var_list.size());
-	auto B = base->var_list.begin();
-
-	for(auto & E : base->var_list )
-	{
-		var_list.erase(E);
+	List<Pair<StringName, BBVariable>>::Element *B = base->var_list.front();
+	for (List<Pair<StringName, BBVariable>>::Element *E = var_list.front(); E; E = E->next()) {
+		if (E->get().first != B->get().first) {
+			List<Pair<StringName, BBVariable>>::Element *F = E->next();
+			while (F) {
+				if (F->get().first == B->get().first) {
+					var_list.move_before(F, E);
+					E = F;
+					break;
+				}
+				F = F->next();
+			}
+		}
+		B = B->next();
 	}
 
 	if (changed) {
@@ -315,7 +371,7 @@ void BlackboardPlan::sync_with_base_plan() {
 inline void bb_add_var_dup_with_prefetch(const Ref<Blackboard> &p_blackboard, const StringName &p_name, const BBVariable &p_var, bool p_prefetch, Node *p_node) {
 	if (unlikely(p_prefetch && p_var.get_type() == Variant::NODE_PATH)) {
 		Node *n = p_node->get_node_or_null(p_var.get_value());
-		BBVariable var = p_var.duplicate();
+		BBVariable var = p_var.duplicate(true);
 		if (n != nullptr) {
 			var.set_value(n);
 		} else {
@@ -328,16 +384,15 @@ inline void bb_add_var_dup_with_prefetch(const Ref<Blackboard> &p_blackboard, co
 		}
 		p_blackboard->assign_var(p_name, var);
 	} else {
-		p_blackboard->assign_var(p_name, p_var.duplicate());
+		p_blackboard->assign_var(p_name, p_var.duplicate(true));
 	}
 }
 
-Ref<Blackboard> BlackboardPlan::create_blackboard(Node *p_node) {
+Ref<Blackboard> BlackboardPlan::create_blackboard(Node *p_node, const Ref<Blackboard> &p_parent_scope) {
 	ERR_FAIL_COND_V(p_node == nullptr && prefetch_nodepath_vars, memnew(Blackboard));
 	Ref<Blackboard> bb = memnew(Blackboard);
-	for (const Pair<StringName, BBVariable> &p : var_list) {
-		bb_add_var_dup_with_prefetch(bb, p.first, p.second, prefetch_nodepath_vars, p_node);
-	}
+	bb->set_parent(p_parent_scope);
+	populate_blackboard(bb, true, p_node);
 	return bb;
 }
 
@@ -348,6 +403,13 @@ void BlackboardPlan::populate_blackboard(const Ref<Blackboard> &p_blackboard, bo
 			continue;
 		}
 		bb_add_var_dup_with_prefetch(p_blackboard, p.first, p.second, prefetch_nodepath_vars, p_node);
+		if (parent_scope_mapping.has(p.first)) {
+			StringName target_var = parent_scope_mapping[p.first];
+			if (target_var != StringName()) {
+				ERR_CONTINUE_MSG(p_blackboard->get_parent() == nullptr, vformat("BlackboardPlan: Cannot link variable $%s to parent scope because the parent scope is not set.", p.first));
+				p_blackboard->link_var(p.first, p_blackboard->get_parent(), target_var);
+			}
+		}
 	}
 }
 
@@ -360,8 +422,7 @@ void BlackboardPlan::get_property_names_by_type(Variant::Type p_type,Array p_res
 			p_result.push_back(p.first);
 		}
 	}
-}
-void BlackboardPlan::_bind_methods() {
+}void BlackboardPlan::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_prefetch_nodepath_vars", "enable"), &BlackboardPlan::set_prefetch_nodepath_vars);
 	ClassDB::bind_method(D_METHOD("is_prefetching_nodepath_vars"), &BlackboardPlan::is_prefetching_nodepath_vars);
 
@@ -369,7 +430,9 @@ void BlackboardPlan::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_base_plan"), &BlackboardPlan::get_base_plan);
 	ClassDB::bind_method(D_METHOD("is_derived"), &BlackboardPlan::is_derived);
 	ClassDB::bind_method(D_METHOD("sync_with_base_plan"), &BlackboardPlan::sync_with_base_plan);
-	ClassDB::bind_method(D_METHOD("create_blackboard", "node"), &BlackboardPlan::create_blackboard);
+	ClassDB::bind_method(D_METHOD("set_parent_scope_plan_provider", "callable"), &BlackboardPlan::set_parent_scope_plan_provider);
+	ClassDB::bind_method(D_METHOD("get_parent_scope_plan_provider"), &BlackboardPlan::get_parent_scope_plan_provider);
+	ClassDB::bind_method(D_METHOD("create_blackboard", "node", "parent_scope"), &BlackboardPlan::create_blackboard, DEFVAL(Ref<Blackboard>()));
 	ClassDB::bind_method(D_METHOD("populate_blackboard", "blackboard", "overwrite", "node"), &BlackboardPlan::populate_blackboard);
 
 	// To avoid cluttering the member namespace, we do not export unnecessary properties in this class.

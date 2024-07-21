@@ -18,6 +18,8 @@ class BBRect2i : public BBParam {
 	GDCLASS(BBRect2i, BBParam);
 
 protected:
+	static void _bind_methods() {}
+
 	virtual Variant::Type get_type() const override { return Variant::RECT2I; }
 };
 

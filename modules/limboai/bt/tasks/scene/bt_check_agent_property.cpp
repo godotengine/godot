@@ -62,7 +62,7 @@ BT::Status BTCheckAgentProperty::_tick(double p_delta) {
 	Variant left_value = get_agent()->get(property);
 #endif
 
-	Variant right_value = value->get_value(get_agent(), get_blackboard());
+	Variant right_value = value->get_value(get_scene_root(), get_blackboard());
 
 	return LimboUtility::get_singleton()->perform_check(check_type, left_value, right_value) ? SUCCESS : FAILURE;
 }

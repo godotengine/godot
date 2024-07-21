@@ -35,7 +35,7 @@ public:
 	void set_subtree(const Ref<BehaviorTree> &p_value);
 	Ref<BehaviorTree> get_subtree() const { return subtree; }
 
-	virtual void initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard) override;
+	virtual void initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard, Node *p_scene_root) override;
 	virtual PackedStringArray get_configuration_warnings() override;
 
 	BTSubtree() = default;

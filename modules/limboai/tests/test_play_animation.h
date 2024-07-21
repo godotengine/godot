@@ -49,13 +49,13 @@ TEST_CASE("[SceneTree][LimboAI] BTPlayAnimation") {
 	SUBCASE("When AnimationPlayer doesn't exist") {
 		player_param->set_saved_value(NodePath("./NotFound"));
 		ERR_PRINT_OFF;
-		pa->initialize(dummy, bb);
+		pa->initialize(dummy, bb, dummy);
 		CHECK(pa->execute(0.01666) == BTTask::FAILURE);
 		ERR_PRINT_ON;
 	}
 	SUBCASE("When AnimationPlayer exists") {
 		player_param->set_saved_value(player->get_path());
-		pa->initialize(dummy, bb);
+		pa->initialize(dummy, bb, dummy);
 
 		SUBCASE("When not waiting to finish") {
 			pa->set_await_completion(0.0);

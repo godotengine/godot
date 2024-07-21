@@ -7,6 +7,10 @@ module_env = env.Clone()
 
 module_env.Append(CPPDEFINES=["LIMBOAI_MODULE"])
 
+import limboai_version
+
+limboai_version.generate_module_version_header()
+
 module_env.add_source_files(env.modules_sources, "*.cpp")
 module_env.add_source_files(env.modules_sources, "blackboard/*.cpp")
 module_env.add_source_files(env.modules_sources, "blackboard/bb_param/*.cpp")

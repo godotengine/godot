@@ -28,7 +28,7 @@ TEST_CASE("[Modules][LimboAI] BTSetAgentProperty") {
 	Ref<BTSetAgentProperty> sap = memnew(BTSetAgentProperty);
 	Node *agent = memnew(Node);
 	Ref<Blackboard> bb = memnew(Blackboard);
-	sap->initialize(agent, bb);
+	sap->initialize(agent, bb, agent);
 
 	sap->set_property("process_priority"); // * property that will be set by the task
 	Ref<BBVariant> value = memnew(BBVariant);

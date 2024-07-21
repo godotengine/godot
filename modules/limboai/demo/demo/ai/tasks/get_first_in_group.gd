@@ -10,8 +10,8 @@
 #*
 @tool
 extends BTAction
-## Get first node in group and save it to the blackboard.
-## Returns FAILURE if group contains 0 nodes.
+## Stores the first node in the [member group] on the blackboard, returning [code]SUCCESS[/code]. [br]
+## Returns [code]FAILURE[/code] if the group contains 0 nodes.
 
 ## Name of the SceneTree group.
 @export var group: StringName

@@ -11,29 +11,46 @@
 
 #include "bt_new_scope.h"
 
+#include "../../behavior_tree.h"
+
 void BTNewScope::set_blackboard_plan(const Ref<BlackboardPlan> &p_plan) {
 	blackboard_plan = p_plan;
 	if (blackboard_plan.is_null()) {
 		blackboard_plan.instantiate();
 	}
+
 	_update_blackboard_plan();
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		callable_mp(this, &BTNewScope::_set_parent_scope_plan_from_bt).call_deferred();
+	}
+#endif // TOOLS_ENABLED
+
 	emit_changed();
 }
 
-void BTNewScope::initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard) {
+#ifdef TOOLS_ENABLED
+void BTNewScope::_set_parent_scope_plan_from_bt() {
+	ERR_FAIL_NULL(get_blackboard_plan());
+	Ref<BehaviorTree> bt = get_root()->editor_get_behavior_tree();
+	ERR_FAIL_NULL(bt);
+	get_blackboard_plan()->set_parent_scope_plan_provider(callable_mp(bt.ptr(), &BehaviorTree::get_blackboard_plan));
+}
+#endif // TOOLS_ENABLED
+
+void BTNewScope::initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard, Node *p_scene_root) {
 	ERR_FAIL_COND(p_agent == nullptr);
 	ERR_FAIL_COND(p_blackboard == nullptr);
 
 	Ref<Blackboard> bb;
 	if (blackboard_plan.is_valid()) {
-		bb = blackboard_plan->create_blackboard(p_agent);
+		bb = blackboard_plan->create_blackboard(p_agent, p_blackboard);
 	} else {
 		bb = Ref<Blackboard>(memnew(Blackboard));
+		bb->set_parent(p_blackboard);
 	}
-
-	bb->set_parent(p_blackboard);
-
-	BTDecorator::initialize(p_agent, bb);
+	BTDecorator::initialize(p_agent, bb, p_scene_root);
 }
 
 BT::Status BTNewScope::_tick(double p_delta) {

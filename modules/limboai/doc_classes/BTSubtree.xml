@@ -6,6 +6,7 @@
 	<description>
 		BTSubtree instantiates a [BehaviorTree] and includes its root task as a child during initialization, while also creating a new [Blackboard] scope.
 		Returns the status of the subtree's execution.
+		Subtree blackboard variables can be mapped to the main tree blackboard plan variables. Check out mapping section in the inspector.
 		Note: BTSubTree is designed as a simpler loader, and does not support updating [member subtree] at runtime. A custom subtree decorator is better suited and [url=https://github.com/limbonaut/limboai/issues/94#issuecomment-2068833610]somewhat trivial[/url] to implement.
 	</description>
 	<tutorials>

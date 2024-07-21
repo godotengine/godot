@@ -59,6 +59,10 @@ private:
 
 	Ref<BlackboardPlan> plan;
 	StringName default_var_name;
+	Variant::Type default_type = Variant::NIL;
+	PropertyHint default_hint = PROPERTY_HINT_NONE;
+	String default_hint_string;
+	Variant default_value;
 
 	VBoxContainer *rows_vbox;
 	Button *add_var_tool;
@@ -99,7 +103,8 @@ public:
 	_FORCE_INLINE_ static BlackboardPlanEditor *get_singleton() { return singleton; }
 
 	void edit_plan(const Ref<BlackboardPlan> &p_plan);
-	void set_next_var_name(const StringName &p_name);
+	void set_defaults(const StringName &p_name, Variant::Type p_type = Variant::FLOAT, PropertyHint p_hint = PROPERTY_HINT_NONE, String p_hint_string = "", Variant p_value = Variant());
+	void reset_defaults();
 
 	BlackboardPlanEditor();
 };

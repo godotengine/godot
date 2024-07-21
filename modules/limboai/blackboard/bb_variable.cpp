@@ -78,12 +78,16 @@ String BBVariable::get_hint_string() const {
 	return data->hint_string;
 }
 
-BBVariable BBVariable::duplicate() const {
+BBVariable BBVariable::duplicate(bool p_deep) const {
 	BBVariable var;
 	var.data->hint = data->hint;
 	var.data->hint_string = data->hint_string;
 	var.data->type = data->type;
-	var.data->value = data->value;
+	if (p_deep) {
+		var.data->value = data->value.duplicate(p_deep);
+	} else {
+		var.data->value = data->value;
+	}
 	var.data->binding_path = data->binding_path;
 	var.data->bound_object = data->bound_object;
 	var.data->bound_property = data->bound_property;

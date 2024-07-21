@@ -49,8 +49,6 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	virtual Variant::Type get_type() const { return Variant::NIL; }
-
 	void set_value_source(ValueSource p_value);
 	ValueSource get_value_source() const { return value_source; }
 
@@ -66,7 +64,9 @@ public:
 	virtual String _to_string();
 #endif
 
-	virtual Variant get_value(Object *p_agent, const Ref<Blackboard> &p_blackboard, const Variant &p_default = Variant());
+	virtual Variant::Type get_type() const { return Variant::NIL; }
+	virtual Variant::Type get_variable_expected_type() const { return get_type(); }
+	virtual Variant get_value(Node *p_scene_root, const Ref<Blackboard> &p_blackboard, const Variant &p_default = Variant());
 
 	BBParam();
 };

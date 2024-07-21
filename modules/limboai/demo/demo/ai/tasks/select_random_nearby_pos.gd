@@ -1,7 +1,7 @@
 @tool
 extends BTAction
-## SelectRandomNearbyPos: Select a position nearby within specified range.
-## Returns SUCCESS.
+## Selects a random position nearby within the specified range and stores it on the blackboard. [br]
+## Returns [code]SUCCESS[/code].
 
 ## Minimum distance to the desired position.
 @export var range_min: float = 300.0

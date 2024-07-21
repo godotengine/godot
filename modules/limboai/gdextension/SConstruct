@@ -12,7 +12,16 @@ env = SConscript("godot-cpp/SConstruct")
 # - CPPDEFINES are for pre-processor defines
 # - LINKFLAGS are for linking flags
 
-# tweak this if you want to use different folders, or more folders, to store your source code in.
+# Generate version header.
+sys.path.append("./limboai")
+import limboai_version
+
+os.chdir("./limboai")
+limboai_version.generate_module_version_header()
+os.chdir("..")
+sys.path.remove("./limboai")
+
+# Tweak this if you want to use different folders, or more folders, to store your source code in.
 env.Append(CPPPATH=["limboai/"])
 env.Append(CPPDEFINES=["LIMBOAI_GDEXTENSION"])
 sources = Glob("limboai/*.cpp")
@@ -31,6 +40,10 @@ sources += Glob("limboai/editor/*.cpp")
 sources += Glob("limboai/hsm/*.cpp")
 sources += Glob("limboai/util/*.cpp")
 
+# Generate documentation header.
+if env["target"] in ["editor", "template_debug"]:
+    doc_data = env.GodotCPPDocData("limboai/gen/doc_data.gen.cpp", source=Glob("limboai/doc_classes/*.xml"))
+    sources.append(doc_data)
 
 if env["platform"] == "macos":
     library = env.SharedLibrary(

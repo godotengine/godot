@@ -47,7 +47,7 @@ TEST_CASE("[Modules][LimboAI] BTEvaluateExpression") {
 		node_param->set_variable("object");
 		ee->set_expression_string("callback()");
 
-		ee->initialize(dummy, bb);
+		ee->initialize(dummy, bb, dummy);
 
 		SUBCASE("When expression string is empty") {
 			ee->set_expression_string("");

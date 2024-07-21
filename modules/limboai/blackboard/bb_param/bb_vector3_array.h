@@ -18,6 +18,8 @@ class BBVector3Array : public BBParam {
 	GDCLASS(BBVector3Array, BBParam);
 
 protected:
+	static void _bind_methods() {}
+
 	virtual Variant::Type get_type() const override { return Variant::PACKED_VECTOR3_ARRAY; }
 };
 

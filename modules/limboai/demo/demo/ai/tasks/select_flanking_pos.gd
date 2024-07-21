@@ -10,8 +10,9 @@
 #*
 @tool
 extends BTAction
-## SelectFlankingPos on the side of a target, and return SUCCESS.
-## Returns FAILURE, if the target is not valid.
+## Selects a position on the target's side and stores it on the
+## blackboard, returning [code]SUCCESS[/code]. [br]
+## Returns [code]FAILURE[/code] if the target is not valid.
 
 enum AgentSide {
 	CLOSEST,
@@ -71,4 +72,3 @@ func _tick(_delta: float) -> Status:
 		flank_pos = target.global_position - offset
 	blackboard.set_var(position_var, flank_pos)
 	return SUCCESS
-

@@ -18,7 +18,7 @@
 		</method>
 		<method name="get_value">
 			<return type="Variant" />
-			<param index="0" name="agent" type="Object" />
+			<param index="0" name="scene_root" type="Node" />
 			<param index="1" name="blackboard" type="Blackboard" />
 			<param index="2" name="default" type="Variant" default="null" />
 			<description>

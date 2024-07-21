@@ -18,6 +18,8 @@ class BBVector2 : public BBParam {
 	GDCLASS(BBVector2, BBParam);
 
 protected:
+	static void _bind_methods() {}
+
 	virtual Variant::Type get_type() const override { return Variant::VECTOR2; }
 };
 

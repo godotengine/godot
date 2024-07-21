@@ -68,6 +68,36 @@ void Blackboard::erase_var(const StringName &p_name) {
 	data.erase(p_name);
 }
 
+TypedArray<StringName> Blackboard::list_vars() const {
+	TypedArray<StringName> var_names;
+	var_names.resize(data.size());
+	int idx = 0;
+	for (const KeyValue<StringName, BBVariable> &kv : data) {
+		var_names[idx] = kv.key;
+		idx += 1;
+	}
+	return var_names;
+}
+
+Dictionary Blackboard::get_vars_as_dict() const {
+	Dictionary dict;
+	for (const KeyValue<StringName, BBVariable> &kv : data) {
+		dict[kv.key] = kv.value.get_value();
+	}
+	return dict;
+}
+
+void Blackboard::populate_from_dict(const Dictionary &p_dictionary) {
+	Array keys = p_dictionary.keys();
+	for (int i = 0; i < keys.size(); i++) {
+		if (keys[i].get_type() == Variant::STRING_NAME || keys[i].get_type() == Variant::STRING) {
+			set_var(keys[i], p_dictionary[keys[i]]);
+		} else {
+			ERR_PRINT("Blackboard: Invalid key type in dictionary to populate blackboard. Must be StringName or String.");
+		}
+	}
+}
+
 void Blackboard::bind_var_to_property(const StringName &p_name, Object *p_object, const StringName &p_property, bool p_create) {
 	if (!data.has(p_name)) {
 		if (p_create) {
@@ -80,7 +110,7 @@ void Blackboard::bind_var_to_property(const StringName &p_name, Object *p_object
 }
 
 void Blackboard::unbind_var(const StringName &p_name) {
-	ERR_FAIL_COND_MSG(data.has(p_name), "Blackboard: Can't unbind variable that doesn't exist (var: " + p_name + ").");
+	ERR_FAIL_COND_MSG(!data.has(p_name), "Blackboard: Can't unbind variable that doesn't exist (var: " + p_name + ").");
 	data[p_name].unbind();
 }
 
@@ -102,12 +132,16 @@ void Blackboard::link_var(const StringName &p_name, const Ref<Blackboard> &p_tar
 }
 
 void Blackboard::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_var", "var_name", "default", "complain"), &Blackboard::get_var, Variant(), true);
+	ClassDB::bind_method(D_METHOD("get_var", "var_name", "default", "complain"), &Blackboard::get_var, DEFVAL(Variant()), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_var", "var_name", "value"), &Blackboard::set_var);
 	ClassDB::bind_method(D_METHOD("has_var", "var_name"), &Blackboard::has_var);
 	ClassDB::bind_method(D_METHOD("set_parent", "blackboard"), &Blackboard::set_parent);
 	ClassDB::bind_method(D_METHOD("get_parent"), &Blackboard::get_parent);
 	ClassDB::bind_method(D_METHOD("erase_var", "var_name"), &Blackboard::erase_var);
+	ClassDB::bind_method(D_METHOD("clear"), &Blackboard::clear);
+	ClassDB::bind_method(D_METHOD("list_vars"), &Blackboard::list_vars);
+	ClassDB::bind_method(D_METHOD("get_vars_as_dict"), &Blackboard::get_vars_as_dict);
+	ClassDB::bind_method(D_METHOD("populate_from_dict", "dictionary"), &Blackboard::populate_from_dict);
 	ClassDB::bind_method(D_METHOD("top"), &Blackboard::top);
 	ClassDB::bind_method(D_METHOD("bind_var_to_property", "var_name", "object", "property", "create"), &Blackboard::bind_var_to_property, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("unbind_var", "var_name"), &Blackboard::unbind_var);

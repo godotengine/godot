@@ -46,6 +46,8 @@ Properties
    +-------------------------------------+---------------------------------------------------------+--------+
    | float                               | :ref:`elapsed_time<class_BTTask_property_elapsed_time>` |        |
    +-------------------------------------+---------------------------------------------------------+--------+
+   | Node                                | :ref:`scene_root<class_BTTask_property_scene_root>`     |        |
+   +-------------------------------------+---------------------------------------------------------+--------+
    | :ref:`Status<enum_BT_Status>`       | :ref:`status<class_BTTask_property_status>`             |        |
    +-------------------------------------+---------------------------------------------------------+--------+
 
@@ -57,59 +59,61 @@ Methods
 .. table::
    :widths: auto
 
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | void                          | :ref:`_enter<class_BTTask_private_method__enter>` **(** **)** |virtual|                                                   |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | void                          | :ref:`_exit<class_BTTask_private_method__exit>` **(** **)** |virtual|                                                     |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | String                        | :ref:`_generate_name<class_BTTask_private_method__generate_name>` **(** **)** |virtual| |const|                           |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | PackedStringArray             | :ref:`_get_configuration_warnings<class_BTTask_private_method__get_configuration_warnings>` **(** **)** |virtual| |const| |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | void                          | :ref:`_setup<class_BTTask_private_method__setup>` **(** **)** |virtual|                                                   |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`Status<enum_BT_Status>` | :ref:`_tick<class_BTTask_private_method__tick>` **(** float delta **)** |virtual|                                         |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | void                          | :ref:`abort<class_BTTask_method_abort>` **(** **)**                                                                       |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | void                          | :ref:`add_child<class_BTTask_method_add_child>` **(** :ref:`BTTask<class_BTTask>` task **)**                              |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | void                          | :ref:`add_child_at_index<class_BTTask_method_add_child_at_index>` **(** :ref:`BTTask<class_BTTask>` task, int idx **)**   |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`BTTask<class_BTTask>`   | :ref:`clone<class_BTTask_method_clone>` **(** **)** |const|                                                               |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`Status<enum_BT_Status>` | :ref:`execute<class_BTTask_method_execute>` **(** float delta **)**                                                       |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`BTTask<class_BTTask>`   | :ref:`get_child<class_BTTask_method_get_child>` **(** int idx **)** |const|                                               |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | int                           | :ref:`get_child_count<class_BTTask_method_get_child_count>` **(** **)** |const|                                           |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | int                           | :ref:`get_child_count_excluding_comments<class_BTTask_method_get_child_count_excluding_comments>` **(** **)** |const|     |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | int                           | :ref:`get_index<class_BTTask_method_get_index>` **(** **)** |const|                                                       |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`BTTask<class_BTTask>`   | :ref:`get_parent<class_BTTask_method_get_parent>` **(** **)** |const|                                                     |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`BTTask<class_BTTask>`   | :ref:`get_root<class_BTTask_method_get_root>` **(** **)** |const|                                                         |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | String                        | :ref:`get_task_name<class_BTTask_method_get_task_name>` **(** **)**                                                       |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | bool                          | :ref:`has_child<class_BTTask_method_has_child>` **(** :ref:`BTTask<class_BTTask>` task **)** |const|                      |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | void                          | :ref:`initialize<class_BTTask_method_initialize>` **(** Node agent, :ref:`Blackboard<class_Blackboard>` blackboard **)**  |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | bool                          | :ref:`is_descendant_of<class_BTTask_method_is_descendant_of>` **(** :ref:`BTTask<class_BTTask>` task **)** |const|        |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | bool                          | :ref:`is_root<class_BTTask_method_is_root>` **(** **)** |const|                                                           |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`BTTask<class_BTTask>`   | :ref:`next_sibling<class_BTTask_method_next_sibling>` **(** **)** |const|                                                 |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | void                          | :ref:`print_tree<class_BTTask_method_print_tree>` **(** int initial_tabs=0 **)**                                          |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | void                          | :ref:`remove_child<class_BTTask_method_remove_child>` **(** :ref:`BTTask<class_BTTask>` task **)**                        |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
-   | void                          | :ref:`remove_child_at_index<class_BTTask_method_remove_child_at_index>` **(** int idx **)**                               |
-   +-------------------------------+---------------------------------------------------------------------------------------------------------------------------+
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                    | :ref:`_enter<class_BTTask_private_method__enter>` **(** **)** |virtual|                                                                   |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                    | :ref:`_exit<class_BTTask_private_method__exit>` **(** **)** |virtual|                                                                     |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | String                                  | :ref:`_generate_name<class_BTTask_private_method__generate_name>` **(** **)** |virtual| |const|                                           |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | PackedStringArray                       | :ref:`_get_configuration_warnings<class_BTTask_private_method__get_configuration_warnings>` **(** **)** |virtual| |const|                 |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                    | :ref:`_setup<class_BTTask_private_method__setup>` **(** **)** |virtual|                                                                   |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`Status<enum_BT_Status>`           | :ref:`_tick<class_BTTask_private_method__tick>` **(** float delta **)** |virtual|                                                         |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                    | :ref:`abort<class_BTTask_method_abort>` **(** **)**                                                                                       |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                    | :ref:`add_child<class_BTTask_method_add_child>` **(** :ref:`BTTask<class_BTTask>` task **)**                                              |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                    | :ref:`add_child_at_index<class_BTTask_method_add_child_at_index>` **(** :ref:`BTTask<class_BTTask>` task, int idx **)**                   |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`BTTask<class_BTTask>`             | :ref:`clone<class_BTTask_method_clone>` **(** **)** |const|                                                                               |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`BehaviorTree<class_BehaviorTree>` | :ref:`editor_get_behavior_tree<class_BTTask_method_editor_get_behavior_tree>` **(** **)**                                                 |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`Status<enum_BT_Status>`           | :ref:`execute<class_BTTask_method_execute>` **(** float delta **)**                                                                       |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`BTTask<class_BTTask>`             | :ref:`get_child<class_BTTask_method_get_child>` **(** int idx **)** |const|                                                               |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | int                                     | :ref:`get_child_count<class_BTTask_method_get_child_count>` **(** **)** |const|                                                           |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | int                                     | :ref:`get_child_count_excluding_comments<class_BTTask_method_get_child_count_excluding_comments>` **(** **)** |const|                     |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | int                                     | :ref:`get_index<class_BTTask_method_get_index>` **(** **)** |const|                                                                       |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`BTTask<class_BTTask>`             | :ref:`get_parent<class_BTTask_method_get_parent>` **(** **)** |const|                                                                     |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`BTTask<class_BTTask>`             | :ref:`get_root<class_BTTask_method_get_root>` **(** **)** |const|                                                                         |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | String                                  | :ref:`get_task_name<class_BTTask_method_get_task_name>` **(** **)**                                                                       |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | bool                                    | :ref:`has_child<class_BTTask_method_has_child>` **(** :ref:`BTTask<class_BTTask>` task **)** |const|                                      |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                    | :ref:`initialize<class_BTTask_method_initialize>` **(** Node agent, :ref:`Blackboard<class_Blackboard>` blackboard, Node scene_root **)** |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | bool                                    | :ref:`is_descendant_of<class_BTTask_method_is_descendant_of>` **(** :ref:`BTTask<class_BTTask>` task **)** |const|                        |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | bool                                    | :ref:`is_root<class_BTTask_method_is_root>` **(** **)** |const|                                                                           |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`BTTask<class_BTTask>`             | :ref:`next_sibling<class_BTTask_method_next_sibling>` **(** **)** |const|                                                                 |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                    | :ref:`print_tree<class_BTTask_method_print_tree>` **(** int initial_tabs=0 **)**                                                          |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                    | :ref:`remove_child<class_BTTask_method_remove_child>` **(** :ref:`BTTask<class_BTTask>` task **)**                                        |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                    | :ref:`remove_child_at_index<class_BTTask_method_remove_child_at_index>` **(** int idx **)**                                               |
+   +-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -131,7 +135,7 @@ Node **agent**
 - void **set_agent** **(** Node value **)**
 - Node **get_agent** **(** **)**
 
-The agent is a contextual object for the task's :ref:`BehaviorTree<class_BehaviorTree>` instance. Usually, agent is the owner of the :ref:`BTPlayer<class_BTPlayer>` node containing the :ref:`BehaviorTree<class_BehaviorTree>` resource.
+The agent is the contextual object for the :ref:`BehaviorTree<class_BehaviorTree>` instance. This is usually the parent of the :ref:`BTPlayer<class_BTPlayer>` node that utilizes the :ref:`BehaviorTree<class_BehaviorTree>` resource.
 
 .. rst-class:: classref-item-separator
 
@@ -185,6 +189,33 @@ float **elapsed_time**
 Elapsed time since the task was "entered". See :ref:`_enter<class_BTTask_private_method__enter>`.
 
 Returns ``0`` when task is not ``RUNNING``.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_BTTask_property_scene_root:
+
+.. rst-class:: classref-property
+
+Node **scene_root**
+
+.. rst-class:: classref-property-setget
+
+- Node **get_scene_root** **(** **)**
+
+Root node of the scene the behavior tree is used in (e.g., the owner of the :ref:`BTPlayer<class_BTPlayer>` node). Can be uses to retrieve ``NodePath`` references.
+
+\ **Example:**\ 
+
+::
+
+    extends BTAction
+    
+    @export var node_path: NodePath
+    
+    func _setup():
+        var node: Node = scene_root.get_node(node_path)
 
 .. rst-class:: classref-item-separator
 
@@ -337,6 +368,18 @@ Duplicates the task and its children, copying the exported members. Sub-resource
 
 ----
 
+.. _class_BTTask_method_editor_get_behavior_tree:
+
+.. rst-class:: classref-method
+
+:ref:`BehaviorTree<class_BehaviorTree>` **editor_get_behavior_tree** **(** **)**
+
+Returns the behavior tree that owns this task. This is only available in the editor.
+
+.. rst-class:: classref-item-separator
+
+----
+
 .. _class_BTTask_method_execute:
 
 .. rst-class:: classref-method
@@ -457,11 +500,11 @@ Returns ``true`` if ``task`` is a child of this task.
 
 .. rst-class:: classref-method
 
-void **initialize** **(** Node agent, :ref:`Blackboard<class_Blackboard>` blackboard **)**
+void **initialize** **(** Node agent, :ref:`Blackboard<class_Blackboard>` blackboard, Node scene_root **)**
 
 Initilizes the task. Assigns :ref:`agent<class_BTTask_property_agent>` and :ref:`blackboard<class_BTTask_property_blackboard>`, and calls :ref:`_setup<class_BTTask_private_method__setup>` for the task and its children.
 
-The method is called recursively for each child task.
+The method is called recursively for each child task. ``scene_root`` should be the root node of the scene the behavior tree is used in (e.g., the owner of the node that contains the behavior tree).
 
 .. rst-class:: classref-item-separator
 

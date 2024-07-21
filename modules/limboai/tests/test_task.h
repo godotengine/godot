@@ -162,7 +162,7 @@ TEST_CASE("[Modules][LimboAI] BTTask") {
 			Node *dummy = memnew(Node);
 			Ref<Blackboard> bb = memnew(Blackboard);
 			SUBCASE("With valid parameters") {
-				task->initialize(dummy, bb);
+				task->initialize(dummy, bb, dummy);
 				CHECK(task->get_agent() == dummy);
 				CHECK(task->get_blackboard() == bb);
 				CHECK(child1->get_agent() == dummy);
@@ -174,12 +174,17 @@ TEST_CASE("[Modules][LimboAI] BTTask") {
 			}
 			SUBCASE("Test if not crashes when agent is null") {
 				ERR_PRINT_OFF;
-				task->initialize(nullptr, bb);
+				task->initialize(nullptr, bb, dummy);
+				ERR_PRINT_ON;
+			}
+			SUBCASE("Test if not crashes when scene_owner is null") {
+				ERR_PRINT_OFF;
+				task->initialize(dummy, bb, nullptr);
 				ERR_PRINT_ON;
 			}
 			SUBCASE("Test if not crashes when BB is null") {
 				ERR_PRINT_OFF;
-				task->initialize(dummy, nullptr);
+				task->initialize(dummy, nullptr, dummy);
 				ERR_PRINT_ON;
 			}
 			memdelete(dummy);

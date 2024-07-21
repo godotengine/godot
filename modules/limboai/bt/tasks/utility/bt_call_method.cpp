@@ -83,7 +83,7 @@ String BTCallMethod::_generate_name() {
 BT::Status BTCallMethod::_tick(double p_delta) {
 	ERR_FAIL_COND_V_MSG(method == StringName(), FAILURE, "BTCallMethod: Method Name is not set.");
 	ERR_FAIL_COND_V_MSG(node_param.is_null(), FAILURE, "BTCallMethod: Node parameter is not set.");
-	Object *obj = node_param->get_value(get_agent(), get_blackboard());
+	Object *obj = node_param->get_value(get_scene_root(), get_blackboard());
 	ERR_FAIL_COND_V_MSG(obj == nullptr, FAILURE, "BTCallMethod: Failed to get object: " + node_param->to_string());
 
 	Variant result;
@@ -101,7 +101,7 @@ BT::Status BTCallMethod::_tick(double p_delta) {
 		}
 		for (int i = 0; i < args.size(); i++) {
 			Ref<BBVariant> param = args[i];
-			call_args.push_back(param->get_value(get_agent(), get_blackboard()));
+			call_args.push_back(param->get_value(get_scene_root(), get_blackboard()));
 			argptrs[i + int(include_delta)] = &call_args[i];
 		}
 	}
@@ -117,7 +117,7 @@ BT::Status BTCallMethod::_tick(double p_delta) {
 	}
 	for (int i = 0; i < args.size(); i++) {
 		Ref<BBVariant> param = args[i];
-		call_args.push_back(param->get_value(get_agent(), get_blackboard()));
+		call_args.push_back(param->get_value(get_scene_root(), get_blackboard()));
 	}
 
 	// TODO: Unsure how to detect call error, so we return SUCCESS for now...

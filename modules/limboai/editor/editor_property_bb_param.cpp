@@ -283,6 +283,7 @@ void EditorPropertyBBParam::update_property() {
 	if (param->get_value_source() == BBParam::BLACKBOARD_VAR) {
 		_remove_value_editor();
 		variable_editor->set_object_and_property(param.ptr(), SNAME("variable"));
+		variable_editor->setup(plan, false, param->get_variable_expected_type());
 		variable_editor->update_property();
 		variable_editor->show();
 		bottom_container->hide();
@@ -300,7 +301,7 @@ void EditorPropertyBBParam::update_property() {
 void EditorPropertyBBParam::setup(PropertyHint p_hint, const String &p_hint_text, const Ref<BlackboardPlan> &p_plan) {
 	param_type = p_hint_text;
 	property_hint = p_hint;
-	variable_editor->setup(p_plan);
+	plan = p_plan;
 	variable_editor->set_name_split_ratio(0.0);
 }
 

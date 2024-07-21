@@ -18,6 +18,8 @@ class BBFloat64Array : public BBParam {
 	GDCLASS(BBFloat64Array, BBParam);
 
 protected:
+	static void _bind_methods() {}
+
 	virtual Variant::Type get_type() const override { return Variant::PACKED_FLOAT64_ARRAY; }
 };
 

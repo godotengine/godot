@@ -24,7 +24,7 @@ TEST_CASE("[Modules][LimboAI] BTCheckTrigger") {
 	Node *dummy = memnew(Node);
 	Ref<Blackboard> bb = memnew(Blackboard);
 
-	ct->initialize(dummy, bb);
+	ct->initialize(dummy, bb, dummy);
 
 	SUBCASE("Empty") {
 		ERR_PRINT_OFF;

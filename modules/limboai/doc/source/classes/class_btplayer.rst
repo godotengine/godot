@@ -19,7 +19,7 @@ Player of :ref:`BehaviorTree<class_BehaviorTree>` resources.
 Description
 -----------
 
-BTPlayer node is used for the instantiation and playback of :ref:`BehaviorTree<class_BehaviorTree>` resources at runtime. During instantiation, the behavior tree instance is initialized with a reference to the agent and the :ref:`blackboard<class_BTPlayer_property_blackboard>`. Agent is the owner of the BTPlayer node (see :ref:`Node.owner<class_Node_member_owner>`).
+**BTPlayer** node is used to instantiate and play :ref:`BehaviorTree<class_BehaviorTree>` resources at runtime. During initialization, the behavior tree instance is given references to the agent, the :ref:`blackboard<class_BTPlayer_property_blackboard>`, and the current scene root. The agent can be specified by the :ref:`agent_node<class_BTPlayer_property_agent_node>` property (defaults to the BTPlayer's parent node).
 
 For an introduction to behavior trees, see :ref:`BehaviorTree<class_BehaviorTree>`.
 
@@ -31,19 +31,21 @@ Properties
 .. table::
    :widths: auto
 
-   +---------------------------------------------+-------------------------------------------------------------------------+-----------+
-   | bool                                        | :ref:`active<class_BTPlayer_property_active>`                           | ``true``  |
-   +---------------------------------------------+-------------------------------------------------------------------------+-----------+
-   | :ref:`BehaviorTree<class_BehaviorTree>`     | :ref:`behavior_tree<class_BTPlayer_property_behavior_tree>`             |           |
-   +---------------------------------------------+-------------------------------------------------------------------------+-----------+
-   | :ref:`Blackboard<class_Blackboard>`         | :ref:`blackboard<class_BTPlayer_property_blackboard>`                   |           |
-   +---------------------------------------------+-------------------------------------------------------------------------+-----------+
-   | :ref:`BlackboardPlan<class_BlackboardPlan>` | :ref:`blackboard_plan<class_BTPlayer_property_blackboard_plan>`         |           |
-   +---------------------------------------------+-------------------------------------------------------------------------+-----------+
-   | bool                                        | :ref:`monitor_performance<class_BTPlayer_property_monitor_performance>` | ``false`` |
-   +---------------------------------------------+-------------------------------------------------------------------------+-----------+
-   | :ref:`UpdateMode<enum_BTPlayer_UpdateMode>` | :ref:`update_mode<class_BTPlayer_property_update_mode>`                 | ``1``     |
-   +---------------------------------------------+-------------------------------------------------------------------------+-----------+
+   +---------------------------------------------+-------------------------------------------------------------------------+--------------------+
+   | bool                                        | :ref:`active<class_BTPlayer_property_active>`                           | ``true``           |
+   +---------------------------------------------+-------------------------------------------------------------------------+--------------------+
+   | NodePath                                    | :ref:`agent_node<class_BTPlayer_property_agent_node>`                   | ``NodePath("..")`` |
+   +---------------------------------------------+-------------------------------------------------------------------------+--------------------+
+   | :ref:`BehaviorTree<class_BehaviorTree>`     | :ref:`behavior_tree<class_BTPlayer_property_behavior_tree>`             |                    |
+   +---------------------------------------------+-------------------------------------------------------------------------+--------------------+
+   | :ref:`Blackboard<class_Blackboard>`         | :ref:`blackboard<class_BTPlayer_property_blackboard>`                   |                    |
+   +---------------------------------------------+-------------------------------------------------------------------------+--------------------+
+   | :ref:`BlackboardPlan<class_BlackboardPlan>` | :ref:`blackboard_plan<class_BTPlayer_property_blackboard_plan>`         |                    |
+   +---------------------------------------------+-------------------------------------------------------------------------+--------------------+
+   | bool                                        | :ref:`monitor_performance<class_BTPlayer_property_monitor_performance>` | ``false``          |
+   +---------------------------------------------+-------------------------------------------------------------------------+--------------------+
+   | :ref:`UpdateMode<enum_BTPlayer_UpdateMode>` | :ref:`update_mode<class_BTPlayer_property_update_mode>`                 | ``1``              |
+   +---------------------------------------------+-------------------------------------------------------------------------+--------------------+
 
 .. rst-class:: classref-reftable-group
 
@@ -156,6 +158,23 @@ bool **active** = ``true``
 - bool **get_active** **(** **)**
 
 If ``true``, the behavior tree will be executed during update.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_BTPlayer_property_agent_node:
+
+.. rst-class:: classref-property
+
+NodePath **agent_node** = ``NodePath("..")``
+
+.. rst-class:: classref-property-setget
+
+- void **set_agent_node** **(** NodePath value **)**
+- NodePath **get_agent_node** **(** **)**
+
+Path to the node that will be used as the agent. Setting it after instantiation will have no effect.
 
 .. rst-class:: classref-item-separator
 

@@ -17,6 +17,9 @@
 class BTComposite : public BTTask {
 	GDCLASS(BTComposite, BTTask);
 
+protected:
+	static void _bind_methods() {}
+
 public:
 	virtual PackedStringArray get_configuration_warnings() override;
 };

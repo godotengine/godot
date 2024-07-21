@@ -24,8 +24,8 @@
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/themes/editor_scale.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
 #endif // LIMBO_MODULE
 
@@ -57,29 +57,85 @@ using namespace godot;
 void TaskButton::_bind_methods() {
 }
 
-Control *TaskButton::_do_make_tooltip(const String &p_text) const {
+Control *TaskButton::_do_make_tooltip() const {
 #ifdef LIMBOAI_MODULE
-	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	//help_bit->get_rich_text()->set_custom_minimum_size(Size2(360 * EDSCALE, 1));
+	String help_symbol;
+	bool is_resource = task_meta.begins_with("res://");
 
-	String help_text;
-	if (!p_text.is_empty()) {
-		help_text = p_text;
+	if (is_resource) {
+		help_symbol = "class|\"" + task_meta.lstrip("res://") + "\"|";
 	} else {
-		help_text = "[i]" + TTR("No description.") + "[/i]";
+		help_symbol = "class|" + task_meta + "|";
 	}
 
-	help_bit->parse_symbol(help_text);
+	EditorHelpBit *help_bit = memnew(EditorHelpBit(help_symbol));
+	help_bit->set_content_height_limits(1, 360 * EDSCALE);
 
-	return help_bit;
+	String desc = _module_get_help_description(task_meta);
+	if (desc.is_empty() && is_resource) {
+		// ! HACK: Force documentation parsing.
+		Ref<Script> s = ResourceLoader::load(task_meta);
+		if (s.is_valid()) {
+			Vector<DocData::ClassDoc> docs = s->get_documentation();
+			for (int i = 0; i < docs.size(); i++) {
+				const DocData::ClassDoc &doc = docs.get(i);
+				EditorHelp::get_doc_data()->add_doc(doc);
+			}
+			desc = _module_get_help_description(task_meta);
+		}
+	}
+	if (desc.is_empty() && help_bit->get_description().is_empty()) {
+		desc = "[i]" + TTR("No description.") + "[/i]";
+	}
+	if (!desc.is_empty()) {
+		help_bit->set_description(desc);
+	}
+
+	EditorHelpBitTooltip::show_tooltip(help_bit, const_cast<TaskButton *>(this));
 #endif // LIMBOAI_MODULE
 
 #ifdef LIMBOAI_GDEXTENSION
 	// TODO: When we figure out how to retrieve documentation in GDEXTENSION, should add a tooltip control here.
 #endif // LIMBOAI_GDEXTENSION
 
-	return nullptr;
+	return memnew(Control); // Make the standard tooltip invisible.
 }
+
+#ifdef LIMBOAI_MODULE
+
+String TaskButton::_module_get_help_description(const String &p_class_or_script_path) const {
+	String descr;
+
+	DocTools *dd = EditorHelp::get_doc_data();
+	HashMap<String, DocData::ClassDoc>::Iterator E;
+
+	if (p_class_or_script_path.begins_with("res://")) {
+		// Try to find by script path.
+		E = dd->class_list.find(vformat("\"%s\"", p_class_or_script_path.trim_prefix("res://")));
+		if (!E) {
+			// Try to guess global script class from filename.
+			String maybe_class_name = p_class_or_script_path.get_file().get_basename().to_pascal_case();
+			E = dd->class_list.find(maybe_class_name);
+		}
+	} else {
+		// Try to find core class or global class.
+		E = dd->class_list.find(p_class_or_script_path);
+	}
+
+	if (E) {
+		if (E->value.description.is_empty()) {
+			descr = DTR(E->value.brief_description);
+		} else {
+			descr = DTR(E->value.description);
+		}
+	}
+
+	// TODO: Documentation tooltips are only available in the module variant. Find a way to show em in GDExtension.
+
+	return descr;
+}
+
+#endif // LIMBOAI_MODULE
 
 TaskButton::TaskButton() {
 	set_focus_mode(FOCUS_NONE);
@@ -125,11 +181,12 @@ void TaskPaletteSection::set_filter(String p_filter_text) {
 	}
 }
 
-void TaskPaletteSection::add_task_button(const String &p_name, const Ref<Texture> &icon, const String &p_tooltip, Variant p_meta) {
+void TaskPaletteSection::add_task_button(const String &p_name, const Ref<Texture> &icon, const String &p_meta) {
 	TaskButton *btn = memnew(TaskButton);
 	btn->set_text(p_name);
 	BUTTON_SET_ICON(btn, icon);
-	btn->set_tooltip_text(p_tooltip);
+	btn->set_tooltip_text("dummy_text"); // Force tooltip to be shown.
+	btn->set_task_meta(p_meta);
 	btn->add_theme_constant_override(LW_NAME(icon_max_width), 16 * EDSCALE); // Force user icons to  be of the proper size.
 	btn->connect(LW_NAME(pressed), callable_mp(this, &TaskPaletteSection::_on_task_button_pressed).bind(p_meta));
 	btn->connect(LW_NAME(gui_input), callable_mp(this, &TaskPaletteSection::_on_task_button_gui_input).bind(p_meta));
@@ -422,11 +479,10 @@ void TaskPalette::refresh() {
 
 		TaskPaletteSection *sec = memnew(TaskPaletteSection());
 		sec->set_category_name(cat);
-		for (String task_meta : tasks) {
+		for (const String &task_meta : tasks) {
 			Ref<Texture2D> icon = LimboUtility::get_singleton()->get_task_icon(task_meta);
 
 			String tname;
-			String descr;
 
 			if (task_meta.begins_with("res:")) {
 				if (filter_settings.type_filter == FilterSettings::TYPE_CORE) {
@@ -440,34 +496,7 @@ void TaskPalette::refresh() {
 				tname = task_meta.trim_prefix("BT");
 			}
 
-#ifdef LIMBOAI_MODULE
-			// Get documentation.
-			DocTools *dd = EditorHelp::get_doc_data();
-			HashMap<String, DocData::ClassDoc>::Iterator E;
-			// Try-find core class.
-			E = dd->class_list.find(task_meta);
-			if (!E) {
-				// Try to find by script filename.
-				E = dd->class_list.find(vformat("\"%s\"", task_meta.trim_prefix("res://")));
-			}
-			if (!E) {
-				// Try-find global script class.
-				String maybe_class_name = task_meta.get_file().get_basename().to_pascal_case();
-				E = dd->class_list.find(maybe_class_name);
-			}
-
-			if (E) {
-				if (E->value.description.is_empty() || E->value.description.length() > 1400) {
-					descr = DTR(E->value.brief_description);
-				} else {
-					descr = DTR(E->value.description);
-				}
-			}
-#endif // LIMBOAI_MODULE
-
-			// TODO: Documentation tooltips are only available in the module. Find a way to show em in GDExtension.
-
-			sec->add_task_button(tname, icon, descr, task_meta);
+			sec->add_task_button(tname, icon, task_meta);
 		}
 		sec->set_filter("");
 		sec->connect(LW_NAME(task_button_pressed), callable_mp(this, &TaskPalette::_on_task_button_pressed));

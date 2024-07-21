@@ -40,18 +40,42 @@ jobs:
         include:
           - name: Template (release)
             target: template_release
+            threads: true
             dlink: false
 
-          - name: Template (release, dlink_enabled=true)
+          - name: Template (release, dlink)
             target: template_release
+            threads: true
             dlink: true
 
           - name: Template (debug)
             target: template_debug
+            threads: true
             dlink: false
 
-          - name: Template (debug, dlink_enabled=true)
+          - name: Template (debug, dlink)
             target: template_debug
+            threads: true
+            dlink: true
+
+          - name: Template (release, nothreads)
+            target: template_release
+            threads: false
+            dlink: false
+
+          - name: Template (release, nothreads, dlink)
+            target: template_release
+            threads: false
+            dlink: true
+
+          - name: Template (debug, nothreads)
+            target: template_debug
+            threads: false
+            dlink: false
+
+          - name: Template (debug, nothreads, dlink)
+            target: template_debug
+            threads: false
             dlink: true
 
     env:
@@ -110,20 +134,24 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons platform=web target=${{matrix.target}} dlink_enabled=${{matrix.dlink}} ${{env.SCONSFLAGS}}
+          scons platform=web target=${{matrix.target}} threads=${{matrix.threads}} dlink_enabled=${{matrix.dlink}} ${{env.SCONSFLAGS}}
 
       - name: Prepare artifacts
         run: |
           mkdir -p out/templates/
-          mv bin/godot.web.template_release.wasm32.zip out/templates/web_release.zip || true
-          mv bin/godot.web.template_release.wasm32.dlink.zip out/templates/web_dlink_release.zip || true
           mv bin/godot.web.template_debug.wasm32.zip out/templates/web_debug.zip || true
+          mv bin/godot.web.template_debug.wasm32.nothreads.zip out/templates/web_nothreads_debug.zip || true
           mv bin/godot.web.template_debug.wasm32.dlink.zip out/templates/web_dlink_debug.zip || true
+          mv bin/godot.web.template_debug.wasm32.nothreads.dlink.zip out/templates/web_dlink_nothreads_debug.zip || true
+          mv bin/godot.web.template_release.wasm32.zip out/templates/web_release.zip || true
+          mv bin/godot.web.template_release.wasm32.nothreads.zip out/templates/web_nothreads_release.zip || true
+          mv bin/godot.web.template_release.wasm32.dlink.zip out/templates/web_dlink_release.zip || true
+          mv bin/godot.web.template_release.wasm32.nothreads.dlink.zip out/templates/web_dlink_nothreads_release.zip || true
           rm -rf bin/
           echo "${GODOT_VERSION}.limboai+${LIMBOAI_VERSION}" > out/templates/version.txt
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{env.NAME_PREFIX}}.${{matrix.target}}.web${{matrix.dlink == true && '.dlink' || ''}}
+          name: ${{env.NAME_PREFIX}}.${{matrix.target}}.web${{matrix.threads == false && '.nothreads' || ''}}${{matrix.dlink == true && '.dlink' || ''}}
           path: out/*

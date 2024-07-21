@@ -23,7 +23,7 @@ TEST_CASE("[Modules][LimboAI] BTForEach") {
 	Ref<BTForEach> fe = memnew(BTForEach);
 	Node *dummy = memnew(Node);
 	Ref<Blackboard> blackboard = memnew(Blackboard);
-	fe->initialize(dummy, blackboard);
+	fe->initialize(dummy, blackboard, dummy);
 
 	Array arr;
 	arr.append("apple");

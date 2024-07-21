@@ -10,8 +10,8 @@
 #*
 @tool
 extends BTAction
-## BackAway
-## Returns RUNNING always.
+## Moves the agent in the opposite direction of its current facing. [br]
+## Returns [code]RUNNING[/code] always.
 
 ## Blackboard variable that stores desired speed.
 @export var speed_var: StringName = &"speed"

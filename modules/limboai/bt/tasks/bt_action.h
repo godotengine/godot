@@ -17,6 +17,9 @@
 class BTAction : public BTTask {
 	GDCLASS(BTAction, BTTask);
 
+protected:
+	static void _bind_methods() {}
+
 public:
 	virtual PackedStringArray get_configuration_warnings() override;
 };

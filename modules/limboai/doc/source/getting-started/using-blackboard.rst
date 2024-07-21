@@ -91,7 +91,7 @@ Usage example:
     @export var speed: BBFloat
 
     func _tick(delta: float) -> Status:
-        var current_speed: float = speed.get_value(agent, blackboard, 0.0)
+        var current_speed: float = speed.get_value(scene_root, blackboard, 0.0)
         ...
 
 Advanced topic: Blackboard scopes

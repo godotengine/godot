@@ -36,7 +36,7 @@ TEST_CASE("[Modules][LimboAI] BTCheckVar") {
 	Ref<BTCheckVar> cv = memnew(BTCheckVar);
 	Ref<Blackboard> bb = memnew(Blackboard);
 	Node *dummy = memnew(Node);
-	cv->initialize(dummy, bb);
+	cv->initialize(dummy, bb, dummy);
 
 	SUBCASE("Check with empty variable and value") {
 		cv->set_variable("");

@@ -31,6 +31,8 @@
 #include <godot_cpp/classes/h_box_container.hpp>
 #endif // LIMBOAI_GDEXTENSION
 
+int EditorPropertyVariableName::last_caret_column = 0;
+
 //***** EditorPropertyVariableName
 
 void EditorPropertyVariableName::_show_variables_popup() {
@@ -38,10 +40,9 @@ void EditorPropertyVariableName::_show_variables_popup() {
 
 	variables_popup->clear();
 	variables_popup->reset_size();
-	int idx = 0;
-	for (String var_name : plan->list_vars()) {
-		variables_popup->add_item(var_name, idx);
-		idx += 1;
+	TypedArray<StringName> var_names = plan->list_vars();
+	for (int i = 0; i < var_names.size(); i++) {
+		variables_popup->add_item(var_names[i], i);
 	}
 
 	Transform2D xform = name_edit->get_screen_transform();
@@ -55,14 +56,26 @@ void EditorPropertyVariableName::_show_variables_popup() {
 }
 
 void EditorPropertyVariableName::_name_changed(const String &p_new_name) {
+	if (updating) {
+		return;
+	}
+
 	emit_changed(get_edited_property(), p_new_name);
+	last_caret_column = name_edit->get_caret_column();
 	_update_status();
+}
+
+void EditorPropertyVariableName::_name_submitted() {
+	_name_changed(name_edit->get_text());
+	if (name_edit->has_focus()) {
+		name_edit->release_focus();
+	}
 }
 
 void EditorPropertyVariableName::_variable_selected(int p_id) {
 	String var_name = plan->get_var_by_index(p_id).first;
 	name_edit->set_text(var_name);
-	_name_changed(var_name);
+	_name_submitted();
 }
 
 void EditorPropertyVariableName::_update_status() {
@@ -71,9 +84,21 @@ void EditorPropertyVariableName::_update_status() {
 	if (plan.is_null()) {
 		return;
 	}
-	if (plan->has_var(name_edit->get_text())) {
-		BUTTON_SET_ICON(status_btn, theme_cache.var_exists_icon);
-		status_btn->set_tooltip_text(TTR("This variable is present in the blackboard plan.\nClick to open the blackboard plan."));
+	String var_name = name_edit->get_text();
+	if (var_name.is_empty() && allow_empty) {
+		BUTTON_SET_ICON(status_btn, theme_cache.var_empty_icon);
+		status_btn->set_tooltip_text(TTR("Variable name not specified.\nClick to open the blackboard plan."));
+	} else if (plan->has_var(var_name)) {
+		if (expected_type == Variant::NIL || plan->get_var(var_name).get_type() == expected_type) {
+			BUTTON_SET_ICON(status_btn, theme_cache.var_exists_icon);
+			status_btn->set_tooltip_text(TTR("This variable is present in the blackboard plan.\nClick to open the blackboard plan."));
+		} else {
+			BUTTON_SET_ICON(status_btn, theme_cache.var_error_icon);
+			status_btn->set_tooltip_text(TTR(vformat(
+					"The %s variable in the blackboard plan should be of type %s.\nClick to open the blackboard plan.",
+					LimboUtility::get_singleton()->decorate_var(var_name),
+					Variant::get_type_name(expected_type))));
+		}
 	} else if (name_edit->get_text().begins_with("_")) {
 		BUTTON_SET_ICON(status_btn, theme_cache.var_private_icon);
 		status_btn->set_tooltip_text(TTR("This variable is private and is not included in the blackboard plan.\nClick to open the blackboard plan."));
@@ -86,7 +111,9 @@ void EditorPropertyVariableName::_update_status() {
 void EditorPropertyVariableName::_status_pressed() {
 	ERR_FAIL_NULL(plan);
 	if (!plan->has_var(name_edit->get_text())) {
-		BlackboardPlanEditor::get_singleton()->set_next_var_name(name_edit->get_text());
+		BlackboardPlanEditor::get_singleton()->set_defaults(name_edit->get_text(),
+				expected_type == Variant::NIL ? Variant::FLOAT : expected_type,
+				default_hint, default_hint_string, default_value);
 	}
 	BlackboardPlanEditor::get_singleton()->edit_plan(plan);
 	BlackboardPlanEditor::get_singleton()->popup_centered();
@@ -110,17 +137,27 @@ void EditorPropertyVariableName::update_property() {
 void EditorPropertyVariableName::_update_property() {
 #endif // LIMBOAI_GDEXTENSION
 	String s = get_edited_object()->get(get_edited_property());
+	updating = true;
 	if (name_edit->get_text() != s) {
 		int caret = name_edit->get_caret_column();
+		if (caret == 0) {
+			caret = last_caret_column;
+		}
 		name_edit->set_text(s);
 		name_edit->set_caret_column(caret);
 	}
 	name_edit->set_editable(!is_read_only());
 	_update_status();
+	updating = false;
 }
 
-void EditorPropertyVariableName::setup(const Ref<BlackboardPlan> &p_plan) {
+void EditorPropertyVariableName::setup(const Ref<BlackboardPlan> &p_plan, bool p_allow_empty, Variant::Type p_type, PropertyHint p_hint, String p_hint_string, Variant p_default_value) {
 	plan = p_plan;
+	allow_empty = p_allow_empty;
+	expected_type = p_type;
+	default_hint = p_hint;
+	default_hint_string = p_hint_string;
+	default_value = p_default_value;
 	_update_status();
 }
 
@@ -128,6 +165,8 @@ void EditorPropertyVariableName::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			name_edit->connect(LW_NAME(text_changed), callable_mp(this, &EditorPropertyVariableName::_name_changed));
+			name_edit->connect(LW_NAME(text_submitted), callable_mp(this, &EditorPropertyVariableName::_name_submitted).unbind(1));
+			name_edit->connect(LW_NAME(focus_exited), callable_mp(this, &EditorPropertyVariableName::_name_submitted));
 			variables_popup->connect(LW_NAME(id_pressed), callable_mp(this, &EditorPropertyVariableName::_variable_selected));
 			drop_btn->connect(LW_NAME(pressed), callable_mp(this, &EditorPropertyVariableName::_show_variables_popup));
 			status_btn->connect(LW_NAME(pressed), callable_mp(this, &EditorPropertyVariableName::_status_pressed));
@@ -148,6 +187,8 @@ void EditorPropertyVariableName::_notification(int p_what) {
 			theme_cache.var_exists_icon = LimboUtility::get_singleton()->get_task_icon(LW_NAME(LimboVarExists));
 			theme_cache.var_not_found_icon = LimboUtility::get_singleton()->get_task_icon(LW_NAME(LimboVarNotFound));
 			theme_cache.var_private_icon = LimboUtility::get_singleton()->get_task_icon(LW_NAME(LimboVarPrivate));
+			theme_cache.var_empty_icon = LimboUtility::get_singleton()->get_task_icon(LW_NAME(LimboVarEmpty));
+			theme_cache.var_error_icon = LimboUtility::get_singleton()->get_task_icon(LW_NAME(LimboVarError));
 		} break;
 	}
 }
@@ -192,6 +233,10 @@ bool EditorInspectorPluginVariableName::_can_handle(Object *p_object) const {
 	if (param.is_valid()) {
 		return true;
 	}
+	Ref<BlackboardPlan> plan = Object::cast_to<BlackboardPlan>(p_object);
+	if (plan.is_valid()) {
+		return true;
+	}
 	return false;
 }
 
@@ -200,13 +245,41 @@ bool EditorInspectorPluginVariableName::parse_property(Object *p_object, const V
 #elif LIMBOAI_GDEXTENSION
 bool EditorInspectorPluginVariableName::_parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 #endif
-	if (!(p_type == Variant::Type::STRING_NAME || p_type == Variant::Type::STRING) || !(p_path.ends_with("_var") || p_path.ends_with("variable"))) {
+	bool is_mapping = p_path.begins_with("mapping/");
+	if (!(p_type == Variant::Type::STRING_NAME || p_type == Variant::Type::STRING) || !(is_mapping || p_path.ends_with("_var") || p_path.ends_with("variable"))) {
 		return false;
 	}
 
+	Ref<BlackboardPlan> plan;
+	Variant::Type expected_type = Variant::NIL;
+	PropertyHint default_hint = PROPERTY_HINT_NONE;
+	String default_hint_string;
+	Variant default_value;
+	if (is_mapping) {
+		plan.reference_ptr(Object::cast_to<BlackboardPlan>(p_object));
+		ERR_FAIL_NULL_V(plan, false);
+		String var_name = p_path.trim_prefix("mapping/");
+		if (plan->has_var(var_name)) {
+			BBVariable variable = plan->get_var(var_name);
+			expected_type = variable.get_type();
+			default_hint = variable.get_hint();
+			default_hint_string = variable.get_hint_string();
+			default_value = variable.get_value();
+		}
+		if (plan->get_parent_scope_plan_provider().is_valid()) {
+			Ref<BlackboardPlan> parent_plan = plan->get_parent_scope_plan_provider().call();
+			if (parent_plan.is_valid()) {
+				plan = parent_plan;
+			}
+		}
+		ERR_FAIL_NULL_V(plan, false);
+	} else {
+		plan = editor_plan_provider.call();
+	}
+
 	EditorPropertyVariableName *ed = memnew(EditorPropertyVariableName);
-	ed->setup(plan_getter.call());
-	add_property_editor(p_path, ed);
+	ed->setup(plan, is_mapping, expected_type, default_hint, default_hint_string, default_value);
+	add_property_editor(p_path, ed, expected_type);
 
 	return true;
 }

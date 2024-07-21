@@ -18,6 +18,8 @@ class BBTransform3D : public BBParam {
 	GDCLASS(BBTransform3D, BBParam);
 
 protected:
+	static void _bind_methods() {}
+
 	virtual Variant::Type get_type() const override { return Variant::TRANSFORM3D; }
 };
 

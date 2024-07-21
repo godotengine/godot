@@ -20,9 +20,9 @@
 #include <godot_cpp/classes/node.hpp>
 #endif // LIMBOAI_GDEXTENSION
 
-Variant BBNode::get_value(Object *p_agent, const Ref<Blackboard> &p_blackboard, const Variant &p_default) {
-	ERR_FAIL_COND_V(p_agent == nullptr, Variant());
-	ERR_FAIL_COND_V(!p_blackboard.is_valid(), Variant());
+Variant BBNode::get_value(Node *p_scene_root, const Ref<Blackboard> &p_blackboard, const Variant &p_default) {
+	ERR_FAIL_NULL_V_MSG(p_scene_root, Variant(), "BBNode: get_value() failed - scene_root is null.");
+	ERR_FAIL_NULL_V_MSG(p_blackboard, Variant(), "BBNode: get_value() failed - blackboard is null.");
 
 	Variant val;
 	if (get_value_source() == SAVED_VALUE) {
@@ -32,9 +32,7 @@ Variant BBNode::get_value(Object *p_agent, const Ref<Blackboard> &p_blackboard, 
 	}
 
 	if (val.get_type() == Variant::NODE_PATH) {
-		Node *agent = Object::cast_to<Node>(p_agent);
-		ERR_FAIL_COND_V_MSG(agent == nullptr, Variant(), "BBNode: p_agent must be a Node.");
-		return agent->get_node_or_null(val);
+		return p_scene_root->get_node_or_null(val);
 	} else {
 		Object *obj = val;
 		if (unlikely(obj == nullptr && val.get_type() != Variant::NIL)) {

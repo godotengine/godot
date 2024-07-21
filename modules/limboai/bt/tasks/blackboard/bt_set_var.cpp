@@ -26,7 +26,7 @@ BT::Status BTSetVar::_tick(double p_delta) {
 	ERR_FAIL_COND_V_MSG(!value.is_valid(), FAILURE, "BTSetVar: `value` is not set.");
 	Variant result;
 	Variant error_result = LW_NAME(error_value);
-	Variant right_value = value->get_value(get_agent(), get_blackboard(), error_result);
+	Variant right_value = value->get_value(get_scene_root(), get_blackboard(), error_result);
 	ERR_FAIL_COND_V_MSG(right_value == error_result, FAILURE, "BTSetVar: Failed to get parameter value. Returning FAILURE.");
 	if (operation == LimboUtility::OPERATION_NONE) {
 		result = right_value;

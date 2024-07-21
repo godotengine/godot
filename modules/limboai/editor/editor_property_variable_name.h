@@ -32,15 +32,28 @@ class EditorPropertyVariableName : public EditorProperty {
 	GDCLASS(EditorPropertyVariableName, EditorProperty);
 
 private:
+	static int last_caret_column;
+
+private:
 	struct ThemeCache {
+		Ref<Texture2D> var_add_icon;
+		Ref<Texture2D> var_empty_icon;
+		Ref<Texture2D> var_error_icon;
 		Ref<Texture2D> var_exists_icon;
 		Ref<Texture2D> var_not_found_icon;
-		Ref<Texture2D> var_add_icon;
 		Ref<Texture2D> var_private_icon;
 	};
 	ThemeCache theme_cache;
 
 	Ref<BlackboardPlan> plan;
+
+	bool allow_empty = false;
+	Variant::Type expected_type = Variant::NIL;
+	PropertyHint default_hint = PROPERTY_HINT_NONE;
+	String default_hint_string;
+	Variant default_value;
+
+	bool updating = false;
 
 	LineEdit *name_edit;
 	Button *drop_btn;
@@ -49,6 +62,7 @@ private:
 
 	void _show_variables_popup();
 	void _name_changed(const String &p_new_name);
+	void _name_submitted();
 	void _variable_selected(int p_id);
 	void _update_status();
 
@@ -68,7 +82,7 @@ public:
 	virtual void _update_property() override;
 #endif
 
-	void setup(const Ref<BlackboardPlan> &p_plan);
+	void setup(const Ref<BlackboardPlan> &p_plan, bool p_allow_empty, Variant::Type p_type = Variant::NIL, PropertyHint p_hint = PROPERTY_HINT_NONE, String p_hint_string = "", Variant p_default_value = Variant());
 	EditorPropertyVariableName();
 };
 
@@ -76,7 +90,7 @@ class EditorInspectorPluginVariableName : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginVariableName, EditorInspectorPlugin);
 
 private:
-	Callable plan_getter;
+	Callable editor_plan_provider;
 
 protected:
 	static void _bind_methods() {}
@@ -90,7 +104,7 @@ public:
 	virtual bool _parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
 #endif
 
-	void set_plan_getter(const Callable &p_getter) { plan_getter = p_getter; }
+	void set_editor_plan_provider(const Callable &p_getter) { editor_plan_provider = p_getter; }
 
 	EditorInspectorPluginVariableName() = default;
 };

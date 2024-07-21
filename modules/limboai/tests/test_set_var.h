@@ -29,7 +29,7 @@ TEST_CASE("[Modules][LimboAI] BTSetVar") {
 	Ref<Blackboard> bb = memnew(Blackboard);
 	Node *dummy = memnew(Node);
 
-	sv->initialize(dummy, bb);
+	sv->initialize(dummy, bb, dummy);
 
 	SUBCASE("When variable is not set") {
 		ERR_PRINT_OFF;

@@ -67,7 +67,6 @@ func _init_state_machine() -> void:
 
 	hsm.initialize(self)
 	hsm.set_active(true)
-	hsm.set_guard(_can_dodge)
 
 
 func _init_input_events() -> void:

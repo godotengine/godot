@@ -31,7 +31,7 @@ class BTEvaluateExpression : public BTAction {
 	TASK_CATEGORY(Utility);
 
 private:
-	Expression expression;
+	Ref<Expression> expression;
 	Error is_parsed = FAILED;
 	Ref<BBNode> node_param;
 	String expression_string;

@@ -39,7 +39,7 @@ TEST_CASE("[Modules][LimboAI] BTCheckAgentProperty") {
 	Ref<BTCheckAgentProperty> cap = memnew(BTCheckAgentProperty);
 	Node *agent = memnew(Node);
 	Ref<Blackboard> bb = memnew(Blackboard);
-	cap->initialize(agent, bb);
+	cap->initialize(agent, bb, agent);
 	StringName agent_name = "SimpleNode";
 	agent->set_name(agent_name);
 

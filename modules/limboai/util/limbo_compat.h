@@ -42,8 +42,8 @@
 #define RESOURCE_LOAD_NO_CACHE(m_path, m_hint) ResourceLoader::load(m_path, m_hint, ResourceFormatLoader::CACHE_MODE_IGNORE)
 #define RESOURCE_SAVE(m_res, m_path, m_flags) ResourceSaver::save(m_res, m_path, m_flags)
 #define RESOURCE_IS_CACHED(m_path) (ResourceCache::has(m_path))
-#define RESOURCE_GET_TYPE(m_path) (ResourceLoader::get_resource_type(m_path))
 #define RESOURCE_EXISTS(m_path, m_type_hint) (ResourceLoader::exists(m_path, m_type_hint))
+#define RESOURCE_IS_SCENE_FILE(m_path) (ResourceLoader::get_resource_type(m_path) == "PackedScene")
 #define GET_PROJECT_SETTINGS_DIR() EditorPaths::get_singleton()->get_project_settings_dir()
 #define EDIT_RESOURCE(m_res) EditorNode::get_singleton()->edit_resource(m_res)
 #define INSPECTOR_GET_EDITED_OBJECT() (InspectorDock::get_inspector_singleton()->get_edited_object())
@@ -53,6 +53,7 @@
 #define PERFORMANCE_ADD_CUSTOM_MONITOR(m_id, m_callable) (Performance::get_singleton()->add_custom_monitor(m_id, m_callable, Variant()))
 #define GET_SCRIPT(m_obj) (m_obj->get_script_instance() ? m_obj->get_script_instance()->get_script() : nullptr)
 #define ADD_STYLEBOX_OVERRIDE(m_control, m_name, m_stylebox) (m_control->add_theme_style_override(m_name, m_stylebox))
+#define GET_NODE(m_parent, m_path) m_parent->get_node(m_path)
 
 _FORCE_INLINE_ bool OBJECT_HAS_PROPERTY(Object *p_obj, const StringName &p_prop) {
 	bool r_valid;
@@ -60,33 +61,6 @@ _FORCE_INLINE_ bool OBJECT_HAS_PROPERTY(Object *p_obj, const StringName &p_prop)
 }
 
 #define VARIANT_EVALUATE(m_op, m_lvalue, m_rvalue, r_ret) r_ret = Variant::evaluate(m_op, m_lvalue, m_rvalue)
-
-// * Virtual calls
-
-#define VCALL(m_name, ...) (GDVIRTUAL_CALL(m_name, __VA_ARGS__))
-#define VCALL_ARGS(m_name, ...) (GDVIRTUAL_CALL(m_name, __VA_ARGS__))
-#define VCALL_V(m_name, r_ret) (GDVIRTUAL_CALL(m_name, r_ret))
-#define VCALL_ARGS_V(m_name, r_ret, ...) (GDVIRTUAL_CALL(m_name, __VA_ARGS__, r_ret))
-
-#define VCALL_OR_NATIVE(m_name)    \
-	if (!GDVIRTUAL_CALL(m_name)) { \
-		m_name();                  \
-	}
-
-#define VCALL_OR_NATIVE_ARGS(m_name, ...)       \
-	if (!GDVIRTUAL_CALL(m_name, __VA_ARGS__)) { \
-		m_name(__VA_ARGS__);                    \
-	}
-
-#define VCALL_OR_NATIVE_V(m_name, m_ret_type, r_ret)       \
-	if (!GDVIRTUAL_CALL(m_name, r_ret)) {                  \
-		r_ret = VariantCaster<m_ret_type>::cast(m_name()); \
-	}
-
-#define VCALL_OR_NATIVE_ARGS_V(m_name, m_ret_type, r_ret, ...)        \
-	if (!GDVIRTUAL_CALL(m_name, __VA_ARGS__, r_ret)) {                \
-		r_ret = VariantCaster<m_ret_type>::cast(m_name(__VA_ARGS__)); \
-	}
 
 // * Enum
 
@@ -126,7 +100,7 @@ using namespace godot;
 #define RESOURCE_LOAD_NO_CACHE(m_path, m_hint) ResourceLoader::get_singleton()->load(m_path, m_hint, ResourceLoader::CACHE_MODE_IGNORE)
 #define RESOURCE_SAVE(m_res, m_path, m_flags) ResourceSaver::get_singleton()->save(m_res, m_path, m_flags)
 #define RESOURCE_IS_CACHED(m_path) (ResourceLoader::get_singleton()->has_cached(res_path))
-#define RESOURCE_GET_TYPE(m_path) (ResourceLoader::get_resource_type(m_path))
+#define RESOURCE_IS_SCENE_FILE(m_path) (ResourceLoader::get_singleton()->get_recognized_extensions_for_type("PackedScene").has(m_path.get_extension()))
 #define RESOURCE_EXISTS(m_path, m_type_hint) (ResourceLoader::get_singleton()->exists(m_path, m_type_hint))
 #define GET_PROJECT_SETTINGS_DIR() EditorInterface::get_singleton()->get_editor_paths()->get_project_settings_dir()
 #define EDIT_RESOURCE(m_res) EditorInterface::get_singleton()->edit_resource(m_res)
@@ -137,6 +111,7 @@ using namespace godot;
 #define PERFORMANCE_ADD_CUSTOM_MONITOR(m_id, m_callable) (Performance::get_singleton()->add_custom_monitor(m_id, m_callable))
 #define GET_SCRIPT(m_obj) (m_obj->get_script())
 #define ADD_STYLEBOX_OVERRIDE(m_control, m_name, m_stylebox) (m_control->add_theme_stylebox_override(m_name, m_stylebox))
+#define GET_NODE(m_parent, m_path) m_parent->get_node_internal(m_path)
 
 _FORCE_INLINE_ bool OBJECT_HAS_PROPERTY(Object *p_obj, const StringName &p_prop) {
 	return Variant(p_obj).has_key(p_prop);
@@ -147,50 +122,6 @@ _FORCE_INLINE_ bool OBJECT_HAS_PROPERTY(Object *p_obj, const StringName &p_prop)
 		bool r_valid;                                                \
 		Variant::evaluate(m_op, m_lvalue, m_rvalue, r_ret, r_valid); \
 	}
-
-// * Virtual calls:
-// * This is a workaround for missing ClassDB::add_virtual_method().
-// ! When using these macros, DON'T BIND the native virtual methods!
-// -----------------------------
-// VCALL*: only calls a script version if present.
-// VCALL_OR_NATIVE*: calls a script version if present; otherwise, calls the native version.
-
-#define VCALL(m_name)                  \
-	if (has_method(LW_NAME(m_name))) { \
-		call(LW_NAME(m_name));         \
-	}
-
-#define VCALL_ARGS(m_name, ...)             \
-	if (has_method(LW_NAME(m_name))) {      \
-		call(LW_NAME(m_name), __VA_ARGS__); \
-	}
-
-#define VCALL_V(m_name, r_ret)         \
-	if (has_method(LW_NAME(m_name))) { \
-		r_ret = call(LW_NAME(m_name)); \
-	}
-
-#define VCALL_ARGS_V(m_name, r_ret, ...)            \
-	if (has_method(LW_NAME(m_name))) {              \
-		r_ret = call(LW_NAME(m_name, __VA_ARGS__)); \
-	}
-
-#define VCALL_OR_NATIVE(m_name)        \
-	if (has_method(LW_NAME(m_name))) { \
-		call(LW_NAME(m_name));         \
-	} else {                           \
-		m_name();                      \
-	}
-
-#define VCALL_OR_NATIVE_ARGS(m_name, ...)   \
-	if (has_method(LW_NAME(m_name))) {      \
-		call(LW_NAME(m_name), __VA_ARGS__); \
-	} else {                                \
-		m_name(__VA_ARGS__);                \
-	}
-
-#define VCALL_OR_NATIVE_V(m_name, m_ret_type, r_ret) r_ret = (has_method(LW_NAME(m_name)) ? VariantCaster<m_ret_type>::cast(call(LW_NAME(m_name))) : VariantCaster<m_ret_type>::cast(m_name()))
-#define VCALL_OR_NATIVE_ARGS_V(m_name, m_ret_type, r_ret, ...) r_ret = (has_method(LW_NAME(m_name)) ? VariantCaster<m_ret_type>::cast(call(LW_NAME(m_name), __VA_ARGS__)) : VariantCaster<m_ret_type>::cast(m_name(__VA_ARGS__)))
 
 // * Enum
 
@@ -235,6 +166,7 @@ Variant VARIANT_DEFAULT(Variant::Type p_type);
 #define IS_RESOURCE_FILE(m_path) (m_path.begins_with("res://") && m_path.find("::") == -1)
 #define RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
 #define RESOURCE_IS_BUILT_IN(m_res) (m_res->get_path().is_empty() || m_res->get_path().contains("::"))
+#define RESOURCE_PATH_IS_BUILT_IN(m_path) (m_path.is_empty() || m_path.contains("::"))
 
 #ifdef TOOLS_ENABLED
 

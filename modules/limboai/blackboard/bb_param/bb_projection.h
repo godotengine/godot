@@ -18,6 +18,8 @@ class BBProjection : public BBParam {
 	GDCLASS(BBProjection, BBParam);
 
 protected:
+	static void _bind_methods() {}
+
 	virtual Variant::Type get_type() const override { return Variant::PROJECTION; }
 };
 

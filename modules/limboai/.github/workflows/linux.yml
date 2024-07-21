@@ -139,27 +139,14 @@ jobs:
       # Inits GODOT_VERSION, LIMBOAI_VERSION and NAME_PREFIX environment variables.
       - uses: ./modules/limboai/.github/actions/init-version
 
-      # About sed see: https://github.com/godotengine/buildroot/issues/6
-      - name: Set up buildroot x86_64
-        if: matrix.opts.arch == 'x86_64'
-        run: |
-          wget https://download.tuxfamily.org/godotengine/toolchains/linux/x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
-          tar -xjf x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
-          mv x86_64-godot-linux-gnu_sdk-buildroot buildroot
-          cd buildroot
-          sed -i x86_64-godot-linux-gnu/sysroot/usr/lib/pkgconfig/dbus-1.pc -e "s@/lib@/lib64@g"
-          ./relocate-sdk.sh
-          cd ..
+      - name: Set up Linux toolchain
+        uses: ./modules/limboai/.github/actions/setup-linux-toolchain
+        with:
+          arch: ${{matrix.opts.arch}}
 
-      - name: Set up buildroot x86_32
-        if: matrix.opts.arch == 'x86_32'
+      - name: Set up Wayland deps
         run: |
-          wget https://download.tuxfamily.org/godotengine/toolchains/linux/i686-godot-linux-gnu_sdk-buildroot.tar.bz2
-          tar -xjf i686-godot-linux-gnu_sdk-buildroot.tar.bz2
-          mv i686-godot-linux-gnu_sdk-buildroot buildroot
-          cd buildroot
-          ./relocate-sdk.sh
-          cd ..
+          sudo apt-get install libwayland-dev
 
       - name: Set up scons cache
         uses: actions/cache@v4

@@ -49,11 +49,11 @@ Methods
 .. table::
    :widths: auto
 
-   +-----------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`Variant.Type<enum_@GlobalScope_Variant.Type>` | :ref:`get_type<class_BBParam_method_get_type>` **(** **)** |const|                                                                              |
-   +-----------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
-   | Variant                                             | :ref:`get_value<class_BBParam_method_get_value>` **(** Object agent, :ref:`Blackboard<class_Blackboard>` blackboard, Variant default=null **)** |
-   +-----------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
+   +-----------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`Variant.Type<enum_@GlobalScope_Variant.Type>` | :ref:`get_type<class_BBParam_method_get_type>` **(** **)** |const|                                                                                 |
+   +-----------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+   | Variant                                             | :ref:`get_value<class_BBParam_method_get_value>` **(** Node scene_root, :ref:`Blackboard<class_Blackboard>` blackboard, Variant default=null **)** |
+   +-----------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -167,7 +167,7 @@ Returns the expected data type of the parameter.
 
 .. rst-class:: classref-method
 
-Variant **get_value** **(** Object agent, :ref:`Blackboard<class_Blackboard>` blackboard, Variant default=null **)**
+Variant **get_value** **(** Node scene_root, :ref:`Blackboard<class_Blackboard>` blackboard, Variant default=null **)**
 
 Returns the value of the parameter.
 

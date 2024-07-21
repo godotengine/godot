@@ -77,7 +77,7 @@ String BTPlayAnimation::_generate_name() {
 void BTPlayAnimation::_setup() {
 	setup_failed = true;
 	ERR_FAIL_COND_MSG(animation_player_param.is_null(), "BTPlayAnimation: AnimationPlayer parameter is not set.");
-	animation_player = Object::cast_to<AnimationPlayer>(animation_player_param->get_value(get_agent(), get_blackboard()));
+	animation_player = Object::cast_to<AnimationPlayer>(animation_player_param->get_value(get_scene_root(), get_blackboard()));
 	ERR_FAIL_COND_MSG(animation_player == nullptr, "BTPlayAnimation: Failed to get AnimationPlayer.");
 	ERR_FAIL_COND_MSG(animation_name != StringName() && !animation_player->has_animation(animation_name), vformat("BTPlayAnimation: Animation not found: %s", animation_name));
 	if (animation_name == StringName() && await_completion > 0.0) {

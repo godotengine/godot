@@ -22,6 +22,8 @@ private:
 	int last_running_idx = 0;
 
 protected:
+	static void _bind_methods() {}
+
 	virtual void _enter() override;
 	virtual Status _tick(double p_delta) override;
 };

@@ -18,6 +18,8 @@ class BBPlane : public BBParam {
 	GDCLASS(BBPlane, BBParam);
 
 protected:
+	static void _bind_methods() {}
+
 	virtual Variant::Type get_type() const override { return Variant::PLANE; }
 };
 

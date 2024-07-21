@@ -36,6 +36,7 @@ env:
   SCONSFLAGS: dev_build=no debug_symbols=no
   EM_VERSION: 3.1.45
   EM_CACHE_FOLDER: "emsdk-cache"
+  GODOT_VERSION: 4.2-stable
 
 jobs:
   gdextension:
@@ -94,14 +95,70 @@ jobs:
             platform: web
             target: template_release
             arch: wasm32
-            should-build: true
+            should-build: ${{ !inputs.test-build }}
 
           - name: 🌐 Web (wasm32, debug)
             runner: ubuntu-20.04
             platform: web
             target: template_debug
             arch: wasm32
-            should-build: true
+            should-build: ${{ !inputs.test-build }}
+
+          - name: 🤖 Android (arm64, release)
+            runner: ubuntu-20.04
+            platform: android
+            target: template_release
+            arch: arm64
+            should-build: ${{ !inputs.test-build }}
+
+          - name: 🤖 Android (arm64, debug)
+            runner: ubuntu-20.04
+            platform: android
+            target: template_debug
+            arch: arm64
+            should-build: ${{ !inputs.test-build }}
+
+          - name: 🤖 Android (arm32, release)
+            runner: ubuntu-20.04
+            platform: android
+            target: template_release
+            arch: arm32
+            should-build: ${{ !inputs.test-build }}
+
+          - name: 🤖 Android (arm32, debug)
+            runner: ubuntu-20.04
+            platform: android
+            target: template_debug
+            arch: arm32
+            should-build: ${{ !inputs.test-build }}
+
+          - name: 🤖 Android (x86_64, release)
+            runner: ubuntu-20.04
+            platform: android
+            target: template_release
+            arch: x86_64
+            should-build: ${{ !inputs.test-build }}
+
+          - name: 🤖 Android (x86_64, debug)
+            runner: ubuntu-20.04
+            platform: android
+            target: template_debug
+            arch: x86_64
+            should-build: ${{ !inputs.test-build }}
+
+          - name: 🤖 Android (x86_32, release)
+            runner: ubuntu-20.04
+            platform: android
+            target: template_release
+            arch: x86_32
+            should-build: ${{ !inputs.test-build }}
+
+          - name: 🤖 Android (x86_32, debug)
+            runner: ubuntu-20.04
+            platform: android
+            target: template_debug
+            arch: x86_32
+            should-build: ${{ !inputs.test-build }}
 
         exclude:
           - { opts: { should-build: false } }
@@ -132,25 +189,11 @@ jobs:
         id: output-name-prefix
         run: echo "name-prefix=${NAME_PREFIX}" >> $GITHUB_OUTPUT
 
-      - name: Set up Linux buildroot x86_64
-        if: matrix.opts.platform == 'linux' && matrix.opts.arch == 'x86_64'
-        run: |
-          wget https://download.tuxfamily.org/godotengine/toolchains/linux/x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
-          tar -xjf x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
-          mv x86_64-godot-linux-gnu_sdk-buildroot buildroot
-          cd buildroot
-          ./relocate-sdk.sh
-          cd ..
-
-      - name: Set up Linux buildroot x86_32
-        if: matrix.opts.platform == 'linux' && matrix.opts.arch == 'x86_32'
-        run: |
-          wget https://download.tuxfamily.org/godotengine/toolchains/linux/i686-godot-linux-gnu_sdk-buildroot.tar.bz2
-          tar -xjf i686-godot-linux-gnu_sdk-buildroot.tar.bz2
-          mv i686-godot-linux-gnu_sdk-buildroot buildroot
-          cd buildroot
-          ./relocate-sdk.sh
-          cd ..
+      - name: Setup Linux toolchain
+        if: matrix.opts.platform == 'linux'
+        uses: ./limboai/.github/actions/setup-linux-toolchain
+        with:
+          arch: ${{matrix.opts.arch}}
 
       - name: Set up Python 3.x
         if: matrix.opts.platform == 'windows' || matrix.opts.platform == 'macos'
@@ -179,12 +222,26 @@ jobs:
           emcc -v
 
       - name: Set up scons
-        if: matrix.opts.platform == 'windows' || matrix.opts.platform == 'macos' || matrix.opts.platform == 'web'
+        if: matrix.opts.platform != 'linux'
         run: |
           python -c "import sys; print(sys.version)"
           python -m pip install scons==4.4.0
           python --version
           scons --version
+
+      - name: Set up Java 17
+        if: matrix.opts.platform == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: nttld/setup-ndk@v1
+        if: matrix.opts.platform == 'android'
+        id: setup-ndk
+        with:
+          ndk-version: r23c
+          link-to-sdk: true
 
       - name: Set up MSVC problem matcher on Windows
         if: matrix.opts.platform == 'windows'
@@ -231,7 +288,7 @@ jobs:
           ls -R out/
 
       - name: Strip lib
-        if: matrix.opts.platform != 'windows' && matrix.opts.platform != 'web'
+        if: matrix.opts.platform != 'windows' && matrix.opts.platform != 'web' && (matrix.opts.platform != 'android' || startsWith(matrix.opts.arch, 'x86'))
         run: |
           ls -l -R out/addons/limboai/bin/
           echo "---"
@@ -251,8 +308,8 @@ jobs:
           name: ${{ env.NAME }}
           path: out/*
 
-  merge-artifacts:
-    name: Merge artifacts
+  package-extension:
+    name: 📦 Package extension
     runs-on: ubuntu-latest
     needs: gdextension
 
@@ -263,3 +320,48 @@ jobs:
           name: ${{needs.gdextension.outputs.name-prefix}}
           pattern: tmp-gdextension.*
           delete-merged: true
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{needs.gdextension.outputs.name-prefix}}
+          path: out/
+
+      - name: Setup Godot
+        shell: bash
+        run: |
+          echo "Downloading Godot ${GODOT_VERSION}"
+          mkdir bin
+          cd bin
+          wget "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip" -O godot.zip
+          unzip godot.zip
+          rm godot.zip
+          mv Godot_* godot
+          chmod u+x godot
+          ls -l
+          cd ..
+          ./bin/godot --version
+
+      - name: Generate icon .import files
+        shell: bash
+        run: |
+          touch out/project.godot
+          timeout 20s ./bin/godot --headless --editor --path ./out/ || /bin/true
+          rm out/project.godot
+          rm -rf out/.godot/
+
+      - name: Change editor icon import settings
+        shell: bash
+        run: |
+          echo "--- Listing icons dir:"
+          ls out/addons/limboai/icons/
+          echo "--- (end of listing)"
+          sed -i 's|editor/scale_with_editor_scale=false|editor/scale_with_editor_scale=true|' out/addons/limboai/icons/*.import
+          sed -i 's|editor/convert_colors_with_editor_theme=false|editor/convert_colors_with_editor_theme=true|' out/addons/limboai/icons/*.import
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{needs.gdextension.outputs.name-prefix}}
+          path: out/*
+          overwrite: true

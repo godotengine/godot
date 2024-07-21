@@ -35,6 +35,7 @@
 #include "scene/property_utils.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
+#include "scene/resources/3d/skin.h"
 
 /*
 
@@ -1124,23 +1125,124 @@ bool Node3D::_property_get_revert(const StringName &p_name, Variant &r_property)
 	}
 	return true;
 }
-static void _get_all_mesh_instances(Node3D *p_node, List<MeshInstance3D *> *r_instances) {
+static void _get_all_mesh_instances(Node3D *p_node, List<MeshInstance3D *> *r_instances,List<MultiMeshInstance3D *> *r_multi_instances) {
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node3D *c = Object::cast_to<Node3D>(p_node->get_child(i));
 		if (c) {
-			_get_all_mesh_instances(c, r_instances);
+			_get_all_mesh_instances(c, r_instances,r_multi_instances);
 		}
 	}
 	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_node);
 	if (mi) {
+		if(mi->get_skin().is_valid() || mi->get_mesh().is_null()) {
+			return;
+		}
 		r_instances->push_back(mi);
+	}
+	MultiMeshInstance3D *mmi = Object::cast_to<MultiMeshInstance3D>(p_node);
+	if (mmi) {
+		if(mmi->get_multimesh().is_null() || mmi->get_multimesh()->get_mesh().is_null()) {
+			return;
+		}
+		r_multi_instances->push_back(mmi);
 	}
 }
 
 void Node3D::bt_conver_child_to_multi_mesh()
 {
 	List<MeshInstance3D *> instances;
-	_get_all_mesh_instances(this, &instances);
+	List<MultiMeshInstance3D *> multi_instances;
+	_get_all_mesh_instances(this, &instances, &multi_instances);
+	HashMap<Mesh*,List<MeshInstance3D*>> mesh_to_mi;
+	HashMap<Mesh*,List<MultiMeshInstance3D*>> mm_to_mmi;
+	Transform3D xform = get_transform().affine_inverse();
+
+	for(auto& mi : instances) {
+		if(!mesh_to_mi.has(mi->get_mesh().ptr())){
+			mesh_to_mi[mi->get_mesh().ptr()] = List<MeshInstance3D*>();
+		}
+		mesh_to_mi[mi->get_mesh().ptr()].push_back(mi);
+	}
+	for(auto& mmi : multi_instances) {
+		if(!mm_to_mmi.has(mmi->get_multimesh()->get_mesh().ptr())){
+			mm_to_mmi[mmi->get_multimesh()->get_mesh().ptr()] = List<MultiMeshInstance3D*>();
+		}
+		mm_to_mmi[mmi->get_multimesh()->get_mesh().ptr()].push_back(mmi);
+	}
+	List<Ref<MultiMesh>> mesh_to_mm;
+
+	for(const KeyValue<Mesh*,List<MeshInstance3D*>> &E : mesh_to_mi) {
+		Ref<MultiMesh> mm;
+		mm.instantiate();
+		mm->set_name(E.key->get_name());
+		mm->set_transform_format(MultiMesh::TRANSFORM_3D);
+		int32_t mesh_count = E.value.size();
+		if(mm_to_mmi.has(E.key)) {
+			List<MultiMeshInstance3D*> mmi_list = mm_to_mmi[E.key];
+			for(auto& mmi : mmi_list) {
+				mesh_count += mmi->get_multimesh()->get_instance_count();
+			}
+		}
+		mm->set_instance_count(mesh_count);
+		int index = 0;
+		
+
+
+		for(auto& mi : E.value) {
+			Transform3D t = mi->get_global_transform();
+			t = xform * t;
+			mm->set_instance_transform(index,t);
+			bool v;
+			Color c = mm->get("instance_shader_parameters/Color",&v);
+			if(v)
+			{
+				mm->set_instance_color(index,c);
+			}
+			c = mm->get("instance_shader_parameters/CustomData",&v);
+			if(v)
+			{
+				mm->set_instance_custom_data(index,c);
+			}
+			index++;
+		}
+		if(mm_to_mmi.has(E.key)) {
+			List<MultiMeshInstance3D*> mmi_list = mm_to_mmi[E.key];
+			for(auto& mmi : mmi_list) {
+				
+				for(int i=0;i<mmi->get_multimesh()->get_instance_count();i++) {
+					Transform3D t = mmi->get_multimesh()->get_instance_transform(i);
+					Transform3D pt = mmi->get_global_transform() * t;
+					pt = xform * pt;
+					mm->set_instance_transform(index,pt);
+					mm->set_instance_color(index,mmi->get_multimesh()->get_instance_color(i));
+					mm->set_instance_custom_data(index,mmi->get_multimesh()->get_instance_custom_data(i));
+					index++;
+				}
+			}
+		}
+		mesh_to_mm.push_back(mm);
+	}
+	// 下面構建MultiMeshInstance3D
+	for(auto& mm : mesh_to_mm) {
+		MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
+		mmi->set_name(mm->get_name());
+		mmi->set_multimesh(mm);
+		add_child(mmi);
+		mmi->set_owner(get_owner());
+	}
+
+	// 刪除所有旧的MeshInstance3D
+	for(const KeyValue<Mesh*,List<MeshInstance3D*>> &E : mesh_to_mi) {
+		for(auto& mi : E.value) {
+			mi->queue_free();
+		}
+	}
+	// 刪除所有旧的MultiMeshInstance3D
+	for(const KeyValue<Mesh*,List<MultiMeshInstance3D*>> &E : mm_to_mmi) {
+		for(auto& mmi : E.value) {
+			mmi->queue_free();
+		}
+	}
 
 }
 
@@ -1236,6 +1338,7 @@ void Node3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ROTATION_EDIT_MODE_EULER);
 	BIND_ENUM_CONSTANT(ROTATION_EDIT_MODE_QUATERNION);
 	BIND_ENUM_CONSTANT(ROTATION_EDIT_MODE_BASIS);
+	ADD_GROUP("Tools", "");
 
 	ADD_MEMBER_BUTTON(bt_conver_child_to_multi_mesh,"Convert child to MultiMesh",Node3D);
 
