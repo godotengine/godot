@@ -100,7 +100,7 @@ Rect2 AnimatedSprite2D::_get_rect() const {
 
 	Point2 ofs = offset;
 	if (centered) {
-		ofs -= s / 2;
+		ofs += (-s / 2).floor();
 	}
 
 	if (s == Size2(0, 0)) {
@@ -263,7 +263,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 			Size2 s = texture->get_size();
 			Point2 ofs = offset;
 			if (centered) {
-				ofs -= s / 2;
+				ofs += (-s / 2).floor();
 			}
 
 			if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
