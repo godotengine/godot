@@ -60,6 +60,7 @@
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/set.h"
 
 class Object;
 
@@ -129,6 +130,8 @@ public:
 		PACKED_VECTOR3_ARRAY,
 		PACKED_COLOR_ARRAY,
 		PACKED_VECTOR4_ARRAY,
+
+		SET,
 
 		VARIANT_MAX
 	};
@@ -303,6 +306,8 @@ private:
 			true, //PACKED_VECTOR3_ARRAY,
 			true, //PACKED_COLOR_ARRAY,
 			true, //PACKED_VECTOR4_ARRAY,
+
+			true, //SET
 		};
 
 		if (unlikely(needs_deinit[type])) { // Make it fast for types that don't need deinit.
@@ -349,7 +354,7 @@ public:
 		return type == STRING || type == STRING_NAME;
 	}
 	_FORCE_INLINE_ bool is_array() const {
-		return type >= ARRAY;
+		return type >= ARRAY && type <= PACKED_VECTOR4_ARRAY;
 	}
 	bool is_shared() const;
 	bool is_zero() const;
@@ -405,6 +410,8 @@ public:
 
 	operator Dictionary() const;
 	operator Array() const;
+
+	operator Set() const;
 
 	operator PackedByteArray() const;
 	operator PackedInt32Array() const;
@@ -470,6 +477,7 @@ public:
 	Variant(const Callable &p_callable);
 	Variant(const Signal &p_signal);
 	Variant(const Dictionary &p_dictionary);
+	Variant(const Set &p_set);
 
 	Variant(const Array &p_array);
 	Variant(const PackedByteArray &p_byte_array);

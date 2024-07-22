@@ -579,6 +579,8 @@ static GDExtensionVariantFromTypeConstructorFunc gdextension_get_variant_from_ty
 			return VariantTypeConstructor<Dictionary>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_ARRAY:
 			return VariantTypeConstructor<Array>::variant_from_type;
+		case GDEXTENSION_VARIANT_TYPE_SET:
+			return VariantTypeConstructor<Set>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_BYTE_ARRAY:
 			return VariantTypeConstructor<PackedByteArray>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_INT32_ARRAY:
@@ -664,6 +666,8 @@ static GDExtensionTypeFromVariantConstructorFunc gdextension_get_variant_to_type
 			return VariantTypeConstructor<Dictionary>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_ARRAY:
 			return VariantTypeConstructor<Array>::type_from_variant;
+		case GDEXTENSION_VARIANT_TYPE_SET:
+			return VariantTypeConstructor<Set>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_BYTE_ARRAY:
 			return VariantTypeConstructor<PackedByteArray>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_INT32_ARRAY:

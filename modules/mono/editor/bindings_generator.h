@@ -681,6 +681,7 @@ class BindingsGenerator {
 		StringName type_NodePath = StaticCString::create("NodePath");
 		StringName type_Array_generic = StaticCString::create("Array_@generic");
 		StringName type_Dictionary_generic = StaticCString::create("Dictionary_@generic");
+		StringName type_Set_generic = StaticCString::create("Set_@generic");
 		StringName type_at_GlobalScope = StaticCString::create("@GlobalScope");
 		StringName enum_Error = StaticCString::create("Error");
 
@@ -705,7 +706,7 @@ class BindingsGenerator {
 		StringName type_Vector4i = StaticCString::create("Vector4i");
 
 		// Object not included as it must be checked for all derived classes
-		static constexpr int nullable_types_count = 19;
+		static constexpr int nullable_types_count = 20;
 		StringName nullable_types[nullable_types_count] = {
 			type_String,
 			type_StringName,
@@ -715,6 +716,7 @@ class BindingsGenerator {
 			type_Dictionary_generic,
 			StaticCString::create(_STR(Array)),
 			StaticCString::create(_STR(Dictionary)),
+			StaticCString::create(_STR(Set)),
 			StaticCString::create(_STR(Callable)),
 			StaticCString::create(_STR(Signal)),
 

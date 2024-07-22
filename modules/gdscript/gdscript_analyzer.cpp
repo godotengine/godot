@@ -1516,6 +1516,7 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node, bool p_is_root
 		case GDScriptParser::Node::LITERAL:
 		case GDScriptParser::Node::PRELOAD:
 		case GDScriptParser::Node::SELF:
+		case GDScriptParser::Node::SET:
 		case GDScriptParser::Node::SUBSCRIPT:
 		case GDScriptParser::Node::TERNARY_OPERATOR:
 		case GDScriptParser::Node::TYPE_TEST:
@@ -2174,7 +2175,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 			} else {
 				push_error(vformat(R"(Unable to iterate on object of type "%s".)", list_type.to_string()), p_for->list);
 			}
-		} else if (list_type.builtin_type == Variant::ARRAY || list_type.builtin_type == Variant::DICTIONARY || !list_type.is_hard_type()) {
+		} else if (list_type.builtin_type == Variant::ARRAY || list_type.builtin_type == Variant::DICTIONARY || !list_type.is_hard_type() || list_type.builtin_type == Variant::SET) {
 			variable_type.kind = GDScriptParser::DataType::VARIANT;
 		} else {
 			push_error(vformat(R"(Unable to iterate on value of type "%s".)", list_type.to_string()), p_for->list);
@@ -2489,6 +2490,9 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 			break;
 		case GDScriptParser::Node::SELF:
 			reduce_self(static_cast<GDScriptParser::SelfNode *>(p_expression));
+			break;
+		case GDScriptParser::Node::SET:
+			reduce_set(static_cast<GDScriptParser::SetNode *>(p_expression));
 			break;
 		case GDScriptParser::Node::SUBSCRIPT:
 			reduce_subscript(static_cast<GDScriptParser::SubscriptNode *>(p_expression));
@@ -3063,6 +3067,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				case Variant::PACKED_VECTOR3_ARRAY:
 				case Variant::PACKED_COLOR_ARRAY:
 				case Variant::PACKED_VECTOR4_ARRAY:
+				case Variant::SET:
 					safe_to_fold = false;
 					break;
 				default:
@@ -3590,6 +3595,23 @@ void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dicti
 	dict_type.is_constant = true;
 
 	p_dictionary->set_datatype(dict_type);
+}
+
+void GDScriptAnalyzer::reduce_set(GDScriptParser::SetNode *p_set) {
+	HashSet<GDScriptParser::ExpressionNode *, VariantHasher, StringLikeVariantComparator> elements;
+
+	for (GDScriptParser::ExpressionNode *expr : elements) {
+		reduce_expression(expr);
+	}
+
+	// It's set in any case.
+	GDScriptParser::DataType set_type;
+	set_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+	set_type.kind = GDScriptParser::DataType::BUILTIN;
+	set_type.builtin_type = Variant::SET;
+	set_type.is_constant = true;
+
+	p_set->set_datatype(set_type);
 }
 
 void GDScriptAnalyzer::reduce_get_node(GDScriptParser::GetNodeNode *p_get_node) {
@@ -4560,6 +4582,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 							case Variant::NODE_PATH:
 							case Variant::SIGNAL:
 							case Variant::STRING_NAME:
+							case Variant::SET:
 								break;
 							// Here for completeness.
 							case Variant::DICTIONARY:
@@ -4596,6 +4619,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					case Variant::NODE_PATH:
 					case Variant::SIGNAL:
 					case Variant::STRING_NAME:
+					case Variant::SET:
 						result_type.kind = GDScriptParser::DataType::VARIANT;
 						push_error(vformat(R"(Cannot use subscript operator on a base of type "%s".)", base_type.to_string()), p_subscript->base);
 						break;

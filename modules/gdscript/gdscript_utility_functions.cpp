@@ -479,6 +479,10 @@ struct GDScriptUtilityFunctionsDefinitions {
 				Dictionary d = *p_args[0];
 				*r_ret = d.size();
 			} break;
+			case Variant::SET: {
+				Set d = *p_args[0];
+				*r_ret = d.size();
+			} break;
 			case Variant::ARRAY: {
 				Array d = *p_args[0];
 				*r_ret = d.size();

@@ -564,6 +564,24 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 3 + argc * 2;
 			} break;
+			case OPCODE_CONSTRUCT_SET: {
+				int instr_var_args = _code_ptr[++ip];
+				int argc = _code_ptr[ip + 1 + instr_var_args];
+				text += " make_set ";
+				text += DADDR(1 + argc);
+				text += " = {";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0) {
+						text += ", ";
+					}
+					text += DADDR(1 + i);
+				}
+
+				text += "}";
+
+				incr += 3 + argc;
+			} break;
 			case OPCODE_CALL:
 			case OPCODE_CALL_RETURN:
 			case OPCODE_CALL_ASYNC: {
@@ -1047,6 +1065,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 	m_macro(PACKED_VECTOR3_ARRAY);         \
 	m_macro(PACKED_COLOR_ARRAY);           \
 	m_macro(PACKED_VECTOR4_ARRAY);         \
+	m_macro(SET);                          \
 	m_macro(OBJECT)
 
 			case OPCODE_ITERATE_BEGIN: {
@@ -1152,6 +1171,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				DISASSEMBLE_TYPE_ADJUST(PACKED_VECTOR3_ARRAY);
 				DISASSEMBLE_TYPE_ADJUST(PACKED_COLOR_ARRAY);
 				DISASSEMBLE_TYPE_ADJUST(PACKED_VECTOR4_ARRAY);
+				DISASSEMBLE_TYPE_ADJUST(SET);
 
 			case OPCODE_ASSERT: {
 				text += "assert (";

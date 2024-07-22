@@ -100,6 +100,7 @@ uint32_t GDScriptByteCodeGenerator::add_temporary(const GDScriptDataType &p_type
 			case Variant::OBJECT:
 			case Variant::DICTIONARY:
 			case Variant::ARRAY:
+			case Variant::SET:
 			case Variant::PACKED_BYTE_ARRAY:
 			case Variant::PACKED_INT32_ARRAY:
 			case Variant::PACKED_INT64_ARRAY:
@@ -513,6 +514,9 @@ void GDScriptByteCodeGenerator::write_type_adjust(const Address &p_target, Varia
 			break;
 		case Variant::DICTIONARY:
 			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_DICTIONARY);
+			break;
+		case Variant::SET:
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_SET);
 			break;
 		case Variant::ARRAY:
 			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_ARRAY);
@@ -1434,6 +1438,17 @@ void GDScriptByteCodeGenerator::write_construct_dictionary(const Address &p_targ
 	ct.cleanup();
 }
 
+void GDScriptByteCodeGenerator::write_construct_set(const Address &p_target, const Vector<Address> &p_arguments) {
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CONSTRUCT_SET, 1 + p_arguments.size());
+	for (int i = 0; i < p_arguments.size(); i++) {
+		append(p_arguments[i]);
+	}
+	CallTarget ct = get_call_target(p_target);
+	append(ct.target);
+	append(p_arguments.size());
+	ct.cleanup();
+}
+
 void GDScriptByteCodeGenerator::write_await(const Address &p_target, const Address &p_operand) {
 	append_opcode(GDScriptFunction::OPCODE_AWAIT);
 	append(p_operand);
@@ -1580,6 +1595,10 @@ void GDScriptByteCodeGenerator::write_for(const Address &p_variable, bool p_use_
 				case Variant::PACKED_VECTOR4_ARRAY:
 					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_VECTOR4_ARRAY;
 					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_VECTOR4_ARRAY;
+					break;
+				case Variant::SET:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_SET;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_SET;
 					break;
 				default:
 					break;

@@ -1178,7 +1178,6 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = carray;
 
 		} break;
-
 		case Variant::PACKED_VECTOR4_ARRAY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
@@ -1243,6 +1242,47 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				}
 			}
 			r_variant = varray;
+
+		} break;
+
+		case Variant::SET: {
+			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
+			int32_t count = decode_uint32(buf);
+			buf += 4;
+			len -= 4;
+
+			Set set;
+
+			ERR_FAIL_MUL_OF(count, sizeof(double) * 4, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(count < 0 || count * sizeof(double) * 4 > (size_t)len, ERR_INVALID_DATA);
+
+			if (r_len) {
+				(*r_len) += 4; // Size of count number.
+			}
+
+			if (count) {
+				for (int i = 0; i < count; i++) {
+					int used = 0;
+					Variant v;
+					Error err = decode_variant(v, buf, len, &used, p_allow_objects, p_depth + 1);
+					ERR_FAIL_COND_V_MSG(err != OK, err, "Error when trying to decode Variant.");
+					buf += used;
+					len -= used;
+					set.add(v);
+					if (r_len) {
+						(*r_len) += used;
+					}
+				}
+
+				int adv = sizeof(double) * 4 * count;
+
+				if (r_len) {
+					(*r_len) += adv;
+				}
+				len -= adv;
+				buf += adv;
+			}
+			r_variant = set;
 
 		} break;
 		default: {
@@ -2039,6 +2079,31 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 			r_len += sizeof(real_t) * 4 * len;
 
+		} break;
+
+		case Variant::SET: {
+			Set data = p_variant;
+			int len = data.size();
+
+			if (buf) {
+				encode_uint32(len, buf);
+				buf += 4;
+			}
+
+			r_len += 4;
+
+			if (buf) {
+				for (const Variant &var : data) {
+					int buf_len;
+					Error err = encode_variant(var, buf, buf_len, p_full_objects, p_depth + 1);
+					ERR_FAIL_COND_V(err, err);
+					ERR_FAIL_COND_V(buf_len % 4, ERR_BUG);
+					if (buf) {
+						buf += buf_len;
+					}
+					r_len += buf_len;
+				}
+			}
 		} break;
 		default: {
 			ERR_FAIL_V(ERR_BUG);

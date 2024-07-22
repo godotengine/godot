@@ -2975,6 +2975,13 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 					case GDScriptTokenizer::Token::EQUAL:
 						dictionary->style = DictionaryNode::LUA_TABLE;
 						break;
+					case GDScriptTokenizer::Token::COMMA:
+						dictionary->elements.push_back({ nullptr, key });
+						return parse_set(dictionary, p_can_assign);
+						break;
+					case GDScriptTokenizer::Token::BRACE_CLOSE:
+						dictionary->elements.push_back({ nullptr, key });
+						return parse_set(dictionary, p_can_assign);
 					default:
 						push_error(R"(Expected ":" or "=" after dictionary key.)");
 						break;
@@ -3039,6 +3046,41 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 	complete_extents(dictionary);
 
 	return dictionary;
+}
+
+GDScriptParser::ExpressionNode *GDScriptParser::parse_set(DictionaryNode *p_previous_operand, bool p_can_assign) {
+	DictionaryNode *dictionary = p_previous_operand;
+	ExpressionNode *first_elem = dictionary->elements[0].value;
+	dictionary->elements.clear();
+	SetNode *set = replace_node<SetNode>();
+	set->elements.push_back(first_elem);
+
+	if (current.type == GDScriptTokenizer::Token::COMMA) {
+		consume(GDScriptTokenizer::Token::COMMA, "Expected comma");
+	}
+
+	if (!check(GDScriptTokenizer::Token::BRACE_CLOSE)) {
+		do {
+			if (check(GDScriptTokenizer::Token::BRACE_CLOSE)) {
+				// Allow for trailing comma.
+				break;
+			}
+
+			// Element.
+			ExpressionNode *element = parse_expression(false, false);
+
+			if (element == nullptr) {
+				push_error(R"(Expected expression as element.)");
+			}
+
+			set->elements.push_back(element);
+		} while (match(GDScriptTokenizer::Token::COMMA) && !is_at_end());
+	}
+	pop_multiline();
+	consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected closing "}" after set elements.)");
+	complete_extents(set);
+
+	return set;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_grouping(ExpressionNode *p_previous_operand, bool p_can_assign) {

@@ -576,6 +576,32 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			return result;
 		} break;
+		case GDScriptParser::Node::SET: {
+			const GDScriptParser::SetNode *sn = static_cast<const GDScriptParser::SetNode *>(p_expression);
+			Vector<GDScriptCodeGenerator::Address> elements;
+
+			// Create the result temporary first since it's the last to be killed.
+			GDScriptDataType set_type;
+			set_type.has_type = true;
+			set_type.kind = GDScriptDataType::BUILTIN;
+			set_type.builtin_type = Variant::SET;
+			GDScriptCodeGenerator::Address result = codegen.add_temporary(set_type);
+
+			for (int i = 0; i < sn->elements.size(); i++) {
+				// Key.
+				elements.push_back(_parse_expression(codegen, r_error, sn->elements[i]));
+			}
+
+			gen->write_construct_set(result, elements);
+
+			for (int i = 0; i < elements.size(); i++) {
+				if (elements[i].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+					gen->pop_temporary();
+				}
+			}
+
+			return result;
+		} break;
 		case GDScriptParser::Node::CAST: {
 			const GDScriptParser::CastNode *cn = static_cast<const GDScriptParser::CastNode *>(p_expression);
 			GDScriptDataType cast_type = _gdtype_from_datatype(cn->get_datatype(), codegen.script, false);
