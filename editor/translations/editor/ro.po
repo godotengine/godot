@@ -458,9 +458,6 @@ msgstr "Adăugați Pistă Bezier"
 msgid "Track path is invalid, so can't add a key."
 msgstr "Calea pistei este invalidă, așa că nu poate fi adăugată o cheie."
 
-msgid "Add Track Key"
-msgstr "Anim Adăugați Pistă"
-
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Calea pistei este invalidă, așa că nu poate fi adăugată o metodă."
 
@@ -1843,9 +1840,6 @@ msgstr "Script nou ..."
 msgid "Write your logic in the _run() method."
 msgstr "Scrie logica programului în metoda _run()."
 
-msgid "There is an edited scene already."
-msgstr "Acolo este o scenă deja editată."
-
 msgid "Editor Settings"
 msgstr "Setări ale Editorului"
 
@@ -2225,9 +2219,6 @@ msgstr "Presetare"
 
 msgid "Failed to load resource."
 msgstr "Încărcarea resursei a eșuat."
-
-msgid "Localized"
-msgstr "Localizat"
 
 msgid "Make Sub-Resources Unique"
 msgstr "Faceți Sub-Resursa Unică"

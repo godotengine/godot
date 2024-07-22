@@ -384,9 +384,6 @@ msgstr "Aldoni Bezier-an trakon"
 msgid "Track path is invalid, so can't add a key."
 msgstr "Vojo de trako estas nevalida, do ne eblas aldoni ŝlosilon."
 
-msgid "Add Track Key"
-msgstr "Aldoni trakan ŝlosilon"
-
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Vojo de trako estas nevalida, do ne eblas aldoni metodan ŝlosilon."
 
@@ -1596,13 +1593,6 @@ msgid "Quick Open Script..."
 msgstr "Rapide malfermi skripton..."
 
 msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"La aktula sceno havas ne radika nodo, sed %d modifita(j) ekstera(j) "
-"risurco(j) konserviĝis iel."
-
-msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -1995,9 +1985,6 @@ msgstr ""
 
 msgid "Write your logic in the _run() method."
 msgstr "Skribu vian logikon en la _run() metodo."
-
-msgid "There is an edited scene already."
-msgstr "Estas redaktanta sceno jam."
 
 msgid "General"
 msgstr "Ĝenerala"

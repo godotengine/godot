@@ -893,9 +893,6 @@ msgstr "Conexão"
 msgid "Engine Version Update Mode"
 msgstr "Modo de Atualização da Versão do Motor"
 
-msgid "Enable Pseudolocalization"
-msgstr "Ativar Pseudo Localização"
-
 msgid "Use Embedded Menu"
 msgstr "Usar Menu Integrado"
 
@@ -1606,6 +1603,15 @@ msgstr "Intervalo de Atualização de Inspeção Remota"
 
 msgid "Profile Native Calls"
 msgstr "Perfil de Chamadas Nativas"
+
+msgid "Input"
+msgstr "Entrada"
+
+msgid "Buffering"
+msgstr "Buffering"
+
+msgid "Agile Event Flushing"
+msgstr "Liberação Ágil de Eventos"
 
 msgid "Project Manager"
 msgstr "Gestor de Projetos"
@@ -2570,18 +2576,6 @@ msgstr "Ambiente"
 msgid "Default Clear Color"
 msgstr "Cor Clara Padrão"
 
-msgid "Show Image"
-msgstr "Mostrar Imagem"
-
-msgid "Image"
-msgstr "Imagem"
-
-msgid "Fullsize"
-msgstr "Tamanho Máximo"
-
-msgid "Use Filter"
-msgstr "Usar Filtro"
-
 msgid "Icon"
 msgstr "Ícone"
 
@@ -2590,12 +2584,6 @@ msgstr "Ícone Nativo macOS"
 
 msgid "Windows Native Icon"
 msgstr "Ícone Nativo Windows"
-
-msgid "Buffering"
-msgstr "Buffering"
-
-msgid "Agile Event Flushing"
-msgstr "Liberação Ágil de Eventos"
 
 msgid "Pointing"
 msgstr "Pontuação"
@@ -2620,6 +2608,18 @@ msgstr "Imagem de Ponto de Acesso Personalizada"
 
 msgid "Tooltip Position Offset"
 msgstr "Deslocamento de Posição da Dica"
+
+msgid "Show Image"
+msgstr "Mostrar Imagem"
+
+msgid "Image"
+msgstr "Imagem"
+
+msgid "Fullsize"
+msgstr "Tamanho Máximo"
+
+msgid "Use Filter"
+msgstr "Usar Filtro"
 
 msgid "Minimum Display Time"
 msgstr "Tempo mínimo de exibição"
@@ -4252,9 +4252,6 @@ msgstr "Ao sair"
 
 msgid "Disable Mode"
 msgstr "Desativar Modo"
-
-msgid "Input"
-msgstr "Entrada"
 
 msgid "Pickable"
 msgstr "Pegável"
@@ -6664,6 +6661,3 @@ msgstr "A detecção de âncora está habilitada"
 
 msgid "Tracking Confidence"
 msgstr "Rastreando a Confiança"
-
-msgid "Property"
-msgstr "Propriedade"

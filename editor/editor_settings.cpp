@@ -1063,13 +1063,13 @@ void EditorSettings::create() {
 		}
 
 		singleton = ResourceLoader::load(config_file_path, "EditorSettings");
-		singleton->set_path(get_newest_settings_path()); // Settings can be loaded from older version file, so make sure it's newest.
-
 		if (singleton.is_null()) {
 			ERR_PRINT("Could not load editor settings from path: " + config_file_path);
+			config_file_path = get_newest_settings_path();
 			goto fail;
 		}
 
+		singleton->set_path(get_newest_settings_path()); // Settings can be loaded from older version file, so make sure it's newest.
 		singleton->save_changed_setting = true;
 
 		print_verbose("EditorSettings: Load OK!");

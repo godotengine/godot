@@ -810,14 +810,14 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "Ta bort Anim spår"
 
-msgid "Hold Shift when clicking the key icon to skip this dialog."
-msgstr "Håll shift vid klick på nyckel ikonen för att hoppa över denna dialog."
-
 msgid "Create new track for %s and insert key?"
 msgstr "Skapa ett nytt spår för %s och infoga nyckel?"
 
 msgid "Create %d new tracks and insert keys?"
 msgstr "Skapa %d nya spår och infoga nycklar?"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr "Håll shift vid klick på nyckel ikonen för att hoppa över denna dialog."
 
 msgid "Create"
 msgstr "Skapa"
@@ -875,18 +875,6 @@ msgstr "Kurva är felaktig så det går inte att skapa en nyckel."
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "Spåret är inte av typen Node3D, kan inte infoga nyckel"
-
-msgid "Add Position Key"
-msgstr "Lägg till positionsnyckel"
-
-msgid "Add Rotation Key"
-msgstr "Lägg till Rotation Key"
-
-msgid "Add Scale Key"
-msgstr "Lägg till skalningsnyckel"
-
-msgid "Add Track Key"
-msgstr "Lägg till spårnyckel"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Spårväg ogiltig, kan således inte lägga till en metod nyckel."
@@ -3076,13 +3064,6 @@ msgid "Quick Open Script..."
 msgstr "Snabböppna Skript..."
 
 msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"Den aktuella scenen har ingen rotnod, men %d modifierade externa resurser "
-"sparades ändå."
-
-msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -3586,9 +3567,6 @@ msgstr "Kör Projekt"
 msgid "Write your logic in the _run() method."
 msgstr "Skriv din logik i _run() metoden."
 
-msgid "There is an edited scene already."
-msgstr "Det finns en redigerad scen redan."
-
 msgid "Edit Shortcut: %s"
 msgstr "Editera genväg: %s"
 
@@ -3669,6 +3647,18 @@ msgstr "Alla Enheter"
 
 msgid "Device"
 msgstr "Enhet"
+
+msgid "Can't get filesystem access."
+msgstr "Kan inte få filsystemsbehörighet."
+
+msgid "Already signed!"
+msgstr "Redan signerad!"
+
+msgid "Failed to create _CodeSignature subfolder."
+msgstr "Misslyckades med att skapa underkatalogen _CodeSignature ."
+
+msgid "Unknown object type."
+msgstr "Okänd objekttyp."
 
 msgid "Project export for platform:"
 msgstr "Projektexport för plattformen:"
@@ -4575,9 +4565,6 @@ msgstr "Misslyckades att ladda resurs."
 
 msgid "Property Name Style"
 msgstr "Egenskapsnamnstil"
-
-msgid "Localized"
-msgstr "Lokaliserad"
 
 msgid "Copy Properties"
 msgstr "Kopiera egenskaper"
@@ -6962,11 +6949,11 @@ msgstr ""
 msgid "Delete Property?"
 msgstr "Radera egenskap?"
 
-msgid "Error saving file %s: %s"
-msgstr "Fel vid sparande av fil %s: %s"
-
 msgid "Error loading %s: %s."
 msgstr "Fel vid laddning %s: %s."
+
+msgid "Error saving file %s: %s"
+msgstr "Fel vid sparande av fil %s: %s"
 
 msgid "Pose"
 msgstr "Ställning"
@@ -7101,18 +7088,6 @@ msgstr "Exporterar projekt..."
 
 msgid "Starting project..."
 msgstr "Startar projekt..."
-
-msgid "Can't get filesystem access."
-msgstr "Kan inte få filsystemsbehörighet."
-
-msgid "Already signed!"
-msgstr "Redan signerad!"
-
-msgid "Failed to create _CodeSignature subfolder."
-msgstr "Misslyckades med att skapa underkatalogen _CodeSignature ."
-
-msgid "Unknown object type."
-msgstr "Okänd objekttyp."
 
 msgid "App Store distribution with ad-hoc code signing is not supported."
 msgstr "App Store distribution med ad-hoc signerad kod är inte supportat."

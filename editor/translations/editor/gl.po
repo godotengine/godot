@@ -11,19 +11,20 @@
 # David Fernández Pérez <davidfernandezperez.thezombrex@gmail.com>, 2023.
 # Carlos Cortes Garcia <carlos.cortes.games@gmail.com>, 2023.
 # C H O P O <ograncthulhu@gmail.com>, 2024.
+# ninjum <ninhum@gmx.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2024-06-10 12:09+0000\n"
-"Last-Translator: C H O P O <ograncthulhu@gmail.com>\n"
+"PO-Revision-Date: 2024-06-20 12:09+0000\n"
+"Last-Translator: ninjum <ninhum@gmx.com>\n"
 "Language-Team: Galician <https://hosted.weblate.org/projects/godot-engine/"
 "godot/gl/>\n"
 "Language: gl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.6-dev\n"
+"X-Generator: Weblate 5.6-rc\n"
 
 msgid "Main Thread"
 msgstr "Fío principal"
@@ -575,6 +576,10 @@ msgstr "Cambiar Lonxitude da Animación"
 msgid "Change Animation Loop"
 msgstr "Cambiar Ciclo da Animación"
 
+msgid "Can't change loop mode on animation embedded in another scene."
+msgstr ""
+"Non se pode cambiar o modo de bucle na animación incorporada noutra escena."
+
 msgid "Animation length (frames)"
 msgstr "Lonxitude da Animacion (en fotogramas)"
 
@@ -640,6 +645,9 @@ msgstr "(Inválido, tipo esperado: %s)"
 
 msgid "Easing:"
 msgstr "Relaxación:"
+
+msgid "In-Handle:"
+msgstr "No manexo:"
 
 msgid "Stream:"
 msgstr "Fluxo:"
@@ -770,18 +778,6 @@ msgstr "A ruta á pista é inválida, polo que non se poden engadir chaves."
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "A pista non e do tipo Node3D, non se pode insertar a clave"
-
-msgid "Add Position Key"
-msgstr "Añadir Clave de Posición"
-
-msgid "Add Rotation Key"
-msgstr "Añadir Clave de Rotación"
-
-msgid "Add Scale Key"
-msgstr "Añadir Clave de Escala"
-
-msgid "Add Track Key"
-msgstr "Engadir Chave de Pista"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
@@ -2608,9 +2604,6 @@ msgstr ""
 msgid "Write your logic in the _run() method."
 msgstr "Escribe a túa lóxica no método '_run()'."
 
-msgid "There is an edited scene already."
-msgstr "Xa hai unha escena editada."
-
 msgid "General"
 msgstr "Xeral"
 
@@ -3031,9 +3024,6 @@ msgstr "Dispositivo:"
 
 msgid "Failed to load resource."
 msgstr "Fallou a carga do Recurso."
-
-msgid "Raw"
-msgstr "Sen Procesar (Raw)"
 
 msgid "Copy Resource"
 msgstr "Copiar Recurso"

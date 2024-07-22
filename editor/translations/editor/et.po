@@ -434,9 +434,6 @@ msgstr "Lisa Bezieri rada"
 msgid "Track path is invalid, so can't add a key."
 msgstr "Raja tee on kehtetu, mistõttu ei sa lisada võtit."
 
-msgid "Add Track Key"
-msgstr "Lisa raja võti"
-
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Raja tee on kehtetu, mistõttu ei saa lisada meetodi võtit."
 
@@ -2033,13 +2030,6 @@ msgid "Quick Open Script..."
 msgstr "Skripti Kiire Avamine..."
 
 msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"Praegusel Stseenil pole juursõlme, kuid %d muudetud välist ressurssi "
-"salvestati sellegipoolest."
-
-msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -2605,15 +2595,6 @@ msgstr "Projekti Käivitamine"
 msgid "Write your logic in the _run() method."
 msgstr "Kirjutage oma loogika meetodis _run()."
 
-msgid "There is an edited scene already."
-msgstr "Redigeeritud stseen on juba olemas."
-
-msgid "Undo: %s"
-msgstr "Võta tagasi %s"
-
-msgid "Redo: %s"
-msgstr "Tee uuesti: %s"
-
 msgid "Common"
 msgstr "Ühine"
 
@@ -2643,6 +2624,9 @@ msgstr "Kõik Seadmed"
 
 msgid "Device"
 msgstr "Seade"
+
+msgid "Failed to create \"%s\" subfolder."
+msgstr "Alamkausta \"%s\" loomine ebaõnnestus."
 
 msgid "Project export for platform:"
 msgstr "Projekti eksportimine platvormi jaoks:"
@@ -4015,15 +3999,6 @@ msgstr "(Praegune)"
 
 msgid "Property Name Style"
 msgstr "Atribuudi Nime Stiil"
-
-msgid "Raw"
-msgstr "Toores"
-
-msgid "Capitalized"
-msgstr "Suurtähtedega"
-
-msgid "Localized"
-msgstr "Lokaliseeritud"
 
 msgid "Localization not available for current language."
 msgstr "Lokaliseerimine pole praeguse keele jaoks saadaval."
@@ -8616,17 +8591,17 @@ msgid "Not Equal (!=)"
 msgstr "Mitte Võrdne (!=)"
 
 msgid ""
-"Returns an associated 3D vector if the provided boolean value is true or "
-"false."
-msgstr ""
-"Tagastab seotud 3D-vektori, kui esitatud kahendmuutuja väärtus on tõene või "
-"väär."
-
-msgid ""
 "Returns an associated 2D vector if the provided boolean value is true or "
 "false."
 msgstr ""
 "Tagastab seotud 2D vektori, kui esitatud kahendmuutuja väärtus on tõene või "
+"väär."
+
+msgid ""
+"Returns an associated 3D vector if the provided boolean value is true or "
+"false."
+msgstr ""
+"Tagastab seotud 3D-vektori, kui esitatud kahendmuutuja väärtus on tõene või "
 "väär."
 
 msgid ""
@@ -8978,11 +8953,11 @@ msgstr "Konfiguratsioon"
 msgid "Network Profiler"
 msgstr "Võrgu profileerija"
 
-msgid "Error saving file %s: %s"
-msgstr "Tõrge faili %s: %s salvestamisel"
-
 msgid "Error loading %s: %s."
 msgstr "Viga laadimisel %s: %s."
+
+msgid "Error saving file %s: %s"
+msgstr "Tõrge faili %s: %s salvestamisel"
 
 msgid "Pose"
 msgstr "Poos"
@@ -9011,9 +8986,6 @@ msgstr "Käivitatava faili \"%s\" avamine nurjus."
 
 msgid "Could not create temp directory:"
 msgstr "Ei saanud luua ajutist kausta:"
-
-msgid "Failed to create \"%s\" subfolder."
-msgstr "Alamkausta \"%s\" loomine ebaõnnestus."
 
 msgid "Creating app bundle"
 msgstr "Rakenduse komplekti loomine"

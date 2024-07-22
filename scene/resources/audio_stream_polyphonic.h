@@ -60,11 +60,8 @@ public:
 class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
 	GDCLASS(AudioStreamPlaybackPolyphonic, AudioStreamPlayback)
 
-	enum {
-		INTERNAL_BUFFER_LEN = 128,
-		ID_MASK = 0xFFFFFFFF,
-		INDEX_SHIFT = 32
-	};
+	constexpr static uint32_t INTERNAL_BUFFER_LEN = 128;
+
 	struct Stream {
 		SafeFlag active;
 		SafeFlag pending_play;

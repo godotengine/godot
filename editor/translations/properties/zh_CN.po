@@ -97,7 +97,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2024-05-10 20:53+0000\n"
+"PO-Revision-Date: 2024-06-15 12:09+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hans/>\n"
@@ -106,7 +106,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.5.4\n"
+"X-Generator: Weblate 5.6-dev\n"
 
 msgid "Application"
 msgstr "应用"
@@ -618,6 +618,9 @@ msgstr "动作"
 msgid "Strength"
 msgstr "强度"
 
+msgid "Event Index"
+msgstr "事件索引"
+
 msgid "Delta"
 msgstr "增量"
 
@@ -810,6 +813,9 @@ msgstr "值"
 msgid "Arg Count"
 msgstr "参数个数"
 
+msgid "Args"
+msgstr "参数"
+
 msgid "Type"
 msgstr "类型"
 
@@ -921,6 +927,9 @@ msgstr "编辑器语言"
 msgid "Localize Settings"
 msgstr "设置本地化"
 
+msgid "Dock Tab Style"
+msgstr "停靠面板选项卡样式"
+
 msgid "UI Layout Direction"
 msgstr "UI 布局方向"
 
@@ -941,9 +950,6 @@ msgstr "连接"
 
 msgid "Engine Version Update Mode"
 msgstr "引擎版本更新模式"
-
-msgid "Enable Pseudolocalization"
-msgstr "启用伪本地化"
 
 msgid "Use Embedded Menu"
 msgstr "使用嵌入式菜单"
@@ -977,6 +983,9 @@ msgstr "字体微调"
 
 msgid "Font Subpixel Positioning"
 msgstr "字体次像素定位"
+
+msgid "Font Disable Embedded Bitmaps"
+msgstr "字体禁用嵌入式点阵"
 
 msgid "Main Font"
 msgstr "主字体"
@@ -1398,6 +1407,9 @@ msgstr "文件"
 msgid "Trim Trailing Whitespace on Save"
 msgstr "保存时移除行尾空格"
 
+msgid "Trim Final Newlines on Save"
+msgstr "保存时移除末尾空行"
+
 msgid "Autosave Interval Secs"
 msgstr "自动保存间隔秒数"
 
@@ -1737,6 +1749,15 @@ msgstr "自动保存"
 msgid "Save Before Running"
 msgstr "运行前保存"
 
+msgid "Bottom Panel"
+msgstr "底部面板"
+
+msgid "Action on Play"
+msgstr "运行开始时操作"
+
+msgid "Action on Stop"
+msgstr "运行结束时操作"
+
 msgid "Output"
 msgstr "输出"
 
@@ -1793,6 +1814,15 @@ msgstr "远程检查器刷新间隔"
 
 msgid "Profile Native Calls"
 msgstr "分析原生调用"
+
+msgid "Input"
+msgstr "输入"
+
+msgid "Buffering"
+msgstr "缓冲"
+
+msgid "Agile Event Flushing"
+msgstr "敏捷事件处理"
 
 msgid "Project Manager"
 msgstr "项目管理器"
@@ -2069,6 +2099,9 @@ msgstr "导入后重置所有骨骼姿势"
 
 msgid "Overwrite Axis"
 msgstr "覆盖轴"
+
+msgid "Keep Global Rest on Leftovers"
+msgstr "残留项保持全局放松"
 
 msgid "Fix Silhouette"
 msgstr "修复剪影"
@@ -2992,18 +3025,6 @@ msgstr "默认"
 msgid "Default Clear Color"
 msgstr "默认清屏颜色"
 
-msgid "Show Image"
-msgstr "显示图像"
-
-msgid "Image"
-msgstr "图像"
-
-msgid "Fullsize"
-msgstr "完整大小"
-
-msgid "Use Filter"
-msgstr "使用过滤"
-
 msgid "Icon"
 msgstr "图标"
 
@@ -3012,12 +3033,6 @@ msgstr "macOS 原生图标"
 
 msgid "Windows Native Icon"
 msgstr "Windows 原生图标"
-
-msgid "Buffering"
-msgstr "缓冲"
-
-msgid "Agile Event Flushing"
-msgstr "敏捷事件处理"
 
 msgid "Pointing"
 msgstr "指点"
@@ -3043,6 +3058,18 @@ msgstr "自定义图像热区"
 msgid "Tooltip Position Offset"
 msgstr "工具提示位置偏移"
 
+msgid "Show Image"
+msgstr "显示图像"
+
+msgid "Image"
+msgstr "图像"
+
+msgid "Fullsize"
+msgstr "完整大小"
+
+msgid "Use Filter"
+msgstr "使用过滤"
+
 msgid "Minimum Display Time"
 msgstr "最短显示时间"
 
@@ -3064,8 +3091,74 @@ msgstr "尝试重新加载程序集"
 msgid "Time"
 msgstr "时间"
 
+msgid "Physics Process"
+msgstr "物理处理"
+
+msgid "Navigation Process"
+msgstr "导航处理"
+
+msgid "Static"
+msgstr "静态"
+
+msgid "Static Max"
+msgstr "静态最大值"
+
+msgid "Msg Buf Max"
+msgstr "消息缓冲最大值"
+
+msgid "Object"
+msgstr "对象"
+
+msgid "Objects"
+msgstr "对象"
+
+msgid "Resources"
+msgstr "资源"
+
+msgid "Orphan Nodes"
+msgstr "孤立节点"
+
+msgid "Raster"
+msgstr "栅格器"
+
+msgid "Total Objects Drawn"
+msgstr "绘制对象总数"
+
+msgid "Total Primitives Drawn"
+msgstr "绘制图元总数"
+
+msgid "Total Draw Calls"
+msgstr "绘制调用总数"
+
 msgid "Video"
 msgstr "视频"
+
+msgid "Video Mem"
+msgstr "显存"
+
+msgid "Texture Mem"
+msgstr "纹理内存"
+
+msgid "Buffer Mem"
+msgstr "缓冲内存"
+
+msgid "Physics 2D"
+msgstr "2D 物理"
+
+msgid "Active Objects"
+msgstr "活动对象"
+
+msgid "Collision Pairs"
+msgstr "碰撞对"
+
+msgid "Islands"
+msgstr "孤岛"
+
+msgid "Physics 3D"
+msgstr "3D 物理"
+
+msgid "Active Maps"
+msgstr "活动地图"
 
 msgid "Regions"
 msgstr "地区"
@@ -3073,11 +3166,23 @@ msgstr "地区"
 msgid "Agents"
 msgstr "代理"
 
+msgid "Links"
+msgstr "链接"
+
 msgid "Polygons"
 msgstr "多边形"
 
 msgid "Edges"
 msgstr "边界"
+
+msgid "Edges Merged"
+msgstr "合并边界"
+
+msgid "Edges Connected"
+msgstr "连接边界"
+
+msgid "Edges Free"
+msgstr "自由边界"
 
 msgid "Operation"
 msgstr "操作"
@@ -3256,6 +3361,9 @@ msgstr "轮询限制（微秒）"
 msgid "Copyright"
 msgstr "版权"
 
+msgid "Bake FPS"
+msgstr "烘焙 FPS"
+
 msgid "glTF"
 msgstr "glTF"
 
@@ -3414,6 +3522,9 @@ msgstr "归一化"
 
 msgid "Count"
 msgstr "数量"
+
+msgid "Accessor Type"
+msgstr "访问器类型"
 
 msgid "Min"
 msgstr "最小值"
@@ -3834,6 +3945,9 @@ msgstr "排序方式"
 
 msgid "Alpha Blend"
 msgstr "Alpha 混合"
+
+msgid "Enable Hole Punch"
+msgstr "启用打洞"
 
 msgid "Aspect Ratio"
 msgstr "纵横比"
@@ -5341,9 +5455,6 @@ msgstr "安全边距"
 msgid "Disable Mode"
 msgstr "禁用模式"
 
-msgid "Input"
-msgstr "输入"
-
 msgid "Pickable"
 msgstr "可拾取"
 
@@ -5581,6 +5692,9 @@ msgstr "导航可见性模式"
 
 msgid "Y Sort Origin"
 msgstr "Y 排序原点"
+
+msgid "X Draw Order Reversed"
+msgstr "逆转 X 绘制顺序"
 
 msgid "Collision Enabled"
 msgstr "启用碰撞"
@@ -5984,6 +6098,9 @@ msgstr "使用降噪器"
 
 msgid "Denoiser Strength"
 msgstr "降噪器强度"
+
+msgid "Denoiser Range"
+msgstr "降噪器范围"
 
 msgid "Texel Scale"
 msgstr "纹素缩放"
@@ -7040,6 +7157,9 @@ msgstr "启用着色"
 
 msgid "Tint Color"
 msgstr "着色颜色"
+
+msgid "Ignore Invalid Connection Type"
+msgstr "忽略无效连接类型"
 
 msgid "Select Mode"
 msgstr "选择模式"
@@ -8118,6 +8238,9 @@ msgstr "地形集"
 
 msgid "Custom Data Layers"
 msgstr "自定义数据层"
+
+msgid "Scenes"
+msgstr "场景"
 
 msgid "Scene"
 msgstr "场景"
@@ -9274,9 +9397,6 @@ msgstr "表面索引"
 msgid "Degrees Mode"
 msgstr "度数模式"
 
-msgid "Font Color"
-msgstr "字体颜色"
-
 msgid "Font Pressed Color"
 msgstr "字体颜色按下"
 
@@ -9318,6 +9438,9 @@ msgstr "水平间距"
 
 msgid "Icon Max Width"
 msgstr "图标最大宽度"
+
+msgid "Align to Largest Stylebox"
+msgstr "对齐最大样式盒"
 
 msgid "Underline Spacing"
 msgstr "下划线间距"
@@ -10845,6 +10968,3 @@ msgstr "世界原点"
 
 msgid "Primary Interface"
 msgstr "主接口"
-
-msgid "Property"
-msgstr "属性"
