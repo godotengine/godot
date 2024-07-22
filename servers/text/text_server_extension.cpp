@@ -196,6 +196,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_font_has_char, "font_rid", "char");
 	GDVIRTUAL_BIND(_font_get_supported_chars, "font_rid");
+	GDVIRTUAL_BIND(_font_get_supported_glyphs, "font_rid");
 
 	GDVIRTUAL_BIND(_font_render_range, "font_rid", "size", "start", "end");
 	GDVIRTUAL_BIND(_font_render_glyph, "font_rid", "size", "index");
@@ -924,6 +925,12 @@ bool TextServerExtension::font_has_char(const RID &p_font_rid, int64_t p_char) c
 String TextServerExtension::font_get_supported_chars(const RID &p_font_rid) const {
 	String ret;
 	GDVIRTUAL_REQUIRED_CALL(_font_get_supported_chars, p_font_rid, ret);
+	return ret;
+}
+
+PackedInt32Array TextServerExtension::font_get_supported_glyphs(const RID &p_font_rid) const {
+	PackedInt32Array ret;
+	GDVIRTUAL_REQUIRED_CALL(_font_get_supported_glyphs, p_font_rid, ret);
 	return ret;
 }
 

@@ -3528,6 +3528,37 @@ String TextServerAdvanced::_font_get_supported_chars(const RID &p_font_rid) cons
 	return chars;
 }
 
+PackedInt32Array TextServerAdvanced::_font_get_supported_glyphs(const RID &p_font_rid) const {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, PackedInt32Array());
+
+	MutexLock lock(fd->mutex);
+	if (fd->cache.is_empty()) {
+		ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, fd->msdf ? Vector2i(fd->msdf_source_size, 0) : Vector2i(16, 0)), PackedInt32Array());
+	}
+	FontForSizeAdvanced *at_size = fd->cache.begin()->value;
+
+	PackedInt32Array glyphs;
+#ifdef MODULE_FREETYPE_ENABLED
+	if (at_size && at_size->face) {
+		FT_UInt gindex;
+		FT_ULong charcode = FT_Get_First_Char(at_size->face, &gindex);
+		while (gindex != 0) {
+			glyphs.push_back(gindex);
+			charcode = FT_Get_Next_Char(at_size->face, charcode, &gindex);
+		}
+		return glyphs;
+	}
+#endif
+	if (at_size) {
+		const HashMap<int32_t, FontGlyph> &gl = at_size->glyph_map;
+		for (const KeyValue<int32_t, FontGlyph> &E : gl) {
+			glyphs.push_back(E.key);
+		}
+	}
+	return glyphs;
+}
+
 void TextServerAdvanced::_font_render_range(const RID &p_font_rid, const Vector2i &p_size, int64_t p_start, int64_t p_end) {
 	FontAdvanced *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);
