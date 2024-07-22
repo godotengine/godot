@@ -77,6 +77,7 @@ public:
 		NEW_VALUE_INDEX,
 	};
 
+	bool get_by_property_name(const String &p_name, Variant &r_ret) const;
 	void set_dict(const Dictionary &p_dict);
 	Dictionary get_dict();
 
