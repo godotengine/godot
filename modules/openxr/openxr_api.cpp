@@ -707,13 +707,6 @@ bool OpenXRAPI::load_supported_environmental_blend_modes() {
 		print_verbose(String("OpenXR: Found environmental blend mode ") + OpenXRUtil::get_environment_blend_mode_name(supported_environment_blend_modes[i]));
 	}
 
-	// Check value we loaded at startup...
-	if (!is_environment_blend_mode_supported(environment_blend_mode)) {
-		print_verbose(String("OpenXR: ") + OpenXRUtil::get_environment_blend_mode_name(environment_blend_mode) + String(" isn't supported, defaulting to ") + OpenXRUtil::get_environment_blend_mode_name(supported_environment_blend_modes[0]));
-
-		environment_blend_mode = supported_environment_blend_modes[0];
-	}
-
 	return true;
 }
 
@@ -835,6 +828,13 @@ bool OpenXRAPI::create_session() {
 
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		wrapper->on_session_created(session);
+	}
+
+	// Check our environment blend mode. This needs to happen after we call `on_session_created()`
+	// on the extension wrappers, so they can emulate alpha blend mode.
+	if (!set_environment_blend_mode(environment_blend_mode)) {
+		print_verbose(String("OpenXR: ") + OpenXRUtil::get_environment_blend_mode_name(environment_blend_mode) + String(" isn't supported, defaulting to ") + OpenXRUtil::get_environment_blend_mode_name(supported_environment_blend_modes[0]));
+		set_environment_blend_mode(supported_environment_blend_modes[0]);
 	}
 
 	return true;
