@@ -3106,6 +3106,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 				Ref<Texture> texture = ResourceLoader::load(uri);
 				if (texture.is_valid()) {
 					p_state->images.push_back(texture->get_data());
+					p_state->external_images_paths.insert(i, uri);
 					continue;
 				} else if (mimetype == "image/png" || mimetype == "image/jpeg") {
 					// Fallback to loading as byte array.
@@ -3234,17 +3235,25 @@ Error GLTFDocument::_parse_textures(Ref<GLTFState> p_state) {
 		}
 		p_state->textures.push_back(t);
 
+		Ref<Texture> tex;
+
 		// Create and cache the texture used in the engine
-		Ref<ImageTexture> imgTex;
-		imgTex.instance();
-		imgTex->create_from_image(p_state->images[t->get_src_image()]);
+		if (p_state->external_images_paths.has(t->get_src_image())) {
+			tex = ResourceLoader::load(p_state->external_images_paths[t->get_src_image()]);
+		} else {
+			Ref<ImageTexture> img_tex;
+			img_tex.instance();
+			img_tex->create_from_image(p_state->images[t->get_src_image()]);
 
-		// Set texture filter and repeat based on sampler settings
-		const Ref<GLTFTextureSampler> sampler = _get_sampler_for_texture(p_state, i);
-		Texture::Flags flags = sampler->get_texture_flags();
-		imgTex->set_flags(flags);
+			// Set texture filter and repeat based on sampler settings. Only supported for embedded textures
+			const Ref<GLTFTextureSampler> sampler = _get_sampler_for_texture(p_state, i);
+			Texture::Flags flags = sampler->get_texture_flags();
+			img_tex->set_flags(flags);
 
-		p_state->texture_cache.insert(i, imgTex);
+			tex = img_tex;
+		}
+
+		p_state->texture_cache.insert(i, tex);
 	}
 
 	return OK;
