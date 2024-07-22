@@ -1249,7 +1249,12 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					}
 
 					if (is_inside_tree() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-						fx_offset = (fx_offset + Point2(0.5, 0.5)).floor();
+						if (Math::fmod(width, 2.0f) == 0.0f) {
+							fx_offset.x = Math::floor(fx_offset.x + 0.5);
+						}
+						if (Math::fmod(l_height, 2.0) == 0.0f) {
+							fx_offset.y = Math::floor(fx_offset.y + 0.5);
+						}
 					}
 
 					Vector2 char_off = char_xform.get_origin();

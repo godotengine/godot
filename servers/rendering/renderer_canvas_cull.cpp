@@ -284,8 +284,14 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	}
 
 	if (snapping_2d_transforms_to_pixel) {
-		final_xform.columns[2] = (final_xform.columns[2] + Point2(0.5, 0.5)).floor();
-		parent_xform.columns[2] = (parent_xform.columns[2] + Point2(0.5, 0.5)).floor();
+		if (Math::fmod(p_canvas_item->get_rect().get_size().x, 2.0f) == 0.0f) {
+			final_xform.columns[2].x = Math::floor(final_xform.columns[2].x + 0.5);
+			parent_xform.columns[2].x = Math::floor(parent_xform.columns[2].x + 0.5);
+		}
+		if (Math::fmod(p_canvas_item->get_rect().get_size().y, 2.0f) == 0.0f) {
+			final_xform.columns[2].y = Math::floor(final_xform.columns[2].y + 0.5);
+			parent_xform.columns[2].y = Math::floor(parent_xform.columns[2].y + 0.5);
+		}
 	}
 
 	final_xform = parent_xform * final_xform;
