@@ -87,7 +87,7 @@ static Result _compFastTrack(RenderMethod* renderer, Paint* cmpTarget, const Ren
 
     if (ptsCnt != 4) return Result::InsufficientCondition;
 
-    if (rTransform) rTransform->update();
+    if (rTransform && (cmpTarget->pImpl->renderFlag & RenderUpdateFlag::Transform)) rTransform->update();
 
     //No rotation and no skewing, still can try out clipping the rect region.
     auto tryClip = false;
@@ -181,13 +181,14 @@ Paint* Paint::Impl::duplicate()
 bool Paint::Impl::rotate(float degree)
 {
     if (rTransform) {
+        if (rTransform->overriding) return false;
         if (mathEqual(degree, rTransform->degree)) return true;
     } else {
         if (mathZero(degree)) return true;
         rTransform = new RenderTransform();
     }
     rTransform->degree = degree;
-    if (!rTransform->overriding) renderFlag |= RenderUpdateFlag::Transform;
+    renderFlag |= RenderUpdateFlag::Transform;
 
     return true;
 }
@@ -196,13 +197,14 @@ bool Paint::Impl::rotate(float degree)
 bool Paint::Impl::scale(float factor)
 {
     if (rTransform) {
+        if (rTransform->overriding) return false;
         if (mathEqual(factor, rTransform->scale)) return true;
     } else {
         if (mathEqual(factor, 1.0f)) return true;
         rTransform = new RenderTransform();
     }
     rTransform->scale = factor;
-    if (!rTransform->overriding) renderFlag |= RenderUpdateFlag::Transform;
+    renderFlag |= RenderUpdateFlag::Transform;
 
     return true;
 }
@@ -211,14 +213,15 @@ bool Paint::Impl::scale(float factor)
 bool Paint::Impl::translate(float x, float y)
 {
     if (rTransform) {
-        if (mathEqual(x, rTransform->x) && mathEqual(y, rTransform->y)) return true;
+        if (rTransform->overriding) return false;
+        if (mathEqual(x, rTransform->m.e13) && mathEqual(y, rTransform->m.e23)) return true;
     } else {
         if (mathZero(x) && mathZero(y)) return true;
         rTransform = new RenderTransform();
     }
-    rTransform->x = x;
-    rTransform->y = y;
-    if (!rTransform->overriding) renderFlag |= RenderUpdateFlag::Transform;
+    rTransform->m.e13 = x;
+    rTransform->m.e23 = y;
+    renderFlag |= RenderUpdateFlag::Transform;
 
     return true;
 }
@@ -263,10 +266,7 @@ RenderData Paint::Impl::update(RenderMethod* renderer, const RenderTransform* pT
         this->renderer = renderer;
     }
 
-    if (renderFlag & RenderUpdateFlag::Transform) {
-        if (!rTransform) return nullptr;
-        rTransform->update();
-    }
+    if (renderFlag & RenderUpdateFlag::Transform) rTransform->update();
 
     /* 1. Composition Pre Processing */
     RenderData trd = nullptr;                 //composite target render data
@@ -390,28 +390,28 @@ Paint :: ~Paint()
 Result Paint::rotate(float degree) noexcept
 {
     if (pImpl->rotate(degree)) return Result::Success;
-    return Result::FailedAllocation;
+    return Result::InsufficientCondition;
 }
 
 
 Result Paint::scale(float factor) noexcept
 {
     if (pImpl->scale(factor)) return Result::Success;
-    return Result::FailedAllocation;
+    return Result::InsufficientCondition;
 }
 
 
 Result Paint::translate(float x, float y) noexcept
 {
     if (pImpl->translate(x, y)) return Result::Success;
-    return Result::FailedAllocation;
+    return Result::InsufficientCondition;
 }
 
 
 Result Paint::transform(const Matrix& m) noexcept
 {
     if (pImpl->transform(m)) return Result::Success;
-    return Result::FailedAllocation;
+    return Result::InsufficientCondition;
 }
 
 

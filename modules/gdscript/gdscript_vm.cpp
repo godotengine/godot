@@ -1807,7 +1807,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					} else if (methodstr == "free") {
 						if (err.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 							if (base->is_ref_counted()) {
-								err_text = "Attempted to free a reference.";
+								err_text = "Attempted to free a RefCounted object.";
 								OPCODE_BREAK;
 							} else if (base->get_type() == Variant::OBJECT) {
 								err_text = "Attempted to free a locked object (calling or emitting).";
@@ -1898,7 +1898,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					} else if (methodstr == "free") {
 						if (err.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 							if (base->is_ref_counted()) {
-								err_text = "Attempted to free a reference.";
+								err_text = "Attempted to free a RefCounted object.";
 								OPCODE_BREAK;
 							} else if (base->get_type() == Variant::OBJECT) {
 								err_text = "Attempted to free a locked object (calling or emitting).";

@@ -59,8 +59,9 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 	CallQueue *call_queue_backup = MessageQueue::get_singleton() != MessageQueue::get_main_singleton() ? MessageQueue::get_singleton() : nullptr;
 
 	{
-		// Tasks must start with this unset. They are free to set-and-forget otherwise.
+		// Tasks must start with these at default values. They are free to set-and-forget otherwise.
 		set_current_thread_safe_for_nodes(false);
+		MessageQueue::set_thread_singleton_override(nullptr);
 		// Since the WorkerThreadPool is started before the script server,
 		// its pre-created threads can't have ScriptServer::thread_enter() called on them early.
 		// Therefore, we do it late at the first opportunity, so in case the task
@@ -397,16 +398,17 @@ Error WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 		task->waiting_user++;
 	}
 
-	task_mutex.unlock();
-
 	if (caller_pool_thread) {
+		task_mutex.unlock();
 		_wait_collaboratively(caller_pool_thread, task);
+		task_mutex.lock();
 		task->waiting_pool--;
 		if (task->waiting_pool == 0 && task->waiting_user == 0) {
 			tasks.erase(p_task_id);
 			task_allocator.free(task);
 		}
 	} else {
+		task_mutex.unlock();
 		task->done_semaphore.wait();
 		task_mutex.lock();
 		task->waiting_user--;
@@ -414,9 +416,9 @@ Error WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 			tasks.erase(p_task_id);
 			task_allocator.free(task);
 		}
-		task_mutex.unlock();
 	}
 
+	task_mutex.unlock();
 	return OK;
 }
 
@@ -670,7 +672,7 @@ uint32_t WorkerThreadPool::thread_enter_unlock_allowance_zone(BinaryMutex *p_mut
 
 uint32_t WorkerThreadPool::_thread_enter_unlock_allowance_zone(void *p_mutex, bool p_is_binary) {
 	for (uint32_t i = 0; i < MAX_UNLOCKABLE_MUTEXES; i++) {
-		if (unlikely(unlockable_mutexes[i] == (uintptr_t)p_mutex)) {
+		if (unlikely((unlockable_mutexes[i] & ~1) == (uintptr_t)p_mutex)) {
 			// Already registered in the current thread.
 			return UINT32_MAX;
 		}

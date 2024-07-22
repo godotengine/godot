@@ -135,7 +135,7 @@
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Queues an animation for playback once the current one is done.
+				Queues an animation for playback once the current animation and all previously queued animations are done.
 				[b]Note:[/b] If a looped animation is currently playing, the queued animation will never play unless the looped animation is stopped somehow.
 			</description>
 		</method>

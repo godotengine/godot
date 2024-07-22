@@ -556,6 +556,7 @@ private:
 	void _plugin_over_self_own(EditorPlugin *p_plugin);
 
 	void _fs_changed();
+	void _resources_reimporting(const Vector<String> &p_resources);
 	void _resources_reimported(const Vector<String> &p_resources);
 	void _sources_changed(bool p_exist);
 
@@ -674,6 +675,8 @@ private:
 	void _begin_first_scan();
 
 	void _notify_nodes_scene_reimported(Node *p_node, Array p_reimported_nodes);
+
+	void _remove_all_not_owned_children(Node *p_node, Node *p_owner);
 
 protected:
 	friend class FileSystemDock;
@@ -803,8 +806,6 @@ public:
 		// Used if the original parent node is lost
 		Transform2D transform_2d;
 		Transform3D transform_3d;
-		// Used to keep track of the ownership of all ancestor nodes so they can be restored later.
-		HashMap<Node *, Node *> ownership_table;
 	};
 
 	struct ConnectionWithNodePath {
@@ -819,7 +820,8 @@ public:
 		List<Node::GroupInfo> groups;
 	};
 
-	void update_ownership_table_for_addition_node_ancestors(Node *p_current_node, HashMap<Node *, Node *> &p_ownership_table);
+	HashMap<int, HashMap<NodePath, HashMap<NodePath, ModificationNodeEntry>>> scenes_modification_table;
+
 	void update_node_from_node_modification_entry(Node *p_node, ModificationNodeEntry &p_node_modification);
 
 	void update_node_reference_modification_table_for_node(
@@ -828,12 +830,18 @@ public:
 			List<Node *> p_excluded_nodes,
 			HashMap<NodePath, ModificationNodeEntry> &p_modification_table);
 
-	void update_reimported_diff_data_for_node(
+	void get_preload_scene_modification_table(
+			Node *p_edited_scene,
+			Node *p_reimported_root,
+			Node *p_node, HashMap<NodePath, ModificationNodeEntry> &p_modification_table);
+
+	void update_reimported_diff_data_for_additional_nodes(
 			Node *p_edited_scene,
 			Node *p_reimported_root,
 			Node *p_node,
 			HashMap<NodePath, ModificationNodeEntry> &p_modification_table,
 			List<AdditiveNodeEntry> &p_addition_list);
+	bool is_additional_node_in_scene(Node *p_edited_scene, Node *p_reimported_root, Node *p_node);
 
 	bool is_scene_open(const String &p_path);
 	bool is_multi_window_enabled() const;
@@ -888,7 +896,9 @@ public:
 
 	void reload_scene(const String &p_path);
 
+	void get_edited_scene_map(const String &p_instance_path, HashMap<int, List<Node *>> &p_edited_scene_map);
 	void find_all_instances_inheriting_path_in_node(Node *p_root, Node *p_node, const String &p_instance_path, List<Node *> &p_instance_list);
+	void preload_reimporting_with_path_in_edited_scenes(const String &p_path);
 	void reload_instances_with_path_in_edited_scenes(const String &p_path);
 
 	bool is_exiting() const { return exiting; }
@@ -908,6 +918,7 @@ public:
 	void save_before_run();
 	void try_autosave();
 	void restart_editor();
+	void unload_editor_addons();
 
 	void dim_editor(bool p_dimming);
 	bool is_editor_dimmed() const;

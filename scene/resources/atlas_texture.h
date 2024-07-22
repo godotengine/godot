@@ -37,6 +37,8 @@ class AtlasTexture : public Texture2D {
 	GDCLASS(AtlasTexture, Texture2D);
 	RES_BASE_EXTENSION("atlastex");
 
+	Rect2 _get_region_rect() const;
+
 protected:
 	Ref<Texture2D> atlas;
 	Rect2 region;

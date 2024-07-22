@@ -795,7 +795,7 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 		// because that's what we want to check to see if it's changed.
 		library_path = actual_lib_path.get_base_dir().path_join(p_path.get_file());
 	} else {
-		library_path = p_path;
+		library_path = actual_lib_path;
 	}
 
 	ERR_FAIL_COND_V_MSG(err == ERR_FILE_NOT_FOUND, err, "GDExtension dynamic library not found: " + abs_path);

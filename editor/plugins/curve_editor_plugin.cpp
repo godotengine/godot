@@ -118,12 +118,6 @@ void CurveEdit::_notification(int p_what) {
 				queue_redraw();
 			}
 		} break;
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
-				break;
-			}
-			[[fallthrough]];
-		}
 		case NOTIFICATION_THEME_CHANGED: {
 			float gizmo_scale = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
 			point_radius = Math::round(BASE_POINT_RADIUS * get_theme_default_base_scale() * gizmo_scale);
@@ -1083,10 +1077,8 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 	Image &im = **img_ref;
 	im.initialize_data(thumbnail_size.x, thumbnail_size.y, false, Image::FORMAT_RGBA8);
 
-	Color bg_color(0.1, 0.1, 0.1, 1.0);
-	Color line_color(0.8, 0.8, 0.8, 1.0);
+	Color line_color = EditorInterface::get_singleton()->get_editor_theme()->get_color(SceneStringName(font_color), EditorStringName(Editor));
 
-	im.fill(bg_color);
 	// Set the first pixel of the thumbnail.
 	float v = (curve->sample_baked(0) - curve->get_min_value()) / curve->get_range();
 	int y = CLAMP(im.get_height() - v * im.get_height(), 0, im.get_height() - 1);

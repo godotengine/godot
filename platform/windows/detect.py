@@ -582,7 +582,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
                 "libEGL.windows." + env["arch"] + prebuilt_lib_extra_suffix,
                 "libGLES.windows." + env["arch"] + prebuilt_lib_extra_suffix,
             ]
-            LIBS += ["dxgi", "d3d9", "d3d11"]
+            LIBS += ["dxgi", "d3d9", "d3d11", "synchronization"]
         env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     if env["target"] in ["editor", "template_debug"]:
@@ -639,7 +639,8 @@ def configure_mingw(env: "SConsEnvironment"):
 
     # TODO: Re-evaluate the need for this / streamline with common config.
     if env["target"] == "template_release":
-        env.Append(CCFLAGS=["-msse2"])
+        if env["arch"] != "arm64":
+            env.Append(CCFLAGS=["-msse2"])
     elif env.dev_build:
         # Allow big objects. It's supposed not to have drawbacks but seems to break
         # GCC LTO, so enabling for debug builds only (which are not built with LTO
@@ -807,7 +808,7 @@ def configure_mingw(env: "SConsEnvironment"):
                     "ANGLE.windows." + env["arch"],
                 ]
             )
-            env.Append(LIBS=["dxgi", "d3d9", "d3d11"])
+            env.Append(LIBS=["dxgi", "d3d9", "d3d11", "synchronization"])
         env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])

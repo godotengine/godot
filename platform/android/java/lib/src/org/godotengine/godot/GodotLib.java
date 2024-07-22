@@ -242,9 +242,8 @@ public class GodotLib {
 	public static native void onRendererPaused();
 
 	/**
-	 * Invoked on the GL thread to update the input dispatch settings
-	 * @param useAccumulatedInput True to use accumulated input, false otherwise
-	 * @param useInputBuffering True to use input buffering, false otherwise
+	 * @return true if input must be dispatched from the render thread. If false, input is
+	 * dispatched from the UI thread.
 	 */
-	public static native void updateInputDispatchSettings(boolean useAccumulatedInput, boolean useInputBuffering);
+	public static native boolean shouldDispatchInputToRenderThread();
 }

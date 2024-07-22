@@ -345,6 +345,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 		}
 		frame->set_max((double)anim->get_length());
 		autoplay->set_pressed(current == player->get_autoplay());
+		player->stop();
 	} else {
 		track_editor->set_animation(Ref<Animation>(), true);
 		track_editor->set_root(nullptr);

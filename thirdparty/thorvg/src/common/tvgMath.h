@@ -42,6 +42,7 @@
 /* General functions                                                    */
 /************************************************************************/
 
+float mathAtan2(float y, float x);
 
 static inline float mathDeg2Rad(float degree)
 {
@@ -79,7 +80,7 @@ bool operator==(const Matrix& lhs, const Matrix& rhs);
 
 static inline bool mathRightAngle(const Matrix* m)
 {
-   auto radian = fabsf(atan2f(m->e21, m->e11));
+   auto radian = fabsf(mathAtan2(m->e21, m->e11));
    if (radian < FLOAT_EPSILON || mathEqual(radian, MATH_PI2) || mathEqual(radian, MATH_PI)) return true;
    return false;
 }

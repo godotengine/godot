@@ -281,6 +281,9 @@ public:
      * The rotational axis passes through the point on the object with zero coordinates.
      *
      * @param[in] degree The value of the angle in degrees.
+     *
+     * @retval Result::InsufficientCondition in case a custom transform is applied.
+     * @see Paint::transform()
      */
     Result rotate(float degree) noexcept;
 
@@ -288,6 +291,9 @@ public:
      * @brief Sets the scale value of the object.
      *
      * @param[in] factor The value of the scaling factor. The default value is 1.
+     *
+     * @retval Result::InsufficientCondition in case a custom transform is applied.
+     * @see Paint::transform()
      */
     Result scale(float factor) noexcept;
 
@@ -299,6 +305,9 @@ public:
      *
      * @param[in] x The value of the horizontal shift.
      * @param[in] y The value of the vertical shift.
+     *
+     * @retval Result::InsufficientCondition in case a custom transform is applied.
+     * @see Paint::transform()
      */
     Result translate(float x, float y) noexcept;
 

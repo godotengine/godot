@@ -291,14 +291,18 @@ bool ResourceImporterScene::get_option_visibility(const String &p_path, const St
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
 		Variant ret = post_importer_plugins.write[i]->get_option_visibility(p_path, animation_importer, p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
-			return ret;
+			if (!ret) {
+				return false;
+			}
 		}
 	}
 
 	for (Ref<EditorSceneFormatImporter> importer : scene_importers) {
 		Variant ret = importer->get_option_visibility(p_path, animation_importer, p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
-			return ret;
+			if (!ret) {
+				return false;
+			}
 		}
 	}
 
