@@ -3229,10 +3229,15 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							spec_constants |= SceneShaderGLES3::ADDITIVE_SPOT;
 						}
 
-						if (scene_state.positional_shadow_quality >= RS::SHADOW_QUALITY_SOFT_HIGH) {
-							spec_constants |= SceneShaderGLES3::SHADOW_MODE_PCF_13;
+						if (scene_state.positional_shadow_quality == RS::SHADOW_QUALITY_SOFT_ULTRA) {
+							// PCF25 is used at Ultra quality.
+							spec_constants |= SceneShaderGLES3::SHADOW_MODE_PCF_LOW | SceneShaderGLES3::SHADOW_MODE_PCF_HIGH;
+						} else if (scene_state.positional_shadow_quality == RS::SHADOW_QUALITY_SOFT_HIGH) {
+							// PCF13 is used at High quality.
+							spec_constants |= SceneShaderGLES3::SHADOW_MODE_PCF_HIGH;
 						} else if (scene_state.positional_shadow_quality >= RS::SHADOW_QUALITY_SOFT_LOW) {
-							spec_constants |= SceneShaderGLES3::SHADOW_MODE_PCF_5;
+							// PCF5 is used at Low and Medium quality.
+							spec_constants |= SceneShaderGLES3::SHADOW_MODE_PCF_LOW;
 						}
 					} else {
 						// Render directional lights.
@@ -3254,10 +3259,15 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							spec_constants |= SceneShaderGLES3::LIGHT_USE_PSSM_BLEND;
 						}
 
-						if (scene_state.directional_shadow_quality >= RS::SHADOW_QUALITY_SOFT_HIGH) {
-							spec_constants |= SceneShaderGLES3::SHADOW_MODE_PCF_13;
+						if (scene_state.directional_shadow_quality == RS::SHADOW_QUALITY_SOFT_ULTRA) {
+							// PCF25 is used at Ultra quality.
+							spec_constants |= SceneShaderGLES3::SHADOW_MODE_PCF_LOW | SceneShaderGLES3::SHADOW_MODE_PCF_HIGH;
+						} else if (scene_state.directional_shadow_quality == RS::SHADOW_QUALITY_SOFT_HIGH) {
+							// PCF13 is used at High quality.
+							spec_constants |= SceneShaderGLES3::SHADOW_MODE_PCF_HIGH;
 						} else if (scene_state.directional_shadow_quality >= RS::SHADOW_QUALITY_SOFT_LOW) {
-							spec_constants |= SceneShaderGLES3::SHADOW_MODE_PCF_5;
+							// PCF5 is used at Low and Medium quality.
+							spec_constants |= SceneShaderGLES3::SHADOW_MODE_PCF_LOW;
 						}
 					}
 				}
