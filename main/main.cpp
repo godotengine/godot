@@ -2459,11 +2459,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif
 
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
+
 	if (p_second_phase) {
 		return setup2();
 	}
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
 	return OK;
 
 error:
