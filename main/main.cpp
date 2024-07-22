@@ -255,6 +255,8 @@ bool profile_gpu = false;
 static const String NULL_DISPLAY_DRIVER("headless");
 static const String NULL_AUDIO_DRIVER("Dummy");
 
+static const String OFFSCREEN_DISPLAY_DRIVER("offscreen");
+
 // The length of the longest column in the command-line help we should align to
 // (excluding the 2-space left and right margins).
 // Currently, this is `--export-release <preset> <path>`.
@@ -1313,6 +1315,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			audio_driver = NULL_AUDIO_DRIVER;
 			display_driver = NULL_DISPLAY_DRIVER;
 
+		} else if (arg == "--offscreen") { // enable offscreen mode (no OS windows).
+
+			display_driver = OFFSCREEN_DISPLAY_DRIVER;
+
 		} else if (arg == "--log-file") { // write to log file
 
 			if (N) {
@@ -2327,11 +2333,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	DEV_ASSERT(NULL_DISPLAY_DRIVER == DisplayServer::get_create_function_name(DisplayServer::get_create_function_count() - 1));
 
 	GLOBAL_DEF_RST_NOVAL("display/display_server/driver", "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.windows", PROPERTY_HINT_ENUM_SUGGESTION, "default,windows,headless"), "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM_SUGGESTION, "default,x11,wayland,headless"), "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.android", PROPERTY_HINT_ENUM_SUGGESTION, "default,android,headless"), "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.ios", PROPERTY_HINT_ENUM_SUGGESTION, "default,iOS,headless"), "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM_SUGGESTION, "default,macos,headless"), "default");
+	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.windows", PROPERTY_HINT_ENUM_SUGGESTION, "default,windows,headless,offscreen"), "default");
+	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM_SUGGESTION, "default,x11,wayland,headless,offscreen"), "default");
+	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.android", PROPERTY_HINT_ENUM_SUGGESTION, "default,android,headless,offscreen"), "default");
+	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.ios", PROPERTY_HINT_ENUM_SUGGESTION, "default,iOS,headless,offscreen"), "default");
+	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM_SUGGESTION, "default,macos,headless,offscreen"), "default");
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
 	if (audio_driver.is_empty()) { // Specified in project.godot.
@@ -2710,6 +2716,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 			if (display_driver_idx < 0) {
 				// If the requested driver wasn't found, pick the first entry.
 				// If all else failed it would be the headless server.
+				// TODO: This will be offscreen now. Should it be changed to DisplayServer::get_create_function_count() - 1?
 				display_driver_idx = 0;
 			}
 		}
@@ -2741,9 +2748,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, err);
 		if (err != OK || display_server == nullptr) {
 			// We can't use this display server, try other ones as fallback.
-			// Skip headless (always last registered) because that's not what users
+			// Skip offscreen and headless (always last registered) because that's not what users
 			// would expect if they didn't request it explicitly.
-			for (int i = 0; i < DisplayServer::get_create_function_count() - 1; i++) {
+			for (int i = 0; i < DisplayServer::get_create_function_count() - 2; i++) {
 				if (i == display_driver_idx) {
 					continue; // Don't try the same twice.
 				}

@@ -6,12 +6,14 @@ env.servers_sources = []
 
 env.add_source_files(env.servers_sources, "audio_server.cpp")
 env.add_source_files(env.servers_sources, "camera_server.cpp")
+env.add_source_files(env.servers_sources, "display_server_offscreen.cpp")
 env.add_source_files(env.servers_sources, "display_server.cpp")
 env.add_source_files(env.servers_sources, "navigation_server_2d.cpp")
 env.add_source_files(env.servers_sources, "navigation_server_3d.cpp")
 env.add_source_files(env.servers_sources, "physics_server_2d.cpp")
 env.add_source_files(env.servers_sources, "physics_server_2d_wrap_mt.cpp")
 env.add_source_files(env.servers_sources, "register_server_types.cpp")
+env.add_source_files(env.servers_sources, "rendering_context_driver_vulkan_headless.cpp")
 env.add_source_files(env.servers_sources, "rendering_server.cpp")
 env.add_source_files(env.servers_sources, "text_server.cpp")
 
