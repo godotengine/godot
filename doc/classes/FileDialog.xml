@@ -148,7 +148,7 @@
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Save a File&quot;" />
 		<member name="use_native_dialog" type="bool" setter="set_use_native_dialog" getter="get_use_native_dialog" default="false">
-			If [code]true[/code], [member access] is set to [constant ACCESS_FILESYSTEM], and it is supported by the current [DisplayServer], OS native dialog will be used instead of custom one.
+			If [code]true[/code], [b]and[/b] [member access] is [b]also[/b] set to [constant ACCESS_FILESYSTEM], [b]and[/b] the current [DisplayServer] supports it, OS native dialog will be used instead of custom one.
 			[b]Note:[/b] On macOS, sandboxed apps always use native dialogs to access host filesystem.
 		</member>
 	</members>
