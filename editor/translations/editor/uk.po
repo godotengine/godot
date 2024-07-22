@@ -45,13 +45,16 @@
 # Bogdan <Bgdn.Weblate@users.noreply.hosted.weblate.org>, 2024.
 # Ivan Reshetnikov <ivan.reshetnikov@proton.me>, 2024.
 # Evgen Zukov <searchyou13@gmail.com>, 2024.
+# Veni Vid <venivid28@gmail.com>, 2024.
+# Andrew <padlyko@gmail.com>, 2024.
+# Fqwe1 <Fqwe1@users.noreply.hosted.weblate.org>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-05-15 18:47+0000\n"
-"Last-Translator: Evgen Zukov <searchyou13@gmail.com>\n"
+"PO-Revision-Date: 2024-07-16 19:57+0000\n"
+"Last-Translator: Fqwe1 <Fqwe1@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -60,7 +63,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.6-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
 msgstr "Головна тема"
@@ -211,6 +214,12 @@ msgstr "Кнопка джойпада %d"
 
 msgid "Pressure:"
 msgstr "Тиск:"
+
+msgid "canceled"
+msgstr "скасовано"
+
+msgid "touched"
+msgstr "торкнувся"
 
 msgid "released"
 msgstr "випущено"
@@ -483,8 +492,14 @@ msgstr "Редагувати подію"
 msgid "Remove Event"
 msgstr "Вилучити подію"
 
+msgid "Filter by Name"
+msgstr "Фільтрувати за іменем"
+
 msgid "Clear All"
 msgstr "Очистити все"
+
+msgid "Clear all search filters."
+msgstr "Очистити усі пошукові фільтри."
 
 msgid "Add New Action"
 msgstr "Додати нову дію"
@@ -605,6 +620,33 @@ msgstr "Неможливо змінити режим циклу для анім�
 
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "Неможливо змінити режим циклу для анімації, вбудованої в іншу сцену."
+
+msgid "Property Track..."
+msgstr "Доріжка Властивостей..."
+
+msgid "3D Position Track..."
+msgstr "Доріжка 3D позиції..."
+
+msgid "3D Rotation Track..."
+msgstr "Доріжка 3D обертання..."
+
+msgid "3D Scale Track..."
+msgstr "Доріжка 3D масштабу..."
+
+msgid "Blend Shape Track..."
+msgstr "Доріжка змішування форми..."
+
+msgid "Call Method Track..."
+msgstr "Доріжка виклику методу..."
+
+msgid "Bezier Curve Track..."
+msgstr "Доріжка кривої Безьє..."
+
+msgid "Audio Playback Track..."
+msgstr "Доріжка відтворення звуку..."
+
+msgid "Animation Playback Track..."
+msgstr "Доріжка відтворення анімації..."
 
 msgid "Animation length (frames)"
 msgstr "Тривалість анімації (у кадрах)"
@@ -769,14 +811,14 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "Видалити доріжку"
 
-msgid "Hold Shift when clicking the key icon to skip this dialog."
-msgstr "Тримайте Shift, натискаючи на іконку, для того, щоб пропустити діалог."
-
 msgid "Create new track for %s and insert key?"
 msgstr "Створити нову доріжку для %s і вставити ключ?"
 
 msgid "Create %d new tracks and insert keys?"
 msgstr "Створити %d нові доріжки і вставити ключі?"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr "Тримайте Shift, натискаючи на іконку, для того, щоб пропустити діалог."
 
 msgid "Create"
 msgstr "Створити"
@@ -839,18 +881,6 @@ msgstr "Шлях доріжки є некоректним, отже не мож�
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "Доріжка не належить до типу Node3D, ключ не можна вставити"
-
-msgid "Add Position Key"
-msgstr "Додати ключ позиції"
-
-msgid "Add Rotation Key"
-msgstr "Додати ключ обертання"
-
-msgid "Add Scale Key"
-msgstr "Додати ключ масштабування"
-
-msgid "Add Track Key"
-msgstr "Додати ключ доріжки"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Шлях доріжки є некоректним, отже не можна додавати ключ методу."
@@ -3162,13 +3192,6 @@ msgid "Quick Open Script..."
 msgstr "Швидке відкриття скрипту..."
 
 msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"У поточної сцени немає кореневого вузла, але %d змінених зовнішніх ресурсів "
-"було збережено попри це."
-
-msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -3899,15 +3922,6 @@ msgstr "Запуск проєкту"
 msgid "Write your logic in the _run() method."
 msgstr "Напишіть свою логіку в методі _run ()."
 
-msgid "There is an edited scene already."
-msgstr "Редагована сцена вже існує."
-
-msgid "Undo: %s"
-msgstr "Скасувати: %s"
-
-msgid "Redo: %s"
-msgstr "Повторити: %s"
-
 msgid "Edit Built-in Action: %s"
 msgstr "Редагувати вбудовану дію: %s"
 
@@ -4009,6 +4023,60 @@ msgstr "Усі пристрої"
 
 msgid "Device"
 msgstr "Пристрій"
+
+msgid "Can't get filesystem access."
+msgstr "Не вдалося отримати доступ до файлової системи."
+
+msgid "Failed to get Info.plist hash."
+msgstr "Не вдалося отримати хеш-суму Info.plist."
+
+msgid "Invalid Info.plist, no exe name."
+msgstr "Некоректний вміст Info.plist — немає назви виконуваного файла."
+
+msgid "Invalid Info.plist, no bundle id."
+msgstr "Некоректний вміст Info.plist — немає ідентифікатора комплекту."
+
+msgid "Invalid Info.plist, can't load."
+msgstr "Некоректний вміст Info.plist — не вдалося завантажити."
+
+msgid "Failed to create \"%s\" subfolder."
+msgstr "Не вдалося створити підтеку «%s»."
+
+msgid "Failed to extract thin binary."
+msgstr "Не вдалося видобути «тонкі» двійкові дані."
+
+msgid "Invalid binary format."
+msgstr "Некоректний формат двійкових даних."
+
+msgid "Already signed!"
+msgstr "Вже підписано!"
+
+msgid "Failed to process nested resources."
+msgstr "Не вдалося обробити вкладені ресурси."
+
+msgid "Failed to create _CodeSignature subfolder."
+msgstr "Не вдалося створити підтеку _CodeSignature."
+
+msgid "Failed to get CodeResources hash."
+msgstr "Не вдалося отримати хеш-суму CodeResources."
+
+msgid "Invalid entitlements file."
+msgstr "Некоректний файл найменувань."
+
+msgid "Invalid executable file."
+msgstr "Некоректний виконуваний файл."
+
+msgid "Can't resize signature load command."
+msgstr "Не вдалося змінити розмір команди завантаження підпису."
+
+msgid "Failed to create fat binary."
+msgstr "Не вдалося створити «товсті» двійкові дані."
+
+msgid "Unknown bundle type."
+msgstr "Невідомий тип комплекту."
+
+msgid "Unknown object type."
+msgstr "Невідомий тип об'єктів."
 
 msgid "Project export for platform:"
 msgstr "Експортування проєкту для платформи:"
@@ -5606,15 +5674,6 @@ msgstr "Розгорнути не типові"
 
 msgid "Property Name Style"
 msgstr "Стиль назв властивостей"
-
-msgid "Raw"
-msgstr "Без обробки"
-
-msgid "Capitalized"
-msgstr "З Великої"
-
-msgid "Localized"
-msgstr "Рідною мовою"
 
 msgid "Localization not available for current language."
 msgstr "Локалізацію поточною мовою не реалізовано."
@@ -11014,17 +11073,17 @@ msgid "Not Equal (!=)"
 msgstr "Не дорівнює (!=)"
 
 msgid ""
-"Returns an associated 3D vector if the provided boolean value is true or "
-"false."
-msgstr ""
-"Повертає асоційований 3D-вектор, якщо надане булеве значення є істинним або "
-"хибним."
-
-msgid ""
 "Returns an associated 2D vector if the provided boolean value is true or "
 "false."
 msgstr ""
 "Повертає асоційований 2D-вектор, якщо надане логічне значення є істинним або "
+"хибним."
+
+msgid ""
+"Returns an associated 3D vector if the provided boolean value is true or "
+"false."
+msgstr ""
+"Повертає асоційований 3D-вектор, якщо надане булеве значення є істинним або "
 "хибним."
 
 msgid ""
@@ -11577,9 +11636,6 @@ msgstr ""
 
 msgid "Remaps a given input from the input range to the output range."
 msgstr "Відображає вхідні дані з діапазону вводу у діапазон виводу."
-
-msgid "Rotates an input vector by a given angle."
-msgstr "Повертає вхідний вектор на заданий кут."
 
 msgid "Vector function."
 msgstr "Векторна функція."
@@ -13341,11 +13397,11 @@ msgstr "Вилучити набір дій"
 msgid "Add interaction profile"
 msgstr "Додати інтерактивний профіль"
 
-msgid "Error saving file %s: %s"
-msgstr "Помилка під час збереження файлу %s: %s"
-
 msgid "Error loading %s: %s."
 msgstr "Помилка завантаження %s: %s."
+
+msgid "Error saving file %s: %s"
+msgstr "Помилка під час збереження файлу %s: %s"
 
 msgid "OpenXR Action map:"
 msgstr "Карта дій OpenXR:"
@@ -13775,60 +13831,6 @@ msgstr "Старт проекту..."
 msgid "All Files"
 msgstr "Усі файли"
 
-msgid "Can't get filesystem access."
-msgstr "Не вдалося отримати доступ до файлової системи."
-
-msgid "Failed to get Info.plist hash."
-msgstr "Не вдалося отримати хеш-суму Info.plist."
-
-msgid "Invalid Info.plist, no exe name."
-msgstr "Некоректний вміст Info.plist — немає назви виконуваного файла."
-
-msgid "Invalid Info.plist, no bundle id."
-msgstr "Некоректний вміст Info.plist — немає ідентифікатора комплекту."
-
-msgid "Invalid Info.plist, can't load."
-msgstr "Некоректний вміст Info.plist — не вдалося завантажити."
-
-msgid "Failed to create \"%s\" subfolder."
-msgstr "Не вдалося створити підтеку «%s»."
-
-msgid "Failed to extract thin binary."
-msgstr "Не вдалося видобути «тонкі» двійкові дані."
-
-msgid "Invalid binary format."
-msgstr "Некоректний формат двійкових даних."
-
-msgid "Already signed!"
-msgstr "Вже підписано!"
-
-msgid "Failed to process nested resources."
-msgstr "Не вдалося обробити вкладені ресурси."
-
-msgid "Failed to create _CodeSignature subfolder."
-msgstr "Не вдалося створити підтеку _CodeSignature."
-
-msgid "Failed to get CodeResources hash."
-msgstr "Не вдалося отримати хеш-суму CodeResources."
-
-msgid "Invalid entitlements file."
-msgstr "Некоректний файл найменувань."
-
-msgid "Invalid executable file."
-msgstr "Некоректний виконуваний файл."
-
-msgid "Can't resize signature load command."
-msgstr "Не вдалося змінити розмір команди завантаження підпису."
-
-msgid "Failed to create fat binary."
-msgstr "Не вдалося створити «товсті» двійкові дані."
-
-msgid "Unknown bundle type."
-msgstr "Невідомий тип комплекту."
-
-msgid "Unknown object type."
-msgstr "Невідомий тип об'єктів."
-
 msgid "Invalid bundle identifier:"
 msgstr "Некоректний ідентифікатор пакунка:"
 
@@ -14188,13 +14190,6 @@ msgstr "Запуск на віддаленій системі Windows"
 
 msgid "Run exported project on remote Windows system"
 msgstr "Запуск експортованого проекту на віддаленій системі Windows"
-
-msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite2D to display frames."
-msgstr ""
-"Ресурс SpriteFrames повинен бути створений або встановлений у властивості "
-"\"Frames\", щоб AnimatedSprite2D міг відображати кадри."
 
 msgid ""
 "Only one visible CanvasModulate is allowed per canvas.\n"
@@ -14762,13 +14757,6 @@ msgid "This body will be ignored until you set a mesh."
 msgstr "Це тіло буде проігноровано, аж доки ви не встановите сітку."
 
 msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"Щоб AnimatedSprite3D могла показувати кадри, має бути створено або "
-"встановлено у властивості «Frames» ресурс SpriteFrames."
-
-msgid ""
 "The GeometryInstance3D visibility range's End distance is set to a non-zero "
 "value, but is lower than the Begin distance.\n"
 "This means the GeometryInstance3D will never be visible.\n"
@@ -15001,16 +14989,6 @@ msgid ""
 msgstr ""
 "Щоб програма могла хоч щось показати, розмір поля перегляду має бути більшим "
 "або рівним 2 пікселям в обох вимірах."
-
-msgid ""
-"An incoming node's name clashes with %s already in the scene (presumably, "
-"from a more nested instance).\n"
-"The less nested node will be renamed. Please fix and re-save the scene."
-msgstr ""
-"Имя входящего узла конфликтует с %s, уже имеющимся в сцене (предположительно, "
-"от более вложенного экземпляра).\n"
-"Менее вложенный узел будет переименован. Пожалуйста, исправьте и "
-"пересохраните сцену."
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"
@@ -15507,10 +15485,6 @@ msgstr ""
 msgid "Too many '%s' uniforms in shader, maximum supported is %d."
 msgstr "Занадто багато форм '%s' у шейдері, максимально підтримується %d."
 
-msgid "Setting default values to uniform arrays is not supported."
-msgstr ""
-"Установка значений по умолчанию для однородных массивов не поддерживается."
-
 msgid "Expected constant expression after '='."
 msgstr "Очікуваний константний вираз після '='."
 
@@ -15611,9 +15585,6 @@ msgstr "'##' не должно появляться в начале расшир
 
 msgid "'##' must not appear at end of macro expansion."
 msgstr "'##' не должно появляться в конце расширения макроса."
-
-msgid "Unmatched elif."
-msgstr "Непревзойденный элиф."
 
 msgid "Missing condition."
 msgstr "Відсутня умова."

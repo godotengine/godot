@@ -801,9 +801,6 @@ msgstr "Agregar Pista Bezier"
 msgid "Track path is invalid, so can't add a key."
 msgstr "La ruta de la pista es inválida, por ende no se pueden agregar claves."
 
-msgid "Add Track Key"
-msgstr "Añadir Clave de Pista"
-
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
 "La ruta de la pista es inválida, por ende no se pueden agregar claves de "
@@ -2107,13 +2104,6 @@ msgid "Quick Open Script..."
 msgstr "Apertura Rápida de Script..."
 
 msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"La escena actual no contiene un nodo raíz, pero %d resource(s) externo(s) "
-"modificado(s) fueron guardados de todos modos."
-
-msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -2559,9 +2549,6 @@ msgstr ""
 msgid "Write your logic in the _run() method."
 msgstr "Escribir tu lógica en el método _run()."
 
-msgid "There is an edited scene already."
-msgstr "Ya hay una escena editada."
-
 msgid "Editor Settings"
 msgstr "Configuración del Editor"
 
@@ -2582,6 +2569,60 @@ msgstr "Todos los Dispositivos"
 
 msgid "Device"
 msgstr "Dispositivo"
+
+msgid "Can't get filesystem access."
+msgstr "No se puede obtener acceso al sistema de archivos."
+
+msgid "Failed to get Info.plist hash."
+msgstr "No se pudo obtener el hash de Info.plist."
+
+msgid "Invalid Info.plist, no exe name."
+msgstr "Info.plist no válido, sin nombre de exe."
+
+msgid "Invalid Info.plist, no bundle id."
+msgstr "Info.plist no válido, sin ID de paquete."
+
+msgid "Invalid Info.plist, can't load."
+msgstr "Info.plist no válido, no se puede cargar."
+
+msgid "Failed to create \"%s\" subfolder."
+msgstr "No se pudo crear la subcarpeta \"%s\"."
+
+msgid "Failed to extract thin binary."
+msgstr "No se pudo extraer el binario delgado."
+
+msgid "Invalid binary format."
+msgstr "Formato binario no válido."
+
+msgid "Already signed!"
+msgstr "Ya está firmado!"
+
+msgid "Failed to process nested resources."
+msgstr "No se pudieron procesar los recursos anidados."
+
+msgid "Failed to create _CodeSignature subfolder."
+msgstr "No se pudo crear la subcarpeta _CodeSignature."
+
+msgid "Failed to get CodeResources hash."
+msgstr "No se pudo obtener el hash de CodeResources."
+
+msgid "Invalid entitlements file."
+msgstr "Archivo de entitlements no válido."
+
+msgid "Invalid executable file."
+msgstr "Archivo ejecutable no válido."
+
+msgid "Can't resize signature load command."
+msgstr "No se puede cambiar el tamaño del comando de carga de la firma."
+
+msgid "Failed to create fat binary."
+msgstr "No se pudo crear el binario gordo."
+
+msgid "Unknown bundle type."
+msgstr "Tipo de paquete desconocido."
+
+msgid "Unknown object type."
+msgstr "Tipo de objeto desconocido."
 
 msgid "Storing File:"
 msgstr "Almacenando Archivo:"
@@ -3311,9 +3352,6 @@ msgstr "Dispositivo:"
 
 msgid "Failed to load resource."
 msgstr "Fallo al cargar recurso."
-
-msgid "Raw"
-msgstr "Raw"
 
 msgid "Copy Properties"
 msgstr "Copiar Propiedades"
@@ -7566,60 +7604,6 @@ msgstr "No se pudo descomprimir el APK temporal no alineado."
 msgid "Invalid Identifier:"
 msgstr "Identificador inválido:"
 
-msgid "Can't get filesystem access."
-msgstr "No se puede obtener acceso al sistema de archivos."
-
-msgid "Failed to get Info.plist hash."
-msgstr "No se pudo obtener el hash de Info.plist."
-
-msgid "Invalid Info.plist, no exe name."
-msgstr "Info.plist no válido, sin nombre de exe."
-
-msgid "Invalid Info.plist, no bundle id."
-msgstr "Info.plist no válido, sin ID de paquete."
-
-msgid "Invalid Info.plist, can't load."
-msgstr "Info.plist no válido, no se puede cargar."
-
-msgid "Failed to create \"%s\" subfolder."
-msgstr "No se pudo crear la subcarpeta \"%s\"."
-
-msgid "Failed to extract thin binary."
-msgstr "No se pudo extraer el binario delgado."
-
-msgid "Invalid binary format."
-msgstr "Formato binario no válido."
-
-msgid "Already signed!"
-msgstr "Ya está firmado!"
-
-msgid "Failed to process nested resources."
-msgstr "No se pudieron procesar los recursos anidados."
-
-msgid "Failed to create _CodeSignature subfolder."
-msgstr "No se pudo crear la subcarpeta _CodeSignature."
-
-msgid "Failed to get CodeResources hash."
-msgstr "No se pudo obtener el hash de CodeResources."
-
-msgid "Invalid entitlements file."
-msgstr "Archivo de entitlements no válido."
-
-msgid "Invalid executable file."
-msgstr "Archivo ejecutable no válido."
-
-msgid "Can't resize signature load command."
-msgstr "No se puede cambiar el tamaño del comando de carga de la firma."
-
-msgid "Failed to create fat binary."
-msgstr "No se pudo crear el binario gordo."
-
-msgid "Unknown bundle type."
-msgstr "Tipo de paquete desconocido."
-
-msgid "Unknown object type."
-msgstr "Tipo de objeto desconocido."
-
 msgid "Invalid bundle identifier:"
 msgstr "Identificador de paquete no válido:"
 
@@ -7831,13 +7815,6 @@ msgstr "Nada visible ya que no se asigno pasadas de dibujado a los meshes."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Este cuerpo será ignorado hasta que se establezca un mesh."
-
-msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"Se debe crear o establecer un recurso SpriteFrames en la propiedad \"Frames\" "
-"para que AnimatedSprite3D pueda mostrar frames."
 
 msgid "Plotting Meshes"
 msgstr "Trazando Meshes"

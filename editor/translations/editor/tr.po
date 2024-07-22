@@ -106,13 +106,17 @@
 # Ufuk SARIALTIN <sarialtinufuk@gmail.com>, 2023.
 # Caner Özer <canerozer44@gmail.com>, 2023.
 # yiid <tunayigit026@gmail.com>, 2023.
+# ellie <gaminge35@gmail.com>, 2024.
+# Zoda <ustunsoykerem23@gmail.com>, 2024.
+# "Mr.Barnard" <muhammedharun2010kaya@gmail.com>, 2024.
+# Makro <23makro@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-05-23 18:09+0000\n"
-"Last-Translator: Volkan Gezer <volkangezer@gmail.com>\n"
+"PO-Revision-Date: 2024-07-16 19:57+0000\n"
+"Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -120,10 +124,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.6-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
-msgstr "Ana İş Parçası"
+msgstr "Ana İş Parçacığı"
 
 msgid "Unset"
 msgstr "Kaldır"
@@ -271,6 +275,12 @@ msgstr "Oyun Kolu Düğmesi %d"
 
 msgid "Pressure:"
 msgstr "Basınç:"
+
+msgid "canceled"
+msgstr "iptal edildi"
+
+msgid "touched"
+msgstr "dokunuldu"
 
 msgid "released"
 msgstr "bırakıldı"
@@ -529,11 +539,17 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "'%s' isimli eylem zaten var."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Geri Döndürülemez - Eylem başlangıçtaki ile aynı"
+
 msgid "Revert Action"
 msgstr "Eylemi geri al"
 
 msgid "Add Event"
 msgstr "Olay Ekle"
+
+msgid "Remove Action"
+msgstr "Eylemi Kaldır"
 
 msgid "Cannot Remove Action"
 msgstr "Eylem Kaldırılamıyor"
@@ -549,6 +565,9 @@ msgstr "İsme göre Filtrele"
 
 msgid "Clear All"
 msgstr "Tümünü Temizle"
+
+msgid "Clear all search filters."
+msgstr "Tüm arama filtrelerini temizle."
 
 msgid "Add New Action"
 msgstr "Yeni Eylem Ekle"
@@ -885,16 +904,16 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "Animasyon İzini Kaldır"
 
-msgid "Hold Shift when clicking the key icon to skip this dialog."
-msgstr ""
-"Bu iletişim kutusunu atlamak için anahtar simgesine tıklarken ÜstKrkt tuşunu "
-"basılı tutun."
-
 msgid "Create new track for %s and insert key?"
 msgstr "%s için yeni iz oluşturup, anahtar eklensin mi?"
 
 msgid "Create %d new tracks and insert keys?"
 msgstr "%d yeni iz oluşturup, anahtarları eklensin mi?"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"Bu iletişim kutusunu atlamak için anahtar simgesine tıklarken ÜstKrkt tuşunu "
+"basılı tutun."
 
 msgid "Create"
 msgstr "Oluştur"
@@ -956,18 +975,6 @@ msgstr "İz yolu geçersiz, o yüzden bir anahtar eklenemez."
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "Bu iz, Node3D düğüm tipinde değil, anahtar eklenemez"
-
-msgid "Add Position Key"
-msgstr "Konum Anahtarı Ekle"
-
-msgid "Add Rotation Key"
-msgstr "Dönme Anahtarı Ekle"
-
-msgid "Add Scale Key"
-msgstr "Ölçek Anahtarı Ekle"
-
-msgid "Add Track Key"
-msgstr "İz Anahtarı Ekle"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "İz yolu geçersiz, o yüzden yöntem anahtarı eklenemez."
@@ -1375,6 +1382,10 @@ msgid "Hide"
 msgstr "Gizle"
 
 msgctxt "Indentation"
+msgid "Spaces"
+msgstr "Boşluklar"
+
+msgctxt "Indentation"
 msgid "Tabs"
 msgstr "Sekmeler"
 
@@ -1731,6 +1742,9 @@ msgstr "Yürütmeye devam ediliyor."
 
 msgid "Bytes:"
 msgstr "Byte sayısı:"
+
+msgid "Warning:"
+msgstr "Uyarı:"
 
 msgid "Error:"
 msgstr "Hata:"
@@ -2130,6 +2144,9 @@ msgstr "Aşağıdaki dosyaların, \"%s\" varlığından çıkartılmasında hata
 msgid "(and %s more files)"
 msgstr "(ve %s dosya daha)"
 
+msgid "Asset \"%s\" installed successfully!"
+msgstr "Varlık \"%s\" başarıyla yüklendi!"
+
 msgid "Success!"
 msgstr "Başarılı!"
 
@@ -2300,6 +2317,30 @@ msgstr "Yeni bir Veriyolu Yerleşim Düzeni oluştur."
 msgid "Audio Bus Layout"
 msgstr "Ses Veri Yolu Düzeni"
 
+msgid "Invalid name."
+msgstr "Geçersiz isim."
+
+msgid "Cannot begin with a digit."
+msgstr "Bir rakamla başlayamaz."
+
+msgid "Valid characters:"
+msgstr "Geçerli karakterler:"
+
+msgid "Must not collide with an existing engine class name."
+msgstr "Var olan bir motor sınıfı adıyla çakışmamalıdır."
+
+msgid "Must not collide with an existing global script class name."
+msgstr "Var olan bir genel betik sınıfı adıyla çakışmamalıdır."
+
+msgid "Must not collide with an existing built-in type name."
+msgstr "Var olan bir yerleşik tür adıyla çakışmamalıdır."
+
+msgid "Must not collide with an existing global constant name."
+msgstr "Var olan bir genel sabit ismiyle çakışmamalıdır."
+
+msgid "Keyword cannot be used as an Autoload name."
+msgstr "Anahtar sözcük Oto-Yükleme adı olarak kullanılamaz."
+
 msgid "Autoload '%s' already exists!"
 msgstr "'%s' otomatik yüklemesi zaten var!"
 
@@ -2335,6 +2376,9 @@ msgstr "Otomatik Yükleme Ekle"
 
 msgid "Path:"
 msgstr "Yol:"
+
+msgid "Set path or press \"%s\" to create a script."
+msgstr "Bir yol belirle veya \"%s\" basarak bir betik oluştur."
 
 msgid "Node Name:"
 msgstr "Düğüm İsmi:"
@@ -2728,6 +2772,11 @@ msgstr "Profil(leri) İçe Aktar"
 msgid "Manage Editor Feature Profiles"
 msgstr "Düzenleyici Özellik Profillerini Yönet"
 
+msgid "Some extensions need the editor to restart to take effect."
+msgstr ""
+"Bazı uzantılar, etkili olabilmeleri için editörün yeniden başlatılmasını "
+"gerektirir."
+
 msgid "Restart"
 msgstr "Yeniden Başlat"
 
@@ -2884,6 +2933,9 @@ msgstr ""
 "Bu sınıf için henüz bir açıklama yok. [color=$color][url=$url]Bir tane "
 "katkıda bulunarak[/url][/color] bize yardım edebilirsiniz!"
 
+msgid "Note:"
+msgstr "Not:"
+
 msgid ""
 "There are notable differences when using this API with C#. See [url=%s]C# API "
 "differences to GDScript[/url] for more information."
@@ -3032,6 +3084,9 @@ msgstr "Sinyal:"
 
 msgid "Theme Property:"
 msgstr "Tema Özelliği:"
+
+msgid "%d match."
+msgstr "%d eşleşme."
 
 msgid "%d matches."
 msgstr "%d eşleşme."
@@ -3194,6 +3249,9 @@ msgstr "Çoklu Ayarla: %s"
 msgid "Remove metadata %s"
 msgstr "%s metaverisini kaldır"
 
+msgid "Pinned %s"
+msgstr "%s Sabitlendi"
+
 msgid "Unpinned %s"
 msgstr "%s sabitlemesi kaldırıldı"
 
@@ -3341,8 +3399,14 @@ msgstr ""
 msgid "Spins when the editor window redraws."
 msgstr "Düzenleyici penceresi yeniden çizilirken, dönmeye devam eder."
 
+msgid "Imported resources can't be saved."
+msgstr "İçe aktarılan kaynaklar kaydedilemez."
+
 msgid "OK"
 msgstr "Tamam"
+
+msgid "Error saving resource!"
+msgstr "Kaynak kaydedilirken hata oluştu!"
 
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
@@ -3361,6 +3425,37 @@ msgstr ""
 msgid "Save Resource As..."
 msgstr "Kaynağı Farklı Kaydet..."
 
+msgid "Can't open file for writing:"
+msgstr "Dosya, yazmak için açılamıyor:"
+
+msgid "Requested file format unknown:"
+msgstr "İstenen dosya biçimi bilinmiyor:"
+
+msgid "Error while saving."
+msgstr "Kaydederken hata oluştu."
+
+msgid "Can't open file '%s'. The file could have been moved or deleted."
+msgstr "'%s' dosyası açılamıyor. Dosya taşınmış veya silinmiş olabilir."
+
+msgid "Error while parsing file '%s'."
+msgstr "'%s' dosyası ayrıştırılırken hata oluştu."
+
+msgid "Scene file '%s' appears to be invalid/corrupt."
+msgstr "Sahne dosyası '%s', geçersiz/bozuk görünüyor."
+
+msgid "Missing file '%s' or one of its dependencies."
+msgstr "'%s' dosyası, veya bağımlılıklarından biri, eksik."
+
+msgid ""
+"File '%s' is saved in a format that is newer than the formats supported by "
+"this version of Godot, so it can't be opened."
+msgstr ""
+"'%s' dosyası, Godot'un bu sürümünün desteklediği dosya biçimlerinden daha "
+"yeni bir biçimde kaydedilmiş, bu nedenle açılamaz."
+
+msgid "Error while loading file '%s'."
+msgstr "'%s' dosyası yüklenirken hata oluştu."
+
 msgid "Saving Scene"
 msgstr "Sahne Kaydediliyor"
 
@@ -3370,8 +3465,28 @@ msgstr "Çözümleniyor"
 msgid "Creating Thumbnail"
 msgstr "Küçük Resim Oluşturuluyor"
 
+msgid "This operation can't be done without a tree root."
+msgstr "Bu işlem, ağacın bir kökü olmadan yapılamaz."
+
+msgid ""
+"This scene can't be saved because there is a cyclic instance inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+"Bu sahne kaydedilemez, çünkü kendine-döngüsel bir örnekleme içermesi var.\n"
+"Lütfen bunu çözün, ve ardından kaydetmeyi tekrar deneyin."
+
+msgid ""
+"Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
+"be satisfied."
+msgstr ""
+"Sahne kaydedilemedi. Muhtemel bağımlılıklar (örneklemeler veya miras alma) "
+"karşılanamadı."
+
 msgid "Save scene before running..."
 msgstr "Çalıştırmadan önce sahneyi kaydedin..."
+
+msgid "Could not save one or more scenes!"
+msgstr "Bir veya daha fazla sahne kaydedilemedi!"
 
 msgid "Save All Scenes"
 msgstr "Tüm Sahneleri Kaydet"
@@ -3384,6 +3499,12 @@ msgstr "Var Olanla Birleştir"
 
 msgid "Apply MeshInstance Transforms"
 msgstr "ÖrgüÖrneği Dönüştürmelerini Uygula"
+
+msgid "Can't load MeshLibrary for merging!"
+msgstr "Birleştirmek için MeshLibrary'i yükleyemiyor!"
+
+msgid "Error saving MeshLibrary!"
+msgstr "MeshLibrary kaydedilirken hata oluştu!"
 
 msgid ""
 "An error occurred while trying to save the editor layout.\n"
@@ -3446,6 +3567,9 @@ msgstr ""
 "Lütfen, bu iş akışını daha iyi anlamak için, belgelerdeki, sahneleri içe "
 "aktarma kısmını okuyunuz."
 
+msgid "Changes may be lost!"
+msgstr "Değişiklikler kaybolabilir!"
+
 msgid "This object is read-only."
 msgstr "Bu nesne salt okunur."
 
@@ -3461,12 +3585,8 @@ msgstr "Sahneyi Hızlı Aç..."
 msgid "Quick Open Script..."
 msgstr "Betiği Hızlı Aç..."
 
-msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"Geçerli sahnede hiç kök düğüm yok, ancak %d değiştirilmiş harici kaynak(lar) "
-"yine de kaydedildi."
+msgid "%s no longer exists! Please specify a new save location."
+msgstr "%s artık mevcut değil! Lütfen yeni bir kaydetme konumu belirtin."
 
 msgid ""
 "A root node is required to save the scene. You can add a root node using the "
@@ -3540,13 +3660,26 @@ msgid "Save changes to the following scene(s) before reloading?"
 msgstr ""
 "Yeniden yüklemeden önce, şu sahne(ler)deki değişiklikler kaydedilsin mi?"
 
+msgid "Save changes to the following scene(s) before quitting?"
+msgstr "Çıkmadan önce, aşağıdaki sahne(ler)deki değişiklikler kaydedilsin mi?"
+
 msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Proje Yöneticisi açılmadan önce, aşağıdaki sahne(ler)deki değişiklikler "
 "kaydedilsin mi?"
 
+msgid ""
+"This option is deprecated. Situations where refresh must be forced are now "
+"considered a bug. Please report."
+msgstr ""
+"Bu seçenek kullanımdan kaldırılmıştır. Yenilemenin zorlanması gerektiği "
+"durumlar artık bir hata olarak kabul edilmektedir. Lütfen rapor edin."
+
 msgid "Pick a Main Scene"
 msgstr "Bir Ana Sahne Seç"
+
+msgid "This operation can't be done without a scene."
+msgstr "Bu operasyon bir sahne olmadan yapılamaz."
 
 msgid "Export Mesh Library"
 msgstr "Örgü Kütüphanesini Dışa Aktar"
@@ -3587,6 +3720,13 @@ msgstr ""
 "Sahne '%s' otomatik olarak içe aktarıldı, bu nedenle değiştirilemez.\n"
 "Üzerinde değişiklik yapmak için, miras alınmış yeni bir sahne oluşturulabilir."
 
+msgid ""
+"Error loading scene, it must be inside the project path. Use 'Import' to open "
+"the scene, then save it inside the project path."
+msgstr ""
+"Sahne yüklenirken hata oluştu; proje yolunun içinde olmalıdır. Sahneyi açmak "
+"için 'İçe Aktar'ı kullanın, ardından proje yoluna kaydedin."
+
 msgid "Scene '%s' has broken dependencies:"
 msgstr "Sahne '%s' bozuk bağımlılıklara sahip:"
 
@@ -3620,6 +3760,9 @@ msgstr ""
 
 msgid "Clear Recent Scenes"
 msgstr "Yakınlarda Kullanılan Sahneleri Temizle"
+
+msgid "There is no defined scene to run."
+msgstr "Çalıştırmak için tanımlanmış bir sahne yok."
 
 msgid ""
 "No main scene has ever been defined, select one?\n"
@@ -3748,6 +3891,9 @@ msgstr "Seçilen Düğümleri Grupla"
 msgid "Ungroup Selected Node(s)"
 msgstr "Seçilen Düğümleri Dağıt"
 
+msgid "Restart Emission"
+msgstr "Yayılımı Yeniden Başlat"
+
 msgid "Pan View"
 msgstr "Görünümü Kaydır"
 
@@ -3817,11 +3963,17 @@ msgstr "Düzenleyici Ayarları..."
 msgid "Project"
 msgstr "Proje"
 
+msgid "Project Settings..."
+msgstr "Proje Ayarları..."
+
 msgid "Project Settings"
 msgstr "Proje Ayarları"
 
 msgid "Version Control"
 msgstr "Sürüm Kontrol"
+
+msgid "Export..."
+msgstr "Dışa Aktar..."
 
 msgid "Install Android Build Template..."
 msgstr "Android Yapı Şablonunu Kur..."
@@ -3858,6 +4010,9 @@ msgstr "Düzenleyici Yerleşim Düzeni"
 
 msgid "Take Screenshot"
 msgstr "Ekran Görüntüsü Al"
+
+msgid "Screenshots are stored in the user data folder (\"user://\")."
+msgstr "Ekran görüntüleri kullanıcı veri klasöründe (\"user://\") saklanır."
 
 msgid "Toggle Fullscreen"
 msgstr "Tam Ekranı Aç/Kapat"
@@ -3940,6 +4095,9 @@ msgstr "Değişiklik Olduğunda Güncelle"
 msgid "Hide Update Spinner"
 msgstr "Güncelleme Fırıldağını Gizle"
 
+msgid "FileSystem"
+msgstr "DosyaSistemi"
+
 msgid "Toggle FileSystem Bottom Panel"
 msgstr "DosyaSistemi Alt Panelini Aç/Kapat"
 
@@ -3951,6 +4109,9 @@ msgstr "Düğüm"
 
 msgid "History"
 msgstr "Geçmiş"
+
+msgid "Output"
+msgstr "Çıktı"
 
 msgid "Toggle Output Bottom Panel"
 msgstr "Çıkış Alt Panelini Aç/Kapat"
@@ -3985,12 +4146,21 @@ msgstr "Kütüphaneyi Dışa Aktar"
 msgid "Open & Run a Script"
 msgstr "Bir Betik Aç ve Çalıştır"
 
+msgid "Files have been modified on disk"
+msgstr "Dosyalar, disk üzerinden değiştirildi"
+
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?"
 msgstr ""
 "Aşağıdaki dosyalar, disk üzerinde daha yeni.\n"
 "Hangi eylem yapılsın?"
+
+msgid "Discard local changes and reload"
+msgstr "Yerel değişiklikleri yok say ve yeniden yükle"
+
+msgid "Keep local changes and overwrite"
+msgstr "Yerel değişiklikleri koru ve üzerine yaz"
 
 msgid "Create/Override Version Control Metadata..."
 msgstr "Sürüm Kontrol Meta Verileri Oluşturma/Üzerine Yazma..."
@@ -4024,6 +4194,9 @@ msgstr "Sonraki Düzenleyiciyi Aç"
 
 msgid "Open the previous Editor"
 msgstr "Önceki Düzenleyiciyi Aç"
+
+msgid "Ok"
+msgstr "Tamam"
 
 msgid "Warning!"
 msgstr "Uyarı!"
@@ -4256,15 +4429,6 @@ msgstr "Projeyi Çalıştır"
 msgid "Write your logic in the _run() method."
 msgstr "Mantığınızı _run() yöntemine yazın."
 
-msgid "There is an edited scene already."
-msgstr "Düzenlenmiş bir sahne zaten var."
-
-msgid "Undo: %s"
-msgstr "Geri al: %s"
-
-msgid "Redo: %s"
-msgstr "İleri al: %s"
-
 msgid "Edit Built-in Action: %s"
 msgstr "Yerleşik Eylemi Düzenle: %s"
 
@@ -4400,6 +4564,61 @@ msgstr "Giriş için Bekleniyor"
 msgid "Filter by Event"
 msgstr "Olaya göre Filtrele"
 
+msgid "Can't get filesystem access."
+msgstr "Dosya sistemi erişimi alınamıyor."
+
+msgid "Failed to get Info.plist hash."
+msgstr "Info.plist sağlaması alınamadı."
+
+msgid "Invalid Info.plist, no exe name."
+msgstr "Geçersiz Info.plist, çalıştırılabilir'in ismi yok."
+
+msgid "Invalid Info.plist, no bundle id."
+msgstr "Geçersiz Info.plist, paket kimliği yok."
+
+msgid "Invalid Info.plist, can't load."
+msgstr "Geçersiz Info.plist, yüklenemiyor."
+
+msgid "Failed to create \"%s\" subfolder."
+msgstr "\"%s\" alt klasörü oluşturulamadı."
+
+msgid "Failed to extract thin binary."
+msgstr ""
+"İnceltilmiş ikili-tip dosyanın (thin binary) çıkartılması başarısız oldu."
+
+msgid "Invalid binary format."
+msgstr "Geçersiz ikili-tip biçimi."
+
+msgid "Already signed!"
+msgstr "Zaten imzalanmış!"
+
+msgid "Failed to process nested resources."
+msgstr "İç içe kaynaklar işlenemedi."
+
+msgid "Failed to create _CodeSignature subfolder."
+msgstr "_CodeSignature alt klasörü oluşturulamadı."
+
+msgid "Failed to get CodeResources hash."
+msgstr "CodeResources sağlaması alınamadı."
+
+msgid "Invalid entitlements file."
+msgstr "Geçersiz yetkilendirmeler dosyası."
+
+msgid "Invalid executable file."
+msgstr "Invalid çalıştırılabilir dosya."
+
+msgid "Can't resize signature load command."
+msgstr "İmza yükleme komutu yeniden boyutlandırılamıyor."
+
+msgid "Failed to create fat binary."
+msgstr "Şişman ikili-tip dosya (fat binary) oluşturamadı."
+
+msgid "Unknown bundle type."
+msgstr "Bilinmeyen paket türü."
+
+msgid "Unknown object type."
+msgstr "Bilinmeyen nesne türü."
+
 msgid "Project export for platform:"
 msgstr "Şu platform için proje dışa aktarımı:"
 
@@ -4412,6 +4631,9 @@ msgstr "Başarıyla tamamlandı."
 msgid "Failed."
 msgstr "Başarısız."
 
+msgid "Unknown Error"
+msgstr "Bilinmeyen Hata"
+
 msgid "Export failed with error code %d."
 msgstr "Dışa aktarma %d hata koduyla başarısız oldu."
 
@@ -4421,11 +4643,20 @@ msgstr "Dosya Depolanıyor: %s"
 msgid "Storing File:"
 msgstr "Dosya Depolama:"
 
+msgid "No export template found at the expected path:"
+msgstr "Beklenen yolda herhangi bir dışa aktarma şablonu bulunamadı:"
+
+msgid "ZIP Creation"
+msgstr "ZIP Oluşturma"
+
 msgid "Could not open file to read from path \"%s\"."
 msgstr "\"%s\" yolundaki dosya, okumak için açılamadı."
 
 msgid "Packing"
 msgstr "Paketleme"
+
+msgid "Save PCK"
+msgstr "PCK Kaydet"
 
 msgid "Cannot create file \"%s\"."
 msgstr "\"%s\" dosyası oluşturulamıyor."
@@ -4448,6 +4679,9 @@ msgstr "Şifrelenmiş dosya yazmak için açılamıyor."
 msgid "Can't open file to read from path \"%s\"."
 msgstr "\"%s\" yolundaki dosya okunmak için açılamıyor."
 
+msgid "Save ZIP"
+msgstr "ZIP Kaydet"
+
 msgid "Custom debug template not found."
 msgstr "Özel hata ayıklama şablonu bulunmadı."
 
@@ -4461,6 +4695,9 @@ msgstr ""
 "Projeyi dışa aktarmak için bir doku biçimi seçilmelidir. Lütfen en az bir "
 "doku biçimi seçin."
 
+msgid "Prepare Template"
+msgstr "Şablon Hazırla"
+
 msgid "The given export path doesn't exist."
 msgstr "Belirtilen dışa aktarım yolu mevcut değil."
 
@@ -4469,6 +4706,9 @@ msgstr "Şablon dosyası bulunamadı: \"%s\"."
 
 msgid "Failed to copy export template."
 msgstr "Dışa aktarım şablonu kopyalanamadı."
+
+msgid "PCK Embedding"
+msgstr "PCK Yerleştirme"
 
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "32-bit dışa aktarımlarda, gömülü PCK 4GiB'den büyük olamaz."
@@ -4546,11 +4786,35 @@ msgstr ""
 "Bu sürüm için indirme bağlantıları bulunamadı. Doğrudan indirme sadece resmi "
 "dağıtımlar için bulunur."
 
+msgid "Disconnected"
+msgstr "Bağlantı kesildi"
+
+msgid "Resolving"
+msgstr "Çözümleniyor"
+
+msgid "Can't Resolve"
+msgstr "Çözümlenemiyor"
+
 msgid "Connecting..."
 msgstr "Bağlanılıyor..."
 
+msgid "Can't Connect"
+msgstr "Bağlanamıyor"
+
+msgid "Connected"
+msgstr "Bağlandı"
+
 msgid "Requesting..."
 msgstr "İstek gönderiliyor..."
+
+msgid "Downloading"
+msgstr "İndiriliyor"
+
+msgid "Connection Error"
+msgstr "Bağlantı Hatası"
+
+msgid "TLS Handshake Error"
+msgstr "TLS El Sıkışma Hatası"
 
 msgid "Can't open the export templates file."
 msgstr "Dışa aktarım kalıpları dosyası açılamadı."
@@ -5298,6 +5562,9 @@ msgstr "Grup zaten mevcut."
 msgid "Add Group"
 msgstr "Grup Ekle"
 
+msgid "Renaming Group References"
+msgstr "Grup Referansları Yeniden Adlandırılıyor"
+
 msgid "Removing Group References"
 msgstr "Grup Referanslarını Kaldırma"
 
@@ -5519,6 +5786,26 @@ msgstr "Oynatılan sahneyi tekrar yükle."
 
 msgid "Quick Run Scene..."
 msgstr "Sahneyi Hızlı Çalıştır..."
+
+msgid ""
+"Movie Maker mode is enabled, but no movie file path has been specified.\n"
+"A default movie file path can be specified in the project settings under the "
+"Editor > Movie Writer category.\n"
+"Alternatively, for running single scenes, a `movie_file` string metadata can "
+"be added to the root node,\n"
+"specifying the path to a movie file that will be used when recording that "
+"scene."
+msgstr ""
+"Movie Maker modu etkinleştirildi ancak hiçbir film dosyası yolu "
+"belirtilmedi.\n"
+"Editör > Film Yazarı kategorisi altındaki proje ayarlarında varsayılan bir "
+"film dosyası yolu belirtilebilir.\n"
+"Alternatif olarak, tek sahneleri çalıştırmak için kök düğüme bir "
+"\"movie_file\" dizesi meta verisi eklenebilir,\n"
+"o sahneyi kaydederken kullanılacak film dosyasının yolunu belirterek."
+
+msgid "Could not start subprocess(es)!"
+msgstr "Alt-işlem(ler) başlatılamadı!"
 
 msgid "Run the project's default scene."
 msgstr "Projenin varsayılan sahnesini çalıştır."
@@ -6246,15 +6533,6 @@ msgstr "Varsayılan Olmayan'ı Genişlet"
 msgid "Property Name Style"
 msgstr "Özellik İsmi Tarzı"
 
-msgid "Raw"
-msgstr "Ham"
-
-msgid "Capitalized"
-msgstr "Büyük Harfe Çevrilmiş"
-
-msgid "Localized"
-msgstr "Yerelleştirilmiş"
-
 msgid "Localization not available for current language."
 msgstr "Geçerli dil için yerelleştirme mevcut değil."
 
@@ -6693,11 +6971,17 @@ msgstr "Bazı AnimationLibrary dosyaları geçersizdi."
 msgid "Some of the selected libraries were already added to the mixer."
 msgstr "Seçilen kütüphanelerden bazıları karıştırıcıya zaten eklenmişti."
 
+msgid "Add Animation Libraries"
+msgstr "Animasyon Kütüphaneleri Ekle"
+
 msgid "Some Animation files were invalid."
 msgstr "Bazı Animasyon dosyaları geçersizdi."
 
 msgid "Some of the selected animations were already added to the library."
 msgstr "Seçilen animasyonlardan bazıları zaten kütüphaneye eklenmişti."
+
+msgid "Load Animations into Library"
+msgstr "Animasyonları Kütüphaneye Yükle"
 
 msgid "Load Animation into Library: %s"
 msgstr "Animasyonu Kütüphaneye Yükle: %s"
@@ -6998,6 +7282,9 @@ msgstr "Tümünü Sil"
 msgid "Root"
 msgstr "Kök"
 
+msgid "AnimationTree"
+msgstr "AnimationTree"
+
 msgid "Toggle AnimationTree Bottom Panel"
 msgstr "AnimasyonAğacı Alt Panelini Aç/Kapat"
 
@@ -7063,6 +7350,9 @@ msgstr "Başarısız:"
 
 msgid "Bad download hash, assuming file has been tampered with."
 msgstr "Kötü indirme sağlaması, dosya üzerinde oynama yapılmış."
+
+msgid "Expected:"
+msgstr "Beklenen:"
 
 msgid "Got:"
 msgstr "Alınan:"
@@ -7143,8 +7433,18 @@ msgctxt "Pagination"
 msgid "Last"
 msgstr "Son"
 
+msgid ""
+"The Asset Library requires an online connection and involves sending data "
+"over the internet."
+msgstr ""
+"Varlık Kütüphanesi çevrimiçi bir bağlantı gerektirir ve internet üzerinden "
+"veri göndermeyi içerir."
+
 msgid "Go Online"
 msgstr "Çevrimiçi Ol"
+
+msgid "Failed to get repository configuration."
+msgstr "Depo yapılandırmasının alınması başarısız oldu."
 
 msgid "All"
 msgstr "Tümü"
@@ -7392,6 +7692,18 @@ msgstr "Merkez Görünüm"
 msgid "Select Mode"
 msgstr "Seçme Kipi"
 
+msgid "Drag: Rotate selected node around pivot."
+msgstr "Sürükleme: Seçili düğümü eksen etrafında döndürür."
+
+msgid "Alt+Drag: Move selected node."
+msgstr "Alt+Sürükle: Seçili düğümü taşıyın."
+
+msgid "Alt+Drag: Scale selected node."
+msgstr "Alt+Sürükle: Seçilen düğümü ölçeklendirir."
+
+msgid "V: Set selected node's pivot position."
+msgstr "V: Seçilen düğümün eksen konumunu ayarlar."
+
 msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
 "Alt + Sağ Fare Düğmesi: Kilitli dahil olmak üzere, tıklanan konumdaki tüm "
@@ -7414,6 +7726,12 @@ msgstr "ÜstKrkt: Orantılı olarak ölçeklendir."
 
 msgid "Show list of selectable nodes at position clicked."
 msgstr "Tıklanan konumdaki, seçilebilir düğümlerin listesini göster."
+
+msgid "Click to change object's rotation pivot."
+msgstr "Nesnenin dönüş pivotunu değiştirmek için tıklayın."
+
+msgid "Shift: Set temporary rotation pivot."
+msgstr "Shift: Geçici dönüş pivotunu ayarlayın."
 
 msgid ""
 "Click this button while holding Shift to put the rotation pivot in the center "
@@ -7633,9 +7951,44 @@ msgstr "Sahnenin %s'den örneklemesinde hata oluştu."
 msgid "Create Node"
 msgstr "Düğüm Oluştur"
 
+msgid "Can't instantiate multiple nodes without root."
+msgstr "Kök olmadan birden fazla düğüm örneklenemez."
+
+msgid "Circular dependency found at %s."
+msgstr "%s'de kendine-döngüsel bağımlılık bulundu."
+
+msgid "Can't instantiate: %s"
+msgstr "Örneklenemiyor: %s"
+
+msgid "Creating inherited scene from: %s"
+msgstr "Şuradan devralınan sahne oluşturuluyor: %s"
+
+msgid "Instantiating: "
+msgstr "Örnekleniyor: "
+
+msgid "Adding %s and %s..."
+msgstr "%s ve %s ekleniyor..."
+
+msgid ""
+"Drag and drop to add as sibling of selected node (except when root is "
+"selected)."
+msgstr ""
+"Seçili düğümün kardeş-öğesi olarak eklemek için sürükleyip bırakın (kök "
+"seçili olduğunda hariç)."
+
+msgid "Hold Shift when dropping to add as child of selected node."
+msgstr ""
+"Seçili düğümün alt-öğesi olarak eklemek için bırakırken ÜstKrkt tuşunu basılı "
+"tutun."
+
 msgid "Hold Alt when dropping to add as child of root node."
 msgstr ""
 "Kök düğüme alt öğe olarak eklemek için bırakırken Alt tuşuna basılı tutun."
+
+msgid "Hold Alt + Shift when dropping to add as different node type."
+msgstr ""
+"Farklı bir düğüm türü olarak eklemek için bırakırken Alt + ÜstKrkt tuşlarını "
+"basılı tutun."
 
 msgid "Change Default Type"
 msgstr "Varsayılan Türü Değiştir"
@@ -7765,6 +8118,12 @@ msgstr "Dikey Boyut Bayraklarını Değiştir"
 msgid "Change Horizontal Size Flags"
 msgstr "Yatay Boyut Bayraklarını Değiştir"
 
+msgid "Change Vertical Expand Flag"
+msgstr "Dikey Genişletme Bayrağını Değiştir"
+
+msgid "Change Horizontal Expand Flag"
+msgstr "Yatay Genişletme Bayrağını Değiştir"
+
 msgid "Presets for the anchor and offset values of a Control node."
 msgstr "Denetim düğümü için çapa ve kayma değerleri için hazır-ayarlar."
 
@@ -7825,6 +8184,9 @@ msgstr "Renkleri Pikselden Yakala"
 
 msgid "Generating Visibility AABB (Waiting for Particle Simulation)"
 msgstr "Görünürlük AABB'si Üretiliyor (Parçacık Benzetimi Bekleniyor)"
+
+msgid "Generating..."
+msgstr "Üretiliyor..."
 
 msgid "Generate Visibility AABB"
 msgstr "Görünebilirlik AABB'si Üret"
@@ -8156,6 +8518,9 @@ msgstr "Yarıçapı Değiştir"
 
 msgid "Change Light Radius"
 msgstr "Işık Yarıçapını Değiştir"
+
+msgid "Start Location"
+msgstr "Başlangıç Konumu"
 
 msgid "End Location"
 msgstr "Bitiş Konumu"
@@ -8828,6 +9193,9 @@ msgstr "%d Yüzeyinin Üzerine Yazma Malzemesini Ayarla"
 msgid "Set Material Override"
 msgstr "Malzemenin Üzerine Yazmayı Ayarla"
 
+msgid "Can't instantiate: %s."
+msgstr "Örneklenemiyor: %s."
+
 msgid "Circular dependency found at %s"
 msgstr "%s 'de döngüsel bağımlılık bulundu"
 
@@ -9097,6 +9465,9 @@ msgstr ""
 "Sahne şunları içeriyor:\n"
 "WorldEnvironment.\n"
 "Önizleme devre dışı bıralıkdı."
+
+msgid "Drag: Use snap."
+msgstr "Sürükle: Tutunma kullan."
 
 msgid ""
 "Groups the selected node with its children. This selects the parent when any "
@@ -9418,11 +9789,26 @@ msgstr "Eğriyi Kapat"
 msgid "Clear Curve Points"
 msgstr "Eğri Noktalarını Temizle"
 
+msgid "Select Points"
+msgstr "Noktaları Seç"
+
+msgid "Shift+Drag: Select Control Points"
+msgstr "ÜstKrkt+Sürükleme: Kontrol Noktalarını Seç"
+
+msgid "Click: Add Point"
+msgstr "Tıklama: Nokta Ekle"
+
+msgid "Left Click: Split Segment (in curve)"
+msgstr "Sol Tıklama: Parçayı Böl (eğri içinde)"
+
 msgid "Right Click: Delete Point"
 msgstr "Sağ tıkla: Nokta Sil"
 
 msgid "Select Control Points (Shift+Drag)"
 msgstr "Denetim Noktalarını Seç (ÜstKrkt + Sürükle)"
+
+msgid "Add Point (in empty space)"
+msgstr "Nokta Ekle (boş alanda)"
 
 msgid "Delete Point"
 msgstr "Noktayı Sil"
@@ -9484,6 +9870,12 @@ msgstr "Giriş-Kontrol Noktasını Sıfırla"
 msgid "Reset Point Tilt"
 msgstr "Nokta Eğimini Sıfırla"
 
+msgid "Shift+Click: Select multiple Points"
+msgstr "ÜstKrkt+Tıklama: Birden fazla Nokta seçin"
+
+msgid "Select Control Points"
+msgstr "Kontrol Noktalarını Seçin"
+
 msgid "Shift+Click: Drag out Control Points"
 msgstr "ÜstKrkt + Tıklama: Denetim Noktalarını Açığa çıkar"
 
@@ -9520,6 +9912,9 @@ msgstr "Bir Eklentiyi Düzenle"
 
 msgid "Create a Plugin"
 msgstr "Bir Eklenti Oluştur"
+
+msgid "Update"
+msgstr "Güncelle"
 
 msgid "Plugin Name:"
 msgstr "Eklentinin İsmi:"
@@ -9663,6 +10058,15 @@ msgstr "Çokgenler"
 msgid "Bones"
 msgstr "Kemikler"
 
+msgid "Move Points"
+msgstr "Noktaları Taşı"
+
+msgid ": Rotate"
+msgstr ": Döndür"
+
+msgid "Shift: Move All"
+msgstr "ÜstKrkt: Tümünü taşı"
+
 msgid "Shift: Scale"
 msgstr "ÜstKrkt: Ölçekle"
 
@@ -9773,8 +10177,20 @@ msgstr "'%s' açılamıyor. Dosya taşınmış ya da silinmiş olabilir."
 msgid "Close and save changes?"
 msgstr "Kapat ve değişiklikleri kaydet?"
 
+msgid "Error writing TextFile:"
+msgstr "TextFile yazılırken hata oluştu:"
+
+msgid "Error saving file!"
+msgstr "Dosya kaydedilirken hata oluştu!"
+
+msgid "Error while saving theme."
+msgstr "Tema kaydedilirken hata oluştu."
+
 msgid "Error Saving"
 msgstr "Kaydedilirken hata"
+
+msgid "Error importing theme."
+msgstr "Tema içe aktarılırken hata oluştu."
 
 msgid "Error Importing"
 msgstr "İçe aktarılırken hata"
@@ -9784,6 +10200,9 @@ msgstr "Yeni Metin Dosyası..."
 
 msgid "Open File"
 msgstr "Dosya Aç"
+
+msgid "Could not load file at:"
+msgstr "Şuradaki dosya yüklenemedi:"
 
 msgid "Save File As..."
 msgstr "Farklı Kaydet..."
@@ -9819,11 +10238,20 @@ msgstr "Bu betik dosyası çalıştırılamaz, çünkü bir araç betiği değil
 msgid "Import Theme"
 msgstr "Temayı İçe Aktar"
 
+msgid "Error while saving theme"
+msgstr "Tema kaydedilirken hata oluştu"
+
 msgid "Error saving"
 msgstr "Kaydedilirken hata"
 
 msgid "Save Theme As..."
 msgstr "Temayı Farklı Kaydet..."
+
+msgid "Open '%s' in Godot online documentation."
+msgstr "'%s' öğesini, Godot çevrimiçi belgelerinde açın."
+
+msgid "Open in Online Docs"
+msgstr "Çevrimiçi Dokümanlarda Aç"
 
 msgid "Online Docs"
 msgstr "Çevrimiçi Belgeler"
@@ -9917,6 +10345,15 @@ msgstr "Betik düzenleyiciyi yüzer hale getir."
 
 msgid "Discard"
 msgstr "Yok Say"
+
+msgid "The following files are newer on disk."
+msgstr "Aşağıdaki dosyalar, disk üzerinde daha yenidir."
+
+msgid "What action should be taken?:"
+msgstr "Hangi eylem uygulanmalı?:"
+
+msgid "Search Results"
+msgstr "Sonuçlarda Ara"
 
 msgid "Toggle Search Results Bottom Panel"
 msgstr "Arama Sonuçları Alt Panelini Aç/Kapat"
@@ -10059,6 +10496,9 @@ msgstr "Kelime Sarmayı Aç/Kapat"
 msgid "Trim Trailing Whitespace"
 msgstr "Sondaki Beyaz boşlukları Kırp"
 
+msgid "Trim Final Newlines"
+msgstr "Son Yeni Satırları Kırp"
+
 msgid "Convert Indent to Spaces"
 msgstr "Girintiyi Boşluklara Dönüştür"
 
@@ -10153,6 +10593,9 @@ msgid ""
 msgstr ""
 "'%s' için dosya yapısı kurtarılamaz hatalar içeriyor:\n"
 "\n"
+
+msgid "ShaderFile"
+msgstr "ShaderFile"
 
 msgid "Toggle ShaderFile Bottom Panel"
 msgstr "GölgelendiriciDosyası Alt Panelini Değiştir"
@@ -10465,6 +10908,9 @@ msgstr "Kayma"
 msgid "Create Frames from Sprite Sheet"
 msgstr "Grafik Öğe Sayfasından Kareler Oluştur"
 
+msgid "SpriteFrames"
+msgstr "SpriteFrames"
+
 msgid "Toggle SpriteFrames Bottom Panel"
 msgstr "SpriteKareleri Alt Panelini Aç/Kapat"
 
@@ -10484,8 +10930,14 @@ msgstr "Yeniden Yükle"
 msgid "Resave"
 msgstr "Yeniden Kaydet"
 
+msgid "%s Mipmaps"
+msgstr "%s Mipharitası"
+
 msgid "Memory: %s"
 msgstr "Bellek: %s"
+
+msgid "No Mipmaps"
+msgstr "Mipharitası yok"
 
 msgid "Set Region Rect"
 msgstr "Bölge Dikdörtgenini Ayarla"
@@ -10572,6 +11024,9 @@ msgid "{num} currently selected"
 msgid_plural "{num} currently selected"
 msgstr[0] "{num} şu an seçilen"
 msgstr[1] "{num} şuan seçili"
+
+msgid "Nothing was selected for the import."
+msgstr "İçe aktarmak için hiçbir şey seçilmedi."
 
 msgid "Importing Theme Items"
 msgstr "Tema Ögeleri İçe Aktarılıyor"
@@ -11248,6 +11703,9 @@ msgstr "Karoları yapıştır"
 msgid "Selection"
 msgstr "Seçim"
 
+msgid "Shift: Draw line."
+msgstr "ÜstKrkt: Çizgi çiz."
+
 msgid "Shift: Draw rectangle."
 msgstr "ÜstKrkt: Dikdörtgen çiz."
 
@@ -11546,6 +12004,13 @@ msgstr ""
 msgid "Select a property editor"
 msgstr "Bir özellik düzenleyicisi seç"
 
+msgid ""
+"TileSet is in read-only mode. Make the resource unique to edit TileSet "
+"properties."
+msgstr ""
+"TileSet salt okunur moddadır. TileSet özelliklerini düzenlemek için kaynağı "
+"benzersiz yapın."
+
 msgid "Paint properties."
 msgstr "Boya özellikleri."
 
@@ -11787,6 +12252,13 @@ msgstr "Saydam-Olmayan Doku Bölgelerinde Karolar Oluştur"
 msgid "Remove Tiles in Fully Transparent Texture Regions"
 msgstr "Tamamen Şeffaf Doku Bölgelerindeki Karoları Kaldır"
 
+msgid ""
+"The current atlas source has tiles outside the texture.\n"
+"You can clear it using \"%s\" option in the 3 dots menu."
+msgstr ""
+"Mevcut atlas kaynağında, dokunun dışında karolar var.\n"
+"Bunu 3 nokta menüsündeki \"%s\" seçeneğini kullanarak temizleyebilirsiniz."
+
 msgid "Hold Ctrl to create multiple tiles."
 msgstr "Birden fazla karo oluşturmak için Ctrl tuşunu basılı tutun."
 
@@ -11925,11 +12397,24 @@ msgstr "Silgi"
 msgid "Picker"
 msgstr "Seçici"
 
+msgid "TileMap"
+msgstr "TileMap"
+
 msgid "Toggle TileMap Bottom Panel"
 msgstr "KaroHaritası Alt Panelini Aç/Kapat"
 
+msgid "TileSet"
+msgstr "TileSet"
+
 msgid "Toggle TileSet Bottom Panel"
 msgstr "KaroSeti Alt Panelini Aç/Kapat"
+
+msgid ""
+"No VCS plugins are available in the project. Install a VCS plugin to use VCS "
+"integration features."
+msgstr ""
+"Projede hiçbir VCS eklentisi mevcut değil. VCS bütünleşme özelliklerini "
+"kullanmak için bir VCS eklentisi kurun."
 
 msgid "Error"
 msgstr "Hata"
@@ -12216,6 +12701,9 @@ msgstr "VisualShader İfadesini Ayarla (görsel gölgelendirici)"
 msgid "Resize VisualShader Node"
 msgstr "VisualShader Düğümünü Boyutlandır (görsel gölgelendirici)"
 
+msgid "Hide Port Preview"
+msgstr "Port Önizlemeyi Gizle"
+
 msgid "Show Port Preview"
 msgstr "Port Önizlemeyi Göster"
 
@@ -12369,6 +12857,9 @@ msgstr "Kopyalama Arabelleğini Temizle"
 msgid "Insert New Node"
 msgstr "Yeni Düğüm Ekle"
 
+msgid "Insert New Reroute"
+msgstr "Yeni Yeniden-Yönlendirme Ekle"
+
 msgid "High-end node"
 msgstr "Üst-düzey düğüm"
 
@@ -12479,17 +12970,17 @@ msgid "Not Equal (!=)"
 msgstr "Eşit Değil (!=)"
 
 msgid ""
-"Returns an associated 3D vector if the provided boolean value is true or "
-"false."
-msgstr ""
-"Verilen mantıksal değerin doğru ya da yanlış olmasına göre, bağlantılı 3D "
-"vektörü döndürür."
-
-msgid ""
 "Returns an associated 2D vector if the provided boolean value is true or "
 "false."
 msgstr ""
 "Verilen mantıksal değerin doğru ya da yanlış olmasına göre, bağlantılı "
+"vektörü döndürür."
+
+msgid ""
+"Returns an associated 3D vector if the provided boolean value is true or "
+"false."
+msgstr ""
+"Verilen mantıksal değerin doğru ya da yanlış olmasına göre, bağlantılı 3D "
 "vektörü döndürür."
 
 msgid ""
@@ -13063,9 +13554,6 @@ msgid "Remaps a given input from the input range to the output range."
 msgstr ""
 "Verilen bir girişi, giriş aralığından çıkış aralığına yeniden haritalar."
 
-msgid "Rotates an input vector by a given angle."
-msgstr "Bir girdi vektörünü verilen bir açı kadar döndürür."
-
 msgid "Vector function."
 msgstr "Vektör fonksiyonu."
 
@@ -13317,6 +13805,13 @@ msgstr "Değişen parametreyi al."
 
 msgid "Set varying parameter."
 msgstr "Değişen parametreyi ayarla."
+
+msgid ""
+"Reroute connections freely, can be used to connect multiple input ports to "
+"single output port."
+msgstr ""
+"Bağlantıları serbestçe yeniden yönlendir, birden fazla giriş portunu tek bir "
+"çıkış portuna bağlamak için kullanılabilir."
 
 msgid "Edit Visual Property: %s"
 msgstr "Görsel Özelliği Düzenle: %s"
@@ -13888,6 +14383,9 @@ msgstr ""
 msgid "Error: Project is missing on the filesystem."
 msgstr "Hata: Proje, dosya sisteminde mevcut değil."
 
+msgid "Last edited timestamp"
+msgstr "Son düzenlenen zaman damgası"
+
 msgid "Missing Project"
 msgstr "Eksik Proje"
 
@@ -13961,6 +14459,9 @@ msgstr "Girdi Haritası"
 
 msgid "Localization"
 msgstr "Yerelleştirme"
+
+msgid "Globals"
+msgstr "Geneller"
 
 msgid "Autoload"
 msgstr "Otomatik yükleme"
@@ -14198,6 +14699,19 @@ msgstr ""
 "'%s' sahnesi örneklenemiyor, çünkü geçerli sahne, kendi düğümlerinden birinin "
 "içinde bulunuyor."
 
+msgid "Instantiate Scene"
+msgid_plural "Instantiate Scenes"
+msgstr[0] "Sahneyi Örnekle"
+msgstr[1] "Sahneleri Örnekle"
+
+msgid "Error loading audio stream from %s"
+msgstr "%s'den ses akışı yüklenirken hata oluştu"
+
+msgid "Create AudioStreamPlayer"
+msgid_plural "Create AudioStreamPlayers"
+msgstr[0] "AudioStreamPlayer Oluştur"
+msgstr[1] "AudioStreamPlayers Oluştur"
+
 msgid "Replace with Branch Scene"
 msgstr "Dal Sahnesi ile Değiştir"
 
@@ -14232,6 +14746,9 @@ msgstr "Örneklenen sahneler kök olamaz"
 
 msgid "Make node as Root"
 msgstr "Düğümü Kök düğüm yap"
+
+msgid "Delete %d nodes and any children?"
+msgstr "%d düğümleri ve tüm alt düğümleri silinsin mi?"
 
 msgid "Delete %d nodes?"
 msgstr "%d düğümleri silinsin mi?"
@@ -14369,6 +14886,9 @@ msgstr "Gölgelendirici Ayarla"
 msgid "Toggle Editable Children"
 msgstr "Düzenlenebilir Alt-öğeleri Aç/Kapat"
 
+msgid "Cut Node(s)"
+msgstr "Düğüm(ler)i Kes"
+
 msgid "Remove Node(s)"
 msgstr "Düğüm(ler)i Kaldır"
 
@@ -14394,6 +14914,9 @@ msgstr "Betik Örneği Oluştur"
 
 msgid "Sub-Resources"
 msgstr "Alt-Kaynaklar"
+
+msgid "Revoke Unique Name"
+msgstr "Benzersiz Adı İptal Et"
 
 msgid "Access as Unique Name"
 msgstr "Benzersiz İsim olarak Erişim"
@@ -14461,6 +14984,9 @@ msgstr ""
 
 msgid "Can't paste root node into the same scene."
 msgstr "Kök düğüm aynı sahnenin içine yapıştırılamaz."
+
+msgid "Paste Node(s) as Sibling of %s"
+msgstr "Düğüm(ler)i %s'nin Kardeş-öğesi Olarak Yapıştır"
 
 msgid "Paste Node(s) as Child of %s"
 msgstr "Düğüm(ler)i, %s'nin Alt-Öğesi Olarak Yapıştır"
@@ -14808,6 +15334,64 @@ msgstr "Simit Şekli İç Yarıçapını Değiştir"
 msgid "Change Torus Outer Radius"
 msgstr "Simit Şekli Dış Yarıçapını Değiştir"
 
+msgid "Invalid type argument to convert(), use TYPE_* constants."
+msgstr ""
+"convert() için geçersiz türde bağımsız değişken, TYPE_* sabitlerini kullanın."
+
+msgid "Cannot resize array."
+msgstr "Dizi yeniden boyutlandırılamıyor."
+
+msgid "Step argument is zero!"
+msgstr "Adım girdi değişkeni sıfır!"
+
+msgid "Not a script with an instance"
+msgstr "Örneklemesi olan bir betik değil"
+
+msgid "Not based on a script"
+msgstr "Bir betiği temel almıyor"
+
+msgid "Not based on a resource file"
+msgstr "Bir kaynak dosyasını temel almamış"
+
+msgid "Invalid instance dictionary format (missing @path)"
+msgstr "Geçersiz örnekleme sözlüğü biçimi (@path eksik)"
+
+msgid "Invalid instance dictionary format (can't load script at @path)"
+msgstr ""
+"Geçersiz örnekleme sözlüğü biçimi (@path adresindeki betik yüklenemiyor)"
+
+msgid "Invalid instance dictionary format (invalid script at @path)"
+msgstr "Geçersiz örnekleme sözlüğü biçimi (@path adresinde geçersiz betik)"
+
+msgid "Invalid instance dictionary (invalid subclasses)"
+msgstr "Geçersiz örnekleme sözlüğü (geçersiz alt sınıflar)"
+
+msgid "Cannot instantiate GDScript class."
+msgstr "GDScript sınıfı örneklenemiyor."
+
+msgid "Value of type '%s' can't provide a length."
+msgstr "'%s' tipindeki değer, bir uzunluk sağlayamaz."
+
+msgid ""
+"Invalid type argument for is_instance_of(), use TYPE_* constants for built-in "
+"types."
+msgstr ""
+"is_instance_of() için geçersiz girdi tipi değişkeni, yerleşik tipler için "
+"TYPE_* sabitlerini kullanın."
+
+msgid "Type argument is a previously freed instance."
+msgstr "Girdi tipi değişkeni önceden serbest bırakılmış bir örneklemedir."
+
+msgid ""
+"Invalid type argument for is_instance_of(), should be a TYPE_* constant, a "
+"class or a script."
+msgstr ""
+"is_instance_of() için geçersiz girdi tipi değişkeni, bir TYPE_* sabiti, bir "
+"sınıf veya bir betik olmalıdır."
+
+msgid "Value argument is a previously freed instance."
+msgstr "Girdi değeri değişkeni önceden serbest bırakılmış bir örneklemedir."
+
 msgid "Export Scene to glTF 2.0 File"
 msgstr "Sahneyi glTF 2.0 Dosyası olarak Dışa Aktar"
 
@@ -14816,6 +15400,21 @@ msgstr "Dışa Aktarma Ayarları:"
 
 msgid "glTF 2.0 Scene..."
 msgstr "glTF 2.0 Sahnesi..."
+
+msgid "Path does not contain a Blender installation."
+msgstr "Yol, bir Blender kurulumu içermiyor."
+
+msgid "Can't execute Blender binary."
+msgstr "Blender ikili dosyası çalıştırılamıyor."
+
+msgid "Unexpected --version output from Blender binary at: %s."
+msgstr "Blender çalıştırılabilir dosyasından beklenmeyen --version çıktısı: %s."
+
+msgid "Path supplied lacks a Blender binary."
+msgstr "Verilen yol bir Blender ikili dosyası içermiyor."
+
+msgid "This Blender installation is too old for this importer (not 3.0+)."
+msgstr "Bu Blender kurulumu, bu içe aktarıcı için çok eski (3.0+ değil)."
 
 msgid "Path to Blender installation is valid (Autodetected)."
 msgstr "Blender kurulumunun yolu geçerlidir (Otomatik algılandı)."
@@ -14842,6 +15441,11 @@ msgid ""
 msgstr ""
 "Bu proje için Blender '.blend' dosyalarının içe aktarılmasını devre dışı "
 "bırakır. Proje Ayarları'nda yeniden etkinleştirilebilir."
+
+msgid "Disabling '.blend' file import requires restarting the editor."
+msgstr ""
+"'.blend' dosya biçimi içe aktarımının devre dışı bırakılması, düzenleyicinin "
+"yeniden başlatılmasını gerektirir."
 
 msgid "Next Plane"
 msgstr "Sonraki Düzlem"
@@ -14962,6 +15566,18 @@ msgstr "Otomatik"
 msgid "Edit Transitions"
 msgstr "Geçişleri Düzenle"
 
+msgid "Using Any Clip -> %s."
+msgstr "Herhangi Bir Parça -> %s Kullanılıyor ."
+
+msgid "Using %s -> Any Clip."
+msgstr "%s -> Herhangi bir Parça Kullanılıyor."
+
+msgid "Using All Clips -> Any Clip."
+msgstr "Tüm Parçalar -> Herhangi Bir Parça Kullanılıyor."
+
+msgid "No transition available."
+msgstr "Geçiş mevcut değil."
+
 msgid "Next Beat"
 msgstr "Sonraki Vuruş"
 
@@ -14971,6 +15587,18 @@ msgstr "Sonraki Ölçü"
 msgid "Clip End"
 msgstr "Parça Sonu"
 
+msgctxt "Transition Time Position"
+msgid "Same"
+msgstr "Aynı"
+
+msgctxt "Transition Time Position"
+msgid "Start"
+msgstr "Başla"
+
+msgctxt "Transition Time Position"
+msgid "Prev"
+msgstr "Önceki"
+
 msgid "From / To"
 msgstr "Buradan/Buraya"
 
@@ -14979,6 +15607,9 @@ msgstr "Herhangi bir Parça"
 
 msgid "AudioStreamInteractive Transition Editor"
 msgstr "AudioStreamInteractive Geçiş Düzenleyici"
+
+msgid "Use Transition:"
+msgstr "Geçiş Kullan:"
 
 msgid "Transition From:"
 msgstr "Buradan Geçiş:"
@@ -15058,11 +15689,45 @@ msgstr "Sınıf ismi, geçerli bir tanımlayıcı olmalıdır"
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Byte'ları çözümlemek için yetersiz byte miktarı, veya geçersiz biçim."
 
+msgid ""
+"Unable to load .NET runtime, no compatible version was found.\n"
+"Attempting to create/edit a project will lead to a crash.\n"
+"\n"
+"Please install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/en-"
+"us/download and restart Godot."
+msgstr ""
+".NET çalışma zamanı yüklenemiyor, uyumlu bir sürüm bulunamadı.\n"
+"Bir proje oluşturmaya/düzenlemeye çalışmak çökmeye yol açacaktır.\n"
+"\n"
+"Lütfen https://dotnet.microsoft.com/en-us/download adresinden .NET SDK 6.0 "
+"veya üst sürümünü yükleyin ve Godot'yu yeniden başlatın."
+
 msgid "Failed to load .NET runtime"
 msgstr ".NET runtime (çalıştırma kitaplığı) yüklenemedi"
 
+msgid ""
+"Unable to find the .NET assemblies directory.\n"
+"Make sure the '%s' directory exists and contains the .NET assemblies."
+msgstr ""
+"NET derleme nesneleri dizini bulunamıyor.\n"
+"'%s' dizininin var olduğundan ve .NET derleme nesnelerini içerdiğinden emin "
+"olun."
+
 msgid ".NET assemblies not found"
 msgstr ".NET derleme nesneleri bulunamadı"
+
+msgid ""
+"Unable to load .NET runtime, specifically hostfxr.\n"
+"Attempting to create/edit a project will lead to a crash.\n"
+"\n"
+"Please install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/en-"
+"us/download and restart Godot."
+msgstr ""
+".NET çalışma zamanı, özellikle hostfxr, yüklenemiyor.\n"
+"Bir proje oluşturmaya/düzenlemeye çalışmak çökmeye yol açacaktır.\n"
+"\n"
+"Lütfen https://dotnet.microsoft.com/en-us/download adresinden .NET SDK 6.0 "
+"veya üst sürümünü yükleyin ve Godot'yu yeniden başlatın."
 
 msgid "%d (%s)"
 msgstr "%d (%s)"
@@ -15095,6 +15760,9 @@ msgstr "Say"
 
 msgid "Network Profiler"
 msgstr "Ağ Profil Çıkarıcısı"
+
+msgid "Replication"
+msgstr "Çoğaltma"
 
 msgid "Toggle Replication Bottom Panel"
 msgstr "Çoğaltma Alt Panelini Aç/Kapat"
@@ -15168,6 +15836,14 @@ msgstr "Özelliği Kaldır"
 
 msgid "Property of this type not supported."
 msgstr "Bu türdeki özellik desteklenmiyor."
+
+msgctxt "Replication Mode"
+msgid "Never"
+msgstr "Asla"
+
+msgctxt "Replication Mode"
+msgid "Always"
+msgstr "Her zaman"
 
 msgctxt "Replication Mode"
 msgid "On Change"
@@ -15251,11 +15927,11 @@ msgstr "Eylem kümesini kaldır"
 msgid "Add interaction profile"
 msgstr "Etkileşim profili ekle"
 
-msgid "Error saving file %s: %s"
-msgstr "%s dosyası kaydedilirken hata: %s"
-
 msgid "Error loading %s: %s."
 msgstr "%s yüklenirken hata: %s."
+
+msgid "Error saving file %s: %s"
+msgstr "%s dosyası kaydedilirken hata: %s"
 
 msgid "OpenXR Action map:"
 msgstr "OpenXR Eylem haritası:"
@@ -15308,6 +15984,9 @@ msgstr "Eylem ekle."
 msgid "Remove action set."
 msgstr "Eylem kümesini kaldır."
 
+msgid "OpenXR Action Map"
+msgstr "OpenXR Eylem Haritası"
+
 msgid "Toggle OpenXR Action Map Bottom Panel"
 msgstr "OpenXR Eylem Haritası Alt Panelini Aç/Kapat"
 
@@ -15356,6 +16035,30 @@ msgid ""
 msgstr ""
 "OpenXR birleştirme katmanları orto-normalleştirilmiş dönüşümlere sahip "
 "olmalıdır (yani ölçek veya kayma olmamalıdır)."
+
+msgid ""
+"Hole punching won't work as expected unless the sort order is less than zero."
+msgstr ""
+"Sıralama düzeni sıfırdan küçük olmadığı sürece, delgeç işlemi beklendiği gibi "
+"çalışmayacaktır."
+
+msgid "Package name is missing."
+msgstr "Paket ismi eksik."
+
+msgid "Package segments must be of non-zero length."
+msgstr "Paket parçaları, sıfır olmayan uzunlukta olmalıdır."
+
+msgid "The character '%s' is not allowed in Android application package names."
+msgstr "Android uygulama paketi isimlerinde '%s' karakterine izin verilmez."
+
+msgid "A digit cannot be the first character in a package segment."
+msgstr "Bir rakam, bir paket parçasındaki ilk karakter olamaz."
+
+msgid "The character '%s' cannot be the first character in a package segment."
+msgstr "'%s' karakteri, bir paket parçasındaki ilk karakter olamaz."
+
+msgid "The package must have at least one '.' separator."
+msgstr "Paket, en az bir '.' ayırıcısına sahip olmalıdır."
 
 msgid "Error creating keystores directory:"
 msgstr "Anahtar depoları dizini oluşturulurken hata oluştu:"
@@ -15553,6 +16256,9 @@ msgstr ""
 "Proje ismi, paket adı biçimi gereksinimlerini karşılamıyor ve \"%s\" olarak "
 "güncellenecektir. Gerekirse lütfen paket adını açık şekilde belirtin."
 
+msgid "Code Signing"
+msgstr "Kod İmzalama"
+
 msgid ""
 "All 'apksigner' tools located in Android SDK 'build-tools' directory failed "
 "to execute. Please check that you have the correct version installed for your "
@@ -15715,6 +16421,9 @@ msgstr "\"%s\" yolundaki bir dizin açılamadı."
 msgid "Could not write to a file at path \"%s\"."
 msgstr "\"%s\" yolundaki bir dosyaya yazılamadı."
 
+msgid "Exporting for iOS (Project Files Only)"
+msgstr "iOS için Dışa Aktarılıyor (Yalnızca Proje Dosyaları)"
+
 msgid "Exporting for iOS"
 msgstr "iOS için Dışa Aktarılıyor"
 
@@ -15744,6 +16453,9 @@ msgstr "Klasör oluşturulması başarısız oldu: \"%s\""
 msgid "Could not create and open the directory: \"%s\""
 msgstr "Klasör oluşturulamadı ve açılamadı: \"%s\""
 
+msgid "iOS Plugins"
+msgstr "iOS Eklentileri"
+
 msgid "Failed to export iOS plugins with code %d. Please check the output log."
 msgstr ""
 "iOS eklentileri dışa aktarımı %d koduyla başarısız oldu. Lütfen çıktı "
@@ -15771,6 +16483,9 @@ msgstr "\"%s\" yolunda bir dosya oluşturulması %d koduyla başarısız oldu."
 msgid "Code signing failed, see editor log for details."
 msgstr ""
 "Kod imzalama başarısız oldu, ayrıntılar için düzenleyici günlüğüne bakın."
+
+msgid "Xcode Build"
+msgstr "Xcode Derlemesi"
 
 msgid "Failed to run xcodebuild with code %d"
 msgstr "xcodebuild çalışması %d kodu ile başarısız oldu"
@@ -15801,6 +16516,12 @@ msgstr "C#/.NET kullanırken iOS'a dışa aktarma deneyseldir."
 msgid "Invalid additional PList content: "
 msgstr "Geçersiz ek PList içeriği: "
 
+msgid "Identifier is missing."
+msgstr "Tanımlayıcı eksik."
+
+msgid "The character '%s' is not allowed in Identifier."
+msgstr "Tanımlayıcıda '%s' karakterine izin verilmez."
+
 msgid "Could not start simctl executable."
 msgstr "simctl çalıştırılabilir dosyası başlatılamadı."
 
@@ -15824,8 +16545,14 @@ msgstr "Cihaz çalıştırılabilir dosyası başlatılamadı."
 msgid "Could not start devicectl executable."
 msgstr "devicectl çalıştırılabilir dosyası başlatılamadı."
 
+msgid "Debug Script Export"
+msgstr "Hata Ayıklama Betiği Dışa Aktarma"
+
 msgid "Could not open file \"%s\"."
 msgstr "\"%s\" dosyası açılamadı."
+
+msgid "Debug Console Export"
+msgstr "Hata Ayıklama Uç-birimi Dışa Aktarma"
 
 msgid "Could not create console wrapper."
 msgstr "Uç-birim sarmalayıcısı oluşturulamadı."
@@ -15842,8 +16569,14 @@ msgstr "32 bit yürütülebilir dosyalarda gömülü veri boyutu >= 4 GiB olamaz
 msgid "Executable \"pck\" section not found."
 msgstr "Çalıştırılabilir \"pck\" bölümü bulunamadı."
 
+msgid "Stop and uninstall"
+msgstr "Durdur ve yüklemeyi kaldır"
+
 msgid "Run on remote Linux/BSD system"
 msgstr "Uzak Linux/BSD sistemi üzerinde çalıştır"
+
+msgid "Stop and uninstall running project from the remote system"
+msgstr "Uzak sistemde çalışan projeyi durdur ve kurulumunu kaldır"
 
 msgid "Run exported project on remote Linux/BSD system"
 msgstr "Dışa aktarılan projeyi uzak Linux/BSD sisteminde çalıştır"
@@ -15871,61 +16604,6 @@ msgstr "Proje başlatılıyor..."
 
 msgid "All Files"
 msgstr "Tüm Dosyalar"
-
-msgid "Can't get filesystem access."
-msgstr "Dosya sistemi erişimi alınamıyor."
-
-msgid "Failed to get Info.plist hash."
-msgstr "Info.plist sağlaması alınamadı."
-
-msgid "Invalid Info.plist, no exe name."
-msgstr "Geçersiz Info.plist, çalıştırılabilir'in ismi yok."
-
-msgid "Invalid Info.plist, no bundle id."
-msgstr "Geçersiz Info.plist, paket kimliği yok."
-
-msgid "Invalid Info.plist, can't load."
-msgstr "Geçersiz Info.plist, yüklenemiyor."
-
-msgid "Failed to create \"%s\" subfolder."
-msgstr "\"%s\" alt klasörü oluşturulamadı."
-
-msgid "Failed to extract thin binary."
-msgstr ""
-"İnceltilmiş ikili-tip dosyanın (thin binary) çıkartılması başarısız oldu."
-
-msgid "Invalid binary format."
-msgstr "Geçersiz ikili-tip biçimi."
-
-msgid "Already signed!"
-msgstr "Zaten imzalanmış!"
-
-msgid "Failed to process nested resources."
-msgstr "İç içe kaynaklar işlenemedi."
-
-msgid "Failed to create _CodeSignature subfolder."
-msgstr "_CodeSignature alt klasörü oluşturulamadı."
-
-msgid "Failed to get CodeResources hash."
-msgstr "CodeResources sağlaması alınamadı."
-
-msgid "Invalid entitlements file."
-msgstr "Geçersiz yetkilendirmeler dosyası."
-
-msgid "Invalid executable file."
-msgstr "Invalid çalıştırılabilir dosya."
-
-msgid "Can't resize signature load command."
-msgstr "İmza yükleme komutu yeniden boyutlandırılamıyor."
-
-msgid "Failed to create fat binary."
-msgstr "Şişman ikili-tip dosya (fat binary) oluşturamadı."
-
-msgid "Unknown bundle type."
-msgstr "Bilinmeyen paket türü."
-
-msgid "Unknown object type."
-msgstr "Bilinmeyen nesne türü."
 
 msgid "Invalid bundle identifier:"
 msgstr "Geçersiz paket tanımlayıcısı:"
@@ -16084,11 +16762,17 @@ msgid "\"%s\": Info.plist missing or invalid, new Info.plist generated."
 msgstr ""
 "\"%s\": Info.plist eksik veya geçersiz, yeni bir Info.plist oluşturuldu."
 
+msgid "PKG Creation"
+msgstr "PKG Oluşturma"
+
 msgid "Could not start productbuild executable."
 msgstr "productbuild yürütülebilir dosyası başlatılamadı."
 
 msgid "`productbuild` failed."
 msgstr "`productbuild` başarısız oldu."
+
+msgid "DMG Creation"
+msgstr "DMG Oluşturma"
 
 msgid "Could not start hdiutil executable."
 msgstr "hdiutil uygulaması başlatılamadı."
@@ -16139,6 +16823,9 @@ msgstr ""
 
 msgid "Making PKG"
 msgstr "PKG Yapılıyor"
+
+msgid "Entitlements Modified"
+msgstr "Yetkiler Değiştirildi"
 
 msgid ""
 "Ad-hoc signed applications require the 'Disable Library Validation' "
@@ -16259,8 +16946,14 @@ msgstr "Geçersiz dışa aktarım şablonu: \"%s\"."
 msgid "Could not write file: \"%s\"."
 msgstr "Dosya yazılamadı: \"%s\"."
 
+msgid "Icon Creation"
+msgstr "Simge Oluşturma"
+
 msgid "Could not read file: \"%s\"."
 msgstr "Dosya okunamadı: \"%s\"."
+
+msgid "PWA"
+msgstr "PWA"
 
 msgid ""
 "Exporting to Web is currently not supported in Godot 4 when using C#/.NET. "
@@ -16309,6 +17002,9 @@ msgstr "HTTP sunucu klasörü oluşturulamadı: \"%s\"."
 
 msgid "Error starting HTTP server: %d."
 msgstr "HTTP sunucusu başlatılırken hata: %d."
+
+msgid "Resources Modification"
+msgstr "Kaynakların Değişikliği"
 
 msgid "Icon size \"%d\" is missing."
 msgstr "Simge boyutu \"%d\" eksik."
@@ -16402,13 +17098,6 @@ msgstr "Uzak Windows sisteminde çalıştır"
 
 msgid "Run exported project on remote Windows system"
 msgstr "Dışa aktarılan projeyi uzak Windows sisteminde çalıştır"
-
-msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite2D to display frames."
-msgstr ""
-"AnimatedSprite2D'nin kareleri görüntüleyebilmesi için, \"Kareler\" özelliği "
-"içinde yeni bir SpriteFrames kaynağı oluşturulmalı veya var olan atanmalıdır."
 
 msgid ""
 "Only one visible CanvasModulate is allowed per canvas.\n"
@@ -17110,14 +17799,6 @@ msgid "This body will be ignored until you set a mesh."
 msgstr "Bu cisim, siz bir örgü ayarlayana kadar yok sayılır."
 
 msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"Bir 3B Oynatılan Grafik Öğenin (AnimatedSprite3D) kareleri göstermesi için, "
-"\"Kareler\" özelliğinde bir Grafik Öğe Kareleri (SpriteFrames) ayarlanmalı "
-"veya yenisi oluşturulmalıdır."
-
-msgid ""
 "The GeometryInstance3D visibility range's End distance is set to a non-zero "
 "value, but is lower than the Begin distance.\n"
 "This means the GeometryInstance3D will never be visible.\n"
@@ -17477,6 +18158,12 @@ msgstr ""
 "kullanılamıyor.\n"
 "`Hiçbiri` hassasiyetine geri döndürüldü."
 
+msgid "'%s' type is incompatible with '%s' source."
+msgstr "'%s' tipi, '%s' kaynağı ile uyumsuz."
+
+msgid "'%s' default color is incompatible with '%s' source."
+msgstr "'%s' varsayılan rengi, '%s' kaynağı ile uyumsuz."
+
 msgid "Default Color"
 msgstr "Varsayılan Renk"
 
@@ -17569,6 +18256,37 @@ msgstr "Sabit ifade bekleniyordu."
 
 msgid "Expected ',' or ')' after argument."
 msgstr "Girdi değişkeninden sonra ',' veya ')' bekleniyordu."
+
+msgid "Varying may not be assigned in the '%s' function."
+msgstr "Değişen, '%s' fonksiyonunda atanamayabilir."
+
+msgid ""
+"Varying with '%s' data type may only be assigned in the 'fragment' function."
+msgstr ""
+"'%s' veri tipindeki değişen, sadece 'fragment' fonksiyonunda atanabilir."
+
+msgid ""
+"Varyings which assigned in 'vertex' function may not be reassigned in "
+"'fragment' or 'light'."
+msgstr ""
+"'Vertex' fonksiyonunda atanmış değişenler, 'fragment' veya 'light' "
+"fonksiyonunda yeniden atanamaz."
+
+msgid ""
+"Varyings which assigned in 'fragment' function may not be reassigned in "
+"'vertex' or 'light'."
+msgstr ""
+"'Fragment' fonksiyonunda atanmış değişenler, 'vertex' veya 'light' "
+"fonksiyonunda yeniden atanamaz."
+
+msgid "Assignment to function."
+msgstr "Fonksiyona atama."
+
+msgid "Swizzling assignment contains duplicates."
+msgstr "Karışımlı ataması kopyalar içeriyor."
+
+msgid "Assignment to uniform."
+msgstr "Düzenliye atama."
 
 msgid "Constants cannot be modified."
 msgstr "Sabitler (constant) değiştirilemez."

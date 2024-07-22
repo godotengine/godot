@@ -82,8 +82,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-06-04 02:24+0000\n"
-"Last-Translator: Tycho <tychoschurink@outlook.com>\n"
+"PO-Revision-Date: 2024-07-13 14:07+0000\n"
+"Last-Translator: Philip Goto <philip.goto@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -91,7 +91,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.6-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
 msgstr "Hoofdthread"
@@ -242,6 +242,12 @@ msgstr "Joypad-knop %d"
 
 msgid "Pressure:"
 msgstr "Druk:"
+
+msgid "canceled"
+msgstr "geannuleerd"
+
+msgid "touched"
+msgstr "aangeraakt"
 
 msgid "released"
 msgstr "losgelaten"
@@ -509,6 +515,9 @@ msgstr "Actie ongedaan maken"
 msgid "Add Event"
 msgstr "Gebeurtenis toevoegen"
 
+msgid "Remove Action"
+msgstr "Actie verwijderen"
+
 msgid "Cannot Remove Action"
 msgstr "Kan actie niet verwijderen"
 
@@ -523,6 +532,9 @@ msgstr "Filter op Naam"
 
 msgid "Clear All"
 msgstr "Alles verwijderen"
+
+msgid "Clear all search filters."
+msgstr "Wis alle zoek­filters."
 
 msgid "Add New Action"
 msgstr "Nieuwe actie toevoegen"
@@ -861,16 +873,16 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "Verwijder Anim Track"
 
-msgid "Hold Shift when clicking the key icon to skip this dialog."
-msgstr ""
-"Houd shift ingedrukt bij het klikken op het sleutel-icoontje om dit venster "
-"over te slaan."
-
 msgid "Create new track for %s and insert key?"
 msgstr "Nieuw spoor aanmaken voor %s en sleutel invoegen?"
 
 msgid "Create %d new tracks and insert keys?"
 msgstr "%d nieuwe sporen aanmaken en sleutels invoeren?"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"Houd shift ingedrukt bij het klikken op het sleutel-icoontje om dit venster "
+"over te slaan."
 
 msgid "Create"
 msgstr "Aanmaken"
@@ -932,18 +944,6 @@ msgstr "Sleutel kan niet toegevoegd worden omdat spoorpad ongeldig is."
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "Sleutel kan niet ingevoegd worden omdat spoor niet van type Node3D is"
-
-msgid "Add Position Key"
-msgstr "Positie-sleutel toevoegen"
-
-msgid "Add Rotation Key"
-msgstr "Rotatie-sleutel toevoegen"
-
-msgid "Add Scale Key"
-msgstr "Schaal-sleutel toevoegen"
-
-msgid "Add Track Key"
-msgstr "Spoor-sleutel toevoegen"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Methodesleutel kan niet toegevoegd worden omdat spoorpad ongeldig is."
@@ -1351,6 +1351,10 @@ msgid "Hide"
 msgstr "Verbergen"
 
 msgctxt "Indentation"
+msgid "Spaces"
+msgstr "Spaties"
+
+msgctxt "Indentation"
 msgid "Tabs"
 msgstr "Tabs"
 
@@ -1712,6 +1716,9 @@ msgstr "Uitvoering hervat."
 
 msgid "Bytes:"
 msgstr "Bytes:"
+
+msgid "Warning:"
+msgstr "Waarschuwing:"
 
 msgid "Error:"
 msgstr "Fout:"
@@ -2279,6 +2286,15 @@ msgstr "Een nieuwe buslay-out aanmaken."
 msgid "Audio Bus Layout"
 msgstr "Geluidsbuslay-out"
 
+msgid "Invalid name."
+msgstr "Ongeldige naam."
+
+msgid "Cannot begin with a digit."
+msgstr "Kan niet beginnen met een cijfer."
+
+msgid "Valid characters:"
+msgstr "Geldige tekens:"
+
 msgid "Autoload '%s' already exists!"
 msgstr "Autoload '%s' bestaat al!"
 
@@ -2812,6 +2828,9 @@ msgstr ""
 "Er is momenteel geen beschrijving voor deze klasse. Help ons alstublieft door "
 "[color=$color][url=$url]een bijdrage te leveren[/url][/color]!"
 
+msgid "Note:"
+msgstr "Notitie:"
+
 msgid ""
 "There are notable differences when using this API with C#. See [url=%s]C# API "
 "differences to GDScript[/url] for more information."
@@ -2905,6 +2924,9 @@ msgstr "Geen beschrijving beschikbaar."
 
 msgid "Metadata:"
 msgstr "Metadata:"
+
+msgid "Setting:"
+msgstr "Instelling:"
 
 msgid "Property:"
 msgstr "Eigenschap:"
@@ -3313,13 +3335,6 @@ msgstr "Scène snel openen..."
 msgid "Quick Open Script..."
 msgstr "Script snel openen..."
 
-msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"De huidige scène heeft geen root node, maar externe resource(s), die werden "
-"gewijzigd door %d, werden toch opgeslagen."
-
 msgid "Save Scene As..."
 msgstr "Scène opslaan als..."
 
@@ -3599,6 +3614,9 @@ msgstr "Project­instellingen"
 msgid "Version Control"
 msgstr "Versie­beheer"
 
+msgid "Export..."
+msgstr "Exporteren…"
+
 msgid "Install Android Build Template..."
 msgstr "Android-bouw­sjabloon installeren…"
 
@@ -3709,6 +3727,9 @@ msgstr "Bijwerken indien gewijzigd"
 msgid "Hide Update Spinner"
 msgstr "Update-lader verbergen"
 
+msgid "FileSystem"
+msgstr "Bestands­systeem"
+
 msgid "Inspector"
 msgstr "Inspecteur"
 
@@ -3717,6 +3738,9 @@ msgstr "Knoop"
 
 msgid "History"
 msgstr "Geschiedenis"
+
+msgid "Output"
+msgstr "Uitvoer"
 
 msgid "Don't Save"
 msgstr "Niet Opslaan"
@@ -3783,6 +3807,9 @@ msgstr "Volgende bewerker openen"
 
 msgid "Open the previous Editor"
 msgstr "Vorige bewerker openen"
+
+msgid "Ok"
+msgstr "Oké"
 
 msgid "Warning!"
 msgstr "Waarschuwing!"
@@ -3946,9 +3973,6 @@ msgstr ""
 msgid "Write your logic in the _run() method."
 msgstr "Schrijf je logica in de _run() methode."
 
-msgid "There is an edited scene already."
-msgstr "Er is al een bewerkte scène."
-
 msgid "Common"
 msgstr "Gemeen­schappelijk"
 
@@ -4107,11 +4131,23 @@ msgstr ""
 "Geen downloadlinks gevonden voor deze versie. Directe download is alleen "
 "beschikbaar voor officiële uitgaven."
 
+msgid "Disconnected"
+msgstr "Losgekoppeld"
+
+msgid "Resolving"
+msgstr "Bezig met oplossen"
+
 msgid "Connecting..."
 msgstr "Verbinden..."
 
+msgid "Connected"
+msgstr "Verbonden"
+
 msgid "Requesting..."
 msgstr "Opvragen..."
+
+msgid "Downloading"
+msgstr "Bezig met downloaden"
 
 msgid "Extracting Export Templates"
 msgstr "Export Sjablonen Uitpakken"
@@ -4167,6 +4203,9 @@ msgstr "Officiële export sjablonen zijn niet beschikbaar voor ontwikkel builds.
 
 msgid "Install templates from a local file."
 msgstr "Sjablonen importeren Vanuit ZIP-Bestand."
+
+msgid "Uninstall Template"
+msgstr "Sjabloon verwijderen"
 
 msgid "Select Template File"
 msgstr "Selecteer sjabloonbestand"
@@ -4793,15 +4832,6 @@ msgstr "Bron laden mislukt."
 msgid "(Current)"
 msgstr "(huidige)"
 
-msgid "Raw"
-msgstr "Rauw"
-
-msgid "Capitalized"
-msgstr "Met hoofdletter"
-
-msgid "Localized"
-msgstr "Gelokaliseerd"
-
 msgid "Copy Properties"
 msgstr "Kopieer Eigenschappen"
 
@@ -5273,6 +5303,9 @@ msgstr "Alles verwijderen"
 msgid "Root"
 msgstr "Root"
 
+msgid "AnimationTree"
+msgstr "Animatie­boom"
+
 msgid "Author"
 msgstr "Auteur"
 
@@ -5336,6 +5369,9 @@ msgstr "Mislukt:"
 msgid "Bad download hash, assuming file has been tampered with."
 msgstr "Slechte downloadhash, bestand kan gemanipuleerd zijn."
 
+msgid "Expected:"
+msgstr "Verwacht:"
+
 msgid "Got:"
 msgstr "Gekregen:"
 
@@ -5386,6 +5422,9 @@ msgstr "Licentie (A-Z)"
 
 msgid "License (Z-A)"
 msgstr "Licentie (Z-A)"
+
+msgid "Featured"
+msgstr "Uitgelicht"
 
 msgid "Testing"
 msgstr "Testen"
@@ -5822,6 +5861,9 @@ msgstr "Gerichte randpixels"
 msgid "Centered"
 msgstr "Gecentreerd"
 
+msgid "Generating..."
+msgstr "Bezig met genereren…"
+
 msgid "Generate Visibility AABB"
 msgstr "Genereer Zichtbaarheid AABB"
 
@@ -5945,6 +5987,12 @@ msgstr "Ingeschakeld"
 
 msgid "Version"
 msgstr "Versie"
+
+msgid "Capitals"
+msgstr "Hoofdletters"
+
+msgid "Ligatures"
+msgstr "Ligaturen"
 
 msgid " - Variation"
 msgstr " - Variatie"
@@ -6598,6 +6646,9 @@ msgstr "Een plugin bewerken"
 msgid "Create a Plugin"
 msgstr "Een plugin aanmaken"
 
+msgid "Update"
+msgstr "Bijwerken"
+
 msgid "Plugin Name:"
 msgstr "Pluginnaam:"
 
@@ -7024,6 +7075,9 @@ msgstr "Ga Naar Vorige Favoriet"
 msgid "Load Shader File..."
 msgstr "Laad Shader Bestand..."
 
+msgid "ShaderFile"
+msgstr "Shader-bestand"
+
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Dit skelet heeft geen botten, maak een aantal Bone2D-knopen als kind."
 
@@ -7229,6 +7283,9 @@ msgstr "Aan het afronden"
 
 msgid "Filter Items"
 msgstr "Items filteren"
+
+msgid "With Data"
+msgstr "Met gegevens"
 
 msgid "Font sizes"
 msgstr "Lettertype­groottes"
@@ -8216,6 +8273,9 @@ msgstr "Invoertoewijzing"
 msgid "Localization"
 msgstr "Lokalisatie"
 
+msgid "Globals"
+msgstr "Globalen"
+
 msgid "Autoload"
 msgstr "Automatisch laden"
 
@@ -8686,6 +8746,33 @@ msgstr "Selecteerafstand:"
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr "Voeg een MeshLibrary aan deze GridMap toe om meshes te gebruiken."
 
+msgid "Disabled"
+msgstr "Uitgeschakeld"
+
+msgid "Fade-In"
+msgstr "Invagen"
+
+msgid "Fade-Out"
+msgstr "Uitvagen"
+
+msgid "Cross-Fade"
+msgstr "Crossfade"
+
+msgid "Automatic"
+msgstr "Automatisch"
+
+msgctxt "Transition Time Position"
+msgid "Same"
+msgstr "Zelfde"
+
+msgctxt "Transition Time Position"
+msgid "Start"
+msgstr "Start"
+
+msgctxt "Transition Time Position"
+msgid "Prev"
+msgstr "Vorige"
+
 msgid "Begin Bake"
 msgstr "Begin lichtberekening"
 
@@ -8727,6 +8814,9 @@ msgstr "Aantal"
 msgid "Network Profiler"
 msgstr "Netwerk Profiler"
 
+msgid "Replication"
+msgstr "Replicatie"
+
 msgid "Spawn"
 msgstr "Spawnen"
 
@@ -8735,6 +8825,14 @@ msgstr "Repliceren"
 
 msgid "Delete Property?"
 msgstr "Property verwijderen?"
+
+msgctxt "Replication Mode"
+msgid "Never"
+msgstr "Nooit"
+
+msgctxt "Replication Mode"
+msgid "Always"
+msgstr "Altijd"
 
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr "Een NavigationMesh-bron is nodig om deze knoop te laten werken."
@@ -8816,6 +8914,9 @@ msgstr "Notarisatie"
 
 msgid "Exporting for macOS"
 msgstr "Exporteren voor macOS"
+
+msgid "PWA"
+msgstr "PWA"
 
 msgid "Run in Browser"
 msgstr "Uitvoeren in Browser"
@@ -8941,13 +9042,6 @@ msgstr "Sonde volumes aan het genereren"
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Dit lichaam zal worden genegeerd totdat je een mesh instelt."
-
-msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"Een SpriteFrames bron moet in de 'Frames' eigenschap gemaakt of gegeven "
-"worden om AnimatedSprite3D frames te laten tonen."
 
 msgid "Plotting Meshes"
 msgstr "Plotten van Meshes"

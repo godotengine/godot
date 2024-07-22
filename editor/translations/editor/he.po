@@ -42,8 +42,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-06-10 12:09+0000\n"
-"Last-Translator: Ram Tourgeman <ramtorgeman@gmail.com>\n"
+"PO-Revision-Date: 2024-06-23 14:09+0000\n"
+"Last-Translator: Kfir Pshititsky <Kfir4321@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/godot/"
 "he/>\n"
 "Language: he\n"
@@ -52,7 +52,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && n "
 "% 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 5.6-dev\n"
+"X-Generator: Weblate 5.6-rc\n"
 
 msgid "Main Thread"
 msgstr "תהליכון ראשי"
@@ -100,31 +100,28 @@ msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "תנועת העכבר במיקום (%s) עם מהירות (%s)"
 
 msgid "Left Stick X-Axis, Joystick 0 X-Axis"
-msgstr "ציר X מוט שמאלי, ג'ויסטיק 1 ציר X"
+msgstr "ציר X מוט שמאלי, ג׳ויסטיק 1 ציר X"
 
 msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
-msgstr "ציר Y מוט שמאלי, ג'ויסטיק 1 ציר Y"
-
-msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
-msgstr "ג'ויסטיק 2 ציר Y, הדק ימני, Sony R2, Xbox RT"
+msgstr "ציר Y מוט שמאלי, ג׳ויסטיק 1 ציר Y"
 
 msgid "Joystick 3 X-Axis"
-msgstr "ג'ויסטיק 3 ציר-X"
+msgstr "ג׳ויסטיק 3 ציר-X"
 
 msgid "Joystick 3 Y-Axis"
-msgstr "ג'ויסטיק 3 ציר-Y"
+msgstr "ג׳ויסטיק 3 ציר-Y"
 
 msgid "Joystick 4 X-Axis"
-msgstr "ג'ויסטיק 4 ציר-X"
+msgstr "ג׳ויסטיק 4 ציר-X"
 
 msgid "Joystick 4 Y-Axis"
-msgstr "ג'ויסטיק 4 ציר-Y"
+msgstr "ג׳ויסטיק 4 ציר-Y"
 
 msgid "Unknown Joypad Axis"
-msgstr "ציר ג'ויפד לא ידוע"
+msgstr "ציר ג׳ויפד לא ידוע"
 
 msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
-msgstr "ג'ויסטיק על ציר %d (%s) עם הערך %.2f"
+msgstr "ג׳ויסטיק על ציר %d (%s) עם הערך %.2f"
 
 msgid "D-pad Up"
 msgstr "כרית כיוונית מעלה"
@@ -143,6 +140,9 @@ msgstr "כפתור אמצעי %d"
 
 msgid "released"
 msgstr "שוחרר"
+
+msgid "Accept"
+msgstr "אישור"
 
 msgid "Select"
 msgstr "בחירה"
@@ -217,7 +217,7 @@ msgid "Invalid input %d (not passed) in expression"
 msgstr "קלט שגוי %d (לא הועבר) בתוך הביטוי"
 
 msgid "self can't be used because instance is null (not passed)"
-msgstr "לא ניתן להשתמש ב-self כי המופע הוא null (לא הועבר)"
+msgstr "לא ניתן להשתמש ב־self כי המופע הוא null (לא הועבר)"
 
 msgid "Invalid operands to operator %s, %s and %s."
 msgstr "אופרנדים לא תקינים לאופרטור ⁨%s⁩, ⁨%s⁩ ו ⁨%s⁩."
@@ -226,10 +226,10 @@ msgid "Invalid index of type %s for base type %s"
 msgstr "שם מאפיין האינדקס מסוג %s עבור בסיס %s שגוי"
 
 msgid "Invalid named index '%s' for base type %s"
-msgstr "שם אינדקס לא תקין '%s' לסוג בסיס %s"
+msgstr "שם האינדקס ”%s“ אינו תקף לסוג הבסיס %s"
 
 msgid "Invalid arguments to construct '%s'"
-msgstr "פרמטרים שגויים לבניית '%s'"
+msgstr "פרמטרים שגויים לבניית ”%s“"
 
 msgid "On call to '%s':"
 msgstr "בקריאה ל־‚%s’:"
@@ -262,7 +262,7 @@ msgid "EiB"
 msgstr "EiB"
 
 msgid "An action with the name '%s' already exists."
-msgstr "פעולה עם השם '%s' כבר קיימת."
+msgstr "כבר קיימת פעולה עם השם ”%s“."
 
 msgid "Add Event"
 msgstr "הוספת אירוע"
@@ -335,9 +335,6 @@ msgstr "בחירת כל המפתחות"
 
 msgid "Deselect All Keys"
 msgstr "ניקוי בחירת כל המפתחות"
-
-msgid "Animation Change Keyframe Value"
-msgstr "שינוי ערך פריים-מפתח הנפשה"
 
 msgid "Animation Change Call"
 msgstr "שינוי קריאת הנפשה"
@@ -482,7 +479,7 @@ msgid "Create"
 msgstr "יצירה"
 
 msgid "node '%s'"
-msgstr "המפרק '%s'"
+msgstr "המפרק ”%s“"
 
 msgid "animation"
 msgstr "הנפשה"
@@ -491,13 +488,16 @@ msgid "AnimationPlayer can't animate itself, only other players."
 msgstr "נגן ההנפשות לא יכול להנפיש את עצמו, רק שחקנים אחרים."
 
 msgid "property '%s'"
-msgstr "מאפיין '%s'"
+msgstr "מאפיין ”%s“"
 
 msgid "Change Animation Step"
 msgstr "שנה מרווח הנפשה"
 
 msgid "Rearrange Tracks"
 msgstr "סדר רצועות מחדש"
+
+msgid "Blend Shape tracks only apply to MeshInstance3D nodes."
+msgstr "רצועות שינוי־צורה חלות רק על מפרקים מבוססי־מרחב."
 
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
@@ -506,9 +506,9 @@ msgid ""
 "-AudioStreamPlayer3D"
 msgstr ""
 "רצועת אודיו יכולה להצביע על חוליות מסוג:\n"
-"- AudioStreamPlayer\n"
-"- AudioStreamPlayer2D\n"
-"- AudioStreamPlayer3D"
+"– AudioStreamPlayer\n"
+"– AudioStreamPlayer2D\n"
+"– AudioStreamPlayer3D"
 
 msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "רצועות הנפשה יכולות להצביע רק על איברי AnimationPlayer."
@@ -524,18 +524,6 @@ msgstr "הוספת רצועת Bezier"
 
 msgid "Track path is invalid, so can't add a key."
 msgstr "נתיב הרצועה אינו תקין, לכן אי אפשר להוסיף מפתח."
-
-msgid "Add Position Key"
-msgstr "הוספת מפתח מיקום"
-
-msgid "Add Rotation Key"
-msgstr "הוספת מפתח סיבוב"
-
-msgid "Add Scale Key"
-msgstr "הוספת מפתח קנה-מידה"
-
-msgid "Add Track Key"
-msgstr "הוספת מפתח רצועה"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "נתיב הרצועה אינו תקין, לכן לא ניתן להוסיף מפתח שיטה."
@@ -767,13 +755,13 @@ msgid "Connect"
 msgstr "התחברות"
 
 msgid "Connect '%s' to '%s'"
-msgstr "חיבור '%s' ל- '%s'"
+msgstr "חיבור ”%s“ ל־ ”%s“"
 
 msgid "Disconnect '%s' from '%s'"
-msgstr "ניתוק '%s' מ-'%s'"
+msgstr "ניתוק ”%s“ מ־”%s“"
 
 msgid "Disconnect all from signal: '%s'"
-msgstr "נתק הכל מהאות '%s'"
+msgstr "ניתוק הכול מהאות: ”%s“"
 
 msgid "Connect..."
 msgstr "התחבר..."
@@ -785,10 +773,10 @@ msgid "Connect a Signal to a Method"
 msgstr "חבר אות לשיטה (מתודה)"
 
 msgid "Edit Connection: '%s'"
-msgstr "עריכת חיבור: '%s'"
+msgstr "עריכת חיבור: ”%s“"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr "האם אתה בטוח שאתה רוצה להסיר את כל החיבורים מהאות \"%s\"?"
+msgstr "האם אתה בטוח שאתה רוצה להסיר את כל החיבורים מהאות ”%s“?"
 
 msgid "Signals"
 msgstr "מסרים"
@@ -809,7 +797,7 @@ msgid "Go to Method"
 msgstr "מעבר לשיטה (מתודה)"
 
 msgid "Change Type of \"%s\""
-msgstr "שינוי הסוג של \"%s\""
+msgstr "שינוי הסוג של ”%s“"
 
 msgid "Change"
 msgstr "שינוי"
@@ -818,7 +806,7 @@ msgid "Create New %s"
 msgstr "יצירת %s חדש"
 
 msgid "No results for \"%s\"."
-msgstr "אין תוצאות עבור \"%s\"."
+msgstr "אין תוצאות עבור ”%s“."
 
 msgid "Favorites:"
 msgstr "מועדפים:"
@@ -980,7 +968,7 @@ msgid "List of Video Memory Usage by Resource:"
 msgstr "רשימת השימוש בזיכרון וידאו לפי משאב:"
 
 msgid "Total:"
-msgstr "סה\"כ:"
+msgstr "סה״כ:"
 
 msgid "Export list to a CSV file"
 msgstr "ייצוא רשימה לקובץ CSV"
@@ -1013,7 +1001,7 @@ msgid "Set From Tree"
 msgstr "קביעה מהעץ"
 
 msgid "Export measures as CSV"
-msgstr "ייצוא נתוני מדידה כ-CSV"
+msgstr "ייצוא נתוני מדידה כ־CSV"
 
 msgid "Search Replacement For:"
 msgstr "חיפוש חלופה עבור:"
@@ -1025,15 +1013,15 @@ msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"סצנה '%s' נמצאת כרגע בעריכה.\n"
-"שינויים יכנסו לתוקף בטעינה מחדש."
+"הסצנה ”%s“ נמצאת כרגע בעריכה.\n"
+"השינויים יחולו בטעינה מחדש."
 
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"משאב '%s' נמצא בשימוש.\n"
-"שינויים יכנסו לתוקף רק בטעינה מחדש."
+"המשאב ”%s“ נמצא בשימוש.\n"
+"השינויים יחולו בטעינה מחדש."
 
 msgid "Dependencies"
 msgstr "תלויות"
@@ -1060,7 +1048,7 @@ msgid "Open"
 msgstr "פתיחה"
 
 msgid "Owners of: %s (Total: %d)"
-msgstr "בעלים של: %s (סה\"כ: %d)"
+msgstr "בעלים של: %s (סה״כ: %d)"
 
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
@@ -1077,7 +1065,7 @@ msgid ""
 "Depending on your filesystem configuration, the files will either be moved to "
 "the system trash or deleted permanently."
 msgstr ""
-"הקבצים שברצונך למחוק נדרשים לשימוש ע\"י משאבים אחרים לפעולתם התקינה.\n"
+"הקבצים שברצונך למחוק נדרשים לשימוש ע״י משאבים אחרים לפעולתם התקינה.\n"
 "למחוק אותם בכל מקרה? (זו פעולה בלתי הפיכה)\n"
 "בהתאם להגדרות מערכת הקבצים שלך, הקבצים יועברו לסל המחזור או יימחקו לצמיתות."
 
@@ -1124,13 +1112,13 @@ msgid "Folder with that name already exists."
 msgstr "תיקייה עם שם זה כבר קיימת."
 
 msgid "Using slashes in folder names will create subfolders recursively."
-msgstr "שימוש בקווים נטויים בשמות תיקיות יצור תת-תיקיות בצורה רקורסיבית."
+msgstr "שימוש בקווים נטויים בשמות תיקיות יצור תת־תיקיות בצורה רקורסיבית."
 
 msgid "Could not create folder."
 msgstr "לא ניתן ליצור תיקייה."
 
 msgid "Create new folder in %s:"
-msgstr "יצירת תיקייה חדשה ב-%s:"
+msgstr "יצירת תיקייה חדשה ב־%s:"
 
 msgid "Create Folder"
 msgstr "יצירת תיקייה"
@@ -1205,9 +1193,9 @@ msgid ""
 "an exhaustive list of all such third-party components with their respective "
 "copyright statements and license terms."
 msgstr ""
-"מנוע Godot מסתמך על מספר ספריות צד-שלישי חינמיות בעלות קוד פתוח, כולן תואמות "
-"את דרישות רישיון ה MIT של המנוע. לפניכם רשימה ממצה של כל רכיבי הצד-שלישי "
-"במנוע עם הצהרות זכויות היוצרים ותנאי הרישיון שלהם."
+"מנוע Godot מסתמך על מספר ספריות צד־שלישי חופשיות ובקוד פתוח, כולן תואמות את "
+"דרישות רישיון MIT של המנוע. לפניכם רשימה ממצה של כל רכיבי הצד־השלישי במנוע עם "
+"הצהרות זכויות היוצרים ותנאי הרישיון שלהם."
 
 msgid "All Components"
 msgstr "כל הרכיבים"
@@ -1219,7 +1207,7 @@ msgid "Licenses"
 msgstr "רישיונות"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
-msgstr "שגיאה בפתיחת קובץ המשאב עבור \"%s\" (אינו בפורמט ZIP)."
+msgstr "שגיאה בפתיחת קובץ המשאב עבור ”%s“ (אינו בפורמט ZIP)."
 
 msgid "%s (already exists)"
 msgstr "%s (כבר קיים)"
@@ -1228,7 +1216,7 @@ msgid "Uncompressing Assets"
 msgstr "פורס משאבים"
 
 msgid "The following files failed extraction from asset \"%s\":"
-msgstr "חילוץ הקבצים הבאים מהמשאב \"%s\" נכשל:"
+msgstr "חילוץ הקבצים הבאים מהמשאב ”%s“ נכשל:"
 
 msgid "(and %s more files)"
 msgstr "(וגם %s קבצים נוספים)"
@@ -1321,7 +1309,7 @@ msgid "Open Audio Bus Layout"
 msgstr "פתיחת פריסת אפיקי שמע"
 
 msgid "There is no '%s' file."
-msgstr "קובץ '%s' אינו קיים."
+msgstr "הקובץ ”%s“ אינו קיים."
 
 msgid "Invalid file, not an audio bus layout."
 msgstr "קובץ שגוי, לא פריסה של אפיקי שמע."
@@ -1390,13 +1378,13 @@ msgid "Global Variable"
 msgstr "משתנה גלובלי"
 
 msgid "3D Engine"
-msgstr "מנוע תלת-מימד"
+msgstr "מנוע תלת ממד"
 
 msgid "2D Physics"
-msgstr "פיזיקה דו-מימדית"
+msgstr "פיזיקה דו־מימדית"
 
 msgid "3D Physics"
-msgstr "פיזיקה תלת-מימדית"
+msgstr "פיזיקה תלת־מימדית"
 
 msgid "OpenGL"
 msgstr "OpenGL"
@@ -1405,10 +1393,10 @@ msgid "Nodes and Classes:"
 msgstr "איברים ומחלקות:"
 
 msgid "File '%s' format is invalid, import aborted."
-msgstr "פורמט קובץ '%s' אינו תקין, הייבוא בוטל."
+msgstr "פורמט הקובץ ”%s“ אינו תקין. היבוא בוטל."
 
 msgid "Error saving profile to path: '%s'."
-msgstr "שגיאה בשמירת פרופיל לנתיב '%s'."
+msgstr "שגיאה בשמירת הפרופיל בנתיב ”%s“."
 
 msgid "New"
 msgstr "חדש"
@@ -1444,7 +1432,7 @@ msgid "Dock Position"
 msgstr "מיקום הפנל"
 
 msgid "3D Editor"
-msgstr "עורך תלת-מימד"
+msgstr "עורך תלת־ממד"
 
 msgid "Script Editor"
 msgstr "עורך הסקריפטים"
@@ -1465,7 +1453,7 @@ msgid "Import Dock"
 msgstr "חלון ייבוא"
 
 msgid "Allows to view and edit 3D scenes."
-msgstr "מאפשר צפייה ועריכה של סצנות תלת-מימד."
+msgstr "מאפשר צפייה ועריכה של סצנות תלת־ממד."
 
 msgid "Allows to edit scripts using the integrated script editor."
 msgstr "מאפשר עריכת סקריפטים בעזרת עורך הסקריפטים המובנה."
@@ -1481,14 +1469,14 @@ msgid ""
 msgstr "מאפשר לעבוד עם אותות וקבוצות של המפרק שנבחר בחלון הסצנה."
 
 msgid "Allows to browse the local file system via a dedicated dock."
-msgstr "מאפשר עיון בקבצי המערכת המקומית ע\"י שימוש בחלון ייעודי."
+msgstr "מאפשר עיון בקבצי המערכת המקומית ע״י שימוש בחלון ייעודי."
 
 msgid ""
 "Allows to configure import settings for individual assets. Requires the "
 "FileSystem dock to function."
 msgstr ""
-"מאפשר התאמת הגדרות ייבוא עבור משאבים בודדים. דורש את השימוש בחלון "
-"מערכת-הקבצים."
+"מאפשר התאמת הגדרות ייבוא עבור משאבים בודדים. דורש את השימוש בחלון מערכת "
+"הקבצים."
 
 msgid "(current)"
 msgstr "(נוכחי)"
@@ -1497,10 +1485,10 @@ msgid "(none)"
 msgstr "(ריק)"
 
 msgid "Remove currently selected profile, '%s'? Cannot be undone."
-msgstr "להסיר את הפרופיל שנבחר, '%s'? זו פעולה בלתי הפיכה."
+msgstr "האם להסיר את הפרופיל הנבחר ”%s“? זוהי פעולה בלתי הפיכה."
 
 msgid "Profile must be a valid filename and must not contain '.'"
-msgstr "הפרופיל חייב להיות שם קובץ תקין ואינו יכול להכיל '.'"
+msgstr "הפרופיל חייב להיות שם קובץ תקין ואינו יכול להכיל ”.“"
 
 msgid "Profile with this name already exists."
 msgstr "פרופיל בשם זה כבר קיים."
@@ -1528,7 +1516,7 @@ msgstr "תכונות מרכזיות:"
 
 msgid ""
 "Profile '%s' already exists. Remove it first before importing, import aborted."
-msgstr "הפרופיל '%s' כבר קיים. הסר אותו תחילה לפני הייבוא, הייבוא בוטל."
+msgstr "הפרופיל ”%s“ כבר קיים. יש להסיר אותו לפני היבוא. היבוא בוטל."
 
 msgid "Reset to Default"
 msgstr "איפוס לברירת מחדל"
@@ -1629,21 +1617,21 @@ msgid ""
 "There is currently no description for this method. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"כרגע אין תיאור לשיטה זאת. בבקשה עזרו לנו על-ידי [color=$color][url=$url]כתיבת "
+"כרגע אין תיאור לשיטה זאת. בבקשה עזרו לנו על ידי [color=$color][url=$url]כתיבת "
 "תיאור[/url][/color]!"
 
 msgid ""
 "There is currently no description for this constructor. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"כרגע אין תיאור לבנאי זה. בבקשה עזרו לנו על-ידי [color=$color][url=$url]כתיבת "
+"כרגע אין תיאור לבנאי זה. בבקשה עזרו לנו על ידי [color=$color][url=$url]כתיבת "
 "תיאור[/url][/color]!"
 
 msgid ""
 "There is currently no description for this operator. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"כרגע אין תיאור לאופרטור זה. בבקשה עזור לנו על-ידי [color=$color]"
+"כרגע אין תיאור לאופרטור זה. בבקשה עזור לנו על ידי [color=$color]"
 "[url=$url]כתיבת תיאור[/url][/color]!"
 
 msgid "Top"
@@ -1910,7 +1898,7 @@ msgid "Name:"
 msgstr "שם:"
 
 msgid "Add Metadata Property for \"%s\""
-msgstr "הוספת מטא-נתון עבור \"%s\""
+msgstr "הוספת מטא־נתון עבור ”%s“"
 
 msgid "Copy Value"
 msgstr "העתקת ערך"
@@ -1966,8 +1954,8 @@ msgid ""
 "disable it."
 msgstr ""
 "מסתובב כאשר חלון העורך מצייר מחדש.\n"
-"האפשרות 'עדכן רציף' מופעלת, מה שעלול להגביר את צריכת החשמל. לחץ כדי להשבית "
-"אותו."
+"האפשרות ”עדכון רציף“ מופעלת, כך שצריכת החשמל עלולה לגדול. יש ללחוץ כדי להשבית "
+"אותה."
 
 msgid "Spins when the editor window redraws."
 msgstr "מסתובב כאשר חלון העורך מצויר מחדש."
@@ -2054,12 +2042,6 @@ msgstr "פתיחת סצנה מהירה…"
 msgid "Quick Open Script..."
 msgstr "פתיחת סקריפט מהירה…"
 
-msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"לסצנה הנוכחית אין צומת שורש, אך %d משאבים חיצוניים ששונו נשמרו בכל מקרה."
-
 msgid "Save Scene As..."
 msgstr "שמירת סצנה בשם…"
 
@@ -2122,28 +2104,29 @@ msgid "Export Mesh Library"
 msgstr "ייצוא Mesh Library"
 
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
-msgstr "לא ניתן לפתוח את תוסף ההרחבות בנתיב: '%s' פענוח ההגדרות נכשל."
+msgstr "לא ניתן לפתוח את תוסף ההרחבות בנתיב: ”%s“ פענוח ההגדרות נכשל."
 
 msgid "Unable to load addon script from path: '%s'."
-msgstr "לא ניתן לטעון סקריפט הרחבה מנתיב: '%s'."
+msgstr "לא ניתן לטעון סקריפט הרחבה מנתיב: ”%s“."
 
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
 "error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"לא ניתן לטעון סקריפט הרחבה מנתיב: '%s'. זה יכול להיות עקב שגיאה בסקריפט.\n"
-"יש לבטל את ההרחבה ,%s, כדי למנוע שגיאות נוספות."
+"לא ניתן לטעון את סקריפט ההרחבה מהנתיב: ”%s“. יתכן שזה נגרם עקב שגיאה "
+"בסקריפט.\n"
+"כדי למנוע שגיאות נוספות יש לבטל את ההרחבה ”%s“."
 
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
-"הסצנה \"%s\" יובאה באופן אוטומטי כך שאין אפשרות לשנות אותה.\n"
+"הסצנה ”%s“ יובאה באופן אוטומטי כך שאין אפשרות לשנות אותה.\n"
 "כדי לבצע בה שינויים ניתן ליצור סצנה חדשה בירושה."
 
 msgid "Scene '%s' has broken dependencies:"
-msgstr "לסצינה '%s' יש תלות חסרה:"
+msgstr "לסצנה ”%s“ יש תלות חסרה:"
 
 msgid "Clear Recent Scenes"
 msgstr "נקה סצינות אחרונות"
@@ -2153,24 +2136,24 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"לא הוגדרה סצנה ראשית, לבחור אחת?\n"
-"אפשר לשנות זאת מאוחר יותר ב-\"הגדרות מיזם\" תחת הקטגוריה 'יישום'."
+"לא הוגדרה עדיין סצנה ראשית. האם לבחור אחת?\n"
+"ניתן לשנות זאת בהמשך ב”הגדרות המיזם“ תחת הקטגוריה ”יישום“."
 
 msgid ""
 "Selected scene '%s' does not exist, select a valid one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"הסצינה שנבחרה '%s' לא קיימת, לבחור סצנה קיימת?\n"
-"אפשר לשנות זאת מאוחר יותר ב\"הגדרות מיזם\" תחת הקטגוריה 'יישום'."
+"הסצנה ”%s“ שנבחרה אינה קיימת. האם לבחור סצנה קיימת?\n"
+"ניתן לשנות זאת בהמשך ב”הגדרות המיזם“ תחת הקטגוריה ”יישום“."
 
 msgid ""
 "Selected scene '%s' is not a scene file, select a valid one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"הסצינה שנבחרה '%s' אינה קובץ סצינה, לבחור קובץ סצינה אחר?\n"
-"אפשר לשנות זאת מאוחר יותר ב-\"הגדרות מיזם\" תחת הקטגוריה 'יישום'."
+"הסצנה ”%s“ שנבחרה אינה קובץ סצנה. האם לבחור קובץ סצנה?\n"
+"ניתן לשנות זאת בהמשך ב”הגדרות המיזם“ תחת הקטגוריה ”יישום“."
 
 msgid "Default"
 msgstr "בחירת מחדל"
@@ -2240,6 +2223,12 @@ msgstr "הגדרות העורך..."
 
 msgid "Project"
 msgstr "מיזם"
+
+msgid "Project Settings..."
+msgstr "הגדרות המיזם..."
+
+msgid "Project Settings"
+msgstr "הגדרות המיזם..."
 
 msgid "Version Control"
 msgstr "בקרת גירסאות"
@@ -2412,15 +2401,6 @@ msgstr "מצליל חדש..."
 
 msgid "Write your logic in the _run() method."
 msgstr "ניתן לכתוב את הלוגיקה שלך בשיטה ‎_run()‎."
-
-msgid "There is an edited scene already."
-msgstr "כבר יש סצנה בעריכה."
-
-msgid "Undo: %s"
-msgstr "ביטול: %s"
-
-msgid "Redo: %s"
-msgstr "ביצוע חוזר: %s"
 
 msgid "Edit Built-in Action: %s"
 msgstr "עריכת הפעולה המובנית: %s"
@@ -2892,9 +2872,6 @@ msgstr "תבנית"
 msgid "Failed to load resource."
 msgstr "טעינת המשאב נכשלה."
 
-msgid "Raw"
-msgstr "Raw"
-
 msgid "Make Sub-Resources Unique"
 msgstr "הפוך משאבי משנה לייחודיים"
 
@@ -2976,7 +2953,7 @@ msgid "Animation name can't be empty."
 msgstr "שם ההנפשה לא יכול להיות ריק."
 
 msgid "Animation name contains invalid characters: '/', ':', ',' or '['."
-msgstr "שם ההנפשה מכיל תווים שגויים: '/', ':', ',' or '['."
+msgstr "שם ההנפשה מכיל תווים שגויים: ”/“, ”:“, ”,“ או ”[“."
 
 msgid "Animation with the same name already exists."
 msgstr "הנפשה עם שם זהה כבר קיימת."
@@ -2985,7 +2962,7 @@ msgid "Enter a library name."
 msgstr "הכנס שם ספרייה."
 
 msgid "Library name contains invalid characters: '/', ':', ',' or '['."
-msgstr "שם הספרייה מכיל תווים שגויים: '/', ':', ',' or '['."
+msgstr "שם הספרייה מכיל תווים שגויים: ”/“, ”:“, ”,“ או ”[“."
 
 msgid "Library with the same name already exists."
 msgstr "ספרייה עם שם זהה כבר קיימת."
@@ -3640,7 +3617,7 @@ msgstr "יוצר:"
 
 msgid ""
 "The skeleton property of the Polygon2D does not point to a Skeleton2D node"
-msgstr "מאפיין 'skeleton' של Polygon2D אינו מצביע על מפרק Skeleton2D"
+msgstr "המאפיין ”skeleton“ של Polygon2D אינו מצביע על מפרק Skeleton2D"
 
 msgid "Move Polygon"
 msgstr "הזזת מצולע"
@@ -3682,7 +3659,7 @@ msgid "Load Resource"
 msgstr "טעינת משאב"
 
 msgid "Can't open '%s'. The file could have been moved or deleted."
-msgstr "לא יכול לפתוח את '%s'. יכול להיות שהקובץ הועבר או נמחק."
+msgstr "לא ניתן לפתוח את ”%s“. יתכן שהקובץ הועבר או נמחק."
 
 msgid "Close and save changes?"
 msgstr "לסגור ולשמור את השינויים?"
@@ -4416,13 +4393,6 @@ msgstr "שום דבר אינו גלוי כי רשתות לא הוקצו למעב
 msgid "This body will be ignored until you set a mesh."
 msgstr "תהיה התעלמות מגוף זה עד שתקבע רשת."
 
-msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"יש ליצור או להגדיר משאב SpriteFrames במאפיין \"Frames\" כדי "
-"ש-AnimatedSprite3D יציג תמוניות."
-
 msgid "Plotting Meshes"
 msgstr "הדפסת רשתות"
 
@@ -4430,13 +4400,13 @@ msgid "Finishing Plot"
 msgstr "מסיים הדפסה"
 
 msgid "On BlendTree node '%s', animation not found: '%s'"
-msgstr "במפרק 'BlendTree '%s, הנפשה לא נמצאה: '%s'"
+msgstr "במפרק BlendTree ”%s“, לא נמצאה ההנפשה: ”%s“"
 
 msgid "Animation not found: '%s'"
-msgstr "הנפשה לא נמצאה: '%s'"
+msgstr "הנפשה שלא נמצאה: ”%s“"
 
 msgid "Nothing connected to input '%s' of node '%s'."
-msgstr "שום דבר לא מחובר לקלט '%s' של צומת '%s'."
+msgstr "שום דבר לא מחובר לקלט ”%s“ של המפרק ”%s“."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "לא נקבע שורש AnimationNode עבור הגרף."
@@ -4467,8 +4437,8 @@ msgid ""
 "Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
-"ScrollContainer מיועד לעבודה עם בקר צאצא יחיד.\n"
-"יש להשתמש במיכל כצאצא (VBox, HBox וכו'), או בבקר ולקבוע את הגודל המינימלי "
+"ScrollContainer נועד לעבודה עם בקר צאצא יחיד.\n"
+"יש להשתמש במכל כצאצא (VBox, HBox וכו׳), או בבקר ולקבוע את הגודל המינימלי "
 "המותאם אישית באופן ידני."
 
 msgid "Invalid source for preview."
