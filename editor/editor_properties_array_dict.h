@@ -65,6 +65,8 @@ class EditorPropertyDictionaryObject : public RefCounted {
 	Variant new_item_key;
 	Variant new_item_value;
 	Dictionary dict;
+	Variant edited_key;
+	int editing_key_index = -3;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -86,9 +88,21 @@ public:
 	void set_new_item_value(const Variant &p_new_item);
 	Variant get_new_item_value();
 
+	void set_edited_key(Variant p_edited_key);
+	Variant get_edited_key();
+
+	bool has_unsaved_edited_key();
+
+	void edit_key_at_index(int p_index);
+	int get_editing_key_index();
+
 	String get_label_for_index(int p_index);
 	String get_property_name_for_index(int p_index);
 
+	void set_layout_direction_on_child(Node *node, bool p_editing_key = true);
+
+	String _get_property_warning(const StringName &p_property);
+	static void _bind_methods();
 	EditorPropertyDictionaryObject();
 };
 
@@ -184,25 +198,57 @@ class EditorPropertyDictionary : public EditorProperty {
 		Variant::Type type = Variant::VARIANT_MAX;
 		bool as_id = false;
 		EditorProperty *prop = nullptr;
+		bool editing_key;
 		String prop_name;
 
 		void set_index(int p_idx) {
 			index = p_idx;
 			prop_name = object->get_property_name_for_index(p_idx);
-			update_prop_or_index();
+			update_slot();
 		}
 
 		void set_prop(EditorProperty *p_prop) {
 			prop->add_sibling(p_prop);
 			prop->queue_free();
 			prop = p_prop;
-			update_prop_or_index();
+			update_editing_key();
 		}
 
-		void update_prop_or_index() {
-			prop->set_object_and_property(object.ptr(), prop_name);
-			prop->set_label(object->get_label_for_index(index));
+		void set_editing_key(bool p_editing_key) {
+			editing_key = p_editing_key;
+			if (!editing_key) {
+				prop->disconnect(SNAME("child_entered_tree"), callable_mp(object.ptr(), &EditorPropertyDictionaryObject::set_layout_direction_on_child));
+				for (int i = 0; i < prop->get_child_count(); i++) {
+					object->set_layout_direction_on_child(prop->get_child(i), false);
+				}
+				prop->set_layout_direction(LAYOUT_DIRECTION_INHERITED);
+			}
+			update_editing_key();
 		}
+
+		void update_editing_key() {
+			if (editing_key) {
+				prop->connect(SNAME("child_entered_tree"), callable_mp(object.ptr(), &EditorPropertyDictionaryObject::set_layout_direction_on_child).bind(true));
+				for (int i = 0; i < prop->get_child_count(); i++) {
+					object->set_layout_direction_on_child(prop->get_child(i), true);
+				}
+				prop->set_layout_direction(LAYOUT_DIRECTION_RTL);
+			}
+
+			update_slot();
+		}
+
+		void update_slot() {
+			prop->set_object_and_property(object.ptr(), prop_name);
+			String cs = object->get_label_for_index(index);
+			prop->set_label(cs);
+			prop->set_tooltip_text(cs);
+		}
+	};
+
+	enum ChangeTypeMenu {
+		MENU_DELETE = Variant::VARIANT_MAX,
+		MENU_EDIT_KEY,
 	};
 
 	PopupMenu *change_type = nullptr;
@@ -231,6 +277,7 @@ class EditorPropertyDictionary : public EditorProperty {
 
 	void _add_key_value();
 	void _object_id_selected(const StringName &p_property, ObjectID p_id);
+	void _edit_key_at_slot_index(int p_slot_index);
 
 protected:
 	static void _bind_methods();
