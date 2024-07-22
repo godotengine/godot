@@ -2560,7 +2560,7 @@ Vector<uint8_t> Image::save_webp_to_buffer(const bool p_lossy, const float p_qua
 	return save_webp_buffer_func(Ref<Image>((Image *)this), p_lossy, p_quality);
 }
 
-int Image::get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps) {
+int64_t Image::get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps) {
 	int mm;
 	return _get_dst_image_size(p_width, p_height, p_format, mm, p_mipmaps ? -1 : 0);
 }
