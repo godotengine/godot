@@ -3,7 +3,7 @@ description: Setup Python, install the pip version of SCons.
 inputs:
   python-version:
     description: The Python version to use.
-    default: "3.12.3"
+    default: "3.x"
   python-arch:
     description: The Python architecture.
     default: "x64"
