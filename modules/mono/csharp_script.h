@@ -434,6 +434,8 @@ public:
 
 	String to_string(bool *r_valid) override;
 
+	static String object_to_string(const Object *p_self);
+
 	Script *get_script() const override;
 
 	ScriptLanguage *get_language() override;
