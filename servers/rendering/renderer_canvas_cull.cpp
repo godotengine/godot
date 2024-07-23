@@ -292,8 +292,11 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		Point2 remainder = Point2(
 				Math::fmod(rect_position_scaled.x, 1.0l),
 				Math::fmod(rect_position_scaled.y, 1.0l));
-		final_xform.columns[2] = (final_xform.columns[2] + Point2(0.5, 0.5)).floor() - remainder;
-		parent_xform.columns[2] = (parent_xform.columns[2] + Point2(0.5, 0.5)).floor() - remainder;
+		Point2 remainder_leftover = Point2(
+				Math::fmod(remainder.x / rect_scale.x, 1.0l),
+				Math::fmod(remainder.y / rect_scale.y, 1.0l));
+		final_xform.columns[2] = (final_xform.columns[2] + Point2(0.5, 0.5)).floor() - remainder_leftover;
+		parent_xform.columns[2] = (parent_xform.columns[2] + Point2(0.5, 0.5)).floor() - remainder_leftover;
 	}
 
 	final_xform = parent_xform * final_xform;
