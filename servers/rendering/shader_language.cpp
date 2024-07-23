@@ -7411,6 +7411,9 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 									return ERR_PARSE_ERROR;
 								}
 								tk = _get_token();
+							} else {
+								_set_expected_error("(");
+								return ERR_PARSE_ERROR;
 							}
 						}
 					} else {
@@ -9520,6 +9523,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 										_set_error(RTR("Array size mismatch."));
 										return ERR_PARSE_ERROR;
 									}
+								} else {
+									_set_expected_error("(");
+									return ERR_PARSE_ERROR;
 								}
 
 								array_size = constant.array_size;
