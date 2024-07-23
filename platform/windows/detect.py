@@ -467,6 +467,8 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     if env["arch"] == "x86_32":
         env["x86_libtheora_opt_vc"] = True
 
+    env.Append(CCFLAGS=["/fp:strict"])
+
     env.AppendUnique(CCFLAGS=["/Gd", "/GR", "/nologo"])
     env.AppendUnique(CCFLAGS=["/utf-8"])  # Force to use Unicode encoding.
     env.AppendUnique(CXXFLAGS=["/TP"])  # assume all sources are C++
@@ -674,6 +676,8 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if env["arch"] in ["x86_32", "x86_64"]:
         env["x86_libtheora_opt_gcc"] = True
+
+    env.Append(CCFLAGS=["-ffp-contract=off"])
 
     mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
 
