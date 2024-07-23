@@ -8,22 +8,38 @@ if len(sys.argv) < 2:
     print("Invalid usage of header_guards.py, it should be called with a path to one or multiple files.")
     sys.exit(1)
 
-HEADER_CHECK_OFFSET = 30
-HEADER_BEGIN_OFFSET = 31
-HEADER_END_OFFSET = -1
-
 changed = []
 invalid = []
 
 for file in sys.argv[1:]:
-    with open(file, "rt", encoding="utf-8", newline="\n") as f:
+    header_start = -1
+    HEADER_CHECK_OFFSET = -1
+
+    with open(file.strip(), "rt", encoding="utf-8", newline="\n") as f:
         lines = f.readlines()
 
-    if len(lines) <= HEADER_BEGIN_OFFSET:
-        continue  # Most likely a dummy file.
+    for idx, line in enumerate(lines):
+        sline = line.strip()
 
-    if lines[HEADER_CHECK_OFFSET].startswith("#import"):
-        continue  # Early catch obj-c file.
+        if header_start < 0:
+            if sline == "":  # Skip empty lines at the top.
+                continue
+
+            if sline.startswith("/**********"):  # Godot header starts this way.
+                header_start = idx
+            else:
+                HEADER_CHECK_OFFSET = 0  # There is no Godot header.
+                break
+        else:
+            if not sline.startswith("*") and not sline.startswith("/*"):  # Not in the Godot header anymore.
+                HEADER_CHECK_OFFSET = idx + 1  # The include should be two lines below the Godot header.
+                break
+
+    if HEADER_CHECK_OFFSET < 0:
+        continue
+
+    HEADER_BEGIN_OFFSET = HEADER_CHECK_OFFSET + 1
+    HEADER_END_OFFSET = len(lines) - 1
 
     split = file.split("/")  # Already in posix-format.
 
@@ -82,6 +98,9 @@ for file in sys.argv[1:]:
     objc = False
 
     for idx, line in enumerate(lines):
+        if line.startswith("// #import"):  # Some dummy obj-c files only have commented out import lines.
+            objc = True
+            break
         if not line.startswith("#"):
             continue
         elif line.startswith("#ifndef") and header_check == -1:

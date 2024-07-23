@@ -1585,9 +1585,6 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 			"Texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT` to be set to be retrieved.");
 
 	uint32_t layer_count = tex->layers;
-	if (tex->type == TEXTURE_TYPE_CUBE || tex->type == TEXTURE_TYPE_CUBE_ARRAY) {
-		layer_count *= 6;
-	}
 	ERR_FAIL_COND_V(p_layer >= layer_count, Vector<uint8_t>());
 
 	if ((tex->usage_flags & TEXTURE_USAGE_CPU_READ_BIT)) {

@@ -191,6 +191,8 @@ def configure(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["__ARM_ARCH_8A__"])
         env.Append(CPPDEFINES=["__ARM_NEON__"])
 
+    env.Append(CCFLAGS=["-ffp-contract=off"])
+
     # Link flags
 
     env.Append(LINKFLAGS="-Wl,--gc-sections -Wl,--no-undefined -Wl,-z,now".split())
