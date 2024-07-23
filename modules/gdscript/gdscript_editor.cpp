@@ -796,7 +796,7 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 				case GDScriptParser::Node::CALL: {
 					const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(par->initializer);
 					if (call->is_constant && call->reduced) {
-						def_val = call->function_name.operator String() + call->reduced_value.operator String();
+						def_val = call->reduced_value.get_construct_string();
 					} else {
 						def_val = call->function_name.operator String() + (call->arguments.is_empty() ? "()" : "(...)");
 					}
@@ -804,7 +804,7 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 				case GDScriptParser::Node::ARRAY: {
 					const GDScriptParser::ArrayNode *arr = static_cast<const GDScriptParser::ArrayNode *>(par->initializer);
 					if (arr->is_constant && arr->reduced) {
-						def_val = arr->reduced_value.operator String();
+						def_val = arr->reduced_value.get_construct_string();
 					} else {
 						def_val = arr->elements.is_empty() ? "[]" : "[...]";
 					}
@@ -812,24 +812,17 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 				case GDScriptParser::Node::DICTIONARY: {
 					const GDScriptParser::DictionaryNode *dict = static_cast<const GDScriptParser::DictionaryNode *>(par->initializer);
 					if (dict->is_constant && dict->reduced) {
-						def_val = dict->reduced_value.operator String();
+						def_val = dict->reduced_value.get_construct_string();
 					} else {
 						def_val = dict->elements.is_empty() ? "{}" : "{...}";
 					}
 				} break;
 				case GDScriptParser::Node::SUBSCRIPT: {
 					const GDScriptParser::SubscriptNode *sub = static_cast<const GDScriptParser::SubscriptNode *>(par->initializer);
-					if (sub->is_constant) {
-						if (sub->datatype.kind == GDScriptParser::DataType::ENUM) {
-							def_val = sub->get_datatype().to_string();
-						} else if (sub->reduced) {
-							const Variant::Type vt = sub->reduced_value.get_type();
-							if (vt == Variant::Type::NIL || vt == Variant::Type::FLOAT || vt == Variant::Type::INT || vt == Variant::Type::STRING || vt == Variant::Type::STRING_NAME || vt == Variant::Type::BOOL || vt == Variant::Type::NODE_PATH) {
-								def_val = sub->reduced_value.operator String();
-							} else {
-								def_val = sub->get_datatype().to_string() + sub->reduced_value.operator String();
-							}
-						}
+					if (sub->is_attribute && sub->datatype.kind == GDScriptParser::DataType::ENUM && !sub->datatype.is_meta_type) {
+						def_val = sub->get_datatype().to_string() + "." + sub->attribute->name;
+					} else if (sub->is_constant && sub->reduced) {
+						def_val = sub->reduced_value.get_construct_string();
 					}
 				} break;
 				default:
