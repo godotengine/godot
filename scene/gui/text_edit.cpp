@@ -4739,10 +4739,6 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 
 	// Show the topmost caret if added above or bottommost caret if added below.
 	if (view_target_caret >= 0 && view_target_caret < get_caret_count()) {
-		print_line("Caret size");
-		print_line(carets.size());
-		print_line("Current caret");
-		print_line(view_target_caret);
 		adjust_viewport_to_caret(view_target_caret);
 	}
 
