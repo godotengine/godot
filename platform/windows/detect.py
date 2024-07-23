@@ -675,6 +675,9 @@ def configure_mingw(env: "SConsEnvironment"):
     if env["arch"] in ["x86_32", "x86_64"]:
         env["x86_libtheora_opt_gcc"] = True
 
+    if env["arch"] == "arm64":
+        env.Append(CCFLAGS=["-ffp-contract=off"])
+
     mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
 
     if env["use_llvm"]:

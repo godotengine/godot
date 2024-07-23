@@ -187,7 +187,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["__ARM_ARCH_7__", "__ARM_ARCH_7A__"])
         env.Append(CPPDEFINES=["__ARM_NEON__"])
     elif env["arch"] == "arm64":
-        env.Append(CCFLAGS=["-mfix-cortex-a53-835769"])
+        env.Append(CCFLAGS=["-mfix-cortex-a53-835769", "-ffp-contract=off"])
         env.Append(CPPDEFINES=["__ARM_ARCH_8A__"])
 
     # Link flags

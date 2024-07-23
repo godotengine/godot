@@ -179,6 +179,9 @@ def configure(env: "SConsEnvironment"):
             env.Append(CCFLAGS=["-fsanitize-recover=memory"])
             env.Append(LINKFLAGS=["-fsanitize=memory"])
 
+    if env["arch"] == "arm64":
+        env.Append(CCFLAGS=["-ffp-contract=off"])
+
     # LTO
 
     if env["lto"] == "auto":  # Full LTO for production.
