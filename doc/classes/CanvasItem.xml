@@ -604,6 +604,9 @@
 		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled" default="false">
 			If [code]true[/code], the object draws behind its parent.
 		</member>
+		<member name="snap_to_pixel" type="int" setter="set_snap_to_pixel" getter="get_snap_to_pixel" enum="CanvasItem.SnapToPixel" default="0">
+			The snapping to pixel mode to use on this [CanvasItem].
+		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="CanvasItem.TextureFilter" default="0">
 			The texture filtering mode to use on this [CanvasItem].
 		</member>
@@ -735,6 +738,18 @@
 		</constant>
 		<constant name="CLIP_CHILDREN_MAX" value="3" enum="ClipChildrenMode">
 			Represents the size of the [enum ClipChildrenMode] enum.
+		</constant>
+		<constant name="SNAP_TO_PIXEL_PARENT_NODE" value="0" enum="SnapToPixel">
+			The [CanvasItem] will inherit the snapping mode from its parent.
+		</constant>
+		<constant name="SNAP_TO_PIXEL_DISABLED" value="1" enum="SnapToPixel">
+			The [CanvasItem] will not snap.
+		</constant>
+		<constant name="SNAP_TO_PIXEL_ENABLED" value="2" enum="SnapToPixel">
+			The [CanvasItem] will snap.
+		</constant>
+		<constant name="SNAP_TO_PIXEL_MAX" value="3" enum="SnapToPixel">
+			Represents the size of the [enum SnapToPixel] enum.
 		</constant>
 	</constants>
 </class>
