@@ -664,6 +664,169 @@ Variant GodotCapsuleShape3D::get_data() const {
 
 GodotCapsuleShape3D::GodotCapsuleShape3D() {}
 
+/********** CONE *************/
+
+void GodotConeShape3D::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
+	Vector3 n = p_transform.basis.xform_inv(p_normal).normalized();
+	real_t h = height * 0.5 - radius;
+
+	n *= radius;
+	n.y += (n.y > 0) ? h : -h;
+
+	r_max = p_normal.dot(p_transform.xform(n));
+	r_min = p_normal.dot(p_transform.xform(-n));
+}
+
+Vector3 GodotConeShape3D::get_support(const Vector3 &p_normal) const {
+	Vector3 n = p_normal;
+
+	real_t h = height * 0.5 - radius;
+
+	n *= radius;
+	n.y += (n.y > 0) ? h : -h;
+	return n;
+}
+
+void GodotConeShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
+	Vector3 n = p_normal;
+
+	real_t d = n.y;
+	real_t h = height * 0.5 - radius; // half-height of the cylinder part
+
+	if (h > 0 && Math::abs(d) < edge_support_threshold_lower) {
+		// make it flat
+		n.y = 0.0;
+		n.normalize();
+		n *= radius;
+
+		r_amount = 2;
+		r_type = FEATURE_EDGE;
+		r_supports[0] = n;
+		r_supports[0].y += h;
+		r_supports[1] = n;
+		r_supports[1].y -= h;
+	} else {
+		n *= radius;
+		n.y += (d > 0) ? h : -h;
+		r_amount = 1;
+		r_type = FEATURE_POINT;
+		*r_supports = n;
+	}
+}
+
+bool GodotConeShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, int &r_face_index, bool p_hit_back_faces) const {
+	Vector3 norm = (p_end - p_begin).normalized();
+	real_t min_d = 1e20;
+
+	Vector3 res, n;
+	bool collision = false;
+
+	Vector3 auxres, auxn;
+	bool collided;
+
+	// test against cylinder and spheres :-|
+
+	collided = Geometry3D::segment_intersects_cylinder(p_begin, p_end, height - radius * 2.0, radius, &auxres, &auxn, 1);
+
+	if (collided) {
+		real_t d = norm.dot(auxres);
+		if (d < min_d) {
+			min_d = d;
+			res = auxres;
+			n = auxn;
+			collision = true;
+		}
+	}
+
+	collided = Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(0, height * 0.5 - radius, 0), radius, &auxres, &auxn);
+
+	if (collided) {
+		real_t d = norm.dot(auxres);
+		if (d < min_d) {
+			min_d = d;
+			res = auxres;
+			n = auxn;
+			collision = true;
+		}
+	}
+
+	collided = Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(0, height * -0.5 + radius, 0), radius, &auxres, &auxn);
+
+	if (collided) {
+		real_t d = norm.dot(auxres);
+
+		if (d < min_d) {
+			min_d = d;
+			res = auxres;
+			n = auxn;
+			collision = true;
+		}
+	}
+
+	if (collision) {
+		r_result = res;
+		r_normal = n;
+	}
+	return collision;
+}
+
+bool GodotConeShape3D::intersect_point(const Vector3 &p_point) const {
+	if (Math::abs(p_point.y) < height * 0.5 - radius) {
+		return Vector3(p_point.x, 0, p_point.z).length() < radius;
+	} else {
+		Vector3 p = p_point;
+		p.y = Math::abs(p.y) - height * 0.5 + radius;
+		return p.length() < radius;
+	}
+}
+
+Vector3 GodotConeShape3D::get_closest_point_to(const Vector3 &p_point) const {
+	Vector3 s[2] = {
+		Vector3(0, -height * 0.5 + radius, 0),
+		Vector3(0, height * 0.5 - radius, 0),
+	};
+
+	Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, s);
+
+	if (p.distance_to(p_point) < radius) {
+		return p_point;
+	}
+
+	return p + (p_point - p).normalized() * radius;
+}
+
+Vector3 GodotConeShape3D::get_moment_of_inertia(real_t p_mass) const {
+	// use bad AABB approximation
+	Vector3 extents = get_aabb().size * 0.5;
+
+	return Vector3(
+			(p_mass / 3.0) * (extents.y * extents.y + extents.z * extents.z),
+			(p_mass / 3.0) * (extents.x * extents.x + extents.z * extents.z),
+			(p_mass / 3.0) * (extents.x * extents.x + extents.y * extents.y));
+}
+
+void GodotConeShape3D::_setup(real_t p_height, real_t p_radius) {
+	height = p_height;
+	radius = p_radius;
+	configure(AABB(Vector3(-radius, -height * 0.5, -radius), Vector3(radius * 2, height, radius * 2)));
+}
+
+void GodotConeShape3D::set_data(const Variant &p_data) {
+	Dictionary d = p_data;
+	ERR_FAIL_COND(!d.has("radius"));
+	ERR_FAIL_COND(!d.has("height"));
+	_setup(d["height"], d["radius"]);
+}
+
+Variant GodotConeShape3D::get_data() const {
+	Dictionary d;
+	d["radius"] = radius;
+	d["height"] = height;
+	return d;
+}
+
+GodotConeShape3D::GodotConeShape3D() {}
+
 /********** CYLINDER *************/
 
 void GodotCylinderShape3D::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {

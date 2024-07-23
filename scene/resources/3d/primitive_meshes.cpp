@@ -606,6 +606,314 @@ int CapsuleMesh::get_rings() const {
 CapsuleMesh::CapsuleMesh() {}
 
 /**
+  ConeMesh
+*/
+
+void ConeMesh::_update_lightmap_size() {
+	if (get_add_uv2()) {
+		// size must have changed, update lightmap size hint
+		Size2i _lightmap_size_hint;
+		float texel_size = get_lightmap_texel_size();
+		float padding = get_uv2_padding();
+
+		float top_circumference = top_radius * Math_PI * 2.0;
+		float bottom_circumference = bottom_radius * Math_PI * 2.0;
+
+		float _width = MAX(top_circumference, bottom_circumference) / texel_size + padding;
+		_width = MAX(_width, (((top_radius + bottom_radius) / texel_size) + padding) * 2.0); // this is extremely unlikely to be larger, will only happen if padding is larger then our diameter.
+		_lightmap_size_hint.x = MAX(1.0, _width);
+
+		float _height = ((height + (MAX(top_radius, bottom_radius) * 2.0)) / texel_size) + (2.0 * padding);
+
+		_lightmap_size_hint.y = MAX(1.0, _height);
+
+		set_lightmap_size_hint(_lightmap_size_hint);
+	}
+}
+
+void ConeMesh::_create_mesh_array(Array &p_arr) const {
+	bool _add_uv2 = get_add_uv2();
+	float texel_size = get_lightmap_texel_size();
+	float _uv2_padding = get_uv2_padding() * texel_size;
+
+	create_mesh_array(p_arr, top_radius, bottom_radius, height, radial_segments, rings, cap_top, cap_bottom, _add_uv2, _uv2_padding);
+}
+
+void ConeMesh::create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments, int rings, bool cap_top, bool cap_bottom, bool p_add_uv2, const float p_uv2_padding) {
+	int i, j, prevrow, thisrow, point;
+	float x, y, z, u, v, radius, radius_h;
+
+	// Only used if we calculate UV2
+	float top_circumference = top_radius * Math_PI * 2.0;
+	float bottom_circumference = bottom_radius * Math_PI * 2.0;
+	float vertical_length = height + MAX(2.0 * top_radius, 2.0 * bottom_radius) + (2.0 * p_uv2_padding);
+	float height_v = height / vertical_length;
+	float padding_v = p_uv2_padding / vertical_length;
+
+	float horizonal_length = MAX(MAX(2.0 * (top_radius + bottom_radius + p_uv2_padding), top_circumference + p_uv2_padding), bottom_circumference + p_uv2_padding);
+	float center_h = 0.5 * (horizonal_length - p_uv2_padding) / horizonal_length;
+	float top_h = top_circumference / horizonal_length;
+	float bottom_h = bottom_circumference / horizonal_length;
+	float padding_h = p_uv2_padding / horizonal_length;
+
+	Vector<Vector3> points;
+	Vector<Vector3> normals;
+	Vector<float> tangents;
+	Vector<Vector2> uvs;
+	Vector<Vector2> uv2s;
+	Vector<int> indices;
+	point = 0;
+
+#define ADD_TANGENT(m_x, m_y, m_z, m_d) \
+	tangents.push_back(m_x);            \
+	tangents.push_back(m_y);            \
+	tangents.push_back(m_z);            \
+	tangents.push_back(m_d);
+
+	thisrow = 0;
+	prevrow = 0;
+	const real_t side_normal_y = (bottom_radius - top_radius) / height;
+	for (j = 0; j <= (rings + 1); j++) {
+		v = j;
+		v /= (rings + 1);
+
+		radius = top_radius + ((bottom_radius - top_radius) * v);
+		radius_h = top_h + ((bottom_h - top_h) * v);
+
+		y = height * v;
+		y = (height * 0.5) - y;
+
+		for (i = 0; i <= radial_segments; i++) {
+			u = i;
+			u /= radial_segments;
+
+			x = sin(u * Math_TAU);
+			z = cos(u * Math_TAU);
+
+			Vector3 p = Vector3(x * radius, y, z * radius);
+			points.push_back(p);
+			normals.push_back(Vector3(x, side_normal_y, z).normalized());
+			ADD_TANGENT(z, 0.0, -x, 1.0)
+			uvs.push_back(Vector2(u, v * 0.5));
+			if (p_add_uv2) {
+				uv2s.push_back(Vector2(center_h + (u - 0.5) * radius_h, v * height_v));
+			}
+			point++;
+
+			if (i > 0 && j > 0) {
+				indices.push_back(prevrow + i - 1);
+				indices.push_back(prevrow + i);
+				indices.push_back(thisrow + i - 1);
+
+				indices.push_back(prevrow + i);
+				indices.push_back(thisrow + i);
+				indices.push_back(thisrow + i - 1);
+			}
+		}
+
+		prevrow = thisrow;
+		thisrow = point;
+	}
+
+	// Adjust for bottom section, only used if we calculate UV2s.
+	top_h = top_radius / horizonal_length;
+	float top_v = top_radius / vertical_length;
+	bottom_h = bottom_radius / horizonal_length;
+	float bottom_v = bottom_radius / vertical_length;
+
+	// Add top.
+	if (cap_top && top_radius > 0.0) {
+		y = height * 0.5;
+
+		thisrow = point;
+		points.push_back(Vector3(0.0, y, 0.0));
+		normals.push_back(Vector3(0.0, 1.0, 0.0));
+		ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
+		uvs.push_back(Vector2(0.25, 0.75));
+		if (p_add_uv2) {
+			uv2s.push_back(Vector2(top_h, height_v + padding_v + MAX(top_v, bottom_v)));
+		}
+		point++;
+
+		for (i = 0; i <= radial_segments; i++) {
+			float r = i;
+			r /= radial_segments;
+
+			x = sin(r * Math_TAU);
+			z = cos(r * Math_TAU);
+
+			u = ((x + 1.0) * 0.25);
+			v = 0.5 + ((z + 1.0) * 0.25);
+
+			Vector3 p = Vector3(x * top_radius, y, z * top_radius);
+			points.push_back(p);
+			normals.push_back(Vector3(0.0, 1.0, 0.0));
+			ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
+			uvs.push_back(Vector2(u, v));
+			if (p_add_uv2) {
+				uv2s.push_back(Vector2(top_h + (x * top_h), height_v + padding_v + MAX(top_v, bottom_v) + (z * top_v)));
+			}
+			point++;
+
+			if (i > 0) {
+				indices.push_back(thisrow);
+				indices.push_back(point - 1);
+				indices.push_back(point - 2);
+			}
+		}
+	}
+
+	// Add bottom.
+	if (cap_bottom && bottom_radius > 0.0) {
+		y = height * -0.5;
+
+		thisrow = point;
+		points.push_back(Vector3(0.0, y, 0.0));
+		normals.push_back(Vector3(0.0, -1.0, 0.0));
+		ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
+		uvs.push_back(Vector2(0.75, 0.75));
+		if (p_add_uv2) {
+			uv2s.push_back(Vector2(top_h + top_h + padding_h + bottom_h, height_v + padding_v + MAX(top_v, bottom_v)));
+		}
+		point++;
+
+		for (i = 0; i <= radial_segments; i++) {
+			float r = i;
+			r /= radial_segments;
+
+			x = sin(r * Math_TAU);
+			z = cos(r * Math_TAU);
+
+			u = 0.5 + ((x + 1.0) * 0.25);
+			v = 1.0 - ((z + 1.0) * 0.25);
+
+			Vector3 p = Vector3(x * bottom_radius, y, z * bottom_radius);
+			points.push_back(p);
+			normals.push_back(Vector3(0.0, -1.0, 0.0));
+			ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
+			uvs.push_back(Vector2(u, v));
+			if (p_add_uv2) {
+				uv2s.push_back(Vector2(top_h + top_h + padding_h + bottom_h + (x * bottom_h), height_v + padding_v + MAX(top_v, bottom_v) - (z * bottom_v)));
+			}
+			point++;
+
+			if (i > 0) {
+				indices.push_back(thisrow);
+				indices.push_back(point - 2);
+				indices.push_back(point - 1);
+			}
+		}
+	}
+
+	p_arr[RS::ARRAY_VERTEX] = points;
+	p_arr[RS::ARRAY_NORMAL] = normals;
+	p_arr[RS::ARRAY_TANGENT] = tangents;
+	p_arr[RS::ARRAY_TEX_UV] = uvs;
+	if (p_add_uv2) {
+		p_arr[RS::ARRAY_TEX_UV2] = uv2s;
+	}
+	p_arr[RS::ARRAY_INDEX] = indices;
+}
+
+void ConeMesh::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_top_radius", "radius"), &ConeMesh::set_top_radius);
+	ClassDB::bind_method(D_METHOD("get_top_radius"), &ConeMesh::get_top_radius);
+	ClassDB::bind_method(D_METHOD("set_bottom_radius", "radius"), &ConeMesh::set_bottom_radius);
+	ClassDB::bind_method(D_METHOD("get_bottom_radius"), &ConeMesh::get_bottom_radius);
+	ClassDB::bind_method(D_METHOD("set_height", "height"), &ConeMesh::set_height);
+	ClassDB::bind_method(D_METHOD("get_height"), &ConeMesh::get_height);
+
+	ClassDB::bind_method(D_METHOD("set_radial_segments", "segments"), &ConeMesh::set_radial_segments);
+	ClassDB::bind_method(D_METHOD("get_radial_segments"), &ConeMesh::get_radial_segments);
+	ClassDB::bind_method(D_METHOD("set_rings", "rings"), &ConeMesh::set_rings);
+	ClassDB::bind_method(D_METHOD("get_rings"), &ConeMesh::get_rings);
+
+	ClassDB::bind_method(D_METHOD("set_cap_top", "cap_top"), &ConeMesh::set_cap_top);
+	ClassDB::bind_method(D_METHOD("is_cap_top"), &ConeMesh::is_cap_top);
+
+	ClassDB::bind_method(D_METHOD("set_cap_bottom", "cap_bottom"), &ConeMesh::set_cap_bottom);
+	ClassDB::bind_method(D_METHOD("is_cap_bottom"), &ConeMesh::is_cap_bottom);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "top_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_top_radius", "get_top_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bottom_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_bottom_radius", "get_bottom_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_rings", "get_rings");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cap_top"), "set_cap_top", "is_cap_top");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cap_bottom"), "set_cap_bottom", "is_cap_bottom");
+}
+
+void ConeMesh::set_top_radius(const float p_radius) {
+	top_radius = p_radius;
+	_update_lightmap_size();
+	request_update();
+}
+
+float ConeMesh::get_top_radius() const {
+	return top_radius;
+}
+
+void ConeMesh::set_bottom_radius(const float p_radius) {
+	bottom_radius = p_radius;
+	_update_lightmap_size();
+	request_update();
+}
+
+float ConeMesh::get_bottom_radius() const {
+	return bottom_radius;
+}
+
+void ConeMesh::set_height(const float p_height) {
+	height = p_height;
+	_update_lightmap_size();
+	request_update();
+}
+
+float ConeMesh::get_height() const {
+	return height;
+}
+
+void ConeMesh::set_radial_segments(const int p_segments) {
+	radial_segments = p_segments > 4 ? p_segments : 4;
+	request_update();
+}
+
+int ConeMesh::get_radial_segments() const {
+	return radial_segments;
+}
+
+void ConeMesh::set_rings(const int p_rings) {
+	ERR_FAIL_COND(p_rings < 0);
+	rings = p_rings;
+	request_update();
+}
+
+int ConeMesh::get_rings() const {
+	return rings;
+}
+
+void ConeMesh::set_cap_top(bool p_cap_top) {
+	cap_top = p_cap_top;
+	request_update();
+}
+
+bool ConeMesh::is_cap_top() const {
+	return cap_top;
+}
+
+void ConeMesh::set_cap_bottom(bool p_cap_bottom) {
+	cap_bottom = p_cap_bottom;
+	request_update();
+}
+
+bool ConeMesh::is_cap_bottom() const {
+	return cap_bottom;
+}
+
+ConeMesh::ConeMesh() {}
+
+
+/**
   BoxMesh
 */
 

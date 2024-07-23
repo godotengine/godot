@@ -246,6 +246,36 @@ public:
 	GodotCapsuleShape3D();
 };
 
+class GodotConeShape3D : public GodotShape3D {
+	real_t height = 0.0;
+	real_t radius = 0.0;
+
+	void _setup(real_t p_height, real_t p_radius);
+
+public:
+	_FORCE_INLINE_ real_t get_height() const { return height; }
+	_FORCE_INLINE_ real_t get_radius() const { return radius; }
+
+	virtual real_t get_volume() const override { return 4.0 / 3.0 * Math_PI * radius * radius * radius + (height - radius * 2.0) * Math_PI * radius * radius; }
+
+	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_CONE; }
+
+	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const override;
+	virtual Vector3 get_support(const Vector3 &p_normal) const override;
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const override;
+	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, int &r_face_index, bool p_hit_back_faces) const override;
+	virtual bool intersect_point(const Vector3 &p_point) const override;
+	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const override;
+
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const override;
+
+	virtual void set_data(const Variant &p_data) override;
+	virtual Variant get_data() const override;
+
+	GodotConeShape3D();
+};
+
+
 class GodotCylinderShape3D : public GodotShape3D {
 	real_t height = 0.0;
 	real_t radius = 0.0;

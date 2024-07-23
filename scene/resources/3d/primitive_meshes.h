@@ -153,6 +153,55 @@ public:
 };
 
 /**
+  Cone 
+ */
+
+class ConeMesh : public PrimitiveMesh {
+	GDCLASS(ConeMesh, PrimitiveMesh);
+
+private:
+	float top_radius = 0.0;
+	float bottom_radius = 0.5;
+	float height = 2.0;
+	int radial_segments = 64;
+	int rings = 4;
+	bool cap_top = true;
+	bool cap_bottom = true;
+
+protected:
+	static void _bind_methods();
+	virtual void _create_mesh_array(Array &p_arr) const override;
+
+	virtual void _update_lightmap_size() override;
+
+public:
+	static void create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments = 64, int rings = 4, bool cap_top = true, bool cap_bottom = true, bool p_add_uv2 = false, const float p_uv2_padding = 1.0);
+
+	void set_top_radius(const float p_radius);
+	float get_top_radius() const;
+
+	void set_bottom_radius(const float p_radius);
+	float get_bottom_radius() const;
+
+	void set_height(const float p_height);
+	float get_height() const;
+
+	void set_radial_segments(const int p_segments);
+	int get_radial_segments() const;
+
+	void set_rings(const int p_rings);
+	int get_rings() const;
+
+	void set_cap_top(bool p_cap_top);
+	bool is_cap_top() const;
+
+	void set_cap_bottom(bool p_cap_bottom);
+	bool is_cap_bottom() const;
+
+	ConeMesh();
+};
+
+/**
 	A box
 */
 class BoxMesh : public PrimitiveMesh {
