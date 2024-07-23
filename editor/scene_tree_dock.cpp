@@ -2416,6 +2416,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 
 	if (need_edit) {
 		EditorNode::get_singleton()->edit_current();
+		editor_selection->clear();
 	}
 }
 
