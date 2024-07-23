@@ -158,7 +158,7 @@ void AnimationPlayer::_notification(int p_what) {
 	}
 }
 
-void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_started, bool p_is_current) {
+void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_internal_seeked, bool p_started, bool p_is_current) {
 	double speed = speed_scale * cd.speed_scale;
 	bool backwards = signbit(speed); // Negative zero means playing backwards too.
 	double delta = p_started ? 0 : p_delta * speed;
@@ -237,9 +237,8 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 	if (Math::is_zero_approx(pi.delta) && backwards) {
 		pi.delta = -0.0; // Sign is needed to handle converted Continuous track from Discrete track correctly.
 	}
-	// AnimationPlayer doesn't have internal seeking.
-	// However, immediately after playback, discrete keys should be retrieved with EXACT mode since behind keys must be ignored at that time.
-	pi.is_external_seeking = !p_started;
+	// Immediately after playback, discrete keys should be retrieved with EXACT mode since behind keys must be ignored at that time.
+	pi.is_external_seeking = !p_internal_seeked && !p_started;
 	pi.looped_flag = looped_flag;
 	pi.weight = p_blend;
 	make_animation_instance(cd.from->name, pi);
@@ -259,13 +258,15 @@ void AnimationPlayer::_blend_playback_data(double p_delta, bool p_started) {
 	Playback &c = playback;
 
 	bool seeked = c.seeked; // The animation may be changed during process, so it is safer that the state is changed before process.
+	bool internal_seeked = c.internal_seeked;
 
 	if (!Math::is_zero_approx(p_delta)) {
 		c.seeked = false;
+		c.internal_seeked = false;
 	}
 
 	// Second, process current animation to check if the animation end reached.
-	_process_playback_data(c.current, p_delta, get_current_blend_amount(), seeked, p_started, true);
+	_process_playback_data(c.current, p_delta, get_current_blend_amount(), seeked, internal_seeked, p_started, true);
 
 	// Finally, if not end the animation, do blending.
 	if (end_reached) {
@@ -282,7 +283,7 @@ void AnimationPlayer::_blend_playback_data(double p_delta, bool p_started) {
 		}
 		// Note: There may be issues if an animation event triggers an animation change while this blend is active,
 		// so it is best to use "deferred" calls instead of "immediate" for animation events that can trigger new animations.
-		_process_playback_data(b.data, p_delta, b.blend_left, false, false);
+		_process_playback_data(b.data, p_delta, b.blend_left, false, false, false);
 	}
 	for (List<Blend>::Element *&E : to_erase) {
 		c.blend.erase(E);
@@ -450,10 +451,10 @@ void AnimationPlayer::_play(const StringName &p_name, double p_custom_blend, flo
 	} else {
 		if (p_from_end && c.current.pos == 0) {
 			// Animation reset but played backwards, set position to the end.
-			seek(c.current.from->animation->get_length(), true, true);
+			seek_internal(c.current.from->animation->get_length(), true, true, true);
 		} else if (!p_from_end && c.current.pos == c.current.from->animation->get_length()) {
 			// Animation resumed but already ended, set position to the beginning.
-			seek(0, true, true);
+			seek_internal(0, true, true, true);
 		} else if (playing) {
 			return;
 		}
@@ -579,7 +580,7 @@ float AnimationPlayer::get_playing_speed() const {
 	return speed_scale * playback.current.speed_scale;
 }
 
-void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
+void AnimationPlayer::seek_internal(double p_time, bool p_update, bool p_update_only, bool p_is_internal_seek) {
 	if (!active) {
 		return;
 	}
@@ -600,10 +601,16 @@ void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
 	}
 
 	playback.seeked = true;
+	playback.internal_seeked = p_is_internal_seek;
+
 	if (p_update) {
 		_process_animation(is_backward ? -0.0 : 0.0, p_update_only);
 		playback.seeked = false; // If animation was proceeded here, no more seek in internal process.
 	}
+}
+
+void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
+	seek_internal(p_time, p_update, p_update_only);
 }
 
 void AnimationPlayer::advance(double p_time) {
@@ -661,7 +668,7 @@ void AnimationPlayer::_stop_internal(bool p_reset, bool p_keep_state) {
 			c.current.pos = 0;
 		} else {
 			is_stopping = true;
-			seek(0, true, true);
+			seek_internal(0, true, true, true);
 			is_stopping = false;
 		}
 		c.current.from = nullptr;
