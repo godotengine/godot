@@ -410,6 +410,10 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				prop_doc.experimental_message = m_var->doc_data.experimental_message;
 				_doctype_from_gdtype(m_var->get_datatype(), prop_doc.type, prop_doc.enumeration);
 
+				if (m_var->is_static) {
+					prop_doc.qualifiers = "static";
+				}
+
 				switch (m_var->property) {
 					case GDP::VariableNode::PROP_NONE:
 						break;

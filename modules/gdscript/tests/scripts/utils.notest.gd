@@ -20,7 +20,7 @@ static func get_type(property: Dictionary, is_return: bool = false) -> String:
 	return type_string(property.type)
 
 
-static func get_property_signature(property: Dictionary, base: Object = null, is_static: bool = false) -> String:
+static func get_property_signature(property: Dictionary, base: Object = null) -> String:
 	if property.usage & PROPERTY_USAGE_CATEGORY:
 		return '@export_category("%s")' % str(property.name).c_escape()
 	if property.usage & PROPERTY_USAGE_GROUP:
@@ -31,7 +31,7 @@ static func get_property_signature(property: Dictionary, base: Object = null, is
 	var result: String = ""
 	if not (property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE):
 		printerr("Missing `PROPERTY_USAGE_SCRIPT_VARIABLE` flag.")
-	if is_static:
+	if property.usage & PROPERTY_USAGE_STATIC:
 		result += "static "
 	result += "var " + property.name + ": " + get_type(property)
 	if is_instance_valid(base):
@@ -74,8 +74,8 @@ static func get_human_readable_hint_string(property: Dictionary) -> String:
 	return property.hint_string
 
 
-static func print_property_extended_info(property: Dictionary, base: Object = null, is_static: bool = false) -> void:
-	print(get_property_signature(property, base, is_static))
+static func print_property_extended_info(property: Dictionary, base: Object = null) -> void:
+	print(get_property_signature(property, base))
 	print('  hint=%s hint_string="%s" usage=%s class_name=&"%s"' % [
 		get_property_hint_name(property.hint).trim_prefix("PROPERTY_HINT_"),
 		get_human_readable_hint_string(property).c_escape(),
@@ -197,6 +197,7 @@ static func get_property_usage_string(usage: int) -> String:
 		return "PROPERTY_USAGE_NONE"
 
 	const FLAGS: Array[Array] = [
+		[PROPERTY_USAGE_STATIC, "PROPERTY_USAGE_STATIC"],
 		[PROPERTY_USAGE_STORAGE, "PROPERTY_USAGE_STORAGE"],
 		[PROPERTY_USAGE_EDITOR, "PROPERTY_USAGE_EDITOR"],
 		[PROPERTY_USAGE_INTERNAL, "PROPERTY_USAGE_INTERNAL"],

@@ -330,6 +330,17 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 			props.push_front(sptr->member_indices[msort[i].name].property_info);
 		}
 
+		List<PropertyInfo> static_property_list;
+		for (const KeyValue<StringName, MemberInfo> &E : sptr->static_variables_indices) {
+			PropertyInfo pi = E.value.property_info;
+			pi.usage |= PROPERTY_USAGE_STATIC;
+			static_property_list.push_back(pi);
+		}
+
+		for (const List<PropertyInfo>::Element *E = static_property_list.back(); E; E = E->prev()) {
+			props.push_front(E->get());
+		}
+
 #ifdef TOOLS_ENABLED
 		r_list->push_back(sptr->get_class_category());
 #endif // TOOLS_ENABLED
@@ -1045,6 +1056,7 @@ void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 		msort.sort();
 
 		for (int i = 0; i < msort.size(); i++) {
+			// NOTE: For the script itself it's a non-static property.
 			p_properties->push_back(E->get()->static_variables_indices[msort[i].name].property_info);
 		}
 	}
@@ -1904,6 +1916,17 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 		msort.reverse();
 		for (int i = 0; i < msort.size(); i++) {
 			props.push_front(sptr->member_indices[msort[i].name].property_info);
+		}
+
+		List<PropertyInfo> static_property_list;
+		for (const KeyValue<StringName, GDScript::MemberInfo> &F : sptr->static_variables_indices) {
+			PropertyInfo pi = F.value.property_info;
+			pi.usage |= PROPERTY_USAGE_STATIC;
+			static_property_list.push_back(pi);
+		}
+
+		for (const List<PropertyInfo>::Element *F = static_property_list.back(); F; F = F->prev()) {
+			props.push_front(F->get());
 		}
 
 #ifdef TOOLS_ENABLED
