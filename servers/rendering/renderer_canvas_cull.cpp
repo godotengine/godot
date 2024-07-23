@@ -36,6 +36,7 @@
 #include "renderer_viewport.h"
 #include "rendering_server_default.h"
 #include "rendering_server_globals.h"
+#include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/storage/texture_storage.h"
 
 // Use the same antialiasing feather size as StyleBoxFlat's default
@@ -284,8 +285,15 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	}
 
 	if (snapping_2d_transforms_to_pixel) {
-		final_xform.columns[2] = (final_xform.columns[2] + Point2(0.5, 0.5)).floor();
-		parent_xform.columns[2] = (parent_xform.columns[2] + Point2(0.5, 0.5)).floor();
+		// If the canvas is set on a subpixel, let's add the remainder to the new position.
+		// This fixes the odd sized canvas items.
+		Size2 rect_scale = final_xform.get_scale().snappedf(0.0001f).abs();
+		Point2 rect_position_scaled = rect.position * rect_scale;
+		Point2 remainder = Point2(
+				Math::fmod(rect_position_scaled.x, 1.0l),
+				Math::fmod(rect_position_scaled.y, 1.0l));
+		final_xform.columns[2] = (final_xform.columns[2] + Point2(0.5, 0.5)).floor() - remainder;
+		parent_xform.columns[2] = (parent_xform.columns[2] + Point2(0.5, 0.5)).floor() - remainder;
 	}
 
 	final_xform = parent_xform * final_xform;
