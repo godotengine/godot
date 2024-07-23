@@ -4728,17 +4728,21 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 
 		bool check_edges = !has_selection(0) || !has_selection(new_caret_index);
 		bool will_merge_with_main_caret = _selection_contains(0, get_caret_line(new_caret_index), get_caret_column(new_caret_index), check_edges, false) || _selection_contains(new_caret_index, get_caret_line(0), get_caret_column(0), check_edges, false);
-		if (will_merge_with_main_caret) {
+/*		if (will_merge_with_main_caret) {
 			// Move next to the main caret so it stays the main caret after merging.
 			Caret new_caret = carets[new_caret_index];
 			carets.remove_at(new_caret_index);
 			carets.insert(0, new_caret);
 			i++;
-		}
+		}*/
 	}
 
 	// Show the topmost caret if added above or bottommost caret if added below.
 	if (view_target_caret >= 0 && view_target_caret < get_caret_count()) {
+		print_line("Caret size");
+		print_line(carets.size());
+		print_line("Current caret");
+		print_line(view_target_caret);
 		adjust_viewport_to_caret(view_target_caret);
 	}
 
@@ -5890,7 +5894,6 @@ void TextEdit::adjust_viewport_to_caret(int p_caret) {
 
 	int cur_line = get_caret_line(p_caret);
 	int cur_wrap = get_caret_wrap_index(p_caret);
-
 	int first_vis_line = get_first_visible_line();
 	int first_vis_wrap = first_visible_line_wrap_ofs;
 	int last_vis_line = get_last_full_visible_line();
