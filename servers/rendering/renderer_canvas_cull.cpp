@@ -285,7 +285,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		rect.position -= repeat_size / scale * (repeat_times / 2);
 	}
 
-	if (snapping_2d_transforms_to_pixel) {
+	if ((p_canvas_item->snap_to_pixel == RS::CANVAS_ITEM_SNAP_TO_PIXEL_DEFAULT && snapping_2d_transforms_to_pixel) || (p_canvas_item->snap_to_pixel == RS::CANVAS_ITEM_SNAP_TO_PIXEL_ENABLED)) {
 		Size2 scale = final_xform.get_scale().snappedf(0.0001);
 		Point2 abs_scaled_position = (rect.position * scale).abs();
 		Point2 odd_sized_correction = Point2(
@@ -2325,6 +2325,12 @@ void RendererCanvasCull::canvas_item_set_default_texture_repeat(RID p_item, RS::
 	Item *ci = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(ci);
 	ci->texture_repeat = p_repeat;
+}
+
+void RendererCanvasCull::canvas_item_set_snap_to_pixel(RID p_item, RS::CanvasItemSnapToPixel p_snap) {
+	Item *ci = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(ci);
+	ci->snap_to_pixel = p_snap;
 }
 
 void RendererCanvasCull::update_visibility_notifiers() {

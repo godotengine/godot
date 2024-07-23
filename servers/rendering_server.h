@@ -860,6 +860,13 @@ public:
 		CANVAS_ITEM_TEXTURE_REPEAT_MAX,
 	};
 
+	enum CanvasItemSnapToPixel {
+		CANVAS_ITEM_SNAP_TO_PIXEL_DEFAULT,
+		CANVAS_ITEM_SNAP_TO_PIXEL_DISABLED,
+		CANVAS_ITEM_SNAP_TO_PIXEL_ENABLED,
+		CANVAS_ITEM_SNAP_TO_PIXEL_MAX,
+	};
+
 	virtual RID viewport_create() = 0;
 
 	enum ViewportScaling3DMode {
@@ -1450,6 +1457,8 @@ public:
 	virtual void canvas_item_set_visibility_layer(RID p_item, uint32_t p_visibility_layer) = 0;
 
 	virtual void canvas_item_set_draw_behind_parent(RID p_item, bool p_enable) = 0;
+
+	virtual void canvas_item_set_snap_to_pixel(RID p_item, CanvasItemSnapToPixel p_snap) = 0;
 
 	enum NinePatchAxisMode {
 		NINE_PATCH_STRETCH,
