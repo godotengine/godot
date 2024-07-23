@@ -5912,6 +5912,11 @@ void TextEdit::adjust_viewport_to_caret(int p_caret) {
 	}
 	visible_width -= 20; // Give it a little more space.
 
+	if (visible_width <= 0) {
+		// Not resized yet.
+		return;
+	}
+
 	Vector2i caret_pos;
 
 	// Get position of the start of caret.
