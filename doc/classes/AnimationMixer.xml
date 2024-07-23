@@ -316,7 +316,7 @@
 			<param index="0" name="anim_name" type="StringName" />
 			<description>
 				Notifies when an animation finished playing.
-				[b]Note:[/b] This signal is not emitted if an animation is looping.
+				[b]Note:[/b] This signal is not emitted if an animation is looping. For looping animations, use [signal animation_looped] instead.
 			</description>
 		</signal>
 		<signal name="animation_libraries_updated">
@@ -327,6 +327,14 @@
 		<signal name="animation_list_changed">
 			<description>
 				Notifies when an animation list is changed.
+			</description>
+		</signal>
+		<signal name="animation_looped">
+			<param index="0" name="anim_name" type="StringName" />
+			<param index="1" name="backwards" type="bool" />
+			<description>
+				Notifies when a looping animation finished playing. [param backwards] is [code]true[/code] if the looping "barrier" has been crossed backwards when playing the animation, [code]false[/code] otherwise. In practice, [param backwards] is [code]true[/code] every time when the animation is played backwards, or every 2 signals emitted when ping-pong looping is used.
+				[b]Note:[/b] This signal is not emitted if an animation is not looping. For non-looping animations, use [signal animation_finished] instead.
 			</description>
 		</signal>
 		<signal name="animation_started">
