@@ -722,7 +722,7 @@ bool EditorFileSystem::_update_scan_actions() {
 				String full_path = ia.dir->get_file_path(idx);
 
 				bool need_reimport = _test_for_reimport(full_path, false);
-				if (!need_reimport && FileAccess::exists(full_path + ".import")) {
+				if (!need_reimport && (reimport_on_missing_imported_files || FileAccess::exists(full_path + ".import"))) {
 					uint64_t import_mt = ia.dir->get_file_import_modified_time(idx);
 					if (import_mt != FileAccess::get_modified_time(full_path + ".import")) {
 						need_reimport = true;
