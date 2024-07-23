@@ -1049,7 +1049,7 @@ void AnimationMixer::blend_capture(double p_delta) {
 	}
 
 	capture_cache.remain -= p_delta * capture_cache.step;
-	if (capture_cache.remain <= 0.0) {
+	if (Animation::is_less_or_equal_approx(capture_cache.remain, 0)) {
 		capture_cache.clear();
 		return;
 	}
@@ -1156,7 +1156,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					if (track->root_motion && calc_root) {
 						double prev_time = time - delta;
 						if (!backward) {
-							if (prev_time < 0) {
+							if (Animation::is_less_approx(prev_time, 0)) {
 								switch (a->get_loop_mode()) {
 									case Animation::LOOP_NONE: {
 										prev_time = 0;
@@ -1172,7 +1172,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								}
 							}
 						} else {
-							if (prev_time > a->get_length()) {
+							if (Animation::is_greater_approx(prev_time, (double)a->get_length())) {
 								switch (a->get_loop_mode()) {
 									case Animation::LOOP_NONE: {
 										prev_time = (double)a->get_length();
@@ -1190,7 +1190,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						}
 						Vector3 loc[2];
 						if (!backward) {
-							if (prev_time > time) {
+							if (Animation::is_greater_approx(prev_time, time)) {
 								Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
 								if (err != OK) {
 									continue;
@@ -1202,7 +1202,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								prev_time = 0;
 							}
 						} else {
-							if (prev_time < time) {
+							if (Animation::is_less_approx(prev_time, time)) {
 								Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
 								if (err != OK) {
 									continue;
@@ -1244,7 +1244,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					if (track->root_motion && calc_root) {
 						double prev_time = time - delta;
 						if (!backward) {
-							if (prev_time < 0) {
+							if (Animation::is_less_approx(prev_time, 0)) {
 								switch (a->get_loop_mode()) {
 									case Animation::LOOP_NONE: {
 										prev_time = 0;
@@ -1260,7 +1260,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								}
 							}
 						} else {
-							if (prev_time > a->get_length()) {
+							if (Animation::is_greater_approx(prev_time, (double)a->get_length())) {
 								switch (a->get_loop_mode()) {
 									case Animation::LOOP_NONE: {
 										prev_time = (double)a->get_length();
@@ -1278,7 +1278,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						}
 						Quaternion rot[2];
 						if (!backward) {
-							if (prev_time > time) {
+							if (Animation::is_greater_approx(prev_time, time)) {
 								Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0]);
 								if (err != OK) {
 									continue;
@@ -1290,7 +1290,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								prev_time = 0;
 							}
 						} else {
-							if (prev_time < time) {
+							if (Animation::is_less_approx(prev_time, time)) {
 								Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0]);
 								if (err != OK) {
 									continue;
@@ -1331,7 +1331,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					if (track->root_motion && calc_root) {
 						double prev_time = time - delta;
 						if (!backward) {
-							if (prev_time < 0) {
+							if (Animation::is_less_approx(prev_time, 0)) {
 								switch (a->get_loop_mode()) {
 									case Animation::LOOP_NONE: {
 										prev_time = 0;
@@ -1347,7 +1347,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								}
 							}
 						} else {
-							if (prev_time > a->get_length()) {
+							if (Animation::is_greater_approx(prev_time, (double)a->get_length())) {
 								switch (a->get_loop_mode()) {
 									case Animation::LOOP_NONE: {
 										prev_time = (double)a->get_length();
@@ -1365,7 +1365,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						}
 						Vector3 scale[2];
 						if (!backward) {
-							if (prev_time > time) {
+							if (Animation::is_greater_approx(prev_time, time)) {
 								Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0]);
 								if (err != OK) {
 									continue;
@@ -1377,7 +1377,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								prev_time = 0;
 							}
 						} else {
-							if (prev_time < time) {
+							if (Animation::is_less_approx(prev_time, time)) {
 								Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0]);
 								if (err != OK) {
 									continue;
@@ -1635,7 +1635,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						PlayingAudioStreamInfo pasi;
 						pasi.index = t->audio_stream_playback->play_stream(stream, start_ofs, 0, 1.0, t->playback_type, t->bus);
 						pasi.start = time;
-						if (len && end_ofs > 0) { // Force an end at a time.
+						if (len && Animation::is_greater_approx(end_ofs, 0)) { // Force an end at a time.
 							pasi.len = len - start_ofs - end_ofs;
 						} else {
 							pasi.len = 0;
@@ -1671,7 +1671,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						double at_anim_pos = 0.0;
 						switch (anim->get_loop_mode()) {
 							case Animation::LOOP_NONE: {
-								if (!is_external_seeking && ((!backward && time >= pos + (double)anim->get_length()) || (backward && time <= pos))) {
+								if (!is_external_seeking && ((!backward && Animation::is_greater_or_equal_approx(time, pos + (double)anim->get_length())) || (backward && Animation::is_less_or_equal_approx(time, pos)))) {
 									continue; // Do nothing if current time is outside of length when started.
 								}
 								at_anim_pos = MIN((double)anim->get_length(), time - pos); // Seek to end.
@@ -1841,23 +1841,23 @@ void AnimationMixer::_blend_apply() {
 						}
 						if (!track_info.loop) {
 							if (!track_info.backward) {
-								if (track_info.time < pasi.start) {
+								if (Animation::is_less_approx(track_info.time, pasi.start)) {
 									stop = true;
 								}
 							} else if (track_info.backward) {
-								if (track_info.time > pasi.start) {
+								if (Animation::is_greater_approx(track_info.time, pasi.start)) {
 									stop = true;
 								}
 							}
 						}
-						if (pasi.len > 0) {
+						if (Animation::is_greater_approx(pasi.len, 0)) {
 							double len = 0.0;
 							if (!track_info.backward) {
-								len = pasi.start > track_info.time ? (track_info.length - pasi.start) + track_info.time : track_info.time - pasi.start;
+								len = Animation::is_greater_approx(pasi.start, track_info.time) ? (track_info.length - pasi.start) + track_info.time : track_info.time - pasi.start;
 							} else {
-								len = pasi.start < track_info.time ? (track_info.length - track_info.time) + pasi.start : pasi.start - track_info.time;
+								len = Animation::is_less_approx(pasi.start, track_info.time) ? (track_info.length - track_info.time) + pasi.start : pasi.start - track_info.time;
 							}
-							if (len > pasi.len) {
+							if (Animation::is_greater_approx(len, pasi.len)) {
 								stop = true;
 							}
 						}
