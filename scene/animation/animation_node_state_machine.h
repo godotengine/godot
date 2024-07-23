@@ -110,6 +110,9 @@ class AnimationNodeStateMachine : public AnimationRootNode {
 	GDCLASS(AnimationNodeStateMachine, AnimationRootNode);
 
 public:
+	static StringName START_NODE;
+	static StringName END_NODE;
+
 	enum StateMachineType {
 		STATE_MACHINE_TYPE_ROOT,
 		STATE_MACHINE_TYPE_NESTED,
@@ -164,9 +167,6 @@ protected:
 	virtual void reset_state() override;
 
 public:
-	StringName start_node = "Start";
-	StringName end_node = "End";
-
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 	virtual bool is_parameter_read_only(const StringName &p_parameter) const override;
