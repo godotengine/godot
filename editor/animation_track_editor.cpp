@@ -3706,7 +3706,7 @@ void AnimationTrackEditor::_animation_track_remove_request(int p_track, Ref<Anim
 	int idx = p_track;
 	if (idx >= 0 && idx < p_from_animation->get_track_count()) {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Remove Anim Track"), UndoRedo::MERGE_DISABLE, p_from_animation.ptr());
+		undo_redo->create_action(TTR("Remove Anim Track"), UndoRedo::MERGE_DISABLE, p_from_animation.ptr(), true);
 
 		// Remove corresponding reset tracks if they are no longer needed.
 		AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
@@ -3748,27 +3748,35 @@ void AnimationTrackEditor::_animation_track_remove_request(int p_track, Ref<Anim
 		}
 
 		undo_redo->add_do_method(this, "_clear_selection", false);
-		undo_redo->add_do_method(p_from_animation.ptr(), "remove_track", idx);
-		undo_redo->add_undo_method(p_from_animation.ptr(), "add_track", p_from_animation->track_get_type(idx), idx);
-		undo_redo->add_undo_method(p_from_animation.ptr(), "track_set_path", idx, p_from_animation->track_get_path(idx));
 
-		// TODO interpolation.
-		for (int i = 0; i < p_from_animation->track_get_key_count(idx); i++) {
-			Variant v = p_from_animation->track_get_key_value(idx, i);
-			float time = p_from_animation->track_get_key_time(idx, i);
-			float trans = p_from_animation->track_get_key_transition(idx, i);
-
-			undo_redo->add_undo_method(p_from_animation.ptr(), "track_insert_key", idx, time, v);
-			undo_redo->add_undo_method(p_from_animation.ptr(), "track_set_key_transition", idx, i, trans);
-		}
-
-		undo_redo->add_undo_method(p_from_animation.ptr(), "track_set_interpolation_type", idx, p_from_animation->track_get_interpolation_type(idx));
-		if (p_from_animation->track_get_type(idx) == Animation::TYPE_VALUE) {
-			undo_redo->add_undo_method(p_from_animation.ptr(), "value_track_set_update_mode", idx, p_from_animation->value_track_get_update_mode(idx));
-		}
 		if (animation->track_get_type(idx) == Animation::TYPE_AUDIO) {
 			undo_redo->add_undo_method(animation.ptr(), "audio_track_set_use_blend", idx, animation->audio_track_is_use_blend(idx));
 		}
+
+		if (p_from_animation->track_get_type(idx) == Animation::TYPE_VALUE) {
+			undo_redo->add_undo_method(p_from_animation.ptr(), "value_track_set_update_mode", idx, p_from_animation->value_track_get_update_mode(idx));
+		}
+
+		undo_redo->add_undo_method(p_from_animation.ptr(), "track_set_interpolation_type", idx, p_from_animation->track_get_interpolation_type(idx));
+
+		for (int i = 0; i < p_from_animation->track_get_key_count(idx); i++) {
+			Variant v = p_from_animation->track_get_key_value(idx, i);
+			float trans = p_from_animation->track_get_key_transition(idx, i);
+
+			undo_redo->add_undo_method(p_from_animation.ptr(), "track_set_key_transition", idx, i, trans);
+		}
+
+		for (int i = 0; i < p_from_animation->track_get_key_count(idx); i++) {
+			Variant v = p_from_animation->track_get_key_value(idx, i);
+			float time = p_from_animation->track_get_key_time(idx, i);
+
+			undo_redo->add_undo_method(p_from_animation.ptr(), "track_insert_key", idx, time, v);
+		}
+
+		undo_redo->add_undo_method(p_from_animation.ptr(), "track_set_path", idx, p_from_animation->track_get_path(idx));
+
+		undo_redo->add_do_method(p_from_animation.ptr(), "remove_track", idx);
+		undo_redo->add_undo_method(p_from_animation.ptr(), "add_track", p_from_animation->track_get_type(idx), idx);
 
 		undo_redo->commit_action();
 	}
@@ -5755,6 +5763,46 @@ void AnimationTrackEditor::_bezier_track_set_key_handle_mode(Animation *p_anim, 
 	p_anim->bezier_track_set_key_handle_mode(p_track, p_index, p_mode, p_set_mode);
 }
 
+int AnimationTrackEditor::_convert_track_to_bezier(Animation *p_anim, int p_index, Animation::HandleMode p_mode, int p_insert_at) {
+	if (p_insert_at < 0) {
+		p_insert_at = p_anim->get_track_count();
+	}
+
+	String track_path = animation->track_get_path(p_index);
+	Variant::Type key_type = p_anim->track_get_key_value(p_index, 0).get_type();
+	Vector<String> subindices = _get_bezier_subindices_for_type(key_type);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Animation Convert Track to Bezier"), UndoRedo::MERGE_DISABLE, p_anim, true);
+
+	for (int i = 0; i < subindices.size(); i++) {
+		String subindex = subindices[i];
+		int new_track_index = p_insert_at + i;
+
+		undo_redo->add_do_method(p_anim, "add_track", Animation::TYPE_BEZIER, new_track_index);
+		undo_redo->add_undo_method(p_anim, "remove_track", new_track_index);
+
+		undo_redo->add_do_method(p_anim, "track_set_path", new_track_index, track_path + subindex);
+
+		int key_count = p_anim->track_get_key_count(p_index);
+
+		for (int j = 0; j < key_count; j++) {
+			float key_time = p_anim->track_get_key_time(p_index, j);
+			Variant key_value = p_anim->track_get_key_value(p_index, j);
+			Variant key_sub_value = subindex.is_empty() ? key_value : key_value.get(subindex.substr(1));
+			undo_redo->add_do_method(p_anim, "bezier_track_insert_key", new_track_index, key_time, key_sub_value, Vector2(0.0, 0.0), Vector2(0.0, 0.0));
+		}
+
+		for (int j = 0; j < key_count; j++) {
+			undo_redo->add_do_method(this, "_bezier_track_set_key_handle_mode", p_anim, new_track_index, j, p_mode, Animation::HANDLE_SET_MODE_AUTO);
+		}
+	}
+
+	undo_redo->commit_action();
+
+	return subindices.size();
+}
+
 void AnimationTrackEditor::_anim_duplicate_keys(float p_ofs, bool p_ofs_valid, int p_track) {
 	if (selection.size() && animation.is_valid()) {
 		int top_track = 0x7FFFFFFF;
@@ -6714,6 +6762,117 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			AnimationPlayerEditor::get_singleton()->get_player()->apply_reset(true);
 		} break;
 
+		case EDIT_CONVERT_TO_BEZIER: {
+			track_convert_select->clear();
+			TreeItem *troot = track_convert_select->create_item();
+
+			for (int i = 0; i < animation->get_track_count(); i++) {
+				if (animation->track_get_key_count(i) == 0) {
+					continue; // Don't list animations with no keys.
+				}
+				NodePath path = animation->track_get_path(i);
+				Node *node = nullptr;
+
+				if (root) {
+					node = root->get_node_or_null(path);
+				}
+
+				String text;
+				Ref<Texture2D> icon = get_editor_theme_icon(SNAME("Node"));
+				if (node) {
+					if (has_theme_icon(node->get_class(), EditorStringName(EditorIcons))) {
+						icon = get_editor_theme_icon(node->get_class());
+					}
+
+					text = node->get_name();
+					Vector<StringName> sn = path.get_subnames();
+					for (int j = 0; j < sn.size(); j++) {
+						text += ".";
+						text += sn[j];
+					}
+
+					path = NodePath(node->get_path().get_names(), path.get_subnames(), true);
+				} else {
+					text = path;
+					int sep = text.find(":");
+					if (sep != -1) {
+						text = text.substr(sep + 1, text.length());
+					}
+				}
+
+				if (animation->track_get_type(i) != Animation::TYPE_VALUE) {
+					continue;
+				}
+
+				TreeItem *it = track_convert_select->create_item(troot);
+				it->set_editable(0, true);
+				it->set_selectable(0, true);
+				it->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+				it->set_icon(0, icon);
+				it->set_text(0, text);
+				Dictionary md;
+				md["track_idx"] = i;
+				md["path"] = path;
+				it->set_metadata(0, md);
+			}
+
+			convert_to_bezier_dialog->popup_centered(Size2(350, 500) * EDSCALE);
+		} break;
+
+		case EDIT_CONVERT_TO_BEZIER_CONFIRM: {
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Animation Convert Track(s) to Bezier"), UndoRedo::MERGE_DISABLE, animation.ptr(), true);
+
+			AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+			Ref<Animation> reset_animation = player->get_animation(SceneStringName(RESET));
+			TreeItem *tree_root = track_convert_select->get_root();
+			if (tree_root) {
+				int new_track_count = animation->get_track_count();
+				int new_reset_track_count = reset_animation->get_track_count();
+				TreeItem *it = tree_root->get_first_child();
+				while (it) {
+					Dictionary md = it->get_metadata(0);
+					int idx = md["track_idx"];
+					if (it->is_checked(0) && idx >= 0 && idx < animation->get_track_count()) {
+						Animation::HandleMode handle_mode = Animation::HANDLE_MODE_LINEAR;
+
+						switch (track_convert_handles_mode->get_selected_id()) {
+							case CONVERT_MODE_LINEAR:
+								handle_mode = Animation::HANDLE_MODE_LINEAR;
+								break;
+							case CONVERT_MODE_BALANCED:
+								handle_mode = Animation::HANDLE_MODE_BALANCED;
+								break;
+							case CONVERT_MODE_MIRRORED:
+								handle_mode = Animation::HANDLE_MODE_MIRRORED;
+								break;
+						}
+
+						new_track_count += _convert_track_to_bezier(animation.ptr(), idx, handle_mode, new_track_count);
+
+						int reset_idx = reset_animation->find_track(animation->track_get_path(idx), animation->track_get_type(idx));
+						if (reset_idx > 0) {
+							new_reset_track_count += _convert_track_to_bezier(reset_animation.ptr(), reset_idx, Animation::HANDLE_MODE_LINEAR, new_reset_track_count);
+						}
+					}
+					it = it->get_next();
+				}
+
+				// Go through the list in reverse and remove the original tracks.
+				it = tree_root->get_child(-1);
+				while (it) {
+					Dictionary md = it->get_metadata(0);
+					int idx = md["track_idx"];
+					if (it->is_checked(0) && idx >= 0 && idx < animation->get_track_count()) {
+						_animation_track_remove_request(idx, animation);
+					}
+					it = it->get_prev();
+				}
+			}
+
+			undo_redo->commit_action();
+		} break;
+
 		case EDIT_BAKE_ANIMATION: {
 			bake_dialog->popup_centered(Size2(200, 100) * EDSCALE);
 		} break;
@@ -7383,6 +7542,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/apply_reset", TTR("Apply Reset")), EDIT_APPLY_RESET);
 	edit->get_popup()->add_separator();
+	edit->get_popup()->add_item(TTR("Convert to Bezier..."), EDIT_CONVERT_TO_BEZIER);
 	edit->get_popup()->add_item(TTR("Bake Animation..."), EDIT_BAKE_ANIMATION);
 	edit->get_popup()->add_item(TTR("Optimize Animation (no undo)..."), EDIT_OPTIMIZE_ANIMATION);
 	edit->get_popup()->add_item(TTR("Clean-Up Animation (no undo)..."), EDIT_CLEAN_UP_ANIMATION);
@@ -7606,6 +7766,39 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	track_copy_select->set_hide_root(true);
 	track_copy_vbox->add_child(track_copy_select);
 	track_copy_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_COPY_TRACKS_CONFIRM));
+
+	convert_to_bezier_dialog = memnew(ConfirmationDialog);
+	add_child(convert_to_bezier_dialog);
+	convert_to_bezier_dialog->set_title(TTR("Convert to Bezier..."));
+	convert_to_bezier_dialog->set_ok_button_text(TTR("Convert"));
+
+	VBoxContainer *track_convert_vbox = memnew(VBoxContainer);
+	convert_to_bezier_dialog->add_child(track_convert_vbox);
+
+	track_convert_select = memnew(Tree);
+	track_convert_select->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	track_convert_select->set_h_size_flags(SIZE_EXPAND_FILL);
+	track_convert_select->set_v_size_flags(SIZE_EXPAND_FILL);
+	track_convert_select->set_hide_root(true);
+	track_convert_vbox->add_child(track_convert_select);
+
+	HBoxContainer *handles_type_hbox = memnew(HBoxContainer);
+	track_convert_vbox->add_child(handles_type_hbox);
+
+	handles_type_hbox->add_child(memnew(Label("Handle Mode")));
+
+	Container *handles_type_spacing = memnew(Container);
+	handles_type_spacing->set_h_size_flags(SIZE_EXPAND);
+
+	handles_type_hbox->add_child(handles_type_spacing);
+
+	track_convert_handles_mode = memnew(OptionButton);
+	track_convert_handles_mode->add_item(TTR("Linear"));
+	track_convert_handles_mode->add_item(TTR("Balanced Automatic"));
+	track_convert_handles_mode->add_item(TTR("Mirrored Automatic"));
+	handles_type_hbox->add_child(track_convert_handles_mode);
+
+	convert_to_bezier_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_CONVERT_TO_BEZIER_CONFIRM));
 }
 
 AnimationTrackEditor::~AnimationTrackEditor() {
