@@ -4231,7 +4231,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 				// we don't have support for specular tint color, but there's no way
 				// of knowing just the specular factor if the tint color is not (1,1,1)
 				// Therefore, enforce the constraint that all values must be equal
-				// However we can't know if (0.5, 0.5, 0.5) is a grey tint * specular factor of 1
+				// However we can't know if (0.5, 0.5, 0.5) is a gray tint * specular factor of 1
 				// or a specular factor of 0.5. That's up to the user to set the Blender model
 				// correctly for Godot usage
 				if ((arr[0] == arr[1]) && (arr[1] == arr[2])) {
