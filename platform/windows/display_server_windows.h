@@ -350,6 +350,12 @@ typedef struct {
 	ICONDIRENTRY idEntries[1]; // An entry for each image (idCount of 'em)
 } ICONDIR, *LPICONDIR;
 
+typedef enum _SHC_PROCESS_DPI_AWARENESS {
+	SHC_PROCESS_DPI_UNAWARE = 0,
+	SHC_PROCESS_SYSTEM_DPI_AWARE = 1,
+	SHC_PROCESS_PER_MONITOR_DPI_AWARE = 2,
+} SHC_PROCESS_DPI_AWARENESS;
+
 class DisplayServerWindows : public DisplayServer {
 	// No need to register with GDCLASS, it's platform-specific and nothing is added.
 
@@ -544,6 +550,31 @@ class DisplayServerWindows : public DisplayServer {
 	IndicatorID indicator_id_counter = 0;
 	HashMap<IndicatorID, IndicatorData> indicators;
 
+	struct FileDialogData {
+		HWND hwnd_owner = 0;
+		Rect2i wrect;
+		String appid;
+		String title;
+		String current_directory;
+		String root;
+		String filename;
+		bool show_hidden = false;
+		DisplayServer::FileDialogMode mode = FileDialogMode::FILE_DIALOG_MODE_OPEN_ANY;
+		Vector<String> filters;
+		TypedArray<Dictionary> options;
+		WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
+		Callable callback;
+		bool options_in_cb = false;
+		Thread listener_thread;
+		SafeFlag close_requested;
+		SafeFlag finished;
+	};
+	Mutex file_dialog_mutex;
+	List<FileDialogData *> file_dialogs;
+	HashMap<HWND, FileDialogData *> file_dialog_wnd;
+
+	static void _thread_fd_monitor(void *p_ud);
+
 	HashMap<int64_t, MouseButton> pointer_prev_button;
 	HashMap<int64_t, MouseButton> pointer_button;
 	HashMap<int64_t, LONG> pointer_down_time;
@@ -605,6 +636,7 @@ class DisplayServerWindows : public DisplayServer {
 	String _get_klid(HKL p_hkl) const;
 
 public:
+	LRESULT WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT MouseProc(int code, WPARAM wParam, LPARAM lParam);
 
