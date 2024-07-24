@@ -333,7 +333,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 
 	if (!parser->has_class(p_class)) {
 		if (parser_ref.is_null()) {
-			// Error already pushed.
+			push_error(vformat(R"(Could not find script "%s".)", p_class->get_datatype().script_path), p_source);
 			return ERR_PARSE_ERROR;
 		}
 
@@ -912,7 +912,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 
 	if (!parser->has_class(p_class)) {
 		if (parser_ref.is_null()) {
-			// Error already pushed.
+			push_error(vformat(R"(Could not find script "%s" (While resolving "%s").)", p_class->get_datatype().script_path, member.get_name()), p_source);
 			return;
 		}
 
@@ -1186,7 +1186,7 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 
 		if (!parser->has_class(p_class)) {
 			if (parser_ref.is_null()) {
-				// Error already pushed.
+				push_error(vformat(R"(Could not find script "%s".)", p_class->get_datatype().script_path), p_source);
 				return;
 			}
 
@@ -1275,7 +1275,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 
 	if (!parser->has_class(p_class)) {
 		if (parser_ref.is_null()) {
-			// Error already pushed.
+			push_error(vformat(R"(Could not find script "%s".)", p_class->get_datatype().script_path), p_source);
 			return;
 		}
 
@@ -3702,12 +3702,10 @@ Ref<GDScriptParserRef> GDScriptAnalyzer::ensure_cached_parser_for_class(const GD
 
 		dependant_parser_ref = Ref<GDScriptParserRef>();
 		dependant_parser = nullptr;
-		p_from_class = p_from_class->base_type.class_type;
+		if (p_from_class != nullptr) {
+			p_from_class = p_from_class->base_type.class_type;
+		}
 	} while (p_from_class != nullptr);
-
-	if (parser_ref.is_null()) {
-		push_error(vformat(R"(Parser bug: Could not find external parser. (%s))", p_context), p_source);
-	}
 
 	return parser_ref;
 }
