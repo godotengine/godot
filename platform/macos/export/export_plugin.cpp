@@ -141,7 +141,7 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 
 		if (p_name == "codesign/codesign") {
 			if (dist_type == 2) {
-				if (codesign_tool == 2 && Engine::get_singleton()->has_singleton("GodotSharp")) {
+				if (codesign_tool == 2 && ClassDB::class_exists("CSharpScript")) {
 					return TTR("'rcodesign' doesn't support signing applications with embedded dynamic libraries (GDExtension or .NET).");
 				}
 				if (codesign_tool == 0) {
@@ -333,7 +333,7 @@ bool EditorExportPlatformMacOS::get_export_option_visibility(const EditorExportP
 	}
 
 	// These entitlements are required to run managed code, and are always enabled in Mono builds.
-	if (Engine::get_singleton()->has_singleton("GodotSharp")) {
+	if (ClassDB::class_exists("CSharpScript")) {
 		if (p_option == "codesign/entitlements/allow_jit_code_execution" || p_option == "codesign/entitlements/allow_unsigned_executable_memory" || p_option == "codesign/entitlements/allow_dyld_environment_variables") {
 			return false;
 		}
@@ -1979,7 +1979,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				ent_f->store_line("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">");
 				ent_f->store_line("<plist version=\"1.0\">");
 				ent_f->store_line("<dict>");
-				if (Engine::get_singleton()->has_singleton("GodotSharp")) {
+				if (ClassDB::class_exists("CSharpScript")) {
 					// These entitlements are required to run managed code, and are always enabled in Mono builds.
 					ent_f->store_line("<key>com.apple.security.cs.allow-jit</key>");
 					ent_f->store_line("<true/>");
