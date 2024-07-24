@@ -787,15 +787,15 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "حذف ترک انیمیشن"
 
-msgid "Hold Shift when clicking the key icon to skip this dialog."
-msgstr ""
-"هنگام کلیک کردن روی نماد، کلید Shift را نگه دارید تا از این گفتگو رد شوید."
-
 msgid "Create new track for %s and insert key?"
 msgstr "یک مسیر جدید برای %s بساز و کلید را درج کن؟"
 
 msgid "Create %d new tracks and insert keys?"
 msgstr "ساختن مسیر‌های جدید %d و درج کلیدها؟"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"هنگام کلیک کردن روی نماد، کلید Shift را نگه دارید تا از این گفتگو رد شوید."
 
 msgid "Create"
 msgstr "ساخت"
@@ -856,18 +856,6 @@ msgstr "مسیر قطعه نامعتبر است، پس نمی‌توان کلی�
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "ترک از نوع گره سه‌بعدی (Node3D) نیست، نمی‌توان کلید را وارد کرد"
-
-msgid "Add Position Key"
-msgstr "افزودن کلید موقعیت"
-
-msgid "Add Rotation Key"
-msgstr "افزودن کلید دوران"
-
-msgid "Add Scale Key"
-msgstr "افزودن کلید اندازه"
-
-msgid "Add Track Key"
-msgstr "افزودن کلید ترک"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "مسیر نامعتبر است، پس نمی‌توان کلید تابعی (متد) اضافه کرد."
@@ -2838,13 +2826,6 @@ msgstr "گشودن فوری صحنه..."
 msgid "Quick Open Script..."
 msgstr "گشودن سریع اسکریپت..."
 
-msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"صحنه کنونی گیره ریشه ای ندارد، اما %d منبع خارجی تغییر کرده به هرحال ذخیره "
-"شدند."
-
 msgid "Save Scene As..."
 msgstr "ذخیره صحنه در ..."
 
@@ -3127,9 +3108,6 @@ msgstr "اسکریپت جدید..."
 
 msgid "Project Run"
 msgstr "اجرای پروژه"
-
-msgid "There is an edited scene already."
-msgstr "در حال حاضر یک صحنه ویرایش شده وجود دارد."
 
 msgid "Editor Settings"
 msgstr "ویرایشگر ترجیحات"
@@ -3721,12 +3699,6 @@ msgstr "بارگیری منبع انجام نشد."
 
 msgid "Property Name Style"
 msgstr "سبک نام ویژگی"
-
-msgid "Raw"
-msgstr "خام"
-
-msgid "Capitalized"
-msgstr "با حروف بزرگ"
 
 msgid "Localization not available for current language."
 msgstr "محلی‌سازی برای زبان فعلی موجود نمی‌باشد."
@@ -5270,16 +5242,16 @@ msgid "Not Equal (!=)"
 msgstr "نا مساوی (=!)"
 
 msgid ""
-"Returns an associated 3D vector if the provided boolean value is true or "
-"false."
-msgstr ""
-"اگر مقدار بولی ارائه‌شده درست یا نادرست باشد یک بردار ۳‌ بعدی مربوط برمی‌گرداند."
-
-msgid ""
 "Returns an associated 2D vector if the provided boolean value is true or "
 "false."
 msgstr ""
 "اگر مقدار بولی ارائه‌شده درست یا نادرست باشد یک بردار ۲ بعدی مربوط برمی‌گرداند."
+
+msgid ""
+"Returns an associated 3D vector if the provided boolean value is true or "
+"false."
+msgstr ""
+"اگر مقدار بولی ارائه‌شده درست یا نادرست باشد یک بردار ۳‌ بعدی مربوط برمی‌گرداند."
 
 msgid "Boolean constant."
 msgstr "ثابت بولی."

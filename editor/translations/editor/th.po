@@ -746,9 +746,6 @@ msgstr "เพิ่มแทร็กเบซิเยร์"
 msgid "Track path is invalid, so can't add a key."
 msgstr "ที่อยู่แทร็กผิดพลาด ไม่สามารถเพิ่มคีย์ได้"
 
-msgid "Add Track Key"
-msgstr "เพิ่มแทร็กคีย์"
-
 msgid "Track path is invalid, so can't add a method key."
 msgstr "ที่อยู่แทร็กผิดพลาด ไม่สามารถเพิ่มคีย์เมธอดได้"
 
@@ -2267,9 +2264,6 @@ msgstr ""
 msgid "Write your logic in the _run() method."
 msgstr "เขียนโปรแกรมในเมท็อด _run()"
 
-msgid "There is an edited scene already."
-msgstr "มีฉากที่แก้ไขอยู่แล้ว"
-
 msgid "Common"
 msgstr "ทั่วไป"
 
@@ -2826,9 +2820,6 @@ msgstr "อุปกรณ์:"
 
 msgid "Failed to load resource."
 msgstr "โหลดทรัพยากรไม่ได้"
-
-msgid "Raw"
-msgstr "Raw"
 
 msgid "Make Sub-Resources Unique"
 msgstr "ไม่ให้ใช้รีซอร์สร่วมกับวัตถุอื่น"
@@ -6375,13 +6366,6 @@ msgstr "สร้างพื้นที่โพรบ"
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "วัตถุนี้จะถูกละเว้นจนกว่าจะตั้ง mesh"
-
-msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"ทรัพยากร SpriteFrames ต้องสร้างหรือตั้งค่าในคุณสมบัติ \"Frames\" เพื่อให้ AnimatedSprite3D "
-"แสดงเฟรม"
 
 msgid "Plotting Meshes"
 msgstr "วางแนว meshes"

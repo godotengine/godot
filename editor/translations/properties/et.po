@@ -1327,6 +1327,12 @@ msgstr "Kaugjuhitava Stseenipuu Värskendamise Intervall"
 msgid "Remote Inspect Refresh Interval"
 msgstr "Kauginspekteerimise Värskendamise Intervall"
 
+msgid "Input"
+msgstr "Sisend"
+
+msgid "Buffering"
+msgstr "Puhverdamine"
+
 msgid "Project Manager"
 msgstr "Projektide Haldur"
 
@@ -2089,6 +2095,21 @@ msgstr "Keskkond"
 msgid "Defaults"
 msgstr "Vaikeväärtused"
 
+msgid "Icon"
+msgstr "Ikoon"
+
+msgid "Windows Native Icon"
+msgstr "Windowsi Süsteemiikoon"
+
+msgid "Pointing"
+msgstr "Osutades"
+
+msgid "Android"
+msgstr "Android"
+
+msgid "Mouse Cursor"
+msgstr "Hiire Kursor"
+
 msgid "Show Image"
 msgstr "Näita Pilti"
 
@@ -2100,24 +2121,6 @@ msgstr "Täissuurus"
 
 msgid "Use Filter"
 msgstr "Kasuta Filtrit"
-
-msgid "Icon"
-msgstr "Ikoon"
-
-msgid "Windows Native Icon"
-msgstr "Windowsi Süsteemiikoon"
-
-msgid "Buffering"
-msgstr "Puhverdamine"
-
-msgid "Pointing"
-msgstr "Osutades"
-
-msgid "Android"
-msgstr "Android"
-
-msgid "Mouse Cursor"
-msgstr "Hiire Kursor"
 
 msgid "Minimum Display Time"
 msgstr "Minimaalne Näitamise Aeg"
@@ -3037,9 +3040,6 @@ msgstr "End"
 msgid "Point"
 msgstr "Punkt"
 
-msgid "Input"
-msgstr "Sisend"
-
 msgid "Linear"
 msgstr "Sirgjooneline"
 
@@ -3291,6 +3291,3 @@ msgstr "Maailma Alguspunkt"
 
 msgid "Primary Interface"
 msgstr "Peamine Kasutajaliides"
-
-msgid "Property"
-msgstr "Atribuut"

@@ -758,16 +758,16 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "Poista animaatioraita"
 
-msgid "Hold Shift when clicking the key icon to skip this dialog."
-msgstr ""
-"Pidä Shift-näppäintä pohjassa painaessasi avain kuvaketta ohittaaksesi tämän "
-"dialogin."
-
 msgid "Create new track for %s and insert key?"
 msgstr "Luo kohteelle %s uusi raita ja lisää avain?"
 
 msgid "Create %d new tracks and insert keys?"
 msgstr "Luo %d uutta raitaa ja lisää avaimet?"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"Pidä Shift-näppäintä pohjassa painaessasi avain kuvaketta ohittaaksesi tämän "
+"dialogin."
 
 msgid "Create"
 msgstr "Luo"
@@ -829,18 +829,6 @@ msgstr "Raidan polku on virheellinen, joten ei voida lisätä avainruutua."
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "Raita ei ole Node3D-tyyppinen, joten ei voida lisätä avainruutua"
-
-msgid "Add Position Key"
-msgstr "Lisää Sijainti Avain"
-
-msgid "Add Rotation Key"
-msgstr "Lisää Kierto Avain"
-
-msgid "Add Scale Key"
-msgstr "Lisää Skaalaus Avain"
-
-msgid "Add Track Key"
-msgstr "Lisää raidan avainruutu"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Raidan polku on virheellinen, joten ei voida lisätä metodin avainta."
@@ -2970,13 +2958,6 @@ msgid "Quick Open Script..."
 msgstr "Skriptin pika-avaus..."
 
 msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"Nykyisessä kohtauksessa ei ole juurisolmua, mutta %d muokattua ulkoista "
-"resurssia (resursseja) tallennettiin kuitenkin."
-
-msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -3590,15 +3571,6 @@ msgstr "Aja Projekti"
 msgid "Write your logic in the _run() method."
 msgstr "Kirjoita logiikka _run() metodiin."
 
-msgid "There is an edited scene already."
-msgstr "Muokattu kohtaus on jo olemassa."
-
-msgid "Undo: %s"
-msgstr "Kumoa: %s"
-
-msgid "Redo: %s"
-msgstr "Tee uudelleen: %s"
-
 msgid "Edit Built-in Action: %s"
 msgstr "Muokkaa Sisäänrakennettua Toimintoa: %s"
 
@@ -3700,6 +3672,60 @@ msgstr "Kaikki laitteet"
 
 msgid "Device"
 msgstr "Laite"
+
+msgid "Can't get filesystem access."
+msgstr "Ei saada pääsyä tiedostojärjestelmään."
+
+msgid "Failed to get Info.plist hash."
+msgstr "Info.plist hajautusarvoa ei saada."
+
+msgid "Invalid Info.plist, no exe name."
+msgstr "Virheellinen Info.plist, exe-nimi puuttuu."
+
+msgid "Invalid Info.plist, no bundle id."
+msgstr "Virheellinen Info.plist, bundle id puuttuu."
+
+msgid "Invalid Info.plist, can't load."
+msgstr "Virheellinen Info.plist, ei voida ladata."
+
+msgid "Failed to create \"%s\" subfolder."
+msgstr "Alikansion \"%s\" luonti epäonnistui."
+
+msgid "Failed to extract thin binary."
+msgstr "Binäärin ohennus epäonnistui."
+
+msgid "Invalid binary format."
+msgstr "Virheellinen binäärimuoto."
+
+msgid "Already signed!"
+msgstr "Jo allekirjoitettu!"
+
+msgid "Failed to process nested resources."
+msgstr "Sisäkkäisten resurssien käsittely epäonnistui."
+
+msgid "Failed to create _CodeSignature subfolder."
+msgstr "_CodeSignature alikansion luonti epäonnistui."
+
+msgid "Failed to get CodeResources hash."
+msgstr "CodeResources hajautusarvon saanti epäonnistui."
+
+msgid "Invalid entitlements file."
+msgstr "Virheellinen oikeutustiedosto (entitlements)."
+
+msgid "Invalid executable file."
+msgstr "Virheellinen käynnistystiedosto."
+
+msgid "Can't resize signature load command."
+msgstr "Ei voida muuttaa allekirjoituksen latauskäskyn kokoa."
+
+msgid "Failed to create fat binary."
+msgstr "Laajennetun binäärin luonti epäonnistui."
+
+msgid "Unknown bundle type."
+msgstr "Tuntematon bundle-tyyppi."
+
+msgid "Unknown object type."
+msgstr "Tuntematon objektityyppi."
 
 msgid "Project export for platform:"
 msgstr "Projektin vienti alustalle:"
@@ -4967,12 +4993,6 @@ msgstr "Resurssin lataaminen epäonnistui."
 
 msgid "(Current)"
 msgstr "(Nykyinen)"
-
-msgid "Raw"
-msgstr "Raaka"
-
-msgid "Capitalized"
-msgstr "Isot alkukirjaimet"
 
 msgid "Localization not available for current language."
 msgstr "Lokalisointi ei ole saatavilla nykyiselle kielelle."
@@ -10125,11 +10145,11 @@ msgstr ""
 "Tälle solmulle täytyy asettaa tai luoda NavigationMesh resurssi, jotta se "
 "toimisi."
 
-msgid "Error saving file %s: %s"
-msgstr "Virhe tallennettaessa tiedostoa %s: %s"
-
 msgid "Error loading %s: %s."
 msgstr "Virhe ladatessa %s: %s."
+
+msgid "Error saving file %s: %s"
+msgstr "Virhe tallennettaessa tiedostoa %s: %s"
 
 msgid "Add action"
 msgstr "Lisää toiminto"
@@ -10365,60 +10385,6 @@ msgstr "Käynnistystiedoston \"%s\" avaus epäonnistui."
 
 msgid "Could not create temp directory:"
 msgstr "Ei voitu luoda väliaikaista hakemistoa:"
-
-msgid "Can't get filesystem access."
-msgstr "Ei saada pääsyä tiedostojärjestelmään."
-
-msgid "Failed to get Info.plist hash."
-msgstr "Info.plist hajautusarvoa ei saada."
-
-msgid "Invalid Info.plist, no exe name."
-msgstr "Virheellinen Info.plist, exe-nimi puuttuu."
-
-msgid "Invalid Info.plist, no bundle id."
-msgstr "Virheellinen Info.plist, bundle id puuttuu."
-
-msgid "Invalid Info.plist, can't load."
-msgstr "Virheellinen Info.plist, ei voida ladata."
-
-msgid "Failed to create \"%s\" subfolder."
-msgstr "Alikansion \"%s\" luonti epäonnistui."
-
-msgid "Failed to extract thin binary."
-msgstr "Binäärin ohennus epäonnistui."
-
-msgid "Invalid binary format."
-msgstr "Virheellinen binäärimuoto."
-
-msgid "Already signed!"
-msgstr "Jo allekirjoitettu!"
-
-msgid "Failed to process nested resources."
-msgstr "Sisäkkäisten resurssien käsittely epäonnistui."
-
-msgid "Failed to create _CodeSignature subfolder."
-msgstr "_CodeSignature alikansion luonti epäonnistui."
-
-msgid "Failed to get CodeResources hash."
-msgstr "CodeResources hajautusarvon saanti epäonnistui."
-
-msgid "Invalid entitlements file."
-msgstr "Virheellinen oikeutustiedosto (entitlements)."
-
-msgid "Invalid executable file."
-msgstr "Virheellinen käynnistystiedosto."
-
-msgid "Can't resize signature load command."
-msgstr "Ei voida muuttaa allekirjoituksen latauskäskyn kokoa."
-
-msgid "Failed to create fat binary."
-msgstr "Laajennetun binäärin luonti epäonnistui."
-
-msgid "Unknown bundle type."
-msgstr "Tuntematon bundle-tyyppi."
-
-msgid "Unknown object type."
-msgstr "Tuntematon objektityyppi."
 
 msgid "Invalid bundle identifier:"
 msgstr "Virheellinen bundle-tunniste:"
@@ -10737,13 +10703,6 @@ msgstr ""
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Tämä kappale sivuutetaan, kunnes asetat meshin."
-
-msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"AnimatedSprite3D solmulle täytyy luoda tai asettaa \"Frames\" ominaisuudeksi "
-"SpriteFrames resurssi ruutujen näyttämiseksi."
 
 msgid "Plotting Meshes"
 msgstr "Piirretään meshejä"

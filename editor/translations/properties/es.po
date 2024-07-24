@@ -104,13 +104,16 @@
 # Zeerats <scbmediasolutions@gmail.com>, 2024.
 # Franco Ezequiel Ibañez <francoibanez.dev@gmail.com>, 2024.
 # Ignacio <ignacioff08@gmail.com>, 2024.
+# Marcelo Gallardo <marcelogallardotoledo@gmail.com>, 2024.
+# José Artigas <squander@users.noreply.hosted.weblate.org>, 2024.
+# Zgtale <zgtale1@hotmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-03-28 09:21+0000\n"
-"Last-Translator: Ignacio <ignacioff08@gmail.com>\n"
+"PO-Revision-Date: 2024-07-17 20:10+0000\n"
+"Last-Translator: Zgtale <zgtale1@hotmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
 "Language: es\n"
@@ -118,7 +121,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.5-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Application"
 msgstr "Aplicación"
@@ -152,6 +155,9 @@ msgstr "Desactivar stderr"
 
 msgid "Print Header"
 msgstr "Cabecera de Impresión"
+
+msgid "Enable Alt Space Menu"
+msgstr "Habilitar menú Alt Espacio"
 
 msgid "Use Hidden Project Data Directory"
 msgstr "Usar Directorio de Datos Ocultos del Proyecto"
@@ -356,9 +362,6 @@ msgstr "Mensaje"
 
 msgid "Rendering"
 msgstr "Renderizado"
-
-msgid "Occlusion Culling"
-msgstr "Occlusion Culling"
 
 msgid "BVH Build Quality"
 msgstr "Calidad de construcción de animaciones BVH"
@@ -813,6 +816,9 @@ msgstr "Valor"
 msgid "Arg Count"
 msgstr "Conteo de Argumentos"
 
+msgid "Args"
+msgstr "Argumentos"
+
 msgid "Type"
 msgstr "Tipo"
 
@@ -941,9 +947,6 @@ msgstr "Pantalla del Administrador de Proyectos"
 
 msgid "Connection"
 msgstr "Conexión"
-
-msgid "Enable Pseudolocalization"
-msgstr "Habiliar Pseudolocalización"
 
 msgid "Use Embedded Menu"
 msgstr "Usar Menú Incrustado"
@@ -1763,6 +1766,15 @@ msgstr "Intervalo de Refresco de la Inspección Remota"
 
 msgid "Profile Native Calls"
 msgstr "Llamadas Nativas de Perfil"
+
+msgid "Input"
+msgstr "Entrada"
+
+msgid "Buffering"
+msgstr "Buffering"
+
+msgid "Agile Event Flushing"
+msgstr "Evento Ágil de Vaciado"
 
 msgid "Project Manager"
 msgstr "Administrador de Proyectos"
@@ -2913,18 +2925,6 @@ msgstr "Predeterminados"
 msgid "Default Clear Color"
 msgstr "Color Claro Predeterminado"
 
-msgid "Show Image"
-msgstr "Mostrar Imagen"
-
-msgid "Image"
-msgstr "imagen"
-
-msgid "Fullsize"
-msgstr "Tamaño completo"
-
-msgid "Use Filter"
-msgstr "Usar Filtro"
-
 msgid "Icon"
 msgstr "Icono"
 
@@ -2933,12 +2933,6 @@ msgstr "Ícono Nativo de macOS"
 
 msgid "Windows Native Icon"
 msgstr "Ícono Nativo de Windows"
-
-msgid "Buffering"
-msgstr "Buffering"
-
-msgid "Agile Event Flushing"
-msgstr "Evento Ágil de Vaciado"
 
 msgid "Pointing"
 msgstr "Puntero"
@@ -2961,6 +2955,18 @@ msgstr "Imagen personalizada para el Hotspot"
 msgid "Tooltip Position Offset"
 msgstr "Offset de Posición del Tooltip"
 
+msgid "Show Image"
+msgstr "Mostrar Imagen"
+
+msgid "Image"
+msgstr "imagen"
+
+msgid "Fullsize"
+msgstr "Tamaño completo"
+
+msgid "Use Filter"
+msgstr "Usar Filtro"
+
 msgid "Minimum Display Time"
 msgstr "Tiempo Mínimo de Visualización"
 
@@ -2982,6 +2988,15 @@ msgstr "Intentos de Recarga de Ensamblados"
 msgid "Time"
 msgstr "Tiempo"
 
+msgid "Orphan Nodes"
+msgstr "Nodos huérfanos"
+
+msgid "Total Objects Drawn"
+msgstr "Objetos dibujados totales"
+
+msgid "Total Primitives Drawn"
+msgstr "Primitivas dibujadas totales"
+
 msgid "Video"
 msgstr "Vídeo"
 
@@ -2990,6 +3005,9 @@ msgstr "Regiones"
 
 msgid "Agents"
 msgstr "Agentes"
+
+msgid "Links"
+msgstr "Enlaces"
 
 msgid "Polygons"
 msgstr "Polígonos"
@@ -5151,9 +5169,6 @@ msgstr "Margen de Seguridad"
 msgid "Disable Mode"
 msgstr "Modo Desactivado"
 
-msgid "Input"
-msgstr "Entrada"
-
 msgid "Pickable"
 msgstr "Seleccionable"
 
@@ -6915,6 +6930,9 @@ msgstr "Ocultar al Seleccionar Elemento con Estado"
 msgid "Submenu Popup Delay"
 msgstr "Retraso en la Aparición del Submenú"
 
+msgid "System Menu ID"
+msgstr "ID del menú del sistema"
+
 msgid "Fill Mode"
 msgstr "Modo de Relleno"
 
@@ -8079,6 +8097,9 @@ msgstr "Animación de partículas Fotogramas V"
 msgid "Particles Anim Loop"
 msgstr "Bucle de Animación de Partículas"
 
+msgid "Needs Motion Vectors"
+msgstr "Necesita vectores de movimiento"
+
 msgid "Load Path"
 msgstr "Ruta de Carga"
 
@@ -8804,9 +8825,6 @@ msgstr "Índice de Superficie"
 
 msgid "Degrees Mode"
 msgstr "Modo de Grados"
-
-msgid "Font Color"
-msgstr "Color de la Fuente"
 
 msgid "Font Pressed Color"
 msgstr "Color de la Fuente al Presionar"
@@ -10322,6 +10340,3 @@ msgstr "Origen del Mundo"
 
 msgid "Primary Interface"
 msgstr "Interfaz Principal"
-
-msgid "Property"
-msgstr "Propiedad"

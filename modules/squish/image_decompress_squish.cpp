@@ -40,7 +40,7 @@ void image_decompress_squish(Image *p_image) {
 	Image::Format target_format = Image::FORMAT_RGBA8;
 
 	Vector<uint8_t> data;
-	int target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
+	int64_t target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->get_mipmap_count();
 	data.resize(target_size);
 

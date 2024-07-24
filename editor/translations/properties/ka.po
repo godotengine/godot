@@ -776,9 +776,6 @@ msgstr "რედაქტორის ეკრანი"
 msgid "Project Manager Screen"
 msgstr "პროექტების მამრთველის ეკრანი"
 
-msgid "Enable Pseudolocalization"
-msgstr "ფსევდოლოკალიზაციის ჩართვა"
-
 msgid "Main Font Size"
 msgstr "მთავარი ფონტის ზომა"
 
@@ -1153,6 +1150,12 @@ msgstr "გამმართველი"
 
 msgid "Profiler Frame Max Functions"
 msgstr "მაქსიმალური ფუნქციები პროფაილერის კადრში"
+
+msgid "Input"
+msgstr "შეყვანა"
+
+msgid "Buffering"
+msgstr "ბუფერის შევსება"
 
 msgid "Project Manager"
 msgstr "პროექტის მმართველი"
@@ -1856,20 +1859,8 @@ msgstr "გარემო"
 msgid "Defaults"
 msgstr "ნაგულისხმევები"
 
-msgid "Show Image"
-msgstr "გამოსახულების ჩვენება"
-
-msgid "Image"
-msgstr "გამოსახულება"
-
-msgid "Use Filter"
-msgstr "ფილტრის გამოყენება"
-
 msgid "Icon"
 msgstr "ხატულა"
-
-msgid "Buffering"
-msgstr "ბუფერის შევსება"
 
 msgid "Android"
 msgstr "Android"
@@ -1879,6 +1870,15 @@ msgstr "ტექსტის დრაივერი"
 
 msgid "Custom Image"
 msgstr "ხელით მითითებული გამოსახულება"
+
+msgid "Show Image"
+msgstr "გამოსახულების ჩვენება"
+
+msgid "Image"
+msgstr "გამოსახულება"
+
+msgid "Use Filter"
+msgstr "ფილტრის გამოყენება"
 
 msgid "Minimum Display Time"
 msgstr "მინიმალური ჩვენების დრო"
@@ -3178,9 +3178,6 @@ msgstr "კედლის ფენები"
 
 msgid "Disable Mode"
 msgstr "რეჟიმის გათიშვა"
-
-msgid "Input"
-msgstr "შეყვანა"
 
 msgid "Build Mode"
 msgstr "აგების რეჟიმი"
@@ -5573,9 +5570,6 @@ msgstr "ზედაპირის ინდექსი"
 msgid "Degrees Mode"
 msgstr "გრადუსების რეჟიმი"
 
-msgid "Font Color"
-msgstr "ფონტის ფერი"
-
 msgid "Font Pressed Color"
 msgstr "ფონტის დაწოლილი ფერი"
 
@@ -6556,6 +6550,3 @@ msgstr "AR"
 
 msgid "World Origin"
 msgstr "სამყაროს წყარო"
-
-msgid "Property"
-msgstr "პარამეტრი"

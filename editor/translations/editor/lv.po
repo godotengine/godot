@@ -618,9 +618,6 @@ msgstr "Pievienot Bezjē Celiņu"
 msgid "Track path is invalid, so can't add a key."
 msgstr "Ceļš uz Celiņu nav derīgs, tāpēc nevar pievienot atslēgu."
 
-msgid "Add Track Key"
-msgstr "Pievienot Celiņa Atslēgu"
-
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Ceļš uz Celiņu nav derīgs, tāpēc nevar pievienot metodes atslēgu."
 
@@ -1816,13 +1813,6 @@ msgid "Quick Open Script..."
 msgstr "ātri atvērt skriptu..."
 
 msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"Pašreizējai ainav nav saknes mezgla, bet %d pārveidoti ārējie resursi tika "
-"saglbāti tāpat."
-
-msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -2184,9 +2174,6 @@ msgstr "Jauns Skripts..."
 msgid "Write your logic in the _run() method."
 msgstr "Raksti savu loģiku _run() metodē."
 
-msgid "There is an edited scene already."
-msgstr "Jau ir rediģēta aina."
-
 msgid "General"
 msgstr "Vispārēji"
 
@@ -2526,9 +2513,6 @@ msgstr "Notīrtīt noklusējumu priekš '%s'"
 
 msgid "Preset"
 msgstr "Sagatave"
-
-msgid "Raw"
-msgstr "Jēls"
 
 msgid "Copy Properties"
 msgstr "Kopēt iestatījumus"

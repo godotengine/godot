@@ -1335,7 +1335,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		/* Compute a BSP tree of the simplices, so it's easy to find the exact one */
 	}
 
-	gi_data->set_path(p_image_data_path);
+	gi_data->set_path(p_image_data_path, true);
 	Error err = ResourceSaver::save(gi_data);
 
 	if (err != OK) {
