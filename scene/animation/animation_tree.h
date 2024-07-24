@@ -87,6 +87,10 @@ public:
 			if (p_break_loop && is_just_looped) {
 				return 0;
 			}
+			double remain = length - position;
+			if (Math::is_zero_approx(remain)) {
+				return 0;
+			}
 			return length - position;
 		}
 	};

@@ -702,7 +702,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 	bool p_is_external_seeking = p_playback_info.is_external_seeking;
 
 	// Check seek to 0 (means reset) by parent AnimationNode.
-	if (p_time == 0 && p_seek && !p_is_external_seeking) {
+	if (Math::is_zero_approx(p_time) && p_seek && !p_is_external_seeking) {
 		if (p_state_machine->state_machine_type != AnimationNodeStateMachine::STATE_MACHINE_TYPE_NESTED || is_end() || !playing) {
 			// Restart state machine.
 			if (p_state_machine->get_state_machine_type() != AnimationNodeStateMachine::STATE_MACHINE_TYPE_GROUPED) {
@@ -873,7 +873,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 		}
 		fadeing_from_nti = p_state_machine->blend_node(p_state_machine->states[fading_from].node, fading_from, pi, AnimationNode::FILTER_IGNORE, true, p_test_only); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 
-		if (fading_pos >= fading_time) {
+		if (Animation::is_greater_or_equal_approx(fading_pos, fading_time)) {
 			// Finish fading.
 			fading_from = StringName();
 			fadeing_from_nti = AnimationNode::NodeTimeInfo();
@@ -887,7 +887,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 	if (will_end || ((p_state_machine->get_state_machine_type() == AnimationNodeStateMachine::STATE_MACHINE_TYPE_NESTED) && !p_state_machine->has_transition_from(current))) {
 		// There is no next transition.
 		if (fading_from != StringName()) {
-			return current_nti.get_remain() > fadeing_from_nti.get_remain() ? current_nti : fadeing_from_nti;
+			return Animation::is_greater_approx(current_nti.get_remain(), fadeing_from_nti.get_remain()) ? current_nti : fadeing_from_nti;
 		}
 		return current_nti;
 	}
@@ -1015,7 +1015,7 @@ bool AnimationNodeStateMachinePlayback::_can_transition_to_next(AnimationTree *p
 	}
 
 	if (current != AnimationNodeStateMachine::START_NODE && p_next.switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_AT_END) {
-		return current_nti.get_remain(p_next.break_loop_at_end) <= p_next.xfade;
+		return Animation::is_less_or_equal_approx(current_nti.get_remain(p_next.break_loop_at_end), p_next.xfade);
 	}
 	return true;
 }
