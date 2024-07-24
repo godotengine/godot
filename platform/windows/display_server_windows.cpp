@@ -34,9 +34,11 @@
 #include "wgl_detect_version.h"
 
 #include "core/config/project_settings.h"
+#include "core/crypto/crypto_core.h"
 #include "core/io/marshalls.h"
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
+#include "drivers/windows/file_access_windows_pipe.h"
 #include "main/main.h"
 #include "scene/resources/texture.h"
 
@@ -250,133 +252,6 @@ void DisplayServerWindows::tts_stop() {
 	tts->stop();
 }
 
-// Silence warning due to a COM API weirdness.
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#endif
-
-class FileDialogEventHandler : public IFileDialogEvents, public IFileDialogControlEvents {
-	LONG ref_count = 1;
-	int ctl_id = 1;
-
-	HashMap<int, String> ctls;
-	Dictionary selected;
-	String root;
-
-public:
-	// IUnknown methods
-	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppv) {
-		static const QITAB qit[] = {
-#ifdef __MINGW32__
-			{ &__uuidof(IFileDialogEvents), static_cast<decltype(qit[0].dwOffset)>(OFFSETOFCLASS(IFileDialogEvents, FileDialogEventHandler)) },
-			{ &__uuidof(IFileDialogControlEvents), static_cast<decltype(qit[0].dwOffset)>(OFFSETOFCLASS(IFileDialogControlEvents, FileDialogEventHandler)) },
-#else
-			QITABENT(FileDialogEventHandler, IFileDialogEvents),
-			QITABENT(FileDialogEventHandler, IFileDialogControlEvents),
-#endif
-			{ nullptr, 0 },
-		};
-		return QISearch(this, qit, riid, ppv);
-	}
-
-	ULONG STDMETHODCALLTYPE AddRef() {
-		return InterlockedIncrement(&ref_count);
-	}
-
-	ULONG STDMETHODCALLTYPE Release() {
-		long ref = InterlockedDecrement(&ref_count);
-		if (!ref) {
-			delete this;
-		}
-		return ref;
-	}
-
-	// IFileDialogEvents methods
-	HRESULT STDMETHODCALLTYPE OnFileOk(IFileDialog *) { return S_OK; };
-	HRESULT STDMETHODCALLTYPE OnFolderChange(IFileDialog *) { return S_OK; };
-
-	HRESULT STDMETHODCALLTYPE OnFolderChanging(IFileDialog *p_pfd, IShellItem *p_item) {
-		if (root.is_empty()) {
-			return S_OK;
-		}
-
-		LPWSTR lpw_path = nullptr;
-		p_item->GetDisplayName(SIGDN_FILESYSPATH, &lpw_path);
-		if (!lpw_path) {
-			return S_FALSE;
-		}
-		String path = String::utf16((const char16_t *)lpw_path).simplify_path();
-		if (!path.begins_with(root.simplify_path())) {
-			return S_FALSE;
-		}
-		return S_OK;
-	}
-
-	HRESULT STDMETHODCALLTYPE OnHelp(IFileDialog *) { return S_OK; };
-	HRESULT STDMETHODCALLTYPE OnSelectionChange(IFileDialog *) { return S_OK; };
-	HRESULT STDMETHODCALLTYPE OnShareViolation(IFileDialog *, IShellItem *, FDE_SHAREVIOLATION_RESPONSE *) { return S_OK; };
-	HRESULT STDMETHODCALLTYPE OnTypeChange(IFileDialog *pfd) { return S_OK; };
-	HRESULT STDMETHODCALLTYPE OnOverwrite(IFileDialog *, IShellItem *, FDE_OVERWRITE_RESPONSE *) { return S_OK; };
-
-	// IFileDialogControlEvents methods
-	HRESULT STDMETHODCALLTYPE OnItemSelected(IFileDialogCustomize *p_pfdc, DWORD p_ctl_id, DWORD p_item_idx) {
-		if (ctls.has(p_ctl_id)) {
-			selected[ctls[p_ctl_id]] = (int)p_item_idx;
-		}
-		return S_OK;
-	}
-
-	HRESULT STDMETHODCALLTYPE OnButtonClicked(IFileDialogCustomize *, DWORD) { return S_OK; };
-	HRESULT STDMETHODCALLTYPE OnCheckButtonToggled(IFileDialogCustomize *p_pfdc, DWORD p_ctl_id, BOOL p_checked) {
-		if (ctls.has(p_ctl_id)) {
-			selected[ctls[p_ctl_id]] = (bool)p_checked;
-		}
-		return S_OK;
-	}
-	HRESULT STDMETHODCALLTYPE OnControlActivating(IFileDialogCustomize *, DWORD) { return S_OK; };
-
-	Dictionary get_selected() {
-		return selected;
-	}
-
-	void set_root(const String &p_root) {
-		root = p_root;
-	}
-
-	void add_option(IFileDialogCustomize *p_pfdc, const String &p_name, const Vector<String> &p_options, int p_default) {
-		int gid = ctl_id++;
-		int cid = ctl_id++;
-
-		if (p_options.size() == 0) {
-			// Add check box.
-			p_pfdc->StartVisualGroup(gid, L"");
-			p_pfdc->AddCheckButton(cid, (LPCWSTR)p_name.utf16().get_data(), p_default);
-			p_pfdc->SetControlState(cid, CDCS_VISIBLE | CDCS_ENABLED);
-			p_pfdc->EndVisualGroup();
-			selected[p_name] = (bool)p_default;
-		} else {
-			// Add combo box.
-			p_pfdc->StartVisualGroup(gid, (LPCWSTR)p_name.utf16().get_data());
-			p_pfdc->AddComboBox(cid);
-			p_pfdc->SetControlState(cid, CDCS_VISIBLE | CDCS_ENABLED);
-			for (int i = 0; i < p_options.size(); i++) {
-				p_pfdc->AddControlItem(cid, i, (LPCWSTR)p_options[i].utf16().get_data());
-			}
-			p_pfdc->SetSelectedControlItem(cid, p_default);
-			p_pfdc->EndVisualGroup();
-			selected[p_name] = p_default;
-		}
-		ctls[cid] = p_name;
-	}
-
-	virtual ~FileDialogEventHandler(){};
-};
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
-
 Error DisplayServerWindows::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
 	return _file_dialog_with_options_show(p_title, p_current_directory, String(), p_filename, p_show_hidden, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
 }
@@ -385,234 +260,187 @@ Error DisplayServerWindows::file_dialog_with_options_show(const String &p_title,
 	return _file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, true);
 }
 
+void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
+	FileDialogData *fd = (FileDialogData *)p_ud;
+
+	CryptoCore::RandomGenerator rng;
+	rng.init();
+	uint8_t uuid[16];
+	rng.get_random_bytes(uuid, 16);
+	String pipe_id = (String("fd-pipe-") + String::hex_encode_buffer(uuid, 16));
+
+	List<String> args;
+	args.push_back("-OpenFileDialogHelper");
+	args.push_back(pipe_id);
+	OS::get_singleton()->create_instance(args, &fd->pid);
+
+	FileAccessWindowsPipe pipe;
+	pipe.open_internal(pipe_id, 0);
+
+	pipe.store_64((uint64_t)fd->hwnd);
+	pipe.store_64(fd->wrect.position.x);
+	pipe.store_64(fd->wrect.position.y);
+	pipe.store_64(fd->wrect.size.x);
+	pipe.store_64(fd->wrect.size.y);
+	pipe.store_pascal_string(fd->appid);
+	pipe.store_pascal_string(fd->title);
+	pipe.store_pascal_string(fd->current_directory);
+	pipe.store_pascal_string(fd->root);
+	pipe.store_pascal_string(fd->filename);
+	pipe.store_8(fd->show_hidded);
+	pipe.store_8((int)fd->mode);
+	pipe.store_64(fd->filters.size());
+	for (const String &E : fd->filters) {
+		pipe.store_pascal_string(E);
+	}
+	int64_t valid_options = 0;
+	for (int i = 0; i < fd->options.size(); i++) {
+		const Dictionary &item = fd->options[i];
+		if (!item.has("name") || !item.has("values") || !item.has("default")) {
+			continue;
+		}
+		valid_options++;
+	}
+	pipe.store_64(valid_options);
+	for (int i = 0; i < fd->options.size(); i++) {
+		const Dictionary &item = fd->options[i];
+		if (!item.has("name") || !item.has("values") || !item.has("default")) {
+			continue;
+		}
+		const String &name = item["name"];
+		const Vector<String> &options = item["values"];
+		int default_idx = item["default"];
+
+		pipe.store_pascal_string(name);
+		pipe.store_64(options.size());
+		for (const String &E : options) {
+			pipe.store_pascal_string(E);
+		}
+		pipe.store_64(default_idx);
+	}
+
+	bool res = pipe.get_8();
+	if (res) {
+		Vector<String> file_names;
+		Dictionary options;
+		int64_t file_name_count = pipe.get_64();
+		for (int64_t j = 0; j < file_name_count; j++) {
+			file_names.push_back(pipe.get_pascal_string());
+		}
+		int64_t index = pipe.get_64();
+		int64_t option_count = pipe.get_64();
+		for (int64_t j = 0; j < option_count; j++) {
+			String option_name = pipe.get_pascal_string();
+			int64_t option_value = pipe.get_64();
+			options[option_name] = option_value;
+		}
+		if (fd->callback.is_valid()) {
+			if (fd->options_in_cb) {
+				Variant v_result = true;
+				Variant v_files = file_names;
+				Variant v_index = index;
+				Variant v_opt = options;
+				const Variant *cb_args[4] = { &v_result, &v_files, &v_index, &v_opt };
+
+				fd->callback.call_deferredp(cb_args, 4);
+			} else {
+				Variant v_result = true;
+				Variant v_files = file_names;
+				Variant v_index = index;
+				const Variant *cb_args[3] = { &v_result, &v_files, &v_index };
+
+				fd->callback.call_deferredp(cb_args, 3);
+			}
+		}
+	} else {
+		if (fd->callback.is_valid()) {
+			if (fd->options_in_cb) {
+				Variant v_result = false;
+				Variant v_files = Vector<String>();
+				Variant v_index = 0;
+				Variant v_opt = Dictionary();
+				const Variant *cb_args[4] = { &v_result, &v_files, &v_index, &v_opt };
+
+				fd->callback.call_deferredp(cb_args, 4);
+			} else {
+				Variant v_result = false;
+				Variant v_files = Vector<String>();
+				Variant v_index = 0;
+				const Variant *cb_args[3] = { &v_result, &v_files, &v_index };
+
+				fd->callback.call_deferredp(cb_args, 3);
+			}
+		}
+	}
+
+	pipe.close();
+
+	fd->pid = 0;
+	fd->finished.set();
+
+	if (fd->window_id != INVALID_WINDOW_ID) {
+		callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(fd->window_id);
+	}
+}
+
 Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_INDEX_V(int(p_mode), FILE_DIALOG_MODE_SAVE_MAX, FAILED);
 
-	Vector<Char16String> filter_names;
-	Vector<Char16String> filter_exts;
-	for (const String &E : p_filters) {
-		Vector<String> tokens = E.split(";");
-		if (tokens.size() >= 1) {
-			String flt = tokens[0].strip_edges();
-			int filter_slice_count = flt.get_slice_count(",");
-			Vector<String> exts;
-			for (int j = 0; j < filter_slice_count; j++) {
-				String str = (flt.get_slice(",", j).strip_edges());
-				if (!str.is_empty()) {
-					exts.push_back(str);
-				}
-			}
-			if (!exts.is_empty()) {
-				String str = String(";").join(exts);
-				filter_exts.push_back(str.utf16());
-				if (tokens.size() == 2) {
-					filter_names.push_back(tokens[1].strip_edges().utf16());
-				} else {
-					filter_names.push_back(str.utf16());
-				}
-			}
-		}
+	WindowID window_id = _get_focused_window_or_popup();
+	if (!windows.has(window_id)) {
+		window_id = MAIN_WINDOW_ID;
 	}
-	if (filter_names.is_empty()) {
-		filter_exts.push_back(String("*.*").utf16());
-		filter_names.push_back(RTR("All Files").utf16());
-	}
-
-	Vector<COMDLG_FILTERSPEC> filters;
-	for (int i = 0; i < filter_names.size(); i++) {
-		filters.push_back({ (LPCWSTR)filter_names[i].ptr(), (LPCWSTR)filter_exts[i].ptr() });
-	}
-
-	WindowID prev_focus = last_focused_window;
-
-	HRESULT hr = S_OK;
-	IFileDialog *pfd = nullptr;
-	if (p_mode == FILE_DIALOG_MODE_SAVE_FILE) {
-		hr = CoCreateInstance(CLSID_FileSaveDialog, nullptr, CLSCTX_INPROC_SERVER, IID_IFileSaveDialog, (void **)&pfd);
+	String appname;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		appname = "Godot.GodotEditor." + String(VERSION_BRANCH);
 	} else {
-		hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_IFileOpenDialog, (void **)&pfd);
+		String name = GLOBAL_GET("application/config/name");
+		String version = GLOBAL_GET("application/config/version");
+		if (version.is_empty()) {
+			version = "0";
+		}
+		String clean_app_name = name.to_pascal_case();
+		for (int i = 0; i < clean_app_name.length(); i++) {
+			if (!is_ascii_alphanumeric_char(clean_app_name[i]) && clean_app_name[i] != '_' && clean_app_name[i] != '.') {
+				clean_app_name[i] = '_';
+			}
+		}
+		clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
+		appname = "Godot." + clean_app_name + "." + version;
 	}
-	if (SUCCEEDED(hr)) {
-		IFileDialogEvents *pfde = nullptr;
-		FileDialogEventHandler *event_handler = new FileDialogEventHandler();
-		hr = event_handler->QueryInterface(IID_PPV_ARGS(&pfde));
 
-		DWORD cookie = 0;
-		hr = pfd->Advise(pfde, &cookie);
-
-		IFileDialogCustomize *pfdc = nullptr;
-		hr = pfd->QueryInterface(IID_PPV_ARGS(&pfdc));
-
-		for (int i = 0; i < p_options.size(); i++) {
-			const Dictionary &item = p_options[i];
-			if (!item.has("name") || !item.has("values") || !item.has("default")) {
-				continue;
-			}
-			const String &name = item["name"];
-			const Vector<String> &options = item["values"];
-			int default_idx = item["default"];
-
-			event_handler->add_option(pfdc, name, options, default_idx);
-		}
-		event_handler->set_root(p_root);
-
-		pfdc->Release();
-
-		DWORD flags;
-		pfd->GetOptions(&flags);
-		if (p_mode == FILE_DIALOG_MODE_OPEN_FILES) {
-			flags |= FOS_ALLOWMULTISELECT;
-		}
-		if (p_mode == FILE_DIALOG_MODE_OPEN_DIR) {
-			flags |= FOS_PICKFOLDERS;
-		}
-		if (p_show_hidden) {
-			flags |= FOS_FORCESHOWHIDDEN;
-		}
-		pfd->SetOptions(flags | FOS_FORCEFILESYSTEM);
-		pfd->SetTitle((LPCWSTR)p_title.utf16().ptr());
-
-		String dir = ProjectSettings::get_singleton()->globalize_path(p_current_directory);
-		if (dir == ".") {
-			dir = OS::get_singleton()->get_executable_path().get_base_dir();
-		}
-		dir = dir.replace("/", "\\");
-
-		IShellItem *shellitem = nullptr;
-		hr = SHCreateItemFromParsingName((LPCWSTR)dir.utf16().ptr(), nullptr, IID_IShellItem, (void **)&shellitem);
-		if (SUCCEEDED(hr)) {
-			pfd->SetDefaultFolder(shellitem);
-			pfd->SetFolder(shellitem);
-		}
-
-		pfd->SetFileName((LPCWSTR)p_filename.utf16().ptr());
-		pfd->SetFileTypes(filters.size(), filters.ptr());
-		pfd->SetFileTypeIndex(0);
-
-		WindowID window_id = _get_focused_window_or_popup();
-		if (!windows.has(window_id)) {
-			window_id = MAIN_WINDOW_ID;
-		}
-
-		hr = pfd->Show(windows[window_id].hWnd);
-		pfd->Unadvise(cookie);
-
-		Dictionary options = event_handler->get_selected();
-
-		pfde->Release();
-		event_handler->Release();
-
-		UINT index = 0;
-		pfd->GetFileTypeIndex(&index);
-		if (index > 0) {
-			index = index - 1;
-		}
-
-		if (SUCCEEDED(hr)) {
-			Vector<String> file_names;
-
-			if (p_mode == FILE_DIALOG_MODE_OPEN_FILES) {
-				IShellItemArray *results;
-				hr = static_cast<IFileOpenDialog *>(pfd)->GetResults(&results);
-				if (SUCCEEDED(hr)) {
-					DWORD count = 0;
-					results->GetCount(&count);
-					for (DWORD i = 0; i < count; i++) {
-						IShellItem *result;
-						results->GetItemAt(i, &result);
-
-						PWSTR file_path = nullptr;
-						hr = result->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
-						if (SUCCEEDED(hr)) {
-							file_names.push_back(String::utf16((const char16_t *)file_path));
-							CoTaskMemFree(file_path);
-						}
-						result->Release();
-					}
-					results->Release();
-				}
-			} else {
-				IShellItem *result;
-				hr = pfd->GetResult(&result);
-				if (SUCCEEDED(hr)) {
-					PWSTR file_path = nullptr;
-					hr = result->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
-					if (SUCCEEDED(hr)) {
-						file_names.push_back(String::utf16((const char16_t *)file_path));
-						CoTaskMemFree(file_path);
-					}
-					result->Release();
-				}
-			}
-			if (p_callback.is_valid()) {
-				if (p_options_in_cb) {
-					Variant v_result = true;
-					Variant v_files = file_names;
-					Variant v_index = index;
-					Variant v_opt = options;
-					Variant ret;
-					Callable::CallError ce;
-					const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
-
-					p_callback.callp(args, 4, ret, ce);
-					if (ce.error != Callable::CallError::CALL_OK) {
-						ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 4, ce)));
-					}
-				} else {
-					Variant v_result = true;
-					Variant v_files = file_names;
-					Variant v_index = index;
-					Variant ret;
-					Callable::CallError ce;
-					const Variant *args[3] = { &v_result, &v_files, &v_index };
-
-					p_callback.callp(args, 3, ret, ce);
-					if (ce.error != Callable::CallError::CALL_OK) {
-						ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 3, ce)));
-					}
-				}
-			}
-		} else {
-			if (p_callback.is_valid()) {
-				if (p_options_in_cb) {
-					Variant v_result = false;
-					Variant v_files = Vector<String>();
-					Variant v_index = index;
-					Variant v_opt = options;
-					Variant ret;
-					Callable::CallError ce;
-					const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
-
-					p_callback.callp(args, 4, ret, ce);
-					if (ce.error != Callable::CallError::CALL_OK) {
-						ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 4, ce)));
-					}
-				} else {
-					Variant v_result = false;
-					Variant v_files = Vector<String>();
-					Variant v_index = index;
-					Variant ret;
-					Callable::CallError ce;
-					const Variant *args[3] = { &v_result, &v_files, &v_index };
-
-					p_callback.callp(args, 3, ret, ce);
-					if (ce.error != Callable::CallError::CALL_OK) {
-						ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 3, ce)));
-					}
-				}
-			}
-		}
-		pfd->Release();
-		if (prev_focus != INVALID_WINDOW_ID) {
-			callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(prev_focus);
-		}
-
-		return OK;
+	FileDialogData *fd = memnew(FileDialogData);
+	if (window_id != INVALID_WINDOW_ID) {
+		fd->hwnd = windows[window_id].hWnd;
+		RECT crect;
+		GetWindowRect(fd->hwnd, &crect);
+		fd->wrect = Rect2i(crect.left, crect.top, crect.right - crect.left, crect.bottom - crect.top);
 	} else {
-		return ERR_CANT_OPEN;
+		fd->hwnd = 0;
+		fd->wrect = Rect2i(CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT);
 	}
+	fd->appid = appname;
+	fd->title = p_title;
+	fd->current_directory = p_current_directory;
+	fd->root = p_root;
+	fd->filename = p_filename;
+	fd->show_hidded = p_show_hidden;
+	fd->mode = p_mode;
+	fd->window_id = window_id;
+	fd->filters = p_filters;
+	fd->options = p_options;
+	fd->callback = p_callback;
+	fd->options_in_cb = p_options_in_cb;
+	fd->finished.clear();
+
+	fd->listener_thread.start(DisplayServerWindows::_thread_fd_monitor, fd);
+
+	MutexLock lock(file_dialog_mutex);
+	file_dialogs.push_back(fd);
+
+	return OK;
 }
 
 void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
@@ -3018,6 +2846,22 @@ void DisplayServerWindows::process_events() {
 	if (!drop_events) {
 		_process_key_events();
 		Input::get_singleton()->flush_buffered_events();
+	}
+
+	MutexLock lock(file_dialog_mutex);
+	LocalVector<List<FileDialogData *>::Element *> to_remove;
+	for (List<FileDialogData *>::Element *E = file_dialogs.front(); E; E = E->next()) {
+		FileDialogData *fd = E->get();
+		if (fd->finished.is_set()) {
+			if (fd->listener_thread.is_started()) {
+				fd->listener_thread.wait_to_finish();
+			}
+			to_remove.push_back(E);
+		}
+	}
+	for (List<FileDialogData *>::Element *E : to_remove) {
+		memdelete(E->get());
+		E->erase();
 	}
 }
 
@@ -5667,12 +5511,6 @@ Vector2i _get_device_ids(const String &p_device_name) {
 	return ids;
 }
 
-typedef enum _SHC_PROCESS_DPI_AWARENESS {
-	SHC_PROCESS_DPI_UNAWARE = 0,
-	SHC_PROCESS_SYSTEM_DPI_AWARE = 1,
-	SHC_PROCESS_PER_MONITOR_DPI_AWARE = 2
-} SHC_PROCESS_DPI_AWARENESS;
-
 bool DisplayServerWindows::is_dark_mode_supported() const {
 	return ux_theme_available;
 }
@@ -6149,6 +5987,23 @@ void DisplayServerWindows::register_windows_driver() {
 }
 
 DisplayServerWindows::~DisplayServerWindows() {
+	MutexLock lock(file_dialog_mutex);
+	LocalVector<List<FileDialogData *>::Element *> to_remove;
+	for (List<FileDialogData *>::Element *E = file_dialogs.front(); E; E = E->next()) {
+		FileDialogData *fd = E->get();
+		if (fd->pid != 0) {
+			OS::get_singleton()->kill(fd->pid);
+		}
+		if (fd->listener_thread.is_started()) {
+			fd->listener_thread.wait_to_finish();
+		}
+		to_remove.push_back(E);
+	}
+	for (List<FileDialogData *>::Element *E : to_remove) {
+		memdelete(E->get());
+		E->erase();
+	}
+
 	delete joypad;
 	touch_state.clear();
 
