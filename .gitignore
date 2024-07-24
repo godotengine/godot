@@ -204,7 +204,7 @@ cscope.po.out
 
 # Visual Studio Code
 .vscode/
-*.code-workspace
+# *.code-workspace
 .history/
 
 # Xcode
