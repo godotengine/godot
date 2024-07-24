@@ -722,12 +722,16 @@ bool EditorFileSystem::_update_scan_actions() {
 				String full_path = ia.dir->get_file_path(idx);
 
 				bool need_reimport = _test_for_reimport(full_path, false);
+				// Workaround GH-94416 for the Android editor for now.
+				// `import_mt` seems to always be 0 and force a reimport on any fs scan.
+#ifndef ANDROID_ENABLED
 				if (!need_reimport && FileAccess::exists(full_path + ".import")) {
 					uint64_t import_mt = ia.dir->get_file_import_modified_time(idx);
 					if (import_mt != FileAccess::get_modified_time(full_path + ".import")) {
 						need_reimport = true;
 					}
 				}
+#endif
 
 				if (need_reimport) {
 					//must reimport
