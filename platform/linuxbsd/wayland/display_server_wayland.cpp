@@ -945,13 +945,13 @@ void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 
 #ifdef GLES3_ENABLED
 	if (egl_manager) {
-		egl_manager->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+		egl_manager->set_use_vsync(p_window_id, p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 
-		emulate_vsync = egl_manager->is_using_vsync();
+		emulate_vsync = egl_manager->is_using_vsync(p_window_id);
 
 		if (emulate_vsync) {
 			print_verbose("VSYNC: manually throttling frames with swap delay 0.");
-			egl_manager->set_use_vsync(false);
+			egl_manager->set_use_vsync(p_window_id, false);
 		}
 	}
 #endif // GLES3_ENABLED
@@ -970,7 +970,7 @@ DisplayServer::VSyncMode DisplayServerWayland::window_get_vsync_mode(DisplayServ
 
 #ifdef GLES3_ENABLED
 	if (egl_manager) {
-		return egl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+		return egl_manager->is_using_vsync(p_window_id) ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
 	}
 #endif // GLES3_ENABLED
 
