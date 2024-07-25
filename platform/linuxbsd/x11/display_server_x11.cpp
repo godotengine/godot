@@ -4989,10 +4989,16 @@ void DisplayServerX11::process_events() {
 
 				last_mouse_pos = pos;
 
-				if (focused_window_id != window_id) {
-					// Adjust event position relative to window distance when event is sent to a different window.
-					mm->set_position(mm->get_position() - window_get_position(focused_window_id) + window_get_position(window_id));
-					mm->set_global_position(mm->get_position());
+				if (windows[focused_window_id].mpass || wd.is_popup) {
+					mm->set_window_id(window_id);
+				} else {
+					int x, y;
+					Window child;
+					XTranslateCoordinates(x11_display, wd.x11_window, windows[focused_window_id].x11_window, event.xmotion.x, event.xmotion.y, &x, &y, &child);
+
+					Point2i pos_focused(x, y);
+					mm->set_position(pos_focused);
+					mm->set_global_position(pos_focused);
 				}
 				Input::get_singleton()->parse_input_event(mm);
 
