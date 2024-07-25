@@ -495,6 +495,8 @@ def use_windows_spawn_fix(self, platform=None):
         rv = proc.wait()
         if rv:
             print_error(err)
+        elif len(err) > 0 and not err.isspace():
+            print(err)
         return rv
 
     def mySpawn(sh, escape, cmd, args, env):
