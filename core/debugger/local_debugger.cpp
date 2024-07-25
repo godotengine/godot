@@ -292,6 +292,7 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			MainLoop *main_loop = OS::get_singleton()->get_main_loop();
 			if (main_loop->get_class() == "SceneTree") {
 				main_loop->call("quit", exit_code);
+				ScriptServer::set_scripting_enabled(false);
 			}
 			break;
 		} else if (line.begins_with("delete")) {
